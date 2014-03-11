@@ -332,18 +332,12 @@ void ProfileSyncService::StartSyncingWithServer() {
 
 void ProfileSyncService::RegisterAuthNotifications() {
   oauth2_token_service_->AddObserver(this);
-
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL,
-                 content::Source<Profile>(profile_));
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_GOOGLE_SIGNED_OUT,
-                 content::Source<Profile>(profile_));
+  signin()->AddObserver(this);
 }
 
 void ProfileSyncService::UnregisterAuthNotifications() {
+  signin()->RemoveObserver(this);
   oauth2_token_service_->RemoveObserver(this);
-  registrar_.RemoveAll();
 }
 
 void ProfileSyncService::RegisterDataTypeController(
@@ -2009,40 +2003,27 @@ void ProfileSyncService::OnSyncManagedPrefChange(bool is_sync_managed) {
   }
 }
 
-void ProfileSyncService::Observe(int type,
-                                 const content::NotificationSource& source,
-                                 const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL: {
-      const GoogleServiceSigninSuccessDetails* successful =
-          content::Details<const GoogleServiceSigninSuccessDetails>(
-              details).ptr();
-      if (!sync_prefs_.IsStartSuppressed() &&
-          !successful->password.empty()) {
-        cached_passphrase_ = successful->password;
-        // Try to consume the passphrase we just cached. If the sync backend
-        // is not running yet, the passphrase will remain cached until the
-        // backend starts up.
-        ConsumeCachedPassphraseIfPossible();
-      }
-#if defined(OS_CHROMEOS)
-      RefreshSpareBootstrapToken(successful->password);
-#endif
-      if (!sync_initialized() ||
-          GetAuthError().state() != AuthError::NONE) {
-        // Track the fact that we're still waiting for auth to complete.
-        is_auth_in_progress_ = true;
-      }
-      break;
-    }
-    case chrome::NOTIFICATION_GOOGLE_SIGNED_OUT:
-      sync_disabled_by_admin_ = false;
-      DisableForUser();
-      break;
-    default: {
-      NOTREACHED();
-    }
+void ProfileSyncService::GoogleSigninSucceeded(const std::string& username,
+                                               const std::string& password) {
+  if (!sync_prefs_.IsStartSuppressed() && !password.empty()) {
+    cached_passphrase_ = password;
+    // Try to consume the passphrase we just cached. If the sync backend
+    // is not running yet, the passphrase will remain cached until the
+    // backend starts up.
+    ConsumeCachedPassphraseIfPossible();
   }
+#if defined(OS_CHROMEOS)
+  RefreshSpareBootstrapToken(password);
+#endif
+  if (!sync_initialized() || GetAuthError().state() != AuthError::NONE) {
+    // Track the fact that we're still waiting for auth to complete.
+    is_auth_in_progress_ = true;
+  }
+}
+
+void ProfileSyncService::GoogleSignedOut(const std::string& username) {
+  sync_disabled_by_admin_ = false;
+  DisableForUser();
 }
 
 void ProfileSyncService::AddObserver(

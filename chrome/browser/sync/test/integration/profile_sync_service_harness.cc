@@ -21,7 +21,6 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/invalidation/p2p_invalidation_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
@@ -38,7 +37,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/sync_driver/data_type_controller.h"
-#include "content/public/browser/notification_service.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "sync/internal_api/public/base/progress_marker_map.h"
 #include "sync/internal_api/public/sessions/sync_session_snapshot.h"
@@ -217,11 +215,7 @@ bool ProfileSyncServiceHarness::SetupSync(
 
   // Authenticate sync client using GAIA credentials.
   service()->signin()->SetAuthenticatedUsername(username_);
-  GoogleServiceSigninSuccessDetails details(username_, password_);
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL,
-      content::Source<Profile>(profile_),
-      content::Details<const GoogleServiceSigninSuccessDetails>(&details));
+  service()->GoogleSigninSucceeded(username_, password_);
 
 #if defined(ENABLE_MANAGED_USERS)
   std::string account_id = profile_->IsManaged() ?
