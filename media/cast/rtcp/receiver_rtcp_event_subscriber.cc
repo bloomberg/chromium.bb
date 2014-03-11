@@ -83,7 +83,7 @@ void ReceiverRtcpEventSubscriber::TruncateMapIfNeeded() {
   // If map size has exceeded |max_size_to_retain_|, remove entry with
   // the smallest RTP timestamp.
   if (rtcp_events_.size() > max_size_to_retain_) {
-    DVLOG(2) << "RTCP event map exceeded size limit; "
+    DVLOG(3) << "RTCP event map exceeded size limit; "
              << "removing oldest entry";
     // This is fine since we only insert elements one at a time.
     rtcp_events_.erase(rtcp_events_.begin());

@@ -153,9 +153,9 @@ bool BuildRtcpReceiverLogMessage(
   DCHECK_GE(kMaxIpPacketSize, start_size + *rtcp_log_size)
       << "Not enough buffer space.";
 
-  VLOG(1) << "number of frames: " << *number_of_frames;
-  VLOG(1) << "total messages to send: " << *total_number_of_messages_to_send;
-  VLOG(1) << "rtcp log size: " << *rtcp_log_size;
+  VLOG(3) << "number of frames: " << *number_of_frames;
+  VLOG(3) << "total messages to send: " << *total_number_of_messages_to_send;
+  VLOG(3) << "rtcp log size: " << *rtcp_log_size;
   return *number_of_frames > 0;
 }
 }  // namespace

@@ -80,7 +80,7 @@ void RtpSender::ResendPackets(
     bool success = false;
 
     if (packets_set.empty()) {
-      VLOG(1) << "Missing all packets in frame " << static_cast<int>(frame_id);
+      VLOG(3) << "Missing all packets in frame " << static_cast<int>(frame_id);
 
       uint16 packet_id = 0;
       do {
@@ -89,7 +89,7 @@ void RtpSender::ResendPackets(
 
         // Resend packet to the network.
         if (success) {
-          VLOG(1) << "Resend " << static_cast<int>(frame_id) << ":"
+          VLOG(3) << "Resend " << static_cast<int>(frame_id) << ":"
                   << packet_id;
           // Set a unique incremental sequence number for every packet.
           Packet& packet = packets_to_resend.back();
@@ -108,7 +108,7 @@ void RtpSender::ResendPackets(
 
         // Resend packet to the network.
         if (success) {
-          VLOG(1) << "Resend " << static_cast<int>(frame_id) << ":"
+          VLOG(3) << "Resend " << static_cast<int>(frame_id) << ":"
                   << packet_id;
           Packet& packet = packets_to_resend.back();
           UpdateSequenceNumber(&packet);

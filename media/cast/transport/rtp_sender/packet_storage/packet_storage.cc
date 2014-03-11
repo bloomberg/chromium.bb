@@ -166,7 +166,6 @@ bool PacketStorage::GetPacket(uint8 frame_id,
     return false;
   }
   it->second->GetCopy(packets);
-  VLOG(1) << "Resend " << static_cast<int>(frame_id) << ":" << packet_id;
   return true;
 }
 

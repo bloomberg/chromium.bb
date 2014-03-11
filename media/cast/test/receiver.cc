@@ -158,7 +158,7 @@ class ReceiverDisplay : public InProcessReceiver {
     // Print out the delta between frames.
     if (!last_render_time_.is_null()) {
       base::TimeDelta time_diff = render_time - last_render_time_;
-      VLOG(1) << "Size = " << video_frame->coded_size().ToString()
+      VLOG(2) << "Size = " << video_frame->coded_size().ToString()
               << "; RenderDelay[mS] =  " << time_diff.InMilliseconds();
     }
     last_render_time_ = render_time;
@@ -169,7 +169,7 @@ class ReceiverDisplay : public InProcessReceiver {
     // For audio just print the playout delta between audio frames.
     if (!last_playout_time_.is_null()) {
       base::TimeDelta time_diff = playout_time - last_playout_time_;
-      VLOG(1) << "SampleRate = " << audio_frame->frequency
+      VLOG(2) << "SampleRate = " << audio_frame->frequency
               << "; PlayoutDelay[mS] =  " << time_diff.InMilliseconds();
     }
     last_playout_time_ = playout_time;

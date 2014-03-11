@@ -25,7 +25,7 @@ class LocalRtcpAudioSenderFeedback : public RtcpSenderFeedback {
     if (!cast_feedback.missing_frames_and_packets_.empty()) {
       audio_sender_->ResendPackets(cast_feedback.missing_frames_and_packets_);
     }
-    VLOG(1) << "Received audio ACK "
+    VLOG(2) << "Received audio ACK "
             << static_cast<int>(cast_feedback.ack_frame_id_);
   }
 

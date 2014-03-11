@@ -73,7 +73,7 @@ PacketType FrameIdMap::InsertPacket(const RtpCastHeader& rtp_header) {
     waiting_for_key_ = false;
   }
 
-  VLOG(1) << "InsertPacket frame:" << frame_id
+  VLOG(3) << "InsertPacket frame:" << frame_id
           << " packet:" << static_cast<int>(rtp_header.packet_id)
           << " max packet:" << static_cast<int>(rtp_header.max_packet_id);
 

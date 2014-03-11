@@ -450,7 +450,7 @@ void VideoSender::ReceivedAck(uint32 acked_frame_id) {
   cast_environment_->Logging()->InsertFrameEvent(
       now, kVideoAckReceived, rtp_timestamp, acked_frame_id);
 
-  VLOG(1) << "ReceivedAck:" << static_cast<int>(acked_frame_id);
+  VLOG(2) << "ReceivedAck:" << static_cast<int>(acked_frame_id);
   last_acked_frame_id_ = acked_frame_id;
   active_session_ = true;
   UpdateFramesInFlight();
@@ -468,7 +468,7 @@ void VideoSender::UpdateFramesInFlight() {
     } else {
       frames_in_flight = static_cast<uint32>(last_sent_frame_id_) + 1;
     }
-    VLOG(1) << frames_in_flight
+    VLOG(2) << frames_in_flight
             << " Frames in flight; last sent: " << last_sent_frame_id_
             << " last acked:" << last_acked_frame_id_;
     if (frames_in_flight >= max_unacked_frames_) {

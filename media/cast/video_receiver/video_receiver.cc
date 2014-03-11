@@ -300,7 +300,7 @@ bool VideoReceiver::PullEncodedVideoFrame(
             << static_cast<int>((*encoded_frame)->frame_id)
             << " time_until_render:" << time_until_render.InMilliseconds();
   } else {
-    VLOG(1) << "Show frame " << static_cast<int>((*encoded_frame)->frame_id)
+    VLOG(2) << "Show frame " << static_cast<int>((*encoded_frame)->frame_id)
             << " time_until_render:" << time_until_render.InMilliseconds();
   }
   // We have a copy of the frame, release this one.
@@ -326,7 +326,7 @@ void VideoReceiver::PlayoutTimeout() {
     VLOG(1) << "Failed to retrieved a complete frame at this point in time";
     return;
   }
-  VLOG(1) << "PlayoutTimeout retrieved frame "
+  VLOG(2) << "PlayoutTimeout retrieved frame "
           << static_cast<int>(encoded_frame->frame_id);
 
   if (decryptor_.initialized() && !DecryptVideoFrame(&encoded_frame)) {

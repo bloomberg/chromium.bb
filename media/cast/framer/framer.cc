@@ -61,7 +61,7 @@ bool Framer::InsertPacket(const uint8* payload_data,
   bool complete = (packet_type == kNewPacketCompletingFrame);
   if (complete) {
     // ACK as soon as possible.
-    VLOG(1) << "Complete frame " << static_cast<int>(rtp_header.frame_id);
+    VLOG(2) << "Complete frame " << static_cast<int>(rtp_header.frame_id);
     cast_msg_builder_->CompleteFrameReceived(rtp_header.frame_id,
                                              rtp_header.is_key_frame);
   }

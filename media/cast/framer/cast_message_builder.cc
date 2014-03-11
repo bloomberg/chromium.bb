@@ -58,7 +58,7 @@ void CastMessageBuilder::CompleteFrameReceived(uint32 frame_id,
     BuildPacketList();
   }
   // Send cast message.
-  VLOG(1) << "Send cast message Ack:" << static_cast<int>(frame_id);
+  VLOG(2) << "Send cast message Ack:" << static_cast<int>(frame_id);
   cast_feedback_->CastFeedback(cast_msg_);
 }
 

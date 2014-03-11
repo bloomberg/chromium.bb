@@ -175,7 +175,7 @@ void RtcpReceiver::HandleSenderReport(RtcpParser* rtcp_parser) {
   // Synchronization source identifier for the originator of this SR packet.
   uint32 remote_ssrc = rtcp_field.sender_report.sender_ssrc;
 
-  VLOG(1) << "Cast RTCP received SR from SSRC " << remote_ssrc;
+  VLOG(2) << "Cast RTCP received SR from SSRC " << remote_ssrc;
 
   if (remote_ssrc_ == remote_ssrc) {
     transport::RtcpSenderInfo remote_sender_info;
@@ -207,7 +207,7 @@ void RtcpReceiver::HandleReceiverReport(RtcpParser* rtcp_parser) {
 
   uint32 remote_ssrc = rtcp_field.receiver_report.sender_ssrc;
 
-  VLOG(1) << "Cast RTCP received RR from SSRC " << remote_ssrc;
+  VLOG(2) << "Cast RTCP received RR from SSRC " << remote_ssrc;
 
   rtcp_field_type = rtcp_parser->Iterate();
   while (rtcp_field_type == kRtcpReportBlockItemCode) {
@@ -234,7 +234,7 @@ void RtcpReceiver::HandleReportBlock(const RtcpField* rtcp_field,
     // This block is not for us ignore it.
     return;
   }
-  VLOG(1) << "Cast RTCP received RB from SSRC " << remote_ssrc;
+  VLOG(2) << "Cast RTCP received RB from SSRC " << remote_ssrc;
   base::TimeTicks now = cast_environment_->Clock()->NowTicks();
   cast_environment_->Logging()->InsertGenericEvent(
       now, kPacketLoss, rb.fraction_lost);
@@ -267,7 +267,7 @@ void RtcpReceiver::HandleSDES(RtcpParser* rtcp_parser) {
 
 void RtcpReceiver::HandleSDESChunk(RtcpParser* rtcp_parser) {
   const RtcpField& rtcp_field = rtcp_parser->Field();
-  VLOG(1) << "Cast RTCP received SDES with cname " << rtcp_field.c_name.name;
+  VLOG(2) << "Cast RTCP received SDES with cname " << rtcp_field.c_name.name;
 }
 
 void RtcpReceiver::HandleXr(RtcpParser* rtcp_parser) {
@@ -359,7 +359,7 @@ void RtcpReceiver::HandleBYE(RtcpParser* rtcp_parser) {
   const RtcpField& rtcp_field = rtcp_parser->Field();
   uint32 remote_ssrc = rtcp_field.bye.sender_ssrc;
   if (remote_ssrc_ == remote_ssrc) {
-    VLOG(1) << "Cast RTCP received BYE from SSRC " << remote_ssrc;
+    VLOG(2) << "Cast RTCP received BYE from SSRC " << remote_ssrc;
   }
   rtcp_parser->Iterate();
 }
@@ -368,7 +368,7 @@ void RtcpReceiver::HandlePLI(RtcpParser* rtcp_parser) {
   const RtcpField& rtcp_field = rtcp_parser->Field();
   if (ssrc_ == rtcp_field.pli.media_ssrc) {
     // Received a signal that we need to send a new key frame.
-    VLOG(1) << "Cast RTCP received PLI on our SSRC " << ssrc_;
+    VLOG(2) << "Cast RTCP received PLI on our SSRC " << ssrc_;
   }
   rtcp_parser->Iterate();
 }
@@ -399,7 +399,7 @@ void RtcpReceiver::HandleRpsi(RtcpParser* rtcp_parser) {
   }
   rpsi_picture_id += (rtcp_field.rpsi.native_bit_string[bytes - 1] & 0x7f);
 
-  VLOG(1) << "Cast RTCP received RPSI with picture_id " << rpsi_picture_id;
+  VLOG(2) << "Cast RTCP received RPSI with picture_id " << rpsi_picture_id;
 }
 
 void RtcpReceiver::HandlePayloadSpecificApp(RtcpParser* rtcp_parser) {
@@ -443,7 +443,7 @@ void RtcpReceiver::HandlePayloadSpecificRembItem(RtcpParser* rtcp_parser) {
   for (int i = 0; i < rtcp_field.remb_item.number_of_ssrcs; ++i) {
     if (rtcp_field.remb_item.ssrcs[i] == ssrc_) {
       // Found matching ssrc.
-      VLOG(1) << "Cast RTCP received REMB with received_bitrate "
+      VLOG(2) << "Cast RTCP received REMB with received_bitrate "
               << rtcp_field.remb_item.bitrate;
       return;
     }
@@ -632,7 +632,7 @@ void RtcpReceiver::HandleFIRItem(const RtcpField* rtcp_field) {
   if (ssrc_ != rtcp_field->fir_item.ssrc)
     return;
 
-  VLOG(1) << "Cast RTCP received FIR on our SSRC " << ssrc_;
+  VLOG(2) << "Cast RTCP received FIR on our SSRC " << ssrc_;
 }
 
 }  // namespace cast
