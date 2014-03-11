@@ -10328,6 +10328,10 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicServerInfo.DiskCacheReadTime" units="milliseconds">
+  <summary>Time spent to load QUIC server information from disk cache.</summary>
+</histogram>
+
 <histogram name="Net.QuicSession.CloseSessionOnError" enum="NetErrorCodes">
   <summary>
     The network error code which resulted in the session being closed.
