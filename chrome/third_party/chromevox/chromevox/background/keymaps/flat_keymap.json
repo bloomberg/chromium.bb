@@ -606,7 +606,11 @@
 
  {"command": "enableConsoleTts",
   "sequence": {"cvoxModifier": true,
-               "keys": {"keyCode": [123]}
+               "keys": {"keyCode": [68, 67]}
+              }},
+ {"command": "toggleBrailleCaptions",
+  "sequence": {"cvoxModifier": true,
+               "keys": {"keyCode": [68, 66]}
               }}
   ]
 }

@@ -532,7 +532,12 @@
 
  {"command": "enableConsoleTts",
   "sequence": {"cvoxModifier": true,
-               "keys": {"keyCode": [66, 67]}
+               "keys": {"keyCode": [68, 67]}
+              }},
+
+ {"command": "toggleBrailleCaptions",
+  "sequence": {"cvoxModifier": true,
+               "keys": {"keyCode": [68, 66]}
               }},
 
  {"command": "toggleSemantics",
