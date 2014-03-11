@@ -14,6 +14,8 @@ import android.util.Log;
 import android.view.Surface;
 import android.view.WindowManager;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
 
@@ -175,6 +177,15 @@ class ScreenOrientationListener {
         mBackend = Build.VERSION.SDK_INT >= 17 ?
                 new ScreenOrientationDisplayListener() :
                 new ScreenOrientationConfigurationListener();
+    }
+
+    /**
+     * Creates a ScreenOrientationConfigurationListener backend regardless of
+     * the current SDK.
+     */
+    @VisibleForTesting
+    void injectConfigurationListenerBackendForTest() {
+        mBackend = new ScreenOrientationConfigurationListener();
     }
 
     /**
