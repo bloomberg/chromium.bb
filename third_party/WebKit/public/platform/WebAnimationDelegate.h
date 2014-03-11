@@ -26,24 +26,13 @@
 #define WebAnimationDelegate_h
 
 #include "WebAnimation.h"
-#include "WebCommon.h"
 
 #define WEB_ANIMATION_DELEGATE_TAKES_MONOTONIC_TIME 1
 
 namespace blink {
 
-class BLINK_PLATFORM_EXPORT WebAnimationDelegate {
+class WebAnimationDelegate {
 public:
-    // FIXME: Remove wallClockTime API after the following file is updated;
-    // webkit/renderer/compositor_bindings/web_to_cc_animation_delegate_adapter.cc
-    void notifyAnimationStarted(double wallClockTime, double monotonicTime, WebAnimation::TargetProperty prop)
-    {
-        notifyAnimationStarted(monotonicTime, prop);
-    }
-    void notifyAnimationFinished(double wallClockTime, double monotonicTime, WebAnimation::TargetProperty prop)
-    {
-        notifyAnimationFinished(monotonicTime, prop);
-    }
     virtual void notifyAnimationStarted(double monotonicTime, WebAnimation::TargetProperty) = 0;
     virtual void notifyAnimationFinished(double monotonicTime, WebAnimation::TargetProperty) = 0;
 };
