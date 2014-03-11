@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/debug/trace_event.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/stl_util.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
@@ -28,6 +29,13 @@ using media::VideoCaptureFormat;
 namespace content {
 
 namespace {
+
+static const int kInfiniteRatio = 99999;
+
+#define UMA_HISTOGRAM_ASPECT_RATIO(name, width, height) \
+    UMA_HISTOGRAM_SPARSE_SLOWLY( \
+        name, \
+        (height) ? ((width) * 100) / (height) : kInfiniteRatio);
 
 // The number of buffers that VideoCaptureBufferPool should allocate.
 const int kNoOfBuffers = 3;
@@ -440,6 +448,9 @@ void VideoCaptureController::VideoCaptureDeviceClient::OnIncomingCapturedData(
                          frame_format.frame_size.width());
     UMA_HISTOGRAM_COUNTS("Media.VideoCapture.Height",
                          frame_format.frame_size.height());
+    UMA_HISTOGRAM_ASPECT_RATIO("Media.VideoCapture.AspectRatio",
+                               frame_format.frame_size.width(),
+                               frame_format.frame_size.height());
     UMA_HISTOGRAM_COUNTS("Media.VideoCapture.FrameRate",
                          frame_format.frame_rate);
     UMA_HISTOGRAM_ENUMERATION("Media.VideoCapture.PixelFormat",

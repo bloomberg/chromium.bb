@@ -7439,6 +7439,14 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Media.VideoCapture.AspectRatio">
+  <summary>
+    Video Capture Device captured aspect ratio, as a rounded integer multiplied
+    by 100. The collection is made in the VideoCaptureController upon reception
+    of the first frame.
+  </summary>
+</histogram>
+
 <histogram name="Media.VideoCapture.FrameRate" units="fps">
   <summary>
     Video Capture Device frame rate requested by VideoCaptureManager on
