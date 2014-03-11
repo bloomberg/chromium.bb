@@ -372,7 +372,7 @@ void Path::addEllipse(const FloatPoint& p, float radiusX, float radiusY, float r
     }
 
     // Add an arc after the relevant transform.
-    AffineTransform ellipseTransform = AffineTransform::translation(p.x(), p.y()).rotate(rad2deg(rotation));
+    AffineTransform ellipseTransform = AffineTransform::translation(p.x(), p.y()).rotateRadians(rotation);
     ASSERT(ellipseTransform.isInvertible());
     AffineTransform inverseEllipseTransform = ellipseTransform.inverse();
     transform(inverseEllipseTransform);

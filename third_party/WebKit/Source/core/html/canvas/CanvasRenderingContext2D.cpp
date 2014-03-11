@@ -628,7 +628,7 @@ void CanvasRenderingContext2D::rotate(float angleInRadians)
         return;
 
     AffineTransform newTransform = state().m_transform;
-    newTransform.rotate(angleInRadians / piDouble * 180.0);
+    newTransform.rotateRadians(angleInRadians);
     if (state().m_transform == newTransform)
         return;
 
@@ -641,7 +641,7 @@ void CanvasRenderingContext2D::rotate(float angleInRadians)
 
     modifiableState().m_transform = newTransform;
     c->rotate(angleInRadians);
-    m_path.transform(AffineTransform().rotate(-angleInRadians / piDouble * 180.0));
+    m_path.transform(AffineTransform().rotateRadians(-angleInRadians));
 }
 
 void CanvasRenderingContext2D::translate(float tx, float ty)

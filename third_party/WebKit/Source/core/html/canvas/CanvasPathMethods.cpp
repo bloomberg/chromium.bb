@@ -230,7 +230,7 @@ void degenerateEllipse(CanvasPathMethods* path, float x, float y, float radiusX,
 
     FloatPoint center(x, y);
     AffineTransform rotationMatrix;
-    rotationMatrix.rotate(rad2deg(rotation));
+    rotationMatrix.rotateRadians(rotation);
     // First, if the object's path has any subpaths, then the method must add a straight line from the last point in the subpath to the start point of the arc.
     lineToFloatPoint(path, center + rotationMatrix.mapPoint(getPointOnEllipse(radiusX, radiusY, startAngle)));
     if ((!radiusX && !radiusY) || startAngle == endAngle)
