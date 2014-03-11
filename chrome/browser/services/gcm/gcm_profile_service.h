@@ -14,6 +14,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/signin/signin_manager_base.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -41,7 +42,8 @@ class GCMProfileServiceTestConsumer;
 
 // Acts as a bridge between GCM API and GCMClient layer. It is profile based.
 class GCMProfileService : public BrowserContextKeyedService,
-                          public content::NotificationObserver {
+                          public content::NotificationObserver,
+                          public SigninManagerBase::Observer {
  public:
   typedef base::Callback<void(const std::string& registration_id,
                               GCMClient::Result result)> RegisterCallback;
@@ -146,6 +148,11 @@ class GCMProfileService : public BrowserContextKeyedService,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+  // Overridden from SigninManagerBase::Observer:
+  virtual void GoogleSigninSucceeded(const std::string& username,
+                                     const std::string& password) OVERRIDE;
+  virtual void GoogleSignedOut(const std::string& username) OVERRIDE;
 
   // Ensures that the GCMClient is loaded and the GCM check-in is done when
   // the profile was signed in.

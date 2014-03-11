@@ -28,7 +28,6 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/encryptor/os_crypt.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_prefs.h"
@@ -138,25 +137,16 @@ class FakeSigninManager : public SigninManagerBase {
 
   void SignIn(const std::string& username) {
     SetAuthenticatedUsername(username);
-
-    GoogleServiceSigninSuccessDetails details(GetAuthenticatedUsername(),
-                                              std::string());
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL,
-        content::Source<Profile>(profile_),
-        content::Details<const GoogleServiceSigninSuccessDetails>(&details));
+    FOR_EACH_OBSERVER(Observer,
+                      observer_list_,
+                      GoogleSigninSucceeded(username, std::string()));
   }
 
   void SignOut() {
     std::string username = GetAuthenticatedUsername();
     clear_authenticated_username();
     profile()->GetPrefs()->ClearPref(prefs::kGoogleServicesUsername);
-
-    GoogleServiceSignoutDetails details(username);
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_GOOGLE_SIGNED_OUT,
-        content::Source<Profile>(profile_),
-        content::Details<const GoogleServiceSignoutDetails>(&details));
+    FOR_EACH_OBSERVER(Observer, observer_list_, GoogleSignedOut(username));
   }
 };
 

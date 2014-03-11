@@ -8,6 +8,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/services/gcm/gcm_client_factory.h"
 #include "chrome/browser/services/gcm/gcm_profile_service.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 
 namespace gcm {
@@ -31,6 +32,7 @@ GCMProfileServiceFactory::GCMProfileServiceFactory()
     : BrowserContextKeyedServiceFactory(
         "GCMProfileService",
         BrowserContextDependencyManager::GetInstance()) {
+  DependsOn(SigninManagerFactory::GetInstance());
 }
 
 GCMProfileServiceFactory::~GCMProfileServiceFactory() {

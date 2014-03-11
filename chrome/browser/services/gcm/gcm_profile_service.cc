@@ -554,12 +554,6 @@ GCMProfileService::~GCMProfileService() {
 void GCMProfileService::Initialize(
     scoped_ptr<GCMClientFactory> gcm_client_factory) {
   registrar_.Add(this,
-                 chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL,
-                 content::Source<Profile>(profile_));
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_GOOGLE_SIGNED_OUT,
-                 content::Source<Profile>(profile_));
-  registrar_.Add(this,
                  chrome::NOTIFICATION_PROFILE_DESTROYED,
                  content::Source<Profile>(profile_));
   // TODO(jianli): move extension specific logic out of GCMProfileService.
@@ -570,6 +564,8 @@ void GCMProfileService::Initialize(
 #if !defined(OS_ANDROID)
   js_event_router_.reset(new extensions::GcmJsEventRouter(profile_));
 #endif
+
+  SigninManagerFactory::GetForProfile(profile_)->AddObserver(this);
 
   // Get the list of available accounts.
   std::vector<std::string> account_ids;
@@ -624,6 +620,7 @@ void GCMProfileService::Shutdown() {
 #if !defined(OS_ANDROID)
   js_event_router_.reset();
 #endif
+  SigninManagerFactory::GetForProfile(profile_)->RemoveObserver(this);
 }
 
 void GCMProfileService::Register(const std::string& app_id,
@@ -795,14 +792,6 @@ void GCMProfileService::Observe(int type,
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   switch (type) {
-    case chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL: {
-      if (GetGCMEnabledState(profile_) == ALWAYS_ENABLED)
-        EnsureLoaded();
-      break;
-    }
-    case chrome::NOTIFICATION_GOOGLE_SIGNED_OUT:
-      CheckOut();
-      break;
     case chrome::NOTIFICATION_PROFILE_DESTROYED:
       ResetGCMClient();
       break;
@@ -816,6 +805,16 @@ void GCMProfileService::Observe(int type,
     default:
       NOTREACHED();
   }
+}
+
+void GCMProfileService::GoogleSigninSucceeded(const std::string& username,
+                                              const std::string& password) {
+  if (GetGCMEnabledState(profile_) == ALWAYS_ENABLED)
+    EnsureLoaded();
+}
+
+void GCMProfileService::GoogleSignedOut(const std::string& username) {
+  CheckOut();
 }
 
 void GCMProfileService::EnsureLoaded() {
