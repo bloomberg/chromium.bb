@@ -1157,6 +1157,7 @@ const char kServerRoleOption[] = "server";
 // Bluetooth Profile Manager errors.
 const char kErrorInvalidArguments[] = "org.bluez.Error.InvalidArguments";
 const char kErrorAlreadyExists[] = "org.bluez.Error.AlreadyExists";
+const char kErrorDoesNotExist[] = "org.bluez.Error.DoesNotExist";
 }  // namespace bluetooth_profile_manager
 
 namespace bluetooth_profile {
