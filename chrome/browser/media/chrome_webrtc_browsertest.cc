@@ -35,9 +35,9 @@
 static const char kMainWebrtcTestHtmlPage[] =
     "/webrtc/webrtc_jsep01_test.html";
 
-// Top-level integration test for WebRTC. Requires a real webcam and microphone
-// on the running system. This test is not meant to run in the main browser
-// test suite since normal tester machines do not have webcams.
+// Top-level integration test for WebRTC. The test methods here must run
+// sequentially since they use a server binary on the system (hence they are
+// tagged as MANUAL).
 class WebRtcBrowserTest : public WebRtcTestBase {
  public:
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
@@ -46,18 +46,12 @@ class WebRtcBrowserTest : public WebRtcTestBase {
   }
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    // This test expects real device handling and requires a real webcam / audio
-    // device; it will not work with fake devices.
-    EXPECT_FALSE(command_line->HasSwitch(
-        switches::kUseFakeDeviceForMediaStream));
-    EXPECT_FALSE(command_line->HasSwitch(
-        switches::kUseFakeUIForMediaStream));
+    // Ensure the infobar is enabled, since we expect that in this test.
+    EXPECT_FALSE(command_line->HasSwitch(switches::kUseFakeUIForMediaStream));
 
-#if defined(OS_MACOSX)
-    // TODO(mcasas): Remove this switch when ManyCam virtual video capture
-    // device starts supporting AVFoundation, see http://crbug.com/327618.
-    command_line->AppendSwitch(switches::kDisableAVFoundation);
-#endif
+    // TODO(phoglund): allow this test to also run with real devices once we
+    // get real webcam bots up.
+    command_line->AppendSwitch(switches::kUseFakeDeviceForMediaStream);
 
     // Flag used by TestWebAudioMediaStream to force garbage collection.
     command_line->AppendSwitchASCII(switches::kJavaScriptFlags, "--expose-gc");
@@ -191,14 +185,15 @@ IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest, MANUAL_CpuUsage15Seconds) {
   ASSERT_TRUE(peerconnection_server_.Stop());
 }
 
+// This is manual for its long execution time.
 IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest,
                        MANUAL_RunsAudioVideoCall60SecsAndLogsInternalMetrics) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   ASSERT_TRUE(peerconnection_server_.Start());
 
-  ASSERT_GE(TestTimeouts::action_max_timeout().InSeconds(), 80) <<
+  ASSERT_GE(TestTimeouts::action_max_timeout().InSeconds(), 100) <<
       "This is a long-running test; you must specify "
-      "--ui-test-action-max-timeout to have a value of at least 80000.";
+      "--ui-test-action-max-timeout to have a value of at least 100000.";
 
   content::WebContents* left_tab =
       OpenTestPageAndGetUserMediaInNewTab(kMainWebrtcTestHtmlPage);
@@ -247,6 +242,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest, TestWebAudioMediaStream) {
   ui_test_utils::NavigateToURL(browser(), url);
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
+
   // A sleep is necessary to be able to detect the crash.
   SleepInJavascript(tab, 1000);
 
