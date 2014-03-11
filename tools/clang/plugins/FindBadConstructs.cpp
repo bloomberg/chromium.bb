@@ -83,12 +83,10 @@ const Type* UnwrapType(const Type* type) {
 struct FindBadConstructsOptions {
   FindBadConstructsOptions() : check_base_classes(false),
                                check_virtuals_in_implementations(true),
-                               check_url_directory(false),
                                check_weak_ptr_factory_order(false) {
   }
   bool check_base_classes;
   bool check_virtuals_in_implementations;
-  bool check_url_directory;
   bool check_weak_ptr_factory_order;
 };
 
@@ -97,7 +95,7 @@ class FindBadConstructsConsumer : public ChromeClassTester {
  public:
   FindBadConstructsConsumer(CompilerInstance& instance,
                             const FindBadConstructsOptions& options)
-      : ChromeClassTester(instance, options.check_url_directory),
+      : ChromeClassTester(instance),
         options_(options) {
     // Register warning/error messages.
     diag_method_requires_override_ = diagnostic().getCustomDiagID(
@@ -740,9 +738,6 @@ class FindBadConstructsAction : public PluginASTAction {
       } else if (args[i] == "check-base-classes") {
         // TODO(rsleevi): Remove this once http://crbug.com/123295 is fixed.
         options_.check_base_classes = true;
-      } else if (args[i] == "check-url-directory") {
-        // TODO(tfarina): Remove this once http://crbug.com/229660 is fixed.
-        options_.check_url_directory = true;
       } else if (args[i] == "check-weak-ptr-factory-order") {
         // TODO(dmichael): Remove this once http://crbug.com/303818 is fixed.
         options_.check_weak_ptr_factory_order = true;
