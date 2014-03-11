@@ -4178,7 +4178,7 @@ PassRefPtrWillBeRawPtr<CSSBasicShape> CSSPropertyParser::parseBasicShapeCircle(C
             RefPtrWillBeRawPtr<CSSValue> centerY;
             args->next(); // set list to start of position center
             parseFillPosition(args, centerX, centerY);
-            if (centerX && centerY) {
+            if (centerX && centerY && !args->current()) {
                 ASSERT(centerX->isPrimitiveValue());
                 ASSERT(centerY->isPrimitiveValue());
                 shape->setCenterX(toCSSPrimitiveValue(centerX.get()));
@@ -4281,7 +4281,7 @@ PassRefPtrWillBeRawPtr<CSSBasicShape> CSSPropertyParser::parseBasicShapeEllipse(
         RefPtrWillBeRawPtr<CSSValue> centerY;
         args->next(); // set list to start of position center
         parseFillPosition(args, centerX, centerY);
-        if (!centerX || !centerY)
+        if (!centerX || !centerY || args->current())
             return nullptr;
 
         ASSERT(centerX->isPrimitiveValue());
@@ -4519,6 +4519,7 @@ PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSPropertyParser::parseBasicShape()
         return nullptr;
 
     m_valueList->next();
+
     return cssValuePool().createValue(shape.release());
 }
 
