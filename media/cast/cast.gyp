@@ -89,6 +89,7 @@
             'test/fake_single_thread_task_runner.h',
             'test/fake_video_encode_accelerator.cc',
             'test/fake_video_encode_accelerator.h',
+            'test/utility/barcode_unittest.cc',
             'transport/cast_transport_sender_impl_unittest.cc',
             'transport/pacing/mock_paced_packet_sender.cc',
             'transport/pacing/mock_paced_packet_sender.h',

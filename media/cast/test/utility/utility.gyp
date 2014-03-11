@@ -24,6 +24,8 @@
         '<(DEPTH)/media/cast/test/fake_single_thread_task_runner.h',
         'audio_utility.cc',
         'audio_utility.h',
+        'barcode.cc',
+        'barcode.h',
         'default_config.cc',
         'default_config.h',
         'in_process_receiver.cc',
@@ -35,6 +37,20 @@
         'video_utility.cc',
         'video_utility.h',
       ], # source
+    },
+    {
+      'target_name': 'generate_barcode_video',
+      'type': 'executable',
+      'include_dirs': [
+        '<(DEPTH)/',
+      ],
+      'dependencies': [
+        '<(DEPTH)/media/media.gyp:media',
+        '<(DEPTH)/media/cast/test/utility/utility.gyp:cast_test_utility',
+      ],
+      'sources': [
+        '<(DEPTH)/media/cast/test/utility/generate_barcode_video.cc',
+      ],
     },
   ],
 }
