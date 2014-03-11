@@ -19,12 +19,9 @@
 namespace extensions {
 
 AccountTracker::AccountTracker(Profile* profile) : profile_(profile) {
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_GOOGLE_SIGNED_OUT,
-                 content::Source<Profile>(profile_));
-
   ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)->AddObserver(this);
   SigninGlobalError::GetForProfile(profile_)->AddProvider(this);
+  SigninManagerFactory::GetForProfile(profile_)->AddObserver(this);
 }
 
 AccountTracker::~AccountTracker() {}
@@ -38,6 +35,7 @@ void AccountTracker::ReportAuthError(const std::string& account_id,
 
 void AccountTracker::Shutdown() {
   STLDeleteValues(&user_info_requests_);
+  SigninManagerFactory::GetForProfile(profile_)->RemoveObserver(this);
   SigninGlobalError::GetForProfile(profile_)->RemoveProvider(this);
   ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)->
       RemoveObserver(this);
@@ -53,9 +51,7 @@ void AccountTracker::RemoveObserver(Observer* observer) {
 
 void AccountTracker::OnRefreshTokenAvailable(const std::string& account_id) {
   // Ignore refresh tokens if there is no primary account ID at all.
-  SigninManagerBase* signin_manager =
-      SigninManagerFactory::GetForProfile(profile_);
-  if (signin_manager->GetAuthenticatedAccountId().empty())
+  if (signin_manager_account_id().empty())
     return;
 
   DVLOG(1) << "AVAILABLE " << account_id;
@@ -68,17 +64,30 @@ void AccountTracker::OnRefreshTokenRevoked(const std::string& account_id) {
   UpdateSignInState(account_id, false);
 }
 
-void AccountTracker::Observe(int type,
-                             const content::NotificationSource& source,
-                             const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_GOOGLE_SIGNED_OUT:
-      StopTrackingAccount(content::Details<GoogleServiceSignoutDetails>(
-          details)->username);
-      break;
-    default:
-      NOTREACHED();
+void AccountTracker::GoogleSigninSucceeded(const std::string& username,
+                                           const std::string& password) {
+  std::vector<std::string> accounts =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)->GetAccounts();
+
+  for (std::vector<std::string>::const_iterator it = accounts.begin();
+       it != accounts.end();
+       ++it) {
+    OnRefreshTokenAvailable(*it);
   }
+}
+
+void AccountTracker::GoogleSignedOut(const std::string& username) {
+  if (username == signin_manager_account_id() ||
+      signin_manager_account_id().empty()) {
+    StopTrackingAllAccounts();
+  } else {
+    StopTrackingAccount(username);
+  }
+}
+
+const std::string AccountTracker::signin_manager_account_id() {
+  return SigninManagerFactory::GetForProfile(profile_)
+      ->GetAuthenticatedAccountId();
 }
 
 void AccountTracker::NotifyAccountAdded(const AccountState& account) {
@@ -145,6 +154,11 @@ void AccountTracker::StopTrackingAccount(const std::string& account_key) {
 
   if (ContainsKey(user_info_requests_, account_key))
     DeleteFetcher(user_info_requests_[account_key]);
+}
+
+void AccountTracker::StopTrackingAllAccounts() {
+  while (!accounts_.empty())
+    StopTrackingAccount(accounts_.begin()->first);
 }
 
 void AccountTracker::StartFetchingUserInfo(const std::string& account_key) {
