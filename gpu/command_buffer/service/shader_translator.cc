@@ -154,11 +154,9 @@ bool ShaderTranslator::Init(
 
 int ShaderTranslator::GetCompileOptions() const {
   int compile_options =
-      SH_OBJECT_CODE | SH_VARIABLES |
-      SH_MAP_LONG_VARIABLE_NAMES | SH_ENFORCE_PACKING_RESTRICTIONS |
-      SH_LIMIT_EXPRESSION_COMPLEXITY | SH_LIMIT_CALL_STACK_DEPTH;
-
-  compile_options |= SH_CLAMP_INDIRECT_ARRAY_BOUNDS;
+      SH_OBJECT_CODE | SH_VARIABLES | SH_ENFORCE_PACKING_RESTRICTIONS |
+      SH_LIMIT_EXPRESSION_COMPLEXITY | SH_LIMIT_CALL_STACK_DEPTH |
+      SH_CLAMP_INDIRECT_ARRAY_BOUNDS;
 
   compile_options |= driver_bug_workarounds_;
 
