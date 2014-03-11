@@ -14,7 +14,6 @@ ServiceWorkerRegistration::ServiceWorkerRegistration(const GURL& pattern,
     : pattern_(pattern),
       script_url_(script_url),
       registration_id_(registration_id),
-      next_version_id_(0L),
       is_shutdown_(false) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 }
@@ -36,8 +35,10 @@ void ServiceWorkerRegistration::Shutdown() {
 }
 
 void ServiceWorkerRegistration::ActivatePendingVersion() {
+  active_version_->set_status(ServiceWorkerVersion::DEACTIVATED);
   active_version_->Shutdown();
   active_version_ = pending_version_;
+  active_version_->set_status(ServiceWorkerVersion::ACTIVE);
   pending_version_ = NULL;
 }
 

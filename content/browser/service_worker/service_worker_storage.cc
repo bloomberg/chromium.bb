@@ -22,12 +22,13 @@ void RunSoon(const base::Closure& closure) {
 const base::FilePath::CharType kServiceWorkerDirectory[] =
     FILE_PATH_LITERAL("ServiceWorker");
 
-}
+}  // namespace
 
 ServiceWorkerStorage::ServiceWorkerStorage(
     const base::FilePath& path,
     quota::QuotaManagerProxy* quota_manager_proxy)
     : last_registration_id_(0),  // TODO(kinuko): this should be read from disk.
+      last_version_id_(0),       // TODO(kinuko): this should be read from disk.
       quota_manager_proxy_(quota_manager_proxy) {
   if (!path.empty())
     path_ = path.Append(kServiceWorkerDirectory);
@@ -114,6 +115,10 @@ void ServiceWorkerStorage::DeleteRegistration(
 
 int64 ServiceWorkerStorage::NewRegistrationId() {
   return ++last_registration_id_;
+}
+
+int64 ServiceWorkerStorage::NewVersionId() {
+  return ++last_version_id_;
 }
 
 bool ServiceWorkerStorage::PatternMatches(const GURL& pattern,

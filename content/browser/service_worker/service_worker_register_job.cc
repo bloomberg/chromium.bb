@@ -111,7 +111,8 @@ void ServiceWorkerRegisterJob::StartWorkerAndContinue(
   }
 
   pending_version_ = new ServiceWorkerVersion(
-      registration_, worker_registry_, registration_->next_version_id());
+      registration_, worker_registry_,
+      storage_->NewVersionId());
   for (std::vector<int>::const_iterator it = pending_process_ids_.begin();
        it != pending_process_ids_.end();
        ++it)
@@ -125,6 +126,7 @@ void ServiceWorkerRegisterJob::StartWorkerAndContinue(
 
   // TODO(alecflett): Don't set the active version until just before
   // the activate event is dispatched.
+  pending_version_->set_status(ServiceWorkerVersion::ACTIVE);
   registration_->set_active_version(pending_version_);
 }
 

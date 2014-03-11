@@ -136,9 +136,9 @@ TEST_F(ServiceWorkerVersionTest, ConcurrentStartAndStop) {
   version_->StartWorker(CreateReceiverOnCurrentThread(&status1));
   version_->StartWorker(CreateReceiverOnCurrentThread(&status2));
 
-  EXPECT_EQ(ServiceWorkerVersion::STARTING, version_->status());
+  EXPECT_EQ(ServiceWorkerVersion::STARTING, version_->running_status());
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(ServiceWorkerVersion::RUNNING, version_->status());
+  EXPECT_EQ(ServiceWorkerVersion::RUNNING, version_->running_status());
 
   // Call StartWorker() after it's started.
   version_->StartWorker(CreateReceiverOnCurrentThread(&status3));
@@ -159,9 +159,9 @@ TEST_F(ServiceWorkerVersionTest, ConcurrentStartAndStop) {
   // Also try calling StartWorker while StopWorker is in queue.
   version_->StartWorker(CreateReceiverOnCurrentThread(&status3));
 
-  EXPECT_EQ(ServiceWorkerVersion::STOPPING, version_->status());
+  EXPECT_EQ(ServiceWorkerVersion::STOPPING, version_->running_status());
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(ServiceWorkerVersion::STOPPED, version_->status());
+  EXPECT_EQ(ServiceWorkerVersion::STOPPED, version_->running_status());
 
   // All StopWorker should just succeed, while StartWorker fails.
   EXPECT_EQ(SERVICE_WORKER_OK, status1);
@@ -170,7 +170,7 @@ TEST_F(ServiceWorkerVersionTest, ConcurrentStartAndStop) {
 }
 
 TEST_F(ServiceWorkerVersionTest, SendMessage) {
-  EXPECT_EQ(ServiceWorkerVersion::STOPPED, version_->status());
+  EXPECT_EQ(ServiceWorkerVersion::STOPPED, version_->running_status());
 
   // Send a message without starting the worker.
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
@@ -180,7 +180,7 @@ TEST_F(ServiceWorkerVersionTest, SendMessage) {
   EXPECT_EQ(SERVICE_WORKER_OK, status);
 
   // The worker should be now started.
-  EXPECT_EQ(ServiceWorkerVersion::RUNNING, version_->status());
+  EXPECT_EQ(ServiceWorkerVersion::RUNNING, version_->running_status());
 
   // Stop the worker, and then send the message immediately.
   ServiceWorkerStatusCode msg_status = SERVICE_WORKER_ERROR_FAILED;
@@ -197,14 +197,14 @@ TEST_F(ServiceWorkerVersionTest, SendMessage) {
 }
 
 TEST_F(ServiceWorkerVersionTest, ReSendMessageAfterStop) {
-  EXPECT_EQ(ServiceWorkerVersion::STOPPED, version_->status());
+  EXPECT_EQ(ServiceWorkerVersion::STOPPED, version_->running_status());
 
   // Start the worker.
   ServiceWorkerStatusCode start_status = SERVICE_WORKER_ERROR_FAILED;
   version_->StartWorker(CreateReceiverOnCurrentThread(&start_status));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(SERVICE_WORKER_OK, start_status);
-  EXPECT_EQ(ServiceWorkerVersion::RUNNING, version_->status());
+  EXPECT_EQ(ServiceWorkerVersion::RUNNING, version_->running_status());
 
   // Stop the worker, and then send the message immediately.
   ServiceWorkerStatusCode msg_status = SERVICE_WORKER_ERROR_FAILED;
@@ -224,7 +224,7 @@ TEST_F(ServiceWorkerVersionTest, ReSendMessageAfterStop) {
                        CreateReceiverOnCurrentThread(&msg_status));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(SERVICE_WORKER_OK, msg_status);
-  EXPECT_EQ(ServiceWorkerVersion::RUNNING, version_->status());
+  EXPECT_EQ(ServiceWorkerVersion::RUNNING, version_->running_status());
 }
 
 TEST_F(ServiceWorkerVersionTest, SendMessageAndRegisterCallback) {

@@ -56,9 +56,9 @@ class CONTENT_EXPORT ServiceWorkerStorage {
   void DeleteRegistration(const GURL& pattern,
                           const StatusCallback& callback);
 
-  // Returns new registration ID which is guaranteed to be unique in
-  // the storage.
+  // Returns new IDs which are guaranteed to be unique in the storage.
   int64 NewRegistrationId();
+  int64 NewVersionId();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerStorageTest, PatternMatches);
@@ -73,6 +73,7 @@ class CONTENT_EXPORT ServiceWorkerStorage {
   PatternToRegistrationMap registration_by_pattern_;
 
   int last_registration_id_;
+  int last_version_id_;
 
   scoped_refptr<quota::QuotaManagerProxy> quota_manager_proxy_;
   base::FilePath path_;

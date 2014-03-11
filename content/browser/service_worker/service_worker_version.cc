@@ -41,7 +41,7 @@ void RunTaskAfterStartWorker(
       error_callback.Run(status);
     return;
   }
-  if (version->status() != ServiceWorkerVersion::RUNNING) {
+  if (version->running_status() != ServiceWorkerVersion::RUNNING) {
     // We've tried to start the worker (and it has succeeded), but
     // it looks it's not running yet.
     NOTREACHED() << "The worker's not running after successful StartWorker";
@@ -98,6 +98,7 @@ ServiceWorkerVersion::ServiceWorkerVersion(
     EmbeddedWorkerRegistry* worker_registry,
     int64 version_id)
     : version_id_(version_id),
+      status_(NEW),
       is_shutdown_(false),
       registration_(registration),
       weak_factory_(this) {
@@ -122,11 +123,11 @@ void ServiceWorkerVersion::StartWorker(const StatusCallback& callback) {
   DCHECK(!is_shutdown_);
   DCHECK(embedded_worker_);
   DCHECK(registration_);
-  if (status() == RUNNING) {
+  if (running_status() == RUNNING) {
     RunSoon(base::Bind(callback, SERVICE_WORKER_OK));
     return;
   }
-  if (status() == STOPPING) {
+  if (running_status() == STOPPING) {
     RunSoon(base::Bind(callback, SERVICE_WORKER_ERROR_START_WORKER_FAILED));
     return;
   }
@@ -145,7 +146,7 @@ void ServiceWorkerVersion::StartWorker(const StatusCallback& callback) {
 void ServiceWorkerVersion::StopWorker(const StatusCallback& callback) {
   DCHECK(!is_shutdown_);
   DCHECK(embedded_worker_);
-  if (status() == STOPPED) {
+  if (running_status() == STOPPED) {
     RunSoon(base::Bind(callback, SERVICE_WORKER_OK));
     return;
   }
@@ -163,7 +164,7 @@ void ServiceWorkerVersion::SendMessage(
     const IPC::Message& message, const StatusCallback& callback) {
   DCHECK(!is_shutdown_);
   DCHECK(embedded_worker_);
-  if (status() != RUNNING) {
+  if (running_status() != RUNNING) {
     // Schedule calling this method after starting the worker.
     StartWorker(base::Bind(&RunTaskAfterStartWorker,
                            weak_factory_.GetWeakPtr(), callback,
@@ -182,7 +183,7 @@ void ServiceWorkerVersion::SendMessageAndRegisterCallback(
     const IPC::Message& message, const MessageCallback& callback) {
   DCHECK(!is_shutdown_);
   DCHECK(embedded_worker_);
-  if (status() != RUNNING) {
+  if (running_status() != RUNNING) {
     // Schedule calling this method after starting the worker.
     StartWorker(base::Bind(&RunTaskAfterStartWorker,
                            weak_factory_.GetWeakPtr(),
@@ -206,6 +207,12 @@ void ServiceWorkerVersion::SendMessageAndRegisterCallback(
 void ServiceWorkerVersion::DispatchInstallEvent(
     int active_version_embedded_worker_id,
     const StatusCallback& callback) {
+  if (status() != NEW) {
+    // Unexpected.
+    NOTREACHED();
+    RunSoon(base::Bind(callback, SERVICE_WORKER_ERROR_FAILED));
+    return;
+  }
   SendMessageAndRegisterCallback(
       ServiceWorkerMsg_InstallEvent(active_version_embedded_worker_id),
       base::Bind(&HandleInstallFinished, callback));
@@ -214,6 +221,14 @@ void ServiceWorkerVersion::DispatchInstallEvent(
 void ServiceWorkerVersion::DispatchFetchEvent(
     const ServiceWorkerFetchRequest& request,
     const FetchCallback& callback) {
+  if (status() != ACTIVE) {
+    // Unexpected.
+    NOTREACHED();
+    RunSoon(base::Bind(callback, SERVICE_WORKER_ERROR_FAILED,
+                       SERVICE_WORKER_FETCH_EVENT_RESULT_FALLBACK,
+                       ServiceWorkerResponse()));
+    return;
+  }
   SendMessageAndRegisterCallback(
       ServiceWorkerMsg_FetchEvent(request),
       base::Bind(&HandleFetchResponse, callback));
@@ -229,14 +244,14 @@ void ServiceWorkerVersion::RemoveProcessToWorker(int process_id) {
 }
 
 void ServiceWorkerVersion::OnStarted() {
-  DCHECK_EQ(RUNNING, status());
+  DCHECK_EQ(RUNNING, running_status());
   // Fire all start callbacks.
   RunCallbacks(start_callbacks_, SERVICE_WORKER_OK);
   start_callbacks_.clear();
 }
 
 void ServiceWorkerVersion::OnStopped() {
-  DCHECK_EQ(STOPPED, status());
+  DCHECK_EQ(STOPPED, running_status());
   // Fire all stop callbacks.
   RunCallbacks(stop_callbacks_, SERVICE_WORKER_OK);
   stop_callbacks_.clear();
