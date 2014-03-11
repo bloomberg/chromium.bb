@@ -16,14 +16,21 @@ function collectProperties()
 
 function emitExpectedResult(path, expected)
 {
-    if (path[0] == 'internals' // Skip internals properties, since they aren't web accessible.
+    // Skip internals properties, since they aren't web accessible.
+    if (path[0] == 'internals'
         || path[0] == 'propertiesToVerify' // Skip the list we're building...
-        || path[0] == 'clientInformation') // Just an alias for navigator.
+        || path[0] == 'clientInformation' // Just an alias for navigator.
+        // Skip testRunner since they are only for testing.
+        || path[0] == 'testRunner'
+        || path[0] == 'layoutTestController') { // Just an alias for testRunner.
         return;
+    }
+
     // FIXME: Skip MemoryInfo for now, since it's not implemented as a DOMWindowProperty, and has
     // no way of knowing when it's detached. Eventually this should have the same behavior.
     if (path.length >= 2 && (path[0] == 'console' || path[0] == 'performance') && path[1] == 'memory')
         return;
+
     // Skip things that are assumed to be constants.
     if (path[path.length - 1].toUpperCase() == path[path.length - 1])
         return;
@@ -79,6 +86,8 @@ function collectPropertiesHelper(object, path)
         // Skip the properties which are hard to expect a stable result.
         // As for 'accessibilityController', we can hardly estimate the states
         // of the cached WebAXObjects.
+        // FIXME: We can't access accessibilityController's properties here
+        // because some property accesses might crash (crbug/351195).
         if (property == 'accessibilityController')
             continue;
         if (!object[property])
