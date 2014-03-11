@@ -78,6 +78,7 @@ class CC_EXPORT ResourceUpdateController {
   bool first_update_attempt_;
   base::SingleThreadTaskRunner* task_runner_;
   bool task_posted_;
+  bool ready_to_finalize_;
   base::WeakPtrFactory<ResourceUpdateController> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceUpdateController);

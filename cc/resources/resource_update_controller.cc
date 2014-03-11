@@ -47,6 +47,7 @@ ResourceUpdateController::ResourceUpdateController(
       first_update_attempt_(true),
       task_runner_(task_runner),
       task_posted_(false),
+      ready_to_finalize_(false),
       weak_factory_(this) {}
 
 ResourceUpdateController::~ResourceUpdateController() {}
@@ -55,8 +56,8 @@ void ResourceUpdateController::PerformMoreUpdates(
     base::TimeTicks time_limit) {
   time_limit_ = time_limit;
 
-  // Update already in progress.
-  if (task_posted_)
+  // Update already in progress or we are already done.
+  if (task_posted_ || ready_to_finalize_)
     return;
 
   // Call UpdateMoreTexturesNow() directly unless it's the first update
@@ -105,8 +106,10 @@ void ResourceUpdateController::Finalize() {
 
 void ResourceUpdateController::OnTimerFired() {
   task_posted_ = false;
-  if (!UpdateMoreTexturesIfEnoughTimeRemaining())
+  if (!UpdateMoreTexturesIfEnoughTimeRemaining()) {
+    ready_to_finalize_ = true;
     client_->ReadyToFinalizeTextureUpdates();
+  }
 }
 
 base::TimeTicks ResourceUpdateController::UpdateMoreTexturesCompletionTime() {

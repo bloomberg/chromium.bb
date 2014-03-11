@@ -455,15 +455,16 @@ TEST_F(ResourceUpdateControllerTest, NoMoreUpdates) {
   EXPECT_TRUE(client.ReadyToFinalizeCalled());
   EXPECT_EQ(2, num_total_uploads_);
 
+  client.Reset();
   controller->SetUpdateTextureTime(base::TimeDelta::FromMilliseconds(100));
   controller->SetUpdateMoreTexturesSize(1);
   // Enough time for updates but no more updates left.
   controller->PerformMoreUpdates(controller->Now() +
                                  base::TimeDelta::FromMilliseconds(310));
-  // 0-delay task used to call ReadyToFinalizeTextureUpdates().
-  RunPendingTask(task_runner.get(), controller.get());
+
+  // ReadyToFinalizeTextureUpdates should only be called once.
   EXPECT_FALSE(task_runner->HasPendingTask());
-  EXPECT_TRUE(client.ReadyToFinalizeCalled());
+  EXPECT_FALSE(client.ReadyToFinalizeCalled());
   EXPECT_EQ(2, num_total_uploads_);
 }
 
