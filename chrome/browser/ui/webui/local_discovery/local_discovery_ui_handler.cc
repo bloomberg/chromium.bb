@@ -13,7 +13,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/local_discovery/privet_confirm_api_flow.h"
 #include "chrome/browser/local_discovery/privet_constants.h"
 #include "chrome/browser/local_discovery/privet_device_lister_impl.h"
@@ -26,7 +25,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_base.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_promo.h"
@@ -34,7 +32,6 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "content/public/browser/notification_source.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_ui.h"
@@ -76,6 +73,9 @@ LocalDiscoveryUIHandler::LocalDiscoveryUIHandler() : is_visible_(false) {
 }
 
 LocalDiscoveryUIHandler::~LocalDiscoveryUIHandler() {
+  Profile* profile = Profile::FromWebUI(web_ui());
+  SigninManagerFactory::GetInstance()->GetForProfile(profile)
+      ->RemoveObserver(this);
   ResetCurrentRegistration();
   SetIsVisible(false);
 }
@@ -146,12 +146,8 @@ void LocalDiscoveryUIHandler::HandleStart(const base::ListValue* args) {
 
   CheckUserLoggedIn();
 
-  notification_registrar_.RemoveAll();
-  notification_registrar_.Add(this,
-                              chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL,
-                              content::Source<Profile>(profile));
-  notification_registrar_.Add(this, chrome::NOTIFICATION_GOOGLE_SIGNED_OUT,
-                              content::Source<Profile>(profile));
+  SigninManagerFactory::GetInstance()->GetForProfile(profile)
+      ->AddObserver(this);
 }
 
 void LocalDiscoveryUIHandler::HandleIsVisible(const base::ListValue* args) {
@@ -426,18 +422,14 @@ void LocalDiscoveryUIHandler::OnCloudPrintPrinterListUnavailable() {
       "local_discovery.onCloudDeviceListUnavailable");
 }
 
-void LocalDiscoveryUIHandler::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL:
-    case chrome::NOTIFICATION_GOOGLE_SIGNED_OUT:
-      CheckUserLoggedIn();
-      break;
-    default:
-      NOTREACHED();
-  }
+void LocalDiscoveryUIHandler::GoogleSigninSucceeded(
+    const std::string& username,
+    const std::string& password) {
+  CheckUserLoggedIn();
+}
+
+void LocalDiscoveryUIHandler::GoogleSignedOut(const std::string& username) {
+  CheckUserLoggedIn();
 }
 
 void LocalDiscoveryUIHandler::SendRegisterError() {
