@@ -342,6 +342,14 @@ def main():
     options.end = end
     print >> sys.stderr, 'Using range %s to %s' % (
         options.begin, options.end)
+
+  # Validate dates.
+  try:
+    to_datetime(options.begin)
+    to_datetime(options.end)
+  except ValueError as e:
+    parser.error('%s: %s - %s' % (e, options.begin, options.end))
+
   if options.count:
     print_count(
         options.reviewer,
