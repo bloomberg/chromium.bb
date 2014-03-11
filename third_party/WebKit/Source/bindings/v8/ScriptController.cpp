@@ -262,10 +262,11 @@ V8WindowShell* ScriptController::windowShell(DOMWrapperWorld* world)
 
 bool ScriptController::shouldBypassMainWorldContentSecurityPolicy()
 {
+    v8::Handle<v8::Context> context = m_isolate->GetCurrentContext();
+    if (context.IsEmpty() || !toDOMWindow(context))
+        return false;
     DOMWrapperWorld* world = DOMWrapperWorld::current(m_isolate);
-    if (world && world->isIsolatedWorld())
-        return world->isolatedWorldHasContentSecurityPolicy();
-    return false;
+    return world->isIsolatedWorld() ? world->isolatedWorldHasContentSecurityPolicy() : false;
 }
 
 TextPosition ScriptController::eventHandlerPosition() const
