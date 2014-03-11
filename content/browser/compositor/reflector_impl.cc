@@ -26,7 +26,6 @@ ReflectorImpl::ReflectorImpl(
       impl_message_loop_(ui::Compositor::GetCompositorMessageLoop()),
       main_message_loop_(base::MessageLoopProxy::current()),
       surface_id_(surface_id) {
-  CreateSharedTexture();
   impl_message_loop_->PostTask(
       FROM_HERE,
       base::Bind(&ReflectorImpl::InitOnImplThread, this));
@@ -45,8 +44,7 @@ void ReflectorImpl::InitOnImplThread() {
   if (!source_surface)
     return;
 
-  AttachToOutputSurface(source_surface);
-  gl_helper_->CopyTextureFullImage(texture_id_, texture_size_);
+  AttachToOutputSurfaceOnImplThread(source_surface);
   // The shared texture doesn't have the data, so invokes full redraw
   // now.
   main_message_loop_->PostTask(
@@ -63,6 +61,10 @@ void ReflectorImpl::OnSourceSurfaceReady(int surface_id) {
 void ReflectorImpl::Shutdown() {
   mirroring_compositor_ = NULL;
   mirroring_layer_ = NULL;
+  {
+    base::AutoLock lock(texture_lock_);
+    texture_id_ = 0;
+  }
   shared_texture_ = NULL;
   impl_message_loop_->PostTask(
       FROM_HERE,
@@ -83,14 +85,12 @@ void ReflectorImpl::ShutdownOnImplThread() {
                  scoped_refptr<ReflectorImpl>(this)));
 }
 
-// This must be called on ImplThread, or before the surface is passed to
-// ImplThread.
-void ReflectorImpl::AttachToOutputSurface(
+void ReflectorImpl::ReattachToOutputSurfaceFromMainThread(
     BrowserCompositorOutputSurface* output_surface) {
-  gl_helper_.reset(
-      new GLHelper(output_surface->context_provider()->ContextGL(),
-                   output_surface->context_provider()->ContextSupport()));
-  output_surface->SetReflector(this);
+  impl_message_loop_->PostTask(
+      FROM_HERE,
+      base::Bind(&ReflectorImpl::AttachToOutputSurfaceOnImplThread,
+                 this, output_surface));
 }
 
 void ReflectorImpl::OnMirroringCompositorResized() {
@@ -98,7 +98,6 @@ void ReflectorImpl::OnMirroringCompositorResized() {
 }
 
 void ReflectorImpl::OnLostResources() {
-  shared_texture_ = NULL;
   mirroring_layer_->SetShowPaintedContent();
 }
 
@@ -106,8 +105,13 @@ void ReflectorImpl::OnReshape(gfx::Size size) {
   if (texture_size_ == size)
     return;
   texture_size_ = size;
-  DCHECK(texture_id_);
-  gl_helper_->ResizeTexture(texture_id_, size);
+  {
+    base::AutoLock lock(texture_lock_);
+    if (texture_id_) {
+      gl_helper_->ResizeTexture(texture_id_, size);
+      gl_helper_->Flush();
+    }
+  }
   main_message_loop_->PostTask(
       FROM_HERE,
       base::Bind(&ReflectorImpl::UpdateTextureSizeOnMainThread,
@@ -116,8 +120,13 @@ void ReflectorImpl::OnReshape(gfx::Size size) {
 }
 
 void ReflectorImpl::OnSwapBuffers() {
-  DCHECK(texture_id_);
-  gl_helper_->CopyTextureFullImage(texture_id_, texture_size_);
+  {
+    base::AutoLock lock(texture_lock_);
+    if (texture_id_) {
+      gl_helper_->CopyTextureFullImage(texture_id_, texture_size_);
+      gl_helper_->Flush();
+    }
+  }
   main_message_loop_->PostTask(
       FROM_HERE,
       base::Bind(&ReflectorImpl::FullRedrawOnMainThread,
@@ -126,8 +135,13 @@ void ReflectorImpl::OnSwapBuffers() {
 }
 
 void ReflectorImpl::OnPostSubBuffer(gfx::Rect rect) {
-  DCHECK(texture_id_);
-  gl_helper_->CopyTextureSubImage(texture_id_, rect);
+  {
+    base::AutoLock lock(texture_lock_);
+    if (texture_id_) {
+      gl_helper_->CopyTextureSubImage(texture_id_, rect);
+      gl_helper_->Flush();
+    }
+  }
   main_message_loop_->PostTask(
       FROM_HERE,
       base::Bind(&ReflectorImpl::UpdateSubBufferOnMainThread,
@@ -136,19 +150,37 @@ void ReflectorImpl::OnPostSubBuffer(gfx::Rect rect) {
                  rect));
 }
 
-void ReflectorImpl::CreateSharedTexture() {
-  texture_id_ =
-      ImageTransportFactory::GetInstance()->GetGLHelper()->CreateTexture();
-  shared_texture_ =
-      ImageTransportFactory::GetInstance()->CreateOwnedTexture(
-          texture_size_, 1.0f, texture_id_);
+void ReflectorImpl::CreateSharedTextureOnMainThread(gfx::Size size) {
+  {
+    base::AutoLock lock(texture_lock_);
+    texture_id_ =
+        ImageTransportFactory::GetInstance()->GetGLHelper()->CreateTexture();
+    shared_texture_ =
+        ImageTransportFactory::GetInstance()->CreateOwnedTexture(
+            size, 1.0f, texture_id_);
+  }
   mirroring_layer_->SetExternalTexture(shared_texture_.get());
+  FullRedrawOnMainThread(size);
 }
 
 ReflectorImpl::~ReflectorImpl() {
   // Make sure the reflector is deleted on main thread.
   DCHECK_EQ(main_message_loop_.get(),
             base::MessageLoopProxy::current().get());
+}
+
+void ReflectorImpl::AttachToOutputSurfaceOnImplThread(
+    BrowserCompositorOutputSurface* output_surface) {
+  output_surface->context_provider()->BindToCurrentThread();
+  gl_helper_.reset(
+      new GLHelper(output_surface->context_provider()->ContextGL(),
+                   output_surface->context_provider()->ContextSupport()));
+  output_surface->SetReflector(this);
+  main_message_loop_->PostTask(
+      FROM_HERE,
+      base::Bind(&ReflectorImpl::CreateSharedTextureOnMainThread,
+                 this->AsWeakPtr(),
+                 texture_size_));
 }
 
 void ReflectorImpl::UpdateTextureSizeOnMainThread(gfx::Size size) {

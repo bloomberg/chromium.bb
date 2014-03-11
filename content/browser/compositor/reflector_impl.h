@@ -8,6 +8,7 @@
 #include "base/id_map.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/synchronization/lock.h"
 #include "content/browser/compositor/image_transport_factory.h"
 #include "ui/compositor/reflector.h"
 #include "ui/gfx/size.h"
@@ -45,9 +46,9 @@ class ReflectorImpl : public ImageTransportFactoryObserver,
   void Shutdown();
   void ShutdownOnImplThread();
 
-  // This must be called on ImplThread, or before the surface is passed to
-  // ImplThread.
-  void AttachToOutputSurface(BrowserCompositorOutputSurface* surface);
+  // Post a task to attach the reflector to the output surface onto ImplThread.
+  void ReattachToOutputSurfaceFromMainThread(
+      BrowserCompositorOutputSurface* surface);
 
   // ui::Reflector implementation.
   virtual void OnMirroringCompositorResized() OVERRIDE;
@@ -70,10 +71,10 @@ class ReflectorImpl : public ImageTransportFactoryObserver,
   void OnPostSubBuffer(gfx::Rect rect);
 
   // Create a shared texture that will be used to copy the content of
-  // mirrored compositor to the mirroring compositor.  This must be
-  // called before the reflector is attached to OutputSurface to avoid
-  // race with ImplThread accessing |texture_id_|.
-  void CreateSharedTexture();
+  // mirrored compositor to the mirroring compositor.  This should
+  // be posted to the main thread when the output is attached in
+  // impl thread.
+  void CreateSharedTextureOnMainThread(gfx::Size size);
 
   // Called when the source surface is bound and available. This must
   // be called on ImplThread.
@@ -81,6 +82,9 @@ class ReflectorImpl : public ImageTransportFactoryObserver,
 
  private:
   virtual ~ReflectorImpl();
+
+  void AttachToOutputSurfaceOnImplThread(
+      BrowserCompositorOutputSurface* surface);
 
   void UpdateTextureSizeOnMainThread(gfx::Size size);
 
@@ -104,6 +108,7 @@ class ReflectorImpl : public ImageTransportFactoryObserver,
   // will be re-ininitiailzed when the new output-surface
   // is created on MainThread.
   int texture_id_;
+  base::Lock texture_lock_;
   gfx::Size texture_size_;
 
   // Must be accessed only on ImplThread.

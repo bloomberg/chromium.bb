@@ -131,18 +131,6 @@ class ScopedTextureBinder : ScopedBinder<Target> {
   }
 };
 
-class ScopedFlush {
- public:
-  explicit ScopedFlush(gpu::gles2::GLES2Interface* gl) : gl_(gl) {}
-
-  ~ScopedFlush() { gl_->Flush(); }
-
- private:
-  gpu::gles2::GLES2Interface* gl_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedFlush);
-};
-
 class ReadbackYUVInterface;
 class GLHelperReadbackSupport;
 
@@ -277,6 +265,10 @@ class CONTENT_EXPORT GLHelper {
   // Copies the all framebuffer data to |texture|. |size| specifies the
   // size of the framebuffer.
   void CopyTextureFullImage(GLuint texture, const gfx::Size& size);
+
+  // Flushes GL commands.
+  void Flush();
+
 
   // A scaler will cache all intermediate textures and programs
   // needed to scale from a specified size to a destination size.

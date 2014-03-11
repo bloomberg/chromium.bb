@@ -238,10 +238,8 @@ scoped_ptr<cc::OutputSurface> GpuProcessTransportFactory::CreateOutputSurface(
           per_compositor_data_[compositor]->surface_id,
           &output_surface_map_,
           compositor->vsync_manager()));
-  if (data->reflector.get()) {
-    data->reflector->CreateSharedTexture();
-    data->reflector->AttachToOutputSurface(surface.get());
-  }
+  if (data->reflector.get())
+    data->reflector->ReattachToOutputSurfaceFromMainThread(surface.get());
 
   return surface.PassAs<cc::OutputSurface>();
 }
