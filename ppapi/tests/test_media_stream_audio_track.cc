@@ -34,6 +34,25 @@ const char kJSCode[] =
     "    navigator.getUserMedia || navigator.webkitGetUserMedia;"
     "navigator.getUserMedia(constraints,"
     "    gotStream, function() {});";
+
+// Helper to check if the |sample_rate| is listed in PP_AudioBuffer_SampleRate
+// enum.
+bool IsSampleRateValid(PP_AudioBuffer_SampleRate sample_rate) {
+  switch (sample_rate) {
+    case PP_AUDIOBUFFER_SAMPLERATE_8000:
+    case PP_AUDIOBUFFER_SAMPLERATE_16000:
+    case PP_AUDIOBUFFER_SAMPLERATE_22050:
+    case PP_AUDIOBUFFER_SAMPLERATE_32000:
+    case PP_AUDIOBUFFER_SAMPLERATE_44100:
+    case PP_AUDIOBUFFER_SAMPLERATE_48000:
+    case PP_AUDIOBUFFER_SAMPLERATE_96000:
+    case PP_AUDIOBUFFER_SAMPLERATE_192000:
+      return true;
+    default:
+      return false;
+  }
+}
+
 }
 
 TestMediaStreamAudioTrack::TestMediaStreamAudioTrack(TestingInstance* instance)
@@ -97,7 +116,7 @@ std::string TestMediaStreamAudioTrack::TestGetBuffer() {
     ASSERT_EQ(PP_OK, cc.result());
     pp::AudioBuffer buffer = cc.output();
     ASSERT_FALSE(buffer.is_null());
-    ASSERT_EQ(buffer.GetSampleRate(), PP_AUDIOBUFFER_SAMPLERATE_44100);
+    ASSERT_TRUE(IsSampleRateValid(buffer.GetSampleRate()));
     ASSERT_EQ(buffer.GetSampleSize(), PP_AUDIOBUFFER_SAMPLESIZE_16_BITS);
 
     ASSERT_GE(buffer.GetTimestamp(), timestamp);

@@ -23,6 +23,22 @@ const uint32_t kMaxDuration = 10;
 // TODO(penghuang): make this configurable.
 const int32_t kNumberOfBuffers = 4;
 
+// Returns true if the |sample_rate| is supported in
+// |PP_AudioBuffer_SampleRate|, otherwise false.
+PP_AudioBuffer_SampleRate GetPPSampleRate(int sample_rate) {
+  switch (sample_rate) {
+    case 8000: return PP_AUDIOBUFFER_SAMPLERATE_8000;
+    case 16000: return PP_AUDIOBUFFER_SAMPLERATE_16000;
+    case 22050: return PP_AUDIOBUFFER_SAMPLERATE_22050;
+    case 32000: return PP_AUDIOBUFFER_SAMPLERATE_32000;
+    case 44100: return PP_AUDIOBUFFER_SAMPLERATE_44100;
+    case 48000: return PP_AUDIOBUFFER_SAMPLERATE_48000;
+    case 96000: return PP_AUDIOBUFFER_SAMPLERATE_96000;
+    case 192000: return PP_AUDIOBUFFER_SAMPLERATE_192000;
+    default: return PP_AUDIOBUFFER_SAMPLERATE_UNKNOWN;
+  }
+}
+
 }  // namespace
 
 namespace content {
@@ -112,15 +128,9 @@ void PepperMediaStreamAudioTrackHost::AudioSink::OnSetFormat(
   DCHECK(params.IsValid());
   DCHECK_LE(params.GetBufferDuration().InMilliseconds(), kMaxDuration);
   DCHECK_EQ(params.bits_per_sample(), 16);
-  DCHECK((params.sample_rate() == AudioParameters::kTelephoneSampleRate) ||
-         (params.sample_rate() == AudioParameters::kAudioCDSampleRate));
+  DCHECK_NE(GetPPSampleRate(params.sample_rate()),
+                            PP_AUDIOBUFFER_SAMPLERATE_UNKNOWN);
 
-  COMPILE_ASSERT(AudioParameters::kTelephoneSampleRate ==
-                 static_cast<int32_t>(PP_AUDIOBUFFER_SAMPLERATE_8000),
-                 audio_sample_rate_does_not_match);
-  COMPILE_ASSERT(AudioParameters::kAudioCDSampleRate ==
-                 static_cast<int32_t>(PP_AUDIOBUFFER_SAMPLERATE_44100),
-                 audio_sample_rate_does_not_match);
   audio_params_ = params;
 
   // TODO(penghuang): support setting format more than once.
