@@ -19,10 +19,12 @@ from chromite.lib import toolchain
 class CBuildbotMetadata(object):
   """Class for recording metadata about a run."""
 
-  def __init__(self, multiprocess_manager=None):
+  def __init__(self, metadata_dict=None, multiprocess_manager=None):
     """Constructor for CBuildbotMetadata.
 
     Args:
+      metadata_dict: Optional dictionary containing initial metadata,
+                     as returned by loading metadata from json.
       multiprocess_manager: Optional multiprocess.Manager instance. If
                             supplied, the metadata instance will use
                             multiprocess containers so that its state
@@ -36,15 +38,33 @@ class CBuildbotMetadata(object):
       self._metadata_dict = {}
       self._cl_action_list = []
 
+    if metadata_dict:
+      self.UpdateWithDict(metadata_dict)
+
   def UpdateWithDict(self, metadata_dict):
     """Update metadata dictionary with values supplied in |metadata_dict|"""
+    # This is effectively the inverse of the dictionar construction in GetDict,
+    # to reconstruct the correct internal representation of a metadata
+    # object.
+    metadata_dict = metadata_dict.copy()
+    cl_action_list = metadata_dict.pop('cl_actions', None)
     self._metadata_dict.update(metadata_dict)
+    if cl_action_list:
+      self._cl_action_list.extend(cl_action_list)
+
+  def GetDict(self):
+    """Returns a dictionary representation of metadata."""
+    # CL actions are be stored in self._cl_action_list instead of
+    # in self._metadata_dict['cl_actions'], because _cl_action_list
+    # is potentially a multiprocess.lis. So, _cl_action_list needs to
+    # be copied into a normal list.
+    temp = self._metadata_dict.copy()
+    temp['cl_action'] = list(self._cl_action_list)
+    return temp
 
   def GetJSON(self):
     """Return a JSON string representation of metadata."""
-    temp = self._metadata_dict.copy()
-    temp['cl_action'] = list(self._cl_action_list)
-    return json.dumps(temp)
+    return json.dumps(self.GetDict())
 
   def RecordCLAction(self, change, action, timestamp=None, reason=None):
     """Record an action that was taken on a CL, to the metadata.
