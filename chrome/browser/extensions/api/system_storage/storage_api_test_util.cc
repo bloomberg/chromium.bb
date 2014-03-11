@@ -17,9 +17,8 @@ storage_monitor::StorageInfo BuildStorageInfoFromTestStorageUnitInfo(
     const TestStorageUnitInfo& unit) {
   return storage_monitor::StorageInfo(
       unit.device_id,
-      base::UTF8ToUTF16(unit.name),
       base::FilePath::StringType(), /* no location */
-      base::string16(), /* no storage label */
+      base::UTF8ToUTF16(unit.name), /* storage label */
       base::string16(), /* no storage vendor */
       base::string16(), /* no storage model */
       unit.capacity);

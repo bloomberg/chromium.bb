@@ -28,7 +28,7 @@ void BuildStorageUnitInfo(const StorageInfo& info,
                           StorageUnitInfo* unit) {
   unit->id = StorageMonitor::GetInstance()->GetTransientIdForDeviceId(
                  info.device_id());
-  unit->name = base::UTF16ToUTF8(info.name());
+  unit->name = base::UTF16ToUTF8(info.GetDisplayName(false));
   // TODO(hmin): Might need to take MTP device into consideration.
   unit->type = StorageInfo::IsRemovableDevice(info.device_id()) ?
       STORAGE_UNIT_TYPE_REMOVABLE : STORAGE_UNIT_TYPE_FIXED;

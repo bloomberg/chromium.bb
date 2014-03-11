@@ -119,8 +119,7 @@ void MTPDeviceDelegateImplWinTest::ProcessAttach(
     const std::string& id,
     const base::string16& label,
     const base::FilePath::StringType& location) {
-  StorageInfo info(id, base::string16(), location, label, base::string16(),
-                   base::string16(), 0);
+  StorageInfo info(id, location, label, base::string16(), base::string16(), 0);
   monitor_->receiver()->ProcessAttach(info);
 }
 

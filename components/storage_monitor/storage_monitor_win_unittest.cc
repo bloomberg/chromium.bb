@@ -313,26 +313,25 @@ TEST_F(StorageMonitorWinTest, PathMountDevices) {
   StorageInfo info;
   EXPECT_TRUE(monitor_->GetStorageInfoForPath(
       base::FilePath(ASCIIToUTF16("F:\\dir")), &info));
-  EXPECT_EQ(L"", info.name());
-  EXPECT_EQ(L"F:\\ Drive", info.storage_label());
+  EXPECT_EQ(L"F:\\ Drive", info.GetDisplayName(false));
   EXPECT_TRUE(monitor_->GetStorageInfoForPath(
       base::FilePath(ASCIIToUTF16("F:\\mount1")), &info));
-  EXPECT_EQ(L"mount1", info.name());
+  EXPECT_EQ(L"mount1", info.GetDisplayName(false));
   EXPECT_TRUE(monitor_->GetStorageInfoForPath(
       base::FilePath(ASCIIToUTF16("F:\\mount1\\dir")), &info));
-  EXPECT_EQ(L"mount1", info.name());
+  EXPECT_EQ(L"mount1", info.GetDisplayName(false));
   EXPECT_TRUE(monitor_->GetStorageInfoForPath(
       base::FilePath(ASCIIToUTF16("F:\\mount2\\dir")), &info));
-  EXPECT_EQ(L"mount2", info.name());
+  EXPECT_EQ(L"mount2", info.GetDisplayName(false));
   EXPECT_TRUE(monitor_->GetStorageInfoForPath(
       base::FilePath(ASCIIToUTF16("F:\\mount1\\subdir")), &info));
-  EXPECT_EQ(L"mount1subdir", info.name());
+  EXPECT_EQ(L"mount1subdir", info.GetDisplayName(false));
   EXPECT_TRUE(monitor_->GetStorageInfoForPath(
       base::FilePath(ASCIIToUTF16("F:\\mount1\\subdir\\dir")), &info));
-  EXPECT_EQ(L"mount1subdir", info.name());
+  EXPECT_EQ(L"mount1subdir", info.GetDisplayName(false));
   EXPECT_TRUE(monitor_->GetStorageInfoForPath(
       base::FilePath(ASCIIToUTF16("F:\\mount1\\subdir\\dir\\dir")), &info));
-  EXPECT_EQ(L"mount1subdir", info.name());
+  EXPECT_EQ(L"mount1subdir", info.GetDisplayName(false));
 }
 
 TEST_F(StorageMonitorWinTest, DevicesAttachedHighBoundary) {
@@ -475,7 +474,7 @@ TEST_F(StorageMonitorWinTest, DeviceInfoForPath) {
   ASSERT_TRUE(volume_mount_watcher_->GetDeviceInfo(removable_device, &info));
   EXPECT_TRUE(StorageInfo::IsRemovableDevice(info.device_id()));
   EXPECT_EQ(info.device_id(), device_info.device_id());
-  EXPECT_EQ(info.name(), device_info.name());
+  EXPECT_EQ(info.GetDisplayName(false), device_info.GetDisplayName(false));
   EXPECT_EQ(info.location(), device_info.location());
   EXPECT_EQ(1000000, info.total_size_in_bytes());
 
@@ -487,7 +486,7 @@ TEST_F(StorageMonitorWinTest, DeviceInfoForPath) {
       fixed_device, &info));
   EXPECT_FALSE(StorageInfo::IsRemovableDevice(info.device_id()));
   EXPECT_EQ(info.device_id(), device_info.device_id());
-  EXPECT_EQ(info.name(), device_info.name());
+  EXPECT_EQ(info.GetDisplayName(false), device_info.GetDisplayName(false));
   EXPECT_EQ(info.location(), device_info.location());
 }
 

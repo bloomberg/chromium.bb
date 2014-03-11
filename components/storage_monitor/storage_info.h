@@ -34,7 +34,6 @@ class StorageInfo {
   StorageInfo();
   // Note: |device_id_in| should be constructed with MakeDeviceId.
   StorageInfo(const std::string& device_id_in,
-              const base::string16& device_name,
               const base::FilePath::StringType& device_location,
               const base::string16& label,
               const base::string16& vendor,
@@ -70,8 +69,15 @@ class StorageInfo {
 
   static bool IsIPhotoDevice(const std::string& device_id);
 
+  // Get the display name for the removable device represented by this
+  // StorageInfo. Include the size for removable devices if |with_size| is true.
+  base::string16 GetDisplayName(bool with_size) const;
+
+  // Same as GetDisplayName(), but may be overridden by |override_display_name|.
+  base::string16 GetDisplayNameWithOverride(
+      const base::string16& override_display_name, bool with_size) const;
+
   const std::string& device_id() const { return device_id_; }
-  const base::string16& name() const { return name_; }
   const base::FilePath::StringType& location() const { return location_; }
   const base::string16& storage_label() const { return storage_label_; }
   const base::string16& vendor_name() const { return vendor_name_; }
@@ -79,7 +85,6 @@ class StorageInfo {
   uint64 total_size_in_bytes() const { return total_size_in_bytes_; }
 
   void set_device_id(const std::string& device_id) { device_id_ = device_id; }
-  void set_name(const base::string16& name) { name_ = name; }
   void set_location(const base::FilePath::StringType& location) {
     location_ = location;
   }
@@ -90,9 +95,6 @@ class StorageInfo {
   // storage device when interacting with the API. Clients should treat
   // this as an opaque string.
   std::string device_id_;
-
-  // Human readable removable storage device name.
-  base::string16 name_;
 
   // Current attached removable storage device location.
   base::FilePath::StringType location_;

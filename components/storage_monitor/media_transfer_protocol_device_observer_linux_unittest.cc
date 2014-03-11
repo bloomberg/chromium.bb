@@ -136,8 +136,6 @@ TEST_F(MediaTransferProtocolDeviceObserverLinuxTest, BasicAttachDetach) {
   EXPECT_EQ(1, observer().attach_calls());
   EXPECT_EQ(0, observer().detach_calls());
   EXPECT_EQ(device_id, observer().last_attached().device_id());
-  EXPECT_EQ(base::ASCIIToUTF16(kStorageLabel),
-            observer().last_attached().name());
   EXPECT_EQ(kStorageLocation, observer().last_attached().location());
 
   // Detach the attached storage.

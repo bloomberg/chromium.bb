@@ -5,6 +5,10 @@
 #include "components/storage_monitor/storage_info.h"
 
 #include "base/logging.h"
+#include "base/strings/utf_string_conversions.h"
+#include "components/storage_monitor/media_storage_util.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/text/bytes_formatting.h"
 
 namespace {
 
@@ -18,6 +22,30 @@ const char kITunesPrefix[] = "itunes:";
 const char kPicasaPrefix[] = "picasa:";
 const char kIPhotoPrefix[] = "iphoto:";
 
+base::string16 GetDisplayNameForDevice(uint64 storage_size_in_bytes,
+                                       const base::string16& name) {
+  DCHECK(!name.empty());
+  return (storage_size_in_bytes == 0) ?
+      name :
+      ui::FormatBytes(storage_size_in_bytes) + base::ASCIIToUTF16(" ") + name;
+}
+
+base::string16 GetFullProductName(const base::string16& vendor_name,
+                                  const base::string16& model_name) {
+  if (vendor_name.empty() && model_name.empty())
+    return base::string16();
+
+  base::string16 product_name;
+  if (vendor_name.empty())
+    product_name = model_name;
+  else if (model_name.empty())
+    product_name = vendor_name;
+  else if (!vendor_name.empty() && !model_name.empty())
+    product_name = vendor_name + base::UTF8ToUTF16(", ") + model_name;
+
+  return product_name;
+}
+
 }  // namespace
 
 namespace storage_monitor {
@@ -26,14 +54,12 @@ StorageInfo::StorageInfo() : total_size_in_bytes_(0) {
 }
 
 StorageInfo::StorageInfo(const std::string& device_id_in,
-                         const base::string16& device_name,
                          const base::FilePath::StringType& device_location,
                          const base::string16& label,
                          const base::string16& vendor,
                          const base::string16& model,
                          uint64 size_in_bytes)
     : device_id_(device_id_in),
-      name_(device_name),
       location_(device_location),
       storage_label_(label),
       vendor_name_(vendor),
@@ -152,6 +178,31 @@ bool StorageInfo::IsIPhotoDevice(const std::string& device_id) {
 bool StorageInfo::IsPicasaDevice(const std::string& device_id) {
   Type type;
   return CrackDeviceId(device_id, &type, NULL) && type == PICASA;
+}
+
+base::string16 StorageInfo::GetDisplayName(bool with_size) const {
+  return GetDisplayNameWithOverride(base::string16(), with_size);
+}
+
+base::string16 StorageInfo::GetDisplayNameWithOverride(
+    const base::string16& override_display_name, bool with_size) const {
+  if (!IsRemovableDevice(device_id_)) {
+    if (!storage_label_.empty())
+      return storage_label_;
+    return base::FilePath(location_).LossyDisplayName();
+  }
+
+  base::string16 name = override_display_name;
+  if (name.empty())
+    name = storage_label_;
+  if (name.empty())
+    name = GetFullProductName(vendor_name_, model_name_);
+  if (name.empty())
+    name = base::ASCIIToUTF16("Unlabeled device");
+
+  if (with_size)
+    name = GetDisplayNameForDevice(total_size_in_bytes_, name);
+  return name;
 }
 
 }  // namespace storage_monitor

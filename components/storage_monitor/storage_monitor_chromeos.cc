@@ -68,7 +68,6 @@ bool GetDeviceInfo(const DiskMountManager::MountPointInfo& mount_info,
       StorageInfo::REMOVABLE_MASS_STORAGE_NO_DCIM;
 
   *info = StorageInfo(StorageInfo::MakeDeviceId(type, unique_id),
-                      base::string16(),
                       mount_info.mount_path,
                       device_label,
                       base::UTF8ToUTF16(disk->vendor_name()),

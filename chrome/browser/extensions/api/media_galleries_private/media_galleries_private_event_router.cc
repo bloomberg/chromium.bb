@@ -92,18 +92,8 @@ void MediaGalleriesPrivateEventRouter::OnRemovableStorageAttached(
           media_galleries_private::OnDeviceAttached::kEventName))
     return;
 
-  MediaGalleryPrefInfo pref_info;
-  pref_info.display_name = info.name();
-  pref_info.device_id = info.device_id();
-  pref_info.type = MediaGalleryPrefInfo::kAutoDetected;
-  pref_info.volume_label = info.storage_label();
-  pref_info.vendor_name = info.vendor_name();
-  pref_info.model_name = info.model_name();
-  pref_info.total_size_in_bytes = info.total_size_in_bytes();
-  pref_info.volume_metadata_valid = true;
-
   DeviceAttachmentDetails details;
-  details.device_name = base::UTF16ToUTF8(pref_info.GetGalleryDisplayName());
+  details.device_name = base::UTF16ToUTF8(info.GetDisplayName(true));
   details.device_id = GetTransientIdForDeviceId(info.device_id());
 
   scoped_ptr<base::ListValue> args(new base::ListValue());

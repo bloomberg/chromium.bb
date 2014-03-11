@@ -76,8 +76,8 @@ bool GetMassStorageDeviceDetails(const base::FilePath& device_path,
   unique_id[11] = device_path.value()[0];
   std::string device_id = StorageInfo::MakeDeviceId(type, unique_id);
   base::string16 storage_label = path.Append(L" Drive").LossyDisplayName();
-  *info = StorageInfo(device_id, base::string16(), path.value(), storage_label,
-                      base::string16(), base::string16(), 1000000);
+  *info = StorageInfo(device_id, path.value(), storage_label, base::string16(),
+                      base::string16(), 1000000);
 
   return true;
 }
@@ -95,11 +95,10 @@ TestVolumeMountWatcherWin::~TestVolumeMountWatcherWin() {
 void TestVolumeMountWatcherWin::AddDeviceForTesting(
     const base::FilePath& device_path,
     const std::string& device_id,
-    const base::string16& device_name,
+    const base::string16& storage_label,
     uint64 total_size_in_bytes) {
-  StorageInfo info(device_id, device_name, device_path.value(),
-                   base::string16(), base::string16(), base::string16(),
-                   total_size_in_bytes);
+  StorageInfo info(device_id, device_path.value(), storage_label,
+                   base::string16(), base::string16(), total_size_in_bytes);
   HandleDeviceAttachEventOnUIThread(device_path, info);
 }
 

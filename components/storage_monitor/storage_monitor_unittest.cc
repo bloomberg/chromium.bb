@@ -36,7 +36,6 @@ TEST(StorageMonitorTest, TestInitialize) {
 TEST(StorageMonitorTest, DeviceAttachDetachNotifications) {
   TestStorageMonitor::Destroy();
   base::MessageLoop message_loop;
-  const base::string16 kDeviceName = base::ASCIIToUTF16("media device");
   const std::string kDeviceId1 = "dcim:UUID:FFF0-0001";
   const std::string kDeviceId2 = "dcim:UUID:FFF0-0002";
   MockRemovableStorageObserver observer1;
@@ -45,16 +44,14 @@ TEST(StorageMonitorTest, DeviceAttachDetachNotifications) {
   monitor.AddObserver(&observer1);
   monitor.AddObserver(&observer2);
 
-  StorageInfo info(kDeviceId1, kDeviceName, FILE_PATH_LITERAL("path"),
-                   base::string16(), base::string16(), base::string16(), 0);
+  StorageInfo info(kDeviceId1, FILE_PATH_LITERAL("path"), base::string16(),
+                   base::string16(), base::string16(), 0);
   monitor.receiver()->ProcessAttach(info);
   message_loop.RunUntilIdle();
 
   EXPECT_EQ(kDeviceId1, observer1.last_attached().device_id());
-  EXPECT_EQ(kDeviceName, observer1.last_attached().name());
   EXPECT_EQ(FILE_PATH_LITERAL("path"), observer1.last_attached().location());
   EXPECT_EQ(kDeviceId1, observer2.last_attached().device_id());
-  EXPECT_EQ(kDeviceName, observer2.last_attached().name());
   EXPECT_EQ(FILE_PATH_LITERAL("path"), observer2.last_attached().location());
   EXPECT_EQ(1, observer1.attach_calls());
   EXPECT_EQ(0, observer1.detach_calls());
@@ -64,10 +61,8 @@ TEST(StorageMonitorTest, DeviceAttachDetachNotifications) {
   message_loop.RunUntilIdle();
 
   EXPECT_EQ(kDeviceId1, observer1.last_detached().device_id());
-  EXPECT_EQ(kDeviceName, observer1.last_detached().name());
   EXPECT_EQ(FILE_PATH_LITERAL("path"), observer1.last_detached().location());
   EXPECT_EQ(kDeviceId1, observer2.last_detached().device_id());
-  EXPECT_EQ(kDeviceName, observer2.last_detached().name());
   EXPECT_EQ(FILE_PATH_LITERAL("path"), observer2.last_detached().location());
 
   EXPECT_EQ(1, observer1.attach_calls());
@@ -94,32 +89,27 @@ TEST(StorageMonitorTest, GetAllAvailableStorageAttachDetach) {
   base::MessageLoop message_loop;
   TestStorageMonitor monitor;
   const std::string kDeviceId1 = "dcim:UUID:FFF0-0042";
-  const base::string16 kDeviceName1 = base::ASCIIToUTF16("test");
   const base::FilePath kDevicePath1(FILE_PATH_LITERAL("/testfoo"));
-  StorageInfo info1(kDeviceId1, kDeviceName1, kDevicePath1.value(),
-                    base::string16(), base::string16(), base::string16(), 0);
+  StorageInfo info1(kDeviceId1, kDevicePath1.value(), base::string16(),
+                    base::string16(), base::string16(), 0);
   monitor.receiver()->ProcessAttach(info1);
   message_loop.RunUntilIdle();
   std::vector<StorageInfo> devices = monitor.GetAllAvailableStorages();
   ASSERT_EQ(1U, devices.size());
   EXPECT_EQ(kDeviceId1, devices[0].device_id());
-  EXPECT_EQ(kDeviceName1, devices[0].name());
   EXPECT_EQ(kDevicePath1.value(), devices[0].location());
 
   const std::string kDeviceId2 = "dcim:UUID:FFF0-0044";
-  const base::string16 kDeviceName2 = base::ASCIIToUTF16("test2");
   const base::FilePath kDevicePath2(FILE_PATH_LITERAL("/testbar"));
-  StorageInfo info2(kDeviceId2, kDeviceName2, kDevicePath2.value(),
-                    base::string16(), base::string16(), base::string16(), 0);
+  StorageInfo info2(kDeviceId2, kDevicePath2.value(), base::string16(),
+                    base::string16(), base::string16(), 0);
   monitor.receiver()->ProcessAttach(info2);
   message_loop.RunUntilIdle();
   devices = monitor.GetAllAvailableStorages();
   ASSERT_EQ(2U, devices.size());
   EXPECT_EQ(kDeviceId1, devices[0].device_id());
-  EXPECT_EQ(kDeviceName1, devices[0].name());
   EXPECT_EQ(kDevicePath1.value(), devices[0].location());
   EXPECT_EQ(kDeviceId2, devices[1].device_id());
-  EXPECT_EQ(kDeviceName2, devices[1].name());
   EXPECT_EQ(kDevicePath2.value(), devices[1].location());
 
   monitor.receiver()->ProcessDetach(kDeviceId1);
@@ -127,7 +117,6 @@ TEST(StorageMonitorTest, GetAllAvailableStorageAttachDetach) {
   devices = monitor.GetAllAvailableStorages();
   ASSERT_EQ(1U, devices.size());
   EXPECT_EQ(kDeviceId2, devices[0].device_id());
-  EXPECT_EQ(kDeviceName2, devices[0].name());
   EXPECT_EQ(kDevicePath2.value(), devices[0].location());
 
   monitor.receiver()->ProcessDetach(kDeviceId2);

@@ -101,8 +101,8 @@ StorageInfo BuildStorageInfo(
   if (!unique_id.empty())
     device_id = StorageInfo::MakeDeviceId(device_type, unique_id);
 
-  return StorageInfo(device_id, base::string16(), location.value(), label,
-                     vendor, model, size_in_bytes);
+  return StorageInfo(device_id, location.value(), label, vendor, model,
+                     size_in_bytes);
 }
 
 void GetDiskInfoAndUpdateOnFileThread(

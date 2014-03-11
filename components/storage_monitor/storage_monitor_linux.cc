@@ -183,7 +183,6 @@ scoped_ptr<StorageInfo> GetDeviceInfo(const base::FilePath& device_path,
 
   storage_info.reset(new StorageInfo(
       StorageInfo::MakeDeviceId(type, unique_id),
-      base::string16(),
       mount_point.value(),
       volume_label,
       vendor_name,

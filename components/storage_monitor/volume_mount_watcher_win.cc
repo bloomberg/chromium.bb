@@ -174,9 +174,8 @@ bool GetDeviceDetails(const base::FilePath& device_path, StorageInfo* info) {
 
   // TODO(gbillock): if volume_label.empty(), get the vendor/model information
   // for the volume.
-  *info = StorageInfo(device_id, base::string16(), mount_point,
-                      volume_label, base::string16(), base::string16(),
-                      total_size_in_bytes);
+  *info = StorageInfo(device_id, mount_point, volume_label, base::string16(),
+                      base::string16(), total_size_in_bytes);
   return true;
 }
 

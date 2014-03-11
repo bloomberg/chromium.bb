@@ -190,20 +190,21 @@ void MediaTransferProtocolDeviceObserverLinux::StorageChanged(
   // New storage is attached.
   if (is_attached) {
     std::string device_id;
-    base::string16 device_name;
+    base::string16 storage_label;
     std::string location;
     get_storage_info_func_(storage_name, mtp_manager_,
-                           &device_id, &device_name, &location);
+                           &device_id, &storage_label, &location);
 
     // Keep track of device id and device name to see how often we receive
     // empty values.
-    MediaStorageUtil::RecordDeviceInfoHistogram(false, device_id, device_name);
-    if (device_id.empty() || device_name.empty())
+    MediaStorageUtil::RecordDeviceInfoHistogram(false, device_id,
+                                                storage_label);
+    if (device_id.empty() || storage_label.empty())
       return;
 
     DCHECK(!ContainsKey(storage_map_, location));
 
-    StorageInfo storage_info(device_id, device_name, location, device_name,
+    StorageInfo storage_info(device_id, location, storage_label,
                              base::string16(), base::string16(), 0);
     storage_map_[location] = storage_info;
     notifications_->ProcessAttach(storage_info);

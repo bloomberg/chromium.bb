@@ -38,7 +38,6 @@
 #include "extensions/common/permissions/permissions_data.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/text/bytes_formatting.h"
 
 using base::DictionaryValue;
 using base::ListValue;
@@ -296,14 +295,6 @@ bool GetMediaGalleryPermissionFromDictionary(
   return false;
 }
 
-base::string16 GetDisplayNameForDevice(uint64 storage_size_in_bytes,
-                                       const base::string16& name) {
-  DCHECK(!name.empty());
-  return (storage_size_in_bytes == 0) ?
-      name :
-      ui::FormatBytes(storage_size_in_bytes) + base::ASCIIToUTF16(" ") + name;
-}
-
 // For a device with |device_name| and a relative path |sub_folder|, construct
 // a display name. If |sub_folder| is empty, then just return |device_name|.
 base::string16 GetDisplayNameForSubFolder(const base::string16& device_name,
@@ -313,22 +304,6 @@ base::string16 GetDisplayNameForSubFolder(const base::string16& device_name,
   return (sub_folder.BaseName().LossyDisplayName() +
           base::ASCIIToUTF16(" - ") +
           device_name);
-}
-
-base::string16 GetFullProductName(const base::string16& vendor_name,
-                                  const base::string16& model_name) {
-  if (vendor_name.empty() && model_name.empty())
-    return base::string16();
-
-  base::string16 product_name;
-  if (vendor_name.empty())
-    product_name = model_name;
-  else if (model_name.empty())
-    product_name = vendor_name;
-  else if (!vendor_name.empty() && !model_name.empty())
-    product_name = vendor_name + base::UTF8ToUTF16(", ") + model_name;
-
-  return product_name;
 }
 
 }  // namespace
@@ -380,19 +355,12 @@ base::string16 MediaGalleryPrefInfo::GetGalleryDisplayName() const {
 #endif
   }
 
-  base::string16 name = display_name;
-  if (name.empty())
-    name = volume_label;
-  if (name.empty())
-    name = GetFullProductName(vendor_name, model_name);
-  if (name.empty())
-    name = l10n_util::GetStringUTF16(IDS_MEDIA_GALLERIES_UNLABELED_DEVICE);
-
-  name = GetDisplayNameForDevice(total_size_in_bytes, name);
-
+  StorageInfo info(device_id,
+                   MediaStorageUtil::FindDevicePathById(device_id).value(),
+                   volume_label, vendor_name, model_name, total_size_in_bytes);
+  base::string16 name = info.GetDisplayNameWithOverride(display_name, true);
   if (!path.empty())
     name = GetDisplayNameForSubFolder(name, path);
-
   return name;
 }
 
@@ -549,7 +517,7 @@ void MediaGalleriesPreferences::AddDefaultGalleries() {
     base::FilePath relative_path;
     StorageInfo info;
     if (MediaStorageUtil::GetDeviceInfoFromPath(path, &info, &relative_path)) {
-      AddGalleryInternal(info.device_id(), info.name(), relative_path,
+      AddGalleryInternal(info.device_id(), base::string16(), relative_path,
                          MediaGalleryPrefInfo::kAutoDetected,
                          info.storage_label(), info.vendor_name(),
                          info.model_name(), info.total_size_in_bytes(),

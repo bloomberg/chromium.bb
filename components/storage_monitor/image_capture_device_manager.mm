@@ -104,8 +104,7 @@ storage_monitor::ImageCaptureDeviceManager* g_image_capture_device_manager =
       storage_monitor::StorageInfo::MakeDeviceId(
           storage_monitor::StorageInfo::MAC_IMAGE_CAPTURE,
           base::SysNSStringToUTF8([cameraDevice UUIDString])),
-      base::SysNSStringToUTF16([cameraDevice name]),
-      "",
+      std::string(),
       base::SysNSStringToUTF16([cameraDevice name]),
       base::string16(),
       base::string16(),

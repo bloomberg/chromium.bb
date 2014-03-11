@@ -169,9 +169,8 @@ class MediaGalleriesPlatformAppBrowserTest : public PlatformAppBrowserTest {
         StorageInfo::REMOVABLE_MASS_STORAGE_WITH_DCIM, kDeviceId);
 
     StorageMonitor::GetInstance()->receiver()->ProcessAttach(
-        StorageInfo(device_id_, base::string16(), kDevicePath,
-                    base::ASCIIToUTF16(kDeviceName), base::string16(),
-                    base::string16(), 0));
+        StorageInfo(device_id_, kDevicePath, base::ASCIIToUTF16(kDeviceName),
+                    base::string16(), base::string16(), 0));
     content::RunAllPendingInMessageLoop();
   }
 

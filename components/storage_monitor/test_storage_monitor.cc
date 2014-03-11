@@ -87,8 +87,8 @@ bool TestStorageMonitor::GetStorageInfoForPath(
   std::string device_id = StorageInfo::MakeDeviceId(
       StorageInfo::FIXED_MASS_STORAGE, path.AsUTF8Unsafe());
   *device_info =
-      StorageInfo(device_id, path.BaseName().LossyDisplayName(), path.value(),
-                  base::string16(), base::string16(), base::string16(), 0);
+      StorageInfo(device_id, path.value(), base::string16(), base::string16(),
+                  base::string16(), 0);
   return true;
 }
 

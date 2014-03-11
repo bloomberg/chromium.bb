@@ -88,7 +88,6 @@ scoped_ptr<StorageInfo> GetDeviceInfo(const base::FilePath& device_path,
   StorageInfo::Type type = kTestDeviceData[i].type;
   storage_info.reset(new StorageInfo(
       StorageInfo::MakeDeviceId(type, kTestDeviceData[i].unique_id),
-      base::string16(),
       mount_point.value(),
       base::ASCIIToUTF16("volume label"),
       base::ASCIIToUTF16("vendor name"),
@@ -328,7 +327,6 @@ TEST_F(StorageMonitorLinuxTest, BasicAttachDetach) {
   EXPECT_EQ(1, observer().attach_calls());
   EXPECT_EQ(0, observer().detach_calls());
   EXPECT_EQ(GetDeviceId(kDeviceDCIM2), observer().last_attached().device_id());
-  EXPECT_EQ(base::string16(), observer().last_attached().name());
   EXPECT_EQ(test_path.value(), observer().last_attached().location());
 
   // |kDeviceDCIM2| should be detached here.
@@ -351,7 +349,6 @@ TEST_F(StorageMonitorLinuxTest, Removable) {
   EXPECT_EQ(1, observer().attach_calls());
   EXPECT_EQ(0, observer().detach_calls());
   EXPECT_EQ(GetDeviceId(kDeviceDCIM1), observer().last_attached().device_id());
-  EXPECT_EQ(base::string16(), observer().last_attached().name());
   EXPECT_EQ(test_path_a.value(), observer().last_attached().location());
 
   // This should do nothing, since |kDeviceFixed| is not removable.
@@ -378,7 +375,6 @@ TEST_F(StorageMonitorLinuxTest, Removable) {
   EXPECT_EQ(2, observer().attach_calls());
   EXPECT_EQ(1, observer().detach_calls());
   EXPECT_EQ(GetDeviceId(kDeviceNoDCIM), observer().last_attached().device_id());
-  EXPECT_EQ(base::string16(), observer().last_attached().name());
   EXPECT_EQ(test_path_b.value(), observer().last_attached().location());
 
   // |kDeviceNoDCIM| should be detached as expected.
@@ -605,7 +601,6 @@ TEST_F(StorageMonitorLinuxTest, DeviceLookUp) {
   EXPECT_TRUE(notifier()->GetStorageInfoForPath(test_path_a, &device_info));
   EXPECT_EQ(GetDeviceId(kDeviceDCIM1), device_info.device_id());
   EXPECT_EQ(test_path_a.value(), device_info.location());
-  EXPECT_EQ(base::string16(), device_info.name());
   EXPECT_EQ(88788ULL, device_info.total_size_in_bytes());
   EXPECT_EQ(base::ASCIIToUTF16("volume label"), device_info.storage_label());
   EXPECT_EQ(base::ASCIIToUTF16("vendor name"), device_info.vendor_name());
@@ -614,12 +609,10 @@ TEST_F(StorageMonitorLinuxTest, DeviceLookUp) {
   EXPECT_TRUE(notifier()->GetStorageInfoForPath(test_path_b, &device_info));
   EXPECT_EQ(GetDeviceId(kDeviceNoDCIM), device_info.device_id());
   EXPECT_EQ(test_path_b.value(), device_info.location());
-  EXPECT_EQ(base::string16(), device_info.name());
 
   EXPECT_TRUE(notifier()->GetStorageInfoForPath(test_path_c, &device_info));
   EXPECT_EQ(GetDeviceId(kDeviceFixed), device_info.device_id());
   EXPECT_EQ(test_path_c.value(), device_info.location());
-  EXPECT_EQ(base::string16(), device_info.name());
 
   // An invalid path.
   EXPECT_FALSE(notifier()->GetStorageInfoForPath(base::FilePath(kInvalidPath),
@@ -631,7 +624,6 @@ TEST_F(StorageMonitorLinuxTest, DeviceLookUp) {
       &device_info));
   EXPECT_EQ(GetDeviceId(kDeviceDCIM1), device_info.device_id());
   EXPECT_EQ(test_path_a.value(), device_info.location());
-  EXPECT_EQ(base::string16(), device_info.name());
 
   // One device attached at multiple points.
   // kDeviceDCIM1 -> kMountPointA *

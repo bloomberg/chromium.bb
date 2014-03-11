@@ -43,9 +43,8 @@ class MediaStorageUtilTest : public testing::Test {
   }
 
   void ProcessAttach(const std::string& id,
-                     const base::string16& name,
                      const base::FilePath::StringType& location) {
-    StorageInfo info(id, name, location, base::string16(), base::string16(),
+    StorageInfo info(id, location, base::string16(), base::string16(),
                      base::string16(), 0);
     monitor_->receiver()->ProcessAttach(info);
   }
@@ -141,8 +140,7 @@ TEST_F(MediaStorageUtilTest, DetectDeviceFiltered) {
   event.Wait();
   EXPECT_FALSE(devices.find(kImageCaptureDeviceId) != devices.end());
 
-  ProcessAttach(kImageCaptureDeviceId, base::ASCIIToUTF16("name"),
-                FILE_PATH_LITERAL("/location"));
+  ProcessAttach(kImageCaptureDeviceId, FILE_PATH_LITERAL("/location"));
   devices.insert(kImageCaptureDeviceId);
   event.Reset();
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
