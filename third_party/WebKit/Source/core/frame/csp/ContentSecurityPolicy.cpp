@@ -329,6 +329,10 @@ bool checkDigest(const String& source, uint8_t hashAlgorithmsUsed, const CSPDire
         { ContentSecurityPolicyHashAlgorithmSha512, blink::WebCryptoAlgorithmIdSha512 }
     };
 
+    // Only bother normalizing the source/computing digests if there are any checks to be done.
+    if (hashAlgorithmsUsed == ContentSecurityPolicyHashAlgorithmNone)
+        return false;
+
     CString normalizedSource = UTF8Encoding().normalizeAndEncode(source, WTF::EntitiesForUnencodables);
 
     // See comment in CSPSourceList::parseHash about why we are using this sizeof
