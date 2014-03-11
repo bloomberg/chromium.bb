@@ -1451,6 +1451,7 @@ TEST_F(BluetoothChromeOSTest, DeviceProperties) {
   EXPECT_EQ(uuids[0], "00001800-0000-1000-8000-00805f9b34fb");
   EXPECT_EQ(uuids[1], "00001801-0000-1000-8000-00805f9b34fb");
 
+  EXPECT_EQ(BluetoothDevice::VENDOR_ID_USB, devices[0]->GetVendorIDSource());
   EXPECT_EQ(0x05ac, devices[0]->GetVendorID());
   EXPECT_EQ(0x030d, devices[0]->GetProductID());
   EXPECT_EQ(0x0306, devices[0]->GetDeviceID());
@@ -3104,6 +3105,7 @@ TEST_F(BluetoothChromeOSTest, DeviceId) {
   // Valid USB IF-assigned identifier.
   ASSERT_EQ("usb:v05ACp030Dd0306", properties->modalias.value());
 
+  EXPECT_EQ(BluetoothDevice::VENDOR_ID_USB, device->GetVendorIDSource());
   EXPECT_EQ(0x05ac, device->GetVendorID());
   EXPECT_EQ(0x030d, device->GetProductID());
   EXPECT_EQ(0x0306, device->GetDeviceID());
@@ -3111,6 +3113,7 @@ TEST_F(BluetoothChromeOSTest, DeviceId) {
   // Valid Bluetooth SIG-assigned identifier.
   properties->modalias.ReplaceValue("bluetooth:v00E0p2400d0400");
 
+  EXPECT_EQ(BluetoothDevice::VENDOR_ID_BLUETOOTH, device->GetVendorIDSource());
   EXPECT_EQ(0x00e0, device->GetVendorID());
   EXPECT_EQ(0x2400, device->GetProductID());
   EXPECT_EQ(0x0400, device->GetDeviceID());
@@ -3118,6 +3121,7 @@ TEST_F(BluetoothChromeOSTest, DeviceId) {
   // Invalid USB IF-assigned identifier.
   properties->modalias.ReplaceValue("usb:x00E0p2400d0400");
 
+  EXPECT_EQ(BluetoothDevice::VENDOR_ID_UNKNOWN, device->GetVendorIDSource());
   EXPECT_EQ(0, device->GetVendorID());
   EXPECT_EQ(0, device->GetProductID());
   EXPECT_EQ(0, device->GetDeviceID());
@@ -3125,6 +3129,7 @@ TEST_F(BluetoothChromeOSTest, DeviceId) {
   // Invalid Bluetooth SIG-assigned identifier.
   properties->modalias.ReplaceValue("bluetooth:x00E0p2400d0400");
 
+  EXPECT_EQ(BluetoothDevice::VENDOR_ID_UNKNOWN, device->GetVendorIDSource());
   EXPECT_EQ(0, device->GetVendorID());
   EXPECT_EQ(0, device->GetProductID());
   EXPECT_EQ(0, device->GetDeviceID());
@@ -3132,6 +3137,7 @@ TEST_F(BluetoothChromeOSTest, DeviceId) {
   // Unknown vendor specification identifier.
   properties->modalias.ReplaceValue("chrome:v00E0p2400d0400");
 
+  EXPECT_EQ(BluetoothDevice::VENDOR_ID_UNKNOWN, device->GetVendorIDSource());
   EXPECT_EQ(0, device->GetVendorID());
   EXPECT_EQ(0, device->GetProductID());
   EXPECT_EQ(0, device->GetDeviceID());

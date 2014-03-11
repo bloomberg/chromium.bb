@@ -206,6 +206,24 @@ message SystemProfileProto {
         // ie. Google's OUI (00:1A:11) is encoded as 0x00001A11
         optional uint32 vendor_prefix = 4;
 
+        // The Vendor ID of a device, returned in vendor_id below, can be
+        // either allocated by the Bluetooth SIG or USB IF, providing two
+        // completely overlapping namespaces for identifiers.
+        //
+        // This field should be read along with vendor_id to correctly
+        // identify the vendor. For example Google is identified by either
+        // vendor_id_source = VENDOR_ID_BLUETOOTH, vendor_id = 0x00E0 or
+        // vendor_id_source = VENDOR_ID_USB, vendor_id = 0x18D1.
+        //
+        // If the device does not support the Device ID specification the
+        // unknown value will be set.
+        enum VendorIDSource {
+          VENDOR_ID_UNKNOWN = 0;
+          VENDOR_ID_BLUETOOTH = 1;
+          VENDOR_ID_USB = 2;
+        }
+        optional VendorIDSource vendor_id_source = 8;
+
         // Vendor ID of the device, where available.
         optional uint32 vendor_id = 5;
 

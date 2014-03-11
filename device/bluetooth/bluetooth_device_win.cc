@@ -71,6 +71,11 @@ std::string BluetoothDeviceWin::GetAddress() const {
   return address_;
 }
 
+BluetoothDevice::VendorIDSource
+BluetoothDeviceWin::GetVendorIDSource() const {
+  return VENDOR_ID_UNKNOWN;
+}
+
 uint16 BluetoothDeviceWin::GetVendorID() const {
   return 0;
 }

@@ -33,6 +33,15 @@ struct BluetoothOutOfBandPairingData;
 // for devices coming and going, as well as properties being updated.
 class BluetoothDevice {
  public:
+  // Possible values that may be returned by GetVendorIDSource(),
+  // indicating different organisations that allocate the identifiers returned
+  // by GetVendorID().
+  enum VendorIDSource {
+    VENDOR_ID_UNKNOWN,
+    VENDOR_ID_BLUETOOTH,
+    VENDOR_ID_USB
+  };
+
   // Possible values that may be returned by GetDeviceType(), representing
   // different types of bluetooth device that we support or are aware of
   // decoded from the bluetooth class information.
@@ -174,6 +183,10 @@ class BluetoothDevice {
   // Returns the Bluetooth of address the device. This should be used as
   // a unique key to identify the device and copied where needed.
   virtual std::string GetAddress() const = 0;
+
+  // Returns the allocation source of the identifier returned by GetVendorID(),
+  // where available, or VENDOR_ID_UNKNOWN where not.
+  virtual VendorIDSource GetVendorIDSource() const = 0;
 
   // Returns the Vendor ID of the device, where available.
   virtual uint16 GetVendorID() const = 0;

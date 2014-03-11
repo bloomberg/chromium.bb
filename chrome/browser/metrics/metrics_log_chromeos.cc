@@ -146,9 +146,12 @@ void MetricsLogChromeOS::WriteBluetoothProto() {
   device::BluetoothAdapter::DeviceList devices = adapter_->GetDevices();
   for (device::BluetoothAdapter::DeviceList::iterator iter =
            devices.begin(); iter != devices.end(); ++iter) {
-    PairedDevice* paired_device = bluetooth->add_paired_device();
-
     device::BluetoothDevice* device = *iter;
+    // Don't collect information about LE devices yet.
+    if (!device->IsPaired())
+      continue;
+
+    PairedDevice* paired_device = bluetooth->add_paired_device();
     paired_device->set_bluetooth_class(device->GetBluetoothClass());
     paired_device->set_type(AsBluetoothDeviceType(device->GetDeviceType()));
 
@@ -165,6 +168,17 @@ void MetricsLogChromeOS::WriteBluetoothProto() {
       base::HexStringToUInt64(vendor_prefix_str, &vendor_prefix);
 
       paired_device->set_vendor_prefix(vendor_prefix);
+    }
+
+    switch (device->GetVendorIDSource()) {
+      case device::BluetoothDevice::VENDOR_ID_BLUETOOTH:
+        paired_device->set_vendor_id_source(PairedDevice::VENDOR_ID_BLUETOOTH);
+        break;
+      case device::BluetoothDevice::VENDOR_ID_USB:
+        paired_device->set_vendor_id_source(PairedDevice::VENDOR_ID_USB);
+        break;
+      default:
+        paired_device->set_vendor_id_source(PairedDevice::VENDOR_ID_UNKNOWN);
     }
 
     paired_device->set_vendor_id(device->GetVendorID());

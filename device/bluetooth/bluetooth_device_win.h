@@ -26,6 +26,7 @@ class BluetoothDeviceWin : public BluetoothDevice {
   // BluetoothDevice override
   virtual uint32 GetBluetoothClass() const OVERRIDE;
   virtual std::string GetAddress() const OVERRIDE;
+  virtual VendorIDSource GetVendorIDSource() const OVERRIDE;
   virtual uint16 GetVendorID() const OVERRIDE;
   virtual uint16 GetProductID() const OVERRIDE;
   virtual uint16 GetDeviceID() const OVERRIDE;

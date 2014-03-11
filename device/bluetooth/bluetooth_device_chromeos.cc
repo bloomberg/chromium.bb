@@ -42,28 +42,37 @@ enum UMAPairingResult {
 };
 
 void ParseModalias(const dbus::ObjectPath& object_path,
-                   uint16 *vendor_id,
-                   uint16 *product_id,
-                   uint16 *device_id) {
+                   BluetoothDevice::VendorIDSource* vendor_id_source,
+                   uint16* vendor_id,
+                   uint16* product_id,
+                   uint16* device_id) {
   chromeos::BluetoothDeviceClient::Properties* properties =
       chromeos::DBusThreadManager::Get()->GetBluetoothDeviceClient()->
           GetProperties(object_path);
   DCHECK(properties);
 
   std::string modalias = properties->modalias.value();
+  BluetoothDevice::VendorIDSource source_value;
   int vendor_value, product_value, device_value;
 
   if (sscanf(modalias.c_str(), "bluetooth:v%04xp%04xd%04x",
-             &vendor_value, &product_value, &device_value) == 3 ||
-      sscanf(modalias.c_str(), "usb:v%04xp%04xd%04x",
              &vendor_value, &product_value, &device_value) == 3) {
-    if (vendor_id != NULL)
-      *vendor_id = vendor_value;
-    if (product_id != NULL)
-      *product_id = product_value;
-    if (device_id != NULL)
-      *device_id = device_value;
+    source_value = BluetoothDevice::VENDOR_ID_BLUETOOTH;
+  } else if (sscanf(modalias.c_str(), "usb:v%04xp%04xd%04x",
+                    &vendor_value, &product_value, &device_value) == 3) {
+    source_value = BluetoothDevice::VENDOR_ID_USB;
+  } else {
+    return;
   }
+
+  if (vendor_id_source != NULL)
+    *vendor_id_source = source_value;
+  if (vendor_id != NULL)
+    *vendor_id = vendor_value;
+  if (product_id != NULL)
+    *product_id = product_value;
+  if (device_id != NULL)
+    *device_id = device_value;
 }
 
 void RecordPairingResult(BluetoothDevice::ConnectErrorCode error_code) {
@@ -142,21 +151,28 @@ std::string BluetoothDeviceChromeOS::GetAddress() const {
   return properties->address.value();
 }
 
+BluetoothDevice::VendorIDSource
+BluetoothDeviceChromeOS::GetVendorIDSource() const {
+  VendorIDSource vendor_id_source = VENDOR_ID_UNKNOWN;
+  ParseModalias(object_path_, &vendor_id_source, NULL, NULL, NULL);
+  return vendor_id_source;
+}
+
 uint16 BluetoothDeviceChromeOS::GetVendorID() const {
   uint16 vendor_id  = 0;
-  ParseModalias(object_path_, &vendor_id, NULL, NULL);
+  ParseModalias(object_path_, NULL, &vendor_id, NULL, NULL);
   return vendor_id;
 }
 
 uint16 BluetoothDeviceChromeOS::GetProductID() const {
   uint16 product_id  = 0;
-  ParseModalias(object_path_, NULL, &product_id, NULL);
+  ParseModalias(object_path_, NULL, NULL, &product_id, NULL);
   return product_id;
 }
 
 uint16 BluetoothDeviceChromeOS::GetDeviceID() const {
   uint16 device_id  = 0;
-  ParseModalias(object_path_, NULL, NULL, &device_id);
+  ParseModalias(object_path_, NULL, NULL, NULL, &device_id);
   return device_id;
 }
 

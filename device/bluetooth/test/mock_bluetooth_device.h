@@ -29,6 +29,7 @@ class MockBluetoothDevice : public BluetoothDevice {
   MOCK_CONST_METHOD0(GetBluetoothClass, uint32());
   MOCK_CONST_METHOD0(GetDeviceName, std::string());
   MOCK_CONST_METHOD0(GetAddress, std::string());
+  MOCK_CONST_METHOD0(GetVendorIDSource, BluetoothDevice::VendorIDSource());
   MOCK_CONST_METHOD0(GetVendorID, uint16());
   MOCK_CONST_METHOD0(GetProductID, uint16());
   MOCK_CONST_METHOD0(GetDeviceID, uint16());
