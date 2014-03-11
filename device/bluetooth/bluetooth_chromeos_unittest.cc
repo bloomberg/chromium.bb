@@ -43,9 +43,12 @@ class TestObserver : public BluetoothAdapter::Observer {
         device_removed_count_(0),
         last_device_(NULL),
         adapter_(adapter) {
+    adapter_->AddObserver(this);
   }
 
-  virtual ~TestObserver() {}
+  virtual ~TestObserver() {
+    adapter_->RemoveObserver(this);
+  }
 
   virtual void AdapterPresentChanged(BluetoothAdapter* adapter,
                                      bool present) OVERRIDE {
@@ -317,7 +320,6 @@ class BluetoothChromeOSTest : public testing::Test {
     fake_bluetooth_device_client_->SetSimulationIntervalMs(10);
 
     TestObserver observer(adapter_);
-    adapter_->AddObserver(&observer);
 
     adapter_->SetPowered(
         true,
@@ -355,8 +357,6 @@ class BluetoothChromeOSTest : public testing::Test {
     callback_count_ = 0;
 
     ASSERT_FALSE(adapter_->IsDiscovering());
-
-    adapter_->RemoveObserver(&observer);
   }
 
   // Run a discovery phase so we have devices that can be paired with.
@@ -414,7 +414,6 @@ TEST_F(BluetoothChromeOSTest, BecomePresent) {
   // Install an observer; expect the AdapterPresentChanged to be called
   // with true, and IsPresent() to return true.
   TestObserver observer(adapter_);
-  adapter_->AddObserver(&observer);
 
   fake_bluetooth_adapter_client_->SetVisible(true);
 
@@ -442,7 +441,6 @@ TEST_F(BluetoothChromeOSTest, BecomeNotPresent) {
   // Install an observer; expect the AdapterPresentChanged to be called
   // with false, and IsPresent() to return false.
   TestObserver observer(adapter_);
-  adapter_->AddObserver(&observer);
 
   fake_bluetooth_adapter_client_->SetVisible(false);
 
@@ -470,7 +468,6 @@ TEST_F(BluetoothChromeOSTest, SecondAdapter) {
   // Install an observer, then add a second adapter. Nothing should change,
   // we ignore the second adapter.
   TestObserver observer(adapter_);
-  adapter_->AddObserver(&observer);
 
   fake_bluetooth_adapter_client_->SetSecondVisible(true);
 
@@ -517,7 +514,6 @@ TEST_F(BluetoothChromeOSTest, BecomePowered) {
   // Install an observer; expect the AdapterPoweredChanged to be called
   // with true, and IsPowered() to return true.
   TestObserver observer(adapter_);
-  adapter_->AddObserver(&observer);
 
   adapter_->SetPowered(
       true,
@@ -551,7 +547,6 @@ TEST_F(BluetoothChromeOSTest, BecomeNotPowered) {
   // Install an observer; expect the AdapterPoweredChanged to be called
   // with false, and IsPowered() to return false.
   TestObserver observer(adapter_);
-  adapter_->AddObserver(&observer);
 
   adapter_->SetPowered(
       false,
@@ -592,7 +587,6 @@ TEST_F(BluetoothChromeOSTest, BecomeDiscoverable) {
   // Install an observer; expect the AdapterDiscoverableChanged to be called
   // with true, and IsDiscoverable() to return true.
   TestObserver observer(adapter_);
-  adapter_->AddObserver(&observer);
 
   adapter_->SetDiscoverable(
       true,
@@ -625,7 +619,6 @@ TEST_F(BluetoothChromeOSTest, BecomeNotDiscoverable) {
   // Install an observer; expect the AdapterDiscoverableChanged to be called
   // with false, and IsDiscoverable() to return false.
   TestObserver observer(adapter_);
-  adapter_->AddObserver(&observer);
 
   adapter_->SetDiscoverable(
       false,
@@ -669,7 +662,6 @@ TEST_F(BluetoothChromeOSTest, StopDiscovery) {
   // AdapterDiscoveringChanged method to be called and no longer to be
   // discovering,
   TestObserver observer(adapter_);
-  adapter_->AddObserver(&observer);
 
   discovery_sessions_[0]->Stop(
       base::Bind(&BluetoothChromeOSTest::Callback,
@@ -692,7 +684,6 @@ TEST_F(BluetoothChromeOSTest, Discovery) {
   GetAdapter();
 
   TestObserver observer(adapter_);
-  adapter_->AddObserver(&observer);
 
   adapter_->SetPowered(
       true,
@@ -771,7 +762,6 @@ TEST_F(BluetoothChromeOSTest, PoweredAndDiscovering) {
   // with true, and IsPresent(), IsPowered() and IsDiscovering() to all
   // return true.
   TestObserver observer(adapter_);
-  adapter_->AddObserver(&observer);
 
   fake_bluetooth_adapter_client_->SetVisible(true);
 
@@ -824,7 +814,6 @@ TEST_F(BluetoothChromeOSTest, MultipleDiscoverySessions) {
   callback_count_ = 0;
 
   TestObserver observer(adapter_);
-  adapter_->AddObserver(&observer);
 
   EXPECT_EQ(0, observer.discovering_changed_count_);
   EXPECT_FALSE(observer.last_discovering_);
@@ -949,7 +938,6 @@ TEST_F(BluetoothChromeOSTest,
   callback_count_ = 0;
 
   TestObserver observer(adapter_);
-  adapter_->AddObserver(&observer);
 
   EXPECT_EQ(0, observer.discovering_changed_count_);
   EXPECT_FALSE(observer.last_discovering_);
@@ -1133,8 +1121,6 @@ TEST_F(BluetoothChromeOSTest,
   EXPECT_FALSE(observer.last_discovering_);
   EXPECT_FALSE(adapter_->IsDiscovering());
   EXPECT_FALSE(discovery_sessions_[0]->IsActive());
-
-  adapter_->RemoveObserver(&observer);
 }
 
 TEST_F(BluetoothChromeOSTest, InvalidatedDiscoverySessions) {
@@ -1151,7 +1137,6 @@ TEST_F(BluetoothChromeOSTest, InvalidatedDiscoverySessions) {
   callback_count_ = 0;
 
   TestObserver observer(adapter_);
-  adapter_->AddObserver(&observer);
 
   EXPECT_EQ(0, observer.discovering_changed_count_);
   EXPECT_FALSE(observer.last_discovering_);
@@ -1229,7 +1214,6 @@ TEST_F(BluetoothChromeOSTest, QueuedDiscoveryRequests) {
   callback_count_ = 0;
 
   TestObserver observer(adapter_);
-  adapter_->AddObserver(&observer);
 
   EXPECT_EQ(0, observer.discovering_changed_count_);
   EXPECT_FALSE(observer.last_discovering_);
@@ -1343,8 +1327,6 @@ TEST_F(BluetoothChromeOSTest, QueuedDiscoveryRequests) {
   EXPECT_TRUE(adapter_->IsDiscovering());
   ASSERT_EQ((size_t)4, discovery_sessions_.size());
   EXPECT_TRUE(discovery_sessions_[3]->IsActive());
-
-  adapter_->RemoveObserver(&observer);
 }
 
 TEST_F(BluetoothChromeOSTest, StartDiscoverySession) {
@@ -1362,7 +1344,6 @@ TEST_F(BluetoothChromeOSTest, StartDiscoverySession) {
   callback_count_ = 0;
 
   TestObserver observer(adapter_);
-  adapter_->AddObserver(&observer);
 
   EXPECT_EQ(0, observer.discovering_changed_count_);
   EXPECT_FALSE(observer.last_discovering_);
@@ -1444,8 +1425,6 @@ TEST_F(BluetoothChromeOSTest, StartDiscoverySession) {
   EXPECT_EQ(0, error_callback_count_);
   EXPECT_FALSE(observer.last_discovering_);
   EXPECT_FALSE(adapter_->IsDiscovering());
-
-  adapter_->RemoveObserver(&observer);
 }
 
 TEST_F(BluetoothChromeOSTest, DeviceProperties) {
@@ -1491,7 +1470,6 @@ TEST_F(BluetoothChromeOSTest, DeviceClassChanged) {
   // Install an observer; expect the DeviceChanged method to be called when
   // we change the class of the device.
   TestObserver observer(adapter_);
-  adapter_->AddObserver(&observer);
 
   FakeBluetoothDeviceClient::Properties* properties =
       fake_bluetooth_device_client_->GetProperties(
@@ -1519,7 +1497,6 @@ TEST_F(BluetoothChromeOSTest, DeviceNameChanged) {
   // Install an observer; expect the DeviceChanged method to be called when
   // we change the alias of the device.
   TestObserver observer(adapter_);
-  adapter_->AddObserver(&observer);
 
   FakeBluetoothDeviceClient::Properties* properties =
       fake_bluetooth_device_client_->GetProperties(
@@ -1551,7 +1528,6 @@ TEST_F(BluetoothChromeOSTest, DeviceUuidsChanged) {
   // Install an observer; expect the DeviceChanged method to be called when
   // we change the class of the device.
   TestObserver observer(adapter_);
-  adapter_->AddObserver(&observer);
 
   FakeBluetoothDeviceClient::Properties* properties =
       fake_bluetooth_device_client_->GetProperties(
@@ -1589,7 +1565,6 @@ TEST_F(BluetoothChromeOSTest, ForgetDevice) {
   // Install an observer; expect the DeviceRemoved method to be called
   // with the device we remove.
   TestObserver observer(adapter_);
-  adapter_->AddObserver(&observer);
 
   devices[0]->Forget(
       base::Bind(&BluetoothChromeOSTest::ErrorCallback,
@@ -1637,7 +1612,6 @@ TEST_F(BluetoothChromeOSTest, ForgetUnpairedDevice) {
   // Install an observer; expect the DeviceRemoved method to be called
   // with the device we remove.
   TestObserver observer(adapter_);
-  adapter_->AddObserver(&observer);
 
   device->Forget(
       base::Bind(&BluetoothChromeOSTest::ErrorCallback,
@@ -1663,7 +1637,6 @@ TEST_F(BluetoothChromeOSTest, ConnectPairedDevice) {
   ASSERT_TRUE(device->IsPaired());
 
   TestObserver observer(adapter_);
-  adapter_->AddObserver(&observer);
 
   // Connect without a pairing delegate; since the device is already Paired
   // this should succeed and the device should become connected.
@@ -1696,7 +1669,6 @@ TEST_F(BluetoothChromeOSTest, ConnectUnpairableDevice) {
   ASSERT_FALSE(device->IsPaired());
 
   TestObserver observer(adapter_);
-  adapter_->AddObserver(&observer);
 
   // Connect without a pairing delegate; since the device does not require
   // pairing, this should succeed and the device should become connected.
@@ -1755,7 +1727,6 @@ TEST_F(BluetoothChromeOSTest, ConnectConnectedDevice) {
   // Connect again; since the device is already Connected, this shouldn't do
   // anything to initiate the connection.
   TestObserver observer(adapter_);
-  adapter_->AddObserver(&observer);
 
   device->Connect(
       NULL,
@@ -1785,7 +1756,6 @@ TEST_F(BluetoothChromeOSTest, ConnectDeviceFails) {
   ASSERT_FALSE(device->IsPaired());
 
   TestObserver observer(adapter_);
-  adapter_->AddObserver(&observer);
 
   // Connect without a pairing delegate; since the device requires pairing,
   // this should fail with an error.
@@ -1831,7 +1801,6 @@ TEST_F(BluetoothChromeOSTest, DisconnectDevice) {
   // Disconnect the device, we should see the observer method fire and the
   // device get dropped.
   TestObserver observer(adapter_);
-  adapter_->AddObserver(&observer);
 
   device->Disconnect(
       base::Bind(&BluetoothChromeOSTest::Callback,
@@ -1860,7 +1829,6 @@ TEST_F(BluetoothChromeOSTest, DisconnectUnconnectedDevice) {
   // Disconnect the device, we should see the observer method fire and the
   // device get dropped.
   TestObserver observer(adapter_);
-  adapter_->AddObserver(&observer);
 
   device->Disconnect(
       base::Bind(&BluetoothChromeOSTest::Callback,
@@ -1890,7 +1858,6 @@ TEST_F(BluetoothChromeOSTest, PairLegacyAutopair) {
   ASSERT_FALSE(device->IsPaired());
 
   TestObserver observer(adapter_);
-  adapter_->AddObserver(&observer);
 
   TestPairingDelegate pairing_delegate;
   device->Connect(
@@ -1945,7 +1912,6 @@ TEST_F(BluetoothChromeOSTest, PairDisplayPinCode) {
   ASSERT_FALSE(device->IsPaired());
 
   TestObserver observer(adapter_);
-  adapter_->AddObserver(&observer);
 
   TestPairingDelegate pairing_delegate;
   device->Connect(
@@ -2003,7 +1969,6 @@ TEST_F(BluetoothChromeOSTest, PairDisplayPasskey) {
   ASSERT_FALSE(device->IsPaired());
 
   TestObserver observer(adapter_);
-  adapter_->AddObserver(&observer);
 
   TestPairingDelegate pairing_delegate;
   device->Connect(
@@ -2081,7 +2046,6 @@ TEST_F(BluetoothChromeOSTest, PairRequestPinCode) {
   ASSERT_FALSE(device->IsPaired());
 
   TestObserver observer(adapter_);
-  adapter_->AddObserver(&observer);
 
   TestPairingDelegate pairing_delegate;
   device->Connect(
@@ -2139,7 +2103,6 @@ TEST_F(BluetoothChromeOSTest, PairConfirmPasskey) {
   ASSERT_FALSE(device->IsPaired());
 
   TestObserver observer(adapter_);
-  adapter_->AddObserver(&observer);
 
   TestPairingDelegate pairing_delegate;
   device->Connect(
@@ -2195,7 +2158,6 @@ TEST_F(BluetoothChromeOSTest, PairRequestPasskey) {
   ASSERT_FALSE(device->IsPaired());
 
   TestObserver observer(adapter_);
-  adapter_->AddObserver(&observer);
 
   TestPairingDelegate pairing_delegate;
   device->Connect(
@@ -2250,7 +2212,6 @@ TEST_F(BluetoothChromeOSTest, PairJustWorks) {
   ASSERT_FALSE(device->IsPaired());
 
   TestObserver observer(adapter_);
-  adapter_->AddObserver(&observer);
 
   TestPairingDelegate pairing_delegate;
   device->Connect(
@@ -2299,7 +2260,6 @@ TEST_F(BluetoothChromeOSTest, PairUnpairableDeviceFails) {
   ASSERT_FALSE(device->IsPaired());
 
   TestObserver observer(adapter_);
-  adapter_->AddObserver(&observer);
 
   TestPairingDelegate pairing_delegate;
   device->Connect(
@@ -2338,7 +2298,6 @@ TEST_F(BluetoothChromeOSTest, PairingFails) {
   ASSERT_FALSE(device->IsPaired());
 
   TestObserver observer(adapter_);
-  adapter_->AddObserver(&observer);
 
   TestPairingDelegate pairing_delegate;
   device->Connect(
@@ -2378,7 +2337,6 @@ TEST_F(BluetoothChromeOSTest, PairingFailsAtConnection) {
   ASSERT_FALSE(device->IsPaired());
 
   TestObserver observer(adapter_);
-  adapter_->AddObserver(&observer);
 
   TestPairingDelegate pairing_delegate;
   device->Connect(
@@ -2429,7 +2387,6 @@ TEST_F(BluetoothChromeOSTest, PairingRejectedAtPinCode) {
   ASSERT_FALSE(device->IsPaired());
 
   TestObserver observer(adapter_);
-  adapter_->AddObserver(&observer);
 
   TestPairingDelegate pairing_delegate;
   device->Connect(
@@ -2471,7 +2428,6 @@ TEST_F(BluetoothChromeOSTest, PairingCancelledAtPinCode) {
   ASSERT_FALSE(device->IsPaired());
 
   TestObserver observer(adapter_);
-  adapter_->AddObserver(&observer);
 
   TestPairingDelegate pairing_delegate;
   device->Connect(
@@ -2513,7 +2469,6 @@ TEST_F(BluetoothChromeOSTest, PairingRejectedAtPasskey) {
   ASSERT_FALSE(device->IsPaired());
 
   TestObserver observer(adapter_);
-  adapter_->AddObserver(&observer);
 
   TestPairingDelegate pairing_delegate;
   device->Connect(
@@ -2555,7 +2510,6 @@ TEST_F(BluetoothChromeOSTest, PairingCancelledAtPasskey) {
   ASSERT_FALSE(device->IsPaired());
 
   TestObserver observer(adapter_);
-  adapter_->AddObserver(&observer);
 
   TestPairingDelegate pairing_delegate;
   device->Connect(
@@ -2597,7 +2551,6 @@ TEST_F(BluetoothChromeOSTest, PairingRejectedAtConfirmation) {
   ASSERT_FALSE(device->IsPaired());
 
   TestObserver observer(adapter_);
-  adapter_->AddObserver(&observer);
 
   TestPairingDelegate pairing_delegate;
   device->Connect(
@@ -2639,7 +2592,6 @@ TEST_F(BluetoothChromeOSTest, PairingCancelledAtConfirmation) {
   ASSERT_FALSE(device->IsPaired());
 
   TestObserver observer(adapter_);
-  adapter_->AddObserver(&observer);
 
   TestPairingDelegate pairing_delegate;
   device->Connect(
@@ -2681,7 +2633,6 @@ TEST_F(BluetoothChromeOSTest, PairingCancelledInFlight) {
   ASSERT_FALSE(device->IsPaired());
 
   TestObserver observer(adapter_);
-  adapter_->AddObserver(&observer);
 
   TestPairingDelegate pairing_delegate;
   device->Connect(
@@ -2729,7 +2680,6 @@ TEST_F(BluetoothChromeOSTest, IncomingPairRequestPinCode) {
   ASSERT_FALSE(device->IsPaired());
 
   TestObserver observer(adapter_);
-  adapter_->AddObserver(&observer);
 
   fake_bluetooth_device_client_->SimulatePairing(
       dbus::ObjectPath(FakeBluetoothDeviceClient::kRequestPinCodePath),
@@ -2781,7 +2731,6 @@ TEST_F(BluetoothChromeOSTest, IncomingPairConfirmPasskey) {
   ASSERT_FALSE(device->IsPaired());
 
   TestObserver observer(adapter_);
-  adapter_->AddObserver(&observer);
 
   fake_bluetooth_device_client_->SimulatePairing(
       dbus::ObjectPath(FakeBluetoothDeviceClient::kConfirmPasskeyPath),
@@ -2834,7 +2783,6 @@ TEST_F(BluetoothChromeOSTest, IncomingPairRequestPasskey) {
   ASSERT_FALSE(device->IsPaired());
 
   TestObserver observer(adapter_);
-  adapter_->AddObserver(&observer);
 
   fake_bluetooth_device_client_->SimulatePairing(
       dbus::ObjectPath(FakeBluetoothDeviceClient::kRequestPasskeyPath),
@@ -2887,7 +2835,6 @@ TEST_F(BluetoothChromeOSTest, IncomingPairJustWorks) {
   ASSERT_FALSE(device->IsPaired());
 
   TestObserver observer(adapter_);
-  adapter_->AddObserver(&observer);
 
   fake_bluetooth_device_client_->SimulatePairing(
       dbus::ObjectPath(FakeBluetoothDeviceClient::kJustWorksPath),
@@ -2935,7 +2882,6 @@ TEST_F(BluetoothChromeOSTest, IncomingPairRequestPinCodeWithoutDelegate) {
   ASSERT_FALSE(device->IsPaired());
 
   TestObserver observer(adapter_);
-  adapter_->AddObserver(&observer);
 
   fake_bluetooth_device_client_->SimulatePairing(
       dbus::ObjectPath(FakeBluetoothDeviceClient::kRequestPinCodePath),
@@ -2978,7 +2924,6 @@ TEST_F(BluetoothChromeOSTest, IncomingPairConfirmPasskeyWithoutDelegate) {
   ASSERT_FALSE(device->IsPaired());
 
   TestObserver observer(adapter_);
-  adapter_->AddObserver(&observer);
 
   fake_bluetooth_device_client_->SimulatePairing(
       dbus::ObjectPath(FakeBluetoothDeviceClient::kConfirmPasskeyPath),
@@ -3021,7 +2966,6 @@ TEST_F(BluetoothChromeOSTest, IncomingPairRequestPasskeyWithoutDelegate) {
   ASSERT_FALSE(device->IsPaired());
 
   TestObserver observer(adapter_);
-  adapter_->AddObserver(&observer);
 
   fake_bluetooth_device_client_->SimulatePairing(
       dbus::ObjectPath(FakeBluetoothDeviceClient::kRequestPasskeyPath),
@@ -3064,7 +3008,6 @@ TEST_F(BluetoothChromeOSTest, IncomingPairJustWorksWithoutDelegate) {
   ASSERT_FALSE(device->IsPaired());
 
   TestObserver observer(adapter_);
-  adapter_->AddObserver(&observer);
 
   fake_bluetooth_device_client_->SimulatePairing(
       dbus::ObjectPath(FakeBluetoothDeviceClient::kJustWorksPath),
@@ -3111,7 +3054,6 @@ TEST_F(BluetoothChromeOSTest, RemovePairingDelegateDuringPairing) {
   ASSERT_FALSE(device->IsPaired());
 
   TestObserver observer(adapter_);
-  adapter_->AddObserver(&observer);
 
   fake_bluetooth_device_client_->SimulatePairing(
       dbus::ObjectPath(FakeBluetoothDeviceClient::kRequestPasskeyPath),
