@@ -41,16 +41,6 @@ using namespace WebCore;
 
 namespace blink {
 
-void WebSelectElement::setValue(const WebString& value)
-{
-    unwrap<HTMLSelectElement>()->setValue(value);
-}
-
-WebString WebSelectElement::value() const
-{
-    return constUnwrap<HTMLSelectElement>()->value();
-}
-
 WebVector<WebElement> WebSelectElement::listItems() const
 {
     const Vector<HTMLElement*>& sourceItems = constUnwrap<HTMLSelectElement>()->listItems();

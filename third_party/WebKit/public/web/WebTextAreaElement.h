@@ -52,14 +52,6 @@ public:
     }
     void assign(const WebTextAreaElement& element) { WebFormControlElement::assign(element); }
 
-    BLINK_EXPORT void setValue(const WebString&);
-    BLINK_EXPORT WebString value() const;
-    BLINK_EXPORT void setSuggestedValue(const WebString&);
-    BLINK_EXPORT WebString suggestedValue() const;
-    BLINK_EXPORT void setSelectionRange(int start, int end);
-    BLINK_EXPORT bool autoComplete() const;
-    BLINK_EXPORT WebString directionForFormData() const;
-
 #if BLINK_IMPLEMENTATION
     WebTextAreaElement(const WTF::PassRefPtr<WebCore::HTMLTextAreaElement>&);
     WebTextAreaElement& operator=(const WTF::PassRefPtr<WebCore::HTMLTextAreaElement>&);

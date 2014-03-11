@@ -54,8 +54,6 @@ public:
     }
     void assign(const WebSelectElement& element) { WebFormControlElement::assign(element); }
 
-    BLINK_EXPORT void setValue(const WebString&);
-    BLINK_EXPORT WebString value() const;
     BLINK_EXPORT WebVector<WebElement> listItems() const;
 
 #if BLINK_IMPLEMENTATION

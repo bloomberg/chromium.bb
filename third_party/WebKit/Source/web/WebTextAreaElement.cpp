@@ -40,41 +40,6 @@ using namespace WebCore;
 
 namespace blink {
 
-void WebTextAreaElement::setValue(const WebString& value)
-{
-    unwrap<HTMLTextAreaElement>()->setValue(value);
-}
-
-WebString WebTextAreaElement::value() const
-{
-    return constUnwrap<HTMLTextAreaElement>()->value();
-}
-
-void WebTextAreaElement::setSuggestedValue(const WebString& value)
-{
-    unwrap<HTMLTextAreaElement>()->setSuggestedValue(value);
-}
-
-WebString WebTextAreaElement::suggestedValue() const
-{
-    return constUnwrap<HTMLTextAreaElement>()->suggestedValue();
-}
-
-void WebTextAreaElement::setSelectionRange(int start, int end)
-{
-    unwrap<HTMLTextAreaElement>()->setSelectionRange(start, end);
-}
-
-bool WebTextAreaElement::autoComplete() const
-{
-    return constUnwrap<HTMLTextAreaElement>()->shouldAutocomplete();
-}
-
-WebString WebTextAreaElement::directionForFormData() const
-{
-    return constUnwrap<HTMLTextAreaElement>()->directionForFormData();
-}
-
 WebTextAreaElement::WebTextAreaElement(const PassRefPtr<HTMLTextAreaElement>& element)
     : WebFormControlElement(element)
 {

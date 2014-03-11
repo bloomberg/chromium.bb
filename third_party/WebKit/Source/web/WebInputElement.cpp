@@ -77,11 +77,6 @@ bool WebInputElement::isCheckbox() const
     return constUnwrap<HTMLInputElement>()->isCheckbox();
 }
 
-bool WebInputElement::autoComplete() const
-{
-    return constUnwrap<HTMLInputElement>()->shouldAutocomplete();
-}
-
 int WebInputElement::maxLength() const
 {
     return constUnwrap<HTMLInputElement>()->maxLength();
@@ -102,34 +97,9 @@ int WebInputElement::size() const
     return constUnwrap<HTMLInputElement>()->size();
 }
 
-void WebInputElement::setValue(const WebString& value, bool sendChangeEvent)
-{
-    unwrap<HTMLInputElement>()->setValue(value, sendChangeEvent ? DispatchChangeEvent : DispatchNoEvent);
-}
-
-WebString WebInputElement::value() const
-{
-    return constUnwrap<HTMLInputElement>()->value();
-}
-
 void WebInputElement::setEditingValue(const WebString& value)
 {
     unwrap<HTMLInputElement>()->setEditingValue(value);
-}
-
-void WebInputElement::setSuggestedValue(const WebString& value)
-{
-    unwrap<HTMLInputElement>()->setSuggestedValue(value);
-}
-
-WebString WebInputElement::suggestedValue() const
-{
-    return constUnwrap<HTMLInputElement>()->suggestedValue();
-}
-
-void WebInputElement::setSelectionRange(int start, int end)
-{
-    unwrap<HTMLInputElement>()->setSelectionRange(start, end);
 }
 
 bool WebInputElement::isValidValue(const WebString& value) const
@@ -209,11 +179,6 @@ void WebInputElement::stopSpeechInput()
 int WebInputElement::defaultMaxLength()
 {
     return HTMLInputElement::maximumLength;
-}
-
-WebString WebInputElement::directionForFormData() const
-{
-    return constUnwrap<HTMLInputElement>()->directionForFormData();
 }
 
 // FIXME: Remove this once password_generation_manager.h stops using it.
