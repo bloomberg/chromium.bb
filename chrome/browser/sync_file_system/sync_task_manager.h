@@ -97,17 +97,15 @@ class SyncTaskManager
   // This should be called when an async task needs to get a task token.
   scoped_ptr<TaskToken> GetToken(const tracked_objects::Location& from_here);
 
-  // Creates a completion callback that calls NotifyTaskDone.
-  // It is ok to give null |callback|.
-  SyncStatusCallback CreateCompletionCallback(
-      scoped_ptr<TaskToken> token,
-      const SyncStatusCallback& callback);
-
   void PushPendingTask(const base::Closure& closure, Priority priority);
+
+  void RunTask(scoped_ptr<TaskToken> token,
+               scoped_ptr<SyncTask> task,
+               const SyncStatusCallback& callback);
 
   base::WeakPtr<Client> client_;
 
-  SyncStatusCode last_operation_status_;
+  // Owns running SyncTask to cancel the task on SyncTaskManager deletion.
   scoped_ptr<SyncTask> running_task_;
   SyncStatusCallback current_callback_;
 

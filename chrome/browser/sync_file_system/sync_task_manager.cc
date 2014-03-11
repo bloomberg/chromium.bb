@@ -12,6 +12,25 @@ using fileapi::FileSystemURL;
 
 namespace sync_file_system {
 
+namespace {
+
+class SyncTaskAdapter : public SyncTask {
+ public:
+  explicit SyncTaskAdapter(const SyncTaskManager::Task& task) : task_(task) {}
+  virtual ~SyncTaskAdapter() {}
+
+  virtual void Run(const SyncStatusCallback& callback) OVERRIDE {
+    task_.Run(callback);
+  }
+
+ private:
+  SyncTaskManager::Task task_;
+
+  DISALLOW_COPY_AND_ASSIGN(SyncTaskAdapter);
+};
+
+}  // namespace
+
 class SyncTaskManager::TaskToken {
  public:
   explicit TaskToken(const base::WeakPtr<SyncTaskManager>& manager)
@@ -68,7 +87,6 @@ bool SyncTaskManager::PendingTaskComparator::operator()(
 SyncTaskManager::SyncTaskManager(
     base::WeakPtr<Client> client)
     : client_(client),
-      last_operation_status_(SYNC_STATUS_OK),
       pending_task_seq_(0) {
 }
 
@@ -88,15 +106,10 @@ void SyncTaskManager::ScheduleTask(
     const Task& task,
     Priority priority,
     const SyncStatusCallback& callback) {
-  scoped_ptr<TaskToken> token(GetToken(from_here));
-  if (!token) {
-    PushPendingTask(
-        base::Bind(&SyncTaskManager::ScheduleTask, AsWeakPtr(), from_here,
-                   task, priority, callback),
-        priority);
-    return;
-  }
-  task.Run(CreateCompletionCallback(token.Pass(), callback));
+  ScheduleSyncTask(from_here,
+                   scoped_ptr<SyncTask>(new SyncTaskAdapter(task)),
+                   priority,
+                   callback);
 }
 
 void SyncTaskManager::ScheduleSyncTask(
@@ -112,20 +125,17 @@ void SyncTaskManager::ScheduleSyncTask(
         priority);
     return;
   }
-  DCHECK(!running_task_);
-  running_task_ = task.Pass();
-  running_task_->Run(CreateCompletionCallback(token.Pass(), callback));
+  RunTask(token.Pass(), task.Pass(), callback);
 }
 
 bool SyncTaskManager::ScheduleTaskIfIdle(
         const tracked_objects::Location& from_here,
         const Task& task,
         const SyncStatusCallback& callback) {
-  scoped_ptr<TaskToken> token(GetToken(from_here));
-  if (!token)
-    return false;
-  task.Run(CreateCompletionCallback(token.Pass(), callback));
-  return true;
+  return ScheduleSyncTaskIfIdle(
+      from_here,
+      scoped_ptr<SyncTask>(new SyncTaskAdapter(task)),
+      callback);
 }
 
 bool SyncTaskManager::ScheduleSyncTaskIfIdle(
@@ -135,10 +145,7 @@ bool SyncTaskManager::ScheduleSyncTaskIfIdle(
   scoped_ptr<TaskToken> token(GetToken(from_here));
   if (!token)
     return false;
-  DCHECK(!running_task_);
-  running_task_ = task.Pass();
-  running_task_->Run(CreateCompletionCallback(token.Pass(),
-                                              callback));
+  RunTask(token.Pass(), task.Pass(), callback);
   return true;
 }
 
@@ -146,7 +153,6 @@ void SyncTaskManager::NotifyTaskDone(
     scoped_ptr<TaskToken> token,
     SyncStatusCode status) {
   DCHECK(token);
-  last_operation_status_ = status;
   token_ = token.Pass();
   scoped_ptr<SyncTask> task = running_task_.Pass();
   TRACE_EVENT_ASYNC_END0("Sync FileSystem", "GetToken", this);
@@ -160,8 +166,7 @@ void SyncTaskManager::NotifyTaskDone(
     task_used_network = task->used_network();
 
   if (client_)
-    client_->NotifyLastOperationStatus(last_operation_status_,
-                                       task_used_network);
+    client_->NotifyLastOperationStatus(status, task_used_network);
 
   if (!current_callback_.is_null()) {
     SyncStatusCallback callback = current_callback_;
@@ -190,19 +195,21 @@ scoped_ptr<SyncTaskManager::TaskToken> SyncTaskManager::GetToken(
   return token_.Pass();
 }
 
-SyncStatusCallback SyncTaskManager::CreateCompletionCallback(
-    scoped_ptr<TaskToken> token,
-    const SyncStatusCallback& callback) {
-  DCHECK(token);
-  DCHECK(current_callback_.is_null());
-  current_callback_ = callback;
-  return base::Bind(&SyncTaskManager::NotifyTaskDone,
-                    AsWeakPtr(), base::Passed(&token));
-}
-
 void SyncTaskManager::PushPendingTask(
     const base::Closure& closure, Priority priority) {
   pending_tasks_.push(PendingTask(closure, priority, pending_task_seq_++));
+}
+
+void SyncTaskManager::RunTask(scoped_ptr<TaskToken> token,
+                              scoped_ptr<SyncTask> task,
+                              const SyncStatusCallback& callback) {
+  DCHECK(!running_task_);
+  DCHECK(current_callback_.is_null());
+  running_task_ = task.Pass();
+  current_callback_ = callback;
+  running_task_->Run(
+      base::Bind(&SyncTaskManager::NotifyTaskDone, AsWeakPtr(),
+                 base::Passed(&token)));
 }
 
 }  // namespace sync_file_system
