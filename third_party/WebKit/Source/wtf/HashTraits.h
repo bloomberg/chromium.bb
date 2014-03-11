@@ -144,13 +144,6 @@ namespace WTF {
 
         static EmptyValueType emptyValue() { return nullptr; }
 
-        typedef const OwnPtr<P>& PeekInType;
-        typedef typename OwnPtr<P>::PtrType IteratorGetType;
-        typedef const IteratorGetType IteratorConstGetType;
-        typedef typename OwnPtr<P>::ValueType& IteratorReferenceType;
-        typedef const typename OwnPtr<P>::ValueType& IteratorConstReferenceType;
-        static IteratorReferenceType getToReferenceConversion(IteratorGetType x) { return *x; }
-        static IteratorConstReferenceType getToReferenceConstConversion(IteratorConstGetType x) { return *x; }
         typedef PassOwnPtr<P> PassInType;
         static void store(PassOwnPtr<P> value, OwnPtr<P>& storage) { storage = value; }
 
