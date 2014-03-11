@@ -554,7 +554,7 @@ void WebFileSystemImpl::directoryExists(
       waitable_results.get());
 }
 
-READ_DIRECTORY_RETURN_TYPE WebFileSystemImpl::readDirectory(
+int WebFileSystemImpl::readDirectory(
     const blink::WebURL& path,
     WebFileSystemCallbacks callbacks) {
   int callbacks_id = RegisterCallbacks(callbacks);
@@ -569,9 +569,7 @@ READ_DIRECTORY_RETURN_TYPE WebFileSystemImpl::readDirectory(
                 base::Bind(&StatusCallbackAdapter,
                            CurrentWorkerId(), callbacks_id, waitable_results)),
       waitable_results.get());
-#if defined(READ_DIRECTORY_RETURNS_INT)
   return callbacks_id;
-#endif
 }
 
 void WebFileSystemImpl::createFileWriter(

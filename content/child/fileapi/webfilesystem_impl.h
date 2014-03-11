@@ -14,13 +14,6 @@
 #include "content/child/worker_task_runner.h"
 #include "third_party/WebKit/public/platform/WebFileSystem.h"
 
-// TODO(hashimoto): Remove this hack.
-#if defined(READ_DIRECTORY_RETURNS_INT)
-#define READ_DIRECTORY_RETURN_TYPE int
-#else
-#define READ_DIRECTORY_RETURN_TYPE void
-#endif
-
 namespace base {
 class MessageLoopProxy;
 class WaitableEvent;
@@ -100,7 +93,7 @@ class WebFileSystemImpl : public blink::WebFileSystem,
   virtual void directoryExists(
       const blink::WebURL& path,
       blink::WebFileSystemCallbacks) OVERRIDE;
-  virtual READ_DIRECTORY_RETURN_TYPE readDirectory(
+  virtual int readDirectory(
       const blink::WebURL& path,
       blink::WebFileSystemCallbacks) OVERRIDE;
   virtual void createFileWriter(
