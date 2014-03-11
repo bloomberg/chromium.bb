@@ -179,6 +179,8 @@ install: $(SONAME)
 		$(DESTDIR)$(LIBDIR)/$(SONAME:$(OBJDIR)/%=%)
 	ln -s $(SONAME:$(OBJDIR)/%=%) \
 		$(DESTDIR)$(LIBDIR)/$(SONAME:$(OBJDIR)/%.0=%)
+	install -D -m 0644 libgestures.pc \
+		$(DESTDIR)$(LIBDIR)/pkgconfig/libgestures.pc
 	install -D -m 0644 \
 		include/gestures.h $(DESTDIR)/usr/include/gestures/gestures.h
 
