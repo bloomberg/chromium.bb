@@ -22,6 +22,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.ResultReceiver;
+import android.os.SystemClock;
 import android.provider.Browser;
 import android.provider.Settings;
 import android.text.Editable;
@@ -1780,7 +1781,7 @@ public class ContentViewCore
     public void scrollBy(int xPix, int yPix) {
         if (mNativeContentViewCore != 0) {
             nativeScrollBy(mNativeContentViewCore,
-                    System.currentTimeMillis(), 0, 0, xPix, yPix);
+                    SystemClock.uptimeMillis(), 0, 0, xPix, yPix);
         }
     }
 
@@ -1794,7 +1795,7 @@ public class ContentViewCore
         final float dxPix = xPix - xCurrentPix;
         final float dyPix = yPix - yCurrentPix;
         if (dxPix != 0 || dyPix != 0) {
-            long time = System.currentTimeMillis();
+            long time = SystemClock.uptimeMillis();
             nativeScrollBegin(mNativeContentViewCore, time,
                     xCurrentPix, yCurrentPix, -dxPix, -dyPix);
             nativeScrollBy(mNativeContentViewCore,
@@ -2651,7 +2652,7 @@ public class ContentViewCore
     public boolean pinchByDelta(float delta) {
         if (mNativeContentViewCore == 0) return false;
 
-        long timeMs = System.currentTimeMillis();
+        long timeMs = SystemClock.uptimeMillis();
         int xPix = getViewportWidthPix() / 2;
         int yPix = getViewportHeightPix() / 2;
 

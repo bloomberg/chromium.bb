@@ -5,6 +5,7 @@
 package org.chromium.content.browser;
 
 import android.content.Context;
+import android.os.SystemClock;
 import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.MediumTest;
 
@@ -37,7 +38,7 @@ public class VSyncMonitorTest extends InstrumentationTestCase {
 
         @Override
         public void onVSync(VSyncMonitor monitor, long vsyncTimeMicros) {
-            mLastVSyncCpuTimeMillis = System.currentTimeMillis();
+            mLastVSyncCpuTimeMillis = SystemClock.uptimeMillis();
             if (mPreviousVSyncTimeMicros == 0) {
                 mPreviousVSyncTimeMicros = vsyncTimeMicros;
                 return;
@@ -133,7 +134,7 @@ public class VSyncMonitorTest extends InstrumentationTestCase {
         monitor.stop();
 
         long period = monitor.getVSyncPeriodInMicroseconds() / 1000;
-        long delay = System.currentTimeMillis() - collector.mLastVSyncCpuTimeMillis;
+        long delay = SystemClock.uptimeMillis() - collector.mLastVSyncCpuTimeMillis;
 
         // The VSync should have activated immediately instead of at the next real vsync.
         assertTrue(delay < period);

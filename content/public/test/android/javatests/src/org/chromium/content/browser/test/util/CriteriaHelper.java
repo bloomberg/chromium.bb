@@ -6,6 +6,8 @@ package org.chromium.content.browser.test.util;
 
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
+import android.os.SystemClock;
+
 /**
  * Helper methods for creating and managing criteria.
  *
@@ -34,8 +36,8 @@ public class CriteriaHelper {
     public static boolean pollForCriteria(Criteria criteria, long maxTimeoutMs,
             long checkIntervalMs) throws InterruptedException {
         boolean isSatisfied = criteria.isSatisfied();
-        long startTime = System.currentTimeMillis();
-        while (!isSatisfied && System.currentTimeMillis() - startTime < maxTimeoutMs) {
+        long startTime = SystemClock.uptimeMillis();
+        while (!isSatisfied && SystemClock.uptimeMillis() - startTime < maxTimeoutMs) {
             Thread.sleep(checkIntervalMs);
             isSatisfied = criteria.isSatisfied();
         }

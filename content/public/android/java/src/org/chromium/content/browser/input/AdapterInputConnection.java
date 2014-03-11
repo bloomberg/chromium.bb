@@ -4,6 +4,7 @@
 
 package org.chromium.content.browser.input;
 
+import android.os.SystemClock;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.Selection;
@@ -218,7 +219,7 @@ public class AdapterInputConnection extends BaseInputConnection {
         if (actionCode == EditorInfo.IME_ACTION_NEXT) {
             restartInput();
             // Send TAB key event
-            long timeStampMs = System.currentTimeMillis();
+            long timeStampMs = SystemClock.uptimeMillis();
             mImeAdapter.sendSyntheticKeyEvent(
                     ImeAdapter.sEventTypeRawKeyDown, timeStampMs, KeyEvent.KEYCODE_TAB, 0);
         } else {

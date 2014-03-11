@@ -4,6 +4,7 @@
 
 package org.chromium.base.library_loader;
 
+import android.os.SystemClock;
 import android.util.Log;
 
 import org.chromium.base.CommandLine;
@@ -107,7 +108,7 @@ public class LibraryLoader {
             if (!sLoaded) {
                 assert !sInitialized;
 
-                long startTime = System.currentTimeMillis();
+                long startTime = SystemClock.uptimeMillis();
                 boolean useChromiumLinker = Linker.isUsed();
 
                 if (useChromiumLinker)
@@ -122,7 +123,7 @@ public class LibraryLoader {
                 }
                 if (useChromiumLinker)
                     Linker.finishLibraryLoad();
-                long stopTime = System.currentTimeMillis();
+                long stopTime = SystemClock.uptimeMillis();
                 Log.i(TAG, String.format("Time to load native libraries: %d ms (timestamps %d-%d)",
                                          stopTime - startTime,
                                          startTime % 10000,

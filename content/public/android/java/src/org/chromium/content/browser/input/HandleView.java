@@ -15,6 +15,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewParent;
+import android.view.animation.AnimationUtils;
 import android.widget.PopupWindow;
 
 import org.chromium.content.browser.PositionObserver;
@@ -402,7 +403,8 @@ public class HandleView extends View {
 
     private void updateAlpha() {
         if (mAlpha == 1.f) return;
-        mAlpha = Math.min(1.f, (System.currentTimeMillis() - mFadeStartTime) / FADE_DURATION);
+        mAlpha = Math.min(1.f,
+                (AnimationUtils.currentAnimationTimeMillis() - mFadeStartTime) / FADE_DURATION);
         mDrawable.setAlpha((int) (255 * mAlpha));
         invalidate();
     }
@@ -413,7 +415,7 @@ public class HandleView extends View {
     void beginFadeIn() {
         if (getVisibility() == VISIBLE) return;
         mAlpha = 0.f;
-        mFadeStartTime = System.currentTimeMillis();
+        mFadeStartTime = AnimationUtils.currentAnimationTimeMillis();
         setVisibility(VISIBLE);
     }
 

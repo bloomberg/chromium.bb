@@ -6,6 +6,7 @@ package org.chromium.content.browser.input;
 
 import android.os.Handler;
 import android.os.ResultReceiver;
+import android.os.SystemClock;
 import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
 import android.view.View;
@@ -310,12 +311,12 @@ public class ImeAdapter {
     }
 
     void sendKeyEventWithKeyCode(int keyCode, int flags) {
-        long eventTime = System.currentTimeMillis();
+        long eventTime = SystemClock.uptimeMillis();
         translateAndSendNativeEvents(new KeyEvent(eventTime, eventTime,
                 KeyEvent.ACTION_DOWN, keyCode, 0, 0,
                 KeyCharacterMap.VIRTUAL_KEYBOARD, 0,
                 flags));
-        translateAndSendNativeEvents(new KeyEvent(System.currentTimeMillis(), eventTime,
+        translateAndSendNativeEvents(new KeyEvent(SystemClock.uptimeMillis(), eventTime,
                 KeyEvent.ACTION_UP, keyCode, 0, 0,
                 KeyCharacterMap.VIRTUAL_KEYBOARD, 0,
                 flags));
@@ -331,7 +332,7 @@ public class ImeAdapter {
         boolean isFinish = text.isEmpty();
         mViewEmbedder.onImeEvent(isFinish);
         int keyCode = shouldSendKeyEventWithKeyCode(text);
-        long timeStampMs = System.currentTimeMillis();
+        long timeStampMs = SystemClock.uptimeMillis();
 
         if (keyCode != COMPOSITION_KEY_CODE) {
             sendKeyEventWithKeyCode(keyCode,
