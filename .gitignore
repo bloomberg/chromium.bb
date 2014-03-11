@@ -1,8 +1,6 @@
-*.Makefile
 *.gypcmd
 *.mk
 *.ncb
-*.ninja
 *.opensdf
 *.props
 *.pyc
@@ -41,7 +39,6 @@ Session.vim
 tags
 Thumbs.db
 v8.log
-/Makefile
 /_out
 /android_emulator_sdk
 /arm-sysroot
