@@ -46,7 +46,8 @@ base::FilePath::StringType FindLibraryLocationInPrefXml(
   // The data is a base64 encoded wchar_t*. Because Base64Decode uses
   // std::strings, the result has to be casted to a wchar_t*.
   std::string data;
-  if (!base::Base64Decode(CollapseWhitespaceASCII(pref_value, true), &data))
+  if (!base::Base64Decode(base::CollapseWhitespaceASCII(pref_value, true),
+                          &data))
     return result;
   return base::FilePath::StringType(
       reinterpret_cast<const wchar_t*>(data.data()), data.size() / 2);

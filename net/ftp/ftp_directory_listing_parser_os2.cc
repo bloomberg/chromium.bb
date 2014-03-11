@@ -23,7 +23,7 @@ bool ParseFtpDirectoryListingOS2(
       continue;
 
     std::vector<base::string16> columns;
-    base::SplitString(CollapseWhitespace(lines[i], false), ' ', &columns);
+    base::SplitString(base::CollapseWhitespace(lines[i], false), ' ', &columns);
 
     // Every line of the listing consists of the following:
     //

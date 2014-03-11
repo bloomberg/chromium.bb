@@ -1159,7 +1159,8 @@ bool IsWebElementEmpty(const blink::WebElement& element) {
     const blink::WebNode& item = children.item(i);
 
     if (item.isTextNode() &&
-        !ContainsOnlyWhitespaceASCII(item.nodeValue().utf8()))
+        !base::ContainsOnlyChars(item.nodeValue().utf8(),
+                                 base::kWhitespaceASCII))
       return false;
 
     // We ignore all other items with names which begin with

@@ -262,8 +262,6 @@ TrimPositions TrimWhitespace(const std::string& input,
   return TrimWhitespaceASCII(input, positions, output);
 }
 
-}  // namespace base
-
 template<typename STR>
 STR CollapseWhitespaceT(const STR& text,
                         bool trim_sequences_with_line_breaks) {
@@ -316,36 +314,17 @@ std::string CollapseWhitespaceASCII(const std::string& text,
   return CollapseWhitespaceT(text, trim_sequences_with_line_breaks);
 }
 
-bool ContainsOnlyWhitespaceASCII(const std::string& str) {
-  for (std::string::const_iterator i(str.begin()); i != str.end(); ++i) {
-    if (!IsAsciiWhitespace(*i))
-      return false;
-  }
-  return true;
+bool ContainsOnlyChars(const StringPiece& input,
+                       const StringPiece& characters) {
+  return input.find_first_not_of(characters) == StringPiece::npos;
 }
 
-bool ContainsOnlyWhitespace(const base::string16& str) {
-  return str.find_first_not_of(base::kWhitespaceUTF16) == string16::npos;
+bool ContainsOnlyChars(const StringPiece16& input,
+                       const StringPiece16& characters) {
+  return input.find_first_not_of(characters) == StringPiece16::npos;
 }
 
-template<typename STR>
-static bool ContainsOnlyCharsT(const STR& input, const STR& characters) {
-  for (typename STR::const_iterator iter = input.begin();
-       iter != input.end(); ++iter) {
-    if (characters.find(*iter) == STR::npos)
-      return false;
-  }
-  return true;
-}
-
-bool ContainsOnlyChars(const string16& input, const string16& characters) {
-  return ContainsOnlyCharsT(input, characters);
-}
-
-bool ContainsOnlyChars(const std::string& input,
-                       const std::string& characters) {
-  return ContainsOnlyCharsT(input, characters);
-}
+}  // namespace base
 
 #if !defined(WCHAR_T_IS_UTF16)
 bool IsStringASCII(const std::wstring& str);

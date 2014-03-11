@@ -1005,7 +1005,7 @@ void FormStructure::ParseFieldTypesFromAutocompleteAttributes(
     // Canonicalize the attribute value by trimming whitespace, collapsing
     // non-space characters (e.g. tab) to spaces, and converting to lowercase.
     std::string autocomplete_attribute =
-        CollapseWhitespaceASCII(field->autocomplete_attribute, false);
+        base::CollapseWhitespaceASCII(field->autocomplete_attribute, false);
     autocomplete_attribute = StringToLowerASCII(autocomplete_attribute);
 
     // The autocomplete attribute is overloaded: it can specify either a field

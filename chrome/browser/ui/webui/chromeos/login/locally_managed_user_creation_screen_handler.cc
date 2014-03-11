@@ -295,7 +295,7 @@ void LocallyManagedUserCreationScreenHandler::HandleCheckLocallyManagedUserName(
     const base::string16& name) {
   std::string user_id;
   if (NULL != UserManager::Get()->GetSupervisedUserManager()->
-          FindByDisplayName(CollapseWhitespace(name, true))) {
+          FindByDisplayName(base::CollapseWhitespace(name, true))) {
     CallJS("managedUserNameError", name,
            l10n_util::GetStringUTF16(
                IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_USERNAME_ALREADY_EXISTS));
@@ -304,7 +304,7 @@ void LocallyManagedUserCreationScreenHandler::HandleCheckLocallyManagedUserName(
            l10n_util::GetStringUTF16(
                IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_ILLEGAL_USERNAME));
   } else if (delegate_ && delegate_->FindUserByDisplayName(
-                 CollapseWhitespace(name, true), &user_id)) {
+                 base::CollapseWhitespace(name, true), &user_id)) {
     CallJS("managedUserSuggestImport", name, user_id);
   } else {
     CallJS("managedUserNameOk", name);
@@ -317,7 +317,7 @@ void LocallyManagedUserCreationScreenHandler::HandleCreateManagedUser(
   if (!delegate_)
     return;
   const base::string16 new_user_name =
-      CollapseWhitespace(new_raw_user_name, true);
+      base::CollapseWhitespace(new_raw_user_name, true);
   if (NULL != UserManager::Get()->GetSupervisedUserManager()->
           FindByDisplayName(new_user_name)) {
     CallJS("managedUserNameError", new_user_name,

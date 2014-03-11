@@ -46,7 +46,8 @@ std::set<BookmarkTag> ExtractTagsFromBookmark(const BookmarkNode* bookmark) {
     std::set<BookmarkTag> tags;
     const BookmarkNode* folder = bookmark->parent();
     while (folder && folder->type() == BookmarkNode::FOLDER) {
-      BookmarkTag trimmed_tag = CollapseWhitespace(folder->GetTitle(), true);
+      BookmarkTag trimmed_tag =
+          base::CollapseWhitespace(folder->GetTitle(), true);
       if (!trimmed_tag.empty())
         tags.insert(trimmed_tag);
       folder = folder->parent();
@@ -205,7 +206,7 @@ void BookmarkTagModel::AddTagsToBookmark(
   std::set<BookmarkTag> all_tags(GetTagsForBookmark(bookmark));
   for (std::set<BookmarkTag>::const_iterator it = tags.begin();
        it != tags.end(); ++it) {
-    BookmarkTag trimmed_tag = CollapseWhitespace(*it, true);
+    BookmarkTag trimmed_tag = base::CollapseWhitespace(*it, true);
     if (trimmed_tag.empty())
       continue;
     all_tags.insert(trimmed_tag);

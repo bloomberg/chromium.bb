@@ -439,7 +439,7 @@ bool ValidateIsolatedFileSystemId(const std::string& filesystem_id) {
   if (filesystem_id.size() != kExpectedFileSystemIdSize)
     return false;
   const std::string kExpectedChars("ABCDEF0123456789");
-  return ContainsOnlyChars(filesystem_id, kExpectedChars);
+  return base::ContainsOnlyChars(filesystem_id, kExpectedChars);
 }
 
 std::string GetIsolatedFileSystemRootURIString(

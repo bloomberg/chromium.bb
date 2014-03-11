@@ -224,7 +224,7 @@ bool Extension::ParsePEMKeyBytes(const std::string& input,
 
   std::string working = input;
   if (StartsWithASCII(working, kKeyBeginHeaderMarker, true)) {
-    working = CollapseWhitespaceASCII(working, true);
+    working = base::CollapseWhitespaceASCII(working, true);
     size_t header_pos = working.find(kKeyInfoEndMarker,
       sizeof(kKeyBeginHeaderMarker) - 1);
     if (header_pos == std::string::npos)

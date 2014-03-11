@@ -258,7 +258,8 @@ void IdleAppNameNotificationView::ShowMessage(
 
   base::string16 app_name;
   bool error = false;
-  if (extension && !ContainsOnlyWhitespaceASCII(extension->name())) {
+  if (extension &&
+      !base::ContainsOnlyChars(extension->name(), base::kWhitespaceASCII)) {
     app_name = base::UTF8ToUTF16(extension->name());
   } else {
     error = true;

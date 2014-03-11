@@ -846,8 +846,8 @@ TEST(ShellUtilTest, GetUserSpecificRegistrySuffix) {
   ASSERT_TRUE(ShellUtil::GetUserSpecificRegistrySuffix(&suffix));
   ASSERT_TRUE(StartsWith(suffix, L".", true));
   ASSERT_EQ(27, suffix.length());
-  ASSERT_TRUE(ContainsOnlyChars(suffix.substr(1),
-                                L"ABCDEFGHIJKLMNOPQRSTUVWXYZ234567"));
+  ASSERT_TRUE(base::ContainsOnlyChars(suffix.substr(1),
+                                      L"ABCDEFGHIJKLMNOPQRSTUVWXYZ234567"));
 }
 
 TEST(ShellUtilTest, GetOldUserSpecificRegistrySuffix) {

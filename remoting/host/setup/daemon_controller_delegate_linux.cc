@@ -291,7 +291,7 @@ std::string DaemonControllerDelegateLinux::GetVersion() {
   }
 
   base::TrimWhitespaceASCII(version, base::TRIM_ALL, &version);
-  if (!ContainsOnlyChars(version, "0123456789.")) {
+  if (!base::ContainsOnlyChars(version, "0123456789.")) {
     LOG(ERROR) << "Received invalid host version number: " << version;
     return std::string();
   }

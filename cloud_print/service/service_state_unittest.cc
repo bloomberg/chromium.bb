@@ -20,7 +20,7 @@ TEST(ServiceStateTest, Empty) {
 TEST(ServiceStateTest, ToString) {
   ServiceState state;
   EXPECT_STREQ("{\"cloud_print\": {\"enabled\": true}}",
-               CollapseWhitespaceASCII(state.ToString(), true).c_str());
+               base::CollapseWhitespaceASCII(state.ToString(), true).c_str());
   state.set_email("test@gmail.com");
   state.set_proxy_id("proxy");
   state.set_robot_email("robot@gmail.com");
@@ -32,7 +32,7 @@ TEST(ServiceStateTest, ToString) {
                "\"test@gmail.com\",\"enabled\": true,\"proxy_id\": \"proxy\","
                "\"robot_email\": \"robot@gmail.com\",\"robot_refresh_token\": "
                "\"abc\",\"xmpp_auth_token\": \"token2\"}}",
-               CollapseWhitespaceASCII(state.ToString(), true).c_str());
+               base::CollapseWhitespaceASCII(state.ToString(), true).c_str());
 }
 
 TEST(ServiceStateTest, FromString) {

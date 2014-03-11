@@ -214,6 +214,28 @@ BASE_EXPORT TrimPositions TrimWhitespace(const std::string& input,
                                          TrimPositions positions,
                                          std::string* output);
 
+// Searches  for CR or LF characters.  Removes all contiguous whitespace
+// strings that contain them.  This is useful when trying to deal with text
+// copied from terminals.
+// Returns |text|, with the following three transformations:
+// (1) Leading and trailing whitespace is trimmed.
+// (2) If |trim_sequences_with_line_breaks| is true, any other whitespace
+//     sequences containing a CR or LF are trimmed.
+// (3) All other whitespace sequences are converted to single spaces.
+BASE_EXPORT string16 CollapseWhitespace(
+    const string16& text,
+    bool trim_sequences_with_line_breaks);
+BASE_EXPORT std::string CollapseWhitespaceASCII(
+    const std::string& text,
+    bool trim_sequences_with_line_breaks);
+
+// Returns true if |input| is empty or contains only characters found in
+// |characters|.
+BASE_EXPORT bool ContainsOnlyChars(const StringPiece& input,
+                                   const StringPiece& characters);
+BASE_EXPORT bool ContainsOnlyChars(const StringPiece16& input,
+                                   const StringPiece16& characters);
+
 }  // namespace base
 
 #if defined(OS_WIN)
@@ -223,33 +245,6 @@ BASE_EXPORT TrimPositions TrimWhitespace(const std::string& input,
 #else
 #error Define string operations appropriately for your platform
 #endif
-
-// Searches  for CR or LF characters.  Removes all contiguous whitespace
-// strings that contain them.  This is useful when trying to deal with text
-// copied from terminals.
-// Returns |text|, with the following three transformations:
-// (1) Leading and trailing whitespace is trimmed.
-// (2) If |trim_sequences_with_line_breaks| is true, any other whitespace
-//     sequences containing a CR or LF are trimmed.
-// (3) All other whitespace sequences are converted to single spaces.
-BASE_EXPORT base::string16 CollapseWhitespace(
-    const base::string16& text,
-    bool trim_sequences_with_line_breaks);
-BASE_EXPORT std::string CollapseWhitespaceASCII(
-    const std::string& text,
-    bool trim_sequences_with_line_breaks);
-
-// Returns true if the passed string is empty or contains only white-space
-// characters.
-BASE_EXPORT bool ContainsOnlyWhitespaceASCII(const std::string& str);
-BASE_EXPORT bool ContainsOnlyWhitespace(const base::string16& str);
-
-// Returns true if |input| is empty or contains only characters found in
-// |characters|.
-BASE_EXPORT bool ContainsOnlyChars(const base::string16& input,
-                                   const base::string16& characters);
-BASE_EXPORT bool ContainsOnlyChars(const std::string& input,
-                                   const std::string& characters);
 
 // Converts to 7-bit ASCII by truncating. The result must be known to be ASCII
 // beforehand.

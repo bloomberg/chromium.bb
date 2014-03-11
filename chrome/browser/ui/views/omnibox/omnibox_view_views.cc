@@ -911,7 +911,7 @@ int OmniboxViewViews::OnDrop(const ui::OSExchangeData& data) {
   } else if (data.HasString()) {
     base::string16 text;
     if (data.GetString(&text)) {
-      base::string16 collapsed_text(CollapseWhitespace(text, true));
+      base::string16 collapsed_text(base::CollapseWhitespace(text, true));
       if (model()->CanPasteAndGo(collapsed_text))
         model()->PasteAndGo(collapsed_text);
       return ui::DragDropTypes::DRAG_COPY;

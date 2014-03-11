@@ -135,7 +135,7 @@ bool ParseFtpDirectoryListingLs(
       continue;
 
     std::vector<base::string16> columns;
-    base::SplitString(CollapseWhitespace(lines[i], false), ' ', &columns);
+    base::SplitString(base::CollapseWhitespace(lines[i], false), ' ', &columns);
 
     // Some FTP servers put a "total n" line at the beginning of the listing
     // (n is an integer). Allow such a line, but only once, and only if it's

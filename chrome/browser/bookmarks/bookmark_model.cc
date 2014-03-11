@@ -635,7 +635,7 @@ const BookmarkNode* BookmarkModel::AddURL(const BookmarkNode* parent,
                                           const base::string16& title,
                                           const GURL& url) {
   return AddURLWithCreationTime(parent, index,
-                                CollapseWhitespace(title, false),
+                                base::CollapseWhitespace(title, false),
                                 url, Time::Now());
 }
 

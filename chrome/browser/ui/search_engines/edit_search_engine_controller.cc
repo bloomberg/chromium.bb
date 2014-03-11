@@ -28,7 +28,7 @@ EditSearchEngineController::EditSearchEngineController(
 
 bool EditSearchEngineController::IsTitleValid(
     const base::string16& title_input) const {
-  return !CollapseWhitespace(title_input, true).empty();
+  return !base::CollapseWhitespace(title_input, true).empty();
 }
 
 bool EditSearchEngineController::IsURLValid(
@@ -63,7 +63,8 @@ bool EditSearchEngineController::IsURLValid(
 
 bool EditSearchEngineController::IsKeywordValid(
     const base::string16& keyword_input) const {
-  base::string16 keyword_input_trimmed(CollapseWhitespace(keyword_input, true));
+  base::string16 keyword_input_trimmed(
+      base::CollapseWhitespace(keyword_input, true));
   if (keyword_input_trimmed.empty())
     return false;  // Do not allow empty keyword.
   const TemplateURL* turl_with_keyword =

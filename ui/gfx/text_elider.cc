@@ -611,7 +611,7 @@ void RectangleText::AddLine(const base::string16& line) {
             base::TrimWhitespace(lines_->at(line), base::TRIM_TRAILING,
                                  &lines_->at(line));
           }
-          if (ContainsOnlyWhitespace(word)) {
+          if (base::ContainsOnlyChars(word, base::kWhitespaceUTF16)) {
             // Skip the first space if the previous line was carried over.
             current_width_ = 0;
             current_line_.clear();

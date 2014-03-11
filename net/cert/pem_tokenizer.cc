@@ -63,8 +63,8 @@ bool PEMTokenizer::GetNext() {
 
       StringPiece encoded = str_.substr(data_begin,
                                         footer_pos - data_begin);
-      if (!base::Base64Decode(CollapseWhitespaceASCII(encoded.as_string(),
-                                                      true), &data_)) {
+      if (!base::Base64Decode(base::CollapseWhitespaceASCII(encoded.as_string(),
+                                                            true), &data_)) {
         // The most likely cause for a decode failure is a datatype that
         // includes PEM headers, which are not supported.
         break;

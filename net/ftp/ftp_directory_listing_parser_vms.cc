@@ -54,7 +54,7 @@ bool ParseVmsFilename(const base::string16& raw_filename,
 }
 
 bool ParseVmsFilesize(const base::string16& input, int64* size) {
-  if (ContainsOnlyChars(input, base::ASCIIToUTF16("*"))) {
+  if (base::ContainsOnlyChars(input, base::ASCIIToUTF16("*"))) {
     // Response consisting of asterisks means unknown size.
     *size = -1;
     return true;
@@ -230,7 +230,7 @@ bool ParseFtpDirectoryListingVms(
     }
 
     std::vector<base::string16> columns;
-    base::SplitString(CollapseWhitespace(lines[i], false), ' ', &columns);
+    base::SplitString(base::CollapseWhitespace(lines[i], false), ' ', &columns);
 
     if (columns.size() == 1) {
       // There can be no continuation if the current line is the last one.
@@ -248,8 +248,8 @@ bool ParseFtpDirectoryListingVms(
 
       // Join the current and next line and split them into columns.
       base::SplitString(
-          CollapseWhitespace(lines[i - 1] + base::ASCIIToUTF16(" ") + lines[i],
-                             false),
+          base::CollapseWhitespace(
+              lines[i - 1] + base::ASCIIToUTF16(" ") + lines[i], false),
           ' ',
           &columns);
     }

@@ -1160,7 +1160,7 @@ void OmniboxViewGtk::HandlePopulatePopup(GtkWidget* sender, GtkMenu* menu) {
   gchar* text = gtk_clipboard_wait_for_text(x_clipboard);
   sanitized_text_for_paste_and_go_ = text ?
       StripJavascriptSchemas(
-          CollapseWhitespace(base::UTF8ToUTF16(text), true)) :
+          base::CollapseWhitespace(base::UTF8ToUTF16(text), true)) :
       base::string16();
   g_free(text);
   GtkWidget* paste_and_go_menuitem = gtk_menu_item_new_with_mnemonic(
@@ -1402,7 +1402,7 @@ void OmniboxViewGtk::HandleInsertText(GtkTextBuffer* buffer,
   if (model()->is_pasting()) {
     // If the user is pasting all-whitespace, paste a single space
     // rather than nothing, since pasting nothing feels broken.
-    filtered_text = CollapseWhitespace(filtered_text, true);
+    filtered_text = base::CollapseWhitespace(filtered_text, true);
     filtered_text = filtered_text.empty() ? base::ASCIIToUTF16(" ") :
         StripJavascriptSchemas(filtered_text);
   }
@@ -1622,7 +1622,7 @@ void OmniboxViewGtk::EmphasizeURLComponents() {
 
 bool OmniboxViewGtk::OnPerformDropImpl(const base::string16& text) {
   base::string16 sanitized_string(StripJavascriptSchemas(
-      CollapseWhitespace(text, true)));
+      base::CollapseWhitespace(text, true)));
   if (model()->CanPasteAndGo(sanitized_string)) {
     model()->PasteAndGo(sanitized_string);
     return true;

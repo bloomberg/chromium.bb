@@ -319,24 +319,6 @@ TEST(StringUtilTest, CollapseWhitespaceASCII) {
   }
 }
 
-TEST(StringUtilTest, ContainsOnlyWhitespaceASCII) {
-  EXPECT_TRUE(ContainsOnlyWhitespaceASCII(std::string()));
-  EXPECT_TRUE(ContainsOnlyWhitespaceASCII(" "));
-  EXPECT_TRUE(ContainsOnlyWhitespaceASCII("\t"));
-  EXPECT_TRUE(ContainsOnlyWhitespaceASCII("\t \r \n  "));
-  EXPECT_FALSE(ContainsOnlyWhitespaceASCII("a"));
-  EXPECT_FALSE(ContainsOnlyWhitespaceASCII("\thello\r \n  "));
-}
-
-TEST(StringUtilTest, ContainsOnlyWhitespace) {
-  EXPECT_TRUE(ContainsOnlyWhitespace(string16()));
-  EXPECT_TRUE(ContainsOnlyWhitespace(ASCIIToUTF16(" ")));
-  EXPECT_TRUE(ContainsOnlyWhitespace(ASCIIToUTF16("\t")));
-  EXPECT_TRUE(ContainsOnlyWhitespace(ASCIIToUTF16("\t \r \n  ")));
-  EXPECT_FALSE(ContainsOnlyWhitespace(ASCIIToUTF16("a")));
-  EXPECT_FALSE(ContainsOnlyWhitespace(ASCIIToUTF16("\thello\r \n  ")));
-}
-
 TEST(StringUtilTest, IsStringUTF8) {
   EXPECT_TRUE(IsStringUTF8("abc"));
   EXPECT_TRUE(IsStringUTF8("\xc2\x81"));
@@ -1161,6 +1143,21 @@ TEST(StringUtilTest, ContainsOnlyChars) {
   EXPECT_TRUE(ContainsOnlyChars("1", "4321"));
   EXPECT_TRUE(ContainsOnlyChars("123", "4321"));
   EXPECT_FALSE(ContainsOnlyChars("123a", "4321"));
+
+  EXPECT_TRUE(ContainsOnlyChars(std::string(), kWhitespaceASCII));
+  EXPECT_TRUE(ContainsOnlyChars(" ", kWhitespaceASCII));
+  EXPECT_TRUE(ContainsOnlyChars("\t", kWhitespaceASCII));
+  EXPECT_TRUE(ContainsOnlyChars("\t \r \n  ", kWhitespaceASCII));
+  EXPECT_FALSE(ContainsOnlyChars("a", kWhitespaceASCII));
+  EXPECT_FALSE(ContainsOnlyChars("\thello\r \n  ", kWhitespaceASCII));
+
+  EXPECT_TRUE(ContainsOnlyChars(string16(), kWhitespaceUTF16));
+  EXPECT_TRUE(ContainsOnlyChars(ASCIIToUTF16(" "), kWhitespaceUTF16));
+  EXPECT_TRUE(ContainsOnlyChars(ASCIIToUTF16("\t"), kWhitespaceUTF16));
+  EXPECT_TRUE(ContainsOnlyChars(ASCIIToUTF16("\t \r \n  "), kWhitespaceUTF16));
+  EXPECT_FALSE(ContainsOnlyChars(ASCIIToUTF16("a"), kWhitespaceUTF16));
+  EXPECT_FALSE(ContainsOnlyChars(ASCIIToUTF16("\thello\r \n  "),
+                                  kWhitespaceUTF16));
 }
 
 class WriteIntoTest : public testing::Test {
