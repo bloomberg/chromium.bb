@@ -74,6 +74,16 @@ function testPermutation() {
   doTest([1, 2, 3], [0, 3, 1, 2, 3]);
 }
 
+function testUpdateIndexes() {
+  var m = new cr.ui.ArrayDataModel([1, 2, 3]);
+  var changedIndexes = [];
+  m.addEventListener('change', function(event) {
+    changedIndexes.push(event.index);
+  });
+  m.updateIndexes([0, 1, 2]);
+  assertArrayEquals([0, 1, 2], changedIndexes);
+}
+
 function testReplaceItem() {
   var m = new cr.ui.ArrayDataModel([1, 2, 3]);
   var permutation = null;
