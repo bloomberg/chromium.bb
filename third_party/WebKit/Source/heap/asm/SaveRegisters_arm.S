@@ -38,27 +38,25 @@
 .global pushAllRegisters
 .hidden pushAllRegisters
 #ifdef __thumb__
-/* THUMB Mode */
+/* In THUMB Mode jump to ARM stub via bx to ensure CPU mode switch.
+ * FIXME: This trampoline is provided to workaround bugs in
+ * the THUMB/ARM interworking that appear in the component build.
+ * When these issues are resolved this stub can be removed.
+ */
 .code 16
 .thumb_func
 pushAllRegisters:
-        /* Push all callee-saved registers and save return address. */
-        push {r4-r7, lr}
-        /* Pass the two first arguments unchanged (r0, r1)
-         * and pass the stack pointer after pushing callee-saved
-         * registers to the callback function.
-         */
-        mov r3, r2
-        mov r2, sp
-        blx r3
-        /* Discard all the registers, and pop lr into pc which returns
-         * and switches mode if needed.
-         */
-        add sp, sp, #16
-        pop {pc}
+        adr r3, pushAllRegistersARM
+        bx r3
+
+.type pushAllRegistersARM, %function
+.hidden pushAllRegistersARM
+.code 32
+pushAllRegistersARM:
 #else
 /* ARM Mode */
 pushAllRegisters:
+#endif
         /* Push all callee-saved registers and save return address. */
         push {r4-r11, lr}
         /* Pass the two first arguments unchanged (r0, r1)
@@ -73,4 +71,3 @@ pushAllRegisters:
          */
         add sp, sp, #32
         pop {pc}
-#endif
