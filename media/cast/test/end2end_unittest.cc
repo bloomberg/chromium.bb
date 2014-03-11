@@ -894,24 +894,21 @@ TEST_F(End2EndTest, GlitchWith3Buffers) {
   Create();
 
   int video_start = kVideoStart;
-  base::TimeTicks send_time;
-  // Frames will rendered on completion until the render time stabilizes, i.e.
-  // we got enough data.
-  const int frames_before_glitch = 20;
-  for (int i = 0; i < frames_before_glitch; ++i) {
-    send_time = testing_clock_sender_->NowTicks();
-    SendVideoFrame(video_start, send_time);
-    test_receiver_video_callback_->AddExpectedResult(
-        video_start,
-        video_sender_config_.width,
-        video_sender_config_.height,
-        send_time);
-    frame_receiver_->GetRawVideoFrame(
-        base::Bind(&TestReceiverVideoCallback::CheckVideoFrame,
-                   test_receiver_video_callback_));
-    RunTasks(kFrameTimerMs);
-    video_start++;
-  }
+  base::TimeTicks send_time = testing_clock_sender_->NowTicks();
+  SendVideoFrame(video_start, send_time);
+  RunTasks(kFrameTimerMs);
+
+  test_receiver_video_callback_->AddExpectedResult(video_start,
+                                                   video_sender_config_.width,
+                                                   video_sender_config_.height,
+                                                   send_time);
+  frame_receiver_->GetRawVideoFrame(
+      base::Bind(&TestReceiverVideoCallback::CheckVideoFrame,
+                 test_receiver_video_callback_));
+
+  RunTasks(750);  // Make sure that we send a RTCP packet.
+
+  video_start++;
 
   // Introduce a glitch lasting for 10 frames.
   sender_to_receiver_.SetSendPackets(false);
@@ -942,8 +939,7 @@ TEST_F(End2EndTest, GlitchWith3Buffers) {
                  test_receiver_video_callback_));
 
   RunTasks(2 * kFrameTimerMs + 1);  // Empty the receiver pipeline.
-  EXPECT_EQ(frames_before_glitch + 1,
-            test_receiver_video_callback_->number_times_called());
+  EXPECT_EQ(2, test_receiver_video_callback_->number_times_called());
 }
 
 TEST_F(End2EndTest, DropEveryOtherFrame3Buffers) {
