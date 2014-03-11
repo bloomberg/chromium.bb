@@ -137,8 +137,8 @@ class NET_EXPORT_PRIVATE QuicCryptoClientStream : public QuicCryptoStream {
   int disk_cache_load_result_;
 
   // Time when call to WaitForDataReady was made, used for computing time spent
-  // to read QUIC server information from disk cache.
-  base::TimeTicks read_start_time_;
+  // to load QUIC server information from disk cache.
+  base::TimeTicks disk_cache_load_start_time_;
 
   base::WeakPtrFactory<QuicCryptoClientStream> weak_factory_;
 

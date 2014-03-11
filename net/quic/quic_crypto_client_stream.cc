@@ -423,7 +423,7 @@ int QuicCryptoClientStream::DoLoadQuicServerInfo(
     return OK;
   }
 
-  read_start_time_ = base::TimeTicks::Now();
+  disk_cache_load_start_time_ = base::TimeTicks::Now();
   generation_counter_ = cached->generation_counter();
   next_state_ = STATE_LOAD_QUIC_SERVER_INFO_COMPLETE;
 
@@ -466,7 +466,7 @@ void QuicCryptoClientStream::LoadQuicServerInfo(
   }
 
   UMA_HISTOGRAM_TIMES("Net.QuicServerInfo.DiskCacheReadTime",
-                      base::TimeTicks::Now() - read_start_time_);
+                      base::TimeTicks::Now() - disk_cache_load_start_time_);
 
   if (disk_cache_load_result_ != OK || !cached->LoadQuicServerInfo(
           session()->connection()->clock()->WallNow())) {
