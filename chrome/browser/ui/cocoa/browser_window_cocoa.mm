@@ -20,6 +20,7 @@
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/shell_integration.h"
+#include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands_mac.h"
@@ -285,11 +286,11 @@ void BrowserWindowCocoa::UpdateLoadingAnimations(bool should_animate) {
 }
 
 void BrowserWindowCocoa::SetStarredState(bool is_starred) {
-  [controller_ setStarredState:is_starred ? YES : NO];
+  [controller_ setStarredState:is_starred];
 }
 
 void BrowserWindowCocoa::SetTranslateIconToggled(bool is_lit) {
-  NOTIMPLEMENTED();
+  [controller_ setCurrentPageIsTranslated:is_lit];
 }
 
 void BrowserWindowCocoa::OnActiveTabChanged(content::WebContents* old_contents,
@@ -494,7 +495,14 @@ void BrowserWindowCocoa::ShowTranslateBubble(
     content::WebContents* contents,
     TranslateTabHelper::TranslateStep step,
     TranslateErrors::Type error_type) {
-  NOTIMPLEMENTED();
+  TranslateTabHelper* translate_tab_helper =
+      TranslateTabHelper::FromWebContents(contents);
+  LanguageState& language_state = translate_tab_helper->GetLanguageState();
+  language_state.SetTranslateEnabled(true);
+
+  [controller_ showTranslateBubbleForWebContents:contents
+                                            step:step
+                                       errorType:error_type];
 }
 
 #if defined(ENABLE_ONE_CLICK_SIGNIN)

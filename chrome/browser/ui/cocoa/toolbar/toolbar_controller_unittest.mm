@@ -216,6 +216,13 @@ TEST_F(ToolbarControllerTest, BookmarkBubblePoint) {
   EXPECT_TRUE(NSPointInRect(starPoint, barFrame));
 }
 
+TEST_F(ToolbarControllerTest, TranslateBubblePoint) {
+  const NSPoint translatePoint = [bar_ translateBubblePoint];
+  const NSRect barFrame =
+      [[bar_ view] convertRect:[[bar_ view] bounds] toView:nil];
+  EXPECT_TRUE(NSPointInRect(translatePoint, barFrame));
+}
+
 TEST_F(ToolbarControllerTest, HoverButtonForEvent) {
   base::scoped_nsobject<HitView> view(
       [[HitView alloc] initWithFrame:NSMakeRect(0, 0, 100, 100)]);

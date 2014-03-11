@@ -27,6 +27,7 @@
 #include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
+#include "chrome/browser/translate/translate_ui_delegate.h"
 #include "chrome/browser/ui/bookmarks/bookmark_editor.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser.h"
@@ -64,12 +65,14 @@
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_view.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_view.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
+#import "chrome/browser/ui/cocoa/translate/translate_bubble_controller.h"
 #include "chrome/browser/ui/cocoa/website_settings/permission_bubble_cocoa.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
 #include "chrome/browser/ui/toolbar/encoding_menu_controller.h"
+#include "chrome/browser/ui/translate/translate_bubble_model_impl.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
 #include "chrome/browser/ui/window_sizer/window_sizer.h"
 #include "chrome/common/chrome_switches.h"
@@ -1261,6 +1264,10 @@ enum {
   [toolbarController_ setStarredState:isStarred];
 }
 
+- (void)setCurrentPageIsTranslated:(BOOL)on {
+  [toolbarController_ setTranslateIconLit:on];
+}
+
 - (void)zoomChangedForActiveTab:(BOOL)canShowBubble {
   [toolbarController_ zoomChangedForActiveTab:canShowBubble];
 }
@@ -1753,6 +1760,62 @@ enum {
           BookmarkEditor::EditDetails::EditNode(node),
           BookmarkEditor::SHOW_TREE);
   }
+}
+
+- (void)showTranslateBubbleForWebContents:(content::WebContents*)contents
+                                     step:
+                                    (TranslateTabHelper::TranslateStep)step
+                                errorType:(TranslateErrors::Type)errorType {
+  // TODO(hajimehoshi): The similar logic exists at TranslateBubbleView::
+  // ShowBubble. This should be unified.
+  if (translateBubbleController_) {
+    // When the user reads the advanced setting panel, the bubble should not be
+    // changed because he/she is focusing on the bubble.
+    if (translateBubbleController_.webContents == contents &&
+        translateBubbleController_.model->GetViewState() ==
+        TranslateBubbleModel::VIEW_STATE_ADVANCED) {
+      return;
+    }
+    if (step != TranslateTabHelper::TRANSLATE_ERROR) {
+      TranslateBubbleModel::ViewState viewState =
+          TranslateBubbleModelImpl::TranslateStepToViewState(step);
+      [translateBubbleController_ switchView:viewState];
+    } else {
+      [translateBubbleController_ switchToErrorView:errorType];
+    }
+    return;
+  }
+
+  // TODO(hajimehoshi): Set the initial languages correctly.
+  std::string sourceLanguage = "xx";
+  std::string targetLanguage = "yy";
+
+  scoped_ptr<TranslateUIDelegate> uiDelegate(
+      new TranslateUIDelegate(contents, sourceLanguage, targetLanguage));
+  scoped_ptr<TranslateBubbleModel> model(
+      new TranslateBubbleModelImpl(step, uiDelegate.Pass()));
+  translateBubbleController_ = [[TranslateBubbleController alloc]
+                                 initWithParentWindow:self
+                                                model:model.Pass()
+                                          webContents:contents];
+  [translateBubbleController_ showWindow:nil];
+
+  NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
+  [center addObserver:self
+             selector:@selector(translateBubbleWindowWillClose:)
+                 name:NSWindowWillCloseNotification
+               object:[translateBubbleController_ window]];
+}
+
+// Nil out the weak translate bubble controller reference.
+- (void)translateBubbleWindowWillClose:(NSNotification*)notification {
+  DCHECK_EQ([notification object], [translateBubbleController_ window]);
+
+  NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
+  [center removeObserver:self
+                    name:NSWindowWillCloseNotification
+                  object:[translateBubbleController_ window]];
+  translateBubbleController_ = nil;
 }
 
 // If the browser is in incognito mode or has multi-profiles, install the image

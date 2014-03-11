@@ -35,6 +35,7 @@ class Profile;
 class SearchButtonDecoration;
 class SelectedKeywordDecoration;
 class StarDecoration;
+class TranslateDecoration;
 class ZoomDecoration;
 class ZoomDecorationTest;
 
@@ -89,6 +90,9 @@ class LocationBarViewMac : public LocationBar,
   // Set the starred state of the bookmark star.
   void SetStarred(bool starred);
 
+  // Set whether or not the translate icon is lit.
+  void SetTranslateIconLit(bool on);
+
   // Happens when the zoom changes for the active tab. |can_show_bubble| is
   // false when the change in zoom for the active tab wasn't an explicit user
   // action (e.g. switching tabs, creating a new tab, creating a new browser).
@@ -102,6 +106,10 @@ class LocationBarViewMac : public LocationBar,
   // Get the point in window coordinates on the star for the bookmark bubble to
   // aim at. Only works if IsStarEnabled returns YES.
   NSPoint GetBookmarkBubblePoint() const;
+
+  // Get the point in window coordinates on the star for the Translate bubble to
+  // aim at.
+  NSPoint GetTranslateBubblePoint() const;
 
   // Get the point in window coordinates in the security icon at which the page
   // info bubble aims.
@@ -190,6 +198,10 @@ class LocationBarViewMac : public LocationBar,
 
   void ShowFirstRunBubbleInternal();
 
+  // Updates the translate decoration in the omnibox with the current translate
+  // state.
+  void UpdateTranslateDecoration();
+
   // Updates the zoom decoration in the omnibox with the current zoom level.
   void UpdateZoomDecoration();
 
@@ -216,6 +228,9 @@ class LocationBarViewMac : public LocationBar,
 
   // Bookmark star right of page actions.
   scoped_ptr<StarDecoration> star_decoration_;
+
+  // Translate icon at the end of the ominibox.
+  scoped_ptr<TranslateDecoration> translate_decoration_;
 
   // A zoom icon at the end of the omnibox, which shows at non-standard zoom
   // levels.

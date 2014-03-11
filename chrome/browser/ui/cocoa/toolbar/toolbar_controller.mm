@@ -451,7 +451,11 @@ class NotificationBridge
 }
 
 - (void)setStarredState:(BOOL)isStarred {
-  locationBarView_->SetStarred(isStarred ? true : false);
+  locationBarView_->SetStarred(isStarred);
+}
+
+- (void)setTranslateIconLit:(BOOL)on {
+  locationBarView_->SetTranslateIconLit(on);
 }
 
 - (void)zoomChangedForActiveTab:(BOOL)canShowBubble {
@@ -743,6 +747,10 @@ class NotificationBridge
   // Inset to account for the whitespace around the hotdogs.
   point.y += wrench_menu_controller::kWrenchBubblePointOffsetY;
   return [self.view convertPoint:point toView:nil];
+}
+
+- (NSPoint)translateBubblePoint {
+  return locationBarView_->GetTranslateBubblePoint();
 }
 
 - (CGFloat)desiredHeightForCompression:(CGFloat)compressByHeight {
