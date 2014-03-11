@@ -185,7 +185,7 @@ protected:
     virtual void paintTextMatchMarker(GraphicsContext*, const FloatPoint& boxOrigin, DocumentMarker*, RenderStyle*, const Font&);
 
 private:
-    void paintDecoration(GraphicsContext*, const FloatPoint& boxOrigin, TextDecoration, TextDecorationStyle, const ShadowList*);
+    void paintDecoration(GraphicsContext*, const FloatPoint& boxOrigin, TextDecoration, const ShadowList*);
     void paintSelection(GraphicsContext*, const FloatPoint& boxOrigin, RenderStyle*, const Font&, Color textColor);
 
     TextRun::ExpansionBehavior expansionBehavior() const

@@ -2968,31 +2968,35 @@ static Color decorationColor(const RenderObject* object, RenderStyle* style)
     return object->resolveColor(style, CSSPropertyWebkitTextFillColor);
 }
 
-void RenderObject::getTextDecorationColors(unsigned decorations, Color& underline, Color& overline,
-                                           Color& linethrough, bool quirksMode, bool firstlineStyle)
+void RenderObject::getTextDecorations(unsigned decorations, AppliedTextDecoration& underline, AppliedTextDecoration& overline, AppliedTextDecoration& linethrough, bool quirksMode, bool firstlineStyle)
 {
     RenderObject* curr = this;
     RenderStyle* styleToUse = 0;
     unsigned currDecs = TextDecorationNone;
     Color resultColor;
+    TextDecorationStyle resultStyle;
     do {
         styleToUse = curr->style(firstlineStyle);
         currDecs = styleToUse->textDecoration();
         currDecs &= decorations;
         resultColor = decorationColor(this, styleToUse);
+        resultStyle = styleToUse->textDecorationStyle();
         // Parameter 'decorations' is cast as an int to enable the bitwise operations below.
         if (currDecs) {
             if (currDecs & TextDecorationUnderline) {
                 decorations &= ~TextDecorationUnderline;
-                underline = resultColor;
+                underline.color = resultColor;
+                underline.style = resultStyle;
             }
             if (currDecs & TextDecorationOverline) {
                 decorations &= ~TextDecorationOverline;
-                overline = resultColor;
+                overline.color = resultColor;
+                overline.style = resultStyle;
             }
             if (currDecs & TextDecorationLineThrough) {
                 decorations &= ~TextDecorationLineThrough;
-                linethrough = resultColor;
+                linethrough.color = resultColor;
+                linethrough.style = resultStyle;
             }
         }
         if (curr->isRubyText())
@@ -3006,12 +3010,18 @@ void RenderObject::getTextDecorationColors(unsigned decorations, Color& underlin
     if (decorations && curr) {
         styleToUse = curr->style(firstlineStyle);
         resultColor = decorationColor(this, styleToUse);
-        if (decorations & TextDecorationUnderline)
-            underline = resultColor;
-        if (decorations & TextDecorationOverline)
-            overline = resultColor;
-        if (decorations & TextDecorationLineThrough)
-            linethrough = resultColor;
+        if (decorations & TextDecorationUnderline) {
+            underline.color = resultColor;
+            underline.style = resultStyle;
+        }
+        if (decorations & TextDecorationOverline) {
+            overline.color = resultColor;
+            overline.style = resultStyle;
+        }
+        if (decorations & TextDecorationLineThrough) {
+            linethrough.color = resultColor;
+            linethrough.style = resultStyle;
+        }
     }
 }
 

@@ -783,7 +783,13 @@ public:
 
     virtual CursorDirective getCursor(const LayoutPoint&, Cursor&) const;
 
-    void getTextDecorationColors(unsigned decorations, Color& underline, Color& overline, Color& linethrough, bool quirksMode = false, bool firstlineStyle = false);
+    struct AppliedTextDecoration {
+        Color color;
+        TextDecorationStyle style;
+        AppliedTextDecoration() : color(Color::transparent), style(TextDecorationStyleSolid) { }
+    };
+
+    void getTextDecorations(unsigned decorations, AppliedTextDecoration& underline, AppliedTextDecoration& overline, AppliedTextDecoration& linethrough, bool quirksMode = false, bool firstlineStyle = false);
 
     // Return the RenderLayerModelObject in the container chain which is responsible for painting this object, or 0
     // if painting is root-relative. This is the container that should be passed to the 'forRepaint'
