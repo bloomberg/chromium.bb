@@ -10,6 +10,7 @@
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/renderer_ppapi_host_impl.h"
 #include "content/renderer/render_view_impl.h"
+#include "media/base/limits.h"
 #include "ppapi/host/dispatch_host_message.h"
 #include "ppapi/host/ppapi_host.h"
 #include "ppapi/proxy/host_dispatcher.h"
@@ -364,10 +365,14 @@ void PepperVideoCaptureHost::SetRequestedInfo(
     uint32_t buffer_count) {
   // Clamp the buffer count to between 1 and |kMaxBuffers|.
   buffer_count_hint_ = std::min(std::max(buffer_count, 1U), kMaxBuffers);
+  // Clamp the frame rate to between 1 and |kMaxFramesPerSecond - 1|.
+  int frames_per_second =
+      std::min(std::max(device_info.frames_per_second, 1U),
+               static_cast<uint32_t>(media::limits::kMaxFramesPerSecond - 1));
 
   video_capture_params_.requested_format = media::VideoCaptureFormat(
       gfx::Size(device_info.width, device_info.height),
-      device_info.frames_per_second,
+      frames_per_second,
       media::PIXEL_FORMAT_I420);
   video_capture_params_.allow_resolution_change = false;
 }

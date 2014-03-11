@@ -60,6 +60,8 @@ void ParamTraits<AudioParameters>::Log(const AudioParameters& p,
 
 void ParamTraits<VideoCaptureFormat>::Write(Message* m,
                                             const VideoCaptureFormat& p) {
+  // Crash during Send rather than have a failure at the message handler.
+  CHECK(p.IsValid());
   m->WriteInt(p.frame_size.width());
   m->WriteInt(p.frame_size.height());
   m->WriteInt(p.frame_rate);
