@@ -31,7 +31,6 @@
 #include "config.h"
 #include "core/inspector/InspectorCanvasAgent.h"
 
-#include "HTMLNames.h"
 #include "bindings/v8/ScriptObject.h"
 #include "bindings/v8/ScriptProfiler.h"
 #include "core/html/HTMLCanvasElement.h"
@@ -270,7 +269,8 @@ void InspectorCanvasAgent::findFramesWithUninstrumentedCanvases()
 
         virtual void visitNode(Node* node) OVERRIDE
         {
-            if (!node->hasTagName(HTMLNames::canvasTag) || !node->document().frame())
+            ASSERT(node);
+            if (!isHTMLCanvasElement(*node) || !node->document().frame())
                 return;
 
             LocalFrame* frame = node->document().frame();

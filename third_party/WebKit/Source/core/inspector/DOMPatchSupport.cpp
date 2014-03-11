@@ -31,7 +31,6 @@
 #include "config.h"
 #include "core/inspector/DOMPatchSupport.h"
 
-#include "HTMLNames.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/Attribute.h"
@@ -40,7 +39,9 @@
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/Node.h"
 #include "core/dom/XMLDocument.h"
+#include "core/html/HTMLBodyElement.h"
 #include "core/html/HTMLDocument.h"
+#include "core/html/HTMLHeadElement.h"
 #include "core/html/parser/HTMLDocumentParser.h"
 #include "core/inspector/DOMEditor.h"
 #include "core/inspector/InspectorHistory.h"
@@ -55,10 +56,6 @@
 using namespace std;
 
 namespace WebCore {
-
-using HTMLNames::bodyTag;
-using HTMLNames::headTag;
-using HTMLNames::htmlTag;
 
 struct DOMPatchSupport::Digest {
     explicit Digest(Node* node) : m_node(node) { }
@@ -142,9 +139,9 @@ Node* DOMPatchSupport::patchNode(Node* node, const String& markup, ExceptionStat
     for (Node* child = parentNode->firstChild(); child != node; child = child->nextSibling())
         newList.append(createDigest(child, 0));
     for (Node* child = fragment->firstChild(); child; child = child->nextSibling()) {
-        if (child->hasTagName(headTag) && !child->firstChild() && markupCopy.find("</head>") == kNotFound)
+        if (isHTMLHeadElement(*child) && !child->firstChild() && markupCopy.find("</head>") == kNotFound)
             continue; // HTML5 parser inserts empty <head> tag whenever it parses <body>
-        if (child->hasTagName(bodyTag) && !child->firstChild() && markupCopy.find("</body>") == kNotFound)
+        if (isHTMLBodyElement(*child) && !child->firstChild() && markupCopy.find("</body>") == kNotFound)
             continue; // HTML5 parser inserts empty <body> tag whenever it parses </head>
         newList.append(createDigest(child, &m_unusedNodesMap));
     }
@@ -315,11 +312,11 @@ bool DOMPatchSupport::innerPatchChildren(ContainerNode* parentNode, const Vector
 
         // Always match <head> and <body> tags with each other - we can't remove them from the DOM
         // upon patching.
-        if (oldList[i]->m_node->hasTagName(headTag)) {
+        if (isHTMLHeadElement(*oldList[i]->m_node)) {
             oldHead = oldList[i].get();
             continue;
         }
-        if (oldList[i]->m_node->hasTagName(bodyTag)) {
+        if (isHTMLBodyElement(*oldList[i]->m_node)) {
             oldBody = oldList[i].get();
             continue;
         }
@@ -359,9 +356,9 @@ bool DOMPatchSupport::innerPatchChildren(ContainerNode* parentNode, const Vector
     // Mark <head> and <body> nodes for merge.
     if (oldHead || oldBody) {
         for (size_t i = 0; i < newList.size(); ++i) {
-            if (oldHead && newList[i]->m_node->hasTagName(headTag))
+            if (oldHead && isHTMLHeadElement(*newList[i]->m_node))
                 merges.set(newList[i].get(), oldHead);
-            if (oldBody && newList[i]->m_node->hasTagName(bodyTag))
+            if (oldBody && isHTMLBodyElement(*newList[i]->m_node))
                 merges.set(newList[i].get(), oldBody);
         }
     }
@@ -386,9 +383,9 @@ bool DOMPatchSupport::innerPatchChildren(ContainerNode* parentNode, const Vector
             continue;
         RefPtr<Node> node = oldMap[i].first->m_node;
         Node* anchorNode = parentNode->traverseToChildAt(oldMap[i].second);
-        if (node.get() == anchorNode)
+        if (node == anchorNode)
             continue;
-        if (node->hasTagName(bodyTag) || node->hasTagName(headTag))
+        if (isHTMLBodyElement(*node) || isHTMLHeadElement(*node))
             continue; // Never move head or body, move the rest of the nodes around them.
 
         if (!m_domEditor->insertBefore(parentNode, node.release(), anchorNode, exceptionState))

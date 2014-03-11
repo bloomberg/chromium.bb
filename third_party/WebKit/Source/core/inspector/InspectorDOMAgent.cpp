@@ -31,7 +31,6 @@
 #include "config.h"
 #include "core/inspector/InspectorDOMAgent.h"
 
-#include "HTMLNames.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ScriptEventListener.h"
 #include "core/dom/Attr.h"
@@ -363,10 +362,10 @@ void InspectorDOMAgent::unbind(Node* node, NodeToIdMap* nodesMap)
         if (element->pseudoElement(AFTER))
             unbind(element->pseudoElement(AFTER), nodesMap);
 
-        if (element->hasTagName(HTMLNames::linkTag)) {
-            HTMLLinkElement* linkElement = toHTMLLinkElement(element);
-            if (linkElement->isImport() && linkElement->import())
-                unbind(linkElement->import(), nodesMap);
+        if (isHTMLLinkElement(*element)) {
+            HTMLLinkElement& linkElement = toHTMLLinkElement(*element);
+            if (linkElement.isImport() && linkElement.import())
+                unbind(linkElement.import(), nodesMap);
         }
     }
 
@@ -1323,7 +1322,7 @@ void InspectorDOMAgent::setFileInputFiles(ErrorString* errorString, int nodeId, 
     Node* node = assertNode(errorString, nodeId);
     if (!node)
         return;
-    if (!node->hasTagName(inputTag) || !toHTMLInputElement(node)->isFileUpload()) {
+    if (!isHTMLInputElement(*node) || !toHTMLInputElement(*node).isFileUpload()) {
         *errorString = "Node is not a file input element";
         return;
     }
@@ -1512,15 +1511,15 @@ PassRefPtr<TypeBuilder::DOM::Node> InspectorDOMAgent::buildObjectForNode(Node* n
             forcePushChildren = true;
         }
 
-        if (element->hasTagName(linkTag)) {
-            HTMLLinkElement* linkElement = toHTMLLinkElement(element);
-            if (linkElement->isImport() && linkElement->import() && innerParentNode(linkElement->import()) == linkElement)
-                value->setImportedDocument(buildObjectForNode(linkElement->import(), 0, nodesMap));
+        if (isHTMLLinkElement(*element)) {
+            HTMLLinkElement& linkElement = toHTMLLinkElement(*element);
+            if (linkElement.isImport() && linkElement.import() && innerParentNode(linkElement.import()) == linkElement)
+                value->setImportedDocument(buildObjectForNode(linkElement.import(), 0, nodesMap));
             forcePushChildren = true;
         }
 
-        if (element->hasTagName(templateTag)) {
-            value->setTemplateContent(buildObjectForNode(toHTMLTemplateElement(element)->content(), 0, nodesMap));
+        if (isHTMLTemplateElement(*element)) {
+            value->setTemplateContent(buildObjectForNode(toHTMLTemplateElement(*element).content(), 0, nodesMap));
             forcePushChildren = true;
         }
 

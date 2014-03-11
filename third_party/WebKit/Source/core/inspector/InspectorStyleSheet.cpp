@@ -26,8 +26,6 @@
 #include "core/inspector/InspectorStyleSheet.h"
 
 #include "CSSPropertyNames.h"
-#include "HTMLNames.h"
-#include "SVGNames.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "bindings/v8/ScriptRegexp.h"
@@ -44,11 +42,13 @@
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/frame/PageConsole.h"
+#include "core/html/HTMLStyleElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/inspector/ContentSearchUtils.h"
 #include "core/inspector/InspectorCSSAgent.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorResourceAgent.h"
+#include "core/svg/SVGStyleElement.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/StringBuilder.h"
@@ -1515,11 +1515,11 @@ bool InspectorStyleSheet::inlineStyleSheetText(String* result) const
     Node* ownerNode = m_pageStyleSheet->ownerNode();
     if (!ownerNode || ownerNode->nodeType() != Node::ELEMENT_NODE)
         return false;
-    Element* ownerElement = toElement(ownerNode);
+    Element& ownerElement = toElement(*ownerNode);
 
-    if (!ownerElement->hasTagName(HTMLNames::styleTag) && !ownerElement->hasTagName(SVGNames::styleTag))
+    if (!isHTMLStyleElement(ownerElement) && !isSVGStyleElement(ownerElement))
         return false;
-    *result = ownerElement->textContent();
+    *result = ownerElement.textContent();
     return true;
 }
 
