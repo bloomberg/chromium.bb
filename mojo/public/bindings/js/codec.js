@@ -83,7 +83,7 @@ define("mojo/public/bindings/js/codec", function() {
 
   var kArrayHeaderSize = 8;
   var kStructHeaderSize = 8;
-  var kMessageHeaderSize = 8;
+  var kMessageHeaderSize = 16;
 
   // Decoder ------------------------------------------------------------------
 
@@ -301,8 +301,10 @@ define("mojo/public/bindings/js/codec", function() {
     this.buffer = new Buffer(numberOfBytes);
     this.handles = [];
     var encoder = this.createEncoder(kMessageHeaderSize);
-    encoder.write32(numberOfBytes);
+    encoder.write32(kMessageHeaderSize);
+    encoder.write32(2);  // num_fields.
     encoder.write32(messageName);
+    encoder.write32(0);  // flags.
   }
 
   MessageBuilder.prototype.createEncoder = function(size) {
@@ -330,8 +332,12 @@ define("mojo/public/bindings/js/codec", function() {
 
   function MessageReader(message) {
     this.decoder = new Decoder(message.memory, message.handles, 0);
-    this.payloadSize = this.decoder.read32() - kMessageHeaderSize;
+    var messageHeaderSize = this.decoder.read32();
+    this.payloadSize = message.memory.length - messageHeaderSize;
+    var numberOfFields = this.decoder.read32();
+    // TODO: better handling of messages of different size.
     this.messageName = this.decoder.read32();
+    var flags = this.decoder.read32();
   }
 
   MessageReader.prototype.decodeStruct = function(cls) {
