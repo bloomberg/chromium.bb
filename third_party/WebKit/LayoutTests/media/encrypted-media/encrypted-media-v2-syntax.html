@@ -1,70 +1,117 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>MediaKeys</title>
-        <script src=../video-test.js></script>
-        <script>
-            function stringToUint8Array(str)
-            {
-                var arr=[];
-                for(var i=0,j=str.length;i<j;++i)
-                  arr[i]=str.charCodeAt(i);
-                return new Uint8Array(arr);
-            }
-
-            var mediaKeys;
-            var mediaKeySession;
-            var initData = stringToUint8Array('mock');
-
-            function checkError()
-            {
-                testExpected('mediaKeySession.error', null, '!=');
-                testExpected('mediaKeySession.error.code', MediaKeyError.MEDIA_KEYERR_UNKNOWN);
-                testExpected('mediaKeySession.error.systemCode', 0);
-            }
-
-            function runTest()
-            {
-                consoleWrite("Test MediaKeys.");
-                testExpected('typeof window.MediaKeys', 'function');
-                testDOMException('new MediaKeys("")', "DOMException.INVALID_ACCESS_ERR");
-                testDOMException('new MediaKeys("unsupported")', "DOMException.NOT_SUPPORTED_ERR");
-                run('mediaKeys = new MediaKeys("org.w3.clearkey")');
-                testExpected('typeof mediaKeys', 'object');
-                testExpected('mediaKeys.keySystem', 'org.w3.clearkey');
-                testExpected('typeof mediaKeys.createSession', 'function');
-
-                testException('mediaKeys.createSession()', '"TypeError: Failed to execute \'createSession\' on \'MediaKeys\': 2 arguments required, but only 0 present."');
-                testException('mediaKeys.createSession("")', '"TypeError: Failed to execute \'createSession\' on \'MediaKeys\': 2 arguments required, but only 1 present."');
-                testException('mediaKeys.createSession("video/webm")', '"TypeError: Failed to execute \'createSession\' on \'MediaKeys\': 2 arguments required, but only 1 present."');
-                testDOMException('mediaKeys.createSession("", new Uint8Array(1))', "DOMException.INVALID_ACCESS_ERR");
-                testDOMException('mediaKeys.createSession("video/webm", null)', "DOMException.INVALID_ACCESS_ERR");
-                testDOMException('mediaKeys.createSession("video/webm", new Uint8Array(0))', "DOMException.INVALID_ACCESS_ERR");
-                testDOMException('mediaKeys.createSession("unsupported/type", new Uint8Array(1))', "DOMException.NOT_SUPPORTED_ERR");
-                consoleWrite("");
-
-                consoleWrite("Test MediaKeySession.");
-                run('mediaKeySession = mediaKeys.createSession("video/webm", initData)');
-                testExpected('typeof mediaKeySession', 'object');
-                testExpected('typeof mediaKeySession.addEventListener', 'function');
-                testExpected('typeof mediaKeySession.update', 'function');
-                testExpected('mediaKeySession.error', null);
-                testExpected('mediaKeySession.keySystem', 'org.w3.clearkey');
-                testExpected('mediaKeySession.sessionId', null, '!=');
-                testExpected('mediaKeySession.onwebkitkeyadded', null);
-                testExpected('mediaKeySession.onwebkitkeyerror', null);
-                testExpected('mediaKeySession.onwebkitkeymessage', null);
-                testException('mediaKeySession.update()', '"TypeError: Failed to execute \'update\' on \'MediaKeySession\': 1 argument required, but only 0 present."');
-                testDOMException('mediaKeySession.update(null)', "DOMException.INVALID_ACCESS_ERR");
-                run('mediaKeySession.update(new Uint8Array(1))');
-
-                run('mediaKeySession.release()');
-
-                endTest();
-            }
-        </script>
+        <title>Test EME syntax</title>
+        <script src="encrypted-media-utils.js"></script>
+        <script src="../../resources/testharness.js"></script>
+        <script src="../../resources/testharnessreport.js"></script>
     </head>
-    <body onload="runTest()">
-        <p>This tests the basic API of MediaKeys and MediaKeySession.</p>
+    <body>
+        <div id="log"></div>
+        <script>
+            var typeError = new TypeError();
+            var mediaKeys = null;
+            var mediaKeySession = null;
+            var initData = stringToUint8Array('init data');
+
+            test(function()
+            {
+                // Too few parameters.
+                assert_throws(typeError, function() { new MediaKeys(); });
+                // Invalid parameters.
+                assert_throws('INVALID_ACCESS_ERR', function() { new MediaKeys(''); });
+                // Invalid key systems.
+                assert_throws('NOT_SUPPORTED_ERR', function() { new MediaKeys(null); });
+                assert_throws('NOT_SUPPORTED_ERR', function() { new MediaKeys(undefined); });
+                assert_throws('NOT_SUPPORTED_ERR', function() { new MediaKeys('unsupported'); });
+                assert_throws('NOT_SUPPORTED_ERR', function() { new MediaKeys(1); });
+                assert_throws('NOT_SUPPORTED_ERR', function() { new MediaKeys(new Uint8Array(0)); });
+            }, 'Test MediaKeys constructor exceptions.');
+
+            test(function()
+            {
+                assert_equals(typeof window.MediaKeys, 'function');
+                assert_not_equals(new MediaKeys('org.w3.clearkey', 'extra'), null);
+                mediaKeys = new MediaKeys('org.w3.clearkey');
+                assert_not_equals(mediaKeys, null);
+                assert_equals(typeof mediaKeys, 'object');
+                assert_equals(mediaKeys.keySystem, 'org.w3.clearkey');
+                assert_equals(typeof mediaKeys.createSession, 'function');
+                assert_equals(typeof mediaKeys.addEventListener, 'undefined');
+            }, 'Test MediaKeys constructor.');
+
+            test(function()
+            {
+                // Too few parameters.
+                assert_throws(typeError, function() { mediaKeys.createSession(); });
+                assert_throws(typeError, function() { mediaKeys.createSession(''); });
+                assert_throws(typeError, function() { mediaKeys.createSession(null); });
+                assert_throws(typeError, function() { mediaKeys.createSession(undefined); });
+                assert_throws(typeError, function() { mediaKeys.createSession('video/webm'); });
+                assert_throws(typeError, function() { mediaKeys.createSession(new Uint8Array(0)); });
+                assert_throws(typeError, function() { mediaKeys.createSession(initData); });
+                // Invalid parameters.
+                assert_throws('InvalidAccessError', function() { mediaKeys.createSession('video/webm', ''); });
+                assert_throws('InvalidAccessError', function() { mediaKeys.createSession('video/webm', null); });
+                assert_throws('InvalidAccessError', function() { mediaKeys.createSession('video/webm', undefined); });
+                assert_throws('InvalidAccessError', function() { mediaKeys.createSession('video/webm', 1); });
+                assert_throws('InvalidAccessError', function() { mediaKeys.createSession('video/webm', new Uint8Array(0)); });
+                assert_throws('InvalidAccessError', function() { mediaKeys.createSession('', initData); });
+                // Not supported contentTypes.
+                assert_throws('NotSupportedError', function() { mediaKeys.createSession(null, initData); });
+                assert_throws('NotSupportedError', function() { mediaKeys.createSession(undefined, initData); });
+                assert_throws('NotSupportedError', function() { mediaKeys.createSession(new Uint8Array(0), initData); });
+                assert_throws('NotSupportedError', function() { mediaKeys.createSession(1, initData); });
+                assert_throws('NotSupportedError', function() { mediaKeys.createSession('unsupported', initData); });
+                assert_throws('NotSupportedError', function() { mediaKeys.createSession('video/foo', initData); });
+                assert_throws('NotSupportedError', function() { mediaKeys.createSession('text/webm', initData); });
+            }, 'Test MediaKeys createSession() exceptions.');
+
+            test(function()
+            {
+                assert_not_equals(mediaKeys.createSession('video/webm', initData, 'extra'), null);
+                mediaKeySession = mediaKeys.createSession('video/webm', initData);
+                assert_not_equals(mediaKeySession, null);
+                assert_equals(typeof mediaKeySession, 'object');
+                assert_equals(typeof mediaKeySession.addEventListener, 'function');
+                assert_equals(typeof mediaKeySession.update, 'function');
+                assert_equals(mediaKeySession.error, null);
+                assert_equals(mediaKeySession.keySystem, 'org.w3.clearkey');
+                assert_equals(typeof mediaKeySession.sessionId, 'string');
+                assert_equals(typeof mediaKeySession.onopen, 'undefined');
+                assert_equals(typeof mediaKeySession.onmessage, 'undefined');
+                assert_equals(typeof mediaKeySession.onclose, 'undefined');
+                assert_equals(typeof mediaKeySession.onerror, 'undefined');
+            }, 'Test MediaKeys createSession().');
+
+            test(function()
+            {
+                // Too few parameters.
+                assert_throws(typeError, function() { mediaKeySession.update(); });
+                // Invalid parameters.
+                assert_throws('InvalidAccessError', function() { mediaKeySession.update(''); });
+                assert_throws('InvalidAccessError', function() { mediaKeySession.update(null); });
+                assert_throws('InvalidAccessError', function() { mediaKeySession.update(undefined); });
+                assert_throws('InvalidAccessError', function() { mediaKeySession.update(1); });
+                assert_throws('InvalidAccessError', function() { mediaKeySession.update(new Uint8Array(0)); });
+            }, 'Test MediaKeySession update() exceptions.');
+
+            test(function()
+            {
+                mediaKeySession.update(new Uint8Array(1), 'extra');
+                mediaKeySession.update(new Uint8Array(1));
+            }, 'Test MediaKeySession update().');
+
+            test(function()
+            {
+                mediaKeySession.release();
+                // FIXME: This causes Chromium to crash. Uncomment this once Chromium is fixed.
+                // mediaKeySession.release('extra');
+            }, 'Test MediaKeySession release().');
+
+            // FIXME: Add syntax checks for MediaKeys.IsTypeSupported().
+            // FIXME: Add syntax checks for MediaKeyError and MediaKeySession events.
+            // FIXME: Add HTMLMediaElement syntax checks, e.g. setMediaKeys, mediakeys, onneedkey.
+        </script>
     </body>
 </html>
