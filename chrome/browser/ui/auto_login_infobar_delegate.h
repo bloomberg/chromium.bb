@@ -7,9 +7,8 @@
 
 #include <string>
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
+#include "chrome/browser/signin/signin_manager.h"
 #include "components/auto_login_parser/auto_login_parser.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 
 class PrefService;
 class Profile;
@@ -20,7 +19,7 @@ class NavigationController;
 
 // This is the actual infobar displayed to prompt the user to auto-login.
 class AutoLoginInfoBarDelegate : public ConfirmInfoBarDelegate,
-                                 public content::NotificationObserver {
+                                 public SigninManagerBase::Observer {
  public:
   struct Params {
     // Information from a parsed header.
@@ -63,20 +62,17 @@ class AutoLoginInfoBarDelegate : public ConfirmInfoBarDelegate,
   virtual bool Accept() OVERRIDE;
   virtual bool Cancel() OVERRIDE;
 
-  // content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  // SigninManagerBase::Observer:
+  virtual void GoogleSignedOut(const std::string& username) OVERRIDE;
 
   void RecordHistogramAction(Actions action);
 
   const Params params_;
 
+  Profile* profile_;
+
   // Whether any UI controls in the infobar were pressed or not.
   bool button_pressed_;
-
-  // For listening to the user signing out.
-  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(AutoLoginInfoBarDelegate);
 };
