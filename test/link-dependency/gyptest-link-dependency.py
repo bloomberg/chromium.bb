@@ -12,7 +12,9 @@ cycle in ninja).
 
 import TestGyp
 
-test = TestGyp.TestGyp()
+# See https://codereview.chromium.org/177043010/#msg15 for why this doesn't
+# work with cmake.
+test = TestGyp.TestGyp(formats=['!cmake'])
 
 test.run_gyp('test.gyp')
 test.build('test.gyp', 'main')
