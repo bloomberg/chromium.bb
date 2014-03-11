@@ -175,6 +175,7 @@ resources_test_SOURCES = tests/resources-test.c
 resources_test_LDADD = libtest-runner.la
 
 fixed_benchmark_SOURCES = tests/fixed-benchmark.c
+fixed_benchmark_LDADD = libtest-runner.la
 
 os_wrappers_test_SOURCES = tests/os-wrappers-test.c
 os_wrappers_test_LDADD = libtest-runner.la
