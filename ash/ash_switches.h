@@ -27,7 +27,6 @@ ASH_EXPORT extern const char kAshDefaultWallpaperSmall[];
 ASH_EXPORT extern const char kAshDisableAlternateFrameCaptionButtonStyle[];
 ASH_EXPORT extern const char kAshDisableAlternateShelfLayout[];
 ASH_EXPORT extern const char kAshDisableDockedWindows[];
-ASH_EXPORT extern const char kAshDisableDragOffShelf[];
 ASH_EXPORT extern const char kAshDisableOverviewMode[];
 ASH_EXPORT extern const char kAshEnableAdvancedGestures[];
 ASH_EXPORT extern const char kAshEnableAlternateFrameCaptionButtonStyle[];

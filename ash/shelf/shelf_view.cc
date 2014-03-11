@@ -1035,7 +1035,7 @@ void ShelfView::ContinueDrag(const ui::LocatedEvent& event) {
 
   // If this is not a drag and drop host operation and not the app list item,
   // check if the item got ripped off the shelf - if it did we are done.
-  if (!drag_and_drop_shelf_id_ && ash::switches::UseDragOffShelf() &&
+  if (!drag_and_drop_shelf_id_ &&
       RemovableByRipOff(current_index) != NOT_REMOVABLE) {
     if (HandleRipOffDrag(event))
       return;

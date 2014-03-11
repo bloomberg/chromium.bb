@@ -50,9 +50,6 @@ const char kAshDisableAlternateShelfLayout[] =
 // Disable ability to dock windows at the desktop edge.
 const char kAshDisableDockedWindows[] = "ash-disable-docked-windows";
 
-// Disable dragging items off the shelf to unpin them.
-const char kAshDisableDragOffShelf[] = "ash-disable-drag-off-shelf";
-
 // Disables overview mode for window switching.
 const char kAshDisableOverviewMode[] = "ash-disable-overview-mode";
 
@@ -157,11 +154,6 @@ bool UseAlternateFrameCaptionButtonStyle() {
 bool UseAlternateShelfLayout() {
   return !CommandLine::ForCurrentProcess()->
       HasSwitch(kAshDisableAlternateShelfLayout);
-}
-
-bool UseDragOffShelf() {
-  return !CommandLine::ForCurrentProcess()->
-      HasSwitch(kAshDisableDragOffShelf);
 }
 
 bool UseImmersiveFullscreenForAllWindows() {

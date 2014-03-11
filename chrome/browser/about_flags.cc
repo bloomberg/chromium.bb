@@ -956,13 +956,6 @@ const Experiment kExperiments[] = {
                                 ash::switches::kAshDisableAlternateShelfLayout)
   },
   {
-      "ash-disable-drag-off-shelf",
-      IDS_FLAGS_DRAG_OFF_SHELF_NAME,
-      IDS_FLAGS_DRAG_OFF_SHELF_DESCRIPTION,
-      kOsCrOS,
-      SINGLE_VALUE_TYPE(ash::switches::kAshDisableDragOffShelf)
-  },
-  {
     "ash-disable-docked-windows",
     IDS_FLAGS_DOCKED_WINDOWS_NAME,
     IDS_FLAGS_DOCKED_WINDOWS_DESCRIPTION,
