@@ -7,7 +7,6 @@
 
 #include "base/atomic_ref_count.h"
 #include "base/callback.h"
-#include "base/cancelable_callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/timer/timer.h"
 #include "media/audio/audio_io.h"
@@ -70,7 +69,6 @@ class MEDIA_EXPORT AudioOutputController
    public:
     virtual void OnCreated() = 0;
     virtual void OnPlaying() = 0;
-    virtual void OnPowerMeasured(float power_dbfs, bool clipped) = 0;
     virtual void OnPaused() = 0;
     virtual void OnError() = 0;
     virtual void OnDeviceChange(int new_buffer_size, int new_sample_rate) = 0;
@@ -169,6 +167,10 @@ class MEDIA_EXPORT AudioOutputController
   virtual void StartDiverting(AudioOutputStream* to_stream) OVERRIDE;
   virtual void StopDiverting() OVERRIDE;
 
+  // Accessor for AudioPowerMonitor::ReadCurrentPowerAndClip().  See comments in
+  // audio_power_monitor.h for usage.  This may be called on any thread.
+  std::pair<float, bool> ReadCurrentPowerAndClip();
+
  protected:
   // Internal state of the source.
   enum State {
@@ -204,10 +206,6 @@ class MEDIA_EXPORT AudioOutputController
   void DoReportError();
   void DoStartDiverting(AudioOutputStream* to_stream);
   void DoStopDiverting();
-
-  // Calls EventHandler::OnPowerMeasured() with the current power level and then
-  // schedules itself to be called again later.
-  void ReportPowerMeasurementPeriodically();
 
   // Helper method that stops the physical stream.
   void StopStream();
@@ -253,9 +251,6 @@ class MEDIA_EXPORT AudioOutputController
 #if defined(AUDIO_POWER_MONITORING)
   // Scans audio samples from OnMoreIOData() as input to compute power levels.
   AudioPowerMonitor power_monitor_;
-
-  // Periodic callback to report power levels during playback.
-  base::CancelableClosure power_poll_callback_;
 #endif
 
   // Flags when we've asked for a stream to start but it never did.

@@ -133,11 +133,11 @@ class CONTENT_EXPORT AudioRendererHost : public BrowserMessageFilter {
   // NotifyStreamCreated message to the peer.
   void DoCompleteCreation(int stream_id);
 
+  // Send playing/paused status to the renderer.
+  void DoNotifyStreamStateChanged(int stream_id, bool is_playing);
+
   RenderViewHost::AudioOutputControllerList DoGetOutputControllers(
       int render_view_id) const;
-
-  // Propagate measured power level of the audio signal to MediaObserver.
-  void DoNotifyAudioPowerLevel(int stream_id, float power_dbfs, bool clipped);
 
   // Send an error message to the renderer.
   void SendErrorMessage(int stream_id);

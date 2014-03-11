@@ -29,13 +29,6 @@ class MockMediaObserver : public MediaObserver {
                     int page_request_id, const GURL& security_origin,
                     const MediaStreamDevice& device,
                     const MediaRequestState state));
-  MOCK_METHOD6(OnAudioStreamPlayingChanged,
-               void(int render_process_id,
-                    int render_view_id,
-                    int stream_id,
-                    bool is_playing,
-                    float power_dbfs,
-                    bool clipped));
 };
 
 }  // namespace content

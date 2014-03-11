@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/tabs/tab_utils.h"
 
 #include "base/strings/string16.h"
-#include "chrome/browser/media/audio_stream_indicator.h"
+#include "chrome/browser/media/audio_stream_monitor.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/media_stream_capture_indicator.h"
 #include "grit/generated_resources.h"
@@ -117,10 +117,9 @@ bool ShouldTabShowCloseButton(int capacity,
 }
 
 bool IsPlayingAudio(content::WebContents* contents) {
-  AudioStreamIndicator* audio_indicator =
-      MediaCaptureDevicesDispatcher::GetInstance()->GetAudioStreamIndicator()
-          .get();
-  return audio_indicator && audio_indicator->IsPlayingAudio(contents);
+  AudioStreamMonitor* const audio_stream_monitor =
+      AudioStreamMonitor::FromWebContents(contents);
+  return audio_stream_monitor && audio_stream_monitor->WasRecentlyAudible();
 }
 
 TabMediaState GetTabMediaStateForContents(content::WebContents* contents) {

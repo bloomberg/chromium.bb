@@ -5,6 +5,7 @@
 #ifndef CONTENT_PUBLIC_BROWSER_MEDIA_OBSERVER_H_
 #define CONTENT_PUBLIC_BROWSER_MEDIA_OBSERVER_H_
 
+#include "base/callback_forward.h"
 #include "content/public/browser/media_request_state.h"
 #include "content/public/common/media_stream_request.h"
 
@@ -31,22 +32,30 @@ class MediaObserver {
       const MediaStreamDevice& device,
       MediaRequestState state) = 0;
 
-  // Called when an audio stream transitions into a playing or paused state, and
-  // also at regular intervals to report the current power level of the audio
-  // signal in dBFS (decibels relative to full-scale) units.  |clipped| is true
-  // if any part of the audio signal has been clipped since the last call.  See
-  // media/audio/audio_power_monitor.h for more info.
-  virtual void OnAudioStreamPlayingChanged(
-      int render_process_id,
-      int render_view_id,
-      int stream_id,
-      bool is_playing,
-      float power_dbfs,
-      bool clipped) = 0;
-
-  // Called when the audio stream is being created.
+  // Called when an audio stream is being created.
   virtual void OnCreatingAudioStream(int render_process_id,
-                                     int render_view_id) = 0;
+                                     int render_frame_id) = 0;
+
+  // Called when an audio stream transitions into a playing state.
+  // |power_read_callback| is a thread-safe callback, provided for polling the
+  // current audio signal power level, and any copies/references to it must be
+  // destroyed when OnAudioStreamStopped() is called.
+  //
+  // The callback returns the current power level (in dBFS units) and the clip
+  // status (true if any part of the audio signal has clipped since the last
+  // callback run).  See media/audio/audio_power_monitor.h for more info.
+  typedef base::Callback<std::pair<float, bool>()> ReadPowerAndClipCallback;
+  virtual void OnAudioStreamPlaying(
+      int render_process_id,
+      int render_frame_id,
+      int stream_id,
+      const ReadPowerAndClipCallback& power_read_callback) = 0;
+
+  // Called when an audio stream has stopped.
+  virtual void OnAudioStreamStopped(
+      int render_process_id,
+      int render_frame_id,
+      int stream_id) = 0;
 
  protected:
   virtual ~MediaObserver() {}

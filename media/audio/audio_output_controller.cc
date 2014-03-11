@@ -21,10 +21,6 @@ namespace media {
 // Time constant for AudioPowerMonitor.  See AudioPowerMonitor ctor comments for
 // semantics.  This value was arbitrarily chosen, but seems to work well.
 static const int kPowerMeasurementTimeConstantMillis = 10;
-
-// Desired frequency of calls to EventHandler::OnPowerMeasured() for reporting
-// power levels in the audio signal.
-static const int kPowerMeasurementsPerSecond = 4;
 #endif
 
 // Polling-related constants.
@@ -183,16 +179,6 @@ void AudioOutputController::DoPlay() {
 
   state_ = kPlaying;
 
-#if defined(AUDIO_POWER_MONITORING)
-  power_monitor_.Reset();
-  power_poll_callback_.Reset(
-      base::Bind(&AudioOutputController::ReportPowerMeasurementPeriodically,
-                 this));
-  // Run the callback to send an initial notification that we're starting in
-  // silence, and to schedule periodic callbacks.
-  power_poll_callback_.callback().Run();
-#endif
-
   stream_->Start(this);
 
   // For UMA tracking purposes, start the wedge detection timer.  This allows us
@@ -214,18 +200,6 @@ void AudioOutputController::DoPlay() {
   handler_->OnPlaying();
 }
 
-#if defined(AUDIO_POWER_MONITORING)
-void AudioOutputController::ReportPowerMeasurementPeriodically() {
-  DCHECK(message_loop_->BelongsToCurrentThread());
-  const std::pair<float, bool>& reading =
-      power_monitor_.ReadCurrentPowerAndClip();
-  handler_->OnPowerMeasured(reading.first, reading.second);
-  message_loop_->PostDelayedTask(
-      FROM_HERE, power_poll_callback_.callback(),
-      TimeDelta::FromSeconds(1) / kPowerMeasurementsPerSecond);
-}
-#endif
-
 void AudioOutputController::StopStream() {
   DCHECK(message_loop_->BelongsToCurrentThread());
 
@@ -234,7 +208,9 @@ void AudioOutputController::StopStream() {
     stream_->Stop();
 
 #if defined(AUDIO_POWER_MONITORING)
-    power_poll_callback_.Cancel();
+    // A stopped stream is silent, and power_montior_.Scan() is no longer being
+    // called; so we must reset the power monitor.
+    power_monitor_.Reset();
 #endif
 
     state_ = kPaused;
@@ -255,11 +231,6 @@ void AudioOutputController::DoPause() {
   // audio has been shutdown.  TODO(dalecurtis): This stinks.  PPAPI should have
   // a better way to know when it should exit PPB_Audio_Shared::Run().
   sync_reader_->UpdatePendingBytes(-1);
-
-#if defined(AUDIO_POWER_MONITORING)
-  // Paused means silence follows.
-  handler_->OnPowerMeasured(AudioPowerMonitor::zero_power(), false);
-#endif
 
   handler_->OnPaused();
 }
@@ -453,6 +424,15 @@ void AudioOutputController::DoStopDiverting() {
   // back to NULL.
   OnDeviceChange();
   DCHECK(!diverting_to_stream_);
+}
+
+std::pair<float, bool> AudioOutputController::ReadCurrentPowerAndClip() {
+#if defined(AUDIO_POWER_MONITORING)
+  return power_monitor_.ReadCurrentPowerAndClip();
+#else
+  NOTREACHED();
+  return std::make_pair(AudioPowerMonitor::zero_power(), false);
+#endif
 }
 
 void AudioOutputController::WedgeCheck() {

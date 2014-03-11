@@ -19,7 +19,6 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/media_stream_request.h"
 
-class AudioStreamIndicator;
 class DesktopStreamsRegistry;
 class MediaStreamCaptureIndicator;
 class Profile;
@@ -124,19 +123,19 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver,
       const GURL& security_origin,
       const content::MediaStreamDevice& device,
       content::MediaRequestState state) OVERRIDE;
-  virtual void OnAudioStreamPlayingChanged(
-      int render_process_id,
-      int render_view_id,
-      int stream_id,
-      bool is_playing,
-      float power_dBFS,
-      bool clipped) OVERRIDE;
   virtual void OnCreatingAudioStream(int render_process_id,
                                      int render_frame_id) OVERRIDE;
+  virtual void OnAudioStreamPlaying(
+      int render_process_id,
+      int render_frame_id,
+      int stream_id,
+      const ReadPowerAndClipCallback& power_read_callback) OVERRIDE;
+  virtual void OnAudioStreamStopped(
+      int render_process_id,
+      int render_frame_id,
+      int stream_id) OVERRIDE;
 
   scoped_refptr<MediaStreamCaptureIndicator> GetMediaStreamCaptureIndicator();
-
-  scoped_refptr<AudioStreamIndicator> GetAudioStreamIndicator();
 
   DesktopStreamsRegistry* GetDesktopStreamsRegistry();
 
@@ -228,8 +227,6 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver,
   RequestsQueues pending_requests_;
 
   scoped_refptr<MediaStreamCaptureIndicator> media_stream_capture_indicator_;
-
-  scoped_refptr<AudioStreamIndicator> audio_stream_indicator_;
 
   scoped_ptr<DesktopStreamsRegistry> desktop_streams_registry_;
 

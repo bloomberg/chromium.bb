@@ -46,6 +46,7 @@ namespace content {
 namespace {
 
 const int kRenderViewId = 1;
+const int kRenderFrameId = 2;
 
 // The number of packers that RunWebRtcLoopbackTimeTest() uses for measurement.
 const int kNumberOfPacketsForLoopbackTest = 100;
@@ -533,8 +534,8 @@ TEST_F(MAYBE_WebRTCAudioDeviceTest, MAYBE_StartPlayout) {
       new talk_base::RefCountedObject<MockMediaStream>("label"));
 
   EXPECT_EQ(0, base->StartPlayout(ch));
-  scoped_refptr<WebRtcAudioRenderer> renderer(
-      CreateDefaultWebRtcAudioRenderer(kRenderViewId, media_stream));
+  scoped_refptr<WebRtcAudioRenderer> renderer(CreateDefaultWebRtcAudioRenderer(
+      kRenderViewId, kRenderFrameId, media_stream));
   scoped_refptr<MediaStreamAudioRenderer> proxy(
       renderer->CreateSharedAudioRendererProxy(media_stream));
   EXPECT_TRUE(webrtc_audio_device->SetAudioRenderer(renderer.get()));
@@ -704,8 +705,8 @@ TEST_F(MAYBE_WebRTCAudioDeviceTest, MAYBE_PlayLocalFile) {
   EXPECT_EQ(0, base->StartPlayout(ch));
   scoped_refptr<webrtc::MediaStreamInterface> media_stream(
       new talk_base::RefCountedObject<MockMediaStream>("label"));
-  scoped_refptr<WebRtcAudioRenderer> renderer(
-      CreateDefaultWebRtcAudioRenderer(kRenderViewId, media_stream));
+  scoped_refptr<WebRtcAudioRenderer> renderer(CreateDefaultWebRtcAudioRenderer(
+      kRenderViewId, kRenderFrameId, media_stream));
   scoped_refptr<MediaStreamAudioRenderer> proxy(
       renderer->CreateSharedAudioRendererProxy(media_stream));
   EXPECT_TRUE(webrtc_audio_device->SetAudioRenderer(renderer.get()));
@@ -812,8 +813,8 @@ TEST_F(MAYBE_WebRTCAudioDeviceTest, MAYBE_FullDuplexAudioWithAGC) {
   EXPECT_EQ(0, base->StartSend(ch));
   scoped_refptr<webrtc::MediaStreamInterface> media_stream(
       new talk_base::RefCountedObject<MockMediaStream>("label"));
-  scoped_refptr<WebRtcAudioRenderer> renderer(
-      CreateDefaultWebRtcAudioRenderer(kRenderViewId, media_stream));
+  scoped_refptr<WebRtcAudioRenderer> renderer(CreateDefaultWebRtcAudioRenderer(
+      kRenderViewId, kRenderFrameId, media_stream));
   scoped_refptr<MediaStreamAudioRenderer> proxy(
       renderer->CreateSharedAudioRendererProxy(media_stream));
   EXPECT_TRUE(webrtc_audio_device->SetAudioRenderer(renderer.get()));
@@ -921,8 +922,8 @@ TEST_F(MAYBE_WebRTCAudioDeviceTest, MAYBE_WebRtcPlayoutSetupTime) {
 
   scoped_refptr<webrtc::MediaStreamInterface> media_stream(
       new talk_base::RefCountedObject<MockMediaStream>("label"));
-  scoped_refptr<WebRtcAudioRenderer> renderer(
-      CreateDefaultWebRtcAudioRenderer(kRenderViewId, media_stream));
+  scoped_refptr<WebRtcAudioRenderer> renderer(CreateDefaultWebRtcAudioRenderer(
+      kRenderViewId, kRenderFrameId, media_stream));
   renderer->Initialize(renderer_source.get());
   scoped_refptr<MediaStreamAudioRenderer> proxy(
       renderer->CreateSharedAudioRendererProxy(media_stream));

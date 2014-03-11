@@ -135,6 +135,7 @@ class MAYBE_WebRTCAudioDeviceTest : public ::testing::Test,
 
   scoped_refptr<WebRtcAudioRenderer> CreateDefaultWebRtcAudioRenderer(
       int render_view_id,
+      int render_frame_id,
       const scoped_refptr<webrtc::MediaStreamInterface>& media_stream);
 
  protected:
