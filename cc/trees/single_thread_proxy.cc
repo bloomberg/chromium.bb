@@ -323,13 +323,12 @@ void SingleThreadProxy::SetNeedsCommitOnImplThread() {
 }
 
 void SingleThreadProxy::PostAnimationEventsToMainThreadOnImplThread(
-    scoped_ptr<AnimationEventsVector> events,
-    base::Time wall_clock_time) {
+    scoped_ptr<AnimationEventsVector> events) {
   TRACE_EVENT0(
       "cc", "SingleThreadProxy::PostAnimationEventsToMainThreadOnImplThread");
   DCHECK(Proxy::IsImplThread());
   DebugScopedSetMainThread main(this);
-  layer_tree_host_->SetAnimationEvents(events.Pass(), wall_clock_time);
+  layer_tree_host_->SetAnimationEvents(events.Pass());
 }
 
 bool SingleThreadProxy::ReduceContentsTextureMemoryOnImplThread(

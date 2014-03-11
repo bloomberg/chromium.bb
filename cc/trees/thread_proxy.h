@@ -87,8 +87,7 @@ class ThreadProxy : public Proxy,
   virtual void DidInitializeVisibleTileOnImplThread() OVERRIDE;
   virtual void SetNeedsCommitOnImplThread() OVERRIDE;
   virtual void PostAnimationEventsToMainThreadOnImplThread(
-      scoped_ptr<AnimationEventsVector> queue,
-      base::Time wall_clock_time) OVERRIDE;
+      scoped_ptr<AnimationEventsVector> queue) OVERRIDE;
   virtual bool ReduceContentsTextureMemoryOnImplThread(size_t limit_bytes,
                                                        int priority_cutoff)
       OVERRIDE;
@@ -146,8 +145,7 @@ class ThreadProxy : public Proxy,
       scoped_ptr<BeginMainFrameAndCommitState> begin_main_frame_state);
   void DidCommitAndDrawFrame();
   void DidCompleteSwapBuffers();
-  void SetAnimationEvents(scoped_ptr<AnimationEventsVector> queue,
-                          base::Time wall_clock_time);
+  void SetAnimationEvents(scoped_ptr<AnimationEventsVector> queue);
   void DoCreateAndInitializeOutputSurface();
   // |capabilities| is set only when |success| is true.
   void OnOutputSurfaceInitializeAttempted(

@@ -2697,7 +2697,6 @@ void LayerTreeHostImpl::AnimateLayers(base::TimeTicks monotonic_time,
 
   TRACE_EVENT0("cc", "LayerTreeHostImpl::AnimateLayers");
 
-  last_animation_time_ = wall_clock_time;
   double monotonic_seconds = (monotonic_time - base::TimeTicks()).InSecondsF();
 
   AnimationRegistrar::AnimationControllerMap copy =
@@ -2727,8 +2726,7 @@ void LayerTreeHostImpl::UpdateAnimationState(bool start_ready_animations) {
     (*iter).second->UpdateState(start_ready_animations, events.get());
 
   if (!events->empty()) {
-    client_->PostAnimationEventsToMainThreadOnImplThread(events.Pass(),
-                                                         last_animation_time_);
+    client_->PostAnimationEventsToMainThreadOnImplThread(events.Pass());
   }
 }
 

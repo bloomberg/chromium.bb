@@ -74,8 +74,7 @@ class LayerTreeHostImplClient {
   virtual void SetNeedsCommitOnImplThread() = 0;
   virtual void SetNeedsManageTilesOnImplThread() = 0;
   virtual void PostAnimationEventsToMainThreadOnImplThread(
-      scoped_ptr<AnimationEventsVector> events,
-      base::Time wall_clock_time) = 0;
+      scoped_ptr<AnimationEventsVector> events) = 0;
   // Returns true if resources were deleted by this call.
   virtual bool ReduceContentsTextureMemoryOnImplThread(
       size_t limit_bytes,
@@ -581,10 +580,6 @@ class CC_EXPORT LayerTreeHostImpl
   bool pinch_gesture_active_;
   bool pinch_gesture_end_should_clear_scrolling_layer_;
   gfx::Point previous_pinch_anchor_;
-
-  // This is set by AnimateLayers() and used by UpdateAnimationState()
-  // when sending animation events to the main thread.
-  base::Time last_animation_time_;
 
   scoped_ptr<TopControlsManager> top_controls_manager_;
 

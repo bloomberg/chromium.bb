@@ -184,8 +184,7 @@ class CC_EXPORT LayerTreeHost {
 
   void SetNextCommitForcesRedraw();
 
-  void SetAnimationEvents(scoped_ptr<AnimationEventsVector> events,
-                          base::Time wall_clock_time);
+  void SetAnimationEvents(scoped_ptr<AnimationEventsVector> events);
 
   void SetRootLayer(scoped_refptr<Layer> root_layer);
   Layer* root_layer() { return root_layer_.get(); }

@@ -481,8 +481,7 @@ void ThreadProxy::SetNeedsCommitOnImplThread() {
 }
 
 void ThreadProxy::PostAnimationEventsToMainThreadOnImplThread(
-    scoped_ptr<AnimationEventsVector> events,
-    base::Time wall_clock_time) {
+    scoped_ptr<AnimationEventsVector> events) {
   TRACE_EVENT0("cc",
                "ThreadProxy::PostAnimationEventsToMainThreadOnImplThread");
   DCHECK(IsImplThread());
@@ -490,8 +489,7 @@ void ThreadProxy::PostAnimationEventsToMainThreadOnImplThread(
       FROM_HERE,
       base::Bind(&ThreadProxy::SetAnimationEvents,
                  main_thread_weak_ptr_,
-                 base::Passed(&events),
-                 wall_clock_time));
+                 base::Passed(&events)));
 }
 
 bool ThreadProxy::ReduceContentsTextureMemoryOnImplThread(size_t limit_bytes,
@@ -1420,13 +1418,12 @@ void ThreadProxy::DidCompleteSwapBuffers() {
   layer_tree_host()->DidCompleteSwapBuffers();
 }
 
-void ThreadProxy::SetAnimationEvents(scoped_ptr<AnimationEventsVector> events,
-                                     base::Time wall_clock_time) {
+void ThreadProxy::SetAnimationEvents(scoped_ptr<AnimationEventsVector> events) {
   TRACE_EVENT0("cc", "ThreadProxy::SetAnimationEvents");
   DCHECK(IsMainThread());
   if (!layer_tree_host())
     return;
-  layer_tree_host()->SetAnimationEvents(events.Pass(), wall_clock_time);
+  layer_tree_host()->SetAnimationEvents(events.Pass());
 }
 
 void ThreadProxy::CreateAndInitializeOutputSurface() {

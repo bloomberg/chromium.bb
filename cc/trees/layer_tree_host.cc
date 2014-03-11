@@ -562,8 +562,8 @@ void LayerTreeHost::SetNextCommitForcesRedraw() {
   next_commit_forces_redraw_ = true;
 }
 
-void LayerTreeHost::SetAnimationEvents(scoped_ptr<AnimationEventsVector> events,
-                                       base::Time wall_clock_time) {
+void LayerTreeHost::SetAnimationEvents(
+    scoped_ptr<AnimationEventsVector> events) {
   DCHECK(proxy_->IsMainThread());
   for (size_t event_index = 0; event_index < events->size(); ++event_index) {
     int event_layer_id = (*events)[event_index].layer_id;

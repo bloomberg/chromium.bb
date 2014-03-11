@@ -133,8 +133,7 @@ class LayerTreeHostImplTest : public testing::Test,
     did_request_commit_ = true;
   }
   virtual void PostAnimationEventsToMainThreadOnImplThread(
-      scoped_ptr<AnimationEventsVector> events,
-      base::Time wall_clock_time) OVERRIDE {}
+      scoped_ptr<AnimationEventsVector> events) OVERRIDE {}
   virtual bool ReduceContentsTextureMemoryOnImplThread(
       size_t limit_bytes, int priority_cutoff) OVERRIDE {
     current_limit_bytes_ = limit_bytes;

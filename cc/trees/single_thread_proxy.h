@@ -69,8 +69,7 @@ class SingleThreadProxy : public Proxy, LayerTreeHostImplClient {
   virtual void DidInitializeVisibleTileOnImplThread() OVERRIDE;
   virtual void SetNeedsCommitOnImplThread() OVERRIDE;
   virtual void PostAnimationEventsToMainThreadOnImplThread(
-      scoped_ptr<AnimationEventsVector> events,
-      base::Time wall_clock_time) OVERRIDE;
+      scoped_ptr<AnimationEventsVector> events) OVERRIDE;
   virtual bool ReduceContentsTextureMemoryOnImplThread(
       size_t limit_bytes,
       int priority_cutoff) OVERRIDE;
