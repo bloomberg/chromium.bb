@@ -69,7 +69,7 @@ class PowerStatusTest : public testing::Test {
 TEST_F(PowerStatusTest, InitializeAndUpdate) {
   // Test that the initial power supply state should be acquired after
   // PowerStatus is instantiated. This depends on
-  // PowerManagerClientStubImpl, which responds to power status update
+  // FakePowerManagerClient, which responds to power status update
   // requests, pretends there is a battery present, and generates some valid
   // power supply status data.
   message_loop_.RunUntilIdle();

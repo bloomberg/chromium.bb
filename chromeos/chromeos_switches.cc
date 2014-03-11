@@ -83,9 +83,6 @@ const char kEnableCarrierSwitching[]        = "enable-carrier-switching";
 const char kEnableNetworkPortalNotification[] =
     "enable-network-portal-notification";
 
-// Enable "interactive" mode for stub implemenations (e.g. PowerManagerClient)
-const char kEnableStubInteractive[] = "enable-stub-interactive";
-
 // Enables touchpad three-finger-click as middle button.
 const char kEnableTouchpadThreeFingerClick[]
     = "enable-touchpad-three-finger-click";
@@ -164,6 +161,11 @@ const char kOobeSkipPostLogin[]             = "oobe-skip-postlogin";
 
 // Interval at which we check for total time on OOBE.
 const char kOobeTimerInterval[]             = "oobe-timer-interval";
+
+// Specifies power stub behavior:
+//  'cycle=2' - Cycles power states every 2 seconds.
+// See FakeDBusThreadManager::ParsePowerCommandLineSwitch for full details.
+const char kPowerStub[] = "power-stub";
 
 // Specifies network stub behavior. If this switch is not specified,
 // ethernet, wifi and vpn are enabled by default, and transitions occur
