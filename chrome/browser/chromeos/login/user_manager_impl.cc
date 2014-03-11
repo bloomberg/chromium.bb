@@ -254,15 +254,13 @@ UserManagerImpl::~UserManagerImpl() {
   // Can't use STLDeleteElements because of the private destructor of User.
   for (UserList::iterator it = users_.begin(); it != users_.end();
        it = users_.erase(it)) {
-    if (active_user_ == *it)
-      active_user_ = NULL;
-    delete *it;
+    DeleteUser(*it);
   }
   // These are pointers to the same User instances that were in users_ list.
   logged_in_users_.clear();
   lru_logged_in_users_.clear();
 
-  delete active_user_;
+  DeleteUser(active_user_);
 }
 
 void UserManagerImpl::Shutdown() {
@@ -609,8 +607,7 @@ void UserManagerImpl::RemoveUserFromList(const std::string& user_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   RemoveNonCryptohomeData(user_id);
   if (user_loading_stage_ == STAGE_LOADED) {
-    User* user = RemoveRegularOrLocallyManagedUserFromList(user_id);
-    delete user;
+    DeleteUser(RemoveRegularOrLocallyManagedUserFromList(user_id));
   } else if (user_loading_stage_ == STAGE_LOADING) {
     DCHECK(gaia::ExtractDomainName(user_id) ==
         UserManager::kLocallyManagedUserDomain);
@@ -1279,7 +1276,7 @@ void UserManagerImpl::RetrieveTrustedDevicePolicies() {
       if ((*it)->GetType() == User::USER_TYPE_REGULAR &&
           user_email != owner_email_) {
         RemoveNonCryptohomeData(user_email);
-        delete *it;
+        DeleteUser(*it);
         it = users_.erase(it);
         changed = true;
       } else {
@@ -1708,7 +1705,7 @@ bool UserManagerImpl::UpdateAndCleanUpPublicAccounts(
   for (UserList::iterator it = users_.begin(); it != users_.end();) {
     if ((*it)->GetType() == User::USER_TYPE_PUBLIC_ACCOUNT) {
       if (*it != GetLoggedInUser())
-        delete *it;
+        DeleteUser(*it);
       it = users_.erase(it);
     } else {
       ++it;
@@ -2049,6 +2046,13 @@ void UserManagerImpl::UpdateNumberOfUsers() {
 
   base::debug::SetCrashKeyValue(crash_keys::kNumberOfUsers,
       base::StringPrintf("%" PRIuS, GetLoggedInUsers().size()));
+}
+
+void UserManagerImpl::DeleteUser(User* user) {
+  const bool is_active_user = (user == active_user_);
+  delete user;
+  if (is_active_user)
+    active_user_ = NULL;
 }
 
 }  // namespace chromeos

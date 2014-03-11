@@ -361,6 +361,10 @@ class UserManagerImpl
   // Update the number of users.
   void UpdateNumberOfUsers();
 
+  // A wrapper around C++ delete operator. Deletes |user|, and when |user|
+  // equals to active_user_, active_user_ is reset to NULL.
+  void DeleteUser(User* user);
+
   // Interface to the signed settings store.
   CrosSettings* cros_settings_;
 
