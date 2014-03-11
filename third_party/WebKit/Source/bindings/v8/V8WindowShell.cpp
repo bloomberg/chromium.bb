@@ -66,6 +66,8 @@
 
 namespace WebCore {
 
+static bool contextBeingInitialized = false;
+
 static void checkDocumentWrapper(v8::Handle<v8::Object> wrapper, Document* document)
 {
     ASSERT(V8Document::toNative(wrapper) == document);
@@ -183,9 +185,10 @@ bool V8WindowShell::initializeIfNeeded()
     if (m_perContextData)
         return true;
 
-    DOMWrapperWorld::setWorldOfInitializingWindow(m_world.get());
+    ASSERT(!contextBeingInitialized);
+    contextBeingInitialized = true;
     bool result = initialize();
-    DOMWrapperWorld::setWorldOfInitializingWindow(0);
+    contextBeingInitialized = false;
     return result;
 }
 
@@ -496,6 +499,17 @@ void V8WindowShell::updateSecurityOrigin(SecurityOrigin* origin)
         return;
     v8::HandleScope handleScope(m_isolate);
     setSecurityToken(origin);
+}
+
+bool V8WindowShell::contextHasCorrectPrototype(v8::Handle<v8::Context> context)
+{
+    if (!isMainThread())
+        return true;
+    // We're initializing the context, so it is not yet in a status where we can
+    // validate the context.
+    if (contextBeingInitialized)
+        return true;
+    return !!toDOMWindow(context);
 }
 
 } // WebCore

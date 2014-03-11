@@ -33,7 +33,6 @@
 
 #include "bindings/v8/V8PerContextData.h"
 #include "platform/weborigin/SecurityOrigin.h"
-#include "wtf/MainThread.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
@@ -71,28 +70,12 @@ public:
 
     static DOMWrapperWorld* world(v8::Handle<v8::Context> context)
     {
+        ASSERT(contextHasCorrectPrototype(context));
         return V8PerContextData::world(context);
     }
 
-    // Will return null if there is no DOMWrapperWorld for the current context.
-    static DOMWrapperWorld* current(v8::Isolate* isolate)
-    {
-        v8::Handle<v8::Context> context = isolate->GetCurrentContext();
-        if (context.IsEmpty()) {
-            // If a worker thread calls current() with an empty context, it means that there is no DOMWrapperWorld.
-            if (!isMainThread())
-                return 0;
-
-            // If the main thread calls current() with an empty context, it's possible that
-            // current() is being called while window is being initialized.
-            // In order to make current() workable during the initialization phase,
-            // we cache the world of the initializing window on worldOfInitializingWindow.
-            // If there is no initiazing window, worldOfInitializingWindow is 0.
-            return worldOfInitializingWindow;
-        }
-        return world(context);
-    }
-
+    // Will return null if there is no DOMWrapperWorld for the current v8::Context
+    static DOMWrapperWorld* current(v8::Isolate*);
     static DOMWrapperWorld* mainWorld();
 
     // Associates an isolated world (see above for description) with a security
@@ -122,19 +105,11 @@ public:
     int extensionGroup() const { return m_extensionGroup; }
     DOMDataStore& domDataStore() { return *m_domDataStore; }
 
-    static void setWorldOfInitializingWindow(DOMWrapperWorld* world)
-    {
-        ASSERT(isMainThread());
-        worldOfInitializingWindow = world;
-    }
-    // FIXME: Remove this method once we fix crbug.com/345014.
-    static bool windowIsBeingInitialized() { return !!worldOfInitializingWindow; }
-
 private:
-    DOMWrapperWorld(int worldId, int extensionGroup);
-
     static unsigned isolatedWorldCount;
-    static DOMWrapperWorld* worldOfInitializingWindow;
+
+    DOMWrapperWorld(int worldId, int extensionGroup);
+    static bool contextHasCorrectPrototype(v8::Handle<v8::Context>);
 
     const int m_worldId;
     const int m_extensionGroup;
