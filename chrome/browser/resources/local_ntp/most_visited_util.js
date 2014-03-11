@@ -197,7 +197,8 @@ function fillMostVisited(location, fill) {
     data = apiHandle.getMostVisitedItemData(params.rid);
     if (!data)
       return;
-    data.provider = CLIENT_PROVIDER_NAME;
+    // Allow server-side provider override.
+    data.provider = params.pr || CLIENT_PROVIDER_NAME;
     delete data.ping;
   }
   if (/^javascript:/i.test(data.url) ||
