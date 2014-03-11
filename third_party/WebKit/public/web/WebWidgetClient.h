@@ -58,9 +58,12 @@ public:
     // Called when the Widget has changed size as a result of an auto-resize.
     virtual void didAutoResize(const WebSize& newSize) { }
 
-    // Called when the compositor is enabled or disabled. The parameter to
-    // didActivateCompositor() is meaningless.
-    // FIXME: Remove parameter from didActivateCompositor().
+    // Called when the compositor is enabled or disabled.
+    // The parameter to didActivateCompositor() is meaningless.
+    // FIXME: The older definiton of didActivateCompositor (i.e with arguments)
+    // and all its corresponding call is to removed once the dependent chromium
+    // side patch https://codereview.chromium.org/137893025/ lands.
+    virtual void didActivateCompositor() { }
     virtual void didActivateCompositor(int deprecated) { }
     virtual void didDeactivateCompositor() { }
 
