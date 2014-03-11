@@ -26,9 +26,6 @@ function runTest() {
     // Create offline audio context.
     var context = new webkitOfflineAudioContext(2, sampleRate * renderLengthSeconds, sampleRate);
 
-    // Dummy filter to get filter type constant
-    var f = context.createBiquadFilter();
-
     // The filters we want to test.
     var filterParameters = [{cutoff : 0,    q : 0, gain : 1 },
                             {cutoff : 1,    q : 0, gain : 1 },
@@ -36,7 +33,7 @@ function runTest() {
                             {cutoff : 0.25, q : 1, gain : 1 },
                            ];
 
-    createTestAndRun(context, f.BANDPASS, filterParameters);
+    createTestAndRun(context, "bandpass", filterParameters);
 }
 
 runTest();
