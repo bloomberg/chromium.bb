@@ -526,7 +526,6 @@ class AutofillDialogControllerTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(AutofillDialogControllerTest);
 };
 
-#if defined(TOOLKIT_VIEWS) || defined(OS_MACOSX)
 // Submit the form data.
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, Submit) {
   GetViewTester()->SubmitForTesting();
@@ -972,7 +971,6 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, MAYBE_PreservedSections) {
   EXPECT_EQ(ASCIIToUTF16("4111111111111111"),
             view->GetTextContentsOfInput(CREDIT_CARD_NUMBER));
 }
-#endif  // defined(TOOLKIT_VIEWS) || defined(OS_MACOSX)
 
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
                        GeneratedCardLastFourAfterVerifyCvv) {
