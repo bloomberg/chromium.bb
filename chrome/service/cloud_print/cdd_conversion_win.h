@@ -19,8 +19,9 @@ namespace cloud_print {
 
 bool IsValidCjt(const std::string& print_ticket);
 
-scoped_ptr<DEVMODE[]> CjtToDevMode(const base::string16& printer_name,
-                                   const std::string& print_ticket);
+scoped_ptr<DEVMODE, base::FreeDeleter> CjtToDevMode(
+    const base::string16& printer_name,
+    const std::string& print_ticket);
 
 std::string CapabilitiesToCdd(
     const printing::PrinterSemanticCapsAndDefaults& semantic_info);

@@ -270,7 +270,7 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
       last_page_printed_ = -1;
       // We only support PDF and XPS documents for now.
       if (print_data_mime_type == kContentTypePDF) {
-        scoped_ptr<DEVMODE[]> dev_mode;
+        scoped_ptr<DEVMODE, base::FreeDeleter> dev_mode;
         if (print_ticket_mime_type == kContentTypeJSON) {
           dev_mode = CjtToDevMode(printer_wide, print_ticket);
         } else {

@@ -385,23 +385,24 @@ std::string GetDriverInfo(HANDLE printer) {
   return driver_info;
 }
 
-scoped_ptr<DEVMODE[]> XpsTicketToDevMode(const base::string16& printer_name,
-                                         const std::string& print_ticket) {
-  scoped_ptr<DEVMODE[]> scoped_dev_mode;
+scoped_ptr<DEVMODE, base::FreeDeleter> XpsTicketToDevMode(
+    const base::string16& printer_name,
+    const std::string& print_ticket) {
+  scoped_ptr<DEVMODE, base::FreeDeleter> dev_mode;
   printing::ScopedXPSInitializer xps_initializer;
   if (!xps_initializer.initialized()) {
     // TODO(sanjeevr): Handle legacy proxy case (with no prntvpt.dll)
-    return scoped_dev_mode.Pass();
+    return dev_mode.Pass();
   }
 
   printing::ScopedPrinterHandle printer;
   if (!printer.OpenPrinter(printer_name.c_str()))
-    return scoped_dev_mode.Pass();
+    return dev_mode.Pass();
 
   base::win::ScopedComPtr<IStream> pt_stream;
   HRESULT hr = StreamFromPrintTicket(print_ticket, pt_stream.Receive());
   if (FAILED(hr))
-    return scoped_dev_mode.Pass();
+    return dev_mode.Pass();
 
   HPTPROVIDER provider = NULL;
   hr = printing::XPSModule::OpenProvider(printer_name, 1, &provider);
@@ -419,28 +420,29 @@ scoped_ptr<DEVMODE[]> XpsTicketToDevMode(const base::string16& printer_name,
     if (SUCCEEDED(hr)) {
       // Correct DEVMODE using DocumentProperties. See documentation for
       // PTConvertPrintTicketToDevMode.
-      scoped_dev_mode = CreateDevMode(printer, dm);
+      dev_mode = CreateDevMode(printer, dm);
       printing::XPSModule::ReleaseMemory(dm);
     }
     printing::XPSModule::CloseProvider(provider);
   }
-  return scoped_dev_mode.Pass();
+  return dev_mode.Pass();
 }
 
-scoped_ptr<DEVMODE[]> CreateDevModeWithColor(HANDLE printer,
-                                             const base::string16& printer_name,
-                                             bool color) {
-  scoped_ptr<DEVMODE[]> default = CreateDevMode(printer, NULL);
+scoped_ptr<DEVMODE, base::FreeDeleter> CreateDevModeWithColor(
+    HANDLE printer,
+    const base::string16& printer_name,
+    bool color) {
+  scoped_ptr<DEVMODE, base::FreeDeleter> default = CreateDevMode(printer, NULL);
   if (!default)
     return default.Pass();
 
-  if ((default.get()->dmFields & DM_COLOR) &&
-      ((default.get()->dmColor == DMCOLOR_COLOR) == color)) {
+  if ((default->dmFields & DM_COLOR) &&
+      ((default->dmColor == DMCOLOR_COLOR) == color)) {
     return default.Pass();
   }
 
-  default.get()->dmFields |= DM_COLOR;
-  default.get()->dmColor = color ? DMCOLOR_COLOR : DMCOLOR_MONOCHROME;
+  default->dmFields |= DM_COLOR;
+  default->dmColor = color ? DMCOLOR_COLOR : DMCOLOR_MONOCHROME;
 
   DriverInfo6 info_6;
   if (!info_6.Init(printer))
@@ -459,25 +461,24 @@ scoped_ptr<DEVMODE[]> CreateDevModeWithColor(HANDLE printer,
 
   const char* xps_color = color ? kXpsTicketColor : kXpsTicketMonochrome;
   std::string xps_ticket = base::StringPrintf(kXpsTicketTemplate, xps_color);
-  scoped_ptr<DEVMODE[]> ticket = printing::XpsTicketToDevMode(printer_name,
-                                                              xps_ticket);
+  scoped_ptr<DEVMODE, base::FreeDeleter> ticket =
+      printing::XpsTicketToDevMode(printer_name, xps_ticket);
   if (!ticket)
     return default.Pass();
 
   return ticket.Pass();
 }
 
-PRINTING_EXPORT scoped_ptr<DEVMODE[]> CreateDevMode(HANDLE printer,
-                                                    DEVMODE* in) {
+scoped_ptr<DEVMODE, base::FreeDeleter> CreateDevMode(HANDLE printer,
+                                                     DEVMODE* in) {
   LONG buffer_size = DocumentProperties(NULL, printer, L"", NULL, NULL, 0);
-  if (buffer_size <= 0)
-    return scoped_ptr<DEVMODE[]>();
-  CHECK_GE(buffer_size, static_cast<int>(sizeof(DEVMODE)));
-  scoped_ptr<DEVMODE[]> out(
-      reinterpret_cast<DEVMODE*>(new uint8[buffer_size]));
+  if (buffer_size < static_cast<int>(sizeof(DEVMODE)))
+    return scoped_ptr<DEVMODE, base::FreeDeleter>();
+  scoped_ptr<DEVMODE, base::FreeDeleter> out(
+      reinterpret_cast<DEVMODE*>(malloc(buffer_size)));
   DWORD flags = (in ? (DM_IN_BUFFER) : 0) | DM_OUT_BUFFER;
   if (DocumentProperties(NULL, printer, L"", out.get(), in, flags) != IDOK)
-    return scoped_ptr<DEVMODE[]>();
+    return scoped_ptr<DEVMODE, base::FreeDeleter>();
   CHECK_GE(buffer_size, out.get()->dmSize + out.get()->dmDriverExtra);
   return out.Pass();
 }

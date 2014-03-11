@@ -15,32 +15,32 @@ bool IsValidCjt(const std::string& print_ticket_data) {
   return description.InitFromString(print_ticket_data);
 }
 
-scoped_ptr<DEVMODE[]> CjtToDevMode(const base::string16& printer_name,
-                                   const std::string& print_ticket) {
-  using namespace cloud_devices::printer;
+scoped_ptr<DEVMODE, base::FreeDeleter> CjtToDevMode(
+    const base::string16& printer_name,
+    const std::string& print_ticket) {
+  scoped_ptr<DEVMODE, base::FreeDeleter> dev_mode;
+
   cloud_devices::CloudDeviceDescription description;
   if (!description.InitFromString(print_ticket))
-    return scoped_ptr<DEVMODE[]>();
+    return dev_mode.Pass();
 
+  using namespace cloud_devices::printer;
   printing::ScopedPrinterHandle printer;
   if (!printer.OpenPrinter(printer_name.c_str()))
-    return scoped_ptr<DEVMODE[]>();
+    return dev_mode.Pass();
 
-  scoped_ptr<DEVMODE[]> scoped_dev_mode;
   {
     ColorTicketItem color;
     if (color.LoadFrom(description)) {
       bool is_color = color.value().type == STANDARD_COLOR;
-      scoped_dev_mode = CreateDevModeWithColor(printer, printer_name, is_color);
+      dev_mode = CreateDevModeWithColor(printer, printer_name, is_color);
     } else {
-      scoped_dev_mode = printing::CreateDevMode(printer, NULL);
+      dev_mode = printing::CreateDevMode(printer, NULL);
     }
   }
 
-  if (!scoped_dev_mode)
-    return scoped_ptr<DEVMODE[]>();
-
-  DEVMODE* dev_mode = scoped_dev_mode.get();
+  if (!dev_mode)
+    return dev_mode.Pass();
 
   ColorTicketItem color;
   DuplexTicketItem duplex;
@@ -122,7 +122,7 @@ scoped_ptr<DEVMODE[]> CjtToDevMode(const base::string16& printer_name,
     }
   }
 
-  return printing::CreateDevMode(printer, dev_mode);
+  return printing::CreateDevMode(printer, dev_mode.get());
 }
 
 std::string CapabilitiesToCdd(

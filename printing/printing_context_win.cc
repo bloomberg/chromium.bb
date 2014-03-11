@@ -284,7 +284,8 @@ PrintingContext::Result PrintingContextWin::UseDefaultSettings() {
         ScopedPrinterHandle printer;
         if (!printer.OpenPrinter(info_2->pPrinterName))
           continue;
-        scoped_ptr<DEVMODE[]> dev_mode = CreateDevMode(printer, NULL);
+        scoped_ptr<DEVMODE, base::FreeDeleter> dev_mode =
+            CreateDevMode(printer, NULL);
         if (!dev_mode || !AllocateContext(info_2->pPrinterName, dev_mode.get(),
                                           &context_)) {
           continue;
@@ -345,7 +346,7 @@ PrintingContext::Result PrintingContextWin::UpdatePrinterSettings(
 
   // Make printer changes local to Chrome.
   // See MSDN documentation regarding DocumentProperties.
-  scoped_ptr<DEVMODE[]> scoped_dev_mode =
+  scoped_ptr<DEVMODE, base::FreeDeleter> scoped_dev_mode =
       CreateDevModeWithColor(printer, settings_.device_name(),
                              settings_.color() != GRAY);
   if (!scoped_dev_mode)
@@ -590,7 +591,8 @@ bool PrintingContextWin::GetPrinterSettings(HANDLE printer,
                                             const std::wstring& device_name) {
   DCHECK(!in_print_job_);
 
-  scoped_ptr<DEVMODE[]> dev_mode = CreateDevMode(printer, NULL);
+  scoped_ptr<DEVMODE, base::FreeDeleter> dev_mode =
+      CreateDevMode(printer, NULL);
 
   if (!dev_mode || !AllocateContext(device_name, dev_mode.get(), &context_)) {
     ResetSettings();
