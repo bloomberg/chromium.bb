@@ -34,7 +34,7 @@ namespace {
 const int kGoogleUpdateTimeoutMs = 20 * 1000;
 
 const char kEnvVariableUntrustedData[] = "GoogleUpdateUntrustedData";
-const int kEnvVariableUntrustedDataMaxLength = 4096;
+const int kUntrustedDataMaxLength = 4096;
 
 // Returns true if Google Update is present at the given level.
 bool IsGoogleUpdatePresent(bool system_install) {
@@ -132,24 +132,19 @@ bool IsUntrustedDataKeyValid(const std::string& key) {
       == key.end();
 }
 
-// Reads and parses untrusted data passed from Google Update as key-value
-// pairs, then overwrites |untrusted_data_map| with the result.
-// Returns true if data are successfully read.
-bool GetGoogleUpdateUntrustedData(
+// Parses |data_string| as key-value pairs and overwrites |untrusted_data| with
+// the result. Returns true if the data could be parsed.
+bool ParseUntrustedData(
+    const std::string& data_string,
     std::map<std::string, std::string>* untrusted_data) {
   DCHECK(untrusted_data);
-  scoped_ptr<base::Environment> env(base::Environment::Create());
-  std::string data_string;
-  if (env == NULL || !env->GetVar(kEnvVariableUntrustedData, &data_string))
-    return false;
-
-  if (data_string.length() > kEnvVariableUntrustedDataMaxLength ||
+  if (data_string.length() > kUntrustedDataMaxLength ||
       !IsStringPrintable(data_string)) {
-    LOG(ERROR) << "Invalid value in " << kEnvVariableUntrustedData;
+    LOG(ERROR) << "Invalid value in untrusted data string.";
     return false;
   }
 
-  VLOG(1) << kEnvVariableUntrustedData << ": " << data_string;
+  VLOG(1) << "Untrusted data string: " << data_string;
 
   std::vector<std::pair<std::string, std::string> > kv_pairs;
   if (!base::SplitStringIntoKeyValuePairs(data_string, '=', '&', &kv_pairs)) {
@@ -169,6 +164,19 @@ bool GetGoogleUpdateUntrustedData(
       LOG(ERROR) << "Illegal character found in untrusted data.";
   }
   return true;
+}
+
+// Reads and parses untrusted data passed from Google Update as key-value
+// pairs, then overwrites |untrusted_data_map| with the result.
+// Returns true if data are successfully read.
+bool GetGoogleUpdateUntrustedData(
+    std::map<std::string, std::string>* untrusted_data) {
+  scoped_ptr<base::Environment> env(base::Environment::Create());
+  std::string data_string;
+  if (!env || !env->GetVar(kEnvVariableUntrustedData, &data_string))
+    return false;
+
+  return ParseUntrustedData(data_string, untrusted_data);
 }
 
 }  // namespace
@@ -217,6 +225,15 @@ std::string GetUntrustedDataValue(const std::string& key) {
     if (data_it != untrusted_data.end())
       return data_it->second;
   }
+
+  return std::string();
+}
+
+std::string GetUntrustedDataValueFromTag(const std::string& tag,
+                                         const std::string& key) {
+  std::map<std::string, std::string> untrusted_data;
+  if (ParseUntrustedData(tag, &untrusted_data))
+    return untrusted_data[key];
 
   return std::string();
 }

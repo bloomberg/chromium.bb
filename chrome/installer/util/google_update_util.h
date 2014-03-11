@@ -27,6 +27,13 @@ bool UninstallGoogleUpdate(bool system_install);
 // contains non-printable characters.
 std::string GetUntrustedDataValue(const std::string& key);
 
+// Returns the value corresponding to |key| in untrusted data passed from
+// |tag|.  |tag| should be a printable list of key-value pairs, e.g.
+// "key1=value1&key2=value2".  Returns an empty string if |key| is absent or if
+// its value contains non-printable characters.
+std::string GetUntrustedDataValueFromTag(const std::string& tag,
+                                         const std::string& key);
+
 }  // namespace google_update
 
 #endif  // CHROME_INSTALLER_UTIL_GOOGLE_UPDATE_UTIL_H_
