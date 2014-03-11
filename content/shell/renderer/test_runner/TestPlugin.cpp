@@ -5,8 +5,15 @@
 #include "content/shell/renderer/test_runner/TestPlugin.h"
 
 #include "base/basictypes.h"
+#include "base/bind.h"
+#include "base/logging.h"
+#include "base/memory/shared_memory.h"
+#include "content/public/renderer/render_thread.h"
 #include "content/shell/renderer/test_runner/TestCommon.h"
 #include "content/shell/renderer/test_runner/WebTestDelegate.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/platform/WebCompositorSupport.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
@@ -190,18 +197,18 @@ bool TestPlugin::initialize(WebPluginContainer* container)
 {
     WebGraphicsContext3D::Attributes attrs;
     m_context = Platform::current()->createOffscreenGraphicsContext3D(attrs);
-    if (!m_context)
-        return false;
-
-    if (!m_context->makeContextCurrent())
-        return false;
+    if (m_context && !m_context->makeContextCurrent()) {
+        delete m_context;
+        m_context = 0;
+    }
 
     if (!initScene())
         return false;
 
-    m_layer = scoped_ptr<WebExternalTextureLayer>(Platform::current()->compositorSupport()->createExternalTextureLayer(this));
+    m_layer = cc::TextureLayer::CreateForMailbox(this);
+    m_webLayer = make_scoped_ptr(new webkit::WebLayerImpl(m_layer));
     m_container = container;
-    m_container->setWebLayer(m_layer->layer());
+    m_container->setWebLayer(m_webLayer.get());
     if (m_reRequestTouchEvents) {
         m_container->requestTouchEventType(WebPluginContainer::TouchEventRequestTypeSynthesizedMouse);
         m_container->requestTouchEventType(WebPluginContainer::TouchEventRequestTypeRaw);
@@ -213,11 +220,15 @@ bool TestPlugin::initialize(WebPluginContainer* container)
 
 void TestPlugin::destroy()
 {
-    if (m_layer.get())
-        m_layer->clearTexture();
+    if (m_layer.get()) {
+        m_layer->WillModifyTexture();
+        m_layer->SetTextureMailbox(cc::TextureMailbox(),
+                                   scoped_ptr<cc::SingleReleaseCallback>());
+    }
     if (m_container)
         m_container->setWebLayer(0);
-    m_layer.reset();
+    m_webLayer.reset();
+    m_layer = NULL;
     destroyScene();
 
     delete m_context;
@@ -244,28 +255,61 @@ void TestPlugin::updateGeometry(const WebRect& frameRect, const WebRect& clipRec
     if (clipRect == m_rect)
         return;
     m_rect = clipRect;
-    if (m_rect.isEmpty())
-        return;
 
-    m_context->viewport(0, 0, m_rect.width, m_rect.height);
+    if (m_rect.isEmpty()) {
+        m_textureMailbox = cc::TextureMailbox();
+    } else if (m_context) {
+        m_context->viewport(0, 0, m_rect.width, m_rect.height);
 
-    m_context->bindTexture(GL_TEXTURE_2D, m_colorTexture);
-    m_context->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    m_context->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    m_context->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    m_context->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    m_context->texImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_rect.width, m_rect.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
-    m_context->bindFramebuffer(GL_FRAMEBUFFER, m_framebuffer);
-    m_context->framebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_colorTexture, 0);
+        m_context->bindTexture(GL_TEXTURE_2D, m_colorTexture);
+        m_context->texParameteri(
+            GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        m_context->texParameteri(
+            GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        m_context->texParameteri(
+            GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        m_context->texParameteri(
+            GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        m_context->texImage2D(GL_TEXTURE_2D,
+                              0,
+                              GL_RGBA,
+                              m_rect.width,
+                              m_rect.height,
+                              0,
+                              GL_RGBA,
+                              GL_UNSIGNED_BYTE,
+                              0);
+        m_context->bindFramebuffer(GL_FRAMEBUFFER, m_framebuffer);
+        m_context->framebufferTexture2D(GL_FRAMEBUFFER,
+                                        GL_COLOR_ATTACHMENT0,
+                                        GL_TEXTURE_2D,
+                                        m_colorTexture,
+                                        0);
 
-    drawScene();
+        drawSceneGL();
 
-    m_context->genMailboxCHROMIUM(m_mailbox.name);
-    m_context->produceTextureCHROMIUM(GL_TEXTURE_2D, m_mailbox.name);
+        gpu::Mailbox mailbox;
+        m_context->genMailboxCHROMIUM(mailbox.name);
+        m_context->produceTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
+        m_context->flush();
+        uint32 syncPoint = m_context->insertSyncPoint();
+        m_textureMailbox = cc::TextureMailbox(mailbox, GL_TEXTURE_2D, syncPoint);
+    } else {
+        size_t bytes = 4 * m_rect.width * m_rect.height;
+        scoped_ptr<base::SharedMemory> bitmap =
+                content::RenderThread::Get()->HostAllocateSharedMemoryBuffer(bytes);
+        if (!bitmap->Map(bytes)) {
+            m_textureMailbox = cc::TextureMailbox();
+        } else {
+            drawSceneSoftware(bitmap->memory(), bytes);
+            m_textureMailbox = cc::TextureMailbox(
+                bitmap.get(), gfx::Size(m_rect.width, m_rect.height));
+            m_sharedBitmap = bitmap.Pass();
+        }
+    }
 
-    m_context->flush();
-    m_layer->layer()->invalidate();
     m_mailboxChanged = true;
+    m_layer->SetNeedsDisplay();
 }
 
 bool TestPlugin::acceptsInputEvents()
@@ -278,22 +322,33 @@ bool TestPlugin::isPlaceholder()
     return false;
 }
 
-blink::WebGraphicsContext3D* TestPlugin::context()
-{
+unsigned TestPlugin::PrepareTexture() {
+    NOTREACHED();
     return 0;
 }
 
-bool TestPlugin::prepareMailbox(blink::WebExternalTextureMailbox* mailbox, blink::WebExternalBitmap*)
-{
+static void ignoreReleaseCallback(uint32 sync_point, bool lost) {}
+
+static void releaseSharedMemory(scoped_ptr<base::SharedMemory> bitmap,
+                                uint32 sync_point,
+                                bool lost) {}
+
+bool TestPlugin::PrepareTextureMailbox(
+    cc::TextureMailbox* mailbox,
+    scoped_ptr<cc::SingleReleaseCallback>* releaseCallback,
+    bool useSharedMemory) {
     if (!m_mailboxChanged)
         return false;
-    *mailbox = m_mailbox;
+    *mailbox = m_textureMailbox;
+    if (m_textureMailbox.IsTexture()) {
+      *releaseCallback =
+          cc::SingleReleaseCallback::Create(base::Bind(&ignoreReleaseCallback));
+    } else {
+      *releaseCallback = cc::SingleReleaseCallback::Create(
+          base::Bind(&releaseSharedMemory, base::Passed(&m_sharedBitmap)));
+    }
     m_mailboxChanged = false;
     return true;
-}
-
-void TestPlugin::mailboxReleased(const blink::WebExternalTextureMailbox&)
-{
 }
 
 TestPlugin::Primitive TestPlugin::parsePrimitive(const WebString& string)
@@ -342,6 +397,9 @@ bool TestPlugin::parseBoolean(const WebString& string)
 
 bool TestPlugin::initScene()
 {
+    if (!m_context)
+        return true;
+
     float color[4];
     premultiplyAlpha(m_scene.backgroundColor, m_scene.opacity, color);
 
@@ -360,13 +418,45 @@ bool TestPlugin::initScene()
     return m_scene.primitive != PrimitiveNone ? initProgram() && initPrimitive() : true;
 }
 
-void TestPlugin::drawScene()
-{
+void TestPlugin::drawSceneGL() {
     m_context->viewport(0, 0, m_rect.width, m_rect.height);
     m_context->clear(GL_COLOR_BUFFER_BIT);
 
     if (m_scene.primitive != PrimitiveNone)
         drawPrimitive();
+}
+
+void TestPlugin::drawSceneSoftware(void* memory, size_t bytes) {
+    DCHECK_EQ(bytes, m_rect.width * m_rect.height * 4u);
+
+    SkColor backgroundColor =
+            SkColorSetARGB(static_cast<uint8>(m_scene.opacity * 255),
+                           m_scene.backgroundColor[0],
+                           m_scene.backgroundColor[1],
+                           m_scene.backgroundColor[2]);
+
+    SkBitmap bitmap;
+    bitmap.setConfig(SkBitmap::kARGB_8888_Config, m_rect.width, m_rect.height);
+    bitmap.setPixels(memory);
+    SkCanvas canvas(bitmap);
+    canvas.clear(backgroundColor);
+
+    if (m_scene.primitive != PrimitiveNone) {
+        DCHECK_EQ(PrimitiveTriangle, m_scene.primitive);
+        SkColor foregroundColor =
+                SkColorSetARGB(static_cast<uint8>(m_scene.opacity * 255),
+                               m_scene.primitiveColor[0],
+                               m_scene.primitiveColor[1],
+                               m_scene.primitiveColor[2]);
+        SkPath trianglePath;
+        trianglePath.moveTo(0.5f * m_rect.width, 0.9f * m_rect.height);
+        trianglePath.lineTo(0.1f * m_rect.width, 0.1f * m_rect.height);
+        trianglePath.lineTo(0.9f * m_rect.width, 0.1f * m_rect.height);
+        SkPaint paint;
+        paint.setColor(foregroundColor);
+        paint.setStyle(SkPaint::kFill_Style);
+        canvas.drawPath(trianglePath, paint);
+    }
 }
 
 void TestPlugin::destroyScene()
