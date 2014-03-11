@@ -166,8 +166,6 @@
         'controls/native/native_view_host.h',
         'controls/native/native_view_host_aura.cc',
         'controls/native/native_view_host_aura.h',
-        'controls/native/native_view_host_win.cc',
-        'controls/native/native_view_host_win.h',
         'controls/prefix_delegate.h',
         'controls/prefix_selector.cc',
         'controls/prefix_selector.h',
