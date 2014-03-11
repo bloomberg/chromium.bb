@@ -43,20 +43,6 @@
       ],
       "revision": 2,
       "test_rect": [0, 0, 400, 300]
-    },
-    {
-      "name": "Pixel.WebGLYellowTriangleContextRestore",
-      "url": "file://../../data/gpu/pixel_webgl_context_restore.html",
-      "navigate_steps": [
-        { "action": "navigate"},
-        {
-            "action": "wait",
-            "javascript": "domAutomationController._finished",
-            "timeout": 30
-        }
-      ],
-      "revision": 2,
-      "test_rect": [0, 0, 400, 300]
     }
   ]
 }
