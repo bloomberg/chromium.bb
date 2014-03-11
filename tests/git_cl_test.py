@@ -674,6 +674,10 @@ class TestGitCl(TestCase):
            'rietveld.viewvc-url'],), ''),
         ((['git', 'config', '--unset-all',
            'rietveld.bug-prefix'],), ''),
+        ((['git', 'config', '--unset-all',
+           'rietveld.cpplint-regex'],), ''),
+        ((['git', 'config', '--unset-all',
+           'rietveld.cpplint-ignore-regex'],), ''),
         ((['git', 'config', 'gerrit.host',
            'gerrit.chromium.org'],), ''),
         # DownloadHooks(False)

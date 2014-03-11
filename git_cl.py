@@ -51,6 +51,10 @@ DESCRIPTION_BACKUP_FILE = '~/.git_cl_description_backup'
 GIT_INSTRUCTIONS_URL = 'http://code.google.com/p/chromium/wiki/UsingGit'
 CHANGE_ID = 'Change-Id:'
 
+# Valid extensions for files we want to lint.
+DEFAULT_LINT_REGEX = r"(.*\.cpp|.*\.cc|.*\.h)"
+DEFAULT_LINT_IGNORE_REGEX = r"$^"
+
 # Shortcut since it quickly becomes redundant.
 Fore = colorama.Fore
 
@@ -422,6 +426,14 @@ class Settings(object):
     if self.git_editor is None:
       self.git_editor = self._GetConfig('core.editor', error_ok=True)
     return self.git_editor or None
+
+  def GetLintRegex(self):
+    return (self._GetRietveldConfig('cpplint-regex', error_ok=True) or
+            DEFAULT_LINT_REGEX)
+
+  def GetLintIgnoreRegex(self):
+    return (self._GetRietveldConfig('cpplint-ignore-regex', error_ok=True) or
+            DEFAULT_LINT_IGNORE_REGEX)
 
   def _GetRietveldConfig(self, param, **kwargs):
     return self._GetConfig('rietveld.' + param, **kwargs)
@@ -1044,6 +1056,8 @@ def LoadCodereviewSettingsFromFile(fileobj):
   SetProperty('tree-status-url', 'STATUS', unset_error_ok=True)
   SetProperty('viewvc-url', 'VIEW_VC', unset_error_ok=True)
   SetProperty('bug-prefix', 'BUG_PREFIX', unset_error_ok=True)
+  SetProperty('cpplint-regex', 'LINT_REGEX', unset_error_ok=True)
+  SetProperty('cpplint-ignore-regex', 'LINT_IGNORE_REGEX', unset_error_ok=True)
 
   if 'GERRIT_HOST' in keyvals:
     RunGit(['config', 'gerrit.host', keyvals['GERRIT_HOST']])
@@ -1364,6 +1378,51 @@ def CreateDescriptionFromLog(args):
   else:
     log_args = args[:]  # Hope for the best!
   return RunGit(['log', '--pretty=format:%s\n\n%b'] + log_args)
+
+
+def CMDlint(parser, args):
+  """Runs cpplint on the current changelist."""
+  _, args = parser.parse_args(args)
+
+  # Access to a protected member _XX of a client class
+  # pylint: disable=W0212
+  try:
+    import cpplint
+    import cpplint_chromium
+  except ImportError:
+    print "Your depot_tools is missing cpplint.py and/or cpplint_chromium.py."
+    return 1
+
+  # Change the current working directory before calling lint so that it
+  # shows the correct base.
+  previous_cwd = os.getcwd()
+  os.chdir(settings.GetRoot())
+  try:
+    cl = Changelist()
+    change = cl.GetChange(cl.GetCommonAncestorWithUpstream(), None)
+    files = [f.LocalPath() for f in change.AffectedFiles()]
+
+    # Process cpplints arguments if any.
+    filenames = cpplint.ParseArguments(args + files)
+
+    white_regex = re.compile(settings.GetLintRegex())
+    black_regex = re.compile(settings.GetLintIgnoreRegex())
+    extra_check_functions = [cpplint_chromium.CheckPointerDeclarationWhitespace]
+    for filename in filenames:
+      if white_regex.match(filename):
+        if black_regex.match(filename):
+          print "Ignoring file %s" % filename
+        else:
+          cpplint.ProcessFile(filename, cpplint._cpplint_state.verbose_level,
+                              extra_check_functions)
+      else:
+        print "Skipping file %s" % filename
+  finally:
+    os.chdir(previous_cwd)
+  print "Total errors found: %d\n" % cpplint._cpplint_state.error_count
+  if cpplint._cpplint_state.error_count != 0:
+    return 1
+  return 0
 
 
 def CMDpresubmit(parser, args):
