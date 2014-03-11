@@ -195,6 +195,12 @@ void FontDescription::updateTypesettingFeatures() const
     case FontDescription::NormalLigaturesState:
         break;
     }
+
+    if (discretionaryLigaturesState() == FontDescription::EnabledLigaturesState
+        || historicalLigaturesState() == FontDescription::EnabledLigaturesState
+        || contextualLigaturesState() == FontDescription::EnabledLigaturesState) {
+        m_typesettingFeatures |= WebCore::Ligatures;
+    }
 }
 
 } // namespace WebCore
