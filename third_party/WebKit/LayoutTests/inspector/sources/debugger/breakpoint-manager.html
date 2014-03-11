@@ -322,7 +322,7 @@ function test()
         dumpBreakpointStorage(breakpointManager);
         InspectorTest.addResult("  Resetting breakpoint manager");
         breakpointManager.removeAllBreakpoints();
-        breakpointManager.removeProvisionalBreakpoints();
+        breakpointManager.removeProvisionalBreakpointsForTest();
         uiSourceCodes = {};
         next();
     }
