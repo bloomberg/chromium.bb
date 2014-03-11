@@ -221,9 +221,9 @@ int OmniboxResultView::GetTextHeight() const {
 void OmniboxResultView::PaintMatch(gfx::Canvas* canvas, int x) {
   const AutocompleteMatch& match = display_match();
   int y = text_bounds_.y();
-  x = DrawRenderText(canvas, RenderMatchContents(), true, x, y);
-  if (match.description.empty())
-    return;
+  int contents_max_width, description_max_width;
+
+  gfx::RenderText* contents_render_text = RenderMatchContents();
 
   const base::string16& separator =
       l10n_util::GetStringUTF16(IDS_AUTOCOMPLETE_MATCH_DESCRIPTION_SEPARATOR);
@@ -236,14 +236,23 @@ void OmniboxResultView::PaintMatch(gfx::Canvas* canvas, int x) {
   ApplyClassifications(description_render_text.get(), match.description_class,
                        true);
 
-  const int min_desc_width = separator_render_text->GetContentWidth() +
-      std::min(description_render_text->GetContentWidth(), ellipsis_width_);
-  if (mirroring_context_->remaining_width(x) < min_desc_width)
-    return;
+  ComputeMatchMaxWidths(
+      contents_render_text->GetContentWidth(),
+      separator_render_text->GetContentWidth(),
+      description_render_text->GetContentWidth(),
+      mirroring_context_->remaining_width(x),
+      !AutocompleteMatch::IsSearchType(match.type),
+      &contents_max_width,
+      &description_max_width);
 
-  x = DrawRenderText(canvas, separator_render_text.get(), false, x, y);
+  x = DrawRenderText(canvas, contents_render_text, true, x, y,
+                     contents_max_width);
 
-  DrawRenderText(canvas, description_render_text.get(), false, x, y);
+  if (description_max_width != 0) {
+      x = DrawRenderText(canvas, separator_render_text.get(), false, x, y, -1);
+      DrawRenderText(canvas, description_render_text.get(), false, x, y,
+                     description_max_width);
+  }
 }
 
 int OmniboxResultView::DrawRenderText(
@@ -251,10 +260,13 @@ int OmniboxResultView::DrawRenderText(
     gfx::RenderText* render_text,
     bool contents,
     int x,
-    int y) const {
+    int y,
+    int max_width) const {
   DCHECK(!render_text->text().empty());
 
-  const int remaining_width = mirroring_context_->remaining_width(x);
+  int remaining_width = mirroring_context_->remaining_width(x);
+  if (max_width >= 0)
+      remaining_width = std::min(remaining_width, max_width);
   const int content_width = render_text->GetContentWidth();
   int right_x = x + std::min(remaining_width, content_width);
 
@@ -331,6 +343,7 @@ scoped_ptr<gfx::RenderText> OmniboxResultView::CreateRenderText(
   render_text->SetFontList(font_list_);
   render_text->SetText(text);
   render_text->SetElideBehavior(gfx::ELIDE_AT_END);
+  render_text->SetCursorEnabled(false);
   return render_text.Pass();
 }
 
@@ -418,6 +431,63 @@ int OmniboxResultView::GetDisplayOffset(
 }
 
 // static
+void OmniboxResultView::ComputeMatchMaxWidths(int contents_width,
+                                              int separator_width,
+                                              int description_width,
+                                              int available_width,
+                                              bool allow_shrinking_contents,
+                                              int* contents_max_width,
+                                              int* description_max_width) {
+  if (available_width <= 0) {
+      *contents_max_width = 0;
+      *description_max_width = 0;
+      return;
+  }
+
+  int total_width = contents_width + separator_width + description_width;
+
+  // The contents should never be empty.
+  DCHECK(contents_width);
+  *contents_max_width = -1;
+
+  // If the description is empty, the contents can get the full width.
+  *description_max_width = description_width ? -1 : 0;
+  if (!description_width)
+    return;
+
+  if (total_width > available_width) {
+    if (allow_shrinking_contents) {
+      // Try to split the available space fairly between contents and
+      // description (if one wants less than half, give it all it wants and
+      // give the other the remaining space; otherwise, give each half).
+      // However, if this makes the contents too narrow to show a significant
+      // amount of information, give the contents more space.
+      *contents_max_width = std::max(
+          (available_width - separator_width + 1) / 2,
+          available_width - separator_width - description_width);
+
+      const int kMinimumContentsWidth = 300;
+      *contents_max_width = std::min(
+          std::max(*contents_max_width, kMinimumContentsWidth), contents_width);
+    }
+
+    // Give the description the remaining space, unless this makes it too small
+    // to display anything meaningful, in which case just hide the description
+    // and let the contents take up the whole width.
+    *description_max_width =
+      available_width - separator_width -
+      (*contents_max_width == -1 ? contents_width : *contents_max_width);
+    const int kMinimumDescriptionWidth = 75;
+    if (*description_max_width <
+        std::min(description_width, kMinimumDescriptionWidth)) {
+      *description_max_width = 0;
+      *contents_max_width = -1;
+    }
+  }
+}
+
+
+// static
 void OmniboxResultView::CommonInitColors(const ui::NativeTheme* theme,
                                          SkColor colors[][NUM_KINDS]) {
   colors[HOVERED][BACKGROUND] =
@@ -491,7 +561,6 @@ const gfx::ImageSkia* OmniboxResultView::GetKeywordIcon() const {
   return location_bar_view_->GetThemeProvider()->GetImageSkiaNamed(
       (GetState() == SELECTED) ? IDR_OMNIBOX_TTS_SELECTED : IDR_OMNIBOX_TTS);
 }
-
 
 void OmniboxResultView::Layout() {
   const gfx::ImageSkia icon = GetIcon();

@@ -1734,6 +1734,7 @@
         'browser/ui/views/frame/opaque_browser_frame_view_layout_unittest.cc',
         'browser/ui/views/frame/test_with_browser_view.cc',
         'browser/ui/views/frame/test_with_browser_view.h',
+        'browser/ui/views/omnibox/omnibox_result_view_unittest.cc',
         'browser/ui/views/toolbar/reload_button_unittest.cc',
         'browser/ui/views/select_file_dialog_extension_unittest.cc',
         'browser/ui/views/status_icons/status_tray_win_unittest.cc',

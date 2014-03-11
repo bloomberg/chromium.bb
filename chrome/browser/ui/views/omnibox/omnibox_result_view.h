@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/animation/animation_delegate.h"
@@ -79,12 +80,15 @@ class OmniboxResultView : public views::View,
 
   // Draws given |render_text| on |canvas| at given location (|x|, |y|).
   // |contents| determines any formatting difference between contents and
-  // description parts of the omnibox result (see AutocompleteMatch).
+  // description parts of the omnibox result (see AutocompleteMatch). If
+  // |max_width| is a non-negative number, the text will be elided to fit
+  // within |max_width|. Returns the x position to the right of the string.
   int DrawRenderText(gfx::Canvas* canvas,
                      gfx::RenderText* render_text,
                      bool contents,
                      int x,
-                     int y) const;
+                     int y,
+                     int max_width) const;
 
   // Creates a RenderText with given |text| and rendering defaults.
   scoped_ptr<gfx::RenderText> CreateRenderText(
@@ -115,6 +119,18 @@ class OmniboxResultView : public views::View,
   }
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(OmniboxResultViewTest, CheckComputeMatchWidths);
+
+  // Computes the maximum width, in pixels, that can be allocated for the two
+  // parts of an autocomplete result, i.e. the contents and the description.
+  static void ComputeMatchMaxWidths(int contents_width,
+                                    int separator_width,
+                                    int description_width,
+                                    int available_width,
+                                    bool allow_shrinking_contents,
+                                    int* contents_max_width,
+                                    int* description_max_width);
+
   // Common initialization code of the colors returned by GetColors().
   static void CommonInitColors(const ui::NativeTheme* theme,
                                SkColor colors[][NUM_KINDS]);

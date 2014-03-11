@@ -340,6 +340,10 @@ bool AutocompleteMatch::IsSearchType(Type type) {
   return type == AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED ||
          type == AutocompleteMatchType::SEARCH_HISTORY ||
          type == AutocompleteMatchType::SEARCH_SUGGEST ||
+         type == AutocompleteMatchType::SEARCH_SUGGEST_ENTITY ||
+         type == AutocompleteMatchType::SEARCH_SUGGEST_INFINITE ||
+         type == AutocompleteMatchType::SEARCH_SUGGEST_PERSONALIZED ||
+         type == AutocompleteMatchType::SEARCH_SUGGEST_PROFILE ||
          type == AutocompleteMatchType::SEARCH_OTHER_ENGINE;
 }
 

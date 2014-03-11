@@ -41,7 +41,7 @@ void TouchOmniboxResultView::PaintMatch(gfx::Canvas* canvas, int x) {
     scoped_ptr<gfx::RenderText> render_text(
         CreateRenderText(match.description));
     ApplyClassifications(render_text.get(), match.description_class, true);
-    DrawRenderText(canvas, render_text.get(), false, x, y);
+    DrawRenderText(canvas, render_text.get(), false, x, y, -1);
     y += OmniboxResultView::GetTextHeight();
   } else {
     // When we have only one line of content (no description), we center the
@@ -49,7 +49,7 @@ void TouchOmniboxResultView::PaintMatch(gfx::Canvas* canvas, int x) {
     y += OmniboxResultView::GetTextHeight() / 2;
   }
 
-  DrawRenderText(canvas, RenderMatchContents(), true, x, y);
+  DrawRenderText(canvas, RenderMatchContents(), true, x, y, -1);
 }
 
 int TouchOmniboxResultView::GetTextHeight() const {
