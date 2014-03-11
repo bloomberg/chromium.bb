@@ -65,8 +65,6 @@
         'touch_fling_gesture_curve.cc',
         'touch_fling_gesture_curve.h',
         'webkit_child_export.h',
-        'webkit_child_helpers.cc',
-        'webkit_child_helpers.h',
         'weburlrequest_extradata_impl.cc',
         'weburlrequest_extradata_impl.h',
         'weburlresponse_extradata_impl.cc',

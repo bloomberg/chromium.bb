@@ -43,6 +43,8 @@
     'child/child_resource_message_filter.h',
     'child/child_thread.cc',
     'child/child_thread.h',
+    'child/content_child_helpers.cc',
+    'child/content_child_helpers.h',
     'child/database_util.cc',
     'child/database_util.h',
     'child/db_message_filter.cc',

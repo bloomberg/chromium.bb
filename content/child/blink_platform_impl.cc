@@ -26,6 +26,7 @@
 #include "base/synchronization/lock.h"
 #include "base/sys_info.h"
 #include "base/time/time.h"
+#include "content/child/content_child_helpers.h"
 #include "content/child/web_socket_stream_handle_impl.h"
 #include "content/child/web_url_loader_impl.h"
 #include "content/public/common/content_client.h"
@@ -38,7 +39,6 @@
 #include "third_party/WebKit/public/platform/WebData.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "ui/base/layout.h"
-#include "webkit/child/webkit_child_helpers.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/sys_utils.h"
@@ -819,7 +819,7 @@ static size_t getMemoryUsageMB(bool bypass_cache) {
       mem_usage_cache_singleton->IsCachedValueValid(&current_mem_usage))
     return current_mem_usage;
 
-  current_mem_usage = webkit_glue::MemoryUsageKB() >> 10;
+  current_mem_usage = GetMemoryUsageKB() >> 10;
   mem_usage_cache_singleton->SetMemoryValue(current_mem_usage);
   return current_mem_usage;
 }
