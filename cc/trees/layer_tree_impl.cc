@@ -267,9 +267,9 @@ void LayerTreeImpl::ClearCurrentlyScrollingLayer() {
   scrolling_layer_id_from_previous_tree_ = 0;
 }
 
-float LayerTreeImpl::VerticalAdjust(const LayerImpl* layer) const {
-  DCHECK(layer);
-  if (layer->parent() != InnerViewportContainerLayer())
+float LayerTreeImpl::VerticalAdjust(const int clip_layer_id) const {
+  LayerImpl* container_layer = InnerViewportContainerLayer();
+  if (!container_layer || clip_layer_id != container_layer->id())
     return 0.f;
 
   return layer_tree_host_impl_->VerticalAdjust();

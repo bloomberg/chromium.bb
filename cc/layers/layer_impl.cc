@@ -1263,7 +1263,8 @@ void LayerImpl::SetScrollbarPosition(ScrollbarLayerImplBase* scrollbar_layer,
     current_offset.Scale(layer_tree_impl()->total_page_scale_factor());
   }
 
-  scrollbar_layer->SetVerticalAdjust(layer_tree_impl()->VerticalAdjust(this));
+  scrollbar_layer->SetVerticalAdjust(
+      layer_tree_impl()->VerticalAdjust(scrollbar_clip_layer->id()));
   if (scrollbar_layer->orientation() == HORIZONTAL) {
     float visible_ratio = clip_rect.width() / scroll_rect.width();
     scrollbar_layer->SetCurrentPos(current_offset.x());
