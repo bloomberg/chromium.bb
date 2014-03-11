@@ -40,11 +40,6 @@ const int kAnimationOffset = 8;
 // The maximum shift in pixels when over-scroll happens.
 const int kMaxOverScrollShift = 48;
 
-// The minimal anchor position offset to make sure that the bubble is still on
-// the screen with 8 pixels spacing on the left / right. This constant is a
-// result of minimal bubble arrow sizes and offsets.
-const int kMinimalAnchorPositionOffset = 57;
-
 ui::Layer* GetLayer(views::Widget* widget) {
   return widget->GetNativeView()->layer();
 }
@@ -82,37 +77,6 @@ gfx::Rect OffsetTowardsShelf(const gfx::Rect& rect, views::Widget* widget) {
   }
 
   return offseted;
-}
-
-// Using |button_bounds|, determine the anchor offset so that the bubble gets
-// shown above the shelf (used for the alternate shelf theme).
-gfx::Vector2d GetAnchorPositionOffsetToShelf(
-    const gfx::Rect& button_bounds, views::Widget* widget) {
-  DCHECK(Shell::HasInstance());
-  ShelfAlignment shelf_alignment = Shell::GetInstance()->GetShelfAlignment(
-      widget->GetNativeView()->GetRootWindow());
-  gfx::Point anchor(button_bounds.CenterPoint());
-  switch (shelf_alignment) {
-    case SHELF_ALIGNMENT_TOP:
-    case SHELF_ALIGNMENT_BOTTOM:
-      if (base::i18n::IsRTL()) {
-        int screen_width = widget->GetWorkAreaBoundsInScreen().width();
-        return gfx::Vector2d(
-            std::min(screen_width - kMinimalAnchorPositionOffset - anchor.x(),
-                     0), 0);
-      }
-      return gfx::Vector2d(
-          std::max(kMinimalAnchorPositionOffset - anchor.x(), 0), 0);
-    case SHELF_ALIGNMENT_LEFT:
-      return gfx::Vector2d(
-          0, std::max(kMinimalAnchorPositionOffset - anchor.y(), 0));
-    case SHELF_ALIGNMENT_RIGHT:
-      return gfx::Vector2d(
-          0, std::max(kMinimalAnchorPositionOffset - anchor.y(), 0));
-    default:
-      NOTREACHED();
-      return gfx::Vector2d();
-  }
 }
 
 }  // namespace
@@ -176,23 +140,6 @@ void AppListController::SetVisible(bool visible, aura::Window* window) {
           Shell::GetScreen()->GetPrimaryDisplay().bounds().CenterPoint(),
           views::BubbleBorder::FLOAT,
           true /* border_accepts_events */);
-    } else if (ash::switches::UseAlternateShelfLayout()) {
-      gfx::Rect applist_button_bounds = Shelf::ForWindow(container)->
-          GetAppListButtonView()->GetBoundsInScreen();
-      // We need the location of the button within the local screen.
-      applist_button_bounds = ScreenUtil::ConvertRectFromScreen(
-          root_window,
-          applist_button_bounds);
-      view->InitAsBubbleAttachedToAnchor(
-          container,
-          pagination_model_.get(),
-          Shelf::ForWindow(container)->GetAppListButtonView(),
-          GetAnchorPositionOffsetToShelf(applist_button_bounds,
-              Shelf::ForWindow(container)->GetAppListButtonView()->
-                  GetWidget()),
-          GetBubbleArrow(container),
-          true /* border_accepts_events */);
-      view->SetArrowPaintType(views::BubbleBorder::PAINT_NONE);
     } else {
       view->InitAsBubbleAttachedToAnchor(
           container,

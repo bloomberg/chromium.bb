@@ -124,11 +124,10 @@ void WorkAreaObserver::SetSystemTrayHeight(int height) {
   // should be reduced by the height of shelf's shown height.
   if (shelf_ && shelf_->visibility_state() == SHELF_AUTO_HIDE &&
       shelf_->auto_hide_state() == SHELF_AUTO_HIDE_SHOWN) {
-    system_tray_height_ -= ShelfLayoutManager::GetPreferredShelfSize() -
-        ShelfLayoutManager::kAutoHideSize;
+    system_tray_height_ -= kShelfSize - ShelfLayoutManager::kAutoHideSize;
   }
 
-  if (system_tray_height_ > 0 && ash::switches::UseAlternateShelfLayout())
+  if (system_tray_height_ > 0)
     system_tray_height_ += message_center::kMarginBetweenItems;
 
   if (!shelf_)
@@ -174,8 +173,7 @@ void WorkAreaObserver::OnAutoHideStateChanged(ShelfAutoHideState new_state) {
       new_state == SHELF_AUTO_HIDE_SHOWN) {
     // Since the work_area is already reduced by kAutoHideSize, the inset width
     // should be just the difference.
-    width = ShelfLayoutManager::GetPreferredShelfSize() -
-        ShelfLayoutManager::kAutoHideSize;
+    width = kShelfSize - ShelfLayoutManager::kAutoHideSize;
   }
   work_area.Inset(shelf_->SelectValueForShelfAlignment(
       gfx::Insets(0, 0, width, 0),
@@ -220,8 +218,7 @@ class WebNotificationBubbleWrapper {
     }
     views::TrayBubbleView* bubble_view = views::TrayBubbleView::Create(
         tray->GetBubbleWindowContainer(), anchor, tray, &init_params);
-    if (ash::switches::UseAlternateShelfLayout())
-      bubble_view->SetArrowPaintType(views::BubbleBorder::PAINT_NONE);
+    bubble_view->SetArrowPaintType(views::BubbleBorder::PAINT_NONE);
     bubble_wrapper_.reset(new TrayBubbleWrapper(tray, bubble_view));
     bubble->InitializeContents(bubble_view);
   }
@@ -273,8 +270,7 @@ class WebNotificationButton : public views::CustomButton {
  protected:
   // Overridden from views::ImageButton:
   virtual gfx::Size GetPreferredSize() OVERRIDE {
-    const int notification_item_size = GetShelfItemHeight();
-    return gfx::Size(notification_item_size, notification_item_size);
+    return gfx::Size(kShelfItemHeight, kShelfItemHeight);
   }
 
   virtual int GetHeightForWidth(int width) OVERRIDE {
@@ -322,7 +318,7 @@ WebNotificationTray::WebNotificationTray(
           internal::kShellWindowId_StatusContainer),
       message_center(),
       message_center_tray_.get(),
-      ash::switches::UseAlternateShelfLayout()));
+      true));
   work_area_observer_.reset(new internal::WorkAreaObserver());
   work_area_observer_->StartObserving(
       popup_collection_.get(),
@@ -348,7 +344,7 @@ bool WebNotificationTray::ShowMessageCenterInternal(bool show_settings) {
       new message_center::MessageCenterBubble(
           message_center(),
           message_center_tray_.get(),
-          ash::switches::UseAlternateShelfLayout());
+          true);
 
   int max_height = 0;
   aura::Window* status_area_window = status_area_widget()->GetNativeView();
@@ -376,7 +372,7 @@ bool WebNotificationTray::ShowMessageCenterInternal(bool show_settings) {
   }
 
   message_center_bubble->SetMaxHeight(std::max(0,
-                                               max_height - GetTraySpacing()));
+                                               max_height - kTraySpacing));
   if (show_settings)
     message_center_bubble->SetSettingsVisible();
   message_center_bubble_.reset(

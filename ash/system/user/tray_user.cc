@@ -72,10 +72,8 @@ namespace {
 
 const int kUserDetailsVerticalPadding = 5;
 const int kUserCardVerticalPadding = 10;
-const int kProfileRoundedCornerRadius = 2;
-const int kUserIconSize = 27;
-const int kUserIconLargeSize = 32;
-const int kUserIconLargeCornerRadius = 2;
+const int kUserIconSize = 32;
+const int kUserIconCornerRadius = 2;
 const int kUserLabelToIconPadding = 5;
 
 // When a hover border is used, it is starting this many pixels before the icon
@@ -913,7 +911,7 @@ void UserView::AddUserCard(SystemTrayItem* owner, user::LoginStatus login) {
 }
 
 views::View* UserView::CreateIconForUserCard(user::LoginStatus login) {
-  RoundedImageView* icon = new RoundedImageView(kProfileRoundedCornerRadius,
+  RoundedImageView* icon = new RoundedImageView(kUserIconCornerRadius,
                                                 multiprofile_index_ == 0);
   icon->SetEnabled(false);
   if (login == user::LOGGED_IN_GUEST) {
@@ -1075,7 +1073,7 @@ void AddUserView::AddContent() {
 
   // Add the [+] icon which is also the anchor for messages.
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-  RoundedImageView* icon = new RoundedImageView(kProfileRoundedCornerRadius,
+  RoundedImageView* icon = new RoundedImageView(kUserIconCornerRadius,
                                                 true);
   anchor_ = icon;
   icon->SetImage(*ui::ResourceBundle::GetSharedInstance().
@@ -1206,7 +1204,7 @@ void TrayUser::UpdateAfterLoginStatusChange(user::LoginStatus status) {
       label_ = NULL;
     }
     if (need_avatar) {
-      avatar_ = new tray::RoundedImageView(kProfileRoundedCornerRadius, true);
+      avatar_ = new tray::RoundedImageView(kUserIconCornerRadius, true);
       layout_view_->AddChildView(avatar_);
     } else {
       avatar_ = NULL;
@@ -1221,9 +1219,9 @@ void TrayUser::UpdateAfterLoginStatusChange(user::LoginStatus status) {
     label_->SetText(bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_GUEST_LABEL));
   }
 
-  if (avatar_ && switches::UseAlternateShelfLayout()) {
+  if (avatar_) {
     avatar_->SetCornerRadii(
-        0, kUserIconLargeCornerRadius, kUserIconLargeCornerRadius, 0);
+        0, kUserIconCornerRadius, kUserIconCornerRadius, 0);
     avatar_->SetBorder(views::Border::NullBorder());
   }
   UpdateAvatarImage(status);
@@ -1239,17 +1237,9 @@ void TrayUser::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
   if (alignment == SHELF_ALIGNMENT_BOTTOM ||
       alignment == SHELF_ALIGNMENT_TOP) {
     if (avatar_) {
-      if (switches::UseAlternateShelfLayout()) {
-        avatar_->SetBorder(views::Border::NullBorder());
-        avatar_->SetCornerRadii(
-            0, kUserIconLargeCornerRadius, kUserIconLargeCornerRadius, 0);
-      } else {
-        avatar_->SetBorder(views::Border::CreateEmptyBorder(
-            0,
-            kTrayImageItemHorizontalPaddingBottomAlignment + 2,
-            0,
-            kTrayImageItemHorizontalPaddingBottomAlignment));
-      }
+      avatar_->SetBorder(views::Border::NullBorder());
+      avatar_->SetCornerRadii(
+          0, kUserIconCornerRadius, kUserIconCornerRadius, 0);
     }
     if (label_) {
       label_->SetBorder(views::Border::CreateEmptyBorder(
@@ -1263,13 +1253,9 @@ void TrayUser::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
                              0, 0, kUserLabelToIconPadding));
   } else {
     if (avatar_) {
-      if (switches::UseAlternateShelfLayout()) {
-        avatar_->SetBorder(views::Border::NullBorder());
-        avatar_->SetCornerRadii(
-            0, 0, kUserIconLargeCornerRadius, kUserIconLargeCornerRadius);
-      } else {
-        SetTrayImageItemBorder(avatar_, alignment);
-      }
+      avatar_->SetBorder(views::Border::NullBorder());
+      avatar_->SetCornerRadii(
+          0, 0, kUserIconCornerRadius, kUserIconCornerRadius);
     }
     if (label_) {
       label_->SetBorder(views::Border::CreateEmptyBorder(
@@ -1311,17 +1297,14 @@ void TrayUser::UpdateAvatarImage(user::LoginStatus status) {
       GetTrayIndex() >= session_state_delegate->NumberOfLoggedInUsers())
     return;
 
-  int icon_size = switches::UseAlternateShelfLayout() ?
-      kUserIconLargeSize : kUserIconSize;
-
   avatar_->SetImage(
       Shell::GetInstance()->session_state_delegate()->GetUserImage(
           GetTrayIndex()),
-      gfx::Size(icon_size, icon_size));
+      gfx::Size(kUserIconSize, kUserIconSize));
 
   // Unit tests might come here with no images for some users.
   if (avatar_->size().IsEmpty())
-    avatar_->SetSize(gfx::Size(icon_size, icon_size));
+    avatar_->SetSize(gfx::Size(kUserIconSize, kUserIconSize));
 }
 
 MultiProfileIndex TrayUser::GetTrayIndex() {
