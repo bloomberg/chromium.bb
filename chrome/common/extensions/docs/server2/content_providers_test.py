@@ -8,7 +8,7 @@ import unittest
 
 from compiled_file_system import CompiledFileSystem
 from content_providers import ContentProviders
-from extensions_paths import EXTENSIONS
+from extensions_paths import CHROME_EXTENSIONS
 from gcs_file_system_provider import CloudStorageFileSystemProvider
 from object_store_creator import ObjectStoreCreator
 from test_file_system import TestFileSystem
@@ -102,7 +102,8 @@ class _MockGithubFileSystemProvider(object):
 class ContentProvidersTest(unittest.TestCase):
   def setUp(self):
     object_store_creator = ObjectStoreCreator.ForTest()
-    test_file_system = TestFileSystem(_FILE_SYSTEM_DATA, relative_to=EXTENSIONS)
+    test_file_system = TestFileSystem(_FILE_SYSTEM_DATA,
+                                      relative_to=CHROME_EXTENSIONS)
     self._github_fs_provider = _MockGithubFileSystemProvider(test_file_system)
     object_store_creator = ObjectStoreCreator.ForTest()
     # TODO(mangini): create tests for GCS

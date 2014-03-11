@@ -6,7 +6,7 @@
 import json
 import unittest
 
-from extensions_paths import EXTENSIONS
+from extensions_paths import CHROME_EXTENSIONS
 from server_instance import ServerInstance
 from test_file_system import TestFileSystem
 
@@ -139,7 +139,7 @@ _TEST_FILESYSTEM = {
 class FeaturesBundleTest(unittest.TestCase):
   def setUp(self):
     self._server = ServerInstance.ForTest(
-        TestFileSystem(_TEST_FILESYSTEM, relative_to=EXTENSIONS))
+        TestFileSystem(_TEST_FILESYSTEM, relative_to=CHROME_EXTENSIONS))
 
   def testManifestFeatures(self):
     expected_features = {

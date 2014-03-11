@@ -7,7 +7,7 @@ import json
 from operator import itemgetter
 import unittest
 
-from extensions_paths import EXTENSIONS
+from extensions_paths import CHROME_EXTENSIONS
 from permissions_data_source import PermissionsDataSource
 from server_instance import ServerInstance
 from third_party.handlebar import Handlebar
@@ -139,7 +139,7 @@ class PermissionsDataSourceTest(unittest.TestCase):
           },
         }
       }
-    }, relative_to=EXTENSIONS)
+    }, relative_to=CHROME_EXTENSIONS)
 
     permissions_data_source = PermissionsDataSource(
         ServerInstance.ForTest(test_file_system), None)

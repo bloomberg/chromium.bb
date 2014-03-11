@@ -7,7 +7,7 @@ import unittest
 import json
 
 from api_list_data_source import APIListDataSource
-from extensions_paths import EXTENSIONS
+from extensions_paths import CHROME_EXTENSIONS
 from server_instance import ServerInstance
 from test_file_system import TestFileSystem
 
@@ -130,7 +130,7 @@ _TEST_DATA = _ToTestApiSchema(_TEST_API_SCHEMA, {
 class APIListDataSourceTest(unittest.TestCase):
   def setUp(self):
     server_instance = ServerInstance.ForTest(
-        TestFileSystem(_TEST_DATA, relative_to=EXTENSIONS))
+        TestFileSystem(_TEST_DATA, relative_to=CHROME_EXTENSIONS))
     self._factory = APIListDataSource.Factory(
         server_instance.compiled_fs_factory,
         server_instance.host_file_system_provider.GetTrunk(),

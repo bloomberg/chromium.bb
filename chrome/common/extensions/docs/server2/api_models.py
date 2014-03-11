@@ -2,11 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import os
 import posixpath
 
 from compiled_file_system import SingleFile, Unicode
-from extensions_paths import API
+from extensions_paths import API, CHROME_API
 from file_system import FileNotFoundError
 from future import Gettable, Future
 from schema_util import ProcessSchema
@@ -42,14 +41,23 @@ class APIModels(object):
                 feature.get('noparent'))]
 
   def GetModel(self, api_name):
-    # Callers sometimes specify a filename which includes .json or .idl - if
-    # so, believe them. They may even include the 'api/' prefix.
-    if os.path.splitext(api_name)[1] in ('.json', '.idl'):
-      if not api_name.startswith(API):
-        api_name = posixpath.join(API, api_name)
-      return self._model_cache.GetFromFile(api_name)
+    # By default |api_name| is assumed to be given without a path or extension,
+    # so combinations of known paths and extension types will be searched.
+    api_extensions = ('.json', '.idl')
+    api_paths = (API, CHROME_API)
 
-    assert not api_name.startswith(API)
+    # Callers sometimes include a file extension and/or prefix path with the
+    # |api_name| argument. We believe them and narrow the search space
+    # accordingly.
+    name, ext = posixpath.splitext(api_name)
+    if ext in api_extensions:
+      api_extensions = (ext,)
+      api_name = name
+    for api_path in api_paths:
+      if api_name.startswith(api_path):
+        api_name = api_name[len(api_path):]
+        api_paths = (api_path,)
+        break
 
     # API names are given as declarativeContent and app.window but file names
     # will be declarative_content and app_window.
@@ -63,8 +71,9 @@ class APIModels(object):
                                         basename.replace('devtools_' , '')))
 
     futures = [self._model_cache.GetFromFile(
-                   posixpath.join(API, '%s.%s' % (file_name, ext)))
-               for ext in ('json', 'idl')]
+                   posixpath.join(path, '%s%s' % (file_name, ext)))
+               for ext in api_extensions
+               for path in api_paths]
     def resolve():
       for future in futures:
         try:

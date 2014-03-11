@@ -259,3 +259,6 @@ class CompiledFileSystem(object):
     if cache_entry is not None:
       return cache_entry.version
     return self._file_system.Stat(path).version
+
+  def FileExists(self, path):
+    return self._file_system.Exists(path)
