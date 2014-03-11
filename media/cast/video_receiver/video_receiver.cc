@@ -18,8 +18,8 @@
 namespace {
 
 static const int64 kMinSchedulingDelayMs = 1;
-static const int64 kMinTimeBetweenOffsetUpdatesMs = 2000;
-static const int kTimeOffsetFilter = 8;
+static const int64 kMinTimeBetweenOffsetUpdatesMs = 1000;
+static const int kTimeOffsetMaxCounter = 10;
 static const int64_t kMinProcessIntervalMs = 5;
 
 }  // namespace
@@ -107,6 +107,7 @@ VideoReceiver::VideoReceiver(scoped_refptr<CastEnvironment> cast_environment,
                     incoming_payload_callback_.get()),
       rtp_video_receiver_statistics_(
           new LocalRtpReceiverStatistics(&rtp_receiver_)),
+      time_offset_counter_(0),
       decryptor_(),
       time_incoming_packet_updated_(false),
       incoming_rtp_timestamp_(0),
@@ -356,15 +357,15 @@ base::TimeTicks VideoReceiver::GetRenderTime(base::TimeTicks now,
   base::TimeTicks rtp_timestamp_in_ticks;
 
   // Compute the time offset_in_ticks based on the incoming_rtp_timestamp_.
-  if (time_offset_.InMilliseconds() == 0) {
-    if (!rtcp_->RtpTimestampInSenderTime(kVideoFrequency,
+  if (time_offset_counter_ == 0) {
+    // Check for received RTCP to sync the stream play it out asap.
+    if (rtcp_->RtpTimestampInSenderTime(kVideoFrequency,
                                          incoming_rtp_timestamp_,
                                          &rtp_timestamp_in_ticks)) {
-      // We have not received any RTCP to sync the stream play it out as soon as
-      // possible.
-      return now;
+
+       ++time_offset_counter_;
     }
-    time_offset_ = time_incoming_packet_ - rtp_timestamp_in_ticks;
+    return now;
   } else if (time_incoming_packet_updated_) {
     if (rtcp_->RtpTimestampInSenderTime(kVideoFrequency,
                                         incoming_rtp_timestamp_,
@@ -372,8 +373,17 @@ base::TimeTicks VideoReceiver::GetRenderTime(base::TimeTicks now,
       // Time to update the time_offset.
       base::TimeDelta time_offset =
           time_incoming_packet_ - rtp_timestamp_in_ticks;
-      time_offset_ = ((kTimeOffsetFilter - 1) * time_offset_ + time_offset) /
-                     kTimeOffsetFilter;
+      // Taking the minimum of the first kTimeOffsetMaxCounter values. We are
+      // assuming that we are looking for the minimum offset, which will occur
+      // when network conditions are the best. This should occur at least once
+      // within the first kTimeOffsetMaxCounter samples. Any drift should be
+      // very slow, and negligible for this use case.
+      if (time_offset_counter_ == 1)
+        time_offset_ = time_offset;
+      else if (time_offset_counter_  < kTimeOffsetMaxCounter) {
+        time_offset_ = std::min(time_offset_, time_offset);
+      }
+      ++time_offset_counter_;
     }
   }
   // Reset |time_incoming_packet_updated_| to enable a future measurement.
@@ -413,8 +423,13 @@ void VideoReceiver::IncomingParsedRtpPacket(const uint8* payload_data,
     if (time_incoming_packet_.is_null())
       InitializeTimers();
     incoming_rtp_timestamp_ = rtp_header.webrtc.header.timestamp;
-    time_incoming_packet_ = now;
-    time_incoming_packet_updated_ = true;
+    // The following incoming packet info is used for syncing sender and
+    // receiver clock. Use only the first packet of every frame to obtain a
+    // minimal value.
+    if (rtp_header.packet_id == 0) {
+      time_incoming_packet_ = now;
+      time_incoming_packet_updated_ = true;
+    }
   }
 
   frame_id_to_rtp_timestamp_[rtp_header.frame_id & 0xff] =
