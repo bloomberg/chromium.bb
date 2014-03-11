@@ -115,6 +115,7 @@
 #include "ui/base/ui_base_switches.h"
 #include "v8/include/v8.h"
 #include "webkit/renderer/compositor_bindings/web_external_bitmap_impl.h"
+#include "webkit/renderer/compositor_bindings/web_layer_impl.h"
 
 #if defined(OS_ANDROID)
 #include <cpu-features.h>
@@ -390,6 +391,41 @@ void RenderThreadImpl::Init() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(cc::switches::kEnableGpuBenchmarking))
       RegisterExtension(GpuBenchmarkingExtension::Get());
+
+  is_impl_side_painting_enabled_ =
+      command_line.HasSwitch(switches::kEnableImplSidePainting) &&
+      !command_line.HasSwitch(switches::kDisableImplSidePainting);
+  webkit::WebLayerImpl::SetImplSidePaintingEnabled(
+      is_impl_side_painting_enabled_);
+
+  is_map_image_enabled_ =
+      command_line.HasSwitch(switches::kEnableMapImage) &&
+      !command_line.HasSwitch(switches::kDisableMapImage);
+
+  if (command_line.HasSwitch(switches::kDisableLCDText)) {
+    is_lcd_text_enabled_ = false;
+  } else if (command_line.HasSwitch(switches::kEnableLCDText)) {
+    is_lcd_text_enabled_ = true;
+  } else {
+#if defined(OS_ANDROID)
+    is_lcd_text_enabled_ = false;
+#else
+    is_lcd_text_enabled_ = true;
+#endif
+  }
+
+  is_gpu_rasterization_enabled_ = false;
+  is_gpu_rasterization_forced_ = false;
+  if (is_impl_side_painting_enabled_ &&
+      !command_line.HasSwitch(switches::kDisableGpuRasterization)) {
+    if (command_line.HasSwitch(switches::kForceGpuRasterization)) {
+      is_gpu_rasterization_forced_ = true;
+    } else if (command_line.HasSwitch(switches::kEnableGpuRasterization) ||
+               command_line.HasSwitch(
+                   switches::kEnableBleedingEdgeRenderingFastPaths)) {
+      is_gpu_rasterization_enabled_ = true;
+    }
+  }
 
   // Note that under Linux, the media library will normally already have
   // been initialized by the Zygote before this instance became a Renderer.
@@ -738,7 +774,7 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
 #if !defined(OS_ANDROID)
   use_skia_scaled_image_cache =
       command_line.HasSwitch(switches::kEnableDeferredImageDecoding) ||
-      cc::switches::IsImplSidePaintingEnabled();
+      is_impl_side_painting_enabled_;
 #endif
   if (!use_skia_scaled_image_cache)
     SkGraphics::SetImageCacheByteLimit(0u);

@@ -54,7 +54,8 @@ PictureLayerImpl::PictureLayerImpl(LayerTreeImpl* tree_impl, int id)
       is_using_lcd_text_(tree_impl->settings().can_use_lcd_text),
       needs_post_commit_initialization_(true),
       should_update_tile_priorities_(false),
-      should_use_gpu_rasterization_(tree_impl->settings().gpu_rasterization) {}
+      should_use_gpu_rasterization_(tree_impl->settings().rasterization_site ==
+                                    LayerTreeSettings::GpuRasterization) {}
 
 PictureLayerImpl::~PictureLayerImpl() {}
 

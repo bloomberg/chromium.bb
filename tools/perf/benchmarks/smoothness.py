@@ -64,7 +64,7 @@ class SmoothnessGpuRasterizationTop25(test.Test):
     options.AppendExtraBrowserArgs('--enable-threaded-compositing')
     options.AppendExtraBrowserArgs('--force-compositing-mode')
     options.AppendExtraBrowserArgs('--enable-impl-side-painting')
-    options.AppendExtraBrowserArgs('--enable-gpu-rasterization')
+    options.AppendExtraBrowserArgs('--force-gpu-rasterization')
 
 
 class SmoothnessGpuRasterizationKeyMobileSites(test.Test):

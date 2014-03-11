@@ -9,36 +9,14 @@
 namespace cc {
 namespace switches {
 
-// Disables LCD text.
-const char kDisableLCDText[] = "disable-lcd-text";
-
 const char kDisableThreadedAnimation[] = "disable-threaded-animation";
 
 // Disables layer-edge anti-aliasing in the compositor.
 const char kDisableCompositedAntialiasing[] =
     "disable-composited-antialiasing";
 
-// Paint content on the main thread instead of the compositor thread.
-// Overrides the kEnableImplSidePainting flag.
-const char kDisableImplSidePainting[] = "disable-impl-side-painting";
-
-// Enables LCD text.
-const char kEnableLCDText[] = "enable-lcd-text";
-
-// Paint content on the compositor thread instead of the main thread.
-const char kEnableImplSidePainting[] = "enable-impl-side-painting";
-
 const char kEnableTopControlsPositionCalculation[] =
     "enable-top-controls-position-calculation";
-
-// Allow heuristics to determine when a layer tile should be drawn with
-// the Skia GPU backend.  Only valid with GPU accelerated compositing +
-// impl-side painting.
-const char kEnableGPURasterization[] = "enable-gpu-rasterization";
-
-// Disable GPU rasterization, i.e. rasterize on the CPU only.
-// Overrides the kEnableGPURasterization flag.
-const char kDisableGPURasterization[] = "disable-gpu-rasterization";
 
 // The height of the movable top controls.
 const char kTopControlsHeight[] = "top-controls-height";
@@ -126,13 +104,6 @@ const char kUIShowOccludingRects[] = "ui-show-occluding-rects";
 const char kShowNonOccludingRects[] = "show-nonoccluding-rects";
 const char kUIShowNonOccludingRects[] = "ui-show-nonoccluding-rects";
 
-// Enable rasterizer that writes directly to GPU memory.
-const char kEnableMapImage[] = "enable-map-image";
-
-// Disable rasterizer that writes directly to GPU memory.
-// Overrides the kEnableMapImage flag.
-const char kDisableMapImage[] = "disable-map-image";
-
 // Prevents the layer tree unit tests from timing out.
 const char kCCLayerTreeTestNoTimeout[] = "cc-layer-tree-test-no-timeout";
 
@@ -145,57 +116,6 @@ const char kDisable4444Textures[] = "disable-4444-textures";
 // Disable touch hit testing in the compositor.
 const char kDisableCompositorTouchHitTesting[] =
     "disable-compositor-touch-hit-testing";
-
-bool IsLCDTextEnabled() {
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kDisableLCDText))
-    return false;
-  else if (command_line->HasSwitch(switches::kEnableLCDText))
-    return true;
-
-#if defined(OS_ANDROID)
-  return false;
-#else
-  return true;
-#endif
-}
-
-bool IsGpuRasterizationEnabled() {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-
-  if (command_line.HasSwitch(switches::kDisableGPURasterization))
-    return false;
-  else if (command_line.HasSwitch(switches::kEnableGPURasterization))
-    return true;
-
-  return false;
-}
-
-bool IsImplSidePaintingEnabled() {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-
-  if (command_line.HasSwitch(switches::kDisableImplSidePainting))
-    return false;
-  else if (command_line.HasSwitch(switches::kEnableImplSidePainting))
-    return true;
-
-#if defined(OS_ANDROID)
-  return true;
-#else
-  return false;
-#endif
-}
-
-bool IsMapImageEnabled() {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-
-  if (command_line.HasSwitch(switches::kDisableMapImage))
-    return false;
-  else if (command_line.HasSwitch(switches::kEnableMapImage))
-    return true;
-
-  return false;
-}
 
 }  // namespace switches
 }  // namespace cc

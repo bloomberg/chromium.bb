@@ -269,6 +269,21 @@ bool IsDelegatedRendererEnabled() {
   return enabled;
 }
 
+bool IsImplSidePaintingEnabled() {
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+
+  if (command_line.HasSwitch(switches::kDisableImplSidePainting))
+    return false;
+  else if (command_line.HasSwitch(switches::kEnableImplSidePainting))
+    return true;
+
+#if defined(OS_ANDROID)
+  return true;
+#else
+  return false;
+#endif
+}
+
 base::Value* GetFeatureStatus() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   GpuDataManagerImpl* manager = GpuDataManagerImpl::GetInstance();
@@ -291,7 +306,7 @@ base::Value* GetFeatureStatus() {
       if (gpu_feature_info.name == "css_animation") {
         status += "_software_animated";
       } else if (gpu_feature_info.name == "raster") {
-        if (cc::switches::IsImplSidePaintingEnabled())
+        if (IsImplSidePaintingEnabled())
           status += "_software_multithreaded";
         else
           status += "_software";
@@ -333,10 +348,8 @@ base::Value* GetFeatureStatus() {
       }
     }
     // TODO(reveman): Remove this when crbug.com/223286 has been fixed.
-    if (gpu_feature_info.name == "raster" &&
-        cc::switches::IsImplSidePaintingEnabled()) {
+    if (gpu_feature_info.name == "raster" && IsImplSidePaintingEnabled())
       status = "disabled_software_multithreaded";
-    }
     feature_status_dict->SetString(
         gpu_feature_info.name.c_str(), status.c_str());
   }

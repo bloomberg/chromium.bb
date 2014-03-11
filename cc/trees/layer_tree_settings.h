@@ -29,7 +29,12 @@ class CC_EXPORT LayerTreeSettings {
   bool show_overdraw_in_tracing;
   bool can_use_lcd_text;
   bool should_clear_root_render_pass;
-  bool gpu_rasterization;
+  enum RasterizationSite {
+    CpuRasterization,
+    HybridRasterization,
+    GpuRasterization,
+  };
+  RasterizationSite rasterization_site;
 
   enum ScrollbarAnimator {
     NoAnimator,

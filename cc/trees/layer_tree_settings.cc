@@ -24,7 +24,7 @@ LayerTreeSettings::LayerTreeSettings()
       show_overdraw_in_tracing(false),
       can_use_lcd_text(true),
       should_clear_root_render_pass(true),
-      gpu_rasterization(false),
+      rasterization_site(CpuRasterization),
       scrollbar_animator(NoAnimator),
       scrollbar_linear_fade_delay_ms(300),
       scrollbar_linear_fade_length_ms(300),

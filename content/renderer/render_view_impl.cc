@@ -461,7 +461,8 @@ static bool ShouldUseAcceleratedCompositingForScrollableFrames(
   if (command_line.HasSwitch(switches::kEnableAcceleratedScrollableFrames))
     return true;
 
-  if (!cc::switches::IsLCDTextEnabled())
+  if (RenderThreadImpl::current() &&
+      !RenderThreadImpl::current()->is_lcd_text_enabled())
     return true;
 
   return DeviceScaleEnsuresTextQuality(device_scale_factor);
@@ -477,7 +478,8 @@ static bool ShouldUseCompositedScrollingForFrames(
   if (command_line.HasSwitch(switches::kEnableCompositedScrollingForFrames))
     return true;
 
-  if (!cc::switches::IsLCDTextEnabled())
+  if (RenderThreadImpl::current() &&
+      !RenderThreadImpl::current()->is_lcd_text_enabled())
     return true;
 
   return DeviceScaleEnsuresTextQuality(device_scale_factor);

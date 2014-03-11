@@ -6379,6 +6379,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_GPU_RASTERIZATION_DESCRIPTION" desc="Description for the flag to enable GPU rasterizer.">
         Use GPU to rasterize web content. Requires impl-side painting.
       </message>
+      <message name="IDS_FLAGS_FORCE_GPU_RASTERIZATION" desc="Description of the 'Force GPU rasterization' experiment">
+        Force-enabled for all layers
+      </message>
       <message name="IDS_FLAGS_EXPERIMENTAL_WEB_PLATFORM_FEATURES_NAME" desc="Name for the flag to enable experimental Web Platform features.">
         Enable experimental Web Platform features.
       </message>

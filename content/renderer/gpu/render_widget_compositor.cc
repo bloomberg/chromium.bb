@@ -126,10 +126,14 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
   settings.max_untiled_layer_size = gfx::Size(max_untiled_layer_width,
                                            max_untiled_layer_height);
 
-  settings.impl_side_painting = cc::switches::IsImplSidePaintingEnabled();
-  settings.gpu_rasterization =
-      cc::switches::IsGpuRasterizationEnabled() ||
-      cmd->HasSwitch(switches::kEnableBleedingEdgeRenderingFastPaths);
+  settings.impl_side_painting =
+      RenderThreadImpl::current()->is_impl_side_painting_enabled();
+  if (RenderThreadImpl::current()->is_gpu_rasterization_forced())
+    settings.rasterization_site = cc::LayerTreeSettings::GpuRasterization;
+  else if (RenderThreadImpl::current()->is_gpu_rasterization_enabled())
+    settings.rasterization_site = cc::LayerTreeSettings::HybridRasterization;
+  else
+    settings.rasterization_site = cc::LayerTreeSettings::CpuRasterization;
 
   settings.calculate_top_controls_position =
       cmd->HasSwitch(cc::switches::kEnableTopControlsPositionCalculation);
@@ -169,7 +173,8 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
 
   settings.show_overdraw_in_tracing =
       cmd->HasSwitch(cc::switches::kTraceOverdraw);
-  settings.can_use_lcd_text = cc::switches::IsLCDTextEnabled();
+  settings.can_use_lcd_text =
+      RenderThreadImpl::current()->is_lcd_text_enabled();
   settings.use_pinch_virtual_viewport =
       cmd->HasSwitch(cc::switches::kEnablePinchVirtualViewport);
   settings.allow_antialiasing &=
@@ -235,7 +240,7 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
   settings.strict_layer_property_change_checking =
       cmd->HasSwitch(cc::switches::kStrictLayerPropertyChangeChecking);
 
-  settings.use_map_image = cc::switches::IsMapImageEnabled();
+  settings.use_map_image = RenderThreadImpl::current()->is_map_image_enabled();
 
 #if defined(OS_ANDROID)
   settings.max_partial_texture_updates = 0;

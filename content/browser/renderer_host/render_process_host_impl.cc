@@ -913,6 +913,9 @@ static void AppendGpuCommandLineFlags(CommandLine* command_line) {
   if (content::IsDelegatedRendererEnabled())
     command_line->AppendSwitch(switches::kEnableDelegatedRenderer);
 
+  if (content::IsImplSidePaintingEnabled())
+    command_line->AppendSwitch(switches::kEnableImplSidePainting);
+
   // Appending disable-gpu-feature switches due to software rendering list.
   GpuDataManagerImpl* gpu_data_manager = GpuDataManagerImpl::GetInstance();
   DCHECK(gpu_data_manager);
@@ -985,11 +988,15 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDisableFiltersOverIPC,
     switches::kDisableGpu,
     switches::kDisableGpuCompositing,
+    switches::kDisableGpuRasterization,
     switches::kDisableGpuVsync,
     switches::kDisableHistogramCustomizer,
+    switches::kDisableImplSidePainting,
+    switches::kDisableLCDText,
     switches::kDisableLayerSquashing,
     switches::kDisableLocalStorage,
     switches::kDisableLogging,
+    switches::kDisableMapImage,
     switches::kDisableOverlayScrollbar,
     switches::kDisablePinch,
     switches::kDisablePrefixedEncryptedMedia,
@@ -1026,13 +1033,17 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableFastTextAutosizing,
     switches::kEnableGPUClientLogging,
     switches::kEnableGpuClientTracing,
+    switches::kEnableGpuRasterization,
     switches::kEnableGPUServiceLogging,
     switches::kEnableHighDpiCompositingForFixedPosition,
     switches::kEnableHTMLImports,
+    switches::kEnableImplSidePainting,
     switches::kEnableInbandTextTracks,
+    switches::kEnableLCDText,
     switches::kEnableLayerSquashing,
     switches::kEnableLogging,
     switches::kEnableMP3StreamParser,
+    switches::kEnableMapImage,
     switches::kEnableMemoryBenchmarking,
     switches::kEnableOverlayFullscreenVideo,
     switches::kEnableOverlayScrollbar,
@@ -1060,6 +1071,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableWebGLDraftExtensions,
     switches::kEnableWebMIDI,
     switches::kForceDeviceScaleFactor,
+    switches::kForceGpuRasterization,
     switches::kFullMemoryCrashReport,
     switches::kJavaScriptFlags,
     switches::kLoggingLevel,
@@ -1095,16 +1107,8 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     cc::switches::kCompositeToMailbox,
     cc::switches::kDisableCompositedAntialiasing,
     cc::switches::kDisableCompositorTouchHitTesting,
-    cc::switches::kDisableGPURasterization,
-    cc::switches::kDisableImplSidePainting,
-    cc::switches::kDisableLCDText,
-    cc::switches::kDisableMapImage,
     cc::switches::kDisableThreadedAnimation,
     cc::switches::kEnableGpuBenchmarking,
-    cc::switches::kEnableGPURasterization,
-    cc::switches::kEnableImplSidePainting,
-    cc::switches::kEnableLCDText,
-    cc::switches::kEnableMapImage,
     cc::switches::kEnablePinchVirtualViewport,
     cc::switches::kEnableTopControlsPositionCalculation,
     cc::switches::kMaxTilesForInterestArea,
@@ -1189,7 +1193,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
   }
 
   // Enforce the extra command line flags for impl-side painting.
-  if (cc::switches::IsImplSidePaintingEnabled() &&
+  if (IsImplSidePaintingEnabled() &&
       !browser_cmd.HasSwitch(switches::kEnableDeferredImageDecoding))
     renderer_cmd->AppendSwitch(switches::kEnableDeferredImageDecoding);
 }

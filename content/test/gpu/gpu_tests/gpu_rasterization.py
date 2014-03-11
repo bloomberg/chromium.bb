@@ -33,7 +33,7 @@ class GpuRasterizationValidator(cloud_storage_test_base.ValidatorBase):
     options.AppendExtraBrowserArgs(['--force-compositing-mode',
                                     '--enable-threaded-compositing',
                                     '--enable-impl-side-painting',
-                                    '--enable-gpu-rasterization',
+                                    '--force-gpu-rasterization',
                                     '--enable-gpu-benchmarking'])
 
   def ValidatePage(self, page, tab, results):

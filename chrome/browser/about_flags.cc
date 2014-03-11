@@ -201,15 +201,15 @@ const Experiment::Choice kNaClDebugMaskChoices[] = {
 const Experiment::Choice kImplSidePaintingChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
   { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
-    cc::switches::kEnableImplSidePainting, ""},
+    switches::kEnableImplSidePainting, ""},
   { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
-    cc::switches::kDisableImplSidePainting, ""}
+    switches::kDisableImplSidePainting, ""}
 };
 
 const Experiment::Choice kLCDTextChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
-  { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED, cc::switches::kEnableLCDText, ""},
-  { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED, cc::switches::kDisableLCDText, ""}
+  { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED, switches::kEnableLCDText, ""},
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED, switches::kDisableLCDText, ""}
 };
 
 const Experiment::Choice kDelegatedRendererChoices[] = {
@@ -299,9 +299,9 @@ const Experiment::Choice kOverlayScrollbarChoices[] = {
 const Experiment::Choice kMapImageChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
   { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
-    cc::switches::kEnableMapImage, ""},
+    switches::kEnableMapImage, ""},
   { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
-    cc::switches::kDisableMapImage, ""}
+    switches::kDisableMapImage, ""}
 };
 
 #if defined(OS_ANDROID)
@@ -324,6 +324,16 @@ const Experiment::Choice kNumRasterThreadsChoices[] = {
   { IDS_FLAGS_NUM_RASTER_THREADS_TWO, switches::kNumRasterThreads, "2" },
   { IDS_FLAGS_NUM_RASTER_THREADS_THREE, switches::kNumRasterThreads, "3" },
   { IDS_FLAGS_NUM_RASTER_THREADS_FOUR, switches::kNumRasterThreads, "4" }
+};
+
+const Experiment::Choice kEnableGpuRasterizationChoices[] = {
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
+  { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
+    switches::kEnableGpuRasterization, "" },
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
+    switches::kDisableGpuRasterization, "" },
+  { IDS_FLAGS_FORCE_GPU_RASTERIZATION,
+    switches::kForceGpuRasterization, "" },
 };
 
 // We're using independent flags here (as opposed to a common flag with
@@ -874,7 +884,7 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_ENABLE_GPU_RASTERIZATION_NAME,
     IDS_FLAGS_ENABLE_GPU_RASTERIZATION_DESCRIPTION,
     kOsAndroid,
-    SINGLE_VALUE_TYPE(cc::switches::kEnableGPURasterization)
+    MULTI_VALUE_TYPE(kEnableGpuRasterizationChoices)
   },
   {
     "enable-experimental-web-platform-features",

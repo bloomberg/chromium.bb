@@ -195,6 +195,22 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
     return compositor_message_loop_proxy_;
   }
 
+  bool is_gpu_rasterization_enabled() const {
+    return is_gpu_rasterization_enabled_;
+  }
+
+  bool is_gpu_rasterization_forced() const {
+    return is_gpu_rasterization_forced_;
+  }
+
+  bool is_impl_side_painting_enabled() const {
+    return is_impl_side_painting_enabled_;
+  }
+
+  bool is_lcd_text_enabled() const { return is_lcd_text_enabled_; }
+
+  bool is_map_image_enabled() const { return is_map_image_enabled_; }
+
   AppCacheDispatcher* appcache_dispatcher() const {
     return appcache_dispatcher_.get();
   }
@@ -503,6 +519,13 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   // multiple threads. Current allocation mechanism for IOSurface
   // backed GpuMemoryBuffers prevent this. crbug.com/325045
   base::ThreadChecker allocate_gpu_memory_buffer_thread_checker_;
+
+  // Compositor settings
+  bool is_gpu_rasterization_enabled_;
+  bool is_gpu_rasterization_forced_;
+  bool is_impl_side_painting_enabled_;
+  bool is_lcd_text_enabled_;
+  bool is_map_image_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderThreadImpl);
 };

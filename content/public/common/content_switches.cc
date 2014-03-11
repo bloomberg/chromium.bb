@@ -206,6 +206,10 @@ extern const char kDisableGpuProcessCrashLimit[] =
 // launch it when it is first needed.
 const char kDisableGpuProcessPrelaunch[]    = "disable-gpu-process-prelaunch";
 
+// Disable GPU rasterization, i.e. rasterize on the CPU only.
+// Overrides the kEnableGpuRasterization and kForceGpuRasterization flags.
+const char kDisableGpuRasterization[]       = "disable-gpu-rasterization";
+
 // Disable the GPU process sandbox.
 const char kDisableGpuSandbox[]             = "disable-gpu-sandbox";
 
@@ -220,6 +224,10 @@ const char kDisableHangMonitor[]            = "disable-hang-monitor";
 
 // Disable the RenderThread's HistogramCustomizer.
 const char kDisableHistogramCustomizer[]    = "disable-histogram-customizer";
+
+// Paint content on the main thread instead of the compositor thread.
+// Overrides the kEnableImplSidePainting flag.
+const char kDisableImplSidePainting[]       = "disable-impl-side-painting";
 
 // Prevent Java from running.
 const char kDisableJava[]                   = "disable-java";
@@ -236,12 +244,19 @@ const char kDisableKillAfterBadIPC[]        = "disable-kill-after-bad-ipc";
 const char kDisablePrefixedEncryptedMedia[] =
     "disable-prefixed-encrypted-media";
 
+// Disables LCD text.
+const char kDisableLCDText[]                = "disable-lcd-text";
+
 // Disable LocalStorage.
 const char kDisableLocalStorage[]           = "disable-local-storage";
 
 // Force logging to be disabled.  Logging is enabled by default in debug
 // builds.
 const char kDisableLogging[]                = "disable-logging";
+
+// Disable rasterizer that writes directly to GPU memory.
+// Overrides the kEnableMapImage flag.
+const char kDisableMapImage[]               = "disable-map-image";
 
 // Disables overlay scrollbars on Aura or Linux. Does nothing on Mac.
 const char kDisableOverlayScrollbar[]       = "disable-overlay-scrollbar";
@@ -351,6 +366,9 @@ const char kEnableAcceleratedFixedRootBackground[] =
 const char kEnableAcceleratedOverflowScroll[] =
     "enable-accelerated-overflow-scroll";
 
+// Enables LCD text.
+const char kEnableLCDText[]                 = "enable-lcd-text";
+
 // Enables experimental feature that maps multiple RenderLayers to
 // one composited layer to avoid pathological layer counts.
 const char kEnableLayerSquashing[] =
@@ -442,6 +460,11 @@ const char kEnableGestureTapHighlight[]     = "enable-gesture-tap-highlight";
 // Enables TRACE for GL calls in the renderer.
 const char kEnableGpuClientTracing[]        = "enable-gpu-client-tracing";
 
+// Allow heuristics to determine when a layer tile should be drawn with the
+// Skia GPU backend. Only valid with GPU accelerated compositing +
+// impl-side painting.
+const char kEnableGpuRasterization[]        = "enable-gpu-rasterization";
+
 // See comment for kEnableCompositingForFixedPosition.
 const char kEnableHighDpiCompositingForFixedPosition[] =
      "enable-high-dpi-fixed-position-compositing";
@@ -460,12 +483,18 @@ const char kEnableHighResolutionTime[]      = "enable-high-resolution-time";
 // Enable HTML Imports
 extern const char kEnableHTMLImports[]      = "enable-html-imports";
 
+// Paint content on the compositor thread instead of the main thread.
+const char kEnableImplSidePainting[]        = "enable-impl-side-painting";
+
 // Enables support for inband text tracks in media content.
 const char kEnableInbandTextTracks[]        = "enable-inband-text-tracks";
 
 // Force logging to be enabled.  Logging is disabled by default in release
 // builds.
 const char kEnableLogging[]                 = "enable-logging";
+
+// Enable rasterizer that writes directly to GPU memory.
+const char kEnableMapImage[]                = "enable-map-image";
 
 // Enables the memory benchmarking extension
 const char kEnableMemoryBenchmarking[]      = "enable-memory-benchmarking";
@@ -616,6 +645,11 @@ const char kForceCompositingMode[]          = "force-compositing-mode";
 // separated by slashes. See FieldTrialList::CreateTrialsFromString() in
 // field_trial.h for details.
 const char kForceFieldTrials[]              = "force-fieldtrials";
+
+// Always use the Skia GPU backend for drawing layer tiles. Only valid with GPU
+// accelerated compositing + impl-side painting. Overrides the
+// kEnableGpuRasterization flag.
+const char kForceGpuRasterization[]        = "force-gpu-rasterization";
 
 // Force renderer accessibility to be on instead of enabling it on demand when
 // a screen reader is detected. The disable-renderer-accessibility switch

@@ -52,6 +52,8 @@ class WebLayerImpl : public blink::WebLayer, public cc::LayerClient {
   virtual ~WebLayerImpl();
 
   static bool UsingPictureLayer();
+  WEBKIT_COMPOSITOR_BINDINGS_EXPORT static void SetImplSidePaintingEnabled(
+      bool enabled);
 
   WEBKIT_COMPOSITOR_BINDINGS_EXPORT cc::Layer* layer() const;
 
