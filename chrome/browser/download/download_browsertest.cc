@@ -46,7 +46,7 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
+#include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -321,24 +321,6 @@ class MockAutoConfirmExtensionInstallPrompt : public ExtensionInstallPrompt {
 static DownloadManager* DownloadManagerForBrowser(Browser* browser) {
   return BrowserContext::GetDownloadManager(browser->profile());
 }
-
-class TestRenderViewContextMenu : public RenderViewContextMenu {
- public:
-  TestRenderViewContextMenu(content::RenderFrameHost* render_frame_host,
-                            const content::ContextMenuParams& params)
-      : RenderViewContextMenu(render_frame_host, params) {
-  }
-  virtual ~TestRenderViewContextMenu() {}
-
- private:
-  virtual void PlatformInit() OVERRIDE {}
-  virtual void PlatformCancel() OVERRIDE {}
-  virtual bool GetAcceleratorForCommandId(int, ui::Accelerator*) OVERRIDE {
-    return false;
-  }
-
-  DISALLOW_COPY_AND_ASSIGN(TestRenderViewContextMenu);
-};
 
 bool WasAutoOpened(DownloadItem* item) {
   return item->GetAutoOpened();

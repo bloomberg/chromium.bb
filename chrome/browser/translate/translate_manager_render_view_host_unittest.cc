@@ -15,7 +15,7 @@
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
-#include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
+#include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
 #include "chrome/browser/translate/translate_manager.h"
 #include "chrome/browser/translate/translate_service.h"
@@ -211,6 +211,27 @@ class TranslateManagerRenderViewHostTest
     base::MessageLoop::current()->RunUntilIdle();
   }
 
+  TestRenderViewContextMenu* CreateContextMenu() {
+    content::ContextMenuParams params;
+    params.media_type = blink::WebContextMenuData::MediaTypeNone;
+    params.x = 0;
+    params.y = 0;
+    params.has_image_contents = true;
+    params.media_flags = 0;
+    params.spellcheck_enabled = false;
+    params.is_editable = false;
+    params.page_url =
+        web_contents()->GetController().GetActiveEntry()->GetURL();
+#if defined(OS_MACOSX)
+    params.writing_direction_default = 0;
+    params.writing_direction_left_to_right = 0;
+    params.writing_direction_right_to_left = 0;
+#endif  // OS_MACOSX
+    params.edit_flags = blink::WebContextMenuData::CanTranslate;
+    return new TestRenderViewContextMenu(web_contents()->GetMainFrame(),
+                                         params);
+  }
+
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) {
@@ -375,51 +396,6 @@ class MockTranslateBubbleFactory : public TranslateBubbleFactory {
   DISALLOW_COPY_AND_ASSIGN(MockTranslateBubbleFactory);
 };
 
-namespace {
-
-class TestRenderViewContextMenu : public RenderViewContextMenu {
- public:
-  static TestRenderViewContextMenu* CreateContextMenu(
-      content::WebContents* web_contents) {
-    content::ContextMenuParams params;
-    params.media_type = blink::WebContextMenuData::MediaTypeNone;
-    params.x = 0;
-    params.y = 0;
-    params.has_image_contents = true;
-    params.media_flags = 0;
-    params.spellcheck_enabled = false;
-    params.is_editable = false;
-    params.page_url = web_contents->GetController().GetActiveEntry()->GetURL();
-#if defined(OS_MACOSX)
-    params.writing_direction_default = 0;
-    params.writing_direction_left_to_right = 0;
-    params.writing_direction_right_to_left = 0;
-#endif  // OS_MACOSX
-    params.edit_flags = blink::WebContextMenuData::CanTranslate;
-    return new TestRenderViewContextMenu(web_contents->GetMainFrame(), params);
-  }
-
-  bool IsItemPresent(int id) {
-    return menu_model_.GetIndexOfCommandId(id) != -1;
-  }
-
-  virtual void PlatformInit() OVERRIDE {}
-  virtual void PlatformCancel() OVERRIDE {}
-  virtual bool GetAcceleratorForCommandId(int command_id,
-                                          ui::Accelerator* accelerator)
-      OVERRIDE {
-    return false;
-  }
-
- private:
-  TestRenderViewContextMenu(content::RenderFrameHost* render_frame_host,
-                            const content::ContextMenuParams& params)
-      : RenderViewContextMenu(render_frame_host, params) {}
-
-  DISALLOW_COPY_AND_ASSIGN(TestRenderViewContextMenu);
-};
-
-}  // namespace
 
 TEST_F(TranslateManagerRenderViewHostTest, NormalTranslate) {
   SimulateNavigation(GURL("http://www.google.fr"), "fr", true);
@@ -531,8 +507,7 @@ TEST_F(TranslateManagerRenderViewHostTest, TranslateUnknownLanguage) {
   ASSERT_TRUE(GetTranslateInfoBar() == NULL);
 
   // Translate the page anyway throught the context menu.
-  scoped_ptr<TestRenderViewContextMenu> menu(
-      TestRenderViewContextMenu::CreateContextMenu(web_contents()));
+  scoped_ptr<TestRenderViewContextMenu> menu(CreateContextMenu());
   menu->Init();
   menu->ExecuteCommand(IDC_CONTENT_CONTEXT_TRANSLATE, 0);
 
@@ -560,7 +535,7 @@ TEST_F(TranslateManagerRenderViewHostTest, TranslateUnknownLanguage) {
   // Let's run the same steps but this time the server detects the page is
   // already in English.
   SimulateNavigation(GURL("http://www.google.com"), "und", true);
-  menu.reset(TestRenderViewContextMenu::CreateContextMenu(web_contents()));
+  menu.reset(CreateContextMenu());
   menu->Init();
   menu->ExecuteCommand(IDC_CONTENT_CONTEXT_TRANSLATE, 0);
   SimulateOnPageTranslated(1, "en", "en", TranslateErrors::IDENTICAL_LANGUAGES);
@@ -572,7 +547,7 @@ TEST_F(TranslateManagerRenderViewHostTest, TranslateUnknownLanguage) {
   // Let's run the same steps again but this time the server fails to detect the
   // page's language (it returns an empty string).
   SimulateNavigation(GURL("http://www.google.com"), "und", true);
-  menu.reset(TestRenderViewContextMenu::CreateContextMenu(web_contents()));
+  menu.reset(CreateContextMenu());
   menu->Init();
   menu->ExecuteCommand(IDC_CONTENT_CONTEXT_TRANSLATE, 0);
   SimulateOnPageTranslated(
@@ -995,8 +970,7 @@ TEST_F(TranslateManagerRenderViewHostTest, UnsupportedUILanguage) {
   EXPECT_TRUE(GetTranslateInfoBar() == NULL);
 
   // And the context menu option should be disabled too.
-  scoped_ptr<TestRenderViewContextMenu> menu(
-      TestRenderViewContextMenu::CreateContextMenu(web_contents()));
+  scoped_ptr<TestRenderViewContextMenu> menu(CreateContextMenu());
   menu->Init();
   EXPECT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_TRANSLATE));
   EXPECT_FALSE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_TRANSLATE));
@@ -1236,15 +1210,14 @@ TEST_F(TranslateManagerRenderViewHostTest, ContextMenu) {
   // Simulate navigating to a page in French. The translate menu should show but
   // should only be enabled when the page language has been received.
   NavigateAndCommit(url);
-  scoped_ptr<TestRenderViewContextMenu> menu(
-      TestRenderViewContextMenu::CreateContextMenu(web_contents()));
+  scoped_ptr<TestRenderViewContextMenu> menu(CreateContextMenu());
   menu->Init();
   EXPECT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_TRANSLATE));
   EXPECT_FALSE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_TRANSLATE));
 
   // Simulate receiving the language.
   SimulateOnTranslateLanguageDetermined("fr", true);
-  menu.reset(TestRenderViewContextMenu::CreateContextMenu(web_contents()));
+  menu.reset(CreateContextMenu());
   menu->Init();
   EXPECT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_TRANSLATE));
   EXPECT_TRUE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_TRANSLATE));
@@ -1273,7 +1246,7 @@ TEST_F(TranslateManagerRenderViewHostTest, ContextMenu) {
   SimulateOnPageTranslated("fr", "en");
 
   // The translate menu should now be disabled.
-  menu.reset(TestRenderViewContextMenu::CreateContextMenu(web_contents()));
+  menu.reset(CreateContextMenu());
   menu->Init();
   EXPECT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_TRANSLATE));
   EXPECT_FALSE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_TRANSLATE));
@@ -1287,7 +1260,7 @@ TEST_F(TranslateManagerRenderViewHostTest, ContextMenu) {
   infobar->Translate();
   EXPECT_TRUE(GetTranslateMessage(&page_id, &original_lang, &target_lang));
   process()->sink().ClearMessages();
-  menu.reset(TestRenderViewContextMenu::CreateContextMenu(web_contents()));
+  menu.reset(CreateContextMenu());
   menu->Init();
   EXPECT_TRUE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_TRANSLATE));
   menu->ExecuteCommand(IDC_CONTENT_CONTEXT_TRANSLATE, 0);
@@ -1302,7 +1275,7 @@ TEST_F(TranslateManagerRenderViewHostTest, ContextMenu) {
   infobar->Translate();
   EXPECT_TRUE(GetTranslateMessage(&page_id, &original_lang, &target_lang));
   process()->sink().ClearMessages();
-  menu.reset(TestRenderViewContextMenu::CreateContextMenu(web_contents()));
+  menu.reset(CreateContextMenu());
   menu->Init();
   EXPECT_TRUE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_TRANSLATE));
   SimulateOnPageTranslated("de", "en");
@@ -1313,7 +1286,7 @@ TEST_F(TranslateManagerRenderViewHostTest, ContextMenu) {
   // Test that the translate context menu is enabled when the page is in an
   // unknown language.
   SimulateNavigation(url, "und", true);
-  menu.reset(TestRenderViewContextMenu::CreateContextMenu(web_contents()));
+  menu.reset(CreateContextMenu());
   menu->Init();
   EXPECT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_TRANSLATE));
   EXPECT_TRUE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_TRANSLATE));
@@ -1321,7 +1294,7 @@ TEST_F(TranslateManagerRenderViewHostTest, ContextMenu) {
   // Test that the translate context menu is enabled even if the page is in an
   // unsupported language.
   SimulateNavigation(url, "qbz", true);
-  menu.reset(TestRenderViewContextMenu::CreateContextMenu(web_contents()));
+  menu.reset(CreateContextMenu());
   menu->Init();
   EXPECT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_TRANSLATE));
   EXPECT_TRUE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_TRANSLATE));
@@ -1414,8 +1387,7 @@ TEST_F(TranslateManagerRenderViewHostTest, NonTranslatablePage) {
   EXPECT_TRUE(GetTranslateInfoBar() == NULL);
 
   // The context menu is enabled to allow users to force translation.
-  scoped_ptr<TestRenderViewContextMenu> menu(
-      TestRenderViewContextMenu::CreateContextMenu(web_contents()));
+  scoped_ptr<TestRenderViewContextMenu> menu(CreateContextMenu());
   menu->Init();
   EXPECT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_TRANSLATE));
   EXPECT_TRUE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_TRANSLATE));
@@ -1552,8 +1524,7 @@ TEST_F(TranslateManagerRenderViewHostTest, BubbleUnknownLanguage) {
   ASSERT_TRUE(factory->model() == NULL);
 
   // Translate the page anyway throught the context menu.
-  scoped_ptr<TestRenderViewContextMenu> menu(
-      TestRenderViewContextMenu::CreateContextMenu(web_contents()));
+  scoped_ptr<TestRenderViewContextMenu> menu(CreateContextMenu());
   menu->Init();
   menu->ExecuteCommand(IDC_CONTENT_CONTEXT_TRANSLATE, 0);
 

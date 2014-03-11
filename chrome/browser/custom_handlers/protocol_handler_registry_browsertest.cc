@@ -9,7 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
-#include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
+#include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -20,29 +20,6 @@
 #include "third_party/WebKit/public/web/WebContextMenuData.h"
 
 using content::WebContents;
-
-namespace {
-
-class TestRenderViewContextMenu : public RenderViewContextMenu {
- public:
-  TestRenderViewContextMenu(content::RenderFrameHost* render_frame_host,
-                            content::ContextMenuParams params)
-      : RenderViewContextMenu(render_frame_host, params) { }
-
-  virtual void PlatformInit() OVERRIDE { }
-  virtual void PlatformCancel() OVERRIDE { }
-  virtual bool GetAcceleratorForCommandId(
-      int command_id,
-      ui::Accelerator* accelerator) OVERRIDE {
-    return false;
-  }
-
-  bool IsItemPresent(int command_id) {
-    return menu_model_.GetIndexOfCommandId(command_id) != -1;
-  }
-};
-
-}  // namespace
 
 class RegisterProtocolHandlerBrowserTest : public InProcessBrowserTest {
  public:

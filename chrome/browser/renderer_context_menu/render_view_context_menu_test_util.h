@@ -26,6 +26,9 @@ class TestRenderViewContextMenu : public RenderViewContextMenu {
   virtual ~TestRenderViewContextMenu();
 
   // Factory.
+  // This is a lightweight method to create a test RenderViewContextMenu
+  // instance.
+  // Use the constructor if you want to create menu with fine-grained params.
   static TestRenderViewContextMenu* Create(content::WebContents* web_contents,
                                            const GURL& page_url,
                                            const GURL& link_url,
