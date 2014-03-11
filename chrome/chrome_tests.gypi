@@ -1244,7 +1244,6 @@
         'browser/extensions/extension_url_rewrite_browsertest.cc',
         'browser/extensions/extension_view_host_factory_browsertest.cc',
         'browser/extensions/extension_websocket_apitest.cc',
-        'browser/extensions/external_install_ui_browsertest.cc',
         'browser/extensions/gpu_browsertest.cc',
         'browser/extensions/isolated_app_browsertest.cc',
         'browser/extensions/lazy_background_page_apitest.cc',
