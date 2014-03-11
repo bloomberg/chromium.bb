@@ -191,6 +191,7 @@ tur.ar
 
 // arpa : http://en.wikipedia.org/wiki/.arpa
 // Confirmed by registry <iana-questions@icann.org> 2008-06-18
+arpa
 e164.arpa
 in-addr.arpa
 ip6.arpa
@@ -215,6 +216,7 @@ or.at
 
 // au : http://en.wikipedia.org/wiki/.au
 // http://www.auda.org.au/
+au
 // 2LDs
 com.au
 net.au
@@ -403,8 +405,8 @@ net.bo
 mil.bo
 tv.bo
 
-// br : http://registro.br/dominio/dpn.html
-// Submitted by registry <fneves@registro.br> 2011-03-01
+// br : http://registro.br/dominio/categoria.html
+// Submitted by registry <fneves@registro.br> 2014-03-04
 br
 adm.br
 adv.br
@@ -449,6 +451,7 @@ lel.br
 mat.br
 med.br
 mil.br
+mp.br
 mus.br
 net.br
 nom.br
@@ -494,6 +497,7 @@ org.bt
 
 // bv : No registrations at this time.
 // Submitted by registry <jarle@uninett.no> 2006-06-16
+bv
 
 // bw : http://en.wikipedia.org/wiki/.bw
 // http://www.gobin.info/domainname/bw.doc
@@ -872,6 +876,7 @@ ga
 
 // gb : This registry is effectively dormant
 // Submitted by registry <Damien.Shaw@ja.net> 2008-06-12
+gb
 
 // gd : http://en.wikipedia.org/wiki/.gd
 gd
@@ -925,6 +930,7 @@ gm
 
 // gn : http://psg.com/dns/gn/gn.txt
 // Submitted by registry <randy@psg.com> 2008-06-17
+gn
 ac.gn
 com.gn
 edu.gn
@@ -1086,6 +1092,7 @@ id
 ac.id
 biz.id
 co.id
+desa.id
 go.id
 mil.id
 my.id
@@ -1184,286 +1191,378 @@ int.is
 it
 gov.it
 edu.it
-// list of reserved geo-names :
+// Reserved geo-names:
 // http://www.nic.it/documenti/regolamenti-e-linee-guida/regolamento-assegnazione-versione-6.0.pdf
-// (There is also a list of reserved geo-names corresponding to Italian
-// municipalities : http://www.nic.it/documenti/appendice-c.pdf , but it is
-// not included here.)
-agrigento.it
+// There is also a list of reserved geo-names corresponding to Italian municipalities
+// http://www.nic.it/documenti/appendice-c.pdf, but it is not included here.
+// Regions
+abr.it
+abruzzo.it
+aosta-valley.it
+aostavalley.it
+bas.it
+basilicata.it
+cal.it
+calabria.it
+cam.it
+campania.it
+emilia-romagna.it
+emiliaromagna.it
+emr.it
+friuli-v-giulia.it
+friuli-ve-giulia.it
+friuli-vegiulia.it
+friuli-venezia-giulia.it
+friuli-veneziagiulia.it
+friuli-vgiulia.it
+friuliv-giulia.it
+friulive-giulia.it
+friulivegiulia.it
+friulivenezia-giulia.it
+friuliveneziagiulia.it
+friulivgiulia.it
+fvg.it
+laz.it
+lazio.it
+lig.it
+liguria.it
+lom.it
+lombardia.it
+lombardy.it
+lucania.it
+mar.it
+marche.it
+mol.it
+molise.it
+piedmont.it
+piemonte.it
+pmn.it
+pug.it
+puglia.it
+sar.it
+sardegna.it
+sardinia.it
+sic.it
+sicilia.it
+sicily.it
+taa.it
+tos.it
+toscana.it
+trentino-a-adige.it
+trentino-aadige.it
+trentino-alto-adige.it
+trentino-altoadige.it
+trentino-s-tirol.it
+trentino-stirol.it
+trentino-sud-tirol.it
+trentino-sudtirol.it
+trentino-sued-tirol.it
+trentino-suedtirol.it
+trentinoa-adige.it
+trentinoaadige.it
+trentinoalto-adige.it
+trentinoaltoadige.it
+trentinos-tirol.it
+trentinostirol.it
+trentinosud-tirol.it
+trentinosudtirol.it
+trentinosued-tirol.it
+trentinosuedtirol.it
+tuscany.it
+umb.it
+umbria.it
+val-d-aosta.it
+val-daosta.it
+vald-aosta.it
+valdaosta.it
+valle-aosta.it
+valle-d-aosta.it
+valle-daosta.it
+valleaosta.it
+valled-aosta.it
+valledaosta.it
+vallee-aoste.it
+valleeaoste.it
+vao.it
+vda.it
+ven.it
+veneto.it
+// Provinces
 ag.it
-alessandria.it
+agrigento.it
 al.it
-ancona.it
-an.it
-aosta.it
-aoste.it
-ao.it
-arezzo.it
-ar.it
-ascoli-piceno.it
-ascolipiceno.it
-ap.it
-asti.it
-at.it
-avellino.it
-av.it
-bari.it
-ba.it
-andria-barletta-trani.it
-andriabarlettatrani.it
-trani-barletta-andria.it
-tranibarlettaandria.it
-barletta-trani-andria.it
-barlettatraniandria.it
-andria-trani-barletta.it
-andriatranibarletta.it
-trani-andria-barletta.it
-traniandriabarletta.it
-bt.it
-belluno.it
-bl.it
-benevento.it
-bn.it
-bergamo.it
-bg.it
-biella.it
-bi.it
-bologna.it
-bo.it
-bolzano.it
-bozen.it
-balsan.it
+alessandria.it
 alto-adige.it
 altoadige.it
-suedtirol.it
-bz.it
-brescia.it
-bs.it
-brindisi.it
-br.it
-cagliari.it
-ca.it
-caltanissetta.it
-cl.it
-campobasso.it
-cb.it
-carboniaiglesias.it
-carbonia-iglesias.it
-iglesias-carbonia.it
-iglesiascarbonia.it
-ci.it
-caserta.it
-ce.it
-catania.it
-ct.it
-catanzaro.it
-cz.it
-chieti.it
-ch.it
-como.it
-co.it
-cosenza.it
-cs.it
-cremona.it
-cr.it
-crotone.it
-kr.it
-cuneo.it
-cn.it
-dell-ogliastra.it
-dellogliastra.it
-ogliastra.it
-og.it
-enna.it
-en.it
-ferrara.it
-fe.it
-fermo.it
-fm.it
-firenze.it
-florence.it
-fi.it
-foggia.it
-fg.it
-forli-cesena.it
-forlicesena.it
-cesena-forli.it
-cesenaforli.it
-fc.it
-frosinone.it
-fr.it
-genova.it
-genoa.it
-ge.it
-gorizia.it
-go.it
-grosseto.it
-gr.it
-imperia.it
-im.it
-isernia.it
-is.it
-laquila.it
-aquila.it
+an.it
+ancona.it
+andria-barletta-trani.it
+andria-trani-barletta.it
+andriabarlettatrani.it
+andriatranibarletta.it
+ao.it
+aosta.it
+aoste.it
+ap.it
 aq.it
-la-spezia.it
-laspezia.it
-sp.it
-latina.it
-lt.it
-lecce.it
-le.it
-lecco.it
-lc.it
-livorno.it
-li.it
-lodi.it
-lo.it
-lucca.it
-lu.it
-macerata.it
-mc.it
-mantova.it
-mn.it
-massa-carrara.it
-massacarrara.it
-carrara-massa.it
-carraramassa.it
-ms.it
-matera.it
-mt.it
-medio-campidano.it
-mediocampidano.it
+aquila.it
+ar.it
+arezzo.it
+ascoli-piceno.it
+ascolipiceno.it
+asti.it
+at.it
+av.it
+avellino.it
+ba.it
+balsan.it
+bari.it
+barletta-trani-andria.it
+barlettatraniandria.it
+belluno.it
+benevento.it
+bergamo .it
+bg.it
+bi.it
+biella.it
+bl.it
+bn.it
+bo.it
+bologna.it
+bolzano.it
+bozen.it
+br.it
+brescia.it
+brindisi.it
+bs.it
+bt.it
+bz.it
+ca.it
+cagliari.it
+caltanissetta.it
 campidano-medio.it
 campidanomedio.it
-vs.it
-messina.it
+campobasso.it
+carbonia-iglesias.it
+carboniaiglesias.it
+carrara-massa.it
+carraramassa.it
+caserta.it
+catania.it
+catanzaro.it
+cb.it
+ce.it
+cesena-forli.it
+cesenaforli.it
+ch.it
+chieti.it
+ci.it
+cl.it
+cn.it
+co.it
+como.it
+cosenza.it
+cr.it
+cremona.it
+crotone.it
+cs.it
+ct.it
+cuneo.it
+cz.it
+dell-ogliastra.it
+dellogliastra.it
+en.it
+enna.it
+fc.it
+fe.it
+fermo.it
+ferrara.it
+fg.it
+fi.it
+firenze.it
+florence.it
+fm.it
+foggia.it
+forli-cesena.it
+forlicesena.it
+fr.it
+frosinone.it
+ge.it
+genoa.it
+genova.it
+go.it
+gorizia.it
+gr.it
+grosseto.it
+iglesias-carbonia.it
+iglesiascarbonia.it
+im.it
+imperia.it
+is.it
+isernia.it
+kr.it
+la-spezia.it
+laquila.it
+laspezia.it
+latina.it
+lc.it
+le.it
+lecce.it
+lecco.it
+li.it
+livorno.it
+lo.it
+lodi.it
+lt.it
+lu.it
+lucca.it
+macerata.it
+mantova.it
+massa-carrara.it
+massacarrara.it
+matera.it
+mb.it
+mc.it
 me.it
-milano.it
-milan.it
+medio-campidano.it
+mediocampidano.it
+messina.it
 mi.it
-modena.it
+milan.it
+milano.it
+mn.it
 mo.it
-monza.it
+modena.it
 monza-brianza.it
+monza-e-della-brianza.it
+monza.it
 monzabrianza.it
 monzaebrianza.it
 monzaedellabrianza.it
-monza-e-della-brianza.it
-mb.it
-napoli.it
-naples.it
+ms.it
+mt.it
 na.it
-novara.it
+naples.it
+napoli.it
 no.it
-nuoro.it
+novara.it
 nu.it
-oristano.it
-or.it
-padova.it
-padua.it
-pd.it
-palermo.it
-pa.it
-parma.it
-pr.it
-pavia.it
-pv.it
-perugia.it
-pg.it
-pescara.it
-pe.it
-pesaro-urbino.it
-pesarourbino.it
-urbino-pesaro.it
-urbinopesaro.it
-pu.it
-piacenza.it
-pc.it
-pisa.it
-pi.it
-pistoia.it
-pt.it
-pordenone.it
-pn.it
-potenza.it
-pz.it
-prato.it
-po.it
-ragusa.it
-rg.it
-ravenna.it
-ra.it
-reggio-calabria.it
-reggiocalabria.it
-rc.it
-reggio-emilia.it
-reggioemilia.it
-re.it
-rieti.it
-ri.it
-rimini.it
-rn.it
-roma.it
-rome.it
-rm.it
-rovigo.it
-ro.it
-salerno.it
-sa.it
-sassari.it
-ss.it
-savona.it
-sv.it
-siena.it
-si.it
-siracusa.it
-sr.it
-sondrio.it
-so.it
-taranto.it
-ta.it
-tempio-olbia.it
-tempioolbia.it
+nuoro.it
+og.it
+ogliastra.it
 olbia-tempio.it
 olbiatempio.it
+or.it
+oristano.it
 ot.it
-teramo.it
+pa.it
+padova.it
+padua.it
+palermo.it
+parma.it
+pavia.it
+pc.it
+pd.it
+pe.it
+perugia.it
+pesaro-urbino.it
+pesarourbino.it
+pescara.it
+pg.it
+pi.it
+piacenza.it
+pisa.it
+pistoia.it
+pn.it
+po.it
+pordenone.it
+potenza .it
+pr.it
+prato.it
+pt.it
+pu.it
+pv.it
+pz.it
+ra.it
+ragusa.it
+ravenna.it
+rc.it
+re.it
+reggio-calabria.it
+reggio-emilia.it
+reggiocalabria.it
+reggioemilia.it
+rg.it
+ri.it
+rieti.it
+rimini.it
+rm.it
+rn.it
+ro.it
+roma.it
+rome.it
+rovigo.it
+sa.it
+salerno.it
+sassari.it
+savona.it
+si.it
+siena.it
+siracusa.it
+so.it
+sondrio.it
+sp.it
+sr.it
+ss.it
+suedtirol.it
+sv.it
+ta.it
+taranto.it
 te.it
+tempio-olbia.it
+tempioolbia.it
+teramo.it
 terni.it
-tr.it
-torino.it
-turin.it
-to.it
-trapani.it
-tp.it
-trento.it
-trentino.it
 tn.it
+to.it
+torino.it
+tp.it
+tr.it
+trani-andria-barletta.it
+trani-barletta-andria.it
+traniandriabarletta.it
+tranibarlettaandria.it
+trapani.it
+trentino.it
+trento.it
 treviso.it
-tv.it
 trieste.it
 ts.it
-udine.it
+turin.it
+tv.it
 ud.it
-varese.it
+udine.it
+urbino-pesaro.it
+urbinopesaro.it
 va.it
+varese.it
+vb.it
+vc.it
+ve.it
 venezia.it
 venice.it
-ve.it
 verbania.it
-vb.it
 vercelli.it
-vc.it
 verona.it
-vr.it
+vi.it
 vibo-valentia.it
 vibovalentia.it
-vv.it
 vicenza.it
-vi.it
 viterbo.it
+vr.it
+vs.it
 vt.it
+vv.it
 
 // je : http://www.channelisles.net/register-domains/
 // Confirmed by registry <nigel@channelisles.net> 2013-11-28
@@ -1491,7 +1590,7 @@ jobs
 
 // jp : http://en.wikipedia.org/wiki/.jp
 // http://jprs.co.jp/en/jpdomain.html
-// Submitted by registry <info@jprs.jp> 2012-05-28
+// Submitted by registry <info@jprs.jp> 2014-02-28
 jp
 // jp organizational type names
 ac.jp
@@ -1595,7 +1694,6 @@ konan.aichi.jp
 kota.aichi.jp
 mihama.aichi.jp
 miyoshi.aichi.jp
-nagakute.aichi.jp
 nishio.aichi.jp
 nisshin.aichi.jp
 obu.aichi.jp
@@ -2267,7 +2365,6 @@ rikuzentakata.iwate.jp
 shiwa.iwate.jp
 shizukuishi.iwate.jp
 sumita.iwate.jp
-takizawa.iwate.jp
 tanohata.iwate.jp
 tono.iwate.jp
 yahaba.iwate.jp
@@ -3305,6 +3402,7 @@ edu.kn
 gov.kn
 
 // kp : http://www.kcce.kp/en_index.php
+kp
 com.kp
 edu.kp
 gov.kp
@@ -3382,6 +3480,7 @@ org.la
 
 // lb : http://en.wikipedia.org/wiki/.lb
 // Submitted by registry <randy@psg.com> 2008-06-17
+lb
 com.lb
 edu.lb
 gov.lb
@@ -3420,6 +3519,7 @@ hotel.lk
 
 // lr : http://psg.com/dns/lr/lr.txt
 // Submitted by registry <randy@psg.com> 2008-06-17
+lr
 com.lr
 edu.lr
 gov.lr
@@ -3562,8 +3662,13 @@ mq
 mr
 gov.mr
 
-// ms : http://en.wikipedia.org/wiki/.ms
+// ms : http://www.nic.ms/pdf/MS_Domain_Name_Rules.pdf
 ms
+com.ms
+edu.ms
+gov.ms
+net.ms
+org.ms
 
 // mt : https://www.nic.org.mt/go/policy
 // Submitted by registry <help@nic.org.mt> 2013-11-19
@@ -5697,6 +5802,7 @@ si
 
 // sj : No registrations at this time.
 // Submitted by registry <jarle@uninett.no> 2008-06-16
+sj
 
 // sk : http://en.wikipedia.org/wiki/.sk
 // list of 2nd level domains ?
@@ -5879,6 +5985,10 @@ org.to
 edu.to
 mil.to
 
+// tp : No registrations at this time.
+// Submitted by Ryan Sleevi <ryan.sleevi@gmail.com> 2014-01-03
+tp
+
 // tr : http://en.wikipedia.org/wiki/.tr
 *.tr
 !nic.tr
@@ -5932,6 +6042,7 @@ club.tw
 
 // tz : http://www.tznic.or.tz/index.php/domains
 // Confirmed by registry <manager@tznic.or.tz> 2013-01-22
+tz
 ac.tz
 co.tz
 go.tz
@@ -6180,7 +6291,7 @@ k12.vt.us
 k12.va.us
 k12.wa.us
 k12.wi.us
-k12.wv.us
+// k12.wv.us  Bug 947705 - Removed at request of Verne Britton <verne@wvnet.edu>
 k12.wy.us
 
 cc.ak.us
@@ -6408,12 +6519,12 @@ yt
 // xn--54b7fta0cc ("Bangla" Bangla) : BD
 বাংলা
 
-// xn--fiqs8s ("China" Chinese-Han-Simplified <.Zhonggou>) : CN
+// xn--fiqs8s ("China" Chinese-Han-Simplified <.Zhongguo>) : CN
 // CNNIC
 // http://cnnic.cn/html/Dir/2005/10/11/3218.htm
 中国
 
-// xn--fiqz9s ("China" Chinese-Han-Traditional <.Zhonggou>) : CN
+// xn--fiqz9s ("China" Chinese-Han-Traditional <.Zhongguo>) : CN
 // CNNIC
 // http://cnnic.cn/html/Dir/2005/10/11/3218.htm
 中國
@@ -6474,6 +6585,9 @@ yt
 // xn--3e0b707e ("Republic of Korea" Hangul) : KR
 한국
 
+// xn--80ao21a ("Kaz" Kazakh) : KZ
+қаз
+
 // xn--fzc2c9e2c ("Lanka" Sinhalese-Sinhala) : LK
 // http://nic.lk
 ලංකා
@@ -6484,6 +6598,12 @@ yt
 
 // xn--mgbc0a9azcg ("Morocco / al-Maghrib" Arabic) : MA
 المغرب
+
+// xn--l1acc ("mon" Mongolian) : MN
+мон
+
+// xn--mgbx4cd0ab ("Malaysia" Malay) : MY
+مليسيا
 
 // xn--mgb9awbf ("Oman" Arabic) : OM
 عمان
@@ -6919,7 +7039,7 @@ club
 voting
 
 // TOKYO : 2013-11-13 GMO Registry, Inc.
-TOKYO
+tokyo
 
 // moe : 2013-11-13 Interlink Co., Ltd.
 moe
@@ -7298,6 +7418,126 @@ vegas
 
 // black : 2014-01-16 Afilias Limited
 black
+
+// soy : 2014-01-23 Charleston Road Registry Inc.
+soy
+
+// trade : 2014-01-23 Elite Registry Limited
+trade
+
+// gent : 2014-01-23 COMBELL GROUP NV/SA
+gent
+
+// ing : 2014-01-23 Charleston Road Registry Inc.
+ing
+
+// dad : 2014-01-23 Charleston Road Registry Inc.
+dad
+
+// shriram : 2014-01-23 Shriram Capital Ltd.
+shriram
+
+// bayern : 2014-01-23 Bayern Connect GmbH
+bayern
+
+// scot : 2014-01-23 Dot Scot Registry Limited
+scot
+
+// webcam : 2014-01-23 dot Webcam Limited
+webcam
+
+// foo : 2014-01-23 Charleston Road Registry Inc.
+foo
+
+// eat : 2014-01-23 Charleston Road Registry Inc.
+eat
+
+// nyc : 2014-01-23 The City of New York
+nyc
+
+// prod : 2014-01-23 Charleston Road Registry Inc.
+prod
+
+// how : 2014-01-23 Charleston Road Registry Inc.
+how
+
+// day : 2014-01-30 Charleston Road Registry Inc.
+day
+
+// meme : 2014-01-30 Charleston Road Registry Inc.
+meme
+
+// mov : 2014-01-30 Charleston Road Registry Inc.
+mov
+
+// paris : 2014-01-30 City of Paris
+paris
+
+// boo : 2014-01-30 Charleston Road Registry Inc.
+boo
+
+// new : 2014-01-30 Charleston Road Registry Inc.
+new
+
+// ifm : 2014-01-30 ifm electronic gmbh
+ifm
+
+// life : 2014-02-06 Trixy Oaks, LLC
+life
+
+// archi : 2014-02-06 STARTING DOT LIMITED
+archi
+
+// spiegel : 2014-02-06 SPIEGEL-Verlag Rudolf Augstein GmbH & Co. KG
+spiegel
+
+// brussels : 2014-02-06 DNS.be vzw
+brussels
+
+// church : 2014-02-06 Holly Fileds, LLC
+church
+
+// here : 2014-02-06 Charleston Road Registry Inc.
+here
+
+// dabur : 2014-02-06 Dabur India Limited
+dabur
+
+// vlaanderen : 2014-02-06 DNS.be vzw
+vlaanderen
+
+// cologne : 2014-02-06 NetCologne Gesellschaft für Telekommunikation mbH
+cologne
+
+// xn--kput3i : 2014-02-13 Beijing RITT-Net Technology Development Co., Ltd
+手机
+
+// wme : 2014-02-13 William Morris Endeavor Entertainment, LLC
+wme
+
+// nhk : 2014-02-13 Japan Broadcasting Corporation (NHK)
+nhk
+
+// suzuki : 2014-02-20 SUZUKI MOTOR CORPORATION
+suzuki
+
+// whoswho : 2014-02-20 Who's Who Registry
+whoswho
+
+// scb : 2014-02-20 The Siam Commercial Bank Public Company Limited ("SCB""\)
+scb
+
+// hamburg : 2014-02-20 Hamburg Top-Level-Domain GmbH
+hamburg
+
+// services : 2014-02-27 Fox Castle, LLC
+services
+
+// bzh : 2014-02-27 Association www.bzh
+bzh
+
+// rio : 2014-02-27 Empresa Municipal de Informática SA - IPLANRIO
+rio
 
 
 // ===END ICANN DOMAINS===
@@ -7700,8 +7940,9 @@ a.prod.fastly.net
 global.prod.fastly.net
 
 // GitHub, Inc.
-// Submitted by Ben Toews <btoews@github.com> 2013-04-18
+// Submitted by Ben Toews <btoews@github.com> 2014-02-06
 github.io
+githubusercontent.com
 
 // GlobeHosting, Inc.
 // Submitted by Zoltan Egresi <egresi@globehosting.com> 2013-07-12
@@ -7753,6 +7994,7 @@ blogspot.tw
 codespot.com
 googleapis.com
 googlecode.com
+withgoogle.com
 
 // Heroku : https://www.heroku.com/
 // Submitted by Tom Maher <tmaher@heroku.com> 2013-05-02
@@ -7769,6 +8011,12 @@ info.at
 
 // Michau Enterprises Limited : http://www.co.pl/
 co.pl
+
+// Microsoft : http://microsoft.com
+// Submitted by Barry Dorrans <bdorrans@microsoft.com> 2014-01-24
+azurewebsites.net
+azure-mobile.net
+cloudapp.net
 
 // NYC.mn : http://www.information.nyc.mn
 // Submitted by Matthew Brown <mattbrown@nyc.mn> 2013-03-11
