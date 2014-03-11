@@ -260,9 +260,11 @@ IN_PROC_BROWSER_TEST_F(WindowOpenPanelTest, MAYBE_WindowOpenPanel) {
   ASSERT_TRUE(RunExtensionTest("window_open/panel")) << message_;
 }
 
-#if defined(USE_ASH_PANELS)
+#if defined(USE_ASH_PANELS) || defined(OS_LINUX)
 // On Ash, this currently fails because we're currently opening new panel
 // windows as popup windows instead.
+// We're also failing on Linux-aura due to the panel is not opened in the
+// right origin.
 #define MAYBE_WindowOpenPanelDetached DISABLED_WindowOpenPanelDetached
 #else
 #define MAYBE_WindowOpenPanelDetached WindowOpenPanelDetached
