@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/profile_chooser_view.h"
 
+#include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_info_util.h"
@@ -20,6 +21,7 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/views/user_manager_view.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -50,6 +52,7 @@ namespace {
 
 const int kFixedMenuWidth = 250;
 const int kButtonHeight = 29;
+const int kProfileAvatarTutorialShowMax = 5;
 
 // Creates a GridLayout with a single column. This ensures that all the child
 // views added get auto-expanded to fill the full width of the bubble.
@@ -360,6 +363,8 @@ void ProfileChooserView::ResetView() {
   add_account_button_ = NULL;
   current_profile_photo_ = NULL;
   current_profile_name_ = NULL;
+  tutorial_ok_button_ = NULL;
+  tutorial_learn_more_link_ = NULL;
   open_other_profile_indexes_map_.clear();
   current_profile_accounts_map_.clear();
 }
@@ -437,12 +442,14 @@ void ProfileChooserView::ShowView(BubbleViewMode view_to_display,
   // Separate items into active and alternatives.
   Indexes other_profiles;
   bool is_guest_view = true;
+  views::View* tutorial_view = NULL;
   views::View* current_profile_view = NULL;
   views::View* current_profile_accounts = NULL;
   for (size_t i = 0; i < avatar_menu->GetNumberOfItems(); ++i) {
     const AvatarMenu::Item& item = avatar_menu->GetItemAt(i);
     if (item.active) {
       if (view_to_display == PROFILE_CHOOSER_VIEW) {
+        tutorial_view = CreateTutorialView(item);
         current_profile_view = CreateCurrentProfileView(item, false);
       } else {
         current_profile_view = CreateCurrentProfileEditableView(item);
@@ -452,6 +459,13 @@ void ProfileChooserView::ShowView(BubbleViewMode view_to_display,
     } else {
       other_profiles.push_back(i);
     }
+  }
+
+  if (tutorial_view) {
+    layout->StartRow(1, 0);
+    layout->AddView(tutorial_view);
+    layout->StartRow(0, 0);
+    layout->AddView(new views::Separator(views::Separator::HORIZONTAL));
   }
 
   if (!current_profile_view)  // Guest windows don't have an active profile.
@@ -519,6 +533,10 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
     ShowView(GAIA_ADD_ACCOUNT_VIEW, avatar_menu_.get());
   } else if (sender == current_profile_photo_->change_photo_button()) {
     avatar_menu_->EditProfile(avatar_menu_->GetActiveProfileIndex());
+  } else if (sender == tutorial_ok_button_) {
+    browser_->profile()->GetPrefs()->SetInteger(
+        prefs::kProfileAvatarTutorialShown, kProfileAvatarTutorialShowMax);
+    ShowView(PROFILE_CHOOSER_VIEW, avatar_menu_.get());
   } else {
     // One of the "other profiles" buttons was pressed.
     ButtonIndexes::const_iterator match =
@@ -550,6 +568,15 @@ void ProfileChooserView::LinkClicked(views::Link* sender, int event_flags) {
     ShowView(ACCOUNT_MANAGEMENT_VIEW, avatar_menu_.get());
   } else if (sender == signout_current_profile_link_) {
     profiles::LockProfile(browser_->profile());
+  } else if (sender == tutorial_learn_more_link_) {
+    // TODO(guohui): update |learn_more_url| once it is decided.
+    const GURL lear_more_url("https://support.google.com/chrome/?hl=en#to");
+    chrome::NavigateParams params(
+        browser_->profile(),
+        lear_more_url,
+        content::PAGE_TRANSITION_LINK);
+    params.disposition = NEW_FOREGROUND_TAB;
+    chrome::Navigate(&params);
   } else {
     DCHECK(sender == signin_current_profile_link_);
     ShowView(GAIA_SIGNIN_VIEW, avatar_menu_.get());
@@ -583,6 +610,105 @@ bool ProfileChooserView::HandleKeyEvent(views::Textfield* sender,
     return true;
   }
   return false;
+}
+
+views::View* ProfileChooserView::CreateTutorialView(
+    const AvatarMenu::Item& current_avatar_item) {
+  if (!current_avatar_item.signed_in)
+    return NULL;
+
+  Profile* profile = browser_->profile();
+  int show_count = profile->GetPrefs()->GetInteger(
+      prefs::kProfileAvatarTutorialShown);
+  if (show_count++ >= kProfileAvatarTutorialShowMax)
+    return NULL;
+
+  profile->GetPrefs()->SetInteger(
+      prefs::kProfileAvatarTutorialShown, show_count);
+
+  views::View* view = new views::View();
+  ui::NativeTheme* theme = GetNativeTheme();
+  view->set_background(
+      views::Background::CreateSolidBackground(theme->GetSystemColor(
+          ui::NativeTheme::kColorId_DialogBackground)));
+
+  views::GridLayout* layout = CreateSingleColumnLayout(view,
+      kFixedMenuWidth - 2 * views::kButtonHEdgeMarginNew);
+  layout->SetInsets(views::kButtonVEdgeMarginNew,
+                    views::kButtonHEdgeMarginNew,
+                    views::kButtonVEdgeMarginNew,
+                    views::kButtonHEdgeMarginNew);
+
+  // Adds title.
+  base::string16 name = profiles::GetAvatarNameForProfile(profile);
+  views::Label* title_label = new views::Label(
+      l10n_util::GetStringFUTF16(IDS_PROFILES_SIGNIN_TUTORIAL_TITLE, name));
+  title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  const SkColor kTitleTextColor = SkColorSetRGB(0x53, 0x8c, 0xea);
+  title_label->SetEnabledColor(kTitleTextColor);
+  layout->StartRow(1, 0);
+  layout->AddView(title_label);
+
+  // Adds body header.
+  views::Label* content_header_label = new views::Label(
+      l10n_util::GetStringUTF16(IDS_PROFILES_SIGNIN_TUTORIAL_CONTENT_HEADER));
+  content_header_label->SetMultiLine(true);
+  content_header_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
+  const gfx::FontList& small_font_list =
+      rb->GetFontList(ui::ResourceBundle::SmallFont);
+  content_header_label->SetFontList(small_font_list);
+  layout->StartRowWithPadding(1, 0, 0, views::kRelatedControlVerticalSpacing);
+  layout->AddView(content_header_label);
+
+  // Adds body content consisting of three bulleted lines.
+  views::View* bullet_row = new views::View();
+  views::GridLayout* bullet_layout = new views::GridLayout(bullet_row);
+  views::ColumnSet* bullet_columns = bullet_layout->AddColumnSet(0);
+  const int kTextHorizIndentation = 10;
+  bullet_columns->AddPaddingColumn(0, kTextHorizIndentation);
+  bullet_columns->AddColumn(views::GridLayout::LEADING,
+      views::GridLayout::CENTER, 0, views::GridLayout::USE_PREF, 0, 0);
+  bullet_row->SetLayoutManager(bullet_layout);
+
+  views::Label* bullet_label = new views::Label(
+      l10n_util::GetStringUTF16(IDS_PROFILES_SIGNIN_TUTORIAL_CONTENT_TEXT));
+  bullet_label->SetMultiLine(true);
+  bullet_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  bullet_label->SetFontList(small_font_list);
+  bullet_layout->StartRow(1, 0);
+  bullet_layout->AddView(bullet_label);
+
+  layout->StartRowWithPadding(1, 0, 0, views::kRelatedControlVerticalSpacing);
+  layout->AddView(bullet_row);
+
+  // Adds links and buttons at the bottom.
+  views::View* button_row = new views::View();
+  views::GridLayout* button_layout = new views::GridLayout(button_row);
+  views::ColumnSet* button_columns = button_layout->AddColumnSet(0);
+  button_columns->AddColumn(views::GridLayout::LEADING,
+      views::GridLayout::CENTER, 0, views::GridLayout::USE_PREF, 0, 0);
+  button_columns->AddPaddingColumn(
+      1, views::kUnrelatedControlHorizontalSpacing);
+  button_columns->AddColumn(views::GridLayout::TRAILING,
+      views::GridLayout::CENTER, 0, views::GridLayout::USE_PREF, 0, 0);
+  button_row->SetLayoutManager(button_layout);
+
+  tutorial_learn_more_link_ = CreateLink(
+      l10n_util::GetStringUTF16(IDS_LEARN_MORE), this);
+  tutorial_learn_more_link_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  button_layout->StartRow(1, 0);
+  button_layout->AddView(tutorial_learn_more_link_);
+
+  tutorial_ok_button_ = new views::BlueButton(this, l10n_util::GetStringUTF16(
+      IDS_PROFILES_SIGNIN_TUTORIAL_OK_BUTTON));
+  tutorial_ok_button_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
+  button_layout->AddView(tutorial_ok_button_);
+
+  layout->StartRowWithPadding(1, 0, 0, views::kUnrelatedControlVerticalSpacing);
+  layout->AddView(button_row);
+
+  return view;
 }
 
 views::View* ProfileChooserView::CreateCurrentProfileView(

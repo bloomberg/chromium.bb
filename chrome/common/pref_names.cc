@@ -1934,6 +1934,11 @@ const char kSignInPromoShowOnFirstRunAllowed[] =
 const char kSignInPromoShowNTPBubble[] = "sync_promo.show_ntp_bubble";
 #endif
 
+// Integer that specifies the number of times that we have shown the tutorial
+// card in the profile avatar bubble.
+const char kProfileAvatarTutorialShown[] =
+    "profile.avatar_bubble_tutorial_shown";
+
 // Time when the user's GAIA info was last updated (represented as an int64).
 const char kProfileGAIAInfoUpdateTime[] = "profile.gaia_info_update_time";
 

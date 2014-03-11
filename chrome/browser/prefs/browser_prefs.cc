@@ -478,6 +478,10 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
       std::string(),
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 #endif
+
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+  RegisterNewProfileUIPrefs(registry);
+#endif
 }
 
 void RegisterUserProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
@@ -497,6 +501,15 @@ void RegisterLoginProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   RegisterProfilePrefs(registry);
 
   chromeos::PowerPrefs::RegisterLoginProfilePrefs(registry);
+}
+#endif
+
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+void RegisterNewProfileUIPrefs(user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterIntegerPref(
+      prefs::kProfileAvatarTutorialShown,
+      0,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 #endif
 

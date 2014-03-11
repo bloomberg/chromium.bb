@@ -119,6 +119,9 @@ class ProfileChooserView : public views::BubbleDelegateView,
   void ShowView(BubbleViewMode view_to_display,
                 AvatarMenu* avatar_menu);
 
+  // Creates a tutorial card for the profile |avatar_item|.
+  views::View* CreateTutorialView(const AvatarMenu::Item& current_avatar_item);
+
   // Creates the main profile card for the profile |avatar_item|. |is_guest|
   // is used to determine whether to show any Sign in/Sign out/Manage accounts
   // links.
@@ -147,6 +150,10 @@ class ProfileChooserView : public views::BubbleDelegateView,
 
   // Accounts associated with the current profile.
   AccountButtonIndexes current_profile_accounts_map_;
+
+  // Links and buttons displayed in the tutorial card.
+  views::Link* tutorial_learn_more_link_;
+  views::LabelButton* tutorial_ok_button_;
 
   // Links displayed in the active profile card.
   views::Link* manage_accounts_link_;

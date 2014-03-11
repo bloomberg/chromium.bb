@@ -11587,6 +11587,12 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       <message name="IDS_PROFILES_EDIT_PROFILE_LINK" desc="Link in the avatar menu bubble to edit a profile.">
         edit
       </message>
+      <message name="IDS_PROFILES_SIGNIN_TUTORIAL_TITLE" desc="Title of the tutorial card in the avatar menu bubble view for a signed-in user.">
+        Hey, <ph name="PROFILE_DISPLAY_NAME">$1<ex>Jessica</ex></ph>!
+      </message>
+      <message name="IDS_PROFILES_SIGNIN_TUTORIAL_OK_BUTTON" desc="Text of the ok button on the tutorial card in the avatar menu bubble view">
+        Ok, Got it!
+      </message>
       <if expr="not use_titlecase">
         <message name="IDS_PROFILES_ADD_PERSON_BUTTON" desc="Button in the avatar menu bubble view for creating a new user.">
           Add person
