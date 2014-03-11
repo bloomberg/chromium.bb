@@ -4,6 +4,7 @@
 
 #include "base/file_util.h"
 #include "base/path_service.h"
+#include "build/build_config.h"
 #include "gin/modules/console.h"
 #include "gin/modules/module_registry.h"
 #include "gin/modules/timer.h"
@@ -50,15 +51,33 @@ TEST(JSTest, core) {
   RunTest("core_unittests.js", true);
 }
 
-TEST(JSTest, codec) {
+// http://crbug.com/351214
+#if defined(OS_POSIX)
+#define MAYBE_codec DISABLED_codec
+#else
+#define MAYBE_codec codec
+#endif
+TEST(JSTest, MAYBE_codec) {
   RunTest("codec_unittests.js", true);
 }
 
-TEST(JSTest, sample_test) {
+// http://crbug.com/351214
+#if defined(OS_POSIX)
+#define MAYBE_sample_test DISABLED_sample_test
+#else
+#define MAYBE_sample_test sample_test
+#endif
+TEST(JSTest, MAYBE_sample_test) {
   RunTest("sample_service_unittests.js", true);
 }
 
-TEST(JSTest, connector) {
+// http://crbug.com/351214
+#if defined(OS_POSIX)
+#define MAYBE_connector DISABLED_connector
+#else
+#define MAYBE_connector connector
+#endif
+TEST(JSTest, MAYBE_connector) {
   RunTest("connector_unittests.js", true);
 }
 
