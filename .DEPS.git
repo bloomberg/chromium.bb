@@ -310,7 +310,7 @@ deps_os = {
     'unix':
     {
         'src/chrome/tools/test/reference_build/chrome_linux':
-            Var('git_url') + '/chromium/reference_builds/chrome_linux64.git@5186d1b279358de0d9a581399281f2268932cd37',
+            Var('git_url') + '/chromium/reference_builds/chrome_linux.git@f2a1a3b62a81bbd759955e81cc196ff9fdffb54e',
         'src/third_party/chromite':
             Var('git_url') + '/chromiumos/chromite.git@1ee2901d33ae698d1f2a1d95e9f3fd5bbd5f13f9',
         'src/third_party/cros_dbus_cplusplus/source':
