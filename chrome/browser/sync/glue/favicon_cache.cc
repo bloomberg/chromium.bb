@@ -301,13 +301,11 @@ syncer::SyncMergeResult FaviconCache::MergeDataAndStartSyncing(
   merge_result.set_num_items_after_association(synced_favicons_.size());
 
   if (type == syncer::FAVICON_IMAGES) {
-      merge_result.set_error(
-          favicon_images_sync_processor_->ProcessSyncChanges(FROM_HERE,
-                                                             local_changes));
+    favicon_images_sync_processor_->ProcessSyncChanges(FROM_HERE,
+                                                       local_changes);
   } else {
-      merge_result.set_error(
-          favicon_tracking_sync_processor_->ProcessSyncChanges(FROM_HERE,
-                                                               local_changes));
+    favicon_tracking_sync_processor_->ProcessSyncChanges(FROM_HERE,
+                                                         local_changes);
   }
   return merge_result;
 }
@@ -396,13 +394,11 @@ syncer::SyncError FaviconCache::ProcessSyncChanges(
   // trigger the necessary expiration.
   if (!error.IsSet() && !new_changes.empty()) {
     if (type == syncer::FAVICON_IMAGES) {
-        error =
-            favicon_images_sync_processor_->ProcessSyncChanges(FROM_HERE,
-                                                               new_changes);
+        favicon_images_sync_processor_->ProcessSyncChanges(FROM_HERE,
+                                                           new_changes);
     } else {
-        error =
-            favicon_tracking_sync_processor_->ProcessSyncChanges(FROM_HERE,
-                                                                 new_changes);
+        favicon_tracking_sync_processor_->ProcessSyncChanges(FROM_HERE,
+                                                             new_changes);
     }
   }
 
