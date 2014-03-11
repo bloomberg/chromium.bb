@@ -90,6 +90,9 @@ function collectPropertiesHelper(object, path)
         // because some property accesses might crash (crbug/351195).
         if (property == 'accessibilityController')
             continue;
+        // As for 'localStorage', local storage is not reliably cleared between tests.
+        if (property == 'localStorage')
+            continue;
         if (!object[property])
             continue;
         path.push(property);
