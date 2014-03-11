@@ -76,6 +76,7 @@ class SyncTaskManager
                               const SyncStatusCallback& callback);
 
   void NotifyTaskDone(scoped_ptr<TaskToken> token,
+                      const SyncStatusCallback& callback,
                       SyncStatusCode status);
 
  private:
@@ -107,7 +108,6 @@ class SyncTaskManager
 
   // Owns running SyncTask to cancel the task on SyncTaskManager deletion.
   scoped_ptr<SyncTask> running_task_;
-  SyncStatusCallback current_callback_;
 
   std::priority_queue<PendingTask, std::vector<PendingTask>,
                       PendingTaskComparator> pending_tasks_;
