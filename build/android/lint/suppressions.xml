@@ -46,6 +46,7 @@ Still reading?
     <ignore path="base/android/java/src/org/chromium/base/MemoryPressureListener.java"/>
     <ignore path="chrome/android/java/src/org/chromium/chrome/browser/printing/PrintingControllerFactory.java"/>
     <ignore path="content/public/android/java/src/org/chromium/content/browser/DeviceUtils.java"/>
+    <ignore path="content/public/android/java/src/org/chromium/content/browser/ScreenOrientationListener.java"/>
     <ignore path="content/public/android/java/src/org/chromium/content/browser/accessibility/BrowserAccessibilityManager.java"/>
     <ignore path="content/public/android/java/src/org/chromium/content/browser/accessibility/JellyBeanAccessibilityInjector.java"/>
     <ignore path="media/base/android/java/src/org/chromium/media/AudioManagerAndroid.java"/>

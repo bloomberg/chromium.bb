@@ -4,6 +4,7 @@
 
 package org.chromium.content.browser;
 
+import android.annotation.SuppressLint;
 import android.content.ComponentCallbacks;
 import android.content.Context;
 import android.content.res.Configuration;
@@ -100,6 +101,7 @@ class ScreenOrientationListener {
      *
      * This method is reliable but DisplayListener is only available for API Level 17+.
      */
+    @SuppressLint("NewApi")
     private class ScreenOrientationDisplayListener
             implements ScreenOrientationListenerBackend, DisplayListener {
 
