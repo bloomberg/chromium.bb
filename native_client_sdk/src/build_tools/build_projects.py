@@ -6,21 +6,21 @@
 import multiprocessing
 import optparse
 import os
+import posixpath
 import sys
+import urllib2
 
 import buildbot_common
 import build_version
 import generate_make
 import parse_dsc
 
-from build_paths import NACL_DIR, SDK_SRC_DIR, OUT_DIR, SDK_RESOURCE_DIR
+from build_paths import SDK_SRC_DIR, OUT_DIR, SDK_RESOURCE_DIR
 from build_paths import GSTORE
 from generate_index import LandingPage
 
 sys.path.append(os.path.join(SDK_SRC_DIR, 'tools'))
-sys.path.append(os.path.join(NACL_DIR, 'build'))
 import getos
-import http_download
 
 
 MAKE = 'nacl_sdk/make_3.99.90-26-gf80222c/make.exe'
@@ -82,8 +82,10 @@ def UpdateHelpers(pepperdir, clobber=False):
   # On Windows add a prebuilt make
   if getos.GetPlatform() == 'win':
     buildbot_common.BuildStep('Add MAKE')
-    http_download.HttpDownload(GSTORE + MAKE,
-                               os.path.join(tools_dir, 'make.exe'))
+    make_url = posixpath.join(GSTORE, MAKE)
+    make_exe = os.path.join(tools_dir, 'make.exe')
+    with open(make_exe, 'wb') as f:
+      f.write(urllib2.urlopen(make_url).read())
 
 
 def ValidateToolchains(toolchains):
