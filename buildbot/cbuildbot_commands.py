@@ -1602,8 +1602,10 @@ def BuildStandaloneImageTarball(archive_dir, image_bin):
   image_dir, image_filename = os.path.split(image_bin)
   filename = '%s.tar.xz' % os.path.splitext(image_filename)[0]
   archive_filename = os.path.join(archive_dir, filename)
+  extra_env = { 'XZ_OPT' : '-1' }
   cros_build_lib.CreateTarball(archive_filename, image_dir,
-                               inputs=[image_filename])
+                               inputs=[image_filename],
+                               extra_env=extra_env)
   return filename
 
 
