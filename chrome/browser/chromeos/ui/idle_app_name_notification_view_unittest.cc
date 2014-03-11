@@ -111,29 +111,9 @@ TEST_F(IdleAppNameNotificationViewTest, CheckCorrectApp) {
   scoped_ptr<chromeos::IdleAppNameNotificationView> message(
       new chromeos::IdleAppNameNotificationView(10, 5, correct_extension()));
   base::string16 text = message->GetShownTextForTest();
-  // Check that the string starts with the application name followed by a space.
-  base::string16 name = base::ASCIIToUTF16("Test ");
+  // Check that the string is the application name.
+  base::string16 name = base::ASCIIToUTF16("Test");
   EXPECT_EQ(name, text.substr(0, name.length()));
-  // Check that the string ends with a space + author's name.
-  base::string16 author = base::ASCIIToUTF16(" Someone");
-  EXPECT_EQ(author,
-            text.substr(text.length() - author.length(), author.length()));
-}
-
-// Check that an invalid author gets shown accordingly.
-TEST_F(IdleAppNameNotificationViewTest, CheckInvalidAuthor) {
-  // Create a message which is visible for 10ms and fades in/out for 5ms.
-  scoped_ptr<chromeos::IdleAppNameNotificationView> message(
-      new chromeos::IdleAppNameNotificationView(10, 5, incorrect_extension()));
-  base::string16 text = message->GetShownTextForTest();
-  // Check that the string starts with the application name followed by a space.
-  base::string16 name = base::ASCIIToUTF16("Test ");
-  EXPECT_EQ(name, text.substr(0, name.length()));
-  // Check that it ends in an invalid author notification.
-  base::string16 author = l10n_util::GetStringUTF16(
-            IDS_IDLE_APP_NAME_INVALID_AUTHOR_NOTIFICATION);
-  EXPECT_EQ(author,
-            text.substr(text.length() - author.length(), author.length()));
 }
 
 // Check that an invalid app gets shown accordingly.

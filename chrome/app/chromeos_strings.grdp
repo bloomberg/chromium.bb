@@ -21,17 +21,8 @@ Press any key to continue exploring.
   </message>
 
   <!-- Application name notification upon idle -->
-  <message name="IDS_IDLE_APP_NAME_NOTIFICATION" desc="A kiosk mode notification which shows the author of the running application (and in front the application name itself in a different font) after some idle timeout.">
-    App by: <ph name="COMPANY_NAME">$1<ex>Example company</ex></ph>
-  </message>
-  <message name="IDS_IDLE_APP_NAME_INVALID_AUTHOR_NOTIFICATION" desc="A notification which shows that the author of the running kiosk application is unknown or invalid.">
-    The author cannot be determined.
-  </message>
   <message name="IDS_IDLE_APP_NAME_UNKNOWN_APPLICATION_NOTIFICATION" desc="A notification which shows that the name of the running Kiosk application cannot be determined and is probably invalid.">
     The application appears to be invalid.
-  </message>
-  <message name="IDS_IDLE_APP_NAME_SPOKEN_NOTIFICATION" desc="The accessibility spoken string for the message which tells the user about the application and the author in Kisok mode.">
-   <ph name="APPLICATION_NAME">$1<ex>My application</ex></ph> <ph name="COMPANY_NAME">$2<ex>Example company</ex></ph>
   </message>
 
   <!-- User Image default image accessible descriptions -->

@@ -51,11 +51,6 @@ const SkColor kWindowBackgroundColor = SK_ColorWHITE;
 // Radius of the rounded corners of the window.
 const int kWindowCornerRadius = 4;
 
-// Spacing around the text.
-const int kHorizontalMarginAroundText = 50;
-const int kVerticalMarginAroundText = 25;
-const int kVerticalSpacingBetweenText = 10;
-
 // Creates and shows the message widget for |view| with |animation_time_ms|.
 void CreateAndShowWidgetWithContent(views::WidgetDelegate* delegate,
                                     views::View* view,
@@ -112,13 +107,12 @@ class IdleAppNameNotificationDelegateView
  public:
   // An idle message which will get shown from the caller and hides itself after
   // a time, calling |owner->CloseMessage| to inform the owner that it got
-  // destroyed. The |app_name| and the |app_author| are strings which get
-  // used as message and |error| is true if something is not correct.
+  // destroyed. The |app_name| is a string which gets used as message and
+  // |error| is true if something is not correct.
   // |message_visibility_time_in_ms| ms's after creation the message will start
   // to remove itself from the screen.
   IdleAppNameNotificationDelegateView(IdleAppNameNotificationView *owner,
                                       const base::string16& app_name,
-                                      const base::string16& app_author,
                                       bool error,
                                       int message_visibility_time_in_ms)
       : owner_(owner),
@@ -127,27 +121,9 @@ class IdleAppNameNotificationDelegateView
     // Add the application name label to the message.
     AddLabel(app_name,
              rb.GetFontList(ui::ResourceBundle::BoldFont),
-             error && app_author.empty() ? kErrorTextColor : kTextColor);
-    if (!app_author.empty()) {
-      // Add the author label to the message.
-      base::string16 app_by_author =
-            l10n_util::GetStringFUTF16(IDS_IDLE_APP_NAME_NOTIFICATION,
-                                       app_author);
-      AddLabel(app_by_author,
-               rb.GetFontList(ui::ResourceBundle::BaseFont),
-               error ? kErrorTextColor : kTextColor);
-      spoken_text_ =
-          l10n_util::GetStringFUTF16(IDS_IDLE_APP_NAME_SPOKEN_NOTIFICATION,
-                                     app_name,
-                                     app_by_author);
-      SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
-                                            kHorizontalMarginAroundText,
-                                            kVerticalMarginAroundText,
-                                            kVerticalSpacingBetweenText));
-    } else {
-      spoken_text_ = app_name;
-      SetLayoutManager(new views::FillLayout);
-    }
+             error ? kErrorTextColor : kTextColor);
+    spoken_text_ = app_name;
+    SetLayoutManager(new views::FillLayout);
 
     // Set a timer which will trigger to remove the message after the given
     // time.
@@ -280,19 +256,10 @@ void IdleAppNameNotificationView::ShowMessage(
     const extensions::Extension* extension) {
   DCHECK(!view_);
 
-  base::string16 author;
   base::string16 app_name;
   bool error = false;
   if (extension && !ContainsOnlyWhitespaceASCII(extension->name())) {
     app_name = base::UTF8ToUTF16(extension->name());
-    // TODO(skuhne): This might not be enough since the author flag is not
-    // explicitly enforced by us, but for Kiosk mode we could maybe require it.
-    extension->manifest()->GetString("author.email", &author);
-    if (ContainsOnlyWhitespace(author)) {
-      error = true;
-      author = l10n_util::GetStringUTF16(
-          IDS_IDLE_APP_NAME_INVALID_AUTHOR_NOTIFICATION);
-    }
   } else {
     error = true;
     app_name = l10n_util::GetStringUTF16(
@@ -302,7 +269,6 @@ void IdleAppNameNotificationView::ShowMessage(
   view_ = new IdleAppNameNotificationDelegateView(
       this,
       app_name,
-      author,
       error,
       message_visibility_time_in_ms + animation_time_ms);
   CreateAndShowWidgetWithContent(view_, view_, animation_time_ms);
