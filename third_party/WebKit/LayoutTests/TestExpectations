@@ -324,6 +324,10 @@ crbug.com/347265 fast/canvas/canvas-incremental-repaint.html [ NeedsRebaseline ]
 crbug.com/113592 virtual/gpu/fast/canvas/canvas-large-pattern.html [ NeedsRebaseline ]
 crbug.com/113592 fast/canvas/canvas-large-pattern.html [ NeedsRebaseline ]
 
+crbug.com/350578 virtual/softwarecompositing/plugins/webplugin-alpha.html [ NeedsRebaseline ]
+crbug.com/350578 virtual/softwarecompositing/plugins/webplugin-no-alpha.html [ NeedsRebaseline ]
+crbug.com/350578 virtual/softwarecompositing/plugins/webplugin-reflection.html [ NeedsRebaseline ]
+
 crbug.com/231357 [ Win Linux Debug ] compositing/video-page-visibility.html [ ImageOnlyFailure ]
 crbug.com/231357 [ Mac ] compositing/video-page-visibility.html [ ImageOnlyFailure ]
 
