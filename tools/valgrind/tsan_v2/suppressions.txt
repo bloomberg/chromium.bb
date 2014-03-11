@@ -241,6 +241,7 @@ race:blink::WebString::reset
 # http://crbug.com/347559
 race:WebCore::ThreadState::stopThreads
 race:WebCore::ThreadState::visitRoots
+race:WebCore::SafePointBarrier::parkAfterPushRegisters
 
 # https://code.google.com/p/v8/issues/detail?id=3143
 race:v8::internal::FLAG_track_double_fields
