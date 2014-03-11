@@ -69,11 +69,6 @@ ShadowRoot::ShadowRoot(Document& document, ShadowRootType type)
     , m_descendantInsertionPointsIsValid(false)
 {
     ScriptWrappable::init(this);
-
-    if (type == ShadowRoot::AuthorShadowRoot) {
-        ShadowRootUsageOriginType usageType = document.url().protocolIsInHTTPFamily() ? ShadowRootUsageOriginWeb : ShadowRootUsageOriginNotWeb;
-        blink::Platform::current()->histogramEnumeration("WebCore.ShadowRoot.constructor", usageType, ShadowRootUsageOriginMax);
-    }
 }
 
 ShadowRoot::~ShadowRoot()
