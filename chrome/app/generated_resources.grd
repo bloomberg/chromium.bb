@@ -3577,9 +3577,6 @@ Make sure you do not expose any sensitive information.
           <message name="IDS_TASK_MANAGER_KILL" desc="The caption of the Task Manager kill button">
             End process
           </message>
-          <message name="IDS_TASK_MANAGER_PURGE_MEMORY" desc="The caption of the Task Manager purge memory button">
-            Purge memory
-          </message>
           <message name="IDS_TASK_MANAGER_PROCESS_ID_COLUMN" desc="The title for Task Manager process ID column.">
             Process ID
           </message>
@@ -3650,9 +3647,6 @@ Make sure you do not expose any sensitive information.
         <if expr="use_titlecase">
           <message name="IDS_TASK_MANAGER_KILL" desc="The caption of the Task Manager kill button">
             End Process
-          </message>
-          <message name="IDS_TASK_MANAGER_PURGE_MEMORY" desc="The caption of the Task Manager purge memory button">
-            Purge Memory
           </message>
           <message name="IDS_TASK_MANAGER_PROCESS_ID_COLUMN" desc="The title for Task Manager process ID column.">
             Process ID

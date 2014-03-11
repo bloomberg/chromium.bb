@@ -4,7 +4,6 @@
 
 #include "chrome/browser/task_manager/task_manager.h"
 
-#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/metrics/stats_table.h"
 #include "base/prefs/pref_service.h"
@@ -12,13 +11,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/memory_purger.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/views/browser_dialogs.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -222,7 +219,6 @@ class TaskManagerView : public views::ButtonListener,
   // Restores saved always on top state from a previous session.
   bool GetSavedAlwaysOnTopState(bool* always_on_top) const;
 
-  views::LabelButton* purge_memory_button_;
   views::LabelButton* kill_button_;
   views::Link* about_memory_link_;
   views::TableView* tab_table_;
@@ -260,8 +256,7 @@ TaskManagerView* TaskManagerView::instance_ = NULL;
 
 
 TaskManagerView::TaskManagerView(chrome::HostDesktopType desktop_type)
-    : purge_memory_button_(NULL),
-      kill_button_(NULL),
+    : kill_button_(NULL),
       about_memory_link_(NULL),
       tab_table_(NULL),
       tab_table_parent_(NULL),
@@ -371,13 +366,6 @@ void TaskManagerView::Init() {
   tab_table_->SetObserver(this);
   tab_table_->set_context_menu_controller(this);
   set_context_menu_controller(this);
-  // If we're running with --purge-memory-button, add a "Purge memory" button.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kPurgeMemoryButton)) {
-    purge_memory_button_ = new views::LabelButton(this,
-        l10n_util::GetStringUTF16(IDS_TASK_MANAGER_PURGE_MEMORY));
-    purge_memory_button_->SetStyle(views::Button::STYLE_BUTTON);
-  }
   kill_button_ = new views::LabelButton(this,
       l10n_util::GetStringUTF16(IDS_TASK_MANAGER_KILL));
   kill_button_->SetStyle(views::Button::STYLE_BUTTON);
@@ -428,15 +416,11 @@ void TaskManagerView::ViewHierarchyChanged(
   if (details.child == this) {
     if (details.is_add) {
       details.parent->AddChildView(about_memory_link_);
-      if (purge_memory_button_)
-        details.parent->AddChildView(purge_memory_button_);
       details.parent->AddChildView(kill_button_);
       tab_table_parent_ = tab_table_->CreateParentIfNecessary();
       AddChildView(tab_table_parent_);
     } else {
       details.parent->RemoveChildView(kill_button_);
-      if (purge_memory_button_)
-        details.parent->RemoveChildView(purge_memory_button_);
       details.parent->RemoveChildView(about_memory_link_);
     }
   }
@@ -450,14 +434,6 @@ void TaskManagerView::Layout() {
   int x = width() - size.width() - horizontal_margin;
   int y_buttons = parent_bounds.bottom() - size.height() - vertical_margin;
   kill_button_->SetBounds(x, y_buttons, size.width(), size.height());
-
-  if (purge_memory_button_) {
-    size = purge_memory_button_->GetPreferredSize();
-    purge_memory_button_->SetBounds(
-        kill_button_->x() - size.width() -
-            views::kUnrelatedControlHorizontalSpacing,
-        y_buttons, size.width(), size.height());
-  }
 
   size = about_memory_link_->GetPreferredSize();
   about_memory_link_->SetBounds(
@@ -537,16 +513,12 @@ void TaskManagerView::Show(Browser* browser) {
 void TaskManagerView::ButtonPressed(
     views::Button* sender,
     const ui::Event& event) {
-  if (purge_memory_button_ && (sender == purge_memory_button_)) {
-    MemoryPurger::PurgeAll();
-  } else {
-    typedef ui::ListSelectionModel::SelectedIndices SelectedIndices;
-    DCHECK_EQ(kill_button_, sender);
-    SelectedIndices selection(tab_table_->selection_model().selected_indices());
-    for (SelectedIndices::const_reverse_iterator i = selection.rbegin();
-         i != selection.rend(); ++i) {
-      task_manager_->KillProcess(*i);
-    }
+  typedef ui::ListSelectionModel::SelectedIndices SelectedIndices;
+  DCHECK_EQ(kill_button_, sender);
+  SelectedIndices selection(tab_table_->selection_model().selected_indices());
+  for (SelectedIndices::const_reverse_iterator i = selection.rbegin();
+        i != selection.rend(); ++i) {
+    task_manager_->KillProcess(*i);
   }
 }
 

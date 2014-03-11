@@ -1198,13 +1198,6 @@ const char kProxyPacUrl[]                   = "proxy-pac-url";
 // affects HTTP and HTTPS requests.
 const char kProxyServer[]                   = "proxy-server";
 
-// Adds a "Purge memory" button to the Task Manager, which tries to dump as
-// much memory as possible. This is mostly useful for testing how well the
-// MemoryPurger functionality works.
-//
-// NOTE: This is only implemented for Views.
-const char kPurgeMemoryButton[]             = "purge-memory-button";
-
 // Specifies the maximum length for a QUIC packet.
 const char kQuicMaxPacketLength[]           = "quic-max-packet-length";
 

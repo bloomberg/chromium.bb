@@ -6,7 +6,6 @@
 
 #include "base/android/memory_pressure_listener_android.h"
 #include "chrome/browser/lifetime/application_lifetime_android.h"
-#include "chrome/browser/memory_purger.h"
 
 BrowserProcessPlatformPart::BrowserProcessPlatformPart() {
   base::android::MemoryPressureListenerAndroid::RegisterSystemCallback(

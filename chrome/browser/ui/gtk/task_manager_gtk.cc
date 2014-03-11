@@ -12,14 +12,12 @@
 #include <vector>
 
 #include "base/auto_reset.h"
-#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/defaults.h"
-#include "chrome/browser/memory_purger.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
@@ -27,7 +25,6 @@
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/menu_gtk.h"
 #include "chrome/browser/ui/host_desktop.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "grit/chromium_strings.h"
 #include "grit/ui_resources.h"
@@ -50,9 +47,6 @@ const gint kTaskManagerResponseKill = 1;
 
 // The resource id for the 'Stats for nerds' link button.
 const gint kTaskManagerAboutMemoryLink = 2;
-
-// The resource id for the 'Purge Memory' button
-const gint kTaskManagerPurgeMemory = 3;
 
 enum TaskManagerColumn {
   kTaskManagerIcon,
@@ -444,13 +438,6 @@ void TaskManagerGtk::Init() {
   // Allow browser windows to go in front of the task manager dialog in
   // metacity.
   gtk_window_set_type_hint(GTK_WINDOW(dialog_), GDK_WINDOW_TYPE_HINT_NORMAL);
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kPurgeMemoryButton)) {
-    gtk_dialog_add_button(GTK_DIALOG(dialog_),
-        l10n_util::GetStringUTF8(IDS_TASK_MANAGER_PURGE_MEMORY).c_str(),
-        kTaskManagerPurgeMemory);
-  }
 
   if (browser_defaults::kShowCancelButtonInTaskManager) {
     gtk_dialog_add_button(GTK_DIALOG(dialog_),
@@ -846,8 +833,6 @@ void TaskManagerGtk::OnResponse(GtkWidget* dialog, int response_id) {
     KillSelectedProcesses();
   } else if (response_id == kTaskManagerAboutMemoryLink) {
     OnLinkActivated();
-  } else if (response_id == kTaskManagerPurgeMemory) {
-    MemoryPurger::PurgeAll();
   }
 }
 
