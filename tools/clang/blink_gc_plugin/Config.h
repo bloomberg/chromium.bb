@@ -99,15 +99,32 @@ class Config {
            IsGCMixinBase(name);
   }
 
+  static bool IsVisitor(const std::string& name) { return name == "Visitor"; }
+
   static bool IsTraceMethod(clang::CXXMethodDecl* method,
                             bool* isTraceAfterDispatch = 0) {
+    if (method->getNumParams() != 1)
+      return false;
+
     const std::string& name = method->getNameAsString();
-    if (name == kTraceName || name == kTraceAfterDispatchName) {
-      if (isTraceAfterDispatch)
-        *isTraceAfterDispatch = (name == kTraceAfterDispatchName);
-      return true;
-    }
-    return false;
+    if (name != kTraceName && name != kTraceAfterDispatchName)
+      return false;
+
+    const clang::QualType& formal_type = method->getParamDecl(0)->getType();
+    if (!formal_type->isPointerType())
+      return false;
+
+    clang::CXXRecordDecl* pointee_type =
+        formal_type->getPointeeType()->getAsCXXRecordDecl();
+    if (!pointee_type)
+      return false;
+
+    if (!IsVisitor(pointee_type->getName()))
+      return false;
+
+    if (isTraceAfterDispatch)
+      *isTraceAfterDispatch = (name == kTraceAfterDispatchName);
+    return true;
   }
 
   static bool StartsWith(const std::string& str, const std::string& prefix) {

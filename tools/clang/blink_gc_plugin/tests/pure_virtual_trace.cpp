@@ -6,9 +6,9 @@
 
 namespace WebCore {
 
-void B::trace(Visitor* visitor) {
+void C::trace(Visitor* visitor) {
     visitor->trace(m_a);
-    // Is not required to trace base class A.
+    // Is not required to trace base classes B and A.
 }
 
 }

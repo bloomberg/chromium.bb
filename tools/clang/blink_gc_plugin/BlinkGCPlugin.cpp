@@ -565,17 +565,6 @@ class BlinkGCPluginConsumer : public ASTConsumer {
 
   // Check an actual trace method.
   void CheckTraceMethod(RecordInfo* parent, CXXMethodDecl* trace) {
-    // Bases with a pure-virtual trace method don't need to be traced.
-    for (CXXMethodDecl::method_iterator it = trace->begin_overridden_methods();
-         it != trace->end_overridden_methods();
-         ++it) {
-      CXXMethodDecl* overridden = const_cast<CXXMethodDecl*>(*it);
-      if (overridden->isPure()) {
-        CXXRecordDecl* base = overridden->getParent();
-        parent->GetBases().find(base)->second.MarkUnneeded();
-      }
-    }
-
     CheckTraceVisitor visitor(trace, parent);
     visitor.TraverseCXXMethodDecl(trace);
 

@@ -16,6 +16,11 @@ public:
 
 class B : public A {
 public:
+    // Does not need a trace method.
+};
+
+class C : public B {
+public:
     void trace(Visitor*);
 private:
     Member<A> m_a;

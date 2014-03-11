@@ -32,11 +32,14 @@ class GraphPoint {
 
 class BasePoint : public GraphPoint {
  public:
-  explicit BasePoint(const TracingStatus& status) : status_(status) {}
+  BasePoint(RecordInfo* info, const TracingStatus& status)
+      : info_(info), status_(status) {}
+  RecordInfo* info() { return info_; }
   const TracingStatus NeedsTracing() { return status_; }
   // Needed to change the status of bases with a pure-virtual trace.
   void MarkUnneeded() { status_ = TracingStatus::Unneeded(); }
  private:
+  RecordInfo* info_;
   TracingStatus status_;
 };
 
@@ -90,6 +93,7 @@ class RecordInfo {
   Fields* CollectFields();
   Bases* CollectBases();
   void DetermineTracingMethods();
+  bool InheritsNonPureTrace();
 
   Edge* CreateEdge(const clang::Type* type);
 
