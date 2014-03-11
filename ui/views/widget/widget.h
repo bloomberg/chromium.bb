@@ -14,6 +14,7 @@
 #include "base/observer_list.h"
 #include "ui/aura/window_layer_type.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/events/event_source.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/focus/focus_manager.h"
@@ -92,6 +93,7 @@ class RootView;
 //      destructor).
 //
 class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
+                            public ui::EventSource,
                             public FocusTraversable {
  public:
   typedef std::set<Widget*> Widgets;
@@ -742,6 +744,9 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   virtual Widget* AsWidget() OVERRIDE;
   virtual const Widget* AsWidget() const OVERRIDE;
   virtual bool SetInitialFocus(ui::WindowShowState show_state) OVERRIDE;
+
+  // Overridden from ui::EventSource:
+  virtual ui::EventProcessor* GetEventProcessor() OVERRIDE;
 
   // Overridden from FocusTraversable:
   virtual FocusSearch* GetFocusSearch() OVERRIDE;

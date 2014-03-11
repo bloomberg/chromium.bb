@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
-#include "ui/events/event_dispatcher.h"
+#include "ui/events/event_processor.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/focus/focus_search.h"
 #include "ui/views/view.h"
@@ -45,7 +45,7 @@ namespace internal {
 //
 class VIEWS_EXPORT RootView : public View,
                               public FocusTraversable,
-                              public ui::EventDispatcherDelegate {
+                              public ui::EventProcessor {
  public:
   static const char kViewClassName[];
 
@@ -62,16 +62,6 @@ class VIEWS_EXPORT RootView : public View,
 
   // Called when parent of the host changed.
   void NotifyNativeViewHierarchyChanged();
-
-  // Input ---------------------------------------------------------------------
-
-  // Process a key event. Send the event to the focused view and up the focus
-  // path, and finally to the default keyboard handler, until someone consumes
-  // it. Returns whether anyone consumed the event.
-  void DispatchKeyEvent(ui::KeyEvent* event);
-  void DispatchScrollEvent(ui::ScrollEvent* event);
-  void DispatchTouchEvent(ui::TouchEvent* event);
-  virtual void DispatchGestureEvent(ui::GestureEvent* event);
 
   // Focus ---------------------------------------------------------------------
 
@@ -97,6 +87,10 @@ class VIEWS_EXPORT RootView : public View,
   virtual FocusTraversable* GetFocusTraversableParent() OVERRIDE;
   virtual View* GetFocusTraversableParentView() OVERRIDE;
 
+  // Overridden from ui::EventProcessor:
+  virtual ui::EventTarget* GetRootTarget() OVERRIDE;
+  virtual ui::EventDispatchDetails OnEventFromSource(ui::Event* event) OVERRIDE;
+
   // Overridden from View:
   virtual const Widget* GetWidget() const OVERRIDE;
   virtual Widget* GetWidget() OVERRIDE;
@@ -116,6 +110,8 @@ class VIEWS_EXPORT RootView : public View,
   virtual void UpdateParentLayer() OVERRIDE;
 
  protected:
+  virtual void DispatchGestureEvent(ui::GestureEvent* event);
+
   // Overridden from View:
   virtual void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) OVERRIDE;
@@ -132,6 +128,17 @@ class VIEWS_EXPORT RootView : public View,
   friend class ::views::test::WidgetTest;
 
   // Input ---------------------------------------------------------------------
+
+  // TODO(tdanderson): Remove the RootView::Dispatch*Event() functions once
+  //                   their targeting and dispatch logic has been moved
+  //                   elsewhere. See crbug.com/348083.
+
+  // Process a key event. Send the event to the focused view and up the focus
+  // path, and finally to the default keyboard handler, until someone consumes
+  // it. Returns whether anyone consumed the event.
+  void DispatchKeyEvent(ui::KeyEvent* event);
+  void DispatchScrollEvent(ui::ScrollEvent* event);
+  void DispatchTouchEvent(ui::TouchEvent* event);
 
   // Update the cursor given a mouse event. This is called by non mouse_move
   // event handlers to honor the cursor desired by views located under the

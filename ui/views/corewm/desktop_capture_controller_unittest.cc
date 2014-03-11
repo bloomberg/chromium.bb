@@ -130,6 +130,7 @@ TEST_F(DesktopCaptureControllerTest, CaptureWindowInputEventTest) {
   aura::client::SetScreenPositionClient(
       widget2->GetNativeView()->GetRootWindow(),
       desktop_position_client2.get());
+  ui::EventDispatchDetails details;
 
   DesktopViewInputTest* v2 = new DesktopViewInputTest();
   v2->SetBoundsRect(gfx::Rect(0, 0, 300, 300));
@@ -150,7 +151,10 @@ TEST_F(DesktopCaptureControllerTest, CaptureWindowInputEventTest) {
                       base::TimeDelta(),
                       ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS,
                                               0.0f, 0.0f), 0);
-  root1->DispatchGestureEvent(&g1);
+  details = root1->OnEventFromSource(&g1);
+  EXPECT_FALSE(details.dispatcher_destroyed);
+  EXPECT_FALSE(details.target_destroyed);
+
   EXPECT_TRUE(v1->received_gesture_event());
   EXPECT_FALSE(v2->received_gesture_event());
   v1->Reset();
@@ -162,7 +166,10 @@ TEST_F(DesktopCaptureControllerTest, CaptureWindowInputEventTest) {
   EXPECT_TRUE(widget2->GetNativeView()->HasCapture());
   EXPECT_EQ(capture_client->GetCaptureWindow(), widget2->GetNativeView());
 
-  root2->DispatchGestureEvent(&g1);
+  details = root2->OnEventFromSource(&g1);
+  EXPECT_FALSE(details.dispatcher_destroyed);
+  EXPECT_FALSE(details.target_destroyed);
+
   EXPECT_TRUE(v2->received_gesture_event());
   EXPECT_FALSE(v1->received_gesture_event());
 

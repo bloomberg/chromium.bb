@@ -1128,10 +1128,12 @@ int Widget::GetNonClientComponent(const gfx::Point& point) {
 }
 
 void Widget::OnKeyEvent(ui::KeyEvent* event) {
-  static_cast<internal::RootView*>(GetRootView())->
-      DispatchKeyEvent(event);
+  SendEventToProcessor(event);
 }
 
+// TODO(tdanderson): We should not be calling the OnMouse*() functions on
+//                   RootView from anywhere in Widget. Use
+//                   SendEventToProcessor() instead. See crbug.com/348087.
 void Widget::OnMouseEvent(ui::MouseEvent* event) {
   View* root_view = GetRootView();
   switch (event->type()) {
@@ -1214,13 +1216,11 @@ void Widget::OnMouseCaptureLost() {
 }
 
 void Widget::OnTouchEvent(ui::TouchEvent* event) {
-  static_cast<internal::RootView*>(GetRootView())->
-      DispatchTouchEvent(event);
+  SendEventToProcessor(event);
 }
 
 void Widget::OnScrollEvent(ui::ScrollEvent* event) {
-  static_cast<internal::RootView*>(GetRootView())->
-      DispatchScrollEvent(event);
+  SendEventToProcessor(event);
 }
 
 void Widget::OnGestureEvent(ui::GestureEvent* event) {
@@ -1240,7 +1240,7 @@ void Widget::OnGestureEvent(ui::GestureEvent* event) {
     default:
       break;
   }
-  static_cast<internal::RootView*>(GetRootView())->DispatchGestureEvent(event);
+  SendEventToProcessor(event);
 }
 
 bool Widget::ExecuteCommand(int command_id) {
@@ -1290,6 +1290,12 @@ bool Widget::SetInitialFocus(ui::WindowShowState show_state) {
   if (v)
     v->RequestFocus();
   return !!v;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Widget, ui::EventSource implementation:
+ui::EventProcessor* Widget::GetEventProcessor() {
+  return root_view_.get();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

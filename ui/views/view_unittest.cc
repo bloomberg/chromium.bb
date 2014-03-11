@@ -529,6 +529,7 @@ TEST_F(ViewTest, TouchEvent) {
   widget->Init(params);
   internal::RootView* root =
       static_cast<internal::RootView*>(widget->GetRootView());
+  ui::EventDispatchDetails details;
 
   root->AddChildView(v1);
   v1->AddChildView(v2);
@@ -548,7 +549,9 @@ TEST_F(ViewTest, TouchEvent) {
                            0, /* first finger touch */
                            base::TimeDelta(),
                            1.0, 0.0, 1.0, 0.0);
-  root->DispatchTouchEvent(&unhandled);
+  details = root->OnEventFromSource(&unhandled);
+  EXPECT_FALSE(details.dispatcher_destroyed);
+  EXPECT_FALSE(details.target_destroyed);
 
   EXPECT_EQ(v1->last_touch_event_type_, 0);
   EXPECT_EQ(v2->last_touch_event_type_, 0);
@@ -564,7 +567,9 @@ TEST_F(ViewTest, TouchEvent) {
                          base::TimeDelta(),
                          1.0, 0.0, 1.0, 0.0);
   v2->last_touch_event_was_handled_ = true;
-  root->DispatchTouchEvent(&pressed);
+  details = root->OnEventFromSource(&pressed);
+  EXPECT_FALSE(details.dispatcher_destroyed);
+  EXPECT_FALSE(details.target_destroyed);
 
   EXPECT_EQ(v2->last_touch_event_type_, ui::ET_TOUCH_PRESSED);
   EXPECT_EQ(v2->location_.x(), 10);
@@ -582,7 +587,10 @@ TEST_F(ViewTest, TouchEvent) {
                          base::TimeDelta(),
                          1.0, 0.0, 1.0, 0.0);
 
-  root->DispatchTouchEvent(&dragged);
+  details = root->OnEventFromSource(&dragged);
+  EXPECT_FALSE(details.dispatcher_destroyed);
+  EXPECT_FALSE(details.target_destroyed);
+
   EXPECT_EQ(v2->last_touch_event_type_, ui::ET_TOUCH_MOVED);
   EXPECT_EQ(v2->location_.x(), -50);
   EXPECT_EQ(v2->location_.y(), -60);
@@ -598,7 +606,11 @@ TEST_F(ViewTest, TouchEvent) {
                           base::TimeDelta(),
                           1.0, 0.0, 1.0, 0.0);
   v2->last_touch_event_was_handled_ = true;
-  root->DispatchTouchEvent(&released);
+
+  details = root->OnEventFromSource(&released);
+  EXPECT_FALSE(details.dispatcher_destroyed);
+  EXPECT_FALSE(details.target_destroyed);
+
   EXPECT_EQ(v2->last_touch_event_type_, ui::ET_TOUCH_RELEASED);
   EXPECT_EQ(v2->location_.x(), -100);
   EXPECT_EQ(v2->location_.y(), -100);
@@ -629,6 +641,7 @@ TEST_F(ViewTest, GestureEvent) {
   widget->Init(params);
   internal::RootView* root =
       static_cast<internal::RootView*>(widget->GetRootView());
+  ui::EventDispatchDetails details;
 
   root->AddChildView(v1);
   v1->AddChildView(v2);
@@ -645,14 +658,19 @@ TEST_F(ViewTest, GestureEvent) {
 
   // Gesture on |v3|
   GestureEventForTest g1(ui::ET_GESTURE_TAP, 110, 110, 0);
-  root->DispatchGestureEvent(&g1);
+  details = root->OnEventFromSource(&g1);
+  EXPECT_FALSE(details.dispatcher_destroyed);
+  EXPECT_FALSE(details.target_destroyed);
+
   EXPECT_EQ(ui::ET_GESTURE_TAP, v2->last_gesture_event_type_);
   EXPECT_EQ(gfx::Point(10, 10), v2->location_);
   EXPECT_EQ(ui::ET_UNKNOWN, v1->last_gesture_event_type_);
 
   // Simulate an up so that RootView is no longer targetting |v3|.
   GestureEventForTest g1_up(ui::ET_GESTURE_END, 110, 110, 0);
-  root->DispatchGestureEvent(&g1_up);
+  details = root->OnEventFromSource(&g1_up);
+  EXPECT_FALSE(details.dispatcher_destroyed);
+  EXPECT_FALSE(details.target_destroyed);
 
   v1->Reset();
   v2->Reset();
@@ -660,7 +678,10 @@ TEST_F(ViewTest, GestureEvent) {
 
   // Gesture on |v1|
   GestureEventForTest g2(ui::ET_GESTURE_TAP, 80, 80, 0);
-  root->DispatchGestureEvent(&g2);
+  details = root->OnEventFromSource(&g2);
+  EXPECT_FALSE(details.dispatcher_destroyed);
+  EXPECT_FALSE(details.target_destroyed);
+
   EXPECT_EQ(ui::ET_GESTURE_TAP, v1->last_gesture_event_type_);
   EXPECT_EQ(gfx::Point(80, 80), v1->location_);
   EXPECT_EQ(ui::ET_UNKNOWN, v2->last_gesture_event_type_);
@@ -669,7 +690,10 @@ TEST_F(ViewTest, GestureEvent) {
   // to |v1| as that is the view the touch was initially down on.
   v1->last_gesture_event_type_ = ui::ET_UNKNOWN;
   v3->last_gesture_event_type_ = ui::ET_UNKNOWN;
-  root->DispatchGestureEvent(&g1);
+  details = root->OnEventFromSource(&g1);
+  EXPECT_FALSE(details.dispatcher_destroyed);
+  EXPECT_FALSE(details.target_destroyed);
+
   EXPECT_EQ(ui::ET_GESTURE_TAP, v1->last_gesture_event_type_);
   EXPECT_EQ(ui::ET_UNKNOWN, v3->last_gesture_event_type_);
   EXPECT_EQ("110,110", v1->location_.ToString());
@@ -695,6 +719,7 @@ TEST_F(ViewTest, ScrollGestureEvent) {
   widget->Init(params);
   internal::RootView* root =
       static_cast<internal::RootView*>(widget->GetRootView());
+  ui::EventDispatchDetails details;
 
   root->AddChildView(v1);
   v1->AddChildView(v2);
@@ -711,7 +736,10 @@ TEST_F(ViewTest, ScrollGestureEvent) {
 
   // Gesture on |v3|
   GestureEventForTest g1(ui::ET_GESTURE_TAP, 110, 110, 0);
-  root->DispatchGestureEvent(&g1);
+  details = root->OnEventFromSource(&g1);
+  EXPECT_FALSE(details.dispatcher_destroyed);
+  EXPECT_FALSE(details.target_destroyed);
+
   EXPECT_EQ(ui::ET_GESTURE_TAP, v2->last_gesture_event_type_);
   EXPECT_EQ(gfx::Point(10, 10), v2->location_);
   EXPECT_EQ(ui::ET_UNKNOWN, v1->last_gesture_event_type_);
@@ -722,7 +750,10 @@ TEST_F(ViewTest, ScrollGestureEvent) {
   // since it does not process scroll-gesture events, these events should reach
   // |v1|.
   GestureEventForTest gscroll_begin(ui::ET_GESTURE_SCROLL_BEGIN, 115, 115, 0);
-  root->DispatchGestureEvent(&gscroll_begin);
+  details = root->OnEventFromSource(&gscroll_begin);
+  EXPECT_FALSE(details.dispatcher_destroyed);
+  EXPECT_FALSE(details.target_destroyed);
+
   EXPECT_EQ(ui::ET_UNKNOWN, v2->last_gesture_event_type_);
   EXPECT_EQ(ui::ET_GESTURE_SCROLL_BEGIN, v1->last_gesture_event_type_);
   v1->Reset();
@@ -731,19 +762,28 @@ TEST_F(ViewTest, ScrollGestureEvent) {
   // default gesture handler, and not |v1| (even though it is the view under the
   // point, and is the scroll event handler).
   GestureEventForTest second_tap(ui::ET_GESTURE_TAP, 70, 70, 0);
-  root->DispatchGestureEvent(&second_tap);
+  details = root->OnEventFromSource(&second_tap);
+  EXPECT_FALSE(details.dispatcher_destroyed);
+  EXPECT_FALSE(details.target_destroyed);
+
   EXPECT_EQ(ui::ET_GESTURE_TAP, v2->last_gesture_event_type_);
   EXPECT_EQ(ui::ET_UNKNOWN, v1->last_gesture_event_type_);
   v2->Reset();
 
   GestureEventForTest gscroll_end(ui::ET_GESTURE_SCROLL_END, 50, 50, 0);
-  root->DispatchGestureEvent(&gscroll_end);
+  details = root->OnEventFromSource(&gscroll_end);
+  EXPECT_FALSE(details.dispatcher_destroyed);
+  EXPECT_FALSE(details.target_destroyed);
+
   EXPECT_EQ(ui::ET_GESTURE_SCROLL_END, v1->last_gesture_event_type_);
   v1->Reset();
 
   // Simulate an up so that RootView is no longer targetting |v3|.
   GestureEventForTest g1_up(ui::ET_GESTURE_END, 110, 110, 0);
-  root->DispatchGestureEvent(&g1_up);
+  details = root->OnEventFromSource(&g1_up);
+  EXPECT_FALSE(details.dispatcher_destroyed);
+  EXPECT_FALSE(details.target_destroyed);
+
   EXPECT_EQ(ui::ET_GESTURE_END, v2->last_gesture_event_type_);
 
   v1->Reset();
@@ -752,7 +792,10 @@ TEST_F(ViewTest, ScrollGestureEvent) {
 
   // Gesture on |v1|
   GestureEventForTest g2(ui::ET_GESTURE_TAP, 80, 80, 0);
-  root->DispatchGestureEvent(&g2);
+  details = root->OnEventFromSource(&g2);
+  EXPECT_FALSE(details.dispatcher_destroyed);
+  EXPECT_FALSE(details.target_destroyed);
+
   EXPECT_EQ(ui::ET_GESTURE_TAP, v1->last_gesture_event_type_);
   EXPECT_EQ(gfx::Point(80, 80), v1->location_);
   EXPECT_EQ(ui::ET_UNKNOWN, v2->last_gesture_event_type_);
@@ -761,7 +804,10 @@ TEST_F(ViewTest, ScrollGestureEvent) {
   // to |v1| as that is the view the touch was initially down on.
   v1->last_gesture_event_type_ = ui::ET_UNKNOWN;
   v3->last_gesture_event_type_ = ui::ET_UNKNOWN;
-  root->DispatchGestureEvent(&g1);
+  details = root->OnEventFromSource(&g1);
+  EXPECT_FALSE(details.dispatcher_destroyed);
+  EXPECT_FALSE(details.target_destroyed);
+
   EXPECT_EQ(ui::ET_GESTURE_TAP, v1->last_gesture_event_type_);
   EXPECT_EQ(ui::ET_UNKNOWN, v3->last_gesture_event_type_);
   EXPECT_EQ("110,110", v1->location_.ToString());
