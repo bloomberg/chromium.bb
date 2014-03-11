@@ -125,7 +125,8 @@ class CC_EXPORT Scheduler {
             const SchedulerSettings& scheduler_settings,
             int layer_tree_host_id);
 
-  void PostBeginImplFrameDeadline(base::TimeTicks deadline);
+  base::TimeTicks AdjustedBeginImplFrameDeadline() const;
+  void ScheduleBeginImplFrameDeadline(base::TimeTicks deadline);
   void SetupNextBeginImplFrameIfNeeded();
   void ActivatePendingTree();
   void DrawAndSwapIfPossible();

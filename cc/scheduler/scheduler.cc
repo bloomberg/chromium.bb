@@ -215,13 +215,15 @@ void Scheduler::BeginImplFrame(const BeginFrameArgs& args) {
          SchedulerStateMachine::BEGIN_IMPL_FRAME_STATE_IDLE);
   DCHECK(state_machine_.HasInitializedOutputSurface());
 
-  if (state_machine_.MainThreadIsInHighLatencyMode() &&
+  last_begin_impl_frame_args_ = args;
+  last_begin_impl_frame_args_.deadline -= client_->DrawDurationEstimate();
+
+  if (!state_machine_.smoothness_takes_priority() &&
+      state_machine_.MainThreadIsInHighLatencyMode() &&
       CanCommitAndActivateBeforeDeadline()) {
     state_machine_.SetSkipNextBeginMainFrameToReduceLatency();
   }
 
-  last_begin_impl_frame_args_ = args;
-  last_begin_impl_frame_args_.deadline -= client_->DrawDurationEstimate();
   state_machine_.OnBeginImplFrame(last_begin_impl_frame_args_);
   devtools_instrumentation::DidBeginFrame(layer_tree_host_id_);
 
@@ -231,20 +233,21 @@ void Scheduler::BeginImplFrame(const BeginFrameArgs& args) {
     return;
 
   state_machine_.OnBeginImplFrameDeadlinePending();
+  base::TimeTicks adjusted_deadline = AdjustedBeginImplFrameDeadline();
+  ScheduleBeginImplFrameDeadline(adjusted_deadline);
+}
+
+base::TimeTicks Scheduler::AdjustedBeginImplFrameDeadline() const {
   if (settings_.using_synchronous_renderer_compositor) {
-    // The synchronous renderer compositor has to make its GL calls
-    // within this call to BeginImplFrame.
-    // TODO(brianderson): Have the OutputSurface initiate the deadline tasks
-    // so the sychronous renderer compositor can take advantage of splitting
-    // up the BeginImplFrame and deadline as well.
-    OnBeginImplFrameDeadline();
+    // The synchronous compositor needs to draw right away.
+    return base::TimeTicks();
   } else if (state_machine_.ShouldTriggerBeginImplFrameDeadlineEarly()) {
     // We are ready to draw a new active tree immediately.
-    PostBeginImplFrameDeadline(base::TimeTicks());
+    return base::TimeTicks();
   } else if (state_machine_.needs_redraw()) {
     // We have an animation or fast input path on the impl thread that wants
     // to draw, so don't wait too long for a new active tree.
-    PostBeginImplFrameDeadline(last_begin_impl_frame_args_.deadline);
+    return last_begin_impl_frame_args_.deadline;
   } else {
     // The impl thread doesn't have anything it wants to draw and we are just
     // waiting for a new active tree, so post the deadline for the next
@@ -253,12 +256,21 @@ void Scheduler::BeginImplFrame(const BeginFrameArgs& args) {
     // BeginImplFrame.
     // TODO(brianderson): Handle long deadlines (that are past the next frame's
     // frame time) properly instead of using this hack.
-    PostBeginImplFrameDeadline(last_begin_impl_frame_args_.frame_time +
-                               last_begin_impl_frame_args_.interval);
+    return last_begin_impl_frame_args_.frame_time +
+           last_begin_impl_frame_args_.interval;
   }
 }
 
-void Scheduler::PostBeginImplFrameDeadline(base::TimeTicks deadline) {
+void Scheduler::ScheduleBeginImplFrameDeadline(base::TimeTicks deadline) {
+  if (settings_.using_synchronous_renderer_compositor) {
+    // The synchronous renderer compositor has to make its GL calls
+    // within this call.
+    // TODO(brianderson): Have the OutputSurface initiate the deadline tasks
+    // so the sychronous renderer compositor can take advantage of splitting
+    // up the BeginImplFrame and deadline as well.
+    OnBeginImplFrameDeadline();
+    return;
+  }
   begin_impl_frame_deadline_closure_.Cancel();
   begin_impl_frame_deadline_closure_.Reset(
       base::Bind(&Scheduler::OnBeginImplFrameDeadline,
@@ -376,8 +388,10 @@ void Scheduler::ProcessScheduledActions() {
   SetupNextBeginImplFrameIfNeeded();
   client_->DidAnticipatedDrawTimeChange(AnticipatedDrawTime());
 
-  if (state_machine_.ShouldTriggerBeginImplFrameDeadlineEarly())
-    PostBeginImplFrameDeadline(base::TimeTicks());
+  if (state_machine_.ShouldTriggerBeginImplFrameDeadlineEarly()) {
+    DCHECK(!settings_.using_synchronous_renderer_compositor);
+    ScheduleBeginImplFrameDeadline(base::TimeTicks());
+  }
 }
 
 bool Scheduler::WillDrawIfNeeded() const {

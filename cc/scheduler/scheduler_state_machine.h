@@ -181,6 +181,7 @@ class CC_EXPORT SchedulerStateMachine {
   // Indicates whether to prioritize animation smoothness over new content
   // activation.
   void SetSmoothnessTakesPriority(bool smoothness_takes_priority);
+  bool smoothness_takes_priority() const { return smoothness_takes_priority_; }
 
   // Indicates whether ACTION_DRAW_AND_SWAP_IF_POSSIBLE drew to the screen.
   void DidDrawIfPossibleCompleted(DrawSwapReadbackResult::DrawResult result);

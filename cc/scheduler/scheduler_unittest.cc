@@ -76,6 +76,9 @@ class FakeSchedulerClient : public SchedulerClient {
   int num_actions_() const { return static_cast<int>(actions_.size()); }
   const char* Action(int i) const { return actions_[i]; }
   base::Value& StateForAction(int i) const { return *states_[i]; }
+  base::TimeTicks posted_begin_impl_frame_deadline() const {
+    return posted_begin_impl_frame_deadline_;
+  }
 
   int ActionIndex(const char* action) const {
     for (size_t i = 0; i < actions_.size(); i++)
@@ -178,6 +181,7 @@ class FakeSchedulerClient : public SchedulerClient {
                                           base::TimeTicks deadline) OVERRIDE {
     actions_.push_back("PostBeginImplFrameDeadlineTask");
     states_.push_back(scheduler_->StateAsValue().release());
+    posted_begin_impl_frame_deadline_ = deadline;
   }
 
   virtual void DidBeginImplFrameDeadline() OVERRIDE {}
@@ -188,6 +192,7 @@ class FakeSchedulerClient : public SchedulerClient {
   bool swap_will_happen_if_draw_happens_;
   int num_draws_;
   bool log_anticipated_draw_time_change_;
+  base::TimeTicks posted_begin_impl_frame_deadline_;
   std::vector<const char*> actions_;
   ScopedVector<base::Value> states_;
   scoped_ptr<Scheduler> scheduler_;
@@ -1100,6 +1105,25 @@ TEST(SchedulerTest, ManageTilesOncePerFrame) {
   scheduler->DidManageTiles();  // Corresponds to ScheduledActionManageTiles
 }
 
+TEST(SchedulerTest, TriggerBeginFrameDeadlineEarly) {
+  SchedulerClientNeedsManageTilesInDraw client;
+  SchedulerSettings default_scheduler_settings;
+  Scheduler* scheduler = client.CreateScheduler(default_scheduler_settings);
+  scheduler->SetCanStart();
+  scheduler->SetVisible(true);
+  scheduler->SetCanDraw(true);
+  InitializeOutputSurfaceAndFirstCommit(scheduler);
+
+  client.Reset();
+  BeginFrameArgs impl_frame_args = BeginFrameArgs::CreateForTesting();
+  scheduler->SetNeedsRedraw();
+  scheduler->BeginImplFrame(impl_frame_args);
+
+  // The deadline should be zero since there is no work other than drawing
+  // pending.
+  EXPECT_EQ(base::TimeTicks(), client.posted_begin_impl_frame_deadline());
+}
+
 class SchedulerClientWithFixedEstimates : public FakeSchedulerClient {
  public:
   SchedulerClientWithFixedEstimates(
@@ -1129,6 +1153,7 @@ class SchedulerClientWithFixedEstimates : public FakeSchedulerClient {
 
 void MainFrameInHighLatencyMode(int64 begin_main_frame_to_commit_estimate_in_ms,
                                 int64 commit_to_activate_estimate_in_ms,
+                                bool smoothness_takes_priority,
                                 bool should_send_begin_main_frame) {
   // Set up client with specified estimates (draw duration is set to 1).
   SchedulerClientWithFixedEstimates client(
@@ -1141,6 +1166,7 @@ void MainFrameInHighLatencyMode(int64 begin_main_frame_to_commit_estimate_in_ms,
   scheduler->SetCanStart();
   scheduler->SetVisible(true);
   scheduler->SetCanDraw(true);
+  scheduler->SetSmoothnessTakesPriority(smoothness_takes_priority);
   InitializeOutputSurfaceAndFirstCommit(scheduler);
 
   // Impl thread hits deadline before commit finishes.
@@ -1172,19 +1198,26 @@ TEST(SchedulerTest,
     SkipMainFrameIfHighLatencyAndCanCommitAndActivateBeforeDeadline) {
   // Set up client so that estimates indicate that we can commit and activate
   // before the deadline (~8ms by default).
-  MainFrameInHighLatencyMode(1, 1, false);
+  MainFrameInHighLatencyMode(1, 1, false, false);
 }
 
 TEST(SchedulerTest, NotSkipMainFrameIfHighLatencyAndCanCommitTooLong) {
   // Set up client so that estimates indicate that the commit cannot finish
   // before the deadline (~8ms by default).
-  MainFrameInHighLatencyMode(10, 1, true);
+  MainFrameInHighLatencyMode(10, 1, false, true);
 }
 
 TEST(SchedulerTest, NotSkipMainFrameIfHighLatencyAndCanActivateTooLong) {
   // Set up client so that estimates indicate that the activate cannot finish
   // before the deadline (~8ms by default).
-  MainFrameInHighLatencyMode(1, 10, true);
+  MainFrameInHighLatencyMode(1, 10, false, true);
+}
+
+TEST(SchedulerTest, NotSkipMainFrameInPreferSmoothnessMode) {
+  // Set up client so that estimates indicate that we can commit and activate
+  // before the deadline (~8ms by default), but also enable smoothness takes
+  // priority mode.
+  MainFrameInHighLatencyMode(1, 1, true, true);
 }
 
 void SpinForMillis(int millis) {
@@ -1197,7 +1230,12 @@ void SpinForMillis(int millis) {
 }
 
 TEST(SchedulerTest, PollForCommitCompletion) {
-  FakeSchedulerClient client;
+  // Since we are simulating a long commit, set up a client with draw duration
+  // estimates that prevent skipping main frames to get to low latency mode.
+  SchedulerClientWithFixedEstimates client(
+      base::TimeDelta::FromMilliseconds(1),
+      base::TimeDelta::FromMilliseconds(32),
+      base::TimeDelta::FromMilliseconds(32));
   client.set_log_anticipated_draw_time_change(true);
   SchedulerSettings settings = SchedulerSettings();
   settings.throttle_frame_production = false;
