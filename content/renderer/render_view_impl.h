@@ -1399,9 +1399,6 @@ class CONTENT_EXPORT RenderViewImpl
   // The external popup for the currently showing select popup.
   scoped_ptr<ExternalPopupMenu> external_popup_menu_;
 
-  // The node that the context menu was pressed over.
-  blink::WebNode context_menu_node_;
-
   // All the registered observers.  We expect this list to be small, so vector
   // is fine.
   ObserverList<RenderViewObserver> observers_;

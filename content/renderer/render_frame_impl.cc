@@ -842,7 +842,7 @@ void RenderFrameImpl::OnContextMenuClosed(
     }
   } else {
     // Internal request, forward to WebKit.
-    render_view_->context_menu_node_.reset();
+    context_menu_node_.reset();
   }
 }
 
@@ -870,8 +870,8 @@ void RenderFrameImpl::OnCut() {
 void RenderFrameImpl::OnCopy() {
   base::AutoReset<bool> handling_select_range(
       &render_view_->handling_select_range_, true);
-  WebNode current_node = render_view_->context_menu_node_.isNull() ?
-      GetFocusedElement() : render_view_->context_menu_node_;
+  WebNode current_node = context_menu_node_.isNull() ?
+      GetFocusedElement() : context_menu_node_;
   frame_->executeCommand(WebString::fromUTF8("Copy"), current_node);
 }
 
@@ -942,7 +942,7 @@ void RenderFrameImpl::CancelContextMenu(int request_id) {
 }
 
 blink::WebNode RenderFrameImpl::GetContextMenuNode() const {
-  return render_view_->context_menu_node_;
+  return context_menu_node_;
 }
 
 blink::WebPlugin* RenderFrameImpl::CreatePlugin(
@@ -1754,7 +1754,7 @@ void RenderFrameImpl::showContextMenu(const blink::WebContextMenuData& data) {
   //                 data encoded images.  We should have a way to save them.
   if (params.src_url.spec().size() > GetMaxURLChars())
     params.src_url = GURL();
-  render_view_->context_menu_node_ = data.node;
+  context_menu_node_ = data.node;
 
 #if defined(OS_ANDROID)
   gfx::Rect start_rect;
@@ -1768,7 +1768,7 @@ void RenderFrameImpl::showContextMenu(const blink::WebContextMenuData& data) {
 }
 
 void RenderFrameImpl::clearContextMenu() {
-  render_view_->context_menu_node_.reset();
+  context_menu_node_.reset();
 }
 
 void RenderFrameImpl::willRequestAfterPreconnect(

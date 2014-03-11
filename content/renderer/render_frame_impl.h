@@ -417,6 +417,9 @@ class CONTENT_EXPORT RenderFrameImpl
 
   scoped_refptr<ChildFrameCompositingHelper> compositing_helper_;
 
+  // The node that the context menu was pressed over.
+  blink::WebNode context_menu_node_;
+
   // External context menu requests we're waiting for. "Internal"
   // (WebKit-originated) context menu events will have an ID of 0 and will not
   // be in this map.
