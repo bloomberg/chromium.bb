@@ -17,8 +17,7 @@ class ServiceWorkerUtils {
   }
 
   static bool IsServiceWorkerResourceType(ResourceType::Type type) {
-    // TODO(kinuko): Add IsServiceWorker() to resource_type.h.
-    return type == ResourceType::SERVICE_WORKER;
+    return ResourceType::IsServiceWorker(type);
   }
 };
 

@@ -54,6 +54,10 @@ class ResourceType {
     return type == SHARED_WORKER;
   }
 
+  static bool IsServiceWorker(ResourceType::Type type) {
+    return type == SERVICE_WORKER;
+  }
+
   static bool IsSubresource(ResourceType::Type type) {
     return type == STYLESHEET ||
            type == SCRIPT ||
