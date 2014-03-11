@@ -6,6 +6,7 @@
 // or read from a file.
 
 #include "base/at_exit.h"
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -411,6 +412,8 @@ void WriteLogsToFileAndStopSubscribing(
 
 int main(int argc, char** argv) {
   base::AtExitManager at_exit;
+  CommandLine::Init(argc, argv);
+  InitLogging(logging::LoggingSettings());
   base::Thread test_thread("Cast sender test app thread");
   base::Thread audio_thread("Cast audio encoder thread");
   base::Thread video_thread("Cast video encoder thread");
@@ -418,7 +421,6 @@ int main(int argc, char** argv) {
   audio_thread.Start();
   video_thread.Start();
 
-  scoped_ptr<base::TickClock> clock(new base::DefaultTickClock());
   base::MessageLoopForIO io_message_loop;
 
   int remote_port;
@@ -452,7 +454,7 @@ int main(int argc, char** argv) {
   // Running transport on the main thread.
   scoped_refptr<media::cast::CastEnvironment> cast_environment(
       new media::cast::CastEnvironment(
-          clock.Pass(),
+          make_scoped_ptr<base::TickClock>(new base::DefaultTickClock()),
           io_message_loop.message_loop_proxy(),
           audio_thread.message_loop_proxy(),
           NULL,
@@ -464,7 +466,7 @@ int main(int argc, char** argv) {
   scoped_ptr<media::cast::transport::CastTransportSender> transport_sender =
       media::cast::transport::CastTransportSender::Create(
           NULL,  // net log.
-          clock.get(),
+          cast_environment->Clock(),
           local_endpoint,
           remote_endpoint,
           logging_config,
