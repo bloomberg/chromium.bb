@@ -723,7 +723,7 @@ const Experiment kExperiments[] = {
     "enable-gesture-tap-highlight",
     IDS_FLAGS_ENABLE_GESTURE_TAP_HIGHLIGHTING_NAME,
     IDS_FLAGS_ENABLE_GESTURE_TAP_HIGHLIGHTING_DESCRIPTION,
-    kOsLinux | kOsCrOS,
+    kOsLinux | kOsCrOS | kOsWin | kOsAndroid,
     ENABLE_DISABLE_VALUE_TYPE(switches::kEnableGestureTapHighlight,
                               switches::kDisableGestureTapHighlight)
   },
