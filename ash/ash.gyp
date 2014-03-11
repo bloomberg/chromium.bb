@@ -924,6 +924,7 @@
         'system/chromeos/network/network_state_notifier_unittest.cc',
         'system/chromeos/power/power_event_observer_unittest.cc',
         'system/chromeos/power/power_status_unittest.cc',
+        'system/chromeos/power/power_status_view_unittest.cc',
         'system/chromeos/power/tray_power_unittest.cc',
         'system/chromeos/screen_security/screen_tray_item_unittest.cc',
         'system/chromeos/tray_display_unittest.cc',
