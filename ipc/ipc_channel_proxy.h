@@ -233,10 +233,6 @@ class IPC_EXPORT ChannelProxy : public Sender, public base::NonThreadSafe {
     // List of filters.  This is only accessed on the IPC thread.
     std::vector<scoped_refptr<MessageFilter> > filters_;
     scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner_;
-
-    // Note, channel_ may be set on the Listener thread or the IPC thread.
-    // But once it has been set, it must only be read or cleared on the IPC
-    // thread.
     scoped_ptr<Channel> channel_;
     std::string channel_id_;
     bool channel_connected_called_;

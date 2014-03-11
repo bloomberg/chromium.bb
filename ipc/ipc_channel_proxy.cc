@@ -156,7 +156,7 @@ void ChannelProxy::Context::ClearIPCTaskRunner() {
 
 void ChannelProxy::Context::CreateChannel(const IPC::ChannelHandle& handle,
                                           const Channel::Mode& mode) {
-  DCHECK(!channel_);
+  DCHECK(channel_.get() == NULL);
   channel_id_ = handle.name;
   channel_.reset(new Channel(handle, mode, this));
 }
@@ -196,14 +196,16 @@ bool ChannelProxy::Context::OnMessageReceivedNoFilter(const Message& message) {
 
 // Called on the IPC::Channel thread
 void ChannelProxy::Context::OnChannelConnected(int32 peer_pid) {
-  // We cache off the peer_pid so it can be safely accessed from both threads.
-  peer_pid_ = channel_->peer_pid();
-
   // Add any pending filters.  This avoids a race condition where someone
   // creates a ChannelProxy, calls AddFilter, and then right after starts the
   // peer process.  The IO thread could receive a message before the task to add
   // the filter is run on the IO thread.
   OnAddFilter();
+
+  // We cache off the peer_pid so it can be safely accessed from both threads.
+  peer_pid_ = channel_->peer_pid();
+  for (size_t i = 0; i < filters_.size(); ++i)
+    filters_[i]->OnChannelConnected(peer_pid);
 
   // See above comment about using listener_task_runner_ here.
   listener_task_runner_->PostTask(
@@ -241,7 +243,7 @@ void ChannelProxy::Context::OnChannelOpened() {
 void ChannelProxy::Context::OnChannelClosed() {
   // It's okay for IPC::ChannelProxy::Close to be called more than once, which
   // would result in this branch being taken.
-  if (!channel_)
+  if (!channel_.get())
     return;
 
   for (size_t i = 0; i < filters_.size(); ++i) {
@@ -266,24 +268,16 @@ void ChannelProxy::Context::Clear() {
 
 // Called on the IPC::Channel thread
 void ChannelProxy::Context::OnSendMessage(scoped_ptr<Message> message) {
-  if (!channel_) {
+  if (!channel_.get()) {
     OnChannelClosed();
     return;
   }
-
   if (!channel_->Send(message.release()))
     OnChannelError();
 }
 
 // Called on the IPC::Channel thread
 void ChannelProxy::Context::OnAddFilter() {
-  // Our OnChannelConnected method has not yet been called, so we can't be
-  // sure that channel_ is valid yet. When OnChannelConnected *is* called,
-  // it invokes OnAddFilter, so any pending filter(s) will be added at that
-  // time.
-  if (peer_pid_ == base::kNullProcessId)
-    return;
-
   std::vector<scoped_refptr<MessageFilter> > new_filters;
   {
     base::AutoLock auto_lock(pending_filters_lock_);
@@ -295,28 +289,19 @@ void ChannelProxy::Context::OnAddFilter() {
 
     message_filter_router_->AddFilter(new_filters[i].get());
 
-    // The channel has already been created and connected, so we need to
-    // inform the filters right now.
-    new_filters[i]->OnFilterAdded(channel_.get());
-    new_filters[i]->OnChannelConnected(peer_pid_);
+    // If the channel has already been created, then we need to send this
+    // message so that the filter gets access to the Channel.
+    if (channel_.get())
+      new_filters[i]->OnFilterAdded(channel_.get());
+    // Ditto for if the channel has been connected.
+    if (peer_pid_)
+      new_filters[i]->OnChannelConnected(peer_pid_);
   }
 }
 
 // Called on the IPC::Channel thread
 void ChannelProxy::Context::OnRemoveFilter(MessageFilter* filter) {
-  if (peer_pid_ == base::kNullProcessId) {
-    // The channel is not yet connected, so any filters are still pending.
-    base::AutoLock auto_lock(pending_filters_lock_);
-    for (size_t i = 0; i < pending_filters_.size(); ++i) {
-      if (pending_filters_[i].get() == filter) {
-        filter->OnFilterRemoved();
-        pending_filters_.erase(pending_filters_.begin() + i);
-        return;
-      }
-    }
-    return;
-  }
-  if (!channel_)
+  if (!channel_.get())
     return;  // The filters have already been deleted.
 
   message_filter_router_->RemoveFilter(filter);
