@@ -630,8 +630,11 @@ void HTMLSelectElement::listBoxOnChange()
         m_lastOnChangeSelection[i] = selected;
     }
 
-    if (fireOnChange)
+    if (fireOnChange) {
+        RefPtr<HTMLSelectElement> protector(this);
+        dispatchInputEvent();
         dispatchFormControlChangeEvent();
+    }
 }
 
 void HTMLSelectElement::dispatchChangeEventForMenuList()
