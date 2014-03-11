@@ -12,7 +12,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/views/auto_keep_alive.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
@@ -65,10 +64,14 @@ UserManagerView::UserManagerView(Profile* profile)
 }
 
 UserManagerView::~UserManagerView() {
+  chrome::DecrementKeepAliveCount();  // Remove shutdown prevention.
 }
 
 // static
 void UserManagerView::Show(const base::FilePath& profile_path_to_focus) {
+  // Prevent the browser process from shutting down while this window is open.
+  chrome::IncrementKeepAliveCount();
+
   ProfileMetrics::LogProfileSwitchUser(ProfileMetrics::OPEN_USER_MANAGER);
   if (instance_) {
     // If there's a user manager window open already, just activate it.
@@ -108,9 +111,6 @@ void UserManagerView::OnGuestProfileCreated(
 
   instance_ = new UserManagerView(guest_profile);
   DialogDelegate::CreateDialogWidget(instance_, NULL, NULL);
-
-  gfx::NativeWindow window = instance_->GetWidget()->GetNativeWindow();
-  instance_->keep_alive_.reset(new AutoKeepAlive(window));
 
 #if defined(OS_WIN)
   // Set the app id for the task manager to the app id of its parent

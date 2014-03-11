@@ -154,10 +154,8 @@ bool PanelExtensionWindowController::IsVisibleToExtension(
 
 Panel::~Panel() {
   DCHECK(!collection_);
-#if !defined(USE_AURA)
   // Invoked by native panel destructor. Do not access native_panel_ here.
   chrome::DecrementKeepAliveCount();  // Remove shutdown prevention.
-#endif
 }
 
 PanelManager* Panel::manager() const {
@@ -539,11 +537,8 @@ void Panel::Initialize(const GURL& url,
                  content::Source<ThemeService>(
                     ThemeServiceFactory::GetForProfile(profile_)));
 
-#if !defined(USE_AURA)
-  // Keep alive for AURA has been moved to panel_view.
   // Prevent the browser process from shutting down while this window is open.
   chrome::IncrementKeepAliveCount();
-#endif
 
   UpdateAppIcon();
 }

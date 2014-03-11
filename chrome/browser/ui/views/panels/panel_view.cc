@@ -15,7 +15,6 @@
 #include "chrome/browser/ui/panels/panel_bounds_animation.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/panels/stacked_panel_collection.h"
-#include "chrome/browser/ui/views/auto_keep_alive.h"
 #include "chrome/browser/ui/views/panels/panel_frame_view.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -283,9 +282,6 @@ PanelView::PanelView(Panel* panel, const gfx::Rect& bounds, bool always_on_top)
   window_->set_frame_type(views::Widget::FRAME_TYPE_FORCE_CUSTOM);
   window_->set_focus_on_creation(false);
   window_->AddObserver(this);
-
-  // Prevent the browser process from shutting down while this window is open.
-  keep_alive_.reset(new AutoKeepAlive(GetNativePanelWindow()));
 
   web_view_ = new views::WebView(NULL);
   AddChildView(web_view_);
