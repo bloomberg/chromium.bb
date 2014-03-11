@@ -10,17 +10,24 @@
 
 #include "base/basictypes.h"
 #include "base/macros.h"
+#include "base/strings/string_piece.h"
 #include "net/base/net_export.h"
 #include "net/spdy/hpack_encoding_context.h"
-
-namespace net {
 
 // An HpackEncoder encodes header sets as outlined in
 // http://tools.ietf.org/html/draft-ietf-httpbis-header-compression-06
 
+namespace net {
+
+namespace test {
+class HpackEncoderPeer;
+}  // namespace test
+
 class NET_EXPORT_PRIVATE HpackEncoder {
  public:
-  explicit HpackEncoder(uint32 max_string_literal_size);
+  friend class test::HpackEncoderPeer;
+
+  explicit HpackEncoder();
   ~HpackEncoder();
 
   // Encodes the given header set into the given string. Returns
@@ -29,7 +36,10 @@ class NET_EXPORT_PRIVATE HpackEncoder {
                        std::string* output);
 
  private:
-  const uint32 max_string_literal_size_;
+  static void CookieToCrumbs(base::StringPiece cookie,
+                             std::vector<base::StringPiece>* out);
+
+  uint32 max_string_literal_size_;
   HpackEncodingContext context_;
 
   DISALLOW_COPY_AND_ASSIGN(HpackEncoder);

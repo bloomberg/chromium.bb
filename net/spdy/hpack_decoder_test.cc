@@ -20,6 +20,9 @@ namespace net {
 
 namespace test {
 
+using base::StringPiece;
+using std::string;
+
 class HpackEncodingContextPeer {
  public:
   explicit HpackEncodingContextPeer(const HpackEncodingContext& context)
@@ -34,14 +37,39 @@ class HpackEncodingContextPeer {
 
 class HpackDecoderPeer {
  public:
-  explicit HpackDecoderPeer(const HpackDecoder& decoder)
+  explicit HpackDecoderPeer(HpackDecoder* decoder)
       : decoder_(decoder) {}
+
+  void HandleHeaderRepresentation(StringPiece name, StringPiece value) {
+    decoder_->HandleHeaderRepresentation(name, value);
+  }
+  bool DecodeNextName(HpackInputStream* in, StringPiece* out) {
+    return decoder_->DecodeNextName(in, out);
+  }
   HpackEncodingContextPeer context_peer() {
-    return HpackEncodingContextPeer(decoder_.context_);
+    return HpackEncodingContextPeer(decoder_->context_);
+  }
+  void set_cookie_name(string name) {
+    decoder_->cookie_name_ = name;
+  }
+  string cookie_name() {
+    return decoder_->cookie_name_;
+  }
+  void set_cookie_value(string value) {
+    decoder_->cookie_value_ = value;
+  }
+  string cookie_value() {
+    return decoder_->cookie_value_;
+  }
+  const std::map<string, string>& decoded_block() const {
+    return decoder_->decoded_block_;
+  }
+  const string& headers_block_buffer() const {
+    return decoder_->headers_block_buffer_;
   }
 
  private:
-  const HpackDecoder& decoder_;
+  HpackDecoder* decoder_;
 };
 
 }  // namespace test
@@ -59,49 +87,122 @@ const size_t kLiteralBound = 1024;
 class HpackDecoderTest : public ::testing::Test {
  protected:
   HpackDecoderTest()
-      : decoder_(huffman_table_, kLiteralBound),
-        decoder_peer_(decoder_),
+      : decoder_(ObtainHpackHuffmanTable()),
+        decoder_peer_(&decoder_),
         context_peer_(decoder_peer_.context_peer()) {}
 
-  // Utility function to decode a string into a header set, assuming
-  // that the emitted headers have unique names.
-  std::map<string, string> DecodeUniqueHeaderSet(StringPiece str) {
-    HpackHeaderPairVector header_list;
-    EXPECT_TRUE(decoder_.DecodeHeaderSet(str, &header_list));
-    std::map<string, string> header_set(
-        header_list.begin(), header_list.end());
-    // Make sure |header_list| has no duplicates.
-    EXPECT_EQ(header_set.size(), header_list.size());
-    return header_set;
+  bool DecodeHeaderBlock(StringPiece str) {
+    return decoder_.HandleControlFrameHeadersData(0, str.data(), str.size()) &&
+        decoder_.HandleControlFrameHeadersComplete(0);
+  }
+  const std::map<string, string>& decoded_block() const {
+    // TODO(jgraettinger): HpackDecoderTest should implement
+    // SpdyHeadersHandlerInterface, and collect headers for examination.
+    return decoder_peer_.decoded_block();
+  }
+  // TODO(jgraettinger): Eliminate uses of this in tests below. Prefer
+  // DecodeHeaderBlock().
+  const std::map<string, string>& DecodeUniqueHeaderSet(StringPiece str) {
+    EXPECT_TRUE(DecodeHeaderBlock(str));
+    return decoded_block();
   }
 
-  HpackHuffmanTable huffman_table_;
   HpackDecoder decoder_;
   test::HpackDecoderPeer decoder_peer_;
   test::HpackEncodingContextPeer context_peer_;
 };
+
+TEST_F(HpackDecoderTest, HandleControlFrameHeadersData) {
+  // Strings under threshold are concatenated in the buffer.
+  EXPECT_TRUE(decoder_.HandleControlFrameHeadersData(
+      0, "small string one", 16));
+  EXPECT_TRUE(decoder_.HandleControlFrameHeadersData(
+      0, "small string two", 16));
+  // A string which would push the buffer over the threshold is refused.
+  EXPECT_FALSE(decoder_.HandleControlFrameHeadersData(
+      0, "fails", kMaxDecodeBufferSize - 32 + 1));
+
+  EXPECT_EQ(decoder_peer_.headers_block_buffer(),
+            "small string onesmall string two");
+}
+
+TEST_F(HpackDecoderTest, HandleControlFrameHeadersComplete) {
+  // Decode a block which toggles two static headers into the reference set.
+  EXPECT_TRUE(DecodeHeaderBlock("\x82\x86"));
+
+  decoder_peer_.set_cookie_name("CooKie");
+  decoder_peer_.set_cookie_value("foobar=baz");
+
+  // Headers in the reference set should be emitted.
+  // Incremental cookie buffer should be emitted and cleared.
+  decoder_.HandleControlFrameHeadersData(0, NULL, 0);
+  decoder_.HandleControlFrameHeadersComplete(0);
+
+  EXPECT_THAT(decoded_block(), ElementsAre(
+      Pair(":method", "GET"),
+      Pair(":path", "/index.html"),
+      Pair("CooKie", "foobar=baz")));
+
+  EXPECT_EQ(decoder_peer_.cookie_name(), "");
+  EXPECT_EQ(decoder_peer_.cookie_value(), "");
+}
+
+TEST_F(HpackDecoderTest, HandleHeaderRepresentation) {
+  // Casing of first Cookie is retained, but all instances are joined.
+  decoder_peer_.HandleHeaderRepresentation("cOOkie", " part 1");
+  decoder_peer_.HandleHeaderRepresentation("cookie", "part 2 ");
+  decoder_peer_.HandleHeaderRepresentation("cookie", "part3");
+
+  // Already-delimited headers are passed through.
+  decoder_peer_.HandleHeaderRepresentation("passed-through",
+                                           string("foo\0baz", 7));
+
+  // Other headers are joined on \0. Case matters.
+  decoder_peer_.HandleHeaderRepresentation("joined", "not joined");
+  decoder_peer_.HandleHeaderRepresentation("joineD", "value 1");
+  decoder_peer_.HandleHeaderRepresentation("joineD", "value 2");
+
+  // Empty headers remain empty.
+  decoder_peer_.HandleHeaderRepresentation("empty", "");
+
+  // Joined empty headers work as expected.
+  decoder_peer_.HandleHeaderRepresentation("empty-joined", "");
+  decoder_peer_.HandleHeaderRepresentation("empty-joined", "foo");
+  decoder_peer_.HandleHeaderRepresentation("empty-joined", "");
+  decoder_peer_.HandleHeaderRepresentation("empty-joined", "");
+
+  // Non-contiguous cookie crumb.
+  decoder_peer_.HandleHeaderRepresentation("Cookie", " fin!");
+
+  // Finish and emit all headers.
+  decoder_.HandleControlFrameHeadersComplete(0);
+
+  EXPECT_THAT(decoded_block(), ElementsAre(
+      Pair("cOOkie", " part 1; part 2 ; part3;  fin!"),
+      Pair("empty", ""),
+      Pair("empty-joined", string("\0foo\0\0", 6)),
+      Pair("joineD", string("value 1\0value 2", 15)),
+      Pair("joined", "not joined"),
+      Pair("passed-through", string("foo\0baz", 7))));
+}
 
 // Decoding an encoded name with a valid string literal should work.
 TEST_F(HpackDecoderTest, DecodeNextNameLiteral) {
   HpackInputStream input_stream(kLiteralBound, StringPiece("\x00\x04name", 6));
 
   StringPiece string_piece;
-  EXPECT_TRUE(decoder_.DecodeNextNameForTest(&input_stream, &string_piece));
+  EXPECT_TRUE(decoder_peer_.DecodeNextName(&input_stream, &string_piece));
   EXPECT_EQ("name", string_piece);
   EXPECT_FALSE(input_stream.HasMoreData());
 }
 
 TEST_F(HpackDecoderTest, DecodeNextNameLiteralWithHuffmanEncoding) {
-  {
-    std::vector<HpackHuffmanSymbol> code = HpackHuffmanCode();
-    EXPECT_TRUE(huffman_table_.Initialize(&code[0], code.size()));
-  }
   char input[] = "\x00\x88\x4e\xb0\x8b\x74\x97\x90\xfa\x7f";
   StringPiece foo(input, arraysize(input) - 1);
   HpackInputStream input_stream(kLiteralBound, foo);
 
   StringPiece string_piece;
-  EXPECT_TRUE(decoder_.DecodeNextNameForTest(&input_stream, &string_piece));
+  EXPECT_TRUE(decoder_peer_.DecodeNextName(&input_stream, &string_piece));
   EXPECT_EQ("custom-key", string_piece);
   EXPECT_FALSE(input_stream.HasMoreData());
 }
@@ -111,7 +212,7 @@ TEST_F(HpackDecoderTest, DecodeNextNameIndexed) {
   HpackInputStream input_stream(kLiteralBound, "\x01");
 
   StringPiece string_piece;
-  EXPECT_TRUE(decoder_.DecodeNextNameForTest(&input_stream, &string_piece));
+  EXPECT_TRUE(decoder_peer_.DecodeNextName(&input_stream, &string_piece));
   EXPECT_EQ(":authority", string_piece);
   EXPECT_FALSE(input_stream.HasMoreData());
 }
@@ -122,7 +223,7 @@ TEST_F(HpackDecoderTest, DecodeNextNameInvalidIndex) {
   HpackInputStream input_stream(kLiteralBound, "\x3d");
 
   StringPiece string_piece;
-  EXPECT_FALSE(decoder_.DecodeNextNameForTest(&input_stream, &string_piece));
+  EXPECT_FALSE(decoder_peer_.DecodeNextName(&input_stream, &string_piece));
 }
 
 // Decoding an indexed header should toggle the index's presence in
@@ -150,19 +251,16 @@ TEST_F(HpackDecoderTest, IndexedHeaderBasic) {
 
 // Test a too-large indexed header.
 TEST_F(HpackDecoderTest, InvalidIndexedHeader) {
-  HpackHeaderPairVector header_list;
   // High-bit set, and a prefix of one more than the number of static entries.
-  EXPECT_FALSE(decoder_.DecodeHeaderSet(StringPiece("\xbd", 1), &header_list));
+  EXPECT_FALSE(DecodeHeaderBlock(StringPiece("\xbd", 1)));
 }
 
 TEST_F(HpackDecoderTest, ContextUpdateMaximumSize) {
-  HpackHeaderPairVector header_list;
   EXPECT_EQ(kDefaultHeaderTableSizeSetting,
             context_peer_.header_table().max_size());
   {
     // Maximum-size update with size 126. Succeeds.
-    EXPECT_TRUE(decoder_.DecodeHeaderSet(StringPiece("\x80\x7e", 2),
-                                         &header_list));
+    EXPECT_TRUE(DecodeHeaderBlock(StringPiece("\x80\x7e", 2)));
     EXPECT_EQ(126u, context_peer_.header_table().max_size());
   }
   string input;
@@ -174,7 +272,7 @@ TEST_F(HpackDecoderTest, ContextUpdateMaximumSize) {
     output_stream.AppendUint32ForTest(kDefaultHeaderTableSizeSetting);
 
     output_stream.TakeString(&input);
-    EXPECT_TRUE(decoder_.DecodeHeaderSet(StringPiece(input), &header_list));
+    EXPECT_TRUE(DecodeHeaderBlock(StringPiece(input)));
     EXPECT_EQ(kDefaultHeaderTableSizeSetting,
               context_peer_.header_table().max_size());
   }
@@ -186,7 +284,7 @@ TEST_F(HpackDecoderTest, ContextUpdateMaximumSize) {
     output_stream.AppendUint32ForTest(kDefaultHeaderTableSizeSetting + 1);
 
     output_stream.TakeString(&input);
-    EXPECT_FALSE(decoder_.DecodeHeaderSet(StringPiece(input), &header_list));
+    EXPECT_FALSE(DecodeHeaderBlock(StringPiece(input)));
     EXPECT_EQ(kDefaultHeaderTableSizeSetting,
               context_peer_.header_table().max_size());
   }
@@ -211,7 +309,6 @@ TEST_F(HpackDecoderTest, ContextUpdateClearReferenceSet) {
 // Decoding two valid encoded literal headers with no indexing should
 // work.
 TEST_F(HpackDecoderTest, LiteralHeaderNoIndexing) {
-  HpackHeaderPairVector header_list;
   // First header with indexed name, second header with string literal
   // name.
   std::map<string, string> header_set =
@@ -244,24 +341,22 @@ TEST_F(HpackDecoderTest, LiteralHeaderIncrementalIndexing) {
 // Decoding literal headers with invalid indices should fail
 // gracefully.
 TEST_F(HpackDecoderTest, LiteralHeaderInvalidIndices) {
-  HpackHeaderPairVector header_list;
-
   // No indexing.
 
   // One more than the number of static table entries.
-  EXPECT_FALSE(decoder_.DecodeHeaderSet(StringPiece("\x7d", 1), &header_list));
-  EXPECT_FALSE(decoder_.DecodeHeaderSet(StringPiece("\x40", 1), &header_list));
+  EXPECT_FALSE(DecodeHeaderBlock(StringPiece("\x7d", 1)));
+  EXPECT_FALSE(DecodeHeaderBlock(StringPiece("\x40", 1)));
 
   // Incremental indexing.
 
   // One more than the number of static table entries.
-  EXPECT_FALSE(decoder_.DecodeHeaderSet(StringPiece("\x3d", 1), &header_list));
-  EXPECT_FALSE(decoder_.DecodeHeaderSet(StringPiece("\x00", 1), &header_list));
+  EXPECT_FALSE(DecodeHeaderBlock(StringPiece("\x3d", 1)));
+  EXPECT_FALSE(DecodeHeaderBlock(StringPiece("\x00", 1)));
 }
 
 // Round-tripping the header set from E.2.1 should work.
 TEST_F(HpackDecoderTest, BasicE21) {
-  HpackEncoder encoder(kLiteralBound);
+  HpackEncoder encoder;
 
   std::map<string, string> expected_header_set;
   expected_header_set[":method"] = "GET";
@@ -273,17 +368,11 @@ TEST_F(HpackDecoderTest, BasicE21) {
   EXPECT_TRUE(encoder.EncodeHeaderSet(
       expected_header_set, &encoded_header_set));
 
-  HpackHeaderPairVector header_list;
-  EXPECT_TRUE(decoder_.DecodeHeaderSet(encoded_header_set, &header_list));
-  std::map<string, string> header_set(header_list.begin(), header_list.end());
-  EXPECT_EQ(expected_header_set, header_set);
+  EXPECT_TRUE(DecodeHeaderBlock(encoded_header_set));
+  EXPECT_EQ(expected_header_set, decoded_block());
 }
 
 TEST_F(HpackDecoderTest, SectionD3RequestHuffmanExamples) {
-  {
-    std::vector<HpackHuffmanSymbol> code = HpackHuffmanCode();
-    EXPECT_TRUE(huffman_table_.Initialize(&code[0], code.size()));
-  }
   std::map<string, string> header_set;
 
   // 82                                      | == Indexed - Add ==
@@ -376,10 +465,6 @@ TEST_F(HpackDecoderTest, SectionD3RequestHuffmanExamples) {
 }
 
 TEST_F(HpackDecoderTest, SectionD5ResponseHuffmanExamples) {
-  {
-    std::vector<HpackHuffmanSymbol> code = HpackHuffmanCode();
-    EXPECT_TRUE(huffman_table_.Initialize(&code[0], code.size()));
-  }
   std::map<string, string> header_set;
   decoder_.ApplyHeaderTableSizeSetting(256);
 

@@ -6,6 +6,11 @@
 
 #include <bitset>
 
+#include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/singleton.h"
+#include "net/spdy/hpack_huffman_table.h"
+
 namespace net {
 
 namespace {
@@ -13,6 +18,25 @@ namespace {
 uint32 bits32(const std::string& bitstring) {
   return std::bitset<32>(bitstring).to_ulong();
 }
+
+// SharedHpackHuffmanTable is a Singleton wrapping a HpackHuffmanTable
+// instance initialized with |kHpackHuffmanCode|.
+struct SharedHpackHuffmanTable {
+ public:
+  SharedHpackHuffmanTable() {
+    std::vector<HpackHuffmanSymbol> code = HpackHuffmanCode();
+    scoped_ptr<HpackHuffmanTable> mutable_table(new HpackHuffmanTable());
+    CHECK(mutable_table->Initialize(&code[0], code.size()));
+    CHECK(mutable_table->IsInitialized());
+    table.reset(mutable_table.release());
+  }
+
+  static SharedHpackHuffmanTable* GetInstance() {
+    return Singleton<SharedHpackHuffmanTable>::get();
+  }
+
+  scoped_ptr<const HpackHuffmanTable> table;
+};
 
 }  // namespace
 
@@ -297,6 +321,10 @@ std::vector<HpackHuffmanSymbol> HpackHuffmanCode() {
   return std::vector<HpackHuffmanSymbol>(
       kHpackHuffmanCode,
       kHpackHuffmanCode + arraysize(kHpackHuffmanCode));
+}
+
+const HpackHuffmanTable& ObtainHpackHuffmanTable() {
+  return *SharedHpackHuffmanTable::GetInstance()->table;
 }
 
 }  // namespace net

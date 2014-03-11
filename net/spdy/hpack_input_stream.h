@@ -6,7 +6,6 @@
 #define NET_SPDY_HPACK_INPUT_STREAM_H_
 
 #include <string>
-#include <vector>
 
 #include "base/basictypes.h"
 #include "base/macros.h"
@@ -19,11 +18,6 @@
 // http://tools.ietf.org/html/draft-ietf-httpbis-header-compression-06
 
 namespace net {
-
-// TODO(akalin): When we use a callback/delegate instead of a vector,
-// use StringPiece instead of string.
-typedef std::pair<std::string, std::string> HpackHeaderPair;
-typedef std::vector<HpackHeaderPair> HpackHeaderPairVector;
 
 // An HpackInputStream handles all the low-level details of decoding
 // header fields.

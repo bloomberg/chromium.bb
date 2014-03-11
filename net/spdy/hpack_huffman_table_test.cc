@@ -372,11 +372,8 @@ TEST(HpackHuffmanTableTest, DecodeWithBadInput) {
 }
 
 TEST(HpackHuffmanTableTest, SpecRequestExamples) {
-  HpackHuffmanTable table;
-  {
-    std::vector<HpackHuffmanSymbol> code = HpackHuffmanCode();
-    EXPECT_TRUE(table.Initialize(&code[0], code.size()));
-  }
+  const HpackHuffmanTable& table(ObtainHpackHuffmanTable());
+
   string buffer;
   string test_table[] = {
     "\xdb\x6d\x88\x3e\x68\xd1\xcb\x12\x25\xba\x7f",
@@ -405,11 +402,8 @@ TEST(HpackHuffmanTableTest, SpecRequestExamples) {
 }
 
 TEST(HpackHuffmanTableTest, SpecResponseExamples) {
-  HpackHuffmanTable table;
-  {
-    std::vector<HpackHuffmanSymbol> code = HpackHuffmanCode();
-    EXPECT_TRUE(table.Initialize(&code[0], code.size()));
-  }
+  const HpackHuffmanTable& table(ObtainHpackHuffmanTable());
+
   string buffer;
   string test_table[] = {
     "\x98\xa7",
@@ -444,11 +438,8 @@ TEST(HpackHuffmanTableTest, SpecResponseExamples) {
 }
 
 TEST(HpackHuffmanTableTest, RoundTripIndvidualSymbols) {
-  HpackHuffmanTable table;
-  {
-    std::vector<HpackHuffmanSymbol> code = HpackHuffmanCode();
-    EXPECT_TRUE(table.Initialize(&code[0], code.size()));
-  }
+  const HpackHuffmanTable& table(ObtainHpackHuffmanTable());
+
   for (size_t i = 0; i != 256; i++) {
     char c = static_cast<char>(i);
     char storage[3] = {c, c, c};
@@ -466,11 +457,8 @@ TEST(HpackHuffmanTableTest, RoundTripIndvidualSymbols) {
 }
 
 TEST(HpackHuffmanTableTest, RoundTripSymbolSequence) {
-  HpackHuffmanTable table;
-  {
-    std::vector<HpackHuffmanSymbol> code = HpackHuffmanCode();
-    EXPECT_TRUE(table.Initialize(&code[0], code.size()));
-  }
+  const HpackHuffmanTable& table(ObtainHpackHuffmanTable());
+
   char storage[512];
   for (size_t i = 0; i != 256; i++) {
     storage[i] = static_cast<char>(i);

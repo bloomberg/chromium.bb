@@ -6,6 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/strings/string_util.h"
 #include "net/spdy/hpack_constants.h"
 #include "net/spdy/hpack_output_stream.h"
 
@@ -14,9 +15,8 @@ namespace net {
 using base::StringPiece;
 using std::string;
 
-HpackDecoder::HpackDecoder(const HpackHuffmanTable& table,
-                           uint32 max_string_literal_size)
-    : max_string_literal_size_(max_string_literal_size),
+HpackDecoder::HpackDecoder(const HpackHuffmanTable& table)
+    : max_string_literal_size_(kDefaultMaxStringLiteralSize),
       huffman_table_(table) {}
 
 HpackDecoder::~HpackDecoder() {}
@@ -25,32 +25,75 @@ void HpackDecoder::ApplyHeaderTableSizeSetting(uint32 max_size) {
   context_.ApplyHeaderTableSizeSetting(max_size);
 }
 
-bool HpackDecoder::DecodeHeaderSet(StringPiece input,
-                                   HpackHeaderPairVector* header_list) {
-  HpackInputStream input_stream(max_string_literal_size_, input);
-  while (input_stream.HasMoreData()) {
-    // May add to |header_list|.
-    if (!DecodeNextOpcode(&input_stream, header_list))
-      return false;
-  }
+bool HpackDecoder::HandleControlFrameHeadersData(SpdyStreamId id,
+                                                 const char* headers_data,
+                                                 size_t headers_data_length) {
+  decoded_block_.clear();
 
-  // After processing opcodes, emit everything in the reference set
-  // that hasn't already been emitted.
-  for (size_t i = 1; i <= context_.GetMutableEntryCount(); ++i) {
-    if (context_.IsReferencedAt(i) &&
-        (context_.GetTouchCountAt(i) == HpackEncodingContext::kUntouched)) {
-      header_list->push_back(
-          HpackHeaderPair(context_.GetNameAt(i).as_string(),
-                          context_.GetValueAt(i).as_string()));
-    }
-    context_.ClearTouchesAt(i);
+  size_t new_size = headers_block_buffer_.size() + headers_data_length;
+  if (new_size > kMaxDecodeBufferSize) {
+    return false;
   }
-
+  headers_block_buffer_.insert(headers_block_buffer_.end(),
+                               headers_data,
+                               headers_data + headers_data_length);
   return true;
 }
 
-bool HpackDecoder::DecodeNextOpcode(HpackInputStream* input_stream,
-                                    HpackHeaderPairVector* header_list) {
+bool HpackDecoder::HandleControlFrameHeadersComplete(SpdyStreamId id) {
+  HpackInputStream input_stream(max_string_literal_size_,
+                                headers_block_buffer_);
+  while (input_stream.HasMoreData()) {
+    if (!DecodeNextOpcode(&input_stream))
+      return false;
+  }
+  headers_block_buffer_.clear();
+
+  // Emit everything in the reference set that hasn't already been emitted.
+  for (size_t i = 1; i <= context_.GetMutableEntryCount(); ++i) {
+    if (context_.IsReferencedAt(i) &&
+        (context_.GetTouchCountAt(i) == HpackEncodingContext::kUntouched)) {
+      HandleHeaderRepresentation(context_.GetNameAt(i).as_string(),
+                                 context_.GetValueAt(i).as_string());
+    }
+    context_.ClearTouchesAt(i);
+  }
+  // Emit the Cookie header, if any crumbles were encountered.
+  if (!cookie_name_.empty()) {
+    decoded_block_[cookie_name_] = cookie_value_;
+    cookie_name_.clear();
+    cookie_value_.clear();
+  }
+  return true;
+}
+
+void HpackDecoder::HandleHeaderRepresentation(StringPiece name,
+                                              StringPiece value) {
+  typedef std::pair<std::map<string, string>::iterator, bool> InsertResult;
+
+  // TODO(jgraettinger): HTTP/2 requires strict lowercasing of headers,
+  // and the permissiveness here isn't wanted. Back this out in upstream.
+  if (LowerCaseEqualsASCII(name.begin(), name.end(), "cookie")) {
+    if (cookie_name_.empty()) {
+      cookie_name_.assign(name.data(), name.size());
+      cookie_value_.assign(value.data(), value.size());
+    } else {
+      cookie_value_ += "; ";
+      cookie_value_.insert(cookie_value_.end(), value.begin(), value.end());
+    }
+  } else {
+    InsertResult result = decoded_block_.insert(
+        std::make_pair(name.as_string(), value.as_string()));
+    if (!result.second) {
+      result.first->second.push_back('\0');
+      result.first->second.insert(result.first->second.end(),
+                                  value.begin(),
+                                  value.end());
+    }
+  }
+}
+
+bool HpackDecoder::DecodeNextOpcode(HpackInputStream* input_stream) {
   // Implements 4.4: Encoding context update. Context updates are a special-case
   // of indexed header, and must be tested prior to |kIndexedOpcode| below.
   if (input_stream->MatchPrefixAndConsume(kEncodingContextOpcode)) {
@@ -58,15 +101,15 @@ bool HpackDecoder::DecodeNextOpcode(HpackInputStream* input_stream,
   }
   // Implements 4.2: Indexed Header Field Representation.
   if (input_stream->MatchPrefixAndConsume(kIndexedOpcode)) {
-    return DecodeNextIndexedHeader(input_stream, header_list);
+    return DecodeNextIndexedHeader(input_stream);
   }
   // Implements 4.3.1: Literal Header Field without Indexing.
   if (input_stream->MatchPrefixAndConsume(kLiteralNoIndexOpcode)) {
-    return DecodeNextLiteralHeader(input_stream, false, header_list);
+    return DecodeNextLiteralHeader(input_stream, false);
   }
   // Implements 4.3.2: Literal Header Field with Incremental Indexing.
   if (input_stream->MatchPrefixAndConsume(kLiteralIncrementalIndexOpcode)) {
-    return DecodeNextLiteralHeader(input_stream, true, header_list);
+    return DecodeNextLiteralHeader(input_stream, true);
   }
   // Unrecognized opcode.
   return false;
@@ -87,8 +130,7 @@ bool HpackDecoder::DecodeNextContextUpdate(HpackInputStream* input_stream) {
   return false;
 }
 
-bool HpackDecoder::DecodeNextIndexedHeader(HpackInputStream* input_stream,
-                                           HpackHeaderPairVector* header_list) {
+bool HpackDecoder::DecodeNextIndexedHeader(HpackInputStream* input_stream) {
   uint32 index = 0;
   if (!input_stream->DecodeNextUint32(&index))
     return false;
@@ -102,9 +144,8 @@ bool HpackDecoder::DecodeNextIndexedHeader(HpackInputStream* input_stream,
   bool emitted = false;
   // The index will be put into the reference set.
   if (!context_.IsReferencedAt(index)) {
-    header_list->push_back(
-        HpackHeaderPair(context_.GetNameAt(index).as_string(),
-                        context_.GetValueAt(index).as_string()));
+    HandleHeaderRepresentation(context_.GetNameAt(index).as_string(),
+                               context_.GetValueAt(index).as_string());
     emitted = true;
   }
 
@@ -121,8 +162,7 @@ bool HpackDecoder::DecodeNextIndexedHeader(HpackInputStream* input_stream,
 }
 
 bool HpackDecoder::DecodeNextLiteralHeader(HpackInputStream* input_stream,
-                                           bool should_index,
-                                           HpackHeaderPairVector* header_list) {
+                                           bool should_index) {
   StringPiece name;
   if (!DecodeNextName(input_stream, &name))
     return false;
@@ -131,8 +171,7 @@ bool HpackDecoder::DecodeNextLiteralHeader(HpackInputStream* input_stream,
   if (!DecodeNextStringLiteral(input_stream, false, &value))
     return false;
 
-  header_list->push_back(
-      HpackHeaderPair(name.as_string(), value.as_string()));
+  HandleHeaderRepresentation(name, value);
 
   if (!should_index)
     return true;

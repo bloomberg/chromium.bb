@@ -29,7 +29,18 @@ struct HpackHuffmanSymbol {
   uint16 id;
 };
 
+class HpackHuffmanTable;
+
 const uint32 kDefaultHeaderTableSizeSetting = 4096;
+
+// Largest string literal an HpackDecoder/HpackEncoder will attempt to process
+// before returning an error.
+const uint32 kDefaultMaxStringLiteralSize = 16 * 1024;
+
+// Maximum amount of encoded header buffer HpackDecoder will retain before
+// returning an error.
+// TODO(jgraettinger): Remove with SpdyHeadersHandlerInterface switch.
+const uint32 kMaxDecodeBufferSize = 32 * 1024;
 
 // The marker for a string literal that is stored unmodified (i.e.,
 // without Huffman encoding) (from 4.1.2).
@@ -65,6 +76,11 @@ const HpackPrefix kLiteralIncrementalIndexOpcode = { 0x00, 2 };
 
 // Returns symbol code table from "Appendix C. Huffman Codes".
 NET_EXPORT_PRIVATE std::vector<HpackHuffmanSymbol> HpackHuffmanCode();
+
+// Returns a HpackHuffmanTable instance initialized with |kHpackHuffmanCode|.
+// The instance is read-only, has static lifetime, and is safe to share amoung
+// threads. This function is thread-safe.
+NET_EXPORT_PRIVATE const HpackHuffmanTable& ObtainHpackHuffmanTable();
 
 }  // namespace net
 
