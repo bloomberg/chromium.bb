@@ -6,6 +6,8 @@
 
 #include <algorithm>
 
+#include "ui/gfx/insets.h"
+
 namespace apps {
 
 SizeConstraints::SizeConstraints()
@@ -17,19 +19,33 @@ SizeConstraints::SizeConstraints(const gfx::Size& min_size,
 
 SizeConstraints::~SizeConstraints() {}
 
+// static
+gfx::Size SizeConstraints::AddFrameToConstraints(
+    const gfx::Size& size_constraints,
+    const gfx::Insets& frame_insets) {
+  return gfx::Size(
+      size_constraints.width() == kUnboundedSize
+          ? kUnboundedSize
+          : size_constraints.width() + frame_insets.width(),
+      size_constraints.height() == kUnboundedSize
+          ? kUnboundedSize
+          : size_constraints.height() + frame_insets.height());
+}
+
 gfx::Size SizeConstraints::ClampSize(gfx::Size size) const {
   const gfx::Size max_size = GetMaximumSize();
   if (max_size.width() != kUnboundedSize)
-    size.set_width(std::min(size.width(), GetMaximumSize().width()));
+    size.set_width(std::min(size.width(), max_size.width()));
   if (max_size.height() != kUnboundedSize)
-    size.set_height(std::min(size.height(), GetMaximumSize().height()));
+    size.set_height(std::min(size.height(), max_size.height()));
   size.SetToMax(GetMinimumSize());
   return size;
 }
 
 bool SizeConstraints::HasMinimumSize() const {
-  return GetMinimumSize().width() != kUnboundedSize ||
-         GetMinimumSize().height() != kUnboundedSize;
+  const gfx::Size min_size = GetMinimumSize();
+  return min_size.width() != kUnboundedSize ||
+         min_size.height() != kUnboundedSize;
 }
 
 bool SizeConstraints::HasMaximumSize() const {

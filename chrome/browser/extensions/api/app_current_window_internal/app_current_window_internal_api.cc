@@ -133,20 +133,25 @@ bool AppCurrentWindowInternalSetBoundsFunction::RunWithWindow(
     AppWindow* window) {
   // Start with the current bounds, and change any values that are specified in
   // the incoming parameters.
-  gfx::Rect bounds = window->GetClientBounds();
+  gfx::Rect window_bounds = window->GetBaseWindow()->GetBounds();
+  gfx::Rect content_bounds = window->GetClientBounds();
+
+  // We need to maintain backcompatibility with a bug on Windows and ChromeOS,
+  // which returns the position of the window but the size of the content.
   scoped_ptr<SetBounds::Params> params(SetBounds::Params::Create(*args_));
   CHECK(params.get());
   if (params->bounds.left)
-    bounds.set_x(*(params->bounds.left));
+    window_bounds.set_x(*(params->bounds.left));
   if (params->bounds.top)
-    bounds.set_y(*(params->bounds.top));
+    window_bounds.set_y(*(params->bounds.top));
   if (params->bounds.width)
-    bounds.set_width(*(params->bounds.width));
+    content_bounds.set_width(*(params->bounds.width));
   if (params->bounds.height)
-    bounds.set_height(*(params->bounds.height));
+    content_bounds.set_height(*(params->bounds.height));
 
-  bounds.Inset(-window->GetBaseWindow()->GetFrameInsets());
-  window->GetBaseWindow()->SetBounds(bounds);
+  content_bounds.Inset(-window->GetBaseWindow()->GetFrameInsets());
+  window_bounds.set_size(content_bounds.size());
+  window->GetBaseWindow()->SetBounds(window_bounds);
   return true;
 }
 
@@ -159,10 +164,10 @@ bool AppCurrentWindowInternalSetMinWidthFunction::RunWithWindow(
 
   scoped_ptr<SetMinWidth::Params> params(SetMinWidth::Params::Create(*args_));
   CHECK(params.get());
-  gfx::Size min_size = window->GetBaseWindow()->GetMinimumSize();
+  gfx::Size min_size = window->GetBaseWindow()->GetContentMinimumSize();
   min_size.set_width(params->min_width.get() ?
       *(params->min_width) : kUnboundedSize);
-  window->SetMinimumSize(min_size);
+  window->SetContentMinimumSize(min_size);
   return true;
 }
 
@@ -175,10 +180,10 @@ bool AppCurrentWindowInternalSetMinHeightFunction::RunWithWindow(
 
   scoped_ptr<SetMinHeight::Params> params(SetMinHeight::Params::Create(*args_));
   CHECK(params.get());
-  gfx::Size min_size = window->GetBaseWindow()->GetMinimumSize();
+  gfx::Size min_size = window->GetBaseWindow()->GetContentMinimumSize();
   min_size.set_height(params->min_height.get() ?
       *(params->min_height) : kUnboundedSize);
-  window->SetMinimumSize(min_size);
+  window->SetContentMinimumSize(min_size);
   return true;
 }
 
@@ -191,10 +196,10 @@ bool AppCurrentWindowInternalSetMaxWidthFunction::RunWithWindow(
 
   scoped_ptr<SetMaxWidth::Params> params(SetMaxWidth::Params::Create(*args_));
   CHECK(params.get());
-  gfx::Size max_size = window->GetBaseWindow()->GetMaximumSize();
+  gfx::Size max_size = window->GetBaseWindow()->GetContentMaximumSize();
   max_size.set_width(params->max_width.get() ?
       *(params->max_width) : kUnboundedSize);
-  window->SetMaximumSize(max_size);
+  window->SetContentMaximumSize(max_size);
   return true;
 }
 
@@ -207,10 +212,10 @@ bool AppCurrentWindowInternalSetMaxHeightFunction::RunWithWindow(
 
   scoped_ptr<SetMaxHeight::Params> params(SetMaxHeight::Params::Create(*args_));
   CHECK(params.get());
-  gfx::Size max_size = window->GetBaseWindow()->GetMaximumSize();
+  gfx::Size max_size = window->GetBaseWindow()->GetContentMaximumSize();
   max_size.set_height(params->max_height.get() ?
       *(params->max_height) : kUnboundedSize);
-  window->SetMaximumSize(max_size);
+  window->SetContentMaximumSize(max_size);
   return true;
 }
 

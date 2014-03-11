@@ -525,7 +525,7 @@ bool WindowsCreateFunction::RunImpl() {
     if (chrome::GetActiveDesktop() == chrome::HOST_DESKTOP_TYPE_ASH) {
       AppWindow::CreateParams create_params;
       create_params.window_type = AppWindow::WINDOW_TYPE_V1_PANEL;
-      create_params.bounds = window_bounds;
+      create_params.window_spec.bounds = window_bounds;
       create_params.focused = saw_focus_key && focused;
       AppWindow* app_window = new AppWindow(
           window_profile, new ChromeAppWindowDelegate(), GetExtension());

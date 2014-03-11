@@ -150,10 +150,10 @@ class NativeAppWindowViews : public NativeAppWindow,
   virtual void HideWithApp() OVERRIDE;
   virtual void ShowWithApp() OVERRIDE;
   virtual void UpdateShelfMenu() OVERRIDE;
-  virtual gfx::Size GetMinimumSize() const OVERRIDE;
-  virtual void SetMinimumSize(const gfx::Size& size) OVERRIDE;
-  virtual gfx::Size GetMaximumSize() const OVERRIDE;
-  virtual void SetMaximumSize(const gfx::Size& size) OVERRIDE;
+  virtual gfx::Size GetContentMinimumSize() const OVERRIDE;
+  virtual void SetContentMinimumSize(const gfx::Size& size) OVERRIDE;
+  virtual gfx::Size GetContentMaximumSize() const OVERRIDE;
+  virtual void SetContentMaximumSize(const gfx::Size& size) OVERRIDE;
 
   // web_modal::WebContentsModalDialogHost implementation.
   virtual gfx::NativeView GetHostView() const OVERRIDE;

@@ -11,6 +11,7 @@
 #include "apps/ui/native_app_window.h"
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
@@ -56,6 +57,10 @@ const char kInvalidChannelForFrameOptions[] =
 const char kFrameOptionsAndFrame[] =
     "Only one of frame and frameOptions can be supplied.";
 const char kColorWithFrameNone[] = "Windows with no frame cannot have a color.";
+const char kInvalidChannelForBounds[] =
+    "innerBounds and outerBounds are only available in dev channel.";
+const char kConflictingBoundsOptions[] =
+    "The $1 property cannot be specified for both inner and outer bounds.";
 }  // namespace app_window_constants
 
 const char kNoneFrameOption[] = "none";
@@ -92,6 +97,49 @@ class DevToolsRestorer : public base::RefCounted<DevToolsRestorer> {
 
   scoped_refptr<AppWindowCreateFunction> delayed_create_function_;
 };
+
+// If the same property is specified for the inner and outer bounds, raise an
+// error.
+bool CheckBoundsConflict(const scoped_ptr<int>& inner_property,
+                         const scoped_ptr<int>& outer_property,
+                         const std::string& property_name,
+                         std::string* error) {
+  if (inner_property.get() && outer_property.get()) {
+    std::vector<std::string> subst;
+    subst.push_back(property_name);
+    *error = ReplaceStringPlaceholders(
+        app_window_constants::kConflictingBoundsOptions, subst, NULL);
+    return false;
+  }
+
+  return true;
+}
+
+// Copy over the bounds specification properties from the API to the
+// AppWindow::CreateParams.
+void CopyBoundsSpec(
+    const extensions::api::app_window::BoundsSpecification* input_spec,
+    apps::AppWindow::BoundsSpecification* create_spec) {
+  if (!input_spec)
+    return;
+
+  if (input_spec->left.get())
+    create_spec->bounds.set_x(*input_spec->left);
+  if (input_spec->top.get())
+    create_spec->bounds.set_y(*input_spec->top);
+  if (input_spec->width.get())
+    create_spec->bounds.set_width(*input_spec->width);
+  if (input_spec->height.get())
+    create_spec->bounds.set_height(*input_spec->height);
+  if (input_spec->min_width.get())
+    create_spec->minimum_size.set_width(*input_spec->min_width);
+  if (input_spec->min_height.get())
+    create_spec->minimum_size.set_height(*input_spec->min_height);
+  if (input_spec->max_width.get())
+    create_spec->maximum_size.set_width(*input_spec->max_width);
+  if (input_spec->max_height.get())
+    create_spec->maximum_size.set_height(*input_spec->max_height);
+}
 
 }  // namespace
 
@@ -173,37 +221,8 @@ bool AppWindowCreateFunction::RunImpl() {
       }
     }
 
-    // TODO(jeremya): remove these, since they do the same thing as
-    // left/top/width/height.
-    if (options->default_width.get())
-      create_params.bounds.set_width(*options->default_width.get());
-    if (options->default_height.get())
-      create_params.bounds.set_height(*options->default_height.get());
-    if (options->default_left.get())
-      create_params.bounds.set_x(*options->default_left.get());
-    if (options->default_top.get())
-      create_params.bounds.set_y(*options->default_top.get());
-
-    if (options->width.get())
-      create_params.bounds.set_width(*options->width.get());
-    if (options->height.get())
-      create_params.bounds.set_height(*options->height.get());
-    if (options->left.get())
-      create_params.bounds.set_x(*options->left.get());
-    if (options->top.get())
-      create_params.bounds.set_y(*options->top.get());
-
-    if (options->bounds.get()) {
-      app_window::ContentBounds* bounds = options->bounds.get();
-      if (bounds->width.get())
-        create_params.bounds.set_width(*bounds->width.get());
-      if (bounds->height.get())
-        create_params.bounds.set_height(*bounds->height.get());
-      if (bounds->left.get())
-        create_params.bounds.set_x(*bounds->left.get());
-      if (bounds->top.get())
-        create_params.bounds.set_y(*bounds->top.get());
-    }
+    if (!GetBoundsSpec(*options, &create_params, &error_))
+      return false;
 
     if (GetCurrentChannel() <= chrome::VersionInfo::CHANNEL_DEV ||
         GetExtension()->location() == extensions::Manifest::COMPONENT) {
@@ -221,17 +240,6 @@ bool AppWindowCreateFunction::RunImpl() {
              switches::kEnableExperimentalExtensionApis))) {
       create_params.transparent_background = *options->transparent_background;
     }
-
-    gfx::Size& minimum_size = create_params.minimum_size;
-    if (options->min_width.get())
-      minimum_size.set_width(*options->min_width);
-    if (options->min_height.get())
-      minimum_size.set_height(*options->min_height);
-    gfx::Size& maximum_size = create_params.maximum_size;
-    if (options->max_width.get())
-      maximum_size.set_width(*options->max_width);
-    if (options->max_height.get())
-      maximum_size.set_height(*options->max_height);
 
     if (options->hidden.get())
       create_params.hidden = *options->hidden.get();
@@ -298,6 +306,123 @@ bool AppWindowCreateFunction::RunImpl() {
   }
 
   SendResponse(true);
+  return true;
+}
+
+bool AppWindowCreateFunction::GetBoundsSpec(
+    const extensions::api::app_window::CreateWindowOptions& options,
+    apps::AppWindow::CreateParams* params,
+    std::string* error) {
+  DCHECK(params);
+  DCHECK(error);
+
+  if (options.inner_bounds.get() || options.outer_bounds.get()) {
+    // Parse the inner and outer bounds specifications. If developers use the
+    // new API, the deprecated fields will be ignored - do not attempt to merge
+    // them.
+
+    if (GetCurrentChannel() > chrome::VersionInfo::CHANNEL_DEV) {
+      *error = app_window_constants::kInvalidChannelForBounds;
+      return false;
+    }
+
+    const extensions::api::app_window::BoundsSpecification* inner_bounds =
+        options.inner_bounds.get();
+    const extensions::api::app_window::BoundsSpecification* outer_bounds =
+        options.outer_bounds.get();
+    if (inner_bounds && outer_bounds) {
+      if (!CheckBoundsConflict(
+               inner_bounds->left, outer_bounds->left, "left", error)) {
+        return false;
+      }
+      if (!CheckBoundsConflict(
+               inner_bounds->top, outer_bounds->top, "top", error)) {
+        return false;
+      }
+      if (!CheckBoundsConflict(
+               inner_bounds->width, outer_bounds->width, "width", error)) {
+        return false;
+      }
+      if (!CheckBoundsConflict(
+               inner_bounds->height, outer_bounds->height, "height", error)) {
+        return false;
+      }
+      if (!CheckBoundsConflict(inner_bounds->min_width,
+                               outer_bounds->min_width,
+                               "minWidth",
+                               error)) {
+        return false;
+      }
+      if (!CheckBoundsConflict(inner_bounds->min_height,
+                               outer_bounds->min_height,
+                               "minHeight",
+                               error)) {
+        return false;
+      }
+      if (!CheckBoundsConflict(inner_bounds->max_width,
+                               outer_bounds->max_width,
+                               "maxWidth",
+                               error)) {
+        return false;
+      }
+      if (!CheckBoundsConflict(inner_bounds->max_height,
+                               outer_bounds->max_height,
+                               "maxHeight",
+                               error)) {
+        return false;
+      }
+    }
+
+    CopyBoundsSpec(inner_bounds, &(params->content_spec));
+    CopyBoundsSpec(outer_bounds, &(params->window_spec));
+  } else {
+    // Parse deprecated fields.
+    // Due to a bug in NativeAppWindow::GetFrameInsets() on Windows and ChromeOS
+    // the bounds set the position of the window and the size of the content.
+    // This will be preserved as apps may be relying on this behavior.
+
+    if (options.default_width.get())
+      params->content_spec.bounds.set_width(*options.default_width.get());
+    if (options.default_height.get())
+      params->content_spec.bounds.set_height(*options.default_height.get());
+    if (options.default_left.get())
+      params->window_spec.bounds.set_x(*options.default_left.get());
+    if (options.default_top.get())
+      params->window_spec.bounds.set_y(*options.default_top.get());
+
+    if (options.width.get())
+      params->content_spec.bounds.set_width(*options.width.get());
+    if (options.height.get())
+      params->content_spec.bounds.set_height(*options.height.get());
+    if (options.left.get())
+      params->window_spec.bounds.set_x(*options.left.get());
+    if (options.top.get())
+      params->window_spec.bounds.set_y(*options.top.get());
+
+    if (options.bounds.get()) {
+      app_window::ContentBounds* bounds = options.bounds.get();
+      if (bounds->width.get())
+        params->content_spec.bounds.set_width(*bounds->width.get());
+      if (bounds->height.get())
+        params->content_spec.bounds.set_height(*bounds->height.get());
+      if (bounds->left.get())
+        params->window_spec.bounds.set_x(*bounds->left.get());
+      if (bounds->top.get())
+        params->window_spec.bounds.set_y(*bounds->top.get());
+    }
+
+    gfx::Size& minimum_size = params->content_spec.minimum_size;
+    if (options.min_width.get())
+      minimum_size.set_width(*options.min_width);
+    if (options.min_height.get())
+      minimum_size.set_height(*options.min_height);
+    gfx::Size& maximum_size = params->content_spec.maximum_size;
+    if (options.max_width.get())
+      maximum_size.set_width(*options.max_width);
+    if (options.max_height.get())
+      maximum_size.set_height(*options.max_height);
+  }
+
   return true;
 }
 

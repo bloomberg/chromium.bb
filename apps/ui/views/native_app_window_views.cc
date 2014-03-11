@@ -37,8 +37,6 @@ void NativeAppWindowViews::Init(AppWindow* app_window,
   frameless_ = create_params.frame == AppWindow::FRAME_NONE;
   transparent_background_ = create_params.transparent_background;
   resizable_ = create_params.resizable;
-  size_constraints_.set_minimum_size(create_params.minimum_size);
-  size_constraints_.set_maximum_size(create_params.maximum_size);
   Observe(app_window_->web_contents());
 
   window_ = new views::Widget;
@@ -61,7 +59,8 @@ void NativeAppWindowViews::InitializeWindow(
   init_params.top_level = true;
   init_params.keep_on_top = create_params.always_on_top;
   window_->Init(init_params);
-  window_->CenterWindow(create_params.bounds.size());
+  window_->CenterWindow(
+      create_params.GetInitialWindowBounds(gfx::Insets()).size());
 }
 
 // ui::BaseWindow implementation.
@@ -408,19 +407,19 @@ void NativeAppWindowViews::ShowWithApp() {}
 
 void NativeAppWindowViews::UpdateShelfMenu() {}
 
-gfx::Size NativeAppWindowViews::GetMinimumSize() const {
+gfx::Size NativeAppWindowViews::GetContentMinimumSize() const {
   return size_constraints_.GetMinimumSize();
 }
 
-void NativeAppWindowViews::SetMinimumSize(const gfx::Size& size) {
+void NativeAppWindowViews::SetContentMinimumSize(const gfx::Size& size) {
   size_constraints_.set_minimum_size(size);
 }
 
-gfx::Size NativeAppWindowViews::GetMaximumSize() const {
+gfx::Size NativeAppWindowViews::GetContentMaximumSize() const {
   return size_constraints_.GetMaximumSize();
 }
 
-void NativeAppWindowViews::SetMaximumSize(const gfx::Size& size) {
+void NativeAppWindowViews::SetContentMaximumSize(const gfx::Size& size) {
   size_constraints_.set_maximum_size(size);
 }
 

@@ -7,6 +7,10 @@
 
 #include "ui/gfx/geometry/size.h"
 
+namespace gfx {
+class Insets;
+}
+
 namespace apps {
 
 class SizeConstraints {
@@ -18,6 +22,10 @@ class SizeConstraints {
   SizeConstraints();
   SizeConstraints(const gfx::Size& min_size, const gfx::Size& max_size);
   ~SizeConstraints();
+
+  // Adds frame insets to a size constraint.
+  static gfx::Size AddFrameToConstraints(const gfx::Size& size_constraints,
+                                         const gfx::Insets& frame_insets);
 
   // Returns the bounds with its size clamped to the min/max size.
   gfx::Size ClampSize(gfx::Size size) const;

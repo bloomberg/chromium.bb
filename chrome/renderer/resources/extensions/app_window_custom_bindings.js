@@ -169,9 +169,13 @@ appWindow.registerCustomHook(function(bindingsAPI) {
       this.contentWindow.close();
     };
     AppWindow.prototype.getBounds = function() {
-      var bounds = appWindowData.innerBounds;
-      return { left: bounds.left, top: bounds.top,
-               width: bounds.width, height: bounds.height };
+      // This is to maintain backcompatibility with a bug on Windows and
+      // ChromeOS, which returns the position of the window but the size of
+      // the content.
+      var innerBounds = appWindowData.innerBounds;
+      var outerBounds = appWindowData.outerBounds;
+      return { left: outerBounds.left, top: outerBounds.top,
+               width: innerBounds.width, height: innerBounds.height };
     };
     AppWindow.prototype.getMinWidth = function() {
       return appWindowData.innerBounds.minWidth;

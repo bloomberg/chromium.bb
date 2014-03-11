@@ -136,10 +136,10 @@ class NativeAppWindowCocoa : public apps::NativeAppWindow,
   virtual void ShowWithApp() OVERRIDE;
   virtual void HideWithApp() OVERRIDE;
   virtual void UpdateShelfMenu() OVERRIDE;
-  virtual gfx::Size GetMinimumSize() const OVERRIDE;
-  virtual void SetMinimumSize(const gfx::Size& size) OVERRIDE;
-  virtual gfx::Size GetMaximumSize() const OVERRIDE;
-  virtual void SetMaximumSize(const gfx::Size& size) OVERRIDE;
+  virtual gfx::Size GetContentMinimumSize() const OVERRIDE;
+  virtual void SetContentMinimumSize(const gfx::Size& size) OVERRIDE;
+  virtual gfx::Size GetContentMaximumSize() const OVERRIDE;
+  virtual void SetContentMaximumSize(const gfx::Size& size) OVERRIDE;
 
   // WebContentsObserver implementation.
   virtual void RenderViewCreated(content::RenderViewHost* rvh) OVERRIDE;
@@ -185,6 +185,11 @@ class NativeAppWindowCocoa : public apps::NativeAppWindow,
   // Cache |restored_bounds_| only if the window is currently restored.
   void UpdateRestoredBounds();
 
+  // Update the minimum and maximum size constraints, fullscreen and resize
+  // controls.
+  void SetContentSizeConstraints(const gfx::Size& minimum_size,
+                                 const gfx::Size& maximum_size);
+
   // Hides the window unconditionally. Used by Hide and HideWithApp.
   void HideWithoutMarkingHidden();
 
@@ -203,6 +208,7 @@ class NativeAppWindowCocoa : public apps::NativeAppWindow,
   bool is_fullscreen_;
   NSRect restored_bounds_;
 
+  bool is_resizable_;
   bool shows_resize_controls_;
   bool shows_fullscreen_controls_;
 

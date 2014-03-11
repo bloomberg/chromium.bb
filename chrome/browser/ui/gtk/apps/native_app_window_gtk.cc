@@ -61,30 +61,36 @@ NativeAppWindowGtk::NativeAppWindowGtk(AppWindow* app_window,
       web_contents()->GetView()->GetNativeView();
   gtk_container_add(GTK_CONTAINER(window_), native_view);
 
-  if (params.bounds.x() != INT_MIN && params.bounds.y() != INT_MIN)
-    gtk_window_move(window_, params.bounds.x(), params.bounds.y());
+  gfx::Insets frame_insets = GetFrameInsets();
+  gfx::Rect initial_bounds = params.GetInitialWindowBounds(frame_insets);
+
+  typedef apps::AppWindow::BoundsSpecification BoundsSpecification;
+  if (initial_bounds.x() != BoundsSpecification::kUnspecifiedPosition &&
+      initial_bounds.y() != BoundsSpecification::kUnspecifiedPosition) {
+    gtk_window_move(window_, initial_bounds.x(), initial_bounds.y());
+  }
 
   // This is done to avoid a WM "feature" where setting the window size to
   // the monitor size causes the WM to set the EWMH for full screen mode.
-  int win_height = params.bounds.height();
+  int win_height = initial_bounds.height();
   if (frameless_ &&
-      gtk_window_util::BoundsMatchMonitorSize(window_, params.bounds)) {
+      gtk_window_util::BoundsMatchMonitorSize(window_, initial_bounds)) {
     win_height -= 1;
   }
-  gtk_window_set_default_size(window_, params.bounds.width(), win_height);
+  gtk_window_set_default_size(window_, initial_bounds.width(), win_height);
 
   resizable_ = params.resizable;
   if (!resizable_) {
     // If the window doesn't have a size request when we set resizable to
     // false, GTK will shrink the window to 1x1px.
     gtk_widget_set_size_request(GTK_WIDGET(window_),
-        params.bounds.width(), win_height);
+        initial_bounds.width(), win_height);
     gtk_window_set_resizable(window_, FALSE);
   }
 
   // make sure bounds_ and restored_bounds_ have correct values until we
   // get our first configure-event
-  bounds_ = restored_bounds_ = params.bounds;
+  bounds_ = restored_bounds_ = initial_bounds;
   gint x, y;
   gtk_window_get_position(window_, &x, &y);
   bounds_.set_origin(gfx::Point(x, y));
@@ -96,9 +102,11 @@ NativeAppWindowGtk::NativeAppWindowGtk(AppWindow* app_window,
   if (always_on_top_)
     gtk_window_set_keep_above(window_, TRUE);
 
-  size_constraints_.set_minimum_size(params.minimum_size);
-  size_constraints_.set_maximum_size(params.maximum_size);
-  UpdateWindowMinMaxSize();
+  size_constraints_.set_minimum_size(
+      params.GetContentMinimumSize(frame_insets));
+  size_constraints_.set_maximum_size(
+      params.GetContentMaximumSize(frame_insets));
+  UpdateContentMinMaxSize();
 
   // In some (older) versions of compiz, raising top-level windows when they
   // are partially off-screen causes them to get snapped back on screen, not
@@ -479,7 +487,7 @@ void NativeAppWindowGtk::OnConfigureDebounced() {
   }
 }
 
-void NativeAppWindowGtk::UpdateWindowMinMaxSize() {
+void NativeAppWindowGtk::UpdateContentMinMaxSize() {
  GdkGeometry hints;
  int hints_mask = 0;
  if (size_constraints_.HasMinimumSize()) {
@@ -739,20 +747,20 @@ void NativeAppWindowGtk::UpdateShelfMenu() {
   NOTIMPLEMENTED();
 }
 
-gfx::Size NativeAppWindowGtk::GetMinimumSize() const {
+gfx::Size NativeAppWindowGtk::GetContentMinimumSize() const {
  return size_constraints_.GetMinimumSize();
 }
 
-void NativeAppWindowGtk::SetMinimumSize(const gfx::Size& size) {
+void NativeAppWindowGtk::SetContentMinimumSize(const gfx::Size& size) {
  size_constraints_.set_minimum_size(size);
- UpdateWindowMinMaxSize();
+ UpdateContentMinMaxSize();
 }
 
-gfx::Size NativeAppWindowGtk::GetMaximumSize() const {
+gfx::Size NativeAppWindowGtk::GetContentMaximumSize() const {
  return size_constraints_.GetMaximumSize();
 }
 
-void NativeAppWindowGtk::SetMaximumSize(const gfx::Size& size) {
+void NativeAppWindowGtk::SetContentMaximumSize(const gfx::Size& size) {
  size_constraints_.set_maximum_size(size);
- UpdateWindowMinMaxSize();
+ UpdateContentMinMaxSize();
 }

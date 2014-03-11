@@ -126,16 +126,53 @@ class AppWindowAPITest : public extensions::PlatformAppBrowserTest {
 // These tests are flaky after https://codereview.chromium.org/57433010/.
 // See http://crbug.com/319613.
 
-IN_PROC_BROWSER_TEST_F(AppWindowAPITest, DISABLED_TestCreate) {
+IN_PROC_BROWSER_TEST_F(AppWindowAPITest, TestCreate) {
   ASSERT_TRUE(RunAppWindowAPITest("testCreate")) << message_;
+}
+
+#if defined(TOOLKIT_GTK)
+#define MAYBE_TestDeprecatedBounds DISABLED_TestDeprecatedBounds
+#else
+#define MAYBE_TestDeprecatedBounds TestDeprecatedBounds
+#endif
+
+IN_PROC_BROWSER_TEST_F(AppWindowAPITest, MAYBE_TestDeprecatedBounds) {
+  ASSERT_TRUE(RunAppWindowAPITest("testDeprecatedBounds")) << message_;
+}
+
+#if defined(TOOLKIT_GTK)
+#define MAYBE_TestInitialBounds DISABLED_TestInitialBounds
+#else
+#define MAYBE_TestInitialBounds TestInitialBounds
+#endif
+
+IN_PROC_BROWSER_TEST_F(AppWindowAPITest, MAYBE_TestInitialBounds) {
+  ASSERT_TRUE(RunAppWindowAPITest("testInitialBounds")) << message_;
+}
+
+#if defined(TOOLKIT_GTK)
+#define MAYBE_TestInitialBoundsInStable DISABLED_TestInitialBoundsInStable
+#else
+#define MAYBE_TestInitialBoundsInStable TestInitialBoundsInStable
+#endif
+
+IN_PROC_BROWSER_TEST_F(AppWindowAPITest, MAYBE_TestInitialBoundsInStable) {
+  extensions::ScopedCurrentChannel channel(chrome::VersionInfo::CHANNEL_STABLE);
+  ASSERT_TRUE(RunAppWindowAPITest("testInitialBoundsInStable")) << message_;
+}
+
+#if defined(TOOLKIT_GTK)
+#define MAYBE_TestInitialConstraints DISABLED_TestInitialConstraints
+#else
+#define MAYBE_TestInitialConstraints TestInitialConstraints
+#endif
+
+IN_PROC_BROWSER_TEST_F(AppWindowAPITest, MAYBE_TestInitialConstraints) {
+  ASSERT_TRUE(RunAppWindowAPITest("testInitialConstraints")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(AppWindowAPITest, TestSingleton) {
   ASSERT_TRUE(RunAppWindowAPITest("testSingleton")) << message_;
-}
-
-IN_PROC_BROWSER_TEST_F(AppWindowAPITest, DISABLED_TestBounds) {
-  ASSERT_TRUE(RunAppWindowAPITest("testBounds")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(AppWindowAPITest, TestCloseEvent) {

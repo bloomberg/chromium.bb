@@ -77,16 +77,16 @@ class NativeAppWindow : public ui::BaseWindow,
   virtual void UpdateShelfMenu() = 0;
 
   // Returns the minimum size constraints of the content.
-  virtual gfx::Size GetMinimumSize() const = 0;
+  virtual gfx::Size GetContentMinimumSize() const = 0;
 
   // Updates the minimum size constraints of the content.
-  virtual void SetMinimumSize(const gfx::Size& size) = 0;
+  virtual void SetContentMinimumSize(const gfx::Size& size) = 0;
 
   // Returns the maximum size constraints of the content.
-  virtual gfx::Size GetMaximumSize() const = 0;
+  virtual gfx::Size GetContentMaximumSize() const = 0;
 
   // Updates the maximum size constraints of the content.
-  virtual void SetMaximumSize(const gfx::Size& size) = 0;
+  virtual void SetContentMaximumSize(const gfx::Size& size) = 0;
 
   virtual ~NativeAppWindow() {}
 };

@@ -49,6 +49,65 @@ function waitForLoad(win, callback) {
   }));
 }
 
+function assertConstraintsUnspecified(win) {
+  chrome.test.assertEq(null, win.innerBounds.minWidth);
+  chrome.test.assertEq(null, win.innerBounds.minHeight);
+  chrome.test.assertEq(null, win.innerBounds.maxWidth);
+  chrome.test.assertEq(null, win.innerBounds.maxHeight);
+  chrome.test.assertEq(null, win.outerBounds.minWidth);
+  chrome.test.assertEq(null, win.outerBounds.minHeight);
+  chrome.test.assertEq(null, win.outerBounds.maxWidth);
+  chrome.test.assertEq(null, win.outerBounds.maxHeight);
+}
+
+function assertBoundsConsistent(win) {
+  // Ensure that the inner and outer bounds are consistent. Since platforms
+  // have different frame padding, we cannot check the sizes precisely.
+  // It is a reasonable assumption that all platforms will have a title bar at
+  // the top of the window.
+  chrome.test.assertTrue(win.innerBounds.left >= win.outerBounds.left);
+  chrome.test.assertTrue(win.innerBounds.top > win.outerBounds.top);
+  chrome.test.assertTrue(win.innerBounds.width <= win.outerBounds.width);
+  chrome.test.assertTrue(win.innerBounds.height < win.outerBounds.height);
+
+  if (win.innerBounds.minWidth === null)
+    chrome.test.assertEq(null, win.outerBounds.minWidth);
+  else
+    chrome.test.assertTrue(
+        win.innerBounds.minWidth <= win.outerBounds.minWidth);
+
+  if (win.innerBounds.minHeight === null)
+    chrome.test.assertEq(null, win.outerBounds.minHeight);
+  else
+    chrome.test.assertTrue(
+        win.innerBounds.minHeight < win.outerBounds.minHeight);
+
+  if (win.innerBounds.maxWidth === null)
+    chrome.test.assertEq(null, win.outerBounds.maxWidth);
+  else
+    chrome.test.assertTrue(
+        win.innerBounds.maxWidth <= win.outerBounds.maxWidth);
+
+  if (win.innerBounds.maxHeight === null)
+    chrome.test.assertEq(null, win.outerBounds.maxHeight);
+  else
+    chrome.test.assertTrue(
+        win.innerBounds.maxHeight < win.outerBounds.maxHeight);
+}
+
+function testConflictingBoundsProperty(propertyName) {
+  var innerBounds = {};
+  var outerBounds = {};
+  innerBounds[propertyName] = 20;
+  outerBounds[propertyName] = 20;
+  chrome.app.window.create('test.html', {
+    innerBounds: innerBounds,
+    outerBounds: outerBounds
+  }, callbackFail('The ' + propertyName + ' property cannot be specified for ' +
+                  'both inner and outer bounds.')
+  );
+}
+
 function testCreate() {
   chrome.test.runTests([
     function basic() {
@@ -103,51 +162,471 @@ function testCreate() {
           win2.contentWindow.close();
         }));
       }));
+    }
+  ]);
+}
+
+function testDeprecatedBounds() {
+  chrome.test.runTests([
+    function contentSize() {
+      var options = { bounds: { width: 250, height: 200 } };
+      chrome.app.window.create('test.html', options, callbackPass(
+      function(win) {
+        var bounds = win.getBounds();
+        chrome.test.assertEq(options.bounds.width, bounds.width);
+        chrome.test.assertEq(options.bounds.height, bounds.height);
+        chrome.test.assertEq(options.bounds.width, win.innerBounds.width);
+        chrome.test.assertEq(options.bounds.height, win.innerBounds.height);
+        win.close();
+      }));
     },
 
-    function contentSize() {
-      chrome.app.window.create('test.html',
-          { bounds: { width: 250, height: 200 } }, callbackPass(function(win) {
-        assertFuzzyEq(250, win.contentWindow.innerWidth, defaultFuzzFactor);
-        assertFuzzyEq(200, win.contentWindow.innerHeight, defaultFuzzFactor);
+    function windowPosition() {
+      var options = { bounds: { left: 250, top: 200 } };
+      chrome.app.window.create('test.html', options, callbackPass(
+      function(win) {
+        var bounds = win.getBounds();
+        chrome.test.assertEq(options.bounds.left, bounds.left);
+        chrome.test.assertEq(options.bounds.top, bounds.top);
+        chrome.test.assertEq(options.bounds.left, win.outerBounds.left);
+        chrome.test.assertEq(options.bounds.top, win.outerBounds.top);
         win.close();
       }));
     },
 
     function minSize() {
-      chrome.app.window.create('test.html', {
+      var options = {
         bounds: { width: 250, height: 250 },
         minWidth: 400, minHeight: 450
-      }, callbackPass(function(win) {
-        var w = win.contentWindow;
-        assertFuzzyEq(400, w.innerWidth, defaultFuzzFactor);
-        assertFuzzyEq(450, w.innerHeight, defaultFuzzFactor);
-        w.close();
+      };
+      chrome.app.window.create('test.html', options, callbackPass(
+      function(win) {
+        var bounds = win.getBounds();
+        chrome.test.assertEq(options.minWidth, bounds.width);
+        chrome.test.assertEq(options.minHeight, bounds.height);
+        win.close();
       }));
     },
 
     function maxSize() {
-      chrome.app.window.create('test.html', {
+      var options = {
         bounds: { width: 250, height: 250 },
         maxWidth: 200, maxHeight: 150
-      }, callbackPass(function(win) {
-        var w = win.contentWindow;
-        assertFuzzyEq(200, w.innerWidth, defaultFuzzFactor);
-        assertFuzzyEq(150, w.innerHeight, defaultFuzzFactor);
-        w.close();
+      };
+      chrome.app.window.create('test.html', options, callbackPass(
+      function(win) {
+        var bounds = win.getBounds();
+        chrome.test.assertEq(options.maxWidth, bounds.width);
+        chrome.test.assertEq(options.maxHeight, bounds.height);
+        win.close();
       }));
     },
 
     function minAndMaxSize() {
-      chrome.app.window.create('test.html', {
+      var options = {
         bounds: { width: 250, height: 250 },
         minWidth: 400, minHeight: 450,
         maxWidth: 200, maxHeight: 150
+      };
+      chrome.app.window.create('test.html', options, callbackPass(
+      function(win) {
+        var bounds = win.getBounds();
+        chrome.test.assertEq(options.minWidth, bounds.width);
+        chrome.test.assertEq(options.minHeight, bounds.height);
+        win.close();
+      }));
+    },
+
+    function simpleSetBounds() {
+      chrome.app.window.create('test.html',
+          { bounds: { width: 250, height: 200 } }, callbackPass(function(win) {
+        var newBounds = {width: 400, height: 450};
+        win.setBounds(newBounds);
+        chrome.test.waitForRoundTrip('msg', callbackPass(function() {
+          var bounds = win.getBounds();
+          chrome.test.assertEq(newBounds.width, bounds.width);
+          chrome.test.assertEq(newBounds.height, bounds.height);
+          win.close();
+        }));
+      }));
+    },
+
+    function heightOnlySetBounds() {
+      chrome.app.window.create('test.html', {
+        bounds: { width: 512, height: 256 }
       }, callbackPass(function(win) {
-        var w = win.contentWindow;
-        assertFuzzyEq(400, w.innerWidth, defaultFuzzFactor);
-        assertFuzzyEq(450, w.innerHeight, defaultFuzzFactor);
-        w.close();
+        win.setBounds({ height: 512 });
+        chrome.test.waitForRoundTrip('msg', callbackPass(function() {
+          var bounds = win.getBounds();
+          chrome.test.assertEq(512, bounds.width);
+          chrome.test.assertEq(512, bounds.height);
+          win.close();
+        }));
+      }));
+    },
+  ]);
+}
+
+function testInitialBounds() {
+  chrome.test.runTests([
+    function testNoOptions() {
+      chrome.app.window.create('test.html', {
+      }, callbackPass(function(win) {
+        chrome.test.assertTrue(win != null);
+        chrome.test.assertTrue(win.innerBounds.width > 0);
+        chrome.test.assertTrue(win.innerBounds.height > 0);
+        chrome.test.assertTrue(win.outerBounds.width > 0);
+        chrome.test.assertTrue(win.outerBounds.height > 0);
+        assertConstraintsUnspecified(win);
+        assertBoundsConsistent(win);
+        win.close();
+      }));
+    },
+
+    function testInnerBoundsOnly() {
+      var innerBounds = {
+        left: 150,
+        top: 100,
+        width: 400,
+        height: 300
+      };
+      chrome.app.window.create('test.html', {
+        innerBounds: innerBounds
+      }, callbackPass(function(win) {
+        chrome.test.assertTrue(win != null);
+        chrome.test.assertEq(innerBounds.left, win.innerBounds.left);
+        chrome.test.assertEq(innerBounds.top, win.innerBounds.top);
+        chrome.test.assertEq(innerBounds.width, win.innerBounds.width);
+        chrome.test.assertEq(innerBounds.height, win.innerBounds.height);
+        assertBoundsConsistent(win);
+        assertConstraintsUnspecified(win);
+        win.close();
+      }));
+    },
+
+    function testOuterBoundsOnly() {
+      var outerBounds = {
+        left: 150,
+        top: 100,
+        width: 400,
+        height: 300
+      };
+      chrome.app.window.create('test.html', {
+        outerBounds: outerBounds
+      }, callbackPass(function(win) {
+        chrome.test.assertTrue(win != null);
+        chrome.test.assertEq(outerBounds.left, win.outerBounds.left);
+        chrome.test.assertEq(outerBounds.top, win.outerBounds.top);
+        chrome.test.assertEq(outerBounds.width, win.outerBounds.width);
+        chrome.test.assertEq(outerBounds.height, win.outerBounds.height);
+        assertBoundsConsistent(win);
+        assertConstraintsUnspecified(win);
+        win.close();
+      }));
+    },
+
+    function testFrameless() {
+      var outerBounds = {
+        left: 150,
+        top: 100,
+        width: 400,
+        height: 300
+      };
+      chrome.app.window.create('test.html', {
+        outerBounds: outerBounds,
+        frame: 'none'
+      }, callbackPass(function(win) {
+        chrome.test.assertTrue(win != null);
+        chrome.test.assertEq(outerBounds.left, win.outerBounds.left);
+        chrome.test.assertEq(outerBounds.top, win.outerBounds.top);
+        chrome.test.assertEq(outerBounds.width, win.outerBounds.width);
+        chrome.test.assertEq(outerBounds.height, win.outerBounds.height);
+        chrome.test.assertEq(outerBounds.left, win.innerBounds.left);
+        chrome.test.assertEq(outerBounds.top, win.innerBounds.top);
+        chrome.test.assertEq(outerBounds.width, win.innerBounds.width);
+        chrome.test.assertEq(outerBounds.height, win.innerBounds.height);
+        assertConstraintsUnspecified(win);
+        win.close();
+      }));
+    },
+
+    function testInnerSizeAndOuterPos() {
+      var innerBounds = {
+        width: 400,
+        height: 300
+      };
+      var outerBounds = {
+        left: 150,
+        top: 100
+      };
+      chrome.app.window.create('test.html', {
+        innerBounds: innerBounds,
+        outerBounds: outerBounds
+      }, callbackPass(function(win) {
+        chrome.test.assertTrue(win != null);
+        chrome.test.assertEq(outerBounds.left, win.outerBounds.left);
+        chrome.test.assertEq(outerBounds.top, win.outerBounds.top);
+        chrome.test.assertEq(innerBounds.width, win.innerBounds.width);
+        chrome.test.assertEq(innerBounds.height, win.innerBounds.height);
+        assertBoundsConsistent(win);
+        assertConstraintsUnspecified(win);
+        win.close();
+      }));
+    },
+
+    function testInnerAndOuterBoundsEdgeCase() {
+      var innerBounds = {
+        left: 150,
+        height: 300
+      };
+      var outerBounds = {
+        width: 400,
+        top: 100
+      };
+      chrome.app.window.create('test.html', {
+        innerBounds: innerBounds,
+        outerBounds: outerBounds
+      }, callbackPass(function(win) {
+        chrome.test.assertTrue(win != null);
+        chrome.test.assertEq(innerBounds.left, win.innerBounds.left);
+        chrome.test.assertEq(innerBounds.height, win.innerBounds.height);
+        chrome.test.assertEq(outerBounds.top, win.outerBounds.top);
+        chrome.test.assertEq(outerBounds.width, win.outerBounds.width);
+        assertBoundsConsistent(win);
+        assertConstraintsUnspecified(win);
+        win.close();
+      }));
+    },
+
+    function testPositionOnly() {
+      var outerBounds = {
+        left: 150,
+        top: 100
+      };
+      chrome.app.window.create('test.html', {
+        outerBounds: outerBounds
+      }, callbackPass(function(win) {
+        chrome.test.assertTrue(win != null);
+        chrome.test.assertEq(outerBounds.left, win.outerBounds.left);
+        chrome.test.assertEq(outerBounds.top, win.outerBounds.top);
+        chrome.test.assertTrue(win.innerBounds.width > 0);
+        chrome.test.assertTrue(win.innerBounds.height > 0);
+        chrome.test.assertTrue(win.outerBounds.width > 0);
+        chrome.test.assertTrue(win.outerBounds.height > 0);
+        assertBoundsConsistent(win);
+        assertConstraintsUnspecified(win);
+        win.close();
+      }));
+    },
+
+    function testSizeOnly() {
+      var outerBounds = {
+        width: 500,
+        height: 400
+      };
+      chrome.app.window.create('test.html', {
+        outerBounds: outerBounds
+      }, callbackPass(function(win) {
+        chrome.test.assertTrue(win != null);
+        chrome.test.assertEq(outerBounds.width, win.outerBounds.width);
+        chrome.test.assertEq(outerBounds.height, win.outerBounds.height);
+        assertBoundsConsistent(win);
+        assertConstraintsUnspecified(win);
+        win.close();
+      }));
+    },
+
+    function testConflictingProperties() {
+      testConflictingBoundsProperty("width");
+      testConflictingBoundsProperty("height");
+      testConflictingBoundsProperty("left");
+      testConflictingBoundsProperty("top");
+      testConflictingBoundsProperty("minWidth");
+      testConflictingBoundsProperty("minHeight");
+      testConflictingBoundsProperty("maxWidth");
+      testConflictingBoundsProperty("maxHeight");
+    }
+  ]);
+}
+
+function testInitialBoundsInStable() {
+  chrome.test.runTests([
+    function testInnerBounds() {
+      var innerBounds = {
+        width: 600,
+        height: 400
+      };
+      chrome.app.window.create('test.html', {
+        innerBounds: innerBounds
+      }, callbackFail('innerBounds and outerBounds are only available in'+
+                      ' dev channel.')
+      );
+    },
+
+    function testOuterBounds() {
+      var outerBounds = {
+        width: 600,
+        height: 400
+      };
+      chrome.app.window.create('test.html', {
+        outerBounds: outerBounds
+      }, callbackFail('innerBounds and outerBounds are only available in'+
+                      ' dev channel.')
+      );
+    }
+  ]);
+}
+
+function testInitialConstraints() {
+  chrome.test.runTests([
+    function testMaxInnerConstraints() {
+      var innerBounds = {
+        width: 800,
+        height: 600,
+        maxWidth: 500,
+        maxHeight: 400
+      };
+      chrome.app.window.create('test.html', {
+        innerBounds: innerBounds
+      }, callbackPass(function(win) {
+        chrome.test.assertTrue(win != null);
+        chrome.test.assertEq(innerBounds.maxWidth, win.innerBounds.width);
+        chrome.test.assertEq(innerBounds.maxHeight, win.innerBounds.height);
+        chrome.test.assertEq(innerBounds.maxWidth, win.innerBounds.maxWidth);
+        chrome.test.assertEq(innerBounds.maxHeight, win.innerBounds.maxHeight);
+        assertBoundsConsistent(win);
+        win.close();
+      }));
+    },
+
+    function testMinInnerConstraints() {
+      var innerBounds = {
+        width: 100,
+        height: 100,
+        minWidth: 300,
+        minHeight: 200
+      };
+      chrome.app.window.create('test.html', {
+        innerBounds: innerBounds
+      }, callbackPass(function(win) {
+        chrome.test.assertTrue(win != null);
+        chrome.test.assertEq(innerBounds.minWidth, win.innerBounds.width);
+        chrome.test.assertEq(innerBounds.minHeight, win.innerBounds.height);
+        chrome.test.assertEq(innerBounds.minWidth, win.innerBounds.minWidth);
+        chrome.test.assertEq(innerBounds.minHeight, win.innerBounds.minHeight);
+        assertBoundsConsistent(win);
+        win.close();
+      }));
+    },
+
+    function testMaxOuterConstraints() {
+      var outerBounds = {
+        width: 800,
+        height: 600,
+        maxWidth: 500,
+        maxHeight: 400
+      };
+      chrome.app.window.create('test.html', {
+        outerBounds: outerBounds
+      }, callbackPass(function(win) {
+        chrome.test.assertTrue(win != null);
+        chrome.test.assertEq(outerBounds.maxWidth, win.outerBounds.width);
+        chrome.test.assertEq(outerBounds.maxHeight, win.outerBounds.height);
+        chrome.test.assertEq(outerBounds.maxWidth, win.outerBounds.maxWidth);
+        chrome.test.assertEq(outerBounds.maxHeight, win.outerBounds.maxHeight);
+        assertBoundsConsistent(win);
+        win.close();
+      }));
+    },
+
+    function testMinOuterConstraints() {
+      var outerBounds = {
+        width: 100,
+        height: 100,
+        minWidth: 300,
+        minHeight: 200
+      };
+      chrome.app.window.create('test.html', {
+        outerBounds: outerBounds
+      }, callbackPass(function(win) {
+        chrome.test.assertTrue(win != null);
+        chrome.test.assertEq(outerBounds.minWidth, win.outerBounds.width);
+        chrome.test.assertEq(outerBounds.minHeight, win.outerBounds.height);
+        chrome.test.assertEq(outerBounds.minWidth, win.outerBounds.minWidth);
+        chrome.test.assertEq(outerBounds.minHeight, win.outerBounds.minHeight);
+        assertBoundsConsistent(win);
+        win.close();
+      }));
+    },
+
+    function testMixedConstraints() {
+      var innerBounds = {
+        width: 100,
+        minHeight: 300
+      };
+      var outerBounds = {
+        height: 100,
+        minWidth: 400,
+      };
+      chrome.app.window.create('test.html', {
+        innerBounds: innerBounds,
+        outerBounds: outerBounds
+      }, callbackPass(function(win) {
+        chrome.test.assertTrue(win != null);
+        chrome.test.assertEq(outerBounds.minWidth, win.outerBounds.width);
+        chrome.test.assertEq(innerBounds.minHeight, win.innerBounds.height);
+        chrome.test.assertEq(outerBounds.minWidth, win.outerBounds.minWidth);
+        chrome.test.assertEq(innerBounds.minHeight, win.innerBounds.minHeight);
+        assertBoundsConsistent(win);
+        win.close();
+      }));
+    },
+
+    function testBadConstraints() {
+      var outerBounds = {
+        width: 500,
+        height: 400,
+        minWidth: 800,
+        minHeight: 700,
+        maxWidth: 300,
+        maxHeight: 200
+      };
+      chrome.app.window.create('test.html', {
+        outerBounds: outerBounds
+      }, callbackPass(function(win) {
+        chrome.test.assertTrue(win != null);
+        chrome.test.assertEq(outerBounds.minWidth, win.outerBounds.width);
+        chrome.test.assertEq(outerBounds.minHeight, win.outerBounds.height);
+        chrome.test.assertEq(outerBounds.minWidth, win.outerBounds.minWidth);
+        chrome.test.assertEq(outerBounds.minHeight, win.outerBounds.minHeight);
+        chrome.test.assertEq(outerBounds.minWidth, win.outerBounds.maxWidth);
+        chrome.test.assertEq(outerBounds.minHeight, win.outerBounds.maxHeight);
+        assertBoundsConsistent(win);
+        win.close();
+      }));
+    },
+
+    function testFrameless() {
+      var outerBounds = {
+        minWidth: 50,
+        minHeight: 50,
+        maxWidth: 800,
+        maxHeight: 800
+      };
+      chrome.app.window.create('test.html', {
+        outerBounds: outerBounds,
+        frame: 'none'
+      }, callbackPass(function(win) {
+        chrome.test.assertTrue(win != null);
+        chrome.test.assertEq(outerBounds.minWidth, win.outerBounds.minWidth);
+        chrome.test.assertEq(outerBounds.minHeight, win.outerBounds.minHeight);
+        chrome.test.assertEq(outerBounds.maxWidth, win.outerBounds.maxWidth);
+        chrome.test.assertEq(outerBounds.maxHeight, win.outerBounds.maxHeight);
+        chrome.test.assertEq(outerBounds.minWidth, win.innerBounds.minWidth);
+        chrome.test.assertEq(outerBounds.minHeight, win.innerBounds.minHeight);
+        chrome.test.assertEq(outerBounds.maxWidth, win.innerBounds.maxWidth);
+        chrome.test.assertEq(outerBounds.maxHeight, win.innerBounds.maxHeight);
+        win.close();
       }));
     }
   ]);
@@ -173,37 +652,6 @@ function testSingleton() {
           );
         })
       );
-    },
-  ]);
-}
-
-function testBounds() {
-  chrome.test.runTests([
-    function simpleSetBounds() {
-      chrome.app.window.create('test.html',
-          { bounds: { width: 250, height: 200 } }, callbackPass(function(win) {
-        var b = win.getBounds();
-        win.setBounds({width: 400, height: 450})
-        // Listen to onresize here rather than win.onBoundsChanged, because
-        // onBoundsChanged is fired before the web contents are resized.
-        win.contentWindow.onresize = callbackPass(function() {
-          assertFuzzyEq(400, win.contentWindow.innerWidth, defaultFuzzFactor);
-          assertFuzzyEq(450, win.contentWindow.innerHeight, defaultFuzzFactor);
-          win.close();
-        });
-      }));
-    },
-
-    function heightOnlySetBounds() {
-      chrome.app.window.create('test.html', {
-        bounds: { width: 512, height: 256 }
-      }, callbackPass(function(win) {
-        win.setBounds({ height: 512 });
-        win.contentWindow.onresize = callbackPass(function() {
-          assertFuzzyEq(512, win.contentWindow.innerHeight, defaultFuzzFactor);
-          win.close();
-        });
-      }));
     },
   ]);
 }

@@ -87,6 +87,23 @@ NSInteger AlwaysOnTopWindowLevel() {
   return NSFloatingWindowLevel;
 }
 
+NSRect GfxToCocoaBounds(gfx::Rect bounds) {
+  typedef apps::AppWindow::BoundsSpecification BoundsSpecification;
+
+  NSRect main_screen_rect = [[[NSScreen screens] objectAtIndex:0] frame];
+
+  // If coordinates are unspecified, center window on primary screen.
+  if (bounds.x() == BoundsSpecification::kUnspecifiedPosition)
+    bounds.set_x(floor((NSWidth(main_screen_rect) - bounds.width()) / 2));
+  if (bounds.y() == BoundsSpecification::kUnspecifiedPosition)
+    bounds.set_y(floor((NSHeight(main_screen_rect) - bounds.height()) / 2));
+
+  // Convert to Mac coordinates.
+  NSRect cocoa_bounds = NSRectFromCGRect(bounds.ToCGRect());
+  cocoa_bounds.origin.y = NSHeight(main_screen_rect) - NSMaxY(cocoa_bounds);
+  return cocoa_bounds;
+}
+
 }  // namespace
 
 @implementation NativeAppWindowController
@@ -284,28 +301,12 @@ NativeAppWindowCocoa::NativeAppWindowCocoa(
       is_hidden_with_app_(false),
       is_maximized_(false),
       is_fullscreen_(false),
+      is_resizable_(params.resizable),
+      shows_resize_controls_(true),
+      shows_fullscreen_controls_(true),
       attention_request_id_(0),
       use_system_drag_(true) {
   Observe(web_contents());
-
-  // Flip coordinates based on the primary screen.
-  NSRect main_screen_rect = [[[NSScreen screens] objectAtIndex:0] frame];
-  NSRect cocoa_bounds = NSMakeRect(params.bounds.x(),
-      NSHeight(main_screen_rect) - params.bounds.y() - params.bounds.height(),
-      params.bounds.width(), params.bounds.height());
-
-  // If coordinates are < 0, center window on primary screen.
-  if (params.bounds.x() == INT_MIN) {
-    cocoa_bounds.origin.x =
-        floor((NSWidth(main_screen_rect) - NSWidth(cocoa_bounds)) / 2);
-  }
-  if (params.bounds.y() == INT_MIN) {
-    cocoa_bounds.origin.y =
-        floor((NSHeight(main_screen_rect) - NSHeight(cocoa_bounds)) / 2);
-  }
-
-  // Initialize |restored_bounds_| after |cocoa_bounds| have been sanitized.
-  restored_bounds_ = cocoa_bounds;
 
   base::scoped_nsobject<NSWindow> window;
   Class window_class;
@@ -319,12 +320,10 @@ NativeAppWindowCocoa::NativeAppWindowCocoa(
     window_class = [ShellFramelessNSWindow class];
   }
 
-  size_constraints_.set_minimum_size(params.minimum_size);
-  size_constraints_.set_maximum_size(params.maximum_size);
-  shows_resize_controls_ =
-      params.resizable && !size_constraints_.HasFixedSize();
-  shows_fullscreen_controls_ =
-      params.resizable && !size_constraints_.HasMaximumSize();
+  // Estimate the initial bounds of the window. Once the frame insets are known,
+  // the window bounds and constraints can be set precisely.
+  NSRect cocoa_bounds = GfxToCocoaBounds(
+      params.GetInitialWindowBounds(gfx::Insets()));
   window.reset([[window_class alloc]
       initWithContentRect:cocoa_bounds
                 styleMask:GetWindowStyleMask()
@@ -339,12 +338,6 @@ NativeAppWindowCocoa::NativeAppWindowCocoa(
   if (params.always_on_top)
     [window setLevel:AlwaysOnTopWindowLevel()];
   InitCollectionBehavior(window);
-
-  // Set the window to participate in Lion Fullscreen mode. Setting this flag
-  // has no effect on Snow Leopard or earlier. UI controls for fullscreen are
-  // only shown for apps that have unbounded size.
-  if (shows_fullscreen_controls_)
-    SetFullScreenCollectionBehavior(window, true);
 
   window_controller_.reset(
       [[NativeAppWindowController alloc] initWithWindow:window.release()]);
@@ -364,9 +357,14 @@ NativeAppWindowCocoa::NativeAppWindowCocoa(
   [[window_controller_ window] setDelegate:window_controller_];
   [window_controller_ setAppWindow:this];
 
-  // Update the size constraints of the NSWindow.
-  SetMinimumSize(params.minimum_size);
-  SetMaximumSize(params.maximum_size);
+  // We can now compute the precise window bounds and constraints.
+  gfx::Insets insets = GetFrameInsets();
+  SetBounds(params.GetInitialWindowBounds(insets));
+  SetContentSizeConstraints(params.GetContentMinimumSize(insets),
+                            params.GetContentMaximumSize(insets));
+
+  // Initialize |restored_bounds_|.
+  restored_bounds_ = [this->window() frame];
 
   extension_keybinding_registry_.reset(new ExtensionKeybindingRegistryCocoa(
       Profile::FromBrowserContext(app_window_->browser_context()),
@@ -613,13 +611,7 @@ void NativeAppWindowCocoa::SetBounds(const gfx::Rect& bounds) {
   if (checked_bounds.height() > max_size.height)
     checked_bounds.set_height(max_size.height);
 
-  NSRect cocoa_bounds = NSMakeRect(checked_bounds.x(), 0,
-                                   checked_bounds.width(),
-                                   checked_bounds.height());
-  // Flip coordinates based on the primary screen.
-  NSScreen* screen = [[NSScreen screens] objectAtIndex:0];
-  cocoa_bounds.origin.y = NSHeight([screen frame]) - checked_bounds.bottom();
-
+  NSRect cocoa_bounds = GfxToCocoaBounds(checked_bounds);
   [window() setFrame:cocoa_bounds display:YES];
   // setFrame: without animate: does not trigger a windowDidEndLiveResize: so
   // call it here.
@@ -1037,28 +1029,14 @@ void NativeAppWindowCocoa::UpdateRestoredBounds() {
     restored_bounds_ = [window() frame];
 }
 
-void NativeAppWindowCocoa::UpdateShelfMenu() {
-  // TODO(tmdiep): To be implemented for Mac.
-  NOTIMPLEMENTED();
-}
-
-gfx::Size NativeAppWindowCocoa::GetMinimumSize() const {
-  return size_constraints_.GetMinimumSize();
-}
-
-void NativeAppWindowCocoa::SetMinimumSize(const gfx::Size& size) {
-  size_constraints_.set_minimum_size(size);
+void NativeAppWindowCocoa::SetContentSizeConstraints(
+    const gfx::Size& minimum_size, const gfx::Size& maximum_size) {
+  // Update the size constraints.
+  size_constraints_.set_minimum_size(minimum_size);
+  size_constraints_.set_maximum_size(maximum_size);
 
   gfx::Size min_size = size_constraints_.GetMinimumSize();
   [window() setContentMinSize:NSMakeSize(min_size.width(), min_size.height())];
-}
-
-gfx::Size NativeAppWindowCocoa::GetMaximumSize() const {
-  return size_constraints_.GetMaximumSize();
-}
-
-void NativeAppWindowCocoa::SetMaximumSize(const gfx::Size& size) {
-  size_constraints_.set_maximum_size(size);
 
   gfx::Size max_size = size_constraints_.GetMaximumSize();
   const int kUnboundedSize = apps::SizeConstraints::kUnboundedSize;
@@ -1067,4 +1045,40 @@ void NativeAppWindowCocoa::SetMaximumSize(const gfx::Size& size) {
   CGFloat max_height = max_size.height() == kUnboundedSize ?
       CGFLOAT_MAX : max_size.height();
   [window() setContentMaxSize:NSMakeSize(max_width, max_height)];
+
+  // Update the window controls.
+  shows_resize_controls_ =
+      is_resizable_ && !size_constraints_.HasFixedSize();
+  shows_fullscreen_controls_ =
+      is_resizable_ && !size_constraints_.HasMaximumSize();
+
+  if (!is_fullscreen_) {
+    [window() setStyleMask:GetWindowStyleMask()];
+
+    // Set the window to participate in Lion Fullscreen mode. Setting this flag
+    // has no effect on Snow Leopard or earlier. UI controls for fullscreen are
+    // only shown for apps that have unbounded size.
+    SetFullScreenCollectionBehavior(window(), shows_fullscreen_controls_);
+  }
+}
+
+void NativeAppWindowCocoa::UpdateShelfMenu() {
+  // TODO(tmdiep): To be implemented for Mac.
+  NOTIMPLEMENTED();
+}
+
+gfx::Size NativeAppWindowCocoa::GetContentMinimumSize() const {
+  return size_constraints_.GetMinimumSize();
+}
+
+void NativeAppWindowCocoa::SetContentMinimumSize(const gfx::Size& size) {
+  SetContentSizeConstraints(size, size_constraints_.GetMaximumSize());
+}
+
+gfx::Size NativeAppWindowCocoa::GetContentMaximumSize() const {
+  return size_constraints_.GetMaximumSize();
+}
+
+void NativeAppWindowCocoa::SetContentMaximumSize(const gfx::Size& size) {
+  SetContentSizeConstraints(size_constraints_.GetMinimumSize(), size);
 }

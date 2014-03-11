@@ -4,6 +4,8 @@
 
 #include "apps/app_window.h"
 
+#include <algorithm>
+
 #include "apps/app_window_geometry_cache.h"
 #include "apps/app_window_registry.h"
 #include "apps/apps_client.h"
@@ -95,14 +97,62 @@ void SetBoundsProperties(const gfx::Rect& bounds,
   window_properties->Set(bounds_name, bounds_properties.release());
 }
 
+// Combines the constraints of the content and window, and returns constraints
+// for the window.
+gfx::Size GetCombinedWindowConstraints(const gfx::Size& window_constraints,
+                                       const gfx::Size& content_constraints,
+                                       const gfx::Insets& frame_insets) {
+  gfx::Size combined_constraints(window_constraints);
+  if (content_constraints.width() > 0) {
+    combined_constraints.set_width(
+        content_constraints.width() + frame_insets.width());
+  }
+  if (content_constraints.height() > 0) {
+    combined_constraints.set_height(
+        content_constraints.height() + frame_insets.height());
+  }
+  return combined_constraints;
+}
+
+// Combines the constraints of the content and window, and returns constraints
+// for the content.
+gfx::Size GetCombinedContentConstraints(const gfx::Size& window_constraints,
+                                        const gfx::Size& content_constraints,
+                                        const gfx::Insets& frame_insets) {
+  gfx::Size combined_constraints(content_constraints);
+  if (window_constraints.width() > 0) {
+    combined_constraints.set_width(
+        std::max(0, window_constraints.width() - frame_insets.width()));
+  }
+  if (window_constraints.height() > 0) {
+    combined_constraints.set_height(
+        std::max(0, window_constraints.height() - frame_insets.height()));
+  }
+  return combined_constraints;
+}
+
 }  // namespace
+
+// AppWindow::BoundsSpecification
+
+const int AppWindow::BoundsSpecification::kUnspecifiedPosition = INT_MIN;
+
+AppWindow::BoundsSpecification::BoundsSpecification()
+    : bounds(kUnspecifiedPosition, kUnspecifiedPosition, 0, 0) {}
+
+AppWindow::BoundsSpecification::~BoundsSpecification() {}
+
+void AppWindow::BoundsSpecification::ResetBounds() {
+  bounds.SetRect(kUnspecifiedPosition, kUnspecifiedPosition, 0, 0);
+}
+
+// AppWindow::CreateParams
 
 AppWindow::CreateParams::CreateParams()
     : window_type(AppWindow::WINDOW_TYPE_DEFAULT),
       frame(AppWindow::FRAME_CHROME),
       has_frame_color(false),
       transparent_background(false),
-      bounds(INT_MIN, INT_MIN, 0, 0),
       creator_process_id(0),
       state(ui::SHOW_STATE_DEFAULT),
       hidden(false),
@@ -112,7 +162,67 @@ AppWindow::CreateParams::CreateParams()
 
 AppWindow::CreateParams::~CreateParams() {}
 
+gfx::Rect AppWindow::CreateParams::GetInitialWindowBounds(
+    const gfx::Insets& frame_insets) const {
+  // Combine into a single window bounds.
+  gfx::Rect combined_bounds(window_spec.bounds);
+  if (content_spec.bounds.x() != BoundsSpecification::kUnspecifiedPosition)
+    combined_bounds.set_x(content_spec.bounds.x() - frame_insets.left());
+  if (content_spec.bounds.y() != BoundsSpecification::kUnspecifiedPosition)
+    combined_bounds.set_y(content_spec.bounds.y() - frame_insets.top());
+  if (content_spec.bounds.width() > 0) {
+    combined_bounds.set_width(
+        content_spec.bounds.width() + frame_insets.width());
+  }
+  if (content_spec.bounds.height() > 0) {
+    combined_bounds.set_height(
+        content_spec.bounds.height() + frame_insets.height());
+  }
+
+  // Constrain the bounds.
+  SizeConstraints constraints(
+      GetCombinedWindowConstraints(
+          window_spec.minimum_size, content_spec.minimum_size, frame_insets),
+      GetCombinedWindowConstraints(
+          window_spec.maximum_size, content_spec.maximum_size, frame_insets));
+  combined_bounds.set_size(constraints.ClampSize(combined_bounds.size()));
+
+  return combined_bounds;
+}
+
+gfx::Size AppWindow::CreateParams::GetContentMinimumSize(
+    const gfx::Insets& frame_insets) const {
+  return GetCombinedContentConstraints(window_spec.minimum_size,
+                                       content_spec.minimum_size,
+                                       frame_insets);
+}
+
+gfx::Size AppWindow::CreateParams::GetContentMaximumSize(
+    const gfx::Insets& frame_insets) const {
+  return GetCombinedContentConstraints(window_spec.maximum_size,
+                                       content_spec.maximum_size,
+                                       frame_insets);
+}
+
+gfx::Size AppWindow::CreateParams::GetWindowMinimumSize(
+    const gfx::Insets& frame_insets) const {
+  return GetCombinedWindowConstraints(window_spec.minimum_size,
+                                      content_spec.minimum_size,
+                                      frame_insets);
+}
+
+gfx::Size AppWindow::CreateParams::GetWindowMaximumSize(
+    const gfx::Insets& frame_insets) const {
+  return GetCombinedWindowConstraints(window_spec.maximum_size,
+                                      content_spec.maximum_size,
+                                      frame_insets);
+}
+
+// AppWindow::Delegate
+
 AppWindow::Delegate::~Delegate() {}
+
+// AppWindow
 
 AppWindow::AppWindow(BrowserContext* context,
                      Delegate* delegate,
@@ -154,7 +264,7 @@ void AppWindow::Init(const GURL& url,
   extensions::SetViewType(web_contents, extensions::VIEW_TYPE_APP_WINDOW);
 
   // Initialize the window
-  CreateParams new_params = LoadDefaultsAndConstrain(params);
+  CreateParams new_params = LoadDefaults(params);
   window_type_ = new_params.window_type;
   window_key_ = new_params.window_key;
 
@@ -208,7 +318,10 @@ void AppWindow::Init(const GURL& url,
     // that to happen, we need to define a size for the content, otherwise the
     // layout will happen in a 0x0 area.
     // Note: WebContents::GetView() is guaranteed to be non-null.
-    web_contents->GetView()->SizeContents(new_params.bounds.size());
+    gfx::Insets frame_insets = native_app_window_->GetFrameInsets();
+    gfx::Rect initial_bounds = new_params.GetInitialWindowBounds(frame_insets);
+    initial_bounds.Inset(frame_insets);
+    web_contents->GetView()->SizeContents(initial_bounds.size());
   }
 
   // Prevent the browser process from shutting down while this window is open.
@@ -519,13 +632,13 @@ void AppWindow::ForcedFullscreen() {
   SetNativeWindowFullscreen();
 }
 
-void AppWindow::SetMinimumSize(const gfx::Size& min_size) {
-  native_app_window_->SetMinimumSize(min_size);
+void AppWindow::SetContentMinimumSize(const gfx::Size& min_size) {
+  native_app_window_->SetContentMinimumSize(min_size);
   OnSizeConstraintsChanged();
 }
 
-void AppWindow::SetMaximumSize(const gfx::Size& max_size) {
-  native_app_window_->SetMaximumSize(max_size);
+void AppWindow::SetContentMaximumSize(const gfx::Size& max_size) {
+  native_app_window_->SetContentMaximumSize(max_size);
   OnSizeConstraintsChanged();
 }
 
@@ -588,17 +701,23 @@ void AppWindow::GetSerializedState(base::DictionaryValue* properties) const {
   properties->SetInteger("frameColor", native_app_window_->FrameColor());
 
   gfx::Rect content_bounds = GetClientBounds();
+  gfx::Size content_min_size = native_app_window_->GetContentMinimumSize();
+  gfx::Size content_max_size = native_app_window_->GetContentMaximumSize();
   SetBoundsProperties(content_bounds,
-                      native_app_window_->GetMinimumSize(),
-                      native_app_window_->GetMaximumSize(),
+                      content_min_size,
+                      content_max_size,
                       "innerBounds",
                       properties);
 
-  // TODO(tmdiep): Frame constraints will be implemented in a future patch.
+  gfx::Insets frame_insets = native_app_window_->GetFrameInsets();
   gfx::Rect frame_bounds = native_app_window_->GetBounds();
+  gfx::Size frame_min_size =
+      SizeConstraints::AddFrameToConstraints(content_min_size, frame_insets);
+  gfx::Size frame_max_size =
+      SizeConstraints::AddFrameToConstraints(content_max_size, frame_insets);
   SetBoundsProperties(frame_bounds,
-                      gfx::Size(),
-                      gfx::Size(),
+                      frame_min_size,
+                      frame_max_size,
                       "outerBounds",
                       properties);
 }
@@ -663,12 +782,13 @@ void AppWindow::UpdateExtensionAppIcon() {
 }
 
 void AppWindow::OnSizeConstraintsChanged() {
-  SizeConstraints size_constraints(native_app_window_->GetMinimumSize(),
-                                   native_app_window_->GetMaximumSize());
+  SizeConstraints size_constraints(native_app_window_->GetContentMinimumSize(),
+                                   native_app_window_->GetContentMaximumSize());
   gfx::Rect bounds = GetClientBounds();
   gfx::Size constrained_size = size_constraints.ClampSize(bounds.size());
   if (bounds.size() != constrained_size) {
     bounds.set_size(constrained_size);
+    bounds.Inset(-native_app_window_->GetFrameInsets());
     native_app_window_->SetBounds(bounds);
   }
   OnNativeWindowChanged();
@@ -852,7 +972,6 @@ void AppWindow::SaveWindowPosition() {
       AppWindowGeometryCache::Get(browser_context());
 
   gfx::Rect bounds = native_app_window_->GetRestoredBounds();
-  bounds.Inset(native_app_window_->GetFrameInsets());
   gfx::Rect screen_bounds =
       gfx::Screen::GetNativeScreen()->GetDisplayMatching(bounds).work_area();
   ui::WindowShowState window_state = native_app_window_->GetRestoredState();
@@ -890,12 +1009,17 @@ void AppWindow::AdjustBoundsToBeVisibleOnScreen(
   }
 }
 
-AppWindow::CreateParams AppWindow::LoadDefaultsAndConstrain(CreateParams params)
+AppWindow::CreateParams AppWindow::LoadDefaults(CreateParams params)
     const {
-  if (params.bounds.width() == 0)
-    params.bounds.set_width(kDefaultWidth);
-  if (params.bounds.height() == 0)
-    params.bounds.set_height(kDefaultHeight);
+  // Ensure width and height are specified.
+  if (params.content_spec.bounds.width() == 0 &&
+      params.window_spec.bounds.width() == 0) {
+    params.content_spec.bounds.set_width(kDefaultWidth);
+  }
+  if (params.content_spec.bounds.height() == 0 &&
+      params.window_spec.bounds.height() == 0) {
+    params.content_spec.bounds.set_height(kDefaultHeight);
+  }
 
   // If left and top are left undefined, the native app window will center
   // the window on the main screen in a platform-defined manner.
@@ -913,24 +1037,26 @@ AppWindow::CreateParams AppWindow::LoadDefaultsAndConstrain(CreateParams params)
                            &cached_bounds,
                            &cached_screen_bounds,
                            &cached_state)) {
+
       // App window has cached screen bounds, make sure it fits on screen in
       // case the screen resolution changed.
       gfx::Screen* screen = gfx::Screen::GetNativeScreen();
       gfx::Display display = screen->GetDisplayMatching(cached_bounds);
       gfx::Rect current_screen_bounds = display.work_area();
+      SizeConstraints constraints(params.GetWindowMinimumSize(gfx::Insets()),
+                                  params.GetWindowMaximumSize(gfx::Insets()));
       AdjustBoundsToBeVisibleOnScreen(cached_bounds,
                                       cached_screen_bounds,
                                       current_screen_bounds,
-                                      params.minimum_size,
-                                      &params.bounds);
+                                      constraints.GetMinimumSize(),
+                                      &params.window_spec.bounds);
       params.state = cached_state;
+
+      // Since we are restoring a cached state, reset the content bounds spec to
+      // ensure it is not used.
+      params.content_spec.ResetBounds();
     }
   }
-
-  SizeConstraints size_constraints(params.minimum_size, params.maximum_size);
-  params.bounds.set_size(size_constraints.ClampSize(params.bounds.size()));
-  params.minimum_size = size_constraints.GetMinimumSize();
-  params.maximum_size = size_constraints.GetMaximumSize();
 
   return params;
 }

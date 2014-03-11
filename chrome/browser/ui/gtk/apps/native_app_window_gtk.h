@@ -87,10 +87,10 @@ class NativeAppWindowGtk : public apps::NativeAppWindow,
   virtual void ShowWithApp() OVERRIDE;
   virtual void UpdateShelfMenu() OVERRIDE;
   // Calls gtk_window_set_geometry_hints with the current size constraints.
-  virtual gfx::Size GetMinimumSize() const OVERRIDE;
-  virtual void SetMinimumSize(const gfx::Size& size) OVERRIDE;
-  virtual gfx::Size GetMaximumSize() const OVERRIDE;
-  virtual void SetMaximumSize(const gfx::Size& size) OVERRIDE;
+  virtual gfx::Size GetContentMinimumSize() const OVERRIDE;
+  virtual void SetContentMinimumSize(const gfx::Size& size) OVERRIDE;
+  virtual gfx::Size GetContentMaximumSize() const OVERRIDE;
+  virtual void SetContentMaximumSize(const gfx::Size& size) OVERRIDE;
 
   // web_modal::WebContentsModalDialogHost implementation.
   virtual gfx::NativeView GetHostView() const OVERRIDE;
@@ -131,7 +131,7 @@ class NativeAppWindowGtk : public apps::NativeAppWindow,
 
   void OnConfigureDebounced();
 
-  void UpdateWindowMinMaxSize();
+  void UpdateContentMinMaxSize();
 
   apps::AppWindow* app_window_;  // weak - AppWindow owns NativeAppWindow.
 

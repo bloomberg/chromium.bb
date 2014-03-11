@@ -224,11 +224,6 @@ void ChromeNativeAppWindowViews::InitializeDefaultWindow(
   if (create_params.transparent_background)
     init_params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   init_params.keep_on_top = create_params.always_on_top;
-  gfx::Rect window_bounds = create_params.bounds;
-  bool position_specified =
-      window_bounds.x() != INT_MIN && window_bounds.y() != INT_MIN;
-  if (position_specified && !window_bounds.IsEmpty())
-    init_params.bounds = window_bounds;
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   // Set up a custom WM_CLASS for app windows. This allows task switchers in
@@ -242,13 +237,22 @@ void ChromeNativeAppWindowViews::InitializeDefaultWindow(
   OnBeforeWidgetInit(&init_params, window());
   window()->Init(init_params);
 
-  gfx::Rect adjusted_bounds = window_bounds;
-  adjusted_bounds.Inset(-GetFrameInsets());
-  // Center window if no position was specified.
-  if (!position_specified)
-    window()->CenterWindow(adjusted_bounds.size());
-  else if (!adjusted_bounds.IsEmpty() && adjusted_bounds != window_bounds)
-    window()->SetBounds(adjusted_bounds);
+  // The frame insets are required to resolve the bounds specifications
+  // correctly. So we set the window bounds and constraints now.
+  gfx::Insets frame_insets = GetFrameInsets();
+  gfx::Rect window_bounds = create_params.GetInitialWindowBounds(frame_insets);
+  SetContentMinimumSize(create_params.GetContentMinimumSize(frame_insets));
+  SetContentMaximumSize(create_params.GetContentMaximumSize(frame_insets));
+  if (!window_bounds.IsEmpty()) {
+    typedef apps::AppWindow::BoundsSpecification BoundsSpecification;
+    bool position_specified =
+        window_bounds.x() != BoundsSpecification::kUnspecifiedPosition &&
+        window_bounds.y() != BoundsSpecification::kUnspecifiedPosition;
+    if (!position_specified)
+      window()->CenterWindow(window_bounds.size());
+    else
+      window()->SetBounds(window_bounds);
+  }
 
   // Register accelarators supported by app windows.
   // TODO(jeremya/stevenjb): should these be registered for panels too?
@@ -283,8 +287,10 @@ void ChromeNativeAppWindowViews::InitializePanelWindow(
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_PANEL);
   params.delegate = this;
 
-  preferred_size_ = gfx::Size(create_params.bounds.width(),
-                              create_params.bounds.height());
+  gfx::Rect initial_window_bounds =
+      create_params.GetInitialWindowBounds(gfx::Insets());
+  preferred_size_ = gfx::Size(initial_window_bounds.width(),
+                              initial_window_bounds.height());
   if (preferred_size_.width() == 0)
     preferred_size_.set_width(kDefaultPanelWidth);
   else if (preferred_size_.width() < kMinPanelWidth)
@@ -314,8 +320,8 @@ void ChromeNativeAppWindowViews::InitializePanelWindow(
 
 #if defined(USE_ASH)
   if (create_params.state == ui::SHOW_STATE_DETACHED) {
-    gfx::Rect window_bounds(create_params.bounds.x(),
-                            create_params.bounds.y(),
+    gfx::Rect window_bounds(initial_window_bounds.x(),
+                            initial_window_bounds.y(),
                             preferred_size_.width(),
                             preferred_size_.height());
     aura::Window* native_window = GetNativeWindow();

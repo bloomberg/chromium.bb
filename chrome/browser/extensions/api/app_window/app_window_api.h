@@ -28,7 +28,10 @@ class AppWindowCreateFunction : public ChromeAsyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 
  private:
-  bool inject_html_titlebar_;
+  bool GetBoundsSpec(
+      const extensions::api::app_window::CreateWindowOptions& options,
+      apps::AppWindow::CreateParams* params,
+      std::string* error);
 
   apps::AppWindow::Frame GetFrameFromString(const std::string& frame_string);
   bool GetFrameOptions(
@@ -36,6 +39,8 @@ class AppWindowCreateFunction : public ChromeAsyncExtensionFunction {
       apps::AppWindow::CreateParams* create_params);
   void UpdateFrameOptionsForChannel(
       apps::AppWindow::CreateParams* create_params);
+
+  bool inject_html_titlebar_;
 };
 
 }  // namespace extensions

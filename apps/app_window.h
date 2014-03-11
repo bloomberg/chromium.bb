@@ -114,6 +114,26 @@ class AppWindow : public content::NotificationObserver,
     FULLSCREEN_TYPE_FORCED = 1 << 3,
   };
 
+  struct BoundsSpecification {
+    // INT_MIN represents an unspecified position component.
+    static const int kUnspecifiedPosition;
+
+    BoundsSpecification();
+    ~BoundsSpecification();
+
+    // INT_MIN designates 'unspecified' for the position components, and 0
+    // designates 'unspecified' for the size components. When unspecified,
+    // they should be replaced with a default value.
+    gfx::Rect bounds;
+
+    gfx::Size minimum_size;
+    gfx::Size maximum_size;
+
+    // Reset the bounds fields to their 'unspecified' values. The minimum and
+    // maximum size constraints remain unchanged.
+    void ResetBounds();
+  };
+
   struct CreateParams {
     CreateParams();
     ~CreateParams();
@@ -125,14 +145,13 @@ class AppWindow : public content::NotificationObserver,
     SkColor frame_color;
     bool transparent_background;  // Only supported on ash.
 
-    // Specify the initial content bounds of the window (excluding any window
-    // decorations). INT_MIN designates 'unspecified' for the position
-    // components, and 0 for the size components. When unspecified, they should
-    // be replaced with a default value.
-    gfx::Rect bounds;
+    // The initial content/inner bounds specification (excluding any window
+    // decorations).
+    BoundsSpecification content_spec;
 
-    gfx::Size minimum_size;
-    gfx::Size maximum_size;
+    // The initial window/outer bounds specification (including window
+    // decorations).
+    BoundsSpecification window_spec;
 
     std::string window_key;
 
@@ -154,6 +173,18 @@ class AppWindow : public content::NotificationObserver,
     // If true, the window will stay on top of other windows that are not
     // configured to be always on top. Defaults to false.
     bool always_on_top;
+
+    // The API enables developers to specify content or window bounds. This
+    // function combines them into a single, constrained window size.
+    gfx::Rect GetInitialWindowBounds(const gfx::Insets& frame_insets) const;
+
+    // The API enables developers to specify content or window size constraints.
+    // These functions combine them so that we can work with one set of
+    // constraints.
+    gfx::Size GetContentMinimumSize(const gfx::Insets& frame_insets) const;
+    gfx::Size GetContentMaximumSize(const gfx::Insets& frame_insets) const;
+    gfx::Size GetWindowMinimumSize(const gfx::Insets& frame_insets) const;
+    gfx::Size GetWindowMaximumSize(const gfx::Insets& frame_insets) const;
   };
 
   class Delegate {
@@ -287,9 +318,9 @@ class AppWindow : public content::NotificationObserver,
   // details.
   void ForcedFullscreen();
 
-  // Set the minimum and maximum size that this window is allowed to be.
-  void SetMinimumSize(const gfx::Size& min_size);
-  void SetMaximumSize(const gfx::Size& max_size);
+  // Set the minimum and maximum size of the content bounds.
+  void SetContentMinimumSize(const gfx::Size& min_size);
+  void SetContentMaximumSize(const gfx::Size& max_size);
 
   enum ShowType { SHOW_ACTIVE, SHOW_INACTIVE };
 
@@ -394,17 +425,16 @@ class AppWindow : public content::NotificationObserver,
   void SaveWindowPosition();
 
   // Helper method to adjust the cached bounds so that we can make sure it can
-  // be visible on the screen. See http://crbug.com/145752 .
+  // be visible on the screen. See http://crbug.com/145752.
   void AdjustBoundsToBeVisibleOnScreen(const gfx::Rect& cached_bounds,
                                        const gfx::Rect& cached_screen_bounds,
                                        const gfx::Rect& current_screen_bounds,
                                        const gfx::Size& minimum_size,
                                        gfx::Rect* bounds) const;
 
-  // Loads the appropriate default or cached window bounds and constrains them
-  // based on screen size and minimum/maximum size. Returns a new CreateParams
-  // that should be used to create the window.
-  CreateParams LoadDefaultsAndConstrain(CreateParams params) const;
+  // Loads the appropriate default or cached window bounds. Returns a new
+  // CreateParams that should be used to create the window.
+  CreateParams LoadDefaults(CreateParams params) const;
 
   // Load the app's image, firing a load state change when loaded.
   void UpdateExtensionAppIcon();
