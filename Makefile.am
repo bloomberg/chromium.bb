@@ -670,7 +670,19 @@ dist_westondata_DATA =				\
 	data/icon_window.png			\
 	data/sign_close.png			\
 	data/sign_maximize.png			\
-	data/sign_minimize.png
+	data/sign_minimize.png			\
+	data/background.png                     \
+	data/tiling.png                         \
+	data/fullscreen.png                     \
+	data/panel.png                          \
+	data/random.png                         \
+	data/sidebyside.png                     \
+	data/home.png                           \
+	data/icon_ivi_clickdot.png              \
+	data/icon_ivi_flower.png                \
+	data/icon_ivi_simple-egl.png            \
+	data/icon_ivi_simple-shm.png            \
+	data/icon_ivi_smoke.png
 
 
 if BUILD_WCAP_TOOLS
