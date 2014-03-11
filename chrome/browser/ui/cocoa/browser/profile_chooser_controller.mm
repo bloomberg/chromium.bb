@@ -7,6 +7,7 @@
 #import "chrome/browser/ui/cocoa/browser/profile_chooser_controller.h"
 
 #include "base/mac/bundle_locations.h"
+#include "base/prefs/pref_service.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -32,6 +33,7 @@
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #include "chrome/browser/ui/singleton_tabs.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
@@ -41,6 +43,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "skia/ext/skia_utils_mac.h"
+#import "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #import "ui/base/cocoa/cocoa_base_utils.h"
 #import "ui/base/cocoa/controls/blue_label_button.h"
 #import "ui/base/cocoa/controls/hyperlink_button_cell.h"
@@ -75,6 +78,9 @@ const int kBlueButtonHeight = 30;
 // Minimum size for embedded sign in pages as defined in Gaia.
 const CGFloat kMinGaiaViewWidth = 320;
 const CGFloat kMinGaiaViewHeight = 440;
+
+// Maximum number of times to show the tutorial in the profile avatar bubble.
+const int kProfileAvatarTutorialShowMax = 5;
 
 gfx::Image CreateProfileImage(const gfx::Image& icon, int imageSize) {
   return profiles::GetSizedAvatarIconWithBorder(
@@ -509,6 +515,9 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 
 
 @interface ProfileChooserController ()
+// Creates a tutorial card for the profile |avatar_item| if needed.
+- (NSView*)createTutorialViewIfNeeded:(const AvatarMenu::Item&)item;
+
 // Creates the main profile card for the profile |item| at the top of
 // the bubble.
 - (NSView*)createCurrentProfileView:(const AvatarMenu::Item&)item;
@@ -556,6 +565,9 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 - (NSButton*)accountButtonWithRect:(NSRect)rect
                              title:(const std::string&)title
                       canBeDeleted:(BOOL)canBeDeleted;
+
+- (NSTextField*)labelWithTitle:(NSString*)title
+                   frameOrigin:(NSPoint)frameOrigin;
 
 @end
 
@@ -623,6 +635,23 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
       browser_->profile())->RevokeCredentials(account);
 }
 
+- (IBAction)openTutorialLearnMoreURL:(id)sender {
+  // TODO(guohui): update |learnMoreUrl| once it is decided.
+  const GURL learnMoreUrl("https://support.google.com/chrome/?hl=en#to");
+  chrome::NavigateParams params(browser_->profile(), learnMoreUrl,
+                                content::PAGE_TRANSITION_LINK);
+  params.disposition = NEW_FOREGROUND_TAB;
+  chrome::Navigate(&params);
+}
+
+- (IBAction)dismissTutorial:(id)sender {
+  // If the user manually dismissed the tutorial, never show it again by setting
+  // the number of times shown to the maximum.
+  browser_->profile()->GetPrefs()->SetInteger(
+      prefs::kProfileAvatarTutorialShown, kProfileAvatarTutorialShowMax);
+  [self initMenuContentsWithView:PROFILE_CHOOSER_VIEW];
+}
+
 - (void)cleanUpEmbeddedViewContents {
   webContents_.reset();
 }
@@ -669,6 +698,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
     return;
   }
 
+  NSView* tutorialView = nil;
   NSView* currentProfileView = nil;
   base::scoped_nsobject<NSMutableArray> otherProfiles(
       [[NSMutableArray alloc] init]);
@@ -678,6 +708,8 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   for (int i = avatarMenu_->GetNumberOfItems() - 1; i >= 0; --i) {
     const AvatarMenu::Item& item = avatarMenu_->GetItemAt(i);
     if (item.active) {
+      if (viewMode_ == PROFILE_CHOOSER_VIEW)
+        tutorialView = [self createTutorialViewIfNeeded:item];
       currentProfileView = [self createCurrentProfileView:item];
     } else {
       [otherProfiles addObject:[self createOtherProfileView:i]];
@@ -739,7 +771,99 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
     yOffset = NSMaxY([currentProfileView frame]) + kVerticalSpacing;
   }
 
+  if (tutorialView) {
+    NSBox* accountsSeparator = [self separatorWithFrame:
+        NSMakeRect(0, yOffset, kFixedMenuWidth, 0)];
+    [contentView addSubview:accountsSeparator];
+    yOffset = NSMaxY([accountsSeparator frame]) + kVerticalSpacing;
+
+    [tutorialView setFrameOrigin:NSMakePoint(kHorizontalSpacing,
+                                             yOffset)];
+    [contentView addSubview:tutorialView];
+    yOffset = NSMaxY([tutorialView frame]) + kVerticalSpacing;
+  }
+
   SetWindowSize([self window], NSMakeSize(kFixedMenuWidth, yOffset));
+}
+
+- (NSView*)createTutorialViewIfNeeded:(const AvatarMenu::Item&)item {
+  if (!item.signed_in)
+    return nil;
+
+  Profile* profile = browser_->profile();
+  const int showCount = profile->GetPrefs()->GetInteger(
+      prefs::kProfileAvatarTutorialShown);
+  if (showCount >= kProfileAvatarTutorialShowMax)
+    return nil;
+
+  profile->GetPrefs()->SetInteger(
+      prefs::kProfileAvatarTutorialShown, showCount + 1);
+
+  CGFloat availableWidth = kFixedMenuWidth - 2 * kHorizontalSpacing;
+  base::scoped_nsobject<NSView> container([[NSView alloc]
+      initWithFrame:NSMakeRect(0, 0, availableWidth, 0)]);
+  CGFloat yOffset = 0;
+
+  // Adds links and buttons at the bottom.
+  NSButton* learnMoreLink =
+      [self linkButtonWithTitle:l10n_util::GetNSString(IDS_LEARN_MORE)
+                    frameOrigin:NSMakePoint(0, yOffset)
+                         action:@selector(openTutorialLearnMoreURL:)];
+  [container addSubview:learnMoreLink];
+
+  base::scoped_nsobject<NSButton> tutorialOkButton([[BlueLabelButton alloc]
+      initWithFrame:NSZeroRect]);
+  [tutorialOkButton setTitle:l10n_util::GetNSString(
+      IDS_PROFILES_SIGNIN_TUTORIAL_OK_BUTTON)];
+  [tutorialOkButton setTarget:self];
+  [tutorialOkButton setAction:@selector(dismissTutorial:)];
+  [tutorialOkButton sizeToFit];
+  [tutorialOkButton setFrameOrigin:NSMakePoint(
+      availableWidth - NSWidth([tutorialOkButton frame]), yOffset)];
+  [container addSubview:tutorialOkButton];
+
+  yOffset = std::max(NSMaxY([learnMoreLink frame]),
+                     NSMaxY([tutorialOkButton frame])) + kVerticalSpacing;
+
+  // Adds body content consisting of three bulleted lines.
+  const int kTextHorizIndentation = 10;
+  NSTextField* bulletLabel =
+      [self labelWithTitle:l10n_util::GetNSString(
+          IDS_PROFILES_SIGNIN_TUTORIAL_CONTENT_TEXT)
+               frameOrigin:NSMakePoint(kTextHorizIndentation, yOffset)];
+  [bulletLabel setFrameSize:NSMakeSize(availableWidth,
+      NSHeight([bulletLabel frame]))];
+  [container addSubview:bulletLabel];
+  yOffset = NSMaxY([bulletLabel frame]) + kSmallVerticalSpacing;
+
+  // Adds body header.
+  NSTextField* contentHeaderLabel =
+      [self labelWithTitle:l10n_util::GetNSString(
+          IDS_PROFILES_SIGNIN_TUTORIAL_CONTENT_HEADER)
+               frameOrigin:NSMakePoint(0, yOffset)];
+  [contentHeaderLabel setFrameSize:NSMakeSize(availableWidth, 0)];
+  [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:
+      contentHeaderLabel];
+  [container addSubview:contentHeaderLabel];
+  yOffset = NSMaxY([contentHeaderLabel frame]) + kSmallVerticalSpacing;
+
+  // Adds title.
+  NSTextField* titleLabel =
+      [self labelWithTitle:l10n_util::GetNSStringF(
+          IDS_PROFILES_SIGNIN_TUTORIAL_TITLE,
+          profiles::GetAvatarNameForProfile(profile))
+               frameOrigin:NSMakePoint(0, yOffset)];
+  [titleLabel setFont:[NSFont labelFontOfSize:kTitleFontSize]];
+  [[titleLabel cell] setTextColor:
+      gfx::SkColorToCalibratedNSColor(chrome_style::GetLinkColor())];
+  [titleLabel sizeToFit];
+  [titleLabel setFrameSize:
+      NSMakeSize(availableWidth, NSHeight([titleLabel frame]))];
+  [container addSubview:titleLabel];
+  yOffset = NSMaxY([titleLabel frame]);
+
+  [container setFrameSize:NSMakeSize(kFixedMenuWidth, yOffset)];
+  return container.autorelease();
 }
 
 - (NSView*)createCurrentProfileView:(const AvatarMenu::Item&)item {
@@ -1073,5 +1197,19 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   return button.autorelease();
 }
 
+- (NSTextField*)labelWithTitle:(NSString*)title
+                   frameOrigin:(NSPoint)frameOrigin {
+  base::scoped_nsobject<NSTextField> label(
+      [[NSTextField alloc] initWithFrame:NSZeroRect]);
+  [label setStringValue:title];
+  [label setEditable:NO];
+  [label setAlignment:NSLeftTextAlignment];
+  [label setBezeled:NO];
+  [label setFont:[NSFont labelFontOfSize:kTextFontSize]];
+  [label setFrameOrigin:frameOrigin];
+  [label sizeToFit];
+
+  return label.autorelease();
+}
 @end
 
