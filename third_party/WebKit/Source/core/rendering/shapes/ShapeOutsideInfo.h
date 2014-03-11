@@ -68,6 +68,8 @@ protected:
         return computedShape().getExcludedIntervals(lineTop, lineHeight, segments);
     }
 
+    virtual const RenderStyle* styleForWritingMode() const OVERRIDE;
+
 private:
     ShapeOutsideInfo(const RenderBox& renderer)
         : ShapeInfo<RenderBox>(renderer)

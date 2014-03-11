@@ -112,6 +112,8 @@ protected:
         return computedShape().getIncludedIntervals(lineTop, lineHeight, segments);
     }
 
+    virtual const RenderStyle* styleForWritingMode() const OVERRIDE;
+
 private:
     ShapeInsideInfo(const RenderBlock& renderer)
     : ShapeInfo<RenderBlock> (renderer)

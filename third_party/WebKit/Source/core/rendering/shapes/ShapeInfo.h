@@ -68,30 +68,7 @@ class ShapeInfo {
 public:
     virtual ~ShapeInfo() { }
 
-    void setReferenceBoxLogicalSize(LayoutSize newReferenceBoxLogicalSize)
-    {
-        switch (referenceBox()) {
-        case MarginBox:
-            newReferenceBoxLogicalSize.expand(m_renderer.marginLogicalWidth(), m_renderer.marginLogicalHeight());
-            break;
-        case BorderBox:
-            break;
-        case PaddingBox:
-            newReferenceBoxLogicalSize.shrink(m_renderer.borderLogicalWidth(), m_renderer.borderLogicalHeight());
-            break;
-        case ContentBox:
-            newReferenceBoxLogicalSize.shrink(m_renderer.borderAndPaddingLogicalWidth(), m_renderer.borderAndPaddingLogicalHeight());
-            break;
-        case BoxMissing:
-            // A non-missing box value must be supplied.
-            ASSERT_NOT_REACHED();
-        }
-
-        if (m_referenceBoxLogicalSize == newReferenceBoxLogicalSize)
-            return;
-        markShapeAsDirty();
-        m_referenceBoxLogicalSize = newReferenceBoxLogicalSize;
-    }
+    void setReferenceBoxLogicalSize(LayoutSize);
 
     SegmentList computeSegmentsForLine(LayoutUnit lineTop, LayoutUnit lineHeight) const;
 
@@ -124,41 +101,10 @@ protected:
     virtual ShapeValue* shapeValue() const = 0;
     virtual void getIntervals(LayoutUnit, LayoutUnit, SegmentList&) const = 0;
 
-    LayoutUnit logicalTopOffset() const
-    {
-        switch (referenceBox()) {
-        case MarginBox:
-            return -m_renderer.marginBefore();
-        case BorderBox:
-            return LayoutUnit();
-        case PaddingBox:
-            return m_renderer.borderBefore();
-        case ContentBox:
-            return m_renderer.borderAndPaddingBefore();
-        case BoxMissing:
-            // A non-missing box value must be supplied.
-            ASSERT_NOT_REACHED();
-        }
-        return LayoutUnit();
-    }
+    virtual const RenderStyle* styleForWritingMode() const = 0;
 
-    LayoutUnit logicalLeftOffset() const
-    {
-        switch (referenceBox()) {
-        case MarginBox:
-            return -m_renderer.marginStart();
-        case BorderBox:
-            return LayoutUnit();
-        case PaddingBox:
-            return m_renderer.borderStart();
-        case ContentBox:
-            return m_renderer.borderAndPaddingStart();
-        case BoxMissing:
-            // A non-missing box value must be supplied.
-            ASSERT_NOT_REACHED();
-        }
-        return LayoutUnit();
-    }
+    LayoutUnit logicalTopOffset() const;
+    LayoutUnit logicalLeftOffset() const;
 
     LayoutUnit m_referenceBoxLineTop;
     LayoutUnit m_lineHeight;

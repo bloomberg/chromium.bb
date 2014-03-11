@@ -57,7 +57,7 @@ bool ShapeOutsideInfo::isEnabledFor(const RenderBox& box)
 
 void ShapeOutsideInfo::updateDeltasForContainingBlockLine(const RenderBlockFlow& containingBlock, const FloatingObject& floatingObject, LayoutUnit lineTop, LayoutUnit lineHeight)
 {
-    LayoutUnit borderBoxTop = containingBlock.logicalTopForFloat(&floatingObject) + std::max(LayoutUnit(), containingBlock.marginBeforeForChild(&m_renderer));
+    LayoutUnit borderBoxTop = containingBlock.logicalTopForFloat(&floatingObject) + containingBlock.marginBeforeForChild(&m_renderer);
     LayoutUnit borderBoxLineTop = lineTop - borderBoxTop;
 
     if (isShapeDirty() || m_borderBoxLineTop != borderBoxLineTop || m_lineHeight != lineHeight) {
@@ -70,10 +70,12 @@ void ShapeOutsideInfo::updateDeltasForContainingBlockLine(const RenderBlockFlow&
         if (lineOverlapsShapeBounds()) {
             SegmentList segments = computeSegmentsForLine(borderBoxLineTop, lineHeight);
             if (segments.size()) {
-                LayoutUnit rawLeftMarginBoxDelta = segments.first().logicalLeft + containingBlock.marginStartForChild(&m_renderer);
+                LayoutUnit logicalLeftMargin = containingBlock.style()->isLeftToRightDirection() ? containingBlock.marginStartForChild(&m_renderer) : containingBlock.marginEndForChild(&m_renderer);
+                LayoutUnit rawLeftMarginBoxDelta = segments.first().logicalLeft + logicalLeftMargin;
                 m_leftMarginBoxDelta = clampToLayoutUnit(rawLeftMarginBoxDelta, LayoutUnit(), floatMarginBoxWidth);
 
-                LayoutUnit rawRightMarginBoxDelta = segments.last().logicalRight - containingBlock.logicalWidthForChild(&m_renderer) - containingBlock.marginEndForChild(&m_renderer);
+                LayoutUnit logicalRightMargin = containingBlock.style()->isLeftToRightDirection() ? containingBlock.marginEndForChild(&m_renderer) : containingBlock.marginStartForChild(&m_renderer);
+                LayoutUnit rawRightMarginBoxDelta = segments.last().logicalRight - containingBlock.logicalWidthForChild(&m_renderer) - logicalRightMargin;
                 m_rightMarginBoxDelta = clampToLayoutUnit(rawRightMarginBoxDelta, -floatMarginBoxWidth, LayoutUnit());
                 m_lineOverlapsShape = true;
                 return;
@@ -92,6 +94,12 @@ void ShapeOutsideInfo::updateDeltasForContainingBlockLine(const RenderBlockFlow&
 ShapeValue* ShapeOutsideInfo::shapeValue() const
 {
     return m_renderer.style()->shapeOutside();
+}
+
+const RenderStyle* ShapeOutsideInfo::styleForWritingMode() const
+{
+    ASSERT(m_renderer.containingBlock());
+    return m_renderer.containingBlock()->style();
 }
 
 }

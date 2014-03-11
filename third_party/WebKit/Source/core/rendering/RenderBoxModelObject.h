@@ -128,6 +128,9 @@ public:
     virtual int borderStart() const { return style()->borderStartWidth(); }
     virtual int borderEnd() const { return style()->borderEndWidth(); }
 
+    int borderWidth() const { return borderLeft() + borderRight(); }
+    int borderHeight() const { return borderTop() + borderBottom(); }
+
     LayoutUnit borderAndPaddingStart() const { return borderStart() + paddingStart(); }
     LayoutUnit borderAndPaddingBefore() const { return borderBefore() + paddingBefore(); }
     LayoutUnit borderAndPaddingAfter() const { return borderAfter() + paddingAfter(); }
