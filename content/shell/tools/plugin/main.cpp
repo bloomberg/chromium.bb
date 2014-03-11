@@ -199,6 +199,7 @@ NPError NPP_New(NPMIMEType pluginType, NPP instance, uint16_t mode, int16_t argc
     obj->eventModel = eventModel;
     obj->coreAnimationLayer = 0;
 #endif // XP_MACOSX
+    obj->alwaysFilterEvents = false;
 
     string testIdentifier;
     const char* onNewScript = 0;
@@ -292,6 +293,8 @@ NPError NPP_New(NPMIMEType pluginType, NPP instance, uint16_t mode, int16_t argc
             else
                 assert(false);
             browser->setvalue(instance, NPPVpluginWindowBool, windowed);
+        } else if (!strcasecmp(argn[i], "alwaysFilterEvents")) {
+            obj->alwaysFilterEvents = true;
         }
     }
 
@@ -786,22 +789,29 @@ int16_t NPP_HandleEvent(NPP instance, void *event)
     if (obj->pluginTest->NPP_HandleEvent(event) == 1)
         return 1;
 
+    int16_t ret = 0;
 #ifdef XP_MACOSX
 #ifndef NP_NO_CARBON
     if (obj->eventModel == NPEventModelCarbon)
-        return handleEventCarbon(instance, obj, static_cast<EventRecord*>(event));
+        ret = handleEventCarbon(instance, obj, static_cast<EventRecord*>(event));
 #endif
+    assert(obj->eventModel == NPEventModelCarbon ||
+           obj->eventModel == NPEventModelCocoa);
+    if (obj->eventModel == NPEventModelCocoa)
+      ret = handleEventCocoa(instance, obj, static_cast<NPCocoaEvent*>(event));
 
-    assert(obj->eventModel == NPEventModelCocoa);
-    return handleEventCocoa(instance, obj, static_cast<NPCocoaEvent*>(event));
 #elif defined(XP_UNIX)
-    return handleEventX11(instance, obj, static_cast<XEvent*>(event));
+    ret = handleEventX11(instance, obj, static_cast<XEvent*>(event));
 #elif defined(XP_WIN)
-    return handleEventWin(instance, obj, static_cast<NPEvent*>(event));
+    ret = handleEventWin(instance, obj, static_cast<NPEvent*>(event));
 #else
     // FIXME: Implement for other platforms.
-    return 0;
+    return obj->alwaysFilterEvents;
 #endif // XP_MACOSX
+
+    if (ret == 0 && obj->alwaysFilterEvents)
+      return 1;
+    return ret;
 }
 
 void NPP_URLNotify(NPP instance, const char *url, NPReason reason, void *notifyData)

@@ -74,6 +74,7 @@ typedef struct {
     void* coreAnimationLayer;
 #endif
     NPWindow lastWindow;
+    NPBool alwaysFilterEvents;
 } PluginObject;
 
 extern NPClass* createPluginClass(void);
