@@ -158,7 +158,7 @@ void ExpectCryptoDataMatchesHex(const std::string& expected_hex,
 
 void ExpectArrayBufferMatchesHex(const std::string& expected_hex,
                                  const blink::WebArrayBuffer& array_buffer) {
-  return ExpectCryptoDataMatchesHex(expected_hex, CryptoData(array_buffer));
+  ExpectCryptoDataMatchesHex(expected_hex, CryptoData(array_buffer));
 }
 
 void ExpectVectorMatches(const std::vector<uint8>& expected,
@@ -2171,10 +2171,11 @@ TEST_F(SharedCryptoTest, MAYBE(AesKwRawSymkeyUnwrapCorruptData)) {
       wrapping_algorithm,
       blink::WebCryptoKeyUsageWrapKey | blink::WebCryptoKeyUsageUnwrapKey);
 
-  // Unwrap a corrupted version of the known ciphertext. Unwrap should pass but
-  // will produce a key that is different than the known original.
+  // Unwrap of a corrupted version of the known ciphertext should fail, due to
+  // AES-KW's built-in integrity check.
   blink::WebCryptoKey unwrapped_key = blink::WebCryptoKey::createNull();
-  ASSERT_STATUS_SUCCESS(
+  EXPECT_STATUS(
+      Status::Error(),
       UnwrapKey(blink::WebCryptoKeyFormatRaw,
                 CryptoData(Corrupted(test_ciphertext)),
                 wrapping_key,
@@ -2183,13 +2184,6 @@ TEST_F(SharedCryptoTest, MAYBE(AesKwRawSymkeyUnwrapCorruptData)) {
                 true,
                 blink::WebCryptoKeyUsageEncrypt,
                 &unwrapped_key));
-
-  // Export the new key and compare its raw bytes with the original known key.
-  // The comparison should fail.
-  blink::WebArrayBuffer raw_key;
-  EXPECT_STATUS_SUCCESS(
-      ExportKey(blink::WebCryptoKeyFormatRaw, unwrapped_key, &raw_key));
-  EXPECT_FALSE(ArrayBufferMatches(test_key, raw_key));
 }
 
 // TODO(eroman):

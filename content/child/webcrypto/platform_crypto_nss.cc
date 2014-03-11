@@ -1191,6 +1191,35 @@ Status UnwrapSymKeyAesKw(const CryptoData& wrapped_key_data,
   if (!unwrapped_key)
     return Status::Error();
 
+// TODO(padolph): Change to "defined(USE_NSS)" once the NSS fix for
+// https://bugzilla.mozilla.org/show_bug.cgi?id=981170 rolls into chromium.
+#if 1
+  // ------- Start NSS bug workaround
+  // Workaround for https://code.google.com/p/chromium/issues/detail?id=349939
+  // If unwrap fails, NSS nevertheless returns a valid-looking PK11SymKey, with
+  // a reasonable length but with key data pointing to uninitialized memory.
+  // This workaround re-wraps the key and compares the result with the incoming
+  // data, and fails if there is a difference. This prevents returning a bad key
+  // to the caller.
+  const unsigned int output_length = wrapped_key_data.byte_length();
+  std::vector<unsigned char> buffer(output_length, 0);
+  SECItem wrapped_key_item = MakeSECItemForBuffer(CryptoData(buffer));
+  if (SECSuccess != PK11_WrapSymKey(CKM_NSS_AES_KEY_WRAP,
+                                    param_item.get(),
+                                    wrapping_key->key(),
+                                    unwrapped_key.get(),
+                                    &wrapped_key_item)) {
+    return Status::Error();
+  }
+  if (wrapped_key_item.len != wrapped_key_data.byte_length() ||
+      memcmp(wrapped_key_item.data,
+             wrapped_key_data.bytes(),
+             wrapped_key_item.len) != 0) {
+    return Status::Error();
+  }
+  // ------- End NSS bug workaround
+#endif
+
   blink::WebCryptoKeyAlgorithm key_algorithm;
   if (!CreateSecretKeyAlgorithm(algorithm, plaintext_length, &key_algorithm))
     return Status::ErrorUnexpected();
