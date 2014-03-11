@@ -82,6 +82,7 @@ public:
     void clearException();
 
     ExceptionCode code() const { return m_code; }
+    const String& message() const { return m_message; }
 
     bool throwIfNeeded()
     {
@@ -107,6 +108,7 @@ public:
 protected:
     ExceptionCode m_code;
     Context m_context;
+    String m_message;
     const char* m_propertyName;
     const char* m_interfaceName;
 

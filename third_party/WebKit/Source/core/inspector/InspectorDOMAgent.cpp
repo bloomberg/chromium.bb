@@ -219,7 +219,7 @@ void RevalidateStyleAttributeTask::onTimer(Timer<RevalidateStyleAttributeTask>*)
 String InspectorDOMAgent::toErrorString(ExceptionState& exceptionState)
 {
     if (exceptionState.hadException())
-        return DOMException::getErrorName(exceptionState.code());
+        return DOMException::getErrorName(exceptionState.code()) + " " + exceptionState.message();
     return "";
 }
 
