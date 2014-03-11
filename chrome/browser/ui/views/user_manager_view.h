@@ -8,6 +8,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "ui/views/window/dialog_delegate.h"
 
+class AutoKeepAlive;
+
 namespace views {
 class WebView;
 }
@@ -48,6 +50,7 @@ class UserManagerView : public views::DialogDelegateView {
 
   views::WebView* web_view_;
 
+  scoped_ptr<AutoKeepAlive> keep_alive_;
   // An open User Manager window. There can only be one open at a time. This
   // is reset to NULL when the window is closed.
   static UserManagerView* instance_;

@@ -40,6 +40,7 @@
 #include "ui/views/drag_utils.h"
 #include "ui/views/ime/input_method.h"
 #include "ui/views/ime/input_method_bridge.h"
+#include "ui/views/view_constants_aura.h"
 #include "ui/views/widget/desktop_aura/desktop_capture_client.h"
 #include "ui/views/widget/desktop_aura/desktop_cursor_loader_updater.h"
 #include "ui/views/widget/desktop_aura/desktop_dispatcher_client.h"
@@ -413,6 +414,9 @@ void DesktopNativeWidgetAura::InitNativeWidget(
       DesktopWindowTreeHost::Create(native_widget_delegate_, this);
   host_.reset(desktop_window_tree_host_->AsWindowTreeHost());
   desktop_window_tree_host_->Init(content_window_, params);
+
+  // Mark this window as Desktop root window.
+  host_->window()->SetProperty(views::kDesktopRootWindow, true);
 
   host_->InitHost();
   host_->window()->AddChild(content_window_container_);

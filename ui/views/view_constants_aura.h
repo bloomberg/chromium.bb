@@ -17,6 +17,10 @@ class View;
 // have the same parent widget as the window on which the property is set.
 VIEWS_EXPORT extern const aura::WindowProperty<View*>* const kHostViewKey;
 
+// A property key to indicate if a window is a desktop root window or not.
+// This property is currently set during creation of desktop root window.
+VIEWS_EXPORT extern const aura::WindowProperty<bool>* const kDesktopRootWindow;
+
 }  // namespace views
 
 #endif  // UI_VIEWS_VIEW_CONSTANTS_AURA_H_
