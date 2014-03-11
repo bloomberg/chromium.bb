@@ -26,7 +26,7 @@ enum TimeoutEvent {
 // versions found in Android's ViewConfiguration.
 GestureDetector::Config::Config()
     : longpress_timeout(base::TimeDelta::FromMilliseconds(500)),
-      tap_timeout(base::TimeDelta::FromMilliseconds(180)),
+      showpress_timeout(base::TimeDelta::FromMilliseconds(180)),
       double_tap_timeout(base::TimeDelta::FromMilliseconds(300)),
       scaled_touch_slop(8),
       scaled_double_tap_slop(100),
@@ -83,11 +83,14 @@ class GestureDetector::TimeoutGestureHandler {
  public:
   TimeoutGestureHandler(const Config& config, GestureDetector* gesture_detector)
       : gesture_detector_(gesture_detector) {
+    DCHECK(config.showpress_timeout <= config.longpress_timeout);
+
     timeout_callbacks_[SHOW_PRESS] = &GestureDetector::OnShowPressTimeout;
-    timeout_delays_[SHOW_PRESS] = config.tap_timeout;
+    timeout_delays_[SHOW_PRESS] = config.showpress_timeout;
 
     timeout_callbacks_[LONG_PRESS] = &GestureDetector::OnLongPressTimeout;
-    timeout_delays_[LONG_PRESS] = config.longpress_timeout + config.tap_timeout;
+    timeout_delays_[LONG_PRESS] =
+        config.longpress_timeout + config.showpress_timeout;
 
     timeout_callbacks_[TAP] = &GestureDetector::OnTapTimeout;
     timeout_delays_[TAP] = config.double_tap_timeout;
@@ -229,6 +232,7 @@ bool GestureDetector::OnTouchEvent(const MotionEvent& ev) {
           handled |= double_tap_listener_->OnDoubleTapEvent(ev);
         } else {
           // This is a first tap.
+          DCHECK(double_tap_timeout_ > base::TimeDelta());
           timeout_handler_->StartTimeout(TAP);
         }
       }
@@ -243,9 +247,11 @@ bool GestureDetector::OnTouchEvent(const MotionEvent& ev) {
       in_longpress_ = false;
       defer_confirm_single_tap_ = false;
 
+      // Always start the SHOW_PRESS timer before the LONG_PRESS timer to ensure
+      // proper timeout ordering.
+      timeout_handler_->StartTimeout(SHOW_PRESS);
       if (is_longpress_enabled_)
         timeout_handler_->StartTimeout(LONG_PRESS);
-      timeout_handler_->StartTimeout(SHOW_PRESS);
       handled |= listener_->OnDown(ev);
       break;
 

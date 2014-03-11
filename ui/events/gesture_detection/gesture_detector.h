@@ -23,7 +23,7 @@ class GestureDetector {
     Config();
     ~Config();
     base::TimeDelta longpress_timeout;
-    base::TimeDelta tap_timeout;
+    base::TimeDelta showpress_timeout;
     base::TimeDelta double_tap_timeout;
     int scaled_touch_slop;
     int scaled_double_tap_slop;

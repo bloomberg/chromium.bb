@@ -14,7 +14,7 @@ GestureDetector::Config DefaultGestureDetectorConfig() {
 
   config.longpress_timeout = base::TimeDelta::FromMilliseconds(
       GestureConfiguration::long_press_time_in_seconds() * 1000.);
-  config.tap_timeout = base::TimeDelta::FromMilliseconds(
+  config.showpress_timeout = base::TimeDelta::FromMilliseconds(
       GestureConfiguration::show_press_delay_in_ms());
   config.double_tap_timeout = base::TimeDelta::FromMilliseconds(
       GestureConfiguration::semi_long_press_time_in_seconds() * 1000.);
