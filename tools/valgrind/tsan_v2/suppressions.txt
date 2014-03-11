@@ -254,3 +254,6 @@ race:cricket::P2PTransportChannel::AddConnection
 
 # http://crbug.com/348984
 race:sctp_express_handle_sack
+
+# http://crbug.com/350982
+race:libvpx/vp9/decoder/vp9_thread.c

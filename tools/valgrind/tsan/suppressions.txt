@@ -1186,3 +1186,12 @@
    fun:cc::TextureUploader::Query::~Query
    fun:cc::TextureUploader::Query::~Query
 }
+{
+  bug_350982
+  ThreadSanitizer:Race
+  fun:change_state
+  fun:vp9_worker_sync
+  fun:decode_tile
+  fun:decode_tiles
+  fun:vp9_decode_frame
+}
