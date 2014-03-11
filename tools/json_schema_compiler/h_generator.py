@@ -392,6 +392,11 @@ class _Generator(object):
   def _GenerateParams(self, params):
     """Builds the parameter list for a function, given an array of parameters.
     """
+    # |error| is populated with warnings and/or errors found during parsing.
+    # |error| being set does not necessarily imply failure and may be
+    # recoverable.
+    # For example, optional properties may have failed to parse, but the
+    # parser was able to continue.
     if self._generate_error_messages:
       params += ('base::string16* error = NULL',)
     return ', '.join(str(p) for p in params)

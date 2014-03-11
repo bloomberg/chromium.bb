@@ -17,6 +17,17 @@
         }
       },
       {
+        "id": "OptionalTestType",
+        "type": "object",
+        "properties": {
+          "string": {
+            "type": "string",
+            "description": "Some string.",
+            "optional": true
+          }
+        }
+      },
+      {
         "id": "ChoiceType",
         "type": "object",
         "properties": {
@@ -25,6 +36,19 @@
                {"type": "array", "items": {"type": "integer", "minimum": 0}},
                {"type": "integer"}
             ]
+          }
+        }
+      },
+      {
+        "id": "OptionalChoiceType",
+        "type": "object",
+        "properties": {
+          "integers": {
+            "choices": [
+               {"type": "array", "items": {"type": "integer", "minimum": 0}},
+               {"type": "integer"}
+            ],
+            "optional": true
           }
         }
       },
@@ -58,6 +82,16 @@
         "properties": {
           "data": {
             "type" : "binary"
+          }
+        }
+      },
+      {
+        "id": "OptionalBinaryData",
+        "type": "object",
+        "properties": {
+          "data": {
+            "type" : "binary",
+            "optional": true
           }
         }
       },
