@@ -1713,12 +1713,15 @@ _release = full.derive(official, internal,
 )
 
 _grouped_config = _config(
-  chrome_sdk=False,
   unittests=None,
   vm_tests=[],
 )
 
-_grouped_release = _release.derive(_grouped_config)
+_grouped_variant_config = _grouped_config.derive(
+  chrome_sdk=False,
+)
+
+_grouped_variant_release = _release.derive(_grouped_variant_config)
 
 ### Master release config.
 
@@ -1733,7 +1736,7 @@ _config.add_group('x86-alex-release-group',
   _release.add_config('x86-alex-release',
     boards=['x86-alex'],
   ),
-  _grouped_release.add_config('x86-alex_he-release',
+  _grouped_variant_release.add_config('x86-alex_he-release',
     boards=['x86-alex_he'],
     hw_tests=[],
     upload_hw_test_artifacts=False,
@@ -1745,7 +1748,7 @@ _config.add_group('x86-zgb-release-group',
   _release.add_config('x86-zgb-release',
     boards=['x86-zgb'],
   ),
-  _grouped_release.add_config('x86-zgb_he-release',
+  _grouped_variant_release.add_config('x86-zgb_he-release',
     boards=['x86-zgb_he'],
     hw_tests=[],
     upload_hw_test_artifacts=False,
@@ -1890,7 +1893,7 @@ _release.add_group('parrot-release-group',
   _release.add_config('parrot-release',
     boards=['parrot'],
   ),
-  _grouped_release.add_config('parrot_ivb-release',
+  _grouped_variant_release.add_config('parrot_ivb-release',
     boards=['parrot_ivb'],
   )
 )
@@ -2030,9 +2033,9 @@ _release.add_config('stumpy_moblab-release',
 _config.add_group('atom-release-group',
   config['x86-mario-release'],
   config['x86-alex-release'].derive(_grouped_config),
-  config['x86-alex_he-release'].derive(_grouped_config),
+  config['x86-alex_he-release'].derive(_grouped_variant_config),
   config['x86-zgb-release'].derive(_grouped_config),
-  config['x86-zgb_he-release'].derive(_grouped_config),
+  config['x86-zgb_he-release'].derive(_grouped_variant_config),
 )
 
 # lumpy-era boards
@@ -2040,7 +2043,7 @@ _config.add_group('lumpy-release-group',
   config['lumpy-release'],
   config['stumpy-release'].derive(_grouped_config),
   config['parrot-release'].derive(_grouped_config),
-  config['parrot_ivb-release'].derive(_grouped_config),
+  config['parrot_ivb-release'].derive(_grouped_variant_config),
   config['butterfly-release'].derive(_grouped_config),
   config['stout-release'].derive(_grouped_config),
 )
