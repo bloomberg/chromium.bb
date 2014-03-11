@@ -65,7 +65,7 @@ bool FirstRunDialog::Show(Profile* profile) {
     aura::Window* anchor = dialog->GetWidget()->GetNativeWindow();
     aura::client::DispatcherClient* client =
         aura::client::GetDispatcherClient(anchor->GetRootWindow());
-    client->RunWithDispatcher(dialog, anchor);
+    client->RunWithDispatcher(NULL, anchor);
     dialog_shown = true;
   }
 #endif  // defined(GOOGLE_CHROME_BUILD)
@@ -76,8 +76,7 @@ bool FirstRunDialog::Show(Profile* profile) {
 FirstRunDialog::FirstRunDialog(Profile* profile)
     : profile_(profile),
       make_default_(NULL),
-      report_crashes_(NULL),
-      should_show_dialog_(true) {
+      report_crashes_(NULL) {
   GridLayout* layout = GridLayout::CreatePanel(this);
   SetLayoutManager(layout);
 
@@ -102,6 +101,13 @@ FirstRunDialog::FirstRunDialog(Profile* profile)
 FirstRunDialog::~FirstRunDialog() {
 }
 
+void FirstRunDialog::Done() {
+  aura::Window* window = GetWidget()->GetNativeView();
+  aura::client::DispatcherClient* client =
+      aura::client::GetDispatcherClient(window->GetRootWindow());
+  client->QuitNestedMessageLoop();
+}
+
 views::View* FirstRunDialog::CreateExtraView() {
   views::Link* link = new views::Link(l10n_util::GetStringUTF16(
       IDS_LEARN_MORE));
@@ -110,12 +116,11 @@ views::View* FirstRunDialog::CreateExtraView() {
 }
 
 void FirstRunDialog::OnClosed() {
-  should_show_dialog_ = false;
   first_run::SetShouldShowWelcomePage();
+  Done();
 }
 
 bool FirstRunDialog::Accept() {
-  should_show_dialog_ = false;
   GetWidget()->Hide();
 
   if (report_crashes_ && report_crashes_->checked()) {
@@ -128,6 +133,7 @@ bool FirstRunDialog::Accept() {
   if (make_default_ && make_default_->checked())
     ShellIntegration::SetAsDefaultBrowser();
 
+  Done();
   return true;
 }
 
@@ -137,11 +143,4 @@ int FirstRunDialog::GetDialogButtons() const {
 
 void FirstRunDialog::LinkClicked(views::Link* source, int event_flags) {
   platform_util::OpenExternal(profile_, GURL(chrome::kLearnMoreReportingURL));
-}
-
-uint32_t FirstRunDialog::Dispatch(const base::NativeEvent& event) {
-  uint32_t action = POST_DISPATCH_PERFORM_DEFAULT;
-  if (!should_show_dialog_)
-    action |= POST_DISPATCH_QUIT_LOOP;
-  return action;
 }

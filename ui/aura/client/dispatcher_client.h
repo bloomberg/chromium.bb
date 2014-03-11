@@ -18,6 +18,8 @@ class AURA_EXPORT DispatcherClient {
  public:
   virtual void RunWithDispatcher(base::MessagePumpDispatcher* dispatcher,
                                  aura::Window* associated_window) = 0;
+
+  virtual void QuitNestedMessageLoop() = 0;
 };
 
 AURA_EXPORT void SetDispatcherClient(Window* root_window,

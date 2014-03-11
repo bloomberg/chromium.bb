@@ -15,8 +15,8 @@ namespace ash {
 // Dispatcher for handling accelerators from menu.
 //
 // Wraps a nested dispatcher to which control is passed if no accelerator key
-// has been pressed.
-// TODO(pkotwicz): Port AcceleratorDispatcher to mac.
+// has been pressed. If the nested dispatcher is NULL, then the control is
+// passed back to the default dispatcher.
 // TODO(pkotwicz): Add support for a |nested_dispatcher| which sends
 //  events to a system IME.
 class ASH_EXPORT AcceleratorDispatcher : public base::MessagePumpDispatcher,

@@ -70,7 +70,6 @@ AcceleratorDispatcher::AcceleratorDispatcher(
     aura::Window* associated_window)
     : nested_dispatcher_(nested_dispatcher),
       associated_window_(associated_window) {
-  DCHECK(nested_dispatcher_);
   associated_window_->AddObserver(this);
 }
 
@@ -121,10 +120,13 @@ uint32_t AcceleratorDispatcher::Dispatch(const base::NativeEvent& event) {
         return POST_DISPATCH_NONE;
     }
 
-    return nested_dispatcher_->Dispatch(key_event.native_event());
+    return nested_dispatcher_
+               ? nested_dispatcher_->Dispatch(key_event.native_event())
+               : POST_DISPATCH_PERFORM_DEFAULT;
   }
 
-  return nested_dispatcher_->Dispatch(event);
+  return nested_dispatcher_ ? nested_dispatcher_->Dispatch(event)
+                            : POST_DISPATCH_PERFORM_DEFAULT;
 }
 
 }  // namespace ash
