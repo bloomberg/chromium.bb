@@ -54,11 +54,6 @@
 
 namespace {
 
-// Whether to use accelerated compositing when necessary (e.g. when a view has a
-// transformation).
-// TODO(sky): nuke this as its always true now.
-bool use_acceleration_when_possible = true;
-
 #if defined(OS_WIN)
 const bool kContextMenuOnMousePress = false;
 #else
@@ -247,8 +242,7 @@ void View::AddChildViewAt(View* view, int index) {
   if (layout_manager_.get())
     layout_manager_->ViewAdded(this, view);
 
-  if (use_acceleration_when_possible)
-    ReorderLayers();
+  ReorderLayers();
 
   // Make sure the visibility of the child layers are correct.
   // If any of the parent View is hidden, then the layers of the subtree
@@ -282,8 +276,7 @@ void View::ReorderChildView(View* view, int index) {
   InitFocusSiblings(view, index);
   children_.insert(children_.begin() + index, view);
 
-  if (use_acceleration_when_possible)
-    ReorderLayers();
+  ReorderLayers();
 }
 
 void View::RemoveChildView(View* view) {
@@ -811,18 +804,6 @@ ui::ThemeProvider* View::GetThemeProvider() const {
 const ui::NativeTheme* View::GetNativeTheme() const {
   const Widget* widget = GetWidget();
   return widget ? widget->GetNativeTheme() : ui::NativeTheme::instance();
-}
-
-// Accelerated Painting --------------------------------------------------------
-
-// static
-void View::set_use_acceleration_when_possible(bool use) {
-  use_acceleration_when_possible = use;
-}
-
-// static
-bool View::get_use_acceleration_when_possible() {
-  return use_acceleration_when_possible;
 }
 
 // Input -----------------------------------------------------------------------
@@ -1467,8 +1448,6 @@ void View::MoveLayerToParent(ui::Layer* parent_layer,
 }
 
 void View::UpdateLayerVisibility() {
-  if (!use_acceleration_when_possible)
-    return;
   bool visible = visible_;
   for (const View* v = parent_; visible && v && !v->layer(); v = v->parent_)
     visible = v->visible();
@@ -1885,11 +1864,9 @@ void View::ViewHierarchyChangedImpl(
     // Make sure the layers belonging to the subtree rooted at |child| get
     // removed from layers that do not belong in the same subtree.
     OrphanLayers();
-    if (use_acceleration_when_possible) {
-      Widget* widget = GetWidget();
-      if (widget)
-        widget->UpdateRootLayers();
-    }
+    Widget* widget = GetWidget();
+    if (widget)
+      widget->UpdateRootLayers();
   }
 
   ViewHierarchyChanged(details);
@@ -1922,20 +1899,18 @@ void View::BoundsChanged(const gfx::Rect& previous_bounds) {
         SCHEDULE_PAINT_SIZE_CHANGED);
   }
 
-  if (use_acceleration_when_possible) {
-    if (layer()) {
-      if (parent_) {
-        SetLayerBounds(GetLocalBounds() +
-                       gfx::Vector2d(GetMirroredX(), y()) +
-                       parent_->CalculateOffsetToAncestorWithLayer(NULL));
-      } else {
-        SetLayerBounds(bounds_);
-      }
+  if (layer()) {
+    if (parent_) {
+      SetLayerBounds(GetLocalBounds() +
+                     gfx::Vector2d(GetMirroredX(), y()) +
+                     parent_->CalculateOffsetToAncestorWithLayer(NULL));
     } else {
-      // If our bounds have changed, then any descendant layer bounds may
-      // have changed. Update them accordingly.
-      UpdateChildLayerBounds(CalculateOffsetToAncestorWithLayer(NULL));
+      SetLayerBounds(bounds_);
     }
+  } else {
+    // If our bounds have changed, then any descendant layer bounds may have
+    // changed. Update them accordingly.
+    UpdateChildLayerBounds(CalculateOffsetToAncestorWithLayer(NULL));
   }
 
   OnBoundsChanged(previous_bounds);

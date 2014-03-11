@@ -331,13 +331,11 @@ TrayBubbleView::TrayBubbleView(gfx::NativeView parent_window,
   set_close_on_deactivate(init_params.close_on_deactivate);
   set_margins(gfx::Insets());
   bubble_border_ = new TrayBubbleBorder(this, GetAnchorView(), params_);
-  if (get_use_acceleration_when_possible()) {
-    SetPaintToLayer(true);
-    SetFillsBoundsOpaquely(true);
+  SetPaintToLayer(true);
+  SetFillsBoundsOpaquely(true);
 
-    bubble_content_mask_.reset(
-        new TrayBubbleContentMask(bubble_border_->GetBorderCornerRadius()));
-  }
+  bubble_content_mask_.reset(
+      new TrayBubbleContentMask(bubble_border_->GetBorderCornerRadius()));
 }
 
 TrayBubbleView::~TrayBubbleView() {
@@ -352,8 +350,7 @@ void TrayBubbleView::InitializeAndShowBubble() {
   SetAlignment(params_.arrow_alignment);
   bubble_border_->UpdateArrowOffset();
 
-  if (get_use_acceleration_when_possible())
-    layer()->parent()->SetMaskLayer(bubble_content_mask_->layer());
+  layer()->parent()->SetMaskLayer(bubble_content_mask_->layer());
 
   GetWidget()->Show();
   GetWidget()->GetNativeWindow()->SetEventTargeter(
@@ -363,8 +360,7 @@ void TrayBubbleView::InitializeAndShowBubble() {
 
 void TrayBubbleView::UpdateBubble() {
   SizeToContents();
-  if (get_use_acceleration_when_possible())
-    bubble_content_mask_->layer()->SetBounds(layer()->bounds());
+  bubble_content_mask_->layer()->SetBounds(layer()->bounds());
   GetWidget()->GetRootView()->SchedulePaint();
 }
 
@@ -504,8 +500,7 @@ void TrayBubbleView::ChildPreferredSizeChanged(View* child) {
 
 void TrayBubbleView::ViewHierarchyChanged(
     const ViewHierarchyChangedDetails& details) {
-  if (get_use_acceleration_when_possible() && details.is_add &&
-      details.child == this) {
+  if (details.is_add && details.child == this) {
     details.parent->SetPaintToLayer(true);
     details.parent->SetFillsBoundsOpaquely(true);
     details.parent->layer()->SetMasksToBounds(true);

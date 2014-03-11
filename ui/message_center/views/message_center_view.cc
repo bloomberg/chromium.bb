@@ -568,11 +568,9 @@ MessageCenterView::MessageCenterView(MessageCenter* message_center,
   scroller_ =
       new BoundedScrollView(kMinScrollViewHeight, max_height - button_height);
 
-  if (get_use_acceleration_when_possible()) {
-    scroller_->SetPaintToLayer(true);
-    scroller_->SetFillsBoundsOpaquely(false);
-    scroller_->layer()->SetMasksToBounds(true);
-  }
+  scroller_->SetPaintToLayer(true);
+  scroller_->SetFillsBoundsOpaquely(false);
+  scroller_->layer()->SetMasksToBounds(true);
 
   empty_list_view_.reset(new NoNotificationMessageView);
   empty_list_view_->set_owned_by_client();

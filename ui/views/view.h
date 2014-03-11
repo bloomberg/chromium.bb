@@ -557,12 +557,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
     flip_canvas_on_paint_for_rtl_ui_ = enable;
   }
 
-  // Accelerated painting ------------------------------------------------------
-
-  // Enable/Disable accelerated compositing.
-  static void set_use_acceleration_when_possible(bool use);
-  static bool get_use_acceleration_when_possible();
-
   // Input ---------------------------------------------------------------------
   // The points, rects, mouse locations, and touch locations in the following
   // functions are in the view's coordinates, except for a RootView.

@@ -52,10 +52,8 @@ MessageCenterWidgetDelegate::MessageCenterWidgetDelegate(
 
   AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
 
-  if (get_use_acceleration_when_possible()) {
-    SetPaintToLayer(true);
-    SetFillsBoundsOpaquely(true);
-  }
+  SetPaintToLayer(true);
+  SetFillsBoundsOpaquely(true);
 
   InitWidget();
 }

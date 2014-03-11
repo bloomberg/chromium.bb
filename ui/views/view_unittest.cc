@@ -2987,7 +2987,7 @@ void TestLayerAnimator::SetBounds(const gfx::Rect& bounds) {
 
 class ViewLayerTest : public ViewsTestBase {
  public:
-  ViewLayerTest() : widget_(NULL), old_use_acceleration_(false) {}
+  ViewLayerTest() : widget_(NULL) {}
 
   virtual ~ViewLayerTest() {
   }
@@ -2999,9 +2999,6 @@ class ViewLayerTest : public ViewsTestBase {
 
   virtual void SetUp() OVERRIDE {
     ViewTest::SetUp();
-    old_use_acceleration_ = View::get_use_acceleration_when_possible();
-    View::set_use_acceleration_when_possible(true);
-
     widget_ = new Widget;
     Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
     params.bounds = gfx::Rect(50, 50, 200, 200);
@@ -3011,7 +3008,6 @@ class ViewLayerTest : public ViewsTestBase {
   }
 
   virtual void TearDown() OVERRIDE {
-    View::set_use_acceleration_when_possible(old_use_acceleration_);
     widget_->CloseNow();
     ViewsTestBase::TearDown();
   }
@@ -3020,7 +3016,6 @@ class ViewLayerTest : public ViewsTestBase {
 
  private:
   Widget* widget_;
-  bool old_use_acceleration_;
 };
 
 

@@ -99,8 +99,7 @@ MessageCenterButtonBar::MessageCenterButtonBar(
       close_all_button_(NULL),
       settings_button_(NULL),
       quiet_mode_button_(NULL) {
-  if (get_use_acceleration_when_possible())
-    SetPaintToLayer(true);
+  SetPaintToLayer(true);
   set_background(
       views::Background::CreateSolidBackground(kMessageCenterBackgroundColor));
 

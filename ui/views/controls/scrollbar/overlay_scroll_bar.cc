@@ -44,12 +44,10 @@ class OverlayScrollBarThumb : public BaseScrollBarThumb,
 OverlayScrollBarThumb::OverlayScrollBarThumb(BaseScrollBar* scroll_bar)
     : BaseScrollBarThumb(scroll_bar),
       animation_opacity_(0.0) {
-  if (get_use_acceleration_when_possible()) {
-    // This is necessary, otherwise the thumb will be rendered below the views
-    // if those views paint to their own layers.
-    SetPaintToLayer(true);
-    SetFillsBoundsOpaquely(false);
-  }
+  // This is necessary, otherwise the thumb will be rendered below the views if
+  // those views paint to their own layers.
+  SetPaintToLayer(true);
+  SetFillsBoundsOpaquely(false);
 }
 
 OverlayScrollBarThumb::~OverlayScrollBarThumb() {
