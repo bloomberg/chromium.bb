@@ -182,15 +182,15 @@ void CastSessionDelegate::GetEventLogsAndReset(
     return;
   }
 
+  media::cast::proto::LogMetadata metadata;
   media::cast::FrameEventMap frame_events;
   media::cast::PacketEventMap packet_events;
-  media::cast::RtpTimestamp rtp_timestamp;
 
-  subscriber->GetEventsAndReset(&frame_events, &packet_events, &rtp_timestamp);
+  subscriber->GetEventsAndReset(&metadata, &frame_events, &packet_events);
 
   media::cast::LogSerializer log_serializer(kMaxSerializedBytes);
   bool success = log_serializer.SerializeEventsForStream(
-      is_audio, frame_events, packet_events, rtp_timestamp);
+      metadata, frame_events, packet_events);
 
   if (!success) {
     VLOG(2) << "Failed to serialize event log.";

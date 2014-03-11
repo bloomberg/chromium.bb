@@ -52,7 +52,7 @@ TEST_F(SerializeDeserializeTest, Basic) {
   // Insert frame and packet events with RTP timestamps 0, 90, 180, ...
   for (int i = 0; i < 10; i++) {
     linked_ptr<AggregatedFrameEvent> frame_event(new AggregatedFrameEvent);
-    frame_event->set_rtp_timestamp(i * 90);
+    frame_event->set_relative_rtp_timestamp(i * 90);
     for (uint32 event_index = 0; event_index < arraysize(kVideoFrameEvents);
          ++event_index) {
       frame_event->add_event_type(
@@ -65,14 +65,14 @@ TEST_F(SerializeDeserializeTest, Basic) {
     frame_event->set_delay_millis(kDelayMillis[i % arraysize(kDelayMillis)]);
 
     frame_event_map.insert(
-        std::make_pair(frame_event->rtp_timestamp(), frame_event));
+        std::make_pair(frame_event->relative_rtp_timestamp(), frame_event));
   }
 
   event_time_micros = 0;
   int packet_id = 0;
   for (int i = 0; i < 10; i++) {
     linked_ptr<AggregatedPacketEvent> packet_event(new AggregatedPacketEvent);
-    packet_event->set_rtp_timestamp(i * 90);
+    packet_event->set_relative_rtp_timestamp(i * 90);
     for (int j = 0; j < 10; j++) {
       BasePacketEvent* base_event = packet_event->add_base_packet_event();
       base_event->set_packet_id(packet_id);
@@ -86,28 +86,31 @@ TEST_F(SerializeDeserializeTest, Basic) {
       }
     }
     packet_event_map.insert(
-        std::make_pair(packet_event->rtp_timestamp(), packet_event));
+        std::make_pair(packet_event->relative_rtp_timestamp(), packet_event));
   }
 
+  media::cast::proto::LogMetadata metadata;
+  metadata.set_is_audio(false);
+  metadata.set_first_rtp_timestamp(first_rtp_timestamp);
+  metadata.set_num_frame_events(frame_event_map.size());
+  metadata.set_num_packet_events(packet_event_map.size());
   bool success = serializer_.SerializeEventsForStream(
-      false, frame_event_map, packet_event_map, first_rtp_timestamp);
+      metadata, frame_event_map, packet_event_map);
   uint32 length = serializer_.GetSerializedLength();
   scoped_ptr<std::string> serialized = serializer_.GetSerializedLogAndReset();
   ASSERT_TRUE(success);
   ASSERT_EQ(length, serialized->size());
 
-  bool returned_is_audio;
   FrameEventMap returned_frame_events;
   PacketEventMap returned_packet_events;
-  RtpTimestamp returned_first_rtp_timestamp;
+  media::cast::proto::LogMetadata returned_metadata;
   success = DeserializeEvents(*serialized,
-                              &returned_is_audio,
+                              &returned_metadata,
                               &returned_frame_events,
-                              &returned_packet_events,
-                              &returned_first_rtp_timestamp);
+                              &returned_packet_events);
   ASSERT_TRUE(success);
-  EXPECT_FALSE(returned_is_audio);
-  EXPECT_EQ(first_rtp_timestamp, returned_first_rtp_timestamp);
+  EXPECT_FALSE(returned_metadata.is_audio());
+  EXPECT_EQ(first_rtp_timestamp, returned_metadata.first_rtp_timestamp());
 
   // Check that the returned map is equal to the original map.
   EXPECT_EQ(frame_event_map.size(), returned_frame_events.size());

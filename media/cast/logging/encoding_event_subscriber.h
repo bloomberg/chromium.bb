@@ -47,17 +47,11 @@ class EncodingEventSubscriber : public RawEventSubscriber {
       OVERRIDE;
 
   // Assigns frame events and packet events received so far to |frame_events|
-  // and clears them |packet_events| respectively, assigns the first seen RTP
-  // timestamp (which is used as a reference for all event entries) to
-  // |first_rtp_timestamp|, and reset this object's internal states.
-  // All RTP timestamp values returned in the maps are relative to
-  // |first_rtp_timestamp|, i.e. suppose |first_rtp_timestamp| is X,
-  // then the first event will be recorded with a relative
-  // RTP timestamp value of 0. If the next event has original RTP timestamp
-  // X+20, it will be recorded with a relative RTP timestamp of 20.
-  void GetEventsAndReset(FrameEventMap* frame_events,
-                         PacketEventMap* packet_events,
-                         RtpTimestamp* first_rtp_timestamp);
+  // and |packet_events| and resets the internal state.
+  // In addition, assign metadata associated with these events to |metadata|.
+  void GetEventsAndReset(media::cast::proto::LogMetadata* metadata,
+                         FrameEventMap* frame_events,
+                         PacketEventMap* packet_events);
 
  private:
   bool ShouldProcessEvent(CastLoggingEvent event);

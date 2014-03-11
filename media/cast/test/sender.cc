@@ -362,15 +362,15 @@ void WriteLogsToFileAndStopSubscribing(
       video_event_subscriber.get());
   media::cast::FrameEventMap frame_events;
   media::cast::PacketEventMap packet_events;
-  media::cast::RtpTimestamp first_rtp_timestamp;
+  media::cast::proto::LogMetadata video_log_metadata;
   video_event_subscriber->GetEventsAndReset(
-      &frame_events, &packet_events, &first_rtp_timestamp);
+      &video_log_metadata, &frame_events, &packet_events);
 
   VLOG(0) << "Video frame map size: " << frame_events.size();
   VLOG(0) << "Video packet map size: " << packet_events.size();
 
   if (!serializer.SerializeEventsForStream(
-          false, frame_events, packet_events, first_rtp_timestamp)) {
+          video_log_metadata, frame_events, packet_events)) {
     VLOG(1) << "Failed to serialize video events.";
     return;
   }
@@ -379,16 +379,17 @@ void WriteLogsToFileAndStopSubscribing(
   VLOG(0) << "Video events serialized length: " << length_so_far;
 
   // Serialize audio events.
+  media::cast::proto::LogMetadata audio_log_metadata;
   cast_environment->Logging()->RemoveRawEventSubscriber(
       audio_event_subscriber.get());
   audio_event_subscriber->GetEventsAndReset(
-      &frame_events, &packet_events, &first_rtp_timestamp);
+      &audio_log_metadata, &frame_events, &packet_events);
 
   VLOG(0) << "Audio frame map size: " << frame_events.size();
   VLOG(0) << "Audio packet map size: " << packet_events.size();
 
   if (!serializer.SerializeEventsForStream(
-          true, frame_events, packet_events, first_rtp_timestamp)) {
+          audio_log_metadata, frame_events, packet_events)) {
     VLOG(1) << "Failed to serialize audio events.";
     return;
   }

@@ -17,9 +17,8 @@ LogSerializer::LogSerializer(const int max_serialized_bytes)
 LogSerializer::~LogSerializer() {}
 
 // The format is as follows:
-//   8-bit integer describing |is_audio|.
-//   32-bit integer describing |first_rtp_timestamp|.
-//   32-bit integer describing number of frame events.
+//   16-bit integer describing the folowing LogMetadata proto size in bytes.
+//   The LogMetadata proto.
 //   (The following repeated for number of frame events):
 //     16-bit integer describing the following AggregatedFrameEvent proto size
 //         in bytes.
@@ -30,10 +29,9 @@ LogSerializer::~LogSerializer() {}
 //         size in bytes.
 //     The AggregatedPacketEvent proto.
 bool LogSerializer::SerializeEventsForStream(
-    bool is_audio,
+    const media::cast::proto::LogMetadata& metadata,
     const FrameEventMap& frame_events,
-    const PacketEventMap& packet_events,
-    const RtpTimestamp first_rtp_timestamp) {
+    const PacketEventMap& packet_events) {
   if (!serialized_log_so_far_) {
     serialized_log_so_far_.reset(new std::string(max_serialized_bytes_, 0));
   }
@@ -45,23 +43,18 @@ bool LogSerializer::SerializeEventsForStream(
   base::BigEndianWriter writer(&(*serialized_log_so_far_)[index_so_far_],
                               remaining_space);
 
-  // Write stream ID.
-  if (!writer.WriteU8(is_audio ? 1 : 0))
+  int proto_size = metadata.ByteSize();
+  if (!writer.WriteU16(proto_size))
     return false;
-
-  // Write first RTP timestamp.
-  if (!writer.WriteU32(first_rtp_timestamp))
+  if (!metadata.SerializeToArray(writer.ptr(), writer.remaining()))
     return false;
-
-  // Frame events - write size first, then write entries.
-  if (!writer.WriteU32(frame_events.size()))
+  if (!writer.Skip(proto_size))
     return false;
 
   for (media::cast::FrameEventMap::const_iterator it = frame_events.begin();
        it != frame_events.end();
        ++it) {
-    int proto_size = it->second->ByteSize();
-
+    proto_size = it->second->ByteSize();
     // Write size of the proto, then write the proto.
     if (!writer.WriteU16(proto_size))
       return false;
@@ -72,12 +65,10 @@ bool LogSerializer::SerializeEventsForStream(
   }
 
   // Write packet events.
-  if (!writer.WriteU32(packet_events.size()))
-    return false;
   for (media::cast::PacketEventMap::const_iterator it = packet_events.begin();
        it != packet_events.end();
        ++it) {
-    int proto_size = it->second->ByteSize();
+    proto_size = it->second->ByteSize();
     // Write size of the proto, then write the proto.
     if (!writer.WriteU16(proto_size))
       return false;

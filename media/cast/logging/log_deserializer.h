@@ -24,10 +24,9 @@ namespace cast {
 // |first_rtp_timestamp|: This will be populated with the first RTP timestamp
 // of the events.
 bool DeserializeEvents(const std::string& data,
-                       bool* is_audio,
+                       media::cast::proto::LogMetadata* metadata,
                        FrameEventMap* frame_events,
-                       PacketEventMap* packet_events,
-                       RtpTimestamp* first_rtp_timestamp);
+                       PacketEventMap* packet_events);
 
 }  // namespace cast
 }  // namespace media

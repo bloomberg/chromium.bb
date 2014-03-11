@@ -16,33 +16,29 @@ namespace media {
 namespace cast {
 
 bool DeserializeEvents(const std::string& data,
-                       bool* is_audio,
+                       media::cast::proto::LogMetadata* metadata,
                        FrameEventMap* frame_events,
-                       PacketEventMap* packet_events,
-                       RtpTimestamp* first_rtp_timestamp) {
-  DCHECK(is_audio);
+                       PacketEventMap* packet_events) {
+  DCHECK(metadata);
   DCHECK(frame_events);
   DCHECK(packet_events);
-  DCHECK(first_rtp_timestamp);
 
   base::BigEndianReader reader(&data[0], data.size());
 
-  uint8 is_audio_int;
-  if (!reader.ReadU8(&is_audio_int))
+  uint16 proto_size;
+  if (!reader.ReadU16(&proto_size))
     return false;
-  *is_audio = (is_audio_int != 0);
-
-  if (!reader.ReadU32(first_rtp_timestamp))
+  if (!metadata->ParseFromArray(reader.ptr(), proto_size))
+    return false;
+  if (!reader.Skip(proto_size))
     return false;
 
   FrameEventMap frame_event_map;
   PacketEventMap packet_event_map;
-  uint32 num_frame_events;
-  if (!reader.ReadU32(&num_frame_events))
-    return false;
 
-  for (uint32 i = 0; i < num_frame_events; i++) {
-    uint16 proto_size;
+  int num_frame_events = metadata->num_frame_events();
+
+  for (int i = 0; i < num_frame_events; i++) {
     if (!reader.ReadU16(&proto_size))
       return false;
 
@@ -53,22 +49,18 @@ bool DeserializeEvents(const std::string& data,
       return false;
 
     std::pair<FrameEventMap::iterator, bool> result = frame_event_map.insert(
-        std::make_pair(frame_event->rtp_timestamp(), frame_event));
+        std::make_pair(frame_event->relative_rtp_timestamp(), frame_event));
     if (!result.second) {
       VLOG(1) << "Duplicate frame event entry detected: "
-              << frame_event->rtp_timestamp();
+              << frame_event->relative_rtp_timestamp();
       return false;
     }
   }
 
   frame_events->swap(frame_event_map);
 
-  uint32 num_packet_events;
-  if (!reader.ReadU32(&num_packet_events))
-    return false;
-
-  for (uint32 i = 0; i < num_packet_events; i++) {
-    uint16 proto_size;
+  int num_packet_events = metadata->num_packet_events();
+  for (int i = 0; i < num_packet_events; i++) {
     if (!reader.ReadU16(&proto_size))
       return false;
 
@@ -79,10 +71,10 @@ bool DeserializeEvents(const std::string& data,
       return false;
 
     std::pair<PacketEventMap::iterator, bool> result = packet_event_map.insert(
-        std::make_pair(packet_event->rtp_timestamp(), packet_event));
+        std::make_pair(packet_event->relative_rtp_timestamp(), packet_event));
     if (!result.second) {
       VLOG(1) << "Duplicate packet event entry detected: "
-              << packet_event->rtp_timestamp();
+              << packet_event->relative_rtp_timestamp();
       return false;
     }
   }

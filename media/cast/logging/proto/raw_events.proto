@@ -20,7 +20,9 @@ enum EventType {
   JITTER_MS = 3;
   VIDEO_ACK_RECEIVED = 4;
   REMB_BITRATE = 5;
+  // Audio receiver.
   AUDIO_ACK_SENT = 6;
+  // Video receiver.
   VIDEO_ACK_SENT = 7;
   // Audio sender.
   AUDIO_FRAME_RECEIVED = 8;
@@ -48,8 +50,26 @@ enum EventType {
   DUPLICATE_VIDEO_PACKET_RECEIVED = 25;
 }
 
+// Each log will contain one |LogMetadata|.
+message LogMetadata {
+  // |true| if the events are related to audio. |false| if they are related to
+  // video.
+  optional bool is_audio = 1;
+
+  // Used as a reference for all event entries.
+  // i.e. the original RTP timestamp for each event will be
+  // |first_rtp_timestamp| + |relative_rtp_timestamp|.
+  optional uint32 first_rtp_timestamp = 2;
+
+  // Number of AggregatedFrameEvent's.
+  optional int32 num_frame_events = 3;
+
+  // Number of AggregatedPacketEvent's.
+  optional int32 num_packet_events = 4;
+}
+
 message AggregatedFrameEvent {
-  optional uint32 rtp_timestamp = 1;
+  optional uint32 relative_rtp_timestamp = 1;
 
   repeated EventType event_type = 2 [packed = true];
   repeated int64 event_timestamp_micros = 3 [packed = true];
@@ -68,7 +88,7 @@ message BasePacketEvent {
 }
 
 message AggregatedPacketEvent {
-  optional uint32 rtp_timestamp = 1;
+  optional uint32 relative_rtp_timestamp = 1;
   repeated BasePacketEvent base_packet_event = 2;
 };
 

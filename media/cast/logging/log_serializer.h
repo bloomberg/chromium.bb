@@ -35,9 +35,8 @@ class LogSerializer {
   explicit LogSerializer(const int max_serialized_bytes);
   ~LogSerializer();
 
-  // Serialize |frame_events|, |packet_events|, |first_rtp_timestamp|
-  // returned from EncodingEventSubscriber. |is_audio| indicates whether the
-  // events are from an audio or video stream.
+  // Serialize |frame_events|, |packet_events|, and |metadata|
+  // returned from EncodingEventSubscriber.
   //
   // Returns |true| if serialization is successful. This function
   // returns |false| if the serialized string will exceed |kMaxSerializedsize|.
@@ -46,10 +45,9 @@ class LogSerializer {
   // calling |GetSerializedString()|.
   //
   // See .cc file for format specification.
-  bool SerializeEventsForStream(bool is_audio,
+  bool SerializeEventsForStream(const media::cast::proto::LogMetadata& metadata,
                                 const FrameEventMap& frame_events,
-                                const PacketEventMap& packet_events,
-                                const RtpTimestamp first_rtp_timestamp);
+                                const PacketEventMap& packet_events);
 
   // Gets a string of serialized events up to the last successful call to
   // |SerializeEventsForStream()| and resets it.

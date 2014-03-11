@@ -15,6 +15,7 @@
 using media::cast::proto::AggregatedFrameEvent;
 using media::cast::proto::AggregatedPacketEvent;
 using media::cast::proto::BasePacketEvent;
+using media::cast::proto::LogMetadata;
 
 namespace media {
 namespace cast {
@@ -33,7 +34,7 @@ class EncodingEventSubscriberTest : public ::testing::Test {
             task_runner_,
             task_runner_,
             GetLoggingConfigWithRawEventsAndStatsEnabled())),
-        first_rtp_timestamp(0) {}
+        first_rtp_timestamp_(0) {}
 
   void Init(EventMediaType event_media_type) {
     DCHECK(!event_subscriber_);
@@ -51,16 +52,18 @@ class EncodingEventSubscriberTest : public ::testing::Test {
 
   void GetEventsAndReset() {
     event_subscriber_->GetEventsAndReset(
-        &frame_events, &packet_events, &first_rtp_timestamp);
+        &metadata_, &frame_events_, &packet_events_);
+    first_rtp_timestamp_ = metadata_.first_rtp_timestamp();
   }
 
   base::SimpleTestTickClock* testing_clock_;  // Owned by CastEnvironment.
   scoped_refptr<test::FakeSingleThreadTaskRunner> task_runner_;
   scoped_refptr<CastEnvironment> cast_environment_;
   scoped_ptr<EncodingEventSubscriber> event_subscriber_;
-  FrameEventMap frame_events;
-  PacketEventMap packet_events;
-  RtpTimestamp first_rtp_timestamp;
+  FrameEventMap frame_events_;
+  PacketEventMap packet_events_;
+  LogMetadata metadata_;
+  RtpTimestamp first_rtp_timestamp_;
 };
 
 TEST_F(EncodingEventSubscriberTest, FrameEventTruncating) {
@@ -82,9 +85,9 @@ TEST_F(EncodingEventSubscriberTest, FrameEventTruncating) {
 
   GetEventsAndReset();
 
-  ASSERT_EQ(10u, frame_events.size());
-  EXPECT_EQ(100u, frame_events.begin()->first);
-  EXPECT_EQ(1000u, frame_events.rbegin()->first);
+  ASSERT_EQ(10u, frame_events_.size());
+  EXPECT_EQ(100u, frame_events_.begin()->first);
+  EXPECT_EQ(1000u, frame_events_.rbegin()->first);
 }
 
 TEST_F(EncodingEventSubscriberTest, PacketEventTruncating) {
@@ -105,9 +108,9 @@ TEST_F(EncodingEventSubscriberTest, PacketEventTruncating) {
 
   GetEventsAndReset();
 
-  ASSERT_EQ(10u, packet_events.size());
-  EXPECT_EQ(100u, packet_events.begin()->first);
-  EXPECT_EQ(1000u, packet_events.rbegin()->first);
+  ASSERT_EQ(10u, packet_events_.size());
+  EXPECT_EQ(100u, packet_events_.begin()->first);
+  EXPECT_EQ(1000u, packet_events_.rbegin()->first);
 }
 
 TEST_F(EncodingEventSubscriberTest, EventFiltering) {
@@ -128,8 +131,8 @@ TEST_F(EncodingEventSubscriberTest, EventFiltering) {
 
   GetEventsAndReset();
 
-  FrameEventMap::iterator frame_it = frame_events.find(0);
-  ASSERT_TRUE(frame_it != frame_events.end());
+  FrameEventMap::iterator frame_it = frame_events_.find(0);
+  ASSERT_TRUE(frame_it != frame_events_.end());
 
   linked_ptr<AggregatedFrameEvent> frame_event = frame_it->second;
 
@@ -139,7 +142,7 @@ TEST_F(EncodingEventSubscriberTest, EventFiltering) {
 
   GetEventsAndReset();
 
-  EXPECT_TRUE(packet_events.empty());
+  EXPECT_TRUE(packet_events_.empty());
 }
 
 TEST_F(EncodingEventSubscriberTest, FrameEvent) {
@@ -152,15 +155,15 @@ TEST_F(EncodingEventSubscriberTest, FrameEvent) {
 
   GetEventsAndReset();
 
-  ASSERT_EQ(1u, frame_events.size());
+  ASSERT_EQ(1u, frame_events_.size());
 
-  RtpTimestamp relative_rtp_timestamp = rtp_timestamp - first_rtp_timestamp;
-  FrameEventMap::iterator it = frame_events.find(relative_rtp_timestamp);
-  ASSERT_TRUE(it != frame_events.end());
+  RtpTimestamp relative_rtp_timestamp = rtp_timestamp - first_rtp_timestamp_;
+  FrameEventMap::iterator it = frame_events_.find(relative_rtp_timestamp);
+  ASSERT_TRUE(it != frame_events_.end());
 
   linked_ptr<AggregatedFrameEvent> event = it->second;
 
-  EXPECT_EQ(relative_rtp_timestamp, event->rtp_timestamp());
+  EXPECT_EQ(relative_rtp_timestamp, event->relative_rtp_timestamp());
 
   ASSERT_EQ(1, event->event_type_size());
   EXPECT_EQ(media::cast::proto::VIDEO_FRAME_DECODED, event->event_type(0));
@@ -171,7 +174,7 @@ TEST_F(EncodingEventSubscriberTest, FrameEvent) {
   EXPECT_EQ(0, event->delay_millis());
 
   GetEventsAndReset();
-  EXPECT_TRUE(frame_events.empty());
+  EXPECT_TRUE(frame_events_.empty());
 }
 
 TEST_F(EncodingEventSubscriberTest, FrameEventDelay) {
@@ -185,15 +188,15 @@ TEST_F(EncodingEventSubscriberTest, FrameEventDelay) {
 
   GetEventsAndReset();
 
-  ASSERT_EQ(1u, frame_events.size());
+  ASSERT_EQ(1u, frame_events_.size());
 
-  RtpTimestamp relative_rtp_timestamp = rtp_timestamp - first_rtp_timestamp;
-  FrameEventMap::iterator it = frame_events.find(relative_rtp_timestamp);
-  ASSERT_TRUE(it != frame_events.end());
+  RtpTimestamp relative_rtp_timestamp = rtp_timestamp - first_rtp_timestamp_;
+  FrameEventMap::iterator it = frame_events_.find(relative_rtp_timestamp);
+  ASSERT_TRUE(it != frame_events_.end());
 
   linked_ptr<AggregatedFrameEvent> event = it->second;
 
-  EXPECT_EQ(relative_rtp_timestamp, event->rtp_timestamp());
+  EXPECT_EQ(relative_rtp_timestamp, event->relative_rtp_timestamp());
 
   ASSERT_EQ(1, event->event_type_size());
   EXPECT_EQ(media::cast::proto::AUDIO_PLAYOUT_DELAY, event->event_type(0));
@@ -215,15 +218,15 @@ TEST_F(EncodingEventSubscriberTest, FrameEventSize) {
 
   GetEventsAndReset();
 
-  ASSERT_EQ(1u, frame_events.size());
+  ASSERT_EQ(1u, frame_events_.size());
 
-  RtpTimestamp relative_rtp_timestamp = rtp_timestamp - first_rtp_timestamp;
-  FrameEventMap::iterator it = frame_events.find(relative_rtp_timestamp);
-  ASSERT_TRUE(it != frame_events.end());
+  RtpTimestamp relative_rtp_timestamp = rtp_timestamp - first_rtp_timestamp_;
+  FrameEventMap::iterator it = frame_events_.find(relative_rtp_timestamp);
+  ASSERT_TRUE(it != frame_events_.end());
 
   linked_ptr<AggregatedFrameEvent> event = it->second;
 
-  EXPECT_EQ(relative_rtp_timestamp, event->rtp_timestamp());
+  EXPECT_EQ(relative_rtp_timestamp, event->relative_rtp_timestamp());
 
   ASSERT_EQ(1, event->event_type_size());
   EXPECT_EQ(media::cast::proto::VIDEO_FRAME_ENCODED, event->event_type(0));
@@ -256,15 +259,15 @@ TEST_F(EncodingEventSubscriberTest, MultipleFrameEvents) {
 
   GetEventsAndReset();
 
-  ASSERT_EQ(2u, frame_events.size());
+  ASSERT_EQ(2u, frame_events_.size());
 
-  RtpTimestamp relative_rtp_timestamp = rtp_timestamp1 - first_rtp_timestamp;
-  FrameEventMap::iterator it = frame_events.find(relative_rtp_timestamp);
-  ASSERT_TRUE(it != frame_events.end());
+  RtpTimestamp relative_rtp_timestamp = rtp_timestamp1 - first_rtp_timestamp_;
+  FrameEventMap::iterator it = frame_events_.find(relative_rtp_timestamp);
+  ASSERT_TRUE(it != frame_events_.end());
 
   linked_ptr<AggregatedFrameEvent> event = it->second;
 
-  EXPECT_EQ(relative_rtp_timestamp, event->rtp_timestamp());
+  EXPECT_EQ(relative_rtp_timestamp, event->relative_rtp_timestamp());
 
   ASSERT_EQ(2, event->event_type_size());
   EXPECT_EQ(media::cast::proto::AUDIO_PLAYOUT_DELAY, event->event_type(0));
@@ -274,13 +277,13 @@ TEST_F(EncodingEventSubscriberTest, MultipleFrameEvents) {
   EXPECT_EQ(now1.ToInternalValue(), event->event_timestamp_micros(0));
   EXPECT_EQ(now3.ToInternalValue(), event->event_timestamp_micros(1));
 
-  relative_rtp_timestamp = rtp_timestamp2 - first_rtp_timestamp;
-  it = frame_events.find(relative_rtp_timestamp);
-  ASSERT_TRUE(it != frame_events.end());
+  relative_rtp_timestamp = rtp_timestamp2 - first_rtp_timestamp_;
+  it = frame_events_.find(relative_rtp_timestamp);
+  ASSERT_TRUE(it != frame_events_.end());
 
   event = it->second;
 
-  EXPECT_EQ(relative_rtp_timestamp, event->rtp_timestamp());
+  EXPECT_EQ(relative_rtp_timestamp, event->relative_rtp_timestamp());
 
   ASSERT_EQ(1, event->event_type_size());
   EXPECT_EQ(media::cast::proto::AUDIO_FRAME_ENCODED, event->event_type(0));
@@ -301,15 +304,15 @@ TEST_F(EncodingEventSubscriberTest, PacketEvent) {
 
   GetEventsAndReset();
 
-  ASSERT_EQ(1u, packet_events.size());
+  ASSERT_EQ(1u, packet_events_.size());
 
-  RtpTimestamp relative_rtp_timestamp = rtp_timestamp - first_rtp_timestamp;
-  PacketEventMap::iterator it = packet_events.find(relative_rtp_timestamp);
-  ASSERT_TRUE(it != packet_events.end());
+  RtpTimestamp relative_rtp_timestamp = rtp_timestamp - first_rtp_timestamp_;
+  PacketEventMap::iterator it = packet_events_.find(relative_rtp_timestamp);
+  ASSERT_TRUE(it != packet_events_.end());
 
   linked_ptr<AggregatedPacketEvent> event = it->second;
 
-  EXPECT_EQ(relative_rtp_timestamp, event->rtp_timestamp());
+  EXPECT_EQ(relative_rtp_timestamp, event->relative_rtp_timestamp());
 
   ASSERT_EQ(1, event->base_packet_event_size());
   const BasePacketEvent& base_event = event->base_packet_event(0);
@@ -321,7 +324,7 @@ TEST_F(EncodingEventSubscriberTest, PacketEvent) {
   EXPECT_EQ(now.ToInternalValue(), base_event.event_timestamp_micros(0));
 
   GetEventsAndReset();
-  EXPECT_TRUE(packet_events.empty());
+  EXPECT_TRUE(packet_events_.empty());
 }
 
 TEST_F(EncodingEventSubscriberTest, MultiplePacketEventsForPacket) {
@@ -342,15 +345,15 @@ TEST_F(EncodingEventSubscriberTest, MultiplePacketEventsForPacket) {
 
   GetEventsAndReset();
 
-  ASSERT_EQ(1u, packet_events.size());
+  ASSERT_EQ(1u, packet_events_.size());
 
-  RtpTimestamp relative_rtp_timestamp = rtp_timestamp - first_rtp_timestamp;
-  PacketEventMap::iterator it = packet_events.find(relative_rtp_timestamp);
-  ASSERT_TRUE(it != packet_events.end());
+  RtpTimestamp relative_rtp_timestamp = rtp_timestamp - first_rtp_timestamp_;
+  PacketEventMap::iterator it = packet_events_.find(relative_rtp_timestamp);
+  ASSERT_TRUE(it != packet_events_.end());
 
   linked_ptr<AggregatedPacketEvent> event = it->second;
 
-  EXPECT_EQ(relative_rtp_timestamp, event->rtp_timestamp());
+  EXPECT_EQ(relative_rtp_timestamp, event->relative_rtp_timestamp());
 
   ASSERT_EQ(1, event->base_packet_event_size());
   const BasePacketEvent& base_event = event->base_packet_event(0);
@@ -383,15 +386,15 @@ TEST_F(EncodingEventSubscriberTest, MultiplePacketEventsForFrame) {
 
   GetEventsAndReset();
 
-  ASSERT_EQ(1u, packet_events.size());
+  ASSERT_EQ(1u, packet_events_.size());
 
-  RtpTimestamp relative_rtp_timestamp = rtp_timestamp - first_rtp_timestamp;
-  PacketEventMap::iterator it = packet_events.find(relative_rtp_timestamp);
-  ASSERT_TRUE(it != packet_events.end());
+  RtpTimestamp relative_rtp_timestamp = rtp_timestamp - first_rtp_timestamp_;
+  PacketEventMap::iterator it = packet_events_.find(relative_rtp_timestamp);
+  ASSERT_TRUE(it != packet_events_.end());
 
   linked_ptr<AggregatedPacketEvent> event = it->second;
 
-  EXPECT_EQ(relative_rtp_timestamp, event->rtp_timestamp());
+  EXPECT_EQ(relative_rtp_timestamp, event->relative_rtp_timestamp());
 
   ASSERT_EQ(2, event->base_packet_event_size());
   const BasePacketEvent& base_event = event->base_packet_event(0);
@@ -430,15 +433,15 @@ TEST_F(EncodingEventSubscriberTest, MultiplePacketEvents) {
 
   GetEventsAndReset();
 
-  ASSERT_EQ(2u, packet_events.size());
+  ASSERT_EQ(2u, packet_events_.size());
 
-  RtpTimestamp relative_rtp_timestamp = rtp_timestamp_1 - first_rtp_timestamp;
-  PacketEventMap::iterator it = packet_events.find(relative_rtp_timestamp);
-  ASSERT_TRUE(it != packet_events.end());
+  RtpTimestamp relative_rtp_timestamp = rtp_timestamp_1 - first_rtp_timestamp_;
+  PacketEventMap::iterator it = packet_events_.find(relative_rtp_timestamp);
+  ASSERT_TRUE(it != packet_events_.end());
 
   linked_ptr<AggregatedPacketEvent> event = it->second;
 
-  EXPECT_EQ(relative_rtp_timestamp, event->rtp_timestamp());
+  EXPECT_EQ(relative_rtp_timestamp, event->relative_rtp_timestamp());
 
   ASSERT_EQ(1, event->base_packet_event_size());
   const BasePacketEvent& base_event = event->base_packet_event(0);
@@ -448,13 +451,13 @@ TEST_F(EncodingEventSubscriberTest, MultiplePacketEvents) {
   ASSERT_EQ(1, base_event.event_timestamp_micros_size());
   EXPECT_EQ(now1.ToInternalValue(), base_event.event_timestamp_micros(0));
 
-  relative_rtp_timestamp = rtp_timestamp_2 - first_rtp_timestamp;
-  it = packet_events.find(relative_rtp_timestamp);
-  ASSERT_TRUE(it != packet_events.end());
+  relative_rtp_timestamp = rtp_timestamp_2 - first_rtp_timestamp_;
+  it = packet_events_.find(relative_rtp_timestamp);
+  ASSERT_TRUE(it != packet_events_.end());
 
   event = it->second;
 
-  EXPECT_EQ(relative_rtp_timestamp, event->rtp_timestamp());
+  EXPECT_EQ(relative_rtp_timestamp, event->relative_rtp_timestamp());
 
   ASSERT_EQ(1, event->base_packet_event_size());
   const BasePacketEvent& base_event_2 = event->base_packet_event(0);
@@ -483,12 +486,12 @@ TEST_F(EncodingEventSubscriberTest, FirstRtpTimestamp) {
 
   GetEventsAndReset();
 
-  EXPECT_EQ(rtp_timestamp, first_rtp_timestamp);
-  FrameEventMap::iterator it = frame_events.find(0);
-  ASSERT_NE(frame_events.end(), it);
+  EXPECT_EQ(rtp_timestamp, first_rtp_timestamp_);
+  FrameEventMap::iterator it = frame_events_.find(0);
+  ASSERT_NE(frame_events_.end(), it);
 
-  it = frame_events.find(30);
-  ASSERT_NE(frame_events.end(), it);
+  it = frame_events_.find(30);
+  ASSERT_NE(frame_events_.end(), it);
 
   rtp_timestamp = 67890;
 
@@ -498,7 +501,7 @@ TEST_F(EncodingEventSubscriberTest, FirstRtpTimestamp) {
                                                  /*frame_id*/ 0);
   GetEventsAndReset();
 
-  EXPECT_EQ(rtp_timestamp, first_rtp_timestamp);
+  EXPECT_EQ(rtp_timestamp, first_rtp_timestamp_);
 }
 
 TEST_F(EncodingEventSubscriberTest, RelativeRtpTimestampWrapAround) {
@@ -519,11 +522,11 @@ TEST_F(EncodingEventSubscriberTest, RelativeRtpTimestampWrapAround) {
 
   GetEventsAndReset();
 
-  FrameEventMap::iterator it = frame_events.find(0);
-  ASSERT_NE(frame_events.end(), it);
+  FrameEventMap::iterator it = frame_events_.find(0);
+  ASSERT_NE(frame_events_.end(), it);
 
-  it = frame_events.find(30);
-  ASSERT_NE(frame_events.end(), it);
+  it = frame_events_.find(30);
+  ASSERT_NE(frame_events_.end(), it);
 }
 
 }  // namespace cast

@@ -15,6 +15,7 @@ using media::cast::proto::AggregatedFrameEvent;
 using media::cast::proto::AggregatedGenericEvent;
 using media::cast::proto::AggregatedPacketEvent;
 using media::cast::proto::BasePacketEvent;
+using media::cast::proto::LogMetadata;
 
 namespace media {
 namespace cast {
@@ -44,7 +45,7 @@ void EncodingEventSubscriber::OnReceiveFrameEvent(
     // Look up existing entry. If not found, create a new entry and add to map.
     if (it == frame_event_map_.end()) {
       event_proto.reset(new AggregatedFrameEvent);
-      event_proto->set_rtp_timestamp(relative_rtp_timestamp);
+      event_proto->set_relative_rtp_timestamp(relative_rtp_timestamp);
       frame_event_map_.insert(
           std::make_pair(relative_rtp_timestamp, event_proto));
     } else {
@@ -84,7 +85,7 @@ void EncodingEventSubscriber::OnReceivePacketEvent(
     // Look up existing entry. If not found, create a new entry and add to map.
     if (it == packet_event_map_.end()) {
       event_proto.reset(new AggregatedPacketEvent);
-      event_proto->set_rtp_timestamp(relative_rtp_timestamp);
+      event_proto->set_relative_rtp_timestamp(relative_rtp_timestamp);
       packet_event_map_.insert(
           std::make_pair(relative_rtp_timestamp, event_proto));
       base_packet_event_proto = event_proto->add_base_packet_event();
@@ -127,15 +128,17 @@ void EncodingEventSubscriber::OnReceiveGenericEvent(
   // Do nothing, there are no generic events we are interested in.
 }
 
-void EncodingEventSubscriber::GetEventsAndReset(
-    FrameEventMap* frame_events,
-    PacketEventMap* packet_events,
-    RtpTimestamp* first_rtp_timestamp) {
+void EncodingEventSubscriber::GetEventsAndReset(LogMetadata* metadata,
+                                                FrameEventMap* frame_events,
+                                                PacketEventMap* packet_events) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
+  metadata->set_is_audio(event_media_type_ == AUDIO_EVENT);
+  metadata->set_first_rtp_timestamp(first_rtp_timestamp_);
+  metadata->set_num_frame_events(frame_event_map_.size());
+  metadata->set_num_packet_events(packet_event_map_.size());
   frame_events->swap(frame_event_map_);
   packet_events->swap(packet_event_map_);
-  *first_rtp_timestamp = first_rtp_timestamp_;
   Reset();
 }
 
