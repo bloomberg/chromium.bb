@@ -98,7 +98,8 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest, ActionableErrorTest) {
       protocol_error.error_description);
 }
 
-IN_PROC_BROWSER_TEST_F(SyncErrorTest, ErrorWhileSettingUp) {
+// Disabled, http://crbug.com/351160 .
+IN_PROC_BROWSER_TEST_F(SyncErrorTest, DISABLED_ErrorWhileSettingUp) {
   ASSERT_TRUE(SetupClients());
 
   syncer::SyncProtocolError protocol_error;

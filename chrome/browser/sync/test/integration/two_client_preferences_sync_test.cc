@@ -505,7 +505,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest, kUsesSystemTheme) {
 
 // TCM ID - 6473347.
 #if defined(OS_CHROMEOS)
-IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest, kTapToClickEnabled) {
+// Disabled, http://crbug.com/351159 .
+IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest, DISABLED_kTapToClickEnabled) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(BooleanPrefMatches(prefs::kTapToClickEnabled));
 
