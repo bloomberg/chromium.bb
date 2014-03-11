@@ -5,7 +5,7 @@
 #include "chrome/browser/signin/mutable_profile_oauth2_token_service.h"
 
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/webdata/web_data_service_factory.h"
+#include "components/signin/core/signin_client.h"
 #include "components/signin/core/webdata/token_web_data.h"
 #include "components/webdata/common/web_data_service_base.h"
 #include "content/public/browser/browser_thread.h"
@@ -162,9 +162,7 @@ void MutableProfileOAuth2TokenService::LoadCredentials(
   CancelAllRequests();
   refresh_tokens().clear();
   loading_primary_account_id_ = primary_account_id;
-  scoped_refptr<TokenWebData> token_web_data =
-      WebDataServiceFactory::GetTokenWebDataForProfile(
-          profile(), Profile::EXPLICIT_ACCESS);
+  scoped_refptr<TokenWebData> token_web_data = client()->GetDatabase();
   if (token_web_data.get())
     web_data_service_request_ = token_web_data->GetAllTokens(this);
 }
@@ -222,9 +220,7 @@ void MutableProfileOAuth2TokenService::LoadAllCredentialsIntoMemory(
       old_login_token = refresh_token;
 
     if (IsLegacyServiceId(prefixed_account_id)) {
-      scoped_refptr<TokenWebData> token_web_data =
-          WebDataServiceFactory::GetTokenWebDataForProfile(
-              profile(), Profile::EXPLICIT_ACCESS);
+      scoped_refptr<TokenWebData> token_web_data = client()->GetDatabase();
       if (token_web_data.get())
         token_web_data->RemoveTokenForService(prefixed_account_id);
     } else {
@@ -336,9 +332,7 @@ void MutableProfileOAuth2TokenService::RevokeCredentials(
 void MutableProfileOAuth2TokenService::PersistCredentials(
     const std::string& account_id,
     const std::string& refresh_token) {
-  scoped_refptr<TokenWebData> token_web_data =
-      WebDataServiceFactory::GetTokenWebDataForProfile(
-          profile(), Profile::EXPLICIT_ACCESS);
+  scoped_refptr<TokenWebData> token_web_data = client()->GetDatabase();
   if (token_web_data.get()) {
     token_web_data->SetTokenForService(ApplyAccountIdPrefix(account_id),
                                        refresh_token);
@@ -347,9 +341,7 @@ void MutableProfileOAuth2TokenService::PersistCredentials(
 
 void MutableProfileOAuth2TokenService::ClearPersistedCredentials(
     const std::string& account_id) {
-  scoped_refptr<TokenWebData> token_web_data =
-      WebDataServiceFactory::GetTokenWebDataForProfile(
-          profile(), Profile::EXPLICIT_ACCESS);
+  scoped_refptr<TokenWebData> token_web_data = client()->GetDatabase();
   if (token_web_data.get())
     token_web_data->RemoveTokenForService(ApplyAccountIdPrefix(account_id));
 }
@@ -395,9 +387,7 @@ void MutableProfileOAuth2TokenService::RevokeCredentialsOnServer(
 
 void MutableProfileOAuth2TokenService::CancelWebTokenFetch() {
   if (web_data_service_request_ != 0) {
-    scoped_refptr<TokenWebData> token_web_data =
-        WebDataServiceFactory::GetTokenWebDataForProfile(
-            profile(), Profile::EXPLICIT_ACCESS);
+    scoped_refptr<TokenWebData> token_web_data = client()->GetDatabase();
     DCHECK(token_web_data.get());
     token_web_data->CancelRequest(web_data_service_request_);
     web_data_service_request_  = 0;

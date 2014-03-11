@@ -5,6 +5,7 @@
 #include "chrome/browser/signin/chrome_signin_client.h"
 
 #include "chrome/browser/content_settings/cookie_settings.h"
+#include "chrome/browser/webdata/web_data_service_factory.h"
 #include "url/gurl.h"
 
 namespace {
@@ -32,6 +33,7 @@ bool ChromeSigninClient::SettingsAllowSigninCookies(
                                                  GURL(kGoogleAccountsUrl));
 }
 
-bool ChromeSigninClient::AreSigninCookiesAllowed() {
-  return ProfileAllowsSigninCookies(profile_);
+scoped_refptr<TokenWebData> ChromeSigninClient::GetDatabase() {
+  return WebDataServiceFactory::GetTokenWebDataForProfile(
+      profile_, Profile::EXPLICIT_ACCESS);
 }

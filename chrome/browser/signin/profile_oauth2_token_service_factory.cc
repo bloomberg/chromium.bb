@@ -5,6 +5,7 @@
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
@@ -36,7 +37,9 @@ ProfileOAuth2TokenServiceWrapperImpl::ProfileOAuth2TokenServiceWrapperImpl(
     Profile* profile) {
   profile_oauth2_token_service_.reset(new ProfileOAuth2TokenServiceFactory::
                                           PlatformSpecificOAuth2TokenService());
-  profile_oauth2_token_service_->Initialize(profile);
+  ChromeSigninClient* client =
+      ChromeSigninClientFactory::GetInstance()->GetForProfile(profile);
+  profile_oauth2_token_service_->Initialize(client, profile);
 }
 
 ProfileOAuth2TokenServiceWrapperImpl::~ProfileOAuth2TokenServiceWrapperImpl() {}
@@ -56,6 +59,7 @@ ProfileOAuth2TokenServiceFactory::ProfileOAuth2TokenServiceFactory()
         BrowserContextDependencyManager::GetInstance()) {
   DependsOn(GlobalErrorServiceFactory::GetInstance());
   DependsOn(WebDataServiceFactory::GetInstance());
+  DependsOn(ChromeSigninClientFactory::GetInstance());
 }
 
 ProfileOAuth2TokenServiceFactory::~ProfileOAuth2TokenServiceFactory() {

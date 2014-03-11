@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_wrapper.h"
 
 // static
@@ -25,7 +26,9 @@ FakeProfileOAuth2TokenServiceWrapper::FakeProfileOAuth2TokenServiceWrapper(
     bool auto_issue_tokens) {
   if (auto_issue_tokens)
     service_.set_auto_post_fetch_response_on_message_loop(true);
-  service_.Initialize(reinterpret_cast<Profile*>(profile));
+  service_.Initialize(
+      ChromeSigninClientFactory::GetInstance()->GetForProfile(profile),
+      reinterpret_cast<Profile*>(profile));
 }
 
 FakeProfileOAuth2TokenServiceWrapper::~FakeProfileOAuth2TokenServiceWrapper() {

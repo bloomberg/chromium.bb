@@ -24,7 +24,7 @@ class ChromeSigninClient : public SigninClient,
   static bool SettingsAllowSigninCookies(CookieSettings* cookie_settings);
 
   // SigninClient implementation.
-  virtual bool AreSigninCookiesAllowed() OVERRIDE;
+  virtual scoped_refptr<TokenWebData> GetDatabase() OVERRIDE;
 
  private:
   Profile* profile_;

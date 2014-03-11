@@ -19,6 +19,7 @@ class URLRequestContextGetter;
 
 class GoogleServiceAuthError;
 class Profile;
+class SigninClient;
 class SigninGlobalError;
 
 // ProfileOAuth2TokenService is a class that retrieves
@@ -39,8 +40,10 @@ class ProfileOAuth2TokenService : public OAuth2TokenService {
  public:
   virtual ~ProfileOAuth2TokenService();
 
-  // Initializes this token service with the profile.
-  virtual void Initialize(Profile* profile);
+  // Initializes this token service with the SigninClient and profile.
+  // TODO(blundell): Eliminate this class knowing about Profile.
+  // crbug.com/334217
+  virtual void Initialize(SigninClient* client, Profile* profile);
 
   virtual void Shutdown();
 
@@ -80,6 +83,8 @@ class ProfileOAuth2TokenService : public OAuth2TokenService {
 
   Profile* profile() const { return profile_; }
 
+  SigninClient* client() const { return client_; }
+
  protected:
   ProfileOAuth2TokenService();
 
@@ -102,6 +107,9 @@ class ProfileOAuth2TokenService : public OAuth2TokenService {
       const GoogleServiceAuthError& error) OVERRIDE;
 
  private:
+  // The client with which this instance was initialized, or NULL.
+  SigninClient* client_;
+
   // The profile with which this instance was initialized, or NULL.
   Profile* profile_;
 

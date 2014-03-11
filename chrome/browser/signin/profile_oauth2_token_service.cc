@@ -20,8 +20,7 @@
 #include "net/url_request/url_request_context_getter.h"
 
 ProfileOAuth2TokenService::ProfileOAuth2TokenService()
-    : profile_(NULL) {
-}
+    : client_(NULL), profile_(NULL) {}
 
 ProfileOAuth2TokenService::~ProfileOAuth2TokenService() {
   DCHECK(!signin_global_error_.get()) <<
@@ -29,7 +28,11 @@ ProfileOAuth2TokenService::~ProfileOAuth2TokenService() {
       "ProfileOAuth2TokenService::Shutdown";
 }
 
-void ProfileOAuth2TokenService::Initialize(Profile* profile) {
+void ProfileOAuth2TokenService::Initialize(SigninClient* client,
+                                           Profile* profile) {
+  DCHECK(client);
+  DCHECK(!client_);
+  client_ = client;
   DCHECK(profile);
   DCHECK(!profile_);
   profile_ = profile;
