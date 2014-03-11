@@ -66,6 +66,10 @@ vars = {
   # the commit queue can handle CLs rolling openssl
   # and whatever else without interference from each other.
   "openssl_revision": "253925",
+  # Three lines of non-changing comments so that
+  # the commit queue can handle CLs rolling ANGLE
+  # and whatever else without interference from each other.
+  "angle_revision": "fa63e947cb3eccf463648d21a05d5002c9b8adfa",
 }
 
 deps = {
@@ -82,8 +86,7 @@ deps = {
     (Var("googlecode_url") % "googlemock") + "/trunk@410",
 
   "src/third_party/angle":
-    Var("chromium_git") +
-    "/angle/angle.git@fa63e947cb3eccf463648d21a05d5002c9b8adfa",
+    Var("chromium_git") + "/angle/angle.git@" + Var("angle_revision"),
 
   "src/third_party/trace-viewer":
     (Var("googlecode_url") % "trace-viewer") + "/trunk@1203",
