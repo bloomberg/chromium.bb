@@ -219,6 +219,18 @@ TEST_F(EmbedderTest, ChannelsHandlePassing) {
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(h0));
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(h1));
 
+  EXPECT_TRUE(server_channel_info != NULL);
+  system::test::PostTaskAndWait(io_thread()->task_runner(),
+                                FROM_HERE,
+                                base::Bind(&DestroyChannelOnIOThread,
+                                           server_channel_info));
+
+  EXPECT_TRUE(client_channel_info != NULL);
+  system::test::PostTaskAndWait(io_thread()->task_runner(),
+                                FROM_HERE,
+                                base::Bind(&DestroyChannelOnIOThread,
+                                           client_channel_info));
+
   EXPECT_TRUE(test::Shutdown());
 }
 
