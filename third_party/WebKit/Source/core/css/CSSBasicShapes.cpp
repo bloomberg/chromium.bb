@@ -141,10 +141,10 @@ static String serializePositionOffset(const Pair& offset, const Pair& other)
     return offset.cssText();
 }
 
-static PassRefPtr<CSSPrimitiveValue> buildSerializablePositionOffset(PassRefPtr<CSSPrimitiveValue> offset, CSSValueID defaultSide)
+static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> buildSerializablePositionOffset(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> offset, CSSValueID defaultSide)
 {
     CSSValueID side = defaultSide;
-    RefPtr<CSSPrimitiveValue> amount;
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> amount;
 
     if (!offset) {
         side = CSSValueCenter;
@@ -177,8 +177,8 @@ static PassRefPtr<CSSPrimitiveValue> buildSerializablePositionOffset(PassRefPtr<
 
 String CSSBasicShapeCircle::cssText() const
 {
-    RefPtr<CSSPrimitiveValue> normalizedCX = buildSerializablePositionOffset(m_centerX, CSSValueLeft);
-    RefPtr<CSSPrimitiveValue> normalizedCY = buildSerializablePositionOffset(m_centerY, CSSValueTop);
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> normalizedCX = buildSerializablePositionOffset(m_centerX, CSSValueLeft);
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> normalizedCY = buildSerializablePositionOffset(m_centerY, CSSValueTop);
 
     return buildCircleString(m_radius ? m_radius->cssText() : String(),
         serializePositionOffset(*normalizedCX->getPairValue(), *normalizedCY->getPairValue()),
@@ -272,8 +272,8 @@ static String buildEllipseString(const String& radiusX, const String& radiusY, c
 
 String CSSBasicShapeEllipse::cssText() const
 {
-    RefPtr<CSSPrimitiveValue> normalizedCX = buildSerializablePositionOffset(m_centerX, CSSValueLeft);
-    RefPtr<CSSPrimitiveValue> normalizedCY = buildSerializablePositionOffset(m_centerY, CSSValueTop);
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> normalizedCX = buildSerializablePositionOffset(m_centerX, CSSValueLeft);
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> normalizedCY = buildSerializablePositionOffset(m_centerY, CSSValueTop);
 
     return buildEllipseString(m_radiusX ? m_radiusX->cssText() : String(),
         m_radiusY ? m_radiusY->cssText() : String(),
