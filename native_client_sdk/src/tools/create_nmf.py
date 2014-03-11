@@ -90,8 +90,27 @@ def PosixRelPath(path, start):
   e.g.
   For Windows: "foo\\bar\\baz.blah", "foo" => "bar/baz.blah"
   For Mac/Linux: "foo/bar/baz.blah", "foo" => "bar/baz.blah"
+
+  NOTE: This function uses os.path.realpath to create a canonical path for
+  |path| and |start|.
   """
-  return MakePosixPath(os.path.relpath(path, start))
+  real_path = os.path.realpath(path)
+  real_start = os.path.realpath(start)
+  return MakePosixPath(os.path.relpath(real_path, real_start))
+
+
+def DirectoryTreeContainsFile(dirname, filename):
+  """Returns True if a file is in a directory, or any of that directory's
+  subdirectories recursively.
+
+  e.g.
+  DirectoryTreeContainsFile("foo", "foo/quux.txt") => True
+  DirectoryTreeContainsFile("foo", "foo/bar/baz/blah.txt") => True
+  DirectoryTreeContainsFile("foo", "bar/blah.txt") => False
+  """
+  real_dirname = os.path.realpath(dirname)
+  real_filename = os.path.realpath(filename)
+  return real_filename.startswith(real_dirname)
 
 
 def MakeDir(dirname):
@@ -253,19 +272,18 @@ class NmfUtils(object):
     arch_to_main_dir = {}
     for main_file in main_nexes:
       arch, _ = ParseElfHeader(main_file)
-      main_dir = os.path.dirname(os.path.abspath(main_file))
+      main_dir = os.path.dirname(main_file)
       main_dir = PosixRelPath(main_dir, self.nmf_root)
       if main_dir == '.':
         main_dir = ''
       arch_to_main_dir[arch] = main_dir
 
     for arch_file in self.needed.itervalues():
-      path = os.path.normcase(os.path.abspath(arch_file.path))
       prefix = ''
-      if os.path.abspath(path).startswith(os.path.abspath(self.nmf_root)):
+      if DirectoryTreeContainsFile(self.nmf_root, arch_file.path):
         # This file is already in the nmf_root tree, so it does not need to be
         # staged. Just make the URL relative to the .nmf.
-        url = PosixRelPath(path, self.nmf_root)
+        url = PosixRelPath(arch_file.path, self.nmf_root)
       else:
         # This file is outside of the nmf_root subtree, so it needs to be
         # staged. Its path should be relative to the main .nexe with the same
@@ -295,8 +313,8 @@ class NmfUtils(object):
       source = arch_file.path
       destination = os.path.join(destination_dir, arch_file.url)
 
-      if (os.path.normcase(os.path.abspath(source)) ==
-          os.path.normcase(os.path.abspath(destination))):
+      if (os.path.normcase(os.path.realpath(source)) ==
+          os.path.normcase(os.path.realpath(destination))):
         continue
 
       # make sure target dir exists
