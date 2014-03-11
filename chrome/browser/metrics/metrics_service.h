@@ -479,8 +479,8 @@ class MetricsService
   // additional logging of the type of page loaded.
   void LogLoadStarted(content::WebContents* web_contents);
 
-  // Checks whether a notification can be logged.
-  bool CanLogNotification();
+  // Checks whether events should currently be logged.
+  bool ShouldLogEvents();
 
   // Sets the value of the specified path in prefs and schedules a save.
   void RecordBooleanPrefValue(const char* path, bool value);
