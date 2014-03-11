@@ -17,6 +17,7 @@
 #include "base/task_runner_util.h"
 #include "base/threading/simple_thread.h"
 #include "ipc/file_descriptor_set_posix.h"
+#include "ipc/ipc_listener.h"
 #include "ipc/ipc_logging.h"
 #include "native_client/src/public/imc_syscalls.h"
 #include "native_client/src/public/imc_types.h"
@@ -138,9 +139,15 @@ Channel::ChannelImpl::~ChannelImpl() {
   Close();
 }
 
+base::ProcessId Channel::ChannelImpl::peer_pid() const {
+  // This shouldn't actually get used in the untrusted side of the proxy, and we
+  // don't have the real pid anyway.
+  return -1;
+}
+
 bool Channel::ChannelImpl::Connect() {
   if (pipe_ == -1) {
-    DLOG(INFO) << "Channel creation failed: " << pipe_name_;
+    DLOG(WARNING) << "Channel creation failed: " << pipe_name_;
     return false;
   }
 
@@ -164,6 +171,10 @@ bool Channel::ChannelImpl::Connect() {
   waiting_connect_ = false;
   // If there were any messages queued before connection, send them.
   ProcessOutgoingMessages();
+  base::MessageLoopProxy::current()->PostTask(FROM_HERE,
+      base::Bind(&Channel::ChannelImpl::CallOnChannelConnected,
+                 weak_ptr_factory_.GetWeakPtr()));
+
   return true;
 }
 
@@ -293,6 +304,10 @@ bool Channel::ChannelImpl::ProcessOutgoingMessages() {
   return true;
 }
 
+void Channel::ChannelImpl::CallOnChannelConnected() {
+  listener()->OnChannelConnected(peer_pid());
+}
+
 Channel::ChannelImpl::ReadState Channel::ChannelImpl::ReadData(
     char* buffer,
     int buffer_len,
@@ -372,9 +387,7 @@ void Channel::Close() {
 }
 
 base::ProcessId Channel::peer_pid() const {
-  // This shouldn't actually get used in the untrusted side of the proxy, and we
-  // don't have the real pid anyway.
-  return -1;
+  return channel_impl_->peer_pid();
 }
 
 bool Channel::Send(Message* message) {
