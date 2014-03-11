@@ -529,7 +529,7 @@ InspectorTest.clickColumn = function(column, callback)
 
     function sortingComplete()
     {
-        InspectorTest._currentGrid().removeEventListener("sorting complete", sortingComplete, this);
+        InspectorTest._currentGrid().removeEventListener(WebInspector.HeapSnapshotSortableDataGrid.Events.SortingComplete, sortingComplete, this);
         InspectorTest.assertEquals(column.identifier, this._currentGrid().sortColumnIdentifier(), "unexpected sorting");
         column.sort = this._currentGrid().sortOrder();
         function callCallback()
@@ -538,7 +538,7 @@ InspectorTest.clickColumn = function(column, callback)
         }
         setTimeout(callCallback, 0);
     }
-    InspectorTest._currentGrid().addEventListener("sorting complete", sortingComplete, this);
+    InspectorTest._currentGrid().addEventListener(WebInspector.HeapSnapshotSortableDataGrid.Events.SortingComplete, sortingComplete, this);
     this._currentGrid()._clickInHeaderCell(event);
 };
 
@@ -737,10 +737,10 @@ InspectorTest._snapshotViewShown = function()
         var dataGrid = this.dataGrid;
         function sortingComplete()
         {
-            dataGrid.removeEventListener("sorting complete", sortingComplete, null);
+            dataGrid.removeEventListener(WebInspector.HeapSnapshotSortableDataGrid.Events.SortingComplete, sortingComplete, null);
             callback();
         }
-        dataGrid.addEventListener("sorting complete", sortingComplete, null);
+        dataGrid.addEventListener(WebInspector.HeapSnapshotSortableDataGrid.Events.SortingComplete, sortingComplete, null);
     }
 };
 
