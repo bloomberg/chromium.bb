@@ -86,9 +86,6 @@ bool AndroidVideoDecodeAccelerator::Initialize(media::VideoCodecProfile profile,
 
   client_ = client;
 
-  if (!media::MediaCodecBridge::IsAvailable())
-    return false;
-
   if (profile == media::VP8PROFILE_MAIN) {
     codec_ = media::kCodecVP8;
   } else {

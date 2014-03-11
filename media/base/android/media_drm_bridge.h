@@ -6,8 +6,6 @@
 #define MEDIA_BASE_ANDROID_MEDIA_DRM_BRIDGE_H_
 
 #include <jni.h>
-#include <map>
-#include <queue>
 #include <string>
 #include <vector>
 
@@ -39,9 +37,10 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys {
   virtual ~MediaDrmBridge();
 
   // Checks whether MediaDRM is available.
+  // All other static methods check IsAvailable() internally. There's no need
+  // to check IsAvailable() explicitly before calling them.
   static bool IsAvailable();
 
-  // TODO(xhwang): Add tests for MediaDrmBridge. See http://crbug.com/303864
   static bool IsSecurityLevelSupported(const std::string& key_system,
                                        SecurityLevel security_level);
 

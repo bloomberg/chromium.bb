@@ -254,7 +254,7 @@ class MediaDrmBridge {
      * Check whether the crypto scheme is supported for the given container.
      * If |containerMimeType| is an empty string, we just return whether
      * the crypto scheme is supported.
-     * TODO(qinmin): Implement the checking for container.
+     * TODO(xhwang): Implement container check. See: http://crbug.com/350481
      *
      * @return true if the container and the crypto scheme is supported, or
      * false otherwise.

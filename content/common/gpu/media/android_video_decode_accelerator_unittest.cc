@@ -82,8 +82,6 @@ class AndroidVideoDecodeAcceleratorTest : public testing::Test {
 };
 
 TEST_F(AndroidVideoDecodeAcceleratorTest, ConfigureUnsupportedCodec) {
-  if (!media::MediaCodecBridge::IsAvailable())
-    return;
   EXPECT_FALSE(Configure(media::kUnknownVideoCodec));
 }
 
