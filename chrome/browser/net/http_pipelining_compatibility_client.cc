@@ -93,8 +93,7 @@ Request::Request(int request_id,
       url_request_(url_request_context->CreateRequest(GURL(base_url +
                                                            info.filename),
                                                       net::DEFAULT_PRIORITY,
-                                                      this,
-                                                      NULL)),
+                                                      this)),
       info_(info),
       response_code_(0) {
   url_request_->SetLoadFlags(net::LOAD_BYPASS_CACHE |

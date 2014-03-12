@@ -412,7 +412,7 @@ void ConnectionTester::TestRunner::ProxyConfigServiceCreated(
   }
   // Fetch a request using the experimental context.
   request_ = request_context_->CreateRequest(
-      experiment.url, net::DEFAULT_PRIORITY, this, NULL);
+      experiment.url, net::DEFAULT_PRIORITY, this);
   request_->Start();
 }
 

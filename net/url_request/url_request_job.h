@@ -26,7 +26,6 @@ namespace net {
 class AuthChallengeInfo;
 class AuthCredentials;
 class CookieOptions;
-class CookieStore;
 class Filter;
 class HttpRequestHeaders;
 class HttpResponseInfo;
@@ -238,9 +237,6 @@ class NET_EXPORT URLRequestJob
 
   // Delegates to URLRequest::Delegate.
   bool CanEnablePrivacyMode() const;
-
-  // Returns the cookie store to be used for the request.
-  CookieStore* GetCookieStore() const;
 
   // Notifies the job that the network is about to be used.
   void NotifyBeforeNetworkStart(bool* defer);

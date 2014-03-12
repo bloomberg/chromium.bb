@@ -105,7 +105,7 @@ class FileSystemURLRequestJobTest : public testing::Test {
     delegate_->set_quit_on_complete(true);
     delegate_->set_quit_on_redirect(true);
     request_ = empty_context_.CreateRequest(
-        url, net::DEFAULT_PRIORITY, delegate_.get(), NULL);
+        url, net::DEFAULT_PRIORITY, delegate_.get());
     if (headers)
       request_->SetExtraRequestHeaders(*headers);
     ASSERT_TRUE(!job_);

@@ -62,7 +62,6 @@ struct MediaLogEvent;
 }
 
 namespace net {
-class CookieStore;
 class KeygenHandler;
 class URLRequestContext;
 class URLRequestContextGetter;
@@ -109,10 +108,10 @@ class RenderMessageFilter : public BrowserMessageFilter {
 
   int render_process_id() const { return render_process_id_; }
 
-  // Returns the correct net::CookieStore depending on what type of url is
+  // Returns the correct net::URLRequestContext depending on what type of url is
   // given.
   // Only call on the IO thread.
-  net::CookieStore* GetCookieStoreForURL(const GURL& url);
+  net::URLRequestContext* GetRequestContextForURL(const GURL& url);
 
  private:
   friend class BrowserThread;

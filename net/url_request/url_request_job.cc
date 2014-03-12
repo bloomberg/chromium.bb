@@ -286,12 +286,6 @@ bool URLRequestJob::CanEnablePrivacyMode() const {
   return request_->CanEnablePrivacyMode();
 }
 
-CookieStore* URLRequestJob::GetCookieStore() const {
-  DCHECK(request_);
-
-  return request_->cookie_store();
-}
-
 void URLRequestJob::NotifyBeforeNetworkStart(bool* defer) {
   if (!request_)
     return;

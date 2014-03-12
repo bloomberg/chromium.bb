@@ -47,7 +47,7 @@ void BeginDownload(
   ResourceDispatcherHost* rdh = ResourceDispatcherHost::Get();
   scoped_ptr<net::URLRequest> request(
       resource_context->GetRequestContext()->CreateRequest(
-          url, net::DEFAULT_PRIORITY, NULL, NULL));
+          url, net::DEFAULT_PRIORITY, NULL));
   content::DownloadInterruptReason error = rdh->BeginDownload(
       request.Pass(),
       content::Referrer(),

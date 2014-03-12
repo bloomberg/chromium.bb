@@ -113,7 +113,7 @@ class SSLClientCertificateSelectorTest : public InProcessBrowserTest {
   scoped_ptr<net::URLRequest> MakeURLRequest(
       net::URLRequestContextGetter* context_getter) {
     return context_getter->GetURLRequestContext()->CreateRequest(
-        GURL("https://example"), net::DEFAULT_PRIORITY, NULL, NULL);
+        GURL("https://example"), net::DEFAULT_PRIORITY, NULL);
   }
 
   base::WaitableEvent io_loop_finished_event_;

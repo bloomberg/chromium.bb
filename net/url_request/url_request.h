@@ -25,7 +25,6 @@
 #include "net/base/request_priority.h"
 #include "net/base/upload_progress.h"
 #include "net/cookies/canonical_cookie.h"
-#include "net/cookies/cookie_store.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_info.h"
 #include "net/url_request/url_request_status.h"
@@ -292,19 +291,10 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
     virtual ~Delegate() {}
   };
 
-  // TODO(tburkard): we should get rid of this constructor, and have each
-  // creator of a URLRequest specifically list the cookie store to be used.
-  // For now, this constructor will use the cookie store in |context|.
   URLRequest(const GURL& url,
              RequestPriority priority,
              Delegate* delegate,
              const URLRequestContext* context);
-
-  URLRequest(const GURL& url,
-             RequestPriority priority,
-             Delegate* delegate,
-             const URLRequestContext* context,
-             CookieStore* cookie_store);
 
   // If destroyed after Start() has been called but while IO is pending,
   // then the request will be effectively canceled and the delegate
@@ -701,8 +691,6 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
   // Allow the URLRequestJob class to set our status too
   void set_status(const URLRequestStatus& value) { status_ = value; }
 
-  CookieStore* cookie_store() const { return cookie_store_; }
-
   // Allow the URLRequestJob to redirect this request.  Returns OK if
   // successful, otherwise an error code is returned.
   int Redirect(const GURL& location, int http_status_code);
@@ -741,15 +729,6 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
   // Registers or unregisters a network interception class.
   static void RegisterRequestInterceptor(Interceptor* interceptor);
   static void UnregisterRequestInterceptor(Interceptor* interceptor);
-
-  // Initializes the URLRequest. Code shared between the two constructors.
-  // TODO(tburkard): This can ultimately be folded into a single constructor
-  // again.
-  void Init(const GURL& url,
-            RequestPriority priotity,
-            Delegate* delegate,
-            const URLRequestContext* context,
-            CookieStore* cookie_store);
 
   // Resumes or blocks a request paused by the NetworkDelegate::OnBeforeRequest
   // handler. If |blocked| is true, the request is blocked and an error page is
@@ -915,9 +894,6 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
 
   // Keeps track of whether or not OnBeforeNetworkStart has been called yet.
   bool notified_before_network_start_;
-
-  // The cookie store to be used for this request.
-  scoped_refptr<CookieStore> cookie_store_;
 
   DISALLOW_COPY_AND_ASSIGN(URLRequest);
 };

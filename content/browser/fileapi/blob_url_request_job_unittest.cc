@@ -248,7 +248,7 @@ class BlobURLRequestJobTest : public testing::Test {
   void TestRequest(const std::string& method,
                    const net::HttpRequestHeaders& extra_headers) {
     request_ = url_request_context_.CreateRequest(
-        GURL("blob:blah"), net::DEFAULT_PRIORITY, &url_request_delegate_, NULL);
+        GURL("blob:blah"), net::DEFAULT_PRIORITY, &url_request_delegate_);
     request_->set_method(method);
     if (!extra_headers.IsEmpty())
       request_->SetExtraRequestHeaders(extra_headers);

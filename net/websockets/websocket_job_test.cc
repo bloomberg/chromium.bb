@@ -41,9 +41,8 @@ namespace {
 
 class MockSocketStream : public SocketStream {
  public:
-  MockSocketStream(const GURL& url, SocketStream::Delegate* delegate,
-                   URLRequestContext* context, CookieStore* cookie_store)
-      : SocketStream(url, delegate, context, cookie_store) {}
+  MockSocketStream(const GURL& url, SocketStream::Delegate* delegate)
+      : SocketStream(url, delegate) {}
 
   virtual void Connect() OVERRIDE {}
   virtual bool SendData(const char* data, int len) OVERRIDE {
@@ -365,8 +364,7 @@ class WebSocketJobTest : public PlatformTest,
     websocket_ = new WebSocketJob(delegate);
 
     if (stream_type == STREAM_MOCK_SOCKET)
-      socket_ = new MockSocketStream(url, websocket_.get(), context_.get(),
-                                     NULL);
+      socket_ = new MockSocketStream(url, websocket_.get());
 
     if (stream_type == STREAM_SOCKET || stream_type == STREAM_SPDY_WEBSOCKET) {
       if (stream_type == STREAM_SPDY_WEBSOCKET) {
@@ -382,7 +380,7 @@ class WebSocketJobTest : public PlatformTest,
       host_resolver_.reset(new MockHostResolver);
       context_->set_host_resolver(host_resolver_.get());
 
-      socket_ = new SocketStream(url, websocket_.get(), context_.get(), NULL);
+      socket_ = new SocketStream(url, websocket_.get());
       socket_factory_.reset(new MockClientSocketFactory);
       DCHECK(data_.get());
       socket_factory_->AddSocketDataProvider(data_.get());
@@ -390,6 +388,7 @@ class WebSocketJobTest : public PlatformTest,
     }
 
     websocket_->InitSocketStream(socket_.get());
+    websocket_->set_context(context_.get());
     // MockHostResolver resolves all hosts to 127.0.0.1; however, when we create
     // a WebSocketJob purely to block another one in a throttling test, we don't
     // perform a real connect. In that case, the following address is used
@@ -739,14 +738,14 @@ void WebSocketJobTest::TestHSTSUpgrade() {
   scoped_refptr<SocketStreamJob> job =
       SocketStreamJob::CreateSocketStreamJob(
           url, &delegate, context_->transport_security_state(),
-          context_->ssl_config_service(), NULL, NULL);
+          context_->ssl_config_service());
   EXPECT_TRUE(GetSocket(job.get())->is_secure());
   job->DetachDelegate();
 
   url = GURL("ws://donotupgrademe.com/");
   job = SocketStreamJob::CreateSocketStreamJob(
       url, &delegate, context_->transport_security_state(),
-      context_->ssl_config_service(), NULL, NULL);
+      context_->ssl_config_service());
   EXPECT_FALSE(GetSocket(job.get())->is_secure());
   job->DetachDelegate();
 }

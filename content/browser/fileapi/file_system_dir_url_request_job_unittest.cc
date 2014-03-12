@@ -88,7 +88,7 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
     delegate_.reset(new net::TestDelegate());
     delegate_->set_quit_on_redirect(true);
     request_ = empty_context_.CreateRequest(
-        url, net::DEFAULT_PRIORITY, delegate_.get(), NULL);
+        url, net::DEFAULT_PRIORITY, delegate_.get());
     job_ = new fileapi::FileSystemDirURLRequestJob(
         request_.get(), NULL, file_system_context);
 

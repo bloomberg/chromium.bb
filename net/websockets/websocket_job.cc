@@ -36,10 +36,9 @@ const char* const kSetCookieHeaders[] = {
 };
 
 net::SocketStreamJob* WebSocketJobFactory(
-    const GURL& url, net::SocketStream::Delegate* delegate,
-    net::URLRequestContext* context, net::CookieStore* cookie_store) {
+    const GURL& url, net::SocketStream::Delegate* delegate) {
   net::WebSocketJob* job = new net::WebSocketJob(delegate);
-  job->InitSocketStream(new net::SocketStream(url, job, context, cookie_store));
+  job->InitSocketStream(new net::SocketStream(url, job));
   return job;
 }
 
@@ -371,11 +370,11 @@ void WebSocketJob::AddCookieHeaderAndSend() {
   if (socket_.get() && delegate_ && state_ == CONNECTING) {
     handshake_request_->RemoveHeaders(kCookieHeaders,
                                       arraysize(kCookieHeaders));
-    if (allow && socket_->cookie_store()) {
+    if (allow && socket_->context()->cookie_store()) {
       // Add cookies, including HttpOnly cookies.
       CookieOptions cookie_options;
       cookie_options.set_include_httponly();
-      socket_->cookie_store()->GetCookiesWithOptionsAsync(
+      socket_->context()->cookie_store()->GetCookiesWithOptionsAsync(
           GetURLForCookies(), cookie_options,
           base::Bind(&WebSocketJob::LoadCookieCallback,
                      weak_ptr_factory_.GetWeakPtr()));
@@ -506,7 +505,7 @@ void WebSocketJob::SaveNextCookie() {
   callback_pending_ = false;
   save_next_cookie_running_ = true;
 
-  if (socket_->cookie_store()) {
+  if (socket_->context()->cookie_store()) {
     GURL url_for_cookies = GetURLForCookies();
 
     CookieOptions options;
@@ -527,7 +526,7 @@ void WebSocketJob::SaveNextCookie() {
         continue;
 
       callback_pending_ = true;
-      socket_->cookie_store()->SetCookieWithOptionsAsync(
+      socket_->context()->cookie_store()->SetCookieWithOptionsAsync(
           url_for_cookies, cookie, options,
           base::Bind(&WebSocketJob::OnCookieSaved,
                      weak_ptr_factory_.GetWeakPtr()));

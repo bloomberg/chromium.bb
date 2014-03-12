@@ -50,7 +50,6 @@ class ImageSkia;
 
 namespace net {
 class CookieOptions;
-class CookieStore;
 class HttpNetworkSession;
 class NetLog;
 class SSLCertRequestInfo;
@@ -626,12 +625,6 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   // Returns true if dev channel APIs are available for plugins.
   virtual bool IsPluginAllowedToUseDevChannelAPIs();
-
-  // Returns a special cookie store to use for a given render process, or NULL
-  // if the default cookie store should be used
-  // This is called on the IO thread.
-  virtual net::CookieStore* OverrideCookieStoreForRenderProcess(
-      int render_process_id_);
 };
 
 }  // namespace content

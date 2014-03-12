@@ -1056,12 +1056,9 @@ void ResourceDispatcherHostImpl::BeginRequest(
   }
 
   // Construct the request.
-  net::CookieStore* cookie_store =
-      GetContentClient()->browser()->OverrideCookieStoreForRenderProcess(
-          child_id);
   scoped_ptr<net::URLRequest> new_request;
   new_request = request_context->CreateRequest(
-      request_data.url, request_data.priority, NULL, cookie_store);
+      request_data.url, request_data.priority, NULL);
 
   new_request->set_method(request_data.method);
   new_request->set_first_party_for_cookies(
@@ -1362,13 +1359,8 @@ void ResourceDispatcherHostImpl::BeginSaveFile(
     return;
   }
 
-  net::CookieStore* cookie_store =
-      GetContentClient()->browser()->OverrideCookieStoreForRenderProcess(
-          child_id);
   scoped_ptr<net::URLRequest> request(
-      request_context->CreateRequest(url, net::DEFAULT_PRIORITY, NULL,
-                                     cookie_store));
-
+      request_context->CreateRequest(url, net::DEFAULT_PRIORITY, NULL));
   request->set_method("GET");
   SetReferrerForRequest(request.get(), referrer);
 

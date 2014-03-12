@@ -139,7 +139,7 @@ class ResourceSchedulerTest : public testing::Test {
       net::RequestPriority priority,
       int route_id) {
     scoped_ptr<net::URLRequest> url_request(
-        context_.CreateRequest(GURL(url), priority, NULL, NULL));
+        context_.CreateRequest(GURL(url), priority, NULL));
     ResourceRequestInfoImpl* info = new ResourceRequestInfoImpl(
         PROCESS_TYPE_RENDERER,             // process_type
         kChildId,                          // child_id

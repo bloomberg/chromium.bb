@@ -22,8 +22,7 @@ class SocketStreamJobManager {
   static SocketStreamJobManager* GetInstance();
 
   SocketStreamJob* CreateJob(
-      const GURL& url, SocketStream::Delegate* delegate,
-      URLRequestContext* context, CookieStore* cookie_store) const;
+      const GURL& url, SocketStream::Delegate* delegate) const;
 
   SocketStreamJob::ProtocolFactory* RegisterProtocolFactory(
       const std::string& scheme, SocketStreamJob::ProtocolFactory* factory);

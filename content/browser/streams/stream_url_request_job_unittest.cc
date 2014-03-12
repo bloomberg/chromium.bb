@@ -76,7 +76,7 @@ class StreamURLRequestJobTest : public testing::Test {
                    const std::string& expected_response) {
     net::TestDelegate delegate;
     request_ = url_request_context_.CreateRequest(
-        url, net::DEFAULT_PRIORITY, &delegate, NULL);
+        url, net::DEFAULT_PRIORITY, &delegate);
     request_->set_method(method);
     if (!extra_headers.IsEmpty())
       request_->SetExtraRequestHeaders(extra_headers);
@@ -134,7 +134,7 @@ TEST_F(StreamURLRequestJobTest, TestGetLargeStreamRequest) {
 TEST_F(StreamURLRequestJobTest, TestGetNonExistentStreamRequest) {
   net::TestDelegate delegate;
   request_ = url_request_context_.CreateRequest(
-      kStreamURL, net::DEFAULT_PRIORITY, &delegate, NULL);
+      kStreamURL, net::DEFAULT_PRIORITY, &delegate);
   request_->set_method("GET");
   request_->Start();
 

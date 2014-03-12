@@ -224,8 +224,7 @@ void SocketStreamDispatcherHost::OnConnect(int render_frame_id,
   // Note that the SocketStreamHost is responsible for checking that |url|
   // is valid.
   SocketStreamHost* socket_stream_host =
-      new SocketStreamHost(this, render_process_id_, render_frame_id,
-                           socket_id);
+      new SocketStreamHost(this, render_frame_id, socket_id);
   hosts_.AddWithID(socket_stream_host, socket_id);
   socket_stream_host->Connect(url, GetURLRequestContext());
   DVLOG(2) << "SocketStreamDispatcherHost::OnConnect -> " << socket_id;

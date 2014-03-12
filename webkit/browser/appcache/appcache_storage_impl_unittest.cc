@@ -1746,7 +1746,7 @@ class AppCacheStorageImplTest : public testing::Test {
       AppCacheHost* host2 = backend_->GetHost(2);
       GURL manifest_url = MockHttpServer::GetMockUrl("manifest");
       request_ = service()->request_context()->CreateRequest(
-          manifest_url, net::DEFAULT_PRIORITY, NULL, NULL);
+          manifest_url, net::DEFAULT_PRIORITY, NULL);
       AppCacheInterceptor::SetExtraRequestInfo(
           request_.get(), service_.get(),
           backend_->process_id(), host2->host_id(),

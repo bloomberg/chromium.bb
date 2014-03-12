@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "content/common/socket_stream.h"
-#include "content/public/browser/content_browser_client.h"
 #include "net/socket_stream/socket_stream_job.h"
 #include "net/url_request/url_request_context.h"
 
@@ -29,11 +28,9 @@ class SocketStreamId : public net::SocketStream::UserData {
 
 SocketStreamHost::SocketStreamHost(
     net::SocketStream::Delegate* delegate,
-    int child_id,
     int render_frame_id,
     int socket_id)
     : delegate_(delegate),
-      child_id_(child_id),
       render_frame_id_(render_frame_id),
       socket_id_(socket_id) {
   DCHECK_NE(socket_id_, kNoSocketId);
@@ -54,7 +51,7 @@ int SocketStreamHost::SocketIdFromSocketStream(
 
 SocketStreamHost::~SocketStreamHost() {
   VLOG(1) << "SocketStreamHost destructed socket_id=" << socket_id_;
-  job_->DetachContext();
+  job_->set_context(NULL);
   job_->DetachDelegate();
 }
 
@@ -63,10 +60,8 @@ void SocketStreamHost::Connect(const GURL& url,
   VLOG(1) << "SocketStreamHost::Connect url=" << url;
   job_ = net::SocketStreamJob::CreateSocketStreamJob(
       url, delegate_, request_context->transport_security_state(),
-      request_context->ssl_config_service(),
-      request_context,
-      GetContentClient()->browser()->OverrideCookieStoreForRenderProcess(
-          child_id_));
+      request_context->ssl_config_service());
+  job_->set_context(request_context);
   job_->SetUserData(kSocketIdKey, new SocketStreamId(socket_id_));
   job_->Connect();
 }
