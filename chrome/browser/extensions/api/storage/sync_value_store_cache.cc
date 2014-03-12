@@ -64,9 +64,9 @@ syncer::SyncableService* SyncValueStoreCache::GetSyncableService(
 
   switch (type) {
     case syncer::APP_SETTINGS:
-      return app_backend_->GetAsSyncableService();
+      return app_backend_.get();
     case syncer::EXTENSION_SETTINGS:
-      return extension_backend_->GetAsSyncableService();
+      return extension_backend_.get();
     default:
       NOTREACHED();
       return NULL;
@@ -78,7 +78,7 @@ void SyncValueStoreCache::RunWithValueStoreForExtension(
     scoped_refptr<const Extension> extension) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK(initialized_);
-  SettingsBackend* backend =
+  SyncStorageBackend* backend =
       extension->is_app() ? app_backend_.get() : extension_backend_.get();
   callback.Run(backend->GetStorage(extension->id()));
 }

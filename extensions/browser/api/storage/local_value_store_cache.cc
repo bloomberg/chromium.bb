@@ -11,10 +11,10 @@
 #include "base/files/file_path.h"
 #include "chrome/common/extensions/api/storage.h"
 #include "content/public/browser/browser_thread.h"
-#include "extensions/browser/api/storage/local_storage_backend.h"
 #include "extensions/browser/api/storage/settings_storage_factory.h"
 #include "extensions/browser/api/storage/settings_storage_quota_enforcer.h"
 #include "extensions/browser/api/storage/weak_unlimited_settings_storage.h"
+#include "extensions/browser/value_store/value_store.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/permissions/api_permission.h"
@@ -41,17 +41,12 @@ SettingsStorageQuotaEnforcer::Limits GetLocalQuotaLimits() {
 LocalValueStoreCache::LocalValueStoreCache(
     const scoped_refptr<SettingsStorageFactory>& factory,
     const base::FilePath& profile_path)
-    : initialized_(false) {
+    : storage_factory_(factory),
+      extension_base_path_(
+          profile_path.AppendASCII(kLocalExtensionSettingsDirectoryName)),
+      app_base_path_(profile_path.AppendASCII(kLocalAppSettingsDirectoryName)),
+      quota_(GetLocalQuotaLimits()) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // This post is safe since the destructor can only be invoked from the
-  // same message loop, and any potential post of a deletion task must come
-  // after the constructor returns.
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&LocalValueStoreCache::InitOnFileThread,
-                 base::Unretained(this),
-                 factory, profile_path));
 }
 
 LocalValueStoreCache::~LocalValueStoreCache() {
@@ -62,11 +57,8 @@ void LocalValueStoreCache::RunWithValueStoreForExtension(
     const StorageCallback& callback,
     scoped_refptr<const Extension> extension) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  DCHECK(initialized_);
 
-  SettingsBackend* backend =
-      extension->is_app() ? app_backend_.get() : extension_backend_.get();
-  ValueStore* storage = backend->GetStorage(extension->id());
+  ValueStore* storage = GetStorage(extension);
 
   // A neat way to implement unlimited storage; if the extension has the
   // unlimited storage permission, force through all calls to Set().
@@ -80,25 +72,25 @@ void LocalValueStoreCache::RunWithValueStoreForExtension(
 
 void LocalValueStoreCache::DeleteStorageSoon(const std::string& extension_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  DCHECK(initialized_);
-  app_backend_->DeleteStorage(extension_id);
-  extension_backend_->DeleteStorage(extension_id);
+  storage_map_.erase(extension_id);
+  storage_factory_->DeleteDatabaseIfExists(app_base_path_, extension_id);
+  storage_factory_->DeleteDatabaseIfExists(extension_base_path_, extension_id);
 }
 
-void LocalValueStoreCache::InitOnFileThread(
-    const scoped_refptr<SettingsStorageFactory>& factory,
-    const base::FilePath& profile_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  DCHECK(!initialized_);
-  app_backend_.reset(new LocalStorageBackend(
-      factory,
-      profile_path.AppendASCII(kLocalAppSettingsDirectoryName),
-      GetLocalQuotaLimits()));
-  extension_backend_.reset(new LocalStorageBackend(
-      factory,
-      profile_path.AppendASCII(kLocalExtensionSettingsDirectoryName),
-      GetLocalQuotaLimits()));
-  initialized_ = true;
+ValueStore* LocalValueStoreCache::GetStorage(
+    scoped_refptr<const Extension> extension) {
+  StorageMap::iterator iter = storage_map_.find(extension->id());
+  if (iter != storage_map_.end())
+    return iter->second.get();
+
+  const base::FilePath& file_path =
+      extension->is_app() ? app_base_path_ : extension_base_path_;
+  linked_ptr<SettingsStorageQuotaEnforcer> storage(
+      new SettingsStorageQuotaEnforcer(
+          quota_, storage_factory_->Create(file_path, extension->id())));
+  DCHECK(storage.get());
+  storage_map_[extension->id()] = storage;
+  return storage.get();
 }
 
 }  // namespace extensions

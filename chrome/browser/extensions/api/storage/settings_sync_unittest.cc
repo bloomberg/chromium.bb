@@ -1339,7 +1339,7 @@ TEST_F(ExtensionSettingsSyncTest,
   syncer::ModelType model_type = syncer::APP_SETTINGS;
   Manifest::Type type = Manifest::TYPE_LEGACY_PACKAGED_APP;
 
-  // This value should be larger than the limit in settings_backend.cc.
+  // This value should be larger than the limit in sync_storage_backend.cc.
   std::string string_5k;
   for (size_t i = 0; i < 5000; ++i) {
     string_5k.append("a");

@@ -22,8 +22,7 @@ class BrowserContext;
 
 namespace extensions {
 
-// The component of extension settings which runs on the UI thread, as opposed
-// to SettingsBackend which lives on the FILE thread.
+// The component of extension settings which runs on the UI thread.
 class SettingsFrontend : public BrowserContextKeyedAPI {
  public:
   // Returns the current instance for |context|.

@@ -37,7 +37,9 @@ SyncStorageBackend::SyncStorageBackend(
     const scoped_refptr<SettingsObserverList>& observers,
     syncer::ModelType sync_type,
     const syncer::SyncableService::StartSyncFlare& flare)
-    : SettingsBackend(storage_factory, base_path, quota),
+    : storage_factory_(storage_factory),
+      base_path_(base_path),
+      quota_(quota),
       observers_(observers),
       sync_type_(sync_type),
       flare_(flare) {
@@ -64,8 +66,9 @@ SyncableSettingsStorage* SyncStorageBackend::GetOrCreateStorageWithSyncData(
     return maybe_storage->second.get();
   }
 
-  scoped_ptr<SettingsStorageQuotaEnforcer> storage =
-      CreateStorageForExtension(extension_id);
+  scoped_ptr<SettingsStorageQuotaEnforcer> storage(
+      new SettingsStorageQuotaEnforcer(
+          quota_, storage_factory_->Create(base_path_, extension_id)));
 
   // It's fine to create the quota enforcer underneath the sync layer, since
   // sync will only go ahead if each underlying storage operation succeeds.
@@ -101,10 +104,6 @@ void SyncStorageBackend::DeleteStorage(const std::string& extension_id) {
   storage_objs_.erase(extension_id);
 }
 
-syncer::SyncableService* SyncStorageBackend::GetAsSyncableService() {
-  return this;
-}
-
 std::set<std::string> SyncStorageBackend::GetKnownExtensionIDs() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   std::set<std::string> result;
@@ -117,9 +116,9 @@ std::set<std::string> SyncStorageBackend::GetKnownExtensionIDs() const {
     result.insert(it->first);
   }
 
-  // Leveldb databases are directories inside base_path().
+  // Leveldb databases are directories inside |base_path_|.
   base::FileEnumerator extension_dirs(
-      base_path(), false, base::FileEnumerator::DIRECTORIES);
+      base_path_, false, base::FileEnumerator::DIRECTORIES);
   while (!extension_dirs.Next().empty()) {
     base::FilePath extension_dir = extension_dirs.GetInfo().GetName();
     DCHECK(!extension_dir.IsAbsolute());

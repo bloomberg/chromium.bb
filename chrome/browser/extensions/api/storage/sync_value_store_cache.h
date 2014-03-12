@@ -23,8 +23,8 @@ class SyncableService;
 
 namespace extensions {
 
-class SettingsBackend;
 class SettingsStorageFactory;
+class SyncStorageBackend;
 
 // ValueStoreCache for the SYNC namespace. It owns a backend for apps and
 // another for extensions. Each backend takes care of persistence and syncing.
@@ -50,8 +50,8 @@ class SyncValueStoreCache : public ValueStoreCache {
                         const base::FilePath& profile_path);
 
   bool initialized_;
-  scoped_ptr<SettingsBackend> app_backend_;
-  scoped_ptr<SettingsBackend> extension_backend_;
+  scoped_ptr<SyncStorageBackend> app_backend_;
+  scoped_ptr<SyncStorageBackend> extension_backend_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncValueStoreCache);
 };

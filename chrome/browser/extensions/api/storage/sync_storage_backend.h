@@ -14,7 +14,6 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "extensions/browser/api/storage/settings_backend.h"
 #include "extensions/browser/api/storage/settings_observer.h"
 #include "extensions/browser/api/storage/settings_storage_factory.h"
 #include "extensions/browser/api/storage/settings_storage_quota_enforcer.h"
@@ -32,8 +31,7 @@ class SyncableSettingsStorage;
 // Manages ValueStore objects for extensions, including routing
 // changes from sync to them.
 // Lives entirely on the FILE thread.
-class SyncStorageBackend : public SettingsBackend,
-                           public syncer::SyncableService {
+class SyncStorageBackend : public syncer::SyncableService {
  public:
   // |storage_factory| is use to create leveldb storage areas.
   // |base_path| is the base of the extension settings directory, so the
@@ -49,10 +47,8 @@ class SyncStorageBackend : public SettingsBackend,
 
   virtual ~SyncStorageBackend();
 
-  // SettingsBackend implementation.
-  virtual ValueStore* GetStorage(const std::string& extension_id) OVERRIDE;
-  virtual void DeleteStorage(const std::string& extension_id) OVERRIDE;
-  virtual syncer::SyncableService* GetAsSyncableService() OVERRIDE;
+  virtual ValueStore* GetStorage(const std::string& extension_id);
+  virtual void DeleteStorage(const std::string& extension_id);
 
   // syncer::SyncableService implementation.
   virtual syncer::SyncDataList GetAllSyncData(syncer::ModelType type)
@@ -81,6 +77,15 @@ class SyncStorageBackend : public SettingsBackend,
   // Creates a new SettingsSyncProcessor for an extension.
   scoped_ptr<SettingsSyncProcessor> CreateSettingsSyncProcessor(
       const std::string& extension_id) const;
+
+  // The Factory to use for creating new ValueStores.
+  const scoped_refptr<SettingsStorageFactory> storage_factory_;
+
+  // The base file path to use when creating new ValueStores.
+  const base::FilePath base_path_;
+
+  // Quota limits (see SettingsStorageQuotaEnforcer).
+  const SettingsStorageQuotaEnforcer::Limits quota_;
 
   // The list of observers to settings changes.
   const scoped_refptr<SettingsObserverList> observers_;

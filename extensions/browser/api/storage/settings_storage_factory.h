@@ -17,7 +17,7 @@ namespace extensions {
 // Factory for creating SettingStorage instances.
 //
 // Refcouted because it's just too messy to distribute these objects between
-// SettingsBackend instances any other way.
+// ValueStoreCache instances any other way.
 class SettingsStorageFactory
     : public base::RefCountedThreadSafe<SettingsStorageFactory> {
  public:
