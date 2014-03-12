@@ -312,30 +312,11 @@ DebuggerScript.isEvalCompilation = function(eventData)
 
 DebuggerScript._frameMirrorToJSCallFrame = function(frameMirror, callerFrame)
 {
-    // Get function name and display name.
-    var funcMirror;
-    var displayName;
-    try {
-        funcMirror = frameMirror.func();
-        if (funcMirror) {
-            var valueMirror = funcMirror.property("displayName").value();
-            if (valueMirror && valueMirror.isString())
-                displayName = valueMirror.value();
-        }
-    } catch(e) {
-    }
-    var functionName;
-    if (funcMirror)
-        functionName = displayName || funcMirror.name() || funcMirror.inferredName();
+    // Stuff that can not be initialized lazily (i.e. valid while paused with a valid break_id).
+    var funcMirror = frameMirror.func();
 
-    // Get script ID.
-    var script = funcMirror.script();
-    var sourceID = script && script.id();
+    var sourcePosition = frameMirror.details_.sourcePosition();
 
-    // Get location.
-    var location  = frameMirror.sourceLocation();
-
-    // Get this object.
     var thisObject = frameMirror.details_.receiver();
 
     var isAtReturn = !!frameMirror.details_.isAtReturn();
@@ -347,6 +328,47 @@ DebuggerScript._frameMirrorToJSCallFrame = function(frameMirror, callerFrame)
         var scopeMirror = frameMirror.scope(i);
         scopeType.push(scopeMirror.scopeType());
         scopeChain.push(DebuggerScript._buildScopeObject(scopeMirror));
+    }
+
+    var location;
+
+    function ensureLocation()
+    {
+        if (!location) {
+            var script = funcMirror.script();
+            if (script)
+                location = script.locationFromPosition(sourcePosition, true);
+            if (!location)
+                location = { line: 0, column: 0 };
+        }
+        return location;
+    }
+
+    function line()
+    {
+        return ensureLocation().line;
+    }
+
+    function column()
+    {
+        return ensureLocation().column;
+    }
+
+    function sourceID()
+    {
+        var script = funcMirror.script();
+        return script && script.id();
+    }
+
+    function functionName()
+    {
+        if (!funcMirror.resolved())
+            return undefined;
+        var displayName;
+        var valueMirror = funcMirror.property("displayName").value();
+        if (valueMirror && valueMirror.isString())
+            displayName = valueMirror.value();
+        return displayName || funcMirror.name() || funcMirror.inferredName();
     }
 
     function evaluate(expression)
@@ -388,8 +410,8 @@ DebuggerScript._frameMirrorToJSCallFrame = function(frameMirror, callerFrame)
 
     return {
         "sourceID": sourceID,
-        "line": location ? location.line : 0,
-        "column": location ? location.column : 0,
+        "line": line,
+        "column": column,
         "functionName": functionName,
         "thisObject": thisObject,
         "scopeChain": scopeChain,

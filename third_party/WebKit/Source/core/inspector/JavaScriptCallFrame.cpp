@@ -62,42 +62,44 @@ JavaScriptCallFrame* JavaScriptCallFrame::caller()
     return m_caller.get();
 }
 
-int JavaScriptCallFrame::sourceID() const
+int JavaScriptCallFrame::callV8FunctionReturnInt(const char* name) const
 {
     v8::HandleScope handleScope(m_isolate);
-    v8::Context::Scope contextScope(m_debuggerContext.newLocal(m_isolate));
-    v8::Handle<v8::Value> result = m_callFrame.newLocal(m_isolate)->Get(v8AtomicString(m_isolate, "sourceID"));
+    v8::Handle<v8::Object> callFrame = m_callFrame.newLocal(m_isolate);
+    v8::Handle<v8::Function> func = v8::Handle<v8::Function>::Cast(callFrame->Get(v8AtomicString(m_isolate, name)));
+    v8::Handle<v8::Value> result = func->Call(callFrame, 0, 0);
     if (result->IsInt32())
         return result->Int32Value();
     return 0;
+}
+
+String JavaScriptCallFrame::callV8FunctionReturnString(const char* name) const
+{
+    v8::HandleScope handleScope(m_isolate);
+    v8::Handle<v8::Object> callFrame = m_callFrame.newLocal(m_isolate);
+    v8::Handle<v8::Function> func = v8::Handle<v8::Function>::Cast(callFrame->Get(v8AtomicString(m_isolate, name)));
+    v8::Handle<v8::Value> result = func->Call(callFrame, 0, 0);
+    return toCoreStringWithUndefinedOrNullCheck(result);
+}
+
+int JavaScriptCallFrame::sourceID() const
+{
+    return callV8FunctionReturnInt("sourceID");
 }
 
 int JavaScriptCallFrame::line() const
 {
-    v8::HandleScope handleScope(m_isolate);
-    v8::Context::Scope contextScope(m_debuggerContext.newLocal(m_isolate));
-    v8::Handle<v8::Value> result = m_callFrame.newLocal(m_isolate)->Get(v8AtomicString(m_isolate, "line"));
-    if (result->IsInt32())
-        return result->Int32Value();
-    return 0;
+    return callV8FunctionReturnInt("line");
 }
 
 int JavaScriptCallFrame::column() const
 {
-    v8::HandleScope handleScope(m_isolate);
-    v8::Context::Scope contextScope(m_debuggerContext.newLocal(m_isolate));
-    v8::Handle<v8::Value> result = m_callFrame.newLocal(m_isolate)->Get(v8AtomicString(m_isolate, "column"));
-    if (result->IsInt32())
-        return result->Int32Value();
-    return 0;
+    return callV8FunctionReturnInt("column");
 }
 
 String JavaScriptCallFrame::functionName() const
 {
-    v8::HandleScope handleScope(m_isolate);
-    v8::Context::Scope contextScope(m_debuggerContext.newLocal(m_isolate));
-    v8::Handle<v8::Value> result = m_callFrame.newLocal(m_isolate)->Get(v8AtomicString(m_isolate, "functionName"));
-    return toCoreStringWithUndefinedOrNullCheck(result);
+    return callV8FunctionReturnString("functionName");
 }
 
 v8::Handle<v8::Value> JavaScriptCallFrame::scopeChain() const
@@ -122,10 +124,7 @@ v8::Handle<v8::Value> JavaScriptCallFrame::thisObject() const
 
 String JavaScriptCallFrame::stepInPositions() const
 {
-    v8::Handle<v8::Object> callFrame = m_callFrame.newLocal(m_isolate);
-    v8::Handle<v8::Function> stepInPositions = v8::Handle<v8::Function>::Cast(callFrame->Get(v8AtomicString(m_isolate, "stepInPositions")));
-    v8::Handle<v8::Value> result = stepInPositions->Call(callFrame, 0, 0);
-    return toCoreStringWithUndefinedOrNullCheck(result);
+    return callV8FunctionReturnString("stepInPositions");
 }
 
 bool JavaScriptCallFrame::isAtReturn() const
@@ -148,7 +147,7 @@ v8::Handle<v8::Value> JavaScriptCallFrame::evaluate(const String& expression)
     v8::Handle<v8::Object> callFrame = m_callFrame.newLocal(m_isolate);
     v8::Handle<v8::Function> evalFunction = v8::Handle<v8::Function>::Cast(callFrame->Get(v8AtomicString(m_isolate, "evaluate")));
     v8::Handle<v8::Value> argv[] = { v8String(m_debuggerContext.newLocal(m_isolate)->GetIsolate(), expression) };
-    return evalFunction->Call(callFrame, 1, argv);
+    return evalFunction->Call(callFrame, WTF_ARRAY_LENGTH(argv), argv);
 }
 
 v8::Handle<v8::Value> JavaScriptCallFrame::restart()
@@ -175,7 +174,7 @@ ScriptValue JavaScriptCallFrame::setVariableValue(int scopeNumber, const String&
         v8String(m_isolate, variableName),
         newValue.v8Value()
     };
-    return ScriptValue(setVariableValueFunction->Call(callFrame, 3, argv), m_isolate);
+    return ScriptValue(setVariableValueFunction->Call(callFrame, WTF_ARRAY_LENGTH(argv), argv), m_isolate);
 }
 
 } // namespace WebCore

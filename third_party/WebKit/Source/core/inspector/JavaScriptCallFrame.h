@@ -72,6 +72,9 @@ public:
 private:
     JavaScriptCallFrame(v8::Handle<v8::Context> debuggerContext, v8::Handle<v8::Object> callFrame);
 
+    int callV8FunctionReturnInt(const char* name) const;
+    String callV8FunctionReturnString(const char* name) const;
+
     v8::Isolate* m_isolate;
     RefPtr<JavaScriptCallFrame> m_caller;
     ScopedPersistent<v8::Context> m_debuggerContext;
