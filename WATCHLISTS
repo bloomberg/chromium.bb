@@ -383,6 +383,7 @@
                   '|chrome/browser/extensions/api/metrics_private/'\
                   '|chrome/browser/ui/webui/metrics_handler'\
                   '|content/browser/user_metrics.cc'\
+                  '|components/rappor/'\
                   '|content/public/browser/user_metrics.h'\
                   # Exclude XML files; in particular, histograms.xml.
                   '|tools/metrics/[^.]*([.](?!xml$).*)?$',
