@@ -1,6 +1,6 @@
 {
   "description": "A collection of animation performance tests",
-  "archive_data_file": "data/robohornet_pro.json",
+  "archive_data_file": "data/tough_animation_cases.json",
   "navigate_steps" : [
     { "action": "navigate" },
     { "action": "wait", "javascript": "measurementReady" }
