@@ -21,7 +21,6 @@
 #include "ui/views/controls/message_box_view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_delegate.h"
-#include "ui/wm/core/window_util.h"
 
 #if defined(OS_WIN)
 #include "ui/base/win/message_box_win.h"
@@ -38,6 +37,7 @@ namespace {
 // destroyed before a box in an outer-loop. So to avoid this, ref-counting is
 // used so that the SimpleMessageBoxViews gets deleted at the right time.
 class SimpleMessageBoxViews : public views::DialogDelegate,
+                              public base::MessagePumpDispatcher,
                               public base::RefCounted<SimpleMessageBoxViews> {
  public:
   SimpleMessageBoxViews(const base::string16& title,
@@ -63,12 +63,12 @@ class SimpleMessageBoxViews : public views::DialogDelegate,
   virtual views::Widget* GetWidget() OVERRIDE;
   virtual const views::Widget* GetWidget() const OVERRIDE;
 
+  // Overridden from MessagePumpDispatcher:
+  virtual uint32_t Dispatch(const base::NativeEvent& event) OVERRIDE;
+
  private:
   friend class base::RefCounted<SimpleMessageBoxViews>;
   virtual ~SimpleMessageBoxViews();
-
-  // This terminates the nested message-loop.
-  void Done();
 
   const base::string16 window_title_;
   const MessageBoxType type_;
@@ -76,6 +76,10 @@ class SimpleMessageBoxViews : public views::DialogDelegate,
   base::string16 no_text_;
   MessageBoxResult result_;
   views::MessageBoxView* message_box_view_;
+
+  // Set to false as soon as the user clicks a dialog button; this tells the
+  // dispatcher we're done.
+  bool should_show_dialog_;
 
   DISALLOW_COPY_AND_ASSIGN(SimpleMessageBoxViews);
 };
@@ -94,7 +98,8 @@ SimpleMessageBoxViews::SimpleMessageBoxViews(const base::string16& title,
       no_text_(no_text),
       result_(MESSAGE_BOX_RESULT_NO),
       message_box_view_(new views::MessageBoxView(
-          views::MessageBoxView::InitParams(message))) {
+          views::MessageBoxView::InitParams(message))),
+      should_show_dialog_(true) {
   AddRef();
 
   if (yes_text_.empty()) {
@@ -133,14 +138,14 @@ base::string16 SimpleMessageBoxViews::GetDialogButtonLabel(
 }
 
 bool SimpleMessageBoxViews::Cancel() {
+  should_show_dialog_= false;
   result_ = MESSAGE_BOX_RESULT_NO;
-  Done();
   return true;
 }
 
 bool SimpleMessageBoxViews::Accept() {
+  should_show_dialog_ = false;
   result_ = MESSAGE_BOX_RESULT_YES;
-  Done();
   return true;
 }
 
@@ -168,27 +173,18 @@ const views::Widget* SimpleMessageBoxViews::GetWidget() const {
   return message_box_view_->GetWidget();
 }
 
+uint32_t SimpleMessageBoxViews::Dispatch(const base::NativeEvent& event) {
+  uint32_t action = POST_DISPATCH_PERFORM_DEFAULT;
+  if (!should_show_dialog_)
+    action |= POST_DISPATCH_QUIT_LOOP;
+  return action;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // SimpleMessageBoxViews, private:
 
 SimpleMessageBoxViews::~SimpleMessageBoxViews() {
 }
-
-void SimpleMessageBoxViews::Done() {
-  // The nested-loop is started from the parent's dispatcher client (if there is
-  // one), otherwise it's started from the widget's own window's dispatcher
-  // client. Make sure the termination of the nested loop happens from the
-  // correct dispatcher client.
-  aura::Window* window = GetWidget()->GetNativeView();
-  aura::Window* parent = views::corewm::GetTransientParent(window);
-  aura::client::DispatcherClient* client = NULL;
-  if (parent)
-    client = aura::client::GetDispatcherClient(parent->GetRootWindow());
-  if (!client)
-    client = aura::client::GetDispatcherClient(window->GetRootWindow());
-  client->QuitNestedMessageLoop();
-}
-
 
 #if defined(OS_WIN)
 UINT GetMessageBoxFlagsFromType(MessageBoxType type) {
@@ -238,7 +234,7 @@ MessageBoxResult ShowMessageBoxImpl(gfx::NativeWindow parent,
     anchor = dialog->GetWidget()->GetNativeWindow();
     client = aura::client::GetDispatcherClient(anchor->GetRootWindow());
   }
-  client->RunWithDispatcher(NULL, anchor);
+  client->RunWithDispatcher(dialog.get(), anchor);
   return dialog->result();
 }
 
