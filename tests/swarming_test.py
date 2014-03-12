@@ -895,7 +895,10 @@ class MainTest(TestCase):
           'query', '--swarming', 'https://localhost:1',
           '--dimension', 'os', 'amiga',
         ])
-    self._check_output('amig1\namig2\n', '')
+    expected = (
+        "amig1\n  {u'os': u'amiga'}\n"
+        "amig2\n  {u'foo': 1, u'os': [u'amiga', u'atari']}\n")
+    self._check_output(expected, '')
 
   def test_query_filter_keep_dead(self):
     self.requests = [
@@ -920,7 +923,11 @@ class MainTest(TestCase):
           'query', '--swarming', 'https://localhost:1',
           '--dimension', 'os', 'amiga', '--keep-dead',
         ])
-    self._check_output('amig1\namig2\ndead\n', '')
+    expected = (
+        "amig1\n  {u'os': u'amiga'}\n"
+        "amig2\n  {u'foo': 1, u'os': [u'amiga', u'atari']}\n"
+        "dead\n  {u'os': u'amiga'}\n")
+    self._check_output(expected, '')
 
   def test_trigger_no_request(self):
     with self.assertRaises(SystemExit):

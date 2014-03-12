@@ -612,7 +612,7 @@ def CMDquery(parser, args):
       help='Do not filter out dead bots')
   parser.filter_group.add_option(
       '-b', '--bare', action='store_true',
-      help='Do not print out dimensions, implied with --dimension is used')
+      help='Do not print out dimensions')
   options, args = parser.parse_args(args)
   service = net.get_http_service(options.swarming)
   data = service.json_request('GET', '/swarming/api/v1/bots')
@@ -627,10 +627,15 @@ def CMDquery(parser, args):
     if not options.keep_dead and utcnow - last_seen > timeout:
       continue
 
+    # If the user requested to filter on dimensions, ensure the bot has all the
+    # dimensions requested.
     dimensions = machine['dimensions']
     for key, value in options.dimensions:
       if key not in dimensions:
         break
+      # A bot can have multiple value for a key, for example,
+      # {'os': ['Windows', 'Windows-6.1']}, so that --dimension os=Windows will
+      # be accepted.
       if isinstance(dimensions[key], list):
         if value not in dimensions[key]:
           break
@@ -639,7 +644,7 @@ def CMDquery(parser, args):
           break
     else:
       print machine['tag']
-      if not options.dimensions and not options.bare:
+      if not options.bare:
         print '  %s' % dimensions
   return 0
 
