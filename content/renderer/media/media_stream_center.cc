@@ -14,9 +14,7 @@
 #include "content/renderer/media/media_stream.h"
 #include "content/renderer/media/media_stream_dependency_factory.h"
 #include "content/renderer/media/media_stream_source.h"
-#include "content/renderer/media/media_stream_video_source.h"
 #include "content/renderer/media/media_stream_video_track.h"
-#include "third_party/WebKit/public/platform/WebMediaConstraints.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamCenterClient.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
@@ -48,19 +46,17 @@ void CreateNativeVideoMediaStreamTrack(
   DCHECK(track.extraData() == NULL);
   blink::WebMediaStreamSource source = track.source();
   DCHECK_EQ(source.type(), blink::WebMediaStreamSource::TypeVideo);
-  MediaStreamVideoSource* native_source =
-      MediaStreamVideoSource::GetVideoSource(source);
-  if (!native_source) {
+
+  if (!source.extraData()) {
     // TODO(perkj): Implement support for sources from
     // remote MediaStreams.
     NOTIMPLEMENTED();
     return;
   }
+  MediaStreamTrack* native_track = new MediaStreamVideoTrack(factory);
+  native_track->SetEnabled(track.isEnabled());
   blink::WebMediaStreamTrack writable_track(track);
-  writable_track.setExtraData(
-      new MediaStreamVideoTrack(native_source, source.constraints(),
-                                MediaStreamVideoSource::ConstraintsCallback(),
-                                track.isEnabled(), factory));
+  writable_track.setExtraData(native_track);
 }
 
 void CreateNativeMediaStreamTrack(const blink::WebMediaStreamTrack& track,

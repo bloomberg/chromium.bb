@@ -24,9 +24,10 @@ class CONTENT_EXPORT MediaStreamAudioSource
   MediaStreamAudioSource();
   virtual ~MediaStreamAudioSource();
 
-  void AddTrack(const blink::WebMediaStreamTrack& track,
-                const blink::WebMediaConstraints& constraints,
-                const ConstraintsCallback& callback);
+  virtual void AddTrack(const blink::WebMediaStreamTrack& track,
+                        const blink::WebMediaConstraints& constraints,
+                        const ConstraintsCallback& callback) OVERRIDE;
+  virtual void RemoveTrack(const blink::WebMediaStreamTrack& track) OVERRIDE;
 
   void SetLocalAudioSource(webrtc::AudioSourceInterface* source) {
     local_audio_source_ = source;

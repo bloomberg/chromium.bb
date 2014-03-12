@@ -478,9 +478,10 @@ void MediaStreamImpl::CreateVideoTracks(
                            constraints,
                            request->frame,
                            &webkit_source);
-    (*webkit_tracks)[i] =
-        request->CreateAndStartVideoTrack(webkit_source, constraints,
-                                          dependency_factory_);
+    (*webkit_tracks)[i].initialize(webkit_source);
+    (*webkit_tracks)[i].setExtraData(new MediaStreamVideoTrack(
+        dependency_factory_));
+    request->StartTrack((*webkit_tracks)[i], constraints);
   }
 }
 
@@ -521,7 +522,7 @@ void MediaStreamImpl::CreateAudioTracks(
                            request->frame,
                            &webkit_source);
     (*webkit_tracks)[i].initialize(webkit_source);
-    request->StartAudioTrack((*webkit_tracks)[i], constraints);
+    request->StartTrack((*webkit_tracks)[i], constraints);
   }
 }
 
@@ -833,12 +834,11 @@ MediaStreamImpl::UserMediaRequestInfo::~UserMediaRequestInfo() {
   DVLOG(1) << "~UserMediaRequestInfo";
 }
 
-void MediaStreamImpl::UserMediaRequestInfo::StartAudioTrack(
+void MediaStreamImpl::UserMediaRequestInfo::StartTrack(
     const blink::WebMediaStreamTrack& track,
     const blink::WebMediaConstraints& constraints) {
-  DCHECK(track.source().type() == blink::WebMediaStreamSource::TypeAudio);
-  MediaStreamAudioSource* native_source =
-      static_cast <MediaStreamAudioSource*>(track.source().extraData());
+  MediaStreamSource* native_source =
+      static_cast <MediaStreamSource*>(track.source().extraData());
   DCHECK(native_source);
 
   sources_.push_back(track.source());
@@ -847,24 +847,6 @@ void MediaStreamImpl::UserMediaRequestInfo::StartAudioTrack(
       track, constraints, base::Bind(
           &MediaStreamImpl::UserMediaRequestInfo::OnTrackStarted,
           AsWeakPtr()));
-}
-
-blink::WebMediaStreamTrack
-MediaStreamImpl::UserMediaRequestInfo::CreateAndStartVideoTrack(
-    const blink::WebMediaStreamSource& source,
-    const blink::WebMediaConstraints& constraints,
-    MediaStreamDependencyFactory* factory) {
-  DCHECK(source.type() == blink::WebMediaStreamSource::TypeVideo);
-  MediaStreamVideoSource* native_source =
-      MediaStreamVideoSource::GetVideoSource(source);
-  DCHECK(native_source);
-  sources_.push_back(source);
-  sources_waiting_for_callback_.push_back(native_source);
-  return MediaStreamVideoTrack::CreateVideoTrack(
-      native_source, constraints, base::Bind(
-          &MediaStreamImpl::UserMediaRequestInfo::OnTrackStarted,
-          AsWeakPtr()),
-      true, factory);
 }
 
 void MediaStreamImpl::UserMediaRequestInfo::CallbackOnTracksStarted(

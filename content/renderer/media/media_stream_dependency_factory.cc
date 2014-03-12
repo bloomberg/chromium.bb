@@ -726,7 +726,7 @@ void MediaStreamDependencyFactory::AddNativeTrackToBlinkTrack(
 
   if (track.source().type() == blink::WebMediaStreamSource::TypeVideo) {
     DVLOG(1) << "AddNativeTrackToBlinkTrack() video";
-    track.setExtraData(new WebRtcMediaStreamVideoTrack(
+    track.setExtraData(new MediaStreamVideoTrack(
         static_cast<webrtc::VideoTrackInterface*>(native_track)));
   } else {
     DVLOG(1) << "AddNativeTrackToBlinkTrack() audio";

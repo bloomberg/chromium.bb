@@ -48,4 +48,9 @@ void MediaStreamAudioSource::AddTrack(
   callback.Run(this, result);
 }
 
+void MediaStreamAudioSource::RemoveTrack(
+    const blink::WebMediaStreamTrack& track) {
+  NOTIMPLEMENTED();
+}
+
 }  // namespace content

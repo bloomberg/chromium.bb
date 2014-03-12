@@ -30,6 +30,11 @@ class CONTENT_EXPORT MediaStreamSource
   MediaStreamSource();
   virtual ~MediaStreamSource();
 
+  virtual void AddTrack(const blink::WebMediaStreamTrack& track,
+                        const blink::WebMediaConstraints& constraints,
+                        const ConstraintsCallback& callback) = 0;
+  virtual void RemoveTrack(const blink::WebMediaStreamTrack& track) = 0;
+
   // Returns device information about a source that has been created by a
   // JavaScript call to GetUserMedia, e.g., a camera or microphone.
   const StreamDeviceInfo& device_info() const {

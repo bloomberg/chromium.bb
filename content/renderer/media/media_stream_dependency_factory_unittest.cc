@@ -100,17 +100,13 @@ class MediaStreamDependencyFactoryTest : public ::testing::Test {
       audio_track_vector[i].setExtraData(native_track);
     }
 
-    blink::WebMediaConstraints constraints;
-    constraints.initialize();
     blink::WebVector<blink::WebMediaStreamTrack> video_track_vector(
         video_sources.size());
     for (size_t i = 0; i < video_track_vector.size(); ++i) {
-      MediaStreamVideoSource* native_source =
-             MediaStreamVideoSource::GetVideoSource(video_sources[i]);
-      video_track_vector[i] = MediaStreamVideoTrack::CreateVideoTrack(
-          native_source, constraints,
-          MediaStreamVideoSource::ConstraintsCallback(), true,
-          dependency_factory_.get());
+      video_track_vector[i].initialize(video_sources[i].id(),
+                                       video_sources[i]);
+      video_track_vector[i].setExtraData(
+          new MediaStreamVideoTrack(dependency_factory_.get()));
     }
 
     stream_desc.initialize("media stream", audio_track_vector,
