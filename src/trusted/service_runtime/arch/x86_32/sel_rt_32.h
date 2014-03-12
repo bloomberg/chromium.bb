@@ -264,21 +264,12 @@ EXTERN_C_END
 #endif
 
 #if defined(__ASSEMBLER__)
-/*
- * The MacOS assembler has a macro facility that is pretty close
- * to GNU as macros, but not quite the same.
- */
-#if NACL_OSX || defined(__clang__)
-# define MACRO(name)    .macro name
-# define ENDMACRO       .endmacro
-# define MACROENTRY     DEFINE_GLOBAL_HIDDEN_LOCATION($0):
-# define MACROARG1      $0
-# define MACROARG2      $1
-# define MACROARG3      $2
-# define MACROARG4      $3
-# define MACROIMMED(x)  $$##x
+/* TODO(thakis): Remove the clang branch once clang 202554 is everywhere. */
+#if defined(__clang__)
+# define MACRO(name)    .macro name arg1, arg2=0, arg3=0, arg4=0
 #else
 # define MACRO(name)    .macro name arg1, arg2=0, arg3=, arg4=
+#endif
 # define ENDMACRO       .endm
 # define MACROENTRY     DEFINE_GLOBAL_HIDDEN_LOCATION(\arg1):
 # define MACROARG1      \arg1
@@ -286,7 +277,6 @@ EXTERN_C_END
 # define MACROARG3      \arg3
 # define MACROARG4      \arg4
 # define MACROIMMED(x)  $##x
-#endif
 
 #endif
 

@@ -4,25 +4,13 @@
  * found in the LICENSE file.
  */
 
-/*
- * The MacOS assembler has a macro facility that is pretty close
- * to GNU as macros, but not quite the same.
- */
-#if NACL_OSX || defined(__clang__)
-# define MACRO(name)    .macro name
-# define ENDMACRO       .endmacro
-# define MACROARG1      $0
-# define MACROARG2      $1
-# define MACROARG3      $2
-# define MACROARG4      $3
-#else
-# define MACRO(name)    .macro name arg1=0, arg2=0, arg3=0, arg4=0
-# define ENDMACRO       .endm
-# define MACROARG1      \arg1
-# define MACROARG2      \arg2
-# define MACROARG3      \arg3
-# define MACROARG4      \arg4
-#endif
+#define MACRO(name)    .macro name arg1=0, arg2=0, arg3=0, arg4=0
+#define ENDMACRO       .endm
+#define MACROARG1      \arg1
+#define MACROARG2      \arg2
+#define MACROARG3      \arg3
+#define MACROARG4      \arg4
+
 /*
  * We must write x86 assembly immediates as "$ 0" rather than "$0" to
  * avoid this being treated as a macro argument by the Mac/Clang
