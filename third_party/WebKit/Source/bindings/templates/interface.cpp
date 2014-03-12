@@ -561,11 +561,11 @@ static void {{cpp_class}}OriginSafeMethodSetterCallback(v8::Local<v8::String> na
 const WrapperTypeInfo {{v8_class}}Constructor::wrapperTypeInfo = { gin::kEmbedderBlink, {{v8_class}}Constructor::domTemplate, {{v8_class}}::derefObject, {{to_active_dom_object}}, {{to_event_target}}, 0, {{v8_class}}::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype, false };
 
 {{named_constructor_callback(named_constructor)}}
-v8::Handle<v8::FunctionTemplate> {{v8_class}}Constructor::domTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
+v8::Handle<v8::FunctionTemplate> {{v8_class}}Constructor::domTemplate(v8::Isolate* isolate)
 {
     static int domTemplateKey; // This address is used for a key to look up the dom template.
     V8PerIsolateData* data = V8PerIsolateData::from(isolate);
-    v8::Local<v8::FunctionTemplate> result = data->existingDOMTemplate(currentWorldType, &domTemplateKey);
+    v8::Local<v8::FunctionTemplate> result = data->existingDOMTemplate(&domTemplateKey);
     if (!result.IsEmpty())
         return result;
 
@@ -576,9 +576,8 @@ v8::Handle<v8::FunctionTemplate> {{v8_class}}Constructor::domTemplate(v8::Isolat
     v8::Local<v8::ObjectTemplate> instanceTemplate = result->InstanceTemplate();
     instanceTemplate->SetInternalFieldCount({{v8_class}}::internalFieldCount);
     result->SetClassName(v8AtomicString(isolate, "{{cpp_class}}"));
-    result->Inherit({{v8_class}}::domTemplate(isolate, currentWorldType));
-    data->setDOMTemplate(currentWorldType, &domTemplateKey, result);
-
+    result->Inherit({{v8_class}}::domTemplate(isolate));
+    data->setDOMTemplate(&domTemplateKey, result);
     return scope.Escape(result);
 }
 
@@ -843,9 +842,9 @@ void {{v8_class}}::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>
 {##############################################################################}
 {% block configure_shadow_object_template %}
 {% if interface_name == 'Window' %}
-static void configureShadowObjectTemplate(v8::Handle<v8::ObjectTemplate> templ, v8::Isolate* isolate, WrapperWorldType currentWorldType)
+static void configureShadowObjectTemplate(v8::Handle<v8::ObjectTemplate> templ, v8::Isolate* isolate)
 {
-    V8DOMConfiguration::installAttributes(templ, v8::Handle<v8::ObjectTemplate>(), shadowAttributes, WTF_ARRAY_LENGTH(shadowAttributes), isolate, currentWorldType);
+    V8DOMConfiguration::installAttributes(templ, v8::Handle<v8::ObjectTemplate>(), shadowAttributes, WTF_ARRAY_LENGTH(shadowAttributes), isolate);
 
     // Install a security handler with V8.
     templ->SetAccessCheckCallbacks(V8Window::namedSecurityCheckCustom, V8Window::indexedSecurityCheckCustom, v8::External::New(isolate, const_cast<WrapperTypeInfo*>(&V8Window::wrapperTypeInfo)));
@@ -859,17 +858,17 @@ static void configureShadowObjectTemplate(v8::Handle<v8::ObjectTemplate> templ, 
 {##############################################################################}
 {% block configure_class_template %}
 {# FIXME: rename to install_dom_template and Install{{v8_class}}DOMTemplate #}
-static void configure{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate, WrapperWorldType currentWorldType)
+static void configure{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate)
 {
     functionTemplate->ReadOnlyPrototype();
 
     v8::Local<v8::Signature> defaultSignature;
     {% set parent_template =
-           'V8%s::domTemplate(isolate, currentWorldType)' % parent_interface
+           'V8%s::domTemplate(isolate)' % parent_interface
            if parent_interface else 'v8::Local<v8::FunctionTemplate>()' %}
     {% if runtime_enabled_function %}
     if (!{{runtime_enabled_function}}())
-        defaultSignature = V8DOMConfiguration::installDOMClassTemplate(functionTemplate, "", {{parent_template}}, {{v8_class}}::internalFieldCount, 0, 0, 0, 0, 0, 0, isolate, currentWorldType);
+        defaultSignature = V8DOMConfiguration::installDOMClassTemplate(functionTemplate, "", {{parent_template}}, {{v8_class}}::internalFieldCount, 0, 0, 0, 0, 0, 0, isolate);
     else
     {% endif %}
     {% set runtime_enabled_indent = 4 if runtime_enabled_function else 0 %}
@@ -891,7 +890,7 @@ static void configure{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> funct
         {{attributes_name}}, {{attributes_length}},
         {{accessors_name}}, {{accessors_length}},
         {{methods_name}}, {{methods_length}},
-        isolate, currentWorldType);
+        isolate);
     {% endfilter %}
 
     {% if constructors or has_custom_constructor or has_event_constructor %}
@@ -911,7 +910,7 @@ static void configure{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> funct
     if ({{attribute.runtime_enabled_function}}()) {
         static const V8DOMConfiguration::AttributeConfiguration attributeConfiguration =\
         {{attribute_configuration(attribute)}};
-        V8DOMConfiguration::installAttribute(instanceTemplate, prototypeTemplate, attributeConfiguration, isolate, currentWorldType);
+        V8DOMConfiguration::installAttribute(instanceTemplate, prototypeTemplate, attributeConfiguration, isolate);
     }
     {% endfilter %}
     {% endfor %}
@@ -975,7 +974,7 @@ static void configure{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> funct
     {% filter conditional(method.conditional_string) %}
     {% if method.is_do_not_check_security %}
     {% if method.is_per_world_bindings %}
-    if (currentWorldType == MainWorld) {
+    if (DOMWrapperWorld::current(isolate)->isMainWorld()) {
         {{install_do_not_check_security_signature(method, 'ForMainWorld')}}
     } else {
         {{install_do_not_check_security_signature(method)}}
@@ -985,7 +984,7 @@ static void configure{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> funct
     {% endif %}
     {% else %}{# is_do_not_check_security #}
     {% if method.is_per_world_bindings %}
-    if (currentWorldType == MainWorld) {
+    if (DOMWrapperWorld::current(isolate)->isMainWorld()) {
         {% filter runtime_enabled(method.runtime_enabled_function) %}
         {{install_custom_signature(method, 'ForMainWorld')}}
         {% endfilter %}
@@ -1094,17 +1093,17 @@ COMPILE_ASSERT({{constant.value}} == {{constant_cpp_class}}::{{constant.reflecte
 {##############################################################################}
 {% block get_template %}
 {# FIXME: rename to get_dom_template and GetDOMTemplate #}
-v8::Handle<v8::FunctionTemplate> {{v8_class}}::domTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
+v8::Handle<v8::FunctionTemplate> {{v8_class}}::domTemplate(v8::Isolate* isolate)
 {
     V8PerIsolateData* data = V8PerIsolateData::from(isolate);
-    V8PerIsolateData::TemplateMap::iterator result = data->templateMap(currentWorldType).find(&wrapperTypeInfo);
-    if (result != data->templateMap(currentWorldType).end())
+    V8PerIsolateData::TemplateMap::iterator result = data->templateMap().find(&wrapperTypeInfo);
+    if (result != data->templateMap().end())
         return result->value.newLocal(isolate);
 
     TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "BuildDOMTemplate");
     v8::Local<v8::FunctionTemplate> templ = v8::FunctionTemplate::New(isolate, V8ObjectConstructor::isValidConstructorMode);
-    configure{{v8_class}}Template(templ, isolate, currentWorldType);
-    data->templateMap(currentWorldType).add(&wrapperTypeInfo, UnsafePersistent<v8::FunctionTemplate>(isolate, templ));
+    configure{{v8_class}}Template(templ, isolate);
+    data->templateMap().add(&wrapperTypeInfo, UnsafePersistent<v8::FunctionTemplate>(isolate, templ));
     return templ;
 }
 
@@ -1161,7 +1160,7 @@ void {{v8_class}}::installPerContextEnabledProperties(v8::Handle<v8::Object> ins
 void {{v8_class}}::installPerContextEnabledMethods(v8::Handle<v8::Object> prototypeTemplate, v8::Isolate* isolate)
 {
     {# Define per-context enabled operations #}
-    v8::Local<v8::Signature> defaultSignature = v8::Signature::New(isolate, domTemplate(isolate, worldType(isolate)));
+    v8::Local<v8::Signature> defaultSignature = v8::Signature::New(isolate, domTemplate(isolate));
 
     ExecutionContext* context = toExecutionContext(prototypeTemplate->CreationContext());
     {% for method in methods if method.per_context_enabled_function %}
@@ -1201,14 +1200,14 @@ EventTarget* {{v8_class}}::toEventTarget(v8::Handle<v8::Object> object)
 {##############################################################################}
 {% block get_shadow_object_template %}
 {% if interface_name == 'Window' %}
-v8::Handle<v8::ObjectTemplate> V8Window::getShadowObjectTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
+v8::Handle<v8::ObjectTemplate> V8Window::getShadowObjectTemplate(v8::Isolate* isolate)
 {
-    if (currentWorldType == MainWorld) {
+    if (DOMWrapperWorld::current(isolate)->isMainWorld()) {
         DEFINE_STATIC_LOCAL(v8::Persistent<v8::ObjectTemplate>, V8WindowShadowObjectCacheForMainWorld, ());
         if (V8WindowShadowObjectCacheForMainWorld.IsEmpty()) {
             TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "BuildDOMTemplate");
             v8::Handle<v8::ObjectTemplate> templ = v8::ObjectTemplate::New(isolate);
-            configureShadowObjectTemplate(templ, isolate, currentWorldType);
+            configureShadowObjectTemplate(templ, isolate);
             V8WindowShadowObjectCacheForMainWorld.Reset(isolate, templ);
             return templ;
         }
@@ -1218,7 +1217,7 @@ v8::Handle<v8::ObjectTemplate> V8Window::getShadowObjectTemplate(v8::Isolate* is
         if (V8WindowShadowObjectCacheForNonMainWorld.IsEmpty()) {
             TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "BuildDOMTemplate");
             v8::Handle<v8::ObjectTemplate> templ = v8::ObjectTemplate::New(isolate);
-            configureShadowObjectTemplate(templ, isolate, currentWorldType);
+            configureShadowObjectTemplate(templ, isolate);
             V8WindowShadowObjectCacheForNonMainWorld.Reset(isolate, templ);
             return templ;
         }

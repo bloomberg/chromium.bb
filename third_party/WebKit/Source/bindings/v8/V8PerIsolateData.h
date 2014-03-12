@@ -68,15 +68,6 @@ public:
     bool isMainThread() { return m_isMainThread; }
     v8::Isolate* isolate() { return m_isolate; }
 
-    typedef HashMap<const void*, UnsafePersistent<v8::FunctionTemplate> > TemplateMap;
-
-    TemplateMap& templateMap(WrapperWorldType worldType)
-    {
-        if (worldType == MainWorld)
-            return m_templatesForMainWorld;
-        return m_templatesForNonMainWorld;
-    }
-
     v8::Handle<v8::FunctionTemplate> toStringTemplate();
 
     StringCache* stringCache() { return m_stringCache.get(); }
@@ -99,9 +90,11 @@ public:
     GCEventData* gcEventData() { return m_gcEventData.get(); }
     V8HiddenValue* hiddenValue() { return m_hiddenValue.get(); }
 
-    v8::Handle<v8::FunctionTemplate> domTemplate(WrapperWorldType, void* domTemplateKey, v8::FunctionCallback = 0, v8::Handle<v8::Value> data = v8::Handle<v8::Value>(), v8::Handle<v8::Signature> = v8::Handle<v8::Signature>(), int length = 0);
-    v8::Handle<v8::FunctionTemplate> existingDOMTemplate(WrapperWorldType, void* domTemplateKey);
-    void setDOMTemplate(WrapperWorldType, void* domTemplateKey, v8::Handle<v8::FunctionTemplate>);
+    typedef HashMap<const void*, UnsafePersistent<v8::FunctionTemplate> > TemplateMap;
+    TemplateMap& templateMap();
+    v8::Handle<v8::FunctionTemplate> domTemplate(void* domTemplateKey, v8::FunctionCallback = 0, v8::Handle<v8::Value> data = v8::Handle<v8::Value>(), v8::Handle<v8::Signature> = v8::Handle<v8::Signature>(), int length = 0);
+    v8::Handle<v8::FunctionTemplate> existingDOMTemplate(void* domTemplateKey);
+    void setDOMTemplate(void* domTemplateKey, v8::Handle<v8::FunctionTemplate>);
 
     bool hasInstance(const WrapperTypeInfo*, v8::Handle<v8::Value>);
     v8::Handle<v8::Object> findInstanceInPrototypeChain(const WrapperTypeInfo*, v8::Handle<v8::Value>);

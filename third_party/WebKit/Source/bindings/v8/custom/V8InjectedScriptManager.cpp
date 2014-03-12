@@ -53,7 +53,7 @@ struct InjectedScriptManager::CallbackData {
 
 static v8::Local<v8::Object> createInjectedScriptHostV8Wrapper(InjectedScriptHost* host, v8::Isolate* isolate)
 {
-    v8::Local<v8::Function> function = V8InjectedScriptHost::domTemplate(isolate, MainWorld)->GetFunction();
+    v8::Local<v8::Function> function = V8InjectedScriptHost::domTemplate(isolate)->GetFunction();
     if (function.IsEmpty()) {
         // Return if allocation failed.
         return v8::Local<v8::Object>();

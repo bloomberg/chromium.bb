@@ -33,18 +33,19 @@
 
 namespace WebCore {
 
-void V8DOMConfiguration::installAttributes(v8::Handle<v8::ObjectTemplate> instanceTemplate, v8::Handle<v8::ObjectTemplate> prototype, const AttributeConfiguration* attributes, size_t attributeCount, v8::Isolate* isolate, WrapperWorldType currentWorldType)
+void V8DOMConfiguration::installAttributes(v8::Handle<v8::ObjectTemplate> instanceTemplate, v8::Handle<v8::ObjectTemplate> prototype, const AttributeConfiguration* attributes, size_t attributeCount, v8::Isolate* isolate)
 {
     for (size_t i = 0; i < attributeCount; ++i)
-        installAttribute(instanceTemplate, prototype, attributes[i], isolate, currentWorldType);
+        installAttribute(instanceTemplate, prototype, attributes[i], isolate);
 }
 
-void V8DOMConfiguration::installAccessors(v8::Handle<v8::ObjectTemplate> prototype, v8::Handle<v8::Signature> signature, const AccessorConfiguration* accessors, size_t accessorCount, v8::Isolate* isolate, WrapperWorldType currentWorldType)
+void V8DOMConfiguration::installAccessors(v8::Handle<v8::ObjectTemplate> prototype, v8::Handle<v8::Signature> signature, const AccessorConfiguration* accessors, size_t accessorCount, v8::Isolate* isolate)
 {
+    bool isMainWorld = DOMWrapperWorld::current(isolate)->isMainWorld();
     for (size_t i = 0; i < accessorCount; ++i) {
         v8::FunctionCallback getterCallback = accessors[i].getter;
         v8::FunctionCallback setterCallback = accessors[i].setter;
-        if (currentWorldType == MainWorld) {
+        if (isMainWorld) {
             if (accessors[i].getterForMainWorld)
                 getterCallback = accessors[i].getterForMainWorld;
             if (accessors[i].setterForMainWorld)
@@ -75,11 +76,12 @@ void V8DOMConfiguration::installConstants(v8::Handle<v8::FunctionTemplate> funct
     }
 }
 
-void V8DOMConfiguration::installCallbacks(v8::Handle<v8::ObjectTemplate> prototype, v8::Handle<v8::Signature> signature, v8::PropertyAttribute attributes, const MethodConfiguration* callbacks, size_t callbackCount, v8::Isolate* isolate, WrapperWorldType currentWorldType)
+void V8DOMConfiguration::installCallbacks(v8::Handle<v8::ObjectTemplate> prototype, v8::Handle<v8::Signature> signature, v8::PropertyAttribute attributes, const MethodConfiguration* callbacks, size_t callbackCount, v8::Isolate* isolate)
 {
+    bool isMainWorld = DOMWrapperWorld::current(isolate)->isMainWorld();
     for (size_t i = 0; i < callbackCount; ++i) {
         v8::FunctionCallback callback = callbacks[i].callback;
-        if (currentWorldType == MainWorld && callbacks[i].callbackForMainWorld)
+        if (isMainWorld && callbacks[i].callbackForMainWorld)
             callback = callbacks[i].callbackForMainWorld;
         v8::Local<v8::FunctionTemplate> functionTemplate = v8::FunctionTemplate::New(isolate, callback, v8Undefined(), signature, callbacks[i].length);
         functionTemplate->RemovePrototype();
@@ -91,7 +93,7 @@ v8::Local<v8::Signature> V8DOMConfiguration::installDOMClassTemplate(v8::Handle<
     const AttributeConfiguration* attributes, size_t attributeCount,
     const AccessorConfiguration* accessors, size_t accessorCount,
     const MethodConfiguration* callbacks, size_t callbackCount,
-    v8::Isolate* isolate, WrapperWorldType currentWorldType)
+    v8::Isolate* isolate)
 {
     functionDescriptor->SetClassName(v8AtomicString(isolate, interfaceName));
     v8::Local<v8::ObjectTemplate> instanceTemplate = functionDescriptor->InstanceTemplate();
@@ -107,11 +109,11 @@ v8::Local<v8::Signature> V8DOMConfiguration::installDOMClassTemplate(v8::Handle<
 
     v8::Local<v8::Signature> defaultSignature = v8::Signature::New(isolate, functionDescriptor);
     if (attributeCount)
-        installAttributes(instanceTemplate, functionDescriptor->PrototypeTemplate(), attributes, attributeCount, isolate, currentWorldType);
+        installAttributes(instanceTemplate, functionDescriptor->PrototypeTemplate(), attributes, attributeCount, isolate);
     if (accessorCount)
-        installAccessors(functionDescriptor->PrototypeTemplate(), defaultSignature, accessors, accessorCount, isolate, currentWorldType);
+        installAccessors(functionDescriptor->PrototypeTemplate(), defaultSignature, accessors, accessorCount, isolate);
     if (callbackCount)
-        installCallbacks(functionDescriptor->PrototypeTemplate(), defaultSignature, static_cast<v8::PropertyAttribute>(v8::DontDelete), callbacks, callbackCount, isolate, currentWorldType);
+        installCallbacks(functionDescriptor->PrototypeTemplate(), defaultSignature, static_cast<v8::PropertyAttribute>(v8::DontDelete), callbacks, callbackCount, isolate);
     return defaultSignature;
 }
 

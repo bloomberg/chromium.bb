@@ -108,7 +108,7 @@ inline void v8SetReturnValue(const CallbackInfo& info, ArrayBuffer* impl)
 template<class CallbackInfo>
 inline void v8SetReturnValueForMainWorld(const CallbackInfo& info, ArrayBuffer* impl)
 {
-    ASSERT(worldType(info.GetIsolate()) == MainWorld);
+    ASSERT(DOMWrapperWorld::current(info.GetIsolate())->isMainWorld());
     if (UNLIKELY(!impl)) {
         v8SetReturnValueNull(info);
         return;

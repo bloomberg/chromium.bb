@@ -61,15 +61,14 @@ namespace {
 v8::Local<v8::ObjectTemplate> cachedObjectTemplate(void* domTemplateKey, int internalFieldCount, v8::Isolate* isolate)
 {
     V8PerIsolateData* data = V8PerIsolateData::from(isolate);
-    WrapperWorldType currentWorldType = worldType(isolate);
-    v8::Handle<v8::FunctionTemplate> functionDescriptor = data->existingDOMTemplate(currentWorldType, domTemplateKey);
+    v8::Handle<v8::FunctionTemplate> functionDescriptor = data->existingDOMTemplate(domTemplateKey);
     if (!functionDescriptor.IsEmpty())
         return functionDescriptor->InstanceTemplate();
 
     functionDescriptor = v8::FunctionTemplate::New(isolate);
     v8::Local<v8::ObjectTemplate> instanceTemplate = functionDescriptor->InstanceTemplate();
     instanceTemplate->SetInternalFieldCount(internalFieldCount);
-    data->setDOMTemplate(currentWorldType, domTemplateKey, functionDescriptor);
+    data->setDOMTemplate(domTemplateKey, functionDescriptor);
     return instanceTemplate;
 }
 
@@ -681,8 +680,7 @@ void V8PromiseCustom::setState(v8::Handle<v8::Object> internal, PromiseState sta
 
 bool V8PromiseCustom::isPromise(v8::Handle<v8::Value> maybePromise, v8::Isolate* isolate)
 {
-    WrapperWorldType currentWorldType = worldType(isolate);
-    return V8Promise::domTemplate(isolate, currentWorldType)->HasInstance(maybePromise);
+    return V8Promise::domTemplate(isolate)->HasInstance(maybePromise);
 }
 
 v8::Local<v8::Object> V8PromiseCustom::toPromise(v8::Handle<v8::Value> maybePromise, v8::Isolate* isolate)

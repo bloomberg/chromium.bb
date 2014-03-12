@@ -51,13 +51,7 @@ namespace WebCore {
     static const uint16_t v8DOMNodeClassId = 1;
     static const uint16_t v8DOMObjectClassId = 2;
 
-    enum WrapperWorldType {
-        MainWorld,
-        IsolatedWorld,
-        WorkerWorld
-    };
-
-    typedef v8::Handle<v8::FunctionTemplate> (*DomTemplateFunction)(v8::Isolate*, WrapperWorldType);
+    typedef v8::Handle<v8::FunctionTemplate> (*DomTemplateFunction)(v8::Isolate*);
     typedef void (*DerefObjectFunction)(void*);
     typedef ActiveDOMObject* (*ToActiveDOMObjectFunction)(v8::Handle<v8::Object>);
     typedef EventTarget* (*ToEventTargetFunction)(v8::Handle<v8::Object>);
@@ -100,7 +94,10 @@ namespace WebCore {
             return false;
         }
 
-        v8::Handle<v8::FunctionTemplate> domTemplate(v8::Isolate* isolate, WrapperWorldType worldType) const { return domTemplateFunction(isolate, worldType); }
+        v8::Handle<v8::FunctionTemplate> domTemplate(v8::Isolate* isolate) const
+        {
+            return domTemplateFunction(isolate);
+        }
 
         void installPerContextEnabledMethods(v8::Handle<v8::Object> prototypeTemplate, v8::Isolate* isolate) const
         {

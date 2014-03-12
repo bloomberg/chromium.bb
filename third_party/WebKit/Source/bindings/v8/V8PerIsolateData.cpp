@@ -93,9 +93,16 @@ void V8PerIsolateData::dispose(v8::Isolate* isolate)
     isolate->SetData(gin::kEmbedderBlink, 0);
 }
 
-v8::Handle<v8::FunctionTemplate> V8PerIsolateData::domTemplate(WrapperWorldType currentWorldType, void* domTemplateKey, v8::FunctionCallback callback, v8::Handle<v8::Value> data, v8::Handle<v8::Signature> signature, int length)
+V8PerIsolateData::TemplateMap& V8PerIsolateData::templateMap()
 {
-    TemplateMap& templates = templateMap(currentWorldType);
+    if (DOMWrapperWorld::current(m_isolate)->isMainWorld())
+        return m_templatesForMainWorld;
+    return m_templatesForNonMainWorld;
+}
+
+v8::Handle<v8::FunctionTemplate> V8PerIsolateData::domTemplate(void* domTemplateKey, v8::FunctionCallback callback, v8::Handle<v8::Value> data, v8::Handle<v8::Signature> signature, int length)
+{
+    TemplateMap& templates = templateMap();
     TemplateMap::iterator result = templates.find(domTemplateKey);
     if (result != templates.end())
         return result->value.newLocal(m_isolate);
@@ -104,18 +111,18 @@ v8::Handle<v8::FunctionTemplate> V8PerIsolateData::domTemplate(WrapperWorldType 
     return templ;
 }
 
-v8::Handle<v8::FunctionTemplate> V8PerIsolateData::existingDOMTemplate(WrapperWorldType currentWorldType, void* domTemplateKey)
+v8::Handle<v8::FunctionTemplate> V8PerIsolateData::existingDOMTemplate(void* domTemplateKey)
 {
-    TemplateMap& templates = templateMap(currentWorldType);
+    TemplateMap& templates = templateMap();
     TemplateMap::iterator result = templates.find(domTemplateKey);
     if (result != templates.end())
         return result->value.newLocal(m_isolate);
     return v8::Local<v8::FunctionTemplate>();
 }
 
-void V8PerIsolateData::setDOMTemplate(WrapperWorldType currentWorldType, void* domTemplateKey, v8::Handle<v8::FunctionTemplate> templ)
+void V8PerIsolateData::setDOMTemplate(void* domTemplateKey, v8::Handle<v8::FunctionTemplate> templ)
 {
-    templateMap(currentWorldType).add(domTemplateKey, UnsafePersistent<v8::FunctionTemplate>(m_isolate, templ));
+    templateMap().add(domTemplateKey, UnsafePersistent<v8::FunctionTemplate>(m_isolate, templ));
 }
 
 v8::Local<v8::Context> V8PerIsolateData::ensureRegexContext()

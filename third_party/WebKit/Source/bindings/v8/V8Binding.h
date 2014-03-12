@@ -635,9 +635,6 @@ inline v8::Handle<v8::Value> toV8Sequence(v8::Handle<v8::Value> value, uint32_t&
 v8::Isolate* toIsolate(ExecutionContext*);
 v8::Isolate* toIsolate(LocalFrame*);
 
-WrapperWorldType worldType(v8::Isolate*);
-WrapperWorldType worldTypeInMainThread(v8::Isolate*);
-
 DOMWindow* toDOMWindow(v8::Handle<v8::Value>, v8::Isolate*);
 DOMWindow* toDOMWindow(v8::Handle<v8::Context>);
 ExecutionContext* toExecutionContext(v8::Handle<v8::Context>);

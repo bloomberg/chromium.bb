@@ -611,25 +611,6 @@ void crashIfV8IsDead()
     }
 }
 
-WrapperWorldType worldType(v8::Isolate* isolate)
-{
-    V8PerIsolateData* data = V8PerIsolateData::from(isolate);
-    if (data->isMainThread())
-        return worldTypeInMainThread(isolate);
-    return WorkerWorld;
-}
-
-WrapperWorldType worldTypeInMainThread(v8::Isolate* isolate)
-{
-    if (!DOMWrapperWorld::isolatedWorldsExist())
-        return MainWorld;
-    ASSERT(!isolate->GetEnteredContext().IsEmpty());
-    DOMWrapperWorld* world = DOMWrapperWorld::world(isolate->GetEnteredContext());
-    if (world->isMainWorld())
-        return MainWorld;
-    return IsolatedWorld;
-}
-
 v8::Handle<v8::Function> getBoundFunction(v8::Handle<v8::Function> function)
 {
     v8::Handle<v8::Value> boundFunction = function->GetBoundFunction();

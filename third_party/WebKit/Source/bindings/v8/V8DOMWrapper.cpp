@@ -44,17 +44,16 @@ namespace WebCore {
 static v8::Local<v8::Object> wrapInShadowTemplate(v8::Local<v8::Object> wrapper, Node* impl, v8::Isolate* isolate)
 {
     static int shadowTemplateKey; // This address is used for a key to look up the dom template.
-    WrapperWorldType currentWorldType = worldType(isolate);
     V8PerIsolateData* data = V8PerIsolateData::from(isolate);
-    v8::Handle<v8::FunctionTemplate> shadowTemplate = data->existingDOMTemplate(currentWorldType, &shadowTemplateKey);
+    v8::Handle<v8::FunctionTemplate> shadowTemplate = data->existingDOMTemplate(&shadowTemplateKey);
     if (shadowTemplate.IsEmpty()) {
         shadowTemplate = v8::FunctionTemplate::New(isolate);
         if (shadowTemplate.IsEmpty())
             return v8::Local<v8::Object>();
         shadowTemplate->SetClassName(v8AtomicString(isolate, "HTMLDocument"));
-        shadowTemplate->Inherit(V8HTMLDocument::domTemplate(isolate, currentWorldType));
+        shadowTemplate->Inherit(V8HTMLDocument::domTemplate(isolate));
         shadowTemplate->InstanceTemplate()->SetInternalFieldCount(V8HTMLDocument::internalFieldCount);
-        data->setDOMTemplate(currentWorldType, &shadowTemplateKey, shadowTemplate);
+        data->setDOMTemplate(&shadowTemplateKey, shadowTemplate);
     }
 
     v8::Local<v8::Function> shadowConstructor = shadowTemplate->GetFunction();
@@ -74,7 +73,7 @@ v8::Local<v8::Object> V8DOMWrapper::createWrapper(v8::Handle<v8::Object> creatio
     V8WrapperInstantiationScope scope(creationContext, isolate);
 
     V8PerContextData* perContextData = V8PerContextData::from(scope.context());
-    v8::Local<v8::Object> wrapper = perContextData ? perContextData->createWrapperFromCache(type) : V8ObjectConstructor::newInstance(type->domTemplate(isolate, worldTypeInMainThread(isolate))->GetFunction());
+    v8::Local<v8::Object> wrapper = perContextData ? perContextData->createWrapperFromCache(type) : V8ObjectConstructor::newInstance(type->domTemplate(isolate)->GetFunction());
 
     if (type == &V8HTMLDocument::wrapperTypeInfo && !wrapper.IsEmpty())
         wrapper = wrapInShadowTemplate(wrapper, static_cast<Node*>(impl), isolate);
