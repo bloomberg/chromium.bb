@@ -85,9 +85,6 @@ v8::Local<v8::Value> V8ScriptRunner::runCompiledScript(v8::Handle<v8::Script> sc
     if (V8RecursionScope::recursionLevel() >= kMaxRecursionDepth)
         return handleMaxRecursionDepthExceeded(isolate);
 
-    if (handleOutOfMemory())
-        return v8::Local<v8::Value>();
-
     RELEASE_ASSERT(!context->isIteratingOverObservers());
 
     // Run the script and keep track of the current recursion depth.
@@ -96,9 +93,6 @@ v8::Local<v8::Value> V8ScriptRunner::runCompiledScript(v8::Handle<v8::Script> sc
         V8RecursionScope recursionScope(context);
         result = script->Run();
     }
-
-    if (handleOutOfMemory())
-        ASSERT(result.IsEmpty());
 
     if (result.IsEmpty())
         return v8::Local<v8::Value>();

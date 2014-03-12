@@ -288,9 +288,6 @@ public:
 
     // Script notifications ------------------------------------------------
 
-    // Script in the page tried to allocate too much memory.
-    virtual void didExhaustMemoryAvailableForScript(WebFrame*) { }
-
     // Notifies that a new script context has been created for this frame.
     // This is similar to didClearWindowObject but only called once per
     // frame context.

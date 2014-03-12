@@ -58,9 +58,6 @@ public:
     virtual void dispatchDidClearWindowObjectInWorld(WebCore::DOMWrapperWorld*) OVERRIDE;
     virtual void documentElementAvailable() OVERRIDE;
 
-    // Script in the page tried to allocate too much memory.
-    virtual void didExhaustMemoryAvailableForScript();
-
     virtual void didCreateScriptContext(v8::Handle<v8::Context>, int extensionGroup, int worldId) OVERRIDE;
     virtual void willReleaseScriptContext(v8::Handle<v8::Context>, int worldId) OVERRIDE;
 

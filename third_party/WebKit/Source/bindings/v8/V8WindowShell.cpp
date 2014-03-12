@@ -109,11 +109,8 @@ void V8WindowShell::disposeContext(GlobalDetachmentBehavior behavior)
     V8GCForContextDispose::instanceTemplate().notifyContextDisposed(m_frame->isMainFrame());
 }
 
-void V8WindowShell::clearForClose(bool destroyGlobal)
+void V8WindowShell::clearForClose()
 {
-    if (destroyGlobal)
-        m_global.clear();
-
     if (!m_perContextData)
         return;
 

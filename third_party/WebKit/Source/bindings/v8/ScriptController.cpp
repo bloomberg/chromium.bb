@@ -123,22 +123,12 @@ void ScriptController::clearScriptObjects()
     }
 }
 
-void ScriptController::clearForOutOfMemory()
-{
-    clearForClose(true);
-}
-
-void ScriptController::clearForClose(bool destroyGlobal)
-{
-    m_windowShell->clearForClose(destroyGlobal);
-    for (IsolatedWorldMap::iterator iter = m_isolatedWorlds.begin(); iter != m_isolatedWorlds.end(); ++iter)
-        iter->value->clearForClose(destroyGlobal);
-}
-
 void ScriptController::clearForClose()
 {
     double start = currentTime();
-    clearForClose(false);
+    m_windowShell->clearForClose();
+    for (IsolatedWorldMap::iterator iter = m_isolatedWorlds.begin(); iter != m_isolatedWorlds.end(); ++iter)
+        iter->value->clearForClose();
     blink::Platform::current()->histogramCustomCounts("WebCore.ScriptController.clearForClose", (currentTime() - start) * 1000, 0, 10000, 50);
 }
 

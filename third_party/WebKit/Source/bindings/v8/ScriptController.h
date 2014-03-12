@@ -135,7 +135,6 @@ public:
     void cleanupScriptObjectsForPlugin(Widget*);
 
     void clearForClose();
-    void clearForOutOfMemory();
 
     NPObject* createScriptObjectForPluginElement(HTMLPlugInElement*);
     NPObject* windowScriptNPObject();
@@ -156,7 +155,6 @@ private:
     typedef HashMap<Widget*, NPObject*> PluginObjectMap;
 
     ScriptValue evaluateScriptInMainWorld(const ScriptSourceCode&, AccessControlStatus, ExecuteScriptPolicy);
-    void clearForClose(bool destroyGlobal);
 
     LocalFrame* m_frame;
     const String* m_sourceURL;

@@ -135,12 +135,6 @@ void FrameLoaderClientImpl::documentElementAvailable()
         m_webFrame->client()->didCreateDocumentElement(m_webFrame);
 }
 
-void FrameLoaderClientImpl::didExhaustMemoryAvailableForScript()
-{
-    if (m_webFrame->client())
-        m_webFrame->client()->didExhaustMemoryAvailableForScript(m_webFrame);
-}
-
 void FrameLoaderClientImpl::didCreateScriptContext(v8::Handle<v8::Context> context, int extensionGroup, int worldId)
 {
     WebViewImpl* webview = m_webFrame->viewImpl();

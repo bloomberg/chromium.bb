@@ -143,8 +143,6 @@ void V8AbstractEventListener::invokeEventHandler(ExecutionContext* context, Even
         tryCatch.Reset();
     }
 
-    ASSERT(!handleOutOfMemory() || returnValue.IsEmpty());
-
     if (returnValue.IsEmpty())
         return;
 

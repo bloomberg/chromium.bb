@@ -49,7 +49,6 @@
 #include "core/dom/QualifiedName.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
-#include "core/frame/UseCounter.h"
 #include "core/inspector/BindingVisitors.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
@@ -572,28 +571,6 @@ v8::Local<v8::Context> toV8Context(v8::Isolate* isolate, LocalFrame* frame, DOMW
         return v8::Local<v8::Context>();
     LocalFrame* attachedFrame= toFrameIfNotDetached(context);
     return frame == attachedFrame ? context : v8::Local<v8::Context>();
-}
-
-bool handleOutOfMemory()
-{
-    v8::Local<v8::Context> context = v8::Isolate::GetCurrent()->GetCurrentContext();
-
-    if (!context->HasOutOfMemoryException())
-        return false;
-
-    // Warning, error, disable JS for this frame?
-    LocalFrame* frame = toFrameIfNotDetached(context);
-    if (!frame)
-        return true;
-
-    frame->script().clearForOutOfMemory();
-    frame->loader().client()->didExhaustMemoryAvailableForScript();
-    UseCounter::count(frame->document(), UseCounter::JavascriptExhaustedMemory);
-
-    if (Settings* settings = frame->settings())
-        settings->setScriptEnabled(false);
-
-    return true;
 }
 
 v8::Local<v8::Value> handleMaxRecursionDepthExceeded(v8::Isolate* isolate)

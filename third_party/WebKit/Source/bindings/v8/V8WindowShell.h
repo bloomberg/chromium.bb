@@ -76,7 +76,7 @@ public:
     void updateDocumentWrapper(v8::Handle<v8::Object> wrapper);
 
     void clearForNavigation();
-    void clearForClose(bool destroyGlobal);
+    void clearForClose();
 
     DOMWrapperWorld* world() { return m_world.get(); }
 
