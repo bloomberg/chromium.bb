@@ -710,7 +710,6 @@
             'browser/renderer_host/p2p/socket_host_tcp_unittest.cc',
             'browser/renderer_host/p2p/socket_host_tcp_server_unittest.cc',
             'browser/renderer_host/p2p/socket_host_udp_unittest.cc',
-            'browser/renderer_host/p2p/socket_host_unittest.cc',
             'renderer/media/media_stream_audio_processor_unittest.cc',
             'renderer/media/media_stream_dependency_factory_unittest.cc',
             'renderer/media/media_stream_dispatcher_unittest.cc',

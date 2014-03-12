@@ -15,7 +15,6 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
-#include "third_party/libjingle/source/talk/base/asyncpacketsocket.h"
 
 namespace {
 
@@ -235,8 +234,6 @@ void P2PSocketHostUdp::DoSend(const PendingPacket& packet) {
       last_dscp_ = net::DSCP_NO_CHANGE;
     }
   }
-  packet_processing_helpers::ApplyPacketOptions(
-      packet.data->data(), packet.size, packet.packet_options, 0);
   int result = socket_->SendTo(
       packet.data.get(),
       packet.size,

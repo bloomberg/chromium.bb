@@ -18,7 +18,6 @@
 #include "net/socket/tcp_client_socket.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "third_party/libjingle/source/talk/base/asyncpacketsocket.h"
 
 namespace {
 
@@ -319,7 +318,7 @@ void P2PSocketHostTcpBase::Send(const net::IPEndPoint& to,
     }
   }
 
-  DoSend(to, data, options);
+  DoSend(to, data);
 }
 
 void P2PSocketHostTcpBase::WriteOrQueue(
@@ -451,16 +450,12 @@ int P2PSocketHostTcp::ProcessInput(char* input, int input_len) {
 }
 
 void P2PSocketHostTcp::DoSend(const net::IPEndPoint& to,
-                              const std::vector<char>& data,
-                              const talk_base::PacketOptions& options) {
+                              const std::vector<char>& data) {
   int size = kPacketHeaderSize + data.size();
   scoped_refptr<net::DrainableIOBuffer> buffer =
       new net::DrainableIOBuffer(new net::IOBuffer(size), size);
   *reinterpret_cast<uint16*>(buffer->data()) = base::HostToNet16(data.size());
   memcpy(buffer->data() + kPacketHeaderSize, &data[0], data.size());
-
-  packet_processing_helpers::ApplyPacketOptions(
-      buffer->data(), buffer->BytesRemaining(), options, 0);
 
   WriteOrQueue(buffer);
 }
@@ -500,8 +495,7 @@ int P2PSocketHostStunTcp::ProcessInput(char* input, int input_len) {
 }
 
 void P2PSocketHostStunTcp::DoSend(const net::IPEndPoint& to,
-                                  const std::vector<char>& data,
-                                  const talk_base::PacketOptions& options) {
+                                  const std::vector<char>& data) {
   // Each packet is expected to have header (STUN/TURN ChannelData), where
   // header contains message type and and length of message.
   if (data.size() < kPacketHeaderSize + kPacketLengthOffset) {
@@ -527,9 +521,6 @@ void P2PSocketHostStunTcp::DoSend(const net::IPEndPoint& to,
   scoped_refptr<net::DrainableIOBuffer> buffer =
       new net::DrainableIOBuffer(new net::IOBuffer(size), size);
   memcpy(buffer->data(), &data[0], data.size());
-
-  packet_processing_helpers::ApplyPacketOptions(
-      buffer->data(), data.size(), options, 0);
 
   if (pad_bytes) {
     char padding[4] = {0};
