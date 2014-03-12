@@ -4208,6 +4208,14 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   return [super isOpaque];
 }
 
+// "-webkit-app-region: drag | no-drag" is implemented on Mac by excluding
+// regions that are not draggable. (See ControlRegionView in
+// native_app_window_cocoa.mm). This requires the render host view to be
+// draggable by default.
+- (BOOL)mouseDownCanMoveWindow {
+  return YES;
+}
+
 @end
 
 @implementation SoftwareLayer
