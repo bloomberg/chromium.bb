@@ -441,7 +441,7 @@ session_notify(struct wl_listener *listener, void *data)
 		weston_log("activating session\n");
 		compositor->base.state = compositor->prev_state;
 		weston_compositor_damage_all(&compositor->base);
-		udev_input_enable(&compositor->input, compositor->udev);
+		udev_input_enable(&compositor->input);
 	} else {
 		weston_log("deactivating session\n");
 		udev_input_disable(&compositor->input);

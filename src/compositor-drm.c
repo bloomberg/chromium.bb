@@ -2435,7 +2435,7 @@ session_notify(struct wl_listener *listener, void *data)
 		compositor->state = ec->prev_state;
 		drm_compositor_set_modes(ec);
 		weston_compositor_damage_all(compositor);
-		udev_input_enable(&ec->input, ec->udev);
+		udev_input_enable(&ec->input);
 	} else {
 		weston_log("deactivating session\n");
 		udev_input_disable(&ec->input);

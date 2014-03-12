@@ -36,6 +36,7 @@ struct udev_seat {
 };
 
 struct udev_input {
+	struct udev *udev;
 	struct udev_monitor *udev_monitor;
 	struct wl_event_source *udev_monitor_source;
 	char *seat_id;
@@ -43,7 +44,7 @@ struct udev_input {
 	int enabled;
 };
 
-int udev_input_enable(struct udev_input *input, struct udev *udev);
+int udev_input_enable(struct udev_input *input);
 void udev_input_disable(struct udev_input *input);
 int udev_input_init(struct udev_input *input,
 		    struct weston_compositor *c,

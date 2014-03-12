@@ -824,7 +824,7 @@ session_notify(struct wl_listener *listener, void *data)
 
 		weston_compositor_damage_all(&compositor->base);
 
-		udev_input_enable(&compositor->input, compositor->udev);
+		udev_input_enable(&compositor->input);
 	} else {
 		weston_log("leaving VT\n");
 		udev_input_disable(&compositor->input);
