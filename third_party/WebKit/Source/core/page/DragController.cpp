@@ -303,7 +303,7 @@ static HTMLInputElement* asFileInput(Node* node)
 {
     ASSERT(node);
     for (; node; node = node->shadowHost()) {
-        if (node->hasTagName(HTMLNames::inputTag) && toHTMLInputElement(node)->isFileUpload())
+        if (isHTMLInputElement(*node) && toHTMLInputElement(node)->isFileUpload())
             return toHTMLInputElement(node);
     }
     return 0;
@@ -655,7 +655,7 @@ Node* DragController::draggableNode(const LocalFrame* src, Node* startNode, cons
                 return node;
             }
             // Other draggable elements are considered unselectable.
-            if (node->hasTagName(HTMLNames::aTag) && toHTMLAnchorElement(node)->isLiveLink()) {
+            if (isHTMLAnchorElement(*node) && toHTMLAnchorElement(node)->isLiveLink()) {
                 candidateDragType = DragSourceActionLink;
                 break;
             }

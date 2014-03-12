@@ -145,7 +145,7 @@ Node* scrollableEnclosingBoxOrParentFrameForNodeInDirection(FocusType, Node*);
 LayoutRect nodeRectInAbsoluteCoordinates(Node*, bool ignoreBorder = false);
 LayoutRect frameRectInAbsoluteCoordinates(LocalFrame*);
 LayoutRect virtualRectForDirection(FocusType, const LayoutRect& startingRect, LayoutUnit width = 0);
-LayoutRect virtualRectForAreaElementAndDirection(HTMLAreaElement*, FocusType);
+LayoutRect virtualRectForAreaElementAndDirection(HTMLAreaElement&, FocusType);
 HTMLFrameOwnerElement* frameOwnerElement(FocusCandidate&);
 
 } // namspace WebCore

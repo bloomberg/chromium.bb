@@ -68,9 +68,9 @@ FocusCandidate::FocusCandidate(Node* node, FocusType type)
     ASSERT(node);
     ASSERT(node->isElementNode());
 
-    if (node->hasTagName(areaTag)) {
-        HTMLAreaElement* area = toHTMLAreaElement(node);
-        HTMLImageElement* image = area->imageElement();
+    if (isHTMLAreaElement(*node)) {
+        HTMLAreaElement& area = toHTMLAreaElement(*node);
+        HTMLImageElement* image = area.imageElement();
         if (!image || !image->renderer())
             return;
 
@@ -605,7 +605,7 @@ bool areElementsOnSameLine(const FocusCandidate& firstCandidate, const FocusCand
     if (!firstCandidate.rect.intersects(secondCandidate.rect))
         return false;
 
-    if (firstCandidate.focusableNode->hasTagName(areaTag) || secondCandidate.focusableNode->hasTagName(areaTag))
+    if (isHTMLAreaElement(*firstCandidate.focusableNode) || isHTMLAreaElement(*secondCandidate.focusableNode))
         return false;
 
     if (!firstCandidate.visibleNode->renderer()->isRenderInline() || !secondCandidate.visibleNode->renderer()->isRenderInline())
@@ -722,13 +722,12 @@ LayoutRect virtualRectForDirection(FocusType type, const LayoutRect& startingRec
     return virtualStartingRect;
 }
 
-LayoutRect virtualRectForAreaElementAndDirection(HTMLAreaElement* area, FocusType type)
+LayoutRect virtualRectForAreaElementAndDirection(HTMLAreaElement& area, FocusType type)
 {
-    ASSERT(area);
-    ASSERT(area->imageElement());
+    ASSERT(area.imageElement());
     // Area elements tend to overlap more than other focusable elements. We flatten the rect of the area elements
     // to minimize the effect of overlapping areas.
-    LayoutRect rect = virtualRectForDirection(type, rectToAbsoluteCoordinates(area->document().frame(), area->computeRect(area->imageElement()->renderer())), 1);
+    LayoutRect rect = virtualRectForDirection(type, rectToAbsoluteCoordinates(area.document().frame(), area.computeRect(area.imageElement()->renderer())), 1);
     return rect;
 }
 

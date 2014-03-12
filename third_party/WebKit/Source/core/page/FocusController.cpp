@@ -616,7 +616,7 @@ static void clearSelectionIfNeeded(LocalFrame* oldFocusedFrame, LocalFrame* newF
                 return;
 
             if (Node* shadowAncestorNode = root->deprecatedShadowAncestorNode()) {
-                if (!shadowAncestorNode->hasTagName(inputTag) && !shadowAncestorNode->hasTagName(textareaTag))
+                if (!isHTMLInputElement(*shadowAncestorNode) && !isHTMLTextAreaElement(*shadowAncestorNode))
                     return;
             }
         }
@@ -891,9 +891,9 @@ bool FocusController::advanceFocusDirectionally(FocusType type)
         if (!hasOffscreenRect(focusedElement)) {
             container = scrollableEnclosingBoxOrParentFrameForNodeInDirection(type, focusedElement);
             startingRect = nodeRectInAbsoluteCoordinates(focusedElement, true /* ignore border */);
-        } else if (focusedElement->hasTagName(areaTag)) {
-            HTMLAreaElement* area = toHTMLAreaElement(focusedElement);
-            container = scrollableEnclosingBoxOrParentFrameForNodeInDirection(type, area->imageElement());
+        } else if (isHTMLAreaElement(*focusedElement)) {
+            HTMLAreaElement& area = toHTMLAreaElement(*focusedElement);
+            container = scrollableEnclosingBoxOrParentFrameForNodeInDirection(type, area.imageElement());
             startingRect = virtualRectForAreaElementAndDirection(area, type);
         }
     }

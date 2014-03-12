@@ -264,7 +264,7 @@ static inline bool shouldRefetchEventTarget(const MouseEventWithHitTestResults& 
     Node* targetNode = mev.targetNode();
     if (!targetNode || !targetNode->parentNode())
         return true;
-    return targetNode->isShadowRoot() && toShadowRoot(targetNode)->host()->hasTagName(inputTag);
+    return targetNode->isShadowRoot() && isHTMLInputElement(*toShadowRoot(targetNode)->host());
 }
 
 EventHandler::EventHandler(LocalFrame* frame)
@@ -1020,7 +1020,7 @@ static LocalFrame* subframeForHitTestResult(const MouseEventWithHitTestResults& 
 
 static bool isSubmitImage(Node* node)
 {
-    return node && node->hasTagName(inputTag) && toHTMLInputElement(node)->isImageButton();
+    return isHTMLInputElement(node) && toHTMLInputElement(node)->isImageButton();
 }
 
 // Returns true if the node's editable block is not current focused for editing
@@ -1748,7 +1748,7 @@ static bool targetIsFrame(Node* target, LocalFrame*& frame)
     if (!target)
         return false;
 
-    if (!target->hasTagName(frameTag) && !target->hasTagName(iframeTag))
+    if (!isHTMLFrameElement(*target) && !isHTMLIFrameElement(*target))
         return false;
 
     frame = toHTMLFrameElementBase(target)->contentFrame();
@@ -1922,7 +1922,7 @@ static inline SVGElementInstance* instanceAssociatedWithShadowTreeElement(Node* 
         return 0;
 
     Element* shadowTreeParentElement = shadowRoot->host();
-    if (!shadowTreeParentElement || !shadowTreeParentElement->hasTagName(useTag))
+    if (!isSVGUseElement(shadowTreeParentElement))
         return 0;
 
     return toSVGUseElement(shadowTreeParentElement)->instanceForShadowTreeElement(referenceNode);
