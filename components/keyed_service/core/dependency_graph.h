@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_BROWSER_CONTEXT_KEYED_SERVICE_DEPENDENCY_GRAPH_H_
-#define COMPONENTS_BROWSER_CONTEXT_KEYED_SERVICE_DEPENDENCY_GRAPH_H_
+#ifndef COMPONENTS_KEYED_SERVICE_CORE_DEPENDENCY_GRAPH_H_
+#define COMPONENTS_KEYED_SERVICE_CORE_DEPENDENCY_GRAPH_H_
 
 #include <map>
 #include <string>
@@ -11,12 +11,12 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service_export.h"
+#include "components/keyed_service/core/keyed_service_export.h"
 
 class DependencyNode;
 
 // Dynamic graph of dependencies between nodes.
-class BROWSER_CONTEXT_KEYED_SERVICE_EXPORT DependencyGraph {
+class KEYED_SERVICE_EXPORT DependencyGraph {
  public:
   DependencyGraph();
   ~DependencyGraph();
@@ -31,19 +31,18 @@ class BROWSER_CONTEXT_KEYED_SERVICE_EXPORT DependencyGraph {
 
   // Topologically sorts nodes to produce a safe construction order
   // (all nodes after their dependees).
-  bool GetConstructionOrder(
-      std::vector<DependencyNode*>* order) WARN_UNUSED_RESULT;
+  bool GetConstructionOrder(std::vector<DependencyNode*>* order)
+      WARN_UNUSED_RESULT;
 
   // Topologically sorts nodes to produce a safe destruction order
   // (all nodes before their dependees).
-  bool GetDestructionOrder(
-      std::vector<DependencyNode*>* order) WARN_UNUSED_RESULT;
+  bool GetDestructionOrder(std::vector<DependencyNode*>* order)
+      WARN_UNUSED_RESULT;
 
   // Returns representation of the dependency graph in graphviz format.
-  std::string DumpAsGraphviz(
-      const std::string& toplevel_name,
-      const base::Callback<std::string(DependencyNode*)>&
-      node_name_callback) const;
+  std::string DumpAsGraphviz(const std::string& toplevel_name,
+                             const base::Callback<std::string(DependencyNode*)>&
+                                 node_name_callback) const;
 
  private:
   typedef std::multimap<DependencyNode*, DependencyNode*> EdgeMap;
@@ -65,4 +64,4 @@ class BROWSER_CONTEXT_KEYED_SERVICE_EXPORT DependencyGraph {
   DISALLOW_COPY_AND_ASSIGN(DependencyGraph);
 };
 
-#endif  // COMPONENTS_BROWSER_CONTEXT_KEYED_SERVICE_DEPENDENCY_GRAPH_H_
+#endif  // COMPONENTS_KEYED_SERVICE_CORE_DEPENDENCY_GRAPH_H_

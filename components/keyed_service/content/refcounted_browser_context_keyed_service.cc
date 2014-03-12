@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/browser_context_keyed_service/refcounted_browser_context_keyed_service.h"
+#include "components/keyed_service/content/refcounted_browser_context_keyed_service.h"
 
 namespace impl {
 
@@ -21,14 +21,10 @@ void RefcountedBrowserContextKeyedServiceTraits::Destruct(
 
 RefcountedBrowserContextKeyedService::RefcountedBrowserContextKeyedService()
     : requires_destruction_on_thread_(false),
-      thread_id_(content::BrowserThread::UI) {
-}
+      thread_id_(content::BrowserThread::UI) {}
 
 RefcountedBrowserContextKeyedService::RefcountedBrowserContextKeyedService(
     const content::BrowserThread::ID thread_id)
-    : requires_destruction_on_thread_(true),
-      thread_id_(thread_id) {
-}
+    : requires_destruction_on_thread_(true), thread_id_(thread_id) {}
 
 RefcountedBrowserContextKeyedService::~RefcountedBrowserContextKeyedService() {}
-

@@ -1,19 +1,20 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
+#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
 #include <map>
 
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/browser_context.h"
 
 void BrowserContextKeyedServiceFactory::SetTestingFactory(
-    content::BrowserContext* context, TestingFactoryFunction testing_factory) {
+    content::BrowserContext* context,
+    TestingFactoryFunction testing_factory) {
   // Destroying the context may cause us to lose data about whether |context|
   // has our preferences registered on it (since the context object itself
   // isn't dead). See if we need to readd it once we've gone through normal
@@ -40,8 +41,7 @@ void BrowserContextKeyedServiceFactory::SetTestingFactory(
   testing_factories_[context] = testing_factory;
 }
 
-BrowserContextKeyedService*
-BrowserContextKeyedServiceFactory::SetTestingFactoryAndUse(
+KeyedService* BrowserContextKeyedServiceFactory::SetTestingFactoryAndUse(
     content::BrowserContext* context,
     TestingFactoryFunction testing_factory) {
   DCHECK(testing_factory);
@@ -50,16 +50,15 @@ BrowserContextKeyedServiceFactory::SetTestingFactoryAndUse(
 }
 
 BrowserContextKeyedServiceFactory::BrowserContextKeyedServiceFactory(
-    const char* name, BrowserContextDependencyManager* manager)
-    : BrowserContextKeyedBaseFactory(name, manager) {
-}
+    const char* name,
+    BrowserContextDependencyManager* manager)
+    : BrowserContextKeyedBaseFactory(name, manager) {}
 
 BrowserContextKeyedServiceFactory::~BrowserContextKeyedServiceFactory() {
   DCHECK(mapping_.empty());
 }
 
-BrowserContextKeyedService*
-BrowserContextKeyedServiceFactory::GetServiceForBrowserContext(
+KeyedService* BrowserContextKeyedServiceFactory::GetServiceForBrowserContext(
     content::BrowserContext* context,
     bool create) {
   context = GetBrowserContextToUse(context);
@@ -79,7 +78,7 @@ BrowserContextKeyedServiceFactory::GetServiceForBrowserContext(
   // Create new object.
   // Check to see if we have a per-BrowserContext testing factory that we should
   // use instead of default behavior.
-  BrowserContextKeyedService* service = NULL;
+  KeyedService* service = NULL;
   BrowserContextOverriddenTestingFunctions::const_iterator jt =
       testing_factories_.find(context);
   if (jt != testing_factories_.end()) {
@@ -98,7 +97,7 @@ BrowserContextKeyedServiceFactory::GetServiceForBrowserContext(
 
 void BrowserContextKeyedServiceFactory::Associate(
     content::BrowserContext* context,
-    BrowserContextKeyedService* service) {
+    KeyedService* service) {
   DCHECK(!ContainsKey(mapping_, context));
   mapping_.insert(std::make_pair(context, service));
 }

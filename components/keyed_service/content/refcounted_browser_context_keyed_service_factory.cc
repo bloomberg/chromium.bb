@@ -1,14 +1,14 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/browser_context_keyed_service/refcounted_browser_context_keyed_service_factory.h"
+#include "components/keyed_service/content/refcounted_browser_context_keyed_service_factory.h"
 
 #include "base/logging.h"
 #include "base/stl_util.h"
+#include "components/keyed_service/content/refcounted_browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/browser_context.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
-#include "components/browser_context_keyed_service/refcounted_browser_context_keyed_service.h"
 
 void RefcountedBrowserContextKeyedServiceFactory::SetTestingFactory(
     content::BrowserContext* context,
@@ -41,14 +41,13 @@ RefcountedBrowserContextKeyedServiceFactory::SetTestingFactoryAndUse(
 }
 
 RefcountedBrowserContextKeyedServiceFactory::
-RefcountedBrowserContextKeyedServiceFactory(
-    const char* name,
-    BrowserContextDependencyManager* manager)
-    : BrowserContextKeyedBaseFactory(name, manager) {
-}
+    RefcountedBrowserContextKeyedServiceFactory(
+        const char* name,
+        BrowserContextDependencyManager* manager)
+    : BrowserContextKeyedBaseFactory(name, manager) {}
 
 RefcountedBrowserContextKeyedServiceFactory::
-~RefcountedBrowserContextKeyedServiceFactory() {
+    ~RefcountedBrowserContextKeyedServiceFactory() {
   DCHECK(mapping_.empty());
 }
 

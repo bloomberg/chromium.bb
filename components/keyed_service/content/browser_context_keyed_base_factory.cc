@@ -1,20 +1,22 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/browser_context_keyed_service/browser_context_keyed_base_factory.h"
+#include "components/keyed_service/content/browser_context_keyed_base_factory.h"
 
 #include "base/prefs/pref_service.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_context.h"
 
 BrowserContextKeyedBaseFactory::BrowserContextKeyedBaseFactory(
-    const char* name, BrowserContextDependencyManager* manager)
+    const char* name,
+    BrowserContextDependencyManager* manager)
     : dependency_manager_(manager)
 #ifndef NDEBUG
-    , service_name_(name)
+      ,
+      service_name_(name)
 #endif
 {
   dependency_manager_->AddComponent(this);
@@ -89,8 +91,8 @@ void BrowserContextKeyedBaseFactory::RegisterUserPrefsOnBrowserContextForTest(
   RegisterProfilePrefsIfNecessaryForContext(context, registry);
 }
 
-bool
-BrowserContextKeyedBaseFactory::ServiceIsCreatedWithBrowserContext() const {
+bool BrowserContextKeyedBaseFactory::ServiceIsCreatedWithBrowserContext()
+    const {
   return false;
 }
 
@@ -109,8 +111,7 @@ void BrowserContextKeyedBaseFactory::BrowserContextDestroyed(
 
 bool BrowserContextKeyedBaseFactory::ArePreferencesSetOn(
     content::BrowserContext* context) const {
-  return registered_preferences_.find(context) !=
-      registered_preferences_.end();
+  return registered_preferences_.find(context) != registered_preferences_.end();
 }
 
 void BrowserContextKeyedBaseFactory::MarkPreferencesSetOn(

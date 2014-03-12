@@ -11,7 +11,6 @@
 #include "chrome/browser/signin/signin_manager.h"
 
 class Profile;
-class BrowserContextKeyedService;
 
 // SigninManager to use for testing. Tests should use the type
 // SigninManagerForTesting to ensure that the right type for their platform is

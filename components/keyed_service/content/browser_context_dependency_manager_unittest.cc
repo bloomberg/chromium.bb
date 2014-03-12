@@ -1,11 +1,10 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
 
 class BrowserContextDependencyManagerUnittests : public ::testing::Test {
  protected:
@@ -32,17 +31,16 @@ class TestService : public BrowserContextKeyedServiceFactory {
               BrowserContextDependencyManager* manager)
       : BrowserContextKeyedServiceFactory("TestService", manager),
         name_(name),
-        fill_on_shutdown_(fill_on_shutdown) {
-  }
+        fill_on_shutdown_(fill_on_shutdown) {}
 
-  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
+  virtual KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const OVERRIDE {
     ADD_FAILURE() << "This isn't part of the tests!";
     return NULL;
   }
 
-  virtual void BrowserContextShutdown(
-      content::BrowserContext* context) OVERRIDE {
+  virtual void BrowserContextShutdown(content::BrowserContext* context)
+      OVERRIDE {
     fill_on_shutdown_->push_back(name_);
   }
 
@@ -140,22 +138,22 @@ TEST_F(BrowserContextDependencyManagerUnittests, DiamondConfiguration) {
 
 // A final test that works with a more complex graph.
 TEST_F(BrowserContextDependencyManagerUnittests, ComplexGraph) {
-  TestService everything_depends_on_me("everything_depends_on_me",
-                                       shutdown_order(), manager());
+  TestService everything_depends_on_me(
+      "everything_depends_on_me", shutdown_order(), manager());
 
-  TestService intermediary_service("intermediary_service",
-                                   shutdown_order(), manager());
+  TestService intermediary_service(
+      "intermediary_service", shutdown_order(), manager());
   DependOn(&intermediary_service, &everything_depends_on_me);
 
-  TestService specialized_service("specialized_service",
-                                  shutdown_order(), manager());
+  TestService specialized_service(
+      "specialized_service", shutdown_order(), manager());
   DependOn(&specialized_service, &everything_depends_on_me);
   DependOn(&specialized_service, &intermediary_service);
 
   TestService other_root("other_root", shutdown_order(), manager());
 
-  TestService other_intermediary("other_intermediary",
-                                 shutdown_order(), manager());
+  TestService other_intermediary(
+      "other_intermediary", shutdown_order(), manager());
   DependOn(&other_intermediary, &other_root);
 
   TestService bottom("bottom", shutdown_order(), manager());

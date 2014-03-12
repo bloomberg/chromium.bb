@@ -17,6 +17,7 @@
     'dom_distiller.gypi',
     'encryptor.gypi',
     'json_schema.gypi',
+    'keyed_service.gypi',
     'language_usage_metrics.gypi',
     'metrics.gypi',
     'navigation_metrics.gypi',
@@ -36,7 +37,6 @@
   'conditions': [
     ['OS != "ios"', {
       'includes': [
-        'browser_context_keyed_service.gypi',
         'navigation_interception.gypi',
         'plugins.gypi',
         'sessions.gypi',

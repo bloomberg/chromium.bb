@@ -12,7 +12,6 @@
 
 class InstantService;
 class Profile;
-class BrowserContextKeyedService;
 
 // Singleton that owns all InstantServices and associates them with Profiles.
 class InstantServiceFactory : public BrowserContextKeyedServiceFactory {

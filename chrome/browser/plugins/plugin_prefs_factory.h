@@ -11,7 +11,6 @@
 
 class PluginPrefs;
 class Profile;
-class BrowserContextKeyedService;
 
 class PluginPrefsFactory : public RefcountedBrowserContextKeyedServiceFactory {
  public:

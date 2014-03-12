@@ -1,8 +1,8 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 #include <algorithm>
 #include <deque>
@@ -10,7 +10,7 @@
 
 #include "base/bind.h"
 #include "base/debug/trace_event.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_base_factory.h"
+#include "components/keyed_service/content/browser_context_keyed_base_factory.h"
 #include "content/public/browser/browser_context.h"
 
 #ifndef NDEBUG
@@ -48,7 +48,9 @@ void BrowserContextDependencyManager::RegisterProfilePrefsForServices(
   }
 
   for (std::vector<DependencyNode*>::const_iterator it =
-           construction_order.begin(); it != construction_order.end(); ++it) {
+           construction_order.begin();
+       it != construction_order.end();
+       ++it) {
     BrowserContextKeyedBaseFactory* factory =
         static_cast<BrowserContextKeyedBaseFactory*>(*it);
     factory->RegisterProfilePrefsIfNecessaryForContext(context, pref_registry);
@@ -68,8 +70,9 @@ void BrowserContextDependencyManager::CreateBrowserContextServicesForTest(
 void BrowserContextDependencyManager::DoCreateBrowserContextServices(
     content::BrowserContext* context,
     bool is_testing_context) {
-  TRACE_EVENT0("browser",
-    "BrowserContextDependencyManager::DoCreateBrowserContextServices")
+  TRACE_EVENT0(
+      "browser",
+      "BrowserContextDependencyManager::DoCreateBrowserContextServices")
 #ifndef NDEBUG
   MarkBrowserContextLiveForTesting(context);
 #endif
@@ -130,7 +133,7 @@ void BrowserContextDependencyManager::AssertBrowserContextWasntDestroyed(
   if (dead_context_pointers_.find(context) != dead_context_pointers_.end()) {
     NOTREACHED() << "Attempted to access a BrowserContext that was ShutDown(). "
                  << "This is most likely a heap smasher in progress. After "
-                 << "BrowserContextKeyedService::Shutdown() completes, your "
+                 << "KeyedService::Shutdown() completes, your "
                  << "service MUST NOT refer to depended BrowserContext "
                  << "services again.";
   }
@@ -148,11 +151,9 @@ BrowserContextDependencyManager::GetInstance() {
   return Singleton<BrowserContextDependencyManager>::get();
 }
 
-BrowserContextDependencyManager::BrowserContextDependencyManager() {
-}
+BrowserContextDependencyManager::BrowserContextDependencyManager() {}
 
-BrowserContextDependencyManager::~BrowserContextDependencyManager() {
-}
+BrowserContextDependencyManager::~BrowserContextDependencyManager() {}
 
 #ifndef NDEBUG
 namespace {

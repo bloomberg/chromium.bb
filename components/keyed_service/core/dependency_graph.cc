@@ -1,18 +1,16 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/browser_context_keyed_service/dependency_graph.h"
+#include "components/keyed_service/core/dependency_graph.h"
 
 #include <algorithm>
 #include <deque>
 #include <iterator>
 
-DependencyGraph::DependencyGraph() {
-}
+DependencyGraph::DependencyGraph() {}
 
-DependencyGraph::~DependencyGraph() {
-}
+DependencyGraph::~DependencyGraph() {}
 
 void DependencyGraph::AddNode(DependencyNode* node) {
   all_nodes_.push_back(node);
@@ -20,9 +18,7 @@ void DependencyGraph::AddNode(DependencyNode* node) {
 }
 
 void DependencyGraph::RemoveNode(DependencyNode* node) {
-  all_nodes_.erase(std::remove(all_nodes_.begin(),
-                               all_nodes_.end(),
-                               node),
+  all_nodes_.erase(std::remove(all_nodes_.begin(), all_nodes_.end(), node),
                    all_nodes_.end());
 
   // Remove all dependency edges that contain this node.
@@ -53,8 +49,7 @@ bool DependencyGraph::GetConstructionOrder(
   return true;
 }
 
-bool DependencyGraph::GetDestructionOrder(
-    std::vector<DependencyNode*>* order) {
+bool DependencyGraph::GetDestructionOrder(std::vector<DependencyNode*>* order) {
   if (construction_order_.empty() && !BuildConstructionOrder())
     return false;
 
@@ -69,13 +64,10 @@ bool DependencyGraph::GetDestructionOrder(
 bool DependencyGraph::BuildConstructionOrder() {
   // Step 1: Build a set of nodes with no incoming edges.
   std::deque<DependencyNode*> queue;
-  std::copy(all_nodes_.begin(),
-            all_nodes_.end(),
-            std::back_inserter(queue));
+  std::copy(all_nodes_.begin(), all_nodes_.end(), std::back_inserter(queue));
 
   std::deque<DependencyNode*>::iterator queue_end = queue.end();
-  for (EdgeMap::const_iterator it = edges_.begin();
-       it != edges_.end(); ++it) {
+  for (EdgeMap::const_iterator it = edges_.begin(); it != edges_.end(); ++it) {
     queue_end = std::remove(queue.begin(), queue_end, it->second);
   }
   queue.erase(queue_end, queue.end());
@@ -121,8 +113,8 @@ bool DependencyGraph::BuildConstructionOrder() {
 
 std::string DependencyGraph::DumpAsGraphviz(
     const std::string& toplevel_name,
-    const base::Callback<std::string(DependencyNode*)>&
-    node_name_callback) const {
+    const base::Callback<std::string(DependencyNode*)>& node_name_callback)
+    const {
   std::string result("digraph {\n");
 
   // Make a copy of all nodes.
@@ -147,8 +139,9 @@ std::string DependencyGraph::DumpAsGraphviz(
   // Every node that doesn't depend on anything else will implicitly depend on
   // the top level node.
   result.append("\n  /* Toplevel attachments */\n");
-  for (std::deque<DependencyNode*>::const_iterator it =
-           nodes.begin(); it != nodes.end(); ++it) {
+  for (std::deque<DependencyNode*>::const_iterator it = nodes.begin();
+       it != nodes.end();
+       ++it) {
     result.append("  ");
     result.append(node_name_callback.Run(*it));
     result.append(" -> ");

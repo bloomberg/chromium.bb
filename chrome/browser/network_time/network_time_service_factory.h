@@ -9,7 +9,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
 
-class BrowserContextKeyedService;
 class NetworkTimeService;
 
 // Singleton that owns all NetworkTimeService and associates them with

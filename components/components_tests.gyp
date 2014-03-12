@@ -55,8 +55,8 @@
             'autofill/core/common/form_data_unittest.cc',
             'autofill/core/common/form_field_data_unittest.cc',
             'autofill/core/common/password_form_fill_data_unittest.cc',
-            'browser_context_keyed_service/browser_context_dependency_manager_unittest.cc',
-            'browser_context_keyed_service/dependency_graph_unittest.cc',
+            'keyed_service/content/browser_context_dependency_manager_unittest.cc',
+            'keyed_service/core/dependency_graph_unittest.cc',
             'cloud_devices/printer_description_unittest.cc',
             'dom_distiller/core/article_entry_unittest.cc',
             'dom_distiller/core/distiller_unittest.cc',
@@ -172,6 +172,9 @@
             # Dependencies of json_schema
             'components.gyp:json_schema',
 
+            # Dependencies of keyed_service
+            'components.gyp:keyed_service_core',
+
             # Dependencies of language_usage_metrics
             'components.gyp:language_usage_metrics',
 
@@ -206,9 +209,6 @@
                 'dom_distiller/content/dom_distiller_viewer_source_unittest.cc',
               ],
               'dependencies': [
-                # Dependencies of browser_context_keyed_service
-                'components.gyp:browser_context_keyed_service',
-
                 # Dependencies of dom_distiller
                 'components.gyp:dom_distiller_content',
 
@@ -216,6 +216,9 @@
                 # intercept_navigation_resource_throttle_unittest.cc
                 '../skia/skia.gyp:skia',
                 'components.gyp:navigation_interception',
+
+                # Dependencies of keyed_service
+                'components.gyp:keyed_service_content',
 
                 # Dependencies of precache/content
                 'components.gyp:precache_content',
@@ -251,6 +254,7 @@
                 ['include', '^autofill/'],
                 ['include', '^dom_distiller/'],
                 ['include', '^json_schema/'],
+                ['include', '^keyed_service/core/'],
                 ['include', '^language_usage_metrics/'],
                 ['include', '^password_manager/'],
                 ['include', '^precache/core/'],
