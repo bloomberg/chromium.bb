@@ -7,6 +7,7 @@
 #include <limits>
 
 #include "base/command_line.h"
+#include "base/cpu.h"
 #include "base/debug/crash_logging.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
@@ -288,11 +289,25 @@ void PpapiThread::OnLoadPlugin(const base::FilePath& path,
   // can be loaded. TODO(cpu): consider changing to the loading style of
   // regular plugins.
   if (g_target_services) {
-    // Let Flash load DRM before lockdown on Vista+.
-    if (permissions.HasPermission(ppapi::PERMISSION_FLASH) &&
-        base::win::OSInfo::GetInstance()->version() >=
-        base::win::VERSION_VISTA ) {
-      LoadLibrary(L"dxva2.dll");
+    // Let Flash load DXVA before lockdown on Vista+.
+    if (permissions.HasPermission(ppapi::PERMISSION_FLASH)) {
+      if (base::win::OSInfo::GetInstance()->version() >=
+          base::win::VERSION_VISTA) {
+        LoadLibraryA("dxva2.dll");
+      }
+
+      if (base::win::OSInfo::GetInstance()->version() >=
+          base::win::VERSION_WIN7) {
+        base::CPU cpu;
+        if ((cpu.vendor_name() == "AuthenticAMD") && (cpu.family() > 0x14)) {
+          // The AMD crypto acceleration is only AMD Bulldozer and above.
+#if defined(_WIN64)
+          LoadLibraryA("amdhcp64.dll");
+#else
+          LoadLibraryA("amdhcp32.dll");
+#endif
+        }
+      }
     }
 
     // Cause advapi32 to load before the sandbox is turned on.
@@ -306,7 +321,7 @@ void PpapiThread::OnLoadPlugin(const base::FilePath& path,
       // Warm up system locales.
       EnumSystemLocalesW(EnumLocalesProc, LCID_INSTALLED);
     }
-
+    // Engage the sandbox.
     g_target_services->LowerToken();
   }
 #endif
