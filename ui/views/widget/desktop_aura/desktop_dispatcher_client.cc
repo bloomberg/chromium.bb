@@ -9,9 +9,11 @@
 
 namespace views {
 
-DesktopDispatcherClient::DesktopDispatcherClient() {}
+DesktopDispatcherClient::DesktopDispatcherClient()
+    : weak_ptr_factory_(this) {}
 
-DesktopDispatcherClient::~DesktopDispatcherClient() {}
+DesktopDispatcherClient::~DesktopDispatcherClient() {
+}
 
 void DesktopDispatcherClient::RunWithDispatcher(
     base::MessagePumpDispatcher* nested_dispatcher,
@@ -23,10 +25,15 @@ void DesktopDispatcherClient::RunWithDispatcher(
   base::MessageLoopForUI* loop = base::MessageLoopForUI::current();
   base::MessageLoopForUI::ScopedNestableTaskAllower allow_nested(loop);
 
+  base::Closure old_quit_closure = quit_closure_;
   base::RunLoop run_loop(nested_dispatcher);
-  base::AutoReset<base::Closure> reset_closure(&quit_closure_,
-                                               run_loop.QuitClosure());
+  quit_closure_ = run_loop.QuitClosure();
+  base::WeakPtr<DesktopDispatcherClient> alive(weak_ptr_factory_.GetWeakPtr());
   run_loop.Run();
+  if (alive) {
+    weak_ptr_factory_.InvalidateWeakPtrs();
+    quit_closure_ = old_quit_closure;
+  }
 }
 
 void DesktopDispatcherClient::QuitNestedMessageLoop() {

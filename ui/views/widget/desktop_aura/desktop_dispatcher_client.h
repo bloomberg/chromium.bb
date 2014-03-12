@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/memory/weak_ptr.h"
 #include "ui/aura/client/dispatcher_client.h"
 #include "ui/views/views_export.h"
 
@@ -25,6 +26,10 @@ class VIEWS_EXPORT DesktopDispatcherClient
 
  private:
   base::Closure quit_closure_;
+
+  // Used to keep track of whether the client has been destroyed while the
+  // nested loop was running.
+  base::WeakPtrFactory<DesktopDispatcherClient> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopDispatcherClient);
 };
