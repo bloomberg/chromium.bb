@@ -14,6 +14,7 @@
 #include "base/time/time.h"
 
 struct TranslateEventDetails;
+class GURL;
 class TranslateURLFetcher;
 
 // The TranslateLanguageList class is responsible for maintaining the latest
@@ -83,6 +84,9 @@ class TranslateLanguageList {
   // Parses |language_list| containing the list of languages that the translate
   // server can translate to and from.
   void SetSupportedLanguages(const std::string& language_list);
+
+  // Returns the url from which to load the list of languages.
+  GURL TranslateLanguageUrl();
 
   // Callbacks called on translate events.
   EventCallbackList callback_list_;

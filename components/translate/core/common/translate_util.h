@@ -20,7 +20,8 @@ void ToTranslateLanguageSynonym(std::string* language);
 // Converts language code synonym to use at Chrome internal.
 void ToChromeLanguageSynonym(std::string* language);
 
-// Get Security origin with which Translate runs.
+// Get Security origin with which Translate runs. This is used both for
+// language checks and to obtain the list of available languages.
 GURL GetTranslateSecurityOrigin();
 
 }  // namespace translate

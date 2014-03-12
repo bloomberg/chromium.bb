@@ -18,6 +18,7 @@
 #include "components/translate/core/browser/translate_event_details.h"
 #include "components/translate/core/browser/translate_url_fetcher.h"
 #include "components/translate/core/browser/translate_url_util.h"
+#include "components/translate/core/common/translate_util.h"
 #include "net/base/url_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
@@ -94,8 +95,7 @@ const char* const kDefaultSupportedLanguages[] = {
 };
 
 // Constant URL string to fetch server supporting language list.
-const char kLanguageListFetchURL[] =
-    "https://translate.googleapis.com/translate_a/l?client=chrome&cb=sl";
+const char kLanguageListFetchPath[] = "translate_a/l?client=chrome&cb=sl";
 
 // Used in kTranslateScriptURL to request supporting languages list including
 // "alpha languages".
@@ -166,6 +166,12 @@ bool TranslateLanguageList::IsAlphaLanguage(const std::string& language) {
   return alpha_languages_.count(language) != 0;
 }
 
+GURL TranslateLanguageList::TranslateLanguageUrl() {
+  std::string url = translate::GetTranslateSecurityOrigin().spec() +
+      kLanguageListFetchPath;
+  return GURL(url);
+}
+
 void TranslateLanguageList::RequestLanguageList() {
   // If resource requests are not allowed, we'll get a callback when they are.
   if (!resource_requests_allowed_) {
@@ -178,7 +184,7 @@ void TranslateLanguageList::RequestLanguageList() {
   if (language_list_fetcher_.get() &&
       (language_list_fetcher_->state() == TranslateURLFetcher::IDLE ||
        language_list_fetcher_->state() == TranslateURLFetcher::FAILED)) {
-    GURL url = GURL(kLanguageListFetchURL);
+    GURL url = TranslateLanguageUrl();
     url = TranslateURLUtil::AddHostLocaleToUrl(url);
     url = TranslateURLUtil::AddApiKeyToUrl(url);
     url = net::AppendQueryParameter(
