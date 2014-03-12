@@ -68,6 +68,7 @@
 #include "content/public/browser/download_save_info.h"
 #include "content/public/browser/download_url_parameters.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/web_contents.h"
@@ -2359,10 +2360,9 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, SavePageNonHTMLViaPost) {
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::Source<content::NavigationController>(
           &web_contents->GetController()));
-  content::RenderViewHost* render_view_host = web_contents->GetRenderViewHost();
-  ASSERT_TRUE(render_view_host != NULL);
-  render_view_host->ExecuteJavascriptInWebFrame(
-        base::string16(), base::ASCIIToUTF16("SubmitForm()"));
+  content::RenderFrameHost* render_frame_host = web_contents->GetMainFrame();
+  ASSERT_TRUE(render_frame_host != NULL);
+  render_frame_host->ExecuteJavaScript(base::ASCIIToUTF16("SubmitForm()"));
   observer.Wait();
   EXPECT_EQ(jpeg_url, web_contents->GetURL());
 

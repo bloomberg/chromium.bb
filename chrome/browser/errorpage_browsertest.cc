@@ -21,6 +21,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -523,8 +524,7 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, IFrameDNSError_JavaScript) {
     content::WindowedNotificationObserver load_observer(
         content::NOTIFICATION_LOAD_STOP,
         content::Source<NavigationController>(&wc->GetController()));
-    wc->GetRenderViewHost()->ExecuteJavascriptInWebFrame(
-        base::string16(), base::ASCIIToUTF16(script));
+    wc->GetMainFrame()->ExecuteJavaScript(base::ASCIIToUTF16(script));
     load_observer.Wait();
 
     // Ensure we saw the expected failure.
@@ -544,8 +544,7 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, IFrameDNSError_JavaScript) {
     content::WindowedNotificationObserver load_observer(
         content::NOTIFICATION_LOAD_STOP,
         content::Source<NavigationController>(&wc->GetController()));
-    wc->GetRenderViewHost()->ExecuteJavascriptInWebFrame(
-        base::string16(), base::ASCIIToUTF16(script));
+    wc->GetMainFrame()->ExecuteJavaScript(base::ASCIIToUTF16(script));
     load_observer.Wait();
   }
 
@@ -556,8 +555,7 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, IFrameDNSError_JavaScript) {
     content::WindowedNotificationObserver load_observer(
         content::NOTIFICATION_LOAD_STOP,
         content::Source<NavigationController>(&wc->GetController()));
-    wc->GetRenderViewHost()->ExecuteJavascriptInWebFrame(
-        base::string16(), base::ASCIIToUTF16(script));
+    wc->GetMainFrame()->ExecuteJavaScript(base::ASCIIToUTF16(script));
     load_observer.Wait();
 
     EXPECT_EQ(fail_url, fail_observer.fail_url());

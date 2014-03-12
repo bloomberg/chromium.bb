@@ -373,6 +373,9 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnCopy();
   void OnPaste();
   void OnCSSInsertRequest(const std::string& css);
+  void OnJavaScriptExecuteRequest(const base::string16& javascript,
+                                  int id,
+                                  bool notify_result);
 
   // Virtual since overridden by WebTestProxy for layout tests.
   virtual blink::WebNavigationPolicy DecidePolicyForNavigation(

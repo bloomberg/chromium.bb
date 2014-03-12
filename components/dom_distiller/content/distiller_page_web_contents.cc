@@ -10,6 +10,7 @@
 #include "components/dom_distiller/core/distiller_page.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -49,14 +50,12 @@ void DistillerPageWebContents::LoadURLImpl(const GURL& gurl) {
 
 void DistillerPageWebContents::ExecuteJavaScriptImpl(
     const std::string& script) {
-  content::RenderViewHost* host = web_contents_->GetRenderViewHost();
-  DCHECK(host);
-  host->ExecuteJavascriptInWebFrameCallbackResult(
-      base::string16(),  // frame_xpath
-      base::UTF8ToUTF16(script),
-      base::Bind(&DistillerPage::OnExecuteJavaScriptDone,
-                 base::Unretained(this),
-                 web_contents_->GetLastCommittedURL()));
+  content::RenderFrameHost* frame = web_contents_->GetMainFrame();
+  DCHECK(frame);
+  frame->ExecuteJavaScript(base::UTF8ToUTF16(script),
+                           base::Bind(&DistillerPage::OnExecuteJavaScriptDone,
+                                      base::Unretained(this),
+                                      web_contents_->GetLastCommittedURL()));
 }
 
 void DistillerPageWebContents::DidFinishLoad(int64 frame_id,

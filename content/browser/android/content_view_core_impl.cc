@@ -46,6 +46,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
@@ -1579,8 +1580,8 @@ void ContentViewCoreImpl::EvaluateJavaScript(JNIEnv* env,
 
   if (!callback) {
     // No callback requested.
-    rvh->ExecuteJavascriptInWebFrame(base::string16(),  // frame_xpath
-                                     ConvertJavaStringToUTF16(env, script));
+    web_contents_->GetMainFrame()->ExecuteJavaScript(
+        ConvertJavaStringToUTF16(env, script));
     return;
   }
 
@@ -1588,11 +1589,10 @@ void ContentViewCoreImpl::EvaluateJavaScript(JNIEnv* env,
   // base::Callback.
   ScopedJavaGlobalRef<jobject> j_callback;
   j_callback.Reset(env, callback);
-  content::RenderViewHost::JavascriptResultCallback c_callback =
+  content::RenderFrameHost::JavaScriptResultCallback c_callback =
       base::Bind(&JavaScriptResultCallback, j_callback);
 
-  rvh->ExecuteJavascriptInWebFrameCallbackResult(
-      base::string16(),  // frame_xpath
+  web_contents_->GetMainFrame()->ExecuteJavaScript(
       ConvertJavaStringToUTF16(env, script),
       c_callback);
 }

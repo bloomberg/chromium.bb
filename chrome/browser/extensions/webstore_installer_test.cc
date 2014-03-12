@@ -21,7 +21,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
-#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/base/host_port_pair.h"
@@ -120,8 +120,6 @@ void WebstoreInstallerTest::RunTestAsync(
     const std::string& test_function_name) {
   std::string script = base::StringPrintf(
       "%s('%s')", test_function_name.c_str(), test_gallery_url_.c_str());
-  browser()->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost()->
-      ExecuteJavascriptInWebFrame(
-          base::UTF8ToUTF16(std::string()),
-          base::UTF8ToUTF16(script));
+  browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame()->
+      ExecuteJavaScript(base::UTF8ToUTF16(script));
 }

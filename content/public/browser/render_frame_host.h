@@ -5,11 +5,16 @@
 #ifndef CONTENT_PUBLIC_BROWSER_RENDER_FRAME_HOST_H_
 #define CONTENT_PUBLIC_BROWSER_RENDER_FRAME_HOST_H_
 
+#include "base/callback_forward.h"
 #include "content/common/content_export.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "ui/gfx/native_widget_types.h"
 #include "url/gurl.h"
+
+namespace base {
+class Value;
+}
 
 namespace content {
 class RenderProcessHost;
@@ -83,6 +88,13 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
 
   // Requests the renderer to insert CSS into the frame's document.
   virtual void InsertCSS(const std::string& css) = 0;
+
+  // Runs some JavaScript in this frame's context. If a callback is provided, it
+  // will be used to return the result, when the result is available.
+  typedef base::Callback<void(const base::Value*)> JavaScriptResultCallback;
+  virtual void ExecuteJavaScript(const base::string16& javascript) = 0;
+  virtual void ExecuteJavaScript(const base::string16& javascript,
+                                 const JavaScriptResultCallback& callback) = 0;
 
   // Temporary until we get rid of RenderViewHost.
   virtual RenderViewHost* GetRenderViewHost() = 0;

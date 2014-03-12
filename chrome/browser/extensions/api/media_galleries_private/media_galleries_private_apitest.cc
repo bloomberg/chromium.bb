@@ -14,6 +14,7 @@
 #include "components/storage_monitor/storage_info.h"
 #include "components/storage_monitor/storage_monitor.h"
 #include "components/storage_monitor/test_storage_monitor.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
@@ -80,8 +81,7 @@ class MediaGalleriesPrivateApiTest : public ExtensionApiTest {
                       const std::string& js_command,
                       const std::string& ok_message) {
     ExtensionTestMessageListener listener(ok_message, false  /* no reply */);
-    host->ExecuteJavascriptInWebFrame(base::string16(),
-                                      base::ASCIIToUTF16(js_command));
+    host->GetMainFrame()->ExecuteJavaScript(base::ASCIIToUTF16(js_command));
     EXPECT_TRUE(listener.WaitUntilSatisfied());
   }
 

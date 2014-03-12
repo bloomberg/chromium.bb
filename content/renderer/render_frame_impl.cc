@@ -56,6 +56,7 @@
 #include "content/renderer/render_widget_fullscreen_pepper.h"
 #include "content/renderer/renderer_webapplicationcachehost_impl.h"
 #include "content/renderer/shared_worker_repository.h"
+#include "content/renderer/v8_value_converter_impl.h"
 #include "content/renderer/websharedworker_proxy.h"
 #include "net/base/data_url.h"
 #include "net/base/net_errors.h"
@@ -73,6 +74,7 @@
 #include "third_party/WebKit/public/web/WebNavigationPolicy.h"
 #include "third_party/WebKit/public/web/WebPlugin.h"
 #include "third_party/WebKit/public/web/WebPluginParams.h"
+#include "third_party/WebKit/public/web/WebScriptSource.h"
 #include "third_party/WebKit/public/web/WebSearchableFormData.h"
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/web/WebSecurityPolicy.h"
@@ -105,6 +107,7 @@ using blink::WebNavigationType;
 using blink::WebNode;
 using blink::WebPluginParams;
 using blink::WebReferrerPolicy;
+using blink::WebScriptSource;
 using blink::WebSearchableFormData;
 using blink::WebSecurityOrigin;
 using blink::WebSecurityPolicy;
@@ -549,6 +552,8 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(InputMsg_Copy, OnCopy)
     IPC_MESSAGE_HANDLER(InputMsg_Paste, OnPaste)
     IPC_MESSAGE_HANDLER(FrameMsg_CSSInsertRequest, OnCSSInsertRequest)
+    IPC_MESSAGE_HANDLER(FrameMsg_JavaScriptExecuteRequest,
+                        OnJavaScriptExecuteRequest)
   IPC_END_MESSAGE_MAP_EX()
 
   if (!msg_is_ok) {
@@ -883,6 +888,33 @@ void RenderFrameImpl::OnPaste() {
 
 void RenderFrameImpl::OnCSSInsertRequest(const std::string& css) {
   frame_->document().insertStyleSheet(WebString::fromUTF8(css));
+}
+
+void RenderFrameImpl::OnJavaScriptExecuteRequest(
+    const base::string16& jscript,
+    int id,
+    bool notify_result) {
+  TRACE_EVENT_INSTANT0("test_tracing", "OnJavaScriptExecuteRequest",
+                       TRACE_EVENT_SCOPE_THREAD);
+
+  v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
+  v8::Handle<v8::Value> result =
+      frame_->executeScriptAndReturnValue(WebScriptSource(jscript));
+  if (notify_result) {
+    base::ListValue list;
+    if (!result.IsEmpty()) {
+      v8::Local<v8::Context> context = frame_->mainWorldScriptContext();
+      v8::Context::Scope context_scope(context);
+      V8ValueConverterImpl converter;
+      converter.SetDateAllowed(true);
+      converter.SetRegExpAllowed(true);
+      base::Value* result_value = converter.FromV8Value(result, context);
+      list.Set(0, result_value ? result_value : base::Value::CreateNullValue());
+    } else {
+      list.Set(0, base::Value::CreateNullValue());
+    }
+    Send(new FrameHostMsg_JavaScriptExecuteResponse(routing_id_, id, list));
+  }
 }
 
 bool RenderFrameImpl::ShouldUpdateSelectionTextFromContextMenuParams(

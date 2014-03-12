@@ -317,8 +317,8 @@ void ResumeAppleEventAndSendReply(NSAppleEventManagerSuspensionID suspension_id,
 }
 
 - (id)handlesExecuteJavascriptScriptCommand:(NSScriptCommand*)command {
-  RenderViewHost* view = webContents_->GetRenderViewHost();
-  if (!view) {
+  content::RenderFrameHost* frame = webContents_->GetMainFrame();
+  if (!frame) {
     NOTREACHED();
     return nil;
   }
@@ -326,15 +326,12 @@ void ResumeAppleEventAndSendReply(NSAppleEventManagerSuspensionID suspension_id,
   NSAppleEventManager* manager = [NSAppleEventManager sharedAppleEventManager];
   NSAppleEventManagerSuspensionID suspensionID =
       [manager suspendCurrentAppleEvent];
-  content::RenderViewHost::JavascriptResultCallback callback =
+  content::RenderFrameHost::JavaScriptResultCallback callback =
       base::Bind(&ResumeAppleEventAndSendReply, suspensionID);
 
   base::string16 script = base::SysNSStringToUTF16(
       [[command evaluatedArguments] objectForKey:@"javascript"]);
-  view->ExecuteJavascriptInWebFrameCallbackResult(
-      base::string16(),  // frame_xpath
-      script,
-      callback);
+  frame->ExecuteJavaScript(script, callback);
 
   return nil;
 }

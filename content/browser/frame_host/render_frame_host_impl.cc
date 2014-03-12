@@ -197,6 +197,24 @@ void RenderFrameHostImpl::InsertCSS(const std::string& css) {
   Send(new FrameMsg_CSSInsertRequest(routing_id_, css));
 }
 
+void RenderFrameHostImpl::ExecuteJavaScript(
+    const base::string16& javascript) {
+  Send(new FrameMsg_JavaScriptExecuteRequest(routing_id_,
+                                             javascript,
+                                             0, false));
+}
+
+void RenderFrameHostImpl::ExecuteJavaScript(
+     const base::string16& javascript,
+     const JavaScriptResultCallback& callback) {
+  static int next_id = 1;
+  int key = next_id++;
+  Send(new FrameMsg_JavaScriptExecuteRequest(routing_id_,
+                                             javascript,
+                                             key, true));
+  javascript_callbacks_.insert(std::make_pair(key, callback));
+}
+
 RenderViewHost* RenderFrameHostImpl::GetRenderViewHost() {
   return render_view_host_;
 }
@@ -234,6 +252,8 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_BeforeUnload_ACK, OnBeforeUnloadACK)
     IPC_MESSAGE_HANDLER(FrameHostMsg_SwapOut_ACK, OnSwapOutACK)
     IPC_MESSAGE_HANDLER(FrameHostMsg_ContextMenu, OnContextMenu)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_JavaScriptExecuteResponse,
+                        OnJavaScriptExecuteResponse)
   IPC_END_MESSAGE_MAP_EX()
 
   if (!msg_is_ok) {
@@ -498,6 +518,25 @@ void RenderFrameHostImpl::OnContextMenu(const ContextMenuParams& params) {
   process->FilterURL(true, &validated_params.frame_url);
 
   delegate_->ShowContextMenu(this, validated_params);
+}
+
+void RenderFrameHostImpl::OnJavaScriptExecuteResponse(
+    int id, const base::ListValue& result) {
+  const base::Value* result_value;
+  if (!result.Get(0, &result_value)) {
+    // Programming error or rogue renderer.
+    NOTREACHED() << "Got bad arguments for OnJavaScriptExecuteResponse";
+    return;
+  }
+
+  std::map<int, JavaScriptResultCallback>::iterator it =
+      javascript_callbacks_.find(id);
+  if (it != javascript_callbacks_.end()) {
+    it->second.Run(result_value);
+    javascript_callbacks_.erase(it);
+  } else {
+    NOTREACHED() << "Received script response for unknown request";
+  }
 }
 
 void RenderFrameHostImpl::SetPendingShutdown(const base::Closure& on_swap_out) {

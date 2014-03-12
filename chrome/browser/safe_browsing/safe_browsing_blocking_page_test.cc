@@ -31,6 +31,7 @@
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
@@ -589,8 +590,7 @@ class SafeBrowsingBlockingPageTest : public InProcessBrowserTest {
     // We don't use ExecuteScriptAndGetValue for this one, since clicking
     // the button/link may navigate away before the injected javascript can
     // reply, hanging the test.
-    rvh->ExecuteJavascriptInWebFrame(
-        base::string16(),
+    rvh->GetMainFrame()->ExecuteJavaScript(
         base::ASCIIToUTF16(
             "document.getElementById('" + node_id + "').click();\n"));
     return true;

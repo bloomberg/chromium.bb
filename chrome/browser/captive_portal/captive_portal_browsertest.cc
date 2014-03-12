@@ -38,7 +38,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
-#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "content/test/net/url_request_failed_job.h"
@@ -1317,10 +1317,9 @@ void CaptivePortalBrowserTest::NavigateLoginTab(Browser* browser,
   ASSERT_TRUE(IsLoginTab(browser->tab_strip_model()->GetActiveWebContents()));
 
   // Do the navigation.
-  content::RenderViewHost* render_view_host =
-      tab_strip_model->GetActiveWebContents()->GetRenderViewHost();
-  render_view_host->ExecuteJavascriptInWebFrame(
-      base::string16(), base::ASCIIToUTF16("submitForm()"));
+  content::RenderFrameHost* render_frame_host =
+      tab_strip_model->GetActiveWebContents()->GetMainFrame();
+  render_frame_host->ExecuteJavaScript(base::ASCIIToUTF16("submitForm()"));
 
   portal_observer.WaitForResults(1);
   navigation_observer.WaitForNavigations(1);
@@ -1365,10 +1364,9 @@ void CaptivePortalBrowserTest::Login(Browser* browser,
   ASSERT_TRUE(IsLoginTab(tab_strip_model->GetWebContentsAt(login_tab_index)));
 
   // Trigger a navigation.
-  content::RenderViewHost* render_view_host =
-      tab_strip_model->GetActiveWebContents()->GetRenderViewHost();
-  render_view_host->ExecuteJavascriptInWebFrame(
-      base::string16(), base::ASCIIToUTF16("submitForm()"));
+  content::RenderFrameHost* render_frame_host =
+      tab_strip_model->GetActiveWebContents()->GetMainFrame();
+  render_frame_host->ExecuteJavaScript(base::ASCIIToUTF16("submitForm()"));
 
   portal_observer.WaitForResults(1);
 
@@ -1719,11 +1717,9 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, SSLCertErrorLogin) {
   CaptivePortalObserver portal_observer(browser()->profile());
 
   TabStripModel* tab_strip_model = browser()->tab_strip_model();
-  content::RenderViewHost* render_view_host =
-      tab_strip_model->GetActiveWebContents()->GetRenderViewHost();
-  render_view_host->ExecuteJavascriptInWebFrame(
-      base::string16(),
-      base::ASCIIToUTF16("submitForm()"));
+  content::RenderFrameHost* render_frame_host =
+      tab_strip_model->GetActiveWebContents()->GetMainFrame();
+  render_frame_host->ExecuteJavaScript(base::ASCIIToUTF16("submitForm()"));
 
   // The captive portal tab navigation will trigger a captive portal check,
   // and reloading the original tab will bring up the interstitial page again,

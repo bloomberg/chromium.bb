@@ -9,7 +9,7 @@
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_frame_host.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/extension.h"
@@ -22,7 +22,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, AlertBasic) {
       extensions::ExtensionSystem::Get(browser()->profile())->
           process_manager()->GetBackgroundHostForExtension(extension->id());
   ASSERT_TRUE(host);
-  host->render_view_host()->ExecuteJavascriptInWebFrame(base::string16(),
+  host->host_contents()->GetMainFrame()->ExecuteJavaScript(
       base::ASCIIToUTF16("alert('This should not crash.');"));
 
   AppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();

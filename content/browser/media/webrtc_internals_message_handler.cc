@@ -7,8 +7,8 @@
 #include "content/browser/media/webrtc_internals.h"
 #include "content/common/media/peer_connection_tracker_messages.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 
@@ -65,9 +65,9 @@ void WebRTCInternalsMessageHandler::OnDOMLoadDone(
     std::vector<const base::Value*> args_vector;
     base::string16 script = WebUI::GetJavascriptCall("setAecRecordingEnabled",
                                                      args_vector);
-    RenderViewHost* host = web_ui()->GetWebContents()->GetRenderViewHost();
+    RenderFrameHost* host = web_ui()->GetWebContents()->GetMainFrame();
     if (host)
-      host->ExecuteJavascriptInWebFrame(base::string16(), script);
+      host->ExecuteJavaScript(script);
   }
 }
 
@@ -78,9 +78,9 @@ void WebRTCInternalsMessageHandler::OnUpdate(const std::string& command,
   args_vector.push_back(args);
   base::string16 update = WebUI::GetJavascriptCall(command, args_vector);
 
-  RenderViewHost* host = web_ui()->GetWebContents()->GetRenderViewHost();
+  RenderFrameHost* host = web_ui()->GetWebContents()->GetMainFrame();
   if (host)
-    host->ExecuteJavascriptInWebFrame(base::string16(), update);
+    host->ExecuteJavaScript(update);
 }
 
 }  // namespace content

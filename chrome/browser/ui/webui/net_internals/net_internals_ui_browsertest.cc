@@ -23,7 +23,7 @@
 #include "chrome/browser/ui/webui/net_internals/net_internals_ui.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "net/base/address_list.h"
@@ -278,10 +278,9 @@ void NetInternalsTest::MessageHandler::NavigateToPrerender(
     const base::ListValue* list_value) {
   std::string url;
   ASSERT_TRUE(list_value->GetString(0, &url));
-  content::RenderViewHost* host =
-      browser()->tab_strip_model()->GetWebContentsAt(1)->GetRenderViewHost();
-  host->ExecuteJavascriptInWebFrame(
-      base::string16(),
+  content::RenderFrameHost* frame =
+      browser()->tab_strip_model()->GetWebContentsAt(1)->GetMainFrame();
+  frame->ExecuteJavaScript(
       base::ASCIIToUTF16(base::StringPrintf("Click('%s')", url.c_str())));
 }
 

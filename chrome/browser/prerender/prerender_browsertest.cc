@@ -65,6 +65,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/site_instance.h"
@@ -96,6 +97,7 @@ using content::DevToolsManager;
 using content::NavigationController;
 using content::OpenURLParams;
 using content::Referrer;
+using content::RenderFrameHost;
 using content::RenderViewHost;
 using content::RenderWidgetHost;
 using content::TestNavigationObserver;
@@ -1186,18 +1188,14 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
   }
 
   void RemoveLinkElement(int i) const {
-    GetActiveWebContents()->GetRenderViewHost()->ExecuteJavascriptInWebFrame(
-            base::string16(),
-            base::ASCIIToUTF16(base::StringPrintf("RemoveLinkElement(%d)", i)));
+    GetActiveWebContents()->GetMainFrame()->ExecuteJavaScript(
+        base::ASCIIToUTF16(base::StringPrintf("RemoveLinkElement(%d)", i)));
   }
 
   void ClickToNextPageAfterPrerender() {
     TestNavigationObserver nav_observer(GetActiveWebContents());
-    RenderViewHost* render_view_host =
-        GetActiveWebContents()->GetRenderViewHost();
-    render_view_host->ExecuteJavascriptInWebFrame(
-        base::string16(),
-        base::ASCIIToUTF16("ClickOpenLink()"));
+    RenderFrameHost* render_frame_host = GetActiveWebContents()->GetMainFrame();
+    render_frame_host->ExecuteJavaScript(base::ASCIIToUTF16("ClickOpenLink()"));
     nav_observer.Wait();
   }
 
@@ -1454,10 +1452,8 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
   void AddPrerender(const GURL& url, int index) {
     std::string javascript = base::StringPrintf(
         "AddPrerender('%s', %d)", url.spec().c_str(), index);
-    RenderViewHost* render_view_host =
-        GetActiveWebContents()->GetRenderViewHost();
-    render_view_host->ExecuteJavascriptInWebFrame(
-        base::string16(), base::ASCIIToUTF16(javascript));
+    RenderFrameHost* render_frame_host = GetActiveWebContents()->GetMainFrame();
+    render_frame_host->ExecuteJavaScript(base::ASCIIToUTF16(javascript));
   }
 
   // Returns a string for pattern-matching TaskManager tab entries.
@@ -1591,8 +1587,7 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
                          const GURL& ping_url,
                          bool new_web_contents) const {
     WebContents* web_contents = GetActiveWebContents();
-    RenderViewHost* render_view_host =
-        GetActiveWebContents()->GetRenderViewHost();
+    RenderFrameHost* render_frame_host = web_contents->GetMainFrame();
     // Extra arguments in JS are ignored.
     std::string javascript = base::StringPrintf(
         "%s('%s', '%s')", javascript_function_name.c_str(),
@@ -1600,14 +1595,12 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
 
     if (new_web_contents) {
       NewTabNavigationOrSwapObserver observer;
-      render_view_host->ExecuteJavascriptInWebFrame(
-          base::string16(), base::ASCIIToUTF16(javascript));
+      render_frame_host->ExecuteJavaScript(base::ASCIIToUTF16(javascript));
       observer.Wait();
     } else {
       NavigationOrSwapObserver observer(current_browser()->tab_strip_model(),
                                         web_contents);
-      render_view_host->ExecuteJavascriptInWebFrame(
-          base::string16(), base::ASCIIToUTF16(javascript));
+      render_frame_host->ExecuteJavaScript(base::ASCIIToUTF16(javascript));
       observer.Wait();
     }
   }

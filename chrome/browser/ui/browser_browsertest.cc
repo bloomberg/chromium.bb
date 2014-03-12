@@ -61,6 +61,7 @@
 #include "content/public/browser/interstitial_page_delegate.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -418,8 +419,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, JavascriptAlertActivatesTab) {
   EXPECT_EQ(0, browser()->tab_strip_model()->active_index());
   WebContents* second_tab = browser()->tab_strip_model()->GetWebContentsAt(1);
   ASSERT_TRUE(second_tab);
-  second_tab->GetRenderViewHost()->ExecuteJavascriptInWebFrame(
-      base::string16(),
+  second_tab->GetMainFrame()->ExecuteJavaScript(
       ASCIIToUTF16("alert('Activate!');"));
   AppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
   alert->CloseModalDialog();
@@ -481,8 +481,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CrossProcessNavCancelsDialogs) {
   // even if the renderer tries to synchronously create more.
   // See http://crbug.com/312490.
   WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
-  contents->GetRenderViewHost()->ExecuteJavascriptInWebFrame(
-      base::string16(),
+  contents->GetMainFrame()->ExecuteJavaScript(
       ASCIIToUTF16("alert('one'); alert('two');"));
   AppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
   EXPECT_TRUE(alert->IsValid());
@@ -508,8 +507,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, SadTabCancelsDialogs) {
 
   // Start a navigation to trigger the beforeunload dialog.
   WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
-  contents->GetRenderViewHost()->ExecuteJavascriptInWebFrame(
-      base::string16(),
+  contents->GetMainFrame()->ExecuteJavaScript(
       ASCIIToUTF16("window.location.href = 'data:text/html,foo'"));
   AppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
   EXPECT_TRUE(alert->IsValid());
@@ -545,9 +543,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ReloadThenCancelBeforeUnload) {
       browser()->tab_strip_model()->GetActiveWebContents()->IsLoading());
 
   // Clear the beforeunload handler so the test can easily exit.
-  browser()->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost()->
-      ExecuteJavascriptInWebFrame(base::string16(),
-                                  ASCIIToUTF16("onbeforeunload=null;"));
+  browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame()->
+      ExecuteJavaScript(ASCIIToUTF16("onbeforeunload=null;"));
 }
 
 class RedirectObserver : public content::WebContentsObserver {
@@ -706,9 +703,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CancelBeforeUnloadResetsURL) {
   EXPECT_EQ(url, browser()->toolbar_model()->GetURL());
 
   // Clear the beforeunload handler so the test can easily exit.
-  browser()->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost()->
-      ExecuteJavascriptInWebFrame(base::string16(),
-                                  ASCIIToUTF16("onbeforeunload=null;"));
+  browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame()->
+      ExecuteJavaScript(ASCIIToUTF16("onbeforeunload=null;"));
 }
 
 // Crashy on mac.  http://crbug.com/38522  Crashy on win too (after 3 years).
@@ -723,16 +719,14 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CancelBeforeUnloadResetsURL) {
 // Test for crbug.com/11647.  A page closed with window.close() should not have
 // two beforeunload dialogs shown.
 IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_SingleBeforeUnloadAfterWindowClose) {
-  browser()->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost()->
-      ExecuteJavascriptInWebFrame(base::string16(),
-                                  ASCIIToUTF16(kOpenNewBeforeUnloadPage));
+  browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame()->
+      ExecuteJavaScript(ASCIIToUTF16(kOpenNewBeforeUnloadPage));
 
   // Close the new window with JavaScript, which should show a single
   // beforeunload dialog.  Then show another alert, to make it easy to verify
   // that a second beforeunload dialog isn't shown.
-  browser()->tab_strip_model()->GetWebContentsAt(0)->GetRenderViewHost()->
-      ExecuteJavascriptInWebFrame(base::string16(),
-                                  ASCIIToUTF16("w.close(); alert('bar');"));
+  browser()->tab_strip_model()->GetWebContentsAt(0)->GetMainFrame()->
+      ExecuteJavaScript(ASCIIToUTF16("w.close(); alert('bar');"));
   AppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
   alert->native_dialog()->AcceptAppModalDialog();
 
@@ -888,8 +882,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, NullOpenerRedirectForksProcess) {
   content::WindowedNotificationObserver nav_observer(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::NotificationService::AllSources());
-  oldtab->GetRenderViewHost()->ExecuteJavascriptInWebFrame(
-      base::string16(), ASCIIToUTF16(redirect_popup));
+  oldtab->GetMainFrame()->ExecuteJavaScript(ASCIIToUTF16(redirect_popup));
 
   // Wait for popup window to appear and finish navigating.
   popup_observer.Wait();
@@ -922,8 +915,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, NullOpenerRedirectForksProcess) {
   content::WindowedNotificationObserver nav_observer2(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::NotificationService::AllSources());
-  oldtab->GetRenderViewHost()->ExecuteJavascriptInWebFrame(
-      base::string16(), ASCIIToUTF16(refresh_popup));
+  oldtab->GetMainFrame()->ExecuteJavaScript(ASCIIToUTF16(refresh_popup));
 
   // Wait for popup window to appear and finish navigating.
   popup_observer2.Wait();
@@ -976,8 +968,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, OtherRedirectsDontForkProcess) {
   content::WindowedNotificationObserver nav_observer(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::NotificationService::AllSources());
-  oldtab->GetRenderViewHost()->ExecuteJavascriptInWebFrame(
-      base::string16(), ASCIIToUTF16(dont_fork_popup));
+  oldtab->GetMainFrame()->ExecuteJavaScript(ASCIIToUTF16(dont_fork_popup));
 
   // Wait for popup window to appear and finish navigating.
   popup_observer.Wait();
@@ -1003,8 +994,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, OtherRedirectsDontForkProcess) {
   content::WindowedNotificationObserver nav_observer2(
         content::NOTIFICATION_NAV_ENTRY_COMMITTED,
         content::NotificationService::AllSources());
-  oldtab->GetRenderViewHost()->
-      ExecuteJavascriptInWebFrame(base::string16(), ASCIIToUTF16(navigate_str));
+  oldtab->GetMainFrame()->ExecuteJavaScript(ASCIIToUTF16(navigate_str));
   nav_observer2.Wait();
   ASSERT_TRUE(oldtab->GetController().GetLastCommittedEntry());
   EXPECT_EQ(https_url.spec(),
@@ -1810,8 +1800,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, InterstitialClosesDialogs) {
   ui_test_utils::NavigateToURL(browser(), url);
 
   WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
-  contents->GetRenderViewHost()->ExecuteJavascriptInWebFrame(
-      base::string16(),
+  contents->GetMainFrame()->ExecuteJavaScript(
       ASCIIToUTF16("alert('Dialog showing!');"));
   AppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
   EXPECT_TRUE(alert->IsValid());

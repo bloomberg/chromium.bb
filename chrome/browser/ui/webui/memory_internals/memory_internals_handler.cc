@@ -12,7 +12,7 @@
 #include "base/values.h"
 #include "chrome/browser/ui/webui/memory_internals/memory_internals_proxy.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 
@@ -39,9 +39,8 @@ void MemoryInternalsHandler::OnJSUpdate(const base::ListValue* list) {
 }
 
 void MemoryInternalsHandler::OnUpdate(const base::string16& update) {
-  // Don't try to execute JavaScript in a RenderView that no longer exists.
-  content::RenderViewHost* host =
-      web_ui()->GetWebContents()->GetRenderViewHost();
-  if (host)
-    host->ExecuteJavascriptInWebFrame(base::string16(), update);
+  // Don't try to execute JavaScript in a RenderFrame that no longer exists.
+  content::RenderFrameHost* frame = web_ui()->GetWebContents()->GetMainFrame();
+  if (frame)
+    frame->ExecuteJavaScript(update);
 }

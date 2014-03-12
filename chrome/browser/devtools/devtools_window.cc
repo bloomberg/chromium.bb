@@ -1435,8 +1435,7 @@ void DevToolsWindow::UpdateTheme() {
       "\", \"" +
       SkColorToRGBAString(tp->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT)) +
       "\")");
-  web_contents_->GetRenderViewHost()->ExecuteJavascriptInWebFrame(
-      base::string16(), base::ASCIIToUTF16(command));
+  web_contents_->GetMainFrame()->ExecuteJavaScript(base::ASCIIToUTF16(command));
 }
 
 void DevToolsWindow::AddDevToolsExtensionsToClient() {
@@ -1498,8 +1497,7 @@ void DevToolsWindow::CallClientFunction(const std::string& function_name,
   }
   base::string16 javascript =
       base::ASCIIToUTF16(function_name + "(" + params + ");");
-  web_contents_->GetRenderViewHost()->ExecuteJavascriptInWebFrame(
-      base::string16(), javascript);
+  web_contents_->GetMainFrame()->ExecuteJavaScript(javascript);
 }
 
 void DevToolsWindow::UpdateBrowserToolbar() {

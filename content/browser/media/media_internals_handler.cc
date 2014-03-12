@@ -9,7 +9,7 @@
 #include "base/values.h"
 #include "content/browser/media/media_internals_proxy.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 
@@ -41,9 +41,9 @@ void MediaInternalsMessageHandler::OnGetEverything(
 void MediaInternalsMessageHandler::OnUpdate(const base::string16& update) {
   // Don't try to execute JavaScript in a RenderView that no longer exists nor
   // if the chrome://media-internals page hasn't finished loading.
-  RenderViewHost* host = web_ui()->GetWebContents()->GetRenderViewHost();
+  RenderFrameHost* host = web_ui()->GetWebContents()->GetMainFrame();
   if (host && page_load_complete_)
-    host->ExecuteJavascriptInWebFrame(base::string16(), update);
+    host->ExecuteJavaScript(update);
 }
 
 }  // namespace content

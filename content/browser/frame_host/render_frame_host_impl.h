@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_FRAME_HOST_RENDER_FRAME_HOST_IMPL_H_
 #define CONTENT_BROWSER_FRAME_HOST_RENDER_FRAME_HOST_IMPL_H_
 
+#include <map>
 #include <string>
 #include <vector>
 
@@ -23,6 +24,7 @@ struct FrameMsg_Navigate_Params;
 
 namespace base {
 class FilePath;
+class ListValue;
 }
 
 namespace content {
@@ -61,6 +63,11 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
   virtual void Copy() OVERRIDE;
   virtual void Paste() OVERRIDE;
   virtual void InsertCSS(const std::string& css) OVERRIDE;
+  virtual void ExecuteJavaScript(
+      const base::string16& javascript) OVERRIDE;
+  virtual void ExecuteJavaScript(
+      const base::string16& javascript,
+      const JavaScriptResultCallback& callback) OVERRIDE;
   virtual RenderViewHost* GetRenderViewHost() OVERRIDE;
 
   // IPC::Sender
@@ -178,6 +185,7 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
       const base::TimeTicks& renderer_before_unload_end_time);
   void OnSwapOutACK();
   void OnContextMenu(const ContextMenuParams& params);
+  void OnJavaScriptExecuteResponse(int id, const base::ListValue& result);
 
   // Returns whether the given URL is allowed to commit in the current process.
   // This is a more conservative check than RenderProcessHost::FilterURL, since
@@ -213,6 +221,10 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
 
   // The FrameTreeNode which this RenderFrameHostImpl is hosted in.
   FrameTreeNode* frame_tree_node_;
+
+  // The mapping of pending JavaScript calls created by
+  // ExecuteJavaScript and their corresponding callbacks.
+  std::map<int, JavaScriptResultCallback> javascript_callbacks_;
 
   int routing_id_;
   bool is_swapped_out_;

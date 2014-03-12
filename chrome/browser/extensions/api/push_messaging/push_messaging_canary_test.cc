@@ -14,7 +14,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_frame_host.h"
 #include "extensions/common/extension_set.h"
 #include "net/dns/mock_host_resolver.h"
 
@@ -160,8 +160,8 @@ IN_PROC_BROWSER_TEST_F(PushMessagingCanaryTest, MANUAL_ReceivesPush) {
       "startTestWithCredentials('%s', '%s', '%s');",
       client_id.c_str(), client_secret.c_str(), refresh_token.c_str()));
 
-  browser()->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost()->
-      ExecuteJavascriptInWebFrame(base::string16(), script_string);
+  browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame()->
+      ExecuteJavaScript(script_string);
 
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }

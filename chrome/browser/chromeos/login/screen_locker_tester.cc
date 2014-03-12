@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/webui_screen_locker.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -119,8 +120,7 @@ class WebUIScreenLockerTester : public ScreenLockerTester {
 };
 
 void WebUIScreenLockerTester::SetPassword(const std::string& password) {
-  RenderViewHost()->ExecuteJavascriptInWebFrame(
-      base::string16(),
+  webui()->GetWebContents()->GetMainFrame()->ExecuteJavaScript(
       base::ASCIIToUTF16(base::StringPrintf(
           "$('pod-row').pods[0].passwordElement.value = '%s';",
           password.c_str())));

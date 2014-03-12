@@ -1122,8 +1122,8 @@ void BrowserPluginGuest::DidStopLoading(RenderViewHost* render_view_host) {
     const char script[] = "window.addEventListener('dragstart', function() { "
                           "  window.event.preventDefault(); "
                           "});";
-    render_view_host->ExecuteJavascriptInWebFrame(base::string16(),
-                                                  base::ASCIIToUTF16(script));
+    render_view_host->GetMainFrame()->ExecuteJavaScript(
+        base::ASCIIToUTF16(script));
   }
 }
 
