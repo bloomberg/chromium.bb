@@ -52,7 +52,7 @@ public:
 
     void SetUp()
     {
-        m_scope = V8BindingTestScope::create(m_isolate);
+        m_scope = V8ExecutionScope::create(m_isolate);
         m_promise = ScriptPromise::createPending();
         m_resolver = ScriptPromiseResolver::create(m_promise);
     }
@@ -85,7 +85,7 @@ protected:
     RefPtr<ScriptPromiseResolver> m_resolver;
     ScriptPromise m_promise;
 private:
-    OwnPtr<V8BindingTestScope> m_scope;
+    OwnPtr<V8ExecutionScope> m_scope;
 };
 
 TEST_F(ScriptPromiseResolverTest, initialState)

@@ -72,7 +72,7 @@ NullExecutionContext::NullExecutionContext()
 class IDBRequestTest : public testing::Test {
 public:
     IDBRequestTest()
-        : m_scope(V8BindingTestScope::create(v8::Isolate::GetCurrent()))
+        : m_scope(V8ExecutionScope::create(v8::Isolate::GetCurrent()))
         , m_context(adoptRef(new NullExecutionContext()))
     {
     }
@@ -83,7 +83,7 @@ public:
     }
 
 private:
-    OwnPtr<V8BindingTestScope> m_scope;
+    OwnPtr<V8ExecutionScope> m_scope;
     RefPtr<ExecutionContext> m_context;
 };
 

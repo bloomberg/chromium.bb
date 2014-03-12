@@ -50,7 +50,7 @@ namespace {
 class IDBTransactionTest : public testing::Test {
 public:
     IDBTransactionTest()
-        : m_scope(V8BindingTestScope::create(v8::Isolate::GetCurrent()))
+        : m_scope(V8ExecutionScope::create(v8::Isolate::GetCurrent()))
         , m_document(Document::create())
     {
     }
@@ -61,7 +61,7 @@ public:
     }
 
 private:
-    OwnPtr<V8BindingTestScope> m_scope;
+    OwnPtr<V8ExecutionScope> m_scope;
     RefPtr<Document> m_document;
 };
 

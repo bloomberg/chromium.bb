@@ -43,6 +43,7 @@ namespace WebCore {
 class DOMDataStore;
 class GCEventData;
 class StringCache;
+class V8PerContextData;
 struct WrapperTypeInfo;
 
 class ExternalStringVisitor;
@@ -118,10 +119,9 @@ private:
     DOMTemplateMap m_domTemplateMapForNonMainWorld;
     ScopedPersistent<v8::FunctionTemplate> m_toStringTemplate;
     OwnPtr<StringCache> m_stringCache;
-
     OwnPtr<V8HiddenValue> m_hiddenValue;
     ScopedPersistent<v8::Value> m_liveRoot;
-    ScopedPersistent<v8::Context> m_regexContext;
+    OwnPtr<V8PerContextData> m_perContextDataForRegex;
 
     const char* m_previousSamplingState;
 

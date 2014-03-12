@@ -392,11 +392,7 @@ void V8GCController::majorGCEpilogue(v8::Isolate* isolate)
 
 void V8GCController::collectGarbage(v8::Isolate* isolate)
 {
-    v8::HandleScope handleScope(isolate);
-    v8::Local<v8::Context> context = v8::Context::New(isolate);
-    if (context.IsEmpty())
-        return;
-    v8::Context::Scope contextScope(context);
+    V8ExecutionScope scope(isolate);
     V8ScriptRunner::compileAndRunInternalScript(v8String(isolate, "if (gc) gc();"), isolate);
 }
 

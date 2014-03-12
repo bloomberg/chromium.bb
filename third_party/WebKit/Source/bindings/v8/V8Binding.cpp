@@ -672,12 +672,12 @@ v8::Isolate* toIsolate(LocalFrame* frame)
     return frame->script().isolate();
 }
 
-PassOwnPtr<V8BindingTestScope> V8BindingTestScope::create(v8::Isolate* isolate)
+PassOwnPtr<V8ExecutionScope> V8ExecutionScope::create(v8::Isolate* isolate)
 {
-    return adoptPtr(new V8BindingTestScope(isolate));
+    return adoptPtr(new V8ExecutionScope(isolate));
 }
 
-V8BindingTestScope::V8BindingTestScope(v8::Isolate* isolate)
+V8ExecutionScope::V8ExecutionScope(v8::Isolate* isolate)
     : m_handleScope(isolate)
     , m_context(v8::Context::New(isolate))
     , m_contextScope(m_context)

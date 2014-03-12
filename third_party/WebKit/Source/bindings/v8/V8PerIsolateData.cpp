@@ -32,6 +32,7 @@
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8HiddenValue.h"
 #include "bindings/v8/V8ObjectConstructor.h"
+#include "bindings/v8/V8PerContextData.h"
 #include "bindings/v8/V8ScriptRunner.h"
 #include "wtf/MainThread.h"
 
@@ -127,9 +128,9 @@ void V8PerIsolateData::setDOMTemplate(void* domTemplateKey, v8::Handle<v8::Funct
 
 v8::Local<v8::Context> V8PerIsolateData::ensureRegexContext()
 {
-    if (m_regexContext.isEmpty())
-        m_regexContext.set(m_isolate, v8::Context::New(m_isolate));
-    return m_regexContext.newLocal(m_isolate);
+    if (!m_perContextDataForRegex)
+        m_perContextDataForRegex = V8PerContextData::create(v8::Context::New(m_isolate), DOMWrapperWorld::create());
+    return m_perContextDataForRegex->context();
 }
 
 bool V8PerIsolateData::hasInstance(const WrapperTypeInfo* info, v8::Handle<v8::Value> value)

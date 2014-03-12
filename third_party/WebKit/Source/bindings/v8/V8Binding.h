@@ -731,13 +731,12 @@ private:
     v8::Isolate* m_isolate;
 };
 
-class V8BindingTestScope {
+class V8ExecutionScope {
 public:
-    static PassOwnPtr<V8BindingTestScope> create(v8::Isolate*);
+    static PassOwnPtr<V8ExecutionScope> create(v8::Isolate*);
+    explicit V8ExecutionScope(v8::Isolate*);
 
 private:
-    explicit V8BindingTestScope(v8::Isolate*);
-
     v8::HandleScope m_handleScope;
     v8::Handle<v8::Context> m_context;
     v8::Context::Scope m_contextScope;
