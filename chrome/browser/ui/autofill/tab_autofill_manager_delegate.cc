@@ -20,7 +20,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/common/url_constants.h"
-#include "components/autofill/content/browser/autofill_driver_impl.h"
+#include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/content/common/autofill_messages.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "content/public/browser/render_view_host.h"

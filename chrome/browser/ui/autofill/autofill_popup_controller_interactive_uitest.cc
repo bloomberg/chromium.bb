@@ -9,7 +9,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "components/autofill/content/browser/autofill_driver_impl.h"
+#include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/test_autofill_external_delegate.h"
 #include "content/public/browser/web_contents.h"
@@ -76,8 +76,8 @@ class AutofillPopupControllerBrowserTest
     ASSERT_TRUE(web_contents_ != NULL);
     Observe(web_contents_);
 
-    AutofillDriverImpl* driver =
-        AutofillDriverImpl::FromWebContents(web_contents_);
+    ContentAutofillDriver* driver =
+        ContentAutofillDriver::FromWebContents(web_contents_);
     autofill_external_delegate_.reset(
        new TestAutofillExternalDelegate(
            web_contents_,

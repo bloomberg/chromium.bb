@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTOFILL_CONTENT_BROWSER_AUTOFILL_DRIVER_IMPL_H_
-#define COMPONENTS_AUTOFILL_CONTENT_BROWSER_AUTOFILL_DRIVER_IMPL_H_
+#ifndef COMPONENTS_AUTOFILL_CONTENT_BROWSER_CONTENT_AUTOFILL_DRIVER_H_
+#define COMPONENTS_AUTOFILL_CONTENT_BROWSER_CONTENT_AUTOFILL_DRIVER_H_
 
 #include <string>
 
@@ -31,16 +31,16 @@ class AutofillManagerDelegate;
 // Class that drives autofill flow in the browser process based on
 // communication from the renderer and from the external world. There is one
 // instance per WebContents.
-class AutofillDriverImpl : public AutofillDriver,
-                           public content::WebContentsObserver,
-                           public base::SupportsUserData::Data {
+class ContentAutofillDriver : public AutofillDriver,
+                              public content::WebContentsObserver,
+                              public base::SupportsUserData::Data {
  public:
   static void CreateForWebContentsAndDelegate(
       content::WebContents* contents,
       autofill::AutofillManagerDelegate* delegate,
       const std::string& app_locale,
       AutofillManager::AutofillDownloadManagerState enable_download_manager);
-  static AutofillDriverImpl* FromWebContents(content::WebContents* contents);
+  static ContentAutofillDriver* FromWebContents(content::WebContents* contents);
 
   // AutofillDriver:
   virtual bool IsOffTheRecord() const OVERRIDE;
@@ -70,12 +70,12 @@ class AutofillDriverImpl : public AutofillDriver,
   AutofillManager* autofill_manager() { return autofill_manager_.get(); }
 
  protected:
-  AutofillDriverImpl(
+  ContentAutofillDriver(
       content::WebContents* web_contents,
       autofill::AutofillManagerDelegate* delegate,
       const std::string& app_locale,
       AutofillManager::AutofillDownloadManagerState enable_download_manager);
-  virtual ~AutofillDriverImpl();
+  virtual ~ContentAutofillDriver();
 
   // content::WebContentsObserver:
   virtual void DidNavigateMainFrame(
@@ -105,4 +105,4 @@ class AutofillDriverImpl : public AutofillDriver,
 
 }  // namespace autofill
 
-#endif  // COMPONENTS_AUTOFILL_CONTENT_BROWSER_AUTOFILL_DRIVER_IMPL_H_
+#endif  // COMPONENTS_AUTOFILL_CONTENT_BROWSER_CONTENT_AUTOFILL_DRIVER_H_

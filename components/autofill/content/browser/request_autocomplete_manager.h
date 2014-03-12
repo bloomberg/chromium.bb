@@ -13,14 +13,14 @@ class GURL;
 
 namespace autofill {
 
-class AutofillDriverImpl;
+class ContentAutofillDriver;
 struct FormData;
 class FormStructure;
 
 // Driver for the requestAutocomplete flow.
 class RequestAutocompleteManager {
  public:
-  explicit RequestAutocompleteManager(AutofillDriverImpl* autofill_driver);
+  explicit RequestAutocompleteManager(ContentAutofillDriver* autofill_driver);
   ~RequestAutocompleteManager();
 
   // Requests an interactive autocomplete UI to be shown for |frame_url| with
@@ -49,7 +49,7 @@ class RequestAutocompleteManager {
   void ReturnAutocompleteData(const FormStructure* result);
 
   // The autofill driver owns and outlives |this|.
-  AutofillDriverImpl* const autofill_driver_;  // weak.
+  ContentAutofillDriver* const autofill_driver_;  // weak.
 
   base::WeakPtrFactory<RequestAutocompleteManager> weak_ptr_factory_;
 };

@@ -13,7 +13,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/autofill/content/browser/autofill_driver_impl.h"
+#include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/data_driven_test.h"
 #include "components/autofill/core/browser/form_structure.h"
@@ -70,9 +70,10 @@ void FormStructureBrowserTest::GenerateResults(const std::string& input,
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(),
                                                        HTMLToDataURI(input)));
 
-  AutofillDriverImpl* autofill_driver = AutofillDriverImpl::FromWebContents(
-      browser()->tab_strip_model()->GetActiveWebContents());
-  ASSERT_NE(static_cast<AutofillDriverImpl*>(NULL), autofill_driver);
+  ContentAutofillDriver* autofill_driver =
+      ContentAutofillDriver::FromWebContents(
+          browser()->tab_strip_model()->GetActiveWebContents());
+  ASSERT_NE(static_cast<ContentAutofillDriver*>(NULL), autofill_driver);
   AutofillManager* autofill_manager = autofill_driver->autofill_manager();
   ASSERT_NE(static_cast<AutofillManager*>(NULL), autofill_manager);
   std::vector<FormStructure*> forms = autofill_manager->form_structures_.get();

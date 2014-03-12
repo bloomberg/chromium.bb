@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
-#include "components/autofill/content/browser/autofill_driver_impl.h"
+#include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/content/common/autofill_messages.h"
 #include "components/autofill/core/browser/autofill_external_delegate.h"
 #include "components/autofill/core/browser/autofill_manager.h"
@@ -38,41 +38,39 @@ const AutofillManager::AutofillDownloadManagerState kDownloadState =
 
 class MockAutofillManager : public AutofillManager {
  public:
-  MockAutofillManager(AutofillDriver* driver,
-                      AutofillManagerDelegate* delegate)
-      : AutofillManager(driver, delegate, kAppLocale, kDownloadState) {
-  }
+  MockAutofillManager(AutofillDriver* driver, AutofillManagerDelegate* delegate)
+      : AutofillManager(driver, delegate, kAppLocale, kDownloadState) {}
   virtual ~MockAutofillManager() {}
 
   MOCK_METHOD0(Reset, void());
 };
 
-class TestAutofillDriverImpl : public AutofillDriverImpl {
+class TestContentAutofillDriver : public ContentAutofillDriver {
  public:
-  TestAutofillDriverImpl(content::WebContents* contents,
-                         AutofillManagerDelegate* delegate)
-      : AutofillDriverImpl(contents, delegate, kAppLocale, kDownloadState) {
+  TestContentAutofillDriver(content::WebContents* contents,
+                            AutofillManagerDelegate* delegate)
+      : ContentAutofillDriver(contents, delegate, kAppLocale, kDownloadState) {
     scoped_ptr<AutofillManager> autofill_manager(
         new MockAutofillManager(this, delegate));
     SetAutofillManager(autofill_manager.Pass());
   }
-  virtual ~TestAutofillDriverImpl() {}
+  virtual ~TestContentAutofillDriver() {}
 
   virtual MockAutofillManager* mock_autofill_manager() {
     return static_cast<MockAutofillManager*>(autofill_manager());
   }
 
-  using AutofillDriverImpl::DidNavigateMainFrame;
+  using ContentAutofillDriver::DidNavigateMainFrame;
 };
 
-class AutofillDriverImplTest : public ChromeRenderViewHostTestHarness {
+class ContentAutofillDriverTest : public ChromeRenderViewHostTestHarness {
  public:
   virtual void SetUp() OVERRIDE {
     ChromeRenderViewHostTestHarness::SetUp();
 
     test_manager_delegate_.reset(new TestAutofillManagerDelegate());
-    driver_.reset(new TestAutofillDriverImpl(web_contents(),
-                                             test_manager_delegate_.get()));
+    driver_.reset(new TestContentAutofillDriver(web_contents(),
+                                                test_manager_delegate_.get()));
   }
 
   virtual void TearDown() OVERRIDE {
@@ -168,10 +166,9 @@ class AutofillDriverImplTest : public ChromeRenderViewHostTestHarness {
                                                         &autofill_param))
           return false;
         break;
-    case AutofillMsg_AcceptPasswordAutofillSuggestion::ID:
+      case AutofillMsg_AcceptPasswordAutofillSuggestion::ID:
         if (!AutofillMsg_AcceptPasswordAutofillSuggestion::Read(
-                message,
-                &autofill_param))
+                message, &autofill_param))
           return false;
         break;
       default:
@@ -196,10 +193,10 @@ class AutofillDriverImplTest : public ChromeRenderViewHostTestHarness {
   }
 
   scoped_ptr<TestAutofillManagerDelegate> test_manager_delegate_;
-  scoped_ptr<TestAutofillDriverImpl> driver_;
+  scoped_ptr<TestContentAutofillDriver> driver_;
 };
 
-TEST_F(AutofillDriverImplTest, GetURLRequestContext) {
+TEST_F(ContentAutofillDriverTest, GetURLRequestContext) {
   net::URLRequestContextGetter* request_context =
       driver_->GetURLRequestContext();
   net::URLRequestContextGetter* expected_request_context =
@@ -207,7 +204,7 @@ TEST_F(AutofillDriverImplTest, GetURLRequestContext) {
   EXPECT_EQ(request_context, expected_request_context);
 }
 
-TEST_F(AutofillDriverImplTest, NavigatedToDifferentPage) {
+TEST_F(ContentAutofillDriverTest, NavigatedToDifferentPage) {
   EXPECT_CALL(*driver_->mock_autofill_manager(), Reset());
   content::LoadCommittedDetails details = content::LoadCommittedDetails();
   details.is_main_frame = true;
@@ -217,7 +214,7 @@ TEST_F(AutofillDriverImplTest, NavigatedToDifferentPage) {
   driver_->DidNavigateMainFrame(details, params);
 }
 
-TEST_F(AutofillDriverImplTest, NavigatedWithinSamePage) {
+TEST_F(ContentAutofillDriverTest, NavigatedWithinSamePage) {
   EXPECT_CALL(*driver_->mock_autofill_manager(), Reset()).Times(0);
   content::LoadCommittedDetails details = content::LoadCommittedDetails();
   details.is_main_frame = false;
@@ -226,43 +223,40 @@ TEST_F(AutofillDriverImplTest, NavigatedWithinSamePage) {
   driver_->DidNavigateMainFrame(details, params);
 }
 
-TEST_F(AutofillDriverImplTest, FormDataSentToRenderer_FillForm) {
+TEST_F(ContentAutofillDriverTest, FormDataSentToRenderer_FillForm) {
   int input_page_id = 42;
   FormData input_form_data;
   test::CreateTestAddressFormData(&input_form_data);
-  driver_->SendFormDataToRenderer(input_page_id,
-                                  AutofillDriver::FORM_DATA_ACTION_FILL,
-                                  input_form_data);
+  driver_->SendFormDataToRenderer(
+      input_page_id, AutofillDriver::FORM_DATA_ACTION_FILL, input_form_data);
 
   int output_page_id = 0;
   FormData output_form_data;
-  EXPECT_FALSE(GetAutofillPreviewFormMessage(&output_page_id,
-                                             &output_form_data));
-  EXPECT_TRUE(GetAutofillFillFormMessage(&output_page_id,
-                                         &output_form_data));
+  EXPECT_FALSE(
+      GetAutofillPreviewFormMessage(&output_page_id, &output_form_data));
+  EXPECT_TRUE(GetAutofillFillFormMessage(&output_page_id, &output_form_data));
   EXPECT_EQ(input_page_id, output_page_id);
   EXPECT_EQ(input_form_data, output_form_data);
 }
 
-TEST_F(AutofillDriverImplTest, FormDataSentToRenderer_PreviewForm) {
+TEST_F(ContentAutofillDriverTest, FormDataSentToRenderer_PreviewForm) {
   int input_page_id = 42;
   FormData input_form_data;
   test::CreateTestAddressFormData(&input_form_data);
-  driver_->SendFormDataToRenderer(input_page_id,
-                                  AutofillDriver::FORM_DATA_ACTION_PREVIEW,
-                                  input_form_data);
+  driver_->SendFormDataToRenderer(
+      input_page_id, AutofillDriver::FORM_DATA_ACTION_PREVIEW, input_form_data);
 
   int output_page_id = 0;
   FormData output_form_data;
-  EXPECT_FALSE(GetAutofillFillFormMessage(&output_page_id,
-                                          &output_form_data));
-  EXPECT_TRUE(GetAutofillPreviewFormMessage(&output_page_id,
-                                            &output_form_data));
+  EXPECT_FALSE(GetAutofillFillFormMessage(&output_page_id, &output_form_data));
+  EXPECT_TRUE(
+      GetAutofillPreviewFormMessage(&output_page_id, &output_form_data));
   EXPECT_EQ(input_page_id, output_page_id);
   EXPECT_EQ(input_form_data, output_form_data);
 }
 
-TEST_F(AutofillDriverImplTest, TypePredictionsNotSentToRendererWhenDisabled) {
+TEST_F(ContentAutofillDriverTest,
+       TypePredictionsNotSentToRendererWhenDisabled) {
   FormData form;
   test::CreateTestAddressFormData(&form);
   FormStructure form_structure(form);
@@ -271,7 +265,7 @@ TEST_F(AutofillDriverImplTest, TypePredictionsNotSentToRendererWhenDisabled) {
   EXPECT_FALSE(GetFieldTypePredictionsAvailable(NULL));
 }
 
-TEST_F(AutofillDriverImplTest, TypePredictionsSentToRendererWhenEnabled) {
+TEST_F(ContentAutofillDriverTest, TypePredictionsSentToRendererWhenEnabled) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kShowAutofillTypePredictions);
 
@@ -288,42 +282,40 @@ TEST_F(AutofillDriverImplTest, TypePredictionsSentToRendererWhenEnabled) {
   EXPECT_EQ(expected_type_predictions, output_type_predictions);
 }
 
-TEST_F(AutofillDriverImplTest, AcceptDataListSuggestion) {
+TEST_F(ContentAutofillDriverTest, AcceptDataListSuggestion) {
   base::string16 input_value(base::ASCIIToUTF16("barfoo"));
   base::string16 output_value;
   driver_->RendererShouldAcceptDataListSuggestion(input_value);
   EXPECT_TRUE(GetString16FromMessageWithID(
-      AutofillMsg_AcceptDataListSuggestion::ID,
-      &output_value));
+      AutofillMsg_AcceptDataListSuggestion::ID, &output_value));
   EXPECT_EQ(input_value, output_value);
 }
 
-TEST_F(AutofillDriverImplTest, AcceptPasswordAutofillSuggestion) {
+TEST_F(ContentAutofillDriverTest, AcceptPasswordAutofillSuggestion) {
   base::string16 input_value(base::ASCIIToUTF16("barbaz"));
   base::string16 output_value;
   driver_->RendererShouldAcceptPasswordAutofillSuggestion(input_value);
   EXPECT_TRUE(GetString16FromMessageWithID(
-      AutofillMsg_AcceptPasswordAutofillSuggestion::ID,
-      &output_value));
+      AutofillMsg_AcceptPasswordAutofillSuggestion::ID, &output_value));
   EXPECT_EQ(input_value, output_value);
 }
 
-TEST_F(AutofillDriverImplTest, ClearFilledFormSentToRenderer) {
+TEST_F(ContentAutofillDriverTest, ClearFilledFormSentToRenderer) {
   driver_->RendererShouldClearFilledForm();
   EXPECT_TRUE(HasMessageMatchingID(AutofillMsg_ClearForm::ID));
 }
 
-TEST_F(AutofillDriverImplTest, ClearPreviewedFormSentToRenderer) {
+TEST_F(ContentAutofillDriverTest, ClearPreviewedFormSentToRenderer) {
   driver_->RendererShouldClearPreviewedForm();
   EXPECT_TRUE(HasMessageMatchingID(AutofillMsg_ClearPreviewedForm::ID));
 }
 
-TEST_F(AutofillDriverImplTest, SetNodeText) {
+TEST_F(ContentAutofillDriverTest, SetNodeText) {
   base::string16 input_value(base::ASCIIToUTF16("barqux"));
   base::string16 output_value;
   driver_->RendererShouldSetNodeText(input_value);
-  EXPECT_TRUE(GetString16FromMessageWithID(AutofillMsg_SetNodeText::ID,
-                                           &output_value));
+  EXPECT_TRUE(
+      GetString16FromMessageWithID(AutofillMsg_SetNodeText::ID, &output_value));
   EXPECT_EQ(input_value, output_value);
 }
 

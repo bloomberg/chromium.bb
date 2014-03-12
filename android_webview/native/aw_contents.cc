@@ -38,7 +38,7 @@
 #include "base/pickle.h"
 #include "base/strings/string16.h"
 #include "base/supports_user_data.h"
-#include "components/autofill/content/browser/autofill_driver_impl.h"
+#include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"
@@ -65,7 +65,7 @@
 struct AwDrawSWFunctionTable;
 struct AwDrawGLFunctionTable;
 
-using autofill::AutofillDriverImpl;
+using autofill::ContentAutofillDriver;
 using autofill::AutofillManager;
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF16;
@@ -248,7 +248,7 @@ void AwContents::SetSaveFormData(bool enabled) {
   InitAutofillIfNecessary(enabled);
   // We need to check for the existence, since autofill_manager_delegate
   // may not be created when the setting is false.
-  if (AutofillDriverImpl::FromWebContents(web_contents_.get())) {
+  if (ContentAutofillDriver::FromWebContents(web_contents_.get())) {
     AwAutofillManagerDelegate::FromWebContents(web_contents_.get())->
         SetSaveFormData(enabled);
   }
@@ -260,13 +260,13 @@ void AwContents::InitAutofillIfNecessary(bool enabled) {
     return;
   // Check if the autofill driver already exists.
   content::WebContents* web_contents = web_contents_.get();
-  if (AutofillDriverImpl::FromWebContents(web_contents))
+  if (ContentAutofillDriver::FromWebContents(web_contents))
     return;
 
   AwBrowserContext::FromWebContents(web_contents)->
       CreateUserPrefServiceIfNecessary();
   AwAutofillManagerDelegate::CreateForWebContents(web_contents);
-  AutofillDriverImpl::CreateForWebContentsAndDelegate(
+  ContentAutofillDriver::CreateForWebContentsAndDelegate(
       web_contents,
       AwAutofillManagerDelegate::FromWebContents(web_contents),
       l10n_util::GetDefaultLocale(),

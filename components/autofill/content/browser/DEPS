@@ -25,7 +25,7 @@ specific_include_rules = {
   # plain BrowserContext to a Profile. If on the other hand we move it
   # to the 'components_unittests' target, it will at this point fail
   # to build due to a few link-time dependencies.
-  'autofill_driver_impl_unittest.cc': [
+  'content_autofill_driver_unittest.cc': [
     "!chrome/test/base/chrome_render_view_host_test_harness.h",
   ],
   'request_autocomplete_manager_unittest.cc': [

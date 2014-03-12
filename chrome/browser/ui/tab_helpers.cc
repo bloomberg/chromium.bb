@@ -27,7 +27,7 @@
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/common/chrome_switches.h"
-#include "components/autofill/content/browser/autofill_driver_impl.h"
+#include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "content/public/browser/web_contents.h"
@@ -119,7 +119,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   // --- Common tab helpers ---
 
   autofill::TabAutofillManagerDelegate::CreateForWebContents(web_contents);
-  autofill::AutofillDriverImpl::CreateForWebContentsAndDelegate(
+  autofill::ContentAutofillDriver::CreateForWebContentsAndDelegate(
       web_contents,
       autofill::TabAutofillManagerDelegate::FromWebContents(web_contents),
       g_browser_process->GetApplicationLocale(),

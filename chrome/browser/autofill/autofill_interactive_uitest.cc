@@ -31,7 +31,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/autofill/content/browser/autofill_driver_impl.h"
+#include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/autofill_manager_test_delegate.h"
 #include "components/autofill/core/browser/autofill_profile.h"
@@ -213,8 +213,8 @@ class AutofillInteractiveTest : public InProcessBrowserTest {
 
     // Inject the test delegate into the AutofillManager.
     content::WebContents* web_contents = GetWebContents();
-    AutofillDriverImpl* autofill_driver =
-        AutofillDriverImpl::FromWebContents(web_contents);
+    ContentAutofillDriver* autofill_driver =
+        ContentAutofillDriver::FromWebContents(web_contents);
     AutofillManager* autofill_manager = autofill_driver->autofill_manager();
     autofill_manager->SetTestDelegate(&test_delegate_);
   }
@@ -222,8 +222,8 @@ class AutofillInteractiveTest : public InProcessBrowserTest {
   virtual void CleanUpOnMainThread() OVERRIDE {
     // Make sure to close any showing popups prior to tearing down the UI.
     content::WebContents* web_contents = GetWebContents();
-    AutofillManager* autofill_manager =
-        AutofillDriverImpl::FromWebContents(web_contents)->autofill_manager();
+    AutofillManager* autofill_manager = ContentAutofillDriver::FromWebContents(
+                                            web_contents)->autofill_manager();
     autofill_manager->delegate()->HideAutofillPopup();
   }
 

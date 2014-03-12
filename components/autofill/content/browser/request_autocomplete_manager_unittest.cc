@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
-#include "components/autofill/content/browser/autofill_driver_impl.h"
+#include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/content/browser/request_autocomplete_manager.h"
 #include "components/autofill/content/common/autofill_messages.h"
 #include "components/autofill/core/browser/test_autofill_manager_delegate.h"
@@ -69,23 +69,23 @@ class CustomTestAutofillManagerDelegate : public TestAutofillManagerDelegate {
     DISALLOW_COPY_AND_ASSIGN(CustomTestAutofillManagerDelegate);
 };
 
-class TestAutofillDriverImpl : public AutofillDriverImpl {
+class TestContentAutofillDriver : public ContentAutofillDriver {
  public:
-  TestAutofillDriverImpl(content::WebContents* contents,
-                         AutofillManagerDelegate* delegate)
-      : AutofillDriverImpl(contents, delegate, kAppLocale, kDownloadState) {
+  TestContentAutofillDriver(content::WebContents* contents,
+                            AutofillManagerDelegate* delegate)
+      : ContentAutofillDriver(contents, delegate, kAppLocale, kDownloadState) {
     SetAutofillManager(make_scoped_ptr<AutofillManager>(
         new TestAutofillManager(this, delegate)));
   }
-  virtual ~TestAutofillDriverImpl() {}
+  virtual ~TestContentAutofillDriver() {}
 
   TestAutofillManager* mock_autofill_manager() {
     return static_cast<TestAutofillManager*>(autofill_manager());
   }
 
-  using AutofillDriverImpl::DidNavigateMainFrame;
+  using ContentAutofillDriver::DidNavigateMainFrame;
 
-  DISALLOW_COPY_AND_ASSIGN(TestAutofillDriverImpl);
+  DISALLOW_COPY_AND_ASSIGN(TestContentAutofillDriver);
 };
 
 }  // namespace
@@ -97,8 +97,8 @@ class RequestAutocompleteManagerTest : public ChromeRenderViewHostTestHarness {
   virtual void SetUp() OVERRIDE {
     ChromeRenderViewHostTestHarness::SetUp();
 
-    driver_.reset(new TestAutofillDriverImpl(web_contents(),
-                                             &manager_delegate_));
+    driver_.reset(
+        new TestContentAutofillDriver(web_contents(), &manager_delegate_));
     request_autocomplete_manager_.reset(
         new RequestAutocompleteManager(driver_.get()));
   }
@@ -131,7 +131,7 @@ class RequestAutocompleteManagerTest : public ChromeRenderViewHostTestHarness {
 
  protected:
   CustomTestAutofillManagerDelegate manager_delegate_;
-  scoped_ptr<TestAutofillDriverImpl> driver_;
+  scoped_ptr<TestContentAutofillDriver> driver_;
   scoped_ptr<RequestAutocompleteManager> request_autocomplete_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(RequestAutocompleteManagerTest);

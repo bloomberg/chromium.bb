@@ -28,7 +28,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/autofill/content/browser/autofill_driver_impl.h"
+#include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/credit_card.h"
@@ -130,8 +130,8 @@ class AutofillTest : public InProcessBrowserTest {
     // Make sure to close any showing popups prior to tearing down the UI.
     content::WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
-    AutofillManager* autofill_manager =
-        AutofillDriverImpl::FromWebContents(web_contents)->autofill_manager();
+    AutofillManager* autofill_manager = ContentAutofillDriver::FromWebContents(
+                                            web_contents)->autofill_manager();
     autofill_manager->delegate()->HideAutofillPopup();
   }
 

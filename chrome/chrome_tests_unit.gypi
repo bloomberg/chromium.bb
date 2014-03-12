@@ -1947,7 +1947,7 @@
 
         # TODO(joi): Move to //components/components_tests.gypi once
         # remaining dependencies back to //chrome are eliminated.
-        '../components/autofill/content/browser/autofill_driver_impl_unittest.cc',
+        '../components/autofill/content/browser/content_autofill_driver_unittest.cc',
         '../components/autofill/content/browser/request_autocomplete_manager_unittest.cc',
         '../components/autofill/content/browser/wallet/full_wallet_unittest.cc',
         '../components/autofill/content/browser/wallet/instrument_unittest.cc',

@@ -964,7 +964,7 @@
         'browser/apps/window_controls_browsertest.cc',
         'browser/autocomplete/autocomplete_browsertest.cc',
         'browser/autofill/autofill_browsertest.cc',
-        'browser/autofill/autofill_driver_impl_browsertest.cc',
+        'browser/autofill/content_autofill_driver_browsertest.cc',
         'browser/autofill/form_structure_browsertest.cc',
         'browser/autofill/risk/fingerprint_browsertest.cc',
         'browser/bitmap_fetcher_browsertest.cc',

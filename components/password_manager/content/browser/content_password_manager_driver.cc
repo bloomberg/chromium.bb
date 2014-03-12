@@ -4,7 +4,7 @@
 
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
 
-#include "components/autofill/content/browser/autofill_driver_impl.h"
+#include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/content/common/autofill_messages.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/password_form.h"
@@ -101,7 +101,7 @@ bool ContentPasswordManagerDriver::OnMessageReceived(
 }
 
 autofill::AutofillManager* ContentPasswordManagerDriver::GetAutofillManager() {
-  autofill::AutofillDriverImpl* driver =
-      autofill::AutofillDriverImpl::FromWebContents(web_contents());
+  autofill::ContentAutofillDriver* driver =
+      autofill::ContentAutofillDriver::FromWebContents(web_contents());
   return driver ? driver->autofill_manager() : NULL;
 }

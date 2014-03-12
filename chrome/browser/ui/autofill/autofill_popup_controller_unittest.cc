@@ -12,7 +12,7 @@
 #include "chrome/browser/ui/autofill/test_popup_controller_common.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/autofill/content/browser/autofill_driver_impl.h"
+#include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/core/browser/autofill_external_delegate.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
@@ -132,13 +132,13 @@ class AutofillPopupControllerUnitTest : public ChromeRenderViewHostTestHarness {
   virtual void SetUp() OVERRIDE {
     ChromeRenderViewHostTestHarness::SetUp();
 
-    AutofillDriverImpl::CreateForWebContentsAndDelegate(
+    ContentAutofillDriver::CreateForWebContentsAndDelegate(
         web_contents(),
         manager_delegate_.get(),
         "en-US",
         AutofillManager::ENABLE_AUTOFILL_DOWNLOAD_MANAGER);
-    AutofillDriverImpl* driver =
-        AutofillDriverImpl::FromWebContents(web_contents());
+    ContentAutofillDriver* driver =
+        ContentAutofillDriver::FromWebContents(web_contents());
     external_delegate_.reset(
         new NiceMock<MockAutofillExternalDelegate>(
             driver->autofill_manager(),
@@ -428,8 +428,8 @@ TEST_F(AutofillPopupControllerUnitTest, PopupsWithOnlyDataLists) {
 }
 
 TEST_F(AutofillPopupControllerUnitTest, GetOrCreate) {
-  AutofillDriverImpl* driver =
-      AutofillDriverImpl::FromWebContents(web_contents());
+  ContentAutofillDriver* driver =
+      ContentAutofillDriver::FromWebContents(web_contents());
   MockAutofillExternalDelegate delegate(driver->autofill_manager(), driver);
 
   WeakPtr<AutofillPopupControllerImpl> controller =

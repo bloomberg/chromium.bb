@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
-#include "components/autofill/content/browser/autofill_driver_impl.h"
+#include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/test_autofill_manager_delegate.h"
 #include "content/public/browser/navigation_controller.h"
@@ -55,30 +55,30 @@ class MockAutofillManagerDelegate
   DISALLOW_COPY_AND_ASSIGN(MockAutofillManagerDelegate);
 };
 
-// Subclass AutofillDriverImpl so we can create an AutofillDriverImpl instance.
-class TestAutofillDriverImpl : public AutofillDriverImpl {
+// Subclass ContentAutofillDriver so we can create an ContentAutofillDriver
+// instance.
+class TestContentAutofillDriver : public ContentAutofillDriver {
  public:
-  TestAutofillDriverImpl(content::WebContents* web_contents,
-                         AutofillManagerDelegate* delegate)
-      : AutofillDriverImpl(
-          web_contents,
-          delegate,
-          g_browser_process->GetApplicationLocale(),
-          AutofillManager::ENABLE_AUTOFILL_DOWNLOAD_MANAGER) {}
-  virtual ~TestAutofillDriverImpl() {}
+  TestContentAutofillDriver(content::WebContents* web_contents,
+                            AutofillManagerDelegate* delegate)
+      : ContentAutofillDriver(
+            web_contents,
+            delegate,
+            g_browser_process->GetApplicationLocale(),
+            AutofillManager::ENABLE_AUTOFILL_DOWNLOAD_MANAGER) {}
+  virtual ~TestContentAutofillDriver() {}
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(TestAutofillDriverImpl);
+  DISALLOW_COPY_AND_ASSIGN(TestContentAutofillDriver);
 };
 
 }  // namespace
 
-class AutofillDriverImplBrowserTest
-    : public InProcessBrowserTest,
-      public content::WebContentsObserver {
+class ContentAutofillDriverBrowserTest : public InProcessBrowserTest,
+                                         public content::WebContentsObserver {
  public:
-  AutofillDriverImplBrowserTest() {}
-  virtual ~AutofillDriverImplBrowserTest() {}
+  ContentAutofillDriverBrowserTest() {}
+  virtual ~ContentAutofillDriverBrowserTest() {}
 
   virtual void SetUpOnMainThread() OVERRIDE {
     web_contents_ = browser()->tab_strip_model()->GetActiveWebContents();
@@ -86,8 +86,8 @@ class AutofillDriverImplBrowserTest
     Observe(web_contents_);
     AutofillManager::RegisterProfilePrefs(manager_delegate_.GetPrefRegistry());
 
-    autofill_driver_.reset(new TestAutofillDriverImpl(web_contents_,
-                                                      &manager_delegate_));
+    autofill_driver_.reset(
+        new TestContentAutofillDriver(web_contents_, &manager_delegate_));
   }
 
   // Normally the WebContents will automatically delete the driver, but here
@@ -116,10 +116,10 @@ class AutofillDriverImplBrowserTest
   base::Closure nav_entry_committed_callback_;
 
   testing::NiceMock<MockAutofillManagerDelegate> manager_delegate_;
-  scoped_ptr<TestAutofillDriverImpl> autofill_driver_;
+  scoped_ptr<TestContentAutofillDriver> autofill_driver_;
 };
 
-IN_PROC_BROWSER_TEST_F(AutofillDriverImplBrowserTest,
+IN_PROC_BROWSER_TEST_F(ContentAutofillDriverBrowserTest,
                        SwitchTabAndHideAutofillPopup) {
   // Notification is different on platforms. On linux this will be called twice,
   // while on windows only once.
@@ -129,13 +129,14 @@ IN_PROC_BROWSER_TEST_F(AutofillDriverImplBrowserTest,
   scoped_refptr<content::MessageLoopRunner> runner =
       new content::MessageLoopRunner;
   web_contents_hidden_callback_ = runner->QuitClosure();
-  chrome::AddSelectedTabWithURL(browser(), GURL(content::kAboutBlankURL),
+  chrome::AddSelectedTabWithURL(browser(),
+                                GURL(content::kAboutBlankURL),
                                 content::PAGE_TRANSITION_AUTO_TOPLEVEL);
   runner->Run();
   web_contents_hidden_callback_.Reset();
 }
 
-IN_PROC_BROWSER_TEST_F(AutofillDriverImplBrowserTest,
+IN_PROC_BROWSER_TEST_F(ContentAutofillDriverBrowserTest,
                        TestPageNavigationHidingAutofillPopup) {
   // Notification is different on platforms. On linux this will be called twice,
   // while on windows only once.
@@ -145,12 +146,16 @@ IN_PROC_BROWSER_TEST_F(AutofillDriverImplBrowserTest,
   scoped_refptr<content::MessageLoopRunner> runner =
       new content::MessageLoopRunner;
   nav_entry_committed_callback_ = runner->QuitClosure();
-  browser()->OpenURL(content::OpenURLParams(
-      GURL(chrome::kChromeUIBookmarksURL), content::Referrer(),
-      CURRENT_TAB, content::PAGE_TRANSITION_TYPED, false));
-  browser()->OpenURL(content::OpenURLParams(
-      GURL(chrome::kChromeUIAboutURL), content::Referrer(),
-      CURRENT_TAB, content::PAGE_TRANSITION_TYPED, false));
+  browser()->OpenURL(content::OpenURLParams(GURL(chrome::kChromeUIBookmarksURL),
+                                            content::Referrer(),
+                                            CURRENT_TAB,
+                                            content::PAGE_TRANSITION_TYPED,
+                                            false));
+  browser()->OpenURL(content::OpenURLParams(GURL(chrome::kChromeUIAboutURL),
+                                            content::Referrer(),
+                                            CURRENT_TAB,
+                                            content::PAGE_TRANSITION_TYPED,
+                                            false));
   runner->Run();
   nav_entry_committed_callback_.Reset();
 }
