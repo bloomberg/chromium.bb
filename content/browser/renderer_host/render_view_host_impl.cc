@@ -1233,19 +1233,6 @@ void RenderViewHostImpl::OnRenderProcessGone(int status, int exit_code) {
                                   exit_code);
 }
 
-void RenderViewHostImpl::OnDidStartProvisionalLoadForFrame(
-    int parent_routing_id,
-    bool is_main_frame,
-    const GURL& url) {
-  NOTREACHED();
-}
-
-void RenderViewHostImpl::OnNavigate(const IPC::Message& msg) {
-  // TODO(nasko): Forward calls to the top level RenderFrameHost until all
-  // callers of this method on RenderViewHost are removed.
-  delegate_->GetFrameTree()->GetMainFrame()->OnMessageReceived(msg);
-}
-
 void RenderViewHostImpl::OnUpdateState(int32 page_id, const PageState& state) {
   // Without this check, the renderer can trick the browser into using
   // filenames it can't access in a future session restore.

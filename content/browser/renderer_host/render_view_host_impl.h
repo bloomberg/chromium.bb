@@ -484,15 +484,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   // RenderFrameHost.
   void AttachToFrameTree();
 
-  // The following IPC handlers are public so RenderFrameHost can call them,
-  // while we transition the code to not use RenderViewHost.
-  //
-  // TODO(nasko): Remove those methods once we are done moving navigation
-  // into RenderFrameHost.
-  void OnDidStartProvisionalLoadForFrame(int parent_routing_id,
-                                         bool main_frame,
-                                         const GURL& url);
-
   // Increases the refcounting on this RVH. This is done by the FrameTree on
   // creation of a RenderFrameHost.
   void increment_ref_count() { ++frames_ref_count_; }
@@ -531,7 +522,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   void OnShowFullscreenWidget(int route_id);
   void OnRenderViewReady();
   void OnRenderProcessGone(int status, int error_code);
-  void OnNavigate(const IPC::Message& msg);
   void OnUpdateState(int32 page_id, const PageState& state);
   void OnUpdateTitle(int32 page_id,
                      const base::string16& title,
