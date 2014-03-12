@@ -27,6 +27,7 @@
 #ifndef DocumentStyleSheetCollector_h
 #define DocumentStyleSheetCollector_h
 
+#include "heap/Handle.h"
 #include "wtf/HashSet.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
@@ -39,13 +40,17 @@ class StyleSheet;
 class StyleSheetCollection;
 
 class DocumentStyleSheetCollector {
+    // This class contains references to two on-heap collections, therefore
+    // it's unhealthy to have it anywhere but on the stack, where stack
+    // scanning will keep them alive.
+    STACK_ALLOCATED();
 public:
     friend class ImportedDocumentStyleSheetCollector;
 
-    DocumentStyleSheetCollector(Vector<RefPtr<StyleSheet> >& sheetsForList, Vector<RefPtr<CSSStyleSheet> >& activeList, HashSet<Document*>&);
+    DocumentStyleSheetCollector(WillBeHeapVector<RefPtrWillBeMember<StyleSheet> >& sheetsForList, WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet> >& activeList, HashSet<Document*>&);
     ~DocumentStyleSheetCollector();
 
-    void appendActiveStyleSheets(const Vector<RefPtr<CSSStyleSheet> >&);
+    void appendActiveStyleSheets(const WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet> >&);
     void appendActiveStyleSheet(CSSStyleSheet*);
     void appendSheetForList(StyleSheet*);
 
@@ -53,8 +58,8 @@ public:
     void willVisit(Document* document) { m_visitedDocuments.add(document); }
 
 private:
-    Vector<RefPtr<StyleSheet> >& m_styleSheetsForStyleSheetList;
-    Vector<RefPtr<CSSStyleSheet> >& m_activeAuthorStyleSheets;
+    WillBeHeapVector<RefPtrWillBeMember<StyleSheet> >& m_styleSheetsForStyleSheetList;
+    WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet> >& m_activeAuthorStyleSheets;
     HashSet<Document*>& m_visitedDocuments;
 };
 
@@ -67,7 +72,7 @@ private:
 
 class ImportedDocumentStyleSheetCollector FINAL : public DocumentStyleSheetCollector {
 public:
-    ImportedDocumentStyleSheetCollector(DocumentStyleSheetCollector&, Vector<RefPtr<StyleSheet> >&);
+    ImportedDocumentStyleSheetCollector(DocumentStyleSheetCollector&, WillBeHeapVector<RefPtrWillBeMember<StyleSheet> >&);
 };
 
 } // namespace WebCore

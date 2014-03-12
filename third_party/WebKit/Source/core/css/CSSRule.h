@@ -34,10 +34,7 @@ class CSSParserContext;
 class CSSStyleSheet;
 class StyleRuleBase;
 
-// FIXME: oilpan: CSSRuleList redirects increments and decrements of its
-// reference counts to its CSSRule. That means this has to be
-// RefCountedGarbageCollected instead of just GarbageCollected for now.
-class CSSRule : public RefCountedWillBeRefCountedGarbageCollected<CSSRule> {
+class CSSRule : public RefCountedWillBeGarbageCollectedFinalized<CSSRule> {
 public:
     virtual ~CSSRule() { }
 

@@ -172,7 +172,7 @@ public:
 
     static PassRefPtr<InspectorStyleSheet> create(InspectorPageAgent*, InspectorResourceAgent*, const String& id, PassRefPtr<CSSStyleSheet> pageStyleSheet, TypeBuilder::CSS::StyleSheetOrigin::Enum, const String& documentURL, Listener*);
     static String styleSheetURL(CSSStyleSheet* pageStyleSheet);
-    static void collectFlatRules(PassRefPtr<CSSRuleList>, CSSRuleVector* result);
+    static void collectFlatRules(PassRefPtrWillBeRawPtr<CSSRuleList>, CSSRuleVector* result);
 
     virtual ~InspectorStyleSheet();
 

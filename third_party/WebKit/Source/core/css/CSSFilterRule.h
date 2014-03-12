@@ -43,7 +43,7 @@ class CSSFilterRule FINAL : public CSSRule {
 public:
     static PassRefPtrWillBeRawPtr<CSSFilterRule> create(StyleRuleFilter* rule, CSSStyleSheet* sheet)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new CSSFilterRule(rule, sheet));
+        return adoptRefWillBeNoop(new CSSFilterRule(rule, sheet));
     }
 
     virtual ~CSSFilterRule();

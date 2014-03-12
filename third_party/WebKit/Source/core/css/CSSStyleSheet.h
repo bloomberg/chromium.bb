@@ -64,13 +64,13 @@ public:
     virtual bool disabled() const OVERRIDE { return m_isDisabled; }
     virtual void setDisabled(bool) OVERRIDE;
 
-    PassRefPtr<CSSRuleList> cssRules();
+    PassRefPtrWillBeRawPtr<CSSRuleList> cssRules();
     unsigned insertRule(const String& rule, unsigned index, ExceptionState&);
     unsigned insertRule(const String& rule, ExceptionState&); // Deprecated.
     void deleteRule(unsigned index, ExceptionState&);
 
     // IE Extensions
-    PassRefPtr<CSSRuleList> rules();
+    PassRefPtrWillBeRawPtr<CSSRuleList> rules();
     int addRule(const String& selector, const String& style, int index, ExceptionState&);
     int addRule(const String& selector, const String& style, ExceptionState&);
     void removeRule(unsigned index, ExceptionState& exceptionState) { deleteRule(index, exceptionState); }
@@ -140,10 +140,9 @@ private:
 
     TextPosition m_startPosition;
     bool m_loadCompleted;
-
     mutable RefPtrWillBeMember<MediaList> m_mediaCSSOMWrapper;
     mutable WillBeHeapVector<RefPtrWillBeMember<CSSRule> > m_childRuleCSSOMWrappers;
-    mutable OwnPtr<CSSRuleList> m_ruleListCSSOMWrapper;
+    mutable OwnPtrWillBeMember<CSSRuleList> m_ruleListCSSOMWrapper;
 };
 
 inline CSSStyleSheet::RuleMutationScope::RuleMutationScope(CSSStyleSheet* sheet)

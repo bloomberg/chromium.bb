@@ -556,7 +556,9 @@ Document::~Document()
     m_timeline->detachFromDocument();
     m_transitionTimeline->detachFromDocument();
 
-    m_styleEngine.clear(); // We need to destory CSSFontSelector before destroying m_fetcher.
+    // We need to destroy CSSFontSelector before destroying m_fetcher.
+    if (m_styleEngine)
+        m_styleEngine->detachFromDocument();
 
     if (m_elemSheet)
         m_elemSheet->clearOwnerNode();

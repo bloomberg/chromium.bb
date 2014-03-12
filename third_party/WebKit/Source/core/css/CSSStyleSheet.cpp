@@ -46,18 +46,30 @@ namespace WebCore {
 
 class StyleSheetCSSRuleList FINAL : public CSSRuleList {
 public:
-    StyleSheetCSSRuleList(CSSStyleSheet* sheet) : m_styleSheet(sheet) { }
+    static PassOwnPtrWillBeRawPtr<StyleSheetCSSRuleList> create(CSSStyleSheet* sheet)
+    {
+        return adoptPtrWillBeNoop(new StyleSheetCSSRuleList(sheet));
+    }
+
+    virtual void trace(Visitor* visitor) OVERRIDE
+    {
+        visitor->trace(m_styleSheet);
+    }
 
 private:
+    StyleSheetCSSRuleList(CSSStyleSheet* sheet) : m_styleSheet(sheet) { }
+
+#if !ENABLE(OILPAN)
     virtual void ref() OVERRIDE { m_styleSheet->ref(); }
     virtual void deref() OVERRIDE { m_styleSheet->deref(); }
+#endif
 
     virtual unsigned length() const OVERRIDE { return m_styleSheet->length(); }
     virtual CSSRule* item(unsigned index) const OVERRIDE { return m_styleSheet->item(index); }
 
     virtual CSSStyleSheet* styleSheet() const OVERRIDE { return m_styleSheet; }
 
-    CSSStyleSheet* m_styleSheet;
+    RawPtrWillBeMember<CSSStyleSheet> m_styleSheet;
 };
 
 #if !ASSERT_DISABLED
@@ -258,12 +270,12 @@ bool CSSStyleSheet::canAccessRules() const
     return false;
 }
 
-PassRefPtr<CSSRuleList> CSSStyleSheet::rules()
+PassRefPtrWillBeRawPtr<CSSRuleList> CSSStyleSheet::rules()
 {
     if (!canAccessRules())
         return nullptr;
     // IE behavior.
-    RefPtr<StaticCSSRuleList> nonCharsetRules = StaticCSSRuleList::create();
+    RefPtrWillBeRawPtr<StaticCSSRuleList> nonCharsetRules(StaticCSSRuleList::create());
     unsigned ruleCount = length();
     for (unsigned i = 0; i < ruleCount; ++i) {
         CSSRule* rule = item(i);
@@ -349,12 +361,12 @@ int CSSStyleSheet::addRule(const String& selector, const String& style, Exceptio
 }
 
 
-PassRefPtr<CSSRuleList> CSSStyleSheet::cssRules()
+PassRefPtrWillBeRawPtr<CSSRuleList> CSSStyleSheet::cssRules()
 {
     if (!canAccessRules())
         return nullptr;
     if (!m_ruleListCSSOMWrapper)
-        m_ruleListCSSOMWrapper = adoptPtr(new StyleSheetCSSRuleList(this));
+        m_ruleListCSSOMWrapper = StyleSheetCSSRuleList::create(this);
     return m_ruleListCSSOMWrapper.get();
 }
 
@@ -421,6 +433,7 @@ void CSSStyleSheet::trace(Visitor* visitor)
     visitor->trace(m_ownerRule);
     visitor->trace(m_mediaCSSOMWrapper);
     visitor->trace(m_childRuleCSSOMWrappers);
+    visitor->trace(m_ruleListCSSOMWrapper);
 }
 
 }

@@ -29,7 +29,7 @@
 
 namespace WebCore {
 
-struct SameSizeAsCSSRule : public RefCountedWillBeRefCountedGarbageCollected<SameSizeAsCSSRule> {
+struct SameSizeAsCSSRule : public RefCountedWillBeGarbageCollectedFinalized<SameSizeAsCSSRule> {
     virtual ~SameSizeAsCSSRule();
     unsigned char bitfields;
     void* pointerUnion;

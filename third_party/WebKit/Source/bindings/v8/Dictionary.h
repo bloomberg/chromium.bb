@@ -81,7 +81,7 @@ public:
     bool get(const String&, unsigned long&) const;
     bool get(const String&, unsigned long long&) const;
     bool get(const String&, RefPtr<DOMWindow>&) const;
-    bool get(const String&, RefPtrWillBeRawPtr<Storage>&) const;
+    bool get(const String&, RefPtrWillBeMember<Storage>&) const;
     bool get(const String&, MessagePortArray&) const;
     bool get(const String&, RefPtr<Uint8Array>&) const;
     bool get(const String&, RefPtr<ArrayBufferView>&) const;

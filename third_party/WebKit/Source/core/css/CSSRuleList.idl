@@ -25,7 +25,8 @@
 
 // Introduced in DOM Level 2:
 [
-    DependentLifetime
+    DependentLifetime,
+    WillBeGarbageCollected,
 ] interface CSSRuleList {
     readonly attribute unsigned long    length;
     getter CSSRule           item(unsigned long index);

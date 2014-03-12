@@ -471,13 +471,13 @@ static PassRefPtr<TypeBuilder::CSS::SourceRange> buildSourceRangeObject(const So
     return result.release();
 }
 
-static PassRefPtr<CSSRuleList> asCSSRuleList(CSSStyleSheet* styleSheet)
+static PassRefPtrWillBeRawPtr<CSSRuleList> asCSSRuleList(CSSStyleSheet* styleSheet)
 {
     if (!styleSheet)
         return nullptr;
 
-    RefPtr<StaticCSSRuleList> list = StaticCSSRuleList::create();
-    WillBePersistentHeapVector<RefPtrWillBeMember<CSSRule> >& listRules = list->rules();
+    RefPtrWillBeRawPtr<StaticCSSRuleList> list = StaticCSSRuleList::create();
+    WillBeHeapVector<RefPtrWillBeMember<CSSRule> >& listRules = list->rules();
     for (unsigned i = 0, size = styleSheet->length(); i < size; ++i) {
         CSSRule* item = styleSheet->item(i);
         if (item->type() == CSSRule::CHARSET_RULE)
@@ -487,7 +487,7 @@ static PassRefPtr<CSSRuleList> asCSSRuleList(CSSStyleSheet* styleSheet)
     return list.release();
 }
 
-static PassRefPtr<CSSRuleList> asCSSRuleList(CSSRule* rule)
+static PassRefPtrWillBeRawPtr<CSSRuleList> asCSSRuleList(CSSRule* rule)
 {
     if (!rule)
         return nullptr;
@@ -847,7 +847,7 @@ String InspectorStyleSheet::styleSheetURL(CSSStyleSheet* pageStyleSheet)
 }
 
 // static
-void InspectorStyleSheet::collectFlatRules(PassRefPtr<CSSRuleList> ruleList, CSSRuleVector* result)
+void InspectorStyleSheet::collectFlatRules(PassRefPtrWillBeRawPtr<CSSRuleList> ruleList, CSSRuleVector* result)
 {
     if (!ruleList)
         return;
@@ -867,7 +867,7 @@ void InspectorStyleSheet::collectFlatRules(PassRefPtr<CSSRuleList> ruleList, CSS
         default:
             break;
         }
-        RefPtr<CSSRuleList> childRuleList = asCSSRuleList(rule);
+        RefPtrWillBeRawPtr<CSSRuleList> childRuleList = asCSSRuleList(rule);
         if (childRuleList)
             collectFlatRules(childRuleList, result);
     }

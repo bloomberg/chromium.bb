@@ -44,7 +44,7 @@ class CSSViewportRule FINAL: public CSSRule {
 public:
     static PassRefPtrWillBeRawPtr<CSSViewportRule> create(StyleRuleViewport* viewportRule, CSSStyleSheet* sheet)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new CSSViewportRule(viewportRule, sheet));
+        return adoptRefWillBeNoop(new CSSViewportRule(viewportRule, sheet));
     }
     virtual ~CSSViewportRule();
 

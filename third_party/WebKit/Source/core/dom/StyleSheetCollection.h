@@ -28,6 +28,7 @@
 #ifndef StyleSheetCollection_h
 #define StyleSheetCollection_h
 
+#include "heap/Handle.h"
 #include "wtf/FastAllocBase.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
@@ -46,20 +47,20 @@ public:
     StyleSheetCollection();
     ~StyleSheetCollection();
 
-    Vector<RefPtr<CSSStyleSheet> >& activeAuthorStyleSheets() { return m_activeAuthorStyleSheets; }
-    Vector<RefPtr<StyleSheet> >& styleSheetsForStyleSheetList() { return m_styleSheetsForStyleSheetList; }
-    const Vector<RefPtr<CSSStyleSheet> >& activeAuthorStyleSheets() const { return m_activeAuthorStyleSheets; }
-    const Vector<RefPtr<StyleSheet> >& styleSheetsForStyleSheetList() const { return m_styleSheetsForStyleSheetList; }
+    WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet> >& activeAuthorStyleSheets() { return m_activeAuthorStyleSheets; }
+    WillBeHeapVector<RefPtrWillBeMember<StyleSheet> >& styleSheetsForStyleSheetList() { return m_styleSheetsForStyleSheetList; }
+    const WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet> >& activeAuthorStyleSheets() const { return m_activeAuthorStyleSheets; }
+    const WillBeHeapVector<RefPtrWillBeMember<StyleSheet> >& styleSheetsForStyleSheetList() const { return m_styleSheetsForStyleSheetList; }
 
     void swap(StyleSheetCollection&);
-    void swapSheetsForSheetList(Vector<RefPtr<StyleSheet> >&);
-    void appendActiveStyleSheets(const Vector<RefPtr<CSSStyleSheet> >&);
+    void swapSheetsForSheetList(WillBeHeapVector<RefPtrWillBeMember<StyleSheet> >&);
+    void appendActiveStyleSheets(const WillBePersistentHeapVector<RefPtrWillBeMember<CSSStyleSheet> >&);
     void appendActiveStyleSheet(CSSStyleSheet*);
     void appendSheetForList(StyleSheet*);
 
 protected:
-    Vector<RefPtr<StyleSheet> > m_styleSheetsForStyleSheetList;
-    Vector<RefPtr<CSSStyleSheet> > m_activeAuthorStyleSheets;
+    WillBePersistentHeapVector<RefPtrWillBeMember<StyleSheet> > m_styleSheetsForStyleSheetList;
+    WillBePersistentHeapVector<RefPtrWillBeMember<CSSStyleSheet> > m_activeAuthorStyleSheets;
 };
 
 }

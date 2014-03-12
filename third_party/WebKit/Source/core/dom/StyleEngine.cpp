@@ -101,6 +101,13 @@ StyleEngine::StyleEngine(Document& document)
 
 StyleEngine::~StyleEngine()
 {
+}
+
+void StyleEngine::detachFromDocument()
+{
+    // Cleanup is performed eagerly when the StyleEngine is removed from the
+    // document. The StyleEngine is unreachable after this, since only the
+    // document has a reference to it.
     for (unsigned i = 0; i < m_injectedAuthorStyleSheets.size(); ++i)
         m_injectedAuthorStyleSheets[i]->clearOwnerNode();
     for (unsigned i = 0; i < m_authorStyleSheets.size(); ++i)
@@ -111,6 +118,11 @@ StyleEngine::~StyleEngine()
         if (m_resolver)
             m_fontSelector->unregisterForInvalidationCallbacks(m_resolver.get());
     }
+
+    // Decrement reference counts for things we could be keeping alive.
+    m_fontSelector.clear();
+    m_resolver.clear();
+    m_styleSheetCollectionMap.clear();
 }
 
 inline Document* StyleEngine::master()
@@ -172,7 +184,7 @@ TreeScopeStyleSheetCollection* StyleEngine::styleSheetCollectionFor(TreeScope& t
     return it->value.get();
 }
 
-const Vector<RefPtr<StyleSheet> >& StyleEngine::styleSheetsForStyleSheetList(TreeScope& treeScope)
+const WillBeHeapVector<RefPtrWillBeMember<StyleSheet> >& StyleEngine::styleSheetsForStyleSheetList(TreeScope& treeScope)
 {
     if (treeScope == m_document)
         return m_documentStyleSheetCollection.styleSheetsForStyleSheetList();
@@ -180,7 +192,7 @@ const Vector<RefPtr<StyleSheet> >& StyleEngine::styleSheetsForStyleSheetList(Tre
     return ensureStyleSheetCollectionFor(treeScope)->styleSheetsForStyleSheetList();
 }
 
-const Vector<RefPtr<CSSStyleSheet> >& StyleEngine::activeAuthorStyleSheets() const
+const WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet> >& StyleEngine::activeAuthorStyleSheets() const
 {
     return m_documentStyleSheetCollection.activeAuthorStyleSheets();
 }
@@ -200,7 +212,7 @@ void StyleEngine::resetCSSFeatureFlags(const RuleFeatureSet& features)
     m_maxDirectAdjacentSelectors = features.maxDirectAdjacentSelectors();
 }
 
-const Vector<RefPtr<CSSStyleSheet> >& StyleEngine::injectedAuthorStyleSheets() const
+const WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet> >& StyleEngine::injectedAuthorStyleSheets() const
 {
     updateInjectedStyleSheetCache();
     return m_injectedAuthorStyleSheets;
@@ -224,7 +236,7 @@ void StyleEngine::updateInjectedStyleSheetCache() const
             continue;
         if (!URLPatternMatcher::matchesPatterns(m_document.url(), entry->whitelist()))
             continue;
-        RefPtr<CSSStyleSheet> groupSheet = CSSStyleSheet::createInline(const_cast<Document*>(&m_document), KURL());
+        RefPtrWillBeRawPtr<CSSStyleSheet> groupSheet = CSSStyleSheet::createInline(const_cast<Document*>(&m_document), KURL());
         m_injectedAuthorStyleSheets.append(groupSheet);
         groupSheet->contents()->parseString(entry->source());
     }
@@ -367,7 +379,7 @@ void StyleEngine::clearMediaQueryRuleSetStyleSheets()
 void StyleEngine::updateStyleSheetsInImport(DocumentStyleSheetCollector& parentCollector)
 {
     ASSERT(!isMaster());
-    Vector<RefPtr<StyleSheet> > sheetsForList;
+    WillBeHeapVector<RefPtrWillBeMember<StyleSheet> > sheetsForList;
     ImportedDocumentStyleSheetCollector subcollector(parentCollector, sheetsForList);
     m_documentStyleSheetCollection.collectStyleSheets(this, subcollector);
     m_documentStyleSheetCollection.swapSheetsForSheetList(sheetsForList);
@@ -412,12 +424,12 @@ bool StyleEngine::updateActiveStyleSheets(StyleResolverUpdateMode updateMode)
     return requiresFullStyleRecalc;
 }
 
-const Vector<RefPtr<StyleSheet> > StyleEngine::activeStyleSheetsForInspector() const
+const WillBeHeapVector<RefPtrWillBeMember<StyleSheet> > StyleEngine::activeStyleSheetsForInspector() const
 {
     if (m_activeTreeScopes.isEmpty())
         return m_documentStyleSheetCollection.styleSheetsForStyleSheetList();
 
-    Vector<RefPtr<StyleSheet> > activeStyleSheets;
+    WillBeHeapVector<RefPtrWillBeMember<StyleSheet> > activeStyleSheets;
 
     activeStyleSheets.appendVector(m_documentStyleSheetCollection.styleSheetsForStyleSheetList());
 
@@ -627,6 +639,12 @@ void StyleEngine::removeSheet(StyleSheetContents* contents)
 
     textToSheetCache().remove(it->value);
     sheetToTextCache().remove(contents);
+}
+
+void StyleEngine::trace(Visitor* visitor)
+{
+    visitor->trace(m_injectedAuthorStyleSheets);
+    visitor->trace(m_authorStyleSheets);
 }
 
 }

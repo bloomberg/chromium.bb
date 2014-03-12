@@ -72,7 +72,7 @@ PassRefPtr<StyleRuleList> ElementRuleCollector::matchedStyleRuleList()
     return m_styleRuleList.release();
 }
 
-PassRefPtr<CSSRuleList> ElementRuleCollector::matchedCSSRuleList()
+PassRefPtrWillBeRawPtr<CSSRuleList> ElementRuleCollector::matchedCSSRuleList()
 {
     ASSERT(m_mode == SelectorChecker::CollectingCSSRules);
     return m_cssRuleList.release();

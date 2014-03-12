@@ -376,7 +376,7 @@ public:
 
     // Macro to declare methods needed for each typed heap.
 #define DECLARE_VISITOR_METHODS(Type)                                  \
-    DEBUG_ONLY(void checkGCInfo(const Type*, const GCInfo*);) \
+    DEBUG_ONLY(void checkGCInfo(const Type*, const GCInfo*);)          \
     virtual void mark(const Type*, TraceCallback) = 0;                 \
     virtual bool isMarked(const Type*) = 0;
 

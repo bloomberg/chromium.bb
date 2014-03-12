@@ -76,7 +76,7 @@ class CSSKeyframesRule FINAL : public CSSRule {
 public:
     static PassRefPtrWillBeRawPtr<CSSKeyframesRule> create(StyleRuleKeyframes* rule, CSSStyleSheet* sheet)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new CSSKeyframesRule(rule, sheet));
+        return adoptRefWillBeNoop(new CSSKeyframesRule(rule, sheet));
     }
 
     virtual ~CSSKeyframesRule();
@@ -108,7 +108,7 @@ private:
 
     RefPtrWillBeMember<StyleRuleKeyframes> m_keyframesRule;
     mutable WillBeHeapVector<RefPtrWillBeMember<CSSKeyframeRule> > m_childRuleCSSOMWrappers;
-    mutable OwnPtr<CSSRuleList> m_ruleListCSSOMWrapper;
+    mutable OwnPtrWillBeMember<CSSRuleList> m_ruleListCSSOMWrapper;
     bool m_isPrefixed;
 };
 

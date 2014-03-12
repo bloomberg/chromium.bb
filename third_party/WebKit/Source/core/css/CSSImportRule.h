@@ -36,7 +36,7 @@ class CSSImportRule FINAL : public CSSRule {
 public:
     static PassRefPtrWillBeRawPtr<CSSImportRule> create(StyleRuleImport* rule, CSSStyleSheet* sheet)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new CSSImportRule(rule, sheet));
+        return adoptRefWillBeNoop(new CSSImportRule(rule, sheet));
     }
 
     virtual ~CSSImportRule();
@@ -56,7 +56,7 @@ private:
 
     RefPtrWillBeMember<StyleRuleImport> m_importRule;
     mutable RefPtrWillBeMember<MediaList> m_mediaCSSOMWrapper;
-    mutable RefPtr<CSSStyleSheet> m_styleSheetCSSOMWrapper;
+    mutable RefPtrWillBeMember<CSSStyleSheet> m_styleSheetCSSOMWrapper;
 };
 
 DEFINE_CSS_RULE_TYPE_CASTS(CSSImportRule, IMPORT_RULE);

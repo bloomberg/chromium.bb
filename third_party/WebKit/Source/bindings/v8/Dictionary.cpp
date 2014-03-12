@@ -330,7 +330,7 @@ bool Dictionary::get(const String& key, RefPtr<DOMWindow>& value) const
     return true;
 }
 
-bool Dictionary::get(const String& key, RefPtrWillBeRawPtr<Storage>& value) const
+bool Dictionary::get(const String& key, RefPtrWillBeMember<Storage>& value) const
 {
     v8::Local<v8::Value> v8Value;
     if (!getKey(key, v8Value))

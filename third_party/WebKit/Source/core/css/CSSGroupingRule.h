@@ -56,7 +56,7 @@ protected:
 
     RefPtrWillBeMember<StyleRuleGroup> m_groupRule;
     mutable WillBeHeapVector<RefPtrWillBeMember<CSSRule> > m_childRuleCSSOMWrappers;
-    mutable OwnPtr<CSSRuleList> m_ruleListCSSOMWrapper;
+    mutable OwnPtrWillBeMember<CSSRuleList> m_ruleListCSSOMWrapper;
 };
 
 } // namespace WebCore

@@ -40,7 +40,7 @@ StyleSheetList::~StyleSheetList()
 {
 }
 
-inline const Vector<RefPtr<StyleSheet> >& StyleSheetList::styleSheets()
+inline const WillBeHeapVector<RefPtrWillBeMember<StyleSheet> >& StyleSheetList::styleSheets()
 {
     if (!m_treeScope)
         return m_detachedStyleSheets;
@@ -60,7 +60,7 @@ unsigned StyleSheetList::length()
 
 StyleSheet* StyleSheetList::item(unsigned index)
 {
-    const Vector<RefPtr<StyleSheet> >& sheets = styleSheets();
+    const WillBeHeapVector<RefPtrWillBeMember<StyleSheet> >& sheets = styleSheets();
     return index < sheets.size() ? sheets[index].get() : 0;
 }
 
@@ -89,6 +89,7 @@ CSSStyleSheet* StyleSheetList::anonymousNamedGetter(const AtomicString& name)
 
 void StyleSheetList::trace(Visitor* visitor)
 {
+    visitor->trace(m_detachedStyleSheets);
 }
 
 } // namespace WebCore

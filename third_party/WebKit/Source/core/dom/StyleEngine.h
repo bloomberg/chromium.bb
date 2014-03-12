@@ -71,8 +71,8 @@ private:
     bool m_needsStyleRecalc;
 };
 
-class StyleEngine {
-    WTF_MAKE_FAST_ALLOCATED;
+class StyleEngine : public NoBaseWillBeGarbageCollectedFinalized<StyleEngine> {
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
 
     class IgnoringPendingStylesheet : public TemporaryChange<bool> {
@@ -85,17 +85,19 @@ public:
 
     friend class IgnoringPendingStylesheet;
 
-    static PassOwnPtr<StyleEngine> create(Document& document) { return adoptPtr(new StyleEngine(document)); }
+    static PassOwnPtrWillBeRawPtr<StyleEngine> create(Document& document) { return adoptPtrWillBeNoop(new StyleEngine(document)); }
 
     ~StyleEngine();
 
-    const Vector<RefPtr<StyleSheet> >& styleSheetsForStyleSheetList(TreeScope&);
-    const Vector<RefPtr<CSSStyleSheet> >& activeAuthorStyleSheets() const;
+    void detachFromDocument();
 
-    const Vector<RefPtr<CSSStyleSheet> >& documentAuthorStyleSheets() const { return m_authorStyleSheets; }
-    const Vector<RefPtr<CSSStyleSheet> >& injectedAuthorStyleSheets() const;
+    const WillBeHeapVector<RefPtrWillBeMember<StyleSheet> >& styleSheetsForStyleSheetList(TreeScope&);
+    const WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet> >& activeAuthorStyleSheets() const;
 
-    const Vector<RefPtr<StyleSheet> > activeStyleSheetsForInspector() const;
+    const WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet> >& documentAuthorStyleSheets() const { return m_authorStyleSheets; }
+    const WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet> >& injectedAuthorStyleSheets() const;
+
+    const WillBeHeapVector<RefPtrWillBeMember<StyleSheet> > activeStyleSheetsForInspector() const;
 
     void modifiedStyleSheet(StyleSheet*);
     void addStyleSheetCandidateNode(Node*, bool createdByParser);
@@ -184,6 +186,8 @@ public:
     static PassRefPtr<CSSStyleSheet> createSheet(Element*, const String& text, TextPosition startPosition, bool createdByParser);
     static void removeSheet(StyleSheetContents*);
 
+    void trace(Visitor*);
+
 private:
     StyleEngine(Document&);
 
@@ -216,10 +220,10 @@ private:
     // elements and when it is safe to execute scripts.
     int m_pendingStylesheets;
 
-    mutable Vector<RefPtr<CSSStyleSheet> > m_injectedAuthorStyleSheets;
+    mutable WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet> > m_injectedAuthorStyleSheets;
     mutable bool m_injectedStyleSheetCacheValid;
 
-    Vector<RefPtr<CSSStyleSheet> > m_authorStyleSheets;
+    WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet> > m_authorStyleSheets;
 
     DocumentStyleSheetCollection m_documentStyleSheetCollection;
     HashMap<TreeScope*, OwnPtr<TreeScopeStyleSheetCollection> > m_styleSheetCollectionMap;

@@ -102,7 +102,7 @@ public:
 
     MatchResult& matchedResult();
     PassRefPtr<StyleRuleList> matchedStyleRuleList();
-    PassRefPtr<CSSRuleList> matchedCSSRuleList();
+    PassRefPtrWillBeRawPtr<CSSRuleList> matchedCSSRuleList();
 
     void collectMatchingRules(const MatchRequest&, RuleRange&, SelectorChecker::BehaviorAtBoundary = SelectorChecker::DoesNotCrossBoundary, CascadeScope = ignoreCascadeScope, CascadeOrder = ignoreCascadeOrder);
     void sortAndTransferMatchedRules();
@@ -153,7 +153,7 @@ private:
     OwnPtr<Vector<MatchedRule, 32> > m_matchedRules;
 
     // Output.
-    RefPtr<StaticCSSRuleList> m_cssRuleList;
+    RefPtrWillBeMember<StaticCSSRuleList> m_cssRuleList;
     RefPtr<StyleRuleList> m_styleRuleList;
     MatchResult m_result;
 };

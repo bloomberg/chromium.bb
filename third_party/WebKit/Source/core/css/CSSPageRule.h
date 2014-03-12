@@ -36,7 +36,7 @@ class CSSPageRule FINAL : public CSSRule {
 public:
     static PassRefPtrWillBeRawPtr<CSSPageRule> create(StyleRulePage* rule, CSSStyleSheet* sheet)
     {
-        return adoptRefWillBeRefCountedGarbageCollected(new CSSPageRule(rule, sheet));
+        return adoptRefWillBeNoop(new CSSPageRule(rule, sheet));
     }
 
     virtual ~CSSPageRule();

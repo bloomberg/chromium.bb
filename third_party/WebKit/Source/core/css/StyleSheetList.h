@@ -52,10 +52,10 @@ public:
 
 private:
     StyleSheetList(TreeScope*);
-    const Vector<RefPtr<StyleSheet> >& styleSheets();
+    const WillBeHeapVector<RefPtrWillBeMember<StyleSheet> >& styleSheets();
 
     TreeScope* m_treeScope;
-    Vector<RefPtr<StyleSheet> > m_detachedStyleSheets;
+    WillBeHeapVector<RefPtrWillBeMember<StyleSheet> > m_detachedStyleSheets;
 };
 
 } // namespace WebCore

@@ -139,7 +139,7 @@ CSSRule* CSSGroupingRule::item(unsigned index) const
 CSSRuleList* CSSGroupingRule::cssRules() const
 {
     if (!m_ruleListCSSOMWrapper)
-        m_ruleListCSSOMWrapper = adoptPtr(new LiveCSSRuleList<CSSGroupingRule>(const_cast<CSSGroupingRule*>(this)));
+        m_ruleListCSSOMWrapper = LiveCSSRuleList<CSSGroupingRule>::create(const_cast<CSSGroupingRule*>(this));
     return m_ruleListCSSOMWrapper.get();
 }
 
@@ -160,6 +160,7 @@ void CSSGroupingRule::trace(Visitor* visitor)
     visitor->trace(m_childRuleCSSOMWrappers);
 #endif
     visitor->trace(m_groupRule);
+    visitor->trace(m_ruleListCSSOMWrapper);
 }
 
 } // namespace WebCore
