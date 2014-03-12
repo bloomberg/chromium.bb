@@ -174,7 +174,12 @@ bool test_getcwd() {
 
   // Calculate parent folder.
   strncpy(parent, dirname, PATH_MAX);
-  strrchr(parent, '/')[0] = '\0';
+  char *basename_start = strrchr(parent, '/');
+  if (basename_start == NULL) {
+    basename_start = strrchr(parent, '\\');
+    ASSERT_NE_MSG(basename_start, NULL, "test_file contains no dir seperator");
+  }
+  basename_start[0] = '\0';
 
   int retcode = chdir("..");
   ASSERT_EQ_MSG(retcode, 0, "chdir() failed");

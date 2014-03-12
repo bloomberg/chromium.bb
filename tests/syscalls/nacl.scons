@@ -19,29 +19,26 @@ syscalls_nexe = env.ComponentProgram('syscalls',
                                      EXTRA_LIBS=['${PTHREAD_LIBS}',
                                                  '${NONIRT_LIBS}'])
 
-if not env.Bit('host_windows'):
-  # Creating a R/W test file in the output directory.
-  # Because this test gets built on one platform and run on another (arm),
-  # explaining to scons that this file is a dependency of the build and not
-  # a test is tricky. As a simple work-around, the test inputs have been made
-  # a 'default' scons target.
-  # TODO(bradnelson): find a better way to make the plumbing on this work.
-  inputs = env.Command(env.File('file_ok_rdwr.txt'), env.File('file_ok.txt'),
-             [Copy(env.File('file_ok_rdwr.txt'), env.File('file_ok.txt')),
-              Chmod(env.File('file_ok_rdwr.txt'), 0755)])
-  Default(inputs)
+# Creating a R/W test file in the output directory.
+# Because this test gets built on one platform and run on another (arm),
+# explaining to scons that this file is a dependency of the build and not
+# a test is tricky. As a simple work-around, the test inputs have been made
+# a 'default' scons target.
+# TODO(bradnelson): find a better way to make the plumbing on this work.
+inputs = env.Command(env.File('file_ok_rdwr.txt'), env.File('file_ok.txt'),
+           [Copy(env.File('file_ok_rdwr.txt'), env.File('file_ok.txt')),
+            Chmod(env.File('file_ok_rdwr.txt'), 0755)])
+Default(inputs)
 
-  # syscalls_test exercise open/read/write, so need filesystem access
-  # via the debug flag to sel_ldr
-  node = env.CommandSelLdrTestNacl(
-      'syscalls_test.out',
-      syscalls_nexe,
-      args=[env.File('file_ok_rdwr.txt')],
-      stdout_golden=env.File('syscalls.stdout'),
-      filter_regex="'^(All tests PASSED)$|^(TEST.*)$'",
-      sel_ldr_flags=['-a'],
-                                   )
-  env.AddNodeToTestSuite(node, ['small_tests'], 'run_syscall_test')
+# syscalls_test exercise open/read/write, so need filesystem access
+# via the debug flag to sel_ldr
+node = env.CommandSelLdrTestNacl(
+    'syscalls_test.out',
+    syscalls_nexe,
+    args=[env.File('file_ok_rdwr.txt')],
+    stdout_golden=env.File('syscalls.stdout'),
+    sel_ldr_flags=['-a'])
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_syscall_test')
 
 # getpid() works with nacl-glibc, but only via the IRT (there is no
 # direct syscall version).

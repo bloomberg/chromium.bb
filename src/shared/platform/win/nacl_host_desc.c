@@ -1339,8 +1339,8 @@ int NaClHostDescIsatty(struct NaClHostDesc *d) {
 
   NaClHostDescCheckValidity("NaClHostDescIsatty", d);
   retval = _isatty(d->d);
-  /* When _isatty fails it returns zero and sets errno. */
-  return (0 == retval) ? -NaClXlateErrno(errno) : 1;
+  /* When windows _isatty fails it returns zero, but does not set errno. */
+  return (0 == retval) ? -NACL_ABI_ENOTTY : 1;
 }
 
 int NaClHostDescClose(struct NaClHostDesc *d) {
