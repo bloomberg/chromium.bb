@@ -290,15 +290,10 @@ void RawChannelWin::RawChannelIOHandler::OnReadCompleted(DWORD bytes_read,
 
   if (error != ERROR_SUCCESS) {
     DCHECK_EQ(bytes_read, 0u);
-
-    // ERROR_BROKEN_PIPE indicates that the other side has closed the handle.
-    // Don't regard that as a fatal error. We simply don't tell RawChannel that
-    // the read has actually completed.
-    if (error != ERROR_BROKEN_PIPE) {
-      LOG(ERROR) << "ReadFile failed: " << error;
-      owner_->OnReadCompleted(false, 0);
-    }
+    PLOG_IF(ERROR, error != ERROR_BROKEN_PIPE) << "ReadFile";
+    owner_->OnReadCompleted(false, 0);
   } else {
+    DCHECK_GT(bytes_read, 0u);
     owner_->OnReadCompleted(true, bytes_read);
   }
 }
@@ -363,14 +358,8 @@ RawChannel::IOResult RawChannelWin::Read(size_t* bytes_read) {
     DCHECK_EQ(bytes_read_dword, 0u);
     DWORD error = GetLastError();
     if (error != ERROR_IO_PENDING) {
-      if (error != ERROR_BROKEN_PIPE) {
-        PLOG(ERROR) << "ReadFile";
-        return IO_FAILED;
-      }
-
-      // Please see comments in |RawChannelIOHandler::OnReadCompleted()| for why
-      // handling ERROR_BROKEN_PIPE differently.
-      return IO_PENDING;
+      LOG_IF(ERROR, error != ERROR_BROKEN_PIPE) << "ReadFile failed: " << error;
+      return IO_FAILED;
     }
   }
 

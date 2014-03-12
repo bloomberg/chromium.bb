@@ -108,13 +108,15 @@ RawChannel::IOResult RawChannelPosix::Read(size_t* bytes_read) {
 
   ssize_t read_result = HANDLE_EINTR(read(fd_.get().fd, buffer, bytes_to_read));
 
-  if (read_result >= 0) {
+  if (read_result > 0) {
     *bytes_read = static_cast<size_t>(read_result);
     return IO_SUCCEEDED;
   }
 
-  if (errno != EAGAIN && errno != EWOULDBLOCK) {
-    PLOG(ERROR) << "read";
+  // |read_result == 0| means "end of file".
+  if (read_result == 0 || (errno != EAGAIN && errno != EWOULDBLOCK)) {
+    if (read_result != 0)
+      PLOG(ERROR) << "read";
 
     // Make sure that |OnFileCanReadWithoutBlocking()| won't be called again.
     read_watcher_.reset();

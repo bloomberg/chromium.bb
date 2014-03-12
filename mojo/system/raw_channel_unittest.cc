@@ -30,10 +30,6 @@
 #include "mojo/system/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_POSIX)
-#include <sys/socket.h>
-#endif
-
 namespace mojo {
 namespace system {
 namespace {
@@ -114,8 +110,9 @@ class WriteOnlyRawChannelDelegate : public RawChannel::Delegate {
       const MessageInTransit::View& /*message_view*/) OVERRIDE {
     NOTREACHED();
   }
-  virtual void OnFatalError(FatalError /*fatal_error*/) OVERRIDE {
-    NOTREACHED();
+  virtual void OnFatalError(FatalError fatal_error) OVERRIDE {
+    // We'll get a read error when the connection is closed.
+    CHECK_EQ(fatal_error, FATAL_ERROR_FAILED_READ);
   }
 
  private:
@@ -253,8 +250,9 @@ class ReadCheckerRawChannelDelegate : public RawChannel::Delegate {
     if (should_signal)
       done_event_.Signal();
   }
-  virtual void OnFatalError(FatalError /*fatal_error*/) OVERRIDE {
-    NOTREACHED();
+  virtual void OnFatalError(FatalError fatal_error) OVERRIDE {
+    // We'll get a read error when the connection is closed.
+    CHECK_EQ(fatal_error, FATAL_ERROR_FAILED_READ);
   }
 
   // Wait for all the messages (of sizes |expected_sizes_|) to be seen.
@@ -363,8 +361,9 @@ class ReadCountdownRawChannelDelegate : public RawChannel::Delegate {
     if (count_ >= expected_count_)
       done_event_.Signal();
   }
-  virtual void OnFatalError(FatalError /*fatal_error*/) OVERRIDE {
-    NOTREACHED();
+  virtual void OnFatalError(FatalError fatal_error) OVERRIDE {
+    // We'll get a read error when the connection is closed.
+    CHECK_EQ(fatal_error, FATAL_ERROR_FAILED_READ);
   }
 
   // Wait for all the messages to have been seen.
@@ -438,7 +437,8 @@ class FatalErrorRecordingRawChannelDelegate
                                         bool expect_read_error,
                                         bool expect_write_error)
       : ReadCountdownRawChannelDelegate(expected_read_count),
-        got_fatal_error_event_(false, false),
+        got_read_fatal_error_event_(false, false),
+        got_write_fatal_error_event_(false, false),
         expecting_read_error_(expect_read_error),
         expecting_write_error_(expect_write_error) {
   }
@@ -449,23 +449,22 @@ class FatalErrorRecordingRawChannelDelegate
     if (fatal_error == FATAL_ERROR_FAILED_READ) {
       ASSERT_TRUE(expecting_read_error_);
       expecting_read_error_ = false;
+      got_read_fatal_error_event_.Signal();
     } else if (fatal_error == FATAL_ERROR_FAILED_WRITE) {
       ASSERT_TRUE(expecting_write_error_);
       expecting_write_error_ = false;
+      got_write_fatal_error_event_.Signal();
     } else {
       ASSERT_TRUE(false);
     }
-
-    if (!expecting_read_error_ && !expecting_write_error_)
-      got_fatal_error_event_.Signal();
   }
 
-  void WaitForFatalError() {
-    got_fatal_error_event_.Wait();
-  }
+  void WaitForReadFatalError() { got_read_fatal_error_event_.Wait(); }
+  void WaitForWriteFatalError() { got_write_fatal_error_event_.Wait(); }
 
  private:
-  base::WaitableEvent got_fatal_error_event_;
+  base::WaitableEvent got_read_fatal_error_event_;
+  base::WaitableEvent got_write_fatal_error_event_;
 
   bool expecting_read_error_;
   bool expecting_write_error_;
@@ -474,10 +473,8 @@ class FatalErrorRecordingRawChannelDelegate
 };
 
 // Tests fatal errors.
-// TODO(vtl): Figure out how to make reading fail reliably. (I'm not convinced
-// that it does.)
 TEST_F(RawChannelTest, OnFatalError) {
-  FatalErrorRecordingRawChannelDelegate delegate(0, false, true);
+  FatalErrorRecordingRawChannelDelegate delegate(0, true, true);
 
   scoped_ptr<RawChannel> rc(RawChannel::Create(handles[0].Pass(),
                                                &delegate,
@@ -491,46 +488,27 @@ TEST_F(RawChannelTest, OnFatalError) {
 
   EXPECT_FALSE(rc->WriteMessage(MakeTestMessage(1)));
 
-  // TODO(vtl): In theory, it's conceivable that closing the other end might
-  // lead to read failing. In practice, it doesn't seem to.
-  delegate.WaitForFatalError();
+  // We should get a write fatal error.
+  delegate.WaitForWriteFatalError();
+
+  // We should also get a read fatal error.
+  delegate.WaitForReadFatalError();
 
   EXPECT_FALSE(rc->WriteMessage(MakeTestMessage(2)));
 
   // Sleep a bit, to make sure we don't get another |OnFatalError()|
   // notification. (If we actually get another one, |OnFatalError()| crashes.)
-  base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
+  base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(20));
 
   io_thread()->PostTaskAndWait(FROM_HERE,
                                base::Bind(&RawChannel::Shutdown,
                                           base::Unretained(rc.get())));
 }
 
-#if defined(OS_POSIX)
 // RawChannelTest.ReadUnaffectedByWriteFatalError ------------------------------
 
-// TODO(yzshen): On Windows, I haven't figured out a way to shut down one
-// direction of the named pipe.
-// TODO(yzshen): On Mac, shutting down read on one end doesn't fail write on the
-// other end.
-#if defined(OS_MACOSX)
-#define MAYBE_ReadUnaffectedByWriteFatalError \
-    DISABLED_ReadUnaffectedByWriteFatalError
-#else
-#define MAYBE_ReadUnaffectedByWriteFatalError \
-    ReadUnaffectedByWriteFatalError
-#endif
-TEST_F(RawChannelTest, MAYBE_ReadUnaffectedByWriteFatalError) {
+TEST_F(RawChannelTest, ReadUnaffectedByWriteFatalError) {
   const size_t kMessageCount = 5;
-
-  FatalErrorRecordingRawChannelDelegate delegate(2 * kMessageCount, false,
-                                                 true);
-  scoped_ptr<RawChannel> rc(RawChannel::Create(handles[0].Pass(),
-                                               &delegate,
-                                               io_thread()->message_loop()));
-
-  io_thread()->PostTaskAndWait(FROM_HERE,
-                               base::Bind(&InitOnIOThread, rc.get()));
 
   // Write into the other end a few messages.
   uint32_t message_size = 1;
@@ -539,32 +517,33 @@ TEST_F(RawChannelTest, MAYBE_ReadUnaffectedByWriteFatalError) {
     EXPECT_TRUE(WriteTestMessageToHandle(handles[1].get(), message_size));
   }
 
-  // Shut down read at the other end, which should make writing fail.
-  EXPECT_EQ(0, shutdown(handles[1].get().fd, SHUT_RD));
+  // Close the other end, which should make writing fail.
+  handles[1].reset();
+
+  // Only start up reading here. The system buffer should still contain the
+  // messages that were written.
+  FatalErrorRecordingRawChannelDelegate delegate(kMessageCount, true, true);
+  scoped_ptr<RawChannel> rc(RawChannel::Create(handles[0].Pass(),
+                                               &delegate,
+                                               io_thread()->message_loop()));
+  io_thread()->PostTaskAndWait(FROM_HERE,
+                               base::Bind(&InitOnIOThread, rc.get()));
 
   EXPECT_FALSE(rc->WriteMessage(MakeTestMessage(1)));
 
-  delegate.WaitForFatalError();
+  // We should definitely get a write fatal error.
+  delegate.WaitForWriteFatalError();
 
-  EXPECT_FALSE(rc->WriteMessage(MakeTestMessage(2)));
-
-  // Sleep a bit, to make sure we don't get another |OnFatalError()|
-  // notification. (If we actually get another one, |OnFatalError()| crashes.)
-  base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
-
-  // Write into the other end a few more messages.
-  for (size_t count = 0; count < kMessageCount;
-       ++count, message_size += message_size / 2 + 1) {
-    EXPECT_TRUE(WriteTestMessageToHandle(handles[1].get(), message_size));
-  }
   // Wait for reading to finish. A writing failure shouldn't affect reading.
   delegate.Wait();
+
+  // And then we should get a read fatal error.
+  delegate.WaitForReadFatalError();
 
   io_thread()->PostTaskAndWait(FROM_HERE,
                                base::Bind(&RawChannel::Shutdown,
                                           base::Unretained(rc.get())));
 }
-#endif  // defined(OS_POSIX)
 
 // RawChannelTest.WriteMessageAfterShutdown ------------------------------------
 
