@@ -4,6 +4,7 @@
 
 #include "content/browser/service_worker/service_worker_url_request_job.h"
 
+#include "base/bind.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
@@ -15,11 +16,26 @@ ServiceWorkerURLRequestJob::ServiceWorkerURLRequestJob(
     net::URLRequest* request,
     net::NetworkDelegate* network_delegate)
     : net::URLRequestJob(request, network_delegate),
+      response_type_(NOT_DETERMINED),
+      is_started_(false),
       weak_factory_(this) {
 }
 
+void ServiceWorkerURLRequestJob::FallbackToNetwork() {
+  DCHECK_EQ(NOT_DETERMINED, response_type_);
+  response_type_ = FALLBACK_TO_NETWORK;
+  MaybeStartRequest();
+}
+
+void ServiceWorkerURLRequestJob::ForwardToServiceWorker() {
+  DCHECK_EQ(NOT_DETERMINED, response_type_);
+  response_type_ = FORWARD_TO_SERVICE_WORKER;
+  MaybeStartRequest();
+}
+
 void ServiceWorkerURLRequestJob::Start() {
-  NOTIMPLEMENTED();
+  is_started_ = true;
+  MaybeStartRequest();
 }
 
 void ServiceWorkerURLRequestJob::Kill() {
@@ -86,6 +102,35 @@ const net::HttpResponseInfo* ServiceWorkerURLRequestJob::http_info() const {
 }
 
 ServiceWorkerURLRequestJob::~ServiceWorkerURLRequestJob() {
+}
+
+void ServiceWorkerURLRequestJob::MaybeStartRequest() {
+  if (is_started_ && response_type_ != NOT_DETERMINED) {
+    // Start asynchronously.
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&ServiceWorkerURLRequestJob::StartRequest,
+                   weak_factory_.GetWeakPtr()));
+  }
+}
+
+void ServiceWorkerURLRequestJob::StartRequest() {
+  // TODO(kinuko): Implement.
+  //
+  // For FALLBACK_TO_NETWORK case: restart the request to create a new
+  //  job. Our request handler will return NULL here, and the default job
+  //  (which hits network) should be created.
+  // For FORWARD_TO_SERVICE_WORKER case: send a fetch event to the
+  //  ServiceWorker associated to the provider_host, and handle the returned
+  //  response.
+  //  - If the response indicates fallback-to-network we'll perform restart via
+  //    NotifyRestartRequired.
+  //  - If the response header indicates redirect the request may be
+  //    internally restarted via NotifyHeadersComplete.
+  //  - If the response has an identifier to on-disk response data
+  //    (e.g. blob or cache entry) we'll need to pull  data from disk before
+  //    respond to the document.
+  NOTIMPLEMENTED();
 }
 
 }  // namespace content

@@ -46,6 +46,10 @@ class ServiceWorkerProviderHost
     return script_client_thread_ids_;
   }
 
+  // Associate |version| to this provider host. Giving NULL to this method
+  // will unset the associated version.
+  void AssociateVersion(ServiceWorkerVersion* version);
+
   // Returns true if this provider host should handle requests for
   // |resource_type|.
   bool ShouldHandleRequest(ResourceType::Type resource_type) const;

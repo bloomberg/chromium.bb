@@ -6,6 +6,7 @@
 
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
+#include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_url_request_job.h"
 #include "content/browser/service_worker/service_worker_utils.h"
 #include "content/common/service_worker/service_worker_types.h"
@@ -53,13 +54,43 @@ ServiceWorkerRequestHandler::~ServiceWorkerRequestHandler() {
 net::URLRequestJob* ServiceWorkerRequestHandler::MaybeCreateJob(
     net::URLRequest* request,
     net::NetworkDelegate* network_delegate) {
-  if (ShouldFallbackToNetwork()) {
+  if (!context_ || !provider_host_) {
+    // We can't do anything other than to fall back to network.
     job_ = NULL;
     return NULL;
   }
 
-  DCHECK(!job_.get());
+  // This may get called multiple times for original and redirect requests:
+  // A. original request case: job_ is null, no previous location info.
+  // B. redirect or restarted request case:
+  //  a) job_ is non-null if the previous location was forwarded to SW.
+  //  b) job_ is null if the previous location was fallback.
+  //  c) job_ is non-null if additional restart was required to fall back.
+
+  // We've come here by restart, we already have original request and it
+  // tells we should fallback to network. (Case B-c)
+  if (job_.get() && job_->ShouldFallbackToNetwork()) {
+    job_ = NULL;
+    return NULL;
+  }
+
+  // It's for original request (A) or redirect case (B-a or B-b).
+  DCHECK(!job_.get() || job_->ShouldForwardToServiceWorker());
+
   job_ = new ServiceWorkerURLRequestJob(request, network_delegate);
+  if (ServiceWorkerUtils::IsMainResourceType(resource_type_))
+    PrepareForMainResource(request->url());
+  else
+    PrepareForSubResource();
+
+  if (job_->ShouldFallbackToNetwork()) {
+    // If we know we can fallback to network at this point (in case
+    // the storage lookup returned immediately), just return NULL here to
+    // fallback to network.
+    job_ = NULL;
+    return NULL;
+  }
+
   return job_.get();
 }
 
@@ -69,12 +100,41 @@ ServiceWorkerRequestHandler::ServiceWorkerRequestHandler(
     ResourceType::Type resource_type)
     : context_(context),
       provider_host_(provider_host),
-      resource_type_(resource_type) {
+      resource_type_(resource_type),
+      weak_factory_(this) {
 }
 
-bool ServiceWorkerRequestHandler::ShouldFallbackToNetwork() const {
-  NOTIMPLEMENTED();
-  return true;
+void ServiceWorkerRequestHandler::PrepareForMainResource(const GURL& url) {
+  DCHECK(job_.get());
+  DCHECK(context_);
+  // The corresponding provider_host may already have associate version in
+  // redirect case, unassociate it now.
+  provider_host_->AssociateVersion(NULL);
+  context_->storage()->FindRegistrationForDocument(
+      url,
+      base::Bind(&self::DidLookupRegistrationForMainResource,
+                  weak_factory_.GetWeakPtr()));
+}
+
+void ServiceWorkerRequestHandler::DidLookupRegistrationForMainResource(
+    ServiceWorkerStatusCode status,
+    const scoped_refptr<ServiceWorkerRegistration>& registration) {
+  DCHECK(job_.get());
+  if (status != SERVICE_WORKER_OK || !registration->active_version()) {
+    // No registration, or no active version for the registration is available.
+    job_->FallbackToNetwork();
+    return;
+  }
+  DCHECK(registration);
+  provider_host_->AssociateVersion(registration->active_version());
+  job_->ForwardToServiceWorker();
+}
+
+void ServiceWorkerRequestHandler::PrepareForSubResource() {
+  DCHECK(job_.get());
+  DCHECK(context_);
+  DCHECK(provider_host_->associated_version());
+  job_->ForwardToServiceWorker();
 }
 
 }  // namespace content

@@ -22,6 +22,17 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate);
 
+  // Sets the response type.
+  void FallbackToNetwork();
+  void ForwardToServiceWorker();
+
+  bool ShouldFallbackToNetwork() const {
+    return response_type_ == FALLBACK_TO_NETWORK;
+  }
+  bool ShouldForwardToServiceWorker() const {
+    return response_type_ == FORWARD_TO_SERVICE_WORKER;
+  }
+
   // net::URLRequestJob overrides:
   virtual void Start() OVERRIDE;
   virtual void Kill() OVERRIDE;
@@ -42,6 +53,20 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob
   virtual ~ServiceWorkerURLRequestJob();
 
  private:
+  enum ResponseType {
+    NOT_DETERMINED,
+    FALLBACK_TO_NETWORK,
+    FORWARD_TO_SERVICE_WORKER,
+  };
+
+  // We start processing the request if Start() is called AND response_type_
+  // is determined.
+  void MaybeStartRequest();
+  void StartRequest();
+
+  ResponseType response_type_;
+  bool is_started_;
+
   net::HttpByteRange byte_range_;
   scoped_ptr<net::HttpResponseInfo> range_response_info_;
   scoped_ptr<net::HttpResponseInfo> http_response_info_;

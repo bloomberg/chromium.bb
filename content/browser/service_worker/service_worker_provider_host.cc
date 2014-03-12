@@ -12,10 +12,21 @@ namespace content {
 
 ServiceWorkerProviderHost::ServiceWorkerProviderHost(
     int process_id, int provider_id)
-    : process_id_(process_id), provider_id_(provider_id) {
+    : process_id_(process_id),
+      provider_id_(provider_id) {
 }
 
 ServiceWorkerProviderHost::~ServiceWorkerProviderHost() {
+  AssociateVersion(NULL);
+}
+
+void ServiceWorkerProviderHost::AssociateVersion(
+    ServiceWorkerVersion* version) {
+  if (associated_version())
+    associated_version_->RemoveProcessToWorker(process_id_);
+  associated_version_ = version;
+  if (version)
+    version->AddProcessToWorker(process_id_);
 }
 
 void ServiceWorkerProviderHost::AddScriptClient(int thread_id) {
@@ -35,6 +46,10 @@ bool ServiceWorkerProviderHost::ShouldHandleRequest(
 
   if (associated_version())
     return true;
+
+  // TODO(kinuko): Handle ServiceWorker cases.
+  // For now we always return false here, so that we don't handle
+  // requests for ServiceWorker (either for the main or sub resources).
 
   return false;
 }
