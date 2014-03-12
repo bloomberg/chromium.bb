@@ -85,6 +85,8 @@ class CONTENT_EXPORT MediaStreamAudioProcessor :
                              int* new_volume,
                              int16** out);
 
+  bool IsAudioTrackProcessingEnabled() const;
+
   // The audio format of the input to the processor.
   const media::AudioParameters& InputFormat() const;
 

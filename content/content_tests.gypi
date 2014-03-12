@@ -711,6 +711,7 @@
             'renderer/media/media_stream_dependency_factory_unittest.cc',
             'renderer/media/media_stream_dispatcher_unittest.cc',
             'renderer/media/media_stream_impl_unittest.cc',
+            'renderer/media/mock_media_constraint_factory.cc',
             'renderer/media/rtc_peer_connection_handler_unittest.cc',
             'renderer/media/rtc_video_decoder_unittest.cc',
             'renderer/media/video_source_handler_unittest.cc',

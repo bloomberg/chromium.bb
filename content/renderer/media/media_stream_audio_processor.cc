@@ -265,13 +265,8 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
     const blink::WebMediaConstraints& constraints, int effects,
     MediaStreamType type) {
   DCHECK(!audio_processing_);
-  const std::string group_name =
-      base::FieldTrialList::FindFullName("MediaStreamAudioTrackProcessing");
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableAudioTrackProcessing) &&
-      group_name != "Enabled") {
+  if (!IsAudioTrackProcessingEnabled())
     return;
-  }
 
   RTCMediaConstraints native_constraints(constraints);
 
@@ -490,6 +485,13 @@ void MediaStreamAudioProcessor::StopAudioProcessing() {
     playout_data_source_->RemovePlayoutSink(this);
 
   audio_processing_.reset();
+}
+
+bool MediaStreamAudioProcessor::IsAudioTrackProcessingEnabled() const {
+  const std::string group_name =
+      base::FieldTrialList::FindFullName("MediaStreamAudioTrackProcessing");
+  return group_name == "Enabled" || CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableAudioTrackProcessing);
 }
 
 }  // namespace content

@@ -464,7 +464,7 @@ void WebRtcAudioCapturer::Capture(media::AudioBus* audio_source,
     // Note that, we turn off the audio processing in PeerConnection if the
     // processor has already processed the data.
     need_audio_processing = need_audio_processing_ ?
-        !audio_processor_->has_audio_processing() : false;
+        !audio_processor_->IsAudioTrackProcessingEnabled() : false;
   }
 
   DCHECK(audio_processor_->InputFormat().IsValid());
