@@ -257,8 +257,7 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
   // and are disabled for Android WebView as it doesn't support the format.
   settings.use_rgba_4444_textures =
       base::android::SysUtils::IsLowEndDevice() &&
-      !widget->UsingSynchronousRendererCompositor() &&
-      !cmd->HasSwitch(cc::switches::kDisable4444Textures);
+      !widget->UsingSynchronousRendererCompositor();
   if (widget->UsingSynchronousRendererCompositor()) {
     // TODO(boliu): Set this ratio for Webview.
   } else if (base::android::SysUtils::IsLowEndDevice()) {

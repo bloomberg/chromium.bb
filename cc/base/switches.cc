@@ -110,9 +110,6 @@ const char kCCLayerTreeTestNoTimeout[] = "cc-layer-tree-test-no-timeout";
 // Makes pixel tests write their output instead of read it.
 const char kCCRebaselinePixeltests[] = "cc-rebaseline-pixeltests";
 
-// Disable textures using RGBA_4444 layout.
-const char kDisable4444Textures[] = "disable-4444-textures";
-
 // Disable touch hit testing in the compositor.
 const char kDisableCompositorTouchHitTesting[] =
     "disable-compositor-touch-hit-testing";
