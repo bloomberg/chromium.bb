@@ -286,6 +286,10 @@ class SystemTrayDelegateWin : public ash::SystemTrayDelegate,
     return false;
   }
 
+  virtual bool IsSearchKeyMappedToCapsLock() OVERRIDE {
+    return false;
+  }
+
  private:
   ash::SystemTrayNotifier* GetSystemTrayNotifier() {
     return ash::Shell::GetInstance()->system_tray_notifier();

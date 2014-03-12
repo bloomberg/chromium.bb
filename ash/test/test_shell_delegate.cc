@@ -6,7 +6,6 @@
 
 #include <limits>
 
-#include "ash/caps_lock_delegate_stub.h"
 #include "ash/default_accessibility_delegate.h"
 #include "ash/gpu_support_stub.h"
 #include "ash/host/window_tree_host_factory.h"
@@ -112,10 +111,6 @@ SystemTrayDelegate* TestShellDelegate::CreateSystemTrayDelegate() {
 
 UserWallpaperDelegate* TestShellDelegate::CreateUserWallpaperDelegate() {
   return new TestUserWallpaperDelegate();
-}
-
-CapsLockDelegate* TestShellDelegate::CreateCapsLockDelegate() {
-  return new CapsLockDelegateStub;
 }
 
 SessionStateDelegate* TestShellDelegate::CreateSessionStateDelegate() {

@@ -496,14 +496,22 @@ TEST_F(ShellTest, ToggleAutoHide) {
             shell->GetShelfAutoHideBehavior(root_window));
 }
 
+// Tests that the cursor-filter is ahead of the drag-drop controller in the
+// pre-target list.
 TEST_F(ShellTest, TestPreTargetHandlerOrder) {
   Shell* shell = Shell::GetInstance();
   ui::EventTargetTestApi test_api(shell);
   test::ShellTestApi shell_test_api(shell);
 
   const ui::EventHandlerList& handlers = test_api.pre_target_handlers();
-  EXPECT_EQ(handlers[0], shell->mouse_cursor_filter());
-  EXPECT_EQ(handlers[1], shell_test_api.drag_drop_controller());
+  ui::EventHandlerList::const_iterator cursor_filter =
+      std::find(handlers.begin(), handlers.end(), shell->mouse_cursor_filter());
+  ui::EventHandlerList::const_iterator drag_drop =
+      std::find(handlers.begin(), handlers.end(),
+                shell_test_api.drag_drop_controller());
+  EXPECT_NE(handlers.end(), cursor_filter);
+  EXPECT_NE(handlers.end(), drag_drop);
+  EXPECT_GT(drag_drop, cursor_filter);
 }
 
 // Verifies an EventHandler added to Env gets notified from EventGenerator.

@@ -15,7 +15,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/events/system_key_event_listener.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/login/login_display.h"
 #include "chrome/browser/chromeos/login/screens/error_screen_actor.h"
@@ -30,6 +29,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_ui.h"
 #include "net/base/net_errors.h"
+#include "ui/events/event_handler.h"
 
 namespace base {
 class DictionaryValue;
@@ -205,8 +205,8 @@ class SigninScreenHandlerDelegate {
 class SigninScreenHandler
     : public BaseScreenHandler,
       public LoginDisplayWebUIHandler,
-      public SystemKeyEventListener::CapsLockObserver,
       public content::NotificationObserver,
+      public ui::EventHandler,
       public NetworkStateInformer::NetworkStateInformerObserver {
  public:
   SigninScreenHandler(
@@ -302,8 +302,8 @@ class SigninScreenHandler
   virtual void ShowSigninScreenForCreds(const std::string& username,
                                         const std::string& password) OVERRIDE;
 
-  // SystemKeyEventListener::CapsLockObserver overrides.
-  virtual void OnCapsLockChange(bool enabled) OVERRIDE;
+  // ui::EventHandler implementation:
+  virtual void OnKeyEvent(ui::KeyEvent* key) OVERRIDE;
 
   // content::NotificationObserver implementation:
   virtual void Observe(int type,
@@ -533,6 +533,8 @@ class SigninScreenHandler
   scoped_ptr<CrosSettings::ObserverSubscription> allow_guest_subscription_;
 
   bool wait_for_auto_enrollment_check_;
+
+  bool caps_lock_enabled_;
 
   base::Closure kiosk_enable_flow_aborted_callback_for_test_;
 

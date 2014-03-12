@@ -313,6 +313,7 @@ SigninScreenHandler::SigninScreenHandler(
       last_network_state_(NetworkStateInformer::UNKNOWN),
       has_pending_auth_ui_(false),
       wait_for_auto_enrollment_check_(false),
+      caps_lock_enabled_(false),
       gaia_screen_handler_(gaia_screen_handler) {
   DCHECK(network_state_informer_.get());
   DCHECK(error_screen_actor_);
@@ -341,11 +342,8 @@ SigninScreenHandler::SigninScreenHandler(
 }
 
 SigninScreenHandler::~SigninScreenHandler() {
+  ash::Shell::GetInstance()->RemovePreTargetHandler(this);
   weak_factory_.InvalidateWeakPtrs();
-  SystemKeyEventListener* key_event_listener =
-      SystemKeyEventListener::GetInstance();
-  if (key_event_listener)
-    key_event_listener->RemoveCapsLockObserver(this);
   if (delegate_)
     delegate_->SetWebUIHandler(NULL);
   network_state_informer_->RemoveObserver(this);
@@ -719,11 +717,8 @@ void SigninScreenHandler::Initialize() {
   if (!delegate_)
     return;
 
-  // Register for Caps Lock state change notifications;
-  SystemKeyEventListener* key_event_listener =
-      SystemKeyEventListener::GetInstance();
-  if (key_event_listener)
-    key_event_listener->AddCapsLockObserver(this);
+  // Make sure the event is processed by this before the IME.
+  ash::Shell::GetInstance()->PrependPreTargetHandler(this);
 
   if (show_on_init_) {
     show_on_init_ = false;
@@ -953,9 +948,13 @@ void SigninScreenHandler::OnCookiesCleared(base::Closure on_clear_callback) {
   on_clear_callback.Run();
 }
 
-void SigninScreenHandler::OnCapsLockChange(bool enabled) {
-  if (page_is_ready())
-    CallJS("login.AccountPickerScreen.setCapsLockState", enabled);
+void SigninScreenHandler::OnKeyEvent(ui::KeyEvent* key) {
+  if (key->type() == ui::ET_KEY_PRESSED &&
+      key->key_code() == ui::VKEY_CAPITAL) {
+    caps_lock_enabled_ = !caps_lock_enabled_;
+    if (page_is_ready())
+      CallJS("login.AccountPickerScreen.setCapsLockState", caps_lock_enabled_);
+  }
 }
 
 void SigninScreenHandler::Observe(int type,

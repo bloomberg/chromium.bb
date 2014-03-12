@@ -78,7 +78,6 @@ class AcceleratorController;
 class AccessibilityDelegate;
 class AshNativeCursorManager;
 class AutoclickController;
-class CapsLockDelegate;
 class DesktopBackgroundController;
 class DisplayController;
 class FirstRunHelper;
@@ -390,10 +389,6 @@ class ASH_EXPORT Shell
     return user_wallpaper_delegate_.get();
   }
 
-  CapsLockDelegate* caps_lock_delegate() {
-    return caps_lock_delegate_.get();
-  }
-
   SessionStateDelegate* session_state_delegate() {
     return session_state_delegate_.get();
   }
@@ -629,7 +624,6 @@ class ASH_EXPORT Shell
   scoped_ptr<SystemTrayDelegate> system_tray_delegate_;
   scoped_ptr<SystemTrayNotifier> system_tray_notifier_;
   scoped_ptr<UserWallpaperDelegate> user_wallpaper_delegate_;
-  scoped_ptr<CapsLockDelegate> caps_lock_delegate_;
   scoped_ptr<SessionStateDelegate> session_state_delegate_;
   scoped_ptr<AccessibilityDelegate> accessibility_delegate_;
   scoped_ptr<NewWindowDelegate> new_window_delegate_;

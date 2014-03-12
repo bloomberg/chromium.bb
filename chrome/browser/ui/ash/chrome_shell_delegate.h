@@ -61,7 +61,6 @@ class ChromeShellDelegate : public ash::ShellDelegate,
       ash::ShelfModel* model) OVERRIDE;
   virtual ash::SystemTrayDelegate* CreateSystemTrayDelegate() OVERRIDE;
   virtual ash::UserWallpaperDelegate* CreateUserWallpaperDelegate() OVERRIDE;
-  virtual ash::CapsLockDelegate* CreateCapsLockDelegate() OVERRIDE;
   virtual ash::SessionStateDelegate* CreateSessionStateDelegate() OVERRIDE;
   virtual ash::AccessibilityDelegate* CreateAccessibilityDelegate() OVERRIDE;
   virtual ash::NewWindowDelegate* CreateNewWindowDelegate() OVERRIDE;

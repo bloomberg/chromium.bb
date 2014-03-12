@@ -18,7 +18,6 @@
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/job_list.h"
-#include "chrome/browser/chromeos/events/system_key_event_listener.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/system_tray_delegate_chromeos.h"
 #include "chromeos/audio/cras_audio_handler.h"
@@ -43,7 +42,6 @@ class SystemTrayDelegateChromeOS
       public chromeos::LoginState::Observer,
       public chromeos::CrasAudioHandler::AudioObserver,
       public device::BluetoothAdapter::Observer,
-      public SystemKeyEventListener::CapsLockObserver,
       public policy::CloudPolicyStore::Observer,
       public ash::SessionStateObserver {
  public:
@@ -130,6 +128,7 @@ class SystemTrayDelegateChromeOS
   virtual void ActiveUserWasChanged() OVERRIDE;
   virtual bool IsNetworkBehindCaptivePortal(
       const std::string& service_path) const OVERRIDE;
+  virtual bool IsSearchKeyMappedToCapsLock() OVERRIDE;
 
   // browser tests need to call ShouldUse24HourClock().
   bool GetShouldUse24HourClockForTesting() const;
@@ -227,9 +226,6 @@ class SystemTrayDelegateChromeOS
 
   void OnStartBluetoothDiscoverySession(
       scoped_ptr<device::BluetoothDiscoverySession> discovery_session);
-
-  // Overridden from SystemKeyEventListener::CapsLockObserver.
-  virtual void OnCapsLockChange(bool enabled) OVERRIDE;
 
   void UpdateEnterpriseDomain();
 

@@ -19,7 +19,6 @@
 #include "ash/system/session/logout_button_observer.h"
 #include "ash/system/session/session_length_limit_observer.h"
 #include "ash/system/tray_accessibility.h"
-#include "ash/system/tray_caps_lock.h"
 #include "ash/system/user/update_observer.h"
 #include "ash/system/user/user_observer.h"
 #include "base/observer_list.h"
@@ -52,9 +51,6 @@ class ASH_EXPORT SystemTrayNotifier {
 
   void AddBluetoothObserver(BluetoothObserver* observer);
   void RemoveBluetoothObserver(BluetoothObserver* observer);
-
-  void AddCapsLockObserver(CapsLockObserver* observer);
-  void RemoveCapsLockObserver(CapsLockObserver* observer);
 
   void AddClockObserver(ClockObserver* observer);
   void RemoveClockObserver(ClockObserver* observer);
@@ -112,7 +108,6 @@ class ASH_EXPORT SystemTrayNotifier {
   void NotifyTracingModeChanged(bool value);
   void NotifyRefreshBluetooth();
   void NotifyBluetoothDiscoveringChanged();
-  void NotifyCapsLockChanged(bool enabled, bool search_mapped_to_caps_lock);
   void NotifyRefreshClock();
   void NotifyDateFormatChanged();
   void NotifySystemClockTimeUpdated();
@@ -149,7 +144,6 @@ class ASH_EXPORT SystemTrayNotifier {
   ObserverList<AccessibilityObserver> accessibility_observers_;
   ObserverList<AudioObserver> audio_observers_;
   ObserverList<BluetoothObserver> bluetooth_observers_;
-  ObserverList<CapsLockObserver> caps_lock_observers_;
   ObserverList<ClockObserver> clock_observers_;
   ObserverList<DriveObserver> drive_observers_;
   ObserverList<IMEObserver> ime_observers_;

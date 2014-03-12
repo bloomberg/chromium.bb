@@ -5,7 +5,6 @@
 #include "ash/shell/shell_delegate_impl.h"
 
 #include "ash/accessibility_delegate.h"
-#include "ash/caps_lock_delegate_stub.h"
 #include "ash/default_accessibility_delegate.h"
 #include "ash/default_user_wallpaper_delegate.h"
 #include "ash/gpu_support_stub.h"
@@ -133,10 +132,6 @@ ash::SystemTrayDelegate* ShellDelegateImpl::CreateSystemTrayDelegate() {
 
 ash::UserWallpaperDelegate* ShellDelegateImpl::CreateUserWallpaperDelegate() {
   return new DefaultUserWallpaperDelegate();
-}
-
-ash::CapsLockDelegate* ShellDelegateImpl::CreateCapsLockDelegate() {
-  return new CapsLockDelegateStub;
 }
 
 ash::SessionStateDelegate* ShellDelegateImpl::CreateSessionStateDelegate() {

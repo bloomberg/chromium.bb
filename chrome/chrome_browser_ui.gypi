@@ -278,10 +278,6 @@
         'browser/ui/ash/ash_init.h',
         'browser/ui/ash/ash_util.cc',
         'browser/ui/ash/ash_util.h',
-        'browser/ui/ash/caps_lock_delegate_chromeos.cc',
-        'browser/ui/ash/caps_lock_delegate_chromeos.h',
-        'browser/ui/ash/caps_lock_delegate_views.cc',
-        'browser/ui/ash/caps_lock_delegate_views.h',
         'browser/ui/ash/chrome_launcher_prefs.cc',
         'browser/ui/ash/chrome_launcher_prefs.h',
         'browser/ui/ash/chrome_new_window_delegate.cc',
@@ -2843,7 +2839,6 @@
             'browser_chromeos',
           ],
           'sources!': [
-            'browser/ui/ash/caps_lock_delegate_views.cc',
             'browser/ui/ash/chrome_shell_delegate_views.cc',
             'browser/ui/ash/multi_user/multi_user_context_menu.cc',
             'browser/ui/ash/session_state_delegate_views.cc',

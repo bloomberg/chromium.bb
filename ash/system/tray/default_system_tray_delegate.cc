@@ -289,4 +289,8 @@ bool DefaultSystemTrayDelegate::IsNetworkBehindCaptivePortal(
   return false;
 }
 
+bool DefaultSystemTrayDelegate::IsSearchKeyMappedToCapsLock() {
+  return false;
+}
+
 }  // namespace ash

@@ -14,7 +14,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/ash/caps_lock_delegate_views.h"
 #include "chrome/browser/ui/ash/chrome_new_window_delegate.h"
 #include "chrome/browser/ui/ash/session_state_delegate_views.h"
 #include "chrome/browser/ui/browser.h"
@@ -164,10 +163,6 @@ ash::NewWindowDelegate* ChromeShellDelegate::CreateNewWindowDelegate() {
 
 ash::MediaDelegate* ChromeShellDelegate::CreateMediaDelegate() {
   return new MediaDelegateImpl;
-}
-
-ash::CapsLockDelegate* ChromeShellDelegate::CreateCapsLockDelegate() {
-  return new CapsLockDelegate();
 }
 
 ash::SessionStateDelegate* ChromeShellDelegate::CreateSessionStateDelegate() {

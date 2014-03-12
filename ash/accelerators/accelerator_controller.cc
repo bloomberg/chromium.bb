@@ -13,7 +13,6 @@
 #include "ash/accelerators/accelerator_table.h"
 #include "ash/accelerators/debug_commands.h"
 #include "ash/ash_switches.h"
-#include "ash/caps_lock_delegate.h"
 #include "ash/debug.h"
 #include "ash/display/display_controller.h"
 #include "ash/display/display_manager.h"
@@ -75,6 +74,8 @@
 #include "ash/session_state_delegate.h"
 #include "ash/system/chromeos/keyboard_brightness_controller.h"
 #include "base/sys_info.h"
+#include "chromeos/ime/input_method_manager.h"
+#include "chromeos/ime/xkeyboard.h"
 #endif  // defined(OS_CHROMEOS)
 
 namespace ash {
@@ -169,27 +170,6 @@ bool HandleCycleLinear(const ui::Accelerator& accelerator) {
     base::RecordAction(base::UserMetricsAction("Accel_NextWindow_F5"));
   shell->window_cycle_controller()->HandleLinearCycleWindow();
   return true;
-}
-
-bool HandleDisableCapsLock(ui::KeyboardCode key_code,
-                           ui::EventType previous_event_type,
-                           ui::KeyboardCode previous_key_code) {
-  Shell* shell = Shell::GetInstance();
-
-  if (previous_event_type == ui::ET_KEY_RELEASED ||
-      (previous_key_code != ui::VKEY_LSHIFT &&
-       previous_key_code != ui::VKEY_SHIFT &&
-       previous_key_code != ui::VKEY_RSHIFT)) {
-    // If something else was pressed between the Shift key being pressed
-    // and released, then ignore the release of the Shift key.
-    return false;
-  }
-  base::RecordAction(UserMetricsAction("Accel_Disable_Caps_Lock"));
-  if (shell->caps_lock_delegate()->IsCapsLockEnabled()) {
-    shell->caps_lock_delegate()->SetCapsLockEnabled(false);
-    return true;
-  }
-  return false;
 }
 
 bool HandleFocusLauncher() {
@@ -534,24 +514,6 @@ bool HandleToggleAppList(ui::KeyboardCode key_code,
   return true;
 }
 
-bool HandleToggleCapsLock(ui::KeyboardCode key_code,
-                          ui::EventType previous_event_type,
-                          ui::KeyboardCode previous_key_code) {
-  Shell* shell = Shell::GetInstance();
-  if (key_code == ui::VKEY_LWIN) {
-    // If something else was pressed between the Search key (LWIN)
-    // being pressed and released, then ignore the release of the
-    // Search key.
-    // TODO(danakj): Releasing Alt first breaks this: crbug.com/166495
-    if (previous_event_type == ui::ET_KEY_RELEASED ||
-        previous_key_code != ui::VKEY_LWIN)
-      return false;
-  }
-  base::RecordAction(UserMetricsAction("Accel_Toggle_Caps_Lock"));
-  shell->caps_lock_delegate()->ToggleCapsLock();
-  return true;
-}
-
 bool HandleToggleFullscreen(ui::KeyboardCode key_code) {
   if (key_code == ui::VKEY_MEDIA_LAUNCH_APP2) {
     base::RecordAction(UserMetricsAction("Accel_Fullscreen_F4"));
@@ -690,6 +652,51 @@ bool HandleTouchHudProjectToggle() {
   base::RecordAction(UserMetricsAction("Accel_Touch_Hud_Clear"));
   bool enabled = Shell::GetInstance()->is_touch_hud_projection_enabled();
   Shell::GetInstance()->SetTouchHudProjectionEnabled(!enabled);
+  return true;
+}
+
+bool HandleDisableCapsLock(ui::KeyboardCode key_code,
+                           ui::EventType previous_event_type,
+                           ui::KeyboardCode previous_key_code) {
+  if (previous_event_type == ui::ET_KEY_RELEASED ||
+      (previous_key_code != ui::VKEY_LSHIFT &&
+       previous_key_code != ui::VKEY_SHIFT &&
+       previous_key_code != ui::VKEY_RSHIFT)) {
+    // If something else was pressed between the Shift key being pressed
+    // and released, then ignore the release of the Shift key.
+    return false;
+  }
+  base::RecordAction(UserMetricsAction("Accel_Disable_Caps_Lock"));
+  chromeos::input_method::InputMethodManager* ime =
+      chromeos::input_method::InputMethodManager::Get();
+  chromeos::input_method::XKeyboard* xkeyboard =
+      ime ? ime->GetXKeyboard() : NULL;
+  if (xkeyboard && xkeyboard->CapsLockIsEnabled()) {
+    xkeyboard->SetCapsLockEnabled(false);
+    return true;
+  }
+  return false;
+}
+
+bool HandleToggleCapsLock(ui::KeyboardCode key_code,
+                          ui::EventType previous_event_type,
+                          ui::KeyboardCode previous_key_code) {
+  if (key_code == ui::VKEY_LWIN) {
+    // If something else was pressed between the Search key (LWIN)
+    // being pressed and released, then ignore the release of the
+    // Search key.
+    // TODO(danakj): Releasing Alt first breaks this: crbug.com/166495
+    if (previous_event_type == ui::ET_KEY_RELEASED ||
+        previous_key_code != ui::VKEY_LWIN)
+      return false;
+  }
+  base::RecordAction(UserMetricsAction("Accel_Toggle_Caps_Lock"));
+  chromeos::input_method::InputMethodManager* ime =
+      chromeos::input_method::InputMethodManager::Get();
+  chromeos::input_method::XKeyboard* xkeyboard =
+      ime ? ime->GetXKeyboard() : NULL;
+  if (xkeyboard)
+    xkeyboard->SetCapsLockEnabled(!xkeyboard->CapsLockIsEnabled());
   return true;
 }
 
@@ -973,6 +980,12 @@ bool AcceleratorController::PerformAction(int action,
     case DISABLE_GPU_WATCHDOG:
       Shell::GetInstance()->gpu_support()->DisableGpuWatchdog();
       return true;
+    case DISABLE_CAPS_LOCK:
+      return HandleDisableCapsLock(
+          key_code, previous_event_type, previous_key_code);
+    case TOGGLE_CAPS_LOCK:
+      return HandleToggleCapsLock(
+          key_code, previous_event_type, previous_key_code);
 #endif  // OS_CHROMEOS
     case OPEN_FEEDBACK_PAGE:
       return HandleOpenFeedbackPage();
@@ -995,12 +1008,6 @@ bool AcceleratorController::PerformAction(int action,
     case TOGGLE_APP_LIST:
       return HandleToggleAppList(
           key_code, previous_event_type, previous_key_code, accelerator);
-    case DISABLE_CAPS_LOCK:
-      return HandleDisableCapsLock(
-          key_code, previous_event_type, previous_key_code);
-    case TOGGLE_CAPS_LOCK:
-      return HandleToggleCapsLock(
-          key_code, previous_event_type, previous_key_code);
     case BRIGHTNESS_DOWN:
       if (brightness_control_delegate_)
         return brightness_control_delegate_->HandleBrightnessDown(accelerator);

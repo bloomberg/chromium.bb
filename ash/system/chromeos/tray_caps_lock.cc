@@ -2,15 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/tray_caps_lock.h"
+#include "ash/system/chromeos/tray_caps_lock.h"
 
-#include "ash/caps_lock_delegate.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/shell.h"
 #include "ash/system/tray/actionable_view.h"
 #include "ash/system/tray/fixed_sized_image_view.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/tray_constants.h"
+#include "chromeos/ime/input_method_manager.h"
+#include "chromeos/ime/xkeyboard.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "ui/accessibility/ax_view_state.h"
@@ -23,6 +24,17 @@
 
 namespace ash {
 namespace internal {
+
+namespace {
+
+bool CapsLockIsEnabled() {
+  chromeos::input_method::InputMethodManager* ime =
+      chromeos::input_method::InputMethodManager::Get();
+  return (ime && ime->GetXKeyboard()) ? ime->GetXKeyboard()->CapsLockIsEnabled()
+                                      : false;
+}
+
+}
 
 class CapsLockDefaultView : public ActionableView {
  public:
@@ -51,7 +63,7 @@ class CapsLockDefaultView : public ActionableView {
   virtual ~CapsLockDefaultView() {}
 
   // Updates the label text and the shortcut text.
-  void Update(bool caps_lock_enabled, bool search_mapped_to_caps_lock) {
+  void Update(bool caps_lock_enabled) {
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
     const int text_string_id = caps_lock_enabled ?
         IDS_ASH_STATUS_TRAY_CAPS_LOCK_ENABLED :
@@ -59,6 +71,8 @@ class CapsLockDefaultView : public ActionableView {
     text_label_->SetText(bundle.GetLocalizedString(text_string_id));
 
     int shortcut_string_id = 0;
+    bool search_mapped_to_caps_lock = Shell::GetInstance()->
+        system_tray_delegate()->IsSearchKeyMappedToCapsLock();
     if (caps_lock_enabled) {
       shortcut_string_id = search_mapped_to_caps_lock ?
           IDS_ASH_STATUS_TRAY_CAPS_LOCK_SHORTCUT_SEARCH_OR_SHIFT :
@@ -95,11 +109,13 @@ class CapsLockDefaultView : public ActionableView {
 
   // Overridden from ActionableView:
   virtual bool PerformAction(const ui::Event& event) OVERRIDE {
+    chromeos::input_method::XKeyboard* xkeyboard =
+        chromeos::input_method::InputMethodManager::Get()->GetXKeyboard();
     Shell::GetInstance()->metrics()->RecordUserMetricsAction(
-        Shell::GetInstance()->caps_lock_delegate()->IsCapsLockEnabled() ?
+        xkeyboard->CapsLockIsEnabled() ?
         ash::UMA_STATUS_AREA_CAPS_LOCK_DISABLED_BY_CLICK :
         ash::UMA_STATUS_AREA_CAPS_LOCK_ENABLED_BY_CLICK);
-    Shell::GetInstance()->caps_lock_delegate()->ToggleCapsLock();
+    xkeyboard->SetCapsLockEnabled(!xkeyboard->CapsLockIsEnabled());
     return true;
   }
 
@@ -113,19 +129,45 @@ TrayCapsLock::TrayCapsLock(SystemTray* system_tray)
     : TrayImageItem(system_tray, IDR_AURA_UBER_TRAY_CAPS_LOCK),
       default_(NULL),
       detailed_(NULL),
-      search_mapped_to_caps_lock_(false),
-      caps_lock_enabled_(
-          Shell::GetInstance()->caps_lock_delegate()->IsCapsLockEnabled()),
+      caps_lock_enabled_(CapsLockIsEnabled()),
       message_shown_(false) {
-  Shell::GetInstance()->system_tray_notifier()->AddCapsLockObserver(this);
+  // Make sure the event is processed by this before the IME.
+  Shell::GetInstance()->PrependPreTargetHandler(this);
 }
 
 TrayCapsLock::~TrayCapsLock() {
-  Shell::GetInstance()->system_tray_notifier()->RemoveCapsLockObserver(this);
+  Shell::GetInstance()->RemovePreTargetHandler(this);
+}
+
+void TrayCapsLock::OnCapsLockChanged(bool enabled) {
+  if (tray_view())
+    tray_view()->SetVisible(enabled);
+
+  caps_lock_enabled_ = enabled;
+
+  if (default_) {
+    default_->Update(enabled);
+  } else {
+    if (enabled) {
+      if (!message_shown_) {
+        Shell::GetInstance()->metrics()->RecordUserMetricsAction(
+            ash::UMA_STATUS_AREA_CAPS_LOCK_POPUP);
+        PopupDetailedView(kTrayPopupAutoCloseDelayForTextInSeconds, false);
+        message_shown_ = true;
+      }
+    } else if (detailed_) {
+      detailed_->GetWidget()->Close();
+    }
+  }
+}
+
+void TrayCapsLock::OnKeyEvent(ui::KeyEvent* key) {
+  if (key->type() == ui::ET_KEY_PRESSED && key->key_code() == ui::VKEY_CAPITAL)
+    OnCapsLockChanged(!caps_lock_enabled_);
 }
 
 bool TrayCapsLock::GetInitialVisibility() {
-  return Shell::GetInstance()->caps_lock_delegate()->IsCapsLockEnabled();
+  return CapsLockIsEnabled();
 }
 
 views::View* TrayCapsLock::CreateDefaultView(user::LoginStatus status) {
@@ -133,7 +175,7 @@ views::View* TrayCapsLock::CreateDefaultView(user::LoginStatus status) {
     return NULL;
   DCHECK(default_ == NULL);
   default_ = new CapsLockDefaultView;
-  default_->Update(caps_lock_enabled_, search_mapped_to_caps_lock_);
+  default_->Update(caps_lock_enabled_);
   return default_;
 }
 
@@ -152,7 +194,8 @@ views::View* TrayCapsLock::CreateDetailedView(user::LoginStatus status) {
 
   detailed_->AddChildView(image);
 
-  const int string_id = search_mapped_to_caps_lock_ ?
+  const int string_id = Shell::GetInstance()->system_tray_delegate()->
+                            IsSearchKeyMappedToCapsLock() ?
       IDS_ASH_STATUS_TRAY_CAPS_LOCK_CANCEL_BY_SEARCH :
       IDS_ASH_STATUS_TRAY_CAPS_LOCK_CANCEL_BY_ALT_SEARCH;
   views::Label* label = new views::Label(bundle.GetLocalizedString(string_id));
@@ -171,30 +214,6 @@ void TrayCapsLock::DestroyDefaultView() {
 
 void TrayCapsLock::DestroyDetailedView() {
   detailed_ = NULL;
-}
-
-void TrayCapsLock::OnCapsLockChanged(bool enabled,
-                                     bool search_mapped_to_caps_lock) {
-  if (tray_view())
-    tray_view()->SetVisible(enabled);
-
-  caps_lock_enabled_ = enabled;
-  search_mapped_to_caps_lock_ = search_mapped_to_caps_lock;
-
-  if (default_) {
-    default_->Update(enabled, search_mapped_to_caps_lock);
-  } else {
-    if (enabled) {
-      if (!message_shown_) {
-        Shell::GetInstance()->metrics()->RecordUserMetricsAction(
-            ash::UMA_STATUS_AREA_CAPS_LOCK_POPUP);
-        PopupDetailedView(kTrayPopupAutoCloseDelayForTextInSeconds, false);
-        message_shown_ = true;
-      }
-    } else if (detailed_) {
-      detailed_->GetWidget()->Close();
-    }
-  }
 }
 
 }  // namespace internal

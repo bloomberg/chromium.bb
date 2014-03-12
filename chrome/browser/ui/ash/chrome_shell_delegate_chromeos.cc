@@ -24,7 +24,6 @@
 #include "chrome/browser/chromeos/extensions/media_player_event_router.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/speech/tts_controller.h"
-#include "chrome/browser/ui/ash/caps_lock_delegate_chromeos.h"
 #include "chrome/browser/ui/ash/chrome_new_window_delegate_chromeos.h"
 #include "chrome/browser/ui/ash/session_state_delegate_chromeos.h"
 #include "chrome/browser/ui/ash/system_tray_delegate_chromeos.h"
@@ -241,12 +240,6 @@ void ChromeShellDelegate::Shutdown() {
   content::RecordAction(base::UserMetricsAction("Shutdown"));
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->
       RequestShutdown();
-}
-
-ash::CapsLockDelegate* ChromeShellDelegate::CreateCapsLockDelegate() {
-  chromeos::input_method::XKeyboard* xkeyboard =
-      chromeos::input_method::InputMethodManager::Get()->GetXKeyboard();
-  return new CapsLockDelegate(xkeyboard);
 }
 
 ash::SessionStateDelegate* ChromeShellDelegate::CreateSessionStateDelegate() {

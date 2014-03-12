@@ -14,27 +14,12 @@ namespace chromeos {
 
 class SystemKeyEventListener : public base::MessageLoopForUI::Observer {
  public:
-  // Observer for caps lock state changes.
-  class CapsLockObserver {
-   public:
-    virtual void OnCapsLockChange(bool enabled) = 0;
-
-   protected:
-    CapsLockObserver() {}
-    virtual ~CapsLockObserver() {}
-
-    DISALLOW_COPY_AND_ASSIGN(CapsLockObserver);
-  };
-
   static void Initialize();
   static void Shutdown();
   // GetInstance returns NULL if not initialized or if already shutdown.
   static SystemKeyEventListener* GetInstance();
 
   void Stop();
-
-  void AddCapsLockObserver(CapsLockObserver* observer);
-  void RemoveCapsLockObserver(CapsLockObserver* observer);
 
  private:
   // Defines the delete on exit Singleton traits we like.  Best to have this
@@ -50,16 +35,10 @@ class SystemKeyEventListener : public base::MessageLoopForUI::Observer {
       const base::NativeEvent& event) OVERRIDE;
   virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE;
 
-  void OnCapsLock(bool enabled);
-  void OnModifiers(int state);
-
   // Returns true if the event was processed, false otherwise.
   virtual bool ProcessedXEvent(XEvent* xevent);
 
   bool stopped_;
-
-  bool caps_lock_is_on_;
-  ObserverList<CapsLockObserver> caps_lock_observers_;
 
   // Base X ID for events from the XKB extension.
   int xkb_event_base_;

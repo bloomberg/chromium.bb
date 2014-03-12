@@ -327,6 +327,9 @@ class ASH_EXPORT SystemTrayDelegate {
   // Returns true when |network| is behind captive portal.
   virtual bool IsNetworkBehindCaptivePortal(
       const std::string& service_path) const = 0;
+
+  // Returns true when the Search key is configured to be treated as Caps Lock.
+  virtual bool IsSearchKeyMappedToCapsLock() = 0;
 };
 }  // namespace ash
 

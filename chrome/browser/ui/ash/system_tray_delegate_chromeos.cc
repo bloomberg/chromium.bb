@@ -28,7 +28,6 @@
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray_accessibility.h"
-#include "ash/system/tray_caps_lock.h"
 #include "ash/system/user/login_status.h"
 #include "ash/system/user/update_observer.h"
 #include "ash/system/user/user_observer.h"
@@ -292,9 +291,6 @@ void SystemTrayDelegateChromeOS::Initialize() {
   ash::ime::InputMethodMenuManager::GetInstance()->AddObserver(this);
   UpdateClockType();
 
-  if (SystemKeyEventListener::GetInstance())
-    SystemKeyEventListener::GetInstance()->AddCapsLockObserver(this);
-
   device::BluetoothAdapterFactory::GetAdapter(
       base::Bind(&SystemTrayDelegateChromeOS::InitializeOnAdapterReady,
                  weak_ptr_factory_.GetWeakPtr()));
@@ -357,8 +353,6 @@ SystemTrayDelegateChromeOS::~SystemTrayDelegateChromeOS() {
   DBusThreadManager::Get()->GetSessionManagerClient()->RemoveObserver(this);
   input_method::InputMethodManager::Get()->RemoveObserver(this);
   ash::ime::InputMethodMenuManager::GetInstance()->RemoveObserver(this);
-  if (SystemKeyEventListener::GetInstance())
-    SystemKeyEventListener::GetInstance()->RemoveCapsLockObserver(this);
   bluetooth_adapter_->RemoveObserver(this);
   ash::Shell::GetInstance()
       ->session_state_delegate()
@@ -920,6 +914,10 @@ bool SystemTrayDelegateChromeOS::IsNetworkBehindCaptivePortal(
   return state.status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL;
 }
 
+bool SystemTrayDelegateChromeOS::IsSearchKeyMappedToCapsLock() {
+  return search_key_mapped_to_ == input_method::kCapsLockKey;
+}
+
 ash::SystemTray* SystemTrayDelegateChromeOS::GetPrimarySystemTray() {
   return ash::Shell::GetInstance()->GetPrimarySystemTray();
 }
@@ -1313,16 +1311,6 @@ void SystemTrayDelegateChromeOS::OnStartBluetoothDiscoverySession(
     return;
   VLOG(1) << "Claiming new Bluetooth device discovery session.";
   bluetooth_discovery_session_ = discovery_session.Pass();
-}
-
-// Overridden from SystemKeyEventListener::CapsLockObserver.
-void SystemTrayDelegateChromeOS::OnCapsLockChange(bool enabled) {
-  bool search_mapped_to_caps_lock = false;
-  if (!base::SysInfo::IsRunningOnChromeOS() ||
-      search_key_mapped_to_ == input_method::kCapsLockKey)
-    search_mapped_to_caps_lock = true;
-  GetSystemTrayNotifier()->NotifyCapsLockChanged(enabled,
-                                                 search_mapped_to_caps_lock);
 }
 
 void SystemTrayDelegateChromeOS::UpdateEnterpriseDomain() {

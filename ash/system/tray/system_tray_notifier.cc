@@ -45,14 +45,6 @@ void SystemTrayNotifier::RemoveBluetoothObserver(BluetoothObserver* observer) {
   bluetooth_observers_.RemoveObserver(observer);
 }
 
-void SystemTrayNotifier::AddCapsLockObserver(CapsLockObserver* observer) {
-  caps_lock_observers_.AddObserver(observer);
-}
-
-void SystemTrayNotifier::RemoveCapsLockObserver(CapsLockObserver* observer) {
-  caps_lock_observers_.RemoveObserver(observer);
-}
-
 void SystemTrayNotifier::AddClockObserver(ClockObserver* observer) {
   clock_observers_.AddObserver(observer);
 }
@@ -240,14 +232,6 @@ void SystemTrayNotifier::NotifyBluetoothDiscoveringChanged() {
   FOR_EACH_OBSERVER(BluetoothObserver,
                     bluetooth_observers_,
                     OnBluetoothDiscoveringChanged());
-}
-
-void SystemTrayNotifier::NotifyCapsLockChanged(
-    bool enabled,
-    bool search_mapped_to_caps_lock) {
-  FOR_EACH_OBSERVER(CapsLockObserver,
-                    caps_lock_observers_,
-                    OnCapsLockChanged(enabled, search_mapped_to_caps_lock));
 }
 
 void SystemTrayNotifier::NotifyRefreshClock() {

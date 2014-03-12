@@ -13,7 +13,6 @@
 #include "ash/accelerators/nested_dispatcher_controller.h"
 #include "ash/ash_switches.h"
 #include "ash/autoclick/autoclick_controller.h"
-#include "ash/caps_lock_delegate.h"
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/desktop_background/desktop_background_view.h"
 #include "ash/desktop_background/user_wallpaper_delegate.h"
@@ -939,9 +938,6 @@ void Shell::Init() {
   // This controller needs to be set before SetupManagedWindowMode.
   desktop_background_controller_.reset(new DesktopBackgroundController());
   user_wallpaper_delegate_.reset(delegate_->CreateUserWallpaperDelegate());
-
-  // StatusAreaWidget uses Shell's CapsLockDelegate.
-  caps_lock_delegate_.reset(delegate_->CreateCapsLockDelegate());
 
   session_state_delegate_.reset(delegate_->CreateSessionStateDelegate());
   accessibility_delegate_.reset(delegate_->CreateAccessibilityDelegate());

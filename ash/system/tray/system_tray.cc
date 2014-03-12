@@ -22,7 +22,6 @@
 #include "ash/system/tray/tray_bubble_wrapper.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray_accessibility.h"
-#include "ash/system/tray_caps_lock.h"
 #include "ash/system/tray_update.h"
 #include "ash/system/user/login_status.h"
 #include "ash/system/user/tray_user.h"
@@ -58,6 +57,7 @@
 #include "ash/system/chromeos/screen_security/screen_capture_tray_item.h"
 #include "ash/system/chromeos/screen_security/screen_share_tray_item.h"
 #include "ash/system/chromeos/settings/tray_settings.h"
+#include "ash/system/chromeos/tray_caps_lock.h"
 #include "ash/system/chromeos/tray_display.h"
 #include "ash/system/chromeos/tray_tracing.h"
 #include "ui/message_center/message_center.h"
@@ -206,7 +206,6 @@ void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
   AddTrayItem(tray_accessibility_);
   AddTrayItem(new internal::TrayBluetooth(this));
   AddTrayItem(new internal::TrayDrive(this));
-  AddTrayItem(new internal::TrayCapsLock(this));
   AddTrayItem(new internal::TrayUpdate(this));
   AddTrayItem(tray_date_);
 #endif

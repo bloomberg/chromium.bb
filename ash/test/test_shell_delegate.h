@@ -44,7 +44,6 @@ class TestShellDelegate : public ShellDelegate {
   virtual ShelfDelegate* CreateShelfDelegate(ShelfModel* model) OVERRIDE;
   virtual SystemTrayDelegate* CreateSystemTrayDelegate() OVERRIDE;
   virtual UserWallpaperDelegate* CreateUserWallpaperDelegate() OVERRIDE;
-  virtual CapsLockDelegate* CreateCapsLockDelegate() OVERRIDE;
   virtual SessionStateDelegate* CreateSessionStateDelegate() OVERRIDE;
   virtual AccessibilityDelegate* CreateAccessibilityDelegate() OVERRIDE;
   virtual NewWindowDelegate* CreateNewWindowDelegate() OVERRIDE;
