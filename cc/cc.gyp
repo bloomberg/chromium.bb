@@ -106,8 +106,6 @@
         'debug/micro_benchmark_controller.h',
         'debug/micro_benchmark_controller_impl.cc',
         'debug/micro_benchmark_controller_impl.h',
-        'debug/overdraw_metrics.cc',
-        'debug/overdraw_metrics.h',
         'debug/paint_time_counter.cc',
         'debug/paint_time_counter.h',
         'debug/picture_record_benchmark.cc',

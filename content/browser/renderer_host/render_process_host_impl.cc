@@ -1144,7 +1144,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     cc::switches::kTopControlsHeight,
     cc::switches::kTopControlsHideThreshold,
     cc::switches::kTopControlsShowThreshold,
-    cc::switches::kTraceOverdraw,
 #if defined(ENABLE_PLUGINS)
     switches::kEnablePepperTesting,
 #endif

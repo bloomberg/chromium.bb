@@ -15,10 +15,8 @@ namespace cc {
 template <typename LayerType>
 class TestOcclusionTracker : public OcclusionTracker<LayerType> {
  public:
-  TestOcclusionTracker(const gfx::Rect& screen_scissor_rect,
-                       bool record_metrics_for_frame)
-      : OcclusionTracker<LayerType>(screen_scissor_rect,
-                                    record_metrics_for_frame) {}
+  explicit TestOcclusionTracker(const gfx::Rect& screen_scissor_rect)
+      : OcclusionTracker<LayerType>(screen_scissor_rect) {}
 
   Region occlusion_from_inside_target() const {
     return OcclusionTracker<LayerType>::stack_.back()

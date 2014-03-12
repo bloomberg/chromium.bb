@@ -26,7 +26,6 @@
 #include "cc/base/swap_promise_monitor.h"
 #include "cc/debug/micro_benchmark.h"
 #include "cc/debug/micro_benchmark_controller.h"
-#include "cc/debug/overdraw_metrics.h"
 #include "cc/input/input_handler.h"
 #include "cc/input/scrollbar.h"
 #include "cc/input/top_controls_state.h"
@@ -344,8 +343,7 @@ class CC_EXPORT LayerTreeHost {
   void ReduceMemoryUsage();
 
   void PrioritizeTextures(
-      const RenderSurfaceLayerList& render_surface_layer_list,
-      OverdrawMetrics* metrics);
+      const RenderSurfaceLayerList& render_surface_layer_list);
   void SetPrioritiesForSurfaces(size_t surface_memory_bytes);
   void SetPrioritiesForLayers(const RenderSurfaceLayerList& update_list);
   size_t CalculateMemoryForRenderSurfaces(

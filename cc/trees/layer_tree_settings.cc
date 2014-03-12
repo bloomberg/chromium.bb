@@ -21,7 +21,6 @@ LayerTreeSettings::LayerTreeSettings()
       per_tile_painting_enabled(false),
       partial_swap_enabled(false),
       accelerated_animation_enabled(true),
-      show_overdraw_in_tracing(false),
       can_use_lcd_text(true),
       should_clear_root_render_pass(true),
       rasterization_site(CpuRasterization),

@@ -5,7 +5,6 @@
 #include "cc/trees/quad_culler.h"
 
 #include "cc/debug/debug_colors.h"
-#include "cc/debug/overdraw_metrics.h"
 #include "cc/layers/append_quads_data.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/quads/debug_border_draw_quad.h"
@@ -50,13 +49,6 @@ static inline bool AppendQuadInternal(
   bool keep_quad = !culled_rect.IsEmpty();
   if (keep_quad)
     draw_quad->visible_rect = culled_rect;
-
-  occlusion_tracker.overdraw_metrics()->DidCullForDrawing(
-      draw_quad->quadTransform(), draw_quad->rect, culled_rect);
-  gfx::Rect opaque_draw_rect =
-      draw_quad->opacity() == 1.0f ? draw_quad->opaque_rect : gfx::Rect();
-  occlusion_tracker.overdraw_metrics()->
-      DidDraw(draw_quad->quadTransform(), culled_rect, opaque_draw_rect);
 
   if (keep_quad) {
     if (create_debug_border_quads && !draw_quad->IsDebugQuad() &&

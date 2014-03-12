@@ -14,7 +14,6 @@
 #include "ui/gfx/rect.h"
 
 namespace cc {
-class OverdrawMetrics;
 class LayerImpl;
 class RenderSurfaceImpl;
 class Layer;
@@ -32,8 +31,7 @@ class RenderSurface;
 template <typename LayerType>
 class CC_EXPORT OcclusionTracker {
  public:
-  OcclusionTracker(const gfx::Rect& screen_space_clip_rect,
-                   bool record_metrics_for_frame);
+  explicit OcclusionTracker(const gfx::Rect& screen_space_clip_rect);
   ~OcclusionTracker();
 
   // Called at the beginning of each step in the LayerIterator's front-to-back
@@ -66,11 +64,6 @@ class CC_EXPORT OcclusionTracker {
       const LayerType* layer,
       bool for_replica,
       const gfx::Rect& content_rect) const;
-
-  // Report operations for recording overdraw metrics.
-  OverdrawMetrics* overdraw_metrics() const {
-    return overdraw_metrics_.get();
-  }
 
   // Gives the region of the screen that is not occluded by something opaque.
   Region ComputeVisibleRegionInScreen() const {
@@ -139,7 +132,6 @@ class CC_EXPORT OcclusionTracker {
   void MarkOccludedBehindLayer(const LayerType* layer);
 
   gfx::Rect screen_space_clip_rect_;
-  scoped_ptr<class OverdrawMetrics> overdraw_metrics_;
   gfx::Size minimum_tracking_size_;
 
   // This is used for visualizing the occlusion tracking process.

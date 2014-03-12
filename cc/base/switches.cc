@@ -27,10 +27,6 @@ const char kTopControlsHideThreshold[] = "top-controls-hide-threshold";
 // Percentage of the top controls need to be shown before they will auto show.
 const char kTopControlsShowThreshold[] = "top-controls-show-threshold";
 
-// Show metrics about overdraw in about:tracing recordings, such as the number
-// of pixels culled, and the number of pixels drawn, for each frame.
-const char kTraceOverdraw[] = "trace-overdraw";
-
 // Re-rasters everything multiple times to simulate a much slower machine.
 // Give a scale factor to cause raster to take that many times longer to
 // complete, such as --slow-down-raster-scale-factor=25.

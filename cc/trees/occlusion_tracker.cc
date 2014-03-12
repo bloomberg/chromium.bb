@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "cc/base/math_util.h"
-#include "cc/debug/overdraw_metrics.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/render_surface.h"
@@ -19,10 +18,8 @@ namespace cc {
 
 template <typename LayerType>
 OcclusionTracker<LayerType>::OcclusionTracker(
-    const gfx::Rect& screen_space_clip_rect,
-    bool record_metrics_for_frame)
+    const gfx::Rect& screen_space_clip_rect)
     : screen_space_clip_rect_(screen_space_clip_rect),
-      overdraw_metrics_(OverdrawMetrics::Create(record_metrics_for_frame)),
       occluding_screen_space_rects_(NULL),
       non_occluding_screen_space_rects_(NULL) {}
 

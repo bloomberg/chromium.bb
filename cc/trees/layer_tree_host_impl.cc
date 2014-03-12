@@ -22,7 +22,6 @@
 #include "cc/debug/debug_rect_history.h"
 #include "cc/debug/devtools_instrumentation.h"
 #include "cc/debug/frame_rate_counter.h"
-#include "cc/debug/overdraw_metrics.h"
 #include "cc/debug/paint_time_counter.h"
 #include "cc/debug/rendering_stats_instrumentation.h"
 #include "cc/debug/traced_value.h"
@@ -759,13 +758,8 @@ DrawSwapReadbackResult::DrawResult LayerTreeHostImpl::CalculateRenderPasses(
     root_pass->damage_rect = root_pass->output_rect;
   }
 
-  bool record_metrics_for_frame =
-      settings_.show_overdraw_in_tracing &&
-      base::debug::TraceLog::GetInstance() &&
-      base::debug::TraceLog::GetInstance()->IsEnabled();
   OcclusionTracker<LayerImpl> occlusion_tracker(
-      active_tree_->root_layer()->render_surface()->content_rect(),
-      record_metrics_for_frame);
+      active_tree_->root_layer()->render_surface()->content_rect());
   occlusion_tracker.set_minimum_tracking_size(
       settings_.minimum_occlusion_tracking_size);
 
@@ -911,11 +905,6 @@ DrawSwapReadbackResult::DrawResult LayerTreeHostImpl::CalculateRenderPasses(
         active_tree_->background_color(),
         occlusion_tracker);
   }
-
-  if (draw_result == DrawSwapReadbackResult::DRAW_SUCCESS)
-    occlusion_tracker.overdraw_metrics()->RecordMetrics(this);
-  else
-    DCHECK(!have_copy_request);
 
   RemoveRenderPasses(CullRenderPassesWithNoQuads(), frame);
   renderer_->DecideRenderPassAllocationsForFrame(frame->render_passes);

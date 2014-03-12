@@ -6,7 +6,6 @@
 
 #include "cc/animation/layer_animation_controller.h"
 #include "cc/base/math_util.h"
-#include "cc/debug/overdraw_metrics.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/output/copy_output_request.h"
@@ -76,12 +75,8 @@ class TestContentLayerImpl : public LayerImpl {
 template <typename LayerType>
 class TestOcclusionTrackerWithClip : public TestOcclusionTracker<LayerType> {
  public:
-  TestOcclusionTrackerWithClip(const gfx::Rect& viewport_rect,
-                               bool record_metrics_for_frame)
-      : TestOcclusionTracker<LayerType>(viewport_rect,
-                                        record_metrics_for_frame) {}
   explicit TestOcclusionTrackerWithClip(const gfx::Rect& viewport_rect)
-      : TestOcclusionTracker<LayerType>(viewport_rect, false) {}
+      : TestOcclusionTracker<LayerType>(viewport_rect) {}
 
   bool OccludedLayer(const LayerType* layer,
                      const gfx::Rect& content_rect) const {
@@ -531,7 +526,7 @@ class OcclusionTrackerTestIdentityTransforms
     this->CalcDrawEtc(root);
 
     TestOcclusionTrackerWithClip<typename Types::LayerType> occlusion(
-        gfx::Rect(0, 0, 1000, 1000), false);
+        gfx::Rect(0, 0, 1000, 1000));
 
     this->VisitLayer(layer, &occlusion);
     this->EnterLayer(parent, &occlusion);
@@ -3715,7 +3710,7 @@ class OcclusionTrackerTestEmptyEventLayerDoesNotOcclude
     this->CalcDrawEtc(root);
 
     TestOcclusionTrackerWithClip<typename Types::LayerType> occlusion(
-        gfx::Rect(0, 0, 1000, 1000), false);
+        gfx::Rect(0, 0, 1000, 1000));
 
     this->VisitLayer(empty_layer, &occlusion);
 

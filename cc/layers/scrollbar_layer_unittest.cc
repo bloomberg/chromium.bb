@@ -652,7 +652,8 @@ class ScrollbarLayerTestResourceCreation : public testing::Test {
     EXPECT_EQ(scrollbar_layer->layer_tree_host(), layer_tree_host_.get());
 
     ResourceUpdateQueue queue;
-    OcclusionTracker<Layer> occlusion_tracker(gfx::Rect(), false);
+    gfx::Rect screen_space_clip_rect;
+    OcclusionTracker<Layer> occlusion_tracker(screen_space_clip_rect);
 
     scrollbar_layer->SavePaintProperties();
     for (int update_counter = 0; update_counter < num_updates; update_counter++)
@@ -738,7 +739,8 @@ class ScaledScrollbarLayerTestResourceCreation : public testing::Test {
     EXPECT_EQ(scrollbar_layer->layer_tree_host(), layer_tree_host_.get());
 
     ResourceUpdateQueue queue;
-    OcclusionTracker<Layer> occlusion_tracker(gfx::Rect(), false);
+    gfx::Rect screen_space_clip_rect;
+    OcclusionTracker<Layer> occlusion_tracker(screen_space_clip_rect);
     scrollbar_layer->SavePaintProperties();
     scrollbar_layer->Update(&queue, &occlusion_tracker);
 
@@ -814,7 +816,8 @@ class ScaledScrollbarLayerTestScaledRasterization : public testing::Test {
                   scaled_size.height());
 
     ResourceUpdateQueue queue;
-    OcclusionTracker<Layer> occlusion_tracker(gfx::Rect(), false);
+    gfx::Rect screen_space_clip_rect;
+    OcclusionTracker<Layer> occlusion_tracker(screen_space_clip_rect);
     scrollbar_layer->SavePaintProperties();
 
     scrollbar_layer->Update(&queue, &occlusion_tracker);

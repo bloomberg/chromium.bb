@@ -4,7 +4,6 @@
 
 #include "cc/layers/ui_resource_layer.h"
 
-#include "cc/debug/overdraw_metrics.h"
 #include "cc/resources/prioritized_resource_manager.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/resources/resource_update_queue.h"
@@ -58,7 +57,8 @@ TEST_F(UIResourceLayerTest, SetBitmap) {
   EXPECT_EQ(test_layer->layer_tree_host(), layer_tree_host_.get());
 
   ResourceUpdateQueue queue;
-  OcclusionTracker<Layer> occlusion_tracker(gfx::Rect(), false);
+  gfx::Rect screen_space_clip_rect;
+  OcclusionTracker<Layer> occlusion_tracker(screen_space_clip_rect);
   test_layer->SavePaintProperties();
   test_layer->Update(&queue, &occlusion_tracker);
 
@@ -86,7 +86,8 @@ TEST_F(UIResourceLayerTest, SetUIResourceId) {
   EXPECT_EQ(test_layer->layer_tree_host(), layer_tree_host_.get());
 
   ResourceUpdateQueue queue;
-  OcclusionTracker<Layer> occlusion_tracker(gfx::Rect(), false);
+  gfx::Rect screen_space_clip_rect;
+  OcclusionTracker<Layer> occlusion_tracker(screen_space_clip_rect);
   test_layer->SavePaintProperties();
   test_layer->Update(&queue, &occlusion_tracker);
 

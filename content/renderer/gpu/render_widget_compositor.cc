@@ -171,8 +171,6 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
         settings.top_controls_hide_threshold = hide_threshold;
   }
 
-  settings.show_overdraw_in_tracing =
-      cmd->HasSwitch(cc::switches::kTraceOverdraw);
   settings.can_use_lcd_text =
       RenderThreadImpl::current()->is_lcd_text_enabled();
   settings.use_pinch_virtual_viewport =

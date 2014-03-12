@@ -35,7 +35,7 @@ TEST(PictureLayerTest, NoTilesIfEmptyBounds) {
   layer->SetIsDrawable(true);
   layer->SavePaintProperties();
 
-  OcclusionTracker<Layer> occlusion(gfx::Rect(0, 0, 1000, 1000), false);
+  OcclusionTracker<Layer> occlusion(gfx::Rect(0, 0, 1000, 1000));
   scoped_ptr<ResourceUpdateQueue> queue(new ResourceUpdateQueue);
   layer->Update(queue.get(), &occlusion);
 
