@@ -887,7 +887,8 @@ TEST_F(End2EndTest, StartSenderBeforeReceiver) {
 }
 
 // This tests a network glitch lasting for 10 video frames.
-TEST_F(End2EndTest, GlitchWith3Buffers) {
+// Flaky. See crbug.com/351596.
+TEST_F(End2EndTest, DISABLED_GlitchWith3Buffers) {
   SetupConfig(transport::kOpus, kDefaultAudioSamplingRate, false, 3);
   video_sender_config_.rtp_config.max_delay_ms = 67;
   video_receiver_config_.rtp_max_delay_ms = 67;
