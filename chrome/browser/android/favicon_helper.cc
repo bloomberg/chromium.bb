@@ -140,9 +140,11 @@ ScopedJavaLocalRef<jobject> FaviconHelper::GetSyncedFaviconImageForURL(
   return gfx::ConvertToJavaBitmap(&favicon_bitmap);
 }
 
-jint FaviconHelper::GetDominantColorForBitmap(JNIEnv* env,
-                                              jobject obj,
-                                              jobject bitmap) {
+FaviconHelper::~FaviconHelper() {}
+
+static jint GetDominantColorForBitmap(JNIEnv* env,
+                                      jclass clazz,
+                                      jobject bitmap) {
   if (!bitmap)
     return 0;
 
@@ -150,8 +152,6 @@ jint FaviconHelper::GetDominantColorForBitmap(JNIEnv* env,
     SkBitmap skbitmap = gfx::CreateSkBitmapFromJavaBitmap(bitmap_lock);
     return color_utils::CalculateKMeanColorOfBitmap(skbitmap);
 }
-
-FaviconHelper::~FaviconHelper() {}
 
 // static
 bool FaviconHelper::RegisterFaviconHelper(JNIEnv* env) {

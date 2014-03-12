@@ -88,8 +88,8 @@ public class FaviconHelper {
      * @param image The bitmap image to find the dominant color for.
      * @return The dominant color in {@link Color} format.
      */
-    public int getDominantColorForBitmap(Bitmap image) {
-        return nativeGetDominantColorForBitmap(mNativeFaviconHelper, image);
+    public static int getDominantColorForBitmap(Bitmap image) {
+        return nativeGetDominantColorForBitmap(image);
     }
 
     /**
@@ -113,6 +113,5 @@ public class FaviconHelper {
             FaviconImageCallback faviconImageCallback);
     private static native Bitmap nativeGetSyncedFaviconImageForURL(long nativeFaviconHelper,
             Profile profile, String pageUrl);
-    private static native int nativeGetDominantColorForBitmap(long nativeFaviconHelper,
-            Bitmap image);
+    private static native int nativeGetDominantColorForBitmap(Bitmap image);
 }

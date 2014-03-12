@@ -27,7 +27,6 @@ class FaviconHelper {
       jobject obj,
       jobject jprofile,
       jstring j_page_url);
-  jint GetDominantColorForBitmap(JNIEnv* env, jobject obj, jobject bitmap);
   static bool RegisterFaviconHelper(JNIEnv* env);
 
  private:
