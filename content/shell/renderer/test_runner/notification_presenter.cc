@@ -63,8 +63,9 @@ void NotificationPresenter::CancelAllActiveNotifications() {
 }
 
 void NotificationPresenter::Reset() {
-  // TODO(peter): Ensure that |active_notifications_| is empty as well.
+  CancelAllActiveNotifications();
   known_origins_.clear();
+  replacements_.clear();
 }
 
 bool NotificationPresenter::show(const WebNotification& notification) {
@@ -77,19 +78,30 @@ bool NotificationPresenter::show(const WebNotification& notification) {
     replacements_[replaceId] = notification.title().utf8();
   }
 
-  delegate_->printMessage("DESKTOP NOTIFICATION:");
-  delegate_->printMessage(
-      notification.direction() == WebTextDirectionRightToLeft ? "(RTL)" : "");
-  delegate_->printMessage(" icon ");
-  delegate_->printMessage(notification.iconURL().isEmpty()
-                              ? ""
-                              : notification.iconURL().spec().data());
-  delegate_->printMessage(", title ");
-  delegate_->printMessage(
-      notification.title().isEmpty() ? "" : notification.title().utf8().data());
-  delegate_->printMessage(", text ");
-  delegate_->printMessage(
-      notification.body().isEmpty() ? "" : notification.body().utf8().data());
+  delegate_->printMessage("DESKTOP NOTIFICATION SHOWN: ");
+  if (!notification.title().isEmpty())
+    delegate_->printMessage(notification.title().utf8().data());
+
+  if (notification.direction() == WebTextDirectionRightToLeft)
+    delegate_->printMessage(", RTL");
+
+  // TODO(beverloo): WebNotification should expose the "lang" attribute's value.
+
+  if (!notification.body().isEmpty()) {
+    delegate_->printMessage(std::string(", body: ") +
+                            notification.body().utf8().data());
+  }
+
+  if (!notification.replaceId().isEmpty()) {
+    delegate_->printMessage(std::string(", tag: ") +
+                            notification.replaceId().utf8().data());
+  }
+
+  if (!notification.iconURL().isEmpty()) {
+    delegate_->printMessage(std::string(", icon: ") +
+                            notification.iconURL().spec().data());
+  }
+
   delegate_->printMessage("\n");
 
   std::string title = notification.title().utf8();
