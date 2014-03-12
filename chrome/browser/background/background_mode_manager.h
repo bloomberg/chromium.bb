@@ -103,6 +103,8 @@ class BackgroundModeManager
   FRIEND_TEST_ALL_PREFIXES(BackgroundModeManagerTest,
                            ProfileInfoCacheObserver);
   FRIEND_TEST_ALL_PREFIXES(BackgroundModeManagerTest,
+                           DeleteBackgroundProfile);
+  FRIEND_TEST_ALL_PREFIXES(BackgroundModeManagerTest,
                            BackgroundMenuGeneration);
   FRIEND_TEST_ALL_PREFIXES(BackgroundModeManagerTest,
                            BackgroundMenuGenerationMultipleProfile);

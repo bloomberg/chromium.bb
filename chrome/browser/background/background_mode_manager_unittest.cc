@@ -365,6 +365,7 @@ TEST_F(BackgroundModeManagerTest, ProfileInfoCacheObserver) {
   EXPECT_EQ(base::UTF8ToUTF16("p1"),
             manager.GetBackgroundModeData(profile1)->name());
 
+  EXPECT_TRUE(chrome::WillKeepAlive());
   TestingProfile* profile2 = profile_manager->CreateTestingProfile("p2");
   manager.RegisterProfile(profile2);
   EXPECT_EQ(2, manager.NumberOfBackgroundModeData());
@@ -374,11 +375,41 @@ TEST_F(BackgroundModeManagerTest, ProfileInfoCacheObserver) {
             manager.GetBackgroundModeData(profile2)->name());
 
   manager.OnProfileWillBeRemoved(profile2->GetPath());
+  // Should still be in background mode after deleting profile.
+  EXPECT_TRUE(chrome::WillKeepAlive());
   EXPECT_EQ(1, manager.NumberOfBackgroundModeData());
 
   // Check that the background mode data we think is in the map actually is.
   EXPECT_EQ(base::UTF8ToUTF16("p1"),
             manager.GetBackgroundModeData(profile1)->name());
+}
+
+TEST_F(BackgroundModeManagerTest, DeleteBackgroundProfile) {
+  // Tests whether deleting the only profile when it is a BG profile works
+  // or not (http://crbug.com/346214).
+  scoped_ptr<TestingProfileManager> profile_manager =
+      CreateTestingProfileManager();
+  TestingProfile* profile = profile_manager->CreateTestingProfile("p1");
+  TestBackgroundModeManager manager(
+      command_line_.get(), profile_manager->profile_info_cache(), true);
+  manager.RegisterProfile(profile);
+  EXPECT_FALSE(chrome::WillKeepAlive());
+
+  // Install app, should show status tray icon.
+  manager.OnBackgroundAppInstalled(NULL);
+  manager.SetBackgroundAppCount(1);
+  manager.SetBackgroundAppCountForProfile(1);
+  manager.OnApplicationListChanged(profile);
+
+  manager.OnProfileNameChanged(
+      profile->GetPath(),
+      manager.GetBackgroundModeData(profile)->name());
+
+  EXPECT_TRUE(chrome::WillKeepAlive());
+  manager.SetBackgroundAppCount(0);
+  manager.SetBackgroundAppCountForProfile(0);
+  manager.OnProfileWillBeRemoved(profile->GetPath());
+  EXPECT_FALSE(chrome::WillKeepAlive());
 }
 
 TEST_F(BackgroundModeManagerTest, DisableBackgroundModeUnderTestFlag) {

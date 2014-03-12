@@ -459,7 +459,14 @@ void BackgroundModeManager::OnProfileWillBeRemoved(
       GetBackgroundModeIterator(profile_name);
   // If a profile isn't running a background app, it may not be in the map.
   if (it != background_mode_data_.end()) {
+    it->second->applications_->RemoveObserver(this);
     background_mode_data_.erase(it);
+    // If there are no background mode profiles any longer, then turn off
+    // background mode.
+    if (!ShouldBeInBackgroundMode()) {
+      EnableLaunchOnStartup(false);
+      EndBackgroundMode();
+    }
     UpdateStatusTrayIconContextMenu();
   }
 }
