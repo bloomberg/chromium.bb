@@ -65,7 +65,7 @@ def main(argv):
 
   # If AVD is specified, check that the SDK has the required target. If not,
   # check that the SDK has the desired target for the temporary AVD's.
-  api_level = options.api_level
+  api_level = int(options.api_level)
   if options.name:
     android = os.path.join(constants.EMULATOR_SDK_ROOT, 'sdk', 'tools',
                            'android')
@@ -77,7 +77,7 @@ def main(argv):
     except ValueError:
       logging.critical('ERROR: Specified AVD %s does not exist.' % options.name)
       return 1
-    api_level = api_levels[avd_index]
+    api_level = int(api_levels[avd_index])
 
   if not install_emulator_deps.CheckSDKPlatform(api_level):
     logging.critical('ERROR: Emulator SDK missing required target for API %d. '
