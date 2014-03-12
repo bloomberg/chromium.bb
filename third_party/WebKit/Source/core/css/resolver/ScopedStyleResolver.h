@@ -31,6 +31,7 @@
 #include "core/css/RuleSet.h"
 #include "core/dom/ContainerNode.h"
 #include "wtf/HashMap.h"
+#include "wtf/HashSet.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 
@@ -61,7 +62,7 @@ public:
     void collectMatchingAuthorRules(ElementRuleCollector&, bool includeEmptyRules, bool applyAuthorStyles, CascadeScope, CascadeOrder = ignoreCascadeOrder);
     void matchPageRules(PageRuleCollector&);
     void addRulesFromSheet(CSSStyleSheet*, const MediaQueryEvaluator&, StyleResolver*);
-    void collectFeaturesTo(RuleFeatureSet&);
+    void collectFeaturesTo(RuleFeatureSet&, HashSet<const StyleSheetContents*>& visitedSharedStyleSheetContents);
     void resetAuthorStyle();
     void collectViewportRulesTo(StyleResolver*) const;
 

@@ -78,10 +78,13 @@ void ScopedStyleResolver::addRulesFromSheet(CSSStyleSheet* cssSheet, const Media
     resolver->processScopedRules(ruleSet, sheet->baseURL(), &m_scopingNode);
 }
 
-void ScopedStyleResolver::collectFeaturesTo(RuleFeatureSet& features)
+void ScopedStyleResolver::collectFeaturesTo(RuleFeatureSet& features, HashSet<const StyleSheetContents*>& visitedSharedStyleSheetContents)
 {
-    for (size_t i = 0; i < m_authorStyleSheets.size(); ++i)
-        features.add(m_authorStyleSheets[i]->contents()->ruleSet().features());
+    for (size_t i = 0; i < m_authorStyleSheets.size(); ++i) {
+        StyleSheetContents* contents = m_authorStyleSheets[i]->contents();
+        if (contents->hasOneClient() || visitedSharedStyleSheetContents.add(contents).isNewEntry)
+            features.add(contents->ruleSet().features());
+    }
 }
 
 void ScopedStyleResolver::resetAuthorStyle()
