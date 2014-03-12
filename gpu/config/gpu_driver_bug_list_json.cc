@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "4.5",
+  "version": "4.6",
   "entries": [
     {
       "id": 1,
@@ -861,6 +861,18 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       "vendor_id": "0x1002",
       "features": [
         "init_texture_max_anisotropy"
+      ]
+    },
+    {
+      "id": 65,
+      "description": "Linux NVIDIA drivers don't have the correct defaults for vertex attributes",
+      "cr_bugs": [351528],
+      "os": {
+        "type": "linux"
+      },
+      "vendor_id": "0x10de",
+      "features": [
+        "init_vertex_attributes"
       ]
     }
   ]

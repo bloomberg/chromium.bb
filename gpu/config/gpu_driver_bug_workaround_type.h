@@ -50,6 +50,8 @@
          init_texture_max_anisotropy)                        \
   GPU_OP(INIT_VARYINGS_WITHOUT_STATIC_USE,                   \
          init_varyings_without_static_use)                   \
+  GPU_OP(INIT_VERTEX_ATTRIBUTES,                             \
+         init_vertex_attributes)                             \
   GPU_OP(MAX_CUBE_MAP_TEXTURE_SIZE_LIMIT_1024,               \
          max_cube_map_texture_size_limit_1024)               \
   GPU_OP(MAX_CUBE_MAP_TEXTURE_SIZE_LIMIT_4096,               \

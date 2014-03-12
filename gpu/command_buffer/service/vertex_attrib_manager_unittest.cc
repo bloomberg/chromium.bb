@@ -40,7 +40,7 @@ class VertexAttribManagerTest : public testing::Test {
     }
 
     manager_ = new VertexAttribManager();
-    manager_->Initialize(kNumVertexAttribs);
+    manager_->Initialize(kNumVertexAttribs, true);
   }
 
   virtual void TearDown() {

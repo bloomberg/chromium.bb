@@ -6,7 +6,6 @@
 
 #include <list>
 
-#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
@@ -122,14 +121,12 @@ VertexAttribManager::~VertexAttribManager() {
 void VertexAttribManager::Initialize(
     uint32 max_vertex_attribs, bool init_attribs) {
   vertex_attribs_.resize(max_vertex_attribs);
-  bool disable_workarounds = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableGpuDriverBugWorkarounds);
 
   for (uint32 vv = 0; vv < vertex_attribs_.size(); ++vv) {
     vertex_attribs_[vv].set_index(vv);
     vertex_attribs_[vv].SetList(&disabled_vertex_attribs_);
 
-    if (!disable_workarounds && init_attribs) {
+    if (init_attribs) {
       glVertexAttrib4f(vv, 0.0f, 0.0f, 0.0f, 1.0f);
     }
   }

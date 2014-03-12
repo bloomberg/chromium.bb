@@ -171,7 +171,7 @@ class GPU_EXPORT VertexAttribManager :
 
   VertexAttribManager();
 
-  void Initialize(uint32 num_vertex_attribs, bool init_attribs = true);
+  void Initialize(uint32 num_vertex_attribs, bool init_attribs);
 
   bool Enable(GLuint index, bool enable);
 

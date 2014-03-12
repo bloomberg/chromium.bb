@@ -2272,7 +2272,9 @@ bool GLES2DecoderImpl::Initialize(
 
   state_.attrib_values.resize(group_->max_vertex_attribs());
   default_vertex_attrib_manager_ = new VertexAttribManager();
-  default_vertex_attrib_manager_->Initialize(group_->max_vertex_attribs());
+  default_vertex_attrib_manager_->Initialize(
+      group_->max_vertex_attribs(),
+      feature_info_->workarounds().init_vertex_attributes);
 
   // vertex_attrib_manager is set to default_vertex_attrib_manager_ by this call
   DoBindVertexArrayOES(0);
