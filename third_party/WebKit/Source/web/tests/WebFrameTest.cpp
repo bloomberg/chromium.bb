@@ -4000,7 +4000,6 @@ TEST_F(WebFrameTest, ReplaceNavigationAfterHistoryNavigation)
     WebHistoryItem errorHistoryItem;
     errorHistoryItem.initialize();
     errorHistoryItem.setURLString(WebString::fromUTF8(errorURL.c_str(), errorURL.length()));
-    errorHistoryItem.setOriginalURLString(WebString::fromUTF8(errorURL.c_str(), errorURL.length()));
     Platform::current()->unitTestSupport()->registerMockedErrorURL(URLTestHelpers::toKURL(errorURL), response, error);
     frame->loadHistoryItem(errorHistoryItem);
     Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
