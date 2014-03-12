@@ -4439,12 +4439,28 @@
             '-Wno-unneeded-internal-declaration',
             # Match OS X clang C++11 warning settings.
             '-Wno-c++11-narrowing',
+            # As of Xcode 5.1, the register keyword is deprecated, but Chromium
+            # code still uses it.
+            '-Wno-deprecated-register',
           ],
 
-          # Limit the valid architectures depending on "target_subarch".
-          # This need to include the "arm" architectures but also the "x86"
-          # ones (they are used when building for the simulator).
           'conditions': [
+            # Older Xcodes do not support -Wno-deprecated-register, so pass an
+            # additional flag to suppress the "unknown compiler option" error.
+            # Restrict this flag to builds that are either compiling with Xcode
+            # or compiling with Xcode's Clang.  This will allow Ninja builds to
+            # continue failing on unknown compiler options.
+            # TODO(rohitrao): This flag is temporary and should be removed as
+            # soon as the iOS bots are updated to use Xcode 5.1.
+            ['"<(GENERATOR)"=="xcode" or clang_xcode==1', {
+              'WARNING_CFLAGS': [
+                '-Wno-unknown-warning-option',
+              ],
+            }],
+
+            # Limit the valid architectures depending on "target_subarch".
+            # This need to include the "arm" architectures but also the "x86"
+            # ones (they are used when building for the simulator).
             ['target_subarch=="arm32"', {
               'VALID_ARCHS': ['armv7', 'i386'],
             }],
