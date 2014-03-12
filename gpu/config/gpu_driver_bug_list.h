@@ -8,6 +8,7 @@
 #include <string>
 
 #include "gpu/config/gpu_control_list.h"
+#include "gpu/config/gpu_driver_bug_workaround_type.h"
 #include "gpu/gpu_export.h"
 
 namespace gpu {
@@ -23,6 +24,13 @@ class GPU_EXPORT GpuDriverBugList : public GpuControlList {
 
   DISALLOW_COPY_AND_ASSIGN(GpuDriverBugList);
 };
+
+struct DriverBugInfo {
+  GpuDriverBugWorkaroundType feature_type;
+  const char* feature_name;
+};
+
+const struct DriverBugInfo* GetDriverBugWorkarounds();
 
 }  // namespace gpu
 

@@ -12,9 +12,10 @@ namespace gpu {
 
 namespace {
 
-struct DriverBugInfo {
-  int feature_type;
-  std::string feature_name;
+const DriverBugInfo kFeatureList[] = {
+#define GPU_OP(type, name) { type, #name },
+  GPU_DRIVER_BUG_WORKAROUNDS(GPU_OP)
+#undef GPU_OP
 };
 
 }  // namespace anonymous
@@ -30,11 +31,6 @@ GpuDriverBugList::~GpuDriverBugList() {
 GpuDriverBugList* GpuDriverBugList::Create() {
   GpuDriverBugList* list = new GpuDriverBugList();
 
-  const DriverBugInfo kFeatureList[] = {
-#define GPU_OP(type, name) { type, #name },
-    GPU_DRIVER_BUG_WORKAROUNDS(GPU_OP)
-#undef GPU_OP
-  };
   DCHECK_EQ(static_cast<int>(arraysize(kFeatureList)),
             NUMBER_OF_GPU_DRIVER_BUG_WORKAROUND_TYPES);
   for (int i = 0; i < NUMBER_OF_GPU_DRIVER_BUG_WORKAROUND_TYPES; ++i) {
@@ -46,13 +42,14 @@ GpuDriverBugList* GpuDriverBugList::Create() {
 
 std::string GpuDriverBugWorkaroundTypeToString(
     GpuDriverBugWorkaroundType type) {
-  switch (type) {
-#define GPU_OP(type, name) case type: return #name;
-    GPU_DRIVER_BUG_WORKAROUNDS(GPU_OP)
-#undef GPU_OP
-    default:
-      return "unknown";
-  };
+  if (type < NUMBER_OF_GPU_DRIVER_BUG_WORKAROUND_TYPES)
+    return kFeatureList[type].feature_name;
+  else
+    return "unknown";
+}
+
+const struct DriverBugInfo* GetDriverBugWorkarounds() {
+  return kFeatureList;
 }
 
 }  // namespace gpu
