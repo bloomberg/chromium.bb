@@ -63,6 +63,9 @@ class EmbeddedSharedWorkerStub : public IPC::Listener,
   void Shutdown();
   bool Send(IPC::Message* message);
 
+  // WebSharedWorker will own |channel|.
+  void ConnectToChannel(WebMessagePortChannelImpl* channel);
+
   void OnConnect(int sent_message_port_id, int routing_id);
   void OnTerminateWorkerContext();
 
