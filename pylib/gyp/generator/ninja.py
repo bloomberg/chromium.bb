@@ -583,10 +583,7 @@ class NinjaWriter:
   def WriteActions(self, actions, extra_sources, prebuild,
                    extra_mac_bundle_resources):
     # Actions cd into the base directory.
-    env = self.GetSortedXcodeEnv()
-    if self.flavor == 'win':
-      env = self.msvs_settings.GetVSMacroEnv(
-          '$!PRODUCT_DIR', config=self.config_name)
+    env = self.GetToolchainEnv()
     all_outputs = []
     for action in actions:
       # First write out a rule for the action.
@@ -619,7 +616,7 @@ class NinjaWriter:
 
   def WriteRules(self, rules, extra_sources, prebuild,
                  mac_bundle_resources, extra_mac_bundle_resources):
-    env = self.GetSortedXcodeEnv()
+    env = self.GetToolchainEnv()
     all_outputs = []
     for rule in rules:
       # First write out a rule for the rule action.
@@ -721,7 +718,7 @@ class NinjaWriter:
 
   def WriteCopies(self, copies, prebuild, mac_bundle_depends):
     outputs = []
-    env = self.GetSortedXcodeEnv()
+    env = self.GetToolchainEnv()
     for copy in copies:
       for path in copy['files']:
         # Normalize the path so trailing slashes don't confuse us.
@@ -853,10 +850,9 @@ class NinjaWriter:
                                                   self.GypPathToNinja)])
 
     include_dirs = config.get('include_dirs', [])
-    env = self.GetSortedXcodeEnv()
+
+    env = self.GetToolchainEnv()
     if self.flavor == 'win':
-      env = self.msvs_settings.GetVSMacroEnv('$!PRODUCT_DIR',
-                                             config=config_name)
       include_dirs = self.msvs_settings.AdjustIncludeDirs(include_dirs,
                                                           config_name)
     self.WriteVariableList(ninja_file, 'includes',
@@ -1198,6 +1194,19 @@ class NinjaWriter:
                        variables=variables)
     self.target.bundle = output
     return output
+
+  def GetToolchainEnv(self, additional_settings=None):
+    """Returns the variables toolchain would set for build steps."""
+    env = self.GetSortedXcodeEnv(additional_settings=additional_settings)
+    if self.flavor == 'win':
+      env = self.GetMsvsToolchainEnv(
+          additional_settings=additional_settings)
+    return env
+
+  def GetMsvsToolchainEnv(self, additional_settings=None):
+    """Returns the variables Visual Studio would set for build steps."""
+    return self.msvs_settings.GetVSMacroEnv('$!PRODUCT_DIR',
+                                             config=self.config_name)
 
   def GetSortedXcodeEnv(self, additional_settings=None):
     """Returns the variables Xcode would set for build steps."""
