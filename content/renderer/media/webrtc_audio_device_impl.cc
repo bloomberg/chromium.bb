@@ -177,12 +177,6 @@ void WebRtcAudioDeviceImpl::RemoveAudioRenderer(WebRtcAudioRenderer* renderer) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_EQ(renderer, renderer_);
   base::AutoLock auto_lock(lock_);
-  // Notify the playout sink of the change.
-  for (PlayoutDataSinkList::const_iterator it = playout_sinks_.begin();
-       it != playout_sinks_.end(); ++it) {
-    (*it)->OnPlayoutDataSourceChanged();
-  }
-
   renderer_ = NULL;
   playing_ = false;
 }

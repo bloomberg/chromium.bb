@@ -247,14 +247,6 @@ void MediaStreamAudioProcessor::OnPlayoutData(media::AudioBus* audio_bus,
     audio_processing_->AnalyzeReverseStream(&render_frame_);
 }
 
-void MediaStreamAudioProcessor::OnPlayoutDataSourceChanged() {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
-  // There is no need to hold a lock here since the caller guarantees that
-  // there is no more OnPlayoutData() callback on the render thread.
-  render_thread_checker_.DetachFromThread();
-  render_converter_.reset();
-}
-
 void MediaStreamAudioProcessor::GetStats(AudioProcessorStats* stats) {
   stats->typing_noise_detected =
       (base::subtle::Acquire_Load(&typing_detected_) != false);
