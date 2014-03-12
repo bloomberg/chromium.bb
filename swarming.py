@@ -5,7 +5,7 @@
 
 """Client tool to trigger tasks or retrieve results from a Swarming server."""
 
-__version__ = '0.4.1'
+__version__ = '0.4.2'
 
 import getpass
 import hashlib
@@ -563,10 +563,8 @@ def process_trigger_options(parser, options, args):
   if len(args) != 1:
     parser.error('Must pass one .isolated file or its hash (sha1).')
   options.dimensions = dict(options.dimensions)
-  if not options.dimensions.get('os'):
-    parser.error(
-        'Please at least specify the dimension of the swarming bot OS with '
-        '--dimension os <something>.')
+  if not options.dimensions:
+    parser.error('Please at least specify one --dimension')
 
 
 def add_collect_options(parser):

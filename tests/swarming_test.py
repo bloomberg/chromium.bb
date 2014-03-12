@@ -855,8 +855,7 @@ class MainTest(TestCase):
     self._check_output(
         '',
         'Usage: swarming.py trigger [options] (hash|isolated)\n\n'
-        'swarming.py: error: Please at least specify the dimension of the '
-        'swarming bot OS with --dimension os <something>.\n')
+        'swarming.py: error: Please at least specify one --dimension\n')
 
   def test_trigger_env(self):
     self.mock(swarming.isolateserver, 'get_storage',
