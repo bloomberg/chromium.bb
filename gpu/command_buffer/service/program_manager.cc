@@ -125,16 +125,77 @@ Program::UniformInfo::UniformInfo()
       is_array(false) {
 }
 
-Program::UniformInfo::UniformInfo(
-    GLsizei _size,
-    GLenum _type,
-    int _fake_location_base,
-    const std::string& _name)
+Program::UniformInfo::UniformInfo(GLsizei _size,
+                                  GLenum _type,
+                                  int _fake_location_base,
+                                  const std::string& _name)
     : size(_size),
       type(_type),
+      accepts_api_type(0),
       fake_location_base(_fake_location_base),
       is_array(false),
       name(_name) {
+  switch (type) {
+    case GL_INT:
+      accepts_api_type = kUniform1i;
+      break;
+    case GL_INT_VEC2:
+      accepts_api_type = kUniform2i;
+      break;
+    case GL_INT_VEC3:
+      accepts_api_type = kUniform3i;
+      break;
+    case GL_INT_VEC4:
+      accepts_api_type = kUniform4i;
+      break;
+
+    case GL_BOOL:
+      accepts_api_type = kUniform1i | kUniform1f;
+      break;
+    case GL_BOOL_VEC2:
+      accepts_api_type = kUniform2i | kUniform2f;
+      break;
+    case GL_BOOL_VEC3:
+      accepts_api_type = kUniform3i | kUniform3f;
+      break;
+    case GL_BOOL_VEC4:
+      accepts_api_type = kUniform4i | kUniform4f;
+      break;
+
+    case GL_FLOAT:
+      accepts_api_type = kUniform1f;
+      break;
+    case GL_FLOAT_VEC2:
+      accepts_api_type = kUniform2f;
+      break;
+    case GL_FLOAT_VEC3:
+      accepts_api_type = kUniform3f;
+      break;
+    case GL_FLOAT_VEC4:
+      accepts_api_type = kUniform4f;
+      break;
+
+    case GL_FLOAT_MAT2:
+      accepts_api_type = kUniformMatrix2f;
+      break;
+    case GL_FLOAT_MAT3:
+      accepts_api_type = kUniformMatrix3f;
+      break;
+    case GL_FLOAT_MAT4:
+      accepts_api_type = kUniformMatrix4f;
+      break;
+
+    case GL_SAMPLER_2D:
+    case GL_SAMPLER_2D_RECT_ARB:
+    case GL_SAMPLER_CUBE:
+    case GL_SAMPLER_3D_OES:
+    case GL_SAMPLER_EXTERNAL_OES:
+      accepts_api_type = kUniform1i;
+      break;
+    default:
+      NOTREACHED() << "Unhandled UniformInfo type " << type;
+      break;
+  }
 }
 
 Program::UniformInfo::~UniformInfo() {}

@@ -504,12 +504,6 @@ void GLES2Decoder::EndDecoding() {}
 class GLES2DecoderImpl : public GLES2Decoder,
                          public FramebufferManager::TextureDetachObserver {
  public:
-  // Used by PrepForSetUniformByLocation to validate types.
-  struct BaseUniformInfo {
-    const GLenum* const valid_types;
-    size_t num_valid_types;
-  };
-
   explicit GLES2DecoderImpl(ContextGroup* group);
   virtual ~GLES2DecoderImpl();
 
@@ -1104,10 +1098,12 @@ class GLES2DecoderImpl : public GLES2Decoder,
   // errors if the current program is not valid. Returns true if the current
   // program is valid and the location exists. Adjusts count so it
   // does not overflow the uniform.
-  bool PrepForSetUniformByLocation(
-      GLint fake_location, const char* function_name,
-      const BaseUniformInfo& base_info,
-      GLint* real_location, GLenum* type, GLsizei* count);
+  bool PrepForSetUniformByLocation(GLint fake_location,
+                                   const char* function_name,
+                                   Program::UniformApiType api_type,
+                                   GLint* real_location,
+                                   GLenum* type,
+                                   GLsizei* count);
 
   // Gets the service id for any simulated backbuffer fbo.
   GLuint GetBackbufferServiceId() const;
@@ -5536,125 +5532,13 @@ bool GLES2DecoderImpl::CheckCurrentProgramForUniform(
   return location != -1;
 }
 
-namespace {
-
-static const GLenum valid_int_vec1_types_list[] = {
-  GL_INT,
-  GL_BOOL,
-  GL_SAMPLER_2D,
-  GL_SAMPLER_2D_RECT_ARB,
-  GL_SAMPLER_CUBE,
-  GL_SAMPLER_EXTERNAL_OES,
-};
-
-static const GLenum valid_int_vec2_types_list[] = {
-  GL_INT_VEC2,
-  GL_BOOL_VEC2,
-};
-
-static const GLenum valid_int_vec3_types_list[] = {
-  GL_INT_VEC3,
-  GL_BOOL_VEC3,
-};
-
-static const GLenum valid_int_vec4_types_list[] = {
-  GL_INT_VEC4,
-  GL_BOOL_VEC4,
-};
-
-static const GLenum valid_float_vec1_types_list[] = {
-  GL_FLOAT,
-  GL_BOOL,
-};
-
-static const GLenum valid_float_vec2_types_list[] = {
-  GL_FLOAT_VEC2,
-  GL_BOOL_VEC2,
-};
-
-static const GLenum valid_float_vec3_types_list[] = {
-  GL_FLOAT_VEC3,
-  GL_BOOL_VEC3,
-};
-
-static const GLenum valid_float_vec4_types_list[] = {
-  GL_FLOAT_VEC4,
-  GL_BOOL_VEC4,
-};
-
-static const GLenum valid_float_mat2_types_list[] = {
-  GL_FLOAT_MAT2,
-};
-
-static const GLenum valid_float_mat3_types_list[] = {
-  GL_FLOAT_MAT3,
-};
-
-static const GLenum valid_float_mat4_types_list[] = {
-  GL_FLOAT_MAT4,
-};
-
-static const GLES2DecoderImpl::BaseUniformInfo valid_int_vec1_base_info = {
-  valid_int_vec1_types_list,
-  arraysize(valid_int_vec1_types_list),
-};
-
-static const GLES2DecoderImpl::BaseUniformInfo valid_int_vec2_base_info = {
-  valid_int_vec2_types_list,
-  arraysize(valid_int_vec2_types_list),
-};
-
-static const GLES2DecoderImpl::BaseUniformInfo valid_int_vec3_base_info = {
-  valid_int_vec3_types_list,
-  arraysize(valid_int_vec3_types_list),
-};
-
-static const GLES2DecoderImpl::BaseUniformInfo valid_int_vec4_base_info = {
-  valid_int_vec4_types_list,
-  arraysize(valid_int_vec4_types_list),
-};
-
-static const GLES2DecoderImpl::BaseUniformInfo valid_float_vec1_base_info = {
-  valid_float_vec1_types_list,
-  arraysize(valid_float_vec1_types_list),
-};
-
-static const GLES2DecoderImpl::BaseUniformInfo valid_float_vec2_base_info = {
-  valid_float_vec2_types_list,
-  arraysize(valid_float_vec2_types_list),
-};
-
-static const GLES2DecoderImpl::BaseUniformInfo valid_float_vec3_base_info = {
-  valid_float_vec3_types_list,
-  arraysize(valid_float_vec3_types_list),
-};
-
-static const GLES2DecoderImpl::BaseUniformInfo valid_float_vec4_base_info = {
-  valid_float_vec4_types_list,
-  arraysize(valid_float_vec4_types_list),
-};
-
-static const GLES2DecoderImpl::BaseUniformInfo valid_float_mat2_base_info = {
-  valid_float_mat2_types_list,
-  arraysize(valid_float_mat2_types_list),
-};
-
-static const GLES2DecoderImpl::BaseUniformInfo valid_float_mat3_base_info = {
-  valid_float_mat3_types_list,
-  arraysize(valid_float_mat3_types_list),
-};
-
-static const GLES2DecoderImpl::BaseUniformInfo valid_float_mat4_base_info = {
-  valid_float_mat4_types_list,
-  arraysize(valid_float_mat4_types_list),
-};
-
-}  // anonymous namespace.
-
 bool GLES2DecoderImpl::PrepForSetUniformByLocation(
-    GLint fake_location, const char* function_name,
-    const GLES2DecoderImpl::BaseUniformInfo& base_info,
-    GLint* real_location, GLenum* type, GLsizei* count) {
+    GLint fake_location,
+    const char* function_name,
+    Program::UniformApiType api_type,
+    GLint* real_location,
+    GLenum* type,
+    GLsizei* count) {
   DCHECK(type);
   DCHECK(count);
   DCHECK(real_location);
@@ -5671,14 +5555,8 @@ bool GLES2DecoderImpl::PrepForSetUniformByLocation(
         GL_INVALID_OPERATION, function_name, "unknown location");
     return false;
   }
-  bool okay = false;
-  for (size_t ii = 0; ii < base_info.num_valid_types; ++ii) {
-    if (base_info.valid_types[ii] == info->type) {
-      okay = true;
-      break;
-    }
-  }
-  if (!okay) {
+
+  if ((api_type & info->accepts_api_type) == 0) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_OPERATION, function_name,
         "wrong uniform function for type");
@@ -5701,9 +5579,12 @@ void GLES2DecoderImpl::DoUniform1i(GLint fake_location, GLint v0) {
   GLenum type = 0;
   GLsizei count = 1;
   GLint real_location = -1;
-  if (!PrepForSetUniformByLocation(
-      fake_location, "glUniform1i", valid_int_vec1_base_info,
-      &real_location, &type, &count)) {
+  if (!PrepForSetUniformByLocation(fake_location,
+                                   "glUniform1i",
+                                   Program::kUniform1i,
+                                   &real_location,
+                                   &type,
+                                   &count)) {
     return;
   }
   if (!state_.current_program->SetSamplers(
@@ -5719,9 +5600,12 @@ void GLES2DecoderImpl::DoUniform1iv(
     GLint fake_location, GLsizei count, const GLint *value) {
   GLenum type = 0;
   GLint real_location = -1;
-  if (!PrepForSetUniformByLocation(
-      fake_location, "glUniform1iv", valid_int_vec1_base_info,
-      &real_location, &type, &count)) {
+  if (!PrepForSetUniformByLocation(fake_location,
+                                   "glUniform1iv",
+                                   Program::kUniform1i,
+                                   &real_location,
+                                   &type,
+                                   &count)) {
     return;
   }
   if (type == GL_SAMPLER_2D || type == GL_SAMPLER_2D_RECT_ARB ||
@@ -5740,9 +5624,12 @@ void GLES2DecoderImpl::DoUniform1fv(
     GLint fake_location, GLsizei count, const GLfloat* value) {
   GLenum type = 0;
   GLint real_location = -1;
-  if (!PrepForSetUniformByLocation(
-      fake_location, "glUniform1fv", valid_float_vec1_base_info,
-      &real_location, &type, &count)) {
+  if (!PrepForSetUniformByLocation(fake_location,
+                                   "glUniform1fv",
+                                   Program::kUniform1f,
+                                   &real_location,
+                                   &type,
+                                   &count)) {
     return;
   }
   if (type == GL_BOOL) {
@@ -5760,9 +5647,12 @@ void GLES2DecoderImpl::DoUniform2fv(
     GLint fake_location, GLsizei count, const GLfloat* value) {
   GLenum type = 0;
   GLint real_location = -1;
-  if (!PrepForSetUniformByLocation(
-      fake_location, "glUniform2fv", valid_float_vec2_base_info,
-      &real_location, &type, &count)) {
+  if (!PrepForSetUniformByLocation(fake_location,
+                                   "glUniform2fv",
+                                   Program::kUniform2f,
+                                   &real_location,
+                                   &type,
+                                   &count)) {
     return;
   }
   if (type == GL_BOOL_VEC2) {
@@ -5781,9 +5671,12 @@ void GLES2DecoderImpl::DoUniform3fv(
     GLint fake_location, GLsizei count, const GLfloat* value) {
   GLenum type = 0;
   GLint real_location = -1;
-  if (!PrepForSetUniformByLocation(
-      fake_location, "glUniform3fv", valid_float_vec3_base_info,
-      &real_location, &type, &count)) {
+  if (!PrepForSetUniformByLocation(fake_location,
+                                   "glUniform3fv",
+                                   Program::kUniform3f,
+                                   &real_location,
+                                   &type,
+                                   &count)) {
     return;
   }
   if (type == GL_BOOL_VEC3) {
@@ -5802,9 +5695,12 @@ void GLES2DecoderImpl::DoUniform4fv(
     GLint fake_location, GLsizei count, const GLfloat* value) {
   GLenum type = 0;
   GLint real_location = -1;
-  if (!PrepForSetUniformByLocation(
-      fake_location, "glUniform4fv", valid_float_vec4_base_info,
-      &real_location, &type, &count)) {
+  if (!PrepForSetUniformByLocation(fake_location,
+                                   "glUniform4fv",
+                                   Program::kUniform4f,
+                                   &real_location,
+                                   &type,
+                                   &count)) {
     return;
   }
   if (type == GL_BOOL_VEC4) {
@@ -5823,9 +5719,12 @@ void GLES2DecoderImpl::DoUniform2iv(
     GLint fake_location, GLsizei count, const GLint* value) {
   GLenum type = 0;
   GLint real_location = -1;
-  if (!PrepForSetUniformByLocation(
-      fake_location, "glUniform2iv", valid_int_vec2_base_info,
-      &real_location, &type, &count)) {
+  if (!PrepForSetUniformByLocation(fake_location,
+                                   "glUniform2iv",
+                                   Program::kUniform2i,
+                                   &real_location,
+                                   &type,
+                                   &count)) {
     return;
   }
   glUniform2iv(real_location, count, value);
@@ -5835,9 +5734,12 @@ void GLES2DecoderImpl::DoUniform3iv(
     GLint fake_location, GLsizei count, const GLint* value) {
   GLenum type = 0;
   GLint real_location = -1;
-  if (!PrepForSetUniformByLocation(
-      fake_location, "glUniform3iv", valid_int_vec3_base_info,
-      &real_location, &type, &count)) {
+  if (!PrepForSetUniformByLocation(fake_location,
+                                   "glUniform3iv",
+                                   Program::kUniform3i,
+                                   &real_location,
+                                   &type,
+                                   &count)) {
     return;
   }
   glUniform3iv(real_location, count, value);
@@ -5847,9 +5749,12 @@ void GLES2DecoderImpl::DoUniform4iv(
     GLint fake_location, GLsizei count, const GLint* value) {
   GLenum type = 0;
   GLint real_location = -1;
-  if (!PrepForSetUniformByLocation(
-      fake_location, "glUniform4iv", valid_int_vec4_base_info,
-      &real_location, &type, &count)) {
+  if (!PrepForSetUniformByLocation(fake_location,
+                                   "glUniform4iv",
+                                   Program::kUniform4i,
+                                   &real_location,
+                                   &type,
+                                   &count)) {
     return;
   }
   glUniform4iv(real_location, count, value);
@@ -5860,9 +5765,12 @@ void GLES2DecoderImpl::DoUniformMatrix2fv(
     const GLfloat* value) {
   GLenum type = 0;
   GLint real_location = -1;
-  if (!PrepForSetUniformByLocation(
-      fake_location, "glUniformMatrix2fv", valid_float_mat2_base_info,
-      &real_location, &type, &count)) {
+  if (!PrepForSetUniformByLocation(fake_location,
+                                   "glUniformMatrix2fv",
+                                   Program::kUniformMatrix2f,
+                                   &real_location,
+                                   &type,
+                                   &count)) {
     return;
   }
   glUniformMatrix2fv(real_location, count, transpose, value);
@@ -5873,9 +5781,12 @@ void GLES2DecoderImpl::DoUniformMatrix3fv(
     const GLfloat* value) {
   GLenum type = 0;
   GLint real_location = -1;
-  if (!PrepForSetUniformByLocation(
-      fake_location, "glUniformMatrix3fv",  valid_float_mat3_base_info,
-      &real_location, &type, &count)) {
+  if (!PrepForSetUniformByLocation(fake_location,
+                                   "glUniformMatrix3fv",
+                                   Program::kUniformMatrix3f,
+                                   &real_location,
+                                   &type,
+                                   &count)) {
     return;
   }
   glUniformMatrix3fv(real_location, count, transpose, value);
@@ -5886,9 +5797,12 @@ void GLES2DecoderImpl::DoUniformMatrix4fv(
     const GLfloat* value) {
   GLenum type = 0;
   GLint real_location = -1;
-  if (!PrepForSetUniformByLocation(
-      fake_location, "glUniformMatrix4fv",  valid_float_mat4_base_info,
-      &real_location, &type, &count)) {
+  if (!PrepForSetUniformByLocation(fake_location,
+                                   "glUniformMatrix4fv",
+                                   Program::kUniformMatrix4f,
+                                   &real_location,
+                                   &type,
+                                   &count)) {
     return;
   }
   glUniformMatrix4fv(real_location, count, transpose, value);
