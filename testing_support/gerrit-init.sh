@@ -88,8 +88,12 @@ def _cmp(a, b):
     an.append('0')
   while len(bn) < len(an):
     bn.append('0')
-  an.append(a[2][3:] if a[2] else '1000')
-  bn.append(b[2][3:] if b[2] else '1000')
+#  Disable using -rc versions.  This is a temporary hack to avoid
+#  picking up version 2.9-rc0, which requires java 7.  These lines
+#  should be un-commented after this bug is fixed:
+#    https://code.google.com/p/chromium/issues/detail?id=346369
+#  an.append(a[2][3:] if a[2] else '1000')
+#  bn.append(b[2][3:] if b[2] else '1000')
   for i in range(len(an)):
     if an[i] != bn[i]:
       return -1 if int(an[i]) > int(bn[i]) else 1
