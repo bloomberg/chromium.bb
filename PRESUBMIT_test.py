@@ -369,8 +369,8 @@ class BadExtensionsTest(unittest.TestCase):
       'some/path/OWNERS',
       'A\Windows\Path\OWNERS',
     ])
-    results = PRESUBMIT.GetPreferredTrySlaves(None, mock_change)
-    self.assertEqual(0, len(results))
+    results = PRESUBMIT.GetPreferredTryMasters(None, mock_change)
+    self.assertEqual({}, results)
 
 
 class InvalidOSMacroNamesTest(unittest.TestCase):

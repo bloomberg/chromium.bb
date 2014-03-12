@@ -1370,9 +1370,16 @@ def GetDefaultTryConfigs(bots=None):
                                  for x in builders_and_tests[bot]]
 
   if bots:
-    return [(bot, set(builders_and_tests[bot])) for bot in bots]
+    return {
+        'tryserver.chromium': dict((bot, set(builders_and_tests[bot]))
+                                   for bot in bots)
+    }
   else:
-    return [(bot, set(tests)) for bot, tests in builders_and_tests.iteritems()]
+    return {
+        'tryserver.chromium': dict(
+            (bot, set(tests))
+            for bot, tests in builders_and_tests.iteritems())
+    }
 
 
 def CheckChangeOnCommit(input_api, output_api):
@@ -1395,11 +1402,11 @@ def CheckChangeOnCommit(input_api, output_api):
   return results
 
 
-def GetPreferredTrySlaves(project, change):
+def GetPreferredTryMasters(project, change):
   files = change.LocalPaths()
 
   if not files or all(re.search(r'[\\/]OWNERS$', f) for f in files):
-    return []
+    return {}
 
   if all(re.search('\.(m|mm)$|(^|[/_])mac[/_.]', f) for f in files):
     return GetDefaultTryConfigs([
@@ -1418,7 +1425,7 @@ def GetPreferredTrySlaves(project, change):
   if all(re.search('[/_]ios[/_.]', f) for f in files):
     return GetDefaultTryConfigs(['ios_rel_device', 'ios_dbg_simulator'])
 
-  trybots = GetDefaultTryConfigs([
+  builders = [
       'android_clang_dbg',
       'android_dbg',
       'ios_dbg_simulator',
@@ -1438,13 +1445,15 @@ def GetPreferredTrySlaves(project, change):
       'win_nacl_sdk_build',
       'win_rel',
       'win_x64_rel',
-  ])
+  ]
 
   # Match things like path/aura/file.cc and path/file_aura.cc.
   # Same for chromeos.
   if any(re.search('[/_](aura|chromeos)', f) for f in files):
-    trybots.extend(GetDefaultTryConfigs([
-        'linux_chromeos_asan', 'linux_chromium_chromeos_clang_dbg']))
+    builders.extend([
+        'linux_chromeos_asan',
+        'linux_chromium_chromeos_clang_dbg'
+    ])
 
   # If there are gyp changes to base, build, or chromeos, run a full cros build
   # in addition to the shorter linux_chromeos build. Changes to high level gyp
@@ -1452,13 +1461,13 @@ def GetPreferredTrySlaves(project, change):
   # differnt from the linux_chromeos build that most chrome developers test
   # with.
   if any(re.search('^(base|build|chromeos).*\.gypi?$', f) for f in files):
-    trybots.extend(GetDefaultTryConfigs(['cros_x86']))
+    builders.extend(['cros_x86'])
 
   # The AOSP bot doesn't build the chrome/ layer, so ignore any changes to it
   # unless they're .gyp(i) files as changes to those files can break the gyp
   # step on that bot.
   if (not all(re.search('^chrome', f) for f in files) or
       any(re.search('\.gypi?$', f) for f in files)):
-    trybots.extend(GetDefaultTryConfigs(['android_aosp']))
+    builders.extend(['android_aosp'])
 
-  return trybots
+  return GetDefaultTryConfigs(builders)
