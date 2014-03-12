@@ -30,6 +30,7 @@
 class GrContext;
 class SkBitmap;
 struct ViewMsg_New_Params;
+struct WorkerProcessMsg_CreateWorker_Params;
 
 namespace blink {
 class WebGamepads;
@@ -413,6 +414,8 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
                               blink::ScrollerStyle preferred_scroller_style,
                               bool redraw);
 #endif
+  void OnCreateNewSharedWorker(
+      const WorkerProcessMsg_CreateWorker_Params& params);
 
   void IdleHandlerInForegroundTab();
 

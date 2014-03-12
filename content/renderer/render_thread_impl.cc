@@ -53,6 +53,7 @@
 #include "content/common/gpu/gpu_process_launch_causes.h"
 #include "content/common/resource_messages.h"
 #include "content/common/view_messages.h"
+#include "content/common/worker_messages.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
@@ -87,6 +88,7 @@
 #include "content/renderer/renderer_webkitplatformsupport_impl.h"
 #include "content/renderer/service_worker/embedded_worker_context_message_filter.h"
 #include "content/renderer/service_worker/embedded_worker_dispatcher.h"
+#include "content/renderer/shared_worker/embedded_shared_worker_stub.h"
 #include "grit/content_resources.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_forwarding_message_filter.h"
@@ -658,6 +660,7 @@ void RenderThreadImpl::AddRoute(int32 routing_id, IPC::Listener* listener) {
 void RenderThreadImpl::RemoveRoute(int32 routing_id) {
   ChildThread::RemoveRoute(routing_id);
 }
+
 int RenderThreadImpl::GenerateRoutingID() {
   int routing_id = MSG_ROUTING_NONE;
   Send(new ViewHostMsg_GenerateRoutingID(&routing_id));
@@ -1199,6 +1202,7 @@ bool RenderThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewMsg_PurgePluginListCache, OnPurgePluginListCache)
     IPC_MESSAGE_HANDLER(ViewMsg_NetworkStateChanged, OnNetworkStateChanged)
     IPC_MESSAGE_HANDLER(ViewMsg_TempCrashWithData, OnTempCrashWithData)
+    IPC_MESSAGE_HANDLER(WorkerProcessMsg_CreateWorker, OnCreateNewSharedWorker)
 #if defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(ViewMsg_SetWebKitSharedTimersSuspended,
                         OnSetWebKitSharedTimersSuspended)
@@ -1364,6 +1368,16 @@ void RenderThreadImpl::OnUpdateScrollbarTheme(
                                              redraw);
 }
 #endif
+
+void RenderThreadImpl::OnCreateNewSharedWorker(
+    const WorkerProcessMsg_CreateWorker_Params& params) {
+  // EmbeddedSharedWorkerStub will self-destruct.
+  new EmbeddedSharedWorkerStub(params.url,
+                               params.name,
+                               params.content_security_policy,
+                               params.security_policy_type,
+                               params.route_id);
+}
 
 void RenderThreadImpl::OnMemoryPressure(
     base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
