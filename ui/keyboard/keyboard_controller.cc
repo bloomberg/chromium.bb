@@ -25,6 +25,11 @@
 #include "ui/keyboard/keyboard_util.h"
 #include "ui/wm/public/masked_window_targeter.h"
 
+#if defined(OS_CHROMEOS)
+#include "base/process/launch.h"
+#include "base/sys_info.h"
+#endif
+
 namespace {
 
 const int kHideKeyboardDelayMs = 100;
@@ -140,6 +145,21 @@ class KeyboardWindowDelegate : public aura::WindowDelegate {
 
   DISALLOW_COPY_AND_ASSIGN(KeyboardWindowDelegate);
 };
+
+void ToggleTouchEventLogging(bool enable) {
+#if defined(OS_CHROMEOS)
+  if (!base::SysInfo::IsRunningOnChromeOS())
+    return;
+  CommandLine command(
+      base::FilePath("/opt/google/touchscreen/toggle_touch_event_logging"));
+  if (enable)
+    command.AppendArg("1");
+  else
+    command.AppendArg("0");
+  VLOG(1) << "Running " << command.GetCommandLineString();
+  base::LaunchProcess(command, base::LaunchOptions(), NULL);
+#endif
+}
 
 }  // namespace
 
@@ -281,6 +301,7 @@ void KeyboardController::NotifyKeyboardBoundsChanging(
 
 void KeyboardController::HideKeyboard(HideReason reason) {
   keyboard_visible_ = false;
+  ToggleTouchEventLogging(true);
 
   keyboard::LogKeyboardControlEvent(
       reason == HIDE_REASON_AUTOMATIC ?
@@ -411,6 +432,7 @@ void KeyboardController::OnShowImeIfNeeded() {
 }
 
 void KeyboardController::ShowKeyboard() {
+  ToggleTouchEventLogging(false);
   ui::LayerAnimator* container_animator = container_->layer()->GetAnimator();
 
   // If the container is not animating, makes sure the position and opacity
