@@ -32,6 +32,8 @@ function sample1() {
 function executeTest() {
     // Start animating, and stop it again after 100ms.
     animateX.beginElement();
+    // Allow time to pass. (The test framework pauses the timeline on load.)
+    rootSVGElement.unpauseAnimations();
     setTimeout(end, 100);
 }
 
