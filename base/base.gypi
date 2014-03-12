@@ -502,6 +502,7 @@
           'numerics/safe_math_impl.h',
           'safe_strerror_posix.cc',
           'safe_strerror_posix.h',
+          'scoped_generic.h',
           'scoped_native_library.cc',
           'scoped_native_library.h',
           'sequence_checker.h',
