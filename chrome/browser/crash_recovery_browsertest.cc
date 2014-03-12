@@ -14,6 +14,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/page_transition_types.h"
+#include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -22,6 +23,7 @@
 using content::NavigationController;
 using content::OpenURLParams;
 using content::Referrer;
+using content::WebContents;
 
 namespace {
 
@@ -64,6 +66,10 @@ class CacheMaxAgeHandler {
 }  // namespace
 
 class CrashRecoveryBrowserTest : public InProcessBrowserTest {
+ protected:
+  WebContents* GetActiveWebContents() {
+    return browser()->tab_strip_model()->GetActiveWebContents();
+  }
 };
 
 // Test that reload works after a crash.
@@ -80,13 +86,8 @@ IN_PROC_BROWSER_TEST_F(CrashRecoveryBrowserTest, Reload) {
   ASSERT_TRUE(ui_test_utils::GetCurrentTabTitle(browser(),
                                                 &title_before_crash));
   SimulateRendererCrash(browser());
-  content::WindowedNotificationObserver observer(
-      content::NOTIFICATION_LOAD_STOP,
-      content::Source<NavigationController>(
-          &browser()->tab_strip_model()->GetActiveWebContents()->
-              GetController()));
   chrome::Reload(browser(), CURRENT_TAB);
-  observer.Wait();
+  content::WaitForLoadStop(GetActiveWebContents());
   ASSERT_TRUE(ui_test_utils::GetCurrentTabTitle(browser(),
                                                 &title_after_crash));
   EXPECT_NE(title_before_crash, title_after_crash);
@@ -111,13 +112,8 @@ IN_PROC_BROWSER_TEST_F(CrashRecoveryBrowserTest, ReloadCacheRevalidate) {
   ASSERT_TRUE(ui_test_utils::GetCurrentTabTitle(browser(),
                                                 &title_before_crash));
   SimulateRendererCrash(browser());
-  content::WindowedNotificationObserver observer(
-      content::NOTIFICATION_LOAD_STOP,
-      content::Source<NavigationController>(
-          &browser()->tab_strip_model()->GetActiveWebContents()->
-              GetController()));
   chrome::Reload(browser(), CURRENT_TAB);
-  observer.Wait();
+  content::WaitForLoadStop(GetActiveWebContents());
   ASSERT_TRUE(ui_test_utils::GetCurrentTabTitle(browser(),
                                                 &title_after_crash));
   EXPECT_NE(title_before_crash, title_after_crash);
@@ -142,14 +138,27 @@ IN_PROC_BROWSER_TEST_F(CrashRecoveryBrowserTest, LoadInNewTab) {
   ASSERT_TRUE(ui_test_utils::GetCurrentTabTitle(browser(),
                                                 &title_before_crash));
   SimulateRendererCrash(browser());
-  content::WindowedNotificationObserver observer(
-      content::NOTIFICATION_LOAD_STOP,
-      content::Source<NavigationController>(
-          &browser()->tab_strip_model()->GetActiveWebContents()->
-              GetController()));
   chrome::Reload(browser(), CURRENT_TAB);
-  observer.Wait();
+  content::WaitForLoadStop(GetActiveWebContents());
   ASSERT_TRUE(ui_test_utils::GetCurrentTabTitle(browser(),
                                                 &title_after_crash));
   EXPECT_EQ(title_before_crash, title_after_crash);
+}
+
+// Tests that reloads of navigation errors behave correctly after a crash.
+// Regression test for http://crbug.com/348918
+IN_PROC_BROWSER_TEST_F(CrashRecoveryBrowserTest, DoubleReloadWithError) {
+  GURL url("chrome://bogus");
+  ui_test_utils::NavigateToURL(browser(), url);
+  ASSERT_EQ(url, GetActiveWebContents()->GetVisibleURL());
+
+  SimulateRendererCrash(browser());
+
+  chrome::Reload(browser(), CURRENT_TAB);
+  content::WaitForLoadStop(GetActiveWebContents());
+  ASSERT_EQ(url, GetActiveWebContents()->GetVisibleURL());
+
+  chrome::Reload(browser(), CURRENT_TAB);
+  content::WaitForLoadStop(GetActiveWebContents());
+  ASSERT_EQ(url, GetActiveWebContents()->GetVisibleURL());
 }
