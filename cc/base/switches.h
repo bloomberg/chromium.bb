@@ -18,6 +18,9 @@ namespace switches {
 // Switches for the renderer compositor only.
 CC_EXPORT extern const char kDisableThreadedAnimation[];
 CC_EXPORT extern const char kDisableCompositedAntialiasing[];
+CC_EXPORT extern const char kDisableMainFrameBeforeDraw[];
+CC_EXPORT extern const char kDisableMainFrameBeforeActivation[];
+CC_EXPORT extern const char kEnableMainFrameBeforeActivation[];
 CC_EXPORT extern const char kEnableTopControlsPositionCalculation[];
 CC_EXPORT extern const char kJankInsteadOfCheckerboard[];
 CC_EXPORT extern const char kTopControlsHeight[];

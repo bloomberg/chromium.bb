@@ -7,7 +7,9 @@
 namespace cc {
 
 SchedulerSettings::SchedulerSettings()
-    : impl_side_painting(false),
+    : main_frame_before_draw_enabled(true),
+      main_frame_before_activation_enabled(false),
+      impl_side_painting(false),
       timeout_and_draw_when_animation_checkerboards(true),
       maximum_number_of_failed_draws_before_draw_is_forced_(3),
       using_synchronous_renderer_compositor(false),

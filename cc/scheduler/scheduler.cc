@@ -27,6 +27,9 @@ Scheduler::Scheduler(SchedulerClient* client,
       weak_factory_(this) {
   DCHECK(client_);
   DCHECK(!state_machine_.BeginImplFrameNeeded());
+  if (settings_.main_frame_before_activation_enabled) {
+    DCHECK(settings_.main_frame_before_draw_enabled);
+  }
 }
 
 Scheduler::~Scheduler() {}

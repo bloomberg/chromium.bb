@@ -1126,10 +1126,8 @@ class LayerTreeHostContextTestDontUseLostResources
     // This will get called twice:
     // First when we create the initial output surface...
     if (layer_tree_host()->source_frame_number() > 0) {
-      // ... and then again after we forced the context to be lost on the third
-      // frame. Verify this assumption here.
+      // ... and then again after we forced the context to be lost.
       lost_context_ = true;
-      EXPECT_EQ(layer_tree_host()->source_frame_number(), 3);
     }
     return LayerTreeHostContextTest::CreateFakeOutputSurface(fallback);
   }
@@ -1137,7 +1135,7 @@ class LayerTreeHostContextTestDontUseLostResources
   virtual void DidCommitAndDrawFrame() OVERRIDE {
     ASSERT_TRUE(layer_tree_host()->hud_layer());
     // End the test once we know the 3nd frame drew.
-    if (layer_tree_host()->source_frame_number() < 4) {
+    if (layer_tree_host()->source_frame_number() < 5) {
       layer_tree_host()->root_layer()->SetNeedsDisplay();
       layer_tree_host()->SetNeedsCommit();
     } else {

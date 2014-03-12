@@ -984,8 +984,6 @@ void ThreadProxy::StartCommitOnImplThread(
     CompletionEvent* completion,
     ResourceUpdateQueue* raw_queue,
     scoped_refptr<ContextProvider> offscreen_context_provider) {
-  scoped_ptr<ResourceUpdateQueue> queue(raw_queue);
-
   TRACE_EVENT0("cc", "ThreadProxy::StartCommitOnImplThread");
   DCHECK(!impl().commit_completion_event);
   DCHECK(IsImplThread() && IsMainThreadBlocked());
@@ -1002,6 +1000,8 @@ void ThreadProxy::StartCommitOnImplThread(
   // Ideally, we should inform to impl thread when BeginMainFrame is started.
   // But, we can avoid a PostTask in here.
   impl().scheduler->NotifyBeginMainFrameStarted();
+
+  scoped_ptr<ResourceUpdateQueue> queue(raw_queue);
 
   if (offscreen_context_provider.get())
     offscreen_context_provider->BindToCurrentThread();
@@ -1465,6 +1465,10 @@ void ThreadProxy::InitializeImplOnImplThread(CompletionEvent* completion) {
       layer_tree_host()->CreateLayerTreeHostImpl(this);
   const LayerTreeSettings& settings = layer_tree_host()->settings();
   SchedulerSettings scheduler_settings;
+  scheduler_settings.main_frame_before_draw_enabled =
+      settings.main_frame_before_draw_enabled;
+  scheduler_settings.main_frame_before_activation_enabled =
+      settings.main_frame_before_activation_enabled;
   scheduler_settings.impl_side_painting = settings.impl_side_painting;
   scheduler_settings.timeout_and_draw_when_animation_checkerboards =
       settings.timeout_and_draw_when_animation_checkerboards;
