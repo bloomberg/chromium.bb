@@ -69,40 +69,26 @@ class DirectoryLoader {
   class FeedFetcher;
 
   // Part of ReadDirectory().
-  void ReadDirectoryAfterLoad(const base::FilePath& directory_path,
-                              const ReadDirectoryCallback& callback,
-                              FileError error);
-  void ReadDirectoryAfterRead(const ReadDirectoryCallback& callback,
-                              scoped_ptr<ResourceEntryVector> entries,
-                              FileError error);
-
-  // Starts loading the directory contents if needed.
-  // |callback| must not be null.
-  void LoadDirectoryIfNeeded(const base::FilePath& directory_path,
-                             const FileOperationCallback& callback);
-  void LoadDirectoryIfNeededAfterGetEntry(const base::FilePath& directory_path,
-                                          const FileOperationCallback& callback,
-                                          bool should_try_loading_parent,
-                                          const ResourceEntry* entry,
-                                          FileError error);
-  void LoadDirectoryIfNeededAfterLoadParent(
-      const base::FilePath& directory_path,
-      const FileOperationCallback& callback,
-      FileError error);
-
-  // Starts loading directory contents and calls |callback| when it's done.
-  void Load(const DirectoryFetchInfo& directory_fetch_info,
-            const FileOperationCallback& callback);
-  void LoadAfterGetLargestChangestamp(
+  void ReadDirectoryAfterGetEntry(const base::FilePath& directory_path,
+                                  const ReadDirectoryCallback& callback,
+                                  bool should_try_loading_parent,
+                                  const ResourceEntry* entry,
+                                  FileError error);
+  void ReadDirectoryAfterLoadParent(const base::FilePath& directory_path,
+                                    const ReadDirectoryCallback& callback,
+                                    FileError error,
+                                    scoped_ptr<ResourceEntryVector> entries,
+                                    bool has_more);
+  void ReadDirectoryAfterGetLargestChangestamp(
       const DirectoryFetchInfo& directory_fetch_info,
       int64 local_changestamp);
-  void LoadAfterGetAboutResource(
+  void ReadDirectoryAfterGetAboutResource(
       const DirectoryFetchInfo& directory_fetch_info,
       int64 local_changestamp,
       google_apis::GDataErrorCode status,
       scoped_ptr<google_apis::AboutResource> about_resource);
 
-  // Part of Load().
+  // Part of ReadDirectory().
   // This function should be called when the directory load is complete.
   // Flushes the callbacks waiting for the directory to be loaded.
   void OnDirectoryLoadComplete(const DirectoryFetchInfo& directory_fetch_info,
@@ -134,7 +120,7 @@ class DirectoryLoader {
   AboutResourceLoader* about_resource_loader_;  // Not owned.
   LoaderController* loader_controller_;  // Not owned.
   ObserverList<ChangeListLoaderObserver> observers_;
-  typedef std::map<std::string, std::vector<FileOperationCallback> >
+  typedef std::map<std::string, std::vector<ReadDirectoryCallback> >
       LoadCallbackMap;
   LoadCallbackMap pending_load_callback_;
 

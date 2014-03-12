@@ -45,6 +45,20 @@ FileError RefreshMyDriveIfNeeded(
   return resource_metadata->RefreshEntry(entry);
 }
 
+void ReadDirectoryAfterRead(const std::vector<ReadDirectoryCallback>& callbacks,
+                            scoped_ptr<ResourceEntryVector> entries,
+                            FileError error) {
+  if (error != FILE_ERROR_OK)
+    entries.reset();
+  for (size_t i = 0; i < callbacks.size(); ++i) {
+    scoped_ptr<ResourceEntryVector> copied_entries;
+    if (entries)
+      copied_entries.reset(new ResourceEntryVector(*entries));
+
+    callbacks[i].Run(error, copied_entries.Pass(), false /*has_more*/);
+  }
+}
+
 }  // namespace
 
 // Fetches the resource entries in the directory with |directory_resource_id|.
@@ -201,55 +215,6 @@ void DirectoryLoader::ReadDirectory(const base::FilePath& directory_path,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  LoadDirectoryIfNeeded(directory_path,
-                        base::Bind(&DirectoryLoader::ReadDirectoryAfterLoad,
-                                   weak_ptr_factory_.GetWeakPtr(),
-                                   directory_path,
-                                   callback));
-}
-
-void DirectoryLoader::ReadDirectoryAfterLoad(
-    const base::FilePath& directory_path,
-    const ReadDirectoryCallback& callback,
-    FileError error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  DVLOG_IF(1, error != FILE_ERROR_OK) << "LoadDirectoryIfNeeded failed. "
-                                      << FileErrorToString(error);
-
-  ResourceEntryVector* entries = new ResourceEntryVector;
-  base::PostTaskAndReplyWithResult(
-      blocking_task_runner_.get(),
-      FROM_HERE,
-      base::Bind(&ResourceMetadata::ReadDirectoryByPath,
-                 base::Unretained(resource_metadata_),
-                 directory_path,
-                 entries),
-      base::Bind(&DirectoryLoader::ReadDirectoryAfterRead,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 callback,
-                 base::Passed(scoped_ptr<ResourceEntryVector>(entries))));
-}
-
-void DirectoryLoader::ReadDirectoryAfterRead(
-    const ReadDirectoryCallback& callback,
-    scoped_ptr<ResourceEntryVector> entries,
-    FileError error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  if (error != FILE_ERROR_OK)
-    entries.reset();
-  callback.Run(error, entries.Pass(), false);
-}
-
-void DirectoryLoader::LoadDirectoryIfNeeded(
-    const base::FilePath& directory_path,
-    const FileOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
   ResourceEntry* entry = new ResourceEntry;
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(),
@@ -258,7 +223,7 @@ void DirectoryLoader::LoadDirectoryIfNeeded(
                  base::Unretained(resource_metadata_),
                  directory_path,
                  entry),
-      base::Bind(&DirectoryLoader::LoadDirectoryIfNeededAfterGetEntry,
+      base::Bind(&DirectoryLoader::ReadDirectoryAfterGetEntry,
                  weak_ptr_factory_.GetWeakPtr(),
                  directory_path,
                  callback,
@@ -266,9 +231,9 @@ void DirectoryLoader::LoadDirectoryIfNeeded(
                  base::Owned(entry)));
 }
 
-void DirectoryLoader::LoadDirectoryIfNeededAfterGetEntry(
+void DirectoryLoader::ReadDirectoryAfterGetEntry(
     const base::FilePath& directory_path,
-    const FileOperationCallback& callback,
+    const ReadDirectoryCallback& callback,
     bool should_try_loading_parent,
     const ResourceEntry* entry,
     FileError error) {
@@ -284,47 +249,70 @@ void DirectoryLoader::LoadDirectoryIfNeededAfterGetEntry(
       should_try_loading_parent &&
       util::GetDriveGrandRootPath().IsParent(directory_path)) {
     // This entry may be found after loading the parent.
-    LoadDirectoryIfNeeded(
-        directory_path.DirName(),
-        base::Bind(&DirectoryLoader::LoadDirectoryIfNeededAfterLoadParent,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   directory_path,
-                   callback));
+    ReadDirectory(directory_path.DirName(),
+                  base::Bind(&DirectoryLoader::ReadDirectoryAfterLoadParent,
+                             weak_ptr_factory_.GetWeakPtr(),
+                             directory_path,
+                             callback));
     return;
   }
   if (error != FILE_ERROR_OK) {
-    callback.Run(error);
+    callback.Run(error, scoped_ptr<ResourceEntryVector>(), false /*has_more*/);
     return;
   }
 
   if (!entry->file_info().is_directory()) {
-    callback.Run(FILE_ERROR_NOT_A_DIRECTORY);
+    callback.Run(FILE_ERROR_NOT_A_DIRECTORY,
+                 scoped_ptr<ResourceEntryVector>(), false /*has_more*/);
     return;
   }
+
+  DirectoryFetchInfo directory_fetch_info(
+      entry->local_id(),
+      entry->resource_id(),
+      entry->directory_specific_info().changestamp());
+
+  // Register the callback function to be called when it is loaded.
+  const std::string& local_id = directory_fetch_info.local_id();
+  pending_load_callback_[local_id].push_back(callback);
+
+  // If loading task for |local_id| is already running, do nothing.
+  if (pending_load_callback_[local_id].size() > 1)
+    return;
 
   // This entry does not exist on the server. Grand root is excluded as it's
   // specially handled in LoadDirectoryFromServer().
   if (entry->resource_id().empty() &&
       entry->local_id() != util::kDriveGrandRootLocalId) {
-    callback.Run(FILE_ERROR_OK);
+    OnDirectoryLoadComplete(directory_fetch_info, FILE_ERROR_OK);
     return;
   }
 
-  Load(DirectoryFetchInfo(entry->local_id(),
-                          entry->resource_id(),
-                          entry->directory_specific_info().changestamp()),
-       callback);
+  // Check the current status of local metadata, and start loading if needed.
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner_,
+      FROM_HERE,
+      base::Bind(&ResourceMetadata::GetLargestChangestamp,
+                 base::Unretained(resource_metadata_)),
+      base::Bind(&DirectoryLoader::ReadDirectoryAfterGetLargestChangestamp,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 directory_fetch_info));
 }
 
-void DirectoryLoader::LoadDirectoryIfNeededAfterLoadParent(
+void DirectoryLoader::ReadDirectoryAfterLoadParent(
     const base::FilePath& directory_path,
-    const FileOperationCallback& callback,
-    FileError error) {
+    const ReadDirectoryCallback& callback,
+    FileError error,
+    scoped_ptr<ResourceEntryVector> entries,
+    bool has_more) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
+  if (has_more)
+    return;
+
   if (error != FILE_ERROR_OK) {
-    callback.Run(error);
+    callback.Run(error, scoped_ptr<ResourceEntryVector>(), false /*has_more*/);
     return;
   }
 
@@ -336,7 +324,7 @@ void DirectoryLoader::LoadDirectoryIfNeededAfterLoadParent(
                  base::Unretained(resource_metadata_),
                  directory_path,
                  entry),
-      base::Bind(&DirectoryLoader::LoadDirectoryIfNeededAfterGetEntry,
+      base::Bind(&DirectoryLoader::ReadDirectoryAfterGetEntry,
                  weak_ptr_factory_.GetWeakPtr(),
                  directory_path,
                  callback,
@@ -344,31 +332,7 @@ void DirectoryLoader::LoadDirectoryIfNeededAfterLoadParent(
                  base::Owned(entry)));
 }
 
-void DirectoryLoader::Load(const DirectoryFetchInfo& directory_fetch_info,
-                           const FileOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  // Register the callback function to be called when it is loaded.
-  const std::string& local_id = directory_fetch_info.local_id();
-  pending_load_callback_[local_id].push_back(callback);
-
-  // If loading task for |local_id| is already running, do nothing.
-  if (pending_load_callback_[local_id].size() > 1)
-    return;
-
-  // Check the current status of local metadata, and start loading if needed.
-  base::PostTaskAndReplyWithResult(
-      blocking_task_runner_,
-      FROM_HERE,
-      base::Bind(&ResourceMetadata::GetLargestChangestamp,
-                 base::Unretained(resource_metadata_)),
-      base::Bind(&DirectoryLoader::LoadAfterGetLargestChangestamp,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 directory_fetch_info));
-}
-
-void DirectoryLoader::LoadAfterGetLargestChangestamp(
+void DirectoryLoader::ReadDirectoryAfterGetLargestChangestamp(
     const DirectoryFetchInfo& directory_fetch_info,
     int64 local_changestamp) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -376,18 +340,18 @@ void DirectoryLoader::LoadAfterGetLargestChangestamp(
   // Note: To be precise, we need to call UpdateAboutResource() here. However,
   // - It is costly to do GetAboutResource HTTP request every time.
   // - The chance using an old value is small; it only happens when
-  //   LoadIfNeeded is called during one GetAboutResource roundtrip time
+  //   ReadDirectory is called during one GetAboutResource roundtrip time
   //   of a change list fetching.
   // - Even if the value is old, it just marks the directory as older. It may
   //   trigger one future unnecessary re-fetch, but it'll never lose data.
   about_resource_loader_->GetAboutResource(
-      base::Bind(&DirectoryLoader::LoadAfterGetAboutResource,
+      base::Bind(&DirectoryLoader::ReadDirectoryAfterGetAboutResource,
                  weak_ptr_factory_.GetWeakPtr(),
                  directory_fetch_info,
                  local_changestamp));
 }
 
-void DirectoryLoader::LoadAfterGetAboutResource(
+void DirectoryLoader::ReadDirectoryAfterGetAboutResource(
     const DirectoryFetchInfo& directory_fetch_info,
     int64 local_changestamp,
     google_apis::GDataErrorCode status,
@@ -445,12 +409,17 @@ void DirectoryLoader::OnDirectoryLoadComplete(
   LoadCallbackMap::iterator it = pending_load_callback_.find(local_id);
   if (it != pending_load_callback_.end()) {
     DVLOG(1) << "Running callback for " << local_id;
-    const std::vector<FileOperationCallback>& callbacks = it->second;
-    for (size_t i = 0; i < callbacks.size(); ++i) {
-      base::MessageLoopProxy::current()->PostTask(
-          FROM_HERE,
-          base::Bind(callbacks[i], error));
-    }
+    const std::vector<ReadDirectoryCallback>& callbacks = it->second;
+    ResourceEntryVector* entries = new ResourceEntryVector;
+    base::PostTaskAndReplyWithResult(
+        blocking_task_runner_.get(),
+        FROM_HERE,
+        base::Bind(&ResourceMetadata::ReadDirectoryById,
+                   base::Unretained(resource_metadata_),
+                   directory_fetch_info.local_id(),
+                   entries),
+        base::Bind(&ReadDirectoryAfterRead, callbacks,
+                   base::Passed(scoped_ptr<ResourceEntryVector>(entries))));
     pending_load_callback_.erase(it);
   }
 }
