@@ -61,6 +61,10 @@
       }],
       ['target_arch=="mipsel"', {
         'nacl_defines': [
+          'NACL_BUILD_ARCH=mips',
+          'NACL_BUILD_SUBARCH=32',
+          'NACL_TARGET_ARCH=mips',
+          'NACL_TARGET_SUBARCH=32',
         ],
       }],
     ],
