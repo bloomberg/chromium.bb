@@ -210,6 +210,8 @@ Compositor::Compositor(gfx::AcceleratedWidget widget)
       ContextFactory::GetInstance()->DoesCreateTestContexts()
       ? kTestRefreshRate
       : kDefaultRefreshRate;
+  settings.main_frame_before_draw_enabled = false;
+  settings.main_frame_before_activation_enabled = false;
   settings.partial_swap_enabled =
       !command_line->HasSwitch(cc::switches::kUIDisablePartialSwap);
 #if defined(OS_CHROMEOS)
