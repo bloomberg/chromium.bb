@@ -16,6 +16,9 @@ from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import partial_mock
 
+# TODO(build): Finish test wrapper (http://crosbug.com/37517).
+# Until then, this has to be after the chromite imports.
+import mock
 
 class TestOsutils(cros_test_lib.TempDirTestCase):
   """General unittests for the osutils module."""
@@ -134,6 +137,100 @@ class TestOsutils(cros_test_lib.TempDirTestCase):
     path = ':'.join(['/usr/local/bin', depot_tools_path + '/', '/usr/bin'])
     os.environ['PATH'] = path
     self.assertEquals(osutils.FindDepotTools(), depot_tools_path)
+
+
+class TempDirTests(cros_test_lib.TestCase):
+  """Unittests of osutils.TempDir.
+
+  Unlike other test classes in this file, TempDirTestCase isn't used as a base
+  class, because that is the functionality under test.
+  """
+  PREFIX = 'chromite.test.osutils.TempDirTests'
+
+  class HelperException(Exception):
+    """Exception for tests to raise to test exception handling."""
+
+  class HelperExceptionInner(Exception):
+    """Exception for tests to raise to test exception handling."""
+
+  def testBasicSuccessEmpty(self):
+    """Test we create and cleanup an empty tempdir."""
+    with osutils.TempDir(prefix=self.PREFIX) as td:
+      tempdir = td
+      # Show the temp directory exists and is empty.
+      self.assertTrue(os.path.isdir(tempdir))
+      self.assertEquals(os.listdir(tempdir), [])
+
+    # Show the temp directory no longer exists.
+    self.assertNotExists(tempdir)
+
+  def testBasicSuccessNotEmpty(self):
+    """Test we cleanup tempdir with stuff in it."""
+    with osutils.TempDir(prefix=self.PREFIX) as td:
+      tempdir = td
+      # Show the temp directory exists and is empty.
+      self.assertTrue(os.path.isdir(tempdir))
+      self.assertEquals(os.listdir(tempdir), [])
+
+      # Create an empty file.
+      osutils.Touch(os.path.join(tempdir, 'foo.txt'))
+
+      # Create nested sub directories.
+      subdir = os.path.join(tempdir, 'foo', 'bar', 'taco')
+      os.makedirs(subdir)
+      osutils.Touch(os.path.join(subdir, 'sauce.txt'))
+
+    # Show the temp directory no longer exists.
+    self.assertNotExists(tempdir)
+
+  def testErrorCleanup(self):
+    """Test we cleanup, even if an exception is raised."""
+    try:
+      with osutils.TempDir(prefix=self.PREFIX) as td:
+        tempdir = td
+        raise TempDirTests.HelperException()
+    except TempDirTests.HelperException:
+      pass
+
+    # Show the temp directory no longer exists.
+    self.assertNotExists(tempdir)
+
+  def testCleanupExceptionContextException(self):
+    """Test an exception during cleanup if the context DID raise."""
+    was_raised = False
+
+    with mock.patch.object(osutils.TempDir, 'Cleanup',
+                           side_effect=TempDirTests.HelperException):
+      try:
+        with osutils.TempDir(prefix=self.PREFIX) as td:
+          tempdir = td
+          raise TempDirTests.HelperExceptionInner()
+      except TempDirTests.HelperExceptionInner:
+        was_raised = True
+
+    # Show that the exception exited the context.
+    self.assertTrue(was_raised)
+
+    # Cleanup the dir leaked by our mock exception.
+    os.rmdir(tempdir)
+
+  def testCleanupExceptionNoContextException(self):
+    """Test an exception during cleanup if the context did NOT raise."""
+    was_raised = False
+
+    with mock.patch.object(osutils.TempDir, 'Cleanup',
+                           side_effect=TempDirTests.HelperException):
+      try:
+        with osutils.TempDir(prefix=self.PREFIX) as td:
+          tempdir = td
+      except TempDirTests.HelperException:
+        was_raised = True
+
+    # Show that the exception exited the context.
+    self.assertTrue(was_raised)
+
+    # Cleanup the dir leaked by our mock exception.
+    os.rmdir(tempdir)
 
 
 class MountTests(cros_test_lib.TestCase):

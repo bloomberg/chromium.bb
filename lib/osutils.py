@@ -440,8 +440,17 @@ class TempDir(object):
     """Return the temporary directory."""
     return self.tempdir
 
-  def __exit__(self, _type, _value, _traceback):
-    self.Cleanup()
+  def __exit__(self, exc_type, exc_value, exc_traceback):
+    try:
+      self.Cleanup()
+    except Exception:
+      if exc_type:
+        # If an exception from inside the context was already in progress,
+        # log our cleanup exception, then allow the original to resume.
+        cros_build_lib.Error('While exiting %s:', self, exc_info=True)
+      else:
+        # If there was not an exception from the context, raise ours.
+        raise
 
   def __del__(self):
     self.Cleanup()
