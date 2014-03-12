@@ -74,8 +74,12 @@ struct GridSpan {
         // is already converted to an index in our grid representation (ie one was removed from the grid line to account for the side).
         size_t firstLineBeforeOppositePositionIndex = 0;
         const size_t* firstLineBeforeOppositePosition = std::lower_bound(gridLines.begin(), gridLines.end(), resolvedOppositePosition);
-        if (firstLineBeforeOppositePosition != gridLines.end())
+        if (firstLineBeforeOppositePosition != gridLines.end()) {
+            if (*firstLineBeforeOppositePosition > resolvedOppositePosition && firstLineBeforeOppositePosition != gridLines.begin())
+                --firstLineBeforeOppositePosition;
+
             firstLineBeforeOppositePositionIndex = firstLineBeforeOppositePosition - gridLines.begin();
+        }
 
         size_t gridLineIndex = std::max<int>(0, firstLineBeforeOppositePositionIndex - position.spanPosition() + 1);
         size_t resolvedGridLinePosition = gridLines[gridLineIndex];
