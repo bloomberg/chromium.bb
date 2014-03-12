@@ -19,6 +19,7 @@
 #include "net/base/net_export.h"
 #include "net/base/net_log.h"
 #include "net/base/privacy_mode.h"
+#include "net/cookies/cookie_store.h"
 #include "net/proxy/proxy_service.h"
 #include "net/ssl/ssl_config_service.h"
 #include "net/url_request/url_request.h"
@@ -114,7 +115,8 @@ class NET_EXPORT SocketStream
     virtual ~Delegate() {}
   };
 
-  SocketStream(const GURL& url, Delegate* delegate);
+  SocketStream(const GURL& url, Delegate* delegate, URLRequestContext* context,
+               CookieStore* cookie_store);
 
   // The user data allows the clients to associate data with this job.
   // Multiple user data values can be stored under different keys.
@@ -130,9 +132,6 @@ class NET_EXPORT SocketStream
   int max_pending_send_allowed() const { return max_pending_send_allowed_; }
 
   URLRequestContext* context() { return context_; }
-  // There're some asynchronous operations and members that are constructed from
-  // |context|. Be careful when you use this for the second time or more.
-  void set_context(URLRequestContext* context);
 
   const SSLConfig& server_ssl_config() const { return server_ssl_config_; }
   PrivacyMode privacy_mode() const { return privacy_mode_; }
@@ -162,6 +161,9 @@ class NET_EXPORT SocketStream
   // back.
   virtual void DetachDelegate();
 
+  // Detach the context.
+  virtual void DetachContext();
+
   const ProxyServer& proxy_server() const;
 
   // Sets an alternative ClientSocketFactory.  Doesn't take ownership of
@@ -179,6 +181,8 @@ class NET_EXPORT SocketStream
   // case happens because users allow certificate with an error by manual
   // actions on alert dialog or browser cached such kinds of user actions.
   void ContinueDespiteError();
+
+  CookieStore* cookie_store() const;
 
  protected:
   friend class base::RefCountedThreadSafe<SocketStream>;
@@ -388,6 +392,9 @@ class NET_EXPORT SocketStream
   bool server_closed_;
 
   scoped_ptr<SocketStreamMetrics> metrics_;
+
+  // Cookie store to use for this socket stream.
+  scoped_refptr<CookieStore> cookie_store_;
 
   DISALLOW_COPY_AND_ASSIGN(SocketStream);
 };

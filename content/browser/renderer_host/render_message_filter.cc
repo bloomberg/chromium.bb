@@ -583,9 +583,9 @@ void RenderMessageFilter::OnSetCookie(int render_frame_id,
   if (GetContentClient()->browser()->AllowSetCookie(
           url, first_party_for_cookies, cookie, resource_context_,
           render_process_id_, render_frame_id, &options)) {
-    net::URLRequestContext* context = GetRequestContextForURL(url);
+    net::CookieStore* cookie_store = GetCookieStoreForURL(url);
     // Pass a null callback since we don't care about when the 'set' completes.
-    context->cookie_store()->SetCookieWithOptionsAsync(
+    cookie_store->SetCookieWithOptionsAsync(
         url, cookie, options, net::CookieMonster::SetCookiesCallback());
   }
 }
@@ -607,9 +607,8 @@ void RenderMessageFilter::OnGetCookies(int render_frame_id,
   base::strlcpy(url_buf, url.spec().c_str(), arraysize(url_buf));
   base::debug::Alias(url_buf);
 
-  net::URLRequestContext* context = GetRequestContextForURL(url);
-  net::CookieMonster* cookie_monster =
-      context->cookie_store()->GetCookieMonster();
+  net::CookieStore* cookie_store = GetCookieStoreForURL(url);
+  net::CookieMonster* cookie_monster = cookie_store->GetCookieMonster();
   cookie_monster->GetAllCookiesForURLAsync(
       url, base::Bind(&RenderMessageFilter::CheckPolicyForCookies, this,
                       render_frame_id, url, first_party_for_cookies,
@@ -635,9 +634,8 @@ void RenderMessageFilter::OnGetRawCookies(
   // We check policy here to avoid sending back cookies that would not normally
   // be applied to outbound requests for the given URL.  Since this cookie info
   // is visible in the developer tools, it is helpful to make it match reality.
-  net::URLRequestContext* context = GetRequestContextForURL(url);
-  net::CookieMonster* cookie_monster =
-      context->cookie_store()->GetCookieMonster();
+  net::CookieStore* cookie_store = GetCookieStoreForURL(url);
+  net::CookieMonster* cookie_monster = cookie_store->GetCookieMonster();
   cookie_monster->GetAllCookiesForURLAsync(
       url, base::Bind(&RenderMessageFilter::SendGetRawCookiesResponse,
                       this, reply_msg));
@@ -650,8 +648,8 @@ void RenderMessageFilter::OnDeleteCookie(const GURL& url,
   if (!policy->CanAccessCookiesForOrigin(render_process_id_, url))
     return;
 
-  net::URLRequestContext* context = GetRequestContextForURL(url);
-  context->cookie_store()->DeleteCookieAsync(url, cookie_name, base::Closure());
+  net::CookieStore* cookie_store = GetCookieStoreForURL(url);
+  cookie_store->DeleteCookieAsync(url, cookie_name, base::Closure());
 }
 
 void RenderMessageFilter::OnCookiesEnabled(
@@ -885,9 +883,17 @@ void RenderMessageFilter::OnDownloadUrl(const IPC::Message& message,
                                         const base::string16& suggested_name) {
   scoped_ptr<DownloadSaveInfo> save_info(new DownloadSaveInfo());
   save_info->suggested_name = suggested_name;
+
+  // There may be a special cookie store that we could use for this download,
+  // rather than the default one. Since this feature is generally only used for
+  // proper render views, and not downloads, we do not need to retrieve the
+  // special cookie store here, but just initialize the request to use the
+  // default cookie store.
+  // TODO(tburkard): retrieve the appropriate special cookie store, if this
+  // is ever to be used for downloads as well.
   scoped_ptr<net::URLRequest> request(
       resource_context_->GetRequestContext()->CreateRequest(
-          url, net::DEFAULT_PRIORITY, NULL));
+          url, net::DEFAULT_PRIORITY, NULL, NULL));
   RecordDownloadSource(INITIATED_BY_RENDERER);
   resource_dispatcher_host_->BeginDownload(
       request.Pass(),
@@ -920,17 +926,30 @@ void RenderMessageFilter::OnAllocateSharedMemory(
       buffer_size, PeerHandle(), handle);
 }
 
-net::URLRequestContext* RenderMessageFilter::GetRequestContextForURL(
+net::CookieStore* RenderMessageFilter::GetCookieStoreForURL(
     const GURL& url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   net::URLRequestContext* context =
       GetContentClient()->browser()->OverrideRequestContextForURL(
           url, resource_context_);
-  if (!context)
-    context = request_context_->GetURLRequestContext();
 
-  return context;
+  // If we should use a special URLRequestContext rather than the default one,
+  // return the cookie store of that special URLRequestContext.
+  if (context)
+    return context->cookie_store();
+
+  // Otherwise, if there is a special cookie store to be used for this process,
+  // return that cookie store.
+  net::CookieStore* cookie_store =
+      GetContentClient()->browser()->OverrideCookieStoreForRenderProcess(
+          render_process_id_);
+  if (cookie_store)
+    return cookie_store;
+
+  // Otherwise, return the cookie store of the default request context used
+  // for this renderer.
+  return request_context_->GetURLRequestContext()->cookie_store();
 }
 
 #if defined(OS_POSIX) && !defined(TOOLKIT_GTK) && !defined(OS_ANDROID)
@@ -1053,14 +1072,14 @@ void RenderMessageFilter::CheckPolicyForCookies(
     const GURL& first_party_for_cookies,
     IPC::Message* reply_msg,
     const net::CookieList& cookie_list) {
-  net::URLRequestContext* context = GetRequestContextForURL(url);
+  net::CookieStore* cookie_store = GetCookieStoreForURL(url);
   // Check the policy for get cookies, and pass cookie_list to the
   // TabSpecificContentSetting for logging purpose.
   if (GetContentClient()->browser()->AllowGetCookie(
           url, first_party_for_cookies, cookie_list, resource_context_,
           render_process_id_, render_frame_id)) {
     // Gets the cookies from cookie store if allowed.
-    context->cookie_store()->GetCookiesWithOptionsAsync(
+    cookie_store->GetCookiesWithOptionsAsync(
         url, net::CookieOptions(),
         base::Bind(&RenderMessageFilter::SendGetCookiesResponse,
                    this, reply_msg));

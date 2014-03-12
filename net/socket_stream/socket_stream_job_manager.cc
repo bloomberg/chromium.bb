@@ -20,12 +20,14 @@ SocketStreamJobManager* SocketStreamJobManager::GetInstance() {
 }
 
 SocketStreamJob* SocketStreamJobManager::CreateJob(
-    const GURL& url, SocketStream::Delegate* delegate) const {
+    const GURL& url, SocketStream::Delegate* delegate,
+    URLRequestContext* context, CookieStore* cookie_store) const {
   // If url is invalid, create plain SocketStreamJob, which will close
   // the socket immediately.
   if (!url.is_valid()) {
     SocketStreamJob* job = new SocketStreamJob();
-    job->InitSocketStream(new SocketStream(url, delegate));
+    job->InitSocketStream(new SocketStream(url, delegate, context,
+                                           cookie_store));
     return job;
   }
 
@@ -34,12 +36,12 @@ SocketStreamJob* SocketStreamJobManager::CreateJob(
   base::AutoLock locked(lock_);
   FactoryMap::const_iterator found = factories_.find(scheme);
   if (found != factories_.end()) {
-    SocketStreamJob* job = found->second(url, delegate);
+    SocketStreamJob* job = found->second(url, delegate, context, cookie_store);
     if (job)
       return job;
   }
   SocketStreamJob* job = new SocketStreamJob();
-  job->InitSocketStream(new SocketStream(url, delegate));
+  job->InitSocketStream(new SocketStream(url, delegate, context, cookie_store));
   return job;
 }
 

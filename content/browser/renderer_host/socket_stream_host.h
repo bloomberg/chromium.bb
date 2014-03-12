@@ -29,6 +29,7 @@ namespace content {
 class SocketStreamHost {
  public:
   SocketStreamHost(net::SocketStream::Delegate* delegate,
+                   int child_id,
                    int render_frame_id,
                    int socket_id);
   ~SocketStreamHost();
@@ -66,6 +67,7 @@ class SocketStreamHost {
 
  private:
   net::SocketStream::Delegate* delegate_;
+  int child_id_;
   int render_frame_id_;
   int socket_id_;
 

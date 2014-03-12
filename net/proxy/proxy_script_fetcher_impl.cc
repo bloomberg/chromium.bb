@@ -135,7 +135,7 @@ int ProxyScriptFetcherImpl::Fetch(
   }
 
   cur_request_ =
-      url_request_context_->CreateRequest(url, DEFAULT_PRIORITY, this);
+      url_request_context_->CreateRequest(url, DEFAULT_PRIORITY, this, NULL);
   cur_request_->set_method("GET");
 
   // Make sure that the PAC script is downloaded using a direct connection,
