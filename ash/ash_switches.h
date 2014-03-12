@@ -32,7 +32,6 @@ ASH_EXPORT extern const char kAshDisableAudioDeviceMenu[];
 
 ASH_EXPORT extern const char kAshDisableDockedWindows[];
 ASH_EXPORT extern const char kAshDisableOverviewMode[];
-ASH_EXPORT extern const char kAshEnableAdvancedGestures[];
 ASH_EXPORT extern const char kAshEnableAlternateFrameCaptionButtonStyle[];
 ASH_EXPORT extern const char kAshEnableBrightnessControl[];
 ASH_EXPORT extern const char kAshEnableImmersiveFullscreenForAllWindows[];

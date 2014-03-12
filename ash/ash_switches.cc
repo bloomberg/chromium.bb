@@ -56,9 +56,6 @@ const char kAshDisableDockedWindows[] = "ash-disable-docked-windows";
 // Disables overview mode for window switching.
 const char kAshDisableOverviewMode[] = "ash-disable-overview-mode";
 
-// Enable advanced gestures (e.g. for window management).
-const char kAshEnableAdvancedGestures[] = "ash-enable-advanced-gestures";
-
 // Use alternate visual style for the caption buttons (minimize, maximize,
 // restore, close). The alternate style:
 // - Adds a dedicated button for minimize.

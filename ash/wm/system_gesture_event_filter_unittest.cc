@@ -136,8 +136,6 @@ class SystemGestureEventFilterTest
 
   // Overridden from AshTestBase:
   virtual void SetUp() OVERRIDE {
-    CommandLine::ForCurrentProcess()->AppendSwitch(
-        ash::switches::kAshEnableAdvancedGestures);
     if (!docked_enabled_) {
       CommandLine::ForCurrentProcess()->AppendSwitch(
           ash::switches::kAshDisableDockedWindows);
@@ -225,64 +223,6 @@ TEST_P(SystemGestureEventFilterTest, LongPressAffordanceStateOnCaptureLoss) {
   // Check if state has reset.
   EXPECT_EQ(NULL, GetLongPressAffordanceTarget());
   EXPECT_EQ(NULL, GetLongPressAffordanceView());
-}
-
-TEST_P(SystemGestureEventFilterTest, MultiFingerSwipeGestures) {
-  aura::Window* root_window = Shell::GetPrimaryRootWindow();
-  views::Widget* toplevel = views::Widget::CreateWindowWithContextAndBounds(
-      new ResizableWidgetDelegate, root_window, gfx::Rect(0, 0, 600, 600));
-  toplevel->Show();
-
-  const int kSteps = 15;
-  const int kTouchPoints = 4;
-  gfx::Point points[kTouchPoints] = {
-    gfx::Point(250, 250),
-    gfx::Point(250, 350),
-    gfx::Point(350, 250),
-    gfx::Point(350, 350)
-  };
-
-  aura::test::EventGenerator generator(root_window,
-                                       toplevel->GetNativeWindow());
-
-  // Swipe down to minimize.
-  generator.GestureMultiFingerScroll(kTouchPoints, points, 15, kSteps, 0, 150);
-
-  wm::WindowState* toplevel_state =
-      wm::GetWindowState(toplevel->GetNativeWindow());
-  EXPECT_TRUE(toplevel_state->IsMinimized());
-
-  toplevel->Restore();
-
-  // Swipe up to maximize.
-  generator.GestureMultiFingerScroll(kTouchPoints, points, 15, kSteps, 0, -150);
-  EXPECT_TRUE(toplevel_state->IsMaximized());
-
-  toplevel->Restore();
-
-  // Swipe right to snap.
-  gfx::Rect normal_bounds = toplevel->GetWindowBoundsInScreen();
-  generator.GestureMultiFingerScroll(kTouchPoints, points, 15, kSteps, 150, 0);
-  gfx::Rect right_tile_bounds = toplevel->GetWindowBoundsInScreen();
-  EXPECT_NE(normal_bounds.ToString(), right_tile_bounds.ToString());
-
-  // Swipe left to snap.
-  gfx::Point left_points[kTouchPoints];
-  for (int i = 0; i < kTouchPoints; ++i) {
-    left_points[i] = points[i];
-    left_points[i].Offset(right_tile_bounds.x(), right_tile_bounds.y());
-  }
-  generator.GestureMultiFingerScroll(kTouchPoints, left_points, 15, kSteps,
-      -150, 0);
-  gfx::Rect left_tile_bounds = toplevel->GetWindowBoundsInScreen();
-  EXPECT_NE(normal_bounds.ToString(), left_tile_bounds.ToString());
-  EXPECT_NE(right_tile_bounds.ToString(), left_tile_bounds.ToString());
-
-  // Swipe right again.
-  generator.GestureMultiFingerScroll(kTouchPoints, points, 15, kSteps, 150, 0);
-  gfx::Rect current_bounds = toplevel->GetWindowBoundsInScreen();
-  EXPECT_NE(current_bounds.ToString(), left_tile_bounds.ToString());
-  EXPECT_EQ(current_bounds.ToString(), right_tile_bounds.ToString());
 }
 
 TEST_P(SystemGestureEventFilterTest, TwoFingerDrag) {

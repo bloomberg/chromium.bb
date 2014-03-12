@@ -524,8 +524,6 @@
         'wm/gestures/overview_gesture_handler.h',
         'wm/gestures/shelf_gesture_handler.cc',
         'wm/gestures/shelf_gesture_handler.h',
-        'wm/gestures/system_pinch_handler.cc',
-        'wm/gestures/system_pinch_handler.h',
         'wm/gestures/tray_gesture_handler.cc',
         'wm/gestures/tray_gesture_handler.h',
         'wm/image_cursors.cc',
