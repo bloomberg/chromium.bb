@@ -426,23 +426,7 @@ void AdbTargetsUIHandler::RemoteDevicesChanged(
           browser->socket().c_str());  // Ensure uniqueness on the device.
       browser_data->SetString(kTargetIdField, browser_id);
       browser_data->SetString(kTargetSourceField, source_id());
-
-      base::Version remote_version;
-      if (browser->IsChrome()) {
-        remote_version = base::Version(browser->version());
-      } else {
-        // Try parse WebView version.
-        std::string version = browser->version();
-        size_t pos = version.find("Chrome/");
-        if (pos != std::string::npos) {
-          remote_version = base::Version(browser->version().substr(pos + 7));
-        }
-      }
-      chrome::VersionInfo version_info;
-      base::Version local_version(version_info.Version());
-      browser_data->SetBoolean(kCompatibleVersion,
-          !remote_version.IsValid() || // Allow debug of unparseable versions.
-          remote_version.IsOlderThan(version_info.Version()));
+      browser_data->SetBoolean(kCompatibleVersion, true);
 
       base::ListValue* page_list = new base::ListValue();
       remote_browsers_[browser_id] = browser;
