@@ -68,11 +68,11 @@ class SimpleWebViewDialog : public views::ButtonListener,
       const content::OpenURLParams& params) OVERRIDE;
 
   // Implements content::WebContentsDelegate:
+  virtual void NavigationStateChanged(const content::WebContents* source,
+                                      unsigned changed_flags) OVERRIDE;
   virtual void LoadingStateChanged(content::WebContents* source) OVERRIDE;
 
   // Implements LocationBarView::Delegate:
-  virtual void NavigationStateChanged(const content::WebContents* source,
-                                      unsigned changed_flags) OVERRIDE;
   virtual content::WebContents* GetWebContents() OVERRIDE;
   virtual ToolbarModel* GetToolbarModel() OVERRIDE;
   virtual const ToolbarModel* GetToolbarModel() const OVERRIDE;
