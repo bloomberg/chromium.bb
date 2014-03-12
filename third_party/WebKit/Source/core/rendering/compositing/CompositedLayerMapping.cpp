@@ -216,6 +216,7 @@ void CompositedLayerMapping::createPrimaryGraphicsLayer()
     updateOpacity(renderer()->style());
     updateTransform(renderer()->style());
     updateFilters(renderer()->style());
+    updateHasGpuRasterizationHint(renderer()->style());
 
     if (RuntimeEnabledFeatures::cssCompositingEnabled()) {
         updateLayerBlendMode(renderer()->style());
@@ -291,6 +292,11 @@ void CompositedLayerMapping::updateIsRootForIsolatedGroup()
     ASSERT(m_owningLayer.stackingNode()->isStackingContext() || !isolate);
 
     m_graphicsLayer->setIsRootForIsolatedGroup(isolate);
+}
+
+void CompositedLayerMapping::updateHasGpuRasterizationHint(const RenderStyle* style)
+{
+    m_graphicsLayer->setHasGpuRasterizationHint(style->hasWillChangeGpuRasterizationHint());
 }
 
 void CompositedLayerMapping::updateContentsOpaque()
@@ -855,6 +861,7 @@ GraphicsLayerUpdater::UpdateType CompositedLayerMapping::updateGraphicsLayerGeom
         updateIsRootForIsolatedGroup();
     }
 
+    updateHasGpuRasterizationHint(renderer()->style());
     updateContentsRect();
     updateBackgroundColor();
     updateDrawsContent();

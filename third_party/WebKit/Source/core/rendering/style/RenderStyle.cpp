@@ -651,7 +651,8 @@ StyleDifference RenderStyle::repaintOnlyDiff(const RenderStyle* other, unsigned&
             || rareNonInheritedData->m_perspective != other->rareNonInheritedData->m_perspective
             || rareNonInheritedData->m_perspectiveOriginX != other->rareNonInheritedData->m_perspectiveOriginX
             || rareNonInheritedData->m_perspectiveOriginY != other->rareNonInheritedData->m_perspectiveOriginY
-            || hasWillChangeCompositingHint() != other->hasWillChangeCompositingHint())
+            || hasWillChangeCompositingHint() != other->hasWillChangeCompositingHint()
+            || hasWillChangeGpuRasterizationHint() != other->hasWillChangeGpuRasterizationHint())
             return StyleDifferenceRecompositeLayer;
     }
 
@@ -843,6 +844,25 @@ bool RenderStyle::hasWillChangeCompositingHint() const
         case CSSPropertyRight:
         case CSSPropertyBottom:
         case CSSPropertyWebkitFilter:
+            return true;
+        default:
+            break;
+        }
+    }
+    return false;
+}
+
+bool RenderStyle::hasWillChangeGpuRasterizationHint() const
+{
+    if (willChangeContents())
+        return true;
+
+    for (size_t i = 0; i < rareNonInheritedData->m_willChange->m_properties.size(); ++i) {
+        switch (rareNonInheritedData->m_willChange->m_properties[i]) {
+        case CSSPropertyWidth:
+        case CSSPropertyHeight:
+        case CSSPropertyBackgroundColor:
+        case CSSPropertyBackgroundPosition:
             return true;
         default:
             break;

@@ -110,6 +110,7 @@ acceleratedCompositingForFixedPositionEnabled initial=false
 acceleratedCompositingForOverflowScrollEnabled initial=false
 acceleratedCompositingForTransitionEnabled initial=false
 acceleratedCompositingForFixedRootBackgroundEnabled initial=false
+acceleratedCompositingForGpuRasterizationHintEnabled initial=false
 
 forceCompositingMode initial=false
 

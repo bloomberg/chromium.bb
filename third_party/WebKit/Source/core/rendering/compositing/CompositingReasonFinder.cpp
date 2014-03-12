@@ -263,7 +263,15 @@ bool CompositingReasonFinder::requiresCompositingForOutOfFlowClipping(const Rend
 
 bool CompositingReasonFinder::requiresCompositingForWillChange(const RenderObject* renderer) const
 {
-    return renderer->style()->hasWillChangeCompositingHint();
+    if (renderer->style()->hasWillChangeCompositingHint())
+        return true;
+
+    if (Settings* settings = m_renderView.document().settings()) {
+        if (!settings->acceleratedCompositingForGpuRasterizationHintEnabled())
+            return false;
+    }
+
+    return renderer->style()->hasWillChangeGpuRasterizationHint();
 }
 
 bool CompositingReasonFinder::isViewportConstrainedFixedOrStickyLayer(const RenderLayer* layer)

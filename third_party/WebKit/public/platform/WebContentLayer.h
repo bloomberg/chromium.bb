@@ -53,6 +53,8 @@ public:
     // for these tiles.
     // Defaults to false.
     virtual void setDrawCheckerboardForMissingTiles(bool) = 0;
+
+    virtual void setHasGpuRasterizationHint(bool) = 0;
 };
 
 } // namespace blink
