@@ -38,7 +38,7 @@ bool SyncGlobalError::HasMenuItem() {
 }
 
 int SyncGlobalError::MenuItemCommandID() {
-  return IDC_SHOW_SIGNIN_ERROR;
+  return IDC_SHOW_SYNC_ERROR;
 }
 
 base::string16 SyncGlobalError::MenuItemLabel() {
