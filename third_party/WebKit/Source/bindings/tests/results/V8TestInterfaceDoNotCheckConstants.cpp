@@ -99,15 +99,15 @@ static void configureV8TestInterfaceDoNotCheckConstantsTemplate(v8::Handle<v8::F
 v8::Handle<v8::FunctionTemplate> V8TestInterfaceDoNotCheckConstants::domTemplate(v8::Isolate* isolate)
 {
     V8PerIsolateData* data = V8PerIsolateData::from(isolate);
-    V8PerIsolateData::TemplateMap::iterator result = data->templateMap().find(&wrapperTypeInfo);
-    if (result != data->templateMap().end())
-        return result->value.newLocal(isolate);
+    v8::Local<v8::FunctionTemplate> result = data->existingDOMTemplate(const_cast<WrapperTypeInfo*>(&wrapperTypeInfo));
+    if (!result.IsEmpty())
+        return result;
 
     TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "BuildDOMTemplate");
-    v8::Local<v8::FunctionTemplate> templ = v8::FunctionTemplate::New(isolate, V8ObjectConstructor::isValidConstructorMode);
-    configureV8TestInterfaceDoNotCheckConstantsTemplate(templ, isolate);
-    data->templateMap().add(&wrapperTypeInfo, UnsafePersistent<v8::FunctionTemplate>(isolate, templ));
-    return templ;
+    result = v8::FunctionTemplate::New(isolate, V8ObjectConstructor::isValidConstructorMode);
+    configureV8TestInterfaceDoNotCheckConstantsTemplate(result, isolate);
+    data->setDOMTemplate(const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), result);
+    return result;
 }
 
 bool V8TestInterfaceDoNotCheckConstants::hasInstance(v8::Handle<v8::Value> jsValue, v8::Isolate* isolate)

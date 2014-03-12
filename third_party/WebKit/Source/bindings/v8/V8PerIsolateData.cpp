@@ -93,36 +93,36 @@ void V8PerIsolateData::dispose(v8::Isolate* isolate)
     isolate->SetData(gin::kEmbedderBlink, 0);
 }
 
-V8PerIsolateData::TemplateMap& V8PerIsolateData::templateMap()
+V8PerIsolateData::DOMTemplateMap& V8PerIsolateData::currentDOMTemplateMap()
 {
     if (DOMWrapperWorld::current(m_isolate)->isMainWorld())
-        return m_templatesForMainWorld;
-    return m_templatesForNonMainWorld;
+        return m_domTemplateMapForMainWorld;
+    return m_domTemplateMapForNonMainWorld;
 }
 
 v8::Handle<v8::FunctionTemplate> V8PerIsolateData::domTemplate(void* domTemplateKey, v8::FunctionCallback callback, v8::Handle<v8::Value> data, v8::Handle<v8::Signature> signature, int length)
 {
-    TemplateMap& templates = templateMap();
-    TemplateMap::iterator result = templates.find(domTemplateKey);
-    if (result != templates.end())
+    DOMTemplateMap& domTemplateMap = currentDOMTemplateMap();
+    DOMTemplateMap::iterator result = domTemplateMap.find(domTemplateKey);
+    if (result != domTemplateMap.end())
         return result->value.newLocal(m_isolate);
     v8::Local<v8::FunctionTemplate> templ = v8::FunctionTemplate::New(m_isolate, callback, data, signature, length);
-    templates.add(domTemplateKey, UnsafePersistent<v8::FunctionTemplate>(m_isolate, templ));
+    domTemplateMap.add(domTemplateKey, UnsafePersistent<v8::FunctionTemplate>(m_isolate, templ));
     return templ;
 }
 
 v8::Handle<v8::FunctionTemplate> V8PerIsolateData::existingDOMTemplate(void* domTemplateKey)
 {
-    TemplateMap& templates = templateMap();
-    TemplateMap::iterator result = templates.find(domTemplateKey);
-    if (result != templates.end())
+    DOMTemplateMap& domTemplateMap = currentDOMTemplateMap();
+    DOMTemplateMap::iterator result = domTemplateMap.find(domTemplateKey);
+    if (result != domTemplateMap.end())
         return result->value.newLocal(m_isolate);
     return v8::Local<v8::FunctionTemplate>();
 }
 
 void V8PerIsolateData::setDOMTemplate(void* domTemplateKey, v8::Handle<v8::FunctionTemplate> templ)
 {
-    templateMap().add(domTemplateKey, UnsafePersistent<v8::FunctionTemplate>(m_isolate, templ));
+    currentDOMTemplateMap().add(domTemplateKey, UnsafePersistent<v8::FunctionTemplate>(m_isolate, templ));
 }
 
 v8::Local<v8::Context> V8PerIsolateData::ensureRegexContext()
@@ -134,14 +134,14 @@ v8::Local<v8::Context> V8PerIsolateData::ensureRegexContext()
 
 bool V8PerIsolateData::hasInstance(const WrapperTypeInfo* info, v8::Handle<v8::Value> value)
 {
-    return hasInstance(info, value, m_templatesForMainWorld)
-        || hasInstance(info, value, m_templatesForNonMainWorld);
+    return hasInstance(info, value, m_domTemplateMapForMainWorld)
+        || hasInstance(info, value, m_domTemplateMapForNonMainWorld);
 }
 
-bool V8PerIsolateData::hasInstance(const WrapperTypeInfo* info, v8::Handle<v8::Value> value, TemplateMap& templates)
+bool V8PerIsolateData::hasInstance(const WrapperTypeInfo* info, v8::Handle<v8::Value> value, DOMTemplateMap& domTemplateMap)
 {
-    TemplateMap::iterator result = templates.find(info);
-    if (result == templates.end())
+    DOMTemplateMap::iterator result = domTemplateMap.find(info);
+    if (result == domTemplateMap.end())
         return false;
     v8::Handle<v8::FunctionTemplate> templ = result->value.newLocal(m_isolate);
     return templ->HasInstance(value);
@@ -149,18 +149,18 @@ bool V8PerIsolateData::hasInstance(const WrapperTypeInfo* info, v8::Handle<v8::V
 
 v8::Handle<v8::Object> V8PerIsolateData::findInstanceInPrototypeChain(const WrapperTypeInfo* info, v8::Handle<v8::Value> value)
 {
-    v8::Handle<v8::Object> wrapper = findInstanceInPrototypeChain(info, value, m_templatesForMainWorld);
+    v8::Handle<v8::Object> wrapper = findInstanceInPrototypeChain(info, value, m_domTemplateMapForMainWorld);
     if (!wrapper.IsEmpty())
         return wrapper;
-    return findInstanceInPrototypeChain(info, value, m_templatesForNonMainWorld);
+    return findInstanceInPrototypeChain(info, value, m_domTemplateMapForNonMainWorld);
 }
 
-v8::Handle<v8::Object> V8PerIsolateData::findInstanceInPrototypeChain(const WrapperTypeInfo* info, v8::Handle<v8::Value> value, TemplateMap& templates)
+v8::Handle<v8::Object> V8PerIsolateData::findInstanceInPrototypeChain(const WrapperTypeInfo* info, v8::Handle<v8::Value> value, DOMTemplateMap& domTemplateMap)
 {
     if (value.IsEmpty() || !value->IsObject())
         return v8::Handle<v8::Object>();
-    TemplateMap::iterator result = templates.find(info);
-    if (result == templates.end())
+    DOMTemplateMap::iterator result = domTemplateMap.find(info);
+    if (result == domTemplateMap.end())
         return v8::Handle<v8::Object>();
     v8::Handle<v8::FunctionTemplate> templ = result->value.newLocal(m_isolate);
     return v8::Handle<v8::Object>::Cast(value)->FindInstanceInPrototypeChain(templ);

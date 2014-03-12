@@ -570,15 +570,13 @@ v8::Handle<v8::FunctionTemplate> {{v8_class}}Constructor::domTemplate(v8::Isolat
         return result;
 
     TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "BuildDOMTemplate");
-    v8::EscapableHandleScope scope(isolate);
     result = v8::FunctionTemplate::New(isolate, {{v8_class}}ConstructorCallback);
-
     v8::Local<v8::ObjectTemplate> instanceTemplate = result->InstanceTemplate();
     instanceTemplate->SetInternalFieldCount({{v8_class}}::internalFieldCount);
     result->SetClassName(v8AtomicString(isolate, "{{cpp_class}}"));
     result->Inherit({{v8_class}}::domTemplate(isolate));
     data->setDOMTemplate(&domTemplateKey, result);
-    return scope.Escape(result);
+    return result;
 }
 
 {% endif %}
@@ -1096,15 +1094,15 @@ COMPILE_ASSERT({{constant.value}} == {{constant_cpp_class}}::{{constant.reflecte
 v8::Handle<v8::FunctionTemplate> {{v8_class}}::domTemplate(v8::Isolate* isolate)
 {
     V8PerIsolateData* data = V8PerIsolateData::from(isolate);
-    V8PerIsolateData::TemplateMap::iterator result = data->templateMap().find(&wrapperTypeInfo);
-    if (result != data->templateMap().end())
-        return result->value.newLocal(isolate);
+    v8::Local<v8::FunctionTemplate> result = data->existingDOMTemplate(const_cast<WrapperTypeInfo*>(&wrapperTypeInfo));
+    if (!result.IsEmpty())
+        return result;
 
     TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "BuildDOMTemplate");
-    v8::Local<v8::FunctionTemplate> templ = v8::FunctionTemplate::New(isolate, V8ObjectConstructor::isValidConstructorMode);
-    configure{{v8_class}}Template(templ, isolate);
-    data->templateMap().add(&wrapperTypeInfo, UnsafePersistent<v8::FunctionTemplate>(isolate, templ));
-    return templ;
+    result = v8::FunctionTemplate::New(isolate, V8ObjectConstructor::isValidConstructorMode);
+    configure{{v8_class}}Template(result, isolate);
+    data->setDOMTemplate(const_cast<WrapperTypeInfo*>(&wrapperTypeInfo), result);
+    return result;
 }
 
 {% endblock %}

@@ -90,8 +90,6 @@ public:
     GCEventData* gcEventData() { return m_gcEventData.get(); }
     V8HiddenValue* hiddenValue() { return m_hiddenValue.get(); }
 
-    typedef HashMap<const void*, UnsafePersistent<v8::FunctionTemplate> > TemplateMap;
-    TemplateMap& templateMap();
     v8::Handle<v8::FunctionTemplate> domTemplate(void* domTemplateKey, v8::FunctionCallback = 0, v8::Handle<v8::Value> data = v8::Handle<v8::Value>(), v8::Handle<v8::Signature> = v8::Handle<v8::Signature>(), int length = 0);
     v8::Handle<v8::FunctionTemplate> existingDOMTemplate(void* domTemplateKey);
     void setDOMTemplate(void* domTemplateKey, v8::Handle<v8::FunctionTemplate>);
@@ -107,14 +105,17 @@ public:
 private:
     explicit V8PerIsolateData(v8::Isolate*);
     ~V8PerIsolateData();
-    bool hasInstance(const WrapperTypeInfo*, v8::Handle<v8::Value>, TemplateMap&);
-    v8::Handle<v8::Object> findInstanceInPrototypeChain(const WrapperTypeInfo*, v8::Handle<v8::Value>, TemplateMap&);
+
+    typedef HashMap<const void*, UnsafePersistent<v8::FunctionTemplate> > DOMTemplateMap;
+    DOMTemplateMap& currentDOMTemplateMap();
+    bool hasInstance(const WrapperTypeInfo*, v8::Handle<v8::Value>, DOMTemplateMap&);
+    v8::Handle<v8::Object> findInstanceInPrototypeChain(const WrapperTypeInfo*, v8::Handle<v8::Value>, DOMTemplateMap&);
 
     v8::Isolate* m_isolate;
     OwnPtr<gin::IsolateHolder> m_isolateHolder;
     bool m_isMainThread; // Caches the result of isMainThread() for performance.
-    TemplateMap m_templatesForMainWorld;
-    TemplateMap m_templatesForNonMainWorld;
+    DOMTemplateMap m_domTemplateMapForMainWorld;
+    DOMTemplateMap m_domTemplateMapForNonMainWorld;
     ScopedPersistent<v8::FunctionTemplate> m_toStringTemplate;
     OwnPtr<StringCache> m_stringCache;
 
