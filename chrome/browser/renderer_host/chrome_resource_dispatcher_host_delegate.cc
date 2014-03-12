@@ -32,6 +32,7 @@
 #include "chrome/browser/renderer_host/safe_browsing_resource_throttle_factory.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/signin/signin_header_helper.h"
+#include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/auto_login_prompter.h"
 #include "chrome/browser/ui/login/login_prompt.h"
 #include "chrome/browser/ui/sync/one_click_signin_helper.h"
@@ -113,32 +114,12 @@ void NotifyDownloadInitiatedOnUI(int render_process_id, int render_view_id) {
       content::NotificationService::NoDetails());
 }
 
-prerender::PrerenderContents* FindPrerenderContents(int render_process_id,
-                                                    int render_view_id) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  content::RenderViewHost* rvh =
-      content::RenderViewHost::FromID(render_process_id, render_view_id);
-  if (!rvh)
-    return NULL;
-  content::WebContents* web_contents =
-      content::WebContents::FromRenderViewHost(rvh);
-  if (!web_contents)
-    return NULL;
-
-  return prerender::PrerenderContents::FromWebContents(web_contents);
-}
-
 prerender::PrerenderManager* GetPrerenderManager(int render_process_id,
                                                  int render_view_id) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-  content::RenderViewHost* render_view_host =
-      content::RenderViewHost::FromID(render_process_id, render_view_id);
-  if (!render_view_host)
-    return NULL;
-
   content::WebContents* web_contents =
-      content::WebContents::FromRenderViewHost(render_view_host);
+      tab_util::GetWebContentsByID(render_process_id, render_view_id);
   if (!web_contents)
     return NULL;
 
@@ -158,8 +139,11 @@ void UpdatePrerenderNetworkBytesCallback(int render_process_id,
                                          int64 bytes) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
+  content::WebContents* web_contents =
+      tab_util::GetWebContentsByID(render_process_id, render_view_id);
+  // PrerenderContents::FromWebContents handles the NULL case.
   prerender::PrerenderContents* prerender_contents =
-      FindPrerenderContents(render_process_id, render_view_id);
+      prerender::PrerenderContents::FromWebContents(web_contents);
 
   if (prerender_contents)
     prerender_contents->AddNetworkBytes(bytes);
@@ -190,13 +174,8 @@ void SendExecuteMimeTypeHandlerEvent(scoped_ptr<content::StreamHandle> stream,
                                      const std::string& extension_id) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-  content::RenderViewHost* render_view_host =
-      content::RenderViewHost::FromID(render_process_id, render_view_id);
-  if (!render_view_host)
-    return;
-
   content::WebContents* web_contents =
-      content::WebContents::FromRenderViewHost(render_view_host);
+      tab_util::GetWebContentsByID(render_process_id, render_view_id);
   if (!web_contents)
     return;
 
@@ -222,9 +201,14 @@ void SendExecuteMimeTypeHandlerEvent(scoped_ptr<content::StreamHandle> stream,
 void LaunchURL(const GURL& url, int render_process_id, int render_view_id) {
   // If there is no longer a WebContents, the request may have raced with tab
   // closing. Don't fire the external request. (It may have been a prerender.)
+  content::WebContents* web_contents =
+      tab_util::GetWebContentsByID(render_process_id, render_view_id);
+  if (!web_contents)
+    return;
 
+  // Do not launch external requests attached to unswapped prerenders.
   prerender::PrerenderContents* prerender_contents =
-      FindPrerenderContents(render_process_id, render_view_id);
+      prerender::PrerenderContents::FromWebContents(web_contents);
   if (prerender_contents) {
     prerender_contents->Destroy(prerender::FINAL_STATUS_UNSUPPORTED_SCHEME);
     prerender::ReportPrerenderExternalURL();

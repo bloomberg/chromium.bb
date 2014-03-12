@@ -3656,10 +3656,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   NavigateToDestURL();
 }
 
-// Testis flaky: http://crbug.com/347164
 // Checks that non-http/https main page redirects cancel the prerender.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       DISABLED_PrerenderCancelMainFrameRedirectUnsupportedScheme) {
+                       PrerenderCancelMainFrameRedirectUnsupportedScheme) {
   GURL url = test_server()->GetURL(
       CreateServerRedirect("invalidscheme://www.google.com/test.html"));
   PrerenderTestURL(url, FINAL_STATUS_UNSUPPORTED_SCHEME, 0);
