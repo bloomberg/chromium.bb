@@ -428,6 +428,11 @@ _settings = dict(
 # paygen -- Run a stage that generates release payloads for signed images.
   paygen=False,
 
+# perform_paygen_testing -- If the paygen stage runs, generate test payloads,
+#                           and schedule auto-tests for them.
+# If you disable this, you are BEING NAUGHTY!
+  perform_paygen_testing=True,
+
 # manifest_repo_url -- git repository URL for our manifests.
 #  External: https://chromium.googlesource.com/chromiumos/manifest
 #  Internal: https://chrome-internal.googlesource.com/chromeos/manifest-internal
@@ -902,6 +907,9 @@ brillo_non_testable = brillo.derive(
   signer_tests=False,
   hw_tests=[],
   vm_tests=[],
+
+  # Since it doesn't generate test images, payloads can't be tested.
+  perform_paygen_testing=False,
 )
 
 beaglebone = arm.derive(brillo_non_testable, rootfs_verification=False)
@@ -2041,6 +2049,7 @@ _arm_brillo_release.add_config('daisy_winter-full',
 _release.add_config('stumpy_moblab-release',
   brillo_non_testable,
   boards=['stumpy_moblab'],
+
 )
 
 ### Per-chipset release groups

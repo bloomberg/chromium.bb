@@ -1347,8 +1347,8 @@ class PaygenStageTest(AbstractStageTest):
       stage.PerformStage()
 
       # Verify that we queue up work
-      queue.put.assert_any_call(('stable', 'x86-mario', '0.0.1', False))
-      queue.put.assert_any_call(('beta', 'x86-mario', '0.0.1', False))
+      queue.put.assert_any_call(('stable', 'x86-mario', '0.0.1', False, True))
+      queue.put.assert_any_call(('beta', 'x86-mario', '0.0.1', False, True))
 
   def testPerformStageNoChannels(self):
     """Test that SignerResultsStage works when signing works."""
@@ -1383,7 +1383,7 @@ class PaygenStageTest(AbstractStageTest):
     """Test that SignerResultsStage works when signing works."""
     with patch(paygen_build_lib, 'CreatePayloads') as create_payloads:
       # Call the method under test.
-      stages._RunPaygenInProcess('foo', 'foo-board', 'foo-version', False)
+      stages._RunPaygenInProcess('foo', 'foo-board', 'foo-version', False, True)
 
       # Ensure arguments are properly converted and passed along.
       create_payloads.assert_called_with(gspaths.Build(version='foo-version',
@@ -1392,7 +1392,9 @@ class PaygenStageTest(AbstractStageTest):
                                          dry_run=False,
                                          work_dir=mock.ANY,
                                          run_parallel=True,
-                                         run_on_builder=True)
+                                         run_on_builder=True,
+                                         skip_test_payloads=False,
+                                         skip_autotest=False)
 
   @unittest.skipIf(not CROSTOOLS_AVAILABLE,
                    'Internal crostools repository needed.')
@@ -1401,10 +1403,8 @@ class PaygenStageTest(AbstractStageTest):
     with patch(paygen_build_lib, 'CreatePayloads') as create_payloads:
       # Call the method under test.
       # Use release tools channel naming, and a board name including a variant.
-      stages._RunPaygenInProcess('foo-channel',
-                                 'foo-board_variant',
-                                 'foo-version',
-                                 True)
+      stages._RunPaygenInProcess('foo-channel', 'foo-board_variant',
+                                 'foo-version', True, False)
 
       # Ensure arguments are properly converted and passed along.
       create_payloads.assert_called_with(
@@ -1414,7 +1414,9 @@ class PaygenStageTest(AbstractStageTest):
           dry_run=True,
           work_dir=mock.ANY,
           run_parallel=True,
-          run_on_builder=True)
+          run_on_builder=True,
+          skip_test_payloads=True,
+          skip_autotest=True)
 
 
 class AUTestStageTest(AbstractStageTest,

@@ -3134,10 +3134,11 @@ class PaygenStage(ArchivingStage):
         if channel == SignerResultsStage.FINISHED:
           break
 
-        per_channel.put((channel, board, version, self._run.debug))
+        per_channel.put((channel, board, version, self._run.debug,
+                         self._run.config.perform_paygen_testing))
 
 
-def _RunPaygenInProcess(channel, board, version, debug):
+def _RunPaygenInProcess(channel, board, version, debug, test_payloads):
   """Helper for PaygenStage that invokes payload generation.
 
   This method is intended to be safe to invoke inside a process.
@@ -3147,6 +3148,7 @@ def _RunPaygenInProcess(channel, board, version, debug):
     board: Board of payloads to generate ('x86-mario', 'x86-alex-he', etc)
     version: Version of payloads to generate.
     debug: Flag telling if this is a real run, or a test run.
+    test_payloads: Generate test payloads, and schedule auto testing.
   """
   # TODO(dgarrett): Remove when crbug.com/341152 is fixed.
   # These modules are imported here because they aren't always available at
@@ -3174,7 +3176,9 @@ def _RunPaygenInProcess(channel, board, version, debug):
                                       work_dir=tempdir,
                                       dry_run=debug,
                                       run_parallel=True,
-                                      run_on_builder=True)
+                                      run_on_builder=True,
+                                      skip_test_payloads=not test_payloads,
+                                      skip_autotest=not test_payloads)
     except (paygen_build_lib.BuildFinished,
             paygen_build_lib.BuildLocked,
             paygen_build_lib.BuildSkip) as e:
