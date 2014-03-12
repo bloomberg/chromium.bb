@@ -75,8 +75,7 @@ MediaGalleriesDialogViews::MediaGalleriesDialogViews(
       accepted_(false) {
   InitChildViews();
 
-  // May be NULL during tests.
-  if (controller->web_contents()) {
+  if (ControllerHasWebContents()) {
     // Ownership of |contents_| is handed off by this call. |window_| will take
     // care of deleting itself after calling DeleteDelegate().
     WebContentsModalDialogManager* web_contents_modal_dialog_manager =
@@ -93,7 +92,7 @@ MediaGalleriesDialogViews::MediaGalleriesDialogViews(
 }
 
 MediaGalleriesDialogViews::~MediaGalleriesDialogViews() {
-  if (!controller_->web_contents())
+  if (!ControllerHasWebContents())
     delete contents_;
 }
 
@@ -296,14 +295,11 @@ bool MediaGalleriesDialogViews::Accept() {
 }
 
 void MediaGalleriesDialogViews::ButtonPressed(views::Button* sender,
-                                              const ui::Event& event) {
-  GetWidget()->client_view()->AsDialogClientView()->UpdateDialogButtons();
-
-  ButtonPressedAction(sender);
-}
-
-void MediaGalleriesDialogViews::ButtonPressedAction(views::Button* sender) {
+                                              const ui::Event& /* event */) {
   confirm_available_ = true;
+
+  if (ControllerHasWebContents())
+    GetWidget()->client_view()->AsDialogClientView()->UpdateDialogButtons();
 
   if (sender == add_gallery_button_) {
     controller_->OnAddFolderClicked();
@@ -353,6 +349,10 @@ void MediaGalleriesDialogViews::ShowContextMenu(const gfx::Point& point,
       views::MenuRunner::MENU_DELETED) {
     return;
   }
+}
+
+bool MediaGalleriesDialogViews::ControllerHasWebContents() const {
+  return controller_->web_contents() != NULL;
 }
 
 // MediaGalleriesDialogViewsController -----------------------------------------

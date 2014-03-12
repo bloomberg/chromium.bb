@@ -105,13 +105,14 @@ TEST_F(MediaGalleriesDialogTest, ToggleCheckboxes) {
   views::Checkbox* checkbox = dialog.checkbox_map_[1]->checkbox();
   EXPECT_TRUE(checkbox->checked());
 
+  ui::KeyEvent dummy_event(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE, false);
   EXPECT_CALL(controller, DidToggleGalleryId(1, false));
   checkbox->SetChecked(false);
-  dialog.ButtonPressedAction(checkbox);
+  dialog.ButtonPressed(checkbox, dummy_event);
 
   EXPECT_CALL(controller, DidToggleGalleryId(1, true));
   checkbox->SetChecked(true);
-  dialog.ButtonPressedAction(checkbox);
+  dialog.ButtonPressed(checkbox, dummy_event);
 }
 
 // Tests that UpdateGallery will add a new checkbox, but only if it refers to

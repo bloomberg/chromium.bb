@@ -69,8 +69,6 @@ class MediaGalleriesDialogViews : public MediaGalleriesDialog,
   typedef std::map<MediaGalleryCheckboxView*, MediaGalleryPrefInfo>
       NewCheckboxMap;
 
-  void ButtonPressedAction(views::Button* sender);
-
   void InitChildViews();
 
   // Adds a checkbox or updates an existing checkbox. Returns true if a new one
@@ -83,6 +81,10 @@ class MediaGalleriesDialogViews : public MediaGalleriesDialog,
   void ShowContextMenu(const gfx::Point& point,
                        ui::MenuSourceType source_type,
                        MediaGalleryPrefId id);
+
+  // Whether |controller_| has a valid WebContents or not.
+  // In unit tests, it may not.
+  bool ControllerHasWebContents() const;
 
   MediaGalleriesDialogController* controller_;
 
