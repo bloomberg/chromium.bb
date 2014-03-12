@@ -10,7 +10,10 @@ import android.app.Application.ActivityLifecycleCallbacks;
 import android.content.Context;
 import android.os.Bundle;
 
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -226,6 +229,18 @@ public class ApplicationStatus {
      */
     public static Activity getLastTrackedFocusedActivity() {
         return sActivity;
+    }
+
+    /**
+     * @return A {@link List} of all non-destroyed {@link Activity}s.
+     */
+    public static List<WeakReference<Activity>> getRunningActivities() {
+        ThreadUtils.assertOnUiThread();
+        List<WeakReference<Activity>> activities = new ArrayList<WeakReference<Activity>>();
+        for (Activity activity : sActivityInfo.keySet()) {
+            activities.add(new WeakReference<Activity>(activity));
+        }
+        return activities;
     }
 
     /**
