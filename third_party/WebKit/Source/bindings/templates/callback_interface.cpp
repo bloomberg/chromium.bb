@@ -55,10 +55,10 @@ namespace WebCore {
 }
 
 {% for method in methods if not method.custom %}
-{{method.return_cpp_type}} {{v8_class}}::{{method.name}}({{method.argument_declarations | join(', ')}})
+{{method.cpp_type}} {{v8_class}}::{{method.name}}({{method.argument_declarations | join(', ')}})
 {
     {% set return_default = 'return true'
-           if method.return_idl_type == 'boolean' else 'return' %}{# void #}
+           if method.idl_type == 'boolean' else 'return' %}{# void #}
     if (!canInvokeCallback())
         {{return_default}};
 
@@ -93,7 +93,7 @@ namespace WebCore {
     {% endif %}
 
     {% set this_handle_parameter = 'v8::Handle<v8::Object>::Cast(thisHandle), ' if method.call_with_this_handle else '' %}
-    {% if method.return_idl_type == 'boolean' %}
+    {% if method.idl_type == 'boolean' %}
     return invokeCallback(m_callback.newLocal(m_isolate), {{this_handle_parameter}}{{method.arguments | length}}, argv, executionContext(), m_isolate);
     {% else %}{# void #}
     invokeCallback(m_callback.newLocal(m_isolate), {{this_handle_parameter}}{{method.arguments | length}}, argv, executionContext(), m_isolate);

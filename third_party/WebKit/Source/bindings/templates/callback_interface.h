@@ -55,7 +55,7 @@ public:
     virtual ~{{v8_class}}();
 
 {% for method in methods %}
-    virtual {{method.return_cpp_type}} {{method.name}}({{method.argument_declarations | join(', ')}}) OVERRIDE;
+    virtual {{method.cpp_type}} {{method.name}}({{method.argument_declarations | join(', ')}}) OVERRIDE;
 {% endfor %}
 private:
     {{v8_class}}(v8::Handle<v8::Function>, ExecutionContext*);

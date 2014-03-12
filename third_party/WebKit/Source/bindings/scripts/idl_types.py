@@ -1,13 +1,19 @@
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-"""IDL type handling."""
+"""IDL type handling.
+
+Classes:
+IdlType
+IdlUnionType
+TypedObject :: mixin for typedef resolution
+"""
 
 # pylint doesn't understand ABCs.
 # pylint: disable=W0232, E0203, W0201
 
 import abc
-import re
+from collections import defaultdict
 
 ################################################################################
 # IDL types
@@ -41,12 +47,12 @@ INTEGER_TYPES = set([
 ])
 BASIC_TYPES.update(INTEGER_TYPES)
 
-ancestors = {}  # interface_name -> ancestors
+ancestors = defaultdict(list)  # interface_name -> ancestors
 callback_functions = set()
 callback_interfaces = set()
 enums = {}  # name -> values
 
-
+# FIXME: move these functions into methods of IdlType
 def array_or_sequence_type(idl_type):
     return array_type(idl_type) or sequence_type(idl_type)
 
@@ -55,20 +61,19 @@ def array_type(idl_type):
     if is_union_type(idl_type):
         # We do not support arrays of union types
         return False
-    matched = re.match(r'([\w\s]+)\[\]', idl_type)
-    return matched and matched.group(1)
+    return idl_type.is_array and IdlType(idl_type.base_type)
 
 
 def is_basic_type(idl_type):
-    return idl_type in BASIC_TYPES
+    return str(idl_type) in BASIC_TYPES
 
 
 def is_integer_type(idl_type):
-    return idl_type in INTEGER_TYPES
+    return str(idl_type) in INTEGER_TYPES
 
 
 def is_callback_function(idl_type):
-    return idl_type in callback_functions
+    return str(idl_type) in callback_functions
 
 
 def set_callback_functions(new_callback_functions):
@@ -76,7 +81,7 @@ def set_callback_functions(new_callback_functions):
 
 
 def is_callback_interface(idl_type):
-    return idl_type in callback_interfaces
+    return str(idl_type) in callback_interfaces
 
 
 def set_callback_interfaces(new_callback_interfaces):
@@ -84,18 +89,18 @@ def set_callback_interfaces(new_callback_interfaces):
 
 
 def is_composite_type(idl_type):
-    return (idl_type == 'any' or
+    return (str(idl_type) == 'any' or
             array_type(idl_type) or
             sequence_type(idl_type) or
             is_union_type(idl_type))
 
 
 def is_enum(idl_type):
-    return idl_type in enums
+    return str(idl_type) in enums
 
 
 def enum_values(idl_type):
-    return enums.get(idl_type)
+    return enums[str(idl_type)]
 
 
 def set_enums(new_enums):
@@ -104,7 +109,7 @@ def set_enums(new_enums):
 
 def inherits_interface(interface_name, ancestor_name):
     return (interface_name == ancestor_name or
-            ancestor_name in ancestors.get(interface_name, []))
+            ancestor_name in ancestors[interface_name])
 
 
 def set_ancestors(new_ancestors):
@@ -120,16 +125,15 @@ def is_interface_type(idl_type):
                is_composite_type(idl_type) or
                is_callback_function(idl_type) or
                is_enum(idl_type) or
-               idl_type == 'object' or
-               idl_type == 'Promise')  # Promise will be basic in future
+               str(idl_type) == 'object' or
+               str(idl_type) == 'Promise')  # Promise will be basic in future
 
 
 def sequence_type(idl_type):
     if is_union_type(idl_type):
         # We do not support sequences of union types
         return False
-    matched = re.match(r'sequence<([\w\s]+)>', idl_type)
-    return matched and matched.group(1)
+    return idl_type.is_sequence and IdlType(idl_type.base_type)
 
 
 def is_union_type(idl_type):
@@ -148,7 +152,6 @@ class TypedObject(object):
     """
     __metaclass__ = abc.ABCMeta
     idl_type = None
-    extended_attributes = None
 
     def resolve_typedefs(self, typedefs):
         """Resolve typedefs to actual types in the object."""
@@ -156,28 +159,14 @@ class TypedObject(object):
         # interface itself.
         if not self.idl_type:
             return
-        # (Types are represented either as strings or as IdlUnionType objects.)
-        # Union types are objects, which have a member function for this
-        if isinstance(self.idl_type, IdlUnionType):
-            # Method 'resolve_typedefs' call is ok, but pylint can't infer this
-            # pylint: disable=E1101
-            self.idl_type.resolve_typedefs(typedefs)
-            return
-        # Otherwise, IDL type is represented as string, so use a function
-        self.idl_type = resolve_typedefs(self.idl_type, typedefs)
+        self.idl_type.resolve_typedefs(typedefs)
 
 
 class IdlType(object):
-    # FIXME: replace type strings with these objects,
-    # so don't need to parse everywhere types are used.
-    # Types are stored internally as strings, not objects,
-    # e.g., as 'sequence<Foo>' or 'Foo[]',
-    # hence need to parse the string whenever a type is used.
-    # FIXME: incorporate Nullable, Variadic, etc.
-    # FIXME: properly should nest types
-    # Formally types are nested, e.g., short?[] vs. short[]?,
-    # but in practice these complex types aren't used and can treat
-    # as orthogonal properties.
+    # FIXME: incorporate Nullable, etc.
+    # FIXME: use nested types: IdlArrayType, IdlNullableType, IdlSequenceType
+    # to support types like short?[] vs. short[]?, instead of treating these
+    # as orthogonal properties (via flags).
     def __init__(self, base_type, is_array=False, is_sequence=False):
         if is_array and is_sequence:
             raise ValueError('Array of Sequences are not allowed.')
@@ -193,29 +182,18 @@ class IdlType(object):
             return 'sequence<%s>' % type_string
         return type_string
 
-    @classmethod
-    def from_string(cls, type_string):
-        sequence_re = r'^sequence<([^>]*)>$'
-        if type_string.endswith('[]'):
-            type_string = type_string[:-2]
-            sequence_match = re.match(sequence_re, type_string)
-            if sequence_match:
-                raise ValueError('Array of Sequences are not allowed.')
-            return cls(type_string, is_array=True)
-        sequence_match = re.match(sequence_re, type_string)
-        if sequence_match:
-            base_type = sequence_match.group(1)
-            return cls(base_type, is_sequence=True)
-        return cls(type_string)
-
     def resolve_typedefs(self, typedefs):
         if self.base_type in typedefs:
-            self.base_type = typedefs[self.base_type]
-        return self  # Fluent interface
+            # FIXME: a bit ugly; use __init__ instead of setting flags
+            new_type = typedefs[self.base_type]
+            self.base_type = new_type.base_type
+            # handles TYPEDEF[] and 'typedef Type[] TYPEDEF'
+            self.is_array |= new_type.is_array
+            self.is_sequence |= new_type.is_sequence
 
 
 class IdlUnionType(object):
-    # FIXME: remove class, just treat as tuple?
+    # FIXME: derive from IdlType, instead of stand-alone class
     def __init__(self, union_member_types):
         self.union_member_types = union_member_types
 
@@ -223,13 +201,3 @@ class IdlUnionType(object):
         self.union_member_types = [
             typedefs.get(union_member_type, union_member_type)
             for union_member_type in self.union_member_types]
-
-
-def resolve_typedefs(idl_type, typedefs):
-    """Return an IDL type (as string) with typedefs resolved."""
-    # FIXME: merge into above, as only one use
-    # Converts a string representation to and from an IdlType object to handle
-    # parsing of composite types (arrays and sequences) and encapsulate typedef
-    # resolution, e.g., GLint[] -> unsigned long[] requires parsing the '[]'.
-    # Use fluent interface to avoid auxiliary variable.
-    return str(IdlType.from_string(idl_type).resolve_typedefs(typedefs))

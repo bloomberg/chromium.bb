@@ -34,7 +34,7 @@ Design doc: http://www.chromium.org/developers/design-documents/idl-compiler
 from collections import defaultdict
 
 import idl_types
-from idl_types import inherits_interface, is_interface_type
+from idl_types import IdlType, inherits_interface, is_interface_type
 import v8_attributes
 from v8_globals import includes
 import v8_methods
@@ -70,7 +70,7 @@ def generate_interface(interface):
 
     parent_interface = interface.parent
     if parent_interface:
-        header_includes.update(v8_types.includes_for_type(parent_interface))
+        header_includes.update(v8_types.includes_for_type(IdlType(parent_interface)))
     extended_attributes = interface.extended_attributes
 
     is_audio_buffer = inherits_interface(interface.name, 'AudioBuffer')
@@ -119,7 +119,7 @@ def generate_interface(interface):
     else:
         special_wrap_for = []
     for special_wrap_interface in special_wrap_for:
-        v8_types.add_includes_for_type(special_wrap_interface)
+        v8_types.add_includes_for_type(IdlType(special_wrap_interface))
 
     # [WillBeGarbageCollected]
     is_will_be_garbage_collected = 'WillBeGarbageCollected' in extended_attributes
@@ -177,7 +177,7 @@ def generate_interface(interface):
     # [EventConstructor]
     has_event_constructor = 'EventConstructor' in extended_attributes
     any_type_attributes = [attribute for attribute in interface.attributes
-                           if attribute.idl_type == 'any']
+                           if str(attribute.idl_type) == 'any']
     if has_event_constructor:
         includes.add('bindings/v8/Dictionary.h')
         if any_type_attributes:
@@ -266,7 +266,7 @@ def generate_interface(interface):
 def generate_constant(constant):
     # (Blink-only) string literals are unquoted in tokenizer, must be re-quoted
     # in C++.
-    if constant.idl_type == 'DOMString':
+    if str(constant.idl_type) == 'DOMString':
         value = '"%s"' % constant.value
     else:
         value = constant.value
@@ -399,9 +399,9 @@ def overload_check_argument(index, argument):
         return None
 
     cpp_value = 'info[%s]' % index
-    idl_type = argument['idl_type']
+    idl_type = argument['idl_type_object']
     # FIXME: proper type checking, sharing code with attributes and methods
-    if idl_type == 'DOMString' and argument['is_strict_type_checking']:
+    if str(idl_type) == 'DOMString' and argument['is_strict_type_checking']:
         return ' || '.join(['isUndefinedOrNull(%s)' % cpp_value,
                             '%s->IsString()' % cpp_value,
                             '%s->IsObject()' % cpp_value])
@@ -411,7 +411,7 @@ def overload_check_argument(index, argument):
         return ' || '.join(['%s->IsNull()' % cpp_value,
                             '%s->IsFunction()' % cpp_value])
     if v8_types.is_wrapper_type(idl_type):
-        type_check = 'V8{idl_type}::hasInstance({cpp_value}, info.GetIsolate())'.format(idl_type=idl_type, cpp_value=cpp_value)
+        type_check = 'V8{idl_type}::hasInstance({cpp_value}, info.GetIsolate())'.format(idl_type=str(idl_type), cpp_value=cpp_value)
         if argument['is_nullable']:
             type_check = ' || '.join(['%s->IsNull()' % cpp_value, type_check])
         return type_check
@@ -443,7 +443,7 @@ def generate_constructor(interface, constructor):
             # [RaisesException=Constructor]
             interface.extended_attributes.get('RaisesException') == 'Constructor' or
             any(argument for argument in constructor.arguments
-                if argument.idl_type == 'SerializedScriptValue' or
+                if str(argument.idl_type) == 'SerializedScriptValue' or
                    idl_types.is_integer_type(argument.idl_type)),
         'is_constructor': True,
         'is_variadic': False,  # Required for overload resolution
@@ -473,7 +473,8 @@ def constructor_argument_list(interface, constructor):
 def constructor_argument(argument, index):
     return {
         'has_default': 'Default' in argument.extended_attributes,
-        'idl_type': argument.idl_type,
+        'idl_type_object': argument.idl_type,
+        'idl_type': str(argument.idl_type),
         'index': index,
         'is_nullable': False,  # Required for overload resolution
         'is_optional': argument.is_optional,
@@ -536,7 +537,7 @@ def property_getter(getter, cpp_arguments):
             return ' && '.join('!result%sEnabled' % i
                                for i, _ in
                                enumerate(idl_type.union_member_types))
-        if idl_type == 'DOMString':
+        if str(idl_type) == 'DOMString':
             return 'result.isNull()'
         if is_interface_type(idl_type):
             return '!result'
@@ -591,7 +592,7 @@ def property_setter(setter):
         'has_strict_type_checking':
             'StrictTypeChecking' in extended_attributes and
             v8_types.is_wrapper_type(idl_type),
-        'idl_type': idl_type,
+        'idl_type': str(idl_type),
         'is_custom': 'Custom' in extended_attributes,
         'has_exception_state': is_raises_exception or
                                idl_types.is_integer_type(idl_type),
@@ -604,7 +605,7 @@ def property_setter(setter):
 
 def property_deleter(deleter):
     idl_type = deleter.idl_type
-    if idl_type != 'boolean':
+    if str(idl_type) != 'boolean':
         raise Exception(
             'Only deleters with boolean type are allowed, but type is "%s"' %
             idl_type)
@@ -630,7 +631,7 @@ def indexed_property_getter(interface):
             for method in interface.operations
             if ('getter' in method.specials and
                 len(method.arguments) == 1 and
-                method.arguments[0].idl_type == 'unsigned long'))
+                str(method.arguments[0].idl_type) == 'unsigned long'))
     except StopIteration:
         return None
 
@@ -646,7 +647,7 @@ def indexed_property_setter(interface):
             for method in interface.operations
             if ('setter' in method.specials and
                 len(method.arguments) == 2 and
-                method.arguments[0].idl_type == 'unsigned long'))
+                str(method.arguments[0].idl_type) == 'unsigned long'))
     except StopIteration:
         return None
 
@@ -662,7 +663,7 @@ def indexed_property_deleter(interface):
             for method in interface.operations
             if ('deleter' in method.specials and
                 len(method.arguments) == 1 and
-                method.arguments[0].idl_type == 'unsigned long'))
+                str(method.arguments[0].idl_type) == 'unsigned long'))
     except StopIteration:
         return None
 
@@ -683,7 +684,7 @@ def named_property_getter(interface):
             for method in interface.operations
             if ('getter' in method.specials and
                 len(method.arguments) == 1 and
-                method.arguments[0].idl_type == 'DOMString'))
+                str(method.arguments[0].idl_type) == 'DOMString'))
     except StopIteration:
         return None
 
@@ -700,7 +701,7 @@ def named_property_setter(interface):
             for method in interface.operations
             if ('setter' in method.specials and
                 len(method.arguments) == 2 and
-                method.arguments[0].idl_type == 'DOMString'))
+                str(method.arguments[0].idl_type) == 'DOMString'))
     except StopIteration:
         return None
 
@@ -716,7 +717,7 @@ def named_property_deleter(interface):
             for method in interface.operations
             if ('deleter' in method.specials and
                 len(method.arguments) == 1 and
-                method.arguments[0].idl_type == 'DOMString'))
+                str(method.arguments[0].idl_type) == 'DOMString'))
     except StopIteration:
         return None
 

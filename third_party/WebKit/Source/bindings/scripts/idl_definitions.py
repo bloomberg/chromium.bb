@@ -44,7 +44,7 @@ Class hierarchy (mostly containment, '<' for inheritance):
 
 IdlDefinitions
     IdlCallbackFunction < TypedObject
-    IdlEnum :: FIXME: remove
+    IdlEnum :: FIXME: remove, just use a dict for enums
     IdlInterface
         IdlAttribute < TypedObject
         IdlConstant < TypedObject
@@ -53,17 +53,11 @@ IdlDefinitions
     IdlException < IdlInterface
         (same contents as IdlInterface)
 
-IdlUnionType :: FIXME: remove
-
-Auxiliary classes for typedef resolution:
-IdlType
-TypedObject
-
 Design doc: http://www.chromium.org/developers/design-documents/idl-compiler
 """
 
 
-from idl_types import IdlUnionType, TypedObject
+from idl_types import IdlType, IdlUnionType, TypedObject
 
 SPECIAL_KEYWORD_LIST = ['GETTER', 'SETTER', 'DELETER']
 STANDARD_TYPEDEFS = {
@@ -87,7 +81,9 @@ class IdlDefinitions(object):
         if node_class != 'File':
             raise ValueError('Unrecognized node class: %s' % node_class)
 
-        typedefs = STANDARD_TYPEDEFS
+        typedefs = dict((typedef_name, IdlType(type_name))
+                        for typedef_name, type_name in
+                        STANDARD_TYPEDEFS.iteritems())
 
         children = node.GetChildren()
         for child in children:
@@ -546,30 +542,37 @@ def type_node_to_type(node):
         raise ValueError('Type node expects 1 or 2 children (type + optional array []), got %s (multi-dimensional arrays are not supported).' % len(children))
 
     type_node_child = children[0]
-    idl_type = type_node_inner_to_type(type_node_child)
 
     if len(children) == 2:
         array_node = children[1]
         array_node_class = array_node.GetClass()
         if array_node_class != 'Array':
             raise ValueError('Expected Array node as TypeSuffix, got %s node.' % array_node_class)
-        idl_type += '[]'
+        # FIXME: use IdlArrayType instead of is_array, once have that
+        is_array = True
+    else:
+        is_array = False
 
-    return idl_type
+    return type_node_inner_to_type(type_node_child, is_array=is_array)
 
 
-def type_node_inner_to_type(node):
+def type_node_inner_to_type(node, is_array=False):
+    # FIXME: remove is_array once have IdlArrayType
     node_class = node.GetClass()
     # Note Type*r*ef, not Typedef, meaning the type is an identifier, thus
     # either a typedef shorthand (but not a Typedef declaration itself) or an
     # interface type. We do not distinguish these, and just use the type name.
     if node_class in ['PrimitiveType', 'Typeref']:
-        return node.GetName()
+        return IdlType(node.GetName(), is_array=is_array)
     elif node_class == 'Any':
-        return 'any'
+        return IdlType('any', is_array=is_array)
     elif node_class == 'Sequence':
+        if is_array:
+            raise ValueError('Arrays of sequences are not supported')
         return sequence_node_to_type(node)
     elif node_class == 'UnionType':
+        if is_array:
+            raise ValueError('Arrays of unions are not supported')
         return union_type_node_to_idl_union_type(node)
     raise ValueError('Unrecognized node class: %s' % node_class)
 
@@ -582,8 +585,8 @@ def sequence_node_to_type(node):
     sequence_child_class = sequence_child.GetClass()
     if sequence_child_class != 'Type':
         raise ValueError('Unrecognized node class: %s' % sequence_child_class)
-    sequence_type = type_node_to_type(sequence_child)
-    return 'sequence<%s>' % sequence_type
+    element_type = type_node_to_type(sequence_child).base_type
+    return IdlType(element_type, is_sequence=True)
 
 
 def typedef_node_to_type(node):
@@ -598,6 +601,6 @@ def typedef_node_to_type(node):
 
 
 def union_type_node_to_idl_union_type(node):
-    union_member_types = [type_node_to_type(member_type_node)
-                          for member_type_node in node.GetChildren()]
-    return IdlUnionType(union_member_types)
+    member_types = [type_node_to_type(member_type_node)
+                    for member_type_node in node.GetChildren()]
+    return IdlUnionType(member_types)

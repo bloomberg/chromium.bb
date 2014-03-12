@@ -42,6 +42,7 @@ def generate_method(interface, method):
     arguments = method.arguments
     extended_attributes = method.extended_attributes
     idl_type = method.idl_type
+    idl_type_name = str(idl_type)
     is_static = method.is_static
     name = method.name
 
@@ -87,12 +88,12 @@ def generate_method(interface, method):
                 ['DoNotCheckSecurity', 'DoNotCheckSignature', 'NotEnumerable',
                  'ReadOnly', 'RuntimeEnabled', 'Unforgeable'])),
         'function_template': function_template(),
-        'idl_type': idl_type,
+        'idl_type': idl_type_name,
         'has_exception_state':
             is_raises_exception or
             is_check_security_for_frame or
             any(argument for argument in arguments
-                if argument.idl_type == 'SerializedScriptValue' or
+                if str(argument.idl_type) == 'SerializedScriptValue' or
                    idl_types.is_integer_type(argument.idl_type)) or
             name in ['addEventListener', 'removeEventListener', 'dispatchEvent'],
         'is_call_with_execution_context': has_extended_attribute_value(method, 'CallWith', 'ExecutionContext'),
@@ -144,7 +145,8 @@ def generate_argument(interface, method, argument, index):
         'cpp_value': this_cpp_value,
         'enum_validation_expression': v8_utilities.enum_validation_expression(idl_type),
         'has_default': 'Default' in extended_attributes,
-        'idl_type': idl_type,
+        'idl_type_object': idl_type,
+        'idl_type': str(idl_type),
         'index': index,
         'is_clamp': 'Clamp' in extended_attributes,
         'is_callback_interface': idl_types.is_callback_interface(idl_type),
@@ -169,7 +171,7 @@ def cpp_value(interface, method, number_of_arguments):
     def cpp_argument(argument):
         idl_type = argument.idl_type
         if (idl_types.is_callback_interface(idl_type) or
-            idl_type in ['NodeFilter', 'XPathNSResolver']):
+            str(idl_type) in ['NodeFilter', 'XPathNSResolver']):
             # FIXME: remove this special case
             return '%s.release()' % argument.name
         return argument.name
@@ -195,7 +197,7 @@ def cpp_value(interface, method, number_of_arguments):
 def v8_set_return_value(interface_name, method, cpp_value, for_main_world=False):
     idl_type = method.idl_type
     extended_attributes = method.extended_attributes
-    if idl_type == 'void':
+    if str(idl_type) == 'void':
         return None
     is_union_type = idl_types.is_union_type(idl_type)
 
@@ -226,7 +228,7 @@ def v8_value_to_local_cpp_value(argument, index):
         return 'V8TRYCATCH_VOID({vector_type}<{cpp_type}>, {name}, toNativeArguments<{cpp_type}>(info, {index}))'.format(
                 cpp_type=v8_types.cpp_type(idl_type), name=name, index=index, vector_type=vector_type)
     # [Default=NullString]
-    if (argument.is_optional and idl_type == 'DOMString' and
+    if (argument.is_optional and str(idl_type) == 'DOMString' and
         extended_attributes.get('Default') == 'NullString'):
         v8_value = 'argumentOrNull(info, %s)' % index
     else:
