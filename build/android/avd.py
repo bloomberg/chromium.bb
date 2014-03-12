@@ -65,7 +65,7 @@ def main(argv):
 
   # If AVD is specified, check that the SDK has the required target. If not,
   # check that the SDK has the desired target for the temporary AVD's.
-  api_level = int(options.api_level)
+  api_level = options.api_level
   if options.name:
     android = os.path.join(constants.EMULATOR_SDK_ROOT, 'sdk', 'tools',
                            'android')
