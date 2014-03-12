@@ -10,6 +10,7 @@ from branch_utility import BranchUtility
 from extensions_paths import (
     API, CHROME_API, JSON_TEMPLATES, API_FEATURES, MANIFEST_FEATURES,
     PERMISSION_FEATURES)
+from file_system import FileNotFoundError
 from third_party.json_schema_compiler.model import UnixName
 
 
@@ -97,28 +98,24 @@ class AvailabilityFinder(object):
     single _EXTENSION_API file which all APIs share in older versions of Chrome,
     in which case it is unknown whether the API actually exists there.
     '''
-    def find_schema_under_path(api_name, path):
-      # |file_system| will cache the results from the ReadSingle() call.
-      if not file_system.Exists(path).Get():
-        return None
-      filenames = file_system.ReadSingle(path).Get()
-      for ext in ('json', 'idl'):
-        filename = '%s.%s' % (api_name, ext)
-        if filename in filenames:
-          return path + filename
-      if _EXTENSION_API in filenames:
-        return path + _EXTENSION_API
-      # API schema data could not be found in any .json or .idl file.
-      return None
-
     if version == 'trunk' or version > _ORIGINAL_FEATURES_MIN_VERSION:
       # API schema filenames switch format to unix_hacker_style.
       api_name = UnixName(api_name)
 
-    filename = find_schema_under_path(api_name, API)
-    if filename is not None:
-      return filename
-    return find_schema_under_path(api_name, CHROME_API)
+    futures = [(path, file_system.ReadSingle(path))
+               for path in (API, CHROME_API)]
+    for path, future in futures:
+      try:
+        filenames = future.Get()
+        for ext in ('json', 'idl'):
+          filename = '%s.%s' % (api_name, ext)
+          if filename in filenames:
+            return path + filename
+          if _EXTENSION_API in filenames:
+            return path + _EXTENSION_API
+      except FileNotFoundError:
+        pass
+    return None
 
   def _GetApiSchema(self, api_name, file_system, version):
     '''Searches |file_system| for |api_name|'s API schema data, and processes
