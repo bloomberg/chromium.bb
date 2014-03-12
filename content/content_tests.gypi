@@ -256,13 +256,10 @@
             'renderer/media/mock_peer_connection_impl.h',
             'renderer/media/mock_web_rtc_peer_connection_handler_client.cc',
             'renderer/media/mock_web_rtc_peer_connection_handler_client.h',
-            'test/webrtc_audio_device_test.cc',
-            'test/webrtc_audio_device_test.h',
           ],
           'dependencies': [
             '../third_party/libjingle/libjingle.gyp:libjingle_webrtc',
             '../third_party/libjingle/libjingle.gyp:libpeerconnection',
-            '../third_party/webrtc/modules/modules.gyp:audio_device',
             '../third_party/webrtc/modules/modules.gyp:video_capture_module',
           ],
         }],
@@ -720,7 +717,6 @@
             'renderer/media/webrtc/webrtc_local_audio_track_adapter_unittest.cc',
             'renderer/media/webrtc/webrtc_video_capturer_adapter_unittest.cc',
             'renderer/media/webrtc_audio_capturer_unittest.cc',
-            'renderer/media/webrtc_audio_device_unittest.cc',
             'renderer/media/webrtc_identity_service_unittest.cc',
             'renderer/media/webrtc_local_audio_source_provider_unittest.cc',
             'renderer/media/webrtc_local_audio_track_unittest.cc',
@@ -729,7 +725,6 @@
             '../third_party/libjingle/libjingle.gyp:libjingle_webrtc',
             '../third_party/libjingle/libjingle.gyp:libpeerconnection',
             '../third_party/webrtc/modules/modules.gyp:video_capture_module',
-            '../third_party/webrtc/voice_engine/voice_engine.gyp:voice_engine',
           ]
         }, {
           'sources!': [

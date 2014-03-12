@@ -2010,15 +2010,6 @@
    fun:_ZN2v88internal18GvnBasicBlockState32*
 }
 {
-   bug_148865
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN7content16RenderThreadImpl4InitEv
-   fun:_ZN7content16RenderThreadImplC2ERKSs
-   fun:_ZN7content16RenderThreadImplC1ERKSs
-   fun:_ZN7content21WebRTCAudioDeviceTest5SetUpEv
-}
-{
    bug_159190
    Memcheck:Uninitialized
    ...

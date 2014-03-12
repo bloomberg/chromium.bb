@@ -2,13 +2,6 @@
 GeolocationGatewayDataProviderCommonTest.*
 GeolocationWifiDataProviderCommonTest.*
 
-# Flaky, see http://crbug.com/131154
-WebRTCAudioDeviceTest.FullDuplexAudioWithAGC
-
-# Flaky, see http://crbug.com/155284
-WebRTCAudioDeviceTest.StartRecording
-WebRTCAudioDeviceTest.PlayLocalFile
-
 # Fail/crash, see http://crbug.com/151939
 WebDragDestTest.URL
 WebDragDestTest.Data
@@ -41,8 +34,6 @@ SmoothScrollGestureControllerTest.Tick
 VideoCaptureManagerTest.CloseWithoutStop
 VideoCaptureManagerTest.CreateAndClose
 VideoCaptureManagerTest.StartUsingId
-WebRTCAudioDeviceTest.WebRtcPlayoutSetupTime
-WebRTCAudioDeviceTest.WebRtcRecordingSetupTime
 
 # http://crbug.com/247601
 FontSerializationTest.StyledFonts

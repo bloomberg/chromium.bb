@@ -1,5 +1,3 @@
 # Flaky, see http://crbug.com/227278
 WebContentsVideoCaptureDeviceTest.WebContentsDestroyed
 CompositingIOSurfaceTransformerTest.*
-# Flaky, see http://crbug.com/167299
-WebRTCAudioDeviceTest.StartPlayout
