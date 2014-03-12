@@ -124,6 +124,8 @@ class GIN_EXPORT ObjectTemplateBuilder {
     CallbackTraits<T>::SetAsFunctionHandler(isolate_, template_, callback);
     return *this;
   }
+  ObjectTemplateBuilder& AddNamedPropertyInterceptor();
+  ObjectTemplateBuilder& AddIndexedPropertyInterceptor();
 
   v8::Local<v8::ObjectTemplate> Build();
 

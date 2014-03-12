@@ -35,6 +35,8 @@
         'function_template.h',
         'gin_export.h',
         'handle.h',
+        'interceptor.cc',
+        'interceptor.h',
         'isolate_holder.cc',
         'modules/console.cc',
         'modules/console.h',
@@ -117,6 +119,7 @@
       ],
       'sources': [
         'converter_unittest.cc',
+        'interceptor_unittest.cc',
         'modules/module_registry_unittest.cc',
         'modules/timer_unittest.cc',
         'per_context_data_unittest.cc',

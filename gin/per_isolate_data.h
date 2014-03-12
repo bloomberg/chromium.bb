@@ -14,6 +14,10 @@
 
 namespace gin {
 
+class IndexedPropertyInterceptor;
+class NamedPropertyInterceptor;
+class WrappableBase;
+
 // There is one instance of PerIsolateData per v8::Isolate managed by Gin. This
 // class stores all the Gin-related data that varies per isolate.
 class GIN_EXPORT PerIsolateData {
@@ -38,6 +42,22 @@ class GIN_EXPORT PerIsolateData {
   v8::Local<v8::ObjectTemplate> GetObjectTemplate(WrapperInfo* info);
   v8::Local<v8::FunctionTemplate> GetFunctionTemplate(WrapperInfo* info);
 
+  // We maintain a map from Wrappable objects that derive from one of the
+  // interceptor interfaces to the interceptor interface pointers.
+  void SetIndexedPropertyInterceptor(WrappableBase* base,
+                                     IndexedPropertyInterceptor* interceptor);
+  void SetNamedPropertyInterceptor(WrappableBase* base,
+                                   NamedPropertyInterceptor* interceptor);
+
+  void ClearIndexedPropertyInterceptor(WrappableBase* base,
+                                       IndexedPropertyInterceptor* interceptor);
+  void ClearNamedPropertyInterceptor(WrappableBase* base,
+                                     NamedPropertyInterceptor* interceptor);
+
+  IndexedPropertyInterceptor* GetIndexedPropertyInterceptor(
+      WrappableBase* base);
+  NamedPropertyInterceptor* GetNamedPropertyInterceptor(WrappableBase* base);
+
   v8::Isolate* isolate() { return isolate_; }
   v8::ArrayBuffer::Allocator* allocator() { return allocator_; }
 
@@ -46,6 +66,10 @@ class GIN_EXPORT PerIsolateData {
       WrapperInfo*, v8::Eternal<v8::ObjectTemplate> > ObjectTemplateMap;
   typedef std::map<
       WrapperInfo*, v8::Eternal<v8::FunctionTemplate> > FunctionTemplateMap;
+  typedef std::map<WrappableBase*, IndexedPropertyInterceptor*>
+      IndexedPropertyInterceptorMap;
+  typedef std::map<WrappableBase*, NamedPropertyInterceptor*>
+      NamedPropertyInterceptorMap;
 
   // PerIsolateData doesn't actually own |isolate_|. Instead, the isolate is
   // owned by the IsolateHolder, which also owns the PerIsolateData.
@@ -53,6 +77,8 @@ class GIN_EXPORT PerIsolateData {
   v8::ArrayBuffer::Allocator* allocator_;
   ObjectTemplateMap object_templates_;
   FunctionTemplateMap function_templates_;
+  IndexedPropertyInterceptorMap indexed_interceptors_;
+  NamedPropertyInterceptorMap named_interceptors_;
 
   DISALLOW_COPY_AND_ASSIGN(PerIsolateData);
 };

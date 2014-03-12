@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/logging.h"
 #include "gin/per_isolate_data.h"
 #include "gin/public/gin_embedders.h"
 
@@ -53,6 +54,56 @@ v8::Local<v8::FunctionTemplate> PerIsolateData::GetFunctionTemplate(
   if (it == function_templates_.end())
     return v8::Local<v8::FunctionTemplate>();
   return it->second.Get(isolate_);
+}
+
+void PerIsolateData::SetIndexedPropertyInterceptor(
+    WrappableBase* base,
+    IndexedPropertyInterceptor* interceptor) {
+  indexed_interceptors_[base] = interceptor;
+}
+
+void PerIsolateData::SetNamedPropertyInterceptor(
+    WrappableBase* base,
+    NamedPropertyInterceptor* interceptor) {
+  named_interceptors_[base] = interceptor;
+}
+
+void PerIsolateData::ClearIndexedPropertyInterceptor(
+    WrappableBase* base,
+    IndexedPropertyInterceptor* interceptor) {
+  IndexedPropertyInterceptorMap::iterator it = indexed_interceptors_.find(base);
+  if (it != indexed_interceptors_.end())
+    indexed_interceptors_.erase(it);
+  else
+    NOTREACHED();
+}
+
+void PerIsolateData::ClearNamedPropertyInterceptor(
+    WrappableBase* base,
+    NamedPropertyInterceptor* interceptor) {
+  NamedPropertyInterceptorMap::iterator it = named_interceptors_.find(base);
+  if (it != named_interceptors_.end())
+    named_interceptors_.erase(it);
+  else
+    NOTREACHED();
+}
+
+IndexedPropertyInterceptor* PerIsolateData::GetIndexedPropertyInterceptor(
+    WrappableBase* base) {
+  IndexedPropertyInterceptorMap::iterator it = indexed_interceptors_.find(base);
+  if (it != indexed_interceptors_.end())
+    return it->second;
+  else
+    return NULL;
+}
+
+NamedPropertyInterceptor* PerIsolateData::GetNamedPropertyInterceptor(
+    WrappableBase* base) {
+  NamedPropertyInterceptorMap::iterator it = named_interceptors_.find(base);
+  if (it != named_interceptors_.end())
+    return it->second;
+  else
+    return NULL;
 }
 
 }  // namespace gin
