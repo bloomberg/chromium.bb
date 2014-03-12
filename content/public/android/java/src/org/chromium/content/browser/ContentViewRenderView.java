@@ -18,6 +18,8 @@ import android.widget.FrameLayout;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
+import org.chromium.base.ObserverList;
+import org.chromium.base.ObserverList.RewindableIterator;
 import org.chromium.base.TraceEvent;
 import org.chromium.ui.base.WindowAndroid;
 
@@ -107,6 +109,8 @@ public class ContentViewRenderView extends FrameLayout {
         private final VSyncMonitor mVSyncMonitor;
         private boolean mVSyncNotificationEnabled;
         private VSyncManager.Listener mVSyncListener;
+        private final ObserverList<VSyncManager.Listener> mCurrentVSyncListeners;
+        private final RewindableIterator<VSyncManager.Listener> mCurrentVSyncListenersIterator;
 
         // The VSyncMonitor gives the timebase for the actual vsync, but we don't want render until
         // we have had a chance for input events to propagate to the compositor thread. This takes
@@ -116,6 +120,8 @@ public class ContentViewRenderView extends FrameLayout {
 
         VSyncAdapter(Context context) {
             mVSyncMonitor = new VSyncMonitor(context, this);
+            mCurrentVSyncListeners = new ObserverList<VSyncManager.Listener>();
+            mCurrentVSyncListenersIterator = mCurrentVSyncListeners.rewindableIterator();
         }
 
         @Override
@@ -132,7 +138,10 @@ public class ContentViewRenderView extends FrameLayout {
 
             if (mVSyncListener != null) {
                 if (mVSyncNotificationEnabled) {
-                    mVSyncListener.onVSync(vsyncTimeMicros);
+                    for (mCurrentVSyncListenersIterator.rewind();
+                            mCurrentVSyncListenersIterator.hasNext();) {
+                        mCurrentVSyncListenersIterator.next().onVSync(vsyncTimeMicros);
+                    }
                     mVSyncMonitor.requestUpdate();
                 } else {
                     // Compensate for input event lag. Input events are delivered immediately on
@@ -149,12 +158,17 @@ public class ContentViewRenderView extends FrameLayout {
         @Override
         public void registerVSyncListener(VSyncManager.Listener listener) {
             if (!mVSyncNotificationEnabled) mVSyncMonitor.requestUpdate();
+            mCurrentVSyncListeners.addObserver(listener);
             mVSyncNotificationEnabled = true;
         }
 
         @Override
         public void unregisterVSyncListener(VSyncManager.Listener listener) {
-            mVSyncNotificationEnabled = false;
+            mCurrentVSyncListeners.removeObserver(listener);
+            mCurrentVSyncListenersIterator.rewind();
+            if (!mCurrentVSyncListenersIterator.hasNext()) {
+                mVSyncNotificationEnabled = false;
+            }
         }
 
         void setVSyncListener(VSyncManager.Listener listener) {
