@@ -465,7 +465,7 @@ void WorkerThreadableWebSocketChannel::Bridge::initialize(const String& sourceUR
     m_syncHelper = syncHelper.get();
 
     RefPtr<Bridge> protect(this);
-    m_loaderProxy.postTaskToLoader(createCallbackTask(&Peer::initialize, reference.release(), AllowCrossThreadAccess(&m_loaderProxy), m_workerClientWrapper, sourceURL.isolatedCopy(), lineNumber, syncHelper.release()));
+    m_loaderProxy.postTaskToLoader(createCallbackTask(&Peer::initialize, reference.release(), AllowCrossThreadAccess(&m_loaderProxy), m_workerClientWrapper, sourceURL, lineNumber, syncHelper.release()));
     if (!waitForMethodCompletion()) {
         // The worker thread has been signalled to shutdown before method completion.
         terminatePeer();
@@ -475,7 +475,7 @@ void WorkerThreadableWebSocketChannel::Bridge::initialize(const String& sourceUR
 void WorkerThreadableWebSocketChannel::Bridge::connect(const KURL& url, const String& protocol)
 {
     ASSERT(m_workerClientWrapper);
-    m_loaderProxy.postTaskToLoader(CallClosureTask::create(bind(&Peer::connect, m_peer, url, protocol.isolatedCopy())));
+    m_loaderProxy.postTaskToLoader(CallClosureTask::create(bind(&Peer::connect, m_peer, url.copy(), protocol.isolatedCopy())));
 }
 
 WebSocketChannel::SendResult WorkerThreadableWebSocketChannel::Bridge::send(const String& message)
