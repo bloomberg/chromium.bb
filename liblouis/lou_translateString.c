@@ -1878,8 +1878,22 @@ translateString ()
 	  break;
 	case CTO_LargeSign:
 	  if (prevTransOpcode == CTO_LargeSign)
-	    if (dest > 0 && checkAttr (currentOutput[dest - 1], CTC_Space, 1))
+          {
+            int hasEndSegment = 0;
+	    while (dest > 0 && checkAttr (currentOutput[dest - 1], CTC_Space, 1))
+            {
+              if (currentOutput[dest - 1] == 0xffff)
+              {
+                hasEndSegment = 1;
+              }
 	      dest--;
+            }
+            if (hasEndSegment != 0)
+            {
+              currentOutput[dest] = 0xffff;
+              dest++;
+            }
+          }
 	  break;
 	case CTO_DecPoint:
 	  if (table->numberSign)
