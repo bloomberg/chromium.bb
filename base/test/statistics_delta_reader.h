@@ -10,13 +10,13 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/metrics/histogram_samples.h"
 
 namespace base {
 
+class HistogramSamples;
+
 // This class acts as a differential reader for histogram samples, enabling
 // tests to check that metrics were recorded as they should be.
-// Before using this class, StatisticsRecoder must be initialized.
 class StatisticsDeltaReader {
  public:
   StatisticsDeltaReader();

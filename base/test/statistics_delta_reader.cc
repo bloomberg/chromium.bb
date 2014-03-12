@@ -5,12 +5,15 @@
 #include "base/test/statistics_delta_reader.h"
 
 #include "base/metrics/histogram.h"
+#include "base/metrics/histogram_samples.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/stl_util.h"
 
 namespace base {
 
 StatisticsDeltaReader::StatisticsDeltaReader() {
+  StatisticsRecorder::Initialize();  // Safe to call multiple times.
+
   // Record any histogram data that exists when the object is created so it can
   // be subtracted later.
   StatisticsRecorder::Histograms histograms;

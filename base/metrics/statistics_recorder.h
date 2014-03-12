@@ -30,7 +30,7 @@ class BASE_EXPORT StatisticsRecorder {
  public:
   typedef std::vector<HistogramBase*> Histograms;
 
-  // Initializes the StatisticsRecorder system.
+  // Initializes the StatisticsRecorder system. Safe to call multiple times.
   static void Initialize();
 
   // Find out if histograms can now be registered into our list.
@@ -89,7 +89,6 @@ class BASE_EXPORT StatisticsRecorder {
   friend class HistogramSnapshotManagerTest;
   friend class HistogramTest;
   friend class SparseHistogramTest;
-  friend class StatisticsDeltaReaderTest;
   friend class StatisticsRecorderTest;
   FRIEND_TEST_ALL_PREFIXES(HistogramDeltaSerializationTest,
                            DeserializeHistogramAndAddSamples);

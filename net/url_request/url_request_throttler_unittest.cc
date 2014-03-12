@@ -6,7 +6,6 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram_samples.h"
-#include "base/metrics/statistics_recorder.h"
 #include "base/pickle.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -172,10 +171,6 @@ class URLRequestThrottlerEntryTest : public testing::Test {
  protected:
   URLRequestThrottlerEntryTest()
       : request_(GURL(), DEFAULT_PRIORITY, NULL, &context_) {}
-
-  static void SetUpTestCase() {
-    base::StatisticsRecorder::Initialize();
-  }
 
   virtual void SetUp();
 
