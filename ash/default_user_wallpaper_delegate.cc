@@ -6,6 +6,7 @@
 
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/shell.h"
+#include "ui/wm/core/window_animations.h"
 
 namespace ash {
 

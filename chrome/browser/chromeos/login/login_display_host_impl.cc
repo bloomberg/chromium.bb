@@ -82,6 +82,7 @@
 #include "ui/gfx/transform.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/window_animations.h"
 #include "url/gurl.h"
 
 namespace {

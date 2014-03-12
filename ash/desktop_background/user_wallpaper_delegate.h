@@ -6,7 +6,6 @@
 #define ASH_DESKTOP_BACKGROUND_USER_WALLPAPER_DELEGATE_H_
 
 #include "ash/ash_export.h"
-#include "ui/wm/core/window_animations.h"
 
 namespace ash {
 
