@@ -140,7 +140,7 @@ IN_PROC_BROWSER_TEST_F(AppWindowAPITest, MAYBE_TestDeprecatedBounds) {
   ASSERT_TRUE(RunAppWindowAPITest("testDeprecatedBounds")) << message_;
 }
 
-#if defined(TOOLKIT_GTK)
+#if defined(TOOLKIT_GTK) || defined(OS_LINUX)
 #define MAYBE_TestInitialBounds DISABLED_TestInitialBounds
 #else
 #define MAYBE_TestInitialBounds TestInitialBounds
