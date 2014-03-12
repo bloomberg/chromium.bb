@@ -16,7 +16,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
+#include "chrome/browser/task_manager/task_manager_browsertest_util.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/gpu_data_manager.h"
@@ -48,6 +50,15 @@
 using extensions::MenuItem;
 using prerender::PrerenderLinkManager;
 using prerender::PrerenderLinkManagerFactory;
+using task_manager::browsertest_util::MatchAboutBlankTab;
+using task_manager::browsertest_util::MatchAnyApp;
+using task_manager::browsertest_util::MatchAnyBackground;
+using task_manager::browsertest_util::MatchAnyTab;
+using task_manager::browsertest_util::MatchAnyWebView;
+using task_manager::browsertest_util::MatchApp;
+using task_manager::browsertest_util::MatchBackground;
+using task_manager::browsertest_util::MatchWebView;
+using task_manager::browsertest_util::WaitForTaskManagerRows;
 using ui::MenuModel;
 
 namespace {
@@ -1065,6 +1076,51 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, NoPrerenderer) {
           Profile::FromBrowserContext(guest_web_contents->GetBrowserContext()));
   ASSERT_TRUE(prerender_link_manager != NULL);
   EXPECT_TRUE(prerender_link_manager->IsEmpty());
+}
+
+// Verify that existing <webview>'s are detected when the task manager starts
+// up.
+IN_PROC_BROWSER_TEST_F(WebViewTest, TaskManagerExistingWebView) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
+
+  LoadGuest("/extensions/platform_apps/web_view/task_manager/guest.html",
+            "web_view/task_manager");
+
+  chrome::ShowTaskManager(browser());  // Show task manager AFTER guest loads.
+
+  const char* guest_title = "WebViewed test content";
+  const char* app_name = "<webview> task manager test";
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchWebView(guest_title)));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAboutBlankTab()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchApp(app_name)));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchBackground(app_name)));
+
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyWebView()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyTab()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyApp()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyBackground()));
+}
+
+// Verify that the task manager notices the creation of new <webview>'s.
+IN_PROC_BROWSER_TEST_F(WebViewTest, TaskManagerNewWebView) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
+
+  chrome::ShowTaskManager(browser());  // Show task manager BEFORE guest loads.
+
+  LoadGuest("/extensions/platform_apps/web_view/task_manager/guest.html",
+            "web_view/task_manager");
+
+  const char* guest_title = "WebViewed test content";
+  const char* app_name = "<webview> task manager test";
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchWebView(guest_title)));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAboutBlankTab()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchApp(app_name)));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchBackground(app_name)));
+
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyWebView()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyTab()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyApp()));
+  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyBackground()));
 }
 
 // This tests cookie isolation for packaged apps with webview tags. It navigates

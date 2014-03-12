@@ -8,13 +8,16 @@
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/test_timeouts.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/task_manager/resource_provider.h"
 #include "chrome/browser/task_manager/task_manager.h"
+#include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace task_manager {
 namespace browsertest_util {
@@ -142,6 +145,42 @@ void WaitForTaskManagerRows(int required_count,
   observer.RunUntilSatisfied();
   model->RemoveObserver(&observer);
 }
+
+base::string16 MatchTab(const char* title) {
+  return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_TAB_PREFIX,
+                                    base::ASCIIToUTF16(title));
+}
+
+base::string16 MatchAnyTab() { return MatchTab("*"); }
+
+base::string16 MatchAboutBlankTab() { return MatchTab("about:blank"); }
+
+base::string16 MatchExtension(const char* title) {
+  return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_EXTENSION_PREFIX,
+                                    base::ASCIIToUTF16(title));
+}
+
+base::string16 MatchAnyExtension() { return MatchExtension("*"); }
+
+base::string16 MatchApp(const char* title) {
+  return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_APP_PREFIX,
+                                    base::ASCIIToUTF16(title));
+}
+
+base::string16 MatchAnyApp() { return MatchApp("*"); }
+
+base::string16 MatchWebView(const char* title) {
+  return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_WEBVIEW_TAG_PREFIX,
+                                    base::ASCIIToUTF16(title));
+}
+
+base::string16 MatchAnyWebView() { return MatchWebView("*"); }
+
+base::string16 MatchBackground(const char* title) {
+  return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_BACKGROUND_PREFIX,
+                                    base::ASCIIToUTF16(title));
+}
+base::string16 MatchAnyBackground() { return MatchBackground("*"); }
 
 }  // namespace browsertest_util
 }  // namespace task_manager

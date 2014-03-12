@@ -6,7 +6,6 @@
 
 #include "base/files/file_path.h"
 #include "base/strings/stringprintf.h"
-#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/devtools/devtools_window.h"
@@ -46,6 +45,13 @@
 #include "ui/base/l10n/l10n_util.h"
 
 using content::WebContents;
+using task_manager::browsertest_util::MatchAboutBlankTab;
+using task_manager::browsertest_util::MatchAnyApp;
+using task_manager::browsertest_util::MatchAnyExtension;
+using task_manager::browsertest_util::MatchAnyTab;
+using task_manager::browsertest_util::MatchApp;
+using task_manager::browsertest_util::MatchExtension;
+using task_manager::browsertest_util::MatchTab;
 using task_manager::browsertest_util::WaitForTaskManagerRows;
 
 namespace {
@@ -84,29 +90,6 @@ class TaskManagerBrowserTest : public ExtensionBrowserTest {
         base::FilePath(base::FilePath::kCurrentDirectory),
         base::FilePath(kTitle1File));
   }
-
-  base::string16 MatchTab(const char* title) {
-    return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_TAB_PREFIX,
-                                      base::ASCIIToUTF16(title));
-  }
-
-  base::string16 MatchAnyTab() { return MatchTab("*"); }
-
-  base::string16 MatchAboutBlankTab() { return MatchTab("about:blank"); }
-
-  base::string16 MatchExtension(const char* title) {
-    return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_EXTENSION_PREFIX,
-                                      base::ASCIIToUTF16(title));
-  }
-
-  base::string16 MatchAnyExtension() { return MatchExtension("*"); }
-
-  base::string16 MatchApp(const char* title) {
-    return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_APP_PREFIX,
-                                      base::ASCIIToUTF16(title));
-  }
-
-  base::string16 MatchAnyApp() { return MatchApp("*"); }
 
   int FindResourceIndex(const base::string16& title) {
     for (int i = 0; i < model()->ResourceCount(); ++i) {

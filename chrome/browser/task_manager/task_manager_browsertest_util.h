@@ -21,6 +21,19 @@ namespace browsertest_util {
 void WaitForTaskManagerRows(int resource_count,
                             const base::string16& title_pattern);
 
+// ASCII matcher convenience functions for use with WaitForTaskManagerRows()
+base::string16 MatchTab(const char* title);         // "Tab: " + title
+base::string16 MatchAnyTab();                       // "Tab: *"
+base::string16 MatchAboutBlankTab();                // "Tab: about:blank"
+base::string16 MatchExtension(const char* title);   // "Extension: " + title
+base::string16 MatchAnyExtension();                 // "Extension: *"
+base::string16 MatchApp(const char* title);         // "App: " + title
+base::string16 MatchAnyApp();                       // "App: *"
+base::string16 MatchWebView(const char* title);     // "WebView: " + title
+base::string16 MatchAnyWebView();                   // "WebView: *"
+base::string16 MatchBackground(const char* title);  // "Background: " + title
+base::string16 MatchAnyBackground();                // "Background: *"
+
 }  // namespace browsertest_util
 }  // namespace task_manager
 
