@@ -47,16 +47,22 @@ var SwipeDirection = {
 };
 
 /**
- * The default weight of a key in the X direction.
+ * The ratio between the width and height of the key when in portrait mode.
  * @type {number}
  */
-var DEFAULT_KEY_WEIGHT_X = 100;
+var KEY_ASPECT_RATIO_PORTRAIT = 1;
 
 /**
- * The default weight of a key in the Y direction.
+ * The ratio between the width and height of the key when in landscape mode.
  * @type {number}
  */
-var DEFAULT_KEY_WEIGHT_Y = 70;
+var KEY_ASPECT_RATIO_LANDSCAPE = 1.46;
+
+/**
+ * The default weight of a key.
+ * @type {number}
+ */
+var DEFAULT_KEY_WEIGHT = 100;
 
 /**
  * The default volume for keyboard sounds.
@@ -72,6 +78,12 @@ var DEFAULT_VOLUME = 0.2;
 // number before the key is rendered.
 var KEY_PADDING_TOP = 1;
 var KEY_PADDING_BOTTOM = 1;
+
+/**
+ * The maximum number of extra pixels before a resize is triggered.
+ * @type {number}
+ */
+var RESIZE_THRESHOLD = 50;
 
 /**
  * The size of the pool to use for playing audio sounds on key press. This is to
