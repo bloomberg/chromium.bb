@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "components/dom_distiller/core/distiller_page.h"
 #include "url/gurl.h"
@@ -62,6 +63,8 @@ class PageDistiller : public DistillerPage::Delegate {
 
   scoped_ptr<DistillerPage> distiller_page_;
   PageDistillerCallback page_distiller_callback_;
+
+  base::WeakPtrFactory<PageDistiller> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PageDistiller);
 };

@@ -183,36 +183,52 @@ namespace dom_distiller {
 
 class TestDistillerURLFetcher : public DistillerURLFetcher {
  public:
-  TestDistillerURLFetcher() : DistillerURLFetcher(NULL) {
+  explicit TestDistillerURLFetcher(bool delay_fetch)
+      : DistillerURLFetcher(NULL), delay_fetch_(delay_fetch) {
     responses_[kImageURLs[0]] = string(kImageData[0]);
     responses_[kImageURLs[1]] = string(kImageData[1]);
   }
 
-  void CallCallback(string url, const URLFetcherCallback& callback) {
-    callback.Run(responses_[url]);
-  }
-
   virtual void FetchURL(const string& url,
                         const URLFetcherCallback& callback) OVERRIDE {
-    ASSERT_TRUE(base::MessageLoop::current());
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&TestDistillerURLFetcher::CallCallback,
-                   base::Unretained(this),
-                   url,
-                   callback));
+    DCHECK(callback_.is_null());
+    url_ = url;
+    callback_ = callback;
+    if (!delay_fetch_) {
+      PostCallbackTask();
+    }
   }
 
+  void PostCallbackTask() {
+    ASSERT_TRUE(base::MessageLoop::current());
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(callback_, responses_[url_]));
+  }
+
+ private:
   std::map<string, string> responses_;
+  string url_;
+  URLFetcherCallback callback_;
+  bool delay_fetch_;
 };
 
 class TestDistillerURLFetcherFactory : public DistillerURLFetcherFactory {
  public:
   TestDistillerURLFetcherFactory() : DistillerURLFetcherFactory(NULL) {}
+
   virtual ~TestDistillerURLFetcherFactory() {}
   virtual DistillerURLFetcher* CreateDistillerURLFetcher() const OVERRIDE {
-    return new TestDistillerURLFetcher();
+    return new TestDistillerURLFetcher(false);
   }
+};
+
+class MockDistillerURLFetcherFactory : public DistillerURLFetcherFactory {
+ public:
+  explicit MockDistillerURLFetcherFactory()
+      : DistillerURLFetcherFactory(NULL) {}
+  virtual ~MockDistillerURLFetcherFactory() {}
+
+  MOCK_CONST_METHOD0(CreateDistillerURLFetcher, DistillerURLFetcher*());
 };
 
 class MockDistillerPage : public DistillerPage {
@@ -221,7 +237,8 @@ class MockDistillerPage : public DistillerPage {
   MOCK_METHOD1(LoadURLImpl, void(const GURL& gurl));
   MOCK_METHOD1(ExecuteJavaScriptImpl, void(const string& script));
 
-  explicit MockDistillerPage(DistillerPage::Delegate* delegate)
+  explicit MockDistillerPage(
+      const base::WeakPtr<DistillerPage::Delegate>& delegate)
       : DistillerPage(delegate) {}
 };
 
@@ -229,10 +246,10 @@ class MockDistillerPageFactory : public DistillerPageFactory {
  public:
   MOCK_CONST_METHOD1(
       CreateDistillerPageMock,
-      DistillerPage*(DistillerPage::Delegate* delegate));
+      DistillerPage*(const base::WeakPtr<DistillerPage::Delegate>& delegate));
 
   virtual scoped_ptr<DistillerPage> CreateDistillerPage(
-      DistillerPage::Delegate* delegate) const OVERRIDE {
+      const base::WeakPtr<DistillerPage::Delegate>& delegate) const OVERRIDE {
     return scoped_ptr<DistillerPage>(CreateDistillerPageMock(delegate));
   }
 };
@@ -269,7 +286,7 @@ ACTION_P3(DistillerPageOnExecuteJavaScriptDone, distiller_page, url, list) {
 }
 
 ACTION_P2(CreateMockDistillerPage, list, kurl) {
-  DistillerPage::Delegate* delegate = arg0;
+  const base::WeakPtr<DistillerPage::Delegate>& delegate = arg0;
   MockDistillerPage* distiller_page = new MockDistillerPage(delegate);
   EXPECT_CALL(*distiller_page, InitImpl());
   EXPECT_CALL(*distiller_page, LoadURLImpl(kurl))
@@ -280,11 +297,25 @@ ACTION_P2(CreateMockDistillerPage, list, kurl) {
   return distiller_page;
 }
 
+ACTION_P2(CreateMockDistillerPageWithPendingJSCallback,
+          distiller_page_ptr,
+          kurl) {
+  const base::WeakPtr<DistillerPage::Delegate>& delegate = arg0;
+  MockDistillerPage* distiller_page = new MockDistillerPage(delegate);
+  *distiller_page_ptr = distiller_page;
+  EXPECT_CALL(*distiller_page, InitImpl());
+  EXPECT_CALL(*distiller_page, LoadURLImpl(kurl))
+      .WillOnce(testing::InvokeWithoutArgs(distiller_page,
+                                           &DistillerPage::OnLoadURLDone));
+  EXPECT_CALL(*distiller_page, ExecuteJavaScriptImpl(_));
+  return distiller_page;
+}
+
 ACTION_P3(CreateMockDistillerPages,
           distiller_data,
           pages_size,
           start_page_num) {
-  DistillerPage::Delegate* delegate = arg0;
+  const base::WeakPtr<DistillerPage::Delegate>& delegate = arg0;
   MockDistillerPage* distiller_page = new MockDistillerPage(delegate);
   EXPECT_CALL(*distiller_page, InitImpl());
   {
@@ -583,6 +614,52 @@ TEST_F(DistillerTest, DeletingArticleDoesNotInterfereWithUpdates) {
   article_proto_.reset();
   VerifyIncrementalUpdatesMatch(
       distiller_data.get(), kNumPages, in_sequence_updates_, start_page_num);
+}
+
+TEST_F(DistillerTest, CancelWithDelayedImageFetchCallback) {
+  base::MessageLoopForUI loop;
+  vector<int> image_indices;
+  image_indices.push_back(0);
+  scoped_ptr<base::ListValue> distilled_value =
+      CreateDistilledValueReturnedFromJS(kTitle, kContent, image_indices, "");
+  EXPECT_CALL(page_factory_, CreateDistillerPageMock(_))
+      .WillOnce(CreateMockDistillerPage(distilled_value.get(), GURL(kURL)));
+
+  TestDistillerURLFetcher* delayed_fetcher = new TestDistillerURLFetcher(true);
+  MockDistillerURLFetcherFactory url_fetcher_factory;
+  EXPECT_CALL(url_fetcher_factory, CreateDistillerURLFetcher())
+      .WillOnce(Return(delayed_fetcher));
+  distiller_.reset(new DistillerImpl(page_factory_, url_fetcher_factory));
+  distiller_->Init();
+  DistillPage(kURL);
+  base::MessageLoop::current()->RunUntilIdle();
+
+  // Post callback from the url fetcher and then delete the distiller.
+  delayed_fetcher->PostCallbackTask();
+  distiller_.reset();
+
+  base::MessageLoop::current()->RunUntilIdle();
+}
+
+TEST_F(DistillerTest, CancelWithDelayedJSCallback) {
+  base::MessageLoopForUI loop;
+  scoped_ptr<base::ListValue> distilled_value =
+      CreateDistilledValueReturnedFromJS(kTitle, kContent, vector<int>(), "");
+  MockDistillerPage* distiller_page = NULL;
+  EXPECT_CALL(page_factory_, CreateDistillerPageMock(_))
+      .WillOnce(CreateMockDistillerPageWithPendingJSCallback(&distiller_page,
+                                                             GURL(kURL)));
+  distiller_.reset(new DistillerImpl(page_factory_, url_fetcher_factory_));
+  distiller_->Init();
+  DistillPage(kURL);
+  base::MessageLoop::current()->RunUntilIdle();
+
+  ASSERT_TRUE(distiller_page);
+  // Post the task to execute javascript and then delete the distiller.
+  distiller_page->OnExecuteJavaScriptDone(GURL(kURL), distilled_value.get());
+  distiller_.reset();
+
+  base::MessageLoop::current()->RunUntilIdle();
 }
 
 }  // namespace dom_distiller

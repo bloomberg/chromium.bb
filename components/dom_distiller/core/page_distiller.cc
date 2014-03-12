@@ -24,7 +24,10 @@ DistilledPageInfo::DistilledPageInfo() {}
 DistilledPageInfo::~DistilledPageInfo() {}
 
 PageDistiller::PageDistiller(const DistillerPageFactory& distiller_page_factory)
-    : distiller_page_(distiller_page_factory.CreateDistillerPage(this).Pass()) {
+    : weak_factory_(this) {
+  distiller_page_ =
+      distiller_page_factory.CreateDistillerPage(weak_factory_.GetWeakPtr())
+          .Pass();
 }
 
 PageDistiller::~PageDistiller() {}

@@ -50,11 +50,12 @@ DistillerImpl::DistillerImpl(
     const DistillerPageFactory& distiller_page_factory,
     const DistillerURLFetcherFactory& distiller_url_fetcher_factory)
     : distiller_url_fetcher_factory_(distiller_url_fetcher_factory),
-      max_pages_in_article_(kMaxPagesInArticle) {
+      max_pages_in_article_(kMaxPagesInArticle),
+      weak_factory_(this) {
   page_distiller_.reset(new PageDistiller(distiller_page_factory));
 }
 
-DistillerImpl::~DistillerImpl() { DCHECK(AreAllPagesFinished()); }
+DistillerImpl::~DistillerImpl() {}
 
 void DistillerImpl::Init() {
   DCHECK(AreAllPagesFinished());
@@ -123,7 +124,7 @@ void DistillerImpl::DistillNextPage() {
     page_distiller_->DistillPage(
         url,
         base::Bind(&DistillerImpl::OnPageDistillationFinished,
-                   base::Unretained(this),
+                   weak_factory_.GetWeakPtr(),
                    page_num,
                    url));
   }
@@ -186,7 +187,7 @@ void DistillerImpl::FetchImage(int page_num,
 
   fetcher->FetchURL(item,
                     base::Bind(&DistillerImpl::OnFetchImageDone,
-                               base::Unretained(this),
+                               weak_factory_.GetWeakPtr(),
                                page_num,
                                base::Unretained(fetcher),
                                image_id));

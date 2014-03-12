@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "url/gurl.h"
 
@@ -26,7 +27,8 @@ class DistillerPage {
                                          const base::Value* value) {}
   };
 
-  explicit DistillerPage(Delegate* delegate);
+  // Specifies the Delegate that owns this distiller page.
+  explicit DistillerPage(const base::WeakPtr<Delegate>& delegate);
 
   virtual ~DistillerPage();
 
@@ -86,7 +88,8 @@ class DistillerPage {
   State state_;
 
  private:
-  Delegate* delegate_;
+  // The pointer to the delegate that owns this distiller page.
+  base::WeakPtr<Delegate> delegate_;
   DISALLOW_COPY_AND_ASSIGN(DistillerPage);
 };
 
@@ -96,7 +99,7 @@ class DistillerPageFactory {
   virtual ~DistillerPageFactory();
 
   virtual scoped_ptr<DistillerPage> CreateDistillerPage(
-      DistillerPage::Delegate* delegate) const = 0;
+      const base::WeakPtr<DistillerPage::Delegate>& delegate) const = 0;
 };
 
 }  // namespace dom_distiller

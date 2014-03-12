@@ -12,8 +12,9 @@ namespace dom_distiller {
 DistillerPageFactory::~DistillerPageFactory() {}
 
 DistillerPage::DistillerPage(
-    DistillerPage::Delegate* delegate)
+    const base::WeakPtr<DistillerPage::Delegate>& delegate)
     : state_(NO_CONTEXT), delegate_(delegate) {
+  DCHECK(delegate_.get());
 }
 
 DistillerPage::~DistillerPage() {
@@ -42,16 +43,14 @@ void DistillerPage::ExecuteJavaScript(const std::string& script) {
 void DistillerPage::OnLoadURLDone() {
   DCHECK_EQ(LOADING_PAGE, state_);
   state_ = PAGE_AVAILABLE;
-  if (!delegate_)
-    return;
+  DCHECK(delegate_.get());
   delegate_->OnLoadURLDone();
 }
 
 void DistillerPage::OnLoadURLFailed() {
   state_ = PAGELOAD_FAILED;
   scoped_ptr<base::Value> empty(base::Value::CreateNullValue());
-  if (!delegate_)
-    return;
+  DCHECK(delegate_.get());
   delegate_->OnExecuteJavaScriptDone(GURL(), empty.get());
 }
 
@@ -59,8 +58,7 @@ void DistillerPage::OnExecuteJavaScriptDone(const GURL& page_url,
                                             const base::Value* value) {
   DCHECK_EQ(EXECUTING_JAVASCRIPT, state_);
   state_ = PAGE_AVAILABLE;
-  if (!delegate_)
-    return;
+  DCHECK(delegate_.get());
   delegate_->OnExecuteJavaScriptDone(page_url, value);
 }
 

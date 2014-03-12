@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "base/memory/weak_ptr.h"
 #include "components/dom_distiller/core/article_distillation_update.h"
 #include "components/dom_distiller/core/distiller_url_fetcher.h"
 #include "components/dom_distiller/core/page_distiller.h"
@@ -178,6 +179,8 @@ class DistillerImpl : public Distiller {
   base::hash_set<std::string> seen_urls_;
 
   size_t max_pages_in_article_;
+
+  base::WeakPtrFactory<DistillerImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DistillerImpl);
 };

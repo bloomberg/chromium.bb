@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_DOM_DISTILLER_CORE_URL_UTILS_ANDROID_H
-#define COMPONENTS_DOM_DISTILLER_CORE_URL_UTILS_ANDROID_H
+#ifndef COMPONENTS_DOM_DISTILLER_CORE_URL_UTILS_ANDROID_H_
+#define COMPONENTS_DOM_DISTILLER_CORE_URL_UTILS_ANDROID_H_
 
 #include <jni.h>
 
@@ -24,4 +24,4 @@ bool RegisterUrlUtils(JNIEnv* env);
 
 }  // namespace dom_distiller
 
-#endif  // COMPONENTS_DOM_DISTILLER_CORE_URL_UTILS_ANDROID_H
+#endif  // COMPONENTS_DOM_DISTILLER_CORE_URL_UTILS_ANDROID_H_

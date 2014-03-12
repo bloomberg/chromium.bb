@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/values.h"
 #include "components/dom_distiller/content/distiller_page_web_contents.h"
@@ -62,8 +63,9 @@ class DistillerPageWebContentsTest
 
 IN_PROC_BROWSER_TEST_F(DistillerPageWebContentsTest, LoadPage) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  base::WeakPtrFactory<DistillerPage::Delegate> weak_factory(this);
   DistillerPageWebContents distiller_page(
-      this, shell()->web_contents()->GetBrowserContext());
+      weak_factory.GetWeakPtr(), shell()->web_contents()->GetBrowserContext());
   distiller_page_ = &distiller_page;
   distiller_page.Init();
   base::RunLoop run_loop;
