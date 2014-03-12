@@ -1530,6 +1530,16 @@
     ]
   },
 
+  "QuickCheckEnabled": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "test_policy": { "QuickCheckEnabled": true },
+    "pref_mappings": [
+      { "pref": "proxy.quick_check_enabled",
+        "local_state": true
+      }
+    ]
+  },
+
   "HideWebStoreIcon": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "HideWebStoreIcon": true },

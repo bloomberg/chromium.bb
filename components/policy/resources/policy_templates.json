@@ -118,7 +118,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 260
+#   For your editing convenience: highest ID currently used: 261
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -307,6 +307,25 @@
       If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
       If this policy is left not set, this will be enabled but the user will be able to change it.''',
+    },
+    {
+      'name': 'QuickCheckEnabled',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': [ 'chrome.*:33-', 'chrome_os:33-' ],
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': False,
+      },
+      'example_value': True,
+      'id': 261,
+      'caption': '''Enable WPAD optimization''',
+      'desc': '''Enables WPAD optimization in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing this setting.
+
+      Setting this to enabled causes Chrome to wait for a shorter interval for DNS-based WPAD servers.
+
+      If this policy is left not set, this will be enabled and the user will not
+      be able to change it..''',
     },
     {
       'name': 'DisableSpdy',

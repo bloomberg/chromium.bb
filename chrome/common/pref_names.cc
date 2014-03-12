@@ -2669,5 +2669,4 @@ const char kPartnerBookmarkMappings[] = "partnerbookmarks.mappings";
 
 // Whether DNS Quick Check is disabled in proxy resolution.
 const char kQuickCheckEnabled[] = "proxy.quick_check_enabled";
-
 }  // namespace prefs
