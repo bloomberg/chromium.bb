@@ -138,6 +138,17 @@
       }
     },
     {
+      "url": "file://tough_scheduling_cases/raf.html?heavy_first_frame",
+      "why": "Test a requestAnimationFrame handler with a heavy first frame",
+      "synthetic_delays": {
+        "cc.BeginMainFrame": { "target_duration": 0.15 }
+      }
+    },
+    {
+      "url": "file://tough_scheduling_cases/raf_animation.html",
+      "why": "Test a requestAnimationFrame handler with concurrent CSS animation"
+    },
+    {
       "url": "file://tough_scheduling_cases/raf_touch_animation.html",
       "why": "Stress test for the scheduler"
     },
@@ -156,6 +167,11 @@
         "cc.BeginMainFrame": { "target_duration": 0.012 },
         "cc.DrawAndSwap": { "target_duration": 0.012 }
       }
+    },
+    {
+      "url": "file://tough_scheduling_cases/split_animation.html",
+      "why": "Both main and impl thread animating concurrently",
+      "smoothness": { "action": "wait", "seconds": 3 }
     }
   ]
 }
