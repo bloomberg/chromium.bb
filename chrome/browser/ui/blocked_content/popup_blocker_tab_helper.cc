@@ -117,6 +117,8 @@ void PopupBlockerTabHelper::ShowBlockedPopup(int32 id) {
   BlockedRequest* popup = blocked_popups_.Lookup(id);
   if (!popup)
     return;
+  // We set user_gesture to true here, so the new popup gets correctly focused.
+  popup->params.user_gesture = true;
 #if defined(OS_ANDROID)
   TabModelList::HandlePopupNavigation(&popup->params);
 #else
