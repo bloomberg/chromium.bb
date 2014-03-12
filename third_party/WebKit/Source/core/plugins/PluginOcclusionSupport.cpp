@@ -179,7 +179,7 @@ void getPluginOcclusions(Element* element, Widget* parentWidget, const IntRect& 
 
         RenderObject* iframeRenderer = element->renderer();
 
-        if (element->hasTagName(HTMLNames::iframeTag) && intersectsRect(iframeRenderer, frameRect)) {
+        if (isHTMLIFrameElement(*element) && intersectsRect(iframeRenderer, frameRect)) {
             getObjectStack(iframeRenderer, &iframeZstack);
             if (iframeIsAbovePlugin(iframeZstack, pluginZstack))
                 addToOcclusions(toRenderBox(iframeRenderer), occlusions);

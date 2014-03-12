@@ -1010,13 +1010,13 @@ void XMLDocumentParser::startElementNs(const AtomicString& localName, const Atom
 
     m_currentNode->parserAppendChild(newElement.get());
 
-    if (newElement->hasTagName(HTMLNames::templateTag))
-        pushCurrentNode(toHTMLTemplateElement(newElement.get())->content());
+    if (isHTMLTemplateElement(*newElement))
+        pushCurrentNode(toHTMLTemplateElement(*newElement).content());
     else
         pushCurrentNode(newElement.get());
 
-    if (newElement->hasTagName(HTMLNames::htmlTag))
-        toHTMLHtmlElement(newElement)->insertedByParser();
+    if (isHTMLHtmlElement(*newElement))
+        toHTMLHtmlElement(*newElement).insertedByParser();
 
     if (!m_parsingFragment && isFirstElement && document()->frame())
         document()->frame()->loader().dispatchDocumentElementAvailable();

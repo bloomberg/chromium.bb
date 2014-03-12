@@ -28,7 +28,6 @@
 #include "Internals.h"
 
 #include <v8.h>
-#include "HTMLNames.h"
 #include "InspectorFrontendClientLocal.h"
 #include "InternalProfilers.h"
 #include "InternalRuntimeFlags.h"
@@ -378,7 +377,7 @@ bool Internals::isValidContentSelect(Element* insertionPoint, ExceptionState& ex
         return false;
     }
 
-    return insertionPoint->hasTagName(contentTag) && toHTMLContentElement(insertionPoint)->isSelectValid();
+    return isHTMLContentElement(*insertionPoint) && toHTMLContentElement(*insertionPoint).isSelectValid();
 }
 
 Node* Internals::treeScopeRootNode(Node* node, ExceptionState& exceptionState)
@@ -703,12 +702,13 @@ String Internals::visiblePlaceholder(Element* element)
 
 void Internals::selectColorInColorChooser(Element* element, const String& colorValue)
 {
-    if (!element->hasTagName(inputTag))
+    ASSERT(element);
+    if (!isHTMLInputElement(*element))
         return;
     Color color;
     if (!color.setFromString(colorValue))
         return;
-    toHTMLInputElement(element)->selectColorInColorChooser(color);
+    toHTMLInputElement(*element).selectColorInColorChooser(color);
 }
 
 bool Internals::hasAutofocusRequest(Document* document)
@@ -971,11 +971,11 @@ bool Internals::wasLastChangeUserEdit(Element* textField, ExceptionState& except
         return false;
     }
 
-    if (textField->hasTagName(inputTag))
-        return toHTMLInputElement(textField)->lastChangeWasUserEdit();
+    if (isHTMLInputElement(*textField))
+        return toHTMLInputElement(*textField).lastChangeWasUserEdit();
 
-    if (textField->hasTagName(textareaTag))
-        return toHTMLTextAreaElement(textField)->lastChangeWasUserEdit();
+    if (isHTMLTextAreaElement(*textField))
+        return toHTMLTextAreaElement(*textField).lastChangeWasUserEdit();
 
     exceptionState.throwDOMException(InvalidNodeTypeError, "The element provided is not a TEXTAREA.");
     return false;
@@ -988,8 +988,8 @@ bool Internals::elementShouldAutoComplete(Element* element, ExceptionState& exce
         return false;
     }
 
-    if (element->hasTagName(inputTag))
-        return toHTMLInputElement(element)->shouldAutocomplete();
+    if (isHTMLInputElement(*element))
+        return toHTMLInputElement(*element).shouldAutocomplete();
 
     exceptionState.throwDOMException(InvalidNodeTypeError, "The element provided is not an INPUT.");
     return false;
@@ -1008,11 +1008,11 @@ String Internals::suggestedValue(Element* element, ExceptionState& exceptionStat
     }
 
     String suggestedValue;
-    if (element->hasTagName(inputTag))
-        suggestedValue = toHTMLInputElement(element)->suggestedValue();
+    if (isHTMLInputElement(*element))
+        suggestedValue = toHTMLInputElement(*element).suggestedValue();
 
-    if (element->hasTagName(textareaTag))
-        suggestedValue = toHTMLTextAreaElement(element)->suggestedValue();
+    if (isHTMLTextAreaElement(*element))
+        suggestedValue = toHTMLTextAreaElement(*element).suggestedValue();
     return suggestedValue;
 }
 
@@ -1028,11 +1028,11 @@ void Internals::setSuggestedValue(Element* element, const String& value, Excepti
         return;
     }
 
-    if (element->hasTagName(inputTag))
-        toHTMLInputElement(element)->setSuggestedValue(value);
+    if (isHTMLInputElement(*element))
+        toHTMLInputElement(*element).setSuggestedValue(value);
 
-    if (element->hasTagName(textareaTag))
-        toHTMLTextAreaElement(element)->setSuggestedValue(value);
+    if (isHTMLTextAreaElement(*element))
+        toHTMLTextAreaElement(*element).setSuggestedValue(value);
 }
 
 void Internals::setEditingValue(Element* element, const String& value, ExceptionState& exceptionState)
@@ -1042,12 +1042,12 @@ void Internals::setEditingValue(Element* element, const String& value, Exception
         return;
     }
 
-    if (!element->hasTagName(inputTag)) {
+    if (!isHTMLInputElement(*element)) {
         exceptionState.throwDOMException(InvalidNodeTypeError, "The element provided is not an INPUT.");
         return;
     }
 
-    toHTMLInputElement(element)->setEditingValue(value);
+    toHTMLInputElement(*element).setEditingValue(value);
 }
 
 void Internals::setAutofilled(Element* element, bool enabled, ExceptionState& exceptionState)
@@ -2102,8 +2102,8 @@ void Internals::updateLayoutIgnorePendingStylesheetsAndRunPostLayoutTasks(Node* 
         document = contextDocument();
     } else if (node->isDocumentNode()) {
         document = toDocument(node);
-    } else if (node->hasTagName(HTMLNames::iframeTag)) {
-        document = toHTMLIFrameElement(node)->contentDocument();
+    } else if (isHTMLIFrameElement(*node)) {
+        document = toHTMLIFrameElement(*node).contentDocument();
     } else {
         exceptionState.throwTypeError("The node provided is neither a document nor an IFrame.");
         return;
@@ -2285,12 +2285,13 @@ String Internals::baseURL(Document* document, ExceptionState& exceptionState)
 
 bool Internals::isSelectPopupVisible(Node* node)
 {
-    if (!node->hasTagName(HTMLNames::selectTag))
+    ASSERT(node);
+    if (!isHTMLSelectElement(*node))
         return false;
 
-    HTMLSelectElement* select = toHTMLSelectElement(node);
+    HTMLSelectElement& select = toHTMLSelectElement(*node);
 
-    RenderObject* renderer = select->renderer();
+    RenderObject* renderer = select.renderer();
     if (!renderer->isMenuList())
         return false;
 
@@ -2343,12 +2344,12 @@ void Internals::setZoomFactor(float factor)
 
 void Internals::setShouldRevealPassword(Element* element, bool reveal, ExceptionState& exceptionState)
 {
-    if (!element || !element->hasTagName(inputTag)) {
+    if (!isHTMLInputElement(element)) {
         exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::argumentNullOrIncorrectType(1, "Element"));
         return;
     }
 
-    return toHTMLInputElement(element)->setShouldRevealPassword(reveal);
+    return toHTMLInputElement(*element).setShouldRevealPassword(reveal);
 }
 
 namespace {

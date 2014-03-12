@@ -221,8 +221,8 @@ void Clipboard::setDragImage(Element* image, int x, int y, ExceptionState& excep
         return;
     }
     IntPoint location(x, y);
-    if (image->hasTagName(HTMLNames::imgTag) && !image->inDocument())
-        setDragImageResource(toHTMLImageElement(image)->cachedImage(), location);
+    if (isHTMLImageElement(*image) && !image->inDocument())
+        setDragImageResource(toHTMLImageElement(*image).cachedImage(), location);
     else
         setDragImageElement(image, location);
 }

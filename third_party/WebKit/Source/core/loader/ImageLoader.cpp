@@ -22,7 +22,6 @@
 #include "config.h"
 #include "core/loader/ImageLoader.h"
 
-#include "HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/events/Event.h"
@@ -380,8 +379,8 @@ void ImageLoader::dispatchPendingBeforeLoadEvent()
     loadEventSender().cancelEvent(this);
     m_hasPendingLoadEvent = false;
 
-    if (m_element->hasTagName(HTMLNames::objectTag))
-        toHTMLObjectElement(m_element)->renderFallbackContent();
+    if (isHTMLObjectElement(*m_element))
+        toHTMLObjectElement(*m_element).renderFallbackContent();
 
     // Only consider updating the protection ref-count of the Element immediately before returning
     // from this function as doing so might result in the destruction of this ImageLoader.

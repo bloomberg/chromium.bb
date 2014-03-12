@@ -215,14 +215,15 @@ PassRefPtr<FormSubmission> FormSubmission::create(HTMLFormElement* form, const A
     bool containsPasswordData = false;
     for (unsigned i = 0; i < form->associatedElements().size(); ++i) {
         FormAssociatedElement* control = form->associatedElements()[i];
-        HTMLElement* element = toHTMLElement(control);
-        if (!element->isDisabledFormControl())
+        ASSERT(control);
+        HTMLElement& element = toHTMLElement(*control);
+        if (!element.isDisabledFormControl())
             control->appendFormData(*domFormData, isMultiPartForm);
-        if (element->hasTagName(inputTag)) {
-            HTMLInputElement* input = toHTMLInputElement(element);
-            if (input->isTextField())
-                formValues.append(pair<String, String>(input->name().string(), input->value()));
-            if (input->isPasswordField() && !input->value().isEmpty())
+        if (isHTMLInputElement(element)) {
+            HTMLInputElement& input = toHTMLInputElement(element);
+            if (input.isTextField())
+                formValues.append(pair<String, String>(input.name().string(), input.value()));
+            if (input.isPasswordField() && !input.value().isEmpty())
                 containsPasswordData = true;
         }
     }
