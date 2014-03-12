@@ -284,6 +284,16 @@ void BookmarkModel::EndExtensiveChanges() {
   }
 }
 
+void BookmarkModel::BeginGroupedChanges() {
+  FOR_EACH_OBSERVER(BookmarkModelObserver, observers_,
+                    GroupedBookmarkChangesBeginning(this));
+}
+
+void BookmarkModel::EndGroupedChanges() {
+  FOR_EACH_OBSERVER(BookmarkModelObserver, observers_,
+                    GroupedBookmarkChangesEnded(this));
+}
+
 void BookmarkModel::Remove(const BookmarkNode* parent, int index) {
   if (!loaded_ || !IsValidIndex(parent, index, false) || is_root_node(parent)) {
     NOTREACHED();

@@ -34,6 +34,7 @@ class BookmarkModelObserver;
 class BookmarkStorage;
 struct BookmarkTitleMatch;
 class Profile;
+class ScopedGroupBookmarkActions;
 
 namespace base {
 class SequencedTaskRunner;
@@ -439,6 +440,7 @@ class BookmarkModel : public content::NotificationObserver,
   friend class BookmarkCodecTest;
   friend class BookmarkModelTest;
   friend class BookmarkStorage;
+  friend class ScopedGroupBookmarkActions;
 
   // Used to order BookmarkNodes by URL.
   class NodeURLComparator {
@@ -513,6 +515,11 @@ class BookmarkModel : public content::NotificationObserver,
 
   // If we're waiting on a favicon for node, the load request is canceled.
   void CancelPendingFaviconLoadRequests(BookmarkNode* node);
+
+  // Notifies the observers that a set of changes initiated by a single user
+  // action is about to happen and has completed.
+  void BeginGroupedChanges();
+  void EndGroupedChanges();
 
   // content::NotificationObserver:
   virtual void Observe(int type,

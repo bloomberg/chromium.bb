@@ -13,6 +13,7 @@
 
 class BookmarkModel;
 class BookmarkNode;
+class Profile;
 
 namespace user_prefs {
 class PrefRegistrySyncable;

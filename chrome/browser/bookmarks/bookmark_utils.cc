@@ -15,15 +15,19 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/history/query_parser.h"
 #include "chrome/browser/undo/bookmark_undo_service.h"
 #include "chrome/browser/undo/bookmark_undo_service_factory.h"
-#include "chrome/browser/undo/bookmark_undo_utils.h"
 #include "chrome/common/pref_names.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/user_metrics.h"
 #include "net/base/net_util.h"
 #include "ui/base/models/tree_node_iterator.h"
+
+#if !defined(OS_ANDROID)
+#include "chrome/browser/bookmarks/scoped_group_bookmark_actions.h"
+#endif
 
 using base::Time;
 
@@ -149,7 +153,7 @@ void CopyToClipboard(BookmarkModel* model,
 
   if (remove_nodes) {
 #if !defined(OS_ANDROID)
-    ScopedGroupBookmarkActions group_cut(model->profile());
+    ScopedGroupBookmarkActions group_cut(model);
 #endif
     for (size_t i = 0; i < filtered_nodes.size(); ++i) {
       int index = filtered_nodes[i]->parent()->GetIndexOf(filtered_nodes[i]);
@@ -172,7 +176,7 @@ void PasteFromClipboard(BookmarkModel* model,
   if (index == -1)
     index = parent->child_count();
 #if !defined(OS_ANDROID)
-  ScopedGroupBookmarkActions group_paste(model->profile());
+  ScopedGroupBookmarkActions group_paste(model);
 #endif
   CloneBookmarkNode(model, bookmark_data.elements, parent, index, true);
 }
