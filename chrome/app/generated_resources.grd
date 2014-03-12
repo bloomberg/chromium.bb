@@ -11176,157 +11176,49 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       </message>
 
       <!-- New Tab -->
-      <!-- Android specific strings -->
       <if expr="is_android">
         <message name="IDS_NEW_TAB_TITLE"
             desc="Mobile: For Android devices. Do not use title case. Title of the new tab page, this is only shown while loading, then the title comes from the page.">
           New tab
         </message>
-        <message name="IDS_NEW_TAB_MOST_VISITED_TITLE"
-                 desc="The page title for the 'Most Visited' navigation control on the New Tab Page.">
-          New Tab - Most Visited
-        </message>
-        <message name="IDS_NEW_TAB_INCOGNITO_TITLE"
-                 desc="The page title for the 'Incognito' navigation control on the New Tab Page.">
-          New Tab - Incognito
-        </message>
-        <message name="IDS_NEW_TAB_BOOKMARKS_TITLE"
-                 desc="The page title for the 'Bookmarks' navigation control on the New Tab Page.">
-          New Tab - Bookmarks
-        </message>
-        <message name="IDS_NEW_TAB_OTHER_SESSIONS_TITLE"
-                 desc="The page title for the 'Other Sessions' navigation control on the New Tab Page.">
-          New Tab - Other Devices
-        </message>
-        <message name="IDS_NEW_TAB_OTR_MESSAGE_MOBILE"
-                 desc="Mobile: Used when a person opens an OTR tab">
-          <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>You've gone incognito.<ph name="END_BOLD">&lt;/strong&gt;</ph>
-          Pages you view in incognito tabs won't stick around in your browser's history, cookie store, or search history after you've closed <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>all<ph name="END_BOLD">&lt;/strong&gt;</ph> of your incognito tabs. Any files you download or bookmarks you create will be kept.
-          <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;<ex>&lt;br /&gt;&lt;br /&gt;</ex></ph>
-          <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>However, you aren't invisible.<ph name="END_BOLD">&lt;/strong&gt;</ph> Going incognito doesn't hide your browsing from your employer, your internet service provider, governments and other sophisticated attackers, or the websites you visit.
-          <ph name="BEGIN_LINK">&lt;a href="$1"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph> about incognito browsing.
-        </message>
-        <message name="IDS_RECEIVED_DOCUMENTS" desc="New tab page section header for received documents">
-          Received from other devices
-        </message>
-        <message name="IDS_NEW_TAB_CONTEXT_MENU_OPEN_IN_NEW_TAB" desc="Context menu description for loading a link in a new tab">
-          Open in new tab
-        </message>
-        <message name="IDS_NEW_TAB_CONTEXT_MENU_OPEN_IN_INCOGNITO_TAB" desc="Context menu description for loading a link in an incognito tab">
-          Open in incognito tab
-        </message>
-        <message name="IDS_NEW_TAB_CONTEXT_MENU_REMOVE" desc="Context menu description for removing the selected item">
-          Remove
-        </message>
-        <message name="IDS_NEW_TAB_CONTEXT_MENU_REMOVE_ALL" desc="Context menu description for removing all items from a list">
-          Remove all
-        </message>
-        <message name="IDS_NEW_TAB_CONTEXT_MENU_EDIT_BOOKMARK" desc="Context menu description for editing the selected bookmark">
-          Edit bookmark
-        </message>
-        <message name="IDS_NEW_TAB_CONTEXT_MENU_DELETE_BOOKMARK" desc="Context menu description for deleting the selected bookmark">
-          Delete bookmark
-        </message>
-        <message name="IDS_NEW_TAB_CONTEXT_MENU_BOOKMARK_SHORTCUT" desc="Context menu description for creating a shortcut to bookmark on home screen">
-          Add to home screen
-        </message>
-        <message name="IDS_SYNC_PROMO_DESKTOP_INSTRUCTIONS" desc="Information about sync displayed on the NTP when the user has signed in on mobile but not on desktop">
-          &lt;p&gt;
-          Access the tabs you have open on your computer, right here.
-          &lt;/p&gt;
-          &lt;p&gt;
-          Just open Chrome on your computer, go to the menu, and select "Sign in to Chrome..."
-          &lt;/p&gt;
-        </message>
-        <message name="IDS_SYNC_ENABLE_SYNC" desc="Text that displayed on a link or button that allows the user to enable sync.">
-          &lt;p&gt;
-          Tabs you have opened in Chrome on your other devices will appear here.
-          &lt;/p&gt;
-          &lt;a href="#enablesync"&gt;
-          Enable sync.
-          &lt;/p&gt;
-        </message>
       </if>
-      
-      <!-- Strings used for non-Android builds -->
       <if expr="not is_android">
         <message name="IDS_NEW_TAB_TITLE"
             desc="Title of the new tab page, this is only shown while loading, then the title comes from the page">
           New Tab
         </message>
-        <message name="IDS_NEW_TAB_SUGGESTIONS"
-                 desc="The name for the 'Suggestions' navigation control on the New Tab Page.">
-          Suggested
-        </message>
-        <message name="IDS_APP_DEFAULT_PAGE_NAME"
-                 desc="Default name for the first 'Apps' page on the New Tab Page.">
-          Apps
-        </message>
-        <message name="IDS_APP_LAUNCHER_TAB_TITLE"
-                 desc="Default name for stand alone web page to serve as an App launcher when the new tab doesn't show apps.">
-          Apps
-        </message>
-        <message name="IDS_NEW_TAB_OTHER_SESSIONS_LABEL"
-                 desc="The label for the 'Other Sessions' menu on the New Tab Page, which lists tabs that are open in browsing sessions on other devices.">
-          Other devices
-        </message>
-        <message name="IDS_NEW_TAB_OTHER_SESSIONS_EMPTY"
-                 desc="The message for the 'Other Sessions' menu on the New Tab Page, when there are no other sessions.">
-          Access your open tabs on all of your devices.
-        </message>
-        <message name="IDS_NEW_TAB_OTHER_SESSIONS_LEARN_MORE_URL" desc="URL of help center page explaining what the 'Other Sessions' menu is.">
-          http://support.google.com/chrome/bin/answer.py?answer=185277&amp;hl=[GRITLANGCODE]
-        </message>
-        <message name="IDS_NEW_TAB_OTR_MESSAGE"
-                 desc="Used when a person opens an OTR window">
-          <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>You've gone incognito.<ph name="END_BOLD">&lt;/strong&gt;</ph>
-          Pages you view in incognito tabs won't stick around in your browser's history, cookie store, or search history after you've closed <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>all<ph name="END_BOLD">&lt;/strong&gt;</ph> of your incognito tabs. Any files you download or bookmarks you create will be kept.
-          <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;<ex>&lt;br /&gt;&lt;br /&gt;</ex></ph>
-          <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>However, you aren't invisible.<ph name="END_BOLD">&lt;/strong&gt;</ph> Going incognito doesn't hide your browsing from your employer, your internet service provider, governments and other sophisticated attackers, or the websites you visit.
-          <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;<ex>&lt;br /&gt;&lt;br /&gt;</ex></ph>
-          <ph name="BEGIN_LINK">&lt;a href="$1"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph> about incognito browsing.
-        </message>
-        <if expr="chromeos">
-          <message name="IDS_NEW_TAB_GUEST_SESSION_MESSAGE"
-              desc="Used when a person enters Guest Session">
-              <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>You're browsing as a Guest<ph name="END_BOLD">&lt;/strong&gt;</ph>. Pages you view in this window won't appear in the browser history and they won't leave other traces, like cookies, on the computer after you sign out. Files you download and bookmarks you create won't be preserved.
-            <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;<ex>&lt;br /&gt;&lt;br /&gt;</ex></ph>
-            <ph name="BEGIN_LINK">&lt;a href="$1"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph> about Guest browsing.
-          </message>
-        </if>
-        <if expr="not chromeos">
-          <message name="IDS_NEW_TAB_GUEST_SESSION_MESSAGE"
-              desc="Used when a person enters Guest Session">
-              <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>You're browsing as a Guest<ph name="END_BOLD">&lt;/strong&gt;</ph>. Pages you view in this window won't appear in the browser history and they won't leave other traces, like cookies, on the computer after you close all open Guest windows. Any files you download will be preserved, however.
-            <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;<ex>&lt;br /&gt;&lt;br /&gt;</ex></ph>
-            <ph name="BEGIN_LINK">&lt;a href="$1"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph> about Guest browsing.
-          </message>
-        </if>
-        <message name="IDS_NEW_TAB_RECENTLY_CLOSED_WINDOW_SINGLE"
-                 desc="Title of recently closed windows in the recently closed section of the new tab page when the window has a single tab">
-          1 Tab
-        </message>
-        <message name="IDS_NEW_TAB_RECENTLY_CLOSED_WINDOW_MULTIPLE"
-                 desc="Title of recently closed windows in the recently closed section of the new tab page when the window has more than one tab. The % is replaced by the number of tabs">
-          <ph name="TAB_COUNT">$1<ex>3</ex></ph> Tabs
-        </message>
-        <message name="IDS_NEW_TAB_TILE_GRID_ACCESSIBLE_DESCRIPTION"
-                 desc="Help message for screenreader users, spoken when navigating to a tile grid for the first time.">
-          Use left and right arrow keys to navigate.
-        </message>
-        <if expr="chromeos">
-        <message name="IDS_NEW_TAB_CLOSE_MENU_EXPAND" desc="Text for the closed section menu footer that will restore the section.">
-            Expand
-          </message>
-        </if>
-        <message name="IDS_NEW_TAB_APP_INSTALL_HINT_LABEL" desc="Text for the plus icon on the NTP that links to the web store.">
-          Add more apps
-        </message>
       </if>
-
+      <message name="IDS_NEW_TAB_MOST_VISITED_TITLE"
+               desc="The page title for the 'Most Visited' navigation control on the New Tab Page.">
+        New Tab - Most Visited
+      </message>
+      <message name="IDS_NEW_TAB_INCOGNITO_TITLE"
+               desc="The page title for the 'Incognito' navigation control on the New Tab Page.">
+        New Tab - Incognito
+      </message>
+      <message name="IDS_NEW_TAB_BOOKMARKS_TITLE"
+               desc="The page title for the 'Bookmarks' navigation control on the New Tab Page.">
+        New Tab - Bookmarks
+      </message>
+      <message name="IDS_NEW_TAB_OTHER_SESSIONS_TITLE"
+               desc="The page title for the 'Other Sessions' navigation control on the New Tab Page.">
+        New Tab - Other Devices
+      </message>
       <message name="IDS_NEW_TAB_MOST_VISITED"
                desc="The name for the 'Most Visited' navigation control on the New Tab Page.">
         Most visited
+      </message>
+      <message name="IDS_NEW_TAB_SUGGESTIONS"
+               desc="The name for the 'Suggestions' navigation control on the New Tab Page.">
+        Suggested
+      </message>
+      <message name="IDS_APP_DEFAULT_PAGE_NAME"
+               desc="Default name for the first 'Apps' page on the New Tab Page.">
+        Apps
+      </message>
+      <message name="IDS_APP_LAUNCHER_TAB_TITLE"
+               desc="Default name for stand alone web page to serve as an App launcher when the new tab doesn't show apps.">
+        Apps
       </message>
       <message name="IDS_NEW_TAB_RESTORE_THUMBNAILS_SHORT_LINK"
          desc="The link that restores previously removed thumbnails. Context is 'Thumbnail removed. Undo | Restore all'">
@@ -11336,8 +11228,17 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
                desc="The name for the 'Recently Closed' menu on the New Tab Page.">
         Recently closed
       </message>
-
-      <!-- chrome://history and chrome://ntp -->
+      <message name="IDS_NEW_TAB_OTHER_SESSIONS_LABEL"
+               desc="The label for the 'Other Sessions' menu on the New Tab Page, which lists tabs that are open in browsing sessions on other devices.">
+        Other devices
+      </message>
+      <message name="IDS_NEW_TAB_OTHER_SESSIONS_EMPTY"
+               desc="The message for the 'Other Sessions' menu on the New Tab Page, when there are no other sessions.">
+        Access your open tabs on all of your devices.
+      </message>
+      <message name="IDS_NEW_TAB_OTHER_SESSIONS_LEARN_MORE_URL" desc="URL of help center page explaining what the 'Other Sessions' menu is.">
+        http://support.google.com/chrome/bin/answer.py?answer=185277&amp;hl=[GRITLANGCODE]
+      </message>
       <message name="IDS_NEW_TAB_OTHER_SESSIONS_OPEN_ALL"
                desc="In the 'Other Sessions' menu on the New Tab Page, the label for the command to open all tabs and windows from a session.">
         Open all
@@ -11354,7 +11255,74 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
                desc="In the 'Other Sessions' menu on the New Tab Page, the label for the command to expand (uncollapse) the list of windows and tabs in a session.">
         Expand list
       </message>
-
+      <if expr="is_android">
+        <message name="IDS_NEW_TAB_OTR_MESSAGE_MOBILE"
+                 desc="Mobile: Used when a person opens an OTR tab">
+          <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>You've gone incognito.<ph name="END_BOLD">&lt;/strong&gt;</ph>
+          Pages you view in incognito tabs won't stick around in your browser's history, cookie store, or search history after you've closed <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>all<ph name="END_BOLD">&lt;/strong&gt;</ph> of your incognito tabs. Any files you download or bookmarks you create will be kept.
+          <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;<ex>&lt;br /&gt;&lt;br /&gt;</ex></ph>
+          <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>However, you aren't invisible.<ph name="END_BOLD">&lt;/strong&gt;</ph> Going incognito doesn't hide your browsing from your employer, your internet service provider, governments and other sophisticated attackers, or the websites you visit.
+          <ph name="BEGIN_LINK">&lt;a href="$1"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph> about incognito browsing.
+        </message>
+        <message name="IDS_NEW_TAB_OTR_MESSAGE"
+                 desc="Mobile: Used when a person opens an OTR tab">
+          Pages you view in incognito tabs won't stick around in your browser's history, cookie store, or search history after you've closed <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>all<ph name="END_BOLD">&lt;/strong&gt;</ph> of your incognito tabs. Any files you download or bookmarks you create will be kept.
+          <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;<ex>&lt;br /&gt;&lt;br /&gt;</ex></ph>
+          <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>However, you aren't invisible.<ph name="END_BOLD">&lt;/strong&gt;</ph> Going incognito doesn't hide your browsing from your employer, your internet service provider, or the websites you visit.
+          <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;<ex>&lt;br /&gt;&lt;br /&gt;</ex></ph>
+          <ph name="BEGIN_LINK">&lt;a href="$1"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph> about incognito browsing.
+        </message>
+      </if>
+      <if expr="not is_android">
+        <message name="IDS_NEW_TAB_OTR_MESSAGE"
+                 desc="Used when a person opens an OTR window">
+          <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>You've gone incognito.<ph name="END_BOLD">&lt;/strong&gt;</ph>
+          Pages you view in incognito tabs won't stick around in your browser's history, cookie store, or search history after you've closed <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>all<ph name="END_BOLD">&lt;/strong&gt;</ph> of your incognito tabs. Any files you download or bookmarks you create will be kept.
+          <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;<ex>&lt;br /&gt;&lt;br /&gt;</ex></ph>
+          <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>However, you aren't invisible.<ph name="END_BOLD">&lt;/strong&gt;</ph> Going incognito doesn't hide your browsing from your employer, your internet service provider, governments and other sophisticated attackers, or the websites you visit.
+          <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;<ex>&lt;br /&gt;&lt;br /&gt;</ex></ph>
+          <ph name="BEGIN_LINK">&lt;a href="$1"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph> about incognito browsing.
+        </message>
+      </if>
+      <message name="IDS_NEW_TAB_OTR_EXTENSIONS_MESSAGE"
+               desc="Explanation in a new OTR window that extensions have been disabled while in OTR.">
+        Because <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> does not control how extensions handle your personal data, all extensions have been disabled for incognito windows. You can reenable them individually in the
+        <ph name="BEGIN_LINK">&lt;a href="$2"&gt;</ph>extensions manager<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>.
+      </message>
+      <if expr="is_android">
+        <message name="IDS_NEW_TAB_GUEST_SESSION_MESSAGE"
+            desc="Mobile: Used when a person enters Guest Session">
+            <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>You're browsing as a Guest<ph name="END_BOLD">&lt;/strong&gt;</ph>. Pages you view in this tab won't appear in the browser history or search history, and they won't leave other traces, like cookies, on the device after you sign out. Files you download and bookmarks you create won't be preserved.
+          <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;<ex>&lt;br /&gt;&lt;br /&gt;</ex></ph>
+          <ph name="BEGIN_LINK">&lt;a href="$1"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph> about Guest browsing.
+        </message>
+      </if>
+      <if expr="not is_android">
+        <if expr="chromeos">
+          <message name="IDS_NEW_TAB_GUEST_SESSION_MESSAGE"
+              desc="Used when a person enters Guest Session">
+              <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>You're browsing as a Guest<ph name="END_BOLD">&lt;/strong&gt;</ph>. Pages you view in this window won't appear in the browser history and they won't leave other traces, like cookies, on the computer after you sign out. Files you download and bookmarks you create won't be preserved.
+            <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;<ex>&lt;br /&gt;&lt;br /&gt;</ex></ph>
+            <ph name="BEGIN_LINK">&lt;a href="$1"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph> about Guest browsing.
+          </message>
+        </if>
+        <if expr="not chromeos">
+          <message name="IDS_NEW_TAB_GUEST_SESSION_MESSAGE"
+              desc="Used when a person enters Guest Session">
+              <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>You're browsing as a Guest<ph name="END_BOLD">&lt;/strong&gt;</ph>. Pages you view in this window won't appear in the browser history and they won't leave other traces, like cookies, on the computer after you close all open Guest windows. Any files you download will be preserved, however.
+            <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;<ex>&lt;br /&gt;&lt;br /&gt;</ex></ph>
+            <ph name="BEGIN_LINK">&lt;a href="$1"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph> about Guest browsing.
+          </message>
+        </if>
+      </if>
+      <message name="IDS_NEW_TAB_RECENTLY_CLOSED_WINDOW_SINGLE"
+               desc="Title of recently closed windows in the recently closed section of the new tab page when the window has a single tab">
+        1 Tab
+      </message>
+      <message name="IDS_NEW_TAB_RECENTLY_CLOSED_WINDOW_MULTIPLE"
+               desc="Title of recently closed windows in the recently closed section of the new tab page when the window has more than one tab. The % is replaced by the number of tabs">
+        <ph name="TAB_COUNT">$1<ex>3</ex></ph> Tabs
+      </message>
       <message name="IDS_NEW_TAB_ATTRIBUTION_INTRO"
                desc="Leading sentence above a custom logo that the theme artist has provided">
         Theme created by
@@ -11371,6 +11339,10 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
          desc="Tooltip text for the button that removes/blacklists the thumbnail. Once removed the thumbnail will not show up on the new tab page again.">
         Don't show on this page
       </message>
+      <message name="IDS_NEW_TAB_TILE_GRID_ACCESSIBLE_DESCRIPTION"
+         desc="Help message for screenreader users, spoken when navigating to a tile grid for the first time.">
+        Use left and right arrow keys to navigate.
+      </message>
       <message name="IDS_NEW_TAB_PAGE_SWITCHER_CHANGE_TITLE"
          desc="Title for accessibility of the 'page-switcher-start' or 'page-switcher-end' button when switching from one type (determined based on title) of card to another">
         Go to <ph name="PAGE_TITLE">$1<ex>Apps</ex></ph>
@@ -11383,7 +11355,6 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
          desc="Title for the app launcher promo box shown on apps pages.">
         Discover the Chrome App Launcher
       </message>
-
       <if expr="not use_titlecase">
         <message name="IDS_NEW_TAB_APP_OPTIONS"
                  desc="Text for the context menu item that takes the user to the options of an app. (In sentence case.)">
@@ -11485,6 +11456,68 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
           Open in a Tab
         </message>
       </if>
+
+      <if expr="is_android">
+        <message name="IDS_EDIT_SIMPLE" desc="Generic word 'edit', as opposed to the menu items which have ampersands">
+          Edit
+        </message>
+        <message name="IDS_REMOVE_SIMPLE" desc="Generic word 'remove', as opposed to the menu items which have ampersands">
+          Remove
+        </message>
+        <message name="IDS_DELETE_SIMPLE" desc="Generic word 'delete', as opposed to the menu items which have ampersands">
+          Delete
+        </message>
+        <message name="IDS_RECEIVED_DOCUMENTS" desc="New tab page section header for received documents">
+          Received from other devices
+        </message>
+        <message name="IDS_NEW_TAB_CONTEXT_MENU_OPEN_IN_NEW_TAB" desc="Context menu description for loading a link in a new tab">
+          Open in new tab
+        </message>
+        <message name="IDS_NEW_TAB_CONTEXT_MENU_OPEN_IN_INCOGNITO_TAB" desc="Context menu description for loading a link in an incognito tab">
+          Open in incognito tab
+        </message>
+        <message name="IDS_NEW_TAB_CONTEXT_MENU_REMOVE" desc="Context menu description for removing the selected item">
+          Remove
+        </message>
+        <message name="IDS_NEW_TAB_CONTEXT_MENU_REMOVE_ALL" desc="Context menu description for removing all items from a list">
+          Remove all
+        </message>
+        <message name="IDS_NEW_TAB_CONTEXT_MENU_EDIT_BOOKMARK" desc="Context menu description for editing the selected bookmark">
+          Edit bookmark
+        </message>
+        <message name="IDS_NEW_TAB_CONTEXT_MENU_DELETE_BOOKMARK" desc="Context menu description for deleting the selected bookmark">
+          Delete bookmark
+        </message>
+        <message name="IDS_NEW_TAB_CONTEXT_MENU_BOOKMARK_SHORTCUT" desc="Context menu description for creating a shortcut to bookmark on home screen">
+          Add to home screen
+        </message>
+        <message name="IDS_SYNC_PROMO_DESKTOP_INSTRUCTIONS" desc="Information about sync displayed on the NTP when the user has signed in on mobile but not on desktop">
+          &lt;p&gt;
+          Access the tabs you have open on your computer, right here.
+          &lt;/p&gt;
+          &lt;p&gt;
+          Just open Chrome on your computer, go to the menu, and select "Sign in to Chrome..."
+          &lt;/p&gt;
+        </message>
+        <message name="IDS_SYNC_ENABLE_SYNC" desc="Text that displayed on a link or button that allows the user to enable sync.">
+          &lt;p&gt;
+          Tabs you have opened in Chrome on your other devices will appear here.
+          &lt;/p&gt;
+          &lt;a href="#enablesync"&gt;
+          Enable sync.
+          &lt;/p&gt;
+        </message>
+      </if>
+
+      <if expr="chromeos">
+        <message name="IDS_NEW_TAB_CLOSE_MENU_EXPAND" desc="Text for the closed section menu footer that will restore the section.">
+          Expand
+        </message>
+      </if>
+
+      <message name="IDS_NEW_TAB_APP_INSTALL_HINT_LABEL" desc="Text for the plus icon on the NTP that links to the web store.">
+        Add more apps
+      </message>
 
       <!-- Multi-profile -->
       <message name="IDS_PROFILES_OPTIONS_GROUP_NAME" desc="The name of the sync group in the options dialog.">
