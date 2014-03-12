@@ -7,6 +7,7 @@ CONSOLE MESSAGE: line 35: [object RadioNodeList]
 CONSOLE MESSAGE: line 41: 1,2,
 CONSOLE MESSAGE: line 44: [object Object]
 CONSOLE MESSAGE: line 51: [object Arguments]
+CONSOLE MESSAGE: line 55: c1 c2 c3
 CONSOLE MESSAGE: line 15: [object HTMLCollection]
 CONSOLE MESSAGE: line 19: [object HTMLCollection]
 CONSOLE MESSAGE: line 23: [object HTMLOptionsCollection]
@@ -16,7 +17,8 @@ CONSOLE MESSAGE: line 35: [object RadioNodeList]
 CONSOLE MESSAGE: line 41: 1,2,
 CONSOLE MESSAGE: line 44: [object Object]
 CONSOLE MESSAGE: line 51: [object Arguments]
-Tests that console nicely formats HTML Collections and NodeLists.
+CONSOLE MESSAGE: line 55: c1 c2 c3
+Tests that console nicely formats HTML Collections, NodeLists and DOMTokenLists.
 
 HTMLCollection[1] console-format-collections.html:15
 HTMLCollection[3] console-format-collections.html:19
@@ -27,13 +29,15 @@ RadioNodeList[2] console-format-collections.html:35
 Array[2] console-format-collections.html:41
 NonArrayWithLength console-format-collections.html:44
 Arguments[2] console-format-collections.html:51
+DOMTokenList[3] console-format-collections.html:55
 [select#sel, sel: select#sel, item: function, namedItem: function] console-format-collections.html:15
 [script, script, script, item: function, namedItem: function] console-format-collections.html:19
 [option, option, selectedIndex: 0, namedItem: function, add: function, remove: function, item: function] console-format-collections.html:23
-[html, head, script, script, script, body, p, div, form#f, select#sel, option, option, input, input, f: form#f, sel: select#sel, x: NodeList[2], item: function, namedItem: function] console-format-collections.html:27
+[html, head, script, script, script, body, p, div.c1.c2.c3, form#f, select#sel, option, option, input, input, f: form#f, sel: select#sel, x: NodeList[2], item: function, namedItem: function] console-format-collections.html:27
 [select#sel, input, input, sel: select#sel, x: RadioNodeList[2], namedItem: function, item: function] console-format-collections.html:31
 [input, input, value: "", item: function] console-format-collections.html:35
 [1, Array[2]] console-format-collections.html:41
 NonArrayWithLength {keys: Array[0], length: (...)} console-format-collections.html:44
 [1, "2"] console-format-collections.html:51
+["c1", "c2", "c3", item: function, contains: function, add: function, remove: function, toggle: function] console-format-collections.html:55
 

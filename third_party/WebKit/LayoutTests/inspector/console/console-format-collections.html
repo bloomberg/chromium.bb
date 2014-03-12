@@ -49,6 +49,10 @@ function logToConsole()
         return arguments;
     }
     console.log(generateArguments(1, "2"));
+
+    // DOMTokenList
+    var div = document.getElementsByTagName("div")[0];
+    console.log(div.classList);
 }
 
 function onload()
@@ -59,12 +63,12 @@ function onload()
 
 function NonArrayWithLength()
 {
-    this.keys=[];
+    this.keys = [];
 }
 
 NonArrayWithLength.prototype.__defineGetter__("length", function()
 {
-    console.log(".length should not be called");
+    console.log("FAIL: 'length' should not be called");
     return this.keys.length;
 });
 
@@ -83,9 +87,9 @@ function test()
 
 <body onload="onload()">
 <p>
-Tests that console nicely formats HTML Collections and NodeLists.
+Tests that console nicely formats HTML Collections, NodeLists and DOMTokenLists.
 </p>
-<div style="display:none">
+<div style="display:none" class="c1 c2 c3">
     <form id="f">
         <select id="sel" name="sel">
             <option value="1">one</option>
