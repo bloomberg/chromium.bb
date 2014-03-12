@@ -1106,6 +1106,58 @@ const char kErrorConnectionAttemptFailed[] =
     "org.bluez.Error.ConnectionAttemptFailed";
 }  // namespace bluetooth_device
 
+namespace bluetooth_gatt_characteristic {
+// Bluetooth GATT Characteristic service identifiers. The service name is used
+// only for characteristic objects hosted by bluetoothd.
+const char kBluetoothGattCharacteristicServiceName[] = "org.bluez";
+const char kBluetoothGattCharacteristicInterface[] =
+    "org.bluez.GattCharacteristic1";
+
+// Bluetooth GATT Characteristic properties.
+const char kUUIDProperty[] = "UUID";
+const char kServiceProperty[] = "Service";
+const char kValueProperty[] = "Value";
+const char kFlagsProperty[] = "Flags";
+}  // namespace bluetooth_gatt_characteristic
+
+namespace bluetooth_gatt_descriptor {
+// Bluetooth GATT Descriptor service identifiers. The service name is used
+// only for descriptor objects hosted by bluetoothd.
+const char kBluetoothGattDescriptorServiceName[] = "org.bluez";
+const char kBluetoothGattDescriptorInterface[] = "org.bluez.GattDescriptor1";
+
+// Bluetooth GATT Descriptor properties.
+const char kUUIDProperty[] = "UUID";
+const char kCharacteristicProperty[] = "Characteristic";
+const char kValueProperty[] = "Value";
+}  // namespace bluetooth_gatt_descriptor
+
+namespace bluetooth_gatt_manager {
+// Bluetooth GATT Manager service identifiers.
+const char kBluetoothGattManagerServiceName[] = "org.bluez";
+const char kBluetoothGattManagerInterface[] = "org.bluez.GattManager1";
+
+// Bluetooth GATT Manager methods.
+const char kRegisterService[] = "RegisterService";
+const char kUnregisterService[] = "UnregisterService";
+
+// Bluetooth GATT Manager errors.
+const char kErrorInvalidArguments[] = "org.bluez.Error.InvalidArguments";
+const char kErrorAlreadyExists[] = "org.bluez.Error.AlreadyExists";
+const char kErrorDoesNotExist[] = "org.bluez.Error.DoesNotExist";
+}  // namespace bluetooth_gatt_manager
+
+namespace bluetooth_gatt_service {
+// Bluetooth GATT Service service identifiers. The service name is used
+// only for service objects hosted by bluetoothd.
+const char kBluetoothGattServiceServiceName[] = "org.bluez";
+const char kBluetoothGattServiceInterface[] = "org.bluez.GattService1";
+
+// Bluetooth GATT Service properties.
+const char kUUIDProperty[] = "UUID";
+const char kIncludesProperty[] = "Includes";
+}  // namespace bluetooth_gatt_service
+
 namespace bluetooth_input {
 // Bluetooth Input service identifiers.
 const char kBluetoothInputServiceName[] = "org.bluez";
