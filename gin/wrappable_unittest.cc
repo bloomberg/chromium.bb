@@ -235,7 +235,7 @@ TEST_F(WrappableTest, ErrorInObjectConstructorProperty) {
       "  });"
       "})();");
   EXPECT_FALSE(source.IsEmpty());
-  v8::Handle<v8::Script> script = v8::Script::New(source);
+  v8::Handle<v8::Script> script = v8::Script::Compile(source);
   script->Run();
 
   gin::TryCatch try_catch;
