@@ -185,6 +185,11 @@ bool ExtensionWebUI::HandleChromeURLOverride(
 
   ExtensionService* service = profile->GetExtensionService();
 
+  // Use the first non-component override we find. Otherwise, use the first
+  // component override we find.
+  GURL component_url;
+  bool found_component_override = false;
+
   size_t i = 0;
   while (i < url_list->GetSize()) {
     const base::Value* val = NULL;
@@ -203,8 +208,8 @@ bool ExtensionWebUI::HandleChromeURLOverride(
       override += "?" + url->query();
     if (!url->ref().empty())
       override += "#" + url->ref();
-    GURL extension_url(override);
-    if (!extension_url.is_valid()) {
+    GURL override_url(override);
+    if (!override_url.is_valid()) {
       NOTREACHED();
       UnregisterChromeURLOverride(page, profile, val);
       continue;
@@ -212,7 +217,7 @@ bool ExtensionWebUI::HandleChromeURLOverride(
 
     // Verify that the extension that's being referred to actually exists.
     const Extension* extension =
-        service->extensions()->GetByID(extension_url.host());
+        service->extensions()->GetByID(override_url.host());
     if (!extension) {
       // This can currently happen if you use --load-extension one run, and
       // then don't use it the next.  It could also happen if an extension
@@ -232,9 +237,26 @@ bool ExtensionWebUI::HandleChromeURLOverride(
       continue;
     }
 
-    *url = extension_url;
+    // If this is a component extension, record its url.
+    // Only use a component extension override if there are no non-component
+    // extension overrides.
+    if (!found_component_override &&
+        extensions::Manifest::IsComponentLocation(extension->location())) {
+      found_component_override = true;
+      component_url = override_url;
+      continue;
+    }
+
+    *url = override_url;
     return true;
   }
+
+  // If no other extension overrides were found, use the component override.
+  if (found_component_override) {
+    *url = component_url;
+    return true;
+  }
+
   return false;
 }
 
