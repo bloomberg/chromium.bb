@@ -113,6 +113,9 @@ bool IsUninstallSuccess(InstallStatus install_status);
 // Returns true if |cmd_line| contains unsupported (legacy) switches.
 bool ContainsUnsupportedSwitch(const CommandLine& cmd_line);
 
+// Returns true if the processor is supported by chrome.
+bool IsProcessorSupported();
+
 // This class will enable the privilege defined by |privilege_name| on the
 // current process' token. The privilege will be disabled upon the
 // ScopedTokenPrivilege's destruction (unless it was already enabled when the

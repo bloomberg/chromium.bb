@@ -1673,6 +1673,12 @@ InstallStatus InstallProductsHelper(
 
 int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
                     wchar_t* command_line, int show_command) {
+  // Check to see if the CPU is supported before doing anything else. There's
+  // very little than can safely be accomplished if the CPU isn't supported
+  // since dependent libraries (e.g., base) may use invalid instructions.
+  if (!installer::IsProcessorSupported())
+    return installer::CPU_NOT_SUPPORTED;
+
   // The exit manager is in charge of calling the dtors of singletons.
   base::AtExitManager exit_manager;
   CommandLine::Init(0, NULL);

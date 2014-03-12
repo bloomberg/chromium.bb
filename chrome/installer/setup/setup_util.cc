@@ -9,6 +9,7 @@
 #include <windows.h>
 
 #include "base/command_line.h"
+#include "base/cpu.h"
 #include "base/file_util.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
@@ -447,6 +448,10 @@ bool ContainsUnsupportedSwitch(const CommandLine& cmd_line) {
       return true;
   }
   return false;
+}
+
+bool IsProcessorSupported() {
+  return base::CPU().has_sse2();
 }
 
 ScopedTokenPrivilege::ScopedTokenPrivilege(const wchar_t* privilege_name)

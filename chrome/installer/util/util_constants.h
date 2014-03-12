@@ -89,12 +89,13 @@ enum InstallStatus {
                                // in use.
   UNUSED_BINARIES_UNINSTALLED,  // 52. The binaries were uninstalled.
   UNSUPPORTED_OPTION,          // 53. An unsupported legacy option was given.
+  CPU_NOT_SUPPORTED,           // 54. Current OS not supported
   // Friendly reminder: note the COMPILE_ASSERT below.
 };
 
 
 // Existing InstallStatus values must not change.  Always add to the end.
-COMPILE_ASSERT(installer::UNSUPPORTED_OPTION == 53,
+COMPILE_ASSERT(installer::CPU_NOT_SUPPORTED == 54,
                dont_change_enum);
 
 // The type of an update archive.

@@ -293,6 +293,9 @@
             'installer/setup/uninstall.h',
           ],
           'msvs_settings': {
+            'VCCLCompilerTool': {
+              'EnableEnhancedInstructionSet': '4',  # NoExtensions
+            },
             'VCLinkerTool': {
               'SubSystem': '2',     # Set /SUBSYSTEM:WINDOWS
             },
