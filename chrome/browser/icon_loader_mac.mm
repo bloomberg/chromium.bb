@@ -20,8 +20,14 @@ IconGroupID IconLoader::ReadGroupIDFromFilepath(
   return filepath.Extension();
 }
 
+// static
 bool IconLoader::IsIconMutableFromFilepath(const base::FilePath&) {
   return false;
+}
+
+// static
+content::BrowserThread::ID IconLoader::ReadIconThreadID() {
+  return content::BrowserThread::FILE;
 }
 
 void IconLoader::ReadIcon() {

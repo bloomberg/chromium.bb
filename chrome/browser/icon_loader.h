@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "content/public/browser/browser_thread.h"
 #include "ui/gfx/image/image.h"
 
 #if defined(OS_WIN)
@@ -76,6 +77,9 @@ class IconLoader : public base::RefCountedThreadSafe<IconLoader> {
 
   // Some icons (exe's on windows) can change as they're loaded.
   static bool IsIconMutableFromFilepath(const base::FilePath& path);
+
+  // The thread ReadIcon() should be called on.
+  static content::BrowserThread::ID ReadIconThreadID();
 
   void ReadGroup();
   void OnReadGroup();

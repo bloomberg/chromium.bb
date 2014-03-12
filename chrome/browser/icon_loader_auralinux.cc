@@ -15,8 +15,16 @@ IconGroupID IconLoader::ReadGroupIDFromFilepath(
   return base::nix::GetFileMimeType(filepath);
 }
 
+// static
 bool IconLoader::IsIconMutableFromFilepath(const base::FilePath&) {
   return false;
+}
+
+// static
+content::BrowserThread::ID IconLoader::ReadIconThreadID() {
+  // ReadIcon() calls into views::LinuxUI and GTK2 code, so it must be on the UI
+  // thread.
+  return content::BrowserThread::UI;
 }
 
 void IconLoader::ReadIcon() {

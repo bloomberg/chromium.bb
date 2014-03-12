@@ -36,7 +36,7 @@ void IconLoader::ReadGroup() {
 void IconLoader::OnReadGroup() {
   if (IsIconMutableFromFilepath(file_path_) ||
       !delegate_->OnGroupLoaded(this, group_)) {
-    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+    BrowserThread::PostTask(ReadIconThreadID(), FROM_HERE,
         base::Bind(&IconLoader::ReadIcon, this));
   }
 }

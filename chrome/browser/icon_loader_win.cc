@@ -23,10 +23,16 @@ IconGroupID IconLoader::ReadGroupIDFromFilepath(
   return filepath.value();
 }
 
+// static
 bool IconLoader::IsIconMutableFromFilepath(const base::FilePath& filepath) {
   return filepath.MatchesExtension(L".exe") ||
          filepath.MatchesExtension(L".dll") ||
          filepath.MatchesExtension(L".ico");
+}
+
+// static
+content::BrowserThread::ID IconLoader::ReadIconThreadID() {
+  return content::BrowserThread::FILE;
 }
 
 void IconLoader::ReadIcon() {

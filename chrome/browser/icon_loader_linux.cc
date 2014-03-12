@@ -24,8 +24,14 @@ IconGroupID IconLoader::ReadGroupIDFromFilepath(
   return base::nix::GetFileMimeType(filepath);
 }
 
+// static
 bool IconLoader::IsIconMutableFromFilepath(const base::FilePath&) {
   return false;
+}
+
+// static
+content::BrowserThread::ID IconLoader::ReadIconThreadID() {
+  return content::BrowserThread::FILE;
 }
 
 void IconLoader::ReadIcon() {
