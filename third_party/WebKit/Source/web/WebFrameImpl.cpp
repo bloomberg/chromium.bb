@@ -2218,7 +2218,10 @@ WebFrameImpl* WebFrameImpl::fromFrame(LocalFrame* frame)
 {
     if (!frame)
         return 0;
-    return toFrameLoaderClientImpl(frame->loader().client())->webFrame();
+    FrameLoaderClient* client = frame->loader().client();
+    if (!client || !client->isFrameLoaderClientImpl())
+        return 0;
+    return toFrameLoaderClientImpl(client)->webFrame();
 }
 
 WebFrameImpl* WebFrameImpl::fromFrameOwnerElement(Element* element)
