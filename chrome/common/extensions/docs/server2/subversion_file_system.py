@@ -8,6 +8,7 @@ import xml.dom.minidom as xml
 from xml.parsers.expat import ExpatError
 
 from appengine_url_fetcher import AppEngineUrlFetcher
+from appengine_wrappers import IsDownloadError
 from docs_server_utils import StringIdentity
 from file_system import (
     FileNotFoundError, FileSystem, FileSystemError, StatInfo)
@@ -116,8 +117,9 @@ class _AsyncFetchFuture(object):
       try:
         result = future.Get()
       except Exception as e:
-        raise FileSystemError('Error fetching %s for Get: %s' %
-            (path, traceback.format_exc()))
+        exc_type = FileNotFoundError if IsDownloadError(e) else FileSystemError
+        raise exc_type('%s fetching %s for Get: %s' %
+                       (type(e).__name__, path, traceback.format_exc()))
 
       if result.status_code == 404:
         raise FileNotFoundError('Got 404 when fetching %s for Get, content %s' %
@@ -176,8 +178,9 @@ class SubversionFileSystem(FileSystem):
     try:
       result = self._stat_fetcher.Fetch(directory)
     except Exception as e:
-      raise FileSystemError('Error fetching %s for Stat: %s' %
-          (path, traceback.format_exc()))
+      exc_type = FileNotFoundError if IsDownloadError(e) else FileSystemError
+      raise exc_type('%s fetching %s for Stat: %s' %
+                     (type(e).__name__, path, traceback.format_exc()))
 
     if result.status_code == 404:
       raise FileNotFoundError('Got 404 when fetching %s for Stat, content %s' %

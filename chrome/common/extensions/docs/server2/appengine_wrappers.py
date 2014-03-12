@@ -21,7 +21,10 @@ def IsDeadlineExceededError(error):
   handle them all the same way. For more info see:
   https://developers.google.com/appengine/articles/deadlineexceedederrors
   '''
-  return error.__class__.__name__ == 'DeadlineExceededError'
+  return type(error).__name__ == 'DeadlineExceededError'
+
+def IsDownloadError(error):
+  return type(error).__name__ == 'DownloadError'
 
 # This will attempt to import the actual App Engine modules, and if it fails,
 # they will be replaced with fake modules. This is useful during testing.
