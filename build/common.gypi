@@ -290,9 +290,6 @@
       # The system libdir used for this ABI.
       'system_libdir%': 'lib',
 
-      # On Linux, we build with sse2 for Chromium builds.
-      'disable_sse2%': 0,
-
       # Use libjpeg-turbo as the JPEG codec used by Chromium.
       'use_libjpeg_turbo%': 1,
 
@@ -1665,13 +1662,6 @@
         'disable_glibc%': 1,
       }, {
         'disable_glibc%': 0,
-      }],
-
-      # Disable SSE2 when building for ARM or MIPS.
-      ['target_arch=="arm" or target_arch=="mipsel"', {
-        'disable_sse2%': 1,
-      }, {
-        'disable_sse2%': '<(disable_sse2)',
       }],
 
       # Set the relative path from this file to the GYP file of the JPEG
@@ -3208,24 +3198,21 @@
                 # value used during computation does not change depending on
                 # how the compiler optimized the code, since the value is
                 # always kept in its specified precision.
+                #
+                # Refer to http://crbug.com/348761 for rationale behind SSE2
+                # being a minimum requirement for 32-bit Linux builds and
+                # http://crbug.com/313032 for an example where this has "bit"
+                # us in the past.
+                'cflags': [
+                  '-msse2',
+                  '-mfpmath=sse',
+                  '-mmmx',  # Allows mmintrin.h for MMX intrinsics.
+                  '-m32',
+                ],
+                'ldflags': [
+                  '-m32',
+                ],
                 'conditions': [
-                  ['branding=="Chromium" and disable_sse2==0', {
-                    'cflags': [
-                      '-march=pentium4',
-                      '-msse2',
-                      '-mfpmath=sse',
-                    ],
-                  }],
-                  # ChromeOS targets Pinetrail, which is sse3, but most of the
-                  # benefit comes from sse2 so this setting allows ChromeOS
-                  # to build on other CPUs.  In the future -march=atom would
-                  # help but requires a newer compiler.
-                  ['chromeos==1 and disable_sse2==0', {
-                    'cflags': [
-                      '-msse2',
-                      '-mfpmath=sse',
-                    ],
-                  }],
                   # Use gold linker for Android ia32 target.
                   ['OS=="android"', {
                     'cflags': [
@@ -3246,15 +3233,6 @@
                       '/usr/include32',
                     ],
                   }],
-                ],
-                # -mmmx allows mmintrin.h to be used for mmx intrinsics.
-                # video playback is mmx and sse2 optimized.
-                'cflags': [
-                  '-m32',
-                  '-mmmx',
-                ],
-                'ldflags': [
-                  '-m32',
                 ],
               }],
             ],

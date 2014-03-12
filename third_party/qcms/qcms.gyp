@@ -30,21 +30,8 @@
       # removed on next roll.
       'msvs_disabled_warnings': [ 4018 ],
 
-      'variables': {
-        'conditions': [
-          # For x86, turn off SSE2 for non-CrOS *nix Chrome builds.
-          ['disable_sse2==1 or \
-            (branding=="Chrome" and target_arch=="ia32" and \
-             os_posix==1 and OS!="mac" and chromeos==0)', {
-            'qcms_use_sse': 0,
-          }, {
-            'qcms_use_sse': 1,
-          }],
-        ],
-      },
-
       'conditions': [
-        [ 'qcms_use_sse==1', {
+        ['target_arch=="ia32" or target_arch=="x64"', {
           'defines': [
             'SSE2_ENABLE',
           ],
@@ -53,9 +40,9 @@
             'src/transform-sse2.c',
           ],
         }],
-        # MSVC x64 doesn't support the MMX intrinsics present in the SSE1 code,
-        # but that's OK since qcms prefers using SSE2 when available.
-        [ 'qcms_use_sse==1 and OS=="win" and target_arch=="x64"', {
+        # QCMS assumes this target isn't compiled since MSVC x64 doesn't support
+        # the MMX intrinsics present in the SSE1 code.
+        ['OS=="win" and target_arch=="x64"', {
           'sources!': [
             'src/transform-sse1.c',
           ],
