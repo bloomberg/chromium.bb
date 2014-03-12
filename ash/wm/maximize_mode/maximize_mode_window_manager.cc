@@ -22,6 +22,7 @@ MaximizeModeWindowManager::~MaximizeModeWindowManager() {
   EnableBackdropBehindTopWindowOnEachDisplay(false);
   RemoveWindowCreationObservers();
   RestoreAllWindows();
+  Shell::GetInstance()->OnMaximizeModeEnded();
 }
 
 int MaximizeModeWindowManager::GetNumberOfManagedWindows() {
@@ -93,6 +94,7 @@ MaximizeModeWindowManager::MaximizeModeWindowManager()
   MaximizeAllWindows();
   AddWindowCreationObservers();
   EnableBackdropBehindTopWindowOnEachDisplay(true);
+  Shell::GetInstance()->OnMaximizeModeStarted();
   Shell::GetScreen()->AddObserver(this);
   Shell::GetInstance()->AddShellObserver(this);
 }
