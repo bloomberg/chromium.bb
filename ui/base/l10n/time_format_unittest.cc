@@ -74,15 +74,6 @@ class TimeFormatTest : public ::testing::Test {
   {}
 
  protected:
-  static void SetUpTestCase() {
-    LoadLocale(ui::ResourceBundle::GetSharedInstance()
-                   .GetLocaleFilePath("en-US", true));
-  }
-
-  static void TearDownTestCase() {
-    LoadLocale(base::FilePath());
-  }
-
   void TestStrings() {
     // Test English strings (simple, singular).
     EXPECT_EQ(ASCIIToUTF16("1 sec"), TimeFormat::Simple(
@@ -229,12 +220,6 @@ class TimeFormatTest : public ::testing::Test {
   TimeDelta delta_1d12h_;
   TimeDelta delta_2d_;
   TimeDelta delta_2d1h_;
-
- private:
-  static void LoadLocale(const base::FilePath& file_path) {
-    ui::ResourceBundle::GetSharedInstance().OverrideLocalePakForTest(file_path);
-    ui::ResourceBundle::GetSharedInstance().ReloadLocaleResources("en-US");
-  }
 };
 
 TEST_F(TimeFormatTest, SimpleAndDetailedRounding) {

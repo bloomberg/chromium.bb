@@ -52,27 +52,34 @@ void UIBaseTestSuite::Initialize() {
   ui::RegisterPathProvider();
   gfx::RegisterPathProvider();
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  // Look in the framework bundle for resources.
-  // TODO(port): make a resource bundle for non-app exes.  What's done here
-  // isn't really right because this code needs to depend on chrome_dll
-  // being built.  This is inappropriate in app.
-  base::FilePath path;
-  PathService::Get(base::DIR_EXE, &path);
-#if defined(GOOGLE_CHROME_BUILD)
-  path = path.AppendASCII("Google Chrome Framework.framework");
-#elif defined(CHROMIUM_BUILD)
-  path = path.AppendASCII("Chromium Framework.framework");
-#else
-#error Unknown branding
-#endif
-  base::mac::SetOverrideFrameworkBundlePath(path);
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
+  base::FilePath exe_path;
+  PathService::Get(base::DIR_EXE, &exe_path);
 
-  // TODO(tfarina): This loads chrome_100_percent.pak and thus introduces a
-  // dependency on chrome/, we don't want that here, so change this to
-  // InitSharedInstanceWithPakPath().
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  // On Mac, a test Framework bundle is created that links locale.pak and
+  // chrome_100_percent.pak at the appropriate places to ui_test.pak.
+  base::mac::SetOverrideFrameworkBundlePath(
+      exe_path.AppendASCII("ui_unittests Framework.framework"));
   ui::ResourceBundle::InitSharedInstanceWithLocale("en-US", NULL);
+
+#elif defined(OS_IOS) || defined(OS_ANDROID)
+  // On iOS, the ui_unittests binary is itself a mini bundle, with resources
+  // built in. On Android, ui_unittests_apk provides the necessary framework.
+  ui::ResourceBundle::InitSharedInstanceWithLocale("en-US", NULL);
+
+#else
+  // On other platforms, the (hardcoded) paths for chrome_100_percent.pak and
+  // locale.pak get populated by later build steps. To avoid clobbering them,
+  // load the test .pak files directly.
+  ui::ResourceBundle::InitSharedInstanceWithPakPath(
+      exe_path.AppendASCII("ui_test.pak"));
+
+  // ui_unittests can't depend on the locales folder which Chrome will make
+  // later, so use the path created by ui_unittest_strings.
+  PathService::Override(
+      ui::DIR_LOCALES,
+      exe_path.AppendASCII("ui_unittests_strings"));
+#endif
 }
 
 void UIBaseTestSuite::Shutdown() {

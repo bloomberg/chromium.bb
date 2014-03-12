@@ -62,7 +62,6 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../base/base.gyp:test_support_base',
-        '../chrome/chrome_resources.gyp:packed_resources',
         '../skia/skia.gyp:skia',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
@@ -74,6 +73,7 @@
         'events/events.gyp:events_base',
         'gfx/gfx.gyp:gfx_test_support',
         'resources/ui_resources.gyp:ui_resources',
+        'resources/ui_resources.gyp:ui_test_pak',
         'ui.gyp:ui',
         'ui_test_support',
       ],
@@ -285,6 +285,11 @@
           'dependencies': [
             'events/events.gyp:events_test_support',
             'gfx/gfx.gyp:gfx_test_support',
+            'ui_unittests_bundle',
+          ],
+        }, { # OS!="mac"
+          'dependencies': [
+            'base/strings/ui_strings.gyp:ui_unittest_strings',
           ],
         }],
         ['use_aura==1 or toolkit_views==1',  {
@@ -335,6 +340,19 @@
     },
   ],
   'conditions': [
+    # Mac target to build a test Framework bundle to mock out resource loading.
+    ['OS == "mac"', {
+      'targets': [
+        {
+          'target_name': 'ui_unittests_bundle',
+          'type': 'shared_library',
+          'dependencies': [
+            'resources/ui_resources.gyp:ui_test_pak',
+          ],
+          'includes': [ 'ui_unittests_bundle.gypi' ],
+        },
+      ],
+    }],
     # Special target to wrap a gtest_target_type==shared_library
     # ui_unittests into an android apk for execution.
     # See base.gyp for TODO(jrg)s about this strategy.
