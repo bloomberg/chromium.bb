@@ -30,13 +30,13 @@ PASS getStyleValue("shape-inside", "rectangle(45%, 45%, 90%, 60%, 25%, 10%)") is
 PASS getStyleValue("shape-inside", "inset-rectangle(45%, 45%, 90%, 60%, 25%, 10%)") is "inset-rectangle(45%, 45%, 90%, 60%, 25%, 10%)"
 PASS getStyleValue("shape-inside", "inset(45% 45% 90% 60% round 25% 10%)") is "inset(45% 45% 90% 60% round 25% 10% 25% 10% / 25% 10% 25% 10%)"
 PASS getStyleValue("shape-inside", "ellipse(100%, 100%, 100%, 100%)") is "ellipse(100%, 100%, 100%, 100%)"
-PASS getStyleValue("shape-inside", "polygon(10% 20%, 30% 40%, 40% 50%)") is "polygon(nonzero, 10% 20%, 30% 40%, 40% 50%)"
+PASS getStyleValue("shape-inside", "polygon(10% 20%, 30% 40%, 40% 50%)") is "polygon(10% 20%, 30% 40%, 40% 50%)"
 PASS getComputedStyleValue("shape-inside", "circle(50%, 100%, 150%)") is "circle(50%, 100%, 150%)"
 PASS getComputedStyleValue("shape-inside", "rectangle(45%, 45%, 90%, 60%, 25%, 10%)") is "rectangle(45%, 45%, 90%, 60%, 25%, 10%)"
 PASS getComputedStyleValue("shape-inside", "inset-rectangle(45%, 45%, 90%, 60%, 25%, 10%)") is "inset-rectangle(45%, 45%, 90%, 60%, 25%, 10%)"
 PASS getComputedStyleValue("shape-inside", "inset(45% 45% 90% 60% round 25% 10%)") is "inset(45% 45% 90% 60% round 25% 10% 25% 10% / 25% 10% 25% 10%)"
 PASS getComputedStyleValue("shape-inside", "ellipse(100%, 100%, 100%, 100%)") is "ellipse(100%, 100%, 100%, 100%)"
-PASS getComputedStyleValue("shape-inside", "polygon(10% 20%, 30% 40%, 40% 50%)") is "polygon(nonzero, 10% 20%, 30% 40%, 40% 50%)"
+PASS getComputedStyleValue("shape-inside", "polygon(10% 20%, 30% 40%, 40% 50%)") is "polygon(10% 20%, 30% 40%, 40% 50%)"
 PASS getStyleValue("shape-inside", "circle(1px, 1px, 1)") is null
 PASS getComputedStyleValue("shape-inside", "circle(1px, 1px, 1)") is "none"
 PASS getStyleValue("shape-inside", "circle(1px, 1px, px)") is null

@@ -1,3 +1,3 @@
-PASS - "shape-outside" property for "box" element at 0.5s saw something close to: polygon(nonzero, 40px 40px)
-PASS - "shape-inside" property for "box" element at 0.5s saw something close to: polygon(nonzero, 40px 40px)
+PASS - "shape-outside" property for "box" element at 0.5s saw something close to: polygon(40px 40px)
+PASS - "shape-inside" property for "box" element at 0.5s saw something close to: polygon(40px 40px)
 

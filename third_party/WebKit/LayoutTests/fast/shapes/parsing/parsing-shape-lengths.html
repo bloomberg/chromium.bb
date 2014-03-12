@@ -74,14 +74,14 @@ testStyleValue("rectangle(45%, 45%, 90%, 60%, 25%, 10%)", "rectangle(45%, 45%, 9
 testStyleValue("inset-rectangle(45%, 45%, 90%, 60%, 25%, 10%)", "inset-rectangle(45%, 45%, 90%, 60%, 25%, 10%)");
 testStyleValue("inset(45% 45% 90% 60% round 25% 10%)", "inset(45% 45% 90% 60% round 25% 10% 25% 10% / 25% 10% 25% 10%)");
 testStyleValue("ellipse(100%, 100%, 100%, 100%)", "ellipse(100%, 100%, 100%, 100%)");
-testStyleValue("polygon(10% 20%, 30% 40%, 40% 50%)", "polygon(nonzero, 10% 20%, 30% 40%, 40% 50%)");
+testStyleValue("polygon(10% 20%, 30% 40%, 40% 50%)", "polygon(10% 20%, 30% 40%, 40% 50%)");
 
 testComputedStyleValue("circle(50%, 100%, 150%)", "circle(50%, 100%, 150%)");
 testComputedStyleValue("rectangle(45%, 45%, 90%, 60%, 25%, 10%)", "rectangle(45%, 45%, 90%, 60%, 25%, 10%)");
 testComputedStyleValue("inset-rectangle(45%, 45%, 90%, 60%, 25%, 10%)", "inset-rectangle(45%, 45%, 90%, 60%, 25%, 10%)");
 testComputedStyleValue("inset(45% 45% 90% 60% round 25% 10%)", "inset(45% 45% 90% 60% round 25% 10% 25% 10% / 25% 10% 25% 10%)");
 testComputedStyleValue("ellipse(100%, 100%, 100%, 100%)", "ellipse(100%, 100%, 100%, 100%)");
-testComputedStyleValue("polygon(10% 20%, 30% 40%, 40% 50%)", "polygon(nonzero, 10% 20%, 30% 40%, 40% 50%)");
+testComputedStyleValue("polygon(10% 20%, 30% 40%, 40% 50%)", "polygon(10% 20%, 30% 40%, 40% 50%)");
 
 // reject non-lengths
 testInvalidValue("shape-inside", "circle(1px, 1px, 1)");
