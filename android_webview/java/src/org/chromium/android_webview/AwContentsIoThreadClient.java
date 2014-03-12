@@ -31,11 +31,8 @@ public interface AwContentsIoThreadClient {
     public boolean shouldBlockNetworkLoads();
 
     @CalledByNative
-    public void onDownloadStart(String url,
-                                String userAgent,
-                                String contentDisposition,
-                                String mimeType,
-                                long contentLength);
+    public void onDownloadStart(String url, String userAgent,
+        String contentDisposition, String mimeType, long contentLength);
 
     @CalledByNative
     public void newLoginRequest(String realm, String account, String args);

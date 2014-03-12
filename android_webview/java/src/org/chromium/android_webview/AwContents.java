@@ -280,11 +280,8 @@ public class AwContents {
         }
 
         @Override
-        public void onDownloadStart(String url,
-                                    String userAgent,
-                                    String contentDisposition,
-                                    String mimeType,
-                                    long contentLength) {
+        public void onDownloadStart(String url, String userAgent,
+                String contentDisposition, String mimeType, long contentLength) {
             mContentsClient.getCallbackHelper().postOnDownloadStart(url, userAgent,
                     contentDisposition, mimeType, contentLength);
         }
@@ -348,7 +345,7 @@ public class AwContents {
         @Override
         public boolean isLayoutParamsHeightWrapContent() {
             return mContainerView.getLayoutParams() != null &&
-                mContainerView.getLayoutParams().height == ViewGroup.LayoutParams.WRAP_CONTENT;
+                    mContainerView.getLayoutParams().height == ViewGroup.LayoutParams.WRAP_CONTENT;
         }
     }
 
@@ -774,8 +771,8 @@ public class AwContents {
         }
 
         if (mOverScrollGlow != null && mOverScrollGlow.drawEdgeGlows(canvas,
-                    mScrollOffsetManager.computeMaximumHorizontalScrollOffset(),
-                    mScrollOffsetManager.computeMaximumVerticalScrollOffset())) {
+                mScrollOffsetManager.computeMaximumHorizontalScrollOffset(),
+                mScrollOffsetManager.computeMaximumVerticalScrollOffset())) {
             mContainerView.invalidate();
         }
     }
@@ -795,8 +792,8 @@ public class AwContents {
     public Picture capturePicture() {
         if (mNativeAwContents == 0) return null;
         return new AwPicture(nativeCapturePicture(mNativeAwContents,
-                    mScrollOffsetManager.computeHorizontalScrollRange(),
-                    mScrollOffsetManager.computeVerticalScrollRange()));
+                mScrollOffsetManager.computeHorizontalScrollRange(),
+                mScrollOffsetManager.computeVerticalScrollRange()));
     }
 
     public void clearView() {
@@ -887,7 +884,7 @@ public class AwContents {
         if (params.getUrl() != null &&
                 params.getUrl().equals(mContentViewCore.getUrl()) &&
                 params.getTransitionType() == PageTransitionTypes.PAGE_TRANSITION_LINK) {
-                params.setTransitionType(PageTransitionTypes.PAGE_TRANSITION_RELOAD);
+            params.setTransitionType(PageTransitionTypes.PAGE_TRANSITION_RELOAD);
         }
         params.setTransitionType(
                 params.getTransitionType() | PageTransitionTypes.PAGE_TRANSITION_FROM_API);
@@ -1515,8 +1512,8 @@ public class AwContents {
 
             // Note this will trigger IPC back to browser even if nothing is hit.
             nativeRequestNewHitTestDataAt(mNativeAwContents,
-                                          (int) Math.round(event.getX(actionIndex) / mDIPScale),
-                                          (int) Math.round(event.getY(actionIndex) / mDIPScale));
+                    (int) Math.round(event.getX(actionIndex) / mDIPScale),
+                    (int) Math.round(event.getY(actionIndex) / mDIPScale));
         }
 
         if (mOverScrollGlow != null && event.getActionMasked() == MotionEvent.ACTION_UP) {
@@ -1939,17 +1936,18 @@ public class AwContents {
     private void setPageScaleFactorAndLimits(
             float pageScaleFactor, float minPageScaleFactor, float maxPageScaleFactor) {
         if (mPageScaleFactor == pageScaleFactor &&
-            mMinPageScaleFactor == minPageScaleFactor &&
-            mMaxPageScaleFactor == maxPageScaleFactor)
+                mMinPageScaleFactor == minPageScaleFactor &&
+                mMaxPageScaleFactor == maxPageScaleFactor) {
             return;
+        }
         mMinPageScaleFactor = minPageScaleFactor;
         mMaxPageScaleFactor = maxPageScaleFactor;
         if (mPageScaleFactor != pageScaleFactor) {
           float oldPageScaleFactor = mPageScaleFactor;
           mPageScaleFactor = pageScaleFactor;
           mContentsClient.getCallbackHelper().postOnScaleChangedScaled(
-              (float)(oldPageScaleFactor * mDIPScale),
-              (float)(mPageScaleFactor * mDIPScale));
+                  (float)(oldPageScaleFactor * mDIPScale),
+                  (float)(mPageScaleFactor * mDIPScale));
         }
     }
 
