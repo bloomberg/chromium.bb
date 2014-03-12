@@ -266,7 +266,7 @@ void Channel::HandleRemoteError(const base::StringPiece& error_message) {
 
 void Channel::HandleLocalError(const base::StringPiece& error_message) {
   // TODO(vtl): Is this how we really want to handle this?
-  LOG(FATAL) << error_message;
+  LOG(WARNING) << error_message;
 }
 
 }  // namespace system
