@@ -108,11 +108,14 @@ class SourceState {
 
   // Appends new data to the StreamParser.
   // Returns true if the data was successfully appended. Returns false if an
-  // error occurred.  Appending uses cached |timestamp_offset_| and may update
-  // |*timestamp_offset| if |timestamp_offset| is not NULL.
-  // TODO(wolenetz): Rework so |timestamp_offset_| is only valid during
-  // Append(). See http://crbug.com/347623.
-  bool Append(const uint8* data, size_t length, double* timestamp_offset);
+  // error occurred. |*timestamp_offset| is used and possibly updated by the
+  // append. |append_window_start| and |append_window_end| correspond to the MSE
+  // spec's similarly named source buffer attributes that are used in coded
+  // frame processing.
+  bool Append(const uint8* data, size_t length,
+              TimeDelta append_window_start_,
+              TimeDelta append_window_end_,
+              TimeDelta* timestamp_offset);
 
   // Aborts the current append sequence and resets the parser.
   void Abort();
@@ -121,20 +124,11 @@ class SourceState {
   // ChunkDemuxerStreams managed by this object.
   void Remove(TimeDelta start, TimeDelta end, TimeDelta duration);
 
-  // Sets user-specified |timestamp_offset_| if possible.
-  // Returns true if the offset was set. Returns false if the offset could not
-  // be set at this time.
-  bool SetTimestampOffset(TimeDelta timestamp_offset);
+  // Returns true if currently parsing a media segment, or false otherwise.
+  bool parsing_media_segment() const { return parsing_media_segment_; }
 
-  // Sets |sequence_mode_| to |sequence_mode| if possible.
-  // Returns true if the mode update was allowed. Returns false if the mode
-  // could not be updated at this time.
-  bool SetSequenceMode(bool sequence_mode);
-
-  void set_append_window_start(TimeDelta start) {
-    append_window_start_ = start;
-  }
-  void set_append_window_end(TimeDelta end) { append_window_end_ = end; }
+  // Sets |sequence_mode_| to |sequence_mode|.
+  void SetSequenceMode(bool sequence_mode);
 
   // Returns the range of buffered data in this source, capped at |duration|.
   // |ended| - Set to true if end of stream has been signalled and the special
@@ -178,10 +172,11 @@ class SourceState {
   void OnEndOfMediaSegment();
 
   // Called by the |stream_parser_| when new buffers have been parsed. It
-  // applies |timestamp_offset_| to all buffers in |audio_buffers|,
-  // |video_buffers| and |text_map| and then calls Append() with the modified
-  // buffers on |audio_|, |video_| and/or the text demuxer streams associated
-  // with the track numbers in |text_map|.
+  // applies |*timestamp_offset_during_append_| to all buffers in
+  // |audio_buffers|, |video_buffers| and |text_map|, filters buffers against
+  // |append_window_[start,end]_during_append_| and then calls Append()
+  // with the surviving modified buffers on |audio_|, |video_| and/or the text
+  // demuxer streams associated with the track numbers in |text_map|.
   // Returns true on a successful call. Returns false if an error occurred while
   // processing the buffers.
   bool OnNewBuffers(const StreamParser::BufferQueue& audio_buffers,
@@ -189,8 +184,9 @@ class SourceState {
                     const StreamParser::TextBufferQueueMap& text_map);
 
   // Helper function for OnNewBuffers() when new text buffers have been parsed.
-  // It applies |timestamp_offset_| to all buffers in |buffers| and then appends
-  // the (modified) buffers to the demuxer stream associated with
+  // It applies |*timestamp_offset_during_append_| to all buffers in |buffers|,
+  // filters the buffers against |append_window_[start,end]_during_append_| and
+  // then appends the (modified) buffers to the demuxer stream associated with
   // the track having |text_track_id|.
   // Returns true on a successful call. Returns false if an error occurred while
   // processing the buffers.
@@ -204,11 +200,12 @@ class SourceState {
   bool AppendAndUpdateDuration(ChunkDemuxerStream* stream,
                                const StreamParser::BufferQueue& buffers);
 
-  // Helper function that adds |timestamp_offset_| to each buffer in |buffers|.
+  // Helper function that adds |*timestamp_offset_during_append_| to each buffer
+  // in |buffers|.
   void AdjustBufferTimestamps(const StreamParser::BufferQueue& buffers);
 
   // Filters out buffers that are outside of the append window
-  // [|append_window_start_|, |append_window_end_|).
+  // [|append_window_start_during_append_|, |append_window_end_during_append_|).
   // |needs_keyframe| is a pointer to the |xxx_need_keyframe_| flag
   // associated with the |buffers|. Its state is read an updated as
   // this method filters |buffers|.
@@ -222,12 +219,17 @@ class SourceState {
   IncreaseDurationCB increase_duration_cb_;
   NewTextTrackCB new_text_track_cb_;
 
-  // The offset to apply to media segment timestamps.
-  TimeDelta timestamp_offset_;
+  // During Append(), if OnNewBuffers() coded frame processing updates the
+  // timestamp offset then |*timestamp_offset_during_append_| is also updated
+  // so Append()'s caller can know the new offset. This pointer is only non-NULL
+  // during the lifetime of an Append() call.
+  TimeDelta* timestamp_offset_during_append_;
 
-  // Flag that tracks whether or not the current Append() operation changed
-  // |timestamp_offset_|.
-  bool timestamp_offset_updated_by_append_;
+  // During Append(), coded frame processing triggered by OnNewBuffers()
+  // requires these two attributes. These are only valid during the lifetime of
+  // an Append() call.
+  TimeDelta append_window_start_during_append_;
+  TimeDelta append_window_end_during_append_;
 
   // Tracks the mode by which appended media is processed. If true, then
   // appended media is processed using "sequence" mode. Otherwise, appended
@@ -236,32 +238,30 @@ class SourceState {
   // and http://crbug.com/333437.
   bool sequence_mode_;
 
-  TimeDelta append_window_start_;
-  TimeDelta append_window_end_;
-
   // Set to true if the next buffers appended within the append window
   // represent the start of a new media segment. This flag being set
   // triggers a call to |new_segment_cb_| when the new buffers are
   // appended. The flag is set on actual media segment boundaries and
   // when the "append window" filtering causes discontinuities in the
   // appended data.
+  // TODO(wolenetz/acolwell): Investigate if we need this, or if coded frame
+  // processing's discontinuity logic is enough. See http://crbug.com/351489.
   bool new_media_segment_;
 
-  // Keeps track of whether |timestamp_offset_| or |sequence_mode_| can be
-  // updated. These cannot be updated if a media segment is being parsed.
+  // Keeps track of whether a media segment is being parsed.
   bool parsing_media_segment_;
 
   // The object used to parse appended data.
   scoped_ptr<StreamParser> stream_parser_;
 
-  ChunkDemuxerStream* audio_;
+  ChunkDemuxerStream* audio_;  // Not owned by |this|.
   bool audio_needs_keyframe_;
 
-  ChunkDemuxerStream* video_;
+  ChunkDemuxerStream* video_;  // Not owned by |this|.
   bool video_needs_keyframe_;
 
   typedef std::map<StreamParser::TrackId, ChunkDemuxerStream*> TextStreamMap;
-  TextStreamMap text_stream_map_;
+  TextStreamMap text_stream_map_;  // |this| owns the map's stream pointers.
 
   LogCB log_cb_;
 
@@ -370,9 +370,8 @@ SourceState::SourceState(scoped_ptr<StreamParser> stream_parser,
                          const IncreaseDurationCB& increase_duration_cb)
     : create_demuxer_stream_cb_(create_demuxer_stream_cb),
       increase_duration_cb_(increase_duration_cb),
-      timestamp_offset_updated_by_append_(false),
+      timestamp_offset_during_append_(NULL),
       sequence_mode_(false),
-      append_window_end_(kInfiniteDuration()),
       new_media_segment_(false),
       parsing_media_segment_(false),
       stream_parser_(stream_parser.release()),
@@ -414,30 +413,26 @@ void SourceState::Init(const StreamParser::InitCB& init_cb,
                        log_cb_);
 }
 
-bool SourceState::SetTimestampOffset(TimeDelta timestamp_offset) {
-  if (parsing_media_segment_)
-    return false;
-
-  timestamp_offset_ = timestamp_offset;
-  return true;
-}
-
-bool SourceState::SetSequenceMode(bool sequence_mode) {
-  if (parsing_media_segment_)
-    return false;
+void SourceState::SetSequenceMode(bool sequence_mode) {
+  DCHECK(!parsing_media_segment_);
 
   sequence_mode_ = sequence_mode;
-  return true;
 }
 
 bool SourceState::Append(const uint8* data, size_t length,
-                         double* timestamp_offset) {
-  timestamp_offset_updated_by_append_ = false;
+                         TimeDelta append_window_start,
+                         TimeDelta append_window_end,
+                         TimeDelta* timestamp_offset) {
+  DCHECK(timestamp_offset);
+  DCHECK(!timestamp_offset_during_append_);
+  timestamp_offset_during_append_ = timestamp_offset;
+  append_window_start_during_append_ = append_window_start;
+  append_window_end_during_append_ = append_window_end;
+
+  // TODO(wolenetz/acolwell): Curry and pass a NewBuffersCB here bound with
+  // append window and timestamp offset pointer. See http://crbug.com/351454.
   bool err = stream_parser_->Parse(data, length);
-
-  if (timestamp_offset_updated_by_append_ && timestamp_offset)
-    *timestamp_offset = timestamp_offset_.InSecondsF();
-
+  timestamp_offset_during_append_ = NULL;
   return err;
 }
 
@@ -633,14 +628,15 @@ bool SourceState::IsSeekWaitingForData() const {
 
 void SourceState::AdjustBufferTimestamps(
     const StreamParser::BufferQueue& buffers) {
-  if (timestamp_offset_ == TimeDelta())
+  TimeDelta timestamp_offset = *timestamp_offset_during_append_;
+  if (timestamp_offset == TimeDelta())
     return;
 
   for (StreamParser::BufferQueue::const_iterator itr = buffers.begin();
        itr != buffers.end(); ++itr) {
     (*itr)->SetDecodeTimestamp(
-        (*itr)->GetDecodeTimestamp() + timestamp_offset_);
-    (*itr)->set_timestamp((*itr)->timestamp() + timestamp_offset_);
+        (*itr)->GetDecodeTimestamp() + timestamp_offset);
+    (*itr)->set_timestamp((*itr)->timestamp() + timestamp_offset);
   }
 }
 
@@ -782,6 +778,8 @@ bool SourceState::OnNewBuffers(
     const StreamParser::BufferQueue& audio_buffers,
     const StreamParser::BufferQueue& video_buffers,
     const StreamParser::TextBufferQueueMap& text_map) {
+  DVLOG(2) << "OnNewBuffers()";
+  DCHECK(timestamp_offset_during_append_);
   DCHECK(!audio_buffers.empty() || !video_buffers.empty() ||
          !text_map.empty());
 
@@ -915,8 +913,8 @@ void SourceState::FilterWithAppendWindow(
     // |presentation_timestamp + (*itr)->duration()|, like the spec
     // requires, once frame durations are actually present in all buffers.
     TimeDelta frame_end_timestamp = presentation_timestamp;
-    if (presentation_timestamp < append_window_start_ ||
-        frame_end_timestamp > append_window_end_) {
+    if (presentation_timestamp < append_window_start_during_append_ ||
+        frame_end_timestamp > append_window_end_during_append_) {
       DVLOG(1) << "Dropping buffer outside append window."
                << " presentation_timestamp "
                << presentation_timestamp.InSecondsF();
@@ -1421,10 +1419,13 @@ Ranges<TimeDelta> ChunkDemuxer::GetBufferedRanges(const std::string& id) const {
 
 void ChunkDemuxer::AppendData(const std::string& id,
                               const uint8* data, size_t length,
-                              double* timestamp_offset) {
+                              TimeDelta append_window_start,
+                              TimeDelta append_window_end,
+                              TimeDelta* timestamp_offset) {
   DVLOG(1) << "AppendData(" << id << ", " << length << ")";
 
   DCHECK(!id.empty());
+  DCHECK(timestamp_offset);
 
   Ranges<TimeDelta> ranges;
 
@@ -1445,6 +1446,8 @@ void ChunkDemuxer::AppendData(const std::string& id,
       case INITIALIZING:
         DCHECK(IsValidId(id));
         if (!source_state_map_[id]->Append(data, length,
+                                           append_window_start,
+                                           append_window_end,
                                            timestamp_offset)) {
           ReportError_Locked(DEMUXER_ERROR_COULD_NOT_OPEN);
           return;
@@ -1454,6 +1457,8 @@ void ChunkDemuxer::AppendData(const std::string& id,
       case INITIALIZED: {
         DCHECK(IsValidId(id));
         if (!source_state_map_[id]->Append(data, length,
+                                           append_window_start,
+                                           append_window_end,
                                            timestamp_offset)) {
           ReportError_Locked(PIPELINE_ERROR_DECODE);
           return;
@@ -1566,22 +1571,22 @@ void ChunkDemuxer::SetDuration(double duration) {
   }
 }
 
-bool ChunkDemuxer::SetTimestampOffset(const std::string& id, TimeDelta offset) {
+bool ChunkDemuxer::IsParsingMediaSegment(const std::string& id) {
   base::AutoLock auto_lock(lock_);
-  DVLOG(1) << "SetTimestampOffset(" << id << ", " << offset.InSecondsF() << ")";
+  DVLOG(1) << "IsParsingMediaSegment(" << id << ")";
   CHECK(IsValidId(id));
 
-  return source_state_map_[id]->SetTimestampOffset(offset);
+  return source_state_map_[id]->parsing_media_segment();
 }
 
-bool ChunkDemuxer::SetSequenceMode(const std::string& id,
+void ChunkDemuxer::SetSequenceMode(const std::string& id,
                                    bool sequence_mode) {
   base::AutoLock auto_lock(lock_);
   DVLOG(1) << "SetSequenceMode(" << id << ", " << sequence_mode << ")";
   CHECK(IsValidId(id));
   DCHECK_NE(state_, ENDED);
 
-  return source_state_map_[id]->SetSequenceMode(sequence_mode);
+  source_state_map_[id]->SetSequenceMode(sequence_mode);
 }
 
 void ChunkDemuxer::MarkEndOfStream(PipelineStatus status) {
@@ -1632,22 +1637,6 @@ void ChunkDemuxer::UnmarkEndOfStream() {
        itr != source_state_map_.end(); ++itr) {
     itr->second->UnmarkEndOfStream();
   }
-}
-
-void ChunkDemuxer::SetAppendWindowStart(const std::string& id,
-                                        TimeDelta start) {
-  base::AutoLock auto_lock(lock_);
-  DVLOG(1) << "SetAppendWindowStart(" << id << ", "
-           << start.InSecondsF() << ")";
-  CHECK(IsValidId(id));
-  source_state_map_[id]->set_append_window_start(start);
-}
-
-void ChunkDemuxer::SetAppendWindowEnd(const std::string& id, TimeDelta end) {
-  base::AutoLock auto_lock(lock_);
-  DVLOG(1) << "SetAppendWindowEnd(" << id << ", " << end.InSecondsF() << ")";
-  CHECK(IsValidId(id));
-  source_state_map_[id]->set_append_window_end(end);
 }
 
 void ChunkDemuxer::Shutdown() {

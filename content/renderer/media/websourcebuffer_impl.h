@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/time/time.h"
 #include "third_party/WebKit/public/platform/WebSourceBuffer.h"
 
 namespace media {
@@ -39,6 +40,14 @@ class WebSourceBufferImpl : public blink::WebSourceBuffer {
  private:
   std::string id_;
   media::ChunkDemuxer* demuxer_;  // Owned by WebMediaPlayerImpl.
+
+  // Controls the offset applied to timestamps when processing appended media
+  // segments. It is initially 0, which indicates that no offset is being
+  // applied. Both setTimestampOffset() and append() may update this value.
+  base::TimeDelta timestamp_offset_;
+
+  base::TimeDelta append_window_start_;
+  base::TimeDelta append_window_end_;
 
   DISALLOW_COPY_AND_ASSIGN(WebSourceBufferImpl);
 };

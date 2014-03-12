@@ -30,7 +30,8 @@ static base::TimeDelta DoubleToTimeDelta(double time) {
 WebSourceBufferImpl::WebSourceBufferImpl(
     const std::string& id, media::ChunkDemuxer* demuxer)
     : id_(id),
-      demuxer_(demuxer) {
+      demuxer_(demuxer),
+      append_window_end_(media::kInfiniteDuration()) {
   DCHECK(demuxer_);
 }
 
@@ -39,16 +40,20 @@ WebSourceBufferImpl::~WebSourceBufferImpl() {
 }
 
 bool WebSourceBufferImpl::setMode(WebSourceBuffer::AppendMode mode) {
-  bool sequence_mode = false;
+  if (demuxer_->IsParsingMediaSegment(id_))
+    return false;
+
   switch (mode) {
     case WebSourceBuffer::AppendModeSegments:
-      break;
+      demuxer_->SetSequenceMode(id_, false);
+      return true;
     case WebSourceBuffer::AppendModeSequence:
-      sequence_mode = true;
-      break;
+      demuxer_->SetSequenceMode(id_, true);
+      return true;
   }
 
-  return demuxer_->SetSequenceMode(id_, sequence_mode);
+  NOTREACHED();
+  return false;
 }
 
 blink::WebTimeRanges WebSourceBufferImpl::buffered() {
@@ -65,7 +70,18 @@ void WebSourceBufferImpl::append(
     const unsigned char* data,
     unsigned length,
     double* timestamp_offset) {
-  demuxer_->AppendData(id_, data, length, timestamp_offset);
+  base::TimeDelta old_offset = timestamp_offset_;
+  demuxer_->AppendData(id_, data, length,
+                       append_window_start_, append_window_end_,
+                       &timestamp_offset_);
+
+  // Coded frame processing may update the timestamp offset. If the caller
+  // provides a non-NULL |timestamp_offset| and frame processing changes the
+  // timestamp offset, report the new offset to the caller. Do not update the
+  // caller's offset otherwise, to preserve any pre-existing value that may have
+  // more than microsecond precision.
+  if (timestamp_offset && old_offset != timestamp_offset_)
+    *timestamp_offset = timestamp_offset_.InSecondsF();
 }
 
 void WebSourceBufferImpl::abort() {
@@ -77,17 +93,19 @@ void WebSourceBufferImpl::remove(double start, double end) {
 }
 
 bool WebSourceBufferImpl::setTimestampOffset(double offset) {
-  base::TimeDelta time_offset = base::TimeDelta::FromMicroseconds(
-      offset * base::Time::kMicrosecondsPerSecond);
-  return demuxer_->SetTimestampOffset(id_, time_offset);
+  if (demuxer_->IsParsingMediaSegment(id_))
+    return false;
+
+  timestamp_offset_ = DoubleToTimeDelta(offset);
+  return true;
 }
 
 void WebSourceBufferImpl::setAppendWindowStart(double start) {
-  demuxer_->SetAppendWindowStart(id_, DoubleToTimeDelta(start));
+  append_window_start_ = DoubleToTimeDelta(start);
 }
 
 void WebSourceBufferImpl::setAppendWindowEnd(double end) {
-  demuxer_->SetAppendWindowEnd(id_, DoubleToTimeDelta(end));
+  append_window_end_ = DoubleToTimeDelta(end);
 }
 
 void WebSourceBufferImpl::removedFromMediaSource() {

@@ -300,16 +300,20 @@ class MockMediaSource {
 
     // TODO(wolenetz): Test timestamp offset updating once "sequence" append
     // mode processing is implemented. See http://crbug.com/249422.
+    base::TimeDelta timestamp_offset;
     chunk_demuxer_->AppendData(
-        kSourceId, file_data_->data() + current_position_, size, NULL);
+        kSourceId, file_data_->data() + current_position_, size,
+        base::TimeDelta(), kInfiniteDuration(), &timestamp_offset);
     current_position_ += size;
   }
 
   void AppendAtTime(const base::TimeDelta& timestampOffset,
                     const uint8* pData, int size) {
-    CHECK(chunk_demuxer_->SetTimestampOffset(kSourceId, timestampOffset));
-    chunk_demuxer_->AppendData(kSourceId, pData, size, NULL);
-    CHECK(chunk_demuxer_->SetTimestampOffset(kSourceId, base::TimeDelta()));
+    base::TimeDelta timestamp_offset = timestampOffset;
+    CHECK(!chunk_demuxer_->IsParsingMediaSegment(kSourceId));
+    chunk_demuxer_->AppendData(kSourceId, pData, size,
+                               base::TimeDelta(), kInfiniteDuration(),
+                               &timestamp_offset);
   }
 
   void EndOfStream() {

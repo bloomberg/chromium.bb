@@ -98,10 +98,15 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   // Gets the currently buffered ranges for the specified ID.
   Ranges<base::TimeDelta> GetBufferedRanges(const std::string& id) const;
 
-  // Appends media data to the source buffer associated with |id|.
-  // Appending may update |*timestamp_offset| if |timestamp_offset| is not NULL.
+  // Appends media data to the source buffer associated with |id|, applying
+  // and possibly updating |*timestamp_offset| during coded frame processing.
+  // |append_window_start| and |append_window_end| correspond to the MSE spec's
+  // similarly named source buffer attributes that are used in coded frame
+  // processing.
   void AppendData(const std::string& id, const uint8* data, size_t length,
-                  double* timestamp_offset);
+                  base::TimeDelta append_window_start,
+                  base::TimeDelta append_window_end,
+                  base::TimeDelta* timestamp_offset);
 
   // Aborts parsing the current segment and reset the parser to a state where
   // it can accept a new segment.
@@ -120,33 +125,21 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   // |duration|.
   void SetDuration(double duration);
 
-  // Sets a time |offset| to be applied to subsequent buffers appended to the
-  // source buffer associated with |id|. Returns true if the offset is set
-  // properly, false if the offset cannot be applied because we're in the
-  // middle of parsing a media segment.
-  bool SetTimestampOffset(const std::string& id, base::TimeDelta offset);
+  // Returns true if the source buffer associated with |id| is currently parsing
+  // a media segment, or false otherwise.
+  bool IsParsingMediaSegment(const std::string& id);
 
   // Set the append mode to be applied to subsequent buffers appended to the
   // source buffer associated with |id|. If |sequence_mode| is true, caller
   // is requesting "sequence" mode. Otherwise, caller is requesting "segments"
-  // mode. Returns true if the mode update was allowed. Returns false if
-  // the mode cannot be updated because we're in the middle of parsing a media
-  // segment.
-  // In "sequence" mode, appended media will be treated as adjacent in time.
-  // In "segments" mode, timestamps in appended media determine coded frame
-  // placement.
-  bool SetSequenceMode(const std::string& id, bool sequence_mode);
+  // mode.
+  void SetSequenceMode(const std::string& id, bool sequence_mode);
 
   // Called to signal changes in the "end of stream"
   // state. UnmarkEndOfStream() must not be called if a matching
   // MarkEndOfStream() has not come before it.
   void MarkEndOfStream(PipelineStatus status);
   void UnmarkEndOfStream();
-
-  // Set the append window start and end values for the source buffer
-  // associated with |id|.
-  void SetAppendWindowStart(const std::string& id, base::TimeDelta start);
-  void SetAppendWindowEnd(const std::string& id, base::TimeDelta end);
 
   void Shutdown();
 
