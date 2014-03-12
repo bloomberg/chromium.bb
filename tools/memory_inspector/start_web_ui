@@ -1,0 +1,17 @@
+#!/usr/bin/env python
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import memory_inspector
+import webbrowser
+
+from memory_inspector.frontends import www_server
+
+
+if __name__ == '__main__':
+  HTTP_PORT=8089
+  memory_inspector.RegisterAllBackends()
+  print 'Serving on port %d' % HTTP_PORT
+  webbrowser.open('http://localhost:%d' % HTTP_PORT)
+  www_server.Start(HTTP_PORT)

@@ -1,0 +1,159 @@
+<!doctype html>
+<!--
+  -- Copyright 2014 The Chromium Authors. All rights reserved.
+  -- Use of this source code is governed by a BSD-style license that can be
+  -- found in the LICENSE file.
+  -->
+<html lang="en-us">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <title>Memory Inspector</title>
+  <link href='//fonts.googleapis.com/css?family=Coda' rel='stylesheet' type='text/css'>
+  <link href="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/themes/flick/jquery-ui.css" rel="stylesheet">
+  <link href="/rootUi.css" rel="stylesheet" type="text/css">
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/jquery-ui.min.js"></script>
+  <script src="//www.google.com/jsapi"></script>
+  <script type="text/javascript">
+    google.load('visualization', '1',
+                { packages: ['corechart', 'table', 'orgchart', 'treemap'] });
+  </script>
+  <script src="/js/devices.js"></script>
+  <script src="/js/rootUi.js"></script>
+  <script src="/js/processes.js"></script>
+  <script src="/js/timers.js"></script>
+  <script src="/js/webservice.js"></script>
+</head>
+<body>
+  <div id="wrapper">
+    <h1>Memory Inspector</h1>
+    <div id="tabs">
+      <ul>
+        <li><a href="#tabs-ps">Processes</a></li>
+        <li><a href="#tabs-mm">Aggregated Memory maps</a></li>
+        <li><a href="#tabs-mm-table">Memory maps table</a></li>
+        <li><a href="#tabs-native_alloc">Aggregated native allocs.</a></li>
+        <li><a href="#tabs-archive">Archive</a></li>
+        <li><a href="#tabs-settings">Settings</a></li>
+      </ul>
+
+      <div id="tabs-ps">
+        <div>
+          Device:
+          <select id="devices"></select>
+          <input type="button" id="refresh-devices" value="&#10226;">
+        </div>
+        <div id="device_tabs">
+          <ul>
+            <li><a href="#device_tabs-osstats">Device stats</a></li>
+            <li><a href="#device_tabs-procstats">Selected process stats</a></li>
+          </ul>
+          <div id="device_tabs-osstats">
+            <div id="os-mem_chart"></div>
+            <div id="os-cpu_chart"></div>
+          </div>
+          <div id="device_tabs-procstats">
+            <div id="proc-cpu_chart"></div>
+            <div id="proc-mem_chart"></div>
+          </div>
+        </div>
+
+        <div id="ps-table-wrapper">
+          <input type="checkbox" id="ps-show_all">
+          <label for="ps-show_all">Show all system processes</label>
+          <div id="ps-table"></div>
+        </div>
+      </div>
+
+      <div id="tabs-mm">
+        <header id="mm-options">
+          <span>
+            Current metric:
+            <select id="mm-cur-serie"></select>
+          </span>
+          <span>
+            Current snapshot: <select id="mm-cur-snap"></select>
+            of <span id="mm-nsnapshots"></span>
+          </span>
+        </header>
+        <h2>Hierarchical view of selected snapshot</h2>
+        <div id="mm-chart-hierarchy"></div>
+
+        <div id="mm-chart-area"></div>
+
+        <div id="mm-chart-treemap"></div>
+
+      </div>
+
+      <div id="tabs-mm-table">
+        <div id="mm-table-wrapper">
+          <header>
+            <b>Filters: </b>
+            <span>
+            Prot. flags: <input type="text" id="mm-filter-prot" />
+            File name: <input type="text" id="mm-filter-file" />
+            </span>
+          </header>
+          <header>
+            <b>Totals: </b>
+            <b>Priv dirty (Kb): </b><span id="memmaps-totals-priv-dirty">0</span>
+            <b>Priv clean (Kb): </b><span id="memmaps-totals-priv-clean">0</span>
+            <b>Shared dirty (Kb): </b><span id="memmaps-totals-shared-dirty">0</span>
+            <b>Shared clean (Kb): </b><span id="memmaps-totals-shared-clean">0</span>
+          </header>
+          <header>
+            Note: totals from this filtered table might not match the totals in the treemap, as table filtering is not hierarchical.
+          </header>
+          <div id="mm-table"></div>
+        </div>
+      </div>
+
+      <div id="tabs-native_alloc">
+        <header id="nh-options">
+          <span>
+            Current metric:
+            <select id="nh-cur-serie"></select>
+          </span>
+          <span>
+            Current snapshot: <select id="nh-cur-snap"></select>
+            of <span id="nh-nsnapshots"></span>
+          </span>
+        </header>
+        <h2>Hierarchical view of selected snapshot</h2>
+        <div id="nh-chart-hierarchy"></div>
+        <div id="nh-chart-area"></div>
+        <div id="nh-chart-treemap"></div>
+        <div id="native_alloc_chart"></div>
+        <div id="native_alloc_table"></div>
+      </div>
+
+      <div id="tabs-archive">
+        <input type="button" value="Refresh" id="archive-refresh" />
+        <input type="button" value="Analyze Memory maps" id="archive-classify_mmaps" />
+        <input type="button" value="Analyze Native Heap" id="archive-classify_native" />
+        <div id="archive">
+        </div>
+      </div>
+
+      <div id="tabs-settings">
+        <header>
+          <input type="button" value="Reload" id="settings-load" />
+          <input type="button" value="Store" id="settings-store" />
+        </header>
+        <div id="settings-container">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="status_bar">
+    <div id="status_messages"></div>
+    <div id="progress_bar"><div id="progress_bar-label">Progress...</div></div>
+  </div>
+
+  <div id="js_loading_banner">
+  Loading JavaScript content. If you see this message something has probably gone wrong. Check JS console.
+  </div>
+
+</body>
+</html>

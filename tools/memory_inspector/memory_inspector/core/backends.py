@@ -11,6 +11,11 @@ def Register(backend):
   _backends[backend.name] = backend
 
 
+def ListBackends():
+  """Enumerates all the backends."""
+  return _backends.itervalues()
+
+
 def ListDevices():
   """Enumerates all the devices from all the registered backends."""
   for backend in _backends.itervalues():

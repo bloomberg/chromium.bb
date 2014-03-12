@@ -48,7 +48,8 @@ class Storage(object):
     assert(isinstance(settings, dict))
     file_path = os.path.join(self._root, Storage._SETTINGS_FILE % name)
     if not settings:
-      os.unlink(file_path)
+      if os.path.exists(file_path):
+        os.unlink(file_path)
       return
     with open(file_path, 'w') as f:
       return json.dump(settings, f)
