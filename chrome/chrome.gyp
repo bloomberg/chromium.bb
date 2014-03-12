@@ -1048,8 +1048,6 @@
             '../third_party/libjingle/libjingle.gyp:libjingle',
           ],
           'sources': [
-            'service/chrome_service_application_mac.h',
-            'service/chrome_service_application_mac.mm',
             'service/cloud_print/cdd_conversion_win.cc',
             'service/cloud_print/cdd_conversion_win.h',
             'service/cloud_print/cloud_print_auth.cc',

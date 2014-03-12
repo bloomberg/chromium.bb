@@ -30,11 +30,9 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
-#include "chrome/browser/printing/print_dialog_cloud.h"
 #include "chrome/browser/profiles/profile_info_cache_observer.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
-#include "chrome/browser/service_process/service_process_control.h"
 #include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_service_factory.h"
@@ -78,7 +76,6 @@
 #include "chrome/common/mac/app_mode_common.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/profile_management_switches.h"
-#include "chrome/common/service_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_manager.h"
@@ -214,7 +211,6 @@ bool IsProfileSignedOut(Profile* profile) {
 - (void)openUrls:(const std::vector<GURL>&)urls;
 - (void)getUrl:(NSAppleEventDescriptor*)event
      withReply:(NSAppleEventDescriptor*)reply;
-- (void)submitCloudPrintJob:(NSAppleEventDescriptor*)event;
 - (void)windowLayeringDidChange:(NSNotification*)inNotification;
 - (void)activeSpaceDidChange:(NSNotification*)inNotification;
 - (void)windowChangedToProfile:(Profile*)profile;
@@ -289,10 +285,6 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
           andSelector:@selector(getUrl:withReply:)
         forEventClass:kInternetEventClass
            andEventID:kAEGetURL];
-  [em setEventHandler:self
-          andSelector:@selector(submitCloudPrintJob:)
-        forEventClass:cloud_print::kAECloudPrintClass
-           andEventID:cloud_print::kAECloudPrintClass];
   [em setEventHandler:self
           andSelector:@selector(getUrl:withReply:)
         forEventClass:'WWW!'    // A particularly ancient AppleEvent that dates
@@ -1335,29 +1327,6 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
   gurlVector.push_back(gurl);
 
   [self openUrls:gurlVector];
-}
-
-// Apple Event handler that receives print event from service
-// process, gets the required data and launches Print dialog.
-- (void)submitCloudPrintJob:(NSAppleEventDescriptor*)event {
-  // Pull parameter list out of Apple Event.
-  NSAppleEventDescriptor* paramList =
-      [event paramDescriptorForKeyword:cloud_print::kAECloudPrintClass];
-
-  if (paramList != nil) {
-    // Pull required fields out of parameter list.
-    NSString* mime = [[paramList descriptorAtIndex:1] stringValue];
-    NSString* inputPath = [[paramList descriptorAtIndex:2] stringValue];
-    NSString* printTitle = [[paramList descriptorAtIndex:3] stringValue];
-    NSString* printTicket = [[paramList descriptorAtIndex:4] stringValue];
-    // Convert the title to UTF 16 as required.
-    base::string16 title16 = base::SysNSStringToUTF16(printTitle);
-    base::string16 printTicket16 = base::SysNSStringToUTF16(printTicket);
-    print_dialog_cloud::CreatePrintDialogForFile(
-        ProfileManager::GetActiveUserProfile(), NULL,
-        base::FilePath([inputPath fileSystemRepresentation]), title16,
-        printTicket16, [mime UTF8String], /*delete_on_close=*/false);
-  }
 }
 
 - (void)application:(NSApplication*)sender
