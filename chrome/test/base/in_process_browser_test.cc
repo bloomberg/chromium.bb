@@ -202,11 +202,13 @@ void InProcessBrowserTest::SetUp() {
   google_util::SetMockLinkDoctorBaseURLForTesting();
 
 #if defined(OS_WIN)
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8 &&
+  base::win::Version version = base::win::GetVersion();
+  if (version >= base::win::VERSION_WIN7 &&
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests)) {
     com_initializer_.reset(new base::win::ScopedCOMInitializer());
     ui::win::CreateATLModuleIfNeeded();
-    ASSERT_TRUE(win8::MakeTestDefaultBrowserSynchronously());
+    if (version >= base::win::VERSION_WIN8)
+      ASSERT_TRUE(win8::MakeTestDefaultBrowserSynchronously());
   }
 #endif
 
