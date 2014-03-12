@@ -2045,32 +2045,51 @@ _release.add_config('stumpy_moblab-release',
 
 ### Per-chipset release groups
 
-# Atom-based boards
+# pineview chipset boards
+# TODO(davidjames): Rename atom-release-group to pineview-release-group.
 _config.add_group('atom-release-group',
   config['x86-mario-release'],
   config['x86-alex-release'].derive(_grouped_config),
-  config['x86-alex_he-release'].derive(_grouped_variant_config),
   config['x86-zgb-release'].derive(_grouped_config),
+  config['x86-alex_he-release'].derive(_grouped_variant_config),
   config['x86-zgb_he-release'].derive(_grouped_variant_config),
 )
 
-# lumpy-era boards
-_config.add_group('lumpy-release-group',
+# sandybridge chipset boards
+# TODO(davidjames): Combine sandybridge and ivybridge into one builder named
+# sandy/ivybridge canary, once we've optimized our builders more.
+_config.add_group('sandybridge-release-group',
   config['lumpy-release'],
   config['stumpy-release'].derive(_grouped_config),
   config['parrot-release'].derive(_grouped_config),
-  config['parrot_ivb-release'].derive(_grouped_variant_config),
   config['butterfly-release'].derive(_grouped_config),
-  config['stout-release'].derive(_grouped_config),
 )
 
-# slippy-based boards
+# ivybridge chipset boards
+_config.add_group('ivybridge-release-group',
+  config['stout-release'],
+  config['parrot_ivb-release'].derive(_grouped_variant_config),
+)
+
+# slippy-based haswell boards
+# TODO(davidjames): Combine slippy and beltino into haswell canary, once we've
+# optimized our builders more.
+# slippy itself is deprecated in favor of the below boards, so we don't bother
+# building it.
 _config.add_group('slippy-release-group',
-  config['slippy-release'],
+  config['peppy-release'],
   config['falco-release'].derive(_grouped_config),
   config['leon-release'].derive(_grouped_config),
-  config['peppy-release'].derive(_grouped_config),
   config['wolf-release'].derive(_grouped_config),
+)
+
+# beltino-based haswell boards
+# beltino itself is deprecated in favor of the below boards, so we don't bother
+# building it.
+_config.add_group('beltino-release-group',
+  config['panther-release'],
+  config['monroe-release'].derive(_grouped_config),
+  config['zako-release'].derive(_grouped_config),
 )
 
 # rambi-based boards
@@ -2081,14 +2100,6 @@ _config.add_group('rambi-release-group',
   config['kip-release'].derive(_grouped_config),
   config['quawks-release'].derive(_grouped_config),
   config['squawks-release'].derive(_grouped_config),
-)
-
-# beltino-based boards
-_config.add_group('beltino-release-group',
-  config['beltino-release'],
-  config['monroe-release'].derive(_grouped_config),
-  config['panther-release'].derive(_grouped_config),
-  config['zako-release'].derive(_grouped_config),
 )
 
 # Factory and Firmware releases much inherit from these classes.  Modifications
