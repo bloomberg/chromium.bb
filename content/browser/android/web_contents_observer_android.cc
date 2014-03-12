@@ -277,6 +277,15 @@ void WebContentsObserverAndroid::DidFailLoadInternal(
       jstring_error_description.obj(), jstring_url.obj());
 }
 
+void WebContentsObserverAndroid::DidFirstVisuallyNonEmptyPaint(int32 page_id) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj(weak_java_observer_.get(env));
+  if (obj.is_null())
+    return;
+  Java_WebContentsObserverAndroid_didFirstVisuallyNonEmptyPaint(
+      env, obj.obj(), page_id);
+}
+
 bool RegisterWebContentsObserverAndroid(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }

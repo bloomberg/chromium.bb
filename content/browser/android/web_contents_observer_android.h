@@ -54,6 +54,7 @@ class WebContentsObserverAndroid : public WebContentsObserver {
                                     const FrameNavigateParams& params) OVERRIDE;
   virtual void DidNavigateAnyFrame(const LoadCommittedDetails& details,
                                    const FrameNavigateParams& params) OVERRIDE;
+  virtual void DidFirstVisuallyNonEmptyPaint(int32 page_id) OVERRIDE;
   virtual void DidStartProvisionalLoadForFrame(
       int64 frame_id,
       int64 parent_frame_id,

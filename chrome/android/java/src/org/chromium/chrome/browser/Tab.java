@@ -702,6 +702,15 @@ public class Tab implements NavigationClient {
     }
 
     /**
+     * Creates and initializes the {@link ContentView}.
+     *
+     * @param nativeWebContents The native web contents pointer.
+     */
+    protected void initContentView(long nativeWebContents) {
+        setContentView(ContentView.newInstance(mContext, nativeWebContents, getWindowAndroid()));
+    }
+
+    /**
      * Completes the {@link ContentView} specific initialization around a native WebContents
      * pointer.  {@link #getPageInfo()} will still return the {@link NativePage} if there is one.
      * All initialization that needs to reoccur after a web contents swap should be added here.
@@ -709,14 +718,14 @@ public class Tab implements NavigationClient {
      * NOTE: If you attempt to pass a native WebContents that does not have the same incognito
      * state as this tab this call will fail.
      *
-     * @param nativeWebContents The native web contents pointer.
+     * @param view The content view that needs to be set as active view for the tab.
      */
-    protected void initContentView(long nativeWebContents) {
+    protected void setContentView(ContentView view) {
         NativePage previousNativePage = mNativePage;
         mNativePage = null;
         destroyNativePageInternal(previousNativePage);
 
-        mContentView = ContentView.newInstance(mContext, nativeWebContents, getWindowAndroid());
+        mContentView = view;
 
         mContentViewCore = mContentView.getContentViewCore();
         mWebContentsDelegate = createWebContentsDelegate();
@@ -735,9 +744,10 @@ public class Tab implements NavigationClient {
         if (mInfoBarContainer == null) {
             // The InfoBarContainer needs to be created after the ContentView has been natively
             // initialized.
+            WebContents webContents = view.getContentViewCore().getWebContents();
             mInfoBarContainer = new InfoBarContainer(
                     (Activity) mContext, createAutoLoginProcessor(), getId(), getContentView(),
-                    nativeWebContents);
+                    webContents);
         } else {
             mInfoBarContainer.onParentViewChanged(getId(), getContentView());
         }
@@ -917,6 +927,19 @@ public class Tab implements NavigationClient {
     @CalledByNative
     private void swapWebContents(
             final long newWebContents, boolean didStartLoad, boolean didFinishLoad) {
+        swapContentView(ContentView.newInstance(mContext, newWebContents, getWindowAndroid()),
+                false);
+        for (TabObserver observer : mObservers) {
+            observer.onWebContentsSwapped(this, didStartLoad, didFinishLoad);
+        }
+    }
+
+    /**
+     * Called to swap out the current view with the one passed in.
+     * @param view The content view that should be swapped into the tab.
+     * @param deleteOldNativeWebContents Whether to delete the native web contents of old view.
+     */
+    protected void swapContentView(ContentView view, boolean deleteOldNativeWebContents) {
         int originalWidth = 0;
         int originalHeight = 0;
         if (mContentViewCore != null) {
@@ -924,10 +947,10 @@ public class Tab implements NavigationClient {
             originalHeight = mContentViewCore.getViewportHeightPix();
             mContentViewCore.onHide();
         }
-        destroyContentView(false);
+        destroyContentView(deleteOldNativeWebContents);
         NativePage previousNativePage = mNativePage;
         mNativePage = null;
-        initContentView(newWebContents);
+        setContentView(view);
         // Size of the new ContentViewCore is zero at this point. If we don't call onSizeChanged(),
         // next onShow() call would send a resize message with the current ContentViewCore size
         // (zero) to the renderer process, although the new size will be set soon.
@@ -938,9 +961,6 @@ public class Tab implements NavigationClient {
         mContentViewCore.attachImeAdapter();
         for (TabObserver observer : mObservers) observer.onContentChanged(this);
         destroyNativePageInternal(previousNativePage);
-        for (TabObserver observer : mObservers) {
-            observer.onWebContentsSwapped(this, didStartLoad, didFinishLoad);
-        }
     }
 
     @CalledByNative
