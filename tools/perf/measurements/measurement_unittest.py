@@ -14,6 +14,8 @@ from telemetry.unittest import options_for_unittests
 
 class MeasurementUnitTest(unittest.TestCase):
 
+  # TODO(achuith): Fix crbug.com/351114.
+  @test.Disabled('chromeos')
   def testMeasurementSmoke(self):
     # Run all Measurements against the first Page in the PageSet of the first
     # Benchmark that uses them.
