@@ -2682,8 +2682,6 @@
             'html/shadow/MediaControlElements.h',
             'html/shadow/MediaControls.cpp',
             'html/shadow/MediaControls.h',
-            'html/shadow/MediaControlsAndroid.cpp',
-            'html/shadow/MediaControlsAndroid.h',
             'html/shadow/MeterShadowElement.cpp',
             'html/shadow/MeterShadowElement.h',
             'html/shadow/PasswordGeneratorButtonElement.cpp',

@@ -38,10 +38,6 @@ video::-webkit-media-controls-enclosure {
     height: 40px;
 }
 
-audio::-webkit-media-controls-overlay-enclosure {
-    display: none;
-}
-
 video::-webkit-media-controls-overlay-enclosure {
     display: flex;
     position: relative;

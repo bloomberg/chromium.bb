@@ -28,11 +28,18 @@
 #include "core/html/shadow/MediaControls.h"
 
 #include "bindings/v8/ExceptionStatePlaceholder.h"
-#if OS(ANDROID)
-#include "core/html/shadow/MediaControlsAndroid.h"
-#endif
+#include "core/events/MouseEvent.h"
+#include "core/rendering/RenderTheme.h"
 
 namespace WebCore {
+
+#if OS(ANDROID)
+static const bool alwaysHideFullscreenControls = true;
+static const bool needOverlayPlayButton = true;
+#else
+static const bool alwaysHideFullscreenControls = false;
+static const bool needOverlayPlayButton = false;
+#endif
 
 static const double timeWithoutMouseMovementBeforeHidingFullscreenControls = 3;
 
@@ -41,6 +48,8 @@ MediaControls::MediaControls(Document& document)
     , m_mediaController(0)
     , m_panel(0)
     , m_textDisplayContainer(0)
+    , m_overlayPlayButton(0)
+    , m_overlayEnclosure(0)
     , m_playButton(0)
     , m_currentTimeDisplay(0)
     , m_timeline(0)
@@ -58,12 +67,7 @@ MediaControls::MediaControls(Document& document)
 
 PassRefPtr<MediaControls> MediaControls::create(Document& document)
 {
-    RefPtr<MediaControls> controls;
-#if OS(ANDROID)
-    controls = adoptRef(new MediaControlsAndroid(document));
-#else
-    controls = adoptRef(new MediaControls(document));
-#endif
+    RefPtr<MediaControls> controls = adoptRef(new MediaControls(document));
 
     if (controls->initializeControls(document))
         return controls.release();
@@ -73,12 +77,26 @@ PassRefPtr<MediaControls> MediaControls::create(Document& document)
 
 bool MediaControls::initializeControls(Document& document)
 {
+    TrackExceptionState exceptionState;
+
+    if (needOverlayPlayButton) {
+        RefPtr<MediaControlOverlayEnclosureElement> overlayEnclosure = MediaControlOverlayEnclosureElement::create(document);
+        RefPtr<MediaControlOverlayPlayButtonElement> overlayPlayButton = MediaControlOverlayPlayButtonElement::create(document);
+        m_overlayPlayButton = overlayPlayButton.get();
+        overlayEnclosure->appendChild(overlayPlayButton.release(), exceptionState);
+        if (exceptionState.hadException())
+            return false;
+
+        m_overlayEnclosure = overlayEnclosure.get();
+        appendChild(overlayEnclosure.release(), exceptionState);
+        if (exceptionState.hadException())
+            return false;
+    }
+
     // Create an enclosing element for the panel so we can visually offset the controls correctly.
     RefPtr<MediaControlPanelEnclosureElement> enclosure = MediaControlPanelEnclosureElement::create(document);
 
     RefPtr<MediaControlPanelElement> panel = MediaControlPanelElement::create(document);
-
-    TrackExceptionState exceptionState;
 
     RefPtr<MediaControlPlayButtonElement> playButton = MediaControlPlayButtonElement::create(document);
     m_playButton = playButton.get();
@@ -151,6 +169,10 @@ void MediaControls::setMediaController(MediaControllerInterface* controller)
     m_panel->setMediaController(controller);
     if (m_textDisplayContainer)
         m_textDisplayContainer->setMediaController(controller);
+    if (m_overlayPlayButton)
+        m_overlayPlayButton->setMediaController(controller);
+    if (m_overlayEnclosure)
+        m_overlayEnclosure->setMediaController(controller);
     m_playButton->setMediaController(controller);
     m_currentTimeDisplay->setMediaController(controller);
     m_timeline->setMediaController(controller);
@@ -215,9 +237,9 @@ void MediaControls::makeTransparent()
     m_panel->makeTransparent();
 }
 
-bool MediaControls::shouldHideControls()
+bool MediaControls::shouldHideFullscreenControls()
 {
-    return !m_panel->hovered();
+    return alwaysHideFullscreenControls || !m_panel->hovered();
 }
 
 void MediaControls::playbackStarted()
@@ -225,6 +247,8 @@ void MediaControls::playbackStarted()
     m_currentTimeDisplay->show();
     m_durationDisplay->hide();
 
+    if (m_overlayPlayButton)
+        m_overlayPlayButton->updateDisplayType();
     m_playButton->updateDisplayType();
     m_timeline->setPosition(m_mediaController->currentTime());
     updateCurrentTimeDisplay();
@@ -244,6 +268,8 @@ void MediaControls::playbackProgressed()
 
 void MediaControls::playbackStopped()
 {
+    if (m_overlayPlayButton)
+        m_overlayPlayButton->updateDisplayType();
     m_playButton->updateDisplayType();
     m_timeline->setPosition(m_mediaController->currentTime());
     updateCurrentTimeDisplay();
@@ -326,7 +352,7 @@ void MediaControls::defaultEventHandler(Event* event)
             m_isMouseOverControls = true;
             if (!m_mediaController->canPlay()) {
                 makeOpaque();
-                if (shouldHideControls())
+                if (shouldHideFullscreenControls())
                     startHideFullscreenControlsTimer();
             }
         }
@@ -346,7 +372,7 @@ void MediaControls::defaultEventHandler(Event* event)
             // When we get a mouse move in fullscreen mode, show the media controls, and start a timer
             // that will hide the media controls after a 3 seconds without a mouse move.
             makeOpaque();
-            if (shouldHideControls())
+            if (shouldHideFullscreenControls())
                 startHideFullscreenControlsTimer();
         }
         return;
@@ -361,7 +387,7 @@ void MediaControls::hideFullscreenControlsTimerFired(Timer<MediaControls>*)
     if (!m_isFullscreen)
         return;
 
-    if (!shouldHideControls())
+    if (!shouldHideFullscreenControls())
         return;
 
     makeTransparent();
@@ -406,7 +432,11 @@ void MediaControls::createTextTrackDisplay()
 
     m_textDisplayContainer->setMediaController(m_mediaController);
 
-    insertTextTrackContainer(textDisplayContainer.release());
+    // Insert it before (behind) all other control elements.
+    if (m_overlayEnclosure && m_overlayPlayButton)
+        m_overlayEnclosure->insertBefore(textDisplayContainer.release(), m_overlayPlayButton);
+    else
+        insertBefore(textDisplayContainer.release(), m_enclosure);
 }
 
 void MediaControls::showTextTrackDisplay()
@@ -429,12 +459,6 @@ void MediaControls::updateTextTrackDisplay()
         createTextTrackDisplay();
 
     m_textDisplayContainer->updateDisplay();
-}
-
-void MediaControls::insertTextTrackContainer(PassRefPtr<MediaControlTextTrackContainerElement> textTrackContainer)
-{
-    // Insert it before the first controller element so it always displays behind the controls.
-    insertBefore(textTrackContainer, m_enclosure);
 }
 
 }

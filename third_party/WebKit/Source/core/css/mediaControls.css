@@ -115,7 +115,7 @@ audio::-webkit-media-controls-mute-button, video::-webkit-media-controls-mute-bu
     color: inherit;
 }
 
-audio::-webkit-media-controls-overlay-play-button, video::-webkit-media-controls-overlay-play-button {
+audio::-webkit-media-controls-overlay-enclosure, video::-webkit-media-controls-overlay-enclosure {
     display: none;
 }
 
