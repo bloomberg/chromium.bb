@@ -14,6 +14,7 @@
 #include "content/browser/renderer_host/java/java_bridge_dispatcher_host.h"
 #include "content/common/android/hash_set.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_frame_host.h"
 #include "third_party/WebKit/public/web/WebBindings.h"
 
 namespace content {
@@ -85,31 +86,31 @@ void JavaBridgeDispatcherHostManager::RemoveNamedObject(
 }
 
 void JavaBridgeDispatcherHostManager::OnGetChannelHandle(
-    RenderViewHost* render_view_host, IPC::Message* reply_msg) {
-  instances_[render_view_host]->OnGetChannelHandle(reply_msg);
+    RenderFrameHost* render_frame_host, IPC::Message* reply_msg) {
+  instances_[render_frame_host]->OnGetChannelHandle(reply_msg);
 }
 
-void JavaBridgeDispatcherHostManager::RenderViewCreated(
-    RenderViewHost* render_view_host) {
+void JavaBridgeDispatcherHostManager::RenderFrameCreated(
+    RenderFrameHost* render_frame_host) {
   // Creates a JavaBridgeDispatcherHost for the specified RenderViewHost and
   // adds all currently registered named objects to the new instance.
   scoped_refptr<JavaBridgeDispatcherHost> instance =
-      new JavaBridgeDispatcherHost(render_view_host);
+      new JavaBridgeDispatcherHost(render_frame_host);
 
   for (ObjectMap::const_iterator iter = objects_.begin();
       iter != objects_.end(); ++iter) {
     instance->AddNamedObject(iter->first, iter->second);
   }
 
-  instances_[render_view_host] = instance;
+  instances_[render_frame_host] = instance;
 }
 
-void JavaBridgeDispatcherHostManager::RenderViewDeleted(
-    RenderViewHost* render_view_host) {
-  if (!instances_.count(render_view_host))  // Needed for tests.
+void JavaBridgeDispatcherHostManager::RenderFrameDeleted(
+    RenderFrameHost* render_frame_host) {
+  if (!instances_.count(render_frame_host))  // Needed for tests.
     return;
-  instances_[render_view_host]->RenderViewDeleted();
-  instances_.erase(render_view_host);
+  instances_[render_frame_host]->RenderFrameDeleted();
+  instances_.erase(render_frame_host);
 }
 
 void JavaBridgeDispatcherHostManager::DocumentAvailableInMainFrame() {

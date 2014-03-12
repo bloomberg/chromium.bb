@@ -20,18 +20,18 @@ class Message;
 
 namespace content {
 class NPChannelBase;
-class RenderViewHost;
+class RenderFrameHost;
 struct NPVariant_Param;
 
-// This class handles injecting Java objects into a single RenderView. The Java
+// This class handles injecting Java objects into a single RenderFrame. The Java
 // object itself lives in the browser process on a background thread, while a
 // proxy object is created in the renderer. An instance of this class exists
 // for each RenderViewHost.
 class JavaBridgeDispatcherHost
     : public base::RefCountedThreadSafe<JavaBridgeDispatcherHost> {
  public:
-  // We hold a weak pointer to the RenderViewhost. It must outlive this object.
-  explicit JavaBridgeDispatcherHost(RenderViewHost* render_view_host);
+  // We hold a weak pointer to the RenderFrameHost. It must outlive this object.
+  explicit JavaBridgeDispatcherHost(RenderFrameHost* render_frame_host);
 
   // Injects |object| into the main frame of the corresponding RenderView. A
   // proxy object is created in the renderer and when the main frame's window
@@ -45,8 +45,8 @@ class JavaBridgeDispatcherHost
   void AddNamedObject(const base::string16& name, NPObject* object);
   void RemoveNamedObject(const base::string16& name);
 
-  // Since this object is ref-counted, it might outlive render_view_host_.
-  void RenderViewDeleted();
+  // Since this object is ref-counted, it might outlive render_frame_host.
+  void RenderFrameDeleted();
 
   void OnGetChannelHandle(IPC::Message* reply_msg);
 
@@ -61,7 +61,7 @@ class JavaBridgeDispatcherHost
   void CreateObjectStub(NPObject* object, int render_process_id, int route_id);
 
   scoped_refptr<NPChannelBase> channel_;
-  RenderViewHost* render_view_host_;
+  RenderFrameHost* render_frame_host_;
   std::vector<base::WeakPtr<NPObjectStub> > stubs_;
 
   DISALLOW_COPY_AND_ASSIGN(JavaBridgeDispatcherHost);

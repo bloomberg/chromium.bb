@@ -8,7 +8,8 @@
 #include <map>
 
 #include "base/memory/ref_counted.h"
-#include "content/public/renderer/render_view_observer.h"
+#include "base/strings/string16.h"
+#include "content/public/renderer/render_frame_observer.h"
 #include "ipc/ipc_channel_handle.h"
 #include "third_party/npapi/bindings/npruntime.h"
 
@@ -22,16 +23,15 @@ struct NPVariant_Param;
 // bound to the window object of the main frame when that window object is next
 // cleared. These objects remain bound until the window object is cleared
 // again.
-class JavaBridgeDispatcher : public RenderViewObserver {
+class JavaBridgeDispatcher : public RenderFrameObserver {
  public:
-  JavaBridgeDispatcher(RenderView* render_view);
+  JavaBridgeDispatcher(RenderFrame* render_frame);
   virtual ~JavaBridgeDispatcher();
 
  private:
   // RenderViewObserver override:
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void DidClearWindowObject(blink::WebFrame* frame,
-                                    int world_id) OVERRIDE;
+  virtual void DidClearWindowObject(int world_id) OVERRIDE;
 
   // Message handlers
   void OnAddNamedObject(const base::string16& name,

@@ -19,11 +19,11 @@ struct NPObject;
 
 namespace content {
 class JavaBridgeDispatcherHost;
-class RenderViewHost;
+class RenderFrameHost;
 
-// This class handles injecting Java objects into all of the RenderViews
+// This class handles injecting Java objects into all of the RenderFrames
 // associated with a WebContents. It manages a set of JavaBridgeDispatcherHost
-// objects, one per RenderViewHost.
+// objects, one per RenderFrameHost.
 class JavaBridgeDispatcherHostManager
     : public WebContentsObserver,
       public base::SupportsWeakPtr<JavaBridgeDispatcherHostManager> {
@@ -33,11 +33,11 @@ class JavaBridgeDispatcherHostManager
 
   // These methods add or remove the object to each JavaBridgeDispatcherHost.
   // Each one holds a reference to the NPObject while the object is bound to
-  // the corresponding RenderView. See JavaBridgeDispatcherHost for details.
+  // the corresponding RenderFrame. See JavaBridgeDispatcherHost for details.
   void AddNamedObject(const base::string16& name, NPObject* object);
   void RemoveNamedObject(const base::string16& name);
 
-  void OnGetChannelHandle(RenderViewHost* render_view_host,
+  void OnGetChannelHandle(RenderFrameHost* render_frame_host,
                           IPC::Message* reply_msg);
 
   // Every time a JavaBoundObject backed by a real Java object is
@@ -49,8 +49,8 @@ class JavaBridgeDispatcherHostManager
   void SetRetainedObjectSet(const JavaObjectWeakGlobalRef& retained_object_set);
 
   // WebContentsObserver overrides
-  virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;
-  virtual void RenderViewDeleted(RenderViewHost* render_view_host) OVERRIDE;
+  virtual void RenderFrameCreated(RenderFrameHost* render_frame_host) OVERRIDE;
+  virtual void RenderFrameDeleted(RenderFrameHost* render_frame_host) OVERRIDE;
   virtual void DocumentAvailableInMainFrame() OVERRIDE;
 
   void JavaBoundObjectCreated(const base::android::JavaRef<jobject>& object);
@@ -62,7 +62,7 @@ class JavaBridgeDispatcherHostManager
   void SetAllowObjectContentsInspection(bool allow);
 
  private:
-  typedef std::map<RenderViewHost*, scoped_refptr<JavaBridgeDispatcherHost> >
+  typedef std::map<RenderFrameHost*, scoped_refptr<JavaBridgeDispatcherHost> >
       InstanceMap;
   InstanceMap instances_;
   typedef std::map<base::string16, NPObject*> ObjectMap;

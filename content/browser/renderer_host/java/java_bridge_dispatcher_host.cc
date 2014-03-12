@@ -8,12 +8,12 @@
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "content/browser/renderer_host/java/java_bridge_channel_host.h"
-#include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/child/child_process.h"
 #include "content/child/npapi/npobject_stub.h"
 #include "content/child/npapi/npobject_util.h"  // For CreateNPVariantParam()
 #include "content/common/java_bridge_messages.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "third_party/WebKit/public/web/WebBindings.h"
 
@@ -49,8 +49,8 @@ base::LazyInstance<JavaBridgeThread> g_background_thread =
 }  // namespace
 
 JavaBridgeDispatcherHost::JavaBridgeDispatcherHost(
-    RenderViewHost* render_view_host)
-    : render_view_host_(render_view_host) {
+    RenderFrameHost* render_frame_host)
+    : render_frame_host_(render_frame_host) {
 }
 
 JavaBridgeDispatcherHost::~JavaBridgeDispatcherHost() {
@@ -65,7 +65,7 @@ void JavaBridgeDispatcherHost::AddNamedObject(const base::string16& name,
   CreateNPVariantParam(object, &variant_param);
 
   Send(new JavaBridgeMsg_AddNamedObject(
-      render_view_host_->GetRoutingID(), name, variant_param));
+      render_frame_host_->GetRoutingID(), name, variant_param));
 }
 
 void JavaBridgeDispatcherHost::RemoveNamedObject(const base::string16& name) {
@@ -75,11 +75,11 @@ void JavaBridgeDispatcherHost::RemoveNamedObject(const base::string16& name) {
   // the NPObjectStub to be deleted, which will drop its reference to the
   // original NPObject.
   Send(new JavaBridgeMsg_RemoveNamedObject(
-      render_view_host_->GetRoutingID(), name));
+      render_frame_host_->GetRoutingID(), name));
 }
 
-void JavaBridgeDispatcherHost::RenderViewDeleted() {
-  render_view_host_ = NULL;
+void JavaBridgeDispatcherHost::RenderFrameDeleted() {
+  render_frame_host_ = NULL;
 }
 
 void JavaBridgeDispatcherHost::OnGetChannelHandle(IPC::Message* reply_msg) {
@@ -89,8 +89,8 @@ void JavaBridgeDispatcherHost::OnGetChannelHandle(IPC::Message* reply_msg) {
 }
 
 void JavaBridgeDispatcherHost::Send(IPC::Message* msg) {
-  if (render_view_host_) {
-    render_view_host_->Send(msg);
+  if (render_frame_host_) {
+    render_frame_host_->Send(msg);
     return;
   }
 
@@ -132,7 +132,7 @@ void JavaBridgeDispatcherHost::CreateNPVariantParam(NPObject* object,
   g_background_thread.Get().message_loop()->PostTask(
       FROM_HERE,
       base::Bind(&JavaBridgeDispatcherHost::CreateObjectStub, this, object,
-                 render_view_host_->GetProcess()->GetID(), route_id));
+                 render_frame_host_->GetProcess()->GetID(), route_id));
 }
 
 void JavaBridgeDispatcherHost::CreateObjectStub(NPObject* object,

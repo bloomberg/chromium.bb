@@ -49,6 +49,7 @@
 #include "content/renderer/context_menu_params_builder.h"
 #include "content/renderer/dom_automation_controller.h"
 #include "content/renderer/internal_document_state_data.h"
+#include "content/renderer/java/java_bridge_dispatcher.h"
 #include "content/renderer/npapi/plugin_channel_host.h"
 #include "content/renderer/render_process.h"
 #include "content/renderer/render_thread_impl.h"
@@ -306,6 +307,10 @@ RenderFrameImpl::RenderFrameImpl(RenderViewImpl* render_view, int routing_id)
       is_detaching_(false),
       cookie_jar_(this) {
   RenderThread::Get()->AddRoute(routing_id_, this);
+
+#if defined(OS_ANDROID)
+  new JavaBridgeDispatcher(this);
+#endif
 }
 
 RenderFrameImpl::~RenderFrameImpl() {
@@ -1612,6 +1617,9 @@ void RenderFrameImpl::didClearWindowObject(blink::WebFrame* frame,
 
   if (render_view_->GetEnabledBindings() & BINDINGS_POLICY_DOM_AUTOMATION)
     DomAutomationController::Install(this, frame);
+
+  FOR_EACH_OBSERVER(RenderFrameObserver, observers_,
+                    DidClearWindowObject(world_id));
 }
 
 void RenderFrameImpl::didCreateDocumentElement(blink::WebFrame* frame) {

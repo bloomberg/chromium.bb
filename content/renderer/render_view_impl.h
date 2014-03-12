@@ -139,7 +139,6 @@ class FaviconHelper;
 class GeolocationDispatcher;
 class ImageResourceFetcher;
 class InputTagSpeechDispatcher;
-class JavaBridgeDispatcher;
 class LoadProgressTracker;
 class MidiDispatcher;
 class MediaStreamClient;

@@ -205,10 +205,28 @@ bool ForEachFrameInternal(
   return true;
 }
 
+bool ForEachPendingFrameInternal(
+    const base::Callback<void(RenderFrameHost*)>& on_frame,
+    FrameTreeNode* node) {
+  RenderFrameHost* pending_frame_host =
+      node->render_manager()->pending_frame_host();
+  if (pending_frame_host)
+    on_frame.Run(pending_frame_host);
+  return true;
+}
+
 void SendToAllFramesInternal(IPC::Message* message, RenderFrameHost* rfh) {
   IPC::Message* message_copy = new IPC::Message(*message);
   message_copy->set_routing_id(rfh->GetRoutingID());
   rfh->Send(message_copy);
+}
+
+void RunRenderFrameDeleted(
+    ObserverList<WebContentsObserver>* observer_list,
+    RenderFrameHost* render_frame_host) {
+  FOR_EACH_OBSERVER(WebContentsObserver,
+                    *observer_list,
+                    RenderFrameDeleted(render_frame_host));
 }
 
 }  // namespace
@@ -355,12 +373,19 @@ WebContentsImpl::~WebContentsImpl() {
       Source<WebContents>(this),
       NotificationService::NoDetails());
 
+  base::Callback<void(RenderFrameHost*)> run_render_frame_deleted_callback =
+      base::Bind(&RunRenderFrameDeleted, base::Unretained(&observers_));
+  frame_tree_.ForEach(base::Bind(&ForEachPendingFrameInternal,
+                                 run_render_frame_deleted_callback));
+
   RenderViewHost* pending_rvh = GetRenderManager()->pending_render_view_host();
   if (pending_rvh) {
     FOR_EACH_OBSERVER(WebContentsObserver,
                       observers_,
                       RenderViewDeleted(pending_rvh));
   }
+
+  ForEachFrame(run_render_frame_deleted_callback);
 
   FOR_EACH_OBSERVER(WebContentsObserver,
                     observers_,
@@ -2385,7 +2410,7 @@ void WebContentsImpl::OnOpenDateTimeDialog(
 
 void WebContentsImpl::OnJavaBridgeGetChannelHandle(IPC::Message* reply_msg) {
   java_bridge_dispatcher_host_manager_->OnGetChannelHandle(
-      render_view_message_source_, reply_msg);
+      render_frame_message_source_, reply_msg);
 }
 
 #endif

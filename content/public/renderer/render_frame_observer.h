@@ -45,6 +45,7 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
   virtual void DidFinishLoad() {}
   virtual void WillReleaseScriptContext(v8::Handle<v8::Context> context,
                                         int world_id) {}
+  virtual void DidClearWindowObject(int world_id) {}
 
   // IPC::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;

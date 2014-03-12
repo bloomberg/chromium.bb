@@ -45,7 +45,6 @@
 #include "content/common/frame_messages.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/common/input_messages.h"
-#include "content/common/java_bridge_messages.h"
 #include "content/common/pepper_messages.h"
 #include "content/common/socket_stream_handle_data.h"
 #include "content/common/ssl_status_serialization.h"
@@ -88,7 +87,6 @@
 #include "content/renderer/input/input_handler_manager.h"
 #include "content/renderer/input_tag_speech_dispatcher.h"
 #include "content/renderer/internal_document_state_data.h"
-#include "content/renderer/java/java_bridge_dispatcher.h"
 #include "content/renderer/load_progress_tracker.h"
 #include "content/renderer/media/audio_device_factory.h"
 #include "content/renderer/media/audio_renderer_mixer_manager.h"
@@ -804,7 +802,6 @@ void RenderViewImpl::Initialize(RenderViewImplParams* params) {
 
 #if defined(OS_ANDROID)
   media_player_manager_ = new RendererMediaPlayerManager(this);
-  new JavaBridgeDispatcher(this);
 #endif
 
   // The next group of objects all implement RenderViewObserver, so are deleted
