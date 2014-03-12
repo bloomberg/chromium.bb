@@ -30,9 +30,6 @@ class NotificationPresenter : public blink::WebNotificationPresenter {
   // Called by the TestRunner to simulate a user clicking on a notification.
   bool SimulateClick(const std::string& title);
 
-  // Called by the TestRunner to cancel all active notications.
-  void CancelAllActiveNotifications();
-
   // Called by the TestRunner to reset the presenter to an default state.
   void Reset();
 

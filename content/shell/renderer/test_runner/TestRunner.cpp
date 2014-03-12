@@ -296,8 +296,7 @@ TestRunner::TestRunner(TestInterfaces* interfaces)
     bindMethod("setMIDIAccessorResult", &TestRunner::setMIDIAccessorResult);
     bindMethod("setMIDISysExPermission", &TestRunner::setMIDISysExPermission);
     bindMethod("grantWebNotificationPermission", &TestRunner::grantWebNotificationPermission);
-    bindMethod("simulateLegacyWebNotificationClick", &TestRunner::simulateLegacyWebNotificationClick);
-    bindMethod("cancelAllActiveNotifications", &TestRunner::cancelAllActiveNotifications);
+    bindMethod("simulateWebNotificationClick", &TestRunner::simulateWebNotificationClick);
     bindMethod("addMockSpeechInputResult", &TestRunner::addMockSpeechInputResult);
     bindMethod("setMockSpeechInputDumpRect", &TestRunner::setMockSpeechInputDumpRect);
     bindMethod("addMockSpeechRecognitionResult", &TestRunner::addMockSpeechRecognitionResult);
@@ -323,9 +322,6 @@ TestRunner::TestRunner(TestInterfaces* interfaces)
 
     // The following are stubs.
     bindMethod("dumpDatabaseCallbacks", &TestRunner::notImplemented);
-    bindMethod("denyWebNotificationPermission", &TestRunner::notImplemented);
-    bindMethod("removeAllWebNotificationPermissions", &TestRunner::notImplemented);
-    bindMethod("simulateWebNotificationClick", &TestRunner::notImplemented);
     bindMethod("setIconDatabaseEnabled", &TestRunner::notImplemented);
     bindMethod("setScrollbarPolicy", &TestRunner::notImplemented);
     bindMethod("clearAllApplicationCaches", &TestRunner::notImplemented);
@@ -1832,19 +1828,13 @@ void TestRunner::grantWebNotificationPermission(const CppArgumentList& arguments
     notification_presenter_->GrantPermission(arguments[0].toString(), permissionGranted);
 }
 
-void TestRunner::simulateLegacyWebNotificationClick(const CppArgumentList& arguments, CppVariant* result)
+void TestRunner::simulateWebNotificationClick(const CppArgumentList& arguments, CppVariant* result)
 {
     if (arguments.size() != 1 || !arguments[0].isString()) {
         result->set(false);
         return;
     }
     result->set(notification_presenter_->SimulateClick(arguments[0].toString()));
-}
-
-void TestRunner::cancelAllActiveNotifications(const CppArgumentList& arguments, CppVariant* result)
-{
-    notification_presenter_->CancelAllActiveNotifications();
-    result->set(true);
 }
 
 void TestRunner::addMockSpeechInputResult(const CppArgumentList& arguments, CppVariant* result)

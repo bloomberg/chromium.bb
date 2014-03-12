@@ -55,15 +55,12 @@ bool NotificationPresenter::SimulateClick(const std::string& title) {
   return true;
 }
 
-void NotificationPresenter::CancelAllActiveNotifications() {
+void NotificationPresenter::Reset() {
   while (!active_notifications_.empty()) {
     const WebNotification& notification = active_notifications_.begin()->second;
     cancel(notification);
   }
-}
 
-void NotificationPresenter::Reset() {
-  CancelAllActiveNotifications();
   known_origins_.clear();
   replacements_.clear();
 }
