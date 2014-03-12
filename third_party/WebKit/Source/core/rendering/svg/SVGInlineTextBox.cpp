@@ -361,7 +361,7 @@ bool SVGInlineTextBox::acquirePaintingResource(GraphicsContext*& context, float 
     ASSERT(style);
     ASSERT(m_paintingResourceMode != ApplyToDefaultMode);
 
-    bool hasFallback;
+    bool hasFallback = false;
     if (m_paintingResourceMode & ApplyToFillMode)
         m_paintingResource = RenderSVGResource::fillPaintingResource(renderer, style, hasFallback);
     else if (m_paintingResourceMode & ApplyToStrokeMode)
