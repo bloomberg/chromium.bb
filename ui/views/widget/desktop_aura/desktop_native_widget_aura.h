@@ -15,6 +15,7 @@
 #include "ui/base/cursor/cursor.h"
 #include "ui/views/ime/input_method_delegate.h"
 #include "ui/views/widget/native_widget_private.h"
+#include "ui/wm/core/compound_event_filter.h"
 
 namespace aura {
 class WindowEventDispatcher;
@@ -27,19 +28,20 @@ class WindowTreeClient;
 }
 }
 
-namespace views {
-
-namespace corewm {
+namespace wm {
 class CompoundEventFilter;
 class CursorManager;
 class FocusController;
 class InputMethodEventFilter;
 class ShadowController;
-class TooltipController;
 class VisibilityController;
 class WindowModalityController;
 }
 
+namespace views {
+namespace corewm {
+class TooltipController;
+}
 class DesktopCaptureClient;
 class DesktopDispatcherClient;
 class DesktopEventClient;
@@ -77,10 +79,10 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   // as by the time we get here |dispatcher_| is NULL.
   virtual void OnDesktopWindowTreeHostDestroyed(aura::WindowTreeHost* host);
 
-  corewm::InputMethodEventFilter* input_method_event_filter() {
+  wm::InputMethodEventFilter* input_method_event_filter() {
     return input_method_event_filter_.get();
   }
-  corewm::CompoundEventFilter* root_window_event_filter() {
+  wm::CompoundEventFilter* root_window_event_filter() {
     return root_window_event_filter_;
   }
   aura::WindowTreeHost* host() {
@@ -272,7 +274,7 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
 
   internal::NativeWidgetDelegate* native_widget_delegate_;
 
-  scoped_ptr<corewm::FocusController> focus_client_;
+  scoped_ptr<wm::FocusController> focus_client_;
   scoped_ptr<DesktopDispatcherClient> dispatcher_client_;
   scoped_ptr<aura::client::ScreenPositionClient> position_client_;
   scoped_ptr<aura::client::DragDropClient> drag_drop_client_;
@@ -281,9 +283,9 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   scoped_ptr<FocusManagerEventHandler> focus_manager_event_handler_;
 
   // Toplevel event filter which dispatches to other event filters.
-  corewm::CompoundEventFilter* root_window_event_filter_;
+  wm::CompoundEventFilter* root_window_event_filter_;
 
-  scoped_ptr<corewm::InputMethodEventFilter> input_method_event_filter_;
+  scoped_ptr<wm::InputMethodEventFilter> input_method_event_filter_;
 
   scoped_ptr<DropHelper> drop_helper_;
   int last_drop_operation_;
@@ -291,9 +293,9 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   scoped_ptr<corewm::TooltipController> tooltip_controller_;
   scoped_ptr<TooltipManagerAura> tooltip_manager_;
 
-  scoped_ptr<views::corewm::VisibilityController> visibility_controller_;
+  scoped_ptr<wm::VisibilityController> visibility_controller_;
 
-  scoped_ptr<views::corewm::WindowModalityController>
+  scoped_ptr<wm::WindowModalityController>
       window_modality_controller_;
 
   // See comments in OnLostActive().
@@ -307,10 +309,10 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   // (potentially) after we tear down the X11 connection because that's a
   // crash.
   static int cursor_reference_count_;
-  static views::corewm::CursorManager* cursor_manager_;
+  static wm::CursorManager* cursor_manager_;
   static views::DesktopNativeCursorManager* native_cursor_manager_;
 
-  scoped_ptr<corewm::ShadowController> shadow_controller_;
+  scoped_ptr<wm::ShadowController> shadow_controller_;
 
   // Reorders child windows of |window_| associated with a view based on the
   // order of the associated views in the widget's view hierarchy.

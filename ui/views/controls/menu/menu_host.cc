@@ -55,7 +55,7 @@ void MenuHost::InitMenuHost(Widget* parent,
   Init(params);
 
   if (bubble_border)
-    SetShadowType(GetNativeView(), views::corewm::SHADOW_TYPE_NONE);
+    SetShadowType(GetNativeView(), wm::SHADOW_TYPE_NONE);
 
   SetContentsView(contents_view);
   if (bubble_border || rounded_border)

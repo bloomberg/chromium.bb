@@ -23,7 +23,7 @@
 #include "ui/keyboard/keyboard_controller_proxy.h"
 #include "ui/keyboard/keyboard_switches.h"
 #include "ui/keyboard/keyboard_util.h"
-#include "ui/wm/public/masked_window_targeter.h"
+#include "ui/wm/core/masked_window_targeter.h"
 
 #if defined(OS_CHROMEOS)
 #include "base/process/launch.h"

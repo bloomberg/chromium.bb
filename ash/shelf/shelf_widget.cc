@@ -37,7 +37,7 @@
 #include "ui/views/accessible_pane_view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
-#include "ui/wm/public/easy_resize_window_targeter.h"
+#include "ui/wm/core/easy_resize_window_targeter.h"
 
 namespace {
 // Size of black border at bottom (or side) of shelf.

@@ -114,7 +114,7 @@ void SetBoundsAnimated(aura::Window* window, const gfx::Rect& bounds) {
   if (bounds == window->GetTargetBounds())
     return;
 
-  if (views::corewm::WindowAnimationsDisabled(window)) {
+  if (::wm::WindowAnimationsDisabled(window)) {
     window->SetBounds(bounds);
     return;
   }

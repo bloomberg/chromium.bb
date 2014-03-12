@@ -545,7 +545,7 @@ void PanelLayoutManager::WillChangeVisibilityState(
 // PanelLayoutManager private implementation:
 
 void PanelLayoutManager::MinimizePanel(aura::Window* panel) {
-  views::corewm::SetWindowVisibilityAnimationType(
+  ::wm::SetWindowVisibilityAnimationType(
       panel, WINDOW_VISIBILITY_ANIMATION_TYPE_MINIMIZE);
   ui::Layer* layer = panel->layer();
   ui::ScopedLayerAnimationSettings panel_slide_settings(layer->GetAnimator());

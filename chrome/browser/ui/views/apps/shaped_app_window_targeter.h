@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_APPS_SHAPED_APP_WINDOW_TARGETER_H_
 #define CHROME_BROWSER_UI_VIEWS_APPS_SHAPED_APP_WINDOW_TARGETER_H_
 
-#include "ui/wm/public/masked_window_targeter.h"
+#include "ui/wm/core/masked_window_targeter.h"
 
 class ChromeNativeAppWindowViews;
 

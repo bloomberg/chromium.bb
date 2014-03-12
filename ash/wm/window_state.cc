@@ -184,12 +184,12 @@ bool WindowState::CanResize() const {
 }
 
 bool WindowState::CanActivate() const {
-  return views::corewm::CanActivateWindow(window_);
+  return ::wm::CanActivateWindow(window_);
 }
 
 bool WindowState::CanSnap() const {
   if (!CanResize() || window_->type() == ui::wm::WINDOW_TYPE_PANEL ||
-      views::corewm::GetTransientParent(window_))
+      ::wm::GetTransientParent(window_))
     return false;
   // If a window has a maximum size defined, snapping may make it too big.
   // TODO(oshima): We probably should snap if possible.
@@ -392,7 +392,7 @@ void WindowState::SetBoundsDirectCrossFade(const gfx::Rect& new_bounds) {
   // Specify |set_bounds| to true here to keep the old bounds in the child
   // windows of |window|.
   scoped_ptr<ui::LayerTreeOwner> old_layer_owner =
-      views::corewm::RecreateLayers(window_);
+      ::wm::RecreateLayers(window_);
   ui::Layer* old_layer = old_layer_owner->root();
   DCHECK(old_layer);
   ui::Layer* new_layer = window_->layer();

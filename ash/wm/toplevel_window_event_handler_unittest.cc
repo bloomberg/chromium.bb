@@ -357,7 +357,7 @@ TEST_F(ToplevelWindowEventHandlerTest, DontDragIfModalChild) {
   scoped_ptr<aura::Window> w2(CreateWindow(HTCAPTION));
   w2->SetBounds(gfx::Rect(100, 0, 100, 100));
   w2->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_WINDOW);
-  views::corewm::AddTransientChild(w1.get(), w2.get());
+  ::wm::AddTransientChild(w1.get(), w2.get());
   gfx::Size size = w1->bounds().size();
 
   // Attempt to drag w1, position and size should not change because w1 has a

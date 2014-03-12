@@ -7,11 +7,9 @@
 
 #include "base/basictypes.h"
 
-namespace views {
-namespace corewm {
+namespace wm {
 class InputMethodEventFilter;
-}  // namespace corewm
-}  // namespace views
+}  // namespace wm
 
 namespace ash {
 class AshNativeCursorManager;
@@ -37,7 +35,7 @@ public:
   explicit ShellTestApi(Shell* shell);
 
   internal::RootWindowLayoutManager* root_window_layout();
-  views::corewm::InputMethodEventFilter* input_method_event_filter();
+  ::wm::InputMethodEventFilter* input_method_event_filter();
   internal::SystemGestureEventFilter* system_gesture_event_filter();
   internal::WorkspaceController* workspace_controller();
   internal::ScreenPositionController* screen_position_controller();

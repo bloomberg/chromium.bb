@@ -1477,7 +1477,7 @@ void UserManagerImpl::KioskAppLoggedIn(const std::string& app_id) {
   // Disable window animation since kiosk app runs in a single full screen
   // window and window animation causes start-up janks.
   command_line->AppendSwitch(
-      views::corewm::switches::kWindowAnimationsDisabled);
+      wm::switches::kWindowAnimationsDisabled);
 }
 
 void UserManagerImpl::DemoAccountLoggedIn() {
@@ -1489,7 +1489,7 @@ void UserManagerImpl::DemoAccountLoggedIn() {
   // Disable window animation since the demo app runs in a single full screen
   // window and window animation causes start-up janks.
   CommandLine::ForCurrentProcess()->AppendSwitch(
-      views::corewm::switches::kWindowAnimationsDisabled);
+      wm::switches::kWindowAnimationsDisabled);
 }
 
 void UserManagerImpl::RetailModeUserLoggedIn() {

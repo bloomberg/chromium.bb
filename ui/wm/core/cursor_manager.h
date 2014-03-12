@@ -20,8 +20,7 @@ namespace gfx {
 class Display;
 }
 
-namespace views {
-namespace corewm {
+namespace wm {
 
 namespace internal {
 class CursorState;
@@ -86,7 +85,6 @@ class WM_CORE_EXPORT CursorManager : public aura::client::CursorClient,
   DISALLOW_COPY_AND_ASSIGN(CursorManager);
 };
 
-}  // namespace corewm
-}  // namespace views
+}  // namespace wm
 
 #endif  // UI_WM_CORE_CURSOR_MANAGER_H_

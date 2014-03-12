@@ -24,25 +24,25 @@ const int kSmallInteriorInset = 5;
 // Duration for opacity animation in milliseconds.
 const int kShadowAnimationDurationMs = 100;
 
-float GetOpacityForStyle(views::corewm::Shadow::Style style) {
+float GetOpacityForStyle(wm::Shadow::Style style) {
   switch (style) {
-    case views::corewm::Shadow::STYLE_ACTIVE:
+    case wm::Shadow::STYLE_ACTIVE:
       return kActiveShadowOpacity;
-    case views::corewm::Shadow::STYLE_INACTIVE:
+    case wm::Shadow::STYLE_INACTIVE:
       return kInactiveShadowOpacity;
-    case views::corewm::Shadow::STYLE_SMALL:
+    case wm::Shadow::STYLE_SMALL:
       return kSmallShadowOpacity;
   }
   return 1.0f;
 }
 
-int GetInteriorInsetForStyle(views::corewm::Shadow::Style style) {
+int GetInteriorInsetForStyle(wm::Shadow::Style style) {
   switch (style) {
-    case views::corewm::Shadow::STYLE_ACTIVE:
+    case wm::Shadow::STYLE_ACTIVE:
       return kActiveInteriorInset;
-    case views::corewm::Shadow::STYLE_INACTIVE:
+    case wm::Shadow::STYLE_INACTIVE:
       return kInactiveInteriorInset;
-    case views::corewm::Shadow::STYLE_SMALL:
+    case wm::Shadow::STYLE_SMALL:
       return kSmallInteriorInset;
   }
   return 0;
@@ -50,8 +50,7 @@ int GetInteriorInsetForStyle(views::corewm::Shadow::Style style) {
 
 }  // namespace
 
-namespace views {
-namespace corewm {
+namespace wm {
 
 Shadow::Shadow() : style_(STYLE_ACTIVE), interior_inset_(0) {
 }
@@ -191,5 +190,4 @@ void Shadow::UpdateImageGridBounds() {
   image_grid_->SetContentBounds(image_grid_bounds);
 }
 
-}  // namespace corewm
-}  // namespace views
+}  // namespace wm

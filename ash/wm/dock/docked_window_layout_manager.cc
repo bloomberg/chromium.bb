@@ -221,7 +221,7 @@ namespace {
 // Returns true if a window is a popup or a transient child.
 bool IsPopupOrTransient(const aura::Window* window) {
   return (window->type() == ui::wm::WINDOW_TYPE_POPUP ||
-          views::corewm::GetTransientParent(window));
+          ::wm::GetTransientParent(window));
 }
 
 // Certain windows (minimized, hidden or popups) do not matter to docking.
@@ -834,15 +834,15 @@ void DockedWindowLayoutManager::OnWindowVisibilityChanging(
     aura::Window* window, bool visible) {
   if (IsPopupOrTransient(window))
     return;
-  int animation_type = views::corewm::WINDOW_VISIBILITY_ANIMATION_TYPE_DEFAULT;
+  int animation_type = ::wm::WINDOW_VISIBILITY_ANIMATION_TYPE_DEFAULT;
   if (visible) {
-    animation_type = views::corewm::WINDOW_VISIBILITY_ANIMATION_TYPE_DROP;
-    views::corewm::SetWindowVisibilityAnimationDuration(
+    animation_type = ::wm::WINDOW_VISIBILITY_ANIMATION_TYPE_DROP;
+    ::wm::SetWindowVisibilityAnimationDuration(
         window, base::TimeDelta::FromMilliseconds(kFadeDurationMs));
   } else if (wm::GetWindowState(window)->IsMinimized()) {
     animation_type = WINDOW_VISIBILITY_ANIMATION_TYPE_MINIMIZE;
   }
-  views::corewm::SetWindowVisibilityAnimationType(window, animation_type);
+  ::wm::SetWindowVisibilityAnimationType(window, animation_type);
 }
 
 void DockedWindowLayoutManager::OnWindowDestroying(aura::Window* window) {

@@ -34,10 +34,8 @@ namespace gfx {
 class Size;
 }
 
-namespace views {
-namespace corewm {
+namespace wm {
 class WMState;
-}
 }
 
 // Base class for Views based tests that dispatch events.
@@ -156,7 +154,7 @@ class ViewEventTestBase : public views::WidgetDelegate,
 
 #if defined(USE_AURA)
   scoped_ptr<aura::test::AuraTestHelper> aura_test_helper_;
-  scoped_ptr<views::corewm::WMState> wm_state_;
+  scoped_ptr<wm::WMState> wm_state_;
 #endif
 
   ChromeViewsDelegate views_delegate_;

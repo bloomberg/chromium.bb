@@ -973,7 +973,7 @@ void UserView::ToggleAddUserMenuOption() {
   add_menu_option_->SetOpacity(0xFF);
   add_menu_option_->GetNativeWindow()->set_owned_by_parent(false);
   SetShadowType(add_menu_option_->GetNativeView(),
-                views::corewm::SHADOW_TYPE_NONE);
+                wm::SHADOW_TYPE_NONE);
 
   // Position it below our user card.
   gfx::Rect bounds = user_card_view_->GetBoundsInScreen();

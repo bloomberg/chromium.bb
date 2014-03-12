@@ -1445,10 +1445,10 @@ TEST_P(DockedWindowResizerTest, DragWindowWithTransientChild) {
   scoped_ptr<aura::Window> window(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
   scoped_ptr<aura::Window> child(CreateTestWindowInShellWithDelegateAndType(
       NULL, ui::wm::WINDOW_TYPE_NORMAL, 0, gfx::Rect(20, 20, 150, 20)));
-  views::corewm::AddTransientChild(window.get(), child.get());
+  ::wm::AddTransientChild(window.get(), child.get());
   if (window->parent() != child->parent())
     window->parent()->AddChild(child.get());
-  EXPECT_EQ(window.get(), views::corewm::GetTransientParent(child.get()));
+  EXPECT_EQ(window.get(), ::wm::GetTransientParent(child.get()));
 
   DragToVerticalPositionAndToEdge(DOCKED_EDGE_RIGHT, window.get(), 20);
 
@@ -1495,8 +1495,8 @@ TEST_P(DockedWindowResizerTest, DragWindowWithModalTransientChild) {
   // While still dragging create a modal window and make it a transient child of
   // the |window|.
   scoped_ptr<aura::Window> child(CreateModalWindow(gfx::Rect(20, 20, 150, 20)));
-  views::corewm::AddTransientChild(window.get(), child.get());
-  EXPECT_EQ(window.get(), views::corewm::GetTransientParent(child.get()));
+  ::wm::AddTransientChild(window.get(), child.get());
+  EXPECT_EQ(window.get(), ::wm::GetTransientParent(child.get()));
   EXPECT_EQ(internal::kShellWindowId_SystemModalContainer,
             child->parent()->id());
 
@@ -1516,7 +1516,7 @@ TEST_P(DockedWindowResizerTest, DragWindowWithModalTransientChild) {
   EXPECT_EQ(gfx::Point(20, 20).ToString(),
             child->GetBoundsInScreen().origin().ToString());
   // The |child| should still be a transient child of |window|.
-  EXPECT_EQ(window.get(), views::corewm::GetTransientParent(child.get()));
+  EXPECT_EQ(window.get(), ::wm::GetTransientParent(child.get()));
 }
 
 // Tests that side snapping a window undocks it, closes the dock and then snaps.

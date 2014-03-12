@@ -20,8 +20,7 @@
 using std::max;
 using std::min;
 
-namespace views {
-namespace corewm {
+namespace wm {
 
 gfx::RectF ImageGrid::TestAPI::GetTransformedLayerBounds(
     const ui::Layer& layer) {
@@ -304,5 +303,4 @@ void ImageGrid::ScaleHeight(gfx::Size center,
   transform.Scale(1.0, scale);
 }
 
-}  // namespace corewm
-}  // namespace views
+}  // namespace wm

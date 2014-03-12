@@ -55,7 +55,7 @@ AshFocusRules::~AshFocusRules() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// AshFocusRules, views::corewm::FocusRules:
+// AshFocusRules, ::wm::FocusRules:
 
 bool AshFocusRules::SupportsChildActivation(aura::Window* window) const {
   if (window->id() == internal::kShellWindowId_DefaultContainer)

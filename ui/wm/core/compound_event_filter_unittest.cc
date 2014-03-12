@@ -26,8 +26,7 @@ base::TimeDelta GetTime() {
 
 }
 
-namespace views {
-namespace corewm {
+namespace wm {
 
 namespace {
 
@@ -204,5 +203,4 @@ TEST_F(CompoundEventFilterTest, DontHideWhenMouseDown) {
   aura::Env::GetInstance()->RemovePreTargetHandler(compound_filter.get());
 }
 
-}  // namespace corewm
-}  // namespace views
+}  // namespace wm

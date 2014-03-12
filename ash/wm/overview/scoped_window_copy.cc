@@ -42,8 +42,8 @@ views::Widget* CreateCopyOfWindow(aura::Window* target_root,
   widget->SetVisibilityChangedAnimationsEnabled(false);
   std::string name = src_window->name() + " (Copy)";
   widget->GetNativeWindow()->SetName(name);
-  views::corewm::SetShadowType(widget->GetNativeWindow(),
-                               views::corewm::SHADOW_TYPE_RECTANGULAR);
+  ::wm::SetShadowType(widget->GetNativeWindow(),
+                               ::wm::SHADOW_TYPE_RECTANGULAR);
 
   // Set the bounds in the target root window.
   gfx::Display target_display =
@@ -160,7 +160,7 @@ void CleanupWidgetAfterAnimationObserver::MaybeDestruct() {
 ScopedWindowCopy::ScopedWindowCopy(aura::Window* target_root,
                                    aura::Window* src_window) {
   scoped_ptr<ui::LayerTreeOwner> layer_owner =
-      views::corewm::RecreateLayers(src_window);
+      ::wm::RecreateLayers(src_window);
   widget_ = CreateCopyOfWindow(target_root, src_window, layer_owner->root());
   cleanup_observer_ =
       new CleanupWidgetAfterAnimationObserver(widget_, layer_owner.Pass());

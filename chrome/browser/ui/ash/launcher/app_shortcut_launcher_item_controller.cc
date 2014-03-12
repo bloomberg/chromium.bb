@@ -342,7 +342,7 @@ bool AppShortcutLauncherItemController::AdvanceToNextApp() {
           // If there is only a single item available, we animate it upon key
           // action.
           AnimateWindow(browser->window()->GetNativeWindow(),
-              views::corewm::WINDOW_ANIMATION_TYPE_BOUNCE);
+              wm::WINDOW_ANIMATION_TYPE_BOUNCE);
         } else {
           int index = (static_cast<int>(i - items.begin()) + 1) % items.size();
           ActivateContent(items[index]);

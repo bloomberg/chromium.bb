@@ -9,8 +9,7 @@
 #include "ui/compositor/layer.h"
 #include "ui/wm/core/window_animations.h"
 
-namespace views {
-namespace corewm {
+namespace wm {
 
 namespace {
 
@@ -86,6 +85,5 @@ void SetChildWindowVisibilityChangesAnimated(aura::Window* window) {
   window->SetProperty(kChildWindowVisibilityChangesAnimatedKey, true);
 }
 
-}  // namespace corewm
-}  // namespace views
+}  // namespace wm
 

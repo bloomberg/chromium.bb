@@ -13,13 +13,13 @@
 namespace ash {
 namespace wm {
 
-class ASH_EXPORT AshFocusRules : public views::corewm::BaseFocusRules {
+class ASH_EXPORT AshFocusRules : public ::wm::BaseFocusRules {
  public:
   AshFocusRules();
   virtual ~AshFocusRules();
 
  private:
-  // Overridden from views::corewm::BaseFocusRules:
+  // Overridden from ::wm::BaseFocusRules:
   virtual bool SupportsChildActivation(aura::Window* window) const OVERRIDE;
   virtual bool IsWindowConsideredVisibleForActivation(
       aura::Window* window) const OVERRIDE;

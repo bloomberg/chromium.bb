@@ -9,7 +9,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/views/controls/webview/webview.h"
-#include "ui/wm/public/easy_resize_window_targeter.h"
+#include "ui/wm/core/easy_resize_window_targeter.h"
 
 class ShapedAppWindowTargeterTest : public aura::test::AuraTestBase {
  public:

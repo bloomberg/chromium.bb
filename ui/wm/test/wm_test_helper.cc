@@ -23,11 +23,11 @@ WMTestHelper::WMTestHelper(const gfx::Size& default_window_size) {
   focus_client_.reset(new aura::test::TestFocusClient);
   aura::client::SetFocusClient(host_->window(), focus_client_.get());
 
-  root_window_event_filter_ = new views::corewm::CompoundEventFilter;
+  root_window_event_filter_ = new wm::CompoundEventFilter;
   // Pass ownership of the filter to the root_window.
   host_->window()->SetEventFilter(root_window_event_filter_);
 
-  input_method_filter_.reset(new views::corewm::InputMethodEventFilter(
+  input_method_filter_.reset(new wm::InputMethodEventFilter(
       host_->GetAcceleratedWidget()));
   input_method_filter_->SetInputMethodPropertyInRootWindow(host_->window());
   root_window_event_filter_->AddHandler(input_method_filter_.get());

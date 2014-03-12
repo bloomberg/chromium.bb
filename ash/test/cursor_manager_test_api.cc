@@ -15,7 +15,7 @@ namespace ash {
 namespace test {
 
 CursorManagerTestApi::CursorManagerTestApi(
-    views::corewm::CursorManager* cursor_manager)
+    wm::CursorManager* cursor_manager)
     : cursor_manager_(cursor_manager) {
 }
 

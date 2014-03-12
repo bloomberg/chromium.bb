@@ -17,10 +17,8 @@ class Rect;
 namespace ui {
 class Layer;
 }
-namespace views {
-namespace corewm {
+namespace wm {
 class ImageGrid;
-}
 }
 
 namespace ash {
@@ -53,7 +51,7 @@ class ResizeShadow {
 
  private:
   // Images for the shadow effect.
-  scoped_ptr<views::corewm::ImageGrid> image_grid_;
+  scoped_ptr< ::wm::ImageGrid> image_grid_;
 
   // Hit test value from last call to ShowForHitTest().  Used to prevent
   // repeatedly triggering the same animations for the same hit.

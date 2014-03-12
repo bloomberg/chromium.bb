@@ -17,6 +17,7 @@
         '../ui/gfx/gfx.gyp:gfx',
         '../ui/gfx/gfx.gyp:gfx_geometry',
         '../ui/ui.gyp:ui',
+        '../ui/wm/wm.gyp:wm_core',
         '../url/url.gyp:url_lib',
       ],
       'conditions': [

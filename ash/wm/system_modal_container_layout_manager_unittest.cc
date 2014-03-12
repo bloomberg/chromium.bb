@@ -162,7 +162,7 @@ TEST_F(SystemModalContainerLayoutManagerTest, NonModalTransient) {
   TransientWindowObserver destruction_observer;
   transient->AddObserver(&destruction_observer);
 
-  EXPECT_EQ(parent.get(), views::corewm::GetTransientParent(transient));
+  EXPECT_EQ(parent.get(), ::wm::GetTransientParent(transient));
   EXPECT_EQ(parent->parent(), transient->parent());
 
   // The transient should be destroyed with its parent.
@@ -179,7 +179,7 @@ TEST_F(SystemModalContainerLayoutManagerTest, ModalTransient) {
   TransientWindowObserver do1;
   t1->AddObserver(&do1);
 
-  EXPECT_EQ(parent.get(), views::corewm::GetTransientParent(t1));
+  EXPECT_EQ(parent.get(), ::wm::GetTransientParent(t1));
   EXPECT_EQ(GetModalContainer(), t1->parent());
 
   // t1 should now be active.
@@ -197,7 +197,7 @@ TEST_F(SystemModalContainerLayoutManagerTest, ModalTransient) {
 
   EXPECT_TRUE(wm::IsActiveWindow(t2));
 
-  EXPECT_EQ(t1, views::corewm::GetTransientParent(t2));
+  EXPECT_EQ(t1, ::wm::GetTransientParent(t2));
   EXPECT_EQ(GetModalContainer(), t2->parent());
 
   // t2 should still be active, even after clicking on t1.
@@ -218,7 +218,7 @@ TEST_F(SystemModalContainerLayoutManagerTest, ModalNonTransient) {
   TransientWindowObserver do1;
   t1->AddObserver(&do1);
 
-  EXPECT_EQ(NULL, views::corewm::GetTransientParent(t1.get()));
+  EXPECT_EQ(NULL, ::wm::GetTransientParent(t1.get()));
   EXPECT_EQ(GetModalContainer(), t1->parent());
 
   // t1 should now be active.
@@ -237,7 +237,7 @@ TEST_F(SystemModalContainerLayoutManagerTest, ModalNonTransient) {
 
   EXPECT_TRUE(wm::IsActiveWindow(t2));
 
-  EXPECT_EQ(t1, views::corewm::GetTransientParent(t2));
+  EXPECT_EQ(t1, ::wm::GetTransientParent(t2));
   EXPECT_EQ(GetModalContainer(), t2->parent());
 
   // t2 should still be active, even after clicking on t1.

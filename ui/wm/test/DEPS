@@ -1,4 +1,7 @@
 include_rules = [
   "+ui/aura",
+  "+ui/base/resource/resource_bundle.h",
+  "+ui/base/ui_base_paths.h",
+  "+ui/gl",
   "+ui/views",
 ]

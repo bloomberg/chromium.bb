@@ -359,9 +359,9 @@ void DesktopWindowTreeHostX11::CenterWindow(const gfx::Size& size) {
 
   // If |window_|'s transient parent bounds are big enough to contain |size|,
   // use them instead.
-  if (corewm::GetTransientParent(content_window_)) {
+  if (wm::GetTransientParent(content_window_)) {
     gfx::Rect transient_parent_rect =
-        corewm::GetTransientParent(content_window_)->GetBoundsInScreen();
+        wm::GetTransientParent(content_window_)->GetBoundsInScreen();
     if (transient_parent_rect.height() >= size.height() &&
         transient_parent_rect.width() >= size.width()) {
       parent_bounds = transient_parent_rect;

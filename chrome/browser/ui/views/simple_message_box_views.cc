@@ -180,7 +180,7 @@ void SimpleMessageBoxViews::Done() {
   // client. Make sure the termination of the nested loop happens from the
   // correct dispatcher client.
   aura::Window* window = GetWidget()->GetNativeView();
-  aura::Window* parent = views::corewm::GetTransientParent(window);
+  aura::Window* parent = wm::GetTransientParent(window);
   aura::client::DispatcherClient* client = NULL;
   if (parent)
     client = aura::client::GetDispatcherClient(parent->GetRootWindow());

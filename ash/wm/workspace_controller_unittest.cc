@@ -703,7 +703,7 @@ TEST_F(WorkspaceControllerTest, TransientParent) {
   // Window with a transient parent. We set the transient parent to the root,
   // which would never happen but is enough to exercise the bug.
   scoped_ptr<Window> w1(CreateTestWindowUnparented());
-  views::corewm::AddTransientChild(
+  ::wm::AddTransientChild(
       Shell::GetInstance()->GetPrimaryRootWindow(), w1.get());
   w1->SetBounds(gfx::Rect(10, 11, 250, 251));
   ParentWindowInPrimaryRootWindow(w1.get());
@@ -1159,7 +1159,7 @@ TEST_F(WorkspaceControllerTest, VerifyLayerOrdering) {
                                                ui::wm::WINDOW_TYPE_POPUP,
                                                gfx::Rect(5, 6, 7, 8),
                                                NULL);
-  views::corewm::AddTransientChild(browser.get(), status_bubble);
+  ::wm::AddTransientChild(browser.get(), status_bubble);
   ParentWindowInPrimaryRootWindow(status_bubble);
   status_bubble->SetName("status_bubble");
 

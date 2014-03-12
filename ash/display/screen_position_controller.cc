@@ -40,7 +40,7 @@ void MoveAllTransientChildrenToNewRoot(const gfx::Display& display,
   aura::Window* dst_root = Shell::GetInstance()->display_controller()->
       GetRootWindowForDisplayId(display.id());
   aura::Window::Windows transient_children =
-      views::corewm::GetTransientChildren(window);
+      ::wm::GetTransientChildren(window);
   for (aura::Window::Windows::iterator iter = transient_children.begin();
        iter != transient_children.end(); ++iter) {
     aura::Window* transient_child = *iter;
@@ -163,7 +163,7 @@ void ScreenPositionController::SetBounds(aura::Window* window,
   // b) if the window or its ancestor has kStayInSameRootWindowkey. It's
   //    intentionally kept in the same root window even if the bounds is
   //    outside of the display.
-  if (!views::corewm::GetTransientParent(window) &&
+  if (!::wm::GetTransientParent(window) &&
       !ShouldStayInSameRootWindow(window)) {
     aura::Window* dst_root =
         Shell::GetInstance()->display_controller()->GetRootWindowForDisplayId(

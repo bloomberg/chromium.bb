@@ -8,8 +8,7 @@
 #include "build/build_config.h"
 #include "ui/wm/core/wm_core_export.h"
 
-namespace views {
-namespace corewm {
+namespace wm {
 namespace switches {
 
 // Note: If you add a switch, consider if it needs to be copied to a subsequent
@@ -20,7 +19,6 @@ namespace switches {
 WM_CORE_EXPORT extern const char kWindowAnimationsDisabled[];
 
 }  // namespace switches
-}  // namespace corewm
-}  // namespace views
+}  // namespace wm
 
 #endif  // UI_WM_CORE_WM_CORE_SWITCHES_H_

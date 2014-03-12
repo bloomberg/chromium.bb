@@ -32,14 +32,14 @@ class CaptureControllerTest : public aura::test::AuraTestBase {
 
   virtual void SetUp() OVERRIDE {
     AuraTestBase::SetUp();
-    capture_controller_.reset(new corewm::ScopedCaptureClient(root_window()));
+    capture_controller_.reset(new wm::ScopedCaptureClient(root_window()));
 
     second_host_.reset(aura::WindowTreeHost::Create(gfx::Rect(0, 0, 800, 600)));
     second_host_->InitHost();
     second_host_->window()->Show();
     second_host_->SetBounds(gfx::Rect(800, 600));
     second_capture_controller_.reset(
-        new corewm::ScopedCaptureClient(second_host_->window()));
+        new wm::ScopedCaptureClient(second_host_->window()));
 
 #if !defined(OS_CHROMEOS)
     desktop_position_client_.reset(
@@ -77,9 +77,9 @@ class CaptureControllerTest : public aura::test::AuraTestBase {
     return second_capture_controller_->capture_client()->GetCaptureWindow();
   }
 
-  scoped_ptr<corewm::ScopedCaptureClient> capture_controller_;
+  scoped_ptr<wm::ScopedCaptureClient> capture_controller_;
   scoped_ptr<aura::WindowTreeHost> second_host_;
-  scoped_ptr<corewm::ScopedCaptureClient> second_capture_controller_;
+  scoped_ptr<wm::ScopedCaptureClient> second_capture_controller_;
 #if !defined(OS_CHROMEOS)
   scoped_ptr<aura::client::ScreenPositionClient> desktop_position_client_;
   scoped_ptr<aura::client::ScreenPositionClient>
