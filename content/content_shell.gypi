@@ -316,7 +316,7 @@
           ],
         }],
         # TODO(dmikurube): Kill linux_use_tcmalloc. http://crbug.com/345554
-        ['(os_posix==1 and use_aura==1 and ((use_allocator!="none" and use_allocator!="see_use_tcmalloc") or (use_allocator=="see_use_tcmalloc" and linux_use_tcmalloc==1)))', {
+        ['(os_posix==1 and use_aura==1 and ((use_allocator!="none" and use_allocator!="see_use_tcmalloc") or (use_allocator=="see_use_tcmalloc" and linux_use_tcmalloc==1))) or (android_use_tcmalloc==1)', {
           'dependencies': [
             # This is needed by content/app/content_main_runner.cc
             '../base/allocator/allocator.gyp:allocator',
