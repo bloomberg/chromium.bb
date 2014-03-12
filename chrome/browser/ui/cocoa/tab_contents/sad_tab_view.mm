@@ -68,19 +68,20 @@ static const CGFloat kTabHorzMargin = 13;
 
   // Set new frame origin for image.
   NSRect iconFrame = [image_ frame];
-  CGFloat iconX = (maxWidth - NSWidth(iconFrame)) / 2;
+  CGFloat iconX = floorf((maxWidth - NSWidth(iconFrame)) / 2);
   CGFloat iconY =
-      MIN(((NSHeight(newBounds) - NSHeight(iconFrame)) / 2) - kSadTabOffset,
+      MIN(floorf((NSHeight(newBounds) - NSHeight(iconFrame)) / 2) -
+              kSadTabOffset,
           NSHeight(newBounds) - NSHeight(iconFrame));
-  iconX = floor(iconX);
-  iconY = floor(iconY);
+  iconX = floorf(iconX);
+  iconY = floorf(iconY);
   [image_ setFrameOrigin:NSMakePoint(iconX, iconY)];
 
   // Set new frame origin for title.
   if (callSizeToFit)
     [title_ sizeToFit];
   NSRect titleFrame = [title_ frame];
-  CGFloat titleX = (maxWidth - NSWidth(titleFrame)) / 2;
+  CGFloat titleX = floorf((maxWidth - NSWidth(titleFrame)) / 2);
   CGFloat titleY = iconY - kIconTitleSpacing - NSHeight(titleFrame);
   [title_ setFrameOrigin:NSMakePoint(titleX, titleY)];
 
@@ -102,7 +103,7 @@ static const CGFloat kTabHorzMargin = 13;
       [message_ sizeToFit];
       messageFrame = [message_ frame];
     }
-    messageFrame.origin.x = (maxWidth - NSWidth(messageFrame)) / 2;
+    messageFrame.origin.x = floorf((maxWidth - NSWidth(messageFrame)) / 2);
   }
   messageFrame.origin.y =
       titleY - kTitleMessageSpacing - NSHeight(messageFrame);
@@ -116,7 +117,7 @@ static const CGFloat kTabHorzMargin = 13;
     [help_.get() setFrameSize:NSMakeSize(maxWidth, helpHeight)];
     // Set new frame origin for link.
     NSRect helpFrame = [help_.get() frame];
-    CGFloat helpX = (maxWidth - NSWidth(helpFrame)) / 2;
+    CGFloat helpX = floorf((maxWidth - NSWidth(helpFrame)) / 2);
     CGFloat helpY =
         NSMinY(messageFrame) - kMessageLinkSpacing - NSHeight(helpFrame);
     [help_.get() setFrameOrigin:NSMakePoint(helpX, helpY)];
