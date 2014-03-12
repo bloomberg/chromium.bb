@@ -173,13 +173,19 @@ SkColor DebugColors::EvictedTileCheckerboardColor() {
 
 // ======= Debug rect colors =======
 
+static SkColor FadedGreen(int initial_value, int step) {
+  DCHECK_GE(step, 0);
+  DCHECK_LE(step, DebugColors::kFadeSteps);
+  int value = step * initial_value / DebugColors::kFadeSteps;
+  return SkColorSetARGB(value, 0, 195, 0);
+}
 // Paint rects in green.
-SkColor DebugColors::PaintRectBorderColor() {
-  return SkColorSetARGB(255, 0, 195, 0);
+SkColor DebugColors::PaintRectBorderColor(int step) {
+  return FadedGreen(255, step);
 }
 int DebugColors::PaintRectBorderWidth() { return 2; }
-SkColor DebugColors::PaintRectFillColor() {
-  return SkColorSetARGB(30, 0, 195, 0);
+SkColor DebugColors::PaintRectFillColor(int step) {
+  return FadedGreen(60, step);
 }
 
 // Property-changed rects in blue.

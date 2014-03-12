@@ -9,7 +9,6 @@
 
 #include "base/strings/stringprintf.h"
 #include "cc/debug/debug_colors.h"
-#include "cc/debug/debug_rect_history.h"
 #include "cc/debug/frame_rate_counter.h"
 #include "cc/debug/paint_time_counter.h"
 #include "cc/debug/traced_value.h"
@@ -71,7 +70,8 @@ HeadsUpDisplayLayerImpl::HeadsUpDisplayLayerImpl(LayerTreeImpl* tree_impl,
       typeface_(skia::AdoptRef(
           SkTypeface::CreateFromName("monospace", SkTypeface::kBold))),
       fps_graph_(60.0, 80.0),
-      paint_time_graph_(16.0, 48.0) {}
+      paint_time_graph_(16.0, 48.0),
+      fade_step_(0) {}
 
 HeadsUpDisplayLayerImpl::~HeadsUpDisplayLayerImpl() {}
 
@@ -225,11 +225,15 @@ void HeadsUpDisplayLayerImpl::UpdateHudContents() {
   paint_time_graph_.UpdateUpperBound();
 }
 
-void HeadsUpDisplayLayerImpl::DrawHudContents(SkCanvas* canvas) const {
+void HeadsUpDisplayLayerImpl::DrawHudContents(SkCanvas* canvas) {
   const LayerTreeDebugState& debug_state = layer_tree_impl()->debug_state();
 
-  if (debug_state.ShowHudRects())
+  if (debug_state.ShowHudRects()) {
     DrawDebugRects(canvas, layer_tree_impl()->debug_rect_history());
+    if (IsAnimatingHUDContents()) {
+      layer_tree_impl()->SetNeedsRedraw();
+    }
+  }
 
   SkRect area = SkRect::MakeEmpty();
   if (debug_state.continuous_painting) {
@@ -586,11 +590,64 @@ SkRect HeadsUpDisplayLayerImpl::DrawPaintTimeDisplay(
   return area;
 }
 
+void HeadsUpDisplayLayerImpl::DrawDebugRect(
+    SkCanvas* canvas,
+    SkPaint& paint,
+    const DebugRect& rect,
+    SkColor stroke_color,
+    SkColor fill_color,
+    float stroke_width,
+    const std::string& label_text) const {
+  gfx::RectF debug_layer_rect = gfx::ScaleRect(
+      rect.rect, 1.0 / contents_scale_x(), 1.0 / contents_scale_y());
+  SkRect sk_rect = RectFToSkRect(debug_layer_rect);
+  paint.setColor(fill_color);
+  paint.setStyle(SkPaint::kFill_Style);
+  canvas->drawRect(sk_rect, paint);
+
+  paint.setColor(stroke_color);
+  paint.setStyle(SkPaint::kStroke_Style);
+  paint.setStrokeWidth(SkFloatToScalar(stroke_width));
+  canvas->drawRect(sk_rect, paint);
+
+  if (label_text.length()) {
+    const int kFontHeight = 12;
+    const int kPadding = 3;
+
+    canvas->save();
+    canvas->clipRect(sk_rect);
+    canvas->translate(sk_rect.x(), sk_rect.y());
+
+    SkPaint label_paint = CreatePaint();
+    label_paint.setTextSize(kFontHeight);
+    label_paint.setTypeface(typeface_.get());
+    label_paint.setColor(stroke_color);
+
+    const SkScalar label_text_width =
+        label_paint.measureText(label_text.c_str(), label_text.length());
+    canvas->drawRect(SkRect::MakeWH(label_text_width + 2 * kPadding,
+                                    kFontHeight + 2 * kPadding),
+                     label_paint);
+
+    label_paint.setAntiAlias(true);
+    label_paint.setColor(SkColorSetARGB(255, 50, 50, 50));
+    canvas->drawText(label_text.c_str(),
+                     label_text.length(),
+                     kPadding,
+                     kFontHeight * 0.8f + kPadding,
+                     label_paint);
+
+    canvas->restore();
+  }
+}
+
 void HeadsUpDisplayLayerImpl::DrawDebugRects(
     SkCanvas* canvas,
-    DebugRectHistory* debug_rect_history) const {
-  const std::vector<DebugRect>& debug_rects = debug_rect_history->debug_rects();
+    DebugRectHistory* debug_rect_history) {
   SkPaint paint = CreatePaint();
+
+  const std::vector<DebugRect>& debug_rects = debug_rect_history->debug_rects();
+  std::vector<DebugRect> new_paint_rects;
 
   for (size_t i = 0; i < debug_rects.size(); ++i) {
     SkColor stroke_color = 0;
@@ -600,10 +657,8 @@ void HeadsUpDisplayLayerImpl::DrawDebugRects(
 
     switch (debug_rects[i].type) {
       case PAINT_RECT_TYPE:
-        stroke_color = DebugColors::PaintRectBorderColor();
-        fill_color = DebugColors::PaintRectFillColor();
-        stroke_width = DebugColors::PaintRectBorderWidth();
-        break;
+        new_paint_rects.push_back(debug_rects[i]);
+        continue;
       case PROPERTY_CHANGED_RECT_TYPE:
         stroke_color = DebugColors::PropertyChangedRectBorderColor();
         fill_color = DebugColors::PropertyChangedRectFillColor();
@@ -660,47 +715,29 @@ void HeadsUpDisplayLayerImpl::DrawDebugRects(
         break;
     }
 
-    gfx::RectF debug_layer_rect = gfx::ScaleRect(debug_rects[i].rect,
-                                                 1.0 / contents_scale_x(),
-                                                 1.0 / contents_scale_y());
-    SkRect sk_rect = RectFToSkRect(debug_layer_rect);
-    paint.setColor(fill_color);
-    paint.setStyle(SkPaint::kFill_Style);
-    canvas->drawRect(sk_rect, paint);
+    DrawDebugRect(canvas,
+                  paint,
+                  debug_rects[i],
+                  stroke_color,
+                  fill_color,
+                  stroke_width,
+                  label_text);
+  }
 
-    paint.setColor(stroke_color);
-    paint.setStyle(SkPaint::kStroke_Style);
-    paint.setStrokeWidth(SkFloatToScalar(stroke_width));
-    canvas->drawRect(sk_rect, paint);
-
-    if (label_text.length()) {
-      const int kFontHeight = 12;
-      const int kPadding = 3;
-
-      canvas->save();
-      canvas->clipRect(sk_rect);
-      canvas->translate(sk_rect.x(), sk_rect.y());
-
-      SkPaint label_paint = CreatePaint();
-      label_paint.setTextSize(kFontHeight);
-      label_paint.setTypeface(typeface_.get());
-      label_paint.setColor(stroke_color);
-
-      const SkScalar label_text_width =
-          label_paint.measureText(label_text.c_str(), label_text.length());
-      canvas->drawRect(SkRect::MakeWH(label_text_width + 2 * kPadding,
-                                      kFontHeight + 2 * kPadding),
-                       label_paint);
-
-      label_paint.setAntiAlias(true);
-      label_paint.setColor(SkColorSetARGB(255, 50, 50, 50));
-      canvas->drawText(label_text.c_str(),
-                       label_text.length(),
-                       kPadding,
-                       kFontHeight * 0.8f + kPadding,
-                       label_paint);
-
-      canvas->restore();
+  if (new_paint_rects.size()) {
+    paint_rects_.swap(new_paint_rects);
+    fade_step_ = DebugColors::kFadeSteps;
+  }
+  if (fade_step_ > 0) {
+    fade_step_--;
+    for (size_t i = 0; i < paint_rects_.size(); ++i) {
+      DrawDebugRect(canvas,
+                    paint,
+                    paint_rects_[i],
+                    DebugColors::PaintRectBorderColor(fade_step_),
+                    DebugColors::PaintRectFillColor(fade_step_),
+                    DebugColors::PaintRectBorderWidth(),
+                    "");
     }
   }
 }

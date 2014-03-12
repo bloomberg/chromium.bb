@@ -715,9 +715,12 @@ DrawSwapReadbackResult::DrawResult LayerTreeHostImpl::CalculateRenderPasses(
           root_surface->content_rect());
   bool root_surface_has_contributing_layers =
       !root_surface->layer_list().empty();
+  bool hud_wants_to_draw_ = active_tree_->hud_layer() &&
+                            active_tree_->hud_layer()->IsAnimatingHUDContents();
   if (root_surface_has_contributing_layers &&
       root_surface_has_no_visible_damage &&
-      active_tree_->LayersWithCopyOutputRequest().empty()) {
+      active_tree_->LayersWithCopyOutputRequest().empty() &&
+      !hud_wants_to_draw_) {
     TRACE_EVENT0("cc",
                  "LayerTreeHostImpl::CalculateRenderPasses::EmptyDamageRect");
     frame->has_no_damage = true;
