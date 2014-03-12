@@ -449,6 +449,18 @@ ServiceRuntime::ServiceRuntime(Plugin* plugin,
   NaClXCondVarCtor(&cond_);
 }
 
+bool ServiceRuntime::SetupCommandChannel(ErrorInfo* error_info) {
+  NaClLog(4, "ServiceRuntime::SetupCommand (this=%p, subprocess=%p)\n",
+          static_cast<void*>(this),
+          static_cast<void*>(subprocess_.get()));
+  if (!subprocess_->SetupCommand(&command_channel_)) {
+    error_info->SetReport(PP_NACL_ERROR_SEL_LDR_COMMUNICATION_CMD_CHANNEL,
+                          "ServiceRuntime: command channel creation failed");
+    return false;
+  }
+  return true;
+}
+
 bool ServiceRuntime::LoadModule(nacl::DescWrapper* nacl_desc,
                                 ErrorInfo* error_info) {
   NaClLog(4, "ServiceRuntime::LoadModule"
@@ -456,13 +468,6 @@ bool ServiceRuntime::LoadModule(nacl::DescWrapper* nacl_desc,
           static_cast<void*>(this),
           static_cast<void*>(subprocess_.get()));
   CHECK(nacl_desc);
-  // Create the command channel to the sel_ldr and load the nexe from nacl_desc.
-  if (!subprocess_->SetupCommand(&command_channel_)) {
-    error_info->SetReport(PP_NACL_ERROR_SEL_LDR_COMMUNICATION_CMD_CHANNEL,
-                          "ServiceRuntime: command channel creation failed");
-    return false;
-  }
-
   if (!subprocess_->LoadModule(&command_channel_, nacl_desc)) {
     error_info->SetReport(PP_NACL_ERROR_SEL_LDR_COMMUNICATION_CMD_CHANNEL,
                           "ServiceRuntime: load module failed");
@@ -630,8 +635,10 @@ bool ServiceRuntime::LoadNexeAndStart(nacl::DescWrapper* nacl_desc,
   NaClLog(4, "ServiceRuntime::LoadNexeAndStart (nacl_desc=%p)\n",
           reinterpret_cast<void*>(nacl_desc));
   ErrorInfo error_info;
-  bool ok = LoadModule(nacl_desc, &error_info) &&
+
+  bool ok = SetupCommandChannel(&error_info) &&
             InitReverseService(&error_info) &&
+            LoadModule(nacl_desc, &error_info) &&
             StartModule(&error_info);
   if (!ok) {
     if (main_service_runtime_) {
