@@ -89,7 +89,7 @@ class LocalToRemoteSyncerTest : public testing::Test,
                                       database_dir_.path(),
                                       in_memory_env_.get());
     SyncStatusCode status = SYNC_STATUS_UNKNOWN;
-    initializer.Run(CreateResultReceiver(&status));
+    initializer.RunSequential(CreateResultReceiver(&status));
     base::RunLoop().RunUntilIdle();
     EXPECT_EQ(SYNC_STATUS_OK, status);
     metadata_database_ = initializer.PassMetadataDatabase();
@@ -164,7 +164,7 @@ class LocalToRemoteSyncerTest : public testing::Test,
     scoped_ptr<LocalToRemoteSyncer> syncer(new LocalToRemoteSyncer(
         this, SyncFileMetadata(file_change.file_type(), 0, base::Time()),
         file_change, local_path, url));
-    syncer->Run(CreateResultReceiver(&status));
+    syncer->RunSequential(CreateResultReceiver(&status));
     base::RunLoop().RunUntilIdle();
     return status;
   }
@@ -172,7 +172,7 @@ class LocalToRemoteSyncerTest : public testing::Test,
   SyncStatusCode ListChanges() {
     ListChangesTask list_changes(this);
     SyncStatusCode status = SYNC_STATUS_UNKNOWN;
-    list_changes.Run(CreateResultReceiver(&status));
+    list_changes.RunSequential(CreateResultReceiver(&status));
     base::RunLoop().RunUntilIdle();
     return status;
   }
@@ -180,7 +180,7 @@ class LocalToRemoteSyncerTest : public testing::Test,
   SyncStatusCode RunRemoteToLocalSyncer() {
     SyncStatusCode status = SYNC_STATUS_UNKNOWN;
     scoped_ptr<RemoteToLocalSyncer> syncer(new RemoteToLocalSyncer(this));
-    syncer->Run(CreateResultReceiver(&status));
+    syncer->RunSequential(CreateResultReceiver(&status));
     base::RunLoop().RunUntilIdle();
     return status;
   }

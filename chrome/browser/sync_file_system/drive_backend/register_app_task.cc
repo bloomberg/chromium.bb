@@ -47,7 +47,7 @@ bool RegisterAppTask::CanFinishImmediately() {
          metadata_database()->FindAppRootTracker(app_id_, NULL);
 }
 
-void RegisterAppTask::Run(const SyncStatusCallback& callback) {
+void RegisterAppTask::RunSequential(const SyncStatusCallback& callback) {
   if (create_folder_retry_count_++ >= kMaxRetry) {
     callback.Run(SYNC_STATUS_FAILED);
     return;
@@ -109,7 +109,7 @@ void RegisterAppTask::DidCreateAppRootFolder(
     return;
   }
 
-  Run(callback);
+  RunSequential(callback);
 }
 
 bool RegisterAppTask::FilterCandidates(const TrackerIDSet& trackers,

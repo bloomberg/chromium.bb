@@ -27,12 +27,12 @@ namespace drive_backend {
 class MetadataDatabase;
 class SyncEngineContext;
 
-class ListChangesTask : public SyncTask {
+class ListChangesTask : public SequentialSyncTask {
  public:
   explicit ListChangesTask(SyncEngineContext* sync_context);
   virtual ~ListChangesTask();
 
-  virtual void Run(const SyncStatusCallback& callback) OVERRIDE;
+  virtual void RunSequential(const SyncStatusCallback& callback) OVERRIDE;
 
  private:
   void DidListChanges(const SyncStatusCallback& callback,

@@ -7,6 +7,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/sync_file_system/sync_task_manager.h"
+#include "chrome/browser/sync_file_system/sync_task_token.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace sync_file_system {
@@ -111,7 +112,7 @@ class TaskManagerClient
   DISALLOW_COPY_AND_ASSIGN(TaskManagerClient);
 };
 
-class MultihopSyncTask : public SyncTask {
+class MultihopSyncTask : public SequentialSyncTask {
  public:
   MultihopSyncTask(bool* task_started,
                    bool* task_completed)
@@ -124,7 +125,7 @@ class MultihopSyncTask : public SyncTask {
 
   virtual ~MultihopSyncTask() {}
 
-  virtual void Run(const SyncStatusCallback& callback) OVERRIDE {
+  virtual void RunSequential(const SyncStatusCallback& callback) OVERRIDE {
     DCHECK(!*task_started_);
     *task_started_ = true;
     base::MessageLoop::current()->PostTask(

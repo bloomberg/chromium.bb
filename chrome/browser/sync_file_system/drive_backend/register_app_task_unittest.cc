@@ -143,7 +143,7 @@ class RegisterAppTaskTest : public testing::Test,
   SyncStatusCode RunRegisterAppTask(const std::string& app_id) {
     RegisterAppTask task(this, app_id);
     SyncStatusCode status = SYNC_STATUS_UNKNOWN;
-    task.Run(CreateResultReceiver(&status));
+    task.RunSequential(CreateResultReceiver(&status));
     base::RunLoop().RunUntilIdle();
     return status;
   }

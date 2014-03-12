@@ -30,7 +30,7 @@ ConflictResolver::ConflictResolver(SyncEngineContext* sync_context)
 ConflictResolver::~ConflictResolver() {
 }
 
-void ConflictResolver::Run(const SyncStatusCallback& callback) {
+void ConflictResolver::RunSequential(const SyncStatusCallback& callback) {
   if (!IsContextReady()) {
     NOTREACHED();
     callback.Run(SYNC_STATUS_FAILED);

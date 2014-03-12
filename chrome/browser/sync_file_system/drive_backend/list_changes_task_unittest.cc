@@ -84,9 +84,9 @@ class ListChangesTaskTest : public testing::Test,
   }
 
  protected:
-  SyncStatusCode RunTask(SyncTask* sync_task) {
+  SyncStatusCode RunTask(SequentialSyncTask* sync_task) {
     SyncStatusCode status = SYNC_STATUS_UNKNOWN;
-    sync_task->Run(CreateResultReceiver(&status));
+    sync_task->RunSequential(CreateResultReceiver(&status));
     base::RunLoop().RunUntilIdle();
     return status;
   }

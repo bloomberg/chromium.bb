@@ -45,7 +45,7 @@ ListChangesTask::ListChangesTask(SyncEngineContext* sync_context)
 ListChangesTask::~ListChangesTask() {
 }
 
-void ListChangesTask::Run(const SyncStatusCallback& callback) {
+void ListChangesTask::RunSequential(const SyncStatusCallback& callback) {
   util::Log(logging::LOG_VERBOSE, FROM_HERE, "[Changes] Start.");
 
   if (!IsContextReady()) {

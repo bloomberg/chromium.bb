@@ -69,7 +69,7 @@ class SyncEngineInitializerTest : public testing::Test {
         in_memory_env_.get()));
     SyncStatusCode status = SYNC_STATUS_UNKNOWN;
 
-    initializer_->Run(CreateResultReceiver(&status));
+    initializer_->RunSequential(CreateResultReceiver(&status));
     base::RunLoop().RunUntilIdle();
 
     metadata_database_ = initializer_->PassMetadataDatabase();

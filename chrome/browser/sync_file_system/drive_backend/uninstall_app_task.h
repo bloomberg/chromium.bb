@@ -29,7 +29,7 @@ class MetadataDatabase;
 class SyncEngineContext;
 class TrackerSet;
 
-class UninstallAppTask : public SyncTask {
+class UninstallAppTask : public SequentialSyncTask {
  public:
   typedef RemoteFileSyncService::UninstallFlag UninstallFlag;
   UninstallAppTask(SyncEngineContext* sync_context,
@@ -37,7 +37,7 @@ class UninstallAppTask : public SyncTask {
                    UninstallFlag uninstall_flag);
   virtual ~UninstallAppTask();
 
-  virtual void Run(const SyncStatusCallback& callback) OVERRIDE;
+  virtual void RunSequential(const SyncStatusCallback& callback) OVERRIDE;
 
  private:
   void DidDeleteAppRoot(const SyncStatusCallback& callback,

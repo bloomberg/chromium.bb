@@ -35,13 +35,13 @@ class TrackerIDSet;
 // of the active tracker.
 // If multiple trackers have the same local path or the same remote file,
 // ConflictResolver picks up one of them and delete others.
-class ConflictResolver : public SyncTask {
+class ConflictResolver : public SequentialSyncTask {
  public:
   typedef std::vector<std::string> FileIDList;
 
   explicit ConflictResolver(SyncEngineContext* sync_context);
   virtual ~ConflictResolver();
-  virtual void Run(const SyncStatusCallback& callback) OVERRIDE;
+  virtual void RunSequential(const SyncStatusCallback& callback) OVERRIDE;
 
  private:
   typedef std::pair<std::string, std::string> FileIDAndETag;

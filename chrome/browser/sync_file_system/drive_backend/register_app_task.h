@@ -29,13 +29,13 @@ class MetadataDatabase;
 class SyncEngineContext;
 class TrackerIDSet;
 
-class RegisterAppTask : public SyncTask {
+class RegisterAppTask : public SequentialSyncTask {
  public:
   RegisterAppTask(SyncEngineContext* sync_context, const std::string& app_id);
   virtual ~RegisterAppTask();
 
   bool CanFinishImmediately();
-  virtual void Run(const SyncStatusCallback& callback) OVERRIDE;
+  virtual void RunSequential(const SyncStatusCallback& callback) OVERRIDE;
 
  private:
   void CreateAppRootFolder(const SyncStatusCallback& callback);

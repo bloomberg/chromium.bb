@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/location.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
@@ -22,11 +23,12 @@ class Location;
 
 namespace sync_file_system {
 
+class SyncTaskToken;
+
 class SyncTaskManager
     : public base::NonThreadSafe,
       public base::SupportsWeakPtr<SyncTaskManager> {
  public:
-  class TaskToken;
   typedef base::Callback<void(const SyncStatusCallback& callback)> Task;
 
   enum Priority {
@@ -75,9 +77,10 @@ class SyncTaskManager
                               scoped_ptr<SyncTask> task,
                               const SyncStatusCallback& callback);
 
-  void NotifyTaskDone(scoped_ptr<TaskToken> token,
-                      const SyncStatusCallback& callback,
-                      SyncStatusCode status);
+  static void NotifyTaskDone(scoped_ptr<SyncTaskToken> token,
+                             SyncStatusCode status);
+
+  bool HasClient() const;
 
  private:
   struct PendingTask {
@@ -95,14 +98,17 @@ class SyncTaskManager
                     const PendingTask& right) const;
   };
 
+  void NotifyTaskDoneBody(scoped_ptr<SyncTaskToken> token,
+                          SyncStatusCode status);
+
   // This should be called when an async task needs to get a task token.
-  scoped_ptr<TaskToken> GetToken(const tracked_objects::Location& from_here);
+  scoped_ptr<SyncTaskToken> GetToken(const tracked_objects::Location& from_here,
+                                     const SyncStatusCallback& callback);
 
   void PushPendingTask(const base::Closure& closure, Priority priority);
 
-  void RunTask(scoped_ptr<TaskToken> token,
-               scoped_ptr<SyncTask> task,
-               const SyncStatusCallback& callback);
+  void RunTask(scoped_ptr<SyncTaskToken> token,
+               scoped_ptr<SyncTask> task);
 
   base::WeakPtr<Client> client_;
 
@@ -118,7 +124,7 @@ class SyncTaskManager
   // Each task must take TaskToken instance from |token_| and must hold it
   // until it finished. And the task must return the instance through
   // NotifyTaskDone when the task finished.
-  scoped_ptr<TaskToken> token_;
+  scoped_ptr<SyncTaskToken> token_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncTaskManager);
 };

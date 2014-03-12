@@ -86,7 +86,7 @@ RemoteToLocalSyncer::RemoteToLocalSyncer(SyncEngineContext* sync_context)
 RemoteToLocalSyncer::~RemoteToLocalSyncer() {
 }
 
-void RemoteToLocalSyncer::Run(const SyncStatusCallback& callback) {
+void RemoteToLocalSyncer::RunSequential(const SyncStatusCallback& callback) {
   if (!drive_service() || !metadata_database() || !remote_change_processor()) {
     util::Log(logging::LOG_VERBOSE, FROM_HERE,
               "[Remote -> Local] Context not ready.");

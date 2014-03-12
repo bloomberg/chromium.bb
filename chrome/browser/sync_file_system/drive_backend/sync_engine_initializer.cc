@@ -113,7 +113,7 @@ SyncEngineInitializer::~SyncEngineInitializer() {
     cancel_callback_.Run();
 }
 
-void SyncEngineInitializer::Run(const SyncStatusCallback& callback) {
+void SyncEngineInitializer::RunSequential(const SyncStatusCallback& callback) {
   util::Log(logging::LOG_VERBOSE, FROM_HERE, "[Initialize] Start.");
 
   // The metadata seems to have been already initialized. Just return with OK.
