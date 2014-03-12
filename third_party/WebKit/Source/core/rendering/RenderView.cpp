@@ -358,6 +358,7 @@ static inline bool rendererObscuresBackground(RenderBox* rootBox)
     RenderStyle* style = rootBox->style();
     if (style->visibility() != VISIBLE
         || style->opacity() != 1
+        || style->hasFilter()
         || style->hasTransform())
         return false;
 
