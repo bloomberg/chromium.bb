@@ -100,13 +100,13 @@ namespace WebCore {
         void stopLoading();
         bool isCommitted() const { return m_committed; }
         bool isLoading() const;
+        bool isLoadingMainResource() const { return m_loadingMainResource; }
         const ResourceResponse& response() const { return m_response; }
         const ResourceError& mainDocumentError() const { return m_mainDocumentError; }
         bool isClientRedirect() const { return m_isClientRedirect; }
         void setIsClientRedirect(bool isClientRedirect) { m_isClientRedirect = isClientRedirect; }
         bool replacesCurrentHistoryItem() const { return m_replacesCurrentHistoryItem; }
         void setReplacesCurrentHistoryItem(bool replacesCurrentHistoryItem) { m_replacesCurrentHistoryItem = replacesCurrentHistoryItem; }
-        bool isLoadingInAPISense() const;
         const AtomicString& overrideEncoding() const { return m_overrideEncoding; }
 
         bool scheduleArchiveLoad(Resource*, const ResourceRequest&);

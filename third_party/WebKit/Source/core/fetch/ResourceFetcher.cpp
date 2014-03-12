@@ -745,7 +745,7 @@ ResourceRequestCachePolicy ResourceFetcher::resourceRequestCachePolicy(const Res
     if (request.isConditional())
         return ReloadIgnoringCacheData;
 
-    if (m_documentLoader && m_documentLoader->isLoadingInAPISense()) {
+    if (m_documentLoader && m_document && !m_document->loadEventFinished()) {
         // For POST requests, we mutate the main resource's cache policy to avoid form resubmission.
         // This policy should not be inherited by subresources.
         ResourceRequestCachePolicy mainResourceCachePolicy = m_documentLoader->request().cachePolicy();

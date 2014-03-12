@@ -123,8 +123,6 @@ public:
 
     bool isLoadingMainFrame() const;
 
-    bool subframeIsLoading() const;
-
     bool shouldTreatURLAsSrcdocDocument(const KURL&) const;
 
     FrameLoadType loadType() const;
@@ -212,7 +210,7 @@ private:
     bool shouldPerformFragmentNavigation(bool isFormSubmission, const String& httpMethod, FrameLoadType, const KURL&);
     void scrollToFragmentWithParentBoundary(const KURL&);
 
-    void checkLoadCompleteForThisFrame();
+    bool checkLoadCompleteForThisFrame();
 
     // Calls continueLoadAfterNavigationPolicy
     void loadWithNavigationAction(const NavigationAction&, FrameLoadType, PassRefPtr<FormState>,

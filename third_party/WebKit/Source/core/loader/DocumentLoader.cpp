@@ -587,26 +587,6 @@ void DocumentLoader::clearMainResourceHandle()
     m_mainResource = 0;
 }
 
-bool DocumentLoader::isLoadingInAPISense() const
-{
-    // Once a frame has loaded, we no longer need to consider subresources,
-    // but we still need to consider subframes.
-    if (frameLoader()->state() != FrameStateComplete) {
-        Document* doc = m_frame->document();
-        if ((m_loadingMainResource || !m_frame->document()->loadEventFinished()) && isLoading())
-            return true;
-        if (m_fetcher->requestCount())
-            return true;
-        if (doc->isDelayingLoadEvent() && !doc->loadEventFinished())
-            return true;
-        if (doc->processingLoadEvent())
-            return true;
-        if (doc->hasActiveParser())
-            return true;
-    }
-    return frameLoader()->subframeIsLoading();
-}
-
 bool DocumentLoader::maybeCreateArchive()
 {
     // Give the archive machinery a crack at this document. If the MIME type is not an archive type, it will return 0.

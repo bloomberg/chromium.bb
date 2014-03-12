@@ -934,52 +934,62 @@ bool FrameLoader::isLoadingMainFrame() const
     return m_frame->isMainFrame();
 }
 
-bool FrameLoader::subframeIsLoading() const
-{
-    // It's most likely that the last added frame is the last to load so we walk backwards.
-    for (LocalFrame* child = m_frame->tree().lastChild(); child; child = child->tree().previousSibling()) {
-        const FrameLoader& childLoader = child->loader();
-        DocumentLoader* documentLoader = childLoader.documentLoader();
-        if (documentLoader && documentLoader->isLoadingInAPISense())
-            return true;
-        documentLoader = childLoader.provisionalDocumentLoader();
-        if (documentLoader && documentLoader->isLoadingInAPISense())
-            return true;
-        documentLoader = childLoader.policyDocumentLoader();
-        if (documentLoader)
-            return true;
-    }
-    return false;
-}
-
 FrameLoadType FrameLoader::loadType() const
 {
     return m_loadType;
 }
 
-void FrameLoader::checkLoadCompleteForThisFrame()
+// This function is an incomprehensible mess and is only used in checkLoadCompleteForThisFrame.
+// If you're thinking of using it elsewhere, stop right now and reconsider your life.
+static bool isDocumentDoneLoading(Document* document)
+{
+    if (document->loader()->isLoadingMainResource())
+        return false;
+    if (!document->loadEventFinished()) {
+        if (document->loader()->isLoading() || document->isDelayingLoadEvent())
+            return false;
+    }
+    if (document->fetcher()->requestCount())
+        return false;
+    if (document->processingLoadEvent())
+        return false;
+    if (document->hasActiveParser())
+        return false;
+    return true;
+}
+
+bool FrameLoader::checkLoadCompleteForThisFrame()
 {
     ASSERT(m_client->hasWebView());
+    RefPtr<LocalFrame> protect(m_frame);
 
     if (m_state == FrameStateProvisional && m_provisionalDocumentLoader) {
         const ResourceError& error = m_provisionalDocumentLoader->mainDocumentError();
         if (error.isNull())
-            return;
+            return false;
         RefPtr<DocumentLoader> loader = m_provisionalDocumentLoader;
         m_client->dispatchDidFailProvisionalLoad(error);
         if (loader != m_provisionalDocumentLoader)
-            return;
+            return false;
         m_provisionalDocumentLoader->detachFromFrame();
         m_provisionalDocumentLoader = nullptr;
         m_progressTracker->progressCompleted();
         m_state = FrameStateComplete;
+        return true;
     }
 
-    if (m_state != FrameStateCommittedPage)
-        return;
+    bool allChildrenAreDoneLoading = true;
+    for (LocalFrame* child = m_frame->tree().firstChild(); child; child = child->tree().nextSibling())
+        allChildrenAreDoneLoading &= child->loader().checkLoadCompleteForThisFrame();
+    if (!allChildrenAreDoneLoading)
+        return false;
 
-    if (!m_documentLoader || (m_documentLoader->isLoadingInAPISense() && !m_inStopAllLoaders))
-        return;
+    if (m_state == FrameStateComplete)
+        return true;
+    if (m_provisionalDocumentLoader || !m_documentLoader)
+        return false;
+    if (!isDocumentDoneLoading(m_frame->document()) && !m_inStopAllLoaders)
+        return false;
 
     m_state = FrameStateComplete;
 
@@ -992,7 +1002,7 @@ void FrameLoader::checkLoadCompleteForThisFrame()
     restoreScrollPositionAndViewState();
 
     if (!m_stateMachine.committedFirstRealDocumentLoad())
-        return;
+        return true;
 
     m_progressTracker->progressCompleted();
 
@@ -1002,6 +1012,7 @@ void FrameLoader::checkLoadCompleteForThisFrame()
     else
         m_client->dispatchDidFinishLoad();
     m_loadType = FrameLoadTypeStandard;
+    return true;
 }
 
 void FrameLoader::restoreScrollPositionAndViewState()
@@ -1059,17 +1070,8 @@ void FrameLoader::closeAndRemoveChild(LocalFrame* child)
 void FrameLoader::checkLoadComplete()
 {
     ASSERT(m_client->hasWebView());
-
-    // FIXME: Always traversing the entire frame tree is a bit inefficient, but
-    // is currently needed in order to null out the previous history item for all frames.
-    if (Page* page = m_frame->page()) {
-        Vector<RefPtr<LocalFrame>, 10> frames;
-        for (RefPtr<LocalFrame> frame = page->mainFrame(); frame; frame = frame->tree().traverseNext())
-            frames.append(frame);
-        // To process children before their parents, iterate the vector backwards.
-        for (size_t i = frames.size(); i; --i)
-            frames[i - 1]->loader().checkLoadCompleteForThisFrame();
-    }
+    if (Page* page = m_frame->page())
+        page->mainFrame()->loader().checkLoadCompleteForThisFrame();
 }
 
 void FrameLoader::checkLoadComplete(DocumentLoader* documentLoader)
