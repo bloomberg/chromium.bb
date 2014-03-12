@@ -25,6 +25,7 @@ import os
 import time
 
 from pylib import android_commands
+from pylib import constants
 from pylib import forwarder
 from pylib import valgrind_tools
 from pylib.base import base_test_result
@@ -83,7 +84,8 @@ class HostDrivenTestCase(object):
 
   # TODO(craigdh): Remove GetOutDir once references have been removed
   # downstream.
-  def GetOutDir(self):
+  @staticmethod
+  def GetOutDir():
     return constants.GetOutDirectory()
 
   def Run(self):

@@ -2,18 +2,15 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# pylint: disable=W0212
+
 import fcntl
 import logging
 import os
 import psutil
-import re
-import sys
-import time
 
-import android_commands
-import cmd_helper
-import constants
-
+from pylib import cmd_helper
+from pylib import constants
 from pylib import valgrind_tools
 
 
@@ -28,6 +25,7 @@ class _FileLock(object):
   multiprocessing Python module is used.
   """
   def __init__(self, path):
+    self._fd = -1
     self._path = path
 
   def __enter__(self):
@@ -36,7 +34,7 @@ class _FileLock(object):
       raise Exception('Could not open file %s for reading' % self._path)
     fcntl.flock(self._fd, fcntl.LOCK_EX)
 
-  def __exit__(self, type, value, traceback):
+  def __exit__(self, _exception_type, _exception_value, traceback):
     fcntl.flock(self._fd, fcntl.LOCK_UN)
     os.close(self._fd)
 
@@ -154,7 +152,7 @@ class Forwarder(object):
   def DevicePortForHostPort(host_port):
     """Returns the device port that corresponds to a given host port."""
     with _FileLock(Forwarder._LOCK_PATH):
-      (device_serial, device_port) = Forwarder._GetInstanceLocked(
+      (_device_serial, device_port) = Forwarder._GetInstanceLocked(
           None)._host_to_device_port_map.get(host_port)
       return device_port
 
@@ -319,7 +317,7 @@ class Forwarder(object):
     logging.info('Killing device_forwarder.')
     if not adb.FileExistsOnDevice(Forwarder._DEVICE_FORWARDER_PATH):
       return
-    (exit_code, output) = adb.GetShellCommandStatusAndOutput(
+    adb.GetShellCommandStatusAndOutput(
         '%s %s --kill-server' % (tool.GetUtilWrapper(),
                                  Forwarder._DEVICE_FORWARDER_PATH))
     # TODO(pliard): Remove the following call to KillAllBlocking() when we are

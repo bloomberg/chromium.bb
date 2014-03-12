@@ -6,8 +6,8 @@
 
 import logging
 
-import test_package
-import test_runner
+from pylib.uiautomator import test_package
+from pylib.uiautomator import test_runner
 
 
 def Setup(test_options):

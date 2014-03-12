@@ -19,7 +19,7 @@ sys.path.insert(0,
                 os.path.join(constants.DIR_SOURCE_ROOT,
                              'build', 'util', 'lib', 'common'))
 
-import unittest_util
+import unittest_util # pylint: disable=F0401
 
 # If you change the cached output of proguard, increment this number
 PICKLE_FORMAT_VERSION = 1

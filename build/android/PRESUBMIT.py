@@ -38,7 +38,8 @@ def CommonChecks(input_api, output_api):
   output.extend(input_api.canned_checks.RunPylint(
       input_api,
       output_api,
-      white_list=[r'PRESUBMIT\.py$', r'buildbot/.*\.py$'],
+      white_list=[r'PRESUBMIT\.py$', r'buildbot/.*\.py$', r'pylib/.*\.py$'],
+      black_list=[r'pylib/symbols/.*\.py$'],
       extra_paths_list=[
           J(), J('..', '..', 'third_party', 'android_testrunner'),
           J('buildbot')]))

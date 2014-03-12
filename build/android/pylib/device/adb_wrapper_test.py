@@ -5,12 +5,11 @@
 """Tests for the AdbWrapper class."""
 
 import os
-import socket
 import tempfile
 import time
 import unittest
 
-import adb_wrapper
+from pylib.device import adb_wrapper
 
 
 class TestAdbWrapper(unittest.TestCase):
@@ -21,7 +20,8 @@ class TestAdbWrapper(unittest.TestCase):
     self._adb = devices[0]
     self._adb.WaitForDevice()
 
-  def _MakeTempFile(self, contents):
+  @staticmethod
+  def _MakeTempFile(contents):
     """Make a temporary file with the given contents.
     
     Args:
@@ -32,7 +32,7 @@ class TestAdbWrapper(unittest.TestCase):
     """
     fi, path = tempfile.mkstemp()
     with os.fdopen(fi, 'wb') as f:
-      f.write('foo')
+      f.write(contents)
     return path
 
   def testShell(self):

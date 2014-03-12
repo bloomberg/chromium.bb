@@ -16,7 +16,7 @@ sys.path.insert(0,
                 os.path.join(constants.DIR_SOURCE_ROOT,
                              'build', 'util', 'lib', 'common'))
 
-import unittest_util
+import unittest_util # pylint: disable=F0401
 
 class TestInfo(object):
   """An object containing and representing a test function, plus metadata."""

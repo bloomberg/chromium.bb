@@ -22,7 +22,8 @@ class ContentSettings(dict):
     self._table = table
     self._adb = adb
 
-  def _GetTypeBinding(self, value):
+  @staticmethod
+  def _GetTypeBinding(value):
     if isinstance(value, bool):
       return 'b'
     if isinstance(value, float):

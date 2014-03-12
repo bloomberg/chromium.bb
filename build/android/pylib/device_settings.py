@@ -4,7 +4,7 @@
 
 import logging
 
-import content_settings
+from pylib import content_settings
 
 
 def ConfigureContentSettingsDict(adb, desired_settings):

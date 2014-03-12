@@ -6,12 +6,11 @@ import os
 import tempfile
 import time
 
-import android_commands
-import cmd_helper
+from pylib import cmd_helper
 
 
 def _GetTimestamp():
- return time.strftime('%Y-%m-%d-%H%M%S', time.localtime())
+  return time.strftime('%Y-%m-%d-%H%M%S', time.localtime())
 
 
 def _EnsureHostDirectory(host_file):
