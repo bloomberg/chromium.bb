@@ -918,3 +918,6 @@ crbug.com/350827 svg/animations/svglengthlist-animation-3.html [ Failure Pass ]
 crbug.com/350828 svg/custom/animate-initial-pause-unpause.html [ Failure Pass ]
 crbug.com/350543 [ Linux ] svg/as-image/image-change-with-equal-sizes.html [ Crash Pass ]
 crbug.com/350829 [ Linux Win ] virtual/threaded/animations/missing-keyframe-properties-repeating.html [ Timeout Pass ]
+
+# Temporary while the test is fixed
+crbug.com/349472 fast/forms/select/menulist-oninput-fired.html [ Skip ]
