@@ -15,6 +15,18 @@
 #include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 
+namespace cryptohome {
+
+class AccountIdentifier;
+class AddKeyRequest;
+class AuthorizationRequest;
+class BaseReply;
+class CheckKeyRequest;
+class MountRequest;
+class UpdateKeyRequest;
+
+} // namespace cryptohome
+
 namespace chromeos {
 
 // CryptohomeClient is used to communicate with the Cryptohome service.
@@ -58,6 +70,12 @@ class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
   typedef base::Callback<void(DBusMethodCallStatus call_status,
                               bool result,
                               const std::string& data)> DataMethodCallback;
+
+  // A callback for methods which return both a bool and a protobuf as reply.
+  typedef base::Callback<
+      void(DBusMethodCallStatus call_status,
+           bool result,
+           const cryptohome::BaseReply& reply)> ProtobufMethodCallback;
 
   virtual ~CryptohomeClient();
 
@@ -425,6 +443,46 @@ class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
       const std::string& user_id,
       const std::string& key_prefix,
       const BoolDBusMethodCallback& callback) = 0;
+
+  // Asynchronously calls CheckKeyEx method. |callback| is called after method
+  // call, and with reply protobuf.
+  // CheckKeyEx just checks if authorization information is valid.
+  virtual void CheckKeyEx(
+      const cryptohome::AccountIdentifier& id,
+      const cryptohome::AuthorizationRequest& auth,
+      const cryptohome::CheckKeyRequest& request,
+      const ProtobufMethodCallback& callback) = 0;
+
+  // Asynchronously calls MountEx method. |callback| is called after method
+  // call, and with reply protobuf.
+  // MountEx attempts to mount home dir using given authorization, and can
+  // create new home dir if necessary values are specified in |request|.
+  virtual void MountEx(
+      const cryptohome::AccountIdentifier& id,
+      const cryptohome::AuthorizationRequest& auth,
+      const cryptohome::MountRequest& request,
+      const ProtobufMethodCallback& callback) = 0;
+
+  // Asynchronously calls AddKeyEx method. |callback| is called after method
+  // call, and with reply protobuf.
+  // AddKeyEx adds another key to the given key set. |request| also defines
+  // behavior in case when key with specified label already exist.
+  virtual void AddKeyEx(
+      const cryptohome::AccountIdentifier& id,
+      const cryptohome::AuthorizationRequest& auth,
+      const cryptohome::AddKeyRequest& request,
+      const ProtobufMethodCallback& callback) = 0;
+
+  // Asynchronously calls UpdateKeyEx method. |callback| is called after method
+  // call, and with reply protobuf. Reply will contain MountReply extension.
+  // UpdateKeyEx replaces key used for authorization, without affecting any
+  // other keys. If specified at home dir creation time, new key may have
+  // to be signed and/or encrypted.
+  virtual void UpdateKeyEx(
+      const cryptohome::AccountIdentifier& id,
+      const cryptohome::AuthorizationRequest& auth,
+      const cryptohome::UpdateKeyRequest& request,
+      const ProtobufMethodCallback& callback) = 0;
 
  protected:
   // Create() should be used instead.

@@ -28,6 +28,7 @@
         '../third_party/libxml/libxml.gyp:libxml',
         '../ui/display/display.gyp:display',
         '../url/url.gyp:url_lib',
+        'cryptohome_proto',
         'ime/input_method.gyp:gencode',
         'power_manager_proto',
       ],
@@ -378,6 +379,7 @@
         '../testing/gmock.gyp:gmock',
         'chromeos',
         'chromeos_test_support_without_gmock',
+        'cryptohome_proto',
         'power_manager_proto',
       ],
       'sources': [
@@ -424,6 +426,7 @@
         '../crypto/crypto.gyp:crypto',
         '../dbus/dbus.gyp:dbus',
         'chromeos',
+        'cryptohome_proto',
         'power_manager_proto',
       ],
       'sources': [
@@ -461,6 +464,7 @@
         '../testing/gtest.gyp:gtest',
         '../url/url.gyp:url_lib',
         'chromeos_test_support',
+        'cryptohome_proto',
         'power_manager_proto',
       ],
       'sources': [
@@ -548,6 +552,20 @@
       'variables': {
         'proto_in_dir': '../third_party/cros_system_api/dbus/power_manager',
         'proto_out_dir': 'chromeos/dbus/power_manager',
+      },
+      'includes': ['../build/protoc.gypi'],
+    },
+    {
+      # Protobuf compiler/generator for cryptohome related protocol buffers.
+      'target_name': 'cryptohome_proto',
+      'type': 'static_library',
+      'sources': [
+        '../third_party/cros_system_api/dbus/cryptohome/key.proto',
+        '../third_party/cros_system_api/dbus/cryptohome/rpc.proto',
+      ],
+      'variables': {
+        'proto_in_dir': '../third_party/cros_system_api/dbus/cryptohome',
+        'proto_out_dir': 'chromeos/dbus/cryptohome',
       },
       'includes': ['../build/protoc.gypi'],
     },

@@ -7,6 +7,8 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop.h"
+#include "chromeos/dbus/cryptohome/key.pb.h"
+#include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "crypto/nss_util.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -391,6 +393,38 @@ void FakeCryptohomeClient::TpmAttestationDeleteKeys(
       FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS, false));
 }
 
+void FakeCryptohomeClient::CheckKeyEx(
+    const cryptohome::AccountIdentifier& id,
+    const cryptohome::AuthorizationRequest& auth,
+    const cryptohome::CheckKeyRequest& request,
+    const ProtobufMethodCallback& callback) {
+  ReturnProtobufMethodCallback(id.email(), callback);
+}
+
+void FakeCryptohomeClient::MountEx(
+    const cryptohome::AccountIdentifier& id,
+    const cryptohome::AuthorizationRequest& auth,
+    const cryptohome::MountRequest& request,
+    const ProtobufMethodCallback& callback) {
+  ReturnProtobufMethodCallback(id.email(), callback);
+}
+
+void FakeCryptohomeClient::AddKeyEx(
+    const cryptohome::AccountIdentifier& id,
+    const cryptohome::AuthorizationRequest& auth,
+    const cryptohome::AddKeyRequest& request,
+    const ProtobufMethodCallback& callback) {
+  ReturnProtobufMethodCallback(id.email(), callback);
+}
+
+void FakeCryptohomeClient::UpdateKeyEx(
+    const cryptohome::AccountIdentifier& id,
+    const cryptohome::AuthorizationRequest& auth,
+    const cryptohome::UpdateKeyRequest& request,
+    const ProtobufMethodCallback& callback) {
+  ReturnProtobufMethodCallback(id.email(), callback);
+}
+
 void FakeCryptohomeClient::SetServiceIsAvailable(bool is_available) {
   service_is_available_ = is_available;
   if (is_available) {
@@ -406,6 +440,22 @@ std::vector<uint8> FakeCryptohomeClient::GetStubSystemSalt() {
   const char kStubSystemSalt[] = "stub_system_salt";
   return std::vector<uint8>(kStubSystemSalt,
                             kStubSystemSalt + arraysize(kStubSystemSalt) - 1);
+}
+
+void FakeCryptohomeClient::ReturnProtobufMethodCallback(
+    const std::string& userid,
+    const ProtobufMethodCallback& callback) {
+  cryptohome::BaseReply reply;
+  reply.set_error(cryptohome::CRYPTOHOME_ERROR_NOT_SET);
+  cryptohome::MountReply* mount =
+      reply.MutableExtension(cryptohome::MountReply::reply);
+  mount->set_sanitized_username(GetStubSanitizedUsername(userid));
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(callback,
+                 DBUS_METHOD_CALL_SUCCESS,
+                 true,
+                 reply));
 }
 
 void FakeCryptohomeClient::ReturnAsyncMethodResult(

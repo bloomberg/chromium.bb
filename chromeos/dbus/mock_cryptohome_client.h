@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -161,6 +162,26 @@ class MockCryptohomeClient : public CryptohomeClient {
                     const std::string& user_id,
                     const std::string& key_prefix,
                     const BoolDBusMethodCallback& callback));
+  MOCK_METHOD4(CheckKeyEx,
+      void(const cryptohome::AccountIdentifier& id,
+           const cryptohome::AuthorizationRequest& auth,
+           const cryptohome::CheckKeyRequest& request,
+           const ProtobufMethodCallback& callback));
+  MOCK_METHOD4(MountEx,
+      void(const cryptohome::AccountIdentifier& id,
+           const cryptohome::AuthorizationRequest& auth,
+           const cryptohome::MountRequest& request,
+           const ProtobufMethodCallback& callback));
+  MOCK_METHOD4(AddKeyEx,
+      void(const cryptohome::AccountIdentifier& id,
+           const cryptohome::AuthorizationRequest& auth,
+           const cryptohome::AddKeyRequest& request,
+           const ProtobufMethodCallback& callback));
+  MOCK_METHOD4(UpdateKeyEx,
+      void(const cryptohome::AccountIdentifier& id,
+           const cryptohome::AuthorizationRequest& auth,
+           const cryptohome::UpdateKeyRequest& request,
+           const ProtobufMethodCallback& callback));
 };
 
 }  // namespace chromeos
