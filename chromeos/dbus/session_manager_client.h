@@ -22,19 +22,13 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
   // Interface for observing changes from the session manager.
   class Observer {
    public:
+    virtual ~Observer() {}
+
     // Called when the owner key is set.
     virtual void OwnerKeySet(bool success) {}
 
     // Called when the property change is complete.
     virtual void PropertyChangeComplete(bool success) {}
-
-    // Called when the session manager requests that the lock screen be
-    // displayed.  NotifyLockScreenShown() is called after the lock screen
-    // is shown (the canonical "is the screen locked?" state lives in the
-    // session manager).
-    // TODO(derat): Delete this once the session manager is calling the
-    // "LockScreen" method instead.
-    virtual void LockScreen() {}
 
     // Called when the session manager announces that the screen has been locked
     // successfully (i.e. after NotifyLockScreenShown() has been called).
@@ -48,6 +42,22 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
     // Called after EmitLoginPromptVisible is called.
     virtual void EmitLoginPromptVisibleCalled() {}
   };
+
+  // Interface for performing actions on behalf of the stub implementation.
+  class StubDelegate {
+   public:
+    virtual ~StubDelegate() {}
+
+    // Locks the screen. Invoked by the stub when RequestLockScreen() is called.
+    // In the real implementation of SessionManagerClient::RequestLockScreen(),
+    // a lock request is forwarded to the session manager; in the stub, this is
+    // short-circuited and the screen is locked immediately.
+    virtual void LockScreenForStub() = 0;
+  };
+
+  // Sets the delegate used by the stub implementation. Ownership of |delegate|
+  // remains with the caller.
+  virtual void SetStubDelegate(StubDelegate* delegate) = 0;
 
   // Adds and removes the observer.
   virtual void AddObserver(Observer* observer) = 0;

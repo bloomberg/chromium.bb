@@ -69,56 +69,46 @@ namespace {
 // unlock happens even if animations are broken.
 const int kUnlockGuardTimeoutMs = 400;
 
-// Observer to start ScreenLocker when the screen lock
-class ScreenLockObserver : public SessionManagerClient::Observer,
+// Observer to start ScreenLocker when locking the screen is requested.
+class ScreenLockObserver : public SessionManagerClient::StubDelegate,
                            public content::NotificationObserver,
                            public UserAddingScreen::Observer {
  public:
   ScreenLockObserver() : session_started_(false) {
     registrar_.Add(this,
-                   chrome::NOTIFICATION_LOGIN_USER_CHANGED,
-                   content::NotificationService::AllSources());
-    registrar_.Add(this,
                    chrome::NOTIFICATION_SESSION_STARTED,
                    content::NotificationService::AllSources());
+    DBusThreadManager::Get()->GetSessionManagerClient()->SetStubDelegate(this);
+  }
+
+  virtual ~ScreenLockObserver() {
+    if (DBusThreadManager::IsInitialized()) {
+      DBusThreadManager::Get()->GetSessionManagerClient()->SetStubDelegate(
+          NULL);
+    }
   }
 
   bool session_started() const { return session_started_; }
+
+  // SessionManagerClient::StubDelegate overrides:
+  virtual void LockScreenForStub() OVERRIDE {
+    ScreenLocker::HandleLockScreenRequest();
+  }
 
   // NotificationObserver overrides:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE {
-    switch (type) {
-      case chrome::NOTIFICATION_LOGIN_USER_CHANGED: {
-        // Register Screen Lock only after a user has logged in.
-        SessionManagerClient* session_manager =
-            DBusThreadManager::Get()->GetSessionManagerClient();
-        if (!session_manager->HasObserver(this))
-          session_manager->AddObserver(this);
-        break;
-      }
-
-      case chrome::NOTIFICATION_SESSION_STARTED: {
-        session_started_ = true;
-        break;
-      }
-
-      default:
-        NOTREACHED();
-    }
+    if (type == chrome::NOTIFICATION_SESSION_STARTED)
+      session_started_ = true;
+    else
+      NOTREACHED() << "Unexpected notification " << type;
   }
 
-  // TODO(derat): Remove this once the session manager is calling the LockScreen
-  // method instead of emitting a signal.
-  virtual void LockScreen() OVERRIDE {
-    VLOG(1) << "Received LockScreen D-Bus signal from session manager";
-    ScreenLocker::HandleLockScreenRequest();
-  }
-
+  // UserAddingScreen::Observer overrides:
   virtual void OnUserAddingFinished() OVERRIDE {
     UserAddingScreen::Get()->RemoveObserver(this);
-    LockScreen();
+    ScreenLocker::HandleLockScreenRequest();
   }
 
  private:
@@ -128,8 +118,7 @@ class ScreenLockObserver : public SessionManagerClient::Observer,
   DISALLOW_COPY_AND_ASSIGN(ScreenLockObserver);
 };
 
-static base::LazyInstance<ScreenLockObserver> g_screen_lock_observer =
-    LAZY_INSTANCE_INITIALIZER;
+ScreenLockObserver* g_screen_lock_observer = NULL;
 
 }  // namespace
 
@@ -375,21 +364,31 @@ void ScreenLocker::SetLoginStatusConsumer(
 
 // static
 void ScreenLocker::InitClass() {
-  g_screen_lock_observer.Get();
+  DCHECK(!g_screen_lock_observer);
+  g_screen_lock_observer = new ScreenLockObserver;
+}
+
+// static
+void ScreenLocker::ShutDownClass() {
+  DCHECK(g_screen_lock_observer);
+  delete g_screen_lock_observer;
+  g_screen_lock_observer = NULL;
 }
 
 // static
 void ScreenLocker::HandleLockScreenRequest() {
   VLOG(1) << "Received LockScreen request from session manager";
+  DCHECK(g_screen_lock_observer);
   if (UserAddingScreen::Get()->IsRunning()) {
     VLOG(1) << "Waiting for user adding screen to stop";
-    UserAddingScreen::Get()->AddObserver(g_screen_lock_observer.Pointer());
+    UserAddingScreen::Get()->AddObserver(g_screen_lock_observer);
     UserAddingScreen::Get()->Cancel();
     return;
   }
-  if (g_screen_lock_observer.Get().session_started() &&
+  if (g_screen_lock_observer->session_started() &&
       UserManager::Get()->CanCurrentUserLock()) {
     ScreenLocker::Show();
+    ash::Shell::GetInstance()->lock_state_controller()->OnStartingLock();
   } else {
     // If the current user's session cannot be locked or the user has not
     // completed all sign-in steps yet, log out instead. The latter is done to
@@ -492,6 +491,7 @@ ScreenLocker::~ScreenLocker() {
       content::Source<ScreenLocker>(this),
       content::Details<bool>(&state));
   VLOG(1) << "Calling session manager's HandleLockScreenDismissed D-Bus method";
+
   DBusThreadManager::Get()->GetSessionManagerClient()->
       NotifyLockScreenDismissed();
 }

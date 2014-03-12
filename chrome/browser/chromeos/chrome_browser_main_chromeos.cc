@@ -469,11 +469,10 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
 
   // Initialize the screen locker now so that it can receive
   // LOGIN_USER_CHANGED notification from UserManager.
-  if (KioskModeSettings::Get()->IsKioskModeEnabled()) {
+  if (KioskModeSettings::Get()->IsKioskModeEnabled())
     KioskModeIdleLogout::Initialize();
-  } else {
+  else
     ScreenLocker::InitClass();
-  }
 
   // This forces the ProfileManager to be created and register for the
   // notification it needs to track the logged in user.
@@ -778,6 +777,11 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   peripheral_battery_observer_.reset();
   power_prefs_.reset();
   event_rewriter_.reset();
+
+  // Let the ScreenLocker unregister itself from SessionManagerClient before
+  // DBusThreadManager is shut down.
+  if (!KioskModeSettings::Get()->IsKioskModeEnabled())
+    ScreenLocker::ShutDownClass();
 
   // The XInput2 event listener needs to be shut down earlier than when
   // Singletons are finally destroyed in AtExitManager.

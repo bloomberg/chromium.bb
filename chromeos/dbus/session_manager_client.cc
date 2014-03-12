@@ -36,6 +36,10 @@ class SessionManagerClientImpl : public SessionManagerClient {
   }
 
   // SessionManagerClient overrides:
+  virtual void SetStubDelegate(StubDelegate* delegate) OVERRIDE {
+    // Do nothing; this isn't a stub implementation.
+  }
+
   virtual void AddObserver(Observer* observer) OVERRIDE {
     observers_.AddObserver(observer);
   }
@@ -237,16 +241,6 @@ class SessionManagerClientImpl : public SessionManagerClient {
         dbus::ObjectPath(login_manager::kSessionManagerServicePath));
     blocking_method_caller_.reset(
         new BlockingMethodCaller(bus, session_manager_proxy_));
-
-    // Signals emitted on Chromium's interface.  Many of these ought to be
-    // method calls instead.
-    session_manager_proxy_->ConnectToSignal(
-        chromium::kChromiumInterface,
-        chromium::kLockScreenSignal,
-        base::Bind(&SessionManagerClientImpl::ScreenLockReceived,
-                   weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&SessionManagerClientImpl::SignalConnected,
-                   weak_ptr_factory_.GetWeakPtr()));
 
     // Signals emitted on the session manager's interface.
     session_manager_proxy_->ConnectToSignal(
@@ -463,10 +457,6 @@ class SessionManagerClientImpl : public SessionManagerClient {
     FOR_EACH_OBSERVER(Observer, observers_, PropertyChangeComplete(success));
   }
 
-  void ScreenLockReceived(dbus::Signal* signal) {
-    FOR_EACH_OBSERVER(Observer, observers_, LockScreen());
-  }
-
   void ScreenIsLockedReceived(dbus::Signal* signal) {
     FOR_EACH_OBSERVER(Observer, observers_, ScreenIsLocked());
   }
@@ -497,7 +487,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
 // which does nothing.
 class SessionManagerClientStubImpl : public SessionManagerClient {
  public:
-  SessionManagerClientStubImpl() {}
+  SessionManagerClientStubImpl() : delegate_(NULL) {}
   virtual ~SessionManagerClientStubImpl() {}
 
   // SessionManagerClient overrides
@@ -514,6 +504,9 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
     }
   }
 
+  virtual void SetStubDelegate(StubDelegate* delegate) OVERRIDE {
+    delegate_ = delegate;
+  }
   virtual void AddObserver(Observer* observer) OVERRIDE {
     observers_.AddObserver(observer);
   }
@@ -529,7 +522,8 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
   virtual void StopSession() OVERRIDE {}
   virtual void StartDeviceWipe() OVERRIDE {}
   virtual void RequestLockScreen() OVERRIDE {
-    FOR_EACH_OBSERVER(Observer, observers_, LockScreen());
+    if (delegate_)
+      delegate_->LockScreenForStub();
   }
   virtual void NotifyLockScreenShown() OVERRIDE {
     FOR_EACH_OBSERVER(Observer, observers_, ScreenIsLocked());
@@ -617,6 +611,7 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
   }
 
  private:
+  StubDelegate* delegate_;  // Weak pointer; may be NULL.
   ObserverList<Observer> observers_;
   std::string device_policy_;
   std::map<std::string, std::string> user_policies_;

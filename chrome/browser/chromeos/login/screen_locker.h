@@ -122,10 +122,11 @@ class ScreenLocker : public LoginStatusConsumer {
   // there isn't one.
   content::WebUI* GetAssociatedWebUI();
 
-  // Initialize ScreenLocker class. It will listen to
-  // LOGIN_USER_CHANGED notification so that the screen locker accepts
-  // lock event only after a user is logged in.
+  // Initialize or uninitialize the ScreenLocker class. It listens to
+  // NOTIFICATION_SESSION_STARTED so that the screen locker accepts lock
+  // requests only after a user has logged in.
   static void InitClass();
+  static void ShutDownClass();
 
   // Handles a request from the session manager to lock the screen.
   static void HandleLockScreenRequest();

@@ -100,6 +100,9 @@ bool DeviceSettingsTestHelper::HasPendingOperations() const {
 
 void DeviceSettingsTestHelper::Init(dbus::Bus* bus) {}
 
+void DeviceSettingsTestHelper::SetStubDelegate(
+    SessionManagerClient::StubDelegate* delegate) {}
+
 void DeviceSettingsTestHelper::AddObserver(Observer* observer) {}
 
 void DeviceSettingsTestHelper::RemoveObserver(Observer* observer) {}

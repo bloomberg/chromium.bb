@@ -88,8 +88,4 @@ void PowerButtonObserver::PowerButtonEventReceived(
       OnPowerButtonEvent(down, timestamp);
 }
 
-void PowerButtonObserver::LockScreen() {
-  ash::Shell::GetInstance()->lock_state_controller()->OnStartingLock();
-}
-
 }  // namespace chromeos

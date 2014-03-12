@@ -24,6 +24,9 @@ FakeSessionManagerClient::~FakeSessionManagerClient() {
 void FakeSessionManagerClient::Init(dbus::Bus* bus) {
 }
 
+void FakeSessionManagerClient::SetStubDelegate(StubDelegate* delegate) {
+}
+
 void FakeSessionManagerClient::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
 }

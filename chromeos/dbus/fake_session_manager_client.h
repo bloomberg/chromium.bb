@@ -24,6 +24,7 @@ class FakeSessionManagerClient : public SessionManagerClient {
 
   // SessionManagerClient overrides
   virtual void Init(dbus::Bus* bus) OVERRIDE;
+  virtual void SetStubDelegate(StubDelegate* delegate) OVERRIDE;
   virtual void AddObserver(Observer* observer) OVERRIDE;
   virtual void RemoveObserver(Observer* observer) OVERRIDE;
   virtual bool HasObserver(Observer* observer) OVERRIDE;
