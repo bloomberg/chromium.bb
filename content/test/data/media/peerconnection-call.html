@@ -19,7 +19,8 @@
   var transformSdp = function(sdp) { return sdp; };
   var transformRemoteSdp = function(sdp) { return sdp; };
   var transformCandidate = function(candidate) { return candidate; };
-  var onLocalDescriptionError = function(error) { };
+  var onLocalDescriptionError = function(error) { failTest(error); };
+  var onRemoteDescriptionError = function(error) { failTest(error); };
 
   // Temporary measure to be able to force iSAC 16K where needed, particularly
   // on Android. This applies to every test which is why it's implemented like
@@ -656,7 +657,7 @@
     console.log("Negotiating call...");
     // Not stable = negotiation is ongoing. The behavior of re-negotiating while
     // a negotiation is ongoing is more or less undefined, so avoid this.
-    if (caller.signalingState != 'stable')
+    if (caller.signalingState != 'stable' || callee.signalingState != 'stable')
       throw 'You can only negotiate when the connection is stable!';
 
     connectOnIceCandidate(caller, callee);
@@ -681,7 +682,8 @@
 
     var parsedOffer = new RTCSessionDescription({ type: 'offer',
                                                   sdp: offerSdp });
-    callee.setRemoteDescription(parsedOffer);
+    callee.setRemoteDescription(parsedOffer, function() {},
+                                onRemoteDescriptionError);
     callee.createAnswer(function (answer) {
                           onAnswerCreated(answer, caller, callee);
                         });
@@ -744,8 +746,11 @@
 
   function onAnswerCreated(answer, caller, callee) {
     answer.sdp = maybeForceIsac16K(transformSdp(answer.sdp));
-    callee.setLocalDescription(answer);
-    assertEquals('stable', callee.signalingState);
+    callee.setLocalDescription(answer,
+                               function () {
+                                 assertEquals('stable', callee.signalingState);
+                               },
+                               onLocalDescriptionError);
     receiveAnswer(answer.sdp, caller);
   }
 
@@ -754,8 +759,11 @@
     answerSdp = transformRemoteSdp(answerSdp);
     var parsedAnswer = new RTCSessionDescription({ type: 'answer',
                                                    sdp: answerSdp });
-    caller.setRemoteDescription(parsedAnswer);
-    assertEquals('stable', caller.signalingState);
+    caller.setRemoteDescription(parsedAnswer,
+                                function() {
+                                  assertEquals('stable', caller.signalingState);
+                                },
+                                onRemoteDescriptionError);
   }
 
   function connectOnIceCandidate(caller, callee) {

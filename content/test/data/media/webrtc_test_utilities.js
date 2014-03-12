@@ -89,12 +89,12 @@ function waitForVideoToStop(videoElement) {
 }
 
 function waitForConnectionToStabilize(peerConnection, callback) {
-  var waitForStabilization = setInterval(function() {
+  peerConnection.onsignalingstatechange = function(event) {
     if (peerConnection.signalingState == 'stable') {
-      clearInterval(waitForStabilization);
+      peerConnection.onsignalingstatechange = null;
       callback();
     }
-  }, 100);
+  }
 }
 
 // Adds an expected event. You may call this function many times to add more
