@@ -90,7 +90,10 @@ void NewAvatarMenuButtonTest::StartAvatarMenu() {
   EXPECT_TRUE(ProfileChooserView::IsShowing());
 }
 
-IN_PROC_BROWSER_TEST_F(NewAvatarMenuButtonTest, SignOut) {
+// Test fails in some environments. Assumption of sending BROWSER_CLOSED
+// before opening profile window needs to be verified.
+// http://crbug.com/351435
+IN_PROC_BROWSER_TEST_F(NewAvatarMenuButtonTest, DISABLED_SignOut) {
   // If multiprofile mode is not enabled, you can't switch between profiles.
   if (!profiles::IsMultipleProfilesEnabled())
     return;
