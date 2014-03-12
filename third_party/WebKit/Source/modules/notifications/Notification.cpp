@@ -70,7 +70,7 @@ Notification::Notification(const String& title, ExecutionContext* context, Notif
     , m_dir("auto")
     , m_state(Idle)
     , m_client(client)
-    , m_asyncRunner(adoptPtr(new AsyncMethodRunner<Notification>(this, &Notification::showSoon)))
+    , m_asyncRunner(adoptPtr(new AsyncMethodRunner<Notification>(this, &Notification::show)))
 {
     ASSERT(m_client);
     ScriptWrappable::init(this);
@@ -84,18 +84,17 @@ Notification::~Notification()
 
 void Notification::show()
 {
-    // prevent double-showing
-    if (m_state == Idle) {
-        if (!toDocument(executionContext())->page())
-            return;
-        if (NotificationController::from(toDocument(executionContext())->page())->client()->checkPermission(executionContext()) != NotificationClient::PermissionAllowed) {
-            dispatchErrorEvent();
-            return;
-        }
-        if (m_client->show(this)) {
-            m_state = Showing;
-        }
+    ASSERT(m_state == Idle);
+    if (!toDocument(executionContext())->page())
+        return;
+
+    if (NotificationController::from(toDocument(executionContext())->page())->client()->checkPermission(executionContext()) != NotificationClient::PermissionAllowed) {
+        dispatchErrorEvent();
+        return;
     }
+
+    if (m_client->show(this))
+        m_state = Showing;
 }
 
 void Notification::close()
@@ -104,7 +103,7 @@ void Notification::close()
     case Idle:
         break;
     case Showing:
-        m_client->cancel(this);
+        m_client->close(this);
         break;
     case Closed:
         break;
@@ -173,9 +172,7 @@ void Notification::requestPermission(ExecutionContext* context, PassOwnPtr<Notif
 
 bool Notification::dispatchEvent(PassRefPtr<Event> event)
 {
-    // Do not dispatch if the context is gone.
-    if (!executionContext())
-        return false;
+    ASSERT(m_state != Closed);
 
     return EventTarget::dispatchEvent(event);
 }
@@ -200,12 +197,6 @@ void Notification::stop()
 bool Notification::hasPendingActivity() const
 {
     return m_state == Showing || (m_asyncRunner && m_asyncRunner->isActive());
-}
-
-void Notification::showSoon()
-{
-    ASSERT(executionContext()->isDocument());
-    show();
 }
 
 } // namespace WebCore

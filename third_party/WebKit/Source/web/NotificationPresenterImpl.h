@@ -31,10 +31,8 @@
 #ifndef NotificationPresenterImpl_h
 #define NotificationPresenterImpl_h
 
-#include "core/html/VoidCallback.h"
 #include "modules/notifications/NotificationClient.h"
 
-#include "wtf/HashMap.h"
 #include "wtf/PassRefPtr.h"
 
 namespace blink {
@@ -50,7 +48,7 @@ public:
 
     // WebCore::NotificationPresenter implementation.
     virtual bool show(WebCore::Notification*) OVERRIDE;
-    virtual void cancel(WebCore::Notification*) OVERRIDE;
+    virtual void close(WebCore::Notification*) OVERRIDE;
     virtual void notificationObjectDestroyed(WebCore::Notification*) OVERRIDE;
     virtual WebCore::NotificationClient::Permission checkPermission(WebCore::ExecutionContext*) OVERRIDE;
     virtual void requestPermission(WebCore::ExecutionContext*, WTF::PassOwnPtr<WebCore::NotificationPermissionCallback>) OVERRIDE;

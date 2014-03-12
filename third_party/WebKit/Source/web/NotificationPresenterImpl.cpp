@@ -34,6 +34,7 @@
 #include "WebNotification.h"
 #include "WebNotificationPermissionCallback.h"
 #include "WebNotificationPresenter.h"
+#include "WebSecurityOrigin.h"
 #include "core/dom/ExecutionContext.h"
 #include "modules/notifications/Notification.h"
 #include "platform/weborigin/SecurityOrigin.h"
@@ -81,8 +82,11 @@ bool NotificationPresenterImpl::show(Notification* notification)
     return m_presenter->show(PassRefPtr<Notification>(notification));
 }
 
-void NotificationPresenterImpl::cancel(Notification* notification)
+void NotificationPresenterImpl::close(Notification* notification)
 {
+    m_presenter->close(PassRefPtr<Notification>(notification));
+
+    // FIXME: Remove the duplicated call to cancel() when Chromium updated to override close() instead.
     m_presenter->cancel(PassRefPtr<Notification>(notification));
 }
 

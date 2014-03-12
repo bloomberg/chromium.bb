@@ -32,13 +32,13 @@
 #define WebNotificationPresenter_h
 
 #include "../platform/WebString.h"
-#include "WebNotificationPermissionCallback.h"
-#include "WebSecurityOrigin.h"
 
 namespace blink {
 
 class WebDocument;
 class WebNotification;
+class WebNotificationPermissionCallback;
+class WebSecurityOrigin;
 
 // Provides the services to show desktop notifications to the user.
 class WebNotificationPresenter {
@@ -52,7 +52,9 @@ public:
     // Shows a notification.
     virtual bool show(const WebNotification&) = 0;
 
-    // Cancels a notification previously shown, and removes it if being shown.
+    // Closes a notification previously shown, and removes it if being shown.
+    // FIXME: Remove cancel() once Chromium updated to the new name, and make close() pure virtual.
+    virtual void close(const WebNotification&) { }
     virtual void cancel(const WebNotification&) = 0;
 
     // Indiciates that the notification object subscribed to events for a previously shown notification is

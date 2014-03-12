@@ -32,70 +32,65 @@
 #define WebNotification_h
 
 #include "../platform/WebCommon.h"
+#include "../platform/WebPrivatePtr.h"
+#include "../platform/WebString.h"
 #include "WebTextDirection.h"
 
-#if BLINK_IMPLEMENTATION
 namespace WebCore { class Notification; }
+
+#if BLINK_IMPLEMENTATION
 namespace WTF { template <typename T> class PassRefPtr; }
 #endif
 
-namespace WTF {
-class AtomicString;
-}
-
 namespace blink {
 
-class WebNotificationPrivate;
 class WebURL;
-class WebString;
 
 // Represents access to a desktop notification.
 class WebNotification {
 public:
-    WebNotification() : m_private(0) { }
-    WebNotification(const WebNotification& other) : m_private(0) { assign(other); }
-
-    ~WebNotification() { reset(); }
-
-    BLINK_EXPORT void reset();
-    BLINK_EXPORT void assign(const WebNotification&);
-
+    WebNotification() { }
+    WebNotification(const WebNotification& other) { assign(other); }
     WebNotification& operator=(const WebNotification& other)
     {
         assign(other);
         return *this;
     }
 
-    // Operators required to put WebNotification in an ordered map.
-    bool equals(const WebNotification& other) const { return m_private == other.m_private; }
+    ~WebNotification() { reset(); }
+
+    BLINK_EXPORT void reset();
+    BLINK_EXPORT void assign(const WebNotification&);
+
+    // Operators required to put WebNotification in an std::map. Mind that the
+    // order of the notifications in an ordered map will be arbitrary.
+    BLINK_EXPORT bool equals(const WebNotification& other) const;
     BLINK_EXPORT bool lessThan(const WebNotification& other) const;
 
-    // DEPRECATED: Always returns false.
-    BLINK_EXPORT bool isHTML() const;
-
-    // DEPRECATED: Always returns an invalid URL.
-    BLINK_EXPORT WebURL url() const;
-
-    BLINK_EXPORT WebURL iconURL() const;
     BLINK_EXPORT WebString title() const;
-    BLINK_EXPORT WebString body() const;
-    BLINK_EXPORT WebTextDirection direction() const;
 
-    BLINK_EXPORT WebString replaceId() const;
+    BLINK_EXPORT WebTextDirection direction() const;
+    BLINK_EXPORT WebString lang() const;
+    BLINK_EXPORT WebString body() const;
+    BLINK_EXPORT WebString tag() const;
+    BLINK_EXPORT WebURL iconURL() const;
 
     // Called to indicate the notification has been displayed.
-    BLINK_EXPORT void dispatchDisplayEvent();
+    BLINK_EXPORT void dispatchShowEvent();
 
     // Called to indicate an error has occurred with this notification.
     BLINK_EXPORT void dispatchErrorEvent(const WebString& errorMessage);
 
-    // Called to indicate the notification has been closed.  If it was
-    // closed by the user (as opposed to automatically by the system),
-    // the byUser parameter will be true.
+    // Called to indicate the notification has been closed. |byUser| indicates
+    // whether it was closed by the user instead of automatically by the system.
     BLINK_EXPORT void dispatchCloseEvent(bool byUser);
 
     // Called to indicate the notification was clicked on.
     BLINK_EXPORT void dispatchClickEvent();
+
+    // FIXME: Remove these methods once Chromium switched to the new APIs.
+    WebString replaceId() const { return tag(); }
+    void dispatchDisplayEvent() { dispatchShowEvent(); }
 
 #if BLINK_IMPLEMENTATION
     WebNotification(const WTF::PassRefPtr<WebCore::Notification>&);
@@ -104,8 +99,7 @@ public:
 #endif
 
 private:
-    void assign(WebNotificationPrivate*);
-    WebNotificationPrivate* m_private;
+    WebPrivatePtr<WebCore::Notification> m_private;
 };
 
 inline bool operator==(const WebNotification& a, const WebNotification& b)

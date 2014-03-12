@@ -31,53 +31,33 @@
 #include "config.h"
 #include "WebNotification.h"
 
-#include "WebTextDirection.h"
 #include "core/events/Event.h"
-#include "core/page/WindowFocusAllowedIndicator.h"
 #include "modules/notifications/Notification.h"
-#include "platform/UserGestureIndicator.h"
-#include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
 #include "wtf/PassRefPtr.h"
 
-using namespace WebCore;
+using WebCore::Notification;
 
 namespace blink {
 
-class WebNotificationPrivate : public Notification {
-};
-
 void WebNotification::reset()
 {
-    assign(0);
+    m_private.reset();
 }
 
 void WebNotification::assign(const WebNotification& other)
 {
-    WebNotificationPrivate* p = const_cast<WebNotificationPrivate*>(other.m_private);
-    if (p)
-        p->ref(); // FIXME: We should use WebPrivatePtr.
-    assign(p);
+    m_private = other.m_private;
+}
+
+bool WebNotification::equals(const WebNotification& other) const
+{
+    return m_private.get() == other.m_private.get();
 }
 
 bool WebNotification::lessThan(const WebNotification& other) const
 {
-    return reinterpret_cast<uintptr_t>(m_private) < reinterpret_cast<uintptr_t>(other.m_private);
-}
-
-bool WebNotification::isHTML() const
-{
-    return false;
-}
-
-WebURL WebNotification::url() const
-{
-    return WebURL();
-}
-
-WebURL WebNotification::iconURL() const
-{
-    return m_private->iconURL();
+    return m_private.get() < other.m_private.get();
 }
 
 WebString WebNotification::title() const
@@ -85,29 +65,39 @@ WebString WebNotification::title() const
     return m_private->title();
 }
 
+WebTextDirection WebNotification::direction() const
+{
+    return (m_private->direction() == WebCore::RTL) ?
+        WebTextDirectionRightToLeft :
+        WebTextDirectionLeftToRight;
+}
+
+WebString WebNotification::lang() const
+{
+    return m_private->lang();
+}
+
 WebString WebNotification::body() const
 {
     return m_private->body();
 }
 
-WebTextDirection WebNotification::direction() const
-{
-    return (m_private->direction() == RTL) ?
-        WebTextDirectionRightToLeft :
-        WebTextDirectionLeftToRight;
-}
-
-WebString WebNotification::replaceId() const
+WebString WebNotification::tag() const
 {
     return m_private->tag();
 }
 
-void WebNotification::dispatchDisplayEvent()
+WebURL WebNotification::iconURL() const
+{
+    return m_private->iconURL();
+}
+
+void WebNotification::dispatchShowEvent()
 {
     m_private->dispatchShowEvent();
 }
 
-void WebNotification::dispatchErrorEvent(const blink::WebString& /* errorMessage */)
+void WebNotification::dispatchErrorEvent(const WebString& /* errorMessage */)
 {
     // FIXME: errorMessage not supported by WebCore yet
     m_private->dispatchErrorEvent();
@@ -124,28 +114,20 @@ void WebNotification::dispatchClickEvent()
     m_private->dispatchClickEvent();
 }
 
-WebNotification::WebNotification(const WTF::PassRefPtr<Notification>& notification)
-    : m_private(static_cast<WebNotificationPrivate*>(notification.leakRef()))
+WebNotification::WebNotification(const WTF::PassRefPtr<WebCore::Notification>& notification)
+    : m_private(notification)
 {
 }
 
 WebNotification& WebNotification::operator=(const WTF::PassRefPtr<Notification>& notification)
 {
-    assign(static_cast<WebNotificationPrivate*>(notification.leakRef()));
+    m_private = notification;
     return *this;
 }
 
 WebNotification::operator WTF::PassRefPtr<Notification>() const
 {
-    return WTF::PassRefPtr<Notification>(const_cast<WebNotificationPrivate*>(m_private));
-}
-
-void WebNotification::assign(WebNotificationPrivate* p)
-{
-    // p is already ref'd for us by the caller
-    if (m_private)
-        m_private->deref();
-    m_private = p;
+    return m_private.get();
 }
 
 } // namespace blink

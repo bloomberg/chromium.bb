@@ -53,8 +53,8 @@ public:
     // Requests that a notification be shown.
     virtual bool show(Notification*) = 0;
 
-    // Requests that a notification that has already been shown be canceled.
-    virtual void cancel(Notification*) = 0;
+    // Requests that a notification that has already been shown be closed.
+    virtual void close(Notification*) = 0;
 
     // Informs the presenter that a Notification object has been destroyed
     // (such as by a page transition). The presenter may continue showing

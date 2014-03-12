@@ -57,13 +57,6 @@ public:
 
     virtual ~Notification();
 
-    // Calling show() may start asynchronous operation. If this object has
-    // a V8 wrapper, hasPendingActivity() prevents the wrapper from being
-    // collected while m_state is Showing, and so this instance stays alive
-    // until the operation completes. Otherwise, you need to hold a ref on this
-    // instance until the operation completes.
-    void show();
-
     void close();
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(click);
@@ -105,13 +98,18 @@ public:
 private:
     Notification(const String& title, ExecutionContext*, NotificationClient*);
 
+    // Calling show() may start asynchronous operation. If this object has
+    // a V8 wrapper, hasPendingActivity() prevents the wrapper from being
+    // collected while m_state is Showing, and so this instance stays alive
+    // until the operation completes. Otherwise, you need to hold a ref on this
+    // instance until the operation completes.
+    void show();
+
     void setDir(const String& dir) { m_dir = dir; }
     void setLang(const String& lang) { m_lang = lang; }
     void setBody(const String& body) { m_body = body; }
     void setIconUrl(KURL iconUrl) { m_iconUrl = iconUrl; }
     void setTag(const String& tag) { m_tag = tag; }
-
-    void showSoon();
 
 private:
     String m_title;
