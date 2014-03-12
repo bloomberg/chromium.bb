@@ -743,7 +743,7 @@ void CanvasRenderingContext2D::setStrokeColor(const String& color)
     if (color == state().m_unparsedStrokeColor)
         return;
     realizeSaves();
-    setStrokeStyle(CanvasStyle::createFromString(color, &canvas()->document()));
+    setStrokeStyle(CanvasStyle::createFromString(color));
     modifiableState().m_unparsedStrokeColor = color;
 }
 
@@ -785,7 +785,7 @@ void CanvasRenderingContext2D::setFillColor(const String& color)
     if (color == state().m_unparsedFillColor)
         return;
     realizeSaves();
-    setFillStyle(CanvasStyle::createFromString(color, &canvas()->document()));
+    setFillStyle(CanvasStyle::createFromString(color));
     modifiableState().m_unparsedFillColor = color;
 }
 

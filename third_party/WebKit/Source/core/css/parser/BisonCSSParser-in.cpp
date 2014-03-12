@@ -1124,11 +1124,8 @@ bool BisonCSSParser::parseColor(const String& string)
     return !m_parsedProperties.isEmpty() && m_parsedProperties.first().id() == CSSPropertyColor;
 }
 
-bool BisonCSSParser::parseSystemColor(RGBA32& color, const String& string, Document* document)
+bool BisonCSSParser::parseSystemColor(RGBA32& color, const String& string)
 {
-    if (!document)
-        return false;
-
     CSSParserString cssColor;
     cssColor.init(string);
     CSSValueID id = cssValueKeywordID(cssColor);

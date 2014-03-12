@@ -93,7 +93,7 @@ public:
     bool parseSupportsCondition(const String&);
     static bool parseValue(MutableStylePropertySet*, CSSPropertyID, const String&, bool important, CSSParserMode, StyleSheetContents*);
     static bool parseColor(RGBA32& color, const String&, bool strict = false);
-    static bool parseSystemColor(RGBA32& color, const String&, Document*);
+    static bool parseSystemColor(RGBA32& color, const String&);
     static PassRefPtrWillBeRawPtr<CSSValueList> parseFontFaceValue(const AtomicString&);
     static PassRefPtrWillBeRawPtr<CSSValue> parseAnimationTimingFunctionValue(const String&);
     bool parseDeclaration(MutableStylePropertySet*, const String&, CSSParserObserver*, StyleSheetContents* contextStyleSheet);
