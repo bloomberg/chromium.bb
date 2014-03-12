@@ -146,14 +146,10 @@ void ShortcutHelper::AddShortcutInBackground(
   SkColor color = SK_ColorWHITE;
   SkBitmap favicon_bitmap;
   if (bitmap_result.is_valid()) {
-    color_utils::GridSampler sampler;
-    color = color_utils::CalculateKMeanColorOfPNG(bitmap_result.bitmap_data,
-                                                  100,
-                                                  665,
-                                                  &sampler);
-    gfx::PNGCodec::Decode(bitmap_result.bitmap_data->front(),
-                          bitmap_result.bitmap_data->size(),
-                          &favicon_bitmap);
+    if (gfx::PNGCodec::Decode(bitmap_result.bitmap_data->front(),
+                              bitmap_result.bitmap_data->size(),
+                              &favicon_bitmap))
+      color = color_utils::CalculateKMeanColorOfBitmap(favicon_bitmap);
   }
 
   int r_value = SkColorGetR(color);

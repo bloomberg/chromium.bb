@@ -155,12 +155,9 @@ void TabHelper::GenerateContainerIcon(std::map<int, SkBitmap>* bitmaps,
 
   // Draw a rounded rect of the |base_icon|'s dominant color.
   SkPaint color_strip_paint;
-  color_utils::GridSampler sampler;
   color_strip_paint.setFlags(SkPaint::kAntiAlias_Flag);
   color_strip_paint.setColor(
-      color_utils::CalculateKMeanColorOfPNG(
-          gfx::Image::CreateFrom1xBitmap(base_icon).As1xPNGBytes(),
-          100, 665, &sampler));
+      color_utils::CalculateKMeanColorOfBitmap(base_icon));
   color_strip_canvas->drawRoundRect(
       SkRect::MakeWH(output_size, output_size),
       kBorderRadius, kBorderRadius, color_strip_paint);
