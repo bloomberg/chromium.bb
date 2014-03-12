@@ -13,8 +13,9 @@ var ContextMenusSchema =
 var CreateEvent = require('webView').CreateEvent;
 var EventBindings = require('event_bindings');
 var MessagingNatives = requireNative('messaging_natives');
-var WebViewInternal = require('webView').WebViewInternal;
 var WebView = require('webView').WebView;
+var WebViewInternal = require('webView').WebViewInternal;
+var WebViewSchema = requireNative('schema_registry').GetSchema('webview');
 var idGeneratorNatives = requireNative('id_generator');
 var utils = require('utils');
 
@@ -54,17 +55,19 @@ function GetUniqueSubEventName(eventName) {
   return eventName + "/" + idGeneratorNatives.GetNextId();
 }
 
-// This is the only "webview.contextMenus" named event for this renderer.
+// This is the only "webview.onClicked" named event for this renderer.
 //
 // Since we need an event per <webview>, we define events with suffix
 // (subEventName) in each of the <webview>. Behind the scenes, this event is
 // registered as a ContextMenusEvent, with filter set to the webview's
 // |viewInstanceId|. Any time a ContextMenusEvent is dispatched, we re-dispatch
-// it to the subEvent's listeners. This way <webview>.contextMenus behave as a
-// regular chrome Event type.
-var ContextMenusEvent = CreateEvent('webview.contextMenus');
+// it to the subEvent's listeners. This way
+// <webview>.contextMenus.onClicked behave as a regular chrome Event type.
+var ContextMenusEvent = CreateEvent('webview.onClicked');
 
 /**
+ * This event is exposed as <webview>.contextMenus.onClicked.
+ *
  * @constructor
  */
 function ContextMenusOnClickedEvent(opt_eventName,
@@ -246,9 +249,9 @@ WebViewInternal.prototype.setupExperimentalContextMenus_ = function() {
       var getOnClickedEvent = function() {
         return function() {
           if (!self.contextMenusOnClickedEvent_) {
-            var eventName = 'contextMenus.onClicked';
+            var eventName = 'webview.onClicked';
             // TODO(lazyboy): Find event by name instead of events[0].
-            var eventSchema = ContextMenusSchema.events[0];
+            var eventSchema = WebViewSchema.events[0];
             var eventOptions = {supportsListeners: true};
             var onClickedEvent = new ContextMenusOnClickedEvent(
                 eventName, eventSchema, eventOptions, self.viewInstanceId);

@@ -23,7 +23,7 @@ binding.registerCustomHook(function(bindingsAPI) {
   webviewContextMenus.stringIdHandlers = {};
 
   // Per item event handler.
-  var ename = 'contextMenus';
+  var ename = 'webview.contextMenus';
   webviewContextMenus.event = new EventBindings.Event(ename);
 
   webviewContextMenus.getIdFromCreateProperties = function(prop) {

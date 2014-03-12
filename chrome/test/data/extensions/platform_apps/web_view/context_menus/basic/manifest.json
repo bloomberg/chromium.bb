@@ -3,9 +3,7 @@
   "description": "Verifies basic functionality of <webview> contextMenus API.",
   "version": "1",
   "permissions": [
-    "webview",
-    /* TODO(lazyboy): Fix embedder requiring contextMenus permission. */
-    "contextMenus"
+    "webview"
   ],
   "app": {
     "background": {

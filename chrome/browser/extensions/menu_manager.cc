@@ -22,6 +22,7 @@
 #include "chrome/browser/guestview/webview/webview_guest.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/context_menus.h"
+#include "chrome/common/extensions/api/webview.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -40,6 +41,7 @@ using extensions::ExtensionSystem;
 namespace extensions {
 
 namespace context_menus = api::context_menus;
+namespace webview = api::webview;
 
 namespace {
 
@@ -696,9 +698,10 @@ void MenuManager::ExecuteCommand(Profile* profile,
 
   {
     // Dispatch to menu item's .onclick handler.
-    scoped_ptr<Event> event(new Event(
-        event_names::kOnContextMenus,
-        scoped_ptr<base::ListValue>(args->DeepCopy())));
+    scoped_ptr<Event> event(
+        new Event(webview_guest ? event_names::kOnWebviewContextMenus
+                                : event_names::kOnContextMenus,
+                  scoped_ptr<base::ListValue>(args->DeepCopy())));
     event->restrict_to_browser_context = profile;
     event->user_gesture = EventRouter::USER_GESTURE_ENABLED;
     event_router->DispatchEventToExtension(item->extension_id(), event.Pass());
@@ -706,7 +709,7 @@ void MenuManager::ExecuteCommand(Profile* profile,
   {
     // Dispatch to .contextMenus.onClicked handler.
     scoped_ptr<Event> event(
-        new Event(webview_guest ? event_names::kOnWebviewContextMenus
+        new Event(webview_guest ? webview::OnClicked::kEventName
                                 : context_menus::OnClicked::kEventName,
                   args.Pass()));
     event->restrict_to_browser_context = profile;

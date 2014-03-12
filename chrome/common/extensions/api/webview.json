@@ -6,7 +6,7 @@
   {
     "namespace": "webview",
     "description": "none",
-    "dependencies": ["contextMenus"],
+    "dependencies": ["contextMenusInternal"],
     "types": [
       {
         "id": "DataTypeSet",
@@ -118,7 +118,7 @@
                 "parameters": [
                   {
                     "name": "info",
-                    "$ref": "contextMenus.OnClickData",
+                    "$ref": "contextMenusInternal.OnClickData",
                     "description": "Information about the item clicked and the context where the click happened."
                   }
                 ]
@@ -638,6 +638,14 @@
             "name": "instanceId"
           }
         ]
+      }
+    ],
+    "events": [
+      {
+        "name": "onClicked",
+        "type": "function",
+        "nodoc": true,
+        "$ref": "contextMenusInternal.onClicked"
       }
     ]
   }

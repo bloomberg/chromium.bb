@@ -260,6 +260,8 @@ void ExtensionAPI::InitDefaultConfiguration() {
       IDR_EXTENSION_API_JSON_WEBSTOREPRIVATE);
   RegisterSchemaResource("webViewRequest",
       IDR_EXTENSION_API_JSON_WEBVIEW_REQUEST);
+  RegisterSchemaResource("contextMenusInternal",
+                         IDR_EXTENSION_API_JSON_CONTEXTMENUSINTERNAL);
 
   default_configuration_initialized_ = true;
 }
