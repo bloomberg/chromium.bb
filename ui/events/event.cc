@@ -317,10 +317,10 @@ bool MouseEvent::IsRepeatedClickEvent(
   if (time_difference.InMilliseconds() > kDoubleClickTimeMS)
     return false;
 
-  if (abs(event2.x() - event1.x()) > kDoubleClickWidth / 2)
+  if (std::abs(event2.x() - event1.x()) > kDoubleClickWidth / 2)
     return false;
 
-  if (abs(event2.y() - event1.y()) > kDoubleClickHeight / 2)
+  if (std::abs(event2.y() - event1.y()) > kDoubleClickHeight / 2)
     return false;
 
   return true;

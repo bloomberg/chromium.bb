@@ -1354,7 +1354,7 @@ bool GestureSequence::PinchUpdate(const TouchEvent& event,
 
   float distance = BoundingBoxDiagonal(bounding_box_);
 
-  if (abs(distance - pinch_distance_current_) >=
+  if (std::abs(distance - pinch_distance_current_) >=
       GestureConfiguration::min_pinch_update_distance_in_pixels()) {
     AppendPinchGestureUpdate(point,
         distance / pinch_distance_current_, gestures);

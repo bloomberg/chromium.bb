@@ -141,14 +141,14 @@ bool GesturePoint::DidScroll(const TouchEvent& event, int dist) const {
 
 bool GesturePoint::IsInHorizontalRailWindow() const {
   gfx::Vector2dF d = last_touch_position_ - second_last_touch_position_;
-  return abs(d.x()) >
-      GestureConfiguration::rail_start_proportion() * abs(d.y());
+  return std::abs(d.x()) >
+      GestureConfiguration::rail_start_proportion() * std::abs(d.y());
 }
 
 bool GesturePoint::IsInVerticalRailWindow() const {
   gfx::Vector2dF d = last_touch_position_ - second_last_touch_position_;
-  return abs(d.y()) >
-      GestureConfiguration::rail_start_proportion() * abs(d.x());
+  return std::abs(d.y()) >
+      GestureConfiguration::rail_start_proportion() * std::abs(d.x());
 }
 
 bool GesturePoint::BreaksHorizontalRail() {
