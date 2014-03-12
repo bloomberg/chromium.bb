@@ -590,10 +590,10 @@ bool CompositingIOSurfaceMac::IsAsynchronousReadbackSupported() {
     return false;
   if (!HasAppleFenceExtension() && HasPixelBufferObjectExtension())
     return false;
-  // Using PBO crashes on Intel drivers but not on newer Mountain Lion
-  // systems. See bug http://crbug.com/152225.
-  if (offscreen_context_->IsVendorIntel() &&
-      !base::mac::IsOSMountainLionOrLater())
+  // Using PBO crashes or generates invalid output for machines using
+  // Snow Leopard (10.6).
+  // See bug crbug.com/152225 and crbug.com/348256.
+  if (!base::mac::IsOSMountainLionOrLater())
     return false;
   return true;
 }
