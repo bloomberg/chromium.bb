@@ -51,6 +51,20 @@ static std::string BuildReport(const std::string& hostname,
   for (size_t i = 0; i < pem_encoded_chain.size(); ++i)
     *cert_chain += pem_encoded_chain[i];
 
+  for (net::HashValueVector::const_iterator i =
+      ssl_info.public_key_hashes.begin(); i !=
+      ssl_info.public_key_hashes.end(); ++i) {
+    request.add_public_key_hash(i->ToString());
+  }
+
+  const char* const* google_acceptable_certs =
+    net::TransportSecurityState::GooglePinsForDebugging();
+  for (size_t i = 0; google_acceptable_certs[i]; i++) {
+    net::HashValue hash_value(net::HASH_VALUE_SHA1);
+    memcpy(hash_value.data(), google_acceptable_certs[i], hash_value.size());
+    request.add_pin(hash_value.ToString());
+  }
+
   std::string out;
   request.SerializeToString(&out);
   return out;

@@ -248,6 +248,12 @@ class NET_EXPORT TransportSecurityState
   static bool IsGooglePinnedProperty(const std::string& host,
                                      bool sni_enabled);
 
+  // GooglePinsForDebugging returns an array of SHA-1 pins for Google
+  // properties - each 20 bytes long - with a NULL pointer signalling the end
+  // of the array. This is a temporary debugging measure to check for binary
+  // alteration / corruption.
+  static const char* const* GooglePinsForDebugging();
+
   // The maximum number of seconds for which we'll cache an HSTS request.
   static const long int kMaxHSTSAgeSecs;
 

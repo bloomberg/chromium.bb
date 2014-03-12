@@ -718,6 +718,11 @@ bool TransportSecurityState::IsGooglePinnedProperty(const std::string& host,
 }
 
 // static
+const char* const* TransportSecurityState::GooglePinsForDebugging() {
+  return kGoogleAcceptableCerts;
+}
+
+// static
 void TransportSecurityState::ReportUMAOnPinFailure(const std::string& host) {
   std::string canonicalized_host = CanonicalizeHost(host);
 
