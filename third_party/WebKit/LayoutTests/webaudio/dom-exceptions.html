@@ -112,6 +112,8 @@ function runTest() {
     // Invalid sample rate. (unspecified error)
     shouldThrow("new webkitOfflineAudioContext(1, 100, 1)");
     shouldThrow("new webkitOfflineAudioContext(1, 100, 1e6)");
+    // Invalid frame length (crbug.com/351277)
+    shouldThrow("new webkitOfflineAudioContext(1, -88200000000000, 44100)");
 
     // WaveShaper types
     node = context.createWaveShaper();

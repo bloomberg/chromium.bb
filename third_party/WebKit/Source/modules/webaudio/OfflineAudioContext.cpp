@@ -64,6 +64,16 @@ PassRefPtr<OfflineAudioContext> OfflineAudioContext::create(ExecutionContext* co
     }
 
     RefPtr<OfflineAudioContext> audioContext(adoptRef(new OfflineAudioContext(document, numberOfChannels, numberOfFrames, sampleRate)));
+
+    if (!audioContext->destination()) {
+        exceptionState.throwDOMException(
+            NotSupportedError,
+            "OfflineAudioContext(" + String::number(numberOfChannels)
+            + ", " + String::number(numberOfFrames)
+            + ", " + String::number(sampleRate)
+            + ")");
+    }
+
     audioContext->suspendIfNeeded();
     return audioContext.release();
 }
