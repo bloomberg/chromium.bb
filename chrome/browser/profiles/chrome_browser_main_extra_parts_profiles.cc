@@ -86,12 +86,6 @@
 #include "chrome/browser/extensions/api/serial/serial_connection.h"
 #include "chrome/browser/extensions/api/settings_overrides/settings_overrides_api.h"
 #include "chrome/browser/extensions/api/signed_in_devices/signed_in_devices_manager.h"
-#include "chrome/browser/extensions/api/socket/socket.h"
-#include "chrome/browser/extensions/api/socket/tcp_socket.h"
-#include "chrome/browser/extensions/api/socket/udp_socket.h"
-#include "chrome/browser/extensions/api/sockets_tcp/tcp_socket_event_dispatcher.h"
-#include "chrome/browser/extensions/api/sockets_tcp_server/tcp_server_socket_event_dispatcher.h"
-#include "chrome/browser/extensions/api/sockets_udp/udp_socket_event_dispatcher.h"
 #include "chrome/browser/extensions/api/streams_private/streams_private_api.h"
 #include "chrome/browser/extensions/api/system_info/system_info_api.h"
 #include "chrome/browser/extensions/api/tab_capture/tab_capture_registry.h"
@@ -108,6 +102,12 @@
 #include "chrome/browser/extensions/plugin_manager.h"
 #include "chrome/browser/extensions/token_cache/token_cache_service_factory.h"
 #include "extensions/browser/api/api_resource_manager.h"
+#include "extensions/browser/api/socket/socket.h"
+#include "extensions/browser/api/socket/tcp_socket.h"
+#include "extensions/browser/api/socket/udp_socket.h"
+#include "extensions/browser/api/sockets_tcp/tcp_socket_event_dispatcher.h"
+#include "extensions/browser/api/sockets_tcp_server/tcp_server_socket_event_dispatcher.h"
+#include "extensions/browser/api/sockets_udp/udp_socket_event_dispatcher.h"
 #include "extensions/browser/api/storage/settings_frontend.h"
 #include "extensions/browser/extension_prefs_factory.h"
 #include "extensions/browser/renderer_startup_helper.h"
@@ -249,9 +249,9 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   extensions::ApiResourceManager<extensions::Socket>::GetFactoryInstance();
   extensions::ApiResourceManager<extensions::UsbDeviceResource>::
       GetFactoryInstance();
-  extensions::api::TCPServerSocketEventDispatcher::GetFactoryInstance();
-  extensions::api::TCPSocketEventDispatcher::GetFactoryInstance();
-  extensions::api::UDPSocketEventDispatcher::GetFactoryInstance();
+  extensions::core_api::TCPServerSocketEventDispatcher::GetFactoryInstance();
+  extensions::core_api::TCPSocketEventDispatcher::GetFactoryInstance();
+  extensions::core_api::UDPSocketEventDispatcher::GetFactoryInstance();
   extensions::AudioAPI::GetFactoryInstance();
   extensions::BookmarksAPI::GetFactoryInstance();
   extensions::BluetoothAPI::GetFactoryInstance();

@@ -1,13 +1,13 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_SOCKETS_TCP_SERVER_TCP_SERVER_SOCKET_EVENT_DISPATCHER_H_
-#define CHROME_BROWSER_EXTENSIONS_API_SOCKETS_TCP_SERVER_TCP_SERVER_SOCKET_EVENT_DISPATCHER_H_
+#ifndef EXTENSIONS_BROWSER_API_SOCKETS_TCP_SERVER_TCP_SERVER_SOCKET_EVENT_DISPATCHER_H_
+#define EXTENSIONS_BROWSER_API_SOCKETS_TCP_SERVER_TCP_SERVER_SOCKET_EVENT_DISPATCHER_H_
 
-#include "chrome/browser/extensions/api/sockets_tcp/sockets_tcp_api.h"
-#include "chrome/browser/extensions/api/sockets_tcp_server/sockets_tcp_server_api.h"
 #include "extensions/browser/api/api_resource_manager.h"
+#include "extensions/browser/api/sockets_tcp/sockets_tcp_api.h"
+#include "extensions/browser/api/sockets_tcp_server/sockets_tcp_server_api.h"
 
 namespace content {
 class BrowserContext;
@@ -19,7 +19,7 @@ class ResumableTCPSocket;
 }
 
 namespace extensions {
-namespace api {
+namespace core_api {
 
 // Dispatch events related to "sockets.tcp" sockets from callback on native
 // socket instances. There is one instance per profile.
@@ -94,7 +94,7 @@ class TCPServerSocketEventDispatcher
   scoped_refptr<ClientSocketData> client_sockets_;
 };
 
-}  // namespace api
+}  // namespace core_api
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_SOCKETS_TCP_SERVER_TCP_SERVER_SOCKET_EVENT_DISPATCHER_H_
+#endif  // EXTENSIONS_BROWSER_API_SOCKETS_TCP_SERVER_TCP_SERVER_SOCKET_EVENT_DISPATCHER_H_

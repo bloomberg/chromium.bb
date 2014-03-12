@@ -296,7 +296,7 @@
       'conditions': [
         ['OS!="ios"', {
           'dependencies': [
-            'common/extensions/api/api.gyp:api',
+            'common/extensions/api/api.gyp:chrome_api',
             'plugin',
             'renderer',
             'utility',
@@ -1999,7 +1999,7 @@
       'conditions': [
         ['OS!="ios"', {
           'dependencies': [
-            'common/extensions/api/api.gyp:api',
+            'common/extensions/api/api.gyp:chrome_api',
             '../components/components.gyp:autofill_content_test_support',
             '../components/component_strings.gyp:component_strings',
             '../device/bluetooth/bluetooth.gyp:device_bluetooth_mocks',

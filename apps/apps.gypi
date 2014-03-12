@@ -15,7 +15,7 @@
       # browser, then we can clean up these dependencies.
       'dependencies': [
         'browser_extensions',
-        'common/extensions/api/api.gyp:api',
+        'common/extensions/api/api.gyp:chrome_api',
         '../skia/skia.gyp:skia',
       ],
       'include_dirs': [

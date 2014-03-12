@@ -1,6 +1,8 @@
 include_rules = [
   # TODO(jamescook): Remove these. http://crbug.com/305404
   # Chrome pieces for app_shell bring-up.
+  "+chrome/common/extensions/api/generated_api.h",
+  "+chrome/common/extensions/api/generated_schemas.h",
   "+chrome/common/extensions/api/sockets/sockets_manifest_handler.h",
   "+chrome/common/extensions/features/base_feature_provider.h",
   "+chrome/common/extensions/permissions/chrome_api_permissions.h",

@@ -1,17 +1,17 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/sockets_tcp_server/tcp_server_socket_event_dispatcher.h"
+#include "extensions/browser/api/sockets_tcp_server/tcp_server_socket_event_dispatcher.h"
 
-#include "chrome/browser/extensions/api/socket/tcp_socket.h"
+#include "extensions/browser/api/socket/tcp_socket.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "net/base/net_errors.h"
 
 namespace extensions {
-namespace api {
+namespace core_api {
 
 using content::BrowserThread;
 
@@ -39,18 +39,20 @@ TCPServerSocketEventDispatcher::TCPServerSocketEventDispatcher(
     : thread_id_(Socket::kThreadId), browser_context_(context) {
   ApiResourceManager<ResumableTCPServerSocket>* server_manager =
       ApiResourceManager<ResumableTCPServerSocket>::Get(browser_context_);
-  DCHECK(server_manager) << "There is no server socket manager. "
-    "If this assertion is failing during a test, then it is likely that "
-    "TestExtensionSystem is failing to provide an instance of "
-    "ApiResourceManager<ResumableTCPServerSocket>.";
+  DCHECK(server_manager)
+      << "There is no server socket manager. "
+         "If this assertion is failing during a test, then it is likely that "
+         "TestExtensionSystem is failing to provide an instance of "
+         "ApiResourceManager<ResumableTCPServerSocket>.";
   server_sockets_ = server_manager->data_;
 
   ApiResourceManager<ResumableTCPSocket>* client_manager =
       ApiResourceManager<ResumableTCPSocket>::Get(browser_context_);
-  DCHECK(client_manager) << "There is no client socket manager. "
-    "If this assertion is failing during a test, then it is likely that "
-    "TestExtensionSystem is failing to provide an instance of "
-    "ApiResourceManager<ResumableTCPSocket>.";
+  DCHECK(client_manager)
+      << "There is no client socket manager. "
+         "If this assertion is failing during a test, then it is likely that "
+         "TestExtensionSystem is failing to provide an instance of "
+         "ApiResourceManager<ResumableTCPSocket>.";
   client_sockets_ = client_manager->data_;
 }
 
@@ -103,25 +105,25 @@ void TCPServerSocketEventDispatcher::StartAccept(const AcceptParams& params) {
     return;
   }
   DCHECK(params.extension_id == socket->owner_extension_id())
-    << "Socket has wrong owner.";
+      << "Socket has wrong owner.";
 
   // Don't start another accept if the socket has been paused.
   if (socket->paused())
     return;
 
-  socket->Accept(base::Bind(&TCPServerSocketEventDispatcher::AcceptCallback,
-                 params));
+  socket->Accept(
+      base::Bind(&TCPServerSocketEventDispatcher::AcceptCallback, params));
 }
 
 // static
 void TCPServerSocketEventDispatcher::AcceptCallback(
     const AcceptParams& params,
     int result_code,
-    net::TCPClientSocket *socket) {
+    net::TCPClientSocket* socket) {
   DCHECK(BrowserThread::CurrentlyOn(params.thread_id));
 
   if (result_code >= 0) {
-    ResumableTCPSocket *client_socket =
+    ResumableTCPSocket* client_socket =
         new ResumableTCPSocket(socket, params.extension_id, true);
     client_socket->set_paused(true);
     int client_socket_id = params.client_sockets->Add(client_socket);
@@ -133,13 +135,14 @@ void TCPServerSocketEventDispatcher::AcceptCallback(
     scoped_ptr<base::ListValue> args =
         sockets_tcp_server::OnAccept::Create(accept_info);
     scoped_ptr<Event> event(
-      new Event(sockets_tcp_server::OnAccept::kEventName, args.Pass()));
+        new Event(sockets_tcp_server::OnAccept::kEventName, args.Pass()));
     PostEvent(params, event.Pass());
 
     // Post a task to delay the "accept" until the socket is available, as
     // calling StartAccept at this point would error with ERR_IO_PENDING.
     BrowserThread::PostTask(
-        params.thread_id, FROM_HERE,
+        params.thread_id,
+        FROM_HERE,
         base::Bind(&TCPServerSocketEventDispatcher::StartAccept, params));
   } else {
     // Dispatch "onAcceptError" event but don't start another accept to avoid
@@ -150,7 +153,7 @@ void TCPServerSocketEventDispatcher::AcceptCallback(
     scoped_ptr<base::ListValue> args =
         sockets_tcp_server::OnAcceptError::Create(accept_error_info);
     scoped_ptr<Event> event(
-      new Event(sockets_tcp_server::OnAcceptError::kEventName, args.Pass()));
+        new Event(sockets_tcp_server::OnAcceptError::kEventName, args.Pass()));
     PostEvent(params, event.Pass());
 
     // Since we got an error, the socket is now "paused" until the application
@@ -192,5 +195,5 @@ void TCPServerSocketEventDispatcher::DispatchEvent(
     router->DispatchEventToExtension(extension_id, event.Pass());
 }
 
-}  // namespace api
+}  // namespace core_api
 }  // namespace extensions

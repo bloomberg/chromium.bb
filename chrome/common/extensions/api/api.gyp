@@ -5,7 +5,7 @@
 {
   'targets': [
     {
-      'target_name': 'api',
+      'target_name': 'chrome_api',
       'type': 'static_library',
       'sources': [
         '<@(schema_files)',
@@ -99,10 +99,6 @@
               'serial.idl',
               'sessions.json',
               'signed_in_devices.idl',
-              'socket.idl',
-              'sockets_tcp.idl',
-              'sockets_tcp_server.idl',
-              'sockets_udp.idl',
               'storage.json',
               'streams_private.idl',
               'sync_file_system.idl',

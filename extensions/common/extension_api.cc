@@ -16,8 +16,8 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
-#include "chrome/common/extensions/api/generated_schemas.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extensions_client.h"
 #include "extensions/common/features/feature.h"
 #include "extensions/common/features/feature_provider.h"
 #include "extensions/common/permissions/permission_set.h"
@@ -28,8 +28,6 @@
 #include "url/gurl.h"
 
 namespace extensions {
-
-using api::GeneratedSchemas;
 
 namespace {
 
@@ -200,7 +198,9 @@ void ExtensionAPI::LoadSchema(const std::string& name,
                               const base::StringPiece& schema) {
   scoped_ptr<base::ListValue> schema_list(LoadSchemaList(name, schema));
   std::string schema_namespace;
-
+  extensions::ExtensionsClient* extensions_client =
+      extensions::ExtensionsClient::Get();
+  DCHECK(extensions_client);
   while (!schema_list->empty()) {
     base::DictionaryValue* schema = NULL;
     {
@@ -212,7 +212,7 @@ void ExtensionAPI::LoadSchema(const std::string& name,
     CHECK(schema->GetString("namespace", &schema_namespace));
     PrefixWithNamespace(schema_namespace, schema);
     schemas_[schema_namespace] = make_linked_ptr(schema);
-    if (!GeneratedSchemas::IsGenerated(schema_namespace))
+    if (!extensions_client->IsAPISchemaGenerated(schema_namespace))
       CHECK_EQ(1u, unloaded_schemas_.erase(schema_namespace));
   }
 }
@@ -344,14 +344,17 @@ const base::DictionaryValue* ExtensionAPI::GetSchema(
     result = maybe_schema->second.get();
   } else {
     // Might not have loaded yet; or might just not exist.
-   UnloadedSchemaMap::iterator maybe_schema_resource =
+    UnloadedSchemaMap::iterator maybe_schema_resource =
         unloaded_schemas_.find(api_name);
+    extensions::ExtensionsClient* extensions_client =
+        extensions::ExtensionsClient::Get();
+    DCHECK(extensions_client);
     if (maybe_schema_resource != unloaded_schemas_.end()) {
       LoadSchema(maybe_schema_resource->first,
                  ReadFromResource(maybe_schema_resource->second));
     } else if (default_configuration_initialized_ &&
-               GeneratedSchemas::IsGenerated(api_name)) {
-      LoadSchema(api_name, GeneratedSchemas::Get(api_name));
+               extensions_client->IsAPISchemaGenerated(api_name)) {
+      LoadSchema(api_name, extensions_client->GetAPISchema(api_name));
     } else {
       return NULL;
     }
@@ -390,9 +393,12 @@ Feature* ExtensionAPI::GetFeatureDependency(const std::string& full_name) {
 std::string ExtensionAPI::GetAPINameFromFullName(const std::string& full_name,
                                                  std::string* child_name) {
   std::string api_name_candidate = full_name;
+  extensions::ExtensionsClient* extensions_client =
+      extensions::ExtensionsClient::Get();
+  DCHECK(extensions_client);
   while (true) {
     if (schemas_.find(api_name_candidate) != schemas_.end() ||
-        GeneratedSchemas::IsGenerated(api_name_candidate) ||
+        extensions_client->IsAPISchemaGenerated(api_name_candidate) ||
         unloaded_schemas_.find(api_name_candidate) != unloaded_schemas_.end()) {
       std::string result = api_name_candidate;
 

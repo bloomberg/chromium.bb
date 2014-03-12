@@ -1,21 +1,21 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/sockets_tcp_server/sockets_tcp_server_api.h"
+#include "extensions/browser/api/sockets_tcp_server/sockets_tcp_server_api.h"
 
-#include "chrome/browser/extensions/api/socket/tcp_socket.h"
-#include "chrome/browser/extensions/api/sockets_tcp_server/tcp_server_socket_event_dispatcher.h"
 #include "chrome/common/extensions/api/sockets/sockets_manifest_data.h"
 #include "chrome/common/extensions/permissions/socket_permission.h"
 #include "content/public/common/socket_permission_request.h"
+#include "extensions/browser/api/socket/tcp_socket.h"
+#include "extensions/browser/api/sockets_tcp_server/tcp_server_socket_event_dispatcher.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "net/base/net_errors.h"
 
 using content::SocketPermissionRequest;
 using extensions::ResumableTCPServerSocket;
-using extensions::api::sockets_tcp_server::SocketInfo;
-using extensions::api::sockets_tcp_server::SocketProperties;
+using extensions::core_api::sockets_tcp_server::SocketInfo;
+using extensions::core_api::sockets_tcp_server::SocketProperties;
 
 namespace {
 
@@ -59,14 +59,14 @@ void SetSocketProperties(ResumableTCPServerSocket* socket,
 }  // namespace
 
 namespace extensions {
-namespace api {
+namespace core_api {
 
 TCPServerSocketAsyncApiFunction::~TCPServerSocketAsyncApiFunction() {}
 
 scoped_ptr<SocketResourceManagerInterface>
-    TCPServerSocketAsyncApiFunction::CreateSocketResourceManager() {
+TCPServerSocketAsyncApiFunction::CreateSocketResourceManager() {
   return scoped_ptr<SocketResourceManagerInterface>(
-      new SocketResourceManager<ResumableTCPServerSocket>()).Pass();
+             new SocketResourceManager<ResumableTCPServerSocket>()).Pass();
 }
 
 ResumableTCPServerSocket* TCPServerSocketAsyncApiFunction::GetTcpSocket(
@@ -126,15 +126,16 @@ SocketsTcpServerSetPausedFunction::SocketsTcpServerSetPausedFunction()
 SocketsTcpServerSetPausedFunction::~SocketsTcpServerSetPausedFunction() {}
 
 bool SocketsTcpServerSetPausedFunction::Prepare() {
-  params_ = api::sockets_tcp_server::SetPaused::Params::Create(*args_);
+  params_ = core_api::sockets_tcp_server::SetPaused::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
 
   socket_event_dispatcher_ =
       TCPServerSocketEventDispatcher::Get(browser_context());
-  DCHECK(socket_event_dispatcher_) << "There is no socket event dispatcher. "
-    "If this assertion is failing during a test, then it is likely that "
-    "TestExtensionSystem is failing to provide an instance of "
-    "TCPServerSocketEventDispatcher.";
+  DCHECK(socket_event_dispatcher_)
+      << "There is no socket event dispatcher. "
+         "If this assertion is failing during a test, then it is likely that "
+         "TestExtensionSystem is failing to provide an instance of "
+         "TCPServerSocketEventDispatcher.";
   return socket_event_dispatcher_ != NULL;
 }
 
@@ -157,20 +158,21 @@ void SocketsTcpServerSetPausedFunction::Work() {
 }
 
 SocketsTcpServerListenFunction::SocketsTcpServerListenFunction()
-  : socket_event_dispatcher_(NULL) {}
+    : socket_event_dispatcher_(NULL) {}
 
 SocketsTcpServerListenFunction::~SocketsTcpServerListenFunction() {}
 
 bool SocketsTcpServerListenFunction::Prepare() {
-  params_ = api::sockets_tcp_server::Listen::Params::Create(*args_);
+  params_ = core_api::sockets_tcp_server::Listen::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
 
   socket_event_dispatcher_ =
       TCPServerSocketEventDispatcher::Get(browser_context());
-  DCHECK(socket_event_dispatcher_) << "There is no socket event dispatcher. "
-    "If this assertion is failing during a test, then it is likely that "
-    "TestExtensionSystem is failing to provide an instance of "
-    "TCPServerSocketEventDispatcher.";
+  DCHECK(socket_event_dispatcher_)
+      << "There is no socket event dispatcher. "
+         "If this assertion is failing during a test, then it is likely that "
+         "TestExtensionSystem is failing to provide an instance of "
+         "TCPServerSocketEventDispatcher.";
   return socket_event_dispatcher_ != NULL;
 }
 
@@ -182,9 +184,7 @@ void SocketsTcpServerListenFunction::Work() {
   }
 
   SocketPermissionRequest param(
-      SocketPermissionRequest::TCP_LISTEN,
-      params_->address,
-      params_->port);
+      SocketPermissionRequest::TCP_LISTEN, params_->address, params_->port);
   if (!SocketsManifestData::CheckRequest(GetExtension(), param)) {
     error_ = kPermissionError;
     return;
@@ -198,7 +198,6 @@ void SocketsTcpServerListenFunction::Work() {
 
   if (net_result != net::OK)
     error_ = net::ErrorToString(net_result);
-
 
   if (net_result == net::OK) {
     socket_event_dispatcher_->OnServerSocketListen(extension_->id(),
@@ -276,16 +275,15 @@ SocketsTcpServerGetSocketsFunction::SocketsTcpServerGetSocketsFunction() {}
 
 SocketsTcpServerGetSocketsFunction::~SocketsTcpServerGetSocketsFunction() {}
 
-bool SocketsTcpServerGetSocketsFunction::Prepare() {
-  return true;
-}
+bool SocketsTcpServerGetSocketsFunction::Prepare() { return true; }
 
 void SocketsTcpServerGetSocketsFunction::Work() {
   std::vector<linked_ptr<sockets_tcp_server::SocketInfo> > socket_infos;
   base::hash_set<int>* resource_ids = GetSocketIds();
   if (resource_ids != NULL) {
     for (base::hash_set<int>::iterator it = resource_ids->begin();
-             it != resource_ids->end(); ++it) {
+         it != resource_ids->end();
+         ++it) {
       int socket_id = *it;
       ResumableTCPServerSocket* socket = GetTcpSocket(socket_id);
       if (socket) {
@@ -296,5 +294,5 @@ void SocketsTcpServerGetSocketsFunction::Work() {
   results_ = sockets_tcp_server::GetSockets::Results::Create(socket_infos);
 }
 
-}  // namespace api
+}  // namespace core_api
 }  // namespace extensions

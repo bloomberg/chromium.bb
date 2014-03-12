@@ -2682,7 +2682,7 @@
           'dependencies': [
             'browser_extensions',
             'browser/performance_monitor/performance_monitor.gyp:performance_monitor',
-            'common/extensions/api/api.gyp:api',
+            'common/extensions/api/api.gyp:chrome_api',
             'debugger',
             'installer_util',
             '../third_party/re2/re2.gyp:re2',

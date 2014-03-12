@@ -1,17 +1,17 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/sockets_udp/sockets_udp_api.h"
+#include "extensions/browser/api/sockets_udp/sockets_udp_api.h"
 
-#include "chrome/browser/extensions/api/socket/udp_socket.h"
-#include "chrome/browser/extensions/api/sockets_udp/udp_socket_event_dispatcher.h"
 #include "chrome/common/extensions/api/sockets/sockets_manifest_data.h"
 #include "content/public/common/socket_permission_request.h"
+#include "extensions/browser/api/socket/udp_socket.h"
+#include "extensions/browser/api/sockets_udp/udp_socket_event_dispatcher.h"
 #include "net/base/net_errors.h"
 
 namespace extensions {
-namespace api {
+namespace core_api {
 
 using content::SocketPermissionRequest;
 
@@ -23,9 +23,9 @@ const int kWildcardPort = 0;
 UDPSocketAsyncApiFunction::~UDPSocketAsyncApiFunction() {}
 
 scoped_ptr<SocketResourceManagerInterface>
-    UDPSocketAsyncApiFunction::CreateSocketResourceManager() {
+UDPSocketAsyncApiFunction::CreateSocketResourceManager() {
   return scoped_ptr<SocketResourceManagerInterface>(
-      new SocketResourceManager<ResumableUDPSocket>()).Pass();
+             new SocketResourceManager<ResumableUDPSocket>()).Pass();
 }
 
 ResumableUDPSocket* UDPSocketAsyncApiFunction::GetUdpSocket(int socket_id) {
@@ -36,9 +36,9 @@ UDPSocketExtensionWithDnsLookupFunction::
     ~UDPSocketExtensionWithDnsLookupFunction() {}
 
 scoped_ptr<SocketResourceManagerInterface>
-    UDPSocketExtensionWithDnsLookupFunction::CreateSocketResourceManager() {
+UDPSocketExtensionWithDnsLookupFunction::CreateSocketResourceManager() {
   return scoped_ptr<SocketResourceManagerInterface>(
-      new SocketResourceManager<ResumableUDPSocket>()).Pass();
+             new SocketResourceManager<ResumableUDPSocket>()).Pass();
 }
 
 ResumableUDPSocket* UDPSocketExtensionWithDnsLookupFunction::GetUdpSocket(
@@ -137,14 +137,15 @@ SocketsUdpSetPausedFunction::SocketsUdpSetPausedFunction()
 SocketsUdpSetPausedFunction::~SocketsUdpSetPausedFunction() {}
 
 bool SocketsUdpSetPausedFunction::Prepare() {
-  params_ = api::sockets_udp::SetPaused::Params::Create(*args_);
+  params_ = core_api::sockets_udp::SetPaused::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
 
   socket_event_dispatcher_ = UDPSocketEventDispatcher::Get(browser_context());
-  DCHECK(socket_event_dispatcher_) << "There is no socket event dispatcher. "
-    "If this assertion is failing during a test, then it is likely that "
-    "TestExtensionSystem is failing to provide an instance of "
-    "UDPSocketEventDispatcher.";
+  DCHECK(socket_event_dispatcher_)
+      << "There is no socket event dispatcher. "
+         "If this assertion is failing during a test, then it is likely that "
+         "TestExtensionSystem is failing to provide an instance of "
+         "UDPSocketEventDispatcher.";
   return socket_event_dispatcher_ != NULL;
 }
 
@@ -167,8 +168,7 @@ void SocketsUdpSetPausedFunction::Work() {
 }
 
 SocketsUdpBindFunction::SocketsUdpBindFunction()
-    : socket_event_dispatcher_(NULL) {
-}
+    : socket_event_dispatcher_(NULL) {}
 
 SocketsUdpBindFunction::~SocketsUdpBindFunction() {}
 
@@ -177,10 +177,11 @@ bool SocketsUdpBindFunction::Prepare() {
   EXTENSION_FUNCTION_VALIDATE(params_.get());
 
   socket_event_dispatcher_ = UDPSocketEventDispatcher::Get(browser_context());
-  DCHECK(socket_event_dispatcher_) << "There is no socket event dispatcher. "
-    "If this assertion is failing during a test, then it is likely that "
-    "TestExtensionSystem is failing to provide an instance of "
-    "UDPSocketEventDispatcher.";
+  DCHECK(socket_event_dispatcher_)
+      << "There is no socket event dispatcher. "
+         "If this assertion is failing during a test, then it is likely that "
+         "TestExtensionSystem is failing to provide an instance of "
+         "UDPSocketEventDispatcher.";
   return socket_event_dispatcher_ != NULL;
 }
 
@@ -192,9 +193,7 @@ void SocketsUdpBindFunction::Work() {
   }
 
   content::SocketPermissionRequest param(
-      SocketPermissionRequest::UDP_BIND,
-      params_->address,
-      params_->port);
+      SocketPermissionRequest::UDP_BIND, params_->address, params_->port);
   if (!SocketsManifestData::CheckRequest(GetExtension(), param)) {
     error_ = kPermissionError;
     return;
@@ -211,8 +210,7 @@ void SocketsUdpBindFunction::Work() {
   results_ = sockets_udp::Bind::Results::Create(net_result);
 }
 
-SocketsUdpSendFunction::SocketsUdpSendFunction()
-    : io_buffer_size_(0) {}
+SocketsUdpSendFunction::SocketsUdpSendFunction() : io_buffer_size_(0) {}
 
 SocketsUdpSendFunction::~SocketsUdpSendFunction() {}
 
@@ -234,9 +232,7 @@ void SocketsUdpSendFunction::AsyncWorkStart() {
   }
 
   content::SocketPermissionRequest param(
-      SocketPermissionRequest::UDP_SEND_TO,
-      params_->address,
-      params_->port);
+      SocketPermissionRequest::UDP_SEND_TO, params_->address, params_->port);
   if (!SocketsManifestData::CheckRequest(GetExtension(), param)) {
     error_ = kPermissionError;
     AsyncWorkCompleted();
@@ -262,8 +258,11 @@ void SocketsUdpSendFunction::StartSendTo() {
     return;
   }
 
-  socket->SendTo(io_buffer_, io_buffer_size_, resolved_address_, params_->port,
-                  base::Bind(&SocketsUdpSendFunction::OnCompleted, this));
+  socket->SendTo(io_buffer_,
+                 io_buffer_size_,
+                 resolved_address_,
+                 params_->port,
+                 base::Bind(&SocketsUdpSendFunction::OnCompleted, this));
 }
 
 void SocketsUdpSendFunction::OnCompleted(int net_result) {
@@ -337,16 +336,15 @@ SocketsUdpGetSocketsFunction::SocketsUdpGetSocketsFunction() {}
 
 SocketsUdpGetSocketsFunction::~SocketsUdpGetSocketsFunction() {}
 
-bool SocketsUdpGetSocketsFunction::Prepare() {
-  return true;
-}
+bool SocketsUdpGetSocketsFunction::Prepare() { return true; }
 
 void SocketsUdpGetSocketsFunction::Work() {
   std::vector<linked_ptr<sockets_udp::SocketInfo> > socket_infos;
   base::hash_set<int>* resource_ids = GetSocketIds();
   if (resource_ids != NULL) {
     for (base::hash_set<int>::iterator it = resource_ids->begin();
-             it != resource_ids->end(); ++it) {
+         it != resource_ids->end();
+         ++it) {
       int socket_id = *it;
       ResumableUDPSocket* socket = GetUdpSocket(socket_id);
       if (socket) {
@@ -394,7 +392,7 @@ SocketsUdpLeaveGroupFunction::SocketsUdpLeaveGroupFunction() {}
 SocketsUdpLeaveGroupFunction::~SocketsUdpLeaveGroupFunction() {}
 
 bool SocketsUdpLeaveGroupFunction::Prepare() {
-  params_ = api::sockets_udp::LeaveGroup::Params::Create(*args_);
+  params_ = core_api::sockets_udp::LeaveGroup::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
   return true;
 }
@@ -428,7 +426,8 @@ SocketsUdpSetMulticastTimeToLiveFunction::
     ~SocketsUdpSetMulticastTimeToLiveFunction() {}
 
 bool SocketsUdpSetMulticastTimeToLiveFunction::Prepare() {
-  params_ = api::sockets_udp::SetMulticastTimeToLive::Params::Create(*args_);
+  params_ =
+      core_api::sockets_udp::SetMulticastTimeToLive::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
   return true;
 }
@@ -450,10 +449,11 @@ SocketsUdpSetMulticastLoopbackModeFunction::
     SocketsUdpSetMulticastLoopbackModeFunction() {}
 
 SocketsUdpSetMulticastLoopbackModeFunction::
-  ~SocketsUdpSetMulticastLoopbackModeFunction() {}
+    ~SocketsUdpSetMulticastLoopbackModeFunction() {}
 
 bool SocketsUdpSetMulticastLoopbackModeFunction::Prepare() {
-  params_ = api::sockets_udp::SetMulticastLoopbackMode::Params::Create(*args_);
+  params_ =
+      core_api::sockets_udp::SetMulticastLoopbackMode::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
   return true;
 }
@@ -476,7 +476,7 @@ SocketsUdpGetJoinedGroupsFunction::SocketsUdpGetJoinedGroupsFunction() {}
 SocketsUdpGetJoinedGroupsFunction::~SocketsUdpGetJoinedGroupsFunction() {}
 
 bool SocketsUdpGetJoinedGroupsFunction::Prepare() {
-  params_ = api::sockets_udp::GetJoinedGroups::Params::Create(*args_);
+  params_ = core_api::sockets_udp::GetJoinedGroups::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
   return true;
 }
@@ -501,5 +501,5 @@ void SocketsUdpGetJoinedGroupsFunction::Work() {
   results_ = sockets_udp::GetJoinedGroups::Results::Create(groups);
 }
 
-}  // namespace api
+}  // namespace core_api
 }  // namespace extensions

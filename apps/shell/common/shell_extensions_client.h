@@ -37,6 +37,9 @@ class ShellExtensionsClient : public extensions::ExtensionsClient {
       const extensions::APIPermissionSet& api_permissions) const OVERRIDE;
   virtual bool IsScriptableURL(const GURL& url, std::string* error) const
       OVERRIDE;
+  virtual bool IsAPISchemaGenerated(const std::string& name) const OVERRIDE;
+  virtual base::StringPiece GetAPISchema(const std::string& name) const
+      OVERRIDE;
 
  private:
   ScriptingWhitelist scripting_whitelist_;

@@ -31,7 +31,7 @@
         'chrome_resources.gyp:platform_locale_settings',
         'chrome_resources.gyp:theme_resources',
         'common',
-        'common/extensions/api/api.gyp:api',
+        'common/extensions/api/api.gyp:chrome_api',
         'common_net',
         'contacts_proto',
         'debugger',

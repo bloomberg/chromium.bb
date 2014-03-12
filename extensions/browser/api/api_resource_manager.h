@@ -23,15 +23,16 @@
 #include "extensions/common/extension.h"
 
 namespace extensions {
+
 namespace api {
 class SerialEventDispatcher;
+}
+
+namespace core_api {
 class TCPServerSocketEventDispatcher;
 class TCPSocketEventDispatcher;
 class UDPSocketEventDispatcher;
 }
-}
-
-namespace extensions {
 
 // An ApiResourceManager manages the lifetime of a set of resources that
 // ApiFunctions use. Examples are sockets or USB connections.
@@ -149,13 +150,17 @@ class ApiResourceManager : public BrowserContextKeyedAPI,
   }
 
  private:
+  // TODO(rockot): ApiResourceData could be moved out of ApiResourceManager and
+  // we could avoid maintaining a friends list here.
   friend class api::SerialEventDispatcher;
-  friend class api::TCPServerSocketEventDispatcher;
-  friend class api::TCPSocketEventDispatcher;
-  friend class api::UDPSocketEventDispatcher;
+  friend class core_api::TCPServerSocketEventDispatcher;
+  friend class core_api::TCPSocketEventDispatcher;
+  friend class core_api::UDPSocketEventDispatcher;
   friend class BrowserContextKeyedAPIFactory<ApiResourceManager<T> >;
+
   // BrowserContextKeyedAPI implementation.
   static const char* service_name() { return T::service_name(); }
+
   static const bool kServiceHasOwnInstanceInIncognito = true;
   static const bool kServiceIsNULLWhileTesting = true;
 

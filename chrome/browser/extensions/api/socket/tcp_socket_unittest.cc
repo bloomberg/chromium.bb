@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/socket/tcp_socket.h"
+#include "extensions/browser/api/socket/tcp_socket.h"
 
 #include "base/memory/scoped_ptr.h"
 #include "net/base/address_list.h"

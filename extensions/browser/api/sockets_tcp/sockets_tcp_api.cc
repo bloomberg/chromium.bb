@@ -1,18 +1,18 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/sockets_tcp/sockets_tcp_api.h"
+#include "extensions/browser/api/sockets_tcp/sockets_tcp_api.h"
 
-#include "chrome/browser/extensions/api/socket/tcp_socket.h"
-#include "chrome/browser/extensions/api/sockets_tcp/tcp_socket_event_dispatcher.h"
 #include "chrome/common/extensions/api/sockets/sockets_manifest_data.h"
 #include "content/public/common/socket_permission_request.h"
+#include "extensions/browser/api/socket/tcp_socket.h"
+#include "extensions/browser/api/sockets_tcp/tcp_socket_event_dispatcher.h"
 #include "net/base/net_errors.h"
 
 using extensions::ResumableTCPSocket;
-using extensions::api::sockets_tcp::SocketInfo;
-using extensions::api::sockets_tcp::SocketProperties;
+using extensions::core_api::sockets_tcp::SocketInfo;
+using extensions::core_api::sockets_tcp::SocketProperties;
 
 namespace {
 
@@ -75,16 +75,16 @@ void SetSocketProperties(ResumableTCPSocket* socket,
 }  // namespace
 
 namespace extensions {
-namespace api {
+namespace core_api {
 
 using content::SocketPermissionRequest;
 
 TCPSocketAsyncApiFunction::~TCPSocketAsyncApiFunction() {}
 
 scoped_ptr<SocketResourceManagerInterface>
-    TCPSocketAsyncApiFunction::CreateSocketResourceManager() {
+TCPSocketAsyncApiFunction::CreateSocketResourceManager() {
   return scoped_ptr<SocketResourceManagerInterface>(
-      new SocketResourceManager<ResumableTCPSocket>()).Pass();
+             new SocketResourceManager<ResumableTCPSocket>()).Pass();
 }
 
 ResumableTCPSocket* TCPSocketAsyncApiFunction::GetTcpSocket(int socket_id) {
@@ -95,9 +95,9 @@ TCPSocketExtensionWithDnsLookupFunction::
     ~TCPSocketExtensionWithDnsLookupFunction() {}
 
 scoped_ptr<SocketResourceManagerInterface>
-    TCPSocketExtensionWithDnsLookupFunction::CreateSocketResourceManager() {
+TCPSocketExtensionWithDnsLookupFunction::CreateSocketResourceManager() {
   return scoped_ptr<SocketResourceManagerInterface>(
-      new SocketResourceManager<ResumableTCPSocket>()).Pass();
+             new SocketResourceManager<ResumableTCPSocket>()).Pass();
 }
 
 ResumableTCPSocket* TCPSocketExtensionWithDnsLookupFunction::GetTcpSocket(
@@ -155,14 +155,15 @@ SocketsTcpSetPausedFunction::SocketsTcpSetPausedFunction()
 SocketsTcpSetPausedFunction::~SocketsTcpSetPausedFunction() {}
 
 bool SocketsTcpSetPausedFunction::Prepare() {
-  params_ = api::sockets_tcp::SetPaused::Params::Create(*args_);
+  params_ = core_api::sockets_tcp::SetPaused::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
 
   socket_event_dispatcher_ = TCPSocketEventDispatcher::Get(browser_context());
-  DCHECK(socket_event_dispatcher_) << "There is no socket event dispatcher. "
-    "If this assertion is failing during a test, then it is likely that "
-    "TestExtensionSystem is failing to provide an instance of "
-    "TCPSocketEventDispatcher.";
+  DCHECK(socket_event_dispatcher_)
+      << "There is no socket event dispatcher. "
+         "If this assertion is failing during a test, then it is likely that "
+         "TestExtensionSystem is failing to provide an instance of "
+         "TCPSocketEventDispatcher.";
   return socket_event_dispatcher_ != NULL;
 }
 
@@ -189,7 +190,7 @@ SocketsTcpSetKeepAliveFunction::SocketsTcpSetKeepAliveFunction() {}
 SocketsTcpSetKeepAliveFunction::~SocketsTcpSetKeepAliveFunction() {}
 
 bool SocketsTcpSetKeepAliveFunction::Prepare() {
-  params_ = api::sockets_tcp::SetKeepAlive::Params::Create(*args_);
+  params_ = core_api::sockets_tcp::SetKeepAlive::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
   return true;
 }
@@ -215,7 +216,7 @@ SocketsTcpSetNoDelayFunction::SocketsTcpSetNoDelayFunction() {}
 SocketsTcpSetNoDelayFunction::~SocketsTcpSetNoDelayFunction() {}
 
 bool SocketsTcpSetNoDelayFunction::Prepare() {
-  params_ = api::sockets_tcp::SetNoDelay::Params::Create(*args_);
+  params_ = core_api::sockets_tcp::SetNoDelay::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
   return true;
 }
@@ -244,10 +245,11 @@ bool SocketsTcpConnectFunction::Prepare() {
   EXTENSION_FUNCTION_VALIDATE(params_.get());
 
   socket_event_dispatcher_ = TCPSocketEventDispatcher::Get(browser_context());
-  DCHECK(socket_event_dispatcher_) << "There is no socket event dispatcher. "
-    "If this assertion is failing during a test, then it is likely that "
-    "TestExtensionSystem is failing to provide an instance of "
-    "TCPSocketEventDispatcher.";
+  DCHECK(socket_event_dispatcher_)
+      << "There is no socket event dispatcher. "
+         "If this assertion is failing during a test, then it is likely that "
+         "TestExtensionSystem is failing to provide an instance of "
+         "TCPSocketEventDispatcher.";
   return socket_event_dispatcher_ != NULL;
 }
 
@@ -259,10 +261,9 @@ void SocketsTcpConnectFunction::AsyncWorkStart() {
     return;
   }
 
-  content::SocketPermissionRequest param(
-      SocketPermissionRequest::TCP_CONNECT,
-      params_->peer_address,
-      params_->peer_port);
+  content::SocketPermissionRequest param(SocketPermissionRequest::TCP_CONNECT,
+                                         params_->peer_address,
+                                         params_->peer_port);
   if (!SocketsManifestData::CheckRequest(GetExtension(), param)) {
     error_ = kPermissionError;
     AsyncWorkCompleted();
@@ -288,7 +289,8 @@ void SocketsTcpConnectFunction::StartConnect() {
     return;
   }
 
-  socket->Connect(resolved_address_, params_->peer_port,
+  socket->Connect(resolved_address_,
+                  params_->peer_port,
                   base::Bind(&SocketsTcpConnectFunction::OnCompleted, this));
 }
 
@@ -325,8 +327,7 @@ void SocketsTcpDisconnectFunction::Work() {
   results_ = sockets_tcp::Disconnect::Results::Create();
 }
 
-SocketsTcpSendFunction::SocketsTcpSendFunction()
-    : io_buffer_size_(0) {}
+SocketsTcpSendFunction::SocketsTcpSendFunction() : io_buffer_size_(0) {}
 
 SocketsTcpSendFunction::~SocketsTcpSendFunction() {}
 
@@ -346,7 +347,8 @@ void SocketsTcpSendFunction::AsyncWorkStart() {
     return;
   }
 
-  socket->Write(io_buffer_, io_buffer_size_,
+  socket->Write(io_buffer_,
+                io_buffer_size_,
                 base::Bind(&SocketsTcpSendFunction::OnCompleted, this));
 }
 
@@ -420,16 +422,15 @@ SocketsTcpGetSocketsFunction::SocketsTcpGetSocketsFunction() {}
 
 SocketsTcpGetSocketsFunction::~SocketsTcpGetSocketsFunction() {}
 
-bool SocketsTcpGetSocketsFunction::Prepare() {
-  return true;
-}
+bool SocketsTcpGetSocketsFunction::Prepare() { return true; }
 
 void SocketsTcpGetSocketsFunction::Work() {
   std::vector<linked_ptr<sockets_tcp::SocketInfo> > socket_infos;
   base::hash_set<int>* resource_ids = GetSocketIds();
   if (resource_ids != NULL) {
     for (base::hash_set<int>::iterator it = resource_ids->begin();
-             it != resource_ids->end(); ++it) {
+         it != resource_ids->end();
+         ++it) {
       int socket_id = *it;
       ResumableTCPSocket* socket = GetTcpSocket(socket_id);
       if (socket) {
@@ -440,5 +441,5 @@ void SocketsTcpGetSocketsFunction::Work() {
   results_ = sockets_tcp::GetSockets::Results::Create(socket_infos);
 }
 
-}  // namespace api
+}  // namespace core_api
 }  // namespace extensions

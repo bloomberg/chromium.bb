@@ -1,19 +1,21 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_SOCKETS_TCP_SOCKETS_TCP_API_H_
-#define CHROME_BROWSER_EXTENSIONS_API_SOCKETS_TCP_SOCKETS_TCP_API_H_
+#ifndef EXTENSIONS_BROWSER_API_SOCKETS_TCP_SOCKETS_TCP_API_H_
+#define EXTENSIONS_BROWSER_API_SOCKETS_TCP_SOCKETS_TCP_API_H_
 
-#include "chrome/browser/extensions/api/socket/socket_api.h"
-#include "chrome/common/extensions/api/sockets_tcp.h"
+#include "extensions/browser/api/socket/socket_api.h"
+#include "extensions/common/api/sockets_tcp.h"
 
 namespace extensions {
 class ResumableTCPSocket;
 }
 
 namespace extensions {
-namespace api {
+namespace core_api {
+
+class TCPSocketEventDispatcher;
 
 class TCPSocketAsyncApiFunction : public SocketAsyncApiFunction {
  protected:
@@ -71,8 +73,7 @@ class SocketsTcpUpdateFunction : public TCPSocketAsyncApiFunction {
   scoped_ptr<sockets_tcp::Update::Params> params_;
 };
 
-class SocketsTcpSetPausedFunction
-    : public TCPSocketAsyncApiFunction {
+class SocketsTcpSetPausedFunction : public TCPSocketAsyncApiFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("sockets.tcp.setPaused", SOCKETS_TCP_SETPAUSED)
 
@@ -90,8 +91,7 @@ class SocketsTcpSetPausedFunction
   TCPSocketEventDispatcher* socket_event_dispatcher_;
 };
 
-class SocketsTcpSetKeepAliveFunction
-    : public TCPSocketAsyncApiFunction {
+class SocketsTcpSetKeepAliveFunction : public TCPSocketAsyncApiFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("sockets.tcp.setKeepAlive",
                              SOCKETS_TCP_SETKEEPALIVE)
@@ -109,8 +109,7 @@ class SocketsTcpSetKeepAliveFunction
   scoped_ptr<sockets_tcp::SetKeepAlive::Params> params_;
 };
 
-class SocketsTcpSetNoDelayFunction
-    : public TCPSocketAsyncApiFunction {
+class SocketsTcpSetNoDelayFunction : public TCPSocketAsyncApiFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("sockets.tcp.setNoDelay", SOCKETS_TCP_SETNODELAY)
 
@@ -239,7 +238,7 @@ class SocketsTcpGetSocketsFunction : public TCPSocketAsyncApiFunction {
   virtual void Work() OVERRIDE;
 };
 
-}  // namespace api
+}  // namespace core_api
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_SOCKETS_TCP_SOCKETS_TCP_API_H_
+#endif  // EXTENSIONS_BROWSER_API_SOCKETS_TCP_SOCKETS_TCP_API_H_

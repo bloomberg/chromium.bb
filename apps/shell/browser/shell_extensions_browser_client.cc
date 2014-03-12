@@ -15,6 +15,7 @@
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/app_sorting.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/common/api/generated_api.h"
 
 using content::BrowserContext;
 
@@ -157,8 +158,9 @@ ShellExtensionsBrowserClient::GetExtensionSystemFactory() {
 
 void ShellExtensionsBrowserClient::RegisterExtensionFunctions(
     ExtensionFunctionRegistry* registry) const {
-  // TODO(rockot): Remove this once we have enough APIs moved out of src/chrome
-  // See http://crbug.com/349042
+  extensions::core_api::GeneratedFunctionRegistry::RegisterAll(registry);
+  // TODO(rockot): Remove dependency on src/chrome once we have some core APIs
+  // moved out. See http://crbug.com/349042.
   extensions::api::GeneratedFunctionRegistry::RegisterAll(registry);
 }
 

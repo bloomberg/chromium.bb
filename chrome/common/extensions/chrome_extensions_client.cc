@@ -5,11 +5,13 @@
 #include "chrome/common/extensions/chrome_extensions_client.h"
 
 #include "base/command_line.h"
+#include "chrome/common/extensions/api/generated_schemas.h"
 #include "chrome/common/extensions/chrome_manifest_handlers.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/features/base_feature_provider.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/common/url_constants.h"
+#include "extensions/common/api/generated_schemas.h"
 #include "extensions/common/common_manifest_handlers.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_constants.h"
@@ -152,6 +154,19 @@ bool ChromeExtensionsClient::IsScriptableURL(
     return false;
   }
   return true;
+}
+
+bool ChromeExtensionsClient::IsAPISchemaGenerated(
+    const std::string& name) const {
+  return extensions::api::GeneratedSchemas::IsGenerated(name) ||
+         extensions::core_api::GeneratedSchemas::IsGenerated(name);
+}
+
+base::StringPiece ChromeExtensionsClient::GetAPISchema(
+    const std::string& name) const {
+  if (extensions::api::GeneratedSchemas::IsGenerated(name))
+    return extensions::api::GeneratedSchemas::Get(name);
+  return extensions::core_api::GeneratedSchemas::Get(name);
 }
 
 // static

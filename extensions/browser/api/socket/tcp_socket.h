@@ -1,13 +1,13 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_SOCKET_TCP_SOCKET_H_
-#define CHROME_BROWSER_EXTENSIONS_API_SOCKET_TCP_SOCKET_H_
+#ifndef EXTENSIONS_BROWSER_API_SOCKET_TCP_SOCKET_H_
+#define EXTENSIONS_BROWSER_API_SOCKET_TCP_SOCKET_H_
 
 #include <string>
 
-#include "chrome/browser/extensions/api/socket/socket.h"
+#include "extensions/browser/api/socket/socket.h"
 
 // This looks like it should be forward-declarable, but it does some tricky
 // moves that make it easier to just include it.
@@ -34,8 +34,7 @@ class TCPSocket : public Socket {
                        const CompletionCallback& callback) OVERRIDE;
   virtual void Disconnect() OVERRIDE;
   virtual int Bind(const std::string& address, int port) OVERRIDE;
-  virtual void Read(int count,
-                    const ReadCompletionCallback& callback) OVERRIDE;
+  virtual void Read(int count, const ReadCompletionCallback& callback) OVERRIDE;
   virtual void RecvFrom(int count,
                         const RecvFromCompletionCallback& callback) OVERRIDE;
   virtual void SendTo(scoped_refptr<net::IOBuffer> io_buffer,
@@ -45,9 +44,11 @@ class TCPSocket : public Socket {
                       const CompletionCallback& callback) OVERRIDE;
   virtual bool SetKeepAlive(bool enable, int delay) OVERRIDE;
   virtual bool SetNoDelay(bool no_delay) OVERRIDE;
-  virtual int Listen(const std::string& address, int port,
-                     int backlog, std::string* error_msg) OVERRIDE;
-  virtual void Accept(const AcceptCompletionCallback &callback) OVERRIDE;
+  virtual int Listen(const std::string& address,
+                     int port,
+                     int backlog,
+                     std::string* error_msg) OVERRIDE;
+  virtual void Accept(const AcceptCompletionCallback& callback) OVERRIDE;
 
   virtual bool IsConnected() OVERRIDE;
 
@@ -71,8 +72,7 @@ class TCPSocket : public Socket {
  private:
   void RefreshConnectionStatus();
   void OnConnectComplete(int result);
-  void OnReadComplete(scoped_refptr<net::IOBuffer> io_buffer,
-                      int result);
+  void OnReadComplete(scoped_refptr<net::IOBuffer> io_buffer, int result);
   void OnAccept(int result);
 
   TCPSocket(net::TCPServerSocket* tcp_server_socket,
@@ -81,11 +81,7 @@ class TCPSocket : public Socket {
   scoped_ptr<net::TCPClientSocket> socket_;
   scoped_ptr<net::TCPServerSocket> server_socket_;
 
-  enum SocketMode {
-    UNKNOWN = 0,
-    CLIENT,
-    SERVER,
-  };
+  enum SocketMode { UNKNOWN = 0, CLIENT, SERVER, };
   SocketMode socket_mode_;
 
   CompletionCallback connect_callback_;
@@ -112,7 +108,7 @@ class ResumableTCPSocket : public TCPSocket {
   const std::string& name() const { return name_; }
   void set_name(const std::string& name) { name_ = name; }
 
-  bool persistent() const { return persistent_;  }
+  bool persistent() const { return persistent_; }
   void set_persistent(bool persistent) { persistent_ = persistent; }
 
   int buffer_size() const { return buffer_size_; }
@@ -123,9 +119,7 @@ class ResumableTCPSocket : public TCPSocket {
 
  private:
   friend class ApiResourceManager<ResumableTCPSocket>;
-  static const char* service_name() {
-    return "ResumableTCPSocketManager";
-  }
+  static const char* service_name() { return "ResumableTCPSocketManager"; }
 
   // Application-defined string - see sockets_tcp.idl.
   std::string name_;
@@ -176,4 +170,4 @@ class ResumableTCPServerSocket : public TCPSocket {
 
 }  //  namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_SOCKET_TCP_SOCKET_H_
+#endif  // EXTENSIONS_BROWSER_API_SOCKET_TCP_SOCKET_H_

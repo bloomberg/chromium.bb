@@ -137,7 +137,7 @@
             'chrome_resources.gyp:chrome_resources',
             'chrome_resources.gyp:chrome_strings',
             'chrome_resources.gyp:theme_resources',
-            'common/extensions/api/api.gyp:api',
+            'common/extensions/api/api.gyp:chrome_api',
             '../base/base.gyp:base',
             '../content/content.gyp:content_browser',
             '../net/net.gyp:http_server',
@@ -244,7 +244,7 @@
           'type': 'static_library',
           'variables': { 'enable_wexit_time_destructors': 1, },
           'dependencies': [
-            'common/extensions/api/api.gyp:api',
+            'common/extensions/api/api.gyp:chrome_api',
             '../base/base.gyp:base',
             '../content/content.gyp:content_utility',
             '../media/media.gyp:media',

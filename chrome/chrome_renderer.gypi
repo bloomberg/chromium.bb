@@ -480,7 +480,7 @@
           'dependencies': [
             # TODO(hclam): See crbug.com/298380 for details.
             # We should isolate the APIs needed by the renderer.
-            '<(DEPTH)/chrome/common/extensions/api/api.gyp:api',
+            '<(DEPTH)/chrome/common/extensions/api/api.gyp:chrome_api',
           ],
         }],
         ['enable_printing!=0', {

@@ -5,9 +5,11 @@
 #include "apps/shell/common/shell_extensions_client.h"
 
 #include "base/logging.h"
+#include "chrome/common/extensions/api/generated_schemas.h"
 #include "chrome/common/extensions/api/sockets/sockets_manifest_handler.h"
 #include "chrome/common/extensions/features/base_feature_provider.h"
 #include "chrome/common/extensions/permissions/chrome_api_permissions.h"
+#include "extensions/common/api/generated_schemas.h"
 #include "extensions/common/common_manifest_handlers.h"
 #include "extensions/common/manifest_handler.h"
 #include "extensions/common/permissions/permission_message_provider.h"
@@ -146,6 +148,23 @@ bool ShellExtensionsClient::IsScriptableURL(const GURL& url,
                                             std::string* error) const {
   NOTIMPLEMENTED();
   return true;
+}
+
+bool ShellExtensionsClient::IsAPISchemaGenerated(
+    const std::string& name) const {
+  // TODO(rockot): Remove dependency on src/chrome once we have some core APIs
+  // moved out. See http://crbug.com/349042.
+  return extensions::api::GeneratedSchemas::IsGenerated(name) ||
+         extensions::core_api::GeneratedSchemas::IsGenerated(name);
+}
+
+base::StringPiece ShellExtensionsClient::GetAPISchema(
+    const std::string& name) const {
+  // TODO(rockot): Remove dependency on src/chrome once we have some core APIs
+  // moved out. See http://crbug.com/349042.
+  if (extensions::api::GeneratedSchemas::IsGenerated(name))
+    return extensions::api::GeneratedSchemas::Get(name);
+  return extensions::core_api::GeneratedSchemas::Get(name);
 }
 
 }  // namespace apps

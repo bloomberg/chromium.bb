@@ -9,6 +9,8 @@
 #include <string>
 #include <vector>
 
+#include "base/strings/string_piece.h"
+
 class GURL;
 
 namespace extensions {
@@ -70,6 +72,12 @@ class ExtensionsClient {
 
   // Returns false if content scripts are forbidden from running on |url|.
   virtual bool IsScriptableURL(const GURL& url, std::string* error) const = 0;
+
+  // Returns true iff a schema named |name| is generated.
+  virtual bool IsAPISchemaGenerated(const std::string& name) const = 0;
+
+  // Gets the API schema named |name|.
+  virtual base::StringPiece GetAPISchema(const std::string& name) const = 0;
 
   // Return the extensions client.
   static ExtensionsClient* Get();

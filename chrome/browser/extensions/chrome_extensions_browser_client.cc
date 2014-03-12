@@ -33,6 +33,7 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/pref_names.h"
+#include "extensions/common/api/generated_api.h"
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/chromeos_switches.h"
@@ -243,6 +244,7 @@ void ChromeExtensionsBrowserClient::RegisterExtensionFunctions(
   registry->RegisterFunction<extensions::RuntimeRestartFunction>();
 
   // Generated APIs.
+  extensions::core_api::GeneratedFunctionRegistry::RegisterAll(registry);
   extensions::api::GeneratedFunctionRegistry::RegisterAll(registry);
 #endif
 }

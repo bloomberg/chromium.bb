@@ -1,14 +1,14 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_SOCKET_UDP_SOCKET_H_
-#define CHROME_BROWSER_EXTENSIONS_API_SOCKET_UDP_SOCKET_H_
+#ifndef EXTENSIONS_BROWSER_API_SOCKET_UDP_SOCKET_H_
+#define EXTENSIONS_BROWSER_API_SOCKET_UDP_SOCKET_H_
 
 #include <string>
 #include <vector>
 
-#include "chrome/browser/extensions/api/socket/socket.h"
+#include "extensions/browser/api/socket/socket.h"
 #include "net/udp/udp_socket.h"
 
 namespace extensions {
@@ -23,8 +23,7 @@ class UDPSocket : public Socket {
                        const CompletionCallback& callback) OVERRIDE;
   virtual void Disconnect() OVERRIDE;
   virtual int Bind(const std::string& address, int port) OVERRIDE;
-  virtual void Read(int count,
-                    const ReadCompletionCallback& callback) OVERRIDE;
+  virtual void Read(int count, const ReadCompletionCallback& callback) OVERRIDE;
   virtual void RecvFrom(int count,
                         const RecvFromCompletionCallback& callback) OVERRIDE;
   virtual void SendTo(scoped_refptr<net::IOBuffer> io_buffer,
@@ -58,8 +57,7 @@ class UDPSocket : public Socket {
   // Make net::IPEndPoint can be refcounted
   typedef base::RefCountedData<net::IPEndPoint> IPEndPoint;
 
-  void OnReadComplete(scoped_refptr<net::IOBuffer> io_buffer,
-                      int result);
+  void OnReadComplete(scoped_refptr<net::IOBuffer> io_buffer, int result);
   void OnRecvFromComplete(scoped_refptr<net::IOBuffer> io_buffer,
                           scoped_refptr<IPEndPoint> address,
                           int result);
@@ -100,9 +98,7 @@ class ResumableUDPSocket : public UDPSocket {
 
  private:
   friend class ApiResourceManager<ResumableUDPSocket>;
-  static const char* service_name() {
-    return "ResumableUDPSocketManager";
-  }
+  static const char* service_name() { return "ResumableUDPSocketManager"; }
 
   // Application-defined string - see sockets_udp.idl.
   std::string name_;
@@ -118,4 +114,4 @@ class ResumableUDPSocket : public UDPSocket {
 
 }  //  namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_SOCKET_UDP_SOCKET_H_
+#endif  // EXTENSIONS_BROWSER_API_SOCKET_UDP_SOCKET_H_

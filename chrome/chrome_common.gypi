@@ -414,7 +414,7 @@
         ['OS != "ios"', {
           'dependencies': [
             '<(DEPTH)/third_party/re2/re2.gyp:re2',
-            '<(DEPTH)/chrome/common/extensions/api/api.gyp:api',
+            '<(DEPTH)/chrome/common/extensions/api/api.gyp:chrome_api',
             '<(DEPTH)/components/components.gyp:autofill_core_common',
             '<(DEPTH)/components/components.gyp:autofill_content_common',
             '<(DEPTH)/components/components.gyp:password_manager_core_common',

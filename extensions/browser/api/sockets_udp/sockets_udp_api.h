@@ -1,19 +1,19 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_SOCKETS_UDP_SOCKETS_UDP_API_H_
-#define CHROME_BROWSER_EXTENSIONS_API_SOCKETS_UDP_SOCKETS_UDP_API_H_
+#ifndef EXTENSIONS_BROWSER_API_SOCKETS_UDP_SOCKETS_UDP_API_H_
+#define EXTENSIONS_BROWSER_API_SOCKETS_UDP_SOCKETS_UDP_API_H_
 
-#include "chrome/browser/extensions/api/socket/socket_api.h"
-#include "chrome/common/extensions/api/sockets_udp.h"
+#include "extensions/browser/api/socket/socket_api.h"
+#include "extensions/common/api/sockets_udp.h"
 
 namespace extensions {
 class ResumableUDPSocket;
 }
 
 namespace extensions {
-namespace api {
+namespace core_api {
 
 class UDPSocketEventDispatcher;
 
@@ -73,8 +73,7 @@ class SocketsUdpUpdateFunction : public UDPSocketAsyncApiFunction {
   scoped_ptr<sockets_udp::Update::Params> params_;
 };
 
-class SocketsUdpSetPausedFunction
-    : public UDPSocketAsyncApiFunction {
+class SocketsUdpSetPausedFunction : public UDPSocketAsyncApiFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("sockets.udp.setPaused", SOCKETS_UDP_SETPAUSED)
 
@@ -274,7 +273,7 @@ class SocketsUdpGetJoinedGroupsFunction : public UDPSocketAsyncApiFunction {
   scoped_ptr<sockets_udp::GetJoinedGroups::Params> params_;
 };
 
-}  // namespace api
+}  // namespace core_api
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_SOCKETS_UDP_SOCKETS_UDP_API_H_
+#endif  // EXTENSIONS_BROWSER_API_SOCKETS_UDP_SOCKETS_UDP_API_H_

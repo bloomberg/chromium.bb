@@ -1,162 +1,149 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/sockets_tcp/tcp_socket_event_dispatcher.h"
+#include "extensions/browser/api/sockets_udp/udp_socket_event_dispatcher.h"
 
-#include "chrome/browser/extensions/api/socket/tcp_socket.h"
+#include "extensions/browser/api/socket/udp_socket.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "net/base/net_errors.h"
 
-namespace {
-int kDefaultBufferSize = 4096;
-}
-
 namespace extensions {
-namespace api {
+namespace core_api {
 
 using content::BrowserThread;
 
 static base::LazyInstance<
-    BrowserContextKeyedAPIFactory<TCPSocketEventDispatcher> > g_factory =
+    BrowserContextKeyedAPIFactory<UDPSocketEventDispatcher> > g_factory =
     LAZY_INSTANCE_INITIALIZER;
 
 // static
-BrowserContextKeyedAPIFactory<TCPSocketEventDispatcher>*
-TCPSocketEventDispatcher::GetFactoryInstance() {
+BrowserContextKeyedAPIFactory<UDPSocketEventDispatcher>*
+UDPSocketEventDispatcher::GetFactoryInstance() {
   return g_factory.Pointer();
 }
 
 // static
-TCPSocketEventDispatcher* TCPSocketEventDispatcher::Get(
+UDPSocketEventDispatcher* UDPSocketEventDispatcher::Get(
     content::BrowserContext* context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  return BrowserContextKeyedAPIFactory<TCPSocketEventDispatcher>::Get(context);
+  return BrowserContextKeyedAPIFactory<UDPSocketEventDispatcher>::Get(context);
 }
 
-TCPSocketEventDispatcher::TCPSocketEventDispatcher(
+UDPSocketEventDispatcher::UDPSocketEventDispatcher(
     content::BrowserContext* context)
     : thread_id_(Socket::kThreadId), browser_context_(context) {
-  ApiResourceManager<ResumableTCPSocket>* manager =
-      ApiResourceManager<ResumableTCPSocket>::Get(browser_context_);
-  DCHECK(manager) << "There is no socket manager. "
-    "If this assertion is failing during a test, then it is likely that "
-    "TestExtensionSystem is failing to provide an instance of "
-    "ApiResourceManager<ResumableTCPSocket>.";
+  ApiResourceManager<ResumableUDPSocket>* manager =
+      ApiResourceManager<ResumableUDPSocket>::Get(browser_context_);
+  DCHECK(manager)
+      << "There is no socket manager. "
+         "If this assertion is failing during a test, then it is likely that "
+         "TestExtensionSystem is failing to provide an instance of "
+         "ApiResourceManager<ResumableUDPSocket>.";
   sockets_ = manager->data_;
 }
 
-TCPSocketEventDispatcher::~TCPSocketEventDispatcher() {}
+UDPSocketEventDispatcher::~UDPSocketEventDispatcher() {}
 
-TCPSocketEventDispatcher::ReadParams::ReadParams() {}
+UDPSocketEventDispatcher::ReceiveParams::ReceiveParams() {}
 
-TCPSocketEventDispatcher::ReadParams::~ReadParams() {}
+UDPSocketEventDispatcher::ReceiveParams::~ReceiveParams() {}
 
-void TCPSocketEventDispatcher::OnSocketConnect(const std::string& extension_id,
-                                               int socket_id) {
-  DCHECK(BrowserThread::CurrentlyOn(thread_id_));
-
-  StartSocketRead(extension_id, socket_id);
+void UDPSocketEventDispatcher::OnSocketBind(const std::string& extension_id,
+                                            int socket_id) {
+  OnSocketResume(extension_id, socket_id);
 }
 
-void TCPSocketEventDispatcher::OnSocketResume(const std::string& extension_id,
+void UDPSocketEventDispatcher::OnSocketResume(const std::string& extension_id,
                                               int socket_id) {
   DCHECK(BrowserThread::CurrentlyOn(thread_id_));
 
-  StartSocketRead(extension_id, socket_id);
-}
-
-void TCPSocketEventDispatcher::StartSocketRead(const std::string& extension_id,
-                                               int socket_id) {
-  DCHECK(BrowserThread::CurrentlyOn(thread_id_));
-
-  ReadParams params;
+  ReceiveParams params;
   params.thread_id = thread_id_;
   params.browser_context_id = browser_context_;
   params.extension_id = extension_id;
   params.sockets = sockets_;
   params.socket_id = socket_id;
 
-  StartRead(params);
+  StartReceive(params);
 }
 
-// static
-void TCPSocketEventDispatcher::StartRead(const ReadParams& params) {
+/* static */
+void UDPSocketEventDispatcher::StartReceive(const ReceiveParams& params) {
   DCHECK(BrowserThread::CurrentlyOn(params.thread_id));
 
-  ResumableTCPSocket* socket =
+  ResumableUDPSocket* socket =
       params.sockets->Get(params.extension_id, params.socket_id);
-  if (!socket) {
+  if (socket == NULL) {
     // This can happen if the socket is closed while our callback is active.
     return;
   }
   DCHECK(params.extension_id == socket->owner_extension_id())
-    << "Socket has wrong owner.";
+      << "Socket has wrong owner.";
 
   // Don't start another read if the socket has been paused.
   if (socket->paused())
     return;
 
-  int buffer_size = socket->buffer_size();
-  if (buffer_size <= 0)
-    buffer_size = kDefaultBufferSize;
-  socket->Read(buffer_size,
-               base::Bind(&TCPSocketEventDispatcher::ReadCallback,
-               params));
+  int buffer_size = (socket->buffer_size() <= 0 ? 4096 : socket->buffer_size());
+  socket->RecvFrom(
+      buffer_size,
+      base::Bind(&UDPSocketEventDispatcher::ReceiveCallback, params));
 }
 
-// static
-void TCPSocketEventDispatcher::ReadCallback(
-    const ReadParams& params,
+/* static */
+void UDPSocketEventDispatcher::ReceiveCallback(
+    const ReceiveParams& params,
     int bytes_read,
-    scoped_refptr<net::IOBuffer> io_buffer) {
+    scoped_refptr<net::IOBuffer> io_buffer,
+    const std::string& address,
+    int port) {
   DCHECK(BrowserThread::CurrentlyOn(params.thread_id));
 
-  // If |bytes_read| == 0, the connection has been closed by the peer.
+  // If |bytes_read| == 0, the message contained no data.
   // If |bytes_read| < 0, there was a network error, and |bytes_read| is a value
   // from "net::ERR_".
 
-  if (bytes_read == 0) {
-    bytes_read = net::ERR_CONNECTION_CLOSED;
-  }
-
-  if (bytes_read > 0) {
+  if (bytes_read >= 0) {
     // Dispatch "onReceive" event.
-    sockets_tcp::ReceiveInfo receive_info;
+    sockets_udp::ReceiveInfo receive_info;
     receive_info.socket_id = params.socket_id;
     receive_info.data = std::string(io_buffer->data(), bytes_read);
+    receive_info.remote_address = address;
+    receive_info.remote_port = port;
     scoped_ptr<base::ListValue> args =
-        sockets_tcp::OnReceive::Create(receive_info);
+        sockets_udp::OnReceive::Create(receive_info);
     scoped_ptr<Event> event(
-      new Event(sockets_tcp::OnReceive::kEventName, args.Pass()));
+        new Event(sockets_udp::OnReceive::kEventName, args.Pass()));
     PostEvent(params, event.Pass());
 
     // Post a task to delay the read until the socket is available, as
     // calling StartReceive at this point would error with ERR_IO_PENDING.
     BrowserThread::PostTask(
-        params.thread_id, FROM_HERE,
-        base::Bind(&TCPSocketEventDispatcher::StartRead, params));
+        params.thread_id,
+        FROM_HERE,
+        base::Bind(&UDPSocketEventDispatcher::StartReceive, params));
   } else if (bytes_read == net::ERR_IO_PENDING) {
     // This happens when resuming a socket which already had an
-    // active "read" callback.
+    // active "recv" callback.
   } else {
     // Dispatch "onReceiveError" event but don't start another read to avoid
     // potential infinite reads if we have a persistent network error.
-    sockets_tcp::ReceiveErrorInfo receive_error_info;
+    sockets_udp::ReceiveErrorInfo receive_error_info;
     receive_error_info.socket_id = params.socket_id;
     receive_error_info.result_code = bytes_read;
     scoped_ptr<base::ListValue> args =
-        sockets_tcp::OnReceiveError::Create(receive_error_info);
+        sockets_udp::OnReceiveError::Create(receive_error_info);
     scoped_ptr<Event> event(
-      new Event(sockets_tcp::OnReceiveError::kEventName, args.Pass()));
+        new Event(sockets_udp::OnReceiveError::kEventName, args.Pass()));
     PostEvent(params, event.Pass());
 
     // Since we got an error, the socket is now "paused" until the application
     // "resumes" it.
-    ResumableTCPSocket* socket =
+    ResumableUDPSocket* socket =
         params.sockets->Get(params.extension_id, params.socket_id);
     if (socket) {
       socket->set_paused(true);
@@ -164,8 +151,8 @@ void TCPSocketEventDispatcher::ReadCallback(
   }
 }
 
-// static
-void TCPSocketEventDispatcher::PostEvent(const ReadParams& params,
+/* static */
+void UDPSocketEventDispatcher::PostEvent(const ReceiveParams& params,
                                          scoped_ptr<Event> event) {
   DCHECK(BrowserThread::CurrentlyOn(params.thread_id));
 
@@ -177,8 +164,8 @@ void TCPSocketEventDispatcher::PostEvent(const ReadParams& params,
                                      base::Passed(event.Pass())));
 }
 
-// static
-void TCPSocketEventDispatcher::DispatchEvent(void* browser_context_id,
+/*static*/
+void UDPSocketEventDispatcher::DispatchEvent(void* browser_context_id,
                                              const std::string& extension_id,
                                              scoped_ptr<Event> event) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -187,11 +174,10 @@ void TCPSocketEventDispatcher::DispatchEvent(void* browser_context_id,
       reinterpret_cast<content::BrowserContext*>(browser_context_id);
   if (!extensions::ExtensionsBrowserClient::Get()->IsValidContext(context))
     return;
-
   EventRouter* router = ExtensionSystem::Get(context)->event_router();
   if (router)
     router->DispatchEventToExtension(extension_id, event.Pass());
 }
 
-}  // namespace api
+}  // namespace core_api
 }  // namespace extensions

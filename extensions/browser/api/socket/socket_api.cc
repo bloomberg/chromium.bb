@@ -1,20 +1,20 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/socket/socket_api.h"
+#include "extensions/browser/api/socket/socket_api.h"
 
 #include <vector>
 
 #include "base/bind.h"
 #include "base/containers/hash_tables.h"
 #include "chrome/browser/extensions/api/dns/host_resolver_wrapper.h"
-#include "chrome/browser/extensions/api/socket/socket.h"
-#include "chrome/browser/extensions/api/socket/tcp_socket.h"
-#include "chrome/browser/extensions/api/socket/udp_socket.h"
 #include "chrome/common/extensions/permissions/socket_permission.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/resource_context.h"
+#include "extensions/browser/api/socket/socket.h"
+#include "extensions/browser/api/socket/tcp_socket.h"
+#include "extensions/browser/api/socket/udp_socket.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -42,30 +42,25 @@ const char kPermissionError[] = "App does not have permission";
 const char kNetworkListError[] = "Network lookup failed or unsupported";
 const char kTCPSocketBindError[] =
     "TCP socket does not support bind. For TCP server please use listen.";
-const char kMulticastSocketTypeError[] =
-    "Only UDP socket supports multicast.";
+const char kMulticastSocketTypeError[] = "Only UDP socket supports multicast.";
 const char kWildcardAddress[] = "*";
 const int kWildcardPort = 0;
 
-SocketAsyncApiFunction::SocketAsyncApiFunction() {
-}
+SocketAsyncApiFunction::SocketAsyncApiFunction() {}
 
-SocketAsyncApiFunction::~SocketAsyncApiFunction() {
-}
+SocketAsyncApiFunction::~SocketAsyncApiFunction() {}
 
 bool SocketAsyncApiFunction::PrePrepare() {
   manager_ = CreateSocketResourceManager();
   return manager_->SetBrowserContext(browser_context());
 }
 
-bool SocketAsyncApiFunction::Respond() {
-  return error_.empty();
-}
+bool SocketAsyncApiFunction::Respond() { return error_.empty(); }
 
 scoped_ptr<SocketResourceManagerInterface>
-    SocketAsyncApiFunction::CreateSocketResourceManager() {
+SocketAsyncApiFunction::CreateSocketResourceManager() {
   return scoped_ptr<SocketResourceManagerInterface>(
-      new SocketResourceManager<Socket>()).Pass();
+             new SocketResourceManager<Socket>()).Pass();
 }
 
 int SocketAsyncApiFunction::AddSocket(Socket* socket) {
@@ -89,8 +84,7 @@ SocketExtensionWithDnsLookupFunction::SocketExtensionWithDnsLookupFunction()
       request_handle_(new net::HostResolver::RequestHandle),
       addresses_(new net::AddressList) {}
 
-SocketExtensionWithDnsLookupFunction::~SocketExtensionWithDnsLookupFunction() {
-}
+SocketExtensionWithDnsLookupFunction::~SocketExtensionWithDnsLookupFunction() {}
 
 bool SocketExtensionWithDnsLookupFunction::PrePrepare() {
   if (!SocketAsyncApiFunction::PrePrepare())
@@ -136,23 +130,22 @@ void SocketExtensionWithDnsLookupFunction::OnDnsLookup(int resolve_result) {
 }
 
 SocketCreateFunction::SocketCreateFunction()
-    : socket_type_(kSocketTypeInvalid) {
-}
+    : socket_type_(kSocketTypeInvalid) {}
 
 SocketCreateFunction::~SocketCreateFunction() {}
 
 bool SocketCreateFunction::Prepare() {
-  params_ = api::socket::Create::Params::Create(*args_);
+  params_ = core_api::socket::Create::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
 
   switch (params_->type) {
-    case extensions::api::socket::SOCKET_TYPE_TCP:
+    case extensions::core_api::socket::SOCKET_TYPE_TCP:
       socket_type_ = kSocketTypeTCP;
       break;
-    case extensions::api::socket::SOCKET_TYPE_UDP:
+    case extensions::core_api::socket::SOCKET_TYPE_UDP:
       socket_type_ = kSocketTypeUDP;
       break;
-    case extensions::api::socket::SOCKET_TYPE_NONE:
+    case extensions::core_api::socket::SOCKET_TYPE_NONE:
       NOTREACHED();
       break;
   }
@@ -164,7 +157,7 @@ void SocketCreateFunction::Work() {
   Socket* socket = NULL;
   if (socket_type_ == kSocketTypeTCP) {
     socket = new TCPSocket(extension_->id());
-  } else if (socket_type_== kSocketTypeUDP) {
+  } else if (socket_type_ == kSocketTypeUDP) {
     socket = new UDPSocket(extension_->id());
   }
   DCHECK(socket);
@@ -179,19 +172,12 @@ bool SocketDestroyFunction::Prepare() {
   return true;
 }
 
-void SocketDestroyFunction::Work() {
-  RemoveSocket(socket_id_);
-}
+void SocketDestroyFunction::Work() { RemoveSocket(socket_id_); }
 
 SocketConnectFunction::SocketConnectFunction()
-    : socket_id_(0),
-      hostname_(),
-      port_(0),
-      socket_(NULL) {
-}
+    : socket_id_(0), hostname_(), port_(0), socket_(NULL) {}
 
-SocketConnectFunction::~SocketConnectFunction() {
-}
+SocketConnectFunction::~SocketConnectFunction() {}
 
 bool SocketConnectFunction::Prepare() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &socket_id_));
@@ -245,7 +231,8 @@ void SocketConnectFunction::AfterDnsLookup(int lookup_result) {
 }
 
 void SocketConnectFunction::StartConnect() {
-  socket_->Connect(resolved_address_, port_,
+  socket_->Connect(resolved_address_,
+                   port_,
                    base::Bind(&SocketConnectFunction::OnConnect, this));
 }
 
@@ -289,9 +276,7 @@ void SocketBindFunction::Work() {
     SocketPermission::CheckParam param(
         SocketPermissionRequest::UDP_BIND, address_, port_);
     if (!PermissionsData::CheckAPIPermissionWithParam(
-            GetExtension(),
-            APIPermission::kSocket,
-            &param)) {
+            GetExtension(), APIPermission::kSocket, &param)) {
       error_ = kPermissionError;
       SetResult(new base::FundamentalValue(result));
       return;
@@ -311,7 +296,7 @@ SocketListenFunction::SocketListenFunction() {}
 SocketListenFunction::~SocketListenFunction() {}
 
 bool SocketListenFunction::Prepare() {
-  params_ = api::socket::Listen::Params::Create(*args_);
+  params_ = core_api::socket::Listen::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
   return true;
 }
@@ -324,19 +309,17 @@ void SocketListenFunction::Work() {
     SocketPermission::CheckParam param(
         SocketPermissionRequest::TCP_LISTEN, params_->address, params_->port);
     if (!PermissionsData::CheckAPIPermissionWithParam(
-            GetExtension(),
-            APIPermission::kSocket,
-            &param)) {
+            GetExtension(), APIPermission::kSocket, &param)) {
       error_ = kPermissionError;
       SetResult(new base::FundamentalValue(result));
       return;
     }
 
-    result = socket->Listen(
-        params_->address,
-        params_->port,
-        params_->backlog.get() ? *params_->backlog.get() : 5,
-        &error_);
+    result =
+        socket->Listen(params_->address,
+                       params_->port,
+                       params_->backlog.get() ? *params_->backlog.get() : 5,
+                       &error_);
   } else {
     error_ = kSocketNotFoundError;
   }
@@ -349,7 +332,7 @@ SocketAcceptFunction::SocketAcceptFunction() {}
 SocketAcceptFunction::~SocketAcceptFunction() {}
 
 bool SocketAcceptFunction::Prepare() {
-  params_ = api::socket::Accept::Params::Create(*args_);
+  params_ = core_api::socket::Accept::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
   return true;
 }
@@ -365,11 +348,11 @@ void SocketAcceptFunction::AsyncWorkStart() {
 }
 
 void SocketAcceptFunction::OnAccept(int result_code,
-                                    net::TCPClientSocket *socket) {
+                                    net::TCPClientSocket* socket) {
   base::DictionaryValue* result = new base::DictionaryValue();
   result->SetInteger(kResultCodeKey, result_code);
   if (socket) {
-    Socket *client_socket = new TCPSocket(socket, extension_id(), true);
+    Socket* client_socket = new TCPSocket(socket, extension_id(), true);
     result->SetInteger(kSocketIdKey, AddSocket(client_socket));
   }
   SetResult(result);
@@ -382,7 +365,7 @@ SocketReadFunction::SocketReadFunction() {}
 SocketReadFunction::~SocketReadFunction() {}
 
 bool SocketReadFunction::Prepare() {
-  params_ = api::socket::Read::Params::Create(*args_);
+  params_ = core_api::socket::Read::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
   return true;
 }
@@ -416,16 +399,13 @@ void SocketReadFunction::OnCompleted(int bytes_read,
 }
 
 SocketWriteFunction::SocketWriteFunction()
-    : socket_id_(0),
-      io_buffer_(NULL),
-      io_buffer_size_(0) {
-}
+    : socket_id_(0), io_buffer_(NULL), io_buffer_size_(0) {}
 
 SocketWriteFunction::~SocketWriteFunction() {}
 
 bool SocketWriteFunction::Prepare() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &socket_id_));
-  base::BinaryValue *data = NULL;
+  base::BinaryValue* data = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_->GetBinary(1, &data));
 
   io_buffer_size_ = data->GetSize();
@@ -442,7 +422,8 @@ void SocketWriteFunction::AsyncWorkStart() {
     return;
   }
 
-  socket->Write(io_buffer_, io_buffer_size_,
+  socket->Write(io_buffer_,
+                io_buffer_size_,
                 base::Bind(&SocketWriteFunction::OnCompleted, this));
 }
 
@@ -459,7 +440,7 @@ SocketRecvFromFunction::SocketRecvFromFunction() {}
 SocketRecvFromFunction::~SocketRecvFromFunction() {}
 
 bool SocketRecvFromFunction::Prepare() {
-  params_ = api::socket::RecvFrom::Params::Create(*args_);
+  params_ = core_api::socket::RecvFrom::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
   return true;
 }
@@ -501,14 +482,13 @@ SocketSendToFunction::SocketSendToFunction()
       io_buffer_(NULL),
       io_buffer_size_(0),
       port_(0),
-      socket_(NULL) {
-}
+      socket_(NULL) {}
 
 SocketSendToFunction::~SocketSendToFunction() {}
 
 bool SocketSendToFunction::Prepare() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &socket_id_));
-  base::BinaryValue *data = NULL;
+  base::BinaryValue* data = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_->GetBinary(1, &data));
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(2, &hostname_));
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(3, &port_));
@@ -528,12 +508,10 @@ void SocketSendToFunction::AsyncWorkStart() {
   }
 
   if (socket_->GetSocketType() == Socket::TYPE_UDP) {
-    SocketPermission::CheckParam param(SocketPermissionRequest::UDP_SEND_TO,
-        hostname_, port_);
+    SocketPermission::CheckParam param(
+        SocketPermissionRequest::UDP_SEND_TO, hostname_, port_);
     if (!PermissionsData::CheckAPIPermissionWithParam(
-            GetExtension(),
-            APIPermission::kSocket,
-            &param)) {
+            GetExtension(), APIPermission::kSocket, &param)) {
       error_ = kPermissionError;
       SetResult(new base::FundamentalValue(-1));
       AsyncWorkCompleted();
@@ -554,7 +532,10 @@ void SocketSendToFunction::AfterDnsLookup(int lookup_result) {
 }
 
 void SocketSendToFunction::StartSendTo() {
-  socket_->SendTo(io_buffer_, io_buffer_size_, resolved_address_, port_,
+  socket_->SendTo(io_buffer_,
+                  io_buffer_size_,
+                  resolved_address_,
+                  port_,
                   base::Bind(&SocketSendToFunction::OnCompleted, this));
 }
 
@@ -571,7 +552,7 @@ SocketSetKeepAliveFunction::SocketSetKeepAliveFunction() {}
 SocketSetKeepAliveFunction::~SocketSetKeepAliveFunction() {}
 
 bool SocketSetKeepAliveFunction::Prepare() {
-  params_ = api::socket::SetKeepAlive::Params::Create(*args_);
+  params_ = core_api::socket::SetKeepAlive::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
   return true;
 }
@@ -595,7 +576,7 @@ SocketSetNoDelayFunction::SocketSetNoDelayFunction() {}
 SocketSetNoDelayFunction::~SocketSetNoDelayFunction() {}
 
 bool SocketSetNoDelayFunction::Prepare() {
-  params_ = api::socket::SetNoDelay::Params::Create(*args_);
+  params_ = core_api::socket::SetNoDelay::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
   return true;
 }
@@ -615,7 +596,7 @@ SocketGetInfoFunction::SocketGetInfoFunction() {}
 SocketGetInfoFunction::~SocketGetInfoFunction() {}
 
 bool SocketGetInfoFunction::Prepare() {
-  params_ = api::socket::GetInfo::Params::Create(*args_);
+  params_ = core_api::socket::GetInfo::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
   return true;
 }
@@ -627,13 +608,13 @@ void SocketGetInfoFunction::Work() {
     return;
   }
 
-  api::socket::SocketInfo info;
+  core_api::socket::SocketInfo info;
   // This represents what we know about the socket, and does not call through
   // to the system.
   if (socket->GetSocketType() == Socket::TYPE_TCP)
-    info.socket_type = extensions::api::socket::SOCKET_TYPE_TCP;
+    info.socket_type = extensions::core_api::socket::SOCKET_TYPE_TCP;
   else
-    info.socket_type = extensions::api::socket::SOCKET_TYPE_UDP;
+    info.socket_type = extensions::core_api::socket::SOCKET_TYPE_UDP;
   info.connected = socket->IsConnected();
 
   // Grab the peer address as known by the OS. This and the call below will
@@ -642,8 +623,7 @@ void SocketGetInfoFunction::Work() {
   // that it should be closed locally.
   net::IPEndPoint peerAddress;
   if (socket->GetPeerAddress(&peerAddress)) {
-    info.peer_address.reset(
-        new std::string(peerAddress.ToStringWithoutPort()));
+    info.peer_address.reset(new std::string(peerAddress.ToStringWithoutPort()));
     info.peer_port.reset(new int(peerAddress.port()));
   }
 
@@ -659,9 +639,11 @@ void SocketGetInfoFunction::Work() {
 }
 
 bool SocketGetNetworkListFunction::RunImpl() {
-  content::BrowserThread::PostTask(content::BrowserThread::FILE, FROM_HERE,
+  content::BrowserThread::PostTask(
+      content::BrowserThread::FILE,
+      FROM_HERE,
       base::Bind(&SocketGetNetworkListFunction::GetNetworkListOnFileThread,
-          this));
+                 this));
   return true;
 }
 
@@ -669,15 +651,20 @@ void SocketGetNetworkListFunction::GetNetworkListOnFileThread() {
   net::NetworkInterfaceList interface_list;
   if (GetNetworkList(&interface_list,
                      net::INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES)) {
-    content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI,
+        FROM_HERE,
         base::Bind(&SocketGetNetworkListFunction::SendResponseOnUIThread,
-            this, interface_list));
+                   this,
+                   interface_list));
     return;
   }
 
-  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI,
+      FROM_HERE,
       base::Bind(&SocketGetNetworkListFunction::HandleGetNetworkListError,
-          this));
+                 this));
 }
 
 void SocketGetNetworkListFunction::HandleGetNetworkListError() {
@@ -690,19 +677,20 @@ void SocketGetNetworkListFunction::SendResponseOnUIThread(
     const net::NetworkInterfaceList& interface_list) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-  std::vector<linked_ptr<api::socket::NetworkInterface> > create_arg;
+  std::vector<linked_ptr<core_api::socket::NetworkInterface> > create_arg;
   create_arg.reserve(interface_list.size());
   for (net::NetworkInterfaceList::const_iterator i = interface_list.begin();
-       i != interface_list.end(); ++i) {
-    linked_ptr<api::socket::NetworkInterface> info =
-        make_linked_ptr(new api::socket::NetworkInterface);
+       i != interface_list.end();
+       ++i) {
+    linked_ptr<core_api::socket::NetworkInterface> info =
+        make_linked_ptr(new core_api::socket::NetworkInterface);
     info->name = i->name;
     info->address = net::IPAddressToString(i->address);
     info->prefix_length = i->network_prefix;
     create_arg.push_back(info);
   }
 
-  results_ = api::socket::GetNetworkList::Results::Create(create_arg);
+  results_ = core_api::socket::GetNetworkList::Results::Create(create_arg);
   SendResponse(true);
 }
 
@@ -711,7 +699,7 @@ SocketJoinGroupFunction::SocketJoinGroupFunction() {}
 SocketJoinGroupFunction::~SocketJoinGroupFunction() {}
 
 bool SocketJoinGroupFunction::Prepare() {
-  params_ = api::socket::JoinGroup::Params::Create(*args_);
+  params_ = core_api::socket::JoinGroup::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
   return true;
 }
@@ -755,7 +743,7 @@ SocketLeaveGroupFunction::SocketLeaveGroupFunction() {}
 SocketLeaveGroupFunction::~SocketLeaveGroupFunction() {}
 
 bool SocketLeaveGroupFunction::Prepare() {
-  params_ = api::socket::LeaveGroup::Params::Create(*args_);
+  params_ = core_api::socket::LeaveGroup::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
   return true;
 }
@@ -780,9 +768,8 @@ void SocketLeaveGroupFunction::Work() {
       SocketPermissionRequest::UDP_MULTICAST_MEMBERSHIP,
       kWildcardAddress,
       kWildcardPort);
-  if (!PermissionsData::CheckAPIPermissionWithParam(GetExtension(),
-                                                    APIPermission::kSocket,
-                                                    &param)) {
+  if (!PermissionsData::CheckAPIPermissionWithParam(
+          GetExtension(), APIPermission::kSocket, &param)) {
     error_ = kPermissionError;
     SetResult(new base::FundamentalValue(result));
     return;
@@ -799,7 +786,7 @@ SocketSetMulticastTimeToLiveFunction::SocketSetMulticastTimeToLiveFunction() {}
 SocketSetMulticastTimeToLiveFunction::~SocketSetMulticastTimeToLiveFunction() {}
 
 bool SocketSetMulticastTimeToLiveFunction::Prepare() {
-  params_ = api::socket::SetMulticastTimeToLive::Params::Create(*args_);
+  params_ = core_api::socket::SetMulticastTimeToLive::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
   return true;
 }
@@ -818,8 +805,8 @@ void SocketSetMulticastTimeToLiveFunction::Work() {
     return;
   }
 
-  result = static_cast<UDPSocket*>(socket)->SetMulticastTimeToLive(
-      params_->ttl);
+  result =
+      static_cast<UDPSocket*>(socket)->SetMulticastTimeToLive(params_->ttl);
   if (result != 0)
     error_ = net::ErrorToString(result);
   SetResult(new base::FundamentalValue(result));
@@ -829,10 +816,10 @@ SocketSetMulticastLoopbackModeFunction::
     SocketSetMulticastLoopbackModeFunction() {}
 
 SocketSetMulticastLoopbackModeFunction::
-  ~SocketSetMulticastLoopbackModeFunction() {}
+    ~SocketSetMulticastLoopbackModeFunction() {}
 
 bool SocketSetMulticastLoopbackModeFunction::Prepare() {
-  params_ = api::socket::SetMulticastLoopbackMode::Params::Create(*args_);
+  params_ = core_api::socket::SetMulticastLoopbackMode::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
   return true;
 }
@@ -852,8 +839,8 @@ void SocketSetMulticastLoopbackModeFunction::Work() {
     return;
   }
 
-  result = static_cast<UDPSocket*>(socket)->
-      SetMulticastLoopbackMode(params_->enabled);
+  result = static_cast<UDPSocket*>(socket)
+               ->SetMulticastLoopbackMode(params_->enabled);
   if (result != 0)
     error_ = net::ErrorToString(result);
   SetResult(new base::FundamentalValue(result));
@@ -864,7 +851,7 @@ SocketGetJoinedGroupsFunction::SocketGetJoinedGroupsFunction() {}
 SocketGetJoinedGroupsFunction::~SocketGetJoinedGroupsFunction() {}
 
 bool SocketGetJoinedGroupsFunction::Prepare() {
-  params_ = api::socket::GetJoinedGroups::Params::Create(*args_);
+  params_ = core_api::socket::GetJoinedGroups::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params_.get());
   return true;
 }
@@ -889,17 +876,15 @@ void SocketGetJoinedGroupsFunction::Work() {
       kWildcardAddress,
       kWildcardPort);
   if (!PermissionsData::CheckAPIPermissionWithParam(
-          GetExtension(),
-          APIPermission::kSocket,
-          &param)) {
+          GetExtension(), APIPermission::kSocket, &param)) {
     error_ = kPermissionError;
     SetResult(new base::FundamentalValue(result));
     return;
   }
 
   base::ListValue* values = new base::ListValue();
-  values->AppendStrings((std::vector<std::string>&)
-      static_cast<UDPSocket*>(socket)->GetJoinedGroups());
+  values->AppendStrings((std::vector<std::string>&)static_cast<UDPSocket*>(
+                            socket)->GetJoinedGroups());
   SetResult(values);
 }
 

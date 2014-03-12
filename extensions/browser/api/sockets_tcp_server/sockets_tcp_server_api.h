@@ -1,19 +1,19 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_SOCKETS_TCP_SERVER_SOCKETS_TCP_SERVER_API_H_
-#define CHROME_BROWSER_EXTENSIONS_API_SOCKETS_TCP_SERVER_SOCKETS_TCP_SERVER_API_H_
+#ifndef EXTENSIONS_BROWSER_API_SOCKETS_TCP_SERVER_SOCKETS_TCP_SERVER_API_H_
+#define EXTENSIONS_BROWSER_API_SOCKETS_TCP_SERVER_SOCKETS_TCP_SERVER_API_H_
 
-#include "chrome/browser/extensions/api/socket/socket_api.h"
-#include "chrome/common/extensions/api/sockets_tcp_server.h"
+#include "extensions/browser/api/socket/socket_api.h"
+#include "extensions/common/api/sockets_tcp_server.h"
 
 namespace extensions {
 class ResumableTCPServerSocket;
 }
 
 namespace extensions {
-namespace api {
+namespace core_api {
 
 class TCPServerSocketAsyncApiFunction : public SocketAsyncApiFunction {
  protected:
@@ -82,8 +82,7 @@ class SocketsTcpServerSetPausedFunction
   TCPServerSocketEventDispatcher* socket_event_dispatcher_;
 };
 
-class SocketsTcpServerListenFunction
-    : public TCPServerSocketAsyncApiFunction {
+class SocketsTcpServerListenFunction : public TCPServerSocketAsyncApiFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("sockets.tcpServer.listen",
                              SOCKETS_TCP_SERVER_LISTEN)
@@ -173,7 +172,7 @@ class SocketsTcpServerGetSocketsFunction
   virtual void Work() OVERRIDE;
 };
 
-}  // namespace api
+}  // namespace core_api
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_SOCKETS_TCP_SERVER_SOCKETS_TCP_SERVER_API_H_
+#endif  // EXTENSIONS_BROWSER_API_SOCKETS_TCP_SERVER_SOCKETS_TCP_SERVER_API_H_
