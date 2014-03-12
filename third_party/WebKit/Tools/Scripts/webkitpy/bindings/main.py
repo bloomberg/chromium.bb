@@ -171,6 +171,17 @@ class BindingsTests(object):
             return e.exit_code
         return 0
 
+    def delete_cache_files(self):
+        # FIXME: Instead of deleting cache files, don't generate them.
+        cache_files = [os.path.join(self.output_directory, output_file)
+                       for output_file in os.listdir(self.output_directory)
+                       if (output_file in ('lextab.py',  # PLY lex
+                                           'lextab.pyc',
+                                           'parsetab.pickle') or  # PLY yacc
+                               output_file.endswith('.cache'))]  # Jinja
+        for cache_file in cache_files:
+            os.remove(cache_file)
+
     def identical_file(self, reference_filename, output_filename):
         reference_basename = os.path.basename(reference_filename)
         cmd = ['diff',
@@ -193,12 +204,7 @@ class BindingsTests(object):
     def identical_output_files(self):
         file_pairs = [(os.path.join(reference_directory, output_file),
                        os.path.join(self.output_directory, output_file))
-                      for output_file in os.listdir(self.output_directory)
-                      # Skip caches
-                      if not (output_file in ('lextab.py',  # PLY lex
-                                              'lextab.pyc',
-                                              'parsetab.pickle') or  # PLY yacc
-                              output_file.endswith('.cache'))]  # Jinja
+                      for output_file in os.listdir(self.output_directory)]
         return all([self.identical_file(reference_filename, output_filename)
                     for (reference_filename, output_filename) in file_pairs])
 
@@ -234,6 +240,8 @@ class BindingsTests(object):
                 return False
             if self.reset_results and self.verbose:
                 print 'Reset results: %s' % input_filename
+
+        self.delete_cache_files()
 
         # Detect all changes
         passed = self.identical_output_files()
