@@ -113,7 +113,7 @@ void HTMLSelectElement::optionSelectedByUser(int optionIndex, bool fireOnChangeN
     if (optionIndex == selectedIndex())
         return;
 
-    selectOption(optionIndex, DeselectOtherOptions | (fireOnChangeNow ? DispatchChangeEvent : 0) | UserDriven);
+    selectOption(optionIndex, DeselectOtherOptions | (fireOnChangeNow ? DispatchInputAndChangeEvent : 0) | UserDriven);
 }
 
 bool HTMLSelectElement::hasPlaceholderLabelOption() const
@@ -637,7 +637,7 @@ void HTMLSelectElement::listBoxOnChange()
     }
 }
 
-void HTMLSelectElement::dispatchChangeEventForMenuList()
+void HTMLSelectElement::dispatchInputAndChangeEventForMenuList()
 {
     ASSERT(usesMenuList());
 
@@ -645,6 +645,8 @@ void HTMLSelectElement::dispatchChangeEventForMenuList()
     if (m_lastOnChangeIndex != selected && m_isProcessingUserDrivenChange) {
         m_lastOnChangeIndex = selected;
         m_isProcessingUserDrivenChange = false;
+        RefPtr<HTMLSelectElement> protector(this);
+        dispatchInputEvent();
         dispatchFormControlChangeEvent();
     }
 }
@@ -836,8 +838,8 @@ void HTMLSelectElement::selectOption(int optionIndex, SelectOptionFlags flags)
 
     if (usesMenuList()) {
         m_isProcessingUserDrivenChange = flags & UserDriven;
-        if (flags & DispatchChangeEvent)
-            dispatchChangeEventForMenuList();
+        if (flags & DispatchInputAndChangeEvent)
+            dispatchInputAndChangeEventForMenuList();
         if (RenderObject* renderer = this->renderer()) {
             if (usesMenuList())
                 toRenderMenuList(renderer)->didSetSelectedIndex(listIndex);
@@ -900,7 +902,7 @@ void HTMLSelectElement::dispatchBlurEvent(Element* newFocusedElement)
     // change events for list boxes whenever the selection change is actually made.
     // This matches other browsers' behavior.
     if (usesMenuList())
-        dispatchChangeEventForMenuList();
+        dispatchInputAndChangeEventForMenuList();
     HTMLFormControlElementWithState::dispatchBlurEvent(newFocusedElement);
 }
 
@@ -1116,7 +1118,7 @@ void HTMLSelectElement::menuListDefaultEventHandler(Event* event)
             handled = false;
 
         if (handled && static_cast<size_t>(listIndex) < listItems.size())
-            selectOption(listToOptionIndex(listIndex), DeselectOtherOptions | DispatchChangeEvent | UserDriven);
+            selectOption(listToOptionIndex(listIndex), DeselectOtherOptions | DispatchInputAndChangeEvent | UserDriven);
 
         if (handled)
             event->setDefaultHandled();
@@ -1176,7 +1178,7 @@ void HTMLSelectElement::menuListDefaultEventHandler(Event* event)
             } else if (keyCode == '\r') {
                 if (form())
                     form()->submitImplicitly(event, false);
-                dispatchChangeEventForMenuList();
+                dispatchInputAndChangeEventForMenuList();
                 handled = true;
             }
         }
@@ -1489,7 +1491,7 @@ void HTMLSelectElement::typeAheadFind(KeyboardEvent* event)
     int index = m_typeAhead.handleEvent(event, TypeAhead::MatchPrefix | TypeAhead::CycleFirstChar);
     if (index < 0)
         return;
-    selectOption(listToOptionIndex(index), DeselectOtherOptions | DispatchChangeEvent | UserDriven);
+    selectOption(listToOptionIndex(index), DeselectOtherOptions | DispatchInputAndChangeEvent | UserDriven);
     if (!usesMenuList())
         listBoxOnChange();
 }
@@ -1519,12 +1521,12 @@ void HTMLSelectElement::accessKeySetSelectedIndex(int index)
             if (toHTMLOptionElement(element)->selected())
                 toHTMLOptionElement(element)->setSelectedState(false);
             else
-                selectOption(index, DispatchChangeEvent | UserDriven);
+                selectOption(index, DispatchInputAndChangeEvent | UserDriven);
         }
     }
 
     if (usesMenuList())
-        dispatchChangeEventForMenuList();
+        dispatchInputAndChangeEventForMenuList();
     else
         listBoxOnChange();
 
