@@ -98,6 +98,7 @@ struct fd_device * fd_device_new(int fd)
 		ERROR_MSG("unknown device: %s", version->name);
 		dev = NULL;
 	}
+	drmFreeVersion(version);
 
 	if (!dev)
 		return NULL;
