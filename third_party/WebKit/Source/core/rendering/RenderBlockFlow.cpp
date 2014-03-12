@@ -309,6 +309,7 @@ inline bool RenderBlockFlow::layoutBlockFlow(bool relayoutChildren, LayoutUnit &
 {
     LayoutRepainter repainter(*this, checkForRepaintDuringLayout());
 
+    LayoutUnit oldLeft = logicalLeft();
     if (updateLogicalWidthAndColumnWidth())
         relayoutChildren = true;
 
@@ -425,7 +426,7 @@ inline bool RenderBlockFlow::layoutBlockFlow(bool relayoutChildren, LayoutUnit &
     if (heightChanged)
         relayoutChildren = true;
 
-    layoutPositionedObjects(relayoutChildren || isRoot());
+    layoutPositionedObjects(relayoutChildren || isRoot(), oldLeft != logicalLeft() ? ForcedLayoutAfterContainingBlockMoved : DefaultLayout);
 
     updateRegionsAndShapesAfterChildLayout(flowThread, heightChanged);
 

@@ -290,7 +290,13 @@ protected:
     virtual void layout() OVERRIDE;
     virtual bool updateImageLoadingPriorities() OVERRIDE FINAL;
 
-    void layoutPositionedObjects(bool relayoutChildren, bool fixedPositionObjectsOnly = false);
+    enum PositionedLayoutBehavior {
+        DefaultLayout,
+        LayoutOnlyFixedPositionedObjects,
+        ForcedLayoutAfterContainingBlockMoved
+    };
+
+    void layoutPositionedObjects(bool relayoutChildren, PositionedLayoutBehavior = DefaultLayout);
     void markFixedPositionObjectForLayoutIfNeeded(RenderObject* child, SubtreeLayoutScope&);
 
     LayoutUnit marginIntrinsicLogicalWidthForChild(RenderBox* child) const;

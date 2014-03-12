@@ -1514,9 +1514,16 @@ bool RenderObject::repaintAfterLayoutIfNeeded(const RenderLayerModelObject* repa
         // This ASSERT fails due to animations.  See https://bugs.webkit.org/show_bug.cgi?id=37048
         // ASSERT(!newOutlineBoxRectPtr || *newOutlineBoxRectPtr == outlineBoundsForRepaint(repaintContainer));
         newOutlineBox = newOutlineBoxRectPtr ? *newOutlineBoxRectPtr : outlineBoundsForRepaint(repaintContainer);
-        if (newOutlineBox.location() != oldOutlineBox.location() || (mustRepaintBackgroundOrBorder() && (newBounds != oldBounds || newOutlineBox != oldOutlineBox)))
+
+        if ((hasOutline() && newOutlineBox.location() != oldOutlineBox.location())
+            || (mustRepaintBackgroundOrBorder() && (newBounds != oldBounds || (hasOutline() && newOutlineBox != oldOutlineBox))))
             fullRepaint = true;
     }
+
+    // If there is no intersection between the old and the new bounds, invalidating
+    // the difference is more expensive than just doing a full repaint.
+    if (!fullRepaint && !newBounds.intersects(oldBounds))
+        fullRepaint = true;
 
     if (!repaintContainer)
         repaintContainer = v;

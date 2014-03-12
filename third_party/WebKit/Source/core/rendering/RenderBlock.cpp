@@ -1663,7 +1663,7 @@ bool RenderBlock::simplifiedLayout()
     // are statically positioned and thus need to move with their absolute ancestors.
     bool canContainFixedPosObjects = canContainFixedPositionObjects();
     if (posChildNeedsLayout() || canContainFixedPosObjects)
-        layoutPositionedObjects(false, !posChildNeedsLayout() && canContainFixedPosObjects);
+        layoutPositionedObjects(false, !posChildNeedsLayout() && canContainFixedPosObjects ? LayoutOnlyFixedPositionedObjects : DefaultLayout);
 
     // Recompute our overflow information.
     // FIXME: We could do better here by computing a temporary overflow object from layoutPositionedObjects and only
@@ -1731,7 +1731,7 @@ LayoutUnit RenderBlock::marginIntrinsicLogicalWidthForChild(RenderBox* child) co
     return margin;
 }
 
-void RenderBlock::layoutPositionedObjects(bool relayoutChildren, bool fixedPositionObjectsOnly)
+void RenderBlock::layoutPositionedObjects(bool relayoutChildren, PositionedLayoutBehavior info)
 {
     TrackedRendererListHashSet* positionedDescendants = positionedObjects();
     if (!positionedDescendants)
@@ -1750,7 +1750,7 @@ void RenderBlock::layoutPositionedObjects(bool relayoutChildren, bool fixedPosit
         // if this is a fixed position element, mark it for layout if it has an abspos ancestor and needs to move with that ancestor, i.e.
         // it has static position.
         markFixedPositionObjectForLayoutIfNeeded(r, layoutScope);
-        if (fixedPositionObjectsOnly) {
+        if (info == LayoutOnlyFixedPositionedObjects) {
             r->layoutIfNeeded();
             continue;
         }
@@ -1785,6 +1785,11 @@ void RenderBlock::layoutPositionedObjects(bool relayoutChildren, bool fixedPosit
                 r->updateLogicalWidth();
             oldLogicalTop = logicalTopForChild(r);
         }
+
+        // FIXME: We should be able to do a r->setNeedsPositionedMovementLayout() here instead of a full layout. Need
+        // to investigate why it does not trigger the correct invalidations in that case. crbug.com/350756
+        if (info == ForcedLayoutAfterContainingBlockMoved)
+            r->setNeedsLayout();
 
         r->layoutIfNeeded();
 
