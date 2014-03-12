@@ -80,6 +80,7 @@ class ZeroSuggestProvider : public BaseSearchProvider {
   virtual void StopSuggest() OVERRIDE;
   virtual void ClearAllResults() OVERRIDE;
   virtual int GetDefaultResultRelevance() const OVERRIDE;
+  virtual void RecordDeletionResult(bool success) OVERRIDE;
 
   // Adds AutocompleteMatches for each of the suggestions in |results| to
   // |map|.

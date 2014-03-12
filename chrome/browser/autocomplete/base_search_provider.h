@@ -14,6 +14,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/memory/scoped_vector.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
@@ -23,6 +24,7 @@
 class AutocompleteProviderListener;
 class GURL;
 class Profile;
+class SuggestionDeletionHandler;
 class TemplateURL;
 
 namespace base {
@@ -36,6 +38,15 @@ class Value;
 class BaseSearchProvider : public AutocompleteProvider,
                            public net::URLFetcherDelegate {
  public:
+  // ID used in creating URLFetcher for default provider's suggest results.
+  static const int kDefaultProviderURLFetcherID;
+
+  // ID used in creating URLFetcher for keyword provider's suggest results.
+  static const int kKeywordProviderURLFetcherID;
+
+  // ID used in creating URLFetcher for deleting suggestion results.
+  static const int kDeletionURLFetcherID;
+
   BaseSearchProvider(AutocompleteProviderListener* listener,
                      Profile* profile,
                      AutocompleteProvider::Type type);
@@ -45,6 +56,7 @@ class BaseSearchProvider : public AutocompleteProvider,
 
   // AutocompleteProvider:
   virtual void Stop(bool clear_cached_results) OVERRIDE;
+  virtual void DeleteMatch(const AutocompleteMatch& match) OVERRIDE;
   virtual void AddProviderInfo(ProvidersInfo* provider_info) const OVERRIDE;
 
   bool field_trial_triggered_in_session() const {
@@ -252,6 +264,7 @@ class BaseSearchProvider : public AutocompleteProvider,
   typedef std::vector<NavigationResult> NavigationResults;
   typedef std::pair<base::string16, std::string> MatchKey;
   typedef std::map<MatchKey, AutocompleteMatch> MatchMap;
+  typedef ScopedVector<SuggestionDeletionHandler> SuggestionDeletionHandlers;
 
   // A simple structure bundling most of the information (including
   // both SuggestResults and NavigationResults) returned by a call to
@@ -391,6 +404,9 @@ class BaseSearchProvider : public AutocompleteProvider,
   // Returns the relevance to use if it was not explicitly set by the server.
   virtual int GetDefaultResultRelevance() const = 0;
 
+  // Records in UMA whether the deletion request resulted in success.
+  virtual void RecordDeletionResult(bool success) = 0;
+
   // Whether a field trial, if any, has triggered in the most recent
   // autocomplete query. This field is set to true only if the suggestion
   // provider has completed and the response contained
@@ -402,6 +418,23 @@ class BaseSearchProvider : public AutocompleteProvider,
   bool field_trial_triggered_in_session_;
 
  private:
+  friend class SearchProviderTest;
+  FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, TestDeleteMatch);
+
+  // Removes the deleted |match| from the list of |matches_|.
+  void DeleteMatchFromMatches(const AutocompleteMatch& match);
+
+  // This gets called when we have requested a suggestion deletion from the
+  // server to handle the results of the deletion. It will be called after the
+  // deletion request completes.
+  void OnDeletionComplete(bool success,
+                          SuggestionDeletionHandler* handler);
+
+  // Each deletion handler in this vector corresponds to an outstanding request
+  // that a server delete a personalized suggestion. Making this a ScopedVector
+  // causes us to auto-cancel all such requests on shutdown.
+  SuggestionDeletionHandlers deletion_handlers_;
+
   DISALLOW_COPY_AND_ASSIGN(BaseSearchProvider);
 };
 

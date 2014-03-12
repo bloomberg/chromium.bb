@@ -11,6 +11,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_provider_listener.h"
 #include "chrome/browser/autocomplete/url_prefix.h"
+#include "chrome/browser/history/history_service.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/omnibox/omnibox_field_trial.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/instant_service.h"
@@ -45,7 +47,66 @@ AutocompleteMatchType::Type GetAutocompleteMatchType(const std::string& type) {
 
 } // namespace
 
+// SuggestionDeletionHandler -------------------------------------------------
+
+// This class handles making requests to the server in order to delete
+// personalized suggestions.
+class SuggestionDeletionHandler : public net::URLFetcherDelegate {
+ public:
+  typedef base::Callback<void(bool, SuggestionDeletionHandler*)>
+      DeletionCompletedCallback;
+
+  SuggestionDeletionHandler(
+      const std::string& deletion_url,
+      Profile* profile,
+      const DeletionCompletedCallback& callback);
+
+  virtual ~SuggestionDeletionHandler();
+
+ private:
+  // net::URLFetcherDelegate:
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+
+  scoped_ptr<net::URLFetcher> deletion_fetcher_;
+  DeletionCompletedCallback callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(SuggestionDeletionHandler);
+};
+
+
+SuggestionDeletionHandler::SuggestionDeletionHandler(
+    const std::string& deletion_url,
+    Profile* profile,
+    const DeletionCompletedCallback& callback) : callback_(callback) {
+  GURL url(deletion_url);
+  DCHECK(url.is_valid());
+
+  deletion_fetcher_.reset(net::URLFetcher::Create(
+      BaseSearchProvider::kDeletionURLFetcherID,
+      url,
+      net::URLFetcher::GET,
+      this));
+  deletion_fetcher_->SetRequestContext(profile->GetRequestContext());
+  deletion_fetcher_->Start();
+};
+
+SuggestionDeletionHandler::~SuggestionDeletionHandler() {
+};
+
+void SuggestionDeletionHandler::OnURLFetchComplete(
+    const net::URLFetcher* source) {
+  DCHECK(source == deletion_fetcher_.get());
+  callback_.Run(
+      source->GetStatus().is_success() && (source->GetResponseCode() == 200),
+      this);
+};
+
 // BaseSearchProvider ---------------------------------------------------------
+
+// static
+const int BaseSearchProvider::kDefaultProviderURLFetcherID = 1;
+const int BaseSearchProvider::kKeywordProviderURLFetcherID = 2;
+const int BaseSearchProvider::kDeletionURLFetcherID = 3;
 
 BaseSearchProvider::BaseSearchProvider(AutocompleteProviderListener* listener,
                                        Profile* profile,
@@ -65,6 +126,30 @@ void BaseSearchProvider::Stop(bool clear_cached_results) {
 
   if (clear_cached_results)
     ClearAllResults();
+}
+
+void BaseSearchProvider::DeleteMatch(const AutocompleteMatch& match) {
+  DCHECK(match.deletable);
+
+  deletion_handlers_.push_back(new SuggestionDeletionHandler(
+      match.GetAdditionalInfo(BaseSearchProvider::kDeletionUrlKey),
+      profile_,
+      base::Bind(&BaseSearchProvider::OnDeletionComplete,
+                 base::Unretained(this))));
+
+  HistoryService* const history_service =
+      HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
+  TemplateURL* template_url = match.GetTemplateURL(profile_, false);
+  // This may be NULL if the template corresponding to the keyword has been
+  // deleted or there is no keyword set.
+  if (template_url != NULL) {
+    history_service->DeleteMatchingURLsForKeyword(template_url->id(),
+                                                  match.contents);
+  }
+
+  // Immediately update the list of matches to show the match was deleted,
+  // regardless of whether the server request actually succeeds.
+  DeleteMatchFromMatches(match);
 }
 
 void BaseSearchProvider::AddProviderInfo(ProvidersInfo* provider_info) const {
@@ -648,6 +733,7 @@ bool BaseSearchProvider::ParseSuggestResults(const base::Value& root_val,
     // Apply valid suggested relevance scores; discard invalid lists.
     if (relevances != NULL && !relevances->GetInteger(index, &relevance))
       relevances = NULL;
+
     if (types && types->GetString(index, &type) && (type == "NAVIGATION")) {
       // Do not blindly trust the URL coming from the server to be valid.
       GURL url(URLFixerUpper::FixupURL(
@@ -698,4 +784,28 @@ bool BaseSearchProvider::ParseSuggestResults(const base::Value& root_val,
 void BaseSearchProvider::SortResults(bool is_keyword,
                                      const base::ListValue* relevances,
                                      Results* results) {
+}
+
+void BaseSearchProvider::DeleteMatchFromMatches(
+    const AutocompleteMatch& match) {
+  for (ACMatches::iterator i(matches_.begin()); i != matches_.end(); ++i) {
+    // Find the desired match to delete by checking the type and contents.
+    // We can't check the destination URL, because the autocomplete controller
+    // may have reformulated that. Not that while checking for matching
+    // contents works for personalized suggestions, if more match types gain
+    // deletion support, this algorithm may need to be re-examined.
+    if (i->contents == match.contents && i->type == match.type) {
+      matches_.erase(i);
+      break;
+    }
+  }
+}
+
+void BaseSearchProvider::OnDeletionComplete(
+    bool success, SuggestionDeletionHandler* handler) {
+  RecordDeletionResult(success);
+  SuggestionDeletionHandlers::iterator it = std::find(
+      deletion_handlers_.begin(), deletion_handlers_.end(), handler);
+  DCHECK(it != deletion_handlers_.end());
+  deletion_handlers_.erase(it);
 }

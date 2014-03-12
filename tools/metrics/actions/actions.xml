@@ -7749,6 +7749,22 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Omnibox.ZeroSuggestDelete.Failure">
+  <owner>mariakhomenko@chromium.org</owner>
+  <description>
+    Counts the number of requests sent to the server to delete a suggestion
+    shown by ZeroSuggestProvider that returned an error code.
+  </description>
+</action>
+
+<action name="Omnibox.ZeroSuggestDelete.Success">
+  <owner>mariakhomenko@chromium.org</owner>
+  <description>
+    Counts the number of requests sent to the server to delete a suggestion
+    shown by ZeroSuggestProvider that successfully completed.
+  </description>
+</action>
+
 <action name="OmniboxDestinationURLIsSearchOnDSP">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
