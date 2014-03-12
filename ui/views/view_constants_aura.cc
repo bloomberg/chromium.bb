@@ -13,4 +13,6 @@ namespace views {
 
 DEFINE_WINDOW_PROPERTY_KEY(views::View*, kHostViewKey, NULL);
 
+DEFINE_WINDOW_PROPERTY_KEY(bool, kDesktopRootWindow, false);
+
 }  // namespace views

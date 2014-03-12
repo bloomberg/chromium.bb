@@ -1734,6 +1734,8 @@
         'browser/ui/views/ash/chrome_browser_main_extra_parts_ash.h',
         'browser/ui/views/ash/tab_scrubber.h',
         'browser/ui/views/ash/tab_scrubber.cc',
+        'browser/ui/views/auto_keep_alive.cc',
+        'browser/ui/views/auto_keep_alive.h',
         'browser/ui/views/autofill/autofill_dialog_views.cc',
         'browser/ui/views/autofill/autofill_dialog_views.h',
         'browser/ui/views/autofill/autofill_popup_base_view.cc',
