@@ -449,10 +449,6 @@ void RenderLayerCompositor::updateCompositingLayersInternal()
         {
             TRACE_EVENT0("blink_rendering", "RenderLayerCompositor::computeCompositingRequirements");
             OverlapMap overlapTestRequestMap;
-            // Turn off the overlap map test if bleeding edge features are on.
-            OverlapMap* overlapMap = 0;
-            if (!RuntimeEnabledFeatures::bleedingEdgeFastPathsEnabled())
-                overlapMap = &overlapTestRequestMap;
 
             // FIXME: Passing these unclippedDescendants down and keeping track
             // of them dynamically, we are requiring a full tree walk. This
@@ -460,7 +456,7 @@ void RenderLayerCompositor::updateCompositingLayersInternal()
             // scrolling and animation bounds is implemented (crbug.com/252472).
             Vector<RenderLayer*> unclippedDescendants;
             IntRect absoluteDecendantBoundingBox;
-            computeCompositingRequirements(0, updateRoot, overlapMap, recursionData, saw3DTransform, unclippedDescendants, absoluteDecendantBoundingBox);
+            computeCompositingRequirements(0, updateRoot, &overlapTestRequestMap, recursionData, saw3DTransform, unclippedDescendants, absoluteDecendantBoundingBox);
         }
 
         {
