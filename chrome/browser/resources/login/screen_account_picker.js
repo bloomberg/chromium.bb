@@ -25,6 +25,7 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
       'loadUsers',
       'runAppForTesting',
       'setApps',
+      'setShouldShowApps',
       'showAppError',
       'updateUserImage',
       'setCapsLockState',
@@ -201,6 +202,14 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
      */
     setApps: function(apps) {
       $('pod-row').setApps(apps);
+    },
+
+    /**
+     * Sets the flag of whether app pods should be visible.
+     * @param {boolean} shouldShowApps Whether to show app pods.
+     */
+    setShouldShowApps: function(shouldShowApps) {
+      $('pod-row').setShouldShowApps(shouldShowApps);
     },
 
     /**

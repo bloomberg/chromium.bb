@@ -524,6 +524,9 @@ class KioskTest : public OobeBaseTest {
         ->OnConfigureNetwork();
     lock_screen_waiter.Wait();
 
+    // There should be only one owner pod on this screen.
+    JsExpect("$('pod-row').isSinglePod");
+
     // A network error screen should be shown after authenticating.
     OobeScreenWaiter error_screen_waiter(OobeDisplay::SCREEN_ERROR_MESSAGE);
     static_cast<AppLaunchSigninScreen::Delegate*>(GetAppLaunchController())

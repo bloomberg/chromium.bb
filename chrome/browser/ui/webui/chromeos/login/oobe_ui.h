@@ -119,9 +119,6 @@ class OobeUI : public OobeDisplay,
                         SigninScreenHandlerDelegate* delegate,
                         NativeWindowDelegate* native_window_delegate);
 
-  // Shows the kiosk splash screen.
-  void ShowAppLaunchSplashScreen();
-
   // Resets the delegate set in ShowSigninScreen.
   void ResetSigninScreenHandlerDelegate();
 

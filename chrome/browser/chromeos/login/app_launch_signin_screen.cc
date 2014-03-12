@@ -4,11 +4,13 @@
 
 #include "chrome/browser/chromeos/login/app_launch_signin_screen.h"
 
+#include "base/values.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/web_ui.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -29,6 +31,9 @@ AppLaunchSigninScreen::~AppLaunchSigninScreen() {
 
 void AppLaunchSigninScreen::Show() {
   InitOwnerUserList();
+  oobe_ui_->web_ui()->CallJavascriptFunction(
+      "login.AccountPickerScreen.setShouldShowApps",
+      base::FundamentalValue(false));
   oobe_ui_->ShowSigninScreen(LoginScreenContext(), this, NULL);
 }
 
