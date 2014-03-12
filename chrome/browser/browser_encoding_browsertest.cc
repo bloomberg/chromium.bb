@@ -221,7 +221,8 @@ IN_PROC_BROWSER_TEST_F(BrowserEncodingTest, TestOverrideEncoding) {
 // http://crbug.com/2927 for more details.
 //
 // This test fails frequently on the win_rel trybot. See http://crbug.com/122053
-#if defined(OS_WIN)
+// It also times out frequently on Mac dbg. See http://crbug.com/351325
+#if defined(OS_WIN) || defined(OS_MACOSX)
 #define MAYBE_TestEncodingAutoDetect DISABLED_TestEncodingAutoDetect
 #else
 #define MAYBE_TestEncodingAutoDetect TestEncodingAutoDetect
