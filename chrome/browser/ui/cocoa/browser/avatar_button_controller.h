@@ -14,8 +14,10 @@ class Browser;
 // This view controller manages the button that sits in the top of the
 // window frame when using multi-profiles, and shows the current profile's
 // name. Clicking the button will open the profile menu.
-@interface AvatarButtonController : AvatarBaseController
-
+@interface AvatarButtonController : AvatarBaseController {
+ @private
+  BOOL isThemedWindow_;
+}
 // Designated initializer.
 - (id)initWithBrowser:(Browser*)browser;
 

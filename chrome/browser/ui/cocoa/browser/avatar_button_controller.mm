@@ -7,6 +7,8 @@
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/profiles/profiles_state.h"
+#include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
@@ -33,6 +35,8 @@ const ui::NinePartImageIds kHoverBorderImageIds =
     IMAGE_GRID(IDR_AVATAR_MAC_BUTTON_HOVER);
 const ui::NinePartImageIds kPressedBorderImageIds =
     IMAGE_GRID(IDR_AVATAR_MAC_BUTTON_PRESSED);
+const ui::NinePartImageIds kThemedBorderImageIds =
+    IMAGE_GRID(IDR_AVATAR_THEMED_MAC_BUTTON_NORMAL);
 
 NSImage* GetImageFromResourceID(int resourceId) {
   return ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
@@ -42,10 +46,21 @@ NSImage* GetImageFromResourceID(int resourceId) {
 }  // namespace
 
 // Button cell with a custom border given by a set of nine-patch image grids.
-@interface CustomThemeButtonCell : NSButtonCell
+@interface CustomThemeButtonCell : NSButtonCell {
+ @private
+   BOOL isThemedWindow_;
+}
+- (void)setIsThemedWindow:(BOOL)isThemedWindow;
 @end
 
 @implementation CustomThemeButtonCell
+- (id)initWithThemedWindow:(BOOL)isThemedWindow {
+  if ((self = [super init])) {
+    isThemedWindow_ = isThemedWindow;
+  }
+  return self;
+}
+
 - (NSSize)cellSize {
   NSSize buttonSize = [super cellSize];
   buttonSize.width += 2 * kButtonPadding - 2 * kButtonDefaultPadding;
@@ -78,6 +93,8 @@ NSImage* GetImageFromResourceID(int resourceId) {
   HoverState hoverState =
       [base::mac::ObjCCastStrict<HoverImageButton>(controlView) hoverState];
   ui::NinePartImageIds imageIds = kNormalBorderImageIds;
+  if (isThemedWindow_)
+    imageIds = kThemedBorderImageIds;
 
   if (hoverState == kHoverStateMouseDown)
     imageIds = kPressedBorderImageIds;
@@ -85,16 +102,26 @@ NSImage* GetImageFromResourceID(int resourceId) {
     imageIds = kHoverBorderImageIds;
   ui::DrawNinePartImage(frame, imageIds, NSCompositeSourceOver, 1.0, true);
 }
+
+- (void)setIsThemedWindow:(BOOL)isThemedWindow {
+  isThemedWindow_ = isThemedWindow;
+}
 @end
 
 @interface AvatarButtonController (Private)
 - (void)updateAvatarButtonAndLayoutParent:(BOOL)layoutParent;
+- (void)dealloc;
+- (void)themeDidChangeNotification:(NSNotification*)aNotification;
 @end
 
 @implementation AvatarButtonController
 
 - (id)initWithBrowser:(Browser*)browser {
   if ((self = [super initWithBrowser:browser])) {
+    ThemeService* themeService =
+        ThemeServiceFactory::GetForProfile(browser->profile());
+    isThemedWindow_ = !themeService->UsingNativeTheme();
+
     HoverImageButton* hoverButton =
         [[HoverImageButton alloc] initWithFrame:NSZeroRect];
     [hoverButton setDefaultImage:GetImageFromResourceID(
@@ -106,7 +133,7 @@ NSImage* GetImageFromResourceID(int resourceId) {
 
     button_.reset(hoverButton);
     base::scoped_nsobject<CustomThemeButtonCell> cell(
-        [[CustomThemeButtonCell alloc] init]);
+        [[CustomThemeButtonCell alloc] initWithThemedWindow:isThemedWindow_]);
     [button_ setCell:cell.get()];
     [self setView:button_];
 
@@ -122,8 +149,32 @@ NSImage* GetImageFromResourceID(int resourceId) {
     [button_ setAction:@selector(buttonClicked:)];
 
     [self updateAvatarButtonAndLayoutParent:NO];
+
+    NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
+    [center addObserver:self
+               selector:@selector(themeDidChangeNotification:)
+                   name:kBrowserThemeDidChangeNotification
+                 object:nil];
+
   }
   return self;
+}
+
+- (void)dealloc {
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
+  [super dealloc];
+}
+
+- (void)themeDidChangeNotification:(NSNotification*)aNotification {
+  // Redraw the button if the window has switched between themed and native.
+  ThemeService* themeService =
+      ThemeServiceFactory::GetForProfile(browser_->profile());
+  BOOL updatedIsThemedWindow = !themeService->UsingNativeTheme();
+  if (isThemedWindow_ != updatedIsThemedWindow) {
+    isThemedWindow_ = updatedIsThemedWindow;
+    [[button_ cell] setIsThemedWindow:isThemedWindow_];
+    [self updateAvatarButtonAndLayoutParent:YES];
+  }
 }
 
 - (void)updateAvatarButtonAndLayoutParent:(BOOL)layoutParent {
@@ -136,12 +187,15 @@ NSImage* GetImageFromResourceID(int resourceId) {
   [shadow setShadowBlurRadius:0];
 
   NSColor* foregroundColor;
-  if (!browser_->profile()->IsGuestSession()) {
+  if (browser_->profile()->IsGuestSession()) {
+    foregroundColor = [NSColor colorWithCalibratedWhite:1.0 alpha:0.9];
+    [shadow setShadowColor:[NSColor colorWithCalibratedWhite:0.0 alpha:0.4]];
+  } else if (!isThemedWindow_) {
     foregroundColor = [NSColor blackColor];
     [shadow setShadowColor:[NSColor colorWithCalibratedWhite:1.0 alpha:0.7]];
   } else {
-    foregroundColor = [NSColor colorWithCalibratedWhite:1.0 alpha:0.9];
-    [shadow setShadowColor:[NSColor colorWithCalibratedWhite:0.0 alpha:0.4]];
+    foregroundColor = [NSColor blackColor];
+    [shadow setShadowColor:[NSColor colorWithCalibratedWhite:1.0 alpha:0.4]];
   }
 
   base::scoped_nsobject<NSMutableParagraphStyle> paragraphStyle(

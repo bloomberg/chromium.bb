@@ -843,6 +843,17 @@
         <structure type="chrome_scaled_image" name="IDR_AVATAR_MAC_BUTTON_PRESSED_TOP" file="mac/avatar_button/sign_in_button_top_pressed.png" />
         <structure type="chrome_scaled_image" name="IDR_AVATAR_MAC_BUTTON_PRESSED_TOP_LEFT" file="mac/avatar_button/sign_in_button_top_left_pressed.png" />
         <structure type="chrome_scaled_image" name="IDR_AVATAR_MAC_BUTTON_PRESSED_TOP_RIGHT" file="mac/avatar_button/sign_in_button_top_right_pressed.png" />
+
+        <!-- Mac, themed -->
+        <structure type="chrome_scaled_image" name="IDR_AVATAR_THEMED_MAC_BUTTON_NORMAL_BOTTOM" file="mac/avatar_button/sign_in_button_themed_bottom.png" />
+        <structure type="chrome_scaled_image" name="IDR_AVATAR_THEMED_MAC_BUTTON_NORMAL_BOTTOM_LEFT" file="mac/avatar_button/sign_in_button_themed_bottom_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_AVATAR_THEMED_MAC_BUTTON_NORMAL_BOTTOM_RIGHT" file="mac/avatar_button/sign_in_button_themed_bottom_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_AVATAR_THEMED_MAC_BUTTON_NORMAL_CENTER" file="mac/avatar_button/sign_in_button_themed_center.png" />
+        <structure type="chrome_scaled_image" name="IDR_AVATAR_THEMED_MAC_BUTTON_NORMAL_LEFT" file="mac/avatar_button/sign_in_button_themed_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_AVATAR_THEMED_MAC_BUTTON_NORMAL_RIGHT" file="mac/avatar_button/sign_in_button_themed_right.png" />
+        <structure type="chrome_scaled_image" name="IDR_AVATAR_THEMED_MAC_BUTTON_NORMAL_TOP" file="mac/avatar_button/sign_in_button_themed_top.png" />
+        <structure type="chrome_scaled_image" name="IDR_AVATAR_THEMED_MAC_BUTTON_NORMAL_TOP_LEFT" file="mac/avatar_button/sign_in_button_themed_top_left.png" />
+        <structure type="chrome_scaled_image" name="IDR_AVATAR_THEMED_MAC_BUTTON_NORMAL_TOP_RIGHT" file="mac/avatar_button/sign_in_button_themed_top_right.png" />
       </if>
 
       <if expr="chromeos">
