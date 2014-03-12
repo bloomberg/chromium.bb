@@ -67,6 +67,12 @@ class DumpReaderWin(DumpReader):
             return stack
         return None
 
+    def _find_depot_tools_path(self):
+        """Attempt to find depot_tools location in PATH."""
+        for i in os.environ['PATH'].split(os.pathsep):
+            if os.path.isfile(os.path.join(i, 'gclient')):
+                return i
+
     def _check_cdb_available(self):
         """Checks whether we can use cdb to symbolize minidumps."""
         if self._cdb_available != None:
@@ -97,9 +103,18 @@ class DumpReaderWin(DumpReader):
         if gyp_defines:
             gyp_defines = shlex.split(gyp_defines)
         if 'windows_sdk_path' in gyp_defines:
-            possible_cdb_locations.append([
+            possible_cdb_locations.extend([
                 '%s\\Debuggers\\x86' % gyp_defines['windows_sdk_path'],
                 '%s\\Debuggers\\x64' % gyp_defines['windows_sdk_path'],
+            ])
+
+        # Look in depot_tools win_toolchain too.
+        depot_tools = self._find_depot_tools_path()
+        if depot_tools:
+            win8sdk = os.path.join(depot_tools, 'win_toolchain', 'vs2013_files', 'win8sdk')
+            possible_cdb_locations.extend([
+                '%s\\Debuggers\\x86' % win8sdk,
+                '%s\\Debuggers\\x64' % win8sdk,
             ])
 
         for cdb_path in possible_cdb_locations:
