@@ -55,6 +55,21 @@ shouldBe('document.getSelection().toString()', '" foo bar "');
 input.value = String.fromCharCode(0xD800);
 shouldBe('input.value', 'String.fromCharCode(0xD800)');
 
+input.value = 'foo\0bar';
+shouldBeEqualToString('input.value', 'foo\0bar');
+
+input.value = 'foo\bbar';
+shouldBeEqualToString('input.value', "foo\bbar");
+
+input.value = 'foo\tbar';
+shouldBeEqualToString('input.value', "foo\tbar");
+
+input.value = "foo\vbar";
+shouldBeEqualToString('input.value', "foo\vbar");
+
+input.value = "foo\fbar";
+shouldBeEqualToString('input.value', "foo\fbar");
+
 // FIXME: Add more sanitization tests.
 // https://bugs.webkit.org/show_bug.cgi?id=37024
 
