@@ -265,7 +265,8 @@ public:
 
     // These methods write to the canvas and modify the opaque region, if tracked.
     // Also drawLine(const IntPoint& point1, const IntPoint& point2) and fillRoundedRect
-    void writePixels(const SkBitmap&, int x, int y, SkCanvas::Config8888 = SkCanvas::kNative_Premul_Config8888);
+    void writePixels(const SkImageInfo&, const void* pixels, size_t rowBytes, int x, int y);
+    void writePixels(const SkBitmap&, int x, int y);
     void drawBitmap(const SkBitmap&, SkScalar, SkScalar, const SkPaint* = 0);
     void drawBitmapRect(const SkBitmap&, const SkRect*, const SkRect&, const SkPaint* = 0);
     void drawOval(const SkRect&, const SkPaint&);

@@ -1153,19 +1153,33 @@ void GraphicsContext::drawImageBuffer(ImageBuffer* image, const FloatRect& dest,
     }
 }
 
-void GraphicsContext::writePixels(const SkBitmap& bitmap, int x, int y, SkCanvas::Config8888 config8888)
+void GraphicsContext::writePixels(const SkImageInfo& info, const void* pixels, size_t rowBytes, int x, int y)
 {
     if (paintingDisabled())
         return;
 
-    m_canvas->writePixels(bitmap, x, y, config8888);
+    m_canvas->writePixels(info, pixels, rowBytes, x, y);
 
     if (m_trackOpaqueRegion) {
-        SkRect rect = SkRect::MakeXYWH(x, y, bitmap.width(), bitmap.height());
+        SkRect rect = SkRect::MakeXYWH(x, y, info.width(), info.height());
         SkPaint paint;
 
         paint.setXfermodeMode(SkXfermode::kSrc_Mode);
-        m_opaqueRegion.didDrawRect(this, rect, paint, &bitmap);
+        if (kOpaque_SkAlphaType != info.alphaType())
+            paint.setAlpha(0x80); // signal to m_opaqueRegion that we are not fully opaque
+
+        m_opaqueRegion.didDrawRect(this, rect, paint, 0);
+        // more efficient would be to call markRectAsOpaque or MarkRectAsNonOpaque directly,
+        // rather than cons-ing up a paint with an xfermode and alpha
+    }
+}
+
+void GraphicsContext::writePixels(const SkBitmap& bitmap, int x, int y)
+{
+    if (!bitmap.getTexture()) {
+        SkAutoLockPixels alp(bitmap);
+        if (bitmap.getPixels())
+            writePixels(bitmap.info(), bitmap.getPixels(), bitmap.rowBytes(), x, y);
     }
 }
 

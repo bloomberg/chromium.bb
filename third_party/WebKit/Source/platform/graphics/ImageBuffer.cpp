@@ -321,11 +321,6 @@ void ImageBuffer::putByteArray(Multiply multiplied, Uint8ClampedArray* source, c
     ASSERT(originX >= 0);
     ASSERT(originX < sourceRect.maxX());
 
-    int endX = destPoint.x() + sourceRect.maxX();
-    ASSERT(endX <= m_surface->size().width());
-
-    int numColumns = endX - destX;
-
     int originY = sourceRect.y();
     int destY = destPoint.y() + sourceRect.y();
     ASSERT(destY >= 0);
@@ -333,21 +328,12 @@ void ImageBuffer::putByteArray(Multiply multiplied, Uint8ClampedArray* source, c
     ASSERT(originY >= 0);
     ASSERT(originY < sourceRect.maxY());
 
-    int endY = destPoint.y() + sourceRect.maxY();
-    ASSERT(endY <= m_surface->size().height());
-    int numRows = endY - destY;
+    const size_t srcBytesPerRow = 4 * sourceSize.width();
+    const void* srcAddr = source->data() + originY * srcBytesPerRow + originX * 4;
+    const SkAlphaType alphaType = (multiplied == Premultiplied) ? kPremul_SkAlphaType : kUnpremul_SkAlphaType;
+    SkImageInfo info = SkImageInfo::Make(sourceRect.width(), sourceRect.height(), kRGBA_8888_SkColorType, alphaType);
 
-    unsigned srcBytesPerRow = 4 * sourceSize.width();
-    SkBitmap srcBitmap;
-    srcBitmap.installPixels(SkImageInfo::MakeN32Premul(numColumns, numRows), source->data() + originY * srcBytesPerRow + originX * 4, srcBytesPerRow);
-
-    SkCanvas::Config8888 config8888;
-    if (multiplied == Premultiplied)
-        config8888 = SkCanvas::kRGBA_Premul_Config8888;
-    else
-        config8888 = SkCanvas::kRGBA_Unpremul_Config8888;
-
-    context()->writePixels(srcBitmap, destX, destY, config8888);
+    context()->writePixels(info, srcAddr, srcBytesPerRow, destX, destY);
 }
 
 template <typename T>
