@@ -115,7 +115,6 @@ extern const char kDisablePnacl[];
 extern const char kDisablePopupBlocking[];
 extern const char kDisablePreconnect[];
 extern const char kDisablePrerenderLocalPredictor[];
-extern const char kDisablePrivetLocalPrinting[];
 extern const char kDisablePromptOnRepost[];
 extern const char kDisableQuic[];
 extern const char kDisableQuicHttps[];

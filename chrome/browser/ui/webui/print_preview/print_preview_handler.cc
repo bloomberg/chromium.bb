@@ -536,9 +536,8 @@ void PrintPreviewHandler::RegisterMessages() {
 
 bool PrintPreviewHandler::PrivetPrintingEnabled() {
 #if defined(ENABLE_MDNS)
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  return !command_line->HasSwitch(switches::kDisableDeviceDiscovery) &&
-      !command_line->HasSwitch(switches::kDisablePrivetLocalPrinting);
+  return !CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableDeviceDiscovery);
 #else
   return false;
 #endif

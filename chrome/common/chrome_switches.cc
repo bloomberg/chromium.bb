@@ -384,9 +384,6 @@ const char kDisablePreconnect[]             = "disable-preconnect";
 const char kDisablePrerenderLocalPredictor[] =
     "disable-prerender-local-predictor";
 
-// Disable Privet local printing.
-const char kDisablePrivetLocalPrinting[]     = "disable-privet-local-printing";
-
 // Normally when the user attempts to navigate to a page that was the result of
 // a post we prompt to make sure they want to. This switch may be used to
 // disable that check. This switch is used during automated testing.

@@ -1476,13 +1476,6 @@ const Experiment kExperiments[] = {
                               switches::kDisableDeviceDiscoveryNotifications)
   },
   {
-    "disable-privet-local-printing",
-    IDS_FLAGS_DISABLE_PRIVET_LOCAL_PRINTING_NAME,
-    IDS_FLAGS_DISABLE_PRIVET_LOCAL_PRINTING_DESCRIPTION,
-    kOsWin | kOsLinux | kOsCrOS,
-    SINGLE_VALUE_TYPE(switches::kDisablePrivetLocalPrinting)
-  },
-  {
     "enable-print-preview-register-promos",
     IDS_FLAGS_ENABLE_PRINT_PREVIEW_REGISTER_PROMOS_NAME,
     IDS_FLAGS_ENABLE_PRINT_PREVIEW_REGISTER_PROMOS_DESCRIPTION,
