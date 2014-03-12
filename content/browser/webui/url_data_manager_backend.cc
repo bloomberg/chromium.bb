@@ -356,12 +356,13 @@ void URLRequestChromeJob::CheckStoragePartitionMatches(
   // being in the same process. We do an extra check to guard against an
   // exploited renderer pretending to add them as a subframe. We skip this check
   // for resources.
-  // TODO(guohui): move URL constants for favicon, theme, thumb, thumb and
-  // thumbnails from chrome/common/url_constants.h to
+  // TODO(guohui): move URL constants for extension-icon, favicon, theme, thumb,
+  // thumb and thumbnails from chrome/common/url_constants.h to
   // content/public/common/url_constants.h, so that they could be reused here.
   bool allowed = false;
   if (url.SchemeIs(kChromeUIScheme) &&
       (url.host() == kChromeUIResourcesHost ||
+       url.host() == "extension-icon" ||
        url.host() == "favicon" ||
        url.host() == "theme" ||
        url.host() == "thumb" ||
