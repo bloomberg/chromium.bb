@@ -75,7 +75,7 @@ public:
     virtual void initialize() OVERRIDE;
     virtual void uninitialize() OVERRIDE;
 
-    // Listener
+    // AudioContext's listener
     AudioListener* listener();
 
     // Panning model
@@ -84,13 +84,13 @@ public:
     void setPanningModel(const String&);
 
     // Position
-    void setPosition(float x, float y, float z) { m_position = FloatPoint3D(x, y, z); }
+    void setPosition(float x, float y, float z);
 
     // Orientation
-    void setOrientation(float x, float y, float z) { m_orientation = FloatPoint3D(x, y, z); }
+    void setOrientation(float x, float y, float z);
 
     // Velocity
-    void setVelocity(float x, float y, float z) { m_velocity = FloatPoint3D(x, y, z); }
+    void setVelocity(float x, float y, float z);
 
     // Distance parameters
     String distanceModel() const;
@@ -116,8 +116,7 @@ public:
     double coneOuterGain() const { return m_coneEffect.outerGain(); }
     void setConeOuterGain(double angle) { m_coneEffect.setOuterGain(angle); }
 
-    void getAzimuthElevation(double* outAzimuth, double* outElevation);
-    float dopplerRate();
+    double dopplerRate();
 
     virtual double tailTime() const OVERRIDE { return m_panner ? m_panner->tailTime() : 0; }
     virtual double latencyTime() const OVERRIDE { return m_panner ? m_panner->latencyTime() : 0; }
@@ -125,19 +124,37 @@ public:
 private:
     PannerNode(AudioContext*, float sampleRate);
 
+    void calculateAzimuthElevation(double* outAzimuth, double* outElevation);
     // Returns the combined distance and cone gain attenuation.
+    float calculateDistanceConeGain();
+    double calculateDopplerRate();
+
+    void azimuthElevation(double* outAzimuth, double* outElevation);
     float distanceConeGain();
+
+    bool isAzimuthElevationDirty();
+    bool isDistanceConeGainDirty();
+    bool isDopplerRateDirty();
 
     // Notifies any AudioBufferSourceNodes connected to us either directly or indirectly about our existence.
     // This is in order to handle the pitch change necessary for the doppler shift.
     void notifyAudioSourcesConnectedToNode(AudioNode*, HashMap<AudioNode*, bool> &visitedNodes);
 
+    void updateCachedListener();
+    void updateCachedSourceLocationInfo();
+
     OwnPtr<Panner> m_panner;
     unsigned m_panningModel;
 
+    // Current source location information
     FloatPoint3D m_position;
     FloatPoint3D m_orientation;
     FloatPoint3D m_velocity;
+
+    // Cached source location information
+    FloatPoint3D m_cachedPosition;
+    FloatPoint3D m_cachedOrientation;
+    FloatPoint3D m_cachedVelocity;
 
     // Gain
     RefPtr<AudioParam> m_distanceGain;
@@ -146,9 +163,17 @@ private:
     ConeEffect m_coneEffect;
     float m_lastGain;
 
-    // HRTF Database loader
+    double m_cachedAzimuth;
+    double m_cachedElevation;
+    float m_cachedDistanceConeGain;
+    double m_cachedDopplerRate;
+
+    // Cached listener parameters after processing.
+    RefPtr<AudioListener> m_cachedListener;
+
     RefPtr<HRTFDatabaseLoader> m_hrtfDatabaseLoader;
 
+    // AudioContext's connection count
     unsigned m_connectionCount;
 
     // Synchronize process() and setPanningModel() which can change the panner.
