@@ -117,12 +117,6 @@ WebString WebMediaStreamTrack::id() const
     return m_private->id();
 }
 
-WebMediaStream WebMediaStreamTrack::stream() const
-{
-    ASSERT(!m_private.isNull());
-    return WebMediaStream(m_private->stream());
-}
-
 WebMediaStreamSource WebMediaStreamTrack::source() const
 {
     ASSERT(!m_private.isNull());

@@ -66,14 +66,12 @@ bool MediaStreamCenter::getMediaStreamTrackSources(PassRefPtr<MediaStreamTrackSo
     return m_private && m_private->getMediaStreamTrackSources(request);
 }
 
-void MediaStreamCenter::didSetMediaStreamTrackEnabled(MediaStreamDescriptor* stream, MediaStreamComponent* component)
+void MediaStreamCenter::didSetMediaStreamTrackEnabled(MediaStreamComponent* component)
 {
     if (m_private) {
         if (component->enabled()) {
-            m_private->didEnableMediaStreamTrack(stream, component);
             m_private->didEnableMediaStreamTrack(component);
         } else {
-            m_private->didDisableMediaStreamTrack(stream, component);
             m_private->didDisableMediaStreamTrack(component);
         }
     }

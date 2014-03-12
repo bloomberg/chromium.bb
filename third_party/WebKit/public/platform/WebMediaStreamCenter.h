@@ -57,10 +57,6 @@ public:
     virtual void didEnableMediaStreamTrack(const WebMediaStreamTrack&) { }
     virtual void didDisableMediaStreamTrack(const WebMediaStreamTrack&) { }
     virtual bool didStopMediaStreamTrack(const WebMediaStreamTrack&) { return false; }
-
-    // DEPRECATED track functionality.
-    virtual void didEnableMediaStreamTrack(const WebMediaStream&, const WebMediaStreamTrack&) { }
-    virtual void didDisableMediaStreamTrack(const WebMediaStream&, const WebMediaStreamTrack&) { }
 };
 
 } // namespace blink

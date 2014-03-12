@@ -9,6 +9,8 @@ PASS stream2.getAudioTracks().length is 1
 PASS stream2.getVideoTracks().length is 1
 PASS stream1.getAudioTracks().length is 0
 PASS stream1.getTrackById(audioTrack.id) is null
+PASS stream1.getTrackById(audioTrack.id) is non-null.
+PASS audioTrack is stream1.getAudioTracks()[0]
 PASS stream1.getVideoTracks().length is 0
 PASS stream1.getTrackById(videoTrack.id) is null
 PASS stream1.getAudioTracks().length is 1

@@ -41,7 +41,6 @@ PassRefPtr<RTCStatsRequestImpl> RTCStatsRequestImpl::create(ExecutionContext* co
 RTCStatsRequestImpl::RTCStatsRequestImpl(ExecutionContext* context, PassOwnPtr<RTCStatsCallback> callback, PassRefPtr<MediaStreamTrack> selector)
     : ActiveDOMObject(context)
     , m_successCallback(callback)
-    , m_stream(selector ? selector->component()->stream() : 0)
     , m_component(selector ? selector->component() : 0)
 {
 }
@@ -57,12 +56,7 @@ PassRefPtr<RTCStatsResponseBase> RTCStatsRequestImpl::createResponse()
 
 bool RTCStatsRequestImpl::hasSelector()
 {
-    return m_stream;
-}
-
-MediaStreamDescriptor* RTCStatsRequestImpl::stream()
-{
-    return m_stream.get();
+    return m_component;
 }
 
 MediaStreamComponent* RTCStatsRequestImpl::component()
@@ -87,6 +81,5 @@ void RTCStatsRequestImpl::clear()
 {
     m_successCallback.clear();
 }
-
 
 } // namespace WebCore

@@ -85,11 +85,9 @@ public:
     // This function returns true if a selector argument was given to getStats.
     BLINK_PLATFORM_EXPORT bool hasSelector() const;
 
-    // The stream() and component() accessors give the two pieces of information
+    // The component() accessor give the information
     // required to look up a MediaStreamTrack implementation.
-    // It is only useful to call them when hasSelector() returns true.
-    BLINK_PLATFORM_EXPORT const WebMediaStream stream() const;
-
+    // It is only useful to call it when hasSelector() returns true.
     BLINK_PLATFORM_EXPORT const WebMediaStreamTrack component() const;
 
     BLINK_PLATFORM_EXPORT void requestSucceeded(const WebRTCStatsResponse&) const;

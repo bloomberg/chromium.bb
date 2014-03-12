@@ -4,8 +4,6 @@
 <script src="../../resources/js-test.js"></script>
 </head>
 <body>
-<p id="description"></p>
-<div id="console"></div>
 <script>
 description("Test adding and removing tracks.");
 
@@ -74,6 +72,8 @@ function gotStream2(s) {
     tryRemoveTrack(stream1, audioTrack);
     // (re-)add tracks
     tryAddTrack(stream1, audioTrack);
+    shouldBeNonNull('stream1.getTrackById(audioTrack.id)');
+    shouldBe('audioTrack', 'stream1.getAudioTracks()[0]');
 
     tryRemoveTrack(stream1, videoTrack);
     shouldBe('stream1.getVideoTracks().length', '0');

@@ -44,7 +44,6 @@ class MediaStreamDescriptorClient {
 public:
     virtual ~MediaStreamDescriptorClient() { }
 
-    virtual void trackEnded() = 0;
     virtual void streamEnded() = 0;
     virtual void addRemoteTrack(MediaStreamComponent*) = 0;
     virtual void removeRemoteTrack(MediaStreamComponent*) = 0;
@@ -57,11 +56,12 @@ public:
         virtual ~ExtraData() { }
     };
 
+    // Only used for AudioDestinationNode.
     static PassRefPtr<MediaStreamDescriptor> create(const MediaStreamSourceVector& audioSources, const MediaStreamSourceVector& videoSources);
 
-    static PassRefPtr<MediaStreamDescriptor> create(const String& id, const MediaStreamComponentVector& audioComponents, const MediaStreamComponentVector& videoComponents);
+    static PassRefPtr<MediaStreamDescriptor> create(const MediaStreamComponentVector& audioComponents, const MediaStreamComponentVector& videoComponents);
 
-    ~MediaStreamDescriptor();
+    static PassRefPtr<MediaStreamDescriptor> create(const String& id, const MediaStreamComponentVector& audioComponents, const MediaStreamComponentVector& videoComponents);
 
     MediaStreamDescriptorClient* client() const { return m_client; }
     void setClient(MediaStreamDescriptorClient* client) { m_client = client; }

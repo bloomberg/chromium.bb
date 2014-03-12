@@ -75,7 +75,6 @@ public:
 
     BLINK_PLATFORM_EXPORT WebString id() const;
 
-    BLINK_PLATFORM_EXPORT WebMediaStream stream() const;
     BLINK_PLATFORM_EXPORT WebMediaStreamSource source() const;
     BLINK_PLATFORM_EXPORT bool isEnabled() const;
 
