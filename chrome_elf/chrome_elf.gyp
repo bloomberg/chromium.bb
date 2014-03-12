@@ -124,6 +124,7 @@
       ],
       'dependencies': [
         'chrome_elf_common',
+        '../base/base.gyp:base_static',
       ],
     },
     {
