@@ -2201,9 +2201,6 @@
       ['use_libjpeg_turbo==1', {
         'defines': ['USE_LIBJPEG_TURBO=1'],
       }],
-      ['use_nss==1', {
-        'defines': ['USE_NSS=1'],
-      }],
       ['use_x11==1', {
         'defines': ['USE_X11=1'],
       }],
@@ -2357,11 +2354,6 @@
           }],
         ],
       }],
-      ['use_openssl==1', {
-        'defines': [
-          'USE_OPENSSL=1',
-        ],
-      }],
       ['enable_eglimage==1', {
         'defines': [
           'ENABLE_EGLIMAGE=1',
@@ -2513,6 +2505,12 @@
       }],
     ],  # conditions for 'target_defaults'
     'target_conditions': [
+      ['<(use_openssl)==1 or >(nacl_untrusted_build)==1', {
+        'defines': ['USE_OPENSSL=1'],
+      }],
+      ['<(use_nss)==1 and >(nacl_untrusted_build)==0', {
+        'defines': ['USE_NSS=1'],
+      }],
       ['enable_wexit_time_destructors==1', {
         'conditions': [
           [ 'clang==1', {

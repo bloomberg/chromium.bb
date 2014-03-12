@@ -306,6 +306,9 @@ deps = {
   "src/third_party/libwebm/source":
     Var("chromium_git") +
       "/webm/libwebm.git@0f7815b036651e242ec8c2fcfb59fe54f69be1a8",
+
+  "src/third_party/openssl":
+    "/trunk/deps/third_party/openssl@" + Var("openssl_revision"),
 }
 
 
@@ -463,9 +466,6 @@ deps_os = {
       ((Var("googlecode_url") % "linux-syscall-support") + "/trunk/lss@" +
        Var("lss_revision")),
 
-    "src/third_party/openssl":
-      "/trunk/deps/third_party/openssl@" + Var("openssl_revision"),
-
     "src/third_party/gold":
       "/trunk/deps/third_party/gold@228995",
 
@@ -551,9 +551,6 @@ deps_os = {
     "src/third_party/lss":
       ((Var("googlecode_url") % "linux-syscall-support") + "/trunk/lss@" +
        Var("lss_revision")),
-
-    "src/third_party/openssl":
-      "/trunk/deps/third_party/openssl@" + Var("openssl_revision"),
 
     "src/third_party/eyesfree/src/android/java/src/com/googlecode/eyesfree/braille":
       (Var("googlecode_url") % "eyes-free") + "/trunk/braille/client/src/com/googlecode/eyesfree/braille@797",
