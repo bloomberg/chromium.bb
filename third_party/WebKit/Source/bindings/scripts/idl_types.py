@@ -159,7 +159,9 @@ class TypedObject(object):
         # interface itself.
         if not self.idl_type:
             return
-        self.idl_type.resolve_typedefs(typedefs)
+        # Need to re-assign self.idl_type, not just mutate idl_type,
+        # since type(idl_type) may change.
+        self.idl_type = self.idl_type.resolve_typedefs(typedefs)
 
 
 class IdlType(object):
@@ -183,13 +185,25 @@ class IdlType(object):
         return type_string
 
     def resolve_typedefs(self, typedefs):
-        if self.base_type in typedefs:
-            # FIXME: a bit ugly; use __init__ instead of setting flags
-            new_type = typedefs[self.base_type]
-            self.base_type = new_type.base_type
-            # handles TYPEDEF[] and 'typedef Type[] TYPEDEF'
-            self.is_array |= new_type.is_array
-            self.is_sequence |= new_type.is_sequence
+        if self.base_type not in typedefs:
+            return self
+        new_type = typedefs[self.base_type]
+        if type(new_type) != type(self):
+            # If type changes, need to return a different object,
+            # since can't change type(self)
+            return new_type
+        # If type doesn't change, just mutate self to avoid a new object
+        # FIXME: a bit ugly; use __init__ instead of setting flags
+        self.base_type = new_type.base_type
+        # handle array both in use and in typedef itself:
+        # typedef Type TypeDef;
+        # TypeDef[] ...
+        # and:
+        # typedef Type[] TypeArray
+        # TypeArray ...
+        self.is_array |= new_type.is_array
+        self.is_sequence |= new_type.is_sequence
+        return self
 
 
 class IdlUnionType(object):
@@ -201,3 +215,4 @@ class IdlUnionType(object):
         self.union_member_types = [
             typedefs.get(union_member_type, union_member_type)
             for union_member_type in self.union_member_types]
+        return self

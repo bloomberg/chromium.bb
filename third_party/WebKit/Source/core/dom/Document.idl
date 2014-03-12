@@ -20,6 +20,8 @@
 
 callback CustomElementConstructor = Element ();
 
+typedef (CanvasRenderingContext2D or WebGLRenderingContext) RenderingContext;
+
 [
     SpecialWrapFor=HTMLDocument|XMLDocument
 ] interface Document : Node {
@@ -139,9 +141,9 @@ callback CustomElementConstructor = Element ();
     // WebKit extensions
 
     [TreatReturnedNullStringAs=Null] readonly attribute DOMString preferredStylesheetSet;
-             [TreatReturnedNullStringAs=Null, TreatNullAs=NullString] attribute DOMString selectedStylesheetSet;
+    [TreatReturnedNullStringAs=Null, TreatNullAs=NullString] attribute DOMString selectedStylesheetSet;
 
-    (CanvasRenderingContext2D or WebGLRenderingContext) getCSSCanvasContext(DOMString contextId, DOMString name, long width, long height);
+    RenderingContext getCSSCanvasContext(DOMString contextId, DOMString name, long width, long height);
 
     // HTML 5
     HTMLCollection getElementsByClassName(DOMString classNames);

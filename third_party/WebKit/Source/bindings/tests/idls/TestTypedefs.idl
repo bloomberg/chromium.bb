@@ -28,35 +28,34 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// This IDL file is for testing the bindings code generator and for tracking
-// changes in its ouput.
-
-typedef float                      DOUBLE;
-typedef unsigned long long         ULONGLONG;
-typedef TestInterfaceEmpty         TEST_INTERFACE_EMPTY;
-typedef long[]                     ARRAY_OF_LONGS;
-typedef DOMString                  STRING;
-typedef DOMString[]                ARRAY_OF_STRINGS;
-typedef TestCallbackInterface      TEST_CALLBACK_INTERFACE;
+typedef float                      Float;
+typedef unsigned long long         ULongLong;
+typedef TestInterfaceEmpty         TestInterfaceEmptyType;
+typedef long[]                     ArrayOfLongs;
+typedef DOMString                  String;
+typedef DOMString[]                ArrayOfStrings;
+typedef TestCallbackInterface      TestCallbackInterfaceType;
 typedef TestSubObjConstructor      T;
 typedef DOMException               E;
+typedef (Foo or Bar)               FooOrBar;
 
 [
-    Constructor(STRING hello),
+    Constructor(String hello),
 ] interface TestTypedefs {
-    attribute ULONGLONG unsignedLongLongAttr;
+    attribute ULongLong unsignedLongLongAttr;
 
     attribute T TestSubObj;
 
-    [StrictTypeChecking] void func(optional ARRAY_OF_LONGS x);
+    [StrictTypeChecking] void func(optional ArrayOfLongs x);
 
-    void setShadow(DOUBLE width, DOUBLE height, float blur, [StrictTypeChecking] optional STRING color, optional DOUBLE alpha);
-    void voidMethodTestCallbackInterfaceArgument(TEST_CALLBACK_INTERFACE testCallbackInterface);
+    void setShadow(Float width, Float height, float blur, [StrictTypeChecking] optional String color, optional Float alpha);
+    void voidMethodTestCallbackInterfaceArgument(TestCallbackInterfaceType testCallbackInterface);
 
-    ULONGLONG methodWithSequenceArg(sequence<TEST_INTERFACE_EMPTY> sequenceArg);
+    ULongLong methodWithSequenceArg(sequence<TestInterfaceEmptyType> sequenceArg);
+    FooOrBar fooOrBarMethod();
 
-    [RaisesException] ARRAY_OF_STRINGS stringArrayFunction(ARRAY_OF_STRINGS values);
-    [RaisesException] STRING[] stringArrayFunction2(STRING[] values);
+    [RaisesException] ArrayOfStrings stringArrayFunction(ArrayOfStrings values);
+    [RaisesException] String[] stringArrayFunction2(String[] values);
 
     // Exceptions
     [RaisesException] void methodWithException();

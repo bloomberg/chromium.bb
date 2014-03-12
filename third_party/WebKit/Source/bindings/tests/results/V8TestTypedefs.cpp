@@ -34,6 +34,8 @@
 #include "V8TestTypedefs.h"
 
 #include "RuntimeEnabledFeatures.h"
+#include "V8Bar.h"
+#include "V8Foo.h"
 #include "V8TestCallbackInterface.h"
 #include "V8TestInterfaceEmpty.h"
 #include "V8TestSubObj.h"
@@ -332,6 +334,32 @@ static void methodWithSequenceArgMethodCallback(const v8::FunctionCallbackInfo<v
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
+static void fooOrBarMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestTypedefs* imp = V8TestTypedefs::toNative(info.Holder());
+    bool result0Enabled = false;
+    RefPtr<Foo> result0;
+    bool result1Enabled = false;
+    RefPtr<Bar> result1;
+    imp->fooOrBarMethod(result0Enabled, result0, result1Enabled, result1);
+    if (result0Enabled) {
+        v8SetReturnValue(info, result0.release());
+        return;
+    }
+    if (result1Enabled) {
+        v8SetReturnValue(info, result1.release());
+        return;
+    }
+    v8SetReturnValueNull(info);
+}
+
+static void fooOrBarMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestTypedefsV8Internal::fooOrBarMethodMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
 static void stringArrayFunctionMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "stringArrayFunction", "TestTypedefs", info.Holder(), info.GetIsolate());
@@ -424,6 +452,7 @@ static const V8DOMConfiguration::MethodConfiguration V8TestTypedefsMethods[] = {
     {"setShadow", TestTypedefsV8Internal::setShadowMethodCallback, 0, 3},
     {"voidMethodTestCallbackInterfaceArgument", TestTypedefsV8Internal::voidMethodTestCallbackInterfaceArgumentMethodCallback, 0, 1},
     {"methodWithSequenceArg", TestTypedefsV8Internal::methodWithSequenceArgMethodCallback, 0, 1},
+    {"fooOrBarMethod", TestTypedefsV8Internal::fooOrBarMethodMethodCallback, 0, 0},
     {"stringArrayFunction", TestTypedefsV8Internal::stringArrayFunctionMethodCallback, 0, 1},
     {"stringArrayFunction2", TestTypedefsV8Internal::stringArrayFunction2MethodCallback, 0, 1},
     {"methodWithException", TestTypedefsV8Internal::methodWithExceptionMethodCallback, 0, 0},
