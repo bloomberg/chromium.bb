@@ -14,25 +14,9 @@
 #include <fcntl.h>
 #endif
 
-#if defined(OS_WIN)
-#include "base/win/windows_version.h"
-#endif
-
 namespace mojo {
 namespace test {
 namespace {
-
-// Returns true and logs a warning on Windows prior to Vista.
-bool SkipTest() {
-#if defined(OS_WIN)
-  if (base::win::GetVersion() < base::win::VERSION_VISTA) {
-    LOG(WARNING) << "Test skipped: Vista or later needed.";
-    return true;
-  }
-#endif
-
-  return false;
-}
 
 bool IsNonBlocking(const embedder::PlatformHandle& handle) {
 #if defined(OS_WIN)
@@ -59,9 +43,6 @@ bool ReadByte(const embedder::PlatformHandle& handle, char* c) {
 typedef testing::Test MultiprocessTestHelperTest;
 
 TEST_F(MultiprocessTestHelperTest, RunChild) {
-  if (SkipTest())
-    return;
-
   MultiprocessTestHelper helper;
   EXPECT_TRUE(helper.server_platform_handle.is_valid());
 
@@ -75,9 +56,6 @@ MOJO_MULTIPROCESS_TEST_CHILD_MAIN(RunChild) {
 }
 
 TEST_F(MultiprocessTestHelperTest, TestChildMainNotFound) {
-  if (SkipTest())
-    return;
-
   MultiprocessTestHelper helper;
   helper.StartChild("NoSuchTestChildMain");
   int result = helper.WaitForChildShutdown();
@@ -85,9 +63,6 @@ TEST_F(MultiprocessTestHelperTest, TestChildMainNotFound) {
 }
 
 TEST_F(MultiprocessTestHelperTest, PassedChannel) {
-  if (SkipTest())
-    return;
-
   MultiprocessTestHelper helper;
   EXPECT_TRUE(helper.server_platform_handle.is_valid());
   helper.StartChild("PassedChannel");
@@ -132,6 +107,49 @@ MOJO_MULTIPROCESS_TEST_CHILD_MAIN(PassedChannel) {
   // And return it, incremented again.
   c++;
   return static_cast<int>(c);
+}
+
+TEST_F(MultiprocessTestHelperTest, ChildTestPasses) {
+  MultiprocessTestHelper helper;
+  EXPECT_TRUE(helper.server_platform_handle.is_valid());
+  helper.StartChild("ChildTestPasses");
+  EXPECT_TRUE(helper.WaitForChildTestShutdown());
+}
+
+MOJO_MULTIPROCESS_TEST_CHILD_TEST(ChildTestPasses) {
+  ASSERT_TRUE(MultiprocessTestHelper::client_platform_handle.is_valid());
+  EXPECT_TRUE(IsNonBlocking(
+      MultiprocessTestHelper::client_platform_handle.get()));
+}
+
+TEST_F(MultiprocessTestHelperTest, ChildTestFailsAssert) {
+  MultiprocessTestHelper helper;
+  EXPECT_TRUE(helper.server_platform_handle.is_valid());
+  helper.StartChild("ChildTestFailsAssert");
+  EXPECT_FALSE(helper.WaitForChildTestShutdown());
+}
+
+MOJO_MULTIPROCESS_TEST_CHILD_TEST(ChildTestFailsAssert) {
+  ASSERT_FALSE(MultiprocessTestHelper::client_platform_handle.is_valid())
+      << "DISREGARD: Expected failure in child process";
+  ASSERT_FALSE(IsNonBlocking(
+      MultiprocessTestHelper::client_platform_handle.get())) << "Not reached";
+  CHECK(false) << "Not reached";
+}
+
+TEST_F(MultiprocessTestHelperTest, ChildTestFailsExpect) {
+  MultiprocessTestHelper helper;
+  EXPECT_TRUE(helper.server_platform_handle.is_valid());
+  helper.StartChild("ChildTestFailsExpect");
+  EXPECT_FALSE(helper.WaitForChildTestShutdown());
+}
+
+MOJO_MULTIPROCESS_TEST_CHILD_TEST(ChildTestFailsExpect) {
+  EXPECT_FALSE(MultiprocessTestHelper::client_platform_handle.is_valid())
+      << "DISREGARD: Expected failure #1 in child process";
+  EXPECT_FALSE(IsNonBlocking(
+      MultiprocessTestHelper::client_platform_handle.get()))
+      << "DISREGARD: Expected failure #2 in child process";
 }
 
 }  // namespace

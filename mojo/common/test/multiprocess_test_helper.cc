@@ -66,6 +66,10 @@ int MultiprocessTestHelper::WaitForChildShutdown() {
   return rv;
 }
 
+bool MultiprocessTestHelper::WaitForChildTestShutdown() {
+  return WaitForChildShutdown() == 0;
+}
+
 // static
 void MultiprocessTestHelper::ChildSetup() {
   CHECK(CommandLine::InitializedForCurrentProcess());
