@@ -112,12 +112,6 @@ class WebRtcVideoQualityBrowserTest : public WebRtcTestBase {
         command_line->HasSwitch(switches::kUseFakeDeviceForMediaStream))
         << "You cannot run this test with fake devices.";
 
-#if defined(OS_MACOSX)
-    // TODO(mcasas): Remove this switch when ManyCam virtual video capture
-    // device starts supporting AVFoundation, see http://crbug.com/327618.
-    command_line->AppendSwitch(switches::kDisableAVFoundation);
-#endif
-
     // The video playback will not work without a GPU, so force its use here.
     command_line->AppendSwitch(switches::kUseGpuInTests);
   }

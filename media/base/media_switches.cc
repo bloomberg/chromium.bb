@@ -41,8 +41,8 @@ const char kAlsaOutputDevice[] = "alsa-output-device";
 // video capture. Being a dynamically loaded NSBundle and library, it hits the
 // Chrome startup time (http://crbug.com/311325 and http://crbug.com/311437);
 // for experimentation purposes, in particular library load time issue, the
-// usage of this library can be hidden behind this flag.
-const char kDisableAVFoundation[] = "disable-avfoundation";
+// usage of this library can be enabled by using this flag.
+const char kEnableAVFoundation[] = "enable-avfoundation";
 #endif
 
 #if defined(OS_WIN)

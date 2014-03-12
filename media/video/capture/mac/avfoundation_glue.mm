@@ -122,8 +122,8 @@ bool AVFoundationGlue::IsAVFoundationSupported() {
   // DeviceMonitorMac will initialize this static bool from the main UI thread
   // once, during Chrome startup so this construction is thread safe.
   static bool is_av_foundation_supported = base::mac::IsOSLionOrLater() &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableAVFoundation) && [AVFoundationBundle() load];
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableAVFoundation) && [AVFoundationBundle() load];
   return is_av_foundation_supported;
 }
 

@@ -54,13 +54,6 @@ class WebRtcApprtcBrowserTest : public WebRtcTestBase {
 
     // The video playback will not work without a GPU, so force its use here.
     command_line->AppendSwitch(switches::kUseGpuInTests);
-
-#if defined(OS_MACOSX)
-    // TODO(mcasas): Remove this switch when ManyCam virtual video capture
-    // device starts supporting AVFoundation, see http://crbug.com/327618.
-    command_line->AppendSwitch(switches::kDisableAVFoundation);
-#endif
-
     CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kUseFakeDeviceForMediaStream);
   }

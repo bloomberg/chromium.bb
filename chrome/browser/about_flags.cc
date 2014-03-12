@@ -1307,11 +1307,11 @@ const Experiment kExperiments[] = {
   },
 #if defined(OS_MACOSX)
   {
-    "disable-avfoundation",
-    IDS_FLAGS_DISABLE_AVFOUNDATION_NAME,
-    IDS_FLAGS_DISABLE_AVFOUNDATION_DESCRIPTION,
+    "enable-avfoundation",
+    IDS_FLAGS_ENABLE_AVFOUNDATION_NAME,
+    IDS_FLAGS_ENABLE_AVFOUNDATION_DESCRIPTION,
     kOsMac,
-    SINGLE_VALUE_TYPE(switches::kDisableAVFoundation)
+    SINGLE_VALUE_TYPE(switches::kEnableAVFoundation)
   },
 #endif
   {
