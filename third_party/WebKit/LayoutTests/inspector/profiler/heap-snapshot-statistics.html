@@ -18,6 +18,10 @@ function test()
             InspectorTest.addResult(type + " node size: " + size);
             builder.rootNode.linkNode(node, InspectorTest.HeapEdge.Type.internal, type + "Link");
         }
+        var jsArrayNode = new InspectorTest.HeapNode("Array", 8, InspectorTest.HeapNode.Type.object);
+        builder.rootNode.linkNode(jsArrayNode, InspectorTest.HeapEdge.Type.internal, "JSArrayLink");
+        var jsArrayContentsNode = new InspectorTest.HeapNode("", 12, InspectorTest.HeapNode.Type.array);
+        jsArrayNode.linkNode(jsArrayContentsNode, InspectorTest.HeapEdge.Type.internal, "elements");
         return builder.generateSnapshot();
     }
 

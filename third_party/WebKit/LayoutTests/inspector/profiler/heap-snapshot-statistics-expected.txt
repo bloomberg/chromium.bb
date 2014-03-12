@@ -13,7 +13,7 @@ closure node size: 600000
 regexp node size: 7000000
 number node size: 80000000
 native node size: 900000000
-{"total":987654321,"v8heap":87654321,"native":900000000,"code":50000,"arrays":20,"strings":300}
+{"total":987654341,"v8heap":87654341,"native":900000000,"code":50000,"jsArrays":20,"strings":300}
 
 Profiler was disabled.
 
