@@ -543,6 +543,7 @@ void GCMProfileService::RegisterProfilePrefs(
 GCMProfileService::GCMProfileService(Profile* profile)
     : profile_(profile),
       gcm_client_ready_(false),
+      invalidation_event_router_(NULL),
       testing_delegate_(NULL),
       weak_ptr_factory_(this) {
   DCHECK(!profile->IsOffTheRecord());
@@ -759,6 +760,21 @@ void GCMProfileService::DoSend(const std::string& app_id,
                  app_id,
                  receiver_id,
                  message));
+}
+
+void GCMProfileService::AddInvalidationEventRouter(
+    const std::string& app_id,
+    GCMEventRouter* event_router) {
+  DCHECK(invalidation_app_id_.empty() && invalidation_event_router_ == NULL);
+  invalidation_app_id_ = app_id;
+  invalidation_event_router_ = event_router;
+}
+
+void GCMProfileService::RemoveInvalidationEventRouter(
+    const std::string& app_id) {
+  DCHECK(invalidation_app_id_ == app_id);
+  invalidation_app_id_.clear();
+  invalidation_event_router_ = NULL;
 }
 
 GCMClient* GCMProfileService::GetGCMClientForTesting() const {
@@ -1052,6 +1068,10 @@ GCMEventRouter* GCMProfileService::GetEventRouter(const std::string& app_id)
 #if defined(OS_ANDROID)
   return NULL;
 #else
+  if (app_id == invalidation_app_id_) {
+    DCHECK(invalidation_event_router_ != NULL);
+    return invalidation_event_router_;
+  }
   return js_event_router_.get();
 #endif
 }

@@ -129,6 +129,13 @@ void GCMNetworkChannel::SendMessage(const std::string& message) {
   }
 }
 
+void GCMNetworkChannel::SetMessageReceiver(
+    invalidation::MessageCallback* incoming_receiver) {
+  delegate_->SetMessageReceiver(base::Bind(
+      &GCMNetworkChannel::OnIncomingMessage, weak_factory_.GetWeakPtr()));
+  SyncNetworkChannel::SetMessageReceiver(incoming_receiver);
+}
+
 void GCMNetworkChannel::RequestAccessToken() {
   DCHECK(CalledOnValidThread());
   delegate_->RequestToken(base::Bind(&GCMNetworkChannel::OnGetTokenComplete,
@@ -161,10 +168,36 @@ void GCMNetworkChannel::OnGetTokenComplete(
   fetcher_->SetRequestContext(request_context_getter_);
   const std::string auth_header("Authorization: Bearer " + access_token_);
   fetcher_->AddExtraRequestHeader(auth_header);
+  if (!echo_token_.empty()) {
+    const std::string echo_header("echo-token: " + echo_token_);
+    fetcher_->AddExtraRequestHeader(echo_header);
+  }
   fetcher_->SetUploadData("application/x-protobuffer", cached_message_);
   fetcher_->Start();
   // Clear message to prevent accidentally resending it in the future.
   cached_message_.clear();
+}
+
+void GCMNetworkChannel::OnIncomingMessage(const std::string& message,
+                                          const std::string& echo_token) {
+#if !defined(ANDROID)
+  DCHECK(!message.empty());
+  if (!echo_token.empty())
+    echo_token_ = echo_token;
+  std::string data;
+  if (!Base64DecodeURLSafe(message, &data))
+    return;
+  ipc::invalidation::AddressedAndroidMessage android_message;
+  if (!android_message.ParseFromString(data))
+    return;
+  if (!android_message.has_message())
+    return;
+  DVLOG(2) << "Deliver incoming message";
+  DeliverIncomingMessage(android_message.message());
+#else
+  // This code shouldn't be invoked on Android.
+  NOTREACHED();
+#endif
 }
 
 void GCMNetworkChannel::OnURLFetchComplete(const net::URLFetcher* source) {

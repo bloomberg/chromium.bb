@@ -112,6 +112,12 @@ class GCMProfileService : public BrowserContextKeyedService,
                     const GCMClient::OutgoingMessage& message,
                     SendCallback callback);
 
+  // Temporary functions for invalidations to listen to incoming messages from
+  // GCM.
+  void AddInvalidationEventRouter(const std::string& app_id,
+                                  GCMEventRouter* event_router);
+  void RemoveInvalidationEventRouter(const std::string& app_id);
+
   // For testing purpose.
   GCMClient* GetGCMClientForTesting() const;
 
@@ -250,6 +256,12 @@ class GCMProfileService : public BrowserContextKeyedService,
 #if !defined(OS_ANDROID)
   scoped_ptr<GCMEventRouter> js_event_router_;
 #endif
+  // App_id and EventRouter that will handle messages for invalidations.
+  // invalidation_event_router_ lifetime is controlled by
+  // TiclInvalidationService.
+  // TODO(jianli): Should be replaced with map of event routers.
+  std::string invalidation_app_id_;
+  GCMEventRouter* invalidation_event_router_;
 
   // For testing purpose.
   TestingDelegate* testing_delegate_;

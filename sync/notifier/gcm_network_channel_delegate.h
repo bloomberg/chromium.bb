@@ -28,6 +28,8 @@ class GCMNetworkChannelDelegate {
                               const std::string& token)> RequestTokenCallback;
   typedef base::Callback<void(const std::string& registration_id,
                               gcm::GCMClient::Result result)> RegisterCallback;
+  typedef base::Callback<void(const std::string& message,
+                              const std::string& echo_token)> MessageCallback;
 
   virtual ~GCMNetworkChannelDelegate() {}
 
@@ -38,9 +40,11 @@ class GCMNetworkChannelDelegate {
   // Invalidate access token that was rejected by server.
   virtual void InvalidateToken(const std::string& token) = 0;
 
-  // Register with GCMProfileService. Callback should be called with either
-  // registration id or error code.
+  // Request registration_id from GCMProfileService. Callback should be called
+  // with either registration id or error code.
   virtual void Register(RegisterCallback callback) = 0;
+  // Provide callback for incoming messages from GCM.
+  virtual void SetMessageReceiver(MessageCallback callback) = 0;
 };
 }  // namespace syncer
 

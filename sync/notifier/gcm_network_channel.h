@@ -37,6 +37,8 @@ class SYNC_EXPORT_PRIVATE GCMNetworkChannel
 
   // invalidation::NetworkChannel implementation.
   virtual void SendMessage(const std::string& message) OVERRIDE;
+  virtual void SetMessageReceiver(
+      invalidation::MessageCallback* incoming_receiver) OVERRIDE;
 
   // SyncNetworkChannel implementation.
   virtual void UpdateCredentials(const std::string& email,
@@ -59,6 +61,9 @@ class SYNC_EXPORT_PRIVATE GCMNetworkChannel
   void RequestAccessToken();
   void OnGetTokenComplete(const GoogleServiceAuthError& error,
                           const std::string& token);
+  void OnIncomingMessage(const std::string& message,
+                         const std::string& echo_token);
+
   // Base64 encoding/decoding with URL safe alphabet.
   // http://tools.ietf.org/html/rfc4648#page-7
   static void Base64EncodeURLSafe(const std::string& input,
@@ -83,6 +88,10 @@ class SYNC_EXPORT_PRIVATE GCMNetworkChannel
   scoped_ptr<net::BackoffEntry> register_backoff_entry_;
 
   scoped_ptr<net::URLFetcher> fetcher_;
+
+  // cacheinvalidation client receives echo_token with incoming message from
+  // GCM and shuld include it in headers with outgoing message over http.
+  std::string echo_token_;
 
   base::WeakPtrFactory<GCMNetworkChannel> weak_factory_;
 

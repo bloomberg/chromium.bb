@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
+#include "chrome/browser/services/gcm/gcm_event_router.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "google_apis/gcm/gcm_client.h"
 #include "sync/notifier/gcm_network_channel_delegate.h"
@@ -26,7 +27,8 @@ namespace invalidation {
 // Core lives on IO thread. Core implements GCMNetworkChannelDelegate and posts
 // all function calls to GCMInvalidationBridge which does actual work to perform
 // them.
-class GCMInvalidationBridge : public OAuth2TokenService::Consumer,
+class GCMInvalidationBridge : public gcm::GCMEventRouter,
+                              public OAuth2TokenService::Consumer,
                               public base::NonThreadSafe {
  public:
   class Core;
@@ -41,6 +43,15 @@ class GCMInvalidationBridge : public OAuth2TokenService::Consumer,
   virtual void OnGetTokenFailure(const OAuth2TokenService::Request* request,
                                  const GoogleServiceAuthError& error) OVERRIDE;
 
+  // gcm::GCMEventRouter implementation.
+  virtual void OnMessage(const std::string& app_id,
+                         const gcm::GCMClient::IncomingMessage& message)
+      OVERRIDE;
+  virtual void OnMessagesDeleted(const std::string& app_id) OVERRIDE;
+  virtual void OnSendError(
+      const std::string& app_id,
+      const gcm::GCMClient::SendErrorDetails& send_error_details) OVERRIDE;
+
   scoped_ptr<syncer::GCMNetworkChannelDelegate> CreateDelegate();
 
   void CoreInitializationDone(
@@ -54,6 +65,8 @@ class GCMInvalidationBridge : public OAuth2TokenService::Consumer,
   void InvalidateToken(const std::string& token);
 
   void Register(syncer::GCMNetworkChannelDelegate::RegisterCallback callback);
+
+  void SubscribeForIncomingMessages();
 
   void RegisterFinished(
       syncer::GCMNetworkChannelDelegate::RegisterCallback callback,
@@ -72,6 +85,7 @@ class GCMInvalidationBridge : public OAuth2TokenService::Consumer,
   scoped_ptr<OAuth2TokenService::Request> access_token_request_;
   syncer::GCMNetworkChannelDelegate::RequestTokenCallback
       request_token_callback_;
+  bool subscribed_for_incoming_messages_;
 
   base::WeakPtrFactory<GCMInvalidationBridge> weak_factory_;
 

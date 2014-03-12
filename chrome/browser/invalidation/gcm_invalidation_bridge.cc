@@ -27,6 +27,9 @@ const char kInvalidationsSenderId[] = "ipc.invalidation@gmail.com";
 // are arbitrary and not verified/enforced by registration service (yet).
 const char kInvalidationsAppId[] = "com.google.chrome.invalidations";
 
+// Cacheinvalidation specific gcm message keys.
+const char kContentKey[] = "content";
+const char kEchoTokenKey[] = "echo-token";
 }  // namespace
 
 // Core should be very simple class that implements GCMNetwrokChannelDelegate
@@ -44,6 +47,7 @@ class GCMInvalidationBridge::Core : public syncer::GCMNetworkChannelDelegate,
   virtual void RequestToken(RequestTokenCallback callback) OVERRIDE;
   virtual void InvalidateToken(const std::string& token) OVERRIDE;
   virtual void Register(RegisterCallback callback) OVERRIDE;
+  virtual void SetMessageReceiver(MessageCallback callback) OVERRIDE;
 
   void RequestTokenFinished(RequestTokenCallback callback,
                             const GoogleServiceAuthError& error,
@@ -53,9 +57,14 @@ class GCMInvalidationBridge::Core : public syncer::GCMNetworkChannelDelegate,
                         const std::string& registration_id,
                         gcm::GCMClient::Result result);
 
+  void OnIncomingMessage(const std::string& message,
+                         const std::string& echo_token);
+
  private:
   base::WeakPtr<GCMInvalidationBridge> bridge_;
   scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner_;
+
+  MessageCallback message_callback_;
 
   base::WeakPtrFactory<Core> weak_factory_;
 
@@ -107,6 +116,14 @@ void GCMInvalidationBridge::Core::Register(RegisterCallback callback) {
       base::Bind(&GCMInvalidationBridge::Register, bridge_, callback));
 }
 
+void GCMInvalidationBridge::Core::SetMessageReceiver(MessageCallback callback) {
+  message_callback_ = callback;
+  ui_thread_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&GCMInvalidationBridge::SubscribeForIncomingMessages,
+                 bridge_));
+}
+
 void GCMInvalidationBridge::Core::RequestTokenFinished(
     RequestTokenCallback callback,
     const GoogleServiceAuthError& error,
@@ -123,12 +140,28 @@ void GCMInvalidationBridge::Core::RegisterFinished(
   callback.Run(registration_id, result);
 }
 
+void GCMInvalidationBridge::Core::OnIncomingMessage(
+    const std::string& message,
+    const std::string& echo_token) {
+  DCHECK(!message_callback_.is_null());
+  message_callback_.Run(message, echo_token);
+}
+
 GCMInvalidationBridge::GCMInvalidationBridge(Profile* profile)
     : OAuth2TokenService::Consumer("gcm_network_channel"),
       profile_(profile),
+      subscribed_for_incoming_messages_(false),
       weak_factory_(this) {}
 
-GCMInvalidationBridge::~GCMInvalidationBridge() {}
+GCMInvalidationBridge::~GCMInvalidationBridge() {
+  if (subscribed_for_incoming_messages_) {
+    gcm::GCMProfileService* gcm_profile_service =
+        gcm::GCMProfileServiceFactory::GetForProfile(profile_);
+    DCHECK(gcm_profile_service);
+
+    gcm_profile_service->RemoveInvalidationEventRouter(kInvalidationsAppId);
+  }
+}
 
 scoped_ptr<syncer::GCMNetworkChannelDelegate>
 GCMInvalidationBridge::CreateDelegate() {
@@ -168,7 +201,7 @@ void GCMInvalidationBridge::RequestToken(
       SigninManagerFactory::GetForProfile(profile_);
   std::string account_id = signin_manager->GetAuthenticatedAccountId();
   OAuth2TokenService::ScopeSet scopes;
-  scopes.insert(GaiaConstants::kGoogleTalkOAuth2Scope);
+  scopes.insert(GaiaConstants::kChromeSyncOAuth2Scope);
   access_token_request_ = token_service->StartRequest(account_id, scopes, this);
 }
 
@@ -213,7 +246,7 @@ void GCMInvalidationBridge::InvalidateToken(const std::string& token) {
       SigninManagerFactory::GetForProfile(profile_);
   std::string account_id = signin_manager->GetAuthenticatedAccountId();
   OAuth2TokenService::ScopeSet scopes;
-  scopes.insert(GaiaConstants::kGoogleTalkOAuth2Scope);
+  scopes.insert(GaiaConstants::kChromeSyncOAuth2Scope);
   token_service->InvalidateToken(account_id, scopes, token);
 }
 
@@ -248,6 +281,54 @@ void GCMInvalidationBridge::RegisterFinished(
                  callback,
                  registration_id,
                  result));
+}
+
+void GCMInvalidationBridge::SubscribeForIncomingMessages() {
+  // No-op if GCMClient is disabled.
+  gcm::GCMProfileService* gcm_profile_service =
+      gcm::GCMProfileServiceFactory::GetForProfile(profile_);
+  if (gcm_profile_service == NULL)
+    return;
+
+  DCHECK(!subscribed_for_incoming_messages_);
+  gcm_profile_service->AddInvalidationEventRouter(kInvalidationsAppId, this);
+  subscribed_for_incoming_messages_ = true;
+}
+
+void GCMInvalidationBridge::OnMessage(
+    const std::string& app_id,
+    const gcm::GCMClient::IncomingMessage& message) {
+  gcm::GCMClient::MessageData::const_iterator it;
+  std::string content;
+  std::string echo_token;
+  it = message.data.find(kContentKey);
+  if (it != message.data.end())
+    content = it->second;
+  it = message.data.find(kEchoTokenKey);
+  if (it != message.data.end())
+    echo_token = it->second;
+  if (content.empty())
+    return;
+
+  core_thread_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&GCMInvalidationBridge::Core::OnIncomingMessage,
+                 core_,
+                 content,
+                 echo_token));
+}
+
+void GCMInvalidationBridge::OnMessagesDeleted(const std::string& app_id) {
+  // Cacheinvalidation doesn't use long lived non-collapsable messages with GCM.
+  // Android implementation of cacheinvalidation doesn't handle MessagesDeleted
+  // callback so this should be no-op in desktop version as well.
+}
+
+void GCMInvalidationBridge::OnSendError(
+    const std::string& app_id,
+    const gcm::GCMClient::SendErrorDetails& send_error_details) {
+  // cacheinvalidation doesn't send messages over GCM.
+  NOTREACHED();
 }
 
 }  // namespace invalidation
