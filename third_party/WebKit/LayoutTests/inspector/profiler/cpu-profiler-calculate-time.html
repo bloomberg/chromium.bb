@@ -93,7 +93,7 @@ function test()
         "endTime": 1375445601.070847,
         "samples": [ 1, 2 ]
     };
-    WebInspector.showPanel("profiles");
+    WebInspector.inspectorView.showPanel("profiles");
     WebInspector.CPUProfileView.prototype._calculateTimes(profileAndExpectations);
     function checkExpectations(node)
     {

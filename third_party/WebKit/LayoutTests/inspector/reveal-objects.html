@@ -20,7 +20,7 @@ function test() {
     InspectorTest.runTestSuite([
         function init(next)
         {
-            WebInspector.showPanel("elements");
+            WebInspector.inspectorView.showPanel("elements");
             installHooks();
 
             WebInspector.resourceTreeModel.forAllResources(function(r) {
@@ -92,13 +92,13 @@ function test() {
 
     function installHooks()
     {
-        WebInspector.panel("elements");
+        WebInspector.inspectorView.panel("elements");
         InspectorTest.addSniffer(WebInspector.ElementsPanel.prototype, "revealAndSelectNode", nodeRevealed, true);
-        WebInspector.panel("sources");
+        WebInspector.inspectorView.panel("sources");
         InspectorTest.addSniffer(WebInspector.SourcesPanel.prototype, "showUILocation", uiLocationRevealed, true);
-        WebInspector.panel("resources");
+        WebInspector.inspectorView.panel("resources");
         InspectorTest.addSniffer(WebInspector.ResourcesPanel.prototype, "showResource", resourceRevealed, true);
-        WebInspector.panel("network");
+        WebInspector.inspectorView.panel("network");
         InspectorTest.addSniffer(WebInspector.NetworkPanel.prototype, "revealAndHighlightRequest", requestRevealed, true);
     }
 

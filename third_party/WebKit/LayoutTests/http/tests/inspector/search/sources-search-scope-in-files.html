@@ -39,7 +39,7 @@ function test()
         }
     }
 
-    WebInspector.showPanel("sources");
+    WebInspector.inspectorView.showPanel("sources");
 
     InspectorTest.createWorkspace();
     manager = InspectorTest.createIsolatedFileSystemManager(InspectorTest.testWorkspace, InspectorTest.testFileSystemMapping);

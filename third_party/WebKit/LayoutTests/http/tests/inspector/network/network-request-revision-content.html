@@ -23,7 +23,7 @@ function test()
         var eventUISourceCode = event.data;
         if (eventUISourceCode.originURL().indexOf("style.css") == -1)
             return;
-        var request = WebInspector.panel("network").requests[WebInspector.panel("network").requests.length - 1];
+        var request = WebInspector.inspectorView.panel("network").requests[WebInspector.inspectorView.panel("network").requests.length - 1];
         uiSourceCode = WebInspector.workspace.uiSourceCodeForOriginURL(request.url);
         if (!uiSourceCode)
             return;

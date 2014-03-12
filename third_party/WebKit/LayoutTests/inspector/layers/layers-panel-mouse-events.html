@@ -17,7 +17,7 @@ function initialize_LayersPanelnMouseEvents()
 
 InspectorTest.findLayerTreeElement = function(layer)
 {
-    var layerTree = WebInspector.panel("layers").sidebarTree;
+    var layerTree = WebInspector.inspectorView.panel("layers").sidebarTree;
     var element = layerTree.getCachedTreeElement(layer);
     element.reveal();
     return element.listItemElement;
@@ -25,7 +25,7 @@ InspectorTest.findLayerTreeElement = function(layer)
 
 InspectorTest.find3DViewElement = function(layer)
 {
-    var layers3DView = WebInspector.panel("layers")._layers3DView;
+    var layers3DView = WebInspector.inspectorView.panel("layers")._layers3DView;
     return layers3DView._elementForLayer(layer);
 }
 
@@ -62,7 +62,7 @@ InspectorTest.dispatchMouseEventToLayerTree = function(eventType, button, layer)
 InspectorTest.dispatchMouseEventTo3DView = function(eventType, button, layer)
 {
     // Caveat: this will blow if layers are transformed. We only take root layer scale into account.
-    var layer3DView = WebInspector.panel("layers")._layers3DView;
+    var layer3DView = WebInspector.inspectorView.panel("layers")._layers3DView;
     const borderWidth = 1;
     var offsetX = borderWidth;
     var offsetY = borderWidth;
@@ -148,7 +148,7 @@ function test()
 
         InspectorTest.completeTest();
     }
-    WebInspector.showPanel("layers");
+    WebInspector.inspectorView.showPanel("layers");
     InspectorTest.requestLayers(step1);
 
 }

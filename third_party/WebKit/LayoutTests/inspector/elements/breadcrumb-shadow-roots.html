@@ -15,7 +15,7 @@ function loaded()
 
 function test()
 {
-    WebInspector.showPanel("elements");
+    WebInspector.inspectorView.showPanel("elements");
     WebInspector.settings.showShadowDOM.set(true);
     InspectorTest.expandElementsTree(step0);
 

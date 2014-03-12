@@ -6,7 +6,7 @@
 
 function test()
 {
-    WebInspector.showPanel("elements");
+    WebInspector.inspectorView.showPanel("elements");
     InspectorTest.selectNodeAndWaitForStyles("inspected", step1);
 
     var treeElement;

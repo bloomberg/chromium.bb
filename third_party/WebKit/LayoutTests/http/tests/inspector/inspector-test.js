@@ -38,7 +38,7 @@ InspectorTest.Output = {   // override in window.initialize_yourName
 
 InspectorTest.toViewMessage = function(message)
 {
-    WebInspector.panel("console");
+    WebInspector.inspectorView.panel("console");
     return WebInspector.ConsolePanel._view()._messageToViewMessage.get(message);
 }
 
@@ -51,7 +51,7 @@ InspectorTest.evaluateInConsole = function(code, callback)
 {
     callback = InspectorTest.safeWrap(callback);
 
-    WebInspector.panel("console");
+    WebInspector.inspectorView.panel("console");
     var consoleView = WebInspector.ConsolePanel._view();
     consoleView.visible = true;
     consoleView.prompt.text = code;
@@ -218,13 +218,13 @@ InspectorTest.navigate = function(url, callback)
 {
     InspectorTest._pageLoadedCallback = InspectorTest.safeWrap(callback);
 
-    WebInspector.panel("network")._reset();
+    WebInspector.inspectorView.panel("network")._reset();
     InspectorTest.evaluateInConsole("window.location = '" + url + "'");
 }
 
 InspectorTest.recordNetwork = function()
 {
-    WebInspector.panel("network")._networkLogView._recordButton.toggled = true;
+    WebInspector.inspectorView.panel("network")._networkLogView._recordButton.toggled = true;
 }
 
 InspectorTest.hardReloadPage = function(callback, scriptToEvaluateOnLoad, scriptPreprocessor)
@@ -371,7 +371,7 @@ InspectorTest.addConsoleSniffer = function(override, opt_sticky)
         override(message);
     };
 
-    WebInspector.panel("console");
+    WebInspector.inspectorView.panel("console");
     InspectorTest.addSniffer(WebInspector.ConsoleView.prototype, "_showConsoleMessage", sniffer, opt_sticky);
 }
 

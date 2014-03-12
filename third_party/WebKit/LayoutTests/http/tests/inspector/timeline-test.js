@@ -42,8 +42,8 @@ InspectorTest.timelineModel = function()
 InspectorTest.startTimeline = function(callback)
 {
     InspectorTest._timelineRecords = [];
-    WebInspector.panel("timeline").toggleTimelineButton.toggled = true;
-    WebInspector.panel("timeline")._model._collectionEnabled = true;
+    WebInspector.inspectorView.panel("timeline").toggleTimelineButton.toggled = true;
+    WebInspector.inspectorView.panel("timeline")._model._collectionEnabled = true;
     TimelineAgent.start(5, false, true, false, callback);
     function addRecord(record)
     {
@@ -84,8 +84,8 @@ InspectorTest.stopTimeline = function(callback)
     function didStop()
     {
         WebInspector.timelineManager.removeEventListener(WebInspector.TimelineManager.EventTypes.TimelineEventRecorded, InspectorTest._addTimelineEvent);
-        WebInspector.panel("timeline").toggleTimelineButton.toggled = false;
-        WebInspector.panel("timeline")._model._collectionEnabled = false;
+        WebInspector.inspectorView.panel("timeline").toggleTimelineButton.toggled = false;
+        WebInspector.inspectorView.panel("timeline")._model._collectionEnabled = false;
         callback(InspectorTest._timelineRecords);
     }
     TimelineAgent.stop(didStop);
@@ -107,7 +107,7 @@ InspectorTest.evaluateWithTimeline = function(actions, doneCallback)
 
 InspectorTest.loadTimelineRecords = function(records)
 {
-    var model = WebInspector.showPanel("timeline")._model;
+    var model = WebInspector.inspectorView.showPanel("timeline")._model;
     model.reset();
     records.forEach(model._addRecord, model);
 }
@@ -237,7 +237,7 @@ InspectorTest.findPresentationRecord = function(type)
         result = record;
         return true;
     }
-    WebInspector.panel("timeline")._model.forAllRecords(findByType);
+    WebInspector.inspectorView.panel("timeline")._model.forAllRecords(findByType);
     return result;
 }
 

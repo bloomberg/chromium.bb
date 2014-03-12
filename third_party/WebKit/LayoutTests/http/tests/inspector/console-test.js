@@ -3,7 +3,7 @@ var initialize_ConsoleTest = function() {
 
 InspectorTest.showConsolePanel = function()
 {
-    WebInspector.showPanel("console");
+    WebInspector.inspectorView.showPanel("console");
 }
 
 InspectorTest.prepareConsoleMessageText = function(messageElement)
@@ -20,7 +20,7 @@ InspectorTest.prepareConsoleMessageText = function(messageElement)
 
 InspectorTest.dumpConsoleMessages = function(printOriginatingCommand, dumpClassNames)
 {
-    WebInspector.panel("console");
+    WebInspector.inspectorView.panel("console");
     var result = [];
     var visibleMessagesIndices = WebInspector.ConsolePanel._view()._visibleMessagesIndices;
     for (var i = 0; i < visibleMessagesIndices.length; ++i) {
@@ -82,7 +82,7 @@ InspectorTest.dumpConsoleTableMessage = function(message)
 
 InspectorTest.dumpConsoleMessagesWithStyles = function(sortMessages)
 {
-    WebInspector.panel("console");
+    WebInspector.inspectorView.panel("console");
     var result = [];
     var indices = WebInspector.ConsolePanel._view()._visibleMessagesIndices;
     for (var i = 0; i < indices.length; ++i) {
@@ -96,7 +96,7 @@ InspectorTest.dumpConsoleMessagesWithStyles = function(sortMessages)
 }
 
 InspectorTest.dumpConsoleMessagesWithClasses = function(sortMessages) {
-    WebInspector.panel("console");
+    WebInspector.inspectorView.panel("console");
     var result = [];
     var indices = WebInspector.ConsolePanel._view()._visibleMessagesIndices;
     for (var i = 0; i < indices.length; ++i) {
@@ -112,7 +112,7 @@ InspectorTest.dumpConsoleMessagesWithClasses = function(sortMessages) {
 
 InspectorTest.expandConsoleMessages = function(callback)
 {
-    WebInspector.panel("console");
+    WebInspector.inspectorView.panel("console");
     var indices = WebInspector.ConsolePanel._view()._visibleMessagesIndices;
     for (var i = 0; i < indices.length; ++i) {
         var message = WebInspector.console.messages[indices[i]];
@@ -134,7 +134,7 @@ InspectorTest.expandConsoleMessages = function(callback)
 
 InspectorTest.checkConsoleMessagesDontHaveParameters = function()
 {
-    WebInspector.panel("console");
+    WebInspector.inspectorView.panel("console");
     var indices = WebInspector.ConsolePanel._view()._visibleMessagesIndices;
     for (var i = 0; i < indices.length; ++i) {
         var m = WebInspector.console.messages[indices[i]];

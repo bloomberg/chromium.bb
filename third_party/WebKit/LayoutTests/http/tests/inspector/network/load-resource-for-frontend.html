@@ -37,7 +37,7 @@ function test()
 
             function dumpNetworkRequest()
             {
-                var panel = WebInspector.showPanel("network");
+                var panel = WebInspector.inspectorView.showPanel("network");
                 var request = panel.requests[panel.requests.length - 1];
                 InspectorTest.addResult("Dumping request: " + request.url);
                 InspectorTest.addResult("  statusCode: " + request.statusCode);

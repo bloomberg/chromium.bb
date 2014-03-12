@@ -39,7 +39,7 @@ function test()
     WebInspector.experimentsSettings.canvasInspection = {};
     WebInspector.experimentsSettings.canvasInspection.isEnabled = function() { return true; };
 
-    WebInspector.showPanel("profiles");
+    WebInspector.inspectorView.showPanel("profiles");
     var profilesPanel = WebInspector.panels.profiles;
     var typeRegistry = WebInspector.ProfileTypeRegistry.instance;
     var profileType = typeRegistry.canvasProfileType;

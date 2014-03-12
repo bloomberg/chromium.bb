@@ -8,7 +8,7 @@
 <script>
 function test()
 {
-    WebInspector.showPanel("sources");
+    WebInspector.inspectorView.showPanel("sources");
     var panel = WebInspector.panels.sources;
 
     function rollback()
@@ -218,7 +218,7 @@ function test()
             function onScriptSource(uiSourceCode)
             {
                 var linkifier = new WebInspector.Linkifier();
-                WebInspector.showPanel("timeline");
+                WebInspector.inspectorView.showPanel("timeline");
                 var anchorURI = uiSourceCode.url;
                 var anchor = linkifier.linkifyLocation(anchorURI, 10, 1);
                 WebInspector.Revealer.reveal(anchor.__uiLocation);

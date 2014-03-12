@@ -7,7 +7,7 @@
 
 function test()
 {
-    WebInspector.showPanel("elements");
+    WebInspector.inspectorView.showPanel("elements");
     InspectorTest.nodeWithId("lastchild", nodeFound);
 
     function nodeFound(node)

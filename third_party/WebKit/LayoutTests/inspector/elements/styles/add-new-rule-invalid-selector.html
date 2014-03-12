@@ -9,7 +9,7 @@ function test()
     InspectorTest.runTestSuite([
         function init(next)
         {
-            WebInspector.showPanel("elements");
+            WebInspector.inspectorView.showPanel("elements");
             InspectorTest.selectNodeAndWaitForStyles("inspected", next);
         },
 

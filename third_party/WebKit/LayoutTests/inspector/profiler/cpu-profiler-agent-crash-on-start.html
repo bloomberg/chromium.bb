@@ -5,7 +5,7 @@
 
 function test()
 {
-    WebInspector.showPanel("profiles");
+    WebInspector.inspectorView.showPanel("profiles");
     ProfilerAgent.start(onStart);
 
     function onStart()

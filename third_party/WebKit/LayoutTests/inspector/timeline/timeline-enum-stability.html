@@ -5,7 +5,7 @@
 
 function test()
 {
-    WebInspector.showPanel("timeline");
+    WebInspector.inspectorView.showPanel("timeline");
     InspectorTest.addObject(WebInspector.TimelineModel.RecordType);
     InspectorTest.completeTest();
 }

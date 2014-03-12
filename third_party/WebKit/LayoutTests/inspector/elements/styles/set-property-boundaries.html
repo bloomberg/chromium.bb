@@ -12,7 +12,7 @@ h1 {
 <script>
 function test()
 {
-    WebInspector.showPanel("elements");
+    WebInspector.inspectorView.showPanel("elements");
     InspectorTest.nodeWithId("styler", onNodeLoaded);
 
     function onNodeLoaded(node)

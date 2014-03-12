@@ -9,7 +9,7 @@ function test()
 {
     var inspectorResource;
 
-    WebInspector.showPanel("elements");
+    WebInspector.inspectorView.showPanel("elements");
     InspectorTest.selectNodeAndWaitForStyles("inspected", step1);
 
     function step1(node)

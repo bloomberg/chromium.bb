@@ -69,7 +69,7 @@ function test()
 
     function didResolveNode(node)
     {
-        WebInspector.showPanel("elements");
+        WebInspector.inspectorView.showPanel("elements");
         var pane = WebInspector.domBreakpointsSidebarPane;
         InspectorTest.addResult("Set up DOM breakpoints.");
         pane._setBreakpoint(node, pane._breakpointTypes.SubtreeModified, true);
@@ -80,7 +80,7 @@ function test()
 
     function setUpEventBreakpoints()
     {
-        WebInspector.showPanel("sources");
+        WebInspector.inspectorView.showPanel("sources");
         var pane = WebInspector.panels.sources.sidebarPanes.eventListenerBreakpoints;
         InspectorTest.addResult("Set up Event breakpoints.");
         pane._setBreakpoint("listener:click");

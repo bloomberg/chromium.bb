@@ -30,7 +30,7 @@ function test()
         function sourceMappingSniffer(sourceMapping)
         {
             if (sourceMapping instanceof WebInspector.SASSSourceMapping) {
-                WebInspector.showPanel("elements");
+                WebInspector.inspectorView.showPanel("elements");
                 InspectorTest.selectNodeAndWaitForStyles("inspected", step2);
             }
         }

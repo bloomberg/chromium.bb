@@ -13,7 +13,7 @@ function loadIframe()
 
 function test()
 {
-    WebInspector.showPanel("sources");
+    WebInspector.inspectorView.showPanel("sources");
     InspectorTest.startDebuggerTest(step1);
 
     function step1()

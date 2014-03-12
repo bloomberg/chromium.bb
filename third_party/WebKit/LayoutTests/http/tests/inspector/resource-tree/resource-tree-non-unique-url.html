@@ -13,7 +13,7 @@ function loadIframe()
 
 function test()
 {
-    WebInspector.showPanel("resources");
+    WebInspector.inspectorView.showPanel("resources");
     InspectorTest.addSniffer(WebInspector.FrameTreeElement.prototype, "appendResource", onResource, true);
 
     var cssRequestsCount = 0;

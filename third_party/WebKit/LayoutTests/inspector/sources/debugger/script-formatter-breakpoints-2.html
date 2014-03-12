@@ -16,7 +16,7 @@ function f1()
 var test = function()
 {
     WebInspector.breakpointManager._storage._breakpoints = {};
-    var panel = WebInspector.showPanel("sources");
+    var panel = WebInspector.inspectorView.showPanel("sources");
     var scriptFormatter = InspectorTest.scriptFormatter();
     var sourceFrame;
     var formattedSourceFrame;

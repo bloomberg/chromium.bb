@@ -806,7 +806,7 @@ function test()
             "samples": [2,16,21,26,35,36,37,2,2,2,2,2,2,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,48,52,52,61,2,37,37,37,37,37,37,37]
           }
     };
-    WebInspector.showPanel("profiles");
+    WebInspector.inspectorView.showPanel("profiles");
     var cpuProfileView = new WebInspector.CPUProfileView(profileAndExpectations);
     var dataProvider = new WebInspector.CPUFlameChartDataProvider(cpuProfileView);
     var colorGenerator = new WebInspector.FlameChart.ColorGenerator();

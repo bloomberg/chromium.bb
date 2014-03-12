@@ -6,7 +6,7 @@ function initialize_LayerTreeTests()
         if (extension.module().name() === "layers")
             WebInspector.inspectorView.addPanel(new WebInspector.ModuleManagerExtensionPanelDescriptor(extension));
     });
-    InspectorTest._layerTreeModel = WebInspector.panel("layers")._model;
+    InspectorTest._layerTreeModel = WebInspector.inspectorView.panel("layers")._model;
 
     InspectorTest.labelForLayer = function(layer)
     {
@@ -42,7 +42,7 @@ function initialize_LayerTreeTests()
         if (!prefix)
             prefix = "";
         if (!root)
-            root = WebInspector.panel("layers")._layerTree._treeOutline;
+            root = WebInspector.inspectorView.panel("layers")._layerTree._treeOutline;
         if (root.representedObject)
             InspectorTest.addResult(prefix + InspectorTest.labelForLayer(root.representedObject));
         root.children.forEach(InspectorTest.dumpLayerTreeOutline.bind(InspectorTest, prefix + "    "));
@@ -53,7 +53,7 @@ function initialize_LayerTreeTests()
         if (!prefix)
             prefix = "";
         if (!root)
-            root = WebInspector.panel("layers")._layers3DView._rotatingContainerElement;
+            root = WebInspector.inspectorView.panel("layers")._layers3DView._rotatingContainerElement;
         if (root.__layer)
             InspectorTest.addResult(prefix + InspectorTest.labelForLayer(root.__layer));
         for (var element = root.firstElementChild; element; element = element.nextSibling)

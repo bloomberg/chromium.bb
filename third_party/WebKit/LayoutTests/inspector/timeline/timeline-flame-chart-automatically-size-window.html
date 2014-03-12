@@ -7,10 +7,10 @@
 
 function test()
 {
-    WebInspector.showPanel("network");
+    WebInspector.inspectorView.showPanel("network");
     WebInspector.experimentsSettings.timelineFlameChart.enableForTest();
     var timelineData = InspectorTest.timelineData();
-    WebInspector.showPanel("timeline");
+    WebInspector.inspectorView.showPanel("timeline");
     var timeline = WebInspector.panels.timeline;
     timeline._onModeChanged(WebInspector.TimelinePanel.Mode.FlameChart);
     timeline._currentViews[0]._automaticallySizeWindow = true;

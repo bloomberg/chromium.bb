@@ -10,7 +10,7 @@ function test()
 
     function step1()
     {
-        WebInspector.showPanel("sources");
+        WebInspector.inspectorView.showPanel("sources");
         InspectorTest.runAfterResourcesAreFinished(["search.html", "search.js", "search.css"], step2)
     }
 

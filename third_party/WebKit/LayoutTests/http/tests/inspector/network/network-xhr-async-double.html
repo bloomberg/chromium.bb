@@ -37,8 +37,8 @@ function test()
             return;
         }
 
-        var request1 = WebInspector.panel("network").requests[WebInspector.panel("network").requests.length - 2];
-        var request2 = WebInspector.panel("network").requests[WebInspector.panel("network").requests.length - 1];
+        var request1 = WebInspector.inspectorView.panel("network").requests[WebInspector.inspectorView.panel("network").requests.length - 2];
+        var request2 = WebInspector.inspectorView.panel("network").requests[WebInspector.inspectorView.panel("network").requests.length - 1];
         request1.requestContent(step3);
         request2.requestContent(step3);
     }
@@ -48,8 +48,8 @@ function test()
     {
         if (--toLoad)
             return;
-        var request1 = WebInspector.panel("network").requests[WebInspector.panel("network").requests.length - 2];
-        var request2 = WebInspector.panel("network").requests[WebInspector.panel("network").requests.length - 1];
+        var request1 = WebInspector.inspectorView.panel("network").requests[WebInspector.inspectorView.panel("network").requests.length - 2];
+        var request2 = WebInspector.inspectorView.panel("network").requests[WebInspector.inspectorView.panel("network").requests.length - 1];
         InspectorTest.addResult("resource1.content: " + request1.content);
         InspectorTest.addResult("resource2.content: " + request2.content);
         InspectorTest.assertTrue(request1.content === 'request1' && request2.content === 'request2');

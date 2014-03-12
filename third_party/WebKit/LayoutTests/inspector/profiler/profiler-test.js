@@ -2,7 +2,7 @@ var initialize_ProfilerTest = function() {
 
 InspectorTest.startProfilerTest = function(callback)
 {
-    WebInspector.showPanel("profiles");
+    WebInspector.inspectorView.showPanel("profiles");
 
     InspectorTest.addResult("Profiler was enabled.");
     InspectorTest.addSniffer(WebInspector.panels.profiles, "_addProfileHeader", InspectorTest._profileHeaderAdded, true);

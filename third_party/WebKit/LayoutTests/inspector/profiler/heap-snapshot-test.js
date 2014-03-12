@@ -404,7 +404,7 @@ InspectorTest.createHeapSnapshotMockFactories();
 
 InspectorTest.startProfilerTest = function(callback)
 {
-    WebInspector.showPanel("profiles");
+    WebInspector.inspectorView.showPanel("profiles");
     WebInspector.settings.showAdvancedHeapSnapshotProperties.set(true);
 
     InspectorTest.addResult("Profiler was enabled.");

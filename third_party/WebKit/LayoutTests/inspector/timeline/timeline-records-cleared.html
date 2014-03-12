@@ -9,7 +9,7 @@ function test()
 {
     var timelineData = InspectorTest.timelineData();
 
-    WebInspector.showPanel("timeline");
+    WebInspector.inspectorView.showPanel("timeline");
     var timeline = WebInspector.panels.timeline;
 
     var model = timeline._model;

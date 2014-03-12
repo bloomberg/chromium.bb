@@ -17,7 +17,7 @@
 
 function test()
 {
-    WebInspector.showPanel("elements");
+    WebInspector.inspectorView.showPanel("elements");
     InspectorTest.nodeWithId("inspected", nodeFound);
 
     function nodeFound(node)

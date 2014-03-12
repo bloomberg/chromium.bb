@@ -20,7 +20,7 @@ function test()
 
     function step1()
     {
-        WebInspector.showPanel("elements");
+        WebInspector.inspectorView.showPanel("elements");
         InspectorTest.selectNodeAndWaitForStyles("inspected", step2);
     }
 

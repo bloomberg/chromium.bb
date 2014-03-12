@@ -31,9 +31,9 @@ function test()
 
     InspectorTest.addResult("\nrecordPanelShown:");
     InspectorTest.dump(WebInspector.UserMetrics._PanelCodes);
-    WebInspector.showPanel("profiles");
-    WebInspector.showPanel("timeline");
-    WebInspector.showPanel("audits");
+    WebInspector.inspectorView.showPanel("profiles");
+    WebInspector.inspectorView.showPanel("timeline");
+    WebInspector.inspectorView.showPanel("audits");
 
     InspectorTest.completeTest();
 }
