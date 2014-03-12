@@ -83,6 +83,17 @@ int StartIt2MeNativeMessagingHost() {
   // redirected to a pipe or file.
   base::PlatformFile read_file = GetStdHandle(STD_INPUT_HANDLE);
   base::PlatformFile write_file = GetStdHandle(STD_OUTPUT_HANDLE);
+
+  // After the native messaging channel starts the native messaging reader
+  // will keep doing blocking read operations on the input named pipe.
+  // If any other thread tries to perform any operation on STDIN, it will also
+  // block because the input named pipe is synchronous (non-overlapped).
+  // It is pretty common for a DLL to query the device info (GetFileType) of
+  // the STD* handles at startup. So any LoadLibrary request can potentially
+  // be blocked. To prevent that from happening we close STDIN and STDOUT
+  // handles as soon as we retrieve the corresponding file handles.
+  SetStdHandle(STD_INPUT_HANDLE, NULL);
+  SetStdHandle(STD_OUTPUT_HANDLE, NULL);
 #elif defined(OS_POSIX)
   base::PlatformFile read_file = STDIN_FILENO;
   base::PlatformFile write_file = STDOUT_FILENO;
