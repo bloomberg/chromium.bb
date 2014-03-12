@@ -73,7 +73,6 @@ SynchronousCompositorOutputSurface::SynchronousCompositorOutputSurface(
     : cc::OutputSurface(
           scoped_ptr<cc::SoftwareOutputDevice>(new SoftwareDevice(this))),
       routing_id_(routing_id),
-      needs_begin_impl_frame_(false),
       invoking_composite_(false),
       did_swap_buffer_(false),
       current_sw_canvas_(NULL),
@@ -130,8 +129,8 @@ void SynchronousCompositorOutputSurface::Reshape(
 void SynchronousCompositorOutputSurface::SetNeedsBeginImplFrame(
     bool enable) {
   DCHECK(CalledOnValidThread());
-  cc::OutputSurface::SetNeedsBeginImplFrame(enable);
   needs_begin_impl_frame_ = enable;
+  client_ready_for_begin_impl_frame_ = true;
   SynchronousCompositorOutputSurfaceDelegate* delegate = GetDelegate();
   if (delegate && !invoking_composite_)
     delegate->SetContinuousInvalidate(needs_begin_impl_frame_);
@@ -228,9 +227,7 @@ void SynchronousCompositorOutputSurface::InvokeComposite(
   SetExternalDrawConstraints(
       adjusted_transform, viewport, clip, valid_for_tile_management);
   SetNeedsRedrawRect(gfx::Rect(viewport.size()));
-
-  if (needs_begin_impl_frame_)
-    BeginImplFrame(cc::BeginFrameArgs::CreateForSynchronousCompositor());
+  BeginImplFrame(cc::BeginFrameArgs::CreateForSynchronousCompositor());
 
   // After software draws (which might move the viewport arbitrarily), restore
   // the previous hardware viewport to allow CC's tile manager to prioritize

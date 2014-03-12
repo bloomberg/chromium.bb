@@ -90,7 +90,6 @@ class SynchronousCompositorOutputSurface
   SynchronousCompositorOutputSurfaceDelegate* GetDelegate();
 
   int routing_id_;
-  bool needs_begin_impl_frame_;
   bool invoking_composite_;
   bool did_swap_buffer_;
 
