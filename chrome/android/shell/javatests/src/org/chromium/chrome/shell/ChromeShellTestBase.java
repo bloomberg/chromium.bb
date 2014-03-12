@@ -40,7 +40,7 @@ public class ChromeShellTestBase extends ActivityInstrumentationTestCase2<Chrome
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                CommandLine.initFromFile("/data/local/tmp/chromium-testshell-command-line");
+                CommandLine.initFromFile("/data/local/tmp/chrome-shell-command-line");
                 try {
                     BrowserStartupController.get(targetContext).startBrowserProcessesSync(
                             BrowserStartupController.MAX_RENDERERS_LIMIT);
@@ -93,7 +93,7 @@ public class ChromeShellTestBase extends ActivityInstrumentationTestCase2<Chrome
                     runTestOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            TestShellTab tab = activity.getActiveTab();
+                            ChromeShellTab tab = activity.getActiveTab();
                             if (tab != null) {
                                 isLoaded.set(!tab.isLoading()
                                         && !TextUtils.isEmpty(tab.getContentView().getUrl()));
@@ -112,7 +112,7 @@ public class ChromeShellTestBase extends ActivityInstrumentationTestCase2<Chrome
     }
 
     /**
-     * Clear all files and folders in the Chromium testshell's application directory except 'lib'.
+     * Clear all files and folders in the ChromeShell's application directory except 'lib'.
      *
      * The 'cache' directory is recreated as an empty directory.
      *

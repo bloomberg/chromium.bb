@@ -27,7 +27,7 @@ import org.chromium.chrome.browser.appmenu.AppMenuHandler;
 /**
  * A Toolbar {@link View} that shows the URL and navigation buttons.
  */
-public class TestShellToolbar extends LinearLayout {
+public class ChromeShellToolbar extends LinearLayout {
     private static final long COMPLETED_PROGRESS_TIMEOUT_MS = 200;
 
     private final Runnable mClearProgressRunnable = new Runnable() {
@@ -40,7 +40,7 @@ public class TestShellToolbar extends LinearLayout {
     private EditText mUrlTextView;
     private ClipDrawable mProgressDrawable;
 
-    private TestShellTab mTab;
+    private ChromeShellTab mTab;
     private final TabObserver mTabObserver = new TabObserverImpl();
 
     private AppMenuHandler mMenuHandler;
@@ -50,7 +50,7 @@ public class TestShellToolbar extends LinearLayout {
      * @param context The Context the view is running in.
      * @param attrs   The attributes of the XML tag that is inflating the view.
      */
-    public TestShellToolbar(Context context, AttributeSet attrs) {
+    public ChromeShellToolbar(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
 
@@ -58,7 +58,7 @@ public class TestShellToolbar extends LinearLayout {
      * The toolbar will visually represent the state of {@code tab}.
      * @param tab The Tab that should be represented.
      */
-    public void showTab(TestShellTab tab) {
+    public void showTab(ChromeShellTab tab) {
         if (mTab != null) mTab.removeObserver(mTabObserver);
         mTab = tab;
         mTab.addObserver(mTabObserver);
@@ -84,7 +84,7 @@ public class TestShellToolbar extends LinearLayout {
         initializeMenuButton();
     }
 
-    public void setMenuHandler(AppMenuHandler menuHandler) {
+    void setMenuHandler(AppMenuHandler menuHandler) {
         mMenuHandler = menuHandler;
         ImageButton menuButton = (ImageButton) findViewById(R.id.menu_button);
         mAppMenuButtonHelper = new AppMenuButtonHelper(menuButton, mMenuHandler);
@@ -148,12 +148,12 @@ public class TestShellToolbar extends LinearLayout {
     private class TabObserverImpl extends EmptyTabObserver {
         @Override
         public void onLoadProgressChanged(Tab tab, int progress) {
-            if (tab == mTab) TestShellToolbar.this.onLoadProgressChanged(progress);
+            if (tab == mTab) ChromeShellToolbar.this.onLoadProgressChanged(progress);
         }
 
         @Override
         public void onUpdateUrl(Tab tab, String url) {
-            if (tab == mTab) TestShellToolbar.this.onUpdateUrl(url);
+            if (tab == mTab) ChromeShellToolbar.this.onUpdateUrl(url);
         }
     }
 }

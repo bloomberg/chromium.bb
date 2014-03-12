@@ -19,10 +19,10 @@ import org.chromium.content_public.Referrer;
 import org.chromium.ui.base.WindowAndroid;
 
 /**
- * TestShell's implementation of a tab. This mirrors how Chrome for Android subclasses
+ * ChromeShell's implementation of a tab. This mirrors how Chrome for Android subclasses
  * and extends {@link Tab}.
  */
-public class TestShellTab extends Tab {
+public class ChromeShellTab extends Tab {
     // Tab state
     private boolean mIsLoading;
 
@@ -32,7 +32,7 @@ public class TestShellTab extends Tab {
      * @param window            The WindowAndroid should represent this tab.
      * @param contentViewClient The client for the {@link ContentView}s of this Tab.
      */
-    public TestShellTab(Context context, String url, WindowAndroid window,
+    public ChromeShellTab(Context context, String url, WindowAndroid window,
             ContentViewClient contentViewClient) {
         super(false, context, window);
         initialize();
@@ -84,7 +84,7 @@ public class TestShellTab extends Tab {
 
     @Override
     protected TabChromeWebContentsDelegateAndroid createWebContentsDelegate() {
-        return new TestShellTabChromeWebContentsDelegateAndroid();
+        return new ChromeShellTabChromeWebContentsDelegateAndroid();
     }
 
     @Override
@@ -109,7 +109,7 @@ public class TestShellTab extends Tab {
         });
     }
 
-    private class TestShellTabChromeWebContentsDelegateAndroid
+    private class ChromeShellTabChromeWebContentsDelegateAndroid
             extends TabChromeWebContentsDelegateAndroid {
         @Override
         public void onLoadStarted() {

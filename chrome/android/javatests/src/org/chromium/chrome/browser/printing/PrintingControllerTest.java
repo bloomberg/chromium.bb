@@ -17,8 +17,8 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.TestFileUtil;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.printing.TabPrinter;
+import org.chromium.chrome.shell.ChromeShellTab;
 import org.chromium.chrome.shell.ChromeShellTestBase;
-import org.chromium.chrome.shell.TestShellTab;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -77,7 +77,7 @@ public class PrintingControllerTest extends ChromeShellTestBase {
     public void testNormalPrintingFlow() throws Throwable {
         if (!ApiCompatibilityUtils.isPrintingSupported()) return;
 
-        final TestShellTab currentTab = launchChromeShellWithUrl(URL).getActiveTab();
+        final ChromeShellTab currentTab = launchChromeShellWithUrl(URL).getActiveTab();
         assertTrue(waitForActiveShellToBeDoneLoading());
 
         final PrintingControllerImpl printingController = createControllerOnUiThread();
@@ -162,7 +162,7 @@ public class PrintingControllerTest extends ChromeShellTestBase {
     }
 
     private void startControllerOnUiThread(final PrintingControllerImpl controller,
-            final TestShellTab tab) {
+            final ChromeShellTab tab) {
         try {
             final PrintManagerDelegate mockPrintManagerDelegate = new PrintManagerDelegate() {
                 @Override

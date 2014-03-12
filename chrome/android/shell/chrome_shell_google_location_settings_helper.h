@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_ANDROID_SHELL_TESTSHELL_GOOGLE_LOCATION_SETTINGS_HELPER_H_
-#define CHROME_ANDROID_SHELL_TESTSHELL_GOOGLE_LOCATION_SETTINGS_HELPER_H_
+#ifndef CHROME_ANDROID_SHELL_CHROME_SHELL_GOOGLE_LOCATION_SETTINGS_HELPER_H_
+#define CHROME_ANDROID_SHELL_CHROME_SHELL_GOOGLE_LOCATION_SETTINGS_HELPER_H_
 
 #include "chrome/browser/android/google_location_settings_helper.h"
 
 // Stub implementation of GoogleLocationSettingsHelper for testshell.
-class TestShellGoogleLocationSettingsHelper
+class ChromeShellGoogleLocationSettingsHelper
     : public GoogleLocationSettingsHelper {
  public:
   // GoogleLocationSettingsHelper implementation:
@@ -19,13 +19,13 @@ class TestShellGoogleLocationSettingsHelper
   virtual bool IsAllowLabel() OVERRIDE;
 
  protected:
-  TestShellGoogleLocationSettingsHelper();
-  virtual ~TestShellGoogleLocationSettingsHelper();
+  ChromeShellGoogleLocationSettingsHelper();
+  virtual ~ChromeShellGoogleLocationSettingsHelper();
 
  private:
   friend class GoogleLocationSettingsHelper;
 
-  DISALLOW_COPY_AND_ASSIGN(TestShellGoogleLocationSettingsHelper);
+  DISALLOW_COPY_AND_ASSIGN(ChromeShellGoogleLocationSettingsHelper);
 };
 
-#endif  // CHROME_ANDROID_SHELL_TESTSHELL_GOOGLE_LOCATION_SETTINGS_HELPER_H_
+#endif  // CHROME_ANDROID_SHELL_CHROME_SHELL_GOOGLE_LOCATION_SETTINGS_HELPER_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/android/shell/chrome_main_delegate_testshell_android.h"
+#include "chrome/android/shell/chrome_main_delegate_chrome_shell_android.h"
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
@@ -11,16 +11,17 @@
 static const char kDefaultCountryCode[] = "US";
 
 ChromeMainDelegateAndroid* ChromeMainDelegateAndroid::Create() {
-  return new ChromeMainDelegateTestShellAndroid();
+  return new ChromeMainDelegateChromeShellAndroid();
 }
 
-ChromeMainDelegateTestShellAndroid::ChromeMainDelegateTestShellAndroid() {
+ChromeMainDelegateChromeShellAndroid::ChromeMainDelegateChromeShellAndroid() {
 }
 
-ChromeMainDelegateTestShellAndroid::~ChromeMainDelegateTestShellAndroid() {
+ChromeMainDelegateChromeShellAndroid::~ChromeMainDelegateChromeShellAndroid() {
 }
 
-bool ChromeMainDelegateTestShellAndroid::BasicStartupComplete(int* exit_code) {
+bool ChromeMainDelegateChromeShellAndroid::BasicStartupComplete(
+    int* exit_code) {
   TemplateURLPrepopulateData::InitCountryCode(kDefaultCountryCode);
   return ChromeMainDelegateAndroid::BasicStartupComplete(exit_code);
 }

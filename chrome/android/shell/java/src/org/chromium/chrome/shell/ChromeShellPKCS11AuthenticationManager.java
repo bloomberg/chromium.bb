@@ -14,7 +14,7 @@ import java.security.cert.X509Certificate;
 /**
  * ChromeShell stub implementation of PKCS11AuthenticationManager.
  */
-public class TestShellPKCS11AuthenticationManager implements PKCS11AuthenticationManager {
+public class ChromeShellPKCS11AuthenticationManager implements PKCS11AuthenticationManager {
     @Override
     public boolean isPKCS11AuthEnabled() {
         return false;

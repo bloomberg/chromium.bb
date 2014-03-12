@@ -21,7 +21,7 @@ import java.util.ArrayList;
  * loading the right resources.
  */
 public class ChromeShellApplication extends ChromiumApplication {
-    private static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "chromiumtestshell";
+    private static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "chromeshell";
     /**
      * icudtl.dat provides ICU (i18n library) with all the necessary data
      * for its operation. We used to link the data statically to our binary,
@@ -34,8 +34,7 @@ public class ChromeShellApplication extends ChromiumApplication {
         "chrome_100_percent.pak",
         "icudtl.dat",
     };
-    private static final String COMMAND_LINE_FILE =
-            "/data/local/tmp/chromium-testshell-command-line";
+    private static final String COMMAND_LINE_FILE = "/data/local/tmp/chrome-shell-command-line";
 
     ArrayList<ChromeShellApplicationObserver> mObservers;
 
@@ -61,9 +60,7 @@ public class ChromeShellApplication extends ChromiumApplication {
             shouldFire &= observer.onSendBroadcast(intent);
         }
 
-        if (shouldFire) {
-            super.sendBroadcast(intent);
-        }
+        if (shouldFire) super.sendBroadcast(intent);
     }
 
     public void addObserver(ChromeShellApplicationObserver observer) {
@@ -99,6 +96,6 @@ public class ChromeShellApplication extends ChromiumApplication {
 
     @Override
     protected PKCS11AuthenticationManager getPKCS11AuthenticationManager() {
-        return new TestShellPKCS11AuthenticationManager();
+        return new ChromeShellPKCS11AuthenticationManager();
     }
 }

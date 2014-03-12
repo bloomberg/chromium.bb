@@ -47,7 +47,7 @@ def _LogToFlakinessDashboard(results, test_type, test_package,
   try:
     if flakiness_server == constants.UPSTREAM_FLAKINESS_SERVER:
       assert test_package in ['ContentShellTest',
-                              'ChromiumTestShellTest',
+                                'ChromeShellTest',
                               'AndroidWebViewTest']
       dashboard_test_type = ('%s_instrumentation_tests' %
                              test_package.lower().rstrip('test'))

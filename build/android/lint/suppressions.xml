@@ -62,9 +62,9 @@ Still reading?
     <ignore path="AndroidManifest.xml"/>
   </issue>
   <issue id="NewApi">
-    <ignore path="PRODUCT_DIR/chromium_testshell_test_apk/classes/org/chromium/printing/PrintingControllerTest$6.class"/>
-    <ignore path="PRODUCT_DIR/chromium_testshell_test_apk/classes/org/chromium/printing/PrintingControllerTest$7.class"/>
-    <ignore path="PRODUCT_DIR/chromium_testshell_test_apk/classes/org/chromium/printing/PrintingControllerTest.class"/>
+    <ignore path="PRODUCT_DIR/chrome_shell_test_apk/classes/org/chromium/printing/PrintingControllerTest$6.class"/>
+    <ignore path="PRODUCT_DIR/chrome_shell_test_apk/classes/org/chromium/printing/PrintingControllerTest$7.class"/>
+    <ignore path="PRODUCT_DIR/chrome_shell_test_apk/classes/org/chromium/printing/PrintingControllerTest.class"/>
     <ignore path="PRODUCT_DIR/content_shell_test_apk/classes/org/chromium/content/browser/ClipboardTest.class"/>
     <ignore path="android_webview/java/src/org/chromium/android_webview/AwPdfExporter.java"/>
     <ignore path="android_webview/java/src/org/chromium/android_webview/AwPrintDocumentAdapter.java"/>

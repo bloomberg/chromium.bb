@@ -146,7 +146,7 @@ def GetBotStepMap():
         T(std_tests, ['--asan', '--asan-symbolize'])),
       B('blink-try-builder', H(compile_step)),
       B('chromedriver-fyi-tests-dbg', H(std_test_steps),
-        T(['chromedriver'], ['--install=ChromiumTestShell'])),
+        T(['chromedriver'], ['--install=ChromeShell'])),
       B('fyi-x86-builder-dbg',
         H(compile_step + std_host_tests, experimental, target_arch='x86')),
       B('fyi-builder-dbg',
@@ -165,7 +165,7 @@ def GetBotStepMap():
       # Pass empty T([]) so that logcat monitor and device status check are run.
       B('perf-bisect-builder-tests-dbg', H(['bisect_perf_regression']), T([])),
       B('perf-tests-rel', H(std_test_steps),
-        T([], ['--install=ChromiumTestShell'])),
+        T([], ['--install=ChromeShell'])),
       B('webkit-latest-webkit-tests', H(std_test_steps),
         T(['webkit_layout', 'webkit'], ['--auto-reconnect'])),
       B('webkit-latest-contentshell', H(compile_step),

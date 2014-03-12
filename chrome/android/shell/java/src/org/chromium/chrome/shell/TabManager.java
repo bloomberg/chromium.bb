@@ -18,8 +18,8 @@ import org.chromium.ui.base.WindowAndroid;
 
 /**
  * The TabManager hooks together all of the related {@link View}s that are used to represent
- * a {@link TestShellTab}.  It properly builds a {@link TestShellTab} and makes sure that the
- * {@link TestShellToolbar} and {@link ContentViewRenderView} show the proper content.
+ * a {@link ChromeShellTab}.  It properly builds a {@link ChromeShellTab} and makes sure that the
+ * {@link ChromeShellToolbar} and {@link ContentViewRenderView} show the proper content.
  */
 public class TabManager extends LinearLayout {
     private static final String DEFAULT_URL = "http://www.google.com";
@@ -28,9 +28,9 @@ public class TabManager extends LinearLayout {
     private ContentVideoViewClient mContentVideoViewClient;
     private ViewGroup mContentViewHolder;
     private ContentViewRenderView mContentViewRenderView;
-    private TestShellToolbar mToolbar;
+    private ChromeShellToolbar mToolbar;
 
-    private TestShellTab mCurrentTab;
+    private ChromeShellTab mCurrentTab;
 
     private String mStartupUrl = DEFAULT_URL;
 
@@ -58,7 +58,7 @@ public class TabManager extends LinearLayout {
         assert videoViewClient != null;
         mContentVideoViewClient = videoViewClient;
         mContentViewHolder = (ViewGroup) findViewById(R.id.content_container);
-        mToolbar = (TestShellToolbar) findViewById(R.id.toolbar);
+        mToolbar = (ChromeShellToolbar) findViewById(R.id.toolbar);
         mContentViewRenderView = new ContentViewRenderView(getContext(), mWindow) {
             @Override
             protected void onReadyToRender() {
@@ -79,15 +79,15 @@ public class TabManager extends LinearLayout {
     }
 
     /**
-     * @return The currently visible {@link TestShellTab}.
+     * @return The currently visible {@link ChromeShellTab}.
      */
-    public TestShellTab getCurrentTab() {
+    public ChromeShellTab getCurrentTab() {
         return mCurrentTab;
     }
 
     /**
-     * Creates a {@link TestShellTab} with a URL specified by {@code url}.
-     * @param url The URL the new {@link TestShellTab} should start with.
+     * Creates a {@link ChromeShellTab} with a URL specified by {@code url}.
+     * @param url The URL the new {@link ChromeShellTab} should start with.
      */
     public void createTab(String url) {
         if (!isContentViewRenderViewInitialized()) return;
@@ -98,7 +98,7 @@ public class TabManager extends LinearLayout {
                 return mContentVideoViewClient;
             }
         };
-        TestShellTab tab = new TestShellTab(getContext(), url, mWindow, client);
+        ChromeShellTab tab = new ChromeShellTab(getContext(), url, mWindow, client);
         setCurrentTab(tab);
     }
 
@@ -106,7 +106,7 @@ public class TabManager extends LinearLayout {
         return mContentViewRenderView != null && mContentViewRenderView.isInitialized();
     }
 
-    private void setCurrentTab(TestShellTab tab) {
+    private void setCurrentTab(ChromeShellTab tab) {
         if (mCurrentTab != null) {
             mContentViewHolder.removeView(mCurrentTab.getContentView());
             mCurrentTab.destroy();

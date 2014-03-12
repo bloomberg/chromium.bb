@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<!-- Copyright 2012 The Chromium Authors. All rights reserved.
+<!-- Copyright 2014 The Chromium Authors. All rights reserved.
 
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file.
@@ -11,7 +11,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
-    <org.chromium.chrome.shell.TestShellToolbar android:id="@+id/toolbar"
+    <org.chromium.chrome.shell.ChromeShellToolbar android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
@@ -35,7 +35,7 @@
             android:src="@drawable/menu_dots"
             android:background="?android:attr/selectableItemBackground"
             android:scaleType="center" />
-    </org.chromium.chrome.shell.TestShellToolbar>
+    </org.chromium.chrome.shell.ChromeShellToolbar>
     <FrameLayout android:id="@+id/content_container"
         android:layout_width="match_parent"
         android:layout_height="0dp"

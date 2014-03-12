@@ -105,7 +105,7 @@ public class ChromeShellActivity extends Activity implements AppMenuPropertiesDe
     }
 
     private void finishInitialization(final Bundle savedInstanceState) {
-        setContentView(R.layout.testshell_activity);
+        setContentView(R.layout.chrome_shell_activity);
         mTabManager = (TabManager) findViewById(R.id.tab_manager);
 
         mWindow = sWindowAndroidFactory.getActivityWindowAndroid(this);
@@ -116,11 +116,11 @@ public class ChromeShellActivity extends Activity implements AppMenuPropertiesDe
         if (!TextUtils.isEmpty(startupUrl)) {
             mTabManager.setStartupUrl(startupUrl);
         }
-        TestShellToolbar mToolbar = (TestShellToolbar) findViewById(R.id.toolbar);
+        ChromeShellToolbar mToolbar = (ChromeShellToolbar) findViewById(R.id.toolbar);
         mAppMenuHandler = new AppMenuHandler(this, this, R.menu.main_menu);
         mToolbar.setMenuHandler(mAppMenuHandler);
 
-        mDevToolsServer = new DevToolsServer("chromium_testshell");
+        mDevToolsServer = new DevToolsServer("chrome_shell");
         mDevToolsServer.setRemoteDebuggingEnabled(true);
 
         mPrintingController = PrintingControllerFactory.create(this);
@@ -148,7 +148,7 @@ public class ChromeShellActivity extends Activity implements AppMenuPropertiesDe
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
-            TestShellTab tab = getActiveTab();
+            ChromeShellTab tab = getActiveTab();
             if (tab != null && tab.getContentView().canGoBack()) {
                 tab.getContentView().goBack();
                 return true;
@@ -164,7 +164,7 @@ public class ChromeShellActivity extends Activity implements AppMenuPropertiesDe
 
         String url = getUrlFromIntent(intent);
         if (!TextUtils.isEmpty(url)) {
-            TestShellTab tab = getActiveTab();
+            ChromeShellTab tab = getActiveTab();
             if (tab != null) tab.loadUrlWithSanitization(url);
         }
     }
@@ -202,9 +202,9 @@ public class ChromeShellActivity extends Activity implements AppMenuPropertiesDe
     }
 
     /**
-     * @return The {@link TestShellTab} that is currently visible.
+     * @return The {@link ChromeShellTab} that is currently visible.
      */
-    public TestShellTab getActiveTab() {
+    public ChromeShellTab getActiveTab() {
         return mTabManager != null ? mTabManager.getCurrentTab() : null;
     }
 
@@ -212,14 +212,14 @@ public class ChromeShellActivity extends Activity implements AppMenuPropertiesDe
      * @return The ContentView of the active tab.
      */
     public ContentView getActiveContentView() {
-        TestShellTab tab = getActiveTab();
+        ChromeShellTab tab = getActiveTab();
         return tab != null ? tab.getContentView() : null;
     }
 
     /**
-     * Creates a {@link TestShellTab} with a URL specified by {@code url}.
+     * Creates a {@link ChromeShellTab} with a URL specified by {@code url}.
      *
-     * @param url The URL the new {@link TestShellTab} should start with.
+     * @param url The URL the new {@link ChromeShellTab} should start with.
      */
     @VisibleForTesting
     public void createTab(String url) {
@@ -254,7 +254,7 @@ public class ChromeShellActivity extends Activity implements AppMenuPropertiesDe
                 }
                 return true;
             case R.id.distill_page:
-                TestShellTab activeTab = getActiveTab();
+                ChromeShellTab activeTab = getActiveTab();
                 String viewUrl = DomDistillerUrlUtils.getDistillerViewUrlFromUrl(
                         CHROME_DISTILLER_SCHEME, getActiveTab().getUrl());
                 activeTab.loadUrlWithSanitization(viewUrl);
@@ -310,7 +310,7 @@ public class ChromeShellActivity extends Activity implements AppMenuPropertiesDe
         menu.findItem(R.id.print).setVisible(ApiCompatibilityUtils.isPrintingSupported());
 
         menu.findItem(R.id.distill_page).setVisible(
-                CommandLine.getInstance().hasSwitch(TestShellSwitches.ENABLE_DOM_DISTILLER));
+                CommandLine.getInstance().hasSwitch(ChromeShellSwitches.ENABLE_DOM_DISTILLER));
 
         menu.setGroupVisible(R.id.MAIN_MENU, true);
     }

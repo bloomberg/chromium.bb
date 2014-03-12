@@ -52,7 +52,7 @@
     {
       # android_webview_apk creates a .jar as a side effect. Any java
       # targets that need that .jar in their classpath should depend on this
-      # target. For more details see the chromium_testshell_java target.
+      # target. For more details see the chrome_shell_apk_java target.
       'target_name': 'android_webview_apk_java',
       'type': 'none',
       'dependencies': [

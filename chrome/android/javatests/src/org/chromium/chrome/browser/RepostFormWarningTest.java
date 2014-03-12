@@ -9,8 +9,8 @@ import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.test.util.EnormousTest;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.shell.ChromeShellTab;
 import org.chromium.chrome.shell.ChromeShellTestBase;
-import org.chromium.chrome.shell.TestShellTab;
 import org.chromium.chrome.test.util.TabUtils;
 import org.chromium.chrome.test.util.TestHttpServerClient;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
@@ -22,7 +22,7 @@ import java.util.concurrent.TimeoutException;
  */
 public class RepostFormWarningTest extends ChromeShellTestBase {
     // Active tab.
-    private TestShellTab mTab;
+    private ChromeShellTab mTab;
     // Callback helper that manages waiting for pageloads to finish.
     private TestCallbackHelperContainer mCallbackHelper;
 

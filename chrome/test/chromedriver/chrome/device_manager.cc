@@ -58,9 +58,9 @@ Status Device::SetUp(const std::string& package,
   } else if (package.compare("org.chromium.chrome.shell") == 0) {
     // ChromeShell
     known_activity = ".ChromeShellActivity";
-    device_socket = "chromium_testshell_devtools_remote";
-    command_line_file = "/data/local/tmp/chromium-testshell-command-line";
-    exec_name = "chromium_testshell";
+    device_socket = "chrome_shell_devtools_remote";
+    command_line_file = "/data/local/tmp/chrome-shell-command-line";
+    exec_name = "chrome_shell";
   } else if (package.find("chrome") != std::string::npos &&
              package.find("webview") == std::string::npos) {
     // Chrome.

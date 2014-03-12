@@ -49,7 +49,7 @@
             '<@(android_app_targets)',
             'android_builder_tests',
             '../android_webview/android_webview.gyp:android_webview_apk',
-            '../chrome/chrome.gyp:chromium_testshell',
+            '../chrome/chrome.gyp:chrome_shell_apk',
             '../remoting/remoting.gyp:remoting_apk',
             '../tools/telemetry/telemetry.gyp:*#host',
             # TODO(nyquist) This should instead by a target for sync when all of
@@ -776,8 +776,8 @@
                 '../ui/events/events.gyp:events_unittests_apk',
                 '../ui/ui_unittests.gyp:ui_unittests_apk',
                 '../android_webview/android_webview.gyp:android_webview_test_apk',
-                '../chrome/chrome.gyp:chromium_testshell_test_apk',
-                '../chrome/chrome.gyp:chromium_testshell_uiautomator_tests',
+                '../chrome/chrome.gyp:chrome_shell_test_apk',
+                '../chrome/chrome.gyp:chrome_shell_uiautomator_tests',
                 '../webkit/renderer/compositor_bindings/compositor_bindings_tests.gyp:webkit_compositor_bindings_unittests_apk'
               ],
             }],

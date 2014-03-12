@@ -210,7 +210,7 @@ def AddInstrumentationTestOptions(option_parser):
   option_parser.usage = '%prog instrumentation [options]'
   option_parser.commands_dict = {}
   option_parser.example = ('%prog instrumentation '
-                           '--test-apk=ChromiumTestShellTest')
+                           '--test-apk=ChromeShellTest')
 
   AddJavaTestOptions(option_parser)
   AddCommonOptions(option_parser)
@@ -296,8 +296,8 @@ def AddUIAutomatorTestOptions(option_parser):
   option_parser.usage = '%prog uiautomator [options]'
   option_parser.commands_dict = {}
   option_parser.example = (
-      '%prog uiautomator --test-jar=chromium_testshell_uiautomator_tests'
-      ' --package=chromium_test_shell')
+      '%prog uiautomator --test-jar=chrome_shell_uiautomator_tests'
+      ' --package=chrome_shell')
   option_parser.add_option(
       '--package',
       help=('Package under test. Possible values: %s' %
@@ -368,7 +368,7 @@ def AddMonkeyTestOptions(option_parser):
   option_parser.usage = '%prog monkey [options]'
   option_parser.commands_dict = {}
   option_parser.example = (
-      '%prog monkey --package=chromium_test_shell')
+      '%prog monkey --package=chrome_shell')
 
   option_parser.add_option(
       '--package',

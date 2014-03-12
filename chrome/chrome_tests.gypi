@@ -2971,11 +2971,11 @@
     ['OS == "android"', {
       'targets': [
         {
-          'target_name': 'chromium_testshell_test_apk',
+          'target_name': 'chrome_shell_test_apk',
           'type': 'none',
           'dependencies': [
             'chrome_java',
-            'chromium_testshell_java',
+            'chrome_shell_apk_java',
             'chrome_java_test_support',
             '../base/base.gyp:base',
             '../base/base.gyp:base_java_test_support',
@@ -2983,7 +2983,7 @@
             '../sync/sync.gyp:sync_javatests',
           ],
           'variables': {
-            'apk_name': 'ChromiumTestShellTest',
+            'apk_name': 'ChromeShellTest',
             'java_in_dir': 'android/shell/javatests',
             'resource_dir': 'android/shell/res',
             'additional_src_dirs': ['android/javatests/src'],
@@ -3002,7 +3002,7 @@
           'includes': [ '../build/java_apk.gypi' ],
         },
         {
-          'target_name': 'chromium_testshell_uiautomator_tests_java',
+          'target_name': 'chrome_shell_uiautomator_tests_java',
           'type': 'none',
           'variables': {
             'java_in_dir': 'android/uiautomator_tests',
@@ -3014,10 +3014,10 @@
           'includes': [ '../build/java.gypi' ],
         },
         {
-          'target_name': 'chromium_testshell_uiautomator_tests',
+          'target_name': 'chrome_shell_uiautomator_tests',
           'type': 'none',
           'dependencies': [
-            'chromium_testshell_uiautomator_tests_java',
+            'chrome_shell_uiautomator_tests_java',
           ],
           'includes': [ '../build/uiautomator_test.gypi' ],
         },

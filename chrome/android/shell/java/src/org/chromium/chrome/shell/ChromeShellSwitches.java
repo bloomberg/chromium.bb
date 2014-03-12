@@ -7,7 +7,7 @@ package org.chromium.chrome.shell;
 /**
  * Command line switches for the shell.
  */
-public abstract class TestShellSwitches {
+public abstract class ChromeShellSwitches {
     // Enable the DOM Distiller.
     public static final String ENABLE_DOM_DISTILLER = "enable-dom-distiller";
 }
