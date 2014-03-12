@@ -89,13 +89,17 @@ DesktopBackgroundView::~DesktopBackgroundView() {
 void DesktopBackgroundView::OnPaint(gfx::Canvas* canvas) {
   // Scale the image while maintaining the aspect ratio, cropping as
   // necessary to fill the background. Ideally the image should be larger
-  // than the largest display supported, if not we will center it rather than
-  // streching to avoid upsampling artifacts (Note that we could tile too, but
-  // decided not to do this at the moment).
+  // than the largest display supported, if not we will scale and center it if
+  // the layout is WALLPAPER_LAYOUT_CENTER_CROPPED.
   DesktopBackgroundController* controller =
       Shell::GetInstance()->desktop_background_controller();
   gfx::ImageSkia wallpaper = controller->GetWallpaper();
   WallpaperLayout wallpaper_layout = controller->GetWallpaperLayout();
+
+  if (wallpaper.isNull()) {
+    canvas->FillRect(GetLocalBounds(), SK_ColorBLACK);
+    return;
+  }
 
   gfx::NativeView native_view = GetWidget()->GetNativeView();
   gfx::Display display = gfx::Screen::GetScreenFor(native_view)->
@@ -112,9 +116,7 @@ void DesktopBackgroundView::OnPaint(gfx::Canvas* canvas) {
   gfx::Rect wallpaper_rect(
       0, 0, wallpaper.width() * scaling, wallpaper.height() * scaling);
 
-  if (wallpaper_layout == WALLPAPER_LAYOUT_CENTER_CROPPED &&
-      wallpaper_rect.width() >= width() &&
-      wallpaper_rect.height() >= height()) {
+  if (wallpaper_layout == WALLPAPER_LAYOUT_CENTER_CROPPED) {
     // The dimension with the smallest ratio must be cropped, the other one
     // is preserved. Both are set in gfx::Size cropped_size.
     double horizontal_ratio = static_cast<double>(width()) /
@@ -150,16 +152,14 @@ void DesktopBackgroundView::OnPaint(gfx::Canvas* canvas) {
     // Fill with black to make sure that the entire area is opaque.
     canvas->FillRect(GetLocalBounds(), SK_ColorBLACK);
     // All other are simply centered, and not scaled (but may be clipped).
-    if (wallpaper.width() && wallpaper.height()) {
-      canvas->DrawImageInt(
-          wallpaper,
-          0, 0, wallpaper.width(), wallpaper.height(),
-          (width() - wallpaper_rect.width()) / 2,
-          (height() - wallpaper_rect.height()) / 2,
-          wallpaper_rect.width(),
-          wallpaper_rect.height(),
-          true);
-    }
+    canvas->DrawImageInt(
+        wallpaper,
+        0, 0, wallpaper.width(), wallpaper.height(),
+        (width() - wallpaper_rect.width()) / 2,
+        (height() - wallpaper_rect.height()) / 2,
+        wallpaper_rect.width(),
+        wallpaper_rect.height(),
+        true);
   }
 }
 
