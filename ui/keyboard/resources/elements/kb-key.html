@@ -36,6 +36,10 @@
         top: 0;
       }
 
+      :host[align=left]::part(key) {
+        padding-left: 1em;
+      }
+
       kb-shift-key::part(key),
       :host[image]::part(key) {
         height: 70%;
@@ -183,10 +187,20 @@
 </polymer-element>
 
 <polymer-element name="kb-hide-keyboard-key" class="hide-keyboard dark"
-    align="center" char="Invalid" extends="kb-key">
+    align="center" attributes="showMenu" char="Invalid" extends="kb-key">
   <script>
     Polymer('kb-hide-keyboard-key', {
+      /**
+       * Whether to show the options menu on key-up.
+       * @type {boolean}
+       */
+      showMenu: true,
+
       up: function(event) {
+        if (!this.showMenu) {
+          hideKeyboard();
+          return;
+        }
         var details = {
           left: this.offsetLeft,
           top: this.offsetTop,
