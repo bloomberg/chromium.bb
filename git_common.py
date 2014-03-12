@@ -199,6 +199,25 @@ class ProgressPrinter(object):
     del self._thread
 
 
+def branches(*args):
+  NO_BRANCH = ('* (no branch)', '* (detached from ')
+  for line in run('branch', *args).splitlines():
+    if line.startswith(NO_BRANCH):
+      continue
+    yield line.split()[-1]
+
+
+def config_list(option):
+  try:
+    return run('config', '--get-all', option).split()
+  except subprocess2.CalledProcessError:
+    return []
+
+
+def current_branch():
+  return run('rev-parse', '--abbrev-ref', 'HEAD')
+
+
 def parse_commitrefs(*commitrefs):
   """Returns binary encoded commit hashes for one or more commitrefs.
 
@@ -208,7 +227,7 @@ def parse_commitrefs(*commitrefs):
     * 'cool_branch~2'
   """
   try:
-    return map(binascii.unhexlify, hashes(*commitrefs))
+    return map(binascii.unhexlify, hash_multi(*commitrefs))
   except subprocess2.CalledProcessError:
     raise BadCommitRefException(commitrefs)
 
@@ -231,7 +250,11 @@ def run(*cmd, **kwargs):
   return ret
 
 
-def hashes(*reflike):
+def hash_one(reflike):
+  return run('rev-parse', reflike)
+
+
+def hash_multi(*reflike):
   return run('rev-parse', *reflike).splitlines()
 
 
@@ -247,6 +270,10 @@ def intern_f(f, kind='blob'):
   ret = run('hash-object', '-t', kind, '-w', '--stdin', stdin=f)
   f.close()
   return ret
+
+
+def tags(*args):
+  return run('tag', *args).splitlines()
 
 
 def tree(treeref, recurse=False):
@@ -284,6 +311,14 @@ def tree(treeref, recurse=False):
   except subprocess2.CalledProcessError:
     return None
   return ret
+
+
+def upstream(branch):
+  try:
+    return run('rev-parse', '--abbrev-ref', '--symbolic-full-name',
+               branch+'@{upstream}')
+  except subprocess2.CalledProcessError:
+    return None
 
 
 def mktree(treedict):

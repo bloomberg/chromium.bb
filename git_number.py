@@ -153,7 +153,7 @@ def finalize(targets):
     assert updater.returncode == 0
 
     tree_id = git.run('write-tree', env=env)
-    commit_cmd = ['commit-tree', '-m', msg, '-p'] + git.hashes(REF)
+    commit_cmd = ['commit-tree', '-m', msg, '-p'] + git.hash_multi(REF)
     for t in targets:
       commit_cmd.extend(['-p', binascii.hexlify(t)])
     commit_cmd.append(tree_id)

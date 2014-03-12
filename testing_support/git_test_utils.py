@@ -256,6 +256,7 @@ class GitRepo(object):
     self.git('init')
     for commit in schema.walk():
       self._add_schema_commit(commit, schema.data_for(commit.name))
+      self.last_commit = self[commit.name]
     if schema.master:
       self.git('update-ref', 'master', self[schema.master])
 
@@ -321,7 +322,7 @@ class GitRepo(object):
     self.commit_map[commit.name] = self.git('rev-parse', 'HEAD').stdout.strip()
     self.git('tag', 'tag_%s' % commit.name, self[commit.name])
     if commit.is_branch:
-      self.git('update-ref', 'branch_%s' % commit.name, self[commit.name])
+      self.git('branch', '-f', 'branch_%s' % commit.name, self[commit.name])
 
   def git(self, *args, **kwargs):
     """Runs a git command specified by |args| in this repo."""
@@ -393,6 +394,9 @@ class GitRepoReadOnlyTestBase(GitRepoSchemaTestBase):
     super(GitRepoReadOnlyTestBase, cls).setUpClass()
     assert cls.REPO is not None
     cls.repo = cls.r_schema.reify()
+
+  def setUp(self):
+    self.repo.git('checkout', '-f', self.repo.last_commit)
 
   @classmethod
   def tearDownClass(cls):

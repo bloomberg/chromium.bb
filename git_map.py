@@ -1,0 +1,86 @@
+#!/usr/bin/env python
+"""
+Provides an augmented `git log --graph` view. In particular, it also annotates
+commits with branches + tags that point to them. Items are colorized as follows:
+  * Cyan    - Currently checked out branch
+  * Green   - Local branch
+  * Red     - Remote branches
+  * Magenta - Tags
+  * Blue background - The currently checked out commit
+"""
+import sys
+
+import subprocess2
+
+from git_common import current_branch, branches, tags, config_list, GIT_EXE
+
+from third_party import colorama
+
+CYAN = colorama.Fore.CYAN
+GREEN = colorama.Fore.GREEN
+MAGENTA = colorama.Fore.MAGENTA
+RED = colorama.Fore.RED
+
+BLUEBAK = colorama.Back.BLUE
+
+BRIGHT = colorama.Style.BRIGHT
+RESET = colorama.Fore.RESET + colorama.Back.RESET + colorama.Style.RESET_ALL
+
+def main():
+  map_extra = config_list('depot_tools.map_extra')
+  fmt = '%C(red bold)%h%x09%Creset%C(green)%d%Creset %C(yellow)%ad%Creset ~ %s'
+  log_proc = subprocess2.Popen(
+    [GIT_EXE, 'log', '--graph', '--full-history', '--branches', '--tags',
+     '--remotes', '--color=always', '--date=short', ('--pretty=format:' + fmt)
+    ] + map_extra + sys.argv[1:],
+    stdout=subprocess2.PIPE,
+    shell=False)
+
+  current = current_branch()
+  all_branches = set(branches())
+  if current in all_branches:
+    all_branches.remove(current)
+  all_tags = set(tags())
+  try:
+    for line in log_proc.stdout.xreadlines():
+      start = line.find(GREEN+' (')
+      end   = line.find(')', start)
+      if start != -1 and end != -1:
+        start += len(GREEN) + 2
+        branch_list = line[start:end].split(', ')
+        branches_str = ''
+        if branch_list:
+          colored_branches = []
+          head_marker = ''
+          for b in branch_list:
+            if b == "HEAD":
+              head_marker = BLUEBAK+BRIGHT+'*'
+              continue
+            if b == current:
+              colored_branches.append(CYAN+BRIGHT+b+RESET)
+              current = None
+            elif b in all_branches:
+              colored_branches.append(GREEN+BRIGHT+b+RESET)
+              all_branches.remove(b)
+            elif b in all_tags:
+              colored_branches.append(MAGENTA+BRIGHT+b+RESET)
+            elif b.startswith('tag: '):
+              colored_branches.append(MAGENTA+BRIGHT+b[5:]+RESET)
+            else:
+              colored_branches.append(RED+b)
+            branches_str = '(%s) ' % ((GREEN+", ").join(colored_branches)+GREEN)
+          line = "%s%s%s" % (line[:start-1], branches_str, line[end+5:])
+          if head_marker:
+            line = line.replace('*', head_marker, 1)
+      sys.stdout.write(line)
+  except (IOError, KeyboardInterrupt):
+    pass
+  finally:
+    sys.stderr.close()
+    sys.stdout.close()
+  return 0
+
+
+if __name__ == '__main__':
+  sys.exit(main())
+

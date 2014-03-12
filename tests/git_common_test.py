@@ -170,7 +170,7 @@ class GitReadOnlyFunctionsTest(git_test_utils.GitRepoReadOnlyTestBase,
 
   def testHashes(self):
     ret = self.repo.run(
-      self.gc.hashes, *[
+      self.gc.hash_multi, *[
         'master',
         'master~3',
         self.repo['E']+'~',
@@ -185,6 +185,22 @@ class GitReadOnlyFunctionsTest(git_test_utils.GitRepoReadOnlyTestBase,
       self.repo['E'],
       self.repo['C'],
     ], ret)
+    self.assertEquals(
+      self.repo.run(self.gc.hash_one, 'branch_D'),
+      self.repo['D']
+    )
+
+  def testCurrentBranch(self):
+    self.repo.git('checkout', 'branch_D')
+    self.assertEqual(self.repo.run(self.gc.current_branch), 'branch_D')
+
+  def testBranches(self):
+    self.assertEqual(self.repo.run(set, self.gc.branches()),
+                     set(('branch_D', 'root_A')))
+
+  def testTags(self):
+    self.assertEqual(set(self.repo.run(self.gc.tags)),
+                     {'tag_'+l for l in 'ABCDE'})
 
   def testParseCommitrefs(self):
     ret = self.repo.run(
@@ -273,6 +289,24 @@ class GitMutableFunctionsTest(git_test_utils.GitRepoReadWriteTestBase,
       tree[name] = ('100644', 'blob', self._intern_data(name))
     tree_hash = self.repo.run(self.gc.mktree, tree)
     self.assertEquals('37b61866d6e061c4ba478e7eb525be7b5752737d', tree_hash)
+
+  def testConfig(self):
+    self.repo.git('config', '--add', 'happy.derpies', 'food')
+    self.assertEquals(self.repo.run(self.gc.config_list, 'happy.derpies'),
+                      ['food'])
+    self.assertEquals(self.repo.run(self.gc.config_list, 'sad.derpies'), [])
+
+    self.repo.git('config', '--add', 'happy.derpies', 'cat')
+    self.assertEquals(self.repo.run(self.gc.config_list, 'happy.derpies'),
+                      ['food', 'cat'])
+
+  def testUpstream(self):
+    self.repo.git('commit', '--allow-empty', '-am', 'foooooo')
+    self.assertEquals(self.repo.run(self.gc.upstream, 'bobly'), None)
+    self.assertEquals(self.repo.run(self.gc.upstream, 'master'), None)
+    self.repo.git('checkout', '-tb', 'happybranch', 'master')
+    self.assertEquals(self.repo.run(self.gc.upstream, 'happybranch'),
+                      'master')
 
 
 if __name__ == '__main__':
