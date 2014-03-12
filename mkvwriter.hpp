@@ -20,6 +20,7 @@ namespace mkvmuxer {
 class MkvWriter : public IMkvWriter {
  public:
   MkvWriter();
+  MkvWriter(FILE* fp);
   virtual ~MkvWriter();
 
   // IMkvWriter interface
@@ -40,6 +41,7 @@ class MkvWriter : public IMkvWriter {
  private:
   // File handle to output file.
   FILE* file_;
+  bool writer_owns_file_;
 
   LIBWEBM_DISALLOW_COPY_AND_ASSIGN(MkvWriter);
 };

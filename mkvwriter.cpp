@@ -16,7 +16,10 @@
 
 namespace mkvmuxer {
 
-MkvWriter::MkvWriter() : file_(NULL) {
+MkvWriter::MkvWriter() : file_(NULL), writer_owns_file_(true) {
+}
+
+MkvWriter::MkvWriter(FILE* fp): file_(fp), writer_owns_file_(false) {
 }
 
 MkvWriter::~MkvWriter() {
@@ -56,10 +59,10 @@ bool MkvWriter::Open(const char* filename) {
 }
 
 void MkvWriter::Close() {
-  if (file_) {
+  if (file_ && writer_owns_file_) {
     fclose(file_);
-    file_ = NULL;
   }
+  file_ = NULL;
 }
 
 int64 MkvWriter::Position() const {
