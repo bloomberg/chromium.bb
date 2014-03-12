@@ -463,11 +463,6 @@
       'filepath': 'ppapi/api'\
                   '|ppapi/c',
     },
-    'perf': {
-      'filepath': 'tools/perf' \
-                  '|tools/telemetry' \
-                  '|chrome/test/perf'
-    },
     'plugin': {
       'filepath': 'chrome/browser/plugin|chrome/plugin/|'\
         'chrome/common/plugin|webkit/glue/webplugin|webkit/glue/plugins/',
@@ -559,7 +554,8 @@
       'filepath': 'third_party/tcmalloc'
     },
     'telemetry': {
-      'filepath': 'tools/telemetry'
+      'filepath': 'tools/perf/|'\
+                  'tools/telemetry/'
     },
     'tests': {
       'filepath': 'apitest|unittest|browsertest|uitest|chrome/test/',
@@ -831,7 +827,6 @@
                    'noelallen@chromium.org', 'binji@chromium.org',
                    'nfullagar@chromium.org', 'teravest+watch@chromium.org',
                    'tzik@chromium.org'],
-    'perf': ['chrome-speed-team+watch@google.com'],
     'plugin': ['jam@chromium.org',
                'stuartmorgan+watch@chromium.org'],
     'policy_templates': ['joaodasilva+watch@chromium.org'],
