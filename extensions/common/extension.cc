@@ -450,10 +450,6 @@ bool Extension::can_be_incognito_enabled() const {
   return !is_platform_app() || location() == Manifest::COMPONENT;
 }
 
-bool Extension::force_incognito_enabled() const {
-  return PermissionsData::HasAPIPermission(this, APIPermission::kProxy);
-}
-
 void Extension::AddWebExtentPattern(const URLPattern& pattern) {
   // Bookmark apps are permissionless.
   if (from_bookmark())

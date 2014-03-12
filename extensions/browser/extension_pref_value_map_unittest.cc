@@ -52,6 +52,13 @@ class ExtensionPrefValueMapTestBase : public BASECLASS {
     return string_value;
   }
 
+  // Registers the extension as enabled but without incognito permission.
+  void RegisterExtension(const std::string& ext_id,
+                         const base::Time& install_time) {
+    epvm_.RegisterExtension(
+        ext_id, install_time, true /*enabled*/, false /*incognito*/);
+  }
+
  protected:
   ExtensionPrefValueMap epvm_;
 };
@@ -76,21 +83,21 @@ class ExtensionPrefValueMapObserverMock
 };
 
 TEST_F(ExtensionPrefValueMapTest, SetAndGetPrefValue) {
-  epvm_.RegisterExtension(kExt1, CreateTime(10), true);
+  RegisterExtension(kExt1, CreateTime(10));
   epvm_.SetExtensionPref(kExt1, kPref1, kRegular, CreateVal("val1"));
   EXPECT_EQ("val1", GetValue(kPref1, false));
 };
 
 TEST_F(ExtensionPrefValueMapTest, GetNotSetPrefValue) {
-  epvm_.RegisterExtension(kExt1, CreateTime(10), true);
-  EXPECT_EQ("", GetValue(kPref1, false));
+  RegisterExtension(kExt1, CreateTime(10));
+  EXPECT_EQ(std::string(), GetValue(kPref1, false));
 };
 
 // Make sure the last-installed extension wins for each preference.
 TEST_F(ExtensionPrefValueMapTest, Override) {
-  epvm_.RegisterExtension(kExt1, CreateTime(10), true);
-  epvm_.RegisterExtension(kExt2, CreateTime(20), true);
-  epvm_.RegisterExtension(kExt3, CreateTime(30), true);
+  RegisterExtension(kExt1, CreateTime(10));
+  RegisterExtension(kExt2, CreateTime(20));
+  RegisterExtension(kExt3, CreateTime(30));
 
   epvm_.SetExtensionPref(kExt1, kPref1, kRegular, CreateVal("val1"));
   epvm_.SetExtensionPref(kExt2, kPref1, kRegular, CreateVal("val2"));
@@ -109,9 +116,9 @@ TEST_F(ExtensionPrefValueMapTest, Override) {
 }
 
 TEST_F(ExtensionPrefValueMapTest, OverrideChecks) {
-  epvm_.RegisterExtension(kExt1, CreateTime(10), true);
-  epvm_.RegisterExtension(kExt2, CreateTime(20), true);
-  epvm_.RegisterExtension(kExt3, CreateTime(30), true);
+  RegisterExtension(kExt1, CreateTime(10));
+  RegisterExtension(kExt2, CreateTime(20));
+  RegisterExtension(kExt3, CreateTime(30));
 
   EXPECT_FALSE(epvm_.DoesExtensionControlPref(kExt1, kPref1, NULL));
   EXPECT_FALSE(epvm_.DoesExtensionControlPref(kExt2, kPref1, NULL));
@@ -131,23 +138,29 @@ TEST_F(ExtensionPrefValueMapTest, OverrideChecks) {
 }
 
 TEST_F(ExtensionPrefValueMapTest, SetAndGetPrefValueIncognito) {
-  epvm_.RegisterExtension(kExt1, CreateTime(10), true);
+  RegisterExtension(kExt1, CreateTime(10));
   epvm_.SetExtensionPref(kExt1, kPref1, kRegular, CreateVal("val1"));
+  // Check that the value is not propagated until the extension gets incognito
+  // permission.
+  EXPECT_EQ(std::string(), GetValue(kPref1, true));
+  epvm_.SetExtensionIncognitoState(kExt1, true);
   EXPECT_EQ("val1", GetValue(kPref1, true));
+  epvm_.SetExtensionIncognitoState(kExt1, false);
+  EXPECT_EQ(std::string(), GetValue(kPref1, true));
 }
 
 TEST_F(ExtensionPrefValueMapTest, UninstallOnlyExtension) {
-  epvm_.RegisterExtension(kExt1, CreateTime(10), true);
+  RegisterExtension(kExt1, CreateTime(10));
   epvm_.SetExtensionPref(kExt1, kPref1, kRegular, CreateVal("val1"));
   epvm_.UnregisterExtension(kExt1);
 
-  EXPECT_EQ("", GetValue(kPref1, false));
+  EXPECT_EQ(std::string(), GetValue(kPref1, false));
 }
 
 // Tests uninstalling an extension that wasn't winning for any preferences.
 TEST_F(ExtensionPrefValueMapTest, UninstallIrrelevantExtension) {
-  epvm_.RegisterExtension(kExt1, CreateTime(10), true);
-  epvm_.RegisterExtension(kExt2, CreateTime(10), true);
+  RegisterExtension(kExt1, CreateTime(10));
+  RegisterExtension(kExt2, CreateTime(10));
 
   epvm_.SetExtensionPref(kExt1, kPref1, kRegular, CreateVal("val1"));
   epvm_.SetExtensionPref(kExt2, kPref1, kRegular, CreateVal("val2"));
@@ -163,9 +176,9 @@ TEST_F(ExtensionPrefValueMapTest, UninstallIrrelevantExtension) {
 
 // Tests uninstalling an extension that was winning for all preferences.
 TEST_F(ExtensionPrefValueMapTest, UninstallExtensionFromTop) {
-  epvm_.RegisterExtension(kExt1, CreateTime(10), true);
-  epvm_.RegisterExtension(kExt2, CreateTime(20), true);
-  epvm_.RegisterExtension(kExt3, CreateTime(30), true);
+  RegisterExtension(kExt1, CreateTime(10));
+  RegisterExtension(kExt2, CreateTime(20));
+  RegisterExtension(kExt3, CreateTime(30));
 
   epvm_.SetExtensionPref(kExt1, kPref1, kRegular, CreateVal("val1"));
   epvm_.SetExtensionPref(kExt2, kPref1, kRegular, CreateVal("val2"));
@@ -182,9 +195,9 @@ TEST_F(ExtensionPrefValueMapTest, UninstallExtensionFromTop) {
 
 // Tests uninstalling an extension that was winning for only some preferences.
 TEST_F(ExtensionPrefValueMapTest, UninstallExtensionFromMiddle) {
-  epvm_.RegisterExtension(kExt1, CreateTime(10), true);
-  epvm_.RegisterExtension(kExt2, CreateTime(20), true);
-  epvm_.RegisterExtension(kExt3, CreateTime(30), true);
+  RegisterExtension(kExt1, CreateTime(10));
+  RegisterExtension(kExt2, CreateTime(20));
+  RegisterExtension(kExt3, CreateTime(30));
 
   epvm_.SetExtensionPref(kExt1, kPref1, kRegular, CreateVal("val1"));
   epvm_.SetExtensionPref(kExt2, kPref1, kRegular, CreateVal("val2"));
@@ -202,7 +215,7 @@ TEST_F(ExtensionPrefValueMapTest, UninstallExtensionFromMiddle) {
   EXPECT_EQ("val3", GetValue(kPref1, false));
   EXPECT_EQ("val4", GetValue(kPref2, false));
   EXPECT_EQ("val6", GetValue(kPref3, false));
-  EXPECT_EQ("", GetValue(kPref4, false));
+  EXPECT_EQ(std::string(), GetValue(kPref4, false));
 }
 
 // Tests triggering of notifications to registered observers.
@@ -210,7 +223,7 @@ TEST_F(ExtensionPrefValueMapTest, NotifyWhenNeeded) {
   using testing::Mock;
   using testing::StrEq;
 
-  epvm_.RegisterExtension(kExt1, CreateTime(10), true);
+  RegisterExtension(kExt1, CreateTime(10));
 
   ExtensionPrefValueMapObserverMock observer;
   epvm_.AddObserver(&observer);
@@ -253,23 +266,23 @@ TEST_F(ExtensionPrefValueMapTest, NotifyWhenNeeded) {
 
   // Write new value --> no notification after removing observer.
   EXPECT_CALL(observer, OnPrefValueChanged(std::string(kPref1))).Times(0);
-  epvm_.RegisterExtension(kExt1, CreateTime(10), true);
+  RegisterExtension(kExt1, CreateTime(10));
   epvm_.SetExtensionPref(kExt1, kPref1, kRegular, CreateVal("val4"));
   Mock::VerifyAndClearExpectations(&observer);
 }
 
 // Tests disabling an extension.
 TEST_F(ExtensionPrefValueMapTest, DisableExt) {
-  epvm_.RegisterExtension(kExt1, CreateTime(10), true);
+  RegisterExtension(kExt1, CreateTime(10));
 
   epvm_.SetExtensionPref(kExt1, kPref1, kRegular, CreateVal("val1"));
   epvm_.SetExtensionState(kExt1, false);
-  EXPECT_EQ("", GetValue(kPref1, false));
+  EXPECT_EQ(std::string(), GetValue(kPref1, false));
 }
 
 // Tests disabling and reenabling an extension.
 TEST_F(ExtensionPrefValueMapTest, ReenableExt) {
-  epvm_.RegisterExtension(kExt1, CreateTime(10), true);
+  RegisterExtension(kExt1, CreateTime(10));
 
   epvm_.SetExtensionPref(kExt1, kPref1, kRegular, CreateVal("val1"));
   epvm_.SetExtensionState(kExt1, false);
@@ -278,7 +291,9 @@ TEST_F(ExtensionPrefValueMapTest, ReenableExt) {
 }
 
 struct OverrideIncognitoTestCase {
-  OverrideIncognitoTestCase(int val_ext1_regular,
+  OverrideIncognitoTestCase(bool enable_ext1_in_incognito,
+                            bool enable_ext2_in_incognito,
+                            int val_ext1_regular,
                             int val_ext1_regular_only,
                             int val_ext1_incognito_pers,
                             int val_ext1_incognito_sess,
@@ -288,7 +303,9 @@ struct OverrideIncognitoTestCase {
                             int val_ext2_incognito_sess,
                             int effective_value_regular,
                             int effective_value_incognito)
-      : val_ext1_regular_(val_ext1_regular),
+      : enable_ext1_in_incognito_(enable_ext1_in_incognito),
+        enable_ext2_in_incognito_(enable_ext2_in_incognito),
+        val_ext1_regular_(val_ext1_regular),
         val_ext1_regular_only_(val_ext1_regular_only),
         val_ext1_incognito_pers_(val_ext1_incognito_pers),
         val_ext1_incognito_sess_(val_ext1_incognito_sess),
@@ -298,6 +315,9 @@ struct OverrideIncognitoTestCase {
         val_ext2_incognito_sess_(val_ext2_incognito_sess),
         effective_value_regular_(effective_value_regular),
         effective_value_incognito_(effective_value_incognito) {}
+
+  bool enable_ext1_in_incognito_;
+  bool enable_ext2_in_incognito_;
 
   // pers. = persistent
   // sess. = session only
@@ -321,7 +341,7 @@ class ExtensionPrefValueMapTestIncognitoTests
 TEST_P(ExtensionPrefValueMapTestIncognitoTests, OverrideIncognito) {
   OverrideIncognitoTestCase test = GetParam();
   const char* strings[] = {
-      "undefined",
+      "",  // undefined
       "val1",
       "val2",
       "val3",
@@ -332,8 +352,11 @@ TEST_P(ExtensionPrefValueMapTestIncognitoTests, OverrideIncognito) {
       "val8",
   };
 
-  epvm_.RegisterExtension(kExt1, CreateTime(10), true);
-  epvm_.RegisterExtension(kExt2, CreateTime(20), true);
+  const bool kEnabled = true;
+  epvm_.RegisterExtension(
+      kExt1, CreateTime(10), kEnabled, test.enable_ext1_in_incognito_);
+  epvm_.RegisterExtension(
+      kExt2, CreateTime(20), kEnabled, test.enable_ext2_in_incognito_);
   if (test.val_ext1_regular_) {
     epvm_.SetExtensionPref(kExt1, kPref1, kRegular,
                            CreateVal(strings[test.val_ext1_regular_]));
@@ -377,24 +400,42 @@ INSTANTIATE_TEST_CASE_P(
     ExtensionPrefValueMapTestIncognitoTestsInstance,
     ExtensionPrefValueMapTestIncognitoTests,
     testing::Values(
-        // e.g. (1, 0, 0, 0,  0, 0, 7, 0,  1, 7), means:
+        // e.g. (true, 1, 0, 0, 0,  0, 0, 7, 0,  1, 7), means:
         // ext1 regular is set to "val1", ext2 incognito persistent is set to
         // "val7"
         // --> the winning regular value is "val1", the winning incognito
         //     value is "val7".
-        OverrideIncognitoTestCase(1, 0, 0, 0,  0, 0, 0, 0,  1, 1),
-        OverrideIncognitoTestCase(1, 2, 0, 0,  0, 0, 0, 0,  2, 1),
-        OverrideIncognitoTestCase(1, 0, 3, 0,  0, 0, 0, 0,  1, 3),
-        OverrideIncognitoTestCase(1, 0, 0, 4,  0, 0, 0, 0,  1, 4),
-        OverrideIncognitoTestCase(1, 0, 3, 4,  0, 0, 0, 0,  1, 4),
-        OverrideIncognitoTestCase(1, 2, 3, 0,  0, 0, 0, 0,  2, 3),
-        OverrideIncognitoTestCase(1, 0, 0, 0,  5, 0, 0, 0,  5, 5),
-        OverrideIncognitoTestCase(1, 2, 3, 0,  5, 0, 0, 0,  5, 5),
-        OverrideIncognitoTestCase(1, 0, 0, 0,  0, 6, 0, 0,  6, 1),
-        OverrideIncognitoTestCase(1, 0, 3, 0,  5, 6, 0, 0,  6, 5),
-        OverrideIncognitoTestCase(1, 0, 0, 4,  5, 6, 0, 0,  6, 5),
-        OverrideIncognitoTestCase(1, 0, 0, 0,  0, 0, 7, 0,  1, 7),
-        OverrideIncognitoTestCase(1, 2, 0, 0,  5, 0, 7, 0,  5, 7),
-        OverrideIncognitoTestCase(1, 2, 0, 0,  5, 0, 0, 8,  5, 8),
-        OverrideIncognitoTestCase(1, 2, 0, 0,  5, 0, 7, 8,  5, 8),
-        OverrideIncognitoTestCase(1, 2, 3, 0,  0, 6, 7, 0,  6, 7)));
+        OverrideIncognitoTestCase(true, true, 1, 0, 0, 0,  0, 0, 0, 0,  1, 1),
+        OverrideIncognitoTestCase(true, true, 1, 2, 0, 0,  0, 0, 0, 0,  2, 1),
+        OverrideIncognitoTestCase(true, true, 1, 0, 3, 0,  0, 0, 0, 0,  1, 3),
+        OverrideIncognitoTestCase(true, true, 1, 0, 0, 4,  0, 0, 0, 0,  1, 4),
+        OverrideIncognitoTestCase(true, true, 1, 0, 3, 4,  0, 0, 0, 0,  1, 4),
+        OverrideIncognitoTestCase(true, true, 1, 2, 3, 0,  0, 0, 0, 0,  2, 3),
+        OverrideIncognitoTestCase(true, true, 1, 0, 0, 0,  5, 0, 0, 0,  5, 5),
+        OverrideIncognitoTestCase(true, true, 1, 2, 3, 0,  5, 0, 0, 0,  5, 5),
+        OverrideIncognitoTestCase(true, true, 1, 0, 0, 0,  0, 6, 0, 0,  6, 1),
+        OverrideIncognitoTestCase(true, true, 1, 0, 3, 0,  5, 6, 0, 0,  6, 5),
+        OverrideIncognitoTestCase(true, true, 1, 0, 0, 4,  5, 6, 0, 0,  6, 5),
+        OverrideIncognitoTestCase(true, true, 1, 0, 0, 0,  0, 0, 7, 0,  1, 7),
+        OverrideIncognitoTestCase(true, true, 1, 2, 0, 0,  5, 0, 7, 0,  5, 7),
+        OverrideIncognitoTestCase(true, true, 1, 2, 0, 0,  5, 0, 0, 8,  5, 8),
+        OverrideIncognitoTestCase(true, true, 1, 2, 0, 0,  5, 0, 7, 8,  5, 8),
+        OverrideIncognitoTestCase(true, true, 1, 2, 3, 0,  0, 6, 7, 0,  6, 7),
+        // Same tests as above but w/o incognito permission.
+        OverrideIncognitoTestCase(false, false, 1, 0, 0, 0,  0, 0, 0, 0,  1, 0),
+        OverrideIncognitoTestCase(false, false, 1, 2, 0, 0,  0, 0, 0, 0,  2, 0),
+        OverrideIncognitoTestCase(false, false, 1, 0, 3, 0,  0, 0, 0, 0,  1, 0),
+        OverrideIncognitoTestCase(false, false, 1, 0, 0, 4,  0, 0, 0, 0,  1, 0),
+        OverrideIncognitoTestCase(false, false, 1, 0, 3, 4,  0, 0, 0, 0,  1, 0),
+        OverrideIncognitoTestCase(false, false, 1, 2, 3, 0,  0, 0, 0, 0,  2, 0),
+        OverrideIncognitoTestCase(false, false, 1, 0, 0, 0,  5, 0, 0, 0,  5, 0),
+        OverrideIncognitoTestCase(false, false, 1, 2, 3, 0,  5, 0, 0, 0,  5, 0),
+        OverrideIncognitoTestCase(false, false, 1, 0, 0, 0,  0, 6, 0, 0,  6, 0),
+        OverrideIncognitoTestCase(false, false, 1, 0, 3, 0,  5, 6, 0, 0,  6, 0),
+        OverrideIncognitoTestCase(false, false, 1, 0, 0, 4,  5, 6, 0, 0,  6, 0),
+        OverrideIncognitoTestCase(false, false, 1, 0, 0, 0,  0, 0, 7, 0,  1, 0),
+        OverrideIncognitoTestCase(false, false, 1, 2, 0, 0,  5, 0, 7, 0,  5, 0),
+        OverrideIncognitoTestCase(false, false, 1, 2, 0, 0,  5, 0, 0, 8,  5, 0),
+        OverrideIncognitoTestCase(false, false, 1, 2, 0, 0,  5, 0, 7, 8,  5, 0),
+        OverrideIncognitoTestCase(false, false, 1, 2, 3, 0,  0, 6, 7, 0,  6, 0)
+        ));

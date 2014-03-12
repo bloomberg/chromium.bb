@@ -4,6 +4,7 @@
 
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/prefs/proxy_config_dictionary.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -68,6 +69,17 @@ class ProxySettingsApiTest : public ExtensionApiTest {
     ASSERT_TRUE(pref != NULL);
     EXPECT_FALSE(pref->IsExtensionControlled());
   }
+
+  bool SetIsIncognitoEnabled(bool enabled) {
+    ResultCatcher catcher;
+    extensions::util::SetIsIncognitoEnabled(
+        GetSingleLoadedExtension()->id(), browser()->profile(), enabled);
+    if (!catcher.GetNextResult()) {
+      message_ = catcher.message();
+      return false;
+    }
+    return true;
+  }
 };
 
 // Tests direct connection settings.
@@ -77,6 +89,12 @@ IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest, ProxyDirectSettings) {
   ASSERT_TRUE(extension);
 
   PrefService* pref_service = browser()->profile()->GetPrefs();
+  ValidateSettings(ProxyPrefs::MODE_DIRECT, kNoServer, kNoBypass, kNoPac,
+                   pref_service);
+
+  // As the extension is executed with incognito permission, the settings
+  // should propagate to incognito mode.
+  pref_service = browser()->profile()->GetOffTheRecordProfile()->GetPrefs();
   ValidateSettings(ProxyPrefs::MODE_DIRECT, kNoServer, kNoBypass, kNoPac,
                    pref_service);
 }
@@ -101,6 +119,22 @@ IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest, ProxyPacScript) {
   PrefService* pref_service = browser()->profile()->GetPrefs();
   ValidateSettings(ProxyPrefs::MODE_PAC_SCRIPT, kNoServer, kNoBypass,
                    "http://wpad/windows.pac", pref_service);
+
+  // As the extension is not executed with incognito permission, the settings
+  // should not propagate to incognito mode.
+  pref_service = browser()->profile()->GetOffTheRecordProfile()->GetPrefs();
+  ExpectNoSettings(pref_service);
+
+  // Now we enable the extension in incognito mode and verify that settings
+  // are applied.
+  ASSERT_TRUE(SetIsIncognitoEnabled(true));
+  ValidateSettings(ProxyPrefs::MODE_PAC_SCRIPT, kNoServer, kNoBypass,
+                   "http://wpad/windows.pac", pref_service);
+
+  // Disabling incognito permission should revoke the settings for incognito
+  // mode.
+  ASSERT_TRUE(SetIsIncognitoEnabled(false));
+  ExpectNoSettings(pref_service);
 }
 
 // Tests PAC proxy settings.

@@ -454,7 +454,9 @@ void PreferenceAPI::InitExtensionControlledPrefs(
        extension_id != extension_ids.end(); ++extension_id) {
     base::Time install_time = prefs->GetInstallTime(*extension_id);
     bool is_enabled = !prefs->IsExtensionDisabled(*extension_id);
-    value_map->RegisterExtension(*extension_id, install_time, is_enabled);
+    bool is_incognito_enabled = prefs->IsIncognitoEnabled(*extension_id);
+    value_map->RegisterExtension(
+        *extension_id, install_time, is_enabled, is_incognito_enabled);
     prefs->content_settings_store()->RegisterExtension(
         *extension_id, install_time, is_enabled);
 

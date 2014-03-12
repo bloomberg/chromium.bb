@@ -185,8 +185,7 @@ const Extension* ExtensionBrowserTest::LoadExtensionWithFlags(
     content::WindowedNotificationObserver load_signal(
         chrome::NOTIFICATION_EXTENSION_LOADED,
         content::Source<Profile>(profile()));
-    CHECK(!extensions::util::IsIncognitoEnabled(extension_id, profile()) ||
-          extension->force_incognito_enabled());
+    CHECK(!extensions::util::IsIncognitoEnabled(extension_id, profile()));
 
     if (flags & kFlagEnableIncognito) {
       extensions::util::SetIsIncognitoEnabled(extension_id, profile(), true);

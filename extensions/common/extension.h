@@ -332,7 +332,6 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   bool is_legacy_packaged_app() const;
   bool is_extension() const;
   bool can_be_incognito_enabled() const;
-  bool force_incognito_enabled() const;
 
   void AddWebExtentPattern(const URLPattern& pattern);
   const URLPatternSet& web_extent() const { return extent_; }

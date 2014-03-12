@@ -1036,6 +1036,7 @@ void ExtensionPrefs::SetIsIncognitoEnabled(const std::string& extension_id,
                                            bool enabled) {
   UpdateExtensionPref(extension_id, kPrefIncognitoEnabled,
                       new base::FundamentalValue(enabled));
+  extension_pref_value_map_->SetExtensionIncognitoState(extension_id, enabled);
 }
 
 bool ExtensionPrefs::AllowFileAccess(const std::string& extension_id) const {
@@ -1901,9 +1902,10 @@ void ExtensionPrefs::FinishExtensionInfoPrefs(
   if (extension_dict->GetInteger(kPrefState, &initial_state)) {
     is_enabled = initial_state == Extension::ENABLED;
   }
+  bool is_incognito_enabled = IsIncognitoEnabled(extension_id);
 
-  extension_pref_value_map_->RegisterExtension(extension_id, install_time,
-                                               is_enabled);
+  extension_pref_value_map_->RegisterExtension(
+      extension_id, install_time, is_enabled, is_incognito_enabled);
   content_settings_store_->RegisterExtension(extension_id, install_time,
                                              is_enabled);
 }

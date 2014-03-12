@@ -153,6 +153,7 @@ void ExtensionControlledPrefsTest::EnsureExtensionInstalled(
                                     Extension::ENABLED,
                                     false,
                                     syncer::StringOrdinal());
+      prefs()->SetIsIncognitoEnabled(extension->id(), true);
       installed_[i] = true;
       break;
     }

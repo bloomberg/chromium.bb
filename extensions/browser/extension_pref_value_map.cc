@@ -15,6 +15,8 @@ struct ExtensionPrefValueMap::ExtensionEntry {
   base::Time install_time;
   // Whether extension is enabled in the profile.
   bool enabled;
+  // Whether the extension has access to the incognito profile.
+  bool incognito_enabled;
   // Extension controlled preferences for the regular profile.
   PrefValueMap regular_profile_preferences;
   // Extension controlled preferences that should *only* apply to the regular
@@ -74,6 +76,9 @@ bool ExtensionPrefValueMap::CanExtensionControlPref(
     return false;
   }
 
+  if (incognito && !ext->second->incognito_enabled)
+    return false;
+
   ExtensionEntryMap::const_iterator winner =
       GetEffectivePrefValueController(pref_key, incognito, NULL);
   if (winner == entries_.end())
@@ -115,7 +120,8 @@ bool ExtensionPrefValueMap::DoesExtensionControlPref(
 
 void ExtensionPrefValueMap::RegisterExtension(const std::string& ext_id,
                                               const base::Time& install_time,
-                                              bool is_enabled) {
+                                              bool is_enabled,
+                                              bool is_incognito_enabled) {
   if (entries_.find(ext_id) == entries_.end()) {
     entries_[ext_id] = new ExtensionEntry;
 
@@ -124,6 +130,7 @@ void ExtensionPrefValueMap::RegisterExtension(const std::string& ext_id,
   }
 
   entries_[ext_id]->enabled = is_enabled;
+  entries_[ext_id]->incognito_enabled = is_incognito_enabled;
 }
 
 void ExtensionPrefValueMap::UnregisterExtension(const std::string& ext_id) {
@@ -151,6 +158,22 @@ void ExtensionPrefValueMap::SetExtensionState(const std::string& ext_id,
   std::set<std::string> keys;  // keys set by this extension
   GetExtensionControlledKeys(*(i->second), &keys);
   i->second->enabled = is_enabled;
+  NotifyPrefValueChanged(keys);
+}
+
+void ExtensionPrefValueMap::SetExtensionIncognitoState(
+    const std::string& ext_id,
+    bool is_incognito_enabled) {
+  ExtensionEntryMap::const_iterator i = entries_.find(ext_id);
+  // This may happen when sync sets the extension state for an
+  // extension that is not installed.
+  if (i == entries_.end())
+    return;
+  if (i->second->incognito_enabled == is_incognito_enabled)
+    return;
+  std::set<std::string> keys;  // keys set by this extension
+  GetExtensionControlledKeys(*(i->second), &keys);
+  i->second->incognito_enabled = is_incognito_enabled;
   NotifyPrefValueChanged(keys);
 }
 
@@ -231,6 +254,7 @@ const base::Value* ExtensionPrefValueMap::GetEffectivePrefValue(
 
   // First search for incognito session only preferences.
   if (incognito) {
+    DCHECK(winner->second->incognito_enabled);
     const PrefValueMap* prefs = GetExtensionPrefValueMap(
         ext_id, extensions::kExtensionPrefsScopeIncognitoSessionOnly);
     prefs->GetValue(key, &value);
@@ -274,10 +298,13 @@ ExtensionPrefValueMap::GetEffectivePrefValueController(
     const std::string& ext_id = i->first;
     const base::Time& install_time = i->second->install_time;
     const bool enabled = i->second->enabled;
+    const bool incognito_enabled = i->second->incognito_enabled;
 
     if (!enabled)
       continue;
     if (install_time < winners_install_time)
+      continue;
+    if (incognito && !incognito_enabled)
       continue;
 
     const base::Value* value = NULL;

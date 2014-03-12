@@ -32,8 +32,6 @@ bool IsIncognitoEnabled(const std::string& extension_id,
     // work in incognito mode.
     if (extension->location() == Manifest::COMPONENT)
       return true;
-    if (extension->force_incognito_enabled())
-      return true;
   }
 
   return ExtensionPrefs::Get(context)->IsIncognitoEnabled(extension_id);
