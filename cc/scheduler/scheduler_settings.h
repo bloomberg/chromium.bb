@@ -14,8 +14,6 @@ class CC_EXPORT SchedulerSettings {
   SchedulerSettings();
   ~SchedulerSettings();
 
-  bool main_frame_before_draw_enabled;
-  bool main_frame_before_activation_enabled;
   bool impl_side_painting;
   bool timeout_and_draw_when_animation_checkerboards;
   int maximum_number_of_failed_draws_before_draw_is_forced_;

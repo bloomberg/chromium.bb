@@ -15,19 +15,6 @@ const char kDisableThreadedAnimation[] = "disable-threaded-animation";
 const char kDisableCompositedAntialiasing[] =
     "disable-composited-antialiasing";
 
-// Disables sending the next BeginMainFrame before the previous commit has
-// drawn.
-const char kDisableMainFrameBeforeDraw[] = "disable-main-frame-before-draw";
-
-// Disables sending the next BeginMainFrame before the previous commit
-// activates. Overrides the kEnableMainFrameBeforeActivation flag.
-const char kDisableMainFrameBeforeActivation[] =
-    "disable-main-frame-before-activation";
-
-// Enables sending the next BeginMainFrame before the previous commit activates.
-const char kEnableMainFrameBeforeActivation[] =
-    "enable-main-frame-before-activation";
-
 const char kEnableTopControlsPositionCalculation[] =
     "enable-top-controls-position-calculation";
 

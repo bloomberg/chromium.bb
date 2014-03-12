@@ -63,7 +63,6 @@ class CC_EXPORT SchedulerStateMachine {
     COMMIT_STATE_BEGIN_MAIN_FRAME_SENT,
     COMMIT_STATE_BEGIN_MAIN_FRAME_STARTED,
     COMMIT_STATE_READY_TO_COMMIT,
-    COMMIT_STATE_WAITING_FOR_ACTIVATION,
     COMMIT_STATE_WAITING_FOR_FIRST_DRAW,
   };
   static const char* CommitStateToString(CommitState state);
@@ -101,7 +100,6 @@ class CC_EXPORT SchedulerStateMachine {
            commit_state_ == COMMIT_STATE_BEGIN_MAIN_FRAME_STARTED ||
            commit_state_ == COMMIT_STATE_READY_TO_COMMIT;
   }
-  CommitState commit_state() const { return commit_state_; }
 
   bool RedrawPending() const { return needs_redraw_; }
   bool ManageTilesPending() const { return needs_manage_tiles_; }
@@ -233,9 +231,6 @@ class CC_EXPORT SchedulerStateMachine {
   void NotifyReadyToActivate();
 
   bool has_pending_tree() const { return has_pending_tree_; }
-  bool active_tree_needs_first_draw() const {
-    return active_tree_needs_first_draw_;
-  }
 
   void DidManageTiles();
   void DidLoseOutputSurface();
@@ -246,6 +241,8 @@ class CC_EXPORT SchedulerStateMachine {
   bool PendingDrawsShouldBeAborted() const;
 
   bool SupportsProactiveBeginImplFrame() const;
+
+  CommitState commit_state() const { return commit_state_; }
 
  protected:
   bool BeginImplFrameNeededToDraw() const;

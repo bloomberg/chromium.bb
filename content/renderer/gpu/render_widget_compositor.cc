@@ -90,11 +90,6 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
       !cmd->HasSwitch(switches::kDisableGpuVsync);
   settings.begin_impl_frame_scheduling_enabled =
       cmd->HasSwitch(switches::kEnableBeginFrameScheduling);
-  settings.main_frame_before_activation_enabled =
-      cmd->HasSwitch(cc::switches::kEnableMainFrameBeforeActivation) &&
-      !cmd->HasSwitch(cc::switches::kDisableMainFrameBeforeActivation);
-  settings.main_frame_before_draw_enabled =
-      !cmd->HasSwitch(cc::switches::kDisableMainFrameBeforeDraw);
   settings.using_synchronous_renderer_compositor =
       widget->UsingSynchronousRendererCompositor();
   settings.accelerated_animation_enabled =

@@ -829,15 +829,13 @@ MULTI_THREAD_TEST_F(LayerTreeHostAnimationTestContinuousAnimate);
 class LayerTreeHostAnimationTestCancelAnimateCommit
     : public LayerTreeHostAnimationTest {
  public:
-  LayerTreeHostAnimationTestCancelAnimateCommit()
-      : num_animate_calls_(0), num_commit_calls_(0), num_draw_calls_(0) {}
+  LayerTreeHostAnimationTestCancelAnimateCommit() : num_animate_calls_(0) {}
 
   virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
 
   virtual void Animate(base::TimeTicks) OVERRIDE {
-    num_animate_calls_++;
     // No-op animate will cancel the commit.
-    if (layer_tree_host()->source_frame_number() == 1) {
+    if (++num_animate_calls_ == 2) {
       EndTest();
       return;
     }
@@ -845,27 +843,19 @@ class LayerTreeHostAnimationTestCancelAnimateCommit
   }
 
   virtual void CommitCompleteOnThread(LayerTreeHostImpl* tree_impl) OVERRIDE {
-    num_commit_calls_++;
-    if (layer_tree_host()->source_frame_number() > 1)
+    if (num_animate_calls_ > 1)
       FAIL() << "Commit should have been canceled.";
   }
 
   virtual void DrawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE {
-    num_draw_calls_++;
-    if (layer_tree_host()->source_frame_number() > 1)
+    if (num_animate_calls_ > 1)
       FAIL() << "Draw should have been canceled.";
   }
 
-  virtual void AfterTest() OVERRIDE {
-    EXPECT_EQ(2, num_animate_calls_);
-    EXPECT_EQ(1, num_commit_calls_);
-    EXPECT_EQ(1, num_draw_calls_);
-  }
+  virtual void AfterTest() OVERRIDE { EXPECT_EQ(2, num_animate_calls_); }
 
  private:
   int num_animate_calls_;
-  int num_commit_calls_;
-  int num_draw_calls_;
   FakeContentLayerClient client_;
   scoped_refptr<FakeContentLayer> content_;
 };
