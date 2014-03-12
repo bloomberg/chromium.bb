@@ -558,6 +558,7 @@ void PersonalDataManager::GetProfileSuggestions(
     const base::string16& field_contents,
     bool field_is_autofilled,
     const std::vector<ServerFieldType>& other_field_types,
+    const base::Callback<bool(const AutofillProfile&)>& filter,
     std::vector<base::string16>* values,
     std::vector<base::string16>* labels,
     std::vector<base::string16>* icons,
@@ -581,7 +582,8 @@ void PersonalDataManager::GetProfileSuggestions(
       if (!field_is_autofilled) {
         // Suggest data that starts with what the user has typed.
         if (!multi_values[i].empty() &&
-            StartsWith(multi_values[i], field_contents, false)) {
+            StartsWith(multi_values[i], field_contents, false) &&
+            (filter.is_null() || filter.Run(*profile))) {
           matched_profiles.push_back(profile);
           values->push_back(multi_values[i]);
           guid_pairs->push_back(GUIDPair(profile->guid(), i));

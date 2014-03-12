@@ -3117,7 +3117,7 @@ TEST_F(AutofillDialogControllerTest, CountryChangeUpdatesSection) {
                                            ADDRESS_HOME_COUNTRY,
                                            gfx::NativeView(),
                                            gfx::Rect(),
-                                           ASCIIToUTF16("China"),
+                                           ASCIIToUTF16("Belarus"),
                                            true);
   std::map<DialogSection, size_t> updates = view->section_updates();
   EXPECT_EQ(1U, updates[SECTION_SHIPPING]);
@@ -3313,6 +3313,52 @@ TEST_F(AutofillDialogControllerTest, LimitedCountryChoices) {
       controller()->ComboboxModelForAutofillType(ADDRESS_BILLING_COUNTRY);
   EXPECT_EQ(default_number_of_countries,
             billing_country_model->GetItemCount());
+}
+
+TEST_F(AutofillDialogControllerTest, CountriesWithDependentLocalityHidden) {
+  ui::ComboboxModel* model =
+      controller()->ComboboxModelForAutofillType(ADDRESS_BILLING_COUNTRY);
+  for (int i = 0; i < model->GetItemCount(); ++i) {
+    EXPECT_NE(base::ASCIIToUTF16("China"), model->GetItemAt(i));
+    EXPECT_NE(base::ASCIIToUTF16("South Korea"), model->GetItemAt(i));
+  }
+
+  model = controller()->ComboboxModelForAutofillType(ADDRESS_HOME_COUNTRY);
+  for (int i = 0; i < model->GetItemCount(); ++i) {
+    EXPECT_NE(base::ASCIIToUTF16("China"), model->GetItemAt(i));
+    EXPECT_NE(base::ASCIIToUTF16("South Korea"), model->GetItemAt(i));
+  }
+}
+
+TEST_F(AutofillDialogControllerTest, DontSuggestHiddenCountries) {
+  SwitchToAutofill();
+
+  AutofillProfile cn_profile(test::GetVerifiedProfile());
+  cn_profile.SetRawInfo(NAME_FULL, ASCIIToUTF16("Chinese User"));
+  cn_profile.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("CN"));
+  controller()->GetTestingManager()->AddTestingProfile(&cn_profile);
+
+  AutofillProfile us_profile(test::GetVerifiedProfile());
+  us_profile.SetRawInfo(NAME_FULL, ASCIIToUTF16("American User"));
+  controller()->GetTestingManager()->AddTestingProfile(&us_profile);
+
+  controller()->UserEditedOrActivatedInput(
+      SECTION_SHIPPING,
+      NAME_FULL,
+      gfx::NativeView(),
+      gfx::Rect(),
+      cn_profile.GetRawInfo(NAME_FULL).substr(0, 1),
+      true);
+  EXPECT_EQ(UNKNOWN_TYPE, controller()->popup_input_type());
+
+  controller()->UserEditedOrActivatedInput(
+      SECTION_SHIPPING,
+      NAME_FULL,
+      gfx::NativeView(),
+      gfx::Rect(),
+      us_profile.GetRawInfo(NAME_FULL).substr(0, 1),
+      true);
+  EXPECT_EQ(NAME_FULL, controller()->popup_input_type());
 }
 
 }  // namespace autofill

@@ -137,12 +137,14 @@ class PersonalDataManager : public WebDataServiceConsumer,
   // Loads profiles that can suggest data for |type|. |field_contents| is the
   // part the user has already typed. |field_is_autofilled| is true if the field
   // has already been autofilled. |other_field_types| represents the rest of
-  // form. Identifying info is loaded into the last four outparams.
+  // form. |filter| is run on each potential suggestion. If |filter| returns
+  // true, the profile added to the last four outparams (else it's omitted).
   void GetProfileSuggestions(
       const AutofillType& type,
       const base::string16& field_contents,
       bool field_is_autofilled,
       const std::vector<ServerFieldType>& other_field_types,
+      const base::Callback<bool(const AutofillProfile&)>& filter,
       std::vector<base::string16>* values,
       std::vector<base::string16>* labels,
       std::vector<base::string16>* icons,

@@ -1022,6 +1022,7 @@ void AutofillManager::GetProfileSuggestions(
 
   personal_data_->GetProfileSuggestions(
       type, field.value, field.is_autofilled, field_types,
+      base::Callback<bool(const AutofillProfile&)>(),
       values, labels, icons, &guid_pairs);
 
   for (size_t i = 0; i < guid_pairs.size(); ++i) {

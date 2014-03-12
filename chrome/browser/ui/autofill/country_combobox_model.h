@@ -9,9 +9,9 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_vector.h"
-#include "base/strings/string16.h"
 #include "ui/base/models/combobox_model.h"
 
 namespace autofill {
@@ -24,11 +24,10 @@ class CountryComboboxModel : public ui::ComboboxModel {
  public:
   // When |country_filter| is non-empty, it provides the set of country values
   // (both 2-letter codes and display names) that are available to choose from.
-  // When |show_partially_supported_countries| is false, countries with
-  // semi-supported address components (e.g. dependent locality) will be hidden.
+  // |filter| is passed each potential item's country code. If |filter| returns
+  // true, an item for that country is added to the model (else it's omitted).
   CountryComboboxModel(const PersonalDataManager& manager,
-                       const std::set<base::string16>& country_filter,
-                       bool show_partially_supported_countries);
+                       const base::Callback<bool(const std::string&)>& filter);
   virtual ~CountryComboboxModel();
 
   // ui::ComboboxModel implementation:

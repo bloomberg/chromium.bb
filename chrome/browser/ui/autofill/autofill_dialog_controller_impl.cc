@@ -556,6 +556,19 @@ AutofillDialogControllerImpl::~AutofillDialogControllerImpl() {
   GetMetricLogger().LogDialogInitialUserState(initial_user_state_);
 }
 
+bool CountryFilter(const std::set<base::string16>& possible_values,
+                   const std::string& country_code) {
+  if (!i18ninput::CountryIsFullySupported(country_code))
+    return false;
+
+  if (!possible_values.empty() &&
+      !possible_values.count(base::ASCIIToUTF16(country_code))) {
+    return false;
+  }
+
+  return true;
+}
+
 // static
 base::WeakPtr<AutofillDialogControllerImpl>
     AutofillDialogControllerImpl::Create(
@@ -627,12 +640,12 @@ void AutofillDialogControllerImpl::Show() {
 
   billing_country_combobox_model_.reset(new CountryComboboxModel(
       *GetManager(),
-      form_structure_.PossibleValues(ADDRESS_BILLING_COUNTRY),
-      false));
+      base::Bind(CountryFilter,
+                 form_structure_.PossibleValues(ADDRESS_BILLING_COUNTRY))));
   shipping_country_combobox_model_.reset(new CountryComboboxModel(
       *GetManager(),
-      form_structure_.PossibleValues(ADDRESS_HOME_COUNTRY),
-      false));
+      base::Bind(CountryFilter,
+                 form_structure_.PossibleValues(ADDRESS_HOME_COUNTRY))));
 
   // Log any relevant UI metrics and security exceptions.
   GetMetricLogger().LogDialogUiEvent(AutofillMetrics::DIALOG_UI_SHOWN);
@@ -1978,16 +1991,17 @@ void AutofillDialogControllerImpl::UserEditedOrActivatedInput(
                                            &popup_icons,
                                            &popup_guids_);
   } else {
-    std::vector<ServerFieldType> field_types =
-        RequestedTypesForSection(section);
-    GetManager()->GetProfileSuggestions(AutofillType(type),
-                                        field_contents,
-                                        false,
-                                        field_types,
-                                        &popup_values,
-                                        &popup_labels,
-                                        &popup_icons,
-                                        &popup_guids_);
+    GetManager()->GetProfileSuggestions(
+        AutofillType(type),
+        field_contents,
+        false,
+        RequestedTypesForSection(section),
+        base::Bind(&AutofillDialogControllerImpl::ShouldSuggestProfile,
+                   base::Unretained(this), section),
+        &popup_values,
+        &popup_labels,
+        &popup_icons,
+        &popup_guids_);
   }
 
   if (popup_values.empty()) {
@@ -3149,6 +3163,13 @@ bool AutofillDialogControllerImpl::CanAcceptCountry(
   return false;
 }
 
+bool AutofillDialogControllerImpl::ShouldSuggestProfile(
+    DialogSection section,
+    const AutofillProfile& profile) {
+  return CanAcceptCountry(
+      section, UTF16ToASCII(profile.GetRawInfo(ADDRESS_HOME_COUNTRY)));
+}
+
 SuggestionsMenuModel* AutofillDialogControllerImpl::
     SuggestionsMenuModelForSection(DialogSection section) {
   switch (section) {
@@ -3229,7 +3250,13 @@ bool AutofillDialogControllerImpl::RebuildInputsForCountry(
     DialogSection section,
     const base::string16& country_name,
     bool should_clobber) {
-  DCHECK_NE(SECTION_CC, section);
+  CountryComboboxModel* model = CountryComboboxModelForSection(section);
+  if (!model)
+    return false;
+
+  std::string country_code = AutofillCountry::GetCountryCode(
+      country_name, g_browser_process->GetApplicationLocale());
+  DCHECK(CanAcceptCountry(section, country_code));
 
   if (view_ && !should_clobber) {
     FieldValueMap outputs;
@@ -3242,9 +3269,6 @@ bool AutofillDialogControllerImpl::RebuildInputsForCountry(
 
   DetailInputs* inputs = MutableRequestedFieldsForSection(section);
   inputs->clear();
-
-  std::string country_code = AutofillCountry::GetCountryCode(
-      country_name, g_browser_process->GetApplicationLocale());
   common::BuildInputsForSection(section, country_code, inputs);
   return true;
 }

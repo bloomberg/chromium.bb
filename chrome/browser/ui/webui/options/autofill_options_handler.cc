@@ -45,7 +45,7 @@ const char kSettingsOrigin[] = "Chrome settings";
 void SetCountryData(const PersonalDataManager& manager,
                     base::DictionaryValue* localized_strings) {
   autofill::CountryComboboxModel model(
-      manager, std::set<base::string16>(), true);
+      manager, base::Callback<bool(const std::string&)>());
   const std::vector<AutofillCountry*>& countries = model.countries();
   localized_strings->SetString("defaultCountryCode",
                                countries.front()->country_code());

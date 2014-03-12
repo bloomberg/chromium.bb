@@ -433,6 +433,10 @@ class AutofillDialogControllerImpl
   // country code.
   bool CanAcceptCountry(DialogSection section, const std::string& country_code);
 
+  // Whether |profile| should be suggested for |section|.
+  bool ShouldSuggestProfile(DialogSection section,
+                            const AutofillProfile& profile);
+
   // Gets the SuggestionsMenuModel for |section|.
   SuggestionsMenuModel* SuggestionsMenuModelForSection(DialogSection section);
   const SuggestionsMenuModel* SuggestionsMenuModelForSection(
