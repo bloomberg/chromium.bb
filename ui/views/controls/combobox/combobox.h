@@ -125,6 +125,7 @@ class VIEWS_EXPORT Combobox : public MenuDelegate,
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ComboboxTest, Click);
+  FRIEND_TEST_ALL_PREFIXES(ComboboxTest, ClickButDisabled);
   FRIEND_TEST_ALL_PREFIXES(ComboboxTest, NotifyOnClickWithMouse);
   FRIEND_TEST_ALL_PREFIXES(ComboboxTest, ContentWidth);
 

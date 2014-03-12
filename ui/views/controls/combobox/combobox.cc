@@ -564,6 +564,9 @@ void Combobox::OnComboboxModelChanged(ui::ComboboxModel* model) {
 }
 
 void Combobox::ButtonPressed(Button* sender, const ui::Event& event) {
+  if (!enabled())
+    return;
+
   RequestFocus();
 
   if (sender == text_button_) {

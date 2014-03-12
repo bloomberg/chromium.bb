@@ -519,6 +519,27 @@ TEST_F(ComboboxTest, Click) {
   EXPECT_TRUE(test_menu_runner_handler->executed());
 }
 
+TEST_F(ComboboxTest, ClickButDisabled) {
+  InitCombobox();
+
+  TestComboboxListener listener;
+  combobox_->set_listener(&listener);
+
+  combobox_->Layout();
+  combobox_->SetEnabled(false);
+
+  // Click the left side, but nothing happens since the combobox is disabled.
+  TestMenuRunnerHandler* test_menu_runner_handler = new TestMenuRunnerHandler();
+  scoped_ptr<MenuRunnerHandler> menu_runner_handler(test_menu_runner_handler);
+  test::MenuRunnerTestAPI test_api(
+      combobox_->dropdown_list_menu_runner_.get());
+  test_api.SetMenuRunnerHandler(menu_runner_handler.Pass());
+  PerformClick(gfx::Point(combobox_->x() + 1,
+                          combobox_->y() + combobox_->height() / 2));
+  EXPECT_FALSE(listener.on_perform_action_called());
+  EXPECT_FALSE(test_menu_runner_handler->executed());
+}
+
 TEST_F(ComboboxTest, NotifyOnClickWithReturnKey) {
   InitCombobox();
 
