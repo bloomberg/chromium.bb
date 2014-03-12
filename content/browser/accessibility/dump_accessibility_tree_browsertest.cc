@@ -268,7 +268,10 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
   RunTest(FILE_PATH_LITERAL("aria-autocomplete.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaCombobox) {
+// crbug.com/98976 will cause new elements to be added to the Blink a11y tree
+// Re-baseline after the Blink change goes in
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       DISABLED_AccessibilityAriaCombobox) {
   RunTest(FILE_PATH_LITERAL("aria-combobox.html"));
 }
 
@@ -413,7 +416,10 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
   RunTest(FILE_PATH_LITERAL("input-text-name-calc.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityInputTypes) {
+// crbug.com/98976 will cause new elements to be added to the Blink a11y tree
+// Re-baseline after the Blink change goes in
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       DISABLED_AccessibilityInputTypes) {
   RunTest(FILE_PATH_LITERAL("input-types.html"));
 }
 
