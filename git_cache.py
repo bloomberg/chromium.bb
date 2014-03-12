@@ -21,15 +21,6 @@ import subcommand
 GIT_EXECUTABLE = 'git.bat' if sys.platform.startswith('win') else 'git'
 
 
-def NormalizeUrl(url):
-  """Convert a git url to a normalized form."""
-  parsed = urlparse.urlparse(url)
-  norm_url = 'https://' + parsed.netloc + parsed.path
-  if not norm_url.endswith('.git'):
-    norm_url += '.git'
-  return norm_url
-
-
 def UrlToCacheDir(url):
   """Convert a git url to a normalized form for the cache dir path."""
   parsed = urlparse.urlparse(url)
@@ -192,7 +183,7 @@ def CMDpopulate(parser, args):
   def _config(directory):
     RunGit(['config', 'core.deltaBaseCacheLimit', '2g'],
            cwd=directory)
-    RunGit(['config', 'remote.origin.url', NormalizeUrl(url)],
+    RunGit(['config', 'remote.origin.url', url],
            cwd=directory)
     RunGit(['config', '--replace-all', 'remote.origin.fetch',
             '+refs/heads/*:refs/heads/*'],
