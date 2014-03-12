@@ -401,6 +401,15 @@ static bool isASCIILineBreak(UChar c)
 static String limitLength(const String& string, unsigned maxLength)
 {
     unsigned newLength = std::min(maxLength, string.length());
+    // FIXME: We should not truncate the string at a control character. It's not
+    // compatible with IE and Firefox.
+    for (unsigned i = 0; i < newLength; ++i) {
+        const UChar current = string[i];
+        if (current < ' ' && current != '\t') {
+            newLength = i;
+            break;
+        }
+    }
     if (newLength == string.length())
         return string;
     if (newLength > 0 && U16_IS_LEAD(string[newLength - 1]))
