@@ -34,7 +34,7 @@ class Widget;
 // designed to be bound to top-level Widgets.
 class VIEWS_EXPORT InputMethod {
  public:
-  // TODO(yukawa): Move these typedef into ime_constants.h or somewhere.
+
 #if defined(OS_WIN)
   typedef LRESULT NativeEventResult;
 #else
