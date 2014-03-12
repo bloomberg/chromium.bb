@@ -101,7 +101,7 @@ void HTMLStyleElement::scopedAttributeChanged(bool scoped)
             scopingNode = containingShadowRoot();
             unregisterWithScopingNode(scopingNode);
         }
-        document().styleEngine()->removeStyleSheetCandidateNode(this, scopingNode);
+        document().styleEngine()->removeStyleSheetCandidateNode(this, scopingNode, treeScope());
         registerWithScopingNode(true);
 
         document().styleEngine()->addStyleSheetCandidateNode(this, false);
@@ -115,7 +115,7 @@ void HTMLStyleElement::scopedAttributeChanged(bool scoped)
         return;
 
     unregisterWithScopingNode(parentNode());
-    document().styleEngine()->removeStyleSheetCandidateNode(this, parentNode());
+    document().styleEngine()->removeStyleSheetCandidateNode(this, parentNode(), treeScope());
 
     // As any <style> in a shadow tree is treated as "scoped",
     // need to add the <style> to its shadow root.
@@ -190,19 +190,23 @@ void HTMLStyleElement::removedFrom(ContainerNode* insertionPoint)
     // That is, because willRemove() is also called if an ancestor is removed from the document.
     // Now, if we want to register <style scoped> even if it's not inDocument,
     // we'd need to find a way to discern whether that is the case, or whether <style scoped> itself is about to be removed.
-    ContainerNode* scope = 0;
+    ContainerNode* scopingNode = 0;
     if (m_scopedStyleRegistrationState != NotRegistered) {
         if (m_scopedStyleRegistrationState == RegisteredInShadowRoot) {
-            scope = containingShadowRoot();
-            if (!scope)
-                scope = insertionPoint->containingShadowRoot();
-        } else
-            scope = parentNode() ? parentNode() : insertionPoint;
-        unregisterWithScopingNode(scope);
+            scopingNode = containingShadowRoot();
+            if (!scopingNode)
+                scopingNode = insertionPoint->containingShadowRoot();
+        } else {
+            scopingNode = parentNode() ? parentNode() : insertionPoint;
+        }
+
+        unregisterWithScopingNode(scopingNode);
     }
 
-    if (insertionPoint->inDocument())
-        StyleElement::removedFromDocument(document(), this, scope);
+    if (insertionPoint->inDocument()) {
+        TreeScope* containingScope = containingShadowRoot();
+        StyleElement::removedFromDocument(document(), this, scopingNode, containingScope ? *containingScope : insertionPoint->treeScope());
+    }
 }
 
 void HTMLStyleElement::didNotifySubtreeInsertionsToDocument()

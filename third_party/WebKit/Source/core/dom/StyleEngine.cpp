@@ -330,9 +330,13 @@ void StyleEngine::addStyleSheetCandidateNode(Node* node, bool createdByParser)
         insertTreeScopeInDocumentOrder(m_activeTreeScopes, &treeScope);
 }
 
-void StyleEngine::removeStyleSheetCandidateNode(Node* node, ContainerNode* scopingNode)
+void StyleEngine::removeStyleSheetCandidateNode(Node* node)
 {
-    TreeScope& treeScope = scopingNode ? scopingNode->treeScope() : m_document;
+    removeStyleSheetCandidateNode(node, 0, m_document);
+}
+
+void StyleEngine::removeStyleSheetCandidateNode(Node* node, ContainerNode* scopingNode, TreeScope& treeScope)
+{
     ASSERT(isHTMLStyleElement(node) || treeScope == m_document);
 
     TreeScopeStyleSheetCollection* collection = styleSheetCollectionFor(treeScope);

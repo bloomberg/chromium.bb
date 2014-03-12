@@ -101,7 +101,8 @@ public:
 
     void modifiedStyleSheet(StyleSheet*);
     void addStyleSheetCandidateNode(Node*, bool createdByParser);
-    void removeStyleSheetCandidateNode(Node*, ContainerNode* scopingNode = 0);
+    void removeStyleSheetCandidateNode(Node*);
+    void removeStyleSheetCandidateNode(Node*, ContainerNode* scopingNode, TreeScope&);
     void modifiedStyleSheetCandidateNode(Node*);
 
     void invalidateInjectedStyleSheetCache();
