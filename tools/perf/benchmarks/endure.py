@@ -2,18 +2,30 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+"""The Endure benchmarks measure memory performance over a period of time.
+
+In each Endure benchmark, one page action is performed repeatedly and memory
+usage is measured periodically. The specific page actions are defined in the
+page sets, and the statistics that are gathered are determined by the Endure
+measurement class.
+"""
+
 from telemetry import test
 
 from measurements import endure
 
 
 class _EndureBenchmark(test.Test):
+  """Base class which sets options for endure benchmarks below."""
   test = endure.Endure
   # Default options for endure benchmarks. Could be overridden in subclasses.
   options = {
       'skip_navigate_on_repeat': True,
-      'page_repeat_secs': 7200,
-      'perf_stats_interval': '100s'
+      # Depending on the page and the actions performed on the page,
+      # 2000 iterations should be between 1 and 2 hours.
+      'page_repeat_iters': 2000,
+      # One sample per 10 iterations -> 200 points per run.
+      'perf_stats_interval': '10'
   }
 
 
@@ -58,4 +70,3 @@ class EndureGmailRefresh(test.Test):
       'perf_stats_interval': '1'
   }
   page_set = 'page_sets/endure_gmail_refresh.json'
-
