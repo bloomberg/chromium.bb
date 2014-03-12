@@ -408,97 +408,97 @@ void CSSValue::finalize()
 
     switch (classType()) {
     case AspectRatioClass:
-        static_cast<CSSAspectRatioValue*>(this)->~CSSAspectRatioValue();
+        toCSSAspectRatioValue(this)->~CSSAspectRatioValue();
         return;
     case BorderImageSliceClass:
-        static_cast<CSSBorderImageSliceValue*>(this)->~CSSBorderImageSliceValue();
+        toCSSBorderImageSliceValue(this)->~CSSBorderImageSliceValue();
         return;
     case CanvasClass:
-        static_cast<CSSCanvasValue*>(this)->~CSSCanvasValue();
+        toCSSCanvasValue(this)->~CSSCanvasValue();
         return;
     case CursorImageClass:
-        static_cast<CSSCursorImageValue*>(this)->~CSSCursorImageValue();
+        toCSSCursorImageValue(this)->~CSSCursorImageValue();
         return;
     case FontClass:
-        static_cast<CSSFontValue*>(this)->~CSSFontValue();
+        toCSSFontValue(this)->~CSSFontValue();
         return;
     case FontFaceSrcClass:
-        static_cast<CSSFontFaceSrcValue*>(this)->~CSSFontFaceSrcValue();
+        toCSSFontFaceSrcValue(this)->~CSSFontFaceSrcValue();
         return;
     case FontFeatureClass:
-        static_cast<CSSFontFeatureValue*>(this)->~CSSFontFeatureValue();
+        toCSSFontFeatureValue(this)->~CSSFontFeatureValue();
         return;
     case FunctionClass:
-        static_cast<CSSFunctionValue*>(this)->~CSSFunctionValue();
+        toCSSFunctionValue(this)->~CSSFunctionValue();
         return;
     case LinearGradientClass:
-        static_cast<CSSLinearGradientValue*>(this)->~CSSLinearGradientValue();
+        toCSSLinearGradientValue(this)->~CSSLinearGradientValue();
         return;
     case RadialGradientClass:
-        static_cast<CSSRadialGradientValue*>(this)->~CSSRadialGradientValue();
+        toCSSRadialGradientValue(this)->~CSSRadialGradientValue();
         return;
     case CrossfadeClass:
-        static_cast<CSSCrossfadeValue*>(this)->~CSSCrossfadeValue();
+        toCSSCrossfadeValue(this)->~CSSCrossfadeValue();
         return;
     case ImageClass:
-        static_cast<CSSImageValue*>(this)->~CSSImageValue();
+        toCSSImageValue(this)->~CSSImageValue();
         return;
     case InheritedClass:
-        static_cast<CSSInheritedValue*>(this)->~CSSInheritedValue();
+        toCSSInheritedValue(this)->~CSSInheritedValue();
         return;
     case InitialClass:
-        static_cast<CSSInitialValue*>(this)->~CSSInitialValue();
+        toCSSInitialValue(this)->~CSSInitialValue();
         return;
     case GridLineNamesClass:
-        static_cast<CSSGridLineNamesValue*>(this)->~CSSGridLineNamesValue();
+        toCSSGridLineNamesValue(this)->~CSSGridLineNamesValue();
         return;
     case GridTemplateAreasClass:
-        static_cast<CSSGridTemplateAreasValue*>(this)->~CSSGridTemplateAreasValue();
+        toCSSGridTemplateAreasValue(this)->~CSSGridTemplateAreasValue();
         return;
     case PrimitiveClass:
-        static_cast<CSSPrimitiveValue*>(this)->~CSSPrimitiveValue();
+        toCSSPrimitiveValue(this)->~CSSPrimitiveValue();
         return;
     case ReflectClass:
-        static_cast<CSSReflectValue*>(this)->~CSSReflectValue();
+        toCSSReflectValue(this)->~CSSReflectValue();
         return;
     case ShadowClass:
-        static_cast<CSSShadowValue*>(this)->~CSSShadowValue();
+        toCSSShadowValue(this)->~CSSShadowValue();
         return;
     case CubicBezierTimingFunctionClass:
-        static_cast<CSSCubicBezierTimingFunctionValue*>(this)->~CSSCubicBezierTimingFunctionValue();
+        toCSSCubicBezierTimingFunctionValue(this)->~CSSCubicBezierTimingFunctionValue();
         return;
     case StepsTimingFunctionClass:
-        static_cast<CSSStepsTimingFunctionValue*>(this)->~CSSStepsTimingFunctionValue();
+        toCSSStepsTimingFunctionValue(this)->~CSSStepsTimingFunctionValue();
         return;
     case UnicodeRangeClass:
-        static_cast<CSSUnicodeRangeValue*>(this)->~CSSUnicodeRangeValue();
+        toCSSUnicodeRangeValue(this)->~CSSUnicodeRangeValue();
         return;
     case ValueListClass:
-        static_cast<CSSValueList*>(this)->~CSSValueList();
+        toCSSValueList(this)->~CSSValueList();
         return;
     case CSSTransformClass:
-        static_cast<CSSTransformValue*>(this)->~CSSTransformValue();
+        toCSSTransformValue(this)->~CSSTransformValue();
         return;
     case LineBoxContainClass:
-        static_cast<CSSLineBoxContainValue*>(this)->~CSSLineBoxContainValue();
+        toCSSLineBoxContainValue(this)->~CSSLineBoxContainValue();
         return;
     case CalculationClass:
-        static_cast<CSSCalcValue*>(this)->~CSSCalcValue();
+        toCSSCalcValue(this)->~CSSCalcValue();
         return;
     case ImageSetClass:
-        static_cast<CSSImageSetValue*>(this)->~CSSImageSetValue();
+        toCSSImageSetValue(this)->~CSSImageSetValue();
         return;
     case CSSFilterClass:
-        static_cast<CSSFilterValue*>(this)->~CSSFilterValue();
+        toCSSFilterValue(this)->~CSSFilterValue();
         return;
     case CSSArrayFunctionValueClass:
-        static_cast<CSSArrayFunctionValue*>(this)->~CSSArrayFunctionValue();
+        toCSSArrayFunctionValue(this)->~CSSArrayFunctionValue();
         return;
     case SVGPaintClass:
-        static_cast<SVGPaint*>(this)->~SVGPaint();
+        toSVGPaint(this)->~SVGPaint();
         return;
     case CSSSVGDocumentClass:
-        static_cast<CSSSVGDocumentValue*>(this)->~CSSSVGDocumentValue();
+        toCSSSVGDocumentValue(this)->~CSSSVGDocumentValue();
         return;
     }
     ASSERT_NOT_REACHED();
