@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/policy/configuration_policy_pref_store_test.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/incognito_mode_policy_handler.h"
 #include "chrome/common/pref_names.h"
 #include "components/policy/core/browser/configuration_policy_pref_store.h"
+#include "components/policy/core/browser/configuration_policy_pref_store_test.h"
 #include "grit/generated_resources.h"
 #include "policy/policy_constants.h"
 

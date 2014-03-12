@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_POLICY_CONFIGURATION_POLICY_PREF_STORE_TEST_H_
-#define CHROME_BROWSER_POLICY_CONFIGURATION_POLICY_PREF_STORE_TEST_H_
+#ifndef COMPONENTS_POLICY_CORE_BROWSER_CONFIGURATION_POLICY_PREF_STORE_TEST_H_
+#define COMPONENTS_POLICY_CORE_BROWSER_CONFIGURATION_POLICY_PREF_STORE_TEST_H_
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
@@ -40,4 +40,4 @@ class ConfigurationPolicyPrefStoreTest : public testing::Test {
 
 }  // namespace policy
 
-#endif  // CHROME_BROWSER_POLICY_CONFIGURATION_POLICY_PREF_STORE_TEST_H_
+#endif  // COMPONENTS_POLICY_CORE_BROWSER_CONFIGURATION_POLICY_PREF_STORE_TEST_H_

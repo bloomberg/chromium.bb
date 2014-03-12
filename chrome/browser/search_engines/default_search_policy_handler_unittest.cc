@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/policy/configuration_policy_pref_store_test.h"
 #include "chrome/browser/search_engines/default_search_policy_handler.h"
 #include "chrome/common/pref_names.h"
 #include "components/policy/core/browser/configuration_policy_pref_store.h"
+#include "components/policy/core/browser/configuration_policy_pref_store_test.h"
 #include "policy/policy_constants.h"
 
 namespace policy {

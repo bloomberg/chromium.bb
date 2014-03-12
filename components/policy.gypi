@@ -255,6 +255,8 @@
             '..',
           ],
           'sources': [
+            'policy/core/browser/configuration_policy_pref_store_test.cc',
+            'policy/core/browser/configuration_policy_pref_store_test.h',
             'policy/core/common/cloud/mock_cloud_external_data_manager.cc',
             'policy/core/common/cloud/mock_cloud_external_data_manager.h',
             'policy/core/common/cloud/mock_cloud_policy_client.cc',

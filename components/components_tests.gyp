@@ -368,6 +368,8 @@
                 'policy/core/browser/autofill_policy_handler_unittest.cc',
                 'policy/core/browser/browser_policy_connector_unittest.cc',
                 'policy/core/browser/configuration_policy_handler_unittest.cc',
+                'policy/core/browser/configuration_policy_pref_store_unittest.cc',
+                'policy/core/browser/url_blacklist_policy_handler_unittest.cc',
                 'policy/core/common/async_policy_provider_unittest.cc',
                 'policy/core/common/cloud/cloud_policy_client_unittest.cc',
                 'policy/core/common/cloud/cloud_policy_core_unittest.cc',
