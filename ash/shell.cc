@@ -389,14 +389,6 @@ void Shell::OnOverviewModeEnding() {
   FOR_EACH_OBSERVER(ShellObserver, observers_, OnOverviewModeEnding());
 }
 
-void Shell::OnMaximizeModeStarted() {
-  FOR_EACH_OBSERVER(ShellObserver, observers_, OnMaximizeModeStarted());
-}
-
-void Shell::OnMaximizeModeEnded() {
-  FOR_EACH_OBSERVER(ShellObserver, observers_, OnMaximizeModeEnded());
-}
-
 void Shell::CreateShelf() {
   RootWindowControllerList controllers = GetAllRootWindowControllers();
   for (RootWindowControllerList::iterator iter = controllers.begin();

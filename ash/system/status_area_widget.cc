@@ -11,7 +11,6 @@
 #include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
 #include "ash/system/bluetooth/bluetooth_observer.h"
-#include "ash/system/overview/overview_button_tray.h"
 #include "ash/system/session/logout_button_tray.h"
 #include "ash/system/status_area_widget_delegate.h"
 #include "ash/system/tray/system_tray.h"
@@ -34,7 +33,6 @@ const char StatusAreaWidget::kNativeViewName[] = "StatusAreaWidget";
 
 StatusAreaWidget::StatusAreaWidget(aura::Window* status_container)
     : status_area_widget_delegate_(new internal::StatusAreaWidgetDelegate),
-      overview_button_tray_(NULL),
       system_tray_(NULL),
       web_notification_tray_(NULL),
       logout_button_tray_(NULL),
@@ -57,25 +55,26 @@ StatusAreaWidget::~StatusAreaWidget() {
 }
 
 void StatusAreaWidget::CreateTrayViews() {
-  AddOverviewButtonTray();
   AddSystemTray();
   AddWebNotificationTray();
   AddLogoutButtonTray();
 #if defined(OS_CHROMEOS)
   AddVirtualKeyboardTray();
 #endif
-
   SystemTrayDelegate* delegate =
       ash::Shell::GetInstance()->system_tray_delegate();
   DCHECK(delegate);
   // Initialize after all trays have been created.
-  system_tray_->InitializeTrayItems(delegate);
-  web_notification_tray_->Initialize();
-  logout_button_tray_->Initialize();
+  if (system_tray_)
+    system_tray_->InitializeTrayItems(delegate);
+  if (web_notification_tray_)
+    web_notification_tray_->Initialize();
+  if (logout_button_tray_)
+    logout_button_tray_->Initialize();
 #if defined(OS_CHROMEOS)
-  virtual_keyboard_tray_->Initialize();
+  if (virtual_keyboard_tray_)
+    virtual_keyboard_tray_->Initialize();
 #endif
-  overview_button_tray_->Initialize();
   UpdateAfterLoginStatusChange(delegate->GetUserLoginStatus());
 }
 
@@ -93,8 +92,6 @@ void StatusAreaWidget::Shutdown() {
   delete virtual_keyboard_tray_;
   virtual_keyboard_tray_ = NULL;
 #endif
-  delete overview_button_tray_;
-  overview_button_tray_ = NULL;
 }
 
 bool StatusAreaWidget::ShouldShowShelf() const {
@@ -109,8 +106,8 @@ bool StatusAreaWidget::ShouldShowShelf() const {
   // If the shelf is currently visible, don't hide the shelf if the mouse
   // is in any of the notification bubbles.
   return (system_tray_ && system_tray_->IsMouseInNotificationBubble()) ||
-         (web_notification_tray_ &&
-          web_notification_tray_->IsMouseInNotificationBubble());
+        (web_notification_tray_ &&
+         web_notification_tray_->IsMouseInNotificationBubble());
 }
 
 bool StatusAreaWidget::IsMessageBubbleShown() const {
@@ -147,11 +144,6 @@ void StatusAreaWidget::AddVirtualKeyboardTray() {
 }
 #endif
 
-void StatusAreaWidget::AddOverviewButtonTray() {
-  overview_button_tray_ = new OverviewButtonTray(this);
-  status_area_widget_delegate_->AddTray(overview_button_tray_);
-}
-
 void StatusAreaWidget::SetShelfAlignment(ShelfAlignment alignment) {
   status_area_widget_delegate_->set_alignment(alignment);
   if (system_tray_)
@@ -164,8 +156,6 @@ void StatusAreaWidget::SetShelfAlignment(ShelfAlignment alignment) {
   if (virtual_keyboard_tray_)
     virtual_keyboard_tray_->SetShelfAlignment(alignment);
 #endif
-  if (overview_button_tray_)
-    overview_button_tray_->SetShelfAlignment(alignment);
   status_area_widget_delegate_->UpdateLayout();
 }
 
