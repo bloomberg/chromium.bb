@@ -132,6 +132,8 @@ void CSSFontFaceSource::fontLoadWaitLimitExceeded(FontResource*)
     pruneTable();
     if (m_face)
         m_face->fontLoadWaitLimitExceeded(this);
+
+    m_histograms.recordFallbackTime(m_font.get());
 }
 
 PassRefPtr<SimpleFontData> CSSFontFaceSource::getFontData(const FontDescription& fontDescription)
