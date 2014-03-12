@@ -232,7 +232,7 @@ private:
     unsigned m_smallCaps : 1; // FontSmallCaps
     unsigned m_isAbsoluteSize : 1; // Whether or not CSS specified an explicit size
                                   // (logical sizes like "medium" don't count).
-    unsigned m_weight : 8; // FontWeight
+    unsigned m_weight : 4; // FontWeight
     unsigned m_stretch : 4; // FontStretch
     unsigned m_genericFamily : 3; // GenericFamilyType
     unsigned m_usePrinterFont : 1;
@@ -298,43 +298,12 @@ inline bool FontDescription::operator==(const FontDescription& other) const
 
 inline FontWeight traitsMaskToWeight(unsigned mask)
 {
-    switch (mask & FontWeightMask) {
-    case FontWeight100Mask:
-        return FontWeight100;
-        break;
-    case FontWeight200Mask:
-        return FontWeight200;
-        break;
-    case FontWeight300Mask:
-        return FontWeight300;
-        break;
-    case FontWeight400Mask:
-        return FontWeight400;
-        break;
-    case FontWeight500Mask:
-        return FontWeight500;
-        break;
-    case FontWeight600Mask:
-        return FontWeight600;
-        break;
-    case FontWeight700Mask:
-        return FontWeight700;
-        break;
-    case FontWeight800Mask:
-        return FontWeight800;
-        break;
-    case FontWeight900Mask:
-        return FontWeight900;
-        break;
-    default:
-        ASSERT_NOT_REACHED();
-        return FontWeight400;
-    }
+    return static_cast<FontWeight>((mask & FontWeightMask) >> FontWeightBit1);
 }
 
 inline unsigned weightToTraitsMask(FontWeight weight)
 {
-    return FontWeight100Mask << (weight - FontWeight100);
+    return weight << FontWeightBit1;
 }
 
 }

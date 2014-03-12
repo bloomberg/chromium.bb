@@ -68,6 +68,54 @@ TEST(FontDescriptionTest, TestFontTraitsMask)
     source.setWeight(FontWeight100);
     source.setStretch(FontStretchExtraExpanded);
     assertDescriptionMatchesMask(source, source.traitsMask());
+
+    source.setItalic(FontItalicOn);
+    source.setSmallCaps(FontSmallCapsOff);
+    source.setWeight(FontWeight900);
+    source.setStretch(FontStretchNormal);
+    assertDescriptionMatchesMask(source, source.traitsMask());
+
+    source.setItalic(FontItalicOn);
+    source.setSmallCaps(FontSmallCapsOff);
+    source.setWeight(FontWeight800);
+    source.setStretch(FontStretchNormal);
+    assertDescriptionMatchesMask(source, source.traitsMask());
+
+    source.setItalic(FontItalicOn);
+    source.setSmallCaps(FontSmallCapsOff);
+    source.setWeight(FontWeight700);
+    source.setStretch(FontStretchNormal);
+    assertDescriptionMatchesMask(source, source.traitsMask());
+
+    source.setItalic(FontItalicOn);
+    source.setSmallCaps(FontSmallCapsOff);
+    source.setWeight(FontWeight600);
+    source.setStretch(FontStretchNormal);
+    assertDescriptionMatchesMask(source, source.traitsMask());
+
+    source.setItalic(FontItalicOn);
+    source.setSmallCaps(FontSmallCapsOff);
+    source.setWeight(FontWeight500);
+    source.setStretch(FontStretchNormal);
+    assertDescriptionMatchesMask(source, source.traitsMask());
+
+    source.setItalic(FontItalicOn);
+    source.setSmallCaps(FontSmallCapsOff);
+    source.setWeight(FontWeight400);
+    source.setStretch(FontStretchNormal);
+    assertDescriptionMatchesMask(source, source.traitsMask());
+
+    source.setItalic(FontItalicOn);
+    source.setSmallCaps(FontSmallCapsOff);
+    source.setWeight(FontWeight300);
+    source.setStretch(FontStretchUltraExpanded);
+    assertDescriptionMatchesMask(source, source.traitsMask());
+
+    source.setItalic(FontItalicOn);
+    source.setSmallCaps(FontSmallCapsOff);
+    source.setWeight(FontWeight200);
+    source.setStretch(FontStretchNormal);
+    assertDescriptionMatchesMask(source, source.traitsMask());
 }
 
 } // namespace WebCore

@@ -149,10 +149,10 @@ static inline bool compareFontFaces(CSSSegmentedFontFace* first, CSSSegmentedFon
         if (firstRequiresItalics != secondRequiresItalics)
             return firstRequiresItalics;
     }
-
-    if (secondTraitsMask & desiredTraitsMask & FontWeightMask)
+    if ((secondTraitsMask & FontWeightMask) == (desiredTraitsMask & FontWeightMask))
         return false;
-    if (firstTraitsMask & desiredTraitsMask & FontWeightMask)
+
+    if ((firstTraitsMask & FontWeightMask) == (desiredTraitsMask & FontWeightMask))
         return true;
 
     // http://www.w3.org/TR/2011/WD-css3-fonts-20111004/#font-matching-algorithm says :
@@ -163,31 +163,34 @@ static inline bool compareFontFaces(CSSSegmentedFontFace* first, CSSSegmentedFon
 
     static const unsigned fallbackRuleSets = 9;
     static const unsigned rulesPerSet = 8;
-    static const FontTraitsMask weightFallbackRuleSets[fallbackRuleSets][rulesPerSet] = {
-        { FontWeight200Mask, FontWeight300Mask, FontWeight400Mask, FontWeight500Mask, FontWeight600Mask, FontWeight700Mask, FontWeight800Mask, FontWeight900Mask },
-        { FontWeight100Mask, FontWeight300Mask, FontWeight400Mask, FontWeight500Mask, FontWeight600Mask, FontWeight700Mask, FontWeight800Mask, FontWeight900Mask },
-        { FontWeight200Mask, FontWeight100Mask, FontWeight400Mask, FontWeight500Mask, FontWeight600Mask, FontWeight700Mask, FontWeight800Mask, FontWeight900Mask },
-        { FontWeight500Mask, FontWeight300Mask, FontWeight200Mask, FontWeight100Mask, FontWeight600Mask, FontWeight700Mask, FontWeight800Mask, FontWeight900Mask },
-        { FontWeight400Mask, FontWeight300Mask, FontWeight200Mask, FontWeight100Mask, FontWeight600Mask, FontWeight700Mask, FontWeight800Mask, FontWeight900Mask },
-        { FontWeight700Mask, FontWeight800Mask, FontWeight900Mask, FontWeight500Mask, FontWeight400Mask, FontWeight300Mask, FontWeight200Mask, FontWeight100Mask },
-        { FontWeight800Mask, FontWeight900Mask, FontWeight600Mask, FontWeight500Mask, FontWeight400Mask, FontWeight300Mask, FontWeight200Mask, FontWeight100Mask },
-        { FontWeight900Mask, FontWeight700Mask, FontWeight600Mask, FontWeight500Mask, FontWeight400Mask, FontWeight300Mask, FontWeight200Mask, FontWeight100Mask },
-        { FontWeight800Mask, FontWeight700Mask, FontWeight600Mask, FontWeight500Mask, FontWeight400Mask, FontWeight300Mask, FontWeight200Mask, FontWeight100Mask }
+    static const FontWeight weightFallbackRuleSets[fallbackRuleSets][rulesPerSet] = {
+        { FontWeight200, FontWeight300, FontWeight400, FontWeight500, FontWeight600, FontWeight700, FontWeight800, FontWeight900 },
+        { FontWeight100, FontWeight300, FontWeight400, FontWeight500, FontWeight600, FontWeight700, FontWeight800, FontWeight900 },
+        { FontWeight200, FontWeight100, FontWeight400, FontWeight500, FontWeight600, FontWeight700, FontWeight800, FontWeight900 },
+        { FontWeight500, FontWeight300, FontWeight200, FontWeight100, FontWeight600, FontWeight700, FontWeight800, FontWeight900 },
+        { FontWeight400, FontWeight300, FontWeight200, FontWeight100, FontWeight600, FontWeight700, FontWeight800, FontWeight900 },
+        { FontWeight700, FontWeight800, FontWeight900, FontWeight500, FontWeight400, FontWeight300, FontWeight200, FontWeight100 },
+        { FontWeight800, FontWeight900, FontWeight600, FontWeight500, FontWeight400, FontWeight300, FontWeight200, FontWeight100 },
+        { FontWeight900, FontWeight700, FontWeight600, FontWeight500, FontWeight400, FontWeight300, FontWeight200, FontWeight100 },
+        { FontWeight800, FontWeight700, FontWeight600, FontWeight500, FontWeight400, FontWeight300, FontWeight200, FontWeight100 }
     };
 
     unsigned ruleSetIndex = 0;
-    unsigned w = FontWeight100Bit;
-    while (!(desiredTraitsMask & (1 << w))) {
+    unsigned w = FontWeight100;
+    unsigned desiredWeight = traitsMaskToWeight(desiredTraitsMask);
+    while (desiredWeight > w) {
         w++;
         ruleSetIndex++;
     }
 
     ASSERT(ruleSetIndex < fallbackRuleSets);
-    const FontTraitsMask* weightFallbackRule = weightFallbackRuleSets[ruleSetIndex];
+    const FontWeight* weightFallbackRule = weightFallbackRuleSets[ruleSetIndex];
+    FontWeight firstWeight = traitsMaskToWeight(firstTraitsMask);
+    FontWeight secondWeight = traitsMaskToWeight(secondTraitsMask);
     for (unsigned i = 0; i < rulesPerSet; ++i) {
-        if (secondTraitsMask & weightFallbackRule[i])
+        if (secondWeight == weightFallbackRule[i])
             return false;
-        if (firstTraitsMask & weightFallbackRule[i])
+        if (firstWeight == weightFallbackRule[i])
             return true;
     }
 

@@ -150,9 +150,11 @@ PassRefPtr<FontData> CSSSegmentedFontFace::getFontData(const FontDescription& fo
     if (!fontData)
         fontData = SegmentedFontData::create();
 
+    FontWeight weight = traitsMaskToWeight(m_traitsMask);
+    FontWeight desiredWeight = traitsMaskToWeight(desiredTraitsMask);
     FontDescription requestedFontDescription(fontDescription);
     requestedFontDescription.setTraitsMask(m_traitsMask);
-    requestedFontDescription.setSyntheticBold(!(m_traitsMask & (FontWeight600Mask | FontWeight700Mask | FontWeight800Mask | FontWeight900Mask)) && (desiredTraitsMask & (FontWeight600Mask | FontWeight700Mask | FontWeight800Mask | FontWeight900Mask)));
+    requestedFontDescription.setSyntheticBold(weight < FontWeight600 && desiredWeight >= FontWeight600);
     requestedFontDescription.setSyntheticItalic(!(m_traitsMask & FontStyleItalicMask) && (desiredTraitsMask & FontStyleItalicMask));
 
     for (FontFaceList::reverse_iterator it = m_fontFaces.rbegin(); it != m_fontFaces.rend(); ++it) {
