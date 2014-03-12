@@ -153,6 +153,16 @@ if test x$enable_drm_compositor = xyes; then
   PKG_CHECK_MODULES(DRM_COMPOSITOR, [libudev >= 136 libdrm >= 2.4.30 gbm mtdev >= 1.1.0])
 fi
 
+
+AC_ARG_ENABLE(libinput-backend, [  --enable-libinput-backend],,
+	      enable_libinput_backend=no)
+AM_CONDITIONAL([ENABLE_LIBINPUT_BACKEND], [test x$enable_libinput_backend = xyes])
+if test x$enable_libinput_backend = xyes; then
+  AC_DEFINE([BUILD_LIBINPUT_BACKEND], [1], [Build the libinput input device backend])
+  PKG_CHECK_MODULES(LIBINPUT_BACKEND, [libinput >= 0.1.0])
+fi
+
+
 PKG_CHECK_MODULES(COMPOSITOR, [$COMPOSITOR_MODULES])
 
 AC_ARG_ENABLE(wayland-compositor, [  --enable-wayland-compositor],,
@@ -505,6 +515,8 @@ AC_MSG_RESULT([
 	RPI Compositor			${enable_rpi_compositor}
 	FBDEV Compositor		${enable_fbdev_compositor}
 	RDP Compositor			${enable_rdp_compositor}
+
+	libinput Backend		${enable_libinput_backend}
 
 	Raspberry Pi BCM headers	${have_bcm_host}
 

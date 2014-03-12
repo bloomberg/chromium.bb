@@ -29,10 +29,12 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
+#include <sys/time.h>
 #include <sys/types.h>
 #include <fcntl.h>
 #include <unistd.h>
 
+#include <linux/input.h>
 #include <libudev.h>
 
 #ifdef HAVE_BCM_HOST
@@ -43,9 +45,8 @@
 
 #include "compositor.h"
 #include "rpi-renderer.h"
-#include "evdev.h"
 #include "launcher-util.h"
-#include "udev-seat.h"
+#include "udev-input.h"
 
 #if 0
 #define DBG(...) \

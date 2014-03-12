@@ -50,8 +50,6 @@ weston_SOURCES =					\
 	src/compositor.h				\
 	src/input.c					\
 	src/data-device.c				\
-	src/filter.c					\
-	src/filter.h					\
 	src/screenshooter.c				\
 	src/clipboard.c					\
 	src/zoom.c					\
@@ -181,12 +179,33 @@ x11_backend_la_CFLAGS =				\
 x11_backend_la_SOURCES = src/compositor-x11.c
 endif
 
+INPUT_BACKEND_SOURCES = src/udev-input.h
+
+if ENABLE_LIBINPUT_BACKEND
+INPUT_BACKEND_LIBS = $(LIBINPUT_BACKEND_LIBS)
+INPUT_BACKEND_SOURCES +=			\
+	src/libinput-seat.c			\
+	src/libinput-seat.h			\
+	src/libinput-device.c			\
+	src/libinput-device.h
+else
+INPUT_BACKEND_SOURCES +=			\
+	src/filter.c				\
+	src/filter.h				\
+	src/udev-seat.c				\
+	src/udev-seat.h				\
+	src/evdev.c				\
+	src/evdev.h				\
+	src/evdev-touchpad.c
+endif
+
 if ENABLE_DRM_COMPOSITOR
 module_LTLIBRARIES += drm-backend.la
 drm_backend_la_LDFLAGS = -module -avoid-version
 drm_backend_la_LIBADD =				\
 	$(COMPOSITOR_LIBS)			\
 	$(DRM_COMPOSITOR_LIBS)			\
+	$(INPUT_BACKEND_LIBS)			\
 	libshared.la -lrt			\
 	libsession-helper.la
 drm_backend_la_CFLAGS =				\
@@ -196,11 +215,7 @@ drm_backend_la_CFLAGS =				\
 	$(GCC_CFLAGS)
 drm_backend_la_SOURCES =			\
 	src/compositor-drm.c			\
-	src/udev-seat.c				\
-	src/udev-seat.h				\
-	src/evdev.c				\
-	src/evdev.h				\
-	src/evdev-touchpad.c			\
+	$(INPUT_BACKEND_SOURCES)		\
 	src/libbacklight.c			\
 	src/libbacklight.h
 
@@ -239,6 +254,7 @@ rpi_backend_la_LDFLAGS = -module -avoid-version
 rpi_backend_la_LIBADD = $(COMPOSITOR_LIBS)	\
 	$(RPI_COMPOSITOR_LIBS)			\
 	$(RPI_BCM_HOST_LIBS)			\
+	$(INPUT_BACKEND_LIBS)			\
 	libsession-helper.la			\
 	libshared.la
 rpi_backend_la_CFLAGS =				\
@@ -251,11 +267,7 @@ rpi_backend_la_SOURCES =			\
 	src/rpi-renderer.c			\
 	src/rpi-renderer.h			\
 	src/rpi-bcm-stubs.h			\
-	src/udev-seat.c				\
-	src/udev-seat.h				\
-	src/evdev.c				\
-	src/evdev.h				\
-	src/evdev-touchpad.c
+	$(INPUT_BACKEND_SOURCES)
 
 if ENABLE_EGL
 rpi_backend_la_LIBADD += $(EGL_LIBS)
@@ -278,6 +290,7 @@ fbdev_backend_la_LDFLAGS = -module -avoid-version
 fbdev_backend_la_LIBADD =			\
 	$(COMPOSITOR_LIBS)			\
 	$(FBDEV_COMPOSITOR_LIBS)		\
+	$(INPUT_BACKEND_LIBS)			\
 	libsession-helper.la			\
 	libshared.la
 fbdev_backend_la_CFLAGS =			\
@@ -288,11 +301,7 @@ fbdev_backend_la_CFLAGS =			\
 	$(GCC_CFLAGS)
 fbdev_backend_la_SOURCES =			\
 	src/compositor-fbdev.c			\
-	src/udev-seat.c				\
-	src/udev-seat.h				\
-	src/evdev.c				\
-	src/evdev.h				\
-	src/evdev-touchpad.c
+	$(INPUT_BACKEND_SOURCES)
 endif
 
 if ENABLE_RDP_COMPOSITOR
