@@ -33,9 +33,6 @@ PROXIED_IFACE(PPB_FILECHOOSER_TRUSTED_INTERFACE_0_6,
               PPB_FileChooserTrusted_0_6)
 PROXIED_IFACE(PPB_FILEREFPRIVATE_INTERFACE_0_1,
               PPB_FileRefPrivate_0_1)
-// TODO(xhwang): Move PPB_Flash_DeviceID back to interfaces_ppb_private_flash.h.
-PROXIED_IFACE(PPB_FLASH_DEVICEID_INTERFACE_1_0,
-              PPB_Flash_DeviceID_1_0)
 PROXIED_IFACE(PPB_FLASHFULLSCREEN_INTERFACE_0_1,
               PPB_FlashFullscreen_0_1)
 PROXIED_IFACE(PPB_FLASHFULLSCREEN_INTERFACE_1_0,
