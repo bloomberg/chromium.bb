@@ -7,6 +7,7 @@
       "components_unittests",
       "crypto_unittests",
       "dbus_unittests",
+      "gcm_unit_tests",
       "google_apis_unittests",
       "gpu_unittests",
       "url_unittests",
@@ -82,6 +83,7 @@
   },
   "Linux ChromiumOS Tests (dbg)(3)": {
     "gtest_tests": [
+      "gcm_unit_tests",
       "interactive_ui_tests"
     ]
   }
