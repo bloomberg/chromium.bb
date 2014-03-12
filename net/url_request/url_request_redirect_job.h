@@ -5,6 +5,8 @@
 #ifndef NET_URL_REQUEST_URL_REQUEST_REDIRECT_JOB_H_
 #define NET_URL_REQUEST_URL_REQUEST_REDIRECT_JOB_H_
 
+#include <string>
+
 #include "base/memory/weak_ptr.h"
 #include "net/base/net_export.h"
 #include "net/url_request/url_request_job.h"
@@ -27,11 +29,13 @@ class NET_EXPORT URLRequestRedirectJob : public URLRequestJob {
     REDIRECT_307_TEMPORARY_REDIRECT = 307,
   };
 
-  // Constructs a job that redirects to the specified URL.
+  // Constructs a job that redirects to the specified URL.  |redirect_reason| is
+  // logged for debugging purposes, and must not be an empty string.
   URLRequestRedirectJob(URLRequest* request,
                         NetworkDelegate* network_delegate,
                         const GURL& redirect_destination,
-                        StatusCode http_status_code);
+                        StatusCode http_status_code,
+                        const std::string& redirect_reason);
 
   virtual void Start() OVERRIDE;
   virtual bool IsRedirectResponse(GURL* location,
@@ -48,6 +52,7 @@ class NET_EXPORT URLRequestRedirectJob : public URLRequestJob {
   const GURL redirect_destination_;
   const int http_status_code_;
   base::TimeTicks receive_headers_end_;
+  std::string redirect_reason_;
 
   base::WeakPtrFactory<URLRequestRedirectJob> weak_factory_;
 };

@@ -149,7 +149,7 @@ URLRequestJob* URLRequestHttpJob::Factory(URLRequest* request,
     return new URLRequestRedirectJob(
         request, network_delegate, redirect_url,
         // Use status code 307 to preserve the method, so POST requests work.
-        URLRequestRedirectJob::REDIRECT_307_TEMPORARY_REDIRECT);
+        URLRequestRedirectJob::REDIRECT_307_TEMPORARY_REDIRECT, "HSTS");
   }
   return new URLRequestHttpJob(request,
                                network_delegate,

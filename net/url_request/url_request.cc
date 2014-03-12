@@ -667,7 +667,7 @@ void URLRequest::BeforeRequestComplete(int error) {
     URLRequestRedirectJob* job = new URLRequestRedirectJob(
         this, network_delegate_, new_url,
         // Use status code 307 to preserve the method, so POST requests work.
-        URLRequestRedirectJob::REDIRECT_307_TEMPORARY_REDIRECT);
+        URLRequestRedirectJob::REDIRECT_307_TEMPORARY_REDIRECT, "Delegate");
     StartJob(job);
   } else {
     StartJob(URLRequestJobManager::GetInstance()->CreateJob(

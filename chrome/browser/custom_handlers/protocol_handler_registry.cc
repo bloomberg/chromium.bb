@@ -151,7 +151,8 @@ net::URLRequestJob* ProtocolHandlerRegistry::IOThreadDelegate::MaybeCreateJob(
 
   return new net::URLRequestRedirectJob(
       request, network_delegate, translated_url,
-      net::URLRequestRedirectJob::REDIRECT_307_TEMPORARY_REDIRECT);
+      net::URLRequestRedirectJob::REDIRECT_307_TEMPORARY_REDIRECT,
+      "Protocol Handler Registry");
 }
 
 // JobInterceptorFactory -------------------------------------------------------

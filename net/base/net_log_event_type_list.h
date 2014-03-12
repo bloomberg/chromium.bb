@@ -781,12 +781,18 @@ EVENT_TYPE(URL_REQUEST_JOB_BYTES_READ)
 EVENT_TYPE(URL_REQUEST_JOB_FILTERED_BYTES_READ)
 
 // This event is sent when the priority of a net::URLRequest is
-// changed after it has started. The parameters attached to this event
-// are:
+// changed after it has started. The following parameters are attached:
 //   {
 //     "priority": <Numerical value of the priority (higher is more important)>,
 //   }
 EVENT_TYPE(URL_REQUEST_SET_PRIORITY)
+
+EVENT_TYPE(URL_REQUEST_REDIRECT_JOB)
+// This event is logged when a URLRequestRedirectJob is started for a request.
+// The following parameters are attached:
+//   {
+//     "reason": <Reason for the redirect, as a string>,
+//   }
 
 // ------------------------------------------------------------------------
 // HttpCache

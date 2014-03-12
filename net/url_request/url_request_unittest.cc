@@ -5761,7 +5761,7 @@ TEST_F(URLRequestTestHTTP, InterceptPost302RedirectGet) {
 
   URLRequestRedirectJob* job = new URLRequestRedirectJob(
       &req, &default_network_delegate_, test_server_.GetURL("echo"),
-      URLRequestRedirectJob::REDIRECT_302_FOUND);
+      URLRequestRedirectJob::REDIRECT_302_FOUND, "Very Good Reason");
   AddTestInterceptor()->set_main_intercept_job(job);
 
   req.Start();
@@ -5788,7 +5788,8 @@ TEST_F(URLRequestTestHTTP, InterceptPost307RedirectPost) {
 
   URLRequestRedirectJob* job = new URLRequestRedirectJob(
       &req, &default_network_delegate_, test_server_.GetURL("echo"),
-      URLRequestRedirectJob::REDIRECT_307_TEMPORARY_REDIRECT);
+      URLRequestRedirectJob::REDIRECT_307_TEMPORARY_REDIRECT,
+      "Very Good Reason");
   AddTestInterceptor()->set_main_intercept_job(job);
 
   req.Start();
@@ -5992,7 +5993,7 @@ TEST_F(URLRequestTestHTTP, SetSubsequentJobPriority) {
   scoped_refptr<URLRequestRedirectJob> redirect_job =
       new URLRequestRedirectJob(
           &req, &default_network_delegate_, test_server_.GetURL("echo"),
-          URLRequestRedirectJob::REDIRECT_302_FOUND);
+          URLRequestRedirectJob::REDIRECT_302_FOUND, "Very Good Reason");
   AddTestInterceptor()->set_main_intercept_job(redirect_job.get());
 
   req.SetPriority(LOW);
