@@ -12,6 +12,7 @@
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
+#include "ui/compositor/scoped_layer_animation_settings.h"
 
 namespace views {
 namespace corewm {
@@ -53,6 +54,41 @@ TEST_F(VisibilityControllerTest, AnimateHideDoesntHideWindowLayer) {
   EXPECT_FALSE(non_animatable->layer()->visible());
 
   aura::client::SetVisibilityClient(root_window(), NULL);
+}
+
+// Check that a transparency change to 0 will not cause a hide call to be
+// ignored.
+TEST_F(VisibilityControllerTest, AnimateTransparencyToZeroAndHideHides) {
+  // We cannot disable animations for this test.
+  ui::ScopedAnimationDurationScaleMode normal_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
+
+  VisibilityController controller;
+  aura::client::SetVisibilityClient(root_window(), &controller);
+
+  SetChildWindowVisibilityChangesAnimated(root_window());
+
+  aura::test::TestWindowDelegate d;
+  scoped_ptr<aura::Window> window(aura::test::CreateTestWindowWithDelegate(
+      &d, -2, gfx::Rect(0, 0, 50, 50), root_window()));
+  ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
+  settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(5));
+
+  EXPECT_TRUE(window->layer()->visible());
+  EXPECT_TRUE(window->IsVisible());
+
+  window->layer()->SetOpacity(0.0);
+  EXPECT_TRUE(window->layer()->visible());
+  EXPECT_TRUE(window->IsVisible());
+  EXPECT_TRUE(window->layer()->GetAnimator()->
+      IsAnimatingProperty(ui::LayerAnimationElement::OPACITY));
+  EXPECT_EQ(0.0f, window->layer()->GetTargetOpacity());
+
+  // Check that the visibility is correct after the hide animation has finished.
+  window->Hide();
+  window->layer()->GetAnimator()->StopAnimating();
+  EXPECT_FALSE(window->layer()->visible());
+  EXPECT_FALSE(window->IsVisible());
 }
 
 }  // namespace corewm
