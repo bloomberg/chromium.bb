@@ -588,8 +588,9 @@ TEST_F(MediaGalleriesPreferencesTest, AddGalleryWithVolumeMetadata) {
   // Note: we put the microseconds time into a double, so there'll
   // be some possible rounding errors. If it's less than 100, we don't
   // care.
-  EXPECT_LE(abs(now.ToInternalValue() -
-                gallery_info.last_attach_time.ToInternalValue()), 100);
+  EXPECT_LE(std::abs(now.ToInternalValue() -
+                     gallery_info.last_attach_time.ToInternalValue()),
+            100);
 }
 
 TEST_F(MediaGalleriesPreferencesTest, ReplaceGalleryWithVolumeMetadata) {

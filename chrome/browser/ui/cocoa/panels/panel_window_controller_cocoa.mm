@@ -497,10 +497,10 @@ const double kWidthOfMouseResizeArea = 15.0;
   // is too large, we clip the duration (effectively increasing speed) to
   // limit total duration of animation. This makes 'small' transitions fast.
   // 'distance' is the max travel between 4 potentially traveling corners.
-  double distanceX = std::max(abs(NSMinX(currentFrame) - NSMinX(frame)),
-                              abs(NSMaxX(currentFrame) - NSMaxX(frame)));
-  double distanceY = std::max(abs(NSMinY(currentFrame) - NSMinY(frame)),
-                              abs(NSMaxY(currentFrame) - NSMaxY(frame)));
+  double distanceX = std::max(std::abs(NSMinX(currentFrame) - NSMinX(frame)),
+                              std::abs(NSMaxX(currentFrame) - NSMaxX(frame)));
+  double distanceY = std::max(std::abs(NSMinY(currentFrame) - NSMinY(frame)),
+                              std::abs(NSMaxY(currentFrame) - NSMaxY(frame)));
   double distance = std::max(distanceX, distanceY);
   double duration = std::min(distance / kBoundsAnimationSpeedPixelsPerSecond,
                              kBoundsAnimationMaxDurationSeconds);

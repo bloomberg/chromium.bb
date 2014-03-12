@@ -22,6 +22,8 @@
 #include "testing/platform_test.h"
 #include "ui/base/cocoa/animation_utils.h"
 
+#include <cmath>
+
 using base::ASCIIToUTF16;
 
 namespace {
@@ -280,9 +282,9 @@ TEST_F(BookmarkBarFolderControllerTest, BasicPosition) {
   NSPoint buttonOriginInScreen =
       [[parentButton window] convertBaseToScreen:buttonOriginInWindow];
   // Within margin
-  EXPECT_LE(abs(pt.x - buttonOriginInScreen.x),
+  EXPECT_LE(std::abs(pt.x - buttonOriginInScreen.x),
             bookmarks::kBookmarkMenuOverlap + 1);
-  EXPECT_LE(abs(pt.y - buttonOriginInScreen.y),
+  EXPECT_LE(std::abs(pt.y - buttonOriginInScreen.y),
             bookmarks::kBookmarkMenuOverlap + 1);
 
   // Make sure we see the window shift left if it spills off the screen

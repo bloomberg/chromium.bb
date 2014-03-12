@@ -379,7 +379,7 @@ bool Rtcp::RtpTimestampInSenderTime(int frequency, uint32 rtp_timestamp,
   int64 rtp_time_diff_ms = rtp_timestamp_diff / frequency_khz;
 
   // Sanity check.
-  if (abs(rtp_time_diff_ms) > kMaxDiffSinceReceivedRtcpMs)
+  if (std::abs(rtp_time_diff_ms) > kMaxDiffSinceReceivedRtcpMs)
     return false;
 
   *rtp_timestamp_in_ticks = ConvertNtpToTimeTicks(last_received_ntp_seconds_,

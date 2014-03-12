@@ -279,8 +279,10 @@ const SkColor kLegalDocumentsTextColor = SkColorSetRGB(102, 102, 102);
 // Compute the preferred size for the legal documents text, given a width.
 - (NSSize)preferredLegalDocumentSizeForWidth:(CGFloat)width {
   // Only recompute if necessary (On text or frame width change).
-  if (!legalDocumentsSizeDirty_ && abs(legalDocumentsSize_.width-width) < 1.0)
+  if (!legalDocumentsSizeDirty_ &&
+      std::abs(legalDocumentsSize_.width - width) < 1.0) {
     return legalDocumentsSize_;
+  }
 
   // There's no direct API to compute desired sizes - use layouting instead.
   // Layout in a rect with fixed width and "infinite" height.

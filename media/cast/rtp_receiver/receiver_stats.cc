@@ -66,7 +66,7 @@ void ReceiverStats::GetStatistics(uint8* fraction_lost,
   *extended_high_sequence_number =
       (sequence_number_cycles_ << 16) + max_sequence_number_;
 
-  *jitter = static_cast<uint32>(abs(jitter_.InMillisecondsRoundedUp()));
+  *jitter = static_cast<uint32>(std::abs(jitter_.InMillisecondsRoundedUp()));
 
   // Reset interval values.
   interval_min_sequence_number_ = 0;
