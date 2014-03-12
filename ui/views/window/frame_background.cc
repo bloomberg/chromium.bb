@@ -26,10 +26,7 @@ FrameBackground::FrameBackground()
     top_right_corner_(NULL),
     bottom_left_corner_(NULL),
     bottom_right_corner_(NULL),
-    maximized_top_left_(NULL),
-    maximized_top_right_(NULL),
-    maximized_top_offset_(0),
-    theme_background_y_(0) {
+    maximized_top_inset_(0) {
 }
 
 FrameBackground::~FrameBackground() {
@@ -124,41 +121,25 @@ void FrameBackground::PaintRestored(gfx::Canvas* canvas, View* view) const {
 }
 
 void FrameBackground::PaintMaximized(gfx::Canvas* canvas, View* view) const {
-  // We will be painting from top_offset to top_offset + theme_frame_height. If
-  // this is less than top_area_height_, we need to paint the frame color
-  // to fill in the area beneath the image.
-  // TODO(jamescook): I'm not sure this is correct, as it doesn't seem to fully
-  // account for the top_offset, but this is how it worked before.
-  int theme_frame_bottom = maximized_top_offset_ + theme_image_->height();
+  // We will be painting from -|maximized_top_inset_| to
+  // -|maximized_top_inset_| + |theme_image_|->height(). If this is less than
+  // |top_area_height_|, we need to paint the frame color to fill in the area
+  // beneath the image.
+  int theme_frame_bottom = -maximized_top_inset_ + theme_image_->height();
   if (top_area_height_ > theme_frame_bottom) {
     canvas->FillRect(gfx::Rect(0, 0, view->width(), top_area_height_),
                      frame_color_);
   }
 
-  int left_offset = 0;
-  int right_offset = 0;
-
-  // Draw top-left and top-right corners to give maximized ChromeOS windows
-  // a rounded appearance.
-  if (maximized_top_left_ || maximized_top_right_) {
-    // If we have either a left or right we should have both.
-    DCHECK(maximized_top_left_ && maximized_top_right_);
-    left_offset = maximized_top_left_->width();
-    right_offset = maximized_top_right_->width();
-    canvas->DrawImageInt(*maximized_top_left_, 0, 0);
-    canvas->DrawImageInt(*maximized_top_right_,
-                         view->width() - right_offset, 0);
-  }
-
   // Draw the theme frame.
   canvas->TileImageInt(*theme_image_,
-                       left_offset,
-                       maximized_top_offset_,
-                       view->width() - (left_offset + right_offset),
+                       0,
+                       -maximized_top_inset_,
+                       view->width(),
                        theme_image_->height());
   // Draw the theme frame overlay, if available.
   if (theme_overlay_image_)
-    canvas->DrawImageInt(*theme_overlay_image_, 0, theme_background_y_);
+    canvas->DrawImageInt(*theme_overlay_image_, 0, -maximized_top_inset_);
 }
 
 void FrameBackground::PaintFrameColor(gfx::Canvas* canvas, View* view) const {

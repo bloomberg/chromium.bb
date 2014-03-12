@@ -77,10 +77,6 @@ const int kContentEdgeShadowThickness = 2;
 // The icon never shrinks below 16 px on a side.
 const int kIconMinimumSize = 16;
 
-// The top 3 px of the tabstrip is shadow; in maximized mode we push this off
-// the top of the screen so the tabs appear flush against the screen edge.
-const int kTabstripTopShadowThickness = 3;
-
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -637,15 +633,6 @@ void OpaqueBrowserFrameView::PaintMaximizedFrameBorder(gfx::Canvas* canvas) {
   frame_background_->set_theme_image(GetFrameImage());
   frame_background_->set_theme_overlay_image(GetFrameOverlayImage());
   frame_background_->set_top_area_height(GetTopAreaHeight());
-
-  // Theme frame must be aligned with the tabstrip as if we were
-  // in restored mode.  Note that the top of the tabstrip is
-  // kTabstripTopShadowThickness px off the top of the screen.
-  int restored_tabstrip_top_inset = 0;
-  if (browser_view()->IsTabStripVisible())
-    restored_tabstrip_top_inset = layout_->GetTabStripInsetsTop(true);
-  frame_background_->set_theme_background_y(
-      -restored_tabstrip_top_inset - kTabstripTopShadowThickness);
 
   frame_background_->PaintMaximized(canvas, this);
 

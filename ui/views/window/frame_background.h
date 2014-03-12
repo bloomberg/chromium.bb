@@ -44,11 +44,8 @@ class VIEWS_EXPORT FrameBackground {
   // which must extend behind the tab strip.
   void set_top_area_height(int height) { top_area_height_ = height; }
 
-  // Only used if we have an overlay image for the theme.
-  void set_theme_background_y(int y) { theme_background_y_ = y; }
-
-  // Vertical offset for theme image when drawing maximized.
-  void set_maximized_top_offset(int offset) { maximized_top_offset_ = offset; }
+  // Vertical inset for theme image when drawing maximized.
+  void set_maximized_top_inset(int inset) { maximized_top_inset_ = inset; }
 
   // Sets images used when drawing the sides of the frame.
   // Caller owns the memory.
@@ -94,12 +91,8 @@ class VIEWS_EXPORT FrameBackground {
   const gfx::ImageSkia* bottom_left_corner_;
   const gfx::ImageSkia* bottom_right_corner_;
 
-  // Attributes for maximized window painting.
-  // TODO(jamescook): Remove all these.
-  gfx::ImageSkia* maximized_top_left_;
-  gfx::ImageSkia* maximized_top_right_;
-  int maximized_top_offset_;
-  int theme_background_y_;
+  // Vertical inset for theme image when drawing maximized.
+  int maximized_top_inset_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameBackground);
 };
