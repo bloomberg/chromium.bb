@@ -68,6 +68,8 @@ bool GetPluginAllowedToCallRequestOSFileHandle(int render_process_id,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   ContentBrowserClient* client = GetContentClient()->browser();
   RenderProcessHost* host = RenderProcessHost::FromID(render_process_id);
+  if (!host)
+    return false;
   return client->IsPluginAllowedToCallRequestOSFileHandle(
       host->GetBrowserContext(), document_url);
 }
