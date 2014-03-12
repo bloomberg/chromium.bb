@@ -37,8 +37,8 @@ function test()
         profileType._takeHeapSnapshot(function() {});
     }
 
-    WebInspector.log = function(message) {
-        InspectorTest.addResult("WebInspector.log: " + message);
+    WebInspector.console.log = function(message) {
+        InspectorTest.addResult("WebInspector.console.log: " + message);
     }
 
     InspectorTest.runTestSuite([
