@@ -5,7 +5,8 @@
 #include "content/browser/download/mhtml_generation_manager.h"
 
 #include "base/bind.h"
-#include "base/platform_file.h"
+#include "base/files/file.h"
+#include "base/stl_util.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
@@ -22,8 +23,8 @@ class MHTMLGenerationManager::Job : public RenderProcessHostObserver {
 
   void SetWebContents(WebContents* web_contents);
 
-  base::PlatformFile browser_file() { return browser_file_; }
-  void set_browser_file(base::PlatformFile file) { browser_file_ = file; }
+  base::File browser_file() { return browser_file_.Pass(); }
+  void set_browser_file(base::File file) { browser_file_ = file.Pass(); }
 
   int process_id() { return process_id_; }
   int routing_id() { return routing_id_; }
@@ -41,7 +42,7 @@ class MHTMLGenerationManager::Job : public RenderProcessHostObserver {
 
  private:
   // The handle to the file the MHTML is saved to for the browser process.
-  base::PlatformFile browser_file_;
+  base::File browser_file_;
 
   // The IDs mapping to a specific contents.
   int process_id_;
@@ -52,11 +53,11 @@ class MHTMLGenerationManager::Job : public RenderProcessHostObserver {
 
   // The RenderProcessHost being observed, or NULL if none is.
   RenderProcessHost* host_;
+  DISALLOW_COPY_AND_ASSIGN(Job);
 };
 
 MHTMLGenerationManager::Job::Job()
-    : browser_file_(base::kInvalidPlatformFileValue),
-      process_id_(-1),
+    : process_id_(-1),
       routing_id_(-1),
       host_(NULL) {
 }
@@ -94,6 +95,7 @@ MHTMLGenerationManager::MHTMLGenerationManager() {
 }
 
 MHTMLGenerationManager::~MHTMLGenerationManager() {
+  STLDeleteValues(&id_to_job_);
 }
 
 void MHTMLGenerationManager::SaveMHTML(WebContents* web_contents,
@@ -112,7 +114,7 @@ void MHTMLGenerationManager::SaveMHTML(WebContents* web_contents,
 
 void MHTMLGenerationManager::StreamMHTML(
     WebContents* web_contents,
-    const base::PlatformFile browser_file,
+    base::File browser_file,
     const GenerateMHTMLCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -121,9 +123,10 @@ void MHTMLGenerationManager::StreamMHTML(
   base::ProcessHandle renderer_process =
       web_contents->GetRenderProcessHost()->GetHandle();
   IPC::PlatformFileForTransit renderer_file =
-      IPC::GetFileHandleForProcess(browser_file, renderer_process, false);
+     IPC::GetFileHandleForProcess(browser_file.GetPlatformFile(),
+                                  renderer_process, false);
 
-  FileHandleAvailable(job_id, browser_file, renderer_file);
+  FileAvailable(job_id, browser_file.Pass(), renderer_file);
 }
 
 
@@ -135,33 +138,33 @@ void MHTMLGenerationManager::CreateFile(
     int job_id, const base::FilePath& file_path,
     base::ProcessHandle renderer_process) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  base::PlatformFile browser_file = base::CreatePlatformFile(file_path,
-      base::PLATFORM_FILE_CREATE_ALWAYS | base::PLATFORM_FILE_WRITE,
-      NULL, NULL);
-  if (browser_file == base::kInvalidPlatformFileValue) {
+  base::File browser_file(
+      file_path, base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
+  if (!browser_file.IsValid()) {
     LOG(ERROR) << "Failed to create file to save MHTML at: " <<
         file_path.value();
   }
 
   IPC::PlatformFileForTransit renderer_file =
-      IPC::GetFileHandleForProcess(browser_file, renderer_process, false);
+      IPC::GetFileHandleForProcess(browser_file.GetPlatformFile(),
+                                   renderer_process, false);
 
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
-      base::Bind(&MHTMLGenerationManager::FileHandleAvailable,
+      base::Bind(&MHTMLGenerationManager::FileAvailable,
                  base::Unretained(this),
                  job_id,
-                 browser_file,
+                 base::Passed(&browser_file),
                  renderer_file));
 }
 
-void MHTMLGenerationManager::FileHandleAvailable(
+void MHTMLGenerationManager::FileAvailable(
     int job_id,
-    base::PlatformFile browser_file,
+    base::File browser_file,
     IPC::PlatformFileForTransit renderer_file) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (browser_file == base::kInvalidPlatformFileValue) {
+  if (!browser_file.IsValid()) {
     LOG(ERROR) << "Failed to create file";
     JobFinished(job_id, -1);
     return;
@@ -173,11 +176,11 @@ void MHTMLGenerationManager::FileHandleAvailable(
     return;
   }
 
-  Job& job = iter->second;
-  job.set_browser_file(browser_file);
+  Job* job = iter->second;
+  job->set_browser_file(browser_file.Pass());
 
   RenderViewHost* rvh = RenderViewHost::FromID(
-      job.process_id(), job.routing_id());
+      job->process_id(), job->routing_id());
   if (!rvh) {
     // The contents went away.
     JobFinished(job_id, -1);
@@ -196,28 +199,30 @@ void MHTMLGenerationManager::JobFinished(int job_id, int64 file_size) {
     return;
   }
 
-  Job& job = iter->second;
-  job.callback().Run(file_size);
+  Job* job = iter->second;
+  job->callback().Run(file_size);
 
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
       base::Bind(&MHTMLGenerationManager::CloseFile, base::Unretained(this),
-                 job.browser_file()));
+                 base::Passed(job->browser_file())));
 
   id_to_job_.erase(job_id);
+  delete job;
 }
 
-void MHTMLGenerationManager::CloseFile(base::PlatformFile file) {
+void MHTMLGenerationManager::CloseFile(base::File file) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  base::ClosePlatformFile(file);
+  file.Close();
 }
 
 int MHTMLGenerationManager::NewJob(WebContents* web_contents,
                                    const GenerateMHTMLCallback& callback) {
   static int id_counter = 0;
   int job_id = id_counter++;
-  Job& job = id_to_job_[job_id];
-  job.SetWebContents(web_contents);
-  job.set_callback(callback);
+  Job* job = new Job();
+  id_to_job_[job_id] = job;
+  job->SetWebContents(web_contents);
+  job->set_callback(callback);
   return job_id;
 }
 
@@ -225,7 +230,7 @@ void MHTMLGenerationManager::RenderProcessExited(Job* job) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   for (IDToJobMap::iterator it = id_to_job_.begin(); it != id_to_job_.end();
        ++it) {
-    if (&it->second == job) {
+    if (it->second == job) {
       JobFinished(it->first, -1);
       return;
     }

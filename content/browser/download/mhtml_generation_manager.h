@@ -7,8 +7,8 @@
 
 #include <map>
 
+#include "base/files/file.h"
 #include "base/memory/singleton.h"
-#include "base/platform_file.h"
 #include "base/process/process.h"
 #include "ipc/ipc_platform_file.h"
 
@@ -36,7 +36,7 @@ class MHTMLGenerationManager {
   // Instructs the render view to generate a MHTML representation of the current
   // page for |web_contents|.
   void StreamMHTML(WebContents* web_contents,
-                   const base::PlatformFile file,
+                   base::File file,
                    const GenerateMHTMLCallback& callback);
 
   // Notification from the renderer that the MHTML generation finished.
@@ -57,15 +57,14 @@ class MHTMLGenerationManager {
                   base::ProcessHandle renderer_process);
 
   // Called on the UI thread when the file that should hold the MHTML data has
-  // been created.  This returns a handle to that file for the browser process
-  // and one for the renderer process. These handles are
-  // kInvalidPlatformFileValue if the file could not be opened.
-  void FileHandleAvailable(int job_id,
-                           base::PlatformFile browser_file,
-                           IPC::PlatformFileForTransit renderer_file);
+  // been created.  This receives a handle to that file for the browser process
+  // and one for the renderer process.
+  void FileAvailable(int job_id,
+                     base::File browser_file,
+                     IPC::PlatformFileForTransit renderer_file);
 
   // Called on the file thread to close the file the MHTML was saved to.
-  void CloseFile(base::PlatformFile file);
+  void CloseFile(base::File file);
 
   // Called on the UI thread when a job has been processed (successfully or
   // not).  Closes the file and removes the job from the job map.
@@ -78,7 +77,7 @@ class MHTMLGenerationManager {
   // Called when the render process connected to a job exits.
   void RenderProcessExited(Job* job);
 
-  typedef std::map<int, Job> IDToJobMap;
+  typedef std::map<int, Job*> IDToJobMap;
   IDToJobMap id_to_job_;
 
   DISALLOW_COPY_AND_ASSIGN(MHTMLGenerationManager);
