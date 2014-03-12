@@ -48,17 +48,17 @@ bool EsParserH264::Parse(const uint8* buf, int size,
 
   // HLS recommendation: "In AVC video, you should have both a DTS and a
   // PTS in each PES header".
-  if (dts == kNoTimestamp() && pts == kNoTimestamp()) {
-    DVLOG(1) << "A timestamp must be provided for each reassembled PES";
-    return false;
-  }
-  TimingDesc timing_desc;
-  timing_desc.pts = pts;
-  timing_desc.dts = (dts != kNoTimestamp()) ? dts : pts;
+  // However, some streams do not comply with this recommendation.
+  DVLOG_IF(1, pts == kNoTimestamp()) << "Each video PES should have a PTS";
+  if (pts != kNoTimestamp()) {
+    TimingDesc timing_desc;
+    timing_desc.pts = pts;
+    timing_desc.dts = (dts != kNoTimestamp()) ? dts : pts;
 
-  // Link the end of the byte queue with the incoming timing descriptor.
-  timing_desc_list_.push_back(
-      std::pair<int64, TimingDesc>(es_queue_->tail(), timing_desc));
+    // Link the end of the byte queue with the incoming timing descriptor.
+    timing_desc_list_.push_back(
+        std::pair<int64, TimingDesc>(es_queue_->tail(), timing_desc));
+  }
 
   // Add the incoming bytes to the ES queue.
   es_queue_->Push(buf, size);

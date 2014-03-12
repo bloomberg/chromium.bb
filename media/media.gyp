@@ -1144,6 +1144,7 @@
           'sources': [
             'formats/common/stream_parser_test_base.cc',
             'formats/common/stream_parser_test_base.h',
+            'formats/mp2t/es_parser_h264_unittest.cc',
             'formats/mp2t/mp2t_stream_parser_unittest.cc',
             'formats/mp4/aac_unittest.cc',
             'formats/mp4/avc_unittest.cc',
