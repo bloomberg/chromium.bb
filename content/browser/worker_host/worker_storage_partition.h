@@ -27,6 +27,7 @@ class DatabaseTracker;
 namespace content {
 class ChromeAppCacheService;
 class IndexedDBContextImpl;
+class ServiceWorkerContextWrapper;
 
 // Contains the data from StoragePartition for use by Worker APIs.
 //
@@ -49,7 +50,8 @@ class CONTENT_EXPORT WorkerStoragePartition {
       quota::QuotaManager* quota_manager,
       fileapi::FileSystemContext* filesystem_context,
       webkit_database::DatabaseTracker* database_tracker,
-      IndexedDBContextImpl* indexed_db_context);
+      IndexedDBContextImpl* indexed_db_context,
+      ServiceWorkerContextWrapper* service_worker_context);
   ~WorkerStoragePartition();
 
   // Declaring so these don't get inlined which has the unfortunate effect of
@@ -88,6 +90,10 @@ class CONTENT_EXPORT WorkerStoragePartition {
     return indexed_db_context_.get();
   }
 
+  ServiceWorkerContextWrapper* service_worker_context() const {
+    return service_worker_context_.get();
+  }
+
  private:
   void Copy(const WorkerStoragePartition& other);
 
@@ -98,6 +104,7 @@ class CONTENT_EXPORT WorkerStoragePartition {
   scoped_refptr<fileapi::FileSystemContext> filesystem_context_;
   scoped_refptr<webkit_database::DatabaseTracker> database_tracker_;
   scoped_refptr<IndexedDBContextImpl> indexed_db_context_;
+  scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
 };
 
 }  // namespace content

@@ -27,6 +27,7 @@ namespace content {
 class ChromeAppCacheService;
 class ChromeBlobStorageContext;
 class ResourceContext;
+class ServiceWorkerContextWrapper;
 
 // This class filters out incoming IPC messages for network requests and
 // processes them on the IPC thread.  As a result, network requests are not
@@ -47,6 +48,7 @@ class CONTENT_EXPORT ResourceMessageFilter : public BrowserMessageFilter {
       ChromeAppCacheService* appcache_service,
       ChromeBlobStorageContext* blob_storage_context,
       fileapi::FileSystemContext* file_system_context,
+      ServiceWorkerContextWrapper* service_worker_context,
       const GetContextsCallback& get_contexts_callback);
 
   // BrowserMessageFilter implementation.
@@ -74,6 +76,10 @@ class CONTENT_EXPORT ResourceMessageFilter : public BrowserMessageFilter {
     return file_system_context_.get();
   }
 
+  ServiceWorkerContextWrapper* service_worker_context() const {
+    return service_worker_context_.get();
+  }
+
   int child_id() const { return child_id_; }
   int process_type() const { return process_type_; }
 
@@ -92,6 +98,7 @@ class CONTENT_EXPORT ResourceMessageFilter : public BrowserMessageFilter {
   scoped_refptr<ChromeAppCacheService> appcache_service_;
   scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;
   scoped_refptr<fileapi::FileSystemContext> file_system_context_;
+  scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
 
   GetContextsCallback get_contexts_callback_;
 

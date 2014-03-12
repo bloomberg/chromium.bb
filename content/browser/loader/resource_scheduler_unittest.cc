@@ -103,6 +103,7 @@ class FakeResourceMessageFilter : public ResourceMessageFilter {
           NULL  /* appcache_service */,
           NULL  /* blob_storage_context */,
           NULL  /* file_system_context */,
+          NULL  /* service_worker_context */,
           base::Bind(&FakeResourceMessageFilter::GetContexts,
                      base::Unretained(this))) {
   }

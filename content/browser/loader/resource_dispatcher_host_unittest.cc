@@ -176,7 +176,7 @@ class ForwardingFilter : public ResourceMessageFilter {
                             ResourceContext* resource_context)
     : ResourceMessageFilter(
         ChildProcessHostImpl::GenerateChildProcessUniqueId(),
-        PROCESS_TYPE_RENDERER, NULL, NULL, NULL,
+        PROCESS_TYPE_RENDERER, NULL, NULL, NULL, NULL,
         base::Bind(&ForwardingFilter::GetContexts,
                    base::Unretained(this))),
       dest_(dest),

@@ -268,7 +268,7 @@ bool PluginProcessHost::Init(const WebPluginInfo& info) {
   // TODO(jam): right now we're passing NULL for appcache, blob storage, and
   // file system. If NPAPI plugins actually use this, we'll have to plumb them.
   ResourceMessageFilter* resource_message_filter = new ResourceMessageFilter(
-      process_->GetData().id, PROCESS_TYPE_PLUGIN, NULL, NULL, NULL,
+      process_->GetData().id, PROCESS_TYPE_PLUGIN, NULL, NULL, NULL, NULL,
       get_contexts_callback);
   process_->AddFilter(resource_message_filter);
   return true;

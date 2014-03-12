@@ -643,6 +643,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       storage_partition_impl_->GetAppCacheService(),
       ChromeBlobStorageContext::GetFor(browser_context),
       storage_partition_impl_->GetFileSystemContext(),
+      storage_partition_impl_->GetServiceWorkerContext(),
       get_contexts_callback);
 
   AddFilter(resource_message_filter);
@@ -771,7 +772,8 @@ void RenderProcessHostImpl::CreateMessageFilters() {
             storage_partition_impl_->GetQuotaManager(),
             storage_partition_impl_->GetFileSystemContext(),
             storage_partition_impl_->GetDatabaseTracker(),
-            storage_partition_impl_->GetIndexedDBContext()),
+            storage_partition_impl_->GetIndexedDBContext(),
+            storage_partition_impl_->GetServiceWorkerContext()),
         message_port_message_filter_));
   } else {
     AddFilter(new WorkerMessageFilter(
@@ -784,7 +786,8 @@ void RenderProcessHostImpl::CreateMessageFilters() {
             storage_partition_impl_->GetQuotaManager(),
             storage_partition_impl_->GetFileSystemContext(),
             storage_partition_impl_->GetDatabaseTracker(),
-            storage_partition_impl_->GetIndexedDBContext()),
+            storage_partition_impl_->GetIndexedDBContext(),
+            storage_partition_impl_->GetServiceWorkerContext()),
         message_port_message_filter_));
   }
 

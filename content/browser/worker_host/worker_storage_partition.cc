@@ -8,6 +8,7 @@
 
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
+#include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "webkit/browser/database/database_tracker.h"
 #include "webkit/browser/fileapi/file_system_context.h"
@@ -22,14 +23,16 @@ WorkerStoragePartition::WorkerStoragePartition(
     quota::QuotaManager* quota_manager,
     fileapi::FileSystemContext* filesystem_context,
     webkit_database::DatabaseTracker* database_tracker,
-    IndexedDBContextImpl* indexed_db_context)
+    IndexedDBContextImpl* indexed_db_context,
+    ServiceWorkerContextWrapper* service_worker_context)
     : url_request_context_(url_request_context),
       media_url_request_context_(media_url_request_context),
       appcache_service_(appcache_service),
       quota_manager_(quota_manager),
       filesystem_context_(filesystem_context),
       database_tracker_(database_tracker),
-      indexed_db_context_(indexed_db_context) {
+      indexed_db_context_(indexed_db_context),
+      service_worker_context_(service_worker_context) {
 }
 
 WorkerStoragePartition::WorkerStoragePartition(
@@ -52,7 +55,8 @@ bool WorkerStoragePartition::Equals(
          quota_manager_.get() == other.quota_manager_.get() &&
          filesystem_context_.get() == other.filesystem_context_.get() &&
          database_tracker_.get() == other.database_tracker_.get() &&
-         indexed_db_context_.get() == other.indexed_db_context_.get();
+         indexed_db_context_.get() == other.indexed_db_context_.get() &&
+         service_worker_context_.get() == other.service_worker_context_.get();
 }
 
 WorkerStoragePartition::~WorkerStoragePartition() {
@@ -66,6 +70,7 @@ void WorkerStoragePartition::Copy(const WorkerStoragePartition& other) {
   filesystem_context_ = other.filesystem_context_;
   database_tracker_ = other.database_tracker_;
   indexed_db_context_ = other.indexed_db_context_;
+  service_worker_context_ = other.service_worker_context_;
 }
 
 }  // namespace content

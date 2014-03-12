@@ -7,6 +7,7 @@
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/fileapi/chrome_blob_storage_context.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
+#include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/common/resource_messages.h"
 #include "content/public/browser/resource_context.h"
 #include "webkit/browser/fileapi/file_system_context.h"
@@ -19,6 +20,7 @@ ResourceMessageFilter::ResourceMessageFilter(
     ChromeAppCacheService* appcache_service,
     ChromeBlobStorageContext* blob_storage_context,
     fileapi::FileSystemContext* file_system_context,
+    ServiceWorkerContextWrapper* service_worker_context,
     const GetContextsCallback& get_contexts_callback)
     : BrowserMessageFilter(ResourceMsgStart),
       child_id_(child_id),
@@ -26,6 +28,7 @@ ResourceMessageFilter::ResourceMessageFilter(
       appcache_service_(appcache_service),
       blob_storage_context_(blob_storage_context),
       file_system_context_(file_system_context),
+      service_worker_context_(service_worker_context),
       get_contexts_callback_(get_contexts_callback),
       weak_ptr_factory_(this) {
 }

@@ -261,6 +261,7 @@ void WorkerProcessHost::CreateMessageFilters(int render_process_id) {
       partition_.appcache_service(),
       blob_storage_context,
       partition_.filesystem_context(),
+      partition_.service_worker_context(),
       get_contexts_callback);
   process_->AddFilter(resource_message_filter);
 

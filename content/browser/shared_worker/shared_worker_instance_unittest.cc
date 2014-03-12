@@ -19,7 +19,7 @@ class SharedWorkerInstanceTest : public testing::Test {
       : browser_context_(new TestBrowserContext()),
         partition_(new WorkerStoragePartition(
             browser_context_->GetRequestContext(),
-            NULL, NULL, NULL, NULL, NULL, NULL)) {
+            NULL, NULL, NULL, NULL, NULL, NULL, NULL)) {
   }
 
   bool Matches(const SharedWorkerInstance& instance,
