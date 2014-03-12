@@ -80,7 +80,7 @@ bool RenderTreeBuilder::shouldCreateRenderer() const
         return false;
     if (m_node->isSVGElement()) {
         // SVG elements only render when inside <svg>, or if the element is an <svg> itself.
-        if (!m_node->hasTagName(SVGNames::svgTag) && !m_renderingParent->isSVGElement())
+        if (!isSVGSVGElement(*m_node) && !m_renderingParent->isSVGElement())
             return false;
         if (!toSVGElement(m_node)->isValid())
             return false;

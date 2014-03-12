@@ -281,12 +281,14 @@ bool ScriptLoader::fetchScript(const String& sourceUrl)
 
 bool isHTMLScriptLoader(Element* element)
 {
-    return element->hasTagName(HTMLNames::scriptTag);
+    ASSERT(element);
+    return isHTMLScriptElement(*element);
 }
 
 bool isSVGScriptLoader(Element* element)
 {
-    return element->hasTagName(SVGNames::scriptTag);
+    ASSERT(element);
+    return isSVGScriptElement(*element);
 }
 
 void ScriptLoader::executeScript(const ScriptSourceCode& sourceCode)

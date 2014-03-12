@@ -106,9 +106,10 @@ private:
 
 inline void ShadowRootRareData::didAddInsertionPoint(InsertionPoint* point)
 {
-    if (point->hasTagName(HTMLNames::shadowTag))
+    ASSERT(point);
+    if (isHTMLShadowElement(*point))
         ++m_descendantShadowElementCount;
-    else if (point->hasTagName(HTMLNames::contentTag))
+    else if (isHTMLContentElement(*point))
         ++m_descendantContentElementCount;
     else
         ASSERT_NOT_REACHED();
@@ -116,9 +117,10 @@ inline void ShadowRootRareData::didAddInsertionPoint(InsertionPoint* point)
 
 inline void ShadowRootRareData::didRemoveInsertionPoint(InsertionPoint* point)
 {
-    if (point->hasTagName(HTMLNames::shadowTag))
+    ASSERT(point);
+    if (isHTMLShadowElement(*point))
         --m_descendantShadowElementCount;
-    else if (point->hasTagName(HTMLNames::contentTag))
+    else if (isHTMLContentElement(*point))
         --m_descendantContentElementCount;
     else
         ASSERT_NOT_REACHED();

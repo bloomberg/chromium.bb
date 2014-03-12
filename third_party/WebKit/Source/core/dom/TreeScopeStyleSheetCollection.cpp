@@ -59,10 +59,10 @@ void TreeScopeStyleSheetCollection::addStyleSheetCandidateNode(Node* node, bool 
     else
         m_styleSheetCandidateNodes.add(node);
 
-    if (!node->hasTagName(HTMLNames::styleTag))
+    if (!isHTMLStyleElement(*node))
         return;
 
-    ContainerNode* scopingNode = toHTMLStyleElement(node)->scopingNode();
+    ContainerNode* scopingNode = toHTMLStyleElement(*node).scopingNode();
     if (!isTreeScopeRoot(scopingNode))
         m_scopingNodesForStyleScoped.add(scopingNode);
 }

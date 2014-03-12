@@ -104,16 +104,16 @@ StyleSheetCandidate::Type StyleSheetCandidate::typeOf(Node& node)
         return Pi;
 
     if (node.isHTMLElement()) {
-        if (node.hasTagName(linkTag))
+        if (isHTMLLinkElement(node))
             return HTMLLink;
-        if (node.hasTagName(styleTag))
+        if (isHTMLStyleElement(node))
             return HTMLStyle;
 
         ASSERT_NOT_REACHED();
         return HTMLStyle;
     }
 
-    if (node.isSVGElement() && node.hasTagName(SVGNames::styleTag))
+    if (isSVGStyleElement(node))
         return SVGStyle;
 
     ASSERT_NOT_REACHED();

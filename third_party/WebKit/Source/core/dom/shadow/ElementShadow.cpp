@@ -88,7 +88,7 @@ void DistributionPool::distributeTo(InsertionPoint* insertionPoint, ElementShado
         if (m_distributed[i])
             continue;
 
-        if (insertionPoint->hasTagName(HTMLNames::contentTag) && !toHTMLContentElement(insertionPoint)->canSelectNode(m_nodes, i))
+        if (isHTMLContentElement(*insertionPoint) && !toHTMLContentElement(insertionPoint)->canSelectNode(m_nodes, i))
             continue;
 
         Node* node = m_nodes[i];
@@ -302,7 +302,7 @@ void ElementShadow::distribute()
             InsertionPoint* point = insertionPoints[i].get();
             if (!point->isActive())
                 continue;
-            if (point->hasTagName(HTMLNames::shadowTag)) {
+            if (isHTMLShadowElement(*point)) {
                 ASSERT(!shadowInsertionPoint);
                 shadowInsertionPoint = toHTMLShadowElement(point);
                 shadowInsertionPoints.append(shadowInsertionPoint);
@@ -358,9 +358,9 @@ void ElementShadow::collectSelectFeatureSetFrom(ShadowRoot& root)
     for (Element* element = ElementTraversal::firstWithin(root); element; element = ElementTraversal::next(*element, &root)) {
         if (ElementShadow* shadow = element->shadow())
             m_selectFeatures.add(shadow->ensureSelectFeatureSet());
-        if (!element->hasTagName(HTMLNames::contentTag))
+        if (!isHTMLContentElement(*element))
             continue;
-        const CSSSelectorList& list = toHTMLContentElement(element)->selectorList();
+        const CSSSelectorList& list = toHTMLContentElement(*element).selectorList();
         for (const CSSSelector* selector = list.first(); selector; selector = CSSSelectorList::next(*selector)) {
             for (const CSSSelector* component = selector; component; component = component->tagHistory())
                 m_selectFeatures.collectFeaturesFromSelector(*component);

@@ -268,7 +268,7 @@ void ContainerNode::parserInsertBefore(PassRefPtr<Node> newChild, Node& nextChil
     ASSERT(newChild);
     ASSERT(nextChild.parentNode() == this);
     ASSERT(!newChild->isDocumentFragment());
-    ASSERT(!hasTagName(templateTag));
+    ASSERT(!isHTMLTemplateElement(this));
 
     if (nextChild.previousSibling() == newChild || nextChild == newChild) // nothing to do
         return;
@@ -614,7 +614,7 @@ void ContainerNode::parserAppendChild(PassRefPtr<Node> newChild)
     ASSERT(newChild);
     ASSERT(!newChild->parentNode()); // Use appendChild if you need to handle reparenting (and want DOM mutation events).
     ASSERT(!newChild->isDocumentFragment());
-    ASSERT(!hasTagName(templateTag));
+    ASSERT(!isHTMLTemplateElement(this));
 
     if (document() != newChild->document())
         document().adoptNode(newChild.get(), ASSERT_NO_EXCEPTION);
@@ -1034,7 +1034,7 @@ PassRefPtr<HTMLCollection> ContainerNode::getElementsByClassName(const AtomicStr
 
 PassRefPtr<RadioNodeList> ContainerNode::radioNodeList(const AtomicString& name, bool onlyMatchImgElements)
 {
-    ASSERT(hasTagName(formTag) || hasTagName(fieldsetTag));
+    ASSERT(isHTMLFormElement(this) || isHTMLFieldSetElement(this));
     CollectionType type = onlyMatchImgElements ? RadioImgNodeListType : RadioNodeListType;
     return ensureRareData().ensureNodeLists().addCache<RadioNodeList>(*this, type, name);
 }

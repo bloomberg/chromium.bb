@@ -49,7 +49,7 @@ static inline const AtomicString& linkAttribute(const Element& element)
 static inline LinkHash linkHashForElement(const Element& element, const AtomicString& attribute = AtomicString())
 {
     ASSERT(attribute.isNull() || linkAttribute(element) == attribute);
-    if (element.hasTagName(HTMLNames::aTag))
+    if (isHTMLAnchorElement(element))
         return toHTMLAnchorElement(element).visitedLinkHash();
     return visitedLinkHash(element.document().baseURL(), attribute.isNull() ? linkAttribute(element) : attribute);
 }

@@ -1331,7 +1331,7 @@ Node::InsertionNotificationRequest Element::insertedInto(ContainerNode* insertio
     if (!nameValue.isNull())
         updateName(nullAtom, nameValue);
 
-    if (hasTagName(labelTag)) {
+    if (isHTMLLabelElement(*this)) {
         if (scope.shouldCacheLabelsByForAttribute())
             updateLabel(scope, nullAtom, fastGetAttribute(forAttr));
     }
@@ -1365,7 +1365,7 @@ void Element::removedFrom(ContainerNode* insertionPoint)
         if (!nameValue.isNull())
             updateName(nameValue, nullAtom);
 
-        if (hasTagName(labelTag)) {
+        if (isHTMLLabelElement(*this)) {
             TreeScope& treeScope = insertionPoint->treeScope();
             if (treeScope.shouldCacheLabelsByForAttribute())
                 updateLabel(treeScope, fastGetAttribute(forAttr), nullAtom);
@@ -2261,7 +2261,7 @@ void Element::setInnerHTML(const String& html, ExceptionState& exceptionState)
 {
     if (RefPtr<DocumentFragment> fragment = createFragmentForInnerOuterHTML(html, this, AllowScriptingContent, "innerHTML", exceptionState)) {
         ContainerNode* container = this;
-        if (hasTagName(templateTag))
+        if (isHTMLTemplateElement(*this))
             container = toHTMLTemplateElement(this)->content();
         replaceChildrenWithFragment(container, fragment.release(), exceptionState);
     }
@@ -2987,7 +2987,7 @@ inline void Element::updateId(TreeScope& scope, const AtomicString& oldId, const
 
 void Element::updateLabel(TreeScope& scope, const AtomicString& oldForAttributeValue, const AtomicString& newForAttributeValue)
 {
-    ASSERT(hasTagName(labelTag));
+    ASSERT(isHTMLLabelElement(this));
 
     if (!inDocument())
         return;
@@ -3008,11 +3008,11 @@ static bool hasSelectorForAttribute(Document* document, const AtomicString& loca
 
 void Element::willModifyAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& newValue)
 {
-    if (isIdAttributeName(name))
+    if (isIdAttributeName(name)) {
         updateId(oldValue, newValue);
-    else if (name == HTMLNames::nameAttr)
+    } else if (name == HTMLNames::nameAttr) {
         updateName(oldValue, newValue);
-    else if (name == HTMLNames::forAttr && hasTagName(labelTag)) {
+    } else if (name == HTMLNames::forAttr && isHTMLLabelElement(*this)) {
         TreeScope& scope = treeScope();
         if (scope.shouldCacheLabelsByForAttribute())
             updateLabel(scope, oldValue, newValue);
@@ -3128,13 +3128,13 @@ PassRefPtr<HTMLCollection> Element::ensureCachedHTMLCollection(CollectionType ty
         return collection;
 
     if (type == TableRows) {
-        ASSERT(hasTagName(tableTag));
+        ASSERT(isHTMLTableElement(this));
         return ensureRareData().ensureNodeLists().addCache<HTMLTableRowsCollection>(*this, type);
     } else if (type == SelectOptions) {
-        ASSERT(hasTagName(selectTag));
+        ASSERT(isHTMLSelectElement(this));
         return ensureRareData().ensureNodeLists().addCache<HTMLOptionsCollection>(*this, type);
     } else if (type == FormControls) {
-        ASSERT(hasTagName(formTag) || hasTagName(fieldsetTag));
+        ASSERT(isHTMLFormElement(this) || isHTMLFieldSetElement(this));
         return ensureRareData().ensureNodeLists().addCache<HTMLFormControlsCollection>(*this, type);
     }
     return ensureRareData().ensureNodeLists().addCache<HTMLCollection>(*this, type);
@@ -3529,17 +3529,17 @@ bool Element::supportsStyleSharing() const
     // Turn off style sharing for elements that can gain layers for reasons outside of the style system.
     // See comments in RenderObject::setStyle().
     // FIXME: Why does gaining a layer from outside the style system require disabling sharing?
-    if (hasTagName(iframeTag)
-        || hasTagName(frameTag)
-        || hasTagName(embedTag)
-        || hasTagName(objectTag)
-        || hasTagName(appletTag)
-        || hasTagName(canvasTag))
+    if (isHTMLIFrameElement(*this)
+        || isHTMLFrameElement(*this)
+        || isHTMLEmbedElement(*this)
+        || isHTMLObjectElement(*this)
+        || isHTMLAppletElement(*this)
+        || isHTMLCanvasElement(*this))
         return false;
     // FIXME: We should share style for option and optgroup whenever possible.
     // Before doing so, we need to resolve issues in HTMLSelectElement::recalcListItems
     // and RenderMenuList::setText. See also https://bugs.webkit.org/show_bug.cgi?id=88405
-    if (hasTagName(optionTag) || hasTagName(optgroupTag))
+    if (isHTMLOptionElement(*this) || isHTMLOptGroupElement(*this))
         return false;
     if (FullscreenElementStack::isActiveFullScreenElement(this))
         return false;

@@ -148,14 +148,14 @@ bool InsertionPoint::isActive() const
     ShadowRoot* shadowRoot = containingShadowRoot();
     if (!shadowRoot)
         return false;
-    if (!hasTagName(shadowTag) || shadowRoot->descendantShadowElementCount() <= 1)
+    if (!isHTMLShadowElement(*this) || shadowRoot->descendantShadowElementCount() <= 1)
         return true;
 
     // Slow path only when there are more than one shadow elements in a shadow tree. That should be a rare case.
     const Vector<RefPtr<InsertionPoint> >& insertionPoints = shadowRoot->descendantInsertionPoints();
     for (size_t i = 0; i < insertionPoints.size(); ++i) {
         InsertionPoint* point = insertionPoints[i].get();
-        if (point->hasTagName(shadowTag))
+        if (isHTMLShadowElement(*point))
             return point == this;
     }
     return true;
@@ -163,12 +163,12 @@ bool InsertionPoint::isActive() const
 
 bool InsertionPoint::isShadowInsertionPoint() const
 {
-    return hasTagName(shadowTag) && isActive();
+    return isHTMLShadowElement(*this) && isActive();
 }
 
 bool InsertionPoint::isContentInsertionPoint() const
 {
-    return hasTagName(contentTag) && isActive();
+    return isHTMLContentElement(*this) && isActive();
 }
 
 PassRefPtr<NodeList> InsertionPoint::getDistributedNodes()

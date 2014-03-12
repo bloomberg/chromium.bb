@@ -25,9 +25,9 @@
 #ifndef NodeRenderStyle_h
 #define NodeRenderStyle_h
 
-#include "HTMLNames.h"
 #include "core/dom/Node.h"
 #include "core/dom/NodeRenderingTraversal.h"
+#include "core/html/HTMLOptGroupElement.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/style/RenderStyle.h"
 
@@ -40,7 +40,7 @@ inline RenderStyle* Node::renderStyle() const
     // <option> and <optgroup> can be styled even though they never get renderers,
     // so they store their style internally and return it through nonRendererStyle().
     // We check here explicitly to avoid the virtual call in the common case.
-    if (hasTagName(HTMLNames::optgroupTag) || hasTagName(HTMLNames::optionTag))
+    if (isHTMLOptGroupElement(*this) || isHTMLOptionElement(this))
         return nonRendererStyle();
     return 0;
 }

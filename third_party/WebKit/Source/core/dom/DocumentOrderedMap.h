@@ -55,7 +55,7 @@ public:
     Element* getElementByLabelForAttribute(StringImpl*, const TreeScope*) const;
 
 private:
-    template<bool keyMatches(StringImpl*, Element*)> Element* get(StringImpl*, const TreeScope*) const;
+    template<bool keyMatches(StringImpl*, Element&)> Element* get(StringImpl*, const TreeScope*) const;
 
     struct MapEntry {
         explicit MapEntry(Element* firstElement)

@@ -41,24 +41,24 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-inline bool keyMatchesId(StringImpl* key, Element* element)
+inline bool keyMatchesId(StringImpl* key, Element& element)
 {
-    return element->getIdAttribute().impl() == key;
+    return element.getIdAttribute().impl() == key;
 }
 
-inline bool keyMatchesMapName(StringImpl* key, Element* element)
+inline bool keyMatchesMapName(StringImpl* key, Element& element)
 {
-    return element->hasTagName(mapTag) && toHTMLMapElement(element)->getName().impl() == key;
+    return isHTMLMapElement(element) && toHTMLMapElement(element).getName().impl() == key;
 }
 
-inline bool keyMatchesLowercasedMapName(StringImpl* key, Element* element)
+inline bool keyMatchesLowercasedMapName(StringImpl* key, Element& element)
 {
-    return element->hasTagName(mapTag) && toHTMLMapElement(element)->getName().lower().impl() == key;
+    return isHTMLMapElement(element) && toHTMLMapElement(element).getName().lower().impl() == key;
 }
 
-inline bool keyMatchesLabelForAttribute(StringImpl* key, Element* element)
+inline bool keyMatchesLabelForAttribute(StringImpl* key, Element& element)
 {
-    return element->hasTagName(labelTag) && element->getAttribute(forAttr).impl() == key;
+    return isHTMLLabelElement(element) && element.getAttribute(forAttr).impl() == key;
 }
 
 void DocumentOrderedMap::add(StringImpl* key, Element* element)
@@ -101,7 +101,7 @@ void DocumentOrderedMap::remove(StringImpl* key, Element* element)
     }
 }
 
-template<bool keyMatches(StringImpl*, Element*)>
+template<bool keyMatches(StringImpl*, Element&)>
 inline Element* DocumentOrderedMap::get(StringImpl* key, const TreeScope* scope) const
 {
     ASSERT(key);
@@ -117,7 +117,7 @@ inline Element* DocumentOrderedMap::get(StringImpl* key, const TreeScope* scope)
 
     // We know there's at least one node that matches; iterate to find the first one.
     for (Element* element = ElementTraversal::firstWithin(scope->rootNode()); element; element = ElementTraversal::next(*element)) {
-        if (!keyMatches(key, element))
+        if (!keyMatches(key, *element))
             continue;
         entry->element = element;
         return element;
@@ -148,7 +148,7 @@ const Vector<Element*>& DocumentOrderedMap::getAllElementsById(StringImpl* key, 
         entry->orderedList.reserveCapacity(entry->count);
         for (Element* element = entry->element ? entry->element : ElementTraversal::firstWithin(scope->rootNode()); entry->orderedList.size() < entry->count; element = ElementTraversal::next(*element)) {
             ASSERT(element);
-            if (!keyMatchesId(key, element))
+            if (!keyMatchesId(key, *element))
                 continue;
             entry->orderedList.uncheckedAppend(element);
         }

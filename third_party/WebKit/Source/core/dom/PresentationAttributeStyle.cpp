@@ -31,10 +31,10 @@
 #include "config.h"
 #include "core/dom/PresentationAttributeStyle.h"
 
-#include "HTMLNames.h"
 #include "core/css/StylePropertySet.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/Element.h"
+#include "core/html/HTMLInputElement.h"
 #include "wtf/HashFunctions.h"
 #include "wtf/HashMap.h"
 #include "wtf/text/CString.h"
@@ -121,7 +121,7 @@ static void makePresentationAttributeCacheKey(Element& element, PresentationAttr
     if (!element.isHTMLElement())
         return;
     // Interpretation of the size attributes on <input> depends on the type attribute.
-    if (element.hasTagName(inputTag))
+    if (isHTMLInputElement(element))
         return;
     unsigned size = element.attributeCount();
     for (unsigned i = 0; i < size; ++i) {

@@ -85,7 +85,7 @@ void StyleElement::clearDocumentData(Document& document, Element* element)
         m_sheet->clearOwnerNode();
 
     if (element->inDocument())
-        document.styleEngine()->removeStyleSheetCandidateNode(element, element->hasTagName(HTMLNames::styleTag) ? toHTMLStyleElement(element)->scopingNode() :  0);
+        document.styleEngine()->removeStyleSheetCandidateNode(element, isHTMLStyleElement(*element) ? toHTMLStyleElement(*element).scopingNode() :  0);
 }
 
 void StyleElement::childrenChanged(Element* element)

@@ -1188,7 +1188,7 @@ Element *Node::enclosingBlockFlowElement() const
         n = n->parentNode();
         if (!n)
             break;
-        if (n->isBlockFlowElement() || n->hasTagName(bodyTag))
+        if (n->isBlockFlowElement() || isHTMLBodyElement(*n))
             return toElement(n);
     }
     return 0;
@@ -1197,7 +1197,7 @@ Element *Node::enclosingBlockFlowElement() const
 bool Node::isRootEditableElement() const
 {
     return rendererIsEditable() && isElementNode() && (!parentNode() || !parentNode()->rendererIsEditable()
-        || !parentNode()->isElementNode() || hasTagName(bodyTag));
+        || !parentNode()->isElementNode() || isHTMLBodyElement((*this)));
 }
 
 Element* Node::rootEditableElement(EditableType editableType) const
@@ -1216,7 +1216,7 @@ Element* Node::rootEditableElement() const
     for (Node* n = const_cast<Node*>(this); n && n->rendererIsEditable(); n = n->parentNode()) {
         if (n->isElementNode())
             result = toElement(n);
-        if (n->hasTagName(bodyTag))
+        if (isHTMLBodyElement(*n))
             break;
     }
     return result;
@@ -1452,7 +1452,7 @@ static void appendTextContent(const Node* node, bool convertBRsToNewlines, bool&
         break;
 
     case Node::ELEMENT_NODE:
-        if (node->hasTagName(brTag) && convertBRsToNewlines) {
+        if (isHTMLBRElement(*node) && convertBRsToNewlines) {
             isNullString = false;
             content.append('\n');
             break;
@@ -1813,7 +1813,7 @@ void Node::showTreeAndMark(const Node* markedNode1, const char* markedLabel1, co
 {
     const Node* rootNode;
     const Node* node = this;
-    while (node->parentOrShadowHostNode() && !node->hasTagName(bodyTag))
+    while (node->parentOrShadowHostNode() && !isHTMLBodyElement(*node))
         node = node->parentOrShadowHostNode();
     rootNode = node;
 
@@ -1880,7 +1880,7 @@ Node* Node::enclosingLinkEventParentOrSelf()
         // For imagemaps, the enclosing link node is the associated area element not the image itself.
         // So we don't let images be the enclosingLinkNode, even though isLink sometimes returns true
         // for them.
-        if (node->isLink() && !node->hasTagName(imgTag))
+        if (node->isLink() && !isHTMLImageElement(*node))
             return node;
     }
 

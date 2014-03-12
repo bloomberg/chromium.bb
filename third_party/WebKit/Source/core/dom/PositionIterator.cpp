@@ -26,8 +26,8 @@
 #include "config.h"
 #include "core/dom/PositionIterator.h"
 
-#include "HTMLNames.h"
 #include "core/editing/htmlediting.h"
+#include "core/html/HTMLHtmlElement.h"
 #include "core/rendering/RenderBlock.h"
 
 namespace WebCore {
@@ -158,8 +158,8 @@ bool PositionIterator::isCandidate() const
     if (isRenderedTableElement(m_anchorNode) || editingIgnoresContent(m_anchorNode))
         return (atStartOfNode() || atEndOfNode()) && !Position::nodeIsUserSelectNone(m_anchorNode->parentNode());
 
-    if (!m_anchorNode->hasTagName(htmlTag) && renderer->isRenderBlockFlow()) {
-        if (toRenderBlock(renderer)->logicalHeight() || m_anchorNode->hasTagName(bodyTag)) {
+    if (!isHTMLHtmlElement(*m_anchorNode) && renderer->isRenderBlockFlow()) {
+        if (toRenderBlock(renderer)->logicalHeight() || isHTMLBodyElement(*m_anchorNode)) {
             if (!Position::hasRenderedNonAnonymousDescendantsWithHeight(renderer))
                 return atStartOfNode() && !Position::nodeIsUserSelectNone(m_anchorNode);
             return m_anchorNode->rendererIsEditable() && !Position::nodeIsUserSelectNone(m_anchorNode) && Position(*this).atEditingBoundary();

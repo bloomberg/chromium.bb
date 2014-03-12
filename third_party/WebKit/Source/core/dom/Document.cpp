@@ -689,7 +689,7 @@ DOMImplementation& Document::implementation()
 
 bool Document::hasManifest() const
 {
-    return documentElement() && documentElement()->hasTagName(htmlTag) && documentElement()->hasAttribute(manifestAttr);
+    return isHTMLHtmlElement(documentElement()) && documentElement()->hasAttribute(manifestAttr);
 }
 
 Location* Document::location() const
@@ -935,7 +935,7 @@ PassRefPtr<Node> Document::importNode(Node* importedNode, bool deep, ExceptionSt
         if (deep) {
             if (!importContainerNodeChildren(oldElement, newElement, exceptionState))
                 return nullptr;
-            if (oldElement->hasTagName(templateTag)
+            if (isHTMLTemplateElement(*oldElement)
                 && !importContainerNodeChildren(toHTMLTemplateElement(oldElement)->content(), toHTMLTemplateElement(newElement)->content(), exceptionState))
                 return nullptr;
         }
@@ -1335,7 +1335,7 @@ void Document::setTitle(const String& title)
         }
     }
 
-    if (m_titleElement && m_titleElement->hasTagName(titleTag))
+    if (isHTMLTitleElement(m_titleElement))
         toHTMLTitleElement(m_titleElement)->setText(title);
     else
         updateTitle(title);
@@ -2236,8 +2236,7 @@ bool Document::isFrameSet() const
 {
     if (!isHTMLDocument())
         return false;
-    HTMLElement* bodyElement = body();
-    return bodyElement && bodyElement->hasTagName(framesetTag);
+    return isHTMLFrameSetElement(body());
 }
 
 ScriptableDocumentParser* Document::scriptableDocumentParser() const
@@ -2322,9 +2321,9 @@ HTMLElement* Document::body() const
     if (!documentElement())
         return 0;
 
-    for (Element* child = ElementTraversal::firstWithin(*documentElement()); child; child = ElementTraversal::nextSibling(*child)) {
-        if (child->hasTagName(framesetTag) || child->hasTagName(bodyTag))
-            return toHTMLElement(child);
+    for (HTMLElement* child = Traversal<HTMLElement>::firstWithin(*documentElement()); child; child = Traversal<HTMLElement>::nextSibling(*child)) {
+        if (isHTMLFrameSetElement(*child) || isHTMLBodyElement(*child))
+            return child;
     }
 
     return 0;
@@ -2343,7 +2342,7 @@ void Document::setBody(PassRefPtr<HTMLElement> prpNewBody, ExceptionState& excep
         return;
     }
 
-    if (!newBody->hasTagName(bodyTag) && !newBody->hasTagName(framesetTag)) {
+    if (!isHTMLBodyElement(*newBody) && !isHTMLFrameSetElement(*newBody)) {
         exceptionState.throwDOMException(HierarchyRequestError, "The new body element is of type '" + newBody->tagName() + "'. It must be either a 'BODY' or 'FRAMESET' element.");
         return;
     }
@@ -2384,7 +2383,7 @@ Element* Document::viewportDefiningElement(RenderStyle* rootStyle) const
         if (!rootStyle)
             return 0;
     }
-    if (bodyElement && rootStyle->isOverflowVisible() && rootElement->hasTagName(htmlTag))
+    if (bodyElement && rootStyle->isOverflowVisible() && isHTMLHtmlElement(*rootElement))
         return bodyElement;
     return rootElement;
 }
@@ -2558,8 +2557,8 @@ void Document::dispatchUnloadEvents()
 
     if (m_loadEventProgress >= LoadEventTried && m_loadEventProgress <= UnloadEventInProgress) {
         Element* currentFocusedElement = focusedElement();
-        if (currentFocusedElement && currentFocusedElement->hasTagName(inputTag))
-            toHTMLInputElement(currentFocusedElement)->endEditing();
+        if (isHTMLInputElement(currentFocusedElement))
+            toHTMLInputElement(*currentFocusedElement).endEditing();
         if (m_loadEventProgress < PageHideInProgress) {
             m_loadEventProgress = PageHideInProgress;
             if (DOMWindow* window = domWindow())
@@ -2624,7 +2623,7 @@ bool Document::shouldScheduleLayout()
     //    (b) Only schedule layout once we have a body element.
 
     return (haveStylesheetsLoaded() && body())
-        || (documentElement() && !documentElement()->hasTagName(htmlTag));
+        || (documentElement() && !isHTMLHtmlElement(*documentElement()));
 }
 
 bool Document::shouldParserYieldAgressivelyBeforeScriptExecution()
@@ -4226,11 +4225,7 @@ KURL Document::openSearchDescriptionURL()
     if (!head())
         return KURL();
 
-    RefPtr<HTMLCollection> children = head()->children();
-    for (unsigned i = 0; Element* child = children->item(i); i++) {
-        if (!child->hasTagName(linkTag))
-            continue;
-        HTMLLinkElement* linkElement = toHTMLLinkElement(child);
+    for (HTMLLinkElement* linkElement = Traversal<HTMLLinkElement>::firstChild(*head()); linkElement; linkElement = Traversal<HTMLLinkElement>::nextSibling(*linkElement)) {
         if (!equalIgnoringCase(linkElement->type(), openSearchMIMEType) || !equalIgnoringCase(linkElement->rel(), openSearchRelation))
             continue;
         if (linkElement->href().isEmpty())
@@ -4351,7 +4346,7 @@ SVGDocumentExtensions& Document::accessSVGExtensions()
 
 bool Document::hasSVGRootNode() const
 {
-    return documentElement() && documentElement()->hasTagName(SVGNames::svgTag);
+    return isSVGSVGElement(documentElement());
 }
 
 PassRefPtr<HTMLCollection> Document::ensureCachedCollection(CollectionType type)
@@ -4472,13 +4467,7 @@ Vector<IconURL> Document::iconURLs(int iconTypesMask)
     Vector<IconURL> secondaryIcons;
 
     // Start from the last child node so that icons seen later take precedence as required by the spec.
-    RefPtr<HTMLCollection> children = head() ? head()->children() : nullptr;
-    unsigned length = children ? children->length() : 0;
-    for (unsigned i = 0; i < length; i++) {
-        Element* child = children->item(i);
-        if (!child->hasTagName(linkTag))
-            continue;
-        HTMLLinkElement* linkElement = toHTMLLinkElement(child);
+    for (HTMLLinkElement* linkElement = head() ? Traversal<HTMLLinkElement>::firstChild(*head()) : 0; linkElement; linkElement = Traversal<HTMLLinkElement>::nextSibling(*linkElement)) {
         if (!(linkElement->iconType() & iconTypesMask))
             continue;
         if (linkElement->href().isEmpty())

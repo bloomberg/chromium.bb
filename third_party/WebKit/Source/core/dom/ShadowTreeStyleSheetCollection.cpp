@@ -53,14 +53,14 @@ void ShadowTreeStyleSheetCollection::collectStyleSheets(StyleEngine* engine, Sty
         StyleSheet* sheet = 0;
         CSSStyleSheet* activeSheet = 0;
 
-        if (!node->isHTMLElement() || !node->hasTagName(styleTag))
+        if (!isHTMLStyleElement(*node))
             continue;
 
-        Element* element = toElement(node);
+        HTMLStyleElement* element = toHTMLStyleElement(node);
         const AtomicString& title = element->fastGetAttribute(titleAttr);
         bool enabledViaScript = false;
 
-        sheet = toHTMLStyleElement(node)->sheet();
+        sheet = element->sheet();
         if (sheet && !sheet->disabled() && sheet->isCSSStyleSheet())
             activeSheet = toCSSStyleSheet(sheet);
 
