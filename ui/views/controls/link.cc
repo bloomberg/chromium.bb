@@ -47,12 +47,7 @@ const char* Link::GetClassName() const {
 gfx::NativeCursor Link::GetCursor(const ui::MouseEvent& event) {
   if (!enabled())
     return gfx::kNullCursor;
-#if defined(USE_AURA)
   return ui::kCursorHand;
-#elif defined(OS_WIN)
-  static HCURSOR g_hand_cursor = LoadCursor(NULL, IDC_HAND);
-  return g_hand_cursor;
-#endif
 }
 
 bool Link::HitTestRect(const gfx::Rect& rect) const {

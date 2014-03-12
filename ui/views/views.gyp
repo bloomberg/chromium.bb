@@ -7,10 +7,6 @@
   },
   'target_defaults': {
     'conditions': [
-      ['use_aura==1', {
-        'sources/': [ ['exclude', '_win\\.(h|cc)$'] ],
-        'dependencies': [ '../aura/aura.gyp:aura', ],
-      }],
       ['OS!="linux" or chromeos==1', {
         'sources/': [ ['exclude', '_linux\\.(h|cc)$'] ],
       }],
@@ -30,6 +26,7 @@
         '../../url/url.gyp:url_lib',
         '../accessibility/accessibility.gyp:accessibility',
         '../accessibility/accessibility.gyp:ax_gen',
+        '../aura/aura.gyp:aura',
         '../base/strings/ui_strings.gyp:ui_strings',
         '../compositor/compositor.gyp:compositor',
         '../events/events.gyp:events',
@@ -129,7 +126,6 @@
         'controls/menu/menu_controller.h',
         'controls/menu/menu_controller_aura.cc',
         'controls/menu/menu_controller_delegate.h',
-        'controls/menu/menu_controller_win.cc',
         'controls/menu/menu_delegate.cc',
         'controls/menu/menu_delegate.h',
         'controls/menu/menu_host.cc',
@@ -151,8 +147,6 @@
         'controls/menu/menu_separator.h',
         'controls/menu/menu_separator_views.cc',
         'controls/menu/menu_separator_win.cc',
-        'controls/menu/menu_win.cc',
-        'controls/menu/menu_win.h',
         'controls/menu/menu_wrapper.h',
         'controls/menu/native_menu_win.cc',
         'controls/menu/native_menu_win.h',
@@ -282,7 +276,6 @@
         'metrics.cc',
         'metrics.h',
         'metrics_aura.cc',
-        'metrics_win.cc',
         'mouse_constants.h',
         'mouse_watcher.cc',
         'mouse_watcher.h',
@@ -314,7 +307,6 @@
         'view_model.h',
         'view_model_utils.cc',
         'view_model_utils.h',
-        'view_win.cc',
         'views_switches.cc',
         'views_switches.h',
         'views_delegate.cc',
@@ -405,7 +397,6 @@
         'win/hwnd_message_handler_delegate.h',
         'win/hwnd_util.h',
         'win/hwnd_util_aurawin.cc',
-        'win/hwnd_util_win.cc',
         'win/scoped_fullscreen_visibility.cc',
         'win/scoped_fullscreen_visibility.h',
         'window/client_view.cc',
@@ -474,40 +465,6 @@
         '../../third_party/wtl/include',
       ],
       'conditions': [
-        ['use_aura==1', {
-          'conditions': [
-            ['OS=="win"', {
-              'sources/': [
-                ['include', 'controls/menu/menu_insertion_delegate_win.h'],
-                ['include', 'controls/menu/native_menu_win.cc'],
-                ['include', 'controls/menu/native_menu_win.h'],
-                ['include', 'corewm/tooltip_win.cc'],
-                ['include', 'corewm/tooltip_win.h'],
-                ['include', 'event_utils_win.cc'],
-                ['include', 'widget/desktop_aura/desktop_screen_win.cc'],
-                ['include', 'widget/desktop_aura/desktop_drag_drop_client_win.cc'],
-                ['include', 'widget/desktop_aura/desktop_drop_target_win.cc'],
-                ['include', 'widget/desktop_aura/desktop_window_tree_host_win.cc'],
-                ['include', 'widget/monitor_win.cc'],
-                ['include', 'widget/monitor_win.h'],
-                ['include', 'win/appbar.cc'],
-                ['include', 'win/appbar.h'],
-              ],
-            }],
-          ],
-        }],
-        ['use_aura==0', {
-          'sources/': [
-            ['exclude', 'corewm'],
-            ['exclude', 'widget/desktop_aura'],
-            ['exclude', 'widget/window_reorderer.h'],
-            ['exclude', 'widget/window_reorderer.cc'],
-          ],
-          'sources!': [
-            'widget/widget_aura_utils.cc',
-            'widget/widget_aura_utils.h',
-          ],
-        }],
         ['chromeos==1', {
           'sources/': [
             ['exclude', 'widget/desktop_aura'],
@@ -517,20 +474,6 @@
           'sources!': [
             'bubble/tray_bubble_view.cc',
             'bubble/tray_bubble_view.h',
-          ],
-        }],
-        ['use_aura==0 and OS=="win"', {
-          'sources!': [
-            'controls/menu/menu_config_views.cc',
-            'controls/menu/menu_separator_views.cc',
-          ],
-        }],
-        ['use_aura==1 and OS=="win"', {
-          'sources/': [
-            ['include', 'controls/menu/menu_config_win.cc'],
-            ['include', 'controls/menu/menu_separator_win.cc'],
-            ['include', 'accessibility/native_view_accessibility_win.cc'],
-            ['include', 'accessibility/native_view_accessibility_win.h'],
           ],
         }],
         ['OS=="linux" and chromeos==0', {
@@ -603,6 +546,9 @@
         '../../ipc/ipc.gyp:test_support_ipc',
         '../../skia/skia.gyp:skia',
         '../../testing/gtest.gyp:gtest',
+        '../aura/aura.gyp:aura',
+        '../aura/aura.gyp:aura_test_support',
+        '../compositor/compositor.gyp:compositor',
         '../events/events.gyp:events',
         '../gfx/gfx.gyp:gfx',
         '../gfx/gfx.gyp:gfx_geometry',
@@ -644,19 +590,6 @@
             'test/ui_controls_factory_desktop_aurax11.h',
           ],
         }],
-        ['use_aura==1', {
-          'dependencies': [
-            '../aura/aura.gyp:aura_test_support',
-            '../compositor/compositor.gyp:compositor',
-          ],
-        }, {  # use_aura==0
-          'sources!': [
-            'corewm/tooltip_controller_test_helper.cc',
-            'corewm/tooltip_controller_test_helper.h',
-            'test/child_modal_window.cc',
-            'test/child_modal_window.h',
-          ],
-        }],
       ],
     },  # target_name: views_test_support
     {
@@ -669,6 +602,7 @@
         '../../ipc/ipc.gyp:test_support_ipc',
         '../../skia/skia.gyp:skia',
         '../../testing/gtest.gyp:gtest',
+        '../aura/aura.gyp:aura',
         '../events/events.gyp:events',
         '../gfx/gfx.gyp:gfx',
         '../gfx/gfx.gyp:gfx_geometry',
@@ -698,6 +632,8 @@
         '../../third_party/icu/icu.gyp:icuuc',
         '../../url/url.gyp:url_lib',
         '../accessibility/accessibility.gyp:accessibility',
+        '../aura/aura.gyp:aura',
+        '../aura/aura.gyp:aura_test_support',
         '../base/strings/ui_strings.gyp:ui_strings',
         '../compositor/compositor.gyp:compositor',
         '../compositor/compositor.gyp:compositor_test_support',
@@ -752,7 +688,6 @@
         'focus/focus_manager_test.h',
         'focus/focus_manager_test.cc',
         'focus/focus_manager_unittest.cc',
-        'focus/focus_manager_unittest_win.cc',
         'focus/focus_traversal_unittest.cc',
         'ime/input_method_bridge_unittest.cc',
         'layout/box_layout_unittest.cc',
@@ -828,22 +763,6 @@
             '../../base/allocator/allocator.gyp:allocator',
           ],
         }],
-        [ 'use_aura==1', {
-          'dependencies': [
-            '../aura/aura.gyp:aura_test_support',
-          ],
-        }, {  # use_aura==0
-          'sources!': [
-            'controls/native/native_view_host_aura_unittest.cc',
-            'widget/native_widget_aura_unittest.cc',
-          ],
-          'sources/': [
-            ['exclude', 'corewm'],
-            ['exclude', 'ime/input_method_bridge_unittest.cc'],
-            ['exclude', 'widget/desktop_aura'],
-            ['exclude', 'widget/window_reorderer_unittest.cc']
-          ],
-        }],
         ['use_ozone==1', {
           'sources!': [
             'corewm/capture_controller_unittest.cc',
@@ -859,6 +778,7 @@
         '../../skia/skia.gyp:skia',
         '../../third_party/icu/icu.gyp:icui18n',
         '../../third_party/icu/icu.gyp:icuuc',
+        '../aura/aura.gyp:aura',
         '../events/events.gyp:events',
         '../gfx/gfx.gyp:gfx',
         '../gfx/gfx.gyp:gfx_geometry',
@@ -942,6 +862,7 @@
       'dependencies': [
         '../../base/base.gyp:base',
         '../../base/base.gyp:base_i18n',
+        '../aura/aura.gyp:aura',
         '../compositor/compositor.gyp:compositor',
         '../compositor/compositor.gyp:compositor_test_support',
         '../gfx/gfx.gyp:gfx',
@@ -966,6 +887,7 @@
         '../../third_party/icu/icu.gyp:icui18n',
         '../../third_party/icu/icu.gyp:icuuc',
         '../../url/url.gyp:url_lib',
+        '../aura/aura.gyp:aura',
         '../events/events.gyp:events',
         '../gfx/gfx.gyp:gfx',
         '../gfx/gfx.gyp:gfx_geometry',
@@ -1011,6 +933,8 @@
         '../../skia/skia.gyp:skia',
         '../../third_party/icu/icu.gyp:icui18n',
         '../../third_party/icu/icu.gyp:icuuc',
+        '../aura/aura.gyp:aura',
+        '../compositor/compositor.gyp:compositor',
         '../events/events.gyp:events',
         '../gfx/gfx.gyp:gfx',
         '../gfx/gfx.gyp:gfx_geometry',
@@ -1055,11 +979,6 @@
           },
           'dependencies': [
             '../../sandbox/sandbox.gyp:sandbox',
-          ],
-        }],
-        ['use_aura==1', {
-          'dependencies': [
-            '../compositor/compositor.gyp:compositor',
           ],
         }],
         ['OS=="win"', {
