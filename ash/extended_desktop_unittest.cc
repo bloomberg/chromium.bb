@@ -11,7 +11,6 @@
 #include "ash/system/tray/system_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/coordinate_conversion.h"
-#include "ash/wm/window_cycle_controller.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
 #include "base/strings/string_util.h"
@@ -282,57 +281,6 @@ TEST_F(ExtendedDesktopTest, TestCursorLocation) {
   EXPECT_EQ("20,10", Shell::GetScreen()->GetCursorScreenPoint().ToString());
   EXPECT_TRUE(root_window0_test_api.ContainsMouse());
   EXPECT_FALSE(root_window1_test_api.ContainsMouse());
-}
-
-TEST_F(ExtendedDesktopTest, CycleWindows) {
-  if (!SupportsMultipleDisplays())
-    return;
-
-  UpdateDisplay("700x500,500x500");
-  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
-
-  WindowCycleController* controller =
-      Shell::GetInstance()->window_cycle_controller();
-
-  views::Widget* d1_w1 = CreateTestWidget(gfx::Rect(10, 10, 100, 100));
-  EXPECT_EQ(root_windows[0], d1_w1->GetNativeView()->GetRootWindow());
-  views::Widget* d2_w1 = CreateTestWidget(gfx::Rect(800, 10, 100, 100));
-  EXPECT_EQ(root_windows[1], d2_w1->GetNativeView()->GetRootWindow());
-  EXPECT_TRUE(wm::IsActiveWindow(d2_w1->GetNativeView()));
-
-  controller->HandleCycleWindow(WindowCycleController::FORWARD, false);
-  EXPECT_TRUE(wm::IsActiveWindow(d1_w1->GetNativeView()));
-  controller->HandleCycleWindow(WindowCycleController::FORWARD, false);
-  EXPECT_TRUE(wm::IsActiveWindow(d2_w1->GetNativeView()));
-  controller->HandleCycleWindow(WindowCycleController::BACKWARD, false);
-  EXPECT_TRUE(wm::IsActiveWindow(d1_w1->GetNativeView()));
-  controller->HandleCycleWindow(WindowCycleController::BACKWARD, false);
-  EXPECT_TRUE(wm::IsActiveWindow(d2_w1->GetNativeView()));
-
-  // Cycle through all windows across root windows.
-  views::Widget* d1_w2 = CreateTestWidget(gfx::Rect(10, 200, 100, 100));
-  EXPECT_EQ(root_windows[0], d1_w2->GetNativeView()->GetRootWindow());
-  views::Widget* d2_w2 = CreateTestWidget(gfx::Rect(800, 200, 100, 100));
-  EXPECT_EQ(root_windows[1], d2_w2->GetNativeView()->GetRootWindow());
-
-  controller->HandleCycleWindow(WindowCycleController::FORWARD, true);
-  EXPECT_TRUE(wm::IsActiveWindow(d1_w2->GetNativeView()));
-  controller->HandleCycleWindow(WindowCycleController::FORWARD, true);
-  EXPECT_TRUE(wm::IsActiveWindow(d2_w1->GetNativeView()));
-  controller->HandleCycleWindow(WindowCycleController::FORWARD, true);
-  EXPECT_TRUE(wm::IsActiveWindow(d1_w1->GetNativeView()));
-  controller->HandleCycleWindow(WindowCycleController::FORWARD, true);
-  EXPECT_TRUE(wm::IsActiveWindow(d2_w2->GetNativeView()));
-
-  // Backwards
-  controller->HandleCycleWindow(WindowCycleController::BACKWARD, true);
-  EXPECT_TRUE(wm::IsActiveWindow(d1_w1->GetNativeView()));
-  controller->HandleCycleWindow(WindowCycleController::BACKWARD, true);
-  EXPECT_TRUE(wm::IsActiveWindow(d2_w1->GetNativeView()));
-  controller->HandleCycleWindow(WindowCycleController::BACKWARD, true);
-  EXPECT_TRUE(wm::IsActiveWindow(d1_w2->GetNativeView()));
-  controller->HandleCycleWindow(WindowCycleController::BACKWARD, true);
-  EXPECT_TRUE(wm::IsActiveWindow(d2_w2->GetNativeView()));
 }
 
 TEST_F(ExtendedDesktopTest, GetRootWindowAt) {

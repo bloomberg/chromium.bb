@@ -48,7 +48,6 @@
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/partial_screenshot_view.h"
 #include "ash/wm/power_button_controller.h"
-#include "ash/wm/window_cycle_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
@@ -125,50 +124,26 @@ bool HandleAccessibleFocusCycle(bool reverse) {
 }
 
 bool HandleCycleBackwardMRU(const ui::Accelerator& accelerator) {
-  Shell* shell = Shell::GetInstance();
-
   if (accelerator.key_code() == ui::VKEY_TAB)
     base::RecordAction(base::UserMetricsAction("Accel_PrevWindow_Tab"));
 
-  if (switches::UseOverviewMode()) {
-    shell->window_selector_controller()->HandleCycleWindow(
-        WindowSelector::BACKWARD);
-    return true;
-  }
-  shell->window_cycle_controller()->HandleCycleWindow(
-      WindowCycleController::BACKWARD, accelerator.IsAltDown());
+  Shell::GetInstance()->window_selector_controller()->HandleCycleWindow(
+      WindowSelector::BACKWARD);
   return true;
 }
 
 bool HandleCycleForwardMRU(const ui::Accelerator& accelerator) {
-  Shell* shell = Shell::GetInstance();
-
   if (accelerator.key_code() == ui::VKEY_TAB)
     base::RecordAction(base::UserMetricsAction("Accel_NextWindow_Tab"));
 
-  if (switches::UseOverviewMode()) {
-    shell->window_selector_controller()->HandleCycleWindow(
-        WindowSelector::FORWARD);
-    return true;
-  }
-  shell->window_cycle_controller()->HandleCycleWindow(
-      WindowCycleController::FORWARD, accelerator.IsAltDown());
+  Shell::GetInstance()->window_selector_controller()->HandleCycleWindow(
+      WindowSelector::FORWARD);
   return true;
 }
 
-bool HandleCycleLinear(const ui::Accelerator& accelerator) {
-  Shell* shell = Shell::GetInstance();
-
-  // TODO(jamescook): When overview becomes the default the AcceleratorAction
-  // should be renamed from CYCLE_LINEAR to TOGGLE_OVERVIEW.
-  if (switches::UseOverviewMode()) {
-    base::RecordAction(base::UserMetricsAction("Accel_Overview_F5"));
-    shell->window_selector_controller()->ToggleOverview();
-    return true;
-  }
-  if (accelerator.key_code() == ui::VKEY_MEDIA_LAUNCH_APP1)
-    base::RecordAction(base::UserMetricsAction("Accel_NextWindow_F5"));
-  shell->window_cycle_controller()->HandleLinearCycleWindow();
+bool ToggleOverview(const ui::Accelerator& accelerator) {
+  base::RecordAction(base::UserMetricsAction("Accel_Overview_F5"));
+  Shell::GetInstance()->window_selector_controller()->ToggleOverview();
   return true;
 }
 
@@ -942,8 +917,8 @@ bool AcceleratorController::PerformAction(int action,
       return HandleCycleBackwardMRU(accelerator);
     case CYCLE_FORWARD_MRU:
       return HandleCycleForwardMRU(accelerator);
-    case CYCLE_LINEAR:
-      return HandleCycleLinear(accelerator);
+    case TOGGLE_OVERVIEW:
+      return ToggleOverview(accelerator);
 #if defined(OS_CHROMEOS)
     case ADD_REMOVE_DISPLAY:
       return HandleAddRemoveDisplay();

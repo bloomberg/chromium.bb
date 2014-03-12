@@ -363,9 +363,6 @@ class ASH_EXPORT Shell
   VideoDetector* video_detector() {
     return video_detector_.get();
   }
-  WindowCycleController* window_cycle_controller() {
-    return window_cycle_controller_.get();
-  }
   WindowSelectorController* window_selector_controller() {
     return window_selector_controller_.get();
   }
@@ -650,7 +647,6 @@ class ASH_EXPORT Shell
   scoped_ptr<MruWindowTracker> mru_window_tracker_;
   scoped_ptr<UserActivityDetector> user_activity_detector_;
   scoped_ptr<VideoDetector> video_detector_;
-  scoped_ptr<WindowCycleController> window_cycle_controller_;
   scoped_ptr<WindowSelectorController> window_selector_controller_;
   scoped_ptr<internal::FocusCycler> focus_cycler_;
   scoped_ptr<DisplayController> display_controller_;

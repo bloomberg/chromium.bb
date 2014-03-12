@@ -53,9 +53,6 @@ const char kAshDisableAudioDeviceMenu[] =
 // Disable ability to dock windows at the desktop edge.
 const char kAshDisableDockedWindows[] = "ash-disable-docked-windows";
 
-// Disables overview mode for window switching.
-const char kAshDisableOverviewMode[] = "ash-disable-overview-mode";
-
 // Use alternate visual style for the caption buttons (minimize, maximize,
 // restore, close). The alternate style:
 // - Adds a dedicated button for minimize.
@@ -146,10 +143,6 @@ bool UseAlternateFrameCaptionButtonStyle() {
 bool UseImmersiveFullscreenForAllWindows() {
   return !CommandLine::ForCurrentProcess()->HasSwitch(
       kAshEnableImmersiveFullscreenForBrowserOnly);
-}
-
-bool UseOverviewMode() {
-  return !CommandLine::ForCurrentProcess()->HasSwitch(kAshDisableOverviewMode);
 }
 
 bool UseDockedWindows() {

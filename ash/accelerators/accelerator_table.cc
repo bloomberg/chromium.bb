@@ -37,7 +37,7 @@ const AcceleratorData kAcceleratorData[] = {
   { true, ui::VKEY_TAB, ui::EF_ALT_DOWN, CYCLE_FORWARD_MRU },
   { true, ui::VKEY_TAB, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN,
     CYCLE_BACKWARD_MRU },
-  { true, ui::VKEY_MEDIA_LAUNCH_APP1, ui::EF_NONE, CYCLE_LINEAR },
+  { true, ui::VKEY_MEDIA_LAUNCH_APP1, ui::EF_NONE, TOGGLE_OVERVIEW },
 #if defined(OS_CHROMEOS)
   { true, ui::VKEY_BROWSER_SEARCH, ui::EF_NONE, TOGGLE_APP_LIST },
   { true, ui::VKEY_WLAN, ui::EF_NONE, TOGGLE_WIFI },
@@ -356,7 +356,7 @@ const AcceleratorAction kNonrepeatableActions[] = {
   // TODO(mazda): Add other actions which should not be repeated.
   CYCLE_BACKWARD_MRU,
   CYCLE_FORWARD_MRU,
-  CYCLE_LINEAR,
+  TOGGLE_OVERVIEW,
   EXIT,
   PRINT_UI_HIERARCHIES,  // Don't fill the logs if the key is held down.
   ROTATE_SCREEN,
@@ -377,7 +377,7 @@ const AcceleratorAction kActionsAllowedInAppMode[] = {
   BRIGHTNESS_UP,
   CYCLE_BACKWARD_MRU,
   CYCLE_FORWARD_MRU,
-  CYCLE_LINEAR,
+  TOGGLE_OVERVIEW,
   DISABLE_CAPS_LOCK,
   KEYBOARD_BRIGHTNESS_DOWN,
   KEYBOARD_BRIGHTNESS_UP,
@@ -422,7 +422,7 @@ const AcceleratorAction kActionsNeedingWindow[] = {
     ACCESSIBLE_FOCUS_PREVIOUS,
     CYCLE_BACKWARD_MRU,
     CYCLE_FORWARD_MRU,
-    CYCLE_LINEAR,
+    TOGGLE_OVERVIEW,
     WINDOW_SNAP_LEFT,
     WINDOW_SNAP_RIGHT,
     WINDOW_MINIMIZE,

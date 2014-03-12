@@ -10,7 +10,6 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/switchable_windows.h"
-#include "ash/wm/window_cycle_list.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace_controller.h"

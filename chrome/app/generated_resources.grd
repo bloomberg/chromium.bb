@@ -5992,18 +5992,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OVERSCROLL_HISTORY_NAVIGATION_SIMPLE_UI" desc="Description for the simple UI for history navigation from horizontal overscroll.">
         Simple
       </message>
-      <message name="IDS_FLAGS_OVERVIEW_MODE_NAME" desc="Title for the flag to enable window overview mode.">
-        Enable overview mode.
-      </message>
-      <message name="IDS_FLAGS_OVERVIEW_MODE_DESCRIPTION" desc="Description for the flag to enable window overview mode.">
-        Enable overview mode, activated by pushing the switch window button.
-      </message>
-      <message name="IDS_FLAGS_DISABLE_OVERVIEW_MODE_NAME" desc="Title for the flag to disable window overview mode.">
-        Disable overview mode.
-      </message>
-      <message name="IDS_FLAGS_DISABLE_OVERVIEW_MODE_DESCRIPTION" desc="Description for the flag to disable window overview mode.">
-        Disable overview mode, activated by pushing the switch window button.
-      </message>
       <message name="IDS_FLAGS_SCROLL_END_EFFECT_NAME" desc="Title for the flag for scroll end effect from vertical overscroll.">
         Scroll end effect
       </message>

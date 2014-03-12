@@ -20,18 +20,31 @@ namespace accelerators {
 typedef test::AshTestBase AcceleratorCommandsTest;
 
 TEST_F(AcceleratorCommandsTest, ToggleMinimized) {
-  scoped_ptr<aura::Window> window(
+  scoped_ptr<aura::Window> window1(
       CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
-  wm::WindowState* window_state = wm::GetWindowState(window.get());
-  window_state->Activate();
+  scoped_ptr<aura::Window> window2(
+      CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
+  wm::WindowState* window_state1 = wm::GetWindowState(window1.get());
+  wm::WindowState* window_state2 = wm::GetWindowState(window2.get());
+  window_state1->Activate();
+  window_state2->Activate();
 
   ToggleMinimized();
-  EXPECT_TRUE(window_state->IsMinimized());
-  EXPECT_FALSE(window_state->IsNormalStateType());
+  EXPECT_TRUE(window_state2->IsMinimized());
+  EXPECT_FALSE(window_state2->IsNormalStateType());
+  EXPECT_TRUE(window_state1->IsActive());
 
   ToggleMinimized();
-  EXPECT_FALSE(window_state->IsMinimized());
-  EXPECT_TRUE(window_state->IsNormalStateType());
+  EXPECT_TRUE(window_state1->IsMinimized());
+  EXPECT_FALSE(window_state1->IsNormalStateType());
+  EXPECT_FALSE(window_state1->IsActive());
+
+  // Toggling minimize when there are no active windows should unminimize and
+  // activate the last active window.
+  ToggleMinimized();
+  EXPECT_FALSE(window_state1->IsMinimized());
+  EXPECT_TRUE(window_state1->IsNormalStateType());
+  EXPECT_TRUE(window_state1->IsActive());
 }
 
 }  // namespace accelerators

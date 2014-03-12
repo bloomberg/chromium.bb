@@ -74,7 +74,6 @@
 #include "ash/wm/user_activity_detector.h"
 #include "ash/wm/video_detector.h"
 #include "ash/wm/window_animations.h"
-#include "ash/wm/window_cycle_controller.h"
 #include "ash/wm/window_positioner.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
@@ -691,7 +690,6 @@ Shell::~Shell() {
   resize_shadow_controller_.reset();
 
   window_selector_controller_.reset();
-  window_cycle_controller_.reset();
   mru_window_tracker_.reset();
 
   // |shelf_window_watcher_| has a weak pointer to |shelf_Model_|
@@ -924,7 +922,6 @@ void Shell::Init() {
 
   high_contrast_controller_.reset(new HighContrastController);
   video_detector_.reset(new VideoDetector);
-  window_cycle_controller_.reset(new WindowCycleController());
   window_selector_controller_.reset(new WindowSelectorController());
 
   tooltip_controller_.reset(
@@ -1033,7 +1030,6 @@ void Shell::InitRootWindow(aura::Window* root_window) {
   DCHECK(activation_client_);
   DCHECK(visibility_controller_.get());
   DCHECK(drag_drop_controller_.get());
-  DCHECK(window_cycle_controller_.get());
 
   aura::client::SetFocusClient(root_window, focus_client_.get());
   input_method_filter_->SetInputMethodPropertyInRootWindow(root_window);

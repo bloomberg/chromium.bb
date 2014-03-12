@@ -31,7 +31,6 @@ ASH_EXPORT extern const char kAshDisableAudioDeviceMenu[];
 #endif
 
 ASH_EXPORT extern const char kAshDisableDockedWindows[];
-ASH_EXPORT extern const char kAshDisableOverviewMode[];
 ASH_EXPORT extern const char kAshEnableAlternateFrameCaptionButtonStyle[];
 ASH_EXPORT extern const char kAshEnableBrightnessControl[];
 ASH_EXPORT extern const char kAshEnableImmersiveFullscreenForAllWindows[];
@@ -66,9 +65,6 @@ ASH_EXPORT bool UseDragOffShelf();
 // Returns true if all windows (barring frameless apps) can be put into
 // immersive fullscreen via <F4>.
 ASH_EXPORT bool UseImmersiveFullscreenForAllWindows();
-
-// Returns true if overview mode should be activated for window switching.
-ASH_EXPORT bool UseOverviewMode();
 
 // Returns true if docked windows feature is enabled.
 ASH_EXPORT bool UseDockedWindows();

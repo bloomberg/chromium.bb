@@ -23,9 +23,8 @@ namespace internal {
 
 SystemGestureEventFilter::SystemGestureEventFilter()
     : long_press_affordance_(new LongPressAffordanceHandler),
+      overview_gesture_handler_(new OverviewGestureHandler),
       shelf_gesture_handler_(new ShelfGestureHandler()) {
-  if (switches::UseOverviewMode())
-    overview_gesture_handler_.reset(new OverviewGestureHandler);
 }
 
 SystemGestureEventFilter::~SystemGestureEventFilter() {

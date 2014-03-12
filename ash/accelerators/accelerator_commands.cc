@@ -6,7 +6,7 @@
 
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
-#include "ash/wm/window_cycle_controller.h"
+#include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
@@ -20,8 +20,10 @@ bool ToggleMinimized() {
   // Attempt to restore the window that would be cycled through next from
   // the launcher when there is no active window.
   if (!window) {
-    ash::Shell::GetInstance()->window_cycle_controller()->
-        HandleCycleWindow(WindowCycleController::FORWARD, false);
+    MruWindowTracker::WindowList mru_windows(
+        Shell::GetInstance()->mru_window_tracker()->BuildMruWindowList());
+    if (!mru_windows.empty())
+      wm::GetWindowState(mru_windows.front())->Activate();
     return true;
   }
   wm::WindowState* window_state = wm::GetWindowState(window);
