@@ -901,6 +901,8 @@ void BlinkPlatformImpl::SuspendSharedTimer() {
 }
 
 void BlinkPlatformImpl::ResumeSharedTimer() {
+  DCHECK_GT(shared_timer_suspended_, 0);
+
   // The shared timer may have fired or been adjusted while we were suspended.
   if (--shared_timer_suspended_ == 0 &&
       (!shared_timer_.IsRunning() ||
