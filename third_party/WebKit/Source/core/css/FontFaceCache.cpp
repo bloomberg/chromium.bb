@@ -62,9 +62,9 @@ void FontFaceCache::addFontFace(CSSFontSelector* cssFontSelector, PassRefPtr<Fon
     if (!familyFontFaces)
         familyFontFaces = adoptPtr(new TraitsMap);
 
-    RefPtr<CSSSegmentedFontFace>& segmentedFontFace = familyFontFaces->add(fontFace->traitsMask(), nullptr).storedValue->value;
+    RefPtr<CSSSegmentedFontFace>& segmentedFontFace = familyFontFaces->add(fontFace->traits().mask(), nullptr).storedValue->value;
     if (!segmentedFontFace)
-        segmentedFontFace = CSSSegmentedFontFace::create(cssFontSelector, static_cast<FontTraitsMask>(fontFace->traitsMask()));
+        segmentedFontFace = CSSSegmentedFontFace::create(cssFontSelector, fontFace->traits());
 
     segmentedFontFace->addFontFace(fontFace, cssConnected);
     if (cssConnected)
@@ -89,7 +89,7 @@ void FontFaceCache::removeFontFace(FontFace* fontFace, bool cssConnected)
         return;
     TraitsMap* familyFontFaces = fontFacesIter->value.get();
 
-    TraitsMap::iterator familyFontFacesIter = familyFontFaces->find(fontFace->traitsMask());
+    TraitsMap::iterator familyFontFacesIter = familyFontFaces->find(fontFace->traits().mask());
     if (familyFontFacesIter == familyFontFaces->end())
         return;
     RefPtr<CSSSegmentedFontFace> segmentedFontFace = familyFontFacesIter->value;
@@ -114,45 +114,45 @@ void FontFaceCache::clear()
     m_styleRuleToFontFace.clear();
 }
 
-static inline bool compareFontFaces(CSSSegmentedFontFace* first, CSSSegmentedFontFace* second, FontTraitsMask desiredTraitsMask)
+static inline bool compareFontFaces(CSSSegmentedFontFace* first, CSSSegmentedFontFace* second, FontTraits desiredTraits)
 {
-    FontTraitsMask firstTraitsMask = first->traitsMask();
-    FontTraitsMask secondTraitsMask = second->traitsMask();
+    const FontTraits& firstTraits = first->traits();
+    const FontTraits& secondTraits = second->traits();
 
-    bool firstHasDesiredVariant = firstTraitsMask & desiredTraitsMask & FontVariantMask;
-    bool secondHasDesiredVariant = secondTraitsMask & desiredTraitsMask & FontVariantMask;
+    bool firstHasDesiredVariant = firstTraits.variant() == desiredTraits.variant();
+    bool secondHasDesiredVariant = secondTraits.variant() == desiredTraits.variant();
 
     if (firstHasDesiredVariant != secondHasDesiredVariant)
         return firstHasDesiredVariant;
 
     // We need to check font-variant css property for CSS2.1 compatibility.
-    if (desiredTraitsMask & FontVariantSmallCapsMask) {
+    if (desiredTraits.variant() == FontSmallCapsOn) {
         // Prefer a font that has indicated that it can only support small-caps to a font that claims to support
         // all variants. The specialized font is more likely to be true small-caps and not require synthesis.
-        bool firstRequiresSmallCaps = (firstTraitsMask & FontVariantSmallCapsMask) && !(firstTraitsMask & FontVariantNormalMask);
-        bool secondRequiresSmallCaps = (secondTraitsMask & FontVariantSmallCapsMask) && !(secondTraitsMask & FontVariantNormalMask);
+        bool firstRequiresSmallCaps = firstTraits.variant() == FontSmallCapsOn;
+        bool secondRequiresSmallCaps = secondTraits.variant() == FontSmallCapsOn;
         if (firstRequiresSmallCaps != secondRequiresSmallCaps)
             return firstRequiresSmallCaps;
     }
 
-    bool firstHasDesiredStyle = firstTraitsMask & desiredTraitsMask & FontStyleMask;
-    bool secondHasDesiredStyle = secondTraitsMask & desiredTraitsMask & FontStyleMask;
+    bool firstHasDesiredStyle = firstTraits.style() == desiredTraits.style();
+    bool secondHasDesiredStyle = secondTraits.style() == desiredTraits.style();
 
     if (firstHasDesiredStyle != secondHasDesiredStyle)
         return firstHasDesiredStyle;
 
-    if (desiredTraitsMask & FontStyleItalicMask) {
+    if (desiredTraits.style() == FontItalicOn) {
         // Prefer a font that has indicated that it can only support italics to a font that claims to support
         // all styles. The specialized font is more likely to be the one the author wants used.
-        bool firstRequiresItalics = (firstTraitsMask & FontStyleItalicMask) && !(firstTraitsMask & FontStyleNormalMask);
-        bool secondRequiresItalics = (secondTraitsMask & FontStyleItalicMask) && !(secondTraitsMask & FontStyleNormalMask);
+        bool firstRequiresItalics = firstTraits.style() == FontItalicOn;
+        bool secondRequiresItalics = secondTraits.style() == FontItalicOn;
         if (firstRequiresItalics != secondRequiresItalics)
             return firstRequiresItalics;
     }
-    if ((secondTraitsMask & FontWeightMask) == (desiredTraitsMask & FontWeightMask))
+    if (secondTraits.weight() == desiredTraits.weight())
         return false;
 
-    if ((firstTraitsMask & FontWeightMask) == (desiredTraitsMask & FontWeightMask))
+    if (firstTraits.weight() == desiredTraits.weight())
         return true;
 
     // http://www.w3.org/TR/2011/WD-css3-fonts-20111004/#font-matching-algorithm says :
@@ -160,7 +160,6 @@ static inline bool compareFontFaces(CSSSegmentedFontFace* first, CSSSegmentedFon
     //   - If the desired weight is greater than 500, weights above the desired weight are checked in ascending order followed by weights below the desired weight in descending order until a match is found.
     //   - If the desired weight is 400, 500 is checked first and then the rule for desired weights less than 400 is used.
     //   - If the desired weight is 500, 400 is checked first and then the rule for desired weights less than 400 is used.
-
     static const unsigned fallbackRuleSets = 9;
     static const unsigned rulesPerSet = 8;
     static const FontWeight weightFallbackRuleSets[fallbackRuleSets][rulesPerSet] = {
@@ -175,22 +174,13 @@ static inline bool compareFontFaces(CSSSegmentedFontFace* first, CSSSegmentedFon
         { FontWeight800, FontWeight700, FontWeight600, FontWeight500, FontWeight400, FontWeight300, FontWeight200, FontWeight100 }
     };
 
-    unsigned ruleSetIndex = 0;
-    unsigned w = FontWeight100;
-    unsigned desiredWeight = traitsMaskToWeight(desiredTraitsMask);
-    while (desiredWeight > w) {
-        w++;
-        ruleSetIndex++;
-    }
-
+    unsigned ruleSetIndex = static_cast<unsigned>(desiredTraits.weight());
     ASSERT(ruleSetIndex < fallbackRuleSets);
     const FontWeight* weightFallbackRule = weightFallbackRuleSets[ruleSetIndex];
-    FontWeight firstWeight = traitsMaskToWeight(firstTraitsMask);
-    FontWeight secondWeight = traitsMaskToWeight(secondTraitsMask);
     for (unsigned i = 0; i < rulesPerSet; ++i) {
-        if (secondWeight == weightFallbackRule[i])
+        if (secondTraits.weight() == weightFallbackRule[i])
             return false;
-        if (firstWeight == weightFallbackRule[i])
+        if (firstTraits.weight() == weightFallbackRule[i])
             return true;
     }
 
@@ -207,18 +197,17 @@ CSSSegmentedFontFace* FontFaceCache::get(const FontDescription& fontDescription,
     if (!segmentedFontFaceCache)
         segmentedFontFaceCache = adoptPtr(new TraitsMap);
 
-    FontTraitsMask traitsMask = fontDescription.traitsMask();
-
-    RefPtr<CSSSegmentedFontFace>& face = segmentedFontFaceCache->add(traitsMask, nullptr).storedValue->value;
+    FontTraits traits = fontDescription.traits();
+    RefPtr<CSSSegmentedFontFace>& face = segmentedFontFaceCache->add(traits.mask(), nullptr).storedValue->value;
     if (!face) {
         for (TraitsMap::const_iterator i = familyFontFaces->begin(); i != familyFontFaces->end(); ++i) {
             CSSSegmentedFontFace* candidate = i->value.get();
-            unsigned candidateTraitsMask = candidate->traitsMask();
-            if ((traitsMask & FontStyleNormalMask) && !(candidateTraitsMask & FontStyleNormalMask))
+            FontTraits candidateTraits = candidate->traits();
+            if (traits.style() == FontItalicOff && candidateTraits.style() != FontItalicOff)
                 continue;
-            if ((traitsMask & FontVariantNormalMask) && !(candidateTraitsMask & FontVariantNormalMask))
+            if (traits.variant() == FontSmallCapsOff && candidateTraits.variant() != FontSmallCapsOff)
                 continue;
-            if (!face || compareFontFaces(candidate, face.get(), traitsMask))
+            if (!face || compareFontFaces(candidate, face.get(), traits))
                 face = candidate;
         }
     }

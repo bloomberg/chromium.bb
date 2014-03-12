@@ -35,87 +35,87 @@ namespace WebCore {
 static inline void assertDescriptionMatchesMask(FontDescription& source, FontTraitsMask mask)
 {
     FontDescription target;
-    target.setTraitsMask(mask);
+    target.setTraits(FontTraits(mask));
     EXPECT_EQ(source.italic(), target.italic());
     EXPECT_EQ(source.smallCaps(), target.smallCaps());
     EXPECT_EQ(source.weight(), target.weight());
     EXPECT_EQ(source.stretch(), target.stretch());
 }
 
-TEST(FontDescriptionTest, TestFontTraitsMask)
+TEST(FontDescriptionTest, TestFontTraits)
 {
     FontDescription source;
     source.setItalic(FontItalicOff);
     source.setSmallCaps(FontSmallCapsOff);
     source.setWeight(FontWeightNormal);
     source.setStretch(FontStretchNormal);
-    assertDescriptionMatchesMask(source, source.traitsMask());
+    assertDescriptionMatchesMask(source, source.traits().mask());
 
     source.setItalic(FontItalicOff);
     source.setSmallCaps(FontSmallCapsOff);
     source.setWeight(FontWeightNormal);
     source.setStretch(FontStretchExtraCondensed);
-    assertDescriptionMatchesMask(source, source.traitsMask());
+    assertDescriptionMatchesMask(source, source.traits().mask());
 
     source.setItalic(FontItalicOn);
     source.setSmallCaps(FontSmallCapsOff);
     source.setWeight(FontWeight900);
     source.setStretch(FontStretchUltraExpanded);
-    assertDescriptionMatchesMask(source, source.traitsMask());
+    assertDescriptionMatchesMask(source, source.traits().mask());
 
     source.setItalic(FontItalicOn);
     source.setSmallCaps(FontSmallCapsOn);
     source.setWeight(FontWeight100);
     source.setStretch(FontStretchExtraExpanded);
-    assertDescriptionMatchesMask(source, source.traitsMask());
+    assertDescriptionMatchesMask(source, source.traits().mask());
 
     source.setItalic(FontItalicOn);
     source.setSmallCaps(FontSmallCapsOff);
     source.setWeight(FontWeight900);
     source.setStretch(FontStretchNormal);
-    assertDescriptionMatchesMask(source, source.traitsMask());
+    assertDescriptionMatchesMask(source, source.traits().mask());
 
     source.setItalic(FontItalicOn);
     source.setSmallCaps(FontSmallCapsOff);
     source.setWeight(FontWeight800);
     source.setStretch(FontStretchNormal);
-    assertDescriptionMatchesMask(source, source.traitsMask());
+    assertDescriptionMatchesMask(source, source.traits().mask());
 
     source.setItalic(FontItalicOn);
     source.setSmallCaps(FontSmallCapsOff);
     source.setWeight(FontWeight700);
     source.setStretch(FontStretchNormal);
-    assertDescriptionMatchesMask(source, source.traitsMask());
+    assertDescriptionMatchesMask(source, source.traits().mask());
 
     source.setItalic(FontItalicOn);
     source.setSmallCaps(FontSmallCapsOff);
     source.setWeight(FontWeight600);
     source.setStretch(FontStretchNormal);
-    assertDescriptionMatchesMask(source, source.traitsMask());
+    assertDescriptionMatchesMask(source, source.traits().mask());
 
     source.setItalic(FontItalicOn);
     source.setSmallCaps(FontSmallCapsOff);
     source.setWeight(FontWeight500);
     source.setStretch(FontStretchNormal);
-    assertDescriptionMatchesMask(source, source.traitsMask());
+    assertDescriptionMatchesMask(source, source.traits().mask());
 
     source.setItalic(FontItalicOn);
     source.setSmallCaps(FontSmallCapsOff);
     source.setWeight(FontWeight400);
     source.setStretch(FontStretchNormal);
-    assertDescriptionMatchesMask(source, source.traitsMask());
+    assertDescriptionMatchesMask(source, source.traits().mask());
 
     source.setItalic(FontItalicOn);
     source.setSmallCaps(FontSmallCapsOff);
     source.setWeight(FontWeight300);
     source.setStretch(FontStretchUltraExpanded);
-    assertDescriptionMatchesMask(source, source.traitsMask());
+    assertDescriptionMatchesMask(source, source.traits().mask());
 
     source.setItalic(FontItalicOn);
     source.setSmallCaps(FontSmallCapsOff);
     source.setWeight(FontWeight200);
     source.setStretch(FontStretchNormal);
-    assertDescriptionMatchesMask(source, source.traitsMask());
+    assertDescriptionMatchesMask(source, source.traits().mask());
 }
 
 } // namespace WebCore

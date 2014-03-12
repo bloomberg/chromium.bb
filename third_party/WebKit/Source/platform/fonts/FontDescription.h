@@ -31,7 +31,7 @@
 #include "platform/fonts/FontFeatureSettings.h"
 #include "platform/fonts/FontOrientation.h"
 #include "platform/fonts/FontSmoothingMode.h"
-#include "platform/fonts/FontTraitsMask.h"
+#include "platform/fonts/FontTraits.h"
 #include "platform/fonts/FontWidthVariant.h"
 #include "platform/fonts/TextRenderingMode.h"
 #include "platform/fonts/TypesettingFeatures.h"
@@ -41,44 +41,6 @@
 #include "wtf/RefPtr.h"
 
 namespace WebCore {
-
-enum FontWeight {
-    FontWeight100,
-    FontWeight200,
-    FontWeight300,
-    FontWeight400,
-    FontWeight500,
-    FontWeight600,
-    FontWeight700,
-    FontWeight800,
-    FontWeight900,
-    FontWeightNormal = FontWeight400,
-    FontWeightBold = FontWeight700
-};
-
-// Numeric values matching OS/2 & Windows Metrics usWidthClass table.
-// https://www.microsoft.com/typography/otspec/os2.htm
-enum FontStretch {
-    FontStretchUltraCondensed = 1,
-    FontStretchExtraCondensed = 2,
-    FontStretchCondensed = 3,
-    FontStretchSemiCondensed = 4,
-    FontStretchNormal = 5,
-    FontStretchSemiExpanded = 6,
-    FontStretchExpanded = 7,
-    FontStretchExtraExpanded = 8,
-    FontStretchUltraExpanded = 9
-};
-
-enum FontItalic {
-    FontItalicOff = 0,
-    FontItalicOn = 1
-};
-
-enum FontSmallCaps {
-    FontSmallCapsOff = 0,
-    FontSmallCapsOn = 1
-};
 
 class PLATFORM_EXPORT FontDescription {
 public:
@@ -157,7 +119,7 @@ public:
     bool isSyntheticItalic() const { return m_syntheticItalic; }
     bool useSubpixelPositioning() const { return m_subpixelTextPosition; }
 
-    FontTraitsMask traitsMask() const;
+    FontTraits traits() const;
     float wordSpacing() const { return m_wordSpacing; }
     float letterSpacing() const { return m_letterSpacing; }
     bool isSpecifiedFont() const { return m_isSpecifiedFont; }
@@ -168,7 +130,7 @@ public:
     FontDescription makeNormalFeatureSettings() const;
 
     float effectiveFontSize() const; // Returns either the computedSize or the computedPixelSize
-    FontCacheKey cacheKey(const AtomicString& familyName, FontTraitsMask desiredTraits = static_cast<FontTraitsMask>(0)) const;
+    FontCacheKey cacheKey(const AtomicString& familyName, FontTraits desiredTraits = FontTraits(0)) const;
 
     void setFamily(const FontFamily& family) { m_familyList = family; }
     void setComputedSize(float s) { m_computedSize = clampToFloat(s); }
@@ -198,7 +160,7 @@ public:
     void setSyntheticBold(bool syntheticBold) { m_syntheticBold = syntheticBold; }
     void setSyntheticItalic(bool syntheticItalic) { m_syntheticItalic = syntheticItalic; }
     void setFeatureSettings(PassRefPtr<FontFeatureSettings> settings) { m_featureSettings = settings; }
-    void setTraitsMask(FontTraitsMask);
+    void setTraits(FontTraits);
     void setWordSpacing(float s) { m_wordSpacing = s; }
     void setLetterSpacing(float s) { m_letterSpacing = s; }
 
@@ -294,16 +256,6 @@ inline bool FontDescription::operator==(const FontDescription& other) const
         && m_syntheticItalic == other.m_syntheticItalic
         && m_featureSettings == other.m_featureSettings
         && m_subpixelTextPosition == other.m_subpixelTextPosition;
-}
-
-inline FontWeight traitsMaskToWeight(unsigned mask)
-{
-    return static_cast<FontWeight>((mask & FontWeightMask) >> FontWeightBit1);
-}
-
-inline unsigned weightToTraitsMask(FontWeight weight)
-{
-    return weight << FontWeightBit1;
 }
 
 }

@@ -95,20 +95,17 @@ FontWeight FontDescription::bolderWeight(void) const
     return FontWeightNormal;
 }
 
-FontTraitsMask FontDescription::traitsMask() const
+FontTraits FontDescription::traits() const
 {
-    return static_cast<FontTraitsMask>((m_italic ? FontStyleItalicMask : FontStyleNormalMask)
-            | (m_smallCaps ? FontVariantSmallCapsMask : FontVariantNormalMask)
-            | weightToTraitsMask(weight())
-            | (m_stretch << FontStretchBit1));
+    return FontTraits(italic(), smallCaps(), weight(), stretch());
 }
 
-void FontDescription::setTraitsMask(FontTraitsMask traitsMask)
+void FontDescription::setTraits(FontTraits traits)
 {
-    setWeight(traitsMaskToWeight(traitsMask));
-    setItalic((traitsMask & FontStyleItalicMask) ? FontItalicOn : FontItalicOff);
-    setSmallCaps((traitsMask & FontVariantSmallCapsMask) ? FontSmallCapsOn : FontSmallCapsOff);
-    setStretch(static_cast<FontStretch>((traitsMask & FontStretchMask) >> FontStretchBit1));
+    setItalic(traits.style());
+    setSmallCaps(traits.variant());
+    setWeight(traits.weight());
+    setStretch(traits.stretch());
 }
 
 FontDescription FontDescription::makeNormalFeatureSettings() const
@@ -129,11 +126,11 @@ float FontDescription::effectiveFontSize() const
     return floorf(size * FontCacheKey::precisionMultiplier()) / FontCacheKey::precisionMultiplier();
 }
 
-FontCacheKey FontDescription::cacheKey(const AtomicString& familyName, FontTraitsMask desiredTraits) const
+FontCacheKey FontDescription::cacheKey(const AtomicString& familyName, FontTraits desiredTraits) const
 {
-    FontTraitsMask traits = desiredTraits
+    FontTraits fontTraits = desiredTraits.mask()
         ? desiredTraits
-        : traitsMask();
+        : traits();
 
     unsigned options =
         static_cast<unsigned>(m_syntheticItalic) << 8 | // bit 9
@@ -144,7 +141,7 @@ FontCacheKey FontDescription::cacheKey(const AtomicString& familyName, FontTrait
         static_cast<unsigned>(m_usePrinterFont) << 1 | // bit 2
         static_cast<unsigned>(m_subpixelTextPosition); // bit 1
 
-    return FontCacheKey(familyName, effectiveFontSize(), options | traits << 9);
+    return FontCacheKey(familyName, effectiveFontSize(), options | fontTraits.mask() << 9);
 }
 
 

@@ -55,7 +55,6 @@
 #include "core/frame/Settings.h"
 #include "core/svg/SVGFontFaceElement.h"
 #include "platform/fonts/FontDescription.h"
-#include "platform/fonts/FontTraitsMask.h"
 
 namespace WebCore {
 
@@ -170,7 +169,7 @@ PassRefPtr<FontFace> FontFace::create(Document* document, const StyleRuleFontFac
         && fontFace->setPropertyFromStyle(properties, CSSPropertyFontVariant)
         && fontFace->setPropertyFromStyle(properties, CSSPropertyWebkitFontFeatureSettings)
         && !fontFace->family().isEmpty()
-        && fontFace->traitsMask()) {
+        && fontFace->traits().mask()) {
         fontFace->initCSSFontFace(document);
         return fontFace;
     }
@@ -362,7 +361,7 @@ void FontFace::load(ExecutionContext* context)
     FontFamily fontFamily;
     fontFamily.setFamily(m_family);
     fontDescription.setFamily(fontFamily);
-    fontDescription.setTraitsMask(static_cast<FontTraitsMask>(traitsMask()));
+    fontDescription.setTraits(traits());
 
     CSSFontSelector* fontSelector = toDocument(context)->styleEngine()->fontSelector();
     m_cssFontFace->load(fontDescription, fontSelector);
@@ -387,27 +386,24 @@ void FontFace::resolveReadyPromises()
     m_readyResolvers.clear();
 }
 
-unsigned FontFace::traitsMask() const
+FontTraits FontFace::traits() const
 {
-    unsigned traitsMask = 0;
-
+    FontItalic style = FontItalicOff;
     if (m_style) {
         if (!m_style->isPrimitiveValue())
             return 0;
 
         switch (toCSSPrimitiveValue(m_style.get())->getValueID()) {
         case CSSValueNormal:
-            traitsMask |= FontStyleNormalMask;
+            style = FontItalicOff;
             break;
         case CSSValueItalic:
         case CSSValueOblique:
-            traitsMask |= FontStyleItalicMask;
+            style = FontItalicOn;
             break;
         default:
             break;
         }
-    } else {
-        traitsMask |= FontStyleNormalMask;
     }
 
     FontWeight weight = FontWeight400;
@@ -451,8 +447,8 @@ unsigned FontFace::traitsMask() const
             break;
         }
     }
-    traitsMask |= weightToTraitsMask(weight);
 
+    FontSmallCaps variant = FontSmallCapsOff;
     if (RefPtrWillBeRawPtr<CSSValue> fontVariant = m_variant) {
         // font-variant descriptor can be a value list.
         if (fontVariant->isPrimitiveValue()) {
@@ -471,19 +467,18 @@ unsigned FontFace::traitsMask() const
         for (unsigned i = 0; i < numVariants; ++i) {
             switch (toCSSPrimitiveValue(variantList->itemWithoutBoundsCheck(i))->getValueID()) {
             case CSSValueNormal:
-                traitsMask |= FontVariantNormalMask;
+                variant = FontSmallCapsOff;
                 break;
             case CSSValueSmallCaps:
-                traitsMask |= FontVariantSmallCapsMask;
+                variant = FontSmallCapsOn;
                 break;
             default:
                 break;
             }
         }
-    } else {
-        traitsMask |= FontVariantNormalMask;
     }
-    return traitsMask;
+
+    return FontTraits(style, variant, weight, FontStretchNormal);
 }
 
 void FontFace::initCSSFontFace(Document* document)

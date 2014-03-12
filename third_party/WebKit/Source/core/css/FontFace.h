@@ -34,6 +34,7 @@
 #include "CSSPropertyNames.h"
 #include "bindings/v8/ScriptPromise.h"
 #include "core/css/CSSValue.h"
+#include "platform/fonts/FontTraits.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
@@ -82,7 +83,7 @@ public:
 
     LoadStatus loadStatus() const { return m_status; }
     void setLoadStatus(LoadStatus);
-    unsigned traitsMask() const;
+    FontTraits traits() const;
     CSSFontFace* cssFontFace() { return m_cssFontFace.get(); }
 
     void trace(Visitor*);
