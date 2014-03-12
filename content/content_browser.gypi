@@ -725,6 +725,8 @@
     'browser/loader/stream_resource_handler.h',
     'browser/loader/sync_resource_handler.cc',
     'browser/loader/sync_resource_handler.h',
+    'browser/loader/temporary_file_stream.cc',
+    'browser/loader/temporary_file_stream.h',
     'browser/loader/throttling_resource_handler.cc',
     'browser/loader/throttling_resource_handler.h',
     'browser/loader/upload_data_stream_builder.cc',

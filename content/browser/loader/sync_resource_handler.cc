@@ -86,6 +86,18 @@ bool SyncResourceHandler::OnResponseStarted(
 
   DevToolsNetLogObserver::PopulateResponseInfo(request(), response);
 
+  // If the parent handler downloaded the resource to a file, grant the child
+  // read permissions on it. Note: there is similar logic in
+  // AsyncResourceHandler.
+  //
+  // TODO(davidben): Can we remove support for download_file in sync requests
+  // altogether? I don't think Blink ever makes such requests.
+  if (!response->head.download_file_path.empty()) {
+    rdh_->RegisterDownloadedTempFile(
+        info->GetChildID(), info->GetRequestID(),
+        response->head.download_file_path);
+  }
+
   // We don't care about copying the status here.
   result_.headers = response->head.headers;
   result_.mime_type = response->head.mime_type;

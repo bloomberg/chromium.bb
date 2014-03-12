@@ -4,7 +4,9 @@
 
 #include <vector>
 
+#include "base/basictypes.h"
 #include "base/bind.h"
+#include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
@@ -32,6 +34,7 @@
 #include "content/public/common/process_type.h"
 #include "content/public/common/resource_response.h"
 #include "content/public/test/test_browser_context.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/test/test_content_browser_client.h"
 #include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
@@ -46,9 +49,12 @@
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/common/appcache/appcache_interfaces.h"
+#include "webkit/common/blob/shareable_file_reference.h"
 
 // TODO(eroman): Write unit tests for SafeBrowsing that exercise
 //               SafeBrowsingResourceHandler.
+
+using webkit_blob::ShareableFileReference;
 
 namespace content {
 
@@ -86,6 +92,7 @@ static int RequestIDForMessage(const IPC::Message& msg) {
     case ResourceMsg_ReceivedRedirect::ID:
     case ResourceMsg_SetDataBuffer::ID:
     case ResourceMsg_DataReceived::ID:
+    case ResourceMsg_DataDownloaded::ID:
     case ResourceMsg_RequestComplete::ID: {
       bool result = PickleIterator(msg).ReadInt(&request_id);
       DCHECK(result);
@@ -181,6 +188,7 @@ class ForwardingFilter : public ResourceMessageFilter {
                    base::Unretained(this))),
       dest_(dest),
       resource_context_(resource_context) {
+    ChildProcessSecurityPolicyImpl::GetInstance()->Add(child_id());
     set_peer_pid_for_testing(base::GetCurrentProcId());
   }
 
@@ -559,30 +567,45 @@ class TestResourceDispatcherHostDelegate
   scoped_ptr<base::SupportsUserData::Data> user_data_;
 };
 
+// Waits for a ShareableFileReference to be released.
+class ShareableFileReleaseWaiter {
+ public:
+  ShareableFileReleaseWaiter(const base::FilePath& path) {
+    scoped_refptr<ShareableFileReference> file =
+        ShareableFileReference::Get(path);
+    file->AddFinalReleaseCallback(
+        base::Bind(&ShareableFileReleaseWaiter::Released,
+                   base::Unretained(this)));
+  }
+
+  void Wait() {
+    loop_.Run();
+  }
+
+ private:
+  void Released(const base::FilePath& path) {
+    loop_.Quit();
+  }
+
+  base::RunLoop loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(ShareableFileReleaseWaiter);
+};
+
 class ResourceDispatcherHostTest : public testing::Test,
                                    public IPC::Sender {
  public:
   ResourceDispatcherHostTest()
-      : ui_thread_(BrowserThread::UI, &message_loop_),
-        file_thread_(BrowserThread::FILE_USER_BLOCKING, &message_loop_),
-        cache_thread_(BrowserThread::CACHE, &message_loop_),
-        io_thread_(BrowserThread::IO, &message_loop_),
+      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
         old_factory_(NULL),
         send_data_received_acks_(false) {
     browser_context_.reset(new TestBrowserContext());
     BrowserContext::EnsureResourceContextInitialized(browser_context_.get());
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     ResourceContext* resource_context = browser_context_->GetResourceContext();
     filter_ = new ForwardingFilter(this, resource_context);
     resource_context->GetRequestContext()->set_network_delegate(
         &network_delegate_);
-  }
-
-  virtual ~ResourceDispatcherHostTest() {
-    for (std::set<int>::iterator it = child_ids_.begin();
-         it != child_ids_.end(); ++it) {
-      host_.CancelRequestsForProcess(*it);
-    }
   }
 
   // IPC::Sender implementation
@@ -594,13 +617,18 @@ class ResourceDispatcherHostTest : public testing::Test,
       GenerateDataReceivedACK(*msg);
     }
 
+    if (wait_for_request_complete_loop_ &&
+        msg->type() == ResourceMsg_RequestComplete::ID) {
+      wait_for_request_complete_loop_->Quit();
+    }
+
     delete msg;
     return true;
   }
 
  protected:
   // testing::Test
-  virtual void SetUp() {
+  virtual void SetUp() OVERRIDE {
     DCHECK(!test_fixture_);
     test_fixture_ = this;
     ChildProcessSecurityPolicyImpl::GetInstance()->Add(0);
@@ -626,6 +654,11 @@ class ResourceDispatcherHostTest : public testing::Test,
     DCHECK(test_fixture_ == this);
     test_fixture_ = NULL;
 
+    for (std::set<int>::iterator it = child_ids_.begin();
+         it != child_ids_.end(); ++it) {
+      host_.CancelRequestsForProcess(*it);
+    }
+
     host_.Shutdown();
 
     ChildProcessSecurityPolicyImpl::GetInstance()->Remove(0);
@@ -638,7 +671,7 @@ class ResourceDispatcherHostTest : public testing::Test,
     WorkerServiceImpl::GetInstance()->PerformTeardownForTesting();
 
     browser_context_.reset();
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   // Creates a request using the current test object as the filter and
@@ -774,11 +807,14 @@ class ResourceDispatcherHostTest : public testing::Test,
     return old_filter;
   }
 
-  base::MessageLoopForIO message_loop_;
-  BrowserThreadImpl ui_thread_;
-  BrowserThreadImpl file_thread_;
-  BrowserThreadImpl cache_thread_;
-  BrowserThreadImpl io_thread_;
+  void WaitForRequestComplete() {
+    DCHECK(!wait_for_request_complete_loop_);
+    wait_for_request_complete_loop_.reset(new base::RunLoop);
+    wait_for_request_complete_loop_->Run();
+    wait_for_request_complete_loop_.reset();
+  }
+
+  content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<TestBrowserContext> browser_context_;
   scoped_refptr<ForwardingFilter> filter_;
   net::TestNetworkDelegate network_delegate_;
@@ -790,6 +826,7 @@ class ResourceDispatcherHostTest : public testing::Test,
   net::URLRequest::ProtocolFactory* old_factory_;
   bool send_data_received_acks_;
   std::set<int> child_ids_;
+  scoped_ptr<base::RunLoop> wait_for_request_complete_loop_;
   static ResourceDispatcherHostTest* test_fixture_;
   static bool delay_start_;
   static bool delay_complete_;
@@ -2710,6 +2747,163 @@ TEST_F(ResourceDispatcherHostTest, DataReceivedUnexpectedACKs) {
     msgs.clear();
     accum_.GetClassifiedMessages(&msgs);
   }
+}
+
+// Tests the dispatcher host's temporary file management.
+TEST_F(ResourceDispatcherHostTest, RegisterDownloadedTempFile) {
+  const int kRequestID = 1;
+
+  // Create a temporary file.
+  base::FilePath file_path;
+  ASSERT_TRUE(base::CreateTemporaryFile(&file_path));
+  scoped_refptr<ShareableFileReference> deletable_file =
+      ShareableFileReference::GetOrCreate(
+          file_path,
+          ShareableFileReference::DELETE_ON_FINAL_RELEASE,
+          BrowserThread::GetMessageLoopProxyForThread(
+              BrowserThread::FILE).get());
+
+  // Not readable.
+  EXPECT_FALSE(ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
+      filter_->child_id(), file_path));
+
+  // Register it for a resource request.
+  host_.RegisterDownloadedTempFile(filter_->child_id(), kRequestID, file_path);
+
+  // Should be readable now.
+  EXPECT_TRUE(ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
+      filter_->child_id(), file_path));
+
+  // The child releases from the request.
+  bool msg_was_ok = true;
+  ResourceHostMsg_ReleaseDownloadedFile release_msg(kRequestID);
+  host_.OnMessageReceived(release_msg, filter_, &msg_was_ok);
+  ASSERT_TRUE(msg_was_ok);
+
+  // Still readable because there is another reference to the file. (The child
+  // may take additional blob references.)
+  EXPECT_TRUE(ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
+      filter_->child_id(), file_path));
+
+  // Release extra references and wait for the file to be deleted. (This relies
+  // on the delete happening on the FILE thread which is mapped to main thread
+  // in this test.)
+  deletable_file = NULL;
+  base::RunLoop().RunUntilIdle();
+
+  // The file is no longer readable to the child and has been deleted.
+  EXPECT_FALSE(ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
+      filter_->child_id(), file_path));
+  EXPECT_FALSE(base::PathExists(file_path));
+}
+
+// Tests that temporary files held on behalf of child processes are released
+// when the child process dies.
+TEST_F(ResourceDispatcherHostTest, ReleaseTemporiesOnProcessExit) {
+  const int kRequestID = 1;
+
+  // Create a temporary file.
+  base::FilePath file_path;
+  ASSERT_TRUE(base::CreateTemporaryFile(&file_path));
+  scoped_refptr<ShareableFileReference> deletable_file =
+      ShareableFileReference::GetOrCreate(
+          file_path,
+          ShareableFileReference::DELETE_ON_FINAL_RELEASE,
+          BrowserThread::GetMessageLoopProxyForThread(
+              BrowserThread::FILE).get());
+
+  // Register it for a resource request.
+  host_.RegisterDownloadedTempFile(filter_->child_id(), kRequestID, file_path);
+  deletable_file = NULL;
+
+  // Should be readable now.
+  EXPECT_TRUE(ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
+      filter_->child_id(), file_path));
+
+  // Let the process die.
+  filter_->OnChannelClosing();
+  base::RunLoop().RunUntilIdle();
+
+  // The file is no longer readable to the child and has been deleted.
+  EXPECT_FALSE(ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
+      filter_->child_id(), file_path));
+  EXPECT_FALSE(base::PathExists(file_path));
+}
+
+TEST_F(ResourceDispatcherHostTest, DownloadToFile) {
+  // Make a request which downloads to file.
+  ResourceHostMsg_Request request = CreateResourceRequest(
+      "GET", ResourceType::SUB_RESOURCE, net::URLRequestTestJob::test_url_1());
+  request.download_to_file = true;
+  ResourceHostMsg_RequestResource request_msg(0, 1, request);
+  bool msg_was_ok;
+  host_.OnMessageReceived(request_msg, filter_, &msg_was_ok);
+  ASSERT_TRUE(msg_was_ok);
+
+  // Running the message loop until idle does not work because
+  // RedirectToFileResourceHandler posts things to base::WorkerPool. Instead,
+  // wait for the ResourceMsg_RequestComplete to go out. Then run the event loop
+  // until idle so the loader is gone.
+  WaitForRequestComplete();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(0, host_.pending_requests());
+
+  ResourceIPCAccumulator::ClassifiedMessages msgs;
+  accum_.GetClassifiedMessages(&msgs);
+
+  ASSERT_EQ(1U, msgs.size());
+  const std::vector<IPC::Message>& messages = msgs[0];
+
+  // The request should contain the following messages:
+  //     ReceivedResponse    (indicates headers received and filename)
+  //     DataDownloaded*     (bytes downloaded and total length)
+  //     RequestComplete     (request is done)
+
+  // ReceivedResponse
+  ResourceResponseHead response_head;
+  GetResponseHead(messages, &response_head);
+  ASSERT_FALSE(response_head.download_file_path.empty());
+
+  // DataDownloaded
+  size_t total_len = 0;
+  for (size_t i = 1; i < messages.size() - 1; i++) {
+    ASSERT_EQ(ResourceMsg_DataDownloaded::ID, messages[i].type());
+    PickleIterator iter(messages[i]);
+    int request_id, data_len;
+    ASSERT_TRUE(IPC::ReadParam(&messages[i], &iter, &request_id));
+    ASSERT_TRUE(IPC::ReadParam(&messages[i], &iter, &data_len));
+    total_len += data_len;
+  }
+  EXPECT_EQ(net::URLRequestTestJob::test_data_1().size(), total_len);
+
+  // RequestComplete
+  CheckRequestCompleteErrorCode(messages.back(), net::OK);
+
+  // Verify that the data ended up in the temporary file.
+  std::string contents;
+  ASSERT_TRUE(base::ReadFileToString(response_head.download_file_path,
+                                     &contents));
+  EXPECT_EQ(net::URLRequestTestJob::test_data_1(), contents);
+
+  // The file should be readable by the child.
+  EXPECT_TRUE(ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
+      filter_->child_id(), response_head.download_file_path));
+
+  // When the renderer releases the file, it should be deleted. Again,
+  // RunUntilIdle doesn't work because base::WorkerPool is involved.
+  ShareableFileReleaseWaiter waiter(response_head.download_file_path);
+  ResourceHostMsg_ReleaseDownloadedFile release_msg(1);
+  host_.OnMessageReceived(release_msg, filter_, &msg_was_ok);
+  ASSERT_TRUE(msg_was_ok);
+  waiter.Wait();
+  // The release callback runs before the delete is scheduled, so pump the
+  // message loop for the delete itself. (This relies on the delete happening on
+  // the FILE thread which is mapped to main thread in this test.)
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(base::PathExists(response_head.download_file_path));
+  EXPECT_FALSE(ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
+      filter_->child_id(), response_head.download_file_path));
 }
 
 }  // namespace content

@@ -186,7 +186,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // no longer needed.
   void RegisterDownloadedTempFile(
       int child_id, int request_id,
-      webkit_blob::ShareableFileReference* reference);
+      const base::FilePath& file_path);
   void UnregisterDownloadedTempFile(int child_id, int request_id);
 
   // Needed for the sync IPC message dispatcher macros.

@@ -24,6 +24,15 @@ typedef std::list<URLRequestTestJob*> URLRequestJobList;
 base::LazyInstance<URLRequestJobList>::Leaky
     g_pending_jobs = LAZY_INSTANCE_INITIALIZER;
 
+class TestJobProtocolHandler : public URLRequestJobFactory::ProtocolHandler {
+ public:
+  // URLRequestJobFactory::ProtocolHandler implementation:
+  virtual URLRequestJob* MaybeCreateJob(
+      URLRequest* request, NetworkDelegate* network_delegate) const OVERRIDE {
+    return new URLRequestTestJob(request, network_delegate);
+  }
+};
+
 }  // namespace
 
 // static getters for known URLs
@@ -98,10 +107,9 @@ std::string URLRequestTestJob::test_error_headers() {
 }
 
 // static
-URLRequestJob* URLRequestTestJob::Factory(URLRequest* request,
-                                          NetworkDelegate* network_delegate,
-                                          const std::string& scheme) {
-  return new URLRequestTestJob(request, network_delegate);
+URLRequestJobFactory::ProtocolHandler*
+URLRequestTestJob::CreateProtocolHandler() {
+  return new TestJobProtocolHandler();
 }
 
 URLRequestTestJob::URLRequestTestJob(URLRequest* request,
