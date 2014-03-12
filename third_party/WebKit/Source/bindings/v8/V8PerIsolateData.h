@@ -66,7 +66,6 @@ public:
     static void dispose(v8::Isolate*);
     static v8::Isolate* mainThreadIsolate();
 
-    bool isMainThread() { return m_isMainThread; }
     v8::Isolate* isolate() { return m_isolate; }
 
     v8::Handle<v8::FunctionTemplate> toStringTemplate();
@@ -114,7 +113,6 @@ private:
 
     v8::Isolate* m_isolate;
     OwnPtr<gin::IsolateHolder> m_isolateHolder;
-    bool m_isMainThread; // Caches the result of isMainThread() for performance.
     DOMTemplateMap m_domTemplateMapForMainWorld;
     DOMTemplateMap m_domTemplateMapForNonMainWorld;
     ScopedPersistent<v8::FunctionTemplate> m_toStringTemplate;

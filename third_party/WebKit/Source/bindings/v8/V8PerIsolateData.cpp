@@ -43,7 +43,6 @@ static V8PerIsolateData* mainThreadPerIsolateData = 0;
 V8PerIsolateData::V8PerIsolateData(v8::Isolate* isolate)
     : m_isolate(isolate)
     , m_isolateHolder(adoptPtr(new gin::IsolateHolder(m_isolate, v8ArrayBufferAllocator())))
-    , m_isMainThread(WTF::isMainThread())
     , m_stringCache(adoptPtr(new StringCache()))
     , m_hiddenValue(adoptPtr(new V8HiddenValue()))
     , m_constructorMode(ConstructorMode::CreateNewObject)
@@ -54,19 +53,19 @@ V8PerIsolateData::V8PerIsolateData(v8::Isolate* isolate)
     , m_gcEventData(adoptPtr(new GCEventData()))
     , m_performingMicrotaskCheckpoint(false)
 {
-    if (m_isMainThread)
+    if (isMainThread())
         mainThreadPerIsolateData = this;
 }
 
 V8PerIsolateData::~V8PerIsolateData()
 {
-    if (m_isMainThread)
+    if (isMainThread())
         mainThreadPerIsolateData = 0;
 }
 
 v8::Isolate* V8PerIsolateData::mainThreadIsolate()
 {
-    ASSERT(WTF::isMainThread());
+    ASSERT(isMainThread());
     ASSERT(mainThreadPerIsolateData);
     return mainThreadPerIsolateData->isolate();
 }
