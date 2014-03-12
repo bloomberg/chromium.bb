@@ -192,7 +192,7 @@ class P2PSocketHostUdpTest : public testing::Test {
     socket_host_->socket_.reset(socket_);
 
     local_address_ = ParseAddress(kTestLocalIpAddress, kTestPort1);
-    socket_host_->Init(local_address_, net::IPEndPoint());
+    socket_host_->Init(local_address_, P2PHostAndIPEndPoint());
 
     dest1_ = ParseAddress(kTestIpAddress1, kTestPort1);
     dest2_ = ParseAddress(kTestIpAddress2, kTestPort2);

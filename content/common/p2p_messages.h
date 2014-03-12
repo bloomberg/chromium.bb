@@ -9,7 +9,6 @@
 #include "content/common/content_export.h"
 #include "content/common/p2p_socket_type.h"
 #include "ipc/ipc_message_macros.h"
-#include "net/base/ip_endpoint.h"
 #include "net/base/net_util.h"
 #include "third_party/libjingle/source/talk/base/asyncpacketsocket.h"
 
@@ -40,6 +39,11 @@ IPC_STRUCT_TRAITS_END()
 IPC_STRUCT_TRAITS_BEGIN(talk_base::PacketOptions)
   IPC_STRUCT_TRAITS_MEMBER(dscp)
   IPC_STRUCT_TRAITS_MEMBER(packet_time_params)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(content::P2PHostAndIPEndPoint)
+  IPC_STRUCT_TRAITS_MEMBER(hostname)
+  IPC_STRUCT_TRAITS_MEMBER(ip_address)
 IPC_STRUCT_TRAITS_END()
 
 // P2P Socket messages sent from the browser to the renderer.
@@ -86,7 +90,7 @@ IPC_MESSAGE_CONTROL4(P2PHostMsg_CreateSocket,
                      content::P2PSocketType /* type */,
                      int /* socket_id */,
                      net::IPEndPoint /* local_address */,
-                     net::IPEndPoint /* remote_address */)
+                     content::P2PHostAndIPEndPoint /* remote_address */)
 
 IPC_MESSAGE_CONTROL3(P2PHostMsg_AcceptIncomingTcpConnection,
                     int /* listen_socket_id */,

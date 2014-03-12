@@ -65,7 +65,7 @@ bool P2PSocketHostTcpBase::InitAccepted(const net::IPEndPoint& remote_address,
   DCHECK(socket);
   DCHECK_EQ(state_, STATE_UNINITIALIZED);
 
-  remote_address_ = remote_address;
+  remote_address_.ip_address = remote_address;
   // TODO(ronghuawu): Add FakeSSLServerSocket.
   socket_.reset(socket);
   state_ = STATE_OPEN;
@@ -74,14 +74,14 @@ bool P2PSocketHostTcpBase::InitAccepted(const net::IPEndPoint& remote_address,
 }
 
 bool P2PSocketHostTcpBase::Init(const net::IPEndPoint& local_address,
-                                const net::IPEndPoint& remote_address) {
+                                const P2PHostAndIPEndPoint& remote_address) {
   DCHECK_EQ(state_, STATE_UNINITIALIZED);
 
   remote_address_ = remote_address;
   state_ = STATE_CONNECTING;
 
   net::HostPortPair dest_host_port_pair =
-      net::HostPortPair::FromIPEndPoint(remote_address);
+      net::HostPortPair::FromIPEndPoint(remote_address.ip_address);
   // TODO(mallinath) - We are ignoring local_address altogether. We should
   // find a way to inject this into ProxyResolvingClientSocket. This could be
   // a problem on multi-homed host.
@@ -173,7 +173,10 @@ void P2PSocketHostTcpBase::StartTls() {
   // Default ssl config.
   const net::SSLConfig ssl_config;
   net::HostPortPair dest_host_port_pair =
-      net::HostPortPair::FromIPEndPoint(remote_address_);
+      net::HostPortPair::FromIPEndPoint(remote_address_.ip_address);
+  if (!remote_address_.hostname.empty())
+    dest_host_port_pair.set_host(remote_address_.hostname);
+
   net::ClientSocketFactory* socket_factory =
       net::ClientSocketFactory::GetDefaultFactory();
   DCHECK(socket_factory);
@@ -273,7 +276,7 @@ void P2PSocketHostTcpBase::OnPacket(const std::vector<char>& data) {
       connected_ = true;
     } else if (!stun || type == STUN_DATA_INDICATION) {
       LOG(ERROR) << "Received unexpected data packet from "
-                 << remote_address_.ToString()
+                 << remote_address_.ip_address.ToString()
                  << " before STUN binding is finished. "
                  << "Terminating connection.";
       OnError();
@@ -282,7 +285,7 @@ void P2PSocketHostTcpBase::OnPacket(const std::vector<char>& data) {
   }
 
   message_sender_->Send(new P2PMsg_OnDataReceived(
-      id_, remote_address_, data, base::TimeTicks::Now()));
+      id_, remote_address_.ip_address, data, base::TimeTicks::Now()));
 }
 
 // Note: dscp is not actually used on TCP sockets as this point,
@@ -297,7 +300,7 @@ void P2PSocketHostTcpBase::Send(const net::IPEndPoint& to,
     return;
   }
 
-  if (!(to == remote_address_)) {
+  if (!(to == remote_address_.ip_address)) {
     // Renderer should use this socket only to send data to |remote_address_|.
     NOTREACHED();
     OnError();

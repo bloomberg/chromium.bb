@@ -41,7 +41,7 @@ P2PSocketHostTcpServer::~P2PSocketHostTcpServer() {
 }
 
 bool P2PSocketHostTcpServer::Init(const net::IPEndPoint& local_address,
-                                  const net::IPEndPoint& remote_address) {
+                                  const P2PHostAndIPEndPoint& remote_address) {
   DCHECK_EQ(state_, STATE_UNINITIALIZED);
 
   int result = socket_->Listen(local_address, kListenBacklog);

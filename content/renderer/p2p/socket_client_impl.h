@@ -35,7 +35,7 @@ class P2PSocketClientImpl : public P2PSocketClient {
   // P2P_SOCKET_TCP_CLIENT.
   virtual void Init(P2PSocketType type,
                     const net::IPEndPoint& local_address,
-                    const net::IPEndPoint& remote_address,
+                    const P2PHostAndIPEndPoint& remote_address,
                     P2PSocketClientDelegate* delegate);
 
   // Send the |data| to the |address|.
@@ -96,7 +96,7 @@ class P2PSocketClientImpl : public P2PSocketClient {
   // Scheduled on the IPC thread to finish initialization.
   void DoInit(P2PSocketType type,
               const net::IPEndPoint& local_address,
-              const net::IPEndPoint& remote_address);
+              const P2PHostAndIPEndPoint& remote_address);
 
   // Scheduled on the IPC thread to finish closing the connection.
   void DoClose();

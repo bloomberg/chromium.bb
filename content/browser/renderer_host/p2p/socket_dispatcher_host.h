@@ -69,7 +69,7 @@ class P2PSocketDispatcherHost
   void OnCreateSocket(P2PSocketType type,
                       int socket_id,
                       const net::IPEndPoint& local_address,
-                      const net::IPEndPoint& remote_address);
+                      const P2PHostAndIPEndPoint& remote_address);
   void OnAcceptIncomingTcpConnection(int listen_socket_id,
                                      const net::IPEndPoint& remote_address,
                                      int connected_socket_id);

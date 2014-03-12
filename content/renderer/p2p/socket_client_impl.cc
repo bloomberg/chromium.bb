@@ -25,17 +25,6 @@ uint64 GetUniqueId(uint32 random_socket_id, uint32 packet_id) {
 
 namespace content {
 
-scoped_refptr<P2PSocketClient> P2PSocketClient::Create(
-    P2PSocketType type,
-    const net::IPEndPoint& local_address,
-    const net::IPEndPoint& remote_address,
-    P2PSocketClientDelegate* delegate) {
-  P2PSocketClientImpl* impl = new P2PSocketClientImpl(
-      RenderThreadImpl::current()->p2p_socket_dispatcher());
-  impl->Init(type, local_address, remote_address, delegate);
-  return impl;
-}
-
 P2PSocketClientImpl::P2PSocketClientImpl(P2PSocketDispatcher* dispatcher)
     : dispatcher_(dispatcher),
       ipc_message_loop_(dispatcher->message_loop()),
@@ -54,7 +43,7 @@ P2PSocketClientImpl::~P2PSocketClientImpl() {
 void P2PSocketClientImpl::Init(
     P2PSocketType type,
     const net::IPEndPoint& local_address,
-    const net::IPEndPoint& remote_address,
+    const P2PHostAndIPEndPoint& remote_address,
     P2PSocketClientDelegate* delegate) {
   DCHECK(delegate_message_loop_->BelongsToCurrentThread());
   // |delegate_| is only accessesed on |delegate_message_loop_|.
@@ -70,7 +59,7 @@ void P2PSocketClientImpl::Init(
 
 void P2PSocketClientImpl::DoInit(P2PSocketType type,
                                  const net::IPEndPoint& local_address,
-                                 const net::IPEndPoint& remote_address) {
+                                 const P2PHostAndIPEndPoint& remote_address) {
   DCHECK_EQ(state_, STATE_UNINITIALIZED);
   DCHECK(delegate_);
   state_ = STATE_OPENING;

@@ -39,7 +39,7 @@ class CONTENT_EXPORT P2PSocketHost {
 
   // Initalizes the socket. Returns false when initiazations fails.
   virtual bool Init(const net::IPEndPoint& local_address,
-                    const net::IPEndPoint& remote_address) = 0;
+                    const P2PHostAndIPEndPoint& remote_address) = 0;
 
   // Sends |data| on the socket to |to|.
   virtual void Send(const net::IPEndPoint& to,

@@ -39,7 +39,7 @@ class CONTENT_EXPORT P2PSocketHostTcpBase : public P2PSocketHost {
 
   // P2PSocketHost overrides.
   virtual bool Init(const net::IPEndPoint& local_address,
-                    const net::IPEndPoint& remote_address) OVERRIDE;
+                    const P2PHostAndIPEndPoint& remote_address) OVERRIDE;
   virtual void Send(const net::IPEndPoint& to,
                     const std::vector<char>& data,
                     const talk_base::PacketOptions& options,
@@ -81,7 +81,7 @@ class CONTENT_EXPORT P2PSocketHostTcpBase : public P2PSocketHost {
   void OnOpen();
   void DoSendSocketCreateMsg();
 
-  net::IPEndPoint remote_address_;
+  P2PHostAndIPEndPoint remote_address_;
 
   scoped_ptr<net::StreamSocket> socket_;
   scoped_refptr<net::GrowableIOBuffer> read_buffer_;

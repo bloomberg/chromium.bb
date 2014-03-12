@@ -238,7 +238,12 @@ bool IpcPacketSocket::Init(P2PSocketType type,
     return false;
   }
 
-  client->Init(type, local_endpoint, remote_endpoint, this);
+  // We need to send both resolved and unresolved address in Init. Unresolved
+  // address will be used in case of TLS for certificate hostname matching.
+  // Certificate will be tied to domain name not to IP address.
+  P2PHostAndIPEndPoint remote_info(remote_address.hostname(), remote_endpoint);
+
+  client->Init(type, local_endpoint, remote_info, this);
 
   return true;
 }

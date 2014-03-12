@@ -193,7 +193,7 @@ void P2PSocketDispatcherHost::OnGetHostAddress(const std::string& host_name,
 void P2PSocketDispatcherHost::OnCreateSocket(
     P2PSocketType type, int socket_id,
     const net::IPEndPoint& local_address,
-    const net::IPEndPoint& remote_address) {
+    const P2PHostAndIPEndPoint& remote_address) {
   if (LookupSocket(socket_id)) {
     LOG(ERROR) << "Received P2PHostMsg_CreateSocket for socket "
         "that already exists.";

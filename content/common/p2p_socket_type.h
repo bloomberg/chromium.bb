@@ -8,6 +8,10 @@
 #ifndef CONTENT_COMMON_P2P_SOCKET_TYPE_H_
 #define CONTENT_COMMON_P2P_SOCKET_TYPE_H_
 
+#include <string>
+
+#include "net/base/ip_endpoint.h"
+
 namespace content {
 
 enum P2PSocketOption {
@@ -29,6 +33,19 @@ enum P2PSocketType {
   P2P_SOCKET_TLS_CLIENT,
   P2P_SOCKET_STUN_TLS_CLIENT,
   P2P_SOCKET_TYPE_LAST = P2P_SOCKET_STUN_TLS_CLIENT
+};
+
+// Struct which carries both resolved IP address and host string literal.
+// Port number will be part of |ip_address|.
+struct P2PHostAndIPEndPoint {
+  P2PHostAndIPEndPoint() {}
+  P2PHostAndIPEndPoint(const std::string& hostname,
+                       const net::IPEndPoint& ip_address)
+      : hostname(hostname), ip_address(ip_address) {
+  }
+
+  std::string hostname;
+  net::IPEndPoint ip_address;
 };
 
 }  // namespace content

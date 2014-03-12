@@ -83,7 +83,7 @@ P2PSocketHostUdp::~P2PSocketHostUdp() {
 }
 
 bool P2PSocketHostUdp::Init(const net::IPEndPoint& local_address,
-                            const net::IPEndPoint& remote_address) {
+                            const P2PHostAndIPEndPoint& remote_address) {
   DCHECK_EQ(state_, STATE_UNINITIALIZED);
 
   int result = socket_->Listen(local_address);
