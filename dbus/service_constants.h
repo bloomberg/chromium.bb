@@ -1635,6 +1635,10 @@ const char kSystemClockInterface[] = "org.torproject.tlsdate";
 const char kSystemClockServicePath[] = "/org/torproject/tlsdate";
 const char kSystemClockServiceName[] = "org.torproject.tlsdate";
 
+// Methods.
+const char kSystemClockCanSet[] = "CanSetTime";
+const char kSystemClockSet[] = "SetTime";
+
 // Signals.
 const char kSystemClockUpdated[] = "TimeUpdated";
 }  // namespace system_clock
