@@ -83,7 +83,7 @@ GLuint StreamTextureManagerInProcess::CreateStreamTexture(
   }
 
   scoped_refptr<gfx::SurfaceTexture> surface_texture(
-      new gfx::SurfaceTexture(texture->service_id()));
+      gfx::SurfaceTexture::Create(texture->service_id()));
 
   uint32 stream_id = next_id_++;
   base::Closure release_callback =

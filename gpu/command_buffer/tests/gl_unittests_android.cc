@@ -39,7 +39,7 @@ TEST_F(GLSurfaceTextureTest, SimpleTest) {
   GLuint texture = 0xFEEDBEEF;
 
   scoped_refptr<gfx::SurfaceTexture> surface_texture(
-      new gfx::SurfaceTexture(texture));
+      gfx::SurfaceTexture::Create(texture));
   gfx::AcceleratedWidget window = surface_texture->CreateSurface();
   EXPECT_TRUE(window != NULL);
 

@@ -65,7 +65,7 @@ int32 StreamTexture::Create(
 StreamTexture::StreamTexture(GpuCommandBufferStub* owner_stub,
                              int32 route_id,
                              uint32 texture_id)
-    : surface_texture_(new gfx::SurfaceTexture(texture_id)),
+    : surface_texture_(gfx::SurfaceTexture::Create(texture_id)),
       size_(0, 0),
       has_valid_frame_(false),
       has_pending_frame_(false),

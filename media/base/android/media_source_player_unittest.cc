@@ -604,10 +604,10 @@ class MediaSourcePlayerTest : public testing::Test {
   void CreateNextTextureAndSetVideoSurface() {
     gfx::SurfaceTexture* surface_texture;
     if (surface_texture_a_is_next_) {
-      surface_texture_a_ = new gfx::SurfaceTexture(next_texture_id_++);
+      surface_texture_a_ = gfx::SurfaceTexture::Create(next_texture_id_++);
       surface_texture = surface_texture_a_.get();
     } else {
-      surface_texture_b_ = new gfx::SurfaceTexture(next_texture_id_++);
+      surface_texture_b_ = gfx::SurfaceTexture::Create(next_texture_id_++);
       surface_texture = surface_texture_b_.get();
     }
 
@@ -803,7 +803,7 @@ TEST_F(MediaSourcePlayerTest, StartVideoCodecWithInvalidSurface) {
 
   // Test video decoder job will not be created when surface is invalid.
   scoped_refptr<gfx::SurfaceTexture> surface_texture(
-      new gfx::SurfaceTexture(0));
+      gfx::SurfaceTexture::Create(0));
   gfx::ScopedJavaSurface surface(surface_texture.get());
   StartVideoDecoderJob(false);
 

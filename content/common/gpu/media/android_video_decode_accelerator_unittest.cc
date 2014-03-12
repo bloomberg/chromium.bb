@@ -72,7 +72,7 @@ class AndroidVideoDecodeAcceleratorTest : public testing::Test {
   bool Configure(media::VideoCodec codec) {
     AndroidVideoDecodeAccelerator* accelerator =
         static_cast<AndroidVideoDecodeAccelerator*>(accelerator_.get());
-    accelerator->surface_texture_ = new gfx::SurfaceTexture(0);
+    accelerator->surface_texture_ = gfx::SurfaceTexture::Create(0);
     accelerator->codec_ = codec;
     return accelerator->ConfigureMediaCodec();
   }
