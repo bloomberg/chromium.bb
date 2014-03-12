@@ -1,6 +1,0 @@
-This tests that players get updated even if they have previously had their source content removed or go out of effect.
-This is a testharness.js-based test.
-PASS Player updated after finish and play 
-PASS Player updated after clear and set source 
-Harness: the test ran to completion.
-
