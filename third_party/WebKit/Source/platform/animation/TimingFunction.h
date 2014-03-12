@@ -69,9 +69,10 @@ private:
 
 class PLATFORM_EXPORT LinearTimingFunction FINAL : public TimingFunction {
 public:
-    static PassRefPtr<LinearTimingFunction> create()
+    static LinearTimingFunction* preset()
     {
-        return adoptRef(new LinearTimingFunction);
+        DEFINE_STATIC_REF(LinearTimingFunction, linear, (adoptRef(new LinearTimingFunction())));
+        return linear;
     }
 
     virtual ~LinearTimingFunction() { }

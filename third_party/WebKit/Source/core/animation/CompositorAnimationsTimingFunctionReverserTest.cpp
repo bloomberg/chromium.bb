@@ -58,7 +58,7 @@ public:
 
 TEST_F(AnimationCompositorAnimationsTimingFunctionReverserTest, LinearReverse)
 {
-    RefPtr<TimingFunction> linearTiming = LinearTimingFunction::create();
+    RefPtr<TimingFunction> linearTiming = LinearTimingFunction::preset();
     EXPECT_REFV_EQ(linearTiming, reverse(linearTiming));
 }
 

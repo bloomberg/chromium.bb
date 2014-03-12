@@ -89,7 +89,7 @@ static PassRefPtr<TimingFunction> generateTimingFunction(const KeyframeEffectMod
         chainedTimingFunction->appendSegment(upperBound, timingFunction);
     }
     if (isTimingFunctionLinearThroughout)
-        return LinearTimingFunction::create();
+        return LinearTimingFunction::preset();
     return chainedTimingFunction;
 }
 
