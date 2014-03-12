@@ -30,8 +30,6 @@ void MenuConfig::Init(const ui::NativeTheme* theme) {
 #endif
 
 void MenuConfig::InitAura(const ui::NativeTheme* theme) {
-  text_color = theme->GetSystemColor(
-      ui::NativeTheme::kColorId_EnabledMenuItemForegroundColor);
   submenu_horizontal_inset = 1;
   arrow_to_edge_padding = 20;
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();

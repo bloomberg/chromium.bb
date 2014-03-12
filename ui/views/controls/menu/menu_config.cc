@@ -11,8 +11,7 @@
 namespace views {
 
 MenuConfig::MenuConfig(const ui::NativeTheme* theme)
-    : text_color(SK_ColorBLACK),
-      arrow_color(SK_ColorBLACK),
+    : arrow_color(SK_ColorBLACK),
       menu_vertical_border_size(3),
       menu_horizontal_border_size(0),
       submenu_horizontal_inset(3),

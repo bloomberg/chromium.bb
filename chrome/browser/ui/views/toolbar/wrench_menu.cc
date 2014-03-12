@@ -366,15 +366,17 @@ class WrenchMenuView : public views::View,
     View::SchedulePaintInRect(gfx::Rect(size()));
   }
 
-  LabelButton* CreateAndConfigureButton(int string_id,
+  LabelButton* CreateAndConfigureButton(const ui::NativeTheme* native_theme,
+                                        int string_id,
                                         MenuButtonBackground::ButtonType type,
                                         int index,
                                         MenuButtonBackground** background) {
     return CreateButtonWithAccName(
-      string_id, type, index, background, string_id);
+        native_theme, string_id, type, index, background, string_id);
   }
 
-  LabelButton* CreateButtonWithAccName(int string_id,
+  LabelButton* CreateButtonWithAccName(const ui::NativeTheme* native_theme,
+                                       int string_id,
                                        MenuButtonBackground::ButtonType type,
                                        int index,
                                        MenuButtonBackground** background,
@@ -393,14 +395,12 @@ class WrenchMenuView : public views::View,
         new MenuButtonBackground(type, menu_->use_new_menu());
     button->set_background(bg);
     const MenuConfig& menu_config = menu_->GetMenuConfig();
-    button->SetTextColor(views::Button::STATE_NORMAL, menu_config.text_color);
     if (background)
       *background = bg;
     button->SetBorder(scoped_ptr<views::Border>(
         new MenuButtonBorder(menu_config, menu_->use_new_menu())));
     button->SetHorizontalAlignment(gfx::ALIGN_CENTER);
     button->SetFontList(menu_config.font_list);
-    ui::NativeTheme* native_theme = button->GetNativeTheme();
     button->SetTextColor(
         views::Button::STATE_DISABLED,
         native_theme->GetSystemColor(
@@ -526,12 +526,14 @@ class WrenchMenu::CutCopyPasteView : public WrenchMenuView {
                    int paste_index)
       : WrenchMenuView(menu, menu_model) {
     LabelButton* cut = CreateAndConfigureButton(
-        IDS_CUT, MenuButtonBackground::LEFT_BUTTON, cut_index, NULL);
+        native_theme, IDS_CUT, MenuButtonBackground::LEFT_BUTTON,
+        cut_index, NULL);
     MenuButtonBackground* copy_background = NULL;
     CreateAndConfigureButton(
-        IDS_COPY, MenuButtonBackground::CENTER_BUTTON, copy_index,
-        &copy_background);
+        native_theme, IDS_COPY, MenuButtonBackground::CENTER_BUTTON,
+        copy_index, &copy_background);
     LabelButton* paste = CreateAndConfigureButton(
+        native_theme,
         IDS_PASTE,
         menu->use_new_menu() && menu->supports_new_separators_ ?
             MenuButtonBackground::CENTER_BUTTON :
@@ -603,8 +605,8 @@ class WrenchMenu::ZoomView : public WrenchMenuView {
                        base::Unretained(this)));
 
     decrement_button_ = CreateButtonWithAccName(
-        IDS_ZOOM_MINUS2, MenuButtonBackground::LEFT_BUTTON, decrement_index,
-        NULL, IDS_ACCNAME_ZOOM_MINUS2);
+        native_theme, IDS_ZOOM_MINUS2, MenuButtonBackground::LEFT_BUTTON,
+        decrement_index, NULL, IDS_ACCNAME_ZOOM_MINUS2);
 
     zoom_label_ = new Label(
         l10n_util::GetStringFUTF16Int(IDS_ZOOM_PERCENT, 100));
@@ -626,8 +628,8 @@ class WrenchMenu::ZoomView : public WrenchMenuView {
     zoom_label_width_ = MaxWidthForZoomLabel();
 
     increment_button_ = CreateButtonWithAccName(
-        IDS_ZOOM_PLUS2, MenuButtonBackground::RIGHT_BUTTON, increment_index,
-        NULL, IDS_ACCNAME_ZOOM_PLUS2);
+        native_theme, IDS_ZOOM_PLUS2, MenuButtonBackground::RIGHT_BUTTON,
+        increment_index, NULL, IDS_ACCNAME_ZOOM_PLUS2);
 
     center_bg->SetOtherButtons(decrement_button_, increment_button_);
 

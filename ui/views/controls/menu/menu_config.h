@@ -26,9 +26,6 @@ struct VIEWS_EXPORT MenuConfig {
   // Font list used by menus.
   gfx::FontList font_list;
 
-  // Normal text color.
-  SkColor text_color;
-
   // Color for the arrow to scroll bookmarks.
   SkColor arrow_color;
 

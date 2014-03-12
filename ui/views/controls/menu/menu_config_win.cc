@@ -26,9 +26,6 @@ void MenuConfig::Init(const NativeTheme* theme) {
     InitAura(theme);
     return;
   }
-  text_color = NativeThemeWin::instance()->GetThemeColorWithDefault(
-      NativeThemeWin::MENU, MENU_POPUPITEM, MPI_NORMAL, TMT_TEXTCOLOR,
-      COLOR_MENUTEXT);
 
   arrow_color = color_utils::GetSysSkColor(COLOR_MENUTEXT);
 
