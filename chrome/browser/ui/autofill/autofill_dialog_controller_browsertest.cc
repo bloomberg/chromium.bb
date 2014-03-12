@@ -865,13 +865,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, LongNotifications) {
             GetViewTester()->GetSize().width());
 }
 
-// http://crbug.com/318526
-#if defined(OS_MACOSX)
-#define MAYBE_AutocompleteEvent DISABLED_AutocompleteEvent
-#else
-#define MAYBE_AutocompleteEvent AutocompleteEvent
-#endif
-IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, MAYBE_AutocompleteEvent) {
+IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, AutocompleteEvent) {
   AutofillDialogControllerImpl* controller =
       SetUpHtmlAndInvoke("<input autocomplete='cc-name'>");
   ASSERT_TRUE(controller);
@@ -888,16 +882,8 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, MAYBE_AutocompleteEvent) {
   ExpectDomMessage("success");
 }
 
-// http://crbug.com/318526
-#if defined(OS_MACOSX)
-#define MAYBE_AutocompleteErrorEventReasonInvalid \
-    DISABLED_AutocompleteErrorEventReasonInvalid
-#else
-#define MAYBE_AutocompleteErrorEventReasonInvalid \
-    AutocompleteErrorEventReasonInvalid
-#endif
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
-                       MAYBE_AutocompleteErrorEventReasonInvalid) {
+                       AutocompleteErrorEventReasonInvalid) {
   AutofillDialogControllerImpl* controller =
       SetUpHtmlAndInvoke("<input autocomplete='cc-name' pattern='.*zebra.*'>");
   ASSERT_TRUE(controller);
@@ -918,16 +904,8 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
   ExpectDomMessage("error: invalid");
 }
 
-// http://crbug.com/318526
-#if defined(OS_MACOSX)
-#define MAYBE_AutocompleteErrorEventReasonCancel \
-    DISABLED_AutocompleteErrorEventReasonCancel
-#else
-#define MAYBE_AutocompleteErrorEventReasonCancel \
-    AutocompleteErrorEventReasonCancel
-#endif
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
-                       MAYBE_AutocompleteErrorEventReasonCancel) {
+                       AutocompleteErrorEventReasonCancel) {
   AutofillDialogControllerImpl* controller =
       SetUpHtmlAndInvoke("<input autocomplete='cc-name'>");
   ASSERT_TRUE(controller);
@@ -1195,16 +1173,10 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, AddAccount) {
   EXPECT_EQ(4U, controller()->GetTestingWalletClient()->user_index());
 }
 
-// http://crbug.com/318526
-#if defined(OS_MACOSX)
-#define MAYBE_FillFormIncludesCVC DISABLED_FillFormIncludesCVC
-#else
-#define MAYBE_FillFormIncludesCVC FillFormIncludesCVC
-#endif
 // Verify that filling a form works correctly, including filling the CVC when
 // that is requested separately.
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
-                       MAYBE_FillFormIncludesCVC) {
+                       FillFormIncludesCVC) {
   AutofillDialogControllerImpl* controller =
       SetUpHtmlAndInvoke("<input autocomplete='cc-csc'>");
   ASSERT_TRUE(controller);
@@ -1384,14 +1356,8 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
   EXPECT_FALSE(view->IsShowingSection(SECTION_CC_BILLING));
 }
 
-// http://crbug.com/318526
-#if defined(OS_MACOSX)
-#define MAYBE_DoesWorkOnHttpWithFlag DISABLED_DoesWorkOnHttpWithFlag
-#else
-#define MAYBE_DoesWorkOnHttpWithFlag DoesWorkOnHttpWithFlag
-#endif
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
-                       MAYBE_DoesWorkOnHttpWithFlag) {
+                       DoesWorkOnHttpWithFlag) {
   net::SpawnedTestServer http_server(
       net::SpawnedTestServer::TYPE_HTTP,
       net::SpawnedTestServer::kLocalhost,
@@ -1417,14 +1383,8 @@ class AutofillDialogControllerSecurityTest :
   DISALLOW_COPY_AND_ASSIGN(AutofillDialogControllerSecurityTest);
 };
 
-// http://crbug.com/318526
-#if defined(OS_MACOSX)
-#define MAYBE_DoesntWorkOnHttp DISABLED_DoesntWorkOnHttp
-#else
-#define MAYBE_DoesntWorkOnHttp DoesntWorkOnHttp
-#endif
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerSecurityTest,
-                       MAYBE_DoesntWorkOnHttp) {
+                       DoesntWorkOnHttp) {
   net::SpawnedTestServer http_server(
       net::SpawnedTestServer::TYPE_HTTP,
       net::SpawnedTestServer::kLocalhost,
@@ -1433,14 +1393,8 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerSecurityTest,
   EXPECT_FALSE(RunTestPage(http_server));
 }
 
-// http://crbug.com/318526
-#if defined(OS_MACOSX)
-#define MAYBE_DoesWorkOnHttpWithFlags DISABLED_DoesWorkOnHttpWithFlags
-#else
-#define MAYBE_DoesWorkOnHttpWithFlags DoesWorkOnHttpWithFlags
-#endif
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerSecurityTest,
-                       MAYBE_DoesWorkOnHttpWithFlags) {
+                       DoesWorkOnHttpWithFlags) {
   net::SpawnedTestServer https_server(
       net::SpawnedTestServer::TYPE_HTTPS,
       SSLOptions(SSLOptions::CERT_OK),
@@ -1449,14 +1403,8 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerSecurityTest,
   EXPECT_TRUE(RunTestPage(https_server));
 }
 
-// http://crbug.com/318526
-#if defined(OS_MACOSX)
-#define MAYBE_DoesntWorkOnBrokenHttps DISABLED_DoesntWorkOnBrokenHttps
-#else
-#define MAYBE_DoesntWorkOnBrokenHttps DoesntWorkOnBrokenHttps
-#endif
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerSecurityTest,
-                       MAYBE_DoesntWorkOnBrokenHttps) {
+                       DoesntWorkOnBrokenHttps) {
   net::SpawnedTestServer https_server(
       net::SpawnedTestServer::TYPE_HTTPS,
       SSLOptions(SSLOptions::CERT_EXPIRED),
