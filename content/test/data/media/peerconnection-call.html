@@ -431,7 +431,11 @@
     // When |firstDataChannel| transition to open state, send a text string.
     firstDataChannel.onopen = function() {
       assertEquals('open', firstDataChannel.readyState);
-      firstDataChannel.send(sendDataString);
+      if (firstDataChannel.reliable) {
+        firstDataChannel.send(sendDataString);
+      } else {
+        sendDataRepeatedlyUntilClosed(firstDataChannel);
+      }
     }
 
     // When |firstDataChannel| receive a message, close the channel and
@@ -443,8 +447,6 @@
     }
 
     // When |firstDataChannel| transition to closed state, the test pass.
-    // TODO(phoglund): This is flaky, at least in the setupLegacyCall case.
-    // See http://crbug.com/350388.
     addExpectedEvent();
     firstDataChannel.onclose = function() {
       assertEquals('closed', firstDataChannel.readyState);
@@ -459,8 +461,24 @@
       secondDataChannel.onmessage = function(event) {
         assertEquals(event.data, sendDataString);
         assertEquals('open', secondDataChannel.readyState);
-        secondDataChannel.send(sendDataString);
+        console.log("gSecondConnection received data");
+        if (secondDataChannel.reliable) {
+          secondDataChannel.send(sendDataString);
+        } else {
+          sendDataRepeatedlyUntilClosed(secondDataChannel);
+        }
       }
+    }
+
+    // Sends |sendDataString| on |dataChannel| every 200ms as long as
+    // |dataChannel| is open.
+    function sendDataRepeatedlyUntilClosed(dataChannel) {
+      var sendTimer = setInterval(function() {
+        if (dataChannel.readyState == 'open')
+          dataChannel.send(sendDataString);
+        else
+          clearInterval(sendTimer);
+      }, 200);
     }
   }
 

@@ -161,10 +161,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest, NegotiateOfferWithBLine) {
 
 // This test will make a complete PeerConnection-based call using legacy SDP
 // settings: GIce, external SDES, and no BUNDLE.
-#if defined(OS_WIN)
-// Disabled for win7, see http://crbug.com/235089.
-#define MAYBE_CanSetupLegacyCall DISABLED_CanSetupLegacyCall
-#elif defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
 // Timing out on ARM linux, see http://crbug.com/240373
 #define MAYBE_CanSetupLegacyCall DISABLED_CanSetupLegacyCall
 #else
