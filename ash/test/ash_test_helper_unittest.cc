@@ -8,6 +8,10 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/views/widget/widget.h"
 
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
+
 // Tests for AshTestHelper. Who will watch the watchers? And who will test
 // the tests?
 class AshTestHelperTest : public testing::Test {
