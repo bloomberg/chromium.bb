@@ -1164,7 +1164,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDisableWebRTC,
     switches::kEnableLowEndDeviceMode,
     switches::kEnableSpeechRecognition,
-    switches::kHideScrollbars,
     switches::kMediaDrmEnableNonCompositing,
     switches::kNetworkCountryIso,
 #endif

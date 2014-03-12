@@ -1024,10 +1024,6 @@ const char kDisableWebRTC[]                 = "disable-webrtc";
 // Enable the recognition part of the Web Speech API.
 const char kEnableSpeechRecognition[]       = "enable-speech-recognition";
 
-// Don't display any scrollbars. This is useful for Android WebView where
-// the system manages the scrollbars instead.
-const char kHideScrollbars[]                = "hide-scrollbars";
-
 // The telephony region (ISO country code) to use in phone number detection.
 const char kNetworkCountryIso[] = "network-country-iso";
 

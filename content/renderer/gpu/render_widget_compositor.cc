@@ -246,7 +246,7 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
   settings.max_partial_texture_updates = 0;
   settings.scrollbar_animator = cc::LayerTreeSettings::LinearFade;
   settings.solid_color_scrollbar_color =
-      cmd->HasSwitch(switches::kHideScrollbars)
+      (widget->UsingSynchronousRendererCompositor())  // It is Android Webview.
           ? SK_ColorTRANSPARENT
           : SkColorSetARGB(128, 128, 128, 128);
   settings.highp_threshold_min = 2048;
