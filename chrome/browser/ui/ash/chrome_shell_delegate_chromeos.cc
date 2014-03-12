@@ -44,18 +44,16 @@
 namespace {
 
 void InitAfterSessionStart() {
-  // Restor focus after the user session is started.  It's needed
-  // because some windows can be opened in background while login UI
-  // is still active because we currently restore browser windows
-  // before login UI is deleted.
+  // Restore focus after the user session is started.  It's needed because some
+  // windows can be opened in background while login UI is still active because
+  // we currently restore browser windows before login UI is deleted.
   ash::Shell* shell = ash::Shell::GetInstance();
   ash::MruWindowTracker::WindowList mru_list =
       shell->mru_window_tracker()->BuildMruWindowList();
   if (!mru_list.empty())
     mru_list.front()->Focus();
 
-  // Enable magnifier scroll keys as there may be no mouse cursor in
-  // kiosk mode.
+  // Enable magnifier scroll keys as there may be no mouse cursor in kiosk mode.
   ash::MagnifierKeyScroller::SetEnabled(chrome::IsRunningInForcedAppMode());
 
   // Enable long press action to toggle spoken feedback with hotrod
