@@ -36,6 +36,8 @@
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/css/StylePropertySet.h"
 #include "core/events/MouseEvent.h"
+#include "core/html/HTMLMediaElement.h"
+#include "core/html/shadow/MediaControls.h"
 
 namespace WebCore {
 
@@ -65,11 +67,21 @@ MediaControlElementType mediaControlElementType(Node* node)
     return static_cast<MediaControlDivElement*>(element)->displayType();
 }
 
-MediaControlElement::MediaControlElement(MediaControlElementType displayType, HTMLElement* element)
-    : m_mediaController(0)
+MediaControlElement::MediaControlElement(MediaControls& mediaControls, MediaControlElementType displayType, HTMLElement* element)
+    : m_mediaControls(mediaControls)
     , m_displayType(displayType)
     , m_element(element)
 {
+}
+
+HTMLMediaElement& MediaControlElement::mediaElement() const
+{
+    return mediaControls().mediaElement();
+}
+
+MediaControllerInterface& MediaControlElement::mediaControllerInterface() const
+{
+    return mediaControls().mediaControllerInterface();
 }
 
 void MediaControlElement::hide()
@@ -94,17 +106,17 @@ void MediaControlElement::setDisplayType(MediaControlElementType displayType)
 
 // ----------------------------
 
-MediaControlDivElement::MediaControlDivElement(Document& document, MediaControlElementType displayType)
-    : HTMLDivElement(document)
-    , MediaControlElement(displayType, this)
+MediaControlDivElement::MediaControlDivElement(MediaControls& mediaControls, MediaControlElementType displayType)
+    : HTMLDivElement(mediaControls.document())
+    , MediaControlElement(mediaControls, displayType, this)
 {
 }
 
 // ----------------------------
 
-MediaControlInputElement::MediaControlInputElement(Document& document, MediaControlElementType displayType)
-    : HTMLInputElement(document, 0, false)
-    , MediaControlElement(displayType, this)
+MediaControlInputElement::MediaControlInputElement(MediaControls& mediaControls, MediaControlElementType displayType)
+    : HTMLInputElement(mediaControls.document(), 0, false)
+    , MediaControlElement(mediaControls, displayType, this)
 {
 }
 
@@ -115,8 +127,8 @@ bool MediaControlInputElement::isMouseFocusable() const
 
 // ----------------------------
 
-MediaControlTimeDisplayElement::MediaControlTimeDisplayElement(Document& document, MediaControlElementType displayType)
-    : MediaControlDivElement(document, displayType)
+MediaControlTimeDisplayElement::MediaControlTimeDisplayElement(MediaControls& mediaControls, MediaControlElementType displayType)
+    : MediaControlDivElement(mediaControls, displayType)
     , m_currentValue(0)
 {
 }

@@ -37,9 +37,10 @@ class Event;
 
 class MediaControls FINAL : public HTMLDivElement {
 public:
-    static PassRefPtr<MediaControls> create(Document&);
+    static PassRefPtr<MediaControls> create(HTMLMediaElement&);
 
-    void setMediaController(MediaControllerInterface*);
+    HTMLMediaElement& mediaElement() const { return m_mediaElement; }
+    MediaControllerInterface& mediaControllerInterface() const;
 
     void reset();
 
@@ -65,9 +66,9 @@ public:
     void updateTextTrackDisplay();
 
 private:
-    explicit MediaControls(Document&);
+    explicit MediaControls(HTMLMediaElement&);
 
-    bool initializeControls(Document&);
+    bool initializeControls();
 
     void makeOpaque();
     void makeTransparent();
@@ -90,7 +91,7 @@ private:
     // Element
     virtual const AtomicString& shadowPseudoId() const OVERRIDE;
 
-    MediaControllerInterface* m_mediaController;
+    HTMLMediaElement& m_mediaElement;
 
     // Container for the media control elements.
     MediaControlPanelElement* m_panel;

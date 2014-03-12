@@ -3310,11 +3310,10 @@ bool HTMLMediaElement::createMediaControls()
     if (hasMediaControls())
         return true;
 
-    RefPtr<MediaControls> mediaControls = MediaControls::create(document());
+    RefPtr<MediaControls> mediaControls = MediaControls::create(*this);
     if (!mediaControls)
         return false;
 
-    mediaControls->setMediaController(m_mediaController ? m_mediaController.get() : static_cast<MediaControllerInterface*>(this));
     mediaControls->reset();
     if (isFullscreen())
         mediaControls->enteredFullscreen();
@@ -3517,9 +3516,6 @@ void HTMLMediaElement::setControllerInternal(PassRefPtr<MediaController> control
         UseCounter::count(document(), UseCounter::HTMLMediaElementControllerNotNull);
         m_mediaController->addMediaElement(this);
     }
-
-    if (hasMediaControls())
-        mediaControls()->setMediaController(m_mediaController ? m_mediaController.get() : static_cast<MediaControllerInterface*>(this));
 }
 
 void HTMLMediaElement::updateMediaController()

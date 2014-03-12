@@ -32,11 +32,13 @@
 
 #include "core/html/HTMLDivElement.h"
 #include "core/html/HTMLInputElement.h"
-#include "core/html/HTMLMediaElement.h"
-#include "core/html/MediaControllerInterface.h"
 #include "core/rendering/RenderBlock.h"
 
 namespace WebCore {
+
+class HTMLMediaElement;
+class MediaControllerInterface;
+class MediaControls;
 
 enum MediaControlElementType {
     MediaEnterFullscreenButton = 0,
@@ -78,17 +80,17 @@ public:
 
     MediaControlElementType displayType() { return m_displayType; }
 
-    void setMediaController(MediaControllerInterface* controller) { m_mediaController = controller; }
-    MediaControllerInterface* mediaController() const { return m_mediaController; }
-
 protected:
-    explicit MediaControlElement(MediaControlElementType, HTMLElement*);
-    ~MediaControlElement() { }
+    MediaControlElement(MediaControls&, MediaControlElementType, HTMLElement*);
+
+    MediaControls& mediaControls() const { return m_mediaControls; }
+    HTMLMediaElement& mediaElement() const;
+    MediaControllerInterface& mediaControllerInterface() const;
 
     void setDisplayType(MediaControlElementType);
 
 private:
-    MediaControllerInterface* m_mediaController;
+    MediaControls& m_mediaControls;
     MediaControlElementType m_displayType;
     HTMLElement* m_element;
 };
@@ -98,7 +100,7 @@ private:
 class MediaControlDivElement : public HTMLDivElement, public MediaControlElement {
 protected:
     virtual bool isMediaControlElement() const OVERRIDE FINAL { return true; }
-    explicit MediaControlDivElement(Document&, MediaControlElementType);
+    MediaControlDivElement(MediaControls&, MediaControlElementType);
 };
 
 // ----------------------------
@@ -106,7 +108,7 @@ protected:
 class MediaControlInputElement : public HTMLInputElement, public MediaControlElement {
 protected:
     virtual bool isMediaControlElement() const OVERRIDE FINAL { return true; }
-    explicit MediaControlInputElement(Document&, MediaControlElementType);
+    MediaControlInputElement(MediaControls&, MediaControlElementType);
 
 private:
     virtual void updateDisplayType() { }
@@ -121,7 +123,7 @@ public:
     double currentValue() const { return m_currentValue; }
 
 protected:
-    explicit MediaControlTimeDisplayElement(Document&, MediaControlElementType);
+    MediaControlTimeDisplayElement(MediaControls&, MediaControlElementType);
 
 private:
     double m_currentValue;

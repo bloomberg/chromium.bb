@@ -30,6 +30,7 @@
 #include "config.h"
 #include "core/accessibility/AXMediaControls.h"
 
+#include "core/html/HTMLMediaElement.h"
 #include "platform/text/PlatformLocale.h"
 
 namespace WebCore {
