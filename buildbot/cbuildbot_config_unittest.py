@@ -263,9 +263,7 @@ class CBuildBotTest(cros_test_lib.MoxTestCase):
 
     for build_name, config in cbuildbot_config.config.iteritems():
       if not config['build_tests']:
-        self.assertFalse('factory_test' in config['images'],
-            'Config %s builds factory_test without build_tests.' % build_name)
-        for flag in ('vm_tests', 'hw_tests'):
+        for flag in ('factory_toolkit', 'vm_tests', 'hw_tests'):
           self.assertFalse(config[flag],
               'Config %s set %s without build_tests.' % (build_name, flag))
 

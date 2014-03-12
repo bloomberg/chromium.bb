@@ -39,7 +39,6 @@ _PREFLIGHT_BINHOST = 'PREFLIGHT_BINHOST'
 _CHROME_BINHOST = 'CHROME_BINHOST'
 _CROS_ARCHIVE_URL = 'CROS_ARCHIVE_URL'
 _FACTORY_SHIM = 'factory_shim'
-_FACTORY_TEST = 'factory_test'
 _FULL_BINHOST = 'FULL_BINHOST'
 _PRIVATE_BINHOST_CONF_DIR = ('src/private-overlays/chromeos-partner-overlay/'
                              'chromeos/binhost')
@@ -1423,33 +1422,6 @@ def PushImages(board, archive_url, dryrun, profile, sign_types=()):
     return e.args[1]
 
 
-def BuildFactoryTestImage(buildroot, board, extra_env):
-  """Build a factory test image.
-
-  Args:
-    buildroot: Root directory where build occurs.
-    board: Board type that was built on this machine
-    extra_env: Flags to be added to the environment for the new process.
-
-  Returns:
-    The basename of the symlink created for the image.
-  """
-
-  # We use build_attempt=2 here to ensure that this image uses a different
-  # output directory from our regular image and the factory shim image (below).
-  alias = _FACTORY_TEST
-  cmd = ['./build_image',
-         '--board=%s' % board,
-         '--replace',
-         '--noenable_rootfs_verification',
-         '--symlink=%s' % alias,
-         '--build_attempt=2',
-         'factory_test']
-  _RunBuildScript(buildroot, cmd, extra_env=extra_env, capture_output=True,
-                  enter_chroot=True)
-  return alias
-
-
 def BuildFactoryInstallImage(buildroot, board, extra_env):
   """Build a factory install image.
 
@@ -1771,14 +1743,16 @@ def BuildFirmwareArchive(buildroot, board, archive_dir):
   return archive_name
 
 
-def BuildFactoryZip(buildroot, board, archive_dir, image_root, version=None):
+def BuildFactoryZip(buildroot, board, archive_dir, factory_shim_dir,
+                    factory_toolkit_dir, version=None):
   """Build factory_image.zip in archive_dir.
 
   Args:
     buildroot: Root directory where build occurs.
     board: Board name of build target.
-    archive_dir: Directory to store image.zip.
-    image_root: Directory containing factory_shim and factory_test symlinks.
+    archive_dir: Directory to store factory_image.zip.
+    factory_shim_dir: Directory containing factory shim.
+    factory_toolkit_dir: Directory containing factory toolkit.
     version: The version string to be included in the factory image.zip.
 
   Returns:
@@ -1794,27 +1768,20 @@ def BuildFactoryZip(buildroot, board, archive_dir, image_root, version=None):
 
   # Rules for archive: { folder: pattern }
   rules = {
-    os.path.join(image_root, _FACTORY_SHIM):
+    factory_shim_dir:
       ['*factory_install*.bin', '*partition*', os.path.join('netboot', '*')],
-    os.path.join(image_root, _FACTORY_TEST):
+    factory_toolkit_dir:
       ['*factory_image*.bin', '*partition*', 'install_factory_toolkit.run'],
   }
 
-  # Special files that must not be included.
-  excludes_list = [
-  ]
-
   for folder, patterns in rules.items():
-    if not os.path.exists(folder):
+    if not folder or not os.path.exists(folder):
       continue
     basename = os.path.basename(folder)
     target = os.path.join(temp_dir, basename)
     os.symlink(folder, target)
     for pattern in patterns:
       cmd.extend(['--include', os.path.join(basename, pattern)])
-
-  for exclude in excludes_list:
-    cmd.extend(['--exclude', exclude])
 
   # Everything in /usr/local/factory/bundle gets overlaid into the
   # bundle.

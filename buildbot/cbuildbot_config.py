@@ -461,7 +461,12 @@ _settings = dict(
 
 # images -- List of images we want to build -- see build_image for more details.
   images=['test'],
+
+# factory_install_netboot -- Whether to build a netboot image.
   factory_install_netboot=True,
+
+# factory_toolkit -- Whether to build the factory toolkit.
+  factory_toolkit=True,
 
 # packages -- Tuple of specific packages we want to build.  Most configs won't
 #             specify anything here and instead let build_packages calculate.
@@ -836,7 +841,7 @@ binary = _config(
   # Full builds that build fully from binaries.
   build_type=constants.BUILD_FROM_SOURCE_TYPE,
   archive_build_debug=True,
-  images=['test', 'factory_test', 'factory_install'],
+  images=['test', 'factory_install'],
   git_sync=True,
 )
 
@@ -851,7 +856,7 @@ full = _config(
 
   build_type=constants.BUILD_FROM_SOURCE_TYPE,
   archive_build_debug=True,
-  images=['base', 'test', 'factory_test', 'factory_install'],
+  images=['base', 'test', 'factory_install'],
   git_sync=True,
   trybot_list=True,
   description='Full Builds',
@@ -881,7 +886,7 @@ paladin = _config(
   description='Commit Queue',
   upload_standalone_images=False,
   chroot_replace=True,
-  images=['test', 'factory_test']
+  images=['test']
 )
 
 # Used for paladin builders that build from source.
@@ -928,6 +933,7 @@ sonic = _config(
   unittests=True,
   upload_hw_test_artifacts=False,
   build_tests=False,
+  factory_toolkit=False,
   vm_tests=[],
   signer_tests=False,
   sync_chrome=False,
@@ -941,9 +947,7 @@ brillo = _config(
 
   # TODO(gauravsh): Should be set to True once testing works.
   build_tests=False,
-  # TODO(akeshet): factory_test images cannot be build without build_tests=True.
-  #                Remove the following line when build_tests is True.
-  images=['test'],
+  factory_toolkit=False,
   signer_tests=False,
   vm_tests=[],
   hw_tests=[],
@@ -957,6 +961,7 @@ brillo_non_testable = brillo.derive(
 
   # Disable all the tests!
   build_tests=False,
+  factory_toolkit=False,
   signer_tests=False,
   hw_tests=[],
   vm_tests=[],
@@ -1788,7 +1793,7 @@ _release = full.derive(official, internal,
   build_tests=True,
   manifest=constants.OFFICIAL_MANIFEST,
   manifest_version=True,
-  images=['base', 'test', 'factory_test', 'factory_install'],
+  images=['base', 'test', 'factory_install'],
   push_image=True,
   upload_symbols=True,
   binhost_bucket='gs://chromeos-dev-installer',
@@ -2260,6 +2265,7 @@ _factory_release = _release.derive(
 
 _firmware = _config(
   images=[],
+  factory_toolkit=False,
   packages=('virtual/chromeos-firmware',),
   usepkg_setup_board=True,
   usepkg_build_packages=True,

@@ -3623,18 +3623,9 @@ class ArchiveStage(ArchivingStage):
     def BuildAndArchiveFactoryImages():
       """Build and archive the factory zip file.
 
-      The factory zip file consists of the factory test image and the factory
+      The factory zip file consists of the factory toolkit and the factory
       install image. Both are built here.
       """
-
-      # Build factory test image and create symlink to it.
-      factory_test_symlink = None
-      if 'factory_test' in config['images']:
-        alias = commands.BuildFactoryTestImage(buildroot, board, extra_env)
-        factory_test_symlink = self.GetImageDirSymlink(alias)
-        commands.MakeFactoryToolkit(
-            buildroot, board, factory_test_symlink, self._run.attrs.release_tag)
-
       # Build factory install image and create a symlink to it.
       factory_install_symlink = None
       if 'factory_install' in config['images']:
@@ -3643,13 +3634,23 @@ class ArchiveStage(ArchivingStage):
         if config['factory_install_netboot']:
           commands.MakeNetboot(buildroot, board, factory_install_symlink)
 
-      # Build and upload factory zip.
-      if factory_install_symlink and factory_test_symlink:
-        image_root = os.path.dirname(factory_install_symlink)
-        filename = commands.BuildFactoryZip(
-            buildroot, board, archive_path, image_root,
-            self._run.attrs.release_tag)
-        self._release_upload_queue.put([filename])
+      # Build the factory toolkit.
+      chroot_dir = os.path.join(buildroot, constants.DEFAULT_CHROOT_DIR)
+      chroot_tmp_dir = os.path.join(chroot_dir, 'tmp')
+      with osutils.TempDir(base_dir=chroot_tmp_dir) as tempdir:
+        # Build the factory toolkit.
+        if config['factory_toolkit']:
+          toolkit_dir = os.path.join(tempdir, 'factory_toolkit')
+          os.makedirs(toolkit_dir)
+          commands.MakeFactoryToolkit(
+              buildroot, board, toolkit_dir, self._run.attrs.release_tag)
+
+        # Build and upload factory zip if needed.
+        if factory_install_symlink or config['factory_toolkit']:
+          filename = commands.BuildFactoryZip(
+              buildroot, board, archive_path, factory_install_symlink,
+              toolkit_dir, self._run.attrs.release_tag)
+          self._release_upload_queue.put([filename])
 
     def ArchiveStandaloneArtifact(artifact_info):
       """Build and upload a single archive."""
