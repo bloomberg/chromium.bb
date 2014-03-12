@@ -24,6 +24,10 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
     # self.Fail('gl-enable-vertex-attrib.html',
     #     ['mac', 'amd', ('nvidia', 0x1234)], bug=123)
 
+    # Fails on all platforms
+    self.Fail('conformance/glsl/misc/shaders-with-mis-matching-uniforms.html',
+        bug=351396)
+
     # Win7 / Intel failures
     self.Fail('conformance/rendering/gl-scissor-test.html',
         ['win7', 'intel'], bug=314997)
