@@ -219,6 +219,10 @@ private:
                            const unsigned flag_decreasing,
                            unsigned* flags);
 
+  // memory managers to prevent malloc during interrupt calls
+  MemoryManager<KState> kstate_mm_;
+  MemoryManager<FingerHistory> history_mm_;
+
   // A map to store each finger's past coordinates and calculation
   // intermediates
   typedef map<short, FingerHistory*, kMaxFingers> FingerHistoryMap;
@@ -287,10 +291,6 @@ private:
   // 0.10    |   1.6448536269514722
   // 0.20    |   1.2815515655446004
   DoubleProperty z_threshold_;
-
-  // memory managers to prevent malloc during interrupt calls
-  MemoryManager<FingerHistory> history_mm_;
-  MemoryManager<KState> kstate_mm_;
 };
 
 }

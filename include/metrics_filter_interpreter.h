@@ -79,16 +79,16 @@ class MetricsFilterInterpreter : public FilterInterpreter {
   // Compute interested statistics for the mouse history, send GestureMetrics.
   void ReportMouseStatistics();
 
+  // memory managers to prevent malloc during interrupt calls
+  MemoryManager<MState> mstate_mm_;
+  MemoryManager<FingerHistory> history_mm_;
+
   // A map to store each finger's past data
   typedef map<short, FingerHistory*, kMaxFingers> FingerHistoryMap;
   FingerHistoryMap histories_;
 
   // Device class (e.g. touchpad, mouse).
   GestureInterpreterDeviceClass devclass_;
-
-  // memory managers to prevent malloc during interrupt calls
-  MemoryManager<FingerHistory> history_mm_;
-  MemoryManager<MState> mstate_mm_;
 
   // The total number of mouse movement sessions from the startup.
   int mouse_movement_session_index_;

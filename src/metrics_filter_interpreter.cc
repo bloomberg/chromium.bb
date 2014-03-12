@@ -22,9 +22,9 @@ MetricsFilterInterpreter::MetricsFilterInterpreter(
     Tracer* tracer,
     GestureInterpreterDeviceClass devclass)
     : FilterInterpreter(NULL, next, tracer, false),
-      devclass_(devclass),
-      history_mm_(kMaxFingers),
       mstate_mm_(kMaxFingers * MState::MaxHistorySize()),
+      history_mm_(kMaxFingers),
+      devclass_(devclass),
       mouse_movement_session_index_(0),
       mouse_movement_current_session_length(0),
       mouse_movement_current_session_start(0),

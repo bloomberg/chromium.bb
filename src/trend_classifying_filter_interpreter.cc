@@ -20,6 +20,8 @@ namespace {
 const double k1_18 = 1.0 / 18.0;
 const double k2_3 = 2.0 / 3.0;
 
+const int kNumOfSamples = 20;
+
 }  // namespace {}
 
 namespace gestures {
@@ -27,6 +29,8 @@ namespace gestures {
 TrendClassifyingFilterInterpreter::TrendClassifyingFilterInterpreter(
     PropRegistry* prop_reg, Interpreter* next, Tracer* tracer)
     : FilterInterpreter(NULL, next, tracer, false),
+      kstate_mm_(kMaxFingers * kNumOfSamples),
+      history_mm_(kMaxFingers),
       trend_classifying_filter_enable_(
           prop_reg, "Trend Classifying Filter Enabled", true),
       second_order_enable_(
@@ -34,11 +38,9 @@ TrendClassifyingFilterInterpreter::TrendClassifyingFilterInterpreter(
       min_num_of_samples_(
           prop_reg, "Trend Classifying Min Num of Samples", 6),
       num_of_samples_(
-          prop_reg, "Trend Classifying Num of Samples", 20),
+          prop_reg, "Trend Classifying Num of Samples", kNumOfSamples),
       z_threshold_(
-          prop_reg, "Trend Classifying Z Threshold", 2.5758293035489004),
-      history_mm_(kMaxFingers),
-      kstate_mm_(kMaxFingers * num_of_samples_.val_) {
+          prop_reg, "Trend Classifying Z Threshold", 2.5758293035489004) {
   InitName();
 }
 
