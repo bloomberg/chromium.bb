@@ -12,8 +12,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/chromeos_export.h"
+#include "chromeos/dbus/bluetooth_profile_manager_client.h"
 #include "chromeos/dbus/bluetooth_profile_service_provider.h"
 #include "dbus/object_path.h"
+#include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_profile.h"
 
 namespace dbus {
@@ -22,18 +24,13 @@ class FileDescriptor;
 
 }  // namespace dbus
 
-namespace device {
-
-class BluetoothAdapter;
-
-}  // namespace device
-
 namespace chromeos {
 
 // The BluetoothProfileChromeOS class implements BluetoothProfile for the
 // Chrome OS platform.
 class CHROMEOS_EXPORT BluetoothProfileChromeOS
     : public device::BluetoothProfile,
+      private device::BluetoothAdapter::Observer,
       private BluetoothProfileServiceProvider::Delegate {
  public:
   // BluetoothProfile override.
@@ -69,8 +66,22 @@ class CHROMEOS_EXPORT BluetoothProfileChromeOS
       const ConfirmationCallback& callback) OVERRIDE;
   virtual void Cancel() OVERRIDE;
 
+  // device::BluetoothAdapter::Observer override.
+  virtual void AdapterPresentChanged(device::BluetoothAdapter* adapter,
+                                     bool present) OVERRIDE;
+
   // Called by dbus:: on completion of the D-Bus method call to register the
-  // profile object.
+  // profile object as a result of the adapter becoming present.
+  void OnInternalRegisterProfile();
+  void OnInternalRegisterProfileError(const std::string& error_name,
+                                      const std::string& error_message);
+
+  // Internal method run to get the adapter object during initialization.
+  void OnGetAdapter(const ProfileCallback& callback,
+                    scoped_refptr<device::BluetoothAdapter> adapter);
+
+  // Called by dbus:: on completion of the D-Bus method call to register the
+  // profile object during initialization.
   void OnRegisterProfile(const ProfileCallback& callback);
   void OnRegisterProfileError(const ProfileCallback& callback,
                               const std::string& error_name,
@@ -83,26 +94,21 @@ class CHROMEOS_EXPORT BluetoothProfileChromeOS
                                 const std::string& error_message);
 
   // Method run once the file descriptor has been validated in order to get
-  // the default adapter, and method run once the default adapter has been
-  // obtained in order to get the device object to be passed to the connection
-  // callback.
+  // the device object to be passed to the connection callback.
   //
   // The |fd| argument is moved compared to the NewConnection() call since it
   // becomes the result of a PostTaskAndReplyWithResult() call.
-  void GetAdapter(
+  void OnCheckValidity(
       const dbus::ObjectPath& device_path,
       const BluetoothProfileServiceProvider::Delegate::Options& options,
       const ConfirmationCallback& callback,
       scoped_ptr<dbus::FileDescriptor> fd);
-  void OnGetAdapter(
-      const dbus::ObjectPath& device_path,
-      const BluetoothProfileServiceProvider::Delegate::Options& options,
-      const ConfirmationCallback& callback,
-      scoped_ptr<dbus::FileDescriptor> fd,
-      scoped_refptr<device::BluetoothAdapter>);
 
   // UUID of the profile passed during initialization.
   std::string uuid_;
+
+  // Copy of the profile options passed during initialization.
+  BluetoothProfileManagerClient::Options options_;
 
   // Object path of the local profile D-Bus object.
   dbus::ObjectPath object_path_;
@@ -110,6 +116,10 @@ class CHROMEOS_EXPORT BluetoothProfileChromeOS
   // Local profile D-Bus object used for receiving profile delegate methods
   // from BlueZ.
   scoped_ptr<BluetoothProfileServiceProvider> profile_;
+
+  // Reference to the adapter object, the profile is re-registered when the
+  // adapter changes.
+  scoped_refptr<device::BluetoothAdapter> adapter_;
 
   // Callback used on both outgoing and incoming connections to pass the
   // connected socket to profile object owner.
