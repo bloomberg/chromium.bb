@@ -12,6 +12,7 @@
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/root_window_controller.h"
 #include "ash/scoped_target_root_window.h"
+#include "ash/shelf/alternate_app_list_button.h"
 #include "ash/shelf/app_list_button.h"
 #include "ash/shelf/overflow_bubble.h"
 #include "ash/shelf/overflow_bubble_view.h"
@@ -72,6 +73,13 @@ const int kDefaultLeadingInset = 8;
 
 // Minimum distance before drag starts.
 const int kMinimumDragDistance = 8;
+
+// Size between the buttons.
+const int kButtonSpacing = 4;
+const int kAlternateButtonSpacing = 10;
+
+// Size allocated to for each button.
+const int kButtonSize = 44;
 
 // Additional spacing for the left and right side of icons.
 const int kHorizontalIconSpacing = 2;
@@ -424,18 +432,36 @@ void ShelfView::Init() {
     view_model_->Add(child, static_cast<int>(i - items.begin()));
     AddChildView(child);
   }
+  ShelfStatusChanged();
   overflow_button_ = new OverflowButton(this);
   overflow_button_->set_context_menu_controller(this);
   ConfigureChildView(overflow_button_);
   AddChildView(overflow_button_);
+  UpdateFirstButtonPadding();
 
   // We'll layout when our bounds change.
 }
 
 void ShelfView::OnShelfAlignmentChanged() {
+  UpdateFirstButtonPadding();
   overflow_button_->OnShelfAlignmentChanged();
   LayoutToIdealBounds();
   for (int i=0; i < view_model_->view_size(); ++i) {
+    // TODO: remove when AppIcon is a Shelf Button.
+    if (TYPE_APP_LIST == model_->items()[i].type &&
+        !ash::switches::UseAlternateShelfLayout()) {
+      static_cast<AppListButton*>(view_model_->view_at(i))->SetImageAlignment(
+          layout_manager_->SelectValueForShelfAlignment(
+              views::ImageButton::ALIGN_CENTER,
+              views::ImageButton::ALIGN_LEFT,
+              views::ImageButton::ALIGN_RIGHT,
+              views::ImageButton::ALIGN_CENTER),
+          layout_manager_->SelectValueForShelfAlignment(
+              views::ImageButton::ALIGN_TOP,
+              views::ImageButton::ALIGN_MIDDLE,
+              views::ImageButton::ALIGN_MIDDLE,
+              views::ImageButton::ALIGN_BOTTOM));
+    }
     if (i >= first_visible_index_ && i <= last_visible_index_)
       view_model_->view_at(i)->Layout();
   }
@@ -689,10 +715,13 @@ void ShelfView::LayoutToIdealBounds() {
 void ShelfView::UpdateAllButtonsVisibilityInOverflowMode() {
   // The overflow button is not shown in overflow mode.
   overflow_button_->SetVisible(false);
+  int last_button_index = model_->FirstPanelIndex() - 1;
   DCHECK_LT(last_visible_index_, view_model_->view_size());
   for (int i = 0; i < view_model_->view_size(); ++i) {
     bool visible = i >= first_visible_index_ &&
         i <= last_visible_index_;
+    if (!ash::switches::UseAlternateShelfLayout())
+      visible &= i != last_button_index;
 
     // To track the dragging of |drag_view_| continuously, its visibility
     // should be always true regardless of its position.
@@ -713,11 +742,15 @@ void ShelfView::CalculateIdealBounds(IdealBounds* bounds) {
   int first_panel_index = model_->FirstPanelIndex();
   int last_button_index = first_panel_index - 1;
 
-  int x = 0;
-  int y = 0;
+  // Initial x,y values account both leading_inset in primary
+  // coordinate and secondary coordinate based on the dynamic edge of the
+  // shelf (eg top edge on bottom-aligned shelf).
+  int inset = ash::switches::UseAlternateShelfLayout() ? 0 : leading_inset_;
+  int x = layout_manager_->SelectValueForShelfAlignment(inset, 0, 0, inset);
+  int y = layout_manager_->SelectValueForShelfAlignment(0, inset, inset, 0);
 
-  int button_size = kShelfButtonSize;
-  int button_spacing = kShelfButtonSpacing;
+  int button_size = GetButtonSize();
+  int button_spacing = GetButtonSpacing();
 
   int w = layout_manager_->PrimaryAxisValue(button_size, width());
   int h = layout_manager_->PrimaryAxisValue(height(), button_size);
@@ -739,6 +772,16 @@ void ShelfView::CalculateIdealBounds(IdealBounds* bounds) {
     return;
   }
 
+  // To address Fitt's law, we make the first shelf button include the
+  // leading inset (if there is one).
+  if (!ash::switches::UseAlternateShelfLayout()) {
+    if (view_model_->view_size() > 0) {
+      view_model_->set_ideal_bounds(0, gfx::Rect(gfx::Size(
+          layout_manager_->PrimaryAxisValue(inset + w, w),
+          layout_manager_->PrimaryAxisValue(h, inset + h))));
+    }
+  }
+
   // Right aligned icons.
   int end_position = available_size - button_spacing;
   x = layout_manager_->PrimaryAxisValue(end_position, 0);
@@ -756,7 +799,9 @@ void ShelfView::CalculateIdealBounds(IdealBounds* bounds) {
   int last_icon_position = layout_manager_->PrimaryAxisValue(
       view_model_->ideal_bounds(last_button_index).right(),
       view_model_->ideal_bounds(last_button_index).bottom())
-      + button_size;
+      + button_size + inset;
+  if (!ash::switches::UseAlternateShelfLayout())
+      last_icon_position += button_size;
   int reserved_icon_space = available_size * kReservedNonPanelIconProportion;
   if (last_icon_position < reserved_icon_space)
     end_position = last_icon_position;
@@ -767,18 +812,28 @@ void ShelfView::CalculateIdealBounds(IdealBounds* bounds) {
       gfx::Size(layout_manager_->PrimaryAxisValue(w, width()),
                 layout_manager_->PrimaryAxisValue(height(), h)));
 
-  last_visible_index_ = DetermineLastVisibleIndex(
-      end_position - button_size);
+  if (ash::switches::UseAlternateShelfLayout()) {
+    last_visible_index_ = DetermineLastVisibleIndex(
+        end_position - button_size);
+  } else {
+    last_visible_index_ = DetermineLastVisibleIndex(
+        end_position - inset - 2 * button_size);
+  }
   last_hidden_index_ = DetermineFirstVisiblePanelIndex(end_position) - 1;
-  bool show_overflow = (last_visible_index_ < last_button_index ||
-                       last_hidden_index_ >= first_panel_index);
+  bool show_overflow =
+      ((ash::switches::UseAlternateShelfLayout() ? 0 : 1) +
+      last_visible_index_ < last_button_index ||
+      last_hidden_index_ >= first_panel_index);
 
   // Create Space for the overflow button
-  if (show_overflow && last_visible_index_ > 0 &&
-      last_visible_index_ < last_button_index)
+  if (show_overflow && ash::switches::UseAlternateShelfLayout() &&
+      last_visible_index_ > 0 && last_visible_index_ < last_button_index)
     --last_visible_index_;
   for (int i = 0; i < view_model_->view_size(); ++i) {
     bool visible = i <= last_visible_index_ || i > last_hidden_index_;
+    // Always show the app list.
+    if (!ash::switches::UseAlternateShelfLayout())
+      visible |= (i == last_button_index);
     // To receive drag event continously from |drag_view_| during the dragging
     // off from the shelf, don't make |drag_view_| invisible. It will be
     // eventually invisible and removed from the |view_model_| by
@@ -792,8 +847,12 @@ void ShelfView::CalculateIdealBounds(IdealBounds* bounds) {
   if (show_overflow) {
     DCHECK_NE(0, view_model_->view_size());
     if (last_visible_index_ == -1) {
-      x = 0;
-      y = 0;
+      x = layout_manager_->SelectValueForShelfAlignment(inset, 0, 0, inset);
+      y = layout_manager_->SelectValueForShelfAlignment(0, inset, inset, 0);
+    } else if (last_visible_index_ == last_button_index
+        && !ash::switches::UseAlternateShelfLayout()) {
+      x = view_model_->ideal_bounds(last_visible_index_).x();
+      y = view_model_->ideal_bounds(last_visible_index_).y();
     } else {
       x = layout_manager_->PrimaryAxisValue(
           view_model_->ideal_bounds(last_visible_index_).right(),
@@ -808,11 +867,23 @@ void ShelfView::CalculateIdealBounds(IdealBounds* bounds) {
 
     // Add more space between last visible item and overflow button.
     // Without this, two buttons look too close compared with other items.
-    x = layout_manager_->PrimaryAxisValue(x + button_spacing, x);
-    y = layout_manager_->PrimaryAxisValue(y, y + button_spacing);
+    if (ash::switches::UseAlternateShelfLayout()) {
+      x = layout_manager_->PrimaryAxisValue(x + button_spacing, x);
+      y = layout_manager_->PrimaryAxisValue(y, y + button_spacing);
+    }
 
     bounds->overflow_bounds.set_x(x);
     bounds->overflow_bounds.set_y(y);
+    if (!ash::switches::UseAlternateShelfLayout()) {
+      // Position app list after overflow button.
+      gfx::Rect app_list_bounds = view_model_->ideal_bounds(last_button_index);
+
+      x = layout_manager_->PrimaryAxisValue(x + w + button_spacing, x);
+      y = layout_manager_->PrimaryAxisValue(y, y + h + button_spacing);
+      app_list_bounds.set_x(x);
+      app_list_bounds.set_y(y);
+      view_model_->set_ideal_bounds(last_button_index, app_list_bounds);
+    }
     if (overflow_bubble_.get() && overflow_bubble_->IsShowing())
       UpdateOverflowRange(overflow_bubble_->shelf_view());
   } else {
@@ -861,6 +932,8 @@ void ShelfView::AnimateToIdealBounds() {
     // padding of the first gets properly transferred to the new first item.
     if (i && view->border())
       view->SetBorder(views::Border::NullBorder());
+    else if (!i && !view->border())
+      UpdateFirstButtonPadding();
   }
   overflow_button_->SetBoundsRect(ideal_bounds.overflow_bounds);
 }
@@ -882,7 +955,26 @@ views::View* ShelfView::CreateViewForItem(const ShelfItem& item) {
     }
 
     case TYPE_APP_LIST: {
-      view = new AppListButton(this, this, layout_manager_->shelf_widget());
+      if (ash::switches::UseAlternateShelfLayout()) {
+        view = new AlternateAppListButton(this,
+                                          this,
+                                          layout_manager_->shelf_widget());
+      } else {
+        // TODO(dave): turn this into a ShelfButton too.
+        AppListButton* button = new AppListButton(this, this);
+        button->SetImageAlignment(
+            layout_manager_->SelectValueForShelfAlignment(
+                views::ImageButton::ALIGN_CENTER,
+                views::ImageButton::ALIGN_LEFT,
+                views::ImageButton::ALIGN_RIGHT,
+                views::ImageButton::ALIGN_CENTER),
+            layout_manager_->SelectValueForShelfAlignment(
+                views::ImageButton::ALIGN_TOP,
+                views::ImageButton::ALIGN_MIDDLE,
+                views::ImageButton::ALIGN_MIDDLE,
+                views::ImageButton::ALIGN_BOTTOM));
+        view = button;
+      }
       break;
     }
 
@@ -1239,6 +1331,22 @@ void ShelfView::ToggleOverflowBubble() {
   Shell::GetInstance()->UpdateShelfVisibility();
 }
 
+void ShelfView::UpdateFirstButtonPadding() {
+  if (ash::switches::UseAlternateShelfLayout())
+    return;
+
+  // Creates an empty border for first shelf button to make included leading
+  // inset act as the button's padding. This is only needed on button creation
+  // and when shelf alignment changes.
+  if (view_model_->view_size() > 0) {
+    view_model_->view_at(0)->SetBorder(views::Border::CreateEmptyBorder(
+        layout_manager_->PrimaryAxisValue(0, leading_inset_),
+        layout_manager_->PrimaryAxisValue(leading_inset_, 0),
+        0,
+        0));
+  }
+}
+
 void ShelfView::OnFadeOutAnimationEnded() {
   AnimateToIdealBounds();
   StartFadeInLastVisibleItem();
@@ -1265,6 +1373,16 @@ void ShelfView::UpdateOverflowRange(ShelfView* overflow_view) {
 
   overflow_view->first_visible_index_ = first_overflow_index;
   overflow_view->last_visible_index_ = last_overflow_index;
+}
+
+int ShelfView::GetButtonSize() const {
+  return ash::switches::UseAlternateShelfLayout() ?
+      kButtonSize : kShelfPreferredSize;
+}
+
+int ShelfView::GetButtonSpacing() const {
+  return ash::switches::UseAlternateShelfLayout() ?
+      kAlternateButtonSpacing : kButtonSpacing;
 }
 
 bool ShelfView::ShouldHideTooltip(const gfx::Point& cursor_location) {
@@ -1299,6 +1417,8 @@ gfx::Rect ShelfView::GetBoundsForDragInsertInScreen() {
         owner_overflow_bubble_->bubble_view()->GetBubbleBounds();
     preferred_size = bubble_bounds.size();
   } else {
+    const int preferred_shelf_size = layout_manager_->GetPreferredShelfSize();
+
     const int last_button_index = view_model_->view_size() - 1;
     gfx::Rect last_button_bounds =
         view_model_->view_at(last_button_index)->bounds();
@@ -1311,9 +1431,9 @@ gfx::Rect ShelfView::GetBoundsForDragInsertInScreen() {
 
     if (layout_manager_->IsHorizontalAlignment()) {
       preferred_size = gfx::Size(last_button_bounds.right() + leading_inset_,
-                                 kShelfSize);
+                                 preferred_shelf_size);
     } else {
-      preferred_size = gfx::Size(kShelfSize,
+      preferred_size = gfx::Size(preferred_shelf_size,
                                  last_button_bounds.bottom() + leading_inset_);
     }
   }
@@ -1364,6 +1484,8 @@ gfx::Size ShelfView::GetPreferredSize() {
   IdealBounds ideal_bounds;
   CalculateIdealBounds(&ideal_bounds);
 
+  const int preferred_size = layout_manager_->GetPreferredShelfSize();
+
   int last_button_index = is_overflow_mode() ?
       last_visible_index_ : view_model_->view_size() - 1;
 
@@ -1381,13 +1503,14 @@ gfx::Size ShelfView::GetPreferredSize() {
   const gfx::Rect last_button_bounds =
       last_button_index  >= first_visible_index_ ?
           view_model_->ideal_bounds(last_button_index) :
-          gfx::Rect(gfx::Size(kShelfSize, kShelfSize));
+          gfx::Rect(gfx::Size(preferred_size, preferred_size));
 
   if (layout_manager_->IsHorizontalAlignment()) {
-    return gfx::Size(last_button_bounds.right() + leading_inset_, kShelfSize);
+    return gfx::Size(last_button_bounds.right() + leading_inset_,
+                     preferred_size);
   }
 
-  return gfx::Size(kShelfSize,
+  return gfx::Size(preferred_size,
                    last_button_bounds.bottom() + leading_inset_);
 }
 
@@ -1552,7 +1675,14 @@ void ShelfView::ShelfItemMoved(int start_index, int target_index) {
 }
 
 void ShelfView::ShelfStatusChanged() {
-  // Nothing to do here.
+  if (ash::switches::UseAlternateShelfLayout())
+    return;
+  AppListButton* app_list_button =
+      static_cast<AppListButton*>(GetAppListButtonView());
+  if (model_->status() == ShelfModel::STATUS_LOADING)
+    app_list_button->StartLoadingAnimation();
+  else
+    app_list_button->StopLoadingAnimation();
 }
 
 void ShelfView::PointerPressedOnButton(views::View* view,

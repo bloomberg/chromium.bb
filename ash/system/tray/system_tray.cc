@@ -97,9 +97,11 @@ class SystemBubbleWrapper {
     bubble_->InitView(anchor, login_status, init_params);
     bubble_wrapper_.reset(
         new internal::TrayBubbleWrapper(tray, bubble_->bubble_view()));
-    // The system bubble should not have an arrow.
-    bubble_->bubble_view()->SetArrowPaintType(
-        views::BubbleBorder::PAINT_NONE);
+    if (ash::switches::UseAlternateShelfLayout()) {
+      // The system bubble should not have an arrow.
+      bubble_->bubble_view()->SetArrowPaintType(
+          views::BubbleBorder::PAINT_NONE);
+    }
     is_persistent_ = is_persistent;
 
     // If ChromeVox is enabled, focus the default item if no item is focused.
@@ -478,7 +480,8 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
                                            menu_width,
                                            kTrayPopupMaxWidth);
     init_params.can_activate = can_activate;
-    init_params.first_item_has_no_margin = true;
+    init_params.first_item_has_no_margin =
+        ash::switches::UseAlternateShelfLayout();
     if (detailed) {
       // This is the case where a volume control or brightness control bubble
       // is created.
@@ -549,7 +552,8 @@ void SystemTray::UpdateNotificationBubble() {
                                          GetAnchorAlignment(),
                                          kTrayPopupMinWidth,
                                          kTrayPopupMaxWidth);
-  init_params.first_item_has_no_margin = true;
+  init_params.first_item_has_no_margin =
+      ash::switches::UseAlternateShelfLayout();
   init_params.arrow_color = kBackgroundColor;
   init_params.arrow_offset = GetTrayXOffset(notification_items_[0]);
   notification_bubble_.reset(

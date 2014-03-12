@@ -31,9 +31,19 @@ namespace {
 // if the shelf is aligned horizontally then this is the height of the bar.
 const int kBarSize = 3;
 const int kIconSize = 32;
-const int kIconPad = 5;
-const int kIconPadVertical = 6;
+const int kHopSpacing = 2;
+const int kIconPad = 8;
+const int kAlternateIconPad = 5;
+const int kAlternateIconPadVertical = 6;
+const int kHopUpMS = 0;
+const int kHopDownMS = 200;
 const int kAttentionThrobDurationMS = 800;
+
+bool ShouldHop(int state) {
+  return state & ash::internal::ShelfButton::STATE_HOVERED ||
+         state & ash::internal::ShelfButton::STATE_ACTIVE ||
+         state & ash::internal::ShelfButton::STATE_FOCUSED;
+}
 
 // Simple AnimationDelegate that owns a single ThrobAnimation instance to
 // keep all Draw Attention animations in sync.
@@ -288,6 +298,13 @@ const gfx::ImageSkia& ShelfButton::GetImage() const {
 
 void ShelfButton::AddState(State state) {
   if (!(state_ & state)) {
+    if (!ash::switches::UseAlternateShelfLayout() &&
+        (ShouldHop(state) || !ShouldHop(state_))) {
+      ui::ScopedLayerAnimationSettings scoped_setter(
+          icon_view_->layer()->GetAnimator());
+      scoped_setter.SetTransitionDuration(
+          base::TimeDelta::FromMilliseconds(kHopUpMS));
+    }
     state_ |= state;
     Layout();
     if (state & STATE_ATTENTION)
@@ -297,6 +314,14 @@ void ShelfButton::AddState(State state) {
 
 void ShelfButton::ClearState(State state) {
   if (state_ & state) {
+    if (!ash::switches::UseAlternateShelfLayout() &&
+        (!ShouldHop(state) || ShouldHop(state_))) {
+      ui::ScopedLayerAnimationSettings scoped_setter(
+          icon_view_->layer()->GetAnimator());
+      scoped_setter.SetTweenType(gfx::Tween::LINEAR);
+      scoped_setter.SetTransitionDuration(
+          base::TimeDelta::FromMilliseconds(kHopDownMS));
+    }
     state_ &= ~state;
     Layout();
     if (state & STATE_ATTENTION)
@@ -375,9 +400,11 @@ void ShelfButton::GetAccessibleState(ui::AXViewState* state) {
 void ShelfButton::Layout() {
   const gfx::Rect button_bounds(GetContentsBounds());
   int icon_pad = kIconPad;
-  icon_pad =
-      shelf_layout_manager_->GetAlignment() != SHELF_ALIGNMENT_BOTTOM ?
-      kIconPadVertical : kIconPad;
+  if (ash::switches::UseAlternateShelfLayout()) {
+      icon_pad =
+          shelf_layout_manager_->GetAlignment() != SHELF_ALIGNMENT_BOTTOM ?
+          kAlternateIconPadVertical : kAlternateIconPad;
+  }
   int x_offset = shelf_layout_manager_->PrimaryAxisValue(0, icon_pad);
   int y_offset = shelf_layout_manager_->PrimaryAxisValue(icon_pad, 0);
 
@@ -393,6 +420,13 @@ void ShelfButton::Layout() {
 
   if (SHELF_ALIGNMENT_TOP == shelf_layout_manager_->GetAlignment())
     y_offset = button_bounds.height() - (kIconSize + icon_pad);
+
+  if (ShouldHop(state_) && !ash::switches::UseAlternateShelfLayout()) {
+    x_offset += shelf_layout_manager_->SelectValueForShelfAlignment(
+        0, kHopSpacing, -kHopSpacing, 0);
+    y_offset += shelf_layout_manager_->SelectValueForShelfAlignment(
+        -kHopSpacing, 0, 0, kHopSpacing);
+  }
 
   // Center icon with respect to the secondary axis, and ensure
   // that the icon doesn't occlude the bar highlight.
@@ -511,10 +545,19 @@ void ShelfButton::UpdateBar() {
   }
 
   int bar_id = 0;
-  if (state_ & STATE_ACTIVE)
-    bar_id = IDR_AURA_LAUNCHER_UNDERLINE_ACTIVE;
-  else if (state_ & STATE_RUNNING)
-    bar_id = IDR_AURA_LAUNCHER_UNDERLINE_RUNNING;
+  if (ash::switches::UseAlternateShelfLayout()) {
+    if (state_ & STATE_ACTIVE)
+      bar_id = IDR_AURA_LAUNCHER_UNDERLINE_ACTIVE_ALTERNATE;
+    else if (state_ & STATE_RUNNING)
+      bar_id = IDR_AURA_LAUNCHER_UNDERLINE_RUNNING_ALTERNATE;
+  } else {
+    if (state_ & (STATE_ACTIVE | STATE_ATTENTION))
+      bar_id = IDR_AURA_LAUNCHER_UNDERLINE_ACTIVE;
+    else if (state_ & (STATE_HOVERED | STATE_FOCUSED))
+      bar_id = IDR_AURA_LAUNCHER_UNDERLINE_HOVER;
+    else
+      bar_id = IDR_AURA_LAUNCHER_UNDERLINE_RUNNING;
+  }
 
   if (bar_id != 0) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();

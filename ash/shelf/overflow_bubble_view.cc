@@ -186,7 +186,7 @@ gfx::Rect OverflowBubbleView::GetBubbleBounds() {
       views::BubbleBorder::is_arrow_on_horizontal(arrow()) ?
       bubble_insets.left() : bubble_insets.top();
   const int arrow_offset = border_size + kPadding + kShelfViewLeadingInset +
-      kShelfSize / 2;
+      ShelfLayoutManager::GetPreferredShelfSize() / 2;
 
   const gfx::Size content_size = GetPreferredSize();
   border->set_arrow_offset(arrow_offset);

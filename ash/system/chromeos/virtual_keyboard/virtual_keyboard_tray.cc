@@ -4,7 +4,6 @@
 
 #include "ash/system/chromeos/virtual_keyboard/virtual_keyboard_tray.h"
 
-#include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray_notifier.h"
@@ -44,7 +43,7 @@ VirtualKeyboardButton::~VirtualKeyboardButton() {
 }
 
 gfx::Size VirtualKeyboardButton::GetPreferredSize() {
-  const int virtual_keyboard_button_height = kShelfSize;
+  const int virtual_keyboard_button_height = GetShelfItemHeight();
   gfx::Size size = ImageButton::GetPreferredSize();
   int padding = virtual_keyboard_button_height - size.height();
   size.set_height(virtual_keyboard_button_height);
