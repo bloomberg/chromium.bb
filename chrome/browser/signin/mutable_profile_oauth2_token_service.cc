@@ -4,7 +4,6 @@
 
 #include "chrome/browser/signin/mutable_profile_oauth2_token_service.h"
 
-#include "chrome/browser/profiles/profile.h"
 #include "components/signin/core/signin_client.h"
 #include "components/signin/core/webdata/token_web_data.h"
 #include "components/webdata/common/web_data_service_base.h"
@@ -13,14 +12,6 @@
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "net/url_request/url_request_context_getter.h"
-
-#if defined(ENABLE_MANAGED_USERS)
-#include "chrome/browser/managed_mode/managed_user_constants.h"
-#endif
-
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/user_manager.h"
-#endif
 
 namespace {
 
@@ -150,7 +141,7 @@ std::string MutableProfileOAuth2TokenService::GetRefreshToken(
 
 net::URLRequestContextGetter*
 MutableProfileOAuth2TokenService::GetRequestContext() {
-  return profile()->GetRequestContext();
+  return client()->GetURLRequestContext();
 }
 
 void MutableProfileOAuth2TokenService::LoadCredentials(
@@ -347,25 +338,8 @@ void MutableProfileOAuth2TokenService::ClearPersistedCredentials(
 }
 
 void MutableProfileOAuth2TokenService::RevokeAllCredentials() {
-#if defined(OS_CHROMEOS)
-  // UserManager may not exist in unit_tests.
-  if (chromeos::UserManager::IsInitialized() &&
-      chromeos::UserManager::Get()->IsLoggedInAsLocallyManagedUser()) {
-    // Don't allow revoking credentials for Chrome OS supervised users.
-    // See http://crbug.com/332032
-    LOG(ERROR) << "Attempt to revoke supervised user refresh "
-               << "token detected, ignoring.";
+  if (!client()->CanRevokeCredentials())
     return;
-  }
-#else
-  // Don't allow revoking credentials for supervised users.
-  // See http://crbug.com/332032
-  if (profile()->IsManaged()) {
-    LOG(ERROR) << "Attempt to revoke supervised user refresh "
-               << "token detected, ignoring.";
-    return;
-  }
-#endif
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   CancelWebTokenFetch();
   CancelAllRequests();

@@ -25,6 +25,8 @@ class ChromeSigninClient : public SigninClient,
 
   // SigninClient implementation.
   virtual scoped_refptr<TokenWebData> GetDatabase() OVERRIDE;
+  virtual bool CanRevokeCredentials() OVERRIDE;
+  virtual net::URLRequestContextGetter* GetURLRequestContext() OVERRIDE;
 
  private:
   Profile* profile_;

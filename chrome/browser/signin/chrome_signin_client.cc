@@ -8,6 +8,14 @@
 #include "chrome/browser/webdata/web_data_service_factory.h"
 #include "url/gurl.h"
 
+#if defined(ENABLE_MANAGED_USERS)
+#include "chrome/browser/managed_mode/managed_user_constants.h"
+#endif
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/user_manager.h"
+#endif
+
 namespace {
 
 const char kGoogleAccountsUrl[] = "https://accounts.google.com";
@@ -36,4 +44,31 @@ bool ChromeSigninClient::SettingsAllowSigninCookies(
 scoped_refptr<TokenWebData> ChromeSigninClient::GetDatabase() {
   return WebDataServiceFactory::GetTokenWebDataForProfile(
       profile_, Profile::EXPLICIT_ACCESS);
+}
+
+bool ChromeSigninClient::CanRevokeCredentials() {
+#if defined(OS_CHROMEOS)
+  // UserManager may not exist in unit_tests.
+  if (chromeos::UserManager::IsInitialized() &&
+      chromeos::UserManager::Get()->IsLoggedInAsLocallyManagedUser()) {
+    // Don't allow revoking credentials for Chrome OS supervised users.
+    // See http://crbug.com/332032
+    LOG(ERROR) << "Attempt to revoke supervised user refresh "
+               << "token detected, ignoring.";
+    return false;
+  }
+#else
+  // Don't allow revoking credentials for supervised users.
+  // See http://crbug.com/332032
+  if (profile_->IsManaged()) {
+    LOG(ERROR) << "Attempt to revoke supervised user refresh "
+               << "token detected, ignoring.";
+    return false;
+  }
+#endif
+  return true;
+}
+
+net::URLRequestContextGetter* ChromeSigninClient::GetURLRequestContext() {
+  return profile_->GetRequestContext();
 }
