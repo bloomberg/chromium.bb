@@ -295,11 +295,16 @@ static bool IsRangeListSorted(
   return true;
 }
 
-// Comparison function for two Buffers based on timestamp.
-static bool BufferComparator(
-    const scoped_refptr<media::StreamParserBuffer>& first,
-    const scoped_refptr<media::StreamParserBuffer>& second) {
-  return first->GetDecodeTimestamp() < second->GetDecodeTimestamp();
+// Comparison operators for std::upper_bound() and std::lower_bound().
+static bool CompareTimeDeltaToStreamParserBuffer(
+    const base::TimeDelta& decode_timestamp,
+    const scoped_refptr<media::StreamParserBuffer>& buffer) {
+  return decode_timestamp < buffer->GetDecodeTimestamp();
+}
+static bool CompareStreamParserBufferToTimeDelta(
+    const scoped_refptr<media::StreamParserBuffer>& buffer,
+    const base::TimeDelta& decode_timestamp) {
+  return buffer->GetDecodeTimestamp() < decode_timestamp;
 }
 
 // Returns an estimate of how far from the beginning or end of a range a buffer
@@ -1691,19 +1696,17 @@ SourceBufferRange* SourceBufferRange::SplitRange(
 }
 
 SourceBufferRange::BufferQueue::iterator SourceBufferRange::GetBufferItrAt(
-    base::TimeDelta timestamp, bool skip_given_timestamp) {
-  // Need to make a dummy buffer with timestamp |timestamp| in order to search
-  // the |buffers_| container.
-  scoped_refptr<StreamParserBuffer> dummy_buffer =
-      StreamParserBuffer::CopyFrom(NULL, 0, false, DemuxerStream::UNKNOWN, 0);
-  dummy_buffer->SetDecodeTimestamp(timestamp);
-
-  if (skip_given_timestamp) {
-    return std::upper_bound(
-        buffers_.begin(), buffers_.end(), dummy_buffer, BufferComparator);
-  }
-  return std::lower_bound(
-      buffers_.begin(), buffers_.end(), dummy_buffer, BufferComparator);
+    base::TimeDelta timestamp,
+    bool skip_given_timestamp) {
+  return skip_given_timestamp
+             ? std::upper_bound(buffers_.begin(),
+                                buffers_.end(),
+                                timestamp,
+                                CompareTimeDeltaToStreamParserBuffer)
+             : std::lower_bound(buffers_.begin(),
+                                buffers_.end(),
+                                timestamp,
+                                CompareStreamParserBufferToTimeDelta);
 }
 
 SourceBufferRange::KeyframeMap::iterator
