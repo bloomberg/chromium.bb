@@ -22,6 +22,7 @@
 #include "net/quic/quic_crypto_stream.h"
 #include "net/quic/quic_http_stream.h"
 #include "net/quic/quic_protocol.h"
+#include "net/quic/quic_session_key.h"
 
 namespace net {
 
@@ -165,22 +166,6 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   friend class test::QuicStreamFactoryPeer;
 
   // The key used to find session by hostname. Includes
-  // the hostname, port, and scheme.
-  struct NET_EXPORT_PRIVATE SessionKey {
-    SessionKey();
-    SessionKey(HostPortPair host_port_pair,
-               bool is_https);
-    ~SessionKey();
-
-    HostPortPair host_port_pair;
-    bool is_https;
-
-    // Needed to be an element of std::set.
-    bool operator<(const SessionKey &other) const;
-    bool operator==(const SessionKey &other) const;
-  };
-
-  // The key used to find session by hostname. Includes
   // the ip address, port, and scheme.
   struct NET_EXPORT_PRIVATE IpAliasKey {
     IpAliasKey();
@@ -195,45 +180,45 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
     bool operator==(const IpAliasKey &other) const;
   };
 
-  typedef std::map<SessionKey, QuicClientSession*> SessionMap;
-  typedef std::set<SessionKey> AliasSet;
+  typedef std::map<QuicSessionKey, QuicClientSession*> SessionMap;
+  typedef std::set<QuicSessionKey> AliasSet;
   typedef std::map<QuicClientSession*, AliasSet> SessionAliasMap;
   typedef std::set<QuicClientSession*> SessionSet;
   typedef std::map<IpAliasKey, SessionSet> IPAliasMap;
-  typedef std::map<SessionKey, QuicCryptoClientConfig*> CryptoConfigMap;
-  typedef std::map<SessionKey, SessionKey> CanonicalHostMap;
-  typedef std::map<SessionKey, Job*> JobMap;
+  typedef std::map<QuicSessionKey, QuicCryptoClientConfig*> CryptoConfigMap;
+  typedef std::map<QuicSessionKey, QuicSessionKey> CanonicalHostMap;
+  typedef std::map<QuicSessionKey, Job*> JobMap;
   typedef std::map<QuicStreamRequest*, Job*> RequestMap;
   typedef std::set<QuicStreamRequest*> RequestSet;
   typedef std::map<Job*, RequestSet> JobRequestsMap;
 
   // Returns a newly created QuicHttpStream owned by the caller, if a
   // matching session already exists.  Returns NULL otherwise.
-  scoped_ptr<QuicHttpStream> CreateIfSessionExists(const SessionKey& key,
+  scoped_ptr<QuicHttpStream> CreateIfSessionExists(const QuicSessionKey& key,
                                                    const BoundNetLog& net_log);
 
-  bool OnResolution(const SessionKey& session_key,
+  bool OnResolution(const QuicSessionKey& session_key,
                     const AddressList& address_list);
   void OnJobComplete(Job* job, int rv);
-  bool HasActiveSession(const SessionKey& session_key) const;
-  bool HasActiveJob(const SessionKey& session_key) const;
+  bool HasActiveSession(const QuicSessionKey& session_key) const;
+  bool HasActiveJob(const QuicSessionKey& session_key) const;
   int CreateSession(const HostPortPair& host_port_pair,
                     bool is_https,
                     CertVerifier* cert_verifier,
                     const AddressList& address_list,
                     const BoundNetLog& net_log,
                     QuicClientSession** session);
-  void ActivateSession(const SessionKey& key,
+  void ActivateSession(const QuicSessionKey& key,
                        QuicClientSession* session);
 
   QuicCryptoClientConfig* GetOrCreateCryptoConfig(
-      const SessionKey& session_key);
+      const QuicSessionKey& session_key);
 
   // If the suffix of the hostname in |session_key| is in |canoncial_suffixes_|,
   // then populate |crypto_config| with a canonical server config data from
   // |canonical_hostname_to_origin_map_| for that suffix.
   void PopulateFromCanonicalConfig(
-      const SessionKey& session_key,
+      const QuicSessionKey& session_key,
       QuicCryptoClientConfig* crypto_config);
 
   bool require_confirmation_;

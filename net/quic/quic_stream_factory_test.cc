@@ -16,6 +16,7 @@
 #include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/crypto/quic_encrypter.h"
 #include "net/quic/quic_http_stream.h"
+#include "net/quic/quic_session_key.h"
 #include "net/quic/test_tools/mock_clock.h"
 #include "net/quic/test_tools/mock_crypto_client_stream_factory.h"
 #include "net/quic/test_tools/mock_random.h"
@@ -43,14 +44,14 @@ class QuicStreamFactoryPeer {
       QuicStreamFactory* factory,
       const HostPortPair& host_port_pair,
       bool is_https) {
-    QuicStreamFactory::SessionKey session_key(host_port_pair, is_https);
+    QuicSessionKey session_key(host_port_pair, is_https);
     return factory->GetOrCreateCryptoConfig(session_key);
   }
 
   static bool HasActiveSession(QuicStreamFactory* factory,
                                const HostPortPair& host_port_pair,
                                bool is_https) {
-    QuicStreamFactory::SessionKey session_key(host_port_pair, is_https);
+    QuicSessionKey session_key(host_port_pair, is_https);
     return factory->HasActiveSession(session_key);
   }
 
@@ -58,7 +59,7 @@ class QuicStreamFactoryPeer {
       QuicStreamFactory* factory,
       const HostPortPair& host_port_pair,
       bool is_https) {
-    QuicStreamFactory::SessionKey session_key(host_port_pair, is_https);
+    QuicSessionKey session_key(host_port_pair, is_https);
     DCHECK(factory->HasActiveSession(session_key));
     return factory->active_sessions_[session_key];
   }
@@ -68,7 +69,7 @@ class QuicStreamFactoryPeer {
       const HostPortPair& host_port_pair,
       bool is_https,
       const BoundNetLog& net_log) {
-    QuicStreamFactory::SessionKey session_key(host_port_pair, is_https);
+    QuicSessionKey session_key(host_port_pair, is_https);
     return factory->CreateIfSessionExists(session_key, net_log);
   }
 
