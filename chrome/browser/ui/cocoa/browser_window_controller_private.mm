@@ -628,7 +628,7 @@ willPositionSheet:(NSWindow*)sheet
 
   if (presentationMode) {
     BOOL fullscreen_for_tab =
-        browser_->fullscreen_controller()->IsFullscreenForTabOrPending();
+        browser_->fullscreen_controller()->IsWindowFullscreenForTabOrPending();
     BOOL kiosk_mode =
         CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode);
     BOOL showDropdown = !fullscreen_for_tab &&
@@ -826,7 +826,7 @@ willPositionSheet:(NSWindow*)sheet
   NSWindow* window = [self window];
   savedRegularWindowFrame_ = [window frame];
   BOOL mode = enteringPresentationMode_ ||
-       browser_->fullscreen_controller()->IsFullscreenForTabOrPending();
+       browser_->fullscreen_controller()->IsWindowFullscreenForTabOrPending();
   enteringFullscreen_ = YES;
   [self setPresentationModeInternal:mode forceDropdown:NO];
 }

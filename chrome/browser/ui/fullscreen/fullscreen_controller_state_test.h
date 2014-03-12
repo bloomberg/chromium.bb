@@ -32,8 +32,8 @@ class FullscreenControllerStateTest {
  public:
   // Events names for FullscreenController methods.
   enum Event {
-    TOGGLE_FULLSCREEN,         // ToggleFullscreenMode()
-    TOGGLE_FULLSCREEN_CHROME,  // ToggleFullscreenWithChrome()
+    TOGGLE_FULLSCREEN,         // ToggleBrowserFullscreenMode()
+    TOGGLE_FULLSCREEN_CHROME,  // ToggleBrowserFullscreenWithChrome()
     TAB_FULLSCREEN_TRUE,       // ToggleFullscreenModeForTab(, true)
     TAB_FULLSCREEN_FALSE,      // ToggleFullscreenModeForTab(, false)
     METRO_SNAP_TRUE,           // SetMetroSnapMode(true)

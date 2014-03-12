@@ -787,7 +787,8 @@ void Browser::OnWebContentsInstantSupportDisabled(
 // Browser, Assorted browser commands:
 
 void Browser::ToggleFullscreenModeWithExtension(const GURL& extension_url) {
-  fullscreen_controller_->ToggleFullscreenModeWithExtension(extension_url);
+  fullscreen_controller_->
+      ToggleBrowserFullscreenModeWithExtension(extension_url);
 }
 
 bool Browser::SupportsWindowFeature(WindowFeature feature) const {

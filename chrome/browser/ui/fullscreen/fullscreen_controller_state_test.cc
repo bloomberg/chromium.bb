@@ -371,13 +371,13 @@ bool FullscreenControllerStateTest::InvokeEvent(Event event) {
 
   switch (event) {
     case TOGGLE_FULLSCREEN:
-      GetFullscreenController()->ToggleFullscreenMode();
+      GetFullscreenController()->ToggleBrowserFullscreenMode();
       break;
 
     case TOGGLE_FULLSCREEN_CHROME:
 #if defined(OS_MACOSX)
       if (chrome::mac::SupportsSystemFullscreen()) {
-        GetFullscreenController()->ToggleFullscreenWithChrome();
+        GetFullscreenController()->ToggleBrowserFullscreenWithChrome();
         break;
       }
 #endif
@@ -762,7 +762,7 @@ void FullscreenControllerStateTest::VerifyWindowStateExpectations(
               !!fullscreen_for_browser) << GetAndClearDebugLog();
   }
   if (fullscreen_for_tab != FULLSCREEN_FOR_TAB_NO_EXPECTATION) {
-    EXPECT_EQ(GetFullscreenController()->IsFullscreenForTabOrPending(),
+    EXPECT_EQ(GetFullscreenController()->IsWindowFullscreenForTabOrPending(),
               !!fullscreen_for_tab) << GetAndClearDebugLog();
   }
   if (in_metro_snap != IN_METRO_SNAP_NO_EXPECTATION) {

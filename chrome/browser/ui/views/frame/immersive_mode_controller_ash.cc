@@ -153,7 +153,7 @@ bool ImmersiveModeControllerAsh::UpdateTabIndicators() {
     use_tab_indicators_ = false;
   } else {
     bool in_tab_fullscreen = browser_view_->browser()->fullscreen_controller()->
-        IsFullscreenForTabOrPending();
+        IsWindowFullscreenForTabOrPending();
     use_tab_indicators_ = !in_tab_fullscreen;
   }
 
@@ -217,8 +217,8 @@ void ImmersiveModeControllerAsh::OnPostWindowStateTypeChange(
     ash::wm::WindowState* window_state,
     ash::wm::WindowStateType old_type) {
   // Disable immersive fullscreen when the user exits fullscreen without going
-  // through FullscreenController::ToggleFullscreenMode(). This is the case if
-  // the user exits fullscreen via the restore button.
+  // through FullscreenController::ToggleBrowserFullscreenMode(). This is the
+  // case if the user exits fullscreen via the restore button.
   if (controller_->IsEnabled() &&
       !window_state->IsFullscreen() &&
       !window_state->IsMinimized()) {
@@ -241,7 +241,7 @@ void ImmersiveModeControllerAsh::Observe(
   // browser fullscreen and tab fullscreen, hide the shelf completely and
   // prevent it from being revealed.
   bool in_tab_fullscreen = content::Source<FullscreenController>(source)->
-      IsFullscreenForTabOrPending();
+      IsWindowFullscreenForTabOrPending();
   ash::wm::GetWindowState(native_window_)->set_hide_shelf_when_fullscreen(
       in_tab_fullscreen);
   ash::Shell::GetInstance()->UpdateShelfVisibility();

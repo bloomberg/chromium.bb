@@ -4208,7 +4208,7 @@ void TestingAutomationProvider::IsFullscreenForTab(Browser* browser,
     IPC::Message* reply_message) {
   base::DictionaryValue dict;
   dict.SetBoolean("result",
-      browser->fullscreen_controller()->IsFullscreenForTabOrPending());
+      browser->fullscreen_controller()->IsWindowFullscreenForTabOrPending());
   AutomationJSONReply(this, reply_message).SendSuccess(&dict);
 }
 

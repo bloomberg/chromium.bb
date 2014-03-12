@@ -185,7 +185,7 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestFullscreenExit) {
       browser_window->GetNativeWindow());
   {
     Waiter waiter(browser());
-    browser()->fullscreen_controller()->ToggleFullscreenMode();
+    browser()->fullscreen_controller()->ToggleBrowserFullscreenMode();
     waiter.Wait(false /* not locked */, true /* full screen */);
     EXPECT_TRUE(browser_window->IsFullscreen());
     EXPECT_FALSE(window_state->hide_shelf_when_fullscreen());
@@ -206,7 +206,7 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestFullscreenExit) {
   EXPECT_FALSE(tester->IsLocked());
   {
     Waiter waiter(browser());
-    browser()->fullscreen_controller()->ToggleFullscreenMode();
+    browser()->fullscreen_controller()->ToggleBrowserFullscreenMode();
     waiter.Wait(false /* not locked */, false /* fullscreen */);
     EXPECT_FALSE(browser_window->IsFullscreen());
   }

@@ -15,13 +15,14 @@
 namespace chrome {
 
 void ToggleFullscreenWithChromeOrFallback(Browser* browser) {
+  DCHECK(browser);
   // In simplified fullscreen mode, the "WithChrome" variant does not exist.
   // Call into the standard cross-platform fullscreen method instead.
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kEnableSimplifiedFullscreen))
     ToggleFullscreenMode(browser);
   else if (chrome::mac::SupportsSystemFullscreen())
-    browser->fullscreen_controller()->ToggleFullscreenWithChrome();
+    browser->fullscreen_controller()->ToggleBrowserFullscreenWithChrome();
   else
     ToggleFullscreenMode(browser);
 }

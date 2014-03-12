@@ -505,7 +505,7 @@ TEST_F(FullscreenControllerStateUnitTest, OneCapturedFullscreenedTab) {
   ASSERT_FALSE(browser()->window()->IsFullscreen());
   ASSERT_FALSE(wc_delegate->IsFullscreenForTabOrPending(first_tab));
   ASSERT_FALSE(wc_delegate->IsFullscreenForTabOrPending(second_tab));
-  ASSERT_FALSE(GetFullscreenController()->IsFullscreenForTabOrPending());
+  ASSERT_FALSE(GetFullscreenController()->IsWindowFullscreenForTabOrPending());
 
   // Enter tab fullscreen.  Since the tab is being captured, the browser window
   // should not expand to fill the screen.
@@ -513,7 +513,7 @@ TEST_F(FullscreenControllerStateUnitTest, OneCapturedFullscreenedTab) {
   EXPECT_FALSE(browser()->window()->IsFullscreen());
   EXPECT_TRUE(wc_delegate->IsFullscreenForTabOrPending(first_tab));
   EXPECT_FALSE(wc_delegate->IsFullscreenForTabOrPending(second_tab));
-  EXPECT_FALSE(GetFullscreenController()->IsFullscreenForTabOrPending());
+  EXPECT_FALSE(GetFullscreenController()->IsWindowFullscreenForTabOrPending());
 
   // Switch to the other tab.  Check that the first tab was resized to the
   // WebContents' preferred size.
@@ -521,7 +521,7 @@ TEST_F(FullscreenControllerStateUnitTest, OneCapturedFullscreenedTab) {
   EXPECT_FALSE(browser()->window()->IsFullscreen());
   EXPECT_TRUE(wc_delegate->IsFullscreenForTabOrPending(first_tab));
   EXPECT_FALSE(wc_delegate->IsFullscreenForTabOrPending(second_tab));
-  EXPECT_FALSE(GetFullscreenController()->IsFullscreenForTabOrPending());
+  EXPECT_FALSE(GetFullscreenController()->IsWindowFullscreenForTabOrPending());
   // TODO(miu): Need to make an adjustment to content::WebContentsViewMac for
   // the following to work:
 #if !defined(OS_MACOSX)
@@ -533,12 +533,12 @@ TEST_F(FullscreenControllerStateUnitTest, OneCapturedFullscreenedTab) {
   EXPECT_FALSE(browser()->window()->IsFullscreen());
   EXPECT_TRUE(wc_delegate->IsFullscreenForTabOrPending(first_tab));
   EXPECT_FALSE(wc_delegate->IsFullscreenForTabOrPending(second_tab));
-  EXPECT_FALSE(GetFullscreenController()->IsFullscreenForTabOrPending());
+  EXPECT_FALSE(GetFullscreenController()->IsWindowFullscreenForTabOrPending());
   ASSERT_TRUE(InvokeEvent(TAB_FULLSCREEN_FALSE));
   EXPECT_FALSE(browser()->window()->IsFullscreen());
   EXPECT_FALSE(wc_delegate->IsFullscreenForTabOrPending(first_tab));
   EXPECT_FALSE(wc_delegate->IsFullscreenForTabOrPending(second_tab));
-  EXPECT_FALSE(GetFullscreenController()->IsFullscreenForTabOrPending());
+  EXPECT_FALSE(GetFullscreenController()->IsWindowFullscreenForTabOrPending());
 }
 
 // Tests that, in a browser configured for Fullscreen-Within-Tab mode, more than
@@ -575,14 +575,14 @@ TEST_F(FullscreenControllerStateUnitTest, TwoFullscreenedTabsOneCaptured) {
   EXPECT_FALSE(browser()->window()->IsFullscreen());
   EXPECT_TRUE(wc_delegate->IsFullscreenForTabOrPending(first_tab));
   EXPECT_FALSE(wc_delegate->IsFullscreenForTabOrPending(second_tab));
-  EXPECT_FALSE(GetFullscreenController()->IsFullscreenForTabOrPending());
+  EXPECT_FALSE(GetFullscreenController()->IsWindowFullscreenForTabOrPending());
   browser()->tab_strip_model()->ActivateTabAt(1, true);
   ASSERT_TRUE(InvokeEvent(TAB_FULLSCREEN_TRUE));
   ASSERT_TRUE(InvokeEvent(WINDOW_CHANGE));
   EXPECT_TRUE(browser()->window()->IsFullscreen());
   EXPECT_TRUE(wc_delegate->IsFullscreenForTabOrPending(first_tab));
   EXPECT_TRUE(wc_delegate->IsFullscreenForTabOrPending(second_tab));
-  EXPECT_TRUE(GetFullscreenController()->IsFullscreenForTabOrPending());
+  EXPECT_TRUE(GetFullscreenController()->IsWindowFullscreenForTabOrPending());
 
   // Now exit fullscreen while still in the second tab.  The browser window
   // should no longer be fullscreened.
@@ -591,7 +591,7 @@ TEST_F(FullscreenControllerStateUnitTest, TwoFullscreenedTabsOneCaptured) {
   EXPECT_FALSE(browser()->window()->IsFullscreen());
   EXPECT_TRUE(wc_delegate->IsFullscreenForTabOrPending(first_tab));
   EXPECT_FALSE(wc_delegate->IsFullscreenForTabOrPending(second_tab));
-  EXPECT_FALSE(GetFullscreenController()->IsFullscreenForTabOrPending());
+  EXPECT_FALSE(GetFullscreenController()->IsWindowFullscreenForTabOrPending());
 
   // Finally, exit fullscreen on the captured tab.
   browser()->tab_strip_model()->ActivateTabAt(0, true);
@@ -599,7 +599,7 @@ TEST_F(FullscreenControllerStateUnitTest, TwoFullscreenedTabsOneCaptured) {
   EXPECT_FALSE(browser()->window()->IsFullscreen());
   EXPECT_FALSE(wc_delegate->IsFullscreenForTabOrPending(first_tab));
   EXPECT_FALSE(wc_delegate->IsFullscreenForTabOrPending(second_tab));
-  EXPECT_FALSE(GetFullscreenController()->IsFullscreenForTabOrPending());
+  EXPECT_FALSE(GetFullscreenController()->IsWindowFullscreenForTabOrPending());
 }
 
 // Tests that, in a browser configured for Fullscreen-Within-Tab mode, more than
@@ -636,14 +636,14 @@ TEST_F(FullscreenControllerStateUnitTest,
   EXPECT_FALSE(browser()->window()->IsFullscreen());
   EXPECT_TRUE(wc_delegate->IsFullscreenForTabOrPending(first_tab));
   EXPECT_FALSE(wc_delegate->IsFullscreenForTabOrPending(second_tab));
-  EXPECT_FALSE(GetFullscreenController()->IsFullscreenForTabOrPending());
+  EXPECT_FALSE(GetFullscreenController()->IsWindowFullscreenForTabOrPending());
   browser()->tab_strip_model()->ActivateTabAt(1, true);
   ASSERT_TRUE(InvokeEvent(TAB_FULLSCREEN_TRUE));
   ASSERT_TRUE(InvokeEvent(WINDOW_CHANGE));
   EXPECT_TRUE(browser()->window()->IsFullscreen());
   EXPECT_TRUE(wc_delegate->IsFullscreenForTabOrPending(first_tab));
   EXPECT_TRUE(wc_delegate->IsFullscreenForTabOrPending(second_tab));
-  EXPECT_TRUE(GetFullscreenController()->IsFullscreenForTabOrPending());
+  EXPECT_TRUE(GetFullscreenController()->IsWindowFullscreenForTabOrPending());
 
   // Now, the first tab (backgrounded) exits fullscreen.  This should not affect
   // the second tab's fullscreen, nor the state of the browser window.
@@ -651,7 +651,7 @@ TEST_F(FullscreenControllerStateUnitTest,
   EXPECT_TRUE(browser()->window()->IsFullscreen());
   EXPECT_FALSE(wc_delegate->IsFullscreenForTabOrPending(first_tab));
   EXPECT_TRUE(wc_delegate->IsFullscreenForTabOrPending(second_tab));
-  EXPECT_TRUE(GetFullscreenController()->IsFullscreenForTabOrPending());
+  EXPECT_TRUE(GetFullscreenController()->IsWindowFullscreenForTabOrPending());
 
   // Finally, exit fullscreen on the second tab.
   ASSERT_TRUE(InvokeEvent(TAB_FULLSCREEN_FALSE));
@@ -659,7 +659,7 @@ TEST_F(FullscreenControllerStateUnitTest,
   EXPECT_FALSE(browser()->window()->IsFullscreen());
   EXPECT_FALSE(wc_delegate->IsFullscreenForTabOrPending(first_tab));
   EXPECT_FALSE(wc_delegate->IsFullscreenForTabOrPending(second_tab));
-  EXPECT_FALSE(GetFullscreenController()->IsFullscreenForTabOrPending());
+  EXPECT_FALSE(GetFullscreenController()->IsWindowFullscreenForTabOrPending());
 }
 
 // Tests that, in a browser configured for Fullscreen-Within-Tab mode,
@@ -689,7 +689,7 @@ TEST_F(FullscreenControllerStateUnitTest,
   tab->IncrementCapturerCount(kCaptureSize);
   ASSERT_TRUE(InvokeEvent(TAB_FULLSCREEN_TRUE));
   EXPECT_TRUE(wc_delegate->IsFullscreenForTabOrPending(tab));
-  EXPECT_FALSE(GetFullscreenController()->IsFullscreenForTabOrPending());
+  EXPECT_FALSE(GetFullscreenController()->IsWindowFullscreenForTabOrPending());
   EXPECT_FALSE(GetFullscreenController()->IsFullscreenForBrowser());
 
   // Now, toggle into Browser Fullscreen mode.  The browser window should now be
@@ -697,7 +697,7 @@ TEST_F(FullscreenControllerStateUnitTest,
   ASSERT_TRUE(InvokeEvent(TOGGLE_FULLSCREEN));
   ASSERT_TRUE(InvokeEvent(WINDOW_CHANGE));
   EXPECT_TRUE(wc_delegate->IsFullscreenForTabOrPending(tab));
-  EXPECT_FALSE(GetFullscreenController()->IsFullscreenForTabOrPending());
+  EXPECT_FALSE(GetFullscreenController()->IsWindowFullscreenForTabOrPending());
   EXPECT_TRUE(GetFullscreenController()->IsFullscreenForBrowser());
 
   // Now, toggle back out of Browser Fullscreen mode.  The browser window exits
@@ -705,7 +705,7 @@ TEST_F(FullscreenControllerStateUnitTest,
   ASSERT_TRUE(InvokeEvent(TOGGLE_FULLSCREEN));
   ASSERT_TRUE(InvokeEvent(WINDOW_CHANGE));
   EXPECT_TRUE(wc_delegate->IsFullscreenForTabOrPending(tab));
-  EXPECT_FALSE(GetFullscreenController()->IsFullscreenForTabOrPending());
+  EXPECT_FALSE(GetFullscreenController()->IsWindowFullscreenForTabOrPending());
   EXPECT_FALSE(GetFullscreenController()->IsFullscreenForBrowser());
 
   // Finally, toggle back into Browser Fullscreen mode and then toggle out of
@@ -715,6 +715,6 @@ TEST_F(FullscreenControllerStateUnitTest,
   ASSERT_TRUE(InvokeEvent(WINDOW_CHANGE));
   ASSERT_TRUE(InvokeEvent(TAB_FULLSCREEN_FALSE));
   EXPECT_FALSE(wc_delegate->IsFullscreenForTabOrPending(tab));
-  EXPECT_FALSE(GetFullscreenController()->IsFullscreenForTabOrPending());
+  EXPECT_FALSE(GetFullscreenController()->IsWindowFullscreenForTabOrPending());
   EXPECT_TRUE(GetFullscreenController()->IsFullscreenForBrowser());
 }

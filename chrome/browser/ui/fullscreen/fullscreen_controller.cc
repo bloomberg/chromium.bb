@@ -63,12 +63,20 @@ bool FullscreenController::IsFullscreenForBrowser() const {
   return window_->IsFullscreen() && !IsFullscreenCausedByTab();
 }
 
-void FullscreenController::ToggleFullscreenMode() {
+void FullscreenController::ToggleBrowserFullscreenMode() {
   extension_caused_fullscreen_ = GURL();
   ToggleFullscreenModeInternal(BROWSER);
 }
 
-bool FullscreenController::IsFullscreenForTabOrPending() const {
+void FullscreenController::ToggleBrowserFullscreenModeWithExtension(
+    const GURL& extension_url) {
+  // |extension_caused_fullscreen_| will be reset if this causes fullscreen to
+  // exit.
+  extension_caused_fullscreen_ = extension_url;
+  ToggleFullscreenModeInternal(BROWSER);
+}
+
+bool FullscreenController::IsWindowFullscreenForTabOrPending() const {
   return fullscreened_tab_ != NULL;
 }
 
@@ -101,7 +109,7 @@ void FullscreenController::ToggleFullscreenModeForTab(WebContents* web_contents,
       web_contents != browser_->tab_strip_model()->GetActiveWebContents()) {
     return;
   }
-  if (IsFullscreenForTabOrPending() == enter_fullscreen)
+  if (IsWindowFullscreenForTabOrPending() == enter_fullscreen)
     return;
 
 #if defined(OS_WIN)
@@ -176,14 +184,6 @@ void FullscreenController::ToggleFullscreenModeForTab(WebContents* web_contents,
   }
 }
 
-void FullscreenController::ToggleFullscreenModeWithExtension(
-    const GURL& extension_url) {
-  // |extension_caused_fullscreen_| will be reset if this causes fullscreen to
-  // exit.
-  extension_caused_fullscreen_ = extension_url;
-  ToggleFullscreenModeInternal(BROWSER);
-}
-
 bool FullscreenController::IsInMetroSnapMode() {
 #if defined(OS_WIN)
   return window_->IsInMetroSnapMode();
@@ -207,7 +207,7 @@ void FullscreenController::SetMetroSnapMode(bool enable) {
 #endif  // defined(OS_WIN)
 
 #if defined(OS_MACOSX)
-void FullscreenController::ToggleFullscreenWithChrome() {
+void FullscreenController::ToggleBrowserFullscreenWithChrome() {
   // This method cannot be called if simplified fullscreen is enabled.
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   DCHECK(!command_line->HasSwitch(switches::kEnableSimplifiedFullscreen));
@@ -351,7 +351,7 @@ bool FullscreenController::HandleUserPressedEscape() {
     if (rvh)
       rvh->ExitFullscreen();
     return true;
-  } else if (IsFullscreenForTabOrPending() ||
+  } else if (IsWindowFullscreenForTabOrPending() ||
              IsMouseLocked() || IsMouseLockRequested()) {
     ExitTabFullscreenOrMouseLockIfNecessary();
     return true;
@@ -361,7 +361,7 @@ bool FullscreenController::HandleUserPressedEscape() {
 }
 
 void FullscreenController::ExitTabOrBrowserFullscreenToPreviousState() {
-  if (IsFullscreenForTabOrPending())
+  if (IsWindowFullscreenForTabOrPending())
     ExitTabFullscreenOrMouseLockIfNecessary();
   else if (IsFullscreenForBrowser())
     ExitFullscreenModeInternal();
@@ -428,11 +428,11 @@ void FullscreenController::OnDenyFullscreenPermission() {
     // UpdateFullscreenExitBubbleContent() must be called, but to avoid
     // duplicate calls we do so only if not adjusting the fullscreen state
     // below, which also calls UpdateFullscreenExitBubbleContent().
-    if (!IsFullscreenForTabOrPending())
+    if (!IsWindowFullscreenForTabOrPending())
       UpdateFullscreenExitBubbleContent();
   }
 
-  if (IsFullscreenForTabOrPending())
+  if (IsWindowFullscreenForTabOrPending())
     ExitTabFullscreenOrMouseLockIfNecessary();
 }
 
@@ -593,7 +593,7 @@ void FullscreenController::ToggleFullscreenModeInternal(
 #if defined(OS_MACOSX)
   // When a Mac user requests a toggle they may be toggling between
   // FullscreenWithoutChrome and FullscreenWithChrome.
-  if (!IsFullscreenForTabOrPending()) {
+  if (!IsWindowFullscreenForTabOrPending()) {
     if (option == BROWSER_WITH_CHROME)
       enter_fullscreen |= window_->IsFullscreenWithoutChrome();
     else
@@ -684,7 +684,7 @@ void FullscreenController::SetMouseLockTab(WebContents* tab) {
 }
 
 void FullscreenController::ExitTabFullscreenOrMouseLockIfNecessary() {
-  if (IsFullscreenForTabOrPending())
+  if (IsWindowFullscreenForTabOrPending())
     ToggleFullscreenModeForTab(fullscreened_tab_, false);
   else
     NotifyTabOfExitIfNecessary();

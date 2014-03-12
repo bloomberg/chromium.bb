@@ -60,35 +60,39 @@ class FullscreenController : public content::NotificationObserver {
   // Browser/User Fullscreen ///////////////////////////////////////////////////
 
   // Returns true if the window is currently fullscreen and was initially
-  // transitioned to fullscreen by a browser (vs tab) mode transition.
+  // transitioned to fullscreen by a browser (i.e., not tab-initiated) mode
+  // transition.
   bool IsFullscreenForBrowser() const;
 
-  void ToggleFullscreenMode();
-
-  // Tab/HTML/Flash Fullscreen /////////////////////////////////////////////////
-
-  // Returns true if fullscreen has been caused by a tab.
-  // The window may still be transitioning, and window_->IsFullscreen()
-  // may still return false.
-  //
-  // NOTE: The zero-argument version returns true iff a fullscreen tab and its
-  // browser window is/will be fullscreen. On the other hand, the one-argument
-  // version will return true while the renderer is/will be in fullscreen mode,
-  // but not necessarily the browser window. See 'FullscreenWithinTab Note'.
-  bool IsFullscreenForTabOrPending() const;
-  bool IsFullscreenForTabOrPending(
-      const content::WebContents* web_contents) const;
-  // True if fullscreen was entered because of tab fullscreen (was not
-  // previously in browser fullscreen).
-  bool IsFullscreenCausedByTab() const;
-
-  void ToggleFullscreenModeForTab(content::WebContents* web_contents,
-                                  bool enter_fullscreen);
+  void ToggleBrowserFullscreenMode();
 
   // Extension API implementation uses this method to toggle fullscreen mode.
   // The extension's name is displayed in the full screen bubble UI to attribute
   // the cause of the full screen state change.
-  void ToggleFullscreenModeWithExtension(const GURL& extension_url);
+  void ToggleBrowserFullscreenModeWithExtension(const GURL& extension_url);
+
+  // Tab/HTML/Flash Fullscreen /////////////////////////////////////////////////
+
+  // Returns true if the browser window has/will fullscreen because of
+  // tab-initiated fullscreen. The window may still be transitioning, and
+  // BrowserWindow::IsFullscreen() may still return false.
+  bool IsWindowFullscreenForTabOrPending() const;
+
+  // Returns true if the tab is/will be in fullscreen mode. Note: This does NOT
+  // indicate whether the browser window is/will be fullscreened as well. See
+  // 'FullscreenWithinTab Note'.
+  bool IsFullscreenForTabOrPending(
+      const content::WebContents* web_contents) const;
+
+  // True if fullscreen was entered because of tab fullscreen (was not
+  // previously in user-initiated fullscreen).
+  bool IsFullscreenCausedByTab() const;
+
+  // Enter or leave tab-initiated fullscreen mode. FullscreenController will
+  // decide whether to also fullscreen the browser window. See
+  // 'FullscreenWithinTab Note'.
+  void ToggleFullscreenModeForTab(content::WebContents* web_contents,
+                                  bool enter_fullscreen);
 
   // Platform Fullscreen ///////////////////////////////////////////////////////
 
@@ -102,7 +106,7 @@ class FullscreenController : public content::NotificationObserver {
 #endif
 
 #if defined(OS_MACOSX)
-  void ToggleFullscreenWithChrome();
+  void ToggleBrowserFullscreenWithChrome();
 #endif
 
   // Mouse Lock ////////////////////////////////////////////////////////////////

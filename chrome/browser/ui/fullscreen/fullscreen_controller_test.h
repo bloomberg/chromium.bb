@@ -43,7 +43,7 @@ class FullscreenControllerTest : public InProcessBrowserTest {
   void LostMouseLock();
   bool SendEscapeToFullscreenController();
   bool IsFullscreenForBrowser();
-  bool IsFullscreenForTabOrPending();
+  bool IsWindowFullscreenForTabOrPending();
   bool IsMouseLockPermissionRequested();
   bool IsFullscreenPermissionRequested();
   FullscreenExitBubbleType GetFullscreenExitBubbleType();

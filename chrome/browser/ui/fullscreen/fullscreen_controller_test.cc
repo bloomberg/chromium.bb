@@ -39,8 +39,9 @@ bool FullscreenControllerTest::IsFullscreenForBrowser() {
   return browser()->fullscreen_controller()->IsFullscreenForBrowser();
 }
 
-bool FullscreenControllerTest::IsFullscreenForTabOrPending() {
-  return browser()->fullscreen_controller()->IsFullscreenForTabOrPending();
+bool FullscreenControllerTest::IsWindowFullscreenForTabOrPending() {
+  return browser()->fullscreen_controller()->
+      IsWindowFullscreenForTabOrPending();
 }
 
 bool FullscreenControllerTest::IsMouseLockPermissionRequested() {

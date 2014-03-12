@@ -168,7 +168,7 @@ void FullscreenControllerInteractiveTest::ToggleTabFullscreen_Internal(
   } while (retry_until_success &&
            !IsFullscreenForBrowser() &&
            browser()->window()->IsFullscreen() != enter_fullscreen);
-  ASSERT_EQ(IsFullscreenForTabOrPending(), enter_fullscreen);
+  ASSERT_EQ(IsWindowFullscreenForTabOrPending(), enter_fullscreen);
   if (!IsFullscreenForBrowser())
     ASSERT_EQ(browser()->window()->IsFullscreen(), enter_fullscreen);
 }
@@ -335,7 +335,7 @@ IN_PROC_BROWSER_TEST_F(
   ui_test_utils::NavigateToURL(browser(), url);
   ASSERT_NO_FATAL_FAILURE(ToggleTabFullscreen(true));
   ui_test_utils::NavigateToURL(browser(), url_with_fragment);
-  ASSERT_TRUE(IsFullscreenForTabOrPending());
+  ASSERT_TRUE(IsWindowFullscreenForTabOrPending());
 }
 
 // Tests tab fullscreen exits, but browser fullscreen remains, on navigation.
@@ -354,7 +354,7 @@ IN_PROC_BROWSER_TEST_F(
   GoBack();
 
   ASSERT_TRUE(IsFullscreenForBrowser());
-  ASSERT_FALSE(IsFullscreenForTabOrPending());
+  ASSERT_FALSE(IsWindowFullscreenForTabOrPending());
 }
 
 #if defined(OS_MACOSX)
@@ -437,14 +437,14 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest, EscapingMouseLock) {
   // Accept mouse lock, confirm it and that there is no prompt.
   AcceptCurrentFullscreenOrMouseLockRequest();
   ASSERT_TRUE(IsMouseLocked());
-  ASSERT_FALSE(IsFullscreenForTabOrPending());
+  ASSERT_FALSE(IsWindowFullscreenForTabOrPending());
   ASSERT_FALSE(IsFullscreenPermissionRequested());
   ASSERT_FALSE(IsMouseLockPermissionRequested());
 
   // Escape, confirm we are out of mouse lock with no prompts.
   SendEscapeToFullscreenController();
   ASSERT_FALSE(IsMouseLocked());
-  ASSERT_FALSE(IsFullscreenForTabOrPending());
+  ASSERT_FALSE(IsWindowFullscreenForTabOrPending());
   ASSERT_FALSE(IsFullscreenPermissionRequested());
   ASSERT_FALSE(IsMouseLockPermissionRequested());
 }
@@ -495,7 +495,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
   // Accept both, confirm mouse lock and fullscreen and no prompts.
   AcceptCurrentFullscreenOrMouseLockRequest();
   ASSERT_TRUE(IsMouseLocked());
-  ASSERT_TRUE(IsFullscreenForTabOrPending());
+  ASSERT_TRUE(IsWindowFullscreenForTabOrPending());
   ASSERT_FALSE(IsFullscreenPermissionRequested());
   ASSERT_FALSE(IsMouseLockPermissionRequested());
 
@@ -506,7 +506,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
     fullscreen_observer.Wait();
   }
   ASSERT_FALSE(IsMouseLocked());
-  ASSERT_FALSE(IsFullscreenForTabOrPending());
+  ASSERT_FALSE(IsWindowFullscreenForTabOrPending());
   ASSERT_FALSE(IsFullscreenPermissionRequested());
   ASSERT_FALSE(IsMouseLockPermissionRequested());
 }
@@ -562,7 +562,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
   // Accept fullscreen and mouse lock.
   AcceptCurrentFullscreenOrMouseLockRequest();
   ASSERT_TRUE(IsMouseLocked());
-  ASSERT_TRUE(IsFullscreenForTabOrPending());
+  ASSERT_TRUE(IsWindowFullscreenForTabOrPending());
   ASSERT_FALSE(IsFullscreenBubbleDisplayingButtons());
 }
 
@@ -591,7 +591,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
   ASSERT_TRUE(IsFullscreenPermissionRequested());
   ASSERT_TRUE(IsMouseLockPermissionRequested());
   ASSERT_FALSE(IsMouseLocked());
-  ASSERT_TRUE(IsFullscreenForTabOrPending());
+  ASSERT_TRUE(IsWindowFullscreenForTabOrPending());
 
   // Deny both first, to make sure we can.
   {
@@ -600,7 +600,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
     fullscreen_observer.Wait();
   }
   ASSERT_FALSE(IsMouseLocked());
-  ASSERT_FALSE(IsFullscreenForTabOrPending());
+  ASSERT_FALSE(IsWindowFullscreenForTabOrPending());
   ASSERT_FALSE(IsFullscreenPermissionRequested());
 
   // Request to lock the mouse and enter fullscreen.
@@ -616,12 +616,12 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
   ASSERT_TRUE(IsFullscreenPermissionRequested());
   ASSERT_TRUE(IsMouseLockPermissionRequested());
   ASSERT_FALSE(IsMouseLocked());
-  ASSERT_TRUE(IsFullscreenForTabOrPending());
+  ASSERT_TRUE(IsWindowFullscreenForTabOrPending());
 
   // Accept both, confirm they are enabled and there is no prompt.
   AcceptCurrentFullscreenOrMouseLockRequest();
   ASSERT_TRUE(IsMouseLocked());
-  ASSERT_TRUE(IsFullscreenForTabOrPending());
+  ASSERT_TRUE(IsWindowFullscreenForTabOrPending());
   ASSERT_FALSE(IsFullscreenPermissionRequested());
 }
 
@@ -652,7 +652,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
   ASSERT_FALSE(IsFullscreenPermissionRequested());
   ASSERT_FALSE(IsMouseLockPermissionRequested());
   ASSERT_TRUE(IsMouseLocked());
-  ASSERT_TRUE(IsFullscreenForTabOrPending());
+  ASSERT_TRUE(IsWindowFullscreenForTabOrPending());
 }
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
@@ -898,7 +898,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
   }
 
   // We are fullscreen.
-  ASSERT_TRUE(IsFullscreenForTabOrPending());
+  ASSERT_TRUE(IsWindowFullscreenForTabOrPending());
 
   // Reload. Mouse should be unlocked and fullscreen exited.
   {
@@ -906,7 +906,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
     Reload();
     fullscreen_observer.Wait();
     ASSERT_FALSE(IsMouseLocked());
-    ASSERT_FALSE(IsFullscreenForTabOrPending());
+    ASSERT_FALSE(IsWindowFullscreenForTabOrPending());
   }
 }
 
