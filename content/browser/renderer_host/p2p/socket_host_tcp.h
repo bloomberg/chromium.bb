@@ -52,7 +52,8 @@ class CONTENT_EXPORT P2PSocketHostTcpBase : public P2PSocketHost {
   // Derived classes will provide the implementation.
   virtual int ProcessInput(char* input, int input_len) = 0;
   virtual void DoSend(const net::IPEndPoint& to,
-                      const std::vector<char>& data) = 0;
+                      const std::vector<char>& data,
+                      const talk_base::PacketOptions& options) = 0;
 
   void WriteOrQueue(scoped_refptr<net::DrainableIOBuffer>& buffer);
   void OnPacket(const std::vector<char>& data);
@@ -108,7 +109,8 @@ class CONTENT_EXPORT P2PSocketHostTcp : public P2PSocketHostTcpBase {
  protected:
   virtual int ProcessInput(char* input, int input_len) OVERRIDE;
   virtual void DoSend(const net::IPEndPoint& to,
-                      const std::vector<char>& data) OVERRIDE;
+                      const std::vector<char>& data,
+                      const talk_base::PacketOptions& options) OVERRIDE;
  private:
   DISALLOW_COPY_AND_ASSIGN(P2PSocketHostTcp);
 };
@@ -129,7 +131,8 @@ class CONTENT_EXPORT P2PSocketHostStunTcp : public P2PSocketHostTcpBase {
  protected:
   virtual int ProcessInput(char* input, int input_len) OVERRIDE;
   virtual void DoSend(const net::IPEndPoint& to,
-                      const std::vector<char>& data) OVERRIDE;
+                      const std::vector<char>& data,
+                      const talk_base::PacketOptions& options) OVERRIDE;
  private:
   int GetExpectedPacketSize(const char* data, int len, int* pad_bytes);
 
