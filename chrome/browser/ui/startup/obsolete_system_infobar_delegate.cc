@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/startup/obsolete_system_infobar_delegate.h"
 
+#include "base/cpu.h"
 #include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/common/url_constants.h"
@@ -40,6 +41,10 @@ void ObsoleteSystemInfoBarDelegate::Create(InfoBarService* infobar_service) {
   //   Ubuntu Precise:     GTK 2.24
   if (!gtk_check_version(2, 24, 0))
     return;
+#elif defined(OS_WIN)
+  // On Windows we no longer support non-SSE2 machines since Chrome 35.
+  if (base::CPU().has_sse2())
+    return;
 #else
   // No other platforms currently show this infobar.
   return;
@@ -59,6 +64,8 @@ ObsoleteSystemInfoBarDelegate::~ObsoleteSystemInfoBarDelegate() {
 base::string16 ObsoleteSystemInfoBarDelegate::GetMessageText() const {
 #if defined(OS_MACOSX)
   return ObsoleteSystemMac::LocalizedObsoleteSystemString();
+#elif defined(OS_WIN)
+  return l10n_util::GetStringUTF16(IDS_WIN_SSE_OBSOLETE_NOW);
 #else
   return l10n_util::GetStringUTF16(IDS_SYSTEM_OBSOLETE_MESSAGE);
 #endif
