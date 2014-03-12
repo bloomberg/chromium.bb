@@ -66,7 +66,7 @@ void BookmarkPromptView::Init() {
 void BookmarkPromptView::LinkClicked(views::Link* source, int event_flags) {
   DCHECK_EQ(source, dismiss_link_);
   BookmarkPromptController::DisableBookmarkPrompt(prefs_);
-  StartFade(false);
+  GetWidget()->Close();
 }
 
 void BookmarkPromptView::WindowClosing() {

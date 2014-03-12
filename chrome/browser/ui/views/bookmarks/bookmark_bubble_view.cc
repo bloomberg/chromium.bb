@@ -325,13 +325,13 @@ void BookmarkBubbleView::HandleButtonPressed(views::Button* sender) {
     // Set this so we remove the bookmark after the window closes.
     remove_bookmark_ = true;
     apply_edits_ = false;
-    StartFade(false);
+    GetWidget()->Close();
   } else if (sender == edit_button_) {
     content::RecordAction(UserMetricsAction("BookmarkBubble_Edit"));
     ShowEditor();
   } else {
     DCHECK_EQ(close_button_, sender);
-    StartFade(false);
+    GetWidget()->Close();
   }
 }
 

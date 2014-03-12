@@ -792,8 +792,7 @@ void ToolbarView::ShowCriticalNotification() {
 #if defined(OS_WIN)
   CriticalNotificationBubbleView* bubble_delegate =
       new CriticalNotificationBubbleView(app_menu_);
-  views::BubbleDelegateView::CreateBubble(bubble_delegate);
-  bubble_delegate->StartFade(true);
+  views::BubbleDelegateView::CreateBubble(bubble_delegate)->Show();
 #endif
 }
 

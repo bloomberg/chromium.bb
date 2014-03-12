@@ -30,7 +30,6 @@ class VIEWS_EXAMPLES_EXPORT BubbleExample : public ExampleBase,
   Button* small_shadow_;
   Button* align_to_edge_;
   Button* persistent_;
-  Button* fade_in_;
 
   DISALLOW_COPY_AND_ASSIGN(BubbleExample);
 };

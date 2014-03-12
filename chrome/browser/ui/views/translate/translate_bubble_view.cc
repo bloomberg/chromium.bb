@@ -378,7 +378,7 @@ void TranslateBubbleView::HandleButtonPressed(
     }
     case BUTTON_ID_SHOW_ORIGINAL: {
       model_->RevertTranslation();
-      StartFade(false);
+      GetWidget()->Close();
       break;
     }
     case BUTTON_ID_ALWAYS_TRANSLATE: {
@@ -429,7 +429,7 @@ void TranslateBubbleView::HandleComboboxPerformAction(
           NOTREACHED();
           break;
       }
-      StartFade(false);
+      GetWidget()->Close();
       break;
     }
     case COMBOBOX_ID_SOURCE_LANGUAGE: {

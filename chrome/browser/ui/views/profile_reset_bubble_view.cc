@@ -154,8 +154,7 @@ ProfileResetBubbleView* ProfileResetBubbleView::ShowBubble(
       BrowserView::GetBrowserViewForBrowser(browser)->toolbar()->app_menu();
   ProfileResetBubbleView* reset_bubble = new ProfileResetBubbleView(
       global_error, anchor_view, browser, browser->profile());
-  views::BubbleDelegateView::CreateBubble(reset_bubble);
-  reset_bubble->StartFade(true);
+  views::BubbleDelegateView::CreateBubble(reset_bubble)->Show();
   content::RecordAction(base::UserMetricsAction("SettingsResetBubble.Show"));
   return reset_bubble;
 }
@@ -408,7 +407,7 @@ void ProfileResetBubbleView::ButtonPressed(views::Button* sender,
 
     if (global_error_)
       global_error_->OnBubbleViewNoThanksButtonPressed();
-    StartFade(false);
+    GetWidget()->Close();
     return;
   } else if (sender == controls_.help_button) {
     show_help_pane_ = !show_help_pane_;
@@ -428,7 +427,7 @@ void ProfileResetBubbleView::LinkClicked(views::Link* source, int flags) {
 
 void ProfileResetBubbleView::CloseBubbleView() {
   resetting_ = false;
-  StartFade(false);
+  GetWidget()->Close();
 }
 
 void ProfileResetBubbleView::UpdateFeedbackDetails() {

@@ -98,8 +98,7 @@ class BundleInstalledBubble : public views::BubbleDelegateView,
           BundleInstaller::Item::STATE_FAILED));
     }
 
-    views::BubbleDelegateView::CreateBubble(this);
-    StartFade(true);
+    views::BubbleDelegateView::CreateBubble(this)->Show();
   }
 
   void AddItemList(GridLayout* layout, const BundleInstaller::ItemList& items) {
@@ -145,7 +144,7 @@ class BundleInstalledBubble : public views::BubbleDelegateView,
   // views::ButtonListener implementation:
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE {
-    StartFade(false);
+    GetWidget()->Close();
   }
 
   DISALLOW_COPY_AND_ASSIGN(BundleInstalledBubble);

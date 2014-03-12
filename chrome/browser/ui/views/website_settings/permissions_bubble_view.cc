@@ -248,14 +248,11 @@ void PermissionBubbleViewViews::Show(
   if (bubble_delegate_ != NULL)
     bubble_delegate_->Close();
 
-  PermissionsBubbleDelegateView* bubble_delegate =
+  bubble_delegate_ =
       new PermissionsBubbleDelegateView(anchor_view_, this,
                                         requests, values, customization_mode);
-  bubble_delegate_ = bubble_delegate;
-  views::BubbleDelegateView::CreateBubble(bubble_delegate_);
-
-  bubble_delegate_->StartFade(true);
-  bubble_delegate->SizeToContents();
+  views::BubbleDelegateView::CreateBubble(bubble_delegate_)->Show();
+  bubble_delegate_->SizeToContents();
 }
 
 bool PermissionBubbleViewViews::CanAcceptRequestUpdate() {

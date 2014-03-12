@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/run_loop.h"
-#include "ui/aura/env.h"
 #include "ui/base/hit_test.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/bubble/bubble_frame_view.h"
@@ -37,7 +35,6 @@ class TestBubbleDelegateView : public BubbleDelegateView {
   // BubbleDelegateView overrides:
   virtual View* GetInitiallyFocusedView() OVERRIDE { return view_; }
   virtual gfx::Size GetPreferredSize() OVERRIDE { return gfx::Size(200, 200); }
-  virtual int GetFadeDuration() OVERRIDE { return 1; }
 
  private:
   View* view_;
@@ -249,62 +246,6 @@ TEST_F(BubbleDelegateTest, CloseWhenAnchorWidgetBoundsChanged) {
   EXPECT_TRUE(bubble_widget->IsVisible());
   anchor_widget->SetBounds(gfx::Rect(10, 10, 100, 100));
   EXPECT_FALSE(bubble_widget->IsVisible());
-}
-
-// This class provides functionality to verify that the BubbleView shows up
-// when we call BubbleDelegateView::StartFade(true) and is destroyed when we
-// call BubbleDelegateView::StartFade(false).
-class BubbleWidgetClosingTest : public BubbleDelegateTest,
-                                public views::WidgetObserver {
- public:
-  BubbleWidgetClosingTest() : bubble_destroyed_(false) {
-    aura::Env::CreateInstance();
-  }
-
-  virtual ~BubbleWidgetClosingTest() {}
-
-  void Observe(views::Widget* widget) {
-    widget->AddObserver(this);
-  }
-
-  // views::WidgetObserver overrides.
-  virtual void OnWidgetDestroyed(Widget* widget) OVERRIDE {
-    bubble_destroyed_ = true;
-    widget->RemoveObserver(this);
-    loop_.Quit();
-  }
-
-  bool bubble_destroyed() const { return bubble_destroyed_; }
-
-  void RunNestedLoop() {
-    loop_.Run();
-  }
-
- private:
-  bool bubble_destroyed_;
-  base::RunLoop loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(BubbleWidgetClosingTest);
-};
-
-TEST_F(BubbleWidgetClosingTest, TestBubbleVisibilityAndClose) {
-  scoped_ptr<Widget> anchor_widget(CreateTestWidget());
-  TestBubbleDelegateView* bubble_delegate =
-      new TestBubbleDelegateView(anchor_widget->GetContentsView());
-  Widget* bubble_widget = BubbleDelegateView::CreateBubble(bubble_delegate);
-  EXPECT_FALSE(bubble_widget->IsVisible());
-
-  bubble_delegate->StartFade(true);
-  EXPECT_TRUE(bubble_widget->IsVisible());
-
-  EXPECT_EQ(bubble_delegate->GetInitiallyFocusedView(),
-            bubble_widget->GetFocusManager()->GetFocusedView());
-
-  Observe(bubble_widget);
-
-  bubble_delegate->StartFade(false);
-  RunNestedLoop();
-  EXPECT_TRUE(bubble_destroyed());
 }
 
 }  // namespace views

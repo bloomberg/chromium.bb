@@ -161,8 +161,7 @@ void MaybeShowInvertBubbleView(BrowserView* browser_view) {
       !pref_service->GetBoolean(prefs::kInvertNotificationShown)) {
     pref_service->SetBoolean(prefs::kInvertNotificationShown, true);
     InvertBubbleView* delegate = new InvertBubbleView(browser, anchor);
-    views::BubbleDelegateView::CreateBubble(delegate);
-    delegate->StartFade(true);
+    views::BubbleDelegateView::CreateBubble(delegate)->Show();
   }
 }
 

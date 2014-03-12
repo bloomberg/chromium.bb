@@ -6,7 +6,6 @@
 
 #include "base/callback_helpers.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/sync/one_click_signin_helper.h"
@@ -111,8 +110,7 @@ OneClickSigninBubbleView::OneClickSigninBubbleView(
       ok_button_(NULL),
       undo_button_(NULL),
       close_button_(NULL),
-      clicked_learn_more_(false),
-      message_loop_for_testing_(NULL) {
+      clicked_learn_more_(false) {
   if (is_sync_dialog_) {
     DCHECK(!start_sync_callback_.is_null());
     set_arrow(views::BubbleBorder::NONE);
@@ -128,12 +126,6 @@ OneClickSigninBubbleView::~OneClickSigninBubbleView() {
 
 ui::ModalType OneClickSigninBubbleView::GetModalType() const {
   return is_sync_dialog_? ui::MODAL_TYPE_CHILD : ui::MODAL_TYPE_NONE;
-}
-
-void OneClickSigninBubbleView::AnimationEnded(const gfx::Animation* animation) {
-  views::BubbleDelegateView::AnimationEnded(animation);
-  if (message_loop_for_testing_)
-    message_loop_for_testing_->Quit();
 }
 
 void OneClickSigninBubbleView::Init() {

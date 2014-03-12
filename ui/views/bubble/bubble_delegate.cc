@@ -5,7 +5,6 @@
 #include "ui/views/bubble/bubble_delegate.h"
 
 #include "ui/accessibility/ax_view_state.h"
-#include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/rect.h"
 #include "ui/native_theme/native_theme.h"
@@ -17,9 +16,6 @@
 #if defined(OS_WIN)
 #include "ui/base/win/shell.h"
 #endif
-
-// The duration of the fade animation in milliseconds.
-static const int kHideFadeDurationMS = 200;
 
 // The defaut margin between the content and the inside border, in pixels.
 static const int kDefaultMargin = 6;
@@ -57,7 +53,6 @@ BubbleDelegateView::BubbleDelegateView()
       shadow_(BubbleBorder::SMALL_SHADOW),
       color_explicitly_set_(false),
       margins_(kDefaultMargin, kDefaultMargin, kDefaultMargin, kDefaultMargin),
-      original_opacity_(255),
       use_focusless_(false),
       accept_events_(true),
       border_accepts_events_(true),
@@ -79,7 +74,6 @@ BubbleDelegateView::BubbleDelegateView(
       shadow_(BubbleBorder::SMALL_SHADOW),
       color_explicitly_set_(false),
       margins_(kDefaultMargin, kDefaultMargin, kDefaultMargin, kDefaultMargin),
-      original_opacity_(255),
       use_focusless_(false),
       accept_events_(true),
       border_accepts_events_(true),
@@ -203,18 +197,6 @@ void BubbleDelegateView::OnBeforeBubbleWidgetInit(Widget::InitParams* params,
                                                   Widget* widget) const {
 }
 
-void BubbleDelegateView::StartFade(bool fade_in) {
-  if (fade_in)
-    GetWidget()->Show();
-  else
-    GetWidget()->Close();
-}
-
-void BubbleDelegateView::ResetFade() {
-  fade_animation_.reset();
-  GetWidget()->SetOpacity(original_opacity_);
-}
-
 void BubbleDelegateView::SetAlignment(BubbleBorder::BubbleAlignment alignment) {
   GetBubbleFrameView()->bubble_border()->set_alignment(alignment);
   SizeToContents();
@@ -234,30 +216,12 @@ bool BubbleDelegateView::AcceleratorPressed(
     const ui::Accelerator& accelerator) {
   if (!close_on_esc() || accelerator.key_code() != ui::VKEY_ESCAPE)
     return false;
-  if (fade_animation_.get())
-    fade_animation_->Reset();
   GetWidget()->Close();
   return true;
 }
 
 void BubbleDelegateView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
   UpdateColorsFromTheme(theme);
-}
-
-void BubbleDelegateView::AnimationEnded(const gfx::Animation* animation) {
-  if (animation != fade_animation_.get())
-    return;
-  bool closed = fade_animation_->GetCurrentValue() == 0;
-  fade_animation_->Reset();
-  if (closed)
-    GetWidget()->Close();
-}
-
-void BubbleDelegateView::AnimationProgressed(const gfx::Animation* animation) {
-  if (animation != fade_animation_.get())
-    return;
-  DCHECK(fade_animation_->is_animating());
-  GetWidget()->SetOpacity(fade_animation_->GetCurrentValue() * 255);
 }
 
 void BubbleDelegateView::Init() {}
@@ -309,10 +273,6 @@ gfx::Rect BubbleDelegateView::GetBubbleBounds() {
   // its size is the preferred size of the bubble's client view (this view).
   return GetBubbleFrameView()->GetUpdatedWindowBounds(GetAnchorRect(),
       GetPreferredSize(), adjust_if_offscreen_);
-}
-
-int BubbleDelegateView::GetFadeDuration() {
-  return kHideFadeDurationMS;
 }
 
 void BubbleDelegateView::UpdateColorsFromTheme(const ui::NativeTheme* theme) {

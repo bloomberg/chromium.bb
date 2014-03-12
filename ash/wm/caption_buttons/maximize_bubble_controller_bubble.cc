@@ -12,7 +12,6 @@
 #include "ash/wm/caption_buttons/maximize_bubble_controller.h"
 #include "grit/ash_strings.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/animation/animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/path.h"
 #include "ui/views/bubble/bubble_frame_view.h"
@@ -342,7 +341,6 @@ MaximizeBubbleControllerBubble::MaximizeBubbleControllerBubble(
                                 views::BubbleBorder::TOP_RIGHT),
       shutting_down_(false),
       owner_(owner),
-      bubble_widget_(NULL),
       contents_view_(NULL),
       bubble_border_(NULL),
       appearance_delay_ms_(appearance_delay_ms) {
@@ -371,11 +369,11 @@ MaximizeBubbleControllerBubble::MaximizeBubbleControllerBubble(
 
   // Note that the returned widget has an observer which points to our
   // functions.
-  bubble_widget_ = views::BubbleDelegateView::CreateBubble(this);
-  bubble_widget_->set_focus_on_creation(false);
+  views::Widget* bubble_widget = views::BubbleDelegateView::CreateBubble(this);
+  bubble_widget->set_focus_on_creation(false);
 
   SetAlignment(views::BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE);
-  bubble_widget_->non_client_view()->frame_view()->set_background(NULL);
+  bubble_widget->non_client_view()->frame_view()->set_background(NULL);
 
   bubble_border_ = new MaximizeBubbleBorder(this, GetAnchorView());
   GetBubbleFrameView()->SetBubbleBorder(
@@ -385,12 +383,9 @@ MaximizeBubbleControllerBubble::MaximizeBubbleControllerBubble(
   // Recalculate size with new border.
   SizeToContents();
 
-  if (!appearance_delay_ms_)
-    GetWidget()->Show();
-  else
-    StartFade(true);
+  GetWidget()->Show();
 
-  aura::Window* window = bubble_widget_->GetNativeWindow();
+  aura::Window* window = bubble_widget->GetNativeWindow();
   window->SetEventTargeter(scoped_ptr<ui::EventTargeter>(
       new MaximizeBubbleTargeter(window, bubble_border_)));
 
@@ -407,7 +402,7 @@ MaximizeBubbleControllerBubble::~MaximizeBubbleControllerBubble() {
 }
 
 aura::Window* MaximizeBubbleControllerBubble::GetBubbleWindow() {
-  return bubble_widget_ ? bubble_widget_->GetNativeWindow() : NULL;
+  return GetWidget()->GetNativeWindow();
 }
 
 gfx::Rect MaximizeBubbleControllerBubble::GetAnchorRect() {
@@ -417,22 +412,6 @@ gfx::Rect MaximizeBubbleControllerBubble::GetAnchorRect() {
   gfx::Rect anchor_rect =
       owner_->frame_maximize_button()->GetBoundsInScreen();
   return anchor_rect;
-}
-
-void MaximizeBubbleControllerBubble::AnimationProgressed(
-    const gfx::Animation* animation) {
-  // First do everything needed for the fade by calling the base function.
-  BubbleDelegateView::AnimationProgressed(animation);
-  // When fading in we are done.
-  if (!shutting_down_)
-    return;
-  // Upon fade out an additional shift is required.
-  const int kBubbleAnimationOffsetY = 5;
-  int shift = animation->CurrentValueBetween(kBubbleAnimationOffsetY, 0);
-  gfx::Rect rect = initial_position_;
-
-  rect.set_y(rect.y() + shift);
-  bubble_widget_->GetNativeWindow()->SetBounds(rect);
 }
 
 bool MaximizeBubbleControllerBubble::CanActivate() const {
@@ -490,7 +469,7 @@ gfx::Size MaximizeBubbleControllerBubble::GetPreferredSize() {
 }
 
 void MaximizeBubbleControllerBubble::OnWidgetDestroying(views::Widget* widget) {
-  if (bubble_widget_ == widget) {
+  if (GetWidget() == widget) {
     mouse_watcher_->Stop();
 
     if (owner_) {
@@ -513,11 +492,10 @@ void MaximizeBubbleControllerBubble::ControllerRequestsCloseAndDelete() {
   owner_ = NULL;
 
   // Close the widget asynchronously after the hide animation is finished.
-  initial_position_ = bubble_widget_->GetNativeWindow()->bounds();
   if (!appearance_delay_ms_)
-    bubble_widget_->CloseNow();
+    GetWidget()->CloseNow();
   else
-    StartFade(false);
+    GetWidget()->Close();
 }
 
 void MaximizeBubbleControllerBubble::SetSnapType(SnapType snap_type) {

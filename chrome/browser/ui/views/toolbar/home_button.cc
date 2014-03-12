@@ -65,8 +65,7 @@ void HomePageUndoBubble::ShowBubble(Browser* browser,
                                                   undo_value_is_ntp,
                                                   undo_url,
                                                   anchor_view);
-  views::BubbleDelegateView::CreateBubble(home_page_undo_bubble_);
-  home_page_undo_bubble_->StartFade(true);
+  views::BubbleDelegateView::CreateBubble(home_page_undo_bubble_)->Show();
 }
 
 void HomePageUndoBubble::HideBubble() {

@@ -234,7 +234,7 @@ void BookmarkAppBubbleView::HandleButtonPressed(views::Button* sender) {
   if (sender == add_button_)
     remove_app_ = false;
 
-  StartFade(false);
+  GetWidget()->Close();
 }
 
 void BookmarkAppBubbleView::ApplyEdits() {

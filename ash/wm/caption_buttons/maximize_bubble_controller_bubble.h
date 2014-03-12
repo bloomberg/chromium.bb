@@ -40,7 +40,6 @@ class MaximizeBubbleControllerBubble : public views::BubbleDelegateView,
 
   // Overridden from views::BubbleDelegateView.
   virtual gfx::Rect GetAnchorRect() OVERRIDE;
-  virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
   virtual bool CanActivate() const OVERRIDE;
 
   // Overridden from views::WidgetDelegateView.
@@ -83,17 +82,11 @@ class MaximizeBubbleControllerBubble : public views::BubbleDelegateView,
   // Our owning class.
   MaximizeBubbleController* owner_;
 
-  // The widget which contains our menu and the bubble border.
-  views::Widget* bubble_widget_;
-
   // The content accessor of the menu.
   BubbleContentsView* contents_view_;
 
   // The bubble border (weak reference).
   MaximizeBubbleBorder* bubble_border_;
-
-  // The rectangle before the animation starts.
-  gfx::Rect initial_position_;
 
   // The mouse watcher which takes care of out of window hover events.
   scoped_ptr<views::MouseWatcher> mouse_watcher_;

@@ -111,7 +111,7 @@ ConflictingModuleView::~ConflictingModuleView() {
 }
 
 void ConflictingModuleView::ShowBubble() {
-  StartFade(true);
+  GetWidget()->Show();
 
   IntegerPrefMember bubble_shown;
   bubble_shown.Init(

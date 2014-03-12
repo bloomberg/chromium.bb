@@ -31,8 +31,7 @@ FirstRunBubble* FirstRunBubble::ShowBubble(Browser* browser,
   first_run::LogFirstRunMetric(first_run::FIRST_RUN_BUBBLE_SHOWN);
 
   FirstRunBubble* delegate = new FirstRunBubble(browser, anchor_view);
-  views::BubbleDelegateView::CreateBubble(delegate);
-  delegate->StartFade(true);
+  views::BubbleDelegateView::CreateBubble(delegate)->Show();
   return delegate;
 }
 

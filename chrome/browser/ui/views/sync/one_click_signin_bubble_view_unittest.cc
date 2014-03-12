@@ -62,7 +62,6 @@ class OneClickSigninBubbleViewTest : public views::ViewsTestBase {
     OneClickSigninBubbleView* view =
         OneClickSigninBubbleView::view_for_testing();
     EXPECT_TRUE(view != NULL);
-    view->message_loop_for_testing_ = base::MessageLoop::current();
     return view;
   }
 

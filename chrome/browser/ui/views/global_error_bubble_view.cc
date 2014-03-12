@@ -51,7 +51,7 @@ GlobalErrorBubbleViewBase* GlobalErrorBubbleViewBase::ShowStandardBubbleView(
                                 browser,
                                 error);
   views::BubbleDelegateView::CreateBubble(bubble_view);
-  bubble_view->StartFade(true);
+  bubble_view->GetWidget()->Show();
   return bubble_view;
 }
 

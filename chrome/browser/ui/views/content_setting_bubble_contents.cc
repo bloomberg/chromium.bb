@@ -411,18 +411,18 @@ void ContentSettingBubbleContents::ButtonPressed(views::Button* sender,
   }
   DCHECK_EQ(sender, close_button_);
   content_setting_bubble_model_->OnDoneClicked();
-  StartFade(false);
+  GetWidget()->Close();
 }
 
 void ContentSettingBubbleContents::LinkClicked(views::Link* source,
                                                int event_flags) {
   if (source == custom_link_) {
     content_setting_bubble_model_->OnCustomLinkClicked();
-    StartFade(false);
+    GetWidget()->Close();
     return;
   }
   if (source == manage_link_) {
-    StartFade(false);
+    GetWidget()->Close();
     content_setting_bubble_model_->OnManageLinkClicked();
     // CAREFUL: Showing the settings window activates it, which deactivates the
     // info bubble, which causes it to close, which deletes us.

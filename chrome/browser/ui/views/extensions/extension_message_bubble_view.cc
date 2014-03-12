@@ -186,7 +186,7 @@ ExtensionMessageBubbleView::~ExtensionMessageBubbleView() {
 }
 
 void ExtensionMessageBubbleView::ShowBubble() {
-  StartFade(true);
+  GetWidget()->Show();
 }
 
 void ExtensionMessageBubbleView::Init() {

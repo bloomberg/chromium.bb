@@ -57,8 +57,7 @@ void OutdatedUpgradeBubbleView::ShowBubble(views::View* anchor_view,
   if (IsShowing())
     return;
   upgrade_bubble_ = new OutdatedUpgradeBubbleView(anchor_view, navigator);
-  views::BubbleDelegateView::CreateBubble(upgrade_bubble_);
-  upgrade_bubble_->StartFade(true);
+  views::BubbleDelegateView::CreateBubble(upgrade_bubble_)->Show();
   content::RecordAction(
       base::UserMetricsAction("OutdatedUpgradeBubble.Show"));
 }
@@ -203,5 +202,5 @@ void OutdatedUpgradeBubbleView::HandleButtonPressed(views::Button* sender) {
     content::RecordAction(
         base::UserMetricsAction("OutdatedUpgradeBubble.Later"));
   }
-  StartFade(false);
+  GetWidget()->Close();
 }

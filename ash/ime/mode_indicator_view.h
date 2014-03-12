@@ -14,6 +14,7 @@
 
 namespace views {
 class Label;
+class Widget;
 }  // namespace views
 
 namespace ash {
@@ -41,13 +42,11 @@ class ASH_EXPORT ModeIndicatorView : public views::BubbleDelegateView {
       views::Widget* widget) OVERRIDE;
 
  private:
-  // Hide the window with fading animation.  This is called from
-  // ShowAndFadeOut.
-  void FadeOut();
-
   gfx::Rect cursor_bounds_;
   views::Label* label_view_;
-  base::OneShotTimer<ModeIndicatorView> timer_;
+  base::OneShotTimer<views::Widget> timer_;
+
+  DISALLOW_COPY_AND_ASSIGN(ModeIndicatorView);
 };
 
 }  // namespace ime

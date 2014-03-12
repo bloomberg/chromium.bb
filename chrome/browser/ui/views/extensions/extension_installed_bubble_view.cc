@@ -237,10 +237,8 @@ class InstalledBubbleContent : public views::View,
 
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE {
-    if (sender == close_button_)
-      bubble_->StartFade(false);
-    else
-      NOTREACHED() << "Unknown view";
+    DCHECK_EQ(sender, close_button_);
+    GetWidget()->Close();
   }
 
   // Implements the views::LinkListener interface.
@@ -581,13 +579,12 @@ bool ExtensionInstalledBubbleView::MaybeShowNow() {
       bubble_.browser(), bubble_.extension(), bubble_.type(),
       &bubble_.icon(), this));
 
-  views::BubbleDelegateView::CreateBubble(this);
+  views::BubbleDelegateView::CreateBubble(this)->Show();
 
   // The bubble widget is now the parent and owner of |this| and takes care of
   // deletion when the bubble or browser go away.
   bubble_.IgnoreBrowserClosing();
 
-  StartFade(true);
   return true;
 }
 

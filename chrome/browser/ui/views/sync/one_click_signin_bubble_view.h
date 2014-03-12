@@ -17,10 +17,6 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/link_listener.h"
 
-namespace base {
-class MessageLoop;
-}
-
 namespace views {
 class GridLayout;
 class ImageButton;
@@ -77,7 +73,6 @@ class OneClickSigninBubbleView : public views::BubbleDelegateView,
   FRIEND_TEST_ALL_PREFIXES(OneClickSigninBubbleViewTest, DialogLearnMoreLink);
 
   // Overridden from views::BubbleDelegateView:
-  virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE;
   virtual void Init() OVERRIDE;
 
   // Overridden from views::LinkListener:
@@ -141,9 +136,6 @@ class OneClickSigninBubbleView : public views::BubbleDelegateView,
   views::ImageButton* close_button_;
 
   bool clicked_learn_more_;
-
-  // A message loop used only with unit tests.
-  base::MessageLoop* message_loop_for_testing_;
 
   // The bubble, if we're showing one.
   static OneClickSigninBubbleView* bubble_view_;

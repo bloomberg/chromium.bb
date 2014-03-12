@@ -220,7 +220,7 @@ void PasswordGenerationBubbleView::ButtonPressed(views::Button* sender,
         render_view_host_->GetRoutingID(), textfield_->text()));
     password_manager_->SetFormHasGeneratedPassword(form_);
     actions_.password_accepted = true;
-    StartFade(false);
+    GetWidget()->Close();
   }
   if (sender == regenerate_button_) {
     textfield_->SetText(
