@@ -17,12 +17,6 @@
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/input_method_base.h"
 
-namespace chromeos {
-namespace ibus {
-class CompositionText;
-}  // namespace ibus
-}  // namespace chromeos
-
 namespace ui {
 
 // A ui::InputMethod implementation based on IBus.
