@@ -4,7 +4,6 @@
 
 """Module containing helper class and methods for interacting with Gerrit."""
 
-import logging
 import operator
 
 from chromite.buildbot import constants
@@ -131,8 +130,8 @@ class GerritHelper(object):
       if result:
         return result.output.split()[0]
     except cros_build_lib.RunCommandError:
-      logging.error('Command "%s" failed.', cros_build_lib.CmdToStr(cmd),
-                    exc_info=True)
+      cros_build_lib.Error('Command "%s" failed.', cros_build_lib.CmdToStr(cmd),
+                           exc_info=True)
 
   def QuerySingleRecord(self, change=None, **kwargs):
     """Free-form query of a gerrit change that expects a single result.
@@ -200,8 +199,8 @@ class GerritHelper(object):
 
     if change and change.isdigit() and not query_kwds:
       if dryrun:
-        logging.info('Would have run gob_util.GetChangeDetail(%s, %s)',
-                     self.host, change)
+        cros_build_lib.Info('Would have run gob_util.GetChangeDetail(%s, %s)',
+                            self.host, change)
         return []
       change = self.GetChangeDetail(change)
       if change is None:
@@ -216,9 +215,10 @@ class GerritHelper(object):
                             ' and a "change" search parameter')
 
     if dryrun:
-      logging.info('Would have run gob_util.QueryChanges(%s, %s, '
-                   'first_param=%s, limit=%d)', self.host, repr(query_kwds),
-                   change, self._GERRIT_MAX_QUERY_RETURN)
+      cros_build_lib.Info(
+          'Would have run gob_util.QueryChanges(%s, %s, first_param=%s, '
+          'limit=%d)', self.host, repr(query_kwds), change,
+          self._GERRIT_MAX_QUERY_RETURN)
       return []
 
     moar = gob_util.QueryChanges(
@@ -296,11 +296,12 @@ class GerritHelper(object):
       return
     if dryrun:
       if msg:
-        logging.info('Would have add message "%s" to change "%s".',
-                     msg, change)
+        cros_build_lib.Info('Would have add message "%s" to change "%s".',
+                            msg, change)
       if labels:
         for key, val in labels.iteritems():
-          logging.info('Would have set label "%s" to "%s" for change "%s".',
+          cros_build_lib.Info(
+              'Would have set label "%s" to "%s" for change "%s".',
               key, val, change)
       return
     gob_util.SetReview(self.host, self._to_changenum(change),
@@ -309,7 +310,7 @@ class GerritHelper(object):
   def RemoveCommitReady(self, change, dryrun=False):
     """Set the 'Commit-Queue' label on a gerrit change to '0'."""
     if dryrun:
-      logging.info('Would have reset Commit-Queue label for %s', change)
+      cros_build_lib.Info('Would have reset Commit-Queue label for %s', change)
       return
     gob_util.ResetReviewLabels(self.host, self._to_changenum(change),
                                label='Commit-Queue', notify='OWNER')
@@ -317,21 +318,21 @@ class GerritHelper(object):
   def SubmitChange(self, change, dryrun=False):
     """Land (merge) a gerrit change."""
     if dryrun:
-      logging.info('Would have submitted change %s', change)
+      cros_build_lib.Info('Would have submitted change %s', change)
       return
     gob_util.SubmitChange(self.host, self._to_changenum(change))
 
   def AbandonChange(self, change, dryrun=False):
     """Mark a gerrit change as 'Abandoned'."""
     if dryrun:
-      logging.info('Would have abandoned change %s', change)
+      cros_build_lib.Info('Would have abandoned change %s', change)
       return
     gob_util.AbandonChange(self.host, self._to_changenum(change))
 
   def RestoreChange(self, change, dryrun=False):
     """Re-activate a previously abandoned gerrit change."""
     if dryrun:
-      logging.info('Would have restored change %s', change)
+      cros_build_lib.Info('Would have restored change %s', change)
       return
     gob_util.RestoreChange(self.host, self._to_changenum(change))
 

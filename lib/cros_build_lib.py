@@ -1425,9 +1425,8 @@ def GetDefaultBoard():
       default_board = default_board_file.read().strip()
       # Check for user typos like whitespace
       if not re.match('[a-zA-Z0-9-_]*$', default_board):
-        logging.warning('Noticed invalid default board: |%s|. '
-                        'Ignoring this default.',
-                        default_board)
+        Warning('Noticed invalid default board: |%s|. '
+                'Ignoring this default.', default_board)
         default_board = None
   except IOError:
     return None
@@ -1462,7 +1461,7 @@ def GetBoard(device_board, override_board=None, force=False):
     if not force and not BooleanPrompt(default=False, prolog=msg):
       Die('Exiting...')
 
-    logging.warning(msg)
+    Warning(msg)
 
   return board
 

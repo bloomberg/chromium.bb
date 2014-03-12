@@ -6,7 +6,6 @@
 
 import calendar
 import inspect
-import logging
 import os
 import random
 import re
@@ -745,7 +744,7 @@ class GitRepoPatch(object):
 
     self.Fetch(git_repo)
 
-    logging.info('Attempting to cherry-pick change %s', self)
+    cros_build_lib.Info('Attempting to cherry-pick change %s', self)
 
     if not git.DoesLocalBranchExist(git_repo, constants.PATCH_BRANCH):
       cmd = ['checkout', '-b', constants.PATCH_BRANCH, '-t', upstream]
@@ -830,7 +829,7 @@ class GitRepoPatch(object):
     try:
       self._SetChangeId(self._ParseChangeId(commit_message))
     except BrokenChangeID:
-      logging.warning(
+      cros_build_lib.Warning(
           'Change %s, sha1 %s lacks a change-id in its commit '
           'message.  CQ-DEPEND against this rev may not work, nor '
           'will any gerrit querying.  Please add the appropriate '
@@ -880,7 +879,8 @@ class GitRepoPatch(object):
     CQ-DEPEND=10001,10002
     """
     dependencies = []
-    logging.debug('Checking for CQ-DEPEND dependencies for change %s', self)
+    cros_build_lib.Debug('Checking for CQ-DEPEND dependencies for change %s',
+                         self)
 
     # Only fetch the commit message if needed.
     if self.commit_message is None:
@@ -892,8 +892,8 @@ class GitRepoPatch(object):
       raise BrokenCQDepends(self, str(e))
 
     if dependencies:
-      logging.debug('Found %s Paladin dependencies for change %s', dependencies,
-                   self)
+      cros_build_lib.Debug('Found %s Paladin dependencies for change %s',
+                           dependencies, self)
     return dependencies
 
   def _FindEbuildConflicts(self, git_repo, upstream, inflight=False):
@@ -1354,7 +1354,7 @@ class GerritPatch(GitRepoPatch):
             % (self.change_id, self.sha1, parsed_id))
 
     except BrokenChangeID:
-      logging.warning(
+      cros_build_lib.Warning(
           'Change %s, Change-Id %s, sha1 %s lacks a change-id in its commit '
           'message.  This can break the ability for any children to depend on '
           'this Change as a parent.  Please add the appropriate '
