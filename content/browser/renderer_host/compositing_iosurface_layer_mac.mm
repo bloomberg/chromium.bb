@@ -186,10 +186,17 @@
   if (!renderWidgetHostView_)
     return;
 
-  gfx::Rect window_rect([self frame]);
+  // The correct viewport to cover the layer will be set up by the caller.
+  // Transform this into a window size for DrawIOSurface, where it will be
+  // transformed back into this viewport.
+  GLint viewport[4];
+  glGetIntegerv(GL_VIEWPORT, viewport);
+  gfx::Rect window_rect(viewport[0], viewport[1], viewport[2], viewport[3]);
   float window_scale_factor = 1.f;
   if ([self respondsToSelector:(@selector(contentsScale))])
     window_scale_factor = [self contentsScale];
+  window_rect = ToNearestRect(
+      gfx::ScaleRect(window_rect, 1.f/window_scale_factor));
 
   if (!renderWidgetHostView_->compositing_iosurface_->DrawIOSurface(
         context_,

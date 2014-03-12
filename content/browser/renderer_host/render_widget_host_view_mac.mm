@@ -2962,6 +2962,14 @@ void RenderWidgetHostViewMac::SendPendingSwapAck() {
   [renderWidgetHostView_->software_layer_ setNeedsDisplay];
   [renderWidgetHostView_->compositing_iosurface_layer_ setFrame:frame];
   [renderWidgetHostView_->compositing_iosurface_layer_ setNeedsDisplay];
+
+  // Sometimes, especially when infobars are being removed, the setNeedsDisplay
+  // calls are dropped on the floor, and stale content is displayed. Calling
+  // displayIfNeeded will ensure that the right size frame is drawn to the
+  // screen.
+  // http://crbug.com/350817
+  [renderWidgetHostView_->software_layer_ displayIfNeeded];
+  [renderWidgetHostView_->compositing_iosurface_layer_ displayIfNeeded];
 }
 
 - (void)callSetNeedsDisplayInRect {
