@@ -1028,7 +1028,7 @@ void Element::attributeChanged(const QualifiedName& name, const AtomicString& ne
         AtomicString newId = makeIdForStyleResolution(newValue, document().inQuirksMode());
         if (newId != oldId) {
             elementData()->setIdForStyleResolution(newId);
-            shouldInvalidateStyle = testShouldInvalidateStyle && checkNeedsStyleInvalidationForIdChange(oldId, newId, styleResolver->ensureRuleFeatureSet());
+            shouldInvalidateStyle = testShouldInvalidateStyle && checkNeedsStyleInvalidationForIdChange(oldId, newId, styleResolver->ensureUpdatedRuleFeatureSet());
         }
     } else if (name == classAttr) {
         classAttributeChanged(newValue);
@@ -1096,11 +1096,11 @@ void Element::classAttributeChanged(const AtomicString& newClassString)
         elementData()->setClass(newClassString, shouldFoldCase);
         const SpaceSplitString& newClasses = elementData()->classNames();
         if (testShouldInvalidateStyle)
-            styleResolver->ensureRuleFeatureSet().scheduleStyleInvalidationForClassChange(oldClasses, newClasses, this);
+            styleResolver->ensureUpdatedRuleFeatureSet().scheduleStyleInvalidationForClassChange(oldClasses, newClasses, this);
     } else {
         const SpaceSplitString& oldClasses = elementData()->classNames();
         if (testShouldInvalidateStyle)
-            styleResolver->ensureRuleFeatureSet().scheduleStyleInvalidationForClassChange(oldClasses, this);
+            styleResolver->ensureUpdatedRuleFeatureSet().scheduleStyleInvalidationForClassChange(oldClasses, this);
         elementData()->clearClass();
     }
 
@@ -3003,7 +3003,7 @@ void Element::updateLabel(TreeScope& scope, const AtomicString& oldForAttributeV
 
 static bool hasSelectorForAttribute(Document* document, const AtomicString& localName)
 {
-    return document->ensureStyleResolver().ensureRuleFeatureSet().hasSelectorForAttribute(localName);
+    return document->ensureStyleResolver().ensureUpdatedRuleFeatureSet().hasSelectorForAttribute(localName);
 }
 
 void Element::willModifyAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& newValue)

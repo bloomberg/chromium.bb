@@ -1591,7 +1591,7 @@ void Document::updateStyleInvalidationIfNeeded()
     TRACE_EVENT0("webkit", "Document::computeNeedsStyleRecalcState");
     ASSERT(styleResolver());
 
-    styleResolver()->ensureRuleFeatureSet().computeStyleInvalidation(*this);
+    styleResolver()->ruleFeatureSet().computeStyleInvalidation(*this);
 }
 
 void Document::updateDistributionForNodeIfNeeded(Node* node)
@@ -1805,7 +1805,7 @@ void Document::updateStyle(StyleRecalcChange change)
         if (m_styleEngine->hasResolver()) {
             // Pseudo element removal and similar may only work with these flags still set. Reset them after the style recalc.
             StyleResolver& resolver = m_styleEngine->ensureResolver();
-            m_styleEngine->resetCSSFeatureFlags(resolver.ensureRuleFeatureSet());
+            m_styleEngine->resetCSSFeatureFlags(resolver.ensureUpdatedRuleFeatureSet());
             resolver.clearStyleSharingList();
         }
 

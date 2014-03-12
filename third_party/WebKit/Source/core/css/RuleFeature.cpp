@@ -276,7 +276,6 @@ void RuleFeatureSet::FeatureMetadata::add(const FeatureMetadata& other)
 
 void RuleFeatureSet::FeatureMetadata::clear()
 {
-
     idsInRules.clear();
     attrsInRules.clear();
     usesFirstLineRules = false;
@@ -298,9 +297,11 @@ void RuleFeatureSet::add(const RuleFeatureSet& other)
 
 void RuleFeatureSet::clear()
 {
-    m_metadata.clear();
     siblingRules.clear();
     uncommonAttributeRules.clear();
+    m_metadata.clear();
+    m_classInvalidationSets.clear();
+    m_pendingInvalidationMap.clear();
 }
 
 void RuleFeatureSet::scheduleStyleInvalidationForClassChange(const SpaceSplitString& changedClasses, Element* element)

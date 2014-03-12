@@ -482,7 +482,7 @@ void StyleEngine::createResolver()
     m_resolver = adoptPtr(new StyleResolver(m_document));
     appendActiveAuthorStyleSheets();
     m_fontSelector->registerForInvalidationCallbacks(m_resolver.get());
-    combineCSSFeatureFlags(m_resolver->ensureRuleFeatureSet());
+    combineCSSFeatureFlags(m_resolver->ensureUpdatedRuleFeatureSet());
 }
 
 void StyleEngine::clearResolver()

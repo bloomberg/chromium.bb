@@ -199,10 +199,15 @@ public:
     // Exposed for RenderStyle::isStyleAvilable().
     static RenderStyle* styleNotYetAvailable() { return s_styleNotYetAvailable; }
 
-    RuleFeatureSet& ensureRuleFeatureSet()
+    RuleFeatureSet& ensureUpdatedRuleFeatureSet()
     {
         if (hasPendingAuthorStyleSheets())
             appendPendingAuthorStyleSheets();
+        return m_features;
+    }
+
+    RuleFeatureSet& ruleFeatureSet()
+    {
         return m_features;
     }
 
