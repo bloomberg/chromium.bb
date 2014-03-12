@@ -732,6 +732,13 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="AsyncDNS.NameServersType" enum="AsyncDNSNameServersType">
+  <summary>
+    Type of nameservers in the DNS config, recorded each time the config is read
+    by the DNSConfigService.
+  </summary>
+</histogram>
+
 <histogram name="AsyncDNS.ParseToAddressList" enum="AsyncDNSParseResult">
   <summary>
     Counts of results of parsing addresses out of DNS responses in successful
@@ -24794,6 +24801,25 @@ other types of suffix sets.
   <int value="2" label="COMPUTER_NAME_FAILED"/>
   <int value="3" label="IPHELPER_FAILED"/>
   <int value="4" label="BAD_ADDRESS"/>
+</enum>
+
+<enum name="AsyncDNSNameServersType" type="int">
+  <summary>Type of nameservers in the DNS config.</summary>
+  <int value="0" label="NONE">No nameservers configured.</int>
+  <int value="1" label="GOOGLE_PUBLIC_DNS">
+    All nameservers are Google Public DNS servers.
+  </int>
+  <int value="2" label="PUBLIC">
+    All nameservers have public IP addresses (and aren't Google Public DNS
+    servers).
+  </int>
+  <int value="3" label="PRIVATE">
+    All nameservers have private IP addresses (loopback, link-local, or RFC
+    1918).
+  </int>
+  <int value="4" label="MIXED">
+    Nameservers are a mix of types (Google Public DNS, public, private).
+  </int>
 </enum>
 
 <enum name="AsyncDNSParseResult" type="int">

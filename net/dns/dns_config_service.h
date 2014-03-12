@@ -11,6 +11,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -30,6 +31,37 @@ namespace net {
 // Always use 1 second timeout (followed by binary exponential backoff).
 // TODO(szym): Remove code which reads timeout from system.
 const unsigned kDnsTimeoutSeconds = 1;
+
+// Classifies nameserver address lists for histograms.
+class NET_EXPORT_PRIVATE NameServerClassifier {
+ public:
+  // This is used in a histogram (AsyncDNS.NameServersType); add new entries
+  // right before MAX_VALUE.
+  enum NameServersType {
+    NAME_SERVERS_TYPE_NONE,
+    NAME_SERVERS_TYPE_GOOGLE_PUBLIC_DNS,
+    NAME_SERVERS_TYPE_PRIVATE,
+    NAME_SERVERS_TYPE_PUBLIC,
+    NAME_SERVERS_TYPE_MIXED,
+    NAME_SERVERS_TYPE_MAX_VALUE
+  };
+
+  NameServerClassifier();
+  ~NameServerClassifier();
+
+  NameServersType GetNameServersType(
+      const std::vector<net::IPEndPoint>& nameservers) const;
+
+ private:
+  struct NameServerTypeRule;
+
+  void AddRule(const char* pattern_string, NameServersType type);
+  NameServersType GetNameServerType(const IPAddressNumber& address) const;
+  static NameServersType MergeNameServersTypes(NameServersType a,
+                                               NameServersType b);
+
+  ScopedVector<NameServerTypeRule> rules_;
+};
 
 // DnsConfig stores configuration of the system resolver.
 struct NET_EXPORT_PRIVATE DnsConfig {
@@ -89,7 +121,6 @@ struct NET_EXPORT_PRIVATE DnsConfig {
   // as it may cause them to return incorrect results.
   bool use_local_ipv6;
 };
-
 
 // Service for reading system DNS settings, on demand or when signalled by
 // internal watchers and NetworkChangeNotifier.
@@ -174,6 +205,8 @@ class NET_EXPORT_PRIVATE DnsConfigService
 
   // Started in Invalidate*, cleared in On*Read.
   base::OneShotTimer<DnsConfigService> timer_;
+
+  NameServerClassifier classifier_;
 
   DISALLOW_COPY_AND_ASSIGN(DnsConfigService);
 };

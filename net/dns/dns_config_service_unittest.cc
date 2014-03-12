@@ -9,12 +9,106 @@
 #include "base/cancelable_callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/strings/string_split.h"
 #include "base/test/test_timeouts.h"
+#include "net/base/net_util.h"
+#include "net/dns/dns_protocol.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
 
 namespace {
+
+const NameServerClassifier::NameServersType kNone =
+    NameServerClassifier::NAME_SERVERS_TYPE_NONE;
+const NameServerClassifier::NameServersType kGoogle =
+    NameServerClassifier::NAME_SERVERS_TYPE_GOOGLE_PUBLIC_DNS;
+const NameServerClassifier::NameServersType kPrivate =
+    NameServerClassifier::NAME_SERVERS_TYPE_PRIVATE;
+const NameServerClassifier::NameServersType kPublic =
+    NameServerClassifier::NAME_SERVERS_TYPE_PUBLIC;
+const NameServerClassifier::NameServersType kMixed =
+    NameServerClassifier::NAME_SERVERS_TYPE_MIXED;
+
+class NameServerClassifierTest : public testing::Test {
+ protected:
+  NameServerClassifier::NameServersType Classify(
+      const std::string& servers_string) {
+    std::vector<std::string> server_strings;
+    base::SplitString(servers_string, ' ', &server_strings);
+
+    std::vector<IPEndPoint> servers;
+    for (std::vector<std::string>::const_iterator it = server_strings.begin();
+         it != server_strings.end();
+         ++it) {
+      if (*it == "")
+        continue;
+
+      IPAddressNumber address;
+      bool parsed = ParseIPLiteralToNumber(*it, &address);
+      EXPECT_TRUE(parsed);
+      servers.push_back(IPEndPoint(address, dns_protocol::kDefaultPort));
+    }
+
+    return classifier_.GetNameServersType(servers);
+  }
+
+ private:
+  NameServerClassifier classifier_;
+};
+
+TEST_F(NameServerClassifierTest, None) {
+  EXPECT_EQ(kNone, Classify(""));
+}
+
+TEST_F(NameServerClassifierTest, Google) {
+  EXPECT_EQ(kGoogle, Classify("8.8.8.8"));
+  EXPECT_EQ(kGoogle, Classify("8.8.8.8 8.8.4.4"));
+  EXPECT_EQ(kGoogle, Classify("2001:4860:4860::8888"));
+  EXPECT_EQ(kGoogle, Classify("2001:4860:4860::8888 2001:4860:4860::8844"));
+  EXPECT_EQ(kGoogle, Classify("2001:4860:4860::8888 8.8.8.8"));
+
+  // Make sure nobody took any shortcuts on the IP matching:
+  EXPECT_EQ(kPublic, Classify("8.8.8.4"));
+  EXPECT_EQ(kPublic, Classify("8.8.4.8"));
+  EXPECT_EQ(kPublic, Classify("2001:4860:4860::8884"));
+  EXPECT_EQ(kPublic, Classify("2001:4860:4860::8848"));
+  EXPECT_EQ(kPublic, Classify("2001:4860:4860::1:8888"));
+  EXPECT_EQ(kPublic, Classify("2001:4860:4860:1::8888"));
+}
+
+TEST_F(NameServerClassifierTest, PrivateLocalhost) {
+  EXPECT_EQ(kPrivate, Classify("127.0.0.1"));
+  EXPECT_EQ(kPrivate, Classify("::1"));
+}
+
+TEST_F(NameServerClassifierTest, PrivateRfc1918) {
+  EXPECT_EQ(kPrivate, Classify("10.0.0.0 10.255.255.255"));
+  EXPECT_EQ(kPrivate, Classify("172.16.0.0 172.31.255.255"));
+  EXPECT_EQ(kPrivate, Classify("192.168.0.0 192.168.255.255"));
+  EXPECT_EQ(kPrivate, Classify("10.1.1.1 172.16.1.1 192.168.1.1"));
+}
+
+TEST_F(NameServerClassifierTest, PrivateIPv4LinkLocal) {
+  EXPECT_EQ(kPrivate, Classify("169.254.0.0 169.254.255.255"));
+}
+
+TEST_F(NameServerClassifierTest, PrivateIPv6LinkLocal) {
+  EXPECT_EQ(kPrivate,
+      Classify("fe80:: fe80:ffff:ffff:ffff:ffff:ffff:ffff:ffff"));
+}
+
+TEST_F(NameServerClassifierTest, Public) {
+  EXPECT_EQ(kPublic, Classify("4.2.2.1"));
+  EXPECT_EQ(kPublic, Classify("4.2.2.1 4.2.2.2"));
+}
+
+TEST_F(NameServerClassifierTest, Mixed) {
+  EXPECT_EQ(kMixed, Classify("8.8.8.8 192.168.1.1"));
+  EXPECT_EQ(kMixed, Classify("8.8.8.8 4.2.2.1"));
+  EXPECT_EQ(kMixed, Classify("192.168.1.1 4.2.2.1"));
+  EXPECT_EQ(kMixed, Classify("8.8.8.8 192.168.1.1 4.2.2.1"));
+}
 
 class DnsConfigServiceTest : public testing::Test {
  public:
