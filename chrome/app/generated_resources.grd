@@ -6568,11 +6568,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_SYNCED_NOTIFICATIONS_DESCRIPTION" desc="Description for the flag to enable synced notifications.">
         Enable experimental Synchronized Notifications.
       </message>
-      <message name="IDS_FLAGS_ENABLE_SYNC_APP_LIST_NAME" desc="Name of the flag to enable syncing the app list.">
-        Enable App Launcher sync
+      <message name="IDS_FLAGS_DISABLE_SYNC_APP_LIST_NAME" desc="Name of the flag to disable syncing the app list.">
+        Disable App Launcher sync
       </message>
-      <message name="IDS_FLAGS_ENABLE_SYNC_APP_LIST_DESCRIPTION" desc="Description for the flag to enable syncing the app list.">
-        Enable experimental App Launcher sync.
+      <message name="IDS_FLAGS_DISABLE_SYNC_APP_LIST_DESCRIPTION" desc="Description for the flag to disable syncing the app list.">
+        Disable App Launcher sync.
       </message>
       <message name="IDS_FLAGS_ENABLE_SCREEN_CAPTURE_NAME" desc="Name of the flag to enable screen capture support.">
         Enable screen capture support in getUserMedia().

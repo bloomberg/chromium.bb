@@ -37,6 +37,9 @@ class ProfileSyncComponentsFactoryImplTest : public testing::Test {
   static std::vector<syncer::ModelType> DefaultDatatypes() {
     std::vector<syncer::ModelType> datatypes;
     datatypes.push_back(syncer::APPS);
+#if defined(ENABLE_APP_LIST)
+    datatypes.push_back(syncer::APP_LIST);
+#endif
     datatypes.push_back(syncer::APP_SETTINGS);
     datatypes.push_back(syncer::AUTOFILL);
     datatypes.push_back(syncer::AUTOFILL_PROFILE);
