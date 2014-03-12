@@ -48,11 +48,10 @@
 #include "ppapi/host/host_factory.h"
 #include "ppapi/host/ppapi_host.h"
 #include "ppapi/proxy/ppapi_messages.h"
-#include "ppapi/shared_impl/ppapi_constants.h"
 #include "ppapi/shared_impl/ppapi_nacl_plugin_args.h"
+#include "ppapi/shared_impl/ppapi_switches.h"
 
 #if defined(OS_POSIX)
-
 #include <fcntl.h>
 
 #include "ipc/ipc_channel_posix.h"
@@ -234,9 +233,6 @@ struct NaClProcessHost::NaClInternal {
 
 // -----------------------------------------------------------------------------
 
-unsigned NaClProcessHost::keepalive_throttle_interval_milliseconds_ =
-    ppapi::kKeepaliveThrottleIntervalDefaultMilliseconds;
-
 NaClProcessHost::NaClProcessHost(const GURL& manifest_url,
                                  int render_view_id,
                                  uint32 permission_bits,
@@ -356,12 +352,6 @@ void NaClProcessHost::EarlyStartup() {
     nacl_debug_mask = "!*://*/*ssh_client.nmf,chrome://pnacl-translator/*";
   }
   NaClBrowser::GetDelegate()->SetDebugPatterns(nacl_debug_mask);
-}
-
-// static
-void NaClProcessHost::SetPpapiKeepAliveThrottleForTesting(
-    unsigned milliseconds) {
-  keepalive_throttle_interval_milliseconds_ = milliseconds;
 }
 
 void NaClProcessHost::Launch(
@@ -868,11 +858,10 @@ void NaClProcessHost::OnPpapiChannelsCreated(
     ppapi::PpapiNaClPluginArgs args;
     args.off_the_record = nacl_host_message_filter_->off_the_record();
     args.permissions = permissions_;
-    args.keepalive_throttle_interval_milliseconds =
-        keepalive_throttle_interval_milliseconds_;
     CommandLine* cmdline = CommandLine::ForCurrentProcess();
     DCHECK(cmdline);
     std::string flag_whitelist[] = {
+      switches::kPpapiKeepAliveThrottle,
       switches::kV,
       switches::kVModule,
     };

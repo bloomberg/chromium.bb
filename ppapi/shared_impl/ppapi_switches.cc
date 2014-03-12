@@ -9,4 +9,7 @@ namespace switches {
 // Enables the testing interface for PPAPI.
 const char kEnablePepperTesting[] = "enable-pepper-testing";
 
+// Specifies throttling time in milliseconds for PpapiHostMsg_Keepalive IPCs.
+const char kPpapiKeepAliveThrottle[] = "ppapi-keep-alive-throttle";
+
 }  // namespace switches
