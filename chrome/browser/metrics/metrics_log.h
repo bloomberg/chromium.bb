@@ -113,9 +113,9 @@ class MetricsLog : public MetricsLogBase {
   //
   // If |log_type| is INITIAL_LOG, records additional info such as number of
   // incomplete shutdowns as well as extra breakpad and debugger stats.
-  void RecordStabilityMetrics(
-      base::TimeDelta incremental_uptime,
-      LogType log_type);
+  void RecordStabilityMetrics(base::TimeDelta incremental_uptime,
+                              base::TimeDelta uptime,
+                              LogType log_type);
 
   const base::TimeTicks& creation_time() const {
     return creation_time_;
@@ -168,7 +168,8 @@ class MetricsLog : public MetricsLogBase {
   // Delaying these stats would bias metrics away from happy long lived
   // chromium processes (ones that don't crash, and keep on running).
   void WriteRealtimeStabilityAttributes(PrefService* pref,
-                                        base::TimeDelta incremental_uptime);
+                                        base::TimeDelta incremental_uptime,
+                                        base::TimeDelta uptime);
 
   // Writes the list of installed plugins.
   void WritePluginList(const std::vector<content::WebPluginInfo>& plugin_list);

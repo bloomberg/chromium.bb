@@ -339,9 +339,15 @@ class MetricsService
   // Callback that moves the state to INIT_TASK_DONE.
   virtual void FinishedReceivingProfilerData() OVERRIDE;
 
-  // Get the amount of uptime since this function was last called.
-  // This updates the cumulative uptime metric for uninstall as a side effect.
-  base::TimeDelta GetIncrementalUptime(PrefService* pref);
+  // Get the amount of uptime since this process started and since the last
+  // call to this function.  Also updates the cumulative uptime metric (stored
+  // as a pref) for uninstall.  Uptimes are measured using TimeTicks, which
+  // guarantees that it is monotonic and does not jump if the user changes
+  // his/her clock.  The TimeTicks implementation also makes the clock not
+  // count time the computer is suspended.
+  void GetUptimes(PrefService* pref,
+                  base::TimeDelta* incremental_uptime,
+                  base::TimeDelta* uptime);
 
   // Returns the low entropy source for this client. This is a random value
   // that is non-identifying amongst browser clients. This method will
@@ -590,7 +596,10 @@ class MetricsService
   // The last entropy source returned by this service, used for testing.
   EntropySourceReturned entropy_source_returned_;
 
-  // Stores the time of the last call to |GetIncrementalUptime()|.
+  // Stores the time of the first call to |GetUptimes()|.
+  base::TimeTicks first_updated_time_;
+
+  // Stores the time of the last call to |GetUptimes()|.
   base::TimeTicks last_updated_time_;
 
   // Execution phase the browser is in.

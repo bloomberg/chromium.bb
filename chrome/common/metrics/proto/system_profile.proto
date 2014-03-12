@@ -361,9 +361,23 @@ message SystemProfileProto {
   // Figures that can be used to generate application stability metrics.
   // All values are counts of events since the last time that these
   // values were reported.
+  // Next tag: 24
   message Stability {
-    // Total amount of time that the program was running, in seconds.
-    optional int64 uptime_sec = 1;
+    // Total amount of time that the program was running, in seconds,
+    // since the last time a log was recorded, as measured using a client-side
+    // clock implemented via TimeTicks, which guarantees that it is monotonic
+    // and does not jump if the user changes his/her clock.  The TimeTicks
+    // implementation also makes the clock not count time the computer is
+    // suspended.
+    optional int64 incremental_uptime_sec = 1;
+
+    // Total amount of time that the program was running, in seconds,
+    // since startup, as measured using a client-side clock implemented
+    // via TimeTicks, which guarantees that it is monotonic and does not
+    // jump if the user changes his/her clock.  The TimeTicks implementation
+    // also makes the clock not count time the computer is suspended.
+    // This field was added for M-35.
+    optional int64 uptime_sec = 23;
 
     // Page loads along with renderer crashes and hangs, since page load count
     // roughly corresponds to usage.

@@ -1010,8 +1010,11 @@ void MetricsService::InitializeMetricsState(ReportingState reporting_state) {
     pref->SetBoolean(prefs::kStabilitySessionEndCompleted, true);
   }
 
-  // Initialize uptime counters.
-  const base::TimeDelta startup_uptime = GetIncrementalUptime(pref);
+  // Call GetUptimes() for the first time, thus allowing all later calls
+  // to record incremental uptimes accurately.
+  base::TimeDelta ignored_uptime_parameter;
+  base::TimeDelta startup_uptime;
+  GetUptimes(pref, &startup_uptime, &ignored_uptime_parameter);
   DCHECK_EQ(0, startup_uptime.InMicroseconds());
   // For backwards compatibility, leave this intact in case Omaha is checking
   // them.  prefs::kStabilityLastTimestampSec may also be useless now.
@@ -1157,22 +1160,26 @@ void MetricsService::FinishedReceivingProfilerData() {
   scheduler_->InitTaskComplete();
 }
 
-base::TimeDelta MetricsService::GetIncrementalUptime(PrefService* pref) {
+void MetricsService::GetUptimes(PrefService* pref,
+                                base::TimeDelta* incremental_uptime,
+                                base::TimeDelta* uptime) {
   base::TimeTicks now = base::TimeTicks::Now();
-  // If this is the first call, init |last_updated_time_|.
-  if (last_updated_time_.is_null())
+  // If this is the first call, init |first_updated_time_| and
+  // |last_updated_time_|.
+  if (last_updated_time_.is_null()) {
+    first_updated_time_ = now;
     last_updated_time_ = now;
-  const base::TimeDelta incremental_time = now - last_updated_time_;
+  }
+  *incremental_uptime = now - last_updated_time_;
+  *uptime = now - first_updated_time_;
   last_updated_time_ = now;
 
-  const int64 incremental_time_secs = incremental_time.InSeconds();
+  const int64 incremental_time_secs = incremental_uptime->InSeconds();
   if (incremental_time_secs > 0) {
     int64 metrics_uptime = pref->GetInt64(prefs::kUninstallMetricsUptimeSec);
     metrics_uptime += incremental_time_secs;
     pref->SetInt64(prefs::kUninstallMetricsUptimeSec, metrics_uptime);
   }
-
-  return incremental_time;
 }
 
 int MetricsService::GetLowEntropySource() {
@@ -1296,7 +1303,10 @@ void MetricsService::CloseCurrentLog() {
   current_log->RecordEnvironment(plugins_, google_update_metrics_,
                                  synthetic_trials);
   PrefService* pref = g_browser_process->local_state();
-  current_log->RecordStabilityMetrics(GetIncrementalUptime(pref),
+  base::TimeDelta incremental_uptime;
+  base::TimeDelta uptime;
+  GetUptimes(pref, &incremental_uptime, &uptime);
+  current_log->RecordStabilityMetrics(incremental_uptime, uptime,
                                       MetricsLog::ONGOING_LOG);
 
   RecordCurrentHistograms();
@@ -1552,8 +1562,8 @@ void MetricsService::PrepareInitialStabilityLog() {
       new MetricsLog(client_id_, session_id_));
   if (!initial_stability_log->LoadSavedEnvironmentFromPrefs())
     return;
-  initial_stability_log->RecordStabilityMetrics(base::TimeDelta(),
-                                                MetricsLog::INITIAL_LOG);
+  initial_stability_log->RecordStabilityMetrics(
+      base::TimeDelta(), base::TimeDelta(), MetricsLog::INITIAL_LOG);
   log_manager_.LoadPersistedUnsentLogs();
 
   log_manager_.PauseCurrentLog();
@@ -1582,7 +1592,10 @@ void MetricsService::PrepareInitialMetricsLog(MetricsLog::LogType log_type) {
   initial_metrics_log_->RecordEnvironment(plugins_, google_update_metrics_,
                                           synthetic_trials);
   PrefService* pref = g_browser_process->local_state();
-  initial_metrics_log_->RecordStabilityMetrics(GetIncrementalUptime(pref),
+  base::TimeDelta incremental_uptime;
+  base::TimeDelta uptime;
+  GetUptimes(pref, &incremental_uptime, &uptime);
+  initial_metrics_log_->RecordStabilityMetrics(incremental_uptime, uptime,
                                                log_type);
 
   // Histograms only get written to the current log, so make the new log current

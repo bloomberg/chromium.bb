@@ -379,7 +379,8 @@ TEST_F(MetricsLogTest, InitialLogStabilityMetrics) {
   log.RecordEnvironment(std::vector<content::WebPluginInfo>(),
                         GoogleUpdateMetrics(),
                         std::vector<chrome_variations::ActiveGroupId>());
-  log.RecordStabilityMetrics(base::TimeDelta(), MetricsLog::INITIAL_LOG);
+  log.RecordStabilityMetrics(
+      base::TimeDelta(), base::TimeDelta(), MetricsLog::INITIAL_LOG);
   const metrics::SystemProfileProto_Stability& stability =
       log.system_profile().stability();
   // Required metrics:
@@ -398,7 +399,8 @@ TEST_F(MetricsLogTest, OngoingLogStabilityMetrics) {
   log.RecordEnvironment(std::vector<content::WebPluginInfo>(),
                         GoogleUpdateMetrics(),
                         std::vector<chrome_variations::ActiveGroupId>());
-  log.RecordStabilityMetrics(base::TimeDelta(), MetricsLog::ONGOING_LOG);
+  log.RecordStabilityMetrics(
+      base::TimeDelta(), base::TimeDelta(), MetricsLog::ONGOING_LOG);
   const metrics::SystemProfileProto_Stability& stability =
       log.system_profile().stability();
   // Required metrics:
@@ -447,7 +449,8 @@ TEST_F(MetricsLogTest, Plugins) {
     update.Get()->Append(plugin_dict.release());
   }
 
-  log.RecordStabilityMetrics(base::TimeDelta(), MetricsLog::ONGOING_LOG);
+  log.RecordStabilityMetrics(
+      base::TimeDelta(), base::TimeDelta(), MetricsLog::ONGOING_LOG);
   const metrics::SystemProfileProto_Stability& stability =
       log.system_profile().stability();
   ASSERT_EQ(1, stability.plugin_stability_size());

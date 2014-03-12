@@ -412,9 +412,9 @@ const std::string& MetricsLog::version_extension() {
   return g_version_extension.Get();
 }
 
-void MetricsLog::RecordStabilityMetrics(
-    base::TimeDelta incremental_uptime,
-    LogType log_type) {
+void MetricsLog::RecordStabilityMetrics(base::TimeDelta incremental_uptime,
+                                        base::TimeDelta uptime,
+                                        LogType log_type) {
   DCHECK_NE(NO_LOG, log_type);
   DCHECK(!locked());
   DCHECK(HasEnvironment());
@@ -434,7 +434,7 @@ void MetricsLog::RecordStabilityMetrics(
   // restart to gather these, as that delay biases our observation away from
   // users that run happily for a looooong time.  We send increments with each
   // uma log upload, just as we send histogram data.
-  WriteRealtimeStabilityAttributes(pref, incremental_uptime);
+  WriteRealtimeStabilityAttributes(pref, incremental_uptime, uptime);
 
   // Omit some stats unless this is the initial stability log.
   if (log_type != INITIAL_LOG)
@@ -588,7 +588,8 @@ void MetricsLog::WriteRequiredStabilityAttributes(PrefService* pref) {
 
 void MetricsLog::WriteRealtimeStabilityAttributes(
     PrefService* pref,
-    base::TimeDelta incremental_uptime) {
+    base::TimeDelta incremental_uptime,
+    base::TimeDelta uptime) {
   // Update the stats which are critical for real-time stability monitoring.
   // Since these are "optional," only list ones that are non-zero, as the counts
   // are aggregated (summed) server side.
@@ -629,7 +630,10 @@ void MetricsLog::WriteRealtimeStabilityAttributes(
   metrics_log_chromeos_->WriteRealtimeStabilityAttributes(pref);
 #endif  // OS_CHROMEOS
 
-  const uint64 uptime_sec = incremental_uptime.InSeconds();
+  const uint64 incremental_uptime_sec = incremental_uptime.InSeconds();
+  if (incremental_uptime_sec)
+    stability->set_incremental_uptime_sec(incremental_uptime_sec);
+  const uint64 uptime_sec = uptime.InSeconds();
   if (uptime_sec)
     stability->set_uptime_sec(uptime_sec);
 }
