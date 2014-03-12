@@ -84,6 +84,8 @@ ScriptValue IDBRequest::result(ExceptionState& exceptionState)
         exceptionState.throwDOMException(InvalidStateError, IDBDatabase::requestNotFinishedErrorMessage);
         return ScriptValue();
     }
+    if (m_contextStopped || !executionContext())
+        return ScriptValue();
     m_resultDirty = false;
     return idbAnyToScriptValue(&m_requestState, m_result);
 }
@@ -99,6 +101,9 @@ PassRefPtrWillBeRawPtr<DOMError> IDBRequest::error(ExceptionState& exceptionStat
 
 ScriptValue IDBRequest::source(ExecutionContext* context) const
 {
+    if (m_contextStopped || !executionContext())
+        return ScriptValue();
+
     DOMRequestState requestState(context);
     return idbAnyToScriptValue(&requestState, m_source);
 }
