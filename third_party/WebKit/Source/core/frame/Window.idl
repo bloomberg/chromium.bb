@@ -191,8 +191,8 @@
     attribute EventHandler onwebkittransitionend;
     [PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute EventHandler onwheel;
 
-    [DeprecateAs=CaptureEvents] void captureEvents();
-    [DeprecateAs=ReleaseEvents] void releaseEvents();
+    [MeasureAs=WindowCaptureEvents] void captureEvents();
+    [MeasureAs=WindowReleaseEvents] void releaseEvents();
 
     // Additional constructors.
     attribute TransitionEventConstructor WebKitTransitionEvent;

@@ -138,8 +138,6 @@ public:
         ShadowDOMPrefixedShadowRoot = 89,
         SVGAnimationElement = 90,
         KeyboardEventKeyLocation = 91,
-        CaptureEvents = 92,
-        ReleaseEvents = 93,
         LineClamp = 96,
         SubFrameBeforeUnloadRegistered = 97,
         SubFrameBeforeUnloadFired = 98,
@@ -303,6 +301,10 @@ public:
         PrefixedWorkerURL = 284,
         WindowOrientation = 285,
         DOMStringListContains = 286,
+        DocumentCaptureEvents = 287,
+        DocumentReleaseEvents = 288,
+        WindowCaptureEvents = 289,
+        WindowReleaseEvents = 290,
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
         NumberOfFeatures, // This enum value must be last.

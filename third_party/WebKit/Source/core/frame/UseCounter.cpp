@@ -623,9 +623,6 @@ String UseCounter::deprecationMessage(Feature feature)
     case PrefixedPerformanceTimeline:
         return "'window.performance.webkitGet*' methods have been deprecated. Please use the unprefixed 'performance.get*' methods instead.";
 
-    case DocumentClear:
-        return "document.clear() is deprecated. This method doesn't do anything.";
-
     // HTML Media Capture
     case CaptureAttributeAsEnum:
         return "Using the 'capture' attribute as an enum is deprecated. Please use it as a boolean and specify the media types that should be accepted in the 'accept' attribute.";
@@ -633,12 +630,6 @@ String UseCounter::deprecationMessage(Feature feature)
     // Keyboard Event (DOM Level 3)
     case KeyboardEventKeyLocation:
         return "'KeyboardEvent.keyLocation' is deprecated. Please use 'KeyboardEvent.location' instead.";
-
-    case CaptureEvents:
-        return "captureEvents() is deprecated. This method doesn't do anything.";
-
-    case ReleaseEvents:
-        return "releaseEvents() is deprecated. This method doesn't do anything.";
 
     case ConsoleMarkTimeline:
         return "console.markTimeline is deprecated. Please use the console.timeStamp instead.";

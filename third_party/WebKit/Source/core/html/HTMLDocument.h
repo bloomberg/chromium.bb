@@ -58,7 +58,7 @@ public:
     const AtomicString& vlinkColor() const;
     void setVlinkColor(const AtomicString&);
 
-    void clear();
+    void clear() { }
 
     void captureEvents() { }
     void releaseEvents() { }

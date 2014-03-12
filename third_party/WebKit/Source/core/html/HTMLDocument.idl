@@ -36,10 +36,10 @@ interface HTMLDocument : Document {
 
     [Replaceable, ImplementedAs=allForBinding] readonly attribute HTMLAllCollection all;
 
-    [DeprecateAs=DocumentClear] void clear();
+    [MeasureAs=DocumentClear] void clear();
 
-    [DeprecateAs=CaptureEvents] void captureEvents();
-    [DeprecateAs=ReleaseEvents] void releaseEvents();
+    [MeasureAs=DocumentCaptureEvents] void captureEvents();
+    [MeasureAs=DocumentReleaseEvents] void releaseEvents();
 
     [TreatNullAs=NullString, CustomElementCallbacks] attribute DOMString dir;
     [TreatNullAs=NullString, CustomElementCallbacks] attribute DOMString designMode;

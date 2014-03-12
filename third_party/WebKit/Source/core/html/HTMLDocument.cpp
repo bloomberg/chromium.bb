@@ -300,13 +300,6 @@ bool HTMLDocument::isCaseSensitiveAttribute(const QualifiedName& attributeName)
     return !isPossibleHTMLAttr || !htmlCaseInsensitiveAttributesSet->contains(attributeName.localName().impl());
 }
 
-void HTMLDocument::clear()
-{
-    // FIXME: This does nothing, and that seems unlikely to be correct.
-    // We've long had a comment saying that IE doesn't support this.
-    // But I do see it in the documentation for Mozilla.
-}
-
 void HTMLDocument::write(DOMWindow* callingWindow, const Vector<String>& text)
 {
     ASSERT(callingWindow);
