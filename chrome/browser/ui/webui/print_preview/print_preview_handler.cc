@@ -839,10 +839,7 @@ void PrintPreviewHandler::HandleCancelPendingPrintRequest(
   WebContents* initiator = GetInitiator();
   if (initiator)
     ClearInitiatorDetails();
-  gfx::NativeWindow parent = initiator ?
-      initiator->GetView()->GetTopLevelNativeWindow() :
-      NULL;
-  chrome::ShowPrintErrorDialog(parent);
+  chrome::ShowPrintErrorDialog();
 }
 
 void PrintPreviewHandler::HandleSaveAppState(const base::ListValue* args) {

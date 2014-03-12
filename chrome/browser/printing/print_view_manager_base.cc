@@ -197,8 +197,7 @@ void PrintViewManagerBase::OnPrintingFailed(int cookie) {
   }
 
 #if defined(ENABLE_FULL_PRINTING)
-  chrome::ShowPrintErrorDialog(
-      web_contents()->GetView()->GetTopLevelNativeWindow());
+  chrome::ShowPrintErrorDialog();
 #endif
 
   ReleasePrinterQuery();

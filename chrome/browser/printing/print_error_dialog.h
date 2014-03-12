@@ -5,12 +5,11 @@
 #ifndef CHROME_BROWSER_PRINTING_PRINT_ERROR_DIALOG_H_
 #define CHROME_BROWSER_PRINTING_PRINT_ERROR_DIALOG_H_
 
-#include "ui/gfx/native_widget_types.h"
-
 namespace chrome {
 
 // Shows a window-modal error that printing failed for some unknown reason.
-void ShowPrintErrorDialog(gfx::NativeWindow parent);
+// TODO(vitalybuka, crbug.com/351550): Should be replaced with better UI.
+void ShowPrintErrorDialog();
 
 }  // namespace chrome
 
