@@ -58,7 +58,7 @@ void TopIconAnimationView::TransformView() {
   // closing a folder.
   ui::ScopedLayerAnimationSettings settings(layer()->GetAnimator());
   settings.AddObserver(this);
-  settings.SetTweenType(gfx::Tween::EASE_IN_OUT_2);
+  settings.SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
   settings.SetTransitionDuration(
       base::TimeDelta::FromMilliseconds(kFolderTransitionInDurationMs));
   layer()->SetTransform(open_folder_ ? gfx::Transform() : transform);

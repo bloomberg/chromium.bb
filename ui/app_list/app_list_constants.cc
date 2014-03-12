@@ -53,7 +53,7 @@ const gfx::Tween::Type kFolderFadeInTweenType = gfx::Tween::EASE_IN_2;
 
 // Animation curve used for fading out the target page when opening or closing
 // a folder.
-const gfx::Tween::Type kFolderFadeOutTweenType = gfx::Tween::EASE_IN_3;
+const gfx::Tween::Type kFolderFadeOutTweenType = gfx::Tween::FAST_OUT_LINEAR_IN;
 
 // Preferred number of columns and rows in apps grid.
 const int kPreferredCols = 4;

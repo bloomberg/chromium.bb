@@ -31,7 +31,7 @@ class WindowSelectorAnimationSettings
         ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
     SetTransitionDuration(base::TimeDelta::FromMilliseconds(
         ScopedTransformOverviewWindow::kTransitionMilliseconds));
-    SetTweenType(gfx::Tween::EASE_IN_OUT_2);
+    SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
   }
 
   virtual ~WindowSelectorAnimationSettings() {
