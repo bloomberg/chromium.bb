@@ -295,6 +295,9 @@ void RenderViewDevToolsAgentHost::RenderProcessGone(
     case base::TERMINATION_STATUS_ABNORMAL_TERMINATION:
     case base::TERMINATION_STATUS_PROCESS_WAS_KILLED:
     case base::TERMINATION_STATUS_PROCESS_CRASHED:
+#if defined(OS_ANDROID)
+    case base::TERMINATION_STATUS_OOM_PROTECTED:
+#endif
       RenderViewCrashed();
       break;
     default:
