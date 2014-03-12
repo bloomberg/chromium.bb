@@ -470,11 +470,6 @@ void SafeBrowsingDatabaseManager::ResetDatabase() {
       &SafeBrowsingDatabaseManager::OnResetDatabase, this));
 }
 
-void SafeBrowsingDatabaseManager::PurgeMemory() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  CloseDatabase();
-}
-
 void SafeBrowsingDatabaseManager::LogPauseDelay(base::TimeDelta time) {
   UMA_HISTOGRAM_LONG_TIMES("SB2.Delay", time);
 }
@@ -533,7 +528,6 @@ void SafeBrowsingDatabaseManager::DoStopOnIOThread() {
   enabled_ = false;
 
   // Delete queued checks, calling back any clients with 'SB_THREAT_TYPE_SAFE'.
-  // If we don't do this here we may fail to close the database below.
   while (!queued_checks_.empty()) {
     QueuedCheck queued = queued_checks_.front();
     if (queued.client) {
@@ -547,11 +541,23 @@ void SafeBrowsingDatabaseManager::DoStopOnIOThread() {
     queued_checks_.pop_front();
   }
 
-  // Close the database.  We don't simply DeleteSoon() because if a close is
-  // already pending, we'll double-free, and we don't set |database_| to NULL
-  // because if there is still anything running on the db thread, it could
-  // create a new database object (via GetDatabase()) that would then leak.
-  CloseDatabase();
+  // Close the database.  Cases to avoid:
+  //  * If |closing_database_| is true, continuing will queue up a second
+  //    request, |closing_database_| will be reset after handling the first
+  //    request, and if any functions on the db thread recreate the database, we
+  //    could start using it on the IO thread and then have the second request
+  //    handler delete it out from under us.
+  //  * If |database_| is NULL, then either no creation request is in flight, in
+  //    which case we don't need to do anything, or one is in flight, in which
+  //    case the database will be recreated before our deletion request is
+  //    handled, and could be used on the IO thread in that time period, leading
+  //    to the same problem as above.
+  // Checking DatabaseAvailable() avoids both of these.
+  if (DatabaseAvailable()) {
+    closing_database_ = true;
+    safe_browsing_thread_->message_loop()->PostTask(FROM_HERE,
+        base::Bind(&SafeBrowsingDatabaseManager::OnCloseDatabase, this));
+  }
 
   // Flush the database thread. Any in-progress database check results will be
   // ignored and cleaned up below.
@@ -598,37 +604,6 @@ bool SafeBrowsingDatabaseManager::MakeDatabaseAvailable() {
       base::Bind(base::IgnoreResult(&SafeBrowsingDatabaseManager::GetDatabase),
                  this));
   return false;
-}
-
-void SafeBrowsingDatabaseManager::CloseDatabase() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  // Cases to avoid:
-  //  * If |closing_database_| is true, continuing will queue up a second
-  //    request, |closing_database_| will be reset after handling the first
-  //    request, and if any functions on the db thread recreate the database, we
-  //    could start using it on the IO thread and then have the second request
-  //    handler delete it out from under us.
-  //  * If |database_| is NULL, then either no creation request is in flight, in
-  //    which case we don't need to do anything, or one is in flight, in which
-  //    case the database will be recreated before our deletion request is
-  //    handled, and could be used on the IO thread in that time period, leading
-  //    to the same problem as above.
-  //  * If |queued_checks_| is non-empty and |database_| is non-NULL, we're
-  //    about to be called back (in DatabaseLoadComplete()).  This will call
-  //    CheckUrl(), which will want the database.  Closing the database here
-  //    would lead to an infinite loop in DatabaseLoadComplete(), and even if it
-  //    didn't, it would be pointless since we'd just want to recreate.
-  //
-  // The first two cases above are handled by checking DatabaseAvailable().
-  if (!DatabaseAvailable() || !queued_checks_.empty())
-    return;
-
-  closing_database_ = true;
-  if (safe_browsing_thread_.get()) {
-    safe_browsing_thread_->message_loop()->PostTask(FROM_HERE,
-        base::Bind(&SafeBrowsingDatabaseManager::OnCloseDatabase, this));
-  }
 }
 
 SafeBrowsingDatabase* SafeBrowsingDatabaseManager::GetDatabase() {

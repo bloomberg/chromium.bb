@@ -184,9 +184,6 @@ class SafeBrowsingDatabaseManager
       const std::vector<SBFullHashResult>& full_hashes,
       bool can_cache);
 
-  // Called on the IO thread to release memory.
-  void PurgeMemory();
-
   // Log the user perceived delay caused by SafeBrowsing. This delay is the time
   // delta starting from when we would have started reading data from the
   // network, and ending when the SafeBrowsing check completes indicating that
@@ -249,14 +246,6 @@ class SafeBrowsingDatabaseManager
   // Note that this is only needed outside the db thread, since functions on the
   // db thread can call GetDatabase() directly.
   bool MakeDatabaseAvailable();
-
-  // Called on the IO thread to try to close the database, freeing the memory
-  // associated with it.  The database will be automatically reopened as needed.
-  //
-  // NOTE: Actual database closure is asynchronous, and until it happens, the IO
-  // thread is not allowed to access it; may not actually trigger a close if one
-  // is already pending or doing so would cause problems.
-  void CloseDatabase();
 
   // Should only be called on db thread as SafeBrowsingDatabase is not
   // threadsafe.
