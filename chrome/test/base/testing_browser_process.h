@@ -87,8 +87,7 @@ class TestingBrowserProcess : public BrowserProcess {
   virtual void CreateDevToolsHttpProtocolHandler(
       chrome::HostDesktopType host_desktop_type,
       const std::string& ip,
-      int port,
-      const std::string& frontend_url) OVERRIDE;
+      int port) OVERRIDE;
   virtual unsigned int AddRefModule() OVERRIDE;
   virtual unsigned int ReleaseModule() OVERRIDE;
   virtual bool IsShuttingDown() OVERRIDE;

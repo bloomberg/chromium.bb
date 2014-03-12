@@ -153,8 +153,7 @@ class BrowserProcess {
   virtual void CreateDevToolsHttpProtocolHandler(
       chrome::HostDesktopType host_desktop_type,
       const std::string& ip,
-      int port,
-      const std::string& frontend_url) = 0;
+      int port) = 0;
 
   virtual unsigned int AddRefModule() = 0;
   virtual unsigned int ReleaseModule() = 0;

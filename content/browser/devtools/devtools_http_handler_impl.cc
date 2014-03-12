@@ -215,8 +215,7 @@ GURL DevToolsHttpHandlerImpl::GetFrontendURL() {
   net::IPEndPoint ip_address;
   if (server_->GetLocalAddress(&ip_address))
     return GURL();
-  return GURL(std::string("http://") + ip_address.ToString() +
-      overridden_frontend_url_);
+  return GURL(std::string("http://") + ip_address.ToString() + frontend_url_);
 }
 
 static std::string PathWithoutParams(const std::string& path) {
@@ -390,8 +389,8 @@ std::string DevToolsHttpHandlerImpl::GetFrontendURLInternal(
     const std::string& host) {
   return base::StringPrintf(
       "%s%sws=%s%s%s",
-      overridden_frontend_url_.c_str(),
-      overridden_frontend_url_.find("?") == std::string::npos ? "?" : "&",
+      frontend_url_.c_str(),
+      frontend_url_.find("?") == std::string::npos ? "?" : "&",
       host.c_str(),
       kPageUrlPrefix,
       id.c_str());
@@ -641,11 +640,11 @@ DevToolsHttpHandlerImpl::DevToolsHttpHandlerImpl(
     const net::StreamListenSocketFactory* socket_factory,
     const std::string& frontend_url,
     DevToolsHttpHandlerDelegate* delegate)
-    : overridden_frontend_url_(frontend_url),
+    : frontend_url_(frontend_url),
       socket_factory_(socket_factory),
       delegate_(delegate) {
-  if (overridden_frontend_url_.empty())
-      overridden_frontend_url_ = "/devtools/devtools.html";
+  if (frontend_url_.empty())
+      frontend_url_ = "/devtools/devtools.html";
 
   // Balanced in ResetHandlerThreadAndRelease().
   AddRef();

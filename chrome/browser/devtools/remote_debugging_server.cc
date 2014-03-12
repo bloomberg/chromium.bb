@@ -12,11 +12,10 @@
 RemoteDebuggingServer::RemoteDebuggingServer(
     chrome::HostDesktopType host_desktop_type,
     const std::string& ip,
-    int port,
-    const std::string& frontend_url) {
+    int port) {
   devtools_http_handler_ = content::DevToolsHttpHandler::Start(
       new net::TCPListenSocketFactory(ip, port),
-      frontend_url,
+      "",
       new BrowserListTabContentsProvider(host_desktop_type));
 }
 

@@ -468,16 +468,10 @@ void LaunchDevToolsHandlerIfNeeded(const CommandLine& command_line) {
         command_line.GetSwitchValueASCII(::switches::kRemoteDebuggingPort);
     int port;
     if (base::StringToInt(port_str, &port) && port > 0 && port < 65535) {
-      std::string frontend_str;
-      if (command_line.HasSwitch(::switches::kRemoteDebuggingFrontend)) {
-        frontend_str = command_line.GetSwitchValueASCII(
-            ::switches::kRemoteDebuggingFrontend);
-      }
       g_browser_process->CreateDevToolsHttpProtocolHandler(
           chrome::HOST_DESKTOP_TYPE_NATIVE,
           "127.0.0.1",
-          port,
-          frontend_str);
+          port);
     } else {
       DLOG(WARNING) << "Invalid http debugger port number " << port;
     }

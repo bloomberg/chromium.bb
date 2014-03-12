@@ -113,7 +113,7 @@ class DevToolsHttpHandlerImpl
   // The thread used by the devtools handler to run server socket.
   scoped_ptr<base::Thread> thread_;
 
-  std::string overridden_frontend_url_;
+  std::string frontend_url_;
   scoped_ptr<const net::StreamListenSocketFactory> socket_factory_;
   scoped_refptr<net::HttpServer> server_;
   typedef std::map<int, DevToolsClientHost*> ConnectionToClientHostMap;
