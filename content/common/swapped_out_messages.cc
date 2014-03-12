@@ -30,6 +30,9 @@ bool SwappedOutMessages::CanSendWhileSwappedOut(const IPC::Message* msg) {
     case ViewHostMsg_SwapCompositorFrame::ID:
     case ViewHostMsg_UpdateIsDelayed::ID:
     case ViewHostMsg_DidActivateAcceleratedCompositing::ID:
+    // Handled by WorkerMessageFilter (or by SharedWorkerMessageFilter when
+    // embedded-shared-worker is enabled).
+    case ViewHostMsg_DocumentDetached::ID:
     // Allow cross-process JavaScript calls.
     case ViewHostMsg_RouteCloseEvent::ID:
     case ViewHostMsg_RouteMessageEvent::ID:
