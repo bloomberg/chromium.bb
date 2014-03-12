@@ -1843,7 +1843,7 @@ setup_output_seat_constraint(struct drm_compositor *ec,
 	if (strcmp(s, "") != 0) {
 		struct udev_seat *seat;
 
-		seat = udev_seat_get_named(&ec->base, s);
+		seat = udev_seat_get_named(&ec->input, s);
 		if (seat)
 			seat->base.output = output;
 

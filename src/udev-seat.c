@@ -35,8 +35,6 @@
 static const char default_seat[] = "seat0";
 static const char default_seat_name[] = "default";
 
-static struct udev_seat *
-udev_seat_create(struct weston_compositor *c, const char *seat_name);
 static void
 udev_seat_destroy(struct udev_seat *seat);
 
@@ -67,7 +65,7 @@ device_added(struct udev_device *udev_device, struct udev_input *input)
 	if (!seat_name)
 		seat_name = default_seat_name;
 
-	seat = udev_seat_get_named(c, seat_name);
+	seat = udev_seat_get_named(input, seat_name);
 
 	if (seat == NULL)
 		return -1;
@@ -365,8 +363,9 @@ notify_output_create(struct wl_listener *listener, void *data)
 }
 
 static struct udev_seat *
-udev_seat_create(struct weston_compositor *c, const char *seat_name)
+udev_seat_create(struct udev_input *input, const char *seat_name)
 {
+	struct weston_compositor *c = input->compositor;
 	struct udev_seat *seat;
 
 	seat = zalloc(sizeof *seat);
@@ -393,8 +392,9 @@ udev_seat_destroy(struct udev_seat *seat)
 }
 
 struct udev_seat *
-udev_seat_get_named(struct weston_compositor *c, const char *seat_name)
+udev_seat_get_named(struct udev_input *input, const char *seat_name)
 {
+	struct weston_compositor *c = input->compositor;
 	struct udev_seat *seat;
 
 	wl_list_for_each(seat, &c->seat_list, base.link) {
@@ -402,7 +402,7 @@ udev_seat_get_named(struct weston_compositor *c, const char *seat_name)
 			return seat;
 	}
 
-	seat = udev_seat_create(c, seat_name);
+	seat = udev_seat_create(input, seat_name);
 
 	if (!seat)
 		return NULL;
