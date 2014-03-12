@@ -34,6 +34,8 @@ cr.define('options', function() {
           22, 24, 26, 28, 30, 32, 34, 36, 40, 44, 48, 56, 64, 72];
       standardFontRange.addEventListener(
           'change', this.standardRangeChanged_.bind(this, standardFontRange));
+      standardFontRange.addEventListener(
+          'input', this.standardRangeChanged_.bind(this, standardFontRange));
       standardFontRange.customChangeHandler =
           this.standardFontSizeChanged_.bind(standardFontRange);
 
@@ -42,6 +44,8 @@ cr.define('options', function() {
           18, 20, 22, 24];
       minimumFontRange.addEventListener(
           'change', this.minimumRangeChanged_.bind(this, minimumFontRange));
+      minimumFontRange.addEventListener(
+          'input', this.minimumRangeChanged_.bind(this, minimumFontRange));
       minimumFontRange.customChangeHandler =
           this.minimumFontSizeChanged_.bind(minimumFontRange);
 
