@@ -13,7 +13,6 @@ def GetPreferredTryMasters(project, change):
     'tryserver.chromium': {
       'linux_gpu': set(['defaulttests']),
       'mac_gpu': set(['defaulttests']),
-      'mac_gpu_retina': set(['defaulttests']),
       'win_gpu': set(['defaulttests']),
     }
   }

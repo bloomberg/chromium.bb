@@ -230,7 +230,6 @@ def GetPreferredTryMasters(project, change):
       'linux_layout_rel': set(['defaulttests']),
       'linux_gpu': set(['defaulttests']),
       'mac_gpu': set(['defaulttests']),
-      'mac_gpu_retina': set(['defaulttests']),
       'win_gpu': set(['defaulttests']),
     },
   }
