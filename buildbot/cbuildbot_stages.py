@@ -3664,28 +3664,24 @@ class DebugSymbolsStage(BoardSpecificBuilderStage, ArchivingStageMixin):
   def PerformStage(self):
     """Generate debug symbols and upload debug.tgz."""
     buildroot = self._build_root
-    config = self._run.config
     board = self._current_board
-    debug = self._run.debug
-    archive_path = self.archive_path
 
-    commands.GenerateBreakpadSymbols(buildroot, board, debug)
+    commands.GenerateBreakpadSymbols(buildroot, board, self._run.debug)
     self.board_runattrs.SetParallel('breakpad_symbols_generated', True)
 
-    # Kick off the symbol upload process in the background.
-    failed_list = os.path.join(archive_path, 'failed_upload_symbols.list')
-    if config['upload_symbols']:
-      self.UploadSymbols(buildroot, board, failed_list)
+    steps = [self.UploadDebugTarball]
+    failed_list = os.path.join(self.archive_path, 'failed_upload_symbols.list')
+    if self._run.config.upload_symbols:
+      steps.append(lambda: self.UploadSymbols(buildroot, board, failed_list))
 
-    # Generate and upload tarball.
-    with self.ArtifactUploader(archive=False) as queue:
-      if os.path.exists(failed_list):
-        queue.put([os.path.basename(failed_list)])
+    parallel.RunParallelSteps(steps)
 
-      filename = commands.GenerateDebugTarball(
-          buildroot, board, archive_path,
-          config['archive_build_debug'])
-      queue.put([filename])
+  def UploadDebugTarball(self):
+    """Generate and upload the debug tarball."""
+    filename = commands.GenerateDebugTarball(
+        self._build_root, self._current_board, self.archive_path,
+        self._run.config.archive_build_debug)
+    self.UploadArtifact(filename, archive=False)
 
     cros_build_lib.Info('Announcing availability of debug tarball now.')
     self.board_runattrs.SetParallel('debug_tarball_generated', True)
@@ -3699,9 +3695,12 @@ class DebugSymbolsStage(BoardSpecificBuilderStage, ArchivingStageMixin):
       official = False
     else:
       cnt = None
-      official = self._run.config['chromeos_official']
+      official = self._run.config.chromeos_official
 
     commands.UploadSymbols(buildroot, board, official, cnt, failed_list)
+
+    if os.path.exists(failed_list):
+      self.UploadArtifact(os.path.basename(failed_list), archive=False)
 
   def _HandleStageException(self, exc_info):
     """Tell other stages to not wait on us if we die for some reason."""

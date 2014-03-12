@@ -2004,6 +2004,7 @@ class DebugSymbolsStageTest(AbstractStageTest):
 
   def setUp(self):
     self.StartPatcher(BuilderRunMock())
+    self.StartPatcher(ArchivingMock())
     self.StartPatcher(parallel_unittest.ParallelMock())
 
     self.gen_mock = self.PatchObject(commands, 'GenerateBreakpadSymbols')
@@ -2097,10 +2098,10 @@ class DebugSymbolsStageTest(AbstractStageTest):
 
     self.assertEqual(self.gen_mock.call_count, 1)
     self.assertEqual(self.upload_mock.call_count, 1)
-    self.assertEqual(self.tar_mock.call_count, 0)
+    self.assertEqual(self.tar_mock.call_count, 1)
 
     self.assertBoardAttrEqual('breakpad_symbols_generated', True)
-    self.assertBoardAttrEqual('debug_tarball_generated', False)
+    self.assertBoardAttrEqual('debug_tarball_generated', True)
 
 
 class PassStage(bs.BuilderStage):
