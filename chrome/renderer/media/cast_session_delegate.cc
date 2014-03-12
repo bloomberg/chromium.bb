@@ -77,7 +77,7 @@ void CastSessionDelegate::StartAudio(
   cast_transport_->InitializeAudio(transport_config);
   cast_sender_->InitializeAudio(
       config,
-      base::Bind(&CastSessionDelegate::InitializationResult,
+      base::Bind(&CastSessionDelegate::InitializationResultCB,
                  weak_factory_.GetWeakPtr()));
 }
 
@@ -96,7 +96,7 @@ void CastSessionDelegate::StartVideo(
   // hardware video encoding.
   cast_sender_->InitializeVideo(
       config,
-      base::Bind(&CastSessionDelegate::InitializationResult,
+      base::Bind(&CastSessionDelegate::InitializationResultCB,
                  weak_factory_.GetWeakPtr()),
       NULL /* GPU*/);
 }
@@ -226,21 +226,17 @@ void CastSessionDelegate::StatusNotificationCB(
   // TODO(hubbe): Call javascript UDPTransport error function.
 }
 
-void CastSessionDelegate::InitializationResult(
+void CastSessionDelegate::InitializationResultCB(
     media::cast::CastInitializationStatus result) const {
   DCHECK(cast_sender_);
 
   // TODO(pwestin): handle the error codes.
   if (result == media::cast::STATUS_AUDIO_INITIALIZED) {
-    if (!audio_frame_input_available_callback_.is_null()) {
-      audio_frame_input_available_callback_.Run(
-          cast_sender_->audio_frame_input());
-    }
+    audio_frame_input_available_callback_.Run(
+        cast_sender_->audio_frame_input());
   } else if (result == media::cast::STATUS_VIDEO_INITIALIZED) {
-    if (!video_frame_input_available_callback_.is_null()) {
-      video_frame_input_available_callback_.Run(
-          cast_sender_->video_frame_input());
-    }
+    video_frame_input_available_callback_.Run(
+        cast_sender_->video_frame_input());
   }
 }
 

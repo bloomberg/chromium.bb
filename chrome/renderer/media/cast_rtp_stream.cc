@@ -11,7 +11,6 @@
 #include "chrome/renderer/media/cast_udp_transport.h"
 #include "content/public/renderer/media_stream_audio_sink.h"
 #include "content/public/renderer/media_stream_video_sink.h"
-#include "content/public/renderer/render_thread.h"
 #include "media/audio/audio_parameters.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_fifo.h"
@@ -132,10 +131,7 @@ class CastVideoSink : public base::SupportsWeakPtr<CastVideoSink>,
                 const CastRtpStream::ErrorCallback& error_callback)
       : track_(track),
         sink_added_(false),
-        error_callback_(error_callback),
-        render_thread_task_runner_(content::RenderThread::Get()
-                                       ->GetMessageLoop()
-                                       ->message_loop_proxy()) {}
+        error_callback_(error_callback) {}
 
   virtual ~CastVideoSink() {
     if (sink_added_)
@@ -145,25 +141,21 @@ class CastVideoSink : public base::SupportsWeakPtr<CastVideoSink>,
   // content::MediaStreamVideoSink implementation.
   virtual void OnVideoFrame(const scoped_refptr<media::VideoFrame>& frame)
       OVERRIDE {
-    DCHECK(render_thread_task_runner_->BelongsToCurrentThread());
     DCHECK(frame_input_);
     // TODO(hclam): Pass in the accurate capture time to have good
     // audio/video sync.
     frame_input_->InsertRawVideoFrame(frame, base::TimeTicks::Now());
   }
 
-  // Attach this sink to MediaStreamTrack. This method call must
-  // be made on the render thread. Incoming data can then be
-  // passed to media::cast::FrameInput on any thread.
+  // Attach this sink to a video track represented by |track_|.
+  // Data received from the track will be submitted to |frame_input|.
   void AddToTrack(
       const scoped_refptr<media::cast::VideoFrameInput>& frame_input) {
-    DCHECK(render_thread_task_runner_->BelongsToCurrentThread());
+    DCHECK(!sink_added_);
+    sink_added_ = true;
 
     frame_input_ = frame_input;
-    if (!sink_added_) {
-      AddToVideoTrack(this, track_);
-      sink_added_ = true;
-    }
+    AddToVideoTrack(this, track_);
   }
 
  private:
@@ -171,7 +163,6 @@ class CastVideoSink : public base::SupportsWeakPtr<CastVideoSink>,
   scoped_refptr<media::cast::VideoFrameInput> frame_input_;
   bool sink_added_;
   CastRtpStream::ErrorCallback error_callback_;
-  scoped_refptr<base::SingleThreadTaskRunner> render_thread_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(CastVideoSink);
 };
@@ -193,9 +184,6 @@ class CastAudioSink : public base::SupportsWeakPtr<CastAudioSink>,
         sink_added_(false),
         error_callback_(error_callback),
         weak_factory_(this),
-        render_thread_task_runner_(content::RenderThread::Get()
-                                   ->GetMessageLoop()
-                                   ->message_loop_proxy()),
         input_preroll_(0),
         output_channels_(output_channels),
         output_sample_rate_(output_sample_rate) {}
@@ -227,17 +215,11 @@ class CastAudioSink : public base::SupportsWeakPtr<CastAudioSink>,
     // TODO(hclam): Pass in the accurate capture time to have good
     // audio / video sync.
 
-    // TODO(hclam): We shouldn't hop through the render thread.
-    // Bounce the call from the real-time audio thread to the render thread.
-    // Needed since frame_input_ can be changed runtime by the render thread.
     media::AudioBus* const input_bus_ptr = input_bus.get();
-    render_thread_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&CastAudioSink::SendAudio,
-                   weak_factory_.GetWeakPtr(),
-                   input_bus_ptr,
-                   base::TimeTicks::Now(),
-                   base::Bind(&DeleteAudioBus, base::Passed(&input_bus))));
+    frame_input_->InsertAudio(
+        input_bus_ptr,
+        base::TimeTicks::Now(),
+        base::Bind(&DeleteAudioBus, base::Passed(&input_bus)));
   }
 
   // Return a resampled audio data from input. This is called when the
@@ -277,14 +259,6 @@ class CastAudioSink : public base::SupportsWeakPtr<CastAudioSink>,
     return output_bus.Pass();
   }
 
-  void SendAudio(const media::AudioBus* audio_bus,
-                 const base::TimeTicks& recorded_time,
-                 const base::Closure& done_callback) {
-    DCHECK(render_thread_task_runner_->BelongsToCurrentThread());
-    DCHECK(frame_input_);
-    frame_input_->InsertAudio(audio_bus, recorded_time, done_callback);
-  }
-
   // Called on real-time audio thread.
   virtual void OnSetFormat(const media::AudioParameters& params) OVERRIDE {
     if (params.sample_rate() == output_sample_rate_)
@@ -301,15 +275,18 @@ class CastAudioSink : public base::SupportsWeakPtr<CastAudioSink>,
         base::Bind(&CastAudioSink::ProvideData, base::Unretained(this))));
   }
 
-  // See CastVideoSink for details.
+  // Add this sink to the track. Data received from the track will be
+  // submitted to |frame_input|.
   void AddToTrack(
       const scoped_refptr<media::cast::AudioFrameInput>& frame_input) {
-    DCHECK(render_thread_task_runner_->BelongsToCurrentThread());
+    DCHECK(!sink_added_);
+    sink_added_ = true;
+
+    // This member is written here and then accessed on the IO thread
+    // We will not get data until AddToAudioTrack is called so it is
+    // safe to access this member now.
     frame_input_ = frame_input;
-    if (!sink_added_) {
-      AddToAudioTrack(this, track_);
-      sink_added_ = true;
-    }
+    AddToAudioTrack(this, track_);
   }
 
   void ProvideData(int frame_delay, media::AudioBus* output_bus) {
@@ -318,11 +295,9 @@ class CastAudioSink : public base::SupportsWeakPtr<CastAudioSink>,
 
  private:
   blink::WebMediaStreamTrack track_;
-  scoped_refptr<media::cast::AudioFrameInput> frame_input_;
   bool sink_added_;
   CastRtpStream::ErrorCallback error_callback_;
   base::WeakPtrFactory<CastAudioSink> weak_factory_;
-  scoped_refptr<base::SingleThreadTaskRunner> render_thread_task_runner_;
 
   scoped_ptr<media::MultiChannelResampler> resampler_;
   scoped_ptr<media::AudioFifo> fifo_;
@@ -330,6 +305,9 @@ class CastAudioSink : public base::SupportsWeakPtr<CastAudioSink>,
   int input_preroll_;
   const int output_channels_;
   const int output_sample_rate_;
+
+  // This member is accessed on the real-time audio time.
+  scoped_refptr<media::cast::AudioFrameInput> frame_input_;
 
   DISALLOW_COPY_AND_ASSIGN(CastAudioSink);
 };
