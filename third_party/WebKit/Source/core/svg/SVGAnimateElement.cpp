@@ -29,7 +29,6 @@
 #include "core/css/StylePropertySet.h"
 #include "core/dom/QualifiedName.h"
 #include "core/svg/SVGAnimatedTypeAnimator.h"
-#include "core/svg/SVGAnimatorFactory.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGElementInstance.h"
 
@@ -394,7 +393,7 @@ void SVGAnimateElement::resetAnimatedPropertyType()
 SVGAnimatedTypeAnimator* SVGAnimateElement::ensureAnimator()
 {
     if (!m_animator)
-        m_animator = SVGAnimatorFactory::create(this, targetElement(), m_animatedPropertyType);
+        m_animator = SVGAnimatedTypeAnimator::create(m_animatedPropertyType, this, targetElement());
     ASSERT(m_animatedPropertyType == m_animator->type());
     return m_animator.get();
 }

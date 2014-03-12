@@ -29,22 +29,28 @@
 
 namespace WebCore {
 
+class NewSVGAnimatedPropertyBase;
 class NewSVGPropertyBase;
 class SVGElement;
 class SVGAnimationElement;
 
-class SVGAnimatedTypeAnimator {
+class SVGAnimatedTypeAnimator FINAL {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    virtual ~SVGAnimatedTypeAnimator();
-    virtual PassRefPtr<NewSVGPropertyBase> constructFromString(const String&) = 0;
+    static PassOwnPtr<SVGAnimatedTypeAnimator> create(AnimatedPropertyType type, SVGAnimationElement* animationElement, SVGElement* targetElement)
+    {
+        return adoptPtr(new SVGAnimatedTypeAnimator(type, animationElement, targetElement));
+    }
+    ~SVGAnimatedTypeAnimator();
 
-    virtual PassRefPtr<NewSVGPropertyBase> startAnimValAnimation(const Vector<SVGElement*>&) = 0;
-    virtual void stopAnimValAnimation(const Vector<SVGElement*>&) = 0;
-    virtual PassRefPtr<NewSVGPropertyBase> resetAnimValToBaseVal(const Vector<SVGElement*>&) = 0;
+    PassRefPtr<NewSVGPropertyBase> constructFromString(const String&);
 
-    virtual void calculateAnimatedValue(float percentage, unsigned repeatCount, NewSVGPropertyBase*, NewSVGPropertyBase*, NewSVGPropertyBase*, NewSVGPropertyBase*) = 0;
-    virtual float calculateDistance(const String& fromString, const String& toString) = 0;
+    PassRefPtr<NewSVGPropertyBase> startAnimValAnimation(const Vector<SVGElement*>&);
+    void stopAnimValAnimation(const Vector<SVGElement*>&);
+    PassRefPtr<NewSVGPropertyBase> resetAnimValToBaseVal(const Vector<SVGElement*>&);
+
+    void calculateAnimatedValue(float percentage, unsigned repeatCount, NewSVGPropertyBase*, NewSVGPropertyBase*, NewSVGPropertyBase*, NewSVGPropertyBase*);
+    float calculateDistance(const String& fromString, const String& toString);
 
     void calculateFromAndToValues(RefPtr<NewSVGPropertyBase>& from, RefPtr<NewSVGPropertyBase>& to, const String& fromString, const String& toString);
     void calculateFromAndByValues(RefPtr<NewSVGPropertyBase>& from, RefPtr<NewSVGPropertyBase>& to, const String& fromString, const String& byString);
@@ -52,12 +58,20 @@ public:
     void setContextElement(SVGElement* contextElement) { m_contextElement = contextElement; }
     AnimatedPropertyType type() const { return m_type; }
 
-protected:
+private:
     SVGAnimatedTypeAnimator(AnimatedPropertyType, SVGAnimationElement*, SVGElement*);
+
+    friend class ParsePropertyFromString;
+    PassRefPtr<NewSVGPropertyBase> createPropertyForAnimation(const String&);
+    PassRefPtr<NewSVGPropertyBase> resetAnimation(const Vector<SVGElement*>&);
+
+    bool isAnimatingSVGDom() const { return m_animatedProperty; }
+    bool isAnimatingCSSProperty() const { return !m_animatedProperty; }
 
     AnimatedPropertyType m_type;
     SVGAnimationElement* m_animationElement;
     SVGElement* m_contextElement;
+    RefPtr<NewSVGAnimatedPropertyBase> m_animatedProperty;
 };
 
 } // namespace WebCore

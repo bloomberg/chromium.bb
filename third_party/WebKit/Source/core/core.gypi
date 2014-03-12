@@ -2862,7 +2862,6 @@
             'svg/SVGAnimatedInteger.cpp',
             'svg/SVGAnimatedIntegerOptionalInteger.cpp',
             'svg/SVGAnimatedLength.cpp',
-            'svg/SVGAnimatedNewPropertyAnimator.cpp',
             'svg/SVGAnimatedNumber.cpp',
             'svg/SVGAnimatedNumberOptionalNumber.cpp',
             'svg/SVGAnimatedPath.cpp',
