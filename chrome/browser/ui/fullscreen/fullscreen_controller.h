@@ -256,12 +256,6 @@ class FullscreenController : public content::NotificationObserver {
   // WindowFullscreenStateChanged do so.
   bool reentrant_window_state_change_call_check_;
 
-  // A WebContents pointer is in this set if it entered fullscreen mode during
-  // screen capture. In other words, this tracks those WebContentses that are in
-  // fullscreen mode, but the browser window is not. See 'FullscreenWithinTab
-  // Note'.
-  std::set<const content::WebContents*> captured_tabs_;
-
   // Used in testing to confirm proper behavior for specific, privileged
   // fullscreen cases.
   bool is_privileged_fullscreen_for_testing_;

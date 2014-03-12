@@ -15,6 +15,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/fullscreen/fullscreen_within_tab_helper.h"
 #include "chrome/browser/ui/status_bubble.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
@@ -293,12 +294,20 @@ void FullscreenController::OnTabDetachedFromView(WebContents* old_contents) {
   // When the user later selects the tab to show |old_contents| again, UI code
   // elsewhere (e.g., views::WebView) will resize the view to fit within the
   // browser window once again.
+
+  // If the view has been detached from the browser window (e.g., to drag a tab
+  // off into a new browser window), return immediately to avoid an unnecessary
+  // resize.
+  if (!old_contents->GetDelegate())
+    return;
+
+  // Do nothing if tab capture ended after toggling fullscreen, or a preferred
+  // size was never specified by the capturer.
   if (old_contents->GetCapturerCount() == 0 ||
       old_contents->GetPreferredSize().IsEmpty()) {
-    // Do nothing if tab capture ended after toggling fullscreen, or a preferred
-    // size was never specified by the capturer.
     return;
   }
+
   content::RenderWidgetHostView* const current_fs_view =
       old_contents->GetFullscreenRenderWidgetHostView();
   if (current_fs_view)
@@ -745,14 +754,14 @@ bool FullscreenController::MaybeToggleFullscreenForCapturedTab(
 
   if (enter_fullscreen) {
     if (web_contents->GetCapturerCount() > 0) {
-      captured_tabs_.insert(web_contents);
+      FullscreenWithinTabHelper::CreateForWebContents(web_contents);
+      FullscreenWithinTabHelper::FromWebContents(web_contents)->
+          SetIsFullscreenForCapturedTab(true);
       return true;
     }
   } else {
-    const std::set<const WebContents*>::iterator it =
-        captured_tabs_.find(web_contents);
-    if (it != captured_tabs_.end()) {
-      captured_tabs_.erase(it);
+    if (IsFullscreenForCapturedTab(web_contents)) {
+      FullscreenWithinTabHelper::RemoveForWebContents(web_contents);
       return true;
     }
   }
@@ -762,7 +771,11 @@ bool FullscreenController::MaybeToggleFullscreenForCapturedTab(
 
 bool FullscreenController::IsFullscreenForCapturedTab(
     const WebContents* web_contents) const {
-  if (captured_tabs_.find(web_contents) != captured_tabs_.end()) {
+  // Note: On Mac, some of the OnTabXXX() methods get called with a NULL value
+  // for web_contents. Check for that here.
+  const FullscreenWithinTabHelper* const helper = web_contents ?
+      FullscreenWithinTabHelper::FromWebContents(web_contents) : NULL;
+  if (helper && helper->is_fullscreen_for_captured_tab()) {
     DCHECK(IsFullscreenWithinTabPossible());
     DCHECK_NE(fullscreened_tab_, web_contents);
     return true;

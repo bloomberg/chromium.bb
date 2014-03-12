@@ -1157,6 +1157,8 @@
         'browser/ui/fullscreen/fullscreen_exit_bubble.h',
         'browser/ui/fullscreen/fullscreen_exit_bubble_type.cc',
         'browser/ui/fullscreen/fullscreen_exit_bubble_type.h',
+        'browser/ui/fullscreen/fullscreen_within_tab_helper.cc',
+        'browser/ui/fullscreen/fullscreen_within_tab_helper.h',
         'browser/ui/gesture_prefs_observer_factory_aura.cc',
         'browser/ui/gesture_prefs_observer_factory_aura.h',
         'browser/ui/global_error/global_error.cc',

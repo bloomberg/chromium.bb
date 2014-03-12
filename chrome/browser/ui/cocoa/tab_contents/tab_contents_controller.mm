@@ -54,12 +54,9 @@ class FullscreenObserver : public WebContentsObserver {
 - (id)initWithContents:(WebContents*)contents
     andAutoEmbedFullscreen:(BOOL)enableEmbeddedFullscreen {
   if ((self = [super initWithNibName:nil bundle:nil])) {
-    contents_ = contents;
-    if (enableEmbeddedFullscreen) {
+    if (enableEmbeddedFullscreen)
       fullscreenObserver_.reset(new FullscreenObserver(self));
-      fullscreenObserver_->Observe(contents_);
-    }
-    isEmbeddingFullscreenWidget_ = NO;
+    [self changeWebContents:contents];
   }
   return self;
 }
