@@ -362,6 +362,7 @@ remoting.HostSetupDialog.prototype.installHost_ = function() {
   /** @param {remoting.Error} error */
   var onError = function(error) {
     flow.switchToErrorState(error);
+    that.updateState_();
   }
 
   /** @param {remoting.HostController.State} state */
