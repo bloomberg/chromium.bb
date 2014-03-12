@@ -160,9 +160,9 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
   // source-address token or SCFG from a server. If |cached| is non-NULL, the
   // source-address token will be taken from it. |out_params| is used in order
   // to store the cached certs that were sent as hints to the server in
-  // |out_params->cached_certs|. |preferred_version| is the version of the QUIC
-  // protocol that this client chose to use initially. This allows the server to
-  // detect downgrade attacks.
+  // |out_params->cached_certs|. |preferred_version| is the version of the
+  // QUIC protocol that this client chose to use initially. This allows the
+  // server to detect downgrade attacks.
   void FillInchoateClientHello(const std::string& server_hostname,
                                const QuicVersion preferred_version,
                                const CachedState* cached,

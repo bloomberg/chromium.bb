@@ -6,8 +6,6 @@
 
 namespace net {
 
-ProofVerifyDetails::~ProofVerifyDetails() {}
-
 ProofVerifierCallback::~ProofVerifierCallback() {}
 
 ProofVerifier::~ProofVerifier() {}

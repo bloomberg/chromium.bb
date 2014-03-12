@@ -29,8 +29,7 @@ using std::vector;
 
 namespace net {
 
-QuicCryptoClientConfig::QuicCryptoClientConfig() {
-}
+QuicCryptoClientConfig::QuicCryptoClientConfig() {}
 
 QuicCryptoClientConfig::~QuicCryptoClientConfig() {
   STLDeleteValues(&cached_states_);
