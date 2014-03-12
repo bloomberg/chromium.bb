@@ -1,4 +1,12 @@
-description('Tests if the spellchecker behavior change after the spellcheck attribute changed by the script.');
+description('Tests if the spellchecker behaves correctly when the spellcheck attribute '
+    + 'is being changed by the script.');
+
+jsTestIsAsync = true;
+
+if (window.internals) {
+    internals.settings.setUnifiedTextCheckerEnabled(true);
+    internals.settings.setAsynchronousSpellCheckingEnabled(true);
+}
 
 var parent = document.createElement("div");
 document.body.appendChild(parent);
@@ -22,7 +30,10 @@ function testSpellCheckingEnabled(target, enabled)
 
     window.target = target;
     shouldBe("target.spellcheck", enabled ? "true" : "false");
-    shouldBe("internals.hasSpellingMarker(document, 6, 2)", enabled ? "true" : "false");
+    if (window.internals)
+        shouldBecomeEqual("internals.hasSpellingMarker(document, 6, 2)", enabled ? "true" : "false", done);
+    else
+        done();
 }
 
 function createElement(tagName, spellcheck)
@@ -35,52 +46,49 @@ function createElement(tagName, spellcheck)
     return target;
 }
 
-function testFor(tagName, initialAttribute, expectation)
+function testFor(tagName, spellCheckAttribueValues)
 {
-    var target = createElement(tagName, initialAttribute);
+    var target = createElement(tagName, spellCheckAttribueValues.initialValue);
     parent.appendChild(target);
 
-    testSpellCheckingEnabled(target, expectation);
-    parent.innerHTML = "";
+    testSpellCheckingEnabled(target, spellCheckAttribueValues.destinationValue);
 }
 
-// default -> true
-testFor("SPAN", undefined, true);
-// default -> false
-testFor("SPAN", undefined, false);
-// true -> true
-testFor("SPAN", true, true);
-// true -> false
-testFor("SPAN", true, false);
-// false -> true
-testFor("SPAN", false, true);
-// false -> false
-testFor("SPAN", false, false);
+var testElements = [
+    "SPAN",
+    "INPUT",
+    "TEXTAREA"
+];
 
-// default -> true
-testFor("INPUT", undefined, true);
-// default -> false
-testFor("INPUT", undefined, false);
-// true -> true
-testFor("INPUT", true, true);
-// true -> false
-testFor("INPUT", true, false);
-// false -> true
-testFor("INPUT", false, true);
-// false -> false
-testFor("INPUT", false, false);
+const spellcheckAttributeVariances = [
+   { initialValue: undefined, destinationValue: true },
+   { initialValue: undefined, destinationValue: false },
+   { initialValue: true, destinationValue: true },
+   { initialValue: true, destinationValue: false },
+   { initialValue: false, destinationValue: true },
+   { initialValue: false, destinationValue: false }
+];
 
-// default -> true
-testFor("TEXTAREA", undefined, true);
-// default -> false
-testFor("TEXTAREA", undefined, false);
-// true -> true
-testFor("TEXTAREA", true, true);
-// true -> false
-testFor("TEXTAREA", true, false);
-// false -> true
-testFor("TEXTAREA", false, true);
-// false -> false
-testFor("TEXTAREA", false, false);
+var iterator = 0;
+var currentElement = null;
+
+function done()
+{
+    if (!currentElement) {
+        currentElement = testElements.shift();
+        // All elements have been already taken.
+        if (!currentElement)
+            return finishJSTest();
+    }
+
+    if (iterator != spellcheckAttributeVariances.length)
+        setTimeout(testFor(currentElement, spellcheckAttributeVariances[iterator++]), 0);
+    else {
+        iterator = 0;
+        currentElement = null;
+        done();
+    }
+}
+done();
 
 var successfullyParsed = true;
