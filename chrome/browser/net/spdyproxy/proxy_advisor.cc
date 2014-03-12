@@ -119,7 +119,7 @@ void ProxyAdvisor::Advise(
   std::string endpoint =
       DataReductionProxySettings::GetDataReductionProxyOrigin() + "preconnect";
   scoped_ptr<net::URLRequest> request = context->CreateRequest(
-      GURL(endpoint), net::DEFAULT_PRIORITY, this);
+      GURL(endpoint), net::DEFAULT_PRIORITY, this, NULL);
   request->set_method("HEAD");
   request->SetExtraRequestHeaderByName(
       "Proxy-Host-Advisory", header_value, false);

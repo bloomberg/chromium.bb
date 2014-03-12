@@ -35,7 +35,7 @@ scoped_ptr<net::URLRequest> BlobProtocolHandler::CreateBlobRequest(
     net::URLRequest::Delegate* request_delegate) {
   const GURL kBlobUrl("blob://see_user_data/");
   scoped_ptr<net::URLRequest> request = request_context->CreateRequest(
-      kBlobUrl, net::DEFAULT_PRIORITY, request_delegate);
+      kBlobUrl, net::DEFAULT_PRIORITY, request_delegate, NULL);
   SetRequestedBlobDataHandle(request.get(), blob_data_handle.Pass());
   return request.Pass();
 }

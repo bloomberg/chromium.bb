@@ -310,4 +310,9 @@ bool ContentBrowserClient::IsPluginAllowedToUseDevChannelAPIs() {
   return false;
 }
 
+net::CookieStore* ContentBrowserClient::OverrideCookieStoreForRenderProcess(
+    int render_process_id) {
+  return NULL;
+}
+
 }  // namespace content

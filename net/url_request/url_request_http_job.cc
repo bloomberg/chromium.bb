@@ -539,7 +539,7 @@ void URLRequestHttpJob::AddCookieHeaderAndStart() {
   if (!request_)
     return;
 
-  CookieStore* cookie_store = request_->context()->cookie_store();
+  CookieStore* cookie_store = GetCookieStore();
   if (cookie_store && !(request_info_.load_flags & LOAD_DO_NOT_SEND_COOKIES)) {
     net::CookieMonster* cookie_monster = cookie_store->GetCookieMonster();
     if (cookie_monster) {
@@ -558,7 +558,7 @@ void URLRequestHttpJob::AddCookieHeaderAndStart() {
 void URLRequestHttpJob::DoLoadCookies() {
   CookieOptions options;
   options.set_include_httponly();
-  request_->context()->cookie_store()->GetCookiesWithOptionsAsync(
+  GetCookieStore()->GetCookiesWithOptionsAsync(
       request_->url(), options,
       base::Bind(&URLRequestHttpJob::OnCookiesLoaded,
                  weak_factory_.GetWeakPtr()));
@@ -638,8 +638,7 @@ void URLRequestHttpJob::SaveNextCookie() {
       new SharedBoolean(true);
 
   if (!(request_info_.load_flags & LOAD_DO_NOT_SAVE_COOKIES) &&
-      request_->context()->cookie_store() &&
-      response_cookies_.size() > 0) {
+      GetCookieStore() && response_cookies_.size() > 0) {
     CookieOptions options;
     options.set_include_httponly();
     options.set_server_time(response_date_);
@@ -657,7 +656,7 @@ void URLRequestHttpJob::SaveNextCookie() {
       if (CanSetCookie(
           response_cookies_[response_cookies_save_index_], &options)) {
         callback_pending->data = true;
-        request_->context()->cookie_store()->SetCookieWithOptionsAsync(
+        GetCookieStore()->SetCookieWithOptionsAsync(
             request_->url(), response_cookies_[response_cookies_save_index_],
             options, callback);
       }

@@ -173,7 +173,7 @@ void SpawnerCommunicator::SendCommandAndWaitForResultOnIOThread(
   DCHECK(!cur_request_.get());
   context_.reset(new TestURLRequestContext);
   cur_request_ = context_->CreateRequest(
-      GenerateSpawnerCommandURL(command, port_), DEFAULT_PRIORITY, this);
+      GenerateSpawnerCommandURL(command, port_), DEFAULT_PRIORITY, this, NULL);
   DCHECK(cur_request_);
   int current_request_id = ++next_id_;
   SpawnerRequestData* data = new SpawnerRequestData(current_request_id,

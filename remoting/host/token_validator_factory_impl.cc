@@ -82,7 +82,7 @@ void TokenValidatorImpl::StartValidateRequest(const std::string& token) {
 
   request_ = request_context_getter_->GetURLRequestContext()->CreateRequest(
       third_party_auth_config_.token_validation_url, net::DEFAULT_PRIORITY,
-      this);
+      this, NULL);
   request_->SetExtraRequestHeaderByName(
       net::HttpRequestHeaders::kContentType,
       "application/x-www-form-urlencoded", true);
