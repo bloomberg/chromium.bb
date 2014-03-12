@@ -24,6 +24,7 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -33,6 +34,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/dbus/cryptohome_client.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
@@ -483,8 +485,19 @@ class KioskTest : public OobeBaseTest {
   // run. Note this must be called before app profile is loaded.
   void SetupAppProfile(const std::string& relative_app_profile_dir) {
     base::FilePath app_profile_dir;
-    ASSERT_TRUE(PathService::Get(chrome::DIR_USER_DATA, &app_profile_dir));
-    app_profile_dir = app_profile_dir.AppendASCII("user");
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+            ::switches::kMultiProfiles)) {
+      KioskAppManager::App app_data;
+      CHECK(KioskAppManager::Get()->GetApp(test_app_id(), &app_data));
+      std::string app_user_id_hash =
+          CryptohomeClient::GetStubSanitizedUsername(app_data.user_id);
+      app_profile_dir =
+          ProfileHelper::GetProfilePathByUserIdHash(app_user_id_hash);
+    } else {
+      ASSERT_TRUE(PathService::Get(chrome::DIR_USER_DATA, &app_profile_dir));
+      app_profile_dir = app_profile_dir.Append(
+          ProfileHelper::GetProfileDirByLegacyLoginProfileSwitch());
+    }
     ASSERT_TRUE(base::CreateDirectory(app_profile_dir));
 
     base::FilePath test_data_dir;
@@ -879,7 +892,8 @@ IN_PROC_BROWSER_TEST_F(KioskTest, KioskEnableAfter2ndSigninScreen) {
       content::NotificationService::AllSources()).Wait();
 }
 
-class KioskUpdateTest : public KioskTest {
+class KioskUpdateTest : public KioskTest,
+                        public testing::WithParamInterface<bool> {
  public:
   KioskUpdateTest() {}
   virtual ~KioskUpdateTest() {}
@@ -890,6 +904,8 @@ class KioskUpdateTest : public KioskTest {
     needs_background_networking_ = true;
 
     KioskTest::SetUpCommandLine(command_line);
+    if (GetParam())
+      command_line->AppendSwitch(::switches::kMultiProfiles);
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {
@@ -981,25 +997,25 @@ class KioskUpdateTest : public KioskTest {
   DISALLOW_COPY_AND_ASSIGN(KioskUpdateTest);
 };
 
-IN_PROC_BROWSER_TEST_F(KioskUpdateTest, LaunchOfflineEnabledAppNoNetwork) {
+IN_PROC_BROWSER_TEST_P(KioskUpdateTest, LaunchOfflineEnabledAppNoNetwork) {
   set_test_app_id(kTestOfflineEnabledKioskApp);
-  SetupAppProfile("chromeos/app_mode/offline_enabled_app_profile");
 
   PrepareAppLaunch();
   SimulateNetworkOffline();
+  SetupAppProfile("chromeos/app_mode/offline_enabled_app_profile");
 
   LaunchApp(test_app_id(), false);
   WaitForAppLaunchSuccess();
 }
 
-IN_PROC_BROWSER_TEST_F(KioskUpdateTest, LaunchOfflineEnabledAppNoUpdate) {
+IN_PROC_BROWSER_TEST_P(KioskUpdateTest, LaunchOfflineEnabledAppNoUpdate) {
   set_test_app_id(kTestOfflineEnabledKioskApp);
-  SetupAppProfile("chromeos/app_mode/offline_enabled_app_profile");
 
   SetNoUpdate();
 
   PrepareAppLaunch();
   SimulateNetworkOnline();
+  SetupAppProfile("chromeos/app_mode/offline_enabled_app_profile");
 
   LaunchApp(test_app_id(), false);
   WaitForAppLaunchSuccess();
@@ -1007,14 +1023,14 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, LaunchOfflineEnabledAppNoUpdate) {
   EXPECT_EQ("1.0.0", GetInstalledAppVersion().GetString());
 }
 
-IN_PROC_BROWSER_TEST_F(KioskUpdateTest, LaunchOfflineEnabledAppHasUpdate) {
+IN_PROC_BROWSER_TEST_P(KioskUpdateTest, LaunchOfflineEnabledAppHasUpdate) {
   set_test_app_id(kTestOfflineEnabledKioskApp);
-  SetupAppProfile("chromeos/app_mode/offline_enabled_app_profile");
 
   SetUpdateCrx("ajoggoflpgplnnjkjamcmbepjdjdnpdp.crx", "2.0.0");
 
   PrepareAppLaunch();
   SimulateNetworkOnline();
+  SetupAppProfile("chromeos/app_mode/offline_enabled_app_profile");
 
   LaunchApp(test_app_id(), false);
   WaitForAppLaunchSuccess();
@@ -1022,15 +1038,15 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, LaunchOfflineEnabledAppHasUpdate) {
   EXPECT_EQ("2.0.0", GetInstalledAppVersion().GetString());
 }
 
-IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PermissionChange) {
+IN_PROC_BROWSER_TEST_P(KioskUpdateTest, PermissionChange) {
   set_test_app_id(kTestOfflineEnabledKioskApp);
-  SetupAppProfile("chromeos/app_mode/offline_enabled_app_profile");
 
   SetUpdateCrx("ajoggoflpgplnnjkjamcmbepjdjdnpdp_v2_permission_change.crx",
                "2.0.0");
 
   PrepareAppLaunch();
   SimulateNetworkOnline();
+  SetupAppProfile("chromeos/app_mode/offline_enabled_app_profile");
 
   LaunchApp(test_app_id(), false);
   WaitForAppLaunchSuccess();
@@ -1038,7 +1054,7 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PermissionChange) {
   EXPECT_EQ("2.0.0", GetInstalledAppVersion().GetString());
 }
 
-IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PRE_PreserveLocalData) {
+IN_PROC_BROWSER_TEST_P(KioskUpdateTest, PRE_PreserveLocalData) {
   // Installs v1 app and writes some local data.
   set_test_app_id(kTestLocalFsKioskApp);
 
@@ -1048,7 +1064,7 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PRE_PreserveLocalData) {
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PreserveLocalData) {
+IN_PROC_BROWSER_TEST_P(KioskUpdateTest, PreserveLocalData) {
   // Update existing v1 app installed in PRE_PreserveLocalData to v2
   // that reads and verifies the local data.
   set_test_app_id(kTestLocalFsKioskApp);
@@ -1063,6 +1079,11 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PreserveLocalData) {
   EXPECT_EQ("2.0.0", GetInstalledAppVersion().GetString());
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
+
+// TODO(xiyuan): Remove this after multi profile is turned on by default.
+INSTANTIATE_TEST_CASE_P(KioskUpdateTestInstantiation,
+                        KioskUpdateTest,
+                        testing::Bool());
 
 class KioskEnterpriseTest : public KioskTest {
  protected:
