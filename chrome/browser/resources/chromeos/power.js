@@ -5,10 +5,8 @@
 /**
  * Plot a line graph of data versus time on a HTML canvas element.
  *
- * @param {HTMLCanvasElement} plotCanvas The canvas on which the line graph is
+ * @param {HTMLCanvasElement} canvas The canvas on which the line graph is
  *     drawn.
- * @param {HTMLCanvasElement} legendCanvas The canvas on which the legend for
- *     the line graph is drawn.
  * @param {Array.<number>} tData The time (in seconds) in the past when the
  *     corresponding data in plots was sampled.
  * @param {Array.<{data: Array.<number>, color: string}>} plots An
@@ -23,30 +21,28 @@
  * @param {integer} yPrecision An integer value representing the number of
  *     digits of precision the y-axis data should be printed with.
  */
-function plotLineGraph(
-    plotCanvas, legendCanvas, tData, plots, yMin, yMax, yPrecision) {
+function plotLineGraph(canvas, tData, plots, yMin, yMax, yPrecision) {
   var textFont = '12px Arial';
   var textHeight = 12;
   var padding = 5;  // Pixels
   var errorOffsetPixels = 15;
   var gridColor = '#ccc';
-  var plotCtx = plotCanvas.getContext('2d');
+  var ctx = canvas.getContext('2d');
   var size = tData.length;
 
-  function drawText(ctx, text, x, y) {
+  function drawText(text, x, y) {
     ctx.font = textFont;
     ctx.fillStyle = '#000';
     ctx.fillText(text, x, y);
   }
 
-  function printErrorText(ctx, text) {
-    ctx.clearRect(0, 0, plotCanvas.width, plotCanvas.height);
-    drawText(ctx, text, errorOffsetPixels, errorOffsetPixels);
+  function printErrorText(text) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawText(text, errorOffsetPixels, errorOffsetPixels);
   }
 
   if (size < 2) {
-    printErrorText(plotCtx,
-                   loadTimeData.getString('notEnoughDataAvailableYet'));
+    printErrorText(loadTimeData.getString('notEnoughDataAvailableYet'));
     return;
   }
 
@@ -57,14 +53,10 @@ function plotLineGraph(
   }
 
   function valueToString(value) {
-    if (Math.abs(value) < 1) {
-      return Number(value).toFixed(yPrecision - 1);
-    } else {
-      return Number(value).toPrecision(yPrecision);
-    }
+    return Number(value).toPrecision(yPrecision);
   }
 
-  function getTextWidth(ctx, text) {
+  function getTextWidth(text) {
     ctx.font = textFont;
     // For now, all text is drawn to the left of vertical lines, or centered.
     // Add a 2 pixel padding so that there is some spacing between the text
@@ -72,16 +64,16 @@ function plotLineGraph(
     return Math.round(ctx.measureText(text).width) + 2;
   }
 
-  function drawHighlightText(ctx, text, x, y, color) {
+  function drawHighlightText(text, x, y, color) {
     ctx.strokeStyle = '#000';
-    ctx.strokeRect(x, y - textHeight, getTextWidth(ctx, text), textHeight);
+    ctx.strokeRect(x, y - textHeight, getTextWidth(text), textHeight);
     ctx.fillStyle = color;
-    ctx.fillRect(x, y - textHeight, getTextWidth(ctx, text), textHeight);
+    ctx.fillRect(x, y - textHeight, getTextWidth(text), textHeight);
     ctx.fillStyle = '#fff';
     ctx.fillText(text, x, y);
   }
 
-  function drawLine(ctx, x1, y1, x2, y2, color) {
+  function drawLine(x1, y1, x2, y2, color) {
     ctx.save();
     ctx.beginPath();
     ctx.moveTo(x1, y1);
@@ -91,138 +83,66 @@ function plotLineGraph(
     ctx.restore();
   }
 
-  // The strokeRect method of the 2d context of a plotCanvas draws a bounding
+  // The strokeRect method of the 2d context of a canvas draws a bounding
   // rectangle with an offset origin and greater dimensions. Hence, use this
   // function to draw a rect at the desired location with desired dimensions.
-  function drawRect(ctx, x, y, width, height, color) {
-    drawLine(ctx, x, y, x + width - 1, y, color);
-    drawLine(ctx, x, y, x, y + height - 1, color);
-    drawLine(ctx, x, y + height - 1, x + width - 1, y + height - 1, color);
-    drawLine(ctx, x + width - 1, y, x + width - 1, y + height - 1, color);
-  }
-
-  function drawLegend() {
-    // Show a legend only if at least one individual plot has a name.
-    var valid = false;
-    for (var i = 0; i < plots.length; i++) {
-      if (plots[i].name != null) {
-        valid = true;
-        break;
-      }
-    }
-    if (!valid) {
-      legendCanvas.hidden = true;
-      return;
-    }
-
-    var padding = 2;
-    var legendSquareSide = 12;
-    var legendCtx = legendCanvas.getContext('2d');
-    var xLoc = padding;
-    var yLoc = padding;
-    // Adjust the height of the canvas before drawing on it.
-    for (var i = 0; i < plots.length; i++) {
-      if (plots[i].name == null) {
-        continue;
-      }
-      var legendText = '  -  ' + plots[i].name;
-      xLoc += legendSquareSide + getTextWidth(legendCtx, legendText) +
-              2 * padding;
-      if (i < plots.length - 1) {
-        var xLocNext = xLoc +
-                       getTextWidth(legendCtx, '  -  ' + plots[i + 1].name) +
-                       legendSquareSide;
-        if (xLocNext >= legendCanvas.width) {
-          xLoc = padding;
-          yLoc = yLoc + 2 * padding + textHeight;
-        }
-      }
-    }
-
-    legendCanvas.height = yLoc + textHeight + padding;
-
-    xLoc = padding;
-    yLoc = padding;
-    // Go over the plots again, this time drawing the legends.
-    for (var i = 0; i < plots.length; i++) {
-      legendCtx.fillStyle = plots[i].color;
-      legendCtx.fillRect(xLoc, yLoc, legendSquareSide, legendSquareSide);
-      xLoc += legendSquareSide;
-
-      var legendText = '  -  ' + plots[i].name;
-      drawText(legendCtx, legendText, xLoc, yLoc + textHeight - 1);
-      xLoc += getTextWidth(legendCtx, legendText) + 2 * padding;
-
-      if (i < plots.length - 1) {
-        var xLocNext = xLoc +
-                       getTextWidth(legendCtx, '  -  ' + plots[i + 1].name) +
-                       legendSquareSide;
-        if (xLocNext >= legendCanvas.width) {
-          xLoc = padding;
-          yLoc = yLoc + 2 * padding + textHeight;
-        }
-      }
-    }
+  function drawRect(x, y, width, height, color) {
+    drawLine(x, y, x + width - 1, y, color);
+    drawLine(x, y, x, y + height - 1, color);
+    drawLine(x, y + height - 1, x + width - 1, y + height - 1, color);
+    drawLine(x + width - 1, y, x + width - 1, y + height - 1, color);
   }
 
   var yMinStr = valueToString(yMin);
   var yMaxStr = valueToString(yMax);
   var yHalfStr = valueToString((yMax + yMin) / 2);
-  var yMinWidth = getTextWidth(plotCtx, yMinStr);
-  var yMaxWidth = getTextWidth(plotCtx, yMaxStr);
-  var yHalfWidth = getTextWidth(plotCtx, yHalfStr);
+  var yMinWidth = getTextWidth(yMinStr);
+  var yMaxWidth = getTextWidth(yMaxStr);
+  var yHalfWidth = getTextWidth(yHalfStr);
 
   var xMinStr = tData[0];
   var xMaxStr = tData[size - 1];
-  var xMinWidth = getTextWidth(plotCtx, xMinStr);
-  var xMaxWidth = getTextWidth(plotCtx, xMaxStr);
+  var xMinWidth = getTextWidth(xMinStr);
+  var xMaxWidth = getTextWidth(xMaxStr);
 
   var xOrigin = padding + Math.max(yMinWidth,
                                    yMaxWidth,
                                    Math.round(xMinWidth / 2));
   var yOrigin = padding + textHeight;
-  var width = plotCanvas.width - xOrigin - Math.floor(xMaxWidth / 2) - padding;
+  var width = canvas.width - xOrigin - Math.floor(xMaxWidth / 2) - padding;
   if (width < size) {
-    plotCanvas.width += size - width;
+    canvas.width += size - width;
     width = size;
   }
-  var height = plotCanvas.height - yOrigin - textHeight - padding;
+  var height = canvas.height - yOrigin - textHeight - padding;
 
   function drawPlots() {
     // Start fresh.
-    plotCtx.clearRect(0, 0, plotCanvas.width, plotCanvas.height);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // Draw the bounding rectangle.
-    drawRect(plotCtx, xOrigin, yOrigin, width, height, gridColor);
+    drawRect(xOrigin, yOrigin, width, height, gridColor);
 
     // Draw the x and y bound values.
-    drawText(plotCtx, yMaxStr, xOrigin - yMaxWidth, yOrigin + textHeight);
-    drawText(plotCtx, yMinStr, xOrigin - yMinWidth, yOrigin + height);
-    drawText(plotCtx,
-             xMinStr,
-             xOrigin - xMinWidth / 2,
-             yOrigin + height + textHeight);
-    drawText(plotCtx,
-             xMaxStr,
+    drawText(yMaxStr, xOrigin - yMaxWidth, yOrigin + textHeight);
+    drawText(yMinStr, xOrigin - yMinWidth, yOrigin + height);
+    drawText(xMinStr, xOrigin - xMinWidth / 2, yOrigin + height + textHeight);
+    drawText(xMaxStr,
              xOrigin + width - xMaxWidth / 2,
              yOrigin + height + textHeight);
 
     // Draw y-level (horizontal) lines.
-    drawLine(plotCtx,
-             xOrigin + 1, yOrigin + height / 4,
+    drawLine(xOrigin + 1, yOrigin + height / 4,
              xOrigin + width - 2, yOrigin + height / 4,
              gridColor);
-    drawLine(plotCtx,
-             xOrigin + 1, yOrigin + height / 2,
+    drawLine(xOrigin + 1, yOrigin + height / 2,
              xOrigin + width - 2, yOrigin + height / 2, gridColor);
-    drawLine(plotCtx,
-             xOrigin + 1, yOrigin + 3 * height / 4,
+    drawLine(xOrigin + 1, yOrigin + 3 * height / 4,
              xOrigin + width - 2, yOrigin + 3 * height / 4,
              gridColor);
 
     // Draw half-level value.
-    drawText(plotCtx,
-             yHalfStr,
+    drawText(yHalfStr,
              xOrigin - yHalfWidth,
              yOrigin + height / 2 + textHeight / 2);
 
@@ -231,15 +151,15 @@ function plotLineGraph(
     for (var count = 0; count < plots.length; count++) {
       var plot = plots[count];
       var yData = plot.data;
-      plotCtx.strokeStyle = plot.color;
-      plotCtx.beginPath();
+      ctx.strokeStyle = plot.color;
+      ctx.beginPath();
       var beginPath = true;
       for (var i = 0; i < size; i++) {
         var val = yData[i];
         if (typeof val === 'string') {
           // Stroke the plot drawn so far and begin a fresh plot.
-          plotCtx.stroke();
-          plotCtx.beginPath();
+          ctx.stroke();
+          ctx.beginPath();
           beginPath = true;
           continue;
         }
@@ -247,35 +167,27 @@ function plotLineGraph(
         var yPos = yOrigin + height - 1 -
                    Math.round((val - yMin) / yValRange * (height - 1));
         if (beginPath) {
-          plotCtx.moveTo(xPos, yPos);
+          ctx.moveTo(xPos, yPos);
           // A simple move to does not print anything. Hence, draw a little
           // square here to mark a beginning.
-          plotCtx.fillStyle = '#000';
-          plotCtx.fillRect(xPos - 1, yPos - 1, 2, 2);
+          ctx.fillStyle = '#000';
+          ctx.fillRect(xPos - 1, yPos - 1, 2, 2);
           beginPath = false;
         } else {
-          plotCtx.lineTo(xPos, yPos);
+          ctx.lineTo(xPos, yPos);
           if (i === size - 1 || typeof yData[i + 1] === 'string') {
             // Draw a little square to mark an end to go with the start
             // markers from above.
-            plotCtx.fillStyle = '#000';
-            plotCtx.fillRect(xPos - 1, yPos - 1, 2, 2);
+            ctx.fillStyle = '#000';
+            ctx.fillRect(xPos - 1, yPos - 1, 2, 2);
           }
         }
       }
-      plotCtx.stroke();
+      ctx.stroke();
     }
 
     // Paint the missing time intervals with |gridColor|.
     // Pick one of the plots to look for missing time intervals.
-    function drawMissingRect(start, end) {
-      var xLeft = xOrigin + Math.floor(start / (size - 1) * (width - 1));
-      var xRight = xOrigin + Math.floor(end / (size - 1) * (width - 1));
-      plotCtx.fillStyle = gridColor;
-      // The x offsets below are present so that the blank space starts
-      // and ends between two valid samples.
-      plotCtx.fillRect(xLeft + 1, yOrigin, xRight - xLeft - 2, height - 1);
-    }
     var inMissingInterval = false;
     var intervalStart;
     for (var i = 0; i < size; i++) {
@@ -286,24 +198,24 @@ function plotLineGraph(
           // sample.
           intervalStart = Math.max(i - 1, 0);
         }
-
-        if (i == size - 1) {
-          // If this is the last sample, just draw missing rect.
-          drawMissingRect(intervalStart, i);
-        }
       } else if (inMissingInterval) {
         inMissingInterval = false;
-        drawMissingRect(intervalStart, i);
+        var xLeft = xOrigin +
+            Math.floor(intervalStart / (size - 1) * (width - 1));
+        var xRight = xOrigin + Math.floor(i / (size - 1) * (width - 1));
+        ctx.fillStyle = gridColor;
+        // The x offsets below are present so that the blank space starts
+        // and ends between two valid samples.
+        ctx.fillRect(xLeft + 1, yOrigin, xRight - xLeft - 2, height - 1);
       }
     }
   }
 
   function drawTimeGuide(tDataIndex) {
     var x = xOrigin + tDataIndex / (size - 1) * (width - 1);
-    drawLine(plotCtx, x, yOrigin, x, yOrigin + height - 1, '#000');
-    drawText(plotCtx,
-             tData[tDataIndex],
-             x - getTextWidth(plotCtx, tData[tDataIndex]) / 2,
+    drawLine(x, yOrigin, x, yOrigin + height - 1, '#000');
+    drawText(tData[tDataIndex],
+             x - getTextWidth(tData[tDataIndex]) / 2,
              yOrigin - 2);
 
     for (var count = 0; count < plots.length; count++) {
@@ -321,8 +233,8 @@ function plotLineGraph(
             Math.round((val - yMin) / (yMax - yMin) * (height - 1));
         valStr = valueToString(val);
       }
-      plotCtx.fillStyle = '#000';
-      plotCtx.fillRect(x - 2, yPos - 2, 4, 4);
+      ctx.fillStyle = '#000';
+      ctx.fillRect(x - 2, yPos - 2, 4, 4);
 
       // Draw the val to right of the intersection.
       var yLoc;
@@ -333,16 +245,16 @@ function plotLineGraph(
       } else {
         yLoc = yPos + textHeight / 2;
       }
-      drawHighlightText(plotCtx, valStr, x + 5, yLoc, plots[count].color);
+      drawHighlightText(valStr, x + 5, yLoc, plots[count].color);
     }
   }
 
   function onMouseOverOrMove(event) {
     drawPlots();
 
-    var boundingRect = plotCanvas.getBoundingClientRect();
-    var x = Math.round(event.clientX - boundingRect.left);
-    var y = Math.round(event.clientY - boundingRect.top);
+    var boundingRect = canvas.getBoundingClientRect();
+    var x = event.clientX - boundingRect.left;
+    var y = event.clientY - boundingRect.top;
     if (x < xOrigin || x >= xOrigin + width ||
         y < yOrigin || y >= yOrigin + height) {
       return;
@@ -359,65 +271,14 @@ function plotLineGraph(
     drawPlots();
   }
 
-  drawLegend();
   drawPlots();
-  plotCanvas.addEventListener('mouseover', onMouseOverOrMove);
-  plotCanvas.addEventListener('mousemove', onMouseOverOrMove);
-  plotCanvas.addEventListener('mouseout', onMouseOut);
+  canvas.addEventListener('mouseover', onMouseOverOrMove);
+  canvas.addEventListener('mousemove', onMouseOverOrMove);
+  canvas.addEventListener('mouseout', onMouseOut);
 }
 
 var sleepSampleInterval = 30 * 1000; // in milliseconds.
 var sleepText = loadTimeData.getString('systemSuspended');
-var invalidDataText = loadTimeData.getString('invalidData');
-var offlineText = loadTimeData.getString('offlineText');
-
-var plotColors = ['Red', 'Blue', 'Green', 'Gold', 'CadetBlue', 'LightCoral',
-                  'LightSlateGray', 'Peru', 'DarkRed', 'LawnGreen', 'Tan'];
-
-/**
- * Add canvases for plotting to |plotsDiv|. For every header in |headerArray|,
- * one canvas for the plot and one for its legend are added.
- *
- * @param {Array.<string>} headerArray Headers for the different plots to be
- *     added to |plotsDiv|.
- * @param {HTMLDivElement} plotsDiv The div element into which the canvases
- *     are added.
- * @return {<string>: {plotCanvas: <HTMLCanvasElement>,
- *                     legendCanvas: <HTMLCanvasElement>} Returns an object
- *    with the headers as 'keys'. Each element is an object containing the
- *    legend canvas and the plot canvas that have been added to |plotsDiv|.
- */
-function addCanvases(headerArray, plotsDiv) {
-  // Remove the contents before adding new ones.
-  while (plotsDiv.firstChild != null) {
-    plotsDiv.removeChild(plotsDiv.firstChild);
-  }
-  var width = Math.floor(plotsDiv.getBoundingClientRect().width);
-  var canvases = {};
-  for (var i = 0; i < headerArray.length; i++) {
-    var header = document.createElement('h4');
-    header.textContent = headerArray[i];
-    plotsDiv.appendChild(header);
-
-    var legendCanvas = document.createElement('canvas');
-    legendCanvas.width = width;
-    legendCanvas.height = 5;
-    plotsDiv.appendChild(legendCanvas);
-
-    var plotCanvasDiv = document.createElement('div');
-    plotCanvasDiv.style.overflow = 'auto';
-    plotCanvasDiv.style.maxWidth = String(width) + 'px';
-    plotsDiv.appendChild(plotCanvasDiv);
-
-    plotCanvas = document.createElement('canvas');
-    plotCanvas.width = width;
-    plotCanvas.height = 200;
-    plotCanvasDiv.appendChild(plotCanvas);
-
-    canvases[headerArray[i]] = {plot: plotCanvas, legend: legendCanvas};
-  }
-  return canvases;
-}
 
 /**
  * Add samples in |sampleArray| to individual plots in |plots|. If the system
@@ -445,7 +306,7 @@ function addCanvases(headerArray, plotsDiv) {
  *     'sleepDuration' field is for the time in milliseconds the system spent
  *     in sleep/suspend state.
  */
-function addTimeDataSample(plots, tData, absTime, sampleArray,
+function addTimeDataSample(plots, tData, sampleArray,
                            sampleTime, previousSampleTime,
                            systemResumedArray) {
   for (var i = 0; i < plots.length; i++) {
@@ -457,7 +318,6 @@ function addTimeDataSample(plots, tData, absTime, sampleArray,
   var time;
   if (tData.length == 0) {
     time = new Date(sampleTime);
-    absTime[0] = sampleTime;
     tData[0] = time.toLocaleTimeString();
     for (var i = 0; i < plots.length; i++) {
       plots[i].data[0] = sampleArray[i];
@@ -469,17 +329,11 @@ function addTimeDataSample(plots, tData, absTime, sampleArray,
     var resumeTime = systemResumedArray[i].time;
     var sleepDuration = systemResumedArray[i].sleepDuration;
     var sleepStartTime = resumeTime - sleepDuration;
-    if (resumeTime < sampleTime) {
-      if (sleepStartTime < previousSampleTime) {
-        // This can happen if pending callbacks were handled before actually
-        // suspending.
-        sleepStartTime = previousSampleTime + 1000;
-      }
+    if (resumeTime < sampleTime && sleepStartTime > previousSampleTime) {
       // Add sleep samples for every |sleepSampleInterval|.
       var sleepSampleTime = sleepStartTime;
       while (sleepSampleTime < resumeTime) {
         time = new Date(sleepSampleTime);
-        absTime.push(sleepSampleTime);
         tData.push(time.toLocaleTimeString());
         for (var j = 0; j < plots.length; j++) {
           plots[j].data.push(sleepText);
@@ -490,7 +344,6 @@ function addTimeDataSample(plots, tData, absTime, sampleArray,
   }
 
   time = new Date(sampleTime);
-  absTime.push(sampleTime);
   tData.push(time.toLocaleTimeString());
   for (var i = 0; i < plots.length; i++) {
     plots[i].data.push(sampleArray[i]);
@@ -516,19 +369,15 @@ function addTimeDataSample(plots, tData, absTime, sampleArray,
  */
 function showBatteryChargeData(powerSupplyArray, systemResumedArray) {
   var chargeTimeData = [];
-  var chargeAbsTime = [];
   var chargePlot = [
     {
-      name: loadTimeData.getString('batteryChargePercentageHeader'),
       color: '#0000FF',
       data: []
     }
   ];
   var dischargeRateTimeData = [];
-  var dischargeRateAbsTime = [];
   var dischargeRatePlot = [
     {
-      name: loadTimeData.getString('dischargeRateLegendText'),
       color: '#FF0000',
       data: []
     }
@@ -538,9 +387,7 @@ function showBatteryChargeData(powerSupplyArray, systemResumedArray) {
   for (var i = 0; i < powerSupplyArray.length; i++) {
     var j = Math.max(i - 1, 0);
 
-    addTimeDataSample(chargePlot,
-                      chargeTimeData,
-                      chargeAbsTime,
+    addTimeDataSample(chargePlot, chargeTimeData,
                       [powerSupplyArray[i].batteryPercent],
                       powerSupplyArray[i].time,
                       powerSupplyArray[j].time,
@@ -551,7 +398,6 @@ function showBatteryChargeData(powerSupplyArray, systemResumedArray) {
     maxDischargeRate = Math.max(dischargeRate, maxDischargeRate);
     addTimeDataSample(dischargeRatePlot,
                       dischargeRateTimeData,
-                      dischargeRateAbsTime,
                       [dischargeRate],
                       powerSupplyArray[i].time,
                       powerSupplyArray[j].time,
@@ -564,250 +410,26 @@ function showBatteryChargeData(powerSupplyArray, systemResumedArray) {
     maxDischargeRate += 1;
   }
 
-  plotsDiv = $('battery-charge-plots-div');
-
-  canvases = addCanvases(
-      [loadTimeData.getString('batteryChargePercentageHeader'),
-       loadTimeData.getString('batteryDischargeRateHeader')],
-      plotsDiv);
-
-  batteryChargeCanvases = canvases[
-      loadTimeData.getString('batteryChargePercentageHeader')];
-  plotLineGraph(
-      batteryChargeCanvases['plot'],
-      batteryChargeCanvases['legend'],
-      chargeTimeData,
-      chargePlot,
-      0.00,
-      100.00,
-      3);
-
-  dischargeRateCanvases = canvases[
-      loadTimeData.getString('batteryDischargeRateHeader')];
-  plotLineGraph(
-      dischargeRateCanvases['plot'],
-      dischargeRateCanvases['legend'],
-      dischargeRateTimeData,
-      dischargeRatePlot,
-      minDischargeRate,
-      maxDischargeRate,
-      3);
-}
-
-/**
- * Shows state occupancy data (CPU idle or CPU freq state occupancy) on a set of
- * plots on the about:power UI.
- *
- * @param {Array.<{Array.<{
- *     time: number,
- *     cpuOnline:boolean,
- *     timeInState: {<string>: number}>}>} timeInStateData Array of arrays
- *     where each array corresponds to a CPU on the system. The elements of the
- *     individual arrays contain state occupancy samples.
- * @param {Array.<{time: ?, sleepDuration: ?}>} systemResumedArray An array
- *     objects with fields 'time' and 'sleepDuration'. Each object corresponds
- *     to a system resume event. The 'time' field is for the time in
- *     milliseconds since the epoch when the system resumed. The 'sleepDuration'
- *     field is for the time in milliseconds the system spent in sleep/suspend
- *     state.
- * @param {string} i18nHeaderString The header string to be displayed with each
- *     plot. For example, CPU idle data will have its own header format, and CPU
- *     freq data will have its header format.
- * @param {string} unitString This is the string capturing the unit, if any,
- *     for the different states. Note that this is not the unit of the data
- *     being plotted.
- * @param {HTMLDivElement} plotsDivId The div element in which the plots should
- *     be added.
- */
-function showStateOccupancyData(timeInStateData,
-                                systemResumedArray,
-                                i18nHeaderString,
-                                unitString,
-                                plotsDivId) {
-  var cpuPlots = [];
-  for (var cpu = 0; cpu < timeInStateData.length; cpu++) {
-    var cpuData = timeInStateData[cpu];
-    if (cpuData.length == 0) {
-      cpuPlots[cpu] = {plots: [], tData: []};
-      continue;
-    }
-    tData = [];
-    absTime = [];
-    // Each element of |plots| is an array of samples, one for each of the CPU
-    // states. The number of states is dicovered by looking at the first
-    // sample for which the CPU is online.
-    var plots = [];
-    var stateIndexMap = [];
-    var stateCount = 0;
-    for (var i = 0; i < cpuData.length; i++) {
-      if (cpuData[i].cpuOnline) {
-        for (var state in cpuData[i].timeInState) {
-          var stateName = state;
-          if (unitString != null) {
-            stateName += ' ' + unitString;
-          }
-          plots.push({
-              name: stateName,
-              data: [],
-              color: plotColors[stateCount]
-          });
-          stateIndexMap.push(state);
-          stateCount += 1;
-        }
-        break;
-      }
-    }
-    // If stateCount is 0, then it means the CPU has been offline
-    // throughout. Just add a single plot for such a case.
-    if (stateCount == 0) {
-      plots.push({
-          name: null,
-          data: [],
-          color: null
-      });
-      stateCount = 1; // Some invalid state!
-    }
-
-    // Pass the samples through the function addTimeDataSample to add 'sleep'
-    // samples.
-    for (var i = 0; i < cpuData.length; i++) {
-      var sample = cpuData[i];
-      var valArray = [];
-      for (var j = 0; j < stateCount; j++) {
-        if (sample.cpuOnline) {
-          valArray[j] = sample.timeInState[stateIndexMap[j]];
-        } else {
-          valArray[j] = offlineText;
-        }
-      }
-
-      var k = Math.max(i - 1, 0);
-      addTimeDataSample(plots,
-                        tData,
-                        absTime,
-                        valArray,
-                        sample.time,
-                        cpuData[k].time,
-                        systemResumedArray);
-    }
-
-    // Calculate the percentage occupancy of each state. A valid number is
-    // possible only if two consecutive samples are valid/numbers.
-    for (var k = 0; k < stateCount; k++) {
-      var stateData = plots[k].data;
-      // Skip the first sample as there is no previous sample.
-      for (var i = stateData.length - 1; i > 0; i--) {
-        if (typeof stateData[i] === 'number') {
-          if (typeof stateData[i - 1] === 'number') {
-            stateData[i] = (stateData[i] - stateData[i - 1]) /
-                           (absTime[i] - absTime[i - 1]) * 100;
-          } else {
-            stateData[i] = invalidDataText;
-          }
-        }
-      }
-    }
-
-    // Remove the first sample from the time and data arrays.
-    tData.shift();
-    for (var k = 0; k < stateCount; k++) {
-      plots[k].data.shift();
-    }
-    cpuPlots[cpu] = {plots: plots, tData: tData};
-  }
-
-  headers = [];
-  for (var cpu = 0; cpu < timeInStateData.length; cpu++) {
-    headers[cpu] =
-        'CPU ' + cpu + ' ' + loadTimeData.getString(i18nHeaderString);
-  }
-
-  canvases = addCanvases(headers, $(plotsDivId));
-  for (var cpu = 0; cpu < timeInStateData.length; cpu++) {
-    cpuCanvases = canvases[headers[cpu]];
-    plotLineGraph(cpuCanvases['plot'],
-                  cpuCanvases['legend'],
-                  cpuPlots[cpu]['tData'],
-                  cpuPlots[cpu]['plots'],
-                  0,
-                  100,
-                  3);
-  }
-}
-
-function showCpuIdleData(idleStateData, systemResumedArray) {
-  showStateOccupancyData(idleStateData,
-                         systemResumedArray,
-                         'idleStateOccupancyPercentageHeader',
-                         null,
-                         'cpu-idle-plots-div');
-}
-
-function showCpuFreqData(freqStateData, systemResumedArray) {
-  showStateOccupancyData(freqStateData,
-                         systemResumedArray,
-                         'frequencyStateOccupancyPercentageHeader',
-                         'MHz',
-                         'cpu-freq-plots-div');
+  var chargeCanvas = $('battery-charge-percentage-canvas');
+  var dischargeRateCanvas = $('battery-discharge-rate-canvas');
+  plotLineGraph(chargeCanvas, chargeTimeData, chargePlot, 0.00, 100.00, 3);
+  plotLineGraph(dischargeRateCanvas,
+                dischargeRateTimeData,
+                dischargeRatePlot,
+                minDischargeRate,
+                maxDischargeRate,
+                3);
 }
 
 function requestBatteryChargeData() {
   chrome.send('requestBatteryChargeData');
 }
 
-function requestCpuIdleData() {
-  chrome.send('requestCpuIdleData');
-}
-
-function requestCpuFreqData() {
-  chrome.send('requestCpuFreqData');
-}
-
-/**
- * Return a callback for the 'Show'/'Hide' buttons for each section of the
- * about:power page.
- *
- * @param {string} sectionId The ID of the section which is to be shown or
- *     hidden.
- * @param {string} buttonId The ID of the 'Show'/'Hide' button.
- * @param {function} requestFunction The function which should be invoked on
- *    'Show' to request for data from chrome.
- * @return {function} The button callback function.
- */
-function showHideCallback(sectionId, buttonId, requestFunction) {
-  return function() {
-    if ($(sectionId).hidden) {
-      $(sectionId).hidden = false;
-      $(buttonId).textContent = loadTimeData.getString('hideButton');
-      requestFunction();
-    } else {
-      $(sectionId).hidden = true;
-      $(buttonId).textContent = loadTimeData.getString('showButton');
-    }
-  }
-}
-
 var powerUI = {
-  showBatteryChargeData: showBatteryChargeData,
-  showCpuIdleData: showCpuIdleData,
-  showCpuFreqData: showCpuFreqData
+  showBatteryChargeData: showBatteryChargeData
 };
 
 document.addEventListener('DOMContentLoaded', function() {
-  $('battery-charge-section').hidden = true;
-  $('battery-charge-show-button').onclick = showHideCallback(
-      'battery-charge-section',
-      'battery-charge-show-button',
-      requestBatteryChargeData);
+  requestBatteryChargeData();
   $('battery-charge-reload-button').onclick = requestBatteryChargeData;
-
-  $('cpu-idle-section').hidden = true;
-  $('cpu-idle-show-button').onclick = showHideCallback(
-      'cpu-idle-section', 'cpu-idle-show-button', requestCpuIdleData);
-  $('cpu-idle-reload-button').onclick = requestCpuIdleData;
-
-  $('cpu-freq-section').hidden = true;
-  $('cpu-freq-show-button').onclick = showHideCallback(
-      'cpu-freq-section', 'cpu-freq-show-button', requestCpuFreqData);
-  $('cpu-freq-reload-button').onclick = requestCpuFreqData;
 });

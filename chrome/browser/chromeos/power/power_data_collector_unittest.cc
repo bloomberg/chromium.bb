@@ -19,7 +19,7 @@ class PowerDataCollectorTest : public testing::Test {
     FakeDBusThreadManager* fake_dbus_thread_manager = new FakeDBusThreadManager;
     fake_dbus_thread_manager->SetFakeClients();
     DBusThreadManager::InitializeForTesting(fake_dbus_thread_manager);
-    PowerDataCollector::InitializeForTesting();
+    PowerDataCollector::Initialize();
     power_data_collector_ = PowerDataCollector::Get();
   }
 

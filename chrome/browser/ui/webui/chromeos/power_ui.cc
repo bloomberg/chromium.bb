@@ -24,18 +24,9 @@ namespace chromeos {
 namespace {
 
 const char kStringsJsFile[] = "strings.js";
-
 const char kRequestBatteryChargeDataCallback[] = "requestBatteryChargeData";
 const char kOnRequestBatteryChargeDataFunction[] =
     "powerUI.showBatteryChargeData";
-
-const char kRequestCpuIdleDataCallback[] = "requestCpuIdleData";
-const char kOnRequestCpuIdleDataFunction[] =
-    "powerUI.showCpuIdleData";
-
-const char kRequestCpuFreqDataCallback[] = "requestCpuFreqData";
-const char kOnRequestCpuFreqDataFunction[] =
-    "powerUI.showCpuFreqData";
 
 class PowerMessageHandler : public content::WebUIMessageHandler {
  public:
@@ -47,13 +38,6 @@ class PowerMessageHandler : public content::WebUIMessageHandler {
 
  private:
   void OnGetBatteryChargeData(const base::ListValue* value);
-  void OnGetCpuIdleData(const base::ListValue* value);
-  void OnGetCpuFreqData(const base::ListValue* value);
-  void GetJsStateOccupancyData(
-      const std::vector<CpuDataCollector::StateOccupancySampleDeque>& data,
-      const std::vector<std::string>& state_names,
-      base::ListValue* js_data);
-  void GetJsSystemResumedData(base::ListValue* value);
 };
 
 PowerMessageHandler::PowerMessageHandler() {
@@ -66,14 +50,6 @@ void PowerMessageHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       kRequestBatteryChargeDataCallback,
       base::Bind(&PowerMessageHandler::OnGetBatteryChargeData,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      kRequestCpuIdleDataCallback,
-      base::Bind(&PowerMessageHandler::OnGetCpuIdleData,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      kRequestCpuFreqDataCallback,
-      base::Bind(&PowerMessageHandler::OnGetCpuFreqData,
                  base::Unretained(this)));
 }
 
@@ -92,57 +68,9 @@ void PowerMessageHandler::OnGetBatteryChargeData(const base::ListValue* value) {
     js_power_supply_data.Append(element.release());
   }
 
-  base::ListValue js_system_resumed_data;
-  GetJsSystemResumedData(&js_system_resumed_data);
-
-  web_ui()->CallJavascriptFunction(kOnRequestBatteryChargeDataFunction,
-                                   js_power_supply_data,
-                                   js_system_resumed_data);
-}
-
-void PowerMessageHandler::OnGetCpuIdleData(const base::ListValue* value) {
-  const CpuDataCollector& cpu_data_collector =
-      PowerDataCollector::Get()->cpu_data_collector();
-
-  const std::vector<CpuDataCollector::StateOccupancySampleDeque>& idle_data =
-      cpu_data_collector.cpu_idle_state_data();
-  const std::vector<std::string>& idle_state_names =
-      cpu_data_collector.cpu_idle_state_names();
-  base::ListValue js_idle_data;
-  GetJsStateOccupancyData(idle_data, idle_state_names, &js_idle_data);
-
-  base::ListValue js_system_resumed_data;
-  GetJsSystemResumedData(&js_system_resumed_data);
-
-  web_ui()->CallJavascriptFunction(kOnRequestCpuIdleDataFunction,
-                                   js_idle_data,
-                                   js_system_resumed_data);
-}
-
-void PowerMessageHandler::OnGetCpuFreqData(const base::ListValue* value) {
-  const CpuDataCollector& cpu_data_collector =
-      PowerDataCollector::Get()->cpu_data_collector();
-
-  const std::vector<CpuDataCollector::StateOccupancySampleDeque>& freq_data =
-      cpu_data_collector.cpu_freq_state_data();
-  const std::vector<std::string>& freq_state_names =
-      cpu_data_collector.cpu_freq_state_names();
-  base::ListValue js_freq_data;
-  GetJsStateOccupancyData(freq_data, freq_state_names, &js_freq_data);
-
-  base::ListValue js_system_resumed_data;
-  GetJsSystemResumedData(&js_system_resumed_data);
-
-  web_ui()->CallJavascriptFunction(kOnRequestCpuFreqDataFunction,
-                                   js_freq_data,
-                                   js_system_resumed_data);
-}
-
-void PowerMessageHandler::GetJsSystemResumedData(base::ListValue *data) {
-  DCHECK(data);
-
   const std::deque<PowerDataCollector::SystemResumedSample>& system_resumed =
       PowerDataCollector::Get()->system_resumed_data();
+  base::ListValue js_system_resumed_data;
   for (size_t i = 0; i < system_resumed.size(); ++i) {
     const PowerDataCollector::SystemResumedSample& sample = system_resumed[i];
     scoped_ptr<base::DictionaryValue> element(new base::DictionaryValue);
@@ -150,34 +78,12 @@ void PowerMessageHandler::GetJsSystemResumedData(base::ListValue *data) {
                        sample.sleep_duration.InMillisecondsF());
     element->SetDouble("time", sample.time.ToJsTime());
 
-    data->Append(element.release());
+    js_system_resumed_data.Append(element.release());
   }
-}
 
-void PowerMessageHandler::GetJsStateOccupancyData(
-    const std::vector<CpuDataCollector::StateOccupancySampleDeque>& data,
-    const std::vector<std::string>& state_names,
-    base::ListValue *js_data) {
-  for (unsigned int cpu = 0; cpu < data.size(); ++cpu) {
-    const CpuDataCollector::StateOccupancySampleDeque& sample_deque = data[cpu];
-    scoped_ptr<base::ListValue> js_sample_list(new base::ListValue);
-    for (unsigned int i = 0; i < sample_deque.size(); ++i) {
-      const CpuDataCollector::StateOccupancySample& sample = sample_deque[i];
-      scoped_ptr<base::DictionaryValue> js_sample(new base::DictionaryValue);
-      js_sample->SetDouble("time", sample.time.ToJsTime());
-      js_sample->SetBoolean("cpuOnline", sample.cpu_online);
-
-      scoped_ptr<base::DictionaryValue> state_dict(new base::DictionaryValue);
-      for (size_t index = 0; index < sample.time_in_state.size(); ++index) {
-        state_dict->SetDouble(state_names[index],
-                              static_cast<double>(sample.time_in_state[index]));
-      }
-      js_sample->Set("timeInState", state_dict.release());
-
-      js_sample_list->Append(js_sample.release());
-    }
-    js_data->Append(js_sample_list.release());
-  }
+  web_ui()->CallJavascriptFunction(kOnRequestBatteryChargeDataFunction,
+                                   js_power_supply_data,
+                                   js_system_resumed_data);
 }
 
 }  // namespace
@@ -190,35 +96,17 @@ PowerUI::PowerUI(content::WebUI* web_ui) : content::WebUIController(web_ui) {
   html->SetUseJsonJSFormatV2();
 
   html->AddLocalizedString("titleText", IDS_ABOUT_POWER_TITLE);
-  html->AddLocalizedString("showButton", IDS_ABOUT_POWER_SHOW_BUTTON);
-  html->AddLocalizedString("hideButton", IDS_ABOUT_POWER_HIDE_BUTTON);
   html->AddLocalizedString("reloadButton", IDS_ABOUT_POWER_RELOAD_BUTTON);
-  html->AddLocalizedString("notEnoughDataAvailableYet",
-                           IDS_ABOUT_POWER_NOT_ENOUGH_DATA);
-  html->AddLocalizedString("systemSuspended",
-                           IDS_ABOUT_POWER_SYSTEM_SUSPENDED);
-  html->AddLocalizedString("invalidData", IDS_ABOUT_POWER_INVALID);
-  html->AddLocalizedString("offlineText", IDS_ABOUT_POWER_OFFLINE);
-
-  html->AddLocalizedString("batteryChargeSectionTitle",
-                           IDS_ABOUT_POWER_BATTERY_CHARGE_SECTION_TITLE);
   html->AddLocalizedString("batteryChargePercentageHeader",
                            IDS_ABOUT_POWER_BATTERY_CHARGE_PERCENTAGE_HEADER);
   html->AddLocalizedString("batteryDischargeRateHeader",
                            IDS_ABOUT_POWER_BATTERY_DISCHARGE_RATE_HEADER);
-  html->AddLocalizedString("dischargeRateLegendText",
-                           IDS_ABOUT_POWER_DISCHARGE_RATE_LEGEND_TEXT);
-
-  html->AddLocalizedString("cpuIdleSectionTitle",
-                           IDS_ABOUT_POWER_CPU_IDLE_SECTION_TITLE);
-  html->AddLocalizedString("idleStateOccupancyPercentageHeader",
-                           IDS_ABOUT_POWER_CPU_IDLE_STATE_OCCUPANCY_PERCENTAGE);
-
-  html->AddLocalizedString("cpuFreqSectionTitle",
-                           IDS_ABOUT_POWER_CPU_FREQ_SECTION_TITLE);
-  html->AddLocalizedString("frequencyStateOccupancyPercentageHeader",
-                           IDS_ABOUT_POWER_CPU_FREQ_STATE_OCCUPANCY_PERCENTAGE);
-
+  html->AddLocalizedString("negativeDischargeRateInfo",
+                           IDS_ABOUT_POWER_NEGATIVE_DISCHARGE_RATE_INFO);
+  html->AddLocalizedString("notEnoughDataAvailableYet",
+                           IDS_ABOUT_POWER_NOT_ENOUGH_DATA);
+  html->AddLocalizedString("systemSuspended",
+                           IDS_ABOUT_POWER_SYSTEM_SUSPENDED);
   html->SetJsonPath(kStringsJsFile);
 
   html->AddResourcePath("power.css", IDR_ABOUT_POWER_CSS);

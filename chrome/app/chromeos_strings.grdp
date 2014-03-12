@@ -5021,53 +5021,26 @@ All users must sign out to continue.
   </message>
 
   <!-- About power UI display strings -->
-  <message name="IDS_ABOUT_POWER_TITLE" desc="Title of the about:power page">
+  <message name="IDS_ABOUT_POWER_TITLE" desc="Title of the page">
     Power
   </message>
-  <message name="IDS_ABOUT_POWER_SHOW_BUTTON" desc="Text on the 'Show' buttons of the about:power page">
-    Show
-  </message>
-  <message name="IDS_ABOUT_POWER_HIDE_BUTTON" desc="Text on the 'Hide' buttons of the about:power page">
-    Hide
-  </message>
-  <message name="IDS_ABOUT_POWER_RELOAD_BUTTON" desc="Text on the 'Reload' buttons of the about:power page ">
+  <message name="IDS_ABOUT_POWER_RELOAD_BUTTON" desc="Text on the reload button">
     Reload
   </message>
-  <message name="IDS_ABOUT_POWER_BATTERY_CHARGE_SECTION_TITLE" desc="Title for the battery charge related plots on the about:power page">
-    Battery Charge
-  </message>
-  <message name="IDS_ABOUT_POWER_BATTERY_CHARGE_PERCENTAGE_HEADER" desc="Header of the battery charge plot on the about:power page">
+  <message name="IDS_ABOUT_POWER_BATTERY_CHARGE_PERCENTAGE_HEADER" desc="Header of the battery charge plot">
     Battery Charge Percentage
   </message>
-  <message name="IDS_ABOUT_POWER_BATTERY_DISCHARGE_RATE_HEADER" desc="Header of the battery discharge rate plot on the about:power page">
-    Battery Discharge Rate in Watts (Negative value means battery is charging)
+  <message name="IDS_ABOUT_POWER_BATTERY_DISCHARGE_RATE_HEADER" desc="Header of the battery discharge rate plot">
+    Battery Discharge Rate in Watts
   </message>
-  <message name="IDS_ABOUT_POWER_DISCHARGE_RATE_LEGEND_TEXT" desc="Text to be displayed for the discharge rate legend entry of the discharge rate plot on the about:power page">
-    Discharge Rate in Watts
+  <message name="IDS_ABOUT_POWER_NEGATIVE_DISCHARGE_RATE_INFO" desc="Describes what a negative discharge rate means">
+    Negative discharge rate means the battery is charging
   </message>
-  <message name="IDS_ABOUT_POWER_CPU_IDLE_SECTION_TITLE" desc="Title for the CPU idle state data section on the about:power page">
-    Idle State Data
-  </message>
-  <message name="IDS_ABOUT_POWER_CPU_IDLE_STATE_OCCUPANCY_PERCENTAGE" desc="Header for idle state plots on the about:power page">
-    Idle State Occupancy Percentage
-  </message>
-  <message name="IDS_ABOUT_POWER_CPU_FREQ_SECTION_TITLE" desc="Title for the CPU frequency state data section on the about:power page">
-    Frequency State Data
-  </message>
-  <message name="IDS_ABOUT_POWER_CPU_FREQ_STATE_OCCUPANCY_PERCENTAGE" desc="Header for frequency state plots on the about:power page">
-    Frequency State Occupancy Percentage
-  </message>
-  <message name="IDS_ABOUT_POWER_NOT_ENOUGH_DATA" desc="String to display on the plots of the about:power page when enough plot data is not available">
+  <message name="IDS_ABOUT_POWER_NOT_ENOUGH_DATA" desc="String to display when enough plot data is not available">
     Not enough data available yet.
   </message>
-  <message name="IDS_ABOUT_POWER_SYSTEM_SUSPENDED" desc="String to display on the plots of the about:power page for sleep duration">
+  <message name="IDS_ABOUT_POWER_SYSTEM_SUSPENDED" desc="String to display on plots for sleep duration">
     Suspended
-  </message>
-  <message name="IDS_ABOUT_POWER_INVALID" desc="String to display on the plots of the about:power page for invalid data">
-    Invalid
-  </message>
-  <message name="IDS_ABOUT_POWER_OFFLINE" desc="String to display on the plots of the about:power page for offline CPUs">
-    Offline
   </message>
 
   <!-- Strings for the new-style OAuth-based enterprise enrollment page -->

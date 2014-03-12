@@ -10,64 +10,28 @@
   <script src="chrome://power/power.js"></script>
 </head>
 <body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
-  <table id="main-table">
-    <tr class="section-row">
-      <td class="title-cell">
-        <p i18n-content="batteryChargeSectionTitle" class="title-text"></p>
-      </td>
-      <td class="show-button-cell">
-        <button id="battery-charge-show-button" class="show-button"
-                i18n-content="showButton">
-        </button>
-      </td>
-      <td id="battery-charge-cell" class="plots-cell">
-        <div id="battery-charge-section" class="section-div">
-          <div class="plots-div" id="battery-charge-plots-div"></div>
-          <button id="battery-charge-reload-button" class="reload-button"
-                  i18n-content="reloadButton">
-          </button>
-        </div>
-      </td>
-    </tr>
+  <div id="main-layout">
+    <div id="battery-charge-section">
+      <h3 i18n-content="batteryChargePercentageHeader"></h3>
+      <div class="plot-canvas-div">
+        <canvas id="battery-charge-percentage-canvas" width="600" height="200">
+        </canvas>
+      </div>
 
-    <tr class="section-row">
-      <td class="title-cell">
-        <p i18n-content="cpuIdleSectionTitle" class="title-text"></p>
-      </td>
-      <td class="show-button-cell">
-        <button id="cpu-idle-show-button" class="show-button"
-                i18n-content="showButton">
-        </button>
-      </td>
-      <td id="cpu-idle-cell" class="plots-cell">
-        <div id="cpu-idle-section" class="section-div">
-          <div class="plots-div" id="cpu-idle-plots-div"></div>
-          <button id="cpu-idle-reload-button" class="reload-button"
-                  i18n-content="reloadButton">
-          </button>
-        </div>
-      </td>
-    </tr>
+      <h3 i18n-content="batteryDischargeRateHeader"></h3>
+      <p i18n-content="negativeDischargeRateInfo"></p>
+      <div class="plot-canvas-div">
+        <canvas id="battery-discharge-rate-canvas" width="600" height="200">
+        </canvas>
+      </div>
 
-    <tr class="section-row">
-      <td class="title-cell">
-        <p i18n-content="cpuFreqSectionTitle" class="title-text"></p>
-      </td>
-      <td class="show-button-cell">
-        <button id="cpu-freq-show-button" class="show-button"
-                i18n-content="showButton">
-        </button>
-      </td>
-      <td id="cpu-freq-cell" class="plots-cell">
-        <div id="cpu-freq-section" class="section-div">
-          <div class="plots-div" id="cpu-freq-plots-div"></div>
-          <button id="cpu-freq-reload-button" class="reload-button"
-                  i18n-content="reloadButton">
-          </button>
-        </div>
-      </td>
-    </tr>
-  </table>
+      <button id="battery-charge-reload-button" class="reload-button"
+              i18n-content="reloadButton">
+      </button>
+    </div>
+
+    <hr class="section-boundary">
+  </div>
   <script src="chrome://resources/js/i18n_template2.js"></script>
 </body>
 </html>
