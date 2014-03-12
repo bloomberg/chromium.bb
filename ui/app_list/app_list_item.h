@@ -82,6 +82,10 @@ class APP_LIST_EXPORT AppListItem {
   // Returns the number of child items if it has any (e.g. is a folder) or 0.
   virtual size_t ChildItemCount() const;
 
+  // Called when the extension preference changed. Used by ExtensionAppItem
+  // to update icon overlays.
+  virtual void OnExtensionPreferenceChanged();
+
   // Utility functions for sync integration tests.
   virtual bool CompareForTest(const AppListItem* other) const;
   virtual std::string ToDebugString() const;

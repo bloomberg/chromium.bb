@@ -51,7 +51,7 @@ AppsContainerView::AppsContainerView(AppListMainView* app_list_main_view,
   AddChildView(app_list_folder_view_);
 
   apps_grid_view_->SetModel(model_);
-  apps_grid_view_->SetItemList(model_->item_list());
+  apps_grid_view_->SetItemList(model_->top_level_item_list());
   SetShowState(SHOW_APPS,
                false);  /* show apps without animation */
 }

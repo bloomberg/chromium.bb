@@ -17,10 +17,7 @@ namespace {
 
 class TestObserver : public AppListItemListObserver {
  public:
-  TestObserver()
-      : items_added_(0),
-        items_removed_(0) {
-  }
+  TestObserver() : items_added_(0), items_removed_(0), items_moved_(0) {}
 
   virtual ~TestObserver() {
   }
@@ -34,12 +31,26 @@ class TestObserver : public AppListItemListObserver {
     ++items_removed_;
   }
 
+  virtual void OnListItemMoved(size_t from_index,
+                               size_t to_index,
+                               AppListItem* item) OVERRIDE {
+    ++items_moved_;
+  }
+
   size_t items_added() const { return items_added_; }
   size_t items_removed() const { return items_removed_; }
+  size_t items_moved() const { return items_moved_; }
+
+  void ResetCounts() {
+    items_added_ = 0;
+    items_removed_ = 0;
+    items_moved_ = 0;
+  }
 
  private:
   size_t items_added_;
   size_t items_removed_;
+  size_t items_moved_;
 
   DISALLOW_COPY_AND_ASSIGN(TestObserver);
 };
@@ -65,6 +76,14 @@ class AppListItemListTest : public testing::Test {
   }
 
  protected:
+  AppListItem* FindItem(const std::string& id) {
+    return item_list_.FindItem(id);
+  }
+
+  bool FindItemIndex(const std::string& id, size_t* index) {
+    return item_list_.FindItemIndex(id, index);
+  }
+
   scoped_ptr<AppListItem> CreateItem(const std::string& name) {
     scoped_ptr<AppListItem> item(new AppListItem(name));
     size_t nitems = item_list_.item_count();
@@ -141,15 +160,15 @@ TEST_F(AppListItemListTest, FindItemIndex) {
   EXPECT_TRUE(VerifyItemListOrdinals());
 
   size_t index;
-  EXPECT_TRUE(item_list_.FindItemIndex(item_0->id(), &index));
+  EXPECT_TRUE(FindItemIndex(item_0->id(), &index));
   EXPECT_EQ(index, 0u);
-  EXPECT_TRUE(item_list_.FindItemIndex(item_1->id(), &index));
+  EXPECT_TRUE(FindItemIndex(item_1->id(), &index));
   EXPECT_EQ(index, 1u);
-  EXPECT_TRUE(item_list_.FindItemIndex(item_2->id(), &index));
+  EXPECT_TRUE(FindItemIndex(item_2->id(), &index));
   EXPECT_EQ(index, 2u);
 
   scoped_ptr<AppListItem> item_3(CreateItem(GetItemId(3)));
-  EXPECT_FALSE(item_list_.FindItemIndex(item_3->id(), &index));
+  EXPECT_FALSE(FindItemIndex(item_3->id(), &index));
 }
 
 TEST_F(AppListItemListTest, RemoveItemAt) {
@@ -159,13 +178,13 @@ TEST_F(AppListItemListTest, RemoveItemAt) {
   EXPECT_EQ(item_list_.item_count(), 3u);
   EXPECT_EQ(observer_.items_added(), 3u);
   size_t index;
-  EXPECT_TRUE(item_list_.FindItemIndex(item_1->id(), &index));
+  EXPECT_TRUE(FindItemIndex(item_1->id(), &index));
   EXPECT_EQ(index, 1u);
   EXPECT_TRUE(VerifyItemListOrdinals());
 
   scoped_ptr<AppListItem> item_removed = RemoveItemAt(1);
   EXPECT_EQ(item_removed, item_1);
-  EXPECT_FALSE(item_list_.FindItem(item_1->id()));
+  EXPECT_FALSE(FindItem(item_1->id()));
   EXPECT_EQ(item_list_.item_count(), 2u);
   EXPECT_EQ(observer_.items_removed(), 1u);
   EXPECT_EQ(item_list_.item_at(0), item_0);
@@ -185,12 +204,12 @@ TEST_F(AppListItemListTest, RemoveItem) {
   EXPECT_TRUE(VerifyItemListOrdinals());
 
   size_t index;
-  EXPECT_TRUE(item_list_.FindItemIndex(item_1->id(), &index));
+  EXPECT_TRUE(FindItemIndex(item_1->id(), &index));
   EXPECT_EQ(index, 1u);
 
   scoped_ptr<AppListItem> item_removed = RemoveItem(item_1->id());
   EXPECT_EQ(item_removed, item_1);
-  EXPECT_FALSE(item_list_.FindItem(item_1->id()));
+  EXPECT_FALSE(FindItem(item_1->id()));
   EXPECT_EQ(item_list_.item_count(), 2u);
   EXPECT_EQ(observer_.items_removed(), 1u);
   EXPECT_TRUE(VerifyItemListOrdinals());
@@ -204,27 +223,85 @@ TEST_F(AppListItemListTest, MoveItem) {
   CreateAndAddItem(GetItemId(1));
   CreateAndAddItem(GetItemId(2));
   CreateAndAddItem(GetItemId(3));
+
+  EXPECT_TRUE(VerifyItemOrder4(0, 1, 2, 3));
+
+  item_list_.MoveItem(0, 0);
+  EXPECT_EQ(0u, observer_.items_moved());
   EXPECT_TRUE(VerifyItemOrder4(0, 1, 2, 3));
 
   item_list_.MoveItem(0, 1);
+  EXPECT_EQ(1u, observer_.items_moved());
   EXPECT_TRUE(VerifyItemListOrdinals());
   EXPECT_TRUE(VerifyItemOrder4(1, 0, 2, 3));
 
   item_list_.MoveItem(1, 2);
+  EXPECT_EQ(2u, observer_.items_moved());
   EXPECT_TRUE(VerifyItemListOrdinals());
   EXPECT_TRUE(VerifyItemOrder4(1, 2, 0, 3));
 
-  item_list_.MoveItem(2, 3);
+  item_list_.MoveItem(2, 1);
+  EXPECT_EQ(3u, observer_.items_moved());
   EXPECT_TRUE(VerifyItemListOrdinals());
-  EXPECT_TRUE(VerifyItemOrder4(1, 2, 3, 0));
+  EXPECT_TRUE(VerifyItemOrder4(1, 0, 2, 3));
 
   item_list_.MoveItem(3, 0);
+  EXPECT_EQ(4u, observer_.items_moved());
   EXPECT_TRUE(VerifyItemListOrdinals());
-  EXPECT_TRUE(VerifyItemOrder4(0, 1, 2, 3));
+  EXPECT_TRUE(VerifyItemOrder4(3, 1, 0, 2));
 
   item_list_.MoveItem(0, 3);
+  EXPECT_EQ(5u, observer_.items_moved());
   EXPECT_TRUE(VerifyItemListOrdinals());
-  EXPECT_TRUE(VerifyItemOrder4(1, 2, 3, 0));
+  EXPECT_TRUE(VerifyItemOrder4(1, 0, 2, 3));
+}
+
+TEST_F(AppListItemListTest, SamePosition) {
+  CreateAndAddItem(GetItemId(0));
+  CreateAndAddItem(GetItemId(1));
+  CreateAndAddItem(GetItemId(2));
+  CreateAndAddItem(GetItemId(3));
+  item_list_.SetItemPosition(item_list_.item_at(2),
+                             item_list_.item_at(1)->position());
+  EXPECT_TRUE(VerifyItemOrder4(0, 1, 2, 3));
+  EXPECT_TRUE(item_list_.item_at(1)->position().Equals(
+      item_list_.item_at(2)->position()));
+  // Moving an item to position 1 should fix the position.
+  observer_.ResetCounts();
+  item_list_.MoveItem(0, 1);
+  EXPECT_TRUE(VerifyItemOrder4(1, 0, 2, 3));
+  EXPECT_TRUE(item_list_.item_at(0)->position().LessThan(
+      item_list_.item_at(1)->position()));
+  EXPECT_TRUE(item_list_.item_at(1)->position().LessThan(
+      item_list_.item_at(2)->position()));
+  EXPECT_TRUE(item_list_.item_at(2)->position().LessThan(
+      item_list_.item_at(3)->position()));
+  // One extra move notification for fixed position.
+  EXPECT_EQ(2u, observer_.items_moved());
+
+  // Restore the original order.
+  item_list_.MoveItem(1, 0);
+  EXPECT_TRUE(VerifyItemOrder4(0, 1, 2, 3));
+
+  // Set all four items to the same position.
+  item_list_.SetItemPosition(item_list_.item_at(1),
+                             item_list_.item_at(0)->position());
+  item_list_.SetItemPosition(item_list_.item_at(2),
+                             item_list_.item_at(0)->position());
+  item_list_.SetItemPosition(item_list_.item_at(3),
+                             item_list_.item_at(0)->position());
+  // Move should fix the position of the items.
+  observer_.ResetCounts();
+  item_list_.MoveItem(0, 1);
+  EXPECT_TRUE(VerifyItemOrder4(1, 0, 2, 3));
+  EXPECT_TRUE(item_list_.item_at(0)->position().LessThan(
+      item_list_.item_at(1)->position()));
+  EXPECT_TRUE(item_list_.item_at(1)->position().LessThan(
+      item_list_.item_at(2)->position()));
+  EXPECT_TRUE(item_list_.item_at(2)->position().LessThan(
+      item_list_.item_at(3)->position()));
+  // One extra move notification for fixed position.
+  EXPECT_EQ(2u, observer_.items_moved());
 }
 
 TEST_F(AppListItemListTest, CreatePositionBefore) {

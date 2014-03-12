@@ -110,7 +110,7 @@ class AppsGridViewTest : public views::ViewsTestBase {
     apps_grid_view_->SetLayout(kIconDimension, kCols, kRows);
     apps_grid_view_->SetBoundsRect(gfx::Rect(gfx::Size(kWidth, kHeight)));
     apps_grid_view_->SetModel(model_.get());
-    apps_grid_view_->SetItemList(model_->item_list());
+    apps_grid_view_->SetItemList(model_->top_level_item_list());
 
     test_api_.reset(new AppsGridViewTestApi(apps_grid_view_.get()));
   }
@@ -126,7 +126,7 @@ class AppsGridViewTest : public views::ViewsTestBase {
   }
 
   AppListItemView* GetItemViewForPoint(const gfx::Point& point) {
-    for (size_t i = 0; i < model_->item_list()->item_count(); ++i) {
+    for (size_t i = 0; i < model_->top_level_item_list()->item_count(); ++i) {
       AppListItemView* view = GetItemViewAt(i);
       if (view->bounds().Contains(point))
         return view;
@@ -135,7 +135,7 @@ class AppsGridViewTest : public views::ViewsTestBase {
   }
 
   gfx::Rect GetItemTileRectAt(int row, int col) {
-    DCHECK_GT(model_->item_list()->item_count(), 0u);
+    DCHECK_GT(model_->top_level_item_list()->item_count(), 0u);
 
     gfx::Insets insets(apps_grid_view_->GetInsets());
     gfx::Rect rect(gfx::Point(insets.left(), insets.top()),
@@ -208,7 +208,7 @@ TEST_F(AppsGridViewTest, EnsureHighlightedVisible) {
   EXPECT_EQ(1, pagination_model_->selected_page());
 
   // Highlight last one in the model and last page should be selected.
-  model_->HighlightItemAt(model_->item_list()->item_count() - 1);
+  model_->HighlightItemAt(model_->top_level_item_list()->item_count() - 1);
   EXPECT_EQ(kPages - 1, pagination_model_->selected_page());
 }
 

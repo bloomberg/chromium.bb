@@ -201,19 +201,21 @@ scoped_ptr<Pickle> FastShowPickler::PickleAppListModelForFastShow(
   scoped_ptr<Pickle> result(new Pickle);
   if (!result->WriteInt(kVersion))
     return scoped_ptr<Pickle>();
-  if (!result->WriteInt((int) model->item_list()->item_count()))
+  if (!result->WriteInt((int)model->top_level_item_list()->item_count()))
     return scoped_ptr<Pickle>();
-  for (size_t i = 0; i < model->item_list()->item_count(); ++i) {
-    if (!PickleAppListItem(result.get(), model->item_list()->item_at(i)))
+  for (size_t i = 0; i < model->top_level_item_list()->item_count(); ++i) {
+    if (!PickleAppListItem(result.get(),
+                           model->top_level_item_list()->item_at(i))) {
       return scoped_ptr<Pickle>();
+    }
   }
   return result.Pass();
 }
 
 void FastShowPickler::CopyOver(AppListModel* src, AppListModel* dest) {
-  DCHECK_EQ(0u, dest->item_list()->item_count());
-  for (size_t i = 0; i < src->item_list()->item_count(); i++) {
-    AppListItem* src_item = src->item_list()->item_at(i);
+  DCHECK_EQ(0u, dest->top_level_item_list()->item_count());
+  for (size_t i = 0; i < src->top_level_item_list()->item_count(); i++) {
+    AppListItem* src_item = src->top_level_item_list()->item_at(i);
     scoped_ptr<AppListItem> dest_item(new AppListItem(src_item->id()));
     CopyOverItem(src_item, dest_item.get());
     dest->AddItemToFolder(dest_item.Pass(), src_item->folder_id());

@@ -448,7 +448,8 @@ TEST_F(AppsGridControllerTest, ModelUpdate) {
   EXPECT_EQ(std::string("|Item 0,Item 1,Item 2|"), GetViewContent());
 
   // Update the title via the ItemModelObserver.
-  app_list::AppListItem* item_model = model()->item_list()->item_at(2);
+  app_list::AppListItem* item_model =
+      model()->top_level_item_list()->item_at(2);
   model()->SetItemName(item_model, "UpdatedItem");
   EXPECT_NSEQ(@"UpdatedItem", [button title]);
 
@@ -473,7 +474,7 @@ TEST_F(AppsGridControllerTest, ModelAdd) {
   EXPECT_EQ(2u, [[GetPageAt(0) content] count]);
   EXPECT_EQ(std::string("|Item 0,Item 1|"), GetViewContent());
 
-  app_list::AppListItemList* item_list = model()->item_list();
+  app_list::AppListItemList* item_list = model()->top_level_item_list();
 
   model()->CreateAndAddItem("Item 2");
   ASSERT_EQ(3u, item_list->item_count());
@@ -497,7 +498,7 @@ TEST_F(AppsGridControllerTest, ModelMove) {
   EXPECT_EQ(std::string("|Item 0,Item 1,Item 2|"), GetViewContent());
 
   // Test swapping items (e.g. rearranging via sync).
-  model()->item_list()->MoveItem(1, 2);
+  model()->top_level_item_list()->MoveItem(1, 2);
   EXPECT_EQ(std::string("|Item 0,Item 2,Item 1|"), GetViewContent());
 }
 
@@ -534,7 +535,7 @@ TEST_F(AppsGridControllerTest, ModelRemoveSeveral) {
 }
 
 TEST_F(AppsGridControllerTest, ModelRemovePage) {
-  app_list::AppListItemList* item_list = model()->item_list();
+  app_list::AppListItemList* item_list = model()->top_level_item_list();
 
   model()->PopulateApps(kItemsPerPage + 1);
   ASSERT_EQ(kItemsPerPage + 1, item_list->item_count());
@@ -555,7 +556,7 @@ TEST_F(AppsGridControllerTest, ItemInstallProgress) {
   EXPECT_EQ(2u, [apps_grid_controller_ pageCount]);
   EXPECT_EQ(0u, [apps_grid_controller_ visiblePage]);
   app_list::AppListItem* item_model =
-      model()->item_list()->item_at(kItemsPerPage);
+      model()->top_level_item_list()->item_at(kItemsPerPage);
 
   // Highlighting an item should activate the page it is on.
   item_model->SetHighlighted(true);
@@ -591,7 +592,7 @@ TEST_F(AppsGridControllerTest, ItemInstallProgress) {
   // Two things can be installing simultaneously. When one starts or completes
   // the model builder will ask for the item to be highlighted.
   app_list::AppListItem* alternate_item_model =
-      model()->item_list()->item_at(0);
+      model()->top_level_item_list()->item_at(0);
   item_model->SetHighlighted(false);
   alternate_item_model->SetHighlighted(true);
   EXPECT_EQ(0u, [apps_grid_controller_ visiblePage]);

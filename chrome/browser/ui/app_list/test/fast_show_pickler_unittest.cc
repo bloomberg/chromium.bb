@@ -18,16 +18,17 @@ using app_list::AppListModel;
 class AppListModelPicklerUnitTest : public testing::Test {
  protected:
   void CheckIsSame(AppListModel* m1, AppListModel* m2) {
-    ASSERT_EQ(m1->item_list()->item_count(), m2->item_list()->item_count());
-    for (size_t i = 0; i < m1->item_list()->item_count(); i++) {
-      ASSERT_EQ(m1->item_list()->item_at(i)->id(),
-                m2->item_list()->item_at(i)->id());
-      ASSERT_EQ(m1->item_list()->item_at(i)->name(),
-                m2->item_list()->item_at(i)->name());
-      ASSERT_EQ(m1->item_list()->item_at(i)->short_name(),
-                m2->item_list()->item_at(i)->short_name());
-      CompareImages(m1->item_list()->item_at(i)->icon(),
-                    m2->item_list()->item_at(i)->icon());
+    ASSERT_EQ(m1->top_level_item_list()->item_count(),
+              m2->top_level_item_list()->item_count());
+    for (size_t i = 0; i < m1->top_level_item_list()->item_count(); i++) {
+      ASSERT_EQ(m1->top_level_item_list()->item_at(i)->id(),
+                m2->top_level_item_list()->item_at(i)->id());
+      ASSERT_EQ(m1->top_level_item_list()->item_at(i)->name(),
+                m2->top_level_item_list()->item_at(i)->name());
+      ASSERT_EQ(m1->top_level_item_list()->item_at(i)->short_name(),
+                m2->top_level_item_list()->item_at(i)->short_name());
+      CompareImages(m1->top_level_item_list()->item_at(i)->icon(),
+                    m2->top_level_item_list()->item_at(i)->icon());
     }
   }
 

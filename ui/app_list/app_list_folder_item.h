@@ -54,6 +54,7 @@ class APP_LIST_EXPORT AppListFolderItem : public AppListItem,
   virtual ui::MenuModel* GetContextMenuModel() OVERRIDE;
   virtual AppListItem* FindChildItem(const std::string& id) OVERRIDE;
   virtual size_t ChildItemCount() const OVERRIDE;
+  virtual void OnExtensionPreferenceChanged() OVERRIDE;
   virtual bool CompareForTest(const AppListItem* other) const OVERRIDE;
 
   // Calculates the top item icons' bounds inside |folder_icon_bounds|.

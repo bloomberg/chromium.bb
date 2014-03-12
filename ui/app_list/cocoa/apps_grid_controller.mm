@@ -191,7 +191,7 @@ class AppsGridDelegateBridge : public AppListItemListObserver {
   if (delegate_) {
     app_list::AppListModel* oldModel = delegate_->GetModel();
     if (oldModel)
-      oldModel->item_list()->RemoveObserver(bridge_.get());
+      oldModel->top_level_item_list()->RemoveObserver(bridge_.get());
   }
 
   // Since the old model may be getting deleted, and the AppKit objects might
@@ -212,9 +212,10 @@ class AppsGridDelegateBridge : public AppListItemListObserver {
   if (!newModel)
     return;
 
-  newModel->item_list()->AddObserver(bridge_.get());
-  for (size_t i = 0; i < newModel->item_list()->item_count(); ++i) {
-    app_list::AppListItem* itemModel = newModel->item_list()->item_at(i);
+  newModel->top_level_item_list()->AddObserver(bridge_.get());
+  for (size_t i = 0; i < newModel->top_level_item_list()->item_count(); ++i) {
+    app_list::AppListItem* itemModel =
+        newModel->top_level_item_list()->item_at(i);
     [items_ insertObject:[NSValue valueWithPointer:itemModel]
                  atIndex:i];
   }
@@ -526,7 +527,7 @@ class AppsGridDelegateBridge : public AppListItemListObserver {
   if (itemIndex == modelIndex)
     return;
 
-  app_list::AppListItemList* itemList = [self model]->item_list();
+  app_list::AppListItemList* itemList = [self model]->top_level_item_list();
   itemList->RemoveObserver(bridge_.get());
   itemList->MoveItem(itemIndex, modelIndex);
   itemList->AddObserver(bridge_.get());

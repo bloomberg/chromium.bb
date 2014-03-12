@@ -22,6 +22,7 @@ class APP_LIST_EXPORT AppListItemListObserver {
   virtual void OnListItemRemoved(size_t index, AppListItem* item) {}
 
   // Triggered after |item| has been moved from |from_index| to |to_index|.
+  // Note: |from_index| may equal |to_index| if only the ordinal has changed.
   virtual void OnListItemMoved(size_t from_index,
                                size_t to_index,
                                AppListItem* item) {}

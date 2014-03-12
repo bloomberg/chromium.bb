@@ -71,11 +71,11 @@ AppListFolderView::AppListFolderView(AppsContainerView* container_view,
   SetFillsBoundsOpaquely(false);
 #endif
 
-  model_->item_list()->AddObserver(this);
+  model_->AddObserver(this);
 }
 
 AppListFolderView::~AppListFolderView() {
-  model_->item_list()->RemoveObserver(this);
+  model_->RemoveObserver(this);
   // Make sure |items_grid_view_| is deleted before |pagination_model_|.
   RemoveAllChildViews(true);
 }
@@ -129,7 +129,7 @@ bool AppListFolderView::OnKeyPressed(const ui::KeyEvent& event) {
   return items_grid_view_->OnKeyPressed(event);
 }
 
-void AppListFolderView::OnListItemRemoved(size_t index, AppListItem* item) {
+void AppListFolderView::OnAppListItemWillBeDeleted(AppListItem* item) {
   if (item == folder_item_) {
     items_grid_view_->OnFolderItemRemoved();
     folder_header_view_->OnFolderItemRemoved();

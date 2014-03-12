@@ -34,7 +34,7 @@ class PaginationModel;
 
 class AppListFolderView : public views::View,
                           public FolderHeaderViewDelegate,
-                          public AppListItemListObserver,
+                          public AppListModelObserver,
                           public ui::ImplicitAnimationObserver {
  public:
   AppListFolderView(AppsContainerView* container_view,
@@ -84,15 +84,15 @@ class AppListFolderView : public views::View,
   // Hides the view immediately without animation.
   void HideViewImmediately();
 
-  // views::View overrides:
+  // views::View
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
 
-  // Overridden from AppListItemListObserver:
-  virtual void OnListItemRemoved(size_t index, AppListItem* item) OVERRIDE;
+  // AppListModelObserver
+  virtual void OnAppListItemWillBeDeleted(AppListItem* item) OVERRIDE;
 
-  // ui::ImplicitAnimationObserver overrides:
+  // ui::ImplicitAnimationObserver
   virtual void OnImplicitAnimationsCompleted() OVERRIDE;
 
   AppsGridView* items_grid_view() { return items_grid_view_; }

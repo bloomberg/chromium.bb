@@ -174,13 +174,13 @@ void AppListMainView::PreloadIcons(gfx::NativeView parent) {
 
   const int tiles_per_page = kPreferredCols * kPreferredRows;
   const int start_model_index = selected_page * tiles_per_page;
-  const int end_model_index = std::min(
-      static_cast<int>(model_->item_list()->item_count()),
-      start_model_index + tiles_per_page);
+  const int end_model_index =
+      std::min(static_cast<int>(model_->top_level_item_list()->item_count()),
+               start_model_index + tiles_per_page);
 
   pending_icon_loaders_.clear();
   for (int i = start_model_index; i < end_model_index; ++i) {
-    AppListItem* item = model_->item_list()->item_at(i);
+    AppListItem* item = model_->top_level_item_list()->item_at(i);
     if (item->icon().HasRepresentation(scale))
       continue;
 

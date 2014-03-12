@@ -102,7 +102,7 @@ class AppListModelTest : public testing::Test {
   }
 
   std::string GetModelContents() {
-    return GetItemListContents(model_.item_list());
+    return GetItemListContents(model_.top_level_item_list());
   }
 
   test::AppListTestModel model_;
@@ -133,10 +133,10 @@ TEST_F(AppListModelTest, AppsObserver) {
 TEST_F(AppListModelTest, ModelGetItem) {
   const size_t num_apps = 2;
   model_.PopulateApps(num_apps);
-  AppListItem* item0 = model_.item_list()->item_at(0);
+  AppListItem* item0 = model_.top_level_item_list()->item_at(0);
   ASSERT_TRUE(item0);
   EXPECT_EQ(model_.GetItemName(0), item0->id());
-  AppListItem* item1 = model_.item_list()->item_at(1);
+  AppListItem* item1 = model_.top_level_item_list()->item_at(1);
   ASSERT_TRUE(item1);
   EXPECT_EQ(model_.GetItemName(1), item1->id());
 }
@@ -159,19 +159,20 @@ TEST_F(AppListModelTest, SetItemPosition) {
   model_.PopulateApps(num_apps);
   // Adding another item will add it to the end.
   model_.CreateAndAddItem("Added Item 1");
-  ASSERT_EQ(num_apps + 1, model_.item_list()->item_count());
-  EXPECT_EQ("Added Item 1", model_.item_list()->item_at(num_apps)->id());
+  ASSERT_EQ(num_apps + 1, model_.top_level_item_list()->item_count());
+  EXPECT_EQ("Added Item 1",
+            model_.top_level_item_list()->item_at(num_apps)->id());
   // Add an item between items 0 and 1.
-  AppListItem* item0 = model_.item_list()->item_at(0);
+  AppListItem* item0 = model_.top_level_item_list()->item_at(0);
   ASSERT_TRUE(item0);
-  AppListItem* item1 = model_.item_list()->item_at(1);
+  AppListItem* item1 = model_.top_level_item_list()->item_at(1);
   ASSERT_TRUE(item1);
   AppListItem* item2 = model_.CreateItem("Added Item 2");
   model_.AddItem(item2);
   EXPECT_EQ("Item 0,Item 1,Added Item 1,Added Item 2", GetModelContents());
   model_.SetItemPosition(
       item2, item0->position().CreateBetween(item1->position()));
-  EXPECT_EQ(num_apps + 2, model_.item_list()->item_count());
+  EXPECT_EQ(num_apps + 2, model_.top_level_item_list()->item_count());
   EXPECT_EQ(num_apps + 2, observer_.items_added());
   EXPECT_EQ("Item 0,Added Item 2,Item 1,Added Item 1", GetModelContents());
 }
@@ -181,10 +182,10 @@ TEST_F(AppListModelTest, ModelMoveItem) {
   model_.PopulateApps(num_apps);
   // Adding another item will add it to the end.
   model_.CreateAndAddItem("Inserted Item");
-  ASSERT_EQ(num_apps + 1, model_.item_list()->item_count());
+  ASSERT_EQ(num_apps + 1, model_.top_level_item_list()->item_count());
   // Move it to the position 1.
   observer_.ResetCounts();
-  model_.item_list()->MoveItem(num_apps, 1);
+  model_.top_level_item_list()->MoveItem(num_apps, 1);
   EXPECT_EQ(1u, observer_.items_updated());
   EXPECT_EQ("Item 0,Inserted Item,Item 1,Item 2", GetModelContents());
 }
@@ -194,17 +195,17 @@ TEST_F(AppListModelTest, ModelRemoveItem) {
   model_.PopulateApps(num_apps);
   // Remove an item in the middle.
   model_.DeleteItem(model_.GetItemName(1));
-  EXPECT_EQ(num_apps - 1, model_.item_list()->item_count());
+  EXPECT_EQ(num_apps - 1, model_.top_level_item_list()->item_count());
   EXPECT_EQ(1u, observer_.items_removed());
   EXPECT_EQ("Item 0,Item 2,Item 3", GetModelContents());
   // Remove the first item in the list.
   model_.DeleteItem(model_.GetItemName(0));
-  EXPECT_EQ(num_apps - 2, model_.item_list()->item_count());
+  EXPECT_EQ(num_apps - 2, model_.top_level_item_list()->item_count());
   EXPECT_EQ(2u, observer_.items_removed());
   EXPECT_EQ("Item 2,Item 3", GetModelContents());
   // Remove the last item in the list.
   model_.DeleteItem(model_.GetItemName(num_apps - 1));
-  EXPECT_EQ(num_apps - 3, model_.item_list()->item_count());
+  EXPECT_EQ(num_apps - 3, model_.top_level_item_list()->item_count());
   EXPECT_EQ(3u, observer_.items_removed());
   EXPECT_EQ("Item 2", GetModelContents());
 }
@@ -214,15 +215,17 @@ TEST_F(AppListModelTest, AppOrder) {
   model_.PopulateApps(num_apps);
   // Ensure order is preserved.
   for (size_t i = 1; i < num_apps; ++i) {
-    EXPECT_TRUE(model_.item_list()->item_at(i)->position().GreaterThan(
-        model_.item_list()->item_at(i - 1)->position()));
+    EXPECT_TRUE(
+        model_.top_level_item_list()->item_at(i)->position().GreaterThan(
+            model_.top_level_item_list()->item_at(i - 1)->position()));
   }
   // Move an app
-  model_.item_list()->MoveItem(num_apps - 1, 1);
+  model_.top_level_item_list()->MoveItem(num_apps - 1, 1);
   // Ensure order is preserved.
   for (size_t i = 1; i < num_apps; ++i) {
-    EXPECT_TRUE(model_.item_list()->item_at(i)->position().GreaterThan(
-        model_.item_list()->item_at(i - 1)->position()));
+    EXPECT_TRUE(
+        model_.top_level_item_list()->item_at(i)->position().GreaterThan(
+            model_.top_level_item_list()->item_at(i - 1)->position()));
   }
 }
 
@@ -281,21 +284,21 @@ TEST_F(AppListModelFolderTest, FolderItem) {
 
 TEST_F(AppListModelFolderTest, MergeItems) {
   model_.PopulateApps(3);
-  ASSERT_EQ(3u, model_.item_list()->item_count());
-  AppListItem* item0 = model_.item_list()->item_at(0);
-  AppListItem* item1 = model_.item_list()->item_at(1);
-  AppListItem* item2 = model_.item_list()->item_at(2);
+  ASSERT_EQ(3u, model_.top_level_item_list()->item_count());
+  AppListItem* item0 = model_.top_level_item_list()->item_at(0);
+  AppListItem* item1 = model_.top_level_item_list()->item_at(1);
+  AppListItem* item2 = model_.top_level_item_list()->item_at(2);
 
   // Merge two items.
   std::string folder1_id = model_.MergeItems(item0->id(), item1->id());
-  ASSERT_EQ(2u, model_.item_list()->item_count());  // Folder + 1 item
+  ASSERT_EQ(2u, model_.top_level_item_list()->item_count());  // Folder + 1 item
   AppListFolderItem* folder1_item = model_.FindFolderItem(folder1_id);
   ASSERT_TRUE(folder1_item);
   EXPECT_EQ("Item 0,Item 1", GetItemListContents(folder1_item->item_list()));
 
   // Merge an item from the new folder into the third item.
   std::string folder2_id = model_.MergeItems(item2->id(), item1->id());
-  ASSERT_EQ(2u, model_.item_list()->item_count());  // 2 folders
+  ASSERT_EQ(2u, model_.top_level_item_list()->item_count());  // 2 folders
   AppListFolderItem* folder2_item = model_.FindFolderItem(folder2_id);
   EXPECT_EQ("Item 0", GetItemListContents(folder1_item->item_list()));
   EXPECT_EQ("Item 2,Item 1", GetItemListContents(folder2_item->item_list()));
@@ -316,7 +319,7 @@ TEST_F(AppListModelFolderTest, AddItemToFolder) {
   model_.AddItem(folder);
   AppListItem* item0 = new AppListItem("Item 0");
   model_.AddItemToFolder(item0, folder->id());
-  ASSERT_EQ(1u, model_.item_list()->item_count());
+  ASSERT_EQ(1u, model_.top_level_item_list()->item_count());
   AppListFolderItem* folder_item = model_.FindFolderItem(folder->id());
   ASSERT_TRUE(folder_item);
   ASSERT_EQ(1u, folder_item->item_list()->item_count());
@@ -331,7 +334,7 @@ TEST_F(AppListModelFolderTest, MoveItemToFolder) {
   AppListItem* item1 = new AppListItem("Item 1");
   model_.AddItem(item0);
   model_.AddItem(item1);
-  ASSERT_EQ(3u, model_.item_list()->item_count());
+  ASSERT_EQ(3u, model_.top_level_item_list()->item_count());
   // Move item0 and item1 to folder.
   std::string folder_id = folder->id();
   model_.MoveItemToFolder(item0, folder_id);
@@ -360,15 +363,16 @@ TEST_F(AppListModelFolderTest, MoveItemToFolderAt) {
       model_.AddItem(new AppListFolderItem("folder1")));
   model_.AddItem(new AppListItem("Item 2"));
   model_.AddItem(new AppListItem("Item 3"));
-  ASSERT_EQ(5u, model_.item_list()->item_count());
+  ASSERT_EQ(5u, model_.top_level_item_list()->item_count());
   EXPECT_EQ("Item 0,Item 1,folder1,Item 2,Item 3", GetModelContents());
   // Move Item 1 to folder1, then Item 2 before Item 1.
-  model_.MoveItemToFolderAt(
-      model_.item_list()->item_at(1), folder1->id(), syncer::StringOrdinal());
+  model_.MoveItemToFolderAt(model_.top_level_item_list()->item_at(1),
+                            folder1->id(),
+                            syncer::StringOrdinal());
   EXPECT_EQ("Item 0,folder1,Item 2,Item 3", GetModelContents());
-  model_.MoveItemToFolderAt(
-      model_.item_list()->item_at(2), folder1->id(),
-      folder1->item_list()->item_at(0)->position());
+  model_.MoveItemToFolderAt(model_.top_level_item_list()->item_at(2),
+                            folder1->id(),
+                            folder1->item_list()->item_at(0)->position());
   EXPECT_EQ("Item 2,Item 1", GetItemListContents(folder1->item_list()));
   EXPECT_EQ("Item 0,folder1,Item 3", GetModelContents());
   // Move Item 2 out of folder to before folder.
@@ -406,14 +410,14 @@ TEST_F(AppListModelFolderTest, MoveItemFromFolderToFolder) {
 
   // Move item1 from folder0 to folder1. folder0 should get deleted.
   model_.MoveItemToFolder(item1, folder1->id());
-  ASSERT_EQ(1u, model_.item_list()->item_count());
+  ASSERT_EQ(1u, model_.top_level_item_list()->item_count());
   ASSERT_EQ(2u, folder1->item_list()->item_count());
   EXPECT_EQ(folder1->id(), item1->folder_id());
   EXPECT_EQ("Item 0,Item 1", GetItemListContents(folder1->item_list()));
 
   // Move item1 to a non-existant folder2 which should get created.
   model_.MoveItemToFolder(item1, "folder2");
-  ASSERT_EQ(2u, model_.item_list()->item_count());
+  ASSERT_EQ(2u, model_.top_level_item_list()->item_count());
   ASSERT_EQ(1u, folder1->item_list()->item_count());
   EXPECT_EQ("folder2", item1->folder_id());
   AppListFolderItem* folder2 = model_.FindFolderItem("folder2");

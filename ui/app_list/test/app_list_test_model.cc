@@ -64,7 +64,7 @@ std::string AppListTestModel::GetItemName(int id) {
 }
 
 void AppListTestModel::PopulateApps(int n) {
-  int start_index = static_cast<int>(item_list()->item_count());
+  int start_index = static_cast<int>(top_level_item_list()->item_count());
   for (int i = 0; i < n; ++i)
     CreateAndAddItem(GetItemName(start_index + i));
 }
@@ -75,10 +75,10 @@ void AppListTestModel::PopulateAppWithId(int id) {
 
 std::string AppListTestModel::GetModelContent() {
   std::string content;
-  for (size_t i = 0; i < item_list()->item_count(); ++i) {
+  for (size_t i = 0; i < top_level_item_list()->item_count(); ++i) {
     if (i > 0)
       content += ',';
-    content += item_list()->item_at(i)->id();
+    content += top_level_item_list()->item_at(i)->id();
   }
   return content;
 }
@@ -86,12 +86,14 @@ std::string AppListTestModel::GetModelContent() {
 AppListTestModel::AppListTestItem* AppListTestModel::CreateItem(
     const std::string& id) {
   AppListTestItem* item = new AppListTestItem(id, this);
-  size_t nitems = item_list()->item_count();
+  size_t nitems = top_level_item_list()->item_count();
   syncer::StringOrdinal position;
-  if (nitems == 0)
+  if (nitems == 0) {
     position = syncer::StringOrdinal::CreateInitialOrdinal();
-  else
-    position = item_list()->item_at(nitems - 1)->position().CreateAfter();
+  } else {
+    position =
+        top_level_item_list()->item_at(nitems - 1)->position().CreateAfter();
+  }
   item->SetPosition(position);
   SetItemName(item, id);
   return item;
@@ -104,7 +106,7 @@ AppListTestModel::AppListTestItem* AppListTestModel::CreateAndAddItem(
   return static_cast<AppListTestItem*>(item);
 }
 void AppListTestModel::HighlightItemAt(int index) {
-  AppListItem* item = item_list()->item_at(index);
+  AppListItem* item = top_level_item_list()->item_at(index);
   item->SetHighlighted(true);
 }
 

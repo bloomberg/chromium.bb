@@ -49,33 +49,39 @@ void AppListItemList::MoveItem(size_t from_index, size_t to_index) {
     return;
 
   AppListItem* target_item = app_list_items_[from_index];
+  DVLOG(2) << "MoveItem: " << from_index << " -> " << to_index << " ["
+           << target_item->position().ToDebugString() << "]";
+
+  // Remove the target item
   app_list_items_.weak_erase(app_list_items_.begin() + from_index);
-  app_list_items_.insert(app_list_items_.begin() + to_index, target_item);
 
-  // Update position
+  // Update the position
   AppListItem* prev = to_index > 0 ? app_list_items_[to_index - 1] : NULL;
-  AppListItem* next = to_index < app_list_items_.size() - 1 ?
-      app_list_items_[to_index + 1] : NULL;
+  AppListItem* next =
+      to_index < item_count() ? app_list_items_[to_index] : NULL;
   CHECK_NE(prev, next);
-
-  // It is possible that items were added with the same ordinal. Rather than
-  // resolving a potentially complicated chain of conflicts, just set the
-  // ordinal before |next| (which will place it before both items).
-  if (prev && next && prev->position().Equals(next->position()))
-    prev = NULL;
-
   syncer::StringOrdinal new_position;
-  if (!prev)
+  if (!prev) {
     new_position = next->position().CreateBefore();
-  else if (!next)
+  } else if (!next) {
     new_position = prev->position().CreateAfter();
-  else
+  } else {
+    // It is possible that items were added with the same ordinal. To
+    // successfully move the item we need to fix this. We do not try to fix this
+    // when an item is added in order to avoid possible edge cases with sync.
+    if (prev->position().Equals(next->position()))
+      FixItemPosition(to_index);
     new_position = prev->position().CreateBetween(next->position());
-  VLOG(2) << "Move: " << target_item->position().ToDebugString()
-          << " Prev: " << (prev ? prev->position().ToDebugString() : "(none)")
-          << " Next: " << (next ? next->position().ToDebugString() : "(none)")
-          << " -> " << new_position.ToDebugString();
+  }
   target_item->set_position(new_position);
+
+  DVLOG(2) << "Move: "
+           << " Prev: " << (prev ? prev->position().ToDebugString() : "(none)")
+           << " Next: " << (next ? next->position().ToDebugString() : "(none)")
+           << " -> " << new_position.ToDebugString();
+
+  // Insert the item and notify observers.
+  app_list_items_.insert(app_list_items_.begin() + to_index, target_item);
   FOR_EACH_OBSERVER(AppListItemListObserver,
                     observers_,
                     OnListItemMoved(from_index, to_index, target_item));
@@ -95,16 +101,16 @@ void AppListItemList::SetItemPosition(
   // the position.
   size_t to_index = GetItemSortOrderIndex(new_position, item->id());
   if (to_index == from_index) {
-    VLOG(2) << "SetItemPosition: No change: " << item->id().substr(0, 8);
+    DVLOG(2) << "SetItemPosition: No change: " << item->id().substr(0, 8);
     item->set_position(new_position);
     return;
   }
   // Remove the item and get the updated to index.
   app_list_items_.weak_erase(app_list_items_.begin() + from_index);
   to_index = GetItemSortOrderIndex(new_position, item->id());
-  VLOG(2) << "SetItemPosition: " << item->id().substr(0, 8)
-          << " -> " << new_position.ToDebugString()
-          << " From: " << from_index << " To: " << to_index;
+  DVLOG(2) << "SetItemPosition: " << item->id().substr(0, 8) << " -> "
+           << new_position.ToDebugString() << " From: " << from_index
+           << " To: " << to_index;
   item->set_position(new_position);
   app_list_items_.insert(app_list_items_.begin() + to_index, item);
   FOR_EACH_OBSERVER(AppListItemListObserver,
@@ -204,6 +210,33 @@ size_t AppListItemList::GetItemSortOrderIndex(
     }
   }
   return app_list_items_.size();
+}
+
+void AppListItemList::FixItemPosition(size_t index) {
+  DVLOG(1) << "FixItemPosition: " << index;
+  size_t nitems = item_count();
+  DCHECK_LT(index, nitems);
+  DCHECK_GT(index, 0u);
+  // Update the position of |index| and any necessary subsequent items.
+  // First, find the next item that has a different position.
+  AppListItem* prev = app_list_items_[index - 1];
+  size_t last_index = index + 1;
+  for (; last_index < nitems; ++last_index) {
+    if (!app_list_items_[last_index]->position().Equals(prev->position()))
+      break;
+  }
+  AppListItem* last = last_index < nitems ? app_list_items_[last_index] : NULL;
+  for (size_t i = index; i < last_index; ++i) {
+    AppListItem* cur = app_list_items_[i];
+    if (last)
+      cur->set_position(prev->position().CreateBetween(last->position()));
+    else
+      cur->set_position(prev->position().CreateAfter());
+    prev = cur;
+  }
+  FOR_EACH_OBSERVER(AppListItemListObserver,
+                    observers_,
+                    OnListItemMoved(index, index, app_list_items_[index]));
 }
 
 }  // namespace app_list

@@ -178,6 +178,11 @@ size_t AppListFolderItem::ChildItemCount() const {
   return item_list_->item_count();
 }
 
+void AppListFolderItem::OnExtensionPreferenceChanged() {
+  for (size_t i = 0; i < item_list_->item_count(); ++i)
+    item_list_->item_at(i)->OnExtensionPreferenceChanged();
+}
+
 bool AppListFolderItem::CompareForTest(const AppListItem* other) const {
   if (!AppListItem::CompareForTest(other))
     return false;

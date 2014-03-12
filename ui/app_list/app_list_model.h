@@ -26,7 +26,7 @@ class SearchResult;
 // SearchBoxModel and SearchResults. The AppListItemList sub model owns a list
 // of AppListItems and is displayed in the grid view. SearchBoxModel is
 // the model for SearchBoxView. SearchResults owns a list of SearchResult.
-// NOTE: Currently this class observes |item_list_|. The View code may
+// NOTE: Currently this class observes |top_level_item_list_|. The View code may
 // move entries in the item list directly (but can not add or remove them) and
 // the model needs to notify its observers when this occurs.
 class APP_LIST_EXPORT AppListModel : public AppListItemListObserver {
@@ -85,8 +85,8 @@ class APP_LIST_EXPORT AppListModel : public AppListItemListObserver {
                           const std::string& folder_id,
                           syncer::StringOrdinal position);
 
-  // Sets the position of |item| either in |item_list_| or the folder specified
-  // by |item|->folder_id().
+  // Sets the position of |item| either in |top_level_item_list_| or the folder
+  // specified by |item|->folder_id().
   void SetItemPosition(AppListItem* item,
                        const syncer::StringOrdinal& new_position);
 
@@ -98,10 +98,15 @@ class APP_LIST_EXPORT AppListModel : public AppListItemListObserver {
                                const std::string& name,
                                const std::string& short_name);
 
-  // Deletes the item matching |id| from |item_list_| or from its folder.
+  // Deletes the item matching |id| from |top_level_item_list_| or from the
+  // appropriate folder.
   void DeleteItem(const std::string& id);
 
-  AppListItemList* item_list() { return item_list_.get(); }
+  // Call OnExtensionPreferenceChanged() for all items in the model.
+  void NotifyExtensionPreferenceChanged();
+
+  AppListItemList* top_level_item_list() { return top_level_item_list_.get(); }
+
   SearchBoxModel* search_box() { return search_box_.get(); }
   SearchResults* results() { return results_.get(); }
   Status status() const { return status_; }
@@ -115,12 +120,12 @@ class APP_LIST_EXPORT AppListModel : public AppListItemListObserver {
   // Returns an existing folder matching |folder_id| or creates a new folder.
   AppListFolderItem* FindOrCreateFolderItem(const std::string& folder_id);
 
-  // Adds |item_ptr| to |item_list_| and notifies observers.
+  // Adds |item_ptr| to |top_level_item_list_| and notifies observers.
   AppListItem* AddItemToItemListAndNotify(
       scoped_ptr<AppListItem> item_ptr);
 
-  // Adds |item_ptr| to |item_list_| and notifies observers that an Update
-  // occured (e.g. item moved from a folder).
+  // Adds |item_ptr| to |top_level_item_list_| and notifies observers that an
+  // Update occured (e.g. item moved from a folder).
   AppListItem* AddItemToItemListAndNotifyUpdate(
       scoped_ptr<AppListItem> item_ptr);
 
@@ -128,16 +133,18 @@ class APP_LIST_EXPORT AppListModel : public AppListItemListObserver {
   AppListItem* AddItemToFolderItemAndNotify(AppListFolderItem* folder,
                                             scoped_ptr<AppListItem> item_ptr);
 
-  // Removes |item| from |item_list_| or calls RemoveItemFromFolder if
+  // Removes |item| from |top_level_item_list_| or calls RemoveItemFromFolder if
   // |item|->folder_id is set.
   scoped_ptr<AppListItem> RemoveItem(AppListItem* item);
 
   // Removes |item| from |folder|. If |folder| becomes empty, deletes |folder|
-  // from |item_list_|. Does NOT trigger observers, calling function must do so.
+  // from |top_level_item_list_|. Does NOT trigger observers, calling function
+  // must do so.
   scoped_ptr<AppListItem> RemoveItemFromFolder(AppListFolderItem* folder,
                                                AppListItem* item);
 
-  scoped_ptr<AppListItemList> item_list_;
+  scoped_ptr<AppListItemList> top_level_item_list_;
+
   scoped_ptr<SearchBoxModel> search_box_;
   scoped_ptr<SearchResults> results_;
 

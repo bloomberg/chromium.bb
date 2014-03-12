@@ -203,11 +203,6 @@ void ExtensionAppItem::UpdateIcon() {
   SetIcon(icon, true);
 }
 
-void ExtensionAppItem::UpdateIconOverlay() {
-  if (has_overlay_ != NeedsOverlay())
-    UpdateIcon();
-}
-
 void ExtensionAppItem::Move(const ExtensionAppItem* prev,
                             const ExtensionAppItem* next) {
   if (!prev && !next)
@@ -333,6 +328,11 @@ ui::MenuModel* ExtensionAppItem::GetContextMenuModel() {
   if (IsInFolder())
     context_menu_->set_is_in_folder(true);
   return context_menu_->GetMenuModel();
+}
+
+void ExtensionAppItem::OnExtensionPreferenceChanged() {
+  if (has_overlay_ != NeedsOverlay())
+    UpdateIcon();
 }
 
 // static

@@ -84,6 +84,8 @@ size_t AppListItem::ChildItemCount() const {
   return 0;
 }
 
+void AppListItem::OnExtensionPreferenceChanged() {}
+
 bool AppListItem::CompareForTest(const AppListItem* other) const {
   return id_ == other->id_ &&
       folder_id_ == other->folder_id_ &&
