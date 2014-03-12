@@ -185,7 +185,7 @@ int32 MemEntryImpl::GetDataSize(int index) const {
 
 int MemEntryImpl::ReadData(int index, int offset, IOBuffer* buf, int buf_len,
                            const CompletionCallback& callback) {
-  if (net_log_.IsLoggingAllEvents()) {
+  if (net_log_.IsLogging()) {
     net_log_.BeginEvent(
         net::NetLog::TYPE_ENTRY_READ_DATA,
         CreateNetLogReadWriteDataCallback(index, offset, buf_len, false));
@@ -193,7 +193,7 @@ int MemEntryImpl::ReadData(int index, int offset, IOBuffer* buf, int buf_len,
 
   int result = InternalReadData(index, offset, buf, buf_len);
 
-  if (net_log_.IsLoggingAllEvents()) {
+  if (net_log_.IsLogging()) {
     net_log_.EndEvent(
         net::NetLog::TYPE_ENTRY_READ_DATA,
         CreateNetLogReadWriteCompleteCallback(result));
@@ -203,7 +203,7 @@ int MemEntryImpl::ReadData(int index, int offset, IOBuffer* buf, int buf_len,
 
 int MemEntryImpl::WriteData(int index, int offset, IOBuffer* buf, int buf_len,
                             const CompletionCallback& callback, bool truncate) {
-  if (net_log_.IsLoggingAllEvents()) {
+  if (net_log_.IsLogging()) {
     net_log_.BeginEvent(
         net::NetLog::TYPE_ENTRY_WRITE_DATA,
         CreateNetLogReadWriteDataCallback(index, offset, buf_len, truncate));
@@ -211,7 +211,7 @@ int MemEntryImpl::WriteData(int index, int offset, IOBuffer* buf, int buf_len,
 
   int result = InternalWriteData(index, offset, buf, buf_len, truncate);
 
-  if (net_log_.IsLoggingAllEvents()) {
+  if (net_log_.IsLogging()) {
     net_log_.EndEvent(
         net::NetLog::TYPE_ENTRY_WRITE_DATA,
         CreateNetLogReadWriteCompleteCallback(result));
@@ -221,39 +221,39 @@ int MemEntryImpl::WriteData(int index, int offset, IOBuffer* buf, int buf_len,
 
 int MemEntryImpl::ReadSparseData(int64 offset, IOBuffer* buf, int buf_len,
                                  const CompletionCallback& callback) {
-  if (net_log_.IsLoggingAllEvents()) {
+  if (net_log_.IsLogging()) {
     net_log_.BeginEvent(
         net::NetLog::TYPE_SPARSE_READ,
         CreateNetLogSparseOperationCallback(offset, buf_len));
   }
   int result = InternalReadSparseData(offset, buf, buf_len);
-  if (net_log_.IsLoggingAllEvents())
+  if (net_log_.IsLogging())
     net_log_.EndEvent(net::NetLog::TYPE_SPARSE_READ);
   return result;
 }
 
 int MemEntryImpl::WriteSparseData(int64 offset, IOBuffer* buf, int buf_len,
                                   const CompletionCallback& callback) {
-  if (net_log_.IsLoggingAllEvents()) {
+  if (net_log_.IsLogging()) {
     net_log_.BeginEvent(
         net::NetLog::TYPE_SPARSE_WRITE,
         CreateNetLogSparseOperationCallback(offset, buf_len));
   }
   int result = InternalWriteSparseData(offset, buf, buf_len);
-  if (net_log_.IsLoggingAllEvents())
+  if (net_log_.IsLogging())
     net_log_.EndEvent(net::NetLog::TYPE_SPARSE_WRITE);
   return result;
 }
 
 int MemEntryImpl::GetAvailableRange(int64 offset, int len, int64* start,
                                     const CompletionCallback& callback) {
-  if (net_log_.IsLoggingAllEvents()) {
+  if (net_log_.IsLogging()) {
     net_log_.BeginEvent(
         net::NetLog::TYPE_SPARSE_GET_RANGE,
         CreateNetLogSparseOperationCallback(offset, len));
   }
   int result = GetAvailableRange(offset, len, start);
-  if (net_log_.IsLoggingAllEvents()) {
+  if (net_log_.IsLogging()) {
     net_log_.EndEvent(
         net::NetLog::TYPE_SPARSE_GET_RANGE,
         CreateNetLogGetAvailableRangeResultCallback(*start, result));
@@ -373,7 +373,7 @@ int MemEntryImpl::InternalReadSparseData(int64 offset, IOBuffer* buf,
     // we should stop.
     if (child_offset < child->child_first_pos_)
       break;
-    if (net_log_.IsLoggingAllEvents()) {
+    if (net_log_.IsLogging()) {
       net_log_.BeginEvent(
           net::NetLog::TYPE_SPARSE_READ_CHILD_DATA,
           CreateNetLogSparseReadWriteCallback(child->net_log().source(),
@@ -381,7 +381,7 @@ int MemEntryImpl::InternalReadSparseData(int64 offset, IOBuffer* buf,
     }
     int ret = child->ReadData(kSparseData, child_offset, io_buf.get(),
                               io_buf->BytesRemaining(), CompletionCallback());
-    if (net_log_.IsLoggingAllEvents()) {
+    if (net_log_.IsLogging()) {
       net_log_.EndEventWithNetErrorCode(
           net::NetLog::TYPE_SPARSE_READ_CHILD_DATA, ret);
     }
@@ -430,7 +430,7 @@ int MemEntryImpl::InternalWriteSparseData(int64 offset, IOBuffer* buf,
     // Keep a record of the last byte position (exclusive) in the child.
     int data_size = child->GetDataSize(kSparseData);
 
-    if (net_log_.IsLoggingAllEvents()) {
+    if (net_log_.IsLogging()) {
       net_log_.BeginEvent(
           net::NetLog::TYPE_SPARSE_WRITE_CHILD_DATA,
           CreateNetLogSparseReadWriteCallback(child->net_log().source(),
@@ -443,7 +443,7 @@ int MemEntryImpl::InternalWriteSparseData(int64 offset, IOBuffer* buf,
     // continuous we may want to discard this write.
     int ret = child->WriteData(kSparseData, child_offset, io_buf.get(),
                                write_len, CompletionCallback(), true);
-    if (net_log_.IsLoggingAllEvents()) {
+    if (net_log_.IsLogging()) {
       net_log_.EndEventWithNetErrorCode(
           net::NetLog::TYPE_SPARSE_WRITE_CHILD_DATA, ret);
     }

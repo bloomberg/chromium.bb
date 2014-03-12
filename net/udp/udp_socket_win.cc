@@ -461,7 +461,7 @@ void UDPSocketWin::LogRead(int result, const char* bytes) const {
     return;
   }
 
-  if (net_log_.IsLoggingAllEvents()) {
+  if (net_log_.IsLogging()) {
     // Get address for logging, if |address| is NULL.
     IPEndPoint address;
     bool is_address_valid = ReceiveAddressToIPEndpoint(&address);
@@ -497,7 +497,7 @@ void UDPSocketWin::LogWrite(int result,
     return;
   }
 
-  if (net_log_.IsLoggingAllEvents()) {
+  if (net_log_.IsLogging()) {
     net_log_.AddEvent(
         NetLog::TYPE_UDP_BYTES_SENT,
         CreateNetLogUDPDataTranferCallback(result, bytes, address));

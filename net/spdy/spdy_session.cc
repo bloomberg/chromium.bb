@@ -884,7 +884,7 @@ scoped_ptr<SpdyFrame> SpdySession::CreateSynStream(
   spdy_requests.Increment();
   streams_initiated_count_++;
 
-  if (net_log().IsLoggingAllEvents()) {
+  if (net_log().IsLogging()) {
     net_log().AddEvent(
         NetLog::TYPE_SPDY_SESSION_SYN_STREAM,
         base::Bind(&NetLogSpdySynStreamSentCallback, &headers,
@@ -993,7 +993,7 @@ scoped_ptr<SpdyBuffer> SpdySession::CreateDataBuffer(SpdyStreamId stream_id,
   if (effective_len < len)
     flags = static_cast<SpdyDataFlags>(flags & ~DATA_FLAG_FIN);
 
-  if (net_log().IsLoggingAllEvents()) {
+  if (net_log().IsLogging()) {
     net_log().AddEvent(
         NetLog::TYPE_SPDY_SESSION_SEND_DATA,
         base::Bind(&NetLogSpdyDataCallback, stream_id, effective_len,
@@ -1911,7 +1911,7 @@ void SpdySession::OnStreamFrameData(SpdyStreamId stream_id,
     return;
 
   DCHECK_LT(len, 1u << 24);
-  if (net_log().IsLoggingAllEvents()) {
+  if (net_log().IsLogging()) {
     net_log().AddEvent(
         NetLog::TYPE_SPDY_SESSION_RECV_DATA,
         base::Bind(&NetLogSpdyDataCallback, stream_id, len, fin));
@@ -1967,7 +1967,7 @@ void SpdySession::OnSettings(bool clear_persisted) {
   if (clear_persisted)
     http_server_properties_->ClearSpdySettings(host_port_pair());
 
-  if (net_log_.IsLoggingAllEvents()) {
+  if (net_log_.IsLogging()) {
     net_log_.AddEvent(
         NetLog::TYPE_SPDY_SESSION_RECV_SETTINGS,
         base::Bind(&NetLogSpdySettingsCallback, host_port_pair(),
@@ -2056,7 +2056,7 @@ void SpdySession::OnSynStream(SpdyStreamId stream_id,
   base::Time response_time = base::Time::Now();
   base::TimeTicks recv_first_byte_time = time_func_();
 
-  if (net_log_.IsLoggingAllEvents()) {
+  if (net_log_.IsLogging()) {
     net_log_.AddEvent(
         NetLog::TYPE_SPDY_SESSION_PUSHED_SYN_STREAM,
         base::Bind(&NetLogSpdySynStreamReceivedCallback,
@@ -2244,7 +2244,7 @@ void SpdySession::OnSynReply(SpdyStreamId stream_id,
   base::Time response_time = base::Time::Now();
   base::TimeTicks recv_first_byte_time = time_func_();
 
-  if (net_log().IsLoggingAllEvents()) {
+  if (net_log().IsLogging()) {
     net_log().AddEvent(
         NetLog::TYPE_SPDY_SESSION_SYN_REPLY,
         base::Bind(&NetLogSpdySynReplyOrHeadersReceivedCallback,
@@ -2291,7 +2291,7 @@ void SpdySession::OnHeaders(SpdyStreamId stream_id,
   if (availability_state_ == STATE_CLOSED)
     return;
 
-  if (net_log().IsLoggingAllEvents()) {
+  if (net_log().IsLogging()) {
     net_log().AddEvent(
         NetLog::TYPE_SPDY_SESSION_RECV_HEADERS,
         base::Bind(&NetLogSpdySynReplyOrHeadersReceivedCallback,
@@ -2684,7 +2684,7 @@ void SpdySession::WritePingFrame(uint32 unique_id, bool is_ack) {
       buffered_spdy_framer_->CreatePingFrame(unique_id, is_ack));
   EnqueueSessionWrite(HIGHEST, PING, ping_frame.Pass());
 
-  if (net_log().IsLoggingAllEvents()) {
+  if (net_log().IsLogging()) {
     net_log().AddEvent(
         NetLog::TYPE_SPDY_SESSION_PING,
         base::Bind(&NetLogSpdyPingCallback, unique_id, is_ack, "sent"));

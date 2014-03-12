@@ -174,7 +174,7 @@ NetLog::Entry::Entry(const EntryData* data, LogLevel log_level)
 NetLog::Entry::~Entry() {
 }
 
-NetLog::ThreadSafeObserver::ThreadSafeObserver() : log_level_(LOG_BASIC),
+NetLog::ThreadSafeObserver::ThreadSafeObserver() : log_level_(LOG_NONE),
                                                    net_log_(NULL) {
 }
 
@@ -243,9 +243,11 @@ NetLog::LogLevel NetLog::GetLogLevel() const {
 void NetLog::AddThreadSafeObserver(
     net::NetLog::ThreadSafeObserver* observer,
     LogLevel log_level) {
+  DCHECK_NE(LOG_NONE, log_level);
   base::AutoLock lock(lock_);
 
   DCHECK(!observer->net_log_);
+  DCHECK_EQ(LOG_NONE, observer->log_level_);
   observers_.AddObserver(observer);
   observer->net_log_ = this;
   observer->log_level_ = log_level;
@@ -255,10 +257,12 @@ void NetLog::AddThreadSafeObserver(
 void NetLog::SetObserverLogLevel(
     net::NetLog::ThreadSafeObserver* observer,
     LogLevel log_level) {
+  DCHECK_NE(LOG_NONE, log_level);
   base::AutoLock lock(lock_);
 
   DCHECK(observers_.HasObserver(observer));
   DCHECK_EQ(this, observer->net_log_);
+  DCHECK_NE(LOG_NONE, observer->log_level_);
   observer->log_level_ = log_level;
   UpdateLogLevel();
 }
@@ -269,8 +273,10 @@ void NetLog::RemoveThreadSafeObserver(
 
   DCHECK(observers_.HasObserver(observer));
   DCHECK_EQ(this, observer->net_log_);
+  DCHECK_NE(LOG_NONE, observer->log_level_);
   observers_.RemoveObserver(observer);
   observer->net_log_ = NULL;
+  observer->log_level_ = LOG_NONE;
   UpdateLogLevel();
 }
 
@@ -358,8 +364,8 @@ bool NetLog::IsLoggingBytes(LogLevel log_level) {
 }
 
 // static
-bool NetLog::IsLoggingAllEvents(LogLevel log_level) {
-  return log_level <= NetLog::LOG_ALL_BUT_BYTES;
+bool NetLog::IsLogging(LogLevel log_level) {
+  return log_level < NetLog::LOG_NONE;
 }
 
 // static
@@ -477,15 +483,15 @@ void BoundNetLog::AddByteTransferEvent(NetLog::EventType event_type,
 NetLog::LogLevel BoundNetLog::GetLogLevel() const {
   if (net_log_)
     return net_log_->GetLogLevel();
-  return NetLog::LOG_BASIC;
+  return NetLog::LOG_NONE;
 }
 
 bool BoundNetLog::IsLoggingBytes() const {
   return NetLog::IsLoggingBytes(GetLogLevel());
 }
 
-bool BoundNetLog::IsLoggingAllEvents() const {
-  return NetLog::IsLoggingAllEvents(GetLogLevel());
+bool BoundNetLog::IsLogging() const {
+  return NetLog::IsLogging(GetLogLevel());
 }
 
 // static

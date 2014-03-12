@@ -980,7 +980,7 @@ void URLRequest::OrphanJob() {
 int URLRequest::Redirect(const GURL& location, int http_status_code) {
   // Matches call in NotifyReceivedRedirect.
   OnCallToDelegateComplete();
-  if (net_log_.IsLoggingAllEvents()) {
+  if (net_log_.IsLogging()) {
     net_log_.AddEvent(
         NetLog::TYPE_URL_REQUEST_REDIRECTED,
         NetLog::StringCallback("location", &location.possibly_invalid_spec()));

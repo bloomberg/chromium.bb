@@ -44,7 +44,7 @@ TEST(NetLogWebSocketHandshakeParameterTest, ToValue) {
 
   scoped_ptr<base::Value> actual(
       net::NetLogWebSocketHandshakeCallback(&testInput,
-                                            net::NetLog::LOG_BASIC));
+                                            net::NetLog::LOG_ALL));
 
   EXPECT_TRUE(expected.Equals(actual.get()));
 }

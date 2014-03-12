@@ -78,10 +78,6 @@ class NET_EXPORT NetLog {
     // parameters for bytes sent/received events.
     LOG_ALL_BUT_BYTES,
 
-    // Only log events which are cheap, and don't consume much memory.  This is
-    // the default value for observers.
-    LOG_BASIC,
-
     // Don't log any events.
     LOG_NONE,
   };
@@ -233,11 +229,6 @@ class NET_EXPORT NetLog {
   // Adds an observer and sets its log level.  The observer must not be
   // watching any NetLog, including this one, when this is called.
   //
-  // Typical observers should specify LOG_BASIC.
-  //
-  // Observers that need to see the full granularity of events can specify
-  // LOG_ALL_BUT_BYTES. However, doing so will have performance consequences.
-  //
   // NetLog implementations must call NetLog::OnAddObserver to update the
   // observer's internal state.
   void AddThreadSafeObserver(ThreadSafeObserver* observer, LogLevel log_level);
@@ -279,10 +270,9 @@ class NET_EXPORT NetLog {
   // be logged.  This is only the case when |log_level| is LOG_ALL.
   static bool IsLoggingBytes(LogLevel log_level);
 
-  // Returns true if |log_level| indicates that all events should be logged,
-  // including frequently occuring ones that may impact performances.
-  // This is the case when |log_level| is LOG_ALL or LOG_ALL_BUT_BYTES.
-  static bool IsLoggingAllEvents(LogLevel log_level);
+  // Returns true if |log_level| indicates that events should be logged. This is
+  // the case when |log_level| is anything other than LOG_NONE.
+  static bool IsLogging(LogLevel log_level);
 
   // Creates a ParametersCallback that encapsulates a single integer.
   // Warning: |name| must remain valid for the life of the callback.
@@ -391,8 +381,8 @@ class NET_EXPORT BoundNetLog {
   // Shortcut for NetLog::IsLoggingBytes(this->GetLogLevel()).
   bool IsLoggingBytes() const;
 
-  // Shortcut for NetLog::IsLoggingAllEvents(this->GetLogLevel()).
-  bool IsLoggingAllEvents() const;
+  // Shortcut for NetLog::IsLogging(this->GetLogLevel()).
+  bool IsLogging() const;
 
   // Helper to create a BoundNetLog given a NetLog and a SourceType. Takes care
   // of creating a unique source ID, and handles the case of NULL net_log.

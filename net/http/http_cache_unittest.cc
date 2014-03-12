@@ -4,6 +4,8 @@
 
 #include "net/http/http_cache.h"
 
+#include <algorithm>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/scoped_vector.h"
@@ -505,6 +507,31 @@ class FakeWebSocketHandshakeStreamCreateHelper
   }
 };
 
+// Returns true if |entry| is not one of the log types paid attention to in this
+// test. Note that TYPE_HTTP_CACHE_WRITE_INFO and TYPE_HTTP_CACHE_*_DATA are
+// ignored.
+bool ShouldIgnoreLogEntry(const net::CapturingNetLog::CapturedEntry& entry) {
+  switch (entry.type) {
+    case net::NetLog::TYPE_HTTP_CACHE_GET_BACKEND:
+    case net::NetLog::TYPE_HTTP_CACHE_OPEN_ENTRY:
+    case net::NetLog::TYPE_HTTP_CACHE_CREATE_ENTRY:
+    case net::NetLog::TYPE_HTTP_CACHE_ADD_TO_ENTRY:
+    case net::NetLog::TYPE_HTTP_CACHE_DOOM_ENTRY:
+    case net::NetLog::TYPE_HTTP_CACHE_READ_INFO:
+      return false;
+    default:
+      return true;
+  }
+}
+
+// Modifies |entries| to only include log entries created by the cache layer and
+// asserted on in these tests.
+void FilterLogEntries(net::CapturingNetLog::CapturedEntryList* entries) {
+  entries->erase(std::remove_if(entries->begin(), entries->end(),
+                                &ShouldIgnoreLogEntry),
+                 entries->end());
+}
+
 }  // namespace
 
 
@@ -550,7 +577,6 @@ TEST(HttpCache, SimpleGETNoDiskCache) {
   cache.disk_cache()->set_fail_requests();
 
   net::CapturingBoundNetLog log;
-  log.SetLogLevel(net::NetLog::LOG_BASIC);
   net::LoadTimingInfo load_timing_info;
 
   // Read from the network, and don't use the cache.
@@ -561,6 +587,7 @@ TEST(HttpCache, SimpleGETNoDiskCache) {
   // (We attempted to both Open and Create entries, but both failed).
   net::CapturingNetLog::CapturedEntryList entries;
   log.GetEntries(&entries);
+  FilterLogEntries(&entries);
 
   EXPECT_EQ(6u, entries.size());
   EXPECT_TRUE(net::LogContainsBeginEvent(
@@ -716,10 +743,6 @@ TEST(HttpCache, SimpleGET_LoadOnlyFromCache_Hit) {
   MockHttpCache cache;
 
   net::CapturingBoundNetLog log;
-
-  // This prevents a number of write events from being logged.
-  log.SetLogLevel(net::NetLog::LOG_BASIC);
-
   net::LoadTimingInfo load_timing_info;
 
   // Write to the cache.
@@ -729,6 +752,7 @@ TEST(HttpCache, SimpleGET_LoadOnlyFromCache_Hit) {
   // Check that the NetLog was filled as expected.
   net::CapturingNetLog::CapturedEntryList entries;
   log.GetEntries(&entries);
+  FilterLogEntries(&entries);
 
   EXPECT_EQ(8u, entries.size());
   EXPECT_TRUE(net::LogContainsBeginEvent(
@@ -761,6 +785,7 @@ TEST(HttpCache, SimpleGET_LoadOnlyFromCache_Hit) {
 
   // Check that the NetLog was filled as expected.
   log.GetEntries(&entries);
+  FilterLogEntries(&entries);
 
   EXPECT_EQ(8u, entries.size());
   EXPECT_TRUE(net::LogContainsBeginEvent(
@@ -1076,9 +1101,6 @@ TEST(HttpCache, SimpleGET_LoadBypassCache) {
   transaction.load_flags |= net::LOAD_BYPASS_CACHE;
 
   net::CapturingBoundNetLog log;
-
-  // This prevents a number of write events from being logged.
-  log.SetLogLevel(net::NetLog::LOG_BASIC);
   net::LoadTimingInfo load_timing_info;
 
   // Write to the cache.
@@ -1088,6 +1110,7 @@ TEST(HttpCache, SimpleGET_LoadBypassCache) {
   // Check that the NetLog was filled as expected.
   net::CapturingNetLog::CapturedEntryList entries;
   log.GetEntries(&entries);
+  FilterLogEntries(&entries);
 
   EXPECT_EQ(8u, entries.size());
   EXPECT_TRUE(net::LogContainsBeginEvent(

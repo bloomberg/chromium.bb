@@ -439,7 +439,7 @@ int TransportClientSocketPool::RequestSocket(
   const scoped_refptr<TransportSocketParams>* casted_params =
       static_cast<const scoped_refptr<TransportSocketParams>*>(params);
 
-  if (net_log.IsLoggingAllEvents()) {
+  if (net_log.IsLogging()) {
     // TODO(eroman): Split out the host and port parameters.
     net_log.AddEvent(
         NetLog::TYPE_TCP_CLIENT_SOCKET_POOL_REQUESTED_SOCKET,
@@ -459,7 +459,7 @@ void TransportClientSocketPool::RequestSockets(
   const scoped_refptr<TransportSocketParams>* casted_params =
       static_cast<const scoped_refptr<TransportSocketParams>*>(params);
 
-  if (net_log.IsLoggingAllEvents()) {
+  if (net_log.IsLogging()) {
     // TODO(eroman): Split out the host and port parameters.
     net_log.AddEvent(
         NetLog::TYPE_TCP_CLIENT_SOCKET_POOL_REQUESTED_SOCKETS,

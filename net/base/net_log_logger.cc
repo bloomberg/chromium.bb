@@ -163,7 +163,6 @@ base::DictionaryValue* NetLogLogger::GetConstants() {
 
     dict->SetInteger("LOG_ALL", net::NetLog::LOG_ALL);
     dict->SetInteger("LOG_ALL_BUT_BYTES", net::NetLog::LOG_ALL_BUT_BYTES);
-    dict->SetInteger("LOG_BASIC", net::NetLog::LOG_BASIC);
 
     constants_dict->Set("logLevelType", dict);
   }

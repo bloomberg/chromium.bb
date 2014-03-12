@@ -299,7 +299,6 @@ bool GDig::ParseCommandLine(int argc, const char* argv[]) {
       std::map<std::string, NetLog::LogLevel> log_levels;
       log_levels["all"] = NetLog::LOG_ALL;
       log_levels["no_bytes"] = NetLog::LOG_ALL_BUT_BYTES;
-      log_levels["basic"] = NetLog::LOG_BASIC;
 
       if (log_levels.find(log_param) != log_levels.end()) {
         level = log_levels[log_param];

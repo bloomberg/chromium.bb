@@ -1684,7 +1684,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnSetLogLevel(
   }
 
   DCHECK_GE(log_level, net::NetLog::LOG_ALL);
-  DCHECK_LE(log_level, net::NetLog::LOG_BASIC);
+  DCHECK_LT(log_level, net::NetLog::LOG_NONE);
   net_log()->SetObserverLogLevel(
       this, static_cast<net::NetLog::LogLevel>(log_level));
 }

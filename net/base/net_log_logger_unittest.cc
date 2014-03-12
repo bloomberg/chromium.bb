@@ -62,7 +62,7 @@ TEST_F(NetLogLoggerTest, GeneratesValidJSONWithOneEvent) {
                                  NetLog::PHASE_BEGIN,
                                  base::TimeTicks::Now(),
                                  NULL);
-    NetLog::Entry entry(&entry_data, NetLog::LOG_BASIC);
+    NetLog::Entry entry(&entry_data, NetLog::LOG_ALL);
     logger.OnAddEntry(entry);
   }
 
@@ -94,7 +94,7 @@ TEST_F(NetLogLoggerTest, GeneratesValidJSONWithMultipleEvents) {
                                  NetLog::PHASE_BEGIN,
                                  base::TimeTicks::Now(),
                                  NULL);
-    NetLog::Entry entry(&entry_data, NetLog::LOG_BASIC);
+    NetLog::Entry entry(&entry_data, NetLog::LOG_ALL);
 
     // Add the entry multiple times.
     logger.OnAddEntry(entry);
