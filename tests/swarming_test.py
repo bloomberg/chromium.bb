@@ -3,6 +3,7 @@
 # Use of this source code is governed under the Apache License, Version 2.0 that
 # can be found in the LICENSE file.
 
+import datetime
 import getpass
 import hashlib
 import json
@@ -156,7 +157,7 @@ class TestCase(auto_stub.TestCase):
     super(TestCase, self).setUp()
     self._lock = threading.Lock()
     self.requests = []
-    self.mock(swarming.net, 'url_open', self._url_open)
+    self.mock(swarming.net.HttpService, 'request', self._url_open)
     self.mock(swarming.time, 'sleep', lambda x: None)
     self.mock(swarming.subprocess, 'call', lambda *_: self.fail())
     self.mock(sys, 'stdout', StringIO.StringIO())
@@ -180,9 +181,9 @@ class TestCase(auto_stub.TestCase):
 
   def _url_open(self, url, **kwargs):
     logging.info('url_open(%s)', url)
+    # Ignore 'stream' argument, it's not important for these tests.
+    kwargs.pop('stream')
     with self._lock:
-      # Ignore 'stream' argument, it's not important for these tests.
-      kwargs.pop('stream')
       # Since the client is multi-threaded, requests can be processed out of
       # order.
       for index, r in enumerate(self.requests):
@@ -195,8 +196,8 @@ class TestCase(auto_stub.TestCase):
               url,
               json.dumps(kwargs, indent=2, sort_keys=True),
               json.dumps(
-                [(i[0], i[1]) for i in self.requests],
-                indent=2, sort_keys=True)))
+                  [(i[0], i[1]) for i in self.requests],
+                  indent=2, sort_keys=True)))
     return returned
 
 
@@ -205,7 +206,7 @@ class TestGetTestKeys(TestCase):
     self.mock(swarming.time, 'sleep', lambda x: x)
     self.requests = [
       (
-        'http://host:9001/get_matching_test_cases?name=my_test',
+        '/get_matching_test_cases?name=my_test',
         {'retry_404': True},
         StringIO.StringIO('No matching Test Cases'),
       ) for _ in range(net.URL_OPEN_MAX_ATTEMPTS)
@@ -224,12 +225,12 @@ class TestGetTestKeys(TestCase):
     keys = ['key_1', 'key_2']
     self.requests = [
       (
-        'http://host:9001/get_matching_test_cases?name=my_test',
+        '/get_matching_test_cases?name=my_test',
         {'retry_404': True},
         StringIO.StringIO('No matching Test Cases'),
       ),
       (
-        'http://host:9001/get_matching_test_cases?name=my_test',
+        '/get_matching_test_cases?name=my_test',
         {'retry_404': True},
         StringIO.StringIO(json.dumps(keys)),
       ),
@@ -241,7 +242,7 @@ class TestGetTestKeys(TestCase):
     keys = ['key_1', 'key_2']
     self.requests = [
       (
-        'http://host:9001/get_matching_test_cases?name=my_test',
+        '/get_matching_test_cases?name=my_test',
         {'retry_404': True},
         StringIO.StringIO(json.dumps(keys)),
       ),
@@ -254,7 +255,7 @@ class TestGetSwarmResults(TestCase):
   def test_success(self):
     self.requests = [
       (
-        'http://host:9001/get_result?r=key1',
+        '/get_result?r=key1',
         {'retry_404': False, 'retry_50x': False},
         generate_url_response(0, SWARM_OUTPUT_SUCCESS, '0, 0'),
       ),
@@ -266,7 +267,7 @@ class TestGetSwarmResults(TestCase):
   def test_failure(self):
     self.requests = [
       (
-        'http://host:9001/get_result?r=key1',
+        '/get_result?r=key1',
         {'retry_404': False, 'retry_50x': False},
         generate_url_response(0, SWARM_OUTPUT_FAILURE, '0, 1'),
       ),
@@ -278,7 +279,7 @@ class TestGetSwarmResults(TestCase):
   def test_no_test_output(self):
     self.requests = [
       (
-        'http://host:9001/get_result?r=key1',
+        '/get_result?r=key1',
         {'retry_404': False, 'retry_50x': False},
         generate_url_response(0, SWARM_OUTPUT_WITH_NO_TEST_OUTPUT, '0, 0'),
       ),
@@ -307,27 +308,27 @@ class TestGetSwarmResults(TestCase):
     # seconds. It's called twice per loop.
     self.requests = [
       (
-        'http://host:9001/get_result?r=key1',
+        '/get_result?r=key1',
         {'retry_404': False, 'retry_50x': False},
         None,
       ),
       (
-        'http://host:9001/get_result?r=key1',
+        '/get_result?r=key1',
         {'retry_404': False, 'retry_50x': False},
         None,
       ),
       (
-        'http://host:9001/get_result?r=key1',
+        '/get_result?r=key1',
         {'retry_404': False, 'retry_50x': False},
         None,
       ),
       (
-        'http://host:9001/get_result?r=key1',
+        '/get_result?r=key1',
         {'retry_404': False, 'retry_50x': False},
         None,
       ),
       (
-        'http://host:9001/get_result?r=key1',
+        '/get_result?r=key1',
         {'retry_404': False, 'retry_50x': False},
         None,
       ),
@@ -339,12 +340,12 @@ class TestGetSwarmResults(TestCase):
   def test_shard_repeated(self):
     self.requests = [
       (
-        'http://host:9001/get_result?r=key1',
+        '/get_result?r=key1',
         {'retry_404': False, 'retry_50x': False},
         generate_url_response(0, SWARM_OUTPUT_SUCCESS, '0, 0'),
       ),
       (
-        'http://host:9001/get_result?r=key1-repeat',
+        '/get_result?r=key1-repeat',
         {'retry_404': False, 'retry_50x': False},
         generate_url_response(0, SWARM_OUTPUT_SUCCESS, '0, 0'),
       ),
@@ -357,22 +358,22 @@ class TestGetSwarmResults(TestCase):
     """Have shard 1 repeated twice, then shard 2 and 3."""
     self.requests = [
       (
-        'http://host:9001/get_result?r=key1',
+        '/get_result?r=key1',
         {'retry_404': False, 'retry_50x': False},
         generate_url_response(0, TEST_SHARD_OUTPUT_1, '0, 0'),
       ),
       (
-        'http://host:9001/get_result?r=key1-repeat',
+        '/get_result?r=key1-repeat',
         {'retry_404': False, 'retry_50x': False},
         generate_url_response(0, TEST_SHARD_OUTPUT_1, '0, 0'),
       ),
       (
-        'http://host:9001/get_result?r=key2',
+        '/get_result?r=key2',
         {'retry_404': False, 'retry_50x': False},
         generate_url_response(1, TEST_SHARD_OUTPUT_2, '0, 0'),
       ),
       (
-        'http://host:9001/get_result?r=key3',
+        '/get_result?r=key3',
         {'retry_404': False, 'retry_50x': False},
         generate_url_response(2, TEST_SHARD_OUTPUT_3, '0, 0'),
       ),
@@ -675,6 +676,37 @@ class ManifestTest(TestCase):
     self._check_output('Archiving: %s\n' % isolated, '')
 
 
+def mock_swarming_api_v1_bots():
+  """Returns fake /swarming/api/v1/bots data."""
+  now = datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+  dead = '2006-01-02 03:04:05'
+  return {
+    'machine_death_timeout': 10,
+    'machines': [
+      {
+        'tag': 'no-dimensions',
+        'dimensions': {},
+        'last_seen': now,
+      },
+      {
+        'tag': 'amig1',
+        'dimensions': {'os': 'amiga'},
+        'last_seen': now,
+      },
+      {
+        'tag': 'amig2',
+        'dimensions': {'os': ['amiga', 'atari'], 'foo': 1},
+        'last_seen': now,
+      },
+      {
+        'tag': 'dead',
+        'dimensions': {'os': 'amiga'},
+        'last_seen': dead,
+      },
+    ],
+  }
+
+
 class MainTest(TestCase):
   def setUp(self):
     super(MainTest, self).setUp()
@@ -713,7 +745,7 @@ class MainTest(TestCase):
     }
     self.requests = [
       (
-        'https://host1/test',
+        '/test',
         {'data': data},
         # The actual output is ignored as long as it is valid json.
         StringIO.StringIO('{}'),
@@ -761,7 +793,7 @@ class MainTest(TestCase):
     }
     self.requests = [
       (
-        'https://host1/test',
+        '/test',
         {'data': data},
         # The actual output is ignored as long as it is valid json.
         StringIO.StringIO('{}'),
@@ -793,6 +825,102 @@ class MainTest(TestCase):
     self.assertEqual(expected, calls)
     expected = 'Archiving: %s\nTriggered task: %s\n' % (isolated, task_name)
     self._check_output(expected, '')
+
+  def test_query(self):
+    self.requests = [
+      (
+        '/swarming/api/v1/bots',
+        {
+          "content_type": None,
+          "data": None,
+          "headers": None,
+          "max_attempts": 30,
+          "method": "GET",
+          "read_timeout": 360.0,
+          "retry_404": False,
+          "retry_50x": True,
+          "timeout": 360.0
+        },
+        StringIO.StringIO(json.dumps(mock_swarming_api_v1_bots())),
+      ),
+    ]
+    main(['query', '--swarming', 'https://localhost:1'])
+    expected = (
+        "amig1\n  {u'os': u'amiga'}\n"
+        "amig2\n  {u'foo': 1, u'os': [u'amiga', u'atari']}\n"
+        "no-dimensions\n  {}\n")
+    self._check_output(expected, '')
+
+  def test_query_bare(self):
+    self.requests = [
+      (
+        '/swarming/api/v1/bots',
+        {
+          "content_type": None,
+          "data": None,
+          "headers": None,
+          "max_attempts": 30,
+          "method": "GET",
+          "read_timeout": 360.0,
+          "retry_404": False,
+          "retry_50x": True,
+          "timeout": 360.0
+        },
+        StringIO.StringIO(json.dumps(mock_swarming_api_v1_bots())),
+      ),
+    ]
+    main(['query', '--swarming', 'https://localhost:1', '--bare'])
+    self._check_output("amig1\namig2\nno-dimensions\n", '')
+
+  def test_query_filter(self):
+    self.requests = [
+      (
+        '/swarming/api/v1/bots',
+        {
+          "content_type": None,
+          "data": None,
+          "headers": None,
+          "max_attempts": 30,
+          "method": "GET",
+          "read_timeout": 360.0,
+          "retry_404": False,
+          "retry_50x": True,
+          "timeout": 360.0
+        },
+        StringIO.StringIO(json.dumps(mock_swarming_api_v1_bots())),
+      ),
+    ]
+    main(
+        [
+          'query', '--swarming', 'https://localhost:1',
+          '--dimension', 'os', 'amiga',
+        ])
+    self._check_output('amig1\namig2\n', '')
+
+  def test_query_filter_keep_dead(self):
+    self.requests = [
+      (
+        '/swarming/api/v1/bots',
+        {
+          "content_type": None,
+          "data": None,
+          "headers": None,
+          "max_attempts": 30,
+          "method": "GET",
+          "read_timeout": 360.0,
+          "retry_404": False,
+          "retry_50x": True,
+          "timeout": 360.0
+        },
+        StringIO.StringIO(json.dumps(mock_swarming_api_v1_bots())),
+      ),
+    ]
+    main(
+        [
+          'query', '--swarming', 'https://localhost:1',
+          '--dimension', 'os', 'amiga', '--keep-dead',
+        ])
+    self._check_output('amig1\namig2\ndead\n', '')
 
   def test_trigger_no_request(self):
     with self.assertRaises(SystemExit):
@@ -873,7 +1001,7 @@ class MainTest(TestCase):
     }
     self.requests = [
       (
-        'https://host1/test',
+        '/test',
         {'data': data},
         # The actual output is ignored as long as it is valid json.
         StringIO.StringIO('{}'),
@@ -909,7 +1037,7 @@ class MainTest(TestCase):
     }
     self.requests = [
       (
-        'https://host1/test',
+        '/test',
         {'data': data},
         # The actual output is ignored as long as it is valid json.
         StringIO.StringIO('{}'),

@@ -5,8 +5,9 @@
 
 """Client tool to trigger tasks or retrieve results from a Swarming server."""
 
-__version__ = '0.4.2'
+__version__ = '0.4.3'
 
+import datetime
 import getpass
 import hashlib
 import json
@@ -23,6 +24,7 @@ from third_party.depot_tools import fix_encoding
 from third_party.depot_tools import subcommand
 
 from utils import file_path
+from third_party.chromium import natsort
 from utils import net
 from utils import threading_utils
 from utils import tools
@@ -519,16 +521,19 @@ def collect(url, task_name, timeout, decorate):
   return exit_code if exit_code is not None else 1
 
 
-def add_trigger_options(parser):
-  """Adds all options to trigger a task on Swarming."""
-  isolateserver.add_isolate_server_options(parser, True)
-
+def add_filter_options(parser):
   parser.filter_group = tools.optparse.OptionGroup(parser, 'Filtering slaves')
   parser.filter_group.add_option(
       '-d', '--dimension', default=[], action='append', nargs=2,
       dest='dimensions', metavar='FOO bar',
       help='dimension to filter on')
   parser.add_option_group(parser.filter_group)
+
+
+def add_trigger_options(parser):
+  """Adds all options to trigger a task on Swarming."""
+  isolateserver.add_isolate_server_options(parser, True)
+  add_filter_options(parser)
 
   parser.task_group = tools.optparse.OptionGroup(parser, 'Task properties')
   parser.task_group.add_option(
@@ -597,6 +602,46 @@ def CMDcollect(parser, args):
   except Failure as e:
     tools.report_error(e)
     return 1
+
+
+def CMDquery(parser, args):
+  """Returns information about the bots connected to the Swarming server."""
+  add_filter_options(parser)
+  parser.filter_group.add_option(
+      '-k', '--keep-dead', action='store_true',
+      help='Do not filter out dead bots')
+  parser.filter_group.add_option(
+      '-b', '--bare', action='store_true',
+      help='Do not print out dimensions, implied with --dimension is used')
+  options, args = parser.parse_args(args)
+  service = net.get_http_service(options.swarming)
+  data = service.json_request('GET', '/swarming/api/v1/bots')
+  if data is None:
+    print >> sys.stderr, 'Failed to access %s' % options.swarming
+    return 1
+  timeout = datetime.timedelta(seconds=data['machine_death_timeout'])
+  utcnow = datetime.datetime.utcnow()
+  for machine in natsort.natsorted(data['machines'], key=lambda x: x['tag']):
+    last_seen = datetime.datetime.strptime(
+        machine['last_seen'], '%Y-%m-%d %H:%M:%S')
+    if not options.keep_dead and utcnow - last_seen > timeout:
+      continue
+
+    dimensions = machine['dimensions']
+    for key, value in options.dimensions:
+      if key not in dimensions:
+        break
+      if isinstance(dimensions[key], list):
+        if value not in dimensions[key]:
+          break
+      else:
+        if value != dimensions[key]:
+          break
+    else:
+      print machine['tag']
+      if not options.dimensions and not options.bare:
+        print '  %s' % dimensions
+  return 0
 
 
 @subcommand.usage('[hash|isolated]')
