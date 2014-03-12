@@ -101,6 +101,12 @@ class CONTENT_EXPORT BrowserMainLoop {
 
   bool is_tracing_startup() const { return is_tracing_startup_; }
 
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  DeviceMonitorMac* device_monitor_mac() const {
+    return device_monitor_mac_.get();
+  }
+#endif
+
  private:
   class MemoryObserver;
   // For ShutdownThreadsAndCleanUp.

@@ -337,21 +337,24 @@ void AVFoundationMonitorImpl::OnDeviceChanged() {
 namespace content {
 
 DeviceMonitorMac::DeviceMonitorMac() {
+  // Both QTKit and AVFoundation do not need to be fired up until the user
+  // exercises a GetUserMedia. Bringing up either library and enumerating the
+  // devices in the system is an operation taking in the range of hundred of ms,
+  // so it is triggered explicitly from MediaStreamManager::StartMonitoring().
+}
+
+DeviceMonitorMac::~DeviceMonitorMac() {}
+
+void DeviceMonitorMac::StartMonitoring() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (AVFoundationGlue::IsAVFoundationSupported()) {
     DVLOG(1) << "Monitoring via AVFoundation";
     device_monitor_impl_.reset(new AVFoundationMonitorImpl(this));
-    // For the AVFoundation to start sending connect/disconnect notifications,
-    // the AVFoundation NSBundle has to be loaded and the devices enumerated.
-    // This operation seems to take in the range of hundred of ms. so should be
-    // moved to the point when is needed, and that is during
-    // DeviceVideoCaptureMac +getDeviceNames.
   } else {
     DVLOG(1) << "Monitoring via QTKit";
     device_monitor_impl_.reset(new QTKitMonitorImpl(this));
   }
 }
-
-DeviceMonitorMac::~DeviceMonitorMac() {}
 
 void DeviceMonitorMac::NotifyDeviceChanged(
     base::SystemMonitor::DeviceType type) {

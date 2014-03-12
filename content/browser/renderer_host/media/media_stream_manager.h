@@ -307,6 +307,9 @@ class CONTENT_EXPORT MediaStreamManager
   // Helpers to start and stop monitoring devices.
   void StartMonitoring();
   void StopMonitoring();
+#if defined(OS_MACOSX)
+  void StartMonitoringOnUIThread();
+#endif
 
   // Finds the requested device id from constraints. The requested device type
   // must be MEDIA_DEVICE_AUDIO_CAPTURE or MEDIA_DEVICE_VIDEO_CAPTURE.

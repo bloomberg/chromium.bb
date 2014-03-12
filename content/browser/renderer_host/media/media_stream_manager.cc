@@ -42,6 +42,12 @@
 
 namespace content {
 
+// Forward declaration of DeviceMonitorMac and its only useable method.
+class DeviceMonitorMac {
+ public:
+  void StartMonitoring();
+};
+
 namespace {
 // Creates a random label used to identify requests.
 std::string RandomLabel() {
@@ -784,7 +790,23 @@ void MediaStreamManager::StartMonitoring() {
   audio_input_device_manager_->EnumerateDevices(MEDIA_DEVICE_AUDIO_CAPTURE);
   ++active_enumeration_ref_count_[MEDIA_DEVICE_VIDEO_CAPTURE];
   video_capture_manager_->EnumerateDevices(MEDIA_DEVICE_VIDEO_CAPTURE);
+
+#if defined(OS_MACOSX)
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&MediaStreamManager::StartMonitoringOnUIThread,
+                 base::Unretained(this)));
+#endif
 }
+
+#if defined(OS_MACOSX)
+void MediaStreamManager::StartMonitoringOnUIThread() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  BrowserMainLoop* browser_main_loop = content::BrowserMainLoop::GetInstance();
+  if (browser_main_loop)
+    browser_main_loop->device_monitor_mac()->StartMonitoring();
+}
+#endif
 
 void MediaStreamManager::StopMonitoring() {
   DCHECK_EQ(base::MessageLoop::current(), io_loop_);
