@@ -188,8 +188,7 @@ void TiledLayerImpl::AppendQuads(QuadSink* quad_sink,
                                   visible_tile_rect,
                                   border_color,
                                   border_width);
-        quad_sink->Append(debug_border_quad.PassAs<DrawQuad>(),
-                          append_quads_data);
+        quad_sink->Append(debug_border_quad.PassAs<DrawQuad>());
       }
     }
   }
@@ -223,8 +222,7 @@ void TiledLayerImpl::AppendQuads(QuadSink* quad_sink,
             CheckerboardDrawQuad::Create();
         checkerboard_quad->SetNew(
             shared_quad_state, tile_rect, visible_tile_rect, checker_color);
-        if (quad_sink->Append(checkerboard_quad.PassAs<DrawQuad>(),
-                              append_quads_data))
+        if (quad_sink->Append(checkerboard_quad.PassAs<DrawQuad>()))
           append_quads_data->num_missing_tiles++;
 
         continue;
@@ -254,7 +252,7 @@ void TiledLayerImpl::AppendQuads(QuadSink* quad_sink,
                    tex_coord_rect,
                    texture_size,
                    tile->contents_swizzled());
-      quad_sink->Append(quad.PassAs<DrawQuad>(), append_quads_data);
+      quad_sink->Append(quad.PassAs<DrawQuad>());
     }
   }
 }

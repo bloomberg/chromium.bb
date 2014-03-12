@@ -80,8 +80,7 @@ static inline bool AppendQuadInternal(
   return keep_quad;
 }
 
-bool QuadCuller::Append(scoped_ptr<DrawQuad> draw_quad,
-                        AppendQuadsData* append_quads_data) {
+bool QuadCuller::Append(scoped_ptr<DrawQuad> draw_quad) {
   DCHECK(draw_quad->shared_quad_state == current_shared_quad_state_);
   DCHECK(!shared_quad_state_list_->empty());
   DCHECK(shared_quad_state_list_->back() == current_shared_quad_state_);

@@ -4,7 +4,6 @@
 
 #include "cc/test/render_pass_test_utils.h"
 
-#include "cc/layers/append_quads_data.h"
 #include "cc/layers/quad_sink.h"
 #include "cc/quads/render_pass_draw_quad.h"
 #include "cc/quads/shared_quad_state.h"
@@ -33,7 +32,6 @@ SolidColorDrawQuad* AddQuad(TestRenderPass* pass,
                             const gfx::Rect& rect,
                             SkColor color) {
   MockQuadCuller quad_sink(&pass->quad_list, &pass->shared_quad_state_list);
-  AppendQuadsData data(pass->id);
   SharedQuadState* shared_state =
       quad_sink.UseSharedQuadState(SharedQuadState::Create());
   shared_state->SetAll(gfx::Transform(),
@@ -46,7 +44,7 @@ SolidColorDrawQuad* AddQuad(TestRenderPass* pass,
   scoped_ptr<SolidColorDrawQuad> quad = SolidColorDrawQuad::Create();
   quad->SetNew(shared_state, rect, rect, color, false);
   SolidColorDrawQuad* quad_ptr = quad.get();
-  quad_sink.Append(quad.PassAs<DrawQuad>(), &data);
+  quad_sink.Append(quad.PassAs<DrawQuad>());
   return quad_ptr;
 }
 
@@ -54,7 +52,6 @@ SolidColorDrawQuad* AddClippedQuad(TestRenderPass* pass,
                                    const gfx::Rect& rect,
                                    SkColor color) {
   MockQuadCuller quad_sink(&pass->quad_list, &pass->shared_quad_state_list);
-  AppendQuadsData data(pass->id);
   SharedQuadState* shared_state =
       quad_sink.UseSharedQuadState(SharedQuadState::Create());
   shared_state->SetAll(gfx::Transform(),
@@ -67,7 +64,7 @@ SolidColorDrawQuad* AddClippedQuad(TestRenderPass* pass,
   scoped_ptr<SolidColorDrawQuad> quad = SolidColorDrawQuad::Create();
   quad->SetNew(shared_state, rect, rect, color, false);
   SolidColorDrawQuad* quad_ptr = quad.get();
-  quad_sink.Append(quad.PassAs<DrawQuad>(), &data);
+  quad_sink.Append(quad.PassAs<DrawQuad>());
   return quad_ptr;
 }
 
@@ -76,7 +73,6 @@ SolidColorDrawQuad* AddTransformedQuad(TestRenderPass* pass,
                                        SkColor color,
                                        const gfx::Transform& transform) {
   MockQuadCuller quad_sink(&pass->quad_list, &pass->shared_quad_state_list);
-  AppendQuadsData data(pass->id);
   SharedQuadState* shared_state =
       quad_sink.UseSharedQuadState(SharedQuadState::Create());
   shared_state->SetAll(
@@ -84,7 +80,7 @@ SolidColorDrawQuad* AddTransformedQuad(TestRenderPass* pass,
   scoped_ptr<SolidColorDrawQuad> quad = SolidColorDrawQuad::Create();
   quad->SetNew(shared_state, rect, rect, color, false);
   SolidColorDrawQuad* quad_ptr = quad.get();
-  quad_sink.Append(quad.PassAs<DrawQuad>(), &data);
+  quad_sink.Append(quad.PassAs<DrawQuad>());
   return quad_ptr;
 }
 
@@ -92,7 +88,6 @@ void AddRenderPassQuad(TestRenderPass* to_pass,
                        TestRenderPass* contributing_pass) {
   MockQuadCuller quad_sink(&to_pass->quad_list,
                            &to_pass->shared_quad_state_list);
-  AppendQuadsData data(to_pass->id);
   gfx::Rect output_rect = contributing_pass->output_rect;
   SharedQuadState* shared_state =
       quad_sink.UseSharedQuadState(SharedQuadState::Create());
@@ -114,7 +109,7 @@ void AddRenderPassQuad(TestRenderPass* to_pass,
                gfx::RectF(),
                FilterOperations(),
                FilterOperations());
-  quad_sink.Append(quad.PassAs<DrawQuad>(), &data);
+  quad_sink.Append(quad.PassAs<DrawQuad>());
 }
 
 void AddRenderPassQuad(TestRenderPass* to_pass,
@@ -124,7 +119,6 @@ void AddRenderPassQuad(TestRenderPass* to_pass,
                        gfx::Transform transform) {
   MockQuadCuller quad_sink(&to_pass->quad_list,
                            &to_pass->shared_quad_state_list);
-  AppendQuadsData data(to_pass->id);
   gfx::Rect output_rect = contributing_pass->output_rect;
   SharedQuadState* shared_state =
       quad_sink.UseSharedQuadState(SharedQuadState::Create());
@@ -146,7 +140,7 @@ void AddRenderPassQuad(TestRenderPass* to_pass,
                gfx::RectF(),
                filters,
                FilterOperations());
-  quad_sink.Append(quad.PassAs<DrawQuad>(), &data);
+  quad_sink.Append(quad.PassAs<DrawQuad>());
 }
 
 }  // namespace cc

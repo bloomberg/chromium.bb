@@ -20,7 +20,7 @@ MockQuadCuller::MockQuadCuller(
 
 MockQuadCuller::~MockQuadCuller() {}
 
-bool MockQuadCuller::Append(scoped_ptr<DrawQuad> draw_quad, AppendQuadsData*) {
+bool MockQuadCuller::Append(scoped_ptr<DrawQuad> draw_quad) {
   if (!draw_quad->rect.IsEmpty()) {
     active_quad_list_->push_back(draw_quad.Pass());
     return true;

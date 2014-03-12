@@ -839,10 +839,9 @@ TEST_F(QuadCullerTest, PartialCullingNotDestroyed) {
 
   EXPECT_EQ(0u, quad_list.size());
 
-  AppendQuadsData data;
-  culler.Append(color_quad.PassAs<DrawQuad>(), &data);
-  culler.Append(pass_quad.PassAs<DrawQuad>(), &data);
-  culler.Append(replica_quad.PassAs<DrawQuad>(), &data);
+  culler.Append(color_quad.PassAs<DrawQuad>());
+  culler.Append(pass_quad.PassAs<DrawQuad>());
+  culler.Append(replica_quad.PassAs<DrawQuad>());
 
   ASSERT_EQ(3u, quad_list.size());
 
@@ -919,10 +918,9 @@ TEST_F(QuadCullerTest, PartialCullingWithOcclusionNotDestroyed) {
 
   EXPECT_EQ(0u, quad_list.size());
 
-  AppendQuadsData data;
-  culler.Append(color_quad.PassAs<DrawQuad>(), &data);
-  culler.Append(pass_quad.PassAs<DrawQuad>(), &data);
-  culler.Append(replica_quad.PassAs<DrawQuad>(), &data);
+  culler.Append(color_quad.PassAs<DrawQuad>());
+  culler.Append(pass_quad.PassAs<DrawQuad>());
+  culler.Append(replica_quad.PassAs<DrawQuad>());
 
   ASSERT_EQ(3u, quad_list.size());
 

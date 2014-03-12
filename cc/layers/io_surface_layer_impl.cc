@@ -122,7 +122,7 @@ void IOSurfaceLayerImpl::AppendQuads(QuadSink* quad_sink,
                io_surface_size_,
                io_surface_resource_id_,
                IOSurfaceDrawQuad::FLIPPED);
-  quad_sink->Append(quad.PassAs<DrawQuad>(), append_quads_data);
+  quad_sink->Append(quad.PassAs<DrawQuad>());
 }
 
 void IOSurfaceLayerImpl::ReleaseResources() {

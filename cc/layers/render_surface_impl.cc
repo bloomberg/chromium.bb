@@ -168,7 +168,7 @@ void RenderSurfaceImpl::AppendQuads(QuadSink* quad_sink,
         DebugBorderDrawQuad::Create();
     debug_border_quad->SetNew(
         shared_quad_state, quad_rect, visible_quad_rect, color, width);
-    quad_sink->Append(debug_border_quad.PassAs<DrawQuad>(), append_quads_data);
+    quad_sink->Append(debug_border_quad.PassAs<DrawQuad>());
   }
 
   // TODO(shawnsingh): By using the same RenderSurfaceImpl for both the content
@@ -229,7 +229,7 @@ void RenderSurfaceImpl::AppendQuads(QuadSink* quad_sink,
                mask_uv_rect,
                owning_layer_->filters(),
                owning_layer_->background_filters());
-  quad_sink->Append(quad.PassAs<DrawQuad>(), append_quads_data);
+  quad_sink->Append(quad.PassAs<DrawQuad>());
 }
 
 }  // namespace cc

@@ -13,8 +13,6 @@ namespace cc {
 class DrawQuad;
 class SharedQuadState;
 
-struct AppendQuadsData;
-
 class CC_EXPORT QuadSink {
  public:
   virtual ~QuadSink() {}
@@ -27,8 +25,7 @@ class CC_EXPORT QuadSink {
 
   // Returns true if the quad is added to the list, and false if the quad is
   // entirely culled.
-  virtual bool Append(scoped_ptr<DrawQuad> draw_quad,
-                      AppendQuadsData* append_quads_data) = 0;
+  virtual bool Append(scoped_ptr<DrawQuad> draw_quad) = 0;
 };
 
 }  // namespace cc

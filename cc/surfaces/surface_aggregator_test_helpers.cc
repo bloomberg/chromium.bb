@@ -55,7 +55,6 @@ void AddTestSurfaceQuad(TestRenderPass* pass,
 void AddTestRenderPassQuad(TestRenderPass* pass,
                            RenderPass::Id render_pass_id) {
   MockQuadCuller quad_sink(&pass->quad_list, &pass->shared_quad_state_list);
-  AppendQuadsData data(pass->id);
   gfx::Rect output_rect = gfx::Rect(0, 0, 5, 5);
   SharedQuadState* shared_state =
       quad_sink.UseSharedQuadState(SharedQuadState::Create());
@@ -77,7 +76,7 @@ void AddTestRenderPassQuad(TestRenderPass* pass,
                gfx::RectF(),
                FilterOperations(),
                FilterOperations());
-  quad_sink.Append(quad.PassAs<DrawQuad>(), &data);
+  quad_sink.Append(quad.PassAs<DrawQuad>());
 }
 
 void AddQuadInPass(TestRenderPass* pass, Quad desc) {

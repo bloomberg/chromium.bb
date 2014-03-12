@@ -366,7 +366,7 @@ void DelegatedRendererLayerImpl::AppendRainbowDebugBorder(
       scoped_ptr<SolidColorDrawQuad> top_quad = SolidColorDrawQuad::Create();
       top_quad->SetNew(
           shared_quad_state, top, top, colors[i % kNumColors], false);
-      quad_sink->Append(top_quad.PassAs<DrawQuad>(), append_quads_data);
+      quad_sink->Append(top_quad.PassAs<DrawQuad>());
 
       scoped_ptr<SolidColorDrawQuad> bottom_quad = SolidColorDrawQuad::Create();
       bottom_quad->SetNew(shared_quad_state,
@@ -374,7 +374,7 @@ void DelegatedRendererLayerImpl::AppendRainbowDebugBorder(
                           bottom,
                           colors[kNumColors - 1 - (i % kNumColors)],
                           false);
-      quad_sink->Append(bottom_quad.PassAs<DrawQuad>(), append_quads_data);
+      quad_sink->Append(bottom_quad.PassAs<DrawQuad>());
     }
     if (!left.IsEmpty()) {
       scoped_ptr<SolidColorDrawQuad> left_quad = SolidColorDrawQuad::Create();
@@ -383,12 +383,12 @@ void DelegatedRendererLayerImpl::AppendRainbowDebugBorder(
                         left,
                         colors[kNumColors - 1 - (i % kNumColors)],
                         false);
-      quad_sink->Append(left_quad.PassAs<DrawQuad>(), append_quads_data);
+      quad_sink->Append(left_quad.PassAs<DrawQuad>());
 
       scoped_ptr<SolidColorDrawQuad> right_quad = SolidColorDrawQuad::Create();
       right_quad->SetNew(
           shared_quad_state, right, right, colors[i % kNumColors], false);
-      quad_sink->Append(right_quad.PassAs<DrawQuad>(), append_quads_data);
+      quad_sink->Append(right_quad.PassAs<DrawQuad>());
     }
   }
 }
@@ -471,7 +471,7 @@ void DelegatedRendererLayerImpl::AppendRenderPassQuads(
     }
 
     if (output_quad)
-      quad_sink->Append(output_quad.Pass(), append_quads_data);
+      quad_sink->Append(output_quad.Pass());
   }
 }
 

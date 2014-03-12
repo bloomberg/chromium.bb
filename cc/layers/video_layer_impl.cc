@@ -168,7 +168,7 @@ void VideoLayerImpl::AppendQuads(QuadSink* quad_sink,
                            SK_ColorTRANSPARENT,
                            opacity,
                            flipped);
-      quad_sink->Append(texture_quad.PassAs<DrawQuad>(), append_quads_data);
+      quad_sink->Append(texture_quad.PassAs<DrawQuad>());
       break;
     }
     case VideoFrameExternalResources::YUV_RESOURCE: {
@@ -187,7 +187,7 @@ void VideoLayerImpl::AppendQuads(QuadSink* quad_sink,
           frame_resources_[1],
           frame_resources_[2],
           frame_resources_.size() > 3 ? frame_resources_[3] : 0);
-      quad_sink->Append(yuv_video_quad.PassAs<DrawQuad>(), append_quads_data);
+      quad_sink->Append(yuv_video_quad.PassAs<DrawQuad>());
       break;
     }
     case VideoFrameExternalResources::RGB_RESOURCE: {
@@ -211,7 +211,7 @@ void VideoLayerImpl::AppendQuads(QuadSink* quad_sink,
                            SK_ColorTRANSPARENT,
                            opacity,
                            flipped);
-      quad_sink->Append(texture_quad.PassAs<DrawQuad>(), append_quads_data);
+      quad_sink->Append(texture_quad.PassAs<DrawQuad>());
       break;
     }
     case VideoFrameExternalResources::STREAM_TEXTURE_RESOURCE: {
@@ -229,8 +229,7 @@ void VideoLayerImpl::AppendQuads(QuadSink* quad_sink,
           visible_quad_rect,
           frame_resources_[0],
           scale * provider_client_impl_->stream_texture_matrix());
-      quad_sink->Append(stream_video_quad.PassAs<DrawQuad>(),
-                        append_quads_data);
+      quad_sink->Append(stream_video_quad.PassAs<DrawQuad>());
       break;
     }
     case VideoFrameExternalResources::IO_SURFACE: {
@@ -247,8 +246,7 @@ void VideoLayerImpl::AppendQuads(QuadSink* quad_sink,
                               visible_size,
                               frame_resources_[0],
                               IOSurfaceDrawQuad::UNFLIPPED);
-      quad_sink->Append(io_surface_quad.PassAs<DrawQuad>(),
-                        append_quads_data);
+      quad_sink->Append(io_surface_quad.PassAs<DrawQuad>());
       break;
     }
 #if defined(VIDEO_HOLE)

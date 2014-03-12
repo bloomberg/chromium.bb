@@ -157,7 +157,7 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
                  quad_content_rect,
                  contents_scale,
                  pile_);
-    if (quad_sink->Append(quad.PassAs<DrawQuad>(), append_quads_data))
+    if (quad_sink->Append(quad.PassAs<DrawQuad>()))
       append_quads_data->num_missing_tiles++;
     return;
   }
@@ -207,8 +207,7 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
                                 visible_geometry_rect,
                                 color,
                                 width);
-      quad_sink->Append(debug_border_quad.PassAs<DrawQuad>(),
-                        append_quads_data);
+      quad_sink->Append(debug_border_quad.PassAs<DrawQuad>());
     }
   }
 
@@ -229,7 +228,7 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
         SkColor color = DebugColors::DefaultCheckerboardColor();
         quad->SetNew(
             shared_quad_state, geometry_rect, visible_geometry_rect, color);
-        if (quad_sink->Append(quad.PassAs<DrawQuad>(), append_quads_data))
+        if (quad_sink->Append(quad.PassAs<DrawQuad>()))
           append_quads_data->num_missing_tiles++;
       } else {
         SkColor color = SafeOpaqueBackgroundColor();
@@ -239,7 +238,7 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
                      visible_geometry_rect,
                      color,
                      false);
-        if (quad_sink->Append(quad.PassAs<DrawQuad>(), append_quads_data))
+        if (quad_sink->Append(quad.PassAs<DrawQuad>()))
           append_quads_data->num_missing_tiles++;
       }
 
@@ -307,7 +306,7 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
     }
 
     DCHECK(draw_quad);
-    quad_sink->Append(draw_quad.Pass(), append_quads_data);
+    quad_sink->Append(draw_quad.Pass());
 
     if (seen_tilings.empty() || seen_tilings.back() != iter.CurrentTiling())
       seen_tilings.push_back(iter.CurrentTiling());

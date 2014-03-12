@@ -45,7 +45,7 @@ void SolidColorLayerImpl::AppendQuads(QuadSink* quad_sink,
                    visible_quad_rect,
                    background_color(),
                    false);
-      quad_sink->Append(quad.PassAs<DrawQuad>(), append_quads_data);
+      quad_sink->Append(quad.PassAs<DrawQuad>());
     }
   }
 }

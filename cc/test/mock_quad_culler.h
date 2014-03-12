@@ -21,8 +21,7 @@ class MockQuadCuller : public QuadSink {
                  SharedQuadStateList* external_shared_quad_state_list);
 
   // QuadSink interface.
-  virtual bool Append(scoped_ptr<DrawQuad> draw_quad,
-                      AppendQuadsData* append_quads_data) OVERRIDE;
+  virtual bool Append(scoped_ptr<DrawQuad> draw_quad) OVERRIDE;
   virtual SharedQuadState* UseSharedQuadState(
       scoped_ptr<SharedQuadState> shared_quad_state) OVERRIDE;
 

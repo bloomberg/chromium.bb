@@ -653,7 +653,6 @@ static void AppendQuadsToFillScreen(
                             opacity,
                             SkXfermode::kSrcOver_Mode);
 
-  AppendQuadsData append_quads_data;
   for (Region::Iterator fill_rects(screen_background_color_region);
        fill_rects.has_rect();
        fill_rects.next()) {
@@ -667,7 +666,7 @@ static void AppendQuadsToFillScreen(
                  visible_screen_space_rect,
                  screen_background_color,
                  false);
-    quad_culler.Append(quad.PassAs<DrawQuad>(), &append_quads_data);
+    quad_culler.Append(quad.PassAs<DrawQuad>());
   }
   for (Region::Iterator fill_rects(overhang_region);
        fill_rects.has_rect();
@@ -695,7 +694,7 @@ static void AppendQuadsToFillScreen(
         screen_background_color,
         vertex_opacity,
         false);
-      quad_culler.Append(tex_quad.PassAs<DrawQuad>(), &append_quads_data);
+    quad_culler.Append(tex_quad.PassAs<DrawQuad>());
   }
 }
 
