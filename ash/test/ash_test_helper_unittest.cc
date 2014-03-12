@@ -8,10 +8,6 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/views/widget/widget.h"
 
-#if defined(OS_WIN)
-#include "base/win/windows_version.h"
-#endif
-
 // Tests for AshTestHelper. Who will watch the watchers? And who will test
 // the tests?
 class AshTestHelperTest : public testing::Test {
@@ -44,11 +40,6 @@ class AshTestHelperTest : public testing::Test {
 // Ensure that we have initialized enough of Ash to create and show a window.
 TEST_F(AshTestHelperTest, AshTestHelper) {
   // Check initial state.
-#if defined(OS_WIN)
-  // Ash doesn't run on versions of Windows prior to Win7.
-  if (base::win::GetVersion() < base::win::VERSION_WIN7)
-    return;
-#endif
   EXPECT_TRUE(ash_test_helper()->message_loop());
   EXPECT_TRUE(ash_test_helper()->test_shell_delegate());
   EXPECT_TRUE(ash_test_helper()->CurrentContext());

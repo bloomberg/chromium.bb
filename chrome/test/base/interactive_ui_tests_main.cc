@@ -19,10 +19,6 @@
 #include "ash/test/ui_controls_factory_ash.h"
 #endif
 
-#if defined(OS_WIN)
-#include "base/win/scoped_com_initializer.h"
-#endif
-
 class InteractiveUITestSuite : public ChromeTestSuite {
  public:
   InteractiveUITestSuite(int argc, char** argv) : ChromeTestSuite(argc, argv) {}
@@ -40,9 +36,6 @@ class InteractiveUITestSuite : public ChromeTestSuite {
 #if defined(OS_CHROMEOS)
     ui_controls::InstallUIControlsAura(ash::test::CreateAshUIControls());
 #elif defined(USE_AURA)
-#if defined(OS_WIN)
-    com_initializer_.reset(new base::win::ScopedCOMInitializer());
-#endif
 
 #if defined(OS_LINUX)
     ui_controls::InstallUIControlsAura(
@@ -54,18 +47,7 @@ class InteractiveUITestSuite : public ChromeTestSuite {
 #endif
   }
 
-  virtual void Shutdown() OVERRIDE {
-#if defined(OS_WIN)
-    com_initializer_.reset();
-#endif
-  }
-
   virtual bool IsBrowserTestSuite() OVERRIDE { return false; }
-
- private:
-#if defined(OS_WIN)
-  scoped_ptr<base::win::ScopedCOMInitializer> com_initializer_;
-#endif
 };
 
 class InteractiveUITestSuiteRunner : public ChromeTestSuiteRunner {

@@ -33,14 +33,12 @@ void AuraShellTestSuite::Initialize() {
   gfx::GLSurface::InitializeOneOffForTests();
 
 #if defined(OS_WIN)
-  base::win::Version version = base::win::GetVersion();
-  if (version >= base::win::VERSION_WIN7 &&
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8 &&
       !CommandLine::ForCurrentProcess()->HasSwitch(
           ash::switches::kForceAshToDesktop)) {
     com_initializer_.reset(new base::win::ScopedCOMInitializer());
     ui::win::CreateATLModuleIfNeeded();
-    if (version >= base::win::VERSION_WIN8)
-      ASSERT_TRUE(win8::MakeTestDefaultBrowserSynchronously());
+    ASSERT_TRUE(win8::MakeTestDefaultBrowserSynchronously());
   }
 #endif
 

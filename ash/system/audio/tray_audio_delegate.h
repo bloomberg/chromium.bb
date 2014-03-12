@@ -8,7 +8,7 @@
 namespace ash {
 namespace system {
 
-class ASH_EXPORT TrayAudioDelegate {
+class TrayAudioDelegate {
  public:
 
   enum { kNoAudioDeviceIcon = -1 };
