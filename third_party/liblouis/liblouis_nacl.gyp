@@ -76,6 +76,7 @@
             'out_newlib64': '<(braille_test_data_dir)/>(nexe_target)_x86_64.nexe',
             'out_newlib32': '<(braille_test_data_dir)/>(nexe_target)_x86_32.nexe',
             'out_newlib_arm': '<(braille_test_data_dir)/>(nexe_target)_arm.nexe',
+            'out_newlib_mips': '<(braille_test_data_dir)/>(nexe_target)_mips32.nexe',
             'build_newlib': 1,
             'extra_args': [
               '--strip-debug',
@@ -90,6 +91,9 @@
               }],
               ['enable_arm==1', {
                 'nexe_files': ['>(out_newlib_arm)'],
+              }],
+              ['enable_mips==1', {
+                'nexe_files': ['>(out_newlib_mips)'],
               }],
             ],
           },
