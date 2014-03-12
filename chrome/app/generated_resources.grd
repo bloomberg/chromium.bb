@@ -14041,6 +14041,32 @@ After you create a new supervised user, you can manage their settings at any tim
           Are you sure you want to delete this user and all the data associated with it from this computer? This cannot be undone!
         </message>
       </if>
+
+      <!-- User manager tutorial -->
+      <message name="IDS_USER_MANAGER_TUTORIAL_START" desc="Text of the button that continues the tutorial">
+        See what's new
+      </message>
+      <message name="IDS_USER_MANAGER_TUTORIAL_SKIP" desc="Text of the button that stops the tutorial">
+        Skip for now
+      </message>
+      <message name="IDS_USER_MANAGER_TUTORIAL_NEXT" desc="Text of the button that advances the tutorial to the next slide">
+        Next
+      </message>
+      <message name="IDS_USER_MANAGER_TUTORIAL_DONE" desc="The text of the OK button on the last tutorial slide">
+        OK, got it!
+      </message>
+      <message name="IDS_USER_MANAGER_TUTORIAL_SLIDE_GUEST_TITLE" desc="Title of the guest user slide">
+        Share with guests
+      </message>
+      <message name="IDS_USER_MANAGER_TUTORIAL_SLIDE_FRIENDS_TITLE" desc="Title of the friends and family slide">
+        Add family and friends
+      </message>
+      <message name="IDS_USER_MANAGER_TUTORIAL_SLIDE_OUTRO_TITLE" desc="Title of the tutorial completion slide">
+        You're almost done!
+      </message>
+      <message name="IDS_USER_MANAGER_TUTORIAL_SLIDE_OUTRO_USER_NOT_FOUND" desc="Text of the label asking the user if they see their name">
+        Don't see your name?
+      </message>
     </if>
 
     <!-- Aura strings -->

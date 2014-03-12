@@ -1107,6 +1107,34 @@ Signing in anyway will merge Chromium information like bookmarks, history, and o
         Make Chromium the default browser
       </message>
 
+      <!-- User manager tutorial -->
+      <if expr="not is_android and not is_ios and not chromeos">
+        <message name="IDS_USER_MANAGER_TUTORIAL_SLIDE_INTRO_TITLE" desc="Title of the tutorial introduction slide">
+          Chromium just got better
+        </message>
+        <message name="IDS_USER_MANAGER_TUTORIAL_SLIDE_INTRO_TEXT" desc="Main text of the tutorial introduction slide">
+          Now it's easier to use Chromium with your Google Account and on shared computers.
+        </message>
+        <message name="IDS_USER_MANAGER_TUTORIAL_SLIDE_YOUR_CHROME_TITLE" desc="Title of the slide about personalizing the browser">
+          This is your Chromium
+        </message>
+        <message name="IDS_USER_MANAGER_TUTORIAL_SLIDE_YOUR_CHROME_TEXT" desc="Main text of the slide about personalizing the browser">
+          Your web, bookmarks, and other Chromium stuff live here.
+        </message>
+        <message name="IDS_USER_MANAGER_TUTORIAL_SLIDE_GUEST_TEXT" desc="Main text of the guest user slide">
+          Guests can use Chromium without leaving anything behind.
+        </message>
+        <message name="IDS_USER_MANAGER_TUTORIAL_SLIDE_FRIENDS_TEXT" desc="Main text of the friends and family slide">
+          If you share a computer, friends and family can browse separately and set up Chromium just the way the want.
+        </message>
+        <message name="IDS_USER_MANAGER_TUTORIAL_SLIDE_OUTRO_TEXT" desc="Main text of the tutorial completion slide">
+          Click your name to open Chromium and start browsing.
+        </message>
+        <message name="IDS_USER_MANAGER_TUTORIAL_SLIDE_OUTRO_ADD_USER" desc="Text of the add a new user button">
+          Add yourself to Chromium
+        </message>
+      </if>
+
     </messages>
   </release>
 </grit>

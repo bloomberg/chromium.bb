@@ -415,6 +415,43 @@ void UserManagerScreenHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(
            IDS_LOGIN_POD_USER_REMOVE_WARNING));
 
+  // Strings needed for the User Manager tutorial slides.
+  localized_strings->SetString("tutorialStart",
+      l10n_util::GetStringUTF16(IDS_USER_MANAGER_TUTORIAL_START));
+  localized_strings->SetString("tutorialSkip",
+      l10n_util::GetStringUTF16(IDS_USER_MANAGER_TUTORIAL_SKIP));
+  localized_strings->SetString("tutorialNext",
+      l10n_util::GetStringUTF16(IDS_USER_MANAGER_TUTORIAL_NEXT));
+  localized_strings->SetString("tutorialDone",
+      l10n_util::GetStringUTF16(IDS_USER_MANAGER_TUTORIAL_DONE));
+  localized_strings->SetString("slideWelcomeTitle",
+      l10n_util::GetStringUTF16(IDS_USER_MANAGER_TUTORIAL_SLIDE_INTRO_TITLE));
+  localized_strings->SetString("slideWelcomeText",
+      l10n_util::GetStringUTF16(IDS_USER_MANAGER_TUTORIAL_SLIDE_INTRO_TEXT));
+  localized_strings->SetString("slideYourChromeTitle",
+      l10n_util::GetStringUTF16(
+          IDS_USER_MANAGER_TUTORIAL_SLIDE_YOUR_CHROME_TITLE));
+  localized_strings->SetString("slideYourChromeText", l10n_util::GetStringUTF16(
+      IDS_USER_MANAGER_TUTORIAL_SLIDE_YOUR_CHROME_TEXT));
+  localized_strings->SetString("slideGuestsTitle",
+      l10n_util::GetStringUTF16(IDS_USER_MANAGER_TUTORIAL_SLIDE_GUEST_TITLE));
+  localized_strings->SetString("slideGuestsText",
+      l10n_util::GetStringUTF16(IDS_USER_MANAGER_TUTORIAL_SLIDE_GUEST_TEXT));
+  localized_strings->SetString("slideFriendsTitle",
+      l10n_util::GetStringUTF16(IDS_USER_MANAGER_TUTORIAL_SLIDE_FRIENDS_TITLE));
+  localized_strings->SetString("slideFriendsText",
+      l10n_util::GetStringUTF16(IDS_USER_MANAGER_TUTORIAL_SLIDE_FRIENDS_TEXT));
+  localized_strings->SetString("slideCompleteTitle",
+      l10n_util::GetStringUTF16(IDS_USER_MANAGER_TUTORIAL_SLIDE_OUTRO_TITLE));
+  localized_strings->SetString("slideCompleteText",
+      l10n_util::GetStringUTF16(IDS_USER_MANAGER_TUTORIAL_SLIDE_OUTRO_TEXT));
+  localized_strings->SetString("slideCompleteUserNotFound",
+      l10n_util::GetStringUTF16(
+          IDS_USER_MANAGER_TUTORIAL_SLIDE_OUTRO_USER_NOT_FOUND));
+  localized_strings->SetString("slideCompleteAddUser",
+      l10n_util::GetStringUTF16(
+          IDS_USER_MANAGER_TUTORIAL_SLIDE_OUTRO_ADD_USER));
+
   // Strings needed for the user_pod_template public account div, but not ever
   // actually displayed for desktop users.
   localized_strings->SetString("publicAccountReminder", base::string16());

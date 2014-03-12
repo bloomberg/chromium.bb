@@ -339,6 +339,14 @@
       <if expr="not is_android and not is_ios and not chromeos">
         <!-- TODO(noms): Remove this once local profile avatars are migrated -->
         <structure type="chrome_scaled_image" name="IDR_USER_MANAGER_DEFAULT_AVATAR" file="common/login_guest.png" />
+
+        <!-- User Manager tutorial -->
+        <structure type="chrome_scaled_image" name="IDR_ICON_USER_MANAGER_TUTORIAL_WELCOME" file="common/user_manager_tutorial/welcome.png" />
+        <structure type="chrome_scaled_image" name="IDR_ICON_USER_MANAGER_TUTORIAL_YOUR_CHROME" file="common/user_manager_tutorial/your_chrome.png" />
+        <structure type="chrome_scaled_image" name="IDR_ICON_USER_MANAGER_TUTORIAL_GUESTS" file="common/user_manager_tutorial/guests.png" />
+        <structure type="chrome_scaled_image" name="IDR_ICON_USER_MANAGER_TUTORIAL_FRIENDS" file="common/user_manager_tutorial/family_and_friends.png" />
+        <structure type="chrome_scaled_image" name="IDR_ICON_USER_MANAGER_TUTORIAL_COMPLETE" file="common/user_manager_tutorial/complete.png" />
+
       </if>
       <if expr="chromeos">
         <structure type="chrome_scaled_image" name="IDR_ICON_ADD_USER_WHITE" file="icon_add_user_white.png" />

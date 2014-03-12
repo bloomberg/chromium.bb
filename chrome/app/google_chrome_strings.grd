@@ -1031,6 +1031,34 @@ Signing in anyway will merge Chrome information like bookmarks, history, and oth
         Make Google Chrome the default browser
       </message>
 
+      <!-- User manager tutorial -->
+      <if expr="not is_android and not is_ios and not chromeos">
+        <message name="IDS_USER_MANAGER_TUTORIAL_SLIDE_INTRO_TITLE" desc="Title of the tutorial introduction slide">
+          Chrome just got better
+        </message>
+        <message name="IDS_USER_MANAGER_TUTORIAL_SLIDE_INTRO_TEXT" desc="Main text of the tutorial introduction slide">
+          Now it's easier to use Chrome with your Google Account and on shared computers.
+        </message>
+        <message name="IDS_USER_MANAGER_TUTORIAL_SLIDE_YOUR_CHROME_TITLE" desc="Title of the personalization slide">
+          This is your Chrome
+        </message>
+        <message name="IDS_USER_MANAGER_TUTORIAL_SLIDE_YOUR_CHROME_TEXT" desc="Main text of the personalization slide">
+          Your web, bookmarks, and other Chrome stuff live here.
+        </message>
+        <message name="IDS_USER_MANAGER_TUTORIAL_SLIDE_GUEST_TEXT" desc="Main text of the guest user slide">
+          Guests can use Chrome without leaving anything behind.
+        </message>
+        <message name="IDS_USER_MANAGER_TUTORIAL_SLIDE_FRIENDS_TEXT" desc="Main text of the friends and family slide">
+          If you share a computer, friends and family can browse separately and set up Chrome just the way the want.
+        </message>
+        <message name="IDS_USER_MANAGER_TUTORIAL_SLIDE_OUTRO_TEXT" desc="Main text of the tutorial completion slide">
+          Click your name to open Chrome and start browsing.
+        </message>
+        <message name="IDS_USER_MANAGER_TUTORIAL_SLIDE_OUTRO_ADD_USER" desc="Title text for the button that would add a new user">
+          Add yourself to Chrome
+        </message>
+      </if>
+
     </messages>
   </release>
 </grit>
