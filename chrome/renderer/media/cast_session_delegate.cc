@@ -29,15 +29,13 @@ static base::LazyInstance<CastThreads> g_cast_threads =
 
 namespace {
 
-// Allow 10MB for serialized video / audio event logs.
+// Allow 9MB for serialized video / audio event logs.
 const int kMaxSerializedBytes = 9000000;
 
-// Allow about 9MB for video event logs. Assume serialized log data for
-// each frame will take up to 150 bytes.
+// Assume serialized log data for each frame will take up to 150 bytes.
 const int kMaxVideoEventEntries = kMaxSerializedBytes / 150;
 
-// Allow about 9MB for audio event logs. Assume serialized log data for
-// each frame will take up to 75 bytes.
+// Assume serialized log data for each frame will take up to 75 bytes.
 const int kMaxAudioEventEntries = kMaxSerializedBytes / 75;
 
 }  // namespace
@@ -178,7 +176,7 @@ void CastSessionDelegate::GetEventLogsAndReset(
   media::cast::EncodingEventSubscriber* subscriber =
       is_audio ? audio_event_subscriber_.get() : video_event_subscriber_.get();
   if (!subscriber) {
-    callback.Run(make_scoped_ptr(new std::string).Pass());
+    callback.Run(make_scoped_ptr(new base::BinaryValue).Pass());
     return;
   }
 
@@ -188,21 +186,27 @@ void CastSessionDelegate::GetEventLogsAndReset(
 
   subscriber->GetEventsAndReset(&metadata, &frame_events, &packet_events);
 
-  media::cast::LogSerializer log_serializer(kMaxSerializedBytes);
-  bool success = log_serializer.SerializeEventsForStream(
-      metadata, frame_events, packet_events);
+  scoped_ptr<char[]> serialized_log(new char[kMaxSerializedBytes]);
+  int output_bytes;
+  bool success = media::cast::SerializeEvents(metadata,
+                                              frame_events,
+                                              packet_events,
+                                              true,
+                                              kMaxSerializedBytes,
+                                              serialized_log.get(),
+                                              &output_bytes);
 
   if (!success) {
     VLOG(2) << "Failed to serialize event log.";
-    callback.Run(make_scoped_ptr(new std::string).Pass());
+    callback.Run(make_scoped_ptr(new base::BinaryValue).Pass());
     return;
   }
 
-  scoped_ptr<std::string> serialized_log =
-      log_serializer.GetSerializedLogAndReset();
-  DVLOG(2) << "Serialized log length: " << serialized_log->size();
+  DVLOG(2) << "Serialized log length: " << output_bytes;
 
-  callback.Run(serialized_log.Pass());
+  scoped_ptr<base::BinaryValue> blob(
+      new base::BinaryValue(serialized_log.Pass(), output_bytes));
+  callback.Run(blob.Pass());
 }
 
 void CastSessionDelegate::GetStatsAndReset(bool is_audio,

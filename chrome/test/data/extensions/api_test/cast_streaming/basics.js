@@ -45,9 +45,9 @@ chrome.test.runTests([
         stateMachine.onAllStopped =
             pass(function(audioId, videoId) {
           rtpStream.getRawEvents(audioId,
-              stateMachine.onGotLogs.bind(stateMachine, audioId));
+              stateMachine.onGotRawEvents.bind(stateMachine, audioId));
           rtpStream.getRawEvents(videoId,
-              stateMachine.onGotLogs.bind(stateMachine, videoId));
+              stateMachine.onGotRawEvents.bind(stateMachine, videoId));
         }.bind(null, audioId, videoId));
         stateMachine.onGotAllLogs =
             pass(function(stream, audioId, videoId, udpId) {

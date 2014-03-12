@@ -16,15 +16,15 @@ namespace cast {
 // This function takes the output of LogSerializer and deserializes it into
 // its original format. Returns true if deserialization is successful. All
 // output arguments are valid if this function returns true.
-// |data|: Serialized event logs.
-// |is_audio|: This will be set to true or false depending on whether the data
-// is for an audio or video stream.
+// |data|: Serialized event logs with length |data_bytes|.
+// |compressed|: true if |data| is compressed in gzip format.
+// |log_metadata|: This will be populated with deserialized LogMetadata proto.
 // |frame_events|: This will be populated with deserialized frame events.
 // |packet_events|: This will be populated with deserialized packet events.
-// |first_rtp_timestamp|: This will be populated with the first RTP timestamp
-// of the events.
-bool DeserializeEvents(const std::string& data,
-                       media::cast::proto::LogMetadata* metadata,
+bool DeserializeEvents(char* data,
+                       int data_bytes,
+                       bool compressed,
+                       media::cast::proto::LogMetadata* log_metadata,
                        FrameEventMap* frame_events,
                        PacketEventMap* packet_events);
 

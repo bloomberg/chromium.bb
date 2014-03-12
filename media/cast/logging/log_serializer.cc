@@ -1,24 +1,11 @@
 // Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
-#include "media/cast/logging/log_serializer.h"
-
-#include "base/big_endian.h"
-
-namespace media {
-namespace cast {
-
-LogSerializer::LogSerializer(const int max_serialized_bytes)
-    : index_so_far_(0), max_serialized_bytes_(max_serialized_bytes) {
-  DCHECK_GT(max_serialized_bytes_, 0);
-}
-
-LogSerializer::~LogSerializer() {}
-
-// The format is as follows:
-//   16-bit integer describing the folowing LogMetadata proto size in bytes.
-//   The LogMetadata proto.
+//
+// The serialization format is as follows:
+//   8-bit integer describing |is_audio|.
+//   32-bit integer describing |first_rtp_timestamp|.
+//   32-bit integer describing number of frame events.
 //   (The following repeated for number of frame events):
 //     16-bit integer describing the following AggregatedFrameEvent proto size
 //         in bytes.
@@ -28,20 +15,31 @@ LogSerializer::~LogSerializer() {}
 //     16-bit integer describing the following AggregatedPacketEvent proto
 //         size in bytes.
 //     The AggregatedPacketEvent proto.
-bool LogSerializer::SerializeEventsForStream(
-    const media::cast::proto::LogMetadata& metadata,
-    const FrameEventMap& frame_events,
-    const PacketEventMap& packet_events) {
-  if (!serialized_log_so_far_) {
-    serialized_log_so_far_.reset(new std::string(max_serialized_bytes_, 0));
-  }
 
-  int remaining_space = serialized_log_so_far_->size() - index_so_far_;
-  if (remaining_space <= 0)
-    return false;
+#include "media/cast/logging/log_serializer.h"
 
-  base::BigEndianWriter writer(&(*serialized_log_so_far_)[index_so_far_],
-                              remaining_space);
+#include "base/big_endian.h"
+#include "third_party/zlib/zlib.h"
+
+namespace media {
+namespace cast {
+
+namespace {
+
+using media::cast::proto::AggregatedFrameEvent;
+using media::cast::proto::AggregatedPacketEvent;
+using media::cast::proto::LogMetadata;
+
+// Use 30MB of temp buffer to hold uncompressed data if |compress| is true.
+const int kMaxUncompressedBytes = 30 * 1000 * 1000;
+
+bool DoSerializeEvents(const LogMetadata& metadata,
+                       const FrameEventMap& frame_events,
+                       const PacketEventMap& packet_events,
+                       const int max_output_bytes,
+                       char* output,
+                       int* output_bytes) {
+  base::BigEndianWriter writer(output, max_output_bytes);
 
   int proto_size = metadata.ByteSize();
   if (!writer.WriteU16(proto_size))
@@ -55,6 +53,7 @@ bool LogSerializer::SerializeEventsForStream(
        it != frame_events.end();
        ++it) {
     proto_size = it->second->ByteSize();
+
     // Write size of the proto, then write the proto.
     if (!writer.WriteU16(proto_size))
       return false;
@@ -69,6 +68,7 @@ bool LogSerializer::SerializeEventsForStream(
        it != packet_events.end();
        ++it) {
     proto_size = it->second->ByteSize();
+
     // Write size of the proto, then write the proto.
     if (!writer.WriteU16(proto_size))
       return false;
@@ -78,17 +78,86 @@ bool LogSerializer::SerializeEventsForStream(
       return false;
   }
 
-  index_so_far_ = serialized_log_so_far_->size() - writer.remaining();
+  *output_bytes = max_output_bytes - writer.remaining();
   return true;
 }
 
-scoped_ptr<std::string> LogSerializer::GetSerializedLogAndReset() {
-  serialized_log_so_far_->resize(index_so_far_);
-  index_so_far_ = 0;
-  return serialized_log_so_far_.Pass();
+bool Compress(char* uncompressed_buffer,
+              int uncompressed_bytes,
+              int max_output_bytes,
+              char* output,
+              int* output_bytes) {
+  z_stream stream = {0};
+  int result = deflateInit2(&stream,
+                            Z_DEFAULT_COMPRESSION,
+                            Z_DEFLATED,
+                            // 16 is added to produce a gzip header + trailer.
+                            MAX_WBITS + 16,
+                            8,  // memLevel = 8 is default.
+                            Z_DEFAULT_STRATEGY);
+  DCHECK_EQ(Z_OK, result);
+
+  stream.next_in = reinterpret_cast<uint8*>(uncompressed_buffer);
+  stream.avail_in = uncompressed_bytes;
+  stream.next_out = reinterpret_cast<uint8*>(output);
+  stream.avail_out = max_output_bytes;
+
+  // Do a one-shot compression. This will return Z_STREAM_END only if |output|
+  // is large enough to hold all compressed data.
+  result = deflate(&stream, Z_FINISH);
+  bool success = (result == Z_STREAM_END);
+
+  if (!success)
+    DVLOG(2) << "deflate() failed. Result: " << result;
+
+  result = deflateEnd(&stream);
+  DCHECK(result == Z_OK || result == Z_DATA_ERROR);
+
+  if (success)
+    *output_bytes = max_output_bytes - stream.avail_out;
+
+  return success;
 }
 
-int LogSerializer::GetSerializedLength() const { return index_so_far_; }
+}  // namespace
+
+bool SerializeEvents(const LogMetadata& log_metadata,
+                     const FrameEventMap& frame_events,
+                     const PacketEventMap& packet_events,
+                     bool compress,
+                     int max_output_bytes,
+                     char* output,
+                     int* output_bytes) {
+  DCHECK_GT(max_output_bytes, 0);
+  DCHECK(output);
+  DCHECK(output_bytes);
+
+  if (compress) {
+    // Allocate a reasonably large temp buffer to hold uncompressed data.
+    scoped_ptr<char[]> uncompressed_buffer(new char[kMaxUncompressedBytes]);
+    int uncompressed_bytes;
+    bool success = DoSerializeEvents(log_metadata,
+                                     frame_events,
+                                     packet_events,
+                                     kMaxUncompressedBytes,
+                                     uncompressed_buffer.get(),
+                                     &uncompressed_bytes);
+    if (!success)
+      return false;
+    return Compress(uncompressed_buffer.get(),
+                    uncompressed_bytes,
+                    max_output_bytes,
+                    output,
+                    output_bytes);
+  } else {
+    return DoSerializeEvents(log_metadata,
+                             frame_events,
+                             packet_events,
+                             max_output_bytes,
+                             output,
+                             output_bytes);
+  }
+}
 
 }  // namespace cast
 }  // namespace media

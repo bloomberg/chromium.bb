@@ -8,22 +8,26 @@
 #include <utility>
 
 #include "base/big_endian.h"
+#include "third_party/zlib/zlib.h"
 
+using media::cast::FrameEventMap;
+using media::cast::PacketEventMap;
+using media::cast::RtpTimestamp;
 using media::cast::proto::AggregatedFrameEvent;
 using media::cast::proto::AggregatedPacketEvent;
+using media::cast::proto::LogMetadata;
 
-namespace media {
-namespace cast {
+namespace {
 
-bool DeserializeEvents(const std::string& data,
-                       media::cast::proto::LogMetadata* metadata,
-                       FrameEventMap* frame_events,
-                       PacketEventMap* packet_events) {
-  DCHECK(metadata);
-  DCHECK(frame_events);
-  DCHECK(packet_events);
+// Use 30MB of temp buffer to hold uncompressed data if |compress| is true.
+const int kMaxUncompressedBytes = 30 * 1000 * 1000;
 
-  base::BigEndianReader reader(&data[0], data.size());
+bool DoDeserializeEvents(char* data,
+                         int data_bytes,
+                         LogMetadata* metadata,
+                         FrameEventMap* frame_events,
+                         PacketEventMap* packet_events) {
+  base::BigEndianReader reader(data, data_bytes);
 
   uint16 proto_size;
   if (!reader.ReadU16(&proto_size))
@@ -32,7 +36,6 @@ bool DeserializeEvents(const std::string& data,
     return false;
   if (!reader.Skip(proto_size))
     return false;
-
   FrameEventMap frame_event_map;
   PacketEventMap packet_event_map;
 
@@ -82,6 +85,72 @@ bool DeserializeEvents(const std::string& data,
   packet_events->swap(packet_event_map);
 
   return true;
+}
+
+bool Uncompress(char* data,
+                int data_bytes,
+                int max_uncompressed_bytes,
+                char* uncompressed,
+                int* uncompressed_bytes) {
+  z_stream stream = {0};
+  // 16 is added to read in gzip format.
+  int result = inflateInit2(&stream, MAX_WBITS + 16);
+  DCHECK_EQ(Z_OK, result);
+
+  stream.next_in = reinterpret_cast<uint8*>(data);
+  stream.avail_in = data_bytes;
+  stream.next_out = reinterpret_cast<uint8*>(uncompressed);
+  stream.avail_out = max_uncompressed_bytes;
+
+  result = inflate(&stream, Z_FINISH);
+  bool success = (result == Z_STREAM_END);
+  if (!success)
+    DVLOG(2) << "inflate() failed. Result: " << result;
+
+  result = inflateEnd(&stream);
+  DCHECK(result == Z_OK);
+
+  if (success)
+    *uncompressed_bytes = max_uncompressed_bytes - stream.avail_out;
+
+  return success;
+}
+}  // namespace
+
+namespace media {
+namespace cast {
+
+bool DeserializeEvents(char* data,
+                       int data_bytes,
+                       bool compressed,
+                       LogMetadata* log_metadata,
+                       FrameEventMap* frame_events,
+                       PacketEventMap* packet_events) {
+  DCHECK(data);
+  DCHECK_GT(data_bytes, 0);
+  DCHECK(log_metadata);
+  DCHECK(frame_events);
+  DCHECK(packet_events);
+
+  if (compressed) {
+    scoped_ptr<char[]> uncompressed(new char[kMaxUncompressedBytes]);
+    int uncompressed_bytes;
+    if (!Uncompress(data,
+                    data_bytes,
+                    kMaxUncompressedBytes,
+                    uncompressed.get(),
+                    &uncompressed_bytes))
+      return false;
+
+    return DoDeserializeEvents(uncompressed.get(),
+                               uncompressed_bytes,
+                               log_metadata,
+                               frame_events,
+                               packet_events);
+  } else {
+    return DoDeserializeEvents(
+        data, data_bytes, log_metadata, frame_events, packet_events);
+  }
 }
 
 }  // namespace cast

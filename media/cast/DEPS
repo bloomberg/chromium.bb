@@ -2,7 +2,8 @@ include_rules = [
    "+crypto",
    "+media",
    "+net",
-  "+third_party/webrtc",
   "+third_party/libyuv",
+  "+third_party/webrtc",
+  "+third_party/zlib",
   "+ui/gfx",
 ]

@@ -27,7 +27,7 @@ chrome.test.runTests([
         var audioParams = rtpStream.getSupportedParams(audioId)[0];
         var videoParams = rtpStream.getSupportedParams(videoId)[0];
         var expectEmptyLogs = function(rawEvents) {
-          chrome.test.assertEq("", rawEvents);
+          chrome.test.assertEq(0, rawEvents.byteLength);
         }
         chrome.test.assertEq(audioParams.payload.codecName, "OPUS");
         chrome.test.assertEq(videoParams.payload.codecName, "VP8");

@@ -14,6 +14,7 @@
 #include "net/base/ip_endpoint.h"
 
 namespace base {
+class BinaryValue;
 class DictionaryValue;
 class MessageLoopProxy;
 }  // namespace base
@@ -44,7 +45,7 @@ class CastSession : public base::RefCounted<CastSession> {
   typedef base::Callback<void(const scoped_refptr<
       media::cast::VideoFrameInput>&)> VideoFrameInputAvailableCallback;
   typedef base::Callback<void(const std::vector<char>&)> SendPacketCallback;
-  typedef base::Callback<void(scoped_ptr<std::string>)> EventLogsCallback;
+  typedef base::Callback<void(scoped_ptr<base::BinaryValue>)> EventLogsCallback;
   typedef base::Callback<void(scoped_ptr<base::DictionaryValue>)> StatsCallback;
 
   CastSession();

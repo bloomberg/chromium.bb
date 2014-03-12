@@ -480,7 +480,7 @@ void CastStreamingNativeHandler::GetStats(
 
 void CastStreamingNativeHandler::CallGetRawEventsCallback(
     int transport_id,
-    scoped_ptr<std::string> raw_events) {
+    scoped_ptr<base::BinaryValue> raw_events) {
   v8::Isolate* isolate = context()->isolate();
   v8::HandleScope handle_scope(isolate);
   v8::Context::Scope context_scope(context()->v8_context());
@@ -490,10 +490,9 @@ void CastStreamingNativeHandler::CallGetRawEventsCallback(
   if (it == get_raw_events_callbacks_.end())
     return;
   v8::Handle<v8::Value> callback_args[1];
-  callback_args[0] = v8::String::NewFromUtf8(isolate,
-                                             raw_events->data(),
-                                             v8::String::kNormalString,
-                                             raw_events->size());
+  scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
+  callback_args[0] =
+      converter->ToV8Value(raw_events.get(), context()->v8_context());
   context()->CallFunction(it->second->NewHandle(isolate), 1, callback_args);
   get_raw_events_callbacks_.erase(it);
 }

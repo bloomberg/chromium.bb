@@ -46,7 +46,8 @@ namespace cast {
 #define DEFAULT_VIDEO_CODEC_MAX_BITRATE "4000"
 #define DEFAULT_VIDEO_CODEC_MIN_BITRATE "1000"
 
-#define DEFAULT_LOGGING_DURATION "30"
+#define DEFAULT_LOGGING_DURATION "10"
+#define DEFAULT_COMPRESS_LOGS "1"
 
 namespace {
 static const int kAudioChannels = 2;
@@ -56,6 +57,9 @@ static const int kSoundFrequency = 1234;  // Frequency of sinusoid wave.
 // a normal video is 30 fps hence the 33 ms between frames.
 static const float kSoundVolume = 0.5f;
 static const int kFrameTimerMs = 33;
+
+// The max allowed size of serialized log.
+const int kMaxSerializedLogBytes = 10 * 1000 * 1000;
 
 // Dummy callback function that does nothing except to accept ownership of
 // |audio_bus| for destruction. This guarantees that the audio_bus is valid for
@@ -88,10 +92,28 @@ int GetLoggingDuration() {
   return input.GetIntInput();
 }
 
-std::string GetLogFileDestination() {
+std::string GetVideoLogFileDestination(bool compress) {
   test::InputBuilder input(
-      "Enter log file destination.", "./raw_events.log", INT_MIN, INT_MAX);
+      "Enter video events log file destination.",
+      compress ? "./video_events.log.gz" : "./video_events.log",
+      INT_MIN,
+      INT_MAX);
   return input.GetStringInput();
+}
+
+std::string GetAudioLogFileDestination(bool compress) {
+  test::InputBuilder input(
+      "Enter audio events log file destination.",
+      compress ? "./audio_events.log.gz" : "./audio_events.log",
+      INT_MIN,
+      INT_MAX);
+  return input.GetStringInput();
+}
+
+bool CompressLogs() {
+  test::InputBuilder input(
+      "Enter 1 to enable compression on logs.", DEFAULT_COMPRESS_LOGS, 0, 1);
+  return (1 == input.GetIntInput());
 }
 
 bool ReadFromFile() {
@@ -351,61 +373,60 @@ net::IPEndPoint CreateUDPAddress(std::string ip_str, int port) {
   return net::IPEndPoint(ip_number, port);
 }
 
+void DumpLoggingData(
+    scoped_ptr<media::cast::EncodingEventSubscriber> event_subscriber,
+    file_util::ScopedFILE log_file,
+    bool compress) {
+  media::cast::FrameEventMap frame_events;
+  media::cast::PacketEventMap packet_events;
+  media::cast::proto::LogMetadata log_metadata;
+
+  event_subscriber->GetEventsAndReset(
+      &log_metadata, &frame_events, &packet_events);
+
+  VLOG(0) << "Frame map size: " << frame_events.size();
+  VLOG(0) << "Packet map size: " << packet_events.size();
+
+  scoped_ptr<char[]> event_log(new char[media::cast::kMaxSerializedLogBytes]);
+  int event_log_bytes;
+  if (!media::cast::SerializeEvents(log_metadata,
+                                    frame_events,
+                                    packet_events,
+                                    compress,
+                                    media::cast::kMaxSerializedLogBytes,
+                                    event_log.get(),
+                                    &event_log_bytes)) {
+    VLOG(0) << "Failed to serialize events.";
+    return;
+  }
+
+  VLOG(0) << "Events serialized length: " << event_log_bytes;
+
+  int ret = fwrite(event_log.get(), 1, event_log_bytes, log_file.get());
+  if (ret != event_log_bytes)
+    VLOG(0) << "Failed to write logs to file.";
+}
+
 void WriteLogsToFileAndStopSubscribing(
     const scoped_refptr<media::cast::CastEnvironment>& cast_environment,
     scoped_ptr<media::cast::EncodingEventSubscriber> video_event_subscriber,
     scoped_ptr<media::cast::EncodingEventSubscriber> audio_event_subscriber,
-    file_util::ScopedFILE log_file) {
-  media::cast::LogSerializer serializer(media::cast::kMaxSerializedLogBytes);
-
+    file_util::ScopedFILE video_log_file,
+    file_util::ScopedFILE audio_log_file,
+    bool compress) {
   // Serialize video events.
   cast_environment->Logging()->RemoveRawEventSubscriber(
       video_event_subscriber.get());
-  media::cast::FrameEventMap frame_events;
-  media::cast::PacketEventMap packet_events;
-  media::cast::proto::LogMetadata video_log_metadata;
-  video_event_subscriber->GetEventsAndReset(
-      &video_log_metadata, &frame_events, &packet_events);
-
-  VLOG(0) << "Video frame map size: " << frame_events.size();
-  VLOG(0) << "Video packet map size: " << packet_events.size();
-
-  if (!serializer.SerializeEventsForStream(
-          video_log_metadata, frame_events, packet_events)) {
-    VLOG(1) << "Failed to serialize video events.";
-    return;
-  }
-
-  int length_so_far = serializer.GetSerializedLength();
-  VLOG(0) << "Video events serialized length: " << length_so_far;
-
-  // Serialize audio events.
-  media::cast::proto::LogMetadata audio_log_metadata;
   cast_environment->Logging()->RemoveRawEventSubscriber(
       audio_event_subscriber.get());
-  audio_event_subscriber->GetEventsAndReset(
-      &audio_log_metadata, &frame_events, &packet_events);
 
-  VLOG(0) << "Audio frame map size: " << frame_events.size();
-  VLOG(0) << "Audio packet map size: " << packet_events.size();
+  VLOG(0) << "Dumping logging data for video stream.";
+  DumpLoggingData(
+      video_event_subscriber.Pass(), video_log_file.Pass(), compress);
 
-  if (!serializer.SerializeEventsForStream(
-          audio_log_metadata, frame_events, packet_events)) {
-    VLOG(1) << "Failed to serialize audio events.";
-    return;
-  }
-
-  VLOG(0) << "Audio events serialized length: "
-          << serializer.GetSerializedLength() - length_so_far;
-
-  scoped_ptr<std::string> serialized_string =
-      serializer.GetSerializedLogAndReset();
-  VLOG(0) << "Serialized string size: " << serialized_string->size();
-
-  size_t ret = fwrite(
-      &(*serialized_string)[0], 1, serialized_string->size(), log_file.get());
-  if (ret != serialized_string->size())
-    VLOG(1) << "Failed to write logs to file.";
+  VLOG(0) << "Dumping logging data for audio stream.";
+  DumpLoggingData(
+      audio_event_subscriber.Pass(), audio_log_file.Pass(), compress);
 }
 
 }  // namespace
@@ -503,7 +524,11 @@ int main(int argc, char** argv) {
   scoped_ptr<media::cast::EncodingEventSubscriber> video_event_subscriber;
   scoped_ptr<media::cast::EncodingEventSubscriber> audio_event_subscriber;
   if (logging_duration > 0) {
-    std::string log_file_name(media::cast::GetLogFileDestination());
+    bool compress = media::cast::CompressLogs();
+    std::string video_log_file_name(
+        media::cast::GetVideoLogFileDestination(compress));
+    std::string audio_log_file_name(
+        media::cast::GetAudioLogFileDestination(compress));
     video_event_subscriber.reset(new media::cast::EncodingEventSubscriber(
         media::cast::VIDEO_EVENT, 10000));
     audio_event_subscriber.reset(new media::cast::EncodingEventSubscriber(
@@ -512,9 +537,18 @@ int main(int argc, char** argv) {
         video_event_subscriber.get());
     cast_environment->Logging()->AddRawEventSubscriber(
         audio_event_subscriber.get());
-    file_util::ScopedFILE log_file(fopen(log_file_name.c_str(), "w"));
-    if (!log_file) {
-      VLOG(1) << "Failed to open log file for writing.";
+
+    file_util::ScopedFILE video_log_file(
+        fopen(video_log_file_name.c_str(), "w"));
+    if (!video_log_file) {
+      VLOG(1) << "Failed to open video log file for writing.";
+      exit(-1);
+    }
+
+    file_util::ScopedFILE audio_log_file(
+        fopen(audio_log_file_name.c_str(), "w"));
+    if (!audio_log_file) {
+      VLOG(1) << "Failed to open audio log file for writing.";
       exit(-1);
     }
 
@@ -524,7 +558,9 @@ int main(int argc, char** argv) {
                    cast_environment,
                    base::Passed(&video_event_subscriber),
                    base::Passed(&audio_event_subscriber),
-                   base::Passed(&log_file)),
+                   base::Passed(&video_log_file),
+                   base::Passed(&audio_log_file),
+                   compress),
         base::TimeDelta::FromSeconds(logging_duration));
   }
 

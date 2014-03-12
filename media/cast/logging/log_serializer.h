@@ -13,55 +13,24 @@
 namespace media {
 namespace cast {
 
-// The max allowed size of serialized log.
-const int kMaxSerializedLogBytes = 20 * 1000 * 1000;
-
-// This class takes FrameEventMap and PacketEventMap returned from an
-// EncodingEventSubscriber and serialize them. An instance of this class
-// can take input from multiple EncodingEventSubscribers (which represents
-// different streams).
-// Usage:
-// 1. Construct a LogSerializer with a predefined maximum serialized length.
-// 2. For each set of FrameEventMap and PacketEventMap returned by
-//    EncodingEventSubscriber installed on each stream, call
-//    |SerializeEventsForStream()| along with the stream id. Check the returned
-//    value to see if serialization succeeded.
-// 3. Call |GetSerializedLogAndReset()| to get the result.
-// 4. (Optional) Call |GetSerializedLengthSoFar()| between each serialize call.
-class LogSerializer {
- public:
-  // Constructs a LogSerializer that caps size of serialized message to
-  // |max_serialized_bytes|.
-  explicit LogSerializer(const int max_serialized_bytes);
-  ~LogSerializer();
-
-  // Serialize |frame_events|, |packet_events|, and |metadata|
-  // returned from EncodingEventSubscriber.
-  //
-  // Returns |true| if serialization is successful. This function
-  // returns |false| if the serialized string will exceed |kMaxSerializedsize|.
-  //
-  // This may be called multiple times with different streams and events before
-  // calling |GetSerializedString()|.
-  //
-  // See .cc file for format specification.
-  bool SerializeEventsForStream(const media::cast::proto::LogMetadata& metadata,
-                                const FrameEventMap& frame_events,
-                                const PacketEventMap& packet_events);
-
-  // Gets a string of serialized events up to the last successful call to
-  // |SerializeEventsForStream()| and resets it.
-  scoped_ptr<std::string> GetSerializedLogAndReset();
-
-  // Returns the length of the serialized string since last
-  // successful serialization / reset.
-  int GetSerializedLength() const;
-
- private:
-  scoped_ptr<std::string> serialized_log_so_far_;
-  int index_so_far_;
-  const int max_serialized_bytes_;
-};
+// Serialize |frame_events|, |packet_events|, |log_metadata|
+// returned from EncodingEventSubscriber.
+// Result is written to |output|, which can hold |max_output_bytes| of data.
+// If |compress| is true, |output| will be set with data compresssed in
+// gzip format.
+// |output_bytes| will be set to number of bytes written.
+//
+// Returns |true| if serialization is successful. This function
+// returns |false| if the serialized string will exceed |max_output_bytes|.
+//
+// See .cc file for format specification.
+bool SerializeEvents(const media::cast::proto::LogMetadata& log_metadata,
+                     const FrameEventMap& frame_events,
+                     const PacketEventMap& packet_events,
+                     bool compress,
+                     int max_output_bytes,
+                     char* output,
+                     int* output_bytes);
 
 }  // namespace cast
 }  // namespace media
