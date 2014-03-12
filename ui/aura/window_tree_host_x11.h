@@ -127,9 +127,6 @@ class AURA_EXPORT WindowTreeHostX11 : public WindowTreeHost,
 
   ui::X11AtomCache atom_cache_;
 
-  // Touch ids of which the touch press happens at side bezel region.
-  uint32 bezel_tracking_ids_;
-
   DISALLOW_COPY_AND_ASSIGN(WindowTreeHostX11);
 };
 

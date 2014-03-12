@@ -71,15 +71,6 @@ const char* kAtomsToCache[] = {
   return target;
 }
 
-#if defined(USE_XI2_MT)
-bool IsSideBezelsEnabled() {
-  static bool side_bezels_enabled =
-      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kTouchSideBezels) != "0";
-  return side_bezels_enabled;
-}
-#endif
-
 void SelectXInput2EventsForRootWindow(XDisplay* display, ::Window root_window) {
   CHECK(ui::IsXInput2Available());
   unsigned char mask[XIMaskLen(XI_LASTEVENT)] = {};
@@ -151,19 +142,6 @@ class TouchEventCalibrate : public base::MessagePumpObserver {
   virtual ~TouchEventCalibrate() {
     base::MessageLoopForUI::current()->RemoveObserver(this);
   }
-
-#if defined(USE_XI2_MT)
-  bool IsEventOnSideBezels(
-      const base::NativeEvent& xev,
-      const gfx::Rect& bounds) {
-    if (!left_ && !right_)
-      return false;
-
-    gfx::Point location = ui::EventLocationFromNative(xev);
-    int x = location.x();
-    return x < left_ || x > bounds.width() - right_;
-  }
-#endif  // defined(USE_XI2_MT)
 
   // Modify the location of the |event|,
   // expanding it from |bounds| to (|bounds| + bezels).
@@ -273,8 +251,7 @@ WindowTreeHostX11::WindowTreeHostX11(const gfx::Rect& bounds)
       bounds_(bounds),
       is_internal_display_(false),
       touch_calibrate_(new internal::TouchEventCalibrate),
-      atom_cache_(xdisplay_, kAtomsToCache),
-      bezel_tracking_ids_(0) {
+      atom_cache_(xdisplay_, kAtomsToCache) {
   XSetWindowAttributes swa;
   memset(&swa, 0, sizeof(swa));
   swa.background_pixmap = None;
@@ -798,21 +775,6 @@ void WindowTreeHostX11::DispatchXI2Event(const base::NativeEvent& event) {
         break;
 #endif  // defined(OS_CHROMEOS)
       ui::TouchEvent touchev(xev);
-#if defined(USE_XI2_MT)
-      // Ignore touch events with touch press happening on the side bezel.
-      if (!IsSideBezelsEnabled()) {
-        uint32 tracking_id = (1 << touchev.touch_id());
-        if (type == ui::ET_TOUCH_PRESSED &&
-            touch_calibrate_->IsEventOnSideBezels(xev, bounds_))
-          bezel_tracking_ids_ |= tracking_id;
-        if (bezel_tracking_ids_ & tracking_id) {
-          if (type == ui::ET_TOUCH_CANCELLED || type == ui::ET_TOUCH_RELEASED)
-            bezel_tracking_ids_ =
-                (bezel_tracking_ids_ | tracking_id) ^ tracking_id;
-          return;
-        }
-      }
-#endif  // defined(USE_XI2_MT)
 #if defined(OS_CHROMEOS)
       if (base::SysInfo::IsRunningOnChromeOS()) {
         // X maps the touch-surface to the size of the X root-window.

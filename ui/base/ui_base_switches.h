@@ -30,7 +30,6 @@ UI_BASE_EXPORT extern const char kTouchOptimizedUI[];
 UI_BASE_EXPORT extern const char kTouchOptimizedUIAuto[];
 UI_BASE_EXPORT extern const char kTouchOptimizedUIDisabled[];
 UI_BASE_EXPORT extern const char kTouchOptimizedUIEnabled[];
-UI_BASE_EXPORT extern const char kTouchSideBezels[];
 
 #if defined(OS_ANDROID)
 UI_BASE_EXPORT extern const char kTabletUI[];

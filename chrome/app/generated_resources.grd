@@ -5953,12 +5953,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_TCP_FAST_OPEN_DESCRIPTION" desc="Description of the flag that enables TCP Fast Open.">
         Enable the option to send extra authentication information in the initial SYN packet for a previously connected client, allowing faster data send start.
       </message>
-      <message name="IDS_FLAGS_ENABLE_TOUCH_SIDE_BEZELS_NAME" desc="Name of the flag that enables touch events on the side bezels.">
-        Enable touch events on the side bezels.
-      </message>
-      <message name="IDS_FLAGS_ENABLE_TOUCH_SIDE_BEZELS_DESCRIPTION" desc="Description of the flag to enable touch events on the side bezels.">
-        Touch events from the side bezels are processed rather than thrown away.
-      </message>
       <message name="IDS_FLAGS_ENABLE_TOUCH_DRAG_DROP_NAME" desc="Name of the flag that enables touch initiated drag drop.">
         Enable touch initiated drag and drop
       </message>

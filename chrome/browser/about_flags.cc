@@ -1242,15 +1242,6 @@ const Experiment kExperiments[] = {
         switches::kScrollEndEffect, "0")
   },
   {
-    "enable-touch-side-bezels",
-    IDS_FLAGS_ENABLE_TOUCH_SIDE_BEZELS_NAME,
-    IDS_FLAGS_ENABLE_TOUCH_SIDE_BEZELS_DESCRIPTION,
-    kOsCrOS,
-    ENABLE_DISABLE_VALUE_TYPE_AND_VALUE(
-        switches::kTouchSideBezels, "1",
-        switches::kTouchSideBezels, "0")
-  },
-  {
     "enable-touch-drag-drop",
     IDS_FLAGS_ENABLE_TOUCH_DRAG_DROP_NAME,
     IDS_FLAGS_ENABLE_TOUCH_DRAG_DROP_DESCRIPTION,
