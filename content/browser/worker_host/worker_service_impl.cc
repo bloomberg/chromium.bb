@@ -11,6 +11,7 @@
 #include "base/threading/thread.h"
 #include "content/browser/devtools/worker_devtools_manager.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/browser/shared_worker/shared_worker_service_impl.h"
 #include "content/browser/worker_host/worker_message_filter.h"
 #include "content/browser/worker_host/worker_process_host.h"
 #include "content/common/view_messages.h"
@@ -228,7 +229,16 @@ void WorkerPrioritySetter::Observe(int type,
 }
 
 WorkerService* WorkerService::GetInstance() {
-  return WorkerServiceImpl::GetInstance();
+  if (EmbeddedSharedWorkerEnabled())
+    return SharedWorkerServiceImpl::GetInstance();
+  else
+    return WorkerServiceImpl::GetInstance();
+}
+
+bool WorkerService::EmbeddedSharedWorkerEnabled() {
+  static bool enabled = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableEmbeddedSharedWorker);
+  return enabled;
 }
 
 WorkerServiceImpl* WorkerServiceImpl::GetInstance() {

@@ -430,6 +430,9 @@ const char kEnableDelegatedRenderer[]       = "enable-delegated-renderer";
 // Enables restarting interrupted downloads.
 const char kEnableDownloadResumption[]      = "enable-download-resumption";
 
+// Enables running the SharedWorker inside the renderer process.
+const char kEnableEmbeddedSharedWorker[]    = "enable-embedded-shared-worker";
+
 // Enables support for Encrypted Media Extensions (e.g. MediaKeys).
 const char kEnableEncryptedMedia[] = "enable-encrypted-media";
 

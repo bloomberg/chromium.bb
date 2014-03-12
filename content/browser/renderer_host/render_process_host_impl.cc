@@ -97,6 +97,7 @@
 #include "content/browser/screen_orientation/screen_orientation_dispatcher_host.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_dispatcher_host.h"
+#include "content/browser/shared_worker/shared_worker_message_filter.h"
 #include "content/browser/speech/input_tag_speech_dispatcher_host.h"
 #include "content/browser/speech/speech_recognition_dispatcher_host.h"
 #include "content/browser/storage_partition_impl.h"
@@ -123,6 +124,7 @@
 #include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/user_metrics.h"
+#include "content/public/browser/worker_service.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/process_type.h"
@@ -756,18 +758,35 @@ void RenderProcessHostImpl::CreateMessageFilters() {
                  base::Unretained(widget_helper_.get())));
   AddFilter(message_port_message_filter_);
 
-  AddFilter(new WorkerMessageFilter(
-      GetID(),
-      resource_context,
-      WorkerStoragePartition(
-          storage_partition_impl_->GetURLRequestContext(),
-          storage_partition_impl_->GetMediaURLRequestContext(),
-          storage_partition_impl_->GetAppCacheService(),
-          storage_partition_impl_->GetQuotaManager(),
-          storage_partition_impl_->GetFileSystemContext(),
-          storage_partition_impl_->GetDatabaseTracker(),
-          storage_partition_impl_->GetIndexedDBContext()),
-      message_port_message_filter_));
+  // If "--enable-embedded-shared-worker" is set, we use
+  // SharedWorkerMessageFilter in stead of WorkerMessageFilter.
+  if (WorkerService::EmbeddedSharedWorkerEnabled()) {
+    AddFilter(new SharedWorkerMessageFilter(
+        GetID(),
+        resource_context,
+        WorkerStoragePartition(
+            storage_partition_impl_->GetURLRequestContext(),
+            storage_partition_impl_->GetMediaURLRequestContext(),
+            storage_partition_impl_->GetAppCacheService(),
+            storage_partition_impl_->GetQuotaManager(),
+            storage_partition_impl_->GetFileSystemContext(),
+            storage_partition_impl_->GetDatabaseTracker(),
+            storage_partition_impl_->GetIndexedDBContext()),
+        message_port_message_filter_));
+  } else {
+    AddFilter(new WorkerMessageFilter(
+        GetID(),
+        resource_context,
+        WorkerStoragePartition(
+            storage_partition_impl_->GetURLRequestContext(),
+            storage_partition_impl_->GetMediaURLRequestContext(),
+            storage_partition_impl_->GetAppCacheService(),
+            storage_partition_impl_->GetQuotaManager(),
+            storage_partition_impl_->GetFileSystemContext(),
+            storage_partition_impl_->GetDatabaseTracker(),
+            storage_partition_impl_->GetIndexedDBContext()),
+        message_port_message_filter_));
+  }
 
 #if defined(ENABLE_WEBRTC)
   AddFilter(new P2PSocketDispatcherHost(
