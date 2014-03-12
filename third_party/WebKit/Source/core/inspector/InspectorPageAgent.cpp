@@ -1195,7 +1195,7 @@ bool InspectorPageAgent::applyViewportStyleOverride(StyleResolver* resolver)
 
     RefPtrWillBeRawPtr<StyleSheetContents> styleSheet = StyleSheetContents::create(CSSParserContext(UASheetMode, 0));
     styleSheet->parseString(String(viewportAndroidUserAgentStyleSheet, sizeof(viewportAndroidUserAgentStyleSheet)));
-    OwnPtr<RuleSet> ruleSet = RuleSet::create();
+    OwnPtrWillBeRawPtr<RuleSet> ruleSet = RuleSet::create();
     ruleSet->addRulesFromSheet(styleSheet.get(), MediaQueryEvaluator("screen"));
     resolver->viewportStyleResolver()->collectViewportRules(ruleSet.get(), ViewportStyleResolver::UserAgentOrigin);
     return true;

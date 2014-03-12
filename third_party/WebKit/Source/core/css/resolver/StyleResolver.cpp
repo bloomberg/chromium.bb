@@ -246,7 +246,7 @@ void StyleResolver::resetRuleFeatures()
     m_needCollectFeatures = true;
 }
 
-void StyleResolver::addTreeBoundaryCrossingRules(const Vector<MinimalRuleData>& rules, ContainerNode* scope)
+void StyleResolver::addTreeBoundaryCrossingRules(const WillBeHeapVector<MinimalRuleData>& rules, ContainerNode* scope)
 {
     for (unsigned i = 0; i < rules.size(); ++i) {
         const MinimalRuleData& info = rules[i];
@@ -292,12 +292,12 @@ void StyleResolver::resetAuthorStyle(const ContainerNode* scopingNode)
     m_styleTree.remove(scopingNode);
 }
 
-static PassOwnPtr<RuleSet> makeRuleSet(const Vector<RuleFeature>& rules)
+static PassOwnPtrWillBeRawPtr<RuleSet> makeRuleSet(const Vector<RuleFeature>& rules)
 {
     size_t size = rules.size();
     if (!size)
         return nullptr;
-    OwnPtr<RuleSet> ruleSet = RuleSet::create();
+    OwnPtrWillBeRawPtr<RuleSet> ruleSet = RuleSet::create();
     for (size_t i = 0; i < size; ++i)
         ruleSet->addRule(rules[i].rule, rules[i].selectorIndex, rules[i].hasDocumentSecurityOrigin ? RuleHasDocumentSecurityOrigin : RuleHasNoSpecialState);
     return ruleSet.release();

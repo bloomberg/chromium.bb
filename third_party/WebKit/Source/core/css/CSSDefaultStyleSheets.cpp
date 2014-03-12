@@ -78,12 +78,12 @@ static PassRefPtrWillBeRawPtr<StyleSheetContents> parseUASheet(const char* chara
 }
 
 CSSDefaultStyleSheets::CSSDefaultStyleSheets()
-    : m_defaultStyle(0)
-    , m_defaultViewportStyle(0)
-    , m_defaultQuirksStyle(0)
-    , m_defaultPrintStyle(0)
-    , m_defaultViewSourceStyle(0)
-    , m_defaultXHTMLMobileProfileStyle(0)
+    : m_defaultStyle(nullptr)
+    , m_defaultViewportStyle(nullptr)
+    , m_defaultQuirksStyle(nullptr)
+    , m_defaultPrintStyle(nullptr)
+    , m_defaultViewSourceStyle(nullptr)
+    , m_defaultXHTMLMobileProfileStyle(nullptr)
     , m_defaultStyleSheet(nullptr)
     , m_viewportStyleSheet(nullptr)
     , m_quirksStyleSheet(nullptr)
@@ -91,10 +91,10 @@ CSSDefaultStyleSheets::CSSDefaultStyleSheets()
     , m_mediaControlsStyleSheet(nullptr)
     , m_fullscreenStyleSheet(nullptr)
 {
-    m_defaultStyle = RuleSet::create().leakPtr();
-    m_defaultViewportStyle = RuleSet::create().leakPtr();
-    m_defaultPrintStyle = RuleSet::create().leakPtr();
-    m_defaultQuirksStyle = RuleSet::create().leakPtr();
+    m_defaultStyle = RuleSet::create();
+    m_defaultViewportStyle = RuleSet::create();
+    m_defaultPrintStyle = RuleSet::create();
+    m_defaultQuirksStyle = RuleSet::create();
 
     // Strict-mode rules.
     String defaultRules = String(htmlUserAgentStyleSheet, sizeof(htmlUserAgentStyleSheet)) + RenderTheme::theme().extraDefaultStyleSheet();
@@ -118,23 +118,23 @@ CSSDefaultStyleSheets::CSSDefaultStyleSheets()
 RuleSet* CSSDefaultStyleSheets::defaultViewSourceStyle()
 {
     if (!m_defaultViewSourceStyle) {
-        m_defaultViewSourceStyle = RuleSet::create().leakPtr();
+        m_defaultViewSourceStyle = RuleSet::create();
         // Loaded stylesheet is leaked on purpose.
         RefPtrWillBeRawPtr<StyleSheetContents> stylesheet = parseUASheet(sourceUserAgentStyleSheet, sizeof(sourceUserAgentStyleSheet));
         m_defaultViewSourceStyle->addRulesFromSheet(stylesheet.release().leakRef(), screenEval());
     }
-    return m_defaultViewSourceStyle;
+    return m_defaultViewSourceStyle.get();
 }
 
 RuleSet* CSSDefaultStyleSheets::defaultXHTMLMobileProfileStyle()
 {
     if (!m_defaultXHTMLMobileProfileStyle) {
-        m_defaultXHTMLMobileProfileStyle = RuleSet::create().leakPtr();
+        m_defaultXHTMLMobileProfileStyle = RuleSet::create();
         // Loaded stylesheet is leaked on purpose.
         RefPtrWillBeRawPtr<StyleSheetContents> stylesheet = parseUASheet(xhtmlmpUserAgentStyleSheet, sizeof(xhtmlmpUserAgentStyleSheet));
         m_defaultXHTMLMobileProfileStyle->addRulesFromSheet(stylesheet.release().leakRef(), screenEval());
     }
-    return m_defaultXHTMLMobileProfileStyle;
+    return m_defaultXHTMLMobileProfileStyle.get();
 }
 
 void CSSDefaultStyleSheets::ensureDefaultStyleSheetsForElement(Element* element, bool& changedDefaultStyle)
@@ -172,6 +172,12 @@ void CSSDefaultStyleSheets::ensureDefaultStyleSheetsForElement(Element* element,
 
 void CSSDefaultStyleSheets::trace(Visitor* visitor)
 {
+    visitor->trace(m_defaultStyle);
+    visitor->trace(m_defaultViewportStyle);
+    visitor->trace(m_defaultQuirksStyle);
+    visitor->trace(m_defaultPrintStyle);
+    visitor->trace(m_defaultViewSourceStyle);
+    visitor->trace(m_defaultXHTMLMobileProfileStyle);
     visitor->trace(m_defaultStyleSheet);
     visitor->trace(m_viewportStyleSheet);
     visitor->trace(m_quirksStyleSheet);

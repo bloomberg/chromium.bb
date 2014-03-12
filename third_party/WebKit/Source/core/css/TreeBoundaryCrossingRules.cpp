@@ -39,7 +39,7 @@ void TreeBoundaryCrossingRules::addRule(StyleRule* rule, size_t selectorIndex, C
     if (m_treeBoundaryCrossingRuleSetMap.contains(scopingNode)) {
         m_treeBoundaryCrossingRuleSetMap.get(scopingNode)->addRule(rule, selectorIndex, addRuleFlags);
     } else {
-        OwnPtr<RuleSet> ruleSetForScope = RuleSet::create();
+        OwnPtrWillBeRawPtr<RuleSet> ruleSetForScope = RuleSet::create();
         ruleSetForScope->addRule(rule, selectorIndex, addRuleFlags);
         m_treeBoundaryCrossingRuleSetMap.add(scopingNode, ruleSetForScope.release());
         m_scopingNodes.add(scopingNode);

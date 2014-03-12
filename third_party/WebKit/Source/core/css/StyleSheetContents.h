@@ -188,7 +188,7 @@ private:
     WillBeHeapHashSet<RawPtrWillBeWeakMember<CSSStyleSheet> > m_clients;
     typedef WillBeHeapHashSet<RawPtrWillBeWeakMember<CSSStyleSheet> >::iterator ClientsIterator;
 
-    OwnPtr<RuleSet> m_ruleSet;
+    OwnPtrWillBeMember<RuleSet> m_ruleSet;
 };
 
 } // namespace

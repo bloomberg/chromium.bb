@@ -37,10 +37,10 @@ public:
 
     void ensureDefaultStyleSheetsForElement(Element*, bool& changedDefaultStyle);
 
-    RuleSet* defaultStyle() { return m_defaultStyle;}
-    RuleSet* defaultViewportStyle() { return m_defaultViewportStyle;}
-    RuleSet* defaultQuirksStyle() { return m_defaultQuirksStyle;}
-    RuleSet* defaultPrintStyle() { return m_defaultPrintStyle;}
+    RuleSet* defaultStyle() { return m_defaultStyle.get(); }
+    RuleSet* defaultViewportStyle() { return m_defaultViewportStyle.get(); }
+    RuleSet* defaultQuirksStyle() { return m_defaultQuirksStyle.get(); }
+    RuleSet* defaultPrintStyle() { return m_defaultPrintStyle.get(); }
     RuleSet* defaultViewSourceStyle();
 
     // FIXME: Remove WAP support.
@@ -58,12 +58,12 @@ public:
 private:
     CSSDefaultStyleSheets();
 
-    RuleSet* m_defaultStyle;
-    RuleSet* m_defaultViewportStyle;
-    RuleSet* m_defaultQuirksStyle;
-    RuleSet* m_defaultPrintStyle;
-    RuleSet* m_defaultViewSourceStyle;
-    RuleSet* m_defaultXHTMLMobileProfileStyle;
+    OwnPtrWillBeMember<RuleSet> m_defaultStyle;
+    OwnPtrWillBeMember<RuleSet> m_defaultViewportStyle;
+    OwnPtrWillBeMember<RuleSet> m_defaultQuirksStyle;
+    OwnPtrWillBeMember<RuleSet> m_defaultPrintStyle;
+    OwnPtrWillBeMember<RuleSet> m_defaultViewSourceStyle;
+    OwnPtrWillBeMember<RuleSet> m_defaultXHTMLMobileProfileStyle;
 
     RefPtrWillBeMember<StyleSheetContents> m_defaultStyleSheet;
     RefPtrWillBeMember<StyleSheetContents> m_viewportStyleSheet;

@@ -655,6 +655,7 @@ template<typename T, typename U> inline bool operator!=(const Persistent<T>& a, 
 #define WillBeHeapSupplementable WebCore::HeapSupplementable
 #define WillBeHeapTerminatedArray WebCore::HeapTerminatedArray
 #define WillBeHeapTerminatedArrayBuilder WebCore::HeapTerminatedArrayBuilder
+#define WillBeHeapLinkedStack WebCore::HeapLinkedStack
 
 template<typename T> PassRefPtrWillBeRawPtr<T> adoptRefWillBeNoop(T* ptr)
 {
@@ -721,6 +722,7 @@ public:
 #define WillBeHeapSupplementable WebCore::Supplementable
 #define WillBeHeapTerminatedArray WTF::TerminatedArray
 #define WillBeHeapTerminatedArrayBuilder WTF::TerminatedArrayBuilder
+#define WillBeHeapLinkedStack WTF::LinkedStack
 
 template<typename T> PassRefPtrWillBeRawPtr<T> adoptRefWillBeNoop(T* ptr) { return adoptRef(ptr); }
 template<typename T> PassRefPtrWillBeRawPtr<T> adoptRefWillBeRefCountedGarbageCollected(T* ptr) { return adoptRef(ptr); }

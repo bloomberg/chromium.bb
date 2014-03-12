@@ -627,6 +627,7 @@ void StyleSheetContents::trace(Visitor* visitor)
     visitor->trace(m_importRules);
     visitor->trace(m_childRules);
     visitor->trace(m_clients);
+    visitor->trace(m_ruleSet);
 }
 
 }

@@ -27,6 +27,8 @@
 #include "core/css/RuleFeature.h"
 #include "core/css/StyleRule.h"
 #include "core/css/resolver/MediaQueryResult.h"
+#include "heap/HeapLinkedStack.h"
+#include "heap/HeapTerminatedArray.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/LinkedStack.h"
@@ -49,7 +51,9 @@ class CSSSelector;
 class MediaQueryEvaluator;
 class StyleSheetContents;
 
-struct MinimalRuleData {
+class MinimalRuleData {
+    ALLOW_ONLY_INLINE_ALLOCATION();
+public:
     MinimalRuleData(StyleRule* rule, unsigned selectorIndex, AddRuleFlags flags)
     : m_rule(rule)
     , m_selectorIndex(selectorIndex)
@@ -57,13 +61,15 @@ struct MinimalRuleData {
     {
     }
 
-    StyleRule* m_rule;
+    void trace(Visitor*);
+
+    RawPtrWillBeMember<StyleRule> m_rule;
     unsigned m_selectorIndex;
     AddRuleFlags m_flags;
 };
 
 class RuleData {
-    WTF_MAKE_FAST_ALLOCATED;
+    ALLOW_ONLY_INLINE_ALLOCATION();
 public:
     RuleData(StyleRule*, unsigned selectorIndex, unsigned position, AddRuleFlags);
 
@@ -87,8 +93,10 @@ public:
     static const unsigned maximumIdentifierCount = 4;
     const unsigned* descendantSelectorIdentifierHashes() const { return m_descendantSelectorIdentifierHashes; }
 
+    void trace(Visitor*);
+
 private:
-    StyleRule* m_rule;
+    RawPtrWillBeMember<StyleRule> m_rule;
     unsigned m_selectorIndex : 12;
     unsigned m_isLastInArray : 1; // We store an array of RuleData objects in a primitive array.
     // This number was picked fairly arbitrarily. We can probably lower it if we need to.
@@ -115,10 +123,11 @@ struct SameSizeAsRuleData {
 
 COMPILE_ASSERT(sizeof(RuleData) == sizeof(SameSizeAsRuleData), RuleData_should_stay_small);
 
-class RuleSet {
-    WTF_MAKE_NONCOPYABLE(RuleSet); WTF_MAKE_FAST_ALLOCATED;
+class RuleSet : public NoBaseWillBeGarbageCollectedFinalized<RuleSet> {
+    WTF_MAKE_NONCOPYABLE(RuleSet);
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
-    static PassOwnPtr<RuleSet> create() { return adoptPtr(new RuleSet); }
+    static PassOwnPtrWillBeRawPtr<RuleSet> create() { return adoptPtrWillBeNoop(new RuleSet); }
 
     void addRulesFromSheet(StyleSheetContents*, const MediaQueryEvaluator&, AddRuleFlags = RuleHasNoSpecialState);
     void addStyleRule(StyleRule*, AddRuleFlags);
@@ -126,20 +135,20 @@ public:
 
     const RuleFeatureSet& features() const { return m_features; }
 
-    const TerminatedArray<RuleData>* idRules(const AtomicString& key) const { ASSERT(!m_pendingRules); return m_idRules.get(key); }
-    const TerminatedArray<RuleData>* classRules(const AtomicString& key) const { ASSERT(!m_pendingRules); return m_classRules.get(key); }
-    const TerminatedArray<RuleData>* tagRules(const AtomicString& key) const { ASSERT(!m_pendingRules); return m_tagRules.get(key); }
-    const TerminatedArray<RuleData>* shadowPseudoElementRules(const AtomicString& key) const { ASSERT(!m_pendingRules); return m_shadowPseudoElementRules.get(key); }
-    const Vector<RuleData>* linkPseudoClassRules() const { ASSERT(!m_pendingRules); return &m_linkPseudoClassRules; }
-    const Vector<RuleData>* cuePseudoRules() const { ASSERT(!m_pendingRules); return &m_cuePseudoRules; }
-    const Vector<RuleData>* focusPseudoClassRules() const { ASSERT(!m_pendingRules); return &m_focusPseudoClassRules; }
-    const Vector<RuleData>* universalRules() const { ASSERT(!m_pendingRules); return &m_universalRules; }
+    const WillBeHeapTerminatedArray<RuleData>* idRules(const AtomicString& key) const { ASSERT(!m_pendingRules); return m_idRules.get(key); }
+    const WillBeHeapTerminatedArray<RuleData>* classRules(const AtomicString& key) const { ASSERT(!m_pendingRules); return m_classRules.get(key); }
+    const WillBeHeapTerminatedArray<RuleData>* tagRules(const AtomicString& key) const { ASSERT(!m_pendingRules); return m_tagRules.get(key); }
+    const WillBeHeapTerminatedArray<RuleData>* shadowPseudoElementRules(const AtomicString& key) const { ASSERT(!m_pendingRules); return m_shadowPseudoElementRules.get(key); }
+    const WillBeHeapVector<RuleData>* linkPseudoClassRules() const { ASSERT(!m_pendingRules); return &m_linkPseudoClassRules; }
+    const WillBeHeapVector<RuleData>* cuePseudoRules() const { ASSERT(!m_pendingRules); return &m_cuePseudoRules; }
+    const WillBeHeapVector<RuleData>* focusPseudoClassRules() const { ASSERT(!m_pendingRules); return &m_focusPseudoClassRules; }
+    const WillBeHeapVector<RuleData>* universalRules() const { ASSERT(!m_pendingRules); return &m_universalRules; }
     const WillBeHeapVector<RawPtrWillBeMember<StyleRulePage> >& pageRules() const { ASSERT(!m_pendingRules); return m_pageRules; }
     const WillBeHeapVector<RawPtrWillBeMember<StyleRuleViewport> >& viewportRules() const { ASSERT(!m_pendingRules); return m_viewportRules; }
     const WillBeHeapVector<RawPtrWillBeMember<StyleRuleFontFace> >& fontFaceRules() const { return m_fontFaceRules; }
     const WillBeHeapVector<RawPtrWillBeMember<StyleRuleKeyframes> >& keyframesRules() const { return m_keyframesRules; }
-    const Vector<MinimalRuleData>& treeBoundaryCrossingRules() const { return m_treeBoundaryCrossingRules; }
-    const Vector<MinimalRuleData>& shadowDistributedRules() const { return m_shadowDistributedRules; }
+    const WillBeHeapVector<MinimalRuleData>& treeBoundaryCrossingRules() const { return m_treeBoundaryCrossingRules; }
+    const WillBeHeapVector<MinimalRuleData>& shadowDistributedRules() const { return m_shadowDistributedRules; }
     const MediaQueryResultList& viewportDependentMediaQueryResults() const { return m_viewportDependentMediaQueryResults; }
 
     unsigned ruleCount() const { return m_ruleCount; }
@@ -155,17 +164,11 @@ public:
     void show();
 #endif
 
-    struct RuleSetSelectorPair {
-        RuleSetSelectorPair(const CSSSelector* selector, PassOwnPtr<RuleSet> ruleSet) : selector(selector), ruleSet(ruleSet) { }
-        RuleSetSelectorPair(const RuleSetSelectorPair& rs) : selector(rs.selector), ruleSet(const_cast<RuleSetSelectorPair*>(&rs)->ruleSet.release()) { }
-
-        const CSSSelector* selector;
-        OwnPtr<RuleSet> ruleSet;
-    };
+    void trace(Visitor*);
 
 private:
-    typedef HashMap<AtomicString, OwnPtr<LinkedStack<RuleData> > > PendingRuleMap;
-    typedef HashMap<AtomicString, OwnPtr<TerminatedArray<RuleData> > > CompactRuleMap;
+    typedef WillBeHeapHashMap<AtomicString, OwnPtrWillBeMember<WillBeHeapLinkedStack<RuleData> > > PendingRuleMap;
+    typedef WillBeHeapHashMap<AtomicString, OwnPtrWillBeMember<WillBeHeapTerminatedArray<RuleData> > > CompactRuleMap;
 
     RuleSet()
         : m_ruleCount(0)
@@ -184,17 +187,25 @@ private:
     void compactRules();
     static void compactPendingRules(PendingRuleMap&, CompactRuleMap&);
 
-    struct PendingRuleMaps {
+    class PendingRuleMaps : public NoBaseWillBeGarbageCollected<PendingRuleMaps> {
+    public:
+        static PassOwnPtrWillBeRawPtr<PendingRuleMaps> create() { return adoptPtrWillBeNoop(new PendingRuleMaps); }
+
         PendingRuleMap idRules;
         PendingRuleMap classRules;
         PendingRuleMap tagRules;
         PendingRuleMap shadowPseudoElementRules;
+
+        void trace(Visitor*);
+
+    private:
+        PendingRuleMaps() { }
     };
 
     PendingRuleMaps* ensurePendingRules()
     {
         if (!m_pendingRules)
-            m_pendingRules = adoptPtr(new PendingRuleMaps);
+            m_pendingRules = PendingRuleMaps::create();
         return m_pendingRules.get();
     }
 
@@ -202,28 +213,42 @@ private:
     CompactRuleMap m_classRules;
     CompactRuleMap m_tagRules;
     CompactRuleMap m_shadowPseudoElementRules;
-    Vector<RuleData> m_linkPseudoClassRules;
-    Vector<RuleData> m_cuePseudoRules;
-    Vector<RuleData> m_focusPseudoClassRules;
-    Vector<RuleData> m_universalRules;
+    WillBeHeapVector<RuleData> m_linkPseudoClassRules;
+    WillBeHeapVector<RuleData> m_cuePseudoRules;
+    WillBeHeapVector<RuleData> m_focusPseudoClassRules;
+    WillBeHeapVector<RuleData> m_universalRules;
     RuleFeatureSet m_features;
-    WillBePersistentHeapVector<RawPtrWillBeMember<StyleRulePage> > m_pageRules;
-    WillBePersistentHeapVector<RawPtrWillBeMember<StyleRuleViewport> > m_viewportRules;
-    WillBePersistentHeapVector<RawPtrWillBeMember<StyleRuleFontFace> > m_fontFaceRules;
-    WillBePersistentHeapVector<RawPtrWillBeMember<StyleRuleKeyframes> > m_keyframesRules;
-    Vector<MinimalRuleData> m_treeBoundaryCrossingRules;
-    Vector<MinimalRuleData> m_shadowDistributedRules;
+    WillBeHeapVector<RawPtrWillBeMember<StyleRulePage> > m_pageRules;
+    WillBeHeapVector<RawPtrWillBeMember<StyleRuleViewport> > m_viewportRules;
+    WillBeHeapVector<RawPtrWillBeMember<StyleRuleFontFace> > m_fontFaceRules;
+    WillBeHeapVector<RawPtrWillBeMember<StyleRuleKeyframes> > m_keyframesRules;
+    WillBeHeapVector<MinimalRuleData> m_treeBoundaryCrossingRules;
+    WillBeHeapVector<MinimalRuleData> m_shadowDistributedRules;
 
     MediaQueryResultList m_viewportDependentMediaQueryResults;
 
     unsigned m_ruleCount;
-    OwnPtr<PendingRuleMaps> m_pendingRules;
+    OwnPtrWillBeMember<PendingRuleMaps> m_pendingRules;
 
 #ifndef NDEBUG
-    Vector<RuleData> m_allRules;
+    WillBeHeapVector<RuleData> m_allRules;
 #endif
 };
 
 } // namespace WebCore
+
+namespace WTF {
+
+template <> struct VectorTraits<WebCore::RuleData> : VectorTraitsBase<WebCore::RuleData> {
+    static const bool canInitializeWithMemset = true;
+    static const bool canMoveWithMemcpy = true;
+};
+
+template <> struct VectorTraits<WebCore::MinimalRuleData> : VectorTraitsBase<WebCore::MinimalRuleData> {
+    static const bool canInitializeWithMemset = true;
+    static const bool canMoveWithMemcpy = true;
+};
+
+}
 
 #endif // RuleSet_h

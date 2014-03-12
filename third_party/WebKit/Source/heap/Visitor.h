@@ -284,7 +284,8 @@ public:
     template<typename T>
     void trace(const OwnPtr<T>& t)
     {
-        t->trace(this);
+        if (t)
+            t->trace(this);
     }
 
     // This trace method is to trace a RefPtrWillBeMember when ENABLE(OILPAN)

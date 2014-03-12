@@ -40,6 +40,7 @@
 #include "core/css/StyleRuleImport.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/html/track/TextTrackCue.h"
+#include "heap/HeapTerminatedArrayBuilder.h"
 #include "platform/TraceEvent.h"
 #include "platform/weborigin/SecurityOrigin.h"
 
@@ -142,9 +143,9 @@ RuleData::RuleData(StyleRule* rule, unsigned selectorIndex, unsigned position, A
 
 void RuleSet::addToRuleSet(const AtomicString& key, PendingRuleMap& map, const RuleData& ruleData)
 {
-    OwnPtr<LinkedStack<RuleData> >& rules = map.add(key, nullptr).storedValue->value;
+    OwnPtrWillBeMember<WillBeHeapLinkedStack<RuleData> >& rules = map.add(key, nullptr).storedValue->value;
     if (!rules)
-        rules = adoptPtr(new LinkedStack<RuleData>);
+        rules = adoptPtrWillBeNoop(new WillBeHeapLinkedStack<RuleData>);
     rules->push(ruleData);
 }
 
@@ -328,10 +329,10 @@ void RuleSet::compactPendingRules(PendingRuleMap& pendingMap, CompactRuleMap& co
 {
     PendingRuleMap::iterator end = pendingMap.end();
     for (PendingRuleMap::iterator it = pendingMap.begin(); it != end; ++it) {
-        OwnPtr<LinkedStack<RuleData> > pendingRules = it->value.release();
+        OwnPtrWillBeRawPtr<WillBeHeapLinkedStack<RuleData> > pendingRules = it->value.release();
         CompactRuleMap::ValueType* compactRules = compactMap.add(it->key, nullptr).storedValue;
 
-        TerminatedArrayBuilder<RuleData> builder(compactRules->value.release());
+        WillBeHeapTerminatedArrayBuilder<RuleData> builder(compactRules->value.release());
         builder.grow(pendingRules->size());
         while (!pendingRules->isEmpty()) {
             builder.append(pendingRules->peek());
@@ -345,7 +346,7 @@ void RuleSet::compactPendingRules(PendingRuleMap& pendingMap, CompactRuleMap& co
 void RuleSet::compactRules()
 {
     ASSERT(m_pendingRules);
-    OwnPtr<PendingRuleMaps> pendingRules = m_pendingRules.release();
+    OwnPtrWillBeRawPtr<PendingRuleMaps> pendingRules = m_pendingRules.release();
     compactPendingRules(pendingRules->idRules, m_idRules);
     compactPendingRules(pendingRules->classRules, m_classRules);
     compactPendingRules(pendingRules->tagRules, m_tagRules);
@@ -362,11 +363,53 @@ void RuleSet::compactRules()
     m_shadowDistributedRules.shrinkToFit();
 }
 
-#ifndef NDEBUG
+void MinimalRuleData::trace(Visitor* visitor)
+{
+    visitor->trace(m_rule);
+}
 
+void RuleData::trace(Visitor* visitor)
+{
+    visitor->trace(m_rule);
+}
+
+void RuleSet::PendingRuleMaps::trace(Visitor* visitor)
+{
+    visitor->trace(idRules);
+    visitor->trace(classRules);
+    visitor->trace(tagRules);
+    visitor->trace(shadowPseudoElementRules);
+}
+
+void RuleSet::trace(Visitor* visitor)
+{
+#if ENABLE(OILPAN)
+    visitor->trace(m_idRules);
+    visitor->trace(m_classRules);
+    visitor->trace(m_tagRules);
+    visitor->trace(m_shadowPseudoElementRules);
+    visitor->trace(m_linkPseudoClassRules);
+    visitor->trace(m_cuePseudoRules);
+    visitor->trace(m_focusPseudoClassRules);
+    visitor->trace(m_universalRules);
+    visitor->trace(m_pageRules);
+    visitor->trace(m_viewportRules);
+    visitor->trace(m_fontFaceRules);
+    visitor->trace(m_keyframesRules);
+    visitor->trace(m_treeBoundaryCrossingRules);
+    visitor->trace(m_shadowDistributedRules);
+    visitor->trace(m_viewportDependentMediaQueryResults);
+    visitor->trace(m_pendingRules);
+#ifndef NDEBUG
+    visitor->trace(m_allRules);
+#endif
+#endif
+}
+
+#ifndef NDEBUG
 void RuleSet::show()
 {
-    for (Vector<RuleData>::const_iterator it = m_allRules.begin(); it != m_allRules.end(); ++it)
+    for (WillBeHeapVector<RuleData>::const_iterator it = m_allRules.begin(); it != m_allRules.end(); ++it)
         it->selector().show();
 }
 #endif

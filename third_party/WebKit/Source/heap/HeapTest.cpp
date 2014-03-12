@@ -32,6 +32,7 @@
 
 #include "heap/Handle.h"
 #include "heap/Heap.h"
+#include "heap/HeapLinkedStack.h"
 #include "heap/HeapTerminatedArrayBuilder.h"
 #include "heap/ThreadState.h"
 #include "heap/Visitor.h"
@@ -2808,6 +2809,34 @@ TEST(HeapTest, HeapTerminatedArray)
     arr = 0;
     Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
     EXPECT_EQ(8, IntWrapper::s_destructorCalls);
+}
+
+TEST(HeapTest, HeapLinkedStack)
+{
+    HeapStats initialHeapSize;
+    clearOutOldGarbage(&initialHeapSize);
+    IntWrapper::s_destructorCalls = 0;
+
+    HeapLinkedStack<TerminatedArrayItem>* stack = new HeapLinkedStack<TerminatedArrayItem>();
+
+    const size_t stackSize = 10;
+
+    for (size_t i = 0; i < stackSize; i++)
+        stack->push(TerminatedArrayItem(IntWrapper::create(i)));
+
+    Heap::collectGarbage(ThreadState::HeapPointersOnStack);
+    EXPECT_EQ(0, IntWrapper::s_destructorCalls);
+    EXPECT_EQ(stackSize, stack->size());
+    while (!stack->isEmpty()) {
+        EXPECT_EQ(stack->size() - 1, static_cast<size_t>(stack->peek().payload()->value()));
+        stack->pop();
+    }
+
+    Persistent<HeapLinkedStack<TerminatedArrayItem> > pStack = stack;
+
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+    EXPECT_EQ(stackSize, static_cast<size_t>(IntWrapper::s_destructorCalls));
+    EXPECT_EQ(0u, pStack->size());
 }
 
 } // WebCore namespace

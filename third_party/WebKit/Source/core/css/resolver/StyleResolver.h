@@ -232,7 +232,7 @@ private:
 private:
     void initWatchedSelectorRules(const WillBeHeapVector<RefPtrWillBeMember<StyleRule> >& watchedSelectors);
 
-    void addTreeBoundaryCrossingRules(const Vector<MinimalRuleData>&, ContainerNode* scope);
+    void addTreeBoundaryCrossingRules(const WillBeHeapVector<MinimalRuleData>&, ContainerNode* scope);
 
     // FIXME: This should probably go away, folded into FontBuilder.
     void updateFont(StyleResolverState&);
@@ -292,7 +292,7 @@ private:
     MatchedPropertiesCache m_matchedPropertiesCache;
 
     OwnPtr<MediaQueryEvaluator> m_medium;
-    MediaQueryResultList m_viewportDependentMediaQueryResults;
+    WillBePersistentMediaQueryResultList m_viewportDependentMediaQueryResults;
 
     RefPtr<RenderStyle> m_rootDefaultStyle;
 
@@ -308,11 +308,11 @@ private:
     // FIXME: The entire logic of collecting features on StyleResolver, as well as transferring them
     // between various parts of machinery smells wrong. This needs to be better somehow.
     RuleFeatureSet m_features;
-    OwnPtr<RuleSet> m_siblingRuleSet;
-    OwnPtr<RuleSet> m_uncommonAttributeRuleSet;
+    OwnPtrWillBePersistent<RuleSet> m_siblingRuleSet;
+    OwnPtrWillBePersistent<RuleSet> m_uncommonAttributeRuleSet;
 
     // FIXME: watched selectors should be implemented using injected author stylesheets: http://crbug.com/316960
-    OwnPtr<RuleSet> m_watchedSelectorsRules;
+    OwnPtrWillBePersistent<RuleSet> m_watchedSelectorsRules;
     TreeBoundaryCrossingRules m_treeBoundaryCrossingRules;
 
     bool m_needCollectFeatures;

@@ -50,7 +50,7 @@ public:
 
 private:
     DocumentOrderedList m_scopingNodes;
-    typedef HashMap<const ContainerNode*, OwnPtr<RuleSet> > TreeBoundaryCrossingRuleSetMap;
+    typedef WillBePersistentHeapHashMap<const ContainerNode*, OwnPtrWillBeMember<RuleSet> > TreeBoundaryCrossingRuleSetMap;
     TreeBoundaryCrossingRuleSetMap m_treeBoundaryCrossingRuleSetMap;
 };
 
