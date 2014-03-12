@@ -2250,11 +2250,8 @@ void RenderBox::computeLogicalWidth(LogicalExtentComputedValues& computedValues)
         computedValues.m_margins.m_start = minimumValueForLength(styleToUse->marginStart(), containerLogicalWidth);
         computedValues.m_margins.m_end = minimumValueForLength(styleToUse->marginEnd(), containerLogicalWidth);
     } else {
-        LayoutUnit containerLogicalWidthForAutoMargins = containerLogicalWidth;
-        if (avoidsFloats() && cb->containsFloats())
-            containerLogicalWidthForAutoMargins = containingBlockAvailableLineWidth();
         bool hasInvertedDirection = cb->style()->isLeftToRightDirection() != style()->isLeftToRightDirection();
-        computeInlineDirectionMargins(cb, containerLogicalWidthForAutoMargins, computedValues.m_extent,
+        computeInlineDirectionMargins(cb, containerLogicalWidth, computedValues.m_extent,
             hasInvertedDirection ? computedValues.m_margins.m_end : computedValues.m_margins.m_start,
             hasInvertedDirection ? computedValues.m_margins.m_start : computedValues.m_margins.m_end);
     }
@@ -2451,31 +2448,35 @@ void RenderBox::computeInlineDirectionMargins(RenderBlock* containingBlock, Layo
             marginEndLength.setValue(0);
     }
 
+    LayoutUnit availableWidth = containerWidth;
+    if (avoidsFloats() && containingBlock->containsFloats())
+        availableWidth = containingBlockAvailableLineWidth();
+
     // Case One: The object is being centered in the containing block's available logical width.
-    if ((marginStartLength.isAuto() && marginEndLength.isAuto() && childWidth < containerWidth)
+    if ((marginStartLength.isAuto() && marginEndLength.isAuto() && childWidth < availableWidth)
         || (!marginStartLength.isAuto() && !marginEndLength.isAuto() && containingBlock->style()->textAlign() == WEBKIT_CENTER)) {
         // Other browsers center the margin box for align=center elements so we match them here.
         LayoutUnit marginStartWidth = minimumValueForLength(marginStartLength, containerWidth);
         LayoutUnit marginEndWidth = minimumValueForLength(marginEndLength, containerWidth);
-        LayoutUnit centeredMarginBoxStart = max<LayoutUnit>(0, (containerWidth - childWidth - marginStartWidth - marginEndWidth) / 2);
+        LayoutUnit centeredMarginBoxStart = max<LayoutUnit>(0, (availableWidth - childWidth - marginStartWidth - marginEndWidth) / 2);
         marginStart = centeredMarginBoxStart + marginStartWidth;
-        marginEnd = containerWidth - childWidth - marginStart + marginEndWidth;
+        marginEnd = availableWidth - childWidth - marginStart + marginEndWidth;
         return;
     }
 
     // Case Two: The object is being pushed to the start of the containing block's available logical width.
-    if (marginEndLength.isAuto() && childWidth < containerWidth) {
+    if (marginEndLength.isAuto() && childWidth < availableWidth) {
         marginStart = valueForLength(marginStartLength, containerWidth);
-        marginEnd = containerWidth - childWidth - marginStart;
+        marginEnd = availableWidth - childWidth - marginStart;
         return;
     }
 
     // Case Three: The object is being pushed to the end of the containing block's available logical width.
     bool pushToEndFromTextAlign = !marginEndLength.isAuto() && ((!containingBlockStyle->isLeftToRightDirection() && containingBlockStyle->textAlign() == WEBKIT_LEFT)
         || (containingBlockStyle->isLeftToRightDirection() && containingBlockStyle->textAlign() == WEBKIT_RIGHT));
-    if ((marginStartLength.isAuto() && childWidth < containerWidth) || pushToEndFromTextAlign) {
+    if ((marginStartLength.isAuto() && childWidth < availableWidth) || pushToEndFromTextAlign) {
         marginEnd = valueForLength(marginEndLength, containerWidth);
-        marginStart = containerWidth - childWidth - marginEnd;
+        marginStart = availableWidth - childWidth - marginEnd;
         return;
     }
 
