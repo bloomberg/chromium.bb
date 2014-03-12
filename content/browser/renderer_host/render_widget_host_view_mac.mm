@@ -818,7 +818,8 @@ void RenderWidgetHostViewMac::WasShown() {
   if (!use_core_animation_)
     [[cocoa_view_ window] disableScreenUpdatesUntilFlush];
 
-  [[cocoa_view_ layer] setNeedsDisplay];
+  [software_layer_ setNeedsDisplay];
+  [compositing_iosurface_layer_ setNeedsDisplay];
 }
 
 void RenderWidgetHostViewMac::WasHidden() {
@@ -1399,49 +1400,6 @@ void RenderWidgetHostViewMac::CompositorSwapBuffers(
 
   AddPendingLatencyInfo(latency_info);
 
-  NSWindow* window = [cocoa_view_ window];
-  if (window_number() <= 0) {
-    // There is no window to present so capturing during present won't work.
-    // We check if frame subscriber wants this frame and capture manually.
-    if (compositing_iosurface_ && frame_subscriber_) {
-      const base::TimeTicks present_time = base::TimeTicks::Now();
-      scoped_refptr<media::VideoFrame> frame;
-      RenderWidgetHostViewFrameSubscriber::DeliverFrameCallback callback;
-      if (frame_subscriber_->ShouldCaptureFrame(present_time,
-                                                &frame, &callback)) {
-        gfx::ScopedCGLSetCurrentContext scoped_set_current_context(
-            compositing_iosurface_context_->cgl_context());
-        compositing_iosurface_->SetIOSurfaceWithContextCurrent(
-            compositing_iosurface_context_, surface_handle, size,
-            surface_scale_factor);
-        compositing_iosurface_->CopyToVideoFrame(
-            gfx::Rect(size), frame,
-            base::Bind(callback, present_time));
-        return;
-      }
-    }
-
-    // TODO(shess) If the view does not have a window, or the window
-    // does not have backing, the IOSurface will log "invalid drawable"
-    // in -setView:.  It is not clear how this code is reached with such
-    // a case, so record some info into breakpad (some subset of
-    // browsers are likely to crash later for unrelated reasons).
-    // http://crbug.com/148882
-    const char* const kCrashKey = "rwhvm_window";
-    if (!window) {
-      base::debug::SetCrashKeyValue(kCrashKey, "Missing window");
-    } else {
-      std::string value =
-          base::StringPrintf("window %s delegate %s controller %s",
-              object_getClassName(window),
-              object_getClassName([window delegate]),
-              object_getClassName([window windowController]));
-      base::debug::SetCrashKeyValue(kCrashKey, value);
-    }
-
-    return;
-  }
-
   // Ensure compositing_iosurface_ and compositing_iosurface_context_ be
   // allocated.
   if (!CreateCompositedIOSurface()) {
@@ -1465,6 +1423,7 @@ void RenderWidgetHostViewMac::CompositorSwapBuffers(
   // Grab video frames now that the IOSurface has been set up. Note that this
   // will be done in an offscreen context, so it is necessary to re-set the
   // current context afterward.
+  bool frame_was_captured = false;
   if (frame_subscriber_) {
     const base::TimeTicks present_time = base::TimeTicks::Now();
     scoped_refptr<media::VideoFrame> frame;
@@ -1479,6 +1438,7 @@ void RenderWidgetHostViewMac::CompositorSwapBuffers(
           base::Bind(callback, present_time));
       DCHECK_EQ(CGLGetCurrentContext(),
                 compositing_iosurface_context_->cgl_context());
+      frame_was_captured = true;
     }
   }
 
@@ -1496,6 +1456,38 @@ void RenderWidgetHostViewMac::CompositorSwapBuffers(
   if (window_size.IsEmpty()) {
     // setNeedsDisplay will never display and we'll never ack if the window is
     // empty, so ack now and don't bother calling setNeedsDisplay below.
+    return;
+  }
+  if (window_number() <= 0) {
+    // It's normal for a backgrounded tab that is being captured to have no
+    // window but not be hidden. Immediately ack the frame, and don't try to
+    // draw it.
+    if (frame_was_captured)
+      return;
+
+    // If this frame was not captured, there is likely some sort of bug. Ack
+    // the frame and hope for the best. Because the IOSurface and layer are
+    // populated, it will likely be displayed when the view is added to a
+    // window's hierarchy.
+
+    // TODO(shess) If the view does not have a window, or the window
+    // does not have backing, the IOSurface will log "invalid drawable"
+    // in -setView:.  It is not clear how this code is reached with such
+    // a case, so record some info into breakpad (some subset of
+    // browsers are likely to crash later for unrelated reasons).
+    // http://crbug.com/148882
+    const char* const kCrashKey = "rwhvm_window";
+    NSWindow* window = [cocoa_view_ window];
+    if (!window) {
+      base::debug::SetCrashKeyValue(kCrashKey, "Missing window");
+    } else {
+      std::string value =
+          base::StringPrintf("window %s delegate %s controller %s",
+              object_getClassName(window),
+              object_getClassName([window delegate]),
+              object_getClassName([window windowController]));
+      base::debug::SetCrashKeyValue(kCrashKey, value);
+    }
     return;
   }
 
