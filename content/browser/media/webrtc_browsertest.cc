@@ -112,11 +112,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest, MAYBE_CanForwardRemoteStream720p) {
 // MSID and bundle attribute from the initial offer to verify that
 // video is playing for the call even if the initiating client don't support
 // MSID. http://tools.ietf.org/html/draft-alvestrand-rtcweb-msid-02
-#if defined(OS_WIN)
-// Disabled for win, see http://crbug.com/235089.
-#define MAYBE_CanSetupAudioAndVideoCallWithoutMsidAndBundle\
-        DISABLED_CanSetupAudioAndVideoCallWithoutMsidAndBundle
-#elif defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
 // Timing out on ARM linux, see http://crbug.com/240373
 #define MAYBE_CanSetupAudioAndVideoCallWithoutMsidAndBundle\
         DISABLED_CanSetupAudioAndVideoCallWithoutMsidAndBundle
