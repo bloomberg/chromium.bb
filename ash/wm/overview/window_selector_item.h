@@ -86,7 +86,7 @@ class WindowSelectorItem {
   gfx::Rect bounds_;
 
   // True if running SetItemBounds. This prevents recursive calls resulting from
-  // the bounds update when calling ::wm::RecreateWindowLayers to copy
+  // the bounds update when calling views::corewm::RecreateWindowLayers to copy
   // a window layer for display on another monitor.
   bool in_bounds_update_;
 

@@ -46,15 +46,15 @@ int GetDefaultSnappedWindowWidth(aura::Window* window) {
 
 // TODO(beng): replace many of these functions with the corewm versions.
 void ActivateWindow(aura::Window* window) {
-  ::wm::ActivateWindow(window);
+  views::corewm::ActivateWindow(window);
 }
 
 void DeactivateWindow(aura::Window* window) {
-  ::wm::DeactivateWindow(window);
+  views::corewm::DeactivateWindow(window);
 }
 
 bool IsActiveWindow(aura::Window* window) {
-  return ::wm::IsActiveWindow(window);
+  return views::corewm::IsActiveWindow(window);
 }
 
 aura::Window* GetActiveWindow() {
@@ -63,11 +63,11 @@ aura::Window* GetActiveWindow() {
 }
 
 aura::Window* GetActivatableWindow(aura::Window* window) {
-  return ::wm::GetActivatableWindow(window);
+  return views::corewm::GetActivatableWindow(window);
 }
 
 bool CanActivateWindow(aura::Window* window) {
-  return ::wm::CanActivateWindow(window);
+  return views::corewm::CanActivateWindow(window);
 }
 
 bool IsWindowMinimized(aura::Window* window) {
@@ -177,10 +177,10 @@ void ReparentTransientChildrenOfChild(aura::Window* child,
                                       aura::Window* old_parent,
                                       aura::Window* new_parent) {
   for (size_t i = 0;
-       i < ::wm::GetTransientChildren(child).size();
+       i < views::corewm::GetTransientChildren(child).size();
        ++i) {
     ReparentChildWithTransientChildren(
-        ::wm::GetTransientChildren(child)[i],
+        views::corewm::GetTransientChildren(child)[i],
         old_parent,
         new_parent);
   }

@@ -77,21 +77,21 @@ class NativeWebContentsModalDialogManagerViews
     widget->GetNativeWindow()->SetProperty(aura::client::kConstrainedWindowKey,
                                            true);
 
-    wm::SetWindowVisibilityAnimationType(
+    views::corewm::SetWindowVisibilityAnimationType(
         widget->GetNativeWindow(),
-        wm::WINDOW_VISIBILITY_ANIMATION_TYPE_ROTATE);
+        views::corewm::WINDOW_VISIBILITY_ANIMATION_TYPE_ROTATE);
 #endif
 
 #if defined(USE_ASH)
     gfx::NativeView parent = platform_util::GetParent(widget->GetNativeView());
-    wm::SetChildWindowVisibilityChangesAnimated(parent);
+    views::corewm::SetChildWindowVisibilityChangesAnimated(parent);
     // No animations should get performed on the window since that will re-order
     // the window stack which will then cause many problems.
     if (parent && parent->parent()) {
       parent->parent()->SetProperty(aura::client::kAnimationsDisabledKey, true);
     }
 
-    wm::SetModalParent(
+    views::corewm::SetModalParent(
         widget->GetNativeWindow(),
         platform_util::GetParent(widget->GetNativeView()));
 #endif
@@ -100,9 +100,9 @@ class NativeWebContentsModalDialogManagerViews
   virtual void ShowDialog(NativeWebContentsModalDialog dialog) OVERRIDE {
     views::Widget* widget = GetWidget(dialog);
 #if defined(USE_AURA)
-    scoped_ptr<wm::SuspendChildWindowVisibilityAnimations> suspend;
+    scoped_ptr<views::corewm::SuspendChildWindowVisibilityAnimations> suspend;
     if (shown_widgets_.find(widget) != shown_widgets_.end()) {
-      suspend.reset(new wm::SuspendChildWindowVisibilityAnimations(
+      suspend.reset(new views::corewm::SuspendChildWindowVisibilityAnimations(
           widget->GetNativeWindow()->parent()));
     }
 #endif
@@ -123,8 +123,8 @@ class NativeWebContentsModalDialogManagerViews
   virtual void HideDialog(NativeWebContentsModalDialog dialog) OVERRIDE {
     views::Widget* widget = GetWidget(dialog);
 #if defined(USE_AURA)
-    scoped_ptr<wm::SuspendChildWindowVisibilityAnimations> suspend;
-    suspend.reset(new wm::SuspendChildWindowVisibilityAnimations(
+    scoped_ptr<views::corewm::SuspendChildWindowVisibilityAnimations> suspend;
+    suspend.reset(new views::corewm::SuspendChildWindowVisibilityAnimations(
         widget->GetNativeWindow()->parent()));
 #endif
     widget->Hide();

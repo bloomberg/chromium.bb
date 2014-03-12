@@ -41,7 +41,7 @@ ExamplesBrowserMainParts::~ExamplesBrowserMainParts() {
 }
 
 void ExamplesBrowserMainParts::ToolkitInitialized() {
-  wm_state_.reset(new wm::WMState);
+  wm_state_.reset(new views::corewm::WMState);
 }
 
 void ExamplesBrowserMainParts::PreMainMessageLoopRun() {

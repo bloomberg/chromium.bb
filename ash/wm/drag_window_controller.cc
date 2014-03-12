@@ -76,7 +76,7 @@ void DragWindowController::CreateDragWidget(const gfx::Rect& bounds) {
   drag_widget_->GetNativeWindow()->set_id(kShellWindowId_PhantomWindow);
   // Show shadow for the dragging window.
   SetShadowType(drag_widget_->GetNativeWindow(),
-                ::wm::SHADOW_TYPE_RECTANGULAR);
+                views::corewm::SHADOW_TYPE_RECTANGULAR);
   SetBoundsInternal(bounds);
   drag_widget_->StackAbove(window_);
 
@@ -108,7 +108,7 @@ void DragWindowController::SetBoundsInternal(const gfx::Rect& bounds) {
 
 void DragWindowController::RecreateWindowLayers() {
   DCHECK(!layer_owner_.get());
-  layer_owner_ = ::wm::RecreateLayers(window_);
+  layer_owner_ = views::corewm::RecreateLayers(window_);
   layer_owner_->root()->set_delegate(window_->layer()->delegate());
   // Place the layer at (0, 0) of the DragWindowController's window.
   gfx::Rect layer_bounds = layer_owner_->root()->bounds();

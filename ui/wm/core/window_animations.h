@@ -24,7 +24,8 @@ class Layer;
 class LayerAnimationSequence;
 }
 
-namespace wm {
+namespace views {
+namespace corewm {
 
 // A variety of canned animations for window transitions.
 enum WindowVisibilityAnimationType {
@@ -98,6 +99,7 @@ WM_CORE_EXPORT bool AnimateWindow(aura::Window* window,
 // if the global flag disabling window animations is present.
 WM_CORE_EXPORT bool WindowAnimationsDisabled(aura::Window* window);
 
-}  // namespace wm
+}  // namespace corewm
+}  // namespace views
 
 #endif  // UI_WM_CORE_WINDOW_ANIMATIONS_H_

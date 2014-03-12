@@ -96,7 +96,7 @@ void ViewEventTestBase::Done() {
 
 void ViewEventTestBase::SetUp() {
 #if defined(USE_AURA)
-  wm_state_.reset(new wm::WMState);
+  wm_state_.reset(new views::corewm::WMState);
 #endif
 
   views::ViewsDelegate::views_delegate = &views_delegate_;

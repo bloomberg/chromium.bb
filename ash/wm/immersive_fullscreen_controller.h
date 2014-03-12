@@ -41,7 +41,7 @@ namespace ash {
 class ASH_EXPORT ImmersiveFullscreenController
     : public gfx::AnimationDelegate,
       public ui::EventHandler,
-      public ::wm::TransientWindowObserver,
+      public views::corewm::TransientWindowObserver,
       public views::FocusChangeListener,
       public views::WidgetObserver,
       public ImmersiveRevealedLock::Delegate {
@@ -143,7 +143,7 @@ class ASH_EXPORT ImmersiveFullscreenController
   virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE;
   virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
 
-  // ::wm::TransientWindowObserver overrides:
+  // views::corewm::TransientWindowObserver overrides:
   virtual void OnTransientChildAdded(aura::Window* window,
                                      aura::Window* transient) OVERRIDE;
   virtual void OnTransientChildRemoved(aura::Window* window,

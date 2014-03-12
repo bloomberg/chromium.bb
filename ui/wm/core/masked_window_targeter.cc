@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/wm/core/masked_window_targeter.h"
+#include "ui/wm/public/masked_window_targeter.h"
 
 #include "ui/aura/window.h"
 #include "ui/gfx/path.h"

@@ -665,7 +665,7 @@ TEST_F(WindowManagerTest, AdditionalFilters) {
   scoped_ptr<CustomEventHandler> f2(new CustomEventHandler);
 
   // Adds them to root window event filter.
-  ::wm::CompoundEventFilter* env_filter =
+  views::corewm::CompoundEventFilter* env_filter =
       Shell::GetInstance()->env_filter();
   env_filter->AddHandler(f1.get());
   env_filter->AddHandler(f2.get());
@@ -733,7 +733,7 @@ TEST_F(WindowManagerTest, AdditionalFilters) {
 // our internal tracking of the cursor state on ChromeOS (crbug.com/333952).
 TEST_F(WindowManagerTest, UpdateCursorVisibility) {
   aura::test::EventGenerator& generator = GetEventGenerator();
-  ::wm::CursorManager* cursor_manager =
+  views::corewm::CursorManager* cursor_manager =
       ash::Shell::GetInstance()->cursor_manager();
 
   generator.MoveMouseTo(gfx::Point(0, 0));
@@ -754,7 +754,7 @@ TEST_F(WindowManagerTest, UpdateCursorVisibility) {
 // (crbug.com/304296).
 TEST_F(WindowManagerTest, UpdateCursorVisibilityOnKeyEvent) {
   aura::test::EventGenerator& generator = GetEventGenerator();
-  ::wm::CursorManager* cursor_manager =
+  views::corewm::CursorManager* cursor_manager =
       ash::Shell::GetInstance()->cursor_manager();
 
   // Pressing a key hides the cursor but does not disable mouse events.
@@ -777,7 +777,7 @@ TEST_F(WindowManagerTest, UpdateCursorVisibilityOnKeyEvent) {
 
 TEST_F(WindowManagerTest, TestCursorClientObserver) {
   aura::test::EventGenerator& generator = GetEventGenerator();
-  ::wm::CursorManager* cursor_manager =
+  views::corewm::CursorManager* cursor_manager =
       ash::Shell::GetInstance()->cursor_manager();
 
   scoped_ptr<aura::Window> w1(CreateTestWindowInShell(

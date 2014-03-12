@@ -98,7 +98,7 @@ void ShellBrowserMainParts::PostMainMessageLoopStart() {
 }
 
 void ShellBrowserMainParts::ToolkitInitialized() {
-  wm_state_.reset(new wm::WMState);
+  wm_state_.reset(new views::corewm::WMState);
 }
 
 void ShellBrowserMainParts::PreMainMessageLoopRun() {

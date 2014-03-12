@@ -51,7 +51,7 @@ WorkspaceBackdropDelegate::~WorkspaceBackdropDelegate() {
   ui::ScopedLayerAnimationSettings settings(
       background_->GetNativeView()->layer()->GetAnimator());
   background_->Close();
-  settings.AddObserver(::wm::CreateHidingWindowAnimationObserver(
+  settings.AddObserver(views::corewm::CreateHidingWindowAnimationObserver(
       background_->GetNativeView()));
   background_->GetNativeView()->layer()->SetOpacity(0.0f);
 }

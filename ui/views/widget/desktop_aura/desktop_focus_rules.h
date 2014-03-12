@@ -9,13 +9,13 @@
 
 namespace views {
 
-class DesktopFocusRules : public wm::BaseFocusRules {
+class DesktopFocusRules : public corewm::BaseFocusRules {
  public:
   explicit DesktopFocusRules(aura::Window* content_window);
   virtual ~DesktopFocusRules();
 
  private:
-  // Overridden from wm::BaseFocusRules:
+  // Overridden from corewm::BaseFocusRules:
   virtual bool CanActivateWindow(aura::Window* window) const OVERRIDE;
   virtual bool SupportsChildActivation(aura::Window* window) const OVERRIDE;
   virtual bool IsWindowConsideredVisibleForActivation(

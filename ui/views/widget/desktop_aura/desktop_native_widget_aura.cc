@@ -243,7 +243,7 @@ class RootWindowDestructionObserver : public aura::WindowObserver {
 int DesktopNativeWidgetAura::cursor_reference_count_ = 0;
 DesktopNativeCursorManager* DesktopNativeWidgetAura::native_cursor_manager_ =
     NULL;
-wm::CursorManager* DesktopNativeWidgetAura::cursor_manager_ = NULL;
+views::corewm::CursorManager* DesktopNativeWidgetAura::cursor_manager_ = NULL;
 
 DesktopNativeWidgetAura::DesktopNativeWidgetAura(
     internal::NativeWidgetDelegate* delegate)
@@ -401,7 +401,7 @@ void DesktopNativeWidgetAura::InitNativeWidget(
   }
   content_window_->SetType(GetAuraWindowTypeForWidgetType(params.type));
   content_window_->Init(params.layer_type);
-  wm::SetShadowType(content_window_, wm::SHADOW_TYPE_NONE);
+  corewm::SetShadowType(content_window_, corewm::SHADOW_TYPE_NONE);
 
   content_window_container_ = new aura::Window(NULL);
   content_window_container_->Init(aura::WINDOW_LAYER_NOT_DRAWN);
@@ -428,7 +428,7 @@ void DesktopNativeWidgetAura::InitNativeWidget(
   // when modal windows are at the top of the Zorder.
   if (widget_type_ == Widget::InitParams::TYPE_WINDOW)
     window_modality_controller_.reset(
-        new wm::WindowModalityController(host_->window()));
+        new views::corewm::WindowModalityController(host_->window()));
 
   // |root_window_event_filter_| must be created before
   // OnWindowTreeHostCreated() is invoked.
@@ -438,7 +438,7 @@ void DesktopNativeWidgetAura::InitNativeWidget(
   //             handed way of accomplishing focus.
   // No event filter for aura::Env. Create CompoundEvnetFilter per
   // WindowEventDispatcher.
-  root_window_event_filter_ = new wm::CompoundEventFilter;
+  root_window_event_filter_ = new corewm::CompoundEventFilter;
   // Pass ownership of the filter to the root_window.
   host_->window()->SetEventFilter(root_window_event_filter_);
 
@@ -450,8 +450,8 @@ void DesktopNativeWidgetAura::InitNativeWidget(
         DesktopCursorLoaderUpdater::Create());
   }
   if (!cursor_manager_) {
-    cursor_manager_ = new wm::CursorManager(
-        scoped_ptr<wm::NativeCursorManager>(native_cursor_manager_));
+    cursor_manager_ = new views::corewm::CursorManager(
+        scoped_ptr<corewm::NativeCursorManager>(native_cursor_manager_));
   }
   native_cursor_manager_->AddHost(host());
   aura::client::SetCursorClient(host_->window(), cursor_manager_);
@@ -462,8 +462,8 @@ void DesktopNativeWidgetAura::InitNativeWidget(
 
   capture_client_.reset(new DesktopCaptureClient(host_->window()));
 
-  wm::FocusController* focus_controller =
-      new wm::FocusController(new DesktopFocusRules(content_window_));
+  corewm::FocusController* focus_controller =
+      new corewm::FocusController(new DesktopFocusRules(content_window_));
   focus_client_.reset(focus_controller);
   aura::client::SetFocusClient(host_->window(), focus_controller);
   aura::client::SetActivationClient(host_->window(), focus_controller);
@@ -505,11 +505,11 @@ void DesktopNativeWidgetAura::InitNativeWidget(
   host_->window()->AddPreTargetHandler(tooltip_controller_.get());
 
   if (params.opacity == Widget::InitParams::TRANSLUCENT_WINDOW) {
-    visibility_controller_.reset(new wm::VisibilityController);
+    visibility_controller_.reset(new views::corewm::VisibilityController);
     aura::client::SetVisibilityClient(host_->window(),
                                       visibility_controller_.get());
-    wm::SetChildWindowVisibilityChangesAnimated(host_->window());
-    wm::SetChildWindowVisibilityChangesAnimated(
+    views::corewm::SetChildWindowVisibilityChangesAnimated(host_->window());
+    views::corewm::SetChildWindowVisibilityChangesAnimated(
         content_window_container_);
   }
 
@@ -525,7 +525,7 @@ void DesktopNativeWidgetAura::InitNativeWidget(
 
   aura::client::SetActivationDelegate(content_window_, this);
 
-  shadow_controller_.reset(new wm::ShadowController(
+  shadow_controller_.reset(new corewm::ShadowController(
       aura::client::GetActivationClient(host_->window())));
 
   content_window_->SetProperty(aura::client::kCanMaximizeKey,
@@ -1173,7 +1173,7 @@ ui::EventHandler* DesktopNativeWidgetAura::GetEventHandler() {
 void DesktopNativeWidgetAura::InstallInputMethodEventFilter() {
   DCHECK(!input_method_event_filter_.get());
 
-  input_method_event_filter_.reset(new wm::InputMethodEventFilter(
+  input_method_event_filter_.reset(new corewm::InputMethodEventFilter(
       host_->GetAcceleratedWidget()));
   input_method_event_filter_->SetInputMethodPropertyInRootWindow(
       host_->window());

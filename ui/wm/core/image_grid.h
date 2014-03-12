@@ -18,7 +18,8 @@ namespace gfx {
 class Image;
 }  // namespace gfx
 
-namespace wm {
+namespace views {
+namespace corewm {
 
 // An ImageGrid is a 3x3 array of ui::Layers, each containing an image.
 //
@@ -221,6 +222,7 @@ class WM_CORE_EXPORT ImageGrid {
   DISALLOW_COPY_AND_ASSIGN(ImageGrid);
 };
 
-}  // namespace wm
+}  // namespace corewm
+}  // namespace views
 
 #endif  // UI_WM_CORE_IMAGE_GRID_H_

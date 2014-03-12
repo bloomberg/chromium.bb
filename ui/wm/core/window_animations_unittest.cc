@@ -18,7 +18,8 @@
 using aura::Window;
 using ui::Layer;
 
-namespace wm {
+namespace views {
+namespace corewm {
 
 class WindowAnimationsTest : public aura::test::AuraTestBase {
  public:
@@ -128,7 +129,7 @@ TEST_F(WindowAnimationsTest, NotifyHideCompleted) {
   NotifyHideCompletedAnimationHost animation_host;
   scoped_ptr<aura::Window> window(aura::test::CreateTestWindowWithId(0, NULL));
   aura::client::SetAnimationHost(window.get(), &animation_host);
-  wm::SetWindowVisibilityAnimationType(
+  views::corewm::SetWindowVisibilityAnimationType(
       window.get(), WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
   AnimateOnChildWindowVisibilityChanged(window.get(), true);
   EXPECT_TRUE(window->layer()->visible());
@@ -138,4 +139,5 @@ TEST_F(WindowAnimationsTest, NotifyHideCompleted) {
   EXPECT_TRUE(animation_host.hide_completed());
 }
 
-}  // namespace wm
+}  // namespace corewm
+}  // namespace views

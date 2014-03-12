@@ -79,7 +79,7 @@ class DragWindowResizerTest : public test::AshTestBase {
     transient_parent_->SetType(ui::wm::WINDOW_TYPE_NORMAL);
     transient_parent_->Init(aura::WINDOW_LAYER_NOT_DRAWN);
     ParentWindowInPrimaryRootWindow(transient_parent_.get());
-    ::wm::AddTransientChild(transient_parent_.get(), transient_child_);
+    views::corewm::AddTransientChild(transient_parent_.get(), transient_child_);
     transient_parent_->set_id(5);
 
     panel_window_.reset(new aura::Window(&delegate6_));

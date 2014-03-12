@@ -6,9 +6,10 @@
 
 #include "ui/aura/window_property.h"
 
-DECLARE_WINDOW_PROPERTY_TYPE(wm::ShadowType);
+DECLARE_WINDOW_PROPERTY_TYPE(views::corewm::ShadowType);
 
-namespace wm {
+namespace views {
+namespace corewm {
 
 void SetShadowType(aura::Window* window, ShadowType shadow_type) {
   window->SetProperty(kShadowTypeKey, shadow_type);
@@ -20,4 +21,5 @@ ShadowType GetShadowType(aura::Window* window) {
 
 DEFINE_WINDOW_PROPERTY_KEY(ShadowType, kShadowTypeKey, SHADOW_TYPE_NONE);
 
-}  // namespace wm
+}  // namespace corewm
+}  // namespace views

@@ -18,7 +18,7 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/mouse_watcher.h"
-#include "ui/wm/core/masked_window_targeter.h"
+#include "ui/wm/public/masked_window_targeter.h"
 
 namespace ash {
 

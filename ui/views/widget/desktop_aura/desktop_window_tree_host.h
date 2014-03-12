@@ -31,6 +31,7 @@ class NativeTheme;
 
 namespace views {
 namespace corewm {
+
 class Tooltip;
 }
 

@@ -22,8 +22,10 @@ namespace net {
 class NetLog;
 }
 
-namespace wm {
+namespace views {
+namespace corewm {
 class WMState;
+}
 }
 
 namespace ash {
@@ -55,7 +57,7 @@ class ShellBrowserMainParts : public content::BrowserMainParts {
   scoped_ptr<content::ShellBrowserContext> browser_context_;
   scoped_ptr<ash::shell::WindowWatcher> window_watcher_;
   ShellDelegateImpl* delegate_;  // owned by Shell
-  scoped_ptr<wm::WMState> wm_state_;
+  scoped_ptr<views::corewm::WMState> wm_state_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellBrowserMainParts);
 };

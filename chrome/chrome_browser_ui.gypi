@@ -58,7 +58,6 @@
         '../ui/resources/ui_resources.gyp:ui_resources',
         '../ui/snapshot/snapshot.gyp:snapshot',
         '../ui/ui.gyp:ui',
-        '../ui/wm/wm.gyp:wm_core',
       ],
       'include_dirs': [
         '..',

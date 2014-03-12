@@ -15,7 +15,8 @@
 #include "ui/wm/core/focus_rules.h"
 #include "ui/wm/core/window_util.h"
 
-namespace wm {
+namespace views {
+namespace corewm {
 namespace {
 
 // When a modal window is activated, we bring its entire transient parent chain
@@ -25,10 +26,10 @@ void StackTransientParentsBelowModalWindow(aura::Window* window) {
   if (window->GetProperty(aura::client::kModalKey) != ui::MODAL_TYPE_WINDOW)
     return;
 
-  aura::Window* transient_parent = wm::GetTransientParent(window);
+  aura::Window* transient_parent = views::corewm::GetTransientParent(window);
   while (transient_parent) {
     transient_parent->parent()->StackChildAtTop(transient_parent);
-    transient_parent = wm::GetTransientParent(transient_parent);
+    transient_parent = views::corewm::GetTransientParent(transient_parent);
   }
 }
 
@@ -374,4 +375,5 @@ void FocusController::WindowFocusedFromInputEvent(aura::Window* window) {
     FocusWindow(window);
 }
 
-}  // namespace wm
+}  // namespace corewm
+}  // namespace views

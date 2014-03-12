@@ -47,7 +47,7 @@ bool IsSystemKey(ui::KeyboardCode key_code) {
 bool CanConsumeSystemKeys(aura::Window* target) {
   if (!target)  // Can be NULL in tests.
     return false;
-  aura::Window* top_level = ::wm::GetToplevelWindow(target);
+  aura::Window* top_level = views::corewm::GetToplevelWindow(target);
   return top_level && wm::GetWindowState(top_level)->can_consume_system_keys();
 }
 

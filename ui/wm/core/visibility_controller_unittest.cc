@@ -14,7 +14,8 @@
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 
-namespace wm {
+namespace views {
+namespace corewm {
 
 typedef aura::test::AuraTestBase VisibilityControllerTest;
 
@@ -90,4 +91,5 @@ TEST_F(VisibilityControllerTest, AnimateTransparencyToZeroAndHideHides) {
   EXPECT_FALSE(window->IsVisible());
 }
 
-}  // namespace wm
+}  // namespace corewm
+}  // namespace views

@@ -99,7 +99,7 @@ scoped_ptr<WindowResizer> CreateWindowResizer(
     window_resizer = PanelWindowResizer::Create(window_resizer, window_state);
   if (switches::UseDockedWindows() &&
       window_resizer && window->parent() &&
-      !::wm::GetTransientParent(window) &&
+      !views::corewm::GetTransientParent(window) &&
       (window->parent()->id() == internal::kShellWindowId_DefaultContainer ||
        window->parent()->id() == internal::kShellWindowId_DockedContainer ||
        window->parent()->id() == internal::kShellWindowId_PanelContainer)) {

@@ -59,7 +59,7 @@ int main(int argc, char** argv) {
 
   {
     views::DesktopTestViewsDelegate views_delegate;
-    wm::WMState wm_state;
+    views::corewm::WMState wm_state;
 
 #if !defined(OS_CHROMEOS)
     scoped_ptr<gfx::Screen> desktop_screen(views::CreateDesktopScreen());

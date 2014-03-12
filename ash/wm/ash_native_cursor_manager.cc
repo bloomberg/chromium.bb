@@ -63,14 +63,14 @@ AshNativeCursorManager::~AshNativeCursorManager() {
 void AshNativeCursorManager::SetNativeCursorEnabled(bool enabled) {
   native_cursor_enabled_ = enabled;
 
-  ::wm::CursorManager* cursor_manager =
+  views::corewm::CursorManager* cursor_manager =
       Shell::GetInstance()->cursor_manager();
   SetCursor(cursor_manager->GetCursor(), cursor_manager);
 }
 
 void AshNativeCursorManager::SetDisplay(
     const gfx::Display& display,
-    ::wm::NativeCursorManagerDelegate* delegate) {
+    views::corewm::NativeCursorManagerDelegate* delegate) {
   if (image_cursors_->SetDisplay(display))
     SetCursor(delegate->GetCursor(), delegate);
 #if defined(OS_CHROMEOS)
@@ -81,7 +81,7 @@ void AshNativeCursorManager::SetDisplay(
 
 void AshNativeCursorManager::SetCursor(
     gfx::NativeCursor cursor,
-    ::wm::NativeCursorManagerDelegate* delegate) {
+    views::corewm::NativeCursorManagerDelegate* delegate) {
   gfx::NativeCursor new_cursor = cursor;
   if (native_cursor_enabled_) {
     image_cursors_->SetPlatformCursor(&new_cursor);
@@ -105,7 +105,7 @@ void AshNativeCursorManager::SetCursor(
 
 void AshNativeCursorManager::SetCursorSet(
     ui::CursorSetType cursor_set,
-    ::wm::NativeCursorManagerDelegate* delegate) {
+    views::corewm::NativeCursorManagerDelegate* delegate) {
   image_cursors_->SetCursorSet(cursor_set);
   delegate->CommitCursorSet(cursor_set);
 
@@ -121,7 +121,7 @@ void AshNativeCursorManager::SetCursorSet(
 
 void AshNativeCursorManager::SetScale(
     float scale,
-    ::wm::NativeCursorManagerDelegate* delegate) {
+    views::corewm::NativeCursorManagerDelegate* delegate) {
   image_cursors_->SetScale(scale);
   delegate->CommitScale(scale);
 
@@ -131,7 +131,7 @@ void AshNativeCursorManager::SetScale(
 
 void AshNativeCursorManager::SetVisibility(
     bool visible,
-    ::wm::NativeCursorManagerDelegate* delegate) {
+    views::corewm::NativeCursorManagerDelegate* delegate) {
   delegate->CommitVisibility(visible);
 
   if (visible) {
@@ -147,7 +147,7 @@ void AshNativeCursorManager::SetVisibility(
 
 void AshNativeCursorManager::SetMouseEventsEnabled(
     bool enabled,
-    ::wm::NativeCursorManagerDelegate* delegate) {
+    views::corewm::NativeCursorManagerDelegate* delegate) {
   delegate->CommitMouseEventsEnabled(enabled);
 
   if (enabled) {

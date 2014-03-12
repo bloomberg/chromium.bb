@@ -95,8 +95,8 @@ TEST_F(DesktopCaptureControllerTest, CaptureWindowInputEventTest) {
 
   scoped_ptr<Widget> widget1(new Widget());
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
-  scoped_ptr<wm::ScopedCaptureClient> scoped_capture_client(
-      new wm::ScopedCaptureClient(params.context->GetRootWindow()));
+  scoped_ptr<corewm::ScopedCaptureClient> scoped_capture_client(
+      new corewm::ScopedCaptureClient(params.context->GetRootWindow()));
   aura::client::CaptureClient* capture_client =
       scoped_capture_client->capture_client();
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;

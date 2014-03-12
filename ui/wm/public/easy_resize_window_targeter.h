@@ -2,18 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_WM_CORE_EASY_RESIZE_WINDOW_TARGETER_H_
-#define UI_WM_CORE_EASY_RESIZE_WINDOW_TARGETER_H_
+#ifndef UI_WM_PUBLIC_EASY_RESIZE_WINDOW_TARGETER_H_
+#define UI_WM_PUBLIC_EASY_RESIZE_WINDOW_TARGETER_H_
 
 #include "ui/aura/window_targeter.h"
 #include "ui/gfx/geometry/insets.h"
-#include "ui/wm/core/wm_core_export.h"
 
 namespace wm {
 
 // An EventTargeter for a container window that uses a slightly larger
 // hit-target region for easier resize.
-class WM_CORE_EXPORT EasyResizeWindowTargeter : public aura::WindowTargeter {
+class EasyResizeWindowTargeter : public aura::WindowTargeter {
  public:
   // |container| window is the owner of this targeter.
   EasyResizeWindowTargeter(aura::Window* container,
@@ -50,4 +49,4 @@ class WM_CORE_EXPORT EasyResizeWindowTargeter : public aura::WindowTargeter {
 
 }  // namespace wm
 
-#endif  // UI_WM_CORE_EASY_RESIZE_WINDOW_TARGETER_H_
+#endif  // UI_WM_PUBLIC_EASY_RESIZE_WINDOW_TARGETER_H_

@@ -45,7 +45,7 @@ WorkspaceController::WorkspaceController(aura::Window* viewport)
       event_handler_(new WorkspaceEventHandler),
       layout_manager_(new WorkspaceLayoutManager(viewport)) {
   SetWindowVisibilityAnimationTransition(
-      viewport_, ::wm::ANIMATE_NONE);
+      viewport_, views::corewm::ANIMATE_NONE);
 
   viewport_->SetLayoutManager(layout_manager_);
   viewport_->AddPreTargetHandler(event_handler_.get());

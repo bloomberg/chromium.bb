@@ -24,7 +24,7 @@
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/widget/widget.h"
-#include "ui/wm/core/easy_resize_window_targeter.h"
+#include "ui/wm/public/easy_resize_window_targeter.h"
 
 #if defined(OS_LINUX)
 #include "chrome/browser/shell_integration_linux.h"

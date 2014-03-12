@@ -14,7 +14,8 @@ using aura::test::ChildWindowIDsAsString;
 using aura::test::CreateTestWindowWithId;
 using aura::Window;
 
-namespace wm {
+namespace views {
+namespace corewm {
 
 class TransientWindowStackingClientTest : public aura::test::AuraTestBase {
  public:
@@ -212,4 +213,5 @@ TEST_F(TransientWindowStackingClientTest,
             ui::test::ChildLayerNamesAsString(*root_window()->layer()));
 }
 
-}  // namespace wm
+}  // namespace corewm
+}  // namespace views

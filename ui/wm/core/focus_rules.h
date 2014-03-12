@@ -11,7 +11,8 @@ namespace aura {
 class Window;
 }
 
-namespace wm {
+namespace views {
+namespace corewm {
 
 // Implemented by an object that establishes the rules about what can be
 // focused or activated.
@@ -61,6 +62,7 @@ class WM_CORE_EXPORT FocusRules {
       aura::Window* ignore) const = 0;
 };
 
-}  // namespace wm
+}  // namespace corewm
+}  // namespace views
 
 #endif  // UI_WM_CORE_FOCUS_RULES_H_

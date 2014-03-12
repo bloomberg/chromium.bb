@@ -16,13 +16,13 @@ namespace ui {
 class Clipboard;
 }
 
-namespace wm {
-class WMState;
-}
-
 namespace views {
 class View;
 class Widget;
+
+namespace corewm {
+class WMState;
+}
 
 class TestViewsDelegate : public ViewsDelegate {
  public:
@@ -76,7 +76,7 @@ class TestViewsDelegate : public ViewsDelegate {
  private:
   bool use_transparent_windows_;
 
-  scoped_ptr<wm::WMState> wm_state_;
+  scoped_ptr<views::corewm::WMState> wm_state_;
 
   DISALLOW_COPY_AND_ASSIGN(TestViewsDelegate);
 };

@@ -991,12 +991,12 @@ void LoginDisplayHostImpl::InitLoginWindowAndView() {
   if (login_view_->webui_visible())
     OnLoginPromptVisible();
 
-  wm::SetWindowVisibilityAnimationDuration(
+  views::corewm::SetWindowVisibilityAnimationDuration(
       login_window_->GetNativeView(),
       base::TimeDelta::FromMilliseconds(kLoginFadeoutTransitionDurationMs));
-  wm::SetWindowVisibilityAnimationTransition(
+  views::corewm::SetWindowVisibilityAnimationTransition(
       login_window_->GetNativeView(),
-      wm::ANIMATE_HIDE);
+      views::corewm::ANIMATE_HIDE);
 
   login_window_->SetContentsView(login_view_);
 

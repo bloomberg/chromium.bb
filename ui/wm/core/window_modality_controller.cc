@@ -19,7 +19,8 @@
 #include "ui/wm/core/window_animations.h"
 #include "ui/wm/core/window_util.h"
 
-namespace wm {
+namespace views {
+namespace corewm {
 
 // Transient child's modal parent.
 extern const aura::WindowProperty<aura::Window*>* const kModalParentKey;
@@ -191,4 +192,5 @@ bool WindowModalityController::ProcessLocatedEvent(aura::Window* target,
   return !!modal_transient_child;
 }
 
-}  // namespace wm
+}  // namespace corewm
+}  // namespace views

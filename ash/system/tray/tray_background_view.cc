@@ -493,13 +493,13 @@ void TrayBackgroundView::SetTrayBorder() {
 
 void TrayBackgroundView::InitializeBubbleAnimations(
     views::Widget* bubble_widget) {
-  wm::SetWindowVisibilityAnimationType(
+  views::corewm::SetWindowVisibilityAnimationType(
       bubble_widget->GetNativeWindow(),
-      wm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
-  wm::SetWindowVisibilityAnimationTransition(
+      views::corewm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
+  views::corewm::SetWindowVisibilityAnimationTransition(
       bubble_widget->GetNativeWindow(),
-      wm::ANIMATE_HIDE);
-  wm::SetWindowVisibilityAnimationDuration(
+      views::corewm::ANIMATE_HIDE);
+  views::corewm::SetWindowVisibilityAnimationDuration(
       bubble_widget->GetNativeWindow(),
       base::TimeDelta::FromMilliseconds(kAnimationDurationForPopupMS));
 }

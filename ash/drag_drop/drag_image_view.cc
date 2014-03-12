@@ -33,7 +33,7 @@ Widget* CreateDragWidget(gfx::NativeView context) {
   drag_widget->SetOpacity(0xFF);
   drag_widget->GetNativeWindow()->set_owned_by_parent(false);
   drag_widget->GetNativeWindow()->SetName("DragWidget");
-  SetShadowType(drag_widget->GetNativeView(), wm::SHADOW_TYPE_NONE);
+  SetShadowType(drag_widget->GetNativeView(), views::corewm::SHADOW_TYPE_NONE);
   return drag_widget;
 }
 }

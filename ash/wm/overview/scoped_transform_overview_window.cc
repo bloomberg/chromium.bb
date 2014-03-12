@@ -65,7 +65,7 @@ void SetTransformOnWindowAndAllTransientChildren(
   SetTransformOnWindow(window, transform, animate);
 
   aura::Window::Windows transient_children =
-      ::wm::GetTransientChildren(window);
+      views::corewm::GetTransientChildren(window);
   for (aura::Window::Windows::iterator iter = transient_children.begin();
        iter != transient_children.end(); ++iter) {
     aura::Window* transient_child = *iter;
@@ -80,7 +80,7 @@ void SetTransformOnWindowAndAllTransientChildren(
 
 aura::Window* GetModalTransientParent(aura::Window* window) {
   if (window->GetProperty(aura::client::kModalKey) == ui::MODAL_TYPE_WINDOW)
-    return ::wm::GetTransientParent(window);
+    return views::corewm::GetTransientParent(window);
   return NULL;
 }
 
@@ -239,8 +239,8 @@ void ScopedTransformOverviewWindow::SetTransformOnWindowAndTransientChildren(
     bool animate) {
   gfx::Point origin(GetBoundsInScreen().origin());
   aura::Window* window = window_;
-  while (::wm::GetTransientParent(window))
-    window = ::wm::GetTransientParent(window);
+  while (views::corewm::GetTransientParent(window))
+    window = views::corewm::GetTransientParent(window);
   for (ScopedVector<ScopedWindowCopy>::const_iterator iter =
       window_copies_.begin(); iter != window_copies_.end(); ++iter) {
     SetTransformOnWindow(

@@ -3679,7 +3679,7 @@ TEST_F(ViewTest, RecreateLayers) {
 
   {
     scoped_ptr<ui::LayerTreeOwner> cloned_owner(
-        wm::RecreateLayers(w1->GetNativeView()));
+        corewm::RecreateLayers(w1->GetNativeView()));
     w1_layer = cloned_owner->root();
 
     // The order of the layers returned by RecreateWindowLayers() should match

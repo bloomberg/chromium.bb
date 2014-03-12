@@ -25,9 +25,11 @@ class Rect;
 class Size;
 }
 
-namespace wm {
+namespace views {
+namespace corewm {
 class CompoundEventFilter;
 class InputMethodEventFilter;
+}
 }
 
 namespace wm {
@@ -51,10 +53,10 @@ class WMTestHelper : public aura::client::WindowTreeClient {
   scoped_ptr<aura::WindowTreeHost> host_;
 
   // Owned by the root Window.
-  wm::CompoundEventFilter* root_window_event_filter_;
+  views::corewm::CompoundEventFilter* root_window_event_filter_;
 
   scoped_ptr<aura::client::DefaultCaptureClient> capture_client_;
-  scoped_ptr<wm::InputMethodEventFilter> input_method_filter_;
+  scoped_ptr<views::corewm::InputMethodEventFilter> input_method_filter_;
   scoped_ptr<aura::client::DefaultActivationClient> activation_client_;
   scoped_ptr<aura::client::FocusClient> focus_client_;
 

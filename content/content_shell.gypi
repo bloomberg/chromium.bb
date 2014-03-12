@@ -55,7 +55,6 @@
         '../ui/gfx/gfx.gyp:gfx_geometry',
         '../ui/gl/gl.gyp:gl',
         '../ui/ui.gyp:ui',
-        '../ui/wm/wm.gyp:wm_core',
         '../url/url.gyp:url_lib',
         '../v8/tools/gyp/v8.gyp:v8',
         '../webkit/common/webkit_common.gyp:webkit_common',

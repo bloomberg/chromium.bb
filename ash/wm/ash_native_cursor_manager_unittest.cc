@@ -19,7 +19,7 @@
 #include "ui/base/cursor/cursor_loader_win.h"
 #endif
 
-using ::wm::CursorManager;
+using views::corewm::CursorManager;
 
 namespace ash {
 namespace test {

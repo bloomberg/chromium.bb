@@ -18,7 +18,8 @@ class EventTarget;
 class LocatedEvent;
 }
 
-namespace wm {
+namespace views {
+namespace corewm {
 
 // Sets the modal parent for the child.
 WM_CORE_EXPORT void SetModalParent(aura::Window* child, aura::Window* parent);
@@ -66,6 +67,7 @@ class WM_CORE_EXPORT WindowModalityController : public ui::EventHandler,
   DISALLOW_COPY_AND_ASSIGN(WindowModalityController);
 };
 
-}  // namespace wm
+}  // namespace corewm
+}  // namespace views
 
 #endif  // UI_WM_CORE_WINDOW_MODALITY_CONTROLLER_H_
