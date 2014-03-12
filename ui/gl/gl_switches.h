@@ -30,7 +30,6 @@ GL_EXPORT extern const char kEnableGPUServiceLogging[];
 GL_EXPORT extern const char kEnableGPUClientLogging[];
 GL_EXPORT extern const char kEnableGPUServiceTracing[];
 GL_EXPORT extern const char kGpuNoContextLost[];
-GL_EXPORT extern const char kGpuSwapDelay[];
 
 GL_EXPORT extern const char kSupportsDualGpus[];
 GL_EXPORT extern const char kGpuSwitching[];

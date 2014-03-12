@@ -256,16 +256,6 @@ void GpuProcessHostUIShim::OnResizeView(int32 surface_id,
   view->ResizeCompositingSurface(size);
 }
 
-static base::TimeDelta GetSwapDelay() {
-  CommandLine* cmd_line = CommandLine::ForCurrentProcess();
-  int delay = 0;
-  if (cmd_line->HasSwitch(switches::kGpuSwapDelay)) {
-    base::StringToInt(cmd_line->GetSwitchValueNative(
-        switches::kGpuSwapDelay).c_str(), &delay);
-  }
-  return base::TimeDelta::FromMilliseconds(delay);
-}
-
 void GpuProcessHostUIShim::OnAcceleratedSurfaceInitialized(int32 surface_id,
                                                            int32 route_id) {
   RenderWidgetHostViewPort* view =
@@ -296,10 +286,6 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceBuffersSwapped(
     return;
 
   delayed_send.Cancel();
-
-  static const base::TimeDelta swap_delay = GetSwapDelay();
-  if (swap_delay.ToInternalValue())
-    base::PlatformThread::Sleep(swap_delay);
 
   GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params view_params = params;
 

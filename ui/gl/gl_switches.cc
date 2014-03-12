@@ -49,10 +49,6 @@ const char kSwiftShaderPath[]               = "swiftshader-path";
 // context will never be lost in any situations, say, a GPU reset.
 const char kGpuNoContextLost[]              = "gpu-no-context-lost";
 
-// Add a delay in milliseconds to the gpu swap buffer completion signal.
-// Simulates a slow GPU.
-const char kGpuSwapDelay[]                  = "gpu-swap-delay";
-
 // Indicates whether the dual GPU switching is supported or not.
 const char kSupportsDualGpus[]              = "supports-dual-gpus";
 
