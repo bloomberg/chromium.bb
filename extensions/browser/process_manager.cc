@@ -16,7 +16,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/runtime/runtime_api.h"
 #include "chrome/browser/extensions/extension_host.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -39,6 +38,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/manifest_handlers/incognito_info.h"
+#include "extensions/common/one_shot_event.h"
 #include "extensions/common/switches.h"
 
 using content::BrowserContext;
@@ -594,12 +594,10 @@ void ProcessManager::CancelSuspend(const Extension* extension) {
 }
 
 void ProcessManager::OnBrowserWindowReady() {
-  ExtensionService* service = ExtensionSystem::Get(
-      GetBrowserContext())->extension_service();
-  // On Chrome OS, a login screen is implemented as a browser.
-  // This browser has no extension service.  In this case,
-  // service will be NULL.
-  if (!service || !service->is_ready())
+  // If the extension system isn't ready yet the background hosts will be
+  // created via NOTIFICATION_EXTENSIONS_READY below.
+  ExtensionSystem* system = ExtensionSystem::Get(GetBrowserContext());
+  if (!system->ready().is_signaled())
     return;
 
   CreateBackgroundHostsForProfileStartup();
