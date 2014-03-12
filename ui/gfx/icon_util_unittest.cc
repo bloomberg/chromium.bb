@@ -51,9 +51,8 @@ class IconUtilTest : public testing::Test {
 
   SkBitmap CreateBlackSkBitmap(int width, int height) {
     SkBitmap bitmap;
-    bitmap.setConfig(SkBitmap::kARGB_8888_Config, width, height);
-    bitmap.allocPixels();
-    // Setting the pixels to black.
+    bitmap.allocN32Pixels(width, height);
+    // Setting the pixels to transparent-black.
     memset(bitmap.getPixels(), 0, width * height * 4);
     return bitmap;
   }
@@ -173,23 +172,22 @@ TEST_F(IconUtilTest, TestBitmapToIconInvalidParameters) {
   // Wrong bitmap format.
   bitmap.reset(new SkBitmap);
   ASSERT_NE(bitmap.get(), static_cast<SkBitmap*>(NULL));
-  bitmap->setConfig(SkBitmap::kA8_Config, kSmallIconWidth, kSmallIconHeight);
+  bitmap->setConfig(SkImageInfo::MakeA8(kSmallIconWidth, kSmallIconHeight));
   icon = IconUtil::CreateHICONFromSkBitmap(*bitmap);
   EXPECT_EQ(icon, static_cast<HICON>(NULL));
 
   // Invalid bitmap size.
   bitmap.reset(new SkBitmap);
   ASSERT_NE(bitmap.get(), static_cast<SkBitmap*>(NULL));
-  bitmap->setConfig(SkBitmap::kARGB_8888_Config, 0, 0);
+  bitmap->setConfig(SkImageInfo::MakeN32Premul(0, 0));
   icon = IconUtil::CreateHICONFromSkBitmap(*bitmap);
   EXPECT_EQ(icon, static_cast<HICON>(NULL));
 
   // Valid bitmap configuration but no pixels allocated.
   bitmap.reset(new SkBitmap);
   ASSERT_NE(bitmap.get(), static_cast<SkBitmap*>(NULL));
-  bitmap->setConfig(SkBitmap::kARGB_8888_Config,
-                    kSmallIconWidth,
-                    kSmallIconHeight);
+  bitmap->setConfig(SkImageInfo::MakeN32Premul(kSmallIconWidth,
+                                               kSmallIconHeight));
   icon = IconUtil::CreateHICONFromSkBitmap(*bitmap);
   EXPECT_TRUE(icon == NULL);
 }
@@ -207,7 +205,7 @@ TEST_F(IconUtilTest, TestCreateIconFileInvalidParameters) {
   // Wrong bitmap format.
   bitmap.reset(new SkBitmap);
   ASSERT_NE(bitmap.get(), static_cast<SkBitmap*>(NULL));
-  bitmap->setConfig(SkBitmap::kA8_Config, kSmallIconWidth, kSmallIconHeight);
+  bitmap->setConfig(SkImageInfo::MakeA8(kSmallIconWidth, kSmallIconHeight));
   // Must allocate pixels or else ImageSkia will ignore the bitmap and just
   // return an empty image.
   bitmap->allocPixels();
@@ -221,7 +219,7 @@ TEST_F(IconUtilTest, TestCreateIconFileInvalidParameters) {
   image_family.clear();
   bitmap.reset(new SkBitmap);
   ASSERT_NE(bitmap.get(), static_cast<SkBitmap*>(NULL));
-  bitmap->setConfig(SkBitmap::kARGB_8888_Config, 0, 0);
+  bitmap->setConfig(SkImageInfo::MakeN32Premul(0, 0));
   bitmap->allocPixels();
   image_family.Add(gfx::Image::CreateFrom1xBitmap(*bitmap));
   EXPECT_FALSE(IconUtil::CreateIconFileFromImageFamily(image_family,
@@ -232,9 +230,8 @@ TEST_F(IconUtilTest, TestCreateIconFileInvalidParameters) {
   image_family.clear();
   bitmap.reset(new SkBitmap);
   ASSERT_NE(bitmap.get(), static_cast<SkBitmap*>(NULL));
-  bitmap->setConfig(SkBitmap::kARGB_8888_Config,
-                    kSmallIconWidth,
-                    kSmallIconHeight);
+  bitmap->setConfig(SkImageInfo::MakeN32Premul(kSmallIconWidth,
+                                               kSmallIconHeight));
   image_family.Add(gfx::Image::CreateFrom1xBitmap(*bitmap));
   EXPECT_FALSE(IconUtil::CreateIconFileFromImageFamily(image_family,
                                                        valid_icon_filename));
@@ -285,7 +282,7 @@ TEST_F(IconUtilTest, TestCreateSkBitmapFromHICON) {
   ASSERT_NE(bitmap.get(), static_cast<SkBitmap*>(NULL));
   EXPECT_EQ(bitmap->width(), small_icon_size.width());
   EXPECT_EQ(bitmap->height(), small_icon_size.height());
-  EXPECT_EQ(bitmap->config(), SkBitmap::kARGB_8888_Config);
+  EXPECT_EQ(bitmap->colorType(), kPMColor_SkColorType);
   ::DestroyIcon(small_icon);
 
   base::FilePath large_icon_filename = test_data_directory_.AppendASCII(
@@ -299,7 +296,7 @@ TEST_F(IconUtilTest, TestCreateSkBitmapFromHICON) {
   ASSERT_NE(bitmap.get(), static_cast<SkBitmap*>(NULL));
   EXPECT_EQ(bitmap->width(), large_icon_size.width());
   EXPECT_EQ(bitmap->height(), large_icon_size.height());
-  EXPECT_EQ(bitmap->config(), SkBitmap::kARGB_8888_Config);
+  EXPECT_EQ(bitmap->colorType(), kPMColor_SkColorType);
   ::DestroyIcon(large_icon);
 }
 

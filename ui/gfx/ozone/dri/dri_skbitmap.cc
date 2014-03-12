@@ -207,17 +207,17 @@ bool DriSkBitmap::Initialize() {
 }
 
 uint8_t DriSkBitmap::GetColorDepth() const {
-  switch (config()) {
-    case SkBitmap::kNo_Config:
-    case SkBitmap::kA8_Config:
+  switch (colorType()) {
+    case kUnknown_SkColorType:
+    case kAlpha_8_SkColorType:
       return 0;
-    case SkBitmap::kIndex8_Config:
+    case kIndex_8_SkColorType:
       return 8;
-    case SkBitmap::kRGB_565_Config:
+    case kRGB_565_SkColorType:
       return 16;
-    case SkBitmap::kARGB_4444_Config:
+    case kARGB_4444_SkColorType:
       return 12;
-    case SkBitmap::kARGB_8888_Config:
+    case kPMColor_SkColorType:
       return 24;
     default:
       NOTREACHED();

@@ -495,8 +495,7 @@ TEST_F(ImageTest, SkBitmapConversionPreservesOrientation) {
   const int width = 50;
   const int height = 50;
   SkBitmap bitmap;
-  bitmap.setConfig(SkBitmap::kARGB_8888_Config, width, height);
-  bitmap.allocPixels();
+  bitmap.allocN32Pixels(width, height);
   bitmap.eraseRGB(0, 255, 0);
 
   // Paint the upper half of the image in red (lower half is in green).
@@ -538,9 +537,7 @@ TEST_F(ImageTest, SkBitmapConversionPreservesTransparency) {
   const int width = 50;
   const int height = 50;
   SkBitmap bitmap;
-  bitmap.setConfig(SkBitmap::kARGB_8888_Config, width, height, 0,
-                   kPremul_SkAlphaType);
-  bitmap.allocPixels();
+  bitmap.allocN32Pixels(width, height);
   bitmap.eraseARGB(0, 0, 255, 0);
 
   // Paint the upper half of the image in red (lower half is transparent).
