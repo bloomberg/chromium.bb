@@ -145,6 +145,10 @@
             'mojo_bindings',
             'mojo_system',
           ],
+          'dependencies': [
+            'mojo_bindings',
+            'mojo_system',
+          ],
         },
         {
           'target_name': 'mojo_launcher',
@@ -186,6 +190,10 @@
           ],
           'includes': [ 'public/bindings/mojom_bindings_generator.gypi' ],
           'export_dependent_settings': [
+            'mojo_bindings',
+            'mojo_system',
+          ],
+          'dependencies': [
             'mojo_bindings',
             'mojo_system',
           ],

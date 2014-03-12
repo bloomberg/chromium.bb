@@ -414,9 +414,11 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../testing/gtest.gyp:gtest',
+        'mojo_bindings',
         'mojo_environment_standalone',
         'mojo_run_all_unittests',
         'mojo_service_manager',
+        'mojo_system',
         'mojo_utility',
       ],
       'includes': [ 'public/bindings/mojom_bindings_generator.gypi' ],
