@@ -175,6 +175,9 @@ class AccessibilityManager : public content::NotificationObserver,
   void NotifyAccessibilityStatusChanged(
       AccessibilityStatusEventDetails& details);
 
+  // Notify accessibility when locale changes occur.
+  void OnLocaleChanged();
+
  protected:
   AccessibilityManager();
   virtual ~AccessibilityManager();
@@ -195,7 +198,6 @@ class AccessibilityManager : public content::NotificationObserver,
   void UpdateAutoclickFromPref();
   void UpdateAutoclickDelayFromPref();
   void UpdateVirtualKeyboardFromPref();
-  void LocalePrefChanged();
 
   void CheckBrailleState();
   void ReceiveBrailleDisplayState(

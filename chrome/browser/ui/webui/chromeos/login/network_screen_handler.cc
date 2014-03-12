@@ -17,6 +17,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/base/locale_util.h"
 #include "chrome/browser/chromeos/idle_detector.h"
@@ -252,6 +253,8 @@ void NetworkScreenHandler::OnLanguageChangedCallback(
 
   // Buttons are recreated, updated "Continue" button state.
   self->EnableContinue(self->is_continue_enabled_);
+
+  AccessibilityManager::Get()->OnLocaleChanged();
 }
 
 void NetworkScreenHandler::HandleOnLanguageChanged(const std::string& locale) {

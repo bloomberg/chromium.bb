@@ -628,7 +628,7 @@ void AccessibilityManager::UpdateHighContrastFromPref() {
 #endif
 }
 
-void AccessibilityManager::LocalePrefChanged() {
+void AccessibilityManager::OnLocaleChanged() {
   if (!profile_)
     return;
 
@@ -795,7 +795,7 @@ void AccessibilityManager::SetProfile(Profile* profile) {
     local_state_pref_change_registrar_->Init(g_browser_process->local_state());
     local_state_pref_change_registrar_->Add(
         prefs::kApplicationLocale,
-        base::Bind(&AccessibilityManager::LocalePrefChanged,
+        base::Bind(&AccessibilityManager::OnLocaleChanged,
                    base::Unretained(this)));
 
     content::BrowserAccessibilityState::GetInstance()->AddHistogramCallback(
