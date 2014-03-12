@@ -102,10 +102,6 @@ const char kDisableAcceleratedOverflowScroll[] =
 const char kDisableLayerSquashing[] =
     "disable-layer-squashing";
 
-// Disable accelerated compositing for scrollable frames.
-const char kDisableAcceleratedScrollableFrames[] =
-     "disable-accelerated-scrollable-frames";
-
 // Disables GPU accelerated video display.
 const char kDisableAcceleratedVideo[]       = "disable-accelerated-video";
 
@@ -126,10 +122,6 @@ const char kDisableBackingStoreLimit[]      = "disable-backing-store-limit";
 // Disable browser plugin compositing experiment.
 const char kDisableBrowserPluginCompositing[] =
     "disable-browser-plugin-compositing";
-
-// Disable accelerated scrolling by the compositor for frames.
-const char kDisableCompositedScrollingForFrames[] =
-     "disable-composited-scrolling-for-frames";
 
 // See comment for kEnableCompositingForFixedPosition.
 const char kDisableCompositingForFixedPosition[] =
@@ -374,11 +366,6 @@ const char kEnableLCDText[]                 = "enable-lcd-text";
 const char kEnableLayerSquashing[] =
     "enable-layer-squashing";
 
-// Enables accelerated compositing for scrollable frames for accelerated
-// scrolling for them. Requires kForceCompositingMode.
-const char kEnableAcceleratedScrollableFrames[] =
-     "enable-accelerated-scrollable-frames";
-
 // Turns on extremely verbose logging of accessibility events.
 const char kEnableAccessibilityLogging[]    = "enable-accessibility-logging";
 
@@ -392,11 +379,6 @@ const char kEnableBrowserPluginForAllViewTypes[] =
 // Enables Drag and Drop into and out of Browser Plugin.
 // kEnableBrowserPluginGuestViews must also be set at this time.
 const char kEnableBrowserPluginDragDrop[]   = "enable-browser-plugin-drag-drop";
-
-// Enables accelerated scrolling by the compositor for frames. Requires
-// kForceCompositingMode and kEnableAcceleratedScrollableFrames.
-const char kEnableCompositedScrollingForFrames[] =
-     "enable-composited-scrolling-for-frames";
 
 // Enable the creation of compositing layers for fixed position
 // elements. Three options are needed to support four possible scenarios:

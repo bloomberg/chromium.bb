@@ -453,14 +453,6 @@ static bool ShouldUseAcceleratedCompositingForOverflowScroll(
 
 static bool ShouldUseAcceleratedCompositingForScrollableFrames(
     float device_scale_factor) {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-
-  if (command_line.HasSwitch(switches::kDisableAcceleratedScrollableFrames))
-    return false;
-
-  if (command_line.HasSwitch(switches::kEnableAcceleratedScrollableFrames))
-    return true;
-
   if (RenderThreadImpl::current() &&
       !RenderThreadImpl::current()->is_lcd_text_enabled())
     return true;
@@ -470,14 +462,6 @@ static bool ShouldUseAcceleratedCompositingForScrollableFrames(
 
 static bool ShouldUseCompositedScrollingForFrames(
     float device_scale_factor) {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-
-  if (command_line.HasSwitch(switches::kDisableCompositedScrollingForFrames))
-    return false;
-
-  if (command_line.HasSwitch(switches::kEnableCompositedScrollingForFrames))
-    return true;
-
   if (RenderThreadImpl::current() &&
       !RenderThreadImpl::current()->is_lcd_text_enabled())
     return true;
