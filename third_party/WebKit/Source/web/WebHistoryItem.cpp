@@ -96,15 +96,6 @@ void WebHistoryItem::setURLString(const WebString& url)
     m_private->setURLString(KURL(ParsedURLString, url).string());
 }
 
-WebString WebHistoryItem::originalURLString() const
-{
-    return WebString();
-}
-
-void WebHistoryItem::setOriginalURLString(const WebString&)
-{
-}
-
 WebString WebHistoryItem::referrer() const
 {
     return m_private->referrer().referrer;
@@ -189,15 +180,6 @@ void WebHistoryItem::setDocumentSequenceNumber(long long documentSequenceNumber)
 {
     ensureMutable();
     m_private->setDocumentSequenceNumber(documentSequenceNumber);
-}
-
-long long WebHistoryItem::targetFrameID() const
-{
-    return 0;
-}
-
-void WebHistoryItem::setTargetFrameID(long long)
-{
 }
 
 WebSerializedScriptValue WebHistoryItem::stateObject() const

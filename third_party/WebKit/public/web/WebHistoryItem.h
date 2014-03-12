@@ -70,9 +70,6 @@ public:
     BLINK_EXPORT WebString urlString() const;
     BLINK_EXPORT void setURLString(const WebString&);
 
-    BLINK_EXPORT WebString originalURLString() const;
-    BLINK_EXPORT void setOriginalURLString(const WebString&);
-
     BLINK_EXPORT WebString referrer() const;
     BLINK_EXPORT WebReferrerPolicy referrerPolicy() const;
     BLINK_EXPORT void setReferrer(const WebString&, WebReferrerPolicy);
@@ -94,9 +91,6 @@ public:
 
     BLINK_EXPORT long long documentSequenceNumber() const;
     BLINK_EXPORT void setDocumentSequenceNumber(long long);
-
-    BLINK_EXPORT long long targetFrameID() const;
-    BLINK_EXPORT void setTargetFrameID(long long);
 
     BLINK_EXPORT WebSerializedScriptValue stateObject() const;
     BLINK_EXPORT void setStateObject(const WebSerializedScriptValue&);
