@@ -550,12 +550,37 @@ ssl3_GetDigestInfoPrefix(SECOidTag hashAlg,
     return SECSuccess;
 }
 
+/* Given the length of a raw DSA signature (consisting of two integers
+ * r and s), returns the maximum length of the DER encoding of the
+ * following structure:
+ *
+ *    Dss-Sig-Value ::= SEQUENCE {
+ *        r INTEGER,
+ *        s INTEGER
+ *    }
+ */
+static unsigned int
+ssl3_DSAMaxDerEncodedLength(unsigned int rawDsaLen)
+{
+    /* The length of one INTEGER. */
+    unsigned int integerDerLen = rawDsaLen/2 +  /* the integer itself */
+            1 +  /* additional zero byte if high bit is 1 */
+            SEC_ASN1LengthLength(rawDsaLen/2 + 1) +  /* length */
+            1;  /* INTEGER tag */
+
+    /* The length of two INTEGERs in a SEQUENCE */
+    return 2 * integerDerLen +  /* two INTEGERs */
+            SEC_ASN1LengthLength(2 * integerDerLen) +  /* length */
+            1;  /* SEQUENCE tag */
+}
+
 SECStatus
 ssl3_PlatformSignHashes(SSL3Hashes *hash, PlatformKey key, SECItem *buf,
                         PRBool isTLS, KeyType keyType)
 {
     SECStatus       rv                  = SECFailure;
-    PRBool          doDerEncode         = PR_FALSE;
+    PRBool          doDerDecode         = PR_FALSE;
+    unsigned int    rawDsaLen;
     unsigned int    signatureLen;
     OSStatus        status              = noErr;
     CSSM_CSP_HANDLE cspHandle           = 0;
@@ -585,26 +610,13 @@ ssl3_PlatformSignHashes(SSL3Hashes *hash, PlatformKey key, SECItem *buf,
         goto done;
     }
 
-    /* SecKeyGetBlockSize wasn't addeded until OS X 10.6 - but the
-     * needed information is readily available on the key itself.
-     */
-    signatureLen = (cssmKey->KeyHeader.LogicalKeySizeInBits + 7) / 8;
-
-    if (signatureLen == 0) {
-        PORT_SetError(SEC_ERROR_INVALID_KEY);
-        goto done;
-    }
-
-    buf->data = (unsigned char *)PORT_Alloc(signatureLen);
-    if (!buf->data)
-        goto done;    /* error code was set. */
-
     sigAlg = cssmKey->KeyHeader.AlgorithmId;
     digestAlg = CSSM_ALGID_NONE;
 
     switch (keyType) {
         case rsaKey:
             PORT_Assert(sigAlg == CSSM_ALGID_RSA);
+            signatureLen = (cssmKey->KeyHeader.LogicalKeySizeInBits + 7) / 8;
             if (ssl3_GetDigestInfoPrefix(hash->hashAlg, &prefix, &prefixLen) !=
                 SECSuccess) {
                 goto done;
@@ -620,13 +632,29 @@ ssl3_PlatformSignHashes(SSL3Hashes *hash, PlatformKey key, SECItem *buf,
             break;
         case dsaKey:
         case ecKey:
+            /* SSL3 DSA signatures are raw, not DER-encoded. CSSM gives back
+             * DER-encoded signatures, so they must be decoded. */
+            doDerDecode = (keyType == dsaKey) && !isTLS;
+
+            /* Compute the maximum size of a DER-encoded signature: */
             if (keyType == ecKey) {
                 PORT_Assert(sigAlg == CSSM_ALGID_ECDSA);
-                doDerEncode = PR_TRUE;
+                /* LogicalKeySizeInBits is the size of an EC public key. But an
+                 * ECDSA signature length depends on the size of the base
+                 * point's order. For P-256, P-384, and P-521, these two sizes
+                 * are the same. */
+                rawDsaLen =
+                    (cssmKey->KeyHeader.LogicalKeySizeInBits + 7) / 8 * 2;
             } else {
+                /* TODO(davidben): Get the size of the subprime out of CSSM. For
+                 * now, assume 160; Apple's implementation hardcodes it. */
                 PORT_Assert(sigAlg == CSSM_ALGID_DSA);
-                doDerEncode = isTLS;
+                rawDsaLen = 2 * (160 / 8);
             }
+            signatureLen = ssl3_DSAMaxDerEncodedLength(rawDsaLen);
+
+            /* SEC_OID_UNKNOWN is used to specify the MD5/SHA1 concatenated
+             * hash.  In that case, we use just the SHA1 part. */
             if (hash->hashAlg == SEC_OID_UNKNOWN) {
                 hashData.Data   = hash->u.s.sha;
                 hashData.Length = sizeof(hash->u.s.sha);
@@ -640,6 +668,15 @@ ssl3_PlatformSignHashes(SSL3Hashes *hash, PlatformKey key, SECItem *buf,
             goto done;
     }
     PRINT_BUF(60, (NULL, "hash(es) to be signed", hashData.Data, hashData.Length));
+
+    if (signatureLen == 0) {
+        PORT_SetError(SEC_ERROR_INVALID_KEY);
+        goto done;
+    }
+
+    buf->data = (unsigned char *)PORT_Alloc(signatureLen);
+    if (!buf->data)
+        goto done;    /* error code was set. */
 
     /* TODO(rsleevi): Should it be kSecCredentialTypeNoUI? In Win32, at least,
      * you can prevent the UI by setting the provider handle on the
@@ -684,16 +721,13 @@ ssl3_PlatformSignHashes(SSL3Hashes *hash, PlatformKey key, SECItem *buf,
     }
     buf->len = signatureData.Length;
 
-    if (doDerEncode) {
-        SECItem derSig = {siBuffer, NULL, 0};
-
-        /* This also works for an ECDSA signature */
-        rv = DSAU_EncodeDerSigWithLen(&derSig, buf, buf->len);
-        if (rv == SECSuccess) {
-            PORT_Free(buf->data);     /* discard unencoded signature. */
-            *buf = derSig;            /* give caller encoded signature. */
-        } else if (derSig.data) {
-            PORT_Free(derSig.data);
+    if (doDerDecode) {
+        SECItem* rawSig = DSAU_DecodeDerSigToLen(buf, rawDsaLen);
+        if (rawSig != NULL) {
+            PORT_Free(buf->data);     /* discard encoded signature. */
+            *buf = *rawSig;           /* give caller unencoded signature. */
+            PORT_Free(rawSig);
+            rv = SECSuccess;
         }
     } else {
         rv = SECSuccess;
