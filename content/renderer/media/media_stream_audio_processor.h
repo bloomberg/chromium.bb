@@ -115,6 +115,7 @@ class CONTENT_EXPORT MediaStreamAudioProcessor :
   virtual void OnPlayoutData(media::AudioBus* audio_bus,
                              int sample_rate,
                              int audio_delay_milliseconds) OVERRIDE;
+  virtual void OnPlayoutDataSourceChanged() OVERRIDE;
 
   // webrtc::AudioProcessorInterface implementation.
   // This method is called on the libjingle thread.
