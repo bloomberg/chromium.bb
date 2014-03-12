@@ -22,12 +22,6 @@ extern const char kGoogleApisUrl[];
 // "https://accounts.google.com".
 extern const char kLsoUrl[];
 
-// Specifies custom OAuth1 login scope for testing purposes.
-extern const char kOAuth1LoginScope[];
-
-// Overrides OAuth wrap bridge user info scope.
-extern const char kOAuthWrapBridgeUserInfoScope[];
-
 // Specifies custom OAuth2 client id for testing purposes.
 extern const char kOAuth2ClientID[];
 

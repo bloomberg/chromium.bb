@@ -21,7 +21,6 @@
 #include "chromeos/network/network_state_handler.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/gaia_constants.h"
-#include "google_apis/gaia/gaia_urls.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 using content::BrowserThread;
@@ -102,7 +101,7 @@ void OAuth2LoginVerifier::VerifyProfileTokens(Profile* profile) {
 
 void OAuth2LoginVerifier::StartFetchingOAuthLoginAccessToken(Profile* profile) {
   OAuth2TokenService::ScopeSet scopes;
-  scopes.insert(GaiaUrls::GetInstance()->oauth1_login_scope());
+  scopes.insert(GaiaConstants::kOAuth1LoginScope);
   ProfileOAuth2TokenService* token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
   SigninManagerBase* signin_manager =

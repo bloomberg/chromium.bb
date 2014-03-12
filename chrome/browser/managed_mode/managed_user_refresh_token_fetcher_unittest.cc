@@ -9,6 +9,7 @@
 #include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -79,8 +80,7 @@ void VerifyTokenRequest(
     std::vector<FakeProfileOAuth2TokenService::PendingRequest> requests) {
   ASSERT_EQ(1u, requests.size());
   EXPECT_EQ(1u, requests[0].scopes.size());
-  EXPECT_EQ(1u, requests[0].scopes.count(
-      GaiaUrls::GetInstance()->oauth1_login_scope()));
+  EXPECT_EQ(1u, requests[0].scopes.count(GaiaConstants::kOAuth1LoginScope));
 }
 
 }  // namespace

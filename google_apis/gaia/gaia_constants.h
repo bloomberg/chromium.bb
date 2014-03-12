@@ -18,6 +18,8 @@ extern const char kGaiaService[];  // uber token
 extern const char kPicasaService[];
 extern const char kSyncService[];
 extern const char kRemotingService[];
+extern const char kOAuth1LoginScope[];
+extern const char kOAuthWrapBridgeUserInfoScope[];
 extern const char kDeviceManagementServiceOAuth[];
 extern const char kAnyApiOAuth2Scope[];
 extern const char kChromeSyncOAuth2Scope[];

@@ -305,7 +305,7 @@ std::string GaiaAuthFetcher::MakeIssueAuthTokenBody(
 // static
 std::string GaiaAuthFetcher::MakeGetAuthCodeBody() {
   std::string encoded_scope = net::EscapeUrlEncodedData(
-      GaiaUrls::GetInstance()->oauth1_login_scope(), true);
+      GaiaConstants::kOAuth1LoginScope, true);
   std::string encoded_client_id = net::EscapeUrlEncodedData(
       GaiaUrls::GetInstance()->oauth2_chrome_client_id(), true);
   return base::StringPrintf(kClientLoginToOAuth2BodyFormat,
@@ -317,7 +317,7 @@ std::string GaiaAuthFetcher::MakeGetAuthCodeBody() {
 std::string GaiaAuthFetcher::MakeGetTokenPairBody(
     const std::string& auth_code) {
   std::string encoded_scope = net::EscapeUrlEncodedData(
-      GaiaUrls::GetInstance()->oauth1_login_scope(), true);
+      GaiaConstants::kOAuth1LoginScope, true);
   std::string encoded_client_id = net::EscapeUrlEncodedData(
       GaiaUrls::GetInstance()->oauth2_chrome_client_id(), true);
   std::string encoded_client_secret = net::EscapeUrlEncodedData(

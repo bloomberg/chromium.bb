@@ -20,6 +20,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
+#include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/url_util.h"
 #include "net/cookies/parsed_cookie.h"
@@ -263,7 +264,7 @@ void FakeGaia::HandleProgramaticAuth(
   GaiaUrls* gaia_urls = GaiaUrls::GetInstance();
   std::string scope;
   if (!GetQueryParameter(request.content, "scope", &scope) ||
-      gaia_urls->oauth1_login_scope() != scope) {
+      GaiaConstants::kOAuth1LoginScope != scope) {
     return;
   }
 
@@ -434,7 +435,7 @@ void FakeGaia::HandleAuthToken(const HttpRequest& request,
       return;
     }
 
-    if (GaiaUrls::GetInstance()->oauth1_login_scope() != scope) {
+    if (GaiaConstants::kOAuth1LoginScope != scope) {
       http_response->set_code(net::HTTP_BAD_REQUEST);
       LOG(ERROR) << "Invalid scope for /o/oauth2/token - " << scope;
       return;

@@ -276,7 +276,7 @@ class OAuth2Test : public OobeBaseTest {
 
     FakeGaia::AccessTokenInfo auth_login_token_info;
     auth_login_token_info.token = kTestAuthLoginToken;
-    auth_login_token_info.scopes.insert(gaia_urls->oauth1_login_scope());
+    auth_login_token_info.scopes.insert(GaiaConstants::kOAuth1LoginScope);
     auth_login_token_info.audience = gaia_urls->oauth2_chrome_client_id();
     fake_gaia_->IssueOAuthToken(kTestRefreshToken, auth_login_token_info);
   }

@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/settings/token_encryptor.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
+#include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "policy/proto/device_management_backend.pb.h"
@@ -318,8 +319,7 @@ void DeviceOAuth2TokenService::StartValidation() {
   gaia_oauth_client_->RefreshToken(
       client_info,
       refresh_token_,
-      std::vector<std::string>(1,
-                               gaia_urls->oauth_wrap_bridge_user_info_scope()),
+      std::vector<std::string>(1, GaiaConstants::kOAuthWrapBridgeUserInfoScope),
       max_refresh_token_validation_retries_,
       this);
 }

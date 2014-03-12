@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/gaia_constants.h"
-#include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
@@ -31,7 +30,7 @@ UbertokenFetcher::~UbertokenFetcher() {
 
 void UbertokenFetcher::StartFetchingToken(const std::string& account_id) {
   OAuth2TokenService::ScopeSet scopes;
-  scopes.insert(GaiaUrls::GetInstance()->oauth1_login_scope());
+  scopes.insert(GaiaConstants::kOAuth1LoginScope);
   access_token_request_ =
       token_service_->StartRequest(account_id, scopes, this);
 }

@@ -22,9 +22,9 @@
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
 
+using GaiaConstants::kChromeSyncManagedOAuth2Scope;
 using base::Time;
 using gaia::GaiaOAuthClient;
-using GaiaConstants::kChromeSyncManagedOAuth2Scope;
 using net::URLFetcher;
 using net::URLFetcherDelegate;
 using net::URLRequestContextGetter;
@@ -129,7 +129,7 @@ void ManagedUserRefreshTokenFetcherImpl::Start(
 
 void ManagedUserRefreshTokenFetcherImpl::StartFetching() {
   OAuth2TokenService::ScopeSet scopes;
-  scopes.insert(GaiaUrls::GetInstance()->oauth1_login_scope());
+  scopes.insert(GaiaConstants::kOAuth1LoginScope);
   access_token_request_ = oauth2_token_service_->StartRequest(
       account_id_, scopes, this);
 }

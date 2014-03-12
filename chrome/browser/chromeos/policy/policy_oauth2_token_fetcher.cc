@@ -57,8 +57,7 @@ void PolicyOAuth2TokenFetcher::StartFetchingRefreshToken() {
 void PolicyOAuth2TokenFetcher::StartFetchingAccessToken() {
   std::vector<std::string> scopes;
   scopes.push_back(GaiaConstants::kDeviceManagementServiceOAuth);
-  scopes.push_back(
-      GaiaUrls::GetInstance()->oauth_wrap_bridge_user_info_scope());
+  scopes.push_back(GaiaConstants::kOAuthWrapBridgeUserInfoScope);
   access_token_fetcher_.reset(
       new OAuth2AccessTokenFetcherImpl(this, system_context_getter_.get()));
   access_token_fetcher_->Start(

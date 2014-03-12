@@ -36,9 +36,6 @@ class GaiaUrls {
   const GURL& embedded_signin_url() const;
   const GURL& add_account_url() const;
 
-  const std::string& oauth1_login_scope() const;
-  const std::string& oauth_wrap_bridge_user_info_scope() const;
-
   const std::string& oauth2_chrome_client_id() const;
   const std::string& oauth2_chrome_client_secret() const;
   const GURL& client_login_to_oauth2_url() const;
@@ -79,9 +76,6 @@ class GaiaUrls {
   GURL list_accounts_url_;
   GURL embedded_signin_url_;
   GURL add_account_url_;
-
-  std::string oauth1_login_scope_;
-  std::string oauth_wrap_bridge_user_info_scope_;
 
   std::string oauth2_chrome_client_id_;
   std::string oauth2_chrome_client_secret_;
