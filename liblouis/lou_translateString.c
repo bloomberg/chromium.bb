@@ -1882,7 +1882,7 @@ translateString ()
             int hasEndSegment = 0;
 	    while (dest > 0 && checkAttr (currentOutput[dest - 1], CTC_Space, 1))
             {
-              if (currentOutput[dest - 1] == 0xffff)
+              if (currentOutput[dest - 1] == ENDSEGMENT)
               {
                 hasEndSegment = 1;
               }
