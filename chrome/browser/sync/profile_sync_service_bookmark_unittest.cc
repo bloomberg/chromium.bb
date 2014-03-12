@@ -40,6 +40,7 @@
 #include "sync/internal_api/public/test/test_user_share.h"
 #include "sync/internal_api/public/write_node.h"
 #include "sync/internal_api/public/write_transaction.h"
+#include "sync/internal_api/syncapi_internal.h"
 #include "sync/syncable/mutable_entry.h"  // TODO(tim): Remove. Bug 131130.
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -561,11 +562,16 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
 
   void ExpectSyncerNodeMatching(syncer::BaseTransaction* trans,
                                 const BookmarkNode* bnode) {
+    std::string truncated_title = base::UTF16ToUTF8(bnode->GetTitle());
+    syncer::SyncAPINameToServerName(truncated_title, &truncated_title);
+    base::TruncateUTF8ToByteSize(truncated_title, 255, &truncated_title);
+    syncer::ServerNameToSyncAPIName(truncated_title, &truncated_title);
+
     syncer::ReadNode gnode(trans);
     ASSERT_TRUE(InitSyncNodeFromChromeNode(bnode, &gnode));
     // Non-root node titles and parents must match.
     if (!model_->is_permanent_node(bnode)) {
-      EXPECT_EQ(bnode->GetTitle(), base::UTF8ToUTF16(gnode.GetTitle()));
+      EXPECT_EQ(truncated_title, gnode.GetTitle());
       EXPECT_EQ(
           model_associator_->GetChromeNodeFromSyncId(gnode.GetParentId()),
           bnode->parent());
@@ -1055,7 +1061,7 @@ TEST_F(ProfileSyncServiceBookmarkTest, DISABLED_ServerChangeWithInvalidURL) {
 // file names in the sync backend.
 TEST_F(ProfileSyncServiceBookmarkTest, CornerCaseNames) {
   // TODO(ncarter): Bug 1570238 explains the failure of this test.
-  LoadBookmarkModel(DELETE_EXISTING_STORAGE, DONT_SAVE_TO_STORAGE);
+  LoadBookmarkModel(DELETE_EXISTING_STORAGE, SAVE_TO_STORAGE);
   StartSync();
 
   const char* names[] = {
@@ -1073,6 +1079,12 @@ TEST_F(ProfileSyncServiceBookmarkTest, CornerCaseNames) {
       "foo/bar", "foo\\bar", "foo?bar", "foo:bar", "foo|bar", "foo\"bar",
       "foo'bar", "foo<bar", "foo>bar", "foo%bar", "foo*bar", "foo]bar",
       "foo[bar",
+      // A name with title > 255 characters
+      "012345678901234567890123456789012345678901234567890123456789012345678901"
+      "234567890123456789012345678901234567890123456789012345678901234567890123"
+      "456789012345678901234567890123456789012345678901234567890123456789012345"
+      "678901234567890123456789012345678901234567890123456789012345678901234567"
+      "890123456789"
   };
   // Create both folders and bookmarks using each name.
   GURL url("http://www.doublemint.com");
@@ -1082,7 +1094,16 @@ TEST_F(ProfileSyncServiceBookmarkTest, CornerCaseNames) {
   }
 
   // Verify that the browser model matches the sync model.
-  EXPECT_TRUE(model_->other_node()->child_count() == 2*arraysize(names));
+  EXPECT_EQ(static_cast<size_t>(model_->other_node()->child_count()),
+            2*arraysize(names));
+  ExpectModelMatch();
+
+  // Restart and re-associate. Verify things still match.
+  StopSync();
+  LoadBookmarkModel(LOAD_FROM_STORAGE, SAVE_TO_STORAGE);
+  StartSync();
+  EXPECT_EQ(static_cast<size_t>(model_->other_node()->child_count()),
+            2*arraysize(names));
   ExpectModelMatch();
 }
 

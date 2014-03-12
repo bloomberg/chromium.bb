@@ -13,6 +13,7 @@
 #include "base/location.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -28,6 +29,7 @@
 #include "sync/internal_api/public/read_transaction.h"
 #include "sync/internal_api/public/write_node.h"
 #include "sync/internal_api/public/write_transaction.h"
+#include "sync/internal_api/syncapi_internal.h"
 #include "sync/syncable/syncable_write_transaction.h"
 #include "sync/util/cryptographer.h"
 #include "sync/util/data_type_histogram.h"
@@ -58,6 +60,10 @@ const char kBookmarkBarTag[] = "bookmark_bar";
 const char kMobileBookmarksTag[] = "synced_bookmarks";
 const char kOtherBookmarksTag[] = "other_bookmarks";
 
+// Maximum number of bytes to allow in a title (must match sync's internal
+// limits; see write_node.cc).
+const int kTitleLimitBytes = 255;
+
 // Bookmark comparer for map of bookmark nodes.
 class BookmarkComparer {
  public:
@@ -72,7 +78,17 @@ class BookmarkComparer {
     if (node1->is_folder() != node2->is_folder())
       return node1->is_folder();
 
-    int result = node1->GetTitle().compare(node2->GetTitle());
+    // Truncate bookmark titles in the form sync does internally to avoid
+    // mismatches due to sync munging titles.
+    std::string title1 = base::UTF16ToUTF8(node1->GetTitle());
+    syncer::SyncAPINameToServerName(title1, &title1);
+    base::TruncateUTF8ToByteSize(title1, kTitleLimitBytes, &title1);
+
+    std::string title2 = base::UTF16ToUTF8(node2->GetTitle());
+    syncer::SyncAPINameToServerName(title2, &title2);
+    base::TruncateUTF8ToByteSize(title2, kTitleLimitBytes, &title2);
+
+    int result = title1.compare(title2);
     if (result != 0)
       return result < 0;
 
@@ -326,7 +342,11 @@ bool BookmarkModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
 bool BookmarkModelAssociator::NodesMatch(
     const BookmarkNode* bookmark,
     const syncer::BaseNode* sync_node) const {
-  if (bookmark->GetTitle() != base::UTF8ToUTF16(sync_node->GetTitle()))
+  std::string truncated_title = base::UTF16ToUTF8(bookmark->GetTitle());
+  base::TruncateUTF8ToByteSize(truncated_title,
+                               kTitleLimitBytes,
+                               &truncated_title);
+  if (truncated_title != sync_node->GetTitle())
     return false;
   if (bookmark->is_folder() != sync_node->GetIsFolder())
     return false;

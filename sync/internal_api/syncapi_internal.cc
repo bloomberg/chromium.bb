@@ -11,6 +11,14 @@
 
 namespace syncer {
 
+namespace {
+
+bool EndsWithSpace(const std::string& string) {
+  return !string.empty() && *string.rbegin() == ' ';
+}
+
+}
+
 sync_pb::PasswordSpecificsData* DecryptPasswordSpecifics(
     const sync_pb::EntitySpecifics& specifics, Cryptographer* crypto) {
   if (!specifics.has_password())
@@ -36,6 +44,20 @@ void SyncAPINameToServerName(const std::string& syncer_name,
   *out = syncer_name;
   if (IsNameServerIllegalAfterTrimming(*out))
     out->append(" ");
+}
+
+// In the reverse direction, if a server name matches the pattern of a
+// server-illegal name followed by one or more spaces, remove the trailing
+// space.
+void ServerNameToSyncAPIName(const std::string& server_name,
+                             std::string* out) {
+  CHECK(out);
+  int length_to_copy = server_name.length();
+  if (IsNameServerIllegalAfterTrimming(server_name) &&
+      EndsWithSpace(server_name)) {
+    --length_to_copy;
+  }
+  *out = server_name.substr(0, length_to_copy);
 }
 
 // Checks whether |name| is a server-illegal name followed by zero or more space
