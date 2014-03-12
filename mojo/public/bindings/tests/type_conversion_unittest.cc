@@ -64,6 +64,7 @@ class TypeConverter<test_structs::NamedRegion, RedmondNamedRegion> {
 };
 
 namespace test {
+namespace {
 
 class TypeConversionTest : public testing::Test {
  private:
@@ -230,5 +231,6 @@ TEST_F(TypeConversionTest, CustomTypeConverter_Nested) {
   }
 }
 
+}  // namespace
 }  // namespace test
 }  // namespace mojo

@@ -289,8 +289,6 @@ class SimpleMessageReceiver : public mojo::MessageReceiver {
   }
 };
 
-}  // namespace
-
 TEST(BindingsSampleTest, Basic) {
   mojo::Environment env;
   SimpleMessageReceiver receiver;
@@ -353,4 +351,5 @@ TEST(BindingsSampleTest, DefaultValues) {
   EXPECT_EQ(imported::COLOR_BLACK, full.thing().color());
 }
 
+}  // namespace
 }  // namespace sample

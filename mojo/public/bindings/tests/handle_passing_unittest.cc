@@ -174,8 +174,6 @@ class SampleFactoryClientImpl : public sample::FactoryClient {
   bool got_response_;
 };
 
-}  // namespace
-
 class HandlePassingTest : public testing::Test {
  public:
   void PumpMessages() {
@@ -233,5 +231,6 @@ TEST_F(HandlePassingTest, DataPipe) {
   EXPECT_TRUE(factory_client.got_response());
 }
 
+}  // namespace
 }  // namespace test
 }  // namespace mojo

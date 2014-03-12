@@ -30,8 +30,8 @@ class Connector : public MessageReceiver {
   virtual ~Connector();
 
   // Sets the receiver to handle messages read from the message pipe.  The
-  // Connector will only read messages from the pipe if an incoming receiver
-  // has been set.
+  // Connector will read messages from the pipe regardless of whether or not an
+  // incoming receiver has been set.
   void set_incoming_receiver(MessageReceiver* receiver) {
     incoming_receiver_ = receiver;
   }
@@ -45,6 +45,9 @@ class Connector : public MessageReceiver {
   // Returns true if an error was encountered while reading from the pipe or
   // waiting to read from the pipe.
   bool encountered_error() const { return error_; }
+
+  // Closes the pipe, triggering the error state.
+  void CloseMessagePipe();
 
   // MessageReceiver implementation:
   virtual bool Accept(Message* message) MOJO_OVERRIDE;

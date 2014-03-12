@@ -11,6 +11,7 @@
 
 namespace mojo {
 namespace test {
+namespace {
 
 // Tests that basic Array operations work.
 TEST(ArrayTest, Basic) {
@@ -83,5 +84,6 @@ TEST(ArrayTest, Handle) {
   EXPECT_FALSE(handles[0].is_valid());
 }
 
+}  // namespace
 }  // namespace test
 }  // namespace mojo

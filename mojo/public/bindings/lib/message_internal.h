@@ -31,16 +31,10 @@ MOJO_COMPILE_ASSERT(sizeof(MessageHeaderWithRequestID) == 24,
 
 struct MessageData {
   MessageHeader header;
-  uint8_t payload[1];
 };
-MOJO_COMPILE_ASSERT(sizeof(MessageData) == 17, bad_sizeof_MessageData);
 
-struct MessageDataWithRequestID {
-  MessageHeaderWithRequestID header;
-  uint8_t payload[1];
-};
-MOJO_COMPILE_ASSERT(sizeof(MessageDataWithRequestID) == 25,
-                    bad_sizeof_MessageDataWithRequestID);
+MOJO_COMPILE_ASSERT(sizeof(MessageData) == sizeof(MessageHeader),
+                    bad_sizeof_MessageData);
 
 #pragma pack(pop)
 

@@ -15,6 +15,7 @@
 
 namespace mojo {
 namespace test {
+namespace {
 
 class MessageAccumulator : public MessageReceiver {
  public:
@@ -245,5 +246,6 @@ TEST_F(ConnectorTest, MessageWithHandles) {
       std::string(reinterpret_cast<const char*>(message_received.payload())));
 }
 
+}  // namespace
 }  // namespace test
 }  // namespace mojo

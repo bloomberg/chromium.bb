@@ -11,6 +11,7 @@
 
 namespace mojo {
 namespace test {
+namespace {
 
 bool IsZero(void* p_buf, size_t size) {
   char* buf = reinterpret_cast<char*>(p_buf);
@@ -110,5 +111,6 @@ TEST(FixedBufferTest, Leak) {
   free(buf_ptr);
 }
 
+}  // namespace
 }  // namespace test
 }  // namespace mojo

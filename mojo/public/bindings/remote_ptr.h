@@ -8,7 +8,7 @@
 #include <assert.h>
 
 #include "mojo/public/bindings/interface.h"
-#include "mojo/public/bindings/lib/connector.h"
+#include "mojo/public/bindings/lib/router.h"
 #include "mojo/public/system/macros.h"
 
 namespace mojo {
@@ -123,21 +123,21 @@ class RemotePtr {
 
   bool encountered_error() const {
     assert(state_);
-    return state_->connector.encountered_error();
+    return state_->router.encountered_error();
   }
 
  private:
   struct State {
     State(ScopedMessagePipeHandle message_pipe, typename S::_Peer* peer,
           ErrorHandler* error_handler, MojoAsyncWaiter* waiter)
-        : connector(message_pipe.Pass(), waiter),
-          proxy(&connector),
+        : router(message_pipe.Pass(), waiter),
+          proxy(&router),
           stub(peer) {
-      connector.set_error_handler(error_handler);
+      router.set_error_handler(error_handler);
       if (peer)
-        connector.set_incoming_receiver(&stub);
+        router.set_incoming_receiver(&stub);
     }
-    internal::Connector connector;
+    internal::Router router;
     typename S::_Proxy proxy;
     typename S::_Peer::_Stub stub;
   };

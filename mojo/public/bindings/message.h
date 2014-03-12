@@ -40,17 +40,29 @@ class Message {
   // Access the header.
   const internal::MessageHeader* header() const { return &data_->header; }
 
+  uint32_t name() const { return data_->header.name; }
+  bool has_flag(uint32_t flag) const { return !!(data_->header.flags & flag); }
+
   // Access the request_id field (if present).
-  bool has_request_id() const { return data_->header.num_fields == 3; }
+  bool has_request_id() const { return data_->header.num_fields >= 3; }
   uint64_t request_id() const {
     assert(has_request_id());
-    return static_cast<internal::MessageHeaderWithRequestID*>(&data_->header)->
-        request_id;
+    return static_cast<const internal::MessageHeaderWithRequestID*>(
+        &data_->header)->request_id;
+  }
+  void set_request_id(uint64_t request_id) {
+    assert(has_request_id());
+    static_cast<internal::MessageHeaderWithRequestID*>(&data_->header)->
+        request_id = request_id;
   }
 
   // Access the payload.
-  const uint8_t* payload() const { return data_->payload; }
-  uint8_t* mutable_payload() { return data_->payload; }
+  const uint8_t* payload() const {
+    return reinterpret_cast<const uint8_t*>(data_) + data_->header.num_bytes;
+  }
+  uint8_t* mutable_payload() {
+    return reinterpret_cast<uint8_t*>(data_) + data_->header.num_bytes;
+  }
 
   // Access the handles.
   const std::vector<Handle>* handles() const { return &handles_; }

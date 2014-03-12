@@ -113,8 +113,6 @@ class RemotePtrTest : public testing::Test {
   RunLoop loop_;
 };
 
-}  // namespace
-
 TEST_F(RemotePtrTest, EndToEnd) {
   // Suppose this is instantiated in a process that has pipe0_.
   MathCalculatorImpl calculator(pipe_.handle_to_self.Pass());
@@ -227,5 +225,6 @@ TEST_F(RemotePtrTest, NoPeerAttribute) {
   RemotePtr<sample::Port> port(pipe.handle_to_self.Pass());
 }
 
+}  // namespace
 }  // namespace test
 }  // namespace mojo

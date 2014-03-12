@@ -33,6 +33,10 @@ Connector::~Connector() {
     waiter_->CancelWait(waiter_, async_wait_id_);
 }
 
+void Connector::CloseMessagePipe() {
+  Close(message_pipe_.Pass());
+}
+
 bool Connector::Accept(Message* message) {
   if (error_)
     return false;
