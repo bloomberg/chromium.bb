@@ -54,9 +54,6 @@ crbug.com/328996 [ Mac Debug ] http/tests/media/video-seek-to-middle.html [ Pass
 # This test is slow due to Mesa slowness.
 crbug.com/244481 virtual/gpu/canvas/philip/tests/2d.shadow.blur.low.html [ Skip ]
 
-# WebGL not yet supported by the software compositor.
-crbug.com/151713 virtual/softwarecompositing/draws-content/webgl-simple-background.html [ ImageOnlyFailure ]
-
 crbug.com/9798 [ Win ] http/tests/misc/redirect-with-quotes.php [ Pass Timeout ]
 crbug.com/9797 crbug.com/9798 [ Win ] http/tests/xmlhttprequest/state-after-network-error.html [ Pass Timeout ]
 crbug.com/9798 [ Win Release ] http/tests/xmlhttprequest/small-chunks-response-text.html [ Pass Timeout ] # Also slow
@@ -771,9 +768,6 @@ crbug.com/302005 fast/text-autosizing/similar-clusters.html [ Missing ]
 # <iframe> will be repainted due to the extra simplified layout (which is supposed to be overflow calculation).
 crbug.com/338698 compositing/iframes/iframe-content-flipping.html [ NeedsRebaseline ]
 crbug.com/338698 virtual/softwarecompositing/iframes/iframe-content-flipping.html [ NeedsRebaseline ]
-
-# Started failing after r162755.
-crbug.com/324177 [ Linux Win ] virtual/softwarecompositing/webgl/webgl-with-accelerated-background-color.html [ ImageOnlyFailure ]
 
 crbug.com/335710 virtual/gpu/canvas/philip/tests/2d.text.draw.fontface.notinpage.html [ Pass Failure ]
 crbug.com/335710 canvas/philip/tests/2d.text.draw.fontface.notinpage.html [ Pass Failure ]

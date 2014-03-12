@@ -117,3 +117,12 @@ fast/canvas/canvas-lost-gpu-context.html [ WontFix ]
 
 # Missing Chrome Mac support, will start working when we move to harfbuzz on mac.
 [ Mac ] fast/text/international/zerowidthjoiner.html [ WontFix ]
+
+# Software compositing can't use WebGL. (There's no SwiftShader available on Windows either.)
+virtual/softwarecompositing/backface-visibility/backface-visibility-webgl.html [ WontFix ]
+virtual/softwarecompositing/draws-content/webgl-background-layer.html [ WontFix ]
+virtual/softwarecompositing/draws-content/webgl-simple-background.html [ WontFix ]
+virtual/softwarecompositing/layer-creation/stacking-context-overlap-nested.html [ WontFix ]
+virtual/softwarecompositing/visibility/visibility-simple-webgl-layer.html [ WontFix ]
+virtual/softwarecompositing/webgl [ WontFix ]
+
