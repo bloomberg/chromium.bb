@@ -16,7 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/values.h"
+#include "base/strings/string_util.h"
 #include "content/child/webcrypto/crypto_data.h"
 #include "content/child/webcrypto/webcrypto_util.h"
 #include "content/public/common/content_paths.h"
@@ -284,7 +284,7 @@ void RestoreJwkOctDictionary(base::DictionaryValue* dict) {
   dict->SetString("kty", "oct");
   dict->SetString("alg", "A128CBC");
   dict->SetString("use", "enc");
-  dict->SetBoolean("extractable", false);
+  dict->SetBoolean("ext", false);
   dict->SetString("k", "GADWrMRHwQfoNaXU5fZvTg==");
 }
 
@@ -295,7 +295,7 @@ void RestoreJwkRsaDictionary(base::DictionaryValue* dict) {
   dict->SetString("kty", "RSA");
   dict->SetString("alg", "RSA1_5");
   dict->SetString("use", "enc");
-  dict->SetBoolean("extractable", false);
+  dict->SetBoolean("ext", false);
   dict->SetString(
       "n",
       "qLOyhK-OtQs4cDSoYPFGxJGfMYdjzWxVmMiuSBGh4KvEx-CwgtaTpef87Wdc9GaFEncsDLxk"
@@ -538,6 +538,83 @@ Status ImportKeyJwkFromDict(const base::DictionaryValue& dict,
                       key);
 }
 
+// Parses an ArrayBuffer of JSON into a dictionary.
+scoped_ptr<base::DictionaryValue> GetJwkDictionary(
+    const blink::WebArrayBuffer& json) {
+  base::StringPiece json_string(reinterpret_cast<const char*>(json.data()),
+                                json.byteLength());
+  base::Value* value = base::JSONReader::Read(json_string);
+  EXPECT_TRUE(value);
+  base::DictionaryValue* dict_value = NULL;
+  value->GetAsDictionary(&dict_value);
+  return scoped_ptr<base::DictionaryValue>(dict_value);
+}
+
+// Verifies that the JSON in the input ArrayBuffer contains the provided
+// expected values. Exact matches are required on the fields examined.
+::testing::AssertionResult VerifySymmetricJwk(
+    const blink::WebArrayBuffer& json,
+    const std::string& alg_expected,
+    const std::string& k_expected_hex,
+    blink::WebCryptoKeyUsageMask use_mask_expected) {
+
+  scoped_ptr<base::DictionaryValue> dict = GetJwkDictionary(json);
+  if (!dict.get() || dict->empty())
+    return ::testing::AssertionFailure() << "JSON parsing failed";
+
+  // ---- kty
+  std::string value_string;
+  if (!dict->GetString("kty", &value_string))
+    return ::testing::AssertionFailure() << "Missing 'kty'";
+  if (value_string != "oct")
+    return ::testing::AssertionFailure()
+           << "Expected 'kty' to be 'oct' but found " << value_string;
+
+  // ---- alg
+  if (!dict->GetString("alg", &value_string))
+    return ::testing::AssertionFailure() << "Missing 'alg'";
+  if (value_string != alg_expected)
+    return ::testing::AssertionFailure() << "Expected 'alg' to be "
+                                         << alg_expected << " but found "
+                                         << value_string;
+
+  // ---- k
+  if (!dict->GetString("k", &value_string))
+    return ::testing::AssertionFailure() << "Missing 'k'";
+  std::string k_value;
+  if (!webcrypto::Base64DecodeUrlSafe(value_string, &k_value))
+    return ::testing::AssertionFailure() << "Base64DecodeUrlSafe(k) failed";
+  if (!LowerCaseEqualsASCII(base::HexEncode(k_value.data(), k_value.size()),
+                            k_expected_hex.c_str())) {
+    return ::testing::AssertionFailure() << "Expected 'k' to be "
+                                         << k_expected_hex
+                                         << " but found something different";
+  }
+  // ---- ext
+  // always expect ext == true in this case
+  bool ext_value;
+  if (!dict->GetBoolean("ext", &ext_value))
+    return ::testing::AssertionFailure() << "Missing 'ext'";
+  if (!ext_value)
+    return ::testing::AssertionFailure()
+           << "Expected 'ext' to be true but found false";
+
+  // ---- key_ops
+  base::ListValue* key_ops;
+  if (!dict->GetList("key_ops", &key_ops))
+    return ::testing::AssertionFailure() << "Missing 'key_ops'";
+  blink::WebCryptoKeyUsageMask key_ops_mask = 0;
+  Status status = GetWebCryptoUsagesFromJwkKeyOps(key_ops, &key_ops_mask);
+  if (status.IsError())
+    return ::testing::AssertionFailure() << "Failure extracting 'key_ops'";
+  if (key_ops_mask != use_mask_expected)
+    return ::testing::AssertionFailure()
+           << "Expected 'key_ops' mask to be " << use_mask_expected
+           << " but found " << key_ops_mask << " (" << value_string << ")";
+
+  return ::testing::AssertionSuccess();
+}
+
 }  // namespace
 
 TEST_F(SharedCryptoTest, StatusToString) {
@@ -577,7 +654,8 @@ TEST_F(SharedCryptoTest, DigestSampleSets) {
 TEST_F(SharedCryptoTest, HMACSampleSets) {
   scoped_ptr<base::ListValue> tests;
   ASSERT_TRUE(ReadJsonTestFileToList("hmac.json", &tests));
-
+  // TODO(padolph): Missing known answer tests for HMAC SHA224, SHA384, and
+  // SHA512.
   for (size_t test_index = 0; test_index < tests->GetSize(); ++test_index) {
     SCOPED_TRACE(test_index);
     base::DictionaryValue* test;
@@ -923,6 +1001,138 @@ TEST_F(SharedCryptoTest, MAYBE(ImportSecretKeyNoAlgorithm)) {
                           &key));
 }
 
+TEST_F(SharedCryptoTest, ImportJwkKeyUsage) {
+  blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+  base::DictionaryValue dict;
+  dict.SetString("kty", "oct");
+  dict.SetBoolean("ext", false);
+  dict.SetString("k", "GADWrMRHwQfoNaXU5fZvTg==");
+  const blink::WebCryptoAlgorithm aes_cbc_algorithm =
+      webcrypto::CreateAlgorithm(blink::WebCryptoAlgorithmIdAesCbc);
+  const blink::WebCryptoAlgorithm hmac_algorithm =
+      webcrypto::CreateHmacImportAlgorithm(blink::WebCryptoAlgorithmIdSha256);
+  const blink::WebCryptoAlgorithm aes_kw_algorithm =
+      webcrypto::CreateAlgorithm(blink::WebCryptoAlgorithmIdAesKw);
+
+  // Test null usage.
+  base::ListValue* key_ops = new base::ListValue;
+  // Note: the following call makes dict assume ownership of key_ops.
+  dict.Set("key_ops", key_ops);
+  EXPECT_STATUS_SUCCESS(
+      ImportKeyJwkFromDict(dict, aes_cbc_algorithm, false, 0, &key));
+  EXPECT_EQ(0, key.usages());
+
+  // Test each key_ops value translates to the correct Web Crypto value.
+  struct TestCase {
+    const char* jwk_key_op;
+    const char* jwk_alg;
+    const blink::WebCryptoAlgorithm algorithm;
+    const blink::WebCryptoKeyUsage usage;
+  };
+  // TODO(padolph): Add 'deriveBits' key_ops value once it is supported.
+  const TestCase test_case[] = {
+      {"encrypt", "A128CBC", aes_cbc_algorithm,
+       blink::WebCryptoKeyUsageEncrypt},
+      {"decrypt", "A128CBC", aes_cbc_algorithm,
+       blink::WebCryptoKeyUsageDecrypt},
+      {"sign", "HS256", hmac_algorithm, blink::WebCryptoKeyUsageSign},
+      {"verify", "HS256", hmac_algorithm, blink::WebCryptoKeyUsageVerify},
+      {"wrapKey", "A128KW", aes_kw_algorithm, blink::WebCryptoKeyUsageWrapKey},
+      {"unwrapKey", "A128KW", aes_kw_algorithm,
+       blink::WebCryptoKeyUsageUnwrapKey},
+      {"deriveKey", "HS256", hmac_algorithm,
+       blink::WebCryptoKeyUsageDeriveKey}};
+  for (size_t test_index = 0; test_index < ARRAYSIZE_UNSAFE(test_case);
+       ++test_index) {
+    SCOPED_TRACE(test_index);
+    dict.SetString("alg", test_case[test_index].jwk_alg);
+    key_ops->Clear();
+    key_ops->AppendString(test_case[test_index].jwk_key_op);
+    EXPECT_STATUS_SUCCESS(ImportKeyJwkFromDict(dict,
+                                               test_case[test_index].algorithm,
+                                               false,
+                                               test_case[test_index].usage,
+                                               &key));
+    EXPECT_EQ(test_case[test_index].usage, key.usages());
+  }
+
+  // Test discrete multiple usages.
+  dict.SetString("alg", "A128CBC");
+  key_ops->Clear();
+  key_ops->AppendString("encrypt");
+  key_ops->AppendString("decrypt");
+  EXPECT_STATUS_SUCCESS(ImportKeyJwkFromDict(
+      dict,
+      aes_cbc_algorithm,
+      false,
+      blink::WebCryptoKeyUsageDecrypt | blink::WebCryptoKeyUsageEncrypt,
+      &key));
+  EXPECT_EQ(blink::WebCryptoKeyUsageDecrypt | blink::WebCryptoKeyUsageEncrypt,
+            key.usages());
+
+  // Test constrained key usage (input usage is a subset of JWK usage).
+  key_ops->Clear();
+  key_ops->AppendString("encrypt");
+  key_ops->AppendString("decrypt");
+  EXPECT_STATUS_SUCCESS(ImportKeyJwkFromDict(
+      dict, aes_cbc_algorithm, false, blink::WebCryptoKeyUsageDecrypt, &key));
+  EXPECT_EQ(blink::WebCryptoKeyUsageDecrypt, key.usages());
+
+  // Test failure if input usage is NOT a strict subset of the JWK usage.
+  key_ops->Clear();
+  key_ops->AppendString("encrypt");
+  EXPECT_STATUS(Status::ErrorJwkKeyopsInconsistent(),
+                ImportKeyJwkFromDict(dict,
+                                     aes_cbc_algorithm,
+                                     false,
+                                     blink::WebCryptoKeyUsageEncrypt |
+                                         blink::WebCryptoKeyUsageDecrypt,
+                                     &key));
+
+  // Test 'use' inconsistent with 'key_ops'.
+  dict.SetString("alg", "HS256");
+  dict.SetString("use", "sig");
+  key_ops->AppendString("sign");
+  key_ops->AppendString("verify");
+  key_ops->AppendString("encrypt");
+  EXPECT_STATUS(Status::ErrorJwkUseAndKeyopsInconsistent(),
+                ImportKeyJwkFromDict(dict,
+                                     hmac_algorithm,
+                                     false,
+                                     blink::WebCryptoKeyUsageSign |
+                                         blink::WebCryptoKeyUsageVerify,
+                                     &key));
+
+  // Test JWK composite 'sig' use
+  dict.Remove("key_ops", NULL);
+  dict.SetString("use", "sig");
+  EXPECT_STATUS_SUCCESS(ImportKeyJwkFromDict(
+      dict,
+      hmac_algorithm,
+      false,
+      blink::WebCryptoKeyUsageSign | blink::WebCryptoKeyUsageVerify,
+      &key));
+  EXPECT_EQ(blink::WebCryptoKeyUsageSign | blink::WebCryptoKeyUsageVerify,
+            key.usages());
+
+  // Test JWK composite use 'enc' usage
+  dict.SetString("alg", "A128CBC");
+  dict.SetString("use", "enc");
+  EXPECT_STATUS_SUCCESS(ImportKeyJwkFromDict(
+      dict,
+      aes_cbc_algorithm,
+      false,
+      blink::WebCryptoKeyUsageDecrypt | blink::WebCryptoKeyUsageEncrypt |
+          blink::WebCryptoKeyUsageWrapKey | blink::WebCryptoKeyUsageUnwrapKey |
+          blink::WebCryptoKeyUsageDeriveKey,
+      &key));
+  EXPECT_EQ(blink::WebCryptoKeyUsageDecrypt | blink::WebCryptoKeyUsageEncrypt |
+                blink::WebCryptoKeyUsageWrapKey |
+                blink::WebCryptoKeyUsageUnwrapKey |
+                blink::WebCryptoKeyUsageDeriveKey,
+            key.usages());
+}
+
 TEST_F(SharedCryptoTest, ImportJwkFailures) {
 
   blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
@@ -992,7 +1202,7 @@ TEST_F(SharedCryptoTest, ImportJwkFailures) {
 
   // Fail on invalid use.
   dict.SetString("use", "foo");
-  EXPECT_STATUS(Status::ErrorJwkUnrecognizedUsage(),
+  EXPECT_STATUS(Status::ErrorJwkUnrecognizedUse(),
                 ImportKeyJwkFromDict(dict, algorithm, false, usage_mask, &key));
   RestoreJwkOctDictionary(&dict);
 
@@ -1003,8 +1213,23 @@ TEST_F(SharedCryptoTest, ImportJwkFailures) {
   RestoreJwkOctDictionary(&dict);
 
   // Fail on invalid extractable (wrong type).
-  dict.SetInteger("extractable", 0);
-  EXPECT_STATUS(Status::ErrorJwkPropertyWrongType("extractable", "boolean"),
+  dict.SetInteger("ext", 0);
+  EXPECT_STATUS(Status::ErrorJwkPropertyWrongType("ext", "boolean"),
+                ImportKeyJwkFromDict(dict, algorithm, false, usage_mask, &key));
+  RestoreJwkOctDictionary(&dict);
+
+  // Fail on invalid key_ops (wrong type).
+  dict.SetBoolean("key_ops", true);
+  EXPECT_STATUS(Status::ErrorJwkPropertyWrongType("key_ops", "list"),
+                ImportKeyJwkFromDict(dict, algorithm, false, usage_mask, &key));
+  RestoreJwkOctDictionary(&dict);
+
+  // Fail on invalid key_ops (wrong element value).
+  base::ListValue* key_ops = new base::ListValue;
+  // Note: the following call makes dict assume ownership of key_ops.
+  dict.Set("key_ops", key_ops);
+  key_ops->AppendString("foo");
+  EXPECT_STATUS(Status::ErrorJwkUnrecognizedKeyop(),
                 ImportKeyJwkFromDict(dict, algorithm, false, usage_mask, &key));
   RestoreJwkOctDictionary(&dict);
 }
@@ -1149,7 +1374,7 @@ TEST_F(SharedCryptoTest, MAYBE(ImportJwkInputConsistency)) {
   dict.SetString("kty", "oct");
   dict.SetString("alg", "HS256");
   dict.SetString("use", "sig");
-  dict.SetBoolean("extractable", false);
+  dict.SetBoolean("ext", false);
   dict.SetString("k", "l3nZEgZCeX8XRwJdWyK3rGB8qwjhdY8vOkbIvh4lxTuMao9Y_--hdg");
   json_vec = MakeJsonVector(dict);
   EXPECT_STATUS_SUCCESS(ImportKeyJwk(
@@ -1161,19 +1386,19 @@ TEST_F(SharedCryptoTest, MAYBE(ImportJwkInputConsistency)) {
   // 2. input=T, JWK=T ==> pass, result extractable is T
   // 3. input=F, JWK=T ==> pass, result extractable is F
   EXPECT_STATUS(
-      Status::ErrorJwkExtractableInconsistent(),
+      Status::ErrorJwkExtInconsistent(),
       ImportKeyJwk(CryptoData(json_vec), algorithm, true, usage_mask, &key));
   EXPECT_STATUS_SUCCESS(
       ImportKeyJwk(CryptoData(json_vec), algorithm, false, usage_mask, &key));
   EXPECT_FALSE(key.extractable());
-  dict.SetBoolean("extractable", true);
+  dict.SetBoolean("ext", true);
   EXPECT_STATUS_SUCCESS(
       ImportKeyJwkFromDict(dict, algorithm, true, usage_mask, &key));
   EXPECT_TRUE(key.extractable());
   EXPECT_STATUS_SUCCESS(
       ImportKeyJwkFromDict(dict, algorithm, false, usage_mask, &key));
   EXPECT_FALSE(key.extractable());
-  dict.SetBoolean("extractable", true);  // restore previous value
+  dict.SetBoolean("ext", true);  // restore previous value
 
   // Fail: Input algorithm (AES-CBC) is inconsistent with JWK value
   // (HMAC SHA256).
@@ -1215,7 +1440,7 @@ TEST_F(SharedCryptoTest, MAYBE(ImportJwkInputConsistency)) {
 
   // Fail: Input usage_mask (encrypt) is not a subset of the JWK value
   // (sign|verify)
-  EXPECT_STATUS(Status::ErrorJwkUsageInconsistent(),
+  EXPECT_STATUS(Status::ErrorJwkUseInconsistent(),
                 ImportKeyJwk(CryptoData(json_vec),
                              algorithm,
                              extractable,
@@ -1227,7 +1452,7 @@ TEST_F(SharedCryptoTest, MAYBE(ImportJwkInputConsistency)) {
   usage_mask = blink::WebCryptoKeyUsageEncrypt | blink::WebCryptoKeyUsageSign |
                blink::WebCryptoKeyUsageVerify;
   EXPECT_STATUS(
-      Status::ErrorJwkUsageInconsistent(),
+      Status::ErrorJwkUseInconsistent(),
       ImportKeyJwk(
           CryptoData(json_vec), algorithm, extractable, usage_mask, &key));
 
@@ -1235,6 +1460,8 @@ TEST_F(SharedCryptoTest, MAYBE(ImportJwkInputConsistency)) {
   // only certain alg values are permitted. For example, when kty = "RSA" alg
   // must be of the RSA family, or when kty = "oct" alg must be symmetric
   // algorithm.
+
+  // TODO(padolph): key_ops consistency tests
 }
 
 TEST_F(SharedCryptoTest, MAYBE(ImportJwkHappy)) {
@@ -1255,7 +1482,7 @@ TEST_F(SharedCryptoTest, MAYBE(ImportJwkHappy)) {
   dict.SetString("kty", "oct");
   dict.SetString("alg", "HS256");
   dict.SetString("use", "sig");
-  dict.SetBoolean("extractable", false);
+  dict.SetBoolean("ext", false);
   dict.SetString("k", "l3nZEgZCeX8XRwJdWyK3rGB8qwjhdY8vOkbIvh4lxTuMao9Y_--hdg");
 
   ASSERT_STATUS_SUCCESS(
@@ -1283,6 +1510,124 @@ TEST_F(SharedCryptoTest, MAYBE(ImportJwkHappy)) {
   ExpectArrayBufferMatchesHex(mac_raw, output);
 
   // TODO(padolph): Import an RSA public key JWK and use it
+}
+
+TEST_F(SharedCryptoTest, MAYBE(ImportExportJwkSymmetricKey)) {
+  // Raw keys are generated by openssl:
+  // % openssl rand -hex <key length bytes>
+  const char* const key_hex_128 = "3f1e7cd4f6f8543f6b1e16002e688623";
+  const char* const key_hex_192 =
+      "ed91f916dc034eba68a0f9e7f34ddd48b98bd2848109e243";
+  const char* const key_hex_256 =
+      "bd08286b81a74783fd1ccf46b7e05af84ee25ae021210074159e0c4d9d907692";
+  const char* const key_hex_384 =
+      "a22c5441c8b185602283d64c7221de1d0951e706bfc09539435ec0e0ed614e1d406623f2"
+      "b31d31819fec30993380dd82";
+  const char* const key_hex_512 =
+      "5834f639000d4cf82de124fbfd26fb88d463e99f839a76ba41ac88967c80a3f61e1239a4"
+      "52e573dba0750e988152988576efd75b8d0229b7aca2ada2afd392ee";
+  const blink::WebCryptoAlgorithm aes_cbc_alg =
+      webcrypto::CreateAlgorithm(blink::WebCryptoAlgorithmIdAesCbc);
+  const blink::WebCryptoAlgorithm aes_gcm_alg =
+      webcrypto::CreateAlgorithm(blink::WebCryptoAlgorithmIdAesGcm);
+  const blink::WebCryptoAlgorithm aes_kw_alg =
+      webcrypto::CreateAlgorithm(blink::WebCryptoAlgorithmIdAesKw);
+  const blink::WebCryptoAlgorithm hmac_sha_1_alg =
+      webcrypto::CreateHmacImportAlgorithm(blink::WebCryptoAlgorithmIdSha1);
+  const blink::WebCryptoAlgorithm hmac_sha_224_alg =
+      webcrypto::CreateHmacImportAlgorithm(blink::WebCryptoAlgorithmIdSha224);
+  const blink::WebCryptoAlgorithm hmac_sha_256_alg =
+      webcrypto::CreateHmacImportAlgorithm(blink::WebCryptoAlgorithmIdSha256);
+  const blink::WebCryptoAlgorithm hmac_sha_384_alg =
+      webcrypto::CreateHmacImportAlgorithm(blink::WebCryptoAlgorithmIdSha384);
+  const blink::WebCryptoAlgorithm hmac_sha_512_alg =
+      webcrypto::CreateHmacImportAlgorithm(blink::WebCryptoAlgorithmIdSha512);
+
+  struct TestCase {
+    const char* const key_hex;
+    const blink::WebCryptoAlgorithm algorithm;
+    const blink::WebCryptoKeyUsageMask usage;
+    const char* const jwk_alg;
+  };
+
+  // TODO(padolph): Test AES-CTR JWK export, once AES-CTR import works.
+  const TestCase kTests[] = {
+      // AES-CBC 128
+      {key_hex_128, aes_cbc_alg,
+       blink::WebCryptoKeyUsageEncrypt | blink::WebCryptoKeyUsageDecrypt,
+       "A128CBC"},
+      // AES-CBC 192
+      {key_hex_192, aes_cbc_alg, blink::WebCryptoKeyUsageEncrypt, "A192CBC"},
+      // AES-CBC 256
+      {key_hex_256, aes_cbc_alg, blink::WebCryptoKeyUsageDecrypt, "A256CBC"},
+      // AES-GCM 128
+      {key_hex_128, aes_gcm_alg,
+       blink::WebCryptoKeyUsageEncrypt | blink::WebCryptoKeyUsageDecrypt,
+       "A128GCM"},
+      // AES-CGM 192
+      {key_hex_192, aes_gcm_alg, blink::WebCryptoKeyUsageEncrypt, "A192GCM"},
+      // AES-GCM 256
+      {key_hex_256, aes_gcm_alg, blink::WebCryptoKeyUsageDecrypt, "A256GCM"},
+      // AES-KW 128
+      {key_hex_128, aes_kw_alg,
+       blink::WebCryptoKeyUsageWrapKey | blink::WebCryptoKeyUsageUnwrapKey,
+       "A128KW"},
+      // AES-KW 192
+      {key_hex_192, aes_kw_alg,
+       blink::WebCryptoKeyUsageWrapKey | blink::WebCryptoKeyUsageUnwrapKey,
+       "A192KW"},
+      // AES-KW 256
+      {key_hex_256, aes_kw_alg,
+       blink::WebCryptoKeyUsageWrapKey | blink::WebCryptoKeyUsageUnwrapKey,
+       "A256KW"},
+      // HMAC SHA-1
+      {key_hex_256, hmac_sha_1_alg,
+       blink::WebCryptoKeyUsageSign | blink::WebCryptoKeyUsageVerify, "HS1"},
+      // HMAC SHA-384
+      {key_hex_384, hmac_sha_384_alg, blink::WebCryptoKeyUsageSign, "HS384"},
+      // HMAC SHA-512
+      {key_hex_512, hmac_sha_512_alg, blink::WebCryptoKeyUsageVerify, "HS512"},
+      // Large usage value
+      {key_hex_256, aes_cbc_alg,
+       blink::WebCryptoKeyUsageEncrypt | blink::WebCryptoKeyUsageDecrypt |
+           blink::WebCryptoKeyUsageWrapKey | blink::WebCryptoKeyUsageUnwrapKey,
+       "A256CBC"},
+      // Zero usage value
+      {key_hex_512, hmac_sha_512_alg, 0, "HS512"}, };
+
+  // Round-trip import/export each key.
+
+  blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+  blink::WebArrayBuffer json;
+  for (size_t test_index = 0; test_index < ARRAYSIZE_UNSAFE(kTests);
+       ++test_index) {
+    SCOPED_TRACE(test_index);
+    const TestCase& test = kTests[test_index];
+
+    // Import a raw key.
+    key = ImportSecretKeyFromRaw(
+        HexStringToBytes(test.key_hex), test.algorithm, test.usage);
+
+    // Export the key in JWK format and validate.
+    ASSERT_STATUS_SUCCESS(ExportKeyJwk(key, &json));
+    EXPECT_TRUE(
+        VerifySymmetricJwk(json, test.jwk_alg, test.key_hex, test.usage));
+
+    // Import the JWK-formatted key.
+    ASSERT_STATUS_SUCCESS(
+        ImportKeyJwk(CryptoData(json), test.algorithm, true, test.usage, &key));
+    EXPECT_TRUE(key.handle());
+    EXPECT_EQ(blink::WebCryptoKeyTypeSecret, key.type());
+    EXPECT_EQ(test.algorithm.id(), key.algorithm().id());
+    EXPECT_EQ(true, key.extractable());
+    EXPECT_EQ(test.usage, key.usages());
+
+    // Export the key in raw format and compare to the original.
+    blink::WebArrayBuffer key_raw_out;
+    ASSERT_STATUS_SUCCESS(
+        ExportKey(blink::WebCryptoKeyFormatRaw, key, &key_raw_out));
+    ExpectArrayBufferMatchesHex(test.key_hex, key_raw_out);
+  }
 }
 
 TEST_F(SharedCryptoTest, MAYBE(ImportExportSpki)) {

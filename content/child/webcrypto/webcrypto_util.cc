@@ -6,6 +6,7 @@
 
 #include "base/base64.h"
 #include "base/logging.h"
+#include "base/strings/stringprintf.h"
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithm.h"
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithmParams.h"
 #include "third_party/WebKit/public/platform/WebCryptoKeyAlgorithm.h"
@@ -47,10 +48,10 @@ Status Status::ErrorJwkBase64Decode(const std::string& property) {
                 "\" could not be base64 decoded");
 }
 
-Status Status::ErrorJwkExtractableInconsistent() {
+Status Status::ErrorJwkExtInconsistent() {
   return Status(
-      "The \"extractable\" property of the JWK dictionary is "
-      "inconsistent what that specified by the Web Crypto call");
+      "The \"ext\" property of the JWK dictionary is inconsistent what that "
+      "specified by the Web Crypto call");
 }
 
 Status Status::ErrorJwkUnrecognizedAlgorithm() {
@@ -69,15 +70,32 @@ Status Status::ErrorJwkAlgorithmMissing() {
       "and one wasn't specified by the Web Crypto call");
 }
 
-Status Status::ErrorJwkUnrecognizedUsage() {
+Status Status::ErrorJwkUnrecognizedUse() {
   return Status("The JWK \"use\" property could not be parsed");
 }
 
-Status Status::ErrorJwkUsageInconsistent() {
+Status Status::ErrorJwkUnrecognizedKeyop() {
+  return Status("The JWK \"key_ops\" property could not be parsed");
+}
+
+Status Status::ErrorJwkUseInconsistent() {
   return Status(
       "The JWK \"use\" property was inconsistent with that specified "
       "by the Web Crypto call. The JWK usage must be a superset of "
       "those requested");
+}
+
+Status Status::ErrorJwkKeyopsInconsistent() {
+  return Status(
+      "The JWK \"key_ops\" property was inconsistent with that "
+      "specified by the Web Crypto call. The JWK usage must be a "
+      "superset of those requested");
+}
+
+Status Status::ErrorJwkUseAndKeyopsInconsistent() {
+  return Status(
+      "The JWK \"use\" and \"key_ops\" properties were both found "
+      "but are inconsistent with each other.");
 }
 
 Status Status::ErrorJwkRsaPrivateKeyUnsupported() {
@@ -217,6 +235,73 @@ bool Base64DecodeUrlSafe(const std::string& input, std::string* output) {
   std::replace(base64EncodedText.begin(), base64EncodedText.end(), '_', '/');
   base64EncodedText.append((4 - base64EncodedText.size() % 4) % 4, '=');
   return base::Base64Decode(base64EncodedText, output);
+}
+
+// Returns an unpadded 'base64url' encoding of the input data, using the
+// inverse of the process above.
+std::string Base64EncodeUrlSafe(const base::StringPiece& input) {
+  std::string output;
+  base::Base64Encode(input, &output);
+  std::replace(output.begin(), output.end(), '+', '-');
+  std::replace(output.begin(), output.end(), '/', '_');
+  output.erase(std::remove(output.begin(), output.end(), '='), output.end());
+  return output;
+}
+
+struct JwkToWebCryptoUsage {
+  const char* const jwk_key_op;
+  const blink::WebCryptoKeyUsage webcrypto_usage;
+};
+
+const JwkToWebCryptoUsage kJwkWebCryptoUsageMap[] = {
+    {"encrypt", blink::WebCryptoKeyUsageEncrypt},
+    {"decrypt", blink::WebCryptoKeyUsageDecrypt},
+    {"deriveKey", blink::WebCryptoKeyUsageDeriveKey},
+    // TODO(padolph): Add 'deriveBits' once supported by Blink.
+    {"sign", blink::WebCryptoKeyUsageSign},
+    {"unwrapKey", blink::WebCryptoKeyUsageUnwrapKey},
+    {"verify", blink::WebCryptoKeyUsageVerify},
+    {"wrapKey", blink::WebCryptoKeyUsageWrapKey}};
+
+// Modifies the input usage_mask by according to the key_op value.
+bool JwkKeyOpToWebCryptoUsage(const std::string& key_op,
+                              blink::WebCryptoKeyUsageMask* usage_mask) {
+  for (size_t i = 0; i < arraysize(kJwkWebCryptoUsageMap); ++i) {
+    if (kJwkWebCryptoUsageMap[i].jwk_key_op == key_op) {
+      *usage_mask |= kJwkWebCryptoUsageMap[i].webcrypto_usage;
+      return true;
+    }
+  }
+  return false;
+}
+
+// Composes a Web Crypto usage mask from an array of JWK key_ops values.
+Status GetWebCryptoUsagesFromJwkKeyOps(
+    const base::ListValue* jwk_key_ops_value,
+    blink::WebCryptoKeyUsageMask* usage_mask) {
+  *usage_mask = 0;
+  for (size_t i = 0; i < jwk_key_ops_value->GetSize(); ++i) {
+    std::string key_op;
+    if (!jwk_key_ops_value->GetString(i, &key_op)) {
+      return Status::ErrorJwkPropertyWrongType(
+          base::StringPrintf("key_ops[%d]", static_cast<int>(i)), "string");
+    }
+    if (!JwkKeyOpToWebCryptoUsage(key_op, usage_mask))
+      return Status::ErrorJwkUnrecognizedKeyop();
+  }
+  return Status::Success();
+}
+
+// Composes a JWK key_ops List from a Web Crypto usage mask.
+// Note: Caller must assume ownership of returned instance.
+base::ListValue* CreateJwkKeyOpsFromWebCryptoUsages(
+    blink::WebCryptoKeyUsageMask usage_mask) {
+  base::ListValue* jwk_key_ops = new base::ListValue();
+  for (size_t i = 0; i < arraysize(kJwkWebCryptoUsageMap); ++i) {
+    if (usage_mask & kJwkWebCryptoUsageMap[i].webcrypto_usage)
+      jwk_key_ops->AppendString(kJwkWebCryptoUsageMap[i].jwk_key_op);
+  }
+  return jwk_key_ops;
 }
 
 bool IsHashAlgorithm(blink::WebCryptoAlgorithmId alg_id) {
