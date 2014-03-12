@@ -7,7 +7,6 @@
 #include "components/signin/core/signin_client.h"
 #include "components/signin/core/webdata/token_web_data.h"
 #include "components/webdata/common/web_data_service_base.h"
-#include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -275,7 +274,7 @@ std::vector<std::string> MutableProfileOAuth2TokenService::GetAccounts() {
 void MutableProfileOAuth2TokenService::UpdateCredentials(
     const std::string& account_id,
     const std::string& refresh_token) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!account_id.empty());
   DCHECK(!refresh_token.empty());
 
@@ -308,7 +307,7 @@ void MutableProfileOAuth2TokenService::UpdateCredentials(
 
 void MutableProfileOAuth2TokenService::RevokeCredentials(
     const std::string& account_id) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   if (refresh_tokens_.count(account_id) > 0) {
     RevokeCredentialsOnServer(refresh_tokens_[account_id]->refresh_token());
@@ -340,7 +339,7 @@ void MutableProfileOAuth2TokenService::ClearPersistedCredentials(
 void MutableProfileOAuth2TokenService::RevokeAllCredentials() {
   if (!client()->CanRevokeCredentials())
     return;
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
   CancelWebTokenFetch();
   CancelAllRequests();
   ClearCache();

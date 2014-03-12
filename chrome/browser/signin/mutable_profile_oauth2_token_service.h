@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_SIGNIN_MUTABLE_PROFILE_OAUTH2_TOKEN_SERVICE_H_
 
 #include "base/memory/scoped_vector.h"
+#include "base/threading/thread_checker.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "components/webdata/common/web_data_service_base.h"
 #include "components/webdata/common/web_data_service_consumer.h"
@@ -21,6 +22,9 @@ class MutableProfileOAuth2TokenService : public ProfileOAuth2TokenService,
   // ProfileOAuth2TokenService overrides.
   virtual void Shutdown() OVERRIDE;
   virtual std::vector<std::string> GetAccounts() OVERRIDE;
+
+  // The below three methods should be called only on the thread on which this
+  // object was created.
   virtual void LoadCredentials(const std::string& primary_account_id) OVERRIDE;
   virtual void UpdateCredentials(const std::string& account_id,
                                  const std::string& refresh_token) OVERRIDE;
@@ -124,6 +128,10 @@ class MutableProfileOAuth2TokenService : public ProfileOAuth2TokenService,
   std::string loading_primary_account_id_;
 
   ScopedVector<RevokeServerRefreshToken> server_revokes_;
+
+  // Used to verify that certain methods are called only on the thread on which
+  // this instance was created.
+  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(MutableProfileOAuth2TokenService);
 };
