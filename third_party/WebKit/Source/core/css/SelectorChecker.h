@@ -59,11 +59,6 @@ public:
         ScopeIsShadowHostInPseudoHostParameter = ScopeIsShadowHost | TreatShadowHostAsNormalScope
     };
 
-    enum MatchingTagType {
-        MatchingElement = 0,
-        MatchingHostInItsShadowTree
-    };
-
     struct SelectorCheckingContext {
         // Initial selector constructor
         SelectorCheckingContext(const CSSSelector& selector, Element* element, VisitedMatchType visitedMatchType)
@@ -114,7 +109,7 @@ public:
 
     Mode mode() const { return m_mode; }
 
-    static bool tagMatches(const Element&, const QualifiedName&, MatchingTagType = MatchingElement);
+    static bool tagMatches(const Element&, const QualifiedName&);
     static bool isCommonPseudoClassSelector(const CSSSelector&);
     static bool matchesFocusPseudoClass(const Element&);
     static bool checkExactAttribute(const Element&, const QualifiedName& selectorAttributeName, const StringImpl* value);
@@ -154,12 +149,12 @@ inline bool SelectorChecker::isCommonPseudoClassSelector(const CSSSelector& sele
         || pseudoType == CSSSelector::PseudoFocus;
 }
 
-inline bool SelectorChecker::tagMatches(const Element& element, const QualifiedName& tagQName, MatchingTagType matchingTagType)
+inline bool SelectorChecker::tagMatches(const Element& element, const QualifiedName& tagQName)
 {
     if (tagQName == anyQName())
         return true;
     const AtomicString& localName = tagQName.localName();
-    if (localName != starAtom && (localName != element.localName() || matchingTagType == MatchingHostInItsShadowTree))
+    if (localName != starAtom && localName != element.localName())
         return false;
     const AtomicString& namespaceURI = tagQName.namespaceURI();
     return namespaceURI == starAtom || namespaceURI == element.namespaceURI();

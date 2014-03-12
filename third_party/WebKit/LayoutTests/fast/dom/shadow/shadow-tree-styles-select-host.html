@@ -21,6 +21,12 @@ function shouldHaveBorderColor(selector, color) {
     shouldBeEqualToString('borderColorOf(\'' + selector + '\')', color);
 }
 
+function shouldNotHaveBorderColor(selector, color) {
+    var text = 'borderColorOf(\'' + selector + '\')';
+    var unevaledString = '"' + color.replace(/\\/g, "\\\\").replace(/"/g, "\"") + '"';
+    shouldNotBe(text, unevaledString);
+}
+
 function cleanUp() {
     sandbox.innerHTML = '';
 }
@@ -41,7 +47,7 @@ shouldHaveBorderColor('host-child', 'rgb(0, 0, 0)');
 
 cleanUp();
 
-debug('Test that * in a shadow tree can match without :host.');
+debug('Test that * in a shadow tree cannot match without :host.');
 
 sandbox.appendChild(
     createDOM('div', {'id': 'host'},
@@ -52,18 +58,18 @@ sandbox.appendChild(
         createDOM('div', {'id': 'host-child'},
             document.createTextNode('Hello, Host!'))));
 
-shouldHaveBorderColor('host', 'rgb(0, 128, 0)');
+shouldNotHaveBorderColor('host', 'rgb(0, 128, 0)');
 shouldHaveBorderColor('host-child', 'rgb(0, 0, 0)');
 
 cleanUp();
 
-debug('Test that :not() without * in a shadow tree can match without :host.');
+debug('Test that :not(*) in a shadow tree can match without :host.');
 
 sandbox.appendChild(
     createDOM('div', {'id': 'host'},
         createShadowRoot(
             createDOM('style', {},
-                document.createTextNode(':not(div) { border: 1px solid green; }')),
+                document.createTextNode(':not(*) { border: 1px solid green; }')),
             createDOM('content', {})),
         createDOM('div', {'id': 'host-child'},
             document.createTextNode('Hello, Host!'))));

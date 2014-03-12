@@ -477,7 +477,7 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
     bool elementIsHostInItsShadowTree = isHostInItsShadowTree(element, context.behaviorAtBoundary, context.scope);
 
     if (selector.m_match == CSSSelector::Tag)
-        return SelectorChecker::tagMatches(element, selector.tagQName(), elementIsHostInItsShadowTree ? MatchingHostInItsShadowTree : MatchingElement);
+        return SelectorChecker::tagMatches(element, selector.tagQName()) && !elementIsHostInItsShadowTree;
 
     if (selector.m_match == CSSSelector::Class)
         return element.hasClass() && element.classNames().contains(selector.value()) && !elementIsHostInItsShadowTree;
