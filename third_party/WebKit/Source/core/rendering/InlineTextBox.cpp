@@ -984,7 +984,7 @@ static void adjustStepToDecorationLength(float& step, float& controlPointDistanc
  *             |-----------|
  *                 step
  */
-static void strokeWavyTextDecoration(GraphicsContext* context, FloatPoint& p1, FloatPoint& p2, float strokeThickness)
+static void strokeWavyTextDecoration(GraphicsContext* context, FloatPoint p1, FloatPoint p2, float strokeThickness)
 {
     context->adjustLineToPixelBoundaries(p1, p2, strokeThickness, context->strokeStyle());
 
@@ -1071,6 +1071,28 @@ static bool shouldSetDecorationAntialias(TextDecorationStyle underline, TextDeco
     return shouldSetDecorationAntialias(underline) || shouldSetDecorationAntialias(overline) || shouldSetDecorationAntialias(linethrough);
 }
 
+static void paintAppliedDecoration(GraphicsContext* context, FloatPoint start, float width, float doubleOffset, int wavyOffsetFactor,
+    RenderObject::AppliedTextDecoration decoration, float thickness, bool antialiasDecoration, bool isPrinting)
+{
+    context->setStrokeStyle(textDecorationStyleToStrokeStyle(decoration.style));
+    context->setStrokeColor(decoration.color);
+
+    switch (decoration.style) {
+    case TextDecorationStyleWavy:
+        strokeWavyTextDecoration(context, start + FloatPoint(0, doubleOffset * wavyOffsetFactor), start + FloatPoint(width, doubleOffset * wavyOffsetFactor), thickness);
+        break;
+    case TextDecorationStyleDotted:
+    case TextDecorationStyleDashed:
+        context->setShouldAntialias(antialiasDecoration);
+        // Fall through
+    default:
+        context->drawLineForText(start, width, isPrinting);
+
+        if (decoration.style == TextDecorationStyleDouble)
+            context->drawLineForText(start + FloatPoint(0, doubleOffset), width, isPrinting);
+    }
+}
+
 void InlineTextBox::paintDecoration(GraphicsContext* context, const FloatPoint& boxOrigin, TextDecoration deco, const ShadowList* shadowList)
 {
     GraphicsContextStateSaver stateSaver(*context);
@@ -1153,68 +1175,15 @@ void InlineTextBox::paintDecoration(GraphicsContext* context, const FloatPoint& 
         float doubleOffset = textDecorationThickness + 1.f;
 
         if (deco & TextDecorationUnderline) {
-            context->setStrokeStyle(textDecorationStyleToStrokeStyle(underline.style));
-            context->setStrokeColor(underline.color);
             const int underlineOffset = computeUnderlineOffset(styleToUse->textUnderlinePosition(), styleToUse->fontMetrics(), this, textDecorationThickness);
-            switch (underline.style) {
-            case TextDecorationStyleWavy: {
-                FloatPoint start(localOrigin.x(), localOrigin.y() + underlineOffset + doubleOffset);
-                FloatPoint end(localOrigin.x() + width, localOrigin.y() + underlineOffset + doubleOffset);
-                strokeWavyTextDecoration(context, start, end, textDecorationThickness);
-                break;
-            }
-            case TextDecorationStyleDotted:
-            case TextDecorationStyleDashed:
-                context->setShouldAntialias(antialiasDecoration);
-                // Fall through
-            case TextDecorationStyleDouble:
-                context->drawLineForText(FloatPoint(localOrigin.x(), localOrigin.y() + underlineOffset + doubleOffset), width, isPrinting);
-                // Fall through
-            default:
-                context->drawLineForText(FloatPoint(localOrigin.x(), localOrigin.y() + underlineOffset), width, isPrinting);
-            }
+            paintAppliedDecoration(context, localOrigin + FloatPoint(0, underlineOffset), width, doubleOffset, 1, underline, textDecorationThickness, antialiasDecoration, isPrinting);
         }
         if (deco & TextDecorationOverline) {
-            context->setStrokeStyle(textDecorationStyleToStrokeStyle(overline.style));
-            context->setStrokeColor(overline.color);
-            switch (overline.style) {
-            case TextDecorationStyleWavy: {
-                FloatPoint start(localOrigin.x(), localOrigin.y() - doubleOffset);
-                FloatPoint end(localOrigin.x() + width, localOrigin.y() - doubleOffset);
-                strokeWavyTextDecoration(context, start, end, textDecorationThickness);
-                break;
-            }
-            case TextDecorationStyleDotted:
-            case TextDecorationStyleDashed:
-                context->setShouldAntialias(antialiasDecoration);
-                // Fall through
-            case TextDecorationStyleDouble:
-                context->drawLineForText(FloatPoint(localOrigin.x(), localOrigin.y() - doubleOffset), width, isPrinting);
-                // Fall through
-            default:
-                context->drawLineForText(localOrigin, width, isPrinting);
-            }
+            paintAppliedDecoration(context, localOrigin, width, -doubleOffset, 1, overline, textDecorationThickness, antialiasDecoration, isPrinting);
         }
         if (deco & TextDecorationLineThrough) {
-            context->setStrokeStyle(textDecorationStyleToStrokeStyle(linethrough.style));
-            context->setStrokeColor(linethrough.color);
-            switch (linethrough.style) {
-            case TextDecorationStyleWavy: {
-                FloatPoint start(localOrigin.x(), localOrigin.y() + 2 * baseline / 3);
-                FloatPoint end(localOrigin.x() + width, localOrigin.y() + 2 * baseline / 3);
-                strokeWavyTextDecoration(context, start, end, textDecorationThickness);
-                break;
-            }
-            case TextDecorationStyleDotted:
-            case TextDecorationStyleDashed:
-                context->setShouldAntialias(antialiasDecoration);
-                // Fall through
-            case TextDecorationStyleDouble:
-                context->drawLineForText(FloatPoint(localOrigin.x(), localOrigin.y() + doubleOffset + 2 * baseline / 3), width, isPrinting);
-                // Fall through
-            default:
-                context->drawLineForText(FloatPoint(localOrigin.x(), localOrigin.y() + 2 * baseline / 3), width, isPrinting);
-            }
+            const float lineThroughOffset = 2 * baseline / 3;
+            paintAppliedDecoration(context, localOrigin + FloatPoint(0, lineThroughOffset), width, doubleOffset, 0, linethrough, textDecorationThickness, antialiasDecoration, isPrinting);
         }
     }
 }
