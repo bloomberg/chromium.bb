@@ -193,7 +193,6 @@ void RenderView::checkLayoutState(const LayoutState& state)
 
 void RenderView::initializeLayoutState(LayoutState& state)
 {
-    // FIXME: May be better to push a clip and avoid issuing offscreen repaints.
     state.m_clipped = false;
     state.m_pageLogicalHeight = m_pageLogicalHeight;
     state.m_pageLogicalHeightChanged = m_pageLogicalHeightChanged;
