@@ -591,7 +591,7 @@ void AutofillAgent::didAssociateFormControls(
     blink::WebFrame* frame = nodes[i].document().frame();
     // Only monitors dynamic forms created in the top frame. Dynamic forms
     // inserted in iframes are not captured yet.
-    if (!frame->parent()) {
+    if (frame && !frame->parent()) {
       password_autofill_agent_->OnDynamicFormsSeen(frame);
       return;
     }

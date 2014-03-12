@@ -156,4 +156,24 @@ TEST_F(ChromeRenderViewTest, ShowAutofillWarning) {
   EXPECT_TRUE(query_param.e);
 }
 
+// Regression test for [ http://crbug.com/346010 ].
+TEST_F(ChromeRenderViewTest, DontCrashWhileAssociatingForms) {
+  // Don't want any delay for form state sync changes. This will still post a
+  // message so updates will get coalesced, but as soon as we spin the message
+  // loop, it will generate an update.
+  SendContentStateImmediately();
+
+  LoadHTML("<form id='form'>"
+           "<foo id='foo'>"
+           "<script id='script'>"
+           "document.documentElement.appendChild(foo);"
+           "newDoc = document.implementation.createDocument("
+           "    \"http://www.w3.org/1999/xhtml\", \"html\");"
+           "foo.insertBefore(form, script);"
+           "newDoc.adoptNode(foo);"
+           "</script>");
+
+  // Shouldn't crash.
+}
+
 }  // namespace autofill
