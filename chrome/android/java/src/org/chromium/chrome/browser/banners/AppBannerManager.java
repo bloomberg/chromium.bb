@@ -58,9 +58,6 @@ public class AppBannerManager implements AppBannerView.Observer, InstallerDelega
     /** Data about the app being advertised. */
     private AppData mAppData;
 
-    /** Task to get details about an app. */
-    private AppDetailsDelegate.DetailsTask mDetailsTask;
-
     /**
      * Checks if app banners are enabled.
      * @return True if banners are enabled, false otherwise.
@@ -110,6 +107,7 @@ public class AppBannerManager implements AppBannerView.Observer, InstallerDelega
             @Override
             public void onDestroyed(Tab tab) {
                 nativeDestroy(mNativePointer);
+                mContentView = null;
                 resetState();
             }
         };
@@ -135,9 +133,8 @@ public class AppBannerManager implements AppBannerView.Observer, InstallerDelega
 
         if (sAppDetailsDelegate == null || !isBannerForCurrentPage(url)) return;
 
-        mDetailsTask = sAppDetailsDelegate.createTask(
-                this, mContentView.getContext(), url, packageName);
-        mDetailsTask.execute();
+        int iconSize = AppBannerView.getIconSize(mContentView.getContext());
+        sAppDetailsDelegate.getAppDetailsAsynchronously(this, url, packageName, iconSize);
     }
 
     /**
@@ -275,11 +272,6 @@ public class AppBannerManager implements AppBannerView.Observer, InstallerDelega
      * Resets all of the state, killing off any running tasks.
      */
     private void resetState() {
-        if (mDetailsTask != null) {
-            mDetailsTask.cancel(true);
-            mDetailsTask = null;
-        }
-
         if (mAppData != null) {
             mAppData.destroy();
             mAppData = null;
