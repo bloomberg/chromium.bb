@@ -286,8 +286,10 @@ bool FromHeaderDictionary(const base::DictionaryValue* header_value,
     }
   } else if (header_value->HasKey(keys::kHeaderBinaryValueKey)) {
     const base::ListValue* list = NULL;
-    if (!header_value->GetList(keys::kHeaderBinaryValueKey, &list) ||
-        !helpers::CharListToString(list, value)) {
+    if (!header_value->HasKey(keys::kHeaderBinaryValueKey)) {
+      *value = "";
+    } else if (!header_value->GetList(keys::kHeaderBinaryValueKey, &list) ||
+               !helpers::CharListToString(list, value)) {
       return false;
     }
   }
@@ -2219,6 +2221,23 @@ bool WebRequestAddEventListener::RunImpl() {
   return true;
 }
 
+void WebRequestEventHandled::CancelWithError(
+    const std::string& event_name,
+    const std::string& sub_event_name,
+    uint64 request_id,
+    scoped_ptr<ExtensionWebRequestEventRouter::EventResponse> response,
+    const std::string& error) {
+  error_ = error;
+  response->cancel = true;
+  ExtensionWebRequestEventRouter::GetInstance()->OnEventHandled(
+      profile_id(),
+      extension_id(),
+      event_name,
+      sub_event_name,
+      request_id,
+      response.release());
+}
+
 bool WebRequestEventHandled::RunImpl() {
   std::string event_name;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &event_name));
@@ -2247,7 +2266,11 @@ bool WebRequestEventHandled::RunImpl() {
     if (value->HasKey("cancel")) {
       // Don't allow cancel mixed with other keys.
       if (value->HasKey("redirectUrl") || value->HasKey("requestHeaders")) {
-        error_ = keys::kInvalidBlockingResponse;
+        CancelWithError(event_name,
+                        sub_event_name,
+                        request_id,
+                        response.Pass(),
+                        keys::kInvalidBlockingResponse);
         return false;
       }
 
@@ -2262,8 +2285,12 @@ bool WebRequestEventHandled::RunImpl() {
                                                    &new_url_str));
       response->new_url = GURL(new_url_str);
       if (!response->new_url.is_valid()) {
-        error_ = ErrorUtils::FormatErrorMessage(
-            keys::kInvalidRedirectUrl, new_url_str);
+        CancelWithError(event_name,
+                        sub_event_name,
+                        request_id,
+                        response.Pass(),
+                        ErrorUtils::FormatErrorMessage(
+                            keys::kInvalidRedirectUrl, new_url_str));
         return false;
       }
     }
@@ -2279,8 +2306,17 @@ bool WebRequestEventHandled::RunImpl() {
         std::string value;
         EXTENSION_FUNCTION_VALIDATE(
             request_headers_value->GetDictionary(i, &header_value));
-        EXTENSION_FUNCTION_VALIDATE(
-            FromHeaderDictionary(header_value, &name, &value));
+        if (!FromHeaderDictionary(header_value, &name, &value)) {
+          std::string serialized_header;
+          base::JSONWriter::Write(header_value, &serialized_header);
+          CancelWithError(event_name,
+                          sub_event_name,
+                          request_id,
+                          response.Pass(),
+                          ErrorUtils::FormatErrorMessage(keys::kInvalidHeader,
+                                                         serialized_header));
+          return false;
+        }
         response->request_headers->SetHeader(name, value);
       }
     }
@@ -2297,8 +2333,17 @@ bool WebRequestEventHandled::RunImpl() {
         std::string value;
         EXTENSION_FUNCTION_VALIDATE(
             response_headers_value->GetDictionary(i, &header_value));
-        EXTENSION_FUNCTION_VALIDATE(
-            FromHeaderDictionary(header_value, &name, &value));
+        if (!FromHeaderDictionary(header_value, &name, &value)) {
+          std::string serialized_header;
+          base::JSONWriter::Write(header_value, &serialized_header);
+          CancelWithError(event_name,
+                          sub_event_name,
+                          request_id,
+                          response.Pass(),
+                          ErrorUtils::FormatErrorMessage(keys::kInvalidHeader,
+                                                         serialized_header));
+          return false;
+        }
         response_headers->push_back(helpers::ResponseHeader(name, value));
       }
       response->response_headers.reset(response_headers.release());

@@ -124,6 +124,88 @@ runTests([
     navigateAndWait(getURLHttpSimpleLoad());
   },
 
+  // Navigates to a page and provides invalid header information. The request
+  // gets canceled.
+  function simpleLoadCancelledOnReceiveHeadersInvalidHeaders() {
+    expect(
+      [  // events
+        { label: "onBeforeRequest",
+          event: "onBeforeRequest",
+          details: {
+            method: "GET",
+            type: "main_frame",
+            url: getURLHttpSimpleLoad(),
+            frameUrl: getURLHttpSimpleLoad()
+          },
+        },
+        { label: "onBeforeSendHeaders",
+          event: "onBeforeSendHeaders",
+          details: {
+            url: getURLHttpSimpleLoad(),
+            // Note: no requestHeaders because we don't ask for them.
+          },
+          retval: {requestHeaders: [{name: "User-Agent"}]}
+        },
+        // Cancelling is considered an error.
+        { label: "onErrorOccurred",
+          event: "onErrorOccurred",
+          details: {
+            url: getURLHttpSimpleLoad(),
+            fromCache: false,
+            error: "net::ERR_BLOCKED_BY_CLIENT"
+            // Request to chrome-extension:// url has no IP.
+          }
+        },
+      ],
+      [  // event order
+        ["onBeforeRequest", "onBeforeSendHeaders", "onErrorOccurred"]
+      ],
+      {urls: ["<all_urls>"]},  // filter
+      ["blocking"]);
+    navigateAndWait(getURLHttpSimpleLoad());
+  },
+
+  // Navigates to a page and provides invalid header information. The request
+  // gets canceled.
+  function simpleLoadCancelledOnReceiveHeadersInvalidResponse() {
+    expect(
+      [  // events
+        { label: "onBeforeRequest",
+          event: "onBeforeRequest",
+          details: {
+            method: "GET",
+            type: "main_frame",
+            url: getURLHttpSimpleLoad(),
+            frameUrl: getURLHttpSimpleLoad()
+          },
+        },
+        { label: "onBeforeSendHeaders",
+          event: "onBeforeSendHeaders",
+          details: {
+            url: getURLHttpSimpleLoad(),
+            // Note: no requestHeaders because we don't ask for them.
+          },
+          retval: {foo: "bar"}
+        },
+        // Cancelling is considered an error.
+        { label: "onErrorOccurred",
+          event: "onErrorOccurred",
+          details: {
+            url: getURLHttpSimpleLoad(),
+            fromCache: false,
+            error: "net::ERR_BLOCKED_BY_CLIENT"
+            // Request to chrome-extension:// url has no IP.
+          }
+        },
+      ],
+      [  // event order
+        ["onBeforeRequest", "onBeforeSendHeaders", "onErrorOccurred"]
+      ],
+      {urls: ["<all_urls>"]},  // filter
+      ["blocking"]);
+    navigateAndWait(getURLHttpSimpleLoad());
+  },
+
   // Navigates to a page with a blocking handler that redirects to a different
   // page.
   function complexLoadRedirected() {

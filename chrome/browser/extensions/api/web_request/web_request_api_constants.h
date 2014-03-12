@@ -78,6 +78,7 @@ extern const char kInvalidBlockingResponse[];
 extern const char kInvalidRequestFilterUrl[];
 extern const char kBlockingPermissionRequired[];
 extern const char kHostPermissionsRequired[];
+extern const char kInvalidHeader[];
 
 }  // namespace extension_web_request_api_constants
 

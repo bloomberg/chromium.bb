@@ -486,6 +486,17 @@ class WebRequestEventHandled : public SyncIOThreadExtensionFunction {
  protected:
   virtual ~WebRequestEventHandled() {}
 
+  // Cancels and unblocks the network request, and sets error_ such that the
+  // developer console will show the respective error message. Use this function
+  // to handle incorrect requests from the extension that cannot be detected by
+  // the schema validator.
+  void CancelWithError(
+      const std::string& event_name,
+      const std::string& sub_event_name,
+      uint64 request_id,
+      scoped_ptr<ExtensionWebRequestEventRouter::EventResponse> response,
+      const std::string& error);
+
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
 };

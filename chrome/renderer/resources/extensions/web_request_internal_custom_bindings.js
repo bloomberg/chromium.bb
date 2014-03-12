@@ -90,7 +90,7 @@ WebRequestEventImpl.prototype.addListener =
             eventName, subEventName, requestId, result);
       } catch (e) {
         webRequestInternal.eventHandled(
-            eventName, subEventName, requestId);
+            eventName, subEventName, requestId, {cancel: true});
         throw e;
       }
     };
