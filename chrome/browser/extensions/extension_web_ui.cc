@@ -142,8 +142,8 @@ ExtensionWebUI::ExtensionWebUI(content::WebUI* web_ui, const GURL& url)
 
   // Hack: A few things we specialize just for the bookmark manager.
   if (extension->id() == extension_misc::kBookmarkManagerId) {
-    bookmark_manager_private_event_router_.reset(
-        new extensions::BookmarkManagerPrivateEventRouter(
+    bookmark_manager_private_drag_event_router_.reset(
+        new extensions::BookmarkManagerPrivateDragEventRouter(
             profile, web_ui->GetWebContents()));
 
     web_ui->SetLinkTransitionType(content::PAGE_TRANSITION_AUTO_BOOKMARK);
@@ -152,9 +152,9 @@ ExtensionWebUI::ExtensionWebUI(content::WebUI* web_ui, const GURL& url)
 
 ExtensionWebUI::~ExtensionWebUI() {}
 
-extensions::BookmarkManagerPrivateEventRouter*
-ExtensionWebUI::bookmark_manager_private_event_router() {
-  return bookmark_manager_private_event_router_.get();
+extensions::BookmarkManagerPrivateDragEventRouter*
+ExtensionWebUI::bookmark_manager_private_drag_event_router() {
+  return bookmark_manager_private_drag_event_router_.get();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

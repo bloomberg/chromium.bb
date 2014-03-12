@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/lazy_instance.h"
 #include "base/memory/linked_ptr.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
@@ -32,7 +33,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_ui.h"
-#include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/view_type_utils.h"
 #include "grit/generated_resources.h"
@@ -166,23 +166,95 @@ CreateApiBookmarkNodeData(Profile* profile, const BookmarkNodeData& data) {
 }  // namespace
 
 BookmarkManagerPrivateEventRouter::BookmarkManagerPrivateEventRouter(
+    content::BrowserContext* browser_context,
+    BookmarkModel* bookmark_model)
+    : browser_context_(browser_context), bookmark_model_(bookmark_model) {
+  bookmark_model_->AddObserver(this);
+}
+
+BookmarkManagerPrivateEventRouter::~BookmarkManagerPrivateEventRouter() {
+  if (bookmark_model_)
+    bookmark_model_->RemoveObserver(this);
+}
+
+void BookmarkManagerPrivateEventRouter::DispatchEvent(
+    const std::string& event_name,
+    scoped_ptr<base::ListValue> event_args) {
+  extensions::ExtensionSystem::Get(browser_context_)
+      ->event_router()
+      ->BroadcastEvent(make_scoped_ptr(
+          new extensions::Event(event_name, event_args.Pass())));
+}
+
+void BookmarkManagerPrivateEventRouter::BookmarkModelChanged() {}
+
+void BookmarkManagerPrivateEventRouter::BookmarkModelBeingDeleted(
+    BookmarkModel* model) {
+  bookmark_model_ = NULL;
+}
+
+void BookmarkManagerPrivateEventRouter::BookmarkMetaInfoChanged(
+    BookmarkModel* model,
+    const BookmarkNode* node) {
+  DispatchEvent(bookmark_manager_private::OnMetaInfoChanged::kEventName,
+                bookmark_manager_private::OnMetaInfoChanged::Create(
+                    base::Int64ToString(node->id())));
+}
+
+BookmarkManagerPrivateAPI::BookmarkManagerPrivateAPI(
+    content::BrowserContext* browser_context)
+    : browser_context_(browser_context) {
+  EventRouter* event_router =
+      ExtensionSystem::Get(browser_context)->event_router();
+  event_router->RegisterObserver(
+      this, bookmark_manager_private::OnMetaInfoChanged::kEventName);
+}
+
+BookmarkManagerPrivateAPI::~BookmarkManagerPrivateAPI() {}
+
+void BookmarkManagerPrivateAPI::Shutdown() {
+  ExtensionSystem::Get(browser_context_)->event_router()->UnregisterObserver(
+      this);
+}
+
+static base::LazyInstance<
+    BrowserContextKeyedAPIFactory<BookmarkManagerPrivateAPI> > g_factory =
+    LAZY_INSTANCE_INITIALIZER;
+
+// static
+BrowserContextKeyedAPIFactory<BookmarkManagerPrivateAPI>*
+BookmarkManagerPrivateAPI::GetFactoryInstance() {
+  return g_factory.Pointer();
+}
+
+void BookmarkManagerPrivateAPI::OnListenerAdded(
+    const EventListenerInfo& details) {
+  ExtensionSystem::Get(browser_context_)->event_router()->UnregisterObserver(
+      this);
+  event_router_.reset(new BookmarkManagerPrivateEventRouter(
+      browser_context_,
+      BookmarkModelFactory::GetForProfile(
+          Profile::FromBrowserContext(browser_context_))));
+}
+
+BookmarkManagerPrivateDragEventRouter::BookmarkManagerPrivateDragEventRouter(
     Profile* profile,
     content::WebContents* web_contents)
-    : profile_(profile),
-      web_contents_(web_contents) {
+    : profile_(profile), web_contents_(web_contents) {
   BookmarkTabHelper* bookmark_tab_helper =
       BookmarkTabHelper::FromWebContents(web_contents_);
   bookmark_tab_helper->set_bookmark_drag_delegate(this);
 }
 
-BookmarkManagerPrivateEventRouter::~BookmarkManagerPrivateEventRouter() {
+BookmarkManagerPrivateDragEventRouter::
+    ~BookmarkManagerPrivateDragEventRouter() {
   BookmarkTabHelper* bookmark_tab_helper =
       BookmarkTabHelper::FromWebContents(web_contents_);
   if (bookmark_tab_helper->bookmark_drag_delegate() == this)
     bookmark_tab_helper->set_bookmark_drag_delegate(NULL);
 }
 
-void BookmarkManagerPrivateEventRouter::DispatchEvent(
+void BookmarkManagerPrivateDragEventRouter::DispatchEvent(
     const std::string& event_name,
     scoped_ptr<base::ListValue> args) {
   if (!ExtensionSystem::Get(profile_)->event_router())
@@ -192,7 +264,7 @@ void BookmarkManagerPrivateEventRouter::DispatchEvent(
   ExtensionSystem::Get(profile_)->event_router()->BroadcastEvent(event.Pass());
 }
 
-void BookmarkManagerPrivateEventRouter::OnDragEnter(
+void BookmarkManagerPrivateDragEventRouter::OnDragEnter(
     const BookmarkNodeData& data) {
   if (data.size() == 0)
     return;
@@ -201,13 +273,13 @@ void BookmarkManagerPrivateEventRouter::OnDragEnter(
                     *CreateApiBookmarkNodeData(profile_, data)));
 }
 
-void BookmarkManagerPrivateEventRouter::OnDragOver(
+void BookmarkManagerPrivateDragEventRouter::OnDragOver(
     const BookmarkNodeData& data) {
   // Intentionally empty since these events happens too often and floods the
   // message queue. We do not need this event for the bookmark manager anyway.
 }
 
-void BookmarkManagerPrivateEventRouter::OnDragLeave(
+void BookmarkManagerPrivateDragEventRouter::OnDragLeave(
     const BookmarkNodeData& data) {
   if (data.size() == 0)
     return;
@@ -216,7 +288,8 @@ void BookmarkManagerPrivateEventRouter::OnDragLeave(
                     *CreateApiBookmarkNodeData(profile_, data)));
 }
 
-void BookmarkManagerPrivateEventRouter::OnDrop(const BookmarkNodeData& data) {
+void BookmarkManagerPrivateDragEventRouter::OnDrop(
+    const BookmarkNodeData& data) {
   if (data.size() == 0)
     return;
   DispatchEvent(bookmark_manager_private::OnDrop::kEventName,
@@ -229,13 +302,13 @@ void BookmarkManagerPrivateEventRouter::OnDrop(const BookmarkNodeData& data) {
 }
 
 const BookmarkNodeData*
-BookmarkManagerPrivateEventRouter::GetBookmarkNodeData() {
+BookmarkManagerPrivateDragEventRouter::GetBookmarkNodeData() {
   if (bookmark_drag_data_.is_valid())
     return &bookmark_drag_data_;
   return NULL;
 }
 
-void BookmarkManagerPrivateEventRouter::ClearBookmarkNodeData() {
+void BookmarkManagerPrivateDragEventRouter::ClearBookmarkNodeData() {
   bookmark_drag_data_.Clear();
 }
 
@@ -474,8 +547,8 @@ bool BookmarkManagerPrivateDropFunction::RunImpl() {
     ExtensionWebUI* web_ui =
         static_cast<ExtensionWebUI*>(web_contents->GetWebUI()->GetController());
     CHECK(web_ui);
-    BookmarkManagerPrivateEventRouter* router =
-        web_ui->bookmark_manager_private_event_router();
+    BookmarkManagerPrivateDragEventRouter* router =
+        web_ui->bookmark_manager_private_drag_event_router();
 
     DCHECK(router);
     const BookmarkNodeData* drag_data = router->GetBookmarkNodeData();

@@ -20,7 +20,7 @@ class WebContents;
 }
 
 namespace extensions {
-class BookmarkManagerPrivateEventRouter;
+class BookmarkManagerPrivateDragEventRouter;
 }
 
 namespace user_prefs {
@@ -39,8 +39,8 @@ class ExtensionWebUI : public content::WebUIController {
 
   virtual ~ExtensionWebUI();
 
-  virtual extensions::BookmarkManagerPrivateEventRouter*
-      bookmark_manager_private_event_router();
+  virtual extensions::BookmarkManagerPrivateDragEventRouter*
+      bookmark_manager_private_drag_event_router();
 
   // BrowserURLHandler
   static bool HandleChromeURLOverride(GURL* url,
@@ -79,8 +79,8 @@ class ExtensionWebUI : public content::WebUIController {
 
   // TODO(aa): This seems out of place. Why is it not with the event routers for
   // the other extension APIs?
-  scoped_ptr<extensions::BookmarkManagerPrivateEventRouter>
-      bookmark_manager_private_event_router_;
+  scoped_ptr<extensions::BookmarkManagerPrivateDragEventRouter>
+      bookmark_manager_private_drag_event_router_;
 
   // The URL this WebUI was created for.
   GURL url_;

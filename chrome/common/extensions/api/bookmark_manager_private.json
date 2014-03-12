@@ -391,6 +391,14 @@
         "parameters": [
           {"name": "bookmarkNodeData", "$ref": "BookmarkNodeData"}
         ]
+      },
+      {
+        "name": "onMetaInfoChanged",
+        "type": "function",
+        "description": "Fired when the meta info of a node changes.",
+        "parameters": [
+          {"name": "id", "type": "string"}
+        ]
       }
     ]
   }

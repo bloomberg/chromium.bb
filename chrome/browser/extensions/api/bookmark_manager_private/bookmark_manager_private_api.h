@@ -5,30 +5,86 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_BOOKMARK_MANAGER_PRIVATE_BOOKMARK_MANAGER_PRIVATE_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_BOOKMARK_MANAGER_PRIVATE_BOOKMARK_MANAGER_PRIVATE_API_H_
 
+#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
+#include "chrome/browser/bookmarks/base_bookmark_model_observer.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/extensions/api/bookmarks/bookmarks_api.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/undo/bookmark_undo_service.h"
 #include "chrome/browser/undo/bookmark_undo_service_factory.h"
+#include "extensions/browser/browser_context_keyed_api_factory.h"
+#include "extensions/browser/event_router.h"
 
 struct BookmarkNodeData;
 class Profile;
 
 namespace content {
+class BrowserContext;
 class WebContents;
 }
 
 namespace extensions {
 
-// Class that handles the chrome.bookmarkManagerPrivate events.
-class BookmarkManagerPrivateEventRouter
+class BookmarkManagerPrivateEventRouter : public BaseBookmarkModelObserver {
+ public:
+  BookmarkManagerPrivateEventRouter(content::BrowserContext* browser_context,
+                                    BookmarkModel* bookmark_model);
+  virtual ~BookmarkManagerPrivateEventRouter();
+
+  // BaseBookmarkModelObserver:
+  virtual void BookmarkModelChanged() OVERRIDE;
+  virtual void BookmarkModelBeingDeleted(BookmarkModel* model) OVERRIDE;
+  virtual void BookmarkMetaInfoChanged(BookmarkModel* model,
+                                       const BookmarkNode* node) OVERRIDE;
+
+ private:
+  // Helper to actually dispatch an event to extension listeners.
+  void DispatchEvent(const std::string& event_name,
+                     scoped_ptr<base::ListValue> event_args);
+
+  content::BrowserContext* browser_context_;
+  BookmarkModel* bookmark_model_;
+};
+
+class BookmarkManagerPrivateAPI : public BrowserContextKeyedAPI,
+                                  public EventRouter::Observer {
+ public:
+  explicit BookmarkManagerPrivateAPI(content::BrowserContext* browser_context);
+  virtual ~BookmarkManagerPrivateAPI();
+
+  // BrowserContextKeyedService implementation.
+  virtual void Shutdown() OVERRIDE;
+
+  // BrowserContextKeyedAPI implementation.
+  static BrowserContextKeyedAPIFactory<BookmarkManagerPrivateAPI>*
+      GetFactoryInstance();
+
+  // EventRouter::Observer implementation.
+  virtual void OnListenerAdded(const EventListenerInfo& details) OVERRIDE;
+
+ private:
+  friend class BrowserContextKeyedAPIFactory<BookmarkManagerPrivateAPI>;
+
+  // BrowserContextKeyedAPI implementation.
+  static const char* service_name() { return "BookmarkManagerPrivateAPI"; }
+  static const bool kServiceIsNULLWhileTesting = true;
+
+  content::BrowserContext* browser_context_;
+
+  // Created lazily upon OnListenerAdded.
+  scoped_ptr<BookmarkManagerPrivateEventRouter> event_router_;
+};
+
+// Class that handles the drag and drop related chrome.bookmarkManagerPrivate
+// events. This class has one instance per bookmark manager tab.
+class BookmarkManagerPrivateDragEventRouter
     : public BookmarkTabHelper::BookmarkDrag {
  public:
-  BookmarkManagerPrivateEventRouter(Profile* profile,
-                                    content::WebContents* web_contents);
-  virtual ~BookmarkManagerPrivateEventRouter();
+  BookmarkManagerPrivateDragEventRouter(Profile* profile,
+                                        content::WebContents* web_contents);
+  virtual ~BookmarkManagerPrivateDragEventRouter();
 
   // BookmarkTabHelper::BookmarkDrag interface
   virtual void OnDragEnter(const BookmarkNodeData& data) OVERRIDE;
@@ -52,7 +108,7 @@ class BookmarkManagerPrivateEventRouter
   content::WebContents* web_contents_;
   BookmarkNodeData bookmark_drag_data_;
 
-  DISALLOW_COPY_AND_ASSIGN(BookmarkManagerPrivateEventRouter);
+  DISALLOW_COPY_AND_ASSIGN(BookmarkManagerPrivateDragEventRouter);
 };
 
 class ClipboardBookmarkManagerFunction : public extensions::BookmarksFunction {
