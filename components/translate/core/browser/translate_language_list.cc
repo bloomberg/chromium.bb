@@ -119,7 +119,7 @@ TranslateLanguageList::TranslateLanguageList()
     : resource_requests_allowed_(false), request_pending_(false) {
   // We default to our hard coded list of languages in
   // |kDefaultSupportedLanguages|. This list will be overriden by a server
-  // providing supported langauges list.
+  // providing supported languages list.
   for (size_t i = 0; i < arraysize(kDefaultSupportedLanguages); ++i)
     all_supported_languages_.insert(kDefaultSupportedLanguages[i]);
 
@@ -294,9 +294,10 @@ void TranslateLanguageList::SetSupportedLanguages(
     NOTREACHED();
     return;
   }
-
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
   const std::string& locale =
       TranslateDownloadManager::GetInstance()->application_locale();
+#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 
   // Now we can clear language list.
   all_supported_languages_.clear();
@@ -306,10 +307,15 @@ void TranslateLanguageList::SetSupportedLanguages(
        !iter.IsAtEnd();
        iter.Advance()) {
     const std::string& lang = iter.key();
+
+    // Mobile can provide manual triggers for languages where we don't yet
+    // have an ICU translation
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
     if (!l10n_util::IsLocaleNameTranslated(lang.c_str(), locale)) {
       TranslateBrowserMetrics::ReportUndisplayableLanguage(lang);
       continue;
     }
+#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
     all_supported_languages_.insert(lang);
     if (message.empty())
       message += lang;
@@ -332,8 +338,10 @@ void TranslateLanguageList::SetSupportedLanguages(
   for (base::DictionaryValue::Iterator iter(*alpha_languages);
        !iter.IsAtEnd(); iter.Advance()) {
     const std::string& lang = iter.key();
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
     if (!l10n_util::IsLocaleNameTranslated(lang.c_str(), locale))
       continue;
+#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
     alpha_languages_.insert(lang);
   }
 }
