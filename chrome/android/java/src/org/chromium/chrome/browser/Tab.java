@@ -54,6 +54,21 @@ import java.util.concurrent.atomic.AtomicInteger;
  *    turn sets the native pointer for Tab.  For destruction, subclasses in Java must clear
  *    their own native pointer reference, but Tab#destroy() will handle deleting the native
  *    object.
+ *
+ * Notes on {@link Tab#getId()}:
+ *
+ *    Tabs are all generated using a static {@link AtomicInteger} which means they are unique across
+ *  all {@link Activity}s running in the same {@link android.app.Application} process.  Calling
+ *  {@link Tab#incrementIdCounterTo(int)} will ensure new {@link Tab}s get ids greater than or equal
+ *  to the parameter passed to that method.  This should be used when doing things like loading
+ *  persisted {@link Tab}s from disk on process start to ensure all new {@link Tab}s don't have id
+ *  collision.
+ *    Some {@link Activity}s will not call this because they do not persist state, which means those
+ *  ids can potentially conflict with the ones restored from persisted state depending on which
+ *  {@link Activity} runs first on process start.  If {@link Tab}s are ever shared across
+ *  {@link Activity}s or mixed with {@link Tab}s from other {@link Activity}s conflicts can occur
+ *  unless special care is taken to make sure {@link Tab#incrementIdCounterTo(int)} is called with
+ *  the correct value across all affected {@link Activity}s.
  */
 public class Tab implements NavigationClient {
     public static final int INVALID_TAB_ID = -1;
@@ -501,6 +516,8 @@ public class Tab implements NavigationClient {
     }
 
     /**
+     * For more information about the uniqueness of {@link #getId()} see comments on {@link Tab}.
+     * @see Tab
      * @return The id representing this tab.
      */
     @CalledByNative
