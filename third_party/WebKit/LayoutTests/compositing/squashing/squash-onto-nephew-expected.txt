@@ -7,30 +7,18 @@
       (drawsContent 1)
       (children 1
         (GraphicsLayer
-          (position 25.00 25.00)
-          (bounds 300.00 300.00)
-          (contentsOpaque 1)
-          (backgroundColor #808080)
-          (children 1
+          (children 2
             (GraphicsLayer
-              (bounds 300.00 300.00)
-              (children 1
-                (GraphicsLayer
-                  (children 2
-                    (GraphicsLayer
-                      (position 100.00 100.00)
-                      (bounds 100.00 100.00)
-                      (contentsOpaque 1)
-                      (drawsContent 1)
-                      (backgroundColor #0000FF)
-                    )
-                    (GraphicsLayer
-                      (bounds 300.00 300.00)
-                      (drawsContent 1)
-                    )
-                  )
-                )
-              )
+              (position 125.00 125.00)
+              (bounds 100.00 100.00)
+              (contentsOpaque 1)
+              (drawsContent 1)
+              (backgroundColor #0000FF)
+            )
+            (GraphicsLayer
+              (position 40.00 40.00)
+              (bounds 180.00 190.00)
+              (drawsContent 1)
             )
           )
         )

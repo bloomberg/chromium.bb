@@ -138,9 +138,6 @@ public:
     void layerWasAdded(RenderLayer* parent, RenderLayer* child);
     void layerWillBeRemoved(RenderLayer* parent, RenderLayer* child);
 
-    // Get the nearest ancestor layer that has overflow or clip, but is not a stacking context
-    RenderLayer* enclosingNonStackingClippingLayer(const RenderLayer* layer) const;
-
     void repaintCompositedLayers();
 
     RenderLayer* rootRenderLayer() const;
@@ -217,9 +214,10 @@ private:
         SquashingState()
             : mostRecentMapping(0)
             , hasMostRecentMapping(false)
-            , nextSquashedLayerIndex(0) { }
+            , nextSquashedLayerIndex(0)
+            , clippingAncestorForMostRecentMapping(0) { }
 
-        void updateSquashingStateForNewMapping(CompositedLayerMappingPtr, bool hasNewCompositedLayerMapping, IntPoint newOffsetFromAbsoluteForSquashingCLM);
+        void updateSquashingStateForNewMapping(CompositedLayerMappingPtr, bool hasNewCompositedLayerMapping, IntPoint newOffsetFromAbsoluteForSquashingCLM, RenderLayer* clippingAncestorForMostRecentMapping);
 
         // The most recent composited backing that the layer should squash onto if needed.
         CompositedLayerMappingPtr mostRecentMapping;
@@ -231,9 +229,13 @@ private:
 
         // Counter that tracks what index the next RenderLayer would be if it gets squashed to the current squashing layer.
         size_t nextSquashedLayerIndex;
+
+        RenderLayer* clippingAncestorForMostRecentMapping;
     };
 
-    CompositingStateTransitionType computeCompositedLayerUpdate(const RenderLayer*);
+    bool canSquashIntoCurrentSquashingOwner(const RenderLayer* candidate, const SquashingState&, const RenderLayer* clippingAncestor);
+
+    CompositingStateTransitionType computeCompositedLayerUpdate(RenderLayer*);
     // Make updates to the layer based on viewport-constrained properties such as position:fixed. This can in turn affect
     // compositing.
     bool updateLayerIfViewportConstrained(RenderLayer*);
@@ -257,8 +259,8 @@ private:
     CompositingReasons subtreeReasonsForCompositing(RenderObject*, bool hasCompositedDescendants, bool has3DTransformedDescendants) const;
 
     // Make or destroy the CompositedLayerMapping for this layer; returns true if the compositedLayerMapping changed.
-    bool allocateOrClearCompositedLayerMapping(RenderLayer*);
-    bool updateSquashingAssignment(RenderLayer*, SquashingState&);
+    bool allocateOrClearCompositedLayerMapping(RenderLayer*, CompositingStateTransitionType compositedLayerUpdate);
+    bool updateSquashingAssignment(RenderLayer*, SquashingState&, CompositingStateTransitionType compositedLayerUpdate);
 
     void clearMappingForRenderLayerIncludingDescendants(RenderLayer*);
 
@@ -274,7 +276,7 @@ private:
 
     // Defines which RenderLayers will paint into which composited backings, by allocating and destroying CompositedLayerMappings as needed.
     void assignLayersToBackings(RenderLayer*, bool& layersChanged);
-    void assignLayersToBackingsInternal(RenderLayer*, SquashingState&, bool& layersChanged);
+    void assignLayersToBackingsInternal(RenderLayer*, SquashingState&, bool& layersChanged, RenderLayer* clippingAncestor);
 
     // Allocates, sets up hierarchy, and sets appropriate properties for the GraphicsLayers that correspond to a given
     // composited RenderLayer. Does nothing if the given RenderLayer does not have a CompositedLayerMapping.

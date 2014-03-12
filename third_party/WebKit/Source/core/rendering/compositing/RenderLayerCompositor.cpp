@@ -556,11 +556,10 @@ void RenderLayerCompositor::removeOutOfFlowPositionedLayer(RenderLayer* layer)
     m_outOfFlowPositionedLayers.remove(layer);
 }
 
-bool RenderLayerCompositor::allocateOrClearCompositedLayerMapping(RenderLayer* layer)
+bool RenderLayerCompositor::allocateOrClearCompositedLayerMapping(RenderLayer* layer, const CompositingStateTransitionType compositedLayerUpdate)
 {
     bool compositedLayerMappingChanged = false;
     bool nonCompositedReasonChanged = updateLayerIfViewportConstrained(layer);
-    CompositingStateTransitionType compositedLayerUpdate = computeCompositedLayerUpdate(layer);
 
     // FIXME: It would be nice to directly use the layer's compositing reason,
     // but allocateOrClearCompositedLayerMapping also gets called without having updated compositing
@@ -661,9 +660,8 @@ static IntPoint computeOffsetFromAbsolute(RenderLayer* layer)
     return roundedIntPoint(transformState.lastPlanarPoint());
 }
 
-bool RenderLayerCompositor::updateSquashingAssignment(RenderLayer* layer, SquashingState& squashingState)
+bool RenderLayerCompositor::updateSquashingAssignment(RenderLayer* layer, SquashingState& squashingState, const CompositingStateTransitionType compositedLayerUpdate)
 {
-    CompositingStateTransitionType compositedLayerUpdate = computeCompositedLayerUpdate(layer);
 
     // NOTE: In the future as we generalize this, the background of this layer may need to be assigned to a different backing than
     // the squashed RenderLayer's own primary contents. This would happen when we have a composited negative z-index element that needs
@@ -730,7 +728,13 @@ bool RenderLayerCompositor::updateLayerIfViewportConstrained(RenderLayer* layer)
     return false;
 }
 
-RenderLayerCompositor::CompositingStateTransitionType RenderLayerCompositor::computeCompositedLayerUpdate(const RenderLayer* layer)
+bool RenderLayerCompositor::canSquashIntoCurrentSquashingOwner(const RenderLayer* layer, const RenderLayerCompositor::SquashingState& squashingState, const RenderLayer* clippingAncestor)
+{
+    ASSERT(clippingAncestor);
+    return clippingAncestor == squashingState.clippingAncestorForMostRecentMapping;
+}
+
+RenderLayerCompositor::CompositingStateTransitionType RenderLayerCompositor::computeCompositedLayerUpdate(RenderLayer* layer)
 {
     CompositingStateTransitionType update = NoCompositingStateChange;
     if (needsOwnBacking(layer)) {
@@ -768,7 +772,7 @@ void RenderLayerCompositor::applyUpdateLayerCompositingStateChickenEggHacks(Rend
     }
 
     if (compositedLayerUpdate != NoCompositingStateChange)
-        allocateOrClearCompositedLayerMapping(layer);
+        allocateOrClearCompositedLayerMapping(layer, computeCompositedLayerUpdate(layer));
 }
 
 void RenderLayerCompositor::updateLayerCompositingState(RenderLayer* layer, UpdateLayerCompositingStateOptions options)
@@ -858,18 +862,6 @@ void RenderLayerCompositor::layerWillBeRemoved(RenderLayer* parent, RenderLayer*
 
     setCompositingParent(child, 0);
     setCompositingLayersNeedRebuild();
-}
-
-RenderLayer* RenderLayerCompositor::enclosingNonStackingClippingLayer(const RenderLayer* layer) const
-{
-    for (RenderLayer* curr = layer->parent(); curr != 0; curr = curr->parent()) {
-        if (curr->stackingNode()->isStackingContainer())
-            return 0;
-
-        if (curr->renderer()->hasClipOrOverflowClip())
-            return curr;
-    }
-    return 0;
 }
 
 void RenderLayerCompositor::addToOverlapMap(OverlapMap& overlapMap, RenderLayer* layer, IntRect& layerBounds)
@@ -1157,7 +1149,7 @@ void RenderLayerCompositor::computeCompositingRequirements(RenderLayer* ancestor
         overlapMap->geometryMap().popMappingsToAncestor(ancestorLayer);
 }
 
-void RenderLayerCompositor::SquashingState::updateSquashingStateForNewMapping(CompositedLayerMappingPtr newCompositedLayerMapping, bool hasNewCompositedLayerMapping, IntPoint newOffsetFromAbsoluteForSquashingCLM)
+void RenderLayerCompositor::SquashingState::updateSquashingStateForNewMapping(CompositedLayerMappingPtr newCompositedLayerMapping, bool hasNewCompositedLayerMapping, IntPoint newOffsetFromAbsoluteForSquashingCLM, RenderLayer* newClippingAncestorForMostRecentMapping)
 {
     // The most recent backing is done accumulating any more squashing layers.
     if (hasMostRecentMapping)
@@ -1167,46 +1159,57 @@ void RenderLayerCompositor::SquashingState::updateSquashingStateForNewMapping(Co
     mostRecentMapping = newCompositedLayerMapping;
     hasMostRecentMapping = hasNewCompositedLayerMapping;
     offsetFromAbsoluteForSquashingCLM = newOffsetFromAbsoluteForSquashingCLM;
+    clippingAncestorForMostRecentMapping = newClippingAncestorForMostRecentMapping;
 }
 
 void RenderLayerCompositor::assignLayersToBackings(RenderLayer* updateRoot, bool& layersChanged)
 {
     SquashingState squashingState;
-    assignLayersToBackingsInternal(updateRoot, squashingState, layersChanged);
+    assignLayersToBackingsInternal(updateRoot, squashingState, layersChanged, updateRoot);
     if (squashingState.hasMostRecentMapping)
         squashingState.mostRecentMapping->finishAccumulatingSquashingLayers(squashingState.nextSquashedLayerIndex);
 }
 
 void RenderLayerCompositor::assignLayersToBackingsForReflectionLayer(RenderLayer* reflectionLayer, bool& layersChanged)
 {
-    if (computeCompositedLayerUpdate(reflectionLayer) != NoCompositingStateChange) {
+    CompositingStateTransitionType compositedLayerUpdate = computeCompositedLayerUpdate(reflectionLayer);
+    if (compositedLayerUpdate != NoCompositingStateChange) {
         layersChanged = true;
-        allocateOrClearCompositedLayerMapping(reflectionLayer);
+        allocateOrClearCompositedLayerMapping(reflectionLayer, compositedLayerUpdate);
     }
     updateDirectCompositingReasons(reflectionLayer);
     if (reflectionLayer->hasCompositedLayerMapping())
         reflectionLayer->compositedLayerMapping()->updateGraphicsLayerConfiguration();
 }
 
-void RenderLayerCompositor::assignLayersToBackingsInternal(RenderLayer* layer, SquashingState& squashingState, bool& layersChanged)
+void RenderLayerCompositor::assignLayersToBackingsInternal(RenderLayer* layer, SquashingState& squashingState, bool& layersChanged, RenderLayer* clippingAncestor)
 {
-    if (allocateOrClearCompositedLayerMapping(layer))
+    if (layer->renderer()->hasClipOrOverflowClip())
+        clippingAncestor = layer;
+
+    if (layerSquashingEnabled() && requiresSquashing(layer->compositingReasons()) && !canSquashIntoCurrentSquashingOwner(layer, squashingState, clippingAncestor))
+        layer->setCompositingReasons(layer->compositingReasons() | CompositingReasonOverlapsWithoutSquashingTarget);
+
+    CompositingStateTransitionType compositedLayerUpdate = computeCompositedLayerUpdate(layer);
+
+    if (allocateOrClearCompositedLayerMapping(layer, compositedLayerUpdate))
         layersChanged = true;
 
     // FIXME: special-casing reflection layers here is not right.
     if (layer->reflectionInfo())
         assignLayersToBackingsForReflectionLayer(layer->reflectionInfo()->reflectionLayer(), layersChanged);
 
+
     // Add this layer to a squashing backing if needed.
     if (layerSquashingEnabled()) {
-        if (updateSquashingAssignment(layer, squashingState))
+        if (updateSquashingAssignment(layer, squashingState, compositedLayerUpdate))
             layersChanged = true;
     }
 
     if (layer->stackingNode()->isStackingContainer()) {
         RenderLayerStackingNodeIterator iterator(*layer->stackingNode(), NegativeZOrderChildren);
         while (RenderLayerStackingNode* curNode = iterator.next())
-            assignLayersToBackingsInternal(curNode->layer(), squashingState, layersChanged);
+            assignLayersToBackingsInternal(curNode->layer(), squashingState, layersChanged, clippingAncestor);
     }
 
     if (layerSquashingEnabled()) {
@@ -1214,13 +1217,13 @@ void RenderLayerCompositor::assignLayersToBackingsInternal(RenderLayer* layer, S
         if (layer->compositingState() == PaintsIntoOwnBacking || layer->compositingState() == HasOwnBackingButPaintsIntoAncestor) {
             ASSERT(!requiresSquashing(layer->compositingReasons()));
             IntPoint offsetFromAbsoluteForSquashingCLM = computeOffsetFromAbsolute(layer);
-            squashingState.updateSquashingStateForNewMapping(layer->compositedLayerMapping(), layer->hasCompositedLayerMapping(), offsetFromAbsoluteForSquashingCLM);
+            squashingState.updateSquashingStateForNewMapping(layer->compositedLayerMapping(), layer->hasCompositedLayerMapping(), offsetFromAbsoluteForSquashingCLM, clippingAncestor);
         }
     }
 
     RenderLayerStackingNodeIterator iterator(*layer->stackingNode(), NormalFlowChildren | PositiveZOrderChildren);
     while (RenderLayerStackingNode* curNode = iterator.next())
-        assignLayersToBackingsInternal(curNode->layer(), squashingState, layersChanged);
+        assignLayersToBackingsInternal(curNode->layer(), squashingState, layersChanged, clippingAncestor);
 }
 
 void RenderLayerCompositor::setCompositingParent(RenderLayer* childLayer, RenderLayer* parentLayer)
