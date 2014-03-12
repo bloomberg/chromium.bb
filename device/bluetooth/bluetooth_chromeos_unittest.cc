@@ -2700,11 +2700,17 @@ TEST_F(BluetoothChromeOSTest, IncomingPairRequestPinCode) {
   EXPECT_EQ(1, callback_count_);
   EXPECT_EQ(0, error_callback_count_);
 
-  // One for paired.
-  EXPECT_EQ(1, observer.device_changed_count_);
+  // One change for paired, and one for trusted.
+  EXPECT_EQ(2, observer.device_changed_count_);
   EXPECT_EQ(device, observer.last_device_);
 
   EXPECT_TRUE(device->IsPaired());
+
+  // Make sure the trusted property has been set to true.
+  FakeBluetoothDeviceClient::Properties* properties =
+      fake_bluetooth_device_client_->GetProperties(
+          dbus::ObjectPath(FakeBluetoothDeviceClient::kRequestPinCodePath));
+  ASSERT_TRUE(properties->trusted.value());
 
   // No pairing context should remain on the device.
   BluetoothDeviceChromeOS* device_chromeos =
@@ -2752,11 +2758,17 @@ TEST_F(BluetoothChromeOSTest, IncomingPairConfirmPasskey) {
   EXPECT_EQ(1, callback_count_);
   EXPECT_EQ(0, error_callback_count_);
 
-  // One for paired.
-  EXPECT_EQ(1, observer.device_changed_count_);
+  // One change for paired, and one for trusted.
+  EXPECT_EQ(2, observer.device_changed_count_);
   EXPECT_EQ(device, observer.last_device_);
 
   EXPECT_TRUE(device->IsPaired());
+
+  // Make sure the trusted property has been set to true.
+  FakeBluetoothDeviceClient::Properties* properties =
+      fake_bluetooth_device_client_->GetProperties(
+          dbus::ObjectPath(FakeBluetoothDeviceClient::kConfirmPasskeyPath));
+  ASSERT_TRUE(properties->trusted.value());
 
   // No pairing context should remain on the device.
   BluetoothDeviceChromeOS* device_chromeos =
@@ -2803,11 +2815,17 @@ TEST_F(BluetoothChromeOSTest, IncomingPairRequestPasskey) {
   EXPECT_EQ(1, callback_count_);
   EXPECT_EQ(0, error_callback_count_);
 
-  // One for paired.
-  EXPECT_EQ(1, observer.device_changed_count_);
+  // One change for paired, and one for trusted.
+  EXPECT_EQ(2, observer.device_changed_count_);
   EXPECT_EQ(device, observer.last_device_);
 
   EXPECT_TRUE(device->IsPaired());
+
+  // Make sure the trusted property has been set to true.
+  FakeBluetoothDeviceClient::Properties* properties =
+      fake_bluetooth_device_client_->GetProperties(
+          dbus::ObjectPath(FakeBluetoothDeviceClient::kRequestPasskeyPath));
+  ASSERT_TRUE(properties->trusted.value());
 
   // No pairing context should remain on the device.
   BluetoothDeviceChromeOS* device_chromeos =
@@ -2855,11 +2873,17 @@ TEST_F(BluetoothChromeOSTest, IncomingPairJustWorks) {
   EXPECT_EQ(1, callback_count_);
   EXPECT_EQ(0, error_callback_count_);
 
-  // One for paired.
-  EXPECT_EQ(1, observer.device_changed_count_);
+  // One change for paired, and one for trusted.
+  EXPECT_EQ(2, observer.device_changed_count_);
   EXPECT_EQ(device, observer.last_device_);
 
   EXPECT_TRUE(device->IsPaired());
+
+  // Make sure the trusted property has been set to true.
+  FakeBluetoothDeviceClient::Properties* properties =
+      fake_bluetooth_device_client_->GetProperties(
+          dbus::ObjectPath(FakeBluetoothDeviceClient::kJustWorksPath));
+  ASSERT_TRUE(properties->trusted.value());
 
   // No pairing context should remain on the device.
   BluetoothDeviceChromeOS* device_chromeos =

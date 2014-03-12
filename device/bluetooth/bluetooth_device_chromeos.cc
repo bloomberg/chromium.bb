@@ -491,7 +491,6 @@ void BluetoothDeviceChromeOS::OnPair(
 
   EndPairing();
 
-  SetTrusted();
   ConnectInternal(true, callback, error_callback);
 }
 

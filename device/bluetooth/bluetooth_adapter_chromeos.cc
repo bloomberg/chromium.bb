@@ -303,6 +303,12 @@ void BluetoothAdapterChromeOS::DevicePropertyChanged(
       property_name == properties->uuids.name())
     NotifyDeviceChanged(device_chromeos);
 
+  // When a device becomes paired, mark it as trusted so that the user does
+  // not need to approve every incoming connection
+  if (property_name == properties->paired.name() &&
+      properties->paired.value())
+    device_chromeos->SetTrusted();
+
   // UMA connection counting
   if (property_name == properties->connected.name()) {
     int count = 0;
