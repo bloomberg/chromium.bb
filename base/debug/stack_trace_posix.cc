@@ -29,6 +29,7 @@
 #include "base/debug/debugger.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/string_number_conversions.h"
 
@@ -472,7 +473,7 @@ StackTrace::StackTrace() {
 
   // Though the backtrace API man page does not list any possible negative
   // return values, we take no chance.
-  count_ = std::max(backtrace(trace_, arraysize(trace_)), 0);
+  count_ = base::saturated_cast<size_t>(backtrace(trace_, arraysize(trace_)));
 }
 
 void StackTrace::Print() const {
