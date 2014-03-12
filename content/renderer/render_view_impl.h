@@ -406,10 +406,12 @@ class CONTENT_EXPORT RenderViewImpl
   virtual bool enumerateChosenDirectory(
       const blink::WebString& path,
       blink::WebFileChooserCompletion* chooser_completion);
+  // DEPRECATED
   virtual void didStartLoading(bool to_different_document);
   // DEPRECATED
-  virtual void didStartLoading();
   virtual void didStopLoading();
+  virtual void didStartLoading(blink::WebFrame* frame);
+  virtual void didStopLoading(blink::WebFrame* frame);
   virtual void didChangeLoadProgress(blink::WebFrame* frame,
                                      double load_progress);
   virtual void didCancelCompositionOnSelectionChange();
@@ -1132,9 +1134,6 @@ class CONTENT_EXPORT RenderViewImpl
   gfx::Size disable_scrollbars_size_limit_;
 
   // Loading state -------------------------------------------------------------
-
-  // True if the top level frame is currently being loaded.
-  bool is_loading_;
 
   // The gesture that initiated the current navigation.
   // TODO(nasko): Move to RenderFrame, as this is per-frame state.

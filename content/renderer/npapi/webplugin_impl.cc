@@ -1358,14 +1358,14 @@ void WebPluginImpl::InitiateHTTPRangeRequest(
 void WebPluginImpl::DidStartLoading() {
   if (render_view_.get()) {
     // TODO(darin): Make is_loading_ be a counter!
-    render_view_->didStartLoading();
+    render_view_->DidStartLoading();
   }
 }
 
 void WebPluginImpl::DidStopLoading() {
   if (render_view_.get()) {
     // TODO(darin): Make is_loading_ be a counter!
-    render_view_->didStopLoading();
+    render_view_->DidStopLoading();
   }
 }
 

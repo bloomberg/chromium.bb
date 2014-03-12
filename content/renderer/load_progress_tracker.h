@@ -5,13 +5,10 @@
 #ifndef CONTENT_RENDERER_LOAD_PROGRESS_TRACKER_H_
 #define CONTENT_RENDERER_LOAD_PROGRESS_TRACKER_H_
 
+#include "base/containers/hash_tables.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-
-namespace blink {
-class WebFrame;
-}
 
 namespace content {
 class RenderViewImpl;
@@ -21,9 +18,10 @@ class LoadProgressTracker {
   explicit LoadProgressTracker(RenderViewImpl* render_view);
   ~LoadProgressTracker();
 
-  void DidStopLoading();
+  void DidStartLoading(int frame_routing_id);
+  void DidStopLoading(int frame_routing_id);
 
-  void DidChangeLoadProgress(blink::WebFrame* frame, double progress);
+  void DidChangeLoadProgress(int frame_routing_id, double progress);
 
  private:
   void ResetStates();
@@ -32,9 +30,11 @@ class LoadProgressTracker {
 
   RenderViewImpl* render_view_;
 
-  blink::WebFrame* tracked_frame_;
-
-  double progress_;
+  // ProgressMap maps RenderFrame routing ids to a double representing that
+  // frame's completion (from 0 to 1).
+  typedef base::hash_map<int, double> ProgressMap;
+  ProgressMap progresses_;
+  double total_progress_;
 
   base::TimeTicks last_time_progress_sent_;
 

@@ -99,8 +99,9 @@ class CONTENT_EXPORT RenderFrameImpl
   // TODO(nasko): Those are page-level methods at this time and come from
   // WebViewClient. We should move them to be WebFrameClient calls and put
   // logic in the browser side to balance starts/stops.
-  void didStartLoading();
-  void didStopLoading();
+  virtual void didStartLoading(bool to_different_document);
+  virtual void didStopLoading();
+  virtual void didChangeLoadProgress(double load_progress);
 
 #if defined(ENABLE_PLUGINS)
   // Notification that a PPAPI plugin has been created.
@@ -404,6 +405,7 @@ class CONTENT_EXPORT RenderFrameImpl
 
   base::WeakPtr<RenderViewImpl> render_view_;
   int routing_id_;
+  bool is_loading_;
   bool is_swapped_out_;
   bool is_detaching_;
 

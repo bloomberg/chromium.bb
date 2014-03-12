@@ -301,6 +301,7 @@ RenderFrameImpl::RenderFrameImpl(RenderViewImpl* render_view, int routing_id)
     : frame_(NULL),
       render_view_(render_view->AsWeakPtr()),
       routing_id_(routing_id),
+      is_loading_(false),
       is_swapped_out_(false),
       is_detaching_(false),
       cookie_jar_(this) {
@@ -2462,11 +2463,35 @@ WebElement RenderFrameImpl::GetFocusedElement() {
   return WebElement();
 }
 
-void RenderFrameImpl::didStartLoading() {
+void RenderFrameImpl::didStartLoading(bool to_different_document) {
+  if (is_loading_) {
+    DVLOG(1) << "didStartLoading called while loading";
+    return;
+  }
+
+  is_loading_ = true;
+
+  render_view_->didStartLoading(frame_);
+
   Send(new FrameHostMsg_DidStartLoading(routing_id_));
 }
 
 void RenderFrameImpl::didStopLoading() {
+  if (!is_loading_) {
+    DVLOG(1) << "DidStopLoading called while not loading";
+    return;
+  }
+
+  is_loading_ = false;
+
+  render_view_->didStopLoading(frame_);
+
+  // NOTE: For now we're doing the safest thing, and sending out notification
+  // when done loading. This currently isn't an issue as the favicon is only
+  // displayed when done loading. Ideally we would send notification when
+  // finished parsing the head, but webkit doesn't support that yet.
+  // The feed discovery code would also benefit from access to the head.
+  // NOTE: Sending of the IPC message happens through the top-level frame.
   Send(new FrameHostMsg_DidStopLoading(routing_id_));
 }
 
@@ -2725,6 +2750,10 @@ void RenderFrameImpl::OpenURL(WebFrame* frame,
   }
 
   Send(new FrameHostMsg_OpenURL(routing_id_, params));
+}
+
+void RenderFrameImpl::didChangeLoadProgress(double load_progress) {
+  render_view_->didChangeLoadProgress(frame_, load_progress);
 }
 
 }  // namespace content

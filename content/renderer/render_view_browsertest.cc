@@ -2221,6 +2221,40 @@ TEST_F(RenderViewImplTest, SendFaviconURLUpdateEvent) {
       ViewHostMsg_UpdateFaviconURL::ID));
 }
 
+// Test progress tracker messages.
+TEST_F(RenderViewImplTest, SendProgressCompletionUpdates) {
+  std::string data_url_string = "data:text/html,<body>placeholder</body>";
+  GURL url(data_url_string);
+  GetMainFrame()->loadRequest(blink::WebURLRequest(url));
+
+  EXPECT_TRUE(render_thread_->sink().GetFirstMessageMatching(
+      FrameHostMsg_DidStartLoading::ID));
+
+  // The load started, we should receive a start notification and a progress
+  // update with the minimum progress.
+  const IPC::Message* message = render_thread_->sink().GetFirstMessageMatching(
+      ViewHostMsg_DidChangeLoadProgress::ID);
+  EXPECT_TRUE(message);
+  Tuple1<double> progress_value;
+  ViewHostMsg_DidChangeLoadProgress::Read(message, &progress_value);
+  EXPECT_EQ(0.1, progress_value.a);
+  render_thread_->sink().ClearMessages();
+
+  ProcessPendingMessages();
+
+  // The data url has loaded, so we should see a progress change to 1.0 (done)
+  // and a stop notification.
+  message = render_thread_->sink().GetFirstMessageMatching(
+      ViewHostMsg_DidChangeLoadProgress::ID);
+  EXPECT_TRUE(message);
+  ViewHostMsg_DidChangeLoadProgress::Read(message, &progress_value);
+  EXPECT_EQ(1.0, progress_value.a);
+
+  EXPECT_TRUE(render_thread_->sink().GetFirstMessageMatching(
+      FrameHostMsg_DidStopLoading::ID));
+  render_thread_->sink().ClearMessages();
+}
+
 TEST_F(RenderViewImplTest, FocusElementCallsFocusedNodeChanged) {
   LoadHTML("<input id='test1' value='hello1'></input>"
            "<input id='test2' value='hello2'></input>");

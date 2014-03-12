@@ -664,7 +664,6 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
       send_content_state_immediately_(false),
       enabled_bindings_(0),
       send_preferred_size_changes_(false),
-      is_loading_(false),
       navigation_gesture_(NavigationGestureUnknown),
       opened_by_user_gesture_(true),
       opener_suppressed_(false),
@@ -1844,41 +1843,26 @@ bool RenderViewImpl::enumerateChosenDirectory(
 }
 
 void RenderViewImpl::didStartLoading(bool to_different_document) {
-  didStartLoading();
-}
-
-void RenderViewImpl::didStartLoading() {
-  if (is_loading_) {
-    DVLOG(1) << "didStartLoading called while loading";
-    return;
-  }
-
-  is_loading_ = true;
-
-  // Send the IPC message through the top-level frame.
-  main_render_frame_->didStartLoading();
-
-  FOR_EACH_OBSERVER(RenderViewObserver, observers_, DidStartLoading());
+  main_render_frame_->didStartLoading(to_different_document);
 }
 
 void RenderViewImpl::didStopLoading() {
-  if (!is_loading_) {
-    DVLOG(1) << "DidStopLoading called while not loading";
-    return;
-  }
-
-  is_loading_ = false;
-
-  // NOTE: For now we're doing the safest thing, and sending out notification
-  // when done loading. This currently isn't an issue as the favicon is only
-  // displayed when done loading. Ideally we would send notification when
-  // finished parsing the head, but webkit doesn't support that yet.
-  // The feed discovery code would also benefit from access to the head.
-  // NOTE: Sending of the IPC message happens through the top-level frame.
   main_render_frame_->didStopLoading();
+}
 
-  if (load_progress_tracker_ != NULL)
-    load_progress_tracker_->DidStopLoading();
+void RenderViewImpl::didStartLoading(WebFrame* frame) {
+  if (load_progress_tracker_ != NULL) {
+    load_progress_tracker_->DidStartLoading(
+        RenderFrameImpl::FromWebFrame(frame)->GetRoutingID());
+  }
+  FOR_EACH_OBSERVER(RenderViewObserver, observers_, DidStartLoading());
+}
+
+void RenderViewImpl::didStopLoading(WebFrame* frame) {
+  if (load_progress_tracker_ != NULL) {
+    load_progress_tracker_->DidStopLoading(
+        RenderFrameImpl::FromWebFrame(frame)->GetRoutingID());
+  }
 
   DidStopLoadingIcons();
 
@@ -1887,8 +1871,10 @@ void RenderViewImpl::didStopLoading() {
 
 void RenderViewImpl::didChangeLoadProgress(WebFrame* frame,
                                            double load_progress) {
-  if (load_progress_tracker_ != NULL)
-    load_progress_tracker_->DidChangeLoadProgress(frame, load_progress);
+  if (load_progress_tracker_ != NULL) {
+    load_progress_tracker_->DidChangeLoadProgress(
+        RenderFrameImpl::FromWebFrame(frame)->GetRoutingID(), load_progress);
+  }
 }
 
 void RenderViewImpl::didCancelCompositionOnSelectionChange() {
@@ -3254,11 +3240,11 @@ void RenderViewImpl::RunModalAlertDialog(blink::WebFrame* frame,
 }
 
 void RenderViewImpl::DidStartLoading() {
-  didStartLoading();
+  main_render_frame_->didStartLoading(true);
 }
 
 void RenderViewImpl::DidStopLoading() {
-  didStopLoading();
+  main_render_frame_->didStopLoading();
 }
 
 void RenderViewImpl::DidPlay(blink::WebMediaPlayer* player) {

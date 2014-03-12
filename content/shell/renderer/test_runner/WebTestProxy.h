@@ -309,10 +309,10 @@ public:
         WebTestProxyBase::setStatusText(text);
         Base::setStatusText(text);
     }
-    virtual void didStopLoading()
+    virtual void didStopLoading(blink::WebFrame* frame)
     {
         WebTestProxyBase::didStopLoading();
-        Base::didStopLoading();
+        Base::didStopLoading(frame);
     }
     virtual blink::WebUserMediaClient* userMediaClient()
     {
