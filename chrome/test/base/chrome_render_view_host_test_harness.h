@@ -28,7 +28,6 @@ class ChromeRenderViewHostTestHarness
 
  protected:
   // testing::Test
-  virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
 
   // content::RenderViewHostTestHarness.

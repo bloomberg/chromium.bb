@@ -49,12 +49,6 @@ static BrowserContextKeyedService* BuildSigninManagerFake(
 #endif
 }
 
-void ChromeRenderViewHostTestHarness::SetUp() {
-  RenderViewHostTestHarness::SetUp();
-  SigninManagerFactory::GetInstance()->SetTestingFactory(
-          profile(), BuildSigninManagerFake);
-}
-
 void ChromeRenderViewHostTestHarness::TearDown() {
   RenderViewHostTestHarness::TearDown();
 #if defined(USE_ASH)
@@ -67,5 +61,8 @@ void ChromeRenderViewHostTestHarness::TearDown() {
 
 content::BrowserContext*
 ChromeRenderViewHostTestHarness::CreateBrowserContext() {
-  return new TestingProfile();
+  TestingProfile::Builder builder;
+  builder.AddTestingFactory(SigninManagerFactory::GetInstance(),
+                            BuildSigninManagerFake);
+  return builder.Build().release();
 }
