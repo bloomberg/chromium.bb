@@ -1165,28 +1165,6 @@
   fun:PrintJobTest_SimplePrint_Test::TestBody
 }
 {
-   bug_348324a
-   ThreadSanitizer:Race
-   fun:gpu::gles2::QueryManager::Query::MarkAsCompleted
-   fun:gpu::gles2::CommandsIssuedQuery::End
-   fun:gpu::gles2::QueryManager::EndQuery
-   fun:gpu::gles2::GLES2DecoderImpl::HandleEndQueryEXT
-   fun:gpu::gles2::GLES2DecoderImpl::DoCommand
-   fun:gpu::CommandParser::ProcessCommand
-   fun:gpu::GpuScheduler::PutChanged
-   fun:gpu::InProcessCommandBuffer::PumpCommands
-}
-{
-   bug_348324b
-   ThreadSanitizer:Race
-   fun:gpu::gles2::QueryTracker::FreeCompletedQueries
-   fun:gpu::gles2::QueryTracker::RemoveQuery
-   fun:gpu::gles2::GLES2Implementation::DeleteQueriesEXTHelper
-   fun:gpu::gles2::GLES2Implementation::DeleteQueriesEXT
-   fun:cc::TextureUploader::Query::~Query
-   fun:cc::TextureUploader::Query::~Query
-}
-{
   bug_350982
   ThreadSanitizer:Race
   fun:change_state
