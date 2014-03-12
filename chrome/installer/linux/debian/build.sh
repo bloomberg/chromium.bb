@@ -102,7 +102,7 @@ do_package() {
   DEPENDS="${COMMON_DEPS}"
   REPLACES=""
   CONFLICTS=""
-  PROVIDES="google-chrome, www-browser"
+  PROVIDES="www-browser"
   gen_changelog
   process_template "${SCRIPTDIR}/control.template" "${DEB_CONTROL}"
   export DEB_HOST_ARCH="${ARCHITECTURE}"
