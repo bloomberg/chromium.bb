@@ -69,8 +69,9 @@ class IsolateFormatTest(unittest.TestCase):
       pass
 
   def test_load_isolate_as_config_empty(self):
-    self.assertEqual({}, isolate_format.load_isolate_as_config(
-        FAKE_DIR, {}, None).flatten())
+    self.assertEqual(
+        {(): {}},
+        isolate_format.load_isolate_as_config(FAKE_DIR, {}, None).flatten())
 
   def test_load_isolate_as_config(self):
     value = {
@@ -113,6 +114,7 @@ class IsolateFormatTest(unittest.TestCase):
       ],
     }
     expected = {
+      (None,): {},
       ('amiga',): {
         'command': ['echo', 'You should get an Atari'],
         KEY_TOUCHED: ['touched', 'touched_e'],
@@ -450,8 +452,8 @@ class IsolateFormatTest(unittest.TestCase):
         isolate_format.union(
           isolate_format.Configs(None, ()),
           isolate_format.load_isolate_as_config(FAKE_DIR, {}, None)),
-        isolate_format.load_isolate_as_config(FAKE_DIR, {}, None)).flatten()
-    self.assertEqual({}, actual)
+        isolate_format.load_isolate_as_config(FAKE_DIR, {}, None))
+    self.assertEqual({(): {}}, actual.flatten())
 
   def test_merge_empty(self):
     actual = isolate_format.convert_map_to_isolate_dict(
@@ -485,6 +487,7 @@ class IsolateFormatTest(unittest.TestCase):
       ],
     }
     expected = {
+      (None,): {},
       ('linux',): {
         'isolate_dependency_tracked': ['file_common', 'file_linux'],
       },
@@ -539,6 +542,7 @@ class IsolateFormatTest(unittest.TestCase):
       ],
     }
     expected = {
+      (None, None): {},
       ('linux', 1): {
         'isolate_dependency_tracked': ['file_common', 'file_linux'],
       },
@@ -593,10 +597,11 @@ class IsolateFormatTest(unittest.TestCase):
     self.assertEqual(('CHROMEOS', 'OS'), configs.config_variables)
     flatten = dict((k, v.flatten()) for k, v in configs._by_config.iteritems())
     expected = {
-        ((None, 'abc')): {'command': ['bar']},
-        (('1', None)): {'command': ['foo']},
-        # TODO(maruel): It is a conflict.
-        (('1', 'abc')): {'command': ['bar']},
+      (None, None): {},
+      (None, 'abc'): {'command': ['bar']},
+      ('1', None): {'command': ['foo']},
+      # TODO(maruel): It is a conflict.
+      ('1', 'abc'): {'command': ['bar']},
     }
     self.assertEqual(expected, flatten)
 
@@ -625,8 +630,9 @@ class IsolateFormatTest(unittest.TestCase):
     self.assertEqual(('CHROMEOS', 'OS'), configs.config_variables)
     flatten = dict((k, v.flatten()) for k, v in configs._by_config.iteritems())
     expected = {
-        ((None, 'abc')): {'command': ['bar']},
-        ('1', None): {'command': ['foo']},
+      (None, None): {},
+      (None, 'abc'): {'command': ['bar']},
+      ('1', None): {'command': ['foo']},
     }
     self.assertEqual(expected, flatten)
 
@@ -854,7 +860,7 @@ class IsolateFormatTest(unittest.TestCase):
   def _test_pretty_print_impl(self, value, expected):
     actual = cStringIO.StringIO()
     isolate_format.pretty_print(value, actual)
-    self.assertEqual(expected, actual.getvalue())
+    self.assertEqual(expected.splitlines(), actual.getvalue().splitlines())
 
   def test_pretty_print_empty(self):
     self._test_pretty_print_impl({}, '{\n}\n')
@@ -884,8 +890,6 @@ class IsolateFormatTest(unittest.TestCase):
           },
         }],
         ['OS=\"bar\"', {
-          'variables': {},
-        }, {
           'variables': {},
         }],
       ],
@@ -921,25 +925,10 @@ class IsolateFormatTest(unittest.TestCase):
         "    ['OS=\"bar\"', {\n"
         "      'variables': {\n"
         "      },\n"
-        "    }, {\n"
-        "      'variables': {\n"
-        "      },\n"
         "    }],\n"
         "  ],\n"
         "}\n")
     self._test_pretty_print_impl(value, expected)
-
-  def test_convert_old_to_new_bypass(self):
-    isolate_not_needing_conversion = {
-      'conditions': [
-        ['OS=="mac"', {'variables': {'foo': 'bar'}}],
-        ['condition shouldn\'t matter', {'variables': {'x': 'y'}}],
-      ],
-    }
-    self.assertEqual(
-        isolate_not_needing_conversion,
-        isolate_format.convert_old_to_new_format(
-            isolate_not_needing_conversion))
 
   def test_convert_old_to_new_else(self):
     isolate_with_else_clauses = {
@@ -949,52 +938,11 @@ class IsolateFormatTest(unittest.TestCase):
         }, {
           'variables': {'x': 'y'},
         }],
-        ['OS=="foo"', {
-        }, {
-          'variables': {'p': 'q'},
-        }],
       ],
     }
-    expected_output = {
-      'conditions': [
-        ['OS=="foo" or OS=="linux" or OS=="win"', {
-          'variables': {'x': 'y'},
-        }],
-        ['OS=="linux" or OS=="mac" or OS=="win"', {
-          'variables': {'p': 'q'},
-        }],
-        ['OS=="mac"', {
-          'variables': {'foo': 'bar'},
-        }],
-      ],
-    }
-    self.assertEqual(
-        expected_output,
-        isolate_format.convert_old_to_new_format(isolate_with_else_clauses))
-
-  def test_convert_old_to_new_default_variables(self):
-    isolate_with_default_variables = {
-      'conditions': [
-        ['OS=="abc"', {
-          'variables': {'foo': 'bar'},
-        }],
-      ],
-      'variables': {'p': 'q'},
-    }
-    expected_output = {
-      'conditions': [
-        ['OS=="abc"', {
-          'variables': {'foo': 'bar'},
-        }],
-        ['OS=="abc" or OS=="linux" or OS=="mac" or OS=="win"', {
-          'variables': {'p': 'q'},
-        }],
-      ],
-    }
-    self.assertEqual(
-        expected_output,
-        isolate_format.convert_old_to_new_format(
-            isolate_with_default_variables))
+    with self.assertRaises(isolate_format.isolateserver.ConfigError):
+      isolate_format.load_isolate_as_config(
+          '.', isolate_with_else_clauses, None)
 
   def test_match_configs(self):
     expectations = [
@@ -1053,16 +1001,7 @@ class IsolateFormatTest(unittest.TestCase):
             'read_only': 1,
           },
         }],
-        # TODO(maruel): Merge it back once it is possible.
-        ['OS=="mac"', {
-          'variables': {
-            'isolate_dependency_tracked': [
-              'file_non_linux',
-            ],
-            'read_only': 0,
-          },
-        }],
-        ['OS=="win"', {
+        ['OS=="mac" or OS=="win"', {
           'variables': {
             'isolate_dependency_tracked': [
               'file_non_linux',
@@ -1073,23 +1012,25 @@ class IsolateFormatTest(unittest.TestCase):
       ],
     }
     expected = {
-      ('linux',): {
+      (None,): {
         'isolate_dependency_tracked': [
           'file_common',
+        ],
+      },
+      ('linux',): {
+        'isolate_dependency_tracked': [
           'file_linux',
         ],
         'read_only': 1,
       },
       ('mac',): {
         'isolate_dependency_tracked': [
-          'file_common',
           'file_non_linux',
         ],
         'read_only': 0,
       },
       ('win',): {
         'isolate_dependency_tracked': [
-          'file_common',
           'file_non_linux',
         ],
         'read_only': 0,
@@ -1164,7 +1105,8 @@ class IsolateFormatTmpDirTest(unittest.TestCase):
             ],
             'read_only': 1,
           },
-        }, {
+        }],
+        ['OS=="mac" or OS=="win"', {
           'variables': {
             'isolate_dependency_tracked': [
               'file_non_linux',
@@ -1197,18 +1139,20 @@ class IsolateFormatTmpDirTest(unittest.TestCase):
     actual = isolate_format.load_isolate_as_config(self.tempdir, values, None)
 
     expected = {
-      ('linux',): {
+      (None,): {
         'isolate_dependency_tracked': [
           'file_common',
           'file_less_common',
+        ],
+      },
+      ('linux',): {
+        'isolate_dependency_tracked': [
           'file_linux',
         ],
         'read_only': 1,
       },
       ('mac',): {
         'isolate_dependency_tracked': [
-          'file_common',
-          'file_less_common',
           'file_mac',
           'file_non_linux',
         ],
@@ -1216,8 +1160,6 @@ class IsolateFormatTmpDirTest(unittest.TestCase):
       },
       ('win',): {
         'isolate_dependency_tracked': [
-          'file_common',
-          'file_less_common',
           'file_non_linux',
         ],
         'read_only': 0,
@@ -1238,7 +1180,8 @@ class IsolateFormatTmpDirTest(unittest.TestCase):
               'file_linux',
             ],
           },
-        }, {
+        }],
+        ['OS=="mac" or OS=="win"', {
           'variables': {
             'isolate_dependency_tracked': [
               'file_non_linux',
@@ -1290,6 +1233,7 @@ class IsolateFormatTmpDirTest(unittest.TestCase):
 
     actual = isolate_format.load_isolate_as_config(self.tempdir, isolate3, None)
     expected = {
+      (None,): {},
       ('linux',): {
         # Last included takes precedence.
         'command': ['zoo'],

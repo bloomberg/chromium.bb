@@ -326,7 +326,7 @@ def verify_root(value, variables_and_values):
   """Verifies that |value| is the parsed form of a valid .isolate file.
   See verify_ast() for the meaning of |variables_and_values|.
   """
-  VALID_ROOTS = ['includes', 'conditions']
+  VALID_ROOTS = ['includes', 'conditions', 'variables']
   assert isinstance(value, dict), value
   assert set(VALID_ROOTS).issuperset(set(value)), value.keys()
 
@@ -339,6 +339,9 @@ def verify_root(value, variables_and_values):
   assert isinstance(conditions, list), conditions
   for condition in conditions:
     verify_condition(condition, variables_and_values)
+
+  variables = value.get('variables', {})
+  verify_variables(variables)
 
 
 def remove_weak_dependencies(values, key, item, item_configs):
@@ -650,51 +653,6 @@ class Configs(object):
                                        self.config_variables)
 
 
-def convert_old_to_new_format(value):
-  """Converts from the old .isolate format, which only has one variable (OS),
-  always includes 'linux', 'mac' and 'win' in the set of valid values for OS,
-  and allows conditions that depend on the set of all OSes, to the new format,
-  which allows any set of variables, has no hardcoded values, and only allows
-  explicit positive tests of variable values.
-
-  TODO(maruel): Formalize support for variables with a config with no variable
-  bound. This is sensible to keep them at the global level and not in a
-  condition.
-  """
-  conditions = value.get('conditions', [])
-  if 'variables' not in value and all(len(cond) == 2 for cond in conditions):
-    return value  # Nothing to change
-
-  def parse_condition(cond):
-    m = re.match(r'OS=="(\w+)"\Z', cond[0])
-    if not m:
-      raise isolateserver.ConfigError('Invalid condition: %s' % cond[0])
-    return m.group(1)
-
-  oses = set(map(parse_condition, conditions))
-  default_oses = set(['linux', 'mac', 'win'])
-  oses = sorted(oses | default_oses)
-
-  def if_not_os(not_os, then):
-    expr = ' or '.join('OS=="%s"' % os for os in oses if os != not_os)
-    return [expr, then]
-
-  conditions = [
-    cond[:2] for cond in conditions if cond[1]
-  ] + [
-    if_not_os(parse_condition(cond), cond[2])
-    for cond in conditions if len(cond) == 3
-  ]
-
-  if 'variables' in value:
-    conditions.append(if_not_os(None, {'variables': value.pop('variables')}))
-  conditions.sort()
-
-  value = value.copy()
-  value['conditions'] = conditions
-  return value
-
-
 def load_isolate_as_config(isolate_dir, value, file_comment):
   """Parses one .isolate file and returns a Configs() instance.
 
@@ -727,10 +685,13 @@ def load_isolate_as_config(isolate_dir, value, file_comment):
       }],
       ...
     ],
+    'variables': {
+      ...
+    },
   }
   """
-  value = convert_old_to_new_format(value)
-
+  if any(len(cond) == 3 for cond in value.get('conditions', [])):
+    raise isolateserver.ConfigError('Using \'else\' is not supported anymore.')
   variables_and_values = {}
   verify_root(value, variables_and_values)
   if variables_and_values:
@@ -742,6 +703,11 @@ def load_isolate_as_config(isolate_dir, value, file_comment):
     all_configs = []
 
   isolate = Configs(file_comment, config_variables)
+
+  # Add global variables. The global variables are on the empty tuple key.
+  isolate.set_config(
+      (None,) * len(config_variables),
+      ConfigSettings(value.get('variables', {})))
 
   # Add configuration-specific variables.
   for expr, then in value.get('conditions', []):
