@@ -1,4 +1,8 @@
 #!/usr/bin/env python
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
 """
 Provides a short mapping of all the branches in your local repo, organized by
 their upstream ('tracking branch') layout. Example:
@@ -45,7 +49,14 @@ def print_branch(cur, cur_hash, branch, branch_hashes, par_map, branch_map,
   else:
     color += Style.NORMAL
 
-  print color + "  "*depth + branch + (" *" if branch == cur else "")
+  suffix = ''
+  if cur == 'HEAD':
+    if branch_hash == cur_hash:
+      suffix = ' *'
+  elif branch == cur:
+    suffix = ' *'
+
+  print color + "  "*depth + branch + suffix
   for child in par_map.pop(branch, ()):
     print_branch(cur, cur_hash, child, branch_hashes, par_map, branch_map,
                  depth=depth+1)

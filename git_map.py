@@ -1,4 +1,8 @@
 #!/usr/bin/env python
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
 """
 Provides an augmented `git log --graph` view. In particular, it also annotates
 commits with branches + tags that point to them. Items are colorized as follows:

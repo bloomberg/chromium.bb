@@ -1,4 +1,8 @@
 #!/usr/bin/env python
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
 """
 Checks out a downstream branch from the currently checked out branch. If there
 is more than one downstream branch, then this script will prompt you to select
@@ -14,7 +18,11 @@ def main(argv):
   upfn = upstream
   cur = current_branch()
   if cur == 'HEAD':
-    upfn = lambda b: hash_one(upstream(b))
+    def _upfn(b):
+      parent = upstream(b)
+      if parent:
+        return hash_one(parent)
+    upfn = _upfn
     cur = hash_one(cur)
   downstreams = [b for b in branches() if upfn(b) == cur]
   if not downstreams:
