@@ -221,6 +221,11 @@ namespace WebCore {
             PseudoAncestor
         };
 
+        enum OptionalPseudoTypeRequirements {
+            // 0 is used to mean "no requirements".
+            RequiresShadowDOM = 1
+        };
+
         enum MarginBoxType {
             TopLeftCornerMarginBox,
             TopLeftMarginBox,
