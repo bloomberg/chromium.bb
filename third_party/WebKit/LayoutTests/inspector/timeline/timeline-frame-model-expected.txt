@@ -167,6 +167,27 @@ Test: pre-frame time accounting
         scripting : 8.997
     }
 }
+{
+    cpuTime : 0
+    duration : 10
+    endTime : 1081.002
+    startTime : 1071.002
+    timeByCategory : {
+        other : 0
+        rendering : 0
+    }
+}
+{
+    cpuTime : 8.998
+    duration : 15
+    endTime : 1096.002
+    startTime : 1081.002
+    timeByCategory : {
+        other : 1.003
+        painting : 0.998
+        rendering : 6.997
+    }
+}
 Test: record processing order
 {
     cpuTime : 15.999
