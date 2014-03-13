@@ -226,13 +226,6 @@ public class AdapterInputConnection extends BaseInputConnection {
             mImeAdapter.sendKeyEventWithKeyCode(KeyEvent.KEYCODE_ENTER,
                     KeyEvent.FLAG_SOFT_KEYBOARD | KeyEvent.FLAG_KEEP_TOUCH_MODE
                     | KeyEvent.FLAG_EDITOR_ACTION);
-
-            if ((actionCode == EditorInfo.IME_ACTION_GO || actionCode == EditorInfo.IME_ACTION_DONE
-                    || actionCode == EditorInfo.IME_ACTION_SEARCH) && isActive()) {
-                // User is done typing, hide the keyboard.
-                InputMethodManagerWrapper wrapper = getInputMethodManagerWrapper();
-                wrapper.hideSoftInputFromWindow(mInternalView.getWindowToken(), 0, null);
-            }
         }
         return true;
     }
