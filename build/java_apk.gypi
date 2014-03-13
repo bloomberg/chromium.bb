@@ -75,7 +75,6 @@
     'intermediate_dir': '<(PRODUCT_DIR)/<(_target_name)',
     'asset_location%': '<(intermediate_dir)/assets',
     'codegen_stamp': '<(intermediate_dir)/codegen.stamp',
-    'compile_input_paths': [],
     'package_input_paths': [],
     'ordered_libraries_file': '<(intermediate_dir)/native_libraries.json',
     'native_libraries_template': '<(DEPTH)/base/android/java/templates/NativeLibraries.template',
@@ -185,7 +184,6 @@
     }],
     ['native_lib_target != ""', {
       'variables': {
-        'compile_input_paths': [ '<(native_libraries_java_stamp)' ],
         'generated_src_dirs': [ '<(native_libraries_java_dir)' ],
         'native_libs_paths': [
           '<(SHARED_LIB_DIR)/<(native_lib_target).>(android_product_extension)'
@@ -536,7 +534,11 @@
         '>(java_source_list)',
         '>@(input_jars_paths)',
         '<(codegen_stamp)',
-        '>@(compile_input_paths)',
+      ],
+      'conditions': [
+        ['native_lib_target != ""', {
+          'inputs': [ '<(native_libraries_java_stamp)' ],
+        }],
       ],
       'outputs': [
         '<(compile_stamp)',
@@ -550,9 +552,6 @@
         '--javac-includes=<(javac_includes)',
         '--chromium-code=<(chromium_code)',
         '--stamp=<(compile_stamp)',
-
-        # TODO(newt): remove this once http://crbug.com/177552 is fixed in ninja.
-        '--ignore=>!(echo \'>(_inputs)\' | md5sum)',
       ],
     },
     {
@@ -686,6 +685,7 @@
         '<(DEPTH)/build/android/gyp/ant.py',
         '<(android_manifest_path)',
         '<(codegen_stamp)',
+        # TODO: This isn't always rerun correctly, http://crbug.com/351928
 
         '>@(additional_input_paths)',
       ],
@@ -723,11 +723,6 @@
         '-Dbasedir=.',
         '-buildfile',
         '<(DEPTH)/build/android/ant/apk-package-resources.xml',
-
-        # Add list of inputs to the command line, so if inputs change
-        # (e.g. if a Java file is removed), the command will be re-run.
-        # TODO(newt): remove this once crbug.com/177552 is fixed in ninja.
-        '-DTHIS_IS_IGNORED=>!(echo \'>(_inputs)\' | md5sum)',
       ]
     },
     {

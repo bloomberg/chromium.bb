@@ -301,9 +301,6 @@
         '--javac-includes=<(javac_includes)',
         '--chromium-code=<(chromium_code)',
         '--stamp=<(compile_stamp)',
-
-        # TODO(newt): remove this once http://crbug.com/177552 is fixed in ninja.
-        '--ignore=>!(echo \'>(_inputs)\' | md5sum)',
       ]
     },
     {
