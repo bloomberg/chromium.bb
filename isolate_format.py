@@ -489,7 +489,14 @@ def convert_map_to_isolate_dict(values, config_variables):
     conditions = sorted([sef.get_expr(c), v] for c, v in conditions.iteritems())
   else:
     conditions = []
-  return {'conditions': conditions}
+  out = {'conditions': conditions}
+  for c in conditions:
+    if c[0] == '':
+      # Extract the global.
+      out.update(c[1])
+      conditions.remove(c)
+      break
+  return out
 
 
 class ConfigSettings(object):

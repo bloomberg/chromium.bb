@@ -1037,6 +1037,106 @@ class IsolateFormatTest(unittest.TestCase):
     for data, expected in expectations:
       self.assertEqual(expected, isolate_format.match_configs(*data))
 
+  def test_load_with_globals(self):
+    values = {
+      'variables': {
+        'isolate_dependency_tracked': [
+          'file_common',
+        ],
+      },
+      'conditions': [
+        ['OS=="linux"', {
+          'variables': {
+            'isolate_dependency_tracked': [
+              'file_linux',
+            ],
+            'read_only': 1,
+          },
+        }],
+        # TODO(maruel): Merge it back once it is possible.
+        ['OS=="mac"', {
+          'variables': {
+            'isolate_dependency_tracked': [
+              'file_non_linux',
+            ],
+            'read_only': 0,
+          },
+        }],
+        ['OS=="win"', {
+          'variables': {
+            'isolate_dependency_tracked': [
+              'file_non_linux',
+            ],
+            'read_only': 0,
+          },
+        }],
+      ],
+    }
+    expected = {
+      ('linux',): {
+        'isolate_dependency_tracked': [
+          'file_common',
+          'file_linux',
+        ],
+        'read_only': 1,
+      },
+      ('mac',): {
+        'isolate_dependency_tracked': [
+          'file_common',
+          'file_non_linux',
+        ],
+        'read_only': 0,
+      },
+      ('win',): {
+        'isolate_dependency_tracked': [
+          'file_common',
+          'file_non_linux',
+        ],
+        'read_only': 0,
+      },
+    }
+    actual = isolate_format.load_isolate_as_config('.', values, None)
+    self.assertEqual(expected, actual.flatten())
+
+  def test_configs_with_globals(self):
+    c = isolate_format.Configs(None, ('x', 'y'))
+    c.set_config((1, 1), isolate_format.ConfigSettings({KEY_TRACKED: ['1,1']}))
+    c.set_config((2, 2), isolate_format.ConfigSettings({KEY_TRACKED: ['2,2']}))
+    c.set_config(
+        (1, None), isolate_format.ConfigSettings({KEY_TRACKED: ['1,y']}))
+    c.set_config(
+        (None, 2), isolate_format.ConfigSettings({KEY_TRACKED: ['x,2']}))
+    c.set_config(
+        (None, None), isolate_format.ConfigSettings({KEY_TRACKED: ['x,y']}))
+    expected = {
+      (None, None): {KEY_TRACKED: ['x,y']},
+      (None, 2): {KEY_TRACKED: ['x,2']},
+      (1, None): {KEY_TRACKED: ['1,y']},
+      (1, 1): {KEY_TRACKED: ['1,1']},
+      (2, 2): {KEY_TRACKED: ['2,2']},
+    }
+    self.assertEqual(expected, c.flatten())
+
+    s = c.get_config((1, 1))
+    self.assertEqual({KEY_TRACKED: ['1,1', '1,y', 'x,y']}, s.flatten())
+
+    s = c.get_config((1, None))
+    self.assertEqual({KEY_TRACKED: ['1,y', 'x,y']}, s.flatten())
+
+    s = c.get_config((None, None))
+    self.assertEqual({KEY_TRACKED: ['x,y']}, s.flatten())
+
+    expected = {
+      'conditions': [
+        ['x==1', {'variables': {KEY_TRACKED: ['1,y']}}],
+        ['x==1 and y==1', {'variables': {KEY_TRACKED: ['1,1']}}],
+        ['x==2 and y==2', {'variables': {KEY_TRACKED: ['2,2']}}],
+        ['y==2', {'variables': {KEY_TRACKED: ['x,2']}}],
+      ],
+      'variables': {KEY_TRACKED: ['x,y']},
+    }
+    self.assertEqual(expected, c.make_isolate_file())
+
 
 class IsolateFormatTmpDirTest(unittest.TestCase):
   def setUp(self):

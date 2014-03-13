@@ -238,7 +238,6 @@ def _get_bit(all_values, condition):
   A single bit is returned when all variables are specified. Unbounded variable
   is not supported and must be filtered out prior to calling this function.
   """
-  assert condition
   assert isinstance(condition, tuple)
   assert len(condition) == len(all_values), (condition, all_values)
   bit = 1L
