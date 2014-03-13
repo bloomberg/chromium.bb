@@ -99,8 +99,8 @@ struct SupplementableTraits;
 
 template<typename T>
 struct SupplementableTraits<T, true> {
-    typedef PassOwnPtrWillBeRawPtr<SupplementBase<T, true> > SupplementArgumentType;
-    typedef WillBeHeapHashMap<const char*, OwnPtrWillBeMember<SupplementBase<T, true> >, PtrHash<const char*> > SupplementMap;
+    typedef RawPtr<SupplementBase<T, true> > SupplementArgumentType;
+    typedef HeapHashMap<const char*, Member<SupplementBase<T, true> >, PtrHash<const char*> > SupplementMap;
 };
 
 template<typename T>
@@ -119,10 +119,7 @@ public:
 };
 
 template<>
-class SupplementTracing<false> {
-public:
-    virtual void trace(Visitor*) { }
-};
+class SupplementTracing<false> { };
 
 template<typename T, bool isGarbageCollected = false>
 class SupplementBase : public SupplementTracing<isGarbageCollected> {
@@ -148,26 +145,46 @@ public:
     }
 };
 
+template<typename T, bool>
+class SupplementableTracing;
+
+template<typename T>
+class SupplementableTracing<T, true> : public GarbageCollectedMixin {
+public:
+    void trace(Visitor* visitor) { visitor->trace(m_supplements); }
+
+private:
+    typename SupplementableTraits<T, true>::SupplementMap m_supplements;
+    friend class SupplementableBase<T, true>;
+};
+
+template<typename T>
+class SupplementableTracing<T, false> {
+private:
+    typename SupplementableTraits<T, false>::SupplementMap m_supplements;
+    friend class SupplementableBase<T, false>;
+};
+
 template<typename T, bool isGarbageCollected = false>
-class SupplementableBase {
+class SupplementableBase : public SupplementableTracing<T, isGarbageCollected> {
 public:
     void provideSupplement(const char* key, typename SupplementableTraits<T, isGarbageCollected>::SupplementArgumentType supplement)
     {
         ASSERT(m_threadId == currentThread());
-        ASSERT(!m_supplements.get(key));
-        m_supplements.set(key, supplement);
+        ASSERT(!this->m_supplements.get(key));
+        this->m_supplements.set(key, supplement);
     }
 
     void removeSupplement(const char* key)
     {
         ASSERT(m_threadId == currentThread());
-        m_supplements.remove(key);
+        this->m_supplements.remove(key);
     }
 
     SupplementBase<T, isGarbageCollected>* requireSupplement(const char* key)
     {
         ASSERT(m_threadId == currentThread());
-        return m_supplements.get(key);
+        return this->m_supplements.get(key);
     }
 
     void reattachThread()
@@ -177,19 +194,11 @@ public:
 #endif
     }
 
-    void trace(Visitor* visitor)
-    {
-        visitor->trace(m_supplements);
-    }
-
 #if !ASSERT_DISABLED
 protected:
     SupplementableBase() : m_threadId(currentThread()) { }
-#endif
 
 private:
-    typename SupplementableTraits<T, isGarbageCollected>::SupplementMap m_supplements;
-#if !ASSERT_DISABLED
     ThreadIdentifier m_threadId;
 #endif
 };

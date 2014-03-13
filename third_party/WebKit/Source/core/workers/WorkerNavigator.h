@@ -37,6 +37,7 @@
 namespace WebCore {
 
 class WorkerNavigator FINAL : public RefCountedWillBeGarbageCollectedFinalized<WorkerNavigator>, public ScriptWrappable, public NavigatorBase, public WillBeHeapSupplementable<WorkerNavigator> {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WorkerNavigator);
 public:
     static PassRefPtrWillBeRawPtr<WorkerNavigator> create(const String& userAgent)
     {

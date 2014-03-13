@@ -306,7 +306,9 @@ void WorkerGlobalScope::trace(Visitor* visitor)
     visitor->trace(m_console);
     visitor->trace(m_location);
     visitor->trace(m_navigator);
-    WillBeHeapSupplementable<WorkerGlobalScope>::trace(visitor);
+#if ENABLE(OILPAN)
+    HeapSupplementable<WorkerGlobalScope>::trace(visitor);
+#endif
 }
 
 } // namespace WebCore

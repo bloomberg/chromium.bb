@@ -59,6 +59,7 @@ namespace WebCore {
     class WorkerThread;
 
     class WorkerGlobalScope : public RefCountedWillBeRefCountedGarbageCollected<WorkerGlobalScope>, public ScriptWrappable, public SecurityContext, public ExecutionContext, public ExecutionContextClient, public WillBeHeapSupplementable<WorkerGlobalScope>, public EventTargetWithInlineData {
+        WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WorkerGlobalScope);
         DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedWillBeRefCountedGarbageCollected<WorkerGlobalScope>);
     public:
         virtual ~WorkerGlobalScope();
