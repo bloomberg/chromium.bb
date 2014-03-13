@@ -50,7 +50,7 @@ private:
 
     bool checkElementMatchesRadioNodeListFilter(const Element&) const;
 
-    virtual bool nodeMatches(const Element&) const OVERRIDE;
+    virtual bool elementMatches(const Element&) const OVERRIDE;
 
     AtomicString m_name;
     const bool m_onlyMatchImgElements;

@@ -27,7 +27,7 @@ namespace WebCore {
 
 static inline bool isMatchingElement(const LiveNodeList& nodeList, const Element& element)
 {
-    return nodeList.nodeMatches(element);
+    return nodeList.elementMatches(element);
 }
 
 Node* LiveNodeList::virtualOwnerNode() const

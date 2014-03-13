@@ -102,18 +102,18 @@ bool RadioNodeList::checkElementMatchesRadioNodeListFilter(const Element& testEl
     return testElement.getIdAttribute() == m_name || testElement.getNameAttribute() == m_name;
 }
 
-bool RadioNodeList::nodeMatches(const Element& testElement) const
+bool RadioNodeList::elementMatches(const Element& element) const
 {
     if (m_onlyMatchImgElements)
-        return testElement.hasTagName(imgTag);
+        return element.hasTagName(imgTag);
 
-    if (!testElement.hasTagName(objectTag) && !testElement.isFormControlElement())
+    if (!element.hasTagName(objectTag) && !element.isFormControlElement())
         return false;
 
-    if (testElement.hasTagName(inputTag) && toHTMLInputElement(testElement).isImageButton())
+    if (element.hasTagName(inputTag) && toHTMLInputElement(element).isImageButton())
         return false;
 
-    return checkElementMatchesRadioNodeListFilter(testElement);
+    return checkElementMatchesRadioNodeListFilter(element);
 }
 
 } // namespace

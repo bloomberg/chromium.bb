@@ -43,7 +43,7 @@ public:
 
     virtual unsigned length() const OVERRIDE FINAL { return m_collectionIndexCache.nodeCount(*this); }
     virtual Node* item(unsigned offset) const OVERRIDE FINAL { return m_collectionIndexCache.nodeAt(*this, offset); }
-    virtual bool nodeMatches(const Element&) const = 0;
+    virtual bool elementMatches(const Element&) const = 0;
 
     virtual void invalidateCache(Document* oldDocument) const OVERRIDE FINAL;
     bool shouldOnlyIncludeDirectChildren() const { return false; }

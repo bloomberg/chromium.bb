@@ -44,7 +44,7 @@ public:
 private:
     NameNodeList(ContainerNode& rootNode, const AtomicString& name);
 
-    virtual bool nodeMatches(const Element&) const OVERRIDE;
+    virtual bool elementMatches(const Element&) const OVERRIDE;
 
     AtomicString m_name;
 };

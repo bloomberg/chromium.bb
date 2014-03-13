@@ -43,7 +43,7 @@ public:
 protected:
     explicit LabelsNodeList(ContainerNode&);
 
-    virtual bool nodeMatches(const Element&) const OVERRIDE;
+    virtual bool elementMatches(const Element&) const OVERRIDE;
 };
 
 } // namespace WebCore
