@@ -51,8 +51,8 @@ def CheckChangeOnCommit(input_api, output_api):
 def GetPreferredTryMasters(project, change):
   return {
     'tryserver.chromium': {
-      'linux_rel': set(['sync_integration_tests']),
-      'mac_rel': set(['sync_integration_tests']),
+      'linux_chromium_rel': set(['defaulttests']),
+      'mac_chromium_rel': set(['defaulttests']),
       'win_rel': set(['sync_integration_tests']),
     }
   }

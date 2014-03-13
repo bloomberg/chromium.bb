@@ -13,6 +13,6 @@ for more details on the presubmit API built into gcl.
 def GetPreferredTryMasters(project, change):
   return {
     'tryserver.chromium': {
-      'linux_rel': set(['defaulttests']),
+      'linux_chromium_rel': set(['defaulttests']),
     }
   }

@@ -14,6 +14,6 @@ def GetPreferredTryMasters(project, change):
       'linux_gpu': set(['defaulttests']),
       'win_gpu': set(['defaulttests']),
       'mac_gpu': set(['defaulttests']),
-      'linux_layout_rel': set(['defaulttests']),
+      'linux_blink_rel': set(['defaulttests']),
     }
   }

@@ -1323,6 +1323,7 @@ def GetDefaultTryConfigs(bots=None):
           'telemetry_unittests',
       ],
       'win': ['compile'],
+      'win_chromium_compile_dbg': ['defaulttests'],
       'win_nacl_sdk_build': ['compile'],
       'win_rel': standard_tests + [
           'app_list_unittests',
@@ -1412,7 +1413,6 @@ def GetPreferredTryMasters(project, change):
     return GetDefaultTryConfigs([
         'mac_chromium_compile_dbg',
         'mac_chromium_rel',
-        'mac_rel'
     ])
   if all(re.search('(^|[/_])win[/_.]', f) for f in files):
     return GetDefaultTryConfigs(['win', 'win_rel'])
@@ -1430,19 +1430,12 @@ def GetPreferredTryMasters(project, change):
       'android_dbg',
       'ios_dbg_simulator',
       'ios_rel_device',
-      'linux_gtk',
-      'linux_asan',
       'linux_chromium_chromeos_rel',
       'linux_chromium_clang_dbg',
-      'linux_nacl_sdk_build',
       'linux_chromium_rel',
-      'linux_rel',
       'mac_chromium_compile_dbg',
-      'mac_nacl_sdk_build',
       'mac_chromium_rel',
-      'mac_rel',
-      'win',
-      'win_nacl_sdk_build',
+      'win_chromium_compile_dbg',
       'win_rel',
       'win_x64_rel',
   ]
