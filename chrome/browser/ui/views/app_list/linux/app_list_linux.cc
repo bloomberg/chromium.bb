@@ -35,10 +35,8 @@ gfx::Point AppListLinux::FindAnchorPoint(const gfx::Size& view_size,
   AppListPositioner positioner(display, view_size, 0);
 
   // The experimental app list is placed in the center of the screen.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      app_list::switches::kEnableExperimentalAppList)) {
+  if (app_list::switches::IsExperimentalAppListPositionEnabled())
     return positioner.GetAnchorPointForScreenCenter();
-  }
 
   gfx::Point anchor;
   // Snap to the shelf edge. If the cursor is greater than the window

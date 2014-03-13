@@ -6795,6 +6795,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_ENABLE_EXPERIMENTAL_APP_LIST_DESCRIPTION" desc="Description of the flag to enable the experimental app launcher.">
           Enable the experimental version of the app launcher.
         </message>
+        <message name="IDS_FLAGS_ENABLE_EXPERIMENTAL_APP_LIST_POSITION_NAME" desc="Name of the flag to enable the experimental app launcher position.">
+          Enable the experimental app launcher position.
+        </message>
+        <message name="IDS_FLAGS_ENABLE_EXPERIMENTAL_APP_LIST_POSITION_DESCRIPTION" desc="Description of the flag to enable the experimental app launcher position.">
+          Positions the app launcher in the center of the screen with a landscape aspect. This will not enable other app launcher experiments.
+        </message>
       </if>
       <message name="IDS_FLAGS_DISABLE_USER_IMAGE_SYNC_NAME" desc="Name of the flag to disable sync of user account image.">
         Disable avatar sync.

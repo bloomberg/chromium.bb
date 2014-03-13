@@ -9,21 +9,25 @@
 namespace app_list {
 namespace switches {
 
-// If set, the experimental app list will be used.
-const char kEnableExperimentalAppList[] = "enable-experimental-app-list";
-
 // If set, folder will be disabled in app list UI.
 const char kDisableFolderUI[] = "disable-app-list-folder-ui";
 
 // If set, the voice search is disabled in app list UI.
 const char kDisableVoiceSearch[] = "disable-app-list-voice-search";
 
+// If set, the app info context menu item is available in the app list UI.
+const char kEnableAppInfo[] = "enable-app-list-app-info";
+
+// If set, the experimental app list will be used.
+const char kEnableExperimentalAppList[] = "enable-experimental-app-list";
+
+// If set, the experimental app list position will be used.
+const char kEnableExperimentalAppListPosition[] =
+    "enable-experimental-app-list-position";
+
 // If set, it will always listen to the audio locally and open the app-list
 // when the hotword is recognized.
 const char kEnableHotwordAlwaysOn[] = "enable-app-list-hotword-always-on";
-
-// If set, the app info context menu item is available in the app list UI.
-const char kEnableAppInfo[] = "enable-app-list-app-info";
 
 // Folder UI is enabled by default.
 bool IsFolderUIEnabled() {
@@ -55,6 +59,12 @@ bool IsAppInfoEnabled() {
 bool IsExperimentalAppListEnabled() {
   return CommandLine::ForCurrentProcess()->HasSwitch(
       kEnableExperimentalAppList);
+}
+
+bool IsExperimentalAppListPositionEnabled() {
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+             kEnableExperimentalAppListPosition) ||
+         IsExperimentalAppListEnabled();
 }
 
 }  // namespace switches

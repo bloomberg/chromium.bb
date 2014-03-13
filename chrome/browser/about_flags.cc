@@ -1866,6 +1866,13 @@ const Experiment kExperiments[] = {
     kOsWin | kOsLinux | kOsCrOS,
     SINGLE_VALUE_TYPE(app_list::switches::kEnableExperimentalAppList)
   },
+  {
+    "enable-experimental-app-list-position",
+    IDS_FLAGS_ENABLE_EXPERIMENTAL_APP_LIST_POSITION_NAME,
+    IDS_FLAGS_ENABLE_EXPERIMENTAL_APP_LIST_POSITION_DESCRIPTION,
+    kOsWin | kOsLinux | kOsCrOS,
+    SINGLE_VALUE_TYPE(app_list::switches::kEnableExperimentalAppListPosition)
+  },
 #endif
   {
     "touch-scrolling-mode",

@@ -32,8 +32,7 @@ AppsContainerView::AppsContainerView(AppListMainView* app_list_main_view,
       app_list_main_view, pagination_model, start_page_contents);
   int cols = kPreferredCols;
   int rows = kPreferredRows;
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      app_list::switches::kEnableExperimentalAppList)) {
+  if (app_list::switches::IsExperimentalAppListPositionEnabled()) {
     cols = kExperimentalPreferredCols;
     rows = kExperimentalPreferredRows;
   }
