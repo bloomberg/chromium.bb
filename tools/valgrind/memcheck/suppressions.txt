@@ -6317,7 +6317,7 @@
 {
    bug_349939
    Memcheck:Uninitialized
-   fun:_ZN4base9HexEncodeEPKvm
-   fun:_ZN7content9webcrypto12_GLOBAL__N_118ArrayBufferMatchesERKSt6vectorIhSaIhEERKN5blink14WebArrayBufferE
+   ...
+   fun:_ZN7content9webcrypto9UnwrapKeyEN5blink18WebCryptoKeyFormatERKNS0_10CryptoDataERKNS1_12WebCryptoKeyERKNS1_18WebCryptoAlgorithmESB_biPS6_
    fun:_ZN7content9webcrypto53SharedCryptoTest_AesKwRawSymkeyUnwrapCorruptData_Test8TestBodyEv
 }
