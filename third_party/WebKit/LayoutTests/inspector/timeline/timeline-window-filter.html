@@ -27,7 +27,7 @@ function test()
 
     overviewPane._update();
     InspectorTest.addResult("OverviewPane:");
-    dumpDividers(overviewPane._overviewGrid._grid, overviewPane._overviewCalculator);
+    dumpDividers(overviewPane._overviewCalculator);
     InspectorTest.addResult("");
 
     function dumpRecordsCountForRange(windowLeft, windowRight)
@@ -39,7 +39,7 @@ function test()
         InspectorTest.addResult("range = " + windowLeft + " - " + windowRight);
         InspectorTest.addResult("time range = " + view._windowStartTime + " - " + view._windowEndTime);
         InspectorTest.addResult("records count: " + view._presentationModel.filteredRecords().length);
-        dumpDividers(view._timelineGrid, view._calculator);
+        dumpDividers(view._calculator);
         InspectorTest.addResult("");
     }
 
@@ -51,13 +51,13 @@ function test()
         InspectorTest.addResult("mode = " + timeline._presentationModeSetting.get());
         InspectorTest.addResult("range = " + windowLeft + " - " + windowRight);
         InspectorTest.addResult("time range = " + mainView._timeWindowLeft + " - " + mainView._timeWindowRight);
-        dumpDividers(mainView._timelineGrid, mainView._calculator);
+        dumpDividers(mainView._calculator);
         InspectorTest.addResult("");
     }
 
-    function dumpDividers(grid, calculator)
+    function dumpDividers(calculator)
     {
-        var dividers = grid._calculateDividerOffsets(calculator);
+        var dividers = WebInspector.TimelineGrid.calculateDividerOffsets(calculator, 450).offsets;
         for (var i = 0; i < dividers.length; ++i)
             dividers[i] -= calculator.zeroTime();
         InspectorTest.addResult("divider offsets: [" + dividers.join(", ") + "]. We are expecting round numbers.");
