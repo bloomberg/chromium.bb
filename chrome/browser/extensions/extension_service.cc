@@ -607,8 +607,7 @@ void ExtensionService::LoadGreylistFromPrefs() {
 }
 
 void ExtensionService::MaybeBootstrapVerifier() {
-  InstallVerifier* verifier =
-      extensions::ExtensionSystem::Get(profile_)->install_verifier();
+  InstallVerifier* verifier = system_->install_verifier();
   bool do_bootstrap = false;
 
   if (verifier->NeedsBootstrap()) {
@@ -643,17 +642,18 @@ void ExtensionService::VerifyAllExtensions(bool bootstrap) {
     if (InstallVerifier::NeedsVerification(extension))
       to_add.insert(extension.id());
   }
-  extensions::ExtensionSystem::Get(profile_)->install_verifier()->AddMany(
-      to_add, base::Bind(&ExtensionService::FinishVerifyAllExtensions,
-                         AsWeakPtr(), bootstrap));
+  system_->install_verifier()->AddMany(
+      to_add,
+      base::Bind(&ExtensionService::FinishVerifyAllExtensions,
+                 AsWeakPtr(),
+                 bootstrap));
 }
 
 void ExtensionService::FinishVerifyAllExtensions(bool bootstrap, bool success) {
   LogVerifyAllSuccessHistogram(bootstrap, success);
   if (success) {
     // Check to see if any currently unverified extensions became verified.
-    InstallVerifier* verifier =
-        extensions::ExtensionSystem::Get(profile_)->install_verifier();
+    InstallVerifier* verifier = system_->install_verifier();
     const ExtensionSet& disabled_extensions = registry_->disabled_extensions();
     for (ExtensionSet::const_iterator i = disabled_extensions.begin();
          i != disabled_extensions.end(); ++i) {
@@ -873,8 +873,7 @@ bool ExtensionService::UninstallExtension(
         extension.get(), is_ready());
   }
 
-  extensions::ExtensionSystem::Get(profile_)->install_verifier()->Remove(
-      extension->id());
+  system_->install_verifier()->Remove(extension->id());
 
   if (IsUnacknowledgedExternalExtension(extension.get())) {
     UMA_HISTOGRAM_ENUMERATION("Extensions.ExternalExtensionEvent",
@@ -1233,8 +1232,7 @@ void ExtensionService::NotifyExtensionUnloaded(
   // Revoke external file access for the extension from its file system context.
   // It is safe to access the extension's storage partition at this point. The
   // storage partition may get destroyed only after the extension gets unloaded.
-  GURL site = extensions::ExtensionSystem::Get(profile_)->extension_service()->
-      GetSiteForExtensionId(extension->id());
+  GURL site = GetSiteForExtensionId(extension->id());
   fileapi::FileSystemContext* filesystem_context =
       BrowserContext::GetStoragePartitionForSite(profile_, site)->
           GetFileSystemContext();
@@ -2252,8 +2250,8 @@ void ExtensionService::AddNewOrUpdatedExtension(
                                          page_ordinal);
   delayed_installs_.Remove(extension->id());
   if (InstallVerifier::NeedsVerification(*extension)) {
-    extensions::ExtensionSystem::Get(profile_)->install_verifier()->Add(
-        extension->id(), base::Bind(LogAddVerifiedSuccess));
+    system_->install_verifier()->Add(extension->id(),
+                                     base::Bind(LogAddVerifiedSuccess));
   }
   FinishInstallation(extension);
 }
