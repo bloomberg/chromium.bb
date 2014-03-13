@@ -42,9 +42,6 @@
 #include "chrome/installer/util/util_constants.h"
 #include "chrome/installer/util/work_item_list.h"
 
-// Build-time generated include file.
-#include "registered_dlls.h"  // NOLINT
-
 using base::ASCIIToUTF16;
 using base::UTF16ToUTF8;
 using installer::InstallerState;

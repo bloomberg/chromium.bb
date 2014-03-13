@@ -335,31 +335,6 @@
               'process_outputs_as_sources': 1,
               'message': 'Generating version information'
             },
-            {
-              'rule_name': 'server_dlls',
-              'extension': 'release',
-              'variables': {
-                'scan_server_dlls_py' : 'tools/build/win/scan_server_dlls.py',
-                'template_file': 'installer/mini_installer/chrome.release',
-              },
-              'inputs': [
-                '<(scan_server_dlls_py)',
-                '<(template_file)'
-              ],
-              'outputs': [
-                '<(INTERMEDIATE_DIR)/registered_dlls.h',
-              ],
-              'action': [
-                'python',
-                '<(scan_server_dlls_py)',
-                '--output_dir=<(PRODUCT_DIR)',
-                '--input_file=<(RULE_INPUT_PATH)',
-                '--header_output_dir=<(INTERMEDIATE_DIR)',
-                # TODO(sgk):  may just use environment variables
-                #'--distribution=$(CHROMIUM_BUILD)',
-                '--distribution=_google_chrome',
-              ],
-            },
           ],
           'conditions': [
             # TODO(mark):  <(branding_dir) should be defined by the
@@ -432,33 +407,6 @@
             'installer/setup/setup_util.cc',
             'installer/setup/setup_util_unittest.cc',
             'installer/setup/setup_util_unittest.h',
-          ],
-          'rules': [
-            {
-              'rule_name': 'server_dlls',               # Move to lib
-              'extension': 'release',
-              'variables': {
-                'scan_server_dlls_py' : 'tools/build/win/scan_server_dlls.py',
-                'template_file': 'installer/mini_installer/chrome.release',
-              },
-              'inputs': [
-                '<(scan_server_dlls_py)',
-                '<(template_file)'
-              ],
-              'outputs': [
-                '<(INTERMEDIATE_DIR)/registered_dlls.h',
-              ],
-              'action': [
-                'python',
-                '<(scan_server_dlls_py)',
-                '--output_dir=<(PRODUCT_DIR)',
-                '--input_file=<(RULE_INPUT_PATH)',
-                '--header_output_dir=<(INTERMEDIATE_DIR)',
-                # TODO(sgk):  may just use environment variables
-                #'--distribution=$(CHROMIUM_BUILD)',
-                '--distribution=_google_chrome',
-              ],
-            },
           ],
           # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
           'msvs_disabled_warnings': [ 4267, ],

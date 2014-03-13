@@ -49,9 +49,6 @@
 #include "extensions/common/constants.h"
 #include "rlz/lib/rlz_lib.h"
 
-// Build-time generated include file.
-#include "registered_dlls.h"  // NOLINT
-
 using base::win::RegKey;
 using installer::InstallStatus;
 using installer::MasterPreferences;
