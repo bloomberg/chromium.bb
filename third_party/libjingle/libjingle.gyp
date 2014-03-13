@@ -435,6 +435,8 @@
             '<(libjingle_source)/talk/session/media/channelmanager.h',
             '<(libjingle_source)/talk/session/media/currentspeakermonitor.cc',
             '<(libjingle_source)/talk/session/media/currentspeakermonitor.h',
+            '<(libjingle_source)/talk/session/media/externalhmac.cc',
+            '<(libjingle_source)/talk/session/media/externalhmac.h',
             '<(libjingle_source)/talk/session/media/mediamessages.cc',
             '<(libjingle_source)/talk/session/media/mediamessages.h',
             '<(libjingle_source)/talk/session/media/mediamonitor.cc',
