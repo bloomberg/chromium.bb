@@ -148,9 +148,15 @@ void DevToolsNetLogObserver::OnAddURLRequestEntry(
            response_headers->EnumerateHeaderLines(&it, &name, &value); ) {
         info->response_headers.push_back(std::make_pair(name, value));
       }
-      info->response_headers_text =
-          net::HttpUtil::ConvertHeadersBackToHTTPResponse(
-              response_headers->raw_headers());
+
+      if (!info->request_headers_text.empty()) {
+        info->response_headers_text =
+            net::HttpUtil::ConvertHeadersBackToHTTPResponse(
+                response_headers->raw_headers());
+      } else {
+        // SPDY request.
+        info->response_headers_text = "";
+      }
       break;
     }
     default:
