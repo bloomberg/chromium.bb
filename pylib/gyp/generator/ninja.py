@@ -1094,18 +1094,20 @@ class NinjaWriter:
       extra_bindings.append(('soname', os.path.split(output)[1]))
       extra_bindings.append(('lib',
                             gyp.common.EncodePOSIXShellArgument(output)))
-      link_file_list = output + '.rsp'
-      if self.is_mac_bundle:
-        # 'Dependency Framework.framework/Versions/A/Dependency Framework' ->
-        # 'Dependency Framework.framework.rsp'
-        link_file_list = self.xcode_settings.GetWrapperName() + '.rsp'
+      if self.flavor != 'win':
+        link_file_list = output + '.rsp'
+        if self.is_mac_bundle:
+          # 'Dependency Framework.framework/Versions/A/Dependency Framework' ->
+          # 'Dependency Framework.framework.rsp'
+          link_file_list = self.xcode_settings.GetWrapperName() + '.rsp'
         # If an rspfile contains spaces, ninja surrounds the filename with
         # quotes around it and then passes it to open(), creating a file with
-        # quotes in its name (and when looking for the rsp file, the name makes
-        # it through bash which strips the quotes) :-/
+        # quotes in its name (and when looking for the rsp file, the name
+        # makes it through bash which strips the quotes) :-/
         link_file_list = link_file_list.replace(' ', '_')
-      extra_bindings.append(
-        ('link_file_list', gyp.common.EncodePOSIXShellArgument(link_file_list)))
+        extra_bindings.append(
+          ('link_file_list',
+            gyp.common.EncodePOSIXShellArgument(link_file_list)))
       if self.flavor == 'win':
         extra_bindings.append(('binary', output))
         if '/NOENTRY' not in ldflags:
@@ -1927,9 +1929,9 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
         'alink',
         description='LIB $out',
         command=('%s gyp-win-tool link-wrapper $arch False '
-                 '$ar /nologo /ignore:4221 /OUT:$out @$link_file_list' %
+                 '$ar /nologo /ignore:4221 /OUT:$out @$out.rsp' %
                  sys.executable),
-        rspfile='$link_file_list',
+        rspfile='$out.rsp',
         rspfile_content='$in_newline $libflags')
     _AddWinLinkRules(master_ninja, embed_manifest=True)
     _AddWinLinkRules(master_ninja, embed_manifest=False)
