@@ -59,7 +59,6 @@ const CommandLinePrefStore::BooleanSwitchToPreferenceMapEntry
           true },
       { switches::kEnableUnrestrictedSSL3Fallback,
           prefs::kEnableUnrestrictedSSL3Fallback, true },
-      { switches::kEnableMemoryInfo, prefs::kEnableMemoryInfo, true },
 #if defined(GOOGLE_CHROME_BUILD)
       { switches::kDisablePrintPreview, prefs::kPrintPreviewDisabled, true },
 #else

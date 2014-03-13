@@ -254,9 +254,6 @@ void ApplyWebPreferences(const WebPreferences& prefs, WebView* web_view) {
   settings->setAcceleratedCompositingForCanvasEnabled(
       prefs.experimental_webgl_enabled || prefs.accelerated_2d_canvas_enabled);
 
-  // Enable memory info reporting to page if requested on the command line.
-  settings->setMemoryInfoEnabled(prefs.memory_info_enabled);
-
   settings->setAsynchronousSpellCheckingEnabled(
       prefs.asynchronous_spell_checking_enabled);
   settings->setUnifiedTextCheckerEnabled(prefs.unified_textchecker_enabled);

@@ -3513,18 +3513,21 @@
       'name': 'EnableMemoryInfo',
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:17-', 'chrome_os:18-'],
+      'supported_on': ['chrome.*:17-34', 'chrome_os:18-34'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'deprecated': True,
       'future': True,
       'example_value': False,
       'id': 115,
-      'caption': '''Enable reporting memory info (JS heap size) to page''',
-      'desc': '''Allows pages to access JavaScript memory usage statistics.
+      'caption': '''Enable reporting memory info (JS heap size) to page (deprecated)''',
+      'desc': '''This policy has been retired as of <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version 35.
 
-      This settings makes the memory statistics from the Developer Tools Profiles panel available to the web page itself.''',
+      Memory info is anyway reported to page, regardless of the option value, but the sizes reported are
+      quantized and the rate of updates is limited for security reasons. To obtain real-time precise data,
+      please use tools like Telemetry.''',
     },
     {
       'name': 'DisablePrintPreview',

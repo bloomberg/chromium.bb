@@ -122,7 +122,6 @@ struct WEBKIT_COMMON_EXPORT WebPreferences {
   bool deferred_filters_enabled;
   bool gesture_tap_highlight_enabled;
   bool accelerated_compositing_for_plugins_enabled;
-  bool memory_info_enabled;
   bool allow_displaying_insecure_content;
   bool allow_running_insecure_content;
   bool password_echo_enabled;

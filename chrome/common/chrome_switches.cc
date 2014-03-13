@@ -609,11 +609,6 @@ const char kEnableIPv6[]                    = "enable-ipv6";
 // Enables experimentation with launching ephemeral apps via hyperlinks.
 const char kEnableLinkableEphemeralApps[]   = "enable-linkable-ephemeral-apps";
 
-// Make the values returned to window.performance.memory more granular and more
-// up to date. Without this flag, the memory information is still available, but
-// it is bucketized and updated less frequently.
-const char kEnableMemoryInfo[]              = "enable-memory-info";
-
 // Enables metrics recording and reporting in the browser startup sequence, as
 // if this was an official Chrome build where the user allowed metrics
 // reporting. This is used for testing only.

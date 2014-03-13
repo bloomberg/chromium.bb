@@ -661,10 +661,6 @@ void ChromeContentBrowserClient::RegisterProfilePrefs(
       prefs::kEnableHyperlinkAuditing,
       true,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kEnableMemoryInfo,
-      false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 // static
@@ -2293,8 +2289,6 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
   if (prefs->GetBoolean(prefs::kDisable3DAPIs))
     web_prefs->experimental_webgl_enabled = false;
 
-  web_prefs->memory_info_enabled =
-      prefs->GetBoolean(prefs::kEnableMemoryInfo);
   web_prefs->allow_displaying_insecure_content =
       prefs->GetBoolean(prefs::kWebKitAllowDisplayingInsecureContent);
   web_prefs->allow_running_insecure_content =

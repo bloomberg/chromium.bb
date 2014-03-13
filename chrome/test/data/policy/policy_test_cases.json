@@ -1451,11 +1451,7 @@
   },
 
   "EnableMemoryInfo": {
-    "os": ["win", "linux", "mac", "chromeos"],
-    "test_policy": { "EnableMemoryInfo": true },
-    "pref_mappings": [
-      { "pref": "enable_memory_info" }
-    ]
+    "note": "This policy is retired, see http://crbug.com/350339."
   },
 
   "DisablePrintPreview": {
