@@ -27,6 +27,11 @@
     <form action="/stats" method="get">
       <h5>Write your own query</h5>
       <div><textarea name="query" rows="2" cols="100">{{ user_query }}</textarea></div>
+      <div>
+        display format:
+        <input type="radio" name="format" value="table" checked>table (default)
+        <input type="radio" name="format" value="json">json
+      </div>
       <div><input type="submit" value="Submit Query"></div>
     </form>
 
@@ -38,6 +43,11 @@
             <option>{{ example_query }}</option>
           {% endfor %}
         </select>
+      </div>
+      <div>
+        display format:
+        <input type="radio" name="format" value="table" checked>table (default)
+        <input type="radio" name="format" value="json">json
       </div>
       <div><input type="submit" value="Submit Query"></div>
     </form>

@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import datetime
+import json
 import logging
 import os
 import re
@@ -118,19 +120,36 @@ class MainPage(webapp2.RequestHandler):
     except datastore_errors.BadQueryError as ex:
       error_msg = '<p>%s.</p><p>Actual GCL query used: "%s"</p>' % (ex, query)
 
-    results_table = self._PrepareResultsTable(stat_entries, columns)
-    template_values = {
-      'error_msg': error_msg,
-      'gcl_query': query,
-      'user_query': orig_query,
-      'user_email': users.get_current_user(),
-      'results_table': results_table,
-      'column_list': self.ALL_COLUMNS,
-      'example_queries': self.EXAMPLE_QUERIES,
-      }
+    if self.request.get('format') == 'json':
+      # Write output in the JSON format.
+      d = self._ResultsToDictionary(stat_entries, columns)
 
-    template = JINJA_ENVIRONMENT.get_template('index.html')
-    self.response.out.write(template.render(template_values))
+      class CustomEncoder(json.JSONEncoder):
+        """Handles non-serializable classes by converting them to strings."""
+        def default(self, obj):
+          if (isinstance(obj, datetime.datetime) or
+              isinstance(obj, datetime.date) or
+              isinstance(obj, datetime.time)):
+            return obj.isoformat()
+
+          return json.JSONEncoder.default(self, obj)
+
+      self.response.content_type = 'application/json'
+      self.response.write(json.dumps(d, cls=CustomEncoder))
+    else:
+      # Write output to the HTML page.
+      results_table = self._PrepareResultsTable(stat_entries, columns)
+      template_values = {
+          'error_msg': error_msg,
+          'gcl_query': query,
+          'user_query': orig_query,
+          'user_email': users.get_current_user(),
+          'results_table': results_table,
+          'column_list': self.ALL_COLUMNS,
+          'example_queries': self.EXAMPLE_QUERIES,
+      }
+      template = JINJA_ENVIRONMENT.get_template('index.html')
+      self.response.write(template.render(template_values))
 
   def _RemoveSelectFromQuery(self, query):
     """Remove SELECT clause from |query|, return tuple (new_query, columns)."""
@@ -169,6 +188,24 @@ class MainPage(webapp2.RequestHandler):
       table.append(row)
 
     return table
+
+  def _ResultsToDictionary(self, stat_entries, columns):
+    """Converts |stat_entries| to a dictionary with |columns| as keys.
+
+    Args:
+      stat_entries: A list of GqlQuery objects.
+      columns: A list of keys to use.
+
+    Returns:
+      A dictionary with |columns| as keys.
+    """
+    stats_dict = dict()
+    keys = [c for c in columns]
+    for stat_ix, stat_entry in enumerate(stat_entries):
+      stats_dict[stat_ix] = dict(
+          (col, getattr(stat_entry, col)) for col in columns)
+
+    return stats_dict
 
 
 class PostPage(webapp2.RequestHandler):
