@@ -808,7 +808,7 @@ TEST_F(AnimationCompositorAnimationsTest, createReversedOpacityAnimation)
     frames[0]->setEasing(CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseIn));
     frames[1]->setEasing(m_linearTimingFunction.get());
     frames[2]->setEasing(cubicEasyFlipTimingFunction.get());
-    RefPtr<KeyframeEffectModel> effect = KeyframeEffectModel::create(frames);
+    RefPtrWillBeRawPtr<KeyframeEffectModel> effect = KeyframeEffectModel::create(frames);
 
     m_timing.timingFunction = m_linearTimingFunction.get();
     m_timing.iterationCount = 10;

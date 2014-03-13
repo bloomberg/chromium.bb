@@ -201,8 +201,8 @@ bool CompositorAnimations::isCandidateForAnimationOnCompositor(const Timing& tim
         return false;
 
     // Search for any segments with StepsFunction.
-    Vector<RefPtr<Keyframe> >::const_iterator end = keyframeEffect.getFrames().end() - 1; // Ignore timing function of last frame.
-    for (Vector<RefPtr<Keyframe> >::const_iterator iter = keyframeEffect.getFrames().begin(); iter != end; ++iter) {
+    WillBeHeapVector<RefPtrWillBeMember<Keyframe> >::const_iterator end = keyframeEffect.getFrames().end() - 1; // Ignore timing function of last frame.
+    for (WillBeHeapVector<RefPtrWillBeMember<Keyframe> >::const_iterator iter = keyframeEffect.getFrames().begin(); iter != end; ++iter) {
         RELEASE_ASSERT((*iter)->easing());
         switch ((*iter)->easing()->type()) {
         case TimingFunction::LinearFunction:
