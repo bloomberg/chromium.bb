@@ -133,28 +133,43 @@ class FakeSafeBrowsingUIManager :  public SafeBrowsingUIManager {
   // Overrides SafeBrowsingUIManager
   virtual void SendSerializedMalwareDetails(
       const std::string& serialized) OVERRIDE {
-    reports_.push_back(serialized);
     // Notify the UI thread that we got a report.
     BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&FakeSafeBrowsingUIManager::OnMalwareDetailsDone, this));
+        BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(&FakeSafeBrowsingUIManager::OnMalwareDetailsDone,
+                   this,
+                   serialized));
   }
 
-  void OnMalwareDetailsDone() {
+  void OnMalwareDetailsDone(const std::string& serialized) {
     EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    base::MessageLoopForUI::current()->Quit();
+    report_ = serialized;
+
+    EXPECT_FALSE(malware_details_done_callback_.is_null());
+    if (!malware_details_done_callback_.is_null()) {
+      malware_details_done_callback_.Run();
+      malware_details_done_callback_ = base::Closure();
+    }
+  }
+
+  void set_malware_details_done_callback(const base::Closure& callback) {
+    EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    EXPECT_TRUE(malware_details_done_callback_.is_null());
+    malware_details_done_callback_ = callback;
   }
 
   std::string GetReport() {
-    EXPECT_TRUE(reports_.size() == 1);
-    return reports_[0];
+    EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    return report_;
   }
 
  protected:
   virtual ~FakeSafeBrowsingUIManager() { }
 
  private:
-  std::vector<std::string> reports_;
+  std::string report_;
+  base::Closure malware_details_done_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeSafeBrowsingUIManager);
 };
@@ -489,19 +504,16 @@ class SafeBrowsingBlockingPageTest : public InProcessBrowserTest {
       loop_runner->Run();
   }
 
-  void AssertReportSent() {
+  void SetReportSentCallback(const base::Closure& callback) {
     LOG(INFO) << __FUNCTION__;
-    // When a report is scheduled in the IO thread we should get notified.
-    content::RunMessageLoop();
+    factory_.most_recent_service()
+        ->fake_ui_manager()
+        ->set_malware_details_done_callback(callback);
+  }
 
-    std::string serialized = factory_.most_recent_service()->
-        fake_ui_manager()->GetReport();
-
-    safe_browsing::ClientMalwareReportRequest report;
-    ASSERT_TRUE(report.ParseFromString(serialized));
-
-    // Verify the report is complete.
-    EXPECT_TRUE(report.complete());
+  std::string GetReportSent() {
+    LOG(INFO) << __FUNCTION__;
+    return factory_.most_recent_service()->fake_ui_manager()->GetReport();
   }
 
   void MalwareRedirectCancelAndProceed(const std::string& open_function) {
@@ -746,7 +758,12 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, MalwareIframeProceed) {
 #endif
 IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest,
                        MAYBE_MalwareIframeReportDetails) {
+  scoped_refptr<content::MessageLoopRunner> malware_report_sent_runner(
+      new content::MessageLoopRunner);
+  SetReportSentCallback(malware_report_sent_runner->QuitClosure());
+
   GURL url = SetupMalwareIframeWarningAndNavigate();
+
   LOG(INFO) << "1";
 
   // If the DOM details from renderer did not already return, wait for them.
@@ -761,14 +778,20 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest,
   AssertNoInterstitial(true);  // Assert the interstitial is gone
   LOG(INFO) << "5";
 
-  EXPECT_TRUE(browser()->profile()->GetPrefs()->GetBoolean(
+  ASSERT_TRUE(browser()->profile()->GetPrefs()->GetBoolean(
       prefs::kSafeBrowsingReportingEnabled));
   LOG(INFO) << "6";
 
   EXPECT_EQ(url,
             browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
   LOG(INFO) << "7";
-  AssertReportSent();
+
+  malware_report_sent_runner->Run();
+  std::string serialized = GetReportSent();
+  safe_browsing::ClientMalwareReportRequest report;
+  ASSERT_TRUE(report.ParseFromString(serialized));
+  // Verify the report is complete.
+  EXPECT_TRUE(report.complete());
   LOG(INFO) << "8";
 }
 
