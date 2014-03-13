@@ -670,6 +670,9 @@ String UseCounter::deprecationMessage(Feature feature)
     case PrefixedSpeechAttribute:
         return "The 'x-webkit-speech' input field attribute is deprecated. Please use the JavaScript API instead.";
 
+    case PrefixedGamepad:
+        return "'navigator.webkitGetGamepads' is deprecated. Please use 'navigator.getGamepads' instead.";
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();

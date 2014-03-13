@@ -20,5 +20,6 @@
 [
     RuntimeEnabled=Gamepad,
 ] partial interface Navigator {
-    GamepadList webkitGetGamepads();
+    [DeprecateAs=PrefixedGamepad] WebKitGamepadList webkitGetGamepads();
+    GamepadList getGamepads();
 };

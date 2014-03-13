@@ -28,6 +28,7 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "heap/Handle.h"
+#include "modules/gamepad/GamepadButton.h"
 #include "public/platform/WebGamepad.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
@@ -35,7 +36,7 @@
 
 namespace WebCore {
 
-class Gamepad: public RefCountedWillBeGarbageCollectedFinalized<Gamepad>, public ScriptWrappable {
+class Gamepad FINAL : public RefCountedWillBeGarbageCollectedFinalized<Gamepad>, public ScriptWrappable {
 public:
     static PassRefPtrWillBeRawPtr<Gamepad> create()
     {
@@ -46,29 +47,25 @@ public:
     typedef Vector<float> FloatVector;
 
     const String& id() const { return m_id; }
-    void id(const String& id) { m_id = id; }
+    void setId(const String& id) { m_id = id; }
 
     unsigned index() const { return m_index; }
-    void index(unsigned val) { m_index = val; }
+    void setIndex(unsigned val) { m_index = val; }
 
     bool connected() const { return m_connected; }
-    void connected(bool val) { m_connected = val; }
+    void setConnected(bool val) { m_connected = val; }
 
     unsigned long long timestamp() const { return m_timestamp; }
-    void timestamp(unsigned long long val) { m_timestamp = val; }
+    void setTimestamp(unsigned long long val) { m_timestamp = val; }
 
     const String& mapping() const { return m_mapping; }
-    void mapping(const String& val) { m_mapping = val; }
+    void setMapping(const String& val) { m_mapping = val; }
 
     const FloatVector& axes() const { return m_axes; }
-    void axes(unsigned count, float* data);
+    void setAxes(unsigned count, const float* data);
 
-    const FloatVector& buttons() const { return m_buttons; }
-#if defined(ENABLE_NEW_GAMEPAD_API)
-    void buttons(unsigned count, blink::WebGamepadButton* data);
-#else
-    void buttons(unsigned count, float* data);
-#endif
+    const GamepadButtonVector& buttons() const { return m_buttons; }
+    void setButtons(unsigned count, const blink::WebGamepadButton* data);
 
     void trace(Visitor*);
 
@@ -80,7 +77,7 @@ private:
     unsigned long long m_timestamp;
     String m_mapping;
     FloatVector m_axes;
-    FloatVector m_buttons;
+    GamepadButtonVector m_buttons;
 };
 
 } // namespace WebCore

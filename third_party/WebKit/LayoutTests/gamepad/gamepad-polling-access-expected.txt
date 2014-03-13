@@ -1,3 +1,4 @@
+CONSOLE WARNING: 'navigator.webkitGetGamepads' is deprecated. Please use 'navigator.getGamepads' instead.
 PASS navigator.webkitGetGamepads().length is 4
 PASS navigator.webkitGetGamepads().item(0) is null
 PASS navigator.webkitGetGamepads().item(1) is null
@@ -7,9 +8,21 @@ PASS navigator.webkitGetGamepads()[0] is undefined.
 PASS navigator.webkitGetGamepads()[1] is undefined.
 PASS navigator.webkitGetGamepads()[2] is undefined.
 PASS navigator.webkitGetGamepads()[3] is undefined.
+PASS navigator.getGamepads().length is 4
+PASS navigator.getGamepads().item(0) is null
+PASS navigator.getGamepads().item(1) is null
+PASS navigator.getGamepads().item(2) is null
+PASS navigator.getGamepads().item(3) is null
+PASS navigator.getGamepads()[0] is undefined.
+PASS navigator.getGamepads()[1] is undefined.
+PASS navigator.getGamepads()[2] is undefined.
+PASS navigator.getGamepads()[3] is undefined.
 PASS navigator.webkitGetGamepads()[0] is non-null.
+PASS navigator.getGamepads()[0] is non-null.
 PASS navigator.webkitGetGamepads().item(0) is null
 PASS navigator.webkitGetGamepads()[0] is undefined.
+PASS navigator.getGamepads().item(0) is null
+PASS navigator.getGamepads()[0] is undefined.
 PASS navigator.webkitGetGamepads()[0].id is 'MockStick 3000'
 PASS navigator.webkitGetGamepads()[0].buttons.length is 2
 PASS navigator.webkitGetGamepads()[0].axes.length is 2
@@ -18,6 +31,16 @@ PASS navigator.webkitGetGamepads()[0].buttons[1] is 0.0
 PASS navigator.webkitGetGamepads()[0].axes.length is 2
 PASS navigator.webkitGetGamepads()[0].axes[0] is 0.5
 PASS navigator.webkitGetGamepads()[0].axes[1] is -1.0
+PASS navigator.getGamepads()[0].id is 'MockStick 3000'
+PASS navigator.getGamepads()[0].buttons.length is 2
+PASS navigator.getGamepads()[0].axes.length is 2
+PASS navigator.getGamepads()[0].buttons[0].value is 1.0
+PASS navigator.getGamepads()[0].buttons[0].pressed is true
+PASS navigator.getGamepads()[0].buttons[1].value is 0.0
+PASS navigator.getGamepads()[0].buttons[1].pressed is false
+PASS navigator.getGamepads()[0].axes.length is 2
+PASS navigator.getGamepads()[0].axes[0] is 0.5
+PASS navigator.getGamepads()[0].axes[1] is -1.0
 PASS successfullyParsed is true
 
 TEST COMPLETE

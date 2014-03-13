@@ -29,6 +29,7 @@
 #include "bindings/v8/ScriptWrappable.h"
 #include "heap/Handle.h"
 #include "modules/gamepad/Gamepad.h"
+#include "public/platform/WebGamepads.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
@@ -47,13 +48,12 @@ public:
     void trace(Visitor*);
 
 private:
-    enum { kMaximumGamepads = 4 };
     GamepadList()
     {
         ScriptWrappable::init(this);
     }
 
-    RefPtrWillBeMember<Gamepad> m_items[kMaximumGamepads];
+    RefPtrWillBeMember<Gamepad> m_items[blink::WebGamepads::itemsLengthCap];
 };
 
 } // namespace WebCore

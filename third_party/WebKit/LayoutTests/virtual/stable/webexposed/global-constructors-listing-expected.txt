@@ -90,6 +90,7 @@ FocusEvent
 FormData
 Function
 GainNode
+Gamepad
 HTMLAllCollection
 HTMLAnchorElement
 HTMLAppletElement
@@ -437,6 +438,7 @@ WebKitCSSFilterRule
 WebKitCSSFilterValue
 WebKitCSSMatrix
 WebKitCSSTransformValue
+WebKitGamepad
 WebKitMediaSource
 WebKitMutationObserver
 WebKitPoint

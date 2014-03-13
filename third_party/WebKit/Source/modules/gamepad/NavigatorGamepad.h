@@ -28,19 +28,23 @@
 
 #include "heap/Handle.h"
 #include "platform/Supplementable.h"
+#include "public/platform/WebGamepads.h"
 
 namespace WebCore {
 
 class GamepadList;
 class Navigator;
+class WebKitGamepadList;
 
 class NavigatorGamepad FINAL : public Supplement<Navigator> {
 public:
     virtual ~NavigatorGamepad();
     static NavigatorGamepad& from(Navigator&);
 
-    static GamepadList* webkitGetGamepads(Navigator&);
+    static WebKitGamepadList* webkitGetGamepads(Navigator&);
+    static GamepadList* getGamepads(Navigator&);
 
+    WebKitGamepadList* webkitGamepads();
     GamepadList* gamepads();
 
 private:
@@ -48,6 +52,7 @@ private:
     static const char* supplementName();
 
     RefPtrWillBePersistent<GamepadList> m_gamepads;
+    RefPtrWillBePersistent<WebKitGamepadList> m_webkitGamepads;
 };
 
 } // namespace WebCore

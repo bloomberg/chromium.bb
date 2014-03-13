@@ -305,6 +305,7 @@ public:
         DocumentReleaseEvents = 288,
         WindowCaptureEvents = 289,
         WindowReleaseEvents = 290,
+        PrefixedGamepad = 291,
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
         NumberOfFeatures, // This enum value must be last.

@@ -28,12 +28,26 @@
 
 #include "core/frame/Navigator.h"
 #include "modules/gamepad/GamepadList.h"
+#include "modules/gamepad/WebKitGamepadList.h"
 #include "public/platform/Platform.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
 
-static void sampleGamepads(GamepadList* into)
+template<typename T>
+static void sampleGamepad(unsigned index, T& gamepad, const blink::WebGamepad& webGamepad)
+{
+    gamepad.setId(webGamepad.id);
+    gamepad.setIndex(index);
+    gamepad.setConnected(webGamepad.connected);
+    gamepad.setTimestamp(webGamepad.timestamp);
+    gamepad.setMapping(webGamepad.mapping);
+    gamepad.setAxes(webGamepad.axesLength, webGamepad.axes);
+    gamepad.setButtons(webGamepad.buttonsLength, webGamepad.buttons);
+}
+
+template<typename GamepadType, typename ListType>
+static void sampleGamepads(ListType* into)
 {
     blink::WebGamepads gamepads;
 
@@ -42,18 +56,10 @@ static void sampleGamepads(GamepadList* into)
     for (unsigned i = 0; i < blink::WebGamepads::itemsLengthCap; ++i) {
         blink::WebGamepad& webGamepad = gamepads.items[i];
         if (i < gamepads.length && webGamepad.connected) {
-            RefPtrWillBeRawPtr<Gamepad> gamepad = into->item(i);
+            RefPtrWillBeRawPtr<GamepadType> gamepad = into->item(i);
             if (!gamepad)
-                gamepad = Gamepad::create();
-            gamepad->id(webGamepad.id);
-            gamepad->index(i);
-            gamepad->connected(webGamepad.connected);
-            gamepad->timestamp(webGamepad.timestamp);
-#if defined(ENABLE_NEW_GAMEPAD_API)
-            gamepad->mapping(webGamepad.mapping);
-#endif
-            gamepad->axes(webGamepad.axesLength, webGamepad.axes);
-            gamepad->buttons(webGamepad.buttonsLength, webGamepad.buttons);
+                gamepad = GamepadType::create();
+            sampleGamepad(i, *gamepad, webGamepad);
             into->set(i, gamepad);
         } else {
             into->set(i, nullptr);
@@ -84,16 +90,29 @@ NavigatorGamepad& NavigatorGamepad::from(Navigator& navigator)
     return *supplement;
 }
 
-GamepadList* NavigatorGamepad::webkitGetGamepads(Navigator& navigator)
+WebKitGamepadList* NavigatorGamepad::webkitGetGamepads(Navigator& navigator)
+{
+    return NavigatorGamepad::from(navigator).webkitGamepads();
+}
+
+GamepadList* NavigatorGamepad::getGamepads(Navigator& navigator)
 {
     return NavigatorGamepad::from(navigator).gamepads();
+}
+
+WebKitGamepadList* NavigatorGamepad::webkitGamepads()
+{
+    if (!m_webkitGamepads)
+        m_webkitGamepads = WebKitGamepadList::create();
+    sampleGamepads<WebKitGamepad>(m_webkitGamepads.get());
+    return m_webkitGamepads.get();
 }
 
 GamepadList* NavigatorGamepad::gamepads()
 {
     if (!m_gamepads)
         m_gamepads = GamepadList::create();
-    sampleGamepads(m_gamepads.get());
+    sampleGamepads<Gamepad>(m_gamepads.get());
     return m_gamepads.get();
 }
 
