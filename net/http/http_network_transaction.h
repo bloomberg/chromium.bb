@@ -218,11 +218,6 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
   // ShouldResendRequest() is true.
   void ResetConnectionAndRequestForResend();
 
-  // Decides the policy when the connection is closed before the end of headers
-  // has been read. This only applies to reading responses, and not writing
-  // requests.
-  int HandleConnectionClosedBeforeEndOfHeaders();
-
   // Sets up the state machine to restart the transaction with auth.
   void PrepareForAuthRestart(HttpAuth::Target target);
 

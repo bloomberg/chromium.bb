@@ -943,16 +943,6 @@ int HttpNetworkTransaction::DoReadHeaders() {
   return stream_->ReadResponseHeaders(io_callback_);
 }
 
-int HttpNetworkTransaction::HandleConnectionClosedBeforeEndOfHeaders() {
-  if (!response_.headers.get() && !stream_->IsConnectionReused()) {
-    // The connection was closed before any data was sent. Likely an error
-    // rather than empty HTTP/0.9 response.
-    return ERR_EMPTY_RESPONSE;
-  }
-
-  return OK;
-}
-
 int HttpNetworkTransaction::DoReadHeadersComplete(int result) {
   // We can get a certificate error or ERR_SSL_CLIENT_AUTH_CERT_NEEDED here
   // due to SSL renegotiation.
@@ -979,32 +969,30 @@ int HttpNetworkTransaction::DoReadHeadersComplete(int result) {
     return OK;
   }
 
-  if (result < 0 && result != ERR_CONNECTION_CLOSED)
-    return HandleIOError(result);
-
-  if (result == ERR_CONNECTION_CLOSED && ShouldResendRequest(result)) {
-    ResetConnectionAndRequestForResend();
-    return OK;
-  }
-
   // After we call RestartWithAuth a new response_time will be recorded, and
   // we need to be cautious about incorrectly logging the duration across the
   // authentication activity.
   if (result == OK)
     LogTransactionConnectedMetrics();
 
-  if (result == ERR_CONNECTION_CLOSED) {
-    // For now, if we get at least some data, we do the best we can to make
-    // sense of it and send it back up the stack.
-    int rv = HandleConnectionClosedBeforeEndOfHeaders();
-    if (rv != OK)
-      return rv;
-  }
+  // ERR_CONNECTION_CLOSED is treated differently at this point; if partial
+  // response headers were received, we do the best we can to make sense of it
+  // and send it back up the stack.
+  //
+  // TODO(davidben): Consider moving this to HttpBasicStream, It's a little
+  // bizarre for SPDY. Assuming this logic is useful at all.
+  // TODO(davidben): Bubble the error code up so we do not cache?
+  if (result == ERR_CONNECTION_CLOSED && response_.headers.get())
+    result = OK;
+
+  if (result < 0)
+    return HandleIOError(result);
+
   DCHECK(response_.headers.get());
 
 #if defined(SPDY_PROXY_AUTH_ORIGIN)
   // Server-induced fallback; see: http://crbug.com/143712
-  if (response_.was_fetched_via_proxy && response_.headers.get() != NULL) {
+  if (response_.was_fetched_via_proxy) {
     ProxyService::DataReductionProxyBypassEventType proxy_bypass_event =
         ProxyService::BYPASS_EVENT_TYPE_MAX;
     net::HttpResponseHeaders::ChromeProxyInfo chrome_proxy_info;
