@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_STORAGE_H_
 
 #include <map>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
@@ -22,6 +23,7 @@ class QuotaManagerProxy;
 namespace content {
 
 class ServiceWorkerRegistration;
+class ServiceWorkerRegistrationInfo;
 
 // This class provides an interface to load registration data and
 // instantiate ServiceWorkerRegistration objects.
@@ -44,6 +46,11 @@ class CONTENT_EXPORT ServiceWorkerStorage {
                                    const FindRegistrationCallback& callback);
   void FindRegistrationForPattern(const GURL& pattern,
                                   const FindRegistrationCallback& callback);
+
+  typedef base::Callback<
+      void(const std::vector<ServiceWorkerRegistrationInfo>& registrations)>
+      GetAllRegistrationInfosCallback;
+  void GetAllRegistrations(const GetAllRegistrationInfosCallback& callback);
 
   // Stores |registration|. Returns SERVICE_WORKER_ERROR_EXISTS if
   // conflicting registration (which has different script_url) is

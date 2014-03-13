@@ -4,6 +4,7 @@
 
 #include "content/browser/service_worker/service_worker_registration.h"
 
+#include "content/browser/service_worker/service_worker_info.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace content {
@@ -32,6 +33,16 @@ void ServiceWorkerRegistration::Shutdown() {
     pending_version_->Shutdown();
   pending_version_ = NULL;
   is_shutdown_ = true;
+}
+
+ServiceWorkerRegistrationInfo ServiceWorkerRegistration::GetInfo() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  return ServiceWorkerRegistrationInfo(
+      script_url(),
+      pattern(),
+      active_version_ ? active_version_->GetInfo() : ServiceWorkerVersionInfo(),
+      pending_version_ ? pending_version_->GetInfo()
+                       : ServiceWorkerVersionInfo());
 }
 
 void ServiceWorkerRegistration::ActivatePendingVersion() {

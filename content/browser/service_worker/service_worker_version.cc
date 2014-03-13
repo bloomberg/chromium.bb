@@ -10,6 +10,7 @@
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/common/service_worker/service_worker_messages.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace content {
 
@@ -142,6 +143,14 @@ void ServiceWorkerVersion::SetStatus(Status status) {
 void ServiceWorkerVersion::RegisterStatusChangeCallback(
     const base::Closure& callback) {
   status_change_callbacks_.push_back(callback);
+}
+
+ServiceWorkerVersionInfo ServiceWorkerVersion::GetInfo() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  return ServiceWorkerVersionInfo(running_status(),
+                                  status(),
+                                  embedded_worker()->process_id(),
+                                  embedded_worker()->thread_id());
 }
 
 void ServiceWorkerVersion::StartWorker(const StatusCallback& callback) {

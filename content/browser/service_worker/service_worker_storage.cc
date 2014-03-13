@@ -5,10 +5,11 @@
 #include "content/browser/service_worker/service_worker_storage.h"
 
 #include <string>
-
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
+#include "content/browser/service_worker/service_worker_info.h"
 #include "content/browser/service_worker/service_worker_registration.h"
+#include "content/public/browser/browser_thread.h"
 #include "webkit/browser/quota/quota_manager_proxy.h"
 
 namespace content {
@@ -79,6 +80,21 @@ void ServiceWorkerStorage::FindRegistrationForDocument(
   }
   // Always simulate asynchronous call for now.
   RunSoon(base::Bind(callback, status, found));
+}
+
+void ServiceWorkerStorage::GetAllRegistrations(
+    const GetAllRegistrationInfosCallback& callback) {
+  std::vector<ServiceWorkerRegistrationInfo> registrations;
+  for (PatternToRegistrationMap::const_iterator it =
+           registration_by_pattern_.begin();
+       it != registration_by_pattern_.end();
+       ++it) {
+    ServiceWorkerRegistration* registration(it->second.get());
+    registrations.push_back(registration->GetInfo());
+  }
+
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE, base::Bind(callback, registrations));
 }
 
 void ServiceWorkerStorage::StoreRegistration(

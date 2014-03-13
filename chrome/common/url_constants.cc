@@ -639,6 +639,7 @@ const char* const kChromeHostURLs[] = {
   content::kChromeUIIndexedDBInternalsHost,
   content::kChromeUIMediaInternalsHost,
   content::kChromeUINetworkViewCacheHost,
+  content::kChromeUIServiceWorkerInternalsHost,
   content::kChromeUITracingHost,
   content::kChromeUIWebRTCInternalsHost,
 #if defined(ENABLE_WEBRTC)

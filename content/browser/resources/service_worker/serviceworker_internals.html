@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html i18n-values="dir:textdirection;">
+<head>
+  <meta charset="utf-8">
+  <title>ServiceWorker registrations</title>
+  <link rel="stylesheet" href="chrome://resources/css/tabs.css">
+  <link rel="stylesheet" href="chrome://resources/css/widgets.css">
+  <link rel="stylesheet" href="serviceworker_internals.css">
+</head>
+<body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
+    <!-- templates -->
+    <div style="display:none">
+        <div id="serviceworker-version-template" class="serviceworker-version">
+            <div class="serviceworker-status">
+                <span>Installation Status:</span>
+                <span jscontent="$this.status"></span>
+            </div>
+            <div class="serviceworker-running-status">
+                <span>Running Status:</span>
+                <span jscontent="$this.running_status"></span>
+            </div>
+            <div class="serviceworker-pid">
+                <span>Renderer process ID:</span>
+                <span jscontent="$this.process_id"></span>
+            </div>
+            <div class="serviceworker-tid">
+                <span>Renderer thread ID:</span>
+                <span jscontent="$this.thread_id"></span>
+            </div>
+        </div>
+        <div id="serviceworker-list-template"
+             jsvalues="$partition_path:$this.partition_path;.partition_path:$this.partition_path">
+            <div class="serviceworker-summary">
+                <span>Instances in: </span>
+                <span jscontent="$this.partition_path"></span>
+                <span jscontent="'(' + $this.registrations.length + ')'"></span>
+            </div>
+            <div class="serviceworker-item" jsselect="$this.registrations">
+                <div class="serviceworker-scope">
+                    <span>Scope:</span>
+                    <span jscontent="scope"></span>
+                </div>
+                <div class="serviceworker-script_url">
+                    <span>Script:</span>
+                    <span jscontent="script_url"></span>
+                </div>
+                <div jsselect="$this.active">
+                    Active worker:
+                    <div transclude="serviceworker-version-template"></div>
+                </div>
+                <div jsselect="$this.pending">
+                    Pending worker:
+                    <div transclude="serviceworker-version-template"></div>
+                </div>
+                <div class="controls">
+                    <button class="stop" jsdisplay="$this.active.running_status == 'RUNNING'"
+                       jsvalues=".scope:scope;.partition_path:$partition_path">Stop</button>
+                    <button href="#" class="start" jsdisplay="$this.active.running_status != 'RUNNING'"
+                       jsvalues=".scope:scope;.partition_path:$partition_path">Start</button>
+                    <button href="#" class="unregister"
+                       jsvalues=".scope:scope;.partition_path:$partition_path">Unregister</button>
+                    <span class="operation-status" style="display: none">Running...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <h1>ServiceWorker registrations</h1>
+    <div class="content">
+        <div id="serviceworker-list">
+    </div>
+    <script src="chrome://resources/js/util.js"></script>
+    <script src="chrome://resources/js/cr.js"></script>
+    <script src="serviceworker_internals.js"></script>
+    <script src="chrome://resources/js/load_time_data.js"></script>
+    <script src="chrome://resources/js/jstemplate_compiled.js"></script>
+    <script src="strings.js"></script>
+    <script src="chrome://resources/js/i18n_template2.js"></script>
+</body>
+</html>
+

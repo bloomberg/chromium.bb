@@ -16,6 +16,7 @@
 
 namespace content {
 
+class ServiceWorkerRegistrationInfo;
 class ServiceWorkerVersion;
 
 // This class manages all persistence of service workers:
@@ -64,6 +65,8 @@ class CONTENT_EXPORT ServiceWorkerRegistration
     DCHECK(!is_shutdown_);
     pending_version_ = version;
   }
+
+  ServiceWorkerRegistrationInfo GetInfo();
 
   // The final synchronous switchover after all events have been
   // fired, and the old "active version" is being shut down.

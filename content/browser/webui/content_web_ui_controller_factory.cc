@@ -9,7 +9,9 @@
 #include "content/browser/indexed_db/indexed_db_internals_ui.h"
 #include "content/browser/media/media_internals_ui.h"
 #include "content/browser/media/webrtc_internals_ui.h"
+#include "content/browser/service_worker/service_worker_internals_ui.h"
 #include "content/browser/tracing/tracing_ui.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/url_constants.h"
@@ -25,6 +27,7 @@ WebUI::TypeID ContentWebUIControllerFactory::GetWebUIType(
       url.host() == kChromeUIGpuHost ||
       url.host() == kChromeUIIndexedDBInternalsHost ||
       url.host() == kChromeUIMediaInternalsHost ||
+      url.host() == kChromeUIServiceWorkerInternalsHost ||
       url.host() == kChromeUIAccessibilityHost) {
     return const_cast<ContentWebUIControllerFactory*>(this);
   }
@@ -53,6 +56,8 @@ WebUIController* ContentWebUIControllerFactory::CreateWebUIControllerForURL(
     return new MediaInternalsUI(web_ui);
   if (url.host() == kChromeUIAccessibilityHost)
     return new AccessibilityUI(web_ui);
+  if (url.host() == kChromeUIServiceWorkerInternalsHost)
+    return new ServiceWorkerInternalsUI(web_ui);
 #if !defined(OS_ANDROID)
   if (url.host() == kChromeUITracingHost)
     return new TracingUI(web_ui);

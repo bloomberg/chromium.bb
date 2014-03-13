@@ -24,6 +24,7 @@ namespace content {
 
 class EmbeddedWorkerRegistry;
 class ServiceWorkerRegistration;
+class ServiceWorkerVersionInfo;
 
 // This class corresponds to a specific version of a ServiceWorker
 // script for a given pattern. When a script is upgraded, there may be
@@ -78,6 +79,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
   RunningStatus running_status() const {
     return static_cast<RunningStatus>(embedded_worker_->status());
   }
+
+  ServiceWorkerVersionInfo GetInfo();
 
   Status status() const { return status_; }
 
