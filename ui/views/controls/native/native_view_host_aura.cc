@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/window.h"
+#include "ui/base/cursor/cursor.h"
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/view_constants_aura.h"
 #include "ui/views/widget/widget.h"
@@ -98,6 +99,12 @@ void NativeViewHostAura::SetFocus() {
 
 gfx::NativeViewAccessible NativeViewHostAura::GetNativeViewAccessible() {
   return NULL;
+}
+
+gfx::NativeCursor NativeViewHostAura::GetCursor(int x, int y) {
+  if (host_->native_view())
+    return host_->native_view()->GetCursor(gfx::Point(x, y));
+  return gfx::kNullCursor;
 }
 
 void NativeViewHostAura::OnWindowDestroyed(aura::Window* window) {

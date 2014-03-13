@@ -5,6 +5,7 @@
 #include "ui/views/controls/native/native_view_host.h"
 
 #include "base/logging.h"
+#include "ui/base/cursor/cursor.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/accessibility/native_view_accessibility.h"
 #include "ui/views/controls/native/native_view_host_wrapper.h"
@@ -191,6 +192,10 @@ gfx::NativeViewAccessible NativeViewHost::GetNativeViewAccessible() {
   return View::GetNativeViewAccessible();
 }
 
+gfx::NativeCursor NativeViewHost::GetCursor(const ui::MouseEvent& event) {
+  return native_wrapper_->GetCursor(event.x(), event.y());
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // NativeViewHost, private:
 
@@ -220,6 +225,5 @@ void NativeViewHost::ClearFocus() {
       return;
   }
 }
-
 
 }  // namespace views

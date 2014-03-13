@@ -62,6 +62,10 @@ class VIEWS_EXPORT NativeViewHostWrapper {
   // view.
   virtual gfx::NativeViewAccessible GetNativeViewAccessible() = 0;
 
+  // Returns the native cursor corresponding to the point (x, y)
+  // in the native view.
+  virtual gfx::NativeCursor GetCursor(int x, int y) = 0;
+
   // Creates a platform-specific instance of an object implementing this
   // interface.
   static NativeViewHostWrapper* CreateWrapper(NativeViewHost* host);

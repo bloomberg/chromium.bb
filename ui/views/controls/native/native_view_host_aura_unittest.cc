@@ -7,6 +7,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/window.h"
+#include "ui/base/cursor/cursor.h"
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/view.h"
@@ -22,6 +23,10 @@ class NativeViewHostAuraTest : public ViewsTestBase {
 
   NativeViewHostAura* native_host() {
     return static_cast<NativeViewHostAura*>(host_->native_wrapper_.get());
+  }
+
+  Widget* toplevel() {
+    return toplevel_.get();
   }
 
   NativeViewHost* host() {
@@ -93,6 +98,20 @@ TEST_F(NativeViewHostAuraTest, HostViewPropertyKey) {
 
   DestroyHost();
   EXPECT_FALSE(child_win->GetProperty(views::kHostViewKey));
+}
+
+// Tests that the NativeViewHost reports the cursor set on its native view.
+TEST_F(NativeViewHostAuraTest, CursorForNativeView) {
+  CreateHost();
+
+  toplevel()->SetCursor(ui::kCursorHand);
+  child()->SetCursor(ui::kCursorWait);
+  ui::MouseEvent move_event(ui::ET_MOUSE_MOVED, gfx::Point(0, 0),
+                            gfx::Point(0, 0), 0, 0);
+
+  EXPECT_EQ(ui::kCursorWait, host()->GetCursor(move_event).native_type());
+
+  DestroyHost();
 }
 
 }  // namespace views

@@ -86,6 +86,7 @@ class VIEWS_EXPORT NativeViewHost : public View {
   virtual void VisibilityChanged(View* starting_from, bool is_visible) OVERRIDE;
   virtual void OnFocus() OVERRIDE;
   virtual gfx::NativeViewAccessible GetNativeViewAccessible() OVERRIDE;
+  virtual gfx::NativeCursor GetCursor(const ui::MouseEvent& event) OVERRIDE;
 
  protected:
   virtual bool NeedsNotificationWhenVisibleBoundsChange() const OVERRIDE;

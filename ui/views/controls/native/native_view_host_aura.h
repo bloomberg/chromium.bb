@@ -34,6 +34,7 @@ class VIEWS_EXPORT NativeViewHostAura : public NativeViewHostWrapper,
   virtual void HideWidget() OVERRIDE;
   virtual void SetFocus() OVERRIDE;
   virtual gfx::NativeViewAccessible GetNativeViewAccessible() OVERRIDE;
+  virtual gfx::NativeCursor GetCursor(int x, int y) OVERRIDE;
 
  private:
   // Overridden from aura::WindowObserver:
