@@ -393,6 +393,8 @@ public:
     SourceDevice sourceDevice;
 
     union {
+        // Tap information must be set for GestureTap, GestureTapUnconfirmed,
+        // and GestureDoubleTap events.
         struct {
             int tapCount;
             float width;
