@@ -455,6 +455,8 @@ void RenderTable::layout()
     bool collapsing = collapseBorders();
 
     for (RenderObject* child = firstChild(); child; child = child->nextSibling()) {
+        if (!child->needsLayout() && child->isBox())
+            toRenderBox(child)->markForPaginationRelayoutIfNeeded(layouter);
         if (child->isTableSection()) {
             RenderTableSection* section = toRenderTableSection(child);
             if (m_columnLogicalWidthChanged)

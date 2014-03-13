@@ -762,8 +762,11 @@ void RenderTableSection::layout()
             cell->setCellLogicalWidth(tableLayoutLogicalWidth, layouter);
         }
 
-        if (RenderTableRow* rowRenderer = m_grid[r].rowRenderer)
+        if (RenderTableRow* rowRenderer = m_grid[r].rowRenderer) {
+            if (!rowRenderer->needsLayout())
+                rowRenderer->markForPaginationRelayoutIfNeeded(layouter);
             rowRenderer->layoutIfNeeded();
+        }
     }
 
     statePusher.pop();
@@ -973,8 +976,8 @@ void RenderTableSection::layoutRows()
 
             setLogicalPositionForCell(cell, c);
 
-            if (!cell->needsLayout() && view()->layoutState()->pageLogicalHeight() && view()->layoutState()->pageLogicalOffset(*cell, cell->logicalTop()) != cell->pageLogicalOffset())
-                layouter.setChildNeedsLayout(cell);
+            if (!cell->needsLayout())
+                cell->markForPaginationRelayoutIfNeeded(layouter);
 
             cell->layoutIfNeeded();
 

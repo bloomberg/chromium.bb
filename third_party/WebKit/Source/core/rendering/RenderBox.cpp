@@ -4149,6 +4149,15 @@ bool RenderBox::avoidsFloats() const
     return isReplaced() || hasOverflowClip() || isHR() || isLegend() || isWritingModeRoot() || isFlexItemIncludingDeprecated();
 }
 
+void RenderBox::markForPaginationRelayoutIfNeeded(SubtreeLayoutScope& layoutScope)
+{
+    ASSERT(!needsLayout());
+    // If fragmentation height has changed, we need to lay out. No need to enter the renderer if it
+    // is childless, though.
+    if (view()->layoutState()->pageLogicalHeightChanged() && firstChild())
+        layoutScope.setChildNeedsLayout(this);
+}
+
 void RenderBox::addVisualEffectOverflow()
 {
     if (!style()->boxShadow() && !style()->hasBorderImageOutsets())
