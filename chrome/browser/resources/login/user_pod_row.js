@@ -2104,7 +2104,7 @@ cr.define('login', function() {
           focusedPod.reset(true);
           // Notify screen that it is ready.
           screen.onShow();
-          if (!focusedPod.user.isApp)
+          if (!focusedPod.user.isApp && self.focusedPod_ == focusedPod)
             chrome.send('loadWallpaper', [focusedPod.user.username]);
         });
         // Guard timer for 1 second -- it would conver all possible animations.
