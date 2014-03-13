@@ -293,6 +293,7 @@ public:
     virtual void setShowFPSCounter(bool) OVERRIDE;
     virtual void setContinuousPaintingEnabled(bool) OVERRIDE;
     virtual void setShowScrollBottleneckRects(bool) OVERRIDE;
+    virtual void getSelectionRootBounds(WebRect& bounds) const OVERRIDE;
 
     // WebViewImpl
 

@@ -211,6 +211,11 @@ public:
     }
 
 protected:
+    void registerMockedHttpURLLoad(const std::string& fileName)
+    {
+        URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8(fileName.c_str()));
+    }
+
     void testAutoResize(const WebSize& minAutoResize, const WebSize& maxAutoResize,
                         const std::string& pageWidth, const std::string& pageHeight,
                         int expectedWidth, int expectedHeight,
@@ -218,6 +223,7 @@ protected:
 
     void testTextInputType(WebTextInputType expectedType, const std::string& htmlFile);
     void testInputMode(const WebString& expectedInputMode, const std::string& htmlFile);
+    void testSelectionRootBounds(const char* htmlFile, float pageScaleFactor);
 
     std::string m_baseURL;
     FrameTestHelpers::WebViewHelper m_webViewHelper;
@@ -1651,6 +1657,94 @@ TEST_F(WebViewTest, HasTouchEventHandlers)
     document->didRemoveTouchEventHandler(childFrame);
     EXPECT_EQ(1, client.getAndResetHasTouchEventHandlerCallCount(false));
     EXPECT_EQ(0, client.getAndResetHasTouchEventHandlerCallCount(true));
+}
+
+static WebRect ExpectedRootBounds(WebCore::Document* document, float scaleFactor)
+{
+    WebCore::Element* element = document->getElementById("root");
+    if (!element)
+        element = document->getElementById("target");
+    if (element->hasTagName(WebCore::HTMLNames::iframeTag))
+        return ExpectedRootBounds(toHTMLIFrameElement(element)->contentDocument(), scaleFactor);
+
+    WebCore::IntRect boundingBox = element->pixelSnappedBoundingBox();
+    boundingBox = document->frame()->view()->contentsToWindow(boundingBox);
+    boundingBox.scale(scaleFactor);
+    return boundingBox;
+}
+
+void WebViewTest::testSelectionRootBounds(const char* htmlFile, float pageScaleFactor)
+{
+    std::string url = m_baseURL + htmlFile;
+
+    WebView* webView = m_webViewHelper.initializeAndLoad(url, true);
+    webView->resize(WebSize(640, 480));
+    webView->setPageScaleFactor(pageScaleFactor, WebPoint(0, 0));
+    webView->layout();
+    runPendingTasks();
+
+    WebFrameImpl* frame = toWebFrameImpl(webView->mainFrame());
+    EXPECT_TRUE(frame->frame()->document()->isHTMLDocument());
+    WebCore::HTMLDocument* document = WebCore::toHTMLDocument(frame->frame()->document());
+
+    WebRect expectedRootBounds = ExpectedRootBounds(document, webView->pageScaleFactor());
+    WebRect actualRootBounds;
+    webView->getSelectionRootBounds(actualRootBounds);
+    ASSERT_EQ(expectedRootBounds, actualRootBounds);
+
+    WebRect anchor, focus;
+    webView->selectionBounds(anchor, focus);
+    WebCore::IntRect expectedIntRect = expectedRootBounds;
+    ASSERT_TRUE(expectedIntRect.contains(anchor));
+    // The "overflow" tests have the focus boundary outside of the element box.
+    ASSERT_EQ(url.find("overflow") == std::string::npos, expectedIntRect.contains(focus));
+}
+
+TEST_F(WebViewTest, GetSelectionRootBounds)
+{
+    // Register all the pages we will be using.
+    registerMockedHttpURLLoad("select_range_basic.html");
+    registerMockedHttpURLLoad("select_range_div_editable.html");
+    registerMockedHttpURLLoad("select_range_scroll.html");
+    registerMockedHttpURLLoad("select_range_span_editable.html");
+    registerMockedHttpURLLoad("select_range_input.html");
+    registerMockedHttpURLLoad("select_range_input_overflow.html");
+    registerMockedHttpURLLoad("select_range_textarea.html");
+    registerMockedHttpURLLoad("select_range_textarea_overflow.html");
+    registerMockedHttpURLLoad("select_range_iframe.html");
+    registerMockedHttpURLLoad("select_range_iframe_div_editable.html");
+    registerMockedHttpURLLoad("select_range_iframe_scroll.html");
+    registerMockedHttpURLLoad("select_range_iframe_span_editable.html");
+    registerMockedHttpURLLoad("select_range_iframe_input.html");
+    registerMockedHttpURLLoad("select_range_iframe_input_overflow.html");
+    registerMockedHttpURLLoad("select_range_iframe_textarea.html");
+    registerMockedHttpURLLoad("select_range_iframe_textarea_overflow.html");
+
+    // Test with simple pages.
+    testSelectionRootBounds("select_range_basic.html", 1.0f);
+    testSelectionRootBounds("select_range_div_editable.html", 1.0f);
+    testSelectionRootBounds("select_range_scroll.html", 1.0f);
+    testSelectionRootBounds("select_range_span_editable.html", 1.0f);
+    testSelectionRootBounds("select_range_input.html", 1.0f);
+    testSelectionRootBounds("select_range_input_overflow.html", 1.0f);
+    testSelectionRootBounds("select_range_textarea.html", 1.0f);
+    testSelectionRootBounds("select_range_textarea_overflow.html", 1.0f);
+
+    // Test with the same pages as above in iframes.
+    testSelectionRootBounds("select_range_iframe.html", 1.0f);
+    testSelectionRootBounds("select_range_iframe_div_editable.html", 1.0f);
+    testSelectionRootBounds("select_range_iframe_scroll.html", 1.0f);
+    testSelectionRootBounds("select_range_iframe_span_editable.html", 1.0f);
+    testSelectionRootBounds("select_range_iframe_input.html", 1.0f);
+    testSelectionRootBounds("select_range_iframe_input_overflow.html", 1.0f);
+    testSelectionRootBounds("select_range_iframe_textarea.html", 1.0f);
+    testSelectionRootBounds("select_range_iframe_textarea_overflow.html", 1.0f);
+
+    // Basic page with scale factor.
+    testSelectionRootBounds("select_range_basic.html", 0.0f);
+    testSelectionRootBounds("select_range_basic.html", 0.1f);
+    testSelectionRootBounds("select_range_basic.html", 1.5f);
+    testSelectionRootBounds("select_range_basic.html", 2.0f);
 }
 
 } // namespace
