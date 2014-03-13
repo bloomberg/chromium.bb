@@ -87,9 +87,6 @@ namespace WebCore {
 
         void disableEval(const String&);
 
-        // Returns WorkerScriptController for the currently executing context. 0 will be returned if the current executing context is not the worker context.
-        static WorkerScriptController* controllerForContext(v8::Isolate*);
-
         // Evaluate a script file in the current execution environment.
         ScriptValue evaluate(const String& script, const String& fileName, const TextPosition& scriptStartPosition, WorkerGlobalScopeExecutionState*);
 

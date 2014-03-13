@@ -2343,7 +2343,7 @@ static void neuterArrayBufferInAllWorlds(ArrayBuffer* object)
             }
         }
     } else {
-        v8::Handle<v8::Object> wrapper = WorkerScriptController::controllerForContext(isolate)->world()->domDataStore().get<V8ArrayBuffer>(object, isolate);
+        v8::Handle<v8::Object> wrapper = DOMWrapperWorld::current(isolate)->domDataStore().get<V8ArrayBuffer>(object, isolate);
         if (!wrapper.IsEmpty()) {
             ASSERT(wrapper->IsArrayBuffer());
             v8::Handle<v8::ArrayBuffer>::Cast(wrapper)->Neuter();

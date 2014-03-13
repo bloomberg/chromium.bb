@@ -497,6 +497,11 @@ ExecutionContext* toExecutionContext(v8::Handle<v8::Context> context)
     return 0;
 }
 
+DOMWindow* enteredDOMWindow(v8::Isolate* isolate)
+{
+    return toDOMWindow(isolate->GetEnteredContext());
+}
+
 DOMWindow* callingDOMWindow(v8::Isolate* isolate)
 {
     v8::Handle<v8::Context> context = isolate->GetCallingContext();
@@ -521,21 +526,14 @@ ExecutionContext* callingExecutionContext(v8::Isolate* isolate)
     return toExecutionContext(context);
 }
 
-DOMWindow* enteredDOMWindow(v8::Isolate* isolate)
+ExecutionContext* currentExecutionContext(v8::Isolate* isolate)
 {
-    return toDOMWindow(isolate->GetEnteredContext());
+    return toExecutionContext(isolate->GetCurrentContext());
 }
 
 Document* currentDocument(v8::Isolate* isolate)
 {
     return toDOMWindow(isolate->GetCurrentContext())->document();
-}
-
-ExecutionContext* currentExecutionContext(v8::Isolate* isolate)
-{
-    if (WorkerScriptController* controller = WorkerScriptController::controllerForContext(isolate))
-        return &controller->workerGlobalScope();
-    return currentDocument(isolate);
 }
 
 LocalFrame* toFrameIfNotDetached(v8::Handle<v8::Context> context)

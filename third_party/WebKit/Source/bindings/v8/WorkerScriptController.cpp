@@ -263,18 +263,4 @@ void WorkerScriptController::rethrowExceptionFromImportedScript(PassRefPtr<Error
     throwError(V8ThrowException::createError(v8GeneralError, m_errorEventFromImportedScript->message(), m_isolate), m_isolate);
 }
 
-WorkerScriptController* WorkerScriptController::controllerForContext(v8::Isolate* isolate)
-{
-    // Happens on frame destruction, check otherwise GetCurrent() will crash.
-    if (!isolate || !isolate->InContext())
-        return 0;
-    v8::Handle<v8::Context> context = isolate->GetCurrentContext();
-    v8::Handle<v8::Object> global = V8WorkerGlobalScope::findInstanceInPrototypeChain(context->Global(), isolate);
-    // Return 0 if the current executing context is not the worker context.
-    if (global.IsEmpty())
-        return 0;
-    WorkerGlobalScope* workerGlobalScope = V8WorkerGlobalScope::toNative(global);
-    return workerGlobalScope->script();
-}
-
 } // namespace WebCore
