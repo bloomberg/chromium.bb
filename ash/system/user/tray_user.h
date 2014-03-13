@@ -13,6 +13,7 @@
 
 namespace gfx {
 class Rect;
+class Size;
 }
 
 namespace views {
@@ -48,9 +49,16 @@ class ASH_EXPORT TrayUser : public SystemTrayItem,
   };
   TestState GetStateForTest() const;
 
+  // Returns the size of layout_view_.
+  gfx::Size GetLayoutSizeForTest() const;
+
   // Returns the bounds of the user panel in screen coordinates.
   // Note: This only works when the panel shown.
   gfx::Rect GetUserPanelBoundsInScreenForTest() const;
+
+  // Update the TrayUser as if the current LoginStatus is |status|.
+  void UpdateAfterLoginStatusChangeForTest(user::LoginStatus status);
+
 
  private:
   // Overridden from SystemTrayItem.

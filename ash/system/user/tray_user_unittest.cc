@@ -10,6 +10,7 @@
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/system/tray/system_tray.h"
+#include "ash/system/tray/tray_constants.h"
 #include "ash/system/user/tray_user.h"
 #include "ash/system/user/tray_user_separator.h"
 #include "ash/test/ash_test_base.h"
@@ -127,6 +128,17 @@ void TrayUserTest::ClickUserItem(aura::test::EventGenerator* generator,
                                  int index) {
   MoveOverUserItem(generator, index);
   generator->ClickLeftButton();
+}
+
+// Make sure that we show items for all users in the tray accordingly.
+TEST_F(TrayUserTest, CheckTrayItemSize) {
+  InitializeParameters(1, false);
+  tray_user(0)->UpdateAfterLoginStatusChangeForTest(user::LOGGED_IN_GUEST);
+  gfx::Size size = tray_user(0)->GetLayoutSizeForTest();
+  EXPECT_EQ(kTrayItemSize, size.height());
+  tray_user(0)->UpdateAfterLoginStatusChangeForTest(user::LOGGED_IN_USER);
+  size = tray_user(0)->GetLayoutSizeForTest();
+  EXPECT_EQ(kTrayItemSize, size.height());
 }
 
 // Make sure that in single user mode the user panel cannot be activated and no

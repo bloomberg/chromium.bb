@@ -5,6 +5,8 @@
 #ifndef ASH_SYSTEM_TRAY_TRAY_CONSTANTS_H_
 #define ASH_SYSTEM_TRAY_TRAY_CONSTANTS_H_
 
+#include "ash/ash_export.h"
+
 typedef unsigned int SkColor;
 
 namespace ash {
@@ -26,6 +28,8 @@ extern const int kTrayBubbleAnchorTopInsetBottomAnchor;
 extern const int kTrayImageItemHorizontalPaddingBottomAlignment;
 extern const int kTrayImageItemHorizontalPaddingVerticalAlignment;
 extern const int kTrayImageItemVerticalPaddingVerticalAlignment;
+
+ASH_EXPORT extern const int kTrayItemSize;
 
 extern const int kTrayLabelItemHorizontalPaddingBottomAlignment;
 extern const int kTrayLabelItemVerticalPaddingVerticalAlignment;

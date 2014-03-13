@@ -30,6 +30,9 @@ const int kTrayImageItemHorizontalPaddingBottomAlignment = 1;
 const int kTrayImageItemHorizontalPaddingVerticalAlignment = 1;
 const int kTrayImageItemVerticalPaddingVerticalAlignment = 1;
 
+// Size of tray items on the primary axis.
+const int kTrayItemSize = 32;
+
 const int kTrayLabelItemHorizontalPaddingBottomAlignment = 7;
 
 // Vertical padding between status tray items when the shelf is vertical.

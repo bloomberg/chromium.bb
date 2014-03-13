@@ -1112,9 +1112,21 @@ TrayUser::TestState TrayUser::GetStateForTest() const {
   return user_->GetStateForTest();
 }
 
+gfx::Size TrayUser::GetLayoutSizeForTest() const {
+  if (!layout_view_) {
+    return gfx::Size(0, 0);
+  } else {
+    return layout_view_->size();
+  }
+}
+
 gfx::Rect TrayUser::GetUserPanelBoundsInScreenForTest() const {
   DCHECK(user_);
   return user_->GetBoundsInScreenOfUserButtonForTest();
+}
+
+void TrayUser::UpdateAfterLoginStatusChangeForTest(user::LoginStatus status) {
+  UpdateAfterLoginStatusChange(status);
 }
 
 views::View* TrayUser::CreateTrayView(user::LoginStatus status) {
@@ -1252,10 +1264,16 @@ void TrayUser::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
       }
     }
     if (label_) {
+      // If label_ hasn't figured out its size yet, do that first.
+      if (label_->GetContentsBounds().height() == 0)
+        label_->SizeToPreferredSize();
+      int height = label_->GetContentsBounds().height();
+      int vertical_pad = (kTrayItemSize - height) / 2;
+      int remainder = height % 2;
       label_->SetBorder(views::Border::CreateEmptyBorder(
-          0,
+          vertical_pad + remainder,
           kTrayLabelItemHorizontalPaddingBottomAlignment,
-          0,
+          vertical_pad,
           kTrayLabelItemHorizontalPaddingBottomAlignment));
     }
     layout_view_->SetLayoutManager(
