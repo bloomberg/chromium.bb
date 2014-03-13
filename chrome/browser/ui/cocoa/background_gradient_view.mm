@@ -40,16 +40,6 @@
 
 - (void)commonInit {
   showsDivider_ = YES;
-  [[NSNotificationCenter defaultCenter]
-      addObserver:self
-         selector:@selector(windowFocusDidChange:)
-             name:NSApplicationWillBecomeActiveNotification
-           object:NSApp];
-  [[NSNotificationCenter defaultCenter]
-      addObserver:self
-         selector:@selector(windowFocusDidChange:)
-             name:NSApplicationWillResignActiveNotification
-           object:NSApp];
 }
 
 - (void)setShowsDivider:(BOOL)show {
@@ -84,10 +74,16 @@
 
 - (NSColor*)strokeColor {
   NSWindow* window = [self window];
+
+  // Some views have a child NSWindow between them and the window that is
+  // active (e.g, OmniboxPopupTopSeparatorView). For these, check the status
+  // of parentWindow instead. Note that this is not tracked correctly (but
+  // the views that do this appear to be removed when the window loses focus
+  // anyway).
   if ([window parentWindow])
     window = [window parentWindow];
-
   BOOL isActive = [window isMainWindow];
+
   ui::ThemeProvider* themeProvider = [window themeProvider];
   if (!themeProvider)
     return [NSColor blackColor];
@@ -104,7 +100,8 @@
 
   // Themes don't have an inactive image so only look for one if there's no
   // theme.
-  if (![[self window] isMainWindow] && themeProvider->UsingDefaultTheme()) {
+  BOOL isActive = [[self window] isMainWindow];
+  if (!isActive && themeProvider->UsingDefaultTheme()) {
     NSColor* color = themeProvider->GetNSImageColorNamed(
         IDR_THEME_TOOLBAR_INACTIVE);
     if (color)
@@ -115,7 +112,11 @@
 }
 
 - (void)windowFocusDidChange:(NSNotification*)notification {
-  // The background color depends on the window's focus state.
+  // Some child views will indirectly use BackgroundGradientView by calling an
+  // ancestor's draw function (e.g, BookmarkButtonView). Call setNeedsDisplay
+  // on all descendants to ensure that these views re-draw.
+  // TODO(ccameron): Enable these views to listen for focus notifications
+  // directly.
   [self cr_recursivelySetNeedsDisplay:YES];
 }
 
@@ -134,13 +135,17 @@
     [[NSNotificationCenter defaultCenter]
         addObserver:self
            selector:@selector(windowFocusDidChange:)
-               name:NSWindowDidBecomeKeyNotification
-             object:[self window]];
+               name:NSWindowDidBecomeMainNotification
+             object:window];
     [[NSNotificationCenter defaultCenter]
         addObserver:self
            selector:@selector(windowFocusDidChange:)
-               name:NSWindowDidBecomeMainNotification
-             object:[self window]];
+               name:NSWindowDidResignMainNotification
+             object:window];
+    // The new window for the view may have a different focus state than the
+    // last window this view was part of. Force a re-draw to ensure that the
+    // view draws the right state.
+    [self windowFocusDidChange:nil];
   }
   [super viewWillMoveToWindow:window];
 }
