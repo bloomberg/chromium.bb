@@ -23,7 +23,7 @@ setup_gitgit
   test_expect_success "git-cl upload wants a server" \
     "$GIT_CL upload 2>&1 | grep -q 'You must configure'"
 
-  git config rietveld.server localhost:8080
+  git config rietveld.server localhost:10000
 
   test_expect_success "git-cl status has no issue" \
     "$GIT_CL_STATUS | grep -q 'no issue'"

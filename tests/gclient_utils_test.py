@@ -164,9 +164,9 @@ class GClientUtilsTest(trial_dir.TestCase):
         ['ssh-svn://foo/bar/', 'ssh-svn://foo/bar/'],
         ['codereview.chromium.org', 'https://codereview.chromium.org'],
         ['codereview.chromium.org/', 'https://codereview.chromium.org/'],
-        ['http://foo:8080', 'http://foo:8080'],
-        ['http://foo:8080/bar', 'http://foo:8080/bar'],
-        ['foo:8080', 'http://foo:8080'],
+        ['http://foo:10000', 'http://foo:10000'],
+        ['http://foo:10000/bar', 'http://foo:10000/bar'],
+        ['foo:10000', 'http://foo:10000'],
         ['foo:', 'https://foo:'],
     ]
     for content, expected in values:

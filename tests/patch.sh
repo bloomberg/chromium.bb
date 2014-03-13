@@ -18,7 +18,7 @@ setup_gitsvn
   echo "some work done on a branch" >> test
   git add test; git commit -q -m "branch work"
 
-  git config rietveld.server localhost:8080
+  git config rietveld.server localhost:10000
 
   # Prevent the editor from coming up when you upload.
   export GIT_EDITOR=$(which true)

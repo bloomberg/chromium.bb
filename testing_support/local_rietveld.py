@@ -107,7 +107,7 @@ class LocalRietveld(object):
     self.install_prerequisites()
     assert not self.tempdir
     self.tempdir = tempfile.mkdtemp(prefix='rietveld_test')
-    self.port = find_free_port(8080)
+    self.port = find_free_port(10000)
     admin_port = find_free_port(self.port + 1)
     if verbose:
       stdout = stderr = None

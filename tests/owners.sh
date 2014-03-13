@@ -15,7 +15,7 @@ setup_gitsvn
 
   set -e
   cd git-svn
-  git config rietveld.server localhost:8080
+  git config rietveld.server localhost:10000
   export GIT_EDITOR=$(which true)
 
   git checkout -q -b work

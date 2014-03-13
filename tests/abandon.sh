@@ -16,7 +16,7 @@ setup_gitsvn
 (
   set -e
   cd git-svn
-  git config rietveld.server localhost:8080
+  git config rietveld.server localhost:10000
 
   # Create a branch and give it an issue.
   git checkout -q -b abandoned

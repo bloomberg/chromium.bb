@@ -146,5 +146,5 @@ test_expect_failure() {
 print_xsrf_token() {
   curl --cookie dev_appserver_login="test@example.com:False" \
     --header 'X-Requesting-XSRF-Token: 1' \
-    http://localhost:8080/xsrf_token 2>/dev/null
+    http://localhost:10000/xsrf_token 2>/dev/null
 }
