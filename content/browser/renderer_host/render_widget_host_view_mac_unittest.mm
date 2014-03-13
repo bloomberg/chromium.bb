@@ -72,16 +72,15 @@ typedef NSUInteger NSEventPhase;
 }
 
 @property(nonatomic) BOOL unhandledWheelEventReceived;
-
-- (void)gotUnhandledWheelEvent;
 @end
 
 @implementation MockRenderWidgetHostViewMacDelegate
 
 @synthesize unhandledWheelEventReceived = unhandledWheelEventReceived_;
 
-- (void)gotUnhandledWheelEvent {
-  unhandledWheelEventReceived_ = true;
+- (void)gotWheelEventConsumed:(BOOL)consumed {
+  if (!consumed)
+    unhandledWheelEventReceived_ = true;
 }
 - (void)touchesBeganWithEvent:(NSEvent*)event{}
 - (void)touchesMovedWithEvent:(NSEvent*)event{}

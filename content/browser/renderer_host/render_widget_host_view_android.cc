@@ -1044,11 +1044,6 @@ void RenderWidgetHostViewAndroid::SetScrollOffsetPinning(
   // intentionally empty, like RenderWidgetHostViewViews
 }
 
-void RenderWidgetHostViewAndroid::UnhandledWheelEvent(
-    const blink::WebMouseWheelEvent& event) {
-  // intentionally empty, like RenderWidgetHostViewViews
-}
-
 void RenderWidgetHostViewAndroid::GestureEventAck(
     const blink::WebGestureEvent& event,
     InputEventAckState ack_result) {

@@ -106,9 +106,8 @@ class SpellCheckObserver : public content::WebContentsObserver {
   return [historySwiper_ handleEvent:event];
 }
 
-// Notification that a wheel event was unhandled.
-- (void)gotUnhandledWheelEvent {
-  [historySwiper_ gotUnhandledWheelEvent];
+- (void)gotWheelEventConsumed:(BOOL)consumed {
+  [historySwiper_ gotWheelEventConsumed:consumed];
 }
 
 // Notification of scroll offset pinning.
