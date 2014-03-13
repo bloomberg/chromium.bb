@@ -112,19 +112,19 @@ class FrameIdWrapHelper {
             over_the_wire_frame_id < kHighRangeThreshold) {
           range_ = kMiddleRange;
         }
-        if (over_the_wire_frame_id > kHighRangeThreshold) {
+        if (over_the_wire_frame_id >= kHighRangeThreshold) {
           // Wrap count was incremented in High->Low transition, but this frame
           // is 'old', actually from before the wrap count got incremented.
           --wrap_count;
         }
         break;
       case kMiddleRange:
-        if (over_the_wire_frame_id > kHighRangeThreshold) {
+        if (over_the_wire_frame_id >= kHighRangeThreshold) {
           range_ = kHighRange;
         }
         break;
       case kHighRange:
-        if (over_the_wire_frame_id < kLowRangeThreshold) {
+        if (over_the_wire_frame_id <= kLowRangeThreshold) {
           // Wrap-around detected.
           range_ = kLowRange;
           ++frame_id_wrap_count_;
@@ -140,8 +140,8 @@ class FrameIdWrapHelper {
  private:
   enum Range { kLowRange, kMiddleRange, kHighRange, };
 
-  static const uint8 kLowRangeThreshold = 0x0f;
-  static const uint8 kHighRangeThreshold = 0xf0;
+  static const uint8 kLowRangeThreshold = 63;
+  static const uint8 kHighRangeThreshold = 192;
   static const uint32 kStartFrameId = GG_UINT32_C(0xffffffff);
 
   bool first_;
