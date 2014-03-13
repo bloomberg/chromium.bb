@@ -105,14 +105,6 @@ class ChromeResourceDispatcherHostDelegate
       ResourceType::Type resource_type,
       ScopedVector<content::ResourceThrottle>* throttles);
 
-  // Adds Chrome experiment and metrics state as custom headers to |request|.
-  // This is a best-effort attempt, and does not interrupt the request if the
-  // headers can not be appended.
-  void AppendChromeMetricsHeaders(
-      net::URLRequest* request,
-      content::ResourceContext* resource_context,
-      ResourceType::Type resource_type);
-
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
   // Append headers required to tell Gaia whether the sync interstitial
   // should be shown or not.  This header is only added for valid Gaia URLs.
