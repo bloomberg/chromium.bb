@@ -681,15 +681,6 @@ int NaClReverseInterfaceOpenManifestEntry(
   return 0;
 }
 
-int NaClReverseInterfaceCloseManifestEntry(
-    struct NaClReverseInterface   *self,
-    int32_t                       desc) {
-  NaClLog(3,
-          "NaClReverseInterfaceCloseManifestEntry(0x%08"NACL_PRIxPTR", %d)\n",
-          (uintptr_t) self, desc);
-  return 0;
-}
-
 void NaClReverseInterfaceReportCrash(
     struct NaClReverseInterface *self) {
   NaClLog(3,
@@ -769,7 +760,6 @@ struct NaClReverseInterfaceVtbl const kNaClReverseInterfaceVtbl = {
   NaClReverseInterfaceStartupInitializationComplete,
   NaClReverseInterfaceEnumerateManifestKeys,
   NaClReverseInterfaceOpenManifestEntry,
-  NaClReverseInterfaceCloseManifestEntry,
   NaClReverseInterfaceReportCrash,
   NaClReverseInterfaceReportExitStatus,
   NaClReverseInterfaceDoPostMessage,

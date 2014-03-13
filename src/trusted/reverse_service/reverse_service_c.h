@@ -125,14 +125,6 @@ struct NaClReverseInterfaceVtbl {
       struct NaClFileInfo           *info);
 
   /*
-   * Closes manifest entry with file descriptor |desc|. Returns 1 if
-   * successful, 0 otherwise.
-   */
-  int                           (*CloseManifestEntry)(
-      struct NaClReverseInterface   *self,
-      int32_t                       desc);
-
-  /*
    * Reports the client crash.
    */
   void                          (*ReportCrash)(

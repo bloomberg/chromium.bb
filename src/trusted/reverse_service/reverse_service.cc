@@ -102,17 +102,6 @@ int OpenManifestEntry(NaClReverseInterface* self,
   return wrapper->iface->OpenManifestEntry(nacl::string(url_key), info);
 }
 
-int CloseManifestEntry(NaClReverseInterface* self,
-                       int32_t desc) {
-  ReverseInterfaceWrapper* wrapper =
-      reinterpret_cast<ReverseInterfaceWrapper*>(self);
-  if (NULL == wrapper->iface) {
-    NaClLog(1, "CloseManifestEntry, no reverse_interface.\n");
-    return 0;
-  }
-  return wrapper->iface->CloseManifestEntry(desc);
-}
-
 void ReportCrash(NaClReverseInterface* self) {
   ReverseInterfaceWrapper* wrapper =
       reinterpret_cast<ReverseInterfaceWrapper*>(self);
@@ -239,7 +228,6 @@ static NaClReverseInterfaceVtbl const kReverseInterfaceWrapperVtbl = {
   StartupInitializationComplete,
   EnumerateManifestKeys,
   OpenManifestEntry,
-  CloseManifestEntry,
   ReportCrash,
   ReportExitStatus,
   DoPostMessage,

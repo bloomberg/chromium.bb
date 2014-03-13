@@ -78,7 +78,6 @@ class ReverseInterface : public RefCountBase {
 
   virtual bool OpenManifestEntry(nacl::string url_key,
                                  struct NaClFileInfo* info) = 0;
-  virtual bool CloseManifestEntry(int32_t desc) = 0;
   virtual void ReportCrash() = 0;
 
   // The low-order 8 bits of the |exit_status| should be reported to
