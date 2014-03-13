@@ -503,7 +503,7 @@ static bool TryWAVEFileDecoder(blink::WebAudioBus* destination_bus,
 // of a pipe.  The MediaCodec class will decode the data from the
 // shared memory and write the PCM samples back to us over a pipe.
 bool DecodeAudioFileData(blink::WebAudioBus* destination_bus, const char* data,
-                         size_t data_size, double sample_rate,
+                         size_t data_size,
                          scoped_refptr<ThreadSafeSender> sender) {
   // Try to decode the data as a WAVE file first.  If it can't be
   // decoded, use MediaCodec.  See crbug.com/259048.

@@ -16,7 +16,6 @@ namespace content {
 bool DecodeAudioFileData(blink::WebAudioBus* destination_bus,
                          const char* data,
                          size_t data_size,
-                         double sample_rate,
                          scoped_refptr<ThreadSafeSender> sender);
 
 }  // namespace content

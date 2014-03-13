@@ -26,7 +26,7 @@ namespace content {
 // Decode in-memory audio file data.
 bool DecodeAudioFileData(
     blink::WebAudioBus* destination_bus,
-    const char* data, size_t data_size, double sample_rate) {
+    const char* data, size_t data_size) {
   DCHECK(destination_bus);
   if (!destination_bus)
     return false;
