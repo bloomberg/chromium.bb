@@ -1485,6 +1485,8 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
     variations_service->set_policy_pref_service(profile_->GetPrefs());
     variations_service->StartRepeatedVariationsSeedFetch();
   }
+  TranslateDownloadManager::RequestLanguageList(profile_->GetPrefs());
+
 #else
   // Most general initialization is behind us, but opening a
   // tab and/or session restore and such is still to be done.
@@ -1535,7 +1537,8 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
     UMA_HISTOGRAM_LONG_TIMES_100("Startup.BrowserOpenTabs", delay);
 
     // If we're running tests (ui_task is non-null), then we don't want to
-    // call RequestLanguageList or StartRepeatedVariationsSeedFetch.
+    // call RequestLanguageList or StartRepeatedVariationsSeedFetch or
+    // RequestLanguageList
     if (parameters().ui_task == NULL) {
       // Request new variations seed information from server.
       chrome_variations::VariationsService* variations_service =
