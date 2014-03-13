@@ -40,20 +40,21 @@ public:
   }
 
   // SkCanvas overrides.
-  virtual int save(SaveFlags flags = kMatrixClip_SaveFlag) OVERRIDE {
+  virtual void willSave(SaveFlags flags) OVERRIDE {
     AutoStamper stamper(this);
-    return SkProxyCanvas::save(flags);
+    SkProxyCanvas::willSave(flags);
   }
 
-  virtual int saveLayer(const SkRect* bounds, const SkPaint* paint,
-                        SaveFlags flags = kARGB_ClipLayer_SaveFlag) OVERRIDE {
+  virtual SaveLayerStrategy willSaveLayer(const SkRect* bounds,
+                                          const SkPaint* paint,
+                                          SaveFlags flags) OVERRIDE {
     AutoStamper stamper(this);
-    return SkProxyCanvas::saveLayer(bounds, paint, flags);
+    return SkProxyCanvas::willSaveLayer(bounds, paint, flags);
   }
 
-  virtual void restore() OVERRIDE {
+  virtual void willRestore() OVERRIDE {
     AutoStamper stamper(this);
-    SkProxyCanvas::restore();
+    SkProxyCanvas::willRestore();
   }
 
   virtual void drawPaint(const SkPaint& paint) OVERRIDE {

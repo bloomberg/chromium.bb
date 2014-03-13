@@ -31,13 +31,6 @@ class SK_API AnalysisCanvas : public SkCanvas, public SkDrawPictureCallback {
   virtual bool abortDrawing() OVERRIDE;
 
   // SkCanvas overrides.
-  virtual int saveLayer(const SkRect* bounds,
-                        const SkPaint* paint,
-                        SkCanvas::SaveFlags flags) OVERRIDE;
-  virtual int save(SaveFlags flags = kMatrixClip_SaveFlag) OVERRIDE;
-
-  virtual void restore() OVERRIDE;
-
   virtual void clear(SkColor) OVERRIDE;
   virtual void drawPaint(const SkPaint& paint) OVERRIDE;
   virtual void drawPoints(PointMode,
@@ -96,6 +89,12 @@ class SK_API AnalysisCanvas : public SkCanvas, public SkDrawPictureCallback {
                             const SkPaint&) OVERRIDE;
 
  protected:
+  virtual void willSave(SaveFlags) OVERRIDE;
+  virtual SaveLayerStrategy willSaveLayer(const SkRect*,
+                                          const SkPaint*,
+                                          SaveFlags) OVERRIDE;
+  virtual void willRestore() OVERRIDE;
+
   virtual void onClipRect(const SkRect& rect,
                           SkRegion::Op op,
                           ClipEdgeStyle edge_style) OVERRIDE;

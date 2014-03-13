@@ -353,21 +353,15 @@ class NoSaveLayerCanvas : public SkCanvas {
  public:
   NoSaveLayerCanvas(SkBaseDevice* device) : INHERITED(device) {}
 
+ protected:
   // Turn saveLayer() into save() for speed, should not affect correctness.
-  virtual int saveLayer(const SkRect* bounds,
-                        const SkPaint* paint,
-                        SaveFlags flags) SK_OVERRIDE {
-
-    // Like SkPictureRecord, we don't want to create layers, but we do need
-    // to respect the save and (possibly) its rect-clip.
-    int count = this->INHERITED::save(flags);
-    if (bounds) {
-      this->INHERITED::clipRectBounds(bounds, flags, NULL);
-    }
-    return count;
+  virtual SaveLayerStrategy willSaveLayer(const SkRect* bounds,
+                                          const SkPaint* paint,
+                                          SaveFlags flags) SK_OVERRIDE {
+      this->INHERITED::willSaveLayer(bounds, paint, flags);
+      return kNoLayer_SaveLayerStrategy;
   }
 
- protected:
   // Disable aa for speed.
   virtual void onClipRect(const SkRect& rect, 
                           SkRegion::Op op,

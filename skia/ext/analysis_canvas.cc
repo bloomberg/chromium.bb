@@ -346,14 +346,16 @@ void AnalysisCanvas::onClipRRect(const SkRRect& rrect,
   INHERITED::onClipRect(rrect.getBounds(), op, edge_style);
 }
 
-int AnalysisCanvas::save(SkCanvas::SaveFlags flags) {
+void AnalysisCanvas::willSave(SkCanvas::SaveFlags flags) {
   ++saved_stack_size_;
-  return INHERITED::save(flags);
+  INHERITED::willSave(flags);
 }
 
-int AnalysisCanvas::saveLayer(const SkRect* bounds,
-                              const SkPaint* paint,
-                              SkCanvas::SaveFlags flags) {
+SkCanvas::SaveLayerStrategy AnalysisCanvas::willSaveLayer(
+    const SkRect* bounds,
+    const SkPaint* paint,
+    SkCanvas::SaveFlags flags) {
+
   ++saved_stack_size_;
 
   SkIRect canvas_ibounds = SkIRect::MakeSize(this->getDeviceSize());
@@ -384,18 +386,13 @@ int AnalysisCanvas::saveLayer(const SkRect* bounds,
     }
   }
 
+  INHERITED::willSaveLayer(bounds, paint, flags);
   // Actually saving a layer here could cause a new bitmap to be created
   // and real rendering to occur.
-  int count = INHERITED::save(flags);
-  if (bounds) {
-    INHERITED::clipRectBounds(bounds, flags, NULL);
-  }
-  return count;
+  return kNoLayer_SaveLayerStrategy;
 }
 
-void AnalysisCanvas::restore() {
-  INHERITED::restore();
-
+void AnalysisCanvas::willRestore() {
   DCHECK(saved_stack_size_);
   if (saved_stack_size_) {
     --saved_stack_size_;
@@ -408,6 +405,8 @@ void AnalysisCanvas::restore() {
       force_not_transparent_stack_level_ = kNoLayer;
     }
   }
+
+  INHERITED::willRestore();
 }
 
 }  // namespace skia
