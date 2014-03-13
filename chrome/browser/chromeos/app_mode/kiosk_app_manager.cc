@@ -134,6 +134,14 @@ void KioskAppManager::GetConsumerKioskAutoLaunchStatus(
                  callback));
 }
 
+bool KioskAppManager::IsConsumerKioskDeviceWithAutoLaunch() {
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  return connector->GetInstallAttributes() &&
+         connector->GetInstallAttributes()
+             ->IsConsumerKioskDeviceWithAutoLaunch();
+}
+
 void KioskAppManager::OnLockDevice(
     const KioskAppManager::EnableKioskAutoLaunchCallback& callback,
     policy::EnterpriseInstallAttributes::LockResult result) {

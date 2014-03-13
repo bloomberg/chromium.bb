@@ -34,6 +34,7 @@
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -572,6 +573,12 @@ void ExistingUserController::OnUserSelected(const std::string& username) {
 }
 
 void ExistingUserController::OnStartEnterpriseEnrollment() {
+  if (KioskAppManager::Get()->IsConsumerKioskDeviceWithAutoLaunch()) {
+    LOG(WARNING) << "Enterprise enrollment is not available after kiosk auto "
+                    "launch is set.";
+    return;
+  }
+
   DeviceSettingsService::Get()->GetOwnershipStatusAsync(
       base::Bind(&ExistingUserController::OnEnrollmentOwnershipCheckCompleted,
                  weak_factory_.GetWeakPtr()));

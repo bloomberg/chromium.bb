@@ -96,6 +96,9 @@ class KioskAppManager : public KioskAppDataDelegate {
   void EnableConsumerKioskAutoLaunch(
       const EnableKioskAutoLaunchCallback& callback);
 
+  // Returns true if this device is consumer kiosk auto launch enabled.
+  bool IsConsumerKioskDeviceWithAutoLaunch();
+
   // Returns auto launcher app id or an empty string if there is none.
   std::string GetAutoLaunchApp() const;
 
