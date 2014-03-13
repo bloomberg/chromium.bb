@@ -594,10 +594,10 @@ void MediaControlFullscreenButtonElement::defaultEventHandler(Event* event)
         // video implementation without requiring them to implement their own full
         // screen behavior.
         if (document().settings() && document().settings()->fullScreenEnabled()) {
-            if (FullscreenElementStack::isActiveFullScreenElement(toParentMediaElement(this)))
+            if (FullscreenElementStack::isActiveFullScreenElement(&mediaElement()))
                 FullscreenElementStack::from(document()).webkitCancelFullScreen();
             else
-                FullscreenElementStack::from(document()).requestFullScreenForElement(toParentMediaElement(this), 0, FullscreenElementStack::ExemptIFrameAllowFullScreenRequirement);
+                FullscreenElementStack::from(document()).requestFullScreenForElement(&mediaElement(), 0, FullscreenElementStack::ExemptIFrameAllowFullScreenRequirement);
         } else {
             mediaControllerInterface().enterFullscreen();
         }
@@ -701,15 +701,14 @@ void MediaControlTextTrackContainerElement::updateDisplay()
         return;
     }
 
-    HTMLMediaElement* mediaElement = toParentMediaElement(this);
     // 1. If the media element is an audio element, or is another playback
     // mechanism with no rendering area, abort these steps. There is nothing to
     // render.
-    if (!mediaElement || !mediaElement->isVideo())
+    if (!mediaElement().isVideo())
         return;
 
     // 2. Let video be the media element or other playback mechanism.
-    HTMLVideoElement* video = toHTMLVideoElement(mediaElement);
+    HTMLVideoElement& video = toHTMLVideoElement(mediaElement());
 
     // 3. Let output be an empty list of absolutely positioned CSS block boxes.
     Vector<RefPtr<HTMLDivElement> > output;
@@ -733,7 +732,7 @@ void MediaControlTextTrackContainerElement::updateDisplay()
     // 7. Let cues be an empty list of text track cues.
     // 8. For each track track in tracks, append to cues all the cues from
     // track's list of cues that have their text track cue active flag set.
-    CueList activeCues = video->currentlyActiveCues();
+    CueList activeCues = video.currentlyActiveCues();
 
     // 9. If reset is false, then, for each text track cue cue in cues: if cue's
     // text track cue display state has a set of CSS boxes, then add those boxes
@@ -765,18 +764,14 @@ void MediaControlTextTrackContainerElement::updateDisplay()
 
 void MediaControlTextTrackContainerElement::updateSizes()
 {
-    HTMLMediaElement* mediaElement = toParentMediaElement(this);
-    if (!mediaElement)
-        return;
-
     if (!document().isActive())
         return;
 
     IntRect videoBox;
 
-    if (!mediaElement->renderer() || !mediaElement->renderer()->isVideo())
+    if (!mediaElement().renderer() || !mediaElement().renderer()->isVideo())
         return;
-    videoBox = toRenderVideo(mediaElement->renderer())->videoBox();
+    videoBox = toRenderVideo(mediaElement().renderer())->videoBox();
 
     if (m_videoDisplaySize == videoBox)
         return;
