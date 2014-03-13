@@ -13,11 +13,9 @@ import re
 import urllib
 import xml.dom.minidom
 
-# pylint: disable=F0401
 import gdata.projecthosting.client
 import gdata.service
 import gdata.spreadsheet.service
-# pylint: enable=F0401
 
 from chromite.lib import operation
 
@@ -28,7 +26,7 @@ CRED_FILE = os.path.join(os.environ['HOME'], '.gdata_cred.txt')
 
 oper = operation.Operation('gdata_lib')
 
-_BAD_COL_CHARS_REGEX = re.compile(r'[ /]')
+_BAD_COL_CHARS_REGEX = re.compile(r'[ /_]')
 def PrepColNameForSS(col):
   """Translate a column name for spreadsheet interface."""
   # Spreadsheet interface requires column names to be
@@ -46,6 +44,8 @@ def PrepRowForSS(row):
 _NUM_REGEX = re.compile(r'^[\d\.]+$')
 def PrepValForSS(val):
   """Make sure spreadsheet handles this value as a string."""
+  # The main reason for this is version strings (e.g. for portage packages),
+  # which Sheets automatically interprets as numbers and mangles.
   if val and _NUM_REGEX.match(val):
     return "'" + val
   return val
@@ -144,7 +144,7 @@ class Creds(object):
       user = '%s@chromium.org' % user
 
     if not password:
-      password = getpass.getpass('Tracker password for %s:' % user)
+      password = getpass.getpass('Docs password for %s:' % user)
 
     self.user = user
     self.password = password
