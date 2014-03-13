@@ -11,17 +11,18 @@
 #include "base/supports_user_data.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_status_code.h"
+#include "net/url_request/url_request_job_factory.h"
 #include "webkit/common/resource_type.h"
 
 namespace net {
 class NetworkDelegate;
 class URLRequest;
-class URLRequestJob;
 }
 
 namespace content {
 
 class ServiceWorkerContextCore;
+class ServiceWorkerContextWrapper;
 class ServiceWorkerProviderHost;
 class ServiceWorkerRegistration;
 class ServiceWorkerURLRequestJob;
@@ -38,7 +39,7 @@ class CONTENT_EXPORT ServiceWorkerRequestHandler
   // own it.
   static void InitializeHandler(
       net::URLRequest* request,
-      base::WeakPtr<ServiceWorkerContextCore> context,
+      ServiceWorkerContextWrapper* context_wrapper,
       int process_id,
       int provider_id,
       ResourceType::Type resource_type);
@@ -47,6 +48,10 @@ class CONTENT_EXPORT ServiceWorkerRequestHandler
   // if no handler is attached.
   static ServiceWorkerRequestHandler* GetHandler(
       net::URLRequest* request);
+
+  // Creates a protocol interceptor for ServiceWorker.
+  static scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
+      CreateInterceptor();
 
   virtual ~ServiceWorkerRequestHandler();
 

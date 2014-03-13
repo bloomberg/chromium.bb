@@ -64,9 +64,6 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   void RemoveProviderHost(int process_id, int provider_id);
   void RemoveAllProviderHostsForProcess(int process_id);
 
-  // Checks the cmdline flag.
-  bool IsEnabled();
-
   // The callback will be called on the IO thread.
   void RegisterServiceWorker(const GURL& pattern,
                              const GURL& script_url,

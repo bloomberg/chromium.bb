@@ -115,22 +115,34 @@ void ServiceWorkerURLRequestJob::MaybeStartRequest() {
 }
 
 void ServiceWorkerURLRequestJob::StartRequest() {
-  // TODO(kinuko): Implement.
-  //
-  // For FALLBACK_TO_NETWORK case: restart the request to create a new
-  //  job. Our request handler will return NULL here, and the default job
-  //  (which hits network) should be created.
-  // For FORWARD_TO_SERVICE_WORKER case: send a fetch event to the
-  //  ServiceWorker associated to the provider_host, and handle the returned
-  //  response.
-  //  - If the response indicates fallback-to-network we'll perform restart via
-  //    NotifyRestartRequired.
-  //  - If the response header indicates redirect the request may be
-  //    internally restarted via NotifyHeadersComplete.
-  //  - If the response has an identifier to on-disk response data
-  //    (e.g. blob or cache entry) we'll need to pull  data from disk before
-  //    respond to the document.
-  NOTIMPLEMENTED();
+  switch (response_type_) {
+    case NOT_DETERMINED:
+      NOTREACHED();
+      return;
+
+    case FALLBACK_TO_NETWORK:
+      // Restart the request to create a new job. Our request handler will
+      // return NULL, and the default job (which will hit network) should be
+      // created.
+      NotifyRestartRequired();
+      return;
+
+    case FORWARD_TO_SERVICE_WORKER:
+      // TODO(kinuko): Implement.
+      // Send a fetch event to the ServiceWorker associated to the
+      // provider_host, and handle the returned response.
+      //  - If the response indicates fallback-to-network perform restart via
+      //    NotifyRestartRequired.
+      //  - If the response header indicates redirect the request may be
+      //    internally restarted via NotifyHeadersComplete.
+      //  - If the response has an identifier to on-disk response data
+      //    (e.g. blob or cache entry) we'll need to pull  data from disk before
+      //    respond to the document.
+      NOTIMPLEMENTED();
+      return;
+  }
+
+  NOTREACHED();
 }
 
 }  // namespace content

@@ -19,6 +19,10 @@ class ServiceWorkerUtils {
   static bool IsServiceWorkerResourceType(ResourceType::Type type) {
     return ResourceType::IsServiceWorker(type);
   }
+
+  // Returns true if the feature is enabled (or not disabled) by command-line
+  // flag.
+  static bool IsFeatureEnabled();
 };
 
 }  // namespace content

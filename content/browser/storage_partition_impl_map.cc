@@ -19,6 +19,7 @@
 #include "content/browser/fileapi/chrome_blob_storage_context.h"
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/browser/resource_context_impl.h"
+#include "content/browser/service_worker/service_worker_request_handler.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/streams/stream.h"
 #include "content/browser/streams/stream_context.h"
@@ -411,13 +412,17 @@ StoragePartitionImpl* StoragePartitionImplMap::Get(
           CreateDevToolsProtocolHandler(browser_context_->GetResourceContext(),
                                         browser_context_->IsOffTheRecord()));
 
+  ProtocolHandlerScopedVector protocol_interceptors;
+  protocol_interceptors.push_back(
+      ServiceWorkerRequestHandler::CreateInterceptor().release());
+
   // These calls must happen after StoragePartitionImpl::Create().
   if (partition_domain.empty()) {
     partition->SetURLRequestContext(
         GetContentClient()->browser()->CreateRequestContext(
             browser_context_,
             &protocol_handlers,
-            ProtocolHandlerScopedVector()));
+            protocol_interceptors.Pass()));
   } else {
     partition->SetURLRequestContext(
         GetContentClient()->browser()->CreateRequestContextForStoragePartition(
@@ -425,7 +430,7 @@ StoragePartitionImpl* StoragePartitionImplMap::Get(
             partition->GetPath(),
             in_memory,
             &protocol_handlers,
-            ProtocolHandlerScopedVector()));
+            protocol_interceptors.Pass()));
   }
   partition->SetMediaURLRequestContext(
       partition_domain.empty() ?

@@ -4,7 +4,6 @@
 
 #include "content/browser/service_worker/service_worker_context_core.h"
 
-#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/strings/string_util.h"
 #include "content/browser/service_worker/embedded_worker_registry.h"
@@ -14,7 +13,6 @@
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_storage.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/content_switches.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -60,11 +58,6 @@ void ServiceWorkerContextCore::RemoveAllProviderHostsForProcess(
     int process_id) {
   if (providers_.Lookup(process_id))
     providers_.Remove(process_id);
-}
-
-bool ServiceWorkerContextCore::IsEnabled() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableServiceWorker);
 }
 
 void ServiceWorkerContextCore::RegisterServiceWorker(

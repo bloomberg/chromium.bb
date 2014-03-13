@@ -9,6 +9,7 @@
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
+#include "content/browser/service_worker/service_worker_utils.h"
 #include "content/common/service_worker/embedded_worker_messages.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "ipc/ipc_message_macros.h"
@@ -101,7 +102,7 @@ void ServiceWorkerDispatcherHost::OnRegisterServiceWorker(
     int32 request_id,
     const GURL& pattern,
     const GURL& script_url) {
-  if (!context_ || !context_->IsEnabled()) {
+  if (!context_ || !ServiceWorkerUtils::IsFeatureEnabled()) {
     Send(new ServiceWorkerMsg_ServiceWorkerRegistrationError(
         thread_id,
         request_id,
@@ -139,7 +140,7 @@ void ServiceWorkerDispatcherHost::OnUnregisterServiceWorker(
   // TODO(alecflett): This check is insufficient for release. Add a
   // ServiceWorker-specific policy query in
   // ChildProcessSecurityImpl. See http://crbug.com/311631.
-  if (!context_ || !context_->IsEnabled()) {
+  if (!context_ || !ServiceWorkerUtils::IsFeatureEnabled()) {
     Send(new ServiceWorkerMsg_ServiceWorkerRegistrationError(
         thread_id,
         request_id,

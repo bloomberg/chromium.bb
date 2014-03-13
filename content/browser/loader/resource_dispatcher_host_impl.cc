@@ -47,6 +47,7 @@
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/resource_context_impl.h"
+#include "content/browser/service_worker/service_worker_request_handler.h"
 #include "content/browser/streams/stream.h"
 #include "content/browser/streams/stream_context.h"
 #include "content/browser/streams/stream_registry.h"
@@ -1127,6 +1128,14 @@ void ResourceDispatcherHostImpl::BeginRequest(
         filter_->blob_storage_context()->context()->
             GetBlobDataFromPublicURL(new_request->url()));
   }
+
+  // Initialize the service worker handler for the request.
+  ServiceWorkerRequestHandler::InitializeHandler(
+      new_request.get(),
+      filter_->service_worker_context(),
+      child_id,
+      request_data.service_worker_provider_id,
+      request_data.resource_type);
 
   // Have the appcache associate its extra info with the request.
   appcache::AppCacheInterceptor::SetExtraRequestInfo(
