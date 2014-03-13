@@ -520,6 +520,12 @@
     'renderer/web_ui_extension.h',
     'renderer/web_ui_extension_data.cc',
     'renderer/web_ui_extension_data.h',
+    'renderer/web_ui_mojo.cc',
+    'renderer/web_ui_mojo.h',
+    'renderer/web_ui_mojo_context_state.cc',
+    'renderer/web_ui_mojo_context_state.h',
+    'renderer/web_ui_runner.cc',
+    'renderer/web_ui_runner.h',
     'renderer/webclipboard_impl.cc',
     'renderer/webclipboard_impl.h',
     'renderer/webgraphicscontext3d_provider_impl.cc',
@@ -566,6 +572,22 @@
     ['OS=="win" and win_use_allocator_shim==1', {
       'dependencies': [
           '../base/allocator/allocator.gyp:allocator',
+      ],
+    }],
+    # TODO(sky): temporary until mojo is building on android and mac.
+    ['OS=="android" or OS=="mac"', {
+      'sources!': [
+        'renderer/web_ui_mojo.cc',
+        'renderer/web_ui_mojo.h',
+        'renderer/web_ui_mojo_context_state.cc',
+        'renderer/web_ui_mojo_context_state.h',
+        'renderer/web_ui_runner.cc',
+        'renderer/web_ui_runner.h',
+      ],
+    }, {
+      'dependencies': [
+        '../mojo/mojo.gyp:mojo_environment_chromium',
+        '../mojo/mojo.gyp:mojo_js_bindings_lib',
       ],
     }],
     ['OS=="android"', {
