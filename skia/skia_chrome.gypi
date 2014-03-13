@@ -71,7 +71,6 @@
     'ext/skia_utils_mac.h',
     'ext/skia_utils_win.cc',
     'ext/skia_utils_win.h',
-    'ext/vector_canvas.cc',
     'ext/vector_canvas.h',
     'ext/vector_platform_device_emf_win.cc',
     'ext/vector_platform_device_emf_win.h',
