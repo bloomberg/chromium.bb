@@ -61,7 +61,7 @@ class PrioritizedTileSetTest : public testing::Test {
                                  1).Pass();
     tile_manager_.reset(
         new FakeTileManager(&tile_manager_client_, resource_provider_.get()));
-    picture_pile_ = FakePicturePileImpl::CreatePile();
+    picture_pile_ = FakePicturePileImpl::CreateInfiniteFilledPile();
   }
 
   scoped_refptr<Tile> CreateTile() {

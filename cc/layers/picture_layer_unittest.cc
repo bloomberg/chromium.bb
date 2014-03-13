@@ -58,7 +58,7 @@ TEST(PictureLayerTest, NoTilesIfEmptyBounds) {
     EXPECT_FALSE(layer_impl->CanHaveTilings());
     EXPECT_TRUE(layer_impl->bounds() == gfx::Size(0, 0));
     EXPECT_TRUE(layer_impl->pile()->size() == gfx::Size(0, 0));
-    EXPECT_TRUE(layer_impl->pile()->recorded_region().IsEmpty());
+    EXPECT_FALSE(layer_impl->pile()->HasRecordings());
   }
 #ifndef NDEBUG
   proxy.SetCurrentThreadIsImplThread(false);
