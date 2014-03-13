@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/caption_buttons/frame_maximize_button.h"
+#include "ash/frame/caption_buttons/frame_maximize_button.h"
 
+#include "ash/frame/caption_buttons/frame_maximize_button_observer.h"
+#include "ash/frame/caption_buttons/maximize_bubble_controller.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/touch/touch_uma.h"
-#include "ash/wm/caption_buttons/frame_maximize_button_observer.h"
-#include "ash/wm/caption_buttons/maximize_bubble_controller.h"
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"

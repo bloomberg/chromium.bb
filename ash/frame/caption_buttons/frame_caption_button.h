@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_CAPTION_BUTTONS_FRAME_CAPTION_BUTTON_H_
-#define ASH_WM_CAPTION_BUTTONS_FRAME_CAPTION_BUTTON_H_
+#ifndef ASH_FRAME_CAPTION_BUTTONS_FRAME_CAPTION_BUTTON_H_
+#define ASH_FRAME_CAPTION_BUTTONS_FRAME_CAPTION_BUTTON_H_
 
 #include "ash/ash_export.h"
-#include "ash/wm/caption_buttons/caption_button_types.h"
+#include "ash/frame/caption_buttons/caption_button_types.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/controls/button/custom_button.h"
@@ -100,4 +100,4 @@ class ASH_EXPORT FrameCaptionButton : public views::CustomButton {
 
 }  // namespace ash
 
-#endif  // ASH_WM_CAPTION_BUTTONS_FRAME_CAPTION_BUTTON_H_
+#endif  // ASH_FRAME_CAPTION_BUTTONS_FRAME_CAPTION_BUTTON_H_

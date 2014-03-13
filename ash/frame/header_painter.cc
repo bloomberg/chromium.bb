@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/header_painter.h"
+#include "ash/frame/header_painter.h"
 
 #include <vector>
 
-#include "ash/wm/caption_buttons/frame_caption_button_container_view.h"
+#include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "base/logging.h"  // DCHECK
 #include "grit/ash_resources.h"
 #include "third_party/skia/include/core/SkCanvas.h"

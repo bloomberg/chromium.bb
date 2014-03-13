@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_CAPTION_BUTTONS_FRAME_MAXIMIZE_BUTTON_H_
-#define ASH_WM_CAPTION_BUTTONS_FRAME_MAXIMIZE_BUTTON_H_
+#ifndef ASH_FRAME_CAPTION_BUTTONS_FRAME_MAXIMIZE_BUTTON_H_
+#define ASH_FRAME_CAPTION_BUTTONS_FRAME_MAXIMIZE_BUTTON_H_
 
 #include "ash/ash_export.h"
-#include "ash/wm/caption_buttons/caption_button_types.h"
-#include "ash/wm/caption_buttons/frame_caption_button.h"
+#include "ash/frame/caption_buttons/caption_button_types.h"
+#include "ash/frame/caption_buttons/frame_caption_button.h"
 #include "ash/wm/workspace/snap_types.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
@@ -175,4 +175,4 @@ class ASH_EXPORT FrameMaximizeButton : public FrameCaptionButton,
 
 }  // namespace ash
 
-#endif  // ASH_WM_CAPTION_BUTTONS_FRAME_MAXIMIZE_BUTTON_H_
+#endif  // ASH_FRAME_CAPTION_BUTTONS_FRAME_MAXIMIZE_BUTTON_H_

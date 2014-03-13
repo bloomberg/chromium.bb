@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_CUSTOM_FRAME_VIEW_ASH_H_
-#define ASH_WM_CUSTOM_FRAME_VIEW_ASH_H_
+#ifndef ASH_FRAME_CUSTOM_FRAME_VIEW_ASH_H_
+#define ASH_FRAME_CUSTOM_FRAME_VIEW_ASH_H_
 
 #include "ash/ash_export.h"
 #include "base/memory/scoped_ptr.h"
@@ -85,4 +85,4 @@ class ASH_EXPORT CustomFrameViewAsh : public views::NonClientFrameView {
 
 }  // namespace ash
 
-#endif  // ASH_WM_CUSTOM_FRAME_VIEW_ASH_H_
+#endif  // ASH_FRAME_CUSTOM_FRAME_VIEW_ASH_H_

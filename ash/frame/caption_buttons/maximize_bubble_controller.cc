@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/caption_buttons/maximize_bubble_controller.h"
+#include "ash/frame/caption_buttons/maximize_bubble_controller.h"
 
-#include "ash/wm/caption_buttons/frame_maximize_button.h"
-#include "ash/wm/caption_buttons/maximize_bubble_controller_bubble.h"
+#include "ash/frame/caption_buttons/frame_maximize_button.h"
+#include "ash/frame/caption_buttons/maximize_bubble_controller_bubble.h"
 #include "base/timer/timer.h"
 
 

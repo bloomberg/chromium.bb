@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_CAPTION_BUTTONS_FRAME_MAXIMIZE_BUTTON_OBSERVER_H_
-#define ASH_WM_CAPTION_BUTTONS_FRAME_MAXIMIZE_BUTTON_OBSERVER_H_
+#ifndef ASH_FRAME_CAPTION_BUTTONS_FRAME_MAXIMIZE_BUTTON_OBSERVER_H_
+#define ASH_FRAME_CAPTION_BUTTONS_FRAME_MAXIMIZE_BUTTON_OBSERVER_H_
 
 #include "ash/ash_export.h"
 
@@ -23,4 +23,4 @@ class ASH_EXPORT FrameMaximizeButtonObserver {
 
 }  // namespace ash
 
-#endif  // ASH_WM_CAPTION_BUTTONS_FRAME_MAXIMIZE_BUTTON_OBSERVER_H_
+#endif  // ASH_FRAME_CAPTION_BUTTONS_FRAME_MAXIMIZE_BUTTON_OBSERVER_H_

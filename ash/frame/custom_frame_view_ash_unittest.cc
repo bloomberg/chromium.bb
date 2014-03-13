@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/custom_frame_view_ash.h"
+#include "ash/frame/custom_frame_view_ash.h"
 
 #include "ash/test/ash_test_base.h"
 #include "base/memory/scoped_ptr.h"

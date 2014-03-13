@@ -31,8 +31,8 @@
 // TODO(wittman): this code should not depend on ash.
 #if defined(USE_ASH)
 #include "ash/ash_constants.h"
+#include "ash/frame/custom_frame_view_ash.h"
 #include "ash/shell.h"
-#include "ash/wm/custom_frame_view_ash.h"
 #endif
 
 using web_modal::NativeWebContentsModalDialog;

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/caption_buttons/frame_caption_button_container_view.h"
+#include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 
 #include "ash/ash_switches.h"
+#include "ash/frame/caption_buttons/frame_caption_button.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/wm/caption_buttons/frame_caption_button.h"
 #include "base/command_line.h"
 #include "grit/ash_resources.h"
 #include "ui/aura/window_event_dispatcher.h"

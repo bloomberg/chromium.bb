@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/custom_frame_view_ash.h"
+#include "ash/frame/custom_frame_view_ash.h"
 
 #include "ash/ash_switches.h"
-#include "ash/wm/caption_buttons/frame_caption_button_container_view.h"
-#include "ash/wm/caption_buttons/frame_maximize_button.h"
-#include "ash/wm/caption_buttons/frame_maximize_button_observer.h"
-#include "ash/wm/frame_border_hit_test_controller.h"
-#include "ash/wm/header_painter.h"
+#include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
+#include "ash/frame/caption_buttons/frame_maximize_button.h"
+#include "ash/frame/caption_buttons/frame_maximize_button_observer.h"
+#include "ash/frame/frame_border_hit_test_controller.h"
+#include "ash/frame/header_painter.h"
 #include "ash/wm/immersive_fullscreen_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_delegate.h"

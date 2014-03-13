@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_CAPTION_BUTTONS_ALTERNATE_FRAME_SIZE_BUTTON_H_
-#define ASH_WM_CAPTION_BUTTONS_ALTERNATE_FRAME_SIZE_BUTTON_H_
+#ifndef ASH_FRAME_CAPTION_BUTTONS_ALTERNATE_FRAME_SIZE_BUTTON_H_
+#define ASH_FRAME_CAPTION_BUTTONS_ALTERNATE_FRAME_SIZE_BUTTON_H_
 
 #include "ash/ash_export.h"
-#include "ash/wm/caption_buttons/alternate_frame_size_button_delegate.h"
-#include "ash/wm/caption_buttons/frame_caption_button.h"
+#include "ash/frame/caption_buttons/alternate_frame_size_button_delegate.h"
+#include "ash/frame/caption_buttons/frame_caption_button.h"
 #include "ash/wm/workspace/snap_types.h"
 #include "base/timer/timer.h"
 
@@ -118,4 +118,4 @@ class ASH_EXPORT AlternateFrameSizeButton : public FrameCaptionButton {
 
 }  // namespace ash
 
-#endif  // ASH_WM_CAPTION_BUTTONS_ALTERNATE_FRAME_SIZE_BUTTON_H_
+#endif  // ASH_FRAME_CAPTION_BUTTONS_ALTERNATE_FRAME_SIZE_BUTTON_H_

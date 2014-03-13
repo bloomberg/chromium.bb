@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/frame_border_hit_test_controller.h"
+#include "ash/frame/frame_border_hit_test_controller.h"
 
 #include "ash/ash_constants.h"
-#include "ash/wm/header_painter.h"
+#include "ash/frame/header_painter.h"
 #include "ash/wm/resize_handle_window_targeter.h"
 #include "ash/wm/window_state_observer.h"
 #include "ui/aura/env.h"

@@ -33,9 +33,9 @@
 #if defined(USE_ASH)
 #include "ash/ash_constants.h"
 #include "ash/ash_switches.h"
+#include "ash/frame/custom_frame_view_ash.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
-#include "ash/wm/custom_frame_view_ash.h"
 #include "ash/wm/immersive_fullscreen_controller.h"
 #include "ash/wm/panels/panel_frame_view.h"
 #include "ash/wm/window_state.h"

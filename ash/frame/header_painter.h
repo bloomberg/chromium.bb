@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_HEADER_PAINTER_H_
-#define ASH_WM_HEADER_PAINTER_H_
+#ifndef ASH_FRAME_HEADER_PAINTER_H_
+#define ASH_FRAME_HEADER_PAINTER_H_
 
 #include "ash/ash_export.h"
 #include "base/basictypes.h"
@@ -180,4 +180,4 @@ class ASH_EXPORT HeaderPainter : public gfx::AnimationDelegate {
 
 }  // namespace ash
 
-#endif  // ASH_WM_HEADER_PAINTER_H_
+#endif  // ASH_FRAME_HEADER_PAINTER_H_

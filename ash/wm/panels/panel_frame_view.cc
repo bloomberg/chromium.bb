@@ -4,9 +4,9 @@
 
 #include "ash/wm/panels/panel_frame_view.h"
 
-#include "ash/wm/caption_buttons/frame_caption_button_container_view.h"
-#include "ash/wm/frame_border_hit_test_controller.h"
-#include "ash/wm/header_painter.h"
+#include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
+#include "ash/frame/frame_border_hit_test_controller.h"
+#include "ash/frame/header_painter.h"
 #include "grit/ash_resources.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"

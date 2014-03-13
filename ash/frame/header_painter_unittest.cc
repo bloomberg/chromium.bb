@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/header_painter.h"
+#include "ash/frame/header_painter.h"
 
+#include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/wm/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/wm/window_state.h"
 #include "base/memory/scoped_ptr.h"
 #include "grit/ash_resources.h"

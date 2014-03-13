@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/caption_buttons/bubble_contents_button_row.h"
+#include "ash/frame/caption_buttons/bubble_contents_button_row.h"
 
-#include "ash/wm/caption_buttons/maximize_bubble_controller.h"
-#include "ash/wm/caption_buttons/maximize_bubble_controller_bubble.h"
+#include "ash/frame/caption_buttons/maximize_bubble_controller.h"
+#include "ash/frame/caption_buttons/maximize_bubble_controller_bubble.h"
 #include "grit/ash_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/controls/button/image_button.h"
