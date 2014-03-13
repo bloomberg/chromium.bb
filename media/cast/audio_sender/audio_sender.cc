@@ -117,11 +117,11 @@ AudioSender::AudioSender(scoped_refptr<CastEnvironment> cast_environment,
       weak_factory_(this) {
   rtcp_.SetCastReceiverEventHistorySize(kReceiverRtcpEventHistorySize);
   if (!audio_config.use_external_encoder) {
-    audio_encoder_ =
+    audio_encoder_.reset(
         new AudioEncoder(cast_environment,
                          audio_config,
                          base::Bind(&AudioSender::SendEncodedAudioFrame,
-                                    weak_factory_.GetWeakPtr()));
+                                    weak_factory_.GetWeakPtr())));
     cast_initialization_cb_ = audio_encoder_->InitializationResult();
   }
 }
@@ -136,12 +136,11 @@ void AudioSender::InitializeTimers() {
   }
 }
 
-void AudioSender::InsertAudio(const AudioBus* audio_bus,
-                              const base::TimeTicks& recorded_time,
-                              const base::Closure& done_callback) {
+void AudioSender::InsertAudio(scoped_ptr<AudioBus> audio_bus,
+                              const base::TimeTicks& recorded_time) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   DCHECK(audio_encoder_.get()) << "Invalid internal state";
-  audio_encoder_->InsertAudio(audio_bus, recorded_time, done_callback);
+  audio_encoder_->InsertAudio(audio_bus.Pass(), recorded_time);
 }
 
 void AudioSender::SendEncodedAudioFrame(

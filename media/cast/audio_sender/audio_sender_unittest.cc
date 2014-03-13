@@ -15,16 +15,12 @@
 #include "media/cast/test/utility/audio_utility.h"
 #include "media/cast/transport/cast_transport_config.h"
 #include "media/cast/transport/cast_transport_sender_impl.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
 namespace cast {
 
 static const int64 kStartMillisecond = GG_INT64_C(12345678900000);
-
-using testing::_;
-using testing::Exactly;
 
 class TestPacketSender : public transport::PacketSender {
  public:
@@ -51,9 +47,6 @@ class TestPacketSender : public transport::PacketSender {
 };
 
 class AudioSenderTest : public ::testing::Test {
- public:
-  MOCK_METHOD0(InsertAudioCallback, void());
-
  protected:
   AudioSenderTest() {
     InitializeMediaLibraryForTesting();
@@ -116,8 +109,6 @@ class AudioSenderTest : public ::testing::Test {
 };
 
 TEST_F(AudioSenderTest, Encode20ms) {
-  EXPECT_CALL(*this, InsertAudioCallback()).Times(Exactly(1));
-
   const base::TimeDelta kDuration = base::TimeDelta::FromMilliseconds(20);
   scoped_ptr<AudioBus> bus(
       TestAudioBusFactory(audio_config_.channels,
@@ -126,10 +117,7 @@ TEST_F(AudioSenderTest, Encode20ms) {
                           0.5f).NextAudioBus(kDuration));
 
   base::TimeTicks recorded_time = base::TimeTicks::Now();
-  audio_sender_->InsertAudio(bus.get(),
-                             recorded_time,
-                             base::Bind(&AudioSenderTest::InsertAudioCallback,
-                                        base::Unretained(this)));
+  audio_sender_->InsertAudio(bus.Pass(), recorded_time);
   task_runner_->RunTasks();
   EXPECT_GE(
       transport_.number_of_rtp_packets() + transport_.number_of_rtcp_packets(),
@@ -137,8 +125,6 @@ TEST_F(AudioSenderTest, Encode20ms) {
 }
 
 TEST_F(AudioSenderTest, RtcpTimer) {
-  EXPECT_CALL(*this, InsertAudioCallback()).Times(Exactly(1));
-
   const base::TimeDelta kDuration = base::TimeDelta::FromMilliseconds(20);
   scoped_ptr<AudioBus> bus(
       TestAudioBusFactory(audio_config_.channels,
@@ -147,10 +133,7 @@ TEST_F(AudioSenderTest, RtcpTimer) {
                           0.5f).NextAudioBus(kDuration));
 
   base::TimeTicks recorded_time = base::TimeTicks::Now();
-  audio_sender_->InsertAudio(bus.get(),
-                             recorded_time,
-                             base::Bind(&AudioSenderTest::InsertAudioCallback,
-                                        base::Unretained(this)));
+  audio_sender_->InsertAudio(bus.Pass(), recorded_time);
   task_runner_->RunTasks();
 
   // Make sure that we send at least one RTCP packet.

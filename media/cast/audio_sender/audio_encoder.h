@@ -8,6 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
+#include "media/base/audio_bus.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
 
@@ -16,13 +17,9 @@ class TimeTicks;
 }
 
 namespace media {
-class AudioBus;
-}
-
-namespace media {
 namespace cast {
 
-class AudioEncoder : public base::RefCountedThreadSafe<AudioEncoder> {
+class AudioEncoder {
  public:
   typedef base::Callback<void(scoped_ptr<transport::EncodedAudioFrame>,
                               const base::TimeTicks&)> FrameEncodedCallback;
@@ -30,35 +27,20 @@ class AudioEncoder : public base::RefCountedThreadSafe<AudioEncoder> {
   AudioEncoder(const scoped_refptr<CastEnvironment>& cast_environment,
                const AudioSenderConfig& audio_config,
                const FrameEncodedCallback& frame_encoded_callback);
+  virtual ~AudioEncoder();
 
   CastInitializationStatus InitializationResult() const;
 
-  // The |audio_bus| must be valid until the |done_callback| is called.
-  // The callback is called from the main cast thread as soon as the encoder is
-  // done with |audio_bus|; it does not mean that the encoded data has been
-  // sent out.
-  void InsertAudio(const AudioBus* audio_bus,
-                   const base::TimeTicks& recorded_time,
-                   const base::Closure& done_callback);
-
- protected:
-  virtual ~AudioEncoder();
+  void InsertAudio(scoped_ptr<AudioBus> audio_bus,
+                   const base::TimeTicks& recorded_time);
 
  private:
-  friend class base::RefCountedThreadSafe<AudioEncoder>;
-
   class ImplBase;
   class OpusImpl;
   class Pcm16Impl;
 
-  // Invokes |impl_|'s encode method on the AUDIO_ENCODER thread while holding
-  // a ref-count on AudioEncoder.
-  void EncodeAudio(const AudioBus* audio_bus,
-                   const base::TimeTicks& recorded_time,
-                   const base::Closure& done_callback);
-
   const scoped_refptr<CastEnvironment> cast_environment_;
-  scoped_ptr<ImplBase> impl_;
+  scoped_refptr<ImplBase> impl_;
 
   // Used to ensure only one thread invokes InsertAudio().
   base::ThreadChecker insert_thread_checker_;

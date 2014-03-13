@@ -13,15 +13,16 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
+#include "media/base/audio_bus.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
 #include "media/cast/transport/cast_transport_sender.h"
 #include "media/filters/gpu_video_accelerator_factories.h"
 
 namespace media {
-class AudioBus;
 class GpuVideoAcceleratorFactories;
 class VideoFrame;
 
@@ -48,13 +49,8 @@ class AudioFrameInput : public base::RefCountedThreadSafe<AudioFrameInput> {
  public:
   // Insert audio frames into Cast sender. Frames will be encoded, packetized
   // and sent to the network.
-  // The |audio_bus| must be valid until the |done_callback| is called.
-  // The callback is called from the main cast thread as soon as the encoder is
-  // done with |audio_bus|; it does not mean that the encoded data has been
-  // sent out.
-  virtual void InsertAudio(const AudioBus* audio_bus,
-                           const base::TimeTicks& recorded_time,
-                           const base::Closure& done_callback) = 0;
+  virtual void InsertAudio(scoped_ptr<AudioBus> audio_bus,
+                           const base::TimeTicks& recorded_time) = 0;
 
  protected:
   virtual ~AudioFrameInput() {}

@@ -112,10 +112,6 @@ bool ToVideoSenderConfig(const CastRtpParams& params,
   return true;
 }
 
-void DeleteAudioBus(scoped_ptr<media::AudioBus> audio_bus) {
-  // Do nothing as |audio_bus| will be deleted.
-}
-
 }  // namespace
 
 // This class receives MediaStreamTrack events and video frames from a
@@ -214,12 +210,7 @@ class CastAudioSink : public base::SupportsWeakPtr<CastAudioSink>,
 
     // TODO(hclam): Pass in the accurate capture time to have good
     // audio / video sync.
-
-    media::AudioBus* const input_bus_ptr = input_bus.get();
-    frame_input_->InsertAudio(
-        input_bus_ptr,
-        base::TimeTicks::Now(),
-        base::Bind(&DeleteAudioBus, base::Passed(&input_bus)));
+    frame_input_->InsertAudio(input_bus.Pass(), base::TimeTicks::Now());
   }
 
   // Return a resampled audio data from input. This is called when the

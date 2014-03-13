@@ -51,16 +51,14 @@ class LocalAudioFrameInput : public AudioFrameInput {
                        base::WeakPtr<AudioSender> audio_sender)
       : cast_environment_(cast_environment), audio_sender_(audio_sender) {}
 
-  virtual void InsertAudio(const AudioBus* audio_bus,
-                           const base::TimeTicks& recorded_time,
-                           const base::Closure& done_callback) OVERRIDE {
+  virtual void InsertAudio(scoped_ptr<AudioBus> audio_bus,
+                           const base::TimeTicks& recorded_time) OVERRIDE {
     cast_environment_->PostTask(CastEnvironment::MAIN,
                                 FROM_HERE,
                                 base::Bind(&AudioSender::InsertAudio,
                                            audio_sender_,
-                                           audio_bus,
-                                           recorded_time,
-                                           done_callback));
+                                           base::Passed(&audio_bus),
+                                           recorded_time));
   }
 
  protected:

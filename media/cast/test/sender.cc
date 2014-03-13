@@ -60,11 +60,6 @@ static const int kFrameTimerMs = 33;
 
 // The max allowed size of serialized log.
 const int kMaxSerializedLogBytes = 10 * 1000 * 1000;
-
-// Dummy callback function that does nothing except to accept ownership of
-// |audio_bus| for destruction. This guarantees that the audio_bus is valid for
-// the entire duration of the encode/send process (not equivalent to DoNothing).
-void OwnThatAudioBus(scoped_ptr<AudioBus> audio_bus) {}
 }  // namespace
 
 void GetPort(int* port) {
@@ -267,13 +262,10 @@ class SendProcess {
     // Avoid drift.
     audio_diff_ += kFrameTimerMs - num_10ms_blocks * 10;
 
-    scoped_ptr<AudioBus> audio_bus(audio_bus_factory_->NextAudioBus(
-        base::TimeDelta::FromMilliseconds(10) * num_10ms_blocks));
-    AudioBus* const audio_bus_ptr = audio_bus.get();
     audio_frame_input_->InsertAudio(
-        audio_bus_ptr,
-        clock_->NowTicks(),
-        base::Bind(&OwnThatAudioBus, base::Passed(&audio_bus)));
+        audio_bus_factory_->NextAudioBus(
+            base::TimeDelta::FromMilliseconds(10) * num_10ms_blocks),
+        clock_->NowTicks());
 
     gfx::Size size(video_config_.width, video_config_.height);
     // TODO(mikhal): Use the provided timestamp.

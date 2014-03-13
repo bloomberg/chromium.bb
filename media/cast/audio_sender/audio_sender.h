@@ -12,13 +12,10 @@
 #include "base/threading/non_thread_safe.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
+#include "media/base/audio_bus.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/rtcp/rtcp.h"
 #include "media/cast/transport/rtp_sender/rtp_sender.h"
-
-namespace media {
-class AudioBus;
-}
 
 namespace media {
 namespace cast {
@@ -42,13 +39,8 @@ class AudioSender : public base::NonThreadSafe,
     return cast_initialization_cb_;
   }
 
-  // The |audio_bus| must be valid until the |done_callback| is called.
-  // The callback is called from the main cast thread as soon as the encoder is
-  // done with |audio_bus|; it does not mean that the encoded data has been
-  // sent out.
-  void InsertAudio(const AudioBus* audio_bus,
-                   const base::TimeTicks& recorded_time,
-                   const base::Closure& done_callback);
+  void InsertAudio(scoped_ptr<AudioBus> audio_bus,
+                   const base::TimeTicks& recorded_time);
 
   // Only called from the main cast thread.
   void IncomingRtcpPacket(scoped_ptr<Packet> packet);
@@ -80,7 +72,7 @@ class AudioSender : public base::NonThreadSafe,
 
   scoped_refptr<CastEnvironment> cast_environment_;
   transport::CastTransportSender* const transport_sender_;
-  scoped_refptr<AudioEncoder> audio_encoder_;
+  scoped_ptr<AudioEncoder> audio_encoder_;
   scoped_ptr<LocalRtpSenderStatistics> rtp_audio_sender_statistics_;
   scoped_ptr<LocalRtcpAudioSenderFeedback> rtcp_feedback_;
   Rtcp rtcp_;

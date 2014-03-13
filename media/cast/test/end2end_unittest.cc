@@ -85,10 +85,6 @@ std::string ConvertFromBase16String(const std::string base_16) {
   return compressed;
 }
 
-// Dummy callback function that does nothing except to accept ownership of
-// |audio_bus| for destruction.
-void OwnThatAudioBus(scoped_ptr<AudioBus> audio_bus) {}
-
 void UpdateCastTransportStatus(transport::CastTransportStatus status) {
   bool result = (status == transport::TRANSPORT_AUDIO_INITIALIZED ||
                  status == transport::TRANSPORT_VIDEO_INITIALIZED);
@@ -662,11 +658,7 @@ TEST_F(End2EndTest, LoopNoLossPcm16) {
           send_time);
     }
 
-    AudioBus* const audio_bus_ptr = audio_bus.get();
-    audio_frame_input_->InsertAudio(
-        audio_bus_ptr,
-        send_time,
-        base::Bind(&OwnThatAudioBus, base::Passed(&audio_bus)));
+    audio_frame_input_->InsertAudio(audio_bus.Pass(), send_time);
 
     test_receiver_video_callback_->AddExpectedResult(
         video_start,
@@ -719,11 +711,7 @@ TEST_F(End2EndTest, LoopNoLossPcm16ExternalDecoder) {
         1,
         send_time);
 
-    AudioBus* const audio_bus_ptr = audio_bus.get();
-    audio_frame_input_->InsertAudio(
-        audio_bus_ptr,
-        send_time,
-        base::Bind(&OwnThatAudioBus, base::Passed(&audio_bus)));
+    audio_frame_input_->InsertAudio(audio_bus.Pass(), send_time);
 
     RunTasks(10);
     frame_receiver_->GetCodedAudioFrame(
@@ -754,11 +742,7 @@ TEST_F(End2EndTest, LoopNoLossOpus) {
           send_time);
     }
 
-    AudioBus* const audio_bus_ptr = audio_bus.get();
-    audio_frame_input_->InsertAudio(
-        audio_bus_ptr,
-        send_time,
-        base::Bind(&OwnThatAudioBus, base::Passed(&audio_bus)));
+    audio_frame_input_->InsertAudio(audio_bus.Pass(), send_time);
 
     RunTasks(30);
 
@@ -804,11 +788,7 @@ TEST_F(End2EndTest, StartSenderBeforeReceiver) {
     scoped_ptr<AudioBus> audio_bus(audio_bus_factory_->NextAudioBus(
         base::TimeDelta::FromMilliseconds(10) * num_10ms_blocks));
 
-    AudioBus* const audio_bus_ptr = audio_bus.get();
-    audio_frame_input_->InsertAudio(
-        audio_bus_ptr,
-        send_time,
-        base::Bind(&OwnThatAudioBus, base::Passed(&audio_bus)));
+    audio_frame_input_->InsertAudio(audio_bus.Pass(), send_time);
 
     // Frame will be rendered with 100mS delay, as the transmission is delayed.
     // The receiver at this point cannot be synced to the sender's clock, as no
@@ -846,11 +826,7 @@ TEST_F(End2EndTest, StartSenderBeforeReceiver) {
           send_time);
     }
 
-    AudioBus* const audio_bus_ptr = audio_bus.get();
-    audio_frame_input_->InsertAudio(
-        audio_bus_ptr,
-        send_time,
-        base::Bind(&OwnThatAudioBus, base::Passed(&audio_bus)));
+    audio_frame_input_->InsertAudio(audio_bus.Pass(), send_time);
 
     test_receiver_video_callback_->AddExpectedResult(
         video_start,
@@ -1082,11 +1058,7 @@ TEST_F(End2EndTest, CryptoAudio) {
           num_10ms_blocks,
           send_time);
     }
-    AudioBus* const audio_bus_ptr = audio_bus.get();
-    audio_frame_input_->InsertAudio(
-        audio_bus_ptr,
-        send_time,
-        base::Bind(&OwnThatAudioBus, base::Passed(&audio_bus)));
+    audio_frame_input_->InsertAudio(audio_bus.Pass(), send_time);
 
     RunTasks(num_10ms_blocks * 10);
 
@@ -1260,11 +1232,7 @@ TEST_F(End2EndTest, AudioLogging) {
           send_time);
     }
 
-    AudioBus* const audio_bus_ptr = audio_bus.get();
-    audio_frame_input_->InsertAudio(
-        audio_bus_ptr,
-        send_time,
-        base::Bind(&OwnThatAudioBus, base::Passed(&audio_bus)));
+    audio_frame_input_->InsertAudio(audio_bus.Pass(), send_time);
 
     RunTasks(kFrameTimerMs);
     audio_diff += kFrameTimerMs;

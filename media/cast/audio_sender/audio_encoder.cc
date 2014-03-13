@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
+#include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/sys_byteorder.h"
 #include "base/time/time.h"
@@ -26,9 +27,11 @@ namespace cast {
 //
 // Subclasses complete the implementation by handling the actual encoding
 // details.
-class AudioEncoder::ImplBase : public base::SupportsWeakPtr<ImplBase> {
+class AudioEncoder::ImplBase
+    : public base::RefCountedThreadSafe<AudioEncoder::ImplBase>,
+      public base::SupportsWeakPtr<ImplBase> {
  public:
-  ImplBase(CastEnvironment* cast_environment,
+  ImplBase(const scoped_refptr<CastEnvironment>& cast_environment,
            transport::AudioCodec codec,
            int num_channels,
            int sampling_rate,
@@ -58,8 +61,6 @@ class AudioEncoder::ImplBase : public base::SupportsWeakPtr<ImplBase> {
     }
   }
 
-  virtual ~ImplBase() {}
-
   CastInitializationStatus InitializationResult() const {
     return cast_initialization_cb_;
   }
@@ -71,26 +72,18 @@ class AudioEncoder::ImplBase : public base::SupportsWeakPtr<ImplBase> {
         cast_environment_->Clock()->NowTicks(), type, rtp_timestamp, frame_id);
   }
 
-  void EncodeAudio(const AudioBus* audio_bus,
-                   const base::TimeTicks& recorded_time,
-                   const base::Closure& done_callback) {
+  void EncodeAudio(scoped_ptr<AudioBus> audio_bus,
+                   const base::TimeTicks& recorded_time) {
     int src_pos = 0;
     int packet_count = 0;
-    while (audio_bus && src_pos < audio_bus->frames()) {
+    while (src_pos < audio_bus->frames()) {
       const int num_samples_to_xfer = std::min(
           samples_per_10ms_ - buffer_fill_end_, audio_bus->frames() - src_pos);
       DCHECK_EQ(audio_bus->channels(), num_channels_);
       TransferSamplesIntoBuffer(
-          audio_bus, src_pos, buffer_fill_end_, num_samples_to_xfer);
+          audio_bus.get(), src_pos, buffer_fill_end_, num_samples_to_xfer);
       src_pos += num_samples_to_xfer;
       buffer_fill_end_ += num_samples_to_xfer;
-
-      if (src_pos == audio_bus->frames()) {
-        cast_environment_->PostTask(
-            CastEnvironment::MAIN, FROM_HERE, done_callback);
-        // Note: |audio_bus| is invalid once done_callback is invoked.
-        audio_bus = NULL;
-      }
 
       if (buffer_fill_end_ == samples_per_10ms_) {
         scoped_ptr<transport::EncodedAudioFrame> audio_frame(
@@ -145,13 +138,16 @@ class AudioEncoder::ImplBase : public base::SupportsWeakPtr<ImplBase> {
   }
 
  protected:
+  friend class base::RefCountedThreadSafe<ImplBase>;
+  virtual ~ImplBase() {}
+
   virtual void TransferSamplesIntoBuffer(const AudioBus* audio_bus,
                                          int source_offset,
                                          int buffer_fill_offset,
                                          int num_samples) = 0;
   virtual bool EncodeFromFilledBuffer(std::string* out) = 0;
 
-  CastEnvironment* const cast_environment_;
+  const scoped_refptr<CastEnvironment> cast_environment_;
   const transport::AudioCodec codec_;
   const int num_channels_;
   const int samples_per_10ms_;
@@ -179,7 +175,7 @@ class AudioEncoder::ImplBase : public base::SupportsWeakPtr<ImplBase> {
 
 class AudioEncoder::OpusImpl : public AudioEncoder::ImplBase {
  public:
-  OpusImpl(CastEnvironment* cast_environment,
+  OpusImpl(const scoped_refptr<CastEnvironment>& cast_environment,
            int num_channels,
            int sampling_rate,
            int bitrate,
@@ -211,9 +207,9 @@ class AudioEncoder::OpusImpl : public AudioEncoder::ImplBase {
              OPUS_OK);
   }
 
+ private:
   virtual ~OpusImpl() {}
 
- private:
   virtual void TransferSamplesIntoBuffer(const AudioBus* audio_bus,
                                          int source_offset,
                                          int buffer_fill_offset,
@@ -266,7 +262,7 @@ class AudioEncoder::OpusImpl : public AudioEncoder::ImplBase {
 
 class AudioEncoder::Pcm16Impl : public AudioEncoder::ImplBase {
  public:
-  Pcm16Impl(CastEnvironment* cast_environment,
+  Pcm16Impl(const scoped_refptr<CastEnvironment>& cast_environment,
             int num_channels,
             int sampling_rate,
             const FrameEncodedCallback& callback)
@@ -277,9 +273,9 @@ class AudioEncoder::Pcm16Impl : public AudioEncoder::ImplBase {
                  callback),
         buffer_(new int16[num_channels * samples_per_10ms_]) {}
 
+ private:
   virtual ~Pcm16Impl() {}
 
- private:
   virtual void TransferSamplesIntoBuffer(const AudioBus* audio_bus,
                                          int source_offset,
                                          int buffer_fill_offset,
@@ -318,17 +314,17 @@ AudioEncoder::AudioEncoder(
   insert_thread_checker_.DetachFromThread();
   switch (audio_config.codec) {
     case transport::kOpus:
-      impl_.reset(new OpusImpl(cast_environment,
-                               audio_config.channels,
-                               audio_config.frequency,
-                               audio_config.bitrate,
-                               frame_encoded_callback));
+      impl_ = new OpusImpl(cast_environment,
+                           audio_config.channels,
+                           audio_config.frequency,
+                           audio_config.bitrate,
+                           frame_encoded_callback);
       break;
     case transport::kPcm16:
-      impl_.reset(new Pcm16Impl(cast_environment,
-                                audio_config.channels,
-                                audio_config.frequency,
-                                frame_encoded_callback));
+      impl_ = new Pcm16Impl(cast_environment,
+                            audio_config.channels,
+                            audio_config.frequency,
+                            frame_encoded_callback);
       break;
     default:
       NOTREACHED() << "Unsupported or unspecified codec for audio encoder";
@@ -346,30 +342,20 @@ CastInitializationStatus AudioEncoder::InitializationResult() const {
   return STATUS_UNSUPPORTED_AUDIO_CODEC;
 }
 
-void AudioEncoder::InsertAudio(const AudioBus* audio_bus,
-                               const base::TimeTicks& recorded_time,
-                               const base::Closure& done_callback) {
+void AudioEncoder::InsertAudio(scoped_ptr<AudioBus> audio_bus,
+                               const base::TimeTicks& recorded_time) {
   DCHECK(insert_thread_checker_.CalledOnValidThread());
+  DCHECK(audio_bus.get());
   if (!impl_) {
     NOTREACHED();
-    cast_environment_->PostTask(
-        CastEnvironment::MAIN, FROM_HERE, done_callback);
     return;
   }
   cast_environment_->PostTask(CastEnvironment::AUDIO_ENCODER,
                               FROM_HERE,
-                              base::Bind(&AudioEncoder::EncodeAudio,
-                                         this,
-                                         audio_bus,
-                                         recorded_time,
-                                         done_callback));
-}
-
-void AudioEncoder::EncodeAudio(const AudioBus* audio_bus,
-                               const base::TimeTicks& recorded_time,
-                               const base::Closure& done_callback) {
-  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::AUDIO_ENCODER));
-  impl_->EncodeAudio(audio_bus, recorded_time, done_callback);
+                              base::Bind(&AudioEncoder::ImplBase::EncodeAudio,
+                                         impl_,
+                                         base::Passed(&audio_bus),
+                                         recorded_time));
 }
 
 }  // namespace cast

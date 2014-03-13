@@ -117,18 +117,9 @@ class AudioEncoderTest : public ::testing::TestWithParam<TestScenario> {
       receiver_->SetRecordedTimeUpperBound(testing_clock_->NowTicks() +
                                            duration);
 
-      const scoped_ptr<AudioBus> bus(
-          audio_bus_factory_->NextAudioBus(duration));
-
-      const int last_count = release_callback_count_;
-      audio_encoder_->InsertAudio(
-          bus.get(),
-          testing_clock_->NowTicks(),
-          base::Bind(&AudioEncoderTest::IncrementReleaseCallbackCounter,
-                     base::Unretained(this)));
+      audio_encoder_->InsertAudio(audio_bus_factory_->NextAudioBus(duration),
+                                  testing_clock_->NowTicks());
       task_runner_->RunTasks();
-      EXPECT_EQ(1, release_callback_count_ - last_count)
-          << "Release callback was not invoked once.";
 
       testing_clock_->Advance(duration);
     }
@@ -155,23 +146,19 @@ class AudioEncoderTest : public ::testing::TestWithParam<TestScenario> {
 
     receiver_.reset(new TestEncodedAudioFrameReceiver(codec));
 
-    audio_encoder_ = new AudioEncoder(
+    audio_encoder_.reset(new AudioEncoder(
         cast_environment_,
         audio_config,
         base::Bind(&TestEncodedAudioFrameReceiver::FrameEncoded,
-                   base::Unretained(receiver_.get())));
-    release_callback_count_ = 0;
+                   base::Unretained(receiver_.get()))));
   }
-
-  void IncrementReleaseCallbackCounter() { ++release_callback_count_; }
 
   base::SimpleTestTickClock* testing_clock_;  // Owned by CastEnvironment.
   scoped_refptr<test::FakeSingleThreadTaskRunner> task_runner_;
   scoped_ptr<TestAudioBusFactory> audio_bus_factory_;
   scoped_ptr<TestEncodedAudioFrameReceiver> receiver_;
-  scoped_refptr<AudioEncoder> audio_encoder_;
+  scoped_ptr<AudioEncoder> audio_encoder_;
   scoped_refptr<CastEnvironment> cast_environment_;
-  int release_callback_count_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioEncoderTest);
 };
