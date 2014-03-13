@@ -202,7 +202,7 @@
     },
     {
       "name": "tc-webcore-fontcache",
-      "stacktrace": ".*WebCore::FontCache::getCachedFontData.*",
+      "stacktrace": ".*WebCore::FontCache::getFontData.*",
       "allocator": "malloc"
     },
     {
@@ -302,7 +302,12 @@
     },
     {
       "name": "tc-webcore-stylepropertyset",
-      "stacktrace": ".*WebCore::StylePropertySet::create .*",
+      "stacktrace": ".*WebCore::ImmutableStylePropertySet::create .*",
+      "allocator": "malloc"
+    },
+    {
+      "name": "tc-webcore-stylepropertyset",
+      "stacktrace": ".*WebCore::MutableStylePropertySet::create .*",
       "allocator": "malloc"
     },
     {
