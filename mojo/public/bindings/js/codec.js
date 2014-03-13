@@ -296,7 +296,7 @@ define("mojo/public/bindings/js/codec", function() {
 
   function MessageBuilder(messageName, payloadSize) {
     // Currently, we don't compute the payload size correctly ahead of time.
-    // Instead, we resize the buffer at the end.
+    // Instead, we overwrite this field at the end.
     var numberOfBytes = kMessageHeaderSize + payloadSize;
     this.buffer = new Buffer(numberOfBytes);
     this.handles = [];
@@ -320,6 +320,7 @@ define("mojo/public/bindings/js/codec", function() {
     // TODO(abarth): Rather than resizing the buffer at the end, we could
     // compute the size we need ahead of time, like we do in C++.
     var memory = this.buffer.createViewOfAllocatedMemory();
+    store32(memory, 0, memory.length);
     var message = new Message(memory, this.handles);
     this.buffer = null;
     this.handles = null;

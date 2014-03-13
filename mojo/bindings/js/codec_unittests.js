@@ -29,10 +29,8 @@ define([
     var message = builder.finish();
 
     var expectedMemory = new Uint8Array([
-      16, 0, 0, 0,
-       2, 0, 0, 0,
+      24, 0, 0, 0,
       42, 0, 0, 0,
-       0, 0, 0, 0,
 
       16, 0, 0, 0,
        4, 0, 0, 0,
@@ -91,12 +89,11 @@ define([
     var message = builder.finish();
 
     var expectedMemory = new Uint8Array([
-      /*  0: */   16,    0,    0,    0,    2,    0,    0,    0,
-      /*  8: */   31,    0,    0,    0,    0,    0,    0,    0,
-      /* 16: */   72,    0,    0,    0,   12,    0,    0,    0,
-      /* 24: */ 0xD5, 0xB4, 0x12, 0x02, 0x93, 0x6E, 0x01,    0,
-      /* 32: */    5,    0,    0,    0,    0,    0,    0,    0,
-      /* 40: */   48,    0,    0,    0,    0,    0,    0,    0,
+      /*  0: */  232,    0,    0,    0,   31,    0,    0,    0,
+      /*  8: */   72,    0,    0,    0,   12,    0,    0,    0,
+      /* 16: */ 0xD5, 0xB4, 0x12, 0x02, 0x93, 0x6E, 0x01,    0,
+      /* 24: */    5,    0,    0,    0,    0,    0,    0,    0,
+      /* 32: */   48,    0,    0,    0,    0,    0,    0,    0,
     ]);
     // TODO(abarth): Test more of the message's raw memory.
     var actualMemory = new Uint8Array(message.memory.buffer,
