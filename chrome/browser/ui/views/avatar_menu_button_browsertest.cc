@@ -74,6 +74,10 @@ void AvatarMenuButtonTest::StartAvatarMenu() {
 // See http://crbug.com/315732
 #if defined(OS_WIN)
 #define MAYBE_HideOnSecondClick DISABLED_HideOnSecondClick
+#elif defined(OS_CHROMEOS)
+// This test doesn't make sense for ChromeOS since it has a different
+// multi-profiles menu in the system tray instead.
+#define MAYBE_HideOnSecondClick DISABLED_HideOnSecondClick
 #else
 #define MAYBE_HideOnSecondClick HideOnSecondClick
 #endif

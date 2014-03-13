@@ -5,7 +5,11 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 
 #include "base/command_line.h"
+#include "base/prefs/pref_registry_simple.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chromeos/login/user_manager_impl.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/common/chrome_switches.h"
 
 namespace chromeos {
@@ -115,6 +119,9 @@ ScopedUserManagerEnabler::~ScopedUserManagerEnabler() {
 
 ScopedTestUserManager::ScopedTestUserManager() {
   UserManager::Initialize();
+
+  // ProfileHelper has to be initialized after UserManager instance is created.
+  g_browser_process->platform_part()->profile_helper()->Initialize();
 }
 
 ScopedTestUserManager::~ScopedTestUserManager() {

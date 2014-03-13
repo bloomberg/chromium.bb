@@ -377,7 +377,8 @@ class UnittestGuestProfileManager : public UnittestProfileManager {
   }
 };
 
-class ProfileManagerGuestTest : public ProfileManagerTest {
+class ProfileManagerGuestTest : public ProfileManagerTest,
+                                public testing::WithParamInterface<bool>  {
  protected:
   virtual void SetUp() {
     // Create a new temporary directory, and store the path
@@ -386,8 +387,17 @@ class ProfileManagerGuestTest : public ProfileManagerTest {
         new UnittestGuestProfileManager(temp_dir_.path()));
 
     CommandLine* cl = CommandLine::ForCurrentProcess();
+    if (GetParam())
+      cl->AppendSwitch(switches::kMultiProfiles);
+
     cl->AppendSwitch(switches::kTestType);
-    cl->AppendSwitchASCII(chromeos::switches::kLoginProfile, "user");
+    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kMultiProfiles)) {
+      cl->AppendSwitchASCII(chromeos::switches::kLoginProfile,
+                            std::string(chrome::kProfileDirPrefix) +
+                                chromeos::UserManager::kGuestUserName);
+    } else {
+      cl->AppendSwitchASCII(chromeos::switches::kLoginProfile, "user");
+    }
     cl->AppendSwitch(chromeos::switches::kGuestSession);
     cl->AppendSwitch(::switches::kIncognito);
 
@@ -398,7 +408,7 @@ class ProfileManagerGuestTest : public ProfileManagerTest {
   }
 };
 
-TEST_F(ProfileManagerGuestTest, GuestProfileIngonito) {
+TEST_P(ProfileManagerGuestTest, GuestProfileIngonito) {
   Profile* primary_profile = ProfileManager::GetPrimaryUserProfile();
   EXPECT_TRUE(primary_profile->IsOffTheRecord());
 
@@ -412,6 +422,10 @@ TEST_F(ProfileManagerGuestTest, GuestProfileIngonito) {
 
   EXPECT_TRUE(last_used_profile->IsSameProfile(active_profile));
 }
+
+INSTANTIATE_TEST_CASE_P(ProfileManagerGuestTestInstantiation,
+                        ProfileManagerGuestTest,
+                        testing::Bool());
 #endif
 
 TEST_F(ProfileManagerTest, AutoloadProfilesWithBackgroundApps) {

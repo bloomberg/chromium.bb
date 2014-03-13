@@ -92,7 +92,8 @@ void SigninManagerBase::SetAuthenticatedUsername(const std::string& username) {
   std::string pref_username = profile_->GetPrefs()->GetString(
       prefs::kGoogleServicesUsername);
   DCHECK(pref_username.empty() ||
-      gaia::AreEmailsSame(username, pref_username));
+      gaia::AreEmailsSame(username, pref_username))
+      << "username: " << username << "; pref_username: " << pref_username;
   authenticated_username_ = username;
   profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername, username);
   NotifyDiagnosticsObservers(USERNAME, username);

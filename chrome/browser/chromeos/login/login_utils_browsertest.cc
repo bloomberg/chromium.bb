@@ -35,6 +35,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/rlz/rlz.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -65,6 +66,7 @@
 #include "policy/proto/device_management_backend.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/message_center/message_center.h"
 
 #if defined(ENABLE_RLZ)
 #include "rlz/lib/rlz_value_store.h"
@@ -193,7 +195,9 @@ class LoginUtilsTest : public testing::Test,
     CommandLine* command_line = CommandLine::ForCurrentProcess();
     command_line->AppendSwitchASCII(
         policy::switches::kDeviceManagementUrl, kDMServer);
-    command_line->AppendSwitchASCII(switches::kLoginProfile, "user");
+
+    if (!command_line->HasSwitch(::switches::kMultiProfiles))
+      command_line->AppendSwitchASCII(switches::kLoginProfile, "user");
 
     // DBusThreadManager should be initialized before io_thread_state_, as
     // DBusThreadManager is used from chromeos::ProxyConfigServiceImpl,
@@ -248,12 +252,17 @@ class LoginUtilsTest : public testing::Test,
     RLZTracker::EnableZeroDelayForTesting();
 #endif
 
+    // Message center is used by UserManager.
+    message_center::MessageCenter::Initialize();
+
     RunUntilIdle();
   }
 
   virtual void TearDown() OVERRIDE {
     cryptohome::AsyncMethodCaller::Shutdown();
     mock_async_method_caller_ = NULL;
+
+    message_center::MessageCenter::Shutdown();
 
     test_user_manager_.reset();
 
@@ -499,11 +508,28 @@ class LoginUtilsTest : public testing::Test,
   DISALLOW_COPY_AND_ASSIGN(LoginUtilsTest);
 };
 
+class LoginUtilsParamTest
+    : public LoginUtilsTest,
+      public testing::WithParamInterface<bool> {
+ public:
+  LoginUtilsParamTest() {}
+
+  virtual void SetUp() OVERRIDE {
+    CommandLine* command_line = CommandLine::ForCurrentProcess();
+    if (GetParam())
+      command_line->AppendSwitch(::switches::kMultiProfiles);
+    LoginUtilsTest::SetUp();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(LoginUtilsParamTest);
+};
+
 class LoginUtilsBlockingLoginTest
     : public LoginUtilsTest,
       public testing::WithParamInterface<int> {};
 
-TEST_F(LoginUtilsTest, NormalLoginDoesntBlock) {
+TEST_P(LoginUtilsParamTest, NormalLoginDoesntBlock) {
   UserManager* user_manager = UserManager::Get();
   EXPECT_FALSE(user_manager->IsUserLoggedIn());
   EXPECT_FALSE(connector_->IsEnterpriseManaged());
@@ -519,7 +545,7 @@ TEST_F(LoginUtilsTest, NormalLoginDoesntBlock) {
   EXPECT_EQ(kUsername, user_manager->GetLoggedInUser()->email());
 }
 
-TEST_F(LoginUtilsTest, EnterpriseLoginDoesntBlockForNormalUser) {
+TEST_P(LoginUtilsParamTest, EnterpriseLoginDoesntBlockForNormalUser) {
   UserManager* user_manager = UserManager::Get();
   EXPECT_FALSE(user_manager->IsUserLoggedIn());
   EXPECT_FALSE(connector_->IsEnterpriseManaged());
@@ -544,7 +570,7 @@ TEST_F(LoginUtilsTest, EnterpriseLoginDoesntBlockForNormalUser) {
 }
 
 #if defined(ENABLE_RLZ)
-TEST_F(LoginUtilsTest, RlzInitialized) {
+TEST_P(LoginUtilsParamTest, RlzInitialized) {
   // No RLZ brand code set initially.
   EXPECT_FALSE(local_state_.Get()->HasPrefPath(prefs::kRLZBrand));
 
@@ -678,6 +704,10 @@ INSTANTIATE_TEST_CASE_P(
     LoginUtilsBlockingLoginTestInstance,
     LoginUtilsBlockingLoginTest,
     testing::Values(0, 1, 2, 3, 4, 5));
+
+INSTANTIATE_TEST_CASE_P(LoginUtilsParamTestInstantiation,
+                        LoginUtilsParamTest,
+                        testing::Bool());
 
 }  // namespace
 

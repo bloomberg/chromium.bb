@@ -177,6 +177,10 @@ class StubLogin : public LoginStatusConsumer,
 
   // LoginUtils::Delegate implementation:
   virtual void OnProfilePrepared(Profile* profile) OVERRIDE {
+    std::string login_user =
+        CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            chromeos::switches::kLoginUser);
+    profile->GetPrefs()->SetString(prefs::kGoogleServicesUsername, login_user);
     profile_prepared_ = true;
     LoginUtils::Get()->DoBrowserLaunch(profile, NULL);
     delete this;
@@ -623,6 +627,15 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   //    i.e. not on Chrome OS device w/o login flow.
   if (parsed_command_line().HasSwitch(switches::kLoginUser) &&
       !parsed_command_line().HasSwitch(switches::kLoginPassword)) {
+    std::string login_user = parsed_command_line().GetSwitchValueASCII(
+        chromeos::switches::kLoginUser);
+    if (!base::SysInfo::IsRunningOnChromeOS() &&
+        login_user == UserManager::kStubUser) {
+      // For dev machines and stub user emulate as if sync has been initialized.
+      profile()->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
+                                       login_user);
+    }
+
     // This is done in LoginUtils::OnProfileCreated during normal login.
     LoginUtils::Get()->InitRlzDelayed(profile());
 

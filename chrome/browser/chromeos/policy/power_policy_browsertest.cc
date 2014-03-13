@@ -219,9 +219,7 @@ void PowerPolicyBrowserTestBase::InstallUserKey() {
 
 void PowerPolicyBrowserTestBase::StoreAndReloadUserPolicy() {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
-  Profile* profile = profile_manager->GetProfileByPath(
-      profile_manager->user_data_dir().Append(
-          TestingProfile::kTestUserProfileDir));
+  Profile* profile = profile_manager->GetActiveUserProfile();
   ASSERT_TRUE(profile);
 
   // Install the new user policy blob in session manager client.

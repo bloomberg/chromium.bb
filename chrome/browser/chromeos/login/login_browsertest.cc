@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
@@ -33,16 +34,20 @@ using ::testing::Return;
 
 namespace {
 
-class LoginUserTest : public InProcessBrowserTest {
+class LoginUserTest : public InProcessBrowserTest,
+                      public testing::WithParamInterface<bool> {
  protected:
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     command_line->AppendSwitchASCII(
         chromeos::switches::kLoginUser, "TestUser@gmail.com");
     command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "user");
+    if (GetParam())
+      command_line->AppendSwitch(::switches::kMultiProfiles);
   }
 };
 
-class LoginGuestTest : public InProcessBrowserTest {
+class LoginGuestTest : public InProcessBrowserTest,
+                       public testing::WithParamInterface<bool>  {
  protected:
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     command_line->AppendSwitch(chromeos::switches::kGuestSession);
@@ -50,6 +55,8 @@ class LoginGuestTest : public InProcessBrowserTest {
     command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "user");
     command_line->AppendSwitchASCII(chromeos::switches::kLoginUser,
                                     chromeos::UserManager::kGuestUserName);
+    if (GetParam())
+      command_line->AppendSwitch(::switches::kMultiProfiles);
   }
 };
 
@@ -136,19 +143,22 @@ class LoginSigninTest : public InProcessBrowserTest {
 // After a chrome crash, the session manager will restart chrome with
 // the -login-user flag indicating that the user is already logged in.
 // This profile should NOT be an OTR profile.
-IN_PROC_BROWSER_TEST_F(LoginUserTest, UserPassed) {
+IN_PROC_BROWSER_TEST_P(LoginUserTest, UserPassed) {
   Profile* profile = browser()->profile();
-  EXPECT_EQ("user", profile->GetPath().BaseName().value());
+  std::string profile_base_path("user");
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kMultiProfiles))
+    profile_base_path.insert(0, chrome::kProfileDirPrefix);
+  EXPECT_EQ(profile_base_path, profile->GetPath().BaseName().value());
   EXPECT_FALSE(profile->IsOffTheRecord());
 }
 
 // Verifies the cursor is not hidden at startup when user is logged in.
-IN_PROC_BROWSER_TEST_F(LoginUserTest, CursorShown) {
+IN_PROC_BROWSER_TEST_P(LoginUserTest, CursorShown) {
   EXPECT_TRUE(ash::Shell::GetInstance()->cursor_manager()->IsCursorVisible());
 }
 
 // After a guest login, we should get the OTR default profile.
-IN_PROC_BROWSER_TEST_F(LoginGuestTest, GuestIsOTR) {
+IN_PROC_BROWSER_TEST_P(LoginGuestTest, GuestIsOTR) {
   Profile* profile = browser()->profile();
   EXPECT_TRUE(profile->IsOffTheRecord());
   // Ensure there's extension service for this profile.
@@ -156,7 +166,7 @@ IN_PROC_BROWSER_TEST_F(LoginGuestTest, GuestIsOTR) {
 }
 
 // Verifies the cursor is not hidden at startup when running guest session.
-IN_PROC_BROWSER_TEST_F(LoginGuestTest, CursorShown) {
+IN_PROC_BROWSER_TEST_P(LoginGuestTest, CursorShown) {
   EXPECT_TRUE(ash::Shell::GetInstance()->cursor_manager()->IsCursorVisible());
 }
 
@@ -184,5 +194,13 @@ IN_PROC_BROWSER_TEST_F(LoginSigninTest, WebUIVisible) {
       runner->QuitClosure());
   runner->Run();
 }
+
+INSTANTIATE_TEST_CASE_P(LoginUserTestInstantiation,
+                        LoginUserTest,
+                        testing::Bool());
+
+INSTANTIATE_TEST_CASE_P(LoginGuestTestInstantiation,
+                        LoginGuestTest,
+                        testing::Bool());
 
 }  // namespace

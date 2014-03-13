@@ -27,6 +27,11 @@
 #include "net/url_request/url_request_status.h"
 #include "net/url_request/url_request_test_util.h"
 
+#if defined(OS_CHROMEOS)
+#include "base/prefs/pref_service.h"
+#include "chrome/common/pref_names.h"
+#endif
+
 using testing::InvokeWithoutArgs;
 using testing::Return;
 using testing::AtLeast;
@@ -354,6 +359,12 @@ class LocalDiscoveryUITest : public WebUIBrowserTest {
     SigninManagerBase* signin_manager =
         SigninManagerFactory::GetForProfile(browser()->profile());
 
+#if defined(OS_CHROMEOS)
+    // Chrome OS initializes prefs::kGoogleServicesUsername to "stub user" so
+    // we need to override it as well.
+    browser()->profile()->GetPrefs()->
+        SetString(prefs::kGoogleServicesUsername, kSampleUser);
+#endif
     DCHECK(signin_manager);
     signin_manager->SetAuthenticatedUsername(kSampleUser);
 

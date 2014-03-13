@@ -9,6 +9,7 @@
 #include "base/run_loop.h"
 #include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
@@ -17,14 +18,31 @@
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 
+#if defined(OS_CHROMEOS)
+#include "base/command_line.h"
+#include "chrome/common/chrome_switches.h"
+#endif
+
+#if defined(OS_CHROMEOS)
+// TODO(nkostylev): Cleanup this code once multi-profiles are enabled by
+// default on CrOS. http://crbug.com/351655
+class SessionCrashedInfoBarDelegateUnitTest :
+    public BrowserWithTestWindowTest,
+    public testing::WithParamInterface<bool> {
+#else
 class SessionCrashedInfoBarDelegateUnitTest : public BrowserWithTestWindowTest {
+#endif
  public:
   virtual void SetUp() OVERRIDE {
-    pref_service.registry()
-        ->RegisterBooleanPref(prefs::kAllowFileSelectionDialogs, true);
-    pref_service.registry()->RegisterBooleanPref(prefs::kWasRestarted, false);
     static_cast<TestingBrowserProcess*>(g_browser_process)
         ->SetLocalState(&pref_service);
+    chrome::RegisterLocalState(pref_service.registry());
+
+#if defined(OS_CHROMEOS)
+    if (GetParam())
+      CommandLine::ForCurrentProcess()->AppendSwitch(switches::kMultiProfiles);
+#endif
+
     // This needs to be called after the local state is set, because it will
     // create a browser which will try to read from the local state.
     BrowserWithTestWindowTest::SetUp();
@@ -39,7 +57,11 @@ class SessionCrashedInfoBarDelegateUnitTest : public BrowserWithTestWindowTest {
   TestingPrefServiceSimple pref_service;
 };
 
+#if defined(OS_CHROMEOS)
+TEST_P(SessionCrashedInfoBarDelegateUnitTest, DetachingTabWithCrashedInfoBar) {
+#else
 TEST_F(SessionCrashedInfoBarDelegateUnitTest, DetachingTabWithCrashedInfoBar) {
+#endif
   SessionServiceFactory::SetForTestProfile(
       browser()->profile(),
       static_cast<SessionService*>(
@@ -90,3 +112,9 @@ TEST_F(SessionCrashedInfoBarDelegateUnitTest, DetachingTabWithCrashedInfoBar) {
   // Ramp down the test.
   tab_strip->CloseWebContentsAt(0, TabStripModel::CLOSE_NONE);
 }
+
+#if defined(OS_CHROMEOS)
+INSTANTIATE_TEST_CASE_P(SessionCrashedInfoBarDelegateUnitTestInstantiation,
+                        SessionCrashedInfoBarDelegateUnitTest,
+                        testing::Bool());
+#endif
