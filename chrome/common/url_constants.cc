@@ -527,6 +527,9 @@ const char kSyncEncryptionHelpURL[] =
 const char kSyncErrorsHelpURL[] =
     "https://support.google.com/chrome/?p=settings_sync_error";
 
+const char kEnterpriseManagedAccountHelpURL[] =
+    "https://support.google.com/chromebook/answer/1331549";
+
 #if defined(OS_CHROMEOS)
 const char kNaturalScrollHelpURL[] =
     "https://support.google.com/chromeos/?p=simple_scrolling";

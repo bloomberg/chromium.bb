@@ -211,6 +211,15 @@ be available for now. -->
   </translations>
   <release seq="1" allow_pseudo="false">
     <messages fallback_to_english="true">
+      <message name="IDS_PROFILES_DISCONNECT_MANAGED_PROFILE_TITLE" desc="Title of the disconnect managed profile dialog.">
+        Delete managed Chromium user
+      </message>
+      <message name="IDS_PROFILES_DISCONNECT_MANAGED_PROFILE_TEXT" desc="Message explaining to the user what will happen if they disconnect the managed profile.">
+        You are signed in with a managed account which is controlled by an administrator. If you disconnect from this account, this Chromium user and all associated Chromium data, such as apps, bookmarks, history, passwords, and other settings will be removed from this computer.
+      </message>
+      <message name="IDS_PROFILES_DISCONNECT_MANAGED_PROFILE_OK_BUTTON_LABEL" desc="The text to display on the button to confirm deleting the Chromium user profile.">
+        Delete Chromium user
+      </message>
       <message name="IDS_PRODUCT_NAME" desc="The Chrome application name">
         Chromium
       </message>

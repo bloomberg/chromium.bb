@@ -445,6 +445,10 @@ extern const char kSyncEncryptionHelpURL[];
 // The URL for the "Learn more" link when there is a sync error.
 extern const char kSyncErrorsHelpURL[];
 
+// The URL for the "Learn more" link displayed when disconnecting a managed
+// profile.
+extern const char kEnterpriseManagedAccountHelpURL[];
+
 #if defined(OS_CHROMEOS)
 // The URL for the "Learn more" link for natural scrolling on ChromeOS.
 extern const char kNaturalScrollHelpURL[];

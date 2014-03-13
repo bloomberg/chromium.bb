@@ -32,10 +32,12 @@
 #include "chrome/browser/ui/webui/options/options_handlers_helper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/generated_resources.h"
+#include "grit/google_chrome_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
 
@@ -100,6 +102,14 @@ void ManageProfileHandler::GetLocalizedValues(
     { "deleteProfileOK", IDS_PROFILES_DELETE_OK_BUTTON_LABEL },
     { "deleteProfileMessage", IDS_PROFILES_DELETE_MESSAGE },
     { "deleteManagedProfileAddendum", IDS_PROFILES_DELETE_MANAGED_ADDENDUM },
+    { "disconnectManagedProfileTitle",
+        IDS_PROFILES_DISCONNECT_MANAGED_PROFILE_TITLE },
+    { "disconnectManagedProfileOK",
+        IDS_PROFILES_DISCONNECT_MANAGED_PROFILE_OK_BUTTON_LABEL },
+    { "disconnectManagedProfileText",
+        IDS_PROFILES_DISCONNECT_MANAGED_PROFILE_TEXT },
+    { "disconnectManagedProfileLearnMore",
+        IDS_PROFILES_DISCONNECT_MANAGED_PROFILE_LEARN_MORE },
     { "createProfileTitle", IDS_PROFILES_CREATE_TITLE },
     { "createProfileInstructions", IDS_PROFILES_CREATE_INSTRUCTIONS },
     { "createProfileConfirm", IDS_PROFILES_CREATE_CONFIRM },
@@ -125,6 +135,9 @@ void ManageProfileHandler::GetLocalizedValues(
       "disableCreateExistingManagedUsers",
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableCreateExistingManagedUsers));
+
+  localized_strings->SetString("enterpriseManagedAccountHelpURL",
+                               chrome::kEnterpriseManagedAccountHelpURL);
 }
 
 void ManageProfileHandler::InitializeHandler() {

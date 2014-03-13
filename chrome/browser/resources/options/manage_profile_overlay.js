@@ -59,6 +59,7 @@ cr.define('options', function() {
       };
 
       $('manage-profile-cancel').onclick =
+          $('disconnect-managed-profile-cancel').onclick =
           $('delete-profile-cancel').onclick = function(event) {
         OptionsPage.closeOverlay();
       };
@@ -75,6 +76,12 @@ cr.define('options', function() {
       $('remove-shortcut-button').onclick = function(event) {
         chrome.send('removeProfileShortcut', [self.profileInfo_.filePath]);
       };
+
+      $('disconnect-managed-profile-ok').onclick = function(event) {
+        OptionsPage.closeOverlay();
+        chrome.send('deleteProfile',
+                    [BrowserOptions.getCurrentProfile().filePath]);
+      }
 
       $('create-profile-managed-signed-in-learn-more-link').onclick =
           function(event) {
@@ -458,6 +465,7 @@ cr.define('options', function() {
       $('manage-profile-overlay-create').hidden = true;
       $('manage-profile-overlay-manage').hidden = false;
       $('manage-profile-overlay-delete').hidden = true;
+      $('manage-profile-overlay-disconnect-managed').hidden = true;
       $('manage-profile-name').disabled = profileInfo.isManaged;
       this.hideErrorBubble_('manage');
     },
@@ -484,12 +492,28 @@ cr.define('options', function() {
       $('manage-profile-overlay-create').hidden = true;
       $('manage-profile-overlay-manage').hidden = true;
       $('manage-profile-overlay-delete').hidden = false;
+      $('manage-profile-overlay-disconnect-managed').hidden = true;
       $('delete-profile-icon').style.content =
           getProfileAvatarIcon(profileInfo.iconURL);
       $('delete-profile-text').textContent =
           loadTimeData.getStringF('deleteProfileMessage',
                                   elide(profileInfo.name, /* maxLength */ 50));
       $('delete-managed-profile-addendum').hidden = !profileInfo.isManaged;
+
+      // Because this dialog isn't useful when refreshing or as part of the
+      // history, don't create a history entry for it when showing.
+      OptionsPage.showPageByName('manageProfile', false);
+    },
+
+    /**
+     * Display the "Disconnect Managed Profile" dialog.
+     * @private
+     */
+    showDisconnectManagedProfileDialog_: function() {
+      $('manage-profile-overlay-create').hidden = true;
+      $('manage-profile-overlay-manage').hidden = true;
+      $('manage-profile-overlay-delete').hidden = true;
+      $('manage-profile-overlay-disconnect-managed').hidden = false;
 
       // Because this dialog isn't useful when refreshing or as part of the
       // history, don't create a history entry for it when showing.
@@ -515,6 +539,7 @@ cr.define('options', function() {
     'setProfileName',
     'showManageDialog',
     'showDeleteDialog',
+    'showDisconnectManagedProfileDialog',
     'showCreateDialog',
   ].forEach(function(name) {
     ManageProfileOverlay[name] = function() {
@@ -556,6 +581,7 @@ cr.define('options', function() {
       $('manage-profile-overlay-create').hidden = false;
       $('manage-profile-overlay-manage').hidden = true;
       $('manage-profile-overlay-delete').hidden = true;
+      $('manage-profile-overlay-disconnect-managed').hidden = true;
       $('create-profile-instructions').textContent =
          loadTimeData.getStringF('createProfileInstructions');
       this.hideErrorBubble_();

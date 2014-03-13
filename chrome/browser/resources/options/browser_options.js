@@ -39,6 +39,14 @@ cr.define('options', function() {
     signedIn_: false,
 
     /**
+     * Indicates whether signing out is allowed or whether a complete profile
+     * wipe is required to remove the current enterprise account.
+     * @type {boolean}
+     * @private
+     */
+    signoutAllowed_: true,
+
+    /**
      * Keeps track of whether |onShowHomeButtonChanged_| has been called. See
      * |onShowHomeButtonChanged_|.
      * @type {boolean}
@@ -105,12 +113,16 @@ cr.define('options', function() {
       this.updateSyncState_(loadTimeData.getValue('syncData'));
 
       $('start-stop-sync').onclick = function(event) {
-        if (self.signedIn_)
-          SyncSetupOverlay.showStopSyncingUI();
-        else if (cr.isChromeOS)
+        if (self.signedIn_) {
+          if (self.signoutAllowed_)
+            SyncSetupOverlay.showStopSyncingUI();
+          else
+            ManageProfileOverlay.showDisconnectManagedProfileDialog();
+        } else if (cr.isChromeOS) {
           SyncSetupOverlay.showSetupUI();
-        else
+        } else {
           SyncSetupOverlay.startSignIn();
+        }
       };
       $('customize-sync').onclick = function(event) {
         SyncSetupOverlay.showSetupUI();
@@ -840,8 +852,8 @@ cr.define('options', function() {
       // Disable the "sign in" button if we're currently signing in, or if we're
       // already signed in and signout is not allowed.
       var signInButton = $('start-stop-sync');
-      signInButton.disabled = syncData.setupInProgress ||
-                              !syncData.signoutAllowed;
+      signInButton.disabled = syncData.setupInProgress;
+      this.signoutAllowed_ = syncData.signoutAllowed;
       if (!syncData.signoutAllowed)
         $('start-stop-sync-indicator').setAttribute('controlled-by', 'policy');
       else
