@@ -94,7 +94,7 @@ class QuadCullerTest : public testing::Test {
                    OcclusionTracker<LayerImpl>* occlusion_tracker) {
     occlusion_tracker->EnterLayer(*it);
     QuadCuller quad_culler(
-        quad_list, shared_state_list, layer, *occlusion_tracker, false, false);
+        quad_list, shared_state_list, layer, *occlusion_tracker, false);
     AppendQuadsData data;
     layer->AppendQuads(&quad_culler, &data);
     occlusion_tracker->LeaveLayer(*it);
@@ -646,7 +646,6 @@ TEST_F(QuadCullerTest, PartialCullingNotDestroyed) {
                     &shared_state_list,
                     dummy_layer.get(),
                     occlusion_tracker,
-                    false,
                     false);
 
   SharedQuadState* sqs = culler.UseSharedQuadState(SharedQuadState::Create());
@@ -722,7 +721,6 @@ TEST_F(QuadCullerTest, PartialCullingWithOcclusionNotDestroyed) {
                     &shared_state_list,
                     dummy_layer.get(),
                     occlusion_tracker,
-                    false,
                     false);
 
   SharedQuadState* sqs = culler.UseSharedQuadState(SharedQuadState::Create());

@@ -53,9 +53,6 @@ class DebugColors {
   static SkColor MissingTileBorderColor();
   static int MissingTileBorderWidth(const LayerTreeImpl* tree_impl);
 
-  static SkColor CulledTileBorderColor();
-  static int CulledTileBorderWidth(const LayerTreeImpl* tree_impl);
-
   static SkColor SolidColorTileBorderColor();
   static int SolidColorTileBorderWidth(const LayerTreeImpl* tree_impl);
 

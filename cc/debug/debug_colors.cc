@@ -122,14 +122,6 @@ int DebugColors::MissingTileBorderWidth(const LayerTreeImpl* tree_impl) {
   return Scale(1, tree_impl);
 }
 
-// Culled tile borders are brown.
-SkColor DebugColors::CulledTileBorderColor() {
-  return SkColorSetARGB(120, 160, 100, 0);
-}
-int DebugColors::CulledTileBorderWidth(const LayerTreeImpl* tree_impl) {
-  return Scale(1, tree_impl);
-}
-
 // Solid color tile borders are grey.
 SkColor DebugColors::SolidColorTileBorderColor() {
   return SkColorSetARGB(128, 128, 128, 128);

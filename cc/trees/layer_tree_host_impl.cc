@@ -567,7 +567,6 @@ static void AppendQuadsForLayer(
                          &target_render_pass->shared_quad_state_list,
                          layer,
                          occlusion_tracker,
-                         layer->ShowDebugBorders(),
                          for_surface);
   layer->AppendQuads(&quad_culler, append_quads_data);
 }
@@ -583,7 +582,6 @@ static void AppendQuadsForRenderSurfaceLayer(
                          &target_render_pass->shared_quad_state_list,
                          layer,
                          occlusion_tracker,
-                         layer->ShowDebugBorders(),
                          for_surface);
 
   bool is_replica = false;
@@ -632,7 +630,6 @@ static void AppendQuadsToFillScreen(
                          &target_render_pass->shared_quad_state_list,
                          root_layer,
                          occlusion_tracker,
-                         root_layer->ShowDebugBorders(),
                          for_surface);
 
   // Manually create the quad state for the gutter quads, as the root layer

@@ -19,15 +19,12 @@ QuadCuller::QuadCuller(QuadList* quad_list,
                        SharedQuadStateList* shared_quad_state_list,
                        const LayerImpl* layer,
                        const OcclusionTracker<LayerImpl>& occlusion_tracker,
-                       bool show_culling_with_debug_border_quads,
                        bool for_surface)
     : quad_list_(quad_list),
       shared_quad_state_list_(shared_quad_state_list),
       layer_(layer),
       occlusion_tracker_(occlusion_tracker),
       current_shared_quad_state_(NULL),
-      show_culling_with_debug_border_quads_(
-          show_culling_with_debug_border_quads),
       for_surface_(for_surface) {}
 
 SharedQuadState* QuadCuller::UseSharedQuadState(
@@ -44,29 +41,10 @@ static inline bool AppendQuadInternal(
     const gfx::Rect& culled_rect,
     QuadList* quad_list,
     const OcclusionTracker<LayerImpl>& occlusion_tracker,
-    const LayerImpl* layer,
-    bool create_debug_border_quads) {
+    const LayerImpl* layer) {
   bool keep_quad = !culled_rect.IsEmpty();
-  if (keep_quad)
-    draw_quad->visible_rect = culled_rect;
-
   if (keep_quad) {
-    if (create_debug_border_quads && !draw_quad->IsDebugQuad() &&
-        draw_quad->visible_rect != draw_quad->rect) {
-      SkColor color = DebugColors::CulledTileBorderColor();
-      float width = DebugColors::CulledTileBorderWidth(
-          layer ? layer->layer_tree_impl() : NULL);
-      scoped_ptr<DebugBorderDrawQuad> debug_border_quad =
-          DebugBorderDrawQuad::Create();
-      debug_border_quad->SetNew(draw_quad->shared_quad_state,
-                                draw_quad->visible_rect,
-                                draw_quad->visible_rect,
-                                color,
-                                width);
-      quad_list->push_back(debug_border_quad.PassAs<DrawQuad>());
-    }
-
-    // Pass the quad after we're done using it.
+    draw_quad->visible_rect = culled_rect;
     quad_list->push_back(draw_quad.Pass());
   }
   return keep_quad;
@@ -88,12 +66,8 @@ bool QuadCuller::MaybeAppend(scoped_ptr<DrawQuad> draw_quad) {
                                                  draw_quad->quadTransform());
   }
 
-  return AppendQuadInternal(draw_quad.Pass(),
-                            culled_rect,
-                            quad_list_,
-                            occlusion_tracker_,
-                            layer_,
-                            show_culling_with_debug_border_quads_);
+  return AppendQuadInternal(
+      draw_quad.Pass(), culled_rect, quad_list_, occlusion_tracker_, layer_);
 }
 
 }  // namespace cc

@@ -21,7 +21,6 @@ class CC_EXPORT QuadCuller : public QuadSink {
              SharedQuadStateList* shared_quad_state_list,
              const LayerImpl* layer,
              const OcclusionTracker<LayerImpl>& occlusion_tracker,
-             bool show_culling_with_debug_border_quads,
              bool for_surface);
   virtual ~QuadCuller() {}
 
@@ -37,7 +36,6 @@ class CC_EXPORT QuadCuller : public QuadSink {
   const OcclusionTracker<LayerImpl>& occlusion_tracker_;
 
   SharedQuadState* current_shared_quad_state_;
-  bool show_culling_with_debug_border_quads_;
   bool for_surface_;
 
   DISALLOW_COPY_AND_ASSIGN(QuadCuller);
