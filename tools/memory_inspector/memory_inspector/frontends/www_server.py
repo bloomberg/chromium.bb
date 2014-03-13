@@ -100,6 +100,7 @@ class AjaxHandler(UriHandler):
                      ('Expires', 'Fri, 19 Sep 1986 05:00:00 GMT')]
     return http_code, headers + extra_headers, serialized_content
 
+
 @AjaxHandler('/ajax/backends')
 def _ListBackends(args, req_vars):  # pylint: disable=W0613
   return _HTTP_OK, [], [backend.name for backend in backends.ListBackends()]
@@ -117,6 +118,48 @@ def _ListDevices(args, req_vars):  # pylint: disable=W0613
     resp += [{'backend': device.backend.name,
               'id': device.id,
               'name': device.name}]
+  return _HTTP_OK, [], resp
+
+
+@AjaxHandler(r'/ajax/dump/mmap/(\w+)/(\w+)/(\d+)')
+def _DumpMmapsForProcess(args, req_vars):  # pylint: disable=W0613
+  """Dumps memory maps for a process.
+
+  The response is formatted according to the Google Charts DataTable format.
+  """
+  process = _GetProcess(args)
+  if not process:
+    return _HTTP_GONE, [], 'Device not found or process died'
+  mmap = process.DumpMemoryMaps()
+  resp = {
+      'cols': [
+          {'label': 'Start', 'type':'string'},
+          {'label': 'End', 'type':'string'},
+          {'label': 'Length Kb', 'type':'number'},
+          {'label': 'Prot', 'type':'string'},
+          {'label': 'Priv. Dirty Kb', 'type':'number'},
+          {'label': 'Priv. Clean Kb', 'type':'number'},
+          {'label': 'Shared Dirty Kb', 'type':'number'},
+          {'label': 'Shared Clean Kb', 'type':'number'},
+          {'label': 'File', 'type':'string'},
+          {'label': 'Offset', 'type':'number'},
+          {'label': 'Resident Pages', 'type':'string'},
+        ],
+      'rows': []}
+  for entry in mmap.entries:
+    resp['rows'] += [{'c': [
+        {'v': '%08x' % entry.start, 'f': None},
+        {'v': '%08x' % entry.end, 'f': None},
+        {'v': entry.len / 1024, 'f': None},
+        {'v': entry.prot_flags, 'f': None},
+        {'v': entry.priv_dirty_bytes / 1024, 'f': None},
+        {'v': entry.priv_clean_bytes / 1024, 'f': None},
+        {'v': entry.shared_dirty_bytes / 1024, 'f': None},
+        {'v': entry.shared_clean_bytes / 1024, 'f': None},
+        {'v': entry.mapped_file, 'f': None},
+        {'v': entry.mapped_offset, 'f': None},
+        {'v': '[%s]' % (','.join(map(str, entry.resident_pages))), 'f': None},
+    ]}]
   return _HTTP_OK, [], resp
 
 

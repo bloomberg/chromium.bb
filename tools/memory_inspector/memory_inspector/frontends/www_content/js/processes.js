@@ -39,6 +39,7 @@ this.refreshPsTable = function() {
     this.psTable_ = new google.visualization.Table($('#ps-table')[0]);
     google.visualization.events.addListener(
         this.psTable_, 'select', this.onPsTableRowSelect_.bind(this));
+    $('#ps-table').on('dblclick', this.onPsTableDblClick_.bind(this));
   };
 
   var showAllParam = $('#ps-show_all').prop('checked') ? '?all=1' : '';
@@ -69,6 +70,10 @@ this.onPsTableRowSelect_ = function() {
   var pid = this.psTableData_.getValue(sel[0].row, 0);
   this.selProcUri_ = targetDevUri + '/' + pid;
   this.startSelectedProcessStats();
+};
+
+this.onPsTableDblClick_ = function() {
+  mmap.dumpMmaps(this.getSelectedProcessURI());
 };
 
 this.onPsAjaxResponse_ = function(data) {

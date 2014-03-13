@@ -10,6 +10,7 @@
   <title>Memory Inspector</title>
   <link href='//fonts.googleapis.com/css?family=Coda' rel='stylesheet' type='text/css'>
   <link href="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/themes/flick/jquery-ui.css" rel="stylesheet">
+  <link href="/mmap.css" rel="stylesheet" type="text/css">
   <link href="/rootUi.css" rel="stylesheet" type="text/css">
   <link href="/settings.css" rel="stylesheet" type="text/css">
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
@@ -20,6 +21,7 @@
                 { packages: ['corechart', 'table', 'orgchart', 'treemap'] });
   </script>
   <script src="/js/devices.js"></script>
+  <script src="/js/mmap.js"></script>
   <script src="/js/rootUi.js"></script>
   <script src="/js/processes.js"></script>
   <script src="/js/settings.js"></script>
@@ -92,19 +94,33 @@
           <header>
             <b>Filters: </b>
             <span>
-            Prot. flags: <input type="text" id="mm-filter-prot" />
-            File name: <input type="text" id="mm-filter-file" />
+            <input type="button" id="mm-filter-clear" value="Reset">
+            Prot. flags: <input type="text" id="mm-filter-prot">
+            File name: <input type="text" id="mm-filter-file">
+            <i>(Just press enter to apply filters)</i>
             </span>
           </header>
           <header>
-            <b>Totals: </b>
-            <b>Priv dirty (Kb): </b><span id="memmaps-totals-priv-dirty">0</span>
-            <b>Priv clean (Kb): </b><span id="memmaps-totals-priv-clean">0</span>
-            <b>Shared dirty (Kb): </b><span id="memmaps-totals-shared-dirty">0</span>
-            <b>Shared clean (Kb): </b><span id="memmaps-totals-shared-clean">0</span>
+            <b>Lookup addr: </b>
+            <input type="text" id="mm-lookup-addr">
+            <span><b>Offset in mapping:</b></span>
+            <span id="mm-lookup-offset">0</span>
+            </span>
+          </header>
+          <hr>
+          <header>
+            <b>Totals [Kb]: </b>
+            <b>Priv dirty: </b><span id="mm-totals-priv-dirty">0</span>
+            <b>Priv clean: </b><span id="mm-totals-priv-clean">0</span>
+            <b>Shared dirty: </b><span id="mm-totals-shared-dirty">0</span>
+            <b>Shared clean: </b><span id="mm-totals-shared-clean">0</span>
           </header>
           <header>
-            Note: totals from this filtered table might not match the totals in the treemap, as table filtering is not hierarchical.
+            <b>Selected [Kb]: </b>
+            <b>Priv dirty: </b><span id="mm-selected-priv-dirty">0</span>
+            <b>Priv clean: </b><span id="mm-selected-priv-clean">0</span>
+            <b>Shared dirty: </b><span id="mm-selected-shared-dirty">0</span>
+            <b>Shared clean: </b><span id="mm-selected-shared-clean">0</span>
           </header>
           <div id="mm-table"></div>
         </div>
@@ -130,17 +146,17 @@
       </div>
 
       <div id="tabs-archive">
-        <input type="button" value="Refresh" id="archive-refresh" />
-        <input type="button" value="Analyze Memory maps" id="archive-classify_mmaps" />
-        <input type="button" value="Analyze Native Heap" id="archive-classify_native" />
+        <input type="button" value="Refresh" id="archive-refresh">
+        <input type="button" value="Analyze Memory maps" id="archive-classify_mmaps">
+        <input type="button" value="Analyze Native Heap" id="archive-classify_native">
         <div id="archive">
         </div>
       </div>
 
       <div id="tabs-settings">
         <header>
-          <input type="button" value="Reload" id="settings-load" />
-          <input type="button" value="Store" id="settings-store" />
+          <input type="button" value="Reload" id="settings-load">
+          <input type="button" value="Store" id="settings-store">
         </header>
         <div id="settings-container">
         </div>

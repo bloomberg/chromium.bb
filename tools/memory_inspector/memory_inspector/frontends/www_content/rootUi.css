@@ -141,3 +141,7 @@ input[type="text"] {
   display: inline-block;
   height: 20em;
 }
+
+table {
+  -webkit-user-select: none;
+}

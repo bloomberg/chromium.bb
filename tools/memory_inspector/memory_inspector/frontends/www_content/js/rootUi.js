@@ -36,13 +36,23 @@ this.showTab = function(tabId) {
     $('#tabs').tabs('option', 'active', index - 1);
 };
 
-this.showDialog = function(message) {
+this.showDialog = function(content, title) {
   var dialog = $("#message_dialog");
+  title = title || '';
   if (dialog.length == 0) {
     dialog = $('<div id="message_dialog"/>');
     $('body').append(dialog);
   }
-  $("#message_dialog").text(message).dialog({ modal: true });
+  if (typeof(content) == 'string')
+    dialog.empty().text(content);
+  else
+    dialog.empty().append(content);  // Assume is a jQuery DOM object.
+
+  dialog.dialog({modal: true, title: title, height:'auto', width:'auto'});
+};
+
+this.hideDialog = function() {
+  $("#message_dialog").dialog('close');
 };
 
 $(document).ready(this.onDomReady_.bind(this));
