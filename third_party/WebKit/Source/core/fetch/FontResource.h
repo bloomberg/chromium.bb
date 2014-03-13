@@ -65,6 +65,9 @@ public:
     SVGFontElement* getSVGFontById(const String&) const;
 #endif
 
+protected:
+    virtual bool isSafeToUnlock() const OVERRIDE;
+
 private:
     virtual void checkNotify() OVERRIDE;
     void fontLoadWaitLimitCallback(Timer<FontResource>*);

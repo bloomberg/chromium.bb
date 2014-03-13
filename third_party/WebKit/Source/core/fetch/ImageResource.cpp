@@ -131,12 +131,13 @@ void ImageResource::switchClientsToRevalidatedResource()
 
 bool ImageResource::isSafeToUnlock() const
 {
-    return !m_image || (m_image->hasOneRef() && m_image->isBitmapImage());
+    // Note that |m_image| holds a reference to |m_data| in addition to the one held by the Resource parent class.
+    return !m_image || (m_image->hasOneRef() && m_data->refCount() == 2);
 }
 
 void ImageResource::destroyDecodedDataIfPossible()
 {
-    if (isSafeToUnlock() && !hasClients() && !isLoading()) {
+    if (!hasClients() && !isLoading() && (!m_image || (m_image->hasOneRef() && m_image->isBitmapImage()))) {
         m_image = nullptr;
         setDecodedSize(0);
     } else if (m_image && !errorOccurred()) {

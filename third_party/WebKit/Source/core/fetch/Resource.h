@@ -243,6 +243,7 @@ public:
 
     virtual bool canReuse(const ResourceRequest&) const { return true; }
 
+    // Used by the MemoryCache to reduce the memory consumption of the entry.
     void prune();
 
     static const char* resourceTypeToString(Type, const FetchInitiatorInfo&);

@@ -343,15 +343,13 @@ void Resource::willSendRequest(ResourceRequest& request, const ResourceResponse&
 
 bool Resource::unlock()
 {
-    if (hasClients() || m_proxyResource || m_resourceToRevalidate || !m_loadFinishTime || !isSafeToUnlock())
-        return false;
-
     if (!m_data)
         return false;
+
     if (!m_data->isLocked())
         return true;
 
-    if (!m_data->hasOneRef())
+    if (!inCache() || hasClients() || m_handleCount > 1 || m_proxyResource || m_resourceToRevalidate || !m_loadFinishTime || !isSafeToUnlock())
         return false;
 
     m_data->unlock();
@@ -520,6 +518,8 @@ void Resource::allClientsRemoved()
         cancelTimerFired(&m_cancelTimer);
     else if (!m_cancelTimer.isActive())
         m_cancelTimer.startOneShot(0, FROM_HERE);
+
+    unlock();
 }
 
 void Resource::cancelTimerFired(Timer<Resource>* timer)
@@ -796,8 +796,13 @@ void Resource::unregisterHandle(ResourcePtrBase* h)
     if (m_resourceToRevalidate)
         m_handlesToRevalidate.remove(h);
 
-    if (!m_handleCount)
-        deleteIfPossible();
+    if (!m_handleCount) {
+        if (deleteIfPossible())
+            return;
+        unlock();
+    } else if (m_handleCount == 1 && inCache()) {
+        unlock();
+    }
 }
 
 bool Resource::canReuseRedirectChain() const

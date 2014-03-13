@@ -110,12 +110,12 @@ void CSSStyleSheetResource::checkNotify()
 
 bool CSSStyleSheetResource::isSafeToUnlock() const
 {
-    return m_parsedStyleSheetCache;
+    return m_data->hasOneRef();
 }
 
 void CSSStyleSheetResource::destroyDecodedDataIfPossible()
 {
-    if (!isSafeToUnlock())
+    if (!m_parsedStyleSheetCache)
         return;
 
     m_parsedStyleSheetCache->removedFromMemoryCache();

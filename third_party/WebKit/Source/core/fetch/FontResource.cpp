@@ -160,6 +160,11 @@ SVGFontElement* FontResource::getSVGFontById(const String& fontName) const
 }
 #endif
 
+bool FontResource::isSafeToUnlock() const
+{
+    return m_data->hasOneRef();
+}
+
 void FontResource::fontLoadWaitLimitCallback(Timer<FontResource>*)
 {
     if (!isLoading())
