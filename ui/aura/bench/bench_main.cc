@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#if defined(USE_X11)
+#include <X11/Xlib.h>
+#endif
+
 #include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -25,7 +29,7 @@
 #include "ui/compositor/compositor_observer.h"
 #include "ui/compositor/debug_utils.h"
 #include "ui/compositor/layer.h"
-#include "ui/compositor/test/context_factories_for_test.h"
+#include "ui/compositor/test/in_process_context_factory.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/skia_util.h"
@@ -287,11 +291,18 @@ int main(int argc, char** argv) {
 
   base::AtExitManager exit_manager;
 
+#if defined(USE_X11)
+  // This demo uses InProcessContextFactory which uses X on a separate Gpu
+  // thread.
+  XInitThreads();
+#endif
+
   gfx::GLSurface::InitializeOneOff();
 
   // The ContextFactory must exist before any Compositors are created.
-  bool enable_pixel_output = true;
-  ui::InitializeContextFactoryForTests(enable_pixel_output);
+  scoped_ptr<ui::InProcessContextFactory> context_factory(
+      new ui::InProcessContextFactory());
+  ui::ContextFactory::SetInstance(context_factory.get());
 
   base::i18n::InitializeICU();
 
