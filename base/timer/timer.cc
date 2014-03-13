@@ -85,6 +85,14 @@ Timer::~Timer() {
   StopAndAbandon();
 }
 
+bool Timer::IsRunning() const {
+  return is_running_;
+}
+
+TimeDelta Timer::GetCurrentDelay() const {
+  return delay_;
+}
+
 void Timer::Start(const tracked_objects::Location& posted_from,
                   TimeDelta delay,
                   const base::Closure& user_task) {

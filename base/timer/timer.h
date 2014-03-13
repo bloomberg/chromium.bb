@@ -82,28 +82,24 @@ class BASE_EXPORT Timer {
   virtual ~Timer();
 
   // Returns true if the timer is running (i.e., not stopped).
-  bool IsRunning() const {
-    return is_running_;
-  }
+  virtual bool IsRunning() const;
 
   // Returns the current delay for this timer.
-  TimeDelta GetCurrentDelay() const {
-    return delay_;
-  }
+  virtual TimeDelta GetCurrentDelay() const;
 
   // Start the timer to run at the given |delay| from now. If the timer is
   // already running, it will be replaced to call the given |user_task|.
-  void Start(const tracked_objects::Location& posted_from,
+  virtual void Start(const tracked_objects::Location& posted_from,
              TimeDelta delay,
              const base::Closure& user_task);
 
   // Call this method to stop and cancel the timer.  It is a no-op if the timer
   // is not running.
-  void Stop();
+  virtual void Stop();
 
   // Call this method to reset the timer delay. The user_task_ must be set. If
   // the timer is not running, this will start it by posting a task.
-  void Reset();
+  virtual void Reset();
 
   const base::Closure& user_task() const { return user_task_; }
   const TimeTicks& desired_run_time() const { return desired_run_time_; }
@@ -114,6 +110,9 @@ class BASE_EXPORT Timer {
   void SetTaskInfo(const tracked_objects::Location& posted_from,
                    TimeDelta delay,
                    const base::Closure& user_task);
+
+  bool retain_user_task() const { return retain_user_task_; }
+  bool is_repeating() const { return is_repeating_; }
 
  private:
   friend class BaseTimerTaskInternal;
@@ -197,7 +196,7 @@ class BaseTimerMethodPointer : public Timer {
   // Start the timer to run at the given |delay| from now. If the timer is
   // already running, it will be replaced to call a task formed from
   // |reviewer->*method|.
-  void Start(const tracked_objects::Location& posted_from,
+  virtual void Start(const tracked_objects::Location& posted_from,
              TimeDelta delay,
              Receiver* receiver,
              ReceiverMethod method) {

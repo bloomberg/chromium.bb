@@ -649,6 +649,8 @@
           'timer/hi_res_timer_manager.h',
           'timer/hi_res_timer_manager_posix.cc',
           'timer/hi_res_timer_manager_win.cc',
+          'timer/mock_timer.cc',
+          'timer/mock_timer.h',
           'timer/timer.cc',
           'timer/timer.h',
           'tracked_objects.cc',

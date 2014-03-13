@@ -636,6 +636,7 @@
         'time/time_unittest.cc',
         'time/time_win_unittest.cc',
         'timer/hi_res_timer_manager_unittest.cc',
+        'timer/mock_timer_unittest.cc',
         'timer/timer_unittest.cc',
         'tools_sanity_unittest.cc',
         'tracked_objects_unittest.cc',
