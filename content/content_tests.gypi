@@ -1340,6 +1340,7 @@
             'dependencies': [
               'content.gyp:content_common',
               '../base/base.gyp:base',
+              '../build/linux/system.gyp:x11',
               '../media/media.gyp:media',
               '../testing/gtest.gyp:gtest',
               '../third_party/libyuv/libyuv.gyp:libyuv',
@@ -1351,11 +1352,6 @@
             'include_dirs': [
               '<(DEPTH)/third_party/libva',
             ],
-            'link_settings': {
-              'libraries': [
-                '-lX11',
-              ],
-            },
           },
         ]
     }],
