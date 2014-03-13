@@ -66,7 +66,7 @@ void ServiceWorkerContextCore::RegisterServiceWorker(
     const GURL& script_url,
     int source_process_id,
     const RegistrationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   job_coordinator_->Register(
       pattern,
@@ -81,7 +81,7 @@ void ServiceWorkerContextCore::UnregisterServiceWorker(
     const GURL& pattern,
     int source_process_id,
     const UnregistrationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   job_coordinator_->Unregister(pattern, source_process_id, callback);
 }

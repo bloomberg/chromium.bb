@@ -365,6 +365,33 @@ bool BrowserThread::CurrentlyOn(ID identifier) {
              base::MessageLoop::current();
 }
 
+static const char* GetThreadName(BrowserThread::ID thread) {
+  if (BrowserThread::UI < thread && thread < BrowserThread::ID_COUNT)
+    return g_browser_thread_names[thread];
+  if (thread == BrowserThread::UI)
+    return "Chrome_UIThread";
+  return "Unknown Thread";
+}
+
+// static
+std::string BrowserThread::GetDCheckCurrentlyOnErrorMessage(ID expected) {
+  const std::string& message_loop_name =
+      base::MessageLoop::current()->thread_name();
+  ID actual_browser_thread;
+  const char* actual_name = "Unknown Thread";
+  if (!message_loop_name.empty()) {
+    actual_name = message_loop_name.c_str();
+  } else if (GetCurrentThreadIdentifier(&actual_browser_thread)) {
+    actual_name = GetThreadName(actual_browser_thread);
+  }
+  std::string result = "Must be called on ";
+  result += GetThreadName(expected);
+  result += "; actually called on ";
+  result += actual_name;
+  result += ".";
+  return result;
+}
+
 // static
 bool BrowserThread::IsMessageLoopValid(ID identifier) {
   if (g_globals == NULL)

@@ -10,14 +10,11 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/task_runner_util.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
-
-#if defined(UNIT_TEST)
-#include "base/logging.h"
-#endif  // UNIT_TEST
 
 namespace base {
 class MessageLoop;
@@ -29,6 +26,13 @@ namespace content {
 
 class BrowserThreadDelegate;
 class BrowserThreadImpl;
+
+// Use DCHECK_CURRENTLY_ON(BrowserThread::ID) to assert that a function can only
+// be called on the named BrowserThread.
+#define DCHECK_CURRENTLY_ON(thread_identifier)                      \
+  (DCHECK(::content::BrowserThread::CurrentlyOn(thread_identifier)) \
+   << ::content::BrowserThread::GetDCheckCurrentlyOnErrorMessage(   \
+          thread_identifier))
 
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserThread
@@ -188,7 +192,7 @@ class CONTENT_EXPORT BrowserThread {
   static bool IsThreadInitialized(ID identifier);
 
   // Callable on any thread.  Returns whether you're currently on a particular
-  // thread.
+  // thread.  To DCHECK this, use the DCHECK_CURRENTLY_ON() macro above.
   static bool CurrentlyOn(ID identifier);
 
   // Callable on any thread.  Returns whether the threads message loop is valid.
@@ -265,6 +269,9 @@ class CONTENT_EXPORT BrowserThread {
   struct DeleteOnIOThread : public DeleteOnThread<IO> { };
   struct DeleteOnFileThread : public DeleteOnThread<FILE> { };
   struct DeleteOnDBThread : public DeleteOnThread<DB> { };
+
+  // Returns an appropriate error message for when DCHECK_CURRENTLY_ON() fails.
+  static std::string GetDCheckCurrentlyOnErrorMessage(ID expected);
 
  private:
   friend class BrowserThreadImpl;
