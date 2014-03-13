@@ -26,6 +26,16 @@ class MetadataFetchTest(cros_test_lib.TestCase):
     metadata_dict = metadata._metadata_dict # pylint: disable=W0212
     self.assertEqual(metadata_dict['status']['status'], 'passed')
 
+class MetadataTest(cros_test_lib.TestCase):
+  """Tests the correctness of various metadata methods."""
+
+  def testGetDict(self):
+    starting_dict = {'key1' : 1,
+                     'key2' : '2',
+                     'cl_actions' : [('a', 1), ('b', 2)]}
+    metadata = cbuildbot_metadata.CBuildbotMetadata(starting_dict)
+    ending_dict = metadata.GetDict()
+    self.assertEqual(starting_dict, ending_dict)
 
 if __name__ == '__main__':
   cros_test_lib.main(level=logging.DEBUG)

@@ -62,7 +62,7 @@ class CBuildbotMetadata(object):
     # is potentially a multiprocess.lis. So, _cl_action_list needs to
     # be copied into a normal list.
     temp = self._metadata_dict.copy()
-    temp['cl_action'] = list(self._cl_action_list)
+    temp['cl_actions'] = list(self._cl_action_list)
     return temp
 
   def GetJSON(self):
