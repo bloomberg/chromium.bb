@@ -23,6 +23,19 @@
                     "optional": true,
                     "description": "Additional string argument to pass to test."
                   },
+                  "ftpServer": {
+                    "type": "object",
+                    "optional": true,
+                    "description": "Details on the FTP server used to mock network responses.  Will be set only if test calls ExtensionApiTest::StartFTPServer().",
+                    "properties": {
+                      "port": {
+                        "type": "integer",
+                        "description": "The port on which the FTP server is listening.",
+                        "minimum": 1024,
+                        "maximum": 65535
+                      }
+                    }
+                  },
                   "testServer": {
                     "type": "object",
                     "optional": true,

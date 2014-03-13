@@ -8,18 +8,26 @@ var testTabId;
 chrome.test.getConfig(function(config) {
 
   function rewriteURL(url) {
-    return url.replace(/PORT/, config.testServer.port);
+    var isFtp = /^ftp:/i.test(url);
+    var port = isFtp ? config.ftpServer.port : config.testServer.port;
+    return url.replace(/PORT/, port);
   }
 
   function doReq(domain, expectSuccess) {
     var url = rewriteURL(domain + ':PORT/extensions/test_file.txt');
 
     chrome.tabs.sendRequest(testTabId, url, function(response) {
+      if (response.thrownError) {
+        chrome.test.fail(response.thrownError);
+        return;
+      }
       if (expectSuccess) {
         chrome.test.assertEq('load', response.event);
-        chrome.test.assertEq(200, response.status);
+        if (/^https?:/i.test(url))
+          chrome.test.assertEq(200, response.status);
         chrome.test.assertEq('Hello!', response.text);
       } else {
+        chrome.test.assertEq('error', response.event);
         chrome.test.assertEq(0, response.status);
       }
 
@@ -61,6 +69,15 @@ chrome.test.getConfig(function(config) {
         // can still make requests to it since it's the page that the content
         // script is injected into.
         doReq('http://localhost', true);
+      },
+      function allowedFtpHostAllowed() {
+        doReq('ftp://127.0.0.1', true);
+      },
+      function disallowedFtpHostDisallowed() {
+        // The host is the same as the current page, but the scheme differs.
+        // The origin is not whitelisted, so the same origin policy must kick in
+        // and block the request.
+        doReq('ftp://localhost', false);
       }
     ]);
   });

@@ -6,5 +6,5 @@
   "background": {
     "page": "test.html"
   },
-  "permissions": ["http://a.com/", "http://*.b.com/"]
+  "permissions": ["http://a.com/", "http://*.b.com/", "ftp://127.0.0.1/*"]
 }

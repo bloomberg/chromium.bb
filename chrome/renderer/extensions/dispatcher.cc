@@ -1385,6 +1385,7 @@ void Dispatcher::AddOrRemoveOriginPermissions(
       content::kHttpsScheme,
       content::kFileScheme,
       content::kChromeUIScheme,
+      content::kFtpScheme,
     };
     for (size_t j = 0; j < arraysize(schemes); ++j) {
       if (i->MatchesScheme(schemes[j])) {
