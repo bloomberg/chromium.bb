@@ -128,7 +128,7 @@ class ProgressPrinterTest(GitCommonTestBase):
     fmt = '%(count)d/10'
     stream = self.FakeStream()
 
-    pp = self.gc.ProgressPrinter(fmt, enabled=True, stream=stream, period=0.01)
+    pp = self.gc.ProgressPrinter(fmt, enabled=True, fout=stream, period=0.01)
     with pp as inc:
       for _ in xrange(10):
         time.sleep(0.02)
@@ -189,6 +189,17 @@ class GitReadOnlyFunctionsTest(git_test_utils.GitRepoReadOnlyTestBase,
       self.repo.run(self.gc.hash_one, 'branch_D'),
       self.repo['D']
     )
+
+  def testStream(self):
+    items = set(self.repo.commit_map.itervalues())
+
+    def testfn():
+      for line in self.gc.stream('log', '--format=%H').xreadlines():
+        line = line.strip()
+        self.assertIn(line, items)
+        items.remove(line)
+
+    self.repo.run(testfn)
 
   def testCurrentBranch(self):
     self.repo.git('checkout', 'branch_D')

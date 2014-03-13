@@ -19,6 +19,7 @@ import binascii
 import contextlib
 import functools
 import logging
+import os
 import signal
 import sys
 import tempfile
@@ -139,7 +140,7 @@ def ScopedPool(*args, **kwargs):
 
 class ProgressPrinter(object):
   """Threaded single-stat status message printer."""
-  def __init__(self, fmt, enabled=None, stream=sys.stderr, period=0.5):
+  def __init__(self, fmt, enabled=None, fout=sys.stderr, period=0.5):
     """Create a ProgressPrinter.
 
     Use it as a context manager which produces a simple 'increment' method:
@@ -155,7 +156,7 @@ class ProgressPrinter(object):
         should go.
       enabled (bool) - If this is None, will default to True if
         logging.getLogger() is set to INFO or more verbose.
-      stream (file-like) - The stream to print status messages to.
+      fout (file-like) - The stream to print status messages to.
       period (float) - The time in seconds for the printer thread to wait
         between printing.
     """
@@ -168,7 +169,7 @@ class ProgressPrinter(object):
     self._count = 0
     self._dead = False
     self._dead_cond = threading.Condition()
-    self._stream = stream
+    self._stream = fout
     self._thread = threading.Thread(target=self._run)
     self._period = period
 
@@ -239,15 +240,34 @@ def run(*cmd, **kwargs):
 
   kwargs
     autostrip (bool) - Strip the output. Defaults to True.
-  Output string is always strip()'d.
   """
   autostrip = kwargs.pop('autostrip', True)
-  cmd = (GIT_EXE,) + cmd
-  logging.debug('Running %s', ' '.join(repr(tok) for tok in cmd))
-  ret = subprocess2.check_output(cmd, stderr=subprocess2.PIPE, **kwargs)
+
+  retstream, proc = stream_proc(*cmd, **kwargs)
+  ret = retstream.read()
+  retcode = proc.wait()
+  if retcode != 0:
+    raise subprocess2.CalledProcessError(retcode, cmd, os.getcwd(), ret, None)
+
   if autostrip:
     ret = (ret or '').strip()
   return ret
+
+
+def stream_proc(*cmd, **kwargs):
+  """Runs a git command. Returns stdout as a file.
+
+  If logging is DEBUG, we'll print the command before we run it.
+  """
+  cmd = (GIT_EXE,) + cmd
+  logging.debug('Running %s', ' '.join(repr(tok) for tok in cmd))
+  proc = subprocess2.Popen(cmd, stderr=subprocess2.VOID,
+                           stdout=subprocess2.PIPE, **kwargs)
+  return proc.stdout, proc
+
+
+def stream(*cmd, **kwargs):
+  return stream_proc(*cmd, **kwargs)[0]
 
 
 def hash_one(reflike):
