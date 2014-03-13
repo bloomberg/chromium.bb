@@ -1,0 +1,39 @@
+Tests filter query parsing.
+
+
+Keys: []
+Query: plain text
+Result: {"text":["plain text"],"filters":{}}
+
+Keys: ["single"]
+Query: single:value
+Result: {"text":[],"filters":{"single":"value"}}
+
+Keys: ["one","two"]
+Query: one:foo two:bar
+Result: {"text":[],"filters":{"one":"foo","two":"bar"}}
+
+Keys: ["key"]
+Query: bar key foo
+Result: {"text":["bar key foo"],"filters":{}}
+
+Keys: ["key"]
+Query: bar key:foo
+Result: {"text":["bar"],"filters":{"key":"foo"}}
+
+Keys: ["key"]
+Query: bar key:foo baz
+Result: {"text":["bar","baz"],"filters":{"key":"foo"}}
+
+Keys: ["key"]
+Query: bar baz key:foo goo zoo
+Result: {"text":["bar baz","goo zoo"],"filters":{"key":"foo"}}
+
+Keys: ["key"]
+Query: bar key:key:foo
+Result: {"text":["bar"],"filters":{"key":"key:foo"}}
+
+Keys: ["key"]
+Query: bar :key:foo baz
+Result: {"text":["bar :key:foo baz"],"filters":{}}
+
