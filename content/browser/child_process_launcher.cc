@@ -169,6 +169,7 @@ class ChildProcessLauncher::Context
       int child_process_id,
       SandboxedProcessLauncherDelegate* delegate,
       CommandLine* cmd_line) {
+    scoped_ptr<SandboxedProcessLauncherDelegate> delegate_deleter(delegate);
 #if defined(OS_WIN)
     bool launch_elevated = delegate->ShouldLaunchElevated();
 #elif defined(OS_ANDROID)
@@ -191,7 +192,6 @@ class ChildProcessLauncher::Context
       options.start_hidden = true;
       base::LaunchElevatedProcess(*cmd_line, options, &handle);
     } else {
-      scoped_ptr<SandboxedProcessLauncherDelegate> delegate_deleter(delegate);
       handle = StartSandboxedProcess(delegate, cmd_line);
     }
 #elif defined(OS_POSIX)
