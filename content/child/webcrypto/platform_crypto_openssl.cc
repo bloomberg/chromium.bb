@@ -63,8 +63,6 @@ const EVP_MD* GetDigest(blink::WebCryptoAlgorithmId id) {
   switch (id) {
     case blink::WebCryptoAlgorithmIdSha1:
       return EVP_sha1();
-    case blink::WebCryptoAlgorithmIdSha224:
-      return EVP_sha224();
     case blink::WebCryptoAlgorithmIdSha256:
       return EVP_sha256();
     case blink::WebCryptoAlgorithmIdSha384:

@@ -260,7 +260,6 @@ blink::WebCryptoAlgorithm GetDigestAlgorithm(base::DictionaryValue* dict,
     const char* name;
     blink::WebCryptoAlgorithmId id;
   } kDigestNameToId[] = {{"sha-1", blink::WebCryptoAlgorithmIdSha1},
-                         {"sha-224", blink::WebCryptoAlgorithmIdSha224},
                          {"sha-256", blink::WebCryptoAlgorithmIdSha256},
                          {"sha-384", blink::WebCryptoAlgorithmIdSha384},
                          {"sha-512", blink::WebCryptoAlgorithmIdSha512}, };

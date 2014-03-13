@@ -181,8 +181,6 @@ HASH_HashType WebCryptoAlgorithmToNSSHashType(
   switch (algorithm) {
     case blink::WebCryptoAlgorithmIdSha1:
       return HASH_AlgSHA1;
-    case blink::WebCryptoAlgorithmIdSha224:
-      return HASH_AlgSHA224;
     case blink::WebCryptoAlgorithmIdSha256:
       return HASH_AlgSHA256;
     case blink::WebCryptoAlgorithmIdSha384:
@@ -200,8 +198,6 @@ CK_MECHANISM_TYPE WebCryptoHashToHMACMechanism(
   switch (algorithm.id()) {
     case blink::WebCryptoAlgorithmIdSha1:
       return CKM_SHA_1_HMAC;
-    case blink::WebCryptoAlgorithmIdSha224:
-      return CKM_SHA224_HMAC;
     case blink::WebCryptoAlgorithmIdSha256:
       return CKM_SHA256_HMAC;
     case blink::WebCryptoAlgorithmIdSha384:
@@ -808,9 +804,6 @@ Status SignRsaSsaPkcs1v1_5(PrivateKey* key,
     case blink::WebCryptoAlgorithmIdSha1:
       sign_alg_tag = SEC_OID_PKCS1_SHA1_WITH_RSA_ENCRYPTION;
       break;
-    case blink::WebCryptoAlgorithmIdSha224:
-      sign_alg_tag = SEC_OID_PKCS1_SHA224_WITH_RSA_ENCRYPTION;
-      break;
     case blink::WebCryptoAlgorithmIdSha256:
       sign_alg_tag = SEC_OID_PKCS1_SHA256_WITH_RSA_ENCRYPTION;
       break;
@@ -848,9 +841,6 @@ Status VerifyRsaSsaPkcs1v1_5(PublicKey* key,
   switch (hash.id()) {
     case blink::WebCryptoAlgorithmIdSha1:
       hash_alg_tag = SEC_OID_SHA1;
-      break;
-    case blink::WebCryptoAlgorithmIdSha224:
-      hash_alg_tag = SEC_OID_SHA224;
       break;
     case blink::WebCryptoAlgorithmIdSha256:
       hash_alg_tag = SEC_OID_SHA256;

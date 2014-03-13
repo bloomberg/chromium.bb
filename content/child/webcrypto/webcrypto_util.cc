@@ -221,7 +221,6 @@ bool Base64DecodeUrlSafe(const std::string& input, std::string* output) {
 
 bool IsHashAlgorithm(blink::WebCryptoAlgorithmId alg_id) {
   return alg_id == blink::WebCryptoAlgorithmIdSha1 ||
-         alg_id == blink::WebCryptoAlgorithmIdSha224 ||
          alg_id == blink::WebCryptoAlgorithmIdSha256 ||
          alg_id == blink::WebCryptoAlgorithmIdSha384 ||
          alg_id == blink::WebCryptoAlgorithmIdSha512;
@@ -275,7 +274,6 @@ blink::WebCryptoAlgorithm CreateRsaOaepImportAlgorithm(
 unsigned int ShaBlockSizeBytes(blink::WebCryptoAlgorithmId hash_id) {
   switch (hash_id) {
     case blink::WebCryptoAlgorithmIdSha1:
-    case blink::WebCryptoAlgorithmIdSha224:
     case blink::WebCryptoAlgorithmIdSha256:
       return 64;
     case blink::WebCryptoAlgorithmIdSha384:

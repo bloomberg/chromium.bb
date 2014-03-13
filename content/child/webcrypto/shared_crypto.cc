@@ -284,7 +284,6 @@ Status Digest(const blink::WebCryptoAlgorithm& algorithm,
               blink::WebArrayBuffer* buffer) {
   switch (algorithm.id()) {
     case blink::WebCryptoAlgorithmIdSha1:
-    case blink::WebCryptoAlgorithmIdSha224:
     case blink::WebCryptoAlgorithmIdSha256:
     case blink::WebCryptoAlgorithmIdSha384:
     case blink::WebCryptoAlgorithmIdSha512:
