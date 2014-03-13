@@ -3,7 +3,17 @@
 # This file acts as a blacklist; directories and files not listed here will automatically
 # be found and imported.
 
-w3c/csswg-test [ Skip ]
+w3c/csswg-test/approved [ Skip ]
+w3c/csswg-test/build-test [ Skip ]
+w3c/csswg-test/contributors [ Skip ]
+w3c/csswg-test/cvs-import [ Skip ]
+w3c/csswg-test/test-plans [ Skip ]
+w3c/csswg-test/tools-plans [ Skip ]
+w3c/csswg-test/tools [ Skip ]
+w3c/csswg-test/.gitmodules [ Skip ]
+w3c/csswg-test/.hgsubstate [ Skip ]
+w3c/csswg-test/.htaccess [ Skip ]
+
 w3c/web-platform-tests/2dcontext [ Skip ]
 w3c/web-platform-tests/DOMEvents [ Skip ]
 w3c/web-platform-tests/FileAPI [ Skip ]
@@ -19,6 +29,7 @@ w3c/web-platform-tests/config.default.json [ Skip ]
 w3c/web-platform-tests/conformance-checkers [ Skip ]
 w3c/web-platform-tests/cors [ Skip ]
 w3c/web-platform-tests/dom [ Skip ]
+w3c/web-platform-tests/domparsing [ Skip ]
 w3c/web-platform-tests/domxpath [ Skip ]
 w3c/web-platform-tests/eventsource [ Skip ]
 w3c/web-platform-tests/ext-xhtml-pubid [ Skip ]
@@ -30,6 +41,7 @@ w3c/web-platform-tests/images [ Skip ]
 w3c/web-platform-tests/js [ Skip ]
 w3c/web-platform-tests/media [ Skip ]
 w3c/web-platform-tests/mediacapture-streams [ Skip ]
+w3c/web-platform-tests/media-source [ Skip ]
 w3c/web-platform-tests/microdata [ Skip ]
 w3c/web-platform-tests/navigation-timing [ Skip ]
 w3c/web-platform-tests/notifications [ Skip ]
@@ -54,4 +66,23 @@ w3c/web-platform-tests/webgl [ Skip ]
 w3c/web-platform-tests/webmessaging [ Skip ]
 w3c/web-platform-tests/websockets [ Skip ]
 w3c/web-platform-tests/webstorage [ Skip ]
+w3c/web-platform-tests/webvtt [ Skip ]
 w3c/web-platform-tests/workers [ Skip ]
+
+# Exceptions for individual files that fail due to bugs in the upstream tests
+# that we shouldn't bother importing until they are fixed.
+
+# these contain an extraneous debug log div ..
+w3c/web-platform-tests/html-imports/link-import-null.html [ Skip ]
+w3c/web-platform-tests/html-imports/link-import.html [ Skip ]
+w3c/web-platform-tests/html-imports/loading-import.html [ Skip ]
+
+# uses link="reference" rather than link="match"
+w3c/web-platform-tests/shadow-dom/shadow-trees/hosting-multiple-shadow-trees-002.html [ Skip ]
+w3c/web-platform-tests/shadow-dom/shadow-trees/hosting-multiple-shadow-trees-003.html [ Skip ]
+w3c/web-platform-tests/shadow-dom/shadow-trees/hosting-multiple-shadow-trees-004.html [ Skip ]
+w3c/web-platform-tests/shadow-dom/shadow-trees/hosting-multiple-shadow-trees-005.html [ Skip ]
+w3c/web-platform-tests/shadow-dom/shadow-trees/hosting-multiple-shadow-trees-006.html [ Skip ]
+w3c/web-platform-tests/shadow-dom/shadow-trees/text-decoration-001.html [ Skip ]
+w3c/web-platform-tests/shadow-dom/styles/not-apply-in-shadow-root-001.html [ Skip ]
+
