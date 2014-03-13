@@ -21,7 +21,7 @@ namespace base {
 
 // ***************************************************************************
 // ***** Don't use anything from this file anymore. It is being removed!
-// ***** Use base/files/base_file.h instead
+// ***** Use base/files/file.h instead
 // ***************************************************************************
 
 // PLATFORM_FILE_(OPEN|CREATE).* are mutually exclusive. You should specify
