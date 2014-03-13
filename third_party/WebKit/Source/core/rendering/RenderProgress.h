@@ -44,7 +44,6 @@ public:
 private:
     virtual const char* renderName() const OVERRIDE { return "RenderProgress"; }
     virtual bool isProgress() const OVERRIDE { return true; }
-    virtual bool supportsPartialLayout() const OVERRIDE { return false; }
 
     void animationTimerFired(Timer<RenderProgress>*);
     void updateAnimationState();

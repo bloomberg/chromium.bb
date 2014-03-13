@@ -106,7 +106,6 @@ private:
     virtual void willBeRemovedFromTree() OVERRIDE FINAL;
 
     virtual void layoutBlock(bool relayoutChildren) OVERRIDE FINAL;
-    virtual bool supportsPartialLayout() const OVERRIDE FINAL { return false; }
 
 protected:
     RenderFlowThread* m_flowThread;

@@ -49,8 +49,6 @@ public:
 private:
     virtual bool avoidsFloats() const OVERRIDE;
 
-    virtual bool supportsPartialLayout() const OVERRIDE { return false; }
-
     virtual ETextAlign textAlignmentForLine(bool endsWithSoftBreak) const OVERRIDE;
     virtual void adjustInlineDirectionLineBounds(int expansionOpportunityCount, float& logicalLeft, float& logicalWidth) const OVERRIDE;
 };

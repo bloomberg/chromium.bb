@@ -52,6 +52,7 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorSupport.h"
 #include "public/platform/WebContentLayer.h"
+#include "public/platform/WebFloatRect.h"
 #include "public/platform/WebLayerTreeView.h"
 #include "public/platform/WebRect.h"
 #include <skia/ext/platform_canvas.h>

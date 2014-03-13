@@ -91,8 +91,6 @@ private:
 
     virtual void layoutBlock(bool relayoutChildren) OVERRIDE;
 
-    virtual bool supportsPartialLayout() const OVERRIDE { return false; }
-
     int m_currentLoop;
     int m_totalLoops;
     Timer<HTMLMarqueeElement> m_timer;

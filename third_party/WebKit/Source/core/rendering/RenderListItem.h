@@ -69,8 +69,6 @@ private:
 
     virtual void layout() OVERRIDE;
 
-    virtual bool supportsPartialLayout() const OVERRIDE { return false; }
-
     void positionListMarker();
 
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) OVERRIDE;

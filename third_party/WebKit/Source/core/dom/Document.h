@@ -477,7 +477,6 @@ public:
         RunPostLayoutTasksSynchronously,
     };
     void updateLayoutIgnorePendingStylesheets(RunPostLayoutTasks = RunPostLayoutTasksAsyhnchronously);
-    void partialUpdateLayoutIgnorePendingStylesheets(Node*);
     PassRefPtr<RenderStyle> styleForElementIgnoringPendingStylesheets(Element*);
     PassRefPtr<RenderStyle> styleForPage(int pageIndex);
 

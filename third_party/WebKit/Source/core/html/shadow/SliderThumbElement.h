@@ -90,7 +90,6 @@ public:
 
 private:
     virtual bool isSliderThumb() const OVERRIDE;
-    virtual bool supportsPartialLayout() const OVERRIDE { return false; }
 };
 
 // --------------------------------

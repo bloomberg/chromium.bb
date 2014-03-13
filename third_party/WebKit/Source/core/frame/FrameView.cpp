@@ -156,7 +156,6 @@ FrameView::FrameView(LocalFrame* frame)
     , m_hasSoftwareFilters(false)
     , m_visibleContentScaleFactor(1)
     , m_inputEventsScaleFactorForEmulation(1)
-    , m_partialLayout()
     , m_layoutSizeFixedToFrameSize(true)
     , m_didScrollTimer(this, &FrameView::didScrollTimerFired)
 {
@@ -247,7 +246,6 @@ void FrameView::reset()
     m_isVisuallyNonEmpty = false;
     m_firstVisuallyNonEmptyLayoutCallbackPending = true;
     m_maintainScrollPositionAnchor = nullptr;
-    m_partialLayout.reset();
     m_viewportConstrainedObjects.clear();
 }
 
@@ -802,16 +800,11 @@ void FrameView::performLayout(RenderObject* rootForThisLayout, bool inSubtreeLay
     FrameViewLayoutStateMaintainer statePusher(*rootForThisLayout, inSubtreeLayout);
     forceLayoutParentViewIfNeeded();
 
-    {
-        // Text Autosizing requires two-pass layout which is incompatible with partial layout.
-        // If enabled, only do partial layout for the second layout.
-        // FIXME (crbug.com/256657): Do not do two layouts for text autosizing.
-        PartialLayoutDisabler partialLayoutDisabler(partialLayout(), m_frame->settings() && m_frame->settings()->textAutosizingEnabled());
-        rootForThisLayout->layout();
-        gatherDebugLayoutRects(rootForThisLayout);
+    // FIXME (crbug.com/256657): Do not do two layouts for text autosizing.
+    rootForThisLayout->layout();
+    gatherDebugLayoutRects(rootForThisLayout);
 
-        ResourceLoadPriorityOptimizer::resourceLoadPriorityOptimizer()->updateAllImageResourcePriorities();
-    }
+    ResourceLoadPriorityOptimizer::resourceLoadPriorityOptimizer()->updateAllImageResourcePriorities();
 
     TextAutosizer* textAutosizer = frame().document()->textAutosizer();
     bool autosized = textAutosizer && textAutosizer->processSubtree(rootForThisLayout);
@@ -830,9 +823,6 @@ void FrameView::scheduleOrPerformPostLayoutTasks()
     if (m_postLayoutTasksTimer.isActive())
         return;
 
-    // Partial layouts should not happen with synchronous post layouts.
-    ASSERT(!(m_inSynchronousPostLayout && partialLayout().isStopping()));
-
     if (!m_inSynchronousPostLayout) {
         m_inSynchronousPostLayout = true;
         // Calls resumeScheduledEvents()
@@ -846,7 +836,7 @@ void FrameView::scheduleOrPerformPostLayoutTasks()
         // can make us need to update again, and we can get stuck in a nasty cycle unless
         // we call it through the timer here.
         m_postLayoutTasksTimer.startOneShot(0, FROM_HERE);
-        if (!partialLayout().isStopping() && needsLayout())
+        if (needsLayout())
             layout();
     }
 }
@@ -860,8 +850,6 @@ void FrameView::layout(bool allowSubtree)
 
     if (isInPerformLayout() || !m_frame->document()->isActive())
         return;
-
-    ASSERT(!partialLayout().isStopping());
 
     TRACE_EVENT0("webkit", "FrameView::layout");
     TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "Layout");
@@ -904,11 +892,6 @@ void FrameView::layout(bool allowSubtree)
         return;
     }
 
-    bool isPartialLayout = partialLayout().isPartialLayout();
-
-    if (isPartialLayout)
-        lifecycleScope.setFinalState(DocumentLifecycle::StyleClean);
-
     bool shouldDoFullLayout = false;
     FontCachePurgePreventer fontCachePurgePreventer;
     RenderLayer* layer;
@@ -935,9 +918,9 @@ void FrameView::layout(bool allowSubtree)
         ScrollbarMode vMode;
         calculateScrollbarModesForLayoutAndSetViewportRenderer(hMode, vMode);
 
-        shouldDoFullLayout = !inSubtreeLayout && !isPartialLayout && (m_firstLayout || toRenderView(rootForThisLayout)->document().printing());
+        shouldDoFullLayout = !inSubtreeLayout && (m_firstLayout || toRenderView(rootForThisLayout)->document().printing());
 
-        if (!inSubtreeLayout && !isPartialLayout) {
+        if (!inSubtreeLayout) {
             // Now set our scrollbar state for the layout.
             ScrollbarMode currentHMode = horizontalScrollbarMode();
             ScrollbarMode currentVMode = verticalScrollbarMode();
@@ -991,7 +974,7 @@ void FrameView::layout(bool allowSubtree)
         m_layoutSubtreeRoot = 0;
     } // Reset m_layoutSchedulingEnabled to its previous value.
 
-    if (!inSubtreeLayout && !isPartialLayout && !toRenderView(rootForThisLayout)->document().printing())
+    if (!inSubtreeLayout && !toRenderView(rootForThisLayout)->document().printing())
         adjustViewSize();
 
     layer->updateLayerPositionsAfterLayout(renderView()->layer(), updateLayerPositionFlags(layer, inSubtreeLayout, m_doFullRepaint));
@@ -1004,7 +987,7 @@ void FrameView::layout(bool allowSubtree)
         cache->postNotification(rootForThisLayout, AXObjectCache::AXLayoutComplete, true);
     updateAnnotatedRegions();
 
-    ASSERT(partialLayout().isStopping() || !rootForThisLayout->needsLayout());
+    ASSERT(!rootForThisLayout->needsLayout());
 
     if (document->hasListenerType(Document::OVERFLOWCHANGED_LISTENER))
         updateOverflowStatus(layoutSize().width() < contentsWidth(), layoutSize().height() < contentsHeight());
@@ -1021,7 +1004,7 @@ void FrameView::layout(bool allowSubtree)
         if (m_doFullRepaint)
             renderView()->setShouldDoFullRepaintAfterLayout(true);
 
-        if (m_doFullRepaint || !partialLayout().isStopping())
+        if (m_doFullRepaint)
             repaintTree(rootForThisLayout);
 
     } else if (m_doFullRepaint) {
@@ -1032,9 +1015,6 @@ void FrameView::layout(bool allowSubtree)
     }
 
     m_doFullRepaint = false;
-
-    if (partialLayout().isStopping())
-        return;
 
 #ifndef NDEBUG
     // Post-layout assert that nobody was re-marked as needing layout during layout.

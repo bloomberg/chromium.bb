@@ -66,8 +66,6 @@ private:
 
     virtual void computePreferredLogicalWidths() OVERRIDE;
 
-    virtual bool supportsPartialLayout() const OVERRIDE { return false; }
-
     // Have all padding getters return 0. The important point here is to avoid resolving percents
     // against the containing block, since scroll bar corners don't always have one (so it would
     // crash). Scroll bar corners are not actually laid out, and they don't have child content, so

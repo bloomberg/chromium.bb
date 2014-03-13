@@ -303,8 +303,6 @@ protected:
 
     int beforeMarginInLineDirection(LineDirectionMode) const;
 
-    virtual bool supportsPartialLayout() const OVERRIDE { return true; };
-
     virtual void paint(PaintInfo&, const LayoutPoint&) OVERRIDE;
     virtual void paintObject(PaintInfo&, const LayoutPoint&) OVERRIDE;
     virtual void paintChildren(PaintInfo&, const LayoutPoint&);

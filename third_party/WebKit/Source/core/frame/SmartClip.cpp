@@ -38,6 +38,7 @@
 #include "core/frame/FrameView.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/page/Page.h"
+#include "core/rendering/RenderObject.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace WebCore {

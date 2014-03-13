@@ -55,8 +55,6 @@ private:
     virtual ETextAlign textAlignmentForLine(bool endsWithSoftBreak) const OVERRIDE;
     virtual void adjustInlineDirectionLineBounds(int expansionOpportunityCount, float& logicalLeft, float& logicalWidth) const OVERRIDE;
 
-    virtual bool supportsPartialLayout() const OVERRIDE { return false; }
-
     void moveChildren(RenderRubyBase* toBase, RenderObject* beforeChild = 0);
     void moveInlineChildren(RenderRubyBase* toBase, RenderObject* beforeChild = 0);
     void moveBlockChildren(RenderRubyBase* toBase, RenderObject* beforeChild = 0);

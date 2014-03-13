@@ -1865,9 +1865,6 @@ void Document::updateLayout()
     // Only do a layout if changes have occurred that make it necessary.
     if (isActive() && frameView && renderView() && (frameView->layoutPending() || renderView()->needsLayout()))
         frameView->layout();
-
-    if (isActive() && frameView)
-        frameView->partialLayout().reset();
 }
 
 void Document::setNeedsFocusedElementCheck()
@@ -1929,38 +1926,6 @@ void Document::updateLayoutIgnorePendingStylesheets(Document::RunPostLayoutTasks
     updateLayout();
     if (runPostLayoutTasks == RunPostLayoutTasksSynchronously && view())
         view()->flushAnyPendingPostLayoutTasks();
-}
-
-void Document::partialUpdateLayoutIgnorePendingStylesheets(Node* stopLayoutAtNode)
-{
-    // Non-overlay scrollbars can cause a second layout that is dependent
-    // on a first layout. This is disabled for partial layout for now.
-    if (!RuntimeEnabledFeatures::partialLayoutEnabled() || !ScrollbarTheme::theme()->usesOverlayScrollbars()) {
-        updateLayoutIgnorePendingStylesheets();
-        return;
-    }
-
-    StyleEngine::IgnoringPendingStylesheet ignoring(m_styleEngine.get());
-    recalcStyleForLayoutIgnoringPendingStylesheets();
-
-    if (stopLayoutAtNode) {
-        RenderObject* renderer = stopLayoutAtNode->renderer();
-        bool canPartialLayout = renderer;
-        while (renderer) {
-            if (!renderer->supportsPartialLayout()) {
-                canPartialLayout = false;
-                break;
-            }
-            renderer = renderer->parent();
-        }
-        if (canPartialLayout && view())
-            view()->partialLayout().setStopAtRenderer(stopLayoutAtNode->renderer());
-    }
-
-    updateLayout();
-
-    if (view())
-        view()->partialLayout().reset();
 }
 
 PassRefPtr<RenderStyle> Document::styleForElementIgnoringPendingStylesheets(Element* element)

@@ -71,7 +71,6 @@ protected:
 private:
     virtual const char* renderName() const OVERRIDE { return "RenderTextControl"; }
     virtual bool isTextControl() const OVERRIDE FINAL { return true; }
-    virtual bool supportsPartialLayout() const OVERRIDE FINAL { return false; }
     virtual void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const OVERRIDE FINAL;
     virtual void computePreferredLogicalWidths() OVERRIDE FINAL;
     virtual void removeLeftoverAnonymousBlock(RenderBlock*) OVERRIDE FINAL { }

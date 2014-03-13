@@ -44,8 +44,6 @@ private:
     virtual void computePreferredLogicalWidths() OVERRIDE;
     virtual bool avoidsFloats() const OVERRIDE { return true; }
 
-    virtual bool supportsPartialLayout() const OVERRIDE { return false; }
-
     virtual void paintBoxDecorations(PaintInfo&, const LayoutPoint&) OVERRIDE;
     virtual void paintMask(PaintInfo&, const LayoutPoint&) OVERRIDE;
 };

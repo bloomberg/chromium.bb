@@ -172,9 +172,6 @@ void RenderView::layoutContent(const LayoutState& state)
     if (RuntimeEnabledFeatures::dialogElementEnabled())
         positionDialogs();
 
-    if (m_frameView->partialLayout().isStopping())
-        return;
-
 #ifndef NDEBUG
     checkLayoutState(state);
 #endif
@@ -239,11 +236,6 @@ void RenderView::layout()
     m_layoutState = &state;
 
     layoutContent(state);
-
-    if (m_frameView->partialLayout().isStopping()) {
-        m_layoutState = 0;
-        return;
-    }
 
 #ifndef NDEBUG
     checkLayoutState(state);

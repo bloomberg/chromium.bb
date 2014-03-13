@@ -284,7 +284,6 @@ private:
     virtual void paintBoxDecorations(PaintInfo&, const LayoutPoint&) OVERRIDE;
     virtual void paintMask(PaintInfo&, const LayoutPoint&) OVERRIDE;
     virtual void layout() OVERRIDE;
-    virtual bool supportsPartialLayout() const OVERRIDE { return false; }
     virtual void computeIntrinsicLogicalWidths(LayoutUnit& minWidth, LayoutUnit& maxWidth) const OVERRIDE;
     virtual void computePreferredLogicalWidths() OVERRIDE;
     virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) OVERRIDE;

@@ -83,7 +83,6 @@ protected:
 private:
     virtual bool isRuby() const OVERRIDE { return true; }
     virtual const char* renderName() const OVERRIDE { return "RenderRuby (block)"; }
-    virtual bool supportsPartialLayout() const OVERRIDE { return false; }
     virtual bool createsAnonymousWrapper() const OVERRIDE { return true; }
     virtual void removeLeftoverAnonymousBlock(RenderBlock*) OVERRIDE { ASSERT_NOT_REACHED(); }
 };

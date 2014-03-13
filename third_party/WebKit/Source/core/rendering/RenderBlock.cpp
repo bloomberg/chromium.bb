@@ -1291,9 +1291,6 @@ void RenderBlock::layout()
     // layoutBlock().
     layoutBlock(false);
 
-    if (frameView()->partialLayout().isStopping())
-        return;
-
     // It's safe to check for control clip here, since controls can never be table cells.
     // If we have a lightweight clip, there can never be any overflow from children.
     if (hasControlClip() && m_overflow)

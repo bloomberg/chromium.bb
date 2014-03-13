@@ -701,12 +701,6 @@ void RenderObject::checkBlockPositionedObjectsNeedLayout()
     if (isRenderBlock())
         toRenderBlock(this)->checkPositionedObjectsNeedLayout();
 }
-
-void RenderObject::checkNotInPartialLayout()
-{
-    // During partial layout, setNeedsLayout(true or false) should not be called.
-    ASSERT(!frameView()->partialLayout().isStopping());
-}
 #endif
 
 void RenderObject::setPreferredLogicalWidthsDirty(MarkingBehavior markParents)

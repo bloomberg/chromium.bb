@@ -25,8 +25,8 @@
 #ifndef FrameView_h
 #define FrameView_h
 
+#include "RuntimeEnabledFeatures.h"
 #include "core/rendering/PaintPhase.h"
-#include "core/rendering/PartialLayoutState.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/Color.h"
 #include "platform/scroll/ScrollView.h"
@@ -37,8 +37,11 @@
 namespace WebCore {
 
 class AXObjectCache;
+class DocumentLifecycle;
+class Cursor;
 class Element;
 class FloatSize;
+class HTMLFrameOwnerElement;
 class LocalFrame;
 class KURL;
 class Node;
@@ -48,6 +51,7 @@ class RenderEmbeddedObject;
 class RenderObject;
 class RenderScrollbarPart;
 class RenderStyle;
+class RenderView;
 class RenderWidget;
 
 typedef unsigned long long DOMTimeStamp;
@@ -297,8 +301,6 @@ public:
     // DEPRECATED: Use viewportConstrainedVisibleContentRect() instead.
     IntSize scrollOffsetForFixedPosition() const;
 
-    PartialLayoutState& partialLayout() { return m_partialLayout; }
-
     // Override scrollbar notifications to update the AXObject cache.
     virtual void didAddScrollbar(Scrollbar*, ScrollbarOrientation) OVERRIDE;
     virtual void willRemoveScrollbar(Scrollbar*, ScrollbarOrientation) OVERRIDE;
@@ -499,7 +501,6 @@ private:
     IntSize m_inputEventsOffsetForEmulation;
     float m_inputEventsScaleFactorForEmulation;
 
-    PartialLayoutState m_partialLayout;
     IntSize m_layoutSize;
     bool m_layoutSizeFixedToFrameSize;
 

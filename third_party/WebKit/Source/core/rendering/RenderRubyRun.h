@@ -74,7 +74,6 @@ private:
 
     virtual bool isRubyRun() const OVERRIDE { return true; }
     virtual const char* renderName() const OVERRIDE { return "RenderRubyRun (anonymous)"; }
-    virtual bool supportsPartialLayout() const OVERRIDE { return false; }
     virtual bool createsAnonymousWrapper() const OVERRIDE { return true; }
     virtual void removeLeftoverAnonymousBlock(RenderBlock*) OVERRIDE { }
 };

@@ -361,11 +361,6 @@ inline bool RenderBlockFlow::layoutBlockFlow(bool relayoutChildren, LayoutUnit &
     else
         layoutBlockChildren(relayoutChildren, maxFloatLogicalBottom, layoutScope, beforeEdge, afterEdge);
 
-    if (frameView()->partialLayout().isStopping()) {
-        statePusher.pop();
-        return true;
-    }
-
     // Expand our intrinsic height to encompass floats.
     if (lowestFloatLogicalBottom() > (logicalHeight() - afterEdge) && createsBlockFormattingContext())
         setLogicalHeight(lowestFloatLogicalBottom() + afterEdge);
@@ -436,9 +431,6 @@ inline bool RenderBlockFlow::layoutBlockFlow(bool relayoutChildren, LayoutUnit &
     statePusher.pop();
 
     fitBorderToLinesIfNeeded();
-
-    if (frameView()->partialLayout().isStopping())
-        return true;
 
     RenderView* renderView = view();
     if (renderView->layoutState()->m_pageLogicalHeight)
@@ -566,9 +558,6 @@ void RenderBlockFlow::layoutBlockChild(RenderBox* child, MarginInfo& marginInfo,
     bool childNeededLayout = child->needsLayout();
     if (childNeededLayout)
         child->layout();
-
-    if (frameView()->partialLayout().isStopping())
-        return;
 
     // Cache if we are at the top of the block right now.
     bool atBeforeSideOfBlock = marginInfo.atBeforeSideOfBlock();
@@ -940,11 +929,6 @@ void RenderBlockFlow::layoutBlockChildren(bool relayoutChildren, LayoutUnit& max
         // Lay out the child.
         layoutBlockChild(child, marginInfo, previousFloatLogicalBottom, maxFloatLogicalBottom);
         lastNormalFlowChild = child;
-
-        // If doing a partial layout and the child was the target renderer, early exit here.
-        if (frameView()->partialLayout().checkPartialLayoutComplete(child))
-            return;
-
     }
 
     // Now do the handling of the bottom of the block, adding in our bottom border/padding and

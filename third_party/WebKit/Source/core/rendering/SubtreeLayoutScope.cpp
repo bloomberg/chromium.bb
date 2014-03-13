@@ -44,12 +44,6 @@ SubtreeLayoutScope::SubtreeLayoutScope(RenderObject* root)
 
 SubtreeLayoutScope::~SubtreeLayoutScope()
 {
-    // Partial layout early-exits layout and will leave the tree as needing layout.
-    if (m_root->frameView()->partialLayout().isStopping()) {
-        ASSERT(m_root->needsLayout());
-        return;
-    }
-
     RELEASE_ASSERT(!m_root->needsLayout());
 
 #ifndef NDEBUG

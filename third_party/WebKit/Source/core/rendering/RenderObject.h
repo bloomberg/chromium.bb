@@ -668,9 +668,6 @@ public:
     void forceLayout();
     void forceChildLayout();
 
-    // True if we can abort layout, leaving a partially laid out tree.
-    virtual bool supportsPartialLayout() const { return false; }
-
     // used for element state updates that cannot be fixed with a
     // repaint and do not need a relayout
     virtual void updateFromElement() { }
@@ -1067,7 +1064,6 @@ private:
 
 #ifndef NDEBUG
     void checkBlockPositionedObjectsNeedLayout();
-    void checkNotInPartialLayout();
 #endif
 
     RefPtr<RenderStyle> m_style;
@@ -1265,9 +1261,6 @@ inline bool RenderObject::isBeforeOrAfterContent() const
 
 inline void RenderObject::setNeedsLayout(MarkingBehavior markParents, SubtreeLayoutScope* layouter)
 {
-#ifndef NDEBUG
-    checkNotInPartialLayout();
-#endif
     ASSERT(!isSetNeedsLayoutForbidden());
     bool alreadyNeededLayout = m_bitfields.selfNeedsLayout();
     setSelfNeedsLayout(true);
@@ -1281,9 +1274,6 @@ inline void RenderObject::setNeedsLayout(MarkingBehavior markParents, SubtreeLay
 
 inline void RenderObject::clearNeedsLayout()
 {
-#ifndef NDEBUG
-    checkNotInPartialLayout();
-#endif
     setSelfNeedsLayout(false);
     setEverHadLayout(true);
     setPosChildNeedsLayout(false);

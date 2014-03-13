@@ -64,8 +64,6 @@ protected:
     bool m_stretchingChildren;
 
 private:
-    virtual bool supportsPartialLayout() const OVERRIDE { return false; }
-
     void applyLineClamp(FlexBoxIterator&, bool relayoutChildren);
     void clearLineClamp();
 };

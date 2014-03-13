@@ -1411,7 +1411,6 @@
             'rendering/LayoutState.cpp',
             'rendering/OrderIterator.cpp',
             'rendering/OrderIterator.h',
-            'rendering/PartialLayoutState.h',
             'rendering/PointerEventsHitRules.cpp',
             'rendering/PointerEventsHitRules.h',
             'rendering/RenderApplet.cpp',
