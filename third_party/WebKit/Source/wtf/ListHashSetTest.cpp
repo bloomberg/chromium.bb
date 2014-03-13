@@ -26,6 +26,9 @@
 #include "config.h"
 
 #include "wtf/ListHashSet.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/RefPtr.h"
 #include <gtest/gtest.h>
 
 namespace {
@@ -169,6 +172,48 @@ TEST(WTF, ListHashSetPrependOrMoveToLastWithDuplicates)
     ++iterator;
     ASSERT_EQ(1, *iterator);
     ++iterator;
+}
+
+class DummyRefCounted: public WTF::RefCounted<DummyRefCounted> {
+public:
+    DummyRefCounted(bool& isDeleted) : m_isDeleted(isDeleted) { m_isDeleted = false; }
+    ~DummyRefCounted() { m_isDeleted = true; }
+    void ref()
+    {
+        WTF::RefCounted<DummyRefCounted>::ref();
+        ++m_refInvokesCount;
+    }
+
+    static int m_refInvokesCount;
+
+private:
+    bool& m_isDeleted;
+};
+
+int DummyRefCounted::m_refInvokesCount = 0;
+
+TEST(WTF, ListHashSetWithRefPtr)
+{
+    bool isDeleted;
+    RefPtr<DummyRefCounted> ptr = adoptRef(new DummyRefCounted(isDeleted));
+    ASSERT_EQ(0, DummyRefCounted::m_refInvokesCount);
+
+    ListHashSet<RefPtr<DummyRefCounted> > list;
+    list.add(ptr);
+    ASSERT_EQ(ptr, list.first());
+    int storedRefInvokesCount = DummyRefCounted::m_refInvokesCount;
+    DummyRefCounted* rawPtr = ptr.get();
+
+    ASSERT_TRUE(list.contains(ptr));
+    ASSERT_TRUE(list.contains(rawPtr));
+
+    ptr.clear();
+    ASSERT_FALSE(isDeleted);
+
+    list.remove(rawPtr);
+    ASSERT_TRUE(isDeleted);
+
+    ASSERT_EQ(storedRefInvokesCount, DummyRefCounted::m_refInvokesCount);
 }
 
 } // namespace

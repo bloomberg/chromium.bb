@@ -73,6 +73,7 @@ namespace WTF {
 
     public:
         typedef ValueArg ValueType;
+        typedef typename HashTraits<ValueType>::PeekInType ValuePeekInType;
 
         typedef ListHashSetIterator<ValueType, inlineCapacity, HashArg> iterator;
         typedef ListHashSetConstIterator<ValueType, inlineCapacity, HashArg> const_iterator;
@@ -120,9 +121,9 @@ namespace WTF {
         const ValueType& last() const;
         void removeLast();
 
-        iterator find(const ValueType&);
-        const_iterator find(const ValueType&) const;
-        bool contains(const ValueType&) const;
+        iterator find(ValuePeekInType);
+        const_iterator find(ValuePeekInType) const;
+        bool contains(ValuePeekInType) const;
 
         // An alternate version of find() that finds the object by hashing and comparing
         // with some other type, to avoid the cost of type conversion.
@@ -152,7 +153,7 @@ namespace WTF {
         AddResult insertBefore(const ValueType& beforeValue, const ValueType& newValue);
         AddResult insertBefore(iterator, const ValueType&);
 
-        void remove(const ValueType&);
+        void remove(ValuePeekInType);
         void remove(iterator);
         void clear();
 
@@ -684,7 +685,7 @@ namespace WTF {
     }
 
     template<typename T, size_t inlineCapacity, typename U>
-    inline typename ListHashSet<T, inlineCapacity, U>::iterator ListHashSet<T, inlineCapacity, U>::find(const ValueType& value)
+    inline typename ListHashSet<T, inlineCapacity, U>::iterator ListHashSet<T, inlineCapacity, U>::find(ValuePeekInType value)
     {
         ImplTypeIterator it = m_impl.template find<BaseTranslator>(value);
         if (it == m_impl.end())
@@ -693,7 +694,7 @@ namespace WTF {
     }
 
     template<typename T, size_t inlineCapacity, typename U>
-    inline typename ListHashSet<T, inlineCapacity, U>::const_iterator ListHashSet<T, inlineCapacity, U>::find(const ValueType& value) const
+    inline typename ListHashSet<T, inlineCapacity, U>::const_iterator ListHashSet<T, inlineCapacity, U>::find(ValuePeekInType value) const
     {
         ImplTypeConstIterator it = m_impl.template find<BaseTranslator>(value);
         if (it == m_impl.end())
@@ -735,7 +736,7 @@ namespace WTF {
     }
 
     template<typename T, size_t inlineCapacity, typename U>
-    inline bool ListHashSet<T, inlineCapacity, U>::contains(const ValueType& value) const
+    inline bool ListHashSet<T, inlineCapacity, U>::contains(ValuePeekInType value) const
     {
         return m_impl.template contains<BaseTranslator>(value);
     }
@@ -806,7 +807,7 @@ namespace WTF {
     }
 
     template<typename T, size_t inlineCapacity, typename U>
-    inline void ListHashSet<T, inlineCapacity, U>::remove(const ValueType& value)
+    inline void ListHashSet<T, inlineCapacity, U>::remove(ValuePeekInType value)
     {
         remove(find(value));
     }

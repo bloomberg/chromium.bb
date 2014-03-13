@@ -191,8 +191,10 @@ namespace WTF {
     template<typename T> class RefPtrValuePeeker {
     public:
         ALWAYS_INLINE RefPtrValuePeeker(T* p): m_ptr(p) { }
+        ALWAYS_INLINE RefPtrValuePeeker(std::nullptr_t): m_ptr(0) { }
         template<typename U> RefPtrValuePeeker(const RefPtr<U>& p): m_ptr(p.get()) { }
         template<typename U> RefPtrValuePeeker(const PassRefPtr<U>& p): m_ptr(p.get()) { }
+
         ALWAYS_INLINE operator T*() const { return m_ptr; }
     private:
         T* m_ptr;
