@@ -153,6 +153,7 @@
 
 #if defined(ENABLE_WEBRTC)
 #include "content/browser/media/webrtc_internals.h"
+#include "content/browser/renderer_host/media/media_stream_track_metrics_host.h"
 #include "content/browser/renderer_host/media/webrtc_identity_service_host.h"
 #include "content/common/media/media_stream_messages.h"
 #endif
@@ -708,6 +709,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       media_stream_manager));
   AddFilter(
       new DeviceRequestMessageFilter(resource_context, media_stream_manager));
+  AddFilter(new MediaStreamTrackMetricsHost());
 #endif
 #if defined(ENABLE_PLUGINS)
   AddFilter(new PepperRendererConnection(GetID()));

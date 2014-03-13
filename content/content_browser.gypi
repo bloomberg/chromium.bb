@@ -977,6 +977,8 @@
     'browser/renderer_host/media/media_stream_manager.h',
     'browser/renderer_host/media/media_stream_provider.h',
     'browser/renderer_host/media/media_stream_requester.h',
+    'browser/renderer_host/media/media_stream_track_metrics_host.cc',
+    'browser/renderer_host/media/media_stream_track_metrics_host.h',
     'browser/renderer_host/media/media_stream_ui_proxy.cc',
     'browser/renderer_host/media/media_stream_ui_proxy.h',
     'browser/renderer_host/media/midi_dispatcher_host.cc',

@@ -8,8 +8,10 @@
 
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/common/media/media_stream_track_metrics_host_messages.h"
 #include "content/renderer/media/media_stream.h"
 #include "content/renderer/media/media_stream_dependency_factory.h"
+#include "content/renderer/render_thread_impl.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 
 namespace content {
@@ -34,12 +36,25 @@ class RemoteMediaStreamTrackObserver
   // webrtc::ObserverInterface implementation.
   virtual void OnChanged() OVERRIDE;
 
+  // May be overridden by unit tests to avoid sending IPC messages.
+  virtual void SendLifetimeMessage(bool creation);
+
   webrtc::MediaStreamTrackInterface::TrackState state_;
   scoped_refptr<webrtc::MediaStreamTrackInterface> webrtc_track_;
   blink::WebMediaStreamTrack webkit_track_;
+  bool sent_ended_message_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoteMediaStreamTrackObserver);
 };
+
+// We need an ID that is unique for this observer, within the current
+// renderer process, for the lifetime of the observer object. The
+// simplest approach is to just use the object's pointer value. We
+// store it in a uint64 which will be large enough regardless of
+// platform.
+uint64 MakeUniqueId(RemoteMediaStreamTrackObserver* observer) {
+  return reinterpret_cast<uint64>(reinterpret_cast<void*>(observer));
+}
 
 }  // namespace content
 
@@ -78,11 +93,19 @@ RemoteMediaStreamTrackObserver::RemoteMediaStreamTrackObserver(
     const blink::WebMediaStreamTrack& webkit_track)
     : state_(webrtc_track->state()),
       webrtc_track_(webrtc_track),
-      webkit_track_(webkit_track) {
+      webkit_track_(webkit_track),
+      sent_ended_message_(false) {
   webrtc_track->RegisterObserver(this);
+
+  SendLifetimeMessage(true);
 }
 
 RemoteMediaStreamTrackObserver::~RemoteMediaStreamTrackObserver() {
+  // We send the lifetime-ended message here (it will only get sent if
+  // not previously sent) in case we never received a kEnded state
+  // change.
+  SendLifetimeMessage(false);
+
   webrtc_track_->UnregisterObserver(this);
 }
 
@@ -104,12 +127,42 @@ void RemoteMediaStreamTrackObserver::OnChanged() {
           blink::WebMediaStreamSource::ReadyStateLive);
       break;
     case webrtc::MediaStreamTrackInterface::kEnded:
+      // This is a more reliable signal to use for duration, as
+      // destruction of this object might not happen until
+      // considerably later.
+      SendLifetimeMessage(false);
       webkit_track_.source().setReadyState(
           blink::WebMediaStreamSource::ReadyStateEnded);
       break;
     default:
       NOTREACHED();
       break;
+  }
+}
+
+void RemoteMediaStreamTrackObserver::SendLifetimeMessage(bool creation) {
+  // We need to mirror the lifetime state for tracks to the browser
+  // process so that the duration of tracks can be accurately
+  // reported, because of RenderProcessHost::FastShutdownIfPossible,
+  // which in many cases will simply kill the renderer process.
+  //
+  // RenderThreadImpl::current() may be NULL in unit tests.
+  RenderThreadImpl* render_thread = RenderThreadImpl::current();
+  if (render_thread) {
+    if (creation) {
+      RenderThreadImpl::current()->Send(
+          new MediaStreamTrackMetricsHost_AddTrack(
+              MakeUniqueId(this),
+              webkit_track_.source().type() ==
+                  blink::WebMediaStreamSource::TypeAudio,
+              true));
+    } else {
+      if (!sent_ended_message_) {
+        sent_ended_message_ = true;
+        RenderThreadImpl::current()->Send(
+            new MediaStreamTrackMetricsHost_RemoveTrack(MakeUniqueId(this)));
+      }
+    }
   }
 }
 

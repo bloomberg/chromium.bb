@@ -24529,6 +24529,22 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="WebRTC.ReceivedAudioTrackDuration" units="milliseconds">
+  <summary>
+    Durations of audio tracks received over a PeerConnection. This metric is
+    generated based on the lifetime of an observer added for all received tracks
+    by content::RemoteMediaStreamImpl.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.ReceivedVideoTrackDuration" units="milliseconds">
+  <summary>
+    Durations of video tracks received over a PeerConnection. This metric is
+    generated based on the lifetime of an observer added for all received tracks
+    by content::RemoteMediaStreamImpl.
+  </summary>
+</histogram>
+
 <histogram name="WebRTC.ReliableDataChannelMessageSize" units="bytes">
   <summary>
     Sizes of messages sent over reliable data channels. The size of an

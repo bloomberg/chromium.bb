@@ -97,6 +97,7 @@ enum IPCMessageStart {
   CastMsgStart,
   CdmMsgStart,
   ScreenOrientationMsgStart,
+  MediaStreamTrackMetricsHostMsgStart,
   LastIPCMsgStart  // Must come last.
 };
 
