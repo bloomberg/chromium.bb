@@ -346,6 +346,10 @@ GLint StubGLGetUniformLocation(GLuint program, const char* name) {
   return glGetUniformLocation(program, name);
 }
 
+GLvoid StubGLInsertEventMarker(GLsizei length, const char* marker) {
+  glInsertEventMarkerEXT(length, marker);
+}
+
 GLvoid StubGLLineWidth(GLfloat width) {
   glLineWidth(width);
 }
@@ -360,6 +364,14 @@ void* StubGLMapBuffer(GLenum target, GLenum access) {
 
 GLvoid StubGLPixelStorei(GLenum pname, GLint param) {
   glPixelStorei(pname, param);
+}
+
+GLvoid StubGLPopGroupMarker() {
+  glPopGroupMarkerEXT();
+}
+
+GLvoid StubGLPushGroupMarker(GLsizei length, const char* marker) {
+  glPushGroupMarkerEXT(length, marker);
 }
 
 GLvoid StubGLQueryCounter(GLuint id, GLenum target) {
@@ -648,9 +660,12 @@ GrGLInterface* CreateInProcessSkiaGLBinding() {
   functions->fGetString = StubGLGetString;
   functions->fGetTexLevelParameteriv = StubGLGetTexLevelParameteriv;
   functions->fGetUniformLocation = StubGLGetUniformLocation;
+  functions->fInsertEventMarker = StubGLInsertEventMarker;
   functions->fLineWidth = StubGLLineWidth;
   functions->fLinkProgram = StubGLLinkProgram;
   functions->fPixelStorei = StubGLPixelStorei;
+  functions->fPopGroupMarker = StubGLPopGroupMarker;
+  functions->fPushGroupMarker = StubGLPushGroupMarker;
   functions->fQueryCounter = StubGLQueryCounter;
   functions->fReadBuffer = StubGLReadBuffer;
   functions->fReadPixels = StubGLReadPixels;

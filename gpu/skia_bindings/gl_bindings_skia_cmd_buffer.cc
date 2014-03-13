@@ -70,9 +70,12 @@ GrGLInterface* CreateCommandBufferSkiaGLBinding() {
   functions->fGetShaderiv = glGetShaderiv;
   functions->fGetString = glGetString;
   functions->fGetUniformLocation = glGetUniformLocation;
+  functions->fInsertEventMarker = glInsertEventMarkerEXT;
   functions->fLineWidth = glLineWidth;
   functions->fLinkProgram = glLinkProgram;
   functions->fPixelStorei = glPixelStorei;
+  functions->fPopGroupMarker = glPopGroupMarkerEXT;
+  functions->fPushGroupMarker = glPushGroupMarkerEXT;
   functions->fReadPixels = glReadPixels;
   functions->fScissor = glScissor;
   functions->fShaderSource = glShaderSource;
