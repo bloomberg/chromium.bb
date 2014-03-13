@@ -289,7 +289,7 @@ void BrowserShortcutLauncherItemController::ActivateOrAdvanceToNextBrowser() {
     // bounce it (if it is already active).
     if (browser == items[0]) {
       AnimateWindow(browser->window()->GetNativeWindow(),
-                    views::corewm::WINDOW_ANIMATION_TYPE_BOUNCE);
+                    wm::WINDOW_ANIMATION_TYPE_BOUNCE);
       return;
     }
     browser = items[0];

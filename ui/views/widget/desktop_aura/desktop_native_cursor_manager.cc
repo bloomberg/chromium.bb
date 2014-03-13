@@ -38,7 +38,7 @@ void DesktopNativeCursorManager::RemoveHost(aura::WindowTreeHost* host) {
 
 void DesktopNativeCursorManager::SetDisplay(
     const gfx::Display& display,
-    views::corewm::NativeCursorManagerDelegate* delegate) {
+    wm::NativeCursorManagerDelegate* delegate) {
   cursor_loader_->UnloadAll();
   cursor_loader_->set_display(display);
 
@@ -50,7 +50,7 @@ void DesktopNativeCursorManager::SetDisplay(
 
 void DesktopNativeCursorManager::SetCursor(
     gfx::NativeCursor cursor,
-    views::corewm::NativeCursorManagerDelegate* delegate) {
+    wm::NativeCursorManagerDelegate* delegate) {
   gfx::NativeCursor new_cursor = cursor;
   cursor_loader_->SetPlatformCursor(&new_cursor);
   delegate->CommitCursor(new_cursor);
@@ -63,7 +63,7 @@ void DesktopNativeCursorManager::SetCursor(
 
 void DesktopNativeCursorManager::SetVisibility(
     bool visible,
-    views::corewm::NativeCursorManagerDelegate* delegate) {
+    wm::NativeCursorManagerDelegate* delegate) {
   delegate->CommitVisibility(visible);
 
   if (visible) {
@@ -81,19 +81,19 @@ void DesktopNativeCursorManager::SetVisibility(
 
 void DesktopNativeCursorManager::SetCursorSet(
     ui::CursorSetType cursor_set,
-    views::corewm::NativeCursorManagerDelegate* delegate) {
+    wm::NativeCursorManagerDelegate* delegate) {
   NOTIMPLEMENTED();
 }
 
 void DesktopNativeCursorManager::SetScale(
     float scale,
-    views::corewm::NativeCursorManagerDelegate* delegate) {
+    wm::NativeCursorManagerDelegate* delegate) {
   NOTIMPLEMENTED();
 }
 
 void DesktopNativeCursorManager::SetMouseEventsEnabled(
     bool enabled,
-    views::corewm::NativeCursorManagerDelegate* delegate) {
+    wm::NativeCursorManagerDelegate* delegate) {
   delegate->CommitMouseEventsEnabled(enabled);
 
   // TODO(erg): In the ash version, we set the last mouse location on Env. I'm

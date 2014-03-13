@@ -728,7 +728,7 @@ TEST_F(WindowSelectorTest, ModalChild) {
   scoped_ptr<aura::Window> window1(CreateWindow(bounds));
   scoped_ptr<aura::Window> child1(CreateWindow(bounds));
   child1->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_WINDOW);
-  views::corewm::AddTransientChild(window1.get(), child1.get());
+  ::wm::AddTransientChild(window1.get(), child1.get());
   EXPECT_EQ(window1->parent(), child1->parent());
   ToggleOverview();
   EXPECT_TRUE(window1->IsVisible());
@@ -744,7 +744,7 @@ TEST_F(WindowSelectorTest, ClickModalWindowParent) {
   scoped_ptr<aura::Window> window1(CreateWindow(gfx::Rect(0, 0, 180, 180)));
   scoped_ptr<aura::Window> child1(CreateWindow(gfx::Rect(200, 0, 180, 180)));
   child1->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_WINDOW);
-  views::corewm::AddTransientChild(window1.get(), child1.get());
+  ::wm::AddTransientChild(window1.get(), child1.get());
   EXPECT_FALSE(WindowsOverlapping(window1.get(), child1.get()));
   EXPECT_EQ(window1->parent(), child1->parent());
   ToggleOverview();
@@ -865,7 +865,7 @@ TEST_F(WindowSelectorTest, CycleMultipleDisplaysCopiesWindows) {
   unmoved2->SetName("unmoved2");
   moved1->SetName("moved1");
   moved1->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_WINDOW);
-  views::corewm::AddTransientChild(moved1_trans_parent.get(), moved1.get());
+  ::wm::AddTransientChild(moved1_trans_parent.get(), moved1.get());
   moved1_trans_parent->SetName("moved1_trans_parent");
 
   EXPECT_EQ(root_windows[0], moved1->GetRootWindow());

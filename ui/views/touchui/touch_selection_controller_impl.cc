@@ -16,9 +16,9 @@
 #include "ui/gfx/screen.h"
 #include "ui/gfx/size.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/masked_window_targeter.h"
 #include "ui/wm/core/shadow_types.h"
 #include "ui/wm/core/window_animations.h"
-#include "ui/wm/public/masked_window_targeter.h"
 
 namespace {
 
@@ -72,7 +72,7 @@ views::Widget* CreateTouchSelectionPopupWidget(
   params.context = context;
   params.delegate = widget_delegate;
   widget->Init(params);
-  SetShadowType(widget->GetNativeView(), views::corewm::SHADOW_TYPE_NONE);
+  SetShadowType(widget->GetNativeView(), wm::SHADOW_TYPE_NONE);
   return widget;
 }
 
@@ -233,7 +233,7 @@ class TouchSelectionControllerImpl::EditingHandleView
   void SetWidgetVisible(bool visible, bool quick) {
     if (widget_->IsVisible() == visible)
       return;
-    corewm::SetWindowVisibilityAnimationDuration(
+    wm::SetWindowVisibilityAnimationDuration(
         widget_->GetNativeView(),
         base::TimeDelta::FromMilliseconds(
             quick ? kSelectionHandleQuickFadeDurationMs : 0));

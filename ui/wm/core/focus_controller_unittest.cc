@@ -22,8 +22,7 @@
 #include "ui/wm/core/base_focus_rules.h"
 #include "ui/wm/core/wm_state.h"
 
-namespace views {
-namespace corewm {
+namespace wm {
 
 class FocusNotificationObserver : public aura::client::ActivationChangeObserver,
                                   public aura::client::FocusChangeObserver {
@@ -348,7 +347,7 @@ class FocusControllerTestBase : public aura::test::AuraTestBase {
 
   // Overridden from aura::test::AuraTestBase:
   virtual void SetUp() OVERRIDE {
-    wm_state_.reset(new views::corewm::WMState);
+    wm_state_.reset(new wm::WMState);
     // FocusController registers itself as an Env observer so it can catch all
     // window initializations, including the root_window()'s, so we create it
     // before allowing the base setup.
@@ -447,7 +446,7 @@ class FocusControllerTestBase : public aura::test::AuraTestBase {
  private:
   scoped_ptr<FocusController> focus_controller_;
   TestFocusRules* test_focus_rules_;
-  scoped_ptr<views::corewm::WMState> wm_state_;
+  scoped_ptr<wm::WMState> wm_state_;
 
   DISALLOW_COPY_AND_ASSIGN(FocusControllerTestBase);
 };
@@ -1200,5 +1199,4 @@ FOCUS_CONTROLLER_TEST(FocusControllerApiTest,
 // See description above DontPassDeletedWindow() for details.
 FOCUS_CONTROLLER_TEST(FocusControllerApiTest, DontPassDeletedWindow);
 
-}  // namespace corewm
-}  // namespace views
+}  // namespace wm

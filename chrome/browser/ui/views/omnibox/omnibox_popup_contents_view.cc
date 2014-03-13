@@ -223,8 +223,8 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
     if (!popup_.get())
       return;
 #if defined(USE_AURA)
-    views::corewm::SetWindowVisibilityAnimationTransition(
-        popup_->GetNativeView(), views::corewm::ANIMATE_NONE);
+    wm::SetWindowVisibilityAnimationTransition(
+        popup_->GetNativeView(), wm::ANIMATE_NONE);
 #endif
     popup_->SetContentsView(this);
     popup_->StackAbove(omnibox_view_->GetRelativeWindowForPopup());

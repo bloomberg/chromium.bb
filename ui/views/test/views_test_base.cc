@@ -25,7 +25,7 @@ ViewsTestBase::~ViewsTestBase() {
   CHECK(setup_called_)
       << "You have overridden SetUp but never called super class's SetUp";
   CHECK(teardown_called_)
-      << "You have overrideen TearDown but never called super class's TearDown";
+      << "You have overridden TearDown but never called super class's TearDown";
 }
 
 void ViewsTestBase::SetUp() {
@@ -39,7 +39,7 @@ void ViewsTestBase::SetUp() {
 
   aura_test_helper_.reset(new aura::test::AuraTestHelper(&message_loop_));
   aura_test_helper_->SetUp();
-  wm_state_.reset(new views::corewm::WMState);
+  wm_state_.reset(new ::wm::WMState);
   ui::InitializeInputMethodForTesting();
 }
 
@@ -56,7 +56,7 @@ void ViewsTestBase::TearDown() {
   aura_test_helper_->TearDown();
   ui::TerminateContextFactoryForTests();
   wm_state_.reset();
-  CHECK(!corewm::ScopedCaptureClient::IsActive());
+  CHECK(!wm::ScopedCaptureClient::IsActive());
 }
 
 void ViewsTestBase::RunPendingMessages() {

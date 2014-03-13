@@ -22,8 +22,7 @@
 DISABLED_TestInputMethodKeyEventPropagation
 #endif
 
-namespace views {
-namespace corewm {
+namespace wm {
 
 typedef aura::test::AuraTestBase InputMethodEventFilterTest;
 
@@ -87,5 +86,4 @@ TEST_F(InputMethodEventFilterTest, TestInputMethodKeyEventPropagation) {
   window.reset();
 }
 
-}  // namespace corewm
-}  // namespace views
+}  // namespace wm

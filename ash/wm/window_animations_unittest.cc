@@ -71,7 +71,7 @@ TEST_F(WindowAnimationsTest, HideShowBrightnessGrayscaleAnimation) {
   EXPECT_TRUE(window->layer()->visible());
 
   // Hiding.
-  views::corewm::SetWindowVisibilityAnimationType(
+  ::wm::SetWindowVisibilityAnimationType(
       window.get(),
       WINDOW_VISIBILITY_ANIMATION_TYPE_BRIGHTNESS_GRAYSCALE);
   AnimateOnChildWindowVisibilityChanged(window.get(), false);
@@ -80,7 +80,7 @@ TEST_F(WindowAnimationsTest, HideShowBrightnessGrayscaleAnimation) {
   EXPECT_FALSE(window->layer()->visible());
 
   // Showing.
-  views::corewm::SetWindowVisibilityAnimationType(
+  ::wm::SetWindowVisibilityAnimationType(
       window.get(),
       WINDOW_VISIBILITY_ANIMATION_TYPE_BRIGHTNESS_GRAYSCALE);
   AnimateOnChildWindowVisibilityChanged(window.get(), true);

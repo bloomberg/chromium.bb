@@ -22,8 +22,7 @@ class LayerOwner;
 class LayerTreeOwner;
 }
 
-namespace views {
-namespace corewm {
+namespace wm {
 
 WM_CORE_EXPORT void ActivateWindow(aura::Window* window);
 WM_CORE_EXPORT void DeactivateWindow(aura::Window* window);
@@ -65,7 +64,6 @@ WM_CORE_EXPORT void RemoveTransientChild(aura::Window* parent,
 WM_CORE_EXPORT bool HasTransientAncestor(const aura::Window* window,
                                          const aura::Window* ancestor);
 
-}  // namespace corewm
-}  // namespace views
+}  // namespace wm
 
 #endif  // UI_WM_CORE_WINDOW_UTIL_H_

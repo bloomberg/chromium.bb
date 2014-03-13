@@ -9,8 +9,7 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/wm/core/wm_core_export.h"
 
-namespace views {
-namespace corewm {
+namespace wm {
 
 // The non-public interface that CursorManager exposes to its users. This
 // gives accessors to all the current state, and mutators to all the current
@@ -30,7 +29,6 @@ class WM_CORE_EXPORT NativeCursorManagerDelegate {
   virtual void CommitMouseEventsEnabled(bool enabled) = 0;
 };
 
-}  // namespace corewm
-}  // namespace views
+}  // namespace wm
 
 #endif  // UI_WM_CORE_NATIVE_CURSOR_MANAGER_DELEGATE_H_

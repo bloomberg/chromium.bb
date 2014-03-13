@@ -11,8 +11,7 @@
 #include "ui/aura/window_observer.h"
 #include "ui/wm/core/wm_core_export.h"
 
-namespace views {
-namespace corewm {
+namespace wm {
 
 class TransientWindowObserver;
 
@@ -98,7 +97,6 @@ class WM_CORE_EXPORT TransientWindowManager : public aura::WindowObserver {
   DISALLOW_COPY_AND_ASSIGN(TransientWindowManager);
 };
 
-}  // namespace corewm
-}  // namespace views
+}  // namespace wm
 
 #endif  // UI_WM_CORE_TRANSIENT_WINDOW_MANAGER_H_

@@ -10,8 +10,7 @@
 #include "ui/aura/client/visibility_client.h"
 #include "ui/wm/core/wm_core_export.h"
 
-namespace views {
-namespace corewm {
+namespace wm {
 
 class WM_CORE_EXPORT VisibilityController
     : public aura::client::VisibilityClient {
@@ -70,7 +69,6 @@ class WM_CORE_EXPORT SuspendChildWindowVisibilityAnimations {
 void WM_CORE_EXPORT SetChildWindowVisibilityChangesAnimated(
     aura::Window* window);
 
-}  // namespace corewm
-}  // namespace views
+}  // namespace wm
 
 #endif  // UI_WM_CORE_VISIBILITY_CONTROLLER_H_

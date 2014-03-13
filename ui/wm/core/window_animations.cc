@@ -37,8 +37,8 @@
 #include "ui/wm/core/wm_core_switches.h"
 
 DECLARE_WINDOW_PROPERTY_TYPE(int)
-DECLARE_WINDOW_PROPERTY_TYPE(views::corewm::WindowVisibilityAnimationType)
-DECLARE_WINDOW_PROPERTY_TYPE(views::corewm::WindowVisibilityAnimationTransition)
+DECLARE_WINDOW_PROPERTY_TYPE(wm::WindowVisibilityAnimationType)
+DECLARE_WINDOW_PROPERTY_TYPE(wm::WindowVisibilityAnimationTransition)
 DECLARE_WINDOW_PROPERTY_TYPE(float)
 DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(WM_CORE_EXPORT, bool)
 
@@ -46,8 +46,7 @@ using aura::Window;
 using base::TimeDelta;
 using ui::Layer;
 
-namespace views {
-namespace corewm {
+namespace wm {
 namespace {
 const float kWindowAnimation_Vertical_TranslateY = 15.f;
 }  // namespace
@@ -554,5 +553,4 @@ bool WindowAnimationsDisabled(aura::Window* window) {
           switches::kWindowAnimationsDisabled));
 }
 
-}  // namespace corewm
-}  // namespace views
+}  // namespace wm

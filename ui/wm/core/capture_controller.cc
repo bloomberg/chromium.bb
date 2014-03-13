@@ -7,8 +7,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 
-namespace views {
-namespace corewm {
+namespace wm {
 
 ////////////////////////////////////////////////////////////////////////////////
 // CaptureController, public:
@@ -142,5 +141,4 @@ void ScopedCaptureClient::Shutdown() {
   root_window_ = NULL;
 }
 
-}  // namespace corewm
-}  // namespace views
+}  // namespace wm

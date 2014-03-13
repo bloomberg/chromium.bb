@@ -108,7 +108,7 @@ DesktopNotificationsTest::~DesktopNotificationsTest() {
 void DesktopNotificationsTest::SetUp() {
   ui::InitializeInputMethodForTesting();
 #if defined(USE_AURA)
-  wm_state_.reset(new views::corewm::WMState);
+  wm_state_.reset(new wm::WMState);
 #endif
 #if defined(USE_ASH)
   ui::ScopedAnimationDurationScaleMode normal_duration_mode(

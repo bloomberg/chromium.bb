@@ -27,7 +27,7 @@ class UserWallpaperDelegate : public ash::UserWallpaperDelegate {
   virtual int GetAnimationType() OVERRIDE {
     return ShouldShowInitialAnimation() ?
         ash::WINDOW_VISIBILITY_ANIMATION_TYPE_BRIGHTNESS_GRAYSCALE :
-        static_cast<int>(views::corewm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
+        static_cast<int>(wm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
   }
 
   virtual bool ShouldShowInitialAnimation() OVERRIDE {

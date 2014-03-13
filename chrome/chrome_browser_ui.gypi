@@ -2812,6 +2812,7 @@
         }],
         ['toolkit_views == 1', {
           'dependencies': [
+            '../ui/wm/wm.gyp:wm_core',
             '../ui/wm/wm.gyp:wm_public',
           ],
           'sources!': [

@@ -15,8 +15,7 @@
 #include "ui/events/event_handler.h"
 #include "ui/wm/core/wm_core_export.h"
 
-namespace views {
-namespace corewm {
+namespace wm {
 
 class FocusRules;
 
@@ -124,7 +123,6 @@ class WM_CORE_EXPORT FocusController : public aura::client::ActivationClient,
   DISALLOW_COPY_AND_ASSIGN(FocusController);
 };
 
-}  // namespace corewm
-}  // namespace views
+}  // namespace wm
 
 #endif  // UI_WM_CORE_FOCUS_CONTROLLER_H_

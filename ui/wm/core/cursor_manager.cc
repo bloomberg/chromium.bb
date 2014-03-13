@@ -9,8 +9,7 @@
 #include "ui/wm/core/native_cursor_manager.h"
 #include "ui/wm/core/native_cursor_manager_delegate.h"
 
-namespace views {
-namespace corewm {
+namespace wm {
 
 namespace internal {
 
@@ -231,5 +230,4 @@ void CursorManager::CommitMouseEventsEnabled(bool enabled) {
   current_state_->SetMouseEventsEnabled(enabled);
 }
 
-}  // namespace corewm
-}  // namespace views
+}  // namespace wm

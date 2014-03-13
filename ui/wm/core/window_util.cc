@@ -35,8 +35,7 @@ void CloneChildren(ui::Layer* to_clone, ui::Layer* parent) {
 
 }  // namespace
 
-namespace views {
-namespace corewm {
+namespace wm {
 
 void ActivateWindow(aura::Window* window) {
   DCHECK(window);
@@ -127,5 +126,4 @@ bool HasTransientAncestor(const aura::Window* window,
       HasTransientAncestor(transient_parent, ancestor) : false;
 }
 
-}  // namespace corewm
-}  // namespace views
+}  // namespace wm

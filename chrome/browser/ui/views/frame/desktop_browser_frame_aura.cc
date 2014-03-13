@@ -67,10 +67,10 @@ void DesktopBrowserFrameAura::InitNativeWidget(
       browser_desktop_window_tree_host_->AsDesktopWindowTreeHost();
   DesktopNativeWidgetAura::InitNativeWidget(modified_params);
 
-  visibility_controller_.reset(new views::corewm::VisibilityController);
+  visibility_controller_.reset(new wm::VisibilityController);
   aura::client::SetVisibilityClient(GetNativeView()->GetRootWindow(),
                                     visibility_controller_.get());
-  views::corewm::SetChildWindowVisibilityChangesAnimated(
+  wm::SetChildWindowVisibilityChangesAnimated(
       GetNativeView()->GetRootWindow());
 }
 

@@ -17,8 +17,7 @@
 
 using aura::Window;
 
-namespace views {
-namespace corewm {
+namespace wm {
 
 DEFINE_OWNED_WINDOW_PROPERTY_KEY(TransientWindowManager, kPropertyKey, NULL);
 
@@ -152,5 +151,4 @@ void TransientWindowManager::OnWindowDestroying(Window* window) {
   DCHECK(transient_children_.empty());
 }
 
-}  // namespace corewm
-}  // namespace views
+}  // namespace wm

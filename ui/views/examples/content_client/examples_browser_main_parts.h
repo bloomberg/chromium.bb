@@ -15,15 +15,12 @@ struct MainFunctionParams;
 }
 
 namespace wm {
+class WMState;
 class WMTestHelper;
 }
 
 namespace views {
 class ViewsDelegate;
-
-namespace corewm {
-class WMState;
-}
 
 namespace examples {
 
@@ -53,7 +50,7 @@ class ExamplesBrowserMainParts : public content::BrowserMainParts {
   scoped_ptr<wm::WMTestHelper> wm_test_helper_;
 #endif
 
-  scoped_ptr<views::corewm::WMState> wm_state_;
+  scoped_ptr<wm::WMState> wm_state_;
 
   DISALLOW_COPY_AND_ASSIGN(ExamplesBrowserMainParts);
 };

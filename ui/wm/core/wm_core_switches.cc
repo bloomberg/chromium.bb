@@ -6,13 +6,11 @@
 
 #include "base/command_line.h"
 
-namespace views {
-namespace corewm {
+namespace wm {
 namespace switches {
 
 // If present animations are disabled.
 const char kWindowAnimationsDisabled[] = "wm-window-animations-disabled";
 
 }  // namespace switches
-}  // namespace corewm
-}  // namespace views
+}  // namespace wm

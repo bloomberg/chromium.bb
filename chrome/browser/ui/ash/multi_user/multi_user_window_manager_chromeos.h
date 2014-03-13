@@ -56,7 +56,7 @@ class MultiUserWindowManagerChromeOS
       public ash::SessionStateObserver,
       public aura::WindowObserver,
       public content::NotificationObserver,
-      public views::corewm::TransientWindowObserver {
+      public wm::TransientWindowObserver {
  public:
   // Create the manager and use |active_user_id| as the active user.
   explicit MultiUserWindowManagerChromeOS(const std::string& active_user_id);

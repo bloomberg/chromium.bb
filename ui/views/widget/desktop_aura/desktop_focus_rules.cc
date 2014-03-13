@@ -40,7 +40,7 @@ bool DesktopFocusRules::IsWindowConsideredVisibleForActivation(
 aura::Window* DesktopFocusRules::GetToplevelWindow(
     aura::Window* window) const {
   aura::Window* top_level_window =
-      corewm::BaseFocusRules::GetToplevelWindow(window);
+      wm::BaseFocusRules::GetToplevelWindow(window);
   // In Desktop-Aura, only the content_window or children of the RootWindow are
   // considered as top level windows.
   if (top_level_window == content_window_->parent())
@@ -51,7 +51,7 @@ aura::Window* DesktopFocusRules::GetToplevelWindow(
 aura::Window* DesktopFocusRules::GetNextActivatableWindow(
     aura::Window* window) const {
   aura::Window* next_activatable_window =
-      corewm::BaseFocusRules::GetNextActivatableWindow(window);
+      wm::BaseFocusRules::GetNextActivatableWindow(window);
   // In Desktop-Aura the content_window_'s parent is a dummy window and thus
   // should never be activated. We should return the content_window_ if it
   // can be activated in this case.
