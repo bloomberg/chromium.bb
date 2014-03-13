@@ -5,7 +5,7 @@
 [
   {
     "namespace": "gcm",
-    "description": "Use <code>chrome.gcm</code> to enable apps and extensions to send and receive messages through <a href='http://developer.android.com/google/gcm/index.html'>Google Cloud Messaging for Android</a>.",
+    "description": "Use <code>chrome.gcm</code> to enable apps and extensions to send and receive messages through <a href='http://developer.android.com/google/gcm/index.html'>Google Cloud Messaging</a>.",
     "properties": {
       "MAX_MESSAGE_SIZE": {
         "value": 4096,
@@ -21,7 +21,7 @@
           {
             "name": "senderIds",
             "type": "array",
-            "items": { 
+            "items": {
               "type": "string",
               "minLength": 1
             },
@@ -34,7 +34,7 @@
             "type": "function",
             "description": "Function called when registration completes. It should check $(ref:runtime.lastError) for error when <code>registrationId</code> is empty.",
             "parameters": [
-              { 
+              {
                 "name": "registrationId",
                 "type": "string",
                 "description": "A registration ID assigned to the application by the GCM."
@@ -61,14 +61,14 @@
               "messageId": {
                 "type": "string",
                 "minLength": 1,
-                "description": "The ID of the message. It must be unique for each message."
+                "description": "The ID of the message. It must be unique for each message in scope of the applications. See the <a href='cloudMessagingV2#send_messages'>Cloud Messaging documentation</a> for advice for picking and handling an ID."
               },
               "timeToLive": {
                 "type": "integer",
                 "minimum": 0,
                 "maximum": 2419200,
                 "optional": true,
-                "description": "Time-to-live of the message in seconds. If it is not possible to send the message wihtin that time an error will be raised. A time-to-live of 0 indicates that the message should be sent immediately or fail if it's not possible. The maximum and a default value of time-to-live is 2419200 seconds (4 weeks)."
+                "description": "Time-to-live of the message in seconds. If it is not possible to send the message within that time, an onSendError event will be raised. A time-to-live of 0 indicates that the message should be sent immediately or fail if it's not possible. The maximum and a default value of time-to-live is 2419200 seconds (4 weeks)."
               },
               "data": {
                 "type": "object",
@@ -118,7 +118,7 @@
               "collapseKey": {
                 "type": "string",
                 "optional": "true",
-                "desctription": "The collapse key of a message."
+                "desctription": "The collapse key of a message. See <a href='cloudMessagingV2#collapsible_messages'>Collapsible Messages</a> section of Cloud Messaging documentation for details."
               }
             }
           }
@@ -127,7 +127,7 @@
       {
         "name": "onMessagesDeleted",
         "type": "function",
-        "description": "Fired when a GCM server had to delete messages to the application from its queue in order to manage its size. The app is expected to handle that case gracefully, e.g. by running a full sync with its server."
+        "description": "Fired when a GCM server had to delete messages sent by an app server to the application. See <a href='cloudMessagingV2#messages_deleted_event'>Messages deleted event</a> section of Cloud Messaging documentation for details on handling this event."
       },
       {
         "name": "onSendError",
