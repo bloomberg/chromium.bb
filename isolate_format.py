@@ -572,6 +572,8 @@ class Configs(object):
     # .isolate file(s). The order is important since the same order is used for
     # keys in self._by_config.
     assert isinstance(config_variables, tuple)
+    assert all(isinstance(c, basestring) for c in config_variables), (
+        config_variables)
     self._config_variables = config_variables
     # The keys of _by_config are tuples of values for each of the items in
     # self._config_variables. A None item in the list of the key means the value
@@ -584,50 +586,47 @@ class Configs(object):
 
   def get_config(self, config):
     """Returns all configs that matches this config as a single ConfigSettings.
-
-    Returns None if no matching configuration is found.
     """
-    out = None
+    out = ConfigSettings({})
     for k, v in self._by_config.iteritems():
       if all(i == j or j is None for i, j in zip(config, k)):
-        out = out.union(v) if out else v
+        out = out.union(v)
     return out
 
+  def set_config(self, key, value):
+    """Sets the ConfigSettings for this key.
+
+    The key is a tuple of bounded or unbounded variables. The global variable
+    is the key where all values are unbounded, e.g.:
+      (None,) * len(self._config_variables)
+    """
+    assert key not in self._by_config, (key, self._by_config.keys())
+    assert isinstance(key, tuple)
+    assert len(key) == len(self._config_variables), (
+        key, self._config_variables)
+    assert isinstance(value, ConfigSettings)
+    self._by_config[key] = value
+
   def union(self, rhs):
-    """Adds variables from rhs (a Configs) to the existing variables."""
-    # Takes the first file comment, prefering lhs.
+    """Returns a new Configs instance, the union of variables from self and rhs.
 
-    # Default mapping of configs.
-    lhs_config = self._by_config
+    Uses self.file_comment if available, otherwise rhs.file_comment.
+    """
+    # Merge the keys of config_variables for each Configs instances. All the new
+    # variables will become unbounded. This requires realigning the keys.
+    config_variables = tuple(sorted(
+        set(self.config_variables) | set(rhs.config_variables)))
+    out = Configs(self.file_comment or rhs.file_comment, config_variables)
+    mapping_lhs = _get_map_keys(out.config_variables, self.config_variables)
+    mapping_rhs = _get_map_keys(out.config_variables, rhs.config_variables)
+    lhs_config = dict(
+        (_map_keys(mapping_lhs, k), v) for k, v in self._by_config.iteritems())
     # pylint: disable=W0212
-    rhs_config = rhs._by_config
-    comment = self.file_comment or rhs.file_comment
-    if not self.config_variables:
-      assert not self._by_config
-      out = Configs(comment, rhs.config_variables)
-    elif not rhs.config_variables:
-      assert not rhs._by_config
-      out = Configs(comment, self.config_variables)
-    elif rhs.config_variables == self.config_variables:
-      out = Configs(comment, self.config_variables)
-    else:
-      # At that point, we need to merge the keys. By default, all the new
-      # variables will become unbounded. This requires realigning the keys.
-      config_variables = tuple(sorted(
-          set(self.config_variables) | set(rhs.config_variables)))
-      out = Configs(comment, config_variables)
-
-      mapping_lhs = _get_map_keys(out.config_variables, self.config_variables)
-      mapping_rhs = _get_map_keys(out.config_variables, rhs.config_variables)
-      lhs_config = dict(
-          (_map_keys(mapping_lhs, k), v)
-          for k, v in self._by_config.iteritems())
-      rhs_config = dict(
-          (_map_keys(mapping_rhs, k), v)
-          for k, v in rhs._by_config.iteritems())
+    rhs_config = dict(
+        (_map_keys(mapping_rhs, k), v) for k, v in rhs._by_config.iteritems())
 
     for key in set(lhs_config) | set(rhs_config):
-      out._by_config[key] = union(lhs_config.get(key), rhs_config.get(key))
+      out.set_config(key, union(lhs_config.get(key), rhs_config.get(key)))
     return out
 
   def flatten(self):
@@ -742,8 +741,7 @@ def load_isolate_as_config(isolate_dir, value, file_comment):
     configs = match_configs(expr, config_variables, all_configs)
     new = Configs(None, config_variables)
     for config in configs:
-      # pylint: disable=W0212
-      new._by_config[config] = ConfigSettings(then['variables'])
+      new.set_config(config, ConfigSettings(then['variables']))
     isolate = isolate.union(new)
 
   # Load the includes. Process them in reverse so the last one take precedence.
@@ -785,10 +783,6 @@ def load_isolate_for_config(isolate_dir, content, config_variables):
   # A configuration is to be created with all the combinations of free
   # variables.
   config = isolate.get_config(config_name)
-  if not config:
-    logging.debug('Loaded an empty .isolate file from %s', isolate_dir)
-    return [], [], [], None
-
   # Merge tracked and untracked variables, isolate.py doesn't care about the
   # trackability of the variables, only the build tool does.
   dependencies = [

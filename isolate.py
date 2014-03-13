@@ -345,9 +345,7 @@ def generate_isolate(
   config_variable_names, config_values = zip(
       *sorted(config_variables.iteritems()))
   out = isolate_format.Configs(None, config_variable_names)
-  # TODO(maruel): Create a public interface in Configs to add a ConfigSettings.
-  # pylint: disable=W0212
-  out._by_config[config_values] = isolate_format.ConfigSettings(dependencies)
+  out.set_config(config_values, isolate_format.ConfigSettings(dependencies))
   return out.make_isolate_file()
 
 
