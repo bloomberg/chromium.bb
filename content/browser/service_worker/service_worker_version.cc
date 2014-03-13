@@ -87,6 +87,12 @@ void HandleEventFinished(base::WeakPtr<ServiceWorkerVersion> version,
 void HandleFetchResponse(const ServiceWorkerVersion::FetchCallback& callback,
                          ServiceWorkerStatusCode status,
                          const IPC::Message& message) {
+  if (status != SERVICE_WORKER_OK) {
+    callback.Run(status,
+                 SERVICE_WORKER_FETCH_EVENT_RESULT_FALLBACK,
+                 ServiceWorkerResponse());
+    return;
+  }
   if (message.type() != ServiceWorkerHostMsg_FetchEventFinished::ID) {
     NOTREACHED() << "Got unexpected response for FetchEvent: "
                  << message.type();
@@ -98,7 +104,7 @@ void HandleFetchResponse(const ServiceWorkerVersion::FetchCallback& callback,
   ServiceWorkerFetchEventResult result;
   ServiceWorkerResponse response;
   ServiceWorkerHostMsg_FetchEventFinished::Read(&message, &result, &response);
-  callback.Run(status, result, response);
+  callback.Run(SERVICE_WORKER_OK, result, response);
 }
 
 }  // namespace

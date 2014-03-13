@@ -258,9 +258,9 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
                                        fetch_run_loop.QuitClosure(),
                                        &fetch_result));
     fetch_run_loop.Run();
-    ASSERT_EQ(SERVICE_WORKER_OK, fetch_result.status);
     *result = fetch_result.result;
     *response = fetch_result.response;
+    ASSERT_EQ(SERVICE_WORKER_OK, fetch_result.status);
   }
 
   void SetUpRegistrationOnIOThread(const std::string& worker_url) {
@@ -393,11 +393,11 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, FetchEvent_Response) {
   ServiceWorkerResponse response;
   FetchTestHelper("/service_worker/fetch_event.js", &result, &response);
   ASSERT_EQ(SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE, result);
-  ASSERT_EQ(200, response.status_code);
-  ASSERT_EQ("OK", response.status_text);
-  ASSERT_EQ("GET", response.method);
+  EXPECT_EQ(200, response.status_code);
+  EXPECT_EQ("OK", response.status_text);
+  EXPECT_EQ("GET", response.method);
   std::map<std::string, std::string> expected_headers;
-  ASSERT_EQ(expected_headers, response.headers);
+  EXPECT_EQ(expected_headers, response.headers);
 }
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
