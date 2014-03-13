@@ -20,14 +20,15 @@
 #include "content/public/common/page_transition_types.h"
 #include "sql/connection.h"
 
-using base::Time;
-using base::TimeDelta;
 
 namespace history {
 
+
+// Helpers --------------------------------------------------------------------
+
 namespace {
 
-const char* kVirtualHistoryAndBookmarkTable =
+const char kVirtualHistoryAndBookmarkTable[] =
     "SELECT android_urls.id AS _id, "
         "android_cache_db.bookmark_cache.created_time AS created, "
         "urls.title AS title, android_urls.raw_url AS url, "
@@ -47,13 +48,13 @@ const char* kVirtualHistoryAndBookmarkTable =
         "LEFT JOIN android_cache_db.bookmark_cache "
         "on (android_urls.url_id = android_cache_db.bookmark_cache.url_id))";
 
-const char * kURLUpdateClause =
+const char kURLUpdateClause[] =
     "SELECT urls.id, urls.last_visit_time, created_time, urls.url "
     "FROM urls LEFT JOIN "
         "(SELECT url as visit_url, min(visit_time) as created_time"
         " FROM visits GROUP BY url) ON (visit_url = urls.id) ";
 
-const char* kSearchTermUpdateClause =
+const char kSearchTermUpdateClause[] =
     "SELECT keyword_search_terms.term, max(urls.last_visit_time) "
     "FROM keyword_search_terms JOIN urls ON "
         "(keyword_search_terms.url_id = urls.id) "
@@ -66,7 +67,7 @@ void BindStatement(const std::vector<base::string16>& selection_args,
        i != selection_args.end(); ++i) {
     // Using the same method as Android, binding all argument as String.
     statement->BindString16(*col_index, *i);
-    (*col_index)++;
+    ++(*col_index);
   }
 }
 
@@ -85,11 +86,11 @@ bool IsHistoryAndBookmarkRowValid(const HistoryAndBookmarkRow& row) {
   // e. Visit count is 0 or 1 and both last visit time and created time are set
   //    explicitly, but the time is different or created time is not UnixEpoch.
   if (row.is_value_set_explicitly(HistoryAndBookmarkRow::LAST_VISIT_TIME) &&
-      row.last_visit_time() > Time::Now())
+      row.last_visit_time() > base::Time::Now())
     return false;
 
   if (row.is_value_set_explicitly(HistoryAndBookmarkRow::CREATED) &&
-      row.created() > Time::Now())
+      row.created() > base::Time::Now())
     return false;
 
   if (row.is_value_set_explicitly(HistoryAndBookmarkRow::LAST_VISIT_TIME) &&
@@ -101,7 +102,7 @@ bool IsHistoryAndBookmarkRowValid(const HistoryAndBookmarkRow& row) {
         row.is_value_set_explicitly(HistoryAndBookmarkRow::CREATED) &&
         row.is_value_set_explicitly(HistoryAndBookmarkRow::LAST_VISIT_TIME)) {
       if (row.created() != row.last_visit_time() &&
-          row.created() != Time::UnixEpoch() &&
+          row.created() != base::Time::UnixEpoch() &&
           (row.visit_count() == 0 || row.visit_count() == 1))
         return false;
 
@@ -115,120 +116,40 @@ bool IsHistoryAndBookmarkRowValid(const HistoryAndBookmarkRow& row) {
 
 }  // namespace
 
-AndroidProviderBackend::AndroidProviderBackend(
-    const base::FilePath& db_name,
-    HistoryDatabase* history_db,
-    ThumbnailDatabase* thumbnail_db,
-    BookmarkService* bookmark_service,
-    HistoryBackend::Delegate* delegate)
-    : android_cache_db_filename_(db_name),
-      db_(&history_db->GetDB()),
-      history_db_(history_db),
-      thumbnail_db_(thumbnail_db),
-      bookmark_service_(bookmark_service),
-      initialized_(false),
-      delegate_(delegate) {
-  DCHECK(delegate_);
+
+// AndroidProviderBackend::HistoryNotifications -------------------------------
+
+AndroidProviderBackend::HistoryNotifications::HistoryNotifications() {
 }
 
-AndroidProviderBackend::~AndroidProviderBackend() {
+AndroidProviderBackend::HistoryNotifications::~HistoryNotifications() {
 }
 
-AndroidStatement* AndroidProviderBackend::QueryHistoryAndBookmarks(
-    const std::vector<HistoryAndBookmarkRow::ColumnID>& projections,
-    const std::string& selection,
-    const std::vector<base::string16>& selection_args,
-    const std::string& sort_order) {
-  if (projections.empty())
-    return NULL;
-
-  ScopedTransaction transaction(history_db_, thumbnail_db_);
-
-  if (!EnsureInitializedAndUpdated())
-    return NULL;
-
-  transaction.Commit();
-
-  return QueryHistoryAndBookmarksInternal(projections, selection,
-                                          selection_args, sort_order);
-}
-
-bool AndroidProviderBackend::UpdateHistoryAndBookmarks(
-    const HistoryAndBookmarkRow& row,
-    const std::string& selection,
-    const std::vector<base::string16>& selection_args,
-    int* updated_count) {
-  HistoryNotifications notifications;
-
-  ScopedTransaction transaction(history_db_, thumbnail_db_);
-
-  if (!UpdateHistoryAndBookmarks(row, selection, selection_args, updated_count,
-                                 &notifications))
-    return false;
-
-  transaction.Commit();
-  BroadcastNotifications(notifications);
-  return true;
-}
-
-AndroidURLID AndroidProviderBackend::InsertHistoryAndBookmark(
-    const HistoryAndBookmarkRow& values) {
-  HistoryNotifications notifications;
-
-  ScopedTransaction transaction(history_db_, thumbnail_db_);
-
-  AndroidURLID id = InsertHistoryAndBookmark(values, &notifications, true);
-  if (id) {
-    transaction.Commit();
-    BroadcastNotifications(notifications);
-    return id;
-  }
-  return 0;
-}
-
-bool AndroidProviderBackend::DeleteHistoryAndBookmarks(
-    const std::string& selection,
-    const std::vector<base::string16>& selection_args,
-    int* deleted_count) {
-  HistoryNotifications notifications;
-
-  ScopedTransaction transaction(history_db_, thumbnail_db_);
-
-  if (!DeleteHistoryAndBookmarks(selection, selection_args, deleted_count,
-                                 &notifications))
-    return false;
-
-  transaction.Commit();
-  BroadcastNotifications(notifications);
-  return true;
-}
-
-bool AndroidProviderBackend::DeleteHistory(
-    const std::string& selection,
-    const std::vector<base::string16>& selection_args,
-    int* deleted_count) {
-  HistoryNotifications notifications;
-
-  ScopedTransaction transaction(history_db_, thumbnail_db_);
-
-  if (!DeleteHistory(selection, selection_args, deleted_count,
-                     &notifications))
-    return false;
-
-  transaction.Commit();
-  BroadcastNotifications(notifications);
-  return true;
-}
-
-AndroidProviderBackend::HistoryNotification::HistoryNotification(
+void AndroidProviderBackend::HistoryNotifications::PushBack(
     int type,
-    HistoryDetails* detail)
-    : type(type),
-      detail(detail) {
+    scoped_ptr<HistoryDetails> detail) {
+  DCHECK_EQ(types_.size(), details_.size());
+  types_.push_back(type);
+  details_.push_back(detail.release());
 }
 
-AndroidProviderBackend::HistoryNotification::~HistoryNotification() {
+int AndroidProviderBackend::HistoryNotifications::PopBackType() {
+  DCHECK(!empty());
+  int type = types_.back();
+  types_.pop_back();
+  return type;
 }
+
+scoped_ptr<HistoryDetails>
+    AndroidProviderBackend::HistoryNotifications::PopBackDetails() {
+  DCHECK(!details_.empty());
+  scoped_ptr<HistoryDetails> detail(details_.back());
+  details_.weak_erase(details_.end() - 1);
+  return detail.Pass();
+}
+
+
+// AndroidProviderBackend::ScopedTransaction ----------------------------------
 
 AndroidProviderBackend::ScopedTransaction::ScopedTransaction(
     HistoryDatabase* history_db,
@@ -285,6 +206,113 @@ void AndroidProviderBackend::ScopedTransaction::Commit() {
   if (thumbnail_db_)
     thumbnail_db_->CommitTransaction();
   committed_ = true;
+}
+
+
+// AndroidProviderBackend -----------------------------------------------------
+
+AndroidProviderBackend::AndroidProviderBackend(
+    const base::FilePath& db_name,
+    HistoryDatabase* history_db,
+    ThumbnailDatabase* thumbnail_db,
+    BookmarkService* bookmark_service,
+    HistoryBackend::Delegate* delegate)
+    : android_cache_db_filename_(db_name),
+      db_(&history_db->GetDB()),
+      history_db_(history_db),
+      thumbnail_db_(thumbnail_db),
+      bookmark_service_(bookmark_service),
+      initialized_(false),
+      delegate_(delegate) {
+  DCHECK(delegate_);
+}
+
+AndroidProviderBackend::~AndroidProviderBackend() {
+}
+
+AndroidStatement* AndroidProviderBackend::QueryHistoryAndBookmarks(
+    const std::vector<HistoryAndBookmarkRow::ColumnID>& projections,
+    const std::string& selection,
+    const std::vector<base::string16>& selection_args,
+    const std::string& sort_order) {
+  if (projections.empty())
+    return NULL;
+
+  ScopedTransaction transaction(history_db_, thumbnail_db_);
+
+  if (!EnsureInitializedAndUpdated())
+    return NULL;
+
+  transaction.Commit();
+
+  return QueryHistoryAndBookmarksInternal(projections, selection,
+                                          selection_args, sort_order);
+}
+
+bool AndroidProviderBackend::UpdateHistoryAndBookmarks(
+    const HistoryAndBookmarkRow& row,
+    const std::string& selection,
+    const std::vector<base::string16>& selection_args,
+    int* updated_count) {
+  HistoryNotifications notifications;
+
+  ScopedTransaction transaction(history_db_, thumbnail_db_);
+
+  if (!UpdateHistoryAndBookmarks(row, selection, selection_args, updated_count,
+                                 &notifications))
+    return false;
+
+  transaction.Commit();
+  BroadcastNotifications(&notifications);
+  return true;
+}
+
+AndroidURLID AndroidProviderBackend::InsertHistoryAndBookmark(
+    const HistoryAndBookmarkRow& values) {
+  HistoryNotifications notifications;
+
+  ScopedTransaction transaction(history_db_, thumbnail_db_);
+
+  AndroidURLID id = InsertHistoryAndBookmark(values, true, &notifications);
+  if (!id)
+    return 0;
+
+  transaction.Commit();
+  BroadcastNotifications(&notifications);
+  return id;
+}
+
+bool AndroidProviderBackend::DeleteHistoryAndBookmarks(
+    const std::string& selection,
+    const std::vector<base::string16>& selection_args,
+    int* deleted_count) {
+  HistoryNotifications notifications;
+
+  ScopedTransaction transaction(history_db_, thumbnail_db_);
+
+  if (!DeleteHistoryAndBookmarks(selection, selection_args, deleted_count,
+                                 &notifications))
+    return false;
+
+  transaction.Commit();
+  BroadcastNotifications(&notifications);
+  return true;
+}
+
+bool AndroidProviderBackend::DeleteHistory(
+    const std::string& selection,
+    const std::vector<base::string16>& selection_args,
+    int* deleted_count) {
+  HistoryNotifications notifications;
+
+  ScopedTransaction transaction(history_db_, thumbnail_db_);
+
+  if (!DeleteHistory(selection, selection_args, deleted_count, &notifications))
+    return false;
+
+  transaction.Commit();
+  BroadcastNotifications(&notifications);
+  return true;
 }
 
 bool AndroidProviderBackend::UpdateHistoryAndBookmarks(
@@ -352,21 +380,23 @@ bool AndroidProviderBackend::UpdateHistoryAndBookmarks(
       favicon->urls.insert(i->url);
   }
 
-  if (!modified->changed_urls.empty())
-    notifications->push_back(HistoryNotification(
-        chrome::NOTIFICATION_HISTORY_URLS_MODIFIED, modified.release()));
+  if (!modified->changed_urls.empty()) {
+    notifications->PushBack(chrome::NOTIFICATION_HISTORY_URLS_MODIFIED,
+                            modified.PassAs<HistoryDetails>());
+  }
 
-  if (!favicon->urls.empty())
-    notifications->push_back(HistoryNotification(
-        chrome::NOTIFICATION_FAVICON_CHANGED, favicon.release()));
+  if (!favicon->urls.empty()) {
+    notifications->PushBack(chrome::NOTIFICATION_FAVICON_CHANGED,
+                            favicon.PassAs<HistoryDetails>());
+  }
 
   return true;
 }
 
 AndroidURLID AndroidProviderBackend::InsertHistoryAndBookmark(
     const HistoryAndBookmarkRow& values,
-    HistoryNotifications* notifications,
-    bool ensure_initialized_and_updated) {
+    bool ensure_initialized_and_updated,
+    HistoryNotifications* notifications) {
   if (!IsHistoryAndBookmarkRowValid(values))
     return false;
 
@@ -401,11 +431,12 @@ AndroidURLID AndroidProviderBackend::InsertHistoryAndBookmark(
     favicon->urls.insert(url_row.url());
   }
 
-  notifications->push_back(HistoryNotification(
-      chrome::NOTIFICATION_HISTORY_URLS_MODIFIED, modified.release()));
-  if (favicon.get())
-    notifications->push_back(HistoryNotification(
-        chrome::NOTIFICATION_FAVICON_CHANGED, favicon.release()));
+  notifications->PushBack(chrome::NOTIFICATION_HISTORY_URLS_MODIFIED,
+                          modified.PassAs<HistoryDetails>());
+  if (favicon) {
+    notifications->PushBack(chrome::NOTIFICATION_FAVICON_CHANGED,
+                            favicon.PassAs<HistoryDetails>());
+  }
 
   return row.id();
 }
@@ -467,7 +498,7 @@ bool AndroidProviderBackend::DeleteHistory(
       row.set_url(i->url);
       // Set the visit time to the UnixEpoch since that's when the Android
       // system time starts. The Android have a CTS testcase for this.
-      row.set_last_visit_time(Time::UnixEpoch());
+      row.set_last_visit_time(base::Time::UnixEpoch());
       row.set_visit_count(0);
       // We don't want to change the bookmark model, so set_is_bookmark() is
       // not called.
@@ -485,7 +516,7 @@ bool AndroidProviderBackend::DeleteHistory(
     // database during UpdateBookmark(), then the insertion will fail.
     // We can't rely on UpdateBookmark() to insert the bookmarks into history
     // database as the raw_url will be lost.
-    if (!InsertHistoryAndBookmark(*i, notifications, false))
+    if (!InsertHistoryAndBookmark(*i, false, notifications))
       return false;
   }
   return true;
@@ -625,7 +656,7 @@ SearchTermID AndroidProviderBackend::InsertSearchTerm(
   SearchTermID id = history_db_->GetSearchTerm(values.search_term(), NULL);
   if (!id)
     // Note the passed in Time() will be changed in UpdateSearchTermTable().
-    id = history_db_->AddSearchTerm(values.search_term(), Time());
+    id = history_db_->AddSearchTerm(values.search_term(), base::Time());
   return id;
 }
 
@@ -743,11 +774,12 @@ bool AndroidProviderBackend::UpdateVisitedURLs() {
     // The created_time could be set to the last_visit_time only when the type
     // of the 'created' column is NULL because the left join is used in query
     // and there is no row in the visit table when the visit count is 0.
-    Time last_visit_time = Time::FromInternalValue(statement.ColumnInt64(1));
-    Time created_time = last_visit_time;
+    base::Time last_visit_time =
+        base::Time::FromInternalValue(statement.ColumnInt64(1));
+    base::Time created_time = last_visit_time;
 
     if (statement.ColumnType(2) != sql::COLUMN_TYPE_NULL)
-      created_time = Time::FromInternalValue(statement.ColumnInt64(2));
+      created_time = base::Time::FromInternalValue(statement.ColumnInt64(2));
 
     if (!history_db_->AddBookmarkCacheRow(created_time, last_visit_time,
                                           statement.ColumnInt64(0)))
@@ -782,7 +814,7 @@ bool AndroidProviderBackend::UpdateBookmarks() {
       url_row.set_title(i->title);
       // Set the visit time to the UnixEpoch since that's when the Android
       // system time starts. The Android have a CTS testcase for this.
-      url_row.set_last_visit(Time::UnixEpoch());
+      url_row.set_last_visit(base::Time::UnixEpoch());
       url_row.set_hidden(true);
       url_id = history_db_->AddURL(url_row);
       if (url_id == 0) {
@@ -791,8 +823,8 @@ bool AndroidProviderBackend::UpdateBookmarks() {
       }
       if (!history_db_->AddAndroidURLRow(i->url.spec(), url_id))
         return false;
-      if (!history_db_->AddBookmarkCacheRow(Time::UnixEpoch(),
-                            Time::UnixEpoch(), url_id))
+      if (!history_db_->AddBookmarkCacheRow(base::Time::UnixEpoch(),
+                                            base::Time::UnixEpoch(), url_id))
         return false;
     }
     url_ids.push_back(url_id);
@@ -828,7 +860,8 @@ bool AndroidProviderBackend::UpdateSearchTermTable() {
                                                    kSearchTermUpdateClause));
   while (statement.Step()) {
     base::string16 term = statement.ColumnString16(0);
-    Time last_visit_time = Time::FromInternalValue(statement.ColumnInt64(1));
+    base::Time last_visit_time =
+        base::Time::FromInternalValue(statement.ColumnInt64(1));
     SearchTermRow search_term_row;
     if (history_db_->GetSearchTerm(term, &search_term_row)) {
       if (search_term_row.last_visit_time != last_visit_time) {
@@ -1054,14 +1087,14 @@ bool AndroidProviderBackend::SimulateUpdateURL(
 
   modified->changed_urls.push_back(new_url_row);
 
-  notifications->push_back(HistoryNotification(
-      chrome::NOTIFICATION_HISTORY_URLS_DELETED,
-      deleted_details.release()));
-  if (favicon_details.get() && !favicon_details->urls.empty())
-    notifications->push_back(HistoryNotification(
-        chrome::NOTIFICATION_FAVICON_CHANGED, favicon_details.release()));
-  notifications->push_back(HistoryNotification(
-      chrome::NOTIFICATION_HISTORY_URLS_MODIFIED, modified.release()));
+  notifications->PushBack(chrome::NOTIFICATION_HISTORY_URLS_DELETED,
+                          deleted_details.PassAs<HistoryDetails>());
+  if (favicon_details && !favicon_details->urls.empty()) {
+    notifications->PushBack(chrome::NOTIFICATION_FAVICON_CHANGED,
+                            favicon_details.PassAs<HistoryDetails>());
+  }
+  notifications->PushBack(chrome::NOTIFICATION_HISTORY_URLS_MODIFIED,
+                          modified.PassAs<HistoryDetails>());
 
   return true;
 }
@@ -1125,20 +1158,20 @@ bool AndroidProviderBackend::DeleteHistoryInternal(
         return false;
   }
 
-  notifications->push_back(HistoryNotification(
-      chrome::NOTIFICATION_HISTORY_URLS_DELETED,
-      deleted_details.release()));
-  if (favicon.get() && !favicon->urls.empty())
-    notifications->push_back(HistoryNotification(
-        chrome::NOTIFICATION_FAVICON_CHANGED, favicon.release()));
+  notifications->PushBack(chrome::NOTIFICATION_HISTORY_URLS_DELETED,
+                          deleted_details.PassAs<HistoryDetails>());
+  if (favicon && !favicon->urls.empty()) {
+    notifications->PushBack(chrome::NOTIFICATION_FAVICON_CHANGED,
+                            favicon.PassAs<HistoryDetails>());
+  }
   return true;
 }
 
 void AndroidProviderBackend::BroadcastNotifications(
-    const HistoryNotifications& notifications) {
-  for (HistoryNotifications::const_iterator i = notifications.begin();
-       i != notifications.end(); ++i) {
-    delegate_->BroadcastNotifications(i->type, i->detail);
+    HistoryNotifications* notifications) {
+  while (!notifications->empty()) {
+    delegate_->BroadcastNotifications(notifications->PopBackType(),
+                                      notifications->PopBackDetails());
   }
 }
 

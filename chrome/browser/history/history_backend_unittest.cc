@@ -77,13 +77,13 @@ class HistoryBackendTestDelegate : public HistoryBackend::Delegate {
  public:
   explicit HistoryBackendTestDelegate(HistoryBackendTest* test) : test_(test) {}
 
-  virtual void NotifyProfileError(int backend_id,
-                                  sql::InitStatus init_status) OVERRIDE {}
-  virtual void SetInMemoryBackend(int backend_id,
-                                  InMemoryHistoryBackend* backend) OVERRIDE;
-  virtual void BroadcastNotifications(int type,
-                                      HistoryDetails* details) OVERRIDE;
-  virtual void DBLoaded(int backend_id) OVERRIDE;
+  virtual void NotifyProfileError(sql::InitStatus init_status) OVERRIDE {}
+  virtual void SetInMemoryBackend(
+      scoped_ptr<InMemoryHistoryBackend> backend) OVERRIDE;
+  virtual void BroadcastNotifications(
+      int type,
+      scoped_ptr<HistoryDetails> details) OVERRIDE;
+  virtual void DBLoaded() OVERRIDE;
   virtual void NotifyVisitDBObserversOnAddVisit(
       const BriefVisitInfo& info) OVERRIDE {}
 
@@ -180,9 +180,9 @@ class HistoryBackendTest : public testing::Test {
   // updated transition code of the visit records for |url1| and |url2| is
   // returned by filling in |*transition1| and |*transition2|, respectively.
   // |time| is a time of the redirect.
-  void  AddClientRedirect(const GURL& url1, const GURL& url2, bool did_replace,
-                          base::Time time,
-                          int* transition1, int* transition2) {
+  void AddClientRedirect(const GURL& url1, const GURL& url2, bool did_replace,
+                         base::Time time,
+                         int* transition1, int* transition2) {
     void* const dummy_scope = reinterpret_cast<void*>(0x87654321);
     history::RedirectList redirects;
     if (url1.is_valid())
@@ -369,7 +369,6 @@ class HistoryBackendTest : public testing::Test {
                                       &test_dir_))
       return;
     backend_ = new HistoryBackend(test_dir_,
-                                  0,
                                   new HistoryBackendTestDelegate(this),
                                   &bookmark_model_);
     backend_->Init(std::string(), false);
@@ -384,20 +383,16 @@ class HistoryBackendTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  void SetInMemoryBackend(int backend_id, InMemoryHistoryBackend* backend) {
-    mem_backend_.reset(backend);
+  void SetInMemoryBackend(scoped_ptr<InMemoryHistoryBackend> backend) {
+    mem_backend_.swap(backend);
   }
 
-  void BroadcastNotifications(int type,
-                              HistoryDetails* details) {
+  void BroadcastNotifications(int type, scoped_ptr<HistoryDetails> details) {
     ++num_broadcasted_notifications_;
 
     // Send the notifications directly to the in-memory database.
-    content::Details<HistoryDetails> det(details);
+    content::Details<HistoryDetails> det(details.get());
     mem_backend_->Observe(type, content::Source<HistoryBackendTest>(NULL), det);
-
-    // The backend passes ownership of the details pointer to us.
-    delete details;
   }
 
   // The number of notifications which were broadcasted.
@@ -410,18 +405,18 @@ class HistoryBackendTest : public testing::Test {
   content::TestBrowserThread ui_thread_;
 };
 
-void HistoryBackendTestDelegate::SetInMemoryBackend(int backend_id,
-    InMemoryHistoryBackend* backend) {
-  test_->SetInMemoryBackend(backend_id, backend);
+void HistoryBackendTestDelegate::SetInMemoryBackend(
+    scoped_ptr<InMemoryHistoryBackend> backend) {
+  test_->SetInMemoryBackend(backend.Pass());
 }
 
 void HistoryBackendTestDelegate::BroadcastNotifications(
     int type,
-    HistoryDetails* details) {
-  test_->BroadcastNotifications(type, details);
+    scoped_ptr<HistoryDetails> details) {
+  test_->BroadcastNotifications(type, details.Pass());
 }
 
-void HistoryBackendTestDelegate::DBLoaded(int backend_id) {
+void HistoryBackendTestDelegate::DBLoaded() {
   test_->loaded_ = true;
 }
 
@@ -1214,7 +1209,6 @@ TEST_F(HistoryBackendTest, MigrationVisitSource) {
   ASSERT_TRUE(base::CopyFile(old_history_path, new_history_file));
 
   backend_ = new HistoryBackend(new_history_path,
-                                0,
                                 new HistoryBackendTestDelegate(this),
                                 &bookmark_model_);
   backend_->Init(std::string(), false);
@@ -2565,7 +2559,6 @@ TEST_F(HistoryBackendTest, MigrationVisitDuration) {
   ASSERT_TRUE(base::CopyFile(old_archived, new_archived_file));
 
   backend_ = new HistoryBackend(new_history_path,
-                                0,
                                 new HistoryBackendTestDelegate(this),
                                 &bookmark_model_);
   backend_->Init(std::string(), false);

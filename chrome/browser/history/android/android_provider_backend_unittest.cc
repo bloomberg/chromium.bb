@@ -59,25 +59,28 @@ class AndroidProviderBackendDelegate : public HistoryBackend::Delegate {
  public:
   AndroidProviderBackendDelegate() {}
 
-  virtual void NotifyProfileError(int backend_id,
-                                  sql::InitStatus init_status) OVERRIDE {}
-  virtual void SetInMemoryBackend(int backend_id,
-                                  InMemoryHistoryBackend* backend) OVERRIDE {}
-  virtual void BroadcastNotifications(int type,
-                                      HistoryDetails* details) OVERRIDE {
+  virtual void NotifyProfileError(sql::InitStatus init_status) OVERRIDE {}
+  virtual void SetInMemoryBackend(
+      scoped_ptr<InMemoryHistoryBackend> backend) OVERRIDE {}
+  virtual void BroadcastNotifications(
+      int type,
+      scoped_ptr<HistoryDetails> details) OVERRIDE {
     switch (type) {
       case chrome::NOTIFICATION_HISTORY_URLS_DELETED:
-        deleted_details_.reset(static_cast<URLsDeletedDetails*>(details));
+        deleted_details_.reset(
+            static_cast<URLsDeletedDetails*>(details.release()));
         break;
       case chrome::NOTIFICATION_FAVICON_CHANGED:
-        favicon_details_.reset(static_cast<FaviconChangedDetails*>(details));
+        favicon_details_.reset(
+            static_cast<FaviconChangedDetails*>(details.release()));
         break;
       case chrome::NOTIFICATION_HISTORY_URLS_MODIFIED:
-        modified_details_.reset(static_cast<URLsModifiedDetails*>(details));
+        modified_details_.reset(
+            static_cast<URLsModifiedDetails*>(details.release()));
         break;
     }
   }
-  virtual void DBLoaded(int backend_id) OVERRIDE {}
+  virtual void DBLoaded() OVERRIDE {}
   virtual void NotifyVisitDBObserversOnAddVisit(
       const history::BriefVisitInfo& info) OVERRIDE {}
 
@@ -235,8 +238,8 @@ TEST_F(AndroidProviderBackendTest, UpdateTables) {
   // HistoryBackend will shutdown after that.
   {
   scoped_refptr<HistoryBackend> history_backend;
-  history_backend = new HistoryBackend(temp_dir_.path(), 0,
-      new AndroidProviderBackendDelegate(), bookmark_model_);
+  history_backend = new HistoryBackend(
+      temp_dir_.path(), new AndroidProviderBackendDelegate(), bookmark_model_);
   history_backend->Init(std::string(), false);
   history_backend->AddVisits(url1, visits1, history::SOURCE_SYNCED);
   history_backend->AddVisits(url2, visits2, history::SOURCE_SYNCED);
@@ -379,8 +382,8 @@ TEST_F(AndroidProviderBackendTest, QueryHistoryAndBookmarks) {
   // HistoryBackend will shutdown after that.
   {
   scoped_refptr<HistoryBackend> history_backend;
-  history_backend = new HistoryBackend(temp_dir_.path(), 0,
-      new AndroidProviderBackendDelegate(), bookmark_model_);
+  history_backend = new HistoryBackend(
+      temp_dir_.path(), new AndroidProviderBackendDelegate(), bookmark_model_);
   history_backend->Init(std::string(), false);
   history_backend->AddVisits(url1, visits1, history::SOURCE_SYNCED);
   history_backend->AddVisits(url2, visits2, history::SOURCE_SYNCED);
@@ -1778,8 +1781,8 @@ TEST_F(AndroidProviderBackendTest, QueryWithoutThumbnailDB) {
   // HistoryBackend will shutdown after that.
   {
   scoped_refptr<HistoryBackend> history_backend;
-  history_backend = new HistoryBackend(temp_dir_.path(), 0,
-      new AndroidProviderBackendDelegate(), bookmark_model_);
+  history_backend = new HistoryBackend(
+      temp_dir_.path(), new AndroidProviderBackendDelegate(), bookmark_model_);
   history_backend->Init(std::string(), false);
   history_backend->AddVisits(url1, visits1, history::SOURCE_SYNCED);
   history_backend->AddVisits(url2, visits2, history::SOURCE_SYNCED);

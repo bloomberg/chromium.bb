@@ -90,13 +90,13 @@ class BackendDelegate : public HistoryBackend::Delegate {
       : history_test_(history_test) {
   }
 
-  virtual void NotifyProfileError(int backend_id,
-                                  sql::InitStatus init_status) OVERRIDE {}
-  virtual void SetInMemoryBackend(int backend_id,
-                                  InMemoryHistoryBackend* backend) OVERRIDE;
-  virtual void BroadcastNotifications(int type,
-                                      HistoryDetails* details) OVERRIDE;
-  virtual void DBLoaded(int backend_id) OVERRIDE {}
+  virtual void NotifyProfileError(sql::InitStatus init_status) OVERRIDE {}
+  virtual void SetInMemoryBackend(
+      scoped_ptr<InMemoryHistoryBackend> backend) OVERRIDE;
+  virtual void BroadcastNotifications(
+      int type,
+      scoped_ptr<HistoryDetails> details) OVERRIDE;
+  virtual void DBLoaded() OVERRIDE {}
   virtual void NotifyVisitDBObserversOnAddVisit(
       const BriefVisitInfo& info) OVERRIDE {}
  private:
@@ -119,8 +119,8 @@ class HistoryBackendDBTest : public HistoryUnitTestBase {
   // Creates the HistoryBackend and HistoryDatabase on the current thread,
   // assigning the values to backend_ and db_.
   void CreateBackendAndDatabase() {
-    backend_ = new HistoryBackend(history_dir_, 0, new BackendDelegate(this),
-                                  NULL);
+    backend_ =
+        new HistoryBackend(history_dir_, new BackendDelegate(this), NULL);
     backend_->Init(std::string(), false);
     db_ = backend_->db_.get();
     DCHECK(in_mem_backend_) << "Mem backend should have been set by "
@@ -201,23 +201,21 @@ class HistoryBackendDBTest : public HistoryUnitTestBase {
   HistoryDatabase* db_;  // Cached reference to the backend's database.
 };
 
-void BackendDelegate::SetInMemoryBackend(int backend_id,
-                                         InMemoryHistoryBackend* backend) {
+void BackendDelegate::SetInMemoryBackend(
+    scoped_ptr<InMemoryHistoryBackend> backend) {
   // Save the in-memory backend to the history test object, this happens
   // synchronously, so we don't have to do anything fancy.
-  history_test_->in_mem_backend_.reset(backend);
+  history_test_->in_mem_backend_.swap(backend);
 }
 
-void BackendDelegate::BroadcastNotifications(int type,
-                                             HistoryDetails* details) {
+void BackendDelegate::BroadcastNotifications(
+    int type,
+    scoped_ptr<HistoryDetails> details) {
   // Currently, just send the notifications directly to the in-memory database.
   // We may want do do something more fancy in the future.
-  content::Details<HistoryDetails> det(details);
+  content::Details<HistoryDetails> det(details.get());
   history_test_->in_mem_backend_->Observe(type,
       content::Source<HistoryBackendDBTest>(NULL), det);
-
-  // The backend passes ownership of the details pointer to us.
-  delete details;
 }
 
 TEST_F(HistoryBackendDBTest, ClearBrowsingData_Downloads) {

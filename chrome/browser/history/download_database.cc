@@ -296,14 +296,11 @@ bool DownloadDatabase::InitDownloadTable() {
   }
 }
 
-void DownloadDatabase::GetNextDownloadId(uint32* id) {
+uint32 DownloadDatabase::GetNextDownloadId() {
   sql::Statement select_max_id(GetDB().GetUniqueStatement(
       "SELECT max(id) FROM downloads"));
-  if (!select_max_id.Step()) {
-    DCHECK(false);
-    *id = content::DownloadItem::kInvalidId + 1;
-    return;
-  }
+  bool result = select_max_id.Step();
+  DCHECK(result);
   // If there are zero records in the downloads table, then max(id) will return
   // 0 = kInvalidId, so GetNextDownloadId() will set *id = kInvalidId + 1.
   // If there is at least one record but all of the |id|s are <= kInvalidId,
@@ -311,7 +308,7 @@ void DownloadDatabase::GetNextDownloadId(uint32* id) {
   // kInvalidId + 1. Note that any records with |id <= kInvalidId| will be
   // dropped in QueryDownloads()
   // SQLITE doesn't have unsigned integers.
-  *id = 1 + static_cast<uint32>(std::max(
+  return 1 + static_cast<uint32>(std::max(
       static_cast<int64>(content::DownloadItem::kInvalidId),
       select_max_id.ColumnInt64(0)));
 }

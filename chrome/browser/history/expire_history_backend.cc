@@ -370,16 +370,14 @@ void ExpireHistoryBackend::BroadcastDeleteNotifications(
     // we were requested to delete everything even if that was a NOP, since
     // some components care to know when history is deleted (it's up to them to
     // determine if they care whether anything was deleted).
-    URLsDeletedDetails* deleted_details = new URLsDeletedDetails;
-    deleted_details->all_history = false;
-    deleted_details->archived = (type == DELETION_ARCHIVED);
-    deleted_details->rows = dependencies->deleted_urls;
-    deleted_details->favicon_urls = dependencies->expired_favicons;
-    delegate_->NotifySyncURLsDeleted(false,
-                                     deleted_details->archived,
-                                     &deleted_details->rows);
-    delegate_->BroadcastNotifications(
-        chrome::NOTIFICATION_HISTORY_URLS_DELETED, deleted_details);
+    scoped_ptr<URLsDeletedDetails> details(new URLsDeletedDetails);
+    details->all_history = false;
+    details->archived = (type == DELETION_ARCHIVED);
+    details->rows = dependencies->deleted_urls;
+    details->favicon_urls = dependencies->expired_favicons;
+    delegate_->NotifySyncURLsDeleted(false, details->archived, &details->rows);
+    delegate_->BroadcastNotifications(chrome::NOTIFICATION_HISTORY_URLS_DELETED,
+                                      details.PassAs<HistoryDetails>());
   }
 }
 

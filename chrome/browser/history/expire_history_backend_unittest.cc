@@ -162,10 +162,10 @@ class ExpireHistoryTest : public testing::Test,
   // BroadcastNotificationDelegate implementation.
   virtual void BroadcastNotifications(
       int type,
-      HistoryDetails* details_deleted) OVERRIDE {
+      scoped_ptr<HistoryDetails> details) OVERRIDE {
     // This gets called when there are notifications to broadcast. Instead, we
     // store them so we can tell that the correct notifications were sent.
-    notifications_.push_back(std::make_pair(type, details_deleted));
+    notifications_.push_back(std::make_pair(type, details.release()));
   }
   virtual void NotifySyncURLsDeleted(
       bool all_history,

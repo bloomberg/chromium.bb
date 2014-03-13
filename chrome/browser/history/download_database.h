@@ -28,7 +28,7 @@ class DownloadDatabase {
   DownloadDatabase();
   virtual ~DownloadDatabase();
 
-  void GetNextDownloadId(uint32* id);
+  uint32 GetNextDownloadId();
 
   // Get all the downloads from the database.
   void QueryDownloads(

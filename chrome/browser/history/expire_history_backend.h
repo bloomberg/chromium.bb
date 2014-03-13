@@ -31,9 +31,9 @@ class ThumbnailDatabase;
 class BroadcastNotificationDelegate {
  public:
   // Schedules a broadcast of the given notification on the application main
-  // thread. The details argument will have ownership taken by this function.
+  // thread.
   virtual void BroadcastNotifications(int type,
-                                      HistoryDetails* details_deleted) = 0;
+                                      scoped_ptr<HistoryDetails> details) = 0;
 
   // Trigger handling of deleted urls in typed url sync code
   virtual void NotifySyncURLsDeleted(bool all_history,

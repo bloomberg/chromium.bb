@@ -38,7 +38,7 @@ const int EXPIRED_VISIT = -1;
 
 class TestHistoryBackend : public HistoryBackend {
  public:
-  TestHistoryBackend() : HistoryBackend(base::FilePath(), 0, NULL, NULL) {}
+  TestHistoryBackend() : HistoryBackend(base::FilePath(), NULL, NULL) {}
 
   // HistoryBackend test implementation.
   virtual bool IsExpiredVisitTime(const base::Time& time) OVERRIDE {

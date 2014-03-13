@@ -12,6 +12,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "chrome/browser/history/android/android_cache_database.h"
 #include "chrome/browser/history/android/android_history_types.h"
 #include "chrome/browser/history/android/sql_handler.h"
@@ -146,15 +147,23 @@ class AndroidProviderBackend {
   FRIEND_TEST_ALL_PREFIXES(AndroidProviderBackendTest, UpdateTables);
   FRIEND_TEST_ALL_PREFIXES(AndroidProviderBackendTest, UpdateSearchTermTable);
 
-  struct HistoryNotification {
-    HistoryNotification(int type, HistoryDetails* detail);
-    ~HistoryNotification();
+  class HistoryNotifications {
+   public:
+    HistoryNotifications();
+    ~HistoryNotifications();
 
-    int type;
-    // The ownership of the HistoryDetails pointer is transfered to |detail|.
-    HistoryDetails* detail;
+    void PushBack(int type, scoped_ptr<HistoryDetails> detail);
+    int PopBackType();
+    scoped_ptr<HistoryDetails> PopBackDetails();
+
+    bool empty() const { return types_.empty(); }
+
+   private:
+    std::vector<int> types_;
+    ScopedVector<HistoryDetails> details_;
+
+    DISALLOW_COPY_AND_ASSIGN(HistoryNotifications);
   };
-  typedef std::vector<HistoryNotification> HistoryNotifications;
 
   // The scoped transaction for AndroidProviderBackend.
   //
@@ -212,8 +221,8 @@ class AndroidProviderBackend {
   // The EnsureInitializedAndUpdated() will not be invoked if the
   // |ensure_initialized_and_updated| is false.
   AndroidURLID InsertHistoryAndBookmark(const HistoryAndBookmarkRow& values,
-                                        HistoryNotifications* notifications,
-                                        bool ensure_initialized_and_updated);
+                                        bool ensure_initialized_and_updated,
+                                        HistoryNotifications* notifications);
 
   // Deletes the specified rows and returns the number of the deleted rows in
   // |deleted_count|.
@@ -313,7 +322,9 @@ class AndroidProviderBackend {
                              bool delete_bookmarks,
                              HistoryNotifications* notifications);
 
-  void BroadcastNotifications(const HistoryNotifications& notifications);
+  // Broadcasts |notifications|.  Broadcasting takes ownership of the
+  // notifications, so on return |notifications| will be empty.
+  void BroadcastNotifications(HistoryNotifications* notifications);
 
   // Add the search term from the given |values|. It will add the values.url()
   // in the urls table if it doesn't exist, insert visit in the visits table,

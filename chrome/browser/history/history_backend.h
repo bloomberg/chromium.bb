@@ -71,8 +71,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
     virtual ~Delegate() {}
 
     // Called when the database cannot be read correctly for some reason.
-    virtual void NotifyProfileError(int backend_id,
-                                    sql::InitStatus init_status) = 0;
+    virtual void NotifyProfileError(sql::InitStatus init_status) = 0;
 
     // Sets the in-memory history backend. The in-memory backend is created by
     // the main backend. For non-unit tests, this happens on the background
@@ -81,22 +80,18 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
     //
     // This function is NOT guaranteed to be called. If there is an error,
     // there may be no in-memory database.
-    //
-    // Ownership of the backend pointer is transferred to this function.
-    virtual void SetInMemoryBackend(int backend_id,
-                                    InMemoryHistoryBackend* backend) = 0;
+    virtual void SetInMemoryBackend(
+        scoped_ptr<InMemoryHistoryBackend> backend) = 0;
 
     // Broadcasts the specified notification to the notification service.
     // This is implemented here because notifications must only be sent from
     // the main thread. This is the only method that doesn't identify the
     // caller because notifications must always be sent.
-    //
-    // Ownership of the HistoryDetails is transferred to this function.
     virtual void BroadcastNotifications(int type,
-                                        HistoryDetails* details) = 0;
+                                        scoped_ptr<HistoryDetails> details) = 0;
 
     // Invoked when the backend has finished loading the db.
-    virtual void DBLoaded(int backend_id) = 0;
+    virtual void DBLoaded() = 0;
 
     virtual void NotifyVisitDBObserversOnAddVisit(
         const history::BriefVisitInfo& info) = 0;
@@ -110,15 +105,11 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // See the definition of BroadcastNotificationsCallback above. This function
   // takes ownership of the callback pointer.
   //
-  // |id| is used to communicate with the delegate, to identify which
-  // backend is calling the method.
-  //
   // |bookmark_service| is used to determine bookmarked URLs when deleting and
   // may be NULL.
   //
   // This constructor is fast and does no I/O, so can be called at any time.
   HistoryBackend(const base::FilePath& history_dir,
-                 int id,
                  Delegate* delegate,
                  BookmarkService* bookmark_service);
 
@@ -282,11 +273,10 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   // Downloads -----------------------------------------------------------------
 
-  void GetNextDownloadId(uint32* next_id);
+  uint32 GetNextDownloadId();
   void QueryDownloads(std::vector<DownloadRow>* rows);
   void UpdateDownload(const DownloadRow& data);
-  void CreateDownload(const history::DownloadRow& history_info,
-                      bool* success);
+  bool CreateDownload(const history::DownloadRow& history_info);
   void RemoveDownloads(const std::set<uint32>& ids);
 
   // Segment usage -------------------------------------------------------------
@@ -769,11 +759,10 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // Release all tasks in history_db_tasks_ and clears it.
   void ReleaseDBTasks();
 
-  // Schedules a broadcast of the given notification on the main thread. The
-  // details argument will have ownership taken by this function (it will be
-  // sent to the main thread and deleted there).
-  virtual void BroadcastNotifications(int type,
-                                      HistoryDetails* details_deleted) OVERRIDE;
+  // Schedules a broadcast of the given notification on the main thread.
+  virtual void BroadcastNotifications(
+      int type,
+      scoped_ptr<HistoryDetails> details) OVERRIDE;
 
   virtual void NotifySyncURLsDeleted(bool all_history,
                                      bool archived,
@@ -817,10 +806,6 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // be NULL before Init is called and after Cleanup, but is guaranteed
   // non-NULL in between.
   scoped_ptr<Delegate> delegate_;
-
-  // The id of this class, given in creation and used for identifying the
-  // backend when calling the delegate.
-  int id_;
 
   // Directory where database files will be stored.
   base::FilePath history_dir_;
