@@ -595,7 +595,7 @@ TEST_F(DownloadPathReservationTrackerTest, UpdatesToTargetPath) {
 
 TEST_F(DownloadPathReservationTrackerTest, BasicTruncation) {
   int real_max_length =
-      file_util::GetMaximumPathComponentLength(default_download_path());
+      base::GetMaximumPathComponentLength(default_download_path());
   ASSERT_NE(-1, real_max_length);
 
   // TODO(kinaba): the current implementation leaves spaces for appending
@@ -630,7 +630,7 @@ TEST_F(DownloadPathReservationTrackerTest, BasicTruncation) {
 
 TEST_F(DownloadPathReservationTrackerTest, TruncationConflict) {
   int real_max_length =
-      file_util::GetMaximumPathComponentLength(default_download_path());
+      base::GetMaximumPathComponentLength(default_download_path());
   ASSERT_NE(-1, real_max_length);
   const size_t max_length = real_max_length - 11;
 
@@ -670,7 +670,7 @@ TEST_F(DownloadPathReservationTrackerTest, TruncationConflict) {
 
 TEST_F(DownloadPathReservationTrackerTest, TruncationFail) {
   int real_max_length =
-      file_util::GetMaximumPathComponentLength(default_download_path());
+      base::GetMaximumPathComponentLength(default_download_path());
   ASSERT_NE(-1, real_max_length);
   const size_t max_length = real_max_length - 11;
 

@@ -688,23 +688,8 @@ bool SetCurrentDirectory(const FilePath& directory) {
   return ret != 0;
 }
 
-}  // namespace base
-
-// -----------------------------------------------------------------------------
-
-namespace file_util {
-
-using base::DirectoryExists;
-using base::FilePath;
-using base::kFileShareAll;
-
-FILE* OpenFile(const std::string& filename, const char* mode) {
-  base::ThreadRestrictions::AssertIOAllowed();
-  return _fsopen(filename.c_str(), mode, _SH_DENYNO);
-}
-
 int GetMaximumPathComponentLength(const FilePath& path) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  ThreadRestrictions::AssertIOAllowed();
 
   wchar_t volume_path[MAX_PATH];
   if (!GetVolumePathNameW(path.NormalizePathSeparators().value().c_str(),
@@ -727,9 +712,8 @@ int GetMaximumPathComponentLength(const FilePath& path) {
   return std::min(whole_path_limit, static_cast<int>(max_length));
 }
 
-}  // namespace file_util
+// -----------------------------------------------------------------------------
 
-namespace base {
 namespace internal {
 
 bool MoveUnsafe(const FilePath& from_path, const FilePath& to_path) {

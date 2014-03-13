@@ -119,8 +119,7 @@ class MediaFolderFinderTest : public testing::Test {
     for (size_t i = 0; i < count; ++i) {
       base::FilePath test_file(parent_dir.AppendASCII("dummy." + extension));
       int uniquifier =
-          file_util::GetUniquePathNumber(test_file,
-                                         base::FilePath::StringType());
+          base::GetUniquePathNumber(test_file, base::FilePath::StringType());
       if (uniquifier > 0) {
         test_file = test_file.InsertBeforeExtensionASCII(
             base::StringPrintf(" (%d)", uniquifier));

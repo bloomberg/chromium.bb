@@ -198,7 +198,7 @@ void CreateReservation(
   if (is_path_writeable) {
     // Check the limit of file name length if it could be obtained. When the
     // suggested name exceeds the limit, truncate or prompt the user.
-    int max_length = file_util::GetMaximumPathComponentLength(target_dir);
+    int max_length = base::GetMaximumPathComponentLength(target_dir);
     if (max_length != -1) {
       int limit = max_length - kIntermediateNameSuffixLength;
       if (limit <= 0 || !TruncateFileName(&target_path, limit))

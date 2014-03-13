@@ -164,7 +164,7 @@ void ExternalPrefLoader::ReadExternalExtensionPrefFile(
 
   if (IsOptionSet(ENSURE_PATH_CONTROLLED_BY_ADMIN)) {
 #if defined(OS_MACOSX)
-    if (!file_util::VerifyPathControlledByAdmin(json_file)) {
+    if (!base::VerifyPathControlledByAdmin(json_file)) {
       LOG(ERROR) << "Can not read external extensions source.  The file "
                  << json_file.value() << " and every directory in its path, "
                  << "must be owned by root, have group \"admin\", and not be "
@@ -175,7 +175,7 @@ void ExternalPrefLoader::ReadExternalExtensionPrefFile(
     }
 #else
     // The only platform that uses this check is Mac OS.  If you add one,
-    // you need to implement file_util::VerifyPathControlledByAdmin() for
+    // you need to implement base::VerifyPathControlledByAdmin() for
     // that platform.
     NOTREACHED();
 #endif  // defined(OS_MACOSX)

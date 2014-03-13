@@ -246,7 +246,7 @@ class BASE_EXPORT FilePath {
   // TODO(davidben): Check all our extension-sensitive code to see if
   // we can rename this to Extension() and the other to something like
   // LongExtension(), defaulting to short extensions and leaving the
-  // long "extensions" to logic like file_util::GetUniquePathNumber().
+  // long "extensions" to logic like base::GetUniquePathNumber().
   StringType FinalExtension() const;
 
   // Returns "C:\pics\jojo" for path "C:\pics\jojo.jpg"

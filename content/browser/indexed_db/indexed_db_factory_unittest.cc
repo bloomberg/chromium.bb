@@ -163,7 +163,7 @@ TEST_F(IndexedDBFactoryTest, RejectLongOrigins) {
   const base::FilePath base_path = temp_directory.path();
   scoped_refptr<MockIDBFactory> factory = new MockIDBFactory();
 
-  int limit = file_util::GetMaximumPathComponentLength(base_path);
+  int limit = base::GetMaximumPathComponentLength(base_path);
   EXPECT_GT(limit, 0);
 
   std::string origin(limit + 1, 'x');

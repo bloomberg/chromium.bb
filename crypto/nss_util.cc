@@ -146,9 +146,9 @@ char* PKCS11PasswordFunc(PK11SlotInfo* slot, PRBool retry, void* arg) {
 void UseLocalCacheOfNSSDatabaseIfNFS(const base::FilePath& database_dir) {
   bool db_on_nfs = false;
 #if defined(OS_LINUX)
-  file_util::FileSystemType fs_type = file_util::FILE_SYSTEM_UNKNOWN;
-  if (file_util::GetFileSystemType(database_dir, &fs_type))
-    db_on_nfs = (fs_type == file_util::FILE_SYSTEM_NFS);
+  base::FileSystemType fs_type = base::FILE_SYSTEM_UNKNOWN;
+  if (base::GetFileSystemType(database_dir, &fs_type))
+    db_on_nfs = (fs_type == base::FILE_SYSTEM_NFS);
 #elif defined(OS_OPENBSD)
   struct statfs buf;
   if (statfs(database_dir.value().c_str(), &buf) == 0)

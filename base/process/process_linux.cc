@@ -14,6 +14,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
 
+namespace base {
+
 namespace {
 const int kForegroundPriority = 0;
 
@@ -46,13 +48,13 @@ struct CGroups {
         base::FilePath(base::StringPrintf(kControlPath, kForeground));
     background_file =
         base::FilePath(base::StringPrintf(kControlPath, kBackground));
-    file_util::FileSystemType foreground_type;
-    file_util::FileSystemType background_type;
+    base::FileSystemType foreground_type;
+    base::FileSystemType background_type;
     enabled =
-        file_util::GetFileSystemType(foreground_file, &foreground_type) &&
-        file_util::GetFileSystemType(background_file, &background_type) &&
-        foreground_type == file_util::FILE_SYSTEM_CGROUP &&
-        background_type == file_util::FILE_SYSTEM_CGROUP;
+        base::GetFileSystemType(foreground_file, &foreground_type) &&
+        base::GetFileSystemType(background_file, &background_type) &&
+        foreground_type == FILE_SYSTEM_CGROUP &&
+        background_type == FILE_SYSTEM_CGROUP;
   }
 };
 
@@ -61,8 +63,6 @@ base::LazyInstance<CGroups> cgroups = LAZY_INSTANCE_INITIALIZER;
 const int kBackgroundPriority = 5;
 #endif
 }
-
-namespace base {
 
 bool Process::IsProcessBackgrounded() const {
   DCHECK(process_);

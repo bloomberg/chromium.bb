@@ -349,25 +349,12 @@ BASE_EXPORT bool GetCurrentDirectory(FilePath* path);
 // Sets the current working directory for the process.
 BASE_EXPORT bool SetCurrentDirectory(const FilePath& path);
 
-}  // namespace base
-
-// -----------------------------------------------------------------------------
-
-namespace file_util {
-
 // Attempts to find a number that can be appended to the |path| to make it
 // unique. If |path| does not exist, 0 is returned.  If it fails to find such
 // a number, -1 is returned. If |suffix| is not empty, also checks the
 // existence of it with the given suffix.
-BASE_EXPORT int GetUniquePathNumber(const base::FilePath& path,
-                                    const base::FilePath::StringType& suffix);
-
-#if defined(OS_POSIX)
-// Creates a directory with a guaranteed unique name based on |path|, returning
-// the pathname if successful, or an empty path if there was an error creating
-// the directory. Does not create parent directories.
-BASE_EXPORT base::FilePath MakeUniqueDirectory(const base::FilePath& path);
-#endif
+BASE_EXPORT int GetUniquePathNumber(const FilePath& path,
+                                    const FilePath::StringType& suffix);
 
 #if defined(OS_POSIX)
 // Test that |path| can only be changed by a given user and members of
@@ -401,6 +388,32 @@ BASE_EXPORT bool VerifyPathControlledByAdmin(const base::FilePath& path);
 // Returns the maximum length of path component on the volume containing
 // the directory |path|, in the number of FilePath::CharType, or -1 on failure.
 BASE_EXPORT int GetMaximumPathComponentLength(const base::FilePath& path);
+
+#if defined(OS_LINUX)
+// Broad categories of file systems as returned by statfs() on Linux.
+enum FileSystemType {
+  FILE_SYSTEM_UNKNOWN,  // statfs failed.
+  FILE_SYSTEM_0,        // statfs.f_type == 0 means unknown, may indicate AFS.
+  FILE_SYSTEM_ORDINARY,       // on-disk filesystem like ext2
+  FILE_SYSTEM_NFS,
+  FILE_SYSTEM_SMB,
+  FILE_SYSTEM_CODA,
+  FILE_SYSTEM_MEMORY,         // in-memory file system
+  FILE_SYSTEM_CGROUP,         // cgroup control.
+  FILE_SYSTEM_OTHER,          // any other value.
+  FILE_SYSTEM_TYPE_COUNT
+};
+
+// Attempts determine the FileSystemType for |path|.
+// Returns false if |path| doesn't exist.
+BASE_EXPORT bool GetFileSystemType(const FilePath& path, FileSystemType* type);
+#endif
+
+}  // namespace base
+
+// -----------------------------------------------------------------------------
+
+namespace file_util {
 
 // Functor for |ScopedFILE| (below).
 struct ScopedFILEClose {
@@ -438,27 +451,6 @@ typedef scoped_ptr<int, ScopedFDClose> ScopedFD;
 // Let new users use ScopedFDCloser already, while ScopedFD is replaced.
 typedef ScopedFD ScopedFDCloser;
 #endif  // OS_POSIX
-
-#if defined(OS_LINUX)
-// Broad categories of file systems as returned by statfs() on Linux.
-enum FileSystemType {
-  FILE_SYSTEM_UNKNOWN,  // statfs failed.
-  FILE_SYSTEM_0,        // statfs.f_type == 0 means unknown, may indicate AFS.
-  FILE_SYSTEM_ORDINARY,       // on-disk filesystem like ext2
-  FILE_SYSTEM_NFS,
-  FILE_SYSTEM_SMB,
-  FILE_SYSTEM_CODA,
-  FILE_SYSTEM_MEMORY,         // in-memory file system
-  FILE_SYSTEM_CGROUP,         // cgroup control.
-  FILE_SYSTEM_OTHER,          // any other value.
-  FILE_SYSTEM_TYPE_COUNT
-};
-
-// Attempts determine the FileSystemType for |path|.
-// Returns false if |path| doesn't exist.
-BASE_EXPORT bool GetFileSystemType(const base::FilePath& path,
-                                   FileSystemType* type);
-#endif
 
 }  // namespace file_util
 

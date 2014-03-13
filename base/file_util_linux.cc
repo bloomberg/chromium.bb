@@ -25,9 +25,9 @@
 #define TMPFS_MAGIC 0x01021994
 #endif
 
-namespace file_util {
+namespace base {
 
-bool GetFileSystemType(const base::FilePath& path, FileSystemType* type) {
+bool GetFileSystemType(const FilePath& path, FileSystemType* type) {
   struct statfs statfs_buf;
   if (statfs(path.value().c_str(), &statfs_buf) < 0) {
     if (errno == ENOENT)
@@ -75,4 +75,4 @@ bool GetFileSystemType(const base::FilePath& path, FileSystemType* type) {
   return true;
 }
 
-}  // namespace file_util
+}  // namespace base

@@ -227,7 +227,8 @@ bool CreateShortcutsInPaths(
     }
     if (shortcut_paths[i] != web_app_path) {
       int unique_number =
-          file_util::GetUniquePathNumber(shortcut_file, FILE_PATH_LITERAL(""));
+          base::GetUniquePathNumber(shortcut_file,
+                                    base::FilePath::StringType());
       if (unique_number == -1) {
         success = false;
         continue;

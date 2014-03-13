@@ -484,7 +484,7 @@ static void HistogramOpenStatus(IndexedDBBackingStoreOpenResult result,
 }
 
 static bool IsPathTooLong(const base::FilePath& leveldb_dir) {
-  int limit = file_util::GetMaximumPathComponentLength(leveldb_dir.DirName());
+  int limit = base::GetMaximumPathComponentLength(leveldb_dir.DirName());
   if (limit == -1) {
     DLOG(WARNING) << "GetMaximumPathComponentLength returned -1";
     // In limited testing, ChromeOS returns 143, other OSes 255.

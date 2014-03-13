@@ -772,44 +772,6 @@ bool SetCurrentDirectory(const FilePath& path) {
   return !ret;
 }
 
-}  // namespace base
-
-// -----------------------------------------------------------------------------
-
-namespace file_util {
-
-using base::stat_wrapper_t;
-using base::CallStat;
-using base::CallLstat;
-using base::CreateAndOpenFdForTemporaryFile;
-using base::DirectoryExists;
-using base::FileEnumerator;
-using base::FilePath;
-using base::MakeAbsoluteFilePath;
-using base::VerifySpecificPathControlledByUser;
-
-base::FilePath MakeUniqueDirectory(const base::FilePath& path) {
-  const int kMaxAttempts = 20;
-  for (int attempts = 0; attempts < kMaxAttempts; attempts++) {
-    int uniquifier =
-        GetUniquePathNumber(path, base::FilePath::StringType());
-    if (uniquifier < 0)
-      break;
-    base::FilePath test_path = (uniquifier == 0) ? path :
-        path.InsertBeforeExtensionASCII(
-            base::StringPrintf(" (%d)", uniquifier));
-    if (mkdir(test_path.value().c_str(), 0777) == 0)
-      return test_path;
-    else if (errno != EEXIST)
-      break;
-  }
-  return base::FilePath();
-}
-
-FILE* OpenFile(const std::string& filename, const char* mode) {
-  return OpenFile(FilePath(filename), mode);
-}
-
 bool VerifyPathControlledByUser(const FilePath& base,
                                 const FilePath& path,
                                 uid_t owner_uid,
@@ -861,7 +823,7 @@ bool VerifyPathControlledByAdmin(const FilePath& path) {
   };
 
   // Reading the groups database may touch the file system.
-  base::ThreadRestrictions::AssertIOAllowed();
+  ThreadRestrictions::AssertIOAllowed();
 
   std::set<gid_t> allowed_group_ids;
   for (int i = 0, ie = arraysize(kAdminGroupNames); i < ie; ++i) {
@@ -881,13 +843,12 @@ bool VerifyPathControlledByAdmin(const FilePath& path) {
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 
 int GetMaximumPathComponentLength(const FilePath& path) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  ThreadRestrictions::AssertIOAllowed();
   return pathconf(path.value().c_str(), _PC_NAME_MAX);
 }
 
-}  // namespace file_util
+// -----------------------------------------------------------------------------
 
-namespace base {
 namespace internal {
 
 bool MoveUnsafe(const FilePath& from_path, const FilePath& to_path) {

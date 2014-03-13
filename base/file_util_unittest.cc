@@ -2127,23 +2127,23 @@ TEST_F(VerifyPathControlledByUserTest, BadPaths) {
                                      .AppendASCII("not")
                                      .AppendASCII("exist");
   EXPECT_FALSE(
-      file_util::VerifyPathControlledByUser(
+      base::VerifyPathControlledByUser(
           base_dir_, does_not_exist, uid_, ok_gids_));
 
   // |base| not a subpath of |path|.
   EXPECT_FALSE(
-      file_util::VerifyPathControlledByUser(
+      base::VerifyPathControlledByUser(
           sub_dir_, base_dir_, uid_, ok_gids_));
 
   // An empty base path will fail to be a prefix for any path.
   FilePath empty;
   EXPECT_FALSE(
-      file_util::VerifyPathControlledByUser(
+      base::VerifyPathControlledByUser(
           empty, base_dir_, uid_, ok_gids_));
 
   // Finding that a bad call fails proves nothing unless a good call succeeds.
   EXPECT_TRUE(
-      file_util::VerifyPathControlledByUser(
+      base::VerifyPathControlledByUser(
           base_dir_, sub_dir_, uid_, ok_gids_));
 }
 
@@ -2156,10 +2156,10 @@ TEST_F(VerifyPathControlledByUserTest, Symlinks) {
       << "Failed to create symlink.";
 
   EXPECT_FALSE(
-      file_util::VerifyPathControlledByUser(
+      base::VerifyPathControlledByUser(
           base_dir_, file_link, uid_, ok_gids_));
   EXPECT_FALSE(
-      file_util::VerifyPathControlledByUser(
+      base::VerifyPathControlledByUser(
           file_link, file_link, uid_, ok_gids_));
 
   // Symlink from one directory to another within the path.
@@ -2171,16 +2171,16 @@ TEST_F(VerifyPathControlledByUserTest, Symlinks) {
   ASSERT_TRUE(PathExists(file_path_with_link));
 
   EXPECT_FALSE(
-      file_util::VerifyPathControlledByUser(
+      base::VerifyPathControlledByUser(
           base_dir_, file_path_with_link, uid_, ok_gids_));
 
   EXPECT_FALSE(
-      file_util::VerifyPathControlledByUser(
+      base::VerifyPathControlledByUser(
           link_to_sub_dir, file_path_with_link, uid_, ok_gids_));
 
   // Symlinks in parents of base path are allowed.
   EXPECT_TRUE(
-      file_util::VerifyPathControlledByUser(
+      base::VerifyPathControlledByUser(
           file_path_with_link, file_path_with_link, uid_, ok_gids_));
 }
 
@@ -2198,35 +2198,35 @@ TEST_F(VerifyPathControlledByUserTest, OwnershipChecks) {
 
   // We control these paths.
   EXPECT_TRUE(
-      file_util::VerifyPathControlledByUser(
+      base::VerifyPathControlledByUser(
           base_dir_, sub_dir_, uid_, ok_gids_));
   EXPECT_TRUE(
-      file_util::VerifyPathControlledByUser(
+      base::VerifyPathControlledByUser(
           base_dir_, text_file_, uid_, ok_gids_));
   EXPECT_TRUE(
-      file_util::VerifyPathControlledByUser(
+      base::VerifyPathControlledByUser(
           sub_dir_, text_file_, uid_, ok_gids_));
 
   // Another user does not control these paths.
   EXPECT_FALSE(
-      file_util::VerifyPathControlledByUser(
+      base::VerifyPathControlledByUser(
           base_dir_, sub_dir_, bad_uid, ok_gids_));
   EXPECT_FALSE(
-      file_util::VerifyPathControlledByUser(
+      base::VerifyPathControlledByUser(
           base_dir_, text_file_, bad_uid, ok_gids_));
   EXPECT_FALSE(
-      file_util::VerifyPathControlledByUser(
+      base::VerifyPathControlledByUser(
           sub_dir_, text_file_, bad_uid, ok_gids_));
 
   // Another group does not control the paths.
   EXPECT_FALSE(
-      file_util::VerifyPathControlledByUser(
+      base::VerifyPathControlledByUser(
           base_dir_, sub_dir_, uid_, bad_gids_));
   EXPECT_FALSE(
-      file_util::VerifyPathControlledByUser(
+      base::VerifyPathControlledByUser(
           base_dir_, text_file_, uid_, bad_gids_));
   EXPECT_FALSE(
-      file_util::VerifyPathControlledByUser(
+      base::VerifyPathControlledByUser(
           sub_dir_, text_file_, uid_, bad_gids_));
 }
 
@@ -2241,36 +2241,36 @@ TEST_F(VerifyPathControlledByUserTest, GroupWriteTest) {
 
   // Any group is okay because the path is not group-writable.
   EXPECT_TRUE(
-      file_util::VerifyPathControlledByUser(
+      base::VerifyPathControlledByUser(
           base_dir_, sub_dir_, uid_, ok_gids_));
   EXPECT_TRUE(
-      file_util::VerifyPathControlledByUser(
+      base::VerifyPathControlledByUser(
           base_dir_, text_file_, uid_, ok_gids_));
   EXPECT_TRUE(
-      file_util::VerifyPathControlledByUser(
+      base::VerifyPathControlledByUser(
           sub_dir_, text_file_, uid_, ok_gids_));
 
   EXPECT_TRUE(
-      file_util::VerifyPathControlledByUser(
+      base::VerifyPathControlledByUser(
           base_dir_, sub_dir_, uid_, bad_gids_));
   EXPECT_TRUE(
-      file_util::VerifyPathControlledByUser(
+      base::VerifyPathControlledByUser(
           base_dir_, text_file_, uid_, bad_gids_));
   EXPECT_TRUE(
-      file_util::VerifyPathControlledByUser(
+      base::VerifyPathControlledByUser(
           sub_dir_, text_file_, uid_, bad_gids_));
 
   // No group is okay, because we don't check the group
   // if no group can write.
   std::set<gid_t> no_gids;  // Empty set of gids.
   EXPECT_TRUE(
-      file_util::VerifyPathControlledByUser(
+      base::VerifyPathControlledByUser(
           base_dir_, sub_dir_, uid_, no_gids));
   EXPECT_TRUE(
-      file_util::VerifyPathControlledByUser(
+      base::VerifyPathControlledByUser(
           base_dir_, text_file_, uid_, no_gids));
   EXPECT_TRUE(
-      file_util::VerifyPathControlledByUser(
+      base::VerifyPathControlledByUser(
           sub_dir_, text_file_, uid_, no_gids));
 
 
@@ -2284,23 +2284,23 @@ TEST_F(VerifyPathControlledByUserTest, GroupWriteTest) {
 
   // Now |ok_gids_| works, but |bad_gids_| fails.
   EXPECT_TRUE(
-      file_util::VerifyPathControlledByUser(
+      base::VerifyPathControlledByUser(
           base_dir_, sub_dir_, uid_, ok_gids_));
   EXPECT_TRUE(
-      file_util::VerifyPathControlledByUser(
+      base::VerifyPathControlledByUser(
           base_dir_, text_file_, uid_, ok_gids_));
   EXPECT_TRUE(
-      file_util::VerifyPathControlledByUser(
+      base::VerifyPathControlledByUser(
           sub_dir_, text_file_, uid_, ok_gids_));
 
   EXPECT_FALSE(
-      file_util::VerifyPathControlledByUser(
+      base::VerifyPathControlledByUser(
           base_dir_, sub_dir_, uid_, bad_gids_));
   EXPECT_FALSE(
-      file_util::VerifyPathControlledByUser(
+      base::VerifyPathControlledByUser(
           base_dir_, text_file_, uid_, bad_gids_));
   EXPECT_FALSE(
-      file_util::VerifyPathControlledByUser(
+      base::VerifyPathControlledByUser(
           sub_dir_, text_file_, uid_, bad_gids_));
 
   // Because any group in the group set is allowed,
@@ -2313,13 +2313,13 @@ TEST_F(VerifyPathControlledByUserTest, GroupWriteTest) {
       std::inserter(multiple_gids, multiple_gids.begin()));
 
   EXPECT_TRUE(
-      file_util::VerifyPathControlledByUser(
+      base::VerifyPathControlledByUser(
           base_dir_, sub_dir_, uid_, multiple_gids));
   EXPECT_TRUE(
-      file_util::VerifyPathControlledByUser(
+      base::VerifyPathControlledByUser(
           base_dir_, text_file_, uid_, multiple_gids));
   EXPECT_TRUE(
-      file_util::VerifyPathControlledByUser(
+      base::VerifyPathControlledByUser(
           sub_dir_, text_file_, uid_, multiple_gids));
 }
 
@@ -2334,78 +2334,78 @@ TEST_F(VerifyPathControlledByUserTest, WriteBitChecks) {
 
   // Initialy, we control all parts of the path.
   EXPECT_TRUE(
-      file_util::VerifyPathControlledByUser(
+      base::VerifyPathControlledByUser(
           base_dir_, sub_dir_, uid_, ok_gids_));
   EXPECT_TRUE(
-      file_util::VerifyPathControlledByUser(
+      base::VerifyPathControlledByUser(
           base_dir_, text_file_, uid_, ok_gids_));
   EXPECT_TRUE(
-      file_util::VerifyPathControlledByUser(
+      base::VerifyPathControlledByUser(
           sub_dir_, text_file_, uid_, ok_gids_));
 
   // Make base_dir_ world-writable.
   ASSERT_NO_FATAL_FAILURE(
       ChangePosixFilePermissions(base_dir_, S_IWOTH, 0u));
   EXPECT_FALSE(
-      file_util::VerifyPathControlledByUser(
+      base::VerifyPathControlledByUser(
           base_dir_, sub_dir_, uid_, ok_gids_));
   EXPECT_FALSE(
-      file_util::VerifyPathControlledByUser(
+      base::VerifyPathControlledByUser(
           base_dir_, text_file_, uid_, ok_gids_));
   EXPECT_TRUE(
-      file_util::VerifyPathControlledByUser(
+      base::VerifyPathControlledByUser(
           sub_dir_, text_file_, uid_, ok_gids_));
 
   // Make sub_dir_ world writable.
   ASSERT_NO_FATAL_FAILURE(
       ChangePosixFilePermissions(sub_dir_, S_IWOTH, 0u));
   EXPECT_FALSE(
-      file_util::VerifyPathControlledByUser(
+      base::VerifyPathControlledByUser(
           base_dir_, sub_dir_, uid_, ok_gids_));
   EXPECT_FALSE(
-      file_util::VerifyPathControlledByUser(
+      base::VerifyPathControlledByUser(
           base_dir_, text_file_, uid_, ok_gids_));
   EXPECT_FALSE(
-      file_util::VerifyPathControlledByUser(
+      base::VerifyPathControlledByUser(
           sub_dir_, text_file_, uid_, ok_gids_));
 
   // Make text_file_ world writable.
   ASSERT_NO_FATAL_FAILURE(
       ChangePosixFilePermissions(text_file_, S_IWOTH, 0u));
   EXPECT_FALSE(
-      file_util::VerifyPathControlledByUser(
+      base::VerifyPathControlledByUser(
           base_dir_, sub_dir_, uid_, ok_gids_));
   EXPECT_FALSE(
-      file_util::VerifyPathControlledByUser(
+      base::VerifyPathControlledByUser(
           base_dir_, text_file_, uid_, ok_gids_));
   EXPECT_FALSE(
-      file_util::VerifyPathControlledByUser(
+      base::VerifyPathControlledByUser(
           sub_dir_, text_file_, uid_, ok_gids_));
 
   // Make sub_dir_ non-world writable.
   ASSERT_NO_FATAL_FAILURE(
       ChangePosixFilePermissions(sub_dir_, 0u, S_IWOTH));
   EXPECT_FALSE(
-      file_util::VerifyPathControlledByUser(
+      base::VerifyPathControlledByUser(
           base_dir_, sub_dir_, uid_, ok_gids_));
   EXPECT_FALSE(
-      file_util::VerifyPathControlledByUser(
+      base::VerifyPathControlledByUser(
           base_dir_, text_file_, uid_, ok_gids_));
   EXPECT_FALSE(
-      file_util::VerifyPathControlledByUser(
+      base::VerifyPathControlledByUser(
           sub_dir_, text_file_, uid_, ok_gids_));
 
   // Make base_dir_ non-world-writable.
   ASSERT_NO_FATAL_FAILURE(
       ChangePosixFilePermissions(base_dir_, 0u, S_IWOTH));
   EXPECT_TRUE(
-      file_util::VerifyPathControlledByUser(
+      base::VerifyPathControlledByUser(
           base_dir_, sub_dir_, uid_, ok_gids_));
   EXPECT_FALSE(
-      file_util::VerifyPathControlledByUser(
+      base::VerifyPathControlledByUser(
           base_dir_, text_file_, uid_, ok_gids_));
   EXPECT_FALSE(
-      file_util::VerifyPathControlledByUser(
+      base::VerifyPathControlledByUser(
           sub_dir_, text_file_, uid_, ok_gids_));
 
   // Back to the initial state: Nothing is writable, so every path
@@ -2413,13 +2413,13 @@ TEST_F(VerifyPathControlledByUserTest, WriteBitChecks) {
   ASSERT_NO_FATAL_FAILURE(
       ChangePosixFilePermissions(text_file_, 0u, S_IWOTH));
   EXPECT_TRUE(
-      file_util::VerifyPathControlledByUser(
+      base::VerifyPathControlledByUser(
           base_dir_, sub_dir_, uid_, ok_gids_));
   EXPECT_TRUE(
-      file_util::VerifyPathControlledByUser(
+      base::VerifyPathControlledByUser(
           base_dir_, text_file_, uid_, ok_gids_));
   EXPECT_TRUE(
-      file_util::VerifyPathControlledByUser(
+      base::VerifyPathControlledByUser(
           sub_dir_, text_file_, uid_, ok_gids_));
 }
 
