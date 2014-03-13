@@ -162,8 +162,8 @@ void DelegatingRenderer::SetVisible(bool visible) {
   // We loop visibility to the GPU process, since that's what manages memory.
   // That will allow it to feed us with memory allocations that we can act
   // upon.
-  DCHECK(context_provider);
-  context_provider->ContextSupport()->SetSurfaceVisible(visible);
+  if (context_provider)
+    context_provider->ContextSupport()->SetSurfaceVisible(visible);
 }
 
 void DelegatingRenderer::SendManagedMemoryStats(size_t bytes_visible,

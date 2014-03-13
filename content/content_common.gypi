@@ -256,6 +256,8 @@
     'common/gpu/texture_image_transport_surface.h',
     'common/handle_enumerator_win.cc',
     'common/handle_enumerator_win.h',
+    'common/host_shared_bitmap_manager.cc',
+    'common/host_shared_bitmap_manager.h',
     'common/image_messages.h',
     'common/indexed_db/indexed_db_constants.h',
     'common/indexed_db/indexed_db_key.cc',

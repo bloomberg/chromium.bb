@@ -10,6 +10,7 @@
 #include "base/memory/shared_memory.h"
 #include "cc/base/cc_export.h"
 #include "gpu/command_buffer/common/mailbox.h"
+#include "ui/gfx/size.h"
 
 namespace base { class SharedMemory; }
 
@@ -37,6 +38,11 @@ class CC_EXPORT SharedBitmap {
   base::SharedMemory* memory() { return memory_; }
 
   SharedBitmapId id() { return id_; }
+
+  // Returns true if the size is valid and false otherwise.
+  static bool GetSizeInBytes(const gfx::Size& size, size_t* size_in_bytes);
+
+  static SharedBitmapId GenerateId();
 
  private:
   base::SharedMemory* memory_;

@@ -45,6 +45,7 @@ enum SwapType {
 
 bool g_compositor_initialized = false;
 base::Thread* g_compositor_thread = NULL;
+cc::SharedBitmapManager* g_shared_bitmap_manager;
 
 ui::ContextFactory* g_context_factory = NULL;
 
@@ -248,9 +249,13 @@ Compositor::Compositor(gfx::AcceleratedWidget widget)
   base::TimeTicks before_create = base::TimeTicks::Now();
   if (!!g_compositor_thread) {
     host_ = cc::LayerTreeHost::CreateThreaded(
-        this, NULL, settings, g_compositor_thread->message_loop_proxy());
+        this,
+        g_shared_bitmap_manager,
+        settings,
+        g_compositor_thread->message_loop_proxy());
   } else {
-    host_ = cc::LayerTreeHost::CreateSingleThreaded(this, this, NULL, settings);
+    host_ = cc::LayerTreeHost::CreateSingleThreaded(
+        this, this, g_shared_bitmap_manager, settings);
   }
   UMA_HISTOGRAM_TIMES("GPU.CreateBrowserCompositor",
                       base::TimeTicks::Now() - before_create);
@@ -317,6 +322,11 @@ void Compositor::Terminate() {
 
   DCHECK(g_compositor_initialized) << "Compositor::Initialize() didn't happen.";
   g_compositor_initialized = false;
+}
+
+// static
+void Compositor::SetSharedBitmapManager(cc::SharedBitmapManager* manager) {
+  g_shared_bitmap_manager = manager;
 }
 
 void Compositor::ScheduleDraw() {

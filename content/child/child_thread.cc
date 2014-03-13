@@ -27,6 +27,7 @@
 #include "content/child/child_histogram_message_filter.h"
 #include "content/child/child_process.h"
 #include "content/child/child_resource_message_filter.h"
+#include "content/child/child_shared_bitmap_manager.h"
 #include "content/child/fileapi/file_system_dispatcher.h"
 #include "content/child/power_monitor_broadcast_source.h"
 #include "content/child/quota_dispatcher.h"
@@ -311,6 +312,9 @@ void ChildThread::Init() {
       ::HeapProfilerStop,
       ::GetHeapProfile));
 #endif
+
+  shared_bitmap_manager_.reset(
+      new ChildSharedBitmapManager(thread_safe_sender()));
 }
 
 ChildThread::~ChildThread() {
