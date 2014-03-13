@@ -39,8 +39,8 @@
 
 namespace WebCore {
 
-HTMLImportChild::HTMLImportChild(Document& master, const KURL& url, bool createdByParser)
-    : HTMLImport(createdByParser)
+HTMLImportChild::HTMLImportChild(Document& master, const KURL& url, bool sync)
+    : HTMLImport(sync)
     , m_master(master)
     , m_url(url)
     , m_customElementMicrotaskStep(0)
@@ -78,7 +78,7 @@ void HTMLImportChild::startLoading(const ResourcePtr<RawResource>& resource)
     ASSERT(!this->resource());
     ASSERT(!m_loader);
 
-    if (isCreatedByParser()) {
+    if (isSync()) {
         ASSERT(!m_customElementMicrotaskStep);
         m_customElementMicrotaskStep = CustomElement::didCreateImport(this);
     }
@@ -249,7 +249,7 @@ void HTMLImportChild::showThis()
     fprintf(stderr, " loader=%p own=%s async=%s url=%s",
         m_loader.get(),
         hasLoader() && ownsLoader() ? "Y" : "N",
-        isCreatedByParser() ? "Y" : "N",
+        isSync() ? "Y" : "N",
         url().string().utf8().data());
 }
 #endif

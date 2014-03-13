@@ -57,7 +57,7 @@ void HTMLImport::appendChild(HTMLImport* child)
 
     // This prevents HTML parser from going beyond the
     // blockage line before the precise state is computed by recalcState().
-    if (child->isCreatedByParser())
+    if (child->isSync())
         m_state = HTMLImportState::blockedState();
 
     stateWillChange();

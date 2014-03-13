@@ -109,7 +109,7 @@ public:
     Document* master();
     HTMLImportsController* controller();
     bool isRoot() const { return !isChild(); }
-    bool isCreatedByParser() const { return m_createdByParser; }
+    bool isSync() const { return m_sync; }
     const HTMLImportState& state() const { return m_state; }
 
     void appendChild(HTMLImport*);
@@ -129,8 +129,8 @@ public:
 protected:
     // Stating from most conservative state.
     // It will be corrected through state update flow.
-    explicit HTMLImport(bool createdByParser = false)
-        : m_createdByParser(createdByParser)
+    explicit HTMLImport(bool sync = false)
+        : m_sync(sync)
     { }
 
     void stateWillChange();
@@ -144,7 +144,7 @@ protected:
 
 private:
     HTMLImportState m_state;
-    bool m_createdByParser : 1;
+    bool m_sync : 1;
 };
 
 // An abstract class to decouple its sublcass HTMLImportsController.

@@ -70,7 +70,7 @@ void HTMLImportsController::clear()
 
 HTMLImportChild* HTMLImportsController::createChild(const KURL& url, HTMLImport* parent, HTMLImportChildClient* client)
 {
-    OwnPtr<HTMLImportChild> loader = adoptPtr(new HTMLImportChild(*m_master, url, client->isCreatedByParser()));
+    OwnPtr<HTMLImportChild> loader = adoptPtr(new HTMLImportChild(*m_master, url, client->isSync()));
     loader->setClient(client);
     parent->appendChild(loader.get());
     m_imports.append(loader.release());

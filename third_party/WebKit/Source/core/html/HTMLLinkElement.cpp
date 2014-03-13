@@ -342,6 +342,11 @@ const AtomicString& HTMLLinkElement::type() const
     return getAttribute(typeAttr);
 }
 
+bool HTMLLinkElement::async() const
+{
+    return fastHasAttribute(HTMLNames::asyncAttr);
+}
+
 IconType HTMLLinkElement::iconType() const
 {
     return m_relAttribute.iconType();

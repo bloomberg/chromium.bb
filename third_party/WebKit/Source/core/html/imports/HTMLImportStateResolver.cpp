@@ -60,7 +60,7 @@ inline bool HTMLImportStateResolver::shouldBlockDocumentCreation() const
 inline bool HTMLImportStateResolver::shouldBlockScriptExecution() const
 {
     for (HTMLImport* child = m_import->firstChild(); child; child = child->next()) {
-        if (child->isCreatedByParser() && isBlockingFollowers(child))
+        if (child->isSync() && isBlockingFollowers(child))
             return true;
     }
 

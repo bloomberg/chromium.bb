@@ -62,7 +62,7 @@ public:
     // HTMLImportChildClient
     virtual void didFinish() OVERRIDE;
     virtual void importChildWasDestroyed(HTMLImportChild*) OVERRIDE;
-    virtual bool isCreatedByParser() const OVERRIDE;
+    virtual bool isSync() const OVERRIDE;
     virtual HTMLLinkElement* link() OVERRIDE;
 
     Document* importedDocument() const;
