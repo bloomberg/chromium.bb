@@ -44,10 +44,6 @@ class URLLoader;
 class URLUtil_Dev;
 }
 
-namespace ppapi_proxy {
-class BrowserPpp;
-}
-
 namespace plugin {
 
 class ErrorInfo;

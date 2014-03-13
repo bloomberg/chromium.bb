@@ -32,7 +32,6 @@
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_console.h"
 #include "ppapi/c/ppb_var.h"
-#include "ppapi/c/ppp_instance.h"
 #include "ppapi/c/private/ppb_nacl_private.h"
 #include "ppapi/cpp/dev/url_util_dev.h"
 #include "ppapi/cpp/module.h"
@@ -931,10 +930,6 @@ void Plugin::ReportDeadNexe() {
   }
   // else ReportLoadError() and ReportAbortError() will be used by loading code
   // to provide error handling.
-  //
-  // NOTE: not all crashes during load will make it here.
-  // Those in BrowserPpp::InitializeModule and creation of PPP interfaces
-  // will just get reported back as PP_ERROR_FAILED.
 }
 
 void Plugin::NaClManifestBufferReady(int32_t pp_error) {
