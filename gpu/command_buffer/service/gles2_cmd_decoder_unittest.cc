@@ -7043,45 +7043,83 @@ TEST_F(GLES2DecoderManualInitTest, BeginEndQueryEXT) {
       .RetiresOnSaturation();
 }
 
+struct QueryType {
+  GLenum type;
+  bool is_gl;
+};
+
+const QueryType kQueryTypes[] = {
+  { GL_COMMANDS_ISSUED_CHROMIUM, false },
+  { GL_LATENCY_QUERY_CHROMIUM, false },
+  { GL_ASYNC_PIXEL_UNPACK_COMPLETED_CHROMIUM, false },
+  { GL_ASYNC_PIXEL_PACK_COMPLETED_CHROMIUM, false },
+  { GL_GET_ERROR_QUERY_CHROMIUM, false },
+  { GL_ANY_SAMPLES_PASSED_EXT, true },
+};
+
 static void CheckBeginEndQueryBadMemoryFails(
     GLES2DecoderTestBase* test,
     GLuint client_id,
     GLuint service_id,
+    const QueryType& query_type,
     int32 shm_id,
     uint32 shm_offset) {
+  // We need to reset the decoder on each iteration, because we lose the
+  // context every time.
+  test->InitDecoder(
+        "GL_EXT_occlusion_query_boolean",      // extensions
+        "opengl es 2.0",   // gl version
+        true,    // has alpha
+        false,   // has depth
+        false,   // has stencil
+        true,    // request alpha
+        false,   // request depth
+        false,   // request stencil
+        true);   // bind generates resource
   ::testing::StrictMock< ::gfx::MockGLInterface>* gl = test->GetGLMock();
 
   BeginQueryEXT begin_cmd;
 
   test->GenHelper<GenQueriesEXTImmediate>(client_id);
 
-  EXPECT_CALL(*gl, GenQueriesARB(1, _))
-     .WillOnce(SetArgumentPointee<1>(service_id))
-     .RetiresOnSaturation();
-  EXPECT_CALL(*gl, BeginQueryARB(GL_ANY_SAMPLES_PASSED_EXT, service_id))
-      .Times(1)
-      .RetiresOnSaturation();
+  if (query_type.is_gl) {
+    EXPECT_CALL(*gl, GenQueriesARB(1, _))
+       .WillOnce(SetArgumentPointee<1>(service_id))
+       .RetiresOnSaturation();
+    EXPECT_CALL(*gl, BeginQueryARB(query_type.type, service_id))
+        .Times(1)
+        .RetiresOnSaturation();
+  }
 
   // Test bad shared memory fails
-  begin_cmd.Init(GL_ANY_SAMPLES_PASSED_EXT, client_id, shm_id, shm_offset);
+  begin_cmd.Init(query_type.type, client_id, shm_id, shm_offset);
   error::Error error1 = test->ExecuteCmd(begin_cmd);
 
-  EXPECT_CALL(*gl, EndQueryARB(GL_ANY_SAMPLES_PASSED_EXT))
-      .Times(1)
-      .RetiresOnSaturation();
+  if (query_type.is_gl) {
+    EXPECT_CALL(*gl, EndQueryARB(query_type.type))
+        .Times(1)
+        .RetiresOnSaturation();
+  }
+  if (query_type.type == GL_GET_ERROR_QUERY_CHROMIUM) {
+    EXPECT_CALL(*gl, GetError())
+        .WillOnce(Return(GL_NO_ERROR))
+        .RetiresOnSaturation();
+  }
 
   EndQueryEXT end_cmd;
-  end_cmd.Init(GL_ANY_SAMPLES_PASSED_EXT, 1);
+  end_cmd.Init(query_type.type, 1);
   error::Error error2 = test->ExecuteCmd(end_cmd);
 
-  EXPECT_CALL(*gl,
-      GetQueryObjectuivARB(service_id, GL_QUERY_RESULT_AVAILABLE_EXT, _))
-      .WillOnce(SetArgumentPointee<2>(1))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl,
-      GetQueryObjectuivARB(service_id, GL_QUERY_RESULT_EXT, _))
-      .WillOnce(SetArgumentPointee<2>(1))
-      .RetiresOnSaturation();
+  if (query_type.is_gl) {
+    EXPECT_CALL(*gl,
+        GetQueryObjectuivARB(service_id, GL_QUERY_RESULT_AVAILABLE_EXT, _))
+        .WillOnce(SetArgumentPointee<2>(1))
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl,
+        GetQueryObjectuivARB(service_id, GL_QUERY_RESULT_EXT, _))
+        .WillOnce(SetArgumentPointee<2>(1))
+        .RetiresOnSaturation();
+  }
 
   QueryManager* query_manager = test->GetDecoder()->GetQueryManager();
   ASSERT_TRUE(query_manager != NULL);
@@ -7091,43 +7129,36 @@ static void CheckBeginEndQueryBadMemoryFails(
               error2 != error::kNoError ||
               !process_success);
 
-  EXPECT_CALL(*gl, DeleteQueriesARB(1, _))
-      .Times(1)
-      .RetiresOnSaturation();
+  if (query_type.is_gl) {
+    EXPECT_CALL(*gl, DeleteQueriesARB(1, _))
+        .Times(1)
+        .RetiresOnSaturation();
+  }
+  test->ResetDecoder();
 }
 
 TEST_F(GLES2DecoderManualInitTest, BeginEndQueryEXTBadMemoryIdFails) {
-  InitDecoder(
-      "GL_EXT_occlusion_query_boolean",      // extensions
-      "opengl es 2.0",   // gl version
-      true,    // has alpha
-      false,   // has depth
-      false,   // has stencil
-      true,    // request alpha
-      false,   // request depth
-      false,   // request stencil
-      true);   // bind generates resource
-
-  CheckBeginEndQueryBadMemoryFails(
-      this, kNewClientId, kNewServiceId,
-      kInvalidSharedMemoryId, kSharedMemoryOffset);
+  for (size_t i = 0; i < arraysize(kQueryTypes); ++i) {
+    CheckBeginEndQueryBadMemoryFails(
+        this, kNewClientId, kNewServiceId,
+        kQueryTypes[i],
+        kInvalidSharedMemoryId, kSharedMemoryOffset);
+  }
 }
 
 TEST_F(GLES2DecoderManualInitTest, BeginEndQueryEXTBadMemoryOffsetFails) {
-  InitDecoder(
-      "GL_EXT_occlusion_query_boolean",      // extensions
-      "opengl es 2.0",   // gl version
-      true,    // has alpha
-      false,   // has depth
-      false,   // has stencil
-      true,    // request alpha
-      false,   // request depth
-      false,   // request stencil
-      true);   // bind generates resource
-
-  CheckBeginEndQueryBadMemoryFails(
-      this, kNewClientId, kNewServiceId,
-      kSharedMemoryId, kInvalidSharedMemoryOffset);
+  for (size_t i = 0; i < arraysize(kQueryTypes); ++i) {
+    // Out-of-bounds.
+    CheckBeginEndQueryBadMemoryFails(
+        this, kNewClientId, kNewServiceId,
+        kQueryTypes[i],
+        kSharedMemoryId, kInvalidSharedMemoryOffset);
+    // Overflow.
+    CheckBeginEndQueryBadMemoryFails(
+        this, kNewClientId, kNewServiceId,
+        kQueryTypes[i],
+        kSharedMemoryId, 0xfffffffcu);
+  }
 }
 
 TEST_F(GLES2DecoderTest, BeginEndQueryEXTCommandsIssuedCHROMIUM) {

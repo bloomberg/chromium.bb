@@ -337,7 +337,9 @@ void GLES2DecoderTestBase::InitDecoderWithCommandLine(
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
-void GLES2DecoderTestBase::TearDown() {
+void GLES2DecoderTestBase::ResetDecoder() {
+  if (!decoder_.get())
+    return;
   // All Tests should have read all their GLErrors before getting here.
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 
@@ -352,6 +354,10 @@ void GLES2DecoderTestBase::TearDown() {
   engine_.reset();
   ::gfx::MockGLInterface::SetGLInterface(NULL);
   gl_.reset();
+}
+
+void GLES2DecoderTestBase::TearDown() {
+  ResetDecoder();
 }
 
 void GLES2DecoderTestBase::ExpectEnableDisable(GLenum cap, bool enable) {
@@ -1413,10 +1419,12 @@ void GLES2DecoderTestBase::AddExpectationsForSimulatedAttrib0(
 
 GLES2DecoderWithShaderTestBase::MockCommandBufferEngine::
 MockCommandBufferEngine() {
-  data_.reset(new int8[kSharedBufferSize]);
-  ClearSharedMemory();
-  valid_buffer_.ptr = data_.get();
+  shm_.reset(new base::SharedMemory());
+  shm_->CreateAndMapAnonymous(kSharedBufferSize);
   valid_buffer_.size = kSharedBufferSize;
+  valid_buffer_.shared_memory = shm_.get();
+  valid_buffer_.ptr = shm_->memory();
+  ClearSharedMemory();
 }
 
 GLES2DecoderWithShaderTestBase::MockCommandBufferEngine::

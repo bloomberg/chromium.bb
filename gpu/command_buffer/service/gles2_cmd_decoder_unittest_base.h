@@ -171,6 +171,8 @@ class GLES2DecoderTestBase : public testing::Test {
       bool bind_generates_resource,
       const CommandLine* command_line);
 
+  void ResetDecoder();
+
   const ContextGroup& group() const {
     return *group_.get();
   }
@@ -518,7 +520,7 @@ class GLES2DecoderTestBase : public testing::Test {
     virtual gpu::Buffer GetSharedMemoryBuffer(int32 shm_id) OVERRIDE;
 
     void ClearSharedMemory() {
-      memset(data_.get(), kInitialMemoryValue, kSharedBufferSize);
+      memset(shm_->memory(), kInitialMemoryValue, kSharedBufferSize);
     }
 
     virtual void set_token(int32 token) OVERRIDE;
@@ -532,7 +534,7 @@ class GLES2DecoderTestBase : public testing::Test {
     virtual int32 GetGetOffset() OVERRIDE;
 
    private:
-    scoped_ptr<int8[]> data_;
+    scoped_ptr<base::SharedMemory> shm_;
     gpu::Buffer valid_buffer_;
     gpu::Buffer invalid_buffer_;
   };

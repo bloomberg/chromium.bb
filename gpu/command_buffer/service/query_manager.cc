@@ -8,6 +8,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/shared_memory.h"
+#include "base/numerics/safe_math.h"
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
@@ -95,8 +96,9 @@ bool AsyncPixelTransfersCompletedQuery::End(
   mem_params.shm_size = buffer.size;
   mem_params.shm_data_offset = shm_offset();
   mem_params.shm_data_size = sizeof(QuerySync);
-  uint32 end = mem_params.shm_data_offset + mem_params.shm_data_size;
-  if (end > mem_params.shm_size || end < mem_params.shm_data_offset)
+  base::CheckedNumeric<uint32> end = mem_params.shm_data_offset;
+  end += mem_params.shm_data_size;
+  if (!end.IsValid() || end.ValueOrDie() > mem_params.shm_size)
     return false;
 
   observer_ = new AsyncPixelTransferCompletionObserverImpl(submit_count);
@@ -304,11 +306,17 @@ class AsyncReadPixelsCompletedQuery
  protected:
   void Complete();
   virtual ~AsyncReadPixelsCompletedQuery();
+
+ private:
+  bool completed_;
+  bool complete_result_;
 };
 
 AsyncReadPixelsCompletedQuery::AsyncReadPixelsCompletedQuery(
     QueryManager* manager, GLenum target, int32 shm_id, uint32 shm_offset)
-    : Query(manager, target, shm_id, shm_offset) {
+    : Query(manager, target, shm_id, shm_offset),
+      completed_(false),
+      complete_result_(false) {
 }
 
 bool AsyncReadPixelsCompletedQuery::Begin() {
@@ -323,15 +331,16 @@ bool AsyncReadPixelsCompletedQuery::End(base::subtle::Atomic32 submit_count) {
       base::Bind(&AsyncReadPixelsCompletedQuery::Complete,
                  AsWeakPtr()));
 
-  return true;
+  return Process();
 }
 
 void AsyncReadPixelsCompletedQuery::Complete() {
-  MarkAsCompleted(1);
+  completed_ = true;
+  complete_result_ = MarkAsCompleted(1);
 }
 
 bool AsyncReadPixelsCompletedQuery::Process() {
-  return true;
+  return !completed_ || complete_result_;
 }
 
 void AsyncReadPixelsCompletedQuery::Destroy(bool /* have_context */) {
