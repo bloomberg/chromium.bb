@@ -6,14 +6,13 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/extensions/api/storage/storage_api.h"
 #include "chrome/browser/extensions/extension_api_unittest.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "extensions/browser/api/storage/leveldb_settings_storage_factory.h"
 #include "extensions/browser/api/storage/settings_frontend.h"
 #include "extensions/browser/api/storage/settings_storage_quota_enforcer.h"
 #include "extensions/browser/api/storage/settings_test_util.h"
+#include "extensions/browser/api/storage/storage_api.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
@@ -44,22 +43,9 @@ class StorageApiUnittest : public ExtensionApiUnittest {
     ExtensionApiUnittest::SetUp();
     TestExtensionSystem* extension_system =
         static_cast<TestExtensionSystem*>(ExtensionSystem::Get(profile()));
-    ExtensionService* extension_service = extension_system->extension_service();
-    if (!extension_service) {
-      extension_service = extension_system->CreateExtensionService(
-          CommandLine::ForCurrentProcess(), base::FilePath(), false);
-      ASSERT_TRUE(extension_service);
-    }
-
-    if (!extension_system->event_router()) {
-      extension_system->SetEventRouter(scoped_ptr<EventRouter>(
-          new EventRouter(profile(), ExtensionPrefs::Get(profile()))));
-    }
-
-    scoped_refptr<Extension> extension =
-        test_util::CreateExtensionWithID(id_util::GenerateId("ext"));
-    set_extension(extension);
-    extension_service->AddExtension(extension.get());
+    // SettingsFrontend requires an EventRouter.
+    extension_system->SetEventRouter(scoped_ptr<EventRouter>(
+        new EventRouter(profile(), ExtensionPrefs::Get(profile()))));
   }
 
  protected:

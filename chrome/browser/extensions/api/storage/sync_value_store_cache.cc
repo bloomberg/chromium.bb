@@ -10,10 +10,10 @@
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/extensions/api/storage/sync_storage_backend.h"
 #include "chrome/browser/sync/glue/sync_start_util.h"
-#include "chrome/common/extensions/api/storage.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/storage/settings_frontend.h"
 #include "extensions/browser/api/storage/settings_storage_quota_enforcer.h"
+#include "extensions/common/api/storage.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 
@@ -24,12 +24,12 @@ namespace extensions {
 namespace {
 
 // Returns the quota limit for sync storage, taken from the schema in
-// chrome/common/extensions/api/storage.json.
+// extensions/common/api/storage.json.
 SettingsStorageQuotaEnforcer::Limits GetSyncQuotaLimits() {
   SettingsStorageQuotaEnforcer::Limits limits = {
-    static_cast<size_t>(api::storage::sync::QUOTA_BYTES),
-    static_cast<size_t>(api::storage::sync::QUOTA_BYTES_PER_ITEM),
-    static_cast<size_t>(api::storage::sync::MAX_ITEMS)
+    static_cast<size_t>(core_api::storage::sync::QUOTA_BYTES),
+    static_cast<size_t>(core_api::storage::sync::QUOTA_BYTES_PER_ITEM),
+    static_cast<size_t>(core_api::storage::sync::MAX_ITEMS)
   };
   return limits;
 }

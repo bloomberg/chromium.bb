@@ -487,8 +487,6 @@
         'browser/extensions/api/storage/settings_sync_processor.h',
         'browser/extensions/api/storage/settings_sync_util.cc',
         'browser/extensions/api/storage/settings_sync_util.h',
-        'browser/extensions/api/storage/storage_api.cc',
-        'browser/extensions/api/storage/storage_api.h',
         'browser/extensions/api/storage/sync_storage_backend.cc',
         'browser/extensions/api/storage/sync_storage_backend.h',
         'browser/extensions/api/storage/sync_value_store_cache.cc',

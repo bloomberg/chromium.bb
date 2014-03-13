@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/storage/storage_api.h"
+#include "extensions/browser/api/storage/storage_api.h"
 
 #include <string>
 #include <vector>
@@ -10,10 +10,10 @@
 #include "base/bind.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
-#include "chrome/common/extensions/api/storage.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/storage/settings_frontend.h"
 #include "extensions/browser/quota_service.h"
+#include "extensions/common/api/storage.h"
 
 namespace extensions {
 
@@ -151,7 +151,7 @@ std::vector<std::string> GetKeys(const base::DictionaryValue& dict) {
 void GetModificationQuotaLimitHeuristics(QuotaLimitHeuristics* heuristics) {
   QuotaLimitHeuristic::Config longLimitConfig = {
     // See storage.json for current value.
-    api::storage::sync::MAX_WRITE_OPERATIONS_PER_HOUR,
+    core_api::storage::sync::MAX_WRITE_OPERATIONS_PER_HOUR,
     base::TimeDelta::FromHours(1)
   };
   heuristics->push_back(new QuotaService::TimedLimit(
@@ -162,7 +162,7 @@ void GetModificationQuotaLimitHeuristics(QuotaLimitHeuristics* heuristics) {
   // A max of 10 operations per minute, sustained over 10 minutes.
   QuotaLimitHeuristic::Config shortLimitConfig = {
     // See storage.json for current value.
-    api::storage::sync::MAX_SUSTAINED_WRITE_OPERATIONS_PER_MINUTE,
+    core_api::storage::sync::MAX_SUSTAINED_WRITE_OPERATIONS_PER_MINUTE,
     base::TimeDelta::FromMinutes(1)
   };
   heuristics->push_back(new QuotaService::SustainedLimit(

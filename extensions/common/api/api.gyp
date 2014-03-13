@@ -10,6 +10,8 @@
       'sources': [
         '<@(schema_files)',
       ],
+      # TODO(jschuh): http://crbug.com/167187 size_t -> int
+      'msvs_disabled_warnings': [ 4267 ],
       'includes': [
         '../../../build/json_schema_bundle_compile.gypi',
         '../../../build/json_schema_compile.gypi',
@@ -18,11 +20,13 @@
         'chromium_code': 1,
         'non_compiled_schema_files': [
         ],
+        # TODO: Eliminate these on Android. See crbug.com/305852.
         'schema_files': [
           'socket.idl',
           'sockets_tcp.idl',
           'sockets_tcp_server.idl',
           'sockets_udp.idl',
+          'storage.json',
         ],
         'cc_dir': 'extensions/common/api',
         'root_namespace': 'extensions::core_api',

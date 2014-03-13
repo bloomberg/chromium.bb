@@ -32,17 +32,10 @@ specific_include_rules = {
   "(.*test|.*test_util)\.(cc|h)": [
     # Temporarily allowed testing includes.  See above.
     # TODO(jamescook): Remove these. http://crbug.com/162530
+    "+chrome/browser/extensions/extension_api_unittest.h",
     "+chrome/browser/extensions/extension_service_unittest.h",
     "+chrome/browser/extensions/test_extension_system.h",
     "+chrome/common/chrome_paths.h",
     "+chrome/test/base/testing_profile.h",
   ],
-  # TODO(jamescook): Eliminate these after moving storage.idl to src/extensions.
-  # http://crbug.com/348058
-  "local_value_store_cache\.cc": [
-    "+chrome/common/extensions/api/storage.h"
-  ],
-  "settings_frontend\.cc": [
-    "+chrome/common/extensions/api/storage.h"
-  ]
 }

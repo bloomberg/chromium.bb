@@ -212,6 +212,8 @@
         'browser/api/storage/settings_storage_factory.h',
         'browser/api/storage/settings_storage_quota_enforcer.cc',
         'browser/api/storage/settings_storage_quota_enforcer.h',
+        'browser/api/storage/storage_api.cc',
+        'browser/api/storage/storage_api.h',
         'browser/api/storage/value_store_cache.cc',
         'browser/api/storage/value_store_cache.h',
         'browser/api/storage/weak_unlimited_settings_storage.cc',

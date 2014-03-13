@@ -9,7 +9,6 @@
 #include "base/files/file_path.h"
 #include "base/json/json_reader.h"
 #include "base/lazy_instance.h"
-#include "chrome/common/extensions/api/storage.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/extensions_api_client.h"
@@ -18,6 +17,7 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/common/api/storage.h"
 
 using content::BrowserContext;
 using content::BrowserThread;
@@ -48,7 +48,7 @@ class DefaultObserver : public SettingsObserver {
     args->Append(new base::StringValue(settings_namespace::ToString(
         settings_namespace)));
     scoped_ptr<Event> event(new Event(
-        api::storage::OnChanged::kEventName, args.Pass()));
+        core_api::storage::OnChanged::kEventName, args.Pass()));
     ExtensionSystem::Get(browser_context_)->event_router()->
         DispatchEventToExtension(extension_id, event.Pass());
   }

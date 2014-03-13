@@ -9,12 +9,12 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
-#include "chrome/common/extensions/api/storage.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/storage/settings_storage_factory.h"
 #include "extensions/browser/api/storage/settings_storage_quota_enforcer.h"
 #include "extensions/browser/api/storage/weak_unlimited_settings_storage.h"
 #include "extensions/browser/value_store/value_store.h"
+#include "extensions/common/api/storage.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/permissions/api_permission.h"
@@ -26,10 +26,10 @@ namespace extensions {
 namespace {
 
 // Returns the quota limit for local storage, taken from the schema in
-// chrome/common/extensions/api/storage.json.
+// extensions/common/api/storage.json.
 SettingsStorageQuotaEnforcer::Limits GetLocalQuotaLimits() {
   SettingsStorageQuotaEnforcer::Limits limits = {
-    static_cast<size_t>(api::storage::local::QUOTA_BYTES),
+    static_cast<size_t>(core_api::storage::local::QUOTA_BYTES),
     std::numeric_limits<size_t>::max(),
     std::numeric_limits<size_t>::max()
   };

@@ -18,7 +18,6 @@
 #include "chrome/browser/policy/schema_registry_service.h"
 #include "chrome/browser/policy/schema_registry_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/extensions/api/storage.h"
 #include "chrome/common/extensions/api/storage/storage_schema_manifest_handler.h"
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/schema.h"
@@ -33,6 +32,7 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/value_store/value_store_change.h"
+#include "extensions/common/api/storage.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
@@ -45,7 +45,7 @@ using content::BrowserThread;
 
 namespace extensions {
 
-namespace storage = api::storage;
+namespace storage = core_api::storage;
 
 namespace {
 
