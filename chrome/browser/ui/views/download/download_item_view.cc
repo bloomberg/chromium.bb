@@ -474,6 +474,7 @@ bool DownloadItemView::OnKeyPressed(const ui::KeyEvent& event) {
 
   if (event.key_code() == ui::VKEY_SPACE ||
       event.key_code() == ui::VKEY_RETURN) {
+    // OpenDownload may delete this, so don't add any code after this line.
     OpenDownload();
     return true;
   }
@@ -906,8 +907,12 @@ void DownloadItemView::OpenDownload() {
   // open downloads super quickly, we should be concerned about clickjacking.
   UMA_HISTOGRAM_LONG_TIMES("clickjacking.open_download",
                            base::Time::Now() - creation_time_);
-  download()->OpenDownload();
+
   UpdateAccessibleName();
+
+  // Calling download()->OpenDownload may delete this, so this must be
+  // the last thing we do.
+  download()->OpenDownload();
 }
 
 bool DownloadItemView::SubmitDownloadToFeedbackService() {
@@ -1044,13 +1049,16 @@ void DownloadItemView::HandleClickEvent(const ui::LocatedEvent& event,
   if (mode_ == DANGEROUS_MODE)
     return;
 
-  if (active_event &&
-      !InDropDownButtonXCoordinateRange(event.x()) &&
-      !IsShowingWarningDialog()) {
-    OpenDownload();
+  SetState(NORMAL, NORMAL);
+
+  if (!active_event ||
+      InDropDownButtonXCoordinateRange(event.x()) ||
+      IsShowingWarningDialog()) {
+    return;
   }
 
-  SetState(NORMAL, NORMAL);
+  // OpenDownload may delete this, so don't add any code after this line.
+  OpenDownload();
 }
 
 // Load an icon for the file type we're downloading, and animate any in progress
