@@ -1094,6 +1094,18 @@ class NinjaWriter:
       extra_bindings.append(('soname', os.path.split(output)[1]))
       extra_bindings.append(('lib',
                             gyp.common.EncodePOSIXShellArgument(output)))
+      link_file_list = output + '.rsp'
+      if self.is_mac_bundle:
+        # 'Dependency Framework.framework/Versions/A/Dependency Framework' ->
+        # 'Dependency Framework.framework.rsp'
+        link_file_list = self.xcode_settings.GetWrapperName() + '.rsp'
+        # If an rspfile contains spaces, ninja surrounds the filename with
+        # quotes around it and then passes it to open(), creating a file with
+        # quotes in its name (and when looking for the rsp file, the name makes
+        # it through bash which strips the quotes) :-/
+        link_file_list = link_file_list.replace(' ', '_')
+      extra_bindings.append(
+        ('link_file_list', gyp.common.EncodePOSIXShellArgument(link_file_list)))
       if self.flavor == 'win':
         extra_bindings.append(('binary', output))
         if '/NOENTRY' not in ldflags:
@@ -1891,17 +1903,18 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
       'solink',
       description='SOLINK $lib',
       restat=True,
-      command=(mtime_preserving_solink_base % {
-          'suffix': '-Wl,--whole-archive $in $solibs -Wl,--no-whole-archive '
-          '$libs'}),
+      command=mtime_preserving_solink_base % {'suffix': '@$link_file_list'},
+      rspfile='$link_file_list',
+      rspfile_content=
+          '-Wl,--whole-archive $in $solibs -Wl,--no-whole-archive $libs',
       pool='link_pool')
     master_ninja.rule(
       'solink_module',
       description='SOLINK(module) $lib',
       restat=True,
-      command=(mtime_preserving_solink_base % {
-          'suffix': '-Wl,--start-group $in $solibs -Wl,--end-group '
-          '$libs'}),
+      command=mtime_preserving_solink_base % {'suffix': '@$link_file_list'},
+      rspfile='$link_file_list',
+      rspfile_content='-Wl,--start-group $in $solibs -Wl,--end-group $libs',
       pool='link_pool')
     master_ninja.rule(
       'link',
@@ -1914,9 +1927,9 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
         'alink',
         description='LIB $out',
         command=('%s gyp-win-tool link-wrapper $arch False '
-                 '$ar /nologo /ignore:4221 /OUT:$out @$out.rsp' %
+                 '$ar /nologo /ignore:4221 /OUT:$out @$link_file_list' %
                  sys.executable),
-        rspfile='$out.rsp',
+        rspfile='$link_file_list',
         rspfile_content='$in_newline $libflags')
     _AddWinLinkRules(master_ninja, embed_manifest=True)
     _AddWinLinkRules(master_ninja, embed_manifest=False)
@@ -1968,34 +1981,42 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
               '{ otool -l $lib | grep LC_ID_DYLIB -A 5; '
               'nm -gP $lib | cut -f1-2 -d\' \' | grep -v U$$; true; }'})
 
-    solink_suffix = '$in $solibs $libs$postbuilds'
+
+    solink_suffix = '@$link_file_list$postbuilds'
     master_ninja.rule(
       'solink',
       description='SOLINK $lib, POSTBUILDS',
       restat=True,
       command=mtime_preserving_solink_base % {'suffix': solink_suffix,
                                               'type': '-shared'},
+      rspfile='$link_file_list',
+      rspfile_content='$in $solibs $libs',
       pool='link_pool')
     master_ninja.rule(
       'solink_notoc',
       description='SOLINK $lib, POSTBUILDS',
       restat=True,
       command=solink_base % {'suffix':solink_suffix, 'type': '-shared'},
+      rspfile='$link_file_list',
+      rspfile_content='$in $solibs $libs',
       pool='link_pool')
 
-    solink_module_suffix = '$in $solibs $libs$postbuilds'
     master_ninja.rule(
       'solink_module',
       description='SOLINK(module) $lib, POSTBUILDS',
       restat=True,
-      command=mtime_preserving_solink_base % {'suffix': solink_module_suffix,
+      command=mtime_preserving_solink_base % {'suffix': solink_suffix,
                                               'type': '-bundle'},
+      rspfile='$link_file_list',
+      rspfile_content='$in $solibs $libs',
       pool='link_pool')
     master_ninja.rule(
       'solink_module_notoc',
       description='SOLINK(module) $lib, POSTBUILDS',
       restat=True,
-      command=solink_base % {'suffix': solink_module_suffix, 'type': '-bundle'},
+      command=solink_base % {'suffix': solink_suffix, 'type': '-bundle'},
+      rspfile='$link_file_list',
+      rspfile_content='$in $solibs $libs',
       pool='link_pool')
 
     master_ninja.rule(
