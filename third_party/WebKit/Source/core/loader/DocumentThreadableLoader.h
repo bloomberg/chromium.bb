@@ -90,8 +90,6 @@ class DocumentThreadableLoader FINAL : public RefCounted<DocumentThreadableLoade
         void didFinishLoading(unsigned long identifier, double finishTime);
         void didTimeout(Timer<DocumentThreadableLoader>*);
         void makeCrossOriginAccessRequest(const ResourceRequest&);
-        void makeSimpleCrossOriginAccessRequest(const ResourceRequest&);
-        void makeCrossOriginAccessRequestWithPreflight(const ResourceRequest&);
         void preflightSuccess();
         void preflightFailure(const String& url, const String& errorDescription);
 
