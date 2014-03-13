@@ -13,7 +13,7 @@
   
   <script>
     var assert = chai.assert;
-    document.addEventListener('WebComponentsReady', function() {
+    document.addEventListener('polymer-ready', function() {
       var s = document.querySelector('polymer-selection');
       s.addEventListener("polymer-select", function(event) {
         if (test === 1) {

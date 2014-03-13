@@ -24,7 +24,16 @@
   
   <script>
     var assert = chai.assert;
-    document.addEventListener('WebComponentsReady', function() {
+    
+    function oneMutation(node, options, cb) {
+      var o = new MutationObserver(function() {
+        cb();
+        o.disconnect();
+      });
+      o.observe(node, options);
+    }
+    
+    document.addEventListener('polymer-ready', function() {
       //
       var s = document.querySelector('#selector');
       assert.equal(s.selected, null);
@@ -44,7 +53,9 @@
         assert.equal(this.selectedItem.length, selectEventCounter);
       });
       // set selected
-      new PathObserver(s, 'selected', function() {
+      s.selected = [0, 2];
+      Platform.flush();
+      oneMutation(s, {attributes: true}, function() {
         // check polymer-select event
         assert.equal(selectEventCounter, 2);
         // check selected class
@@ -61,8 +72,6 @@
         assert.isFalse(s.children[0].classList.contains('polymer-selected'));
         done();
       });
-      s.selected = [0, 2];
-      Platform.flush();
     });
   </script>
 </body>

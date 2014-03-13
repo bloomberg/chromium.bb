@@ -1,10 +1,8 @@
 {
   "name": "chromium",
+  "private": true,
   "dependencies": {
-    "platform": "latest",
-    "polymer": "latest",
-    "polymer-selector": "latest",
-    "polymer-selection": "latest"
-  },
-  "private": true
+    "polymer": "Polymer/polymer#~0.1.4",
+    "polymer-selector": "Polymer/polymer-selector#~0.1.4"
+  }
 }

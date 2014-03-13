@@ -420,6 +420,6 @@ AudioPlayer.TrackInfo.prototype.setMetadata = function(
 };
 
 // Starts loading the audio player.
-window.addEventListener('WebComponentsReady', function(e) {
+window.addEventListener('polymer-ready', function(e) {
   AudioPlayer.load();
 });

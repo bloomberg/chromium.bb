@@ -39,7 +39,16 @@
   <script>
     var assert = chai.assert;
     var async = requestAnimationFrame;
-    document.addEventListener('WebComponentsReady', function() {
+    
+    function oneMutation(node, options, cb) {
+      var o = new MutationObserver(function() {
+        cb();
+        o.disconnect();
+      });
+      o.observe(node, options);
+    }
+    
+    document.addEventListener('polymer-ready', function() {
       // selector1
       var s = document.querySelector('#selector1');
       assert.equal(s.selected, null);
@@ -60,7 +69,10 @@
           assert.equal(e.detail.item, s.selectedItem);
         }
       });
-      new PathObserver(s, 'selected', function() {
+      // set selected
+      s.selected = 'item5';
+      Platform.flush();
+      oneMutation(s, {attributes: true}, function() {
         // check polymer-select event
         assert.equal(selectEventCounter, 1);
         // check selected class
@@ -78,9 +90,6 @@
           done();
         }, 50);
       });
-      // set selected
-      s.selected = 'item5';
-      Platform.flush();
     });
   </script>
 </body>

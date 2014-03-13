@@ -74,7 +74,7 @@ var lowercaseAccents = {
         '\u016B'], // Lowercase U macron
 };
 
-document.addEventListener('WebComponentsReady', function() {
+document.addEventListener('polymer-ready', function() {
   var altkeyMetadata = document.createElement('kb-altkey-data');
   altkeyMetadata.registerAltkeys(uppercaseAccents);
   altkeyMetadata.registerAltkeys(lowercaseAccents);

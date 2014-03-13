@@ -40,7 +40,7 @@ var symbolAltKeys = {
   '.com' : ['.net','.org','.gov']
 };
 
-document.addEventListener('WebComponentsReady', function() {
+document.addEventListener('polymer-ready', function() {
   var altkeyMetadata = document.createElement('kb-altkey-data');
   altkeyMetadata.registerAltkeys(symbolAltKeys);
 });
