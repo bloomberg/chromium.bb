@@ -286,6 +286,11 @@ window_has_focus(struct window *window);
 
 typedef void (*menu_func_t)(void *data, struct input *input, int index);
 
+struct window *
+window_create_menu(struct display *display,
+		   struct input *input, uint32_t time,
+		   menu_func_t func, const char **entries, int count,
+		   void *user_data);
 void
 window_show_menu(struct display *display,
 		 struct input *input, uint32_t time, struct window *parent,

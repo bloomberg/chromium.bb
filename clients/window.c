@@ -4583,31 +4583,28 @@ static const struct xdg_popup_listener xdg_popup_listener = {
 	handle_popup_popup_done,
 };
 
-void
-window_show_menu(struct display *display,
-		 struct input *input, uint32_t time, struct window *parent,
-		 int32_t x, int32_t y,
-		 menu_func_t func, const char **entries, int count)
+static struct menu *
+create_menu(struct display *display,
+	    struct input *input, uint32_t time,
+	    menu_func_t func, const char **entries, int count,
+	    void *user_data)
 {
 	struct window *window;
 	struct menu *menu;
-	int32_t ix, iy;
 
 	menu = malloc(sizeof *menu);
 	if (!menu)
-		return;
+		return NULL;
 
-	window = window_create_internal(parent->display, 0);
+	window = window_create_internal(display, 0);
 	if (!window) {
 		free(menu);
-		return;
+		return NULL;
 	}
 
 	menu->window = window;
-	menu->user_data = parent;
+	menu->user_data = user_data;
 	menu->widget = window_add_widget(menu->window, menu);
-	window_set_buffer_scale (menu->window, window_get_buffer_scale (parent));
-	window_set_buffer_transform (menu->window, window_get_buffer_transform (parent));
 	menu->frame = frame_create(window->display->theme, 0, 0,
 				   FRAME_BUTTON_NONE, NULL);
 	fail_on_null(menu->frame);
@@ -4618,8 +4615,6 @@ window_show_menu(struct display *display,
 	menu->time = time;
 	menu->func = func;
 	menu->input = input;
-	window->x = x;
-	window->y = y;
 
 	input_ungrab(input);
 
@@ -4635,6 +4630,47 @@ window_show_menu(struct display *display,
 	frame_set_flag(menu->frame, FRAME_FLAG_ACTIVE);
 	window_schedule_resize(window, frame_width(menu->frame),
 			       frame_height(menu->frame));
+
+	return menu;
+}
+
+struct window *
+window_create_menu(struct display *display,
+		   struct input *input, uint32_t time,
+		   menu_func_t func, const char **entries, int count,
+		   void *user_data)
+{
+	struct menu *menu;
+	menu = create_menu(display, input, time, func, entries, count, user_data);
+
+	if (menu == NULL)
+		return NULL;
+
+	return menu->window;
+}
+
+void
+window_show_menu(struct display *display,
+		 struct input *input, uint32_t time, struct window *parent,
+		 int32_t x, int32_t y,
+		 menu_func_t func, const char **entries, int count)
+{
+	struct menu *menu;
+	struct window *window;
+	int32_t ix, iy;
+
+	menu = create_menu(display, input, time, func, entries, count, parent);
+
+	if (menu == NULL)
+		return;
+
+	window = menu->window;
+
+	window_set_buffer_scale (menu->window, window_get_buffer_scale (parent));
+	window_set_buffer_transform (menu->window, window_get_buffer_transform (parent));
+
+	window->x = x;
+	window->y = y;
 
 	frame_interior(menu->frame, &ix, &iy, NULL, NULL);
 
