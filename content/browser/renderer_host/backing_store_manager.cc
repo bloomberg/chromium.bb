@@ -256,14 +256,6 @@ void BackingStoreManager::RemoveBackingStore(RenderWidgetHost* host) {
 }
 
 // static
-void BackingStoreManager::RemoveAllBackingStores() {
-  if (large_cache) {
-    large_cache->Clear();
-    small_cache->Clear();
-  }
-}
-
-// static
 size_t BackingStoreManager::MemorySize() {
   if (!large_cache)
     return 0;

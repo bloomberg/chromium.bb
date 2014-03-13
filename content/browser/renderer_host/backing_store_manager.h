@@ -68,9 +68,6 @@ class BackingStoreManager {
   // Removes the backing store for the host.
   static void RemoveBackingStore(RenderWidgetHost* host);
 
-  // Removes all backing stores.
-  static void RemoveAllBackingStores();
-
   // Current size in bytes of the backing store cache.
   static size_t MemorySize();
 

@@ -108,9 +108,6 @@ class RenderWidgetHostView;
 // the RenderWidgetHost's IPC message map.
 class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
  public:
-  // Free all backing stores used for rendering to drop memory usage.
-  static void RemoveAllBackingStores();
-
   // Returns the size of all the backing stores used for rendering
   static size_t BackingStoreMemorySize();
 

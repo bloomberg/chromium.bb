@@ -159,11 +159,6 @@ class RenderWidgetHostIteratorImpl : public RenderWidgetHostIterator {
 
 
 // static
-void RenderWidgetHost::RemoveAllBackingStores() {
-  BackingStoreManager::RemoveAllBackingStores();
-}
-
-// static
 size_t RenderWidgetHost::BackingStoreMemorySize() {
   return BackingStoreManager::MemorySize();
 }
