@@ -75,8 +75,10 @@ class DesktopBackgroundController::WallpaperLoader
     if (cancel_flag_.IsSet())
       return;
 
-    if (!file_path_.empty())
+    if (!file_path_.empty()) {
+      VLOG(1) << "Loading " << file_path_.value();
       file_bitmap_ = LoadSkBitmapFromJPEGFile(file_path_);
+    }
 
     if (cancel_flag_.IsSet())
       return;
@@ -207,6 +209,7 @@ void DesktopBackgroundController::OnRootWindowAdded(aura::Window* root_window) {
 }
 
 bool DesktopBackgroundController::SetDefaultWallpaper(bool is_guest) {
+  VLOG(1) << "SetDefaultWallpaper: is_guest=" << is_guest;
   const bool use_large =
       GetAppropriateResolution() == WALLPAPER_RESOLUTION_LARGE;
 
@@ -229,8 +232,10 @@ bool DesktopBackgroundController::SetDefaultWallpaper(bool is_guest) {
   }
   file_path = command_line->GetSwitchValuePath(switch_name);
 
-  if (DefaultWallpaperIsAlreadyLoadingOrLoaded(file_path, resource_id))
+  if (DefaultWallpaperIsAlreadyLoadingOrLoaded(file_path, resource_id)) {
+    VLOG(1) << "Default wallpaper is already loading or loaded";
     return false;
+  }
 
   CancelDefaultWallpaperLoader();
   default_wallpaper_loader_ = new WallpaperLoader(
@@ -249,10 +254,14 @@ bool DesktopBackgroundController::SetDefaultWallpaper(bool is_guest) {
 void DesktopBackgroundController::SetCustomWallpaper(
     const gfx::ImageSkia& image,
     WallpaperLayout layout) {
+  VLOG(1) << "SetCustomWallpaper: image_id="
+          << WallpaperResizer::GetImageId(image) << " layout=" << layout;
   CancelDefaultWallpaperLoader();
 
-  if (CustomWallpaperIsAlreadyLoaded(image))
+  if (CustomWallpaperIsAlreadyLoaded(image)) {
+    VLOG(1) << "Custom wallpaper is already loaded";
     return;
+  }
 
   current_wallpaper_.reset(new WallpaperResizer(
       image, GetMaxDisplaySizeInNative(), layout));
@@ -345,6 +354,7 @@ void DesktopBackgroundController::SetDesktopBackgroundImageMode() {
 
 void DesktopBackgroundController::OnDefaultWallpaperLoadCompleted(
     scoped_refptr<WallpaperLoader> loader) {
+  VLOG(1) << "OnDefaultWallpaperLoadCompleted";
   current_wallpaper_.reset(loader->ReleaseWallpaperResizer());
   current_wallpaper_->StartResize();
   current_default_wallpaper_path_ = loader->file_path();
