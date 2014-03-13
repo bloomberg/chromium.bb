@@ -59,7 +59,6 @@ extern const char kCheckForUpdateIntervalSec[];
 extern const char kCheckCloudPrintConnectorPolicy[];
 extern const char kCipherSuiteBlacklist[];
 extern const char kClearTokenService[];
-extern const char kCloudPrintDeleteFile[];
 extern const char kCloudPrintFile[];
 extern const char kCloudPrintJobTitle[];
 extern const char kCloudPrintFileType[];

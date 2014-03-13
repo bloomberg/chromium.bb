@@ -43,8 +43,7 @@ void CreatePrintDialogForFile(content::BrowserContext* browser_context,
                               const base::FilePath& path_to_file,
                               const base::string16& print_job_title,
                               const base::string16& print_ticket,
-                              const std::string& file_type,
-                              bool delete_on_close);
+                              const std::string& file_type);
 
 // Creates a print dialog to print data in RAM.
 // Called on the FILE or UI thread. Even though this may start up a modal

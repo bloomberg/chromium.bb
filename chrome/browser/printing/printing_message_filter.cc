@@ -246,8 +246,7 @@ void PrintingMessageFilter::CreatePrintDialogForFile(
       path,
       wc->GetTitle(),
       base::string16(),
-      std::string("application/pdf"),
-      false);
+      std::string("application/pdf"));
 }
 #endif  // defined(OS_CHROMEOS)
 

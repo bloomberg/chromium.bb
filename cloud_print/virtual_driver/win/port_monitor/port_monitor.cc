@@ -213,17 +213,12 @@ bool LaunchPrintDialog(const base::FilePath& xps_path,
   CommandLine command_line(chrome_path);
 
   base::FilePath chrome_profile = GetChromeProfilePath();
-  if (!chrome_profile.empty()) {
+  if (!chrome_profile.empty())
     command_line.AppendSwitchPath(switches::kUserDataDir, chrome_profile);
-  }
 
-  command_line.AppendSwitchPath(switches::kCloudPrintFile,
-                                xps_path);
-  command_line.AppendSwitchNative(switches::kCloudPrintFileType,
-                                  kXpsMimeType);
-  command_line.AppendSwitchNative(switches::kCloudPrintJobTitle,
-                                  job_title);
-  command_line.AppendSwitch(switches::kCloudPrintDeleteFile);
+  command_line.AppendSwitchPath(switches::kCloudPrintFile, xps_path);
+  command_line.AppendSwitchNative(switches::kCloudPrintFileType, kXpsMimeType);
+  command_line.AppendSwitchNative(switches::kCloudPrintJobTitle, job_title);
   base::LaunchOptions options;
   options.as_user = primary_token_scoped;
   base::LaunchProcess(command_line, options, NULL);

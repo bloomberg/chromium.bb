@@ -163,10 +163,6 @@ const char kCipherSuiteBlacklist[]          = "cipher-suite-blacklist";
 // expiration of credentials during testing.
 const char kClearTokenService[]             = "clear-token-service";
 
-// Used with kCloudPrintFile. Tells Chrome to delete the file when finished
-// displaying the print dialog.
-const char kCloudPrintDeleteFile[]          = "cloud-print-delete-file";
-
 // Tells chrome to display the cloud print dialog and upload the specified file
 // for printing.
 const char kCloudPrintFile[]                = "cloud-print-file";
