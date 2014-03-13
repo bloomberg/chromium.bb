@@ -51,7 +51,9 @@ void WebRuntimeFeatures::enableExperimentalFeatures(bool enable)
 
 void WebRuntimeFeatures::enableBleedingEdgeFastPaths(bool enable)
 {
+    ASSERT(enable);
     RuntimeEnabledFeatures::setBleedingEdgeFastPathsEnabled(enable);
+    RuntimeEnabledFeatures::setSubpixelFontScalingEnabled(enable || RuntimeEnabledFeatures::subpixelFontScalingEnabled());
     RuntimeEnabledFeatures::setCSSWillChangeEnabled(enable);
 }
 
