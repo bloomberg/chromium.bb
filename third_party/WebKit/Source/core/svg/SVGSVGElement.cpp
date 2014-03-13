@@ -819,22 +819,20 @@ void SVGSVGElement::inheritViewAttributes(SVGViewElement* viewElement)
 // See http://www.w3.org/TR/SVG11/struct.html#InterfaceSVGSVGElement
 Element* SVGSVGElement::getElementById(const AtomicString& id) const
 {
-    if (!treeScope().containsMultipleElementsWithId(id)) {
-        Element* element = treeScope().getElementById(id);
-        if (!element || !element->isDescendantOf(this))
-            return 0;
-
+    Element* element = treeScope().getElementById(id);
+    if (element && element->isDescendantOf(this))
         return element;
-    }
 
-    // If duplicate IDs are there, return the first descendant of the svg element.
-    const Vector<Element*>& elements = treeScope().getAllElementsById(id);
-    Vector<Element*>::const_iterator end = elements.end();
-    for (Vector<Element*>::const_iterator it = elements.begin(); it != end; ++it) {
-        if ((*it)->isDescendantOf(this))
-            return *it;
-    }
+    // Fall back to traversing our subtree. Duplicate ids are allowed, the first found will
+    // be returned.
+    for (Node* node = firstChild(); node; node = NodeTraversal::next(*node, this)) {
+        if (!node->isElementNode())
+            continue;
 
+        Element* element = toElement(node);
+        if (element->getIdAttribute() == id)
+            return element;
+    }
     return 0;
 }
 

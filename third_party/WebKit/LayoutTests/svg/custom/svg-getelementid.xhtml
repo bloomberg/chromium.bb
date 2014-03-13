@@ -79,6 +79,13 @@
   var nonsvg = root.getElementById("nonsvg");
   var foreign = root.getElementById("foreign");
   shouldBeTrue("foreign.firstChild.nextSibling == nonsvg");
+
+  // Test that SVG element can find child elements when svg is not part of document yet
+  var orphanSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  var childSvg = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+  orphanSvg.appendChild(childSvg)
+  childSvg.id = 'fooSvg2'
+  shouldBeTrue("childSvg == orphanSvg.getElementById('fooSvg2')");
 ]]></script>
 
 </body>

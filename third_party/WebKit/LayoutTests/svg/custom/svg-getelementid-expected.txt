@@ -8,6 +8,7 @@ PASS svgTree4.firstChild.nextSibling == root.getElementById('foo') is true
 PASS svgTree5.firstChild.nextSibling == bar is true
 PASS svgTree5.firstChild.nextSibling == svgTree5.getElementById('bar') is true
 PASS foreign.firstChild.nextSibling == nonsvg is true
+PASS childSvg == orphanSvg.getElementById('fooSvg2') is true
 PASS successfullyParsed is true
 
 TEST COMPLETE
