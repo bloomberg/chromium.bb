@@ -43,6 +43,7 @@
 #include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/core/SkRRect.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
+#include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/effects/SkBlurMaskFilter.h"
 #include "third_party/skia/include/effects/SkCornerPathEffect.h"
 #include "third_party/skia/include/effects/SkLumaColorFilter.h"
@@ -65,20 +66,20 @@ namespace {
 class CompatibleImageBufferSurface : public ImageBufferSurface {
     WTF_MAKE_NONCOPYABLE(CompatibleImageBufferSurface); WTF_MAKE_FAST_ALLOCATED;
 public:
-    CompatibleImageBufferSurface(PassRefPtr<SkBaseDevice> device, const IntSize& size, OpacityMode opacityMode)
+    CompatibleImageBufferSurface(PassRefPtr<SkSurface> surface, const IntSize& size, OpacityMode opacityMode)
         : ImageBufferSurface(size, opacityMode)
+        , m_surface(surface)
     {
-        m_canvas = adoptPtr(new SkCanvas(device.get())); // Takes a ref on device
     }
     virtual ~CompatibleImageBufferSurface() { }
 
-    virtual SkCanvas* canvas() const OVERRIDE { return m_canvas.get(); }
-    virtual bool isValid() const OVERRIDE { return m_canvas; }
-    virtual bool isAccelerated() const OVERRIDE { return isValid() && m_canvas->getTopDevice()->accessRenderTarget(); }
+    virtual SkCanvas* canvas() const OVERRIDE { return m_surface ? m_surface->getCanvas() : 0; }
+    virtual bool isValid() const OVERRIDE { return m_surface; }
+    virtual bool isAccelerated() const OVERRIDE { return isValid() && m_surface->getCanvas()->getTopDevice()->accessRenderTarget(); }
     virtual Platform3DObject getBackingTexture() const OVERRIDE
     {
         ASSERT(isAccelerated());
-        GrRenderTarget* renderTarget = m_canvas->getTopDevice()->accessRenderTarget();
+        GrRenderTarget* renderTarget = m_surface->getCanvas()->getTopDevice()->accessRenderTarget();
         if (renderTarget) {
             return renderTarget->asTexture()->getTextureHandle();
         }
@@ -86,7 +87,7 @@ public:
     };
 
 private:
-    OwnPtr<SkCanvas> m_canvas;
+    RefPtr<SkSurface> m_surface;
 };
 
 } // unnamed namespace
@@ -1725,10 +1726,12 @@ PassOwnPtr<ImageBuffer> GraphicsContext::createCompatibleBuffer(const IntSize& s
     AffineTransform transform = getCTM(DefinitelyIncludeDeviceScale);
     IntSize scaledSize(static_cast<int>(ceil(size.width() * transform.xScale())), static_cast<int>(ceil(size.height() * transform.yScale())));
 
-    RefPtr<SkBaseDevice> device = adoptRef(m_canvas->getTopDevice()->createCompatibleDevice(SkBitmap::kARGB_8888_Config, size.width(), size.height(), opacityMode == Opaque));
-    if (!device)
+    SkAlphaType alphaType = (opacityMode == Opaque) ? kOpaque_SkAlphaType : kPremul_SkAlphaType;
+    SkImageInfo info = SkImageInfo::MakeN32(size.width(), size.height(), alphaType);
+    RefPtr<SkSurface> skSurface = adoptRef(m_canvas->newSurface(info));
+    if (!skSurface)
         return nullptr;
-    OwnPtr<ImageBufferSurface> surface = adoptPtr(new CompatibleImageBufferSurface(device.release(), scaledSize, opacityMode));
+    OwnPtr<ImageBufferSurface> surface = adoptPtr(new CompatibleImageBufferSurface(skSurface.release(), scaledSize, opacityMode));
     ASSERT(surface->isValid());
     OwnPtr<ImageBuffer> buffer = adoptPtr(new ImageBuffer(surface.release()));
 

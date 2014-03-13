@@ -48,16 +48,18 @@ AcceleratedImageBufferSurface::AcceleratedImageBufferSurface(const IntSize& size
     GrContext* grContext = m_contextProvider->grContext();
     if (!grContext)
         return;
-    RefPtr<SkGpuDevice> device = adoptRef(new SkGpuDevice(grContext, SkBitmap::kARGB_8888_Config, size.width(), size.height(), msaaSampleCount));
-    if (!device->accessRenderTarget())
+
+    SkAlphaType alphaType = (Opaque == opacityMode) ? kOpaque_SkAlphaType : kPremul_SkAlphaType;
+    SkImageInfo info = SkImageInfo::MakeN32(size.width(), size.height(), alphaType);
+    m_surface = adoptPtr(SkSurface::NewRenderTarget(grContext, info, msaaSampleCount));
+    if (!m_surface.get())
         return;
-    m_canvas = adoptPtr(new SkCanvas(device.get()));
     clear();
 }
 
 Platform3DObject AcceleratedImageBufferSurface::getBackingTexture() const
 {
-    GrRenderTarget* renderTarget = m_canvas->getTopDevice()->accessRenderTarget();
+    GrRenderTarget* renderTarget = m_surface->getCanvas()->getTopDevice()->accessRenderTarget();
     if (renderTarget) {
         return renderTarget->asTexture()->getTextureHandle();
     }

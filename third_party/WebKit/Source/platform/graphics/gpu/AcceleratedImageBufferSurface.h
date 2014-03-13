@@ -33,6 +33,7 @@
 
 #include "platform/graphics/ImageBufferSurface.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
+#include "third_party/skia/include/core/SkSurface.h"
 #include "wtf/OwnPtr.h"
 
 namespace WebCore {
@@ -43,13 +44,13 @@ public:
     AcceleratedImageBufferSurface(const IntSize&, OpacityMode = NonOpaque, int msaaSampleCount = 0);
     virtual ~AcceleratedImageBufferSurface() { }
 
-    virtual SkCanvas* canvas() const OVERRIDE { return m_canvas.get();}
-    virtual bool isValid() const OVERRIDE { return m_canvas; }
+    virtual SkCanvas* canvas() const OVERRIDE { return m_surface ? m_surface->getCanvas() : 0; }
+    virtual bool isValid() const OVERRIDE { return m_surface; }
     virtual bool isAccelerated() const OVERRIDE { return true; }
     virtual Platform3DObject getBackingTexture() const OVERRIDE;
 
 private:
-    OwnPtr<SkCanvas> m_canvas;
+    OwnPtr<SkSurface> m_surface;
     OwnPtr<blink::WebGraphicsContext3DProvider> m_contextProvider;
 };
 
