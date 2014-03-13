@@ -508,6 +508,11 @@ static bool ShouldUseAcceleratedFixedRootBackground(float device_scale_factor) {
   return DeviceScaleEnsuresTextQuality(device_scale_factor);
 }
 
+static bool ShouldUseCompositingForGpuRasterizationHint() {
+  return RenderThreadImpl::current() &&
+         RenderThreadImpl::current()->is_gpu_rasterization_enabled();
+}
+
 static FaviconURL::IconType ToFaviconType(blink::WebIconURL::Type type) {
   switch (type) {
     case blink::WebIconURL::TypeFavicon:
@@ -769,6 +774,9 @@ void RenderViewImpl::Initialize(RenderViewImplParams* params) {
       ShouldUseAcceleratedCompositingForScrollableFrames(device_scale_factor_));
   webview()->settings()->setCompositedScrollingForFramesEnabled(
       ShouldUseCompositedScrollingForFrames(device_scale_factor_));
+  webview()->settings()
+      ->setAcceleratedCompositingForGpuRasterizationHintEnabled(
+          ShouldUseCompositingForGpuRasterizationHint());
 
   ApplyWebPreferences(webkit_preferences_, webview());
 
