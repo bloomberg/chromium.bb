@@ -59,21 +59,7 @@ function test()
     {
         InspectorTest.addResult("After adding new rule (other):");
         InspectorTest.dumpSelectedElementStyles(true, false, true);
-
-        InspectorTest.waitForStylesForClass("my-class", onStylesReceived);
-        InspectorTest.nodeWithClass("my-class", onNodeFound);
-        function onNodeFound(node)
-        {
-            WebInspector.Revealer.reveal(node);
-        }
-
-        function onStylesReceived()
-        {
-            InspectorTest.addNewRule(null, function() {
-                InspectorTest.dumpSelectedElementStyles(true, false, true);
-                InspectorTest.completeTest();
-            });
-        }
+        InspectorTest.completeTest();
     }
 
     function revisionAdded(revision)
@@ -92,11 +78,6 @@ Tests that adding a new rule works after switching nodes.
 
 <div id="inspected" style="font-size: 12px">Text</div>
 <div id="other" style="color:red"></div>
-<div>
-    <div class="my-class"></div>
-    <div class="my-class"></div>
-    <div class="my-class"></div>
-</div>
 
 </body>
 </html>

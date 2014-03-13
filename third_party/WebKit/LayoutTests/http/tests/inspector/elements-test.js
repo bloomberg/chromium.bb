@@ -52,15 +52,6 @@ InspectorTest.nodeWithId = function(idValue, callback)
     InspectorTest.findNode(nodeIdMatches, callback);
 }
 
-InspectorTest.nodeWithClass = function(classValue, callback)
-{
-    function nodeClassMatches(node)
-    {
-        return node.getAttribute("class") === classValue;
-    }
-    InspectorTest.findNode(nodeClassMatches, callback);
-}
-
 InspectorTest.expandedNodeWithId = function(idValue)
 {
     var result;
@@ -83,40 +74,18 @@ InspectorTest.selectNodeWithId = function(idValue, callback)
     InspectorTest.nodeWithId(idValue, onNodeFound);
 }
 
-function waitForStylesRebuild(matchFunction, callback, requireRebuild)
+InspectorTest.waitForStyles = function(idValue, callback, requireRebuild)
 {
+    callback = InspectorTest.safeWrap(callback);
+
     (function sniff(node, rebuild)
     {
-        if ((rebuild || !requireRebuild) && node && matchFunction(node)) {
+        if ((rebuild || !requireRebuild) && node && node.getAttribute("id") === idValue) {
             callback();
             return;
         }
         InspectorTest.addSniffer(WebInspector.StylesSidebarPane.prototype, "_nodeStylesUpdatedForTest", sniff);
     })(null);
-}
-
-InspectorTest.waitForStyles = function(idValue, callback, requireRebuild)
-{
-    callback = InspectorTest.safeWrap(callback);
-
-    function nodeWithId(node)
-    {
-        return node.getAttribute("id") === idValue;
-    }
-
-    waitForStylesRebuild(nodeWithId, callback, requireRebuild);
-}
-
-InspectorTest.waitForStylesForClass = function(classValue, callback, requireRebuild)
-{
-    callback = InspectorTest.safeWrap(callback);
-
-    function nodeWithClass(node)
-    {
-        return node.getAttribute("class") === classValue;
-    }
-
-    waitForStylesRebuild(nodeWithClass, callback, requireRebuild);
 }
 
 InspectorTest.selectNodeAndWaitForStyles = function(idValue, callback)
