@@ -38,8 +38,10 @@ static const char kMainWebrtcTestHtmlPage[] =
 // Top-level integration test for WebRTC. The test methods here must run
 // sequentially since they use a server binary on the system (hence they are
 // tagged as MANUAL).
-class WebRtcBrowserTest : public WebRtcTestBase {
+class WebRtcBrowserTest : public WebRtcTestBase,
+                          public testing::WithParamInterface<bool> {
  public:
+  WebRtcBrowserTest() {}
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     PeerConnectionServerRunner::KillAllPeerConnectionServersOnCurrentSystem();
     DetectErrorsInJavaScript();  // Look for errors in our rather complex js.
@@ -55,6 +57,10 @@ class WebRtcBrowserTest : public WebRtcTestBase {
 
     // Flag used by TestWebAudioMediaStream to force garbage collection.
     command_line->AppendSwitchASCII(switches::kJavaScriptFlags, "--expose-gc");
+
+    bool enable_audio_track_processing = GetParam();
+    if (enable_audio_track_processing)
+      command_line->AppendSwitch(switches::kEnableAudioTrackProcessing);
   }
 
   void PrintProcessMetrics(base::ProcessMetrics* process_metrics,
@@ -110,7 +116,12 @@ class WebRtcBrowserTest : public WebRtcTestBase {
   PeerConnectionServerRunner peerconnection_server_;
 };
 
-IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest,
+static const bool kRunTestsWithFlag[] = { false, true };
+INSTANTIATE_TEST_CASE_P(WebRtcBrowserTests,
+                        WebRtcBrowserTest,
+                        testing::ValuesIn(kRunTestsWithFlag));
+
+IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest,
                        MANUAL_RunsAudioVideoWebRTCCallInTwoTabs) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   ASSERT_TRUE(peerconnection_server_.Start());
@@ -135,7 +146,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest,
   ASSERT_TRUE(peerconnection_server_.Stop());
 }
 
-IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest, MANUAL_CpuUsage15Seconds) {
+IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest, MANUAL_CpuUsage15Seconds) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   ASSERT_TRUE(peerconnection_server_.Start());
 
@@ -186,7 +197,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest, MANUAL_CpuUsage15Seconds) {
 }
 
 // This is manual for its long execution time.
-IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest,
+IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest,
                        MANUAL_RunsAudioVideoCall60SecsAndLogsInternalMetrics) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   ASSERT_TRUE(peerconnection_server_.Start());
@@ -236,7 +247,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest,
   ASSERT_TRUE(peerconnection_server_.Stop());
 }
 
-IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest, TestWebAudioMediaStream) {
+IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest, TestWebAudioMediaStream) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   GURL url(embedded_test_server()->GetURL("/webrtc/webaudio_crash.html"));
   ui_test_utils::NavigateToURL(browser(), url);

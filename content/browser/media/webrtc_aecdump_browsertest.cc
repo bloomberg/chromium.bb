@@ -20,7 +20,8 @@ namespace content {
 
 // This tests AEC dump enabled using the command line flag. It does not test AEC
 // dump enabled using webrtc-internals (that's tested in webrtc_browsertest.cc).
-class WebRtcAecDumpBrowserTest : public WebRtcContentBrowserTest {
+class WebRtcAecDumpBrowserTest : public WebRtcContentBrowserTest,
+                                 public testing::WithParamInterface<bool> {
  public:
   WebRtcAecDumpBrowserTest() {}
   virtual ~WebRtcAecDumpBrowserTest() {}
@@ -40,6 +41,10 @@ class WebRtcAecDumpBrowserTest : public WebRtcContentBrowserTest {
     // Enable AEC dump with the command line flag.
     command_line->AppendSwitchPath(switches::kEnableWebRtcAecRecordings,
                                    dump_file_);
+
+    bool enable_audio_track_processing = GetParam();
+    if (enable_audio_track_processing)
+      command_line->AppendSwitch(switches::kEnableAudioTrackProcessing);
   }
 
  protected:
@@ -49,6 +54,11 @@ class WebRtcAecDumpBrowserTest : public WebRtcContentBrowserTest {
  private:
   DISALLOW_COPY_AND_ASSIGN(WebRtcAecDumpBrowserTest);
 };
+
+static const bool kRunTestsWithFlag[] = { false, true };
+INSTANTIATE_TEST_CASE_P(WebRtcAecDumpBrowserTests,
+                        WebRtcAecDumpBrowserTest,
+                        testing::ValuesIn(kRunTestsWithFlag));
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
 // Timing out on ARM linux bot: http://crbug.com/238490
@@ -60,7 +70,7 @@ class WebRtcAecDumpBrowserTest : public WebRtcContentBrowserTest {
 // This tests will make a complete PeerConnection-based call, verify that
 // video is playing for the call, and verify that a non-empty AEC dump file
 // exists.
-IN_PROC_BROWSER_TEST_F(WebRtcAecDumpBrowserTest, MAYBE_CallWithAecDump) {
+IN_PROC_BROWSER_TEST_P(WebRtcAecDumpBrowserTest, MAYBE_CallWithAecDump) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   GURL url(embedded_test_server()->GetURL("/media/peerconnection-call.html"));
