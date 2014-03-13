@@ -50,7 +50,7 @@ class MOJO_SYSTEM_IMPL_EXPORT PlatformChannelPair {
 
   ScopedPlatformHandle PassServerHandle();
 
-  // For in-process use (e.g., in tests).
+  // For in-process use (e.g., in tests or to pass over another channel).
   ScopedPlatformHandle PassClientHandle();
 
   // To be called in the child process, after the parent process called
