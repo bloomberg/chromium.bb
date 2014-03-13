@@ -7,6 +7,7 @@
 
 function test()
 {
+    WebInspector.experimentsSettings.timelineFlameChart.enableForTest();
     var timelineData = InspectorTest.timelineData();
 
     WebInspector.inspectorView.showPanel("timeline");
@@ -42,47 +43,67 @@ function test()
         InspectorTest.addResult("");
     }
 
+    function dumpFlameChartRecordsCountForRange(windowLeft, windowRight)
+    {
+        var mainView = timeline._currentViews[0]._mainView;
+        overviewPane._overviewGrid.setWindow(windowLeft, windowRight);
+        mainView.update();
+        InspectorTest.addResult("mode = " + timeline._presentationModeSetting.get());
+        InspectorTest.addResult("range = " + windowLeft + " - " + windowRight);
+        InspectorTest.addResult("time range = " + mainView._timeWindowLeft + " - " + mainView._timeWindowRight);
+        dumpDividers(mainView._timelineGrid, mainView._calculator);
+        InspectorTest.addResult("");
+    }
+
     function dumpDividers(grid, calculator)
     {
         var dividers = grid._calculateDividerOffsets(calculator);
-        var labels = [];
         for (var i = 0; i < dividers.length; ++i)
             dividers[i] -= calculator.zeroTime();
         InspectorTest.addResult("divider offsets: [" + dividers.join(", ") + "]. We are expecting round numbers.");
     }
 
-    timeline._selectPresentationMode(WebInspector.TimelinePanel.Mode.Events);
+    timeline._onModeChanged(WebInspector.TimelinePanel.Mode.Events);
     dumpRecordsCountForRange(0, 1);
     dumpRecordsCountForRange(0.25, 0.75);
     dumpRecordsCountForRange(0.33, 0.66);
 
-    timeline._selectPresentationMode(WebInspector.TimelinePanel.Mode.Memory);
+    timeline._onModeChanged(WebInspector.TimelinePanel.Mode.Memory);
     dumpRecordsCountForRange(0, 1);
     dumpRecordsCountForRange(0.25, 0.75);
     dumpRecordsCountForRange(0.33, 0.66);
 
-    timeline._selectPresentationMode(WebInspector.TimelinePanel.Mode.Frames);
+    timeline._onModeChanged(WebInspector.TimelinePanel.Mode.Frames);
     dumpRecordsCountForRange(0, 1);
     dumpRecordsCountForRange(0.25, 0.75);
     dumpRecordsCountForRange(0.33, 0.66);
+
+    timeline._onModeChanged(WebInspector.TimelinePanel.Mode.FlameChart);
+    dumpFlameChartRecordsCountForRange(0, 1);
+    dumpFlameChartRecordsCountForRange(0.25, 0.5);
+    dumpFlameChartRecordsCountForRange(0.33, 0.4);
 
     overviewPane._overviewGrid.setWindow(0.1, 0.9);
 
     InspectorTest.addResult("--------------------------------------------------------");
     InspectorTest.addResult("mode = " + timeline._presentationModeSetting.get());
     InspectorTest.addResult("time range = " + timeline._windowStartTime + " - " + timeline._windowEndTime);
-    timeline._selectPresentationMode(WebInspector.TimelinePanel.Mode.Events);
+    timeline._onModeChanged(WebInspector.TimelinePanel.Mode.Events);
     InspectorTest.addResult("");
 
     InspectorTest.addResult("mode = " + timeline._presentationModeSetting.get());
     InspectorTest.addResult("time range = " + timeline._windowStartTime + " - " + timeline._windowEndTime);
-    timeline._selectPresentationMode(WebInspector.TimelinePanel.Mode.Memory);
-    
+    timeline._onModeChanged(WebInspector.TimelinePanel.Mode.Memory);
     InspectorTest.addResult("");
 
     InspectorTest.addResult("mode = " + timeline._presentationModeSetting.get());
     InspectorTest.addResult("time range = " + timeline._windowStartTime + " - " + timeline._windowEndTime);
-    timeline._selectPresentationMode(WebInspector.TimelinePanel.Mode.Frames);
+    timeline._onModeChanged(WebInspector.TimelinePanel.Mode.Frames);
+    InspectorTest.addResult("");
+
+    InspectorTest.addResult("mode = " + timeline._presentationModeSetting.get());
+    InspectorTest.addResult("time range = " + timeline._windowStartTime + " - " + timeline._windowEndTime);
+    timeline._onModeChanged(WebInspector.TimelinePanel.Mode.FlameChart);
 
     InspectorTest.completeTest();
 }
