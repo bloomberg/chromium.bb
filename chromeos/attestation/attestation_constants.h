@@ -41,6 +41,11 @@ enum AttestationCertificateProfile {
   PROFILE_CONTENT_PROTECTION_CERTIFICATE,
 };
 
+enum PrivacyCAType {
+  DEFAULT_PCA,    // The Google-operated Privacy CA.
+  ALTERNATE_PCA,  // An alternate Privacy CA specified by enterprise policy.
+};
+
 // A key name for the Enterprise Machine Key.  This key should always be stored
 // as a DEVICE_KEY.
 CHROMEOS_EXPORT extern const char kEnterpriseMachineKey[];

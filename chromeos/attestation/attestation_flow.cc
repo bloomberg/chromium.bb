@@ -125,11 +125,12 @@ void AttestationFlow::GetCertificate(
 void AttestationFlow::StartEnroll(const base::Closure& on_failure,
                                   const base::Closure& next_task) {
   // Get the attestation service to create a Privacy CA enrollment request.
-  async_caller_->AsyncTpmAttestationCreateEnrollRequest(base::Bind(
-      &AttestationFlow::SendEnrollRequestToPCA,
-      weak_factory_.GetWeakPtr(),
-      on_failure,
-      next_task));
+  async_caller_->AsyncTpmAttestationCreateEnrollRequest(
+      server_proxy_->GetType(),
+      base::Bind(&AttestationFlow::SendEnrollRequestToPCA,
+                 weak_factory_.GetWeakPtr(),
+                 on_failure,
+                 next_task));
 }
 
 void AttestationFlow::SendEnrollRequestToPCA(const base::Closure& on_failure,
@@ -166,6 +167,7 @@ void AttestationFlow::SendEnrollResponseToDaemon(
 
   // Forward the response to the attestation service to complete enrollment.
   async_caller_->AsyncTpmAttestationEnroll(
+      server_proxy_->GetType(),
       data,
       base::Bind(&AttestationFlow::OnEnrollComplete,
                  weak_factory_.GetWeakPtr(),
@@ -201,6 +203,7 @@ void AttestationFlow::StartCertificateRequest(
   if (generate_new_key) {
     // Get the attestation service to create a Privacy CA certificate request.
     async_caller_->AsyncTpmAttestationCreateCertRequest(
+        server_proxy_->GetType(),
         certificate_profile,
         user_id,
         request_origin,
@@ -297,6 +300,12 @@ void AttestationFlow::GetExistingCertificate(
       user_id,
       key_name,
       base::Bind(&DBusDataMethodCallback, callback));
+}
+
+ServerProxy::~ServerProxy() {}
+
+PrivacyCAType ServerProxy::GetType() {
+  return DEFAULT_PCA;
 }
 
 }  // namespace attestation

@@ -103,23 +103,28 @@ class CHROMEOS_EXPORT AsyncMethodCaller {
 
   // Asks cryptohomed to asynchronously create an attestation enrollment
   // request.  On success the data sent to |callback| is a request to be sent
-  // to the Privacy CA.
+  // to the Privacy CA of type |pca_type|.
   virtual void AsyncTpmAttestationCreateEnrollRequest(
+      chromeos::attestation::PrivacyCAType pca_type,
       const DataCallback& callback) = 0;
 
   // Asks cryptohomed to asynchronously finish an attestation enrollment.
   // |pca_response| is the response to the enrollment request emitted by the
-  // Privacy CA.
-  virtual void AsyncTpmAttestationEnroll(const std::string& pca_response,
-                                         const Callback& callback) = 0;
+  // Privacy CA of type |pca_type|.
+  virtual void AsyncTpmAttestationEnroll(
+      chromeos::attestation::PrivacyCAType pca_type,
+      const std::string& pca_response,
+      const Callback& callback) = 0;
 
   // Asks cryptohomed to asynchronously create an attestation certificate
   // request according to |certificate_profile|.  Some profiles require that the
   // |user_id| of the currently active user and an identifier of the
   // |request_origin| be provided.  On success the data sent to |callback| is a
-  // request to be sent to the Privacy CA.  The |request_origin| may be sent to
-  // the Privacy CA but the |user_id| will never be sent.
+  // request to be sent to the Privacy CA of type |pca_type|.  The
+  // |request_origin| may be sent to the Privacy CA but the |user_id| will never
+  // be sent.
   virtual void AsyncTpmAttestationCreateCertRequest(
+      chromeos::attestation::PrivacyCAType pca_type,
       chromeos::attestation::AttestationCertificateProfile certificate_profile,
       const std::string& user_id,
       const std::string& request_origin,

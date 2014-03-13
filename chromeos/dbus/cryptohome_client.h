@@ -280,15 +280,19 @@ class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
   // will be called when the dbus call completes.  When the operation completes,
   // the AsyncCallStatusWithDataHandler signal handler is called.  The data that
   // is sent with the signal is an enrollment request to be sent to the Privacy
-  // CA.  The enrollment is completed by calling AsyncTpmAttestationEnroll.
+  // CA of type |pca_type|.  The enrollment is completed by calling
+  // AsyncTpmAttestationEnroll.
   virtual void AsyncTpmAttestationCreateEnrollRequest(
+      chromeos::attestation::PrivacyCAType pca_type,
       const AsyncMethodCallback& callback) = 0;
 
   // Asynchronously finishes an attestation enrollment operation.  The callback
   // will be called when the dbus call completes.  When the operation completes,
   // the AsyncCallStatusHandler signal handler is called.  |pca_response| is the
-  // response to the enrollment request emitted by the Privacy CA.
+  // response to the enrollment request emitted by the Privacy CA of type
+  // |pca_type|.
   virtual void AsyncTpmAttestationEnroll(
+      chromeos::attestation::PrivacyCAType pca_type,
       const std::string& pca_response,
       const AsyncMethodCallback& callback) = 0;
 
@@ -298,10 +302,12 @@ class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
   // provided.  |callback| will be called when the dbus call completes.  When
   // the operation completes, the AsyncCallStatusWithDataHandler signal handler
   // is called.  The data that is sent with the signal is a certificate request
-  // to be sent to the Privacy CA.  The certificate request is completed by
-  // calling AsyncTpmAttestationFinishCertRequest.  The |user_id| will not
-  // be included in the certificate request for the Privacy CA.
+  // to be sent to the Privacy CA of type |pca_type|.  The certificate request
+  // is completed by calling AsyncTpmAttestationFinishCertRequest.  The
+  // |user_id| will not be included in the certificate request for the Privacy
+  // CA.
   virtual void AsyncTpmAttestationCreateCertRequest(
+      chromeos::attestation::PrivacyCAType pca_type,
       attestation::AttestationCertificateProfile certificate_profile,
       const std::string& user_id,
       const std::string& request_origin,

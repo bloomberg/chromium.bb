@@ -8,6 +8,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 
 using testing::_;
+using testing::DefaultValue;
 using testing::Invoke;
 
 namespace chromeos {
@@ -27,7 +28,9 @@ void FakeServerProxy::SendCertificateRequest(const std::string& request,
   callback.Run(result_, request + "_response");
 }
 
-MockServerProxy::MockServerProxy() {}
+MockServerProxy::MockServerProxy() {
+  DefaultValue<PrivacyCAType>::Set(DEFAULT_PCA);
+}
 
 MockServerProxy::~MockServerProxy() {}
 

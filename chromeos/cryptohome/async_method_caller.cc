@@ -113,19 +113,22 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller {
   }
 
   virtual void AsyncTpmAttestationCreateEnrollRequest(
+      chromeos::attestation::PrivacyCAType pca_type,
       const DataCallback& callback) OVERRIDE {
     DBusThreadManager::Get()->GetCryptohomeClient()->
-        AsyncTpmAttestationCreateEnrollRequest(base::Bind(
+        AsyncTpmAttestationCreateEnrollRequest(pca_type, base::Bind(
             &AsyncMethodCallerImpl::RegisterAsyncDataCallback,
             weak_ptr_factory_.GetWeakPtr(),
             callback,
             "Couldn't initiate async attestation enroll request."));
   }
 
-  virtual void AsyncTpmAttestationEnroll(const std::string& pca_response,
-                                         const Callback& callback) OVERRIDE {
+  virtual void AsyncTpmAttestationEnroll(
+      chromeos::attestation::PrivacyCAType pca_type,
+      const std::string& pca_response,
+      const Callback& callback) OVERRIDE {
     DBusThreadManager::Get()->GetCryptohomeClient()->
-        AsyncTpmAttestationEnroll(pca_response, base::Bind(
+        AsyncTpmAttestationEnroll(pca_type, pca_response, base::Bind(
             &AsyncMethodCallerImpl::RegisterAsyncCallback,
             weak_ptr_factory_.GetWeakPtr(),
             callback,
@@ -133,12 +136,14 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller {
   }
 
   virtual void AsyncTpmAttestationCreateCertRequest(
+      chromeos::attestation::PrivacyCAType pca_type,
       chromeos::attestation::AttestationCertificateProfile certificate_profile,
       const std::string& user_id,
       const std::string& request_origin,
       const DataCallback& callback) OVERRIDE {
     DBusThreadManager::Get()->GetCryptohomeClient()->
         AsyncTpmAttestationCreateCertRequest(
+            pca_type,
             certificate_profile,
             user_id,
             request_origin,

@@ -434,10 +434,13 @@ class CryptohomeClientImpl : public CryptohomeClient {
 
   // CryptohomeClient override.
   virtual void AsyncTpmAttestationCreateEnrollRequest(
+      attestation::PrivacyCAType pca_type,
       const AsyncMethodCallback& callback) OVERRIDE {
     dbus::MethodCall method_call(
         cryptohome::kCryptohomeInterface,
-        cryptohome::kCryptohomeAsyncTpmAttestationCreateEnrollRequest);
+        cryptohome::kCryptohomeAsyncTpmAttestationCreateEnrollRequestNew);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendInt32(pca_type);
     proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
                        base::Bind(&CryptohomeClientImpl::OnAsyncMethodCall,
                                   weak_ptr_factory_.GetWeakPtr(),
@@ -446,12 +449,14 @@ class CryptohomeClientImpl : public CryptohomeClient {
 
   // CryptohomeClient override.
   virtual void AsyncTpmAttestationEnroll(
+      attestation::PrivacyCAType pca_type,
       const std::string& pca_response,
       const AsyncMethodCallback& callback) OVERRIDE {
     dbus::MethodCall method_call(
         cryptohome::kCryptohomeInterface,
-        cryptohome::kCryptohomeAsyncTpmAttestationEnroll);
+        cryptohome::kCryptohomeAsyncTpmAttestationEnrollNew);
     dbus::MessageWriter writer(&method_call);
+    writer.AppendInt32(pca_type);
     writer.AppendArrayOfBytes(
         reinterpret_cast<const uint8*>(pca_response.data()),
         pca_response.size());
@@ -463,14 +468,16 @@ class CryptohomeClientImpl : public CryptohomeClient {
 
   // CryptohomeClient override.
   virtual void AsyncTpmAttestationCreateCertRequest(
+      attestation::PrivacyCAType pca_type,
       attestation::AttestationCertificateProfile certificate_profile,
       const std::string& user_id,
       const std::string& request_origin,
       const AsyncMethodCallback& callback) OVERRIDE {
     dbus::MethodCall method_call(
         cryptohome::kCryptohomeInterface,
-        cryptohome::kCryptohomeAsyncTpmAttestationCreateCertRequestByProfile);
+        cryptohome::kCryptohomeAsyncTpmAttestationCreateCertRequest);
     dbus::MessageWriter writer(&method_call);
+    writer.AppendInt32(pca_type);
     writer.AppendInt32(certificate_profile);
     writer.AppendString(user_id);
     writer.AppendString(request_origin);

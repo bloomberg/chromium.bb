@@ -46,6 +46,7 @@ class MockServerProxy : public ServerProxy {
                void(const std::string&, const DataCallback&));
   MOCK_METHOD2(SendCertificateRequest,
                void(const std::string&, const DataCallback&));
+  MOCK_METHOD0(GetType, PrivacyCAType());
 
  private:
   FakeServerProxy fake_;

@@ -44,16 +44,16 @@ void MockAsyncMethodCaller::SetUp(bool success, MountError return_code) {
   ON_CALL(*this, AsyncRemove(_, _))
       .WillByDefault(
           WithArgs<1>(Invoke(this, &MockAsyncMethodCaller::DoCallback)));
-  ON_CALL(*this, AsyncTpmAttestationCreateEnrollRequest(_))
+  ON_CALL(*this, AsyncTpmAttestationCreateEnrollRequest(_, _))
       .WillByDefault(
-          WithArgs<0>(Invoke(this,
+          WithArgs<1>(Invoke(this,
                              &MockAsyncMethodCaller::FakeCreateEnrollRequest)));
-  ON_CALL(*this, AsyncTpmAttestationEnroll(_, _))
+  ON_CALL(*this, AsyncTpmAttestationEnroll(_, _, _))
       .WillByDefault(
-          WithArgs<1>(Invoke(this, &MockAsyncMethodCaller::DoCallback)));
-  ON_CALL(*this, AsyncTpmAttestationCreateCertRequest(_, _, _, _))
+          WithArgs<2>(Invoke(this, &MockAsyncMethodCaller::DoCallback)));
+  ON_CALL(*this, AsyncTpmAttestationCreateCertRequest(_, _, _, _, _))
       .WillByDefault(
-          WithArgs<3>(Invoke(this,
+          WithArgs<4>(Invoke(this,
                              &MockAsyncMethodCaller::FakeCreateCertRequest)));
   ON_CALL(*this, AsyncTpmAttestationFinishCertRequest(_, _, _, _, _))
       .WillByDefault(

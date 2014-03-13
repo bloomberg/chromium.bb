@@ -33,11 +33,12 @@ class CHROMEOS_EXPORT ServerProxy {
  public:
   typedef base::Callback<void(bool success,
                               const std::string& data)> DataCallback;
-  virtual ~ServerProxy() {}
+  virtual ~ServerProxy();
   virtual void SendEnrollRequest(const std::string& request,
                                  const DataCallback& on_response) = 0;
   virtual void SendCertificateRequest(const std::string& request,
                                       const DataCallback& on_response) = 0;
+  virtual PrivacyCAType GetType();
 };
 
 // Implements the message flow for Chrome OS attestation tasks.  Generally this

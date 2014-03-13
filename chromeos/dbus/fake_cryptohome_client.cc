@@ -279,17 +279,20 @@ void FakeCryptohomeClient::TpmAttestationIsEnrolled(
 }
 
 void FakeCryptohomeClient::AsyncTpmAttestationCreateEnrollRequest(
+    chromeos::attestation::PrivacyCAType pca_type,
     const AsyncMethodCallback& callback) {
   ReturnAsyncMethodResult(callback, true);
 }
 
 void FakeCryptohomeClient::AsyncTpmAttestationEnroll(
+    chromeos::attestation::PrivacyCAType pca_type,
     const std::string& pca_response,
     const AsyncMethodCallback& callback) {
   ReturnAsyncMethodResult(callback, false);
 }
 
 void FakeCryptohomeClient::AsyncTpmAttestationCreateCertRequest(
+    chromeos::attestation::PrivacyCAType pca_type,
     attestation::AttestationCertificateProfile certificate_profile,
     const std::string& user_id,
     const std::string& request_origin,

@@ -91,11 +91,14 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
   virtual void TpmAttestationIsEnrolled(
       const BoolDBusMethodCallback& callback) OVERRIDE;
   virtual void AsyncTpmAttestationCreateEnrollRequest(
+      chromeos::attestation::PrivacyCAType pca_type,
       const AsyncMethodCallback& callback) OVERRIDE;
   virtual void AsyncTpmAttestationEnroll(
+      chromeos::attestation::PrivacyCAType pca_type,
       const std::string& pca_response,
       const AsyncMethodCallback& callback) OVERRIDE;
   virtual void AsyncTpmAttestationCreateCertRequest(
+      chromeos::attestation::PrivacyCAType pca_type,
       attestation::AttestationCertificateProfile certificate_profile,
       const std::string& user_id,
       const std::string& request_origin,
