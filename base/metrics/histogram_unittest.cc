@@ -443,6 +443,32 @@ TEST_F(HistogramTest, CustomHistogramSerializeInfo) {
   EXPECT_FALSE(iter.SkipBytes(1));
 }
 
+TEST_F(HistogramTest, BadConstruction) {
+  HistogramBase* histogram = Histogram::FactoryGet(
+      "BadConstruction", 0, 100, 8, HistogramBase::kNoFlags);
+  EXPECT_TRUE(histogram->HasConstructionArguments(1, 100, 8));
+
+  // Try to get the same histogram name with different arguments.
+  HistogramBase* bad_histogram = Histogram::FactoryGet(
+      "BadConstruction", 0, 100, 7, HistogramBase::kNoFlags);
+  EXPECT_EQ(NULL, bad_histogram);
+  bad_histogram = Histogram::FactoryGet(
+      "BadConstruction", 0, 99, 8, HistogramBase::kNoFlags);
+  EXPECT_EQ(NULL, bad_histogram);
+
+  HistogramBase* linear_histogram = LinearHistogram::FactoryGet(
+      "BadConstructionLinear", 0, 100, 8, HistogramBase::kNoFlags);
+  EXPECT_TRUE(linear_histogram->HasConstructionArguments(1, 100, 8));
+
+  // Try to get the same histogram name with different arguments.
+  bad_histogram = LinearHistogram::FactoryGet(
+      "BadConstructionLinear", 0, 100, 7, HistogramBase::kNoFlags);
+  EXPECT_EQ(NULL, bad_histogram);
+  bad_histogram = LinearHistogram::FactoryGet(
+      "BadConstructionLinear", 10, 100, 8, HistogramBase::kNoFlags);
+  EXPECT_EQ(NULL, bad_histogram);
+}
+
 #if GTEST_HAS_DEATH_TEST
 // For Histogram, LinearHistogram and CustomHistogram, the minimum for a
 // declared range is 1, while the maximum is (HistogramBase::kSampleType_MAX -

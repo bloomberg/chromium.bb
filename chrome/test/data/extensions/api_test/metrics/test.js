@@ -92,5 +92,50 @@ chrome.test.runTests([
     });
   },
 
+  function testBucketSizeChanges() {
+    var linear1 = {
+      'metricName': 'test.bucketchange.linear',
+      'type': 'histogram-linear',
+      'min': 0,
+      'max': 100,
+      'buckets': 10
+    };
+    var linear2 = {
+      'metricName': 'test.bucketchange.linear',
+      'type': 'histogram-linear',
+      'min': 0,
+      'max': 100,
+      'buckets': 20
+    };
+    var log1 = {
+      'metricName': 'test.bucketchange.log',
+      'type': 'histogram-log',
+      'min': 0,
+      'max': 100,
+      'buckets': 10
+    };
+    var log2 = {
+      'metricName': 'test.bucketchange.log',
+      'type': 'histogram-log',
+      'min': 0,
+      'max': 100,
+      'buckets': 20
+    };
+
+    chrome.metricsPrivate.recordValue(linear1, 42);
+    // This one should be rejected because the bucket count is different.
+    // We check for sample count == 2 in metrics_apitest.cc
+    chrome.metricsPrivate.recordValue(linear2, 42);
+    chrome.metricsPrivate.recordValue(linear1, 42);
+
+    chrome.metricsPrivate.recordValue(log1, 42);
+    // This one should be rejected because the bucket count is different.
+    // We check for sample count == 2 in metrics_apitest.cc
+    chrome.metricsPrivate.recordValue(log2, 42);
+    chrome.metricsPrivate.recordValue(log1, 42);
+
+    chrome.test.succeed();
+  },
+
 ]);
 

@@ -33,17 +33,19 @@ struct RecordedHistogram {
   int min;
   int max;
   size_t buckets;
+  int count;
 } g_histograms[] = {
-  {"test.h.1", base::HISTOGRAM, 1, 100, 50},  // custom
-  {"test.h.2", base::LINEAR_HISTOGRAM, 1, 200, 50},  // custom
-  {"test.h.3", base::LINEAR_HISTOGRAM, 1, 101, 102},  // percentage
-  {"test.time", base::HISTOGRAM, 1, 10000, 50},
-  {"test.medium.time", base::HISTOGRAM, 1, 180000, 50},
-  {"test.long.time", base::HISTOGRAM, 1, 3600000, 50},
-  {"test.count", base::HISTOGRAM, 1, 1000000, 50},
-  {"test.medium.count", base::HISTOGRAM, 1, 10000, 50},
-  {"test.small.count", base::HISTOGRAM, 1, 100, 50},
-};
+      {"test.h.1", base::HISTOGRAM, 1, 100, 50, 1},          // custom
+      {"test.h.2", base::LINEAR_HISTOGRAM, 1, 200, 50, 1},   // custom
+      {"test.h.3", base::LINEAR_HISTOGRAM, 1, 101, 102, 2},  // percentage
+      {"test.time", base::HISTOGRAM, 1, 10000, 50, 1},
+      {"test.medium.time", base::HISTOGRAM, 1, 180000, 50, 1},
+      {"test.long.time", base::HISTOGRAM, 1, 3600000, 50, 1},
+      {"test.count", base::HISTOGRAM, 1, 1000000, 50, 1},
+      {"test.medium.count", base::HISTOGRAM, 1, 10000, 50, 1},
+      {"test.small.count", base::HISTOGRAM, 1, 100, 50, 1},
+      {"test.bucketchange.linear", base::LINEAR_HISTOGRAM, 1, 100, 10, 2},
+      {"test.bucketchange.log", base::HISTOGRAM, 1, 100, 10, 2}, };
 
 // This class observes and collects user action notifications that are sent
 // by the tests, so that they can be examined afterwards for correctness.
@@ -116,6 +118,10 @@ void ValidateHistograms(const RecordedHistogram* recorded,
         EXPECT_EQ(r.type, histogram->GetHistogramType());
         EXPECT_TRUE(
             histogram->HasConstructionArguments(r.min, r.max, r.buckets));
+        scoped_ptr<base::HistogramSamples> snapshot =
+            histogram->SnapshotSamples();
+        base::HistogramBase::Count sample_count = snapshot->TotalCount();
+        EXPECT_EQ(sample_count, r.count);
         break;
       }
     }

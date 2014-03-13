@@ -110,7 +110,16 @@ HistogramBase* Histogram::FactoryGet(const string& name,
   }
 
   DCHECK_EQ(HISTOGRAM, histogram->GetHistogramType());
-  CHECK(histogram->HasConstructionArguments(minimum, maximum, bucket_count));
+  if (!histogram->HasConstructionArguments(minimum, maximum, bucket_count)) {
+    // The construction arguments do not match the existing histogram.  This can
+    // come about if an extension updates in the middle of a chrome run and has
+    // changed one of them, or simply by bad code within Chrome itself.  We
+    // return NULL here with the expectation that bad code in Chrome will crash
+    // on dereference, but extension/Pepper APIs will guard against NULL and not
+    // crash.
+    DLOG(ERROR) << "Histogram " << name << " has bad construction arguments";
+    return NULL;
+  }
   return histogram;
 }
 
@@ -567,7 +576,16 @@ HistogramBase* LinearHistogram::FactoryGetWithRangeDescription(
   }
 
   DCHECK_EQ(LINEAR_HISTOGRAM, histogram->GetHistogramType());
-  CHECK(histogram->HasConstructionArguments(minimum, maximum, bucket_count));
+  if (!histogram->HasConstructionArguments(minimum, maximum, bucket_count)) {
+    // The construction arguments do not match the existing histogram.  This can
+    // come about if an extension updates in the middle of a chrome run and has
+    // changed one of them, or simply by bad code within Chrome itself.  We
+    // return NULL here with the expectation that bad code in Chrome will crash
+    // on dereference, but extension/Pepper APIs will guard against NULL and not
+    // crash.
+    DLOG(ERROR) << "Histogram " << name << " has bad construction arguments";
+    return NULL;
+  }
   return histogram;
 }
 

@@ -139,7 +139,10 @@ bool MetricsHistogramHelperFunction::RecordValue(
         base::HistogramBase::kUmaTargetedHistogramFlag);
   }
 
-  counter->Add(sample);
+  // The histogram can be NULL if it is constructed with bad arguments.  Ignore
+  // that data for this API.  An error message will be logged.
+  if (counter)
+    counter->Add(sample);
   return true;
 }
 

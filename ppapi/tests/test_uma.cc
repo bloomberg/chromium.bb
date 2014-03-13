@@ -30,6 +30,11 @@ std::string TestUMA::TestCount() {
   uma_interface_->HistogramCustomCounts(instance, name, 30, 1, 100, 50);
   uma_interface_->HistogramCustomCounts(instance, name, 20, 1, 100, 50);
   uma_interface_->HistogramCustomCounts(instance, name, 40, 1, 100, 50);
+  // Test that passing in different construction arguments for the same
+  // histogram name does not crash.
+  uma_interface_->HistogramCustomCounts(instance, name, 40, 1, 100, 100);
+  uma_interface_->HistogramCustomCounts(instance, name, 40, 1, 90, 50);
+  uma_interface_->HistogramCustomCounts(instance, name, 40, 10, 100, 50);
   PASS();
 }
 
@@ -41,6 +46,11 @@ std::string TestUMA::TestTime() {
   uma_interface_->HistogramCustomTimes(instance, name, 1000, 1, 10000, 50);
   uma_interface_->HistogramCustomTimes(instance, name, 5000, 1, 10000, 50);
   uma_interface_->HistogramCustomTimes(instance, name, 10, 1, 10000, 50);
+  // Test that passing in different construction arguments for the same
+  // histogram name does not crash.
+  uma_interface_->HistogramCustomTimes(instance, name, 10, 1, 10000, 100);
+  uma_interface_->HistogramCustomTimes(instance, name, 10, 1, 9000, 50);
+  uma_interface_->HistogramCustomTimes(instance, name, 10, 100, 10000, 50);
   PASS();
 }
 
@@ -53,6 +63,9 @@ std::string TestUMA::TestEnum() {
   uma_interface_->HistogramEnumeration(instance, name, 3, 5);
   uma_interface_->HistogramEnumeration(instance, name, 1, 5);
   uma_interface_->HistogramEnumeration(instance, name, 2, 5);
+  // Test that passing in different construction arguments for the same
+  // histogram name does not crash.
+  uma_interface_->HistogramEnumeration(instance, name, 2, 6);
   PASS();
 }
 
