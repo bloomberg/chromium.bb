@@ -16,14 +16,14 @@ class FakeProfileOAuth2TokenServiceWrapper
     : public ProfileOAuth2TokenServiceWrapper {
  public:
   // Helper function to be used with
-  // BrowserContextKeyedService::SetTestingFactory().
-  static BrowserContextKeyedService* Build(content::BrowserContext* context);
+  // KeyedService::SetTestingFactory().
+  static KeyedService* Build(content::BrowserContext* context);
 
   // Helper function to be used with
-  // BrowserContextKeyedService::SetTestingFactory() that creates a
+  // KeyedService::SetTestingFactory() that creates a
   // FakeProfileOAuth2TokenService object that posts fetch responses on the
   // current message loop.
-  static BrowserContextKeyedService* BuildAutoIssuingTokenService(
+  static KeyedService* BuildAutoIssuingTokenService(
       content::BrowserContext* context);
 
   FakeProfileOAuth2TokenServiceWrapper(Profile* profile,

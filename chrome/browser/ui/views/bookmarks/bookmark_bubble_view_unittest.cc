@@ -73,7 +73,7 @@ class BookmarkBubbleViewTest : public BrowserWithTestWindowTest {
   scoped_ptr<BookmarkBubbleView> bubble_;
 
  private:
-  static BrowserContextKeyedService* BuildFakeSignInManager(
+  static KeyedService* BuildFakeSignInManager(
       content::BrowserContext* profile) {
 #if defined(OS_CHROMEOS)
     return new FakeSigninManagerBase();

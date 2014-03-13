@@ -90,8 +90,7 @@ class ProfileSyncServiceStartupTest : public testing::Test {
     profile_.reset();
   }
 
-  static BrowserContextKeyedService* BuildService(
-      content::BrowserContext* browser_context) {
+  static KeyedService* BuildService(content::BrowserContext* browser_context) {
     Profile* profile = static_cast<Profile*>(browser_context);
     return new ProfileSyncService(
         new ProfileSyncComponentsFactoryMock(),
@@ -151,8 +150,7 @@ class ProfileSyncServiceStartupCrosTest : public ProfileSyncServiceStartupTest {
     sync_->AddObserver(&observer_);
   }
 
-  static BrowserContextKeyedService* BuildCrosService(
-      content::BrowserContext* context) {
+  static KeyedService* BuildCrosService(content::BrowserContext* context) {
     Profile* profile = static_cast<Profile*>(context);
     SigninManagerBase* signin =
         SigninManagerFactory::GetForProfile(profile);

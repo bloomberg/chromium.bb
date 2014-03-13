@@ -143,7 +143,7 @@ class RecentTabsSubMenuModelTest
     content::BrowserThread::GetBlockingPool()->FlushForTesting();
   }
 
-  static BrowserContextKeyedService* GetTabRestoreService(
+  static KeyedService* GetTabRestoreService(
       content::BrowserContext* browser_context) {
     // Ownership is tranfered to the profile.
     return new PersistentTabRestoreService(

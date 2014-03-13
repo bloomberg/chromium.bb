@@ -23,11 +23,11 @@ class FakeSigninManagerBase : public SigninManagerBase {
   virtual ~FakeSigninManagerBase();
 
   // Helper function to be used with
-  // BrowserContextKeyedService::SetTestingFactory(). In order to match
+  // KeyedService::SetTestingFactory(). In order to match
   // the API of SigninManagerFactory::GetForProfile(), returns a
   // FakeSigninManagerBase* on ChromeOS, and a FakeSigninManager* on all other
   // platforms. The returned instance is initialized.
-  static BrowserContextKeyedService* Build(content::BrowserContext* context);
+  static KeyedService* Build(content::BrowserContext* context);
 };
 
 #if !defined(OS_CHROMEOS)

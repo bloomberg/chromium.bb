@@ -34,7 +34,7 @@
 #include "base/prefs/pref_member.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_internals_util.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
 class CookieSettings;
@@ -62,7 +62,7 @@ struct GoogleServiceSignoutDetails {
   std::string username;
 };
 
-class SigninManagerBase : public BrowserContextKeyedService {
+class SigninManagerBase : public KeyedService {
  public:
   class Observer {
    public:
@@ -125,7 +125,7 @@ class SigninManagerBase : public BrowserContextKeyedService {
   // Returns true if there's a signin in progress.
   virtual bool AuthInProgress() const;
 
-  // BrowserContextKeyedService implementation.
+  // KeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
   // Methods to register or remove observers of signin.

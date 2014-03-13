@@ -7,14 +7,14 @@
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_wrapper.h"
 
 // static
-BrowserContextKeyedService* FakeProfileOAuth2TokenServiceWrapper::Build(
+KeyedService* FakeProfileOAuth2TokenServiceWrapper::Build(
     content::BrowserContext* context) {
   Profile* profile = static_cast<Profile*>(context);
   return new FakeProfileOAuth2TokenServiceWrapper(profile, false);
 }
 
 // static
-BrowserContextKeyedService*
+KeyedService*
 FakeProfileOAuth2TokenServiceWrapper::BuildAutoIssuingTokenService(
     content::BrowserContext* context) {
   Profile* profile = static_cast<Profile*>(context);

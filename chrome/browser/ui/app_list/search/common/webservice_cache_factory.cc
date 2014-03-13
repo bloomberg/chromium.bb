@@ -6,7 +6,7 @@
 
 #include "base/memory/singleton.h"
 #include "chrome/browser/ui/app_list/search/common/webservice_cache.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 namespace app_list {
 
@@ -29,7 +29,7 @@ WebserviceCacheFactory::WebserviceCacheFactory()
 
 WebserviceCacheFactory::~WebserviceCacheFactory() {}
 
-BrowserContextKeyedService* WebserviceCacheFactory::BuildServiceInstanceFor(
+KeyedService* WebserviceCacheFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   return new WebserviceCache(context);
 }

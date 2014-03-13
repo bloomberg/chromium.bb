@@ -60,8 +60,7 @@ class SigninManagerMock : public FakeSigninManager {
   MOCK_CONST_METHOD1(IsAllowedUsername, bool(const std::string& username));
 };
 
-static BrowserContextKeyedService* BuildSigninManagerMock(
-    content::BrowserContext* profile) {
+static KeyedService* BuildSigninManagerMock(content::BrowserContext* profile) {
   return new SigninManagerMock(static_cast<Profile*>(profile));
 }
 
@@ -161,7 +160,7 @@ class OneClickTestProfileSyncService : public TestProfileSyncService {
 
    // Helper routine to be used in conjunction with
    // BrowserContextKeyedServiceFactory::SetTestingFactory().
-   static BrowserContextKeyedService* Build(content::BrowserContext* profile) {
+   static KeyedService* Build(content::BrowserContext* profile) {
      return new OneClickTestProfileSyncService(static_cast<Profile*>(profile));
    }
 

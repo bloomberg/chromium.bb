@@ -7,7 +7,7 @@
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 // static
 GlobalErrorService* GlobalErrorServiceFactory::GetForProfile(Profile* profile) {
@@ -29,7 +29,7 @@ GlobalErrorServiceFactory::GlobalErrorServiceFactory()
 GlobalErrorServiceFactory::~GlobalErrorServiceFactory() {
 }
 
-BrowserContextKeyedService* GlobalErrorServiceFactory::BuildServiceInstanceFor(
+KeyedService* GlobalErrorServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   return new GlobalErrorService(static_cast<Profile*>(profile));
 }

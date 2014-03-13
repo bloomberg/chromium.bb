@@ -44,7 +44,7 @@ enum IconSize {
 struct SyncedFaviconInfo;
 
 // Encapsulates the logic for loading and storing synced favicons.
-// TODO(zea): make this a BrowserContextKeyedService.
+// TODO(zea): make this a KeyedService.
 class FaviconCache : public syncer::SyncableService,
                      public content::NotificationObserver {
  public:

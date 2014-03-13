@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_SEARCH_HISTORY_FACTORY_H_
 #define CHROME_BROWSER_UI_APP_LIST_SEARCH_HISTORY_FACTORY_H_
 
-#include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
+#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
 template<typename T> struct DefaultSingletonTraits;
 
@@ -33,7 +33,7 @@ class HistoryFactory : public BrowserContextKeyedServiceFactory {
   virtual ~HistoryFactory();
 
   // BrowserContextKeyedServiceFactory overrides:
-  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
+  virtual KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(HistoryFactory);

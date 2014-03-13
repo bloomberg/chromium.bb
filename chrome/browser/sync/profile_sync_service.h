@@ -28,7 +28,7 @@
 #include "chrome/browser/sync/sessions2/sessions_sync_manager.h"
 #include "chrome/browser/sync/startup_controller.h"
 #include "chrome/browser/sync/sync_prefs.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "components/sync_driver/data_type_controller.h"
 #include "components/sync_driver/data_type_encryption_handler.h"
 #include "components/sync_driver/data_type_manager.h"
@@ -167,18 +167,17 @@ using browser_sync::SessionsSyncManager;
 //   tell the sync engine that setup is completed and it can begin downloading
 //   data from the sync server.
 //
-class ProfileSyncService
-    : public ProfileSyncServiceBase,
-      public browser_sync::SyncFrontend,
-      public browser_sync::SyncPrefObserver,
-      public browser_sync::DataTypeManagerObserver,
-      public syncer::UnrecoverableErrorHandler,
-      public content::NotificationObserver,
-      public BrowserContextKeyedService,
-      public browser_sync::DataTypeEncryptionHandler,
-      public OAuth2TokenService::Consumer,
-      public OAuth2TokenService::Observer,
-      public SessionsSyncManager::SyncInternalApiDelegate {
+class ProfileSyncService : public ProfileSyncServiceBase,
+                           public browser_sync::SyncFrontend,
+                           public browser_sync::SyncPrefObserver,
+                           public browser_sync::DataTypeManagerObserver,
+                           public syncer::UnrecoverableErrorHandler,
+                           public content::NotificationObserver,
+                           public KeyedService,
+                           public browser_sync::DataTypeEncryptionHandler,
+                           public OAuth2TokenService::Consumer,
+                           public OAuth2TokenService::Observer,
+                           public SessionsSyncManager::SyncInternalApiDelegate {
  public:
   typedef browser_sync::SyncBackendHost::Status Status;
 
@@ -683,7 +682,7 @@ class ProfileSyncService
   virtual void OnRefreshTokenRevoked(const std::string& account_id) OVERRIDE;
   virtual void OnRefreshTokensLoaded() OVERRIDE;
 
-  // BrowserContextKeyedService implementation.  This must be called exactly
+  // KeyedService implementation.  This must be called exactly
   // once (before this object is destroyed).
   virtual void Shutdown() OVERRIDE;
 

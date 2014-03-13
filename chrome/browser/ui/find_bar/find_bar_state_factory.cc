@@ -7,7 +7,7 @@
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/find_bar/find_bar_state.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 // static
 FindBarState* FindBarStateFactory::GetForProfile(Profile* profile) {
@@ -42,7 +42,7 @@ FindBarStateFactory::FindBarStateFactory()
 
 FindBarStateFactory::~FindBarStateFactory() {}
 
-BrowserContextKeyedService* FindBarStateFactory::BuildServiceInstanceFor(
+KeyedService* FindBarStateFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   return new FindBarState;
 }

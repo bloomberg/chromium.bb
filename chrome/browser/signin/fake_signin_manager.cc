@@ -23,8 +23,7 @@ FakeSigninManagerBase::~FakeSigninManagerBase() {
 }
 
 // static
-BrowserContextKeyedService* FakeSigninManagerBase::Build(
-    content::BrowserContext* context) {
+KeyedService* FakeSigninManagerBase::Build(content::BrowserContext* context) {
   SigninManagerBase* manager;
   Profile* profile = static_cast<Profile*>(context);
 #if defined(OS_CHROMEOS)

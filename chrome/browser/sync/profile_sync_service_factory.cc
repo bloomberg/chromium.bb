@@ -31,7 +31,7 @@
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/common/pref_names.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "extensions/browser/extension_system_provider.h"
 #include "extensions/browser/extensions_browser_client.h"
 
@@ -86,7 +86,7 @@ ProfileSyncServiceFactory::ProfileSyncServiceFactory()
 ProfileSyncServiceFactory::~ProfileSyncServiceFactory() {
 }
 
-BrowserContextKeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
+KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = static_cast<Profile*>(context);
 

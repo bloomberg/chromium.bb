@@ -50,8 +50,7 @@ const char kGetTokenPairValidResponse[] =
 
 const char kUberAuthTokenURLFormat[] = "?source=%s&issueuberauth=1";
 
-BrowserContextKeyedService* SigninManagerBuild(
-    content::BrowserContext* context) {
+KeyedService* SigninManagerBuild(content::BrowserContext* context) {
   SigninManager* service = NULL;
   Profile* profile = static_cast<Profile*>(context);
   service = new SigninManager(

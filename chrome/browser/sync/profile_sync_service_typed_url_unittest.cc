@@ -41,7 +41,7 @@
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/sync/test_profile_sync_service.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/browser_context_keyed_service/refcounted_browser_context_keyed_service.h"
+#include "components/keyed_service/content/refcounted_browser_context_keyed_service.h"
 #include "components/sync_driver/data_type_error_handler_mock.h"
 #include "content/public/browser/notification_service.h"
 #include "google_apis/gaia/gaia_constants.h"
@@ -110,8 +110,7 @@ class HistoryServiceMock : public HistoryService {
   virtual ~HistoryServiceMock() {}
 };
 
-BrowserContextKeyedService* BuildHistoryService(
-    content::BrowserContext* profile) {
+KeyedService* BuildHistoryService(content::BrowserContext* profile) {
   return new HistoryServiceMock(static_cast<Profile*>(profile));
 }
 

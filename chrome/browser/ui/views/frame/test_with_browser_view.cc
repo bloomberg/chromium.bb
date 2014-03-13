@@ -25,13 +25,11 @@
 namespace {
 
 // Caller owns the returned service.
-BrowserContextKeyedService* CreateTemplateURLService(
-    content::BrowserContext* profile) {
+KeyedService* CreateTemplateURLService(content::BrowserContext* profile) {
   return new TemplateURLService(static_cast<Profile*>(profile));
 }
 
-BrowserContextKeyedService* CreateAutocompleteClassifier(
-    content::BrowserContext* profile) {
+KeyedService* CreateAutocompleteClassifier(content::BrowserContext* profile) {
   return new AutocompleteClassifier(static_cast<Profile*>(profile));
 }
 

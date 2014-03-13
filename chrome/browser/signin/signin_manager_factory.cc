@@ -11,7 +11,7 @@
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/common/pref_names.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 
 SigninManagerFactory::SigninManagerFactory()
@@ -120,7 +120,7 @@ void SigninManagerFactory::NotifyObserversOfSigninManagerCreationForTesting(
   FOR_EACH_OBSERVER(Observer, observer_list_, SigninManagerCreated(manager));
 }
 
-BrowserContextKeyedService* SigninManagerFactory::BuildServiceInstanceFor(
+KeyedService* SigninManagerFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   SigninManagerBase* service = NULL;
   Profile* profile = static_cast<Profile*>(context);

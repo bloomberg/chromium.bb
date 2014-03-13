@@ -68,7 +68,7 @@ class SearchController : public SpeechUIModelObserver {
   bool dispatching_query_;
   Providers providers_;
   scoped_ptr<Mixer> mixer_;
-  History* history_;  // BrowserContextKeyedService, not owned.
+  History* history_;  // KeyedService, not owned.
 
   base::OneShotTimer<SearchController> stop_timer_;
 

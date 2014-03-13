@@ -114,7 +114,7 @@ TestProfileSyncService::~TestProfileSyncService() {
 }
 
 // static
-BrowserContextKeyedService* TestProfileSyncService::TestFactoryFunction(
+KeyedService* TestProfileSyncService::TestFactoryFunction(
     content::BrowserContext* context) {
   Profile* profile = static_cast<Profile*>(context);
   SigninManagerBase* signin =

@@ -15,7 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "chrome/browser/signin/signin_manager.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
@@ -27,7 +27,7 @@ class GaiaAuthFetcher;
 class Profile;
 struct ChromeCookieDetails;
 
-class AccountReconcilor : public BrowserContextKeyedService,
+class AccountReconcilor : public KeyedService,
                           public content::NotificationObserver,
                           public GaiaAuthConsumer,
                           public MergeSessionHelper::Observer,
@@ -40,7 +40,7 @@ class AccountReconcilor : public BrowserContextKeyedService,
 
   void Initialize(bool start_reconcile_if_tokens_available);
 
-  // BrowserContextKeyedService implementation.
+  // KeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
   // Add or remove observers for the merge session notification.

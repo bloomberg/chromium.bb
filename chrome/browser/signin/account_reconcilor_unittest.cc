@@ -27,7 +27,7 @@ const char kTestEmail[] = "user@gmail.com";
 
 class MockAccountReconcilor : public testing::StrictMock<AccountReconcilor> {
  public:
-  static BrowserContextKeyedService* Build(content::BrowserContext* profile);
+  static KeyedService* Build(content::BrowserContext* profile);
 
   explicit MockAccountReconcilor(Profile* profile);
   virtual ~MockAccountReconcilor() {}
@@ -45,8 +45,7 @@ class MockAccountReconcilor : public testing::StrictMock<AccountReconcilor> {
 };
 
 // static
-BrowserContextKeyedService* MockAccountReconcilor::Build(
-    content::BrowserContext* profile) {
+KeyedService* MockAccountReconcilor::Build(content::BrowserContext* profile) {
   AccountReconcilor* reconcilor =
       new MockAccountReconcilor(static_cast<Profile*>(profile));
   reconcilor->Initialize(false /* start_reconcile_if_tokens_available */);

@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 
 class GlobalError;
 class Profile;
@@ -18,7 +18,7 @@ class Profile;
 // error should be shown using this service. Examples of global errors are:
 //   - the previous session crashed for a given profile.
 //   - a sync error occurred
-class GlobalErrorService : public BrowserContextKeyedService {
+class GlobalErrorService : public KeyedService {
  public:
   // Type used to represent the list of currently active errors.
   typedef std::vector<GlobalError*> GlobalErrorList;

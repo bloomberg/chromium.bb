@@ -5,7 +5,7 @@
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 
 #include "chrome/browser/profiles/profile.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 ChromeSigninClientFactory::ChromeSigninClientFactory()
     : BrowserContextKeyedServiceFactory(
@@ -25,7 +25,7 @@ ChromeSigninClientFactory* ChromeSigninClientFactory::GetInstance() {
   return Singleton<ChromeSigninClientFactory>::get();
 }
 
-BrowserContextKeyedService* ChromeSigninClientFactory::BuildServiceInstanceFor(
+KeyedService* ChromeSigninClientFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   ChromeSigninClient* client =
       new ChromeSigninClient(static_cast<Profile*>(context));

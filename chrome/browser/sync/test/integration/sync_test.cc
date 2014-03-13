@@ -105,8 +105,7 @@ void SetProxyConfigCallback(
   done->Signal();
 }
 
-BrowserContextKeyedService* BuildP2PInvalidationService(
-    content::BrowserContext* context) {
+KeyedService* BuildP2PInvalidationService(content::BrowserContext* context) {
   Profile* profile = static_cast<Profile*>(context);
   return new invalidation::P2PInvalidationService(profile);
 }

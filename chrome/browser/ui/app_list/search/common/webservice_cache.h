@@ -13,7 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "chrome/browser/ui/app_list/search/common/dictionary_data_store.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 
 namespace base {
 class DictionaryValue;
@@ -38,7 +38,7 @@ typedef std::pair<ResultStatus, const base::DictionaryValue*> CacheResult;
 // during an input session. This will reduce unnecessary queries for typing
 // backspace or so on. This is not meant to hold cache entries across multiple
 // search sessions.
-class WebserviceCache : public BrowserContextKeyedService,
+class WebserviceCache : public KeyedService,
                         public base::SupportsWeakPtr<WebserviceCache> {
  public:
   enum QueryType {

@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_APP_LIST_SEARCH_COMMON_WEBSERVICE_CACHE_FACTORY_H_
 #define CHROME_BROWSER_UI_APP_LIST_SEARCH_COMMON_WEBSERVICE_CACHE_FACTORY_H_
 
-#include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
+#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
 template<typename T> struct DefaultSingletonTraits;
 
@@ -34,7 +34,7 @@ class WebserviceCacheFactory : public BrowserContextKeyedServiceFactory {
   virtual ~WebserviceCacheFactory();
 
   // BrowserContextKeyedServiceFactory overrides:
-  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
+  virtual KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(WebserviceCacheFactory);

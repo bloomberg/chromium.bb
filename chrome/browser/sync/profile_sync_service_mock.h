@@ -33,7 +33,7 @@ class ProfileSyncServiceMock : public ProfileSyncService {
 
   // Helper routine to be used in conjunction with
   // BrowserContextKeyedServiceFactory::SetTestingFactory().
-  static BrowserContextKeyedService* BuildMockProfileSyncService(
+  static KeyedService* BuildMockProfileSyncService(
       content::BrowserContext* profile);
 
   MOCK_METHOD0(DisableForUser, void());

@@ -34,7 +34,7 @@ class WebserviceSearchProvider : public SearchProvider {
 
  protected:
   Profile* profile_;
-  WebserviceCache* cache_;  // BrowserContextKeyedService, not owned.
+  WebserviceCache* cache_;  // KeyedService, not owned.
 
  private:
   bool IsSensitiveInput(const base::string16& query);

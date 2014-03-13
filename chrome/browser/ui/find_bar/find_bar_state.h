@@ -10,11 +10,11 @@
 
 #include "base/basictypes.h"
 #include "base/strings/string16.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 
 class Profile;
 
-class FindBarState : public BrowserContextKeyedService {
+class FindBarState : public KeyedService {
  public:
   FindBarState() {}
   virtual ~FindBarState() {}

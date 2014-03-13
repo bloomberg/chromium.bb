@@ -18,8 +18,7 @@
 
 namespace {
 
-BrowserContextKeyedService* BuildPinnedTabService(
-    content::BrowserContext* profile) {
+KeyedService* BuildPinnedTabService(content::BrowserContext* profile) {
   return new PinnedTabService(static_cast<Profile*>(profile));
 }
 

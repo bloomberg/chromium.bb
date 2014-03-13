@@ -14,7 +14,7 @@
 #include "chrome/browser/signin/signin_internals_util.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
 class Profile;
@@ -26,7 +26,7 @@ typedef std::pair<std::string, std::string> TimedSigninStatusValue;
 // This class collects authentication, signin and token information
 // to propagate to about:signin-internals via SigninInternalsUI.
 class AboutSigninInternals
-    : public BrowserContextKeyedService,
+    : public KeyedService,
       public signin_internals_util::SigninDiagnosticsObserver,
       public OAuth2TokenService::DiagnosticsObserver {
  public:
@@ -60,7 +60,7 @@ class AboutSigninInternals
 
   void Initialize(Profile* profile);
 
-  // BrowserContextKeyedService implementation.
+  // KeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
   // Returns a dictionary of values in signin_status_ for use in

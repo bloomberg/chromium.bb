@@ -21,7 +21,7 @@
 #include "chrome/browser/sync/profile_sync_components_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/test/base/profile_mock.h"
-#include "components/browser_context_keyed_service/refcounted_browser_context_keyed_service.h"
+#include "components/keyed_service/content/refcounted_browser_context_keyed_service.h"
 #include "components/sync_driver/data_type_controller_mock.h"
 #include "components/sync_driver/model_associator_mock.h"
 #include "content/public/browser/notification_service.h"
@@ -54,21 +54,19 @@ class HistoryMock : public HistoryService {
   virtual ~HistoryMock() {}
 };
 
-BrowserContextKeyedService* BuildBookmarkModel(
-    content::BrowserContext* context) {
+KeyedService* BuildBookmarkModel(content::BrowserContext* context) {
   Profile* profile = static_cast<Profile*>(context);
   BookmarkModel* bookmark_model = new BookmarkModel(profile);
   bookmark_model->Load(profile->GetIOTaskRunner());
   return bookmark_model;
 }
 
-BrowserContextKeyedService* BuildBookmarkModelWithoutLoading(
+KeyedService* BuildBookmarkModelWithoutLoading(
     content::BrowserContext* profile) {
   return new BookmarkModel(static_cast<Profile*>(profile));
 }
 
-BrowserContextKeyedService* BuildHistoryService(
-    content::BrowserContext* profile) {
+KeyedService* BuildHistoryService(content::BrowserContext* profile) {
   return new HistoryMock(static_cast<Profile*>(profile));
 }
 

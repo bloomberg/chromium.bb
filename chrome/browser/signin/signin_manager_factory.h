@@ -7,7 +7,7 @@
 
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
+#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
 class SigninManager;
 class SigninManagerBase;
@@ -86,7 +86,7 @@ class SigninManagerFactory : public BrowserContextKeyedServiceFactory {
 #endif
 
   // BrowserContextKeyedServiceFactory:
-  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
+  virtual KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const OVERRIDE;
   virtual void BrowserContextShutdown(content::BrowserContext* context)
       OVERRIDE;

@@ -81,8 +81,7 @@ class OneClickSigninSyncStarterTest : public testing::Test {
   int succeeded_count_;
 
  private:
-  static BrowserContextKeyedService* BuildSigninManager(
-      content::BrowserContext* profile) {
+  static KeyedService* BuildSigninManager(content::BrowserContext* profile) {
     return new FakeSigninManager(static_cast<Profile*>(profile));
   }
 

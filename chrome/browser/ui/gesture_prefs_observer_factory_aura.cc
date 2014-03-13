@@ -15,7 +15,7 @@
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_service.h"
@@ -63,12 +63,12 @@ const std::vector<OverscrollPref>& GetOverscrollPrefs() {
 }
 
 // This class manages gesture configuration preferences.
-class GesturePrefsObserver : public BrowserContextKeyedService {
+class GesturePrefsObserver : public KeyedService {
  public:
   explicit GesturePrefsObserver(PrefService* prefs);
   virtual ~GesturePrefsObserver();
 
-  // BrowserContextKeyedService implementation.
+  // KeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
  private:
@@ -283,8 +283,7 @@ GesturePrefsObserverFactoryAura::GesturePrefsObserverFactoryAura()
 
 GesturePrefsObserverFactoryAura::~GesturePrefsObserverFactoryAura() {}
 
-BrowserContextKeyedService*
-GesturePrefsObserverFactoryAura::BuildServiceInstanceFor(
+KeyedService* GesturePrefsObserverFactoryAura::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   return new GesturePrefsObserver(static_cast<Profile*>(profile)->GetPrefs());
 }

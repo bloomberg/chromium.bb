@@ -13,7 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/app_list/search/history_data_observer.h"
 #include "chrome/browser/ui/app_list/search/history_types.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 
 namespace content {
 class BrowserContext;
@@ -34,8 +34,7 @@ class SearchHistoryTest;
 // primary and secondary associations. See HistoryData comments to see how
 // they are built. The learning data is sent to the mixer to boost results that
 // have been launched before.
-class History : public BrowserContextKeyedService,
-                public HistoryDataObserver {
+class History : public KeyedService, public HistoryDataObserver {
  public:
   explicit History(content::BrowserContext* context);
   virtual ~History();

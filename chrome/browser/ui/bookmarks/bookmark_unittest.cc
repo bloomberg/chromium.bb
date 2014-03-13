@@ -54,7 +54,7 @@ class BookmarkInstantExtendedTest : public BrowserWithTestWindowTest {
   }
 
  private:
-  static BrowserContextKeyedService* CreateTemplateURLService(
+  static KeyedService* CreateTemplateURLService(
       content::BrowserContext* profile) {
     return new TemplateURLService(static_cast<Profile*>(profile));
   }
