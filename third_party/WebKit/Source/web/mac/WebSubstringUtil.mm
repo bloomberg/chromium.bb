@@ -48,31 +48,24 @@
 #include "core/frame/FrameView.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/style/RenderStyle.h"
+#include "core/rendering/HitTestResult.h"
 #include "platform/fonts/Font.h"
 #include "platform/mac/ColorMac.h"
 #include "public/platform/WebRect.h"
+#include "public/web/WebHitTestResult.h"
+#include "public/web/WebRange.h"
+#include "public/web/WebView.h"
 
 using namespace WebCore;
 
-namespace blink {
-
-NSAttributedString* WebSubstringUtil::attributedSubstringInRange(WebFrame* webFrame, size_t location, size_t length)
+static NSAttributedString* attributedSubstringFromRange(const Range* range)
 {
-    LocalFrame* frame = toWebFrameImpl(webFrame)->frame();
-    if (frame->view()->needsLayout())
-        frame->view()->layout();
-
-    Element* editable = frame->selection().rootEditableElementOrDocumentElement();
-    ASSERT(editable);
-    RefPtr<Range> range(PlainTextRange(location, location + length).createRange(*editable));
-    if (!range)
-        return nil;
-
     NSMutableAttributedString* string = [[NSMutableAttributedString alloc] init];
     NSMutableDictionary* attrs = [NSMutableDictionary dictionary];
+    size_t length = range->endOffset() - range->startOffset();
 
     unsigned position = 0;
-    for (TextIterator it(range.get()); !it.atEnd() && [string length] < length; it.advance()) {
+    for (TextIterator it(range); !it.atEnd() && [string length] < length; it.advance()) {
         unsigned numCharacters = it.length();
         if (!numCharacters)
             continue;
@@ -113,6 +106,58 @@ NSAttributedString* WebSubstringUtil::attributedSubstringInRange(WebFrame* webFr
         position += numCharacters;
     }
     return [string autorelease];
+}
+
+namespace blink {
+
+NSAttributedString* WebSubstringUtil::attributedWordAtPoint(WebView* view, WebPoint point, WebPoint& baselinePoint)
+{
+    HitTestResult result = view->hitTestResultAt(point);
+    LocalFrame* frame = result.targetNode()->document().frame();
+    FrameView* frameView = frame->view();
+
+    RefPtr<Range> range = frame->rangeForPoint(result.roundedPointInInnerNodeFrame());
+    if (!range)
+        return nil;
+
+    // Expand to word under point.
+    VisibleSelection selection(range.get());
+    selection.expandUsingGranularity(WordGranularity);
+    RefPtr<Range> wordRange = selection.toNormalizedRange();
+
+    // Convert to NSAttributedString.
+    NSAttributedString* string = attributedSubstringFromRange(wordRange.get());
+
+    // Compute bottom left corner and convert to AppKit coordinates.
+    IntRect stringRect = enclosingIntRect(wordRange->boundingRect());
+    IntPoint stringPoint = frameView->contentsToWindow(stringRect).minXMaxYCorner();
+    stringPoint.setY(frameView->height() - stringPoint.y());
+
+    // Adjust for the font's descender. AppKit wants the baseline point.
+    if ([string length]) {
+        NSDictionary* attributes = [string attributesAtIndex:0 effectiveRange:NULL];
+        NSFont* font = [attributes objectForKey:NSFontAttributeName];
+        if (font)
+            stringPoint.move(0, ceil(-[font descender]));
+    }
+
+    baselinePoint = stringPoint;
+    return string;
+}
+
+NSAttributedString* WebSubstringUtil::attributedSubstringInRange(WebFrame* webFrame, size_t location, size_t length)
+{
+    LocalFrame* frame = toWebFrameImpl(webFrame)->frame();
+    if (frame->view()->needsLayout())
+        frame->view()->layout();
+
+    Element* editable = frame->selection().rootEditableElementOrDocumentElement();
+    ASSERT(editable);
+    RefPtr<Range> range(PlainTextRange(location, location + length).createRange(*editable));
+    if (!range)
+        return nil;
+
+    return attributedSubstringFromRange(range.get());
 }
 
 } // namespace blink
