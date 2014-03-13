@@ -5,6 +5,8 @@
 #ifndef CC_TEST_LAYER_TEST_COMMON_H_
 #define CC_TEST_LAYER_TEST_COMMON_H_
 
+#include "base/basictypes.h"
+
 #define EXPECT_SET_NEEDS_COMMIT(expect, code_to_test)                 \
   do {                                                                \
     EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times((expect)); \
@@ -30,6 +32,12 @@ class LayerTestCommon {
 
   static void VerifyQuadsExactlyCoverRect(const QuadList& quads,
                                           const gfx::Rect& rect);
+
+  static void VerifyQuadsCoverRectWithOcclusion(
+      const QuadList& quads,
+      const gfx::Rect& rect,
+      const gfx::Rect& occluded,
+      size_t* partially_occluded_count);
 };
 
 }  // namespace cc

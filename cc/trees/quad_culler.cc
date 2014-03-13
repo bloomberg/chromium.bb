@@ -36,6 +36,13 @@ SharedQuadState* QuadCuller::UseSharedQuadState(
   return current_shared_quad_state_;
 }
 
+gfx::Rect QuadCuller::UnoccludedContentRect(
+    const gfx::Rect& content_rect,
+    const gfx::Transform& draw_transform) {
+  return occlusion_tracker_.UnoccludedContentRect(
+      layer_->render_target(), content_rect, draw_transform);
+}
+
 static inline bool AppendQuadInternal(
     scoped_ptr<DrawQuad> draw_quad,
     const gfx::Rect& culled_rect,
@@ -68,6 +75,15 @@ bool QuadCuller::MaybeAppend(scoped_ptr<DrawQuad> draw_quad) {
 
   return AppendQuadInternal(
       draw_quad.Pass(), culled_rect, quad_list_, occlusion_tracker_, layer_);
+}
+
+void QuadCuller::Append(scoped_ptr<DrawQuad> draw_quad) {
+  DCHECK(draw_quad->shared_quad_state == current_shared_quad_state_);
+  DCHECK(!shared_quad_state_list_->empty());
+  DCHECK(shared_quad_state_list_->back() == current_shared_quad_state_);
+  DCHECK(!draw_quad->rect.IsEmpty());
+  DCHECK(!draw_quad->visible_rect.IsEmpty());
+  quad_list_->push_back(draw_quad.Pass());
 }
 
 }  // namespace cc

@@ -55,4 +55,35 @@ void LayerTestCommon::VerifyQuadsExactlyCoverRect(const QuadList& quads,
   EXPECT_TRUE(remaining.IsEmpty());
 }
 
+// static
+void LayerTestCommon::VerifyQuadsCoverRectWithOcclusion(
+    const QuadList& quads,
+    const gfx::Rect& rect,
+    const gfx::Rect& occluded,
+    size_t* partially_occluded_count) {
+  // No quad should exist if it's fully occluded.
+  for (size_t i = 0; i < quads.size(); ++i) {
+    EXPECT_FALSE(occluded.Contains(quads[i]->visible_rect));
+  }
+
+  // Quads that are fully occluded on one axis only should be shrunken.
+  for (size_t i = 0; i < quads.size(); ++i) {
+    DrawQuad* quad = quads[i];
+    bool fully_occluded_horizontal = quad->rect.x() >= occluded.x() &&
+                                     quad->rect.right() <= occluded.right();
+    bool fully_occluded_vertical = quad->rect.y() >= occluded.y() &&
+                                   quad->rect.bottom() <= occluded.bottom();
+    bool should_be_occluded =
+        quad->rect.Intersects(occluded) &&
+        (fully_occluded_vertical || fully_occluded_horizontal);
+    if (!should_be_occluded) {
+      EXPECT_EQ(quad->rect.ToString(), quad->visible_rect.ToString());
+    } else {
+      EXPECT_NE(quad->rect.ToString(), quad->visible_rect.ToString());
+      EXPECT_TRUE(quad->rect.Contains(quad->visible_rect));
+      ++(*partially_occluded_count);
+    }
+  }
+}
+
 }  // namespace cc
