@@ -428,8 +428,7 @@ void DefaultState::UpdateBounds(WindowState* window_state,
 
   if (state_type != WINDOW_STATE_TYPE_MINIMIZED) {
     if (old_state_type == WINDOW_STATE_TYPE_MINIMIZED ||
-        (window_state->IsFullscreen() &&
-         !window_state->animate_to_fullscreen())) {
+        window_state->IsFullscreen()) {
       window_state->SetBoundsDirect(bounds_in_parent);
     } else if (window_state->IsMaximizedOrFullscreen() ||
                IsMaximizedOrFullscreenWindowStateType(old_state_type)) {

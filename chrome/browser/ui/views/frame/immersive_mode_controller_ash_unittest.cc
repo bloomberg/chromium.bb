@@ -272,13 +272,6 @@ class ImmersiveModeControllerAshTestHostedApp
   }
   virtual ~ImmersiveModeControllerAshTestHostedApp() {}
 
-  // ImmersiveModeControllerAshTest override:
-  virtual void SetUp() OVERRIDE {
-    CommandLine::ForCurrentProcess()->AppendSwitch(
-        ash::switches::kAshEnableImmersiveFullscreenForAllWindows);
-    ImmersiveModeControllerAshTest::SetUp();
-  }
-
  private:
   DISALLOW_COPY_AND_ASSIGN(ImmersiveModeControllerAshTestHostedApp);
 };

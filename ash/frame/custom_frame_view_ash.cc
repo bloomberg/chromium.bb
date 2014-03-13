@@ -58,21 +58,19 @@ class CustomFrameViewAshWindowStateDelegate
 #if defined(OS_CHROMEOS)
     // TODO(pkotwicz): Investigate if immersive fullscreen can be enabled for
     // Windows Ash.
-    if (ash::switches::UseImmersiveFullscreenForAllWindows()) {
-      immersive_fullscreen_controller_.reset(
-          new ash::ImmersiveFullscreenController);
-      custom_frame_view->InitImmersiveFullscreenControllerForView(
-          immersive_fullscreen_controller_.get());
+    immersive_fullscreen_controller_.reset(
+        new ash::ImmersiveFullscreenController);
+    custom_frame_view->InitImmersiveFullscreenControllerForView(
+        immersive_fullscreen_controller_.get());
 
-      // Add a window state observer to exit fullscreen properly in case
-      // fullscreen is exited without going through
-      // WindowState::ToggleFullscreen(). This is the case when exiting
-      // immersive fullscreen via the "Restore" window control.
-      // TODO(pkotwicz): This is a hack. Remove ASAP. http://crbug.com/319048
-      window_state_ = window_state;
-      window_state_->AddObserver(this);
-      window_state_->window()->AddObserver(this);
-    }
+    // Add a window state observer to exit fullscreen properly in case
+    // fullscreen is exited without going through
+    // WindowState::ToggleFullscreen(). This is the case when exiting
+    // immersive fullscreen via the "Restore" window control.
+    // TODO(pkotwicz): This is a hack. Remove ASAP. http://crbug.com/319048
+    window_state_ = window_state;
+    window_state_->AddObserver(this);
+    window_state_->window()->AddObserver(this);
 #endif
   }
   virtual ~CustomFrameViewAshWindowStateDelegate() {

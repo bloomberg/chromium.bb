@@ -90,20 +90,11 @@ WindowState::WindowState(aura::Window* window)
       top_row_keys_are_function_keys_(false),
       unminimize_to_restore_bounds_(false),
       hide_shelf_when_fullscreen_(true),
-      animate_to_fullscreen_(true),
       minimum_visibility_(false),
       can_be_dragged_(true),
       ignore_property_change_(false),
       current_state_(new DefaultState(ToWindowStateType(GetShowState()))) {
   window_->AddObserver(this);
-#if defined(OS_CHROMEOS)
-  // NOTE(pkotwicz): Animating to immersive fullscreen does not look good. When
-  // switches::UseImmersiveFullscreenForAllWindows() returns true, most windows
-  // can be put into immersive fullscreen. It is not worth the added complexity
-  // to only animate to fullscreen if the window is put into immersive
-  // fullscreen.
-  animate_to_fullscreen_ = !switches::UseImmersiveFullscreenForAllWindows();
-#endif
 }
 
 WindowState::~WindowState() {

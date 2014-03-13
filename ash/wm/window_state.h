@@ -170,15 +170,6 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
     hide_shelf_when_fullscreen_ = value;
   }
 
-  // Sets/gets the flag to suppress the cross-fade animation for
-  // the transition to the fullscreen state.
-  bool animate_to_fullscreen() const {
-    return animate_to_fullscreen_;
-  }
-  void set_animate_to_fullscreen(bool value) {
-    animate_to_fullscreen_ = value;
-  }
-
   // If the minimum visibilty is true, ash will try to keep a
   // minimum amount of the window is always visible on the work area
   // when shown.
@@ -336,7 +327,6 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
 
   bool unminimize_to_restore_bounds_;
   bool hide_shelf_when_fullscreen_;
-  bool animate_to_fullscreen_;
   bool minimum_visibility_;
   bool can_be_dragged_;
 

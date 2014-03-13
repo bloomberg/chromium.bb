@@ -92,32 +92,18 @@ IN_PROC_BROWSER_TEST_F(AcceleratorCommandsBrowserTest, ToggleMaximized) {
 }
 
 class AcceleratorCommandsFullscreenBrowserTest
-    : public WithParamInterface<std::tr1::tuple<bool, ui::WindowShowState> >,
+    : public WithParamInterface<ui::WindowShowState>,
       public InProcessBrowserTest {
  public:
   AcceleratorCommandsFullscreenBrowserTest()
 #if defined(OS_CHROMEOS)
-      : put_browser_in_immersive_(true),
-        put_all_windows_in_immersive_(std::tr1::get<0>(GetParam())),
+      : put_window_in_immersive_(true),
 #else
-      : put_browser_in_immersive_(false),
-        put_all_windows_in_immersive_(false),
+      : put_window_in_immersive_(false),
 #endif
-        initial_show_state_(std::tr1::get<1>(GetParam())) {
+        initial_show_state_(GetParam()) {
   }
   virtual ~AcceleratorCommandsFullscreenBrowserTest() {
-  }
-
-  // BrowserTestBase override:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    InProcessBrowserTest::SetUpCommandLine(command_line);
-    if (put_all_windows_in_immersive_) {
-      CommandLine::ForCurrentProcess()->AppendSwitch(
-          ash::switches::kAshEnableImmersiveFullscreenForAllWindows);
-    } else {
-      CommandLine::ForCurrentProcess()->AppendSwitch(
-          ash::switches::kAshEnableImmersiveFullscreenForBrowserOnly);
-    }
   }
 
   // Sets |window_state|'s show state to |initial_show_state_|.
@@ -136,17 +122,12 @@ class AcceleratorCommandsFullscreenBrowserTest
       return window_state->IsNormalStateType();
   }
 
-  bool put_browser_in_immersive() const {
-    return put_browser_in_immersive_;
-  }
-
-  bool put_all_windows_in_immersive() const {
-    return put_all_windows_in_immersive_;
+  bool put_window_in_immersive() const {
+    return put_window_in_immersive_;
   }
 
  private:
-  bool put_browser_in_immersive_;
-  bool put_all_windows_in_immersive_;
+  bool put_window_in_immersive_;
   ui::WindowShowState initial_show_state_;
 
   DISALLOW_COPY_AND_ASSIGN(AcceleratorCommandsFullscreenBrowserTest);
@@ -173,7 +154,7 @@ IN_PROC_BROWSER_TEST_P(AcceleratorCommandsFullscreenBrowserTest,
 
   ash::accelerators::ToggleFullscreen();
   EXPECT_TRUE(window_state->IsFullscreen());
-  EXPECT_EQ(put_browser_in_immersive(), IsInImmersiveFullscreen(window_state));
+  EXPECT_EQ(put_window_in_immersive(), IsInImmersiveFullscreen(window_state));
 
   ash::accelerators::ToggleFullscreen();
   EXPECT_TRUE(IsInitialShowState(window_state));
@@ -200,8 +181,7 @@ IN_PROC_BROWSER_TEST_P(AcceleratorCommandsFullscreenBrowserTest,
 
   ash::accelerators::ToggleFullscreen();
   EXPECT_TRUE(window_state->IsFullscreen());
-  EXPECT_EQ(put_all_windows_in_immersive(),
-            IsInImmersiveFullscreen(window_state));
+  EXPECT_EQ(put_window_in_immersive(), IsInImmersiveFullscreen(window_state));
 
   ash::accelerators::ToggleFullscreen();
   EXPECT_TRUE(IsInitialShowState(window_state));
@@ -220,8 +200,7 @@ IN_PROC_BROWSER_TEST_P(AcceleratorCommandsFullscreenBrowserTest,
 
   ash::accelerators::ToggleFullscreen();
   EXPECT_TRUE(window_state->IsFullscreen());
-  EXPECT_EQ(put_all_windows_in_immersive(),
-            IsInImmersiveFullscreen(window_state));
+  EXPECT_EQ(put_window_in_immersive(), IsInImmersiveFullscreen(window_state));
 
   ash::accelerators::ToggleFullscreen();
   EXPECT_TRUE(IsInitialShowState(window_state));
@@ -241,8 +220,7 @@ IN_PROC_BROWSER_TEST_P(AcceleratorCommandsFullscreenBrowserTest,
 
   ash::accelerators::ToggleFullscreen();
   EXPECT_TRUE(window_state->IsFullscreen());
-  EXPECT_EQ(put_all_windows_in_immersive(),
-            IsInImmersiveFullscreen(window_state));
+  EXPECT_EQ(put_window_in_immersive(), IsInImmersiveFullscreen(window_state));
 
   // TODO(pkotwicz|oshima): Make toggling fullscreen restore the window to its
   // show state prior to entering fullscreen.
@@ -250,40 +228,24 @@ IN_PROC_BROWSER_TEST_P(AcceleratorCommandsFullscreenBrowserTest,
   EXPECT_FALSE(window_state->IsFullscreen());
 }
 
-#if defined(OS_CHROMEOS)
 INSTANTIATE_TEST_CASE_P(InitiallyRestored,
                         AcceleratorCommandsFullscreenBrowserTest,
-                        Combine(Values(false, true),
-                                Values(ui::SHOW_STATE_NORMAL)));
+                        Values(ui::SHOW_STATE_NORMAL));
 INSTANTIATE_TEST_CASE_P(InitiallyMaximized,
                         AcceleratorCommandsFullscreenBrowserTest,
-                        Combine(Values(false, true),
-                                Values(ui::SHOW_STATE_MAXIMIZED)));
-#else
-// The kAshEnableImmersiveFullscreenForAllWindows flag should have no effect on
-// Windows. Do not run the tests with and without the flag to spare some
-// cycles.
-INSTANTIATE_TEST_CASE_P(InitiallyRestored,
-                        AcceleratorCommandsFullscreenBrowserTest,
-                        Combine(Values(false),
-                                Values(ui::SHOW_STATE_NORMAL)));
-INSTANTIATE_TEST_CASE_P(InitiallyMaximized,
-                        AcceleratorCommandsFullscreenBrowserTest,
-                        Combine(Values(false),
-                                Values(ui::SHOW_STATE_MAXIMIZED)));
-#endif
+                        Values(ui::SHOW_STATE_MAXIMIZED));
 
 class AcceleratorCommandsPlatformAppFullscreenBrowserTest
-    : public WithParamInterface<std::tr1::tuple<bool, ui::WindowShowState> >,
+    : public WithParamInterface<ui::WindowShowState>,
       public extensions::PlatformAppBrowserTest {
  public:
   AcceleratorCommandsPlatformAppFullscreenBrowserTest()
 #if defined(OS_CHROMEOS)
-      : put_all_windows_in_immersive_(std::tr1::get<0>(GetParam())),
+      : put_window_in_immersive_(true),
 #else
-      : put_all_windows_in_immersive_(false),
+      : put_window_in_immersive_(false),
 #endif
-        initial_show_state_(std::tr1::get<1>(GetParam())) {
+        initial_show_state_(GetParam()) {
   }
   virtual ~AcceleratorCommandsPlatformAppFullscreenBrowserTest() {
   }
@@ -304,24 +266,12 @@ class AcceleratorCommandsPlatformAppFullscreenBrowserTest
       return ui::BaseWindow::IsRestored(*app_window->GetBaseWindow());
   }
 
-  // content::BrowserTestBase override:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    if (put_all_windows_in_immersive_) {
-      CommandLine::ForCurrentProcess()->AppendSwitch(
-          ash::switches::kAshEnableImmersiveFullscreenForAllWindows);
-    } else {
-      CommandLine::ForCurrentProcess()->AppendSwitch(
-          ash::switches::kAshEnableImmersiveFullscreenForBrowserOnly);
-    }
-    extensions::PlatformAppBrowserTest::SetUpCommandLine(command_line);
-  }
-
-  bool put_all_windows_in_immersive() const {
-    return put_all_windows_in_immersive_;
+  bool put_window_in_immersive() const {
+    return put_window_in_immersive_;
   }
 
  private:
-  bool put_all_windows_in_immersive_;
+  bool put_window_in_immersive_;
   ui::WindowShowState initial_show_state_;
 
   DISALLOW_COPY_AND_ASSIGN(AcceleratorCommandsPlatformAppFullscreenBrowserTest);
@@ -355,7 +305,7 @@ IN_PROC_BROWSER_TEST_P(AcceleratorCommandsPlatformAppFullscreenBrowserTest,
     EXPECT_TRUE(native_app_window->IsFullscreen());
     ash::wm::WindowState* window_state =
         ash::wm::GetWindowState(native_app_window->GetNativeWindow());
-    EXPECT_EQ(put_all_windows_in_immersive(),
+    EXPECT_EQ(put_window_in_immersive(),
               IsInImmersiveFullscreen(window_state));
 
     ash::accelerators::ToggleFullscreen();
@@ -388,25 +338,9 @@ IN_PROC_BROWSER_TEST_P(AcceleratorCommandsPlatformAppFullscreenBrowserTest,
   }
 }
 
-#if defined(OS_CHROMEOS)
 INSTANTIATE_TEST_CASE_P(InitiallyRestored,
                         AcceleratorCommandsPlatformAppFullscreenBrowserTest,
-                        Combine(Values(false, true),
-                                Values(ui::SHOW_STATE_NORMAL)));
+                        Values(ui::SHOW_STATE_NORMAL));
 INSTANTIATE_TEST_CASE_P(InitiallyMaximized,
                         AcceleratorCommandsPlatformAppFullscreenBrowserTest,
-                        Combine(Values(false, true),
-                                Values(ui::SHOW_STATE_MAXIMIZED)));
-#else
-// The kAshEnableImmersiveFullscreenForAllWindows flag should have no effect on
-// Windows. Do not run the tests with and without the flag to spare some
-// cycles.
-INSTANTIATE_TEST_CASE_P(InitiallyRestored,
-                        AcceleratorCommandsPlatformAppFullscreenBrowserTest,
-                        Combine(Values(false),
-                                Values(ui::SHOW_STATE_NORMAL)));
-INSTANTIATE_TEST_CASE_P(InitiallyMaximized,
-                        AcceleratorCommandsPlatformAppFullscreenBrowserTest,
-                        Combine(Values(false),
-                                Values(ui::SHOW_STATE_MAXIMIZED)));
-#endif
+                        Values(ui::SHOW_STATE_MAXIMIZED));

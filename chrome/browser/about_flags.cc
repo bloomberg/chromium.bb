@@ -966,15 +966,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(ash::switches::kAshDisableDockedWindows)
   },
   {
-    "ash-enable-immersive-fullscreen-all-windows2",
-    IDS_FLAGS_IMMERSIVE_FULLSCREEN_FOR_ALL_WINDOWS_NAME,
-    IDS_FLAGS_IMMERSIVE_FULLSCREEN_FOR_ALL_WINDOWS_DESCRIPTION,
-    kOsCrOS,
-    ENABLE_DISABLE_VALUE_TYPE(
-        ash::switches::kAshEnableImmersiveFullscreenForAllWindows,
-        ash::switches::kAshEnableImmersiveFullscreenForBrowserOnly)
-  },
-  {
     "network-portal-notification",
     IDS_FLAGS_NETWORK_PORTAL_NOTIFICATION_NAME,
     IDS_FLAGS_NETWORK_PORTAL_NOTIFICATION_DESCRIPTION,

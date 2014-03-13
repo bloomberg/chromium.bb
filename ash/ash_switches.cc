@@ -61,15 +61,6 @@ const char kAshEnableAlternateFrameCaptionButtonStyle[] =
 // main monitor as internal.
 const char kAshEnableBrightnessControl[] = "ash-enable-brightness-control";
 
-// Enables putting all windows into immersive fullscreen via <F4>.
-const char kAshEnableImmersiveFullscreenForAllWindows[] =
-    "ash-enable-immersive-all-windows";
-
-// Enables putting only browser windows into immersive fullscreen via <F4>.
-// <F4> puts all other windows into non-immersive fullscreen.
-const char kAshEnableImmersiveFullscreenForBrowserOnly[] =
-    "ash-enable-immersive-browser-only";
-
 #if defined(OS_CHROMEOS)
 // Enables key bindings to scroll magnified screen.
 const char kAshEnableMagnifierKeyScroller[] =
@@ -148,11 +139,6 @@ bool UseAlternateFrameCaptionButtonStyle() {
 bool UseAlternateShelfLayout() {
   return !CommandLine::ForCurrentProcess()->
       HasSwitch(kAshDisableAlternateShelfLayout);
-}
-
-bool UseImmersiveFullscreenForAllWindows() {
-  return !CommandLine::ForCurrentProcess()->HasSwitch(
-      kAshEnableImmersiveFullscreenForBrowserOnly);
 }
 
 bool UseDockedWindows() {

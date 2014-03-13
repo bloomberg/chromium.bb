@@ -70,15 +70,6 @@ BrowserFrameAsh::BrowserFrameAsh(BrowserFrame* browser_frame,
   if (!browser->bounds_overridden() && !browser->is_session_restore())
     SetWindowAutoManaged();
 #if defined(OS_CHROMEOS)
-  if (browser->is_type_tabbed()) {
-    // Animating to immersive fullscreen does not look good. Immersive
-    // fullscreen is the default fullscreen type on ChromeOS for tabbed browser
-    // windows. The WindowState constructor disables animating to fullscreen
-    // completely when switches::UseImmersiveFullscreenForAllWindows() returns
-    // true.
-    window_state->set_animate_to_fullscreen(false);
-  }
-
   // For legacy reasons v1 apps (like Secure Shell) are allowed to consume keys
   // like brightness, volume, etc. Otherwise these keys are handled by the
   // Ash window manager.
