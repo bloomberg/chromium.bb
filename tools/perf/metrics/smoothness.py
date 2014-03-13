@@ -4,10 +4,10 @@
 
 from metrics import timeline_based_metric
 from metrics import rendering_stats
-from metrics import statistics
 from telemetry.core.timeline import bounds
 from telemetry.page import page_measurement
 from telemetry.page.perf_tests_helper import FlattenList
+from telemetry.util import statistics
 
 
 class NotEnoughFramesError(page_measurement.MeasurementFailure):
@@ -34,8 +34,7 @@ class SmoothnessMetric(timeline_based_metric.TimelineBasedMetric):
         renderer_process, model.browser_process, [time_bounds])
     if stats.mouse_wheel_scroll_latency:
       mean_mouse_wheel_scroll_latency = statistics.ArithmeticMean(
-          stats.mouse_wheel_scroll_latency,
-          len(stats.mouse_wheel_scroll_latency))
+          stats.mouse_wheel_scroll_latency)
       mouse_wheel_scroll_latency_discrepancy = statistics.DurationsDiscrepancy(
           stats.mouse_wheel_scroll_latency)
       results.Add('mean_mouse_wheel_scroll_latency', 'ms',
@@ -45,8 +44,7 @@ class SmoothnessMetric(timeline_based_metric.TimelineBasedMetric):
 
     if stats.touch_scroll_latency:
       mean_touch_scroll_latency = statistics.ArithmeticMean(
-          stats.touch_scroll_latency,
-          len(stats.touch_scroll_latency))
+          stats.touch_scroll_latency)
       touch_scroll_latency_discrepancy = statistics.DurationsDiscrepancy(
           stats.touch_scroll_latency)
       results.Add('mean_touch_scroll_latency', 'ms',
@@ -56,8 +54,7 @@ class SmoothnessMetric(timeline_based_metric.TimelineBasedMetric):
 
     if stats.js_touch_scroll_latency:
       mean_js_touch_scroll_latency = statistics.ArithmeticMean(
-          stats.js_touch_scroll_latency,
-          len(stats.js_touch_scroll_latency))
+          stats.js_touch_scroll_latency)
       js_touch_scroll_latency_discrepancy = statistics.DurationsDiscrepancy(
           stats.js_touch_scroll_latency)
       results.Add('mean_js_touch_scroll_latency', 'ms',
@@ -70,8 +67,7 @@ class SmoothnessMetric(timeline_based_metric.TimelineBasedMetric):
     results.Add('frame_times', 'ms', frame_times)
 
     # Arithmetic mean of frame times.
-    mean_frame_time = statistics.ArithmeticMean(frame_times,
-                                                len(frame_times))
+    mean_frame_time = statistics.ArithmeticMean(frame_times)
     results.Add('mean_frame_time', 'ms', round(mean_frame_time, 3))
 
     # Absolute discrepancy of frame time stamps.

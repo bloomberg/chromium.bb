@@ -1,11 +1,12 @@
-# Copyright 2013 The Chromium Authors. All rights reserved.
+# Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 import unittest
 import random
+import math
 
-from metrics import statistics
+from telemetry.util import statistics
 
 
 def Relax(samples, iterations=10):
@@ -158,13 +159,10 @@ class StatisticsUnitTest(unittest.TestCase):
 
   def testArithmeticMean(self):
     # The ArithmeticMean function computes the simple average.
-    self.assertAlmostEquals(40/3.0, statistics.ArithmeticMean([10, 10, 20], 3))
-    self.assertAlmostEquals(15.0, statistics.ArithmeticMean([10, 20], 2))
-    # Both lists of values or single values can be given for either argument.
-    self.assertAlmostEquals(40/3.0, statistics.ArithmeticMean(40, [1, 1, 1]))
+    self.assertAlmostEquals(40/3.0, statistics.ArithmeticMean([10, 10, 20]))
+    self.assertAlmostEquals(15.0, statistics.ArithmeticMean([10, 20]))
     # If the 'count' is zero, then zero is returned.
-    self.assertEquals(0, statistics.ArithmeticMean(4.0, 0))
-    self.assertEquals(0, statistics.ArithmeticMean(4.0, []))
+    self.assertEquals(0, statistics.ArithmeticMean([]))
 
   def testDurationsDiscrepancy(self):
     durations = []
@@ -184,3 +182,18 @@ class StatisticsUnitTest(unittest.TestCase):
     d_c = statistics.DurationsDiscrepancy(durations_c)
 
     self.assertTrue(d_a < d_b < d_c)
+
+  def testStandardDeviation(self):
+    self.assertAlmostEquals(math.sqrt(2/3.0),
+                            statistics.StandardDeviation([1, 2, 3]))
+    self.assertEquals(0, statistics.StandardDeviation([1]))
+    self.assertEquals(0, statistics.StandardDeviation([]))
+
+  def testTrapezoidalRule(self):
+    self.assertEquals(4, statistics.TrapezoidalRule([1, 2, 3], 1))
+    self.assertEquals(2, statistics.TrapezoidalRule([1, 2, 3], .5))
+    self.assertEquals(0, statistics.TrapezoidalRule([1, 2, 3], 0))
+    self.assertEquals(-4, statistics.TrapezoidalRule([1, 2, 3], -1))
+    self.assertEquals(3, statistics.TrapezoidalRule([-1, 2, 3], 1))
+    self.assertEquals(0, statistics.TrapezoidalRule([1], 1))
+    self.assertEquals(0, statistics.TrapezoidalRule([0], 1))

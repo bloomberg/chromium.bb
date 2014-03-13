@@ -14,10 +14,10 @@ Octane 2.0 consists of 17 tests, four more than Octane v1.
 import os
 
 from metrics import power
-from metrics import statistics
 from telemetry import test
 from telemetry.page import page_measurement
 from telemetry.page import page_set
+from telemetry.util import statistics
 
 _GB = 1024 * 1024 * 1024
 

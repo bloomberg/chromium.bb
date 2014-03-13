@@ -16,10 +16,10 @@ mean of individual tests scores.
 
 import os
 
-from metrics import statistics
 from telemetry import test
 from telemetry.page import page_measurement
 from telemetry.page import page_set
+from telemetry.util import statistics
 from telemetry.value import merge_values
 
 class PeaceKeeperMeasurement(page_measurement.PageMeasurement):

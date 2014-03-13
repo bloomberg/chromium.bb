@@ -1,4 +1,4 @@
-# Copyright 2013 The Chromium Authors. All rights reserved.
+# Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -159,23 +159,66 @@ def DurationsDiscrepancy(durations, absolute=True,
   return TimestampsDiscrepancy(timestamps, absolute, interval_multiplier)
 
 
-def ArithmeticMean(numerator, denominator):
+def ArithmeticMean(data):
   """Calculates arithmetic mean.
 
-  Both numerator and denominator can be given as either individual
-  values or lists of values which will be summed.
-
   Args:
-    numerator: A quantity that represents a sum total value.
-    denominator: A quantity that represents a count of the number of things.
+    data: A list of samples.
 
   Returns:
-    The arithmetic mean value, or 0 if the denominator value was 0.
+    The arithmetic mean value, or 0 if the list is empty.
   """
-  numerator_total = Total(numerator)
-  denominator_total = Total(denominator)
+  numerator_total = Total(data)
+  denominator_total = Total(len(data))
   return DivideIfPossibleOrZero(numerator_total, denominator_total)
 
+
+def StandardDeviation(data):
+  """Calculates the standard deviation.
+
+  Args:
+    data: A list of samples.
+
+  Returns:
+    The standard deviation of the samples provided.
+  """
+  if len(data) == 1:
+    return 0.0
+
+  mean = ArithmeticMean(data)
+  variances = [float(x) - mean for x in data]
+  variances = [x * x for x in variances]
+  std_dev = math.sqrt(ArithmeticMean(variances))
+
+  return std_dev
+
+
+def TrapezoidalRule(data, dx):
+  """ Calculate the integral according to the trapezoidal rule
+
+  TrapezoidalRule approximates the definite integral of f from a to b by
+  the composite trapezoidal rule, using n subintervals.
+  http://en.wikipedia.org/wiki/Trapezoidal_rule#Uniform_grid
+
+  Args:
+    data: A list of samples
+    dx: The uniform distance along the x axis between any two samples
+
+  Returns:
+    The area under the curve defined by the samples and the uniform distance
+    according to the trapezoidal rule.
+  """
+
+  n = len(data) - 1
+  s = data[0] + data[n]
+
+  if n == 0:
+    return 0.0
+
+  for i in range(1, n):
+    s += 2 * data[i]
+
+  return s * dx / 2.0
 
 def Total(data):
   """Returns the float value of a number or the sum of a list."""
