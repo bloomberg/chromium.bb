@@ -28,7 +28,7 @@ from file_update import Mkdir, Rmdir, Symlink
 from file_update import NeedsUpdate, UpdateFromTo, UpdateText
 
 
-BIONIC_VERSION = '136890a6f6e5f72b7b0bd872a8c39ce0f8b3545a'
+BIONIC_VERSION = '9585af9f389df46801f2ff4d0464239c3175c7bd'
 ARCHES = ['arm']
 
 BUILD_SCRIPT = os.path.abspath(__file__)
@@ -109,6 +109,18 @@ def FetchBionicSources():
                                 BIONIC_VERSION)
 
 
+def MungeIRT(src, dst):
+  replace_map = {
+    'off_t': 'int64_t'
+  }
+
+  with open(src, 'r') as srcf:
+    text = srcf.read()
+    text = ReplaceText(text, [replace_map])
+    with open(dst, 'w') as dstf:
+      dstf.write(text)
+
+
 def CreateBasicToolchain():
   # Create a toolchain directory containing only the toolchain binaries and
   # basic files line nacl_arm_macros.s.
@@ -135,12 +147,8 @@ def CreateBasicToolchain():
   # Bionic uses the following include paths
   BIONIC_PAIRS = [
     ('bionic/libc/include', '$NACL-nacl/include'),
-    ('bionic/libc/arch-nacl/syscalls/irt.h', '$NACL-nacl/include/irt.h'),
-    ('bionic/libc/arch-nacl/syscalls/irt_syscalls.h',
-        '$NACL-nacl/include/irt_syscalls.h'),
     ('bionic/libc/arch-nacl/syscalls/nacl_stat.h',
         '$NACL-nacl/include/nacl_stat.h'),
-    ('../../src/untrusted/irt/irt_dev.h', '$NACL-nacl/include/irt_dev.h'),
     ('bionic/libc/arch-$ARCH/include/machine',
         '$NACL-nacl/include/machine'),
     ('bionic/libc/kernel/common', '$NACL-nacl/include'),
@@ -153,7 +161,14 @@ def CreateBasicToolchain():
     ('bionic/nacl/$ARCH', '.'),
   ]
 
+
   for arch in ARCHES:
+    for name in ['irt.h', 'irt_dev.h']:
+      src = os.path.join(NATIVE_CLIENT, 'src', 'untrusted', 'irt', name)
+      dst = os.path.join(TOOLCHAIN, 'linux_$ARCH_bionic', '$NACL-nacl',
+                       'include', name)
+      MungeIRT(src, ReplaceArch(dst, arch))
+
     inspath = os.path.join(TOOLCHAIN, 'linux_$ARCH_bionic')
     inspath = ReplaceArch(inspath, arch)
 
