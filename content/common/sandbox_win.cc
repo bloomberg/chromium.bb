@@ -576,7 +576,7 @@ base::ProcessHandle StartSandboxedProcess(
 
   bool in_sandbox = true;
   if (delegate)
-    delegate->ShouldSandbox(&in_sandbox);
+    in_sandbox = delegate->ShouldSandbox();
 
   if (browser_command_line.HasSwitch(switches::kNoSandbox) ||
       cmd_line->HasSwitch(switches::kNoSandbox)) {

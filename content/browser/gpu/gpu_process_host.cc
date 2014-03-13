@@ -33,6 +33,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
+#include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_switches.h"
@@ -43,7 +44,6 @@
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #include "content/common/sandbox_win.h"
-#include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "sandbox/win/src/sandbox_policy.h"
 #include "ui/gfx/switches.h"
 #endif
@@ -169,20 +169,29 @@ void AcceleratedSurfaceBuffersSwappedCompleted(
   AcceleratedSurfaceBuffersSwappedCompletedForRenderer(
       surface_id, timebase, interval, latency_info);
 }
+#endif  // OS_WIN
 
 // NOTE: changes to this class need to be reviewed by the security team.
 class GpuSandboxedProcessLauncherDelegate
     : public SandboxedProcessLauncherDelegate {
  public:
-  explicit GpuSandboxedProcessLauncherDelegate(CommandLine* cmd_line)
+  GpuSandboxedProcessLauncherDelegate(CommandLine* cmd_line,
+                                      ChildProcessHost* host)
+#if defined(OS_WIN)
       : cmd_line_(cmd_line) {}
+#elif defined(OS_POSIX)
+      : ipc_fd_(host->TakeClientFileDescriptor()) {}
+#endif
+
   virtual ~GpuSandboxedProcessLauncherDelegate() {}
 
-  virtual void ShouldSandbox(bool* in_sandbox) OVERRIDE {
-    if (cmd_line_->HasSwitch(switches::kDisableGpuSandbox)) {
-      *in_sandbox = false;
+#if defined(OS_WIN)
+  virtual bool ShouldSandbox() OVERRIDE {
+    bool sandbox = !cmd_line_->HasSwitch(switches::kDisableGpuSandbox);
+    if(! sandbox) {
       DVLOG(1) << "GPU sandbox is disabled";
     }
+    return sandbox;
   }
 
   virtual void PreSandbox(bool* disable_default_policy,
@@ -269,11 +278,20 @@ class GpuSandboxedProcessLauncherDelegate
       }
     }
   }
+#elif defined(OS_POSIX)
+
+  virtual int GetIpcFd() OVERRIDE {
+    return ipc_fd_;
+  }
+#endif  // OS_WIN
 
  private:
+#if defined(OS_WIN)
   CommandLine* cmd_line_;
+#elif defined(OS_POSIX)
+  int ipc_fd_;
+#endif  // OS_WIN
 };
-#endif  // defined(OS_WIN)
 
 }  // anonymous namespace
 
@@ -1137,13 +1155,8 @@ bool GpuProcessHost::LaunchGpuProcess(const std::string& channel_id) {
     cmd_line->PrependWrapper(gpu_launcher);
 
   process_->Launch(
-#if defined(OS_WIN)
-      new GpuSandboxedProcessLauncherDelegate(cmd_line),
-      false,
-#elif defined(OS_POSIX)
-      false,
-      base::EnvironmentMap(),
-#endif
+      new GpuSandboxedProcessLauncherDelegate(cmd_line,
+                                              process_->GetHost()),
       cmd_line);
   process_launched_ = true;
 

@@ -47,6 +47,7 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
+#include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "ipc/ipc_switches.h"
 #include "net/base/mime_util.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -58,26 +59,45 @@
 
 #if defined(OS_WIN)
 #include "content/common/sandbox_win.h"
-#include "content/public/common/sandboxed_process_launcher_delegate.h"
 #endif
 
 namespace content {
 namespace {
 
-#if defined(OS_WIN)
 // NOTE: changes to this class need to be reviewed by the security team.
 class WorkerSandboxedProcessLauncherDelegate
     : public content::SandboxedProcessLauncherDelegate {
  public:
-  WorkerSandboxedProcessLauncherDelegate() {}
+  WorkerSandboxedProcessLauncherDelegate(ChildProcessHost* host,
+                                         bool debugging_child)
+#if defined(OS_POSIX)
+      : ipc_fd_(host->TakeClientFileDescriptor()),
+        debugging_child_(debugging_child)
+#endif  // OS_POSIX
+  {}
+
   virtual ~WorkerSandboxedProcessLauncherDelegate() {}
 
+#if defined(OS_WIN)
   virtual void PreSpawnTarget(sandbox::TargetPolicy* policy,
                               bool* success) {
     AddBaseHandleClosePolicy(policy);
   }
-};
+#elif defined(OS_POSIX)
+  virtual bool ShouldUseZygote() OVERRIDE {
+    return !debugging_child_;
+  }
+  virtual int GetIpcFd() OVERRIDE {
+    return ipc_fd_;
+  }
 #endif  // OS_WIN
+
+ private:
+#if defined(OS_POSIX)
+  int ipc_fd_;
+  bool debugging_child_;
+#endif  // OS_POSIX
+};
 
 // Notifies RenderViewHost that one or more worker objects crashed.
 void WorkerCrashCallback(int render_process_unique_id, int render_frame_id) {
@@ -193,9 +213,8 @@ bool WorkerProcessHost::Init(int render_process_id, int render_frame_id) {
   cmd_line->CopySwitchesFrom(*CommandLine::ForCurrentProcess(), kSwitchNames,
                              arraysize(kSwitchNames));
 
+bool debugging_child = false;
 #if defined(OS_POSIX)
-  bool use_zygote = true;
-
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kWaitForDebuggerChildren)) {
     // Look to pass-on the kWaitForDebugger flag.
@@ -203,7 +222,7 @@ bool WorkerProcessHost::Init(int render_process_id, int render_frame_id) {
         switches::kWaitForDebuggerChildren);
     if (value.empty() || value == switches::kWorkerProcess) {
       cmd_line->AppendSwitch(switches::kWaitForDebugger);
-      use_zygote = false;
+      debugging_child = true;
     }
   }
 
@@ -215,19 +234,14 @@ bool WorkerProcessHost::Init(int render_process_id, int render_frame_id) {
       // launches a new xterm, and runs the worker process in gdb, reading
       // optional commands from gdb_chrome file in the working directory.
       cmd_line->PrependWrapper("xterm -e gdb -x gdb_chrome --args");
-      use_zygote = false;
+      debugging_child = true;
     }
   }
 #endif
 
   process_->Launch(
-#if defined(OS_WIN)
-      new WorkerSandboxedProcessLauncherDelegate,
-      false,
-#elif defined(OS_POSIX)
-      use_zygote,
-      base::EnvironmentMap(),
-#endif
+      new WorkerSandboxedProcessLauncherDelegate(process_->GetHost(),
+                                                 debugging_child),
       cmd_line);
 
   ChildProcessSecurityPolicyImpl::GetInstance()->AddWorker(

@@ -21,6 +21,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/pepper_plugin_info.h"
 #include "content/public/common/process_type.h"
+#include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "ipc/ipc_switches.h"
 #include "net/base/network_change_notifier.h"
 #include "ppapi/proxy/ppapi_messages.h"
@@ -28,24 +29,30 @@
 
 #if defined(OS_WIN)
 #include "content/common/sandbox_win.h"
-#include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "sandbox/win/src/sandbox_policy.h"
 #endif
 
 namespace content {
 
-#if defined(OS_WIN)
 // NOTE: changes to this class need to be reviewed by the security team.
 class PpapiPluginSandboxedProcessLauncherDelegate
     : public content::SandboxedProcessLauncherDelegate {
  public:
-  explicit PpapiPluginSandboxedProcessLauncherDelegate(bool is_broker)
-      : is_broker_(is_broker) {}
+  PpapiPluginSandboxedProcessLauncherDelegate(bool is_broker,
+                                              const PepperPluginInfo& info,
+                                              ChildProcessHost* host)
+      :
+#if defined(OS_POSIX)
+        info_(info),
+        ipc_fd_(host->TakeClientFileDescriptor()),
+#endif  // OS_POSIX
+        is_broker_(is_broker) {}
+
   virtual ~PpapiPluginSandboxedProcessLauncherDelegate() {}
 
-  virtual void ShouldSandbox(bool* in_sandbox) OVERRIDE {
-    if (is_broker_)
-      *in_sandbox = false;
+#if defined(OS_WIN)
+  virtual bool ShouldSandbox() OVERRIDE {
+    return !is_broker_;
   }
 
   virtual void PreSpawnTarget(sandbox::TargetPolicy* policy,
@@ -61,12 +68,27 @@ class PpapiPluginSandboxedProcessLauncherDelegate
     *success = (result == sandbox::SBOX_ALL_OK);
   }
 
+#elif defined(OS_POSIX)
+  virtual bool ShouldUseZygote() OVERRIDE {
+    const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
+    CommandLine::StringType plugin_launcher = browser_command_line
+        .GetSwitchValueNative(switches::kPpapiPluginLauncher);
+    return !is_broker_ && plugin_launcher.empty() && info_.is_sandboxed;
+  }
+  virtual int GetIpcFd() OVERRIDE {
+    return ipc_fd_;
+  }
+#endif  // OS_WIN
+
  private:
+#if defined(OS_POSIX)
+  const PepperPluginInfo& info_;
+  int ipc_fd_;
+#endif  // OS_POSIX
   bool is_broker_;
 
   DISALLOW_COPY_AND_ASSIGN(PpapiPluginSandboxedProcessLauncherDelegate);
 };
-#endif  // OS_WIN
 
 class PpapiPluginProcessHost::PluginNetworkObserver
     : public net::NetworkChangeNotifier::IPAddressObserver,
@@ -333,18 +355,13 @@ bool PpapiPluginProcessHost::Init(const PepperPluginInfo& info) {
   // plugin launcher means we need to use another process instead of just
   // forking the zygote.
 #if defined(OS_POSIX)
-  bool use_zygote = !is_broker_ && plugin_launcher.empty() && info.is_sandboxed;
   if (!info.is_sandboxed)
     cmd_line->AppendSwitchASCII(switches::kNoSandbox, std::string());
 #endif  // OS_POSIX
   process_->Launch(
-#if defined(OS_WIN)
-      new PpapiPluginSandboxedProcessLauncherDelegate(is_broker_),
-      false,
-#elif defined(OS_POSIX)
-      use_zygote,
-      base::EnvironmentMap(),
-#endif
+      new PpapiPluginSandboxedProcessLauncherDelegate(is_broker_,
+                                                      info,
+                                                      process_->GetHost()),
       cmd_line);
   return true;
 }

@@ -40,6 +40,7 @@
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/process_type.h"
+#include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_switches.h"
 #include "native_client/src/shared/imc/nacl_imc_c.h"
@@ -63,7 +64,6 @@
 #include "components/nacl/browser/nacl_broker_service_win.h"
 #include "components/nacl/common/nacl_debug_exception_handler_win.h"
 #include "content/public/common/sandbox_init.h"
-#include "content/public/common/sandboxed_process_launcher_delegate.h"
 #endif
 
 using content::BrowserThread;
@@ -144,14 +144,21 @@ bool RunningOnWOW64() {
   return (base::win::OSInfo::GetInstance()->wow64_status() ==
           base::win::OSInfo::WOW64_ENABLED);
 }
+#endif
 
 // NOTE: changes to this class need to be reviewed by the security team.
 class NaClSandboxedProcessLauncherDelegate
     : public content::SandboxedProcessLauncherDelegate {
  public:
-  NaClSandboxedProcessLauncherDelegate() {}
+  NaClSandboxedProcessLauncherDelegate(ChildProcessHost* host)
+#if defined(OS_POSIX)
+      : ipc_fd_(host->TakeClientFileDescriptor())
+#endif
+  {}
+
   virtual ~NaClSandboxedProcessLauncherDelegate() {}
 
+#if defined(OS_WIN)
   virtual void PostSpawnTarget(base::ProcessHandle process) {
     // For Native Client sel_ldr processes on 32-bit Windows, reserve 1 GB of
     // address space to prevent later failure due to address space fragmentation
@@ -164,9 +171,20 @@ class NaClSandboxedProcessLauncherDelegate
       DLOG(WARNING) << "Failed to reserve address space for Native Client";
     }
   }
-};
-
+#elif defined(OS_POSIX)
+  virtual bool ShouldUseZygote() OVERRIDE {
+    return true;
+  }
+  virtual int GetIpcFd() OVERRIDE {
+    return ipc_fd_;
+  }
 #endif  // OS_WIN
+
+ private:
+#if defined(OS_POSIX)
+  int ipc_fd_;
+#endif  // OS_POSIX
+};
 
 void SetCloseOnExec(NaClHandle fd) {
 #if defined(OS_POSIX)
@@ -577,17 +595,12 @@ bool NaClProcessHost::LaunchSelLdr() {
       SendErrorToRenderer("broker service did not launch process");
       return false;
     }
-  } else {
-    process_->Launch(new NaClSandboxedProcessLauncherDelegate,
-                     false,
-                     cmd_line.release());
+    return true;
   }
-#elif defined(OS_POSIX)
-  process_->Launch(true,  // use_zygote
-                   base::EnvironmentMap(),
-                   cmd_line.release());
 #endif
-
+  process_->Launch(
+      new NaClSandboxedProcessLauncherDelegate(process_->GetHost()),
+      cmd_line.release());
   return true;
 }
 

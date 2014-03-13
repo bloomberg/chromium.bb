@@ -28,8 +28,8 @@ class NaClBrokerSandboxedProcessLauncherDelegate
   NaClBrokerSandboxedProcessLauncherDelegate() {}
   virtual ~NaClBrokerSandboxedProcessLauncherDelegate() {}
 
-  virtual void ShouldSandbox(bool* in_sandbox) OVERRIDE {
-    *in_sandbox = false;
+  virtual bool ShouldSandbox() OVERRIDE {
+    return false;
   }
 
  private:
@@ -68,7 +68,6 @@ bool NaClBrokerHost::Init() {
     cmd_line->AppendSwitch(switches::kNoErrorDialogs);
 
   process_->Launch(new NaClBrokerSandboxedProcessLauncherDelegate,
-                   false,
                    cmd_line);
   return true;
 }

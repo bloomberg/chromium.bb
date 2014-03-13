@@ -23,34 +23,65 @@
 #include "content/public/browser/utility_process_host_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/process_type.h"
+#include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "ipc/ipc_switches.h"
 #include "ui/base/ui_base_switches.h"
 
-#if defined(OS_WIN)
-#include "content/public/common/sandboxed_process_launcher_delegate.h"
-#endif
-
 namespace content {
 
-#if defined(OS_WIN)
 // NOTE: changes to this class need to be reviewed by the security team.
 class UtilitySandboxedProcessLauncherDelegate
     : public SandboxedProcessLauncherDelegate {
  public:
-  explicit UtilitySandboxedProcessLauncherDelegate(
-    const base::FilePath& exposed_dir) : exposed_dir_(exposed_dir) {}
+  UtilitySandboxedProcessLauncherDelegate(const base::FilePath& exposed_dir,
+                                          bool launch_elevated, bool no_sandbox,
+                                          base::EnvironmentMap& env,
+                                          ChildProcessHost* host)
+      : exposed_dir_(exposed_dir),
+#if defined(OS_WIN)
+        launch_elevated_(launch_elevated)
+#elif defined(OS_POSIX)
+        env_(env),
+        no_sandbox_(no_sandbox),
+        ipc_fd_(host->TakeClientFileDescriptor())
+#endif  // OS_WIN
+  {}
+
   virtual ~UtilitySandboxedProcessLauncherDelegate() {}
 
+#if defined(OS_WIN)
+  virtual bool ShouldLaunchElevated() OVERRIDE {
+    return launch_elevated_;
+  }
   virtual void PreSandbox(bool* disable_default_policy,
                           base::FilePath* exposed_dir) OVERRIDE {
     *exposed_dir = exposed_dir_;
   }
+#elif defined(OS_POSIX)
 
-private:
-  base::FilePath exposed_dir_;
+  virtual bool ShouldUseZygote() OVERRIDE {
+    return !no_sandbox_ && exposed_dir_.empty();
+  }
+  virtual base::EnvironmentMap GetEnvironment() OVERRIDE {
+    return env_;
+  }
+  virtual int GetIpcFd() OVERRIDE {
+    return ipc_fd_;
+  }
+#endif  // OS_WIN
+
+ private:
+
+ base::FilePath exposed_dir_;
+
+#if defined(OS_WIN)
+  bool launch_elevated_;
+#elif defined(OS_POSIX)
+  base::EnvironmentMap env_;
+  bool no_sandbox_;
+  int ipc_fd_;
+#endif  // OS_WIN
 };
-#endif
-
 
 UtilityMainThreadFactoryFunction g_utility_main_thread_factory = NULL;
 
@@ -73,9 +104,7 @@ UtilityProcessHostImpl::UtilityProcessHostImpl(
       is_batch_mode_(false),
       is_mdns_enabled_(false),
       no_sandbox_(false),
-#if defined(OS_WIN)
       run_elevated_(false),
-#endif
 #if defined(OS_LINUX)
       child_flags_(ChildProcessHost::CHILD_ALLOW_SELF),
 #else
@@ -226,22 +255,11 @@ bool UtilityProcessHostImpl::StartProcess() {
       cmd_line->AppendSwitch(switches::kUtilityProcessRunningElevated);
 #endif
 
-    bool use_zygote = false;
-
-#if defined(OS_LINUX)
-    // The Linux sandbox does not support granting access to a single directory,
-    // so we need to bypass the zygote in that case.
-    use_zygote = !no_sandbox_ && exposed_dir_.empty();
-#endif
-
     process_->Launch(
-#if defined(OS_WIN)
-        new UtilitySandboxedProcessLauncherDelegate(exposed_dir_),
-        run_elevated_,
-#elif defined(OS_POSIX)
-        use_zygote,
-        env_,
-#endif
+        new UtilitySandboxedProcessLauncherDelegate(exposed_dir_,
+                                                    run_elevated_,
+                                                    no_sandbox_, env_,
+                                                    process_->GetHost()),
         cmd_line);
   }
 

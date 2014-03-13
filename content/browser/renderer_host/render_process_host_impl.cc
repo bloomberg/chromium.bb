@@ -129,6 +129,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/process_type.h"
 #include "content/public/common/result_codes.h"
+#include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "content/public/common/url_constants.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "ipc/ipc_channel.h"
@@ -148,7 +149,6 @@
 #include "base/win/scoped_com_initializer.h"
 #include "content/common/font_cache_dispatcher_win.h"
 #include "content/common/sandbox_win.h"
-#include "content/public/common/sandboxed_process_launcher_delegate.h"
 #endif
 
 #if defined(ENABLE_WEBRTC)
@@ -288,21 +288,42 @@ SiteProcessMap* GetSiteProcessMapForBrowserContext(BrowserContext* context) {
   return map;
 }
 
-#if defined(OS_WIN)
 // NOTE: changes to this class need to be reviewed by the security team.
 class RendererSandboxedProcessLauncherDelegate
     : public content::SandboxedProcessLauncherDelegate {
  public:
-  RendererSandboxedProcessLauncherDelegate() {}
+  RendererSandboxedProcessLauncherDelegate(IPC::ChannelProxy* channel)
+#if defined(OS_POSIX)
+       : ipc_fd_(channel->TakeClientFileDescriptor())
+#endif  // OS_POSIX
+  {}
+
   virtual ~RendererSandboxedProcessLauncherDelegate() {}
 
+#if defined(OS_WIN)
   virtual void PreSpawnTarget(sandbox::TargetPolicy* policy,
                               bool* success) {
     AddBaseHandleClosePolicy(policy);
     GetContentClient()->browser()->PreSpawnRenderer(policy, success);
   }
-};
+
+#elif defined(OS_POSIX)
+  virtual bool ShouldUseZygote() OVERRIDE {
+    const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
+    CommandLine::StringType renderer_prefix =
+        browser_command_line.GetSwitchValueNative(switches::kRendererCmdPrefix);
+    return renderer_prefix.empty();
+  }
+  virtual int GetIpcFd() OVERRIDE {
+    return ipc_fd_;
+  }
 #endif  // OS_WIN
+
+ private:
+#if defined(OS_POSIX)
+  int ipc_fd_;
+#endif  // OS_POSIX
+};
 
 }  // namespace
 
@@ -571,14 +592,7 @@ bool RenderProcessHostImpl::Init() {
     // As long as there's no renderer prefix, we can use the zygote process
     // at this stage.
     child_process_launcher_.reset(new ChildProcessLauncher(
-#if defined(OS_WIN)
-        new RendererSandboxedProcessLauncherDelegate,
-        false,
-#elif defined(OS_POSIX)
-        renderer_prefix.empty(),
-        base::EnvironmentMap(),
-        channel_->TakeClientFileDescriptor(),
-#endif
+        new RendererSandboxedProcessLauncherDelegate(channel_.get()),
         cmd_line,
         GetID(),
         this));

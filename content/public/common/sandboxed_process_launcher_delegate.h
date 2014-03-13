@@ -5,7 +5,10 @@
 #ifndef CONTENT_PUBLIC_COMMON_SANDBOXED_PROCESS_LAUNCHER_DELEGATE_H_
 #define CONTENT_PUBLIC_COMMON_SANDBOXED_PROCESS_LAUNCHER_DELEGATE_H_
 
+#include "base/environment.h"
 #include "base/process/process.h"
+
+#include "content/common/content_export.h"
 
 namespace base {
 class FilePath;
@@ -21,14 +24,19 @@ namespace content {
 // BrowserChildProcessHost/ChildProcessLauncher to control the sandbox policy,
 // i.e. to loosen it if needed.
 // The methods below will be called on the PROCESS_LAUNCHER thread.
-class SandboxedProcessLauncherDelegate {
+class CONTENT_EXPORT SandboxedProcessLauncherDelegate {
  public:
   virtual ~SandboxedProcessLauncherDelegate() {}
 
-  // By default, the process is launched sandboxed. Override this method and set
-  // |in_sandbox| to false if this process should be launched without a sandbox
+#if defined(OS_WIN)
+  // Override to return true if the process should be launched as an elevated
+  // process (which implies no sandbox).
+  virtual bool ShouldLaunchElevated();
+
+  // By default, the process is launched sandboxed. Override this method to
+  // return false if the process should be launched without a sandbox
   // (i.e. through base::LaunchProcess directly).
-  virtual void ShouldSandbox(bool* in_sandbox) {}
+  virtual bool ShouldSandbox();
 
   // Called before the default sandbox is applied. If the default policy is too
   // restrictive, the caller should set |disable_default_policy| to true and
@@ -43,6 +51,18 @@ class SandboxedProcessLauncherDelegate {
 
   // Called right after the process is launched, but before its thread is run.
   virtual void PostSpawnTarget(base::ProcessHandle process) {}
+
+#elif defined(OS_POSIX)
+  // Override this to return true to use the setuid sandbox.
+  virtual bool ShouldUseZygote();
+
+  // Override this if the process needs a non-empty environment map.
+  virtual base::EnvironmentMap GetEnvironment();
+
+  // Return the file descriptor for the IPC channel.
+  virtual int GetIpcFd() = 0;
+
+#endif
 };
 
 }  // namespace content

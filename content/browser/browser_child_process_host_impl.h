@@ -43,13 +43,7 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
   // BrowserChildProcessHost implementation:
   virtual bool Send(IPC::Message* message) OVERRIDE;
   virtual void Launch(
-#if defined(OS_WIN)
       SandboxedProcessLauncherDelegate* delegate,
-      bool launch_elevated,
-#elif defined(OS_POSIX)
-      bool use_zygote,
-      const base::EnvironmentMap& environ,
-#endif
       CommandLine* cmd_line) OVERRIDE;
   virtual const ChildProcessData& GetData() const OVERRIDE;
   virtual ChildProcessHost* GetHost() const OVERRIDE;

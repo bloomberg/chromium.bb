@@ -20,12 +20,12 @@
 #include "content/public/common/content_descriptors.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
+#include "content/public/common/sandboxed_process_launcher_delegate.h"
 
 #if defined(OS_WIN)
 #include "base/files/file_path.h"
 #include "content/common/sandbox_win.h"
 #include "content/public/common/sandbox_init.h"
-#include "content/public/common/sandboxed_process_launcher_delegate.h"
 #elif defined(OS_MACOSX)
 #include "content/browser/mach_broker_mac.h"
 #elif defined(OS_ANDROID)
@@ -71,16 +71,7 @@ class ChildProcessLauncher::Context
   }
 
   void Launch(
-#if defined(OS_WIN)
       SandboxedProcessLauncherDelegate* delegate,
-      bool launch_elevated,
-#elif defined(OS_ANDROID)
-      int ipcfd,
-#elif defined(OS_POSIX)
-      bool use_zygote,
-      const base::EnvironmentMap& environ,
-      int ipcfd,
-#endif
       CommandLine* cmd_line,
       int child_process_id,
       Client* client) {
@@ -92,7 +83,7 @@ class ChildProcessLauncher::Context
     // We need to close the client end of the IPC channel to reliably detect
     // child termination. We will close this fd after we create the child
     // process which is asynchronous on Android.
-    ipcfd_ = ipcfd;
+    ipcfd_ = delegate->GetIpcFd();
 #endif
     BrowserThread::PostTask(
         BrowserThread::PROCESS_LAUNCHER, FROM_HERE,
@@ -101,16 +92,7 @@ class ChildProcessLauncher::Context
             make_scoped_refptr(this),
             client_thread_id_,
             child_process_id,
-#if defined(OS_WIN)
             delegate,
-            launch_elevated,
-#elif defined(OS_ANDROID)
-            ipcfd,
-#elif defined(OS_POSIX)
-            use_zygote,
-            environ,
-            ipcfd,
-#endif
             cmd_line));
   }
 
@@ -185,17 +167,20 @@ class ChildProcessLauncher::Context
       scoped_refptr<Context> this_object,
       BrowserThread::ID client_thread_id,
       int child_process_id,
-#if defined(OS_WIN)
       SandboxedProcessLauncherDelegate* delegate,
-      bool launch_elevated,
-#elif defined(OS_ANDROID)
-      int ipcfd,
-#elif defined(OS_POSIX)
-      bool use_zygote,
-      const base::EnvironmentMap& env,
-      int ipcfd,
-#endif
       CommandLine* cmd_line) {
+#if defined(OS_WIN)
+    bool launch_elevated = delegate->ShouldLaunchElevated();
+#elif defined(OS_ANDROID)
+    int ipcfd = delegate->GetIpcFd();
+#elif defined(OS_MACOSX)
+    base::EnvironmentMap env = delegate->GetEnvironment();
+    int ipcfd = delegate->GetIpcFd();
+#elif defined(OS_POSIX)
+    bool use_zygote = delegate->ShouldUseZygote();
+    base::EnvironmentMap env = delegate->GetEnvironment();
+    int ipcfd = delegate->GetIpcFd();
+#endif
     scoped_ptr<CommandLine> cmd_line_deleter(cmd_line);
     base::TimeTicks begin_launch_time = base::TimeTicks::Now();
 
@@ -430,29 +415,13 @@ class ChildProcessLauncher::Context
 
 
 ChildProcessLauncher::ChildProcessLauncher(
-#if defined(OS_WIN)
     SandboxedProcessLauncherDelegate* delegate,
-    bool launch_elevated,
-#elif defined(OS_POSIX)
-    bool use_zygote,
-    const base::EnvironmentMap& environ,
-    int ipcfd,
-#endif
     CommandLine* cmd_line,
     int child_process_id,
     Client* client) {
   context_ = new Context();
   context_->Launch(
-#if defined(OS_WIN)
       delegate,
-      launch_elevated,
-#elif defined(OS_ANDROID)
-      ipcfd,
-#elif defined(OS_POSIX)
-      use_zygote,
-      environ,
-      ipcfd,
-#endif
       cmd_line,
       child_process_id,
       client);

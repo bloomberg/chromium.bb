@@ -80,6 +80,7 @@
     'public/common/sandbox_init.h',
     'public/common/sandbox_linux.h',
     'public/common/sandbox_type_mac.h',
+    'public/common/sandboxed_process_launcher_delegate.cc',
     'public/common/sandboxed_process_launcher_delegate.h',
     'public/common/security_style.h',
     'public/common/show_desktop_notification_params.cc',

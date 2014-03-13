@@ -129,13 +129,7 @@ void BrowserChildProcessHostImpl::TerminateAll() {
 }
 
 void BrowserChildProcessHostImpl::Launch(
-#if defined(OS_WIN)
     SandboxedProcessLauncherDelegate* delegate,
-    bool launch_elevated,
-#elif defined(OS_POSIX)
-    bool use_zygote,
-    const base::EnvironmentMap& environ,
-#endif
     CommandLine* cmd_line) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
@@ -161,14 +155,7 @@ void BrowserChildProcessHostImpl::Launch(
                              arraysize(kForwardSwitches));
 
   child_process_.reset(new ChildProcessLauncher(
-#if defined(OS_WIN)
       delegate,
-      launch_elevated,
-#elif defined(OS_POSIX)
-      use_zygote,
-      environ,
-      child_process_host_->TakeClientFileDescriptor(),
-#endif
       cmd_line,
       data_.id,
       this));
