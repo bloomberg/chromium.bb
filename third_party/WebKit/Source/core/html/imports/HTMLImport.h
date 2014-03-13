@@ -119,6 +119,7 @@ public:
     virtual Document* document() const = 0;
     virtual void wasDetachedFromDocument() = 0;
     virtual void didFinishParsing() { };
+    virtual void didFetchAllPendingResources() { }
     virtual bool isDone() const = 0; // FIXME: Should be renamed to haveFinishedLoading()
     virtual bool hasLoader() const = 0;
     virtual bool ownsLoader() const { return false; }

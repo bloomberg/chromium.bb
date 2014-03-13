@@ -483,6 +483,10 @@ void FrameLoader::checkCompleted()
     if (m_frame->document()->parsing())
         return;
 
+    // Still waiting imports?
+    if (!m_frame->document()->haveImportsLoaded())
+        return;
+
     // Still waiting for images/scripts?
     if (m_frame->document()->fetcher()->requestCount())
         return;

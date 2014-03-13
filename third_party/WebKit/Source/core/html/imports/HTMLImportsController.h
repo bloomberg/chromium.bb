@@ -62,6 +62,7 @@ public:
     virtual void wasDetachedFromDocument() OVERRIDE;
     virtual bool isDone() const OVERRIDE;
     virtual bool hasLoader() const OVERRIDE;
+    virtual void stateDidChange() OVERRIDE;
 
     // HTMLImportRoot
     virtual void scheduleRecalcState() OVERRIDE;

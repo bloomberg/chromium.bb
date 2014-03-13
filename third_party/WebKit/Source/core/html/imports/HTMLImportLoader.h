@@ -53,8 +53,9 @@ public:
     enum State {
         StateLoading,
         StateWritten,
-        StateError,
-        StateReady
+        StateParsed,
+        StateLoaded,
+        StateError
     };
 
     static PassRefPtr<HTMLImportLoader> create(HTMLImport* import)
@@ -69,11 +70,12 @@ public:
     void addClient(HTMLImportLoaderClient*);
     void removeClient(HTMLImportLoaderClient*);
 
-    bool isDone() const { return m_state == StateReady || m_state == StateError; }
+    bool isDone() const { return m_state == StateLoaded || m_state == StateError; }
     bool hasError() const { return m_state == StateError; }
 
     void startLoading(const ResourcePtr<RawResource>&);
     void didFinishParsing();
+    void didFetchAllPendingResources();
     bool isOwnedBy(const HTMLImport* import) const { return m_import == import; }
 
 private:
@@ -87,9 +89,11 @@ private:
     State startWritingAndParsing(const ResourceResponse&);
     State finishWriting();
     State finishParsing();
+    State finishLoading();
 
     void setState(State);
-    void didFinish();
+    void didFinishLoading();
+    bool hasPendingResources() const;
 
     HTMLImport* m_import;
     Vector<HTMLImportLoaderClient*> m_clients;

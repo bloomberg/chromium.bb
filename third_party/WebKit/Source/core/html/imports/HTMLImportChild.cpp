@@ -153,6 +153,12 @@ void HTMLImportChild::didFinishParsing()
     m_loader->didFinishParsing();
 }
 
+void HTMLImportChild::didFetchAllPendingResources()
+{
+    ASSERT(m_loader->isOwnedBy(this));
+    m_loader->didFetchAllPendingResources();
+}
+
 void HTMLImportChild::stateDidChange()
 {
     HTMLImport::stateDidChange();

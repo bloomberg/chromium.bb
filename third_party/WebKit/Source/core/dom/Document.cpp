@@ -2843,6 +2843,12 @@ LocalFrame* Document::findUnsafeParentScrollPropagationBoundary()
     return 0;
 }
 
+void Document::didFetchAllPendingResources()
+{
+    if (m_import)
+        m_import->didFetchAllPendingResources();
+}
+
 void Document::didRemoveAllPendingStylesheet()
 {
     m_needsNotifyRemoveAllPendingStylesheet = false;

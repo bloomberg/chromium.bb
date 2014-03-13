@@ -105,7 +105,12 @@ HTMLImportLoader::State HTMLImportLoader::finishWriting()
 
 HTMLImportLoader::State HTMLImportLoader::finishParsing()
 {
-    return StateReady;
+    return StateParsed;
+}
+
+HTMLImportLoader::State HTMLImportLoader::finishLoading()
+{
+    return StateLoaded;
 }
 
 void HTMLImportLoader::setState(State state)
@@ -115,19 +120,33 @@ void HTMLImportLoader::setState(State state)
 
     m_state = state;
 
-    if (m_state == StateReady || m_state == StateError || m_state == StateWritten) {
+    if (m_state == StateParsed || m_state == StateError || m_state == StateWritten) {
         if (RefPtr<DocumentWriter> writer = m_writer.release())
             writer->end();
     }
 
     // Since DocumentWriter::end() can let setState() reenter, we shouldn't refer to m_state here.
-    if (state == StateReady || state == StateError)
-        didFinish();
+    if (state == StateLoaded || state == StateError)
+        didFinishLoading();
 }
 
 void HTMLImportLoader::didFinishParsing()
 {
     setState(finishParsing());
+    if (!hasPendingResources())
+        setState(finishLoading());
+}
+
+void HTMLImportLoader::didFetchAllPendingResources()
+{
+    if (m_state == StateParsed)
+        setState(finishLoading());
+}
+
+bool HTMLImportLoader::hasPendingResources() const
+{
+    return m_importedDocument && m_importedDocument->fetcher()->requestCount();
+
 }
 
 Document* HTMLImportLoader::importedDocument() const
@@ -137,7 +156,7 @@ Document* HTMLImportLoader::importedDocument() const
     return m_importedDocument.get();
 }
 
-void HTMLImportLoader::didFinish()
+void HTMLImportLoader::didFinishLoading()
 {
     for (size_t i = 0; i < m_clients.size(); ++i)
         m_clients[i]->didFinishLoading();

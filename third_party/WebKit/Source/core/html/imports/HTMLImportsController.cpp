@@ -33,6 +33,7 @@
 
 #include "core/dom/Document.h"
 #include "core/fetch/ResourceFetcher.h"
+#include "core/frame/LocalFrame.h"
 #include "core/html/imports/HTMLImportChild.h"
 #include "core/html/imports/HTMLImportChildClient.h"
 
@@ -148,6 +149,16 @@ bool HTMLImportsController::hasLoader() const
 bool HTMLImportsController::isDone() const
 {
     return !m_master->parsing();
+}
+
+void HTMLImportsController::stateDidChange()
+{
+    HTMLImport::stateDidChange();
+
+    if (!state().isReady())
+        return;
+    if (LocalFrame* frame = m_master->frame())
+        frame->loader().checkCompleted();
 }
 
 void HTMLImportsController::scheduleRecalcState()
