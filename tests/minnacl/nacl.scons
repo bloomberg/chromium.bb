@@ -29,7 +29,16 @@ test_prog = env.ComponentProgram(
     ['minimal_test_guest.c'],
     EXTRA_LINKFLAGS=['-nostdlib'])
 
+# The minimal_test_guest expects fairly minimal code. Without -nostdlib
+# in the TRANSLATEFLAGS, a dummy pnacl shim will be the real entry
+# point instead of _start, and that will end up doing a bit more work
+# (e.g., an IRT query for nacl_read_tp). This extra work seems to be okay
+# with --use_separate_thread, but crashes otherwise.
 env.Replace(TRANSLATEFLAGS=['-nostdlib'])
+# Avoid supporting non-standard linker-related TRANSLATEFLAGS (-nostdlib) with
+# the sandboxed translator.
+if env.Bit('use_sandboxed_translator'):
+  Return()
 test_prog = env.GetTranslatedNexe(test_prog)
 
 is_broken = not env.Bit('nacl_static_link')

@@ -97,13 +97,16 @@ EXTRA_ENV = {
   'TRIPLE_MIPS32': 'mipsel-none-nacl-gnu',
   'TRIPLE_LINUX_X8632': 'i686-linux-gnu',
 
+  # BE CAREFUL: anything added here can introduce skew between
+  # the pnacl-translate commandline tool and the in-browser translator.
+  # See: llvm/tools/pnacl-llc/srpc_main.cpp and
+  # chromium/src/ppapi/native_client/src/trusted/plugin/pnacl_options.cc
   'LLC_FLAGS_COMMON': '${PIC ? -relocation-model=pic} ' +
                       #  -force-tls-non-pic makes the code generator (llc)
                       # do the work that would otherwise be done by
                       # linker rewrites which are quite messy in the nacl
                       # case and hence have not been implemented in gold
                       '${PIC ? -force-tls-non-pic} ',
-
 
   'LLC_FLAGS_ARM'    :
     ('-arm-reserve-r9 -sfi-disable-cp ' +
@@ -124,6 +127,10 @@ EXTRA_ENV = {
   'LLC_FLAGS_TARGET' : '-mtriple=${TRIPLE} -filetype=${outfiletype}',
 
   # Append additional non-default flags here.
+  # BE CAREFUL: anything added here can introduce skew between
+  # the pnacl-translate commandline tool and the in-browser translator.
+  # See: llvm/tools/pnacl-llc/srpc_main.cpp and
+  # chromium/src/ppapi/native_client/src/trusted/plugin/pnacl_options.cc
   'LLC_FLAGS_EXTRA' : '${FAST_TRANSLATION ? ${LLC_FLAGS_FAST}} ' +
                       '${#OPT_LEVEL ? -O${OPT_LEVEL}} ' +
                       '${OPT_LEVEL == 0 ? -disable-fp-elim}',
@@ -183,6 +190,10 @@ TranslatorPatterns = [
   ( '-c',              "env.set('OUTPUT_TYPE', 'o')"), # Stop at .o
 
   # Expose a very limited set of llc flags.
+  # BE CAREFUL: anything added here can introduce skew between
+  # the pnacl-translate commandline tool and the in-browser translator.
+  # See: llvm/tools/pnacl-llc/srpc_main.cpp and
+  # chromium/src/ppapi/native_client/src/trusted/plugin/pnacl_options.cc
   ( '(-sfi-.+)',        "env.append('LLC_FLAGS_EXTRA', $0)"),
   ( '(-mtls-use-call)', "env.append('LLC_FLAGS_EXTRA', $0)"),
   # These flags are usually used for linktime dead code/data
@@ -193,8 +204,8 @@ TranslatorPatterns = [
   ( '(-mattr=.*)', "env.append('LLC_FLAGS_EXTRA', $0)"),
   ( '(-mcpu=.*)', "env.set('LLC_MCPU', '')\n"
                   "env.append('LLC_FLAGS_EXTRA', $0)"),
-  ( '(-pnaclabi-verify)', "env.append('LLC_FLAGS_EXTRA', $0)"),
-  ( '(-pnaclabi-verify-fatal-errors)', "env.append('LLC_FLAGS_EXTRA', $0)"),
+  ( '(-pnaclabi-verify=.*)', "env.append('LLC_FLAGS_EXTRA', $0)"),
+  ( '(-pnaclabi-verify-fatal-errors=.*)', "env.append('LLC_FLAGS_EXTRA', $0)"),
   ( '(-pnaclabi-allow-dev-intrinsics)', "env.append('LLC_FLAGS_EXTRA', $0)"),
   # Allow overriding the -O level.
   ( '-O([0-3])', "env.set('OPT_LEVEL', $0)"),
@@ -274,7 +285,6 @@ def main(argv):
     Log.Fatal('Value given for -split-module must be > 0')
   if (env.getbool('ALLOW_LLVM_BITCODE_INPUT') or
       env.getone('ARCH') == 'LINUX_X8632' or
-      RequiresNonStandardLDCommandline(inputs, output, 1)[1] or
       env.getbool('USE_EMULATOR')):
     # When llvm input is allowed, the pexe may not be ABI-stable, so do not
     # split it. For now also do not support threading non-SFI baremetal mode.
@@ -351,56 +361,6 @@ def ListReplace(items, old, new):
       ret.append(k)
   return ret
 
-def RequiresNonStandardLDCommandline(inputs, infile, num_modules):
-  ''' Determine when we must force USE_DEFAULT_CMD_LINE off for running
-  the sandboxed LD (if link line is completely non-standard).
-  '''
-  if len(inputs) != num_modules:
-    # There must have been some native objects on the link line.
-    # In that case, if we are using the sandboxed translator, we cannot
-    # currently allow that with the default commandline (only one input).
-    return ('Native link with more than one native object: %s' % str(inputs),
-            True)
-  if not infile:
-    return ('No bitcode input: %s' % str(infile), True)
-  if not env.getbool('USE_STDLIB'):
-    return ('NOSTDLIB', True)
-  if env.getbool('ALLOW_ZEROCOST_CXX_EH'):
-    return ('ALLOW_ZEROCOST_CXX_EH', True)
-  if not env.getbool('USE_IRT'):
-    return ('USE_IRT false when normally true', True)
-  if not env.getbool('USE_IRT_SHIM'):
-    return ('USE_IRT_SHIM false when normally true', True)
-  return (None, False)
-
-def ToggleDefaultCommandlineLD(inputs, infile):
-  if env.getbool('USE_DEFAULT_CMD_LINE'):
-    reason, non_standard = RequiresNonStandardLDCommandline(
-        inputs, infile, int(env.getone('SPLIT_MODULE')))
-    if non_standard:
-      Log.Info(reason + ' -- not using default SRPC commandline for LD!')
-      inputs.append('--pnacl-driver-set-USE_DEFAULT_CMD_LINE=0')
-
-
-def RequiresNonStandardLLCCommandline():
-  extra_flags = env.get('LLC_FLAGS_EXTRA')
-  if extra_flags != []:
-    reason = 'Has additional llc flags: %s' % extra_flags
-    return (reason, True)
-
-  return (None, False)
-
-
-def UseDefaultCommandlineLLC():
-  if not env.getbool('USE_DEFAULT_CMD_LINE'):
-    return False
-  else:
-    reason, non_standard = RequiresNonStandardLLCCommandline()
-    if non_standard:
-      Log.Info(reason + ' -- not using default SRPC commandline for LLC!')
-      return False
-    return True
-
 def RunLD(infile, outfile):
   inputs = env.get('INPUTS')
   if infile:
@@ -410,7 +370,6 @@ def RunLD(infile, outfile):
     # and native archives in the link (as is the case with irt_browser_lib)
     inputs.remove('__BITCODE__')
     inputs = ['--llc-translated-file=' + infile] + inputs
-  ToggleDefaultCommandlineLD(inputs, infile)
   env.set('ld_inputs', *inputs)
   args = env.get('LD_ARGS') + ['-o', outfile]
   if env.getbool('USE_STDLIB'):
@@ -449,9 +408,11 @@ def RunLLCSandboxed():
   driver_tools.CheckTranslatorPrerequisites()
   infile = env.getone('input')
   outfile = env.getone('output')
-  if not filetype.IsPNaClBitcode(infile):
-    Log.Fatal('Input to sandboxed translator must be PNaCl bitcode')
-  script = MakeSelUniversalScriptForLLC(infile, outfile)
+  is_pnacl = filetype.IsPNaClBitcode(infile)
+  if not is_pnacl and not env.getbool('ALLOW_LLVM_BITCODE_INPUT'):
+    Log.Fatal('Translator expects finalized PNaCl bitcode. '
+              'Pass --allow-llvm-bitcode-input to override.')
+  script = MakeSelUniversalScriptForLLC(infile, outfile, is_pnacl)
   command = ('${SEL_UNIVERSAL_PREFIX} ${SEL_UNIVERSAL} ${SEL_UNIVERSAL_FLAGS} '
     '-- ${LLC_SB}')
   driver_tools.Run(command,
@@ -461,19 +422,21 @@ def RunLLCSandboxed():
                    redirect_stderr=subprocess.PIPE,
                    redirect_stdout=subprocess.PIPE)
 
-def BuildOverrideLLCCommandLine():
+def BuildOverrideLLCCommandLine(is_pnacl):
   extra_flags = env.get('LLC_FLAGS_EXTRA')
   # The mcpu is not part of the default flags, so append that too.
   mcpu = env.getone('LLC_MCPU')
   if mcpu:
     extra_flags.append(mcpu)
+  if not is_pnacl:
+    extra_flags.append('-bitcode-format=llvm')
   # command_line is a NUL (\x00) terminated sequence.
   kTerminator = '\0'
   command_line = kTerminator.join(extra_flags) + kTerminator
   command_line_escaped = command_line.replace(kTerminator, '\\x00')
   return len(command_line), command_line_escaped
 
-def MakeSelUniversalScriptForLLC(infile, outfile):
+def MakeSelUniversalScriptForLLC(infile, outfile, is_pnacl):
   script = []
   script.append('readwrite_file objfile %s' % outfile)
   modules = int(env.getone('SPLIT_MODULE'))
@@ -482,15 +445,12 @@ def MakeSelUniversalScriptForLLC(infile, outfile):
                    for m in range(1, modules)])
   stream_rate = int(env.getraw('BITCODE_STREAM_RATE'))
   assert stream_rate != 0
-  if UseDefaultCommandlineLLC():
-    script.append('rpc StreamInit h(objfile) * s()')
-  else:
-    cmdline_len, cmdline_escaped = BuildOverrideLLCCommandLine()
-    assert modules in range(1, 17)
-    script.append('rpc StreamInitWithSplit i(%d) h(objfile) ' % modules +
-                  ' '.join(['h(objfile%d)' % m for m in range(1, modules)] +
-                           ['h(invalid)' for x in range(modules, 16)]) +
-                  ' C(%d,%s) * s()' % (cmdline_len, cmdline_escaped))
+  cmdline_len, cmdline_escaped = BuildOverrideLLCCommandLine(is_pnacl)
+  assert modules in range(1, 17)
+  script.append('rpc StreamInitWithSplit i(%d) h(objfile) ' % modules +
+                ' '.join(['h(objfile%d)' % m for m in range(1, modules)] +
+                         ['h(invalid)' for x in range(modules, 16)]) +
+                ' C(%d,%s) * s()' % (cmdline_len, cmdline_escaped))
   # specify filename, chunk size and rate in bits/s
   script.append('stream_file %s %s %s' % (infile, 64 * 1024, stream_rate))
   script.append('rpc StreamEnd * i() s() s() s()')

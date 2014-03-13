@@ -261,7 +261,6 @@ DriverArgPatterns = [
   ( '--pnacl-i686-bias',               "env.set('BIAS', 'X8632')"),
   ( '--pnacl-x86_64-bias',             "env.set('BIAS', 'X8664')"),
   ( '--pnacl-bias=(.+)',               "env.set('BIAS', FixArch($0))"),
-  ( '--pnacl-default-command-line',    "env.set('USE_DEFAULT_CMD_LINE', '1')"),
   ( '-save-temps',                     "env.set('SAVE_TEMPS', '1')"),
   ( '-no-save-temps',                  "env.set('SAVE_TEMPS', '0')"),
   ( ('-B', '(.*)'),  AddHostBinarySearchPath),

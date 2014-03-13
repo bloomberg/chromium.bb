@@ -40,6 +40,9 @@ EXTRA_ENV = {
   # used by libgcc_eh/libgcc_s to avoid doing the sort during runtime.
   # http://www.airs.com/blog/archives/462
   #
+  # BE CAREFUL: anything added to LD_FLAGS should be synchronized with
+  # flags used by the in-browser translator.
+  # See: binutils/gold/nacl_file.cc
   'LD_FLAGS'    : '-nostdlib ' +
                   # Only relevant for ARM where it suppresses a warning.
                   # Ignored for other archs.
@@ -177,6 +180,8 @@ def IsFlag(arg):
   return arg.startswith('-')
 
 def RunLDSandboxed():
+  if not env.getbool('USE_STDLIB'):
+    Log.Fatal('-nostdlib is not supported by the sandboxed translator')
   CheckTranslatorPrerequisites()
   # The "main" input file is the application's combined object file.
   all_inputs = env.get('inputs')
@@ -221,64 +226,33 @@ def MakeSelUniversalScriptForLD(ld_flags,
                                 files,
                                 outfile):
   """ Return sel_universal script text for invoking LD.nexe with the
-      given ld_flags, main_input (which is treated specially), and
-      other input files. The output will be written to outfile.  """
+  given ld_flags, llc_outputs (which are treated specially), and
+  other input files (for native libraries). The output will be written
+  to outfile.  """
   script = []
 
   # Open the output file.
   script.append('readwrite_file nexefile %s' % outfile)
 
-  # Need to include the linker script file as a linker resource for glibc.
   files_to_map = list(files)
-
-  use_default = env.getbool('USE_DEFAULT_CMD_LINE')
-  # Create a mapping for each input file and add it to the command line.
+  # Create a reverse-service mapping for each input file and add it to
+  # the sel universal script.
   for f in files_to_map:
     basename = pathtools.basename(f)
     # If we are using the dummy shim, map it with the filename of the real
-    # shim, so the baked-in commandline will work
-    if basename == 'libpnacl_irt_shim_dummy.a' and use_default:
-       basename = 'libpnacl_irt_shim.a'
+    # shim, so the baked-in commandline will work.
+    if basename == 'libpnacl_irt_shim_dummy.a':
+      basename = 'libpnacl_irt_shim.a'
     script.append('reverse_service_add_manifest_mapping files/%s %s' %
                   (basename, f))
 
   modules = len(llc_outputs)
-  if modules > 1:
-    script.extend(['readonly_file objfile%d %s' % (i, f)
-                   for i, f in zip(range(modules), llc_outputs)])
-    script.append('rpc RunWithSplit i(%d) ' % modules +
-                  ' '.join(['h(objfile%s)' % m for m in range(modules)] +
-                           ['h(invalid)' for x in range(modules, 16)]) +
-                  ' h(nexefile) *')
-  elif use_default:
-    # Assume static linking for now.
-    soname = ''
-    needed = ''
-    is_shared_library = 0
-
-    script.append('readonly_file objfile %s' % llc_outputs[0])
-    script.append(('rpc RunWithDefaultCommandLine ' +
-                   'h(objfile) h(nexefile) i(%d) s("%s") s("%s") *'
-                   % (is_shared_library, soname, needed)))
-  else:
-    # Join all the arguments.
-    # Based on the format of RUN_LD, the order of arguments is:
-    # ld_flags, then input files (which are more sensitive to order).
-
-    # For the sandboxed build, we don't want "real" filesystem paths,
-    # because we use the reverse-service to do a lookup -- make sure
-    # everything is a basename first.
-    ld_flags = [ pathtools.basename(flag) for flag in ld_flags ]
-    kTerminator = '\0'
-    command_line = kTerminator.join(['ld'] + ld_flags) + kTerminator
-    for f in files:
-      basename = pathtools.basename(f)
-      command_line = command_line + basename + kTerminator
-
-    command_line_escaped = command_line.replace(kTerminator, '\\x00')
-    # Assume that the commandline captures all necessary metadata for now.
-    script.append('rpc Run h(nexefile) C(%d,%s) *' %
-                  (len(command_line), command_line_escaped))
+  script.extend(['readonly_file objfile%d %s' % (i, f)
+                 for i, f in zip(range(modules), llc_outputs)])
+  script.append('rpc RunWithSplit i(%d) ' % modules +
+                ' '.join(['h(objfile%s)' % m for m in range(modules)] +
+                         ['h(invalid)' for x in range(modules, 16)]) +
+                ' h(nexefile) *')
   script.append('echo "ld complete"')
   script.append('')
   return '\n'.join(script)

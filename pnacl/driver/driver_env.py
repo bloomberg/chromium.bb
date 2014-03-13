@@ -168,9 +168,6 @@ INITIAL_ENV = {
   'STRIP'          : '${BINUTILS_BASE}strip${EXEC_EXT}',
   # linker (used for both bitcode and ELF linking)
   'LD'        : '${BINUTILS_BASE}ld.gold${EXEC_EXT}',
-
-  # Use the default command line arguments to the sandboxed translator.
-  'USE_DEFAULT_CMD_LINE': '1',
 }
 
 ######################################################################

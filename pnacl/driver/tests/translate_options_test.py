@@ -13,6 +13,7 @@ from driver_env import env
 import driver_log
 import driver_test_utils
 import driver_tools
+import filetype
 
 import cStringIO
 import os
@@ -26,19 +27,23 @@ class TestLLCOptions(driver_test_utils.DriverTesterCommon):
     driver_test_utils.ApplyTestEnvOverrides(env)
     self.platform = driver_test_utils.GetPlatformToTest()
 
-  def getFakePexe(self):
+  def getFakePexe(self, finalized=True):
     # Even --dry-run requires a file to exist, so make a fake pexe.
     # It even cares that the file is really bitcode.
     with self.getTemp(suffix='.ll', close=False) as t:
       with self.getTemp(suffix='.pexe') as p:
         t.write('''
-define i32 @main() {
+define i32 @_start() {
   ret i32 0
 }
 ''')
         t.close()
         driver_tools.RunDriver('as', [t.name, '-o', p.name])
-        driver_tools.RunDriver('finalize', [p.name])
+        if finalized:
+          driver_tools.RunDriver('finalize', [p.name])
+          self.assertTrue(filetype.IsPNaClBitcode(p.name))
+        else:
+          self.assertTrue(filetype.IsLLVMBitcode(p.name))
         return p
 
 
@@ -48,6 +53,8 @@ define i32 @main() {
     |flags|, check that the commandline for LLC really contains the
     |expected_flags|.  This ensures that the pnacl-translate script
     does not drop certain flags accidentally. '''
+    # TODO(jvoung): Get rid of INHERITED_DRIVER_ARGS, which leaks across runs.
+    env.set('INHERITED_DRIVER_ARGS', '')
     temp_output = self.getTemp()
     # Major hack to prevent DriverExit() from aborting the test.
     # The test will surely DriverLog.Fatal() because dry-run currently
@@ -96,13 +103,13 @@ define i32 @main() {
           pexe,
           self.platform,
           [],
-          expected_triple_cpu)
-      # Test that StreamInit is used with a single module.
+          expected_triple_cpu + ['-bitcode-format=pnacl'])
+      # Even with a single module StreamInitWithSplit is used.
       self.checkLLCTranslateFlags(
           pexe,
           self.platform,
           ['--pnacl-sb', '-split-module=1'],
-          ['StreamInit h'])
+          ['StreamInitWithSplit i\\(1\\).*'])
       # Test that StreamInitWithSplit is used with module splitting.
       # In the tests below, we don't care whether StreamInitWithSplit or
       # StreamInitWithOverrides
@@ -110,7 +117,26 @@ define i32 @main() {
           pexe,
           self.platform,
           ['--pnacl-sb', '-split-module=4'],
-          ['StreamInitWithSplit i.*h\\(objfile\\).*h\\(invalid\\)'])
+          ['StreamInitWithSplit i\\(4\\) h\\(objfile\\).*h\\(invalid\\)'])
+
+  def test_LLVMFile(self):
+    if not driver_test_utils.CanRunHost():
+      return
+    pexe = self.getFakePexe(finalized=False)
+    # For non-sandboxed pnacl-llc, the default -bitcode-format=llvm,
+    # so there is nothing to really check.
+    self.checkLLCTranslateFlags(
+        pexe,
+        self.platform,
+        ['--allow-llvm-bitcode-input'],
+        [])
+    # For sandboxed pnacl-llc, the default -bitcode-format=pnacl,
+    # so we need to set -bitcode-format=llvm to read LLVM files.
+    self.checkLLCTranslateFlags(
+        pexe,
+        self.platform,
+        ['--pnacl-sb', '--allow-llvm-bitcode-input'],
+        ['StreamInitWithSplit i.*C\\(.*-bitcode-format=llvm.*\\)'])
 
   def test_overrideO0(self):
     if driver_test_utils.CanRunHost():
