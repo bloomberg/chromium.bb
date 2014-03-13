@@ -134,7 +134,7 @@ public:
     virtual void setInspectModeEnabled(ErrorString*, bool enabled, const bool* inspectShadowDOM, const RefPtr<JSONObject>* highlightConfig) OVERRIDE;
     virtual void requestNode(ErrorString*, const String& objectId, int* nodeId) OVERRIDE;
     virtual void pushNodeByPathToFrontend(ErrorString*, const String& path, int* nodeId) OVERRIDE;
-    virtual void pushNodeByBackendIdToFrontend(ErrorString*, BackendNodeId, int* nodeId) OVERRIDE;
+    virtual void pushNodesByBackendIdsToFrontend(ErrorString*, const RefPtr<JSONArray>& nodeIds, RefPtr<TypeBuilder::Array<int> >&) OVERRIDE;
     virtual void releaseBackendNodeIds(ErrorString*, const String& nodeGroup) OVERRIDE;
     virtual void hideHighlight(ErrorString*) OVERRIDE;
     virtual void highlightRect(ErrorString*, int x, int y, int width, int height, const RefPtr<JSONObject>* color, const RefPtr<JSONObject>* outlineColor) OVERRIDE;
@@ -259,7 +259,8 @@ private:
     HashMap<int, Node*> m_idToNode;
     HashMap<int, NodeToIdMap*> m_idToNodesMap;
     HashSet<int> m_childrenRequested;
-    HashMap<BackendNodeId, std::pair<Node*, String> > m_backendIdToNode;
+    typedef HashMap<BackendNodeId, std::pair<Node*, String> > BackendIdToNodeMap;
+    BackendIdToNodeMap m_backendIdToNode;
     int m_lastNodeId;
     BackendNodeId m_lastBackendNodeId;
     RefPtr<Document> m_document;

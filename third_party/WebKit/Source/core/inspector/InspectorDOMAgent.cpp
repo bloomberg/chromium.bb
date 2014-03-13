@@ -1998,20 +1998,25 @@ void InspectorDOMAgent::pushNodeByPathToFrontend(ErrorString* errorString, const
         *errorString = "No node with given path found";
 }
 
-void InspectorDOMAgent::pushNodeByBackendIdToFrontend(ErrorString* errorString, BackendNodeId backendNodeId, int* nodeId)
+void InspectorDOMAgent::pushNodesByBackendIdsToFrontend(ErrorString* errorString, const RefPtr<JSONArray>& backendNodeIds, RefPtr<TypeBuilder::Array<int> >& result)
 {
-    if (!m_backendIdToNode.contains(backendNodeId)) {
-        *errorString = "No node with given backend id found";
-        return;
-    }
+    result = TypeBuilder::Array<int>::create();
+    for (JSONArray::const_iterator it = backendNodeIds->begin(); it != backendNodeIds->end(); ++it) {
+        BackendNodeId backendNodeId;
 
-    Node* node = m_backendIdToNode.get(backendNodeId).first;
-    String nodeGroup = m_backendIdToNode.get(backendNodeId).second;
-    *nodeId = pushNodePathToFrontend(node);
+        if (!(*it)->asNumber(&backendNodeId)) {
+            *errorString = "Invalid argument type";
+            return;
+        }
 
-    if (nodeGroup == "") {
-        m_backendIdToNode.remove(backendNodeId);
-        m_nodeGroupToBackendIdMap.find(nodeGroup)->value.remove(node);
+        BackendIdToNodeMap::iterator backendIdToNodeIterator = m_backendIdToNode.find(backendNodeId);
+        if (backendIdToNodeIterator == m_backendIdToNode.end()) {
+            *errorString = "Node not found";
+            return;
+        }
+
+        Node* node = backendIdToNodeIterator->value.first;
+        result->addItem(pushNodePathToFrontend(node));
     }
 }
 

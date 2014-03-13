@@ -35,8 +35,13 @@ function test()
         var mutations = layerMutations(initialLayers, modifiedLayers);
         var newLayer = mutations.additions[0];
 
-        InspectorTest.sendCommand("DOM.getAttributes", {"nodeId": newLayer.nodeId}, InspectorTest.wrapCallback(gotNodeAttributes));
+        InspectorTest.sendCommand("DOM.pushNodesByBackendIdsToFrontend", {"backendNodeIds": [newLayer.backendNodeId]}, InspectorTest.wrapCallback(gotNodeId));
     };
+
+    function gotNodeId(result)
+    {
+        InspectorTest.sendCommand("DOM.getAttributes", {"nodeId": result.nodeIds[0]}, InspectorTest.wrapCallback(gotNodeAttributes));
+    }
 
     function gotNodeAttributes(result)
     {
@@ -81,11 +86,11 @@ function test()
     function dumpLayers(layers)
     {
         // Keep "internal" layers out for better stability.
-        layers = layers.filter(function(layer) { return !!layer.nodeId; });
+        layers = layers.filter(function(layer) { return !!layer.backendNodeId; });
         function replacer(key, value)
         {
 
-            if (["layerId", "parentLayerId", "nodeId", "paintCount"].indexOf(key) >= 0)
+            if (["layerId", "parentLayerId", "backendNodeId", "paintCount"].indexOf(key) >= 0)
                 return typeof(value);
 
             // some values differ based on port, but the ones we most

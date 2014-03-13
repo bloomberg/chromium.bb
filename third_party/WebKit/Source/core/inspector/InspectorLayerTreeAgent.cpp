@@ -50,6 +50,10 @@
 #include "public/platform/WebFloatPoint.h"
 #include "public/platform/WebLayer.h"
 
+namespace {
+const char LayerTreeAgentObjectGroup[] = "layerTreeAgent";
+}
+
 namespace WebCore {
 
 unsigned InspectorLayerTreeAgent::s_lastSnapshotId;
@@ -73,7 +77,7 @@ inline String idForLayer(const GraphicsLayer* graphicsLayer)
     return String::number(graphicsLayer->platformLayer()->id());
 }
 
-static PassRefPtr<TypeBuilder::LayerTree::Layer> buildObjectForLayer(GraphicsLayer* graphicsLayer, int nodeId)
+static PassRefPtr<TypeBuilder::LayerTree::Layer> buildObjectForLayer(GraphicsLayer* graphicsLayer, BackendNodeId nodeId)
 {
     blink::WebLayer* webLayer = graphicsLayer->platformLayer();
     RefPtr<TypeBuilder::LayerTree::Layer> layerObject = TypeBuilder::LayerTree::Layer::create()
@@ -85,7 +89,7 @@ static PassRefPtr<TypeBuilder::LayerTree::Layer> buildObjectForLayer(GraphicsLay
         .setPaintCount(graphicsLayer->paintCount());
 
     if (nodeId)
-        layerObject->setNodeId(nodeId);
+        layerObject->setBackendNodeId(nodeId);
 
     GraphicsLayer* parent = graphicsLayer->parent();
     if (!parent)
@@ -150,6 +154,8 @@ void InspectorLayerTreeAgent::disable(ErrorString*)
 {
     m_instrumentingAgents->setInspectorLayerTreeAgent(0);
     m_snapshotById.clear();
+    ErrorString unused;
+    m_domAgent->releaseBackendNodeIds(&unused, LayerTreeAgentObjectGroup);
 }
 
 void InspectorLayerTreeAgent::layerTreeDidChange()
@@ -216,12 +222,7 @@ void InspectorLayerTreeAgent::gatherGraphicsLayers(GraphicsLayer* root, HashMap<
 
 int InspectorLayerTreeAgent::idForNode(Node* node)
 {
-    int nodeId = m_domAgent->boundNodeId(node);
-    if (!nodeId) {
-        ErrorString ignoredError;
-        nodeId = m_domAgent->pushNodeToFrontend(&ignoredError, m_domAgent->boundNodeId(&node->document()), node);
-    }
-    return nodeId;
+    return m_domAgent->backendNodeIdForNode(node, LayerTreeAgentObjectGroup);
 }
 
 RenderLayerCompositor* InspectorLayerTreeAgent::renderLayerCompositor()

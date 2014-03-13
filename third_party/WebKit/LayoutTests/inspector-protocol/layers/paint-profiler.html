@@ -25,7 +25,7 @@ function test()
 
     function gotLayerTree(layers)
     {
-        var matchingLayers = layers.filter(function(layer) { return !!(layer.nodeId && layer.transform); });
+        var matchingLayers = layers.filter(function(layer) { return !!(layer.backendNodeId && layer.transform); });
         InspectorTest.assertEquals(1, matchingLayers.length);
         var layerId = matchingLayers[0].layerId;
 
