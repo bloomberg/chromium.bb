@@ -1046,13 +1046,13 @@ combinator:
     '+' maybe_space { $$ = CSSSelector::DirectAdjacent; }
     | '~' maybe_space { $$ = CSSSelector::IndirectAdjacent; }
     | '>' maybe_space { $$ = CSSSelector::Child; }
-    // FIXME: implement named combinator and replace the following /shadow/, /shadow-all/ and 
+    // FIXME: implement named combinator and replace the following /shadow/, /shadow-child/ and
     // /shadow-deep/ with named combinator's implementation.
     | '/' IDENT '/' maybe_space {
         if (!RuntimeEnabledFeatures::shadowDOMEnabled())
             YYERROR;
-        if ($2.equalIgnoringCase("shadow-all"))
-            $$ = CSSSelector::ShadowAll;
+        if ($2.equalIgnoringCase("shadow"))
+            $$ = CSSSelector::Shadow;
         else if ($2.equalIgnoringCase("shadow-deep"))
             $$ = CSSSelector::ShadowDeep;
         else if ($2.equalIgnoringCase("content"))

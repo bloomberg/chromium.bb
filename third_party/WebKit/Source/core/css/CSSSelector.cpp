@@ -751,8 +751,8 @@ String CSSSelector::selectorText(const String& rightSide) const
             if (cs->relationIsAffectedByPseudoContent())
                 return tagHistory->selectorText("::-webkit-distributed(> " + str.toString() + rightSide + ")");
             return tagHistory->selectorText(" > " + str.toString() + rightSide);
-        case CSSSelector::ShadowAll:
-            return tagHistory->selectorText(" /shadow-all/ " + str.toString() + rightSide);
+        case CSSSelector::Shadow:
+            return tagHistory->selectorText(" /shadow/ " + str.toString() + rightSide);
         case CSSSelector::ShadowDeep:
             return tagHistory->selectorText(" /shadow-deep/ " + str.toString() + rightSide);
         case CSSSelector::DirectAdjacent:

@@ -225,13 +225,13 @@ borderColorShouldBe('host/host2/target', 'rgb(0, 0, 0)');
 
 cleanUp();
 
-// :host /shadow-all/ :host /shadow-deep/ div should not match.
+// :host /shadow/ :host /shadow-deep/ div should not match.
 
 sandbox.appendChild(
     createDOM('div', {'id': 'host'},
         createShadowRoot(
             createDOM('style', {},
-                document.createTextNode(':host /shadow-all/ :host /shadow-deep/ div { border: 1px solid green; }')),
+                document.createTextNode(':host /shadow/ :host /shadow-deep/ div { border: 1px solid green; }')),
             createDOM('div', {'id': 'host2'},
                 createShadowRoot(
                     createDOM('div', {'id': 'host3'},
