@@ -56,7 +56,7 @@ enum RevealExtentOption {
     DoNotRevealExtent
 };
 
-class FrameSelection : private CaretBase {
+class FrameSelection FINAL : public VisibleSelection::ChangeObserver, private CaretBase {
     WTF_MAKE_NONCOPYABLE(FrameSelection);
     WTF_MAKE_FAST_ALLOCATED;
 public:
@@ -78,6 +78,7 @@ public:
     }
 
     explicit FrameSelection(LocalFrame* = 0);
+    virtual ~FrameSelection();
 
     Element* rootEditableElement() const { return m_selection.rootEditableElement(); }
     Element* rootEditableElementOrDocumentElement() const;
@@ -94,7 +95,7 @@ public:
     const VisibleSelection& selection() const { return m_selection; }
     void setSelection(const VisibleSelection&, SetSelectionOptions = CloseTyping | ClearTypingStyle, CursorAlignOnScroll = AlignCursorOnScrollIfNeeded, TextGranularity = CharacterGranularity);
     void setSelection(const VisibleSelection& selection, TextGranularity granularity) { setSelection(selection, CloseTyping | ClearTypingStyle, AlignCursorOnScrollIfNeeded, granularity); }
-    bool setSelectedRange(Range*, EAffinity, bool closeTyping);
+    bool setSelectedRange(Range*, EAffinity, SetSelectionOptions = CloseTyping | ClearTypingStyle);
     void selectAll();
     void clear();
     void prepareForDestruction();
@@ -143,6 +144,10 @@ public:
     bool isRange() const { return m_selection.isRange(); }
     bool isCaretOrRange() const { return m_selection.isCaretOrRange(); }
     bool isInPasswordField() const;
+
+    // If this FrameSelection has a logical range which is still valid, this function return its clone. Otherwise,
+    // the return value from underlying VisibleSelection's firstRange() is returned.
+    PassRefPtr<Range> firstRange() const;
 
     PassRefPtr<Range> toNormalizedRange() const { return m_selection.toNormalizedRange(); }
 
@@ -197,6 +202,9 @@ public:
 
     void setShouldShowBlockCursor(bool);
 
+    // VisibleSelection::ChangeObserver interface.
+    virtual void didChangeVisibleSelection() OVERRIDE;
+
 private:
     enum EPositionType { START, END, BASE, EXTENT };
 
@@ -235,13 +243,22 @@ private:
 
     void updateSelectionIfNeeded(const Position& base, const Position& extent, const Position& start, const Position& end);
 
+    void startObservingVisibleSelectionChange();
+    void stopObservingVisibleSelectionChangeIfNecessary();
+
     LocalFrame* m_frame;
 
     LayoutUnit m_xPosForVerticalArrowNavigation;
 
     VisibleSelection m_selection;
+    bool m_observingVisibleSelection;
     VisiblePosition m_originalBase; // Used to store base before the adjustment at bidi boundary
     TextGranularity m_granularity;
+
+    // The range specified by the user, which may not be visually canonicalized (hence "logical").
+    // This will be invalidated if the underlying VisibleSelection changes. If that happens, this variable will
+    // become null, in which case logical positions == visible positions.
+    RefPtr<Range> m_logicalRange;
 
     RefPtr<Node> m_previousCaretNode; // The last node which painted the caret. Retained for clearing the old caret when it moves.
 

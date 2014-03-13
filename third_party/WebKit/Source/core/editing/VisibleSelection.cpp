@@ -48,6 +48,7 @@ namespace WebCore {
 
 VisibleSelection::VisibleSelection()
     : m_affinity(DOWNSTREAM)
+    , m_changeObserver(0)
     , m_selectionType(NoSelection)
     , m_baseIsFirst(true)
     , m_isDirectional(false)
@@ -58,6 +59,7 @@ VisibleSelection::VisibleSelection(const Position& pos, EAffinity affinity, bool
     : m_base(pos)
     , m_extent(pos)
     , m_affinity(affinity)
+    , m_changeObserver(0)
     , m_isDirectional(isDirectional)
 {
     validate();
@@ -67,6 +69,7 @@ VisibleSelection::VisibleSelection(const Position& base, const Position& extent,
     : m_base(base)
     , m_extent(extent)
     , m_affinity(affinity)
+    , m_changeObserver(0)
     , m_isDirectional(isDirectional)
 {
     validate();
@@ -76,6 +79,7 @@ VisibleSelection::VisibleSelection(const VisiblePosition& pos, bool isDirectiona
     : m_base(pos.deepEquivalent())
     , m_extent(pos.deepEquivalent())
     , m_affinity(pos.affinity())
+    , m_changeObserver(0)
     , m_isDirectional(isDirectional)
 {
     validate();
@@ -85,6 +89,7 @@ VisibleSelection::VisibleSelection(const VisiblePosition& base, const VisiblePos
     : m_base(base.deepEquivalent())
     , m_extent(extent.deepEquivalent())
     , m_affinity(base.affinity())
+    , m_changeObserver(0)
     , m_isDirectional(isDirectional)
 {
     validate();
@@ -94,9 +99,44 @@ VisibleSelection::VisibleSelection(const Range* range, EAffinity affinity, bool 
     : m_base(range->startPosition())
     , m_extent(range->endPosition())
     , m_affinity(affinity)
+    , m_changeObserver(0)
     , m_isDirectional(isDirectional)
 {
     validate();
+}
+
+VisibleSelection::VisibleSelection(const VisibleSelection& other)
+    : m_base(other.m_base)
+    , m_extent(other.m_extent)
+    , m_start(other.m_start)
+    , m_end(other.m_end)
+    , m_affinity(other.m_affinity)
+    , m_changeObserver(0) // Observer is associated with only one VisibleSelection, so this should not be copied.
+    , m_selectionType(other.m_selectionType)
+    , m_baseIsFirst(other.m_baseIsFirst)
+    , m_isDirectional(other.m_isDirectional)
+{
+}
+
+VisibleSelection& VisibleSelection::operator=(const VisibleSelection& other)
+{
+    didChange();
+
+    m_base = other.m_base;
+    m_extent = other.m_extent;
+    m_start = other.m_start;
+    m_end = other.m_end;
+    m_affinity = other.m_affinity;
+    m_changeObserver = 0;
+    m_selectionType = other.m_selectionType;
+    m_baseIsFirst = other.m_baseIsFirst;
+    m_isDirectional = other.m_isDirectional;
+    return *this;
+}
+
+VisibleSelection::~VisibleSelection()
+{
+    didChange();
 }
 
 VisibleSelection VisibleSelection::selectionFromContentsOfNode(Node* node)
@@ -107,26 +147,38 @@ VisibleSelection VisibleSelection::selectionFromContentsOfNode(Node* node)
 
 void VisibleSelection::setBase(const Position& position)
 {
+    Position oldBase = m_base;
     m_base = position;
     validate();
+    if (m_base != oldBase)
+        didChange();
 }
 
 void VisibleSelection::setBase(const VisiblePosition& visiblePosition)
 {
+    Position oldBase = m_base;
     m_base = visiblePosition.deepEquivalent();
     validate();
+    if (m_base != oldBase)
+        didChange();
 }
 
 void VisibleSelection::setExtent(const Position& position)
 {
+    Position oldExtent = m_extent;
     m_extent = position;
     validate();
+    if (m_extent != oldExtent)
+        didChange();
 }
 
 void VisibleSelection::setExtent(const VisiblePosition& visiblePosition)
 {
+    Position oldExtent = m_extent;
     m_extent = visiblePosition.deepEquivalent();
     validate();
+    if (m_extent != oldExtent)
+        didChange();
 }
 
 PassRefPtr<Range> VisibleSelection::firstRange() const
@@ -199,7 +251,14 @@ bool VisibleSelection::expandUsingGranularity(TextGranularity granularity)
     if (isNone())
         return false;
 
+    // FIXME: Do we need to check all of them?
+    Position oldBase = m_base;
+    Position oldExtent = m_extent;
+    Position oldStart = m_start;
+    Position oldEnd = m_end;
     validate(granularity);
+    if (m_base != oldBase || m_extent != oldExtent || m_start != oldStart || m_end != oldEnd)
+        didChange();
     return true;
 }
 
@@ -237,13 +296,17 @@ void VisibleSelection::appendTrailingWhitespace()
         return;
 
     CharacterIterator charIt(searchRange.get(), TextIteratorEmitsCharactersBetweenAllVisiblePositions);
+    bool changed = false;
 
     for (; charIt.length(); charIt.advance(1)) {
         UChar c = charIt.characterAt(0);
         if ((!isSpaceOrNewline(c) && c != noBreakSpace) || c == '\n')
             break;
         m_end = charIt.range()->endPosition();
+        changed = true;
     }
+    if (changed)
+        didChange();
 }
 
 void VisibleSelection::setBaseAndExtentToDeepEquivalents()
@@ -460,6 +523,7 @@ void VisibleSelection::setWithoutValidation(const Position& base, const Position
         m_end = base;
     }
     m_selectionType = base == extent ? CaretSelection : RangeSelection;
+    didChange();
 }
 
 static Position adjustPositionForEnd(const Position& currentPosition, Node* startContainerNode)
@@ -668,6 +732,32 @@ Element* VisibleSelection::rootEditableElement() const
 Node* VisibleSelection::nonBoundaryShadowTreeRootNode() const
 {
     return start().deprecatedNode() ? start().deprecatedNode()->nonBoundaryShadowTreeRootNode() : 0;
+}
+
+VisibleSelection::ChangeObserver::ChangeObserver()
+{
+}
+
+VisibleSelection::ChangeObserver::~ChangeObserver()
+{
+}
+
+void VisibleSelection::setChangeObserver(ChangeObserver& observer)
+{
+    ASSERT(!m_changeObserver);
+    m_changeObserver = &observer;
+}
+
+void VisibleSelection::clearChangeObserver()
+{
+    ASSERT(m_changeObserver);
+    m_changeObserver = 0;
+}
+
+void VisibleSelection::didChange()
+{
+    if (m_changeObserver)
+        m_changeObserver->didChangeVisibleSelection();
 }
 
 #ifndef NDEBUG

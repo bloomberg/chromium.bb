@@ -91,6 +91,7 @@ static inline bool shouldAlwaysUseDirectionalSelection(LocalFrame* frame)
 FrameSelection::FrameSelection(LocalFrame* frame)
     : m_frame(frame)
     , m_xPosForVerticalArrowNavigation(NoXPosForVerticalArrowNavigation())
+    , m_observingVisibleSelection(false)
     , m_granularity(CharacterGranularity)
     , m_caretBlinkTimer(this, &FrameSelection::caretBlinkTimerFired)
     , m_absCaretBoundsDirty(true)
@@ -101,6 +102,11 @@ FrameSelection::FrameSelection(LocalFrame* frame)
 {
     if (shouldAlwaysUseDirectionalSelection(m_frame))
         m_selection.setIsDirectional(true);
+}
+
+FrameSelection::~FrameSelection()
+{
+    stopObservingVisibleSelectionChangeIfNecessary();
 }
 
 Element* FrameSelection::rootEditableElementOrDocumentElement() const
@@ -1392,7 +1398,7 @@ void FrameSelection::selectAll()
     notifyRendererOfSelectionChange(UserTriggered);
 }
 
-bool FrameSelection::setSelectedRange(Range* range, EAffinity affinity, bool closeTyping)
+bool FrameSelection::setSelectedRange(Range* range, EAffinity affinity, SetSelectionOptions options)
 {
     if (!range || !range->startContainer() || !range->endContainer())
         return false;
@@ -1407,11 +1413,25 @@ bool FrameSelection::setSelectedRange(Range* range, EAffinity affinity, bool clo
     if (exceptionState.hadException())
         return false;
 
+    m_logicalRange = nullptr;
+    stopObservingVisibleSelectionChangeIfNecessary();
+
     // FIXME: Can we provide extentAffinity?
     VisiblePosition visibleStart(range->startPosition(), collapsed ? affinity : DOWNSTREAM);
     VisiblePosition visibleEnd(range->endPosition(), SEL_DEFAULT_AFFINITY);
-    setSelection(VisibleSelection(visibleStart, visibleEnd), ClearTypingStyle | (closeTyping ? CloseTyping : 0));
+    setSelection(VisibleSelection(visibleStart, visibleEnd), options);
+
+    m_logicalRange = range->cloneRange(ASSERT_NO_EXCEPTION);
+    startObservingVisibleSelectionChange();
+
     return true;
+}
+
+PassRefPtr<Range> FrameSelection::firstRange() const
+{
+    if (m_logicalRange)
+        return m_logicalRange->cloneRange(ASSERT_NO_EXCEPTION);
+    return m_selection.firstRange();
 }
 
 bool FrameSelection::isInPasswordField() const
@@ -1805,6 +1825,30 @@ void FrameSelection::setShouldShowBlockCursor(bool shouldShowBlockCursor)
     m_frame->document()->updateLayoutIgnorePendingStylesheets();
 
     updateAppearance();
+}
+
+void FrameSelection::didChangeVisibleSelection()
+{
+    ASSERT(m_observingVisibleSelection);
+    // Invalidate the logical range when the underlying VisibleSelection has changed.
+    m_logicalRange = nullptr;
+    m_selection.clearChangeObserver();
+    m_observingVisibleSelection = false;
+}
+
+void FrameSelection::startObservingVisibleSelectionChange()
+{
+    ASSERT(!m_observingVisibleSelection);
+    m_selection.setChangeObserver(*this);
+    m_observingVisibleSelection = true;
+}
+
+void FrameSelection::stopObservingVisibleSelectionChangeIfNecessary()
+{
+    if (m_observingVisibleSelection) {
+        m_selection.clearChangeObserver();
+        m_observingVisibleSelection = false;
+    }
 }
 
 #ifndef NDEBUG

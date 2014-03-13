@@ -50,6 +50,11 @@ public:
     explicit VisibleSelection(const VisiblePosition&, bool isDirectional = false);
     VisibleSelection(const VisiblePosition&, const VisiblePosition&, bool isDirectional = false);
 
+    VisibleSelection(const VisibleSelection&);
+    VisibleSelection& operator=(const VisibleSelection&);
+
+    ~VisibleSelection();
+
     static VisibleSelection selectionFromContentsOfNode(Node*);
 
     SelectionType selectionType() const { return m_selectionType; }
@@ -105,14 +110,29 @@ public:
 
     VisiblePosition visiblePositionRespectingEditingBoundary(const LayoutPoint& localPoint, Node* targetNode) const;
 
+    void setWithoutValidation(const Position&, const Position&);
+
+    // Listener of VisibleSelection modification. didChangeVisibleSelection() will be invoked when base, extent, start
+    // or end is moved to a different position.
+    //
+    // Objects implementing |ChangeObserver| interface must outlive the VisibleSelection object.
+    class ChangeObserver {
+        WTF_MAKE_NONCOPYABLE(ChangeObserver);
+    public:
+        ChangeObserver();
+        virtual ~ChangeObserver();
+        virtual void didChangeVisibleSelection() = 0;
+    };
+
+    void setChangeObserver(ChangeObserver&);
+    void clearChangeObserver();
+    void didChange(); // Fire the change observer, if any.
 
 #ifndef NDEBUG
     void debugPosition() const;
     void formatForDebugger(char* buffer, unsigned length) const;
     void showTreeForThis() const;
 #endif
-
-    void setWithoutValidation(const Position&, const Position&);
 
 private:
     void validate(TextGranularity = CharacterGranularity);
@@ -135,6 +155,8 @@ private:
     Position m_end;    // Rightmost position when expanded to respect granularity
 
     EAffinity m_affinity;           // the upstream/downstream affinity of the caret
+
+    ChangeObserver* m_changeObserver;
 
     // these are cached, can be recalculated by validate()
     SelectionType m_selectionType; // None, Caret, Range

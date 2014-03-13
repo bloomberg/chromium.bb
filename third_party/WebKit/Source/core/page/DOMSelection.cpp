@@ -369,8 +369,7 @@ PassRefPtr<Range> DOMSelection::getRangeAt(int index, ExceptionState& exceptionS
         return Range::create(shadowAncestor->document(), container, offset, container, offset);
     }
 
-    const VisibleSelection& selection = m_frame->selection().selection();
-    return selection.firstRange();
+    return m_frame->selection().firstRange();
 }
 
 void DOMSelection::removeAllRanges()
@@ -390,7 +389,7 @@ void DOMSelection::addRange(Range* r)
     FrameSelection& selection = m_frame->selection();
 
     if (selection.isNone()) {
-        selection.setSelection(VisibleSelection(r));
+        selection.setSelectedRange(r, VP_DEFAULT_AFFINITY);
         return;
     }
 

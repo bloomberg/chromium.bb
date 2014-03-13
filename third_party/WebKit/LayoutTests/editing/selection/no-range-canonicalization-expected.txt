@@ -1,0 +1,81 @@
+Ranges set by Selection.addRange() and returned by Selection.getRangeAt() should be identical.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+Testing selection on non-editable nodes...
+position = [text1, 1]
+PASS gotRange.startContainer === originalRange.startContainer is true
+PASS gotRange.startOffset is originalRange.startOffset
+PASS gotRange.endContainer === originalRange.endContainer is true
+PASS gotRange.endOffset is originalRange.endOffset
+position = [span1, 1]
+PASS gotRange.startContainer === originalRange.startContainer is true
+PASS gotRange.startOffset is originalRange.startOffset
+PASS gotRange.endContainer === originalRange.endContainer is true
+PASS gotRange.endOffset is originalRange.endOffset
+position = [rootElement, 1]
+PASS gotRange.startContainer === originalRange.startContainer is true
+PASS gotRange.startOffset is originalRange.startOffset
+PASS gotRange.endContainer === originalRange.endContainer is true
+PASS gotRange.endOffset is originalRange.endOffset
+position = [span2, 0]
+PASS gotRange.startContainer === originalRange.startContainer is true
+PASS gotRange.startOffset is originalRange.startOffset
+PASS gotRange.endContainer === originalRange.endContainer is true
+PASS gotRange.endOffset is originalRange.endOffset
+position = [rootElement, 2]
+PASS gotRange.startContainer === originalRange.startContainer is true
+PASS gotRange.startOffset is originalRange.startOffset
+PASS gotRange.endContainer === originalRange.endContainer is true
+PASS gotRange.endOffset is originalRange.endOffset
+position = [span3, 0]
+PASS gotRange.startContainer === originalRange.startContainer is true
+PASS gotRange.startOffset is originalRange.startOffset
+PASS gotRange.endContainer === originalRange.endContainer is true
+PASS gotRange.endOffset is originalRange.endOffset
+position = [text2, 0]
+PASS gotRange.startContainer === originalRange.startContainer is true
+PASS gotRange.startOffset is originalRange.startOffset
+PASS gotRange.endContainer === originalRange.endContainer is true
+PASS gotRange.endOffset is originalRange.endOffset
+Testing selection on editable nodes...
+position = [text1, 1]
+PASS gotRange.startContainer === originalRange.startContainer is true
+PASS gotRange.startOffset is originalRange.startOffset
+PASS gotRange.endContainer === originalRange.endContainer is true
+PASS gotRange.endOffset is originalRange.endOffset
+position = [span1, 1]
+PASS gotRange.startContainer === originalRange.startContainer is true
+PASS gotRange.startOffset is originalRange.startOffset
+PASS gotRange.endContainer === originalRange.endContainer is true
+PASS gotRange.endOffset is originalRange.endOffset
+position = [rootElement, 1]
+PASS gotRange.startContainer === originalRange.startContainer is true
+PASS gotRange.startOffset is originalRange.startOffset
+PASS gotRange.endContainer === originalRange.endContainer is true
+PASS gotRange.endOffset is originalRange.endOffset
+position = [span2, 0]
+PASS gotRange.startContainer === originalRange.startContainer is true
+PASS gotRange.startOffset is originalRange.startOffset
+PASS gotRange.endContainer === originalRange.endContainer is true
+PASS gotRange.endOffset is originalRange.endOffset
+position = [rootElement, 2]
+PASS gotRange.startContainer === originalRange.startContainer is true
+PASS gotRange.startOffset is originalRange.startOffset
+PASS gotRange.endContainer === originalRange.endContainer is true
+PASS gotRange.endOffset is originalRange.endOffset
+position = [span3, 0]
+PASS gotRange.startContainer === originalRange.startContainer is true
+PASS gotRange.startOffset is originalRange.startOffset
+PASS gotRange.endContainer === originalRange.endContainer is true
+PASS gotRange.endOffset is originalRange.endOffset
+position = [text2, 0]
+PASS gotRange.startContainer === originalRange.startContainer is true
+PASS gotRange.startOffset is originalRange.startOffset
+PASS gotRange.endContainer === originalRange.endContainer is true
+PASS gotRange.endOffset is originalRange.endOffset
+PASS successfullyParsed is true
+
+TEST COMPLETE
+
