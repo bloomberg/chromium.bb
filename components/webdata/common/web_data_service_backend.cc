@@ -45,8 +45,7 @@ sql::InitStatus WebDataServiceBackend::LoadDatabaseIfNecessary() {
   db_.reset(new WebDatabase());
 
   for (ScopedVector<WebDatabaseTable>::iterator it = tables_.begin();
-       it != tables_.end();
-       ++it) {
+       it != tables_.end(); ++it) {
     db_->AddTable(*it);
   }
 
@@ -61,13 +60,11 @@ sql::InitStatus WebDataServiceBackend::LoadDatabaseIfNecessary() {
   return init_status_;
 }
 
-void WebDataServiceBackend::ShutdownDatabase(bool should_reinit) {
+void WebDataServiceBackend::ShutdownDatabase() {
   if (db_ && init_status_ == sql::INIT_OK)
     db_->CommitTransaction();
   db_.reset(NULL);
-  init_complete_ = !should_reinit; // Setting init_complete_ to true will ensure
-  // that the init sequence is not re-run.
-
+  init_complete_ = true;  // Ensures the init sequence is not re-run.
   init_status_ = sql::INIT_FAILURE;
 }
 
@@ -111,7 +108,7 @@ scoped_ptr<WDTypedResult> WebDataServiceBackend::ExecuteReadTask(
 }
 
 WebDataServiceBackend::~WebDataServiceBackend() {
-  ShutdownDatabase(false);
+  ShutdownDatabase();
 }
 
 void WebDataServiceBackend::Commit() {

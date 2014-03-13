@@ -62,11 +62,7 @@ class WEBDATA_EXPORT WebDataServiceBase
   // Initializes the web data service.
   virtual void Init();
 
-  // Unloads the database without actually shutting down the service.  This can
-  // be used to temporarily reduce the browser process' memory footprint.
-  void UnloadDatabase();
-
-  // Unloads the database permanently and shuts down service.
+  // Unloads the database and shuts down service.
   void ShutdownDatabase();
 
   // Register a callback to be notified that the database has loaded. Multiple

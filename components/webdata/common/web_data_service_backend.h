@@ -35,7 +35,7 @@ class WEBDATA_EXPORT WebDataServiceBackend
     : public base::RefCountedDeleteOnMessageLoop<WebDataServiceBackend> {
  public:
   class Delegate {
-    public:
+   public:
     virtual ~Delegate() {}
 
     // Invoked when the backend has finished loading the db.
@@ -59,9 +59,8 @@ class WEBDATA_EXPORT WebDataServiceBackend
   // the status of the database.
   sql::InitStatus LoadDatabaseIfNecessary();
 
-  // Shuts down database. |should_reinit| tells us whether or not it should be
-  // possible to re-initialize the DB after the shutdown.
-  void ShutdownDatabase(bool should_reinit);
+  // Shuts down the database.
+  void ShutdownDatabase();
 
   // Task wrappers to update requests and and notify |request_manager_|. These
   // are used in cases where the request is being made from the UI thread and an

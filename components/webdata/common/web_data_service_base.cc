@@ -37,12 +37,6 @@ void WebDataServiceBase::Init() {
   wdbs_->LoadDatabase();
 }
 
-void WebDataServiceBase::UnloadDatabase() {
-  if (!wdbs_.get())
-    return;
-  wdbs_->UnloadDatabase();
-}
-
 void WebDataServiceBase::ShutdownDatabase() {
   if (!wdbs_.get())
     return;

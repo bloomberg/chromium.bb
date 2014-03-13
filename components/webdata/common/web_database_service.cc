@@ -71,15 +71,6 @@ void WebDatabaseService::LoadDatabase() {
       Bind(&WebDataServiceBackend::InitDatabase, wds_backend_));
 }
 
-void WebDatabaseService::UnloadDatabase() {
-  db_loaded_ = false;
-  if (!wds_backend_)
-    return;
-  db_thread_->PostTask(FROM_HERE,
-                       Bind(&WebDataServiceBackend::ShutdownDatabase,
-                            wds_backend_, true));
-}
-
 void WebDatabaseService::ShutdownDatabase() {
   db_loaded_ = false;
   loaded_callbacks_.clear();
@@ -87,9 +78,8 @@ void WebDatabaseService::ShutdownDatabase() {
   weak_ptr_factory_.InvalidateWeakPtrs();
   if (!wds_backend_)
     return;
-  db_thread_->PostTask(FROM_HERE,
-      Bind(&WebDataServiceBackend::ShutdownDatabase,
-           wds_backend_, false));
+  db_thread_->PostTask(
+      FROM_HERE, Bind(&WebDataServiceBackend::ShutdownDatabase, wds_backend_));
 }
 
 WebDatabase* WebDatabaseService::GetDatabaseOnDB() const {
