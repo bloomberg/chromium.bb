@@ -3,6 +3,7 @@
 
 #include <xf86drm.h>
 #include <xf86atomic.h>
+#include <pthread.h>
 #include "nouveau_drm.h"
 
 #include "nouveau.h"
@@ -94,7 +95,7 @@ nouveau_bo(struct nouveau_bo *bo)
 struct nouveau_device_priv {
 	struct nouveau_device base;
 	int close;
-	atomic_t lock;
+	pthread_mutex_t lock;
 	struct nouveau_list bo_list;
 	uint32_t *client;
 	int nr_client;
