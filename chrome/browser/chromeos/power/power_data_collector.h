@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/time/time.h"
+#include "chrome/browser/chromeos/power/cpu_data_collector.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/power_manager_client.h"
 
@@ -63,8 +64,15 @@ class CHROMEOS_EXPORT PowerDataCollector : public PowerManagerClient::Observer {
     return system_resumed_data_;
   }
 
+  const CpuDataCollector& cpu_data_collector() const {
+    return cpu_data_collector_;
+  }
+
   // Can be called only after DBusThreadManager is initialized.
   static void Initialize();
+
+  // Same as Initialize, but does not start the CpuDataCollector.
+  static void InitializeForTesting();
 
   // Can be called only if initialized via Initialize, and before
   // DBusThreadManager is destroyed.
@@ -83,12 +91,13 @@ class CHROMEOS_EXPORT PowerDataCollector : public PowerManagerClient::Observer {
   static const int kSampleTimeLimitSec;
 
  private:
-  PowerDataCollector();
+  explicit PowerDataCollector(const bool start_cpu_data_collector);
 
   virtual ~PowerDataCollector();
 
   std::deque<PowerSupplySample> power_supply_data_;
   std::deque<SystemResumedSample> system_resumed_data_;
+  CpuDataCollector cpu_data_collector_;
 
   DISALLOW_COPY_AND_ASSIGN(PowerDataCollector);
 };
