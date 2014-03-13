@@ -59,7 +59,7 @@ const char kChromiumSyncService[] = "service=chromiumsync";
 
 // Under the covers, we use a dummy chrome-extension ID to serve the purposes
 // outlined in the .h file comment for this string.
-const char* SigninManager::kChromeSigninEffectiveSite =
+const char SigninManager::kChromeSigninEffectiveSite[] =
     "chrome-extension://acfccoigjajmmgbhpfbjnpckhjjegnih";
 
 // static

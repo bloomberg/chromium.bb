@@ -68,7 +68,7 @@ class SigninManager : public SigninManagerBase,
   // We do not grant WebUI privilieges / bindings to this process or to URLs of
   // this scheme; enforcement of privileges is handled separately by
   // OneClickSigninHelper.
-  static const char* kChromeSigninEffectiveSite;
+  static const char kChromeSigninEffectiveSite[];
 
   explicit SigninManager(SigninClient* client);
   virtual ~SigninManager();
