@@ -1344,12 +1344,13 @@ EVENT_TYPE(QUIC_SESSION_PACKET_RECEIVED)
 
 // Session sent a QUIC packet.
 //   {
-//     "encryption_level": <The EncryptionLevel of the packet>
+//     "encryption_level": <The EncryptionLevel of the packet>,
+//     "transmission_type": <The TransmissionType of the packet>,
 //     "packet_sequence_number": <The packet's full 64-bit sequence number,
 //                                as a base-10 string.>,
 //     "size": <The size of the packet in bytes>
 //   }
-EVENT_TYPE(QUIC_SESSION_PACKET_RETRANSMITTED)
+EVENT_TYPE(QUIC_SESSION_PACKET_SENT)
 
 // Session retransmitted a QUIC packet.
 //   {
@@ -1358,11 +1359,12 @@ EVENT_TYPE(QUIC_SESSION_PACKET_RETRANSMITTED)
 //     "new_packet_sequence_number": <The new packet's full 64-bit sequence
 //                                    number, as a base-10 string.>,
 //   }
-EVENT_TYPE(QUIC_SESSION_PACKET_SENT)
+EVENT_TYPE(QUIC_SESSION_PACKET_RETRANSMITTED)
 
 // Session received a QUIC packet header for a valid packet.
 //   {
-//     "guid": <The 64-bit GUID for this connection, as a base-10 string>,
+//     "connection_id": <The 64-bit CONNECTION_ID for this connection, as a
+//                       base-10 string>,
 //     "public_flags": <The public flags set for this packet>,
 //     "packet_sequence_number": <The packet's full 64-bit sequence number,
 //                                as a base-10 string.>,
@@ -1549,7 +1551,8 @@ EVENT_TYPE(QUIC_SESSION_VERSION_NEGOTIATED)
 
 // Session revived a QUIC packet packet via FEC.
 //   {
-//     "guid": <The 64-bit GUID for this connection, as a base-10 string>,
+//     "connection_id": <The 64-bit CONNECTION_ID for this connection, as a
+//                       base-10 string>,
 //     "public_flags": <The public flags set for this packet>,
 //     "packet_sequence_number": <The packet's full 64-bit sequence number,
 //                                as a base-10 string.>,

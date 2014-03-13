@@ -90,7 +90,7 @@ bool QuicPacketCreator::ShouldSendFec(bool force_close) const {
 
 void QuicPacketCreator::MaybeStartFEC() {
   // Don't send FEC until QUIC_VERSION_15.
-  if (framer_->version() > QUIC_VERSION_14 &&
+  if (framer_->version() != QUIC_VERSION_13 &&
       options_.max_packets_per_fec_group > 0 && fec_group_.get() == NULL) {
     DCHECK(queued_frames_.empty());
     // Set the fec group number to the sequence number of the next packet.

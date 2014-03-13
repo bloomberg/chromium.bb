@@ -89,13 +89,14 @@ TEST_F(CubicTest, CwndIncreaseStatsDuringConvexRegion) {
     // Advance current time so that cwnd update is allowed to happen by Cubic.
     clock_.AdvanceTime(hundred_ms_);
     current_cwnd = cubic_.CongestionWindowAfterAck(current_cwnd, rtt_min);
-    EXPECT_NEAR(expected_cwnd - 10, stats_.cwnd_increase_reno_mode, 1);
+    EXPECT_NEAR(expected_cwnd - 10, stats_.cwnd_increase_congestion_avoidance,
+                1);
     EXPECT_NEAR(1u, stats_.cwnd_increase_cubic_mode, 1);
     expected_cwnd++;
   }
   uint32 old_cwnd = current_cwnd;
   stats_.cwnd_increase_cubic_mode = 0;
-  stats_.cwnd_increase_reno_mode = 0;
+  stats_.cwnd_increase_congestion_avoidance = 0;
 
   // Testing Cubic mode increase.
   for (int i = 0; i < 52; ++i) {
@@ -112,7 +113,8 @@ TEST_F(CubicTest, CwndIncreaseStatsDuringConvexRegion) {
   expected_cwnd = 11 + (elapsed_time_s * elapsed_time_s * elapsed_time_s * 410)
       / 1024;
   EXPECT_EQ(expected_cwnd - old_cwnd, stats_.cwnd_increase_cubic_mode);
-  EXPECT_EQ(0u, stats_.cwnd_increase_reno_mode);
+  EXPECT_EQ(expected_cwnd - old_cwnd,
+            stats_.cwnd_increase_congestion_avoidance);
 }
 
 
@@ -150,7 +152,7 @@ TEST_F(CubicTest, BelowOrigin) {
   uint32 old_cwnd =  current_cwnd;
   // Cubic phase.
   stats_.cwnd_increase_cubic_mode = 0;
-  stats_.cwnd_increase_reno_mode = 0;
+  stats_.cwnd_increase_congestion_avoidance = 0;
   for (int i = 0; i < 40 ; ++i) {
     clock_.AdvanceTime(hundred_ms_);
     current_cwnd = cubic_.CongestionWindowAfterAck(current_cwnd, rtt_min);
@@ -158,7 +160,8 @@ TEST_F(CubicTest, BelowOrigin) {
   expected_cwnd = 422;
   EXPECT_EQ(expected_cwnd, current_cwnd);
   EXPECT_EQ(expected_cwnd - old_cwnd, stats_.cwnd_increase_cubic_mode);
-  EXPECT_EQ(0u, stats_.cwnd_increase_reno_mode);
+  EXPECT_EQ(expected_cwnd - old_cwnd,
+            stats_.cwnd_increase_congestion_avoidance);
 }
 
 }  // namespace test

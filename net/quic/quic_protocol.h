@@ -254,7 +254,6 @@ enum QuicVersion {
   QUIC_VERSION_UNSUPPORTED = 0,
 
   QUIC_VERSION_13 = 13,
-  QUIC_VERSION_14 = 14,
   QUIC_VERSION_15 = 15,
   QUIC_VERSION_16 = 16,  // Current version.
 };
@@ -268,7 +267,6 @@ enum QuicVersion {
 // http://sites/quic/adding-and-removing-versions
 static const QuicVersion kSupportedQuicVersions[] = {QUIC_VERSION_16,
                                                      QUIC_VERSION_15,
-                                                     QUIC_VERSION_14,
                                                      QUIC_VERSION_13};
 
 typedef std::vector<QuicVersion> QuicVersionVector;

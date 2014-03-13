@@ -1428,7 +1428,7 @@ bool QuicFramer::ProcessReceivedInfo(uint8 frame_type,
     last_sequence_number -= (range_length + 1);
   }
 
-  if (quic_version_ > QUIC_VERSION_14) {
+  if (quic_version_ != QUIC_VERSION_13) {
     // Parse the revived packets list.
     uint8 num_revived_packets;
     if (!reader_->ReadBytes(&num_revived_packets, 1)) {
@@ -1485,7 +1485,7 @@ bool QuicFramer::ProcessQuicCongestionFeedbackFrame(
     case kInterArrival: {
       CongestionFeedbackMessageInterArrival* inter_arrival =
           &frame->inter_arrival;
-      if (quic_version_ <= QUIC_VERSION_14) {
+      if (quic_version_ == QUIC_VERSION_13) {
         uint16 unused_accumulated_number_of_lost_packets;
         if (!reader_->ReadUInt16(
                 &unused_accumulated_number_of_lost_packets)) {
@@ -1552,7 +1552,7 @@ bool QuicFramer::ProcessQuicCongestionFeedbackFrame(
     }
     case kTCP: {
       CongestionFeedbackMessageTCP* tcp = &frame->tcp;
-      if (quic_version_ <= QUIC_VERSION_14) {
+      if (quic_version_ == QUIC_VERSION_13) {
         uint16 unused_accumulated_number_of_lost_packets;
         if (!reader_->ReadUInt16(&unused_accumulated_number_of_lost_packets)) {
           set_detailed_error(
@@ -1849,7 +1849,7 @@ size_t QuicFramer::GetAckFrameSize(
                                        largest_observed_length);
   if (!ack_info.nack_ranges.empty()) {
     ack_size += kNumberOfMissingPacketsSize  +
-        (quic_version_ <= QUIC_VERSION_14 ? 0 : kNumberOfRevivedPacketsSize);
+        (quic_version_ == QUIC_VERSION_13 ? 0 : kNumberOfRevivedPacketsSize);
     ack_size += ack_info.nack_ranges.size() *
       (missing_sequence_number_length + PACKET_1BYTE_SEQUENCE_NUMBER);
     ack_size +=
@@ -1882,7 +1882,7 @@ size_t QuicFramer::ComputeFrameLength(
         case kInterArrival: {
           const CongestionFeedbackMessageInterArrival& inter_arrival =
               congestion_feedback.inter_arrival;
-          if (quic_version_ <= QUIC_VERSION_14) {
+          if (quic_version_ == QUIC_VERSION_13) {
             len += 2;  // Accumulated number of lost packets.
           }
           len += 1;  // Number received packets.
@@ -1899,7 +1899,7 @@ size_t QuicFramer::ComputeFrameLength(
           len += 4;  // Bitrate.
           break;
         case kTCP:
-          if (quic_version_ <= QUIC_VERSION_14) {
+          if (quic_version_ == QUIC_VERSION_13) {
             len += 2;  // Accumulated number of lost packets.
           }
           len += 2;  // Receive window.
@@ -2059,7 +2059,7 @@ bool QuicFramer::AppendAckFrameAndTypeByte(
       GetMinAckFrameSize(quic_version_,
                          header.public_header.sequence_number_length,
                          largest_observed_length) -
-      (quic_version_ <= QUIC_VERSION_14 ? 0 : kNumberOfRevivedPacketsSize);
+      (quic_version_ == QUIC_VERSION_13 ? 0 : kNumberOfRevivedPacketsSize);
   size_t max_num_ranges = available_range_bytes /
       (missing_sequence_number_length + PACKET_1BYTE_SEQUENCE_NUMBER);
   max_num_ranges =
@@ -2168,7 +2168,7 @@ bool QuicFramer::AppendAckFrameAndTypeByte(
   }
   DCHECK_EQ(num_missing_ranges, num_ranges_written);
 
-  if (quic_version_ > QUIC_VERSION_14) {
+  if (quic_version_ != QUIC_VERSION_13) {
     // Append revived packets.
     // If not all the revived packets fit, only mention the ones that do.
     uint8 num_revived_packets =
@@ -2206,7 +2206,7 @@ bool QuicFramer::AppendCongestionFeedbackFrame(
     case kInterArrival: {
       const CongestionFeedbackMessageInterArrival& inter_arrival =
           frame.inter_arrival;
-      if (quic_version_ <= QUIC_VERSION_14) {
+      if (quic_version_ == QUIC_VERSION_13) {
         // accumulated_number_of_lost_packets is removed.  Always write 0.
         if (!writer->WriteUInt16(0)) {
           return false;
@@ -2272,7 +2272,7 @@ bool QuicFramer::AppendCongestionFeedbackFrame(
       DCHECK_LE(tcp.receive_window, 1u << 20);
       // Simple bit packing, don't send the 4 least significant bits.
       uint16 receive_window = static_cast<uint16>(tcp.receive_window >> 4);
-      if (quic_version_ <= QUIC_VERSION_14) {
+      if (quic_version_ == QUIC_VERSION_13) {
         // accumulated_number_of_lost_packets is removed.  Always write 0.
         if (!writer->WriteUInt16(0)) {
           return false;

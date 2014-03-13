@@ -3011,7 +3011,7 @@ TEST_P(QuicConnectionTest, GoAway) {
 }
 
 TEST_P(QuicConnectionTest, WindowUpdate) {
-  if (version() < QUIC_VERSION_14) {
+  if (version() == QUIC_VERSION_13) {
     return;
   }
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
@@ -3024,7 +3024,7 @@ TEST_P(QuicConnectionTest, WindowUpdate) {
 }
 
 TEST_P(QuicConnectionTest, Blocked) {
-  if (version() < QUIC_VERSION_14) {
+  if (version() == QUIC_VERSION_13) {
     return;
   }
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
@@ -3599,7 +3599,7 @@ TEST_P(QuicConnectionTest, AckNotifierTriggerCallback) {
 
   // Create a delegate which we expect to be called.
   scoped_refptr<MockAckNotifierDelegate> delegate(new MockAckNotifierDelegate);
-  EXPECT_CALL(*delegate, OnAckNotification()).Times(1);
+  EXPECT_CALL(*delegate, OnAckNotification(_, _, _, _)).Times(1);
 
   // Send some data, which will register the delegate to be notified.
   connection_.SendStreamDataWithString(1, "foo", 0, !kFin, delegate.get());
@@ -3616,7 +3616,7 @@ TEST_P(QuicConnectionTest, AckNotifierFailToTriggerCallback) {
 
   // Create a delegate which we don't expect to be called.
   scoped_refptr<MockAckNotifierDelegate> delegate(new MockAckNotifierDelegate);
-  EXPECT_CALL(*delegate, OnAckNotification()).Times(0);
+  EXPECT_CALL(*delegate, OnAckNotification(_, _, _, _)).Times(0);
 
   EXPECT_CALL(*send_algorithm_, UpdateRtt(_));
   EXPECT_CALL(*send_algorithm_, OnPacketAcked(_, _)).Times(2);
@@ -3647,7 +3647,7 @@ TEST_P(QuicConnectionTest, AckNotifierCallbackAfterRetransmission) {
 
   // Create a delegate which we expect to be called.
   scoped_refptr<MockAckNotifierDelegate> delegate(new MockAckNotifierDelegate);
-  EXPECT_CALL(*delegate, OnAckNotification()).Times(1);
+  EXPECT_CALL(*delegate, OnAckNotification(_, _, _, _)).Times(1);
 
   // Send four packets, and register to be notified on ACK of packet 2.
   connection_.SendStreamDataWithString(3, "foo", 0, !kFin, NULL);
@@ -3690,7 +3690,7 @@ TEST_P(QuicConnectionTest, AckNotifierCallbackAfterFECRecovery) {
 
   // Create a delegate which we expect to be called.
   scoped_refptr<MockAckNotifierDelegate> delegate(new MockAckNotifierDelegate);
-  EXPECT_CALL(*delegate, OnAckNotification()).Times(1);
+  EXPECT_CALL(*delegate, OnAckNotification(_, _, _, _)).Times(1);
 
   // Expect ACKs for 1 packet.
   EXPECT_CALL(*send_algorithm_, UpdateRtt(_));
@@ -3733,9 +3733,10 @@ class MockQuicConnectionDebugVisitor
   MOCK_METHOD1(OnFrameAddedToPacket,
                void(const QuicFrame&));
 
-  MOCK_METHOD4(OnPacketSent,
+  MOCK_METHOD5(OnPacketSent,
                void(QuicPacketSequenceNumber,
                     EncryptionLevel,
+                    TransmissionType,
                     const QuicEncryptedPacket&,
                     WriteResult));
 
@@ -3804,7 +3805,7 @@ TEST_P(QuicConnectionTest, Pacing) {
 }
 
 TEST_P(QuicConnectionTest, ControlFramesInstigateAcks) {
-  if (version() < QUIC_VERSION_14) {
+  if (version() == QUIC_VERSION_13) {
     return;
   }
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));

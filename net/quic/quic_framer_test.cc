@@ -1674,8 +1674,8 @@ TEST_P(QuicFramerTest, StreamFrameInFecGroup) {
   CheckStreamFrameData("hello world!", visitor_.stream_frames_[0]);
 }
 
-TEST_P(QuicFramerTest, AckFrameV14) {
-  if (framer_.version() > QUIC_VERSION_14) {
+TEST_P(QuicFramerTest, AckFrameV13) {
+  if (framer_.version() != QUIC_VERSION_13) {
     return;
   }
 
@@ -2475,8 +2475,8 @@ TEST_P(QuicFramerTest, AckFrame500Nacks15) {
                                       AsChars(packet), arraysize(packet));
 }
 
-TEST_P(QuicFramerTest, AckFrame500NacksV14) {
-  if (framer_.version() > QUIC_VERSION_14) {
+TEST_P(QuicFramerTest, AckFrame500NacksV13) {
+  if (framer_.version() != QUIC_VERSION_13) {
     return;
   }
   unsigned char packet[] = {
@@ -2555,7 +2555,7 @@ TEST_P(QuicFramerTest, AckFrame500NacksV14) {
 }
 
 TEST_P(QuicFramerTest, CongestionFeedbackFrameTCP) {
-  if (framer_.version() <= QUIC_VERSION_14) {
+  if (framer_.version() == QUIC_VERSION_13) {
     return;
   }
   unsigned char packet[] = {
@@ -2608,8 +2608,8 @@ TEST_P(QuicFramerTest, CongestionFeedbackFrameTCP) {
   }
 }
 
-TEST_P(QuicFramerTest, CongestionFeedbackFrameTCPV14) {
-  if (framer_.version() > QUIC_VERSION_14) {
+TEST_P(QuicFramerTest, CongestionFeedbackFrameTCPV13) {
+  if (framer_.version() != QUIC_VERSION_13) {
     return;
   }
   unsigned char packet[] = {
@@ -2667,7 +2667,7 @@ TEST_P(QuicFramerTest, CongestionFeedbackFrameTCPV14) {
 }
 
 TEST_P(QuicFramerTest, CongestionFeedbackFrameInterArrival) {
-  if (framer_.version() <= QUIC_VERSION_14) {
+  if (framer_.version() == QUIC_VERSION_13) {
     return;
   }
   unsigned char packet[] = {
@@ -2759,8 +2759,8 @@ TEST_P(QuicFramerTest, CongestionFeedbackFrameInterArrival) {
   }
 }
 
-TEST_P(QuicFramerTest, CongestionFeedbackFrameInterArrivalV14) {
-  if (framer_.version() > QUIC_VERSION_14) {
+TEST_P(QuicFramerTest, CongestionFeedbackFrameInterArrivalV13) {
+  if (framer_.version() != QUIC_VERSION_13) {
     return;
   }
   unsigned char packet[] = {
@@ -4111,8 +4111,8 @@ TEST_P(QuicFramerTest, BuildAckFramePacket15) {
                                       AsChars(packet), arraysize(packet));
 }
 
-TEST_P(QuicFramerTest, BuildAckFramePacketV14) {
-  if (version_ > QUIC_VERSION_14) {
+TEST_P(QuicFramerTest, BuildAckFramePacketV13) {
+  if (version_ != QUIC_VERSION_13) {
     return;
   }
   QuicPacketHeader header;
@@ -4181,7 +4181,7 @@ TEST_P(QuicFramerTest, BuildAckFramePacketV14) {
 }
 
 TEST_P(QuicFramerTest, BuildCongestionFeedbackFramePacketTCP) {
-  if (version_ <= QUIC_VERSION_14) {
+  if (version_ == QUIC_VERSION_13) {
     return;
   }
   QuicPacketHeader header;
@@ -4229,8 +4229,8 @@ TEST_P(QuicFramerTest, BuildCongestionFeedbackFramePacketTCP) {
                                       AsChars(packet), arraysize(packet));
 }
 
-TEST_P(QuicFramerTest, BuildCongestionFeedbackFramePacketTCPV14) {
-  if (version_ > QUIC_VERSION_14) {
+TEST_P(QuicFramerTest, BuildCongestionFeedbackFramePacketTCPV13) {
+  if (version_ != QUIC_VERSION_13) {
     return;
   }
   QuicPacketHeader header;
@@ -4281,7 +4281,7 @@ TEST_P(QuicFramerTest, BuildCongestionFeedbackFramePacketTCPV14) {
 }
 
 TEST_P(QuicFramerTest, BuildCongestionFeedbackFramePacketInterArrival) {
-  if (version_ <= QUIC_VERSION_14) {
+  if (version_ == QUIC_VERSION_13) {
     return;
   }
   QuicPacketHeader header;
@@ -4353,8 +4353,8 @@ TEST_P(QuicFramerTest, BuildCongestionFeedbackFramePacketInterArrival) {
                                       AsChars(packet), arraysize(packet));
 }
 
-TEST_P(QuicFramerTest, BuildCongestionFeedbackFramePacketInterArrivalV14) {
-  if (version_ > QUIC_VERSION_14) {
+TEST_P(QuicFramerTest, BuildCongestionFeedbackFramePacketInterArrivalV13) {
+  if (version_ != QUIC_VERSION_13) {
     return;
   }
   QuicPacketHeader header;

@@ -116,59 +116,60 @@ class NET_EXPORT_PRIVATE QuicConnectionDebugVisitorInterface
   // Called when a packet has been sent.
   virtual void OnPacketSent(QuicPacketSequenceNumber sequence_number,
                             EncryptionLevel level,
+                            TransmissionType transmission_type,
                             const QuicEncryptedPacket& packet,
-                            WriteResult result) = 0;
+                            WriteResult result) {}
 
   // Called when the contents of a packet have been retransmitted as
   // a new packet.
   virtual void OnPacketRetransmitted(
       QuicPacketSequenceNumber old_sequence_number,
-      QuicPacketSequenceNumber new_sequence_number) = 0;
+      QuicPacketSequenceNumber new_sequence_number) {}
 
   // Called when a packet has been received, but before it is
   // validated or parsed.
   virtual void OnPacketReceived(const IPEndPoint& self_address,
                                 const IPEndPoint& peer_address,
-                                const QuicEncryptedPacket& packet) = 0;
+                                const QuicEncryptedPacket& packet) {}
 
   // Called when the protocol version on the received packet doensn't match
   // current protocol version of the connection.
-  virtual void OnProtocolVersionMismatch(QuicVersion version) = 0;
+  virtual void OnProtocolVersionMismatch(QuicVersion version) {}
 
   // Called when the complete header of a packet has been parsed.
-  virtual void OnPacketHeader(const QuicPacketHeader& header) = 0;
+  virtual void OnPacketHeader(const QuicPacketHeader& header) {}
 
   // Called when a StreamFrame has been parsed.
-  virtual void OnStreamFrame(const QuicStreamFrame& frame) = 0;
+  virtual void OnStreamFrame(const QuicStreamFrame& frame) {}
 
   // Called when a AckFrame has been parsed.
-  virtual void OnAckFrame(const QuicAckFrame& frame) = 0;
+  virtual void OnAckFrame(const QuicAckFrame& frame) {}
 
   // Called when a CongestionFeedbackFrame has been parsed.
   virtual void OnCongestionFeedbackFrame(
-      const QuicCongestionFeedbackFrame& frame) = 0;
+      const QuicCongestionFeedbackFrame& frame) {}
 
   // Called when a StopWaitingFrame has been parsed.
-  virtual void OnStopWaitingFrame(const QuicStopWaitingFrame& frame) = 0;
+  virtual void OnStopWaitingFrame(const QuicStopWaitingFrame& frame) {}
 
   // Called when a RstStreamFrame has been parsed.
-  virtual void OnRstStreamFrame(const QuicRstStreamFrame& frame) = 0;
+  virtual void OnRstStreamFrame(const QuicRstStreamFrame& frame) {}
 
   // Called when a ConnectionCloseFrame has been parsed.
   virtual void OnConnectionCloseFrame(
-      const QuicConnectionCloseFrame& frame) = 0;
+      const QuicConnectionCloseFrame& frame) {}
 
   // Called when a public reset packet has been received.
-  virtual void OnPublicResetPacket(const QuicPublicResetPacket& packet) = 0;
+  virtual void OnPublicResetPacket(const QuicPublicResetPacket& packet) {}
 
   // Called when a version negotiation packet has been received.
   virtual void OnVersionNegotiationPacket(
-      const QuicVersionNegotiationPacket& packet) = 0;
+      const QuicVersionNegotiationPacket& packet) {}
 
   // Called after a packet has been successfully parsed which results
   // in the revival of a packet via FEC.
   virtual void OnRevivedPacket(const QuicPacketHeader& revived_header,
-                               base::StringPiece payload) = 0;
+                               base::StringPiece payload) {}
 };
 
 class NET_EXPORT_PRIVATE QuicConnectionHelperInterface {

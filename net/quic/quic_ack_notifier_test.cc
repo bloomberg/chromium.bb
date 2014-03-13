@@ -8,6 +8,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using testing::_;
+
 namespace net {
 namespace test {
 namespace {
@@ -18,20 +20,18 @@ class QuicAckNotifierTest : public ::testing::Test {
     delegate_ = new MockAckNotifierDelegate;
     notifier_.reset(new QuicAckNotifier(delegate_));
 
-    sequence_numbers_.insert(26);
-    sequence_numbers_.insert(99);
-    sequence_numbers_.insert(1234);
-    notifier_->AddSequenceNumbers(sequence_numbers_);
+    notifier_->AddSequenceNumber(26, 100);
+    notifier_->AddSequenceNumber(99, 20);
+    notifier_->AddSequenceNumber(1234, 3);
   }
 
-  SequenceNumberSet sequence_numbers_;
   MockAckNotifierDelegate* delegate_;
   scoped_ptr<QuicAckNotifier> notifier_;
 };
 
 // Should trigger callback when we receive acks for all the registered seqnums.
 TEST_F(QuicAckNotifierTest, TriggerCallback) {
-  EXPECT_CALL(*delegate_, OnAckNotification()).Times(1);
+  EXPECT_CALL(*delegate_, OnAckNotification(3, 123, 0, 0)).Times(1);
   EXPECT_FALSE(notifier_->OnAck(26));
   EXPECT_FALSE(notifier_->OnAck(99));
   EXPECT_TRUE(notifier_->OnAck(1234));
@@ -40,7 +40,7 @@ TEST_F(QuicAckNotifierTest, TriggerCallback) {
 // Should not trigger callback if we never provide all the seqnums.
 TEST_F(QuicAckNotifierTest, DoesNotTrigger) {
   // Should not trigger callback as not all packets have been seen.
-  EXPECT_CALL(*delegate_, OnAckNotification()).Times(0);
+  EXPECT_CALL(*delegate_, OnAckNotification(_, _, _, _)).Times(0);
   EXPECT_FALSE(notifier_->OnAck(26));
   EXPECT_FALSE(notifier_->OnAck(99));
 }
@@ -52,7 +52,7 @@ TEST_F(QuicAckNotifierTest, UpdateSeqNums) {
   notifier_->UpdateSequenceNumber(99, 3000);
   notifier_->UpdateSequenceNumber(1234, 3001);
 
-  EXPECT_CALL(*delegate_, OnAckNotification()).Times(1);
+  EXPECT_CALL(*delegate_, OnAckNotification(3, 123, 2, 20 + 3)).Times(1);
   EXPECT_FALSE(notifier_->OnAck(26));  // original
   EXPECT_FALSE(notifier_->OnAck(3000));  // updated
   EXPECT_TRUE(notifier_->OnAck(3001));  // updated

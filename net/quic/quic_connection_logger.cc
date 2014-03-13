@@ -41,11 +41,13 @@ base::Value* NetLogQuicPacketCallback(const IPEndPoint* self_address,
 base::Value* NetLogQuicPacketSentCallback(
     QuicPacketSequenceNumber sequence_number,
     EncryptionLevel level,
+    TransmissionType transmission_type,
     size_t packet_size,
     WriteResult result,
     NetLog::LogLevel /* log_level */) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetInteger("encryption_level", level);
+  dict->SetInteger("transmission_type", transmission_type);
   dict->SetString("packet_sequence_number",
                   base::Uint64ToString(sequence_number));
   dict->SetInteger("size", packet_size);
@@ -378,12 +380,13 @@ void QuicConnectionLogger::OnFrameAddedToPacket(const QuicFrame& frame) {
 void QuicConnectionLogger::OnPacketSent(
     QuicPacketSequenceNumber sequence_number,
     EncryptionLevel level,
+    TransmissionType transmission_type,
     const QuicEncryptedPacket& packet,
     WriteResult result) {
   net_log_.AddEvent(
       NetLog::TYPE_QUIC_SESSION_PACKET_SENT,
       base::Bind(&NetLogQuicPacketSentCallback, sequence_number, level,
-                 packet.length(), result));
+                 transmission_type, packet.length(), result));
 }
 
 void QuicConnectionLogger:: OnPacketRetransmitted(

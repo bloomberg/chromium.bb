@@ -83,7 +83,7 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator {
     virtual ~DebugDelegateInterface() {}
 
     // Called when a frame has been added to the current packet.
-    virtual void OnFrameAddedToPacket(const QuicFrame& frame) = 0;
+    virtual void OnFrameAddedToPacket(const QuicFrame& frame) {}
   };
 
   QuicPacketGenerator(DelegateInterface* delegate,

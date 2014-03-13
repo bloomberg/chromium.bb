@@ -320,6 +320,9 @@ void QuicSession::SendRstStream(QuicStreamId id,
 }
 
 void QuicSession::SendGoAway(QuicErrorCode error_code, const string& reason) {
+  if (goaway_sent_) {
+    return;
+  }
   goaway_sent_ = true;
   connection_->SendGoAway(error_code, largest_peer_created_stream_id_, reason);
 }
@@ -454,12 +457,6 @@ QuicDataStream* QuicSession::GetDataStream(const QuicStreamId stream_id) {
 
 QuicDataStream* QuicSession::GetIncomingDataStream(QuicStreamId stream_id) {
   if (IsClosedStream(stream_id)) {
-    return NULL;
-  }
-
-  if (goaway_sent_) {
-    // We've already sent a GoAway
-    SendRstStream(stream_id, QUIC_STREAM_PEER_GOING_AWAY, 0);
     return NULL;
   }
 

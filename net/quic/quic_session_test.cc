@@ -427,15 +427,22 @@ TEST_P(QuicSessionTest, OnCanWriteWithClosedStream) {
 }
 
 TEST_P(QuicSessionTest, SendGoAway) {
-  // After sending a GoAway, ensure new incoming streams cannot be created and
-  // result in a RST being sent.
   EXPECT_CALL(*connection_,
               SendGoAway(QUIC_PEER_GOING_AWAY, 0u, "Going Away."));
   session_.SendGoAway(QUIC_PEER_GOING_AWAY, "Going Away.");
   EXPECT_TRUE(session_.goaway_sent());
 
-  EXPECT_CALL(*connection_, SendRstStream(3u, QUIC_STREAM_PEER_GOING_AWAY, 0));
-  EXPECT_FALSE(session_.GetIncomingDataStream(3u));
+  EXPECT_CALL(*connection_,
+              SendRstStream(3u, QUIC_STREAM_PEER_GOING_AWAY, 0)).Times(0);
+  EXPECT_TRUE(session_.GetIncomingDataStream(3u));
+}
+
+TEST_P(QuicSessionTest, DoNotSendGoAwayTwice) {
+  EXPECT_CALL(*connection_,
+              SendGoAway(QUIC_PEER_GOING_AWAY, 0u, "Going Away.")).Times(1);
+  session_.SendGoAway(QUIC_PEER_GOING_AWAY, "Going Away.");
+  EXPECT_TRUE(session_.goaway_sent());
+  session_.SendGoAway(QUIC_PEER_GOING_AWAY, "Going Away.");
 }
 
 TEST_P(QuicSessionTest, IncreasedTimeoutAfterCryptoHandshake) {

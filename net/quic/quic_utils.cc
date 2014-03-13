@@ -231,6 +231,17 @@ const char* QuicUtils::EncryptionLevelToString(EncryptionLevel level) {
 }
 
 // static
+const char* QuicUtils::TransmissionTypeToString(TransmissionType type) {
+  switch (type) {
+    RETURN_STRING_LITERAL(NOT_RETRANSMISSION);
+    RETURN_STRING_LITERAL(NACK_RETRANSMISSION);
+    RETURN_STRING_LITERAL(RTO_RETRANSMISSION);
+    RETURN_STRING_LITERAL(TLP_RETRANSMISSION);
+  }
+  return "INVALID_TRANSMISSION_TYPE";
+}
+
+// static
 string QuicUtils::TagToString(QuicTag tag) {
   char chars[4];
   bool ascii = true;

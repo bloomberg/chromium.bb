@@ -73,20 +73,18 @@ void Cubic::Reset() {
 void Cubic::UpdateCongestionControlStats(
     QuicTcpCongestionWindow new_cubic_mode_cwnd,
     QuicTcpCongestionWindow new_reno_mode_cwnd) {
-  if (last_congestion_window_ < new_cubic_mode_cwnd) {
-    // Congestion window will increase in cubic mode.
-    stats_->cwnd_increase_cubic_mode += new_cubic_mode_cwnd -
-        last_congestion_window_;
-    if (new_cubic_mode_cwnd <= new_reno_mode_cwnd) {
-      // Congestion window increase in reno mode is higher or equal to cubic
-      // mode's increase.
-      stats_->cwnd_increase_reno_mode += new_reno_mode_cwnd -
-          last_congestion_window_;
+
+  QuicTcpCongestionWindow highest_new_cwnd = std::max(new_cubic_mode_cwnd,
+                                                      new_reno_mode_cwnd);
+  if (last_congestion_window_ < highest_new_cwnd) {
+    // cwnd will increase to highest_new_cwnd.
+    stats_->cwnd_increase_congestion_avoidance +=
+        highest_new_cwnd - last_congestion_window_;
+    if (new_cubic_mode_cwnd > new_reno_mode_cwnd) {
+      // This cwnd increase is due to cubic mode.
+      stats_->cwnd_increase_cubic_mode +=
+          new_cubic_mode_cwnd - last_congestion_window_;
     }
-  } else if (last_congestion_window_ < new_reno_mode_cwnd) {
-    // No cwnd increase in cubic mode, but cwnd will increase in reno mode.
-    stats_->cwnd_increase_reno_mode += new_reno_mode_cwnd -
-        last_congestion_window_;
   }
 }
 

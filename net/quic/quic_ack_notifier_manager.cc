@@ -90,7 +90,8 @@ void AckNotifierManager::OnSerializedPacket(
 
       // The AckNotifier needs to know it is tracking this packet's sequence
       // number.
-      notifier->AddSequenceNumber(serialized_packet.sequence_number);
+      notifier->AddSequenceNumber(serialized_packet.sequence_number,
+                                  serialized_packet.packet->length());
 
       // Update the mapping in the other direction, from sequence
       // number to AckNotifier.

@@ -59,6 +59,9 @@ class NET_EXPORT_PRIVATE QuicUtils {
   // Returns the level of encryption as a char*
   static const char* EncryptionLevelToString(EncryptionLevel level);
 
+  // Returns TransmissionType as a char*
+  static const char* TransmissionTypeToString(TransmissionType type);
+
   // TagToString is a utility function for pretty-printing handshake messages
   // that converts a tag to a string. It will try to maintain the human friendly
   // name if possible (i.e. kABCD -> "ABCD"), or will just treat it as a number

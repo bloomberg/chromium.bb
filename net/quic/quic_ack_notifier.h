@@ -21,8 +21,16 @@ class NET_EXPORT_PRIVATE QuicAckNotifier {
      : public base::RefCounted<DelegateInterface> {
    public:
     DelegateInterface();
-    virtual void OnAckNotification() = 0;
-
+    // Args:
+    //  num_original_packets - Number of packets in the original transmission.
+    //  num_original_bytes - Number of packets in the original transmission.
+    //  num_retransmitted_packets - Number of packets that had to be
+    //                              retransmitted.
+    //  num_retransmitted_bytes - Number of bytes that had to be retransmitted.
+    virtual void OnAckNotification(int num_original_packets,
+                                   int num_original_bytes,
+                                   int num_retransmitted_packets,
+                                   int num_retransmitted_bytes) = 0;
    protected:
     friend class base::RefCounted<DelegateInterface>;
 
@@ -35,11 +43,8 @@ class NET_EXPORT_PRIVATE QuicAckNotifier {
   virtual ~QuicAckNotifier();
 
   // Register a sequence number that this AckNotifier should be interested in.
-  void AddSequenceNumber(const QuicPacketSequenceNumber& sequence_number);
-
-  // Register a set of sequence numbers that this AckNotifier should be
-  // interested in.
-  void AddSequenceNumbers(const SequenceNumberSet& sequence_numbers);
+  void AddSequenceNumber(const QuicPacketSequenceNumber& sequence_number,
+                         int packet_payload_size);
 
   // Called by the QuicConnection on receipt of new ACK frame, with the sequence
   // number referenced by the ACK frame.
@@ -60,14 +65,31 @@ class NET_EXPORT_PRIVATE QuicAckNotifier {
                             QuicPacketSequenceNumber new_sequence_number);
 
  private:
+  struct PacketInfo {
+    PacketInfo();
+    explicit PacketInfo(int payload_size);
+
+    int packet_payload_size;
+  };
+
   // The delegate's OnAckNotification() method will be called once we have been
   // notified of ACKs for all the sequence numbers we are tracking.
   // This is not owned by OnAckNotifier and must outlive it.
   scoped_refptr<DelegateInterface> delegate_;
 
-  // Set of sequence numbers this notifier is waiting to hear about. The
-  // delegate will not be called until this is an empty set.
-  SequenceNumberSet sequence_numbers_;
+  // Sequence numbers this notifier is waiting to hear about. The
+  // delegate will not be called until this is empty.
+  base::hash_map<QuicPacketSequenceNumber, PacketInfo> sequence_numbers_;
+
+  // Transmission and retransmission stats.
+  // Number of packets in the original transmission.
+  int original_packet_count_;
+  // Number of packets in the original transmission.
+  int original_byte_count_;
+  // Number of packets that had to be retransmitted.
+  int retransmitted_packet_count_;
+  // Number of bytes that had to be retransmitted.
+  int retransmitted_byte_count_;
 };
 
 };  // namespace net

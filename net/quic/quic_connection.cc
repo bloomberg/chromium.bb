@@ -389,8 +389,7 @@ bool QuicConnection::OnPacketHeader(const QuicPacketHeader& header) {
     debug_visitor_->OnPacketHeader(header);
   }
 
-  if (header.fec_flag && framer_.version() <= QUIC_VERSION_14) {
-    DLOG(WARNING) << "Ignoring FEC packets for versions prior to 15.";
+  if (header.fec_flag && framer_.version() == QUIC_VERSION_13) {
     return false;
   }
 
@@ -1301,8 +1300,11 @@ bool QuicConnection::WritePacket(QueuedPacket packet) {
   }
   if (debug_visitor_) {
     // Pass the write result to the visitor.
-    debug_visitor_->OnPacketSent(
-        sequence_number, packet.encryption_level, *encrypted, result);
+    debug_visitor_->OnPacketSent(sequence_number,
+                                 packet.encryption_level,
+                                 packet.transmission_type,
+                                 *encrypted,
+                                 result);
   }
   if (result.status == WRITE_STATUS_BLOCKED) {
     visitor_->OnWriteBlocked();
@@ -1618,7 +1620,12 @@ void QuicConnection::SendConnectionCloseWithDetails(QuicErrorCode error,
   // If we're write blocked, WritePacket() will not send, but will capture the
   // serialized packet.
   SendConnectionClosePacket(error, details);
-  CloseConnection(error, false);
+  if (connected_) {
+    // It's possible that while sending the connection close packet, we get a
+    // socket error and disconnect right then and there.  Avoid a double
+    // disconnect in that case.
+    CloseConnection(error, false);
+  }
 }
 
 void QuicConnection::SendConnectionClosePacket(QuicErrorCode error,
