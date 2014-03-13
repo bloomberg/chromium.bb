@@ -132,7 +132,6 @@ public:
     FloatRect getClipBounds() const;
     bool getTransformedClipBounds(FloatRect* bounds) const;
     SkMatrix getTotalMatrix() const;
-    bool isPrintingDevice() const;
 
     void setShouldAntialias(bool antialias) { mutableState()->setShouldAntialias(antialias); }
     bool shouldAntialias() const { return immutableState()->shouldAntialias(); }

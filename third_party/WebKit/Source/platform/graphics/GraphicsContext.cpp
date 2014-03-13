@@ -366,13 +366,6 @@ SkMatrix GraphicsContext::getTotalMatrix() const
     return totalMatrix;
 }
 
-bool GraphicsContext::isPrintingDevice() const
-{
-    if (paintingDisabled())
-        return false;
-    return m_canvas->getTopDevice()->getDeviceCapabilities() & SkBaseDevice::kVector_Capability;
-}
-
 void GraphicsContext::adjustTextRenderMode(SkPaint* paint)
 {
     if (paintingDisabled())

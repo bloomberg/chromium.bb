@@ -182,10 +182,6 @@ void paintSkiaText(GraphicsContext* context,
     int size;
     int paintTextFlags = data.paintTextFlags();
 
-    // Ensure font load for printing, because PDF device needs it.
-    if (context->isPrintingDevice())
-        FontPlatformData::ensureFontLoaded(hfont);
-
     RefPtr<SkTypeface> face = CreateTypefaceFromHFont(hfont, &size);
     paintSkiaText(context, data, face.get(), size, paintTextFlags, numGlyphs, glyphs, advances, offsets, origin, textRect);
 }
