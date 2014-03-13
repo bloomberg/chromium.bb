@@ -48,9 +48,11 @@ struct PPB_Flash_DRM_1_1 {
                          struct PP_Var* id,
                          struct PP_CompletionCallback callback);
   /**
-   * Windows only. Synchronously outputs the HMONITOR corresponding to the
-   * monitor on which the plugin instance is displayed in |hmonitor|. PP_TRUE is
-   * returned on success.
+   * Windows and Mac only. Synchronously outputs the HMONITOR or
+   * CGDirectDisplayID corresponding to the monitor on which the plugin instance
+   * is displayed in |hmonitor|. This value is queried asynchronously and this
+   * will return PP_FALSE if the value is not yet available or an error
+   * occurred. PP_TRUE is returned on success.
    */
   PP_Bool (*GetHmonitor)(PP_Resource drm, int64_t* hmonitor);
   /**

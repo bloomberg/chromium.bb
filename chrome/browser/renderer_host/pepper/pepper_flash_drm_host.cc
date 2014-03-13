@@ -28,6 +28,10 @@
 #include "ui/aura/window_event_dispatcher.h"
 #endif
 
+#if defined(OS_MACOSX)
+#include "chrome/browser/renderer_host/pepper/monitor_finder_mac.h"
+#endif
+
 using content::BrowserPpapiHost;
 
 namespace chrome {
@@ -94,8 +98,8 @@ class MonitorFinder : public base::RefCountedThreadSafe<MonitorFinder> {
   volatile HMONITOR monitor_;
   volatile long request_sent_;
 };
-#else
-// TODO(cpu): Support Mac and Linux someday.
+#elif !defined(OS_MACOSX)
+// TODO(cpu): Support Linux someday.
 class MonitorFinder : public base::RefCountedThreadSafe<MonitorFinder> {
  public:
   MonitorFinder(int, int) { }
