@@ -186,10 +186,28 @@ Status WrapSymKeyAesKw(SymKey* wrapping_key,
 // Preconditions:
 //  * |wrapping_key| is non-null
 //  * |key| is non-null
-//  * |algorithm.id()| is for a symmetric key algorithm.
 //  * |wrapped_key_data| is at least 24 bytes and a multiple of 8 bytes
+//  * |algorithm.id()| is for a symmetric key algorithm.
 Status UnwrapSymKeyAesKw(const CryptoData& wrapped_key_data,
                          SymKey* wrapping_key,
+                         const blink::WebCryptoAlgorithm& algorithm,
+                         bool extractable,
+                         blink::WebCryptoKeyUsageMask usage_mask,
+                         blink::WebCryptoKey* key);
+
+// Preconditions:
+//  * |wrapping_key| is non-null
+//  * |key| is non-null
+Status WrapSymKeyRsaEs(PublicKey* wrapping_key,
+                       SymKey* key,
+                       blink::WebArrayBuffer* buffer);
+
+// Preconditions:
+//  * |wrapping_key| is non-null
+//  * |key| is non-null
+//  * |algorithm.id()| is for a symmetric key algorithm.
+Status UnwrapSymKeyRsaEs(const CryptoData& wrapped_key_data,
+                         PrivateKey* wrapping_key,
                          const blink::WebCryptoAlgorithm& algorithm,
                          bool extractable,
                          blink::WebCryptoKeyUsageMask usage_mask,

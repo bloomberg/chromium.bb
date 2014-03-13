@@ -403,6 +403,23 @@ Status UnwrapSymKeyAesKw(const CryptoData& wrapped_key_data,
   return Status::ErrorUnsupported();
 }
 
+Status WrapSymKeyRsaEs(PublicKey* wrapping_key,
+                       SymKey* key,
+                       blink::WebArrayBuffer* buffer) {
+  // TODO(eroman): http://crbug.com/267888
+  return Status::ErrorUnsupported();
+}
+
+Status UnwrapSymKeyRsaEs(const CryptoData& wrapped_key_data,
+                         PrivateKey* wrapping_key,
+                         const blink::WebCryptoAlgorithm& algorithm,
+                         bool extractable,
+                         blink::WebCryptoKeyUsageMask usage_mask,
+                         blink::WebCryptoKey* key) {
+  // TODO(eroman): http://crbug.com/267888
+  return Status::ErrorUnsupported();
+}
+
 }  // namespace platform
 
 }  // namespace webcrypto

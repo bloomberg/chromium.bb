@@ -1124,8 +1124,7 @@ Status WrapSymKeyAesKw(SymKey* wrapping_key,
 
   const unsigned int output_length = input_length + 8;
   *buffer = blink::WebArrayBuffer::create(output_length, 1);
-  unsigned char* buffer_data = reinterpret_cast<unsigned char*>(buffer->data());
-  SECItem wrapped_key_item = {siBuffer, buffer_data, output_length};
+  SECItem wrapped_key_item = MakeSECItemForBuffer(CryptoData(*buffer));
 
   if (SECSuccess != PK11_WrapSymKey(CKM_NSS_AES_KEY_WRAP,
                                     param_item.get(),
@@ -1212,6 +1211,85 @@ Status UnwrapSymKeyAesKw(const CryptoData& wrapped_key_data,
 
   blink::WebCryptoKeyAlgorithm key_algorithm;
   if (!CreateSecretKeyAlgorithm(algorithm, plaintext_length, &key_algorithm))
+    return Status::ErrorUnexpected();
+
+  *key = blink::WebCryptoKey::create(new SymKey(unwrapped_key.Pass()),
+                                     blink::WebCryptoKeyTypeSecret,
+                                     extractable,
+                                     key_algorithm,
+                                     usage_mask);
+  return Status::Success();
+}
+
+Status WrapSymKeyRsaEs(PublicKey* wrapping_key,
+                       SymKey* key,
+                       blink::WebArrayBuffer* buffer) {
+  // Check the raw length of the key to be wrapped against the max size allowed
+  // by the RSA wrapping key. With PKCS#1 v1.5 padding used in this function,
+  // the maximum data length that can be encrypted is the wrapping_key's modulus
+  // byte length minus eleven bytes.
+  const unsigned int input_length_bytes = PK11_GetKeyLength(key->key());
+  const unsigned int modulus_length_bytes =
+      SECKEY_PublicKeyStrength(wrapping_key->key());
+  if (modulus_length_bytes < 11 ||
+      modulus_length_bytes - 11 < input_length_bytes)
+    return Status::ErrorDataTooLarge();
+
+  *buffer = blink::WebArrayBuffer::create(modulus_length_bytes, 1);
+  SECItem wrapped_key_item = MakeSECItemForBuffer(CryptoData(*buffer));
+
+  if (SECSuccess !=
+      PK11_PubWrapSymKey(
+          CKM_RSA_PKCS, wrapping_key->key(), key->key(), &wrapped_key_item)) {
+    return Status::Error();
+  }
+  if (wrapped_key_item.len != modulus_length_bytes)
+    return Status::ErrorUnexpected();
+
+  return Status::Success();
+}
+
+Status UnwrapSymKeyRsaEs(const CryptoData& wrapped_key_data,
+                         PrivateKey* wrapping_key,
+                         const blink::WebCryptoAlgorithm& algorithm,
+                         bool extractable,
+                         blink::WebCryptoKeyUsageMask usage_mask,
+                         blink::WebCryptoKey* key) {
+
+  // Verify wrapped_key_data size does not exceed the modulus of the RSA key.
+  const int modulus_length_bytes =
+      PK11_GetPrivateModulusLen(wrapping_key->key());
+  if (modulus_length_bytes <= 0)
+    return Status::ErrorUnexpected();
+  if (wrapped_key_data.byte_length() >
+      static_cast<unsigned int>(modulus_length_bytes))
+    return Status::ErrorDataTooLarge();
+
+  // Determine the proper NSS key properties from the input algorithm.
+  CK_MECHANISM_TYPE mechanism;
+  CK_FLAGS flags;
+  Status status =
+      WebCryptoAlgorithmToNssMechFlags(algorithm, &mechanism, &flags);
+  if (status.IsError())
+    return status;
+
+  SECItem wrapped_key_item = MakeSECItemForBuffer(wrapped_key_data);
+
+  crypto::ScopedPK11SymKey unwrapped_key(
+      PK11_PubUnwrapSymKeyWithFlagsPerm(wrapping_key->key(),
+                                        &wrapped_key_item,
+                                        mechanism,
+                                        CKA_DECRYPT,
+                                        0,
+                                        flags,
+                                        false));
+  if (!unwrapped_key)
+    return Status::Error();
+
+  const unsigned int key_length = PK11_GetKeyLength(unwrapped_key.get());
+
+  blink::WebCryptoKeyAlgorithm key_algorithm;
+  if (!CreateSecretKeyAlgorithm(algorithm, key_length, &key_algorithm))
     return Status::ErrorUnexpected();
 
   *key = blink::WebCryptoKey::create(new SymKey(unwrapped_key.Pass()),

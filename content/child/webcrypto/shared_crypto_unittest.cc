@@ -357,7 +357,7 @@ blink::WebCryptoAlgorithm CreateAesKwKeyGenAlgorithm(
 // (private key) representations of the key pair provided in Example 1 of the
 // NIST test vectors at
 // ftp://ftp.rsa.com/pub/rsalabs/tmp/pkcs1v15sign-vectors.txt
-const unsigned int kModulusLength = 1024;
+const unsigned int kModulusLengthBits = 1024;
 const char* const kPublicKeySpkiDerHex =
     "30819f300d06092a864886f70d010101050003818d0030818902818100a5"
     "6e4a0e701017589a5187dc7ea841d156f2ec0e36ad52a44dfeb1e61f7ad9"
@@ -1294,7 +1294,8 @@ TEST_F(SharedCryptoTest, MAYBE(ImportExportSpki)) {
   EXPECT_EQ(blink::WebCryptoKeyTypePublic, key.type());
   EXPECT_TRUE(key.extractable());
   EXPECT_EQ(blink::WebCryptoKeyUsageEncrypt, key.usages());
-  EXPECT_EQ(kModulusLength, key.algorithm().rsaParams()->modulusLengthBits());
+  EXPECT_EQ(kModulusLengthBits,
+            key.algorithm().rsaParams()->modulusLengthBits());
   ExpectCryptoDataMatchesHex(
       "010001", CryptoData(key.algorithm().rsaParams()->publicExponent()));
 
@@ -1379,7 +1380,7 @@ TEST_F(SharedCryptoTest, MAYBE(ImportPkcs8)) {
   EXPECT_EQ(blink::WebCryptoKeyUsageSign, key.usages());
   EXPECT_EQ(blink::WebCryptoAlgorithmIdSha1,
             key.algorithm().rsaHashedParams()->hash().id());
-  EXPECT_EQ(kModulusLength,
+  EXPECT_EQ(kModulusLengthBits,
             key.algorithm().rsaHashedParams()->modulusLengthBits());
   ExpectCryptoDataMatchesHex(
       "010001",
@@ -1591,7 +1592,7 @@ TEST_F(SharedCryptoTest, MAYBE(RsaEsRoundTrip)) {
 
   // Make a maximum-length data message. RSAES can operate on messages up to
   // length of k - 11 bytes, where k is the octet length of the RSA modulus.
-  const unsigned int kMaxMsgSizeBytes = kModulusLength / 8 - 11;
+  const unsigned int kMaxMsgSizeBytes = kModulusLengthBits / 8 - 11;
   // There are two hex chars for each byte.
   const unsigned int kMsgHexSize = kMaxMsgSizeBytes * 2;
   char max_data_hex[kMsgHexSize + 1];
@@ -1611,7 +1612,7 @@ TEST_F(SharedCryptoTest, MAYBE(RsaEsRoundTrip)) {
                                   public_key,
                                   CryptoData(HexStringToBytes(kTestDataHex[i])),
                                   &encrypted_data));
-    EXPECT_EQ(kModulusLength / 8, encrypted_data.byteLength());
+    EXPECT_EQ(kModulusLengthBits / 8, encrypted_data.byteLength());
     ASSERT_STATUS_SUCCESS(Decrypt(
         algorithm, private_key, CryptoData(encrypted_data), &decrypted_data));
     ExpectArrayBufferMatchesHex(kTestDataHex[i], decrypted_data);
@@ -1709,7 +1710,7 @@ TEST_F(SharedCryptoTest, MAYBE(RsaEsFailures)) {
 
   // Fail encrypt with message too large. RSAES can operate on messages up to
   // length of k - 11 bytes, where k is the octet length of the RSA modulus.
-  const unsigned int kMaxMsgSizeBytes = kModulusLength / 8 - 11;
+  const unsigned int kMaxMsgSizeBytes = kModulusLengthBits / 8 - 11;
   EXPECT_STATUS(
       Status::ErrorDataTooLarge(),
       Encrypt(algorithm,
@@ -1805,7 +1806,7 @@ TEST_F(SharedCryptoTest, MAYBE(RsaSsaSignVerifyFailures)) {
 
   // Ensure signatures that are greater than the modulus size fail.
   const unsigned int long_message_size_bytes = 1024;
-  DCHECK_GT(long_message_size_bytes, kModulusLength / 8);
+  DCHECK_GT(long_message_size_bytes, kModulusLengthBits / 8);
   const unsigned char kLongSignature[long_message_size_bytes] = {0};
   EXPECT_STATUS_SUCCESS(
       VerifySignature(algorithm,
@@ -2299,6 +2300,180 @@ TEST_F(SharedCryptoTest, MAYBE(AesGcmSampleSets)) {
                                         &plain_text));
     }
   }
+}
+
+TEST_F(SharedCryptoTest, MAYBE(RsaEsRawSymkeyWrapUnwrapKnownAnswer)) {
+  scoped_ptr<base::Value> json;
+  ASSERT_TRUE(ReadJsonTestFile("rsa_es.json", &json));
+  base::DictionaryValue* test = NULL;
+  ASSERT_TRUE(json->GetAsDictionary(&test));
+  const std::vector<uint8> rsa_spki_der =
+      GetBytesFromHexString(test, "rsa_spki_der");
+  const std::vector<uint8> rsa_pkcs8_der =
+      GetBytesFromHexString(test, "rsa_pkcs8_der");
+  const std::vector<uint8> ciphertext =
+      GetBytesFromHexString(test, "ciphertext");
+  const std::vector<uint8> cleartext = GetBytesFromHexString(test, "cleartext");
+  blink::WebCryptoAlgorithm key_algorithm =
+      CreateHmacImportAlgorithm(blink::WebCryptoAlgorithmIdSha256);
+
+  // Import the RSA key pair.
+  blink::WebCryptoAlgorithm algorithm =
+      CreateAlgorithm(blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5);
+  blink::WebCryptoKey public_key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey private_key = blink::WebCryptoKey::createNull();
+  ImportRsaKeyPair(
+      rsa_spki_der,
+      rsa_pkcs8_der,
+      algorithm,
+      false,
+      blink::WebCryptoKeyUsageWrapKey | blink::WebCryptoKeyUsageUnwrapKey,
+      &public_key,
+      &private_key);
+
+  // Import the symmetric key.
+  blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+  ASSERT_STATUS_SUCCESS(ImportKey(blink::WebCryptoKeyFormatRaw,
+                                  CryptoData(cleartext),
+                                  key_algorithm,
+                                  true,
+                                  blink::WebCryptoKeyUsageSign,
+                                  &key));
+
+  // Wrap the symmetric key with raw format.
+  blink::WebArrayBuffer wrapped_key;
+  ASSERT_STATUS_SUCCESS(WrapKey(
+      blink::WebCryptoKeyFormatRaw, public_key, key, algorithm, &wrapped_key));
+
+  // Unwrap the wrapped key.
+  blink::WebCryptoKey unwrapped_key = blink::WebCryptoKey::createNull();
+  ASSERT_STATUS_SUCCESS(UnwrapKey(blink::WebCryptoKeyFormatRaw,
+                                  CryptoData(wrapped_key),
+                                  private_key,
+                                  algorithm,
+                                  key_algorithm,
+                                  true,
+                                  blink::WebCryptoKeyUsageSign,
+                                  &unwrapped_key));
+  EXPECT_FALSE(key.isNull());
+  EXPECT_TRUE(key.handle());
+  EXPECT_EQ(blink::WebCryptoKeyTypeSecret, key.type());
+  EXPECT_EQ(key_algorithm.id(), key.algorithm().id());
+  EXPECT_EQ(true, key.extractable());
+  EXPECT_EQ(blink::WebCryptoKeyUsageSign, key.usages());
+
+  // Export the new key and compare its raw bytes with the original known data.
+  blink::WebArrayBuffer raw_key;
+  EXPECT_STATUS_SUCCESS(
+      ExportKey(blink::WebCryptoKeyFormatRaw, unwrapped_key, &raw_key));
+  EXPECT_TRUE(ArrayBufferMatches(cleartext, raw_key));
+
+  // Unwrap the known wrapped key and compare to the known cleartext.
+  ASSERT_STATUS_SUCCESS(UnwrapKey(blink::WebCryptoKeyFormatRaw,
+                                  CryptoData(ciphertext),
+                                  private_key,
+                                  algorithm,
+                                  key_algorithm,
+                                  true,
+                                  blink::WebCryptoKeyUsageSign,
+                                  &unwrapped_key));
+  EXPECT_STATUS_SUCCESS(
+      ExportKey(blink::WebCryptoKeyFormatRaw, unwrapped_key, &raw_key));
+  EXPECT_TRUE(ArrayBufferMatches(cleartext, raw_key));
+}
+
+TEST_F(SharedCryptoTest, MAYBE(RsaEsRawSymkeyWrapUnwrapErrors)) {
+  const std::vector<uint8> data(64, 0);
+  blink::WebCryptoAlgorithm key_algorithm =
+      CreateHmacImportAlgorithm(blink::WebCryptoAlgorithmIdSha256);
+
+  // Import the RSA key pair.
+  blink::WebCryptoAlgorithm wrapping_algorithm =
+      CreateAlgorithm(blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5);
+  blink::WebCryptoKey public_key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey private_key = blink::WebCryptoKey::createNull();
+  ImportRsaKeyPair(
+      HexStringToBytes(kPublicKeySpkiDerHex),
+      HexStringToBytes(kPrivateKeyPkcs8DerHex),
+      wrapping_algorithm,
+      false,
+      blink::WebCryptoKeyUsageWrapKey | blink::WebCryptoKeyUsageUnwrapKey,
+      &public_key,
+      &private_key);
+
+  // Import the symmetric key.
+  blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+  ASSERT_STATUS_SUCCESS(ImportKey(blink::WebCryptoKeyFormatRaw,
+                                  CryptoData(data),
+                                  key_algorithm,
+                                  true,
+                                  blink::WebCryptoKeyUsageSign,
+                                  &key));
+
+  // Wrapping with a private key should fail.
+  blink::WebArrayBuffer wrapped_key;
+  EXPECT_STATUS(Status::ErrorUnexpectedKeyType(),
+                WrapKey(blink::WebCryptoKeyFormatRaw,
+                        private_key,
+                        key,
+                        wrapping_algorithm,
+                        &wrapped_key));
+
+  // Wrapping a key whose raw keying material is too large for the wrapping key
+  // should fail.
+  // RSAES can encrypt data up to length of k - 11 bytes, where k is the octet
+  // length of the RSA modulus, and can decrypt data up to length k. Fabricate a
+  // big piece of data here that fails both of these criteria, so it can be used
+  // for both wrap and unwrap negative tests below.
+  const std::vector<uint8> big_data(kModulusLengthBits / 8 + 1, 0);
+  blink::WebCryptoKey big_key = blink::WebCryptoKey::createNull();
+  ASSERT_STATUS_SUCCESS(ImportKey(blink::WebCryptoKeyFormatRaw,
+                                  CryptoData(big_data),
+                                  key_algorithm,
+                                  true,
+                                  blink::WebCryptoKeyUsageSign,
+                                  &big_key));
+  EXPECT_STATUS(Status::ErrorDataTooLarge(),
+                WrapKey(blink::WebCryptoKeyFormatRaw,
+                        public_key,
+                        big_key,
+                        wrapping_algorithm,
+                        &wrapped_key));
+
+  // Unwrapping with a public key should fail.
+  blink::WebCryptoKey unwrapped_key = blink::WebCryptoKey::createNull();
+  EXPECT_STATUS(Status::ErrorUnexpectedKeyType(),
+                UnwrapKey(blink::WebCryptoKeyFormatRaw,
+                          CryptoData(data),
+                          public_key,
+                          wrapping_algorithm,
+                          key_algorithm,
+                          true,
+                          blink::WebCryptoKeyUsageSign,
+                          &unwrapped_key));
+
+  // Unwrapping empty data should fail.
+  const std::vector<uint8> emtpy_data;
+  EXPECT_STATUS(Status::ErrorDataTooSmall(),
+                UnwrapKey(blink::WebCryptoKeyFormatRaw,
+                          CryptoData(emtpy_data),
+                          private_key,
+                          wrapping_algorithm,
+                          key_algorithm,
+                          true,
+                          blink::WebCryptoKeyUsageSign,
+                          &unwrapped_key));
+
+  // Unwapping data too large for the wrapping key should fail.
+  EXPECT_STATUS(Status::ErrorDataTooLarge(),
+                UnwrapKey(blink::WebCryptoKeyFormatRaw,
+                          CryptoData(big_data),
+                          private_key,
+                          wrapping_algorithm,
+                          key_algorithm,
+                          true,
+                          blink::WebCryptoKeyUsageSign,
+                          &unwrapped_key));
 }
 
 }  // namespace webcrypto

@@ -498,20 +498,29 @@ Status WrapKey(blink::WebCryptoKeyFormat format,
   if (key_to_wrap.type() != blink::WebCryptoKeyTypeSecret)
     return Status::ErrorUnsupported();
 
-  platform::SymKey* platform_wrapping_key;
-  Status status = ToPlatformSymKey(wrapping_key, &platform_wrapping_key);
-  if (status.IsError())
-    return status;
   platform::SymKey* platform_key;
-  status = ToPlatformSymKey(key_to_wrap, &platform_key);
+  Status status = ToPlatformSymKey(key_to_wrap, &platform_key);
   if (status.IsError())
     return status;
 
   // TODO(padolph): Handle other wrapping algorithms
   switch (wrapping_algorithm.id()) {
-    case blink::WebCryptoAlgorithmIdAesKw:
+    case blink::WebCryptoAlgorithmIdAesKw: {
+      platform::SymKey* platform_wrapping_key;
+      status = ToPlatformSymKey(wrapping_key, &platform_wrapping_key);
+      if (status.IsError())
+        return status;
       return platform::WrapSymKeyAesKw(
           platform_wrapping_key, platform_key, buffer);
+    }
+    case blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5: {
+      platform::PublicKey* platform_wrapping_key;
+      status = ToPlatformPublicKey(wrapping_key, &platform_wrapping_key);
+      if (status.IsError())
+        return status;
+      return platform::WrapSymKeyRsaEs(
+          platform_wrapping_key, platform_key, buffer);
+    }
     default:
       return Status::ErrorUnsupported();
   }
@@ -538,14 +547,13 @@ Status UnwrapKey(blink::WebCryptoKeyFormat format,
   if (format == blink::WebCryptoKeyFormatRaw && algorithm_or_null.isNull())
     return Status::ErrorMissingAlgorithmUnwrapRawKey();
 
-  platform::SymKey* platform_wrapping_key;
-  Status status = ToPlatformSymKey(wrapping_key, &platform_wrapping_key);
-  if (status.IsError())
-    return status;
-
   // TODO(padolph): Handle other wrapping algorithms
   switch (wrapping_algorithm.id()) {
     case blink::WebCryptoAlgorithmIdAesKw: {
+      platform::SymKey* platform_wrapping_key;
+      Status status = ToPlatformSymKey(wrapping_key, &platform_wrapping_key);
+      if (status.IsError())
+        return status;
       // AES-KW requires the wrapped key data size must be at least 24 bytes and
       // also a multiple of 8 bytes.
       if (wrapped_key_data.byte_length() < 24)
@@ -553,6 +561,21 @@ Status UnwrapKey(blink::WebCryptoKeyFormat format,
       if (wrapped_key_data.byte_length() % 8)
         return Status::ErrorInvalidAesKwDataLength();
       return platform::UnwrapSymKeyAesKw(wrapped_key_data,
+                                         platform_wrapping_key,
+                                         algorithm_or_null,
+                                         extractable,
+                                         usage_mask,
+                                         key);
+    }
+    case blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5: {
+      platform::PrivateKey* platform_wrapping_key;
+      Status status =
+          ToPlatformPrivateKey(wrapping_key, &platform_wrapping_key);
+      if (status.IsError())
+        return status;
+      if (!wrapped_key_data.byte_length())
+        return Status::ErrorDataTooSmall();
+      return platform::UnwrapSymKeyRsaEs(wrapped_key_data,
                                          platform_wrapping_key,
                                          algorithm_or_null,
                                          extractable,
