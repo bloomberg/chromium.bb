@@ -36439,7 +36439,18 @@ other types of suffix sets.
              connections to a WiFi bridge."/>
   <group name="CONNECTION_WIFI"
       label="Connections via WiFi are tallied, but this may include
-             connections to a mobile hotspot."/>
+             connections to a mobile hotspot. Also check similar histograms
+             that end in WIFI_802.11* for more details on some platforms."/>
+  <group name="CONNECTION_WIFI_ANCIENT"
+      label="Connections via 802.11 that are no longer standard are tallied."/>
+  <group name="CONNECTION_WIFI_802.11a"
+      label="Connections via 802.11a are tallied."/>
+  <group name="CONNECTION_WIFI_802.11b"
+      label="Connections via 802.11b are tallied."/>
+  <group name="CONNECTION_WIFI_802.11g"
+      label="Connections via 802.11g are tallied."/>
+  <group name="CONNECTION_WIFI_802.11n"
+      label="Connections via 802.11n are tallied."/>
   <group name="CONNECTION_2G" label="Connections via mobile 2G are tallied."/>
   <group name="CONNECTION_3G" label="Connections via mobile 3G are tallied."/>
   <group name="CONNECTION_4G" label="Connections via mobile 4G are tallied."/>

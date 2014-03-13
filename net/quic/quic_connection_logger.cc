@@ -14,6 +14,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "net/base/net_log.h"
+#include "net/base/net_util.h"
 #include "net/quic/crypto/crypto_handshake_message.h"
 #include "net/quic/crypto/crypto_protocol.h"
 #include "net/quic/quic_address_mismatch.h"
@@ -243,6 +244,52 @@ void UpdatePublicResetAddressMismatchHistogram(
                             sample, QUIC_ADDRESS_MISMATCH_MAX);
 }
 
+const char* GetConnectionDescriptionString() {
+  NetworkChangeNotifier::ConnectionType type =
+      NetworkChangeNotifier::GetConnectionType();
+  const char* description = NetworkChangeNotifier::ConnectionTypeToString(type);
+  // Most platforms don't distingish Wifi vs Etherenet, and call everything
+  // CONNECTION_UNKNOWN :-(.  We'll tease out some details when we are on WiFi,
+  // and hopefully leave only ethernet (with no WiFi available) in the
+  // CONNECTION_UNKNOWN category.  This *might* err if there is both ethernet,
+  // as well as WiFi, where WiFi was not being used that much.
+  // This function only seems usefully defined on Windows currently.
+  if (type == NetworkChangeNotifier::CONNECTION_UNKNOWN ||
+      type == NetworkChangeNotifier::CONNECTION_WIFI) {
+    WifiPHYLayerProtocol wifi_type = GetWifiPHYLayerProtocol();
+    switch (wifi_type) {
+      case WIFI_PHY_LAYER_PROTOCOL_NONE:
+        // No wifi support or no associated AP.
+        break;
+      case WIFI_PHY_LAYER_PROTOCOL_ANCIENT:
+        // An obsolete modes introduced by the original 802.11, e.g. IR, FHSS.
+        description = "CONNECTION_WIFI_ANCIENT";
+        break;
+      case WIFI_PHY_LAYER_PROTOCOL_A:
+        // 802.11a, OFDM-based rates.
+        description = "CONNECTION_WIFI_802.11a";
+        break;
+      case WIFI_PHY_LAYER_PROTOCOL_B:
+        // 802.11b, DSSS or HR DSSS.
+        description = "CONNECTION_WIFI_802.11b";
+        break;
+      case WIFI_PHY_LAYER_PROTOCOL_G:
+        // 802.11g, same rates as 802.11a but compatible with 802.11b.
+        description = "CONNECTION_WIFI_802.11g";
+        break;
+      case WIFI_PHY_LAYER_PROTOCOL_N:
+        // 802.11n, HT rates.
+        description = "CONNECTION_WIFI_802.11n";
+        break;
+      case WIFI_PHY_LAYER_PROTOCOL_UNKNOWN:
+        // Unclassified mode or failure to identify.
+        break;
+    }
+  }
+  return description;
+}
+
+
 }  // namespace
 
 QuicConnectionLogger::QuicConnectionLogger(const BoundNetLog& net_log)
@@ -253,7 +300,7 @@ QuicConnectionLogger::QuicConnectionLogger(const BoundNetLog& net_log)
       out_of_order_recieved_packet_count_(0),
       num_truncated_acks_sent_(0),
       num_truncated_acks_received_(0),
-      connection_type_(NetworkChangeNotifier::GetConnectionType()) {
+      connection_description_(GetConnectionDescriptionString()) {
 }
 
 QuicConnectionLogger::~QuicConnectionLogger() {
@@ -530,10 +577,9 @@ void QuicConnectionLogger::OnSuccessfulVersionNegotiation(
 base::HistogramBase* QuicConnectionLogger::GetAckHistogram(
     const char* ack_or_nack) {
   string prefix("Net.QuicSession.PacketReceived_");
-  const char* suffix = NetworkChangeNotifier::ConnectionTypeToString(
-      connection_type_);
-  return base::LinearHistogram::FactoryGet(prefix + ack_or_nack + suffix, 1,
-      packets_received_.size(), packets_received_.size() + 1,
+  return base::LinearHistogram::FactoryGet(
+      prefix + ack_or_nack + connection_description_,
+      1, packets_received_.size(), packets_received_.size() + 1,
       base::HistogramBase::kUmaTargetedHistogramFlag);
 }
 

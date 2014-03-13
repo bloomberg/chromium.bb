@@ -95,7 +95,7 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
   std::bitset<101> packets_received_;
   // The available type of connection (WiFi, 3G, etc.) when connection was first
   // used.
-  NetworkChangeNotifier::ConnectionType connection_type_;
+  const char* const connection_description_;
   DISALLOW_COPY_AND_ASSIGN(QuicConnectionLogger);
 };
 
