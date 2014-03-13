@@ -97,9 +97,9 @@ struct Property;
 %%compare-strncmp
 %%define class-name %(class_name)sHash
 %%define lookup-function-name findPropertyImpl
-%%define hash-function-name propery_hash_function
+%%define hash-function-name property_hash_function
 %%define slot-name nameOffset
-%%define word-array-name property_wordlist
+%%define word-array-name property_word_list
 %%enum
 %%%%
 %(property_to_enum_map)s
@@ -245,7 +245,9 @@ class CSSPropertiesWriter(in_generator.Writer):
             'internal_properties': '\n'.join(map(self._case_properties, filter(lambda property: property['is_internal'], self._properties))),
         }
         # FIXME: If we could depend on Python 2.7, we would use subprocess.check_output
-        gperf_args = [self.gperf_path, '--key-positions=*', '-P', '-D', '-n', '-s', '2']
+        gperf_args = [self.gperf_path, '--key-positions=*', '-P', '-n']
+        gperf_args.extend(['-m', '50'])  # Pick best of 50 attempts.
+        gperf_args.append('-D')  # Allow duplicate hashes -> More compact code.
         gperf = subprocess.Popen(gperf_args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, universal_newlines=True)
         return gperf.communicate(gperf_input)[0]
 
