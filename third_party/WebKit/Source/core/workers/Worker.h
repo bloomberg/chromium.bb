@@ -34,6 +34,7 @@
 #include "core/events/ThreadLocalEventNames.h"
 #include "core/workers/AbstractWorker.h"
 #include "core/workers/WorkerScriptLoaderClient.h"
+#include "heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
@@ -48,7 +49,7 @@ class WorkerScriptLoader;
 
 class Worker FINAL : public AbstractWorker, public ScriptWrappable, private WorkerScriptLoaderClient {
 public:
-    static PassRefPtr<Worker> create(ExecutionContext*, const String& url, ExceptionState&);
+    static PassRefPtrWillBeRawPtr<Worker> create(ExecutionContext*, const String& url, ExceptionState&);
     virtual ~Worker();
 
     virtual const AtomicString& interfaceName() const OVERRIDE;
@@ -61,6 +62,8 @@ public:
     virtual bool hasPendingActivity() const OVERRIDE;
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(message);
+
+    virtual void trace(Visitor*) OVERRIDE;
 
 private:
     explicit Worker(ExecutionContext*);

@@ -31,6 +31,7 @@
 #ifndef SharedWorkerRepositoryClient_h
 #define SharedWorkerRepositoryClient_h
 
+#include "heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
 
@@ -51,7 +52,7 @@ public:
     SharedWorkerRepositoryClient() { }
     virtual ~SharedWorkerRepositoryClient() { }
 
-    virtual void connect(PassRefPtr<SharedWorker>, PassOwnPtr<blink::WebMessagePortChannel>, const KURL&, const String& name, ExceptionState&)  = 0;
+    virtual void connect(PassRefPtrWillBeRawPtr<SharedWorker>, PassOwnPtr<blink::WebMessagePortChannel>, const KURL&, const String& name, ExceptionState&)  = 0;
 
     virtual void documentDetached(Document*) = 0;
 };

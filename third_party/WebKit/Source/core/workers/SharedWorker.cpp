@@ -54,14 +54,14 @@ inline SharedWorker::SharedWorker(ExecutionContext* context)
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<SharedWorker> SharedWorker::create(ExecutionContext* context, const String& url, const String& name, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<SharedWorker> SharedWorker::create(ExecutionContext* context, const String& url, const String& name, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
     ASSERT_WITH_SECURITY_IMPLICATION(context->isDocument());
 
     UseCounter::count(context, UseCounter::SharedWorkerStart);
 
-    RefPtr<SharedWorker> worker = adoptRef(new SharedWorker(context));
+    RefPtrWillBeRawPtr<SharedWorker> worker = adoptRefWillBeRefCountedGarbageCollected(new SharedWorker(context));
 
     RefPtr<MessageChannel> channel = MessageChannel::create(context);
     worker->m_port = channel->port1();
@@ -104,6 +104,11 @@ void SharedWorker::setPreventGC()
 void SharedWorker::unsetPreventGC()
 {
     unsetPendingActivity(this);
+}
+
+void SharedWorker::trace(Visitor* visitor)
+{
+    AbstractWorker::trace(visitor);
 }
 
 } // namespace WebCore

@@ -50,7 +50,7 @@ public:
 
     virtual ~SharedWorkerRepositoryClientImpl() { }
 
-    virtual void connect(PassRefPtr<WebCore::SharedWorker>, PassOwnPtr<WebMessagePortChannel>, const WebCore::KURL&, const String& name, WebCore::ExceptionState&) OVERRIDE;
+    virtual void connect(PassRefPtrWillBeRawPtr<WebCore::SharedWorker>, PassOwnPtr<WebMessagePortChannel>, const WebCore::KURL&, const String& name, WebCore::ExceptionState&) OVERRIDE;
     virtual void documentDetached(WebCore::Document*) OVERRIDE;
 
 private:
