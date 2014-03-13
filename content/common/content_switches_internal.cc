@@ -13,6 +13,17 @@
 
 namespace content {
 
+bool IsOverlayScrollbarEnabled() {
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+
+  if (command_line.HasSwitch(switches::kDisableOverlayScrollbar))
+    return false;
+  else if (command_line.HasSwitch(switches::kEnableOverlayScrollbar))
+    return true;
+
+  return false;
+}
+
 bool IsPinchToZoomEnabled() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 

@@ -8,7 +8,6 @@
 #include "content/common/content_switches_internal.h"
 #include "content/public/common/content_switches.h"
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
-#include "ui/native_theme/native_theme_switches.h"
 
 #if defined(OS_ANDROID)
 #include <cpu-features.h>
@@ -154,7 +153,7 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (command_line.HasSwitch(switches::kEnableOverlayFullscreenVideo))
     WebRuntimeFeatures::enableOverlayFullscreenVideo(true);
 
-  if (ui::IsOverlayScrollbarEnabled())
+  if (IsOverlayScrollbarEnabled())
     WebRuntimeFeatures::enableOverlayScrollbars(true);
 
   if (command_line.HasSwitch(switches::kEnableFastTextAutosizing))

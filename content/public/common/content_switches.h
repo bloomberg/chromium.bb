@@ -27,7 +27,7 @@ CONTENT_EXPORT extern const char kBlinkPlatformLogChannels[];
 CONTENT_EXPORT extern const char kBlockCrossSiteDocuments[];
 CONTENT_EXPORT extern const char kBrowserAssertTest[];
 CONTENT_EXPORT extern const char kBrowserCrashTest[];
-CONTENT_EXPORT extern const char kBrowserSubprocessPath[];
+CONTENT_EXPORT extern const char kBmrowserSubprocessPath[];
 extern const char kDebugPluginLoading[];
 CONTENT_EXPORT extern const char kDefaultTileWidth[];
 CONTENT_EXPORT extern const char kDefaultTileHeight[];
