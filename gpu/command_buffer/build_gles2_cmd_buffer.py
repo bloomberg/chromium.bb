@@ -6919,7 +6919,7 @@ class GLGenerator(object):
 
   def ParseGLH(self, filename):
     """Parses the cmd_buffer_functions.txt file and extracts the functions"""
-    f = open("gpu/command_buffer/cmd_buffer_functions.txt", "r")
+    f = open(filename, "r")
     functions = f.read()
     f.close()
     for line in functions.splitlines():
@@ -7805,7 +7805,7 @@ def main(argv):
   os.chdir(os.path.dirname(__file__) + "/../..")
 
   gen = GLGenerator(options.verbose)
-  gen.ParseGLH("common/GLES2/gl2.h")
+  gen.ParseGLH("gpu/command_buffer/cmd_buffer_functions.txt")
 
   # Support generating files under gen/
   if options.output_dir != None:
