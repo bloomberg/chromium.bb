@@ -129,7 +129,7 @@ void UIResourceLayerImpl::AppendQuads(QuadSink* quad_sink,
                SK_ColorTRANSPARENT,
                vertex_opacity_,
                flipped);
-  quad_sink->Append(quad.PassAs<DrawQuad>());
+  quad_sink->MaybeAppend(quad.PassAs<DrawQuad>());
 }
 
 const char* UIResourceLayerImpl::LayerTypeAsString() const {

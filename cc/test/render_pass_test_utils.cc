@@ -44,7 +44,7 @@ SolidColorDrawQuad* AddQuad(TestRenderPass* pass,
   scoped_ptr<SolidColorDrawQuad> quad = SolidColorDrawQuad::Create();
   quad->SetNew(shared_state, rect, rect, color, false);
   SolidColorDrawQuad* quad_ptr = quad.get();
-  quad_sink.Append(quad.PassAs<DrawQuad>());
+  quad_sink.MaybeAppend(quad.PassAs<DrawQuad>());
   return quad_ptr;
 }
 
@@ -64,7 +64,7 @@ SolidColorDrawQuad* AddClippedQuad(TestRenderPass* pass,
   scoped_ptr<SolidColorDrawQuad> quad = SolidColorDrawQuad::Create();
   quad->SetNew(shared_state, rect, rect, color, false);
   SolidColorDrawQuad* quad_ptr = quad.get();
-  quad_sink.Append(quad.PassAs<DrawQuad>());
+  quad_sink.MaybeAppend(quad.PassAs<DrawQuad>());
   return quad_ptr;
 }
 
@@ -80,7 +80,7 @@ SolidColorDrawQuad* AddTransformedQuad(TestRenderPass* pass,
   scoped_ptr<SolidColorDrawQuad> quad = SolidColorDrawQuad::Create();
   quad->SetNew(shared_state, rect, rect, color, false);
   SolidColorDrawQuad* quad_ptr = quad.get();
-  quad_sink.Append(quad.PassAs<DrawQuad>());
+  quad_sink.MaybeAppend(quad.PassAs<DrawQuad>());
   return quad_ptr;
 }
 
@@ -109,7 +109,7 @@ void AddRenderPassQuad(TestRenderPass* to_pass,
                gfx::RectF(),
                FilterOperations(),
                FilterOperations());
-  quad_sink.Append(quad.PassAs<DrawQuad>());
+  quad_sink.MaybeAppend(quad.PassAs<DrawQuad>());
 }
 
 void AddRenderPassQuad(TestRenderPass* to_pass,
@@ -140,7 +140,7 @@ void AddRenderPassQuad(TestRenderPass* to_pass,
                gfx::RectF(),
                filters,
                FilterOperations());
-  quad_sink.Append(quad.PassAs<DrawQuad>());
+  quad_sink.MaybeAppend(quad.PassAs<DrawQuad>());
 }
 
 }  // namespace cc

@@ -48,7 +48,7 @@ void SurfaceLayerImpl::AppendQuads(QuadSink* quad_sink,
   gfx::Rect quad_rect(content_bounds());
   gfx::Rect visible_quad_rect(quad_rect);
   quad->SetNew(shared_quad_state, quad_rect, visible_quad_rect, surface_id_);
-  quad_sink->Append(quad.PassAs<DrawQuad>());
+  quad_sink->MaybeAppend(quad.PassAs<DrawQuad>());
 }
 
 void SurfaceLayerImpl::GetDebugBorderProperties(SkColor* color,

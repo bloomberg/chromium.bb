@@ -133,7 +133,7 @@ void HeadsUpDisplayLayerImpl::AppendQuads(QuadSink* quad_sink,
                SK_ColorTRANSPARENT,
                vertex_opacity,
                flipped);
-  quad_sink->Append(quad.PassAs<DrawQuad>());
+  quad_sink->MaybeAppend(quad.PassAs<DrawQuad>());
 }
 
 void HeadsUpDisplayLayerImpl::UpdateHudTexture(

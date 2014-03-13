@@ -76,7 +76,7 @@ void AddTestRenderPassQuad(TestRenderPass* pass,
                gfx::RectF(),
                FilterOperations(),
                FilterOperations());
-  quad_sink.Append(quad.PassAs<DrawQuad>());
+  quad_sink.MaybeAppend(quad.PassAs<DrawQuad>());
 }
 
 void AddQuadInPass(TestRenderPass* pass, Quad desc) {

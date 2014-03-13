@@ -105,7 +105,7 @@ void PaintedScrollbarLayerImpl::AppendQuads(
                  SK_ColorTRANSPARENT,
                  opacity,
                  flipped);
-    quad_sink->Append(quad.PassAs<DrawQuad>());
+    quad_sink->MaybeAppend(quad.PassAs<DrawQuad>());
   }
 
   gfx::Rect track_quad_rect = content_bounds_rect;
@@ -125,7 +125,7 @@ void PaintedScrollbarLayerImpl::AppendQuads(
                  SK_ColorTRANSPARENT,
                  opacity,
                  flipped);
-    quad_sink->Append(quad.PassAs<DrawQuad>());
+    quad_sink->MaybeAppend(quad.PassAs<DrawQuad>());
   }
 }
 

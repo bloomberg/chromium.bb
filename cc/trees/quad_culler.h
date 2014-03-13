@@ -28,7 +28,7 @@ class CC_EXPORT QuadCuller : public QuadSink {
   // QuadSink implementation.
   virtual SharedQuadState* UseSharedQuadState(
       scoped_ptr<SharedQuadState> shared_quad_state) OVERRIDE;
-  virtual bool Append(scoped_ptr<DrawQuad> draw_quad) OVERRIDE;
+  virtual bool MaybeAppend(scoped_ptr<DrawQuad> draw_quad) OVERRIDE;
 
  private:
   QuadList* quad_list_;

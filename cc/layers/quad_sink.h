@@ -25,7 +25,7 @@ class CC_EXPORT QuadSink {
 
   // Returns true if the quad is added to the list, and false if the quad is
   // entirely culled.
-  virtual bool Append(scoped_ptr<DrawQuad> draw_quad) = 0;
+  virtual bool MaybeAppend(scoped_ptr<DrawQuad> draw_quad) = 0;
 };
 
 }  // namespace cc
