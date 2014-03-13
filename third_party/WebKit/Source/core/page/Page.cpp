@@ -326,7 +326,6 @@ void Page::setDefersLoading(bool defers)
         return;
 
     m_defersLoading = defers;
-    m_historyController->setDefersLoading(defers);
     for (LocalFrame* frame = mainFrame(); frame; frame = frame->tree().traverseNext())
         frame->loader().setDefersLoading(defers);
 }

@@ -183,6 +183,10 @@ void FrameLoader::setDefersLoading(bool defers)
         m_policyDocumentLoader->setDefersLoading(defers);
 
     if (!defers) {
+        if (m_deferredHistoryLoad.isValid()) {
+            loadHistoryItem(m_deferredHistoryLoad.m_item.get(), m_deferredHistoryLoad.m_type, m_deferredHistoryLoad.m_cachePolicy);
+            m_deferredHistoryLoad = DeferredHistoryLoad();
+        }
         m_frame->navigationScheduler().startTimer();
         startCheckCompleteTimer();
     }
@@ -1414,6 +1418,11 @@ LocalFrame* FrameLoader::findFrameForNavigation(const AtomicString& name, Docume
 
 void FrameLoader::loadHistoryItem(HistoryItem* item, HistoryLoadType historyLoadType, ResourceRequestCachePolicy cachePolicy)
 {
+    if (m_frame->page()->defersLoading()) {
+        m_deferredHistoryLoad = DeferredHistoryLoad(item, historyLoadType, cachePolicy);
+        return;
+    }
+
     m_provisionalItem = item;
     if (historyLoadType == HistorySameDocumentLoad) {
         m_loadType = FrameLoadTypeBackForward;

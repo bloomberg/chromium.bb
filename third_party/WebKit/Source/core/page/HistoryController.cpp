@@ -136,8 +136,6 @@ HistoryItem* HistoryEntry::itemForFrame(LocalFrame* frame)
 
 HistoryController::HistoryController(Page* page)
     : m_page(page)
-    , m_defersLoading(false)
-    , m_deferredCachePolicy(UseProtocolCachePolicy)
 {
 }
 
@@ -202,12 +200,6 @@ void HistoryController::recursiveGoToEntry(LocalFrame* frame, HistoryFrameLoadSe
 
 void HistoryController::goToItem(HistoryItem* targetItem, ResourceRequestCachePolicy cachePolicy)
 {
-    if (m_defersLoading) {
-        m_deferredItem = targetItem;
-        m_deferredCachePolicy = cachePolicy;
-        return;
-    }
-
     // We don't have enough information to set a correct frame id here. This might be a restore from
     // disk, and the frame ids might not match up if the state was saved from a different process.
     // Ensure the HistoryEntry's main frame id matches the actual main frame id. Its subframe ids
@@ -228,16 +220,6 @@ void HistoryController::goToItem(HistoryItem* targetItem, ResourceRequestCachePo
         historyNode->value()->clearChildren();
     }
     goToEntry(newEntry.release(), cachePolicy);
-}
-
-void HistoryController::setDefersLoading(bool defer)
-{
-    m_defersLoading = defer;
-    if (!defer && m_deferredItem) {
-        goToItem(m_deferredItem.get(), m_deferredCachePolicy);
-        m_deferredItem = nullptr;
-        m_deferredCachePolicy = UseProtocolCachePolicy;
-    }
 }
 
 void HistoryController::updateForInitialLoadInChildFrame(LocalFrame* frame, HistoryItem* item)

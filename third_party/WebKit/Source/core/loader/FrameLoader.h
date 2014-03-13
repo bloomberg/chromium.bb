@@ -254,6 +254,23 @@ private:
 
     RefPtr<HistoryItem> m_currentItem;
     RefPtr<HistoryItem> m_provisionalItem;
+    struct DeferredHistoryLoad {
+        DeferredHistoryLoad(HistoryItem* item, HistoryLoadType type, ResourceRequestCachePolicy cachePolicy)
+            : m_item(item)
+            , m_type(type)
+            , m_cachePolicy(cachePolicy)
+        {
+        }
+
+        DeferredHistoryLoad() { }
+
+        bool isValid() { return m_item; }
+
+        RefPtr<HistoryItem> m_item;
+        HistoryLoadType m_type;
+        ResourceRequestCachePolicy m_cachePolicy;
+    };
+    DeferredHistoryLoad m_deferredHistoryLoad;
 
     bool m_inStopAllLoaders;
 

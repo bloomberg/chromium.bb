@@ -151,8 +151,6 @@ public:
     HistoryItem* itemForNewChildFrame(LocalFrame*) const;
     void removeChildrenForRedirect(LocalFrame*);
 
-    void setDefersLoading(bool);
-
 private:
     void goToEntry(PassOwnPtr<HistoryEntry>, ResourceRequestCachePolicy);
     typedef HashMap<RefPtr<LocalFrame>, RefPtr<HistoryItem> > HistoryFrameLoadSet;
@@ -166,10 +164,6 @@ private:
     OwnPtr<HistoryEntry> m_currentEntry;
     OwnPtr<HistoryEntry> m_previousEntry;
     OwnPtr<HistoryEntry> m_provisionalEntry;
-
-    bool m_defersLoading;
-    RefPtr<HistoryItem> m_deferredItem;
-    ResourceRequestCachePolicy m_deferredCachePolicy;
 };
 
 } // namespace WebCore
