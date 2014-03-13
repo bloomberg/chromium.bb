@@ -157,7 +157,7 @@ public:
         m_count++;
     }
 
-    virtual void registerWeakMembers(const void*, WeakPointerCallback) OVERRIDE { }
+    virtual void registerWeakMembers(const void*, const void*, WeakPointerCallback) OVERRIDE { }
     virtual void registerWeakCell(void**, WeakPointerCallback) OVERRIDE { }
     virtual bool isMarked(const void*) OVERRIDE { return false; }
 
@@ -401,9 +401,11 @@ private:
             ThreadState::current()->safePoint(ThreadState::NoHeapPointersOnStack);
             {
                 Persistent<HeapHashMap<ThreadMarker, WeakMember<IntWrapper> > > weakMap = new HeapHashMap<ThreadMarker, WeakMember<IntWrapper> >;
+                PersistentHeapHashMap<ThreadMarker, WeakMember<IntWrapper> > weakMap2;
 
                 for (int i = 0; i < numberOfAllocations; i++) {
                     weakMap->add(static_cast<unsigned>(i), IntWrapper::create(0));
+                    weakMap2.add(static_cast<unsigned>(i), IntWrapper::create(0));
                     if (!(i % 10)) {
                         ThreadState::current()->safePoint(ThreadState::NoHeapPointersOnStack);
                     }
@@ -418,6 +420,7 @@ private:
 
                 Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
                 EXPECT_TRUE(weakMap->isEmpty());
+                EXPECT_TRUE(weakMap2.isEmpty());
             }
             yield();
         }

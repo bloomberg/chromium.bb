@@ -1186,9 +1186,9 @@ public:
         visitHeader(header, header->payload(), callback);
     }
 
-    virtual void registerWeakMembers(const void* containingObject, WeakPointerCallback callback) OVERRIDE
+    virtual void registerWeakMembers(const void* closure, const void* containingObject, WeakPointerCallback callback) OVERRIDE
     {
-        Heap::pushWeakObjectPointerCallback(const_cast<void*>(containingObject), callback);
+        Heap::pushWeakObjectPointerCallback(const_cast<void*>(closure), const_cast<void*>(containingObject), callback);
     }
 
     virtual bool isMarked(const void* objectPointer) OVERRIDE
@@ -1281,13 +1281,13 @@ void Heap::pushWeakCellPointerCallback(void** cell, WeakPointerCallback callback
     *slot = CallbackStack::Item(cell, callback);
 }
 
-void Heap::pushWeakObjectPointerCallback(void* object, WeakPointerCallback callback)
+void Heap::pushWeakObjectPointerCallback(void* closure, void* object, WeakPointerCallback callback)
 {
     ASSERT(Heap::contains(object));
     BaseHeapPage* heapPageForObject = reinterpret_cast<BaseHeapPage*>(pageHeaderAddress(reinterpret_cast<Address>(object)));
     ASSERT(Heap::contains(object) == heapPageForObject);
     ThreadState* state = heapPageForObject->threadState();
-    state->pushWeakObjectPointerCallback(object, callback);
+    state->pushWeakObjectPointerCallback(closure, callback);
 }
 
 bool Heap::popAndInvokeWeakPointerCallback(Visitor* visitor)

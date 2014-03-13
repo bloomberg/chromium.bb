@@ -772,22 +772,28 @@ public:
     // Push a trace callback on the marking stack.
     static void pushTraceCallback(void* containerObject, TraceCallback);
 
-    // Push a weak pointer callback on the weak callback
-    // stack. General object pointer callbacks are pushed on a thread
-    // local weak callback stack and the callback is called on the
-    // thread that owns the object. Cell pointer callbacks are pushed
-    // on a static callback stack and the weak callback is performed
-    // on the thread performing garbage collection. This is OK because
-    // cells are just cleared and no deallocation can happen.
-    static void pushWeakObjectPointerCallback(void* containerObject, WeakPointerCallback);
+    // Add a weak pointer callback to the weak callback work list. General
+    // object pointer callbacks are added to a thread local weak callback work
+    // list and the callback is called on the thread that owns the object, with
+    // the closure pointer as an argument. Most of the time, the closure and
+    // the containerObject can be the same thing, but the containerObject is
+    // constrained to be on the heap, since the heap is used to identify the
+    // correct thread.
+    static void pushWeakObjectPointerCallback(void* closure, void* containerObject, WeakPointerCallback);
+
+    // Similar to the more general pushWeakObjectPointerCallback, but cell
+    // pointer callbacks are added to a static callback work list and the weak
+    // callback is performed on the thread performing garbage collection. This
+    // is OK because cells are just cleared and no deallocation can happen.
     static void pushWeakCellPointerCallback(void** cell, WeakPointerCallback);
 
     // Pop the top of the marking stack and call the callback with the visitor
     // and the object. Returns false when there is nothing more to do.
     static bool popAndInvokeTraceCallback(Visitor*);
 
-    // Pop the top of the weak callback stack and call the callback with the visitor
-    // and the object. Returns false when there is nothing more to do.
+    // Remove an item from the weak callback work list and call the callback
+    // with the visitor and the closure pointer. Returns false when there is
+    // nothing more to do.
     static bool popAndInvokeWeakPointerCallback(Visitor*);
 
     template<typename T> static Address allocate(size_t);
@@ -1262,9 +1268,9 @@ public:
         return hasDeadMember(visitor, t.key) || hasDeadMember(visitor, t.value);
     }
 
-    static void registerWeakMembers(Visitor* visitor, const void* object, WeakPointerCallback callback)
+    static void registerWeakMembers(Visitor* visitor, const void* closure, const void* object, WeakPointerCallback callback)
     {
-        visitor->registerWeakMembers(object, callback);
+        visitor->registerWeakMembers(closure, object, callback);
     }
 
     template<typename T>

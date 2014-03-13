@@ -1083,7 +1083,7 @@ namespace WTF {
         if (!Traits::isWeak)
             Allocator::markNoTracing(visitor, m_table);
         else
-            Allocator::registerWeakMembers(visitor, this, WeakProcessingHashTableHelper<Traits::isWeak, Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::process);
+            Allocator::registerWeakMembers(visitor, this, m_table, WeakProcessingHashTableHelper<Traits::isWeak, Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::process);
         if (ShouldBeTraced<Traits>::value) {
             for (ValueType* element = m_table + m_tableSize - 1; element >= m_table; element--) {
                 if (!isEmptyOrDeletedBucket(*element))

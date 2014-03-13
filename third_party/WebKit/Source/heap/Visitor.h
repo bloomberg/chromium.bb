@@ -340,7 +340,8 @@ public:
     // pointed to belong to the same thread as the object receiving
     // the weak callback. Since other threads have been resumed the
     // mark bits are not valid for objects from other threads.
-    virtual void registerWeakMembers(const void*, WeakPointerCallback) = 0;
+    virtual void registerWeakMembers(const void* object, WeakPointerCallback callback) { registerWeakMembers(object, object, callback); }
+    virtual void registerWeakMembers(const void*, const void*, WeakPointerCallback) = 0;
 
     template<typename T, void (T::*method)(Visitor*)>
     void registerWeakMembers(const T* obj)
