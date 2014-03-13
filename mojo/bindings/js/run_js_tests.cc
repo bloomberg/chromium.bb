@@ -43,13 +43,7 @@ TEST(JSTest, core) {
   RunTest("core_unittests.js", true);
 }
 
-// http://crbug.com/351214
-#if defined(OS_POSIX)
-#define MAYBE_codec DISABLED_codec
-#else
-#define MAYBE_codec codec
-#endif
-TEST(JSTest, MAYBE_codec) {
+TEST(JSTest, codec) {
   RunTest("codec_unittests.js", true);
 }
 
