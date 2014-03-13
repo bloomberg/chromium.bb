@@ -49,14 +49,15 @@
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/ScriptResource.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/UseCounter.h"
 #include "core/html/HTMLHtmlElement.h"
 #include "core/html/HTMLTemplateElement.h"
 #include "core/html/parser/HTMLEntityParser.h"
 #include "core/html/parser/TextResourceDecoder.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/ImageLoader.h"
-#include "core/frame/UseCounter.h"
 #include "core/xml/XMLTreeViewer.h"
+#include "core/xml/parser/SharedBufferReader.h"
 #include "core/xml/parser/XMLDocumentParserScope.h"
 #include "core/xml/parser/XMLParserInput.h"
 #include "platform/SharedBuffer.h"
@@ -525,41 +526,6 @@ static int matchFunc(const char*)
     return XMLDocumentParserScope::currentFetcher && currentThread() == libxmlLoaderThread;
 }
 
-class OffsetBuffer {
-    WTF_MAKE_FAST_ALLOCATED;
-public:
-    OffsetBuffer(PassRefPtr<SharedBuffer> buffer) : m_buffer(buffer), m_currentOffset(0) { }
-
-    int readOutBytes(char* outputBuffer, unsigned askedToRead)
-    {
-        if (!m_buffer)
-            return 0;
-
-        unsigned bytesCopied = 0;
-        ASSERT(m_currentOffset <= m_buffer->size());
-        unsigned bytesLeft = m_buffer->size() - m_currentOffset;
-        unsigned lenToCopy = min(askedToRead, bytesLeft);
-
-        while (bytesCopied < lenToCopy) {
-            const char* data;
-            unsigned segmentSize = m_buffer->getSomeData(data, m_currentOffset);
-            if (!segmentSize)
-                break;
-
-            segmentSize = min(segmentSize, lenToCopy - bytesCopied);
-            memcpy(outputBuffer + bytesCopied, data + m_currentOffset, segmentSize);
-            bytesCopied += segmentSize;
-            m_currentOffset += segmentSize;
-        }
-
-        return bytesCopied;
-    }
-
-private:
-    RefPtr<SharedBuffer> m_buffer;
-    unsigned m_currentOffset;
-};
-
 static inline void setAttributes(Element* element, Vector<Attribute>& attributeVector, ParserContentPolicy parserContentPolicy)
 {
     if (!scriptingContentIsAllowed(parserContentPolicy))
@@ -678,7 +644,7 @@ static void* openFunc(const char* uri)
     if (!shouldAllowExternalLoad(finalURL))
         return &globalDescriptor;
 
-    return new OffsetBuffer(data);
+    return new SharedBufferReader(data);
 }
 
 static int readFunc(void* context, char* buffer, int len)
@@ -687,8 +653,8 @@ static int readFunc(void* context, char* buffer, int len)
     if (context == &globalDescriptor)
         return 0;
 
-    OffsetBuffer* data = static_cast<OffsetBuffer*>(context);
-    return data->readOutBytes(buffer, len);
+    SharedBufferReader* data = static_cast<SharedBufferReader*>(context);
+    return data->readData(buffer, len);
 }
 
 static int writeFunc(void*, const char*, int)
@@ -700,7 +666,7 @@ static int writeFunc(void*, const char*, int)
 static int closeFunc(void* context)
 {
     if (context != &globalDescriptor) {
-        OffsetBuffer* data = static_cast<OffsetBuffer*>(context);
+        SharedBufferReader* data = static_cast<SharedBufferReader*>(context);
         delete data;
     }
     return 0;

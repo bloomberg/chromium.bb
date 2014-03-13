@@ -1834,6 +1834,8 @@
             'xml/XSLTUnicodeSort.cpp',
             'xml/XSLTUnicodeSort.h',
             'xml/parser/MarkupTokenizerInlines.h',
+            'xml/parser/SharedBufferReader.cpp',
+            'xml/parser/SharedBufferReader.h',
             'xml/parser/XMLDocumentParser.cpp',
             'xml/parser/XMLDocumentParser.h',
             'xml/parser/XMLDocumentParserScope.cpp',
@@ -3300,6 +3302,7 @@
             'rendering/shapes/BoxShapeTest.cpp',
             'testing/UnitTestHelpers.cpp',
             'testing/UnitTestHelpers.h',
+            'xml/parser/SharedBufferReaderTest.cpp',
         ],
     }
 }
