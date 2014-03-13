@@ -427,13 +427,6 @@ void Widget::ViewHierarchyChanged(
       focus_manager->ViewRemoved(details.child);
     ViewStorage::GetInstance()->ViewRemoved(details.child);
     native_widget_->ViewRemoved(details.child);
-
-    // Many observers do not remove themselves during destruction, so we must
-    // not notify once we destroy our |root_view_|.
-    if (root_view_.get()) {
-      FOR_EACH_OBSERVER(
-          WidgetObserver, observers_, OnViewRemoved(this, details.child));
-    }
   }
 }
 
