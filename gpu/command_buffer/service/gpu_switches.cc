@@ -40,11 +40,6 @@ const char kDisableGpuProgramCache[]        = "disable-gpu-program-cache";
 // Enforce GL minimums.
 const char kEnforceGLMinimums[]             = "enforce-gl-minimums";
 
-// Force the use of a workaround for graphics hangs seen on certain
-// Mac OS systems. Enabled by default (and can't be disabled) on known
-// affected systems.
-const char kForceGLFinishWorkaround[]       = "force-glfinish-workaround";
-
 // Sets the total amount of memory that may be allocated for GPU resources
 const char kForceGpuMemAvailableMb[]        = "force-gpu-mem-available-mb";
 
@@ -75,7 +70,6 @@ const char* kGpuSwitches[] = {
   kEnableGPUServiceLoggingGPU,
   kDisableGpuProgramCache,
   kEnforceGLMinimums,
-  kForceGLFinishWorkaround,
   kForceGpuMemAvailableMb,
   kForceSynchronousGLReadPixels,
   kGpuDriverBugWorkarounds,

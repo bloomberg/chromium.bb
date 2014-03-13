@@ -15,6 +15,7 @@
 #include "base/mac/mac_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/platform_thread.h"
+#include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/renderer_host/compositing_iosurface_context_mac.h"
 #include "content/browser/renderer_host/compositing_iosurface_shader_programs_mac.h"
 #include "content/browser/renderer_host/compositing_iosurface_transformer_mac.h"
@@ -22,6 +23,7 @@
 #include "content/browser/renderer_host/render_widget_host_view_mac.h"
 #include "content/common/content_constants_internal.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
+#include "gpu/config/gpu_driver_bug_workaround_type.h"
 #include "media/base/video_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/rect.h"
@@ -364,42 +366,18 @@ bool CompositingIOSurfaceMac::DrawIOSurface(
     glClear(GL_COLOR_BUFFER_BIT);
   }
 
-  static bool initialized_workaround = false;
-  static bool force_on_workaround = false;
-  static bool force_off_workaround = false;
-  if (!initialized_workaround) {
-    force_on_workaround = CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kForceGLFinishWorkaround);
-    force_off_workaround = CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kDisableGpuDriverBugWorkarounds);
-
-    initialized_workaround = true;
-  }
-
-  bool workaround_needed = false;
-  // http://crbug.com/123409 : work around bugs in graphics driver on
-  // MacBook Air with Intel HD graphics, and possibly on other models,
-  // by forcing the graphics pipeline to be completely drained at this
-  // point. This workaround is not necessary on Mountain Lion.
-  // TODO(ccameron): determine if this is still needed with CoreAnimation.
-  workaround_needed |= base::mac::IsOSLionOrEarlier() &&
-                       drawing_context->IsVendorIntel();
-
-  // http://crbug.com/318877 : work around a bug where the window does
-  // not finish rendering its contents before displaying them on Mavericks
-  // on Retina MacBook Pro when using the Intel HD graphics GPU. Note that
-  // this is not necessary when flushing the drawable because we are in
-  // one of the two following situations:
-  // - we are drawing and underlay, and we will call glFinish() when drawing
+  bool workaround_needed =
+      GpuDataManagerImpl::GetInstance()->IsDriverBugWorkaroundActive(
+          gpu::FORCE_GL_FINISH_AFTER_COMPOSITING);
+  // Note that this is not necessary when flushing the drawable in Mavericks
+  // or later if we are in one of the two following situations:
+  // - we are drawing an underlay, and we will call glFinish() when drawing
   //   the overlay.
   // - we are using CoreAnimation, where this bug does not manifest.
-  workaround_needed |= base::mac::IsOSMavericksOrLater() &&
-                       flush_drawable &&
-                       drawing_context->IsVendorIntel();
+  if (workaround_needed && !flush_drawable && base::mac::IsOSMavericksOrLater())
+    workaround_needed = false;
 
-  const bool use_glfinish_workaround =
-      (workaround_needed || force_on_workaround) && !force_off_workaround;
-  if (use_glfinish_workaround) {
+  if (workaround_needed) {
     TRACE_EVENT0("gpu", "glFinish");
     glFinish();
   }

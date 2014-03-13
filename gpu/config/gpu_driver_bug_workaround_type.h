@@ -42,6 +42,8 @@
          exit_on_context_lost)                               \
   GPU_OP(FORCE_DISCRETE_GPU,                                 \
          force_discrete_gpu)                                 \
+  GPU_OP(FORCE_GL_FINISH_AFTER_COMPOSITING,                  \
+         force_gl_finish_after_compositing)                  \
   GPU_OP(FORCE_INTEGRATED_GPU,                               \
          force_integrated_gpu)                               \
   GPU_OP(INIT_GL_POSITION_IN_VERTEX_SHADER,                  \
