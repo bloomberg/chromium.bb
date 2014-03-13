@@ -187,6 +187,11 @@ void WorkerGlobalScope::clearInspector()
     m_workerInspectorController.clear();
 }
 
+void WorkerGlobalScope::willStopActiveDOMObjects()
+{
+    lifecycleNotifier().notifyWillStopActiveDOMObjects();
+}
+
 void WorkerGlobalScope::dispose()
 {
     ASSERT(thread()->isCurrentThread());

@@ -81,6 +81,7 @@ namespace WebCore {
         void clearScript() { m_script.clear(); }
         void clearInspector();
 
+        void willStopActiveDOMObjects();
         void dispose();
 
         WorkerThread* thread() const { return m_thread; }

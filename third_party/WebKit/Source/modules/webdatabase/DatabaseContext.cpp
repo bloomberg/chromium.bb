@@ -131,6 +131,11 @@ void DatabaseContext::contextDestroyed()
     deref(); // paired with the ref() call on create().
 }
 
+void DatabaseContext::willStop()
+{
+    DatabaseManager::manager().interruptAllDatabasesForContext(this);
+}
+
 // stop() is from stopActiveDOMObjects() which indicates that the owner LocalFrame
 // or WorkerThread is shutting down. Initiate the orderly shutdown by stopping
 // the associated databases.

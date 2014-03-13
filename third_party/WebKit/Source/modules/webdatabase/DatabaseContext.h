@@ -53,6 +53,7 @@ public:
 
     // For life-cycle management (inherited from ActiveDOMObject):
     virtual void contextDestroyed() OVERRIDE;
+    virtual void willStop() OVERRIDE;
     virtual void stop() OVERRIDE;
 
     PassRefPtr<DatabaseContext> backend();

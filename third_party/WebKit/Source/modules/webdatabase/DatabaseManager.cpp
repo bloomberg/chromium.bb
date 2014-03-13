@@ -276,11 +276,9 @@ void DatabaseManager::closeDatabasesImmediately(const String& originIdentifier, 
     m_server->closeDatabasesImmediately(originIdentifier, name);
 }
 
-void DatabaseManager::interruptAllDatabasesForContext(ExecutionContext* context)
+void DatabaseManager::interruptAllDatabasesForContext(DatabaseContext* databaseContext)
 {
-    RefPtr<DatabaseContext> databaseContext = existingDatabaseContextFor(context);
-    if (databaseContext)
-        m_server->interruptAllDatabasesForContext(databaseContext->backend().get());
+    m_server->interruptAllDatabasesForContext(databaseContext->backend().get());
 }
 
 void DatabaseManager::logErrorMessage(ExecutionContext* context, const String& message)

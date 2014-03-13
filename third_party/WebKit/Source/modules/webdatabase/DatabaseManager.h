@@ -81,7 +81,7 @@ public:
 
     void closeDatabasesImmediately(const String& originIdentifier, const String& name);
 
-    void interruptAllDatabasesForContext(ExecutionContext*);
+    void interruptAllDatabasesForContext(DatabaseContext*);
 
 private:
     DatabaseManager();

@@ -53,6 +53,7 @@ public:
 
     void notifyResumingActiveDOMObjects();
     void notifySuspendingActiveDOMObjects();
+    void notifyWillStopActiveDOMObjects();
     void notifyStoppingActiveDOMObjects();
 
     bool contains(ActiveDOMObject* object) const { return m_activeDOMObjects.contains(object); }

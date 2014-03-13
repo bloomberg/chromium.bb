@@ -35,7 +35,6 @@
 #include "core/workers/WorkerReportingProxy.h"
 #include "core/workers/WorkerThreadStartupData.h"
 #include "heap/ThreadState.h"
-#include "modules/webdatabase/DatabaseManager.h"
 #include "platform/PlatformThreadData.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/Platform.h"
@@ -219,8 +218,7 @@ void WorkerThread::stop()
     // Ensure that tasks are being handled by thread event loop. If script execution weren't forbidden, a while(1) loop in JS could keep the thread alive forever.
     if (m_workerGlobalScope) {
         m_workerGlobalScope->script()->scheduleExecutionTermination();
-
-        DatabaseManager::manager().interruptAllDatabasesForContext(m_workerGlobalScope.get());
+        m_workerGlobalScope->willStopActiveDOMObjects();
         m_runLoop.postTaskAndTerminate(WorkerThreadShutdownStartTask::create());
         return;
     }
