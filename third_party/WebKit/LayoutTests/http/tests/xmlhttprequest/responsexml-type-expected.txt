@@ -1,0 +1,11 @@
+This tests that XMLHttpRequest.responseXML returns an XMLDocument.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS request.responseXML.__proto__ is XMLDocument.prototype
+PASS request.responseXML.__proto__.__proto__ is Document.prototype
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

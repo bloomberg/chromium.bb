@@ -29,6 +29,7 @@
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/DOMImplementation.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/XMLDocument.h"
 #include "core/editing/markup.h"
 #include "core/events/Event.h"
 #include "core/fetch/CrossOriginAccessControl.h"
@@ -254,7 +255,7 @@ Document* XMLHttpRequest::responseXML(ExceptionState& exceptionState)
             if (isHTML)
                 m_responseDocument = HTMLDocument::create(init);
             else
-                m_responseDocument = Document::create(init);
+                m_responseDocument = XMLDocument::create(init);
             // FIXME: Set Last-Modified.
             m_responseDocument->setContent(m_responseText.flattenToString());
             m_responseDocument->setSecurityOrigin(securityOrigin());
