@@ -328,7 +328,7 @@ void ScriptLoader::executeScript(const ScriptSourceCode& sourceCode)
             contextDocument->pushCurrentScript(toHTMLScriptElement(m_element));
 
         AccessControlStatus corsCheck = NotSharableCrossOrigin;
-        if (sourceCode.resource() && sourceCode.resource()->passesAccessControlCheck(m_element->document().securityOrigin()))
+        if (!m_isExternalScript || (sourceCode.resource() && sourceCode.resource()->passesAccessControlCheck(m_element->document().securityOrigin())))
             corsCheck = SharableCrossOrigin;
 
         // Create a script from the script element node, using the script
