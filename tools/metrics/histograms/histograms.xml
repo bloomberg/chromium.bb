@@ -6908,6 +6908,14 @@ other types of suffix sets.
   <summary>The version of glibc used. (Linux only)</summary>
 </histogram>
 
+<histogram name="Login.ConsumerNewUsersAllowed" enum="LoginConsumerWhitelist">
+  <summary>
+    Chrome OS histogram tracking, per consumer sign-in, whether the device owner
+    is allowing arbitrary accounts to be used on the device, or only those on a
+    specific whitelist.
+  </summary>
+</histogram>
+
 <histogram name="Login.FailureReason" enum="LoginFailureReason">
   <summary>Chrome OS login failure reason.</summary>
 </histogram>
@@ -29972,6 +29980,11 @@ other types of suffix sets.
 <enum name="LocalRendererSinkStates" type="int">
   <int value="0" label="SinkStarted"/>
   <int value="1" label="SinkNeverStarted"/>
+</enum>
+
+<enum name="LoginConsumerWhitelist" type="int">
+  <int value="0" label="ANY_USER_ALLOWED">Any user can sign in</int>
+  <int value="1" label="ONLY_WHITELISTED_ALLOWED">Whitelisted users only</int>
 </enum>
 
 <enum name="LoginFailureReason" type="int">
