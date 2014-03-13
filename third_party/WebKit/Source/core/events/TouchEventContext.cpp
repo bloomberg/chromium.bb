@@ -45,9 +45,7 @@ TouchEventContext::TouchEventContext()
 {
 }
 
-TouchEventContext::~TouchEventContext()
-{
-}
+DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(TouchEventContext)
 
 void TouchEventContext::handleLocalEvents(Event* event) const
 {

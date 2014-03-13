@@ -38,9 +38,9 @@ class MediaQuerySet;
 // will be called whenever the value of the query changes.
 
 class MediaQueryList FINAL : public RefCountedWillBeGarbageCollected<MediaQueryList> {
+    DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(MediaQueryList);
 public:
     static PassRefPtrWillBeRawPtr<MediaQueryList> create(PassRefPtrWillBeRawPtr<MediaQueryMatcher>, PassRefPtrWillBeRawPtr<MediaQuerySet>, bool);
-    ~MediaQueryList();
     String media() const;
     bool matches();
 

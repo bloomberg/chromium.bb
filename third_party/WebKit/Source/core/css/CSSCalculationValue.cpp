@@ -174,9 +174,7 @@ double CSSCalcValue::computeLengthPx(const CSSToLengthConversionData& conversion
     return clampToPermittedRange(m_expression->computeLengthPx(conversionData));
 }
 
-CSSCalcExpressionNode::~CSSCalcExpressionNode()
-{
-}
+DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(CSSCalcExpressionNode)
 
 class CSSCalcPrimitiveValue FINAL : public CSSCalcExpressionNode {
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;

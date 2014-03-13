@@ -39,13 +39,13 @@ class MediaList;
 class MediaQuery;
 
 class MediaQuerySet : public RefCountedWillBeGarbageCollected<MediaQuerySet> {
+    DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(MediaQuerySet);
 public:
     static PassRefPtrWillBeRawPtr<MediaQuerySet> create()
     {
         return adoptRefWillBeNoop(new MediaQuerySet());
     }
     static PassRefPtrWillBeRawPtr<MediaQuerySet> create(const String& mediaString);
-    ~MediaQuerySet();
 
     bool set(const String&);
     bool add(const String&);

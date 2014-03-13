@@ -39,10 +39,6 @@ WorkerNavigatorStorageQuota::WorkerNavigatorStorageQuota()
 {
 }
 
-WorkerNavigatorStorageQuota::~WorkerNavigatorStorageQuota()
-{
-}
-
 const char* WorkerNavigatorStorageQuota::supplementName()
 {
     return "WorkerNavigatorStorageQuota";

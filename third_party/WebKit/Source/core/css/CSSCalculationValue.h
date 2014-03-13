@@ -57,13 +57,13 @@ enum CalculationCategory {
 };
 
 class CSSCalcExpressionNode : public RefCountedWillBeGarbageCollected<CSSCalcExpressionNode> {
+    DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(CSSCalcExpressionNode);
 public:
     enum Type {
         CssCalcPrimitiveValue = 1,
         CssCalcBinaryOperation
     };
 
-    virtual ~CSSCalcExpressionNode() = 0;
     virtual bool isZero() const = 0;
     virtual PassOwnPtr<CalcExpressionNode> toCalcValue(const CSSToLengthConversionData&) const = 0;
     virtual double doubleValue() const = 0;

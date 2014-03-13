@@ -42,7 +42,6 @@ namespace WebCore {
 class WorkerNavigatorStorageQuota FINAL : public NoBaseWillBeGarbageCollected<WorkerNavigatorStorageQuota>, public WillBeHeapSupplement<WorkerNavigator> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WorkerNavigatorStorageQuota);
 public:
-    virtual ~WorkerNavigatorStorageQuota();
     static WorkerNavigatorStorageQuota& from(WorkerNavigator&);
 
     static DeprecatedStorageQuota* webkitTemporaryStorage(WorkerNavigator&);

@@ -41,10 +41,6 @@ WorkerGlobalScopePerformance::WorkerGlobalScopePerformance()
 {
 }
 
-WorkerGlobalScopePerformance::~WorkerGlobalScopePerformance()
-{
-}
-
 const char* WorkerGlobalScopePerformance::supplementName()
 {
     return "WorkerGlobalScopePerformance";

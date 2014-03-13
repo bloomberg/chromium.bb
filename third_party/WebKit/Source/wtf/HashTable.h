@@ -218,8 +218,21 @@ namespace WTF {
         static bool isEmptyOrDeletedBucket(const Value& value) { return isEmptyBucket(value) || isDeletedBucket(value); }
     };
 
+    // Don't declare a destructor for HeapAllocated hash tables.
+    template<typename Derived, bool isGarbageCollected>
+    class HashTableDestructorBase;
+
+    template<typename Derived>
+    class HashTableDestructorBase<Derived, true> { };
+
+    template<typename Derived>
+    class HashTableDestructorBase<Derived, false> {
+    public:
+        ~HashTableDestructorBase() { static_cast<Derived*>(this)->finalize(); }
+    };
+
     template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
-    class HashTable {
+    class HashTable : public HashTableDestructorBase<HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>, Allocator::isGarbageCollected> {
     public:
         typedef HashTableIterator<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator> iterator;
         typedef HashTableConstIterator<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator> const_iterator;
@@ -278,10 +291,9 @@ namespace WTF {
 #endif
 
         HashTable();
-        ~HashTable()
+        void finalize()
         {
-            if (Allocator::isGarbageCollected)
-                return;
+            ASSERT(!Allocator::isGarbageCollected);
             if (LIKELY(!m_table))
                 return;
             deallocateTable(m_table, m_tableSize);

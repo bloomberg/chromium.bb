@@ -45,12 +45,12 @@ class LayerRect;
 class Node;
 
 class LayerRectList : public RefCountedWillBeGarbageCollected<LayerRectList> {
+    DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(LayerRectList);
 public:
     static PassRefPtrWillBeRawPtr<LayerRectList> create()
     {
         return adoptRefWillBeNoop(new LayerRectList);
     }
-    ~LayerRectList();
 
     unsigned length() const;
     LayerRect* item(unsigned index);

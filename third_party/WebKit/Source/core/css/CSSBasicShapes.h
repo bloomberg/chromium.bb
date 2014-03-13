@@ -39,6 +39,7 @@
 namespace WebCore {
 
 class CSSBasicShape : public RefCountedWillBeGarbageCollected<CSSBasicShape> {
+    DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(CSSBasicShape);
 public:
     enum Type {
         CSSBasicShapeRectangleType,
@@ -59,9 +60,6 @@ public:
     void setLayoutBox(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> layoutBox) { m_layoutBox = layoutBox; }
 
     virtual void trace(Visitor* visitor) { visitor->trace(m_layoutBox); }
-
-public:
-    virtual ~CSSBasicShape() { }
 
 protected:
     CSSBasicShape() { }

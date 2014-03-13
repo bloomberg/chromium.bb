@@ -40,9 +40,9 @@ class MediaQuerySet;
 // The listeners must be called in the very same order in which they have been added.
 
 class MediaQueryMatcher FINAL : public RefCountedWillBeGarbageCollected<MediaQueryMatcher> {
+    DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(MediaQueryMatcher);
 public:
     static PassRefPtrWillBeRawPtr<MediaQueryMatcher> create(Document* document) { return adoptRefWillBeNoop(new MediaQueryMatcher(document)); }
-    ~MediaQueryMatcher();
     void documentDestroyed();
 
     void addListener(PassRefPtrWillBeRawPtr<MediaQueryListListener>, PassRefPtrWillBeRawPtr<MediaQueryList>);

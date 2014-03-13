@@ -895,7 +895,6 @@ protected:
     {
         ASSERT(ThreadStateFor<ThreadingTrait<T>::Affinity>::state()->contains(reinterpret_cast<Address>(this)));
     }
-    ~GarbageCollected() { }
 };
 
 // Base class for objects allocated in the Blink garbage-collected

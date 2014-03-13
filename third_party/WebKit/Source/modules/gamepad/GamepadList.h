@@ -35,7 +35,7 @@
 
 namespace WebCore {
 
-class GamepadList : public RefCountedWillBeGarbageCollected<GamepadList>, public ScriptWrappable {
+class GamepadList : public RefCountedWillBeGarbageCollectedFinalized<GamepadList>, public ScriptWrappable {
 public:
     static PassRefPtrWillBeRawPtr<GamepadList> create() { return adoptRefWillBeNoop(new GamepadList); }
     ~GamepadList();

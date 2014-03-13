@@ -41,9 +41,7 @@ MediaQueryList::MediaQueryList(PassRefPtrWillBeRawPtr<MediaQueryMatcher> vector,
 {
 }
 
-MediaQueryList::~MediaQueryList()
-{
-}
+DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(MediaQueryList)
 
 String MediaQueryList::media() const
 {

@@ -40,10 +40,6 @@ WorkerGlobalScopeCrypto::WorkerGlobalScopeCrypto()
 {
 }
 
-WorkerGlobalScopeCrypto::~WorkerGlobalScopeCrypto()
-{
-}
-
 const char* WorkerGlobalScopeCrypto::supplementName()
 {
     return "WorkerGlobalScopeCrypto";

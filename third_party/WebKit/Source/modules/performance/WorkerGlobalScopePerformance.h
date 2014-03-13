@@ -42,7 +42,6 @@ class WorkerGlobalScope;
 class WorkerGlobalScopePerformance FINAL : public NoBaseWillBeGarbageCollected<WorkerGlobalScopePerformance>, public WillBeHeapSupplement<WorkerGlobalScope> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WorkerGlobalScopePerformance);
 public:
-    virtual ~WorkerGlobalScopePerformance();
     static WorkerGlobalScopePerformance& from(WorkerGlobalScope&);
 
     static WorkerPerformance* performance(WorkerGlobalScope&);

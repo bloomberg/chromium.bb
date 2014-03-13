@@ -44,7 +44,6 @@ class WorkerGlobalScope;
 class WorkerGlobalScopeCrypto FINAL : public NoBaseWillBeGarbageCollected<WorkerGlobalScopeCrypto>, public WillBeHeapSupplement<WorkerGlobalScope> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WorkerGlobalScopeCrypto);
 public:
-    virtual ~WorkerGlobalScopeCrypto();
     static WorkerGlobalScopeCrypto& from(WillBeHeapSupplementable<WorkerGlobalScope>&);
     static WorkerCrypto* crypto(WillBeHeapSupplementable<WorkerGlobalScope>&);
     WorkerCrypto* crypto() const;

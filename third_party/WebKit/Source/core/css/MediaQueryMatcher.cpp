@@ -62,9 +62,7 @@ MediaQueryMatcher::MediaQueryMatcher(Document* document)
     ASSERT(m_document);
 }
 
-MediaQueryMatcher::~MediaQueryMatcher()
-{
-}
+DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(MediaQueryMatcher)
 
 void MediaQueryMatcher::documentDestroyed()
 {

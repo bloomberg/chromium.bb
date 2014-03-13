@@ -41,9 +41,7 @@ LayerRectList::LayerRectList()
 {
 }
 
-LayerRectList::~LayerRectList()
-{
-}
+DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(LayerRectList)
 
 unsigned LayerRectList::length() const
 {

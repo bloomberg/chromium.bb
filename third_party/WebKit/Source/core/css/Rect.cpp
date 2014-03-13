@@ -7,6 +7,8 @@
 
 namespace WebCore {
 
+DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(RectBase)
+
 void RectBase::trace(Visitor* visitor)
 {
     visitor->trace(m_top);

@@ -313,10 +313,6 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         {
         }
 
-        ~VectorBufferBase()
-        {
-        }
-
         T* m_buffer;
         unsigned m_capacity;
         unsigned m_size;
@@ -340,10 +336,6 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
             // allocation on some systems.
             if (capacity)
                 allocateBuffer(capacity);
-        }
-
-        ~VectorBuffer()
-        {
         }
 
         void destruct()
@@ -405,10 +397,6 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         {
             if (capacity > inlineCapacity)
                 Base::allocateBuffer(capacity);
-        }
-
-        ~VectorBuffer()
-        {
         }
 
         void destruct()
@@ -493,8 +481,49 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         AlignedBuffer<m_inlineBufferSize, WTF_ALIGN_OF(T)> m_inlineBuffer;
     };
 
+    template<typename T, size_t inlineCapacity, typename Allocator>
+    class Vector;
+
+    // VectorDestructorBase defines the destructor of a vector. This base is used in order to
+    // completely avoid creating a destructor for a vector that does not need to be destructed.
+    // By doing so, the clang compiler will have correct information about whether or not a
+    // vector has a trivial destructor and we use that in a compiler plugin to ensure the
+    // correctness of non-finalized garbage-collected classes and the use of VectorTraits::needsDestruction.
+
+    // All non-GC managed vectors needs a destructor. This destructor will simply call finalize on the actual vector type.
+    template<typename Derived, typename Elements, bool hasInlineCapacity, bool isGarbageCollected>
+    class VectorDestructorBase {
+    public:
+        ~VectorDestructorBase() { static_cast<Derived*>(this)->finalize(); }
+    };
+
+    // Heap-allocated vectors with no inlineCapacity never need a destructor.
+    template<typename Derived, typename Elements>
+    class VectorDestructorBase<Derived, Elements, false, true> { };
+
+    // Heap-allocator vectors with inlineCapacity need a destructor if the inline elements do.
+    // The use of VectorTraits<Elements>::needsDestruction is delayed until we know that
+    // inlineCapacity is non-zero to allow classes that recursively refer to themselves in vector
+    // members. If inlineCapacity is non-zero doing so would have undefined meaning, so in this
+    // case we can use HeapVectorWithInlineCapacityDestructorBase to define a destructor
+    // depending on the value of VectorTraits<Elements>::needsDestruction.
+    template<typename Derived, bool elementsNeedsDestruction>
+    class HeapVectorWithInlineCapacityDestructorBase;
+
+    template<typename Derived>
+    class HeapVectorWithInlineCapacityDestructorBase<Derived, true> {
+    public:
+        ~HeapVectorWithInlineCapacityDestructorBase() { static_cast<Derived*>(this)->finalize(); }
+    };
+
+    template<typename Derived>
+    class HeapVectorWithInlineCapacityDestructorBase<Derived, false> { };
+
+    template<typename Derived, typename Elements>
+    class VectorDestructorBase<Derived, Elements, true, true> : public HeapVectorWithInlineCapacityDestructorBase<Derived, VectorTraits<Elements>::needsDestruction> { };
+
     template<typename T, size_t inlineCapacity = 0, typename Allocator = DefaultAllocator>
-    class Vector : private VectorBuffer<T, inlineCapacity, Allocator> {
+    class Vector : private VectorBuffer<T, inlineCapacity, Allocator>, public VectorDestructorBase<Vector<T, inlineCapacity, Allocator>, T, (inlineCapacity > 0), Allocator::isGarbageCollected> {
     private:
         typedef VectorBuffer<T, inlineCapacity, Allocator> Base;
         typedef VectorTypeOperations<T> TypeOperations;
@@ -536,7 +565,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         // On-GC-heap vectors: Destructor should be called for inline buffers
         // (if any) but destructor shouldn't be called for vector backing since
         // it is managed by the traced GC heap.
-        ~Vector()
+        void finalize()
         {
             if (!inlineCapacity) {
                 if (LIKELY(!Base::buffer()))
@@ -548,11 +577,6 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
             }
 
             Base::destruct();
-        }
-
-        void finalize()
-        {
-            this->~Vector();
         }
 
         void clearUnusedSlots(T* from, T* to)

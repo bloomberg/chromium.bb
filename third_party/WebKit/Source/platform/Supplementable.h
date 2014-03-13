@@ -119,12 +119,14 @@ public:
 };
 
 template<>
-class SupplementTracing<false> { };
+class SupplementTracing<false> {
+public:
+    virtual ~SupplementTracing() { }
+};
 
 template<typename T, bool isGarbageCollected = false>
 class SupplementBase : public SupplementTracing<isGarbageCollected> {
 public:
-    virtual ~SupplementBase() { }
 #if SECURITY_ASSERT_ENABLED
     virtual bool isRefCountedWrapper() const { return false; }
 #endif

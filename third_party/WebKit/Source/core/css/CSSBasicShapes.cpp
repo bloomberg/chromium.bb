@@ -39,6 +39,8 @@ using namespace WTF;
 
 namespace WebCore {
 
+DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(CSSBasicShape)
+
 static String buildRectangleString(const String& x, const String& y, const String& width, const String& height, const String& radiusX, const String& radiusY, const String& layoutBox)
 {
     const char opening[] = "rectangle(";

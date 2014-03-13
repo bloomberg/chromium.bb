@@ -63,9 +63,7 @@ MediaQuerySet::MediaQuerySet(const MediaQuerySet& o)
         m_queries[i] = o.m_queries[i]->copy();
 }
 
-MediaQuerySet::~MediaQuerySet()
-{
-}
+DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(MediaQuerySet)
 
 PassRefPtrWillBeRawPtr<MediaQuerySet> MediaQuerySet::create(const String& mediaString)
 {
