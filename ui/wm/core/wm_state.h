@@ -8,7 +8,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/wm/core/wm_core_export.h"
 
-namespace wm {
+namespace views {
+namespace corewm {
 
 class TransientWindowController;
 class TransientWindowStackingClient;
@@ -27,6 +28,7 @@ class WM_CORE_EXPORT WMState {
   DISALLOW_COPY_AND_ASSIGN(WMState);
 };
 
-}  // namespace wm
+}  // namespace corewm
+}  // namespace views
 
 #endif  // UI_WM_CORE_WM_STATE_H_

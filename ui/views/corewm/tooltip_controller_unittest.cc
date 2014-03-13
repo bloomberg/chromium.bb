@@ -76,7 +76,7 @@ class TooltipControllerTest : public aura::test::AuraTestBase {
   virtual ~TooltipControllerTest() {}
 
   virtual void SetUp() OVERRIDE {
-    wm_state_.reset(new wm::WMState);
+    wm_state_.reset(new views::corewm::WMState);
     aura::test::AuraTestBase::SetUp();
 #if defined(OS_CHROMEOS)
     controller_.reset(new TooltipController(
@@ -137,7 +137,7 @@ class TooltipControllerTest : public aura::test::AuraTestBase {
   ui::ScopedOleInitializer ole_initializer_;
 #endif
 
-  scoped_ptr<wm::WMState> wm_state_;
+  scoped_ptr<views::corewm::WMState> wm_state_;
 
   DISALLOW_COPY_AND_ASSIGN(TooltipControllerTest);
 };
@@ -695,10 +695,10 @@ class TooltipControllerTest2 : public aura::test::AuraTestBase {
   virtual ~TooltipControllerTest2() {}
 
   virtual void SetUp() OVERRIDE {
-    wm_state_.reset(new wm::WMState);
+    wm_state_.reset(new views::corewm::WMState);
     aura::test::AuraTestBase::SetUp();
     controller_.reset(new TooltipController(
-                          scoped_ptr<corewm::Tooltip>(test_tooltip_)));
+                          scoped_ptr<views::corewm::Tooltip>(test_tooltip_)));
     root_window()->AddPreTargetHandler(controller_.get());
     SetTooltipClient(root_window(), controller_.get());
     helper_.reset(new TooltipControllerTestHelper(controller_.get()));
@@ -723,7 +723,7 @@ class TooltipControllerTest2 : public aura::test::AuraTestBase {
 
  private:
   scoped_ptr<TooltipController> controller_;
-  scoped_ptr<wm::WMState> wm_state_;
+  scoped_ptr<views::corewm::WMState> wm_state_;
 
   DISALLOW_COPY_AND_ASSIGN(TooltipControllerTest2);
 };

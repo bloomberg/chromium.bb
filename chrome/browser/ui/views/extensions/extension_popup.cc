@@ -198,7 +198,7 @@ void ExtensionPopup::OnWindowActivated(aura::Window* gained_active,
   if (!inspect_with_devtools_ && anchor_window == gained_active &&
       host_desktop_type != chrome::HOST_DESKTOP_TYPE_ASH &&
       this_window->GetRootWindow() == anchor_window->GetRootWindow() &&
-      wm::GetTransientParent(gained_active) != this_window)
+      views::corewm::GetTransientParent(gained_active) != this_window)
     GetWidget()->Close();
 }
 #endif
@@ -224,10 +224,10 @@ ExtensionPopup* ExtensionPopup::ShowPopup(const GURL& url,
 
 #if defined(USE_AURA)
   gfx::NativeView native_view = popup->GetWidget()->GetNativeView();
-  wm::SetWindowVisibilityAnimationType(
+  views::corewm::SetWindowVisibilityAnimationType(
       native_view,
-      wm::WINDOW_VISIBILITY_ANIMATION_TYPE_VERTICAL);
-  wm::SetWindowVisibilityAnimationVerticalPosition(
+      views::corewm::WINDOW_VISIBILITY_ANIMATION_TYPE_VERTICAL);
+  views::corewm::SetWindowVisibilityAnimationVerticalPosition(
       native_view,
       -3.0f);
 #endif

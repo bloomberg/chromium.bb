@@ -11,7 +11,8 @@
 #include "ui/events/event.h"
 #include "ui/events/event_processor.h"
 
-namespace wm {
+namespace views {
+namespace corewm {
 
 ////////////////////////////////////////////////////////////////////////////////
 // InputMethodEventFilter, public:
@@ -70,4 +71,5 @@ bool InputMethodEventFilter::DispatchKeyEventPostIME(
   return aura_event.handled();
 }
 
-}  // namespace wm
+}  // namespace corewm
+}  // namespace views

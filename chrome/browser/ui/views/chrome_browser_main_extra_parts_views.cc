@@ -26,6 +26,6 @@ void ChromeBrowserMainExtraPartsViews::ToolkitInitialized() {
     views::ViewsDelegate::views_delegate = new ChromeViewsDelegate;
 
 #if defined(USE_AURA)
-  wm_state_.reset(new wm::WMState);
+  wm_state_.reset(new views::corewm::WMState);
 #endif
 }

@@ -10,7 +10,8 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 
-namespace wm {
+namespace views {
+namespace corewm {
 
 namespace {
 
@@ -337,4 +338,5 @@ TEST_F(ImageGridTest, TooSmall) {
   EXPECT_TRUE(test_api.bottom_right_clip_rect().IsEmpty());
 }
 
-}  // namespace wm
+}  // namespace corewm
+}  // namespace views

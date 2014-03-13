@@ -11,7 +11,8 @@
 #include "ui/wm/core/window_modality_controller.h"
 #include "ui/wm/core/window_util.h"
 
-namespace wm {
+namespace views {
+namespace corewm {
 namespace {
 
 aura::Window* GetFocusedWindow(aura::Window* context) {
@@ -120,15 +121,15 @@ aura::Window* BaseFocusRules::GetActivatableWindow(aura::Window* window) const {
     if (modal_transient)
       return GetActivatableWindow(modal_transient);
 
-    if (wm::GetTransientParent(child)) {
+    if (views::corewm::GetTransientParent(child)) {
       // To avoid infinite recursion, if |child| has a transient parent
       // whose own modal transient is |child| itself, just return |child|.
       aura::Window* parent_modal_transient =
-          GetModalTransient(wm::GetTransientParent(child));
+          GetModalTransient(views::corewm::GetTransientParent(child));
       if (parent_modal_transient == child)
         return child;
 
-      return GetActivatableWindow(wm::GetTransientParent(child));
+      return GetActivatableWindow(views::corewm::GetTransientParent(child));
     }
 
     parent = parent->parent();
@@ -192,4 +193,5 @@ aura::Window* BaseFocusRules::GetNextActivatableWindow(
   return NULL;
 }
 
-}  // namespace wm
+}  // namespace corewm
+}  // namespace views

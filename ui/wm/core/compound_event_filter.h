@@ -25,7 +25,8 @@ class MouseEvent;
 class TouchEvent;
 }
 
-namespace wm {
+namespace views {
+namespace corewm {
 
 // TODO(beng): This class should die. AddEventHandler() on the root Window
 //             should be used instead.
@@ -88,6 +89,7 @@ class WM_CORE_EXPORT CompoundEventFilter : public ui::EventHandler {
   DISALLOW_COPY_AND_ASSIGN(CompoundEventFilter);
 };
 
-}  // namespace wm
+}  // namespace corewm
+}  // namespace views
 
 #endif  // UI_WM_CORE_COMPOUND_EVENT_FILTER_H_

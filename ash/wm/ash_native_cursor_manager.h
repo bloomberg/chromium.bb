@@ -28,7 +28,7 @@ class ImageCursors;
 // NativeCursorManagerDelegate interface, which receives messages about what
 // changes were acted on.
 class ASH_EXPORT AshNativeCursorManager
-    : public ::wm::NativeCursorManager {
+    : public views::corewm::NativeCursorManager {
  public:
   AshNativeCursorManager();
   virtual ~AshNativeCursorManager();
@@ -42,25 +42,25 @@ class ASH_EXPORT AshNativeCursorManager
  private:
   friend class test::CursorManagerTestApi;
 
-  // Overridden from ::wm::NativeCursorManager:
+  // Overridden from views::corewm::NativeCursorManager:
   virtual void SetDisplay(
       const gfx::Display& display,
-      ::wm::NativeCursorManagerDelegate* delegate) OVERRIDE;
+      views::corewm::NativeCursorManagerDelegate* delegate) OVERRIDE;
   virtual void SetCursor(
       gfx::NativeCursor cursor,
-      ::wm::NativeCursorManagerDelegate* delegate) OVERRIDE;
+      views::corewm::NativeCursorManagerDelegate* delegate) OVERRIDE;
   virtual void SetVisibility(
       bool visible,
-      ::wm::NativeCursorManagerDelegate* delegate) OVERRIDE;
+      views::corewm::NativeCursorManagerDelegate* delegate) OVERRIDE;
   virtual void SetScale(
       float scale,
-      ::wm::NativeCursorManagerDelegate* delegate) OVERRIDE;
+      views::corewm::NativeCursorManagerDelegate* delegate) OVERRIDE;
   virtual void SetCursorSet(
       ui::CursorSetType cursor_set,
-      ::wm::NativeCursorManagerDelegate* delegate) OVERRIDE;
+      views::corewm::NativeCursorManagerDelegate* delegate) OVERRIDE;
   virtual void SetMouseEventsEnabled(
       bool enabled,
-      ::wm::NativeCursorManagerDelegate* delegate) OVERRIDE;
+      views::corewm::NativeCursorManagerDelegate* delegate) OVERRIDE;
 
   // The cursor location where the cursor was disabled.
   gfx::Point disabled_cursor_location_;

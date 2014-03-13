@@ -22,8 +22,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(USE_AURA)
-namespace wm {
+namespace views {
+namespace corewm {
 class WMState;
+}
 }
 #endif
 
@@ -130,7 +132,7 @@ class DesktopNotificationsTest : public testing::Test {
 
  private:
 #if defined(USE_AURA)
-  scoped_ptr<wm::WMState> wm_state_;
+  scoped_ptr<views::corewm::WMState> wm_state_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(DesktopNotificationsTest);

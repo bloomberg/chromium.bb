@@ -211,9 +211,9 @@ InfolistWindow::~InfolistWindow() {
 
 void InfolistWindow::InitWidget() {
   views::Widget* widget = views::BubbleDelegateView::CreateBubble(this);
-  wm::SetWindowVisibilityAnimationType(
+  views::corewm::SetWindowVisibilityAnimationType(
       widget->GetNativeView(),
-      wm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
+      views::corewm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
 
   // BubbleFrameView will be initialized through CreateBubble.
   GetBubbleFrameView()->SetBubbleBorder(

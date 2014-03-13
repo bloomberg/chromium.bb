@@ -66,9 +66,9 @@
 #include "ui/views/view_model.h"
 #include "ui/views/view_model_utils.h"
 #include "ui/wm/core/capture_controller.h"
-#include "ui/wm/core/easy_resize_window_targeter.h"
 #include "ui/wm/core/visibility_controller.h"
 #include "ui/wm/core/window_util.h"
+#include "ui/wm/public/easy_resize_window_targeter.h"
 #include "ui/wm/public/window_types.h"
 
 #if defined(OS_CHROMEOS)
@@ -600,7 +600,7 @@ const aura::Window* RootWindowController::GetWindowForFullscreenMode() const {
   while (topmost_window) {
     if (wm::GetWindowState(topmost_window)->IsFullscreen())
       return topmost_window;
-    topmost_window = ::wm::GetTransientParent(topmost_window);
+    topmost_window = views::corewm::GetTransientParent(topmost_window);
   }
   return NULL;
 }
@@ -668,7 +668,8 @@ RootWindowController::RootWindowController(aura::WindowTreeHost* host)
 
   stacking_controller_.reset(new StackingController);
   aura::client::SetWindowTreeClient(root_window(), stacking_controller_.get());
-  capture_client_.reset(new ::wm::ScopedCaptureClient(root_window()));
+  capture_client_.reset(
+      new views::corewm::ScopedCaptureClient(root_window()));
 }
 
 void RootWindowController::Init(RootWindowType root_window_type,
@@ -816,7 +817,8 @@ void RootWindowController::CreateContainersInRootWindow(
       kShellWindowId_DesktopBackgroundContainer,
       "DesktopBackgroundContainer",
       root_window);
-  ::wm::SetChildWindowVisibilityChangesAnimated(desktop_background_container);
+  views::corewm::SetChildWindowVisibilityChangesAnimated(
+      desktop_background_container);
 
   aura::Window* non_lock_screen_containers = CreateContainer(
       kShellWindowId_NonLockScreenContainersContainer,
@@ -827,7 +829,8 @@ void RootWindowController::CreateContainersInRootWindow(
       kShellWindowId_LockScreenBackgroundContainer,
       "LockScreenBackgroundContainer",
       root_window);
-  ::wm::SetChildWindowVisibilityChangesAnimated(lock_background_containers);
+  views::corewm::SetChildWindowVisibilityChangesAnimated(
+      lock_background_containers);
 
   aura::Window* lock_screen_containers = CreateContainer(
       kShellWindowId_LockScreenContainersContainer,
@@ -846,7 +849,7 @@ void RootWindowController::CreateContainersInRootWindow(
       kShellWindowId_DefaultContainer,
       "DefaultContainer",
       non_lock_screen_containers);
-  ::wm::SetChildWindowVisibilityChangesAnimated(default_container);
+  views::corewm::SetChildWindowVisibilityChangesAnimated(default_container);
   SetUsesScreenCoordinates(default_container);
   SetUsesEasyResizeTargeter(default_container);
 
@@ -854,14 +857,15 @@ void RootWindowController::CreateContainersInRootWindow(
       kShellWindowId_AlwaysOnTopContainer,
       "AlwaysOnTopContainer",
       non_lock_screen_containers);
-  ::wm::SetChildWindowVisibilityChangesAnimated(always_on_top_container);
+  views::corewm::SetChildWindowVisibilityChangesAnimated(
+      always_on_top_container);
   SetUsesScreenCoordinates(always_on_top_container);
 
   aura::Window* docked_container = CreateContainer(
       kShellWindowId_DockedContainer,
       "DockedContainer",
       non_lock_screen_containers);
-  ::wm::SetChildWindowVisibilityChangesAnimated(docked_container);
+  views::corewm::SetChildWindowVisibilityChangesAnimated(docked_container);
   SetUsesScreenCoordinates(docked_container);
   SetUsesEasyResizeTargeter(docked_container);
 
@@ -898,7 +902,7 @@ void RootWindowController::CreateContainersInRootWindow(
       non_lock_screen_containers);
   modal_container->SetLayoutManager(
       new SystemModalContainerLayoutManager(modal_container));
-  ::wm::SetChildWindowVisibilityChangesAnimated(modal_container);
+  views::corewm::SetChildWindowVisibilityChangesAnimated(modal_container);
   SetUsesScreenCoordinates(modal_container);
   SetUsesEasyResizeTargeter(modal_container);
 
@@ -906,7 +910,8 @@ void RootWindowController::CreateContainersInRootWindow(
       kShellWindowId_InputMethodContainer,
       "InputMethodContainer",
       non_lock_screen_containers);
-  ::wm::SetChildWindowVisibilityChangesAnimated(input_method_container);
+  views::corewm::SetChildWindowVisibilityChangesAnimated(
+      input_method_container);
   SetUsesScreenCoordinates(input_method_container);
 
   // TODO(beng): Figure out if we can make this use
@@ -926,7 +931,7 @@ void RootWindowController::CreateContainersInRootWindow(
       lock_screen_containers);
   lock_modal_container->SetLayoutManager(
       new SystemModalContainerLayoutManager(lock_modal_container));
-  ::wm::SetChildWindowVisibilityChangesAnimated(lock_modal_container);
+  views::corewm::SetChildWindowVisibilityChangesAnimated(lock_modal_container);
   SetUsesScreenCoordinates(lock_modal_container);
   SetUsesEasyResizeTargeter(lock_modal_container);
 
@@ -941,7 +946,8 @@ void RootWindowController::CreateContainersInRootWindow(
       kShellWindowId_SettingBubbleContainer,
       "SettingBubbleContainer",
       lock_screen_related_containers);
-  ::wm::SetChildWindowVisibilityChangesAnimated(settings_bubble_container);
+  views::corewm::SetChildWindowVisibilityChangesAnimated(
+      settings_bubble_container);
   SetUsesScreenCoordinates(settings_bubble_container);
   DescendantShouldStayInSameRootWindow(settings_bubble_container);
 
@@ -949,14 +955,14 @@ void RootWindowController::CreateContainersInRootWindow(
       kShellWindowId_MenuContainer,
       "MenuContainer",
       lock_screen_related_containers);
-  ::wm::SetChildWindowVisibilityChangesAnimated(menu_container);
+  views::corewm::SetChildWindowVisibilityChangesAnimated(menu_container);
   SetUsesScreenCoordinates(menu_container);
 
   aura::Window* drag_drop_container = CreateContainer(
       kShellWindowId_DragImageAndTooltipContainer,
       "DragImageAndTooltipContainer",
       lock_screen_related_containers);
-  ::wm::SetChildWindowVisibilityChangesAnimated(drag_drop_container);
+  views::corewm::SetChildWindowVisibilityChangesAnimated(drag_drop_container);
   SetUsesScreenCoordinates(drag_drop_container);
 
   aura::Window* overlay_container = CreateContainer(

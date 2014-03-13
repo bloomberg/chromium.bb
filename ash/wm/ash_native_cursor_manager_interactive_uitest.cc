@@ -21,7 +21,7 @@
 
 namespace ash {
 
-using ::wm::CursorManager;
+using views::corewm::CursorManager;
 typedef test::AshTestBase AshNativeCursorManagerTest;
 
 namespace {

@@ -58,9 +58,9 @@ ModeIndicatorView::ModeIndicatorView(gfx::NativeView parent,
 ModeIndicatorView::~ModeIndicatorView() {}
 
 void ModeIndicatorView::ShowAndFadeOut() {
-  wm::SetWindowVisibilityAnimationTransition(
+  views::corewm::SetWindowVisibilityAnimationTransition(
       GetWidget()->GetNativeView(),
-      wm::ANIMATE_HIDE);
+      views::corewm::ANIMATE_HIDE);
   GetWidget()->Show();
   timer_.Start(FROM_HERE,
                base::TimeDelta::FromMilliseconds(kShowingDuration),

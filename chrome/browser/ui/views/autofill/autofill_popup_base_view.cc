@@ -58,8 +58,8 @@ void AutofillPopupBaseView::DoShow() {
     widget->SetContentsView(this);
 #if defined(USE_AURA)
     // No animation for popup appearance (too distracting).
-    wm::SetWindowVisibilityAnimationTransition(
-        widget->GetNativeView(), wm::ANIMATE_HIDE);
+    views::corewm::SetWindowVisibilityAnimationTransition(
+        widget->GetNativeView(), views::corewm::ANIMATE_HIDE);
 #endif
   }
 

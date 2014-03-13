@@ -12,7 +12,8 @@ namespace aura {
 class Window;
 }
 
-namespace wm {
+namespace views {
+namespace corewm {
 
 // Different types of drop shadows that can be drawn under a window by the
 // shell.  Used as a value for the kShadowTypeKey property.
@@ -29,6 +30,7 @@ WM_CORE_EXPORT ShadowType GetShadowType(aura::Window* window);
 // window.  If unset, no shadow is displayed.
 extern const aura::WindowProperty<ShadowType>* const kShadowTypeKey;
 
-}  // namespace wm
+}  // namespace corewm
+}  // namespace views
 
 #endif  // UI_WM_CORE_SHADOW_TYPES_H_

@@ -21,7 +21,8 @@
 #include "ui/events/x/touch_factory_x11.h"
 #endif
 
-namespace wm {
+namespace views {
+namespace corewm {
 
 namespace {
 
@@ -293,4 +294,5 @@ void CompoundEventFilter::OnGestureEvent(ui::GestureEvent* event) {
   }
 }
 
-}  // namespace wm
+}  // namespace corewm
+}  // namespace views

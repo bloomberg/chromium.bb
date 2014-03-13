@@ -23,7 +23,8 @@ namespace gfx {
 class Rect;
 }
 
-namespace wm {
+namespace views {
+namespace corewm {
 
 class Shadow;
 
@@ -64,6 +65,7 @@ class WM_CORE_EXPORT ShadowController :
   DISALLOW_COPY_AND_ASSIGN(ShadowController);
 };
 
-}  // namespace wm
+}  // namespace corewm
+}  // namespace views
 
 #endif  // UI_WM_CORE_SHADOW_CONTROLLER_H_

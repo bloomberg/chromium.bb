@@ -22,7 +22,7 @@ internal::RootWindowLayoutManager* ShellTestApi::root_window_layout() {
   return shell_->GetPrimaryRootWindowController()->root_window_layout();
 }
 
-wm::InputMethodEventFilter*
+views::corewm::InputMethodEventFilter*
 ShellTestApi::input_method_event_filter() {
   return shell_->input_method_filter_.get();
 }

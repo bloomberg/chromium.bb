@@ -194,10 +194,10 @@ PopupMessage::PopupMessage(const base::string16& caption,
   widget_ = view_->GetWidget();
 
   gfx::NativeView native_view = widget_->GetNativeView();
-  wm::SetWindowVisibilityAnimationType(
-      native_view, wm::WINDOW_VISIBILITY_ANIMATION_TYPE_VERTICAL);
-  wm::SetWindowVisibilityAnimationTransition(
-      native_view, wm::ANIMATE_HIDE);
+  views::corewm::SetWindowVisibilityAnimationType(
+      native_view, views::corewm::WINDOW_VISIBILITY_ANIMATION_TYPE_VERTICAL);
+  views::corewm::SetWindowVisibilityAnimationTransition(
+      native_view, views::corewm::ANIMATE_HIDE);
   view_->GetWidget()->Show();
 }
 
@@ -219,8 +219,8 @@ void PopupMessage::CancelHidingAnimation() {
     return;
 
   gfx::NativeView native_view = widget_->GetNativeView();
-  wm::SetWindowVisibilityAnimationTransition(
-      native_view, wm::ANIMATE_NONE);
+  views::corewm::SetWindowVisibilityAnimationTransition(
+      native_view, views::corewm::ANIMATE_NONE);
 }
 
 }  // namespace ash

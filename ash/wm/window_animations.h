@@ -30,7 +30,7 @@ namespace ash {
 enum WindowVisibilityAnimationType {
   // Window scale/rotates down to its launcher icon.
   WINDOW_VISIBILITY_ANIMATION_TYPE_MINIMIZE =
-      ::wm::WINDOW_VISIBILITY_ANIMATION_MAX,
+      views::corewm::WINDOW_VISIBILITY_ANIMATION_MAX,
   // Fade in/out using brightness and grayscale web filters.
   WINDOW_VISIBILITY_ANIMATION_TYPE_BRIGHTNESS_GRAYSCALE
 };

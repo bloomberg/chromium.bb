@@ -13,8 +13,10 @@ namespace gfx {
 class Display;
 }
 
-namespace wm {
+namespace views {
+namespace corewm {
 class CursorManager;
+}
 }
 
 namespace ash {
@@ -23,7 +25,7 @@ namespace test {
 // Use the api in this class to test CursorManager.
 class CursorManagerTestApi {
  public:
-  explicit CursorManagerTestApi(::wm::CursorManager* cursor_manager);
+  explicit CursorManagerTestApi(views::corewm::CursorManager* cursor_manager);
   ~CursorManagerTestApi();
 
   float GetCurrentScale() const;
@@ -32,7 +34,7 @@ class CursorManagerTestApi {
   gfx::Display GetDisplay() const;
 
  private:
-  ::wm::CursorManager* cursor_manager_;
+  views::corewm::CursorManager* cursor_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(CursorManagerTestApi);
 };

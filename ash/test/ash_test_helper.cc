@@ -52,7 +52,7 @@ AshTestHelper::~AshTestHelper() {
 }
 
 void AshTestHelper::SetUp(bool start_session) {
-  wm_state_.reset(new wm::WMState);
+  wm_state_.reset(new views::corewm::WMState);
 
   // Disable animations during tests.
   zero_duration_mode_.reset(new ui::ScopedAnimationDurationScaleMode(
@@ -126,7 +126,7 @@ void AshTestHelper::TearDown() {
   ui::ShutdownInputMethodForTesting();
   zero_duration_mode_.reset();
 
-  CHECK(!wm::ScopedCaptureClient::IsActive());
+  CHECK(!views::corewm::ScopedCaptureClient::IsActive());
 
   wm_state_.reset();
 }

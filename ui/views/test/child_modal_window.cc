@@ -150,7 +150,7 @@ gfx::NativeWindow ChildModalParent::GetChild() const {
 Widget* ChildModalParent::CreateChild() {
   Widget* child = Widget::CreateWindowWithParent(
       new ChildModalWindow, GetWidget()->GetNativeView());
-  wm::SetModalParent(child->GetNativeView(), GetModalParent());
+  corewm::SetModalParent(child->GetNativeView(), GetModalParent());
   child->AddObserver(this);
   child->GetNativeView()->SetName("ChildModalWindow");
   return child;

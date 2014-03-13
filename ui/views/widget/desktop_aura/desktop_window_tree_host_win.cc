@@ -160,7 +160,7 @@ void DesktopWindowTreeHostWin::OnNativeWidgetCreated(
 
   should_animate_window_close_ =
       content_window_->type() != ui::wm::WINDOW_TYPE_NORMAL &&
-      !wm::WindowAnimationsDisabled(content_window_);
+      !views::corewm::WindowAnimationsDisabled(content_window_);
 
 // TODO this is not invoked *after* Init(), but should be ok.
   SetWindowTransparency();

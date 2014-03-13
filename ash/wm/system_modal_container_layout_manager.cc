@@ -177,7 +177,7 @@ void SystemModalContainerLayoutManager::DestroyModalBackground() {
     ui::ScopedLayerAnimationSettings settings(
         modal_background_->GetNativeView()->layer()->GetAnimator());
     modal_background_->Close();
-    settings.AddObserver(::wm::CreateHidingWindowAnimationObserver(
+    settings.AddObserver(views::corewm::CreateHidingWindowAnimationObserver(
         modal_background_->GetNativeView()));
     modal_background_->GetNativeView()->layer()->SetOpacity(0.0f);
     modal_background_ = NULL;

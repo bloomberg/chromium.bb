@@ -338,7 +338,7 @@ TEST_F(WorkspaceLayoutManagerTest, DontClobberRestoreBounds) {
 
   scoped_ptr<aura::Window> window2(
       CreateTestWindowInShellWithBounds(gfx::Rect(12, 20, 30, 40)));
-  ::wm::AddTransientChild(window.get(), window2.get());
+  views::corewm::AddTransientChild(window.get(), window2.get());
   window2->Show();
 
   window_observer.set_window(window2.get());

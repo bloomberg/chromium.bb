@@ -206,7 +206,7 @@ void DragWindowResizer::UpdateDragWindow(const gfx::Rect& bounds,
 
 bool DragWindowResizer::ShouldAllowMouseWarp() {
   return (details().window_component == HTCAPTION) &&
-      !::wm::GetTransientParent(GetTarget()) &&
+      !views::corewm::GetTransientParent(GetTarget()) &&
       (GetTarget()->type() == ui::wm::WINDOW_TYPE_NORMAL ||
        GetTarget()->type() == ui::wm::WINDOW_TYPE_PANEL);
 }

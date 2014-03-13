@@ -290,7 +290,7 @@ TEST_F(WorkspaceEventHandlerTest,
   wd1.set_window_component(HTCAPTION);
 
   child->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_WINDOW);
-  ::wm::AddTransientChild(window.get(), child.get());
+  views::corewm::AddTransientChild(window.get(), child.get());
 
   wm::WindowState* window_state = wm::GetWindowState(window.get());
   EXPECT_FALSE(window_state->IsMaximized());

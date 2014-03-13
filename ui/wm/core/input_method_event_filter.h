@@ -18,7 +18,8 @@ class EventProcessor;
 class InputMethod;
 }
 
-namespace wm {
+namespace views {
+namespace corewm {
 
 // An event filter that forwards a KeyEvent to a system IME, and dispatches a
 // TranslatedKeyEvent to the root window as needed.
@@ -48,6 +49,7 @@ class WM_CORE_EXPORT InputMethodEventFilter
   DISALLOW_COPY_AND_ASSIGN(InputMethodEventFilter);
 };
 
-}  // namespace wm
+}  // namespace corewm
+}  // namespace views
 
 #endif  // UI_WM_CORE_INPUT_METHOD_EVENT_FILTER_H_

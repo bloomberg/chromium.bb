@@ -15,8 +15,10 @@ class BrowserDesktopWindowTreeHost;
 class BrowserFrame;
 class BrowserView;
 
-namespace wm {
+namespace views {
+namespace corewm {
 class VisibilityController;
+}
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -55,7 +57,7 @@ class DesktopBrowserFrameAura : public views::DesktopNativeWidgetAura,
   // Owned by the RootWindow.
   BrowserDesktopWindowTreeHost* browser_desktop_window_tree_host_;
 
-  scoped_ptr<wm::VisibilityController> visibility_controller_;
+  scoped_ptr<views::corewm::VisibilityController> visibility_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopBrowserFrameAura);
 };

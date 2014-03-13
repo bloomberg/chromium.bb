@@ -11,7 +11,8 @@
 
 using aura::Window;
 
-namespace wm {
+namespace views {
+namespace corewm {
 
 namespace {
 
@@ -129,4 +130,5 @@ bool TransientWindowStackingClient::AdjustStacking(
   return *child != *target;
 }
 
-}  // namespace wm
+}  // namespace corewm
+}  // namespace views

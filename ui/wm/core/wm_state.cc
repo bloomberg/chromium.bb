@@ -7,7 +7,8 @@
 #include "ui/wm/core/transient_window_controller.h"
 #include "ui/wm/core/transient_window_stacking_client.h"
 
-namespace wm {
+namespace views {
+namespace corewm {
 
 WMState::WMState()
     : window_stacking_client_(new TransientWindowStackingClient),
@@ -26,4 +27,5 @@ WMState::~WMState() {
   }
 }
 
-}  // namespace wm
+}  // namespace corewm
+}  // namespace views

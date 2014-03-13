@@ -19,7 +19,8 @@
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/core/wm_state.h"
 
-namespace wm {
+namespace views {
+namespace corewm {
 
 class ShadowControllerTest : public aura::test::AuraTestBase {
  public:
@@ -27,7 +28,7 @@ class ShadowControllerTest : public aura::test::AuraTestBase {
   virtual ~ShadowControllerTest() {}
 
   virtual void SetUp() OVERRIDE {
-    wm_state_.reset(new wm::WMState);
+    wm_state_.reset(new views::corewm::WMState);
     AuraTestBase::SetUp();
     aura::client::ActivationClient* activation_client =
         aura::client::GetActivationClient(root_window());
@@ -51,7 +52,7 @@ class ShadowControllerTest : public aura::test::AuraTestBase {
 
  private:
   scoped_ptr<ShadowController> shadow_controller_;
-  scoped_ptr<wm::WMState> wm_state_;
+  scoped_ptr<views::corewm::WMState> wm_state_;
 
   DISALLOW_COPY_AND_ASSIGN(ShadowControllerTest);
 };
@@ -214,4 +215,5 @@ TEST_F(ShadowControllerTest, TransientParentKeepsActiveShadow) {
   EXPECT_EQ(Shadow::STYLE_ACTIVE, shadow1->style());
 }
 
-}  // namespace wm
+}  // namespace corewm
+}  // namespace views

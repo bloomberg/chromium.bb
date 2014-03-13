@@ -10,40 +10,40 @@
 
 namespace {
 
-class TestingCursorManager : public wm::NativeCursorManager {
+class TestingCursorManager : public views::corewm::NativeCursorManager {
  public:
-  // Overridden from wm::NativeCursorManager:
+  // Overridden from views::corewm::NativeCursorManager:
   virtual void SetDisplay(
       const gfx::Display& display,
-      wm::NativeCursorManagerDelegate* delegate) OVERRIDE {}
+      views::corewm::NativeCursorManagerDelegate* delegate) OVERRIDE {}
 
   virtual void SetCursor(
       gfx::NativeCursor cursor,
-      wm::NativeCursorManagerDelegate* delegate) OVERRIDE {
+      views::corewm::NativeCursorManagerDelegate* delegate) OVERRIDE {
     delegate->CommitCursor(cursor);
   }
 
   virtual void SetVisibility(
       bool visible,
-      wm::NativeCursorManagerDelegate* delegate) OVERRIDE {
+      views::corewm::NativeCursorManagerDelegate* delegate) OVERRIDE {
     delegate->CommitVisibility(visible);
   }
 
   virtual void SetMouseEventsEnabled(
       bool enabled,
-      wm::NativeCursorManagerDelegate* delegate) OVERRIDE {
+      views::corewm::NativeCursorManagerDelegate* delegate) OVERRIDE {
     delegate->CommitMouseEventsEnabled(enabled);
   }
 
   virtual void SetCursorSet(
       ui::CursorSetType cursor_set,
-      wm::NativeCursorManagerDelegate* delegate) OVERRIDE {
+      views::corewm::NativeCursorManagerDelegate* delegate) OVERRIDE {
     delegate->CommitCursorSet(cursor_set);
   }
 
   virtual void SetScale(
       float scale,
-      wm::NativeCursorManagerDelegate* delegate) OVERRIDE {
+      views::corewm::NativeCursorManagerDelegate* delegate) OVERRIDE {
     delegate->CommitScale(scale);
   }
 };
@@ -54,12 +54,12 @@ class CursorManagerTest : public aura::test::AuraTestBase {
  protected:
   CursorManagerTest()
       : delegate_(new TestingCursorManager),
-        cursor_manager_(scoped_ptr<wm::NativeCursorManager>(
+        cursor_manager_(scoped_ptr<views::corewm::NativeCursorManager>(
             delegate_)) {
   }
 
   TestingCursorManager* delegate_;
-  wm::CursorManager cursor_manager_;
+  views::corewm::CursorManager cursor_manager_;
 };
 
 class TestingCursorClientObserver : public aura::client::CursorClientObserver {

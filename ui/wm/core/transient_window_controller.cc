@@ -6,7 +6,8 @@
 
 #include "ui/wm/core/transient_window_manager.h"
 
-namespace wm {
+namespace views {
+namespace corewm {
 
 TransientWindowController::TransientWindowController() {
 }
@@ -37,4 +38,5 @@ const aura::Window* TransientWindowController::GetTransientParent(
   return window_manager ? window_manager->transient_parent() : NULL;
 }
 
-}  // namespace wm
+}  // namespace corewm
+}  // namespace views

@@ -15,7 +15,8 @@ namespace ui {
 class Layer;
 }  // namespace ui
 
-namespace wm {
+namespace views {
+namespace corewm {
 
 class ImageGrid;
 
@@ -81,6 +82,7 @@ class WM_CORE_EXPORT Shadow : public ui::ImplicitAnimationObserver {
   DISALLOW_COPY_AND_ASSIGN(Shadow);
 };
 
-}  // namespace wm
+}  // namespace corewm
+}  // namespace views
 
 #endif  // UI_WM_CORE_SHADOW_H_

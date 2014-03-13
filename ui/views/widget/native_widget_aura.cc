@@ -132,7 +132,7 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
     // Set up the transient child before the window is added. This way the
     // LayoutManager knows the window has a transient parent.
     if (parent && parent->type() != ui::wm::WINDOW_TYPE_UNKNOWN) {
-      wm::AddTransientChild(parent, window_);
+      corewm::AddTransientChild(parent, window_);
       if (!context)
         context = parent;
       parent = NULL;
@@ -315,9 +315,9 @@ void NativeWidgetAura::CenterWindow(const gfx::Size& size) {
 
   // If |window_|'s transient parent's bounds are big enough to fit it, then we
   // center it with respect to the transient parent.
-  if (wm::GetTransientParent(window_)) {
+  if (views::corewm::GetTransientParent(window_)) {
     gfx::Rect transient_parent_rect =
-        wm::GetTransientParent(window_)->GetBoundsInRootWindow();
+        views::corewm::GetTransientParent(window_)->GetBoundsInRootWindow();
     transient_parent_rect.Intersect(work_area);
     if (transient_parent_rect.height() >= size.height() &&
         transient_parent_rect.width() >= size.width())
@@ -523,7 +523,7 @@ void NativeWidgetAura::Deactivate() {
 }
 
 bool NativeWidgetAura::IsActive() const {
-  return window_ && wm::IsActiveWindow(window_);
+  return window_ && corewm::IsActiveWindow(window_);
 }
 
 void NativeWidgetAura::SetAlwaysOnTop(bool on_top) {
@@ -1083,7 +1083,7 @@ void NativeWidgetPrivate::GetAllChildWidgets(gfx::NativeView native_view,
 void NativeWidgetPrivate::GetAllOwnedWidgets(gfx::NativeView native_view,
                                              Widget::Widgets* owned) {
   const aura::Window::Windows& transient_children =
-      wm::GetTransientChildren(native_view);
+      views::corewm::GetTransientChildren(native_view);
   for (aura::Window::Windows::const_iterator i = transient_children.begin();
        i != transient_children.end(); ++i) {
     NativeWidgetPrivate* native_widget = static_cast<NativeWidgetPrivate*>(

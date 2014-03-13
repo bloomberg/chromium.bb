@@ -8,7 +8,8 @@
 #include "ui/aura/client/window_stacking_client.h"
 #include "ui/wm/core/wm_core_export.h"
 
-namespace wm {
+namespace views {
+namespace corewm {
 
 class TransientWindowManager;
 
@@ -32,6 +33,7 @@ class WM_CORE_EXPORT TransientWindowStackingClient
   DISALLOW_COPY_AND_ASSIGN(TransientWindowStackingClient);
 };
 
-}  // namespace wm
+}  // namespace corewm
+}  // namespace views
 
 #endif  // UI_WM_CORE_TRANSIENT_WINDOW_STACKING_CLIENT_H_

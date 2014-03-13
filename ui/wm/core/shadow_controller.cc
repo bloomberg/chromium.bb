@@ -23,7 +23,8 @@
 
 using std::make_pair;
 
-namespace wm {
+namespace views {
+namespace corewm {
 
 namespace {
 
@@ -269,4 +270,5 @@ Shadow* ShadowController::TestApi::GetShadowForWindow(aura::Window* window) {
   return controller_->impl_->GetShadowForWindow(window);
 }
 
-}  // namespace wm
+}  // namespace corewm
+}  // namespace views
