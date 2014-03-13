@@ -22,10 +22,10 @@ InspectorTest.dumpConsoleMessages = function(printOriginatingCommand, dumpClassN
 {
     WebInspector.inspectorView.panel("console");
     var result = [];
-    var messageViews = WebInspector.ConsolePanel._view()._visibleViewMessages;
-    for (var i = 0; i < messageViews.length; ++i) {
-        var message = messageViews[i].consoleMessage();
-        var element = messageViews[i].toMessageElement();
+    var visibleMessagesIndices = WebInspector.ConsolePanel._view()._visibleMessagesIndices;
+    for (var i = 0; i < visibleMessagesIndices.length; ++i) {
+        var message = WebInspector.console.messages[visibleMessagesIndices[i]];
+        var element = InspectorTest.toViewMessage(message).toMessageElement();
 
         if (dumpClassNames) {
             var classNames = [];
@@ -43,7 +43,7 @@ InspectorTest.dumpConsoleMessages = function(printOriginatingCommand, dumpClassN
             InspectorTest.addResult(messageText + (dumpClassNames ? " " + classNames.join(" > ") : ""));
         }
 
-        var uiMessage = messageViews[i];
+        var uiMessage = InspectorTest.toViewMessage(message);
         if (printOriginatingCommand && uiMessage.originatingCommand) {
             var originatingElement = uiMessage.originatingCommand.toMessageElement();
             InspectorTest.addResult("Originating from: " + originatingElement.textContent.replace(/\u200b/g, ""));
@@ -84,9 +84,9 @@ InspectorTest.dumpConsoleMessagesWithStyles = function(sortMessages)
 {
     WebInspector.inspectorView.panel("console");
     var result = [];
-    var messageViews = WebInspector.ConsolePanel._view()._visibleViewMessages;
-    for (var i = 0; i < messageViews.length; ++i) {
-        var element = messageViews[i].toMessageElement();
+    var indices = WebInspector.ConsolePanel._view()._visibleMessagesIndices;
+    for (var i = 0; i < indices.length; ++i) {
+        var element = InspectorTest.toViewMessage(WebInspector.console.messages[indices[i]]).toMessageElement();
         var messageText = InspectorTest.prepareConsoleMessageText(element)
         InspectorTest.addResult(messageText);
         var spans = element.querySelectorAll(".console-message-text > span > span");
@@ -98,9 +98,9 @@ InspectorTest.dumpConsoleMessagesWithStyles = function(sortMessages)
 InspectorTest.dumpConsoleMessagesWithClasses = function(sortMessages) {
     WebInspector.inspectorView.panel("console");
     var result = [];
-    var messageViews = WebInspector.ConsolePanel._view()._visibleViewMessages;
-    for (var i = 0; i < messageViews.length; ++i) {
-        var element = messageViews[i].toMessageElement();
+    var indices = WebInspector.ConsolePanel._view()._visibleMessagesIndices;
+    for (var i = 0; i < indices.length; ++i) {
+        var element = InspectorTest.toViewMessage(WebInspector.console.messages[indices[i]]).toMessageElement();
         var messageText = InspectorTest.prepareConsoleMessageText(element)
         result.push(messageText + " " + element.getAttribute("class"));
     }
@@ -113,10 +113,10 @@ InspectorTest.dumpConsoleMessagesWithClasses = function(sortMessages) {
 InspectorTest.expandConsoleMessages = function(callback)
 {
     WebInspector.inspectorView.panel("console");
-    var messageViews = WebInspector.ConsolePanel._view()._visibleViewMessages;
-    for (var i = 0; i < messageViews.length; ++i) {
-        var message = messageViews[i].consoleMessage();
-        var element = messageViews[i].toMessageElement();
+    var indices = WebInspector.ConsolePanel._view()._visibleMessagesIndices;
+    for (var i = 0; i < indices.length; ++i) {
+        var message = WebInspector.console.messages[indices[i]];
+        var element = InspectorTest.toViewMessage(message).toMessageElement();
         var node = element;
         while (node) {
             if (node.treeElementForTest)
@@ -135,9 +135,9 @@ InspectorTest.expandConsoleMessages = function(callback)
 InspectorTest.checkConsoleMessagesDontHaveParameters = function()
 {
     WebInspector.inspectorView.panel("console");
-    var messageViews = WebInspector.ConsolePanel._view()._visibleViewMessages;
-    for (var i = 0; i < messageViews.length; ++i) {
-        var m = messageViews[i].consoleMessage();
+    var indices = WebInspector.ConsolePanel._view()._visibleMessagesIndices;
+    for (var i = 0; i < indices.length; ++i) {
+        var m = WebInspector.console.messages[indices[i]];
         InspectorTest.addResult("Message[" + i + "]:");
         InspectorTest.addResult("Message: " + WebInspector.displayNameForURL(m.url) + ":" + m.line + " " + m.message);
         if ("_parameters" in m) {
