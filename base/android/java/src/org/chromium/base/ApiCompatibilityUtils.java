@@ -4,6 +4,7 @@
 
 package org.chromium.base;
 
+import android.app.PendingIntent;
 import android.content.res.Configuration;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
@@ -262,6 +263,18 @@ public class ApiCompatibilityUtils {
             iv.setImageAlpha(alpha);
         } else {
             iv.setAlpha(alpha);
+        }
+    }
+
+    /**
+     * @see android.app.PendingIntent#getCreatorPackage()
+     */
+    @SuppressWarnings("deprecation")
+    public static String getCreatorPackage(PendingIntent intent) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            return intent.getCreatorPackage();
+        } else {
+            return intent.getTargetPackage();
         }
     }
 }
