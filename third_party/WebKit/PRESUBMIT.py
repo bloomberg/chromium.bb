@@ -312,12 +312,14 @@ def CheckChangeOnCommit(input_api, output_api):
 
 def GetPreferredTryMasters(project, change):
     return {
+        'tryserver.blink': {
+            'blink_presubmit': set(['defaulttests']),
+            'linux_blink_dbg': set(['defaulttests']),
+            'linux_blink_rel': set(['defaulttests']),
+        },
         'tryserver.chromium': {
             'blink_android_compile_dbg': set(['defaulttests']),
             'blink_android_compile_rel': set(['defaulttests']),
-            'blink_presubmit': set(['defaulttests']),
-            'linux_blink': set(['defaulttests']),
-            'linux_blink_rel': set(['defaulttests']),
             'mac_blink_compile': set(['defaulttests']),
             'mac_blink_rel': set(['defaulttests']),
             'win_blink_compile': set(['defaulttests']),
