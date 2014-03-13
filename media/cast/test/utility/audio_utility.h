@@ -58,6 +58,22 @@ scoped_ptr<PcmAudioFrame> ToPcmAudioFrame(const AudioBus& audio_bus,
 // zero.
 int CountZeroCrossings(const std::vector<int16>& samples);
 
+// Encode |timestamp| into the samples pointed to by 'samples' in a way
+// that should be decodable even after compressing/decompressing the audio.
+// Assumes 48Khz sampling rate and needs at least 240 samples. Returns
+// false if |samples| is too small. If more than 240 samples are available,
+// then the timestamp will be repeated. |sample_offset| should contain how
+// many samples has been encoded so far, so that we can make smooth
+// transitions between encoded chunks.
+// See audio_utility.cc for details on how the encoding is done.
+bool EncodeTimestamp(uint16 timestamp,
+                     size_t sample_offset,
+                     std::vector<int16>* samples);
+
+// Decode a timestamp encoded with EncodeTimestamp. Returns true if a
+// timestamp was found in |samples|.
+bool DecodeTimestamp(const std::vector<int16>& samples, uint16* timestamp);
+
 }  // namespace cast
 }  // namespace media
 

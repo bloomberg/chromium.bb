@@ -52,5 +52,21 @@
         '<(DEPTH)/media/cast/test/utility/generate_barcode_video.cc',
       ],
     },
+    {
+      'target_name': 'generate_timecode_audio',
+      'type': 'executable',
+      'include_dirs': [
+        '<(DEPTH)/',
+      ],
+      'dependencies': [
+        '<(DEPTH)/media/cast/cast_config.gyp:cast_config',
+        '<(DEPTH)/media/cast/test/utility/utility.gyp:cast_test_utility',
+        '<(DEPTH)/media/cast/transport/cast_transport.gyp:cast_transport',
+        '<(DEPTH)/media/media.gyp:media',
+      ],
+      'sources': [
+        '<(DEPTH)/media/cast/test/utility/generate_timecode_audio.cc',
+      ],
+    },
   ],
 }

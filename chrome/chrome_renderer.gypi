@@ -21,7 +21,7 @@
         '../components/components.gyp:translate_language_detection',
         '../components/components.gyp:visitedlink_renderer',
         '../content/content.gyp:content_renderer',
-        '../media/cast/cast.gyp:cast_config',
+        '../media/cast/cast_config.gyp:cast_config',
         '../media/cast/cast_sender.gyp:cast_sender',
         '../media/cast/logging/logging.gyp:sender_logging',
         '../media/cast/transport/cast_transport.gyp:cast_transport',

@@ -8,23 +8,6 @@
     'chromium_code': 1,
   },
   'targets': [
-    {
-      'target_name': 'cast_config',
-      'type': 'static_library',
-      'include_dirs': [
-        '<(DEPTH)/',
-      ],
-      'dependencies': [
-        '<(DEPTH)/base/base.gyp:base',
-      ],
-      'sources': [
-        'cast_config.cc',
-        'cast_config.h',
-        'cast_defines.h',
-        'cast_environment.cc',
-        'cast_environment.h',
-      ], # source
-    },
   ],  # targets,
   'conditions': [
     ['include_tests==1', {
@@ -33,7 +16,7 @@
           'target_name': 'cast_unittests',
           'type': '<(gtest_target_type)',
           'dependencies': [
-            'cast_config',
+            'cast_config.gyp:cast_config',
             'cast_receiver.gyp:cast_receiver',
             'cast_sender.gyp:cast_sender',
             'logging/logging.gyp:cast_log_analysis',
@@ -89,6 +72,7 @@
             'test/fake_single_thread_task_runner.h',
             'test/fake_video_encode_accelerator.cc',
             'test/fake_video_encode_accelerator.h',
+            'test/utility/audio_utility_unittest.cc',
             'test/utility/barcode_unittest.cc',
             'transport/cast_transport_sender_impl_unittest.cc',
             'transport/pacing/mock_paced_packet_sender.cc',
@@ -113,7 +97,7 @@
             '<(DEPTH)/',
           ],
           'dependencies': [
-            'cast_config',
+            'cast_config.gyp:cast_config',
             'logging/logging.gyp:sender_logging',
             '<(DEPTH)/ui/gfx/gfx.gyp:gfx',
             '<(DEPTH)/net/net.gyp:net_test_support',
@@ -135,7 +119,7 @@
             '<(DEPTH)/',
           ],
           'dependencies': [
-            'cast_config',
+            'cast_config.gyp:cast_config',
             '<(DEPTH)/ui/gfx/gfx.gyp:gfx',
             '<(DEPTH)/net/net.gyp:net_test_support',
             '<(DEPTH)/media/cast/cast_receiver.gyp:*',
