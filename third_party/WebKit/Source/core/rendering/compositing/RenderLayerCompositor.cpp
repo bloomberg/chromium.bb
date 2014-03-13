@@ -829,11 +829,6 @@ LayoutRect RenderLayerCompositor::calculateCompositedBounds(const RenderLayer* l
         return LayoutRect();
 
     RenderLayer::CalculateLayerBoundsFlags flags = RenderLayer::DefaultCalculateLayerBoundsFlags | RenderLayer::ExcludeHiddenDescendants | RenderLayer::DontConstrainForMask;
-#if HAVE(COMPOSITOR_FILTER_OUTSETS)
-    // If the compositor computes its own filter outsets, don't include them in the composited bounds.
-    if (!layer->paintsWithFilters())
-        flags &= ~RenderLayer::IncludeLayerFilterOutsets;
-#endif
     return layer->calculateLayerBounds(ancestorLayer, 0, flags);
 }
 

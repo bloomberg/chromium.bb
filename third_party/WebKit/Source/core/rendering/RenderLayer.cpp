@@ -216,10 +216,9 @@ bool RenderLayer::paintsWithFilters() const
 
     // https://code.google.com/p/chromium/issues/detail?id=343759
     DisableCompositingQueryAsserts disabler;
-    if (compositingState() != PaintsIntoOwnBacking)
-        return true;
-
-    if (!m_compositedLayerMapping || !m_compositedLayerMapping->canCompositeFilters())
+    if (!m_compositedLayerMapping
+        || compositingState() != PaintsIntoOwnBacking
+        || !m_compositedLayerMapping->canCompositeFilters())
         return true;
 
     return false;
@@ -3508,10 +3507,9 @@ CompositingState RenderLayer::compositingState() const
     if (!m_compositedLayerMapping)
         return NotComposited;
 
-    if (m_compositedLayerMapping && compositedLayerMapping()->paintsIntoCompositedAncestor())
+    if (compositedLayerMapping()->paintsIntoCompositedAncestor())
         return HasOwnBackingButPaintsIntoAncestor;
 
-    ASSERT(m_compositedLayerMapping);
     return PaintsIntoOwnBacking;
 }
 
@@ -3823,16 +3821,6 @@ inline bool RenderLayer::needsCompositingLayersRebuiltForFilters(const RenderSty
         //     whose compositors can't compute their own filter outsets.
         return true;
     }
-
-#if HAVE(COMPOSITOR_FILTER_OUTSETS)
-    if ((didPaintWithFilters != paintsWithFilters()) && !newOutsets.isZero()) {
-        // When the layer used to paint filters in software and now paints filters in the
-        // compositor, the compositing layer bounds need to change from including filter outsets to
-        // excluding filter outsets, on platforms whose compositors compute their own outsets.
-        // Similarly for the reverse change from compositor-painted to software-painted filters.
-        return true;
-    }
-#endif
 
     return false;
 }
