@@ -102,16 +102,16 @@ function verify(condition, message) {
  * Builds a request to the notification server.
  * @param {string} method Request method.
  * @param {string} handlerName Server handler to send the request to.
- * @param {string=} contentType Value for the Content-type header.
+ * @param {string=} opt_contentType Value for the Content-type header.
  * @return {XMLHttpRequest} Server request.
  */
-function buildServerRequest(method, handlerName, contentType) {
+function buildServerRequest(method, handlerName, opt_contentType) {
   var request = new XMLHttpRequest();
 
   request.responseType = 'text';
   request.open(method, NOTIFICATION_CARDS_URL + '/' + handlerName, true);
-  if (contentType)
-    request.setRequestHeader('Content-type', contentType);
+  if (opt_contentType)
+    request.setRequestHeader('Content-type', opt_contentType);
 
   return request;
 }
@@ -169,6 +169,8 @@ function sendErrorReport(error) {
     trace: filteredStack
   };
 
+  // We use relatively direct calls here because the instrumentation may be in
+  // a bad state. Wrappers and promises should not be involved in the reporting.
   var request = buildServerRequest('POST', 'jserrors', 'application/json');
   request.onloadend = function(event) {
     console.log('sendErrorReport status: ' + request.status);

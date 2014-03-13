@@ -248,31 +248,38 @@ function recordEvent(event) {
 }
 
 /**
- * Adds authorization behavior to the request.
- * @param {XMLHttpRequest} request Server request.
- * @param {function(boolean)} callbackBoolean Completion callback with 'success'
- *     parameter.
+ * Checks the result of the HTTP Request and updates the authentication
+ * manager on any failure.
+ * @param {XMLHttpRequest} request XMLHttpRequest that sent the authenticated
+ *     request.
  */
-function setAuthorization(request, callbackBoolean) {
-  authenticationManager.getAuthToken().then(function(token) {
+function checkAuthenticationStatus(request) {
+  if (request.status == HTTP_FORBIDDEN ||
+      request.status == HTTP_UNAUTHORIZED) {
+    authenticationManager.removeToken(token);
+  }
+}
+
+/**
+ * Builds and sends an authenticated request to the notification server.
+ * @param {string} method Request method.
+ * @param {string} handlerName Server handler to send the request to.
+ * @param {string=} opt_contentType Value for the Content-type header.
+ * @return {Promise} A promise to issue a request to the server.
+ *     The promise rejects if there is a client-side authentication issue.
+ */
+function requestFromServer(method, handlerName, opt_contentType) {
+  return authenticationManager.getAuthToken().then(function(token) {
+    var request = buildServerRequest(method, handlerName, opt_contentType);
     request.setRequestHeader('Authorization', 'Bearer ' + token);
-
-    // Instrument onloadend to remove stale auth tokens.
-    var originalOnLoadEnd = request.onloadend;
-    request.onloadend = wrapper.wrapCallback(function(event) {
-      if (request.status == HTTP_FORBIDDEN ||
-          request.status == HTTP_UNAUTHORIZED) {
-        authenticationManager.removeToken(token).then(function() {
-          originalOnLoadEnd(event);
-        });
-      } else {
-        originalOnLoadEnd(event);
-      }
+    var requestPromise = new Promise(function(resolve) {
+      request.addEventListener('loadend', function() {
+        resolve(request);
+      }, false);
+      request.send();
     });
-
-    callbackBoolean(true);
-  }).catch(function() {
-    callbackBoolean(false);
+    requestPromise.then(checkAuthenticationStatus);
+    return requestPromise;
   });
 }
 
@@ -567,21 +574,15 @@ function requestNotificationGroups(groupNames) {
 
   console.log('requestNotificationGroups: request=' + requestParameters);
 
-  var request = buildServerRequest('GET', 'notifications' + requestParameters);
-
-  request.onloadend = function(event) {
-    console.log('requestNotificationGroups-onloadend ' + request.status);
-    if (request.status == HTTP_OK) {
-      recordEvent(GoogleNowEvent.REQUEST_FOR_CARDS_SUCCESS);
-      processServerResponse(
-          JSON.parse(request.responseText), cardShownCallback);
-    }
-  };
-
-  setAuthorization(request, function(success) {
-    if (success)
-      request.send();
-  });
+  requestFromServer('GET', 'notifications' + requestParameters).then(
+    function(request) {
+      console.log('requestNotificationGroups-received ' + request.status);
+      if (request.status == HTTP_OK) {
+        recordEvent(GoogleNowEvent.REQUEST_FOR_CARDS_SUCCESS);
+        processServerResponse(
+            JSON.parse(request.responseText), cardShownCallback);
+      }
+    });
 }
 
 /**
@@ -592,11 +593,9 @@ function requestNotificationGroups(groupNames) {
 function requestOptedIn(optedInCallback) {
   console.log('requestOptedIn from ' + NOTIFICATION_CARDS_URL);
 
-  var request = buildServerRequest('GET', 'settings/optin');
-
-  request.onloadend = function(event) {
+  requestFromServer('GET', 'settings/optin').then(function(request) {
     console.log(
-        'requestOptedIn-onloadend ' + request.status + ' ' + request.response);
+        'requestOptedIn-received ' + request.status + ' ' + request.response);
     if (request.status == HTTP_OK) {
       var parsedResponse = JSON.parse(request.responseText);
       if (parsedResponse.value) {
@@ -608,11 +607,6 @@ function requestOptedIn(optedInCallback) {
         scheduleNextPoll({}, false);
       }
     }
-  };
-
-  setAuthorization(request, function(success) {
-    if (success)
-      request.send();
   });
 }
 
@@ -711,8 +705,7 @@ function requestCardDismissal(
 
   console.log('requestCardDismissal: requestParameters=' + requestParameters);
 
-  var request = buildServerRequest('DELETE', requestParameters);
-  request.onloadend = function(event) {
+  requestFromServer('DELETE', requestParameters).then(function(request) {
     console.log('requestDismissingCard-onloadend ' + request.status);
     if (request.status == HTTP_NOCONTENT)
       recordEvent(GoogleNowEvent.DISMISS_REQUEST_SUCCESS);
@@ -723,13 +716,8 @@ function requestCardDismissal(
         request.status == HTTP_BAD_REQUEST ||
         request.status == HTTP_METHOD_NOT_ALLOWED;
     callbackBoolean(done);
-  };
-
-  setAuthorization(request, function(success) {
-    if (success)
-      request.send();
-    else
-      callbackBoolean(false);
+  }).catch(function() {
+    callbackBoolean(false);
   });
 }
 
