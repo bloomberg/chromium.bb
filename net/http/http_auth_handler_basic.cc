@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_auth.h"
+#include "net/http/http_auth_challenge_tokenizer.h"
 
 namespace net {
 
@@ -33,7 +34,7 @@ namespace {
 //
 // TODO(cbentzel): Realm may need to be decoded using RFC 2047 rules as
 // well, see http://crbug.com/25790.
-bool ParseRealm(const HttpAuth::ChallengeTokenizer& tokenizer,
+bool ParseRealm(const HttpAuthChallengeTokenizer& tokenizer,
                 std::string* realm) {
   CHECK(realm);
   realm->clear();
@@ -51,7 +52,7 @@ bool ParseRealm(const HttpAuth::ChallengeTokenizer& tokenizer,
 
 }  // namespace
 
-bool HttpAuthHandlerBasic::Init(HttpAuth::ChallengeTokenizer* challenge) {
+bool HttpAuthHandlerBasic::Init(HttpAuthChallengeTokenizer* challenge) {
   auth_scheme_ = HttpAuth::AUTH_SCHEME_BASIC;
   score_ = 1;
   properties_ = 0;
@@ -59,7 +60,7 @@ bool HttpAuthHandlerBasic::Init(HttpAuth::ChallengeTokenizer* challenge) {
 }
 
 bool HttpAuthHandlerBasic::ParseChallenge(
-    HttpAuth::ChallengeTokenizer* challenge) {
+    HttpAuthChallengeTokenizer* challenge) {
   // Verify the challenge's auth-scheme.
   if (!LowerCaseEqualsASCII(challenge->scheme(), "basic"))
     return false;
@@ -73,7 +74,7 @@ bool HttpAuthHandlerBasic::ParseChallenge(
 }
 
 HttpAuth::AuthorizationResult HttpAuthHandlerBasic::HandleAnotherChallenge(
-    HttpAuth::ChallengeTokenizer* challenge) {
+    HttpAuthChallengeTokenizer* challenge) {
   // Basic authentication is always a single round, so any responses
   // should be treated as a rejection.  However, if the new challenge
   // is for a different realm, then indicate the realm change.
@@ -105,7 +106,7 @@ HttpAuthHandlerBasic::Factory::~Factory() {
 }
 
 int HttpAuthHandlerBasic::Factory::CreateAuthHandler(
-    HttpAuth::ChallengeTokenizer* challenge,
+    HttpAuthChallengeTokenizer* challenge,
     HttpAuth::Target target,
     const GURL& origin,
     CreateReason reason,

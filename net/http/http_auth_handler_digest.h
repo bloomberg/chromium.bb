@@ -65,7 +65,7 @@ class NET_EXPORT_PRIVATE HttpAuthHandlerDigest : public HttpAuthHandler {
     void set_nonce_generator(const NonceGenerator* nonce_generator);
 
     virtual int CreateAuthHandler(
-        HttpAuth::ChallengeTokenizer* challenge,
+        HttpAuthChallengeTokenizer* challenge,
         HttpAuth::Target target,
         const GURL& origin,
         CreateReason reason,
@@ -78,10 +78,10 @@ class NET_EXPORT_PRIVATE HttpAuthHandlerDigest : public HttpAuthHandler {
   };
 
   virtual HttpAuth::AuthorizationResult HandleAnotherChallenge(
-      HttpAuth::ChallengeTokenizer* challenge) OVERRIDE;
+      HttpAuthChallengeTokenizer* challenge) OVERRIDE;
 
  protected:
-  virtual bool Init(HttpAuth::ChallengeTokenizer* challenge) OVERRIDE;
+  virtual bool Init(HttpAuthChallengeTokenizer* challenge) OVERRIDE;
 
   virtual int GenerateAuthTokenImpl(const AuthCredentials* credentials,
                                     const HttpRequestInfo* request,
@@ -124,7 +124,7 @@ class NET_EXPORT_PRIVATE HttpAuthHandlerDigest : public HttpAuthHandler {
 
   // Parse the challenge, saving the results into this instance.
   // Returns true on success.
-  bool ParseChallenge(HttpAuth::ChallengeTokenizer* challenge);
+  bool ParseChallenge(HttpAuthChallengeTokenizer* challenge);
 
   // Parse an individual property. Returns true on success.
   bool ParseChallengeProperty(const std::string& name,

@@ -10,6 +10,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/net_log_unittest.h"
 #include "net/base/test_completion_callback.h"
+#include "net/http/http_auth_challenge_tokenizer.h"
 #include "net/http/http_auth_handler_mock.h"
 #include "net/http/http_request_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -34,7 +35,7 @@ TEST(HttpAuthHandlerTest, NetLog) {
             (k == 0) ? HttpAuth::AUTH_PROXY : HttpAuth::AUTH_SERVER;
         NetLog::EventType event_type =
             (k == 0) ? NetLog::TYPE_AUTH_PROXY : NetLog::TYPE_AUTH_SERVER;
-        HttpAuth::ChallengeTokenizer tokenizer(
+        HttpAuthChallengeTokenizer tokenizer(
             challenge.begin(), challenge.end());
         HttpAuthHandlerMock mock_handler;
         CapturingNetLog capturing_net_log;

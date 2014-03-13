@@ -14,6 +14,7 @@
 
 namespace net {
 
+class HttpAuthChallengeTokenizer;
 struct HttpRequestInfo;
 
 // HttpAuthHandler is the interface for the authentication schemes
@@ -29,7 +30,7 @@ class NET_EXPORT_PRIVATE HttpAuthHandler {
   // authentication scheme, but none of the tokens occurring after the
   // authentication scheme. |target| and |origin| are both stored
   // for later use, and are not part of the initial challenge.
-  bool InitFromChallenge(HttpAuth::ChallengeTokenizer* challenge,
+  bool InitFromChallenge(HttpAuthChallengeTokenizer* challenge,
                          HttpAuth::Target target,
                          const GURL& origin,
                          const BoundNetLog& net_log);
@@ -48,7 +49,7 @@ class NET_EXPORT_PRIVATE HttpAuthHandler {
   // authentication scheme, but none of the tokens occurring after the
   // authentication scheme.
   virtual HttpAuth::AuthorizationResult HandleAnotherChallenge(
-      HttpAuth::ChallengeTokenizer* challenge) = 0;
+      HttpAuthChallengeTokenizer* challenge) = 0;
 
   // Generates an authentication token, potentially asynchronously.
   //
@@ -151,7 +152,7 @@ class NET_EXPORT_PRIVATE HttpAuthHandler {
   // authentication scheme.
   // Implementations are expected to initialize the following members:
   // scheme_, realm_, score_, properties_
-  virtual bool Init(HttpAuth::ChallengeTokenizer* challenge) = 0;
+  virtual bool Init(HttpAuthChallengeTokenizer* challenge) = 0;
 
   // |GenerateAuthTokenImpl()} is the auth-scheme specific implementation
   // of generating the next auth token. Callers should use |GenerateAuthToken()|

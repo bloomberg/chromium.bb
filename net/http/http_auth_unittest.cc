@@ -11,6 +11,7 @@
 #include "net/base/net_errors.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_auth.h"
+#include "net/http/http_auth_challenge_tokenizer.h"
 #include "net/http/http_auth_filter.h"
 #include "net/http/http_auth_handler.h"
 #include "net/http/http_auth_handler_factory.h"
@@ -28,7 +29,7 @@ HttpAuthHandlerMock* CreateMockHandler(bool connection_based) {
   HttpAuthHandlerMock* auth_handler = new HttpAuthHandlerMock();
   auth_handler->set_connection_based(connection_based);
   std::string challenge_text = "Basic";
-  HttpAuth::ChallengeTokenizer challenge(challenge_text.begin(),
+  HttpAuthChallengeTokenizer challenge(challenge_text.begin(),
                                          challenge_text.end());
   GURL origin("www.example.com");
   EXPECT_TRUE(auth_handler->InitFromChallenge(&challenge,
@@ -243,173 +244,6 @@ TEST(HttpAuthTest, HandleChallengeResponse) {
       HttpAuth::AUTHORIZATION_RESULT_ACCEPT,
       HandleChallengeResponse(true, kTwoMockChallenges, &challenge_used));
   EXPECT_EQ("Mock token_a", challenge_used);
-}
-
-TEST(HttpAuthTest, ChallengeTokenizer) {
-  std::string challenge_str = "Basic realm=\"foobar\"";
-  HttpAuth::ChallengeTokenizer challenge(challenge_str.begin(),
-                                         challenge_str.end());
-  HttpUtil::NameValuePairsIterator parameters = challenge.param_pairs();
-
-  EXPECT_TRUE(parameters.valid());
-  EXPECT_EQ(std::string("Basic"), challenge.scheme());
-  EXPECT_TRUE(parameters.GetNext());
-  EXPECT_TRUE(parameters.valid());
-  EXPECT_EQ(std::string("realm"), parameters.name());
-  EXPECT_EQ(std::string("foobar"), parameters.value());
-  EXPECT_FALSE(parameters.GetNext());
-}
-
-// Use a name=value property with no quote marks.
-TEST(HttpAuthTest, ChallengeTokenizerNoQuotes) {
-  std::string challenge_str = "Basic realm=foobar@baz.com";
-  HttpAuth::ChallengeTokenizer challenge(challenge_str.begin(),
-                                         challenge_str.end());
-  HttpUtil::NameValuePairsIterator parameters = challenge.param_pairs();
-
-  EXPECT_TRUE(parameters.valid());
-  EXPECT_EQ(std::string("Basic"), challenge.scheme());
-  EXPECT_TRUE(parameters.GetNext());
-  EXPECT_TRUE(parameters.valid());
-  EXPECT_EQ(std::string("realm"), parameters.name());
-  EXPECT_EQ(std::string("foobar@baz.com"), parameters.value());
-  EXPECT_FALSE(parameters.GetNext());
-}
-
-// Use a name=value property with mismatching quote marks.
-TEST(HttpAuthTest, ChallengeTokenizerMismatchedQuotes) {
-  std::string challenge_str = "Basic realm=\"foobar@baz.com";
-  HttpAuth::ChallengeTokenizer challenge(challenge_str.begin(),
-                                         challenge_str.end());
-  HttpUtil::NameValuePairsIterator parameters = challenge.param_pairs();
-
-  EXPECT_TRUE(parameters.valid());
-  EXPECT_EQ(std::string("Basic"), challenge.scheme());
-  EXPECT_TRUE(parameters.GetNext());
-  EXPECT_TRUE(parameters.valid());
-  EXPECT_EQ(std::string("realm"), parameters.name());
-  EXPECT_EQ(std::string("foobar@baz.com"), parameters.value());
-  EXPECT_FALSE(parameters.GetNext());
-}
-
-// Use a name= property without a value and with mismatching quote marks.
-TEST(HttpAuthTest, ChallengeTokenizerMismatchedQuotesNoValue) {
-  std::string challenge_str = "Basic realm=\"";
-  HttpAuth::ChallengeTokenizer challenge(challenge_str.begin(),
-                                         challenge_str.end());
-  HttpUtil::NameValuePairsIterator parameters = challenge.param_pairs();
-
-  EXPECT_TRUE(parameters.valid());
-  EXPECT_EQ(std::string("Basic"), challenge.scheme());
-  EXPECT_TRUE(parameters.GetNext());
-  EXPECT_TRUE(parameters.valid());
-  EXPECT_EQ(std::string("realm"), parameters.name());
-  EXPECT_EQ(std::string(), parameters.value());
-  EXPECT_FALSE(parameters.GetNext());
-}
-
-// Use a name=value property with mismatching quote marks and spaces in the
-// value.
-TEST(HttpAuthTest, ChallengeTokenizerMismatchedQuotesSpaces) {
-  std::string challenge_str = "Basic realm=\"foo bar";
-  HttpAuth::ChallengeTokenizer challenge(challenge_str.begin(),
-                                         challenge_str.end());
-  HttpUtil::NameValuePairsIterator parameters = challenge.param_pairs();
-
-  EXPECT_TRUE(parameters.valid());
-  EXPECT_EQ(std::string("Basic"), challenge.scheme());
-  EXPECT_TRUE(parameters.GetNext());
-  EXPECT_TRUE(parameters.valid());
-  EXPECT_EQ(std::string("realm"), parameters.name());
-  EXPECT_EQ(std::string("foo bar"), parameters.value());
-  EXPECT_FALSE(parameters.GetNext());
-}
-
-// Use multiple name=value properties with mismatching quote marks in the last
-// value.
-TEST(HttpAuthTest, ChallengeTokenizerMismatchedQuotesMultiple) {
-  std::string challenge_str = "Digest qop=auth-int, algorithm=md5, realm=\"foo";
-  HttpAuth::ChallengeTokenizer challenge(challenge_str.begin(),
-                                         challenge_str.end());
-  HttpUtil::NameValuePairsIterator parameters = challenge.param_pairs();
-
-  EXPECT_TRUE(parameters.valid());
-  EXPECT_EQ(std::string("Digest"), challenge.scheme());
-  EXPECT_TRUE(parameters.GetNext());
-  EXPECT_TRUE(parameters.valid());
-  EXPECT_EQ(std::string("qop"), parameters.name());
-  EXPECT_EQ(std::string("auth-int"), parameters.value());
-  EXPECT_TRUE(parameters.GetNext());
-  EXPECT_TRUE(parameters.valid());
-  EXPECT_EQ(std::string("algorithm"), parameters.name());
-  EXPECT_EQ(std::string("md5"), parameters.value());
-  EXPECT_TRUE(parameters.GetNext());
-  EXPECT_TRUE(parameters.valid());
-  EXPECT_EQ(std::string("realm"), parameters.name());
-  EXPECT_EQ(std::string("foo"), parameters.value());
-  EXPECT_FALSE(parameters.GetNext());
-}
-
-// Use a name= property which has no value.
-TEST(HttpAuthTest, ChallengeTokenizerNoValue) {
-  std::string challenge_str = "Digest qop=";
-  HttpAuth::ChallengeTokenizer challenge(
-      challenge_str.begin(), challenge_str.end());
-  HttpUtil::NameValuePairsIterator parameters = challenge.param_pairs();
-
-  EXPECT_TRUE(parameters.valid());
-  EXPECT_EQ(std::string("Digest"), challenge.scheme());
-  EXPECT_FALSE(parameters.GetNext());
-  EXPECT_FALSE(parameters.valid());
-}
-
-// Specify multiple properties, comma separated.
-TEST(HttpAuthTest, ChallengeTokenizerMultiple) {
-  std::string challenge_str =
-      "Digest algorithm=md5, realm=\"Oblivion\", qop=auth-int";
-  HttpAuth::ChallengeTokenizer challenge(challenge_str.begin(),
-                                         challenge_str.end());
-  HttpUtil::NameValuePairsIterator parameters = challenge.param_pairs();
-
-  EXPECT_TRUE(parameters.valid());
-  EXPECT_EQ(std::string("Digest"), challenge.scheme());
-  EXPECT_TRUE(parameters.GetNext());
-  EXPECT_TRUE(parameters.valid());
-  EXPECT_EQ(std::string("algorithm"), parameters.name());
-  EXPECT_EQ(std::string("md5"), parameters.value());
-  EXPECT_TRUE(parameters.GetNext());
-  EXPECT_TRUE(parameters.valid());
-  EXPECT_EQ(std::string("realm"), parameters.name());
-  EXPECT_EQ(std::string("Oblivion"), parameters.value());
-  EXPECT_TRUE(parameters.GetNext());
-  EXPECT_TRUE(parameters.valid());
-  EXPECT_EQ(std::string("qop"), parameters.name());
-  EXPECT_EQ(std::string("auth-int"), parameters.value());
-  EXPECT_FALSE(parameters.GetNext());
-  EXPECT_TRUE(parameters.valid());
-}
-
-// Use a challenge which has no property.
-TEST(HttpAuthTest, ChallengeTokenizerNoProperty) {
-  std::string challenge_str = "NTLM";
-  HttpAuth::ChallengeTokenizer challenge(
-      challenge_str.begin(), challenge_str.end());
-  HttpUtil::NameValuePairsIterator parameters = challenge.param_pairs();
-
-  EXPECT_TRUE(parameters.valid());
-  EXPECT_EQ(std::string("NTLM"), challenge.scheme());
-  EXPECT_FALSE(parameters.GetNext());
-}
-
-// Use a challenge with Base64 encoded token.
-TEST(HttpAuthTest, ChallengeTokenizerBase64) {
-  std::string challenge_str = "NTLM  SGVsbG8sIFdvcmxkCg===";
-  HttpAuth::ChallengeTokenizer challenge(challenge_str.begin(),
-                                         challenge_str.end());
-
-  EXPECT_EQ(std::string("NTLM"), challenge.scheme());
-  // Notice the two equal statements below due to padding removal.
-  EXPECT_EQ(std::string("SGVsbG8sIFdvcmxkCg=="), challenge.base64_param());
 }
 
 TEST(HttpAuthTest, GetChallengeHeaderName) {

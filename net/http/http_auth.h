@@ -167,48 +167,6 @@ class NET_EXPORT_PRIVATE HttpAuth {
       Target target,
       const std::set<Scheme>& disabled_schemes,
       std::string* challenge_used);
-
-  // Breaks up a challenge string into the the auth scheme and parameter list,
-  // according to RFC 2617 Sec 1.2:
-  //    challenge = auth-scheme 1*SP 1#auth-param
-  //
-  // Depending on the challenge scheme, it may be appropriate to interpret the
-  // parameters as either a base-64 encoded string or a comma-delimited list
-  // of name-value pairs. param_pairs() and base64_param() methods are provided
-  // to support either usage.
-  class NET_EXPORT_PRIVATE ChallengeTokenizer {
-   public:
-    ChallengeTokenizer(std::string::const_iterator begin,
-                       std::string::const_iterator end);
-
-    // Get the original text.
-    std::string challenge_text() const {
-      return std::string(begin_, end_);
-    }
-
-    // Get the auth scheme of the challenge.
-    std::string::const_iterator scheme_begin() const { return scheme_begin_; }
-    std::string::const_iterator scheme_end() const { return scheme_end_; }
-    std::string scheme() const {
-      return std::string(scheme_begin_, scheme_end_);
-    }
-
-    HttpUtil::NameValuePairsIterator param_pairs() const;
-    std::string base64_param() const;
-
-   private:
-    void Init(std::string::const_iterator begin,
-              std::string::const_iterator end);
-
-    std::string::const_iterator begin_;
-    std::string::const_iterator end_;
-
-    std::string::const_iterator scheme_begin_;
-    std::string::const_iterator scheme_end_;
-
-    std::string::const_iterator params_begin_;
-    std::string::const_iterator params_end_;
-  };
 };
 
 }  // namespace net

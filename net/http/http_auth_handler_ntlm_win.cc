@@ -52,7 +52,7 @@ HttpAuthHandlerNTLM::Factory::~Factory() {
 }
 
 int HttpAuthHandlerNTLM::Factory::CreateAuthHandler(
-    HttpAuth::ChallengeTokenizer* challenge,
+    HttpAuthChallengeTokenizer* challenge,
     HttpAuth::Target target,
     const GURL& origin,
     CreateReason reason,

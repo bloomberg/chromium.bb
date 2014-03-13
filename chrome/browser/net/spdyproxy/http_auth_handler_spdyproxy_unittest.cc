@@ -12,6 +12,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "net/base/net_errors.h"
+#include "net/http/http_auth_challenge_tokenizer.h"
 #include "net/http/http_request_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -34,6 +35,7 @@ using net::BoundNetLog;
 using net::CompletionCallback;
 using net::Error;
 using net::HttpAuth;
+using net::HttpAuthChallengeTokenizer;
 using net::HttpAuthHandler;
 using net::HttpRequestInfo;
 
@@ -119,7 +121,7 @@ TEST(HttpAuthHandlerSpdyProxyTest, HandleAnotherChallenge) {
       kValidChallenge, HttpAuth::AUTH_PROXY, origin,
       BoundNetLog(), &spdyproxy));
   std::string challenge(kValidChallenge);
-  HttpAuth::ChallengeTokenizer tok(challenge.begin(),
+  HttpAuthChallengeTokenizer tok(challenge.begin(),
                                    challenge.end());
   EXPECT_EQ(HttpAuth::AUTHORIZATION_RESULT_REJECT,
             spdyproxy->HandleAnotherChallenge(&tok));

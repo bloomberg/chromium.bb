@@ -25,7 +25,7 @@ class HttpAuthHandlerSpdyProxy : public net::HttpAuthHandler {
     virtual ~Factory();
 
     virtual int CreateAuthHandler(
-        net::HttpAuth::ChallengeTokenizer* challenge,
+        net::HttpAuthChallengeTokenizer* challenge,
         net::HttpAuth::Target target,
         const GURL& origin,
         CreateReason reason,
@@ -43,7 +43,7 @@ class HttpAuthHandlerSpdyProxy : public net::HttpAuthHandler {
 
   // Overrides from net::HttpAuthHandler.
   virtual net::HttpAuth::AuthorizationResult HandleAnotherChallenge(
-      net::HttpAuth::ChallengeTokenizer* challenge) OVERRIDE;
+      net::HttpAuthChallengeTokenizer* challenge) OVERRIDE;
   virtual bool NeedsIdentity() OVERRIDE;
   virtual bool AllowsDefaultCredentials() OVERRIDE;
   virtual bool AllowsExplicitCredentials() OVERRIDE;
@@ -53,14 +53,14 @@ class HttpAuthHandlerSpdyProxy : public net::HttpAuthHandler {
 
   virtual ~HttpAuthHandlerSpdyProxy();
 
-  virtual bool Init(net::HttpAuth::ChallengeTokenizer* challenge) OVERRIDE;
+  virtual bool Init(net::HttpAuthChallengeTokenizer* challenge) OVERRIDE;
 
   virtual int GenerateAuthTokenImpl(const net::AuthCredentials* credentials,
                                     const net::HttpRequestInfo* request,
                                     const net::CompletionCallback& callback,
                                     std::string* auth_token) OVERRIDE;
 
-  bool ParseChallenge(net::HttpAuth::ChallengeTokenizer* challenge);
+  bool ParseChallenge(net::HttpAuthChallengeTokenizer* challenge);
 
   bool ParseChallengeProperty(const std::string& name,
                               const std::string& value);

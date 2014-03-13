@@ -22,6 +22,8 @@
 
 namespace net {
 
+class HttpAuthChallengeTokenizer;
+
 // Mechanism OID for GSSAPI. We always use SPNEGO.
 NET_EXPORT_PRIVATE extern gss_OID CHROME_GSS_SPNEGO_MECH_OID_DESC;
 
@@ -240,7 +242,7 @@ class NET_EXPORT_PRIVATE HttpAuthGSSAPI {
   bool AllowsExplicitCredentials() const;
 
   HttpAuth::AuthorizationResult ParseChallenge(
-      HttpAuth::ChallengeTokenizer* tok);
+      HttpAuthChallengeTokenizer* tok);
 
   // Generates an authentication token.
   // The return value is an error code. If it's not |OK|, the value of

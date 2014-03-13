@@ -7,6 +7,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "net/base/net_errors.h"
+#include "net/http/http_auth_challenge_tokenizer.h"
 #include "net/http/http_auth_filter.h"
 #include "net/http/http_auth_handler_basic.h"
 #include "net/http/http_auth_handler_digest.h"
@@ -24,7 +25,7 @@ int HttpAuthHandlerFactory::CreateAuthHandlerFromString(
     const GURL& origin,
     const BoundNetLog& net_log,
     scoped_ptr<HttpAuthHandler>* handler) {
-  HttpAuth::ChallengeTokenizer props(challenge.begin(), challenge.end());
+  HttpAuthChallengeTokenizer props(challenge.begin(), challenge.end());
   return CreateAuthHandler(&props, target, origin, CREATE_CHALLENGE, 1,
                            net_log, handler);
 }
@@ -36,7 +37,7 @@ int HttpAuthHandlerFactory::CreatePreemptiveAuthHandlerFromString(
     int digest_nonce_count,
     const BoundNetLog& net_log,
     scoped_ptr<HttpAuthHandler>* handler) {
-  HttpAuth::ChallengeTokenizer props(challenge.begin(), challenge.end());
+  HttpAuthChallengeTokenizer props(challenge.begin(), challenge.end());
   return CreateAuthHandler(&props, target, origin, CREATE_PREEMPTIVE,
                            digest_nonce_count, net_log, handler);
 }
@@ -172,7 +173,7 @@ HttpAuthHandlerRegistryFactory* HttpAuthHandlerRegistryFactory::Create(
 }
 
 int HttpAuthHandlerRegistryFactory::CreateAuthHandler(
-    HttpAuth::ChallengeTokenizer* challenge,
+    HttpAuthChallengeTokenizer* challenge,
     HttpAuth::Target target,
     const GURL& origin,
     CreateReason reason,

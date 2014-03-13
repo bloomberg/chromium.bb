@@ -33,12 +33,12 @@ class MockAuthHandler : public HttpAuthHandler {
   }
 
   virtual HttpAuth::AuthorizationResult HandleAnotherChallenge(
-      HttpAuth::ChallengeTokenizer* challenge) OVERRIDE {
+      HttpAuthChallengeTokenizer* challenge) OVERRIDE {
     return HttpAuth::AUTHORIZATION_RESULT_REJECT;
   }
 
  protected:
-  virtual bool Init(HttpAuth::ChallengeTokenizer* challenge) OVERRIDE {
+  virtual bool Init(HttpAuthChallengeTokenizer* challenge) OVERRIDE {
     return false;  // Unused.
   }
 

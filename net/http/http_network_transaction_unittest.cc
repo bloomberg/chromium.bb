@@ -35,6 +35,7 @@
 #include "net/cert/mock_cert_verifier.h"
 #include "net/dns/host_cache.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/http/http_auth_challenge_tokenizer.h"
 #include "net/http/http_auth_handler_digest.h"
 #include "net/http/http_auth_handler_mock.h"
 #include "net/http/http_auth_handler_ntlm.h"
@@ -9381,8 +9382,8 @@ TEST_P(HttpNetworkTransactionTest, GenerateAuthToken) {
         HttpAuthHandlerMock* auth_handler(new HttpAuthHandlerMock());
         std::string auth_challenge = "Mock realm=proxy";
         GURL origin(test_config.proxy_url);
-        HttpAuth::ChallengeTokenizer tokenizer(auth_challenge.begin(),
-                                               auth_challenge.end());
+        HttpAuthChallengeTokenizer tokenizer(auth_challenge.begin(),
+                                             auth_challenge.end());
         auth_handler->InitFromChallenge(&tokenizer, HttpAuth::AUTH_PROXY,
                                         origin, BoundNetLog());
         auth_handler->SetGenerateExpectation(
@@ -9395,8 +9396,8 @@ TEST_P(HttpNetworkTransactionTest, GenerateAuthToken) {
       HttpAuthHandlerMock* auth_handler(new HttpAuthHandlerMock());
       std::string auth_challenge = "Mock realm=server";
       GURL origin(test_config.server_url);
-      HttpAuth::ChallengeTokenizer tokenizer(auth_challenge.begin(),
-                                             auth_challenge.end());
+      HttpAuthChallengeTokenizer tokenizer(auth_challenge.begin(),
+                                           auth_challenge.end());
       auth_handler->InitFromChallenge(&tokenizer, HttpAuth::AUTH_SERVER,
                                       origin, BoundNetLog());
       auth_handler->SetGenerateExpectation(
@@ -9492,8 +9493,8 @@ TEST_P(HttpNetworkTransactionTest, MultiRoundAuth) {
   auth_handler->set_connection_based(true);
   std::string auth_challenge = "Mock realm=server";
   GURL origin("http://www.example.com");
-  HttpAuth::ChallengeTokenizer tokenizer(auth_challenge.begin(),
-                                         auth_challenge.end());
+  HttpAuthChallengeTokenizer tokenizer(auth_challenge.begin(),
+                                       auth_challenge.end());
   auth_handler->InitFromChallenge(&tokenizer, HttpAuth::AUTH_SERVER,
                                   origin, BoundNetLog());
   auth_factory->AddMockHandler(auth_handler, HttpAuth::AUTH_SERVER);

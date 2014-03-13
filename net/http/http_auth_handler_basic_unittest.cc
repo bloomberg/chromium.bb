@@ -9,6 +9,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "net/base/net_errors.h"
+#include "net/http/http_auth_challenge_tokenizer.h"
 #include "net/http/http_auth_handler_basic.h"
 #include "net/http/http_request_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -91,8 +92,8 @@ TEST(HttpAuthHandlerBasicTest, HandleAnotherChallenge) {
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
     std::string challenge(tests[i].challenge);
-    HttpAuth::ChallengeTokenizer tok(challenge.begin(),
-                                     challenge.end());
+    HttpAuthChallengeTokenizer tok(challenge.begin(),
+                                   challenge.end());
     EXPECT_EQ(tests[i].expected_rv, basic->HandleAnotherChallenge(&tok));
   }
 }

@@ -16,6 +16,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
+#include "net/http/http_auth_challenge_tokenizer.h"
 
 // These are defined for the GSSAPI library:
 // Paraphrasing the comments from gssapi.h:
@@ -684,7 +685,7 @@ void HttpAuthGSSAPI::Delegate() {
 }
 
 HttpAuth::AuthorizationResult HttpAuthGSSAPI::ParseChallenge(
-    HttpAuth::ChallengeTokenizer* tok) {
+    HttpAuthChallengeTokenizer* tok) {
   // Verify the challenge's auth-scheme.
   if (!LowerCaseEqualsASCII(tok->scheme(), StringToLowerASCII(scheme_).c_str()))
     return HttpAuth::AUTHORIZATION_RESULT_INVALID;

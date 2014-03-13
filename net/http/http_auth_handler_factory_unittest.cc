@@ -21,7 +21,7 @@ class MockHttpAuthHandlerFactory : public HttpAuthHandlerFactory {
       return_code_(return_code) {}
   virtual ~MockHttpAuthHandlerFactory() {}
 
-  virtual int CreateAuthHandler(HttpAuth::ChallengeTokenizer* challenge,
+  virtual int CreateAuthHandler(HttpAuthChallengeTokenizer* challenge,
                                 HttpAuth::Target target,
                                 const GURL& origin,
                                 CreateReason reason,

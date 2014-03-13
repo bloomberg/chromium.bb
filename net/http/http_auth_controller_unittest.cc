@@ -9,6 +9,7 @@
 #include "net/base/net_log.h"
 #include "net/base/test_completion_callback.h"
 #include "net/http/http_auth_cache.h"
+#include "net/http/http_auth_challenge_tokenizer.h"
 #include "net/http/http_auth_handler_mock.h"
 #include "net/http/http_request_info.h"
 #include "net/http/http_response_headers.h"
@@ -127,7 +128,7 @@ TEST(HttpAuthControllerTest, NoExplicitCredentialsAllowed) {
     }
 
    protected:
-    virtual bool Init(HttpAuth::ChallengeTokenizer* challenge) OVERRIDE {
+    virtual bool Init(HttpAuthChallengeTokenizer* challenge) OVERRIDE {
       HttpAuthHandlerMock::Init(challenge);
       set_allows_default_credentials(true);
       set_allows_explicit_credentials(false);

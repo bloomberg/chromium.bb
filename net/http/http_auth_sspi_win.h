@@ -22,6 +22,8 @@
 
 namespace net {
 
+class HttpAuthChallengeTokenizer;
+
 // SSPILibrary is introduced so unit tests can mock the calls to Windows' SSPI
 // implementation. The default implementation simply passes the arguments on to
 // the SSPI implementation provided by Secur32.dll.
@@ -134,7 +136,7 @@ class NET_EXPORT_PRIVATE HttpAuthSSPI {
   bool AllowsExplicitCredentials() const;
 
   HttpAuth::AuthorizationResult ParseChallenge(
-      HttpAuth::ChallengeTokenizer* tok);
+      HttpAuthChallengeTokenizer* tok);
 
   // Generates an authentication token for the service specified by the
   // Service Principal Name |spn| and stores the value in |*auth_token|.

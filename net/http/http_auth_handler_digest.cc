@@ -16,6 +16,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/http/http_auth.h"
+#include "net/http/http_auth_challenge_tokenizer.h"
 #include "net/http/http_request_info.h"
 #include "net/http/http_util.h"
 #include "url/gurl.h"
@@ -89,7 +90,7 @@ void HttpAuthHandlerDigest::Factory::set_nonce_generator(
 }
 
 int HttpAuthHandlerDigest::Factory::CreateAuthHandler(
-    HttpAuth::ChallengeTokenizer* challenge,
+    HttpAuthChallengeTokenizer* challenge,
     HttpAuth::Target target,
     const GURL& origin,
     CreateReason reason,
@@ -107,7 +108,7 @@ int HttpAuthHandlerDigest::Factory::CreateAuthHandler(
 }
 
 HttpAuth::AuthorizationResult HttpAuthHandlerDigest::HandleAnotherChallenge(
-    HttpAuth::ChallengeTokenizer* challenge) {
+    HttpAuthChallengeTokenizer* challenge) {
   // Even though Digest is not connection based, a "second round" is parsed
   // to differentiate between stale and rejected responses.
   // Note that the state of the current handler is not mutated - this way if
@@ -133,7 +134,7 @@ HttpAuth::AuthorizationResult HttpAuthHandlerDigest::HandleAnotherChallenge(
       HttpAuth::AUTHORIZATION_RESULT_REJECT;
 }
 
-bool HttpAuthHandlerDigest::Init(HttpAuth::ChallengeTokenizer* challenge) {
+bool HttpAuthHandlerDigest::Init(HttpAuthChallengeTokenizer* challenge) {
   return ParseChallenge(challenge);
 }
 
@@ -186,7 +187,7 @@ HttpAuthHandlerDigest::~HttpAuthHandlerDigest() {
 // send the realm (See http://crbug.com/20984 for an instance where a
 // webserver was not sending the realm with a BASIC challenge).
 bool HttpAuthHandlerDigest::ParseChallenge(
-    HttpAuth::ChallengeTokenizer* challenge) {
+    HttpAuthChallengeTokenizer* challenge) {
   auth_scheme_ = HttpAuth::AUTH_SCHEME_DIGEST;
   score_ = 2;
   properties_ = ENCRYPTS_IDENTITY;

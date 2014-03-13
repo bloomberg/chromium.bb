@@ -42,7 +42,7 @@ class NET_EXPORT_PRIVATE HttpAuthHandlerNTLM : public HttpAuthHandler {
     virtual ~Factory();
 
     virtual int CreateAuthHandler(
-        HttpAuth::ChallengeTokenizer* challenge,
+        HttpAuthChallengeTokenizer* challenge,
         HttpAuth::Target target,
         const GURL& origin,
         CreateReason reason,
@@ -109,14 +109,14 @@ class NET_EXPORT_PRIVATE HttpAuthHandlerNTLM : public HttpAuthHandler {
   virtual bool AllowsDefaultCredentials() OVERRIDE;
 
   virtual HttpAuth::AuthorizationResult HandleAnotherChallenge(
-      HttpAuth::ChallengeTokenizer* challenge) OVERRIDE;
+      HttpAuthChallengeTokenizer* challenge) OVERRIDE;
 
  protected:
   // This function acquires a credentials handle in the SSPI implementation.
   // It does nothing in the portable implementation.
   int InitializeBeforeFirstChallenge();
 
-  virtual bool Init(HttpAuth::ChallengeTokenizer* tok) OVERRIDE;
+  virtual bool Init(HttpAuthChallengeTokenizer* tok) OVERRIDE;
 
   virtual int GenerateAuthTokenImpl(const AuthCredentials* credentials,
                                     const HttpRequestInfo* request,
@@ -135,7 +135,7 @@ class NET_EXPORT_PRIVATE HttpAuthHandlerNTLM : public HttpAuthHandler {
 
   // Parse the challenge, saving the results into this instance.
   HttpAuth::AuthorizationResult ParseChallenge(
-      HttpAuth::ChallengeTokenizer* tok, bool initial_challenge);
+      HttpAuthChallengeTokenizer* tok, bool initial_challenge);
 
   // Given an input token received from the server, generate the next output
   // token to be sent to the server.

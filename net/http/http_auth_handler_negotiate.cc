@@ -37,7 +37,7 @@ void HttpAuthHandlerNegotiate::Factory::set_host_resolver(
 }
 
 int HttpAuthHandlerNegotiate::Factory::CreateAuthHandler(
-    HttpAuth::ChallengeTokenizer* challenge,
+    HttpAuthChallengeTokenizer* challenge,
     HttpAuth::Target target,
     const GURL& origin,
     CreateReason reason,
@@ -161,7 +161,7 @@ std::string HttpAuthHandlerNegotiate::CreateSPN(
 }
 
 HttpAuth::AuthorizationResult HttpAuthHandlerNegotiate::HandleAnotherChallenge(
-    HttpAuth::ChallengeTokenizer* challenge) {
+    HttpAuthChallengeTokenizer* challenge) {
   return auth_system_.ParseChallenge(challenge);
 }
 
@@ -184,7 +184,7 @@ bool HttpAuthHandlerNegotiate::AllowsExplicitCredentials() {
 
 // The Negotiate challenge header looks like:
 //   WWW-Authenticate: NEGOTIATE auth-data
-bool HttpAuthHandlerNegotiate::Init(HttpAuth::ChallengeTokenizer* challenge) {
+bool HttpAuthHandlerNegotiate::Init(HttpAuthChallengeTokenizer* challenge) {
 #if defined(OS_POSIX)
   if (!auth_system_.Init()) {
     VLOG(1) << "can't initialize GSSAPI library";

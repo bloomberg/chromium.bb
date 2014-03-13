@@ -43,7 +43,7 @@ class HttpAuthHandlerMock : public HttpAuthHandler {
 
     // HttpAuthHandlerFactory:
     virtual int CreateAuthHandler(
-        HttpAuth::ChallengeTokenizer* challenge,
+        HttpAuthChallengeTokenizer* challenge,
         HttpAuth::Target target,
         const GURL& origin,
         CreateReason reason,
@@ -88,13 +88,13 @@ class HttpAuthHandlerMock : public HttpAuthHandler {
 
   // HttpAuthHandler:
   virtual HttpAuth::AuthorizationResult HandleAnotherChallenge(
-      HttpAuth::ChallengeTokenizer* challenge) OVERRIDE;
+      HttpAuthChallengeTokenizer* challenge) OVERRIDE;
   virtual bool NeedsIdentity() OVERRIDE;
   virtual bool AllowsDefaultCredentials() OVERRIDE;
   virtual bool AllowsExplicitCredentials() OVERRIDE;
 
  protected:
-  virtual bool Init(HttpAuth::ChallengeTokenizer* challenge) OVERRIDE;
+  virtual bool Init(HttpAuthChallengeTokenizer* challenge) OVERRIDE;
 
   virtual int GenerateAuthTokenImpl(const AuthCredentials* credentials,
                                     const HttpRequestInfo* request,

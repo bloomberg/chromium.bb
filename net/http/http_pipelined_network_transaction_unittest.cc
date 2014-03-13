@@ -16,6 +16,7 @@
 #include "net/base/request_priority.h"
 #include "net/dns/host_cache.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/http/http_auth_challenge_tokenizer.h"
 #include "net/http/http_auth_handler_mock.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_network_transaction.h"
@@ -587,7 +588,7 @@ TEST_F(HttpPipelinedNetworkTransactionTest, BasicHttpAuthentication) {
 
   HttpAuthHandlerMock* mock_auth = new HttpAuthHandlerMock;
   std::string challenge_text = "Basic";
-  HttpAuth::ChallengeTokenizer challenge(challenge_text.begin(),
+  HttpAuthChallengeTokenizer challenge(challenge_text.begin(),
                                          challenge_text.end());
   GURL origin("localhost");
   EXPECT_TRUE(mock_auth->InitFromChallenge(&challenge,

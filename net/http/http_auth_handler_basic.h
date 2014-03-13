@@ -22,7 +22,7 @@ class NET_EXPORT_PRIVATE HttpAuthHandlerBasic : public HttpAuthHandler {
     virtual ~Factory();
 
     virtual int CreateAuthHandler(
-        HttpAuth::ChallengeTokenizer* challenge,
+        HttpAuthChallengeTokenizer* challenge,
         HttpAuth::Target target,
         const GURL& origin,
         CreateReason reason,
@@ -32,10 +32,10 @@ class NET_EXPORT_PRIVATE HttpAuthHandlerBasic : public HttpAuthHandler {
   };
 
   virtual HttpAuth::AuthorizationResult HandleAnotherChallenge(
-      HttpAuth::ChallengeTokenizer* challenge) OVERRIDE;
+      HttpAuthChallengeTokenizer* challenge) OVERRIDE;
 
  protected:
-  virtual bool Init(HttpAuth::ChallengeTokenizer* challenge) OVERRIDE;
+  virtual bool Init(HttpAuthChallengeTokenizer* challenge) OVERRIDE;
 
   virtual int GenerateAuthTokenImpl(const AuthCredentials* credentials,
                                     const HttpRequestInfo* request,
@@ -45,7 +45,7 @@ class NET_EXPORT_PRIVATE HttpAuthHandlerBasic : public HttpAuthHandler {
  private:
   virtual ~HttpAuthHandlerBasic() {}
 
-  bool ParseChallenge(HttpAuth::ChallengeTokenizer* challenge);
+  bool ParseChallenge(HttpAuthChallengeTokenizer* challenge);
 };
 
 }  // namespace net

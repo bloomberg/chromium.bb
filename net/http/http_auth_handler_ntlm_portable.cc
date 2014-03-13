@@ -707,7 +707,7 @@ int HttpAuthHandlerNTLM::GetNextToken(const void* in_token,
 }
 
 int HttpAuthHandlerNTLM::Factory::CreateAuthHandler(
-    HttpAuth::ChallengeTokenizer* challenge,
+    HttpAuthChallengeTokenizer* challenge,
     HttpAuth::Target target,
     const GURL& origin,
     CreateReason reason,

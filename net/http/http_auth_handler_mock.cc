@@ -8,6 +8,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
 #include "net/base/net_errors.h"
+#include "net/http/http_auth_challenge_tokenizer.h"
 #include "net/http/http_request_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -77,7 +78,7 @@ void HttpAuthHandlerMock::SetGenerateExpectation(bool async, int rv) {
 }
 
 HttpAuth::AuthorizationResult HttpAuthHandlerMock::HandleAnotherChallenge(
-    HttpAuth::ChallengeTokenizer* challenge) {
+    HttpAuthChallengeTokenizer* challenge) {
   // If we receive an empty challenge for a connection based scheme, or a second
   // challenge for a non connection based scheme, assume it's a rejection.
   if (!is_connection_based() || challenge->base64_param().empty())
@@ -99,7 +100,7 @@ bool HttpAuthHandlerMock::AllowsExplicitCredentials() {
   return allows_explicit_credentials_;
 }
 
-bool HttpAuthHandlerMock::Init(HttpAuth::ChallengeTokenizer* challenge) {
+bool HttpAuthHandlerMock::Init(HttpAuthChallengeTokenizer* challenge) {
   auth_scheme_ = HttpAuth::AUTH_SCHEME_MOCK;
   score_ = 1;
   properties_ = connection_based_ ? IS_CONNECTION_BASED : 0;
@@ -164,7 +165,7 @@ void HttpAuthHandlerMock::Factory::AddMockHandler(
 }
 
 int HttpAuthHandlerMock::Factory::CreateAuthHandler(
-    HttpAuth::ChallengeTokenizer* challenge,
+    HttpAuthChallengeTokenizer* challenge,
     HttpAuth::Target target,
     const GURL& origin,
     CreateReason reason,

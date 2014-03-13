@@ -20,6 +20,7 @@ namespace net {
 
 class BoundNetLog;
 class HostResolver;
+class HttpAuthChallengeTokenizer;
 class HttpAuthHandler;
 class HttpAuthHandlerRegistryFactory;
 
@@ -73,7 +74,7 @@ class NET_EXPORT HttpAuthHandlerFactory {
   // NOTE: This will apply to ALL |origin| values if the filters are empty.
   //
   // |*challenge| should not be reused after a call to |CreateAuthHandler()|,
-  virtual int CreateAuthHandler(HttpAuth::ChallengeTokenizer* challenge,
+  virtual int CreateAuthHandler(HttpAuthChallengeTokenizer* challenge,
                                 HttpAuth::Target target,
                                 const GURL& origin,
                                 CreateReason create_reason,
@@ -182,7 +183,7 @@ class NET_EXPORT HttpAuthHandlerRegistryFactory
 
   // Creates an auth handler by dispatching out to the registered factories
   // based on the first token in |challenge|.
-  virtual int CreateAuthHandler(HttpAuth::ChallengeTokenizer* challenge,
+  virtual int CreateAuthHandler(HttpAuthChallengeTokenizer* challenge,
                                 HttpAuth::Target target,
                                 const GURL& origin,
                                 CreateReason reason,

@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "net/base/net_errors.h"
+#include "net/http/http_auth_challenge_tokenizer.h"
 
 namespace net {
 
@@ -22,7 +23,7 @@ HttpAuthHandler::~HttpAuthHandler() {
 }
 
 bool HttpAuthHandler::InitFromChallenge(
-    HttpAuth::ChallengeTokenizer* challenge,
+    HttpAuthChallengeTokenizer* challenge,
     HttpAuth::Target target,
     const GURL& origin,
     const BoundNetLog& net_log) {

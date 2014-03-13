@@ -12,15 +12,16 @@
 #include "base/strings/utf_string_conversions.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
+#include "net/http/http_auth_challenge_tokenizer.h"
 
 namespace net {
 
 HttpAuth::AuthorizationResult HttpAuthHandlerNTLM::HandleAnotherChallenge(
-    HttpAuth::ChallengeTokenizer* challenge) {
+    HttpAuthChallengeTokenizer* challenge) {
   return ParseChallenge(challenge, false);
 }
 
-bool HttpAuthHandlerNTLM::Init(HttpAuth::ChallengeTokenizer* tok) {
+bool HttpAuthHandlerNTLM::Init(HttpAuthChallengeTokenizer* tok) {
   auth_scheme_ = HttpAuth::AUTH_SCHEME_NTLM;
   score_ = 3;
   properties_ = ENCRYPTS_IDENTITY | IS_CONNECTION_BASED;
@@ -100,7 +101,7 @@ int HttpAuthHandlerNTLM::GenerateAuthTokenImpl(
 // The NTLM challenge header looks like:
 //   WWW-Authenticate: NTLM auth-data
 HttpAuth::AuthorizationResult HttpAuthHandlerNTLM::ParseChallenge(
-    HttpAuth::ChallengeTokenizer* tok, bool initial_challenge) {
+    HttpAuthChallengeTokenizer* tok, bool initial_challenge) {
 #if defined(NTLM_SSPI)
   // auth_sspi_ contains state for whether or not this is the initial challenge.
   return auth_sspi_.ParseChallenge(tok);
