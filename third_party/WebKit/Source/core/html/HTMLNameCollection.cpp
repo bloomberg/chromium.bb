@@ -63,11 +63,11 @@ Element* HTMLNameCollection::virtualItemAfter(Element* previous) const
         case WindowNamedItems:
             // find only images, forms, applets, embeds and objects by name,
             // but anything by id
-            if (current->hasTagName(imgTag)
-                || current->hasTagName(formTag)
-                || current->hasTagName(appletTag)
-                || current->hasTagName(embedTag)
-                || current->hasTagName(objectTag)) {
+            if (isHTMLImageElement(*current)
+                || isHTMLFormElement(*current)
+                || isHTMLAppletElement(*current)
+                || isHTMLEmbedElement(*current)
+                || isHTMLObjectElement(*current)) {
                 if (current->getNameAttribute() == m_name)
                     return current;
             }
@@ -78,16 +78,16 @@ Element* HTMLNameCollection::virtualItemAfter(Element* previous) const
             // find images, forms, applets, embeds, objects and iframes by name,
             // applets and object by id, and images by id but only if they have
             // a name attribute (this very strange rule matches IE)
-            if (current->hasTagName(formTag)
-                || current->hasTagName(iframeTag)
-                || (current->hasTagName(embedTag) && toHTMLEmbedElement(current)->isExposed())) {
+            if (isHTMLFormElement(*current)
+                || isHTMLIFrameElement(*current)
+                || (isHTMLEmbedElement(*current) && toHTMLEmbedElement(*current).isExposed())) {
                 if (current->getNameAttribute() == m_name)
                     return current;
-            } else if (current->hasTagName(appletTag)
-                || (current->hasTagName(objectTag) && toHTMLObjectElement(current)->isExposed())) {
+            } else if (isHTMLAppletElement(*current)
+                || (isHTMLObjectElement(*current) && toHTMLObjectElement(*current).isExposed())) {
                 if (current->getNameAttribute() == m_name || current->getIdAttribute() == m_name)
                     return current;
-            } else if (current->hasTagName(imgTag)) {
+            } else if (isHTMLImageElement(*current)) {
                 if (current->getNameAttribute() == m_name || (current->getIdAttribute() == m_name && current->hasName()))
                     return current;
             }

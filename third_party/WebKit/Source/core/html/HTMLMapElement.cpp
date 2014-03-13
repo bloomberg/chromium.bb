@@ -74,15 +74,14 @@ HTMLImageElement* HTMLMapElement::imageElement()
 {
     RefPtr<HTMLCollection> images = document().images();
     for (unsigned i = 0; Element* curr = images->item(i); i++) {
-        if (!curr->hasTagName(imgTag))
-            continue;
+        ASSERT(isHTMLImageElement(curr));
 
         // The HTMLImageElement's useMap() value includes the '#' symbol at the beginning,
         // which has to be stripped off.
-        HTMLImageElement* imageElement = toHTMLImageElement(curr);
-        String useMapName = imageElement->getAttribute(usemapAttr).string().substring(1);
+        HTMLImageElement& imageElement = toHTMLImageElement(*curr);
+        String useMapName = imageElement.getAttribute(usemapAttr).string().substring(1);
         if (equalIgnoringCase(useMapName, m_name))
-            return imageElement;
+            return &imageElement;
     }
 
     return 0;

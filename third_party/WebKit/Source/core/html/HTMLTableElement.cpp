@@ -37,6 +37,7 @@
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/html/HTMLTableCaptionElement.h"
+#include "core/html/HTMLTableCellElement.h"
 #include "core/html/HTMLTableRowElement.h"
 #include "core/html/HTMLTableRowsCollection.h"
 #include "core/html/HTMLTableSectionElement.h"
@@ -255,7 +256,7 @@ void HTMLTableElement::setNeedsTableStyleRecalc() const
     Element* element = ElementTraversal::next(*this, this);
     while (element) {
         element->setNeedsStyleRecalc(LocalStyleChange);
-        if (element->hasTagName(tdTag) || element->hasTagName(thTag))
+        if (isHTMLTableCellElement(*element))
             element = ElementTraversal::nextSkippingChildren(*element, this);
         else
             element = ElementTraversal::next(*element, this);

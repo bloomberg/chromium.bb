@@ -92,7 +92,7 @@ void HTMLLIElement::attach(const AttachContext& context)
             current = current->parentElement();
             if (!current)
                 break;
-            if (current->hasTagName(ulTag) || current->hasTagName(olTag))
+            if (isHTMLUListElement(*current) || isHTMLOListElement(*current))
                 listNode = current;
         }
 

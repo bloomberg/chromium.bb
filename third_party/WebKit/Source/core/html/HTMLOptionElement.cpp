@@ -165,7 +165,7 @@ int HTMLOptionElement::index() const
     const Vector<HTMLElement*>& items = selectElement->listItems();
     size_t length = items.size();
     for (size_t i = 0; i < length; ++i) {
-        if (!items[i]->hasTagName(optionTag))
+        if (!isHTMLOptionElement(*items[i]))
             continue;
         if (items[i] == this)
             return optionIndex;
@@ -260,7 +260,7 @@ void HTMLOptionElement::childrenChanged(bool changedByParser, Node* beforeChange
 HTMLDataListElement* HTMLOptionElement::ownerDataListElement() const
 {
     for (ContainerNode* parent = parentNode(); parent ; parent = parent->parentNode()) {
-        if (parent->hasTagName(datalistTag))
+        if (isHTMLDataListElement(*parent))
             return toHTMLDataListElement(parent);
     }
     return 0;
@@ -269,7 +269,7 @@ HTMLDataListElement* HTMLOptionElement::ownerDataListElement() const
 HTMLSelectElement* HTMLOptionElement::ownerSelectElement() const
 {
     ContainerNode* select = parentNode();
-    while (select && !select->hasTagName(selectTag))
+    while (select && !isHTMLSelectElement(*select))
         select = select->parentNode();
 
     if (!select)
@@ -322,7 +322,7 @@ void HTMLOptionElement::didRecalcStyle(StyleRecalcChange change)
 String HTMLOptionElement::textIndentedToRespectGroupLabel() const
 {
     ContainerNode* parent = parentNode();
-    if (parent && parent->hasTagName(optgroupTag))
+    if (parent && isHTMLOptGroupElement(*parent))
         return "    " + text();
     return text();
 }
@@ -332,7 +332,7 @@ bool HTMLOptionElement::isDisabledFormControl() const
     if (ownElementDisabled())
         return true;
     if (Element* parent = parentElement())
-        return parent->hasTagName(optgroupTag) && parent->isDisabledFormControl();
+        return isHTMLOptGroupElement(*parent) && parent->isDisabledFormControl();
     return false;
 }
 

@@ -34,7 +34,7 @@ namespace WebCore {
 HTMLOptionsCollection::HTMLOptionsCollection(ContainerNode& select)
     : HTMLCollection(select, SelectOptions, DoesNotOverrideItemAfter)
 {
-    ASSERT(select.hasTagName(HTMLNames::selectTag));
+    ASSERT(isHTMLSelectElement(select));
     ScriptWrappable::init(this);
 }
 

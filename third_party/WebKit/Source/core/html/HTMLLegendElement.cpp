@@ -50,7 +50,7 @@ HTMLFormControlElement* HTMLLegendElement::associatedControl()
 {
     // Check if there's a fieldset belonging to this legend.
     Element* fieldset = parentElement();
-    while (fieldset && !fieldset->hasTagName(fieldsetTag))
+    while (fieldset && !isHTMLFieldSetElement(*fieldset))
         fieldset = fieldset->parentElement();
     if (!fieldset)
         return 0;
@@ -82,7 +82,7 @@ HTMLFormElement* HTMLLegendElement::form() const
     // its parent, then the form attribute must return the same value as the
     // form attribute on that fieldset element. Otherwise, it must return null.
     ContainerNode* fieldset = parentNode();
-    if (!fieldset || !fieldset->hasTagName(fieldsetTag))
+    if (!isHTMLFieldSetElement(fieldset))
         return 0;
 
     return toHTMLFieldSetElement(fieldset)->formOwner();

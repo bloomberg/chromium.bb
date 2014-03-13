@@ -212,8 +212,9 @@ bool HTMLObjectElement::hasFallbackContent() const
         if (child->isTextNode()) {
             if (!toText(child)->containsOnlyWhitespace())
                 return true;
-        } else if (!child->hasTagName(paramTag))
+        } else if (!isHTMLParamElement(*child)) {
             return true;
+        }
     }
     return false;
 }
@@ -414,11 +415,11 @@ bool HTMLObjectElement::isExposed() const
 {
     // http://www.whatwg.org/specs/web-apps/current-work/#exposed
     for (Node* ancestor = parentNode(); ancestor; ancestor = ancestor->parentNode()) {
-        if (ancestor->hasTagName(objectTag) && toHTMLObjectElement(ancestor)->isExposed())
+        if (isHTMLObjectElement(*ancestor) && toHTMLObjectElement(ancestor)->isExposed())
             return false;
     }
-    for (Element* element = ElementTraversal::firstWithin(*this); element; element = ElementTraversal::next(*element, this)) {
-        if (element->hasTagName(objectTag) || element->hasTagName(embedTag))
+    for (HTMLElement* element = Traversal<HTMLElement>::firstWithin(*this); element; element = Traversal<HTMLElement>::next(*element, this)) {
+        if (isHTMLObjectElement(*element) || isHTMLEmbedElement(*element))
             return false;
     }
     return true;
@@ -429,14 +430,14 @@ bool HTMLObjectElement::containsJavaApplet() const
     if (MIMETypeRegistry::isJavaAppletMIMEType(getAttribute(typeAttr)))
         return true;
 
-    for (Element* child = ElementTraversal::firstWithin(*this); child; child = ElementTraversal::nextSkippingChildren(*child, this)) {
-        if (child->hasTagName(paramTag)
+    for (HTMLElement* child = Traversal<HTMLElement>::firstWithin(*this); child; child = Traversal<HTMLElement>::nextSkippingChildren(*child, this)) {
+        if (isHTMLParamElement(*child)
                 && equalIgnoringCase(child->getNameAttribute(), "type")
                 && MIMETypeRegistry::isJavaAppletMIMEType(child->getAttribute(valueAttr).string()))
             return true;
-        if (child->hasTagName(objectTag) && toHTMLObjectElement(child)->containsJavaApplet())
+        if (isHTMLObjectElement(*child) && toHTMLObjectElement(*child).containsJavaApplet())
             return true;
-        if (child->hasTagName(appletTag))
+        if (isHTMLAppletElement(*child))
             return true;
     }
 

@@ -442,7 +442,7 @@ PassRefPtr<Range> HTMLTextFormControlElement::selection() const
     Node* endNode = 0;
     for (Node* node = innerText->firstChild(); node; node = NodeTraversal::next(*node, innerText)) {
         ASSERT(!node->firstChild());
-        ASSERT(node->isTextNode() || node->hasTagName(brTag));
+        ASSERT(node->isTextNode() || isHTMLBRElement(*node));
         int length = node->isTextNode() ? lastOffsetInNode(node) : 1;
 
         if (offset <= start && start <= offset + length)
@@ -536,7 +536,7 @@ String HTMLTextFormControlElement::innerTextValue() const
 
     StringBuilder result;
     for (Node* node = innerText; node; node = NodeTraversal::next(*node, innerText)) {
-        if (node->hasTagName(brTag))
+        if (isHTMLBRElement(*node))
             result.append(newlineCharacter);
         else if (node->isTextNode())
             result.append(toText(node)->data());
@@ -583,7 +583,7 @@ String HTMLTextFormControlElement::valueWithHardLineBreaks() const
 
     StringBuilder result;
     for (Node* node = innerText->firstChild(); node; node = NodeTraversal::next(*node, innerText)) {
-        if (node->hasTagName(brTag))
+        if (isHTMLBRElement(*node))
             result.append(newlineCharacter);
         else if (node->isTextNode()) {
             String data = toText(node)->data();

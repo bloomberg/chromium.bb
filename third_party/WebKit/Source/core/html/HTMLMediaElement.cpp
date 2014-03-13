@@ -2319,8 +2319,6 @@ TextTrackList* HTMLMediaElement::textTracks()
 
 void HTMLMediaElement::didAddTrackElement(HTMLTrackElement* trackElement)
 {
-    ASSERT(trackElement->hasTagName(trackTag));
-
     if (!RuntimeEnabledFeatures::videoTrackEnabled())
         return;
 
@@ -2345,16 +2343,12 @@ void HTMLMediaElement::didAddTrackElement(HTMLTrackElement* trackElement)
 
 void HTMLMediaElement::didRemoveTrackElement(HTMLTrackElement* trackElement)
 {
-    ASSERT(trackElement->hasTagName(trackTag));
-
     if (!RuntimeEnabledFeatures::videoTrackEnabled())
         return;
 
 #if !LOG_DISABLED
-    if (trackElement->hasTagName(trackTag)) {
-        KURL url = trackElement->getNonEmptyURLAttribute(srcAttr);
-        WTF_LOG(Media, "HTMLMediaElement::didRemoveTrackElement - 'src' is %s", urlForLoggingMedia(url).utf8().data());
-    }
+    KURL url = trackElement->getNonEmptyURLAttribute(srcAttr);
+    WTF_LOG(Media, "HTMLMediaElement::didRemoveTrackElement - 'src' is %s", urlForLoggingMedia(url).utf8().data());
 #endif
 
     RefPtr<TextTrack> textTrack = trackElement->track();
@@ -2594,7 +2588,7 @@ KURL HTMLMediaElement::selectNextSourceChild(ContentType* contentType, String* k
             continue;
         lookingForStartNode = false;
 
-        if (!node->hasTagName(sourceTag))
+        if (!isHTMLSourceElement(*node))
             continue;
         if (node->parentNode() != this)
             continue;
@@ -2668,10 +2662,8 @@ void HTMLMediaElement::sourceWasAdded(HTMLSourceElement* source)
     WTF_LOG(Media, "HTMLMediaElement::sourceWasAdded(%p)", source);
 
 #if !LOG_DISABLED
-    if (source->hasTagName(sourceTag)) {
-        KURL url = source->getNonEmptyURLAttribute(srcAttr);
-        WTF_LOG(Media, "HTMLMediaElement::sourceWasAdded - 'src' is %s", urlForLoggingMedia(url).utf8().data());
-    }
+    KURL url = source->getNonEmptyURLAttribute(srcAttr);
+    WTF_LOG(Media, "HTMLMediaElement::sourceWasAdded - 'src' is %s", urlForLoggingMedia(url).utf8().data());
 #endif
 
     // We should only consider a <source> element when there is not src attribute at all.
@@ -2716,10 +2708,8 @@ void HTMLMediaElement::sourceWasRemoved(HTMLSourceElement* source)
     WTF_LOG(Media, "HTMLMediaElement::sourceWasRemoved(%p)", source);
 
 #if !LOG_DISABLED
-    if (source->hasTagName(sourceTag)) {
-        KURL url = source->getNonEmptyURLAttribute(srcAttr);
-        WTF_LOG(Media, "HTMLMediaElement::sourceWasRemoved - 'src' is %s", urlForLoggingMedia(url).utf8().data());
-    }
+    KURL url = source->getNonEmptyURLAttribute(srcAttr);
+    WTF_LOG(Media, "HTMLMediaElement::sourceWasRemoved - 'src' is %s", urlForLoggingMedia(url).utf8().data());
 #endif
 
     if (source != m_currentSourceNode && source != m_nextChildNodeToConsider)

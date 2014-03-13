@@ -449,7 +449,7 @@ static bool inDocumentHead(HTMLMetaElement* element)
         return false;
 
     for (Element* current = element; current; current = current->parentElement()) {
-        if (current->hasTagName(HTMLNames::headTag))
+        if (isHTMLHeadElement(*current))
             return true;
     }
     return false;

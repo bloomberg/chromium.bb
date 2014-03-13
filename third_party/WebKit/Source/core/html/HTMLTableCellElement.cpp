@@ -67,14 +67,12 @@ int HTMLTableCellElement::rowSpan() const
 
 int HTMLTableCellElement::cellIndex() const
 {
-    int index = 0;
-    if (!parentElement() || !parentElement()->hasTagName(trTag))
+    if (!isHTMLTableRowElement(parentElement()))
         return -1;
 
-    for (const Node * node = previousSibling(); node; node = node->previousSibling()) {
-        if (node->hasTagName(tdTag) || node->hasTagName(thTag))
-            index++;
-    }
+    int index = 0;
+    for (const HTMLTableCellElement* element = Traversal<HTMLTableCellElement>::previousSibling(*this); element; element = Traversal<HTMLTableCellElement>::previousSibling(*element))
+        ++index;
 
     return index;
 }
