@@ -7,6 +7,10 @@
 #ifndef NATIVE_CLIENT_SRC_PUBLIC_IRT_CORE_H_
 #define NATIVE_CLIENT_SRC_PUBLIC_IRT_CORE_H_ 1
 
+#include "native_client/src/include/nacl_base.h"
+
+EXTERN_C_BEGIN
+
 /*
  * This header file declares functions that may be used by an embedder
  * of NaCl (such as Chromium) to implement a NaCl IRT.
@@ -76,5 +80,7 @@ size_t nacl_irt_query_list(const char *interface_ident,
                            void *table, size_t tablesize,
                            const struct nacl_irt_interface *available,
                            size_t available_size);
+
+EXTERN_C_END
 
 #endif
