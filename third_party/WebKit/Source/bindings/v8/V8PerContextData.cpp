@@ -59,19 +59,22 @@ public:
     static V8PerContextDataHolder* from(v8::Handle<v8::Context> context)
     {
         V8PerContextDataHolder* holder = static_cast<V8PerContextDataHolder*>(context->GetAlignedPointerFromEmbedderData(v8ContextPerContextDataIndex));
-        // |holder| must not be 0 because V8PerContextDataHolder is kept alive as long as the |context| is alive.
-        // Here we have a handle to the |context|, which means that the V8PerContextDataHolder is alive.
-        ASSERT(holder);
+        // V8PerContextDataHolder::from() must not be called for a context that does not have
+        // valid embedder data in the embedder field.
+        RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(holder);
+        RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(holder->context() == context);
         return holder;
     }
 
     V8PerContextData* perContextData() const { return m_perContextData; }
     void setPerContextData(V8PerContextData* data) { m_perContextData = data; }
     DOMWrapperWorld* world() const { return m_world.get(); }
+    v8::Handle<v8::Context> context() const { return m_context.newLocal(m_isolate); }
 
 private:
     V8PerContextDataHolder(v8::Handle<v8::Context> context, PassRefPtr<DOMWrapperWorld> world)
-        : m_context(v8::Isolate::GetCurrent(), context)
+        : m_isolate(context->GetIsolate())
+        , m_context(m_isolate, context)
         , m_perContextData(0)
         , m_world(world)
     {
@@ -87,6 +90,7 @@ private:
         delete data.GetParameter();
     }
 
+    v8::Isolate* m_isolate;
     ScopedPersistent<v8::Context> m_context;
     V8PerContextData* m_perContextData;
     RefPtr<DOMWrapperWorld> m_world;
