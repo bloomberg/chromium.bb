@@ -141,12 +141,6 @@ void ThreadableWebSocketChannelClientWrapper::resume()
     processPendingTasks();
 }
 
-void ThreadableWebSocketChannelClientWrapper::processPendingTasksCallback(ExecutionContext* context, PassRefPtr<ThreadableWebSocketChannelClientWrapper> wrapper)
-{
-    ASSERT_UNUSED(context, context->isWorkerGlobalScope());
-    wrapper->processPendingTasks();
-}
-
 void ThreadableWebSocketChannelClientWrapper::processPendingTasks()
 {
     if (m_suspended)

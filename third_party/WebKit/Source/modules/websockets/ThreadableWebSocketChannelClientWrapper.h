@@ -79,7 +79,6 @@ private:
     static void didUpdateBufferedAmountCallback(ExecutionContext*, PassRefPtr<ThreadableWebSocketChannelClientWrapper>, unsigned long bufferedAmount);
     static void didStartClosingHandshakeCallback(ExecutionContext*, PassRefPtr<ThreadableWebSocketChannelClientWrapper>);
     static void didCloseCallback(ExecutionContext*, PassRefPtr<ThreadableWebSocketChannelClientWrapper>, unsigned long unhandledBufferedAmount, WebSocketChannelClient::ClosingHandshakeCompletionStatus, unsigned short code, const String& reason);
-    static void processPendingTasksCallback(ExecutionContext*, PassRefPtr<ThreadableWebSocketChannelClientWrapper>);
     static void didReceiveMessageErrorCallback(ExecutionContext*, PassRefPtr<ThreadableWebSocketChannelClientWrapper>);
 
     WebSocketChannelClient* m_client;
