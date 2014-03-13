@@ -363,8 +363,8 @@ struct window_frame {
 };
 
 struct menu {
+	void *user_data;
 	struct window *window;
-	struct window *parent;
 	struct widget *widget;
 	struct input *input;
 	struct frame *frame;
@@ -2229,9 +2229,9 @@ frame_get_pointer_image_for_location(struct window_frame *frame,
 }
 
 static void
-frame_menu_func(struct window *window,
-		struct input *input, int index, void *data)
+frame_menu_func(void *data, struct input *input, int index)
 {
+	struct window *window = data;
 	struct display *display;
 
 	switch (index) {
@@ -4507,8 +4507,7 @@ menu_button_handler(struct widget *widget,
 	    (menu->release_count > 0 || time - menu->time > 500)) {
 		/* Either relase after press-drag-release or
 		 * click-motion-click. */
-		menu->func(menu->parent, input,
-			   menu->current, menu->parent->user_data);
+		menu->func(menu->user_data, input, menu->current);
 		input_ungrab(input);
 		menu_destroy(menu);
 	} else if (state == WL_POINTER_BUTTON_STATE_RELEASED) {
@@ -4605,7 +4604,7 @@ window_show_menu(struct display *display,
 	}
 
 	menu->window = window;
-	menu->parent = parent;
+	menu->user_data = parent;
 	menu->widget = window_add_widget(menu->window, menu);
 	window_set_buffer_scale (menu->window, window_get_buffer_scale (parent));
 	window_set_buffer_transform (menu->window, window_get_buffer_transform (parent));

@@ -200,8 +200,7 @@ key_handler(struct window *window, struct input *input, uint32_t time,
 }
 
 static void
-menu_func(struct window *window,
-	  struct input *input, int index, void *user_data)
+menu_func(void *data, struct input *input, int index)
 {
 	fprintf(stderr, "picked entry %d\n", index);
 }

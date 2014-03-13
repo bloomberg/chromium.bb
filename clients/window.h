@@ -284,8 +284,7 @@ window_get_parent(struct window *window);
 int
 window_has_focus(struct window *window);
 
-typedef void (*menu_func_t)(struct window *window,
-			    struct input *input, int index, void *data);
+typedef void (*menu_func_t)(void *data, struct input *input, int index);
 
 void
 window_show_menu(struct display *display,

@@ -2680,9 +2680,10 @@ recompute_selection(struct terminal *terminal)
 }
 
 static void
-menu_func(struct window *window, struct input *input, int index, void *data)
+menu_func(void *data, struct input *input, int index)
 {
-	struct terminal *terminal = data;
+	struct window *window = data;
+	struct terminal *terminal = window_get_user_data(window);
 
 	fprintf(stderr, "picked entry %d\n", index);
 

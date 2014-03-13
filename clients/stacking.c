@@ -82,7 +82,7 @@ new_window(struct stacking *stacking, struct window *parent_window)
 }
 
 static void
-show_popup_cb(struct window *window, struct input *input, int index, void *data)
+show_popup_cb(void *data, struct input *input, int index)
 {
 	/* Ignore the selected menu item. */
 }
