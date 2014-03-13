@@ -29,6 +29,8 @@ class MutableProfileOAuth2TokenService : public ProfileOAuth2TokenService,
   virtual void UpdateCredentials(const std::string& account_id,
                                  const std::string& refresh_token) OVERRIDE;
   virtual void RevokeAllCredentials() OVERRIDE;
+  virtual bool RefreshTokenIsAvailable(const std::string& account_id) const
+      OVERRIDE;
 
   // Revokes credentials related to |account_id|.
   void RevokeCredentials(const std::string& account_id);
@@ -71,9 +73,18 @@ class MutableProfileOAuth2TokenService : public ProfileOAuth2TokenService,
   virtual ~MutableProfileOAuth2TokenService();
 
   // OAuth2TokenService implementation.
-  virtual std::string GetRefreshToken(const std::string& account_id)
-      const OVERRIDE;
+  virtual OAuth2AccessTokenFetcher* CreateAccessTokenFetcher(
+      const std::string& account_id,
+      net::URLRequestContextGetter* getter,
+      OAuth2AccessTokenConsumer* consumer) OVERRIDE;
   virtual net::URLRequestContextGetter* GetRequestContext() OVERRIDE;
+
+  // Updates the internal cache of the result from the most-recently-completed
+  // auth request (used for reporting errors to the user).
+  virtual void UpdateAuthError(const std::string& account_id,
+                               const GoogleServiceAuthError& error) OVERRIDE;
+
+  virtual std::string GetRefreshToken(const std::string& account_id) const;
 
   AccountInfoMap& refresh_tokens() { return refresh_tokens_; }
 
@@ -86,12 +97,6 @@ class MutableProfileOAuth2TokenService : public ProfileOAuth2TokenService,
                            PersistenceDBUpgrade);
   FRIEND_TEST_ALL_PREFIXES(MutableProfileOAuth2TokenServiceTest,
                            PersistenceLoadCredentials);
-
-  // Updates the internal cache of the result from the most-recently-completed
-  // auth request (used for reporting errors to the user).
-  virtual void UpdateAuthError(
-      const std::string& account_id,
-      const GoogleServiceAuthError& error) OVERRIDE;
 
   // WebDataServiceConsumer implementation:
   virtual void OnWebDataServiceRequestDone(

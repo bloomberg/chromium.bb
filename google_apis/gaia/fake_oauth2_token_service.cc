@@ -4,15 +4,9 @@
 
 #include "google_apis/gaia/fake_oauth2_token_service.h"
 
-FakeOAuth2TokenService::FakeOAuth2TokenService() {
-}
+FakeOAuth2TokenService::FakeOAuth2TokenService() : request_context_(NULL) {}
 
 FakeOAuth2TokenService::~FakeOAuth2TokenService() {
-}
-
-std::string FakeOAuth2TokenService::GetRefreshToken(
-    const std::string& account_id) const {
-  return std::string();
 }
 
 void FakeOAuth2TokenService::FetchOAuth2Token(
@@ -32,5 +26,24 @@ void FakeOAuth2TokenService::InvalidateOAuth2Token(
 }
 
 net::URLRequestContextGetter* FakeOAuth2TokenService::GetRequestContext() {
+  return request_context_;
+}
+
+bool FakeOAuth2TokenService::RefreshTokenIsAvailable(
+    const std::string& account_id) const {
+  return account_ids_.count(account_id) != 0;
+};
+
+void FakeOAuth2TokenService::AddAccount(const std::string& account_id) {
+  account_ids_.insert(account_id);
+}
+
+OAuth2AccessTokenFetcher* FakeOAuth2TokenService::CreateAccessTokenFetcher(
+    const std::string& account_id,
+    net::URLRequestContextGetter* getter,
+    OAuth2AccessTokenConsumer* consumer) {
+  // |FakeOAuth2TokenService| overrides |FetchOAuth2Token| and thus
+  // |CreateAccessTokenFetcher| should never be called.
+  NOTREACHED();
   return NULL;
 }

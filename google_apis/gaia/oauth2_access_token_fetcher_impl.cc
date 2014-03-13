@@ -130,8 +130,13 @@ scoped_ptr<base::DictionaryValue> ParseGetAccessTokenResponse(
 }  // namespace
 
 OAuth2AccessTokenFetcherImpl::OAuth2AccessTokenFetcherImpl(
-    OAuth2AccessTokenConsumer* consumer, URLRequestContextGetter* getter)
-    : OAuth2AccessTokenFetcher(consumer), getter_(getter), state_(INITIAL) {}
+    OAuth2AccessTokenConsumer* consumer,
+    net::URLRequestContextGetter* getter,
+    const std::string& refresh_token)
+    : OAuth2AccessTokenFetcher(consumer),
+      getter_(getter),
+      refresh_token_(refresh_token),
+      state_(INITIAL) {}
 
 OAuth2AccessTokenFetcherImpl::~OAuth2AccessTokenFetcherImpl() {}
 
@@ -140,11 +145,9 @@ void OAuth2AccessTokenFetcherImpl::CancelRequest() { fetcher_.reset(); }
 void OAuth2AccessTokenFetcherImpl::Start(
     const std::string& client_id,
     const std::string& client_secret,
-    const std::string& refresh_token,
     const std::vector<std::string>& scopes) {
   client_id_ = client_id;
   client_secret_ = client_secret;
-  refresh_token_ = refresh_token;
   scopes_ = scopes;
   StartGetAccessToken();
 }

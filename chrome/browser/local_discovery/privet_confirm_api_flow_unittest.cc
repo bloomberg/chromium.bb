@@ -5,8 +5,8 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/local_discovery/privet_confirm_api_flow.h"
-#include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
 #include "content/public/test/test_browser_thread.h"
+#include "google_apis/gaia/fake_oauth2_token_service.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
@@ -36,25 +36,6 @@ const char kFailedConfirmResponseBadJson[] = "["
 
 const char kAccountId[] = "account_id";
 
-class TestOAuth2TokenService : public OAuth2TokenService {
- public:
-  explicit TestOAuth2TokenService(net::URLRequestContextGetter* request_context)
-      : request_context_(request_context) {
-  }
- protected:
-  virtual std::string GetRefreshToken(const std::string& account_id)
-      const OVERRIDE {
-    return "SampleToken";
-  }
-
-  virtual net::URLRequestContextGetter* GetRequestContext() OVERRIDE {
-    return request_context_.get();
-  }
-
- private:
-  scoped_refptr<net::URLRequestContextGetter> request_context_;
-};
-
 class MockableConfirmCallback {
  public:
   MOCK_METHOD1(ConfirmCallback, void(CloudPrintBaseApiFlow::Status));
@@ -72,8 +53,9 @@ class PrivetConfirmApiFlowTest : public testing::Test {
                    &loop_),
         request_context_(new net::TestURLRequestContextGetter(
             base::MessageLoopProxy::current())),
-        token_service_(request_context_.get()),
         account_id_(kAccountId) {
+    token_service_.set_request_context(request_context_.get());
+    token_service_.AddAccount(account_id_);
     ui_thread_.Stop();  // HACK: Fake being on the UI thread
   }
 
@@ -85,7 +67,7 @@ class PrivetConfirmApiFlowTest : public testing::Test {
   content::TestBrowserThread ui_thread_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_;
   net::TestURLFetcherFactory fetcher_factory_;
-  TestOAuth2TokenService token_service_;
+  FakeOAuth2TokenService token_service_;
   MockableConfirmCallback callback_;
   std::string account_id_;
 };

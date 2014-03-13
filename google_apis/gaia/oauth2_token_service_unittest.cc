@@ -9,6 +9,7 @@
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
+#include "google_apis/gaia/oauth2_access_token_fetcher_impl.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "google_apis/gaia/oauth2_token_service_test_util.h"
 #include "net/http/http_status_code.h"
@@ -55,24 +56,36 @@ class TestOAuth2TokenService : public OAuth2TokenService {
   // For testing: set the refresh token to be used.
   void set_refresh_token(const std::string& account_id,
                          const std::string& refresh_token) {
-    refresh_tokens_[account_id] = refresh_token;
+    if (refresh_token.empty())
+      refresh_tokens_.erase(account_id);
+    else
+      refresh_tokens_[account_id] = refresh_token;
   }
 
- protected:
-  virtual std::string GetRefreshToken(const std::string& account_id)
-      const OVERRIDE {
+  virtual bool RefreshTokenIsAvailable(const std::string& account_id) const
+      OVERRIDE {
     std::map<std::string, std::string>::const_iterator it =
         refresh_tokens_.find(account_id);
-    if (it != refresh_tokens_.end())
-      return it->second;
-    return std::string();
-  }
+
+    return it != refresh_tokens_.end();
+  };
 
  private:
   // OAuth2TokenService implementation.
   virtual net::URLRequestContextGetter* GetRequestContext() OVERRIDE {
     return request_context_getter_.get();
   }
+
+  virtual OAuth2AccessTokenFetcher* CreateAccessTokenFetcher(
+      const std::string& account_id,
+      net::URLRequestContextGetter* getter,
+      OAuth2AccessTokenConsumer* consumer) OVERRIDE {
+    std::map<std::string, std::string>::const_iterator it =
+        refresh_tokens_.find(account_id);
+    DCHECK(it != refresh_tokens_.end());
+    std::string refresh_token(it->second);
+    return new OAuth2AccessTokenFetcherImpl(consumer, getter, refresh_token);
+  };
 
   std::map<std::string, std::string> refresh_tokens_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;

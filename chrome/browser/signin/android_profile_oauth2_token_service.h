@@ -81,6 +81,14 @@ class AndroidProfileOAuth2TokenService : public ProfileOAuth2TokenService {
                                 const std::string& client_secret,
                                 const ScopeSet& scopes) OVERRIDE;
 
+  // Overriden from OAuth2TokenService to avoid compile errors. Has NOTREACHED()
+  // implementation as |AndroidProfileOAuth2TokenService| overrides
+  // |FetchOAuth2Token| and thus bypasses this method entirely.
+  virtual OAuth2AccessTokenFetcher* CreateAccessTokenFetcher(
+      const std::string& account_id,
+      net::URLRequestContextGetter* getter,
+      OAuth2AccessTokenConsumer* consumer) OVERRIDE;
+
   // Overridden from OAuth2TokenService to intercept token fetch requests and
   // redirect them to the Account Manager.
   virtual void InvalidateOAuth2Token(const std::string& account_id,

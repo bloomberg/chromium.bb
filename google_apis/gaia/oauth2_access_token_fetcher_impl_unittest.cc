@@ -86,7 +86,7 @@ class OAuth2AccessTokenFetcherImplTest : public testing::Test {
   OAuth2AccessTokenFetcherImplTest()
       : request_context_getter_(new net::TestURLRequestContextGetter(
             base::MessageLoopProxy::current())),
-        fetcher_(&consumer_, request_context_getter_) {
+        fetcher_(&consumer_, request_context_getter_, "refresh_token") {
     base::RunLoop().RunUntilIdle();
   }
 
@@ -125,8 +125,7 @@ TEST_F(OAuth2AccessTokenFetcherImplTest,
        DISABLED_GetAccessTokenRequestFailure) {
   TestURLFetcher* url_fetcher = SetupGetAccessToken(false, 0, std::string());
   EXPECT_CALL(consumer_, OnGetTokenFailure(_)).Times(1);
-  fetcher_.Start(
-      "client_id", "client_secret", "refresh_token", ScopeList());
+  fetcher_.Start("client_id", "client_secret", ScopeList());
   fetcher_.OnURLFetchComplete(url_fetcher);
 }
 
@@ -135,8 +134,7 @@ TEST_F(OAuth2AccessTokenFetcherImplTest,
   TestURLFetcher* url_fetcher =
       SetupGetAccessToken(true, net::HTTP_FORBIDDEN, std::string());
   EXPECT_CALL(consumer_, OnGetTokenFailure(_)).Times(1);
-  fetcher_.Start(
-      "client_id", "client_secret", "refresh_token", ScopeList());
+  fetcher_.Start("client_id", "client_secret", ScopeList());
   fetcher_.OnURLFetchComplete(url_fetcher);
 }
 
@@ -144,8 +142,7 @@ TEST_F(OAuth2AccessTokenFetcherImplTest, DISABLED_Success) {
   TestURLFetcher* url_fetcher =
       SetupGetAccessToken(true, net::HTTP_OK, kValidTokenResponse);
   EXPECT_CALL(consumer_, OnGetTokenSuccess("at1", _)).Times(1);
-  fetcher_.Start(
-      "client_id", "client_secret", "refresh_token", ScopeList());
+  fetcher_.Start("client_id", "client_secret", ScopeList());
   fetcher_.OnURLFetchComplete(url_fetcher);
 }
 

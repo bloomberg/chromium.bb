@@ -116,13 +116,15 @@ class FakeProfileOAuth2TokenService
                                 const std::string& client_secret,
                                 const ScopeSet& scopes) OVERRIDE;
 
+  virtual OAuth2AccessTokenFetcher* CreateAccessTokenFetcher(
+      const std::string& account_id,
+      net::URLRequestContextGetter* getter,
+      OAuth2AccessTokenConsumer* consumer) OVERRIDE;
+
   virtual void InvalidateOAuth2Token(const std::string& account_id,
                                      const std::string& client_id,
                                      const ScopeSet& scopes,
                                      const std::string& access_token) OVERRIDE;
-
-  virtual std::string GetRefreshToken(const std::string& account_id)
-      const OVERRIDE;
 
   virtual net::URLRequestContextGetter* GetRequestContext() OVERRIDE;
 
@@ -138,6 +140,8 @@ class FakeProfileOAuth2TokenService
                         const GoogleServiceAuthError& error,
                         const std::string& access_token,
                         const base::Time& expiration);
+
+  std::string GetRefreshToken(const std::string& account_id) const;
 
   std::vector<PendingRequest> pending_requests_;
 

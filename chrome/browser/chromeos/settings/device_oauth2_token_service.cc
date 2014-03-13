@@ -21,6 +21,7 @@
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "google_apis/gaia/oauth2_access_token_fetcher_impl.h"
 #include "policy/proto/device_management_backend.pb.h"
 
 namespace chromeos {
@@ -200,6 +201,16 @@ void DeviceOAuth2TokenService::FetchOAuth2Token(
 
   NOTREACHED() << "Unexpected state " << state_;
 }
+
+OAuth2AccessTokenFetcher* DeviceOAuth2TokenService::CreateAccessTokenFetcher(
+    const std::string& account_id,
+    net::URLRequestContextGetter* getter,
+    OAuth2AccessTokenConsumer* consumer) {
+  std::string refresh_token = GetRefreshToken(account_id);
+  DCHECK(!refresh_token.empty());
+  return new OAuth2AccessTokenFetcherImpl(consumer, getter, refresh_token);
+}
+
 
 void DeviceOAuth2TokenService::DidGetSystemSalt(
     const std::string& system_salt) {

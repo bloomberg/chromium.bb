@@ -10,6 +10,7 @@
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "google_apis/gaia/oauth2_access_token_fetcher_impl.h"
 #include "net/url_request/url_request_context_getter.h"
 
 namespace {
@@ -130,12 +131,27 @@ void MutableProfileOAuth2TokenService::Shutdown() {
   ProfileOAuth2TokenService::Shutdown();
 }
 
+bool MutableProfileOAuth2TokenService::RefreshTokenIsAvailable(
+    const std::string& account_id) const {
+  return !GetRefreshToken(account_id).empty();
+}
+
 std::string MutableProfileOAuth2TokenService::GetRefreshToken(
     const std::string& account_id) const {
   AccountInfoMap::const_iterator iter = refresh_tokens_.find(account_id);
   if (iter != refresh_tokens_.end())
     return iter->second->refresh_token();
   return std::string();
+}
+
+OAuth2AccessTokenFetcher*
+MutableProfileOAuth2TokenService::CreateAccessTokenFetcher(
+    const std::string& account_id,
+    net::URLRequestContextGetter* getter,
+    OAuth2AccessTokenConsumer* consumer) {
+  std::string refresh_token = GetRefreshToken(account_id);
+  DCHECK(!refresh_token.empty());
+  return new OAuth2AccessTokenFetcherImpl(consumer, getter, refresh_token);
 }
 
 net::URLRequestContextGetter*

@@ -130,6 +130,15 @@ void AndroidProfileOAuth2TokenService::FetchOAuth2Token(
       reinterpret_cast<intptr_t>(heap_callback.release()));
 }
 
+OAuth2AccessTokenFetcher*
+AndroidProfileOAuth2TokenService::CreateAccessTokenFetcher(
+    const std::string& account_id,
+    net::URLRequestContextGetter* getter,
+    OAuth2AccessTokenConsumer* consumer) {
+  NOTREACHED();
+  return NULL;
+}
+
 void AndroidProfileOAuth2TokenService::InvalidateOAuth2Token(
     const std::string& account_id,
     const std::string& client_id,

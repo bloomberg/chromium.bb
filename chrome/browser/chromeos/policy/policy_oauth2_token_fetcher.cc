@@ -59,11 +59,12 @@ void PolicyOAuth2TokenFetcher::StartFetchingAccessToken() {
   scopes.push_back(GaiaConstants::kDeviceManagementServiceOAuth);
   scopes.push_back(GaiaConstants::kOAuthWrapBridgeUserInfoScope);
   access_token_fetcher_.reset(
-      new OAuth2AccessTokenFetcherImpl(this, system_context_getter_.get()));
+      new OAuth2AccessTokenFetcherImpl(this,
+                                       system_context_getter_.get(),
+                                       oauth2_refresh_token_));
   access_token_fetcher_->Start(
       GaiaUrls::GetInstance()->oauth2_chrome_client_id(),
       GaiaUrls::GetInstance()->oauth2_chrome_client_secret(),
-      oauth2_refresh_token_,
       scopes);
 }
 

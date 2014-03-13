@@ -134,7 +134,7 @@ void CloudPolicyClientRegistrationHelper::LoginTokenHelper::FetchAccessToken(
   // Start fetching an OAuth2 access token for the device management and
   // userinfo services.
   oauth2_access_token_fetcher_.reset(
-      new OAuth2AccessTokenFetcherImpl(this, context));
+      new OAuth2AccessTokenFetcherImpl(this, context, login_refresh_token));
   std::vector<std::string> scopes;
   scopes.push_back(GaiaConstants::kDeviceManagementServiceOAuth);
   scopes.push_back(kServiceScopeGetUserInfo);
@@ -142,7 +142,6 @@ void CloudPolicyClientRegistrationHelper::LoginTokenHelper::FetchAccessToken(
   oauth2_access_token_fetcher_->Start(
       gaia_urls->oauth2_chrome_client_id(),
       gaia_urls->oauth2_chrome_client_secret(),
-      login_refresh_token,
       scopes);
 }
 

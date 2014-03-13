@@ -77,10 +77,8 @@ void OAuth2TokenService::RequestImpl::InformConsumer(
     consumer_->OnGetTokenFailure(this, error);
 }
 
-// Class that fetches an OAuth2 access token for a given set of scopes and
-// OAuth2 refresh token.
-
-// Class that fetches OAuth2 access tokens for given scopes and refresh token.
+// Class that fetches an OAuth2 access token for a given account id and set of
+// scopes.
 //
 // It aims to meet OAuth2TokenService's requirements on token fetching. Retry
 // mechanism is used to handle failures.
@@ -110,14 +108,13 @@ void OAuth2TokenService::RequestImpl::InformConsumer(
 class OAuth2TokenService::Fetcher : public OAuth2AccessTokenConsumer {
  public:
   // Creates a Fetcher and starts fetching an OAuth2 access token for
-  // |refresh_token| and |scopes| in the request context obtained by |getter|.
+  // |account_id| and |scopes| in the request context obtained by |getter|.
   // The given |oauth2_token_service| will be informed when fetching is done.
   static Fetcher* CreateAndStart(OAuth2TokenService* oauth2_token_service,
                                  const std::string& account_id,
                                  net::URLRequestContextGetter* getter,
                                  const std::string& client_id,
                                  const std::string& client_secret,
-                                 const std::string& refresh_token,
                                  const ScopeSet& scopes,
                                  base::WeakPtr<RequestImpl> waiting_request);
   virtual ~Fetcher();
@@ -135,7 +132,6 @@ class OAuth2TokenService::Fetcher : public OAuth2AccessTokenConsumer {
   void Cancel();
 
   const ScopeSet& GetScopeSet() const;
-  const std::string& GetRefreshToken() const;
   const std::string& GetClientId() const;
   const std::string& GetAccountId() const;
 
@@ -155,7 +151,6 @@ class OAuth2TokenService::Fetcher : public OAuth2AccessTokenConsumer {
           net::URLRequestContextGetter* getter,
           const std::string& client_id,
           const std::string& client_secret,
-          const std::string& refresh_token,
           const OAuth2TokenService::ScopeSet& scopes,
           base::WeakPtr<RequestImpl> waiting_request);
   void Start();
@@ -171,7 +166,6 @@ class OAuth2TokenService::Fetcher : public OAuth2AccessTokenConsumer {
   OAuth2TokenService* const oauth2_token_service_;
   scoped_refptr<net::URLRequestContextGetter> getter_;
   const std::string account_id_;
-  const std::string refresh_token_;
   const ScopeSet scopes_;
   std::vector<base::WeakPtr<RequestImpl> > waiting_requests_;
 
@@ -200,7 +194,6 @@ OAuth2TokenService::Fetcher* OAuth2TokenService::Fetcher::CreateAndStart(
     net::URLRequestContextGetter* getter,
     const std::string& client_id,
     const std::string& client_secret,
-    const std::string& refresh_token,
     const OAuth2TokenService::ScopeSet& scopes,
     base::WeakPtr<RequestImpl> waiting_request) {
   OAuth2TokenService::Fetcher* fetcher = new Fetcher(
@@ -209,7 +202,6 @@ OAuth2TokenService::Fetcher* OAuth2TokenService::Fetcher::CreateAndStart(
       getter,
       client_id,
       client_secret,
-      refresh_token,
       scopes,
       waiting_request);
   fetcher->Start();
@@ -222,13 +214,11 @@ OAuth2TokenService::Fetcher::Fetcher(
     net::URLRequestContextGetter* getter,
     const std::string& client_id,
     const std::string& client_secret,
-    const std::string& refresh_token,
     const OAuth2TokenService::ScopeSet& scopes,
     base::WeakPtr<RequestImpl> waiting_request)
     : oauth2_token_service_(oauth2_token_service),
       getter_(getter),
       account_id_(account_id),
-      refresh_token_(refresh_token),
       scopes_(scopes),
       retry_number_(0),
       error_(GoogleServiceAuthError::SERVICE_UNAVAILABLE),
@@ -236,7 +226,6 @@ OAuth2TokenService::Fetcher::Fetcher(
       client_secret_(client_secret) {
   DCHECK(oauth2_token_service_);
   DCHECK(getter_.get());
-  DCHECK(refresh_token_.length());
   waiting_requests_.push_back(waiting_request);
 }
 
@@ -247,10 +236,11 @@ OAuth2TokenService::Fetcher::~Fetcher() {
 }
 
 void OAuth2TokenService::Fetcher::Start() {
-  fetcher_.reset(new OAuth2AccessTokenFetcherImpl(this, getter_.get()));
+  fetcher_.reset(oauth2_token_service_->CreateAccessTokenFetcher(
+      account_id_, getter_.get(), this));
+  DCHECK(fetcher_);
   fetcher_->Start(client_id_,
                   client_secret_,
-                  refresh_token_,
                   std::vector<std::string>(scopes_.begin(), scopes_.end()));
   retry_timer_.Stop();
 }
@@ -356,10 +346,6 @@ const OAuth2TokenService::ScopeSet& OAuth2TokenService::Fetcher::GetScopeSet()
   return scopes_;
 }
 
-const std::string& OAuth2TokenService::Fetcher::GetRefreshToken() const {
-  return refresh_token_;
-}
-
 const std::string& OAuth2TokenService::Fetcher::GetClientId() const {
   return client_id_;
 }
@@ -404,12 +390,6 @@ void OAuth2TokenService::AddDiagnosticsObserver(DiagnosticsObserver* observer) {
 void OAuth2TokenService::RemoveDiagnosticsObserver(
     DiagnosticsObserver* observer) {
   diagnostics_observer_list_.RemoveObserver(observer);
-}
-
-bool OAuth2TokenService::RefreshTokenIsAvailable(
-    const std::string& account_id) const {
-  DCHECK(CalledOnValidThread());
-  return !GetRefreshToken(account_id).empty();
 }
 
 std::vector<std::string> OAuth2TokenService::GetAccounts() {
@@ -515,8 +495,6 @@ void OAuth2TokenService::FetchOAuth2Token(RequestImpl* request,
                                           const std::string& client_id,
                                           const std::string& client_secret,
                                           const ScopeSet& scopes) {
-  std::string refresh_token = GetRefreshToken(account_id);
-
   // If there is already a pending fetcher for |scopes| and |account_id|,
   // simply register this |request| for those results rather than starting
   // a new fetcher.
@@ -536,7 +514,6 @@ void OAuth2TokenService::FetchOAuth2Token(RequestImpl* request,
                               getter,
                               client_id,
                               client_secret,
-                              refresh_token,
                               scopes,
                               request->AsWeakPtr());
 }

@@ -109,7 +109,6 @@ void OAuth2ApiCallFlow::BeginMintAccessToken() {
   oauth2_access_token_fetcher_->Start(
       GaiaUrls::GetInstance()->oauth2_chrome_client_id(),
       GaiaUrls::GetInstance()->oauth2_chrome_client_secret(),
-      refresh_token_,
       scopes_);
 }
 
@@ -127,7 +126,7 @@ void OAuth2ApiCallFlow::EndMintAccessToken(
 }
 
 OAuth2AccessTokenFetcher* OAuth2ApiCallFlow::CreateAccessTokenFetcher() {
-  return new OAuth2AccessTokenFetcherImpl(this, context_);
+  return new OAuth2AccessTokenFetcherImpl(this, context_, refresh_token_);
 }
 
 void OAuth2ApiCallFlow::OnURLFetchComplete(const net::URLFetcher* source) {

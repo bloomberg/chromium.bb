@@ -8,6 +8,7 @@
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/local_discovery/cloud_print_printer_list.h"
 #include "content/public/test/test_browser_thread.h"
+#include "google_apis/gaia/fake_oauth2_token_service.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
@@ -38,25 +39,6 @@ const char kSampleSuccessResponseOAuth[] = "{"
     "    ]"
     "}";
 
-class TestOAuth2TokenService : public OAuth2TokenService {
- public:
-  explicit TestOAuth2TokenService(net::URLRequestContextGetter* request_context)
-      : request_context_(request_context) {
-  }
- protected:
-  virtual std::string GetRefreshToken(const std::string& account_id)
-      const OVERRIDE {
-    return "SampleToken";
-  }
-
-  virtual net::URLRequestContextGetter* GetRequestContext() OVERRIDE {
-    return request_context_.get();
-  }
-
- private:
-  scoped_refptr<net::URLRequestContextGetter> request_context_;
-};
-
 class MockDelegate : public CloudPrintPrinterList::Delegate {
  public:
   MOCK_METHOD0(OnCloudPrintPrinterListUnavailable, void());
@@ -66,13 +48,12 @@ class MockDelegate : public CloudPrintPrinterList::Delegate {
 class CloudPrintPrinterListTest : public testing::Test {
  public:
   CloudPrintPrinterListTest()
-      : ui_thread_(content::BrowserThread::UI,
-                   &loop_),
+      : ui_thread_(content::BrowserThread::UI, &loop_),
         request_context_(new net::TestURLRequestContextGetter(
-            base::MessageLoopProxy::current())),
-        token_service_(request_context_.get()) {
+            base::MessageLoopProxy::current())) {
     ui_thread_.Stop();  // HACK: Fake being on the UI thread
-
+    token_service_.set_request_context(request_context_.get());
+    token_service_.AddAccount("account_id");
     printer_list_.reset(
         new CloudPrintPrinterList(request_context_.get(),
                                   "http://SoMeUrL.com/cloudprint",
@@ -100,7 +81,7 @@ class CloudPrintPrinterListTest : public testing::Test {
   // requests.
   scoped_ptr<net::TestURLFetcherFactory> fallback_fetcher_factory_;
   scoped_ptr<net::FakeURLFetcherFactory> fetcher_factory_;
-  TestOAuth2TokenService token_service_;
+  FakeOAuth2TokenService token_service_;
   StrictMock<MockDelegate> delegate_;
   scoped_ptr<CloudPrintPrinterList> printer_list_;
 };

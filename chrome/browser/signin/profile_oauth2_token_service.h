@@ -91,11 +91,6 @@ class ProfileOAuth2TokenService : public OAuth2TokenService {
   // Simply returns NULL and should be overriden by subsclasses.
   virtual net::URLRequestContextGetter* GetRequestContext() OVERRIDE;
 
-  // Default implementation of this method is NOTREACHED as it should be be
-  // overriden by subclasses.
-  virtual std::string GetRefreshToken(const std::string& account_id)
-      const OVERRIDE;
-
   // Updates the internal cache of the result from the most-recently-completed
   // auth request (used for reporting errors to the user).
   virtual void UpdateAuthError(

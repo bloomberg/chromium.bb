@@ -36,7 +36,6 @@ class OAuth2AccessTokenFetcher {
   // a super-set of the specified scopes.
   virtual void Start(const std::string& client_id,
                      const std::string& client_secret,
-                     const std::string& refresh_token,
                      const std::vector<std::string>& scopes) = 0;
 
   // Cancels the current request and informs the consumer.

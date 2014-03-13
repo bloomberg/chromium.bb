@@ -46,12 +46,6 @@ void ProfileOAuth2TokenService::Shutdown() {
   signin_global_error_.reset();
 }
 
-std::string ProfileOAuth2TokenService::GetRefreshToken(
-    const std::string& account_id) const {
-  NOTREACHED() << "GetRefreshToken should not be called on the base PO2TS";
-  return "";
-}
-
 net::URLRequestContextGetter* ProfileOAuth2TokenService::GetRequestContext() {
   return NULL;
 }

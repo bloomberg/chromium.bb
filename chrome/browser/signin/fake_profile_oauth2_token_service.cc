@@ -185,6 +185,15 @@ void FakeProfileOAuth2TokenService::FetchOAuth2Token(
   }
 }
 
+OAuth2AccessTokenFetcher*
+FakeProfileOAuth2TokenService::CreateAccessTokenFetcher(
+    const std::string& account_id,
+    net::URLRequestContextGetter* getter,
+    OAuth2AccessTokenConsumer* consumer) {
+  NOTREACHED();
+  return NULL;
+}
+
 void FakeProfileOAuth2TokenService::InvalidateOAuth2Token(
     const std::string& account_id,
     const std::string& client_id,

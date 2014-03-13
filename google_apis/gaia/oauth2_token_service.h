@@ -26,6 +26,7 @@ class URLRequestContextGetter;
 }
 
 class GoogleServiceAuthError;
+class OAuth2AccessTokenFetcher;
 
 // Abstract base class for a service that fetches and caches OAuth2 access
 // tokens. Concrete subclasses should implement GetRefreshToken to return
@@ -172,7 +173,7 @@ class OAuth2TokenService : public base::NonThreadSafe {
 
   // Returns true if a refresh token exists for |account_id|. If false, calls to
   // |StartRequest| will result in a Consumer::OnGetTokenFailure callback.
-  virtual bool RefreshTokenIsAvailable(const std::string& account_id) const;
+  virtual bool RefreshTokenIsAvailable(const std::string& account_id) const = 0;
 
   // Mark an OAuth2 |access_token| issued for |account_id| and |scopes| as
   // invalid. This should be done if the token was received from this class,
@@ -228,10 +229,6 @@ class OAuth2TokenService : public base::NonThreadSafe {
     Consumer* const consumer_;
   };
 
-  // Subclasses should return the maintained refresh token for |account_id|.
-  // If no token is available, return an empty string.
-  virtual std::string GetRefreshToken(const std::string& account_id) const = 0;
-
   // Subclasses can override if they want to report errors to the user.
   virtual void UpdateAuthError(
       const std::string& account_id,
@@ -273,6 +270,16 @@ class OAuth2TokenService : public base::NonThreadSafe {
                                 const std::string& client_id,
                                 const std::string& client_secret,
                                 const ScopeSet& scopes);
+
+  // Creates an access token fetcher for the given account id.
+  //
+  // Subclasses should override to create an access token fetcher for the given
+  // |account_id|. This method is only called if subclasses use the default
+  // implementation of |FetchOAuth2Token|.
+  virtual OAuth2AccessTokenFetcher* CreateAccessTokenFetcher(
+      const std::string& account_id,
+      net::URLRequestContextGetter* getter,
+      OAuth2AccessTokenConsumer* consumer) = 0;
 
   // Invalidates the |access_token| issued for |account_id|, |client_id| and
   // |scopes|. Virtual so it can be overriden for tests and for platform-

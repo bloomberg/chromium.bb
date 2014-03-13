@@ -72,8 +72,6 @@ class DeviceOAuth2TokenService : public OAuth2TokenService,
 
  protected:
   // Implementation of OAuth2TokenService.
-  virtual std::string GetRefreshToken(const std::string& account_id)
-      const OVERRIDE;
   virtual net::URLRequestContextGetter* GetRequestContext() OVERRIDE;
   virtual void FetchOAuth2Token(RequestImpl* request,
                                 const std::string& account_id,
@@ -81,6 +79,10 @@ class DeviceOAuth2TokenService : public OAuth2TokenService,
                                 const std::string& client_id,
                                 const std::string& client_secret,
                                 const ScopeSet& scopes) OVERRIDE;
+  virtual OAuth2AccessTokenFetcher* CreateAccessTokenFetcher(
+      const std::string& account_id,
+      net::URLRequestContextGetter* getter,
+      OAuth2AccessTokenConsumer* consumer) OVERRIDE;
 
  private:
   struct PendingRequest;
@@ -108,6 +110,9 @@ class DeviceOAuth2TokenService : public OAuth2TokenService,
   explicit DeviceOAuth2TokenService(net::URLRequestContextGetter* getter,
                                     PrefService* local_state);
   virtual ~DeviceOAuth2TokenService();
+
+  // Returns the refresh token for account_id.
+  std::string GetRefreshToken(const std::string& account_id) const;
 
   // Handles completion of the system salt input.
   void DidGetSystemSalt(const std::string& system_salt);

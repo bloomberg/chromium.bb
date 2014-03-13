@@ -49,13 +49,13 @@ class OAuth2AccessTokenFetcherImpl : public OAuth2AccessTokenFetcher,
                                      public net::URLFetcherDelegate {
  public:
   OAuth2AccessTokenFetcherImpl(OAuth2AccessTokenConsumer* consumer,
-                               net::URLRequestContextGetter* getter);
+                               net::URLRequestContextGetter* getter,
+                               const std::string& refresh_token);
   virtual ~OAuth2AccessTokenFetcherImpl();
 
   // Implementation of OAuth2AccessTokenFetcher
   virtual void Start(const std::string& client_id,
                      const std::string& client_secret,
-                     const std::string& refresh_token,
                      const std::vector<std::string>& scopes) OVERRIDE;
 
   virtual void CancelRequest() OVERRIDE;
@@ -97,13 +97,13 @@ class OAuth2AccessTokenFetcherImpl : public OAuth2AccessTokenFetcher,
 
   // State that is set during construction.
   net::URLRequestContextGetter* const getter_;
+  std::string refresh_token_;
   State state_;
 
   // While a fetch is in progress.
   scoped_ptr<net::URLFetcher> fetcher_;
   std::string client_id_;
   std::string client_secret_;
-  std::string refresh_token_;
   std::vector<std::string> scopes_;
 
   friend class OAuth2AccessTokenFetcherImplTest;
