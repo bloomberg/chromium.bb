@@ -977,9 +977,6 @@ const char kEnableAudioTrackProcessing[]    = "enable-audio-track-processing";
 // Disables WebRTC device enumeration.
 const char kDisableDeviceEnumeration[]      = "disable-device-enumeration";
 
-// Disables WebRTC DataChannels SCTP wire protocol support.
-const char kDisableSCTPDataChannels[]       = "disable-sctp-data-channels";
-
 // Disables HW decode acceleration for WebRTC.
 const char kDisableWebRtcHWDecoding[]       = "disable-webrtc-hw-decoding";
 

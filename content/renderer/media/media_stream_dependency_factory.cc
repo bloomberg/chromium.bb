@@ -468,8 +468,7 @@ void MediaStreamDependencyFactory::CreatePeerConnectionFactory() {
 
   pc_factory_ = factory;
   webrtc::PeerConnectionFactoryInterface::Options factory_options;
-  factory_options.disable_sctp_data_channels =
-      cmd_line->HasSwitch(switches::kDisableSCTPDataChannels);
+  factory_options.disable_sctp_data_channels = false;
   factory_options.disable_encryption =
       cmd_line->HasSwitch(switches::kDisableWebRtcEncryption);
   pc_factory_->SetOptions(factory_options);
