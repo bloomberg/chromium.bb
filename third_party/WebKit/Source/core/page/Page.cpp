@@ -162,8 +162,6 @@ Page::~Page()
         frame->detachFromFrameHost();
     }
 
-    m_inspectorController->inspectedPageDestroyed();
-
     if (m_scrollingCoordinator)
         m_scrollingCoordinator->pageDestroyed();
 
