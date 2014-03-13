@@ -220,7 +220,7 @@ bool GetObjectDetails(IPortableDevice* device,
     return true;
   }
   return (GetObjectSize(properties_values.get(), size) &&
-      GetLastModifiedTime(properties_values.get(), last_modified_time));
+          GetLastModifiedTime(properties_values.get(), last_modified_time));
 }
 
 // Creates an MTP device object entry for the given |device| and |object_id|.
@@ -245,9 +245,8 @@ bool GetMTPDeviceObjectEntry(IPortableDevice* device,
 }
 
 // Gets the entries of the directory specified by |directory_object_id| from
-// the given MTP |device|. Set |get_all_entries| to true to get all the entries
-// of the directory. To request a specific object entry, put the object name in
-// |object_name|. Leave |object_name| blank to request all entries. On
+// the given MTP |device|. To request a specific object entry, put the object
+// name in |object_name|. Leave |object_name| blank to request all entries. On
 // success returns true and set |object_entries|.
 bool GetMTPDeviceObjectEntries(IPortableDevice* device,
                                const base::string16& directory_object_id,
