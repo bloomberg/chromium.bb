@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_SYNC_TASK_TOKEN_H_
-#define CHROME_BROWSER_SYNC_FILE_SYSTEM_SYNC_TASK_TOKEN_H_
+#ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_SYNC_TASK_TOKEN_H_
+#define CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_SYNC_TASK_TOKEN_H_
 
 #include "base/callback.h"
 #include "base/location.h"
@@ -12,6 +12,7 @@
 #include "chrome/browser/sync_file_system/sync_callbacks.h"
 
 namespace sync_file_system {
+namespace drive_backend {
 
 class SyncTaskManager;
 
@@ -42,6 +43,7 @@ class SyncTaskToken {
 };
 
 
+}  // namespace drive_backend
 }  // namespace sync_file_system
 
-#endif  // CHROME_BROWSER_SYNC_FILE_SYSTEM_SYNC_TASK_TOKEN_H_
+#endif  // CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_SYNC_TASK_TOKEN_H_

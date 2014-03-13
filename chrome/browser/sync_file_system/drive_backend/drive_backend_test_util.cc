@@ -5,6 +5,7 @@
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_test_util.h"
 
 #include <set>
+#include <string>
 
 #include "chrome/browser/drive/drive_api_util.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.h"

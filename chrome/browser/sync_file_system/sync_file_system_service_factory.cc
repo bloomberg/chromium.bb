@@ -4,6 +4,8 @@
 
 #include "chrome/browser/sync_file_system/sync_file_system_service_factory.h"
 
+#include <set>
+
 #include "base/command_line.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync_file_system/local/local_file_sync_service.h"

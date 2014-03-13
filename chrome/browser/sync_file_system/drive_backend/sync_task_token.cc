@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync_file_system/sync_task_token.h"
+#include "chrome/browser/sync_file_system/drive_backend/sync_task_token.h"
 
 #include "base/bind.h"
-#include "chrome/browser/sync_file_system/sync_task_manager.h"
+#include "chrome/browser/sync_file_system/drive_backend/sync_task_manager.h"
 
 namespace sync_file_system {
+namespace drive_backend {
 
 SyncTaskToken::SyncTaskToken(const base::WeakPtr<SyncTaskManager>& manager)
     : manager_(manager) {
@@ -43,4 +44,5 @@ SyncStatusCallback SyncTaskToken::WrapToCallback(
   return base::Bind(&SyncTaskManager::NotifyTaskDone, base::Passed(&token));
 }
 
+}  // namespace drive_backend
 }  // namespace sync_file_system

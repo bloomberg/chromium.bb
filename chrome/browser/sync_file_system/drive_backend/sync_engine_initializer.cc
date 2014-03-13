@@ -198,7 +198,7 @@ void SyncEngineInitializer::FindSyncRoot(const SyncStatusCallback& callback) {
   set_used_network(true);
   cancel_callback_ = drive_service_->SearchByTitle(
       kSyncRootFolderTitle,
-      std::string(), // parent_folder_id
+      std::string(),  // parent_folder_id
       base::Bind(&SyncEngineInitializer::DidFindSyncRoot,
                  weak_ptr_factory_.GetWeakPtr(),
                  callback));

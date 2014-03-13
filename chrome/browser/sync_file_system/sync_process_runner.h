@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_SYNC_PROCESS_RUNNER_H_
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_SYNC_PROCESS_RUNNER_H_
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"

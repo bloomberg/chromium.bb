@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,11 +6,12 @@
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "chrome/browser/sync_file_system/sync_task_manager.h"
-#include "chrome/browser/sync_file_system/sync_task_token.h"
+#include "chrome/browser/sync_file_system/drive_backend/sync_task_manager.h"
+#include "chrome/browser/sync_file_system/drive_backend/sync_task_token.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace sync_file_system {
+namespace drive_backend {
 
 namespace {
 
@@ -321,4 +322,5 @@ TEST(SyncTaskManagerTest, ScheduleTaskAtPriority) {
   EXPECT_EQ(5, callback_count);
 }
 
+}  // namespace drive_backend
 }  // namespace sync_file_system

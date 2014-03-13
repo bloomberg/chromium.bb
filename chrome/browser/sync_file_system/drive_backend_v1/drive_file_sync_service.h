@@ -21,6 +21,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/sync_file_system/conflict_resolution_resolver.h"
+#include "chrome/browser/sync_file_system/drive_backend/sync_task_manager.h"
 #include "chrome/browser/sync_file_system/drive_backend_v1/api_util_interface.h"
 #include "chrome/browser/sync_file_system/drive_backend_v1/drive_metadata_store.h"
 #include "chrome/browser/sync_file_system/drive_backend_v1/local_sync_operation_resolver.h"
@@ -34,7 +35,6 @@
 #include "chrome/browser/sync_file_system/sync_direction.h"
 #include "chrome/browser/sync_file_system/sync_file_system.pb.h"
 #include "chrome/browser/sync_file_system/sync_status_code.h"
-#include "chrome/browser/sync_file_system/sync_task_manager.h"
 
 class ExtensionService;
 
@@ -51,16 +51,15 @@ namespace sync_file_system {
 namespace drive_backend {
 class LocalSyncDelegate;
 class RemoteSyncDelegate;
-}
-
 class SyncTaskManager;
+}
 
 // Maintains remote file changes.
 // Owned by SyncFileSystemService (which is a per-profile object).
 class DriveFileSyncService : public RemoteFileSyncService,
                              public LocalChangeProcessor,
                              public drive_backend::APIUtilObserver,
-                             public SyncTaskManager::Client,
+                             public drive_backend::SyncTaskManager::Client,
                              public base::NonThreadSafe,
                              public base::SupportsWeakPtr<DriveFileSyncService>,
                              public drive::DriveNotificationObserver {
@@ -170,10 +169,10 @@ class DriveFileSyncService : public RemoteFileSyncService,
 
   explicit DriveFileSyncService(Profile* profile);
 
-  void Initialize(scoped_ptr<SyncTaskManager> task_manager,
+  void Initialize(scoped_ptr<drive_backend::SyncTaskManager> task_manager,
                   const SyncStatusCallback& callback);
   void InitializeForTesting(
-      scoped_ptr<SyncTaskManager> task_manager,
+      scoped_ptr<drive_backend::SyncTaskManager> task_manager,
       const base::FilePath& base_dir,
       scoped_ptr<drive_backend::APIUtilInterface> sync_client,
       scoped_ptr<DriveMetadataStore> metadata_store,
@@ -351,7 +350,7 @@ class DriveFileSyncService : public RemoteFileSyncService,
 
   Profile* profile_;
 
-  scoped_ptr<SyncTaskManager> task_manager_;
+  scoped_ptr<drive_backend::SyncTaskManager> task_manager_;
 
   scoped_ptr<drive_backend::LocalSyncDelegate> running_local_sync_task_;
   scoped_ptr<drive_backend::RemoteSyncDelegate> running_remote_sync_task_;

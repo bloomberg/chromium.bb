@@ -409,7 +409,7 @@ class DriveBackendSyncTest : public testing::Test,
 
     CannedSyncableFileSystem* file_system = file_systems_[app_id];
     std::stack<base::FilePath> folders;
-    folders.push(base::FilePath()); // root folder
+    folders.push(base::FilePath());  // root folder
 
     size_t result = 1;
     while (!folders.empty()) {

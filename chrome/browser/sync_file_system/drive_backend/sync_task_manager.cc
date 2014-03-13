@@ -1,18 +1,19 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync_file_system/sync_task_manager.h"
+#include "chrome/browser/sync_file_system/drive_backend/sync_task_manager.h"
 
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/sync_file_system/drive_backend/sync_task_token.h"
 #include "chrome/browser/sync_file_system/sync_file_metadata.h"
-#include "chrome/browser/sync_file_system/sync_task_token.h"
 
 using fileapi::FileSystemURL;
 
 namespace sync_file_system {
+namespace drive_backend {
 
 namespace {
 
@@ -184,4 +185,5 @@ void SyncTaskManager::RunTask(scoped_ptr<SyncTaskToken> token,
   running_task_->Run(token.Pass());
 }
 
+}  // namespace drive_backend
 }  // namespace sync_file_system
