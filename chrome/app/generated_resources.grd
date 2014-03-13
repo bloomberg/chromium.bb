@@ -6822,12 +6822,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
           If enabled, transitions during first-run tutorial are animated.
         </message>
       </if>
-      <message name="IDS_FLAGS_HIDPI_NAME" desc="Name of flag to enable/disable HiDPI Support.">
-        HiDPI Support
-      </message>
-      <message name="IDS_FLAGS_HIDPI_DESCRIPTION" desc="Description of flag to enable/disable HiDPI Support.">
-        If enabled, application size and layout will adapt to the operating system's DPI settings.
-      </message>
       <message name="IDS_FLAGS_ENABLE_ACCELERATED_SCROLLABLE_FRAMES_NAME" desc="Name of the flag to enable accelerated scrollable frames.">
         Enable accelerated scrollable frames.
       </message>

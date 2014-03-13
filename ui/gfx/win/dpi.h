@@ -37,6 +37,8 @@ GFX_EXPORT bool IsInHighDPIMode();
 
 GFX_EXPORT void EnableHighDPISupport();
 
+GFX_EXPORT void ForceHighDPISupportForTesting(float scale);
+
 // TODO(kevers|girard):  Move above methods into win namespace.
 
 namespace win {

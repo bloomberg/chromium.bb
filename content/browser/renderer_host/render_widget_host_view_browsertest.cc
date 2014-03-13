@@ -877,7 +877,7 @@ class CompositingRenderWidgetHostViewTabCaptureHighDPI
     cmd->AppendSwitchASCII(switches::kForceDeviceScaleFactor,
                            base::StringPrintf("%f", scale()));
 #if defined(OS_WIN)
-    cmd->AppendSwitchASCII(switches::kHighDPISupport, "1");
+    gfx::ForceHighDPISupportForTesting(scale());
     gfx::EnableHighDPISupport();
 #endif
   }

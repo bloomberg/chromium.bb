@@ -1542,14 +1542,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableHTMLImports)
   },
   {
-    "high-dpi-support",
-    IDS_FLAGS_HIDPI_NAME,
-    IDS_FLAGS_HIDPI_DESCRIPTION,
-    kOsWin,
-    ENABLE_DISABLE_VALUE_TYPE_AND_VALUE(switches::kHighDPISupport, "1",
-                                        switches::kHighDPISupport, "0")
-  },
-  {
     "enable-web-midi",
     IDS_FLAGS_ENABLE_WEB_MIDI_NAME,
     IDS_FLAGS_ENABLE_WEB_MIDI_DESCRIPTION,

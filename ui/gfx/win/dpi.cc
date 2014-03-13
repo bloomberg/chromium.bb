@@ -20,6 +20,11 @@ namespace {
 int kDefaultDPIX = 96;
 int kDefaultDPIY = 96;
 
+const wchar_t kRegistryProfilePath[] = L"SOFTWARE\\Google\\Chrome\\Profile";
+const wchar_t kHighDPISupportW[] = L"high-dpi-support";
+
+bool force_highdpi_for_testing = false;
+
 BOOL IsProcessDPIAwareWrapper() {
   typedef BOOL(WINAPI *IsProcessDPIAwarePtr)(VOID);
   IsProcessDPIAwarePtr is_process_dpi_aware_func =
@@ -98,6 +103,21 @@ BOOL SetProcessDPIAwareWrapper() {
     set_process_dpi_aware_func();
 }
 
+DWORD ReadRegistryValue(HKEY root,
+                        const wchar_t* base_key,
+                        const wchar_t* value_name,
+                        DWORD default_value) {
+  base::win::RegKey reg_key(HKEY_CURRENT_USER,
+                            base_key,
+                            KEY_QUERY_VALUE);
+  DWORD value;
+  if (reg_key.Valid() &&
+      reg_key.ReadValueDW(value_name, &value) == ERROR_SUCCESS) {
+    return value;
+  }
+  return default_value;
+}
+
 }  // namespace
 
 namespace gfx {
@@ -137,14 +157,19 @@ float GetDPIScale() {
   return 1.0;
 }
 
+void ForceHighDPISupportForTesting(float scale) {
+  force_highdpi_for_testing = true;
+  g_device_scale_factor = scale;
+}
+
 bool IsHighDPIEnabled() {
+  // Flag stored in HKEY_CURRENT_USER\SOFTWARE\\Google\\Chrome\\Profile,
+  // under the DWORD value high-dpi-support.
   // Default is disabled.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kHighDPISupport)) {
-    return CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-        switches::kHighDPISupport).compare("1") == 0;
-  }
-  return false;
+  static DWORD value = ReadRegistryValue(
+      HKEY_CURRENT_USER, kRegistryProfilePath,
+      kHighDPISupportW, FALSE);
+  return force_highdpi_for_testing || (value == 1);
 }
 
 bool IsInHighDPIMode() {
@@ -153,10 +178,8 @@ bool IsInHighDPIMode() {
 
 void EnableHighDPISupport() {
   if (IsHighDPIEnabled() &&
-      (base::win::GetVersion() < base::win::VERSION_WIN8_1)) {
-    if (!SetProcessDpiAwarenessWrapper(PROCESS_SYSTEM_DPI_AWARE)) {
-      SetProcessDPIAwareWrapper();
-    }
+      !SetProcessDpiAwarenessWrapper(PROCESS_SYSTEM_DPI_AWARE)) {
+    SetProcessDPIAwareWrapper();
   }
 }
 
