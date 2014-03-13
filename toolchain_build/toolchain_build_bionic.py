@@ -28,7 +28,7 @@ from file_update import Mkdir, Rmdir, Symlink
 from file_update import NeedsUpdate, UpdateFromTo, UpdateText
 
 
-BIONIC_VERSION = '3a7daf231449b2d3dd9596846c0daeecaf427b29'
+BIONIC_VERSION = '649e9f7df39f73cd13b83e8c3371d3f47022ef62'
 ARCHES = ['arm']
 
 BUILD_SCRIPT = os.path.abspath(__file__)
@@ -404,7 +404,7 @@ def GetProjectPaths(arch, project):
   return out
 
 
-def CreateProject(arch, project):
+def CreateProject(arch, project, clobber=False):
   paths = GetProjectPaths(arch, project)
 
   MAKEFILE_TEMPLATE = """
@@ -445,17 +445,21 @@ include $(src_path)/Makefile
   text = ReplaceText(MAKEFILE_TEMPLATE, [remap])
   text = ReplaceArch(text, arch)
 
+  if clobber:
+    print 'Clobering Bionic project directories.'
+    Rmdir(paths['work'])
+
   Mkdir(paths['work'])
   Mkdir(paths['ins'])
   UpdateText(os.path.join(paths['work'], 'Makefile'), text)
 
 
-def ConfigureBionicProjects():
+def ConfigureBionicProjects(clobber=False):
   PROJECTS = ['libc', 'libm', 'linker', 'tests']
   arch = 'arm'
   for project in PROJECTS:
     print 'Configure %s for %s.' % (project, arch)
-    CreateProject(arch, project)
+    CreateProject(arch, project, clobber)
 
 
 def MakeBionicProject(project, targets=[], clobber=False):
@@ -567,7 +571,7 @@ def main(argv):
   CreateBasicToolchain()
 
   # Configure Bionic Projects, libc, libm, linker, tests, ...
-  ConfigureBionicProjects()
+  ConfigureBionicProjects(clobber=options.buildbot)
 
   if not options.skip_gcc:
     # Build newlib gcc_libs for use by bionic
@@ -577,22 +581,22 @@ def main(argv):
   ConfigureAndBuild_libgcc()
 
   # With libgcc.a, we can now build libc.so
-  MakeBionicProject('libc', clobber=options.clobber or options.buildbot)
+  MakeBionicProject('libc')
 
   # With libc.so, we can build libgcc_s.so
   BuildAndInstall_libgcc_s()
 
   # With libc and libgcc_s, we can now build libm
-  MakeBionicProject('libm', clobber=options.clobber or options.buildbot)
+  MakeBionicProject('libm')
 
   # With libc, libgcc, and libm, we can now build libstdc++
   ConfigureAndBuild_libstdcpp()
 
   # Now we can build the linker
-  MakeBionicProject('linker', clobber=options.clobber or options.buildbot)
+  MakeBionicProject('linker')
 
   # Now we have a full toolchain, so test it
-  MakeBionicProject('tests', clobber=options.clobber or options.buildbot)
+  MakeBionicProject('tests')
 
   # We can run only off buildbots
   if not options.buildbot:
