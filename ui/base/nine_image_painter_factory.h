@@ -13,6 +13,17 @@
                         x ## _LEFT,        x ## _CENTER, x ## _RIGHT, \
                         x ## _BOTTOM_LEFT, x ## _BOTTOM, x ## _BOTTOM_RIGHT, }
 
+// Defines a empty image for used in macro for creating image grid for a ring of
+// eight images.
+#define EMPTY_IMAGE 0
+
+// A macro to define arrays of IDR constants used with CreateImageGridPainter
+// where only a ring of eight images is provided and center image is empty.
+#define IMAGE_GRID_NO_CENTER(x) { x ## _TOP_LEFT, x ## _TOP, x ## _TOP_RIGHT, \
+      x ## _LEFT, EMPTY_IMAGE, x ## _RIGHT, \
+      x ## _BOTTOM_LEFT, x ## _BOTTOM, x ## _BOTTOM_RIGHT, }
+
+
 namespace gfx {
 class NineImagePainter;
 }

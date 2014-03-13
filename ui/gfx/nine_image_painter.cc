@@ -4,6 +4,9 @@
 
 #include "ui/gfx/nine_image_painter.h"
 
+#include <limits>
+
+#include "third_party/skia/include/core/SkPaint.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/insets.h"
@@ -11,6 +14,21 @@
 #include "ui/gfx/scoped_canvas.h"
 
 namespace gfx {
+
+namespace {
+
+// Stretches the given image over the specified canvas area.
+void Fill(Canvas* c,
+          const ImageSkia& i,
+          int x,
+          int y,
+          int w,
+          int h,
+          const SkPaint& paint) {
+  c->DrawImageInt(i, 0, 0, i.width(), i.height(), x, y, w, h, false, paint);
+}
+
+}  // namespace
 
 NineImagePainter::NineImagePainter(const std::vector<ImageSkia>& images) {
   DCHECK_EQ(arraysize(images_), images.size());
@@ -51,11 +69,22 @@ Size NineImagePainter::GetMinimumSize() const {
 }
 
 void NineImagePainter::Paint(Canvas* canvas, const Rect& bounds) {
+  // When no alpha value is specified, use default value of 100% opacity.
+  Paint(canvas, bounds, std::numeric_limits<uint8>::max());
+}
+
+
+void NineImagePainter::Paint(Canvas* canvas,
+                             const Rect& bounds,
+                             const uint8 alpha) {
   if (IsEmpty())
     return;
 
   ScopedCanvas scoped_canvas(canvas);
   canvas->Translate(bounds.OffsetFromOrigin());
+
+  SkPaint paint;
+  paint.setAlpha(alpha);
 
   // In case the corners and edges don't all have the same width/height, we draw
   // the center first, and extend it out in all directions to the edges of the
@@ -80,25 +109,15 @@ void NineImagePainter::Paint(Canvas* canvas, const Rect& bounds) {
   int i4y = std::min(std::min(i0h, i1h), i2h);
   int i4h = h - i4y - std::min(std::min(i6h, i7h), i8h);
   if (!images_[4].isNull())
-    Fill(canvas, images_[4], i4x, i4y, i4w, i4h);
-  canvas->DrawImageInt(images_[0], 0, 0);
-  Fill(canvas, images_[1], i0w, 0, w - i0w - i2w, i1h);
-  canvas->DrawImageInt(images_[2], w - i2w, 0);
-  Fill(canvas, images_[3], 0, i0h, i3w, h - i0h - i6h);
-  Fill(canvas, images_[5], w - i5w, i2h, i5w, h - i2h - i8h);
-  canvas->DrawImageInt(images_[6], 0, h - i6h);
-  Fill(canvas, images_[7], i6w, h - i7h, w - i6w - i8w, i7h);
-  canvas->DrawImageInt(images_[8], w - i8w, h - i8h);
-}
-
-// static
-void NineImagePainter::Fill(Canvas* c,
-                            const ImageSkia& i,
-                            int x,
-                            int y,
-                            int w,
-                            int h) {
-  c->DrawImageInt(i, 0, 0, i.width(), i.height(), x, y, w, h, false);
+    Fill(canvas, images_[4], i4x, i4y, i4w, i4h, paint);
+  canvas->DrawImageInt(images_[0], 0, 0, paint);
+  Fill(canvas, images_[1], i0w, 0, w - i0w - i2w, i1h, paint);
+  canvas->DrawImageInt(images_[2], w - i2w, 0, paint);
+  Fill(canvas, images_[3], 0, i0h, i3w, h - i0h - i6h, paint);
+  Fill(canvas, images_[5], w - i5w, i2h, i5w, h - i2h - i8h, paint);
+  canvas->DrawImageInt(images_[6], 0, h - i6h, paint);
+  Fill(canvas, images_[7], i6w, h - i7h, w - i6w - i8w, i7h, paint);
+  canvas->DrawImageInt(images_[8], w - i8w, h - i8h, paint);
 }
 
 }  // namespace gfx

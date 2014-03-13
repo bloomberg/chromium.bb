@@ -250,9 +250,6 @@ const char kDisableLogging[]                = "disable-logging";
 // Overrides the kEnableMapImage flag.
 const char kDisableMapImage[]               = "disable-map-image";
 
-// Disables overlay scrollbars on Aura or Linux. Does nothing on Mac.
-const char kDisableOverlayScrollbar[]       = "disable-overlay-scrollbar";
-
 // Disable Pepper3D.
 const char kDisablePepper3d[]               = "disable-pepper-3d";
 
@@ -498,9 +495,6 @@ const char kEnableOverlayFullscreenVideo[]  = "enable-overlay-fullscreen-video";
 // Disables blink subtitle and media control on top of overlay fullscreen video.
 const char kDisableOverlayFullscreenVideoSubtitle[] =
     "disable-overlay-fullscreen-video-subtitle";
-
-// Enables overlay scrollbars on Aura or Linux. Does nothing on Mac.
-const char kEnableOverlayScrollbar[]        = "enable-overlay-scrollbar";
 
 // Forward overscroll event data from the renderer to the browser.
 const char kEnableOverscrollNotifications[] = "enable-overscroll-notifications";

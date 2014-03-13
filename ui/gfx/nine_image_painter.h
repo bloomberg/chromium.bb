@@ -24,16 +24,9 @@ class GFX_EXPORT NineImagePainter {
   bool IsEmpty() const;
   Size GetMinimumSize() const;
   void Paint(Canvas* canvas, const Rect& bounds);
+  void Paint(Canvas* canvas, const Rect& bounds, uint8 alpha);
 
  private:
-  // Stretches the given image over the specified canvas area.
-  static void Fill(Canvas* c,
-                   const ImageSkia& i,
-                   int x,
-                   int y,
-                   int w,
-                   int h);
-
   // Images are numbered as depicted below.
   //  ____________________
   // |__i0__|__i1__|__i2__|
