@@ -32,7 +32,7 @@
         '../gfx/gfx.gyp:gfx_geometry',
         '../gfx/gfx.gyp:gfx',
         '../resources/ui_resources.gyp:ui_resources',
-        '../ui.gyp:ui',
+        '../base/ui_base.gyp:ui_base',
       ],
       'defines': [
         'WM_CORE_IMPLEMENTATION',
@@ -114,7 +114,7 @@
         '../events/events.gyp:events',
         '../gfx/gfx.gyp:gfx_geometry',
         '../gfx/gfx.gyp:gfx',
-        '../ui.gyp:ui',
+        '../base/ui_base.gyp:ui_base',
         'wm_core',
         'wm_test_support',
       ],
