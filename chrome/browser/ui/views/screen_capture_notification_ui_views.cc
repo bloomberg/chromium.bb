@@ -17,7 +17,8 @@
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/blue_button.h"
 #include "ui/views/controls/image_view.h"
-#include "ui/views/layout/box_layout.h"
+#include "ui/views/controls/link.h"
+#include "ui/views/controls/link_listener.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -71,7 +72,8 @@ class NotificationBarClientView : public views::ClientView {
 class ScreenCaptureNotificationUIViews
     : public ScreenCaptureNotificationUI,
       public views::WidgetDelegateView,
-      public views::ButtonListener {
+      public views::ButtonListener,
+      public views::LinkListener {
  public:
   explicit ScreenCaptureNotificationUIViews(const base::string16& text);
   virtual ~ScreenCaptureNotificationUIViews();
@@ -92,10 +94,14 @@ class ScreenCaptureNotificationUIViews
   virtual base::string16 GetWindowTitle() const OVERRIDE;
   virtual bool ShouldShowWindowTitle() const OVERRIDE;
   virtual bool ShouldShowCloseButton() const OVERRIDE;
+  virtual bool CanActivate() const OVERRIDE;
 
   // views::ButtonListener interface.
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE;
+
+  // views::LinkListener interface.
+  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
  private:
   // Helper to call |stop_callback_|.
@@ -107,6 +113,7 @@ class ScreenCaptureNotificationUIViews
   views::ImageView* gripper_;
   views::Label* label_;
   views::BlueButton* stop_button_;
+  views::Link* hide_link_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenCaptureNotificationUIViews);
 };
@@ -117,7 +124,8 @@ ScreenCaptureNotificationUIViews::ScreenCaptureNotificationUIViews(
       client_view_(NULL),
       gripper_(NULL),
       label_(NULL),
-      stop_button_(NULL) {
+      stop_button_(NULL),
+      hide_link_(NULL) {
   set_owned_by_client();
 
   set_background(views::Background::CreateSolidBackground(GetNativeTheme()->
@@ -136,6 +144,13 @@ ScreenCaptureNotificationUIViews::ScreenCaptureNotificationUIViews(
       l10n_util::GetStringUTF16(IDS_MEDIA_SCREEN_CAPTURE_NOTIFICATION_STOP);
   stop_button_ = new views::BlueButton(this, stop_text);
   AddChildView(stop_button_);
+
+  // TODO(jiayl): IDS_PASSWORDS_PAGE_VIEW_HIDE_BUTTON is used for the need to
+  // merge to M34. Change it to a new IDS_ after the merge.
+  hide_link_ = new views::Link(
+      l10n_util::GetStringUTF16(IDS_PASSWORDS_PAGE_VIEW_HIDE_BUTTON));
+  hide_link_->set_listener(this);
+  AddChildView(hide_link_);
 }
 
 ScreenCaptureNotificationUIViews::~ScreenCaptureNotificationUIViews() {
@@ -160,7 +175,8 @@ void ScreenCaptureNotificationUIViews::OnStarted(
   params.remove_standard_frame = true;
   params.keep_on_top = true;
   params.top_level = true;
-  params.can_activate = false;
+  // Make sure can_activate is true so the window icon will show in the taskbar.
+  params.can_activate = true;
 
 #if defined(USE_ASH)
   // TODO(sergeyu): The notification bar must be shown on the monitor that's
@@ -192,31 +208,45 @@ void ScreenCaptureNotificationUIViews::OnStarted(
 
 gfx::Size ScreenCaptureNotificationUIViews::GetPreferredSize() {
   gfx::Size grip_size = gripper_->GetPreferredSize();
-  gfx::Size label_size = child_at(1)->GetPreferredSize();
-  gfx::Size button_size = child_at(2)->GetPreferredSize();
-  int width = kHorizontalMargin * 2 + grip_size.width() + label_size.width() +
-      button_size.width();
+  gfx::Size label_size = label_->GetPreferredSize();
+  gfx::Size stop_button_size = stop_button_->GetPreferredSize();
+  gfx::Size hide_link_size = hide_link_->GetPreferredSize();
+  int width = kHorizontalMargin * 3 + grip_size.width() + label_size.width() +
+      stop_button_size.width() + hide_link_size.width();
   width = std::max(width, kMinimumWidth);
   width = std::min(width, kMaximumWidth);
-  return gfx::Size(width, std::max(label_size.height(), button_size.height()));
+  return gfx::Size(width, std::max(label_size.height(),
+                                   std::max(hide_link_size.height(),
+                                            stop_button_size.height())));
 }
 
 void ScreenCaptureNotificationUIViews::Layout() {
   gfx::Rect grip_rect(gripper_->GetPreferredSize());
-  grip_rect.set_y(bounds().height() / 2 - grip_rect.height() / 2);
+  grip_rect.set_y((bounds().height() - grip_rect.height()) / 2);
   gripper_->SetBoundsRect(grip_rect);
 
-  gfx::Rect button_rect(stop_button_->GetPreferredSize());
-  button_rect.set_x(bounds().width() - button_rect.width());
-  stop_button_->SetBoundsRect(button_rect);
+  gfx::Rect stop_button_rect(stop_button_->GetPreferredSize());
+  gfx::Rect hide_link_rect(hide_link_->GetPreferredSize());
+
+  hide_link_rect.set_x(bounds().width() - hide_link_rect.width());
+  hide_link_rect.set_y((bounds().height() - hide_link_rect.height()) / 2);
+  hide_link_->SetBoundsRect(hide_link_rect);
+
+  stop_button_rect.set_x(
+      hide_link_rect.x() - kHorizontalMargin - stop_button_rect.width());
+  stop_button_->SetBoundsRect(stop_button_rect);
 
   gfx::Rect label_rect;
   label_rect.set_x(grip_rect.right() + kHorizontalMargin);
-  label_rect.set_width(button_rect.x() - kHorizontalMargin - label_rect.x());
+  label_rect.set_width(
+      stop_button_rect.x() - kHorizontalMargin - label_rect.x());
   label_rect.set_height(bounds().height());
   label_->SetBoundsRect(label_rect);
 
-  client_view_->SetClientRect(button_rect);
+  client_view_->SetClientRect(gfx::Rect(
+      stop_button_rect.x(), stop_button_rect.y(),
+      stop_button_rect.width() + kHorizontalMargin + hide_link_rect.width(),
+      std::max(stop_button_rect.height(), hide_link_rect.height())));
 }
 
 void ScreenCaptureNotificationUIViews::DeleteDelegate() {
@@ -260,9 +290,20 @@ bool ScreenCaptureNotificationUIViews::ShouldShowCloseButton() const {
   return false;
 }
 
+bool ScreenCaptureNotificationUIViews::CanActivate() const {
+  // If we do not override this method, the window sometimes does not properly
+  // restore to its normal size on Windows.
+  return false;
+}
+
 void ScreenCaptureNotificationUIViews::ButtonPressed(views::Button* sender,
                                                      const ui::Event& event) {
   NotifyStopped();
+}
+
+void ScreenCaptureNotificationUIViews::LinkClicked(views::Link* source,
+                                                   int event_flags) {
+  GetWidget()->Minimize();
 }
 
 void ScreenCaptureNotificationUIViews::NotifyStopped() {

@@ -10,11 +10,16 @@
 
 @interface ScreenCaptureNotificationController (ExposedForTesting)
 - (NSButton*)stopButton;
+- (NSButton*)minimizeButton;
 @end
 
 @implementation ScreenCaptureNotificationController (ExposedForTesting)
 - (NSButton*)stopButton {
   return stopButton_;
+}
+
+- (NSButton*)minimizeButton {
+  return minimizeButton_;
 }
 @end
 
@@ -68,7 +73,9 @@ TEST_F(ScreenCaptureNotificationUICocoaTest, LongTitle) {
   target_->OnStarted(
       base::Bind(&ScreenCaptureNotificationUICocoaTest::StopCallback,
                  base::Unretained(this)));
-  EXPECT_LE(NSWidth([[controller() window] frame]), 1000);
+  // The elided label sometimes is a few pixels longer than the max width. So
+  // allow a 5px off from the 1000px maximium.
+  EXPECT_LE(NSWidth([[controller() window] frame]), 1005);
 }
 
 TEST_F(ScreenCaptureNotificationUICocoaTest, ShortTitle) {
@@ -101,4 +108,17 @@ TEST_F(ScreenCaptureNotificationUICocoaTest, CloseWindow) {
   [[controller() window] close];
 
   EXPECT_EQ(1, callback_called_);
+}
+
+TEST_F(ScreenCaptureNotificationUICocoaTest, MinimizeWindow) {
+  target_.reset(
+      new ScreenCaptureNotificationUICocoa(base::UTF8ToUTF16("Title")));
+  target_->OnStarted(
+      base::Bind(&ScreenCaptureNotificationUICocoaTest::StopCallback,
+                 base::Unretained(this)));
+
+  [[controller() minimizeButton] performClick:nil];
+
+  EXPECT_EQ(0, callback_called_);
+  EXPECT_TRUE([[controller() window] isMiniaturized]);
 }

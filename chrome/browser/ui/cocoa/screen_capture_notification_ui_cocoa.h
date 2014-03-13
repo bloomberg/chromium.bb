@@ -19,11 +19,13 @@
  @private
   base::Closure stop_callback_;
   base::scoped_nsobject<NSButton> stopButton_;
+  base::scoped_nsobject<NSButton> minimizeButton_;
 }
 
 - (id)initWithCallback:(const base::Closure&)stop_callback
                   text:(const base::string16&)text;
 - (void)stopSharing:(id)sender;
+- (void)minimize:(id)sender;
 
 @end
 

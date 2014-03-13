@@ -16,6 +16,7 @@
 #include "grit/theme_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "ui/base/cocoa/controls/blue_label_button.h"
+#import "ui/base/cocoa/controls/hyperlink_button_cell.h"
 #include "ui/base/cocoa/window_size_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -112,6 +113,10 @@ scoped_ptr<ScreenCaptureNotificationUI> ScreenCaptureNotificationUI::Create(
   }
 }
 
+- (void)minimize:(id)sender {
+  [[self window] miniaturize:sender];
+}
+
 - (void)hide {
   stop_callback_.Reset();
   [self close];
@@ -132,7 +137,16 @@ scoped_ptr<ScreenCaptureNotificationUI> ScreenCaptureNotificationUI::Create(
   [stopButton_ sizeToFit];
   [content addSubview:stopButton_];
 
-  CGFloat buttonWidth = NSWidth([stopButton_ frame]);
+  minimizeButton_.reset(
+      [[HyperlinkButtonCell buttonWithString:l10n_util::GetNSString(
+          IDS_PASSWORDS_PAGE_VIEW_HIDE_BUTTON)] retain]);
+  [minimizeButton_ sizeToFit];
+  [minimizeButton_ setTarget:self];
+  [minimizeButton_ setAction:@selector(minimize:)];
+  [content addSubview:minimizeButton_];
+
+  CGFloat buttonsWidth = NSWidth([stopButton_ frame]) + kHorizontalMargin +
+      NSWidth([minimizeButton_ frame]);
   CGFloat totalHeight = kPadding + NSHeight([stopButton_ frame]) + kPadding;
 
   // Create grip icon.
@@ -147,7 +161,7 @@ scoped_ptr<ScreenCaptureNotificationUI> ScreenCaptureNotificationUI::Create(
   int maximumWidth =
       std::min(kMaximumWidth, NSWidth([[NSScreen mainScreen] visibleFrame]));
   int maxLabelWidth = maximumWidth - kPaddingLeft - kPadding -
-                      kHorizontalMargin * 2 - gripWidth - buttonWidth;
+                      kHorizontalMargin * 2 - gripWidth - buttonsWidth;
   gfx::FontList font_list;
   base::string16 elidedText =
       ElideText(text, font_list, maxLabelWidth, gfx::ELIDE_IN_MIDDLE);
@@ -168,22 +182,29 @@ scoped_ptr<ScreenCaptureNotificationUI> ScreenCaptureNotificationUI::Create(
 
   // Resize content view to fit controls.
   CGFloat minimumLableWidth = kMinimumWidth - kPaddingLeft - kPadding -
-                              kHorizontalMargin * 2 - gripWidth - buttonWidth;
+                              kHorizontalMargin * 2 - gripWidth - buttonsWidth;
   CGFloat lableWidth =
       std::max(NSWidth([statusTextField frame]), minimumLableWidth);
   CGFloat totalWidth = kPaddingLeft + kPadding + kHorizontalMargin * 2 +
-                       gripWidth + lableWidth + buttonWidth;
+                       gripWidth + lableWidth + buttonsWidth;
   [content setFrame:NSMakeRect(0, 0, totalWidth, totalHeight)];
 
-  // Move the button to the right place.
+  // Move the buttons to the right place.
   NSPoint buttonOrigin =
-      NSMakePoint(totalWidth - kPadding - buttonWidth, kPadding);
+      NSMakePoint(totalWidth - kPadding - buttonsWidth, kPadding);
   [stopButton_ setFrameOrigin:buttonOrigin];
+
+  [minimizeButton_ setFrameOrigin:NSMakePoint(
+      totalWidth - kPadding - NSWidth([minimizeButton_ frame]),
+      (totalHeight - NSHeight([minimizeButton_ frame])) / 2)];
 
   if (base::i18n::IsRTL()) {
     [stopButton_
         setFrameOrigin:NSMakePoint(totalWidth - NSMaxX([stopButton_ frame]),
                                    NSMinY([stopButton_ frame]))];
+    [minimizeButton_
+        setFrameOrigin:NSMakePoint(totalWidth - NSMaxX([minimizeButton_ frame]),
+                                   NSMinY([minimizeButton_ frame]))];
     [statusTextField
         setFrameOrigin:NSMakePoint(totalWidth - NSMaxX([statusTextField frame]),
                                    NSMinY([statusTextField frame]))];
