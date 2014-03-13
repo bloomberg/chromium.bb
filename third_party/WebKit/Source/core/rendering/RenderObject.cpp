@@ -2056,6 +2056,20 @@ void RenderObject::styleWillChange(StyleDifference diff, const RenderStyle* newS
                 view()->frameView()->addSlowRepaintObject();
         }
     }
+
+    // Elements with non-auto touch-action will send a SetTouchAction message
+    // on touchstart in EventHandler::handleTouchEvent, and so effectively have
+    // a touchstart handler that must be reported.
+    //
+    // Since a CSS property cannot be applied directly to a text node, a
+    // handler will have already been added for its parent so ignore it.
+    TouchAction oldTouchAction = m_style ? m_style->touchAction() : TouchActionAuto;
+    if (node() && !node()->isTextNode() && (oldTouchAction == TouchActionAuto) != (newStyle->touchAction() == TouchActionAuto)) {
+        if (newStyle->touchAction() != TouchActionAuto)
+            document().didAddTouchEventHandler(node());
+        else
+            document().didRemoveTouchEventHandler(node());
+    }
 }
 
 static bool areNonIdenticalCursorListsEqual(const RenderStyle* a, const RenderStyle* b)
@@ -2583,6 +2597,13 @@ void RenderObject::willBeDestroyed()
 
     if (hasCounterNodeMap())
         RenderCounter::destroyCounterNodes(*this);
+
+    // Remove the handler if node had touch-action set. Don't call when
+    // document is being destroyed as all handlers will have been cleared
+    // previously. Handlers are not added for text nodes so don't try removing
+    // for one too. Need to check if m_style is null in cases of partial construction.
+    if (!documentBeingDestroyed() && node() && !node()->isTextNode() && m_style && m_style->touchAction() != TouchActionAuto)
+        document().didRemoveTouchEventHandler(node());
 
     setAncestorLineBoxDirty(false);
 
