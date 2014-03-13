@@ -21,6 +21,7 @@ namespace cast {
 namespace {
 static const uint32 kSendingSsrc = 0x12345678;
 static const uint32 kMediaSsrc = 0x87654321;
+static const int16 kDefaultDelay = 100;
 static const std::string kCName("test@10.1.1.1");
 
 transport::RtcpReportBlock GetReportBlock() {
@@ -105,7 +106,7 @@ TEST_F(RtcpSenderTest, RtcpReceiverReport) {
   test_transport_.SetExpectedRtcpPacket(p1.GetPacket());
 
   rtcp_sender_->SendRtcpFromRtpReceiver(
-      RtcpSender::kRtcpRr, NULL, NULL, NULL, NULL);
+      transport::kRtcpRr, NULL, NULL, NULL, NULL, kDefaultDelay);
 
   EXPECT_EQ(1, test_transport_.packet_count());
 
@@ -119,7 +120,7 @@ TEST_F(RtcpSenderTest, RtcpReceiverReport) {
   transport::RtcpReportBlock report_block = GetReportBlock();
 
   rtcp_sender_->SendRtcpFromRtpReceiver(
-      RtcpSender::kRtcpRr, &report_block, NULL, NULL, NULL);
+      transport::kRtcpRr, &report_block, NULL, NULL, NULL, kDefaultDelay);
 
   EXPECT_EQ(2, test_transport_.packet_count());
 }
@@ -141,11 +142,12 @@ TEST_F(RtcpSenderTest, RtcpReceiverReportWithRrtr) {
   rrtr.ntp_fraction = kNtpLow;
 
   rtcp_sender_->SendRtcpFromRtpReceiver(
-      RtcpSender::kRtcpRr | RtcpSender::kRtcpRrtr,
+      transport::kRtcpRr | transport::kRtcpRrtr,
       &report_block,
       &rrtr,
       NULL,
-      NULL);
+      NULL,
+      kDefaultDelay);
 
   EXPECT_EQ(1, test_transport_.packet_count());
 }
@@ -156,7 +158,7 @@ TEST_F(RtcpSenderTest, RtcpReceiverReportWithCast) {
   p.AddRr(kSendingSsrc, 1);
   p.AddRb(kMediaSsrc);
   p.AddSdesCname(kSendingSsrc, kCName);
-  p.AddCast(kSendingSsrc, kMediaSsrc);
+  p.AddCast(kSendingSsrc, kMediaSsrc, kDefaultDelay);
   test_transport_.SetExpectedRtcpPacket(p.GetPacket().Pass());
 
   transport::RtcpReportBlock report_block = GetReportBlock();
@@ -173,11 +175,12 @@ TEST_F(RtcpSenderTest, RtcpReceiverReportWithCast) {
       missing_packets;
 
   rtcp_sender_->SendRtcpFromRtpReceiver(
-      RtcpSender::kRtcpRr | RtcpSender::kRtcpCast,
+      transport::kRtcpRr | transport::kRtcpCast,
       &report_block,
       NULL,
       &cast_message,
-      NULL);
+      NULL,
+      kDefaultDelay);
 
   EXPECT_EQ(1, test_transport_.packet_count());
 }
@@ -189,7 +192,7 @@ TEST_F(RtcpSenderTest, RtcpReceiverReportWithRrtraAndCastMessage) {
   p.AddSdesCname(kSendingSsrc, kCName);
   p.AddXrHeader(kSendingSsrc);
   p.AddXrRrtrBlock();
-  p.AddCast(kSendingSsrc, kMediaSsrc);
+  p.AddCast(kSendingSsrc, kMediaSsrc, kDefaultDelay);
   test_transport_.SetExpectedRtcpPacket(p.GetPacket().Pass());
 
   transport::RtcpReportBlock report_block = GetReportBlock();
@@ -210,11 +213,12 @@ TEST_F(RtcpSenderTest, RtcpReceiverReportWithRrtraAndCastMessage) {
       missing_packets;
 
   rtcp_sender_->SendRtcpFromRtpReceiver(
-      RtcpSender::kRtcpRr | RtcpSender::kRtcpRrtr | RtcpSender::kRtcpCast,
+      transport::kRtcpRr | transport::kRtcpRrtr | transport::kRtcpCast,
       &report_block,
       &rrtr,
       &cast_message,
-      NULL);
+      NULL,
+      kDefaultDelay);
 
   EXPECT_EQ(1, test_transport_.packet_count());
 }
@@ -229,7 +233,7 @@ TEST_F(RtcpSenderTest, RtcpReceiverReportWithRrtrCastMessageAndLog) {
   p.AddSdesCname(kSendingSsrc, kCName);
   p.AddXrHeader(kSendingSsrc);
   p.AddXrRrtrBlock();
-  p.AddCast(kSendingSsrc, kMediaSsrc);
+  p.AddCast(kSendingSsrc, kMediaSsrc, kDefaultDelay);
   test_transport_.SetExpectedRtcpPacket(p.GetPacket().Pass());
 
   transport::RtcpReportBlock report_block = GetReportBlock();
@@ -253,12 +257,13 @@ TEST_F(RtcpSenderTest, RtcpReceiverReportWithRrtrCastMessageAndLog) {
       500, ReceiverRtcpEventSubscriber::kVideoEventSubscriber);
 
   rtcp_sender_->SendRtcpFromRtpReceiver(
-      RtcpSender::kRtcpRr | RtcpSender::kRtcpRrtr | RtcpSender::kRtcpCast |
-          RtcpSender::kRtcpReceiverLog,
+      transport::kRtcpRr | transport::kRtcpRrtr | transport::kRtcpCast |
+          transport::kRtcpReceiverLog,
       &report_block,
       &rrtr,
       &cast_message,
-      &event_subscriber);
+      &event_subscriber,
+      kDefaultDelay);
 
   base::SimpleTestTickClock testing_clock;
   testing_clock.Advance(base::TimeDelta::FromMilliseconds(kTimeBaseMs));
@@ -286,23 +291,25 @@ TEST_F(RtcpSenderTest, RtcpReceiverReportWithRrtrCastMessageAndLog) {
   EXPECT_EQ(2u, event_subscriber.get_rtcp_events().size());
 
   rtcp_sender_->SendRtcpFromRtpReceiver(
-      RtcpSender::kRtcpRr | RtcpSender::kRtcpRrtr | RtcpSender::kRtcpCast |
-          RtcpSender::kRtcpReceiverLog,
+      transport::kRtcpRr | transport::kRtcpRrtr | transport::kRtcpCast |
+          transport::kRtcpReceiverLog,
       &report_block,
       &rrtr,
       &cast_message,
-      &event_subscriber);
+      &event_subscriber,
+      kDefaultDelay);
 
   EXPECT_EQ(2, test_transport_.packet_count());
 
   // We expect to see the same packet because we send redundant events.
   rtcp_sender_->SendRtcpFromRtpReceiver(
-      RtcpSender::kRtcpRr | RtcpSender::kRtcpRrtr | RtcpSender::kRtcpCast |
-          RtcpSender::kRtcpReceiverLog,
+      transport::kRtcpRr | transport::kRtcpRrtr | transport::kRtcpCast |
+          transport::kRtcpReceiverLog,
       &report_block,
       &rrtr,
       &cast_message,
-      &event_subscriber);
+      &event_subscriber,
+      kDefaultDelay);
 
   EXPECT_EQ(3, test_transport_.packet_count());
 }
@@ -360,11 +367,12 @@ TEST_F(RtcpSenderTest, RtcpReceiverReportWithOversizedFrameLog) {
   }
 
   rtcp_sender_->SendRtcpFromRtpReceiver(
-      RtcpSender::kRtcpRr | RtcpSender::kRtcpReceiverLog,
+      transport::kRtcpRr | transport::kRtcpReceiverLog,
       &report_block,
       NULL,
       NULL,
-      &event_subscriber);
+      &event_subscriber,
+      kDefaultDelay);
 
   EXPECT_EQ(1, test_transport_.packet_count());
 }
@@ -413,11 +421,12 @@ TEST_F(RtcpSenderTest, RtcpReceiverReportWithTooManyLogFrames) {
   }
 
   rtcp_sender_->SendRtcpFromRtpReceiver(
-      RtcpSender::kRtcpRr | RtcpSender::kRtcpReceiverLog,
+      transport::kRtcpRr | transport::kRtcpReceiverLog,
       &report_block,
       NULL,
       NULL,
-      &event_subscriber);
+      &event_subscriber,
+      kDefaultDelay);
 
   EXPECT_EQ(1, test_transport_.packet_count());
 }
@@ -460,11 +469,12 @@ TEST_F(RtcpSenderTest, RtcpReceiverReportWithOldLogFrames) {
   }
 
   rtcp_sender_->SendRtcpFromRtpReceiver(
-      RtcpSender::kRtcpRr | RtcpSender::kRtcpReceiverLog,
+      transport::kRtcpRr | transport::kRtcpReceiverLog,
       &report_block,
       NULL,
       NULL,
-      &event_subscriber);
+      &event_subscriber,
+      kDefaultDelay);
 
   EXPECT_EQ(1, test_transport_.packet_count());
 }

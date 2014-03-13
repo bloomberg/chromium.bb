@@ -16,7 +16,6 @@
 
 namespace media {
 namespace cast {
-
 // This calls is a pure owner class that group all required receive objects
 // together such as pacer, packet receiver, frame receiver, audio and video
 // receivers.
@@ -38,6 +37,7 @@ class CastReceiverImpl : public CastReceiver {
 
  private:
   void ReceivedPacket(scoped_ptr<Packet> packet);
+  void UpdateTargetDelay(base::TimeDelta target_delay_ms);
 
   transport::PacedSender pacer_;
   AudioReceiver audio_receiver_;

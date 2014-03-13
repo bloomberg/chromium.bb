@@ -33,13 +33,18 @@ class Rtcp;
 class RtpReceiverStatistics;
 class VideoDecoder;
 
+// Callback used by the video receiver to inform the audio receiver of the new
+// delay used to compute the playout and render times.
+typedef base::Callback<void(base::TimeDelta)> SetTargetDelayCallback;
+
 // Should only be called from the Main cast thread.
 class VideoReceiver : public base::NonThreadSafe,
                       public base::SupportsWeakPtr<VideoReceiver> {
  public:
   VideoReceiver(scoped_refptr<CastEnvironment> cast_environment,
                 const VideoReceiverConfig& video_config,
-                transport::PacedPacketSender* const packet_sender);
+                transport::PacedPacketSender* const packet_sender,
+                const SetTargetDelayCallback& target_delay_cb);
 
   virtual ~VideoReceiver();
 
@@ -98,6 +103,10 @@ class VideoReceiver : public base::NonThreadSafe,
   // Actually send the next RTCP report.
   void SendNextRtcpReport();
 
+  // Update the target delay based on past information. Will also update the
+  // rtcp module and the audio receiver.
+  void UpdateTargetDelay();
+
   scoped_ptr<VideoDecoder> video_decoder_;
   scoped_refptr<CastEnvironment> cast_environment_;
 
@@ -122,6 +131,7 @@ class VideoReceiver : public base::NonThreadSafe,
   base::TimeTicks time_incoming_packet_;
   uint32 incoming_rtp_timestamp_;
   base::TimeTicks last_render_time_;
+  SetTargetDelayCallback target_delay_cb_;
 
   // This mapping allows us to log kVideoAckSent as a frame event. In addition
   // it allows the event to be transmitted via RTCP.

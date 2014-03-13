@@ -163,7 +163,8 @@ bool BuildRtcpReceiverLogMessage(
 // TODO(mikhal): This is only used by the receiver. Consider renaming.
 RtcpSender::RtcpSender(scoped_refptr<CastEnvironment> cast_environment,
                        transport::PacedPacketSender* outgoing_transport,
-                       uint32 sending_ssrc, const std::string& c_name)
+                       uint32 sending_ssrc,
+                       const std::string& c_name)
     : ssrc_(sending_ssrc),
       c_name_(c_name),
       transport_(outgoing_transport),
@@ -183,41 +184,47 @@ void RtcpSender::SendRtcpFromRtpReceiver(
     const transport::RtcpReportBlock* report_block,
     const RtcpReceiverReferenceTimeReport* rrtr,
     const RtcpCastMessage* cast_message,
-    const ReceiverRtcpEventSubscriber* event_subscriber) {
-  if (packet_type_flags & kRtcpSr || packet_type_flags & kRtcpDlrr ||
-      packet_type_flags & kRtcpSenderLog) {
+    const ReceiverRtcpEventSubscriber* event_subscriber,
+    uint16 target_delay_ms) {
+  if (packet_type_flags & transport::kRtcpSr ||
+      packet_type_flags & transport::kRtcpDlrr ||
+      packet_type_flags & transport::kRtcpSenderLog) {
     NOTREACHED() << "Invalid argument";
   }
-  if (packet_type_flags & kRtcpPli || packet_type_flags & kRtcpRpsi ||
-      packet_type_flags & kRtcpRemb || packet_type_flags & kRtcpNack) {
+  if (packet_type_flags & transport::kRtcpPli ||
+      packet_type_flags & transport::kRtcpRpsi ||
+      packet_type_flags & transport::kRtcpRemb ||
+      packet_type_flags & transport::kRtcpNack) {
     // Implement these for webrtc interop.
     NOTIMPLEMENTED();
   }
   Packet packet;
   packet.reserve(kMaxIpPacketSize);
 
-  if (packet_type_flags & kRtcpRr) {
+  if (packet_type_flags & transport::kRtcpRr) {
     BuildRR(report_block, &packet);
     if (!c_name_.empty()) {
       BuildSdec(&packet);
     }
   }
-  if (packet_type_flags & kRtcpBye) {
+  if (packet_type_flags & transport::kRtcpBye) {
     BuildBye(&packet);
   }
-  if (packet_type_flags & kRtcpRrtr) {
+  if (packet_type_flags & transport::kRtcpRrtr) {
     DCHECK(rrtr) << "Invalid argument";
     BuildRrtr(rrtr, &packet);
   }
-  if (packet_type_flags & kRtcpCast) {
+  if (packet_type_flags & transport::kRtcpCast) {
     DCHECK(cast_message) << "Invalid argument";
-    BuildCast(cast_message, &packet);
+    BuildCast(cast_message, target_delay_ms, &packet);
   }
-  if (packet_type_flags & kRtcpReceiverLog) {
+  if (packet_type_flags & transport::kRtcpReceiverLog) {
     DCHECK(event_subscriber) << "Invalid argument";
     BuildReceiverLog(event_subscriber->get_rtcp_events(), &packet);
   }
-  if (packet.empty()) return;  // Sanity don't send empty packets.
+
+  if (packet.empty())
+    return;  // Sanity don't send empty packets.
 
   transport_->SendRtcpPacket(packet);
 }
@@ -226,7 +233,8 @@ void RtcpSender::BuildRR(const transport::RtcpReportBlock* report_block,
                          Packet* packet) const {
   size_t start_size = packet->size();
   DCHECK_LT(start_size + 32, kMaxIpPacketSize) << "Not enough buffer space";
-  if (start_size + 32 > kMaxIpPacketSize) return;
+  if (start_size + 32 > kMaxIpPacketSize)
+    return;
 
   uint16 number_of_rows = (report_block) ? 7 : 1;
   packet->resize(start_size + 8);
@@ -247,7 +255,8 @@ void RtcpSender::AddReportBlocks(const transport::RtcpReportBlock& report_block,
                                  Packet* packet) const {
   size_t start_size = packet->size();
   DCHECK_LT(start_size + 24, kMaxIpPacketSize) << "Not enough buffer space";
-  if (start_size + 24 > kMaxIpPacketSize) return;
+  if (start_size + 24 > kMaxIpPacketSize)
+    return;
 
   packet->resize(start_size + 24);
 
@@ -276,7 +285,8 @@ void RtcpSender::BuildSdec(Packet* packet) const {
   size_t start_size = packet->size();
   DCHECK_LT(start_size + 12 + c_name_.length(), kMaxIpPacketSize)
       << "Not enough buffer space";
-  if (start_size + 12 > kMaxIpPacketSize) return;
+  if (start_size + 12 > kMaxIpPacketSize)
+    return;
 
   // SDES Source Description.
   packet->resize(start_size + 10);
@@ -295,8 +305,8 @@ void RtcpSender::BuildSdec(Packet* packet) const {
   big_endian_writer.WriteU8(static_cast<uint8>(c_name_.length()));
 
   size_t sdes_length = 10 + c_name_.length();
-  packet->insert(packet->end(), c_name_.c_str(),
-                 c_name_.c_str() + c_name_.length());
+  packet->insert(
+      packet->end(), c_name_.c_str(), c_name_.c_str() + c_name_.length());
 
   size_t padding = 0;
 
@@ -319,7 +329,8 @@ void RtcpSender::BuildSdec(Packet* packet) const {
 void RtcpSender::BuildPli(uint32 remote_ssrc, Packet* packet) const {
   size_t start_size = packet->size();
   DCHECK_LT(start_size + 12, kMaxIpPacketSize) << "Not enough buffer space";
-  if (start_size + 12 > kMaxIpPacketSize) return;
+  if (start_size + 12 > kMaxIpPacketSize)
+    return;
 
   packet->resize(start_size + 12);
 
@@ -345,7 +356,8 @@ void RtcpSender::BuildPli(uint32 remote_ssrc, Packet* packet) const {
 void RtcpSender::BuildRpsi(const RtcpRpsiMessage* rpsi, Packet* packet) const {
   size_t start_size = packet->size();
   DCHECK_LT(start_size + 24, kMaxIpPacketSize) << "Not enough buffer space";
-  if (start_size + 24 > kMaxIpPacketSize) return;
+  if (start_size + 24 > kMaxIpPacketSize)
+    return;
 
   packet->resize(start_size + 24);
 
@@ -400,7 +412,8 @@ void RtcpSender::BuildRemb(const RtcpRembMessage* remb, Packet* packet) const {
   size_t remb_size = 20 + 4 * remb->remb_ssrcs.size();
   DCHECK_LT(start_size + remb_size, kMaxIpPacketSize)
       << "Not enough buffer space";
-  if (start_size + remb_size > kMaxIpPacketSize) return;
+  if (start_size + remb_size > kMaxIpPacketSize)
+    return;
 
   packet->resize(start_size + remb_size);
 
@@ -421,8 +434,8 @@ void RtcpSender::BuildRemb(const RtcpRembMessage* remb, Packet* packet) const {
   // 6 bit exponent and a 18 bit mantissa.
   uint8 bitrate_exponent;
   uint32 bitrate_mantissa;
-  BitrateToRembExponentBitrate(remb->remb_bitrate, &bitrate_exponent,
-                               &bitrate_mantissa);
+  BitrateToRembExponentBitrate(
+      remb->remb_bitrate, &bitrate_exponent, &bitrate_mantissa);
 
   big_endian_writer.WriteU8(static_cast<uint8>(
       (bitrate_exponent << 2) + ((bitrate_mantissa >> 16) & 0x03)));
@@ -434,14 +447,15 @@ void RtcpSender::BuildRemb(const RtcpRembMessage* remb, Packet* packet) const {
     big_endian_writer.WriteU32(*it);
   }
   base::TimeTicks now = cast_environment_->Clock()->NowTicks();
-  cast_environment_->Logging()->InsertGenericEvent(now, kRembBitrate,
-                                                   remb->remb_bitrate);
+  cast_environment_->Logging()->InsertGenericEvent(
+      now, kRembBitrate, remb->remb_bitrate);
 }
 
 void RtcpSender::BuildNack(const RtcpNackMessage* nack, Packet* packet) const {
   size_t start_size = packet->size();
   DCHECK_LT(start_size + 16, kMaxIpPacketSize) << "Not enough buffer space";
-  if (start_size + 16 > kMaxIpPacketSize) return;
+  if (start_size + 16 > kMaxIpPacketSize)
+    return;
 
   packet->resize(start_size + 16);
 
@@ -481,7 +495,8 @@ void RtcpSender::BuildNack(const RtcpNackMessage* nack, Packet* packet) const {
     // Write the sequence number and the bitmask to the packet.
     start_size = packet->size();
     DCHECK_LT(start_size + 4, kMaxIpPacketSize) << "Not enough buffer space";
-    if (start_size + 4 > kMaxIpPacketSize) return;
+    if (start_size + 4 > kMaxIpPacketSize)
+      return;
 
     packet->resize(start_size + 4);
     base::BigEndianWriter big_endian_nack_writer(
@@ -497,7 +512,8 @@ void RtcpSender::BuildNack(const RtcpNackMessage* nack, Packet* packet) const {
 void RtcpSender::BuildBye(Packet* packet) const {
   size_t start_size = packet->size();
   DCHECK_LT(start_size + 8, kMaxIpPacketSize) << "Not enough buffer space";
-  if (start_size + 8 > kMaxIpPacketSize) return;
+  if (start_size + 8 > kMaxIpPacketSize)
+    return;
 
   packet->resize(start_size + 8);
 
@@ -513,7 +529,8 @@ void RtcpSender::BuildRrtr(const RtcpReceiverReferenceTimeReport* rrtr,
                            Packet* packet) const {
   size_t start_size = packet->size();
   DCHECK_LT(start_size + 20, kMaxIpPacketSize) << "Not enough buffer space";
-  if (start_size + 20 > kMaxIpPacketSize) return;
+  if (start_size + 20 > kMaxIpPacketSize)
+    return;
 
   packet->resize(start_size + 20);
 
@@ -533,10 +550,13 @@ void RtcpSender::BuildRrtr(const RtcpReceiverReferenceTimeReport* rrtr,
   big_endian_writer.WriteU32(rrtr->ntp_fraction);
 }
 
-void RtcpSender::BuildCast(const RtcpCastMessage* cast, Packet* packet) const {
+void RtcpSender::BuildCast(const RtcpCastMessage* cast,
+                           uint16 target_delay_ms,
+                           Packet* packet) const {
   size_t start_size = packet->size();
   DCHECK_LT(start_size + 20, kMaxIpPacketSize) << "Not enough buffer space";
-  if (start_size + 20 > kMaxIpPacketSize) return;
+  if (start_size + 20 > kMaxIpPacketSize)
+    return;
 
   packet->resize(start_size + 20);
 
@@ -554,8 +574,7 @@ void RtcpSender::BuildCast(const RtcpCastMessage* cast, Packet* packet) const {
   big_endian_writer.WriteU8(static_cast<uint8>(cast->ack_frame_id_));
   size_t cast_loss_field_pos = start_size + 17;  // Save loss field position.
   big_endian_writer.WriteU8(0);  // Overwritten with number_of_loss_fields.
-  big_endian_writer.WriteU8(0);  // Reserved.
-  big_endian_writer.WriteU8(0);  // Reserved.
+  big_endian_writer.WriteU16(target_delay_ms);
 
   size_t number_of_loss_fields = 0;
   size_t max_number_of_loss_fields = std::min<size_t>(

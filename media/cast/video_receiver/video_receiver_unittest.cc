@@ -60,8 +60,12 @@ class PeerVideoReceiver : public VideoReceiver {
  public:
   PeerVideoReceiver(scoped_refptr<CastEnvironment> cast_environment,
                     const VideoReceiverConfig& video_config,
-                    transport::PacedPacketSender* const packet_sender)
-      : VideoReceiver(cast_environment, video_config, packet_sender) {}
+                    transport::PacedPacketSender* const packet_sender,
+                    const SetTargetDelayCallback& target_delay_cb)
+      : VideoReceiver(cast_environment,
+                      video_config,
+                      packet_sender,
+                      target_delay_cb) {}
   using VideoReceiver::IncomingParsedRtpPacket;
 };
 
@@ -82,8 +86,8 @@ class VideoReceiverTest : public ::testing::Test {
                             task_runner_,
                             task_runner_,
                             GetLoggingConfigWithRawEventsAndStatsEnabled());
-    receiver_.reset(
-        new PeerVideoReceiver(cast_environment_, config_, &mock_transport_));
+    receiver_.reset(new PeerVideoReceiver(
+        cast_environment_, config_, &mock_transport_, target_delay_cb_));
     testing_clock_->Advance(
         base::TimeDelta::FromMilliseconds(kStartMillisecond));
     video_receiver_callback_ = new TestVideoReceiverCallback();
@@ -112,6 +116,7 @@ class VideoReceiverTest : public ::testing::Test {
   scoped_refptr<test::FakeSingleThreadTaskRunner> task_runner_;
   scoped_refptr<CastEnvironment> cast_environment_;
   scoped_refptr<TestVideoReceiverCallback> video_receiver_callback_;
+  SetTargetDelayCallback target_delay_cb_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoReceiverTest);
 };

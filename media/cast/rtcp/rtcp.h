@@ -116,6 +116,9 @@ class Rtcp {
   // used to remove duplicates. The history will store at most |size| events.
   void SetCastReceiverEventHistorySize(size_t size);
 
+  // Update the target delay. Will be added to every sender report.
+  void SetTargetDelay(base::TimeDelta target_delay);
+
  protected:
   int CheckForWrapAround(uint32 new_timestamp, uint32 old_timestamp) const;
 
@@ -189,6 +192,7 @@ class Rtcp {
   base::TimeDelta max_rtt_;
   int number_of_rtt_in_avg_;
   float avg_rtt_ms_;
+  uint16 target_delay_ms_;
 
   DISALLOW_COPY_AND_ASSIGN(Rtcp);
 };

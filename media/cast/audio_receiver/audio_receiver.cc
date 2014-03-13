@@ -119,6 +119,8 @@ AudioReceiver::AudioReceiver(scoped_refptr<CastEnvironment> cast_environment,
                        audio_config.rtcp_mode, rtcp_interval_delta,
                        audio_config.feedback_ssrc, audio_config.incoming_ssrc,
                        audio_config.rtcp_c_name));
+  // Set the target delay that will be conveyed to the sender.
+  rtcp_->SetTargetDelay(target_delay_delta_);
   cast_environment_->Logging()->AddRawEventSubscriber(&event_subscriber_);
   memset(frame_id_to_rtp_timestamp_, 0, sizeof(frame_id_to_rtp_timestamp_));
 }
@@ -365,6 +367,11 @@ void AudioReceiver::IncomingPacket(scoped_ptr<Packet> packet) {
   } else {
     rtcp_->IncomingRtcpPacket(&packet->front(), packet->size());
   }
+}
+
+void AudioReceiver::SetTargetDelay(base::TimeDelta target_delay) {
+  target_delay_delta_ = target_delay;
+  rtcp_->SetTargetDelay(target_delay_delta_);
 }
 
 void AudioReceiver::CastFeedback(const RtcpCastMessage& cast_message) {

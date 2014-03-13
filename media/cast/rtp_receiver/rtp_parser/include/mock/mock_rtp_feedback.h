@@ -21,7 +21,7 @@ class MockRtpFeedback : public RtpFeedback {
 
   MOCK_METHOD1(OnPacketTimeout, void(const int32 id));
   MOCK_METHOD2(OnReceivedPacket,
-               void(const int32 id, const RtpRtcpPacketType packet_type));
+               void(const int32 id, const RtpRtcpPacketField packet_type));
   MOCK_METHOD2(OnPeriodicDeadOrAlive,
                void(const int32 id, const RTPAliveType alive));
   MOCK_METHOD2(OnIncomingSSRCChanged, void(const int32 id, const uint32 ssrc));

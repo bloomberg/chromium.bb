@@ -138,6 +138,7 @@ struct RtcpFieldPayloadSpecificRembItem {
 struct RtcpFieldPayloadSpecificCastItem {
   uint8 last_frame_id;
   uint8 number_of_lost_fields;
+  uint16 target_delay_ms;
 };
 
 struct RtcpFieldPayloadSpecificCastNackItem {

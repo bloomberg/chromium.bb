@@ -29,23 +29,6 @@ class RtcpBuilder {
                              uint32 ssrc,
                              const std::string& c_name);
 
-  enum RtcpPacketType {
-    kRtcpSr     = 0x0002,
-    kRtcpRr     = 0x0004,
-    kRtcpBye    = 0x0008,
-    kRtcpPli    = 0x0010,
-    kRtcpNack   = 0x0020,
-    kRtcpFir    = 0x0040,
-    kRtcpSrReq  = 0x0200,
-    kRtcpDlrr   = 0x0400,
-    kRtcpRrtr   = 0x0800,
-    kRtcpRpsi   = 0x8000,
-    kRtcpRemb   = 0x10000,
-    kRtcpCast   = 0x20000,
-    kRtcpSenderLog = 0x40000,
-    kRtcpReceiverLog = 0x80000,
-  };
-
  private:
   bool BuildSR(const RtcpSenderInfo& sender_info, Packet* packet) const;
   bool BuildSdec(Packet* packet) const;

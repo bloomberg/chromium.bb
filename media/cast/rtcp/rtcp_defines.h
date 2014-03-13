@@ -31,6 +31,7 @@ class RtcpCastMessage {
 
   uint32 media_ssrc_;
   uint32 ack_frame_id_;
+  uint16 target_delay_ms_;
   MissingFramesAndPacketsMap missing_frames_and_packets_;
 
   DISALLOW_COPY_AND_ASSIGN(RtcpCastMessage);

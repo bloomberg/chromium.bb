@@ -107,7 +107,7 @@ class VideoSender : public base::NonThreadSafe,
   void ResendPacketsOnTransportThread(
       const transport::MissingFramesAndPacketsMap& missing_packets);
 
-  const base::TimeDelta rtp_max_delay_;
+  base::TimeDelta rtp_max_delay_;
   const int max_frame_rate_;
 
   scoped_refptr<CastEnvironment> cast_environment_;

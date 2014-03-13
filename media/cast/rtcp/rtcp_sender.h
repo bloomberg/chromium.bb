@@ -46,23 +46,8 @@ class RtcpSender {
       const transport::RtcpReportBlock* report_block,
       const RtcpReceiverReferenceTimeReport* rrtr,
       const RtcpCastMessage* cast_message,
-      const ReceiverRtcpEventSubscriber* event_subscriber);
-  enum RtcpPacketType {
-    kRtcpSr = 0x0002,
-    kRtcpRr = 0x0004,
-    kRtcpBye = 0x0008,
-    kRtcpPli = 0x0010,
-    kRtcpNack = 0x0020,
-    kRtcpFir = 0x0040,
-    kRtcpSrReq = 0x0200,
-    kRtcpDlrr = 0x0400,
-    kRtcpRrtr = 0x0800,
-    kRtcpRpsi = 0x8000,
-    kRtcpRemb = 0x10000,
-    kRtcpCast = 0x20000,
-    kRtcpSenderLog = 0x40000,
-    kRtcpReceiverLog = 0x80000,
-  };
+      const ReceiverRtcpEventSubscriber* event_subscriber,
+      uint16 target_delay_ms);
 
  private:
   void BuildRR(const transport::RtcpReportBlock* report_block,
@@ -86,7 +71,9 @@ class RtcpSender {
   void BuildRrtr(const RtcpReceiverReferenceTimeReport* rrtr,
                  Packet* packet) const;
 
-  void BuildCast(const RtcpCastMessage* cast_message, Packet* packet) const;
+  void BuildCast(const RtcpCastMessage* cast_message,
+                 uint16 target_delay_ms,
+                 Packet* packet) const;
 
   void BuildReceiverLog(
       const ReceiverRtcpEventSubscriber::RtcpEventMultiMap& rtcp_events,

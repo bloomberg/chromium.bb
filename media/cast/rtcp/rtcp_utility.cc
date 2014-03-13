@@ -880,6 +880,7 @@ bool RtcpParser::ParsePayloadSpecificCastItem() {
       reinterpret_cast<const char*>(rtcp_data_), length);
   big_endian_reader.ReadU8(&field_.cast_item.last_frame_id);
   big_endian_reader.ReadU8(&field_.cast_item.number_of_lost_fields);
+  big_endian_reader.ReadU16(&field_.cast_item.target_delay_ms);
 
   rtcp_data_ += 4;
 

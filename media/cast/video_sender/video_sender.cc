@@ -117,9 +117,8 @@ VideoSender::VideoSender(
       active_session_(false),
       weak_factory_(this) {
   max_unacked_frames_ =
-      static_cast<uint8>(video_config.rtp_config.max_delay_ms *
-                         video_config.max_frame_rate / 1000) +
-      1;
+      1 + static_cast<uint8>(video_config.rtp_config.max_delay_ms *
+                             max_frame_rate_ / 1000);
   VLOG(1) << "max_unacked_frames " << static_cast<int>(max_unacked_frames_);
   DCHECK_GT(max_unacked_frames_, 0) << "Invalid argument";
 
@@ -382,6 +381,12 @@ void VideoSender::OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback) {
   base::TimeDelta max_rtt;
   base::TimeTicks now = cast_environment_->Clock()->NowTicks();
 
+  // Update delay and max number of frames in flight based on the the new
+  // received target delay.
+  rtp_max_delay_ =
+      base::TimeDelta::FromMilliseconds(cast_feedback.target_delay_ms_);
+  max_unacked_frames_ = 1 + static_cast<uint8>(cast_feedback.target_delay_ms_ *
+                                               max_frame_rate_ / 1000);
   if (rtcp_->Rtt(&rtt, &avg_rtt, &min_rtt, &max_rtt)) {
     cast_environment_->Logging()->InsertGenericEvent(
         now, kRttMs, rtt.InMilliseconds());

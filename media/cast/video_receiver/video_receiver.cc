@@ -90,7 +90,8 @@ class LocalRtpReceiverStatistics : public RtpReceiverStatistics {
 
 VideoReceiver::VideoReceiver(scoped_refptr<CastEnvironment> cast_environment,
                              const VideoReceiverConfig& video_config,
-                             transport::PacedPacketSender* const packet_sender)
+                             transport::PacedPacketSender* const packet_sender,
+                             const SetTargetDelayCallback& target_delay_cb)
     : cast_environment_(cast_environment),
       event_subscriber_(kReceiverRtcpEventHistorySize,
                         ReceiverRtcpEventSubscriber::kVideoEventSubscriber),
@@ -111,6 +112,7 @@ VideoReceiver::VideoReceiver(scoped_refptr<CastEnvironment> cast_environment,
       decryptor_(),
       time_incoming_packet_updated_(false),
       incoming_rtp_timestamp_(0),
+      target_delay_cb_(target_delay_cb),
       weak_factory_(this) {
   int max_unacked_frames =
       video_config.rtp_max_delay_ms * video_config.max_frame_rate / 1000;
@@ -139,6 +141,8 @@ VideoReceiver::VideoReceiver(scoped_refptr<CastEnvironment> cast_environment,
                video_config.feedback_ssrc,
                video_config.incoming_ssrc,
                video_config.rtcp_c_name));
+  // Set the target delay that will be conveyed to the sender.
+  rtcp_->SetTargetDelay(target_delay_delta_);
   cast_environment_->Logging()->AddRawEventSubscriber(&event_subscriber_);
   memset(frame_id_to_rtp_timestamp_, 0, sizeof(frame_id_to_rtp_timestamp_));
 }
@@ -394,6 +398,7 @@ base::TimeTicks VideoReceiver::GetRenderTime(base::TimeTicks now,
     // This can fail if we have not received any RTCP packets in a long time.
     return now;
   }
+
   base::TimeTicks render_time =
       rtp_timestamp_in_ticks + time_offset_ + target_delay_delta_;
   if (last_render_time_ > render_time)
@@ -533,6 +538,12 @@ void VideoReceiver::SendNextRtcpReport() {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   rtcp_->SendRtcpFromRtpReceiver(NULL, NULL);
   ScheduleNextRtcpReport();
+}
+
+void VideoReceiver::UpdateTargetDelay() {
+  NOTIMPLEMENTED();
+  rtcp_->SetTargetDelay(target_delay_delta_);
+  target_delay_cb_.Run(target_delay_delta_);
 }
 
 }  // namespace cast
