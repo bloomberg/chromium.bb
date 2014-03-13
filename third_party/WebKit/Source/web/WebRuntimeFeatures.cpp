@@ -52,6 +52,7 @@ void WebRuntimeFeatures::enableExperimentalFeatures(bool enable)
 void WebRuntimeFeatures::enableBleedingEdgeFastPaths(bool enable)
 {
     RuntimeEnabledFeatures::setBleedingEdgeFastPathsEnabled(enable);
+    RuntimeEnabledFeatures::setCSSWillChangeEnabled(enable);
 }
 
 void WebRuntimeFeatures::enableTestOnlyFeatures(bool enable)
