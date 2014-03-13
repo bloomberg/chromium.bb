@@ -1743,9 +1743,6 @@ IPC_MESSAGE_CONTROL3(ViewHostMsg_DidGenerateCacheableMetadata,
                      double /* expected_response_time */,
                      std::vector<char> /* data */)
 
-// Displays a JavaScript out-of-memory message in the infobar.
-IPC_MESSAGE_ROUTED0(ViewHostMsg_JSOutOfMemory)
-
 // Register a new handler for URL requests with the given scheme.
 IPC_MESSAGE_ROUTED4(ViewHostMsg_RegisterProtocolHandler,
                     std::string /* scheme */,

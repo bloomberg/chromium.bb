@@ -565,7 +565,6 @@ class CONTENT_EXPORT RenderViewImpl
       blink::WebFrame* frame,
       const blink::WebSecurityOrigin& origin,
       const blink::WebURL& target);
-  virtual void didExhaustMemoryAvailableForScript(blink::WebFrame* frame);
   virtual void didCreateScriptContext(blink::WebFrame* frame,
                                       v8::Handle<v8::Context>,
                                       int extension_group,

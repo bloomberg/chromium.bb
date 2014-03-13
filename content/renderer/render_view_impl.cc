@@ -2811,10 +2811,6 @@ void RenderViewImpl::didRunInsecureContent(
   NOTREACHED();
 }
 
-void RenderViewImpl::didExhaustMemoryAvailableForScript(WebFrame* frame) {
-  NOTREACHED();
-}
-
 void RenderViewImpl::didCreateScriptContext(WebFrame* frame,
                                             v8::Handle<v8::Context> context,
                                             int extension_group,

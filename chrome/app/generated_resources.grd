@@ -11939,10 +11939,6 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         A part of this page (HTML WebWorker) has crashed, so it might not function correctly.
       </message>
 
-      <message name="IDS_JS_OUT_OF_MEMORY_PROMPT" desc="Info Bar message to notify JS out of memory">
-        Script on the page used too much memory. Reload to enable scripts again.
-      </message>
-
       <message name="IDS_PAGE_INFO_SECURITY_TAB_FIRST_VISITED_TODAY"
                desc="Message in IDS_PAGE_INFO_SECURITY_TAB_PERSONAL_HISTORY_TITLE section displayed when first visited page today">
         You have never visited this site before today.

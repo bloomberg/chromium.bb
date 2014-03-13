@@ -146,10 +146,6 @@ class PrerenderContents::WebContentsDelegateImpl
     return false;
   }
 
-  virtual void JSOutOfMemory(WebContents* tab) OVERRIDE {
-    prerender_contents_->Destroy(FINAL_STATUS_JS_OUT_OF_MEMORY);
-  }
-
   virtual bool ShouldSuppressDialogs() OVERRIDE {
     // We still want to show the user the message when they navigate to this
     // page, so cancel this prerender.

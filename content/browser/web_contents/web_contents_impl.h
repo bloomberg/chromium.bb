@@ -673,7 +673,6 @@ class CONTENT_EXPORT WebContentsImpl
                           int maximum_percent,
                           bool remember);
   void OnEnumerateDirectory(int request_id, const base::FilePath& path);
-  void OnJSOutOfMemory();
 
   void OnRegisterProtocolHandler(const std::string& protocol,
                                  const GURL& url,

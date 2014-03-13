@@ -2089,13 +2089,6 @@ void RenderFrameImpl::didAbortLoading(blink::WebFrame* frame) {
 #endif
 }
 
-void RenderFrameImpl::didExhaustMemoryAvailableForScript(
-    blink::WebFrame* frame) {
-  DCHECK(!frame_ || frame_ == frame);
-  render_view_->Send(new ViewHostMsg_JSOutOfMemory(
-      render_view_->GetRoutingID()));
-}
-
 void RenderFrameImpl::didCreateScriptContext(blink::WebFrame* frame,
                                              v8::Handle<v8::Context> context,
                                              int extension_group,

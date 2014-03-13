@@ -363,9 +363,6 @@ class CONTENT_EXPORT WebContentsDelegate {
   virtual bool IsFullscreenForTabOrPending(
       const WebContents* web_contents) const;
 
-  // Called when a Javascript out of memory notification is received.
-  virtual void JSOutOfMemory(WebContents* web_contents) {}
-
   // Register a new handler for URL requests with the given scheme.
   // |user_gesture| is true if the registration is made in the context of a user
   // gesture.

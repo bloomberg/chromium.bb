@@ -494,7 +494,6 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
     IPC_MESSAGE_HANDLER(ViewHostMsg_GoToEntryAtOffset, OnGoToEntryAtOffset)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateZoomLimits, OnUpdateZoomLimits)
     IPC_MESSAGE_HANDLER(ViewHostMsg_EnumerateDirectory, OnEnumerateDirectory)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_JSOutOfMemory, OnJSOutOfMemory)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RegisterProtocolHandler,
                         OnRegisterProtocolHandler)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Find_Reply, OnFindReply)
@@ -2361,11 +2360,6 @@ void WebContentsImpl::OnEnumerateDirectory(int request_id,
       ChildProcessSecurityPolicyImpl::GetInstance();
   if (policy->CanReadFile(GetRenderProcessHost()->GetID(), path))
     delegate_->EnumerateDirectory(this, request_id, path);
-}
-
-void WebContentsImpl::OnJSOutOfMemory() {
-  if (delegate_)
-    delegate_->JSOutOfMemory(this);
 }
 
 void WebContentsImpl::OnRegisterProtocolHandler(const std::string& protocol,
