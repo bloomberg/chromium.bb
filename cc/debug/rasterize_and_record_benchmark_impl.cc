@@ -11,6 +11,7 @@
 #include "base/values.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/picture_layer_impl.h"
+#include "cc/resources/raster_worker_pool.h"
 #include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_host_impl.h"
 #include "ui/gfx/rect.h"
@@ -26,6 +27,59 @@ base::TimeTicks Now() {
              ? base::TimeTicks::ThreadNow()
              : base::TimeTicks::HighResNow();
 }
+
+class BenchmarkRasterTask : public internal::Task {
+ public:
+  BenchmarkRasterTask(PicturePileImpl* picture_pile,
+                      const gfx::Rect& content_rect,
+                      float contents_scale,
+                      size_t repeat_count)
+      : picture_pile_(picture_pile),
+        content_rect_(content_rect),
+        contents_scale_(contents_scale),
+        repeat_count_(repeat_count),
+        is_solid_color_(false),
+        best_time_(base::TimeDelta::Max()) {}
+
+  // Overridden from internal::Task:
+  virtual void RunOnWorkerThread(unsigned thread_index) OVERRIDE {
+    PicturePileImpl* picture_pile =
+        picture_pile_->GetCloneForDrawingOnThread(thread_index);
+
+    for (size_t i = 0; i < repeat_count_; ++i) {
+      SkBitmap bitmap;
+      bitmap.allocPixels(SkImageInfo::MakeN32Premul(content_rect_.width(),
+                                                    content_rect_.height()));
+      SkCanvas canvas(bitmap);
+      PicturePileImpl::Analysis analysis;
+
+      base::TimeTicks start = Now();
+      picture_pile->AnalyzeInRect(
+          content_rect_, contents_scale_, &analysis, NULL);
+      picture_pile->RasterToBitmap(
+          &canvas, content_rect_, contents_scale_, NULL);
+      base::TimeTicks end = Now();
+      base::TimeDelta duration = end - start;
+      if (duration < best_time_)
+        best_time_ = duration;
+
+      is_solid_color_ = analysis.is_solid_color;
+    }
+  }
+
+  bool IsSolidColor() const { return is_solid_color_; }
+  base::TimeDelta GetBestTime() const { return best_time_; }
+
+ private:
+  virtual ~BenchmarkRasterTask() {}
+
+  PicturePileImpl* picture_pile_;
+  gfx::Rect content_rect_;
+  float contents_scale_;
+  size_t repeat_count_;
+  bool is_solid_color_;
+  base::TimeDelta best_time_;
+};
 
 }  // namespace
 
@@ -88,6 +142,13 @@ void RasterizeAndRecordBenchmarkImpl::RunOnLayer(PictureLayerImpl* layer) {
     return;
   }
 
+  internal::TaskGraphRunner* task_graph_runner =
+      RasterWorkerPool::GetTaskGraphRunner();
+  DCHECK(task_graph_runner);
+
+  if (!task_namespace_.IsValid())
+    task_namespace_ = task_graph_runner->GetNamespaceToken();
+
   PictureLayerTilingSet tiling_set(layer, layer->content_bounds());
 
   PictureLayerTiling* tiling = tiling_set.AddTiling(layer->contents_scale_x());
@@ -102,29 +163,30 @@ void RasterizeAndRecordBenchmarkImpl::RunOnLayer(PictureLayerImpl* layer) {
     gfx::Rect content_rect = (*it)->content_rect();
     float contents_scale = (*it)->contents_scale();
 
+    scoped_refptr<BenchmarkRasterTask> benchmark_raster_task(
+        new BenchmarkRasterTask(picture_pile,
+                                content_rect,
+                                contents_scale,
+                                rasterize_repeat_count_));
+
+    internal::TaskGraph graph;
+
+    graph.nodes.push_back(internal::TaskGraph::Node(
+        benchmark_raster_task,
+        RasterWorkerPool::kBenchmarkRasterTaskPriority,
+        0u));
+
+    task_graph_runner->SetTaskGraph(task_namespace_, &graph);
+    task_graph_runner->WaitForTasksToFinishRunning(task_namespace_);
+
+    internal::Task::Vector completed_tasks;
+    task_graph_runner->CollectCompletedTasks(task_namespace_, &completed_tasks);
+    DCHECK_EQ(1u, completed_tasks.size());
+    DCHECK_EQ(completed_tasks[0], benchmark_raster_task);
+
     int tile_size = content_rect.width() * content_rect.height();
-
-    base::TimeDelta min_time = base::TimeDelta::Max();
-
-    bool is_solid_color = false;
-    for (int i = 0; i < rasterize_repeat_count_; ++i) {
-      SkBitmap bitmap;
-      bitmap.allocPixels(SkImageInfo::MakeN32Premul(content_rect.width(),
-                                                    content_rect.height()));
-      SkCanvas canvas(bitmap);
-      PicturePileImpl::Analysis analysis;
-
-      base::TimeTicks start = Now();
-      picture_pile->AnalyzeInRect(
-          content_rect, contents_scale, &analysis, NULL);
-      picture_pile->RasterToBitmap(&canvas, content_rect, contents_scale, NULL);
-      base::TimeTicks end = Now();
-      base::TimeDelta duration = end - start;
-      if (duration < min_time)
-        min_time = duration;
-
-      is_solid_color = analysis.is_solid_color;
-    }
+    base::TimeDelta min_time = benchmark_raster_task->GetBestTime();
+    bool is_solid_color = benchmark_raster_task->IsSolidColor();
 
     if (layer->contents_opaque())
       rasterize_results_.pixels_rasterized_as_opaque += tile_size;
