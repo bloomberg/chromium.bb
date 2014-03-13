@@ -185,6 +185,7 @@
   },
   "contextMenusInternal": {
     "internal": true,
+    "channel": "stable",
     "contexts": ["blessed_extension"]
   },
   "cookies": {
