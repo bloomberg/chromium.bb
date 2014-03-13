@@ -40,6 +40,7 @@ const QuicTag kC255 = TAG('C', '2', '5', '5');  // ECDH, Curve25519
 // AEAD algorithms
 const QuicTag kNULL = TAG('N', 'U', 'L', 'N');  // null algorithm
 const QuicTag kAESG = TAG('A', 'E', 'S', 'G');  // AES128 + GCM-12
+const QuicTag kCC12 = TAG('C', 'C', '1', '2');  // ChaCha20 + Poly1305
 
 // Congestion control feedback types
 const QuicTag kQBIC = TAG('Q', 'B', 'I', 'C');  // TCP cubic

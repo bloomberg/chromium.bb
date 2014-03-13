@@ -268,44 +268,40 @@ QuicData* DecryptWithNonce(Aes128Gcm12Decrypter* decrypter,
 }
 
 TEST(Aes128Gcm12DecrypterTest, Decrypt) {
-  if (!Aes128Gcm12Decrypter::IsSupported()) {
-    LOG(INFO) << "AES GCM not supported. Test skipped.";
-    return;
-  }
-
-  string key;
-  string iv;
-  string ct;
-  string aad;
-  string tag;
-  string pt;
-
   for (size_t i = 0; i < arraysize(test_group_array); i++) {
     SCOPED_TRACE(i);
-    const TestVector* test_vector = test_group_array[i];
+    const TestVector* test_vectors = test_group_array[i];
     const TestGroupInfo& test_info = test_group_info[i];
-    for (size_t j = 0; test_vector[j].key != NULL; j++) {
+    for (size_t j = 0; test_vectors[j].key != NULL; j++) {
       // If not present then decryption is expected to fail.
-      bool has_pt = test_vector[j].pt;
+      bool has_pt = test_vectors[j].pt;
 
       // Decode the test vector.
-      ASSERT_TRUE(DecodeHexString(test_vector[j].key, &key));
-      ASSERT_TRUE(DecodeHexString(test_vector[j].iv, &iv));
-      ASSERT_TRUE(DecodeHexString(test_vector[j].ct, &ct));
-      ASSERT_TRUE(DecodeHexString(test_vector[j].aad, &aad));
-      ASSERT_TRUE(DecodeHexString(test_vector[j].tag, &tag));
-      if (has_pt)
-        ASSERT_TRUE(DecodeHexString(test_vector[j].pt, &pt));
+      string key;
+      string iv;
+      string ct;
+      string aad;
+      string tag;
+      string pt;
+      ASSERT_TRUE(DecodeHexString(test_vectors[j].key, &key));
+      ASSERT_TRUE(DecodeHexString(test_vectors[j].iv, &iv));
+      ASSERT_TRUE(DecodeHexString(test_vectors[j].ct, &ct));
+      ASSERT_TRUE(DecodeHexString(test_vectors[j].aad, &aad));
+      ASSERT_TRUE(DecodeHexString(test_vectors[j].tag, &tag));
+      if (has_pt) {
+        ASSERT_TRUE(DecodeHexString(test_vectors[j].pt, &pt));
+      }
 
       // The test vector's lengths should look sane. Note that the lengths
       // in |test_info| are in bits.
       EXPECT_EQ(test_info.key_len, key.size() * 8);
       EXPECT_EQ(test_info.iv_len, iv.size() * 8);
-      EXPECT_EQ(test_info.pt_len, pt.size() * 8);
+      EXPECT_EQ(test_info.pt_len, ct.size() * 8);
       EXPECT_EQ(test_info.aad_len, aad.size() * 8);
       EXPECT_EQ(test_info.tag_len, tag.size() * 8);
-      if (has_pt)
+      if (has_pt) {
         EXPECT_EQ(test_info.pt_len, pt.size() * 8);
+      }
 
       // The test vectors have 16 byte authenticators but this code only uses
       // the first 12.
@@ -319,8 +315,8 @@ TEST(Aes128Gcm12DecrypterTest, Decrypt) {
 
       scoped_ptr<QuicData> decrypted(DecryptWithNonce(
           &decrypter, iv,
-          // OpenSSL fails if NULL is set as the AAD, as opposed to a
-          // zero-length, non-NULL pointer.
+          // This deliberately tests that the decrypter can handle an AAD that
+          // is set to NULL, as opposed to a zero-length, non-NULL pointer.
           aad.size() ? aad : StringPiece(), ciphertext));
       if (!decrypted.get()) {
         EXPECT_FALSE(has_pt);

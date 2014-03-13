@@ -224,25 +224,24 @@ QuicData* EncryptWithNonce(Aes128Gcm12Encrypter* encrypter,
 }
 
 TEST(Aes128Gcm12EncrypterTest, Encrypt) {
-  string key;
-  string iv;
-  string pt;
-  string aad;
-  string ct;
-  string tag;
-
   for (size_t i = 0; i < arraysize(test_group_array); i++) {
     SCOPED_TRACE(i);
-    const TestVector* test_vector = test_group_array[i];
+    const TestVector* test_vectors = test_group_array[i];
     const TestGroupInfo& test_info = test_group_info[i];
-    for (size_t j = 0; test_vector[j].key != NULL; j++) {
+    for (size_t j = 0; test_vectors[j].key != NULL; j++) {
       // Decode the test vector.
-      ASSERT_TRUE(DecodeHexString(test_vector[j].key, &key));
-      ASSERT_TRUE(DecodeHexString(test_vector[j].iv, &iv));
-      ASSERT_TRUE(DecodeHexString(test_vector[j].pt, &pt));
-      ASSERT_TRUE(DecodeHexString(test_vector[j].aad, &aad));
-      ASSERT_TRUE(DecodeHexString(test_vector[j].ct, &ct));
-      ASSERT_TRUE(DecodeHexString(test_vector[j].tag, &tag));
+      string key;
+      string iv;
+      string pt;
+      string aad;
+      string ct;
+      string tag;
+      ASSERT_TRUE(DecodeHexString(test_vectors[j].key, &key));
+      ASSERT_TRUE(DecodeHexString(test_vectors[j].iv, &iv));
+      ASSERT_TRUE(DecodeHexString(test_vectors[j].pt, &pt));
+      ASSERT_TRUE(DecodeHexString(test_vectors[j].aad, &aad));
+      ASSERT_TRUE(DecodeHexString(test_vectors[j].ct, &ct));
+      ASSERT_TRUE(DecodeHexString(test_vectors[j].tag, &tag));
 
       // The test vector's lengths should look sane. Note that the lengths
       // in |test_info| are in bits.
@@ -257,9 +256,8 @@ TEST(Aes128Gcm12EncrypterTest, Encrypt) {
       ASSERT_TRUE(encrypter.SetKey(key));
       scoped_ptr<QuicData> encrypted(EncryptWithNonce(
           &encrypter, iv,
-          // OpenSSL fails if NULL is set as the AAD, as opposed to a
-          // zero-length, non-NULL pointer. This deliberately tests that we
-          // handle this case.
+          // This deliberately tests that the encrypter can handle an AAD that
+          // is set to NULL, as opposed to a zero-length, non-NULL pointer.
           aad.size() ? aad : StringPiece(), pt));
       ASSERT_TRUE(encrypted.get());
 
