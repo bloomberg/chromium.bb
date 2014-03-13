@@ -57,7 +57,6 @@ public:
     // LinkResource
     virtual void process() OVERRIDE;
     virtual Type type() const OVERRIDE { return Import; }
-    virtual void ownerRemoved() OVERRIDE;
     virtual bool hasLoaded() const OVERRIDE;
 
     // HTMLImportChildClient

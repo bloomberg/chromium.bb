@@ -17,7 +17,7 @@ shouldBeNull("hello.import");
 debug("Re-inserting it shouldn't help.");
 document.head.appendChild(hello);
 window.setTimeout(function() {
-    shouldBeNull("hello.import");
+    shouldBeNonNull("hello.import");
     finishJSTest();
 }, 0);
 

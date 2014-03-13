@@ -19,9 +19,9 @@ function testStaticImport()
     staticImport.remove();
     shouldBeNull("staticImport.import");
 
-    // And never comes back even after re-insertion.
+    // And comes back even after re-insertion.
     document.head.appendChild(staticImport);
-    shouldBeNull("staticImport.import");
+    shouldBeNonNull("staticImport.import");
 }
 
 function testDynamicImport()
@@ -32,7 +32,7 @@ function testDynamicImport()
         dynamicImport.remove();
         shouldBeNull("dynamicImport.import");
         document.head.appendChild(dynamicImport);
-        shouldBeNull("dynamicImport.import");
+        shouldBeNonNull("dynamicImport.import");
 
         testDynamicImportRemovingEagerly();
     };
@@ -65,7 +65,7 @@ function testDynamicImportRemovingEagerly()
 
         shouldBeNull("dynamicImportEager.import");
         document.head.appendChild(dynamicImportEager);
-        shouldBeNull("dynamicImportEager.import");
+        shouldBeNonNull("dynamicImportEager.import");
 
         finishJSTest();
     }

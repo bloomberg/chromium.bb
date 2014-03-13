@@ -5,12 +5,12 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 PASS staticImport.import is non-null.
 PASS staticImport.import is null
-PASS staticImport.import is null
+PASS staticImport.import is non-null.
 PASS dynamicImport.import is non-null.
 PASS dynamicImport.import is null
-PASS dynamicImport.import is null
+PASS dynamicImport.import is non-null.
 PASS dynamicImportEager.import is null
-PASS dynamicImportEager.import is null
+PASS dynamicImportEager.import is non-null.
 PASS successfullyParsed is true
 
 TEST COMPLETE
