@@ -53,9 +53,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   };
 
   // Current version status; some of the status (e.g. INSTALLED and ACTIVE)
-  // should be persisted unlike running status. Note that this class doesn't
-  // change status on its own, consumers of this class should explicitly set
-  // a new status by calling set_status().
+  // should be persisted unlike running status.
   enum Status {
     NEW,         // The version is just created.
     INSTALLING,  // Install event is dispatched and being handled.
@@ -82,7 +80,15 @@ class CONTENT_EXPORT ServiceWorkerVersion
   }
 
   Status status() const { return status_; }
-  void set_status(Status status) { status_ = status; }
+
+  // This sets the new status and also run status change callbacks
+  // if there're any (see RegisterStatusChangeCallback).
+  void SetStatus(Status status);
+
+  // Registers status change callback. (This is for one-off observation,
+  // the consumer needs to re-register if it wants to continue observing
+  // status changes)
+  void RegisterStatusChangeCallback(const base::Closure& callback);
 
   // Starts an embedded worker for this version.
   // This returns OK (success) if the worker is already running.
@@ -116,10 +122,22 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // |active_version_embedded_worker_id| must be a valid positive ID
   // if there's an active (previous) version running.
   //
-  // This must be called when the status() is NEW. Calling this in other
-  // statuses will result in an error SERVICE_WORKER_ERROR_FAILED.
+  // This must be called when the status() is NEW. Calling this changes
+  // the version's status to INSTALLING.
+  // Upon completion, the version's status will be changed to INSTALLED
+  // on success, or back to NEW on failure.
   void DispatchInstallEvent(int active_version_embedded_worker_id,
                             const StatusCallback& callback);
+
+  // Sends activate event to the associated embedded worker and asynchronously
+  // calls |callback| when it errors out or it gets response from the worker
+  // to notify activation completion.
+  //
+  // This must be called when the status() is INSTALLED. Calling this changes
+  // the version's status to ACTIVATING.
+  // Upon completion, the version's status will be changed to ACTIVE
+  // on success, or back to INSTALLED on failure.
+  void DispatchActivateEvent(const StatusCallback& callback);
 
   // Sends fetch event to the associated embedded worker and calls
   // |callback| with the response from the worker.
@@ -160,6 +178,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // Pending callbacks.
   std::vector<StatusCallback> start_callbacks_;
   std::vector<StatusCallback> stop_callbacks_;
+
+  std::vector<base::Closure> status_change_callbacks_;
 
   IDMap<MessageCallback, IDMapOwnPointer> message_callbacks_;
 

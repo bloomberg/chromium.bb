@@ -24,10 +24,11 @@ void RunSoon(const base::Closure& callback) {
 }
 
 template <typename CallbackArray, typename Arg>
-void RunCallbacks(const CallbackArray& callbacks, const Arg& arg) {
-  for (typename CallbackArray::const_iterator i = callbacks.begin();
-       i != callbacks.end(); ++i)
+void RunCallbacks(CallbackArray* callbacks, const Arg& arg) {
+  for (typename CallbackArray::const_iterator i = callbacks->begin();
+       i != callbacks->end(); ++i)
     (*i).Run(arg);
+  callbacks->clear();
 }
 
 // A callback adapter to start a |task| after StartWorker.
@@ -57,20 +58,28 @@ void RunEmptyMessageCallback(const MessageCallback& callback,
   callback.Run(status, IPC::Message());
 }
 
-void HandleInstallFinished(const StatusCallback& callback,
-                           ServiceWorkerStatusCode status,
-                           const IPC::Message& message) {
+void HandleEventFinished(base::WeakPtr<ServiceWorkerVersion> version,
+                         uint32 expected_message_type,
+                         const StatusCallback& callback,
+                         ServiceWorkerVersion::Status next_status_on_success,
+                         ServiceWorkerVersion::Status next_status_on_error,
+                         ServiceWorkerStatusCode status,
+                         const IPC::Message& message) {
+  if (!version)
+    return;
   if (status != SERVICE_WORKER_OK) {
+    version->SetStatus(next_status_on_error);
     callback.Run(status);
     return;
   }
-
-  if (message.type() != ServiceWorkerHostMsg_InstallEventFinished::ID) {
-    NOTREACHED() << "Got unexpected response for InstallEvent: "
-                 << message.type();
+  if (message.type() != expected_message_type) {
+    NOTREACHED() << "Got unexpected response: " << message.type()
+                 << " expected:" << expected_message_type;
+    version->SetStatus(next_status_on_error);
     callback.Run(SERVICE_WORKER_ERROR_FAILED);
     return;
   }
+  version->SetStatus(next_status_on_success);
   callback.Run(SERVICE_WORKER_OK);
 }
 
@@ -117,6 +126,22 @@ void ServiceWorkerVersion::Shutdown() {
     embedded_worker_->RemoveObserver(this);
     embedded_worker_.reset();
   }
+}
+
+void ServiceWorkerVersion::SetStatus(Status status) {
+  status_ = status;
+
+  for (std::vector<base::Closure>::const_iterator i =
+           status_change_callbacks_.begin();
+       i != status_change_callbacks_.end(); ++i) {
+    (*i).Run();
+  }
+  status_change_callbacks_.clear();
+}
+
+void ServiceWorkerVersion::RegisterStatusChangeCallback(
+    const base::Closure& callback) {
+  status_change_callbacks_.push_back(callback);
 }
 
 void ServiceWorkerVersion::StartWorker(const StatusCallback& callback) {
@@ -207,28 +232,31 @@ void ServiceWorkerVersion::SendMessageAndRegisterCallback(
 void ServiceWorkerVersion::DispatchInstallEvent(
     int active_version_embedded_worker_id,
     const StatusCallback& callback) {
-  if (status() != NEW) {
-    // Unexpected.
-    NOTREACHED();
-    RunSoon(base::Bind(callback, SERVICE_WORKER_ERROR_FAILED));
-    return;
-  }
+  DCHECK_EQ(NEW, status()) << status();
+  status_ = INSTALLING;
   SendMessageAndRegisterCallback(
       ServiceWorkerMsg_InstallEvent(active_version_embedded_worker_id),
-      base::Bind(&HandleInstallFinished, callback));
+      base::Bind(&HandleEventFinished, weak_factory_.GetWeakPtr(),
+                 ServiceWorkerHostMsg_InstallEventFinished::ID,
+                 callback, INSTALLED, NEW));
+}
+
+void ServiceWorkerVersion::DispatchActivateEvent(
+    const StatusCallback& callback) {
+  DCHECK_EQ(INSTALLED, status()) << status();
+  status_ = ACTIVATING;
+  // TODO(kinuko): Implement.
+  NOTIMPLEMENTED();
+  RunSoon(base::Bind(&HandleEventFinished, weak_factory_.GetWeakPtr(),
+                     -1 /* dummy message_id */, callback, ACTIVE, INSTALLED,
+                     SERVICE_WORKER_OK,
+                     IPC::Message(-1, -1, IPC::Message::PRIORITY_NORMAL)));
 }
 
 void ServiceWorkerVersion::DispatchFetchEvent(
     const ServiceWorkerFetchRequest& request,
     const FetchCallback& callback) {
-  if (status() != ACTIVE) {
-    // Unexpected.
-    NOTREACHED();
-    RunSoon(base::Bind(callback, SERVICE_WORKER_ERROR_FAILED,
-                       SERVICE_WORKER_FETCH_EVENT_RESULT_FALLBACK,
-                       ServiceWorkerResponse()));
-    return;
-  }
+  DCHECK_EQ(ACTIVE, status()) << status();
   SendMessageAndRegisterCallback(
       ServiceWorkerMsg_FetchEvent(request),
       base::Bind(&HandleFetchResponse, callback));
@@ -246,21 +274,19 @@ void ServiceWorkerVersion::RemoveProcessToWorker(int process_id) {
 void ServiceWorkerVersion::OnStarted() {
   DCHECK_EQ(RUNNING, running_status());
   // Fire all start callbacks.
-  RunCallbacks(start_callbacks_, SERVICE_WORKER_OK);
-  start_callbacks_.clear();
+  RunCallbacks(&start_callbacks_, SERVICE_WORKER_OK);
 }
 
 void ServiceWorkerVersion::OnStopped() {
   DCHECK_EQ(STOPPED, running_status());
   // Fire all stop callbacks.
-  RunCallbacks(stop_callbacks_, SERVICE_WORKER_OK);
-  stop_callbacks_.clear();
+  RunCallbacks(&stop_callbacks_, SERVICE_WORKER_OK);
 
   // Let all start callbacks fail.
-  RunCallbacks(start_callbacks_, SERVICE_WORKER_ERROR_START_WORKER_FAILED);
-  start_callbacks_.clear();
+  RunCallbacks(&start_callbacks_, SERVICE_WORKER_ERROR_START_WORKER_FAILED);
 
-  // Let all message callbacks fail.
+  // Let all message callbacks fail (this will also fire and clear all
+  // callbacks for events).
   // TODO(kinuko): Consider if we want to add queue+resend mechanism here.
   IDMap<MessageCallback, IDMapOwnPointer>::iterator iter(&message_callbacks_);
   while (!iter.IsAtEnd()) {

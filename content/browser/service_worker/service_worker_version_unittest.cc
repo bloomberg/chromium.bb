@@ -40,10 +40,14 @@ class MessageReceiver : public EmbeddedWorkerTestHelper {
         current_request_id_(0) {}
   virtual ~MessageReceiver() {}
 
-  virtual void OnSendMessageToWorker(int thread_id,
+  virtual bool OnSendMessageToWorker(int thread_id,
                                      int embedded_worker_id,
                                      int request_id,
                                      const IPC::Message& message) OVERRIDE {
+    if (EmbeddedWorkerTestHelper::OnSendMessageToWorker(
+            thread_id, embedded_worker_id, request_id, message)) {
+      return true;
+    }
     current_embedded_worker_id_ = embedded_worker_id;
     current_request_id_ = request_id;
     bool handled = true;
@@ -52,7 +56,7 @@ class MessageReceiver : public EmbeddedWorkerTestHelper {
       IPC_MESSAGE_HANDLER(TestMsg_Request, OnRequest)
       IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
-    ASSERT_TRUE(handled);
+    return handled;
   }
 
  private:
@@ -80,6 +84,10 @@ void ReceiveResponse(ServiceWorkerStatusCode* status_out,
   ASSERT_TRUE(TestMsg_Response::Read(&message, &param));
   *status_out = status;
   *value_out = param.a;
+}
+
+void VerifyCalled(bool* called) {
+  *called = true;
 }
 
 }  // namespace
@@ -245,6 +253,51 @@ TEST_F(ServiceWorkerVersionTest, SendMessageAndRegisterCallback) {
   EXPECT_EQ(SERVICE_WORKER_OK, status2);
   EXPECT_EQ(111 * 2, value1);
   EXPECT_EQ(333 * 2, value2);
+}
+
+TEST_F(ServiceWorkerVersionTest, InstallAndWaitCompletion) {
+  EXPECT_EQ(ServiceWorkerVersion::NEW, version_->status());
+
+  // Dispatch an install event.
+  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
+  version_->DispatchInstallEvent(-1, CreateReceiverOnCurrentThread(&status));
+  EXPECT_EQ(ServiceWorkerVersion::INSTALLING, version_->status());
+
+  // Wait for the completion.
+  bool status_change_called = false;
+  version_->RegisterStatusChangeCallback(
+      base::Bind(&VerifyCalled, &status_change_called));
+
+  base::RunLoop().RunUntilIdle();
+
+  // After successful completion, version's status must be changed to
+  // INSTALLED, and status change callback must have been fired.
+  EXPECT_EQ(SERVICE_WORKER_OK, status);
+  EXPECT_TRUE(status_change_called);
+  EXPECT_EQ(ServiceWorkerVersion::INSTALLED, version_->status());
+}
+
+TEST_F(ServiceWorkerVersionTest, ActivateAndWaitCompletion) {
+  version_->SetStatus(ServiceWorkerVersion::INSTALLED);
+  EXPECT_EQ(ServiceWorkerVersion::INSTALLED, version_->status());
+
+  // Dispatch an activate event.
+  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
+  version_->DispatchActivateEvent(CreateReceiverOnCurrentThread(&status));
+  EXPECT_EQ(ServiceWorkerVersion::ACTIVATING, version_->status());
+
+  // Wait for the completion.
+  bool status_change_called = false;
+  version_->RegisterStatusChangeCallback(
+      base::Bind(&VerifyCalled, &status_change_called));
+
+  base::RunLoop().RunUntilIdle();
+
+  // After successful completion, version's status must be changed to
+  // ACTIVE, and status change callback must have been fired.
+  EXPECT_EQ(SERVICE_WORKER_OK, status);
+  EXPECT_TRUE(status_change_called);
+  EXPECT_EQ(ServiceWorkerVersion::ACTIVE, version_->status());
 }
 
 }  // namespace content

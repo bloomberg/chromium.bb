@@ -35,10 +35,11 @@ void ServiceWorkerRegistration::Shutdown() {
 }
 
 void ServiceWorkerRegistration::ActivatePendingVersion() {
-  active_version_->set_status(ServiceWorkerVersion::DEACTIVATED);
+  active_version_->SetStatus(ServiceWorkerVersion::DEACTIVATED);
   active_version_->Shutdown();
   active_version_ = pending_version_;
-  active_version_->set_status(ServiceWorkerVersion::ACTIVE);
+  // TODO(kinuko): This should be set to ACTIVATING until activation finishes.
+  active_version_->SetStatus(ServiceWorkerVersion::ACTIVE);
   pending_version_ = NULL;
 }
 

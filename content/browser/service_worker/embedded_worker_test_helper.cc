@@ -9,6 +9,7 @@
 #include "content/browser/service_worker/embedded_worker_registry.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/common/service_worker/embedded_worker_messages.h"
+#include "content/common/service_worker/service_worker_messages.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -70,12 +71,43 @@ void EmbeddedWorkerTestHelper::OnStopWorker(int embedded_worker_id) {
   SimulateWorkerStopped(embedded_worker_id);
 }
 
-void EmbeddedWorkerTestHelper::OnSendMessageToWorker(
+bool EmbeddedWorkerTestHelper::OnSendMessageToWorker(
     int thread_id,
     int embedded_worker_id,
     int request_id,
     const IPC::Message& message) {
-  // Do nothing on the message by default.
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(EmbeddedWorkerTestHelper, message)
+    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_InstallEvent, OnInstallEventStub)
+    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_FetchEvent, OnFetchEventStub)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  // Record all messages directed to inner script context.
+  inner_sink_.OnMessageReceived(message);
+  return handled;
+}
+
+void EmbeddedWorkerTestHelper::OnInstallEvent(
+    int embedded_worker_id,
+    int request_id,
+    int active_version_embedded_worker_id) {
+  SimulateSendMessageToBrowser(
+      embedded_worker_id,
+      request_id,
+      ServiceWorkerHostMsg_InstallEventFinished());
+}
+
+void EmbeddedWorkerTestHelper::OnFetchEvent(
+    int embedded_worker_id,
+    int request_id,
+    const ServiceWorkerFetchRequest& request) {
+  SimulateSendMessageToBrowser(
+      embedded_worker_id,
+      request_id,
+      ServiceWorkerHostMsg_FetchEventFinished(
+          SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE,
+          ServiceWorkerResponse(200, "OK", "GET",
+                                std::map<std::string, std::string>())));
 }
 
 void EmbeddedWorkerTestHelper::SimulateWorkerStarted(
@@ -131,17 +163,42 @@ void EmbeddedWorkerTestHelper::OnSendMessageToWorkerStub(
     int embedded_worker_id,
     int request_id,
     const IPC::Message& message) {
+  current_embedded_worker_id_ = embedded_worker_id;
+  current_request_id_ = request_id;
   EmbeddedWorkerInstance* worker = registry()->GetWorker(embedded_worker_id);
   ASSERT_TRUE(worker != NULL);
   EXPECT_EQ(worker->thread_id(), thread_id);
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
-      base::Bind(&EmbeddedWorkerTestHelper::OnSendMessageToWorker,
+      base::Bind(
+          base::IgnoreResult(&EmbeddedWorkerTestHelper::OnSendMessageToWorker),
+          weak_factory_.GetWeakPtr(),
+          thread_id,
+          embedded_worker_id,
+          request_id,
+          message));
+}
+
+void EmbeddedWorkerTestHelper::OnInstallEventStub(
+    int active_version_embedded_worker_id) {
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&EmbeddedWorkerTestHelper::OnInstallEvent,
                  weak_factory_.GetWeakPtr(),
-                 thread_id,
-                 embedded_worker_id,
-                 request_id,
-                 message));
+                 current_embedded_worker_id_,
+                 current_request_id_,
+                 active_version_embedded_worker_id));
+}
+
+void EmbeddedWorkerTestHelper::OnFetchEventStub(
+    const ServiceWorkerFetchRequest& request) {
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&EmbeddedWorkerTestHelper::OnFetchEvent,
+                 weak_factory_.GetWeakPtr(),
+                 current_embedded_worker_id_,
+                 current_request_id_,
+                 request));
 }
 
 EmbeddedWorkerRegistry* EmbeddedWorkerTestHelper::registry() {

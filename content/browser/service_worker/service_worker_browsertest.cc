@@ -295,7 +295,7 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
         embedded_test_server()->GetURL("/service_worker/empty.html"),
         "GET",
         std::map<std::string, std::string>());
-    version_->set_status(ServiceWorkerVersion::ACTIVE);
+    version_->SetStatus(ServiceWorkerVersion::ACTIVE);
     version_->DispatchFetchEvent(
         request, CreateResponseReceiver(BrowserThread::UI, done, result));
   }

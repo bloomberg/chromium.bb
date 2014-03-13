@@ -126,7 +126,7 @@ void ServiceWorkerRegisterJob::StartWorkerAndContinue(
 
   // TODO(alecflett): Don't set the active version until just before
   // the activate event is dispatched.
-  pending_version_->set_status(ServiceWorkerVersion::ACTIVE);
+  pending_version_->SetStatus(ServiceWorkerVersion::ACTIVE);
   registration_->set_active_version(pending_version_);
 }
 

@@ -59,7 +59,7 @@ TEST_F(ServiceWorkerRegistrationTest, ActivatePending) {
   const int64 version_2_id = 2L;
   scoped_refptr<ServiceWorkerVersion> version_1 =
       new ServiceWorkerVersion(registration, NULL, version_1_id);
-  version_1->set_status(ServiceWorkerVersion::ACTIVE);
+  version_1->SetStatus(ServiceWorkerVersion::ACTIVE);
   registration->set_active_version(version_1);
 
   scoped_refptr<ServiceWorkerVersion> version_2 =
