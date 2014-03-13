@@ -59,7 +59,8 @@ class TranslateManager : public content::NotificationObserver {
   // The actual translation might be performed asynchronously if the translate
   // script is not yet available.
   void TranslatePage(const std::string& source_lang,
-                     const std::string& target_lang);
+                     const std::string& target_lang,
+                     bool triggered_from_menu);
 
   // Reverts the contents of the page to its original language.
   void RevertTranslation();

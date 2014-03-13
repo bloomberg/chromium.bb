@@ -51,7 +51,8 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
                      const std::string& original_language,
                      const std::string& target_language,
                      TranslateErrors::Type error_type,
-                     PrefService* prefs);
+                     PrefService* prefs,
+                     bool triggered_from_menu);
 
   // Returns the number of languages supported.
   size_t num_languages() const { return ui_delegate_.GetNumberOfLanguages(); }
@@ -91,6 +92,13 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
   // Returns true if the current infobar indicates an error (in which case it
   // should get a yellow background instead of a blue one).
   bool is_error() const { return step_ == TranslateTabHelper::TRANSLATE_ERROR; }
+
+
+  // Return true if the translation was triggered by a menu entry instead of
+  // via an infobar/bubble or preference.
+  bool triggered_from_menu() const {
+    return triggered_from_menu_;
+  }
 
   // Returns what kind of background fading effect the infobar should use when
   // its is shown.
@@ -163,7 +171,8 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
                            const std::string& original_language,
                            const std::string& target_language,
                            TranslateErrors::Type error_type,
-                           PrefService* prefs);
+                           PrefService* prefs,
+                           bool triggered_from_menu);
 
  private:
   friend class TranslationInfoBarTest;
@@ -195,6 +204,9 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
   // The translation related preferences.
   scoped_ptr<TranslatePrefs> prefs_;
 
+  // Whether the translation was triggered via a menu click vs automatically
+  // (due to language detection, preferences...)
+  bool triggered_from_menu_;
   DISALLOW_COPY_AND_ASSIGN(TranslateInfoBarDelegate);
 };
 

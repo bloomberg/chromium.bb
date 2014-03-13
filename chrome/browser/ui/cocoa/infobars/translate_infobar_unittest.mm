@@ -42,7 +42,7 @@ class MockTranslateInfoBarDelegate : public TranslateInfoBarDelegate {
                                TranslateErrors::Type error,
                                PrefService* prefs)
       : TranslateInfoBarDelegate(web_contents, step, NULL, "en", "es", error,
-                                 prefs) {
+                                 prefs, false) {
   }
 
   MOCK_METHOD0(Translate, void());

@@ -27,8 +27,10 @@ public class TranslateAlwaysPanel implements TranslateSubPanel {
         panelMessage.setText(context.getString(
                 R.string.translate_infobar_translation_done, mOptions.targetLanguage()));
 
-        TranslateCheckBox checkBox = new TranslateCheckBox(mOptions, mListener);
-        checkBox.createContent(context, layout);
+        if (!mOptions.triggeredFromMenu()) {
+            TranslateCheckBox checkBox = new TranslateCheckBox(mOptions, mListener);
+            checkBox.createContent(context, layout);
+        }
 
         layout.addButtons(context.getString(R.string.translate_button_done),
                 context.getString(R.string.translate_show_original));

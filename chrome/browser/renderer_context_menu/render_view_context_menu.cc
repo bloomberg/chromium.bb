@@ -1780,7 +1780,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       prefs->RemoveSiteFromBlacklist(params_.page_url.HostNoBrackets());
       TranslateManager* manager = translate_tab_helper->GetTranslateManager();
       DCHECK(manager);
-      manager->TranslatePage(original_lang, target_lang);
+      manager->TranslatePage(original_lang, target_lang, true);
       break;
     }
 

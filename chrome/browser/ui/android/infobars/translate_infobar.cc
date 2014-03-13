@@ -47,7 +47,8 @@ ScopedJavaLocalRef<jobject> TranslateInfoBar::CreateRenderInfoBar(JNIEnv* env) {
       env, java_translate_delegate_.obj(), reinterpret_cast<intptr_t>(this),
       delegate->translate_step(), delegate->original_language_index(),
       delegate->target_language_index(), delegate->ShouldAlwaysTranslate(),
-      ShouldDisplayNeverTranslateInfoBarOnCancel(), java_languages.obj());
+      ShouldDisplayNeverTranslateInfoBarOnCancel(),
+      delegate->triggered_from_menu(), java_languages.obj());
 }
 
 void TranslateInfoBar::ProcessButton(int action,
@@ -105,10 +106,11 @@ void TranslateInfoBar::ApplyTranslateOptions(JNIEnv* env,
 void TranslateInfoBar::TransferOwnership(
     TranslateInfoBar* destination,
     TranslateTabHelper::TranslateStep new_type) {
+  int new_target_language = destination->GetDelegate()->target_language_index();
   JNIEnv* env = base::android::AttachCurrentThread();
   if (Java_TranslateInfoBarDelegate_changeTranslateInfoBarTypeAndPointer(
       env, java_translate_delegate_.obj(),
-      reinterpret_cast<intptr_t>(destination), new_type)) {
+      reinterpret_cast<intptr_t>(destination), new_type, new_target_language)) {
     ReassignJavaInfoBar(destination);
     destination->SetJavaDelegate(java_translate_delegate_.Release());
   }

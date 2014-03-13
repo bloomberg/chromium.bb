@@ -321,7 +321,7 @@ void TranslateManager::InitiateTranslation(const std::string& page_lang) {
     if (!auto_target_lang.empty()) {
       TranslateBrowserMetrics::ReportInitiationStatus(
           TranslateBrowserMetrics::INITIATION_STATUS_AUTO_BY_CONFIG);
-      TranslatePage(language_code, auto_target_lang);
+      TranslatePage(language_code, auto_target_lang, false);
       return;
     }
   }
@@ -332,7 +332,7 @@ void TranslateManager::InitiateTranslation(const std::string& page_lang) {
     // This page was navigated through a click from a translated page.
     TranslateBrowserMetrics::ReportInitiationStatus(
         TranslateBrowserMetrics::INITIATION_STATUS_AUTO_BY_LINK);
-    TranslatePage(language_code, auto_translate_to);
+    TranslatePage(language_code, auto_translate_to, false);
     return;
   }
 
@@ -343,7 +343,8 @@ void TranslateManager::InitiateTranslation(const std::string& page_lang) {
   translate_tab_helper_->ShowTranslateUI(TranslateTabHelper::BEFORE_TRANSLATE,
                                          language_code,
                                          target_lang,
-                                         TranslateErrors::NONE);
+                                         TranslateErrors::NONE,
+                                         false);
 }
 
 void TranslateManager::InitiateTranslationPosted(const std::string& page_lang,
@@ -372,7 +373,8 @@ void TranslateManager::InitiateTranslationPosted(const std::string& page_lang,
 }
 
 void TranslateManager::TranslatePage(const std::string& original_source_lang,
-                                     const std::string& target_lang) {
+                                     const std::string& target_lang,
+                                     bool triggered_from_menu) {
   WebContents* web_contents = translate_tab_helper_->GetWebContents();
   DCHECK(web_contents);
   NavigationEntry* entry = web_contents->GetController().GetActiveEntry();
@@ -392,7 +394,8 @@ void TranslateManager::TranslatePage(const std::string& original_source_lang,
   translate_tab_helper_->ShowTranslateUI(TranslateTabHelper::TRANSLATING,
                                          source_lang,
                                          target_lang,
-                                         TranslateErrors::NONE);
+                                         TranslateErrors::NONE,
+                                         triggered_from_menu);
 
   TranslateScript* script = TranslateDownloadManager::GetInstance()->script();
   DCHECK(script != NULL);
@@ -489,7 +492,8 @@ void TranslateManager::PageTranslated(PageTranslatedDetails* details) {
   translate_tab_helper_->ShowTranslateUI(TranslateTabHelper::AFTER_TRANSLATE,
                                          details->source_language,
                                          details->target_language,
-                                         details->error_type);
+                                         details->error_type,
+                                         false);
 
   WebContents* web_contents = translate_tab_helper_->GetWebContents();
   if (details->error_type != TranslateErrors::NONE &&
@@ -526,7 +530,8 @@ void TranslateManager::OnTranslateScriptFetchComplete(
     translate_tab_helper_->ShowTranslateUI(TranslateTabHelper::TRANSLATE_ERROR,
                                            source_lang,
                                            target_lang,
-                                           TranslateErrors::NETWORK);
+                                           TranslateErrors::NETWORK,
+                                           false);
     if (!web_contents->GetBrowserContext()->IsOffTheRecord()) {
       TranslateErrorDetails error_details;
       error_details.time = base::Time::Now();

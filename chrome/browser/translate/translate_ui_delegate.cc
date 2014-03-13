@@ -160,7 +160,8 @@ void TranslateUIDelegate::Translate() {
   TranslateManager* manager =
       TranslateTabHelper::GetManagerFromWebContents(web_contents());
   DCHECK(manager);
-  manager->TranslatePage(GetOriginalLanguageCode(), GetTargetLanguageCode());
+  manager->TranslatePage(
+      GetOriginalLanguageCode(), GetTargetLanguageCode(), false);
 
   UMA_HISTOGRAM_BOOLEAN(kPerformTranslate, true);
 }
