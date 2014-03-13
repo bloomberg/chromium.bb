@@ -77,6 +77,12 @@ const int kContentEdgeShadowThickness = 2;
 // The icon never shrinks below 16 px on a side.
 const int kIconMinimumSize = 16;
 
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+// The number of pixels to move the frame background image upwards when using
+// the GTK+ theme and the titlebar is condensed.
+const int kGTKThemeCondensedFrameTopInset = 15;
+#endif
+
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -629,10 +635,19 @@ void OpaqueBrowserFrameView::PaintRestoredFrameBorder(gfx::Canvas* canvas) {
 }
 
 void OpaqueBrowserFrameView::PaintMaximizedFrameBorder(gfx::Canvas* canvas) {
+  ui::ThemeProvider* tp = GetThemeProvider();
   frame_background_->set_frame_color(GetFrameColor());
   frame_background_->set_theme_image(GetFrameImage());
   frame_background_->set_theme_overlay_image(GetFrameOverlayImage());
   frame_background_->set_top_area_height(GetTopAreaHeight());
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  // The window manager typically shows a gradient in the native title bar (when
+  // the system title bar pref is set, or when maximized on Ubuntu). Hide the
+  // gradient in the tab strip (by shifting it up vertically) to avoid a
+  // double-gradient effect.
+  if (tp->UsingNativeTheme())
+    frame_background_->set_maximized_top_inset(kGTKThemeCondensedFrameTopInset);
+#endif
 
   frame_background_->PaintMaximized(canvas, this);
 
@@ -641,8 +656,7 @@ void OpaqueBrowserFrameView::PaintMaximizedFrameBorder(gfx::Canvas* canvas) {
     // There's no toolbar to edge the frame border, so we need to draw a bottom
     // edge.  The graphic we use for this has a built in client edge, so we clip
     // it off the bottom.
-    gfx::ImageSkia* top_center =
-        GetThemeProvider()->GetImageSkiaNamed(IDR_APP_TOP_CENTER);
+    gfx::ImageSkia* top_center = tp->GetImageSkiaNamed(IDR_APP_TOP_CENTER);
     int edge_height = top_center->height() - kClientEdgeThickness;
     canvas->TileImageInt(*top_center, 0,
         frame()->client_view()->y() - edge_height, width(), edge_height);
