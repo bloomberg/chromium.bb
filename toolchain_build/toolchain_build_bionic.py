@@ -28,7 +28,7 @@ from file_update import Mkdir, Rmdir, Symlink
 from file_update import NeedsUpdate, UpdateFromTo, UpdateText
 
 
-BIONIC_VERSION = '9585af9f389df46801f2ff4d0464239c3175c7bd'
+BIONIC_VERSION = '3a7daf231449b2d3dd9596846c0daeecaf427b29'
 ARCHES = ['arm']
 
 BUILD_SCRIPT = os.path.abspath(__file__)
@@ -458,7 +458,7 @@ def ConfigureBionicProjects():
     CreateProject(arch, project)
 
 
-def MakeBionicProject(project, targets=[]):
+def MakeBionicProject(project, targets=[], clobber=False):
   arch = 'arm'
   paths = GetProjectPaths(arch, project)
   workpath = paths['work']
@@ -466,6 +466,11 @@ def MakeBionicProject(project, targets=[]):
   targetlist = ' '.join(targets)
 
   print 'Building %s for %s at %s %s.' % (project, arch, workpath, targetlist)
+  if clobber:
+    args = ['make', '-j12', 'V=1', 'clean']
+    if process.Run(args, cwd=workpath, outfile=sys.stdout):
+      raise RuntimeError('Failed to clean %s for %s.\n' % (project, arch))
+
   args = ['make', '-j12', 'V=1'] + targets
   if process.Run(args, cwd=workpath, outfile=sys.stdout):
     raise RuntimeError('Failed to build %s for %s.\n' % (project, arch))
@@ -572,22 +577,22 @@ def main(argv):
   ConfigureAndBuild_libgcc()
 
   # With libgcc.a, we can now build libc.so
-  MakeBionicProject('libc')
+  MakeBionicProject('libc', clobber=options.clobber or options.buildbot)
 
   # With libc.so, we can build libgcc_s.so
   BuildAndInstall_libgcc_s()
 
   # With libc and libgcc_s, we can now build libm
-  MakeBionicProject('libm')
+  MakeBionicProject('libm', clobber=options.clobber or options.buildbot)
 
   # With libc, libgcc, and libm, we can now build libstdc++
   ConfigureAndBuild_libstdcpp()
 
   # Now we can build the linker
-  MakeBionicProject('linker')
+  MakeBionicProject('linker', clobber=options.clobber or options.buildbot)
 
   # Now we have a full toolchain, so test it
-  MakeBionicProject('tests')
+  MakeBionicProject('tests', clobber=options.clobber or options.buildbot)
 
   # We can run only off buildbots
   if not options.buildbot:
