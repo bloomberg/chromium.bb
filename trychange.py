@@ -376,14 +376,14 @@ def _GenTSBotSpec(checkouts, change, changed_files, options):
                                         options.issue,
                                         options.patchset,
                                         options.email)
-    trybots = presubmit_support.DoGetTrySlaves(
+    trybots = presubmit_support.DoGetTryMasters(
         change,
         checkouts[0].GetFileNames(),
         checkouts[0].checkout_root,
         root_presubmit,
         options.project,
         options.verbose,
-        sys.stdout)
+        sys.stdout).get('tryserver.chromium', [])
     if trybots:
       old_style = filter(lambda x: isinstance(x, basestring), trybots)
       new_style = filter(lambda x: isinstance(x, tuple), trybots)
