@@ -95,6 +95,9 @@ bool AsyncPixelTransfersCompletedQuery::End(
   mem_params.shm_size = buffer.size;
   mem_params.shm_data_offset = shm_offset();
   mem_params.shm_data_size = sizeof(QuerySync);
+  uint32 end = mem_params.shm_data_offset + mem_params.shm_data_size;
+  if (end > mem_params.shm_size || end < mem_params.shm_data_offset)
+    return false;
 
   observer_ = new AsyncPixelTransferCompletionObserverImpl(submit_count);
 
