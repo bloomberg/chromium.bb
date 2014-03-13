@@ -310,6 +310,8 @@ void KeyboardController::HideKeyboard(HideReason reason) {
 
   NotifyKeyboardBoundsChanging(gfx::Rect());
 
+  set_lock_keyboard(false);
+
   ui::LayerAnimator* container_animator = container_->layer()->GetAnimator();
   animation_observer_.reset(new CallbackAnimationObserver(
       container_animator,
