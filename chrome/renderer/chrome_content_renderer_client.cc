@@ -1293,13 +1293,6 @@ void ChromeContentRendererClient::SetSpellcheck(SpellCheck* spellcheck) {
 }
 #endif
 
-void ChromeContentRendererClient::OnPurgeMemory() {
-#if defined(ENABLE_SPELLCHECK)
-  DVLOG(1) << "Resetting spellcheck in renderer client";
-  SetSpellcheck(new SpellCheck());
-#endif
-}
-
 bool ChromeContentRendererClient::IsAdblockInstalled() {
   return g_current_client->extension_dispatcher_->extensions()->Contains(
       "gighmmpiobklfepjocnamgkkbiglidom");

@@ -262,12 +262,6 @@ IPC_MESSAGE_CONTROL3(ChromeViewMsg_SetCacheCapacities,
 IPC_MESSAGE_CONTROL1(ChromeViewMsg_ClearCache,
                      bool /* on_navigation */)
 
-// Tells the renderer to dump as much memory as it can, perhaps because we
-// have memory pressure or the renderer is (or will be) paged out.  This
-// should only result in purging objects we can recalculate, e.g. caches or
-// JS garbage, not in purging irreplaceable objects.
-IPC_MESSAGE_CONTROL0(ChromeViewMsg_PurgeMemory)
-
 // For WebUI testing, this message stores parameters to do ScriptEvalRequest at
 // a time which is late enough to not be thrown out, and early enough to be
 // before onload events are fired.

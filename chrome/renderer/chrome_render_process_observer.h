@@ -61,7 +61,6 @@ class ChromeRenderProcessObserver : public content::RenderProcessObserver {
   void OnSetFieldTrialGroup(const std::string& fiel_trial_name,
                             const std::string& group_name);
   void OnGetV8HeapStats();
-  void OnPurgeMemory();
 
   static bool is_incognito_process_;
   scoped_ptr<content::ResourceDispatcherDelegate> resource_delegate_;

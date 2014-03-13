@@ -135,14 +135,10 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   void SetExtensionDispatcher(extensions::Dispatcher* extension_dispatcher);
 
 #if defined(ENABLE_SPELLCHECK)
-  // Sets a new |spellcheck|. Used for low-mem restart and testing only.
+  // Sets a new |spellcheck|. Used for testing only.
   // Takes ownership of |spellcheck|.
   void SetSpellcheck(SpellCheck* spellcheck);
 #endif
-
-  // Called in low-memory conditions to dump the memory used by the spellchecker
-  // and start over.
-  void OnPurgeMemory();
 
   static blink::WebPlugin* CreatePlugin(
       content::RenderFrame* render_frame,
