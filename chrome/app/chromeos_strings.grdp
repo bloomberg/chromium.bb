@@ -1230,7 +1230,7 @@ Press any key to continue exploring.
     Other languages
   </message>
   <message name="IDS_OOBE_OTHER_KEYBOARD_LAYOUTS" desc="Option group name dividing vendor-configured keyboard layouts from other available layouts in out-of-box 'Select your keyboard' select control.">
-    Other layouts
+    Other keyboards
   </message>
   <message name="IDS_LOGIN_TITLE" desc="Title of sign-in box">
     Sign in
@@ -4246,171 +4246,171 @@ Battery full
     Full-width English
   </message>
 
-  <message name="IDS_STATUSBAR_LAYOUT_JAPAN" desc="In the language menu button, this shows the input mode.">
-    Japanese keyboard
+  <message name="IDS_STATUSBAR_LAYOUT_JAPAN" desc="In the language menu button, this shows the input mode [Japanese keyboard].">
+    Japanese
   </message>
-  <message name="IDS_STATUSBAR_LAYOUT_SLOVENIA" desc="In the language menu button, this shows the input mode.">
-    Slovenian keyboard
+  <message name="IDS_STATUSBAR_LAYOUT_SLOVENIA" desc="In the language menu button, this shows the input mode [Slovenian keyboard].">
+    Slovenian
   </message>
-  <message name="IDS_STATUSBAR_LAYOUT_GERMANY" desc="In the language menu button, this shows the input mode.">
-    German keyboard
+  <message name="IDS_STATUSBAR_LAYOUT_GERMANY" desc="In the language menu button, this shows the input mode [German keyboard].">
+    German
   </message>
-  <message name="IDS_STATUSBAR_LAYOUT_GERMANY_NEO2" desc="In the language menu button, this shows the input mode.">
-    German Neo 2 keyboard
+  <message name="IDS_STATUSBAR_LAYOUT_GERMANY_NEO2" desc="In the language menu button, this shows the input mode [German Neo 2 keyboard].">
+    German Neo 2
   </message>
-  <message name="IDS_STATUSBAR_LAYOUT_ITALY" desc="In the language menu button, this shows the input mode.">
-    Italian keyboard
+  <message name="IDS_STATUSBAR_LAYOUT_ITALY" desc="In the language menu button, this shows the input mode [Italian keyboard].">
+    Italian
   </message>
-  <message name="IDS_STATUSBAR_LAYOUT_ESTONIA" desc="In the language menu button, this shows the input mode.">
-    Estonian keyboard
+  <message name="IDS_STATUSBAR_LAYOUT_ESTONIA" desc="In the language menu button, this shows the input mode [Estonian keyboard].">
+    Estonian
   </message>
-  <message name="IDS_STATUSBAR_LAYOUT_HUNGARY" desc="In the language menu button, this shows the input mode.">
-    Hungarian keyboard
+  <message name="IDS_STATUSBAR_LAYOUT_HUNGARY" desc="In the language menu button, this shows the input mode [Hungarian keyboard].">
+    Hungarian
   </message>
-  <message name="IDS_STATUSBAR_LAYOUT_POLAND" desc="In the language menu button, this shows the input mode.">
-    Polish keyboard
+  <message name="IDS_STATUSBAR_LAYOUT_POLAND" desc="In the language menu button, this shows the input mode [Polish keyboard].">
+    Polish
   </message>
-  <message name="IDS_STATUSBAR_LAYOUT_DENMARK" desc="In the language menu button, this shows the input mode.">
-    Danish keyboard
+  <message name="IDS_STATUSBAR_LAYOUT_DENMARK" desc="In the language menu button, this shows the input mode [Danish keyboard].">
+    Danish
   </message>
-  <message name="IDS_STATUSBAR_LAYOUT_CROATIA" desc="In the language menu button, this shows the input mode.">
-    Croatian keyboard
+  <message name="IDS_STATUSBAR_LAYOUT_CROATIA" desc="In the language menu button, this shows the input mode [Croatian keyboard].">
+    Croatian
   </message>
-  <message name="IDS_STATUSBAR_LAYOUT_BRAZIL" desc="In the language menu button, this shows the input mode.">
-    Brazilian keyboard
+  <message name="IDS_STATUSBAR_LAYOUT_BRAZIL" desc="In the language menu button, this shows the input mode [Brazilian keyboard].">
+    Brazilian
   </message>
-  <message name="IDS_STATUSBAR_LAYOUT_SERBIA" desc="In the language menu button, this shows the input mode.">
-    Serbian keyboard
+  <message name="IDS_STATUSBAR_LAYOUT_SERBIA" desc="In the language menu button, this shows the input mode [Serbian keyboard].">
+    Serbian
   </message>
-  <message name="IDS_STATUSBAR_LAYOUT_CZECHIA" desc="In the language menu button, this shows the input mode.">
-    Czech keyboard
+  <message name="IDS_STATUSBAR_LAYOUT_CZECHIA" desc="In the language menu button, this shows the input mode [Czech keyboard].">
+    Czech
   </message>
-  <message name="IDS_STATUSBAR_LAYOUT_CZECHIA_QWERTY" desc="In the language menu button, this shows the input mode.">
-    Czech QWERTY keyboard
+  <message name="IDS_STATUSBAR_LAYOUT_CZECHIA_QWERTY" desc="In the language menu button, this shows the input mode [Czech QWERTY keyboard].">
+    Czech QWERTY
   </message>
-  <message name="IDS_STATUSBAR_LAYOUT_USA_DVORAK" desc="In the language menu button, this shows the input mode.">
-    US Dvorak keyboard
+  <message name="IDS_STATUSBAR_LAYOUT_USA_DVORAK" desc="In the language menu button, this shows the input mode [US Dvorak keyboard].">
+    US Dvorak
   </message>
-  <message name="IDS_STATUSBAR_LAYOUT_USA_COLEMAK" desc="In the language menu button, this shows the input mode.">
-    US Colemak keyboard
+  <message name="IDS_STATUSBAR_LAYOUT_USA_COLEMAK" desc="In the language menu button, this shows the input mode [US Colemak keyboard].">
+    US Colemak
   </message>
-  <message name="IDS_STATUSBAR_LAYOUT_ROMANIA" desc="In the language menu button, this shows the input mode.">
-    Romanian keyboard
+  <message name="IDS_STATUSBAR_LAYOUT_ROMANIA" desc="In the language menu button, this shows the input mode [Romanian keyboard].">
+    Romanian
   </message>
-  <message name="IDS_STATUSBAR_LAYOUT_USA" desc="In the language menu button, this shows the input mode.">
-    US keyboard
+  <message name="IDS_STATUSBAR_LAYOUT_USA" desc="In the language menu button, this shows the input mode [US keyboard].">
+    US
   </message>
-  <message name="IDS_STATUSBAR_LAYOUT_USA_EXTENDED" desc="In the language menu button, this shows the input mode.">
-    US extended keyboard
+  <message name="IDS_STATUSBAR_LAYOUT_USA_EXTENDED" desc="In the language menu button, this shows the input mode [US extended keyboard].">
+    US extended
   </message>
-  <message name="IDS_STATUSBAR_LAYOUT_USA_INTERNATIONAL" desc="In the language menu button, this shows the input mode.">
-    US international keyboard
+  <message name="IDS_STATUSBAR_LAYOUT_USA_INTERNATIONAL" desc="In the language menu button, this shows the input mode [US international keyboard].">
+    US international
   </message>
-  <message name="IDS_STATUSBAR_LAYOUT_LITHUANIA" desc="In the language menu button, this shows the input mode.">
-    Lithuanian keyboard
+  <message name="IDS_STATUSBAR_LAYOUT_LITHUANIA" desc="In the language menu button, this shows the input mode [Lithuanian keyboard].">
+    Lithuanian
   </message>
-  <message name="IDS_STATUSBAR_LAYOUT_UNITED_KINGDOM" desc="In the language menu button, this shows the input mode.">
-    UK keyboard
+  <message name="IDS_STATUSBAR_LAYOUT_UNITED_KINGDOM" desc="In the language menu button, this shows the input mode [UK keyboard].">
+    UK
   </message>
-  <message name="IDS_STATUSBAR_LAYOUT_UNITED_KINGDOM_DVORAK" desc="In the language menu button, this shows the input mode.">
-    UK Dvorak keyboard
+  <message name="IDS_STATUSBAR_LAYOUT_UNITED_KINGDOM_DVORAK" desc="In the language menu button, this shows the input mode [UK Dvorak keyboard].">
+    UK Dvorak
   </message>
-  <message name="IDS_STATUSBAR_LAYOUT_SLOVAKIA" desc="In the language menu button, this shows the input mode.">
-    Slovakian keyboard
+  <message name="IDS_STATUSBAR_LAYOUT_SLOVAKIA" desc="In the language menu button, this shows the input mode [Slovakian keyboard].">
+    Slovakian
   </message>
-  <message name="IDS_STATUSBAR_LAYOUT_RUSSIA" desc="In the language menu button, this shows the input mode.">
-    Russian keyboard
+  <message name="IDS_STATUSBAR_LAYOUT_RUSSIA" desc="In the language menu button, this shows the input mode [Russian keyboard].">
+    Russian
   </message>
-  <message name="IDS_STATUSBAR_LAYOUT_RUSSIA_PHONETIC" desc="In the language menu button, this shows the input mode.">
-    Russian phonetic keyboard
+  <message name="IDS_STATUSBAR_LAYOUT_RUSSIA_PHONETIC" desc="In the language menu button, this shows the input mode [Russian phonetic keyboard].">
+    Russian phonetic
   </message>
-  <message name="IDS_STATUSBAR_LAYOUT_GREECE" desc="In the language menu button, this shows the input mode.">
-    Greek keyboard
+  <message name="IDS_STATUSBAR_LAYOUT_GREECE" desc="In the language menu button, this shows the input mode [Greek keyboard].">
+    Greek
   </message>
-  <message name="IDS_STATUSBAR_LAYOUT_BELGIUM" desc="In the language menu button, this shows the input mode.">
-    Belgian keyboard
+  <message name="IDS_STATUSBAR_LAYOUT_BELGIUM" desc="In the language menu button, this shows the input mode [Belgian keyboard].">
+    Belgian
   </message>
-  <message name="IDS_STATUSBAR_LAYOUT_BULGARIA" desc="In the language menu button, this shows the input mode.">
-    Bulgarian keyboard
+  <message name="IDS_STATUSBAR_LAYOUT_BULGARIA" desc="In the language menu button, this shows the input mode [Bulgarian keyboard].">
+    Bulgarian
   </message>
-  <message name="IDS_STATUSBAR_LAYOUT_BULGARIA_PHONETIC" desc="In the language menu button, this shows the input mode.">
-    Bulgarian phonetic keyboard
+  <message name="IDS_STATUSBAR_LAYOUT_BULGARIA_PHONETIC" desc="In the language menu button, this shows the input mode [Bulgarian phonetic keyboard].">
+    Bulgarian phonetic
   </message>
-  <message name="IDS_STATUSBAR_LAYOUT_SWITZERLAND" desc="In the language menu button, this shows the input mode.">
-    Swiss keyboard
+  <message name="IDS_STATUSBAR_LAYOUT_SWITZERLAND" desc="In the language menu button, this shows the input mode [Swiss keyboard].">
+    Swiss
   </message>
-  <message name="IDS_STATUSBAR_LAYOUT_SWITZERLAND_FRENCH" desc="In the language menu button, this shows the input mode.">
-    Swiss French keyboard
+  <message name="IDS_STATUSBAR_LAYOUT_SWITZERLAND_FRENCH" desc="In the language menu button, this shows the input mode [Swiss French keyboard].">
+    Swiss French
   </message>
-  <message name="IDS_STATUSBAR_LAYOUT_TURKEY" desc="In the language menu button, this shows the input mode.">
-    Turkish keyboard
+  <message name="IDS_STATUSBAR_LAYOUT_TURKEY" desc="In the language menu button, this shows the input mode [Turkish keyboard].">
+    Turkish
   </message>
-  <message name="IDS_STATUSBAR_LAYOUT_PORTUGAL" desc="In the language menu button, this shows the input mode.">
-    Portuguese keyboard
+  <message name="IDS_STATUSBAR_LAYOUT_PORTUGAL" desc="In the language menu button, this shows the input mode [Portuguese keyboard].">
+    Portuguese
   </message>
-  <message name="IDS_STATUSBAR_LAYOUT_SPAIN" desc="In the language menu button, this shows the input mode.">
-    Spanish keyboard
+  <message name="IDS_STATUSBAR_LAYOUT_SPAIN" desc="In the language menu button, this shows the input mode [Spanish keyboard].">
+    Spanish
   </message>
-  <message name="IDS_STATUSBAR_LAYOUT_FINLAND" desc="In the language menu button, this shows the input mode.">
-    Finnish keyboard
+  <message name="IDS_STATUSBAR_LAYOUT_FINLAND" desc="In the language menu button, this shows the input mode [Finnish keyboard].">
+    Finnish
   </message>
-  <message name="IDS_STATUSBAR_LAYOUT_UKRAINE" desc="In the language menu button, this shows the input mode.">
-    Ukrainian keyboard
+  <message name="IDS_STATUSBAR_LAYOUT_UKRAINE" desc="In the language menu button, this shows the input mode [Ukrainian keyboard].">
+    Ukrainian
   </message>
-  <message name="IDS_STATUSBAR_LAYOUT_SPAIN_CATALAN" desc="In the language menu button, this shows the input mode.">
-    Catalan keyboard
+  <message name="IDS_STATUSBAR_LAYOUT_SPAIN_CATALAN" desc="In the language menu button, this shows the input mode [Catalan keyboard].">
+    Catalan
   </message>
-  <message name="IDS_STATUSBAR_LAYOUT_FRANCE" desc="In the language menu button, this shows the input mode.">
-    French keyboard
+  <message name="IDS_STATUSBAR_LAYOUT_FRANCE" desc="In the language menu button, this shows the input mode [French keyboard].">
+    French
   </message>
-  <message name="IDS_STATUSBAR_LAYOUT_NORWAY" desc="In the language menu button, this shows the input mode.">
-    Norwegian keyboard
+  <message name="IDS_STATUSBAR_LAYOUT_NORWAY" desc="In the language menu button, this shows the input mode [Norwegian keyboard].">
+    Norwegian
   </message>
-  <message name="IDS_STATUSBAR_LAYOUT_SWEDEN" desc="In the language menu button, this shows the input mode.">
-    Swedish keyboard
+  <message name="IDS_STATUSBAR_LAYOUT_SWEDEN" desc="In the language menu button, this shows the input mode [Swedish keyboard].">
+    Swedish
   </message>
-  <message name="IDS_STATUSBAR_LAYOUT_NETHERLANDS" desc="In the language menu button, this shows the input mode.">
-    Dutch keyboard
+  <message name="IDS_STATUSBAR_LAYOUT_NETHERLANDS" desc="In the language menu button, this shows the input mode [Dutch keyboard].">
+    Dutch
   </message>
-  <message name="IDS_STATUSBAR_LAYOUT_LATIN_AMERICAN" desc="In the language menu button, this shows the input mode.">
-    Latin American keyboard
+  <message name="IDS_STATUSBAR_LAYOUT_LATIN_AMERICAN" desc="In the language menu button, this shows the input mode [Latin American keyboard].">
+    Latin American
   </message>
-  <message name="IDS_STATUSBAR_LAYOUT_LATVIA" desc="In the language menu button, this shows the input mode.">
-    Latvian keyboard
+  <message name="IDS_STATUSBAR_LAYOUT_LATVIA" desc="In the language menu button, this shows the input mode [Latvian keyboard].">
+    Latvian
   </message>
-  <message name="IDS_STATUSBAR_LAYOUT_CANADA" desc="In the language menu button, this shows the input mode.">
-    Canadian French keyboard
+  <message name="IDS_STATUSBAR_LAYOUT_CANADA" desc="In the language menu button, this shows the input mode [Canadian French keyboard].">
+    Canadian French
   </message>
-  <message name="IDS_STATUSBAR_LAYOUT_CANADA_ENGLISH" desc="In the language menu button, this shows the input mode.">
-    Canadian English keyboard
+  <message name="IDS_STATUSBAR_LAYOUT_CANADA_ENGLISH" desc="In the language menu button, this shows the input mode [Canadian English keyboard].">
+    Canadian English
   </message>
-  <message name="IDS_STATUSBAR_LAYOUT_ISRAEL" desc="In the language menu button, this shows the input mode.">
-    Hebrew keyboard
+  <message name="IDS_STATUSBAR_LAYOUT_ISRAEL" desc="In the language menu button, this shows the input mode [Hebrew keyboard].">
+    Hebrew
   </message>
-  <message name="IDS_STATUSBAR_LAYOUT_KOREA_104" desc="In the language menu button, this shows the input mode.">
-    Korean keyboard
+  <message name="IDS_STATUSBAR_LAYOUT_KOREA_104" desc="In the language menu button, this shows the input mode [Korean keyboard].">
+    Korean
   </message>
-  <message name="IDS_STATUSBAR_LAYOUT_ICELANDIC" desc="In the language menu button, this shows the input mode.">
-    Icelandic keyboard
+  <message name="IDS_STATUSBAR_LAYOUT_ICELANDIC" desc="In the language menu button, this shows the input mode [Icelandic keyboard].">
+    Icelandic
   </message>
-  <message name="IDS_STATUSBAR_LAYOUT_CANADIAN_MULTILINGUAL" desc="In the language menu button, this shows the input mode.">
-    Canadian Multilingual keyboard
+  <message name="IDS_STATUSBAR_LAYOUT_CANADIAN_MULTILINGUAL" desc="In the language menu button, this shows the input mode [Canadian Multilingual keyboard].">
+    Canadian Multilingual
   </message>
-  <message name="IDS_STATUSBAR_LAYOUT_GEORGIAN" desc="In the language menu button, this shows the input mode.">
-    Georgian keyboard
+  <message name="IDS_STATUSBAR_LAYOUT_GEORGIAN" desc="In the language menu button, this shows the input mode [Georgian keyboard].">
+    Georgian
   </message>
-  <message name="IDS_STATUSBAR_LAYOUT_BELARUSIAN" desc="In the language menu button, this shows the input mode.">
-    Belarusian keyboard
+  <message name="IDS_STATUSBAR_LAYOUT_BELARUSIAN" desc="In the language menu button, this shows the input mode [Belarusian keyboard].">
+    Belarusian
   </message>
-  <message name="IDS_STATUSBAR_LAYOUT_ARMENIAN_PHONETIC" desc="In the language menu button, this shows the input mode.">
-    Armenian Phonetic keyboard
+  <message name="IDS_STATUSBAR_LAYOUT_ARMENIAN_PHONETIC" desc="In the language menu button, this shows the input mode [Armenian Phonetic keyboard].">
+    Armenian Phonetic
   </message>
-  <message name="IDS_STATUSBAR_LAYOUT_MONGOLIAN" desc="In the language menu button, this shows the input mode.">
-    Mongolian keyboard
+  <message name="IDS_STATUSBAR_LAYOUT_MONGOLIAN" desc="In the language menu button, this shows the input mode [Mongolian keyboard].">
+    Mongolian
   </message>
 
-  <message name="IDS_STATUSBAR_LAYOUT_USA_MYSTERY" desc="In the language menu button, this shows the input mode.">
-    US Mystery keyboard
+  <message name="IDS_STATUSBAR_LAYOUT_USA_MYSTERY" desc="In the language menu button, this shows the input mode [US Mystery keyboard].">
+    US Mystery
   </message>
 
   <!-- Attribution strings for stock user images, not translateable. -->
