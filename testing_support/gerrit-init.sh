@@ -77,10 +77,16 @@ import re
 import sys
 
 requested_version = sys.argv[1] if len(sys.argv) > 1 else None
-gerrit_re = re.compile('gerrit(?:-full)?-([0-9.]+)(-rc[0-9]+)?[.]war')
+# Disable using -rc versions.  This is a temporary hack to avoid
+# picking up version 2.9-rc0, which requires java 7.  These lines
+# should be un-commented after this bug is fixed:
+#   https://code.google.com/p/chromium/issues/detail?id=346369
+#gerrit_re = re.compile('gerrit(?:-full)?-([0-9.]+)(-rc[0-9]+)?[.]war')
+gerrit_re = re.compile('gerrit(?:-full)?-([0-9.]+)[.]war')
 j = json.load(sys.stdin)
 items = [(x, gerrit_re.match(x['name'])) for x in j['items']]
-items = [(x, m.group(1), m.group(2)) for x, m in items if m]
+#items = [(x, m.group(1), m.group(2)) for x, m in items if m]
+items = [(x, m.group(1), '') for x, m in items if m]
 def _cmp(a, b):
   an = a[1].split('.')
   bn = b[1].split('.')
@@ -88,12 +94,8 @@ def _cmp(a, b):
     an.append('0')
   while len(bn) < len(an):
     bn.append('0')
-#  Disable using -rc versions.  This is a temporary hack to avoid
-#  picking up version 2.9-rc0, which requires java 7.  These lines
-#  should be un-commented after this bug is fixed:
-#    https://code.google.com/p/chromium/issues/detail?id=346369
-#  an.append(a[2][3:] if a[2] else '1000')
-#  bn.append(b[2][3:] if b[2] else '1000')
+  an.append(a[2][3:] if a[2] else '1000')
+  bn.append(b[2][3:] if b[2] else '1000')
   for i in range(len(an)):
     if an[i] != bn[i]:
       return -1 if int(an[i]) > int(bn[i]) else 1
