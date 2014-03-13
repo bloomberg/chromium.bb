@@ -1382,7 +1382,9 @@ def CreateDescriptionFromLog(args):
 
 def CMDlint(parser, args):
   """Runs cpplint on the current changelist."""
-  _, args = parser.parse_args(args)
+  parser.add_option('--filter', action='append', metavar='-x,+y',
+                    help='Comma-separated list of cpplint\'s category-filters')
+  (options, args) = parser.parse_args(args)
 
   # Access to a protected member _XX of a client class
   # pylint: disable=W0212
@@ -1403,7 +1405,10 @@ def CMDlint(parser, args):
     files = [f.LocalPath() for f in change.AffectedFiles()]
 
     # Process cpplints arguments if any.
-    filenames = cpplint.ParseArguments(args + files)
+    command = args + files
+    if options.filter:
+      command = ['--filter=' + ','.join(options.filter)] + command
+    filenames = cpplint.ParseArguments(command)
 
     white_regex = re.compile(settings.GetLintRegex())
     black_regex = re.compile(settings.GetLintIgnoreRegex())
