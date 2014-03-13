@@ -232,7 +232,7 @@ v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info
     {% endif %}
     {% if attribute.put_forwards %}
     {{cpp_class}}* proxyImp = {{v8_class}}::toNative(info.Holder());
-    {{attribute.idl_type}}* imp = WTF::getPtr(proxyImp->{{attribute.name}}());
+    RefPtr<{{attribute.idl_type}}> imp = WTF::getPtr(proxyImp->{{attribute.name}}());
     if (!imp)
         return;
     {% elif not attribute.is_static %}
