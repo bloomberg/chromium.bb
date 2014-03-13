@@ -461,6 +461,7 @@
         '../gin/gin.gyp:gin_test',
         'mojo_js_bindings_lib',
         'mojo_run_all_unittests',
+        'mojo_sample_service',
       ],
       'sources': [
         'bindings/js/run_js_tests.cc',
