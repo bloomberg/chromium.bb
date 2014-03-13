@@ -296,10 +296,7 @@ bool HTMLFormElement::prepareForSubmission(Event* event)
         return false;
     }
 
-    StringPairVector controlNamesAndValues;
-    getTextFieldValues(controlNamesAndValues);
-    RefPtr<FormState> formState = FormState::create(this, controlNamesAndValues, &document(), NotSubmittedByJavaScript);
-    frame->loader().client()->dispatchWillSendSubmitEvent(formState.release());
+    frame->loader().client()->dispatchWillSendSubmitEvent(this);
 
     if (dispatchEvent(Event::createCancelableBubble(EventTypeNames::submit)))
         m_shouldSubmit = true;
@@ -462,19 +459,10 @@ void HTMLFormElement::reset()
 
 void HTMLFormElement::requestAutocomplete()
 {
-    LocalFrame* frame = document().frame();
-    if (!frame)
-        return;
-
-    if (!shouldAutocomplete() || !UserGestureIndicator::processingUserGesture()) {
+    if (!document().frame() || !shouldAutocomplete() || !UserGestureIndicator::processingUserGesture())
         finishRequestAutocomplete(AutocompleteResultErrorDisabled);
-        return;
-    }
-
-    StringPairVector controlNamesAndValues;
-    getTextFieldValues(controlNamesAndValues);
-    RefPtr<FormState> formState = FormState::create(this, controlNamesAndValues, &document(), SubmittedByJavaScript);
-    frame->loader().client()->didRequestAutocomplete(formState.release());
+    else
+        document().frame()->loader().client()->didRequestAutocomplete(this);
 }
 
 void HTMLFormElement::finishRequestAutocomplete(AutocompleteResult result)

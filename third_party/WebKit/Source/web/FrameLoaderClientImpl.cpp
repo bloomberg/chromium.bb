@@ -60,9 +60,7 @@
 #include "core/events/MouseEvent.h"
 #include "core/dom/WheelController.h"
 #include "core/html/HTMLAppletElement.h"
-#include "core/html/HTMLFormElement.h" // needed by core/loader/FormState.h
 #include "core/loader/DocumentLoader.h"
-#include "core/loader/FormState.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/HistoryItem.h"
@@ -480,16 +478,16 @@ void FrameLoaderClientImpl::dispatchWillRequestResource(FetchRequest* request)
     }
 }
 
-void FrameLoaderClientImpl::dispatchWillSendSubmitEvent(PassRefPtr<FormState> prpFormState)
+void FrameLoaderClientImpl::dispatchWillSendSubmitEvent(HTMLFormElement* form)
 {
     if (m_webFrame->client())
-        m_webFrame->client()->willSendSubmitEvent(m_webFrame, WebFormElement(prpFormState->form()));
+        m_webFrame->client()->willSendSubmitEvent(m_webFrame, WebFormElement(form));
 }
 
-void FrameLoaderClientImpl::dispatchWillSubmitForm(PassRefPtr<FormState> formState)
+void FrameLoaderClientImpl::dispatchWillSubmitForm(HTMLFormElement* form)
 {
     if (m_webFrame->client())
-        m_webFrame->client()->willSubmitForm(m_webFrame, WebFormElement(formState->form()));
+        m_webFrame->client()->willSubmitForm(m_webFrame, WebFormElement(form));
 }
 
 void FrameLoaderClientImpl::postProgressStartedNotification(LoadStartType loadStartType)
@@ -752,10 +750,10 @@ void FrameLoaderClientImpl::dispatchWillStartUsingPeerConnectionHandler(blink::W
     m_webFrame->client()->willStartUsingPeerConnectionHandler(webFrame(), handler);
 }
 
-void FrameLoaderClientImpl::didRequestAutocomplete(PassRefPtr<FormState> formState)
+void FrameLoaderClientImpl::didRequestAutocomplete(HTMLFormElement* form)
 {
     if (m_webFrame->viewImpl() && m_webFrame->viewImpl()->autofillClient())
-        m_webFrame->viewImpl()->autofillClient()->didRequestAutocomplete(m_webFrame, WebFormElement(formState->form()));
+        m_webFrame->viewImpl()->autofillClient()->didRequestAutocomplete(m_webFrame, WebFormElement(form));
 }
 
 bool FrameLoaderClientImpl::allowWebGL(bool enabledPerSettings)

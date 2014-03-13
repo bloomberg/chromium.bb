@@ -206,8 +206,8 @@ public:
 
     virtual NavigationPolicy decidePolicyForNavigation(const ResourceRequest&, DocumentLoader*, NavigationPolicy) OVERRIDE;
 
-    virtual void dispatchWillSendSubmitEvent(PassRefPtr<FormState>) OVERRIDE;
-    virtual void dispatchWillSubmitForm(PassRefPtr<FormState>) OVERRIDE;
+    virtual void dispatchWillSendSubmitEvent(HTMLFormElement*) OVERRIDE;
+    virtual void dispatchWillSubmitForm(HTMLFormElement*) OVERRIDE;
 
     virtual void postProgressStartedNotification(LoadStartType) OVERRIDE { }
     virtual void postProgressEstimateChangedNotification() OVERRIDE { }
@@ -244,7 +244,8 @@ public:
 
     virtual blink::WebCookieJar* cookieJar() const OVERRIDE { return 0; }
 
-    virtual void didRequestAutocomplete(PassRefPtr<FormState>) OVERRIDE;
+    virtual void didRequestAutocomplete(HTMLFormElement*) OVERRIDE;
+
     virtual PassOwnPtr<blink::WebServiceWorkerProvider> createServiceWorkerProvider() OVERRIDE;
     virtual PassOwnPtr<blink::WebApplicationCacheHost> createApplicationCacheHost(blink::WebApplicationCacheHostClient*) OVERRIDE;
 };

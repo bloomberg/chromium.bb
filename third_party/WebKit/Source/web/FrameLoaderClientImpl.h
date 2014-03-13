@@ -96,8 +96,8 @@ public:
     virtual void dispatchDidFirstVisuallyNonEmptyLayout() OVERRIDE;
     virtual WebCore::NavigationPolicy decidePolicyForNavigation(const WebCore::ResourceRequest&, WebCore::DocumentLoader*, WebCore::NavigationPolicy) OVERRIDE;
     virtual void dispatchWillRequestResource(WebCore::FetchRequest*) OVERRIDE;
-    virtual void dispatchWillSendSubmitEvent(PassRefPtr<WebCore::FormState>) OVERRIDE;
-    virtual void dispatchWillSubmitForm(PassRefPtr<WebCore::FormState>) OVERRIDE;
+    virtual void dispatchWillSendSubmitEvent(WebCore::HTMLFormElement*) OVERRIDE;
+    virtual void dispatchWillSubmitForm(WebCore::HTMLFormElement*) OVERRIDE;
     virtual void postProgressStartedNotification(WebCore::LoadStartType) OVERRIDE;
     virtual void postProgressEstimateChangedNotification() OVERRIDE;
     virtual void postProgressFinishedNotification() OVERRIDE;
@@ -144,7 +144,7 @@ public:
 
     virtual void dispatchWillStartUsingPeerConnectionHandler(blink::WebRTCPeerConnectionHandler*) OVERRIDE;
 
-    virtual void didRequestAutocomplete(PassRefPtr<WebCore::FormState>) OVERRIDE;
+    virtual void didRequestAutocomplete(WebCore::HTMLFormElement*) OVERRIDE;
 
     virtual bool allowWebGL(bool enabledPerSettings) OVERRIDE;
     virtual void didLoseWebGLContext(int arbRobustnessContextLostReason) OVERRIDE;

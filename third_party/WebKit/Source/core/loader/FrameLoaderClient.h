@@ -62,18 +62,17 @@ namespace WebCore {
     class DOMWrapperWorld;
     class DocumentLoader;
     class Element;
-class FetchRequest;
-    class FormState;
-    class LocalFrame;
+    class FetchRequest;
     class FrameLoader;
     class FrameNetworkingContext;
-    class HistoryItem;
     class HTMLAppletElement;
     class HTMLFormElement;
     class HTMLFrameOwnerElement;
     class HTMLPlugInElement;
+    class HistoryItem;
     class IntSize;
     class KURL;
+    class LocalFrame;
     class MessageEvent;
     class Page;
     class PluginView;
@@ -120,8 +119,8 @@ class FetchRequest;
 
         virtual void dispatchWillRequestResource(FetchRequest*) { }
 
-        virtual void dispatchWillSendSubmitEvent(PassRefPtr<FormState>) = 0;
-        virtual void dispatchWillSubmitForm(PassRefPtr<FormState>) = 0;
+        virtual void dispatchWillSendSubmitEvent(HTMLFormElement*) = 0;
+        virtual void dispatchWillSubmitForm(HTMLFormElement*) = 0;
 
         // Maybe these should go into a ProgressTrackerClient some day
         virtual void postProgressStartedNotification(LoadStartType) = 0;
@@ -209,7 +208,7 @@ class FetchRequest;
 
         virtual void dispatchWillStartUsingPeerConnectionHandler(blink::WebRTCPeerConnectionHandler*) { }
 
-        virtual void didRequestAutocomplete(PassRefPtr<FormState>) = 0;
+        virtual void didRequestAutocomplete(HTMLFormElement*) = 0;
 
         virtual bool allowWebGL(bool enabledPerSettings) { return enabledPerSettings; }
         // Informs the embedder that a WebGL canvas inside this frame received a lost context

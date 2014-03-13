@@ -1339,7 +1339,7 @@ void FrameLoader::loadWithNavigationAction(const NavigationAction& action, Frame
     m_state = FrameStateProvisional;
 
     if (formState)
-        m_client->dispatchWillSubmitForm(formState);
+        m_client->dispatchWillSubmitForm(formState->form());
 
     m_progressTracker->progressStarted();
     if (m_provisionalDocumentLoader->isClientRedirect())

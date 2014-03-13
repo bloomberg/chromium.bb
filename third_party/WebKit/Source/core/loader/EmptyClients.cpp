@@ -31,7 +31,6 @@
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/loader/DocumentLoader.h"
-#include "core/loader/FormState.h"
 #include "core/storage/StorageNamespace.h"
 #include "platform/ColorChooser.h"
 #include "platform/DateTimeChooser.h"
@@ -110,11 +109,11 @@ NavigationPolicy EmptyFrameLoaderClient::decidePolicyForNavigation(const Resourc
     return NavigationPolicyIgnore;
 }
 
-void EmptyFrameLoaderClient::dispatchWillSendSubmitEvent(PassRefPtr<FormState>)
+void EmptyFrameLoaderClient::dispatchWillSendSubmitEvent(HTMLFormElement*)
 {
 }
 
-void EmptyFrameLoaderClient::dispatchWillSubmitForm(PassRefPtr<FormState>)
+void EmptyFrameLoaderClient::dispatchWillSubmitForm(HTMLFormElement*)
 {
 }
 
@@ -142,7 +141,7 @@ void EmptyTextCheckerClient::requestCheckingOfString(PassRefPtr<TextCheckingRequ
 {
 }
 
-void EmptyFrameLoaderClient::didRequestAutocomplete(PassRefPtr<FormState>)
+void EmptyFrameLoaderClient::didRequestAutocomplete(HTMLFormElement*)
 {
 }
 
