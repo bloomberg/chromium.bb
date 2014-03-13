@@ -61,6 +61,7 @@
 #include "platform/ThemeTypes.h"
 #include "platform/fonts/FontBaseline.h"
 #include "platform/fonts/FontDescription.h"
+#include "platform/geometry/FloatRoundedRect.h"
 #include "platform/geometry/LayoutBoxExtent.h"
 #include "platform/geometry/RoundedRect.h"
 #include "platform/graphics/Color.h"
@@ -1885,6 +1886,8 @@ inline bool RenderStyle::hasPseudoElementStyle() const
 {
     return noninherited_flags._pseudoBits & PSEUDO_ELEMENT_MASK;
 }
+
+float calcBorderRadiiConstraintScaleFor(const FloatRect&, const FloatRoundedRect::Radii&);
 
 } // namespace WebCore
 
