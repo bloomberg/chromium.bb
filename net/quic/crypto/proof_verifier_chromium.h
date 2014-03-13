@@ -5,17 +5,16 @@
 #ifndef NET_QUIC_CRYPTO_PROOF_VERIFIER_CHROMIUM_H_
 #define NET_QUIC_CRYPTO_PROOF_VERIFIER_CHROMIUM_H_
 
+#include <set>
 #include <string>
 #include <vector>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "net/base/completion_callback.h"
 #include "net/base/net_export.h"
 #include "net/base/net_log.h"
 #include "net/cert/cert_verify_result.h"
-#include "net/cert/x509_certificate.h"
 #include "net/quic/crypto/proof_verifier.h"
 
 namespace net {
@@ -30,8 +29,8 @@ struct ProofVerifyDetailsChromium : public ProofVerifyDetails {
   CertVerifyResult cert_verify_result;
 };
 
-// ProofVerifierChromium implements the QUIC ProofVerifier interface.
-// TODO(rtenneti): Add support for multiple requests for one ProofVerifier.
+// ProofVerifierChromium implements the QUIC ProofVerifier interface.  It is
+// capable of handling multiple simultaneous requests.
 class NET_EXPORT_PRIVATE ProofVerifierChromium : public ProofVerifier {
  public:
   ProofVerifierChromium(CertVerifier* cert_verifier,
@@ -48,36 +47,16 @@ class NET_EXPORT_PRIVATE ProofVerifierChromium : public ProofVerifier {
                              ProofVerifierCallback* callback) OVERRIDE;
 
  private:
-  enum State {
-    STATE_NONE,
-    STATE_VERIFY_CERT,
-    STATE_VERIFY_CERT_COMPLETE,
-  };
+  class Job;
 
-  int DoLoop(int last_io_result);
-  void OnIOComplete(int result);
-  int DoVerifyCert(int result);
-  int DoVerifyCertComplete(int result);
+  void OnJobComplete(Job* job);
 
-  bool VerifySignature(const std::string& signed_data,
-                       const std::string& signature,
-                       const std::string& cert);
+  // Set owning pointers to active jobs.
+  typedef std::set<Job*> JobSet;
+  JobSet active_jobs_;
 
-  // |cert_verifier_| and |verifier_| are used for verifying certificates.
+  // Underlying verifier used to verify certificates.
   CertVerifier* const cert_verifier_;
-  scoped_ptr<SingleRequestCertVerifier> verifier_;
-
-  // |hostname| specifies the hostname for which |certs| is a valid chain.
-  std::string hostname_;
-
-  scoped_ptr<ProofVerifierCallback> callback_;
-  scoped_ptr<ProofVerifyDetailsChromium> verify_details_;
-  std::string error_details_;
-
-  // X509Certificate from a chain of DER encoded certificates.
-  scoped_refptr<X509Certificate> cert_;
-
-  State next_state_;
 
   BoundNetLog net_log_;
 
