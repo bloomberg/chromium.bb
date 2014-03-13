@@ -5,9 +5,6 @@
 #ifndef CONTENT_BROWSER_LOADER_REDIRECT_TO_FILE_RESOURCE_HANDLER_H_
 #define CONTENT_BROWSER_LOADER_REDIRECT_TO_FILE_RESOURCE_HANDLER_H_
 
-#include "base/basictypes.h"
-#include "base/callback.h"
-#include "base/compiler_specific.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
@@ -15,11 +12,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/platform_file.h"
 #include "content/browser/loader/layered_resource_handler.h"
-#include "content/browser/loader/temporary_file_stream.h"
-#include "content/common/content_export.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_status.h"
-#include "url/gurl.h"
 
 namespace net {
 class FileStream;
@@ -31,32 +25,19 @@ class ShareableFileReference;
 }
 
 namespace content {
+class ResourceDispatcherHostImpl;
 
-// Redirects network data to a file.  This is intended to be layered in front of
-// either the AsyncResourceHandler or the SyncResourceHandler.  The downstream
-// resource handler does not see OnWillRead or OnReadCompleted calls. Instead,
-// the ResourceResponse contains the path to a temporary file and
-// OnDataDownloaded is called as the file downloads.
-class CONTENT_EXPORT RedirectToFileResourceHandler
-    : public LayeredResourceHandler {
+// Redirects network data to a file.  This is intended to be layered in front
+// of either the AsyncResourceHandler or the SyncResourceHandler.
+class RedirectToFileResourceHandler : public LayeredResourceHandler {
  public:
-  typedef base::Callback<void(const CreateTemporaryFileStreamCallback&)>
-      CreateTemporaryFileStreamFunction;
-
-  // Create a RedirectToFileResourceHandler for |request| which wraps
-  // |next_handler|.
-  RedirectToFileResourceHandler(scoped_ptr<ResourceHandler> next_handler,
-                                net::URLRequest* request);
+  RedirectToFileResourceHandler(
+      scoped_ptr<ResourceHandler> next_handler,
+      net::URLRequest* request,
+      ResourceDispatcherHostImpl* resource_dispatcher_host);
   virtual ~RedirectToFileResourceHandler();
 
-  // Replace the CreateTemporaryFileStream implementation with a mocked one for
-  // testing purposes. The function should create a net::FileStream and a
-  // ShareableFileReference and then asynchronously pass them to the
-  // CreateTemporaryFileStreamCallback.
-  void SetCreateTemporaryFileStreamFunctionForTesting(
-      const CreateTemporaryFileStreamFunction& create_temporary_file_stream);
-
-  // LayeredResourceHandler implementation:
+  // ResourceHandler implementation:
   virtual bool OnResponseStarted(int request_id,
                                  ResourceResponse* response,
                                  bool* defer) OVERRIDE;
@@ -76,19 +57,17 @@ class CONTENT_EXPORT RedirectToFileResourceHandler
                                    bool* defer) OVERRIDE;
 
  private:
-  void DidCreateTemporaryFile(
-      base::File::Error error_code,
-      scoped_ptr<net::FileStream> file_stream,
-      webkit_blob::ShareableFileReference* deletable_file);
-
-  // Called by RedirectToFileResourceHandler::Writer.
+  void DidCreateTemporaryFile(base::File::Error error_code,
+                              base::PassPlatformFile file_handle,
+                              const base::FilePath& file_path);
   void DidWriteToFile(int result);
-
   bool WriteMore();
   bool BufIsFull() const;
   void ResumeIfDeferred();
 
-  CreateTemporaryFileStreamFunction create_temporary_file_stream_;
+  base::WeakPtrFactory<RedirectToFileResourceHandler> weak_factory_;
+
+  ResourceDispatcherHostImpl* host_;
 
   // We allocate a single, fixed-size IO buffer (buf_) used to read from the
   // network (buf_write_pending_ is true while the system is copying data into
@@ -101,11 +80,8 @@ class CONTENT_EXPORT RedirectToFileResourceHandler
   bool buf_write_pending_;
   int write_cursor_;
 
-  // Helper writer object which maintains references to the net::FileStream and
-  // webkit_blob::ShareableFileReference. This is maintained separately so that,
-  // on Windows, the temporary file isn't deleted until after it is closed.
-  class Writer;
-  Writer* writer_;
+  scoped_ptr<net::FileStream> file_stream_;
+  bool write_callback_pending_;
 
   // |next_buffer_size_| is the size of the buffer to be allocated on the next
   // OnWillRead() call.  We exponentially grow the size of the buffer allocated
@@ -114,14 +90,15 @@ class CONTENT_EXPORT RedirectToFileResourceHandler
   // was filled, up to a maximum size of 512k.
   int next_buffer_size_;
 
-  bool did_defer_;
+  // We create a ShareableFileReference that's deletable for the temp
+  // file created as  a result of the download.
+  scoped_refptr<webkit_blob::ShareableFileReference> deletable_file_;
+
+  bool did_defer_ ;
 
   bool completed_during_write_;
-  GURL will_start_url_;
   net::URLRequestStatus completed_status_;
   std::string completed_security_info_;
-
-  base::WeakPtrFactory<RedirectToFileResourceHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RedirectToFileResourceHandler);
 };

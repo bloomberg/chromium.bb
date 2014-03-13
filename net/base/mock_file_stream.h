@@ -10,7 +10,6 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
-#include "base/memory/weak_ptr.h"
 #include "net/base/file_stream.h"
 #include "net/base/net_errors.h"
 
@@ -22,11 +21,11 @@ namespace testing {
 
 class MockFileStream : public net::FileStream {
  public:
-  explicit MockFileStream(net::NetLog* net_log);
-  MockFileStream(base::PlatformFile file, int flags, net::NetLog* net_log);
-  MockFileStream(base::PlatformFile file, int flags, net::NetLog* net_log,
-                 const scoped_refptr<base::TaskRunner>& task_runner);
-  virtual ~MockFileStream();
+  MockFileStream(net::NetLog* net_log)
+      : net::FileStream(net_log), forced_error_(net::OK) {}
+
+  MockFileStream(base::PlatformFile file, int flags, net::NetLog* net_log)
+      : net::FileStream(file, flags, net_log), forced_error_(net::OK) {}
 
   // FileStream methods.
   virtual int OpenSync(const base::FilePath& path, int open_flags) OVERRIDE;
@@ -47,27 +46,10 @@ class MockFileStream : public net::FileStream {
   virtual int Flush(const CompletionCallback& callback) OVERRIDE;
   virtual int FlushSync() OVERRIDE;
 
-  void set_forced_error_async(int error) {
-    forced_error_ = error;
-    async_error_ = true;
-  }
-  void set_forced_error(int error) {
-    forced_error_ = error;
-    async_error_ = false;
-  }
-  void clear_forced_error() {
-    forced_error_ = net::OK;
-    async_error_ = false;
-  }
+  void set_forced_error(int error) { forced_error_ = error; }
+  void clear_forced_error() { forced_error_ = net::OK; }
   int forced_error() const { return forced_error_; }
   const base::FilePath& get_path() const { return path_; }
-
-  // Throttles all asynchronous callbacks, including forced errors, until a
-  // matching ReleaseCallbacks call.
-  void ThrottleCallbacks();
-
-  // Resumes running asynchronous callbacks and runs any throttled callbacks.
-  void ReleaseCallbacks();
 
  private:
   int ReturnError(int function_error) {
@@ -90,23 +72,8 @@ class MockFileStream : public net::FileStream {
     return function_error;
   }
 
-  // Wrappers for callbacks to make them honor ThrottleCallbacks and
-  // ReleaseCallbacks.
-  void DoCallback(const CompletionCallback& callback, int result);
-  void DoCallback64(const Int64CompletionCallback& callback, int64 result);
-
-  // Depending on |async_error_|, either synchronously returns |forced_error_|
-  // asynchronously calls |callback| with |async_error_|.
-  int ErrorCallback(const CompletionCallback& callback);
-  int64 ErrorCallback64(const Int64CompletionCallback& callback);
-
   int forced_error_;
-  bool async_error_;
-  bool throttled_;
-  base::Closure throttled_task_;
   base::FilePath path_;
-
-  base::WeakPtrFactory<MockFileStream> weak_factory_;
 };
 
 }  // namespace testing

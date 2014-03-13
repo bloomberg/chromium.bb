@@ -11,7 +11,6 @@
 #include "net/base/load_timing_info.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job.h"
-#include "net/url_request/url_request_job_factory.h"
 
 namespace net {
 
@@ -104,8 +103,8 @@ class NET_EXPORT_PRIVATE URLRequestTestJob : public URLRequestJob {
 
   RequestPriority priority() const { return priority_; }
 
-  // Create a protocol handler for callers that don't subclass.
-  static URLRequestJobFactory::ProtocolHandler* CreateProtocolHandler();
+  // Factory method for protocol factory registration if callers don't subclass
+  static URLRequest::ProtocolFactory Factory;
 
   // Job functions
   virtual void SetPriority(RequestPriority priority) OVERRIDE;

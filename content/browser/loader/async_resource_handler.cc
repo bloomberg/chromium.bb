@@ -200,15 +200,6 @@ bool AsyncResourceHandler::OnResponseStarted(int request_id,
             net::GetHostOrSpecFromURL(request_url))));
   }
 
-  // If the parent handler downloaded the resource to a file, grant the child
-  // read permissions on it. Note: there is similar logic in
-  // SyncResourceHandler.
-  if (!response->head.download_file_path.empty()) {
-    rdh_->RegisterDownloadedTempFile(
-        info->GetChildID(), info->GetRequestID(),
-        response->head.download_file_path);
-  }
-
   response->head.request_start = request()->creation_time();
   response->head.response_start = TimeTicks::Now();
   info->filter()->Send(new ResourceMsg_ReceivedResponse(request_id,
