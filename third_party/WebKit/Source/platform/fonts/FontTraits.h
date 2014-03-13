@@ -75,10 +75,14 @@ struct FontTraits {
     FontTraits(FontItalic style, FontSmallCaps variant, FontWeight weight, FontStretch stretch)
         : m_style(style), m_variant(variant), m_weight(weight), m_stretch(stretch), m_filler(0)
     {
+        ASSERT(!m_filler);
+        ASSERT(!(m_mask >> 10));
     }
     FontTraits(FontTraitsMask mask)
         : m_mask(mask)
     {
+        ASSERT(!m_filler);
+        ASSERT(!(m_mask >> 10));
     }
     FontItalic style() const { return static_cast<FontItalic>(m_style); }
     FontSmallCaps variant() const { return static_cast<FontSmallCaps>(m_variant); }
