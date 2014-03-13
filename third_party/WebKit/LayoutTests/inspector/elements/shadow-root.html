@@ -6,8 +6,6 @@
 
 function test()
 {
-    WebInspector.ElementsTreeOutline.showShadowDOMForTest = true;
-
     InspectorTest.expandElementsTree(function() {
         var container = InspectorTest.expandedNodeWithId("container");
         InspectorTest.dumpElementsTree(container);
@@ -19,12 +17,13 @@ function test()
 
 <body onload="runTest()">
 
-<p id="description">This test verified #document-fragment is displayed when showShadowRoot is enabled.</p>
+<p id="description">This test verifies that author shadow root's #document-fragment is displayed and user-agent one is hidden by default.</p>
 
 <div id="container">
     <div id="test1"></div>
     <div id="test2">only test</div>
     <div id="test3">with <span>elements</span></div>
+    <input type="text" value="Test">
 </div>
 
 <script>
