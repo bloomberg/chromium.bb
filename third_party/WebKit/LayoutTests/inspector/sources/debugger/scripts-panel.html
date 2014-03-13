@@ -68,15 +68,18 @@ function test()
             var panel = new WebInspector.SourcesPanel(workspace);
             panel.show(WebInspector.inspectorView.element);
 
-            addNetworkFile(workspace, "foo.js");
+            var uiSourceCode = addNetworkFile(workspace, "foo.js");
             addNetworkFile(workspace, "bar.js");
             addNetworkFile(workspace, "baz.js");
 
             InspectorTest.dumpScriptsNavigator(panel._navigator);
+            InspectorTest.addResult("Revealing in navigator.");
+            panel._navigator.revealUISourceCode(uiSourceCode);
+            InspectorTest.dumpScriptsNavigator(panel._navigator);
 
             InspectorTest.testNetworkWorkspaceProvider.reset();
             InspectorTest.dumpScriptsNavigator(panel._navigator);
-            var uiSourceCode = addNetworkFile(workspace, "bar.js");
+            uiSourceCode = addNetworkFile(workspace, "bar.js");
             panel._navigator.revealUISourceCode(uiSourceCode);
             InspectorTest.dumpScriptsNavigator(panel._navigator);
 

@@ -16,6 +16,11 @@ Running: testReset
 Source requested for baz.js
 Dumping ScriptsNavigator 'Scripts' tab:
   (no domain)
+Dumping ScriptsNavigator 'Content scripts' tab:
+
+Revealing in navigator.
+Dumping ScriptsNavigator 'Scripts' tab:
+  (no domain)
     bar.js
     baz.js
     foo.js
