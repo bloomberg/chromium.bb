@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,7 +14,6 @@
 #include "chrome/common/extensions/permissions/media_galleries_permission_data.h"
 #include "chrome/common/extensions/permissions/socket_permission_data.h"
 #include "chrome/common/extensions/permissions/usb_device_permission_data.h"
-#include "chrome/common/web_application_info.h"
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/socket_permission_request.h"
 #include "extensions/common/draggable_region.h"
@@ -160,20 +159,6 @@ IPC_STRUCT_BEGIN(ExtensionMsg_UpdatePermissions_Params)
   IPC_STRUCT_MEMBER(extensions::URLPatternSet, scriptable_hosts)
 IPC_STRUCT_END()
 
-IPC_STRUCT_TRAITS_BEGIN(WebApplicationInfo::IconInfo)
-  IPC_STRUCT_TRAITS_MEMBER(url)
-  IPC_STRUCT_TRAITS_MEMBER(width)
-  IPC_STRUCT_TRAITS_MEMBER(height)
-  IPC_STRUCT_TRAITS_MEMBER(data)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(WebApplicationInfo)
-  IPC_STRUCT_TRAITS_MEMBER(title)
-  IPC_STRUCT_TRAITS_MEMBER(description)
-  IPC_STRUCT_TRAITS_MEMBER(app_url)
-  IPC_STRUCT_TRAITS_MEMBER(icons)
-IPC_STRUCT_TRAITS_END()
-
 IPC_STRUCT_TRAITS_BEGIN(extensions::DraggableRegion)
   IPC_STRUCT_TRAITS_MEMBER(draggable)
   IPC_STRUCT_TRAITS_MEMBER(bounds)
@@ -209,8 +194,8 @@ IPC_STRUCT_TRAITS_BEGIN(extensions::Message)
 IPC_STRUCT_TRAITS_END()
 
 // Singly-included section for custom IPC traits.
-#ifndef CHROME_COMMON_EXTENSIONS_EXTENSION_MESSAGES_H_
-#define CHROME_COMMON_EXTENSIONS_EXTENSION_MESSAGES_H_
+#ifndef EXTENSIONS_COMMON_EXTENSION_MESSAGES_H_
+#define EXTENSIONS_COMMON_EXTENSION_MESSAGES_H_
 
 // IPC_MESSAGE macros choke on extra , in the std::map, when expanding. We need
 // to typedef it to avoid that.
@@ -310,7 +295,7 @@ struct ParamTraits<ExtensionMsg_Loaded_Params> {
 
 }  // namespace IPC
 
-#endif  // CHROME_COMMON_EXTENSIONS_EXTENSION_MESSAGES_H_
+#endif  // EXTENSIONS_COMMON_EXTENSION_MESSAGES_H_
 
 // Messages sent from the browser to the renderer.
 
@@ -376,11 +361,6 @@ IPC_MESSAGE_ROUTED1(ExtensionMsg_ExecuteCode,
 // handle is valid in the context of the renderer.
 IPC_MESSAGE_CONTROL1(ExtensionMsg_UpdateUserScripts,
                      base::SharedMemoryHandle)
-
-// Requests application info for the page. The renderer responds back with
-// ExtensionHostMsg_DidGetApplicationInfo.
-IPC_MESSAGE_ROUTED1(ExtensionMsg_GetApplicationInfo,
-                    int32 /*page_id*/)
 
 // Tell the render view which browser window it's being attached to.
 IPC_MESSAGE_ROUTED1(ExtensionMsg_UpdateBrowserWindowId,
@@ -598,10 +578,6 @@ IPC_MESSAGE_ROUTED3(ExtensionHostMsg_ContentScriptsExecuting,
                     ExecutingScriptsMap,
                     int32 /* page_id of the _topmost_ frame */,
                     GURL /* url of the _topmost_ frame */)
-
-IPC_MESSAGE_ROUTED2(ExtensionHostMsg_DidGetApplicationInfo,
-                    int32 /* page_id */,
-                    WebApplicationInfo)
 
 // Sent by the renderer to implement chrome.webstore.install().
 IPC_MESSAGE_ROUTED4(ExtensionHostMsg_InlineWebstoreInstall,

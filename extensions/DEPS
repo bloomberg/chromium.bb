@@ -12,12 +12,6 @@ specific_include_rules = {
     "+content/public/test",
   ],
   # Temporary includes for tests.
-  "^api_permission_set_unittest\.cc$": [
-    "+chrome/common/extensions/extension_messages.h",
-  ],
-  "^manifest_permission_set_unittest\.cc$": [
-    "+chrome/common/extensions/extension_messages.h",
-  ],
   "^permissions_data_unittest\.cc$": [
     "+chrome/common/chrome_version_info.h",
     "+chrome/common/extensions/extension_test_util.h",

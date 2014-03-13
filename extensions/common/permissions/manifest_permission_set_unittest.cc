@@ -4,7 +4,7 @@
 
 #include "base/pickle.h"
 #include "base/values.h"
-#include "chrome/common/extensions/extension_messages.h"
+#include "extensions/common/extension_messages.h"
 #include "extensions/common/permissions/manifest_permission.h"
 #include "extensions/common/permissions/manifest_permission_set.h"
 #include "ipc/ipc_message.h"

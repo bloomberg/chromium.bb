@@ -7,7 +7,6 @@
 #include "apps/ui/native_app_window.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/common/extensions/api/app_window.h"
-#include "chrome/common/extensions/extension_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
@@ -18,6 +17,7 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/renderer_preferences.h"
+#include "extensions/common/extension_messages.h"
 
 namespace app_window = extensions::api::app_window;
 

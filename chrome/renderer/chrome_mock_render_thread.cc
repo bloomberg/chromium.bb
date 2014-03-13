@@ -7,11 +7,11 @@
 #include <vector>
 
 #include "base/values.h"
-#include "chrome/common/extensions/extension_messages.h"
 #include "chrome/renderer/mock_printer.h"
+#include "extensions/common/extension_messages.h"
 #include "ipc/ipc_sync_message.h"
-#include "printing/print_job_constants.h"
 #include "printing/page_range.h"
+#include "printing/print_job_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_CHROMEOS)

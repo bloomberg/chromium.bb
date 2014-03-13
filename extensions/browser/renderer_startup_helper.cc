@@ -6,7 +6,6 @@
 
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
-#include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/features/feature_channel.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 #include "content/public/browser/notification_service.h"
@@ -14,6 +13,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extensions_browser_client.h"
+#include "extensions/common/extension_messages.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/extensions_client.h"
 #include "ui/base/webui/web_ui_util.h"

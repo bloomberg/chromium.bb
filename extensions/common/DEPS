@@ -9,6 +9,8 @@ include_rules = [
   #
   # TODO(benwells): Remove these. http://crbug.com/162530
   "+chrome/common/extensions/api/generated_schemas.h",
+  "+chrome/common/extensions/api/messaging/message.h",
+  "+chrome/common/extensions/permissions",
   "+grit/chromium_strings.h",
   "+grit/common_resources.h",
   "+grit/extensions_api_resources.h",

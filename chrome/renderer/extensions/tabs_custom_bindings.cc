@@ -7,8 +7,8 @@
 #include <string>
 
 #include "base/bind.h"
-#include "chrome/common/extensions/extension_messages.h"
 #include "content/public/renderer/render_view.h"
+#include "extensions/common/extension_messages.h"
 #include "grit/renderer_resources.h"
 #include "v8/include/v8.h"
 

@@ -37,7 +37,6 @@ include_rules = [
   "+chrome/browser/extensions/unpacked_installer.h",
   "+chrome/common/extensions/api/app_runtime.h",
   "+chrome/common/extensions/api/app_window.h",
-  "+chrome/common/extensions/extension_messages.h",
   "+chrome/common/extensions/manifest_handlers/icons_handler.h",
 ]
 

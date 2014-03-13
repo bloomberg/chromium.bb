@@ -5,8 +5,8 @@
 #include "chrome/renderer/extensions/context_menus_custom_bindings.h"
 
 #include "base/bind.h"
-#include "chrome/common/extensions/extension_messages.h"
 #include "content/public/renderer/render_thread.h"
+#include "extensions/common/extension_messages.h"
 #include "grit/renderer_resources.h"
 #include "v8/include/v8.h"
 

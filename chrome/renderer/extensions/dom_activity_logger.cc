@@ -6,11 +6,11 @@
 
 #include "base/logging.h"
 #include "chrome/common/extensions/dom_action_types.h"
-#include "chrome/common/extensions/extension_messages.h"
 #include "chrome/renderer/chrome_render_process_observer.h"
 #include "chrome/renderer/extensions/activity_log_converter_strategy.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/v8_value_converter.h"
+#include "extensions/common/extension_messages.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/web/WebDOMActivityLogger.h"

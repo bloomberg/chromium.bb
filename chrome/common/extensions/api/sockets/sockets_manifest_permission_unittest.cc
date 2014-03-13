@@ -8,7 +8,7 @@
 #include "base/pickle.h"
 #include "base/values.h"
 #include "chrome/common/extensions/api/sockets/sockets_manifest_permission.h"
-#include "chrome/common/extensions/extension_messages.h"
+#include "extensions/common/extension_messages.h"
 #include "extensions/common/manifest_constants.h"
 #include "ipc/ipc_message.h"
 #include "testing/gtest/include/gtest/gtest.h"

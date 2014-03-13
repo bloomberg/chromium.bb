@@ -5,10 +5,10 @@
 #include "chrome/renderer/extensions/request_sender.h"
 
 #include "base/values.h"
-#include "chrome/common/extensions/extension_messages.h"
 #include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "chrome/renderer/extensions/dispatcher.h"
 #include "content/public/renderer/render_view.h"
+#include "extensions/common/extension_messages.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebUserGestureIndicator.h"

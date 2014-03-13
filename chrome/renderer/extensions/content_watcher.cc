@@ -4,9 +4,9 @@
 
 #include "chrome/renderer/extensions/content_watcher.h"
 
-#include "chrome/common/extensions/extension_messages.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/render_view_visitor.h"
+#include "extensions/common/extension_messages.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebFrame.h"

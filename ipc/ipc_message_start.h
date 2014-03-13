@@ -98,6 +98,7 @@ enum IPCMessageStart {
   CdmMsgStart,
   ScreenOrientationMsgStart,
   MediaStreamTrackMetricsHostMsgStart,
+  ChromeExtensionMsgStart,
   LastIPCMsgStart  // Must come last.
 };
 

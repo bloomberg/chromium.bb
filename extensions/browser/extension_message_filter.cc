@@ -4,13 +4,13 @@
 
 #include "extensions/browser/extension_message_filter.h"
 
-#include "chrome/common/extensions/extension_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/process_manager.h"
+#include "extensions/common/extension_messages.h"
 #include "ipc/ipc_message_macros.h"
 
 using content::BrowserThread;

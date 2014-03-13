@@ -9,10 +9,10 @@
 #include "chrome/browser/extensions/script_executor.h"
 #include "chrome/common/extensions/api/i18n/default_locale_handler.h"
 #include "chrome/common/extensions/extension_file_util.h"
-#include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/message_bundle.h"
 #include "extensions/browser/file_reader.h"
 #include "extensions/common/error_utils.h"
+#include "extensions/common/extension_messages.h"
 #include "net/base/net_util.h"
 #include "ui/base/resource/resource_bundle.h"
 

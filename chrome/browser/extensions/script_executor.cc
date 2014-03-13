@@ -7,10 +7,10 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/pickle.h"
-#include "chrome/common/extensions/extension_messages.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "extensions/common/extension_messages.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
 
