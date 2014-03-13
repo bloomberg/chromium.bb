@@ -930,3 +930,4 @@ crbug.com/352035 [ Debug ] inspector/sources/debugger/async-callstack-scopes.htm
 crbug.com/352035 [ Debug ] inspector/sources/debugger/async-callstack.html [ Crash ]
 crbug.com/352035 [ Debug ] inspector/sources/debugger/debug-console-command.html [ Crash ]
 
+crbug.com/352377 [ Debug ] svg/animations/repeatn-event-1c.svg [ ImageOnlyFailure Pass ]
