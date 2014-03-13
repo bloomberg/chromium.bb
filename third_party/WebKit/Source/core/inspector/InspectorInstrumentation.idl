@@ -448,7 +448,7 @@ interface InspectorInstrumentation {
     [ApplicationCache, Inline=FastReturn]
     void updateApplicationCacheStatus([Keep] LocalFrame*);
 
-    [LayerTree]
+    [Timeline, LayerTree, Inline=FastReturn]
     void layerTreeDidChange(Page*);
 
     [DOM, Inline=FastReturn]

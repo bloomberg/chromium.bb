@@ -80,6 +80,9 @@ public:
     virtual void replaySnapshot(ErrorString*, const String& snapshotId, const int* fromStep, const int* toStep, String* dataURL) OVERRIDE;
     virtual void profileSnapshot(ErrorString*, const String& snapshotId, const int* minRepeatCount, const double* minDuration, RefPtr<TypeBuilder::Array<TypeBuilder::Array<double> > >&) OVERRIDE;
 
+    // Called by other agents.
+    PassRefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> > buildLayerTree(const String& nodeGroup);
+
 private:
     static unsigned s_lastSnapshotId;
 
@@ -88,12 +91,11 @@ private:
     RenderLayerCompositor* renderLayerCompositor();
     GraphicsLayer* layerById(ErrorString*, const String& layerId);
     const LayerSnapshot* snapshotById(ErrorString*, const String& snapshotId);
-    PassRefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> > buildLayerTree();
 
     typedef HashMap<int, int> LayerIdToNodeIdMap;
-    void buildLayerIdToNodeIdMap(RenderLayer*, LayerIdToNodeIdMap&);
+    void buildLayerIdToNodeIdMap(RenderLayer*, const String& nodeGroup, LayerIdToNodeIdMap&);
     void gatherGraphicsLayers(GraphicsLayer*, HashMap<int, int>& layerIdToNodeIdMap, RefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> >&);
-    int idForNode(Node*);
+    int idForNode(Node*, const String& nodeGroup);
 
     InspectorFrontend::LayerTree* m_frontend;
     Page* m_page;

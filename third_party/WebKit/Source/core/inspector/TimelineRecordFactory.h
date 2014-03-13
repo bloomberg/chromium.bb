@@ -74,6 +74,7 @@ public:
     static PassRefPtr<JSONObject> createAnimationFrameData(int callbackId);
     static PassRefPtr<JSONObject> createNodeData(long long nodeId);
     static PassRefPtr<JSONObject> createLayerData(long long layerRootNodeId);
+    static PassRefPtr<JSONObject> createLayerTreeData(PassRefPtr<JSONValue> layerTree);
     static PassRefPtr<JSONObject> createFrameData(int frameId);
     static PassRefPtr<JSONObject> createGPUTaskData(bool foreign);
 

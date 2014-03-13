@@ -94,8 +94,13 @@ InspectorController::InspectorController(Page* page, InspectorClient* inspectorC
     m_domAgent = domAgentPtr.get();
     m_agents.append(domAgentPtr.release());
 
-    OwnPtr<InspectorTimelineAgent> timelineAgentPtr(InspectorTimelineAgent::create(m_pageAgent, m_domAgent, overlay,
-        InspectorTimelineAgent::PageInspector, inspectorClient));
+
+    OwnPtr<InspectorLayerTreeAgent> layerTreeAgentPtr(InspectorLayerTreeAgent::create(m_domAgent, m_page));
+    m_layerTreeAgent = layerTreeAgentPtr.get();
+    m_agents.append(layerTreeAgentPtr.release());
+
+    OwnPtr<InspectorTimelineAgent> timelineAgentPtr(InspectorTimelineAgent::create(m_pageAgent, m_domAgent, m_layerTreeAgent,
+        overlay, InspectorTimelineAgent::PageInspector, inspectorClient));
     m_timelineAgent = timelineAgentPtr.get();
     m_agents.append(timelineAgentPtr.release());
 
@@ -168,10 +173,6 @@ void InspectorController::initializeDeferredAgents()
     m_agents.append(InspectorCanvasAgent::create(m_pageAgent, injectedScriptManager));
 
     m_agents.append(InspectorInputAgent::create(m_page, m_inspectorClient));
-
-    OwnPtr<InspectorLayerTreeAgent> layerTreeAgentPtr(InspectorLayerTreeAgent::create(m_domAgent, m_page));
-    m_layerTreeAgent = layerTreeAgentPtr.get();
-    m_agents.append(layerTreeAgentPtr.release());
 }
 
 void InspectorController::inspectedPageDestroyed()

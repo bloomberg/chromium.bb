@@ -68,6 +68,7 @@ class InspectorDOMAgent;
 class InspectorFrontend;
 class InspectorOverlay;
 class InspectorPageAgent;
+class InspectorLayerTreeAgent;
 class InstrumentingAgents;
 class KURL;
 class Node;
@@ -124,9 +125,10 @@ public:
         size_t usedGPUMemoryBytes;
     };
 
-    static PassOwnPtr<InspectorTimelineAgent> create(InspectorPageAgent* pageAgent, InspectorDOMAgent* domAgent, InspectorOverlay* overlay, InspectorType type, InspectorClient* client)
+    static PassOwnPtr<InspectorTimelineAgent> create(InspectorPageAgent* pageAgent, InspectorDOMAgent* domAgent, InspectorLayerTreeAgent* layerTreeAgent,
+        InspectorOverlay* overlay, InspectorType type, InspectorClient* client)
     {
-        return adoptPtr(new InspectorTimelineAgent(pageAgent, domAgent, overlay, type, client));
+        return adoptPtr(new InspectorTimelineAgent(pageAgent, domAgent, layerTreeAgent, overlay, type, client));
     }
 
     virtual ~InspectorTimelineAgent();
@@ -160,6 +162,8 @@ public:
     void didInvalidateLayout(LocalFrame*);
     bool willLayout(LocalFrame*);
     void didLayout(RenderObject*);
+
+    void layerTreeDidChange();
 
     void willAutosizeText(RenderObject*);
     void didAutosizeText(RenderObject*);
@@ -242,7 +246,7 @@ private:
 
     friend class TimelineRecordStack;
 
-    InspectorTimelineAgent(InspectorPageAgent*, InspectorDOMAgent*, InspectorOverlay*, InspectorType, InspectorClient*);
+    InspectorTimelineAgent(InspectorPageAgent*, InspectorDOMAgent*, InspectorLayerTreeAgent*, InspectorOverlay*, InspectorType, InspectorClient*);
 
     // Trace event handlers
     void onBeginImplSideFrame(const TraceEventDispatcher::TraceEvent&);
@@ -301,6 +305,7 @@ private:
 
     InspectorPageAgent* m_pageAgent;
     InspectorDOMAgent* m_domAgent;
+    InspectorLayerTreeAgent* m_layerTreeAgent;
     InspectorFrontend::Timeline* m_frontend;
     InspectorClient* m_client;
     InspectorOverlay* m_overlay;

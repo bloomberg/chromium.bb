@@ -42,6 +42,7 @@
 #include "core/inspector/InspectorCounters.h"
 #include "core/inspector/InspectorDOMAgent.h"
 #include "core/inspector/InspectorInstrumentation.h"
+#include "core/inspector/InspectorLayerTreeAgent.h"
 #include "core/inspector/InspectorOverlay.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorState.h"
@@ -81,6 +82,7 @@ static const char ScheduleStyleRecalculation[] = "ScheduleStyleRecalculation";
 static const char RecalculateStyles[] = "RecalculateStyles";
 static const char InvalidateLayout[] = "InvalidateLayout";
 static const char Layout[] = "Layout";
+static const char UpdateLayerTree[] = "UpdateLayerTree";
 static const char AutosizeText[] = "AutosizeText";
 static const char Paint[] = "Paint";
 static const char ScrollLayer[] = "ScrollLayer";
@@ -517,6 +519,12 @@ void InspectorTimelineAgent::didLayout(RenderObject* root)
     else
         ASSERT_NOT_REACHED();
     didCompleteCurrentRecord(TimelineRecordType::Layout);
+}
+
+void InspectorTimelineAgent::layerTreeDidChange()
+{
+    RefPtr<JSONValue> layerTree = m_layerTreeAgent->buildLayerTree(BackendNodeIdGroup);
+    appendRecord(TimelineRecordFactory::createLayerTreeData(layerTree), TimelineRecordType::UpdateLayerTree, false, 0);
 }
 
 void InspectorTimelineAgent::willAutosizeText(RenderObject* renderer)
@@ -1176,10 +1184,12 @@ void InspectorTimelineAgent::unwindRecordStack()
     }
 }
 
-InspectorTimelineAgent::InspectorTimelineAgent(InspectorPageAgent* pageAgent, InspectorDOMAgent* domAgent, InspectorOverlay* overlay, InspectorType type, InspectorClient* client)
+InspectorTimelineAgent::InspectorTimelineAgent(InspectorPageAgent* pageAgent, InspectorDOMAgent* domAgent, InspectorLayerTreeAgent* layerTreeAgent,
+    InspectorOverlay* overlay, InspectorType type, InspectorClient* client)
     : InspectorBaseAgent<InspectorTimelineAgent>("Timeline")
     , m_pageAgent(pageAgent)
     , m_domAgent(domAgent)
+    , m_layerTreeAgent(layerTreeAgent)
     , m_frontend(0)
     , m_client(client)
     , m_overlay(overlay)
