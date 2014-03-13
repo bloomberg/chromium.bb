@@ -13,13 +13,19 @@
 #include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/image/image_skia_operations.h"
 
-namespace profiles {
+// Helper methods for transforming and drawing avatar icons.
+namespace {
 
-const int kAvatarIconWidth = 38;
-const int kAvatarIconHeight = 31;
-const int kAvatarIconPadding = 2;
+// Given a width, determine the height that preserves the aspect ratio.
+int GetAvatarHeightByRatio(int width) {
 
-namespace internal {
+  // Multiply the desired width by the aspect ratio to determine the
+  // desired height. Add 0.5 before int truncating to ensure proper rounding.
+  int ideal_height_for_width =
+      (width * profiles::kAvatarIconHeight / profiles::kAvatarIconWidth) +
+      0.5f;
+  return ideal_height_for_width;
+}
 
 // A CanvasImageSource that draws a sized and positioned avatar with an
 // optional border independently of the scale factor.
@@ -63,12 +69,14 @@ AvatarImageSource::AvatarImageSource(gfx::ImageSkia avatar,
                                      AvatarBorder border)
     : gfx::CanvasImageSource(canvas_size, false),
       canvas_size_(canvas_size),
-      size_(size - kAvatarIconPadding),
+      size_(size - profiles::kAvatarIconPadding),
       position_(position),
       border_(border) {
-  // Resize the avatar to the desired square size.
+  // Resize the avatar to the desired square size, avoiding stretches.
+  int resized_avatar_height = GetAvatarHeightByRatio(size_);
   avatar_ = gfx::ImageSkiaOperations::CreateResizedImage(
-      avatar, skia::ImageOperations::RESIZE_BEST, gfx::Size(size_, size_));
+      avatar, skia::ImageOperations::RESIZE_BEST,
+      gfx::Size(size_, resized_avatar_height));
 }
 
 AvatarImageSource::~AvatarImageSource() {
@@ -78,16 +86,21 @@ void AvatarImageSource::Draw(gfx::Canvas* canvas) {
   // Center the avatar horizontally.
   int x = (canvas_size_.width() - size_) / 2;
   int y;
+  float extra_height = 0.0f;
 
   if (position_ == POSITION_CENTER) {
     // Draw the avatar centered on the canvas.
     y = (canvas_size_.height() - size_) / 2;
+
+    // The avatar may be shorter than it is wide, rather than perfectly square
+    // If so, center it further down than otherwise.
+    extra_height = (size_ - GetAvatarHeightByRatio(size_)) / 2.0f;
   } else {
     // Draw the avatar on the bottom center of the canvas, leaving 1px below.
     y = canvas_size_.height() - size_ - 1;
   }
 
-  canvas->DrawImageInt(avatar_, x, y);
+  canvas->DrawImageInt(avatar_, x, y + extra_height);
 
   if (border_ == BORDER_NORMAL) {
     // Draw a gray border on the inside of the avatar.
@@ -151,7 +164,13 @@ void AvatarImageSource::Draw(gfx::Canvas* canvas) {
   }
 }
 
-}  // namespace internal
+}  // namespace
+
+namespace profiles {
+
+const int kAvatarIconWidth = 38;
+const int kAvatarIconHeight = 31;
+const int kAvatarIconPadding = 2;
 
 gfx::Image GetSizedAvatarIconWithBorder(const gfx::Image& image,
                                         bool is_rectangle,
@@ -163,12 +182,12 @@ gfx::Image GetSizedAvatarIconWithBorder(const gfx::Image& image,
 
   // Source for a centered, sized icon with a border.
   scoped_ptr<gfx::ImageSkiaSource> source(
-      new internal::AvatarImageSource(
+      new AvatarImageSource(
           *image.ToImageSkia(),
           size,
           std::min(width, height),
-          internal::AvatarImageSource::POSITION_CENTER,
-          internal::AvatarImageSource::BORDER_NORMAL));
+          AvatarImageSource::POSITION_CENTER,
+          AvatarImageSource::BORDER_NORMAL));
 
   return gfx::Image(gfx::ImageSkia(source.release(), size));
 }
@@ -188,12 +207,12 @@ gfx::Image GetAvatarIconForWebUI(const gfx::Image& image,
 
   // Source for a centered, sized icon.
   scoped_ptr<gfx::ImageSkiaSource> source(
-      new internal::AvatarImageSource(
+      new AvatarImageSource(
           *image.ToImageSkia(),
           size,
           std::min(kAvatarIconWidth, kAvatarIconHeight),
-          internal::AvatarImageSource::POSITION_CENTER,
-          internal::AvatarImageSource::BORDER_NONE));
+          AvatarImageSource::POSITION_CENTER,
+          AvatarImageSource::BORDER_NONE));
 
   return gfx::Image(gfx::ImageSkia(source.release(), size));
 }
@@ -212,12 +231,12 @@ gfx::Image GetAvatarIconForTitleBar(const gfx::Image& image,
   // Source for a sized icon drawn at the bottom center of the canvas,
   // with an etched border.
   scoped_ptr<gfx::ImageSkiaSource> source(
-      new internal::AvatarImageSource(
+      new AvatarImageSource(
           *image.ToImageSkia(),
           dst_size,
           size,
-          internal::AvatarImageSource::POSITION_BOTTOM_CENTER,
-          internal::AvatarImageSource::BORDER_ETCHED));
+          AvatarImageSource::POSITION_BOTTOM_CENTER,
+          AvatarImageSource::BORDER_ETCHED));
 
   return gfx::Image(gfx::ImageSkia(source.release(), dst_size));
 }
