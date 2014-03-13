@@ -151,9 +151,9 @@ TEST_F(VideoCaptureManagerTest, CreateAndClose) {
 
   InSequence s;
   EXPECT_CALL(*listener_, DevicesEnumerated(MEDIA_DEVICE_VIDEO_CAPTURE, _))
-      .Times(1).WillOnce(SaveArg<1>(&devices));
-  EXPECT_CALL(*listener_, Opened(MEDIA_DEVICE_VIDEO_CAPTURE, _)).Times(1);
-  EXPECT_CALL(*listener_, Closed(MEDIA_DEVICE_VIDEO_CAPTURE, _)).Times(1);
+      .WillOnce(SaveArg<1>(&devices));
+  EXPECT_CALL(*listener_, Opened(MEDIA_DEVICE_VIDEO_CAPTURE, _));
+  EXPECT_CALL(*listener_, Closed(MEDIA_DEVICE_VIDEO_CAPTURE, _));
 
   vcm_->EnumerateDevices(MEDIA_DEVICE_VIDEO_CAPTURE);
 
@@ -177,7 +177,7 @@ TEST_F(VideoCaptureManagerTest, OpenTwice) {
 
   InSequence s;
   EXPECT_CALL(*listener_, DevicesEnumerated(MEDIA_DEVICE_VIDEO_CAPTURE, _))
-      .Times(1).WillOnce(SaveArg<1>(&devices));
+      .WillOnce(SaveArg<1>(&devices));
   EXPECT_CALL(*listener_, Opened(MEDIA_DEVICE_VIDEO_CAPTURE, _)).Times(2);
   EXPECT_CALL(*listener_, Closed(MEDIA_DEVICE_VIDEO_CAPTURE, _)).Times(2);
 
@@ -209,7 +209,7 @@ TEST_F(VideoCaptureManagerTest, ConnectAndDisconnectDevices) {
 
   InSequence s;
   EXPECT_CALL(*listener_, DevicesEnumerated(MEDIA_DEVICE_VIDEO_CAPTURE, _))
-      .Times(1).WillOnce(SaveArg<1>(&devices));
+      .WillOnce(SaveArg<1>(&devices));
   vcm_->EnumerateDevices(MEDIA_DEVICE_VIDEO_CAPTURE);
   message_loop_->RunUntilIdle();
   ASSERT_EQ(devices.size(), 2u);
@@ -217,7 +217,7 @@ TEST_F(VideoCaptureManagerTest, ConnectAndDisconnectDevices) {
   // Simulate we remove 1 fake device.
   media::FakeVideoCaptureDevice::SetNumberOfFakeDevices(1);
   EXPECT_CALL(*listener_, DevicesEnumerated(MEDIA_DEVICE_VIDEO_CAPTURE, _))
-      .Times(1).WillOnce(SaveArg<1>(&devices));
+      .WillOnce(SaveArg<1>(&devices));
   vcm_->EnumerateDevices(MEDIA_DEVICE_VIDEO_CAPTURE);
   message_loop_->RunUntilIdle();
   ASSERT_EQ(devices.size(), 1u);
@@ -225,7 +225,7 @@ TEST_F(VideoCaptureManagerTest, ConnectAndDisconnectDevices) {
   // Simulate we add 2 fake devices.
   media::FakeVideoCaptureDevice::SetNumberOfFakeDevices(3);
   EXPECT_CALL(*listener_, DevicesEnumerated(MEDIA_DEVICE_VIDEO_CAPTURE, _))
-      .Times(1).WillOnce(SaveArg<1>(&devices));
+      .WillOnce(SaveArg<1>(&devices));
   vcm_->EnumerateDevices(MEDIA_DEVICE_VIDEO_CAPTURE);
   message_loop_->RunUntilIdle();
   ASSERT_EQ(devices.size(), 3u);
@@ -249,12 +249,12 @@ TEST_F(VideoCaptureManagerTest, ManipulateDeviceAndCheckCapabilities) {
 
   InSequence s;
   EXPECT_CALL(*listener_, DevicesEnumerated(MEDIA_DEVICE_VIDEO_CAPTURE, _))
-      .Times(1).WillOnce(SaveArg<1>(&devices));
+      .WillOnce(SaveArg<1>(&devices));
   vcm_->EnumerateDevices(MEDIA_DEVICE_VIDEO_CAPTURE);
   message_loop_->RunUntilIdle();
   ASSERT_GE(devices.size(), 2u);
 
-  EXPECT_CALL(*listener_, Opened(MEDIA_DEVICE_VIDEO_CAPTURE, _)).Times(1);
+  EXPECT_CALL(*listener_, Opened(MEDIA_DEVICE_VIDEO_CAPTURE, _));
   video_session_id = vcm_->Open(devices.front());
   message_loop_->RunUntilIdle();
 
@@ -284,7 +284,7 @@ TEST_F(VideoCaptureManagerTest, ManipulateDeviceAndCheckCapabilities) {
   EXPECT_GT(supported_formats[1].frame_size.height(), 1);
   EXPECT_GT(supported_formats[1].frame_rate, 1);
 
-  EXPECT_CALL(*listener_, Closed(MEDIA_DEVICE_VIDEO_CAPTURE, _)).Times(1);
+  EXPECT_CALL(*listener_, Closed(MEDIA_DEVICE_VIDEO_CAPTURE, _));
   StopClient(client_id);
   supported_formats.clear();
   EXPECT_TRUE(
@@ -312,12 +312,12 @@ TEST_F(VideoCaptureManagerTest, StartDeviceAndGetDeviceFormatInUse) {
 
   InSequence s;
   EXPECT_CALL(*listener_, DevicesEnumerated(MEDIA_DEVICE_VIDEO_CAPTURE, _))
-      .Times(1).WillOnce(SaveArg<1>(&devices));
+      .WillOnce(SaveArg<1>(&devices));
   vcm_->EnumerateDevices(MEDIA_DEVICE_VIDEO_CAPTURE);
   message_loop_->RunUntilIdle();
   ASSERT_GE(devices.size(), 2u);
 
-  EXPECT_CALL(*listener_, Opened(MEDIA_DEVICE_VIDEO_CAPTURE, _)).Times(1);
+  EXPECT_CALL(*listener_, Opened(MEDIA_DEVICE_VIDEO_CAPTURE, _));
   int video_session_id = vcm_->Open(devices.front());
   message_loop_->RunUntilIdle();
 
@@ -340,7 +340,7 @@ TEST_F(VideoCaptureManagerTest, StartDeviceAndGetDeviceFormatInUse) {
   }
   formats_in_use.clear();
 
-  EXPECT_CALL(*listener_, Closed(MEDIA_DEVICE_VIDEO_CAPTURE, _)).Times(1);
+  EXPECT_CALL(*listener_, Closed(MEDIA_DEVICE_VIDEO_CAPTURE, _));
   StopClient(client_id);
   message_loop_->RunUntilIdle();
   // After StopClient(), the device's formats in use should be empty again.
@@ -358,7 +358,7 @@ TEST_F(VideoCaptureManagerTest, OpenTwo) {
 
   InSequence s;
   EXPECT_CALL(*listener_, DevicesEnumerated(MEDIA_DEVICE_VIDEO_CAPTURE, _))
-      .Times(1).WillOnce(SaveArg<1>(&devices));
+      .WillOnce(SaveArg<1>(&devices));
   EXPECT_CALL(*listener_, Opened(MEDIA_DEVICE_VIDEO_CAPTURE, _)).Times(2);
   EXPECT_CALL(*listener_, Closed(MEDIA_DEVICE_VIDEO_CAPTURE, _)).Times(2);
 
@@ -387,10 +387,10 @@ TEST_F(VideoCaptureManagerTest, OpenNotExisting) {
 
   InSequence s;
   EXPECT_CALL(*listener_, DevicesEnumerated(MEDIA_DEVICE_VIDEO_CAPTURE, _))
-      .Times(1).WillOnce(SaveArg<1>(&devices));
-  EXPECT_CALL(*listener_, Opened(MEDIA_DEVICE_VIDEO_CAPTURE, _)).Times(1);
-  EXPECT_CALL(*frame_observer_, OnError(_)).Times(1);
-  EXPECT_CALL(*listener_, Closed(MEDIA_DEVICE_VIDEO_CAPTURE, _)).Times(1);
+      .WillOnce(SaveArg<1>(&devices));
+  EXPECT_CALL(*listener_, Opened(MEDIA_DEVICE_VIDEO_CAPTURE, _));
+  EXPECT_CALL(*frame_observer_, OnError(_));
+  EXPECT_CALL(*listener_, Closed(MEDIA_DEVICE_VIDEO_CAPTURE, _));
 
   vcm_->EnumerateDevices(MEDIA_DEVICE_VIDEO_CAPTURE);
 
@@ -429,9 +429,9 @@ TEST_F(VideoCaptureManagerTest, CloseWithoutStop) {
 
   InSequence s;
   EXPECT_CALL(*listener_, DevicesEnumerated(MEDIA_DEVICE_VIDEO_CAPTURE, _))
-      .Times(1).WillOnce(SaveArg<1>(&devices));
-  EXPECT_CALL(*listener_, Opened(MEDIA_DEVICE_VIDEO_CAPTURE, _)).Times(1);
-  EXPECT_CALL(*listener_, Closed(MEDIA_DEVICE_VIDEO_CAPTURE, _)).Times(1);
+      .WillOnce(SaveArg<1>(&devices));
+  EXPECT_CALL(*listener_, Opened(MEDIA_DEVICE_VIDEO_CAPTURE, _));
+  EXPECT_CALL(*listener_, Closed(MEDIA_DEVICE_VIDEO_CAPTURE, _));
 
   vcm_->EnumerateDevices(MEDIA_DEVICE_VIDEO_CAPTURE);
 
