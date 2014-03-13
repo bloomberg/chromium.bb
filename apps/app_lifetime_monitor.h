@@ -10,7 +10,7 @@
 
 #include "apps/app_window_registry.h"
 #include "base/observer_list.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -24,7 +24,7 @@ namespace apps {
 
 // Observes startup of apps and their windows and notifies observers of these
 // events.
-class AppLifetimeMonitor : public BrowserContextKeyedService,
+class AppLifetimeMonitor : public KeyedService,
                            public content::NotificationObserver,
                            public AppWindowRegistry::Observer {
  public:
@@ -66,7 +66,7 @@ class AppLifetimeMonitor : public BrowserContextKeyedService,
   virtual void OnAppWindowIconChanged(AppWindow* app_window) OVERRIDE;
   virtual void OnAppWindowRemoved(AppWindow* app_window) OVERRIDE;
 
-  // BrowserContextKeyedService overrides:
+  // KeyedService overrides:
   virtual void Shutdown() OVERRIDE;
 
   void NotifyAppStart(const std::string& app_id);

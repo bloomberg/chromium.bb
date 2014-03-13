@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_FILE_BROWSER_PRIVATE_API_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 
 class Profile;
 
@@ -15,12 +15,12 @@ namespace file_manager {
 class EventRouter;
 
 // Manages and registers the fileBrowserPrivate API with the extension system.
-class FileBrowserPrivateAPI : public BrowserContextKeyedService {
+class FileBrowserPrivateAPI : public KeyedService {
  public:
   explicit FileBrowserPrivateAPI(Profile* profile);
   virtual ~FileBrowserPrivateAPI();
 
-  // BrowserContextKeyedService overrides.
+  // KeyedService overrides.
   virtual void Shutdown() OVERRIDE;
 
   // Convenience function to return the FileBrowserPrivateAPI for a Profile.

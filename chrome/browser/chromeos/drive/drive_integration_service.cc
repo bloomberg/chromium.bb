@@ -37,7 +37,7 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/user_agent.h"
@@ -608,8 +608,7 @@ DriveIntegrationServiceFactory::DriveIntegrationServiceFactory()
 DriveIntegrationServiceFactory::~DriveIntegrationServiceFactory() {
 }
 
-BrowserContextKeyedService*
-DriveIntegrationServiceFactory::BuildServiceInstanceFor(
+KeyedService* DriveIntegrationServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
 

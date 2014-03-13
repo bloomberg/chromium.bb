@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_APPS_PER_APP_SETTINGS_SERVICE_FACTORY_H_
 #define CHROME_BROWSER_APPS_PER_APP_SETTINGS_SERVICE_FACTORY_H_
 
-#include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
+#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
 namespace content {
 class BrowserContext;
@@ -27,7 +27,7 @@ class PerAppSettingsServiceFactory : public BrowserContextKeyedServiceFactory {
   virtual ~PerAppSettingsServiceFactory();
 
   // BrowserContextKeyedServiceFactory:
-  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
+  virtual KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const OVERRIDE;
   virtual bool ServiceIsCreatedWithBrowserContext() const OVERRIDE;
   virtual content::BrowserContext* GetBrowserContextToUse(

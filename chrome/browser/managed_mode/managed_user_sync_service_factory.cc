@@ -6,7 +6,7 @@
 
 #include "chrome/browser/managed_mode/managed_user_sync_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 // static
 ManagedUserSyncService* ManagedUserSyncServiceFactory::GetForProfile(
@@ -28,8 +28,7 @@ ManagedUserSyncServiceFactory::ManagedUserSyncServiceFactory()
 
 ManagedUserSyncServiceFactory::~ManagedUserSyncServiceFactory() {}
 
-BrowserContextKeyedService*
-ManagedUserSyncServiceFactory::BuildServiceInstanceFor(
+KeyedService* ManagedUserSyncServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   return new ManagedUserSyncService(static_cast<Profile*>(profile)->GetPrefs());
 }

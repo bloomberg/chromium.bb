@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 
 class Profile;
 
@@ -18,7 +18,7 @@ namespace chromeos {
 
 // This class is responsible for detecting authentication problems reported
 // by sync service and
-class AuthSyncObserver : public BrowserContextKeyedService,
+class AuthSyncObserver : public KeyedService,
                          public ProfileSyncServiceObserver {
  public:
   explicit AuthSyncObserver(Profile* user_profile);
@@ -29,7 +29,7 @@ class AuthSyncObserver : public BrowserContextKeyedService,
  private:
   friend class AuthSyncObserverFactory;
 
-  // BrowserContextKeyedService implementation.
+  // KeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
   // ProfileSyncServiceObserver implementation.

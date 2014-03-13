@@ -7,7 +7,7 @@
 #include "chrome/browser/managed_mode/managed_user_settings_service.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 // static
 ManagedUserSettingsService*
@@ -31,8 +31,7 @@ ManagedUserSettingsServiceFactory::ManagedUserSettingsServiceFactory()
 ManagedUserSettingsServiceFactory::
     ~ManagedUserSettingsServiceFactory() {}
 
-BrowserContextKeyedService*
-ManagedUserSettingsServiceFactory::BuildServiceInstanceFor(
+KeyedService* ManagedUserSettingsServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   return new ManagedUserSettingsService();
 }

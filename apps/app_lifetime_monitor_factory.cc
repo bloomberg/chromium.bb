@@ -7,7 +7,7 @@
 #include "apps/app_lifetime_monitor.h"
 #include "apps/app_window_registry.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "extensions/browser/extensions_browser_client.h"
 
 namespace apps {
@@ -31,7 +31,7 @@ AppLifetimeMonitorFactory::AppLifetimeMonitorFactory()
 
 AppLifetimeMonitorFactory::~AppLifetimeMonitorFactory() {}
 
-BrowserContextKeyedService* AppLifetimeMonitorFactory::BuildServiceInstanceFor(
+KeyedService* AppLifetimeMonitorFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   return new AppLifetimeMonitor(static_cast<Profile*>(profile));
 }

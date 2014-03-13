@@ -10,7 +10,7 @@
 
 #include "apps/app_lifetime_monitor.h"
 #include "apps/app_window_registry.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 
 namespace extensions {
 class Extension;
@@ -21,7 +21,7 @@ class Profile;
 namespace apps {
 
 // Tracks what apps need to be restarted when the browser restarts.
-class AppRestoreService : public BrowserContextKeyedService,
+class AppRestoreService : public KeyedService,
                           public AppLifetimeMonitor::Observer {
  public:
   // Returns true if apps should be restored on the current platform, given
@@ -50,7 +50,7 @@ class AppRestoreService : public BrowserContextKeyedService,
   virtual void OnAppStop(Profile* profile, const std::string& app_id) OVERRIDE;
   virtual void OnChromeTerminating() OVERRIDE;
 
-  // BrowserContextKeyedService.
+  // KeyedService.
   virtual void Shutdown() OVERRIDE;
 
   void RecordAppStart(const std::string& extension_id);

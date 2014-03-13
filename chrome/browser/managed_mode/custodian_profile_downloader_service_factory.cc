@@ -7,7 +7,7 @@
 #include "chrome/browser/managed_mode/custodian_profile_downloader_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 // static
 CustodianProfileDownloaderService*
@@ -35,8 +35,7 @@ CustodianProfileDownloaderServiceFactory()
 CustodianProfileDownloaderServiceFactory::
 ~CustodianProfileDownloaderServiceFactory() {}
 
-BrowserContextKeyedService*
-CustodianProfileDownloaderServiceFactory::BuildServiceInstanceFor(
+KeyedService* CustodianProfileDownloaderServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   return new CustodianProfileDownloaderService(static_cast<Profile*>(profile));
 }

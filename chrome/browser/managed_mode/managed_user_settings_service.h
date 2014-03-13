@@ -14,7 +14,7 @@
 #include "base/prefs/pref_store.h"
 #include "base/values.h"
 #include "chrome/browser/managed_mode/managed_users.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "sync/api/syncable_service.h"
 
 class PersistentPrefStore;
@@ -49,7 +49,7 @@ class SequencedTaskRunner;
 //   }
 // would be encoded as two sync items, one with key "Moose:foo" and value "bar",
 // and one with key "Moose:baz" and value "blurp".
-class ManagedUserSettingsService : public BrowserContextKeyedService,
+class ManagedUserSettingsService : public KeyedService,
                                    public syncer::SyncableService,
                                    public PrefStore::Observer {
  public:
@@ -107,7 +107,7 @@ class ManagedUserSettingsService : public BrowserContextKeyedService,
   static syncer::SyncData CreateSyncDataForSetting(const std::string& name,
                                                    const base::Value& value);
 
-  // BrowserContextKeyedService implementation:
+  // KeyedService implementation:
   virtual void Shutdown() OVERRIDE;
 
   // SyncableService implementation:

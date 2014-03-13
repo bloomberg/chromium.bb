@@ -9,11 +9,11 @@
 #include <string>
 
 #include "chrome/browser/ui/host_desktop.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 
 // Stores settings for apps that only persist until the browser context is
 // destroyed.
-class PerAppSettingsService : public BrowserContextKeyedService {
+class PerAppSettingsService : public KeyedService {
  public:
   PerAppSettingsService();
   virtual ~PerAppSettingsService();

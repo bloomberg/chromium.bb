@@ -8,9 +8,9 @@
 #include "base/callback.h"
 #include "chrome/browser/profiles/profile_downloader.h"
 #include "chrome/browser/profiles/profile_downloader_delegate.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 
-class CustodianProfileDownloaderService : public BrowserContextKeyedService,
+class CustodianProfileDownloaderService : public KeyedService,
                                           public ProfileDownloaderDelegate {
  public:
   // Callback for DownloadProfile() below. If the GAIA profile download is
@@ -20,7 +20,7 @@ class CustodianProfileDownloaderService : public BrowserContextKeyedService,
 
   virtual ~CustodianProfileDownloaderService();
 
-  // BrowserContextKeyedService:
+  // KeyedService:
   virtual void Shutdown() OVERRIDE;
 
   // Downloads the GAIA account information for the |custodian_profile_|.
@@ -49,7 +49,7 @@ class CustodianProfileDownloaderService : public BrowserContextKeyedService,
   scoped_ptr<ProfileDownloader> profile_downloader_;
   DownloadProfileCallback download_callback_;
 
-  // Owns us via the BrowserContextKeyedService mechanism.
+  // Owns us via the KeyedService mechanism.
   Profile* custodian_profile_;
 
   std::string last_downloaded_profile_email_;

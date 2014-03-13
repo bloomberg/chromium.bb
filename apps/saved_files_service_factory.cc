@@ -6,7 +6,7 @@
 
 #include "apps/saved_files_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 namespace apps {
 
@@ -28,7 +28,7 @@ SavedFilesServiceFactory::SavedFilesServiceFactory()
 
 SavedFilesServiceFactory::~SavedFilesServiceFactory() {}
 
-BrowserContextKeyedService* SavedFilesServiceFactory::BuildServiceInstanceFor(
+KeyedService* SavedFilesServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   return new SavedFilesService(static_cast<Profile*>(profile));
 }

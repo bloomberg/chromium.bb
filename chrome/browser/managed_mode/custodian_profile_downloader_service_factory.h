@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_MANAGED_MODE_CUSTODIAN_PROFILE_DOWNLOADER_SERVICE_FACTORY_H_
 
 #include "base/memory/singleton.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
+#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
 class CustodianProfileDownloaderService;
 class Profile;
@@ -26,7 +26,7 @@ class CustodianProfileDownloaderServiceFactory
   virtual ~CustodianProfileDownloaderServiceFactory();
 
   // BrowserContextKeyedServiceFactory:
-  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
+  virtual KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const OVERRIDE;
 };
 

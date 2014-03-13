@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_APPS_SHORTCUT_MANAGER_FACTORY_H_
 #define CHROME_BROWSER_APPS_SHORTCUT_MANAGER_FACTORY_H_
 
-#include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
+#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
 template<typename Type> struct DefaultSingletonTraits;
 
@@ -30,7 +30,7 @@ class AppShortcutManagerFactory : public BrowserContextKeyedServiceFactory {
   virtual ~AppShortcutManagerFactory();
 
   // BrowserContextKeyedServiceFactory:
-  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
+  virtual KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const OVERRIDE;
   virtual bool ServiceIsCreatedWithBrowserContext() const OVERRIDE;
   virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;

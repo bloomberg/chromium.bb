@@ -14,7 +14,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_system_provider.h"
 #include "extensions/browser/extensions_browser_client.h"
@@ -141,8 +141,7 @@ KioskAppUpdateServiceFactory* KioskAppUpdateServiceFactory::GetInstance() {
   return Singleton<KioskAppUpdateServiceFactory>::get();
 }
 
-BrowserContextKeyedService*
-KioskAppUpdateServiceFactory::BuildServiceInstanceFor(
+KeyedService* KioskAppUpdateServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   return new KioskAppUpdateService(
       Profile::FromBrowserContext(context),

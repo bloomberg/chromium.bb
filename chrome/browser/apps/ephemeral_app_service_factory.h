@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_APPS_EPHEMERAL_APP_SERVICE_FACTORY_H_
 
 #include "base/memory/singleton.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
+#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
 class EphemeralAppService;
 class Profile;
@@ -24,7 +24,7 @@ class EphemeralAppServiceFactory : public BrowserContextKeyedServiceFactory {
   virtual ~EphemeralAppServiceFactory();
 
   // BrowserContextKeyedServiceFactory implementation:
-  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
+  virtual KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const OVERRIDE;
   virtual content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const OVERRIDE;

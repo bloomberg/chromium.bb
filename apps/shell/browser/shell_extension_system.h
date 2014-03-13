@@ -43,7 +43,7 @@ class ShellExtensionSystem : public ExtensionSystem {
   // Closes the running app.
   void CloseApp();
 
-  // BrowserContextKeyedService implementation:
+  // KeyedService implementation:
   virtual void Shutdown() OVERRIDE;
 
   // ExtensionSystem implementation:

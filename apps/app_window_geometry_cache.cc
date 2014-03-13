@@ -10,7 +10,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "extensions/browser/extension_prefs.h"
@@ -306,8 +306,7 @@ AppWindowGeometryCache::Factory::Factory()
 
 AppWindowGeometryCache::Factory::~Factory() {}
 
-BrowserContextKeyedService*
-AppWindowGeometryCache::Factory::BuildServiceInstanceFor(
+KeyedService* AppWindowGeometryCache::Factory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
   return new AppWindowGeometryCache(profile,

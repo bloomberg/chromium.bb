@@ -6,7 +6,7 @@
 
 #include "base/memory/singleton.h"
 #include "chrome/browser/apps/per_app_settings_service.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "extensions/browser/extensions_browser_client.h"
 
 // static
@@ -30,8 +30,7 @@ PerAppSettingsServiceFactory::PerAppSettingsServiceFactory()
 
 PerAppSettingsServiceFactory::~PerAppSettingsServiceFactory() {}
 
-BrowserContextKeyedService*
-PerAppSettingsServiceFactory::BuildServiceInstanceFor(
+KeyedService* PerAppSettingsServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   return new PerAppSettingsService;
 }

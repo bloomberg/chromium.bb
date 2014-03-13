@@ -7,8 +7,8 @@
 #include "base/time/clock.h"
 #include "chrome/browser/chromeos/login/saml/saml_offline_signin_limiter.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/browser_context.h"
 
 namespace chromeos {
@@ -42,9 +42,8 @@ SAMLOfflineSigninLimiterFactory::SAMLOfflineSigninLimiterFactory()
 SAMLOfflineSigninLimiterFactory::~SAMLOfflineSigninLimiterFactory() {
 }
 
-BrowserContextKeyedService*
-    SAMLOfflineSigninLimiterFactory::BuildServiceInstanceFor(
-        content::BrowserContext* context) const {
+KeyedService* SAMLOfflineSigninLimiterFactory::BuildServiceInstanceFor(
+    content::BrowserContext* context) const {
   return new SAMLOfflineSigninLimiter(static_cast<Profile*>(context),
                                       clock_for_testing_);
 }

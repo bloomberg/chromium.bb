@@ -9,7 +9,7 @@
 #include <set>
 
 #include "base/timer/timer.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -20,7 +20,7 @@ class Extension;
 }  // namespace extensions
 
 // Performs the background garbage collection of ephemeral apps.
-class EphemeralAppService : public BrowserContextKeyedService,
+class EphemeralAppService : public KeyedService,
                             public content::NotificationObserver {
  public:
   // Returns the instance for the given profile. This is a convenience wrapper

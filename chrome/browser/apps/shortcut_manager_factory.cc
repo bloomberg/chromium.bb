@@ -6,7 +6,7 @@
 
 #include "chrome/browser/apps/shortcut_manager.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 // static
 AppShortcutManager* AppShortcutManagerFactory::GetForProfile(Profile* profile) {
@@ -28,7 +28,7 @@ AppShortcutManagerFactory::AppShortcutManagerFactory()
 AppShortcutManagerFactory::~AppShortcutManagerFactory() {
 }
 
-BrowserContextKeyedService* AppShortcutManagerFactory::BuildServiceInstanceFor(
+KeyedService* AppShortcutManagerFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   return new AppShortcutManager(static_cast<Profile*>(profile));
 }

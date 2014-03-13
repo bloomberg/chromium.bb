@@ -9,7 +9,7 @@
 #include "base/callback_list.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/managed_mode/managed_users.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "sync/api/syncable_service.h"
 
 class PrefService;
@@ -34,7 +34,7 @@ class PrefRegistrySyncable;
 // and an "acknowledged" flag, which is used to wait for the Sync server to
 // acknowledge that it has seen a setting change (see
 // ManagedUserSharedSettingsUpdate for how to use this).
-class ManagedUserSharedSettingsService : public BrowserContextKeyedService,
+class ManagedUserSharedSettingsService : public KeyedService,
                                          public syncer::SyncableService {
  public:
   // Called whenever a setting changes (see Subscribe() below).
@@ -85,7 +85,7 @@ class ManagedUserSharedSettingsService : public BrowserContextKeyedService,
                                                    const base::Value& value,
                                                    bool acknowledged);
 
-  // BrowserContextKeyedService implementation:
+  // KeyedService implementation:
   virtual void Shutdown() OVERRIDE;
 
   // SyncableService implementation:

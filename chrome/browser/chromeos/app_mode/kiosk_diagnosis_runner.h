@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/extensions/api/feedback_private/feedback_service.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 
 class Profile;
 
@@ -18,7 +18,7 @@ namespace chromeos {
 
 // A class to run diagnose for kiosk app. Currently, it only schedules a
 // feedback to collected.
-class KioskDiagnosisRunner : public BrowserContextKeyedService {
+class KioskDiagnosisRunner : public KeyedService {
  public:
   // Run diagnostic jobs for |app_id|.
   static void Run(Profile* profile, const std::string& app_id);

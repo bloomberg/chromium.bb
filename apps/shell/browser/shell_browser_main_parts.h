@@ -102,7 +102,7 @@ class ShellBrowserMainParts : public content::BrowserMainParts,
 
   scoped_ptr<content::ShellDevToolsDelegate> devtools_delegate_;
 
-  // Owned by the BrowserContextKeyedService system.
+  // Owned by the KeyedService system.
   extensions::ShellExtensionSystem* extension_system_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellBrowserMainParts);

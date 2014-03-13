@@ -11,8 +11,8 @@
 #include "base/compiler_specific.h"
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
+#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace content {
@@ -27,7 +27,7 @@ class AppWindow;
 
 // The AppWindowRegistry tracks the AppWindows for all platform apps for a
 // particular browser context.
-class AppWindowRegistry : public BrowserContextKeyedService {
+class AppWindowRegistry : public KeyedService {
  public:
   class Observer {
    public:
@@ -115,7 +115,7 @@ class AppWindowRegistry : public BrowserContextKeyedService {
     virtual ~Factory();
 
     // BrowserContextKeyedServiceFactory
-    virtual BrowserContextKeyedService* BuildServiceInstanceFor(
+    virtual KeyedService* BuildServiceInstanceFor(
         content::BrowserContext* context) const OVERRIDE;
     virtual bool ServiceIsCreatedWithBrowserContext() const OVERRIDE;
     virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;

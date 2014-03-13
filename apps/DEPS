@@ -4,6 +4,7 @@ include_rules = [
   "+content/public/common",
   "+content/public/test",
   "+components/browser_context_keyed_service",
+  "+components/keyed_service",
   "+components/user_prefs/pref_registry_syncable.h",
   "+components/web_modal",
   "+extensions",

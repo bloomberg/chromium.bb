@@ -7,7 +7,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/profiles/profile_info_cache_observer.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/common/extension.h"
@@ -20,7 +20,7 @@ class PrefRegistrySyncable;
 }
 
 // This class manages the installation of shortcuts for platform apps.
-class AppShortcutManager : public BrowserContextKeyedService,
+class AppShortcutManager : public KeyedService,
                            public content::NotificationObserver,
                            public ProfileInfoCacheObserver {
  public:

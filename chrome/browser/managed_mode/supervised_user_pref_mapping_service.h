@@ -11,7 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "chrome/browser/managed_mode/managed_users.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 
 class ManagedUserSharedSettingsService;
 class PrefService;
@@ -19,7 +19,7 @@ class PrefService;
 // SupervisedUserPrefMappingService maps shared managed user settings to user
 // preferences. When a shared managed user setting is updated via sync, the
 // corresponding local user preference is set to this new value.
-class SupervisedUserPrefMappingService : public BrowserContextKeyedService {
+class SupervisedUserPrefMappingService : public KeyedService {
  public:
   typedef base::CallbackList<void(const std::string&, const std::string&)>
       CallbackList;
@@ -29,7 +29,7 @@ class SupervisedUserPrefMappingService : public BrowserContextKeyedService {
       ManagedUserSharedSettingsService* shared_settings);
   virtual ~SupervisedUserPrefMappingService();
 
-  // BrowserContextKeyedService implementation:
+  // KeyedService implementation:
   virtual void Shutdown() OVERRIDE;
 
   void Init();

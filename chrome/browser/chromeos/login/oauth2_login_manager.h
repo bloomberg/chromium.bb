@@ -12,7 +12,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/login/oauth2_login_verifier.h"
 #include "chrome/browser/chromeos/login/oauth2_token_fetcher.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -25,7 +25,7 @@ namespace chromeos {
 
 // This class is responsible for restoring authenticated web sessions out of
 // OAuth2 refresh tokens or pre-authenticated cookie jar.
-class OAuth2LoginManager : public BrowserContextKeyedService,
+class OAuth2LoginManager : public KeyedService,
                            public gaia::GaiaOAuthClient::Delegate,
                            public OAuth2LoginVerifier::Delegate,
                            public OAuth2TokenFetcher::Delegate,
@@ -144,7 +144,7 @@ class OAuth2LoginManager : public BrowserContextKeyedService,
     POST_MERGE_COUNT = 7,
   };
 
-  // BrowserContextKeyedService implementation.
+  // KeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
   // gaia::GaiaOAuthClient::Delegate overrides.

@@ -10,7 +10,7 @@
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -24,7 +24,7 @@ namespace apps {
 
 // Monitors apps being reloaded and performs app specific actions (like launch
 // or restart) on them. Also provides an interface to schedule these actions.
-class AppLoadService : public BrowserContextKeyedService,
+class AppLoadService : public KeyedService,
                        public content::NotificationObserver {
  public:
   enum PostReloadActionType {

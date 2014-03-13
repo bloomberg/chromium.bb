@@ -14,8 +14,8 @@
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/drive/drive_notification_observer.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
+#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
+#include "components/keyed_service/core/keyed_service.h"
 
 namespace base {
 class FilePath;
@@ -62,9 +62,8 @@ class DriveIntegrationServiceObserver {
 // The class is essentially a container that manages lifetime of the objects
 // that are used to integrate Drive to Chrome. The object of this class is
 // created per-profile.
-class DriveIntegrationService
-    : public BrowserContextKeyedService,
-      public DriveNotificationObserver {
+class DriveIntegrationService : public KeyedService,
+                                public DriveNotificationObserver {
  public:
   class PreferenceWatcher;
 
@@ -83,7 +82,7 @@ class DriveIntegrationService
       FileSystemInterface* test_file_system);
   virtual ~DriveIntegrationService();
 
-  // BrowserContextKeyedService override:
+  // KeyedService override:
   virtual void Shutdown() OVERRIDE;
 
   void SetEnabled(bool enabled);
@@ -225,7 +224,7 @@ class DriveIntegrationServiceFactory
   virtual ~DriveIntegrationServiceFactory();
 
   // BrowserContextKeyedServiceFactory:
-  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
+  virtual KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const OVERRIDE;
 
   // This is static so it can be set without instantiating the factory. This

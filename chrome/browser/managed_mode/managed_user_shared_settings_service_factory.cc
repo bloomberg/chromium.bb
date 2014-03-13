@@ -5,7 +5,7 @@
 #include "chrome/browser/managed_mode/managed_user_shared_settings_service_factory.h"
 
 #include "chrome/browser/managed_mode/managed_user_shared_settings_service.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_context.h"
 
@@ -32,8 +32,7 @@ ManagedUserSharedSettingsServiceFactory::
 ManagedUserSharedSettingsServiceFactory::
     ~ManagedUserSharedSettingsServiceFactory() {}
 
-BrowserContextKeyedService*
-ManagedUserSharedSettingsServiceFactory::BuildServiceInstanceFor(
+KeyedService* ManagedUserSharedSettingsServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   return new ManagedUserSharedSettingsService(
       user_prefs::UserPrefs::Get(profile));

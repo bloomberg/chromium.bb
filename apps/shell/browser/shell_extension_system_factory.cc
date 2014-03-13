@@ -5,7 +5,7 @@
 #include "apps/shell/browser/shell_extension_system_factory.h"
 
 #include "apps/shell/browser/shell_extension_system.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "extensions/browser/extension_prefs_factory.h"
 #include "extensions/browser/extension_registry_factory.h"
 
@@ -33,9 +33,8 @@ ShellExtensionSystemFactory::ShellExtensionSystemFactory()
 
 ShellExtensionSystemFactory::~ShellExtensionSystemFactory() {}
 
-BrowserContextKeyedService*
-ShellExtensionSystemFactory::BuildServiceInstanceFor(BrowserContext* context)
-    const {
+KeyedService* ShellExtensionSystemFactory::BuildServiceInstanceFor(
+    BrowserContext* context) const {
   return new ShellExtensionSystem(context);
 }
 

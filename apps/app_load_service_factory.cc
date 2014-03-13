@@ -7,7 +7,7 @@
 #include "apps/app_load_service.h"
 #include "apps/app_window_registry.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "extensions/browser/extension_prefs_factory.h"
 #include "extensions/browser/extension_system_provider.h"
 #include "extensions/browser/extensions_browser_client.h"
@@ -37,7 +37,7 @@ AppLoadServiceFactory::AppLoadServiceFactory()
 AppLoadServiceFactory::~AppLoadServiceFactory() {
 }
 
-BrowserContextKeyedService* AppLoadServiceFactory::BuildServiceInstanceFor(
+KeyedService* AppLoadServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   return new AppLoadService(static_cast<Profile*>(profile));
 }

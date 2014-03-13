@@ -12,7 +12,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/disks/disk_mount_manager.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 namespace file_manager {
 
@@ -39,7 +39,7 @@ bool VolumeManagerFactory::ServiceIsNULLWhileTesting() const {
   return true;
 }
 
-BrowserContextKeyedService* VolumeManagerFactory::BuildServiceInstanceFor(
+KeyedService* VolumeManagerFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   VolumeManager* instance = new VolumeManager(
       Profile::FromBrowserContext(profile),

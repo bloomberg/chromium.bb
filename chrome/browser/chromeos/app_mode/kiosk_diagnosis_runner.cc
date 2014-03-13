@@ -11,8 +11,8 @@
 #include "base/time/time.h"
 #include "chrome/browser/extensions/api/feedback_private/feedback_private_api.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_system_provider.h"
 #include "extensions/browser/extensions_browser_client.h"
@@ -45,7 +45,7 @@ class KioskDiagnosisRunner::Factory : public BrowserContextKeyedServiceFactory {
   virtual ~Factory() {}
 
   // BrowserContextKeyedServiceFactory overrides:
-  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
+  virtual KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const OVERRIDE {
     Profile* profile = static_cast<Profile*>(context);
     return new KioskDiagnosisRunner(profile);

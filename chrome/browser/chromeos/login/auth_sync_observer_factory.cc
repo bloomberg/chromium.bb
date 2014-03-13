@@ -7,7 +7,7 @@
 #include "chrome/browser/chromeos/login/auth_sync_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 namespace chromeos {
 
@@ -34,8 +34,7 @@ AuthSyncObserverFactory*
   return Singleton<AuthSyncObserverFactory>::get();
 }
 
-BrowserContextKeyedService*
-AuthSyncObserverFactory::BuildServiceInstanceFor(
+KeyedService* AuthSyncObserverFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = static_cast<Profile*>(context);
   return new AuthSyncObserver(profile);

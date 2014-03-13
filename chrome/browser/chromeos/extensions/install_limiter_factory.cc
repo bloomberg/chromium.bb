@@ -6,7 +6,7 @@
 
 #include "chrome/browser/chromeos/extensions/install_limiter.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "extensions/browser/extension_system_provider.h"
 #include "extensions/browser/extensions_browser_client.h"
 
@@ -33,7 +33,7 @@ InstallLimiterFactory::InstallLimiterFactory()
 InstallLimiterFactory::~InstallLimiterFactory() {
 }
 
-BrowserContextKeyedService* InstallLimiterFactory::BuildServiceInstanceFor(
+KeyedService* InstallLimiterFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   return new InstallLimiter();
 }

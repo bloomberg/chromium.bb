@@ -14,7 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/policy/network_configuration_updater.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -46,7 +46,7 @@ class PolicyService;
 // expansion with the user's name (or email address, etc.) and handling of "Web"
 // trust of certificates.
 class UserNetworkConfigurationUpdater : public NetworkConfigurationUpdater,
-                                        public BrowserContextKeyedService,
+                                        public KeyedService,
                                         public content::NotificationObserver {
  public:
   class WebTrustedCertsObserver {

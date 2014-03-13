@@ -16,7 +16,7 @@
 #include "chrome/browser/managed_mode/managed_users.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "chrome/browser/ui/browser_list_observer.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents.h"
@@ -37,7 +37,7 @@ class PrefRegistrySyncable;
 // This class handles all the information related to a given managed profile
 // (e.g. the installed content packs, the default URL filtering behavior, or
 // manual whitelist/blacklist overrides).
-class ManagedUserService : public BrowserContextKeyedService,
+class ManagedUserService : public KeyedService,
                            public extensions::ManagementPolicy::Provider,
                            public ProfileSyncServiceObserver,
                            public content::NotificationObserver,
@@ -230,7 +230,7 @@ class ManagedUserService : public BrowserContextKeyedService,
   // Each entry is a dictionary which has the timestamp of the event.
   void RecordProfileAndBrowserEventsHelper(const char* key_prefix);
 
-  // Owns us via the BrowserContextKeyedService mechanism.
+  // Owns us via the KeyedService mechanism.
   Profile* profile_;
 
   content::NotificationRegistrar registrar_;

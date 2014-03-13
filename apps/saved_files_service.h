@@ -13,7 +13,7 @@
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/stl_util.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -56,7 +56,7 @@ struct SavedFileEntry {
 
 // Tracks the files that apps have retained access to both while running and
 // when suspended.
-class SavedFilesService : public BrowserContextKeyedService,
+class SavedFilesService : public KeyedService,
                           public content::NotificationObserver {
  public:
   explicit SavedFilesService(Profile* profile);

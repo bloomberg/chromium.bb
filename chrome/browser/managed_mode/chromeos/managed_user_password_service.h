@@ -12,9 +12,9 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/managed_mode/managed_user_shared_settings_service.h"
 #include "chrome/browser/managed_mode/managed_users.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 
-class ManagedUserPasswordService : public BrowserContextKeyedService {
+class ManagedUserPasswordService : public KeyedService {
  public:
   ManagedUserPasswordService();
   virtual ~ManagedUserPasswordService();

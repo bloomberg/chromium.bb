@@ -95,10 +95,10 @@ class ManagedUserRegistrationUtilityImpl
   PrefService* prefs_;
   scoped_ptr<ManagedUserRefreshTokenFetcher> token_fetcher_;
 
-  // A |BrowserContextKeyedService| owned by the custodian profile.
+  // A |KeyedService| owned by the custodian profile.
   ManagedUserSyncService* managed_user_sync_service_;
 
-  // A |BrowserContextKeyedService| owned by the custodian profile.
+  // A |KeyedService| owned by the custodian profile.
   ManagedUserSharedSettingsService* managed_user_shared_settings_service_;
 
   std::string pending_managed_user_id_;

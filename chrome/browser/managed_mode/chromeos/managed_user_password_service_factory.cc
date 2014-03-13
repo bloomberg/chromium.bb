@@ -11,8 +11,7 @@
 #include "chrome/browser/managed_mode/managed_user_shared_settings_service_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
-
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 // static
 ManagedUserPasswordService*
@@ -37,8 +36,7 @@ ManagedUserPasswordServiceFactory::ManagedUserPasswordServiceFactory()
 ManagedUserPasswordServiceFactory::
     ~ManagedUserPasswordServiceFactory() {}
 
-BrowserContextKeyedService*
-ManagedUserPasswordServiceFactory::BuildServiceInstanceFor(
+KeyedService* ManagedUserPasswordServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile= static_cast<Profile*>(context);
   chromeos::User* user = chromeos::UserManager::Get()->

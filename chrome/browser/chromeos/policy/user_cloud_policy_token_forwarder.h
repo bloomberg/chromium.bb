@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_POLICY_USER_CLOUD_POLICY_TOKEN_FORWARDER_H_
 
 #include "base/basictypes.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "components/policy/core/common/cloud/cloud_policy_service.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
@@ -22,7 +22,7 @@ class UserCloudPolicyManagerChromeOS;
 // ready. This service decouples the UserCloudPolicyManagerChromeOS from
 // depending directly on the ProfileOAuth2TokenService, since it is initialized
 // much earlier.
-class UserCloudPolicyTokenForwarder : public BrowserContextKeyedService,
+class UserCloudPolicyTokenForwarder : public KeyedService,
                                       public OAuth2TokenService::Observer,
                                       public OAuth2TokenService::Consumer,
                                       public CloudPolicyService::Observer {
@@ -35,7 +35,7 @@ class UserCloudPolicyTokenForwarder : public BrowserContextKeyedService,
                                 SigninManagerBase* signin_manager);
   virtual ~UserCloudPolicyTokenForwarder();
 
-  // BrowserContextKeyedService:
+  // KeyedService:
   virtual void Shutdown() OVERRIDE;
 
   // OAuth2TokenService::Observer:

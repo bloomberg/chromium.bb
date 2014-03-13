@@ -7,7 +7,7 @@
 
 #include "base/memory/singleton.h"
 #include "chrome/browser/managed_mode/managed_users.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
+#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
 class ManagedUserService;
 class Profile;
@@ -19,7 +19,7 @@ class ManagedUserServiceFactory : public BrowserContextKeyedServiceFactory {
   static ManagedUserServiceFactory* GetInstance();
 
   // Used to create instances for testing.
-  static BrowserContextKeyedService* BuildInstanceFor(Profile* profile);
+  static KeyedService* BuildInstanceFor(Profile* profile);
 
  private:
   friend struct DefaultSingletonTraits<ManagedUserServiceFactory>;
@@ -30,7 +30,7 @@ class ManagedUserServiceFactory : public BrowserContextKeyedServiceFactory {
   // BrowserContextKeyedServiceFactory:
   virtual content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const OVERRIDE;
-  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
+  virtual KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const OVERRIDE;
 };
 

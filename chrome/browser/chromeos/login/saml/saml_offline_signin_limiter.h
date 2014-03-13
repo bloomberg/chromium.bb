@@ -12,7 +12,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/login/user.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 
 class Profile;
 
@@ -29,7 +29,7 @@ namespace chromeos {
 // Enforces a limit on the length of time for which a user authenticated via
 // SAML can use offline authentication against a cached password before being
 // forced to go through online authentication against GAIA again.
-class SAMLOfflineSigninLimiter : public BrowserContextKeyedService {
+class SAMLOfflineSigninLimiter : public KeyedService {
  public:
   // Registers preferences.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
@@ -38,7 +38,7 @@ class SAMLOfflineSigninLimiter : public BrowserContextKeyedService {
   // the type of authentication flow that the user went through.
   void SignedIn(UserContext::AuthFlow auth_flow);
 
-  // BrowserContextKeyedService:
+  // KeyedService:
   virtual void Shutdown() OVERRIDE;
 
  private:

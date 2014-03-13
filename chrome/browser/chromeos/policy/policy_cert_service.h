@@ -14,7 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/policy/user_network_configuration_updater.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 
 namespace chromeos {
 class UserManager;
@@ -35,7 +35,7 @@ class PolicyCertVerifier;
 // Except for unit tests, PolicyCertVerifier should only be created through this
 // class.
 class PolicyCertService
-    : public BrowserContextKeyedService,
+    : public KeyedService,
       public UserNetworkConfigurationUpdater::WebTrustedCertsObserver {
  public:
   PolicyCertService(const std::string& user_id,
@@ -58,7 +58,7 @@ class PolicyCertService
   virtual void OnTrustAnchorsChanged(const net::CertificateList& trust_anchors)
       OVERRIDE;
 
-  // BrowserContextKeyedService:
+  // KeyedService:
   virtual void Shutdown() OVERRIDE;
 
   static scoped_ptr<PolicyCertService> CreateForTesting(

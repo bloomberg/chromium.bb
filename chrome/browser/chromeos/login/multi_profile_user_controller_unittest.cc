@@ -88,8 +88,7 @@ const BehaviorTestCase kBehaviorTestCases[] = {
 // we've ensured the profile has been shut down.
 policy::PolicyCertVerifier* g_policy_cert_verifier_for_factory = NULL;
 
-BrowserContextKeyedService* TestPolicyCertServiceFactory(
-    content::BrowserContext* context) {
+KeyedService* TestPolicyCertServiceFactory(content::BrowserContext* context) {
   return policy::PolicyCertService::CreateForTesting(
       kUsers[0], g_policy_cert_verifier_for_factory, UserManager::Get())
       .release();

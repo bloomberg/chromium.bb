@@ -26,7 +26,7 @@ class ShellExtensionSystemFactory : public ExtensionSystemProvider {
   virtual ~ShellExtensionSystemFactory();
 
   // BrowserContextKeyedServiceFactory implementation:
-  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
+  virtual KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const OVERRIDE;
   virtual content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const OVERRIDE;

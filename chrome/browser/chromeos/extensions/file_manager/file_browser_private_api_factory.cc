@@ -9,7 +9,7 @@
 #include "chrome/browser/chromeos/file_manager/volume_manager_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "extensions/browser/extension_system_provider.h"
 #include "extensions/browser/extensions_browser_client.h"
 
@@ -41,8 +41,7 @@ FileBrowserPrivateAPIFactory::FileBrowserPrivateAPIFactory()
 FileBrowserPrivateAPIFactory::~FileBrowserPrivateAPIFactory() {
 }
 
-BrowserContextKeyedService*
-FileBrowserPrivateAPIFactory::BuildServiceInstanceFor(
+KeyedService* FileBrowserPrivateAPIFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   return new FileBrowserPrivateAPI(Profile::FromBrowserContext(context));
 }

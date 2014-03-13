@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_base_factory.h"
+#include "components/keyed_service/content/browser_context_keyed_base_factory.h"
 
 class Profile;
 
@@ -31,14 +31,14 @@ class UserCloudPolicyManagerChromeOS;
 // cloud policy settings on ChromeOS.
 //
 // UserCloudPolicyManagerChromeOS is handled different than other
-// BrowserContextKeyedServices because it is a dependency of PrefService.
+// KeyedServices because it is a dependency of PrefService.
 // Therefore, lifetime of instances is managed by Profile, Profile startup code
 // invokes CreateForProfile() explicitly, takes ownership, and the instance
 // is only deleted after PrefService destruction.
 //
 // TODO(mnissler): Remove the special lifetime management in favor of
 // PrefService directly depending on UserCloudPolicyManagerChromeOS once the
-// former has been converted to a BrowserContextKeyedService.
+// former has been converted to a KeyedService.
 // See also http://crbug.com/131843 and http://crbug.com/131844.
 class UserCloudPolicyManagerFactoryChromeOS
     : public BrowserContextKeyedBaseFactory {

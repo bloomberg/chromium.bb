@@ -14,7 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_manager.h"
@@ -40,11 +40,10 @@ class WildcardLoginChecker;
 
 // UserCloudPolicyManagerChromeOS implements logic for initializing user policy
 // on Chrome OS.
-class UserCloudPolicyManagerChromeOS
-    : public CloudPolicyManager,
-      public CloudPolicyClient::Observer,
-      public CloudPolicyService::Observer,
-      public BrowserContextKeyedService {
+class UserCloudPolicyManagerChromeOS : public CloudPolicyManager,
+                                       public CloudPolicyClient::Observer,
+                                       public CloudPolicyService::Observer,
+                                       public KeyedService {
  public:
   // If |wait_for_policy_fetch| is true, IsInitializationComplete() will return
   // false as long as there hasn't been a successful policy fetch.
@@ -74,7 +73,7 @@ class UserCloudPolicyManagerChromeOS
 
   // This class is one of the policy providers, and must be ready for the
   // creation of the Profile's PrefService; all the other
-  // BrowserContextKeyedServices depend on the PrefService, so this class can't
+  // KeyedServices depend on the PrefService, so this class can't
   // depend on other BCKS to avoid a circular dependency. So instead of using
   // the ProfileOAuth2TokenService directly to get the access token, a 3rd
   // service (UserCloudPolicyTokenForwarder) will fetch it later and pass it

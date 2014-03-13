@@ -15,8 +15,8 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
+#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/base/ui_base_types.h"
@@ -33,7 +33,7 @@ namespace apps {
 // A cache for persisted geometry of app windows, both to not have to wait
 // for IO when creating a new window, and to not cause IO on every window
 // geometry change.
-class AppWindowGeometryCache : public BrowserContextKeyedService,
+class AppWindowGeometryCache : public KeyedService,
                                public content::NotificationObserver {
  public:
   class Factory : public BrowserContextKeyedServiceFactory {
@@ -51,7 +51,7 @@ class AppWindowGeometryCache : public BrowserContextKeyedService,
     virtual ~Factory();
 
     // BrowserContextKeyedServiceFactory
-    virtual BrowserContextKeyedService* BuildServiceInstanceFor(
+    virtual KeyedService* BuildServiceInstanceFor(
         content::BrowserContext* context) const OVERRIDE;
     virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
     virtual content::BrowserContext* GetBrowserContextToUse(
@@ -91,7 +91,7 @@ class AppWindowGeometryCache : public BrowserContextKeyedService,
                    gfx::Rect* screen_bounds,
                    ui::WindowShowState* state);
 
-  // BrowserContextKeyedService
+  // KeyedService
   virtual void Shutdown() OVERRIDE;
 
   void AddObserver(Observer* observer);

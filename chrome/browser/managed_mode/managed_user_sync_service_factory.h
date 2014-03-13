@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_MANAGED_MODE_MANAGED_USER_SYNC_SERVICE_FACTORY_H_
 
 #include "base/memory/singleton.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
+#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
 class ManagedUserSyncService;
 class Profile;
@@ -25,7 +25,7 @@ class ManagedUserSyncServiceFactory
   virtual ~ManagedUserSyncServiceFactory();
 
   // BrowserContextKeyedServiceFactory:
-  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
+  virtual KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const OVERRIDE;
 };
 

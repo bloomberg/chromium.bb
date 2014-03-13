@@ -6,7 +6,7 @@
 #include "apps/app_window_registry.h"
 #include "apps/apps_client.h"
 #include "apps/ui/native_app_window.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_manager.h"
@@ -285,7 +285,7 @@ AppWindowRegistry::Factory::Factory()
 
 AppWindowRegistry::Factory::~Factory() {}
 
-BrowserContextKeyedService* AppWindowRegistry::Factory::BuildServiceInstanceFor(
+KeyedService* AppWindowRegistry::Factory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   return new AppWindowRegistry(context);
 }

@@ -6,7 +6,7 @@
 
 #include "chrome/browser/chromeos/policy/recommendation_restorer.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_context.h"
 
 namespace policy {
@@ -23,9 +23,8 @@ RecommendationRestorer* RecommendationRestorerFactory::GetForProfile(
           GetInstance()->GetServiceForBrowserContext(profile, false));
 }
 
-BrowserContextKeyedService*
-    RecommendationRestorerFactory::BuildServiceInstanceFor(
-        content::BrowserContext* context) const {
+KeyedService* RecommendationRestorerFactory::BuildServiceInstanceFor(
+    content::BrowserContext* context) const {
   return new RecommendationRestorer(static_cast<Profile*>(context));
 }
 

@@ -7,7 +7,7 @@
 #include "apps/app_lifetime_monitor_factory.h"
 #include "apps/app_restore_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 namespace apps {
 
@@ -31,7 +31,7 @@ AppRestoreServiceFactory::AppRestoreServiceFactory()
 AppRestoreServiceFactory::~AppRestoreServiceFactory() {
 }
 
-BrowserContextKeyedService* AppRestoreServiceFactory::BuildServiceInstanceFor(
+KeyedService* AppRestoreServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   return new AppRestoreService(static_cast<Profile*>(profile));
 }

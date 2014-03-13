@@ -15,7 +15,7 @@
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/run_loop.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/common/result_codes.h"
 #include "content/shell/browser/shell_devtools_delegate.h"
 #include "content/shell/browser/shell_net_log.h"
@@ -41,7 +41,7 @@ using extensions::ShellExtensionSystem;
 namespace apps {
 namespace {
 
-// Register additional BrowserContextKeyedService factories here. See
+// Register additional KeyedService factories here. See
 // ChromeBrowserMainExtraPartsProfiles for details.
 void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   extensions::RendererStartupHelperFactory::GetInstance();
@@ -117,7 +117,7 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   AppsClient::Set(apps_client_.get());
 
   // Create our custom ExtensionSystem first because other
-  // BrowserContextKeyedServices depend on it.
+  // KeyedServices depend on it.
   // TODO(yoz): Move this after EnsureBrowserContextKeyedServiceFactoriesBuilt.
   CreateExtensionSystem();
 
