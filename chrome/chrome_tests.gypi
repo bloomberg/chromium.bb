@@ -1096,6 +1096,7 @@
         'browser/extensions/api/activity_log_private/activity_log_private_apitest.cc',
         'browser/extensions/api/app_window/app_window_apitest.cc',
         'browser/extensions/api/audio/audio_apitest.cc',
+        'browser/extensions/api/automation/automation_apitest.cc',
         'browser/extensions/api/autotest_private/autotest_private_apitest.cc',
         'browser/extensions/api/bluetooth/bluetooth_apitest.cc',
         'browser/extensions/api/bookmark_manager_private/bookmark_manager_private_apitest.cc',

@@ -1,0 +1,54 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// The <code>chrome.automation</code> API allows developers to access the
+// automation (accessibility) tree for the browser. This is a tree
+// representation, analogous to the DOM tree, which represents the
+// <em>semantic</em> structure of a page, and can be used to programmatically
+// interact with a page.
+[nocompile] namespace automation {
+  // A single node in an <code>AutomationTree</code>.
+  [nocompile] dictionary AutomationNode {
+    // Unique ID to identify this node.
+    long id;
+
+    // The role of this node, e.g. button, static text etc.
+    DOMString role;
+
+    // The state of this node, e.g. {pressed": true, "inactive": true} etc.
+    object state;
+
+    // TODO(aboxhall): Rect location;
+
+    // A collection of this node's other attributes.
+    // TODO(aboxhall): Create and use combined list of attributes from
+    // AXStringAttribute, AXIntAttribute etc.
+    object? attributes;
+
+    // The index of this node in its parent node's list of children. If this is
+    // the root node, this will be undefined.
+    long? index_in_parent;
+
+    static object[] children();
+    static object parent();
+    static object firstChild();
+    static object lastChild();
+    static object previousSibling();
+    static object nextSibling();
+  };
+
+  // The automation tree for a single page.
+  [nocompile] dictionary AutomationTree {
+    AutomationNode root;
+  };
+
+  // Called when the <code>AutomationTree</code> for the page is available.
+  callback RootCallback = void(AutomationTree tree);
+
+  interface Functions {
+    // Get the automation tree for the current tab, enabling automation if
+    // necessary.
+    [nocompile] static void getTree(RootCallback callback);
+  };
+};

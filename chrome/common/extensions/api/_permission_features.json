@@ -61,6 +61,10 @@
       ]
     }
   ],
+  "automation": {
+    "channel": "trunk",
+    "extension_types": ["extension", "legacy_packaged_app", "platform_app"]
+  },
   "autotestPrivate": {
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app"],

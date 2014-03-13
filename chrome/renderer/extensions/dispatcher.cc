@@ -965,6 +965,8 @@ void Dispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
 
 void Dispatcher::PopulateSourceMap() {
   // Libraries.
+  source_map_.RegisterSource("automationNode", IDR_AUTOMATION_NODE_JS);
+  source_map_.RegisterSource("automationTree", IDR_AUTOMATION_TREE_JS);
   source_map_.RegisterSource("entryIdManager", IDR_ENTRY_ID_MANAGER);
   source_map_.RegisterSource(kEventBindings, IDR_EVENT_BINDINGS_JS);
   source_map_.RegisterSource("imageUtil", IDR_IMAGE_UTIL_JS);
@@ -984,6 +986,9 @@ void Dispatcher::PopulateSourceMap() {
   source_map_.RegisterSource("app", IDR_APP_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("app.runtime", IDR_APP_RUNTIME_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("app.window", IDR_APP_WINDOW_CUSTOM_BINDINGS_JS);
+  source_map_.RegisterSource("automation", IDR_AUTOMATION_CUSTOM_BINDINGS_JS);
+  source_map_.RegisterSource("automationNode", IDR_AUTOMATION_NODE_JS);
+  source_map_.RegisterSource("automationTree", IDR_AUTOMATION_TREE_JS);
   source_map_.RegisterSource("browserAction",
                              IDR_BROWSER_ACTION_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("contextMenus",

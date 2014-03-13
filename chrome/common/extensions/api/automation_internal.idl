@@ -1,0 +1,56 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// This is the implementation layer of the chrome.automation API, and is
+// essentially a translation of the internal accessibility tree update system
+// into an extension API.
+namespace automationInternal {
+  // A compact representation of the accessibility information for a
+  // single web object, in a form that can be serialized and sent from
+  // one process to another.
+  // See ui/accessibility/ax_node_data.h
+  dictionary AXNodeData {
+    long id;
+    DOMString role;
+    object state;
+    // TODO(aboxhall): include location data;
+    object? bool_attributes;
+    object? float_attributes;
+    object? html_attributes;
+    object? int_attributes;
+    object? intlist_attributes;
+    object? string_attributes;
+    long[] child_ids;
+  };
+
+  // Data for an accessibility event and/or an atomic change to an accessibility
+  // tree. See ui/accessibility/ax_tree_update.h for an extended explanation of
+  // the tree update format.
+  dictionary AXEventParams {
+    // The routing id of the web contents that this update is for.
+    long routing_id;
+
+    // The type of event that this update represents.
+    DOMString event_type;
+
+    // A vector of nodes to update according to the rules described in
+    // ui/ax_tree_update.h.
+    AXNodeData[] nodes;
+  };
+
+  // Returns the routing_id of the tab whose accessibility was enabled using
+  // enable().
+  callback EnableCallback = void(long routing_id);
+
+  interface Functions {
+    // Enable automation of the active tab and retrieves its routing id for use
+    // in future updates.
+    static void enableCurrentTab(EnableCallback callback);
+  };
+
+  interface Events {
+    // Fired when an accessibility event occurs
+    static void onAccessibilityEvent(AXEventParams update);
+  };
+};

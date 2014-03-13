@@ -52,6 +52,7 @@
 #include "content/common/view_messages.h"
 #include "content/port/browser/render_view_host_delegate_view.h"
 #include "content/port/browser/render_widget_host_view_port.h"
+#include "content/public/browser/ax_event_notification_details.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_message_filter.h"
@@ -1708,6 +1709,18 @@ void RenderViewHostImpl::OnAccessibilityEvents(
         view_->GetBrowserAccessibilityManager();
     if (manager)
       manager->OnAccessibilityEvents(params);
+
+    // TODO(aboxhall, dtseng): Only send notification when accessibility mode
+    // extension enabled.
+    std::vector<AXEventNotificationDetails> details;
+    for (unsigned int i = 0; i < params.size(); ++i) {
+      const AccessibilityHostMsg_EventParams& param = params[i];
+      AXEventNotificationDetails detail(
+          param.nodes, param.event_type, param.id, GetRoutingID());
+      details.push_back(detail);
+    }
+
+    delegate_->AccessibilityEventReceived(details);
   }
 
   // Always send an ACK or the renderer can be in a bad state.

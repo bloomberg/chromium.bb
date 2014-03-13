@@ -202,6 +202,7 @@
         'renderer/resource_bundle_source_map.h',
         'renderer/resources/extensions/app_custom_bindings.js',
         'renderer/resources/extensions/app_window_custom_bindings.js',
+        'renderer/resources/extensions/automation_custom_bindings.js',
         'renderer/resources/extensions/binding.js',
         'renderer/resources/extensions/browser_action_custom_bindings.js',
         'renderer/resources/extensions/chrome_direct_setting.js',

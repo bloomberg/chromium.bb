@@ -41,6 +41,8 @@
               'app_runtime.idl',
               'app_window.idl',
               'audio.idl',
+              'automation_internal.idl',
+              'automation.idl',
               'autotest_private.idl',
               'bluetooth.idl',
               'bookmark_manager_private.json',

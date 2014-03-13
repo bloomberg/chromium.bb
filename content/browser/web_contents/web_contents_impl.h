@@ -24,6 +24,7 @@
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/ax_event_notification_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents.h"
@@ -65,6 +66,7 @@ class WebContentsImpl;
 class WebContentsObserver;
 class WebContentsViewPort;
 class WebContentsViewDelegate;
+struct AXEventNotificationDetails;
 struct ColorSuggestion;
 struct FaviconURL;
 struct LoadNotificationDetails;
@@ -422,6 +424,8 @@ class CONTENT_EXPORT WebContentsImpl
   virtual SessionStorageNamespace* GetSessionStorageNamespace(
       SiteInstance* instance) OVERRIDE;
   virtual FrameTree* GetFrameTree() OVERRIDE;
+  virtual void AccessibilityEventReceived(
+      const std::vector<AXEventNotificationDetails>& details) OVERRIDE;
 
   // NavigatorDelegate ---------------------------------------------------------
 

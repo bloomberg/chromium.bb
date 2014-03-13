@@ -540,6 +540,10 @@ const char kEnablePasswordAutofillPublicSuffixDomainMatching[] =
 // GAIA login page, an info bar can help the user login.
 const char kEnableAutologin[]               = "enable-autologin";
 
+// Enables the Automation extension API.
+// TODO(dtseng): Remove once API enabled for stable channel.
+const char kEnableAutomationAPI[]           = "enable-automation-api";
+
 // Enables the benchmarking extensions.
 const char kEnableBenchmarking[]            = "enable-benchmarking";
 

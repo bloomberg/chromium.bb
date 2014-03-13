@@ -42,6 +42,7 @@ class APIPermission {
     kAlwaysOnTopWindows,
     kAudio,
     kAudioCapture,
+    kAutomation,
     kAutoTestPrivate,
     kBackground,
     kBookmark,

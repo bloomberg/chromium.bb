@@ -4571,6 +4571,9 @@ Make sure you do not expose any sensitive information.
       <message name="IDS_EXTENSION_PROMPT_WARNING_START_PAGE_SETTING_OVERRIDE" desc="Permission string for start page override.">
         Change your start page to: <ph name="START_PAGE">$1<ex>start.page.com/start.html</ex></ph>
       </message>
+      <message name="IDS_EXTENSION_PROMPT_WARNING_AUTOMATION" desc="Permission string for access to accessibility tree. TODO(aboxhall/dtseng): write more accurate description; write different versions for different permission levels">
+        Access and interact with all web pages.
+      </message>
 
       <!-- Extension/App error messages -->
       <message name="IDS_EXTENSION_CANT_GET_ABSOLUTE_PATH" desc="Warning displayed in pack dialog when the absolute path to the extension directory can not be found.">

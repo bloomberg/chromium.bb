@@ -77,6 +77,15 @@
     "dependencies": ["permission:audio"],
     "contexts": ["blessed_extension"]
   },
+  "automationInternal": {
+    "internal": true,
+    "dependencies": ["permission:automation"],
+    "contexts": ["blessed_extension"]
+  },
+  "automation": {
+    "dependencies": ["permission:automation"],
+    "contexts": ["blessed_extension"]
+  },
   "autotestPrivate": {
     "dependencies": ["permission:autotestPrivate"],
     "contexts": ["blessed_extension"]

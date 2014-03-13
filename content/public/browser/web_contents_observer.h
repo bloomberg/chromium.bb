@@ -22,6 +22,7 @@ class RenderFrameHost;
 class RenderViewHost;
 class WebContents;
 class WebContentsImpl;
+struct AXEventNotificationDetails;
 struct FaviconURL;
 struct FrameNavigateParams;
 struct LoadCommittedDetails;
@@ -323,6 +324,10 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
 
   // Invoked when a user cancels a before unload dialog.
   virtual void BeforeUnloadDialogCancelled() {}
+
+  // Invoked when an accessibility event is received from the renderer.
+  virtual void AccessibilityEventReceived(
+      const std::vector<AXEventNotificationDetails>& details) {}
 
   // IPC::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;

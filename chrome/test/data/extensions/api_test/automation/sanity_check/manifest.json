@@ -1,0 +1,11 @@
+{
+  "name": "chrome.automation.sanityCheck",
+  "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDJ8Hl8K6R+n/hrPsN1ienxRU3GbL00wFHLJNML45MHwT+3PstgWf4EgC3wbyyTXFtbvJC+Hn14Hyltfhsa+cSraldNHeL+rl+FL04kE4uYHq8YhOYEtzUfg380+o7XV9oESKu9oLTeG9QuQCjmlp3MUqC9wm7ICjxR9flODClOkQIDAQAB",
+  "version": "0.1",
+  "manifest_version": 2,
+  "description": "Tests for the Automation API.",
+  "background": {
+    "scripts": [ "test.js" ]
+  },
+"permissions": ["automation"]
+}

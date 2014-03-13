@@ -55,6 +55,7 @@
 #include "content/common/view_messages.h"
 #include "content/port/browser/render_view_host_delegate_view.h"
 #include "content/port/browser/render_widget_host_view_port.h"
+#include "content/public/browser/ax_event_notification_details.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/color_chooser.h"
 #include "content/public/browser/content_browser_client.h"
@@ -1598,6 +1599,12 @@ SessionStorageNamespace* WebContentsImpl::GetSessionStorageNamespace(
 
 FrameTree* WebContentsImpl::GetFrameTree() {
   return &frame_tree_;
+}
+
+void WebContentsImpl::AccessibilityEventReceived(
+    const std::vector<AXEventNotificationDetails>& details) {
+  FOR_EACH_OBSERVER(
+      WebContentsObserver, observers_, AccessibilityEventReceived(details));
 }
 
 void WebContentsImpl::OnShowValidationMessage(

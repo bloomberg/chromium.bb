@@ -14,6 +14,7 @@
     '../third_party/zlib/google/zip.gyp:zip',
     '../third_party/zlib/zlib.gyp:zlib',
     '../ui/accessibility/accessibility.gyp:accessibility',
+    '../ui/accessibility/accessibility.gyp:ax_gen',
     '../ui/events/events.gyp:events_base',
     '../ui/events/events.gyp:gesture_detection',
     '../ui/gfx/gfx.gyp:gfx',
@@ -22,6 +23,9 @@
     '../ui/snapshot/snapshot.gyp:snapshot',
     '../ui/ui.gyp:ui',
     'browser/speech/proto/speech_proto.gyp:speech_proto',
+  ],
+  'export_dependent_settings': [
+    '../ui/accessibility/accessibility.gyp:ax_gen',
   ],
   'include_dirs': [
     '..',
@@ -45,6 +49,8 @@
     'public/browser/android/synchronous_compositor_client.h',
     'public/browser/android/synchronous_compositor.cc',
     'public/browser/android/synchronous_compositor.h',
+    'public/browser/ax_event_notification_details.cc',
+    'public/browser/ax_event_notification_details.h',
     'public/browser/browser_accessibility_state.h',
     'public/browser/browser_child_process_host.h',
     'public/browser/browser_child_process_host_delegate.cc',
