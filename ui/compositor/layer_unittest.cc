@@ -232,9 +232,8 @@ class TestLayerDelegate : public LayerDelegate {
 
   // Overridden from LayerDelegate:
   virtual void OnPaintLayer(gfx::Canvas* canvas) OVERRIDE {
-    skia::RefPtr<SkBaseDevice> device =
-        skia::SharePtr(canvas->sk_canvas()->getTopDevice());
-    paint_size_ = gfx::Size(device->width(), device->height());
+    SkISize size = canvas->sk_canvas()->getBaseLayerSize();
+    paint_size_ = gfx::Size(size.width(), size.height());
     canvas->FillRect(gfx::Rect(paint_size_), colors_[color_index_]);
     color_index_ = (color_index_ + 1) % static_cast<int>(colors_.size());
     const SkMatrix& matrix = canvas->sk_canvas()->getTotalMatrix();

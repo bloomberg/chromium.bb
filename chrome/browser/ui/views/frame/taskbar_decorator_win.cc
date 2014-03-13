@@ -72,13 +72,13 @@ void SetOverlayIcon(HWND hwnd, scoped_ptr<SkBitmap> bitmap) {
 
     // Paint the resized icon onto a 16x16 canvas otherwise Windows will badly
     // hammer it to 16x16.
-    scoped_ptr<SkCanvas> offscreen_canvas(
-        skia::CreateBitmapCanvas(kOverlayIconSize, kOverlayIconSize, false));
-    DCHECK(offscreen_canvas);
-    offscreen_canvas->drawBitmap(sk_icon, 0, kOverlayIconSize - resized_height);
+    SkBitmap offscreen_bitmap;
+    offscreen_bitmap.allocN32Pixels(kOverlayIconSize, kOverlayIconSize);
+    SkCanvas offscreen_canvas(offscreen_bitmap);
+    offscreen_canvas.clear(SK_ColorTRANSPARENT);
+    offscreen_canvas.drawBitmap(sk_icon, 0, kOverlayIconSize - resized_height);
 
-    icon.Set(IconUtil::CreateHICONFromSkBitmap(
-        offscreen_canvas->getDevice()->accessBitmap(false)));
+    icon.Set(IconUtil::CreateHICONFromSkBitmap(offscreen_bitmap));
     if (!icon.Get())
       return;
   }
