@@ -42,7 +42,6 @@ def generate_method(interface, method):
     arguments = method.arguments
     extended_attributes = method.extended_attributes
     idl_type = method.idl_type
-    idl_type_name = str(idl_type)
     is_static = method.is_static
     name = method.name
 
@@ -88,13 +87,13 @@ def generate_method(interface, method):
                 ['DoNotCheckSecurity', 'DoNotCheckSignature', 'NotEnumerable',
                  'ReadOnly', 'RuntimeEnabled', 'Unforgeable'])),
         'function_template': function_template(),
-        'idl_type': idl_type_name,
+        'idl_type': str(idl_type),
         'has_exception_state':
             is_raises_exception or
             is_check_security_for_frame or
             any(argument for argument in arguments
-                if str(argument.idl_type) == 'SerializedScriptValue' or
-                   idl_types.is_integer_type(argument.idl_type)) or
+                if argument.idl_type.name == 'SerializedScriptValue' or
+                   argument.idl_type.is_integer_type) or
             name in ['addEventListener', 'removeEventListener', 'dispatchEvent'],
         'is_call_with_execution_context': has_extended_attribute_value(method, 'CallWith', 'ExecutionContext'),
         'is_call_with_script_arguments': is_call_with_script_arguments,
@@ -149,7 +148,7 @@ def generate_argument(interface, method, argument, index):
         'idl_type': str(idl_type),
         'index': index,
         'is_clamp': 'Clamp' in extended_attributes,
-        'is_callback_interface': idl_types.is_callback_interface(idl_type),
+        'is_callback_interface': idl_type.is_callback_interface,
         'is_nullable': argument.is_nullable,
         'is_optional': argument.is_optional,
         'is_strict_type_checking': 'StrictTypeChecking' in extended_attributes,
@@ -170,8 +169,8 @@ def generate_argument(interface, method, argument, index):
 def cpp_value(interface, method, number_of_arguments):
     def cpp_argument(argument):
         idl_type = argument.idl_type
-        if (idl_types.is_callback_interface(idl_type) or
-            str(idl_type) in ['NodeFilter', 'XPathNSResolver']):
+        if (idl_type.is_callback_interface or
+            idl_type.name in ['NodeFilter', 'XPathNSResolver']):
             # FIXME: remove this special case
             return '%s.release()' % argument.name
         return argument.name
@@ -199,7 +198,7 @@ def v8_set_return_value(interface_name, method, cpp_value, for_main_world=False)
     extended_attributes = method.extended_attributes
     if str(idl_type) == 'void':
         return None
-    is_union_type = idl_types.is_union_type(idl_type)
+    is_union_type = idl_type.is_union_type
 
     release = False
     # [CallWith=ScriptState], [RaisesException]
@@ -210,10 +209,10 @@ def v8_set_return_value(interface_name, method, cpp_value, for_main_world=False)
         cpp_value = 'result'
 
         if is_union_type:
-            release = [idl_types.is_interface_type(union_member_type)
-                       for union_member_type in idl_type.union_member_types]
+            release = [member_type.is_interface_type
+                       for member_type in idl_type.member_types]
         else:
-            release = idl_types.is_interface_type(idl_type)
+            release = idl_type.is_interface_type
 
     script_wrappable = 'imp' if idl_types.inherits_interface(interface_name, 'Node') else ''
     return v8_types.v8_set_return_value(idl_type, cpp_value, extended_attributes, script_wrappable=script_wrappable, release=release, for_main_world=for_main_world)
@@ -228,7 +227,7 @@ def v8_value_to_local_cpp_value(argument, index):
         return 'V8TRYCATCH_VOID({vector_type}<{cpp_type}>, {name}, toNativeArguments<{cpp_type}>(info, {index}))'.format(
                 cpp_type=v8_types.cpp_type(idl_type), name=name, index=index, vector_type=vector_type)
     # [Default=NullString]
-    if (argument.is_optional and str(idl_type) == 'DOMString' and
+    if (argument.is_optional and idl_type.name == 'String' and
         extended_attributes.get('Default') == 'NullString'):
         v8_value = 'argumentOrNull(info, %s)' % index
     else:
@@ -256,8 +255,8 @@ def property_attributes(method):
 
 def union_arguments(idl_type):
     """Return list of ['result0Enabled', 'result0', 'result1Enabled', ...] for union types, for use in setting return value"""
-    if not idl_types.is_union_type(idl_type):
+    if not idl_type.is_union_type:
         return None
     return [arg
-            for i in range(len(idl_type.union_member_types))
+            for i in range(len(idl_type.member_types))
             for arg in ['result%sEnabled' % i, 'result%s' % i]]

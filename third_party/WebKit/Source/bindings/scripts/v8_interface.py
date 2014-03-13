@@ -34,7 +34,7 @@ Design doc: http://www.chromium.org/developers/design-documents/idl-compiler
 from collections import defaultdict
 
 import idl_types
-from idl_types import IdlType, inherits_interface, is_interface_type
+from idl_types import IdlType, inherits_interface
 import v8_attributes
 from v8_globals import includes
 import v8_methods
@@ -108,7 +108,7 @@ def generate_interface(interface):
         # Raw pointers faster though, and NodeFilter hacky anyway.
         'cpp_type': v8_types.implemented_as(argument.idl_type) + '*',
         'idl_type': argument.idl_type,
-        'v8_type': v8_types.v8_type(argument.idl_type),
+        'v8_type': v8_types.v8_type(argument.idl_type.name),
     } for argument in extended_attributes.get('SetWrapperReferenceTo', [])]
     for set_wrapper_reference_to in set_wrapper_reference_to_list:
         v8_types.add_includes_for_type(set_wrapper_reference_to['idl_type'])
@@ -177,7 +177,7 @@ def generate_interface(interface):
     # [EventConstructor]
     has_event_constructor = 'EventConstructor' in extended_attributes
     any_type_attributes = [attribute for attribute in interface.attributes
-                           if str(attribute.idl_type) == 'any']
+                           if attribute.idl_type.name == 'Any']
     if has_event_constructor:
         includes.add('bindings/v8/Dictionary.h')
         if any_type_attributes:
@@ -266,7 +266,7 @@ def generate_interface(interface):
 def generate_constant(constant):
     # (Blink-only) string literals are unquoted in tokenizer, must be re-quoted
     # in C++.
-    if str(constant.idl_type) == 'DOMString':
+    if constant.idl_type.name == 'String':
         value = '"%s"' % constant.value
     else:
         value = constant.value
@@ -401,21 +401,21 @@ def overload_check_argument(index, argument):
     cpp_value = 'info[%s]' % index
     idl_type = argument['idl_type_object']
     # FIXME: proper type checking, sharing code with attributes and methods
-    if str(idl_type) == 'DOMString' and argument['is_strict_type_checking']:
+    if idl_type.name == 'String' and argument['is_strict_type_checking']:
         return ' || '.join(['isUndefinedOrNull(%s)' % cpp_value,
                             '%s->IsString()' % cpp_value,
                             '%s->IsObject()' % cpp_value])
-    if idl_types.array_or_sequence_type(idl_type):
+    if idl_type.array_or_sequence_type:
         return '%s->IsArray()' % cpp_value
-    if idl_types.is_callback_interface(idl_type):
+    if idl_type.is_callback_interface:
         return ' || '.join(['%s->IsNull()' % cpp_value,
                             '%s->IsFunction()' % cpp_value])
     if v8_types.is_wrapper_type(idl_type):
-        type_check = 'V8{idl_type}::hasInstance({cpp_value}, info.GetIsolate())'.format(idl_type=str(idl_type), cpp_value=cpp_value)
+        type_check = 'V8{idl_type}::hasInstance({cpp_value}, info.GetIsolate())'.format(idl_type=idl_type.name, cpp_value=cpp_value)
         if argument['is_nullable']:
             type_check = ' || '.join(['%s->IsNull()' % cpp_value, type_check])
         return type_check
-    if is_interface_type(idl_type):
+    if idl_type.is_interface_type:
         # Non-wrapper types are just objects: we don't distinguish type
         # We only allow undefined for non-wrapper types (notably Dictionary),
         # as we need it for optional Dictionary arguments, but we don't want to
@@ -443,8 +443,8 @@ def generate_constructor(interface, constructor):
             # [RaisesException=Constructor]
             interface.extended_attributes.get('RaisesException') == 'Constructor' or
             any(argument for argument in constructor.arguments
-                if str(argument.idl_type) == 'SerializedScriptValue' or
-                   idl_types.is_integer_type(argument.idl_type)),
+                if argument.idl_type.name == 'SerializedScriptValue' or
+                   argument.idl_type.is_integer_type),
         'is_constructor': True,
         'is_variadic': False,  # Required for overload resolution
         'number_of_required_arguments':
@@ -533,13 +533,12 @@ def interface_length(interface, constructors):
 
 def property_getter(getter, cpp_arguments):
     def is_null_expression(idl_type):
-        if idl_types.is_union_type(idl_type):
+        if idl_type.is_union_type:
             return ' && '.join('!result%sEnabled' % i
-                               for i, _ in
-                               enumerate(idl_type.union_member_types))
-        if str(idl_type) == 'DOMString':
+                               for i, _ in enumerate(idl_type.member_types))
+        if idl_type.name == 'String':
             return 'result.isNull()'
-        if is_interface_type(idl_type):
+        if idl_type.is_interface_type:
             return '!result'
         return ''
 
@@ -547,11 +546,11 @@ def property_getter(getter, cpp_arguments):
     extended_attributes = getter.extended_attributes
     is_raises_exception = 'RaisesException' in extended_attributes
 
-    if idl_types.is_union_type(idl_type):
-        release = [is_interface_type(union_member_type)
-                   for union_member_type in idl_type.union_member_types]
+    if idl_type.is_union_type:
+        release = [member_type.is_interface_type
+                   for member_type in idl_type.member_types]
     else:
-        release = is_interface_type(idl_type)
+        release = idl_type.is_interface_type
 
     # FIXME: make more generic, so can use v8_methods.cpp_value
     cpp_method_name = 'imp->%s' % cpp_name(getter)
@@ -595,7 +594,7 @@ def property_setter(setter):
         'idl_type': str(idl_type),
         'is_custom': 'Custom' in extended_attributes,
         'has_exception_state': is_raises_exception or
-                               idl_types.is_integer_type(idl_type),
+                               idl_type.is_integer_type,
         'is_raises_exception': is_raises_exception,
         'name': cpp_name(setter),
         'v8_value_to_local_cpp_value': v8_types.v8_value_to_local_cpp_value(

@@ -6,14 +6,10 @@
 Classes:
 IdlType
 IdlUnionType
-TypedObject :: mixin for typedef resolution
 """
 
-# pylint doesn't understand ABCs.
-# pylint: disable=W0232, E0203, W0201
-
-import abc
 from collections import defaultdict
+
 
 ################################################################################
 # IDL types
@@ -33,7 +29,7 @@ BASIC_TYPES = set([
     # http://www.w3.org/TR/WebIDL/#es-type-mapping
     'void',
 ])
-INTEGER_TYPES = set([
+INTEGER_TYPES = frozenset([
     # http://www.w3.org/TR/WebIDL/#dfn-integer-type
     'byte',
     'octet',
@@ -46,66 +42,33 @@ INTEGER_TYPES = set([
     'unsigned long long',
 ])
 BASIC_TYPES.update(INTEGER_TYPES)
+TYPE_NAMES = {
+    # http://heycam.github.io/webidl/#dfn-type-name
+    'any': 'Any',
+    'boolean': 'Boolean',
+    'byte': 'Byte',
+    'octet': 'Octet',
+    'short': 'Short',
+    'unsigned short': 'UnsignedShort',
+    'long': 'Long',
+    'unsigned long': 'UnsignedLong',
+    'long long': 'LongLong',
+    'unsigned long long': 'UnsignedLongLong',
+    'float': 'Float',
+    'unrestricted float': 'UnrestrictedFloat',
+    'double': 'Double',
+    'unrestricted double': 'UnrestrictedDouble',
+    'DOMString': 'String',
+    'ByteString': 'ByteString',
+    'object': 'Object',
+}
+
+
+################################################################################
+# Inheritance
+################################################################################
 
 ancestors = defaultdict(list)  # interface_name -> ancestors
-callback_functions = set()
-callback_interfaces = set()
-enums = {}  # name -> values
-
-# FIXME: move these functions into methods of IdlType
-def array_or_sequence_type(idl_type):
-    return array_type(idl_type) or sequence_type(idl_type)
-
-
-def array_type(idl_type):
-    if is_union_type(idl_type):
-        # We do not support arrays of union types
-        return False
-    return idl_type.is_array and IdlType(idl_type.base_type)
-
-
-def is_basic_type(idl_type):
-    return str(idl_type) in BASIC_TYPES
-
-
-def is_integer_type(idl_type):
-    return str(idl_type) in INTEGER_TYPES
-
-
-def is_callback_function(idl_type):
-    return str(idl_type) in callback_functions
-
-
-def set_callback_functions(new_callback_functions):
-    callback_functions.update(new_callback_functions)
-
-
-def is_callback_interface(idl_type):
-    return str(idl_type) in callback_interfaces
-
-
-def set_callback_interfaces(new_callback_interfaces):
-    callback_interfaces.update(new_callback_interfaces)
-
-
-def is_composite_type(idl_type):
-    return (str(idl_type) == 'any' or
-            array_type(idl_type) or
-            sequence_type(idl_type) or
-            is_union_type(idl_type))
-
-
-def is_enum(idl_type):
-    return str(idl_type) in enums
-
-
-def enum_values(idl_type):
-    return enums[str(idl_type)]
-
-
-def set_enums(new_enums):
-    enums.update(new_enums)
-
 
 def inherits_interface(interface_name, ancestor_name):
     return (interface_name == ancestor_name or
@@ -116,59 +79,19 @@ def set_ancestors(new_ancestors):
     ancestors.update(new_ancestors)
 
 
-def is_interface_type(idl_type):
-    # Anything that is not another type is an interface type.
-    # http://www.w3.org/TR/WebIDL/#idl-types
-    # http://www.w3.org/TR/WebIDL/#idl-interface
-    # In C++ these are RefPtr or PassRefPtr types.
-    return not(is_basic_type(idl_type) or
-               is_composite_type(idl_type) or
-               is_callback_function(idl_type) or
-               is_enum(idl_type) or
-               str(idl_type) == 'object' or
-               str(idl_type) == 'Promise')  # Promise will be basic in future
-
-
-def sequence_type(idl_type):
-    if is_union_type(idl_type):
-        # We do not support sequences of union types
-        return False
-    return idl_type.is_sequence and IdlType(idl_type.base_type)
-
-
-def is_union_type(idl_type):
-    return isinstance(idl_type, IdlUnionType)
-
-
 ################################################################################
-# Type classes (for typedef resolution)
+# IdlType
 ################################################################################
-
-class TypedObject(object):
-    """Object with a type, such as an Attribute or Operation (return value).
-
-    The type can be an actual type, or can be a typedef, which must be resolved
-    before passing data to the code generator.
-    """
-    __metaclass__ = abc.ABCMeta
-    idl_type = None
-
-    def resolve_typedefs(self, typedefs):
-        """Resolve typedefs to actual types in the object."""
-        # Constructors don't have their own return type, because it's the
-        # interface itself.
-        if not self.idl_type:
-            return
-        # Need to re-assign self.idl_type, not just mutate idl_type,
-        # since type(idl_type) may change.
-        self.idl_type = self.idl_type.resolve_typedefs(typedefs)
-
 
 class IdlType(object):
     # FIXME: incorporate Nullable, etc.
     # FIXME: use nested types: IdlArrayType, IdlNullableType, IdlSequenceType
     # to support types like short?[] vs. short[]?, instead of treating these
     # as orthogonal properties (via flags).
+    callback_functions = set()
+    callback_interfaces = set()
+    enums = {}  # name -> values
+
     def __init__(self, base_type, is_array=False, is_sequence=False):
         if is_array and is_sequence:
             raise ValueError('Array of Sequences are not allowed.')
@@ -183,6 +106,95 @@ class IdlType(object):
         if self.is_sequence:
             return 'sequence<%s>' % type_string
         return type_string
+
+    # FIXME: rename to native_array_element_type and move to v8_types.py
+    @property
+    def array_or_sequence_type(self):
+        return self.array_type or self.sequence_type
+
+    # FIXME: rename to array_element_type
+    @property
+    def array_type(self):
+        return self.is_array and IdlType(self.base_type)
+
+    # FIXME: rename to sequence_element_type
+    @property
+    def sequence_type(self):
+        return self.is_sequence and IdlType(self.base_type)
+
+    @property
+    def is_basic_type(self):
+        return str(self) in BASIC_TYPES
+
+    @property
+    def is_callback_function(self):
+        return self.name in IdlType.callback_functions
+
+    @property
+    def is_callback_interface(self):
+        return self.name in IdlType.callback_interfaces
+
+    @property
+    def is_composite_type(self):
+        return (self.name == 'Any' or
+                self.array_type or
+                self.sequence_type or
+                self.is_union_type)
+
+    @property
+    def is_enum(self):
+        return self.name in IdlType.enums
+
+    @property
+    def enum_values(self):
+        return IdlType.enums[self.name]
+
+    @property
+    def is_integer_type(self):
+        return str(self) in INTEGER_TYPES
+
+    @property
+    def is_interface_type(self):
+        # Anything that is not another type is an interface type.
+        # http://www.w3.org/TR/WebIDL/#idl-types
+        # http://www.w3.org/TR/WebIDL/#idl-interface
+        # In C++ these are RefPtr or PassRefPtr types.
+        return not(self.is_basic_type or
+                   self.is_composite_type or
+                   self.is_callback_function or
+                   self.is_enum or
+                   self.name == 'Object' or
+                   self.name == 'Promise')  # Promise will be basic in future
+
+    @property
+    def is_union_type(self):
+        return isinstance(self, IdlUnionType)
+
+    @property
+    def name(self):
+        """Return type name.
+
+        http://heycam.github.io/webidl/#dfn-type-name
+        """
+        base_type = self.base_type
+        base_type_name = TYPE_NAMES.get(base_type, base_type)
+        if self.is_array:
+            return base_type_name + 'Array'
+        if self.is_sequence:
+            return base_type_name + 'Sequence'
+        return base_type_name
+
+    @classmethod
+    def set_callback_functions(cls, new_callback_functions):
+        cls.callback_functions.update(new_callback_functions)
+
+    @classmethod
+    def set_callback_interfaces(cls, new_callback_interfaces):
+        cls.callback_interfaces.update(new_callback_interfaces)
+
+    @classmethod
+    def set_enums(cls, new_enums):
+        cls.enums.update(new_enums)
 
     def resolve_typedefs(self, typedefs):
         if self.base_type not in typedefs:
@@ -206,13 +218,61 @@ class IdlType(object):
         return self
 
 
+################################################################################
+# IdlUnionType
+################################################################################
+
 class IdlUnionType(object):
-    # FIXME: derive from IdlType, instead of stand-alone class
-    def __init__(self, union_member_types):
-        self.union_member_types = union_member_types
+    # http://heycam.github.io/webidl/#idl-union
+    # FIXME: derive from IdlType, instead of stand-alone class, to reduce
+    # duplication.
+    def __init__(self, member_types):
+        self.member_types = member_types
+
+    @property
+    def array_or_sequence_type(self):
+        return False
+
+    @property
+    def array_type(self):
+        return False
+
+    @property
+    def is_array(self):
+        # We do not support arrays of union types
+        return False
+
+    @property
+    def is_basic_type(self):
+        return False
+
+    @property
+    def is_callback_function(self):
+        return False
+
+    @property
+    def is_enum(self):
+        return False
+
+    @property
+    def is_integer_type(self):
+        return False
+
+    @property
+    def is_sequence(self):
+        # We do not support sequences of union types
+        return False
+
+    @property
+    def is_union_type(self):
+        return True
+
+    @property
+    def name(self):
+        return 'Or'.join(member_type.name for member_type in self.member_types)
 
     def resolve_typedefs(self, typedefs):
-        self.union_member_types = [
-            typedefs.get(union_member_type, union_member_type)
-            for union_member_type in self.union_member_types]
+        self.member_types = [
+            typedefs.get(member_type, member_type)
+            for member_type in self.member_types]
         return self

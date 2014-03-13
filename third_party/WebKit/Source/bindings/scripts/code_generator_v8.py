@@ -69,6 +69,7 @@ sys.path.insert(1, third_party_dir)
 import jinja2
 
 import idl_types
+from idl_types import IdlType
 import v8_callback_interface
 from v8_globals import includes, interfaces
 import v8_interface
@@ -87,7 +88,7 @@ class CodeGeneratorV8(object):
             (interface_name, interface_info['ancestors'])
             for interface_name, interface_info in interfaces_info.iteritems()
             if interface_info['ancestors']))
-        idl_types.set_callback_interfaces(set(
+        IdlType.set_callback_interfaces(set(
             interface_name
             for interface_name, interface_info in interfaces_info.iteritems()
             if interface_info['is_callback_interface']))
@@ -111,9 +112,9 @@ class CodeGeneratorV8(object):
         interfaces.update(definitions.interfaces)
 
         # Set local type info
-        idl_types.set_callback_functions(definitions.callback_functions.keys())
-        idl_types.set_enums((enum.name, enum.values)
-                            for enum in definitions.enumerations.values())
+        IdlType.set_callback_functions(definitions.callback_functions.keys())
+        IdlType.set_enums((enum.name, enum.values)
+                          for enum in definitions.enumerations.values())
 
         # Select appropriate Jinja template and contents function
         if interface.is_callback:

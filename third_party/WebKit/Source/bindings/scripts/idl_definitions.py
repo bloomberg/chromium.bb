@@ -53,17 +53,44 @@ IdlDefinitions
     IdlException < IdlInterface
         (same contents as IdlInterface)
 
+TypedObject :: mixin for typedef resolution
+
 Design doc: http://www.chromium.org/developers/design-documents/idl-compiler
 """
 
+import abc
 
-from idl_types import IdlType, IdlUnionType, TypedObject
+from idl_types import IdlType, IdlUnionType
 
 SPECIAL_KEYWORD_LIST = ['GETTER', 'SETTER', 'DELETER']
 STANDARD_TYPEDEFS = {
     # http://www.w3.org/TR/WebIDL/#common-DOMTimeStamp
     'DOMTimeStamp': 'unsigned long long',
 }
+
+
+################################################################################
+# TypedObject (mixin for typedef resolution)
+################################################################################
+
+class TypedObject(object):
+    """Object with a type, such as an Attribute or Operation (return value).
+
+    The type can be an actual type, or can be a typedef, which must be resolved
+    before passing data to the code generator.
+    """
+    __metaclass__ = abc.ABCMeta
+    idl_type = None
+
+    def resolve_typedefs(self, typedefs):
+        """Resolve typedefs to actual types in the object."""
+        # Constructors don't have their own return type, because it's the
+        # interface itself.
+        if not self.idl_type:
+            return
+        # Need to re-assign self.idl_type, not just mutate idl_type,
+        # since type(idl_type) may change.
+        self.idl_type = self.idl_type.resolve_typedefs(typedefs)
 
 
 ################################################################################

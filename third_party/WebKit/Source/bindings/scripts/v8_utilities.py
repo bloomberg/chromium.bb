@@ -96,10 +96,10 @@ def uncapitalize(name):
 ################################################################################
 
 def enum_validation_expression(idl_type):
-    if not idl_types.is_enum(idl_type):
+    if not idl_type.is_enum:
         return None
     return ' || '.join(['string == "%s"' % enum_value
-                        for enum_value in idl_types.enum_values(idl_type)])
+                        for enum_value in idl_type.enum_values])
 
 
 def scoped_name(interface, definition, base_name):
