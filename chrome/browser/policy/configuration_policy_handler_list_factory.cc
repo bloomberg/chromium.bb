@@ -41,11 +41,11 @@
 #include "ash/magnifier/magnifier_constants.h"
 #include "chrome/browser/chromeos/policy/configuration_policy_handler_chromeos.h"
 #include "chromeos/dbus/power_policy_controller.h"
-#endif  // defined(OS_CHROMEOS)
+#endif
 
-#if defined(OS_ANDROID)
-#include "chrome/browser/policy/configuration_policy_handler_android.h"
-#endif  // defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_IOS)
+#include "chrome/browser/policy/managed_bookmarks_policy_handler.h"
+#endif
 
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_IOS)
 #include "chrome/browser/download/download_dir_policy_handler.h"
@@ -709,7 +709,7 @@ scoped_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       new ExternalDataPolicyHandler(key::kUserAvatarImage)));
 #endif  // defined(OS_CHROMEOS)
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_IOS)
   handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
       new ManagedBookmarksPolicyHandler()));
 #endif

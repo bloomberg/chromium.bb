@@ -9,7 +9,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
-#include "chrome/browser/policy/configuration_policy_handler_android.h"
+#include "chrome/browser/policy/managed_bookmarks_policy_handler.h"
 #include "chrome/common/pref_names.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "grit/component_strings.h"

@@ -297,7 +297,7 @@
     Mandatory
   </message>
 
-  <if expr="is_android">
+  <if expr="is_android or is_ios">
     <message name="IDS_POLICY_MANAGED_BOOKMARKS" desc="Mobile: name of the managed bookmarks folder">
       <ph name="DOMAIN">$1<ex>google.com</ex></ph> bookmarks
     </message>

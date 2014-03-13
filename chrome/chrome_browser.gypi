@@ -1575,14 +1575,14 @@
         'browser/policy/cloud/user_policy_signin_service_factory.h',
         'browser/policy/cloud/user_policy_signin_service_ios.h',
         'browser/policy/cloud/user_policy_signin_service_ios.mm',
-        'browser/policy/configuration_policy_handler_android.cc',
-        'browser/policy/configuration_policy_handler_android.h',
         'browser/policy/configuration_policy_handler_list_factory.cc',
         'browser/policy/configuration_policy_handler_list_factory.h',
         'browser/policy/file_selection_dialogs_policy_handler.cc',
         'browser/policy/file_selection_dialogs_policy_handler.h',
         'browser/policy/javascript_policy_handler.cc',
         'browser/policy/javascript_policy_handler.h',
+        'browser/policy/managed_bookmarks_policy_handler.cc',
+        'browser/policy/managed_bookmarks_policy_handler.h',
         'browser/policy/policy_helpers.cc',
         'browser/policy/policy_helpers.h',
         'browser/policy/profile_policy_connector.cc',
@@ -2819,6 +2819,10 @@
               'dependencies': [
                 'policy_path_parser',
               ],
+              'sources!': [
+                'browser/policy/managed_bookmarks_policy_handler.cc',
+                'browser/policy/managed_bookmarks_policy_handler.h',
+              ],
             }],
             ['OS=="ios"', {
               # Explicitly add the browser/policy files that should be included
@@ -2844,6 +2848,8 @@
                 ['include', '^browser/policy/cloud/user_policy_signin_service_ios.mm'],
                 ['include', '^browser/policy/configuration_policy_handler_list_factory.cc'],
                 ['include', '^browser/policy/configuration_policy_handler_list_factory.h'],
+                ['include', '^browser/policy/managed_bookmarks_policy_handler.cc'],
+                ['include', '^browser/policy/managed_bookmarks_policy_handler.h'],
                 ['include', '^browser/policy/policy_helpers.cc'],
                 ['include', '^browser/policy/policy_helpers.h'],
                 ['include', '^browser/policy/profile_policy_connector.cc'],

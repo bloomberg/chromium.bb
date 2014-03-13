@@ -141,7 +141,7 @@ void ProfilePolicyConnectorFactory::BrowserContextDestroyed(
 
 void ProfilePolicyConnectorFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_IOS)
   registry->RegisterListPref(
       prefs::kManagedBookmarks,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);

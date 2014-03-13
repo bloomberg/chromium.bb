@@ -6243,7 +6243,7 @@
           },
         },
       },
-      'supported_on': ['android:30-'],
+      'supported_on': ['android:30-', 'ios:35-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
