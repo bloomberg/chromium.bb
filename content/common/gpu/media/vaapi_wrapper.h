@@ -16,7 +16,6 @@
 #include "content/common/gpu/media/va_surface.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
-#include "third_party/libva/va/va.h"
 #include "third_party/libva/va/va_x11.h"
 #include "ui/gfx/size.h"
 

@@ -2,17 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/common/gpu/media/vaapi_wrapper.h"
+
 #include <dlfcn.h>
 
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
-#include "content/common/gpu/media/vaapi_wrapper.h"
+// Auto-generated for dlopen libva libraries
+#include "content/common/gpu/media/va_stubs.h"
+
+using content_common_gpu_media::kModuleVa;
+using content_common_gpu_media::InitializeStubs;
+using content_common_gpu_media::StubPathMap;
+
+// libva-x11 depends on libva, so dlopen libva-x11 is enough
+static const base::FilePath::CharType kVaLib[] =
+    FILE_PATH_LITERAL("libva-x11.so.1");
 
 #define LOG_VA_ERROR_AND_REPORT(va_error, err_msg)         \
   do {                                                     \
     DVLOG(1) << err_msg                                    \
-             << " VA error: " << VAAPI_ErrorStr(va_error); \
+             << " VA error: " << vaErrorStr(va_error);     \
     report_error_to_uma_cb_.Run();                         \
   } while (0)
 
@@ -31,136 +42,6 @@
   } while (0)
 
 namespace content {
-
-static void *vaapi_handle = NULL;
-static void *vaapi_x11_handle = NULL;
-
-typedef VAStatus (*VaapiBeginPicture)(VADisplay dpy,
-                                      VAContextID context,
-                                      VASurfaceID render_target);
-typedef VAStatus (*VaapiCreateBuffer)(VADisplay dpy,
-                                      VAContextID context,
-                                      VABufferType type,
-                                      unsigned int size,
-                                      unsigned int num_elements,
-                                      void *data,
-                                      VABufferID *buf_id);
-typedef VAStatus (*VaapiCreateConfig)(VADisplay dpy,
-                                      VAProfile profile,
-                                      VAEntrypoint entrypoint,
-                                      VAConfigAttrib *attrib_list,
-                                      int num_attribs,
-                                      VAConfigID *config_id);
-typedef VAStatus (*VaapiCreateContext)(VADisplay dpy,
-                                       VAConfigID config_id,
-                                       int picture_width,
-                                       int picture_height,
-                                       int flag,
-                                       VASurfaceID *render_targets,
-                                       int num_render_targets,
-                                       VAContextID *context);
-// In VAAPI version < 0.34, vaCreateSurface has 6 parameters, but in VAAPI
-// version >= 0.34, vaCreateSurface has 8 parameters.
-// TODO(chihchung): Remove the old path once ChromeOS updates to 1.2.1.
-typedef void *VaapiCreateSurfaces;
-typedef VAStatus (*VaapiCreateSurfaces6)(VADisplay dpy,
-                                         int width,
-                                         int height,
-                                         int format,
-                                         int num_surfaces,
-                                         VASurfaceID *surfaces);
-typedef VAStatus (*VaapiCreateSurfaces8)(VADisplay dpy,
-                                         unsigned int format,
-                                         unsigned int width,
-                                         unsigned int height,
-                                         VASurfaceID *surfaces,
-                                         unsigned int num_surfaces,
-                                         VASurfaceAttrib *attrib_list,
-                                         unsigned int num_attribs);
-typedef VAStatus (*VaapiDeriveImage)(VADisplay dpy,
-                                     VASurfaceID surface,
-                                     VAImage* image);
-typedef VAStatus (*VaapiDestroyBuffer)(VADisplay dpy, VABufferID buffer_id);
-typedef VAStatus (*VaapiDestroyConfig)(VADisplay dpy, VAConfigID config_id);
-typedef VAStatus (*VaapiDestroyContext)(VADisplay dpy, VAContextID context);
-typedef VAStatus (*VaapiDestroyImage)(VADisplay dpy, VAImageID image);
-typedef VAStatus (*VaapiDestroySurfaces)(VADisplay dpy,
-                                         VASurfaceID *surfaces,
-                                         int num_surfaces);
-typedef int (*VaapiDisplayIsValid)(VADisplay dpy);
-typedef VAStatus (*VaapiEndPicture)(VADisplay dpy, VAContextID context);
-typedef const char* (*VaapiErrorStr)(VAStatus error_status);
-typedef VAStatus (*VaapiGetConfigAttributes)(VADisplay dpy,
-                                             VAProfile profile,
-                                             VAEntrypoint entrypoint,
-                                             VAConfigAttrib *attrib_list,
-                                             int num_attribs);
-typedef VADisplay (*VaapiGetDisplay)(Display *dpy);
-typedef VAStatus (*VaapiInitialize)(VADisplay dpy,
-                                    int *major_version,
-                                    int *minor_version);
-typedef VAStatus (*VaapiMapBuffer)(VADisplay dpy,
-                                   VABufferID buf_id,
-                                   void** pbuf);
-typedef int (*VaapiMaxNumProfiles)(VADisplay dpy);
-typedef VAStatus (*VaapiPutSurface)(VADisplay dpy,
-                                    VASurfaceID surface,
-                                    Drawable draw,
-                                    short srcx,
-                                    short srcy,
-                                    unsigned short srcw,
-                                    unsigned short srch,
-                                    short destx,
-                                    short desty,
-                                    unsigned short destw,
-                                    unsigned short desth,
-                                    VARectangle *cliprects,
-                                    unsigned int number_cliprects,
-                                    unsigned int flags);
-typedef VAStatus (*VaapiQueryConfigProfiles)(VADisplay dpy,
-                                             VAProfile *profile_list,
-                                             int *num_profiles);
-typedef VAStatus (*VaapiRenderPicture)(VADisplay dpy,
-                                       VAContextID context,
-                                       VABufferID *buffers,
-                                       int num_buffers);
-typedef VAStatus (*VaapiSetDisplayAttributes)(VADisplay dpy,
-                                              VADisplayAttribute *type,
-                                              int num_attributes);
-typedef VAStatus (*VaapiSyncSurface)(VADisplay dpy, VASurfaceID render_target);
-typedef VAStatus (*VaapiTerminate)(VADisplay dpy);
-typedef VAStatus (*VaapiUnmapBuffer)(VADisplay dpy, VABufferID buf_id);
-
-#define VAAPI_SYM(name, handle) Vaapi##name VAAPI_##name = NULL
-
-VAAPI_SYM(BeginPicture, vaapi_handle);
-VAAPI_SYM(CreateBuffer, vaapi_handle);
-VAAPI_SYM(CreateConfig, vaapi_handle);
-VAAPI_SYM(CreateContext, vaapi_handle);
-VAAPI_SYM(CreateSurfaces, vaapi_handle);
-VAAPI_SYM(DeriveImage, vaapi_handle);
-VAAPI_SYM(DestroyBuffer, vaapi_handle);
-VAAPI_SYM(DestroyConfig, vaapi_handle);
-VAAPI_SYM(DestroyContext, vaapi_handle);
-VAAPI_SYM(DestroyImage, vaapi_handle);
-VAAPI_SYM(DestroySurfaces, vaapi_handle);
-VAAPI_SYM(DisplayIsValid, vaapi_handle);
-VAAPI_SYM(EndPicture, vaapi_handle);
-VAAPI_SYM(ErrorStr, vaapi_handle);
-VAAPI_SYM(GetConfigAttributes, vaapi_handle);
-VAAPI_SYM(GetDisplay, vaapi_x11_handle);
-VAAPI_SYM(Initialize, vaapi_handle);
-VAAPI_SYM(MapBuffer, vaapi_handle);
-VAAPI_SYM(MaxNumProfiles, vaapi_handle);
-VAAPI_SYM(PutSurface, vaapi_x11_handle);
-VAAPI_SYM(QueryConfigProfiles, vaapi_handle);
-VAAPI_SYM(RenderPicture, vaapi_handle);
-VAAPI_SYM(SetDisplayAttributes, vaapi_handle);
-VAAPI_SYM(SyncSurface, vaapi_x11_handle);
-VAAPI_SYM(Terminate, vaapi_handle);
-VAAPI_SYM(UnmapBuffer, vaapi_handle);
-
-#undef VAAPI_SYM
 
 // Maps Profile enum values to VaProfile values.
 static VAProfile ProfileToVAProfile(
@@ -248,9 +129,9 @@ void VaapiWrapper::TryToSetVADisplayAttributeToLocalGPU() {
                              VA_RENDER_MODE_LOCAL_GPU,
                              VA_DISPLAY_ATTRIB_SETTABLE};
 
-  VAStatus va_res = VAAPI_SetDisplayAttributes(va_display_, &item, 1);
+  VAStatus va_res = vaSetDisplayAttributes(va_display_, &item, 1);
   if (va_res != VA_STATUS_SUCCESS)
-    DVLOG(2) << "VAAPI_SetDisplayAttributes unsupported, ignoring by default.";
+    DVLOG(2) << "vaSetDisplayAttributes unsupported, ignoring by default.";
 }
 
 bool VaapiWrapper::Initialize(media::VideoCodecProfile profile,
@@ -266,24 +147,28 @@ bool VaapiWrapper::Initialize(media::VideoCodecProfile profile,
 
   base::AutoLock auto_lock(va_lock_);
 
-  va_display_ = VAAPI_GetDisplay(x_display);
-  if (!VAAPI_DisplayIsValid(va_display_)) {
+  va_display_ = vaGetDisplay(x_display);
+  if (!vaDisplayIsValid(va_display_)) {
     DVLOG(1) << "Could not get a valid VA display";
     return false;
   }
 
-  VAStatus va_res =
-      VAAPI_Initialize(va_display_, &major_version_, &minor_version_);
+  VAStatus va_res = vaInitialize(va_display_, &major_version_, &minor_version_);
   VA_SUCCESS_OR_RETURN(va_res, "vaInitialize failed", false);
   DVLOG(1) << "VAAPI version: " << major_version_ << "." << minor_version_;
 
+  if (VAAPIVersionLessThan(0, 34)) {
+    DVLOG(1) << "VAAPI version < 0.34 is not supported.";
+    return false;
+  }
+
   // Query the driver for supported profiles.
-  int max_profiles = VAAPI_MaxNumProfiles(va_display_);
+  int max_profiles = vaMaxNumProfiles(va_display_);
   std::vector<VAProfile> supported_profiles(
       base::checked_cast<size_t>(max_profiles));
 
   int num_supported_profiles;
-  va_res = VAAPI_QueryConfigProfiles(
+  va_res = vaQueryConfigProfiles(
       va_display_, &supported_profiles[0], &num_supported_profiles);
   VA_SUCCESS_OR_RETURN(va_res, "vaQueryConfigProfiles failed", false);
   if (num_supported_profiles < 0 || num_supported_profiles > max_profiles) {
@@ -301,8 +186,8 @@ bool VaapiWrapper::Initialize(media::VideoCodecProfile profile,
 
   VAConfigAttrib attrib = {VAConfigAttribRTFormat, 0};
   const VAEntrypoint kEntrypoint = VAEntrypointVLD;
-  va_res = VAAPI_GetConfigAttributes(va_display_, va_profile, kEntrypoint,
-                                     &attrib, 1);
+  va_res = vaGetConfigAttributes(va_display_, va_profile, kEntrypoint,
+                                 &attrib, 1);
   VA_SUCCESS_OR_RETURN(va_res, "vaGetConfigAttributes failed", false);
 
   if (!(attrib.value & VA_RT_FORMAT_YUV420)) {
@@ -312,8 +197,8 @@ bool VaapiWrapper::Initialize(media::VideoCodecProfile profile,
 
   TryToSetVADisplayAttributeToLocalGPU();
 
-  va_res = VAAPI_CreateConfig(va_display_, va_profile, kEntrypoint,
-                              &attrib, 1, &va_config_id_);
+  va_res = vaCreateConfig(va_display_, va_profile, kEntrypoint,
+                          &attrib, 1, &va_config_id_);
   VA_SUCCESS_OR_RETURN(va_res, "vaCreateConfig failed", false);
 
   return true;
@@ -323,12 +208,12 @@ void VaapiWrapper::Deinitialize() {
   base::AutoLock auto_lock(va_lock_);
 
   if (va_config_id_ != VA_INVALID_ID) {
-    VAStatus va_res = VAAPI_DestroyConfig(va_display_, va_config_id_);
+    VAStatus va_res = vaDestroyConfig(va_display_, va_config_id_);
     VA_LOG_ON_ERROR(va_res, "vaDestroyConfig failed");
   }
 
   if (va_display_) {
-    VAStatus va_res = VAAPI_Terminate(va_display_);
+    VAStatus va_res = vaTerminate(va_display_);
     VA_LOG_ON_ERROR(va_res, "vaTerminate failed");
   }
 
@@ -343,7 +228,7 @@ bool VaapiWrapper::VAAPIVersionLessThan(int major, int minor) {
 
 bool VaapiWrapper::CreateSurfaces(gfx::Size size,
                                   size_t num_surfaces,
-                                   std::vector<VASurfaceID>* va_surfaces) {
+                                  std::vector<VASurfaceID>* va_surfaces) {
   base::AutoLock auto_lock(va_lock_);
   DVLOG(2) << "Creating " << num_surfaces << " surfaces";
 
@@ -352,23 +237,12 @@ bool VaapiWrapper::CreateSurfaces(gfx::Size size,
   va_surface_ids_.resize(num_surfaces);
 
   // Allocate surfaces in driver.
-  VAStatus va_res;
-  if (VAAPIVersionLessThan(0, 34)) {
-    va_res = reinterpret_cast<VaapiCreateSurfaces6>(VAAPI_CreateSurfaces)(
-        va_display_,
-        size.width(), size.height(),
-        VA_RT_FORMAT_YUV420,
-        va_surface_ids_.size(),
-        &va_surface_ids_[0]);
-  } else {
-    va_res = reinterpret_cast<VaapiCreateSurfaces8>(VAAPI_CreateSurfaces)(
-        va_display_,
-        VA_RT_FORMAT_YUV420,
-        size.width(), size.height(),
-        &va_surface_ids_[0],
-        va_surface_ids_.size(),
-        NULL, 0);
-  }
+  VAStatus va_res = vaCreateSurfaces(va_display_,
+                                     VA_RT_FORMAT_YUV420,
+                                     size.width(), size.height(),
+                                     &va_surface_ids_[0],
+                                     va_surface_ids_.size(),
+                                     NULL, 0);
 
   VA_LOG_ON_ERROR(va_res, "vaCreateSurfaces failed");
   if (va_res != VA_STATUS_SUCCESS) {
@@ -377,10 +251,10 @@ bool VaapiWrapper::CreateSurfaces(gfx::Size size,
   }
 
   // And create a context associated with them.
-  va_res = VAAPI_CreateContext(va_display_, va_config_id_,
-                               size.width(), size.height(), VA_PROGRESSIVE,
-                               &va_surface_ids_[0], va_surface_ids_.size(),
-                               &va_context_id_);
+  va_res = vaCreateContext(va_display_, va_config_id_,
+                           size.width(), size.height(), VA_PROGRESSIVE,
+                           &va_surface_ids_[0], va_surface_ids_.size(),
+                           &va_context_id_);
 
   VA_LOG_ON_ERROR(va_res, "vaCreateContext failed");
   if (va_res != VA_STATUS_SUCCESS) {
@@ -397,13 +271,13 @@ void VaapiWrapper::DestroySurfaces() {
   DVLOG(2) << "Destroying " << va_surface_ids_.size()  << " surfaces";
 
   if (va_context_id_ != VA_INVALID_ID) {
-    VAStatus va_res = VAAPI_DestroyContext(va_display_, va_context_id_);
+    VAStatus va_res = vaDestroyContext(va_display_, va_context_id_);
     VA_LOG_ON_ERROR(va_res, "vaDestroyContext failed");
   }
 
   if (!va_surface_ids_.empty()) {
-    VAStatus va_res = VAAPI_DestroySurfaces(va_display_, &va_surface_ids_[0],
-                                            va_surface_ids_.size());
+    VAStatus va_res = vaDestroySurfaces(va_display_, &va_surface_ids_[0],
+                                        va_surface_ids_.size());
     VA_LOG_ON_ERROR(va_res, "vaDestroySurfaces failed");
   }
 
@@ -417,9 +291,9 @@ bool VaapiWrapper::SubmitBuffer(VABufferType va_buffer_type,
   base::AutoLock auto_lock(va_lock_);
 
   VABufferID buffer_id;
-  VAStatus va_res = VAAPI_CreateBuffer(va_display_, va_context_id_,
-                                       va_buffer_type, size,
-                                       1, buffer, &buffer_id);
+  VAStatus va_res = vaCreateBuffer(va_display_, va_context_id_,
+                                   va_buffer_type, size,
+                                   1, buffer, &buffer_id);
   VA_SUCCESS_OR_RETURN(va_res, "Failed to create a VA buffer", false);
 
   switch (va_buffer_type) {
@@ -440,12 +314,12 @@ void VaapiWrapper::DestroyPendingBuffers() {
   base::AutoLock auto_lock(va_lock_);
 
   for (size_t i = 0; i < pending_va_bufs_.size(); ++i) {
-    VAStatus va_res = VAAPI_DestroyBuffer(va_display_, pending_va_bufs_[i]);
+    VAStatus va_res = vaDestroyBuffer(va_display_, pending_va_bufs_[i]);
     VA_LOG_ON_ERROR(va_res, "vaDestroyBuffer failed");
   }
 
   for (size_t i = 0; i < pending_slice_bufs_.size(); ++i) {
-    VAStatus va_res = VAAPI_DestroyBuffer(va_display_, pending_slice_bufs_[i]);
+    VAStatus va_res = vaDestroyBuffer(va_display_, pending_slice_bufs_[i]);
     VA_LOG_ON_ERROR(va_res, "vaDestroyBuffer failed");
   }
 
@@ -461,23 +335,23 @@ bool VaapiWrapper::SubmitDecode(VASurfaceID va_surface_id) {
   DVLOG(4) << "Decoding into VA surface " << va_surface_id;
 
   // Get ready to decode into surface.
-  VAStatus va_res = VAAPI_BeginPicture(va_display_, va_context_id_,
-                                       va_surface_id);
+  VAStatus va_res = vaBeginPicture(va_display_, va_context_id_,
+                                   va_surface_id);
   VA_SUCCESS_OR_RETURN(va_res, "vaBeginPicture failed", false);
 
   // Commit parameter and slice buffers.
-  va_res = VAAPI_RenderPicture(va_display_, va_context_id_,
-                               &pending_va_bufs_[0], pending_va_bufs_.size());
+  va_res = vaRenderPicture(va_display_, va_context_id_,
+                           &pending_va_bufs_[0], pending_va_bufs_.size());
   VA_SUCCESS_OR_RETURN(va_res, "vaRenderPicture for va_bufs failed", false);
 
-  va_res = VAAPI_RenderPicture(va_display_, va_context_id_,
-                               &pending_slice_bufs_[0],
-                               pending_slice_bufs_.size());
+  va_res = vaRenderPicture(va_display_, va_context_id_,
+                           &pending_slice_bufs_[0],
+                           pending_slice_bufs_.size());
   VA_SUCCESS_OR_RETURN(va_res, "vaRenderPicture for slices failed", false);
 
   // Instruct HW decoder to start processing committed buffers (decode this
   // picture). This does not block until the end of decode.
-  va_res = VAAPI_EndPicture(va_display_, va_context_id_);
+  va_res = vaEndPicture(va_display_, va_context_id_);
   VA_SUCCESS_OR_RETURN(va_res, "vaEndPicture failed", false);
 
   return true;
@@ -494,16 +368,16 @@ bool VaapiWrapper::PutSurfaceIntoPixmap(VASurfaceID va_surface_id,
                                         gfx::Size dest_size) {
   base::AutoLock auto_lock(va_lock_);
 
-  VAStatus va_res = VAAPI_SyncSurface(va_display_, va_surface_id);
+  VAStatus va_res = vaSyncSurface(va_display_, va_surface_id);
   VA_SUCCESS_OR_RETURN(va_res, "Failed syncing surface", false);
 
   // Put the data into an X Pixmap.
-  va_res = VAAPI_PutSurface(va_display_,
-                            va_surface_id,
-                            x_pixmap,
-                            0, 0, dest_size.width(), dest_size.height(),
-                            0, 0, dest_size.width(), dest_size.height(),
-                            NULL, 0, 0);
+  va_res = vaPutSurface(va_display_,
+                        va_surface_id,
+                        x_pixmap,
+                        0, 0, dest_size.width(), dest_size.height(),
+                        0, 0, dest_size.width(), dest_size.height(),
+                        NULL, 0, 0);
   VA_SUCCESS_OR_RETURN(va_res, "Failed putting decode surface to pixmap",
                        false);
   return true;
@@ -514,77 +388,38 @@ bool VaapiWrapper::GetVaImageForTesting(VASurfaceID va_surface_id,
                                         void** mem) {
   base::AutoLock auto_lock(va_lock_);
 
-  VAStatus va_res = VAAPI_SyncSurface(va_display_, va_surface_id);
+  VAStatus va_res = vaSyncSurface(va_display_, va_surface_id);
   VA_SUCCESS_OR_RETURN(va_res, "Failed syncing surface", false);
 
   // Derive a VAImage from the VASurface
-  va_res = VAAPI_DeriveImage(va_display_, va_surface_id, image);
+  va_res = vaDeriveImage(va_display_, va_surface_id, image);
   VA_LOG_ON_ERROR(va_res, "vaDeriveImage failed");
   if (va_res != VA_STATUS_SUCCESS)
     return false;
 
   // Map the VAImage into memory
-  va_res = VAAPI_MapBuffer(va_display_, image->buf, mem);
+  va_res = vaMapBuffer(va_display_, image->buf, mem);
   VA_LOG_ON_ERROR(va_res, "vaMapBuffer failed");
   if (va_res == VA_STATUS_SUCCESS)
     return true;
 
-  VAAPI_DestroyImage(va_display_, image->image_id);
+  vaDestroyImage(va_display_, image->image_id);
   return false;
 }
 
 void VaapiWrapper::ReturnVaImageForTesting(VAImage* image) {
   base::AutoLock auto_lock(va_lock_);
 
-  VAAPI_UnmapBuffer(va_display_, image->buf);
-  VAAPI_DestroyImage(va_display_, image->image_id);
+  vaUnmapBuffer(va_display_, image->buf);
+  vaDestroyImage(va_display_, image->image_id);
 }
 
 // static
 bool VaapiWrapper::PostSandboxInitialization() {
-  vaapi_handle = dlopen("libva.so.1", RTLD_NOW);
-  vaapi_x11_handle = dlopen("libva-x11.so.1", RTLD_NOW);
+  StubPathMap paths;
+  paths[kModuleVa].push_back(kVaLib);
 
-  if (!vaapi_handle || !vaapi_x11_handle)
-    return false;
-#define VAAPI_DLSYM_OR_RETURN_ON_ERROR(name, handle)                          \
-  do {                                                                        \
-    VAAPI_##name = reinterpret_cast<Vaapi##name>(dlsym((handle), "va"#name)); \
-    if (VAAPI_##name == NULL) {                                               \
-      DVLOG(1) << "Failed to dlsym va"#name;                                  \
-      return false;                                                           \
-    }                                                                         \
-  } while (0)
-
-  VAAPI_DLSYM_OR_RETURN_ON_ERROR(BeginPicture, vaapi_handle);
-  VAAPI_DLSYM_OR_RETURN_ON_ERROR(CreateBuffer, vaapi_handle);
-  VAAPI_DLSYM_OR_RETURN_ON_ERROR(CreateConfig, vaapi_handle);
-  VAAPI_DLSYM_OR_RETURN_ON_ERROR(CreateContext, vaapi_handle);
-  VAAPI_DLSYM_OR_RETURN_ON_ERROR(CreateSurfaces, vaapi_handle);
-  VAAPI_DLSYM_OR_RETURN_ON_ERROR(DeriveImage, vaapi_handle);
-  VAAPI_DLSYM_OR_RETURN_ON_ERROR(DestroyBuffer, vaapi_handle);
-  VAAPI_DLSYM_OR_RETURN_ON_ERROR(DestroyConfig, vaapi_handle);
-  VAAPI_DLSYM_OR_RETURN_ON_ERROR(DestroyContext, vaapi_handle);
-  VAAPI_DLSYM_OR_RETURN_ON_ERROR(DestroyImage, vaapi_handle);
-  VAAPI_DLSYM_OR_RETURN_ON_ERROR(DestroySurfaces, vaapi_handle);
-  VAAPI_DLSYM_OR_RETURN_ON_ERROR(DisplayIsValid, vaapi_handle);
-  VAAPI_DLSYM_OR_RETURN_ON_ERROR(EndPicture, vaapi_handle);
-  VAAPI_DLSYM_OR_RETURN_ON_ERROR(ErrorStr, vaapi_handle);
-  VAAPI_DLSYM_OR_RETURN_ON_ERROR(GetConfigAttributes, vaapi_handle);
-  VAAPI_DLSYM_OR_RETURN_ON_ERROR(GetDisplay, vaapi_x11_handle);
-  VAAPI_DLSYM_OR_RETURN_ON_ERROR(Initialize, vaapi_handle);
-  VAAPI_DLSYM_OR_RETURN_ON_ERROR(MapBuffer, vaapi_handle);
-  VAAPI_DLSYM_OR_RETURN_ON_ERROR(MaxNumProfiles, vaapi_handle);
-  VAAPI_DLSYM_OR_RETURN_ON_ERROR(PutSurface, vaapi_x11_handle);
-  VAAPI_DLSYM_OR_RETURN_ON_ERROR(QueryConfigProfiles, vaapi_handle);
-  VAAPI_DLSYM_OR_RETURN_ON_ERROR(RenderPicture, vaapi_handle);
-  VAAPI_DLSYM_OR_RETURN_ON_ERROR(SetDisplayAttributes, vaapi_handle);
-  VAAPI_DLSYM_OR_RETURN_ON_ERROR(SyncSurface, vaapi_handle);
-  VAAPI_DLSYM_OR_RETURN_ON_ERROR(Terminate, vaapi_handle);
-  VAAPI_DLSYM_OR_RETURN_ON_ERROR(UnmapBuffer, vaapi_handle);
-#undef VAAPI_DLSYM
-
-  return true;
+  return InitializeStubs(paths);
 }
 
 }  // namespace content
