@@ -2288,6 +2288,10 @@ bool RenderViewImpl::isPointerLocked() {
       webwidget_mouse_lock_target_.get());
 }
 
+// FIXME: To be removed as soon as chromium and blink side changes land
+// didActivateCompositor with parameters is still kept in order to land
+// these changes s-chromium - https://codereview.chromium.org/137893025/.
+// s-blink - https://codereview.chromium.org/138523003/
 void RenderViewImpl::didActivateCompositor(int input_handler_identifier) {
 #if !defined(OS_MACOSX)  // many events are unhandled - http://crbug.com/138003
   InputHandlerManager* input_handler_manager =
@@ -2301,6 +2305,21 @@ void RenderViewImpl::didActivateCompositor(int input_handler_identifier) {
 #endif
 
   RenderWidget::didActivateCompositor(input_handler_identifier);
+}
+
+void RenderViewImpl::didActivateCompositor() {
+#if !defined(OS_MACOSX)  // many events are unhandled - http://crbug.com/138003
+  InputHandlerManager* input_handler_manager =
+      RenderThreadImpl::current()->input_handler_manager();
+  if (input_handler_manager) {
+     input_handler_manager->AddInputHandler(
+        routing_id_,
+        compositor_->GetInputHandler(),
+        AsWeakPtr());
+  }
+#endif
+
+  RenderWidget::didActivateCompositor();
 }
 
 void RenderViewImpl::didHandleGestureEvent(

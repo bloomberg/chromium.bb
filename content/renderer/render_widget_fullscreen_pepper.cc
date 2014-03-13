@@ -414,7 +414,7 @@ void RenderWidgetFullscreenPepper::SetLayer(blink::WebLayer* layer) {
       layer_->setDrawsContent(true);
       compositor_->setDeviceScaleFactor(device_scale_factor_);
       compositor_->setRootLayer(*layer_);
-      didActivateCompositor(-1);
+      didActivateCompositor();
     } else {
       didDeactivateCompositor();
     }

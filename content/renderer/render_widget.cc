@@ -1807,7 +1807,39 @@ void RenderWidget::AutoResizeCompositor()  {
     compositor_->setViewportSize(size_, physical_backing_size_);
 }
 
+// FIXME: To be removed as soon as chromium and blink side changes land
+// didActivateCompositor with parameters is still kept in order to land
+// these changes s-chromium - https://codereview.chromium.org/137893025/.
+// s-blink - https://codereview.chromium.org/138523003/
 void RenderWidget::didActivateCompositor(int input_handler_identifier) {
+  TRACE_EVENT0("gpu", "RenderWidget::didActivateCompositor");
+
+#if !defined(OS_MACOSX)
+  if (!is_accelerated_compositing_active_) {
+    // When not in accelerated compositing mode, in certain cases (e.g. waiting
+    // for a resize or if no backing store) the RenderWidgetHost is blocking the
+    // browser's UI thread for some time, waiting for an UpdateRect. If we are
+    // going to switch to accelerated compositing, the GPU process may need
+    // round-trips to the browser's UI thread before finishing the frame,
+    // causing deadlocks if we delay the UpdateRect until we receive the
+    // OnSwapBuffersComplete.  So send a dummy message that will unblock the
+    // browser's UI thread. This is not necessary on Mac, because SwapBuffers
+    // now unblocks GetBackingStore on Mac.
+    Send(new ViewHostMsg_UpdateIsDelayed(routing_id_));
+  }
+#endif
+
+  is_accelerated_compositing_active_ = true;
+  Send(new ViewHostMsg_DidActivateAcceleratedCompositing(
+      routing_id_, is_accelerated_compositing_active_));
+
+  if (!was_accelerated_compositing_ever_active_) {
+    was_accelerated_compositing_ever_active_ = true;
+    webwidget_->enterForceCompositingMode(true);
+  }
+}
+
+void RenderWidget::didActivateCompositor() {
   TRACE_EVENT0("gpu", "RenderWidget::didActivateCompositor");
 
 #if !defined(OS_MACOSX)

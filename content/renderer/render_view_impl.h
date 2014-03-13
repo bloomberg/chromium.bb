@@ -374,7 +374,12 @@ class CONTENT_EXPORT RenderViewImpl
   virtual bool requestPointerLock();
   virtual void requestPointerUnlock();
   virtual bool isPointerLocked();
+  // FIXME: To be removed as soon as chromium and blink side changes land
+  // didActivateCompositor with parameters is still kept in order to land
+  // these changes s-chromium - https://codereview.chromium.org/137893025/.
+  // s-blink - https://codereview.chromium.org/138523003/
   virtual void didActivateCompositor(int input_handler_identifier);
+  virtual void didActivateCompositor() OVERRIDE;
   virtual void didHandleGestureEvent(const blink::WebGestureEvent& event,
                                      bool event_cancelled) OVERRIDE;
   virtual void initializeLayerTreeView() OVERRIDE;

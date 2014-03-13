@@ -130,7 +130,12 @@ class CONTENT_EXPORT RenderWidget
   virtual void didScrollRect(int dx, int dy,
                              const blink::WebRect& clipRect);
   virtual void didAutoResize(const blink::WebSize& new_size);
+  // FIXME: To be removed as soon as chromium and blink side changes land
+  // didActivateCompositor with parameters is still kept in order to land
+  // these changes s-chromium - https://codereview.chromium.org/137893025/.
+  // s-blink - https://codereview.chromium.org/138523003/
   virtual void didActivateCompositor(int input_handler_identifier);
+  virtual void didActivateCompositor() OVERRIDE;
   virtual void didDeactivateCompositor();
   virtual void initializeLayerTreeView();
   virtual blink::WebLayerTreeView* layerTreeView();
