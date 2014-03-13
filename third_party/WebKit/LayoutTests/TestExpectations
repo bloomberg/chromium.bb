@@ -921,3 +921,9 @@ crbug.com/350829 [ Linux Win ] virtual/threaded/animations/missing-keyframe-prop
 
 # Temporary while the test is fixed
 crbug.com/349472 fast/forms/select/menulist-oninput-fired.html [ Skip ]
+
+crbug.com/352035 [ Debug ] inspector/sources/debugger/async-callstack-promises.html [ Crash ]
+crbug.com/352035 [ Debug ] inspector/sources/debugger/async-callstack-scopes.html [ Crash ]
+crbug.com/352035 [ Debug ] inspector/sources/debugger/async-callstack.html [ Crash ]
+crbug.com/352035 [ Debug ] inspector/sources/debugger/debug-console-command.html [ Crash ]
+
