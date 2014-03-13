@@ -633,7 +633,7 @@ void HTMLElement::setTranslate(bool enable)
 HTMLFormElement* HTMLElement::findFormAncestor() const
 {
     for (ContainerNode* ancestor = parentNode(); ancestor; ancestor = ancestor->parentNode()) {
-        if (ancestor->hasTagName(formTag))
+        if (isHTMLFormElement(*ancestor))
             return toHTMLFormElement(ancestor);
     }
     return 0;
@@ -641,7 +641,7 @@ HTMLFormElement* HTMLElement::findFormAncestor() const
 
 static inline bool elementAffectsDirectionality(const Node* node)
 {
-    return node->isHTMLElement() && (node->hasTagName(bdiTag) || toHTMLElement(node)->hasAttribute(dirAttr));
+    return node->isHTMLElement() && (isHTMLBDIElement(*node) || toHTMLElement(node)->hasAttribute(dirAttr));
 }
 
 static void setHasDirAutoFlagRecursively(Node* firstNode, bool flag, Node* lastNode = 0)
@@ -676,7 +676,7 @@ void HTMLElement::childrenChanged(bool changedByParser, Node* beforeChange, Node
 bool HTMLElement::hasDirectionAuto() const
 {
     const AtomicString& direction = fastGetAttribute(dirAttr);
-    return (hasTagName(bdiTag) && direction == nullAtom) || equalIgnoringCase(direction, "auto");
+    return (isHTMLBDIElement(*this) && direction == nullAtom) || equalIgnoringCase(direction, "auto");
 }
 
 TextDirection HTMLElement::directionalityIfhasDirAutoAttribute(bool& isAuto) const
@@ -692,7 +692,7 @@ TextDirection HTMLElement::directionalityIfhasDirAutoAttribute(bool& isAuto) con
 
 TextDirection HTMLElement::directionality(Node** strongDirectionalityTextNode) const
 {
-    if (hasTagName(inputTag)) {
+    if (isHTMLInputElement(*this)) {
         HTMLInputElement* inputElement = toHTMLInputElement(const_cast<HTMLElement*>(this));
         bool hasStrongDirectionality;
         TextDirection textDirection = determineDirectionality(inputElement->value(), hasStrongDirectionality);
@@ -704,7 +704,7 @@ TextDirection HTMLElement::directionality(Node** strongDirectionalityTextNode) c
     Node* node = firstChild();
     while (node) {
         // Skip bdi, script, style and text form controls.
-        if (equalIgnoringCase(node->nodeName(), "bdi") || node->hasTagName(scriptTag) || node->hasTagName(styleTag)
+        if (equalIgnoringCase(node->nodeName(), "bdi") || isHTMLScriptElement(*node) || isHTMLStyleElement(*node)
             || (node->isElementNode() && toElement(node)->isTextFormControl())) {
             node = NodeTraversal::nextSkippingChildren(*node, this);
             continue;

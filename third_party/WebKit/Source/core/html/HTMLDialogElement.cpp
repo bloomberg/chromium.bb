@@ -45,7 +45,7 @@ static void setFocusForModalDialog(HTMLDialogElement* dialog)
     Element* focusableDescendant = 0;
     Node* next = 0;
     for (Node* node = dialog->firstChild(); node; node = next) {
-        if (node->hasTagName(dialogTag))
+        if (isHTMLDialogElement(*node))
             next = NodeTraversal::nextSkippingChildren(*node, dialog);
         else
             next = NodeTraversal::next(*node, dialog);

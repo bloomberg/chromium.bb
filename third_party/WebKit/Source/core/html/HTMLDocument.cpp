@@ -114,7 +114,7 @@ void HTMLDocument::setDesignMode(const String& value)
 HTMLBodyElement* HTMLDocument::htmlBodyElement() const
 {
     HTMLElement* body = this->body();
-    return (body && body->hasTagName(bodyTag)) ? toHTMLBodyElement(body) : 0;
+    return isHTMLBodyElement(body) ? toHTMLBodyElement(body) : 0;
 }
 
 const AtomicString& HTMLDocument::bodyAttributeValue(const QualifiedName& name) const

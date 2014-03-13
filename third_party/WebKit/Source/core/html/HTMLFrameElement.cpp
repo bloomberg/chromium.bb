@@ -59,7 +59,7 @@ RenderObject* HTMLFrameElement::createRenderer(RenderStyle*)
 static inline HTMLFrameSetElement* containingFrameSetElement(Node* node)
 {
     while ((node = node->parentNode())) {
-        if (node->hasTagName(framesetTag))
+        if (isHTMLFrameSetElement(*node))
             return toHTMLFrameSetElement(node);
     }
     return 0;

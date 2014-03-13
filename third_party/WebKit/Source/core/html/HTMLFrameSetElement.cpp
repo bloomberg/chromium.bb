@@ -170,18 +170,18 @@ void HTMLFrameSetElement::attach(const AttachContext& context)
     // Inherit default settings from parent frameset
     // FIXME: This is not dynamic.
     for (ContainerNode* node = parentNode(); node; node = node->parentNode()) {
-        if (node->hasTagName(framesetTag)) {
-            HTMLFrameSetElement* frameset = toHTMLFrameSetElement(node);
+        if (isHTMLFrameSetElement(*node)) {
+            HTMLFrameSetElement& frameset = toHTMLFrameSetElement(*node);
             if (!m_frameborderSet)
-                m_frameborder = frameset->hasFrameBorder();
+                m_frameborder = frameset.hasFrameBorder();
             if (m_frameborder) {
                 if (!m_borderSet)
-                    m_border = frameset->border();
+                    m_border = frameset.border();
                 if (!m_borderColorSet)
-                    m_borderColorSet = frameset->hasBorderColor();
+                    m_borderColorSet = frameset.hasBorderColor();
             }
             if (!m_noresize)
-                m_noresize = frameset->noResize();
+                m_noresize = frameset.noResize();
             break;
         }
     }
@@ -220,7 +220,7 @@ void HTMLFrameSetElement::willRecalcStyle(StyleRecalcChange)
 DOMWindow* HTMLFrameSetElement::anonymousNamedGetter(const AtomicString& name)
 {
     Element* frameElement = children()->namedItem(name);
-    if (!frameElement || !frameElement->hasTagName(HTMLNames::frameTag))
+    if (!isHTMLFrameElement(frameElement))
         return 0;
     Document* document = toHTMLFrameElement(frameElement)->contentDocument();
     if (!document || !document->frame())

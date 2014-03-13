@@ -96,11 +96,11 @@ bool HTMLFormElement::rendererIsNeeded(const RenderStyle& style)
     RenderObject* parentRenderer = node->renderer();
     // FIXME: Shouldn't we also check for table caption (see |formIsTablePart| below).
     // FIXME: This check is not correct for Shadow DOM.
-    bool parentIsTableElementPart = (parentRenderer->isTable() && node->hasTagName(tableTag))
-        || (parentRenderer->isTableRow() && node->hasTagName(trTag))
+    bool parentIsTableElementPart = (parentRenderer->isTable() && isHTMLTableElement(*node))
+        || (parentRenderer->isTableRow() && isHTMLTableRowElement(*node))
         || (parentRenderer->isTableSection() && node->hasTagName(tbodyTag))
         || (parentRenderer->isRenderTableCol() && node->hasTagName(colTag))
-        || (parentRenderer->isTableCell() && node->hasTagName(trTag));
+        || (parentRenderer->isTableCell() && isHTMLTableRowElement(*node));
 
     if (!parentIsTableElementPart)
         return true;
@@ -327,23 +327,23 @@ void HTMLFormElement::getTextFieldValues(StringPairVector& fieldNamesAndValues) 
     fieldNamesAndValues.reserveCapacity(elements.size());
     for (unsigned i = 0; i < elements.size(); ++i) {
         FormAssociatedElement* control = elements[i];
-        HTMLElement* element = toHTMLElement(control);
-        if (!element->hasTagName(inputTag))
+        HTMLElement& element = toHTMLElement(*control);
+        if (!isHTMLInputElement(element))
             continue;
 
-        HTMLInputElement* input = toHTMLInputElement(element);
-        if (!input->isTextField())
+        HTMLInputElement& input = toHTMLInputElement(element);
+        if (!input.isTextField())
             continue;
 
-        fieldNamesAndValues.append(make_pair(input->name().string(), input->value()));
+        fieldNamesAndValues.append(make_pair(input.name().string(), input.value()));
     }
 }
 
 void HTMLFormElement::submitDialog(PassRefPtr<FormSubmission> formSubmission)
 {
     for (Node* node = this; node; node = node->parentOrShadowHostNode()) {
-        if (node->hasTagName(dialogTag)) {
-            toHTMLDialogElement(node)->closeDialog(formSubmission->result());
+        if (isHTMLDialogElement(*node)) {
+            toHTMLDialogElement(*node).closeDialog(formSubmission->result());
             return;
         }
     }
@@ -565,18 +565,16 @@ PassRefPtr<HTMLCollection> HTMLFormElement::elements()
 void HTMLFormElement::collectAssociatedElements(Node& root, Vector<FormAssociatedElement*>& elements) const
 {
     elements.clear();
-    for (Node* node = &root; node; node = NodeTraversal::next(*node)) {
-        if (!node->isHTMLElement())
-            continue;
-        FormAssociatedElement* element = 0;
-        if (toElement(node)->isFormControlElement())
-            element = toHTMLFormControlElement(node);
-        else if (node->hasTagName(objectTag))
-            element = toHTMLObjectElement(node);
+    for (HTMLElement* element = Traversal<HTMLElement>::firstWithin(root); element; element = Traversal<HTMLElement>::next(*element)) {
+        FormAssociatedElement* associatedElement = 0;
+        if (element->isFormControlElement())
+            associatedElement = toHTMLFormControlElement(element);
+        else if (isHTMLObjectElement(*element))
+            associatedElement = toHTMLObjectElement(element);
         else
             continue;
-        if (element->form()== this)
-            elements.append(element);
+        if (associatedElement->form()== this)
+            elements.append(associatedElement);
     }
 }
 
@@ -601,9 +599,9 @@ const Vector<FormAssociatedElement*>& HTMLFormElement::associatedElements() cons
 void HTMLFormElement::collectImageElements(Node& root, Vector<HTMLImageElement*>& elements)
 {
     elements.clear();
-    for (Node* node = &root; node; node = NodeTraversal::next(*node)) {
-        if (node->isHTMLElement() && node->hasTagName(imgTag) && toHTMLElement(node)->formOwner() == this)
-            elements.append(toHTMLImageElement(node));
+    for (HTMLImageElement* image = Traversal<HTMLImageElement>::firstWithin(root); image; image = Traversal<HTMLImageElement>::next(*image)) {
+        if (image->formOwner() == this)
+            elements.append(image);
     }
 }
 
@@ -709,9 +707,9 @@ Element* HTMLFormElement::elementFromPastNamesMap(const AtomicString& pastName)
     if (!element)
         return 0;
     ASSERT_WITH_SECURITY_IMPLICATION(toHTMLElement(element)->formOwner() == this);
-    if (element->hasTagName(imgTag)) {
+    if (isHTMLImageElement(*element)) {
         ASSERT_WITH_SECURITY_IMPLICATION(imageElements().find(element) != kNotFound);
-    } else if (element->hasTagName(objectTag)) {
+    } else if (isHTMLObjectElement(*element)) {
         ASSERT_WITH_SECURITY_IMPLICATION(associatedElements().find(toHTMLObjectElement(element)) != kNotFound);
     } else {
         ASSERT_WITH_SECURITY_IMPLICATION(associatedElements().find(toHTMLFormControlElement(element)) != kNotFound);
@@ -798,7 +796,7 @@ void HTMLFormElement::anonymousNamedGetter(const AtomicString& name, bool& retur
         return;
     }
 
-    bool onlyMatchImg = elements.size() && elements.at(0)->hasTagName(imgTag);
+    bool onlyMatchImg = !elements.isEmpty() && isHTMLImageElement(*elements.first());
     returnValue0Enabled = true;
     returnValue0 = radioNodeList(name, onlyMatchImg);
 }

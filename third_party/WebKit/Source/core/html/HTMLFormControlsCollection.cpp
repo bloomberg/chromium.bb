@@ -43,7 +43,7 @@ HTMLFormControlsCollection::HTMLFormControlsCollection(ContainerNode& ownerNode)
     , m_cachedElement(0)
     , m_cachedElementOffsetInArray(0)
 {
-    ASSERT(ownerNode.hasTagName(formTag) || ownerNode.hasTagName(fieldsetTag));
+    ASSERT(isHTMLFormElement(ownerNode) || isHTMLFieldSetElement(ownerNode));
     ScriptWrappable::init(this);
 }
 
@@ -58,8 +58,8 @@ HTMLFormControlsCollection::~HTMLFormControlsCollection()
 
 const Vector<FormAssociatedElement*>& HTMLFormControlsCollection::formControlElements() const
 {
-    ASSERT(ownerNode().hasTagName(formTag) || ownerNode().hasTagName(fieldsetTag));
-    if (ownerNode().hasTagName(formTag))
+    ASSERT(isHTMLFormElement(ownerNode()) || isHTMLFieldSetElement(ownerNode()));
+    if (isHTMLFormElement(ownerNode()))
         return toHTMLFormElement(ownerNode()).associatedElements();
     return toHTMLFieldSetElement(ownerNode()).associatedElements();
 }
@@ -141,7 +141,7 @@ Element* HTMLFormControlsCollection::namedItem(const AtomicString& name) const
     // attribute. If a match is not found, the method then searches for an
     // object with a matching name attribute, but only on those elements
     // that are allowed a name attribute.
-    const Vector<HTMLImageElement*>* imagesElements = ownerNode().hasTagName(fieldsetTag) ? 0 : &formImageElements();
+    const Vector<HTMLImageElement*>* imagesElements = isHTMLFieldSetElement(ownerNode()) ? 0 : &formImageElements();
     if (HTMLElement* item = firstNamedItem(formControlElements(), imagesElements, idAttr, name))
         return item;
 
@@ -174,7 +174,7 @@ void HTMLFormControlsCollection::updateIdNameCache() const
         }
     }
 
-    if (ownerNode().hasTagName(formTag)) {
+    if (isHTMLFormElement(ownerNode())) {
         const Vector<HTMLImageElement*>& imageElementsArray = formImageElements();
         for (unsigned i = 0; i < imageElementsArray.size(); ++i) {
             HTMLImageElement* element = imageElementsArray[i];

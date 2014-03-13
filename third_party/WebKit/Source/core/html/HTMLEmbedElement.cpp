@@ -54,10 +54,11 @@ PassRefPtr<HTMLEmbedElement> HTMLEmbedElement::create(Document& document, bool c
 
 static inline RenderWidget* findWidgetRenderer(const Node* n)
 {
-    if (!n->renderer())
-        do
+    if (!n->renderer()) {
+        do {
             n = n->parentNode();
-        while (n && !n->hasTagName(objectTag));
+        } while (n && !isHTMLObjectElement(*n));
+    }
 
     if (n && n->renderer() && n->renderer()->isWidget())
         return toRenderWidget(n->renderer());
@@ -174,7 +175,7 @@ bool HTMLEmbedElement::rendererIsNeeded(const RenderStyle& style)
     // If my parent is an <object> and is not set to use fallback content, I
     // should be ignored and not get a renderer.
     ContainerNode* p = parentNode();
-    if (p && p->hasTagName(objectTag)) {
+    if (isHTMLObjectElement(p)) {
         ASSERT(p->renderer());
         if (!toHTMLObjectElement(p)->useFallbackContent()) {
             ASSERT(!p->renderer()->isEmbeddedObject());
@@ -203,7 +204,7 @@ bool HTMLEmbedElement::isExposed() const
 {
     // http://www.whatwg.org/specs/web-apps/current-work/#exposed
     for (Node* ancestor = parentNode(); ancestor; ancestor = ancestor->parentNode()) {
-        if (ancestor->hasTagName(objectTag) && toHTMLObjectElement(ancestor)->isExposed())
+        if (isHTMLObjectElement(*ancestor) && toHTMLObjectElement(*ancestor).isExposed())
             return false;
     }
     return true;

@@ -171,16 +171,16 @@ static void appendServerMapMousePosition(StringBuilder& url, Event* event)
     ASSERT(event->target());
     Node* target = event->target()->toNode();
     ASSERT(target);
-    if (!target->hasTagName(imgTag))
+    if (!isHTMLImageElement(*target))
         return;
 
-    HTMLImageElement* imageElement = toHTMLImageElement(event->target()->toNode());
-    if (!imageElement || !imageElement->isServerMap())
+    HTMLImageElement& imageElement = toHTMLImageElement(*target);
+    if (!imageElement.isServerMap())
         return;
 
-    if (!imageElement->renderer() || !imageElement->renderer()->isRenderImage())
+    if (!imageElement.renderer() || !imageElement.renderer()->isRenderImage())
         return;
-    RenderImage* renderer = toRenderImage(imageElement->renderer());
+    RenderImage* renderer = toRenderImage(imageElement.renderer());
 
     // FIXME: This should probably pass true for useTransforms.
     FloatPoint absolutePosition = renderer->absoluteToLocal(FloatPoint(toMouseEvent(event)->pageX(), toMouseEvent(event)->pageY()));

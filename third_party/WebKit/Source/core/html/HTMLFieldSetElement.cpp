@@ -107,8 +107,8 @@ void HTMLFieldSetElement::refreshElementsIfNeeded() const
 
     m_associatedElements.clear();
 
-    for (Element* element = ElementTraversal::firstWithin(*this); element; element = ElementTraversal::next(*element, this)) {
-        if (element->hasTagName(objectTag)) {
+    for (HTMLElement* element = Traversal<HTMLElement>::firstWithin(*this); element; element = Traversal<HTMLElement>::next(*element, this)) {
+        if (isHTMLObjectElement(*element)) {
             m_associatedElements.append(toHTMLObjectElement(element));
             continue;
         }

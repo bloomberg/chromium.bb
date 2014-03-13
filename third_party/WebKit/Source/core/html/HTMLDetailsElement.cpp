@@ -83,7 +83,7 @@ Element* HTMLDetailsElement::findMainSummary() const
         return summary;
 
     HTMLContentElement* content = toHTMLContentElement(userAgentShadowRoot()->firstChild());
-    ASSERT(content->firstChild() && content->firstChild()->hasTagName(summaryTag));
+    ASSERT(content->firstChild() && isHTMLSummaryElement(*content->firstChild()));
     return toElement(content->firstChild());
 }
 

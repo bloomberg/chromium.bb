@@ -104,9 +104,9 @@ void HTMLFormControlElement::updateAncestorDisabledState() const
     HTMLFieldSetElement* fieldSetAncestor = 0;
     ContainerNode* legendAncestor = 0;
     for (ContainerNode* ancestor = parentNode(); ancestor; ancestor = ancestor->parentNode()) {
-        if (!legendAncestor && ancestor->hasTagName(legendTag))
+        if (!legendAncestor && isHTMLLegendElement(*ancestor))
             legendAncestor = ancestor;
-        if (ancestor->hasTagName(fieldsetTag)) {
+        if (isHTMLFieldSetElement(*ancestor)) {
             fieldSetAncestor = toHTMLFieldSetElement(ancestor);
             break;
         }
@@ -358,7 +358,7 @@ bool HTMLFormControlElement::recalcWillValidate() const
 {
     if (m_dataListAncestorState == Unknown) {
         for (ContainerNode* ancestor = parentNode(); ancestor; ancestor = ancestor->parentNode()) {
-            if (ancestor->hasTagName(datalistTag)) {
+            if (isHTMLDataListElement(*ancestor)) {
                 m_dataListAncestorState = InsideDataList;
                 break;
             }

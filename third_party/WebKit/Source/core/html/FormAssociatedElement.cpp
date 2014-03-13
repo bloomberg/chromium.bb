@@ -108,11 +108,8 @@ HTMLFormElement* FormAssociatedElement::findAssociatedForm(const HTMLElement* el
         // value is a form element, then associate the form-associated element
         // with that form element.
         // 3.2. Abort the "reset the form owner" steps.
-        HTMLFormElement* newForm = 0;
         Element* newFormCandidate = element->treeScope().getElementById(formId);
-        if (newFormCandidate && newFormCandidate->hasTagName(formTag))
-            newForm = toHTMLFormElement(newFormCandidate);
-        return newForm;
+        return isHTMLFormElement(newFormCandidate) ? toHTMLFormElement(newFormCandidate) : 0;
     }
     // 4. Otherwise, if the form-associated element in question has an ancestor
     // form element, then associate the form-associated element with the nearest
