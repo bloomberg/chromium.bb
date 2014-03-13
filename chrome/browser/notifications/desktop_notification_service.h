@@ -17,7 +17,7 @@
 #include "chrome/browser/content_settings/content_settings_provider.h"
 #include "chrome/browser/notifications/extension_welcome_notification.h"
 #include "chrome/common/content_settings.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "third_party/WebKit/public/web/WebNotificationPresenter.h"
@@ -46,7 +46,7 @@ class PrefRegistrySyncable;
 
 // The DesktopNotificationService is an object, owned by the Profile,
 // which provides the creation of desktop "toasts" to web pages and workers.
-class DesktopNotificationService : public BrowserContextKeyedService,
+class DesktopNotificationService : public KeyedService,
                                    public content::NotificationObserver {
  public:
   enum DesktopNotificationSource {

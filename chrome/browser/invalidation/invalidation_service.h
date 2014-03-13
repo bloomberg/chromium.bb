@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_INVALIDATION_INVALIDATION_SERVICE_H_
 #define CHROME_BROWSER_INVALIDATION_INVALIDATION_SERVICE_H_
 
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "sync/notifier/invalidation_util.h"
 #include "sync/notifier/invalidator_state.h"
 
@@ -65,7 +65,7 @@ class InvalidationLogger;
 // This class inherits from ProfileKeyedService to make it possible to correctly
 // cast from various InvalidationService implementations to ProfileKeyedService
 // in InvalidationServiceFactory.
-class InvalidationService : public BrowserContextKeyedService {
+class InvalidationService : public KeyedService {
  public:
   // Starts sending notifications to |handler|.  |handler| must not be NULL,
   // and it must not already be registered.

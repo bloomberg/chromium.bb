@@ -7,7 +7,7 @@
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 // static
 DownloadService* DownloadServiceFactory::GetForBrowserContext(
@@ -31,7 +31,7 @@ DownloadServiceFactory::DownloadServiceFactory()
 DownloadServiceFactory::~DownloadServiceFactory() {
 }
 
-BrowserContextKeyedService* DownloadServiceFactory::BuildServiceInstanceFor(
+KeyedService* DownloadServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   DownloadService* service =
       new DownloadService(static_cast<Profile*>(profile));

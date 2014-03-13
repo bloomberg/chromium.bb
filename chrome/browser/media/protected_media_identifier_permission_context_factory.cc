@@ -8,12 +8,12 @@
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 
 namespace {
 
-class Service : public BrowserContextKeyedService {
+class Service : public KeyedService {
  public:
   explicit Service(Profile* profile) {
     context_ = new ProtectedMediaIdentifierPermissionContext(profile);
@@ -61,7 +61,7 @@ ProtectedMediaIdentifierPermissionContextFactory::
 ~ProtectedMediaIdentifierPermissionContextFactory() {
 }
 
-BrowserContextKeyedService*
+KeyedService*
 ProtectedMediaIdentifierPermissionContextFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   return new Service(static_cast<Profile*>(profile));

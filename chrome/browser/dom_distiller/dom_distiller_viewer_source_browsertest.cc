@@ -120,7 +120,7 @@ class DomDistillerViewerSourceBrowserTest : public InProcessBrowserTest {
     command_line->AppendSwitch(switches::kEnableDomDistiller);
   }
 
-  static BrowserContextKeyedService* Build(content::BrowserContext* context) {
+  static KeyedService* Build(content::BrowserContext* context) {
     FakeDB* fake_db = new FakeDB(database_model_);
     MockDistillerFactory* factory = new MockDistillerFactory();
     DomDistillerContextKeyedService* service =

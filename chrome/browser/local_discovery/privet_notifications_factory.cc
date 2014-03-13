@@ -6,7 +6,7 @@
 
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/local_discovery/privet_notifications.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 namespace local_discovery {
 
@@ -24,8 +24,7 @@ PrivetNotificationServiceFactory::PrivetNotificationServiceFactory()
 PrivetNotificationServiceFactory::~PrivetNotificationServiceFactory() {
 }
 
-BrowserContextKeyedService*
-PrivetNotificationServiceFactory::BuildServiceInstanceFor(
+KeyedService* PrivetNotificationServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   return new PrivetNotificationService(profile);
 }

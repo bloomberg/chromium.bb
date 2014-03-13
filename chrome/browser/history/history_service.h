@@ -28,7 +28,7 @@
 #include "chrome/browser/history/typed_url_syncable_service.h"
 #include "chrome/browser/search_engines/template_url_id.h"
 #include "chrome/common/ref_counted_util.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "components/visitedlink/browser/visitedlink_delegate.h"
 #include "content/public/browser/download_manager_delegate.h"
 #include "content/public/browser/notification_observer.h"
@@ -85,7 +85,7 @@ struct HistoryDetails;
 class HistoryService : public CancelableRequestProvider,
                        public content::NotificationObserver,
                        public syncer::SyncableService,
-                       public BrowserContextKeyedService,
+                       public KeyedService,
                        public visitedlink::VisitedLinkDelegate {
  public:
   // Miscellaneous commonly-used types.
@@ -164,7 +164,7 @@ class HistoryService : public CancelableRequestProvider,
     return in_memory_url_index_.get();
   }
 
-  // BrowserContextKeyedService:
+  // KeyedService:
   virtual void Shutdown() OVERRIDE;
 
   // Navigation ----------------------------------------------------------------

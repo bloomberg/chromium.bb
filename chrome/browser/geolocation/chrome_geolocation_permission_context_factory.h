@@ -8,7 +8,7 @@
 #include "base/memory/singleton.h"
 #include "base/prefs/pref_service.h"
 #include "base/values.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
+#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
 class ChromeGeolocationPermissionContext;
 class PrefRegistrySyncable;
@@ -29,8 +29,8 @@ class ChromeGeolocationPermissionContextFactory
   virtual ~ChromeGeolocationPermissionContextFactory();
 
   // BrowserContextKeyedBaseFactory methods:
-  virtual BrowserContextKeyedService*
-      BuildServiceInstanceFor(content::BrowserContext* profile) const OVERRIDE;
+  virtual KeyedService* BuildServiceInstanceFor(
+      content::BrowserContext* profile) const OVERRIDE;
   virtual void RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable* registry) OVERRIDE;
   virtual content::BrowserContext* GetBrowserContextToUse(

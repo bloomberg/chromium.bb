@@ -21,7 +21,7 @@
 #include "chrome/browser/devtools/devtools_protocol.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/address_list.h"
 #include "net/base/net_errors.h"
@@ -619,8 +619,7 @@ PortForwardingController::Factory::Factory()
 
 PortForwardingController::Factory::~Factory() {}
 
-BrowserContextKeyedService*
-PortForwardingController::Factory::BuildServiceInstanceFor(
+KeyedService* PortForwardingController::Factory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
   return new PortForwardingController(profile->GetPrefs());

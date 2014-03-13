@@ -7,7 +7,7 @@
 #include "chrome/browser/media_galleries/media_galleries_preferences.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 
 // static
@@ -30,8 +30,7 @@ MediaGalleriesPreferencesFactory::MediaGalleriesPreferencesFactory()
 
 MediaGalleriesPreferencesFactory::~MediaGalleriesPreferencesFactory() {}
 
-BrowserContextKeyedService*
-MediaGalleriesPreferencesFactory::BuildServiceInstanceFor(
+KeyedService* MediaGalleriesPreferencesFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   return new MediaGalleriesPreferences(static_cast<Profile*>(profile));
 }

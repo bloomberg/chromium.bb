@@ -14,7 +14,7 @@
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/sync_notifier/synced_notification.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "sync/api/syncable_service.h"
 #include "ui/message_center/notifier_settings.h"
 
@@ -55,12 +55,12 @@ enum ChromeNotifierServiceActionType {
 // delivered notifications for chrome. These are obtained from the sync service
 // and kept up to date.
 class ChromeNotifierService : public syncer::SyncableService,
-                              public BrowserContextKeyedService {
+                              public KeyedService {
  public:
   ChromeNotifierService(Profile* profile, NotificationUIManager* manager);
   virtual ~ChromeNotifierService();
 
-  // Methods from BrowserContextKeyedService.
+  // Methods from KeyedService.
   virtual void Shutdown() OVERRIDE;
 
   // syncer::SyncableService implementation.

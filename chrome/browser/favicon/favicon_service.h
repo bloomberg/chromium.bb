@@ -14,7 +14,7 @@
 #include "chrome/browser/common/cancelable_request.h"
 #include "chrome/common/favicon/favicon_types.h"
 #include "chrome/common/ref_counted_util.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "ui/base/layout.h"
 
 class GURL;
@@ -31,8 +31,7 @@ struct FaviconImageResult;
 //
 // This service is thread safe. Each request callback is invoked in the
 // thread that made the request.
-class FaviconService : public CancelableRequestProvider,
-                       public BrowserContextKeyedService {
+class FaviconService : public CancelableRequestProvider, public KeyedService {
  public:
   explicit FaviconService(Profile* profile);
 

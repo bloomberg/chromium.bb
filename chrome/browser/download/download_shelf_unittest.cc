@@ -28,8 +28,7 @@ using content::DownloadItem;
 
 namespace {
 
-BrowserContextKeyedService* CreateDownloadService(
-    content::BrowserContext* context) {
+KeyedService* CreateDownloadService(content::BrowserContext* context) {
   return new DownloadService(Profile::FromBrowserContext(context));
 }
 

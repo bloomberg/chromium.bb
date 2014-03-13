@@ -10,7 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 
 namespace base {
 class DictionaryValue;
@@ -25,7 +25,7 @@ namespace history {
 // Provides an API for querying Google servers for a signed-in user's
 // synced history visits. It is roughly analogous to HistoryService, and
 // supports a similar API.
-class WebHistoryService : public BrowserContextKeyedService {
+class WebHistoryService : public KeyedService {
  public:
   // Handles all the work of making an API request. This class encapsulates
   // the entire state of the request. When an instance is destroyed, all

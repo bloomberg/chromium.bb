@@ -18,8 +18,7 @@ FakeInvalidationService::~FakeInvalidationService() {
 }
 
 // static
-BrowserContextKeyedService* FakeInvalidationService::Build(
-    content::BrowserContext* context) {
+KeyedService* FakeInvalidationService::Build(content::BrowserContext* context) {
   return new FakeInvalidationService();
 }
 

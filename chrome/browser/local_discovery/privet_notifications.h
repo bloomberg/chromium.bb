@@ -12,7 +12,7 @@
 #include "chrome/browser/local_discovery/privet_device_lister.h"
 #include "chrome/browser/local_discovery/privet_http.h"
 #include "chrome/browser/notifications/notification_delegate.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 
 class NotificationUIManager;
 
@@ -86,7 +86,7 @@ class PrivetNotificationsListener  {
 };
 
 class PrivetNotificationService
-    : public BrowserContextKeyedService,
+    : public KeyedService,
       public PrivetDeviceLister::Delegate,
       public PrivetNotificationsListener::Delegate,
       public base::SupportsWeakPtr<PrivetNotificationService> {

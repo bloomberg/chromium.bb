@@ -6,7 +6,7 @@
 
 #include "chrome/browser/network_time/network_time_service.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 NetworkTimeServiceFactory::NetworkTimeServiceFactory()
     : BrowserContextKeyedServiceFactory(
@@ -34,8 +34,7 @@ content::BrowserContext* NetworkTimeServiceFactory::GetBrowserContextToUse(
   return chrome::GetBrowserContextRedirectedInIncognito(context);
 }
 
-BrowserContextKeyedService*
-NetworkTimeServiceFactory::BuildServiceInstanceFor(
+KeyedService* NetworkTimeServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   return new NetworkTimeService(static_cast<Profile*>(context));
 }

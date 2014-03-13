@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_DOM_DISTILLER_DOM_DISTILLER_SERVICE_FACTORY_H_
 
 #include "base/memory/singleton.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
 #include "components/dom_distiller/core/dom_distiller_service.h"
+#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
 namespace content {
 class BrowserContext;
@@ -16,8 +16,8 @@ class BrowserContext;
 namespace dom_distiller {
 
 // A simple wrapper for DomDistillerService to expose it as a
-// BrowserContextKeyedService.
-class DomDistillerContextKeyedService : public BrowserContextKeyedService,
+// KeyedService.
+class DomDistillerContextKeyedService : public KeyedService,
                                         public DomDistillerService {
  public:
   DomDistillerContextKeyedService(
@@ -41,7 +41,7 @@ class DomDistillerServiceFactory : public BrowserContextKeyedServiceFactory {
   DomDistillerServiceFactory();
   virtual ~DomDistillerServiceFactory();
 
-  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
+  virtual KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const OVERRIDE;
 
   virtual content::BrowserContext* GetBrowserContextToUse(

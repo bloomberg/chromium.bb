@@ -12,7 +12,7 @@
 #include "chrome/browser/webdata/web_data_service_factory.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 namespace autofill {
 namespace {
@@ -82,7 +82,7 @@ PersonalDataManagerFactory::PersonalDataManagerFactory()
 PersonalDataManagerFactory::~PersonalDataManagerFactory() {
 }
 
-BrowserContextKeyedService* PersonalDataManagerFactory::BuildServiceInstanceFor(
+KeyedService* PersonalDataManagerFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   PersonalDataManagerService* service =
       new PersonalDataManagerServiceImpl(static_cast<Profile*>(profile));

@@ -6,11 +6,11 @@
 
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/common/url_constants.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 #include "components/dom_distiller/content/distiller_page_web_contents.h"
 #include "components/dom_distiller/content/dom_distiller_viewer_source.h"
 #include "components/dom_distiller/core/distiller.h"
 #include "components/dom_distiller/core/dom_distiller_store.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/url_data_source.h"
@@ -42,7 +42,7 @@ DomDistillerServiceFactory::DomDistillerServiceFactory()
 
 DomDistillerServiceFactory::~DomDistillerServiceFactory() {}
 
-BrowserContextKeyedService* DomDistillerServiceFactory::BuildServiceInstanceFor(
+KeyedService* DomDistillerServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   scoped_refptr<base::SequencedTaskRunner> background_task_runner =
       content::BrowserThread::GetBlockingPool()->GetSequencedTaskRunner(

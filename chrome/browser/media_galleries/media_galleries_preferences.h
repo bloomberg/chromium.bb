@@ -16,7 +16,7 @@
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "components/storage_monitor/removable_storage_observer.h"
 
 class Profile;
@@ -133,7 +133,7 @@ typedef std::set<MediaGalleryPrefId> MediaGalleryPrefIdSet;
 // A class to manage the media gallery preferences.  There is one instance per
 // user profile.
 class MediaGalleriesPreferences
-    : public BrowserContextKeyedService,
+    : public KeyedService,
       public storage_monitor::RemovableStorageObserver {
  public:
   class GalleryChangeObserver {
@@ -255,7 +255,7 @@ class MediaGalleriesPreferences
   base::Time GetLastScanCompletionTime() const;
   void SetLastScanCompletionTime(const base::Time& time);
 
-  // BrowserContextKeyedService implementation:
+  // KeyedService implementation:
   virtual void Shutdown() OVERRIDE;
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);

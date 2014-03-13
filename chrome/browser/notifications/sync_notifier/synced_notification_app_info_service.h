@@ -12,7 +12,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/notifications/sync_notifier/synced_notification_app_info.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "sync/api/syncable_service.h"
 
 class NotificationUIManager;
@@ -28,12 +28,12 @@ namespace notifier {
 // from the server with metadata about the services sending synced
 // notifications.
 class SyncedNotificationAppInfoService : public syncer::SyncableService,
-                                         public BrowserContextKeyedService {
+                                         public KeyedService {
  public:
   explicit SyncedNotificationAppInfoService(Profile* profile);
   virtual ~SyncedNotificationAppInfoService();
 
-  // Methods from BrowserContextKeyedService.
+  // Methods from KeyedService.
   virtual void Shutdown() OVERRIDE;
 
   // syncer::SyncableService implementation.

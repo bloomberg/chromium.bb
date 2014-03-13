@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_MEDIA_CHROME_MIDI_PERMISSION_CONTEXT_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/browser_context.h"
 
 namespace content {
@@ -19,12 +19,12 @@ class PermissionRequestID;
 class Profile;
 
 // This class manages MIDI permissions flow. Used on the UI thread.
-class ChromeMidiPermissionContext : public BrowserContextKeyedService {
+class ChromeMidiPermissionContext : public KeyedService {
  public:
   explicit ChromeMidiPermissionContext(Profile* profile);
   virtual ~ChromeMidiPermissionContext();
 
-  // BrowserContextKeyedService methods:
+  // KeyedService methods:
   virtual void Shutdown() OVERRIDE;
 
   // Request to ask users permission about MIDI.

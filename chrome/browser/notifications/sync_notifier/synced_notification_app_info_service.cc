@@ -24,7 +24,7 @@ SyncedNotificationAppInfoService::SyncedNotificationAppInfoService(
 
 SyncedNotificationAppInfoService::~SyncedNotificationAppInfoService() {}
 
-// Methods from BrowserContextKeyedService.
+// Methods from KeyedService.
 void SyncedNotificationAppInfoService::Shutdown() {}
 
 // syncer::SyncableService implementation.

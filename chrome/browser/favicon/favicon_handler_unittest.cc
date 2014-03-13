@@ -1068,13 +1068,11 @@ TEST_F(FaviconHandlerTest, MultipleFavicons) {
 
 #endif
 
-static BrowserContextKeyedService* BuildFaviconService(
-    content::BrowserContext* profile) {
+static KeyedService* BuildFaviconService(content::BrowserContext* profile) {
   return new FaviconService(static_cast<Profile*>(profile));
 }
 
-static BrowserContextKeyedService* BuildHistoryService(
-    content::BrowserContext* profile) {
+static KeyedService* BuildHistoryService(content::BrowserContext* profile) {
   return NULL;
 }
 

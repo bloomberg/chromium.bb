@@ -11,7 +11,7 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/chrome_switches.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 namespace {
 // Returns true if the user is signed in and full history sync is enabled,
@@ -45,7 +45,7 @@ history::WebHistoryService* WebHistoryServiceFactory::GetForProfile(
   return NULL;
 }
 
-BrowserContextKeyedService* WebHistoryServiceFactory::BuildServiceInstanceFor(
+KeyedService* WebHistoryServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = static_cast<Profile*>(context);
 

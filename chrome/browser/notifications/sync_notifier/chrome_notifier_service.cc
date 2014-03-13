@@ -120,7 +120,7 @@ ChromeNotifierService::ChromeNotifierService(Profile* profile,
 
 ChromeNotifierService::~ChromeNotifierService() {}
 
-// Methods from BrowserContextKeyedService.
+// Methods from KeyedService.
 void ChromeNotifierService::Shutdown() {}
 
 // syncer::SyncableService implementation.

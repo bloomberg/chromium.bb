@@ -4,7 +4,7 @@
 
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/invalidation/invalidation_service.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 
 #ifndef CHROME_BROWSER_INVALIDATION_P2P_INVALIDATION_SERVICE_H_
 #define CHROME_BROWSER_INVALIDATION_P2P_INVALIDATION_SERVICE_H_
@@ -29,7 +29,7 @@ class P2PInvalidationService
   explicit P2PInvalidationService(Profile* profile);
   virtual ~P2PInvalidationService();
 
-  // Overrides BrowserContextKeyedService method.
+  // Overrides KeyedService method.
   virtual void Shutdown() OVERRIDE;
 
   // InvalidationService implementation.

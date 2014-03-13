@@ -9,7 +9,7 @@
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/drive/drive_notification_observer.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "sync/notifier/invalidation_handler.h"
 
 class ProfileSyncService;
@@ -24,15 +24,14 @@ namespace drive {
 // Conditions under which updates should be searched:
 // 1. XMPP invalidation is received from Google Drive.
 // 2. Polling timer counts down.
-class DriveNotificationManager
-    : public BrowserContextKeyedService,
-      public syncer::InvalidationHandler {
+class DriveNotificationManager : public KeyedService,
+                                 public syncer::InvalidationHandler {
  public:
   explicit DriveNotificationManager(
       invalidation::InvalidationService* invalidation_service);
   virtual ~DriveNotificationManager();
 
-  // BrowserContextKeyedService override.
+  // KeyedService override.
   virtual void Shutdown() OVERRIDE;
 
   // syncer::InvalidationHandler implementation.

@@ -9,7 +9,7 @@
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "extensions/browser/extension_system_provider.h"
 #include "extensions/browser/extensions_browser_client.h"
 
@@ -26,7 +26,7 @@ AutocompleteClassifierFactory* AutocompleteClassifierFactory::GetInstance() {
 }
 
 // static
-BrowserContextKeyedService* AutocompleteClassifierFactory::BuildInstanceFor(
+KeyedService* AutocompleteClassifierFactory::BuildInstanceFor(
     content::BrowserContext* profile) {
   return new AutocompleteClassifier(static_cast<Profile*>(profile));
 }
@@ -55,8 +55,7 @@ bool AutocompleteClassifierFactory::ServiceIsNULLWhileTesting() const {
   return true;
 }
 
-BrowserContextKeyedService*
-AutocompleteClassifierFactory::BuildServiceInstanceFor(
+KeyedService* AutocompleteClassifierFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   return BuildInstanceFor(static_cast<Profile*>(profile));
 }

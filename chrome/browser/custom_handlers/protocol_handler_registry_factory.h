@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
+#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
 class Profile;
 class ProtocolHandlerRegistry;
@@ -40,7 +40,7 @@ class ProtocolHandlerRegistryFactory
   virtual ~ProtocolHandlerRegistryFactory();
 
   // BrowserContextKeyedServiceFactory implementation.
-  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
+  virtual KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(ProtocolHandlerRegistryFactory);

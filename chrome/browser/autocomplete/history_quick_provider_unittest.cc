@@ -117,7 +117,7 @@ class HistoryQuickProviderTest : public testing::Test,
     std::set<std::string> matches_;
   };
 
-  static BrowserContextKeyedService* CreateTemplateURLService(
+  static KeyedService* CreateTemplateURLService(
       content::BrowserContext* profile) {
     return new TemplateURLService(static_cast<Profile*>(profile));
   }

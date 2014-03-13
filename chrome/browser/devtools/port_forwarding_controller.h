@@ -8,12 +8,12 @@
 #include <map>
 
 #include "chrome/browser/devtools/devtools_adb_bridge.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
+#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
+#include "components/keyed_service/core/keyed_service.h"
 
 class PrefService;
 
-class PortForwardingController : public BrowserContextKeyedService {
+class PortForwardingController : public KeyedService {
  public:
   explicit PortForwardingController(PrefService* pref_service);
 
@@ -34,7 +34,7 @@ class PortForwardingController : public BrowserContextKeyedService {
     virtual ~Factory();
 
     // BrowserContextKeyedServiceFactory overrides:
-    virtual BrowserContextKeyedService* BuildServiceInstanceFor(
+    virtual KeyedService* BuildServiceInstanceFor(
         content::BrowserContext* context) const OVERRIDE;
     DISALLOW_COPY_AND_ASSIGN(Factory);
   };

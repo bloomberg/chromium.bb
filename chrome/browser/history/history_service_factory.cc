@@ -10,7 +10,7 @@
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/common/pref_names.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 // static
 HistoryService* HistoryServiceFactory::GetForProfile(
@@ -64,8 +64,7 @@ HistoryServiceFactory::HistoryServiceFactory()
 HistoryServiceFactory::~HistoryServiceFactory() {
 }
 
-BrowserContextKeyedService*
-HistoryServiceFactory::BuildServiceInstanceFor(
+KeyedService* HistoryServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = static_cast<Profile*>(context);
   HistoryService* history_service = new HistoryService(profile);

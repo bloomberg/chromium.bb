@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/singleton.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
+#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
 namespace user_prefs {
 class PrefRegistrySyncable;
@@ -47,7 +47,7 @@ class InvalidationServiceFactory : public BrowserContextKeyedServiceFactory {
   virtual ~InvalidationServiceFactory();
 
   // BrowserContextKeyedServiceFactory:
-  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
+  virtual KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const OVERRIDE;
   virtual void RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable* registry) OVERRIDE;

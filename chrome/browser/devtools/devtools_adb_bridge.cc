@@ -29,7 +29,7 @@
 #include "chrome/browser/devtools/devtools_target_impl.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_client_host.h"
 #include "content/public/browser/devtools_external_agent_proxy.h"
@@ -718,8 +718,7 @@ DevToolsAdbBridge::Factory::Factory()
 
 DevToolsAdbBridge::Factory::~Factory() {}
 
-BrowserContextKeyedService*
-DevToolsAdbBridge::Factory::BuildServiceInstanceFor(
+KeyedService* DevToolsAdbBridge::Factory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   return new DevToolsAdbBridge::Wrapper();
 }

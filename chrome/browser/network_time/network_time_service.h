@@ -7,7 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 
 class NetworkTimeTracker;
 class Profile;
@@ -17,7 +17,7 @@ class PrefRegistrySyncable;
 }
 
 // NetworkTimeService can convert local time to network time.
-class NetworkTimeService : public BrowserContextKeyedService {
+class NetworkTimeService : public KeyedService {
  public:
   explicit NetworkTimeService(Profile* profile);
   virtual ~NetworkTimeService();

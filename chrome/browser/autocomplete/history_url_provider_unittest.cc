@@ -163,7 +163,7 @@ class HistoryURLProviderTest : public testing::Test,
   virtual void OnProviderUpdate(bool updated_matches) OVERRIDE;
 
  protected:
-  static BrowserContextKeyedService* CreateTemplateURLService(
+  static KeyedService* CreateTemplateURLService(
       content::BrowserContext* profile) {
     return new TemplateURLService(static_cast<Profile*>(profile));
   }

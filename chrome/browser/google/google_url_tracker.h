@@ -14,7 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/google/google_url_tracker_map_entry.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "net/base/network_change_notifier.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -44,7 +44,7 @@ class NavigationController;
 // RequestServerCheck().
 class GoogleURLTracker : public net::URLFetcherDelegate,
                          public net::NetworkChangeNotifier::IPAddressObserver,
-                         public BrowserContextKeyedService {
+                         public KeyedService {
  public:
   // The contents of the Details for a NOTIFICATION_GOOGLE_URL_UPDATED.
   typedef std::pair<GURL, GURL> UpdatedDetails;
@@ -136,7 +136,7 @@ class GoogleURLTracker : public net::URLFetcherDelegate,
   // NetworkChangeNotifier::IPAddressObserver:
   virtual void OnIPAddressChanged() OVERRIDE;
 
-  // BrowserContextKeyedService:
+  // KeyedService:
   virtual void Shutdown() OVERRIDE;
 
   // Registers consumer interest in getting an updated URL from the server.

@@ -25,8 +25,7 @@ const char kReportFive[] = "five";
 const base::TimeDelta kRetryDelayForTest =
     base::TimeDelta::FromMilliseconds(100);
 
-BrowserContextKeyedService* CreateFeedbackUploaderService(
-    content::BrowserContext* context) {
+KeyedService* CreateFeedbackUploaderService(content::BrowserContext* context) {
   return new feedback::FeedbackUploader(Profile::FromBrowserContext(context));
 }
 

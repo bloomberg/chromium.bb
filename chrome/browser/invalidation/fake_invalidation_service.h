@@ -32,7 +32,7 @@ class FakeInvalidationService : public InvalidationService {
   FakeInvalidationService();
   virtual ~FakeInvalidationService();
 
-  static BrowserContextKeyedService* Build(content::BrowserContext* context);
+  static KeyedService* Build(content::BrowserContext* context);
 
   virtual void RegisterInvalidationHandler(
       syncer::InvalidationHandler* handler) OVERRIDE;

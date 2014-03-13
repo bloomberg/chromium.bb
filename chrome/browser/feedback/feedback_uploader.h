@@ -14,7 +14,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/feedback/feedback_uploader_delegate.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 
 namespace content {
 class BrowserContext;
@@ -27,7 +27,7 @@ class FeedbackReport;
 // FeedbackUploader is used to add a feedback report to the queue of reports
 // being uploaded. In case uploading a report fails, it is written to disk and
 // tried again when it's turn comes up next in the queue.
-class FeedbackUploader : public BrowserContextKeyedService,
+class FeedbackUploader : public KeyedService,
                          public base::SupportsWeakPtr<FeedbackUploader> {
  public:
   explicit FeedbackUploader(content::BrowserContext* context);

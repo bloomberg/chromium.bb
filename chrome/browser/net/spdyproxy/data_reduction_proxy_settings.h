@@ -78,7 +78,7 @@ COMPILE_ASSERT(kNumDaysInHistorySummary <= kNumDaysInHistory,
 // Central point for configuring the data reduction proxy.
 // This object lives on the UI thread and all of its methods are expected to
 // be called from there.
-// TODO(marq): Convert this to be a BrowserContextKeyedService with an
+// TODO(marq): Convert this to be a KeyedService with an
 // associated factory class, and refactor the Java call sites accordingly.
 class DataReductionProxySettings
     : public net::URLFetcherDelegate,

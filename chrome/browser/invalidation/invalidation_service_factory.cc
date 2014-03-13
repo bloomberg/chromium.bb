@@ -16,7 +16,7 @@
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/invalidation/invalidation_controller_android.h"
@@ -55,7 +55,7 @@ void InvalidationServiceFactory::RegisterTestingFactory(
   testing_factory_ = testing_factory;
 }
 
-BrowserContextKeyedService* InvalidationServiceFactory::BuildServiceInstanceFor(
+KeyedService* InvalidationServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = static_cast<Profile*>(context);
 

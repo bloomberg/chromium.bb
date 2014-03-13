@@ -6,7 +6,7 @@
 
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/sync_notifier/synced_notification_app_info_service.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 namespace notifier {
 
@@ -34,8 +34,7 @@ SyncedNotificationAppInfoServiceFactory::
 SyncedNotificationAppInfoServiceFactory::
     ~SyncedNotificationAppInfoServiceFactory() {}
 
-BrowserContextKeyedService*
-SyncedNotificationAppInfoServiceFactory::BuildServiceInstanceFor(
+KeyedService* SyncedNotificationAppInfoServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   SyncedNotificationAppInfoService* app_info_service =
       new SyncedNotificationAppInfoService(static_cast<Profile*>(profile));

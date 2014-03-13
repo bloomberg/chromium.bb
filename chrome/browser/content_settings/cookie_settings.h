@@ -14,8 +14,8 @@
 #include "base/synchronization/lock.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/common/content_settings.h"
-#include "components/browser_context_keyed_service/refcounted_browser_context_keyed_service.h"
-#include "components/browser_context_keyed_service/refcounted_browser_context_keyed_service_factory.h"
+#include "components/keyed_service/content/refcounted_browser_context_keyed_service.h"
+#include "components/keyed_service/content/refcounted_browser_context_keyed_service_factory.h"
 
 class ContentSettingsPattern;
 class CookieSettingsWrapper;

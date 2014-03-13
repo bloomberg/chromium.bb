@@ -13,7 +13,7 @@
 #include "chrome/browser/invalidation/invalidator_storage.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/signin_manager.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "net/base/backoff_entry.h"
 #include "sync/notifier/invalidation_handler.h"
@@ -82,7 +82,7 @@ class TiclInvalidationService : public base::NonThreadSafe,
       const syncer::ObjectIdInvalidationMap& invalidation_map) OVERRIDE;
   virtual std::string GetOwnerName() const OVERRIDE;
 
-  // Overrides BrowserContextKeyedService method.
+  // Overrides KeyedService method.
   virtual void Shutdown() OVERRIDE;
 
  protected:

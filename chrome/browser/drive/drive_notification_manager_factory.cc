@@ -9,7 +9,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 namespace drive {
 
@@ -40,8 +40,7 @@ DriveNotificationManagerFactory::DriveNotificationManagerFactory()
 
 DriveNotificationManagerFactory::~DriveNotificationManagerFactory() {}
 
-BrowserContextKeyedService*
-DriveNotificationManagerFactory::BuildServiceInstanceFor(
+KeyedService* DriveNotificationManagerFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   return new DriveNotificationManager(
       invalidation::InvalidationServiceFactory::GetForProfile(
