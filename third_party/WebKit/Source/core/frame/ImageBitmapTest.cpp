@@ -40,6 +40,7 @@
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/canvas/CanvasRenderingContext2D.h"
+#include "heap/Handle.h"
 #include "platform/graphics/BitmapImage.h"
 #include "platform/graphics/skia/NativeImageSkia.h"
 #include "platform/network/ResourceRequest.h"
@@ -69,6 +70,11 @@ protected:
     }
     virtual void TearDown()
     {
+        // Garbage collection is required prior to switching out the
+        // test's memory cache; image resources are released, evicting
+        // them from the cache.
+        Heap::collectGarbage(ThreadState::NoHeapPointersOnStack, Heap::ForcedForTesting);
+
         // Regain the ownership of testing memory cache, so that it will be
         // destroyed.
         m_testingMemoryCache = adoptPtr(memoryCache());
@@ -88,10 +94,10 @@ TEST_F(ImageBitmapTest, ImageResourceConsistency)
     RefPtr<HTMLImageElement> imageElement = HTMLImageElement::create(*Document::create().get());
     imageElement->setImageResource(new ImageResource(BitmapImage::create(NativeImageSkia::create(m_bitmap)).get()));
 
-    RefPtr<ImageBitmap> imageBitmapNoCrop = ImageBitmap::create(imageElement.get(), IntRect(0, 0, m_bitmap.width(), m_bitmap.height()));
-    RefPtr<ImageBitmap> imageBitmapInteriorCrop = ImageBitmap::create(imageElement.get(), IntRect(m_bitmap.width() / 2, m_bitmap.height() / 2, m_bitmap.width() / 2, m_bitmap.height() / 2));
-    RefPtr<ImageBitmap> imageBitmapExteriorCrop = ImageBitmap::create(imageElement.get(), IntRect(-m_bitmap.width() / 2, -m_bitmap.height() / 2, m_bitmap.width(), m_bitmap.height()));
-    RefPtr<ImageBitmap> imageBitmapOutsideCrop = ImageBitmap::create(imageElement.get(), IntRect(-m_bitmap.width(), -m_bitmap.height(), m_bitmap.width(), m_bitmap.height()));
+    RefPtrWillBeRawPtr<ImageBitmap> imageBitmapNoCrop = ImageBitmap::create(imageElement.get(), IntRect(0, 0, m_bitmap.width(), m_bitmap.height()));
+    RefPtrWillBeRawPtr<ImageBitmap> imageBitmapInteriorCrop = ImageBitmap::create(imageElement.get(), IntRect(m_bitmap.width() / 2, m_bitmap.height() / 2, m_bitmap.width() / 2, m_bitmap.height() / 2));
+    RefPtrWillBeRawPtr<ImageBitmap> imageBitmapExteriorCrop = ImageBitmap::create(imageElement.get(), IntRect(-m_bitmap.width() / 2, -m_bitmap.height() / 2, m_bitmap.width(), m_bitmap.height()));
+    RefPtrWillBeRawPtr<ImageBitmap> imageBitmapOutsideCrop = ImageBitmap::create(imageElement.get(), IntRect(-m_bitmap.width(), -m_bitmap.height(), m_bitmap.width(), m_bitmap.height()));
 
     ASSERT_EQ(imageBitmapNoCrop->bitmapImage().get(), imageElement->cachedImage()->image());
     ASSERT_EQ(imageBitmapInteriorCrop->bitmapImage().get(), imageElement->cachedImage()->image());
@@ -142,12 +148,12 @@ TEST_F(ImageBitmapTest, ImageBitmapLiveResourcePriority)
     ASSERT_EQ(imageExteriorCrop->cachedImage()->cacheLiveResourcePriority(), Resource::CacheLiveResourcePriorityLow);
     ASSERT_EQ(imageOutsideCrop->cachedImage()->cacheLiveResourcePriority(), Resource::CacheLiveResourcePriorityLow);
 
-    RefPtr<ImageBitmap> imageBitmapInteriorCrop = ImageBitmap::create(imageInteriorCrop.get(), IntRect(m_bitmap.width() / 2, m_bitmap.height() / 2, m_bitmap.width(), m_bitmap.height()));
+    RefPtrWillBeRawPtr<ImageBitmap> imageBitmapInteriorCrop = ImageBitmap::create(imageInteriorCrop.get(), IntRect(m_bitmap.width() / 2, m_bitmap.height() / 2, m_bitmap.width(), m_bitmap.height()));
     {
-        RefPtr<ImageBitmap> imageBitmapNoCrop = ImageBitmap::create(imageNoCrop.get(), IntRect(0, 0, m_bitmap.width(), m_bitmap.height()));
-        RefPtr<ImageBitmap> imageBitmapInteriorCrop2 = ImageBitmap::create(imageInteriorCrop.get(), IntRect(m_bitmap.width() / 2, m_bitmap.height() / 2, m_bitmap.width(), m_bitmap.height()));
-        RefPtr<ImageBitmap> imageBitmapExteriorCrop = ImageBitmap::create(imageExteriorCrop.get(), IntRect(-m_bitmap.width() / 2, -m_bitmap.height() / 2, m_bitmap.width(), m_bitmap.height()));
-        RefPtr<ImageBitmap> imageBitmapOutsideCrop = ImageBitmap::create(imageOutsideCrop.get(), IntRect(-m_bitmap.width(), -m_bitmap.height(), m_bitmap.width(), m_bitmap.height()));
+        RefPtrWillBeRawPtr<ImageBitmap> imageBitmapNoCrop = ImageBitmap::create(imageNoCrop.get(), IntRect(0, 0, m_bitmap.width(), m_bitmap.height()));
+        RefPtrWillBeRawPtr<ImageBitmap> imageBitmapInteriorCrop2 = ImageBitmap::create(imageInteriorCrop.get(), IntRect(m_bitmap.width() / 2, m_bitmap.height() / 2, m_bitmap.width(), m_bitmap.height()));
+        RefPtrWillBeRawPtr<ImageBitmap> imageBitmapExteriorCrop = ImageBitmap::create(imageExteriorCrop.get(), IntRect(-m_bitmap.width() / 2, -m_bitmap.height() / 2, m_bitmap.width(), m_bitmap.height()));
+        RefPtrWillBeRawPtr<ImageBitmap> imageBitmapOutsideCrop = ImageBitmap::create(imageOutsideCrop.get(), IntRect(-m_bitmap.width(), -m_bitmap.height(), m_bitmap.width(), m_bitmap.height()));
 
         // Images that are referenced by ImageBitmaps have CacheLiveResourcePriorityHigh.
         ASSERT_EQ(imageNoCrop->cachedImage()->cacheLiveResourcePriority(), Resource::CacheLiveResourcePriorityHigh);
@@ -156,6 +162,15 @@ TEST_F(ImageBitmapTest, ImageBitmapLiveResourcePriority)
 
         // ImageBitmaps that do not contain any of the source image do not elevate CacheLiveResourcePriority.
         ASSERT_EQ(imageOutsideCrop->cachedImage()->cacheLiveResourcePriority(), Resource::CacheLiveResourcePriorityLow);
+
+        // Stub out references to the ImageBitmaps created and force a
+        // garbage collection to have the ImageBitmaps be collected and
+        // destructed.
+        imageBitmapNoCrop = nullptr;
+        imageBitmapInteriorCrop2 = nullptr;
+        imageBitmapExteriorCrop = nullptr;
+        imageBitmapOutsideCrop = nullptr;
+        Heap::collectGarbage(ThreadState::HeapPointersOnStack, Heap::ForcedForTesting);
     }
 
     // CacheLiveResourcePriroity should return to CacheLiveResourcePriorityLow when no ImageBitmaps reference the image.
@@ -165,6 +180,7 @@ TEST_F(ImageBitmapTest, ImageBitmapLiveResourcePriority)
 
     // There is still an ImageBitmap that references this image.
     ASSERT_EQ(imageInteriorCrop->cachedImage()->cacheLiveResourcePriority(), Resource::CacheLiveResourcePriorityHigh);
+    imageBitmapInteriorCrop = nullptr;
 }
 
 // Verifies that ImageBitmaps constructed from HTMLImageElements hold a reference to the original Image if the HTMLImageElement src is changed.
@@ -174,7 +190,7 @@ TEST_F(ImageBitmapTest, ImageBitmapSourceChanged)
     ResourcePtr<ImageResource> originalImageResource = new ImageResource(BitmapImage::create(NativeImageSkia::create(m_bitmap)).get());
     image->setImageResource(originalImageResource.get());
 
-    RefPtr<ImageBitmap> imageBitmap = ImageBitmap::create(image.get(), IntRect(0, 0, m_bitmap.width(), m_bitmap.height()));
+    RefPtrWillBeRawPtr<ImageBitmap> imageBitmap = ImageBitmap::create(image.get(), IntRect(0, 0, m_bitmap.width(), m_bitmap.height()));
     ASSERT_EQ(imageBitmap->bitmapImage().get(), originalImageResource->image());
 
     ResourcePtr<ImageResource> newImageResource = new ImageResource(BitmapImage::create(NativeImageSkia::create(m_bitmap2)).get());
@@ -196,9 +212,9 @@ TEST_F(ImageBitmapTest, ImageResourceLifetime)
     RefPtr<HTMLCanvasElement> canvasElement = HTMLCanvasElement::create(*Document::create().get());
     canvasElement->setHeight(40);
     canvasElement->setWidth(40);
-    RefPtr<ImageBitmap> imageBitmapDerived;
+    RefPtrWillBeRawPtr<ImageBitmap> imageBitmapDerived;
     {
-        RefPtr<ImageBitmap> imageBitmapFromCanvas = ImageBitmap::create(canvasElement.get(), IntRect(0, 0, canvasElement->width(), canvasElement->height()));
+        RefPtrWillBeRawPtr<ImageBitmap> imageBitmapFromCanvas = ImageBitmap::create(canvasElement.get(), IntRect(0, 0, canvasElement->width(), canvasElement->height()));
         imageBitmapDerived = ImageBitmap::create(imageBitmapFromCanvas.get(), IntRect(0, 0, 20, 20));
     }
     CanvasRenderingContext* context = canvasElement->getContext("2d");

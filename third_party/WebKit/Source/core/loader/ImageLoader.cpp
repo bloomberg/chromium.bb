@@ -457,8 +457,8 @@ void ImageLoader::elementDidMoveToNewDocument()
 
 void ImageLoader::sourceImageChanged()
 {
-    HashSet<ImageLoaderClient*>::iterator end = m_clients.end();
-    for (HashSet<ImageLoaderClient*>::iterator it = m_clients.begin(); it != end; ++it) {
+    ImageLoaderClientSet::iterator end = m_clients.end();
+    for (ImageLoaderClientSet::iterator it = m_clients.begin(); it != end; ++it) {
         ImageLoaderClient* handle = *it;
         handle->notifyImageSourceChanged();
     }

@@ -8,6 +8,7 @@
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/canvas/CanvasImageSource.h"
+#include "heap/Handle.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/Image.h"
 #include "wtf/PassRefPtr.h"
@@ -19,15 +20,15 @@ class HTMLCanvasElement;
 class HTMLVideoElement;
 class ImageData;
 
-class ImageBitmap FINAL : public RefCounted<ImageBitmap>, public ScriptWrappable, public ImageLoaderClient, public CanvasImageSource {
-
+class ImageBitmap FINAL : public RefCountedWillBeGarbageCollectedFinalized<ImageBitmap>, public ScriptWrappable, public ImageLoaderClient, public CanvasImageSource {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ImageBitmap);
 public:
-    static PassRefPtr<ImageBitmap> create(HTMLImageElement*, const IntRect&);
-    static PassRefPtr<ImageBitmap> create(HTMLVideoElement*, const IntRect&);
-    static PassRefPtr<ImageBitmap> create(HTMLCanvasElement*, const IntRect&);
-    static PassRefPtr<ImageBitmap> create(ImageData*, const IntRect&);
-    static PassRefPtr<ImageBitmap> create(ImageBitmap*, const IntRect&);
-    static PassRefPtr<ImageBitmap> create(Image*, const IntRect&);
+    static PassRefPtrWillBeRawPtr<ImageBitmap> create(HTMLImageElement*, const IntRect&);
+    static PassRefPtrWillBeRawPtr<ImageBitmap> create(HTMLVideoElement*, const IntRect&);
+    static PassRefPtrWillBeRawPtr<ImageBitmap> create(HTMLCanvasElement*, const IntRect&);
+    static PassRefPtrWillBeRawPtr<ImageBitmap> create(ImageData*, const IntRect&);
+    static PassRefPtrWillBeRawPtr<ImageBitmap> create(ImageBitmap*, const IntRect&);
+    static PassRefPtrWillBeRawPtr<ImageBitmap> create(Image*, const IntRect&);
 
     PassRefPtr<Image> bitmapImage() const;
     PassRefPtr<HTMLImageElement> imageElement() const { return m_imageElement; }
@@ -45,6 +46,8 @@ public:
     virtual bool wouldTaintOrigin(SecurityOrigin*) const OVERRIDE { return false; };
     virtual void adjustDrawRects(FloatRect* srcRect, FloatRect* dstRect) const OVERRIDE;
     virtual FloatSize sourceSize() const OVERRIDE;
+
+    virtual void trace(Visitor*);
 
 private:
     ImageBitmap(HTMLImageElement*, const IntRect&);

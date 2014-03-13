@@ -63,7 +63,7 @@ static IntSize sizeFor(HTMLVideoElement* video)
     return IntSize();
 }
 
-static ScriptPromise fulfillImageBitmap(ExecutionContext* context, PassRefPtr<ImageBitmap> imageBitmap)
+static ScriptPromise fulfillImageBitmap(ExecutionContext* context, PassRefPtrWillBeRawPtr<ImageBitmap> imageBitmap)
 {
     ScriptPromise promise = ScriptPromise::createPending(context);
     RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(promise, context);
@@ -342,7 +342,7 @@ void ImageBitmapFactories::ImageBitmapLoader::didFinishLoading()
         m_cropRect = IntRect(IntPoint(), image->size());
     }
 
-    RefPtr<ImageBitmap> imageBitmap = ImageBitmap::create(image.get(), m_cropRect);
+    RefPtrWillBeRawPtr<ImageBitmap> imageBitmap = ImageBitmap::create(image.get(), m_cropRect);
     ScriptScope scope(m_scriptState);
     m_resolver->resolve(imageBitmap.release());
     m_factory->didFinishLoading(this);

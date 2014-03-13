@@ -26,17 +26,20 @@
 #include "core/fetch/ImageResource.h"
 #include "core/fetch/ImageResourceClient.h"
 #include "core/fetch/ResourcePtr.h"
+#include "heap/Handle.h"
 #include "wtf/HashSet.h"
 #include "wtf/text/AtomicString.h"
 
 namespace WebCore {
 
-class ImageLoaderClient {
+class ImageLoaderClient : public WillBeGarbageCollectedMixin {
 public:
     virtual void notifyImageSourceChanged() = 0;
 
     // Determines whether the observed ImageResource should have higher priority in the decoded resources cache.
     virtual bool requestsHighLiveResourceCachePriority() { return false; }
+
+    virtual void trace(Visitor*) = 0;
 
 protected:
     ImageLoaderClient() { }
@@ -106,9 +109,11 @@ private:
 
     void timerFired(Timer<ImageLoader>*);
 
+    typedef WillBePersistentHeapHashSet<RawPtrWillBeWeakMember<ImageLoaderClient> > ImageLoaderClientSet;
+
     Element* m_element;
     ResourcePtr<ImageResource> m_image;
-    HashSet<ImageLoaderClient*> m_clients;
+    ImageLoaderClientSet m_clients;
     Timer<ImageLoader> m_derefElementTimer;
     AtomicString m_failedLoadURL;
     bool m_hasPendingBeforeLoadEvent : 1;
