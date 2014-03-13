@@ -2751,6 +2751,10 @@ void RenderWidget::setTouchAction(
    COMPILE_ASSERT(static_cast<blink::WebTouchAction>(TOUCH_ACTION_PAN_Y) ==
                       blink::WebTouchActionPanY,
                   enum_values_must_match_for_touch_action);
+   COMPILE_ASSERT(
+       static_cast<blink::WebTouchAction>(TOUCH_ACTION_PINCH_ZOOM) ==
+           blink::WebTouchActionPinchZoom,
+       enum_values_must_match_for_touch_action);
 
    content::TouchAction content_touch_action =
        static_cast<content::TouchAction>(web_touch_action);

@@ -61,10 +61,13 @@ bool TouchActionFilter::FilterGestureEvent(WebGestureEvent* gesture_event) {
 
     case WebInputEvent::GesturePinchBegin:
       DCHECK(!drop_pinch_gesture_events_);
-      if (allowed_touch_action_ == TOUCH_ACTION_AUTO) {
+      if (allowed_touch_action_ == TOUCH_ACTION_AUTO ||
+          allowed_touch_action_ & TOUCH_ACTION_PINCH_ZOOM) {
         // Pinch events are always bracketed by scroll events, and the W3C
         // standard touch-action provides no way to disable scrolling without
-        // also disabling pinching.
+        // also disabling pinching (validated by the IPC ENUM traits).
+        DCHECK(allowed_touch_action_ == TOUCH_ACTION_AUTO ||
+            allowed_touch_action_ == TOUCH_ACTION_MANIPULATION);
         DCHECK(!drop_scroll_gesture_events_);
       } else {
         drop_pinch_gesture_events_ = true;

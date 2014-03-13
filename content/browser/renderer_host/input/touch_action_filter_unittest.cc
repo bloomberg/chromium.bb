@@ -415,6 +415,15 @@ TEST(TouchActionFilterTest, Pinch) {
   EXPECT_TRUE(filter.FilterGestureEvent(&pinch_end));
   EXPECT_FALSE(filter.FilterGestureEvent(&scroll_end));
 
+  // Pinch is allowed with touch-action: manipulation.
+  filter.ResetTouchAction();
+  filter.OnSetTouchAction(TOUCH_ACTION_MANIPULATION);
+  EXPECT_FALSE(filter.FilterGestureEvent(&scroll_begin));
+  EXPECT_FALSE(filter.FilterGestureEvent(&pinch_begin));
+  EXPECT_FALSE(filter.FilterGestureEvent(&pinch_update));
+  EXPECT_FALSE(filter.FilterGestureEvent(&pinch_end));
+  EXPECT_FALSE(filter.FilterGestureEvent(&scroll_end));
+
   // Pinch state is automatically reset at the end of a scroll.
   filter.ResetTouchAction();
   EXPECT_FALSE(filter.FilterGestureEvent(&scroll_begin));
@@ -504,7 +513,7 @@ TEST(TouchActionFilterTest, DoubleTap) {
 
   // Double tap is disabled with any touch action other than auto.
   filter.ResetTouchAction();
-  filter.OnSetTouchAction(TOUCH_ACTION_NONE);
+  filter.OnSetTouchAction(TOUCH_ACTION_MANIPULATION);
   EXPECT_FALSE(filter.FilterGestureEvent(&tap_down));
   EXPECT_FALSE(filter.FilterGestureEvent(&unconfirmed_tap));
   EXPECT_EQ(WebInputEvent::GestureTap, unconfirmed_tap.type);
