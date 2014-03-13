@@ -48,6 +48,7 @@
       ],
       'sources': [
         'gurl_unittest.cc',
+        'origin_unittest.cc',
         'url_canon_unittest.cc',
         'url_parse_unittest.cc',
         'url_test_utils.h',

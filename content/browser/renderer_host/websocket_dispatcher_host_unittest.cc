@@ -15,6 +15,7 @@
 #include "ipc/ipc_message.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace content {
 namespace {
@@ -87,7 +88,7 @@ TEST_F(WebSocketDispatcherHostTest, AddChannelRequest) {
   GURL socket_url("ws://example.com/test");
   std::vector<std::string> requested_protocols;
   requested_protocols.push_back("hello");
-  GURL origin("http://example.com/test");
+  url::Origin origin("http://example.com/test");
   WebSocketHostMsg_AddChannelRequest message(
       routing_id, socket_url, requested_protocols, origin);
 
@@ -122,7 +123,7 @@ TEST_F(WebSocketDispatcherHostTest, SendFrame) {
   GURL socket_url("ws://example.com/test");
   std::vector<std::string> requested_protocols;
   requested_protocols.push_back("hello");
-  GURL origin("http://example.com/test");
+  url::Origin origin("http://example.com/test");
   WebSocketHostMsg_AddChannelRequest add_channel_message(
       routing_id, socket_url, requested_protocols, origin);
 

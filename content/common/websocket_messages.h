@@ -21,6 +21,7 @@
 #include "content/common/websocket.h"
 #include "ipc/ipc_message_macros.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
@@ -60,7 +61,7 @@ IPC_STRUCT_TRAITS_END()
 IPC_MESSAGE_ROUTED3(WebSocketHostMsg_AddChannelRequest,
                     GURL /* socket_url */,
                     std::vector<std::string> /* requested_protocols */,
-                    GURL /* origin */)
+                    url::Origin /* origin */)
 
 // WebSocket messages sent from the browser to the renderer.
 

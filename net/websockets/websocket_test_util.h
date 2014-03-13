@@ -14,6 +14,10 @@
 
 class GURL;
 
+namespace url {
+class Origin;
+}  // namespace url
+
 namespace net {
 
 class BoundNetLog;
@@ -38,7 +42,7 @@ NET_EXPORT_PRIVATE extern scoped_ptr<WebSocketStreamRequest>
     CreateAndConnectStreamForTesting(
         const GURL& socket_url,
         scoped_ptr<WebSocketHandshakeStreamCreateHelper> create_helper,
-        const GURL& origin,
+        const url::Origin& origin,
         URLRequestContext* url_request_context,
         const BoundNetLog& net_log,
         scoped_ptr<WebSocketStream::ConnectDelegate> connect_delegate);

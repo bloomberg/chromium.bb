@@ -17,6 +17,7 @@
 #include "net/websockets/websocket_frame.h"  // for WebSocketFrameHeader::OpCode
 #include "net/websockets/websocket_handshake_request_info.h"
 #include "net/websockets/websocket_handshake_response_info.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -240,14 +241,15 @@ bool WebSocketHost::OnMessageReceived(const IPC::Message& message,
 void WebSocketHost::OnAddChannelRequest(
     const GURL& socket_url,
     const std::vector<std::string>& requested_protocols,
-    const GURL& origin) {
+    const url::Origin& origin) {
   DVLOG(3) << "WebSocketHost::OnAddChannelRequest"
            << " routing_id=" << routing_id_ << " socket_url=\"" << socket_url
            << "\" requested_protocols=\""
-           << JoinString(requested_protocols, ", ") << "\" origin=\"" << origin
-           << "\"";
+           << JoinString(requested_protocols, ", ") << "\" origin=\""
+           << origin.string() << "\"";
 
-  channel_->SendAddChannelRequest(socket_url, requested_protocols, origin);
+  channel_->SendAddChannelRequest(
+      socket_url, requested_protocols, origin);
 }
 
 void WebSocketHost::OnSendFrame(bool fin,

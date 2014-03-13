@@ -16,6 +16,7 @@
 #include "net/websockets/websocket_handshake_stream_create_helper.h"
 #include "net/websockets/websocket_test_util.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace net {
 namespace {
@@ -146,7 +147,7 @@ void Delegate::OnReadCompleted(URLRequest* request, int bytes_read) {
 scoped_ptr<WebSocketStreamRequest> CreateAndConnectStreamWithCreateHelper(
     const GURL& socket_url,
     scoped_ptr<WebSocketHandshakeStreamCreateHelper> create_helper,
-    const GURL& origin,
+    const url::Origin& origin,
     URLRequestContext* url_request_context,
     const BoundNetLog& net_log,
     scoped_ptr<WebSocketStream::ConnectDelegate> connect_delegate) {
@@ -158,7 +159,7 @@ scoped_ptr<WebSocketStreamRequest> CreateAndConnectStreamWithCreateHelper(
   HttpRequestHeaders headers;
   headers.SetHeader(websockets::kUpgrade, websockets::kWebSocketLowercase);
   headers.SetHeader(HttpRequestHeaders::kConnection, websockets::kUpgrade);
-  headers.SetHeader(HttpRequestHeaders::kOrigin, origin.spec());
+  headers.SetHeader(HttpRequestHeaders::kOrigin, origin.string());
   headers.SetHeader(websockets::kSecWebSocketVersion,
                     websockets::kSupportedVersion);
   request->url_request()->SetExtraRequestHeaders(headers);
@@ -184,7 +185,7 @@ WebSocketStream::ConnectDelegate::~ConnectDelegate() {}
 scoped_ptr<WebSocketStreamRequest> WebSocketStream::CreateAndConnectStream(
     const GURL& socket_url,
     const std::vector<std::string>& requested_subprotocols,
-    const GURL& origin,
+    const url::Origin& origin,
     URLRequestContext* url_request_context,
     const BoundNetLog& net_log,
     scoped_ptr<ConnectDelegate> connect_delegate) {
@@ -201,12 +202,12 @@ scoped_ptr<WebSocketStreamRequest> WebSocketStream::CreateAndConnectStream(
 
 // This is declared in websocket_test_util.h.
 scoped_ptr<WebSocketStreamRequest> CreateAndConnectStreamForTesting(
-      const GURL& socket_url,
-      scoped_ptr<WebSocketHandshakeStreamCreateHelper> create_helper,
-      const GURL& origin,
-      URLRequestContext* url_request_context,
-      const BoundNetLog& net_log,
-      scoped_ptr<WebSocketStream::ConnectDelegate> connect_delegate) {
+    const GURL& socket_url,
+    scoped_ptr<WebSocketHandshakeStreamCreateHelper> create_helper,
+    const url::Origin& origin,
+    URLRequestContext* url_request_context,
+    const BoundNetLog& net_log,
+    scoped_ptr<WebSocketStream::ConnectDelegate> connect_delegate) {
   return CreateAndConnectStreamWithCreateHelper(socket_url,
                                                 create_helper.Pass(),
                                                 origin,

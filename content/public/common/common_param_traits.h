@@ -14,6 +14,8 @@
 #ifndef CONTENT_PUBLIC_COMMON_COMMON_PARAM_TRAITS_H_
 #define CONTENT_PUBLIC_COMMON_COMMON_PARAM_TRAITS_H_
 
+#include <string>
+
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 #include "content/public/common/common_param_traits_macros.h"
@@ -21,6 +23,7 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/surface/transport_dib.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 class SkBitmap;
 
@@ -46,6 +49,14 @@ namespace IPC {
 template <>
 struct CONTENT_EXPORT ParamTraits<GURL> {
   typedef GURL param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, PickleIterator* iter, param_type* p);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template <>
+struct CONTENT_EXPORT ParamTraits<url::Origin> {
+  typedef url::Origin param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, PickleIterator* iter, param_type* p);
   static void Log(const param_type& p, std::string* l);

@@ -17,7 +17,6 @@
 #include "content/common/websocket_messages.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
-#include "url/gurl.h"
 #include "third_party/WebKit/public/platform/WebSocketHandle.h"
 #include "third_party/WebKit/public/platform/WebSocketHandleClient.h"
 #include "third_party/WebKit/public/platform/WebSocketHandshakeRequestInfo.h"
@@ -25,6 +24,8 @@
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
+#include "url/gurl.h"
+#include "url/origin.h"
 
 using blink::WebSocketHandle;
 using blink::WebSocketHandleClient;
@@ -216,11 +217,11 @@ void WebSocketBridge::connect(
   std::vector<std::string> protocols_to_pass;
   for (size_t i = 0; i < protocols.size(); ++i)
     protocols_to_pass.push_back(protocols[i].utf8());
-  GURL origin_to_pass(origin.utf8());
+  url::Origin origin_to_pass(origin.utf8());
 
-  DVLOG(1) << "Bridge#" << channel_id_ << " Connect("
-           << url << ", (" << JoinString(protocols_to_pass, ", ") << "), "
-           << origin_to_pass << ")";
+  DVLOG(1) << "Bridge#" << channel_id_ << " Connect(" << url << ", ("
+           << JoinString(protocols_to_pass, ", ") << "), "
+           << origin_to_pass.string() << ")";
 
   ChildThread::current()->Send(
       new WebSocketHostMsg_AddChannelRequest(channel_id_,

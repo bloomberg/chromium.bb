@@ -14,6 +14,10 @@
 
 class GURL;
 
+namespace url {
+class Origin;
+}  // namespace url
+
 namespace net {
 class WebSocketChannel;
 class URLRequestContext;
@@ -47,7 +51,7 @@ class CONTENT_EXPORT WebSocketHost {
 
   void OnAddChannelRequest(const GURL& socket_url,
                            const std::vector<std::string>& requested_protocols,
-                           const GURL& origin);
+                           const url::Origin& origin);
 
   void OnSendFrame(bool fin,
                    WebSocketMessageType type,
