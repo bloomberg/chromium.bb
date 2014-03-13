@@ -54,6 +54,7 @@ class IDLLexer(object):
       'INTERFACE',
       'STRUCT',
       'TYPEDEF',
+      'OR',
 
     # Extra WebIDL keywords
       'CALLBACK',
@@ -92,6 +93,8 @@ class IDLLexer(object):
     'optional' : 'OPTIONAL',
     'static' : 'STATIC',
     'namespace' : 'NAMESPACE',
+
+    'or' : 'OR',
   }
 
   # 'literals' is a value expected by lex which specifies a list of valid

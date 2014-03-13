@@ -6,6 +6,8 @@
 import idl_schema
 import unittest
 
+from json_parse import OrderedDict
+
 def getFunction(schema, name):
   for item in schema['functions']:
     if item['name'] == name:
@@ -35,6 +37,7 @@ class IdlSchemaTest(unittest.TestCase):
     self.assertEquals(1, len(loaded))
     self.assertEquals('idl_basics', loaded[0]['namespace'])
     self.idl_basics = loaded[0]
+    self.maxDiff = None
 
   def testSimpleCallbacks(self):
     schema = self.idl_basics
@@ -58,7 +61,7 @@ class IdlSchemaTest(unittest.TestCase):
 
 
   def testArrayOfCallbacks(self):
-    schema = idl_schema.Load('test/idl_callback_arrays.idl')[0]
+    schema = idl_schema.Load('test/idl_function_types.idl')[0]
     expected = [{'type':'array', 'name':'callbacks',
                  'items':{'type':'function', 'name':'MyCallback',
                           'parameters':[{'type':'integer', 'name':'x'}]}}]
@@ -260,6 +263,105 @@ class IdlSchemaTest(unittest.TestCase):
     self.assertEquals('integer', baz_type['properties']['x']['type'])
     self.assertEquals(True, baz_type['properties']['foo']['optional'])
     self.assertEquals('FooType', baz_type['properties']['foo']['$ref'])
+
+  def testObjectTypesWithUnions(self):
+    schema = idl_schema.Load('test/idl_object_types.idl')[0]
+
+    union_type = getType(schema, 'UnionType')
+    expected = {
+                 'type': 'object',
+                 'id': 'UnionType',
+                 'properties': {
+                   'x': {
+                     'name': 'x',
+                     'optional': True,
+                     'choices': [
+                       {'type': 'integer'},
+                       {'$ref': 'FooType'},
+                     ]
+                   },
+                   'y': {
+                     'name': 'y',
+                     'choices': [
+                       {'type': 'string'},
+                       {'type': 'object',
+                        'additionalProperties': {'type': 'any'}}
+                     ]
+                   },
+                   'z': {
+                     'name': 'z',
+                     'choices': [
+                       {'type': 'object', 'isInstanceOf': 'ImageData',
+                        'additionalProperties': {'type': 'any'}},
+                       {'type': 'integer'}
+                     ]
+                   }
+                 },
+               }
+
+    self.assertEquals(expected, union_type)
+
+  def testUnionsWithModifiers(self):
+    schema = idl_schema.Load('test/idl_object_types.idl')[0]
+
+    union_type = getType(schema, 'ModifiedUnionType')
+    expected = {
+                 'type': 'object',
+                 'id': 'ModifiedUnionType',
+                 'properties': {
+                   'x': {
+                     'name': 'x',
+                     'nodoc': True,
+                     'choices': [
+                       {'type': 'integer'},
+                       {'type': 'string'}
+                     ]
+                   }
+                 }
+               }
+
+    self.assertEquals(expected, union_type)
+
+  def testUnionsWithFunctions(self):
+    schema = idl_schema.Load('test/idl_function_types.idl')[0]
+
+    union_params = getParams(schema, 'union_params')
+    expected = [{
+                 'name': 'x',
+                 'choices': [
+                   {'type': 'integer'},
+                   {'type': 'string'}
+                 ]
+               }]
+
+    self.assertEquals(expected, union_params)
+
+  def testUnionsWithCallbacks(self):
+    schema = idl_schema.Load('test/idl_function_types.idl')[0]
+
+    blah_params = getParams(schema, 'blah')
+    expected = [{
+                 'type': 'function', 'name': 'callback', 'parameters': [{
+                   'name': 'x',
+                   'choices': [
+                     {'type': 'integer'},
+                     {'type': 'string'}
+                   ]}
+                 ]
+               }]
+    self.assertEquals(expected, blah_params)
+
+    badabish_params = getParams(schema, 'badabish')
+    expected = [{
+                 'type': 'function', 'name': 'callback', 'parameters': [{
+                   'name': 'x', 'optional': True, 'choices': [
+                     {'type': 'integer'},
+                     {'type': 'string'}
+                   ]
+                 }]
+               }]
+
+    self.assertEquals(expected, badabish_params)
 
 
 if __name__ == '__main__':

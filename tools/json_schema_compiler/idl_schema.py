@@ -216,7 +216,7 @@ class Typeref(object):
   function parameter, converts into a Python dictionary that the JSON schema
   compiler expects to see.
   '''
-  def __init__(self, typeref, parent, additional_properties=OrderedDict()):
+  def __init__(self, typeref, parent, additional_properties):
     self.typeref = typeref
     self.parent = parent
     self.additional_properties = additional_properties
@@ -225,7 +225,7 @@ class Typeref(object):
     properties = self.additional_properties
     result = properties
 
-    if self.parent.GetProperty('OPTIONAL'):
+    if self.parent.GetPropertyLocal('OPTIONAL'):
       properties['optional'] = True
 
     # The IDL parser denotes array types by adding a child 'Array' node onto
@@ -264,6 +264,13 @@ class Typeref(object):
       if 'additionalProperties' not in properties:
         properties['additionalProperties'] = OrderedDict()
       properties['additionalProperties']['type'] = 'any'
+    elif self.parent.GetPropertyLocal('Union'):
+      choices = []
+      properties['choices'] = [Typeref(node.GetProperty('TYPEREF'),
+                                       node,
+                                       OrderedDict()).process(callbacks)
+                               for node in self.parent.GetChildren()
+                               if node.cls == 'Option']
     elif self.typeref is None:
       properties['type'] = 'function'
     else:

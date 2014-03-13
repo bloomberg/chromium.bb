@@ -20,6 +20,16 @@ namespace idl_object_types {
     FooType? foo;
   };
 
+  dictionary UnionType {
+    (long or FooType)? x;
+    (DOMString or object) y;
+    ([instanceOf=ImageData]object or long) z;
+  };
+
+  dictionary ModifiedUnionType {
+    [nodoc] (long or DOMString) x;
+  };
+
   interface Functions {
     static void objectFunction1([instanceOf=ImageData]object icon);
     static void objectFunction2(any some_arg);

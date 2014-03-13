@@ -534,17 +534,17 @@ class IDLParser(IDLLexer):
     if self.parse_debug: DumpReduction('expression_unop', p)
 
   def p_expression_term(self, p):
-    "expression : '(' expression ')'"
+    """expression : '(' expression ')'"""
     p[0] = "%s%s%s" % (str(p[1]), str(p[2]), str(p[3]))
     if self.parse_debug: DumpReduction('expression_term', p)
 
   def p_expression_symbol(self, p):
-    "expression : SYMBOL"
+    """expression : SYMBOL"""
     p[0] = p[1]
     if self.parse_debug: DumpReduction('expression_symbol', p)
 
   def p_expression_integer(self, p):
-    "expression : integer"
+    """expression : integer"""
     p[0] = p[1]
     if self.parse_debug: DumpReduction('expression_integer', p)
 
@@ -583,6 +583,27 @@ class IDLParser(IDLLexer):
     # them.
     p.set_lineno(0, p.lineno(1))
 
+
+#
+# Union
+#
+# A union allows multiple choices of types for a parameter or member.
+#
+
+  def p_union_option(self, p):
+    """union_option : modifiers SYMBOL arrays"""
+    typeref = self.BuildAttribute('TYPEREF', p[2])
+    children = ListFromConcat(p[1], typeref, p[3])
+    p[0] = self.BuildProduction('Option', p, 2, children)
+
+  def p_union_list(self, p):
+    """union_list : union_option OR union_list
+                  | union_option"""
+    if len(p) > 2:
+      p[0] = ListFromConcat(p[1], p[3])
+    else:
+      p[0] = p[1]
+
 #
 # Parameter List
 #
@@ -604,6 +625,13 @@ class IDLParser(IDLLexer):
     typeref = self.BuildAttribute('TYPEREF', p[3])
     children = ListFromConcat(p[1], p[2], typeref, p[4])
     p[0] = self.BuildNamed('Param', p, 5, children)
+    if self.parse_debug: DumpReduction('param_item', p)
+
+  def p_param_item_union(self, p):
+    """param_item : modifiers optional '(' union_list ')' identifier"""
+    union = self.BuildAttribute('Union', True)
+    children = ListFromConcat(p[1], p[2], p[4], union)
+    p[0] = self.BuildNamed('Param', p, 6, children)
     if self.parse_debug: DumpReduction('param_item', p)
 
   def p_optional(self, p):
@@ -736,6 +764,13 @@ class IDLParser(IDLLexer):
     typeref = self.BuildAttribute('TYPEREF', p[2])
     children = ListFromConcat(p[1], typeref, p[3], p[4])
     p[0] = self.BuildNamed('Member', p, 5, children)
+    if self.parse_debug: DumpReduction('attribute', p)
+
+  def p_member_attribute_union(self, p):
+    """member_attribute : modifiers '(' union_list ')' questionmark identifier"""
+    union = self.BuildAttribute('Union', True)
+    children = ListFromConcat(p[1], p[3], p[5], union)
+    p[0] = self.BuildNamed('Member', p, 6, children)
     if self.parse_debug: DumpReduction('attribute', p)
 
   def p_member_function(self, p):
