@@ -608,12 +608,18 @@ def CMDquery(parser, args):
   """Returns information about the bots connected to the Swarming server."""
   add_filter_options(parser)
   parser.filter_group.add_option(
+      '--dead-only', action='store_true',
+      help='Only print dead bots, useful to reap them and reimage broken bots')
+  parser.filter_group.add_option(
       '-k', '--keep-dead', action='store_true',
       help='Do not filter out dead bots')
   parser.filter_group.add_option(
       '-b', '--bare', action='store_true',
       help='Do not print out dimensions')
   options, args = parser.parse_args(args)
+
+  if options.keep_dead and options.dead_only:
+    parser.error('Use only one of --keep-dead and --dead-only')
   service = net.get_http_service(options.swarming)
   data = service.json_request('GET', '/swarming/api/v1/bots')
   if data is None:
@@ -624,7 +630,11 @@ def CMDquery(parser, args):
   for machine in natsort.natsorted(data['machines'], key=lambda x: x['tag']):
     last_seen = datetime.datetime.strptime(
         machine['last_seen'], '%Y-%m-%d %H:%M:%S')
-    if not options.keep_dead and utcnow - last_seen > timeout:
+    is_dead = utcnow - last_seen > timeout
+    if options.dead_only:
+      if not is_dead:
+        continue
+    elif not options.keep_dead and is_dead:
       continue
 
     # If the user requested to filter on dimensions, ensure the bot has all the

@@ -929,6 +929,33 @@ class MainTest(TestCase):
         "dead\n  {u'os': u'amiga'}\n")
     self._check_output(expected, '')
 
+  def test_query_filter_dead_only(self):
+    self.requests = [
+      (
+        '/swarming/api/v1/bots',
+        {
+          "content_type": None,
+          "data": None,
+          "headers": None,
+          "max_attempts": 30,
+          "method": "GET",
+          "read_timeout": 360.0,
+          "retry_404": False,
+          "retry_50x": True,
+          "timeout": 360.0
+        },
+        StringIO.StringIO(json.dumps(mock_swarming_api_v1_bots())),
+      ),
+    ]
+    main(
+        [
+          'query', '--swarming', 'https://localhost:1',
+          '--dimension', 'os', 'amiga', '--dead-only',
+        ])
+    expected = (
+        "dead\n  {u'os': u'amiga'}\n")
+    self._check_output(expected, '')
+
   def test_trigger_no_request(self):
     with self.assertRaises(SystemExit):
       main([
