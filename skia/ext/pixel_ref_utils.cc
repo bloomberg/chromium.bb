@@ -51,11 +51,6 @@ class GatherPixelRefDevice : public SkBitmapDevice {
       : SkBitmapDevice(bm), pixel_ref_set_(pixel_ref_set) {}
 
   virtual void clear(SkColor color) SK_OVERRIDE {}
-  virtual void writePixels(const SkBitmap& bitmap,
-                           int x,
-                           int y,
-                           SkCanvas::Config8888 config8888) SK_OVERRIDE {}
-
   virtual void drawPaint(const SkDraw& draw, const SkPaint& paint) SK_OVERRIDE {
     SkBitmap bitmap;
     if (GetBitmapFromPaint(paint, &bitmap)) {
@@ -322,6 +317,13 @@ class GatherPixelRefDevice : public SkBitmapDevice {
                             int x,
                             int y,
                             SkCanvas::Config8888 config8888) SK_OVERRIDE {
+    return false;
+  }
+  virtual bool onWritePixels(const SkImageInfo& info,
+                             const void* pixels,
+                             size_t rowBytes,
+                             int x,
+                             int y) SK_OVERRIDE {
     return false;
   }
 
