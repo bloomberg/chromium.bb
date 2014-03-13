@@ -291,9 +291,10 @@ bool ScreenCaptureNotificationUIViews::ShouldShowCloseButton() const {
 }
 
 bool ScreenCaptureNotificationUIViews::CanActivate() const {
-  // If we do not override this method, the window sometimes does not properly
-  // restore to its normal size on Windows.
-  return false;
+  // When the window is visible, it can be activated so the mouse clicks
+  // can be sent to the window; when the window is minimized, we don't want it
+  // to activate, otherwise it sometimes does not show properly on Windows.
+  return GetWidget() && GetWidget()->IsVisible();
 }
 
 void ScreenCaptureNotificationUIViews::ButtonPressed(views::Button* sender,
