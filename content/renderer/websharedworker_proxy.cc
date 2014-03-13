@@ -4,8 +4,8 @@
 
 #include "content/renderer/websharedworker_proxy.h"
 
-#include "content/child/child_thread.h"
 #include "content/child/webmessageportchannel_impl.h"
+#include "content/common/message_router.h"
 #include "content/common/view_messages.h"
 #include "content/common/worker_messages.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
@@ -13,18 +13,18 @@
 
 namespace content {
 
-WebSharedWorkerProxy::WebSharedWorkerProxy(ChildThread* child_thread,
+WebSharedWorkerProxy::WebSharedWorkerProxy(MessageRouter* router,
                                            unsigned long long document_id,
                                            int route_id,
                                            int render_frame_route_id)
     : route_id_(route_id),
       render_frame_route_id_(render_frame_route_id),
-      child_thread_(child_thread),
+      router_(router),
       document_id_(document_id),
       pending_route_id_(route_id),
       connect_listener_(NULL),
       created_(false) {
-  child_thread_->AddRoute(route_id_, this);
+  router_->AddRoute(route_id_, this);
 }
 
 WebSharedWorkerProxy::~WebSharedWorkerProxy() {
@@ -42,7 +42,7 @@ void WebSharedWorkerProxy::Disconnect() {
   // So the messages from WorkerContext (like WorkerContextDestroyed) do not
   // come after nobody is listening. Since Worker and WorkerContext can
   // terminate independently, already sent messages may still be in the pipe.
-  child_thread_->RemoveRoute(route_id_);
+  router_->RemoveRoute(route_id_);
 
   route_id_ = MSG_ROUTING_NONE;
 }
@@ -62,7 +62,7 @@ bool WebSharedWorkerProxy::Send(IPC::Message* message) {
   // TODO(jabdelmalek): handle sync messages if we need them.
   IPC::Message* wrapped_msg = new ViewHostMsg_ForwardToWorker(*message);
   delete message;
-  return child_thread_->Send(wrapped_msg);
+  return router_->Send(wrapped_msg);
 }
 
 void WebSharedWorkerProxy::SendQueuedMessages() {

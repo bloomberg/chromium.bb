@@ -16,7 +16,7 @@
 
 namespace content {
 
-class ChildThread;
+class MessageRouter;
 
 // Implementation of the WebSharedWorker APIs. This object is intended to only
 // live long enough to allow the caller to send a "connect" event to the worker
@@ -27,7 +27,7 @@ class WebSharedWorkerProxy : public blink::WebSharedWorkerConnector,
                              private IPC::Listener {
  public:
   // If the worker not loaded yet, route_id == MSG_ROUTING_NONE
-  WebSharedWorkerProxy(ChildThread* child_thread,
+  WebSharedWorkerProxy(MessageRouter* router,
                        unsigned long long document_id,
                        int route_id,
                        int render_frame_route_id);
@@ -67,7 +67,7 @@ class WebSharedWorkerProxy : public blink::WebSharedWorkerConnector,
   // The routing id for the RenderFrame that created this worker.
   int render_frame_route_id_;
 
-  ChildThread* child_thread_;
+  MessageRouter* const router_;
 
   // ID of our parent document (used to shutdown workers when the parent
   // document is detached).

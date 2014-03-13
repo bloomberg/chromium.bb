@@ -66,11 +66,9 @@ class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
   // IPC::Sender implementation:
   virtual bool Send(IPC::Message* msg) OVERRIDE;
 
-  // See documentation on MessageRouter for AddRoute and RemoveRoute
-  void AddRoute(int32 routing_id, IPC::Listener* listener);
-  void RemoveRoute(int32 routing_id);
-
   IPC::SyncChannel* channel() { return channel_.get(); }
+
+  MessageRouter* GetRouter();
 
   // Creates a ResourceLoaderBridge.
   // Tests can override this method if they want a custom loading behavior.
@@ -164,6 +162,16 @@ class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
   virtual void OnChannelError() OVERRIDE;
 
  private:
+  class ChildThreadMessageRouter : public MessageRouter {
+   public:
+    // |sender| must outlive this object.
+    explicit ChildThreadMessageRouter(IPC::Sender* sender);
+    virtual bool Send(IPC::Message* msg) OVERRIDE;
+
+   private:
+    IPC::Sender* const sender_;
+  };
+
   void Init();
 
   // IPC message handlers.
@@ -189,7 +197,7 @@ class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
 
   // Implements message routing functionality to the consumers of ChildThread.
-  MessageRouter router_;
+  ChildThreadMessageRouter router_;
 
   // Handles resource loads for this process.
   scoped_ptr<ResourceDispatcher> resource_dispatcher_;

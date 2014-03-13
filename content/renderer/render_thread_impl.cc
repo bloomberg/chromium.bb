@@ -654,11 +654,11 @@ scoped_refptr<base::MessageLoopProxy>
 }
 
 void RenderThreadImpl::AddRoute(int32 routing_id, IPC::Listener* listener) {
-  ChildThread::AddRoute(routing_id, listener);
+  ChildThread::GetRouter()->AddRoute(routing_id, listener);
 }
 
 void RenderThreadImpl::RemoveRoute(int32 routing_id) {
-  ChildThread::RemoveRoute(routing_id);
+  ChildThread::GetRouter()->RemoveRoute(routing_id);
 }
 
 int RenderThreadImpl::GenerateRoutingID() {

@@ -150,7 +150,7 @@ void GpuChildThread::OnInitialize() {
   // IPC messages before the sandbox has been enabled and all other necessary
   // initialization has succeeded.
   gpu_channel_manager_.reset(
-      new GpuChannelManager(this,
+      new GpuChannelManager(GetRouter(),
                             watchdog_thread_.get(),
                             ChildProcess::current()->io_message_loop_proxy(),
                             ChildProcess::current()->GetShutDownEvent()));

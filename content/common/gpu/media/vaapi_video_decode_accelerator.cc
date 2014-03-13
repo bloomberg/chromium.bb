@@ -9,7 +9,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/waitable_event.h"
-#include "content/child/child_thread.h"
+#include "base/threading/non_thread_safe.h"
 #include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/media/vaapi_video_decode_accelerator.h"
 #include "media/base/bind_to_current_loop.h"
@@ -68,7 +68,7 @@ void VaapiVideoDecodeAccelerator::NotifyError(Error error) {
 //
 // TFPPictures are used for output, contents of VASurfaces passed from decoder
 // are put into the associated pixmap memory and sent to client.
-class VaapiVideoDecodeAccelerator::TFPPicture {
+class VaapiVideoDecodeAccelerator::TFPPicture : public base::NonThreadSafe {
  public:
   ~TFPPicture();
 
@@ -158,10 +158,7 @@ VaapiVideoDecodeAccelerator::TFPPicture::Create(
 
 bool VaapiVideoDecodeAccelerator::TFPPicture::Initialize(
     const GLXFBConfig& fb_config) {
-  // Check for NULL prevents unittests from crashing on nonexistent ChildThread.
-  DCHECK(ChildThread::current() == NULL ||
-      ChildThread::current()->message_loop() == base::MessageLoop::current());
-
+  DCHECK(CalledOnValidThread());
   if (!make_context_current_.Run())
     return false;
 
@@ -193,10 +190,7 @@ bool VaapiVideoDecodeAccelerator::TFPPicture::Initialize(
 }
 
 VaapiVideoDecodeAccelerator::TFPPicture::~TFPPicture() {
-  // Check for NULL prevents unittests from crashing on nonexistent ChildThread.
-  DCHECK(ChildThread::current() == NULL ||
-      ChildThread::current()->message_loop() == base::MessageLoop::current());
-
+  DCHECK(CalledOnValidThread());
   // Unbind surface from texture and deallocate resources.
   if (glx_pixmap_ && make_context_current_.Run()) {
     glXReleaseTexImageEXT(x_display_, glx_pixmap_, GLX_FRONT_LEFT_EXT);
@@ -209,12 +203,9 @@ VaapiVideoDecodeAccelerator::TFPPicture::~TFPPicture() {
 }
 
 bool VaapiVideoDecodeAccelerator::TFPPicture::Bind() {
+  DCHECK(CalledOnValidThread());
   DCHECK(x_pixmap_);
   DCHECK(glx_pixmap_);
-  // Check for NULL prevents unittests from crashing on nonexistent ChildThread.
-  DCHECK(ChildThread::current() == NULL ||
-      ChildThread::current()->message_loop() == base::MessageLoop::current());
-
   if (!make_context_current_.Run())
     return false;
 

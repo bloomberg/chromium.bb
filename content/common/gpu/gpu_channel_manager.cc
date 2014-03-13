@@ -6,11 +6,11 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "content/child/child_thread.h"
 #include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/gpu_memory_manager.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/gpu/sync_point_manager.h"
+#include "content/common/message_router.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
@@ -29,20 +29,20 @@ GpuChannelManager::ImageOperation::ImageOperation(
 GpuChannelManager::ImageOperation::~ImageOperation() {
 }
 
-GpuChannelManager::GpuChannelManager(ChildThread* gpu_child_thread,
+GpuChannelManager::GpuChannelManager(MessageRouter* router,
                                      GpuWatchdog* watchdog,
                                      base::MessageLoopProxy* io_message_loop,
                                      base::WaitableEvent* shutdown_event)
     : weak_factory_(this),
       io_message_loop_(io_message_loop),
       shutdown_event_(shutdown_event),
-      gpu_child_thread_(gpu_child_thread),
+      router_(router),
       gpu_memory_manager_(
           this,
           GpuMemoryManager::kDefaultMaxSurfacesWithFrontbufferSoftLimit),
       watchdog_(watchdog),
       sync_point_manager_(new SyncPointManager) {
-  DCHECK(gpu_child_thread);
+  DCHECK(router_);
   DCHECK(io_message_loop);
   DCHECK(shutdown_event);
 }
@@ -78,11 +78,11 @@ int GpuChannelManager::GenerateRouteID() {
 }
 
 void GpuChannelManager::AddRoute(int32 routing_id, IPC::Listener* listener) {
-  gpu_child_thread_->AddRoute(routing_id, listener);
+  router_->AddRoute(routing_id, listener);
 }
 
 void GpuChannelManager::RemoveRoute(int32 routing_id) {
-  gpu_child_thread_->RemoveRoute(routing_id);
+  router_->RemoveRoute(routing_id);
 }
 
 GpuChannel* GpuChannelManager::LookupChannel(int32 client_id) {
@@ -109,9 +109,7 @@ bool GpuChannelManager::OnMessageReceived(const IPC::Message& msg) {
   return handled;
 }
 
-bool GpuChannelManager::Send(IPC::Message* msg) {
-  return gpu_child_thread_->Send(msg);
-}
+bool GpuChannelManager::Send(IPC::Message* msg) { return router_->Send(msg); }
 
 void GpuChannelManager::OnEstablishChannel(int client_id, bool share_context) {
   IPC::ChannelHandle channel_handle;

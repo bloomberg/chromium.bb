@@ -192,8 +192,17 @@ void QuitMainThreadMessageLoop() {
 
 }  // namespace
 
+ChildThread::ChildThreadMessageRouter::ChildThreadMessageRouter(
+    IPC::Sender* sender)
+    : sender_(sender) {}
+
+bool ChildThread::ChildThreadMessageRouter::Send(IPC::Message* msg) {
+  return sender_->Send(msg);
+}
+
 ChildThread::ChildThread()
-    : channel_connected_factory_(this),
+    : router_(this),
+      channel_connected_factory_(this),
       in_browser_process_(false) {
   channel_name_ = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
       switches::kProcessChannelID);
@@ -202,6 +211,7 @@ ChildThread::ChildThread()
 
 ChildThread::ChildThread(const std::string& channel_name)
     : channel_name_(channel_name),
+      router_(this),
       channel_connected_factory_(this),
       in_browser_process_(true) {
   Init();
@@ -349,16 +359,9 @@ bool ChildThread::Send(IPC::Message* msg) {
   return channel_->Send(msg);
 }
 
-void ChildThread::AddRoute(int32 routing_id, IPC::Listener* listener) {
+MessageRouter* ChildThread::GetRouter() {
   DCHECK(base::MessageLoop::current() == message_loop());
-
-  router_.AddRoute(routing_id, listener);
-}
-
-void ChildThread::RemoveRoute(int32 routing_id) {
-  DCHECK(base::MessageLoop::current() == message_loop());
-
-  router_.RemoveRoute(routing_id);
+  return &router_;
 }
 
 webkit_glue::ResourceLoaderBridge* ChildThread::CreateBridge(

@@ -39,7 +39,7 @@ SharedWorkerRepository::createSharedWorkerConnector(
   if (route_id == MSG_ROUTING_NONE)
     return NULL;
   documents_with_workers_.insert(document_id);
-  return new WebSharedWorkerProxy(ChildThread::current(),
+  return new WebSharedWorkerProxy(ChildThread::current()->GetRouter(),
                                   document_id,
                                   route_id,
                                   params.render_frame_route_id);

@@ -56,7 +56,7 @@ WebMessagePortChannelImpl::~WebMessagePortChannelImpl() {
     Send(new MessagePortHostMsg_DestroyMessagePort(message_port_id_));
 
   if (route_id_ != MSG_ROUTING_NONE)
-    ChildThread::current()->RemoveRoute(route_id_);
+    ChildThread::current()->GetRouter()->RemoveRoute(route_id_);
 }
 
 void WebMessagePortChannelImpl::setClient(WebMessagePortChannelClient* client) {
@@ -149,7 +149,7 @@ void WebMessagePortChannelImpl::Init() {
         &route_id_, &message_port_id_));
   }
 
-  ChildThread::current()->AddRoute(route_id_, this);
+  ChildThread::current()->GetRouter()->AddRoute(route_id_, this);
 }
 
 void WebMessagePortChannelImpl::Entangle(
@@ -193,7 +193,7 @@ void WebMessagePortChannelImpl::Send(IPC::Message* message) {
     return;
   }
 
-  ChildThread::current()->Send(message);
+  ChildThread::current()->GetRouter()->Send(message);
 }
 
 bool WebMessagePortChannelImpl::OnMessageReceived(const IPC::Message& message) {
