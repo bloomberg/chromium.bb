@@ -24,6 +24,7 @@
 <translation id="7222373446505536781">F11</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY"/> B</translation>
 <translation id="3660179305079774227">Rodyklė „Aukštyn“</translation>
+<translation id="7062130397825382308">Liko <ph name="NUMBER_ONE"/> sekundė</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY"/> MB/s</translation>
 <translation id="5608669887400696928"><ph name="NUMBER_DEFAULT"/> val.</translation>
 <translation id="3990502903496589789">Dešinysis kraštas</translation>
@@ -45,6 +46,7 @@
 <translation id="7770995925463083016">Prieš <ph name="NUMBER_TWO"/> min.</translation>
 <translation id="3234408098842461169">Rodyklė „Žemyn“</translation>
 <translation id="3087734570205094154">Apačia</translation>
+<translation id="8828991073132329143"><ph name="NUMBER_MANY"/> seconds left</translation>
 <translation id="5935630983280450497">liko <ph name="NUMBER_ONE"/> min.</translation>
 <translation id="1860796786778352021">Uždaryti pranešimus</translation>
 <translation id="6364916375976753737">Slinkti į kairę</translation>
@@ -68,6 +70,7 @@
 <translation id="7781829728241885113">Vakar</translation>
 <translation id="3424538384153559412"><ph name="NUMBER_TWO"/> min.</translation>
 <translation id="50960180632766478">liko <ph name="NUMBER_FEW"/> min.</translation>
+<translation id="5517291721709019259"><ph name="NUMBER_FEW"/> seconds left</translation>
 <translation id="6659594942844771486">Skirtukas</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY"/> MB</translation>
 <translation id="4988273303304146523">Prieš <ph name="NUMBER_DEFAULT"/> dienas (-ų)</translation>
@@ -137,12 +140,14 @@
 <translation id="1285266685456062655">Prieš <ph name="NUMBER_FEW"/> val.</translation>
 <translation id="6918245111648057970">Kiekvienam naudotojui leisti pranešimus iš nurodyto:</translation>
 <translation id="5489830104927132166"><ph name="NUMBER_ONE"/> sek.</translation>
+<translation id="1270251962578273213"><ph name="NUMBER_TWO"/> seconds left</translation>
 <translation id="3994835489895548312">Liko <ph name="NUMBER_MANY"/> min.</translation>
 <translation id="6358975074282722691">Prieš <ph name="NUMBER_TWO"/> sek.</translation>
 <translation id="520299402983819650"><ph name="QUANTITY"/> PB</translation>
 <translation id="2983818520079887040">Nustatymai...</translation>
 <translation id="6845383723252244143">Pasirinkti aplanką</translation>
 <translation id="7600770490873519066"><ph name="NUMBER_FEW"/> sek.</translation>
+<translation id="5368780922436099921"><ph name="NUMBER_ZERO"/> seconds left</translation>
 <translation id="1095623615273566396"><ph name="NUMBER_FEW"/> sek.</translation>
 <translation id="5583640892426849032">Grįžties klavišas</translation>
 <translation id="5263972071113911534">Prieš <ph name="NUMBER_MANY"/> dienas (-ų)</translation>
@@ -165,6 +170,7 @@
 <translation id="6142413573757616983"><ph name="QUANTITY"/> B/s</translation>
 <translation id="7649070708921625228">Žinynas</translation>
 <translation id="6699343763173986273">Kitas medijos takelis</translation>
+<translation id="5445120697129764393">Liko <ph name="NUMBER_DEFAULT"/> sekundžių</translation>
 <translation id="8226233771743600312">Netrukdyti vieną dieną</translation>
 <translation id="7457942297256758195">Išvalyti viską</translation>
 <translation id="822618367988303761">Prieš <ph name="NUMBER_TWO"/> dienas</translation>

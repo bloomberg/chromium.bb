@@ -14,7 +14,9 @@
 <translation id="3358663646935160692">Tätä tiliä hallinnoi <ph name="DOMAIN_NAME"/>.
 
 Olet kirjautumassa hallinnoituun tiliin, jonka hallinnoijalla on oikeus muokata Chrome-profiiliasi. Chrome-tietosi yhdistetään tähän tiliin pysyvästi. Jos irrotat Chrome-tiedot tilistä, paikalliset Chrome-tiedot poistetaan.</translation>
+<translation id="1966710179511230534">Päivitä kirjautumistietosi.</translation>
 <translation id="1623104350909869708">Estä tätä sivua luomasta muita viestejä</translation>
+<translation id="8218346974737627104">Kirjautumisen vahvistaminen</translation>
 <translation id="624558823898732418">Käännöksen kieli: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">Valitse todennuksen varmenne</translation>
 <translation id="3896036286668839683">Varmennetiedot</translation>
@@ -29,7 +31,6 @@ Olet kirjautumassa hallinnoituun tiliin, jonka hallinnoijalla on oikeus muokata 
 <translation id="5684874026226664614">Hups, tätä sivua ei voi kääntää.</translation>
 <translation id="4619298195800598081">Avaa alkup. uudella välilehd.</translation>
 <translation id="907015151729920253">Älykortti</translation>
-<translation id="3136378934686431938">Päivitä kirjautumistietosi.</translation>
 <translation id="3063601790762993062">Tallenna video</translation>
 <translation id="6042308850641462728">Lisää</translation>
 <translation id="3992315671621218278">Tallenna linkki</translation>
@@ -59,5 +60,4 @@ Olet kirjautumassa hallinnoituun tiliin, jonka hallinnoijalla on oikeus muokata 
 <translation id="6277522088822131679">Sivua tulostettaessa tapahtui virhe. Yritä uudelleen.</translation>
 <translation id="1742134235943978220">Käännetty kielelle <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="6965382102122355670">OK</translation>
-<translation id="7495038789730067783">Vahvista kirjautuminen</translation>
 </translationbundle>

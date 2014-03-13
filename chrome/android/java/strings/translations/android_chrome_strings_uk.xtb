@@ -14,7 +14,9 @@
 <translation id="3358663646935160692">Цим обліковим записом керує домен <ph name="DOMAIN_NAME"/>.
 
 Ви входите в керований обліковий запис і дозволяєте його адміністратору керувати вашим профілем Chrome. Ваші дані Chrome буде назавжди пов’язано з цим обліковим записом. Відключення від цього облікового запису видалить усі локальні дані Chrome.</translation>
+<translation id="1966710179511230534">Оновіть свої дані для входу.</translation>
 <translation id="1623104350909869708">Заборонити цій сторінці створювати додаткові діалогові вікна</translation>
+<translation id="8218346974737627104">Підтвердити вхід</translation>
 <translation id="624558823898732418">Мова перекладу: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">Виберіть сертифікат для автентифікації</translation>
 <translation id="3896036286668839683">Перегляд сертифікатів</translation>
@@ -29,7 +31,6 @@
 <translation id="5684874026226664614">На жаль, цю сторінку неможливо перекласти.</translation>
 <translation id="4619298195800598081">Відкр. оригінал у нов. вкладці</translation>
 <translation id="907015151729920253">Смарт-карта</translation>
-<translation id="3136378934686431938">Оновіть свої дані для входу.</translation>
 <translation id="3063601790762993062">Зберегти відео</translation>
 <translation id="6042308850641462728">Більше</translation>
 <translation id="3992315671621218278">Зберегти посилання</translation>
@@ -59,5 +60,4 @@
 <translation id="6277522088822131679">Виникла проблема з друком цієї сторінки. Повторіть спробу.</translation>
 <translation id="1742134235943978220">Перекладено такою мовою: <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="6965382102122355670">ОК</translation>
-<translation id="7495038789730067783">Підтвердити вхід</translation>
 </translationbundle>

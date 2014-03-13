@@ -83,6 +83,32 @@
 
           Om den här principen inte anges är den stora markören inaktiverad när inloggningsskärmen visas för första gången. Användarna kan aktivera eller inaktivera den stora markören när som helst, och dess status på inloggningsskärmen sparas för olika användare.</translation>
 <translation id="3185009703220253572">sedan version <ph name="SINCE_VERSION"/></translation>
+<translation id="5298412045697677971">Konfigurera avatarbild för användare.
+
+      Den här policyn gör att du kan konfigurera avatarbilden som representerar användaren på inloggningsskärmen. Ange policyn genom att ange en webbadress som <ph name="PRODUCT_OS_NAME"/> kan hämta avatarbilden från och en kryptografisk hash som används för att verifiera hämtningens integritet. Bilden måste vara i JPEG-format och dess storlek får inte överskrida 512 kB. Webbadressen måste vara tillgänglig utan autentisering.
+
+      Avatarbilden hämtas och lagras i cacheminnet. Den hämtas igen varje gång webbadressen eller hashen ändras.
+
+      Den här policyn ska anges som en sträng som uttrycker webbadressen och hashen i JSON-format enligt följande schema:
+      {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;url&quot;: {
+            &quot;description&quot;: &quot;Den webbadress som bilden ska hämtas från.&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          },
+          &quot;hash&quot;: {
+            &quot;description&quot;: &quot;SHA-256-hashen för avatarbilden.&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          }
+        }
+      }
+
+      Om policyn anges hämtar och använder <ph name="PRODUCT_OS_NAME"/> avatarbilden.
+
+      Om du ställer in den här policyn kan den inte ändras eller åsidosättas av användaren.
+
+      Om policyn inte anges kan användaren välja en avatarbild åt sig själv på inloggningsskärmen.</translation>
 <translation id="2204753382813641270">Kontrollera hur hyllan döljs automatiskt</translation>
 <translation id="3816312845600780067">Aktivera kortkommandot för räddning vid automatisk inloggning</translation>
 <translation id="3214164532079860003">Om den här policyn är aktiverad tvingar den startsidan att importeras från den nuvarande standardwebbläsaren.
@@ -100,6 +126,7 @@
 <translation id="5469825884154817306">Blockera bilder på dessa webbplatser</translation>
 <translation id="5827231192798670332">Väljer den strategi som används för att frigöra diskutrymme under automatisk rensning.</translation>
 <translation id="8412312801707973447">Anger huruvida OCSP/CRL-onlinekontroller ska utföras</translation>
+<translation id="2482676533225429905">Native Messaging</translation>
 <translation id="6649397154027560979">Den här principen är föråldrad, använd URLBlacklist i stället.
 
       Inaktiverar de protokollscheman som listas i <ph name="PRODUCT_NAME"/>.
@@ -175,9 +202,6 @@
 
           Policyns värde ska anges i millisekunder. Värdet måste vara lägre än inaktivitetstiden.</translation>
 <translation id="4157003184375321727">Rapportera version av operativsystem och fast programvara</translation>
-<translation id="4752214355598028025">Med tjänsten Säker webbsökning visas en varningssida när användare navigerar till webbplatser som flaggats som skadliga. Om du aktiverar inställningen kan användare inte fortsätta från varningssidan till den skadliga webbplatsen.
-
-      Om inställningen inaktiveras eller inte konfigureras kan användare välja att fortsätta från den flaggade webbplatsen efter att varningen har visats.</translation>
 <translation id="5255162913209987122">Kan rekommenderas</translation>
 <translation id="1861037019115362154">Policyn anger en lista med plugin-program som inaktiveras i <ph name="PRODUCT_NAME"/> och förhindrar att användarna ändrar inställningen.
 
@@ -204,6 +228,19 @@
 <translation id="1096105751829466145">Standardsökleverantör</translation>
 <translation id="7567380065339179813">Tillåt plugin-program på dessa webbplatser</translation>
 <translation id="4555850956567117258">Aktivera fjärrattestering för användaren</translation>
+<translation id="4418909344122918381">Styr användarbeteende i en session med flera profiler på <ph name="PRODUCT_OS_NAME"/>-enheter.
+
+      Om policyn är inställd på MultiProfileUserBehaviorUnrestricted kan användaren vara primär eller sekundär i en session med flera profiler.
+
+      Om policyn är inställd på MultiProfileUserBehaviorMustBePrimary kan användaren bara vara primär i en session med flera profiler.
+
+      Om policyn är inställd på MultiProfileUserBehaviorNotAllowed kan användaren inte delta i en session med flera profiler.
+
+      Om du anger den här inställningen kan den inte ändras eller åsidosättas av användare.
+
+      Om inställningen ändras medan användaren är inloggad i en session med flera profiler kontrolleras motsvarande inställningar för alla användare i sessionen. Sessionen avslutas om någon av användarna inte längre kan delta i den.
+
+      Om policyn inte anges används standardinställningen MultiProfileUserBehaviorUnrestricted.</translation>
 <translation id="5966615072639944554">Tilläggen får använda API:et för fjärrattestering</translation>
 <translation id="1617235075406854669">Aktivera borttagning av webb- och hämtningshistorik</translation>
 <translation id="5290940294294002042">Ange en lista med plugin-program som användaren kan aktivera och inaktivera</translation>
@@ -241,6 +278,15 @@
 
       Om den här principen inte anges är den aktiverad, men användarna kan ändra den.</translation>
 <translation id="268577405881275241">Aktivera proxyfunktionen för datakomprimering</translation>
+<translation id="3820526221169548563">Aktivera tillgänglighetsfunktionen för skärmtangentbord.
+
+          Om policyn är inställd på sant är skärmtangentbordet alltid aktiverat.
+
+          Om policyn är inställd på falskt är skärmtangentbordet alltid inaktiverat.
+
+          Om du ställer in policyn kan den inte ändras eller åsidosättas av användare.
+
+          Om du inte ställer in policyn är skärmtangentbordet inaktiverat som standard, men det aktiveras av användaren när som helst.</translation>
 <translation id="8369602308428138533">Skärmavstängningstid när enheten är ansluten till elnätet</translation>
 <translation id="6513756852541213407">Policyn gör att du kan ange vilken proxyserver som ska användas av <ph name="PRODUCT_NAME"/> och förhindrar att användarna ändrar proxyinställningarna.
 
@@ -277,12 +323,16 @@
 
       Om den här policyn inte ställs in kan användaren själv välja om Google Synk ska användas eller inte.</translation>
 <translation id="7953256619080733119">Värdar för hanterade användares manuella undantag</translation>
-<translation id="7412982067535265896">Innebär att du kan ange en lista med webbadressmönster som anger webbplatser som får ange sessionscookies.
-
-          Om den här policyn inte anges används det globala standardvärdet för alla webbplatser. Standardvärdet hämtas från policyn DefaultCookiesSetting om den används, eller användarens personliga konfiguration om den inte används.
-
-          Om policyn RestoreOnStartup är inställd på att återställa webbadresser från tidigare sessioner fungerar inte den här policyn och cookies sparas inte permanent för dessa webbplatser.</translation>
 <translation id="4807950475297505572">De användare som använts minst nyligen tas bort tills det finns tillräckligt med ledigt utrymme</translation>
+<translation id="8789506358653607371">Tillåt helskärmsläge.
+
+      Den här policyn styr helskärmsläget där alla användargränssnitt för <ph name="PRODUCT_NAME"/> döljs och endast webbinnehåll är synligt.
+
+      Om policyn är inställd på sant eller inte konfigurerad kan användare, appar och tillägg med relevant behörighet välja helskärmsläget.
+
+      Om policyn är inställd på falskt kan varken användare, appar eller tillägg välja helskärmsläget.
+
+      På alla plattformar förutom <ph name="PRODUCT_OS_NAME"/> är kioskläget inte tillgängligt när helskärmsläget är inaktiverat.</translation>
 <translation id="8828766846428537606">Konfigurerar standardstartsidan i <ph name="PRODUCT_NAME"/> och förhindrar att användarna ändrar den.
 
       Användarnas inställningar för startsidan blir bara helt låsta om du väljer att startsidan ska vara sidan Ny flik eller att den ska vara en webbadress som du anger. Om du inte anger en webbadress för startsidan kan användaren fortfarande ställa in startsidan på sidan Ny flik genom att ange &quot;chrome://newtab&quot;.</translation>
@@ -303,8 +353,29 @@
 <translation id="6561396069801924653">Visa tillgänglighetsalternativ i menyn i systemfältet</translation>
 <translation id="8104962233214241919">Välj klientcertifikat automatiskt för dessa webbplatser</translation>
 <translation id="2906874737073861391">Lista över tillägg i AppPack</translation>
+<translation id="4386578721025870401">Begränsa tiden då en användare som verifierats via SAML kan logga in offline.
+
+      Under inloggningen kan Chrome OS verifiera mot en server (online) eller använda ett cachat lösenord (offline).
+
+      När den här policyn är inställd på värdet -1 kan användaren verifieras offline i oändlighet. När den här policyn är inställd på ett annat värde anges tidslängden sedan den senaste onlineverifieringen efter vilken användaren måste använda onlineverifieringen igen.
+
+      Om du inte ställer in denna policy använder <ph name="PRODUCT_OS_NAME"/> en standardtid på 14 dagar efter vilka användaren måste använda onlineverifieringen igen.
+
+      Den här policyn påverkar endast användare som verifieras via SAML.
+
+      Policyns värde ska anges i sekunder.</translation>
 <translation id="3758249152301468420">Inaktivera utvecklarverktygen</translation>
 <translation id="8665076741187546529">Konfigurera listan med tillägg som måste installeras</translation>
+<translation id="2386768843390156671">Gör att Native Messaging-värdar kan installeras på användarnivå.
+
+          Om inställningen är aktiverad tillåter <ph name="PRODUCT_NAME"/>
+          Native Messaging-värdar som installerats på användarnivå.
+
+          Om inställningen är inaktiverad använder <ph name="PRODUCT_NAME"/>
+          bara Native Messaging-värdar som installerats på systemnivå.
+
+          Om inställningen inte anges tillåter <ph name="PRODUCT_NAME"/>
+          Native Messaging-värdar på användarnivå.</translation>
 <translation id="410478022164847452">Anger efter hur lång tid utan åtgärd från användaren som inaktivitetsåtgärden vidtas när enheten är ansluten till elnätet.
 
           När den här policyn är inställd anger den hur länge användaren måste vara inaktiv innan inaktivitetsåtgärden vidtas av <ph name="PRODUCT_OS_NAME"/>. Inaktivitetsåtgärden kan ställas in separat.
@@ -358,6 +429,9 @@
       Om du inaktiverar inställningen går det inte att lägga till, ta bort eller ändra bokmärken. Befintliga bokmärken kan fortfarande användas.</translation>
 <translation id="3496296378755072552">Lösenordshanteraren</translation>
 <translation id="4372704773119750918">Tillåt inte att företagsanvändare ingår i multiprofiler (primärt eller sekundärt)</translation>
+<translation id="7027785306666625591">Konfigurera energihantering i <ph name="PRODUCT_OS_NAME"/>.
+
+      Med dessa policyer kan du konfigurera hur <ph name="PRODUCT_OS_NAME"/> ska fungera när användaren är inaktiv under en viss tid.</translation>
 <translation id="2565967352111237512">Policyn gör att användningsdata och kraschrelaterade data om  <ph name="PRODUCT_NAME"/> kan rapporteras anonymt till Google och förhindrar att användarna ändrar inställningen.
 
       Om du aktiverar inställningen skickas användningsdata och kraschrelaterade data anonymt till Google.
@@ -548,6 +622,7 @@
           Möjliga värden är basic, digest, ntlm och negotiate. Avgränsa värdena med komma.
 
           Om policyn inte anges används alla fyra.</translation>
+<translation id="1017967144265860778">Energibesparing på inloggningssidan</translation>
 <translation id="4914647484900375533">Aktiverar funktionen Instant i <ph name="PRODUCT_NAME"/> och hindrar användarna från att ändra den här inställningen.
 
       Om du aktiverar den här inställningen är Instant i <ph name="PRODUCT_NAME"/> aktiverat.
@@ -561,9 +636,6 @@
       Den här inställningen har tagits bort från och med version 29 av Chrome.</translation>
 <translation id="6114416803310251055">föråldrad</translation>
 <translation id="8493645415242333585">Spara inte webbhistorik</translation>
-<translation id="5319306267766543020">Konfigurera energihantering i <ph name="PRODUCT_OS_NAME"/>.
-
-      Med dessa policyer kan du konfigurera hur <ph name="PRODUCT_OS_NAME"/> ska fungera när användaren är inaktiv under en viss tid.</translation>
 <translation id="2747783890942882652">Konfigurerar det obligatoriska domännamnet för värden som används på fjärråtkomstvärdar och förhindrar att användare ändrar det.
 
           Om inställningen aktiveras kan värdar endast delas via konton som registrerats på det specifika domännamnet.
@@ -596,6 +668,7 @@
 
           Om den här policyn inte ställs in kan användaren avinstallera alla tillägg i <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="6899705656741990703">Identifiera proxyinställningar automatiskt</translation>
+<translation id="4639407427807680016">Namn på de värdar för Native Messaging som ska undantas från svarta listan</translation>
 <translation id="8382184662529825177">Aktivera användning av fjärrattestering för innehållsskydd för enheten</translation>
 <translation id="7003334574344702284">När den här policyn är aktiverad tvingas import av sparade lösenord från standardwebbläsaren. Policyn påverkar också dialogrutan för import.
 
@@ -626,6 +699,9 @@
 <translation id="8704831857353097849">Lista med inaktiverade plugin-program</translation>
 <translation id="8391419598427733574">Rapportera version av operativsystem och fast programvara för registrerade enheter. Om inställningen är False kommer registrerade enheter regelbundet att rapportera versionen av operativsystemet och den fasta programvaran. Om inställningen inte är angiven eller inställd på False kommer versionsinformationen inte att rapporteras.</translation>
 <translation id="467449052039111439">Öppna följande sidor</translation>
+<translation id="1988371335297483117">Betalningar med automatisk uppdatering i <ph name="PRODUCT_OS_NAME"/> kan hämtas via HTTP i stället för HTTPS. Detta möjliggör transparent HTTP-cachelagring av HTTP-hämtningar.
+
+      Om policyn är inställd på sant kommer <ph name="PRODUCT_OS_NAME"/> att försöka hämta betalningar med automatisk uppdatering via HTTP. Om policyn är inställd på falskt eller inte har angetts kommer HTTPS att användas för att hämta betalningar med automatisk uppdatering.</translation>
 <translation id="5883015257301027298">Standardinställning för cookies</translation>
 <translation id="5017500084427291117">Policyn blockerar åtkomst till de angivna webbadresserna.
 
@@ -644,22 +720,6 @@
 
       Alla poster i listan anger en identifierare som används internt för att skilja de olika lokala kontona på enheten från varandra.</translation>
 <translation id="8955719471735800169">Tillbaka till början</translation>
-<translation id="2534584045044686957">Policyn konfigurerar storleken på det cacheminne som används i <ph name="PRODUCT_NAME"/> för att spara cachelagrade mediefiler på hårddisken.
-
-      Om du anger den här policyn använder <ph name="PRODUCT_NAME"/> den angivna cachestorleken oavsett om användaren har angett flaggan --media-cache-size eller inte.
-
-      Om policyns värde är 0 används standardstorleken för cacheminnen och användaren kan inte ändra den.
-
-      Om policyn inte anges används standardstorleken och användaren kan åsidosätta den med flaggan --media-cache-size.</translation>
-<translation id="3723474915949495925">Policyn anger en lista med plugin-program som kan aktiveras och inaktiveras av användaren i <ph name="PRODUCT_NAME"/>.
-
-      Jokertecknen * och ? kan användas för att matcha sekvenser med arbiträra tecken. * matchar ett arbiträrt antal tecken medan ? anger ett valfritt enstaka tecken, dvs. noll eller ett tecken. Escape-tecknet är \, så om du vill matcha de faktiska tecknen *, ? och \ kan du skriva \ framför dem.
-
-      Om du aktiverar inställningen kan den angivna listan med plugin-program användas i <ph name="PRODUCT_NAME"/>. Användarna kan aktivera eller inaktivera dem i about:plugins, även om plugin-programmet också matchar ett mönster i DisabledPlugins. Användarna kan också aktivera och inaktivera plugin-program som inte matchar några mönster i DisabledPlugins, DisabledPluginsExceptions och EnabledPlugins.
-
-      Policyn är avsedd att tillåta strikt svartlistning av plugin-program genom att listan DisabledPlugins innehåller jokerposter som inaktiverar alla plugin-program (*) eller inaktiverar alla Java-plugin-program (*Java*) men administratören vill aktivera vissa specifika versioner som IcedTea Java 2.3. Dessa specifika versioner kan anges i den här policyn.
-
-      Om policyn inte anges låses alla plugin-program som matchar mönstren i DisabledPlugins och användaren kan inte aktivera dem.</translation>
 <translation id="4557134566541205630">Webbadress för standardsökleverantören av ny fliksida</translation>
 <translation id="546726650689747237">Skärmdämpningstid när enheten är ansluten till elnätet</translation>
 <translation id="4988291787868618635">Åtgärd som ska vidtas när inaktivitetstiden har gått</translation>
@@ -698,6 +758,11 @@
       Om du aktiverar eller inaktiverar inställningen kan användarna inte ändra eller åsidosätta den.
 
       Om du inte anger policyn kan användarna välja om det ska behövas ett lösenord för att låsa upp enheten eller inte.</translation>
+<translation id="383466854578875212">Låter dig ange vilka värdar för Native Messaging (kommunikation med inbyggda appar) som svarta listan inte gäller för.
+
+          Om svarta listan har värdet * betyder det att alla värdar för Native Messaging är otillåtna och att endast de som står med på vitlistan läses in.
+
+          Som standard är alla värdar för Native Messaging tillåtna, men om alla sådana värdar har satts på svarta listan av en princip kan du åsidosätta den principen med hjälp av vitlistan.</translation>
 <translation id="6022948604095165524">Åtgärd vid start</translation>
 <translation id="9042911395677044526">Tillåter att en pushad nätverkskonfiguration används per användare på en <ph name="PRODUCT_OS_NAME"/>-enhet. Nätverkskonfigurationen är en JSON-formaterad sträng som definieras av formatet för öppen nätverkskonfiguration som beskrivs på <ph name="ONC_SPEC_URL"/></translation>
 <translation id="7128918109610518786">Visar en lista med de appidentifierare som ska visas som fasta appar i startfältet i <ph name="PRODUCT_OS_NAME"/>.
@@ -769,11 +834,6 @@
       Den här policyn är begränsad till 1 000 poster. Efterföljande poster ignoreras.
 
       Om den här policyn inte anges görs inga undantag från policyn URLBlacklist.</translation>
-<translation id="4163644371169597382">IT-administratörer för företagsenheter kan använda den här flaggan för att styra om användarna ska kunna utnyttja erbjudanden via registrering i Chrome OS.
-
-      Om policyn är inställd på sant eller inte inte alls inställd anges kan användarna utnyttja erbjudanden via registrering i Chrome OS.
-
-      Om policyn är inställd på falskt kan användarna inte utnyttja erbjudanden.</translation>
 <translation id="8148901634826284024">Aktivera hjälpmedelsfunktionerna i högkontrastläge.
 
           Om den här principen är sann är högkontrastläget alltid aktiverat.
@@ -783,6 +843,7 @@
           Om du anger den här principen kan användarna inte ändra eller åsidosätta den.
 
           Om den här principen inte anges är högkontrastläget inte aktiverat från start, men användaren kan aktivera det när som helst.</translation>
+<translation id="2201555246697292490">Konfigurera lista över tillåtna värdar för Native Messaging</translation>
 <translation id="6177482277304066047">Anger en målversion för automatiska uppdateringar.
 
       Anger prefix för en målversion som <ph name="PRODUCT_OS_NAME"/> ska uppdateras till. Om enheten har en version som är äldre än det angivna prefixet uppdateras den till den senaste versionen med det angivna prefixet. Om enheten redan har en nyare version händer ingenting (ingen nedgradering görs) och enhetens befintliga version påverkas inte. Prefixformatet fungerar per komponent som i följande exempel:
@@ -793,6 +854,7 @@
       &quot;1412.24.34&quot;: uppdatera bara till denna specifika version.</translation>
 <translation id="8102913158860568230">Standardinställning för medieuppspelning</translation>
 <translation id="6641981670621198190">Inaktivera stöd för programmeringsgränssnitt för 3D-grafik</translation>
+<translation id="1265053460044691532">Begränsa tiden som en användare som verifierats via SAML kan logga in offline</translation>
 <translation id="7929480864713075819">Aktivera minnesrapportering (heap-storlek för JavaScript) på sidan</translation>
 <translation id="5703863730741917647">Ange vilken åtgärd som ska vidtas när fördröjningen på grund av inaktivitet har uppnåtts.
 
@@ -967,6 +1029,9 @@
 
       Om policyn är inställd på sant eller inte är konfigurerad kan nya användarkonton skapas under förutsättning att <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME"/> inte förhindrar att användaren loggar in.</translation>
 <translation id="4389091865841123886">Konfigurera fjärrattesteringen med TPM-mekanism.</translation>
+<translation id="9175109938712007705">Eftersom återkallelsekontroller online vid programfel inte ger någon effektiv säkerhetsfördel är de inaktiverade som standard i <ph name="PRODUCT_NAME"/> version 19 och senare. Om du aktiverar den här policyn återställs den tidigare inställningen och OCSP/CRL-onlinekontroller utförs.
+
+      Om policyn inte ställs in eller ställs in på falskt görs ingen återkallelsekontroll online i Chrome 19.</translation>
 <translation id="8256688113167012935">Kontrollerar hur kontonamnet <ph name="PRODUCT_OS_NAME"/> visas på inloggningssidan för motsvarande lokala konto på enheten.
 
       Om policyn tillämpas används den angivna strängen på inloggningsskärmen i den bildbaserade inloggningsväljaren för motsvarande lokala konto på enheten.
@@ -1004,35 +1069,7 @@
 
           Om åtgärden blir avstängning kan <ph name="PRODUCT_OS_NAME"/> konfigureras separat för att antingen låsa eller inte låsa skärmen före avstängningen.</translation>
 <translation id="7750991880413385988">Öppna sidan Ny flik</translation>
-<translation id="741903087521737762">Innebär att du kan ange beteende vid start.
-
-          Om du väljer Öppna sidan Ny flik öppnas alltid sidan ny flik när du startar <ph name="PRODUCT_NAME"/>.
-
-          Om du väljer Återställ den senaste sessionen öppnas de webbadresser som var öppna när <ph name="PRODUCT_NAME"/> stängdes senast och webbläsarsessionen återställs som den lämnades.
-          Om du väljer det här alternativet inaktiveras vissa inställningar som är beroende av sessioner eller som utför åtgärder när programmet avslutas (till exempel att ta bort webbläsardata eller endast sessions-cookies).
-
-          Om du väljer Öppna en lista med webbadresser visas listan med webbadresser som ska öppnas vid start när en användare startar <ph name="PRODUCT_NAME"/>.
-
-          Om du aktiverar den här inställningen kan den inte ändras eller åsidosättas av användaren i <ph name="PRODUCT_NAME"/>.
-
-          Om du inaktiverar inställningen är det samma sak som att inte konfigurera den. Användaren kan fortfarande ändra den i <ph name="PRODUCT_NAME"/>.</translation>
-<translation id="8161570238552664224">Tillåta uppspelning av ljud.
-
-      När policyn anges som falsk inaktiveras ljudutgångar när användaren är inloggad.
-
-      Policyn påverkar alla typer av ljudutgångar och inte bara de inbyggda högtalarna. Åtkomst till ljudfunktioner nekas också av den här policyn. Aktivera inte den här policyn om en skärmläsare krävs för användaren.
-
-      Om inställningen anges som sann eller inte konfigureras kan användare använda alla ljudutgångar som stöds på enheten.</translation>
 <translation id="5761030451068906335">Konfigurerar proxyinställningarna för <ph name="PRODUCT_NAME"/>. Använd inte policyn. Den är inte redo ännu.</translation>
-<translation id="3006443857675504368">Visa tillgänglighetsalternativ för <ph name="PRODUCT_OS_NAME"/> i systemmenyn.
-
-          Om policyn är inställd på sant visas tillgänglighetsalternativen alltid i menyn i systemfältet.
-
-          Om policyn är inställd på falskt visas tillgänglighetsalternativen aldrig i menyn i systemfältet.
-
-          Om du anger den här policyn kan inte användare ändra eller åsidosätta den.
-
-          Om du inte anger den här policyn visas inte tillgänglighetsalternativen i menyn i systemfältet, men användaren kan göra så att tillgänglighetsalternativen visas via sidan Inställningar.</translation>
 <translation id="8344454543174932833">Importera bokmärken från standardwebbläsaren första gången den körs</translation>
 <translation id="1019101089073227242">Ange katalog för användardata</translation>
 <translation id="5826047473100157858">Policyn anger om användaren får öppna sidor i inkognitoläge i <ph name="PRODUCT_NAME"/>.
@@ -1073,6 +1110,13 @@
       Om du aktiverar eller inaktiverar inställningen kan den inte ändras i <ph name="PRODUCT_NAME"/> av användarna.
 
       Om inställningen inte anges kan användaren avgöra om funktionen ska användas eller inte.</translation>
+<translation id="7593523670408385997">Konfigurerar storleken på cacheminnet där <ph name="PRODUCT_NAME"/> sparar cachade filer på skivan.
+
+      När den här principen har getts ett värde använder <ph name="PRODUCT_NAME"/> ett cacheminne med den angivna storleken oavsett om användaren har angett en storlek med flaggan --disk-cache-size eller inte. Det värde som anges i principen är inte en fast gräns utan snarare ett förslag till cachesystemet. Om värdet är mindre än några MB är det för litet och avrundas uppåt till en vettig minimigräns.
+
+      Om principen har värdet 0 används cacheminnets standardstorlek men användaren får inte ändra den.
+
+      Om inget värde har angetts används standardstorleken och användaren kan åsidosätta den med flaggan --disk-cache-size.</translation>
 <translation id="5475361623548884387">Aktivera utskrift</translation>
 <translation id="7287359148642300270">Anger vilka servrar som ska godkännas för integrerad autentisering. Integrerad autentisering är endast aktiverad när <ph name="PRODUCT_NAME"/> får en autentiseringsutmaning från en proxyserver som finns i listan över godkända servrar.
 
@@ -1080,6 +1124,18 @@
 
           Om du inte anger den här policyn kommer Chrome att försöka identifiera om en server finns i intranätet och endast då kommer den att svara på IWA-förfrågningar.  Om en server identifieras som internet kommer IWA-förfrågningar därifrån att ignoreras av Chrome.</translation>
 <translation id="3653237928288822292">Ikon för standardsökleverantör</translation>
+<translation id="4721232045439708965">Innebär att du kan ange beteende vid start.
+
+          Om du väljer Öppna sidan Ny flik öppnas alltid sidan Ny flik när du startar <ph name="PRODUCT_NAME"/>.
+
+          Om du väljer Återställ den senaste sessionen öppnas de webbadresser som var öppna när <ph name="PRODUCT_NAME"/> stängdes senast och webbläsarsessionen återställs som den lämnades.
+          Om du väljer det här alternativet inaktiveras vissa inställningar som är beroende av sessioner eller som utför åtgärder när programmet avslutas (till exempel att ta bort webbläsardata eller endast sessions-cookies).
+
+          Om du väljer Öppna en lista med webbadresser visas listan med webbadresser som ska öppnas vid start när en användare startar <ph name="PRODUCT_NAME"/>.
+
+          Om du aktiverar den här inställningen kan den inte ändras eller åsidosättas av användaren i <ph name="PRODUCT_NAME"/>.
+
+          Om du inaktiverar inställningen är det samma sak som att inte konfigurera den. Användaren kan fortfarande ändra den i <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="2872961005593481000">Stäng av</translation>
 <translation id="4445684791305970001">Policyn inaktiverar utvecklarverktygen och JavaScript-konsolen.
 
@@ -1157,6 +1213,17 @@
 <translation id="6190022522129724693">Standardinställning för popup-fönster</translation>
 <translation id="847472800012384958">Tillåt inte att popup-fönster visas på någon webbplats</translation>
 <translation id="4733471537137819387">Policyer som gäller integrerad HTTP-autentisering</translation>
+<translation id="8501011084242226370">Anger en lista med plugin-program som användaren kan aktivera eller inaktivera i <ph name="PRODUCT_NAME"/>.
+
+      Jokertecknen * och ? kan användas för att matcha följder med vilka tecken som helst. * matchar hur många tecken som helst medan ? matchar vilket enstaka tecken som helst, det vill säga 0 eller 1 tecken. Avkodningstecknet är \, så om du vill matcha just tecknen *, ? eller \ kan du sätta ett \ framför dem.
+
+      Om du aktiverar den här inställningen kan den angivna listan med plugin-program användas i <ph name="PRODUCT_NAME"/>. Användare kan aktivera eller inaktivera dem i about:plugins även om plugin-programmet också matchar ett mönster i DisabledPlugins. Användare kan också aktivera och inaktivera plugin-program som inte matchar några fönster i DisabledPlugins, DisabledPluginsExceptions och EnabledPlugins.
+
+      Syftet med den här policyn är att möjliggöra strikt svartlistning av plugin-program om listan DisabledPlugins innehåller jokerposter som disable all plugins '*' eller disable all Java plugins *Java* men administratören vill aktivera en viss version som IcedTea Java 2.3. Den specifika versionen kan anges i den här policyn.
+
+      Observera att både plugin-programmets namn och grupp måste undantas. Varje plugin-grupp visas i en separat del i about:plugins. Varje del kan innehålla ett eller flera plugin-program. Plugin-programmet Shockwave Flash tillhör gruppen Adobe Flash Player och båda namnen måste matcha något i undantagslistan om det plugin-programmet ska undantas från svartlistan.
+
+      Om den här policyn inte ställs in inaktiveras alla plugin-program som matchar mönstren i DisabledPlugins och de kan inte aktiveras av användaren.</translation>
 <translation id="8951350807133946005">Ange katalog för diskcache</translation>
 <translation id="603410445099326293">Parametrar för föreslagen webbadress som använder POST</translation>
 <translation id="2592091433672667839">Inaktivitetstid innan skärmsläckaren visas på inloggningsskärmen i återförsäljarläge</translation>
@@ -1164,6 +1231,15 @@
 <translation id="2805707493867224476">Tillåt alla webbplatser att visa popup-fönster</translation>
 <translation id="1727394138581151779">Blockera alla plugin-program</translation>
 <translation id="8118665053362250806">Ange cachestorlek för medieenhet</translation>
+<translation id="6565312346072273043">Ange standardläge för tillgänglighetsfunktionen för skärmtangentbord på inloggningsskärmen.
+
+          Om policyn är inställd på sant är skärmtangentbordet aktiverat när inloggningsskärmen visas.
+
+          Om policyn är inställd på falskt är skärmtangentbordet inaktiverat när inloggningsskärmen visas.
+
+          Om du ställer in den här policyn kan användarna åsidosätta den tillfälligt genom att aktivera eller inaktivera skärmtangentbordet. Användarens val sparas däremot inte och standardinställningen återställs varje gång inloggningsskärmen öppnas igen eller användaren är inaktiv på inloggningsskärmen i en minut.
+
+          Om policyn inte ställs in är skärmtangentbordet inaktiverat när inloggningsskärmen visas första gången. Användaren kan aktivera eller inaktivera skärmtangentbordet när som helst och dess status på inloggningsskärmen sparas för användaren.</translation>
 <translation id="7079519252486108041">Blockera popup-fönster på dessa webbplatser</translation>
 <translation id="1859633270756049523">Begränsa sessionslängd</translation>
 <translation id="7433714841194914373">Aktivera Instant</translation>
@@ -1208,6 +1284,7 @@
 <translation id="8519264904050090490">Webbadresser för hanterade användares manuella undantag</translation>
 <translation id="4480694116501920047">Tvinga fram användning av SafeSearch</translation>
 <translation id="465099050592230505">Webbadress till företagets webbutik (föråldrad)</translation>
+<translation id="2006530844219044261">Energibesparing (DPMS)</translation>
 <translation id="1221359380862872747">Läs in angivna webbadresser vid demoinloggning</translation>
 <translation id="2431811512983100641">Policyn anger om TLS-domänbundna certifikattillägg ska aktiveras.
 
@@ -1226,9 +1303,7 @@
       Om policyn inte anges använder <ph name="PRODUCT_NAME"/> standardvärdet 5 000 millisekunder.</translation>
 <translation id="8099880303030573137">Inaktivitetstid när enheten drivs av batteriet</translation>
 <translation id="2761483219396643566">Inaktivitetstid när enheten drivs av batteriet</translation>
-<translation id="5058056679422616660">Betalningar med automatisk uppdatering i <ph name="PRODUCT_OS_NAME"/> kan hämtas via HTTP i stället för HTTPS. Detta möjliggör transparent HTTP-cachelagring av HTTP-hämtningar.
-
-      Om policyn är inställd på Sant kommer <ph name="PRODUCT_OS_NAME"/> att försöka hämta betalningar med automatisk uppdatering via HTTP. Om policyn är inställd på Falskt eller inte har angetts kommer HTTPS att användas för att hämta betalningar med automatisk uppdatering.</translation>
+<translation id="6281043242780654992">Konfigurerar principer för Native Messaging. Om en värd för Native Messaging står på svarta listan är den förbjuden såvida den inte står på vitlistan.</translation>
 <translation id="1468307069016535757">Välj standardtillståndet för hjälpmedelsfunktionen högkontrastläge på inloggningsskärmen.
 
           Om den här principen är sann är högkontrastläget aktiverat på inloggningsskärmen.
@@ -1280,9 +1355,6 @@
 <translation id="5366977351895725771">Om &quot;false&quot; anges inaktiveras alternativet att skapa övervakade användare för den här användaren. Eventuella befintliga övervakade användare är fortfarande tillgängliga.
 
           Om &quot;true&quot; anges eller ingen konfiguration utförs kan den här användaren skapa och hantera övervakade användare.</translation>
-<translation id="8101760444435022591">Eftersom återkallelsekontroller online vid programfel inte ger någon effektiv säkerhetsfördel är de inaktiverade som standard i <ph name="PRODUCT_NAME"/> version 19 och senare. Om du aktiverar den här policyn återställs den tidigare inställningen och OCSP/CRL-onlinekontroller utförs.
-
-      Om policyn inte ställs in eller ställs in på falskt görs ingen återkallelsekontroll online i Chrome 19.</translation>
 <translation id="5469484020713359236">Policyn gör att du kan ange en lista med webbadressmönster som anger webbplatser som får spara cookies.
 
           Om policyn inte anges används det globala standardvärdet för alla webbplatser. Standardvärdet hämtas från policyn DefaultCookiesSetting om den har angetts eller användarens personliga konfiguration om den inte har det.</translation>
@@ -1303,13 +1375,6 @@
 
           Om Falskt har angetts för den här policyn, eller om ingenting har angetts, påbörjas fördröjningar i energisparfunktionen och begränsningar i sessionslängden så fort sessionen har påbörjats.</translation>
 <translation id="4600786265870346112">Aktivera den stora markören</translation>
-<translation id="8592105098257899882">Policyn konfigurerar storleken på den cache som <ph name="PRODUCT_NAME"/> använder för att spara cachefiler på enheten.
-
-      Om du anger den här policyn använder <ph name="PRODUCT_NAME"/> den angivna cachestorleken oavsett om användaren har angett flaggan --disk-cache-size eller inte.
-
-      Om värdet för policyn är 0 används standardstorleken för cache men den kan inte ändras av användaren.
-
-      Om policyn inte anges används standardstorleken och användaren kan åsidosätta den med flaggan --disk-cache-size.</translation>
 <translation id="5887414688706570295">Konfigurerar prefixet TalkGadget som kommer att användas av fjärråtkomstvärdar och förhindrar att användare ändrar det.
 
           Om prefixet anges kopplas det till det grundläggande TalkGadget-namnet för att skapa ett fullständigt domännamn för TalkGadget. Det grundläggande domännamnet för TalkGadget är .talkgadget.google.com.
@@ -1341,7 +1406,6 @@
 
       Om du inaktiverar den här inställningen kan webbsidor tillåtas att använda WebGL API och plugin-program att använda Pepper 3D API. Standardinställningarna i webbläsaren kan fortfarande kräva att kommandoradsargument skickas för att programmeringsgränssnitten ska kunna användas.</translation>
 <translation id="2077273864382355561">Skärmavstängningstid när enheten drivs av batteriet</translation>
-<translation id="909184783177222836">Energihantering</translation>
 <translation id="3417418267404583991">Om den här policyn är inställd på sant eller inte är konfigurerad aktiveras gästinloggning i <ph name="PRODUCT_OS_NAME"/>. Gästinloggningar är anonyma användarsessioner och kräver inget lösenord.
 
       Om policyn är inställd på falskt går det inte att starta gästsessioner i <ph name="PRODUCT_OS_NAME"/>.</translation>
@@ -1350,35 +1414,14 @@
       När DeviceIdleLogoutTimeout har angetts definierar den här policyn hur länge en varningsruta med nedräkning ska visas för användaren innan utloggningen genomförs.
 
       Policyns värde anges i millisekunder.</translation>
-<translation id="54795286564479339">Konfigurera användarens avatarbild.
-
-      Med den här policyn kan du konfigurera den avatarbild som representerar användaren på inloggningsskärmen. Policyn anges genom att man specificerar vilken webbadress som <ph name="PRODUCT_OS_NAME"/> hämtar avatarbilden från. Ett kryptografiskt kondensat måste användas för att verifiera hämtningens integritet. Bilden måste ha JPEG-format och storleken får inte överstiga 512 kB. Webbadressen måste vara tillgänglig utan autentisering.
-
-      Avatarbilden har hämtats och cachats. Den kommer att hämtas igen om webbadressen eller kondensatet ändras.
-
-      Policyn ska specificeras som en sträng som återger webbadressen och kondensatet i JSON-format och som följer detta schema:
-      {
-        &quot;type&quot;: &quot;object&quot;,
-        &quot;properties&quot;: {
-          &quot;url&quot;: {
-            &quot;description&quot;: &quot;Webbadressen som avatarbilden kan hämtas från.&quot;,
-            &quot;type&quot;: &quot;string&quot;
-          },
-          &quot;hash&quot;: {
-            &quot;description&quot;: &quot;SHA-1-kondensatet för avatarbilden.&quot;,
-            &quot;type&quot;: &quot;string&quot;
-          }
-        }
-      }
-
-      Om den här policyn anges hämtar och använder <ph name="PRODUCT_OS_NAME"/> avatarbilden.
-
-      Om du anger den här policyn kan den inte åsidosättas av andra användare.
-
-      Om policyn inte anges kan användaren välja vilken avatarbild som helst att använda på inloggningsskärmen.</translation>
 <translation id="237494535617297575">Policyn gör att du kan ange en lista med webbadressmönster som inte får visa meddelanden.
 
           Om policyn inte anges används det globala standardvärdet för alla webbplatser. Standardvärdet hämtas från policyn DefaultNotificationsSetting om den har angetts eller användarens personliga konfiguration om den inte har det.</translation>
+<translation id="527237119693897329">Låter dig ange vilka värdar för Native Messaging (kommunikation med inbyggda appar) som inte ska läsas in.
+
+           Om svarta listan har värdet * betyder det att alla värdar för Native Messaging är otillåtna, såvida de inte har angetts explicit i vitlistan.
+
+          Om principen inte har getts något värde läser <ph name="PRODUCT_NAME"/> in alla installerade värdar för Native Messaging.</translation>
 <translation id="7258823566580374486">Aktivera avskärmning av fjärråtkomstvärdar</translation>
 <translation id="5560039246134246593">Lägg till en parameter vid hämtningen av startvärdet för Variations i <ph name="PRODUCT_NAME"/>.
 
@@ -1488,15 +1531,6 @@
 
          Om du inte anger någon policy kommer PromptOnAccess att användas och användaren kommer att kunna ändra den.</translation>
 <translation id="2299220924812062390">Ange en lista med aktiverade plugin-program</translation>
-<translation id="328908658998820373">Tillåter helskärmsläge.
-
-      Den här policyn styr helskärmsläget där alla användargränssnitt för <ph name="PRODUCT_NAME"/> döljs och endast webbinnehåll är synligt.
-
-      Om policyn är inställd på Sant eller inte konfigurerad kan användare, appar och tillägg med relevant behörighet välja helskärmsläget.
-
-      Om policyn är inställd på Falskt kan varken användare, appar eller tillägg välja helskärmsläget.
-
-      På alla plattformar förutom <ph name="PRODUCT_OS_NAME"/> är kioskläget inte tillgängligt när helskärmsläget är inaktiverat.</translation>
 <translation id="4325690621216251241">Lägg till en utloggningsknapp i systemfältet</translation>
 <translation id="924557436754151212">Importera sparade lösenord från standardwebbläsaren första gången den körs</translation>
 <translation id="1465619815762735808">Klicka för att spela</translation>
@@ -1513,24 +1547,18 @@
 
           Policyns värde anges i millisekunder. Värdet måste vara mindre än inaktivitetstiden.</translation>
 <translation id="1897365952389968758">Tillåt alla webbplatser att köra JavaScript (rekommenderas)</translation>
-<translation id="5244714491205147861">Energibesparing på inloggningssidan</translation>
 <translation id="922540222991413931">Konfigurera installationskällor för tillägg, appar och användarskript</translation>
 <translation id="7323896582714668701">Ytterligare kommandoradsparametrar för <ph name="PRODUCT_NAME"/></translation>
 <translation id="6931242315485576290">Inaktivera synkronisering av data med Google</translation>
+<translation id="1330145147221172764">Aktivera skärmtangentbordet</translation>
 <translation id="7006788746334555276">Innehållsinställningar</translation>
-<translation id="63659515616919367">Styr användarbeteendet i en multiprofilsession på <ph name="PRODUCT_OS_NAME"/>-enheter.
+<translation id="450537894712826981">Konfigurerar storleken på cacheminnet där <ph name="PRODUCT_NAME"/> sparar cachade mediafiler på skivan.
 
-      Om policyn är inställd på MultiProfileUserBehaviorUnrestricted kan användaren antingen vara en primär eller sekundär användare i en multiprofilsession.
+      När den här principen har getts ett värde använder <ph name="PRODUCT_NAME"/> ett cacheminne med den angivna storleken oavsett om användaren har angett en storlek med flaggan --media-cache-size eller inte. Det värde som anges i principen är inte en fast gräns utan snarare ett förslag till cachesystemet. Om värdet är mindre än några MB är det för litet och avrundas uppåt till en vettig minimigräns.
 
-      Om policyn är inställd på MultiProfileUserBehaviorMustBePrimary kan användaren endast vara en primär användare i en multiprofilsession.
+      Om principen har värdet 0 används cacheminnets standardstorlek men användaren får inte ändra den.
 
-      Om policyn är inställd på MultiProfileUserBehaviorNotAllowed kan användaren inte ingå i en multiprofilsession.
-
-      Om du anger den här inställningen kan användare inte ändra eller åsidosätta den.
-
-      Om inställningen ändras medan användaren är inloggad på en multiprofilsession kommer alla användare i sessionen att kontrolleras mot sina motsvarande inställningar. Sessionen avslutas om någon av användarna inte längre har tillåtelse att vara i sessionen.
-
-      Om policyn inte anges kommer standardvärdet MultiProfileUserBehaviorUnrestricted att användas.</translation>
+      Om inget värde har angetts används standardstorleken och användaren kan åsidosätta den med flaggan --media-cache-size.</translation>
 <translation id="5142301680741828703">Rendera alltid följande webbadressmönster i <ph name="PRODUCT_FRAME_NAME"/></translation>
 <translation id="4625915093043961294">Konfigurera vitlista för tilläggsinstallation</translation>
 <translation id="187819629719252111">Policyn tillåter åtkomst till lokala filer på datorn genom att tillåta att <ph name="PRODUCT_NAME"/> visar dialogrutor för filval.
@@ -1550,9 +1578,11 @@
 <translation id="1062011392452772310">Aktivera fjärrattestering för enheten</translation>
 <translation id="7774768074957326919">Använd systemets proxyinställningar</translation>
 <translation id="3891357445869647828">Aktivera JavaScript</translation>
+<translation id="6774533686631353488">Tillåt Native Messaging-värdar på användarnivå (installerade utan administratörsbehörighet).</translation>
 <translation id="868187325500643455">Tillåt alla webbplatser att köra pluginprogram automatiskt</translation>
 <translation id="7421483919690710988">Ange medieenhetens cachestorlek i byte</translation>
 <translation id="5226033722357981948">Ange om plugin-sökaren ska inaktiveras</translation>
+<translation id="7234280155140786597">Namn på de värdar för Native Messaging som ska vara förbjudna (* betyder alla)</translation>
 <translation id="4890209226533226410">Anger vilken typ av skärmförstorare som är aktiverad.
 
           Om den här principen har angetts bestämmer den vilken typ av skärmförstorare som är aktiv. Skärmförstoraren inaktiveras om värdet på principen är Ingen.
@@ -1613,6 +1643,11 @@
       Om policyn inte har angetts sker ingen automatisk inloggning.</translation>
 <translation id="5983708779415553259">Standardbeteende för webbplatser som inte ingår i ett innehållspaket</translation>
 <translation id="3866530186104388232">Om den här policyn är inställd på sant eller inte är konfigurerad visas befintliga användare på inloggningsskärmen i <ph name="PRODUCT_OS_NAME"/> och det går att välja en. Om policyn är inställd på falskt används inloggningsfönstret för användarnamn och lösenord i <ph name="PRODUCT_OS_NAME"/>.</translation>
+<translation id="7384902298286534237">Innebär att du kan ange en lista med webbadressmönster som anger webbplatser som får ange sessionscookies.
+
+          Om den här policyn inte anges används det globala standardvärdet för alla webbplatser. Standardvärdet hämtas från policyn DefaultCookiesSetting om den används, eller användarens personliga konfiguration om den inte används.
+
+          Om policyn RestoreOnStartup är inställd på att återställa webbadresser från tidigare sessioner fungerar inte den här policyn och cookies sparas inte permanent för dessa webbplatser.</translation>
 <translation id="2098658257603918882">Aktivera rapportering av användning och kraschrelaterade data</translation>
 <translation id="2324547593752594014">Tillåter inloggning i Chrome</translation>
 <translation id="172374442286684480">Tillåt alla webbplatser att ange lokala data</translation>
@@ -1702,6 +1737,11 @@
 
       Om du inte anger inställningen får användarna välja om de vill köra föråldrade program.</translation>
 <translation id="2629448496147630947">Konfigurera alternativ för fjärråtkomst i <ph name="PRODUCT_NAME"/>. Dessa funktioner ignoreras om inte webbappen för fjärråtkomst har installerats.</translation>
+<translation id="4001275826058808087">IT-administratörer för företagsenheter kan använda den här flaggan för att styra om användarna ska kunna utnyttja erbjudanden via registrering i Chrome OS.
+
+      Om policyn är inställd på sant eller inte är inställd kan användarna utnyttja erbjudanden via registrering i Chrome OS.
+
+      Om policyn är inställd på falskt kan användarna inte utnyttja erbjudanden.</translation>
 <translation id="1310699457130669094">Här kan du ange webbadressen till en PAC-fil för proxy.
 
           Den här policyn gäller bara om du har valt manuella proxyinställningar vid Välj hur inställningar för proxyserver ska anges.
@@ -1748,6 +1788,7 @@
       Om du inaktiverar inställningen kan cookies sparas av webbsideelement som inte tillhör den domän som står i webbläsarens adressfält och användarna kan inte ändra inställningen.
 
       Om policyn inte anges är cookies från tredje part tillåtna, men inställningen kan ändras av användaren.</translation>
+<translation id="4604931264910482931">Konfigurera svarta listan för Native Messaging</translation>
 <translation id="6810445994095397827">Blockera JavaScript på dessa webbplatser</translation>
 <translation id="6672934768721876104">Den här policyn gäller inte längre. Använd ProxyMode istället.
 
@@ -1793,6 +1834,7 @@
           Mer detaljerade exempel finns på:
           <ph name="PROXY_HELP_URL"/></translation>
 <translation id="6658245400435704251">Anger hur många sekunder en hämtning av en uppdatering via en enhet får försenas slumpmässigt från den tidpunkt då uppdateringen först skickades till servern. Enheten kan hållas i vänteläge dels under en vanlig tidsperiod, dels beroende på antalet uppdateringskontroller. Spridningen är alltid bunden till en övre tidsgräns så att en enhet aldrig fastnar för gott medan en uppdatering håller på att hämtas.</translation>
+<translation id="102492767056134033">Ange standardläget för skärmtangentbordet på inloggningsskärmen</translation>
 <translation id="523505283826916779">Inställningar för tillgänglighet</translation>
 <translation id="1948757837129151165">Policy för HTTP-autentisering</translation>
 <translation id="5946082169633555022">Betakanal</translation>
@@ -1808,6 +1850,15 @@
       När policyn har angetts blir Hanterade bokmärken den standardmapp som öppnas när bokmärkesvyn öppnas i Chrome.
 
       Hanterade bokmärken synkroniseras inte med användarkontot.</translation>
+<translation id="6757375960964186754">Visa tillgänglighetsalternativ för <ph name="PRODUCT_OS_NAME"/> i systemmenyn.
+
+          Om policyn är inställd på sant visas alltid tillgänglighetsalternativ i systemfältsmenyn.
+
+          Om policyn är inställd på sant visas aldrig tillgänglighetsalternativ i systemfältsmenyn.
+
+          Om du ställer in policyn kan den inte ändras eller åsidosättas av användaren.
+
+          Om du inte ställer in policyn visas inte tillgänglighetsalternativ i systemfältsmenyn, men användaren kan välja att tillgänglighetsalternativen ska visas via menyn Inställningar.</translation>
 <translation id="8303314579975657113">Policyn anger vilket GSSAPI-bibliotek som ska användas för HTTP-autentisering. Du kan ange bara ett biblioteksnamn eller en fullständig sökväg.
 
       Om du inte anger något använder <ph name="PRODUCT_NAME"/> ett standardbiblioteksnamn.</translation>
@@ -1866,6 +1917,9 @@
 <translation id="8197918588508433925">Policyn specificerar vilka tillägg som får använda API:et för Enterprise Platform Keys – chrome.enterprise.platformKeysPrivate.challengeUserKey() – för fjärrattestering. Tillägg måste anges på den här listan om de ska kunna använda API:et.
 
           Om ett tillägg inte finns med på listan, eller om listan inte har fastställts, kommer anslutningen till API:et att misslyckas och en felkod att visas.</translation>
+<translation id="2811293057593285123">Med tjänsten Säker webbsökning visas en varningssida när användare navigerar till webbplatser som flaggats som skadliga. Om du aktiverar inställningen kan användare inte fortsätta från varningssidan till den skadliga webbplatsen.
+
+      Om inställningen inaktiveras eller inte konfigureras kan användare välja att fortsätta från den flaggade webbplatsen efter att varningen har visats.</translation>
 <translation id="7649638372654023172">Konfigurerar webbadressen som är standard för startsidan i <ph name="PRODUCT_NAME"/> och förhindrar att användare ändrar den.
 
           Startsidan är sidan som du öppnar med knappen Startsida. Sidorna som öppnas styrs av policyn RestoreOnStartup.
@@ -1875,5 +1929,12 @@
           Om du aktiverar inställningen kan användarna inte ändra webbadresserna för sina startsidor i <ph name="PRODUCT_NAME"/>, men de kan ändå välja sidan Ny flik som startsida.
 
           Om policyn inte anges kan användaren välja startsida själv om inte HomepageIsNewTabPage är angiven.</translation>
+<translation id="3806576699227917885">Tillåta uppspelning av ljud.
+
+      När policyn anges som falsk inaktiveras ljudutgångar när användaren är inloggad.
+
+      Policyn påverkar alla typer av ljudutgångar och inte bara de inbyggda högtalarna. Åtkomst till ljudfunktioner nekas också av den här policyn. Aktivera inte den här policyn om en skärmläsare krävs för användaren.
+
+      Om inställningen är inställd på sant eller inte är konfigurerad kan användare använda alla ljudutgångar som stöds på enheten.</translation>
 <translation id="4858735034935305895">Tillåt helskärmsläge</translation>
 </translationbundle>

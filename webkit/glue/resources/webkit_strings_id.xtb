@@ -3,7 +3,6 @@
 <translationbundle lang="id">
 <translation id="4763480195061959176">video</translation>
 <translation id="5843503607508392247">Lainnya...</translation>
-<translation id="2426432199384958866">kembalikan streaming film ke waktu nyata</translation>
 <translation id="248395913932153421">Hari</translation>
 <translation id="1729654308190250600">Jangan mengosongkan bidang alamat email.</translation>
 <translation id="6015796118275082299">Tahun</translation>
@@ -22,7 +21,6 @@
 <translation id="7057186640035488495">waktu film</translation>
 <translation id="8199524924445686405">tttt</translation>
 <translation id="795667975304826397">Tidak ada file yang dipilih</translation>
-<translation id="1320012872283894746">mencari mundur dengan cepat</translation>
 <translation id="7789962463072032349">jeda</translation>
 <translation id="6853785296079745596">sembunyikan teks tertutup</translation>
 <translation id="4360991593054037559">Masukkan nilai yang valid. Dua nilai valid terdekat adalah <ph name="VALID_VALUE_LOW"/> dan <ph name="VALID_VALUE_HIGHER"/>.</translation>
@@ -36,7 +34,6 @@
 <translation id="6845533974506654842">tekan</translation>
 <translation id="8244226242650769279">gambar peta</translation>
 <translation id="310520048233152454">Masukkan URL.</translation>
-<translation id="9039488204461337220">mencari maju dengan cepat</translation>
 <translation id="4812940957355064477">Masukkan nomor.</translation>
 <translation id="2548326553472216322">Tidak ada penelusuran terkini</translation>
 <translation id="1938124657309484470">Tanggal harus <ph name="MAXIMUM_DATE_OR_TIME"/> atau lebih awal.</translation>
@@ -49,7 +46,6 @@
 <translation id="3075154866155599887">Masukkan nilai yang valid. Bidang tersebut tidak lengkap atau memiliki tanggal yang tidak valid.</translation>
 <translation id="3040011195152428237">tautan</translation>
 <translation id="1014825444426747588">kosong</translation>
-<translation id="3356679314312413792">cari film mundur 30 detik</translation>
 <translation id="9050748414552849310">tampilkan teks tertutup</translation>
 <translation id="4522570452068850558">Detail</translation>
 <translation id="8451268428117625855">Pilih file.</translation>
@@ -101,7 +97,6 @@
 <translation id="7673697353781729403">Jam</translation>
 <translation id="4664250907885839816">Bagian setelah '<ph name="ATSIGN"/>' tidak boleh berisi simbol '<ph name="INVALIDCHARACTER"/>'.</translation>
 <translation id="3450233048674729344">Nilai harus lebih kecil atau sama dengan <ph name="MAXIMUM"/>.</translation>
-<translation id="3471999216963526757">mundur 30 detik</translation>
 <translation id="668171684555832681">Lainnya...</translation>
 <translation id="6270583010843788609">jempol garis waktu film</translation>
 <translation id="5641012560118721995">jeda pemutaran</translation>
@@ -110,15 +105,12 @@
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> file</translation>
 <translation id="6643016212128521049">Hapus</translation>
 <translation id="7888071071722539607">Sertakan '<ph name="ATSIGN"/>' pada alamat email. '<ph name="INVALIDADDRESS"/>' tidak memiliki '<ph name="ATSIGN"/>'.</translation>
-<translation id="4851297395436456855">maju cepat</translation>
 <translation id="1088086359088493902">Detik</translation>
 <translation id="3934680773876859118">Gagal memuat dokumen PDF</translation>
 <translation id="3632707345189162177">sisa waktu film dalam detik</translation>
 <translation id="6359256949422175976">jempol scrubber waktu film</translation>
 <translation id="8597182159515967513">kepala</translation>
 <translation id="6843725295806269523">bisukan</translation>
-<translation id="2615751259741237794">kembalikan ke waktu nyata</translation>
 <translation id="2653659639078652383">Kirim</translation>
 <translation id="3732799496749320381">bb</translation>
-<translation id="4484359737905287537">balik cepat</translation>
 </translationbundle>

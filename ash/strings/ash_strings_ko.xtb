@@ -15,6 +15,7 @@
 <translation id="370649949373421643">Wi-Fi 사용</translation>
 <translation id="3626281679859535460">밝기</translation>
 <translation id="3621202678540785336">입력</translation>
+<translation id="7348093485538360975">터치 키보드</translation>
 <translation id="595202126637698455">성능 추적 사용 중</translation>
 <translation id="8054466585765276473">배터리 시간 계산 중</translation>
 <translation id="7982789257301363584">네트워크</translation>
@@ -27,6 +28,7 @@
 <translation id="2297568595583585744">상태 표시줄</translation>
 <translation id="1661867754829461514">PIN이 없습니다.</translation>
 <translation id="4508225577814909926"><ph name="NAME"/>: 연결하는 중...</translation>
+<translation id="2248649616066688669">Chromebook의 덮개를 닫아도 외부 디스플레이에 연결되어 있는 동안 계속 사용할 수 있습니다.</translation>
 <translation id="40400351611212369">네트워크 활성화 오류</translation>
 <translation id="4237016987259239829">네트워크 연결 오류</translation>
 <translation id="2946640296642327832">블루투스 사용</translation>
@@ -34,11 +36,14 @@
 <translation id="8206859287963243715">휴대전화</translation>
 <translation id="6596816719288285829">IP 주소</translation>
 <translation id="4508265954913339219">활성화 실패</translation>
+<translation id="8688591111840995413">비밀번호가 잘못됨</translation>
 <translation id="3621712662352432595">오디오 설정</translation>
 <translation id="1812696562331527143">입력 방법이 <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>타사<ph name="END_LINK"/>)(으)로 변경되었습니다.
 전환하려면 Shift+Alt를 누르세요.</translation>
+<translation id="6043994281159824495">지금 로그아웃</translation>
 <translation id="2127372758936585790">저출력 충전기</translation>
 <translation id="3846575436967432996">네트워크 정보 없음</translation>
+<translation id="3799026279081545374">충전기에 문제가 있을 수 있습니다. 미국에 거주하는 경우 866-628-1371에 전화하여 문의하고 교체받으세요. 영국에 거주하는 경우 0800-026-0613에 문의하세요. 아일랜드에 거주하는 경우 1-800-832-664에 문의하세요. 캐나다에 거주하는 경우 866-628-1372에 문의하세요. 오스트레일리아에 거주하는 경우 1-800-067-460에 문의하세요.</translation>
 <translation id="3026237328237090306">모바일 데이터 설정</translation>
 <translation id="5871632337994001636">기기 관리...</translation>
 <translation id="785750925697875037">모바일 계정 표시</translation>
@@ -55,8 +60,10 @@
 <translation id="3294437725009624529">손님</translation>
 <translation id="8190698733819146287">언어 및 입력 설정...</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME"/>(<ph name="ANNOTATION"/>)</translation>
-<translation id="2942516765047364088">서가 정렬</translation>
+<translation id="2942516765047364088">실행기 위치</translation>
 <translation id="8676770494376880701">저출력 충전기 연결됨</translation>
+<translation id="5238774010593222950">다른 계정에 로그인할 수 없습니다.</translation>
+<translation id="1723752762323179280">세션 종료</translation>
 <translation id="7170041865419449892">범위를 벗어났습니다.</translation>
 <translation id="4804818685124855865">연결 해제</translation>
 <translation id="2544853746127077729">인증서가 네트워크에 의해 거부됨</translation>
@@ -72,7 +79,6 @@
 <translation id="3892641579809465218">내부 디스플레이</translation>
 <translation id="7823564328645135659">설정을 동기화한 뒤 Chrome의 언어가 '<ph name="FROM_LOCALE"/>'에서 '<ph name="TO_LOCALE"/>'(으)로 변경되었습니다.</translation>
 <translation id="3368922792935385530">연결됨</translation>
-<translation id="8340999562596018839">음성 피드백</translation>
 <translation id="8654520615680304441">Wi-Fi 사용...</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="5825747213122829519">입력 방법이 <ph name="INPUT_METHOD_ID"/>(으)로 변경되었습니다.
@@ -96,11 +102,9 @@
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
 <translation id="2670531586141364277">네트워크를 연결하려면 '<ph name="NAME"/>' 활성화가 필수입니다.</translation>
 <translation id="3963445509666917109">스피커(내부)</translation>
-<translation id="2825619548187458965">서가</translation>
+<translation id="2825619548187458965">임시보관함</translation>
 <translation id="2614835198358683673">Chromebook이 켜져 있으면 충전되지 않을 수 있습니다. 공식 충전기를 사용해보세요.</translation>
-<translation id="1895658205118569222">종료</translation>
 <translation id="4430019312045809116">볼륨</translation>
-<translation id="8681498213689260554">업데이트하려면 다시 시작하고 Powerwash하세요.</translation>
 <translation id="4442424173763614572">DNS 조회 실패</translation>
 <translation id="7874779702599364982">휴대전화 네트워크를 검색하는 중...</translation>
 <translation id="583281660410589416">알 수 없음</translation>
@@ -110,7 +114,7 @@
 <translation id="1621499497873603021">남은 배터리 사용 시간은 <ph name="TIME_LEFT"/>입니다.</translation>
 <translation id="5980301590375426705">손님 세션 종료</translation>
 <translation id="8308637677604853869">이전 메뉴</translation>
-<translation id="4666297444214622512">다른 계정에 로그인할 수 없습니다.</translation>
+<translation id="4321179778687042513">Ctrl</translation>
 <translation id="3625258641415618104">스크린샷 캡쳐 사용 중지됨</translation>
 <translation id="1346748346194534595">오른쪽</translation>
 <translation id="1773212559869067373">인증서가 로컬로 거부됨</translation>
@@ -119,10 +123,9 @@
 <translation id="8428213095426709021">설정</translation>
 <translation id="2372145515558759244">앱 동기화...</translation>
 <translation id="7256405249507348194">알 수 없는 오류(<ph name="DESC"/>)입니다.</translation>
+<translation id="2894654529758326923">정보</translation>
 <translation id="7925247922861151263">AAA 확인 실패</translation>
 <translation id="8456362689280298700">충전 완료까지 <ph name="HOUR"/>:<ph name="MINUTE"/> 남음</translation>
-<translation id="5787281376604286451">음성 피드백을 사용할 수 있습니다.
-사용중지하려면 Ctrl+Alt+Z를 누르세요.</translation>
 <translation id="4479639480957787382">이더넷</translation>
 <translation id="6312403991423642364">알려지지 않은 네트워크 오류</translation>
 <translation id="1467432559032391204">왼쪽</translation>
@@ -133,6 +136,7 @@
 <translation id="1923539912171292317">자동 클릭</translation>
 <translation id="1398853756734560583">최대화</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: 연결하는 중...</translation>
+<translation id="6062360702481658777"><ph name="LOGOUT_TIME_LEFT"/> 후 자동으로 로그아웃됩니다.</translation>
 <translation id="252373100621549798">알 수 없는 디스플레이</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME"/>에 미러링</translation>
 <translation id="2727977024730340865">저출력 충전기에 연결되었습니다. 배터리 충전 상태가 불안정합니다.</translation>
@@ -141,6 +145,7 @@
 <translation id="1512064327686280138">활성화 실패</translation>
 <translation id="5097002363526479830">'<ph name="NAME"/>' 네트워크에 연결하지 못했습니다: <ph name="DETAILS"/></translation>
 <translation id="1850504506766569011">Wi-Fi가 꺼져 있습니다.</translation>
+<translation id="2872961005593481000">종료</translation>
 <translation id="2966449113954629791">할당되 모바일 데이터를 모두 사용한 것 같습니다. 추가 데이터를 구입하려면 <ph name="NAME"/> 활성화 포털을 방문하세요.</translation>
 <translation id="8132793192354020517"><ph name="NAME"/>에 연결됨</translation>
 <translation id="7052914147756339792">배경화면 설정...</translation>
@@ -153,8 +158,10 @@
 <translation id="7005812687360380971">실패</translation>
 <translation id="882279321799040148">클릭하여 보기</translation>
 <translation id="1753067873202720523">Chromebook이 켜져 있으면 충전되지 않을 수 있습니다.</translation>
+<translation id="7561014039265304140"><ph name="DISPLAY_NAME"/>에서 <ph name="SPECIFIED_RESOLUTION"/>을(를) 지원하지 않습니다. 해상도가 <ph name="FALLBACK_RESOLUTION"/>(으)로 변경되었습니다.</translation>
 <translation id="5045550434625856497">비밀번호가 잘못되었습니다.</translation>
 <translation id="1602076796624386989">모바일 데이터 사용</translation>
+<translation id="68610848741840742">ChromeVox(음성 피드백)</translation>
 <translation id="6981982820502123353">접근성</translation>
 <translation id="3157931365184549694">복구</translation>
 <translation id="4274292172790327596">인식할 수 없는 오류</translation>
@@ -167,17 +174,19 @@
 <translation id="8401662262483418323">'<ph name="NAME"/>'에 연결하지 못함: <ph name="DETAILS"/>
 서버 메시지: <ph name="SERVER_MSG"/></translation>
 <translation id="2475982808118771221">오류가 발생했습니다.</translation>
+<translation id="3783640748446814672">Alt</translation>
 <translation id="7229570126336867161">EVDO가 필요합니다.</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME"/>은(는) <ph name="DOMAIN"/>에서 관리하는 공개 세션입니다.</translation>
 <translation id="9044646465488564462">네트워크 연결 실패: <ph name="DETAILS"/></translation>
 <translation id="7029814467594812963">세션 종료</translation>
+<translation id="479989351350248267">검색</translation>
 <translation id="8454013096329229812">Wi-Fi가 켜져 있습니다.</translation>
 <translation id="4872237917498892622">Alt+검색 또는 Shift 키</translation>
 <translation id="9201131092683066720">배터리가 <ph name="PERCENTAGE"/>% 남았습니다.</translation>
 <translation id="2983818520079887040">설정...</translation>
 <translation id="3871838685472846647">휴대전화 활성화</translation>
 <translation id="1195412055398077112">오버스캔</translation>
-<translation id="112308213915226829">서가 자동 숨김</translation>
+<translation id="112308213915226829">실행기 자동 숨김</translation>
 <translation id="7573962313813535744">고정 모드</translation>
 <translation id="8927026611342028580">연결 요청됨</translation>
 <translation id="8300849813060516376">OTASP 실패</translation>
@@ -193,14 +202,13 @@
 <translation id="5947494881799873997">되돌리기</translation>
 <translation id="7593891976182323525">검색 또는 Shift 키</translation>
 <translation id="7649070708921625228">도움말</translation>
-<translation id="747833637904845037">Chromebook이 외부 디스플레이에 연결되어 있는 동안은 덮개를 닫아도 전원이 켜진 채로 유지됩니다.</translation>
 <translation id="3050422059534974565">CAPS LOCK이 켜져 있습니다.
 취소하려면 검색 또는 Shift 키를 누릅니다.</translation>
 <translation id="397105322502079400">계산 중...</translation>
 <translation id="158849752021629804">홈 네크워크가 필요합니다.</translation>
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE"/> 활성화</translation>
 <translation id="5864471791310927901">DHCP 조회 실패</translation>
-<translation id="6692173217867674490">잘못된 암호</translation>
+<translation id="2819276065543622893">지금 로그아웃됩니다.</translation>
 <translation id="6165508094623778733">자세히 알아보기</translation>
 <translation id="9046895021617826162">연결 실패</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS"/>초 후 기존 해상도로 돌아갑니다.</translation>
@@ -209,6 +217,8 @@
 <translation id="6636709850131805001">인식할 수 없는 상태</translation>
 <translation id="3573179567135747900">'<ph name="FROM_LOCALE"/>'(으)로 다시 변경(다시 시작해야 함)</translation>
 <translation id="8103386449138765447">SMS 메시지: <ph name="MESSAGE_COUNT"/>개</translation>
+<translation id="7097613348211027502">ChromeVox(음성 피드백)를 사용하도록 설정했습니다.
+사용 중지하려면 Ctrl+Alt+Z를 누르세요.</translation>
 <translation id="5045002648206642691">Google 문서함 설정...</translation>
 <translation id="7209101170223508707">CAPS LOCK이 켜져 있습니다.
 취소하려면 Alt+검색 또는 Shift 키를 누릅니다.</translation>
@@ -224,6 +234,7 @@
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">축하합니다. '<ph name="NAME"/>' 데이터 서비스가 활성화되어 사용할 수 있습니다.</translation>
 <translation id="412065659894267608">충전 완료까지 <ph name="HOUR"/>시간 <ph name="MINUTE"/>분 남음</translation>
+<translation id="3077734595579995578">Shift</translation>
 <translation id="7297443947353982503">사용자 이름 또는 비밀번호가 잘못되었거나 EAP 인증에 실패했습니다.</translation>
 <translation id="6359806961507272919"><ph name="PHONE_NUMBER"/>에서 전송된 SMS</translation>
 <translation id="1244147615850840081">네트워크 사업자</translation>

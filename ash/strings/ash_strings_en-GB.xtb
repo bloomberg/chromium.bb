@@ -15,6 +15,7 @@
 <translation id="370649949373421643">Enable Wi-Fi</translation>
 <translation id="3626281679859535460">Brightness</translation>
 <translation id="3621202678540785336">Input</translation>
+<translation id="7348093485538360975">On-Screen Keyboard</translation>
 <translation id="595202126637698455">Performance tracing enabled</translation>
 <translation id="8054466585765276473">Calculating battery time.</translation>
 <translation id="7982789257301363584">Network</translation>
@@ -27,6 +28,7 @@
 <translation id="2297568595583585744">Status tray</translation>
 <translation id="1661867754829461514">PIN missing</translation>
 <translation id="4508225577814909926"><ph name="NAME"/>: Connecting...</translation>
+<translation id="2248649616066688669">You can keep using your Chromebook while it's connected to an external display, even with the lid closed.</translation>
 <translation id="40400351611212369">Network Activation Error</translation>
 <translation id="4237016987259239829">Network Connection Error</translation>
 <translation id="2946640296642327832">Enable Bluetooth</translation>
@@ -34,11 +36,14 @@
 <translation id="8206859287963243715">Mobile</translation>
 <translation id="6596816719288285829">IP Address</translation>
 <translation id="4508265954913339219">Activation failed</translation>
+<translation id="8688591111840995413">Bad password</translation>
 <translation id="3621712662352432595">Audio Settings</translation>
 <translation id="1812696562331527143">Your input method has changed to <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>3rd party<ph name="END_LINK"/>).
 Press Shift + Alt to switch.</translation>
+<translation id="6043994281159824495">Sign out now</translation>
 <translation id="2127372758936585790">Low-power charger</translation>
 <translation id="3846575436967432996">No network information available</translation>
+<translation id="3799026279081545374">You may have a bad charger. If you live in the US, please call 866-628-1371 in order to receive help and a replacement. If you live in the UK, please call 0800-026-0613. If you live in Ireland, please call 1-800-832-664. If you live in Canada, please call 866-628-1372. If you live in Australia, please call 1-800-067-460.</translation>
 <translation id="3026237328237090306">Set up mobile data</translation>
 <translation id="5871632337994001636">Manage devices...</translation>
 <translation id="785750925697875037">View mobile account</translation>
@@ -57,6 +62,8 @@ Press Shift + Alt to switch.</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME"/> (<ph name="ANNOTATION"/>)</translation>
 <translation id="2942516765047364088">Shelf position</translation>
 <translation id="8676770494376880701">Low-power charger connected</translation>
+<translation id="5238774010593222950">Can't sign in to another account.</translation>
+<translation id="1723752762323179280">Exiting Session</translation>
 <translation id="7170041865419449892">Out of range</translation>
 <translation id="4804818685124855865">Disconnect</translation>
 <translation id="2544853746127077729">Authentication certificate rejected by network</translation>
@@ -72,7 +79,6 @@ Press Shift + Alt to switch.</translation>
 <translation id="3892641579809465218">Internal Display</translation>
 <translation id="7823564328645135659">The language has changed from &quot;<ph name="FROM_LOCALE"/>&quot; to &quot;<ph name="TO_LOCALE"/>&quot; after syncing your settings.</translation>
 <translation id="3368922792935385530">Connected</translation>
-<translation id="8340999562596018839">Spoken feedback</translation>
 <translation id="8654520615680304441">Turn Wi-Fi on...</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="5825747213122829519">Your input method has changed to <ph name="INPUT_METHOD_ID"/>.
@@ -98,9 +104,7 @@ Press Shift + Alt to switch.</translation>
 <translation id="3963445509666917109">Speaker (Internal)</translation>
 <translation id="2825619548187458965">Shelf</translation>
 <translation id="2614835198358683673">Your Chromebook may not charge while it is turned on. Consider using the official charger.</translation>
-<translation id="1895658205118569222">Shutdown</translation>
 <translation id="4430019312045809116">volume</translation>
-<translation id="8681498213689260554">Restart and Powerwash to update</translation>
 <translation id="4442424173763614572">DNS lookup failed</translation>
 <translation id="7874779702599364982">Searching for cellular networks...</translation>
 <translation id="583281660410589416">Unknown</translation>
@@ -110,7 +114,7 @@ Press Shift + Alt to switch.</translation>
 <translation id="1621499497873603021">Time left until battery is empty, <ph name="TIME_LEFT"/></translation>
 <translation id="5980301590375426705">Exit guest</translation>
 <translation id="8308637677604853869">Previous menu</translation>
-<translation id="4666297444214622512">Can't sign into another account.</translation>
+<translation id="4321179778687042513">ctrl</translation>
 <translation id="3625258641415618104">Screenshots disabled</translation>
 <translation id="1346748346194534595">Right</translation>
 <translation id="1773212559869067373">Authentication certificate rejected locally</translation>
@@ -119,10 +123,9 @@ Press Shift + Alt to switch.</translation>
 <translation id="8428213095426709021">Settings</translation>
 <translation id="2372145515558759244">Syncing apps...</translation>
 <translation id="7256405249507348194">Unrecognised error: <ph name="DESC"/></translation>
+<translation id="2894654529758326923">Information</translation>
 <translation id="7925247922861151263">AAA check failed</translation>
 <translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> until full</translation>
-<translation id="5787281376604286451">Spoken feedback is enabled.
-Press Ctrl+Alt+Z to disable.</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="6312403991423642364">Unknown network error</translation>
 <translation id="1467432559032391204">Left</translation>
@@ -133,6 +136,7 @@ Press Ctrl+Alt+Z to disable.</translation>
 <translation id="1923539912171292317">Automatic clicks</translation>
 <translation id="1398853756734560583">Maximise</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: Connecting...</translation>
+<translation id="6062360702481658777">You will automatically be signed out in <ph name="LOGOUT_TIME_LEFT"/>.</translation>
 <translation id="252373100621549798">Unknown Display</translation>
 <translation id="1882897271359938046">Mirroring to <ph name="DISPLAY_NAME"/></translation>
 <translation id="2727977024730340865">Plugged in to a low-power charger. Battery charging may not be reliable.</translation>
@@ -141,6 +145,7 @@ Press Ctrl+Alt+Z to disable.</translation>
 <translation id="1512064327686280138">Activation failure</translation>
 <translation id="5097002363526479830">Failed to connect to the network '<ph name="NAME"/>': <ph name="DETAILS"/></translation>
 <translation id="1850504506766569011">Wi-Fi is turned off.</translation>
+<translation id="2872961005593481000">Shut down</translation>
 <translation id="2966449113954629791">You may have used up your mobile data allowance. Visit the <ph name="NAME"/> activation portal to buy more data.</translation>
 <translation id="8132793192354020517">Connected to <ph name="NAME"/></translation>
 <translation id="7052914147756339792">Set wallpaper...</translation>
@@ -153,8 +158,10 @@ Press Ctrl+Alt+Z to disable.</translation>
 <translation id="7005812687360380971">Failure</translation>
 <translation id="882279321799040148">Click to view</translation>
 <translation id="1753067873202720523">Your Chromebook may not charge while it is turned on.</translation>
+<translation id="7561014039265304140"><ph name="DISPLAY_NAME"/> doesn't support <ph name="SPECIFIED_RESOLUTION"/>. The resolution was changed to <ph name="FALLBACK_RESOLUTION"/></translation>
 <translation id="5045550434625856497">Incorrect password</translation>
 <translation id="1602076796624386989">Enable mobile data</translation>
+<translation id="68610848741840742">ChromeVox (Spoken feedback)</translation>
 <translation id="6981982820502123353">Accessibility</translation>
 <translation id="3157931365184549694">Restore</translation>
 <translation id="4274292172790327596">Unrecognised error</translation>
@@ -167,10 +174,12 @@ Press Ctrl+Alt+Z to disable.</translation>
 <translation id="8401662262483418323">Failed to connect to '<ph name="NAME"/>': <ph name="DETAILS"/>
 Server message: <ph name="SERVER_MSG"/></translation>
 <translation id="2475982808118771221">An error occurred</translation>
+<translation id="3783640748446814672">alt</translation>
 <translation id="7229570126336867161">Need EVDO</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> is a public session managed by <ph name="DOMAIN"/></translation>
 <translation id="9044646465488564462">Failed to connect to network: <ph name="DETAILS"/></translation>
 <translation id="7029814467594812963">Exit session</translation>
+<translation id="479989351350248267">search</translation>
 <translation id="8454013096329229812">Wi-Fi is turned on.</translation>
 <translation id="4872237917498892622">Alt+Search or Shift</translation>
 <translation id="9201131092683066720">Battery is <ph name="PERCENTAGE"/>% full.</translation>
@@ -193,14 +202,13 @@ Server message: <ph name="SERVER_MSG"/></translation>
 <translation id="5947494881799873997">Revert</translation>
 <translation id="7593891976182323525">Search or Shift</translation>
 <translation id="7649070708921625228">Help</translation>
-<translation id="747833637904845037">Your Chromebook will stay on while connected to an external display, even with the lid closed.</translation>
 <translation id="3050422059534974565">CAPS LOCK is on.
 Press Search or Shift to cancel.</translation>
 <translation id="397105322502079400">Calculating...</translation>
 <translation id="158849752021629804">Need home network</translation>
 <translation id="6857811139397017780">Activate <ph name="NETWORKSERVICE"/></translation>
 <translation id="5864471791310927901">DHCP look-up failed</translation>
-<translation id="6692173217867674490">Bad passphrase</translation>
+<translation id="2819276065543622893">You will be signed out now.</translation>
 <translation id="6165508094623778733">Learn more</translation>
 <translation id="9046895021617826162">Connection failed</translation>
 <translation id="7168224885072002358">Reverting to old resolution in <ph name="TIMEOUT_SECONDS"/></translation>
@@ -209,6 +217,8 @@ Press Search or Shift to cancel.</translation>
 <translation id="6636709850131805001">Unrecognised state</translation>
 <translation id="3573179567135747900">Change back to &quot;<ph name="FROM_LOCALE"/>&quot; (requires restart)</translation>
 <translation id="8103386449138765447">SMS messages: <ph name="MESSAGE_COUNT"/></translation>
+<translation id="7097613348211027502">ChromeVox (spoken feedback) is enabled.
+Press Ctrl+Alt+Z to disable.</translation>
 <translation id="5045002648206642691">Google Drive settings</translation>
 <translation id="7209101170223508707">CAPS LOCK is on.
 Press Alt+Search or Shift to cancel.</translation>
@@ -224,6 +234,7 @@ Press Alt+Search or Shift to cancel.</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">Congratulations! Your '<ph name="NAME"/>' data service has been activated and is ready to go.</translation>
 <translation id="412065659894267608"><ph name="HOUR"/>h <ph name="MINUTE"/>m until full</translation>
+<translation id="3077734595579995578">shift</translation>
 <translation id="7297443947353982503">Username/password incorrect or EAP-auth failed</translation>
 <translation id="6359806961507272919">SMS from <ph name="PHONE_NUMBER"/></translation>
 <translation id="1244147615850840081">Operator</translation>

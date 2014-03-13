@@ -15,6 +15,7 @@
 <translation id="370649949373421643">Wi-Fi ಅನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="3626281679859535460">ಪ್ರಕಾಶಮಾನ</translation>
 <translation id="3621202678540785336">ಇನ್‌ಪುಟ್</translation>
+<translation id="7348093485538360975">ಆನ್ ಸ್ಕ್ರೀನ್ ಕೀಬೋರ್ಡ್</translation>
 <translation id="595202126637698455">ಕಾರ್ಯಕ್ಷಮತೆ ಟ್ರೇಸಿಂಗ್ ಸಕ್ರಿಯಗೊಂಡಿದೆ</translation>
 <translation id="8054466585765276473">ಬ್ಯಾಟರಿ ಸಮಯವನ್ನು ಲೆಕ್ಕಾಚಾರ ಮಾಡಲಾಗುತ್ತಿದೆ.</translation>
 <translation id="7982789257301363584">ನೆಟ್‌ವರ್ಕ್</translation>
@@ -27,6 +28,7 @@
 <translation id="2297568595583585744">ಸ್ಥಿತಿ ಟ್ರೆ</translation>
 <translation id="1661867754829461514">PIN ಕಾಣೆಯಾಗಿದೆ</translation>
 <translation id="4508225577814909926"><ph name="NAME"/>: ಸಂಪರ್ಕಿಸಲಾಗುತ್ತಿದೆ...</translation>
+<translation id="2248649616066688669">ನಿಮ್ಮ Chromebook ಅನ್ನು ಬಾಹ್ಯ ಪ್ರದರ್ಶನಕ್ಕೆ ಸಂಪರ್ಕಗೊಳಿಸಿರುವಾಗ, ಅದರ ಮುಚ್ಚಳ ಮುಚ್ಚಿದ್ದರೂ ಅದನ್ನು ನೀವು ಬಳಸುತ್ತಲೇ ಇರಬಹುದು.</translation>
 <translation id="40400351611212369">ನೆಟ್‌ವರ್ಕ್ ಸಕ್ರಿಯತೆ ದೋಷ</translation>
 <translation id="4237016987259239829">ನೆಟ್‌ವರ್ಕ್ ಸಂಪರ್ಕದ ದೋಷ</translation>
 <translation id="2946640296642327832">bluetooth ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
@@ -34,11 +36,14 @@
 <translation id="8206859287963243715">ಸೆಲ್ಯುಲಾರ್</translation>
 <translation id="6596816719288285829">IP ವಿಳಾಸ</translation>
 <translation id="4508265954913339219">ಸಕ್ರಿಯಗೊಳಿಸುವಿಕೆ ವಿಫಲವಾಗಿದೆ</translation>
+<translation id="8688591111840995413">ತಪ್ಪಾದ ಪಾಸ್‍ವರ್ಡ್</translation>
 <translation id="3621712662352432595">ಆಡಿಯೊ ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
 <translation id="1812696562331527143">ನಿಮ್ಮ ಇನ್‌ಪುಟ್ ವಿಧಾನವನ್ನು <ph name="INPUT_METHOD_ID"/>* ಗೆ ಬದಲಾಯಿಸಲಾಗಿದೆ (<ph name="BEGIN_LINK"/>3ನೇ ವ್ಯಕ್ತಿ<ph name="END_LINK"/>).
 ಬದಲಿಸಲು Shift + Alt ಅನ್ನು ಒತ್ತಿರಿ.</translation>
+<translation id="6043994281159824495">ಈಗ ಸೈನ್ ಔಟ್ ಮಾಡಿ</translation>
 <translation id="2127372758936585790">ಕಡಿಮೆ ವಿದ್ಯುತ್ ಚಾರ್ಜರ್</translation>
 <translation id="3846575436967432996">ನೆಟ್‌ವರ್ಕ್ ಮಾಹಿತಿ ಲಭ್ಯವಿಲ್ಲ</translation>
+<translation id="3799026279081545374">ನೀವು ತಪ್ಪಾದ ಚಾರ್ಜರ್ ಅನ್ನು ಹೊಂದಿರಬಹುದು. ನೀವು US ನಲ್ಲಿ ನೆಲೆಸಿದ್ದರೇ, ಕ್ರಮವಾಗಿ ಸಹಾಯ ಪಡೆಯಲು ಮತ್ತು ಬದಲಾವಣೆಯನ್ನು ಪಡೆಯಲು ದಯವಿಟ್ಟು 866-628-1371 ಗೆ ಕರೆ ಮಾಡಿ. ನೀವು UK ಯಲ್ಲಿ ನೆಲೆಸಿದ್ದರೆ, ದಯವಿಟ್ಟು 0800-026-0613 ಗೆ ಕರೆ ಮಾಡಿ. ನೀವು ಐರ್ಲೆಂಡ್‍‍ನಲ್ಲಿ ನೆಲೆಸಿದ್ದರೆ, ದಯವಿಟ್ಟು 1-800-832-664 ಗೆ ಕರೆ ಮಾಡಿ. ನೀವು ಕೆನಡಾದಲ್ಲಿ ನೆಲೆಸಿದ್ದರೆ, ದಯವಿಟ್ಟು 866-628-1372 ಗೆ ಕರೆ ಮಾಡಿ. ನೀವು ಆಸ್ಟ್ರೇಲಿಯಾದಲ್ಲಿ ನೆಲೆಸಿದ್ದರೆ, ದಯವಿಟ್ಟು 1-800-067-460 ಗೆ ಕರೆ ಮಾಡಿ.</translation>
 <translation id="3026237328237090306">ಮೊಬೈಲ್ ಡೇಟಾವನ್ನು ಹೊಂದಿಸಿ</translation>
 <translation id="5871632337994001636">ಸಾಧನಗಳನ್ನು ನಿರ್ವಹಿಸಿ...</translation>
 <translation id="785750925697875037">ಮೊಬೈಲ್ ಖಾತೆಯನ್ನು ವೀಕ್ಷಿಸಿ</translation>
@@ -57,6 +62,8 @@
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME"/> (<ph name="ANNOTATION"/>)</translation>
 <translation id="2942516765047364088">ಶೆಲ್ಫ್ ಸ್ಥಾನ</translation>
 <translation id="8676770494376880701">ಕಡಿಮೆ ವಿದ್ಯುತ್ ಚಾರ್ಜರ್ ಸಂಪರ್ಕಪಡಿಸಲಾಗಿದೆ</translation>
+<translation id="5238774010593222950">ಮತ್ತೊಂದು ಖಾತೆಗೆ ಸೈನ್‌ ಇನ್‌ ಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ.</translation>
+<translation id="1723752762323179280">ಸೆಷನ್ ನಿರ್ಗಮಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="7170041865419449892">ವ್ಯಾಪ್ತಿಯ ಹೊರಗೆ</translation>
 <translation id="4804818685124855865">ಡಿಸ್‌ಕನೆಕ್ಟ್</translation>
 <translation id="2544853746127077729">ದೃಢೀಕರಣ ಪ್ರಮಾಣಪತ್ರವನ್ನು ನೆಟ್‌ವರ್ಕ್‌ನಿಂದ ತಿರಸ್ಕರಿಸಲಾಗಿದೆ</translation>
@@ -72,7 +79,6 @@
 <translation id="3892641579809465218">ಆಂತರಿಕ ಪ್ರದರ್ಶನ</translation>
 <translation id="7823564328645135659">ನಿಮ್ಮ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಸಿಂಕ್ ಮಾಡಿದ ನಂತರ ಭಾಷೆಯನ್ನು &quot;<ph name="FROM_LOCALE"/>&quot; ನಿಂದ &quot;<ph name="TO_LOCALE"/>&quot; ಗೆ ಬದಲಾಯಿಸಲಾಗಿದೆ.</translation>
 <translation id="3368922792935385530">ಸಂಪರ್ಕಿಸಲಾಗಿದೆ</translation>
-<translation id="8340999562596018839">ಮಾತನಾಡುವ ಪ್ರತಿಕ್ರಿಯೆ</translation>
 <translation id="8654520615680304441">Wi-Fi ಆನ್ ಮಾಡಿ...</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="5825747213122829519"><ph name="INPUT_METHOD_ID"/> ಗೆ ನಿಮ್ಮ ಇನ್‌ಪುಟ್ ವಿಧಾನವನ್ನು ಬದಲಾಯಿಸಲಾಗಿದೆ.
@@ -98,9 +104,7 @@
 <translation id="3963445509666917109">ಸ್ಪೀಕರ್ (ಆಂತರಿಕ)</translation>
 <translation id="2825619548187458965">ಶೆಲ್ಫ್</translation>
 <translation id="2614835198358683673">ನಿಮ್ಮ Chromebook ಆನ್ ಆಗಿರುವಾಗ ಅದು ಚಾರ್ಜ್ ಆಗುವುದಿಲ್ಲ. ಅಧಿಕೃತ ಚಾರ್ಜರ್ ಬಳಸಿ.</translation>
-<translation id="1895658205118569222">ಶಟ್‌ಡೌನ್</translation>
 <translation id="4430019312045809116">ವಾಲ್ಯೂಮ್</translation>
-<translation id="8681498213689260554">ನವೀಕರಿಸಲು ಮರುಪ್ರಾರಂಭಿಸಿ ಮತ್ತು ಪವರ್‌ವಾಶ್ ಮಾಡಿ</translation>
 <translation id="4442424173763614572">DNS ಲುಕಪ್ ವಿಫಲವಾಗಿದೆ</translation>
 <translation id="7874779702599364982">ಸೆಲ್ಯುಲರ್ ನೆಟ್‌ವರ್ಕ್‌ಗಳಿಗಾಗಿ ಹುಡುಕುತ್ತಿದೆ...</translation>
 <translation id="583281660410589416">ಅಜ್ಞಾತ</translation>
@@ -110,7 +114,7 @@
 <translation id="1621499497873603021">ಬ್ಯಾಟರಿ ಖಾಲಿ ಆಗುವವರೆಗೆ ಉಳಿದಿರುವ ಸಮಯ, <ph name="TIME_LEFT"/></translation>
 <translation id="5980301590375426705">ಅತಿಥಿ ಸೆಶೆನ್‌ನಿಂದ ನಿರ್ಗಮಿಸು</translation>
 <translation id="8308637677604853869">ಹಿಂದಿನ ಮೆನು</translation>
-<translation id="4666297444214622512">ಮತ್ತೊಂದು ಖಾತೆಗೆ ಸೈನ್ ಇನ್ ಮಾಡಲಾಗುವುದಿಲ್ಲ.</translation>
+<translation id="4321179778687042513">ctrl</translation>
 <translation id="3625258641415618104">ಸ್ಕ್ರೀನ್‌ಶಾಟ್‌ಗಳನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ</translation>
 <translation id="1346748346194534595">ಬಲಕ್ಕೆ</translation>
 <translation id="1773212559869067373">ದೃಢೀಕರಣ ಪ್ರಮಾಣಪತ್ರವನ್ನು ಸ್ಥಳೀಯವಾಗಿ ತಿರಸ್ಕರಿಸಲಾಗಿದೆ</translation>
@@ -119,10 +123,9 @@
 <translation id="8428213095426709021">ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
 <translation id="2372145515558759244">ಅಪ್ಲಿಕೇಶನ್‌ಗಳನ್ನು ಸಿಂಕ್ ಮಾಡಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="7256405249507348194">ಗುರುತಿಸದಿರುವ ದೋಷ: <ph name="DESC"/></translation>
+<translation id="2894654529758326923">ಮಾಹಿತಿ</translation>
 <translation id="7925247922861151263">AAA ಪರಿಶೀಲನೆ ವಿಫಲವಾಗಿದೆ</translation>
 <translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> ಪೂರ್ಣಗೊಳ್ಳುವವರೆಗೆ</translation>
-<translation id="5787281376604286451">ಮಾತನಾಡುವ ಪ್ರತಿಕ್ರಿಯೆ ಸಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ.
-ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲು Ctrl+Alt+Z ಒತ್ತಿರಿ.</translation>
 <translation id="4479639480957787382">ಈಥರ್ನೆಟ್</translation>
 <translation id="6312403991423642364">ಅಜ್ಞಾತ ನೆಟ್‌ವರ್ಕ್ ದೋಷ</translation>
 <translation id="1467432559032391204">ಎಡಕ್ಕೆ</translation>
@@ -133,6 +136,7 @@
 <translation id="1923539912171292317">ಸ್ವಯಂಚಾಲಿತ ಕ್ಲಿಕ್‌ಗಳು</translation>
 <translation id="1398853756734560583">ಗರಿಷ್ಠಗೊಳಿಸು</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: ಸಂಪರ್ಕಿಸಲಾಗುತ್ತಿದೆ...</translation>
+<translation id="6062360702481658777"><ph name="LOGOUT_TIME_LEFT"/> ನಲ್ಲಿ ನಿಮ್ಮನ್ನು ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಸೈನ್‌ಔಟ್‌ ಮಾಡಲಾಗುತ್ತದೆ.</translation>
 <translation id="252373100621549798">ಅಜ್ಞಾತ ಪ್ರದರ್ಶನ</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME"/> ಗೆ ಪ್ರತಿಬಿಂಬಿಸುತ್ತಿದೆ</translation>
 <translation id="2727977024730340865">ಕಡಿಮೆ ವಿದ್ಯುತ್ ಚಾರ್ಜರ್‌ಗೆ ಪ್ಲಗ್ ಮಾಡಲಾಗಿದೆ. ಬ್ಯಾಟರಿ ಚಾರ್ಜಿಂಗ್ ವಿಶ್ವಾಸಾರ್ಹವಾಗಿಲ್ಲದಿರಬಹುದು.</translation>
@@ -141,6 +145,7 @@
 <translation id="1512064327686280138">ಸಕ್ರಿಯಗೊಳಿಸುವಿಕೆ ವಿಫಲವಾಗಿದೆ</translation>
 <translation id="5097002363526479830">'<ph name="NAME"/>' ನೆಟ್‌ವರ್ಕ್‌ಗೆ ಸಂಪರ್ಕಿಸಲು ವಿಫಲವಾಗಿದೆ: <ph name="DETAILS"/></translation>
 <translation id="1850504506766569011">Wi-Fi ಆಫ್ ಮಾಡಲಾಗಿದೆ.</translation>
+<translation id="2872961005593481000">ಮುಚ್ಚಿಬಿಡಿ </translation>
 <translation id="2966449113954629791">ನಿಮ್ಮ ಮೊಬೈಲ್ ಡೇಟಾ ಭತ್ಯೆಯನ್ನು ನೀವು ಬಳಸಿರಬಹುದು. ಹೆಚ್ಚಿನ ಡೇಟಾವನ್ನು ಖರೀದಿಸಲು <ph name="NAME"/> ಸಕ್ರಿಯೀಕರಣ ಪೋರ್ಟಲ್‌ಗೆ ಭೇಟಿ ನೀಡಿ.</translation>
 <translation id="8132793192354020517"><ph name="NAME"/> ಗೆ ಸಂಪರ್ಕಗೊಂಡಿದೆ</translation>
 <translation id="7052914147756339792">ವಾಲ್‌ಪೇಪರ್ ಅನ್ನು ಹೊಂದಿಸಿ...</translation>
@@ -153,8 +158,10 @@
 <translation id="7005812687360380971">ವೈಫಲ್ಯ</translation>
 <translation id="882279321799040148">ವೀಕ್ಷಿಸಲು ಕ್ಲಿಕ್ ಮಾಡಿ</translation>
 <translation id="1753067873202720523">ನಿಮ್ಮ Chromebook ಆನ್ ಆಗಿರುವಾಗ ಅದು ಚಾರ್ಜ್ ಆಗುವುದಿಲ್ಲ.</translation>
+<translation id="7561014039265304140"><ph name="SPECIFIED_RESOLUTION"/> ಅನ್ನು <ph name="DISPLAY_NAME"/> ಬೆಂಬಲಿಸುವುದಿಲ್ಲ. ರೆಸಲ್ಯೂಶನ್‌ ಅನ್ನು <ph name="FALLBACK_RESOLUTION"/> ಗೆ ಬದಲಾಯಿಸಲಾಗಿದೆ</translation>
 <translation id="5045550434625856497">ತಪ್ಪಾದ ಪಾಸ್‌ವರ್ಡ್</translation>
 <translation id="1602076796624386989">ಮೊಬೈಲ್ ಡೇಟಾವನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
+<translation id="68610848741840742">ChromeVox (ಮಾತನಾಡುವ ಪ್ರತಿಕ್ರಿಯೆ)</translation>
 <translation id="6981982820502123353">ಪ್ರವೇಶಿಸುವಿಕೆ</translation>
 <translation id="3157931365184549694">ಪುನಃಸ್ಥಾಪನೆ</translation>
 <translation id="4274292172790327596">ಗುರುತಿಸದೆ ಇರುವ ದೋಷ</translation>
@@ -167,10 +174,12 @@
 <translation id="8401662262483418323">'<ph name="NAME"/>' ಗೆ ಸಂಪರ್ಕಪಡಿಸಲು ವಿಫಲವಾಗಿದೆ: <ph name="DETAILS"/>
 ಸರ್ವರ್ ಸಂದೇಶ: <ph name="SERVER_MSG"/></translation>
 <translation id="2475982808118771221">ದೋಷವೊಂದು ಕಾಣಿಸಿಕೊಂಡಿದೆ</translation>
+<translation id="3783640748446814672">alt</translation>
 <translation id="7229570126336867161">EVDO ಅಗತ್ಯವಿದೆ</translation>
 <translation id="2999742336789313416"><ph name="DOMAIN"/> ಮೂಲಕ ನಿರ್ವಹಿಸಲಾದ ಸಾರ್ವಜನಿಕ ಸೆಶನ್ <ph name="DISPLAY_NAME"/> ಆಗಿದೆ</translation>
 <translation id="9044646465488564462">ನೆಟ್‌ವರ್ಕ್‌ಗೆ ಸಂಪರ್ಕಿಸಲು ವಿಫಲವಾಗಿದೆ: <ph name="DETAILS"/></translation>
 <translation id="7029814467594812963">ಸೆಶನ್‌ನಿಂದ ನಿರ್ಗಮಿಸು</translation>
+<translation id="479989351350248267">ಹುಡುಕಿ</translation>
 <translation id="8454013096329229812">Wi-Fi ಆನ್ ಮಾಡಲಾಗಿದೆ.</translation>
 <translation id="4872237917498892622">Alt+ಹುಡುಕಾಟ ಅಥವಾ Shift</translation>
 <translation id="9201131092683066720">ಬ್ಯಾಟರಿ <ph name="PERCENTAGE"/>% ಪೂರ್ಣವಾಗಿದೆ.</translation>
@@ -193,14 +202,13 @@
 <translation id="5947494881799873997">ಹಿಂತಿರುಗಿಸು</translation>
 <translation id="7593891976182323525">ಹುಡುಕಾಟ ಅಥವಾ Shift</translation>
 <translation id="7649070708921625228">ಸಹಾಯ</translation>
-<translation id="747833637904845037">ಒಂದು ಆಂತರಿಕ ಪ್ರದರ್ಶನಕ್ಕೆ ನಿಮ್ಮ Chromebook ಸಂಪರ್ಕಗೊಂಡಿರುವ ಸಂದರ್ಭದಲ್ಲಿ, ಲಿಡ್ ಮುಚ್ಚಲಾಗಿದ್ದರೂ ಕೂಡ ಅನ್ ಆಗಿಯೇ ಉಳಿದಿರುತ್ತದೆ.</translation>
 <translation id="3050422059534974565">CAPS LOCK ಆನ್ ಆಗಿದೆ.
 ರದ್ದುಗೊಳಿಸಲು ಹುಡುಕಾಟ ಅಥವಾ Shift ಕೀಲಿಯನ್ನು ಒತ್ತಿರಿ.</translation>
 <translation id="397105322502079400">ಎಣಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="158849752021629804">ಹೋಮ್ ನೆಟ್‌ವರ್ಕ್ ಅಗತ್ಯವಿದೆ</translation>
 <translation id="6857811139397017780">ಸಕ್ರಿಯಗೊಳಿಸಿ<ph name="NETWORKSERVICE"/></translation>
 <translation id="5864471791310927901">DHCP ಲುಕಪ್ ವಿಫಲವಾಗಿದೆ</translation>
-<translation id="6692173217867674490">ಕೆಟ್ಟ ಪಾಸ್‌ಫ್ರೇಸ್</translation>
+<translation id="2819276065543622893">ಈಗ ನಿಮ್ಮನ್ನು ಸೈನ್ ಔಟ್ ಮಾಡಲಾಗುತ್ತದೆ.</translation>
 <translation id="6165508094623778733">ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ</translation>
 <translation id="9046895021617826162">ಸಂಪರ್ಕವು ವಿಫಲವಾಗಿದೆ</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS"/> ನಲ್ಲಿ ಹಳೆಯ ರೆಸಲ್ಯೂಷನ್‌ಗೆ ಹಿಂತಿರುಗಿಸಲಾಗುತ್ತಿದೆ</translation>
@@ -209,6 +217,7 @@
 <translation id="6636709850131805001">ಅಂಗೀಕಾರವಲ್ಲದ ರಾಜ್ಯ</translation>
 <translation id="3573179567135747900">&quot;<ph name="FROM_LOCALE"/>&quot; ಗೆ ಮರುಬದಲಾಯಿಸಿ (ಮರುಪ್ರಾರಂಭಿಸುವ ಅಗತ್ಯವಿದೆ)</translation>
 <translation id="8103386449138765447">SMS ಸಂದೇಶಗಳು: <ph name="MESSAGE_COUNT"/></translation>
+<translation id="7097613348211027502">ChromeVox (ಮಾತನಾಡುವ ಪ್ರತಿಕ್ರಿಯೆ) ಸಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ. ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲು Ctrl+Alt+Z ಒತ್ತಿರಿ.</translation>
 <translation id="5045002648206642691">Google ಡ್ರೈವ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳು...</translation>
 <translation id="7209101170223508707">CAPS LOCK ಆನ್ ಆಗಿದೆ.
 ರದ್ದುಗೊಳಿಸಲು Alt+ಹುಡುಕಾಟ ಅಥವಾ Shift ಕೀಲಿಯನ್ನು ಒತ್ತಿರಿ</translation>
@@ -224,6 +233,7 @@
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">ಅಭಿನಂದನೆಗಳು! ನಿಮ್ಮ '<ph name="NAME"/>' ಡೇಟಾ ಸೇವೆಯನ್ನು ಕ್ರಿಯಾತ್ಮಕಗೊಳಿಸಲಾಗಿದೆ ಮತ್ತು ಮುಂದುವರೆಯಲು ಸಿದ್ಧವಾಗಿದೆ.</translation>
 <translation id="412065659894267608">ಪೂರ್ಣವಾಗುವವರಗೆ <ph name="HOUR"/>ಗಂ <ph name="MINUTE"/>ನಿ</translation>
+<translation id="3077734595579995578">shift</translation>
 <translation id="7297443947353982503">ಬಳಕೆದಾರಹೆಸರು/ಪಾಸ್‌ವರ್ಡ್ ಸರಿಯಾಗಿಲ್ಲ ಅಥವಾ EAP-auth ವಿಫಲವಾಗಿದೆ</translation>
 <translation id="6359806961507272919"><ph name="PHONE_NUMBER"/> ನಿಂದ SMS</translation>
 <translation id="1244147615850840081">ವಾಹಕ</translation>

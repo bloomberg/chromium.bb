@@ -66,6 +66,32 @@
 
           Jeśli zasada pozostanie nieustawiona, po pierwszym wyświetleniu ekranu logowania duży kursor jest wyłączony. Użytkownicy mogą go w każdej chwili włączyć lub wyłączyć i jego stan na ekranie logowania jest trwały dla wszystkich użytkowników.</translation>
 <translation id="3185009703220253572">od wersji <ph name="SINCE_VERSION"/></translation>
+<translation id="5298412045697677971">Konfigurowanie obrazu awatara użytkownika.
+
+      Ta zasada umożliwia skonfigurowanie obrazu awatara przedstawiającego użytkownika na ekranie logowania. Zasadę konfiguruje się przez podanie adresu URL, spod którego <ph name="PRODUCT_OS_NAME"/> może pobrać obraz awatara, oraz skrótu kryptograficznego służącego do weryfikacji integralności pobranego pliku. Obraz musi mieć format JPEG i nie może być większy niż 512 KB. Adres URL musi być dostępny bez żadnego uwierzytelniania.
+
+      Obraz awatara jest pobierany i przechowywany w pamięci podręcznej. Będzie pobierany ponownie po każdej zmianie adresu lub skrótu.
+
+      Zasada musi być podana w postaci ciągu w formacie JSON zawierającego adres URL i skrót, zgodnego z tym schematem:
+      {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;url&quot;: {
+            &quot;description&quot;: &quot;Adres URL, z którego można pobrać obraz awatara.&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          },
+          &quot;hash&quot;: {
+            &quot;description&quot;: &quot;Skrót SHA-256 obrazu awatara.&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          }
+        }
+      }
+
+      Jeśli ta zasada jest skonfigurowana, <ph name="PRODUCT_OS_NAME"/> będzie pobierać obraz awatara i używać go.
+
+      Jeśli skonfigurujesz tę zasadę, użytkownicy nie będą mogli jej zmienić ani zastąpić.
+
+      Jeśli zasada pozostanie nieskonfigurowana, użytkownicy będą mogli wybierać obrazy awatara przedstawiające ich na ekranie logowania.</translation>
 <translation id="2204753382813641270">Steruj autoukrywaniem półki</translation>
 <translation id="3816312845600780067">Włącz automatyczne logowanie skrótem klawiszowym</translation>
 <translation id="3214164532079860003">W przypadku włączenia ta zasada wymusza zaimportowanie strony startowej z bieżącej przeglądarki domyślnej. Jeśli zasada będzie wyłączona, strona startowa nie zostanie zaimportowana. Jeśli ta zasada nie zostanie ustawiona, użytkownik może zobaczyć pytanie, czy zaimportować stronę, lub importowanie może odbyć się automatycznie.</translation>
@@ -79,6 +105,7 @@
 <translation id="5469825884154817306">Blokuj grafiki w tych witrynach</translation>
 <translation id="5827231192798670332">Wybiera strategię stosowaną do zwalniania miejsca na dysku podczas automatycznego czyszczenia</translation>
 <translation id="8412312801707973447">Czy wykonywane jest sprawdzanie OCSP/CRL online</translation>
+<translation id="2482676533225429905">Wiadomości natywne</translation>
 <translation id="6649397154027560979">Ta zasada została wycofana, zamiast niej użyj URLBlacklist.
 
       Wyłącza wymienione schematy protokołów w <ph name="PRODUCT_NAME"/>.
@@ -146,9 +173,6 @@
 
           Wartość zasady powinna być określona w milisekundach. Wartości muszą być mniejsze niż opóźnienie bezczynności.</translation>
 <translation id="4157003184375321727">Zgłoś wersje systemu operacyjnego i oprogramowania układowego</translation>
-<translation id="4752214355598028025">Usługa Bezpieczne przeglądanie wyświetla ostrzeżenie, gdy użytkownik chce wejść na stronę oznaczoną jako potencjalnie szkodliwa. Włączenie tego ustawienia uniemożliwia użytkownikom przejście ze strony ostrzeżenia na szkodliwą stronę.
-
-      W przypadku wyłączenia lub nieskonfigurowania tego ustawienia użytkownik będzie mógł przejść ze strony ostrzeżenia na stronę oznaczoną jako szkodliwa.</translation>
 <translation id="5255162913209987122">Może być zalecana</translation>
 <translation id="1861037019115362154">Pozwala określić listę wtyczek wyłączonych w <ph name="PRODUCT_NAME"/> i uniemożliwia użytkownikom zmianę tego ustawienia. Możesz użyć symboli wieloznacznych „*” i „?”, by dopasować sekwencje dowolnych znaków. Symbol „*” odpowiada dowolnej liczbie znaków, natomiast „?” oznacza jeden opcjonalny znak (czyli jeden lub zero znaków). Znakiem zmiany znaczenia jest „\”, dlatego by wprowadzić faktyczny znak „*”, „?” lub „\”, musisz umieścić przed nim znak „\”. Jeśli włączysz to ustawienie, wtyczki wymienione na liście nigdy nie będą używane w <ph name="PRODUCT_NAME"/>. Wtyczki są oznaczone jako wyłączone na stronie „about:plugins”, a użytkownicy nie mogą ich włączyć. Pamiętaj, że ta zasada jest zastępowana przez zasady EnabledPlugins i DisabledPluginsExceptions. Jeśli zasada nie zostanie ustawiona, użytkownik będzie mógł korzystać ze wszystkich wtyczek zainstalowanych w systemie oprócz przestarzałych, niebezpiecznych i niezgodnych wbudowanych wtyczek.</translation>
 <translation id="9197740283131855199">Wartość procentowa skalowania opóźnienia przyciemnienia ekranu, jeśli użytkownik stanie się aktywny po przyciemnieniu</translation>
@@ -167,6 +191,19 @@
 <translation id="1096105751829466145">Domyślny dostawca wyszukiwania</translation>
 <translation id="7567380065339179813">Zezwalaj na wtyczki w tych witrynach</translation>
 <translation id="4555850956567117258">Włącz zaświadczanie zdalne dla użytkownika</translation>
+<translation id="4418909344122918381">Kontroluje zachowanie użytkownika w sesji wieloprofilowej na urządzeniach <ph name="PRODUCT_OS_NAME"/>.
+
+      Jeśli ustawisz tu wartość „MultiProfileUserBehaviorUnrestricted”, użytkownik będzie mógł być użytkownikiem głównym lub pomocniczym w sesji wieloprofilowej.
+
+      Jeśli ustawisz tu wartość „MultiProfileUserBehaviorMustBePrimary”', użytkownik będzie mógł być tylko użytkownikiem głównym w sesji wieloprofilowej.
+
+      Jeśli ustawisz tu wartość „MultiProfileUserBehaviorNotAllowed”, użytkownik nie będzie mógł brać udziału w sesji wieloprofilowej.
+
+      Jeśli skonfigurujesz to ustawienie, użytkownicy nie będą mogli go zmienić ani zastąpić.
+
+      Jeśli zmienisz to ustawienie, gdy użytkownik będzie zalogowany w sesji wieloprofilowej, zostaną sprawdzone ustawienia wszystkich użytkowników z tej sesji. Jeśli któryś z nich nie będzie już mógł brać w niej udziału, zostanie ona zamknięta.
+
+      Jeśli nie skonfigurujesz tej zasady, zostanie w niej użyta domyślna wartość „MultiProfileUserBehaviorUnrestricted”.</translation>
 <translation id="5966615072639944554">Rozszerzenia mają pozwolenie na używanie interfejsu API zaświadczania zdalnego</translation>
 <translation id="1617235075406854669">Włącz usuwanie historii przeglądarki i pobierania</translation>
 <translation id="5290940294294002042">Określ listę wtyczek, które użytkownik może włączyć lub wyłączyć</translation>
@@ -197,6 +234,15 @@
 
       Jeśli zasada pozostanie nieustawiona, funkcja jest włączona, ale użytkownik może to zmienić.</translation>
 <translation id="268577405881275241">Włącz serwer proxy kompresowania danych</translation>
+<translation id="3820526221169548563">Włącza funkcję dostępności klawiatury ekranowej.
+
+          Jeśli ustawisz tu wartość prawda, klawiatura ekranowa będzie zawsze włączona.
+
+          Jeśli ustawisz tu wartość fałsz, klawiatura ekranowa będzie zawsze wyłączona.
+
+          Jeśli skonfigurujesz tę zasadę, użytkownicy nie będą mogli jej zmienić ani zastąpić.
+
+          Jeśli nie skonfigurujesz tej zasady, początkowo klawiatura ekranowa będzie wyłączona, ale użytkownik w każdej chwili będzie mógł ją włączyć.</translation>
 <translation id="8369602308428138533">Opóźnienie wyłączenia ekranu przy zasilaniu sieciowym</translation>
 <translation id="6513756852541213407">Pozwala określić serwer proxy używany w <ph name="PRODUCT_NAME"/> i uniemożliwia użytkownikom zmianę jego ustawień. Jeśli zdecydujesz się nie korzystać z serwera proxy i zawsze bezpośrednio nawiązywać połączenia, wszystkie pozostałe opcje będą ignorowane. Są one ignorowane również w przypadku użycia systemowych ustawień serwera proxy lub automatycznego wykrywania serwera proxy. Jeśli wybierzesz tryb stałego serwera proxy, możesz określić dodatkowe opcje w polach „Adres URL serwera proxy” i „Lista rozdzielonych przecinkami reguł omijania serwera proxy”. W przypadku użycia skryptu PAC serwera proxy musisz w polu „Adres URL pliku PAC serwera proxy” określić adres URL skryptu. Szczegółowe przykłady można znaleźć na stronie <ph name="PROXY_HELP_URL"/>. Jeśli ustawienie jest włączone, <ph name="PRODUCT_NAME"/> ignoruje wszystkie opcje dotyczące serwera proxy określone w wierszu polecenia. W przypadku nieskonfigurowania tej zasady użytkownicy będą mogli samodzielnie wybrać ustawienia proxy.</translation>
 <translation id="7763311235717725977">Pozwala określić, czy witryny mogą wyświetlać obrazy. Pokazywanie obrazów może być włączone lub wyłączone dla wszystkich witryn. Jeśli ta zasada nie będzie skonfigurowana, zostanie użyta zasada „AllowImages” i użytkownik będzie mógł zmienić to ustawienie.</translation>
@@ -212,12 +258,16 @@
 <translation id="5912364507361265851">Zezwalaj użytkownikom na pokazywanie haseł w menedżerze haseł</translation>
 <translation id="510186355068252378">Wyłącza synchronizację danych w <ph name="PRODUCT_NAME"/> korzystającą z usług synchronizacji udostępnianych przez Google i uniemożliwia użytkownikom zmianę tego ustawienia. W przypadku włączenia tego ustawienia użytkownicy nie mogą go zmieniać ani zastępować w <ph name="PRODUCT_NAME"/>. Jeśli ta zasada nie zostanie skonfigurowana, użytkownik będzie mógł wybrać, czy chce korzystać z Google Sync.</translation>
 <translation id="7953256619080733119">Zarządzane hosty umieszczone przez użytkownika na liście wyjątków</translation>
-<translation id="7412982067535265896">Pozwala utworzyć listę wzorców URL-i określających witryny, które mogą ustawiać pliki ważne tylko na czas sesji.
-
-          Jeśli ta zasada nie zostanie skonfigurowana, będzie używana wartość domyślna pobrana z zasady „DefaultCookiesSetting” (jeśli jest określona) lub z osobistej konfiguracji użytkownika.
-
-          Jeśli zasada „RestoreOnStartup” jest skonfigurowana do przywracania URL-i z poprzednich sesji, ta zasada nie będzie przestrzegana i w przypadku tych witryn pliki cookie będą przechowywane trwale.</translation>
 <translation id="4807950475297505572">Użytkownicy, którzy najdłużej byli nieaktywni, są usuwani aż do uzyskania odpowiedniej ilości wolnego miejsca</translation>
+<translation id="8789506358653607371">Zezwala na tryb pełnoekranowy.
+
+      Ta zasada kontroluje dostępność trybu pełnoekranowego, w którym cały interfejs użytkownika <ph name="PRODUCT_NAME"/> jest ukryty i widać tylko zawartość strony internetowej.
+
+      Jeśli nie skonfigurujesz tej zasady lub ustawisz w niej wartość prawda, w tryb pełnoekranowy będą mogli przechodzić użytkownik, aplikacje i rozszerzenia o odpowiednich uprawnieniach.
+
+      Jeśli ustawisz tu wartość fałsz, ani użytkownik, ani żadne aplikacje czy rozszerzenia nie będą mogli przechodzić w tryb pełnoekranowy.
+
+      Na żadnej platformie oprócz <ph name="PRODUCT_OS_NAME"/> tryb kiosku nie jest dostępny w trybie pełnoekranowym.</translation>
 <translation id="8828766846428537606">Pozwala skonfigurować domyślną stronę startową w przeglądarce <ph name="PRODUCT_NAME"/> i uniemożliwia użytkownikom jej zmianę. Jeśli jako stronę startową ustawisz stronę Nowa karta albo adres URL (wpisany ręcznie), ustawienia strony startowej użytkownika zostaną całkowicie zablokowane. Jeśli adres URL strony startowej nie zostanie określony, użytkownik jako stronę startową będzie mógł ustawić stronę Nowa karta, podając adres „chrome://newtab”.</translation>
 <translation id="2231817271680715693">Importuj historię przeglądania z przeglądarki domyślnej przy pierwszym uruchomieniu</translation>
 <translation id="1353966721814789986">Strony otwierane po uruchomieniu</translation>
@@ -236,8 +286,32 @@
 <translation id="6561396069801924653">Pokaż opcje ułatwień dostępu w menu na pasku zadań</translation>
 <translation id="8104962233214241919">Automatycznie wybierz certyfikaty klienta dla tych witryn</translation>
 <translation id="2906874737073861391">Lista rozszerzeń z pakietu aplikacji</translation>
+<translation id="4386578721025870401">Ograniczenie czasu, przez który użytkownik uwierzytelniony przez SAML może logować się offline.
+
+      Podczas logowania Chrome OS może przeprowadzać uwierzytelnianie w oparciu o serwer (online) lub za pomocą hasła w pamięci podręcznej (offline).
+
+      Po ustawieniu dla tej zasady wartości -1 użytkownik może bez ograniczeń uwierzytelniać się offline. W przypadku każdej innej wartości zasada określa, po jakim czasie od ostatniego uwierzytelnienia online użytkownik musi ponownie uwierzytelnić się w ten sposób.
+
+      Jeśli zasada nie zostanie ustawiona, <ph name="PRODUCT_OS_NAME"/> użyje domyślnego limitu czasu 14 dni, po upływie którego użytkownik musi ponownie użyć uwierzytelniania online.
+
+      Zasada ta dotyczy tylko użytkowników, którzy przeprowadzili uwierzytelnianie za pomocą SAML.
+
+      Wartość zasady powinna być określona w sekundach.</translation>
 <translation id="3758249152301468420">Wyłącz narzędzia dla programistów</translation>
 <translation id="8665076741187546529">Konfiguruj listę rozszerzeń, których instalacja jest wymuszana</translation>
+<translation id="2386768843390156671">Umożliwia instalację hostów Wiadomości natywnych na poziomie użytkownika.
+
+          Jeśli to ustawienie jest włączone, to <ph name="PRODUCT_NAME"/> umożliwia
+          używanie hostów Wiadomości natywnych instalowanych
+          na poziomie użytkownika.
+
+          Jeśli to ustawienie jest wyłączone, to <ph name="PRODUCT_NAME"/> będzie
+          używać tylko hostów Wiadomości natywnych instalowanych
+          na poziomie systemu.
+
+          Jeśli to ustawienie nie jest określone, to <ph name="PRODUCT_NAME"/>
+          umożliwia używanie hostów Wiadomości natywnych
+          na poziomie użytkownika.</translation>
 <translation id="410478022164847452">Określa, po jakim czasie nieaktywności użytkownika podejmowane jest działanie po bezczynności przy zasilaniu z sieci.
 
           Jeśli ta zasada jest ustawiona, określa czas, przez który użytkownik musi pozostać nieaktywny, zanim <ph name="PRODUCT_OS_NAME"/> wykona działanie związane z bezczynnością (można skonfigurować je osobno).
@@ -287,6 +361,9 @@
 <translation id="4655130238810647237">Włącza lub wyłącza funkcję edytowania zakładek w przeglądarce <ph name="PRODUCT_NAME"/>. Po włączeniu tego ustawienia zakładki można dodawać, usuwać i modyfikować. Jest to wartość domyślna. Jeśli wyłączysz ustawienie, zakładek nie będzie można dodawać, usuwać ani modyfikować. Istniejące zakładki nadal będą dostępne.</translation>
 <translation id="3496296378755072552">Menedżer haseł</translation>
 <translation id="4372704773119750918">Nie zezwalaj użytkownikom firmowym na korzystanie z trybu wieloprofilowego (jako użytkownik główny ani dodatkowy)</translation>
+<translation id="7027785306666625591">Konfiguruje zarządzanie energią w <ph name="PRODUCT_OS_NAME"/>.
+
+      Te zasady umożliwiają określenie, jak <ph name="PRODUCT_OS_NAME"/> ma się zachować, gdy użytkownik przez pewien czas nie wykona żadnej czynności.</translation>
 <translation id="2565967352111237512">Włącza funkcję anonimowego przesyłania do Google raportów o użytkowaniu i danych dotyczących awarii <ph name="PRODUCT_NAME"/> oraz uniemożliwia użytkownikom zmianę tego ustawienia. Jeśli włączysz ustawienie, raporty o użytkowaniu i dane dotyczące awarii będą anonimowo przesyłane do Google. W przypadku jego wyłączenia raporty i dane nigdy nie są przesyłane do Google. Jeśli ustawienie jest włączone lub wyłączone, użytkownicy nie mogą go zmienić ani zastąpić w <ph name="PRODUCT_NAME"/>. W przypadku nieskonfigurowania tej zasady stosowane będzie ustawienie wybrane przez użytkownika podczas instalacji/przy pierwszym uruchomieniu.</translation>
 <translation id="4784220343847172494">Steruje zachowaniem automatycznego czyszczenia na urządzeniach z systemem <ph name="PRODUCT_OS_NAME"/>. Gdy ilość wolnego miejsca na dysku osiąga poziom krytyczny, jest wyzwalane automatyczne czyszczenie, co pozwala odzyskać trochę miejsca.
 
@@ -428,6 +505,7 @@
 <translation id="3646859102161347133">Ustaw typ lupy</translation>
 <translation id="3528000905991875314">Włącz alternatywne strony błędów</translation>
 <translation id="1283072268083088623">Pozwala określić schematy uwierzytelniania HTTP obsługiwane w <ph name="PRODUCT_NAME"/>. Możliwe wartości to „podstawowe”, „podsumowanie”, „NTLM” i „negocjacja”. Poszczególne wartości rozdziel przecinkami. Jeśli ta zasada nie zostanie skonfigurowana, będą używane wszystkie cztery schematy.</translation>
+<translation id="1017967144265860778">Zarządzanie energią na ekranie logowania</translation>
 <translation id="4914647484900375533">Włącza funkcję wyszukiwania dynamicznego w <ph name="PRODUCT_NAME"/> i zapobiega zmianie tego ustawienia przez użytkowników.
 
       Jeśli włączysz ustawienie, wyszukiwanie dynamiczne w <ph name="PRODUCT_NAME"/> jest włączone.
@@ -441,9 +519,6 @@
       Ustawienie zostało usunięte z Chrome 29 i nowszych wersji.</translation>
 <translation id="6114416803310251055">przestarzała</translation>
 <translation id="8493645415242333585">Wyłącz zapisywanie historii przeglądarki</translation>
-<translation id="5319306267766543020">Umożliwia skonfigurowanie zarządzania energią w systemie <ph name="PRODUCT_OS_NAME"/>.
-
-      Te zasady pozwalają skonfigurować zachowanie systemu <ph name="PRODUCT_OS_NAME"/>, gdy użytkownik pozostaje nieaktywny przez pewien czas.</translation>
 <translation id="2747783890942882652">Konfiguruje wymaganą nazwę hosta, która będzie stosowana do hostów zdalnego dostępu, i uniemożliwia użytkownikom jej zmianę.
 
           Jeśli to ustawienie zostanie włączone, hosty będą mogły być udostępniane tylko z użyciem kont zarejestrowanych w określonej domenie.
@@ -470,6 +545,7 @@
 
           W przypadku nieustawienia tej zasady użytkownik będzie mógł odinstalować każde rozszerzenie z <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="6899705656741990703">Automatycznie wykrywaj ustawienia serwera proxy</translation>
+<translation id="4639407427807680016">Nazwy hostów wiadomości natywnych do usunięcia z czarnej listy</translation>
 <translation id="8382184662529825177">Włącz używanie zaświadczania zdalnego do ochrony treści na urządzeniu</translation>
 <translation id="7003334574344702284">Po włączeniu tej zasady wymuszany jest import zapisanych haseł z poprzedniej przeglądarki domyślnej. Włączenie zasady ma również wpływ na opcje w oknie dialogowym importowania. W przypadku jej wyłączenia zapisane hasła nie są importowane. Jeśli zasada nie jest skonfigurowana, użytkownik może zostać zapytany, czy zaimportować hasła lub operacja ta zostanie wykonana automatycznie.</translation>
 <translation id="6258193603492867656">Pozwala określić, czy generowana nazwa SPN w protokole Kerberos ma zawierać port niestandardowy. Po włączeniu tego ustawienia i wprowadzeniu portu niestandardowego (tzn. innego niż 80 i 443) jest on umieszczany w generowanej nazwie SPN w protokole Kerberos. Jeśli wyłączysz ustawienie, generowana nazwa SPN w protokole Kerberos nie będzie w żadnym przypadku zawierać portu.</translation>
@@ -492,6 +568,9 @@
 <translation id="8704831857353097849">Lista wyłączonych wtyczek</translation>
 <translation id="8391419598427733574">Zgłasza wersje systemu operacyjnego i oprogramowania układowego zarejestrowanych urządzeń. Po włączeniu zasady zarejestrowane urządzenia okresowo zgłaszają wersje systemu i oprogramowania. Jeśli zasada nie jest ustawiona lub jest wyłączona, informacje o wersji nie są przesyłane.</translation>
 <translation id="467449052039111439">Otwórz adresy URL z listy</translation>
+<translation id="1988371335297483117">Ładunki aktualizacji automatycznych można pobierać w <ph name="PRODUCT_OS_NAME"/> przez HTTP zamiast HTTPS. Umożliwia to przejrzyste zapisywanie w pamięci podręcznej HTTP plików pobranych przez HTTP.
+
+      Jeśli ustawisz tu wartość prawda, <ph name="PRODUCT_OS_NAME"/> będzie próbować pobierać ładunki aktualizacji automatycznych przez HTTP. Jeśli nie skonfigurujesz tej zasady lub ustawisz w niej wartość fałsz, do pobierania ładunków aktualizacji automatycznych będzie używany protokół HTTPS.</translation>
 <translation id="5883015257301027298">Domyślne ustawienie plików cookie</translation>
 <translation id="5017500084427291117">Blokuje dostęp do wymienionych URL-i.
 
@@ -510,22 +589,6 @@
 
       Każdy wpis określa identyfikator używany wewnętrznie do rozróżniania lokalnych kont na urządzeniu.</translation>
 <translation id="8955719471735800169">Powrót do góry</translation>
-<translation id="2534584045044686957">Umożliwia skonfigurowanie wielkości pamięci podręcznej używanej przez <ph name="PRODUCT_NAME"/> do przechowywania buforowanych plików multimedialnych na dysku.
-
-      Jeśli ustawisz tę zasadę, <ph name="PRODUCT_NAME"/> będzie używać podanego rozmiaru pamięci podręcznej, niezależnie od tego, czy użytkownik określi flagę „--media-cache-size”.
-
-      Jeśli wartość tej zasady zostanie ustawiona na 0, będzie używany domyślny rozmiar pamięci podręcznej, ale użytkownik nie będzie mógł go zmienić.
-
-      Jeśli ta zasada nie zostanie ustawiona, będzie używany rozmiar domyślny, ale użytkownik będzie mógł go zmienić, używając flagi --media-cache-size.</translation>
-<translation id="3723474915949495925">Pozwala określić listę wtyczek, które użytkownik może włączyć lub wyłączyć w <ph name="PRODUCT_NAME"/>.
-
-      Możesz użyć symboli wieloznacznych „*” i „?”, by dopasować sekwencje dowolnych znaków. Symbol „*” odpowiada dowolnej liczbie znaków, natomiast „?” oznacza jeden opcjonalny znak (czyli jeden lub zero znaków). Znakiem zmiany znaczenia jest „\”, dlatego by wprowadzić faktyczny znak „*”, „?” lub „\”, musisz umieścić przed nim znak „\”.
-
-      Jeśli włączysz to ustawienie, w <ph name="PRODUCT_NAME"/> będzie mogła być używana określona lista wtyczek. Użytkownicy będą je mogli włączać i wyłączać na stronie „about:plugins”, nawet jeśli wtyczka będzie zgodna ze wzorcem w zasadzie DisabledPlugins. Użytkownicy będą też mogli włączać i wyłączać wtyczki niezgodne z wzorcami w zasadach DisabledPlugins, DisabledPluginsExceptions i EnabledPlugins.
-
-      Ta zasada ma umożliwić ścisłą kontrolę uruchamiania wtyczek, gdy lista „DisabledPlugins” zawiera pozycje z symbolami wieloznacznymi (na przykład wyłączenie wszystkich wtyczek – „*” lub wyłączenie wszystkich wtyczek Java – „Java*”), a administrator chce włączyć tylko konkretną wersję – na przykład „IcedTea Java 2.3”. Te konkretne wersje można określić w tej zasadzie.
-
-      Jeśli ta zasada nie zostanie ustawiona, każda wtyczka zgodna ze wzorcem na liście „DisabledPlugins” zostanie wyłączona i zablokowana, a użytkownik nie będzie mógł jej włączyć.</translation>
 <translation id="4557134566541205630">URL strony nowej karty domyślnego dostawcy wyszukiwania</translation>
 <translation id="546726650689747237">Opóźnienie przyciemnienia ekranu przy zasilaniu sieciowym</translation>
 <translation id="4988291787868618635">Działanie, jakie ma zostać wykonane po osiągnięciu opóźnienia bezczynności</translation>
@@ -552,6 +615,11 @@
       Jeśli ustawienie jest włączone lub wyłączone, użytkownicy nie mogą go zmienić ani zastąpić.
 
       Jeśli zasada nie zostanie skonfigurowana, użytkownik może wybrać, czy chce odblokowywać urządzenie przy użyciu hasła.</translation>
+<translation id="383466854578875212">Pozwala określić, które hosty wiadomości natywnych nie podlegają umieszczeniu na czarnej liście.
+
+          Wartość * na czarnej liście oznacza, że wszystkie hosty wiadomości natywnych są umieszczane na czarnej liście i wczytywane będą tylko hosty z białej listy.
+
+          Domyślnie wszystkie hosty wiadomości natywnych są umieszczane na białej liście, ale jeśli wszystkie hosty wiadomości natywnych zostały umieszczone na czarnej liście na skutek działania zasad, biała lista może posłużyć do zastąpienia tych zasad.</translation>
 <translation id="6022948604095165524">Działanie po uruchomieniu</translation>
 <translation id="9042911395677044526">Pozwala na przesyłanie konfiguracji sieciowej w trybie push do urządzeń z <ph name="PRODUCT_OS_NAME"/> dla poszczególnych użytkowników. Konfiguracja sieci to łańcuch w formacie JSON zgodny z formatem Open Network Configuration opisanym na <ph name="ONC_SPEC_URL"/></translation>
 <translation id="7128918109610518786">Lista identyfikatorów aplikacji pokazywanych przez <ph name="PRODUCT_OS_NAME"/> jako aplikacje przypięte na pasku programu uruchamiającego.
@@ -619,11 +687,6 @@
       Maksymalna liczba wpisów w tej zasadzie to 1000. Kolejne są ignorowane.
 
       W przypadku nieskonfigurowania tej zasady nie będzie wyjątków w zasadzie „URLBlacklist”.</translation>
-<translation id="4163644371169597382">Administratorzy IT urządzeń firmowych mogą użyć tej flagi do określenia, czy użytkownicy mogą korzystać z ofert w procesie rejestracji systemu operacyjnego Chrome.
-
-      Jeśli wartość tej zasady to Prawda lub nie jest ona ustawiona, użytkownicy mogą wykorzystać oferty przy rejestracji systemu operacyjnego Chrome.
-
-      Jeśli wartość tej zasady to Fałsz, użytkownicy nie mogą wykorzystać ofert.</translation>
 <translation id="8148901634826284024">Włącza funkcję ułatwień dostępu w postaci trybu wysokiego kontrastu.
 
           Jeśli ta zasada ma wartość „prawda”, tryb wysokiego kontrastu jest zawsze włączony.
@@ -633,6 +696,7 @@
           Gdy ją ustawisz, użytkownicy nie mogą jej zmienić ani zastąpić.
 
           Jeśli zasada pozostanie nieustawiona, tryb wysokiego kontrastu jest początkowo wyłączony, ale użytkownik może go w każdej chwili włączyć.</translation>
+<translation id="2201555246697292490">Skonfiguruj białą listę wiadomości natywnych</translation>
 <translation id="6177482277304066047">Ustawia wersję docelową dla autoaktualizacji.
 
       Określa przedrostek wersji docelowej aktualizacji systemu <ph name="PRODUCT_OS_NAME"/>. Jeśli na urządzeniu działa wersja starsza niż określona przez podany przedrostek, zostanie wykonana aktualizacja do najnowszej wersji z danym przedrostkiem. Jeśli na urządzeniu działa już późniejsza wersja, nie są wprowadzane żadne zmiany (czyli nie jest przywracana starsza wersja), a na urządzeniu jest pozostawiana aktualnie używana wersja. Jak pokazano w poniższym przykładzie, format przedrostka rozróżnia komponenty:
@@ -643,6 +707,7 @@
       &quot;1412.24.34&quot;: aktualizacja tylko do tej konkretnej wersji</translation>
 <translation id="8102913158860568230">Domyślne ustawienia strumienia multimediów</translation>
 <translation id="6641981670621198190">Wyłącz obsługę interfejsów API grafiki 3D</translation>
+<translation id="1265053460044691532">Ograniczenie czasu, przez który użytkownik uwierzytelniony za pomocą SAML może logować się offline</translation>
 <translation id="7929480864713075819">Włącz raportowanie informacji o pamięci (rozmiar stosu pamięci JS) do strony.</translation>
 <translation id="5703863730741917647">Określa czynność podejmowaną po osiągnięciu opóźnienia bezczynności.
 
@@ -771,6 +836,9 @@
 
       Jeśli ta zasada będzie mieć wartość true lub nie zostanie skonfigurowana, tworzenie nowych kont użytkowników będzie dozwolone pod warunkiem, że zasada <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME"/> nie będzie zakazywać użytkownikom logowania się.</translation>
 <translation id="4389091865841123886">Konfiguruje zdalne poświadczanie przy użyciu mechanizmu TPM</translation>
+<translation id="9175109938712007705">Ponieważ ignorowane z powodu błędu sieci sprawdzanie, czy certyfikat nie został unieważniony, nie zapewnia żadnego rzeczywistego wzrostu bezpieczeństwa, zostało domyślnie wyłączone w wersji 19 <ph name="PRODUCT_NAME"/> i późniejszych. Jeśli ustawisz tu wartość prawda, zostanie przywrócone poprzednie działanie i internetowe kontrole OCSP/CRL będą przeprowadzane.
+
+      Jeśli nie skonfigurujesz tej zasady lub ustawisz w niej wartość fałsz, w Chrome w wersji 19 i późniejszych nie będą przeprowadzane internetowe kontrole unieważnionych certyfikatów.</translation>
 <translation id="8256688113167012935">Określa nazwę konta, którą <ph name="PRODUCT_OS_NAME"/> pokazuje na ekranie logowania dla danego lokalnego konta na urządzeniu.
 
       W przypadku ustawienia tej opcji na ekranie logowania w graficznym module wybierania loginu dla odpowiedniego lokalnego konta na urządzeniu będzie używany podany łańcuch.
@@ -800,35 +868,7 @@
 
           Jeśli czynnością jest wstrzymanie, <ph name="PRODUCT_OS_NAME"/> można skonfigurować osobno tak, by ekran przedtem był lub nie był blokowany.</translation>
 <translation id="7750991880413385988">Otwórz stronę nowej karty</translation>
-<translation id="741903087521737762">Pozwala określić działanie przy uruchomieniu.
-
-          Jeśli wybierzesz „Otwórz stronę nowej karty”, przy każdym uruchomieniu <ph name="PRODUCT_NAME"/> będzie otwierana strona nowej karty.
-
-          Jeśli wybierzesz „Przywróć ostatnią sesję”, zostanie wznowiona sesja przeglądania i ponownie wczytane URL-e, które były otwarte przy zamknięciu <ph name="PRODUCT_NAME"/>.
-          Wybranie tej opcji wyłącza niektóre ustawienia zależne od sesji lub powodujące wykonywanie działań przy zamykaniu (np. czyszczenie danych przeglądarki przy zamykaniu lub zapisywanie plików cookie tylko na czas sesji).
-
-          Jeśli wybierzesz „Otwórz adresy URL z listy”, po uruchomieniu <ph name="PRODUCT_NAME"/> przez użytkownika będą otwierane strony z listy „Adresy URL otwierane po uruchomieniu”.
-
-          Jeśli włączysz to ustawienie, użytkownicy nie będą mogli go zmienić ani zastąpić w <ph name="PRODUCT_NAME"/>.
-
-          Wyłączenie tego ustawienia jest równoznaczne z pozostawieniem go nieskonfigurowanego. Użytkownik nadal może je zmienić w <ph name="PRODUCT_NAME"/>.</translation>
-<translation id="8161570238552664224">Zezwalaj na odtwarzanie dźwięku.
-
-      W przypadku wyłączenia tej opcji wyjście audio urządzenia nie będzie dostępne, gdy użytkownik będzie zalogowany.
-
-      Ta zasada wpływa na wszystkie typy wyjść audio, a nie tylko na wbudowane głośniki. Ta zasada wyłącza też dźwiękowe funkcje ułatwień dostępu. Nie należy jej włączać, jeśli użytkownik potrzebuje czytnika ekranu.
-
-      Jeśli to ustawienie będzie włączone lub nieskonfigurowane, użytkownicy będą mogli używać wszystkich obsługiwanych wyjść audio urządzenia.</translation>
 <translation id="5761030451068906335">Konfiguruje ustawienia serwera proxy w <ph name="PRODUCT_NAME"/>. Zasada nie jest jeszcze gotowa, więc nie należy jej używać.</translation>
-<translation id="3006443857675504368">Pokazuj opcje ułatwień dostępu <ph name="PRODUCT_OS_NAME"/> w menu systemowym.
-
-          Jeśli ta zasada jest ustawiona na wartość Prawda, opcje ułatwień dostępu są zawsze wyświetlane w menu na pasku zadań.
-
-          Jeśli ta zasada jest ustawiona na wartość Fałsz, opcje ułatwień dostępu nie są wyświetlane w menu na pasku zadań.
-
-          Jeśli ta zasada jest ustawiona, użytkownicy nie mogą jej zmienić ani zastąpić.
-
-          Jeśli ta zasada jest nieustawiona, opcje ułatwień dostępu nie będą wyświetlane w menu na pasku zadań, ale użytkownik będzie mógł włączyć wyświetlanie opcji ułatwień dostępu na stronie Ustawienia.</translation>
 <translation id="8344454543174932833">Importuj zakładki z przeglądarki domyślnej przy pierwszym uruchomieniu</translation>
 <translation id="1019101089073227242">Ustaw katalog danych użytkownika</translation>
 <translation id="5826047473100157858">Określa, czy użytkownik może otwierać strony w trybie incognito w <ph name="PRODUCT_NAME"/>. W przypadku opcji „Włączone” lub nieskonfigurowania zasady strony mogą być otwierane w tym trybie. Opcja „Wyłączone” uniemożliwia otwieranie stron w tym trybie. Po wybraniu opcji „Wymuszone” strony można otwierać TYLKO w trybie incognito.</translation>
@@ -854,6 +894,13 @@
 <translation id="706669471845501145">Zezwalaj witrynom na pokazywanie powiadomień na pulpicie</translation>
 <translation id="7529144158022474049">Współczynnik rozkładania automatycznych aktualizacji w czasie</translation>
 <translation id="2188979373208322108">Włącza pasek zakładek w przeglądarce <ph name="PRODUCT_NAME"/>. Jeśli włączysz to ustawienie, w <ph name="PRODUCT_NAME"/> będzie pokazywany pasek zakładek. W przypadku wyłączenia ustawienia pasek nie będzie wyświetlany. Jeśli ustawienie jest włączone lub wyłączone, użytkownicy nie mogą go zmienić ani zastąpić w <ph name="PRODUCT_NAME"/>. W przypadku nieskonfigurowania tego ustawienia użytkownik może zdecydować, czy chce używać tej funkcji.</translation>
+<translation id="7593523670408385997">Ustala rozmiar pamięci podręcznej, której <ph name="PRODUCT_NAME"/> będzie używać do zapisywania plików pamięci podręcznej na dysku.
+
+      Jeśli ustawisz tę zasadę, <ph name="PRODUCT_NAME"/> będzie używać dostępnego rozmiaru pamięci podręcznej bez względu na to, czy określono flagę „--disk-cache-size”, czy nie. Wartość określona w tej zasadzie nie jest stała i stanowi raczej propozycję dla systemu pamięci podręcznej. Każda wartość niższa niż kilka megabajtów jest za mała i zostanie zaokrąglona do rozsądnego minimum.
+
+      Jeśli wartość w tej zasadzie jest ustawiona na 0, zostanie użyty domyślny rozmiar pamięci podręcznej i użytkownik nie będzie mógł go zmienić.
+
+      Jeśli zasada nie jest ustawiona, zostanie użyty domyślny rozmiar pamięci, a użytkownik będzie mógł go zastąpić flagą --disk-cache-size.</translation>
 <translation id="5475361623548884387">Włącz drukowanie</translation>
 <translation id="7287359148642300270">Określa, które serwery mają być uwzględniane na białej liście wbudowanego uwierzytelniania. Funkcja ta jest włączana tylko w przypadku otrzymania w <ph name="PRODUCT_NAME"/> żądania uwierzytelnienia od serwera proxy lub serwera znajdującego się na tej liście dozwolonych.
 
@@ -861,6 +908,18 @@
 
           Jeśli ta zasada jest nieustawiona, Chrome próbuje wykryć, czy serwer działa w intranecie, i dopiero wtedy odpowiada na żądania IWA. W przypadku wykrycia serwera internetowego przesyłane przez niego żądania IWA będą ignorowane przez Chrome.</translation>
 <translation id="3653237928288822292">Ikona domyślnego dostawcy wyszukiwania</translation>
+<translation id="4721232045439708965">Umożliwia określenie działania po uruchomieniu.
+
+          Jeśli wybierzesz „Otwórz stronę nowej karty”, po uruchomieniu <ph name="PRODUCT_NAME"/> będzie zawsze otwierana strona nowej karty.
+
+          Jeśli wybierzesz „Przywróć ostatnią sesję”, będą otwierane strony, które były otwarte w momencie ostatniego zamknięcia <ph name="PRODUCT_NAME"/>, i będzie przywracana sesja przeglądania w postaci, w jakiej została zamknięta.
+          Wybranie tej opcji powoduje wyłączenie niektórych ustawień zależnych od sesji lub powodujących wykonywanie określonych czynności przy zamykaniu (na przykład czyszczenie danych przeglądania po zamknięciu lub pliki cookie zapisywane tylko na czas sesji).
+
+          Jeśli wybierzesz „Otwórz adresy URL z listy”, po uruchomieniu <ph name="PRODUCT_NAME"/> będzie otwierana lista „Adresów URL otwieranych po uruchomieniu”.
+
+          Jeśli włączysz to ustawienie, użytkownicy nie będą mogli go zmienić ani zastąpić w <ph name="PRODUCT_NAME"/>.
+
+          Wyłączenie tego ustawienia jest równoznaczne z pozostawieniem go bez konfigurowania. Użytkownik nadal będzie mógł zmienić je w <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="2872961005593481000">Wyłącz</translation>
 <translation id="4445684791305970001">Wyłącza narzędzia dla programistów i konsolę JavaScript. Jeśli włączysz to ustawienie, niemożliwe będzie uzyskanie dostępu do narzędzi dla programistów i dokonanie przeglądu elementów witryny. Wszelkie skróty klawiszowe oraz pozycje w menu aplikacji i menu kontekstowym umożliwiające otwarcie narzędzi dla programistów lub konsoli JavaScript będą nieaktywne. Wyłączenie lub nieskonfigurowanie tej opcji umożliwi korzystanie z narzędzi dla programistów i konsoli JavaScript.</translation>
 <translation id="9203071022800375458">Wyłącz tworzenie zrzutów ekranu.
@@ -913,6 +972,17 @@ W przypadku wyłączenia lub nieskonfigurowania tej zasady tworzenie zrzutów ek
 <translation id="6190022522129724693">Domyślne ustawienie wyskakujących okienek</translation>
 <translation id="847472800012384958">Nie zezwalaj na pokazywanie wyskakujących okienek w żadnej witrynie</translation>
 <translation id="4733471537137819387">Zasady dotyczące zintegrowanego uwierzytelniania HTTP.</translation>
+<translation id="8501011084242226370">Określa listę wtyczek, które użytkownik może włączyć lub wyłączyć w <ph name="PRODUCT_NAME"/>.
+
+      W celu odwzorowania sekwencji dowolnych znaków można użyć symboli wieloznacznych „*” i „?”. Symbol „*” odpowiada dowolnej liczbie znaków, a „?” określa opcjonalny pojedynczy znak, czyli oznacza jeden znak lub brak znaku. Znak ucieczki – „\” – umieszczony przed znakami „*”, „?” lub „\” pozwala określić ich podstawowe znaczenie.
+
+      Jeśli włączysz to ustawienie, w <ph name="PRODUCT_NAME"/> będzie możliwe użycie określonej listy wtyczek. Użytkownicy będą mogli je włączać i wyłączać w „about:plugins”, nawet jeśli dana wtyczka będzie też pasowała do wzorca określonego w DisabledPlugins. Użytkownicy będą mogli też włączać i wyłączać wtyczki, które nie pasują do żadnego wzorca w DisabledPlugins, DisabledPluginsExceptions ani EnabledPlugins.
+
+      Celem tej zasady jest umożliwienie utworzenia ścisłej czarnej listy wtyczek, w przypadku gdy lista „DisabledPlugins” zawiera wpisy z symbolami wieloznacznymi, takie jak wyłączające wszystkie wtyczki „*” czy wyłączające wszystkie wtyczki Javy „*Java*”, ale administrator chce włączyć pewne określone wersje, na przykład „IcedTea Java 2.3”. Te konkretne wersje można określić w tej zasadzie.
+
+      Pamiętaj, że musisz wykluczyć zarówno nazwę wtyczki, jak i nazwę grupy wtyczek. Każdą grupę wtyczek widać w oddzielnej sekcji w about:plugins, a do każdej sekcji może należeć co najmniej jedna wtyczka. Na przykład wtyczka „Shockwave Flash” należy do grupy „Adobe Flash Player” i jeśli ma być wykluczona z czarnej listy, obie te nazwy muszą mieć swoje odpowiedniki na liście wyjątków.
+
+      Jeśli nie skonfigurujesz tej zasady, wszystkie wtyczki pasujące do wzorca w „DisabledPlugins” będą blokowane i użytkownik nie będzie mógł ich włączyć.</translation>
 <translation id="8951350807133946005">Ustaw katalog podręcznej pamięci dyskowej</translation>
 <translation id="603410445099326293">Parametry dla sugerowania URL-i używających POST</translation>
 <translation id="2592091433672667839">Czas bezczynności, po upływie którego w trybie sklepu na ekranie logowania jest wyświetlany wygaszacz ekranu</translation>
@@ -920,6 +990,15 @@ W przypadku wyłączenia lub nieskonfigurowania tej zasady tworzenie zrzutów ek
 <translation id="2805707493867224476">Zezwalaj na pokazywanie wyskakujących okienek we wszystkich witrynach</translation>
 <translation id="1727394138581151779">Blokuj wszystkie wtyczki</translation>
 <translation id="8118665053362250806">Ustaw rozmiar dyskowej pamięci podręcznej</translation>
+<translation id="6565312346072273043">Ustawia domyślny stan funkcji dostępności klawiatury ekranowej na ekranie logowania.
+
+          Jeśli ustawisz tu wartość prawda, klawiatura ekranowa będzie włączona na ekranie logowania.
+
+          Jeśli ustawisz tu wartość fałsz, będzie ona na tym ekranie wyłączona.
+
+          Jeśli skonfigurujesz tę zasadę, użytkownicy będą mogli ją tymczasowo zastępować, włączając lub wyłączając klawiaturę ekranową. Wybór użytkownika nie będzie jednak stały i ustawienie domyślnie będzie przywracane po każdym wyświetleniu ekranu logowania lub jeśli przez minutę użytkownik nie wykona żadnej czynności na tym ekranie.
+
+          Jeśli nie skonfigurujesz tej zasady, klawiatura ekranowa będzie wyłączona po pierwszym wyświetleniu ekranu logowania. Użytkownicy będą mogli ją włączyć i wyłączyć w każdej chwili i jej stan na tym ekranie będzie utrzymywany między użytkownikami.</translation>
 <translation id="7079519252486108041">Blokuj wyskakujące okienka w tych witrynach</translation>
 <translation id="1859633270756049523">Ogranicz długość sesji</translation>
 <translation id="7433714841194914373">Włącz wyszukiwanie dynamiczne</translation>
@@ -956,6 +1035,7 @@ W przypadku wyłączenia lub nieskonfigurowania tej zasady tworzenie zrzutów ek
 <translation id="8519264904050090490">Zarządzane adresy URL dodane przez użytkownika na listę wyjątków</translation>
 <translation id="4480694116501920047">Wymuś stosowanie filtru SafeSearch</translation>
 <translation id="465099050592230505">URL firmowego sklepu internetowego (wycofana)</translation>
+<translation id="2006530844219044261">Zarządzanie energią</translation>
 <translation id="1221359380862872747">Załaduj podane URL-e przy logowaniu demonstracyjnym</translation>
 <translation id="2431811512983100641">Określa, czy ma być włączone rozszerzenie certyfikatów TLS powiązanych z domeną.
 
@@ -970,9 +1050,7 @@ W przypadku wyłączenia lub nieskonfigurowania tej zasady tworzenie zrzutów ek
       Nieskonfigurowanie tej zasady spowoduje, że <ph name="PRODUCT_NAME"/> będzie używać domyślnej wartości 5000 milisekund.</translation>
 <translation id="8099880303030573137">Opóźnienie bezczynności przy zasilaniu z baterii</translation>
 <translation id="2761483219396643566">Opóźnienie ostrzeżenia o bezczynności przy zasilaniu z baterii</translation>
-<translation id="5058056679422616660">Pakiety aktualizacji automatycznych w <ph name="PRODUCT_OS_NAME"/> można pobierać przez HTTP zamiast HTTPS. Umożliwia to przejrzyste buforowanie plików pobieranych przez HTTP.
-
-      Jeśli w tej zasadzie wybierzesz wartość Prawda, <ph name="PRODUCT_OS_NAME"/> będzie próbować pobierać aktualizacje automatyczne przez HTTP. Jeśli wybierzesz tu wartość Fałsz lub w ogóle nie skonfigurujesz tej zasady, do pobierania pakietów aktualizacji automatycznych będzie używany protokół HTTPS.</translation>
+<translation id="6281043242780654992">Konfiguruje zasady wiadomości natywnych. Hosty wiadomości natywnych na czarnej liście nie będą dostępne, dopóki nie znajdą się na białej liście.</translation>
 <translation id="1468307069016535757">Ustawia domyślny stan funkcji ułatwień dostępu w postaci trybu wysokiego kontrastu na ekranie logowania.
 
           Jeśli ta zasada ma wartość „prawda”, po wyświetleniu ekranu logowania tryb wysokiego kontrastu jest włączony.
@@ -1016,9 +1094,6 @@ W przypadku wyłączenia lub nieskonfigurowania tej zasady tworzenie zrzutów ek
 <translation id="5366977351895725771">Jeśli ta zasada ma wartość „fałsz”, ten użytkownik nie może tworzyć użytkowników nadzorowanych. Dotychczasowi użytkownicy nadzorowani będą nadal dostępni.
 
           Jeśli ma ona wartość „prawda” lub nie jest skonfigurowana, ten użytkownik może tworzyć użytkowników nadzorowanych i zarządzać nimi.</translation>
-<translation id="8101760444435022591">Ponieważ sprawdzanie online, czy certyfikat nie został unieważniony (ignorowany z powodu błędu sieci) nie poprawia bezpieczeństwa, w <ph name="PRODUCT_NAME"/> 19 i nowszych wersjach jest domyślnie wyłączone. W przypadku włączenia tej zasady przywrócone zostanie wcześniejsze zachowanie i będzie wykonywane sprawdzanie OCSP/CRL online.
-
-      Jeśli ta zasada nie zostanie ustawiona lub będzie wyłączona, Chrome w wersji 19 lub nowszej nie będzie sprawdzał unieważnień online.</translation>
 <translation id="5469484020713359236">Umożliwia skonfigurowanie listy wzorcowych URL-i określających witryny, którym wolno tworzyć pliki cookie. Jeśli ta zasada nie zostanie skonfigurowana, dla wszystkich witryn będzie używana globalna wartość domyślna pochodząca z zasady „DefaultCookiesSetting” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.</translation>
 <translation id="1504431521196476721">Zdalne poświadczanie</translation>
 <translation id="1881299719020653447">Ukryj sklep Chrome Web Store na nowych kartach i w programie uruchamiającym aplikacje.</translation>
@@ -1035,7 +1110,6 @@ W przypadku wyłączenia lub nieskonfigurowania tej zasady tworzenie zrzutów ek
 
          Jeśli ta zasada będzie wyłączona lub nieustawiona, odliczanie opóźnień związanych z zarządzaniem energią oraz czasu związanego z limitem długości sesji będzie rozpoczynane od razu po rozpoczęciu sesji.</translation>
 <translation id="4600786265870346112">Włącz duży kursor</translation>
-<translation id="8592105098257899882">Konfiguruje rozmiar pamięci podręcznej używanej przez <ph name="PRODUCT_NAME"/> do przechowywania plików buforowanych na dysku. W przypadku ustawienia tej zasady <ph name="PRODUCT_NAME"/> będzie używać określonego rozmiaru pamięci podręcznej, niezależnie od tego, czy użytkownik poda parametr „--disk-cache-size”. Jeśli dla tej zasady zostanie ustawiona wartość 0, będzie używany domyślny rozmiar pamięci podręcznej, ale użytkownik nie będzie mógł go zmienić. W przypadku nieskonfigurowania zasady będzie używany rozmiar domyślny, ale użytkownik będzie mógł go zmienić za pomocą parametru --disk-cache-size.</translation>
 <translation id="5887414688706570295">Konfiguruje przedrostek gadżetu TalkGadget, który będzie używany przez hosty zdalnego dostępu, i uniemożliwia użytkownikom jego zmianę.
 
           W przypadku określenia tego przedrostka jest on dołączany na początku podstawowej nazwy gadżetu TalkGadget, by utworzyć pełną nazwę domeny dla gadżetu TalkGadget. Podstawowa nazwa domeny gadżetu TalkGadget to „.talkgadget.google.com”.
@@ -1059,7 +1133,6 @@ W przypadku wyłączenia lub nieskonfigurowania tej zasady tworzenie zrzutów ek
 <translation id="3809527282695568696">Umożliwia określenie listy otwieranych URL-i, jeśli jako działanie po uruchomieniu wybrano opcję „Otwórz adresy URL z listy”. W przypadku nieskonfigurowania zasady po uruchomieniu nie będzie otwierany żaden URL. Ta zasada jest stosowana tylko wówczas, gdy zasada „RestoreOnStartup” jest skonfigurowana jako „RestoreOnStartupIsURLs”.</translation>
 <translation id="649418342108050703">Wyłącza obsługę interfejsów API grafiki 3D. Włączenie tego ustawienia uniemożliwia stronom internetowym korzystanie z procesora graficznego (GPU). W szczególności strony internetowe nie mają dostępu do interfejsu API WebGL, natomiast wtyczki nie mogą korzystać z interfejsu API Pepper 3D. Wyłączenie ustawienia lub nieskonfigurowanie go pozwala stronom internetowym korzystać z interfejsu API WebGL, a wtyczkom – z interfejsu API Pepper 3D. Domyślne ustawienia przeglądarki mogą powodować konieczność podania argumentów w wierszu polecenia w celu użycia tych interfejsów API.</translation>
 <translation id="2077273864382355561">Opóźnienie wyłączenia ekranu przy zasilaniu z baterii</translation>
-<translation id="909184783177222836">Zarządzanie energią</translation>
 <translation id="3417418267404583991">Jeśli ta zasada zostanie włączona lub nie będzie skonfigurowana, <ph name="PRODUCT_OS_NAME"/> będzie umożliwiał logowanie się w trybie gościa. Logowania w trybie gościa to anonimowe sesje użytkownika, które nie wymagają hasła.
 
       W przypadku wyłączenia tej zasady <ph name="PRODUCT_OS_NAME"/> nie będzie zezwalać na uruchamianie sesji gościa.</translation>
@@ -1068,33 +1141,12 @@ W przypadku wyłączenia lub nieskonfigurowania tej zasady tworzenie zrzutów ek
       W przypadku określenia zasady DeviceIdleLogoutTimeout ta zasada określa czas wyświetlania okna ostrzegawczego z licznikiem czasu, które jest wyświetlane przed wylogowaniem użytkownika.
 
       Wartość zasady należy podać w milisekundach.</translation>
-<translation id="54795286564479339">Umożliwia skonfigurowanie obrazu awatara użytkownika.
-
-      Ta zasada pozwala skonfigurować obraz awatara, który reprezentuje użytkownika na ekranie logowania. Aby ją ustawić, podaj URL, z którego <ph name="PRODUCT_OS_NAME"/> może pobrać obraz awatara, oraz skrót kryptograficzny używany do weryfikacji poprawności pobranego pliku. Obraz musi być w formacie JPEG, a jego rozmiar nie może przekraczać 512 kB. URL musi być dostępny bez żadnego uwierzytelniania.
-
-      Po pobraniu obraz awatara jest zapisywany w pamięci podręcznej. Gdy URL lub skrót się zmieni, pobieranie jest powtarzane.
-
-      Zasadę należy zdefiniować jako ciąg tekstowy w formacie JSON zawierający URL i skrót, zgodnie z tym schematem:
-      {
-        &quot;type&quot;: &quot;object&quot;,
-        &quot;properties&quot;: {
-          &quot;url&quot;: {
-            &quot;description&quot;: &quot;URL, z którego można pobrać obraz awatara.&quot;,
-            &quot;type&quot;: &quot;string&quot;
-          },
-          &quot;hash&quot;: {
-            &quot;description&quot;: &quot;Skrót SHA-1 obrazu awatara.&quot;,
-            &quot;type&quot;: &quot;string&quot;
-          }
-        }
-      }
-
-      Jeśli zasada jest ustawiona, <ph name="PRODUCT_OS_NAME"/> pobiera obraz awatara i korzysta z niego.
-
-      Gdy ją ustawisz, użytkownicy nie mogą jej zmienić ani zastąpić.
-
-      Jeśli zasada pozostanie nieustawiona, użytkownik może wybrać obraz awatara, który będzie reprezentował go na ekranie logowania.</translation>
 <translation id="237494535617297575">Umożliwia skonfigurowanie listy wzorców URL-i określających witryny, w których mogą być wyświetlane powiadomienia. Jeśli ta zasada nie zostanie skonfigurowana, dla wszystkich witryn będzie używana globalna wartość domyślna pochodząca z zasady „DefaultNotificationsSetting” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.</translation>
+<translation id="527237119693897329">Pozwala określić, które hosty wiadomości natywnych nie powinny być wczytywane.
+
+          Wartość * na czarnej liście oznacza, że wszystkie hosty wiadomości natywnych są umieszczane na czarnej liście, dopóki nie znajdą się na białej liście.
+
+          Jeśli ta zasada nie została określona, <ph name="PRODUCT_NAME"/> wczyta wszystkie zainstalowane hosty wiadomości natywnych.</translation>
 <translation id="7258823566580374486">Włącz separację hostów zdalnego dostępu</translation>
 <translation id="5560039246134246593">Dodaj parametr do pobierania odmian w <ph name="PRODUCT_NAME"/>.
 
@@ -1205,15 +1257,6 @@ W przypadku wyłączenia lub nieskonfigurowania tej zasady tworzenie zrzutów ek
 
           Jeśli ta zasada nie zostanie ustawiona, będzie stosowane ustawienie „PromptOnAccess” i użytkownik nie będzie mógł go zmienić.</translation>
 <translation id="2299220924812062390">Określ listę włączonych wtyczek</translation>
-<translation id="328908658998820373">Zezwalaj na tryb pełnoekranowy.
-
-      Ta zasada steruje dostępnością trybu pełnoekranowego, w którym cały interfejs <ph name="PRODUCT_NAME"/> jest ukryty i widać tylko treść internetową.
-
-      Jeśli w tej zasadzie wybierzesz wartość Prawda lub w ogóle jej nie skonfigurujesz, użytkownik, aplikacje i rozszerzenia o odpowiednich uprawnieniach będą mogli przechodzić w tryb pełnoekranowy.
-
-      Jeśli wybierzesz tu wartość Fałsz, ani użytkownik, ani żadne aplikacje czy rozszerzenia nie będą mogli przechodzić w tryb pełnoekranowy.
-
-      Na wszystkich platformach poza <ph name="PRODUCT_OS_NAME"/> tryb kiosku jest niedostępny, gdy tryb ekranowy jest wyłączony.</translation>
 <translation id="4325690621216251241">Dodaj przycisk wylogowania do paska zadań</translation>
 <translation id="924557436754151212">Importuj zapisane hasła z przeglądarki domyślnej przy pierwszym uruchomieniu</translation>
 <translation id="1465619815762735808">Kliknij, by uruchomić</translation>
@@ -1230,24 +1273,18 @@ W przypadku wyłączenia lub nieskonfigurowania tej zasady tworzenie zrzutów ek
 
           Wartość tej zasady powinna być określona w milisekundach. Wartości nie mogą być wyższe od opóźnienia bezczynności.</translation>
 <translation id="1897365952389968758">Zezwalaj na wykonywanie kodu JavaScript we wszystkich witrynach</translation>
-<translation id="5244714491205147861">Zarządzanie energią na ekranie logowania</translation>
 <translation id="922540222991413931">Konfiguruj źródła instalacji rozszerzeń, aplikacji i skryptów użytkownika</translation>
 <translation id="7323896582714668701">Dodatkowe parametry wiersza poleceń dla <ph name="PRODUCT_NAME"/></translation>
 <translation id="6931242315485576290">Wyłącz synchronizację danych z Google</translation>
+<translation id="1330145147221172764">Włącz klawiaturę ekranową</translation>
 <translation id="7006788746334555276">Ustawienia treści</translation>
-<translation id="63659515616919367">Steruje zachowaniem użytkowników w sesji wieloprofilowej na urządzeniach <ph name="PRODUCT_OS_NAME"/>.
+<translation id="450537894712826981">Ustala rozmiar pamięci podręcznej, której <ph name="PRODUCT_NAME"/> będzie używać do zapisywania plików pamięci podręcznej na dysku.
 
-      Jeśli w tej zasadzie wybierzesz wartość „MultiProfileUserBehaviorUnrestricted”, użytkownik będzie mógł pełnić funkcję użytkownika głównego lub dodatkowego w sesjach wieloprofilowych.
+      Jeśli ustawisz tę zasadę, <ph name="PRODUCT_NAME"/> będzie używać dostępnego rozmiaru pamięci podręcznej bez względu na to, czy określono flagę „--disk-cache-size”, czy nie. Wartość określona w tej zasadzie nie jest stała i stanowi raczej propozycję dla systemu pamięci podręcznej. Każda wartość niższa niż kilka megabajtów jest za mała i zostanie zaokrąglona do rozsądnego minimum.
 
-      Jeśli w tej zasadzie wybierzesz wartość „MultiProfileUserBehaviorMustBePrimary”, w sesjach wieloprofilowych użytkownik będzie mógł pełnić tylko funkcję użytkownika głównego.
+      Jeśli wartość w tej zasadzie jest ustawiona na 0, zostanie użyty domyślny rozmiar pamięci podręcznej i użytkownik nie będzie mógł go zmienić.
 
-      Jeśli w tej zasadzie wybierzesz wartość „MultiProfileUserBehaviorNotAllowed”, użytkownik nie będzie mógł brać udziału w sesjach wieloprofilowych.
-
-      Jeśli skonfigurujesz to ustawienie, użytkownicy nie będą mogli go zmienić ani zastąpić.
-
-      Jeśli zmienisz to ustawienie, gdy użytkownik będzie zalogowany w sesji wieloprofilowej, wszyscy użytkownicy biorący udział w tej sesji zostaną sprawdzeni pod kątem zgodności z ich odpowiednimi ustawieniami. Jeśli okaże się, że któryś z nich nie może już brać udziału w sesjach wieloprofilowych, sesja zostanie zamknięta.
-
-      Jeśli w ogóle nie skonfigurujesz tej zasady, zostanie użyta wartość domyślna „MultiProfileUserBehaviorUnrestricted”.</translation>
+      Jeśli zasada nie jest ustawiona, zostanie użyty domyślny rozmiar pamięci, a użytkownik będzie mógł go zastąpić flagą --disk-cache-size.</translation>
 <translation id="5142301680741828703">Zawsze renderuj strony we wtyczce <ph name="PRODUCT_FRAME_NAME"/> według następujących wzorców adresów URL</translation>
 <translation id="4625915093043961294">Konfiguruj białą listę instalacji rozszerzeń</translation>
 <translation id="187819629719252111">Umożliwia dostęp do plików lokalnych na komputerze, zezwalając <ph name="PRODUCT_NAME"/> na wyświetlanie okien dialogowych wyboru pliku. Po włączeniu tego ustawienia użytkownicy mogą w normalny sposób otwierać okna dialogowe wyboru pliku. Jeśli wyłączysz ustawienie, w momencie wykonania przez użytkownika czynności powodującej wywołanie okna dialogowego wyboru pliku (np. zaimportowanie zakładek, przesłanie plików, zapisanie linków itp.) zostanie wyświetlony komunikat, a działanie przeglądarki będzie kontynuowane, tak jakby użytkownik kliknął przycisk Anuluj w oknie dialogowym wyboru pliku. Jeśli ustawienie jest nieskonfigurowane, użytkownicy mogą w normalny sposób otwierać okna dialogowe wyboru pliku.</translation>
@@ -1257,9 +1294,11 @@ W przypadku wyłączenia lub nieskonfigurowania tej zasady tworzenie zrzutów ek
 <translation id="1062011392452772310">Włącz zaświadczanie zdalne dla urządzenia</translation>
 <translation id="7774768074957326919">Używaj systemowych ustawień serwera proxy</translation>
 <translation id="3891357445869647828">Włącz obsługę języka JavaScript</translation>
+<translation id="6774533686631353488">Zezwól na hosty Wiadomości natywnych na poziomie użytkownika (instalowane bez uprawnień administratora).</translation>
 <translation id="868187325500643455">Zezwalaj na automatyczne uruchamianie wtyczek we wszystkich witrynach</translation>
 <translation id="7421483919690710988">Ustaw rozmiar dyskowej pamięci podręcznej multimediów w bajtach</translation>
 <translation id="5226033722357981948">Określ, czy funkcja znajdowania wtyczek ma być wyłączona</translation>
+<translation id="7234280155140786597">Nazwy zabronionych hostów wiadomości natywnych (lub * dla wszystkich)</translation>
 <translation id="4890209226533226410">Ustawia włączony typ lupy.
 
           Jeśli ta zasada jest ustawiona, określa typ lupy, który jest włączony. Ustawienie zasady jako „Brak” wyłącza lupę.
@@ -1308,6 +1347,11 @@ W przypadku wyłączenia lub nieskonfigurowania tej zasady tworzenie zrzutów ek
       Jeśli ta zasada jest nieustawiona, automatyczne logowanie nie działa.</translation>
 <translation id="5983708779415553259">Domyślne zachowanie dla witryn nie jest zawarte w żadnym pakiecie treści</translation>
 <translation id="3866530186104388232">Jeśli ta zasada jest włączona lub nieskonfigurowana, <ph name="PRODUCT_OS_NAME"/> będzie umożliwiał wybranie nazwy użytkownika spośród zarejestrowanych nazw wyświetlanych na ekranie logowania. W przypadku wyłączenia tej zasady <ph name="PRODUCT_OS_NAME"/> będzie prosił o podanie nazwy użytkownika i hasła.</translation>
+<translation id="7384902298286534237">Pozwala utworzyć listę wzorców adresów URL określających witryny, które mogą ustawiać pliki ważne tylko na czas sesji.
+
+          Jeśli nie skonfigurujesz tej zasady, dla wszystkich witryn będzie używana globalna wartość domyślna pobrana z zasady „DefaultCookiesSetting” (jeśli jest określona) lub z osobistej konfiguracji użytkownika.
+
+          Jeśli zasada „RestoreOnStartup” jest skonfigurowana do przywracania adresów URL z poprzednich sesji, ta zasada nie będzie przestrzegana i w przypadku tych witryn pliki cookie będą przechowywane trwale.</translation>
 <translation id="2098658257603918882">Włącz przesyłanie raportów o użytkowaniu i danych dotyczących awarii</translation>
 <translation id="2324547593752594014">Zezwalaj na logowanie się w Chrome</translation>
 <translation id="172374442286684480">Zezwalaj wszystkim witrynom na tworzenie danych lokalnych</translation>
@@ -1380,6 +1424,11 @@ W przypadku wyłączenia lub nieskonfigurowania tej zasady tworzenie zrzutów ek
 <translation id="7715711044277116530">Wartość procentowa skalowania opóźnienia przyciemnienia ekranu w trybie prezentacji</translation>
 <translation id="8777120694819070607">Zezwala na uruchamianie nieaktualnych wtyczek w przeglądarce <ph name="PRODUCT_NAME"/>. Jeśli włączysz to ustawienie, nieaktualne wtyczki będą używane w normalny sposób. W przypadku jego wyłączenia nieaktualne wtyczki nie są używane, a użytkownikom nie są wyświetlane monity o udzielenie pozwolenia na ich uruchomienie. Jeśli ustawienie jest nieskonfigurowane, użytkownikom są wyświetlane monity o udzielenie pozwolenia na uruchomienie nieaktualnych wtyczek.</translation>
 <translation id="2629448496147630947">Skonfiguruj opcje dostępu zdalnego w <ph name="PRODUCT_NAME"/>. Funkcje te są uwzględniane dopiero po zainstalowaniu aplikacji internetowej dostępu zdalnego.</translation>
+<translation id="4001275826058808087">Administratorzy IT urządzeń firmowych mogą przy użyciu tej flagi określić, czy użytkownicy mogą korzystać z ofert w procesie rejestracji systemu operacyjnego Chrome.
+
+      Jeśli nie skonfigurujesz tej zasady lub ustawisz dla niej wartość prawda, użytkownicy będą mogli wykorzystywać oferty przy rejestracji systemu operacyjnego Chrome.
+
+      Jeśli ustawisz tu wartość fałsz, użytkownicy nie będą mogli wykorzystywać ofert.</translation>
 <translation id="1310699457130669094">W tym miejscu możesz podać URL pliku PAC serwera proxy. Ta zasada obowiązuje tylko po wybraniu ręcznego konfigurowania ustawień proxy za pomocą opcji „Wybierz sposób określenia ustawień serwera proxy”. Szczegółowe przykłady można znaleźć na  <ph name="PROXY_HELP_URL"/></translation>
 <translation id="1509692106376861764">Ta zasada została wycofana w <ph name="PRODUCT_NAME"/> w wersji 29.</translation>
 <translation id="5464816904705580310">Konfiguruj ustawienia dla zarządzanych użytkowników.</translation>
@@ -1399,6 +1448,7 @@ W przypadku wyłączenia lub nieskonfigurowania tej zasady tworzenie zrzutów ek
 <translation id="8970205333161758602">Pomiń monit o odinstalowanie <ph name="PRODUCT_FRAME_NAME"/></translation>
 <translation id="3273221114520206906">Domyślne ustawienie języka JavaScript</translation>
 <translation id="4025586928523884733">Blokuje pliki cookie innych firm. Włączenie tego ustawienia uniemożliwia tworzenie plików cookie przez elementy stron internetowych niepochodzące z domeny widocznej w pasku adresu przeglądarki. Wyłączenie ustawienia pozwala na tworzenie plików cookie przez te elementy i uniemożliwia użytkownikom jego zmianę. W przypadku nieskonfigurowania tej zasady tworzenie plików cookie przez te elementy będzie dozwolone, ale użytkownik będzie mógł to zmienić.</translation>
+<translation id="4604931264910482931">Skonfiguruj czarną listę wiadomości natywnych</translation>
 <translation id="6810445994095397827">Blokuj kod JavaScript w tych witrynach</translation>
 <translation id="6672934768721876104">Ta zasada jest przestarzała, zamiast niej użyj zasady ProxyMode. Pozwala ona określić serwer proxy używany w <ph name="PRODUCT_NAME"/> i uniemożliwia użytkownikom zmianę jego ustawień. Jeśli zdecydujesz się nie korzystać z serwera proxy i zawsze bezpośrednio nawiązywać połączenia, wszystkie pozostałe opcje będą ignorowane. Są one ignorowane również w przypadku użycia systemowych ustawień serwera proxy lub automatycznego wykrywania serwera proxy. Jeśli chcesz ręcznie wprowadzić ustawienia serwera proxy, możesz określić dodatkowe opcje w polach „Adres URL serwera proxy”, „Adres URL pliku PAC serwera proxy” i „Lista rozdzielonych przecinkami reguł omijania serwera proxy”. Szczegółowe przykłady można znaleźć na <ph name="PROXY_HELP_URL"/>. Jeśli ustawienie jest włączone, przeglądarka <ph name="PRODUCT_NAME"/> ignoruje wszystkie opcje dotyczące serwera proxy określone w wierszu polecenia. W przypadku nieskonfigurowania tej zasady użytkownicy mogą samodzielnie wybrać ustawienia proxy.</translation>
 <translation id="3780152581321609624">Umieść port niestandardowy w nazwie SPN w protokole Kerberos</translation>
@@ -1423,6 +1473,7 @@ W przypadku wyłączenia lub nieskonfigurowania tej zasady tworzenie zrzutów ek
 <translation id="5512418063782665071">Adres URL strony startowej</translation>
 <translation id="2948381198510798695">W przypadku hostów wymienionych na tej liście przeglądarka <ph name="PRODUCT_NAME"/> omija serwer proxy. Ta zasada obowiązuje tylko wówczas, gdy ręcznie wprowadzisz ustawienia serwera proxy za pomocą opcji „Wybierz sposób określenia ustawień serwera proxy”. Szczegółowe przykłady można znaleźć na <ph name="PROXY_HELP_URL"/></translation>
 <translation id="6658245400435704251">Określa, o ile sekund urządzenie może losowo opóźnić pobranie aktualizacji w stosunku do czasu jej opublikowania na serwerze. Urządzenie może odczekać część tego okresu, licząc w sekundach zegara, a pozostałą część, licząc w testach dostępności aktualizacji. Tak czy inaczej okres opóźnienia jest ograniczony z góry, by urządzenie nigdy nie utknęło w stanie oczekiwania na pobranie aktualizacji.</translation>
+<translation id="102492767056134033">Ustaw domyślny stan klawiatury ekranowej na ekranie logowania</translation>
 <translation id="523505283826916779">Ustawienia ułatwień dostępu</translation>
 <translation id="1948757837129151165">Zasady uwierzytelniania HTTP</translation>
 <translation id="5946082169633555022">Wersja beta</translation>
@@ -1438,6 +1489,15 @@ W przypadku wyłączenia lub nieskonfigurowania tej zasady tworzenie zrzutów ek
       Jeśli ta zasada jest ustawiona, Zakładki zarządzane to domyślnie otwierany folder, gdy otwierany jest widok zakładek w Chrome.
 
       Zakładki zarządzane nie są synchronizowane z kontem użytkownika.</translation>
+<translation id="6757375960964186754">Pokazuje opcje ułatwień dostępu <ph name="PRODUCT_OS_NAME"/> w menu systemu.
+
+          Jeśli ustawisz tu wartość prawda, Opcje ułatwień dostępu będą zawsze widoczne w menu na pasku zadań.
+
+          Jeśli ustawisz tu wartość fałsz, Opcje ułatwień dostępu nigdy nie będą widoczne w menu na pasku zadań.
+
+          Jeśli skonfigurujesz tę zasadę, użytkownicy nie będą mogli jej zmienić ani zastąpić.
+
+          Jeśli nie skonfigurujesz tej zasady, Opcje ułatwień dostępu nie będą widoczne w menu na pasku zadań, ale użytkownik będzie mógł włączyć ich wyświetlanie na stronie Ustawień.</translation>
 <translation id="8303314579975657113">Pozwala określić bibliotekę GSSAPI, która ma być używana do uwierzytelniania HTTP. Możesz określić samą nazwę biblioteki lub pełną ścieżkę. Jeśli ustawienie jest nieskonfigurowane, w przeglądarce <ph name="PRODUCT_NAME"/> w zastępstwie używana jest domyślna nazwa biblioteki.</translation>
 <translation id="8549772397068118889">Ostrzegaj przy odwiedzaniu witryn spoza pakietów treści</translation>
 <translation id="7749402620209366169">Pozwala włączyć uwierzytelnianie dwuskładnikowe dla hostów zdalnego dostępu zamiast stosowania PIN-u określanego przez użytkownika.
@@ -1488,6 +1548,9 @@ W przypadku wyłączenia lub nieskonfigurowania tej zasady tworzenie zrzutów ek
 <translation id="8197918588508433925">Ta zasada określa dozwolone rozszerzenia do użycia z funkcją  chrome.enterprise.platformKeysPrivate.challengeUserKey() interfejsu API Enterprise Platform Keys do zdalnego poświadczania. Rozszerzenia muszą zostać dodane do tej listy, by były używane z interfejsem API.
 
           Jeśli rozszerzenie nie znajduje się na liście, lub lista nie jest ustawiona, wywołanie interfejsu API zakończy się błędem.</translation>
+<translation id="2811293057593285123">Usługa Bezpieczne przeglądanie wyświetla ostrzeżenie, gdy użytkownik chce wejść na stronę oznaczoną jako potencjalnie szkodliwa. Jeśli włączysz to ustawienie, użytkownicy nie będą mogli przechodzić ze strony ostrzeżenia na strony szkodliwe.
+
+      Jeśli nie skonfigurujesz tego ustawienia lub je wyłączysz, użytkownicy będą mogli wybrać, czy chcą przejść ze strony ostrzeżenia na stronę oznaczoną jako szkodliwa.</translation>
 <translation id="7649638372654023172">Pozwala skonfigurować URL domyślnej strony startowej w urządzeniu <ph name="PRODUCT_NAME"/> i uniemożliwia użytkownikom jego zmianę.
 
           Strona startowa jest otwierana przyciskiem strony startowej. Strony otwierane przy uruchomieniu są kontrolowane przez zasady RestoreOnStartup.
@@ -1497,5 +1560,12 @@ W przypadku wyłączenia lub nieskonfigurowania tej zasady tworzenie zrzutów ek
           Jeśli włączysz to ustawienie, użytkownicy nie będą mogli zmienić adresu URL swojej strony startowej na urządzeniu <ph name="PRODUCT_NAME"/>, ale jako tę stronę będą mogli wybrać stronę nowej karty.
 
           W przypadku nieustawienia tej zasady użytkownicy będą mogli wybrać własną stronę startową, jeśli zasada HomepageIsNewTabPage również nie będzie ustawiona.</translation>
+<translation id="3806576699227917885">Zezwala na odtwarzanie dźwięku.
+
+      Jeśli ustawisz tu wartość fałsz, wyjście audio urządzenia nie będzie dostępne, gdy użytkownik będzie zalogowany.
+
+      Ta zasada wpływa na wszystkie typy wyjść audio, a nie tylko na wbudowane głośniki. Wyłącza też dźwiękowe funkcje ułatwień dostępu. Nie włączaj jej, jeśli użytkownik potrzebuje czytnika ekranu.
+
+      Jeśli nie skonfigurujesz tego ustawienia lub ustawisz dla niego wartość prawda, użytkownicy będą mogli używać wszystkich obsługiwanych wyjść audio urządzenia.</translation>
 <translation id="4858735034935305895">Zezwalaj na tryb pełnoekranowy</translation>
 </translationbundle>

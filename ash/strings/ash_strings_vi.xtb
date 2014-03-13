@@ -15,6 +15,7 @@
 <translation id="370649949373421643">Bật Wi-Fi</translation>
 <translation id="3626281679859535460">Độ sáng</translation>
 <translation id="3621202678540785336">Thiết bị vào</translation>
+<translation id="7348093485538360975">Bàn phím ảo</translation>
 <translation id="595202126637698455">Đã bật theo dõi hoạt động</translation>
 <translation id="8054466585765276473">Đang tính toán thời lượng pin.</translation>
 <translation id="7982789257301363584">Mạng</translation>
@@ -27,6 +28,7 @@
 <translation id="2297568595583585744">Khay trạng thái</translation>
 <translation id="1661867754829461514">Thiếu PIN</translation>
 <translation id="4508225577814909926"><ph name="NAME"/>: Đang kết nối...</translation>
+<translation id="2248649616066688669">Bạn có thể tiếp tục sử dụng Chromebook của mình khi thiết bị này được kết nối với màn hình bên ngoài, ngay cả khi nắp của Chromebook đóng.</translation>
 <translation id="40400351611212369">Lỗi kích hoạt mạng</translation>
 <translation id="4237016987259239829">Lỗi Kết nối Mạng</translation>
 <translation id="2946640296642327832">Bật bluetooth</translation>
@@ -34,11 +36,14 @@
 <translation id="8206859287963243715">Di động</translation>
 <translation id="6596816719288285829">Địa chỉ IP</translation>
 <translation id="4508265954913339219">Kích hoạt không thành công</translation>
+<translation id="8688591111840995413">Mật khẩu yếu</translation>
 <translation id="3621712662352432595">Cài đặt âm thanh</translation>
 <translation id="1812696562331527143">Phương thức nhập của bạn đã thay đổi thành <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>bên thứ ba<ph name="END_LINK"/>).
 Nhấn Shift + Alt để chuyển đổi.</translation>
+<translation id="6043994281159824495">Đăng xuất bây giờ</translation>
 <translation id="2127372758936585790">Bộ sạc công suất thấp</translation>
 <translation id="3846575436967432996">Không có thông tin mạng</translation>
+<translation id="3799026279081545374">Bộ sạc của bạn có thể bị hỏng. Nếu bạn sống ở Hoa Kỳ, hãy gọi đến số 866-628-1371 để nhận trợ giúp và được thay thế. Nếu bạn sống ở Vương quốc Anh, hãy gọi đến số 0800-026-0613. Nếu bạn sống ở Ireland, hãy gọi đến số 1-800-832-664. Nếu bạn sống ở Canada, hãy gọi đến số 866-628-1372. Nếu bạn sống ở Úc, hãy gọi đến số 1-800-067-460.</translation>
 <translation id="3026237328237090306">Thiết lập dữ liệu di động</translation>
 <translation id="5871632337994001636">Quản lý thiết bị...</translation>
 <translation id="785750925697875037">Xem tài khoản di động</translation>
@@ -57,6 +62,8 @@ Nhấn Shift + Alt để chuyển đổi.</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME"/> (<ph name="ANNOTATION"/>)</translation>
 <translation id="2942516765047364088">Vị trí giá</translation>
 <translation id="8676770494376880701">Đã kết nối bộ sạc công suất thấp</translation>
+<translation id="5238774010593222950">Không thể đăng nhập vào tài khoản khác.</translation>
+<translation id="1723752762323179280">Thoát phiên</translation>
 <translation id="7170041865419449892">Ngoài vùng phủ sóng</translation>
 <translation id="4804818685124855865">Ngắt kết nối</translation>
 <translation id="2544853746127077729">Chứng chỉ xác thực bị mạng từ chối</translation>
@@ -72,7 +79,6 @@ Nhấn Shift + Alt để chuyển đổi.</translation>
 <translation id="3892641579809465218">Màn hình nội bộ</translation>
 <translation id="7823564328645135659">Ngôn ngữ đã chuyển từ &quot;<ph name="FROM_LOCALE"/>&quot; thành &quot;<ph name="TO_LOCALE"/>&quot; sau khi đồng bộ hóa cài đặt của bạn.</translation>
 <translation id="3368922792935385530">Đã kết nối</translation>
-<translation id="8340999562596018839">Phản hồi nói</translation>
 <translation id="8654520615680304441">Bật Wi-Fi...</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="5825747213122829519">Phương thức nhập của bạn đã thay đổi thành <ph name="INPUT_METHOD_ID"/>.
@@ -98,9 +104,7 @@ Nhấn Shift + Alt để chuyển đổi.</translation>
 <translation id="3963445509666917109">Loa (Bên trong)</translation>
 <translation id="2825619548187458965">Giá</translation>
 <translation id="2614835198358683673">Chromebook của bạn có thể không sạc khi đang bật. Hãy xem xét sử dụng bộ sạc chính thức.</translation>
-<translation id="1895658205118569222">Tắt</translation>
 <translation id="4430019312045809116">Âm lượng</translation>
-<translation id="8681498213689260554">Khởi động lại và powerwash để cập nhật</translation>
 <translation id="4442424173763614572">Tìm kiếm DNS không thành công</translation>
 <translation id="7874779702599364982">Đang tìm kiếm mạng di động...</translation>
 <translation id="583281660410589416">Không biết</translation>
@@ -110,7 +114,7 @@ Nhấn Shift + Alt để chuyển đổi.</translation>
 <translation id="1621499497873603021">Thời gian còn lại cho đến khi pin hết, <ph name="TIME_LEFT"/></translation>
 <translation id="5980301590375426705">Thoát khỏi phiên khách</translation>
 <translation id="8308637677604853869">Trình đơn trước</translation>
-<translation id="4666297444214622512">Không thể đăng nhập tài khoản khác.</translation>
+<translation id="4321179778687042513">ctrl</translation>
 <translation id="3625258641415618104">Đã tắt chụp ảnh màn hình</translation>
 <translation id="1346748346194534595">Phải</translation>
 <translation id="1773212559869067373">Chứng chỉ xác thực bị từ chối cục bộ</translation>
@@ -119,10 +123,9 @@ Nhấn Shift + Alt để chuyển đổi.</translation>
 <translation id="8428213095426709021">Cài đặt</translation>
 <translation id="2372145515558759244">Đang đồng bộ hóa ứng dụng...</translation>
 <translation id="7256405249507348194">Lỗi không xác định: <ph name="DESC"/></translation>
+<translation id="2894654529758326923">Thông tin</translation>
 <translation id="7925247922861151263">Không thể kiểm tra AAA</translation>
 <translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> cho đến khi sạc đầy</translation>
-<translation id="5787281376604286451">Phản hồi nói được bật.
-Nhấn Ctrl+Alt+Z để tắt.</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="6312403991423642364">Lỗi mạng không xác định</translation>
 <translation id="1467432559032391204">Trái</translation>
@@ -133,6 +136,7 @@ Nhấn Ctrl+Alt+Z để tắt.</translation>
 <translation id="1923539912171292317">Nhấp chuột tự động</translation>
 <translation id="1398853756734560583">Phóng to</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: Đang kết nối...</translation>
+<translation id="6062360702481658777">Bạn sẽ tự động được đăng xuất sau <ph name="LOGOUT_TIME_LEFT"/>.</translation>
 <translation id="252373100621549798">Màn hình không xác định</translation>
 <translation id="1882897271359938046">Đang phản chiếu tới <ph name="DISPLAY_NAME"/></translation>
 <translation id="2727977024730340865">Được cắm vào bộ sạc công suất thấp. Việc sạc pin có thể không được đảm bảo.</translation>
@@ -141,6 +145,7 @@ Nhấn Ctrl+Alt+Z để tắt.</translation>
 <translation id="1512064327686280138">Lỗi kích hoạt</translation>
 <translation id="5097002363526479830">Không thể kết nối với mạng '<ph name="NAME"/>': <ph name="DETAILS"/></translation>
 <translation id="1850504506766569011">Wi-Fi đang tắt.</translation>
+<translation id="2872961005593481000">Tắt</translation>
 <translation id="2966449113954629791">Bạn có thể đã sử dụng hết dung lượng dữ liệu di động cho phép. Hãy truy cập cổng kích hoạt <ph name="NAME"/> để mua thêm dữ liệu.</translation>
 <translation id="8132793192354020517">Đã kết nối với <ph name="NAME"/></translation>
 <translation id="7052914147756339792">Đặt hình nền...</translation>
@@ -153,8 +158,10 @@ Nhấn Ctrl+Alt+Z để tắt.</translation>
 <translation id="7005812687360380971">Lỗi</translation>
 <translation id="882279321799040148">Nhấp để xem</translation>
 <translation id="1753067873202720523">Chromebook có thể không sạc khi đang bật.</translation>
+<translation id="7561014039265304140"><ph name="DISPLAY_NAME"/> không hỗ trợ <ph name="SPECIFIED_RESOLUTION"/>. Độ phân giải đã được thay đổi thành <ph name="FALLBACK_RESOLUTION"/></translation>
 <translation id="5045550434625856497">Mật khẩu sai</translation>
 <translation id="1602076796624386989">Bật dữ liệu di động</translation>
+<translation id="68610848741840742">ChromeVox (Phản hồi bằng giọng nói)</translation>
 <translation id="6981982820502123353">Khả năng truy cập</translation>
 <translation id="3157931365184549694">Khôi phục</translation>
 <translation id="4274292172790327596">Lỗi chưa được xác định</translation>
@@ -167,10 +174,12 @@ Nhấn Ctrl+Alt+Z để tắt.</translation>
 <translation id="8401662262483418323">Không kết nối được với '<ph name="NAME"/>': <ph name="DETAILS"/>
 Thông báo máy chủ: <ph name="SERVER_MSG"/></translation>
 <translation id="2475982808118771221">Đã xảy ra lôi</translation>
+<translation id="3783640748446814672">alt</translation>
 <translation id="7229570126336867161">Cần có EVDO</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> là phiên công khai được quản lý bởi <ph name="DOMAIN"/></translation>
 <translation id="9044646465488564462">Không kết nối được với mạng: <ph name="DETAILS"/></translation>
 <translation id="7029814467594812963">Thoát khỏi phiên</translation>
+<translation id="479989351350248267">tìm kiếm</translation>
 <translation id="8454013096329229812">Wi-Fi đang bật.</translation>
 <translation id="4872237917498892622">Alt+Search hoặc Shift</translation>
 <translation id="9201131092683066720">Pin đầy <ph name="PERCENTAGE"/>%.</translation>
@@ -193,14 +202,13 @@ Thông báo máy chủ: <ph name="SERVER_MSG"/></translation>
 <translation id="5947494881799873997">Hoàn nguyên</translation>
 <translation id="7593891976182323525">Search hoặc Shift</translation>
 <translation id="7649070708921625228">Trợ giúp</translation>
-<translation id="747833637904845037">Chromebook của bạn sẽ vẫn bật trong khi được kết nối với màn hình bên ngoài cho dù nắp bị đóng.</translation>
 <translation id="3050422059534974565">CAPS LOCK đang bật.
 Nhấn Search hoặc Shift để hủy.</translation>
 <translation id="397105322502079400">Đang tính...</translation>
 <translation id="158849752021629804">Cần mạng gia đình</translation>
 <translation id="6857811139397017780">Kích hoạt <ph name="NETWORKSERVICE"/></translation>
 <translation id="5864471791310927901">Không thể tra cứu DHCP</translation>
-<translation id="6692173217867674490">Cụm mật khẩu sai</translation>
+<translation id="2819276065543622893">Bạn sẽ bị đăng xuất bây giờ.</translation>
 <translation id="6165508094623778733">Tìm hiểu thêm</translation>
 <translation id="9046895021617826162">Kết nối không thành công</translation>
 <translation id="7168224885072002358">Sẽ hoàn nguyên về độ phân giải cũ sau <ph name="TIMEOUT_SECONDS"/></translation>
@@ -209,6 +217,8 @@ Nhấn Search hoặc Shift để hủy.</translation>
 <translation id="6636709850131805001">Trạng thái không xác định</translation>
 <translation id="3573179567135747900">Thay đổi lại thành &quot;<ph name="FROM_LOCALE"/>&quot; (yêu cầu khởi động lại)</translation>
 <translation id="8103386449138765447">Tin nhắn SMS: <ph name="MESSAGE_COUNT"/></translation>
+<translation id="7097613348211027502">Đã bật ChromeVox (phản hồi bằng giọng nói).
+Nhấn Ctrl+Alt+Z để tắt.</translation>
 <translation id="5045002648206642691">Cài đặt Google Drive...</translation>
 <translation id="7209101170223508707">CAPS LOCK đang bật.
 Nhấn Alt+Search hoặc Shift để hủy.</translation>
@@ -224,6 +234,7 @@ Nhấn Alt+Search hoặc Shift để hủy.</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">Xin chúc mừng! Dịch vụ dữ liệu '<ph name="NAME"/>' của bạn đã được kích hoạt và sẵn sàng sử dụng.</translation>
 <translation id="412065659894267608"><ph name="HOUR"/>g <ph name="MINUTE"/>p cho đến khi đầy</translation>
+<translation id="3077734595579995578">shift</translation>
 <translation id="7297443947353982503">Tên người dùng/mật khẩu không đúng hoặc xác thực EAP không thành công</translation>
 <translation id="6359806961507272919">SMS từ <ph name="PHONE_NUMBER"/></translation>
 <translation id="1244147615850840081">Nhà cung cấp</translation>

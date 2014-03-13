@@ -15,6 +15,7 @@
 <translation id="370649949373421643">Ota wifi käyttöön</translation>
 <translation id="3626281679859535460">Kirkkaus</translation>
 <translation id="3621202678540785336">Äänitulo:</translation>
+<translation id="7348093485538360975">Virtuaalinäppäimistö</translation>
 <translation id="595202126637698455">Tehokkuuden seuranta on käytössä</translation>
 <translation id="8054466585765276473">Lasketaan akun kesto.</translation>
 <translation id="7982789257301363584">Verkko</translation>
@@ -27,6 +28,7 @@
 <translation id="2297568595583585744">Tila-alue</translation>
 <translation id="1661867754829461514">PIN-koodi puuttuu</translation>
 <translation id="4508225577814909926"><ph name="NAME"/>: Yhdistetään…</translation>
+<translation id="2248649616066688669">Voit käyttää Chromebookia sen ollessa yhdistettynä ulkoiseen näyttöön, vaikka laitteen kansi olisi kiinni.</translation>
 <translation id="40400351611212369">Verkon aktivointivirhe</translation>
 <translation id="4237016987259239829">Verkon yhteysvirhe</translation>
 <translation id="2946640296642327832">Ota Bluetooth käyttöön</translation>
@@ -34,11 +36,14 @@
 <translation id="8206859287963243715">Matkapuhelin</translation>
 <translation id="6596816719288285829">IP-osoite</translation>
 <translation id="4508265954913339219">Aktivointi epäonnistui</translation>
+<translation id="8688591111840995413">Virheellinen salasana</translation>
 <translation id="3621712662352432595">Ääniasetukset</translation>
 <translation id="1812696562331527143">Syöttötapa on vaihtunut. Uusi syöttötapa on <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>kolmas osapuoli<ph name="END_LINK"/>).
 Vaihda syöttötapaa painamalla Shift + Alt.</translation>
+<translation id="6043994281159824495">Kirjaudu ulos nyt</translation>
 <translation id="2127372758936585790">Pienitehoinen laturi</translation>
 <translation id="3846575436967432996">Verkon tietoja ei saatavilla</translation>
+<translation id="3799026279081545374">Laturisi voi olla virheellinen. Jos asut Yhdysvalloissa, saat ohjeita ja voit tilata uuden laturin soittamalla numeroon 866 628 1371. Jos asut Isossa-Britanniassa, soita numeroon 0800 026 0613. Jos asut Irlannissa, soita numeroon 1 800 832 664. Jos asut Kanadassa, soita numeroon 866 628 1372. Jos asut Australiassa, soita numeroon 1 800 067 460.</translation>
 <translation id="3026237328237090306">Määritä mobiilitiedonsiirron asetukset</translation>
 <translation id="5871632337994001636">Hallinnoi laitteita…</translation>
 <translation id="785750925697875037">Näytä mobiilitili</translation>
@@ -57,6 +62,8 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME"/> (<ph name="ANNOTATION"/>)</translation>
 <translation id="2942516765047364088">Hyllyn sijainti</translation>
 <translation id="8676770494376880701">Pienitehoinen laturi kytketty</translation>
+<translation id="5238774010593222950">Kirjautuminen toiseen tiliin ei onnistu.</translation>
+<translation id="1723752762323179280">Käyttökerran lopettaminen</translation>
 <translation id="7170041865419449892">Katvealueella</translation>
 <translation id="4804818685124855865">Katkaise yhteys</translation>
 <translation id="2544853746127077729">Verkko on hylännyt todennusvarmenteen</translation>
@@ -72,7 +79,6 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="3892641579809465218">Sisäinen näyttö</translation>
 <translation id="7823564328645135659">Käyttökieli on muutettu kielestä <ph name="FROM_LOCALE"/> kieleksi <ph name="TO_LOCALE"/> asetustesi synkronoinnin yhteydessä.</translation>
 <translation id="3368922792935385530">Yhdistetty</translation>
-<translation id="8340999562596018839">Äänipalaute</translation>
 <translation id="8654520615680304441">Ota wifi käyttöön…</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="5825747213122829519">Syöttötapa on vaihtunut. Uusi syöttötapa on <ph name="INPUT_METHOD_ID"/>.
@@ -98,9 +104,7 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="3963445509666917109">Kaiutin (sisäinen)</translation>
 <translation id="2825619548187458965">Hylly</translation>
 <translation id="2614835198358683673">Chromebookisi ei välttämättä lataudu sen ollessa päällä. Harkitse virallisen laturin käyttämistä.</translation>
-<translation id="1895658205118569222">Sulkeminen</translation>
 <translation id="4430019312045809116">Äänenvoimakkuus</translation>
-<translation id="8681498213689260554">Käynnistä laite uudelleen ja suorita powerwash asentaaksesi päivitykset</translation>
 <translation id="4442424173763614572">DNS-haku epäonnistui</translation>
 <translation id="7874779702599364982">Haetaan matkapuhelinverkkoja…</translation>
 <translation id="583281660410589416">Tuntematon</translation>
@@ -110,7 +114,7 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="1621499497873603021">Akku on tyhjä <ph name="TIME_LEFT"/> kuluttua</translation>
 <translation id="5980301590375426705">Sulje vierastila</translation>
 <translation id="8308637677604853869">Edellinen valikko</translation>
-<translation id="4666297444214622512">Toiseen tiliin kirjautuminen ei onnistunut.</translation>
+<translation id="4321179778687042513">ctrl</translation>
 <translation id="3625258641415618104">Kuvakaappaukset poissa käytöstä</translation>
 <translation id="1346748346194534595">Oikealle</translation>
 <translation id="1773212559869067373">Todennusvarmenne on hylätty paikallisesti</translation>
@@ -119,10 +123,9 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="8428213095426709021">Asetukset</translation>
 <translation id="2372145515558759244">Synkronoidaan sovelluksia...</translation>
 <translation id="7256405249507348194">Tunnistamaton virhe: <ph name="DESC"/></translation>
+<translation id="2894654529758326923">Tiedot</translation>
 <translation id="7925247922861151263">AAA-testi epäonnistui</translation>
 <translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> kunnes akku on ladattu</translation>
-<translation id="5787281376604286451">Äänipalaute on käytössä.
-Poista se käytöstä painamalla Ctrl+Alt+Z.</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="6312403991423642364">Tuntematon verkkovirhe</translation>
 <translation id="1467432559032391204">Vasemmalle</translation>
@@ -133,6 +136,7 @@ Poista se käytöstä painamalla Ctrl+Alt+Z.</translation>
 <translation id="1923539912171292317">Automaattiset klikkaukset</translation>
 <translation id="1398853756734560583">Suurenna</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: Yhdistetään…</translation>
+<translation id="6062360702481658777">Sinut kirjataan ulos automaattisesti, aikaa jäljellä <ph name="LOGOUT_TIME_LEFT"/>.</translation>
 <translation id="252373100621549798">Tuntematon näyttö</translation>
 <translation id="1882897271359938046">Peilataan: <ph name="DISPLAY_NAME"/></translation>
 <translation id="2727977024730340865">Pienitehoinen laturi kytketty. Akku ei ehkä lataudu luotettavasti.</translation>
@@ -141,6 +145,7 @@ Poista se käytöstä painamalla Ctrl+Alt+Z.</translation>
 <translation id="1512064327686280138">Aktivointivirhe</translation>
 <translation id="5097002363526479830">Yhteyden muodostaminen verkkoon &quot;<ph name="NAME"/>&quot; epäonnistui: <ph name="DETAILS"/></translation>
 <translation id="1850504506766569011">Wifi ei ole käytössä.</translation>
+<translation id="2872961005593481000">Sammuta</translation>
 <translation id="2966449113954629791">Olet saattanut käyttää tiedonsiirtosaldosi loppuun. Käy <ph name="NAME"/>-aktivointiportaalissa ostamassa lisää saldoa.</translation>
 <translation id="8132793192354020517">Yhteys muodostettu verkkoon <ph name="NAME"/></translation>
 <translation id="7052914147756339792">Aseta taustakuva...</translation>
@@ -153,8 +158,10 @@ Poista se käytöstä painamalla Ctrl+Alt+Z.</translation>
 <translation id="7005812687360380971">Virhe</translation>
 <translation id="882279321799040148">Näytä klikkaamalla</translation>
 <translation id="1753067873202720523">Chromebook ei välttämättä lataudu sen ollessa päällä.</translation>
+<translation id="7561014039265304140"><ph name="DISPLAY_NAME"/> ei tue resoluutiota <ph name="SPECIFIED_RESOLUTION"/>. Resoluutioksi valittiin <ph name="FALLBACK_RESOLUTION"/>.</translation>
 <translation id="5045550434625856497">Väärä salasana</translation>
 <translation id="1602076796624386989">Ota mobiilitiedonsiirto käyttöön</translation>
+<translation id="68610848741840742">ChromeVox (äänipalaute)</translation>
 <translation id="6981982820502123353">Esteettömyys</translation>
 <translation id="3157931365184549694">Palauta</translation>
 <translation id="4274292172790327596">Tunnistamaton virhe</translation>
@@ -167,10 +174,12 @@ Poista se käytöstä painamalla Ctrl+Alt+Z.</translation>
 <translation id="8401662262483418323">Yhteyden muodostaminen kohteeseen <ph name="NAME"/> ei onnistu: <ph name="DETAILS"/>
 Palvelimen viesti: <ph name="SERVER_MSG"/></translation>
 <translation id="2475982808118771221">Tapahtui virhe</translation>
+<translation id="3783640748446814672">alt</translation>
 <translation id="7229570126336867161">EVDO tarvitaan</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> on julkinen käyttökerta, jota hallinnoi <ph name="DOMAIN"/></translation>
 <translation id="9044646465488564462">Yhteyden muodostaminen verkkoon epäonnistui: <ph name="DETAILS"/></translation>
 <translation id="7029814467594812963">Sulje käyttökerta</translation>
+<translation id="479989351350248267">haku</translation>
 <translation id="8454013096329229812">Wifi on käytössä.</translation>
 <translation id="4872237917498892622">Alt + haku tai Shift</translation>
 <translation id="9201131092683066720">Akussa on virtaa <ph name="PERCENTAGE"/> %.</translation>
@@ -193,13 +202,12 @@ Palvelimen viesti: <ph name="SERVER_MSG"/></translation>
 <translation id="5947494881799873997">Palauta</translation>
 <translation id="7593891976182323525">Haku tai Shift</translation>
 <translation id="7649070708921625228">Ohje</translation>
-<translation id="747833637904845037">Chromebookisi pysyy yhdistettynä ulkoiseen näyttöön, vaikka sen kansi olisi suljettu.</translation>
 <translation id="3050422059534974565">CAPS LOCK on päällä. Peruuta painamalla haku- tai Shift-näppäintä.</translation>
 <translation id="397105322502079400">Lasketaan...</translation>
 <translation id="158849752021629804">Kotiverkko tarvitaan</translation>
 <translation id="6857811139397017780">Aktivoi <ph name="NETWORKSERVICE"/></translation>
 <translation id="5864471791310927901">DHCP-haku epäonnistui</translation>
-<translation id="6692173217867674490">Väärä tunnuslause</translation>
+<translation id="2819276065543622893">Sinut kirjataan ulos nyt.</translation>
 <translation id="6165508094623778733">Lisätietoja</translation>
 <translation id="9046895021617826162">Yhdistäminen epäonnistui</translation>
 <translation id="7168224885072002358">Palautetaan vanha tarkkuus, aikaa palautukseen <ph name="TIMEOUT_SECONDS"/></translation>
@@ -208,6 +216,7 @@ Palvelimen viesti: <ph name="SERVER_MSG"/></translation>
 <translation id="6636709850131805001">Tunnistamaton tila</translation>
 <translation id="3573179567135747900">Vaihda takaisin kieleksi <ph name="FROM_LOCALE"/> (vaatii uudelleenkäynnistyksen)</translation>
 <translation id="8103386449138765447">Tekstiviestit: <ph name="MESSAGE_COUNT"/></translation>
+<translation id="7097613348211027502">ChromeVox (äänipalaute) on käytössä. Poista se käytöstä painamalla Ctrl+Alt+Z.</translation>
 <translation id="5045002648206642691">Google Driven asetukset...</translation>
 <translation id="7209101170223508707">CAPS LOCK on päällä. Peruuta painamalla Alt + hakupainike tai Shift.</translation>
 <translation id="8940956008527784070">Akku vähissä (<ph name="PERCENTAGE"/> %)</translation>
@@ -222,6 +231,7 @@ Palvelimen viesti: <ph name="SERVER_MSG"/></translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">Onnittelut! Tiedonsiirtopalvelusi <ph name="NAME"/> on aktivoitu ja käyttövalmis.</translation>
 <translation id="412065659894267608">Akku täynnä <ph name="HOUR"/> t <ph name="MINUTE"/> min kuluttua</translation>
+<translation id="3077734595579995578">vaihto</translation>
 <translation id="7297443947353982503">Käyttäjänimi/salasana on virheellinen tai EAP-todennus epäonnistui</translation>
 <translation id="6359806961507272919">Tekstiviesti lähettäjältä <ph name="PHONE_NUMBER"/></translation>
 <translation id="1244147615850840081">Operaattori</translation>

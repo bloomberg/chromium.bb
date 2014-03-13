@@ -24,6 +24,7 @@
 <translation id="7222373446505536781">F11</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY"/> Б</translation>
 <translation id="3660179305079774227">Стрелка нагоре</translation>
+<translation id="7062130397825382308">Остава <ph name="NUMBER_ONE"/> секунда</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY"/> МБ/сек</translation>
 <translation id="5608669887400696928"><ph name="NUMBER_DEFAULT"/> часа</translation>
 <translation id="3990502903496589789">Десн край</translation>
@@ -45,6 +46,7 @@
 <translation id="7770995925463083016">преди <ph name="NUMBER_TWO"/> мин</translation>
 <translation id="3234408098842461169">Стрелка надолу</translation>
 <translation id="3087734570205094154">Най-долу</translation>
+<translation id="8828991073132329143">Остават <ph name="NUMBER_MANY"/> секунди</translation>
 <translation id="5935630983280450497">Остава <ph name="NUMBER_ONE"/> мин</translation>
 <translation id="1860796786778352021">Затваряне на известието</translation>
 <translation id="6364916375976753737">Превъртане наляво</translation>
@@ -68,6 +70,7 @@
 <translation id="7781829728241885113">Вчера</translation>
 <translation id="3424538384153559412"><ph name="NUMBER_TWO"/> минути</translation>
 <translation id="50960180632766478">Остават <ph name="NUMBER_FEW"/> мин</translation>
+<translation id="5517291721709019259">Остават <ph name="NUMBER_FEW"/> секунди</translation>
 <translation id="6659594942844771486">Раздел</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY"/> МБ</translation>
 <translation id="4988273303304146523">преди <ph name="NUMBER_DEFAULT"/> дни</translation>
@@ -137,12 +140,14 @@
 <translation id="1285266685456062655">преди <ph name="NUMBER_FEW"/> часа</translation>
 <translation id="6918245111648057970">Разрешаване на известията от следните неща за всеки потребител:</translation>
 <translation id="5489830104927132166"><ph name="NUMBER_ONE"/> секунда</translation>
+<translation id="1270251962578273213">Остават <ph name="NUMBER_TWO"/> секунди</translation>
 <translation id="3994835489895548312">Остават <ph name="NUMBER_MANY"/> минути</translation>
 <translation id="6358975074282722691">преди <ph name="NUMBER_TWO"/> сек</translation>
 <translation id="520299402983819650"><ph name="QUANTITY"/> ПБ</translation>
 <translation id="2983818520079887040">Настройки...</translation>
 <translation id="6845383723252244143">Избор на папка</translation>
 <translation id="7600770490873519066"><ph name="NUMBER_FEW"/> секунди</translation>
+<translation id="5368780922436099921">Остават <ph name="NUMBER_ZERO"/> секунди</translation>
 <translation id="1095623615273566396"><ph name="NUMBER_FEW"/> сек</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5263972071113911534">преди <ph name="NUMBER_MANY"/> дни</translation>
@@ -165,6 +170,7 @@
 <translation id="6142413573757616983"><ph name="QUANTITY"/> Б/сек</translation>
 <translation id="7649070708921625228">Помощ</translation>
 <translation id="6699343763173986273">Мултимедия, следващият запис</translation>
+<translation id="5445120697129764393">Остават <ph name="NUMBER_DEFAULT"/> секунди</translation>
 <translation id="8226233771743600312">Не безпокойте за един ден</translation>
 <translation id="7457942297256758195">Изчистване на всички</translation>
 <translation id="822618367988303761">преди <ph name="NUMBER_TWO"/> дни</translation>

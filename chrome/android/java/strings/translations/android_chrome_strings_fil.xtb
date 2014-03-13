@@ -14,7 +14,9 @@
 <translation id="3358663646935160692">Pinamamahalaan ang account na ito ng <ph name="DOMAIN_NAME"/>.
 
 Nagsa-sign in ka sa isang pinamamahalaang account at nagbibigay sa administrator nito ng kontrol sa iyong profile sa Chrome. Permanenteng mauugnay ang iyong data ng Chrome sa account na ito. Ang pagdiskonekta mula sa account na ito ay magtatanggal sa lokal na data ng Chrome.</translation>
+<translation id="1966710179511230534">Paki-update ang iyong mga detalye sa pag-sign in.</translation>
 <translation id="1623104350909869708">Pigilan ang pahinang ito sa paggawa ng mga karagdagang dialog</translation>
+<translation id="8218346974737627104">Kumpirmahin ang pag-sign in</translation>
 <translation id="624558823898732418">Wika ng Pagsasalin: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">Piliin ang certificate para sa pagpapatotoo</translation>
 <translation id="3896036286668839683">Viewer ng Certificate</translation>
@@ -29,7 +31,6 @@ Nagsa-sign in ka sa isang pinamamahalaang account at nagbibigay sa administrator
 <translation id="5684874026226664614">Oops. Hindi maisalin ang pahinang ito.</translation>
 <translation id="4619298195800598081">Buksan ang orihinal na larawan sa bagong tab</translation>
 <translation id="907015151729920253">Smart card</translation>
-<translation id="3136378934686431938">Paki-update ang iyong mga detalye sa pag-sign in.</translation>
 <translation id="3063601790762993062">I-save ang video</translation>
 <translation id="6042308850641462728">Higit pa</translation>
 <translation id="3992315671621218278">I-save ang link</translation>
@@ -59,5 +60,4 @@ Nagsa-sign in ka sa isang pinamamahalaang account at nagbibigay sa administrator
 <translation id="6277522088822131679">Nagkaproblema sa pag-print sa pahina. Pakisubukang muli.</translation>
 <translation id="1742134235943978220">Isinalin sa <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="6965382102122355670">OK</translation>
-<translation id="7495038789730067783">Kumpirmahin ang pag-sign in</translation>
 </translationbundle>

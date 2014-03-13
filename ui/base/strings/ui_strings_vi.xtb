@@ -24,6 +24,7 @@
 <translation id="7222373446505536781">F11</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY"/> B</translation>
 <translation id="3660179305079774227">Phím mũi tên Lên</translation>
+<translation id="7062130397825382308">Còn <ph name="NUMBER_ONE"/> giây</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY"/> MB/giây</translation>
 <translation id="5608669887400696928"><ph name="NUMBER_DEFAULT"/> giờ</translation>
 <translation id="3990502903496589789">Cạnh bên Phải</translation>
@@ -45,6 +46,7 @@
 <translation id="7770995925463083016"><ph name="NUMBER_TWO"/> mins ago</translation>
 <translation id="3234408098842461169">Phím mũi tên Xuống</translation>
 <translation id="3087734570205094154">Bên dưới</translation>
+<translation id="8828991073132329143">Còn <ph name="NUMBER_MANY"/> giây</translation>
 <translation id="5935630983280450497"><ph name="NUMBER_ONE"/> phút còn lại</translation>
 <translation id="1860796786778352021">Đóng thông báo</translation>
 <translation id="6364916375976753737">Cuộn qua Trái</translation>
@@ -68,6 +70,7 @@
 <translation id="7781829728241885113">Hôm qua</translation>
 <translation id="3424538384153559412"><ph name="NUMBER_TWO"/> phút</translation>
 <translation id="50960180632766478"><ph name="NUMBER_FEW"/> phút còn lại</translation>
+<translation id="5517291721709019259">Còn <ph name="NUMBER_FEW"/> giây</translation>
 <translation id="6659594942844771486">Tab</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY"/> MB</translation>
 <translation id="4988273303304146523"><ph name="NUMBER_DEFAULT"/> ngày trước</translation>
@@ -137,12 +140,14 @@
 <translation id="1285266685456062655"><ph name="NUMBER_FEW"/> hours ago</translation>
 <translation id="6918245111648057970">Cho phép thông báo từ mục sau đối với mỗi người dùng:</translation>
 <translation id="5489830104927132166"><ph name="NUMBER_ONE"/> giây</translation>
+<translation id="1270251962578273213">Còn <ph name="NUMBER_TWO"/> giây</translation>
 <translation id="3994835489895548312">Còn lại <ph name="NUMBER_MANY"/> phút</translation>
 <translation id="6358975074282722691"><ph name="NUMBER_TWO"/> secs ago</translation>
 <translation id="520299402983819650"><ph name="QUANTITY"/> PB</translation>
 <translation id="2983818520079887040">Cài đặt...</translation>
 <translation id="6845383723252244143">Chọn Thư mục</translation>
 <translation id="7600770490873519066"><ph name="NUMBER_FEW"/> giây</translation>
+<translation id="5368780922436099921">Còn <ph name="NUMBER_ZERO"/> giây</translation>
 <translation id="1095623615273566396"><ph name="NUMBER_FEW"/> giây</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5263972071113911534"><ph name="NUMBER_MANY"/> days ago</translation>
@@ -165,6 +170,7 @@
 <translation id="6142413573757616983"><ph name="QUANTITY"/> B/giây</translation>
 <translation id="7649070708921625228">Trợ giúp</translation>
 <translation id="6699343763173986273">Bản nhạc tiếp theo của trình phát phương tiện</translation>
+<translation id="5445120697129764393">Còn <ph name="NUMBER_DEFAULT"/> giây</translation>
 <translation id="8226233771743600312">Không làm phiền trong một ngày</translation>
 <translation id="7457942297256758195">Xóa tất cả</translation>
 <translation id="822618367988303761"><ph name="NUMBER_TWO"/> days ago</translation>

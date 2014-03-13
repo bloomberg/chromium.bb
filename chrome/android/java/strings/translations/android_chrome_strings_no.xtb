@@ -14,7 +14,9 @@
 <translation id="3358663646935160692">Denne kontoen administreres av <ph name="DOMAIN_NAME"/>.
 
 Du logger på med en administrert konto, og gir administratoren kontroll over Chrome-profilen din. Chrome-dataene dine blir permanent knyttet til denne kontoen. Hvis du kobler fra denne kontoen, slettes de lokale Chrome-dataene.</translation>
+<translation id="1966710179511230534">Oppdater påloggingsinformasjonen din.</translation>
 <translation id="1623104350909869708">Hindre denne siden i å opprette flere dialogruter</translation>
+<translation id="8218346974737627104">Bekreft påloggingen</translation>
 <translation id="624558823898732418">Målspråk: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">Velg autentiseringssertifikat</translation>
 <translation id="3896036286668839683">Sertifikatfremviser</translation>
@@ -29,7 +31,6 @@ Du logger på med en administrert konto, og gir administratoren kontroll over Ch
 <translation id="5684874026226664614">Beklager. Denne siden kunne ikke oversettes.</translation>
 <translation id="4619298195800598081">Åpne det opprinnelige bildet i en ny fane</translation>
 <translation id="907015151729920253">Smartkort</translation>
-<translation id="3136378934686431938">Oppdater påloggingsinformasjonen din.</translation>
 <translation id="3063601790762993062">Lagre videoen</translation>
 <translation id="6042308850641462728">Mer</translation>
 <translation id="3992315671621218278">Lagre linken</translation>
@@ -59,5 +60,4 @@ Du logger på med en administrert konto, og gir administratoren kontroll over Ch
 <translation id="6277522088822131679">Det oppsto et problem med å skrive ut siden. Prøv på nytt.</translation>
 <translation id="1742134235943978220">Oversatt til <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="6965382102122355670">OK</translation>
-<translation id="7495038789730067783">Bekreft pålogging</translation>
 </translationbundle>

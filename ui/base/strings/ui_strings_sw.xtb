@@ -24,6 +24,7 @@
 <translation id="7222373446505536781">F11</translation>
 <translation id="1761785978543082658">B <ph name="QUANTITY"/></translation>
 <translation id="3660179305079774227">Mshale Juu</translation>
+<translation id="7062130397825382308">Imesalia sekunde <ph name="NUMBER_ONE"/></translation>
 <translation id="1809410197924942083"><ph name="QUANTITY"/> MB/s</translation>
 <translation id="5608669887400696928">saa <ph name="NUMBER_DEFAULT"/></translation>
 <translation id="3990502903496589789">Ncha ya Kulia</translation>
@@ -45,6 +46,7 @@
 <translation id="7770995925463083016">dakika <ph name="NUMBER_TWO"/> zilizopita</translation>
 <translation id="3234408098842461169">Mshale Chini</translation>
 <translation id="3087734570205094154">Chini</translation>
+<translation id="8828991073132329143">Zimesalia sekunde <ph name="NUMBER_MANY"/></translation>
 <translation id="5935630983280450497">imesalia dakika <ph name="NUMBER_ONE"/></translation>
 <translation id="1860796786778352021">Funga arifa</translation>
 <translation id="6364916375976753737">Sogeza Kushoto</translation>
@@ -68,6 +70,7 @@
 <translation id="7781829728241885113">Jana</translation>
 <translation id="3424538384153559412">Dakika <ph name="NUMBER_TWO"/></translation>
 <translation id="50960180632766478">zimesalia dakika <ph name="NUMBER_FEW"/></translation>
+<translation id="5517291721709019259">Zimesalia sekunde <ph name="NUMBER_FEW"/></translation>
 <translation id="6659594942844771486">Kichupo</translation>
 <translation id="3049748772180311791">MB <ph name="QUANTITY"/></translation>
 <translation id="4988273303304146523">siku <ph name="NUMBER_DEFAULT"/> zilizopita</translation>
@@ -137,12 +140,14 @@
 <translation id="1285266685456062655">Saa <ph name="NUMBER_FEW"/> zilizopita</translation>
 <translation id="6918245111648057970">Ruhusu arifa kutoka kwa wafuatao kwa kila mtumiaji:</translation>
 <translation id="5489830104927132166">Sekunde <ph name="NUMBER_ONE"/></translation>
+<translation id="1270251962578273213">Zimesalia sekunde <ph name="NUMBER_TWO"/></translation>
 <translation id="3994835489895548312">Zimesalia dakika <ph name="NUMBER_MANY"/></translation>
 <translation id="6358975074282722691">sekunde <ph name="NUMBER_TWO"/> zilizopita</translation>
 <translation id="520299402983819650">PB <ph name="QUANTITY"/></translation>
 <translation id="2983818520079887040">Mipangilio...</translation>
 <translation id="6845383723252244143">Chagua Folda</translation>
 <translation id="7600770490873519066">Sekunde <ph name="NUMBER_FEW"/></translation>
+<translation id="5368780922436099921">Zimesalia saa <ph name="NUMBER_ZERO"/></translation>
 <translation id="1095623615273566396">sekunde <ph name="NUMBER_FEW"/></translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5263972071113911534">siku <ph name="NUMBER_MANY"/> zilizopita</translation>
@@ -165,6 +170,7 @@
 <translation id="6142413573757616983"><ph name="QUANTITY"/> B/s</translation>
 <translation id="7649070708921625228">Usaidizi</translation>
 <translation id="6699343763173986273">Wimbo Unaofuata kwenye Media</translation>
+<translation id="5445120697129764393">Zimesalia sekunde <ph name="NUMBER_DEFAULT"/></translation>
 <translation id="8226233771743600312">Usinisumbue kwa siku moja</translation>
 <translation id="7457942297256758195">Futa Zote</translation>
 <translation id="822618367988303761">siku <ph name="NUMBER_TWO"/> zilizopita</translation>

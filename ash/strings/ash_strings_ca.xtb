@@ -15,6 +15,7 @@
 <translation id="370649949373421643">Activa la Wi-Fi</translation>
 <translation id="3626281679859535460">Brillantor</translation>
 <translation id="3621202678540785336">Entrada</translation>
+<translation id="7348093485538360975">Teclat en pantalla</translation>
 <translation id="595202126637698455">Seguiment del rendiment activat</translation>
 <translation id="8054466585765276473">S'està calculant el temps de la bateria.</translation>
 <translation id="7982789257301363584">Xarxa</translation>
@@ -27,6 +28,7 @@
 <translation id="2297568595583585744">Safata d'estat</translation>
 <translation id="1661867754829461514">Falta el PIN</translation>
 <translation id="4508225577814909926"><ph name="NAME"/>: s'està connectant...</translation>
+<translation id="2248649616066688669">Podeu continuar utilitzant el dispositiu Chromebook mentre estigui connectat a una pantalla externa, encara que la tapa estigui tancada.</translation>
 <translation id="40400351611212369">Error d'activació de xarxa</translation>
 <translation id="4237016987259239829">Error de connexió a la xarxa</translation>
 <translation id="2946640296642327832">Activa el Bluetooth</translation>
@@ -34,11 +36,14 @@
 <translation id="8206859287963243715">Cel·lular</translation>
 <translation id="6596816719288285829">Adreça IP</translation>
 <translation id="4508265954913339219">S'ha produït un error en l'activació.</translation>
+<translation id="8688591111840995413">Contrasenya incorrecta</translation>
 <translation id="3621712662352432595">Configuració d'àudio</translation>
 <translation id="1812696562331527143">El mètode d'entrada ha canviat a <ph name="INPUT_METHOD_ID"/>* (<ph name="BEGIN_LINK"/>tercers<ph name="END_LINK"/>).
 Premeu Maj+Alt per canviar-lo.</translation>
+<translation id="6043994281159824495">Tanca la sessió ara</translation>
 <translation id="2127372758936585790">Carregador de baix consum</translation>
 <translation id="3846575436967432996">No hi ha informació de xarxa disponible</translation>
+<translation id="3799026279081545374">Pot ser que el carregador s'hagi espatllat. Si residiu als EUA, truqueu al 866-628-1371 per rebre ajuda i un carregador de recanvi. Si residiu al Regne Unit, truqueu al 0800-026-0613. Si residiu a Irlanda, truqueu al 1-800-832-664. Si residiu al Canadà, truqueu al 866-628-1372. Si residiu a Austràlia, truqueu al 1-800-067-460.</translation>
 <translation id="3026237328237090306">Configura les dades mòbils</translation>
 <translation id="5871632337994001636">Gestiona els dispositius...</translation>
 <translation id="785750925697875037">Mostra el compte mòbil</translation>
@@ -57,6 +62,8 @@ Premeu Maj+Alt per canviar-lo.</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME"/> (<ph name="ANNOTATION"/>)</translation>
 <translation id="2942516765047364088">Posició del prestatge</translation>
 <translation id="8676770494376880701">S'ha connectat un carregador de baix consum</translation>
+<translation id="5238774010593222950">No es pot iniciar la sessió a un altre compte.</translation>
+<translation id="1723752762323179280">S'està tancant la sessió</translation>
 <translation id="7170041865419449892">Fora de l'interval</translation>
 <translation id="4804818685124855865">Desconnecta</translation>
 <translation id="2544853746127077729">La xarxa ha rebutjat el certificat d'autenticació</translation>
@@ -72,7 +79,6 @@ Premeu Maj+Alt per canviar-lo.</translation>
 <translation id="3892641579809465218">Pantalla interna</translation>
 <translation id="7823564328645135659">L'idioma ha canviat de &quot;<ph name="FROM_LOCALE"/>&quot; a &quot;<ph name="TO_LOCALE"/>&quot; després de sincronitzar la vostra configuració.</translation>
 <translation id="3368922792935385530">Connectat</translation>
-<translation id="8340999562596018839">Comentaris de veu</translation>
 <translation id="8654520615680304441">Activa la Wi-Fi...</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="5825747213122829519">El mètode d'entrada ha canviat a <ph name="INPUT_METHOD_ID"/>.
@@ -98,9 +104,7 @@ Premeu Maj+Alt per canviar-lo.</translation>
 <translation id="3963445509666917109">Altaveu (intern)</translation>
 <translation id="2825619548187458965">Prestatge</translation>
 <translation id="2614835198358683673">És possible que el vostre Chromebook no es carregui mentre estigui encès. Proveu de fer servir un carregador oficial.</translation>
-<translation id="1895658205118569222">Aturada</translation>
 <translation id="4430019312045809116">Volum</translation>
-<translation id="8681498213689260554">Reinicieu i feu un Powerwash per actualitzar</translation>
 <translation id="4442424173763614572">La cerca de DNS ha fallat</translation>
 <translation id="7874779702599364982">S'estan cercant xarxes mòbils...</translation>
 <translation id="583281660410589416">Desconegut</translation>
@@ -110,7 +114,7 @@ Premeu Maj+Alt per canviar-lo.</translation>
 <translation id="1621499497873603021">Temps que queda fins que no s'esgoti la bateria: <ph name="TIME_LEFT"/></translation>
 <translation id="5980301590375426705">Surt de la sessió de convidat</translation>
 <translation id="8308637677604853869">Menú anterior</translation>
-<translation id="4666297444214622512">No podeu iniciar la sessió en un altre compte.</translation>
+<translation id="4321179778687042513">ctrl</translation>
 <translation id="3625258641415618104">Captures de pantalla desactivades</translation>
 <translation id="1346748346194534595">A la dreta</translation>
 <translation id="1773212559869067373">S'ha rebutjat el certificat d'autenticació de manera local</translation>
@@ -119,10 +123,9 @@ Premeu Maj+Alt per canviar-lo.</translation>
 <translation id="8428213095426709021">Configuració</translation>
 <translation id="2372145515558759244">S'estan sincronitzant les aplicacions...</translation>
 <translation id="7256405249507348194">Error no reconegut: <ph name="DESC"/></translation>
+<translation id="2894654529758326923">Informació</translation>
 <translation id="7925247922861151263">Error en la comprovació d'AAA</translation>
 <translation id="8456362689280298700">Temps per a càrrega completa: <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
-<translation id="5787281376604286451">Els comentaris de veu estan activats.
-Premeu Ctrl+Alt+Z per desactivar-los.</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="6312403991423642364">Error de xarxa desconegut</translation>
 <translation id="1467432559032391204">A l'esquerra</translation>
@@ -133,6 +136,7 @@ Premeu Ctrl+Alt+Z per desactivar-los.</translation>
 <translation id="1923539912171292317">Clics automàtics</translation>
 <translation id="1398853756734560583">Maximitza</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: s'està connectant...</translation>
+<translation id="6062360702481658777">Es tancarà la sessió automàticament d'aquí a <ph name="LOGOUT_TIME_LEFT"/>.</translation>
 <translation id="252373100621549798">Pantalla desconeguda</translation>
 <translation id="1882897271359938046">S'està replicant <ph name="DISPLAY_NAME"/></translation>
 <translation id="2727977024730340865">S'ha connectat a un carregador de baix consum. És possible que la càrrega de la bateria no sigui fiable.</translation>
@@ -141,6 +145,7 @@ Premeu Ctrl+Alt+Z per desactivar-los.</translation>
 <translation id="1512064327686280138">Error d'activació</translation>
 <translation id="5097002363526479830">S'ha produït un error en connectar amb la xarxa &quot;<ph name="NAME"/>&quot;: <ph name="DETAILS"/></translation>
 <translation id="1850504506766569011">La Wi-Fi està desactivada.</translation>
+<translation id="2872961005593481000">Apaga</translation>
 <translation id="2966449113954629791">És possible que hàgiu esgotat la quantitat assignada de dades mòbils. Visiteu el portal d'activació <ph name="NAME"/> per comprar més dades.</translation>
 <translation id="8132793192354020517">Connectat a <ph name="NAME"/></translation>
 <translation id="7052914147756339792">Defineix l'empaperat...</translation>
@@ -153,8 +158,10 @@ Premeu Ctrl+Alt+Z per desactivar-los.</translation>
 <translation id="7005812687360380971">Error</translation>
 <translation id="882279321799040148">Feu clic per visualitzar-la.</translation>
 <translation id="1753067873202720523">Pot ser que el Chromebook no es carregui mentre estigui activat.</translation>
+<translation id="7561014039265304140"><ph name="DISPLAY_NAME"/> no admet <ph name="SPECIFIED_RESOLUTION"/>. S'ha canviat la resolució per <ph name="FALLBACK_RESOLUTION"/>.</translation>
 <translation id="5045550434625856497">Contrasenya incorrecta</translation>
 <translation id="1602076796624386989">Activa les dades mòbils</translation>
+<translation id="68610848741840742">ChromeVox (comentaris de veu)</translation>
 <translation id="6981982820502123353">Accessibilitat</translation>
 <translation id="3157931365184549694">Restaura</translation>
 <translation id="4274292172790327596">Error no reconegut</translation>
@@ -167,10 +174,12 @@ Premeu Ctrl+Alt+Z per desactivar-los.</translation>
 <translation id="8401662262483418323">No s'ha pogut connectar amb &quot;<ph name="NAME"/>&quot;: <ph name="DETAILS"/>
 Missatge del servidor: <ph name="SERVER_MSG"/></translation>
 <translation id="2475982808118771221">S'ha produït un error</translation>
+<translation id="3783640748446814672">alt</translation>
 <translation id="7229570126336867161">Es necessita EVDO</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> és una sessió pública gestionada per <ph name="DOMAIN"/>.</translation>
 <translation id="9044646465488564462">S'ha produït un error en connectar amb la xarxa: <ph name="DETAILS"/></translation>
 <translation id="7029814467594812963">Tanca la sessió</translation>
+<translation id="479989351350248267">cerca</translation>
 <translation id="8454013096329229812">La Wi-Fi està activada.</translation>
 <translation id="4872237917498892622">Alt+Cerca o Maj</translation>
 <translation id="9201131092683066720">La bateria està carregada fins al <ph name="PERCENTAGE"/>%.</translation>
@@ -193,14 +202,13 @@ Missatge del servidor: <ph name="SERVER_MSG"/></translation>
 <translation id="5947494881799873997">Reverteix</translation>
 <translation id="7593891976182323525">Cerca o Maj</translation>
 <translation id="7649070708921625228">Ajuda</translation>
-<translation id="747833637904845037">El Chromebook continuarà actiu mentre estigui connectat a una pantalla externa, tot i que es tanqui la tapa.</translation>
 <translation id="3050422059534974565">Bloq Maj està activat.
 Premeu Cerca o Maj per cancel·lar.</translation>
 <translation id="397105322502079400">S’està calculant...</translation>
 <translation id="158849752021629804">Es necessita una xarxa domèstica</translation>
 <translation id="6857811139397017780">Activa <ph name="NETWORKSERVICE"/></translation>
 <translation id="5864471791310927901">Error en la cerca de DHCP</translation>
-<translation id="6692173217867674490">Contrasenya no vàlida</translation>
+<translation id="2819276065543622893">Ara se us tancarà la sessió.</translation>
 <translation id="6165508094623778733">Més informació</translation>
 <translation id="9046895021617826162">S'ha produït un error en la connexió</translation>
 <translation id="7168224885072002358">Es revertirà a la resolució anterior d'aquí a <ph name="TIMEOUT_SECONDS"/></translation>
@@ -209,6 +217,8 @@ Premeu Cerca o Maj per cancel·lar.</translation>
 <translation id="6636709850131805001">Estat no reconegut</translation>
 <translation id="3573179567135747900">Torna a canviar a &quot;<ph name="FROM_LOCALE"/>&quot; (requereix reiniciar)</translation>
 <translation id="8103386449138765447">Missatges SMS: <ph name="MESSAGE_COUNT"/></translation>
+<translation id="7097613348211027502">ChromeVox (comentaris de veu) està activat.
+Premeu Ctrl + Alt + Z per desactivar-lo.</translation>
 <translation id="5045002648206642691">Configuració de Google Drive...</translation>
 <translation id="7209101170223508707">Bloq Maj està activat.
 Premeu Alt+Cerca o Maj per cancel·lar.</translation>
@@ -224,6 +234,7 @@ Premeu Alt+Cerca o Maj per cancel·lar.</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">Enhorabona. El servei de dades &quot;<ph name="NAME"/>&quot; s'ha activat i ja es pot fer servir.</translation>
 <translation id="412065659894267608">Falten <ph name="HOUR"/> h <ph name="MINUTE"/> min fins que estigui carregada completament</translation>
+<translation id="3077734595579995578">maj</translation>
 <translation id="7297443947353982503">El nom d'usuari o la contrasenya és incorrecte o no s'ha pogut realitzar l'autorització d'EAP.</translation>
 <translation id="6359806961507272919">SMS de <ph name="PHONE_NUMBER"/></translation>
 <translation id="1244147615850840081">Operador</translation>

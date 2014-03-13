@@ -14,7 +14,9 @@
 <translation id="3358663646935160692">Questo account è gestito da <ph name="DOMAIN_NAME"/>.
 
 Stai per eseguire l'accesso con un account gestito e consentire al relativo amministratore di controllare il tuo profilo Chrome. I tuoi dati di Chrome verranno associati definitivamente a questo account. La disconnessione dall'account comporterà l'eliminazione dei dati di Chrome locali.</translation>
+<translation id="1966710179511230534">Aggiorna i dati di accesso.</translation>
 <translation id="1623104350909869708">Impedisci la creazione di altre finestre di dialogo in questa pagina</translation>
+<translation id="8218346974737627104">Conferma accesso</translation>
 <translation id="624558823898732418">Lingua della traduzione: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">Scegli certificato per l'autenticazione</translation>
 <translation id="3896036286668839683">Visualizzatore certificati</translation>
@@ -29,7 +31,6 @@ Stai per eseguire l'accesso con un account gestito e consentire al relativo ammi
 <translation id="5684874026226664614">Spiacenti. Impossibile tradurre questa pagina.</translation>
 <translation id="4619298195800598081">Apri originale in nuova scheda</translation>
 <translation id="907015151729920253">Smart card</translation>
-<translation id="3136378934686431938">Aggiorna i dati di accesso.</translation>
 <translation id="3063601790762993062">Salva video</translation>
 <translation id="6042308850641462728">Più</translation>
 <translation id="3992315671621218278">Salva link</translation>
@@ -59,5 +60,4 @@ Stai per eseguire l'accesso con un account gestito e consentire al relativo ammi
 <translation id="6277522088822131679">Si è verificato un problema durante la stampa della pagina. Riprova.</translation>
 <translation id="1742134235943978220">Tradotto in <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="6965382102122355670">OK</translation>
-<translation id="7495038789730067783">Conferma accesso</translation>
 </translationbundle>

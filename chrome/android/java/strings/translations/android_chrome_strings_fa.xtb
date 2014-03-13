@@ -12,7 +12,9 @@
 <translation id="2731700343119398978">لطفاً صبر کنید...</translation>
 <translation id="7378627244592794276">نه</translation>
 <translation id="3358663646935160692">‏این حساب توسط <ph name="DOMAIN_NAME"/> مدیریت می‌شود. شما با یک حساب مدیریت شده وارد سیستم شده‌اید و به سرپرست این حساب اجازه کنترل نمایه Chrome خود را می‌دهید. اطلاعات Chrome شما به صورت دائم با این حساب مرتبط می‌شود. با قطع ارتباط از این حساب، کلیه اطلاعات Chrome شما در دستگاه حذف می‌شود.</translation>
+<translation id="1966710179511230534">لطفاً جزئیات ورود به سیستمتان را به‌روز کنید.</translation>
 <translation id="1623104350909869708">جلوگیری از ایجاد پنجره‌های اضافی توسط این صفحه</translation>
+<translation id="8218346974737627104">تأیید ورود به سیستم</translation>
 <translation id="624558823898732418">زبان ترجمه: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">انتخاب گواهی برای احراز هویت</translation>
 <translation id="3896036286668839683">نظاره‌گر گواهی</translation>
@@ -27,7 +29,6 @@
 <translation id="5684874026226664614">متأسفیم. این صفحه ترجمه نشد.</translation>
 <translation id="4619298195800598081">باز کردن تصویر اصلی در برگه جدید</translation>
 <translation id="907015151729920253">کارت هوشمند</translation>
-<translation id="3136378934686431938">لطفاً جزئیات ورود به سیستمتان را به‌روز کنید.</translation>
 <translation id="3063601790762993062">ذخیره ویدیو</translation>
 <translation id="6042308850641462728">بیشتر</translation>
 <translation id="3992315671621218278">ذخیره پیوند</translation>
@@ -57,5 +58,4 @@
 <translation id="6277522088822131679">در چاپ صفحه مشکلی پیش آمد. لطفاً دوباره امتحان کنید.</translation>
 <translation id="1742134235943978220">به <ph name="TARGET_LANGUAGE"/> ترجمه شد.</translation>
 <translation id="6965382102122355670">تأیید</translation>
-<translation id="7495038789730067783">تأیید ورود به سیستم</translation>
 </translationbundle>

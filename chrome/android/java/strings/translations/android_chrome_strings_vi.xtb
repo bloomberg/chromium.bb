@@ -14,7 +14,9 @@
 <translation id="3358663646935160692">Tài khoản này được quản lý bởi <ph name="DOMAIN_NAME"/>.
 
 Bạn đang đăng nhập bằng tài khoản được quản lý và cung cấp cho quản trị viên quyền kiểm soát đối với tiểu sử trên Chrome của bạn. Dữ liệu Chrome của bạn sẽ vĩnh viễn gắn với tài khoản này. Ngắt kết nối khỏi tài khoản này sẽ xóa các dữ liệu Chrome cục bộ.</translation>
+<translation id="1966710179511230534">Vui lòng cập nhật chi tiết đăng nhập của bạn.</translation>
 <translation id="1623104350909869708">Ngăn trang này tạo hộp thoại bổ sung</translation>
+<translation id="8218346974737627104">Xác nhận đăng nhập</translation>
 <translation id="624558823898732418">Ngôn ngữ bản dịch: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">Chọn chứng chỉ để xác thực</translation>
 <translation id="3896036286668839683">Trình xem chứng chỉ</translation>
@@ -29,7 +31,6 @@ Bạn đang đăng nhập bằng tài khoản được quản lý và cung cấp
 <translation id="5684874026226664614">Rất tiếc. Không thể dịch trang này.</translation>
 <translation id="4619298195800598081">Mở ảnh gốc trong tab mới</translation>
 <translation id="907015151729920253">Thẻ thông minh</translation>
-<translation id="3136378934686431938">Vui lòng cập nhật chi tiết đăng nhập của bạn.</translation>
 <translation id="3063601790762993062">Lưu video</translation>
 <translation id="6042308850641462728">Thêm</translation>
 <translation id="3992315671621218278">Lưu liên kết</translation>
@@ -59,5 +60,4 @@ Bạn đang đăng nhập bằng tài khoản được quản lý và cung cấp
 <translation id="6277522088822131679">Đã xảy ra sự cố khi in trang này. Vui lòng thử lại.</translation>
 <translation id="1742134235943978220">Đã được dịch sang <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="6965382102122355670">OK</translation>
-<translation id="7495038789730067783">Xác nhận đăng nhập</translation>
 </translationbundle>

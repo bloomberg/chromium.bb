@@ -24,6 +24,7 @@
 <translation id="7222373446505536781">F11</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY"/> பை</translation>
 <translation id="3660179305079774227">மேல்நோக்கிய அம்பு</translation>
+<translation id="7062130397825382308"><ph name="NUMBER_ONE"/> வினாடி உள்ளது</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY"/> மெ.பை/வி</translation>
 <translation id="5608669887400696928"><ph name="NUMBER_DEFAULT"/> மணி நேரம்</translation>
 <translation id="3990502903496589789">வலது விளிம்பு</translation>
@@ -45,6 +46,7 @@
 <translation id="7770995925463083016"><ph name="NUMBER_TWO"/> mins ago</translation>
 <translation id="3234408098842461169">கீழ்நோக்கிய அம்பு</translation>
 <translation id="3087734570205094154">கீழே</translation>
+<translation id="8828991073132329143"><ph name="NUMBER_MANY"/> வினாடிகள் உள்ளன</translation>
 <translation id="5935630983280450497">இன்னும் <ph name="NUMBER_ONE"/> நிமிடம் உள்ளது</translation>
 <translation id="1860796786778352021">அறிவிப்பை மூடு</translation>
 <translation id="6364916375976753737">இடப்புறம் உருட்டு</translation>
@@ -68,6 +70,7 @@
 <translation id="7781829728241885113">நேற்று</translation>
 <translation id="3424538384153559412"><ph name="NUMBER_TWO"/> நிமிடங்கள்</translation>
 <translation id="50960180632766478">இன்னும் <ph name="NUMBER_FEW"/> நிமிடங்கள் உள்ளன</translation>
+<translation id="5517291721709019259"><ph name="NUMBER_FEW"/> வினாடிகள் உள்ளன</translation>
 <translation id="6659594942844771486">Tab</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY"/> மெ.பை</translation>
 <translation id="4988273303304146523"><ph name="NUMBER_DEFAULT"/> days ago</translation>
@@ -137,12 +140,14 @@
 <translation id="1285266685456062655"><ph name="NUMBER_FEW"/> hours ago</translation>
 <translation id="6918245111648057970">ஒவ்வொரு பயனருக்கும் பின்வருபவையிலிருந்து அறிவிப்புகளை அனுமதி:</translation>
 <translation id="5489830104927132166"><ph name="NUMBER_ONE"/> வினாடி</translation>
+<translation id="1270251962578273213"><ph name="NUMBER_TWO"/> வினாடிகள் உள்ளன</translation>
 <translation id="3994835489895548312"><ph name="NUMBER_MANY"/> நிமிடங்கள் உள்ளன</translation>
 <translation id="6358975074282722691"><ph name="NUMBER_TWO"/> secs ago</translation>
 <translation id="520299402983819650"><ph name="QUANTITY"/> பெ.பை</translation>
 <translation id="2983818520079887040">அமைப்புகள்...</translation>
 <translation id="6845383723252244143">கோப்புறையைத் தேர்ந்தெடு</translation>
 <translation id="7600770490873519066"><ph name="NUMBER_FEW"/> வினாடிகள்</translation>
+<translation id="5368780922436099921"><ph name="NUMBER_ZERO"/> வினாடிகள் உள்ளன</translation>
 <translation id="1095623615273566396"><ph name="NUMBER_FEW"/> நொடிகள்</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5263972071113911534"><ph name="NUMBER_MANY"/> days ago</translation>
@@ -165,6 +170,7 @@
 <translation id="6142413573757616983"><ph name="QUANTITY"/> பை/வி</translation>
 <translation id="7649070708921625228">உதவி</translation>
 <translation id="6699343763173986273">ஊடகத்தின் அடுத்த டிராக்</translation>
+<translation id="5445120697129764393"><ph name="NUMBER_DEFAULT"/> வினாடிகள் உள்ளன</translation>
 <translation id="8226233771743600312">ஒரு நாள் தொந்தரவு செய்ய வேண்டாம்</translation>
 <translation id="7457942297256758195">அனைத்தையும் அழி</translation>
 <translation id="822618367988303761"><ph name="NUMBER_TWO"/> days ago</translation>

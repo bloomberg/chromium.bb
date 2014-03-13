@@ -15,6 +15,7 @@
 <translation id="370649949373421643">Активиране на Wi-Fi</translation>
 <translation id="3626281679859535460">Яркост</translation>
 <translation id="3621202678540785336">Вход</translation>
+<translation id="7348093485538360975">Екранна клавиатура</translation>
 <translation id="595202126637698455">Проследяването на ефективността е активирано</translation>
 <translation id="8054466585765276473">Издръжливостта на батерията се изчислява.</translation>
 <translation id="7982789257301363584">Мрежа</translation>
@@ -27,6 +28,7 @@
 <translation id="2297568595583585744">Област на състоянието</translation>
 <translation id="1661867754829461514">Липсва PIN</translation>
 <translation id="4508225577814909926"><ph name="NAME"/>: Установява се връзка...</translation>
+<translation id="2248649616066688669">Можете да продължите да използвате Chromebook, докато е свързан с външен дисплей, дори и със затворен капак.</translation>
 <translation id="40400351611212369">Грешка при активиране на мрежата</translation>
 <translation id="4237016987259239829">Грешка при свързване към мрежата</translation>
 <translation id="2946640296642327832">Активиране на Bluetooth</translation>
@@ -34,11 +36,14 @@
 <translation id="8206859287963243715">Клетъчно</translation>
 <translation id="6596816719288285829">IP адрес</translation>
 <translation id="4508265954913339219">Активирането не бе успешно</translation>
+<translation id="8688591111840995413">Неправилна парола</translation>
 <translation id="3621712662352432595">Настройки за звука</translation>
 <translation id="1812696562331527143">Методът ви на въвеждане се промени на <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>трета страна<ph name="END_LINK"/>).
 Натиснете „Shift + Alt“, за да превключите.</translation>
+<translation id="6043994281159824495">Изход сега</translation>
 <translation id="2127372758936585790">Зарядно устройство с малка мощност</translation>
 <translation id="3846575436967432996">Не е налице информация за мрежата</translation>
+<translation id="3799026279081545374">Възможно е зарядното ви устройство да е дефектно. За да получите помощ и да го замените, моля, обадете се на номера за държавата, в която живеете – 866-628-1371 за САЩ, 0800-026-0613 за Великобритания, 1-800-832-664 за Ирландия, 866-628-1372 за Канада и 1-800-067-460 за Австралия.</translation>
 <translation id="3026237328237090306">Настройка на мобилните данни</translation>
 <translation id="5871632337994001636">Управление на устройствата...</translation>
 <translation id="785750925697875037">Преглед на мобилния профил</translation>
@@ -57,6 +62,8 @@
 <translation id="1279938420744323401">„<ph name="DISPLAY_NAME"/>“ (<ph name="ANNOTATION"/>)</translation>
 <translation id="2942516765047364088">Позиция на лавицата</translation>
 <translation id="8676770494376880701">Свързано е зарядно устройство с малка мощност</translation>
+<translation id="5238774010593222950">Не можете да влезете в друг профил</translation>
+<translation id="1723752762323179280">Излизане от сесията</translation>
 <translation id="7170041865419449892">Извън обхват</translation>
 <translation id="4804818685124855865">Изключване</translation>
 <translation id="2544853746127077729">Сертификатът за удостоверяване бе отхвърлен от мрежата</translation>
@@ -72,7 +79,6 @@
 <translation id="3892641579809465218">Показване на вътрешна информация</translation>
 <translation id="7823564328645135659">Езикът се промени от „<ph name="FROM_LOCALE"/>“ на „<ph name="TO_LOCALE"/>“ след синхронизирането на настройките ви.</translation>
 <translation id="3368922792935385530">Установена е връзка</translation>
-<translation id="8340999562596018839">Обратна връзка с говор</translation>
 <translation id="8654520615680304441">Включване на Wi-Fi...</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="5825747213122829519">Методът ви на въвеждане се промени на <ph name="INPUT_METHOD_ID"/>.
@@ -98,9 +104,7 @@
 <translation id="3963445509666917109">Високоговорител (вътрешен)</translation>
 <translation id="2825619548187458965">Лавица</translation>
 <translation id="2614835198358683673">Възможно е вашият Chromebook да не се зарежда, докато е включен. Помислете за използване на официалното зарядно устройство.</translation>
-<translation id="1895658205118569222">Изключване</translation>
 <translation id="4430019312045809116">Звук</translation>
-<translation id="8681498213689260554">Рестартирайте и извършете Powerwash, за да актуализирате</translation>
 <translation id="4442424173763614572">Търсенето в DNS не бе успешно</translation>
 <translation id="7874779702599364982">Търсят се мобилни мрежи...</translation>
 <translation id="583281660410589416">Неизвестно</translation>
@@ -110,7 +114,7 @@
 <translation id="1621499497873603021">Оставащо време до изразходването на батерията: <ph name="TIME_LEFT"/></translation>
 <translation id="5980301590375426705">Изход от сесията като гост</translation>
 <translation id="8308637677604853869">Предишно меню</translation>
-<translation id="4666297444214622512">Не може да влезете в друг профил.</translation>
+<translation id="4321179778687042513">ctrl</translation>
 <translation id="3625258641415618104">Екранните снимки са деактивирани</translation>
 <translation id="1346748346194534595">Надясно</translation>
 <translation id="1773212559869067373">Сертификатът за удостоверяване бе отхвърлен локално</translation>
@@ -119,10 +123,9 @@
 <translation id="8428213095426709021">Настройки</translation>
 <translation id="2372145515558759244">Приложенията се синхронизират...</translation>
 <translation id="7256405249507348194">Неразпозната грешка: <ph name="DESC"/></translation>
+<translation id="2894654529758326923">Информация</translation>
 <translation id="7925247922861151263">Проверката за AAA не бе успешна</translation>
 <translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> до пълно зареждане</translation>
-<translation id="5787281376604286451">Обратната връзка с говор е активирана.
-Натиснете „Ctrl+Alt+Z“, за да я деактивирате.</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="6312403991423642364">Неизвестна мрежова грешка</translation>
 <translation id="1467432559032391204">Наляво</translation>
@@ -133,6 +136,7 @@
 <translation id="1923539912171292317">Автоматични кликвания</translation>
 <translation id="1398853756734560583">Увеличаване</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: Установява се връзка...</translation>
+<translation id="6062360702481658777">Ще излезете автоматично след <ph name="LOGOUT_TIME_LEFT"/>.</translation>
 <translation id="252373100621549798">Неизвестен дисплей</translation>
 <translation id="1882897271359938046">Дублира се на „<ph name="DISPLAY_NAME"/>“</translation>
 <translation id="2727977024730340865">Използва се зарядно устройство с малка мощност. Зареждането на батерията може да не е надеждно.</translation>
@@ -141,6 +145,7 @@
 <translation id="1512064327686280138">Неуспех при активирането</translation>
 <translation id="5097002363526479830">Свързването с мрежата „<ph name="NAME"/>“ не бе успешно: <ph name="DETAILS"/></translation>
 <translation id="1850504506766569011">Wi-Fi е изключен.</translation>
+<translation id="2872961005593481000">Изключване</translation>
 <translation id="2966449113954629791">Възможно е да сте изразходвали отпуснатите ви мобилни данни. Посетете портала за активиране „<ph name="NAME"/>“, за да купите още данни.</translation>
 <translation id="8132793192354020517">Установена е връзка с/ъс <ph name="NAME"/></translation>
 <translation id="7052914147756339792">Задаване на тапет...</translation>
@@ -153,8 +158,10 @@
 <translation id="7005812687360380971">Неуспех</translation>
 <translation id="882279321799040148">Кликнете, за да прегледате</translation>
 <translation id="1753067873202720523">Вашият Chromebook може да не се зарежда, докато е включен.</translation>
+<translation id="7561014039265304140">„<ph name="DISPLAY_NAME"/>“ не поддържа разделителна способност от <ph name="SPECIFIED_RESOLUTION"/>. Тя бе променена на <ph name="FALLBACK_RESOLUTION"/></translation>
 <translation id="5045550434625856497">Неправилна парола</translation>
 <translation id="1602076796624386989">Активиране на мобилните данни</translation>
+<translation id="68610848741840742">ChromeVox (обратна връзка с говор)</translation>
 <translation id="6981982820502123353">Достъпност</translation>
 <translation id="3157931365184549694">Възстановяване</translation>
 <translation id="4274292172790327596">Неразпозната грешка</translation>
@@ -167,10 +174,12 @@
 <translation id="8401662262483418323">Свързването с/ъс „<ph name="NAME"/>“ не бе успешно: <ph name="DETAILS"/>
 Съобщение от сървъра: <ph name="SERVER_MSG"/></translation>
 <translation id="2475982808118771221">Възникна грешка</translation>
+<translation id="3783640748446814672">alt</translation>
 <translation id="7229570126336867161">Необходим е EVDO</translation>
 <translation id="2999742336789313416">„<ph name="DISPLAY_NAME"/>“ е обществена сесия, управлявана от <ph name="DOMAIN"/></translation>
 <translation id="9044646465488564462">Свързването с мрежата не бе успешно: <ph name="DETAILS"/></translation>
 <translation id="7029814467594812963">Изход от сесията</translation>
+<translation id="479989351350248267">търсете</translation>
 <translation id="8454013096329229812">Wi-Fi е включен.</translation>
 <translation id="4872237917498892622">„Alt + търсене“ или „Shift“</translation>
 <translation id="9201131092683066720">Батерията е <ph name="PERCENTAGE"/>% пълна.</translation>
@@ -193,14 +202,13 @@
 <translation id="5947494881799873997">Възстановяване</translation>
 <translation id="7593891976182323525">„търсене“ или „Shift“</translation>
 <translation id="7649070708921625228">Помощ</translation>
-<translation id="747833637904845037">Докато е свързан с външен монитор, Chromebook ще остане включен дори при затворен капак.</translation>
 <translation id="3050422059534974565">„CAPS LOCK“ е включен.
 Натиснете „търсене“ или „Shift“, за да анулирате.</translation>
 <translation id="397105322502079400">Изчислява се...</translation>
 <translation id="158849752021629804">Необходима е собствена мрежа</translation>
 <translation id="6857811139397017780">Активиране на <ph name="NETWORKSERVICE"/></translation>
 <translation id="5864471791310927901">Търсенето на DHCP сървър не бе успешно</translation>
-<translation id="6692173217867674490">Паролата е неправилна</translation>
+<translation id="2819276065543622893">Ще излезете сега.</translation>
 <translation id="6165508094623778733">Научете повече</translation>
 <translation id="9046895021617826162">Свързването не бе успешно</translation>
 <translation id="7168224885072002358">Старата разделителна способност ще се възстанови след <ph name="TIMEOUT_SECONDS"/></translation>
@@ -209,6 +217,8 @@
 <translation id="6636709850131805001">Неразпознато състояние</translation>
 <translation id="3573179567135747900">Връщане към „<ph name="FROM_LOCALE"/>“ (изисква рестартиране)</translation>
 <translation id="8103386449138765447">SMS съобщения: <ph name="MESSAGE_COUNT"/></translation>
+<translation id="7097613348211027502">Функцията ChromeVox (обратна връзка с говор) е активирана.
+Натиснете „Ctrl+Alt+Z“, за да я деактивирате.</translation>
 <translation id="5045002648206642691">Настройки за Google Диск...</translation>
 <translation id="7209101170223508707">„CAPS LOCK“ е включен.
 Натиснете „Alt + търсене“ или „Shift“, за да анулирате.</translation>
@@ -224,6 +234,7 @@
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">Поздравления! Услугата ви за данни „<ph name="NAME"/>“ е активирана и е готова за работа.</translation>
 <translation id="412065659894267608"><ph name="HOUR"/> ч <ph name="MINUTE"/> м до пълно зареждане</translation>
+<translation id="3077734595579995578">shift</translation>
 <translation id="7297443947353982503">Потребителското име или паролата са неправилни или удостоверяването през EAP не бе успешно</translation>
 <translation id="6359806961507272919">SMS от <ph name="PHONE_NUMBER"/></translation>
 <translation id="1244147615850840081">Оператор</translation>

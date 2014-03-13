@@ -14,7 +14,9 @@
 <translation id="3358663646935160692">Denne konto administreres af <ph name="DOMAIN_NAME"/>.
 
 Du logger ind med en administreret konto, og du giver administratoren kontrol over din Chrome-profil. Dine Chrome-data vil blive knyttet permanent til denne konto. Hvis du logger ud af denne konto, slettes de lokale Chrome-data.</translation>
+<translation id="1966710179511230534">Opdater dine loginoplysninger.</translation>
 <translation id="1623104350909869708">Undgå, at denne side opretter yderligere dialogbokse</translation>
+<translation id="8218346974737627104">Bekræft login</translation>
 <translation id="624558823898732418">Sprog, der skal oversættes til: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">Vælg certifikat til godkendelse</translation>
 <translation id="3896036286668839683">Certifikatvisning</translation>
@@ -29,7 +31,6 @@ Du logger ind med en administreret konto, og du giver administratoren kontrol ov
 <translation id="5684874026226664614">Ups! Denne side kunne ikke oversættes.</translation>
 <translation id="4619298195800598081">Åbn originalbillede i ny fane</translation>
 <translation id="907015151729920253">Smart card</translation>
-<translation id="3136378934686431938">Opdater dine loginoplysninger.</translation>
 <translation id="3063601790762993062">Gem video</translation>
 <translation id="6042308850641462728">Mere</translation>
 <translation id="3992315671621218278">Gem link</translation>
@@ -59,5 +60,4 @@ Du logger ind med en administreret konto, og du giver administratoren kontrol ov
 <translation id="6277522088822131679">Der opstod et problem med udskrivning af siden. Prøv igen.</translation>
 <translation id="1742134235943978220">Oversat til <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="6965382102122355670">OK</translation>
-<translation id="7495038789730067783">Bekræft login</translation>
 </translationbundle>

@@ -15,6 +15,7 @@
 <translation id="370649949373421643">Увімкнути Wi-Fi</translation>
 <translation id="3626281679859535460">Яскравість</translation>
 <translation id="3621202678540785336">Вхід</translation>
+<translation id="7348093485538360975">Екранна клавіатура</translation>
 <translation id="595202126637698455">Відстеження ефективності ввімкнено</translation>
 <translation id="8054466585765276473">Обчислення часу роботи акумулятора.</translation>
 <translation id="7982789257301363584">Мережа</translation>
@@ -27,6 +28,7 @@
 <translation id="2297568595583585744">Контейтер стану</translation>
 <translation id="1661867754829461514">Відсутній PIN-код</translation>
 <translation id="4508225577814909926"><ph name="NAME"/>: Під’єднання…</translation>
+<translation id="2248649616066688669">Ви можете продовжувати користуватися Chromebook, поки він під’єднаний до зовнішнього екрана, навіть якщо кришку закрито.</translation>
 <translation id="40400351611212369">Помилка активації мережі</translation>
 <translation id="4237016987259239829">Помилка з'єднання з мережею</translation>
 <translation id="2946640296642327832">Увімкнути Bluetooth</translation>
@@ -34,11 +36,14 @@
 <translation id="8206859287963243715">Мобільний</translation>
 <translation id="6596816719288285829">ІР-адреса</translation>
 <translation id="4508265954913339219">Помилка активації</translation>
+<translation id="8688591111840995413">Неправильний пароль</translation>
 <translation id="3621712662352432595">Налаштування звуку</translation>
 <translation id="1812696562331527143">Метод введення змінено на <ph name="INPUT_METHOD_ID"/>* (<ph name="BEGIN_LINK"/>третя сторона<ph name="END_LINK"/>).
 Щоб переключитися, натисніть Shift + Alt.</translation>
+<translation id="6043994281159824495">Вийти зараз</translation>
 <translation id="2127372758936585790">Зарядний пристрій низької потужності</translation>
 <translation id="3846575436967432996">Інформація про мережу не доступна</translation>
+<translation id="3799026279081545374">Можливо, у вас несправний зарядний пристрій. Якщо ви проживаєте в США, зателефонуйте за номером 866-628-1371, щоб отримати допомогу та інший зарядний пристрій. Якщо ви проживаєте у Великобританії, зателефонуйте за номером 0800-026-0613. Якщо ви проживаєте в Ірландії, зателефонуйте за номером 1-800-832-664. Якщо ви проживаєте в Канаді, зателефонуйте за номером 866-628-1372. Якщо ви проживаєте в Австралії, зателефонуйте за номером 1-800-067-460.</translation>
 <translation id="3026237328237090306">Налаштувати передавання мобільних даних</translation>
 <translation id="5871632337994001636">Керування пристроями…</translation>
 <translation id="785750925697875037">Переглянути обліковий запис для мобільних пристроїв</translation>
@@ -57,6 +62,8 @@
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME"/> (<ph name="ANNOTATION"/>)</translation>
 <translation id="2942516765047364088">Розташування полиці</translation>
 <translation id="8676770494376880701">Зарядний пристрій низької потужності підключено</translation>
+<translation id="5238774010593222950">Неможливо ввійти в інший обліковий запис.</translation>
+<translation id="1723752762323179280">Завершення сеансу</translation>
 <translation id="7170041865419449892">За межами досяжності</translation>
 <translation id="4804818685124855865">Від'єднатися</translation>
 <translation id="2544853746127077729">Сертифікат автентифікації відхилений мережею</translation>
@@ -72,7 +79,6 @@
 <translation id="3892641579809465218">Внутрішній екран</translation>
 <translation id="7823564328645135659">Після синхронізації налаштувань мову змінено. Попередня: <ph name="FROM_LOCALE"/>, нова: <ph name="TO_LOCALE"/>.</translation>
 <translation id="3368922792935385530">Підключено</translation>
-<translation id="8340999562596018839">Голосові підказки</translation>
 <translation id="8654520615680304441">Увімкнення Wi-Fi…</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="5825747213122829519">Метод введення змінено на <ph name="INPUT_METHOD_ID"/>.
@@ -98,9 +104,7 @@
 <translation id="3963445509666917109">Динамік (внутрішній)</translation>
 <translation id="2825619548187458965">Полиця</translation>
 <translation id="2614835198358683673">Ваш Chromebook може не заряджатися, якщо ввімкнений. Спробуйте скористатися офіційним зарядним пристроєм.</translation>
-<translation id="1895658205118569222">Завершення роботи</translation>
 <translation id="4430019312045809116">Гучність</translation>
-<translation id="8681498213689260554">Щоб оновити, перезапустіть і скористайтеся функцією Powerwash</translation>
 <translation id="4442424173763614572">Помилка пошуку DNS</translation>
 <translation id="7874779702599364982">Пошук мобільних мереж…</translation>
 <translation id="583281660410589416">Невідомо</translation>
@@ -110,7 +114,7 @@
 <translation id="1621499497873603021">До розрядження акумулятора залишилося <ph name="TIME_LEFT"/></translation>
 <translation id="5980301590375426705">Завершити сеанс у режимі гостя</translation>
 <translation id="8308637677604853869">Попереднє меню</translation>
-<translation id="4666297444214622512">Неможливо ввійти в інший обліковий запис.</translation>
+<translation id="4321179778687042513">ctrl</translation>
 <translation id="3625258641415618104">Знімки екрана вимкнено</translation>
 <translation id="1346748346194534595">Праворуч</translation>
 <translation id="1773212559869067373">Сертифікат автентифікації відхилений локально</translation>
@@ -119,10 +123,9 @@
 <translation id="8428213095426709021">Налаштування</translation>
 <translation id="2372145515558759244">Синхронізація програм...</translation>
 <translation id="7256405249507348194">Нерозпізнана помилка: <ph name="DESC"/></translation>
+<translation id="2894654529758326923">Інформація</translation>
 <translation id="7925247922861151263">Помилка перевірки AAA</translation>
 <translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> до повного зарядження</translation>
-<translation id="5787281376604286451">Голосові підказки ввімкнено.
-Натисніть Ctrl+Alt+Z, щоб вимкнути.</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="6312403991423642364">Невідома помилка мережі</translation>
 <translation id="1467432559032391204">Ліворуч</translation>
@@ -133,6 +136,7 @@
 <translation id="1923539912171292317">Автоматичні кліки</translation>
 <translation id="1398853756734560583">Збільшити</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: Під’єднання…</translation>
+<translation id="6062360702481658777">Ви автоматично вийдете за <ph name="LOGOUT_TIME_LEFT"/>.</translation>
 <translation id="252373100621549798">Невідомий дисплей</translation>
 <translation id="1882897271359938046">Дзеркалювання на <ph name="DISPLAY_NAME"/></translation>
 <translation id="2727977024730340865">Підключено до зарядного пристрою низької потужності. Акумулятор може заряджатися неналежним чином.</translation>
@@ -141,6 +145,7 @@
 <translation id="1512064327686280138">Помилка активації</translation>
 <translation id="5097002363526479830">Не вдалося під’єднатися до мережі &quot;<ph name="NAME"/>&quot;: <ph name="DETAILS"/></translation>
 <translation id="1850504506766569011">Wi-Fi вимкнено.</translation>
+<translation id="2872961005593481000">Завершити роботу</translation>
 <translation id="2966449113954629791">Можливо, ви використали свій ліміт мобільного передавання даних. Перейдіть на портал активації <ph name="NAME"/>, щоб придбати більший обсяг даних.</translation>
 <translation id="8132793192354020517">З'єднано з <ph name="NAME"/></translation>
 <translation id="7052914147756339792">Установити фоновий малюнок...</translation>
@@ -153,8 +158,10 @@
 <translation id="7005812687360380971">Помилка</translation>
 <translation id="882279321799040148">Натисніть, щоб переглянути</translation>
 <translation id="1753067873202720523">Ваш Chromebook може не заряджатися, поки він увімкнений.</translation>
+<translation id="7561014039265304140">Екран <ph name="DISPLAY_NAME"/> не підтримує роздільну здатність <ph name="SPECIFIED_RESOLUTION"/>. Роздільну здатність змінено на <ph name="FALLBACK_RESOLUTION"/></translation>
 <translation id="5045550434625856497">Неправильний пароль</translation>
 <translation id="1602076796624386989">Увімкнути передавання мобільних даних</translation>
+<translation id="68610848741840742">ChromeVox (голосові підказки)</translation>
 <translation id="6981982820502123353">Доступність</translation>
 <translation id="3157931365184549694">Відновити</translation>
 <translation id="4274292172790327596">Нерозпізнана помилка</translation>
@@ -167,10 +174,12 @@
 <translation id="8401662262483418323">Помилка під’єднання до мережі &quot;<ph name="NAME"/>&quot;: <ph name="DETAILS"/>
 Повідомлення сервера: <ph name="SERVER_MSG"/></translation>
 <translation id="2475982808118771221">Сталася помилка</translation>
+<translation id="3783640748446814672">alt</translation>
 <translation id="7229570126336867161">Потрібна мережа EVDO</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> – загальнодоступний сеанс, керований доменом <ph name="DOMAIN"/></translation>
 <translation id="9044646465488564462">Помилка під’єднання до мережі: <ph name="DETAILS"/></translation>
 <translation id="7029814467594812963">Завершити сеанс</translation>
+<translation id="479989351350248267">пошук</translation>
 <translation id="8454013096329229812">Wi-Fi увімкнено.</translation>
 <translation id="4872237917498892622">Alt+клавіша пошуку або Shift</translation>
 <translation id="9201131092683066720">Акумулятор заряджений на <ph name="PERCENTAGE"/>%.</translation>
@@ -193,14 +202,13 @@
 <translation id="5947494881799873997">Повернути</translation>
 <translation id="7593891976182323525">Клавіша пошуку або Shift</translation>
 <translation id="7649070708921625228">Довідка</translation>
-<translation id="747833637904845037">Під час під’єднання до зовнішнього екрана Chromebook залишатиметься ввімкненим, навіть якщо кришку закрито.</translation>
 <translation id="3050422059534974565">Клавішу CAPS LOCK увімкнено.
 Натисніть клавішу пошуку або Shift, щоб скасувати.</translation>
 <translation id="397105322502079400">Обчислення...</translation>
 <translation id="158849752021629804">Потрібна домашня мережа</translation>
 <translation id="6857811139397017780">Активувати <ph name="NETWORKSERVICE"/></translation>
 <translation id="5864471791310927901">Помилка пошуку DHCP</translation>
-<translation id="6692173217867674490">Погана парольна фраза</translation>
+<translation id="2819276065543622893">Зараз ви вийдете.</translation>
 <translation id="6165508094623778733">Докладніше</translation>
 <translation id="9046895021617826162">Помилка з'єднання</translation>
 <translation id="7168224885072002358">Попередня роздільна здатність повернеться через <ph name="TIMEOUT_SECONDS"/></translation>
@@ -209,6 +217,8 @@
 <translation id="6636709850131805001">Нерозпізнаний стан</translation>
 <translation id="3573179567135747900">Повернутися до мови &quot;<ph name="FROM_LOCALE"/>&quot; (потрібно перезавантажитися)</translation>
 <translation id="8103386449138765447">SMS повідомлень: <ph name="MESSAGE_COUNT"/></translation>
+<translation id="7097613348211027502">ChromeVox (голосові підказки) увімкнено.
+Натисніть Ctrl+Alt+Z, щоб вимкнути.</translation>
 <translation id="5045002648206642691">Налаштування Google Диска...</translation>
 <translation id="7209101170223508707">Клавішу CAPS LOCK увімкнено.
 Натисніть Alt+клавішу пошуку або Shift, щоб скасувати.</translation>
@@ -224,6 +234,7 @@
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">Вітаємо! Вашу службу передавання даних &quot;<ph name="NAME"/>&quot; активовано. Нею можна користуватися.</translation>
 <translation id="412065659894267608"><ph name="HOUR"/> год. <ph name="MINUTE"/> хв. до повного зарядження</translation>
+<translation id="3077734595579995578">shift</translation>
 <translation id="7297443947353982503">Неправильне ім’я користувача чи пароль або помилка автентифікації за протоколом EAP</translation>
 <translation id="6359806961507272919">SMS-повідомлення від <ph name="PHONE_NUMBER"/></translation>
 <translation id="1244147615850840081">Постачальник</translation>

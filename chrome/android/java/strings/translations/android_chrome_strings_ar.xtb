@@ -12,7 +12,9 @@
 <translation id="2731700343119398978">يرجى الانتظار...</translation>
 <translation id="7378627244592794276">لا</translation>
 <translation id="3358663646935160692">‏تتم إدارة هذا الحساب من خلال <ph name="DOMAIN_NAME"/>. لقد سجلت دخولك باستخدام حساب مُدار تمنح المشرف عليه إمكانية التحكم في ملفك الشخصي على Chrome. ستظل بياناتك على Chrome مرتبطة دائمًا بهذا الحساب. ويؤدي إلغاء الربط بهذا الحساب إلى حذف بيانات Chrome المحلية.</translation>
+<translation id="1966710179511230534">الرجاء تحديث تفاصيل تسجيل الدخول.</translation>
 <translation id="1623104350909869708">منع هذه الصفحة من إنشاء مربعات حوار إضافية.</translation>
+<translation id="8218346974737627104">تأكيد تسجيل الدخول</translation>
 <translation id="624558823898732418">لغة الترجمة: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">اختيار شهادة للمصادقة</translation>
 <translation id="3896036286668839683">عارض الشهادات</translation>
@@ -27,7 +29,6 @@
 <translation id="5684874026226664614">عفوًا. تعذرت ترجمة هذه الصفحة.</translation>
 <translation id="4619298195800598081">فتح الصورة الأصلية بتبويب جديد</translation>
 <translation id="907015151729920253">البطاقة الذكية</translation>
-<translation id="3136378934686431938">الرجاء تحديث تفاصيل تسجيل الدخول.</translation>
 <translation id="3063601790762993062">حفظ الفيديو</translation>
 <translation id="6042308850641462728">المزيد</translation>
 <translation id="3992315671621218278">حفظ الرابط</translation>
@@ -57,5 +58,4 @@
 <translation id="6277522088822131679">حدثت مشكلة أثناء طباعة الصفحة. الرجاء إعادة المحاولة.</translation>
 <translation id="1742134235943978220">تمت الترجمة إلى <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="6965382102122355670">موافق</translation>
-<translation id="7495038789730067783">تأكيد تسجيل الدخول</translation>
 </translationbundle>

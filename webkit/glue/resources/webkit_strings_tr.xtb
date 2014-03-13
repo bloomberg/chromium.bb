@@ -3,7 +3,6 @@
 <translationbundle lang="tr">
 <translation id="4763480195061959176">video</translation>
 <translation id="5843503607508392247">Diğer...</translation>
-<translation id="2426432199384958866">akışı yapılan filmi gerçek zamanlı hale döndür</translation>
 <translation id="248395913932153421">Gün</translation>
 <translation id="1729654308190250600">Lütfen e-posta adresini boş bırakmayın.</translation>
 <translation id="6015796118275082299">Yıl</translation>
@@ -22,7 +21,6 @@
 <translation id="7057186640035488495">filmin süresi</translation>
 <translation id="8199524924445686405">yyyy</translation>
 <translation id="795667975304826397">Dosya seçilmedi</translation>
-<translation id="1320012872283894746">hızlı şekilde geriye doğru git</translation>
 <translation id="7789962463072032349">duraklat</translation>
 <translation id="6853785296079745596">alt yazıları gizle</translation>
 <translation id="4360991593054037559">Lütfen geçerli bir değer girin. En yakın iki geçerli değer şunlardır: <ph name="VALID_VALUE_LOW"/> ve <ph name="VALID_VALUE_HIGHER"/>.</translation>
@@ -36,7 +34,6 @@
 <translation id="6845533974506654842">bas</translation>
 <translation id="8244226242650769279">resim haritası</translation>
 <translation id="310520048233152454">Lütfen bir URL girin.</translation>
-<translation id="9039488204461337220">hızlı şekilde ileriye doğru git</translation>
 <translation id="4812940957355064477">Lütfen bir sayı girin.</translation>
 <translation id="2548326553472216322">Yeni arama yok</translation>
 <translation id="1938124657309484470">Değer <ph name="MAXIMUM_DATE_OR_TIME"/> veya daha geri olmalıdır.</translation>
@@ -49,7 +46,6 @@
 <translation id="3075154866155599887">Lütfen geçerli bir tarih girin. Alan tam doldurulmamış veya geçersiz bir tarih var.</translation>
 <translation id="3040011195152428237">bağlantı</translation>
 <translation id="1014825444426747588">boş</translation>
-<translation id="3356679314312413792">filmde 30 saniye geriye git</translation>
 <translation id="9050748414552849310">alt yazıları göster</translation>
 <translation id="4522570452068850558">Ayrıntılar</translation>
 <translation id="8451268428117625855">Lütfen bir dosya seçin.</translation>
@@ -101,7 +97,6 @@
 <translation id="7673697353781729403">Saat</translation>
 <translation id="4664250907885839816">Başında &quot;<ph name="ATSIGN"/>&quot; bulunan kısımda &quot;<ph name="INVALIDCHARACTER"/>&quot; simgesi bulunmamalıdır.</translation>
 <translation id="3450233048674729344">Değer <ph name="MAXIMUM"/> veya daha küçük olmalıdır.</translation>
-<translation id="3471999216963526757">30 saniye geri git</translation>
 <translation id="668171684555832681">Diğer...</translation>
 <translation id="6270583010843788609">film zaman çizelgesi küçük resmi</translation>
 <translation id="5641012560118721995">oynatmayı duraklat</translation>
@@ -110,15 +105,12 @@
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> dosya</translation>
 <translation id="6643016212128521049">Temizle</translation>
 <translation id="7888071071722539607">Lütfen e-posta adresine bir &quot;<ph name="ATSIGN"/>&quot; işareti ekleyin. &quot;<ph name="INVALIDADDRESS"/>&quot; adresinde &quot;<ph name="ATSIGN"/>&quot; eksik.</translation>
-<translation id="4851297395436456855">ileri sar</translation>
 <translation id="1088086359088493902">Saniye</translation>
 <translation id="3934680773876859118">PDF dokümanı yüklenemedi</translation>
 <translation id="3632707345189162177">saniye olarak filmin kalan süresi</translation>
 <translation id="6359256949422175976">film süresi göstergesinin küçük resmi</translation>
 <translation id="8597182159515967513">başlık</translation>
 <translation id="6843725295806269523">sesi kapat</translation>
-<translation id="2615751259741237794">gerçek zamanlı moda dön</translation>
 <translation id="2653659639078652383">Gönder</translation>
 <translation id="3732799496749320381">aa</translation>
-<translation id="4484359737905287537">geri sar</translation>
 </translationbundle>

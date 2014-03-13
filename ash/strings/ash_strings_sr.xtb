@@ -15,6 +15,7 @@
 <translation id="370649949373421643">Омогући Wi-Fi</translation>
 <translation id="3626281679859535460">Осветљеност</translation>
 <translation id="3621202678540785336">Улаз</translation>
+<translation id="7348093485538360975">Тастатура на екрану</translation>
 <translation id="595202126637698455">Праћење учинка је омогућено</translation>
 <translation id="8054466585765276473">Израчунавање времена трајања батерије.</translation>
 <translation id="7982789257301363584">Мрежа</translation>
@@ -27,6 +28,7 @@
 <translation id="2297568595583585744">Палета статуса</translation>
 <translation id="1661867754829461514">Недостаје PIN</translation>
 <translation id="4508225577814909926"><ph name="NAME"/>: Повезивање...</translation>
+<translation id="2248649616066688669">Можете да наставите да користите Chromebook док је повезан са спољним екраном чак и ако је поклопац затворен.</translation>
 <translation id="40400351611212369">Грешка при активацији мреже</translation>
 <translation id="4237016987259239829">Грешка мрежне везе</translation>
 <translation id="2946640296642327832">Омогући Bluetooth</translation>
@@ -34,11 +36,14 @@
 <translation id="8206859287963243715">Мобилни уређај</translation>
 <translation id="6596816719288285829">IP адреса</translation>
 <translation id="4508265954913339219">Активација није успела</translation>
+<translation id="8688591111840995413">Погрешна лозинка</translation>
 <translation id="3621712662352432595">Подешавања звука</translation>
 <translation id="1812696562331527143">Метод уноса је промењен у <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>трећа страна<ph name="END_LINK"/>).
 Притисните Shift + Alt да бисте пребацили.</translation>
+<translation id="6043994281159824495">Одјави ме одмах</translation>
 <translation id="2127372758936585790">Пуњач мале снаге</translation>
 <translation id="3846575436967432996">Нису доступне информације о мрежи</translation>
+<translation id="3799026279081545374">Можда имате неисправан пуњач. Ако живите у САД, позовите 866 628 1371 да бисте добили помоћ и нов пуњач. Ако живите у УК, позовите 0800 026 0613. Ако живите у Ирској, позовите 1 800 832 664. Ако живите у Канади, позовите 866 628 1372. Ако живите у Аустралији, позовите 1 800 067 460.</translation>
 <translation id="3026237328237090306">Подеси податке за мобилне уређаје</translation>
 <translation id="5871632337994001636">Управљај уређајима...</translation>
 <translation id="785750925697875037">Прикажи налог за мобилне уређаје</translation>
@@ -51,12 +56,14 @@
 <translation id="2268813581635650749">Одјави све</translation>
 <translation id="735745346212279324">Веза са VPN-ом је прекинута</translation>
 <translation id="7320906967354320621">Неактивно</translation>
-<translation id="15373452373711364">Велики показивач миша</translation>
+<translation id="15373452373711364">Велики курсор</translation>
 <translation id="3294437725009624529">Гост</translation>
 <translation id="8190698733819146287">Прилагоди језике и унос...</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME"/> (<ph name="ANNOTATION"/>)</translation>
 <translation id="2942516765047364088">Положај полице</translation>
 <translation id="8676770494376880701">Повезан је пуњач мале снаге</translation>
+<translation id="5238774010593222950">Не можете да се пријавите на још један налог.</translation>
+<translation id="1723752762323179280">Напуштање сесије</translation>
 <translation id="7170041865419449892">Изван опсега</translation>
 <translation id="4804818685124855865">Прекини везу</translation>
 <translation id="2544853746127077729">Мрежа је одбила сертификат за потврду аутентичности</translation>
@@ -72,7 +79,6 @@
 <translation id="3892641579809465218">Интерни екран</translation>
 <translation id="7823564328645135659">Језик је промењен са језика „<ph name="FROM_LOCALE"/>“ на „<ph name="TO_LOCALE"/>“ након синхронизације подешавања.</translation>
 <translation id="3368922792935385530">Повезан</translation>
-<translation id="8340999562596018839">Говорне повратне информације</translation>
 <translation id="8654520615680304441">Укључи Wi-Fi...</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="5825747213122829519">Метод уноса је промењен у <ph name="INPUT_METHOD_ID"/>.
@@ -98,9 +104,7 @@
 <translation id="3963445509666917109">Звучник (интерни)</translation>
 <translation id="2825619548187458965">Полица</translation>
 <translation id="2614835198358683673">Chromebook се можда неће пунити док је укључен. Размислите о коришћењу оригиналног пуњача.</translation>
-<translation id="1895658205118569222">Затварање</translation>
 <translation id="4430019312045809116">Јачина звука</translation>
-<translation id="8681498213689260554">Поново покрените и обавите Powerwash да бисте ажурирали</translation>
 <translation id="4442424173763614572">DNS претрага није успела</translation>
 <translation id="7874779702599364982">Претраживање мобилних мрежа...</translation>
 <translation id="583281660410589416">Непознато</translation>
@@ -110,7 +114,7 @@
 <translation id="1621499497873603021">Време које је преостало док се батерија не испразни, <ph name="TIME_LEFT"/></translation>
 <translation id="5980301590375426705">Изађи из сесије госта</translation>
 <translation id="8308637677604853869">Претходни мени</translation>
-<translation id="4666297444214622512">Не можете да се пријавите на други налог.</translation>
+<translation id="4321179778687042513">ctrl</translation>
 <translation id="3625258641415618104">Снимци екрана су онемогућени</translation>
 <translation id="1346748346194534595">Удесно</translation>
 <translation id="1773212559869067373">Сертификат за потврду аутентичности је одбијен локално</translation>
@@ -119,10 +123,9 @@
 <translation id="8428213095426709021">Подешавања</translation>
 <translation id="2372145515558759244">Синхронизовање апликација...</translation>
 <translation id="7256405249507348194">Непозната грешка: <ph name="DESC"/></translation>
+<translation id="2894654529758326923">Информације</translation>
 <translation id="7925247922861151263">Провера потврде идентитета, овлашћења и приступа није успела</translation>
 <translation id="8456362689280298700">Још <ph name="HOUR"/>:<ph name="MINUTE"/> док се не напуни</translation>
-<translation id="5787281376604286451">Говорне повратне информације су омогућене.
-Притисните Ctrl+Alt+Z да бисте их онемогућили.</translation>
 <translation id="4479639480957787382">Етернет</translation>
 <translation id="6312403991423642364">Непозната грешка на мрежи</translation>
 <translation id="1467432559032391204">Улево</translation>
@@ -133,6 +136,7 @@
 <translation id="1923539912171292317">Аутоматски кликови</translation>
 <translation id="1398853756734560583">Увећај</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: Повезивање...</translation>
+<translation id="6062360702481658777">Аутоматски ћете бити одјављени за <ph name="LOGOUT_TIME_LEFT"/>.</translation>
 <translation id="252373100621549798">Непознати приказ</translation>
 <translation id="1882897271359938046">Пресликавање у <ph name="DISPLAY_NAME"/></translation>
 <translation id="2727977024730340865">Уређај је укључен у пуњач мале снаге. Пуњење батерије можда неће бити поуздано.</translation>
@@ -141,6 +145,7 @@
 <translation id="1512064327686280138">Активација није успела</translation>
 <translation id="5097002363526479830">Повезивање са мрежом „<ph name="NAME"/>“ није успело: <ph name="DETAILS"/></translation>
 <translation id="1850504506766569011">Wi-Fi је искључен.</translation>
+<translation id="2872961005593481000">Искључи</translation>
 <translation id="2966449113954629791">Можда сте искористили дозвољену количину података за мобилне уређаје. Посетите портал за активацију за <ph name="NAME"/> да бисте купили још података.</translation>
 <translation id="8132793192354020517">Успостављена је веза са <ph name="NAME"/></translation>
 <translation id="7052914147756339792">Подеси позадину...</translation>
@@ -153,8 +158,10 @@
 <translation id="7005812687360380971">Није успело</translation>
 <translation id="882279321799040148">Кликните за приказ</translation>
 <translation id="1753067873202720523">Chromebook се можда неће пунити док је укључен.</translation>
+<translation id="7561014039265304140"><ph name="DISPLAY_NAME"/> не подржава <ph name="SPECIFIED_RESOLUTION"/>. Резолуција је промењена на <ph name="FALLBACK_RESOLUTION"/></translation>
 <translation id="5045550434625856497">Нетачна лозинка</translation>
 <translation id="1602076796624386989">Омогући податке за мобилне уређаје</translation>
+<translation id="68610848741840742">ChromeVox (говорне повратне информације)</translation>
 <translation id="6981982820502123353">Приступачност</translation>
 <translation id="3157931365184549694">Поново отвори</translation>
 <translation id="4274292172790327596">Непозната грешка</translation>
@@ -167,10 +174,12 @@
 <translation id="8401662262483418323">Повезивање са „<ph name="NAME"/>“ није успело: <ph name="DETAILS"/>
 Порука сервера: <ph name="SERVER_MSG"/></translation>
 <translation id="2475982808118771221">Дошло је до грешке</translation>
+<translation id="3783640748446814672">alt</translation>
 <translation id="7229570126336867161">Потребан је EVDO</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> је јавна сесија којом управља <ph name="DOMAIN"/></translation>
 <translation id="9044646465488564462">Повезивање са мрежом није успело: <ph name="DETAILS"/></translation>
 <translation id="7029814467594812963">Изађи из сесије</translation>
+<translation id="479989351350248267">претражите</translation>
 <translation id="8454013096329229812">Wi-Fi је укључен.</translation>
 <translation id="4872237917498892622">Alt + тастер за претрагу или Shift</translation>
 <translation id="9201131092683066720">Батерија је <ph name="PERCENTAGE"/>% пуна.</translation>
@@ -193,14 +202,13 @@
 <translation id="5947494881799873997">Врати</translation>
 <translation id="7593891976182323525">Тастер за претрагу или Shift</translation>
 <translation id="7649070708921625228">Помоћ</translation>
-<translation id="747833637904845037">Chromebook ће остати укључен док је повезан са спољним екраном, чак и када је поклопац затворен.</translation>
 <translation id="3050422059534974565">CAPS LOCK је укључен.
 Притисните тастер за претрагу или Shift да бисте га отказали.</translation>
 <translation id="397105322502079400">Израчунавање...</translation>
 <translation id="158849752021629804">Потребна је матична мрежа</translation>
 <translation id="6857811139397017780">Активирај <ph name="NETWORKSERVICE"/></translation>
 <translation id="5864471791310927901">Проналажење DHCP-а није успело</translation>
-<translation id="6692173217867674490">Неисправна приступна фраза</translation>
+<translation id="2819276065543622893">Бићете одмах одјављени.</translation>
 <translation id="6165508094623778733">Сазнајте више</translation>
 <translation id="9046895021617826162">Повезивање није успело</translation>
 <translation id="7168224885072002358">Враћање на стару резолуцију за <ph name="TIMEOUT_SECONDS"/></translation>
@@ -209,6 +217,7 @@
 <translation id="6636709850131805001">Непознато стање</translation>
 <translation id="3573179567135747900">Врати на „<ph name="FROM_LOCALE"/>“ (потребно је поновно покретање)</translation>
 <translation id="8103386449138765447">SMS поруке: <ph name="MESSAGE_COUNT"/></translation>
+<translation id="7097613348211027502">ChromeVox (говорне повратне информације) је омогућен. Притисните Ctrl+Alt+Z да бисте га онемогућили.</translation>
 <translation id="5045002648206642691">Подешавања Google диска...</translation>
 <translation id="7209101170223508707">CAPS LOCK је укључен.
 Притисните Alt + тастер за претрагу или Shift да бисте га отказали.</translation>
@@ -224,6 +233,7 @@
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">Честитамо! Услуга преноса података „<ph name="NAME"/>“ је активирана и спремна за коришћење.</translation>
 <translation id="412065659894267608"><ph name="HOUR"/> с <ph name="MINUTE"/> м до краја пуњења</translation>
+<translation id="3077734595579995578">shift</translation>
 <translation id="7297443947353982503">Корисничко име/лозинка је нетачна или EAP потврда аутентичности није успела</translation>
 <translation id="6359806961507272919">SMS са броја <ph name="PHONE_NUMBER"/></translation>
 <translation id="1244147615850840081">Мобилни оператер</translation>

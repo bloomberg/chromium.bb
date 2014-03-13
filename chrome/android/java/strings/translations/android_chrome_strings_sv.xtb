@@ -14,7 +14,9 @@
 <translation id="3358663646935160692">Kontot hanteras av <ph name="DOMAIN_NAME"/>.
 
 Du loggar in med ett hanterat konto, vilket innebär att administratören kontrollerar din Chrome-profil. Din Chrome-data kommer att knytas permanent till det här kontot. Om du kopplar ifrån det här kontot raderas din lokala Chrome-data.</translation>
+<translation id="1966710179511230534">Uppdatera dina inloggningsuppgifter.</translation>
 <translation id="1623104350909869708">Hindra sidan från att skapa fler dialogrutor</translation>
+<translation id="8218346974737627104">Bekräfta inloggning</translation>
 <translation id="624558823898732418">Översättningsspråk: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">Välj certifikat för autentisering</translation>
 <translation id="3896036286668839683">Certifikatvisare</translation>
@@ -29,7 +31,6 @@ Du loggar in med ett hanterat konto, vilket innebär att administratören kontro
 <translation id="5684874026226664614">Det gick inte att översätta sidan.</translation>
 <translation id="4619298195800598081">Öppna original i ny flik</translation>
 <translation id="907015151729920253">Smartkort</translation>
-<translation id="3136378934686431938">Uppdatera dina inloggningsuppgifter.</translation>
 <translation id="3063601790762993062">Spara video</translation>
 <translation id="6042308850641462728">Mer</translation>
 <translation id="3992315671621218278">Spara länk</translation>
@@ -59,5 +60,4 @@ Du loggar in med ett hanterat konto, vilket innebär att administratören kontro
 <translation id="6277522088822131679">Det gick inte att skriva ut sidan. Försök igen.</translation>
 <translation id="1742134235943978220">Översatt till <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="6965382102122355670">OK</translation>
-<translation id="7495038789730067783">Bekräfta inloggning</translation>
 </translationbundle>

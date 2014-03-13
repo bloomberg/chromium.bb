@@ -14,7 +14,9 @@
 <translation id="3358663646935160692">Šią paskyrą valdo <ph name="DOMAIN_NAME"/>.
 
 Prisijungiate naudodami valdomą paskyrą ir leidžiate administratoriui valdyti jūsų „Chrome“ profilį. „Chrome“ duomenys bus visam laikui susieti su šia paskyra. Atsijungus nuo šios paskyros bus ištrinti vietiniai „Chrome“ duomenys.</translation>
+<translation id="1966710179511230534">Atnaujinkite išsamią prisijungimo informaciją.</translation>
 <translation id="1623104350909869708">Neleisti šiam puslapiui kurti papildomų dialogo langų</translation>
+<translation id="8218346974737627104">Patvirtinti prisijungimą</translation>
 <translation id="624558823898732418">Vertimo kalba: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">Pasirinkite autentifikavimo sertifikatą</translation>
 <translation id="3896036286668839683">Sertifikato peržiūros priemonė</translation>
@@ -29,7 +31,6 @@ Prisijungiate naudodami valdomą paskyrą ir leidžiate administratoriui valdyti
 <translation id="5684874026226664614">Oi, nepavyko išversti šio puslapio.</translation>
 <translation id="4619298195800598081">At. orig. vaiz. nauj. sk. lap.</translation>
 <translation id="907015151729920253">Išmanioji kortelė</translation>
-<translation id="3136378934686431938">Atnaujinkite išsamią prisijungimo informaciją.</translation>
 <translation id="3063601790762993062">Išsaugoti vaizdo įrašą</translation>
 <translation id="6042308850641462728">Daugiau</translation>
 <translation id="3992315671621218278">Išsaugoti nuorodą</translation>
@@ -59,5 +60,4 @@ Prisijungiate naudodami valdomą paskyrą ir leidžiate administratoriui valdyti
 <translation id="6277522088822131679">Spausdinant puslapį kilo problema. Bandykite dar kartą.</translation>
 <translation id="1742134235943978220">Išversta į <ph name="TARGET_LANGUAGE"/> k.</translation>
 <translation id="6965382102122355670">Gerai</translation>
-<translation id="7495038789730067783">Patvirtinti prisijungimą</translation>
 </translationbundle>

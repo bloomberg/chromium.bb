@@ -14,7 +14,9 @@
 <translation id="3358663646935160692">此帐户由 <ph name="DOMAIN_NAME"/> 管理。
 
 您目前登录的帐户是一个托管帐户，该帐户的管理员将能够控制您的 Chrome 个人资料。您的 Chrome 数据将永远与此帐户相关联。断开与此帐户的关联将删除本地 Chrome 数据。</translation>
+<translation id="1966710179511230534">请更新您的登录详细信息。</translation>
 <translation id="1623104350909869708">阻止此页创建其他对话框</translation>
+<translation id="8218346974737627104">确认登录</translation>
 <translation id="624558823898732418">翻译语言：<ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">选择用于验证身份的证书</translation>
 <translation id="3896036286668839683">证书查看器</translation>
@@ -29,7 +31,6 @@
 <translation id="5684874026226664614">糟糕，此网页内容无法翻译。</translation>
 <translation id="4619298195800598081">在新标签页中打开原始图片</translation>
 <translation id="907015151729920253">智能卡</translation>
-<translation id="3136378934686431938">请更新您的登录详情。</translation>
 <translation id="3063601790762993062">保存视频</translation>
 <translation id="6042308850641462728">更多</translation>
 <translation id="3992315671621218278">保存链接</translation>
@@ -59,5 +60,4 @@
 <translation id="6277522088822131679">打印该页面时出现问题，请重试。</translation>
 <translation id="1742134235943978220">已翻译成<ph name="TARGET_LANGUAGE"/>。</translation>
 <translation id="6965382102122355670">确定</translation>
-<translation id="7495038789730067783">确认登录</translation>
 </translationbundle>

@@ -24,6 +24,7 @@
 <translation id="7222373446505536781">F11</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY"/> B</translation>
 <translation id="3660179305079774227">ಮೇಲಿನ ಬಾಣದ ಗುರುತು</translation>
+<translation id="7062130397825382308"><ph name="NUMBER_ONE"/> ಸೆಕೆಂಡ್ ಉಳಿದಿದೆ</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY"/> MB/s</translation>
 <translation id="5608669887400696928"><ph name="NUMBER_DEFAULT"/> ಗಂಟೆಗಳು</translation>
 <translation id="3990502903496589789">ಬಲ ತುದಿ</translation>
@@ -45,6 +46,7 @@
 <translation id="7770995925463083016"><ph name="NUMBER_TWO"/> mins ago</translation>
 <translation id="3234408098842461169">ಕೆಳಗಿನ ಬಾಣದ ಗುರುತು</translation>
 <translation id="3087734570205094154">ಕೆಳಗೆ</translation>
+<translation id="8828991073132329143"><ph name="NUMBER_MANY"/> ಸೆಕೆಂಡ್‍ಗಳು ಉಳಿದಿವೆ</translation>
 <translation id="5935630983280450497"><ph name="NUMBER_ONE"/> ನಿಮಿಷಗಳು ಉಳಿದಿದೆ</translation>
 <translation id="1860796786778352021">ಅಧಿಸೂಚನೆ ಮುಚ್ಚು</translation>
 <translation id="6364916375976753737">ಎಡಕ್ಕೆ ಸ್ಕ್ರೋಲ್ ಮಾಡಿ</translation>
@@ -68,6 +70,7 @@
 <translation id="7781829728241885113">ನಿನ್ನೆ</translation>
 <translation id="3424538384153559412"><ph name="NUMBER_TWO"/> ನಿಮಿಷಗಳು</translation>
 <translation id="50960180632766478"><ph name="NUMBER_FEW"/> ನಿಮಿಷಗಳು ಉಳಿದಿದೆ</translation>
+<translation id="5517291721709019259"><ph name="NUMBER_FEW"/> ಸೆಕೆಂಡ್‍ಗಳು ಉಳಿದಿವೆ</translation>
 <translation id="6659594942844771486">ಟ್ಯಾಬ್</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY"/> MB</translation>
 <translation id="4988273303304146523"><ph name="NUMBER_DEFAULT"/> days ago</translation>
@@ -137,12 +140,14 @@
 <translation id="1285266685456062655"><ph name="NUMBER_FEW"/> hours ago</translation>
 <translation id="6918245111648057970">ಪ್ರತಿ ಬಳಕೆದಾರರಿಗಾಗಿ ಈ ಕೆಳಗಿನವುಗಳಿಂದ ಅಧಿಸೂಚನೆಗಳನ್ನು ಅನುಮತಿಸಿ:</translation>
 <translation id="5489830104927132166"><ph name="NUMBER_ONE"/> ಸೆಕೆಂಡ್</translation>
+<translation id="1270251962578273213"><ph name="NUMBER_TWO"/> ಸೆಕೆಂಡ್‍ಗಳು ಉಳಿದಿವೆ</translation>
 <translation id="3994835489895548312"><ph name="NUMBER_MANY"/> ನಿಮಿಷಗಳು ಉಳಿದಿವೆ</translation>
 <translation id="6358975074282722691"><ph name="NUMBER_TWO"/> secs ago</translation>
 <translation id="520299402983819650"><ph name="QUANTITY"/> PB</translation>
 <translation id="2983818520079887040">ಸೆಟ್ಟಿಂಗ್‌ಗಳು...</translation>
 <translation id="6845383723252244143">ಫೋಲ್ಡರ್ ಆಯ್ಕೆಮಾಡಿ</translation>
 <translation id="7600770490873519066"><ph name="NUMBER_FEW"/> ಸೆಕೆಂಡುಗಳು</translation>
+<translation id="5368780922436099921"><ph name="NUMBER_ZERO"/> ಸೆಕೆಂಡ್‍ಗಳು ಉಳಿದಿವೆ</translation>
 <translation id="1095623615273566396"><ph name="NUMBER_FEW"/> ಸೆಕೆಂಡುಗಳು</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5263972071113911534"><ph name="NUMBER_MANY"/> days ago</translation>
@@ -165,6 +170,7 @@
 <translation id="6142413573757616983"><ph name="QUANTITY"/> B/s</translation>
 <translation id="7649070708921625228">ಸಹಾಯ</translation>
 <translation id="6699343763173986273">ಮೀಡಿಯಾದ ಮುಂದಿನ ಟ್ರ್ಯಾಕ್</translation>
+<translation id="5445120697129764393"><ph name="NUMBER_DEFAULT"/> ಸೆಕೆಂಡ್‍ಗಳು ಉಳಿದಿವೆ</translation>
 <translation id="8226233771743600312">ಒಂದು ದಿನದವರೆಗೆ ಅಡಚಣೆ ಮಾಡಬೇಡಿ</translation>
 <translation id="7457942297256758195">ಎಲ್ಲವನ್ನೂ ತೆರವುಗೊಳಿಸಿ</translation>
 <translation id="822618367988303761"><ph name="NUMBER_TWO"/> days ago</translation>

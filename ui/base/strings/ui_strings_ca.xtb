@@ -24,6 +24,7 @@
 <translation id="7222373446505536781">F11</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY"/> B</translation>
 <translation id="3660179305079774227">Fletxa amunt</translation>
+<translation id="7062130397825382308">Queda <ph name="NUMBER_ONE"/> segon.</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY"/> MB/s</translation>
 <translation id="5608669887400696928"><ph name="NUMBER_DEFAULT"/> hores</translation>
 <translation id="3990502903496589789">Extrem dret</translation>
@@ -45,6 +46,7 @@
 <translation id="7770995925463083016">Fa <ph name="NUMBER_TWO"/> minuts</translation>
 <translation id="3234408098842461169">Fletxa avall</translation>
 <translation id="3087734570205094154">Part inferior</translation>
+<translation id="8828991073132329143">Queden <ph name="NUMBER_MANY"/> segons</translation>
 <translation id="5935630983280450497"><ph name="NUMBER_ONE"/> minut restant</translation>
 <translation id="1860796786778352021">Tanca la notificació</translation>
 <translation id="6364916375976753737">Desplaçament a l'esquerra</translation>
@@ -68,6 +70,7 @@
 <translation id="7781829728241885113">Ahir</translation>
 <translation id="3424538384153559412"><ph name="NUMBER_TWO"/> minuts</translation>
 <translation id="50960180632766478"><ph name="NUMBER_FEW"/> minuts restants</translation>
+<translation id="5517291721709019259">Queden <ph name="NUMBER_FEW"/> segons</translation>
 <translation id="6659594942844771486">Pestanya</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY"/> MB</translation>
 <translation id="4988273303304146523">Fa <ph name="NUMBER_DEFAULT"/> dies</translation>
@@ -137,12 +140,14 @@
 <translation id="1285266685456062655">Fa <ph name="NUMBER_FEW"/> hores</translation>
 <translation id="6918245111648057970">Permet les notificacions de les opcions següents per a cada usuari:</translation>
 <translation id="5489830104927132166"><ph name="NUMBER_ONE"/> segon</translation>
+<translation id="1270251962578273213">Queden <ph name="NUMBER_TWO"/> segons</translation>
 <translation id="3994835489895548312">Queden <ph name="NUMBER_MANY"/> minuts</translation>
 <translation id="6358975074282722691">Fa <ph name="NUMBER_TWO"/> segons</translation>
 <translation id="520299402983819650"><ph name="QUANTITY"/> PB</translation>
 <translation id="2983818520079887040">Configuració...</translation>
 <translation id="6845383723252244143">Selecció d'una carpeta</translation>
 <translation id="7600770490873519066"><ph name="NUMBER_FEW"/> segons</translation>
+<translation id="5368780922436099921">Queden <ph name="NUMBER_ZERO"/> segons</translation>
 <translation id="1095623615273566396"><ph name="NUMBER_FEW"/> segons</translation>
 <translation id="5583640892426849032">Retrocés</translation>
 <translation id="5263972071113911534">Fa <ph name="NUMBER_MANY"/> dies</translation>
@@ -165,6 +170,7 @@
 <translation id="6142413573757616983"><ph name="QUANTITY"/> B/s</translation>
 <translation id="7649070708921625228">Ajuda</translation>
 <translation id="6699343763173986273">Fitxer multimèdia: pista següent</translation>
+<translation id="5445120697129764393">Queden <ph name="NUMBER_DEFAULT"/> segons.</translation>
 <translation id="8226233771743600312">No molesteu durant un dia</translation>
 <translation id="7457942297256758195">Esborra-ho tot</translation>
 <translation id="822618367988303761">Fa <ph name="NUMBER_TWO"/> dies</translation>

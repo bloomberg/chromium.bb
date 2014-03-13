@@ -14,7 +14,9 @@
 <translation id="3358663646935160692">Esta cuenta está administrada por <ph name="DOMAIN_NAME"/>.
 
 Vas a acceder con una cuenta administrada, lo que significa que proporcionarás control sobre tu perfil de Chrome al administrador. Los datos de Chrome que tengas se vincularán de forma permanente a esta cuenta. Si la desconectas, se eliminarán los datos locales de Chrome.</translation>
+<translation id="1966710179511230534">Actualiza los datos de acceso.</translation>
 <translation id="1623104350909869708">Evitar que esta página cree cuadros de diálogo adicionales</translation>
+<translation id="8218346974737627104">Confirmar acceso</translation>
 <translation id="624558823898732418">Idioma de traducción: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">Seleccionar certificado para autenticación</translation>
 <translation id="3896036286668839683">Visualizador de certificados</translation>
@@ -29,7 +31,6 @@ Vas a acceder con una cuenta administrada, lo que significa que proporcionarás 
 <translation id="5684874026226664614">No se puede traducir esta página.</translation>
 <translation id="4619298195800598081">Abrir original en pest. nueva</translation>
 <translation id="907015151729920253">Tarjeta inteligente</translation>
-<translation id="3136378934686431938">Actualiza tus detalles de acceso.</translation>
 <translation id="3063601790762993062">Guardar video</translation>
 <translation id="6042308850641462728">Más</translation>
 <translation id="3992315671621218278">Guardar vínculo</translation>
@@ -59,5 +60,4 @@ Vas a acceder con una cuenta administrada, lo que significa que proporcionarás 
 <translation id="6277522088822131679">Se produjo un error al imprimir la página. Vuelve a intentarlo.</translation>
 <translation id="1742134235943978220">Traducido al <ph name="TARGET_LANGUAGE"/></translation>
 <translation id="6965382102122355670">Aceptar</translation>
-<translation id="7495038789730067783">Confirmar acceso</translation>
 </translationbundle>

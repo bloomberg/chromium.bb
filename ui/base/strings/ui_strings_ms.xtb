@@ -24,6 +24,7 @@
 <translation id="7222373446505536781">F11</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY"/> B</translation>
 <translation id="3660179305079774227">Anak Panah Atas</translation>
+<translation id="7062130397825382308"><ph name="NUMBER_ONE"/> saat lagi</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY"/> MB/s</translation>
 <translation id="5608669887400696928"><ph name="NUMBER_DEFAULT"/> jam</translation>
 <translation id="3990502903496589789">Tepi Kanan</translation>
@@ -45,6 +46,7 @@
 <translation id="7770995925463083016"><ph name="NUMBER_TWO"/> minit lalu</translation>
 <translation id="3234408098842461169">Anak Panah Bawah</translation>
 <translation id="3087734570205094154">Bawah</translation>
+<translation id="8828991073132329143"><ph name="NUMBER_MANY"/> saat lagi</translation>
 <translation id="5935630983280450497"><ph name="NUMBER_ONE"/> minit lagi</translation>
 <translation id="1860796786778352021">Tutup Pemberitahuan</translation>
 <translation id="6364916375976753737">Tatal Ke Kiri</translation>
@@ -68,6 +70,7 @@
 <translation id="7781829728241885113">Semalam</translation>
 <translation id="3424538384153559412"><ph name="NUMBER_TWO"/> minit</translation>
 <translation id="50960180632766478"><ph name="NUMBER_FEW"/> minit lagi</translation>
+<translation id="5517291721709019259"><ph name="NUMBER_FEW"/> saat lagi</translation>
 <translation id="6659594942844771486">Tab</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY"/> MB</translation>
 <translation id="4988273303304146523"><ph name="NUMBER_DEFAULT"/> hari yang lalu</translation>
@@ -137,12 +140,14 @@
 <translation id="1285266685456062655"><ph name="NUMBER_FEW"/> jam yang lalu</translation>
 <translation id="6918245111648057970">Benarkan pemberitahuan daripada yang berikut untuk setiap pengguna:</translation>
 <translation id="5489830104927132166"><ph name="NUMBER_ONE"/> saat</translation>
+<translation id="1270251962578273213"><ph name="NUMBER_TWO"/> saat lagi</translation>
 <translation id="3994835489895548312">Tinggal <ph name="NUMBER_MANY"/> minit</translation>
 <translation id="6358975074282722691"><ph name="NUMBER_TWO"/> saat yang lalu</translation>
 <translation id="520299402983819650"><ph name="QUANTITY"/> PB</translation>
 <translation id="2983818520079887040">Tetapan...</translation>
 <translation id="6845383723252244143">Pilih Folder</translation>
 <translation id="7600770490873519066"><ph name="NUMBER_FEW"/> saat</translation>
+<translation id="5368780922436099921"><ph name="NUMBER_ZERO"/> saat lagi</translation>
 <translation id="1095623615273566396"><ph name="NUMBER_FEW"/> saat</translation>
 <translation id="5583640892426849032">Undur ruang</translation>
 <translation id="5263972071113911534"><ph name="NUMBER_MANY"/> hari yang lalu</translation>
@@ -165,6 +170,7 @@
 <translation id="6142413573757616983"><ph name="QUANTITY"/> B/s</translation>
 <translation id="7649070708921625228">Bantuan</translation>
 <translation id="6699343763173986273">Lagu Media Seterusnya</translation>
+<translation id="5445120697129764393"><ph name="NUMBER_DEFAULT"/> saat lagi</translation>
 <translation id="8226233771743600312">Jangan ganggu selama sehari</translation>
 <translation id="7457942297256758195">Kosongkan Semua</translation>
 <translation id="822618367988303761"><ph name="NUMBER_TWO"/> hari yang lalu</translation>

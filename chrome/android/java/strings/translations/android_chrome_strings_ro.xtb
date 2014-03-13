@@ -14,7 +14,9 @@
 <translation id="3358663646935160692">Acest cont este gestionat de <ph name="DOMAIN_NAME"/>.
 
 Urmează să vă conectați cu un cont gestionat și să acordați administratorului control asupra profilului Chrome. Datele din Chrome vor fi asociate definitiv acestui cont. Dacă vă deconectați de la acest cont, datele locale Chrome se vor șterge.</translation>
+<translation id="1966710179511230534">Actualizați detaliile de conectare.</translation>
 <translation id="1623104350909869708">Restricționați capacitatea acestei pagini de a crea casete de dialog suplimentare</translation>
+<translation id="8218346974737627104">Confirmați conectarea</translation>
 <translation id="624558823898732418">Limba traducerii: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">Alegeți certificatul pentru autentificare</translation>
 <translation id="3896036286668839683">Vizualizator de certificate</translation>
@@ -29,7 +31,6 @@ Urmează să vă conectați cu un cont gestionat și să acordați administrator
 <translation id="5684874026226664614">Hopa. Această pagină nu a putut fi tradusă.</translation>
 <translation id="4619298195800598081">Imagine originală în filă nouă</translation>
 <translation id="907015151729920253">Card inteligent</translation>
-<translation id="3136378934686431938">Actualizați detaliile de conectare.</translation>
 <translation id="3063601790762993062">Salvați videoclipul</translation>
 <translation id="6042308850641462728">Mai mult</translation>
 <translation id="3992315671621218278">Salvați linkul</translation>
@@ -59,5 +60,4 @@ Urmează să vă conectați cu un cont gestionat și să acordați administrator
 <translation id="6277522088822131679">A apărut o problemă la printarea paginii. Încercați din nou.</translation>
 <translation id="1742134235943978220">Tradusă în <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="6965382102122355670">OK</translation>
-<translation id="7495038789730067783">Confirmați conectarea</translation>
 </translationbundle>

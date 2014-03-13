@@ -3,7 +3,6 @@
 <translationbundle lang="nl">
 <translation id="4763480195061959176">video</translation>
 <translation id="5843503607508392247">Anders...</translation>
-<translation id="2426432199384958866">terug naar streamen van film in realtime</translation>
 <translation id="248395913932153421">Dag</translation>
 <translation id="1729654308190250600">Geef een e-mailadres op.</translation>
 <translation id="6015796118275082299">Jaar</translation>
@@ -22,7 +21,6 @@
 <translation id="7057186640035488495">tijd van de film</translation>
 <translation id="8199524924445686405">jjjj</translation>
 <translation id="795667975304826397">Geen bestand gekozen</translation>
-<translation id="1320012872283894746">snel achteruit zoeken</translation>
 <translation id="7789962463072032349">onderbreken</translation>
 <translation id="6853785296079745596">ondertiteling verbergen</translation>
 <translation id="4360991593054037559">Geef een geldige waarde op. De twee dichtstbijzijnde geldige waarden zijn <ph name="VALID_VALUE_LOW"/> en <ph name="VALID_VALUE_HIGHER"/>.</translation>
@@ -36,7 +34,6 @@
 <translation id="6845533974506654842">Indrukken</translation>
 <translation id="8244226242650769279">image map</translation>
 <translation id="310520048233152454">Geef een URL op.</translation>
-<translation id="9039488204461337220">snel vooruit zoeken</translation>
 <translation id="4812940957355064477">Voer een getal in.</translation>
 <translation id="2548326553472216322">Geen recente zoekopdrachten</translation>
 <translation id="1938124657309484470">Waarde moet <ph name="MAXIMUM_DATE_OR_TIME"/> of eerder zijn.</translation>
@@ -49,7 +46,6 @@
 <translation id="3075154866155599887">Voer een geldige waarde in. Het veld is onvolledig of bevat een ongeldige datum.</translation>
 <translation id="3040011195152428237">link</translation>
 <translation id="1014825444426747588">leeg</translation>
-<translation id="3356679314312413792">30 seconden terugspoelen in de film</translation>
 <translation id="9050748414552849310">ondertiteling weergeven</translation>
 <translation id="4522570452068850558">Details</translation>
 <translation id="8451268428117625855">Selecteer een bestand.</translation>
@@ -101,7 +97,6 @@
 <translation id="7673697353781729403">Uur</translation>
 <translation id="4664250907885839816">Het adresgedeelte na '<ph name="ATSIGN"/>' mag niet het teken '<ph name="INVALIDCHARACTER"/>' bevatten.</translation>
 <translation id="3450233048674729344">Waarde moet kleiner dan of gelijk zijn aan <ph name="MAXIMUM"/>.</translation>
-<translation id="3471999216963526757">30 seconden terug</translation>
 <translation id="668171684555832681">Anders...</translation>
 <translation id="6270583010843788609">miniatuur van tijdlijn van film</translation>
 <translation id="5641012560118721995">afspelen onderbreken</translation>
@@ -110,15 +105,12 @@
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> bestanden</translation>
 <translation id="6643016212128521049">Wissen</translation>
 <translation id="7888071071722539607">Gebruik een '<ph name="ATSIGN"/>' in thet e-mailadres. In '<ph name="INVALIDADDRESS"/>' ontbreekt een '<ph name="ATSIGN"/>'.</translation>
-<translation id="4851297395436456855">snel vooruitspoelen</translation>
 <translation id="1088086359088493902">Seconden</translation>
 <translation id="3934680773876859118">PDF-document kan niet worden geladen</translation>
 <translation id="3632707345189162177">aantal seconden van resterende film</translation>
 <translation id="6359256949422175976">miniatuur van schuifbalk met tijd van de film</translation>
 <translation id="8597182159515967513">kop</translation>
 <translation id="6843725295806269523">dempen</translation>
-<translation id="2615751259741237794">terug naar realtime</translation>
 <translation id="2653659639078652383">Verzenden</translation>
 <translation id="3732799496749320381">mm</translation>
-<translation id="4484359737905287537">snel terugspoelen</translation>
 </translationbundle>

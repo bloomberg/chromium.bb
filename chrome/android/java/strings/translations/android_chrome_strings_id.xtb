@@ -14,7 +14,9 @@
 <translation id="3358663646935160692">Akun ini dikelola oleh <ph name="DOMAIN_NAME"/>.
 
 Anda masuk dengan akun yang dikelola dan memberikan administratornya kontrol atas profil Chrome Anda. Data Chrome Anda akan terikat dengan akun ini secara permanen. Memutuskan tautan dengan akun ini akan menghapus data Chrome lokal.</translation>
+<translation id="1966710179511230534">Perbarui detail ID masuk Anda.</translation>
 <translation id="1623104350909869708">Cegah dialog lain dari laman ini.</translation>
+<translation id="8218346974737627104">Konfirmasi proses masuk</translation>
 <translation id="624558823898732418">Bahasa Terjemahan: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">Pilih sertifikat untuk autentikasi</translation>
 <translation id="3896036286668839683">Penampil Sertifikat</translation>
@@ -29,7 +31,6 @@ Anda masuk dengan akun yang dikelola dan memberikan administratornya kontrol ata
 <translation id="5684874026226664614">Ups. Laman ini tidak dapat diterjemahkan.</translation>
 <translation id="4619298195800598081">Buka gambar asli di tab baru</translation>
 <translation id="907015151729920253">Kartu cerdas</translation>
-<translation id="3136378934686431938">Perbarui detail proses masuk Anda.</translation>
 <translation id="3063601790762993062">Simpan video</translation>
 <translation id="6042308850641462728">Lainnya</translation>
 <translation id="3992315671621218278">Simpan tautan</translation>
@@ -59,5 +60,4 @@ Anda masuk dengan akun yang dikelola dan memberikan administratornya kontrol ata
 <translation id="6277522088822131679">Terjadi masalah saat mencetak laman. Coba lagi.</translation>
 <translation id="1742134235943978220">Diterjemahkan ke <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="6965382102122355670">Oke</translation>
-<translation id="7495038789730067783">Konfirmasi proses masuk</translation>
 </translationbundle>

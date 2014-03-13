@@ -24,6 +24,7 @@
 <translation id="7222373446505536781">F11</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY"/> B</translation>
 <translation id="3660179305079774227">Flecha arriba</translation>
+<translation id="7062130397825382308">Falta <ph name="NUMBER_ONE"/> segundo.</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY"/> de MB</translation>
 <translation id="5608669887400696928"><ph name="NUMBER_DEFAULT"/> horas</translation>
 <translation id="3990502903496589789">Borde derecho</translation>
@@ -45,6 +46,7 @@
 <translation id="7770995925463083016">Hace <ph name="NUMBER_TWO"/> minutos</translation>
 <translation id="3234408098842461169">Flecha abajo</translation>
 <translation id="3087734570205094154">Inferior</translation>
+<translation id="8828991073132329143">Faltan <ph name="NUMBER_MANY"/> segundos.</translation>
 <translation id="5935630983280450497">Falta <ph name="NUMBER_ONE"/> minuto</translation>
 <translation id="1860796786778352021">Cerrar notificación</translation>
 <translation id="6364916375976753737">Desplazar hacia la izquierda</translation>
@@ -68,6 +70,7 @@
 <translation id="7781829728241885113">Ayer</translation>
 <translation id="3424538384153559412"><ph name="NUMBER_TWO"/> minutes</translation>
 <translation id="50960180632766478">Faltan <ph name="NUMBER_FEW"/> minutos</translation>
+<translation id="5517291721709019259">Faltan <ph name="NUMBER_FEW"/> segundos.</translation>
 <translation id="6659594942844771486">Pestaña</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY"/> MB</translation>
 <translation id="4988273303304146523">Hace <ph name="NUMBER_DEFAULT"/> días</translation>
@@ -137,12 +140,14 @@
 <translation id="1285266685456062655">Hace <ph name="NUMBER_FEW"/> horas</translation>
 <translation id="6918245111648057970">Permitir notificaciones para cada usuario de lo siguiente:</translation>
 <translation id="5489830104927132166"><ph name="NUMBER_ONE"/> segundo</translation>
+<translation id="1270251962578273213">Faltan <ph name="NUMBER_TWO"/> segundos.</translation>
 <translation id="3994835489895548312">Faltan <ph name="NUMBER_MANY"/> minutos.</translation>
 <translation id="6358975074282722691">Hace <ph name="NUMBER_TWO"/> segundos</translation>
 <translation id="520299402983819650"><ph name="QUANTITY"/> PB</translation>
 <translation id="2983818520079887040">Configuración...</translation>
 <translation id="6845383723252244143">Seleccionar carpeta</translation>
 <translation id="7600770490873519066"><ph name="NUMBER_FEW"/> seconds</translation>
+<translation id="5368780922436099921">Faltan <ph name="NUMBER_ZERO"/> segundos.</translation>
 <translation id="1095623615273566396"><ph name="NUMBER_FEW"/> seg.</translation>
 <translation id="5583640892426849032">Tecla de retroceso</translation>
 <translation id="5263972071113911534">Hace <ph name="NUMBER_MANY"/> días</translation>
@@ -165,6 +170,7 @@
 <translation id="6142413573757616983"><ph name="QUANTITY"/> B/s</translation>
 <translation id="7649070708921625228">Ayuda</translation>
 <translation id="6699343763173986273">Pista multimedia siguiente</translation>
+<translation id="5445120697129764393">Faltan <ph name="NUMBER_DEFAULT"/> segundos.</translation>
 <translation id="8226233771743600312">No molestar durante un día</translation>
 <translation id="7457942297256758195">Borrar todo</translation>
 <translation id="822618367988303761">Hace <ph name="NUMBER_TWO"/> días</translation>

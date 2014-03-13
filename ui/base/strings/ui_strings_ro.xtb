@@ -24,6 +24,7 @@
 <translation id="7222373446505536781">F11</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY"/> O</translation>
 <translation id="3660179305079774227">Săgeata în sus</translation>
+<translation id="7062130397825382308"><ph name="NUMBER_ONE"/> secundă rămasă</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY"/> MO/s</translation>
 <translation id="5608669887400696928"><ph name="NUMBER_DEFAULT"/> ore</translation>
 <translation id="3990502903496589789">Marginea dreaptă</translation>
@@ -45,6 +46,7 @@
 <translation id="7770995925463083016">Cu <ph name="NUMBER_TWO"/> minute în urmă</translation>
 <translation id="3234408098842461169">Săgeata în jos</translation>
 <translation id="3087734570205094154">Jos</translation>
+<translation id="8828991073132329143"><ph name="NUMBER_MANY"/> secunde rămase</translation>
 <translation id="5935630983280450497"><ph name="NUMBER_ONE"/> minut rămas</translation>
 <translation id="1860796786778352021">Buton de închidere a notificării</translation>
 <translation id="6364916375976753737">Derulați spre stânga</translation>
@@ -68,6 +70,7 @@
 <translation id="7781829728241885113">Ieri</translation>
 <translation id="3424538384153559412"><ph name="NUMBER_TWO"/> minute</translation>
 <translation id="50960180632766478"><ph name="NUMBER_FEW"/> minute rămase</translation>
+<translation id="5517291721709019259"><ph name="NUMBER_FEW"/> secunde rămase</translation>
 <translation id="6659594942844771486">Tab</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY"/> MO</translation>
 <translation id="4988273303304146523">Cu <ph name="NUMBER_DEFAULT"/> zile în urmă</translation>
@@ -137,12 +140,14 @@
 <translation id="1285266685456062655">Cu <ph name="NUMBER_FEW"/> ore în urmă</translation>
 <translation id="6918245111648057970">Permiteți notificări de la următoarele servicii pentru fiecare utilizator:</translation>
 <translation id="5489830104927132166"><ph name="NUMBER_ONE"/> secundă</translation>
+<translation id="1270251962578273213"><ph name="NUMBER_TWO"/> secunde rămase</translation>
 <translation id="3994835489895548312"><ph name="NUMBER_MANY"/> de minute rămase</translation>
 <translation id="6358975074282722691">Cu <ph name="NUMBER_TWO"/> secunde în urmă</translation>
 <translation id="520299402983819650"><ph name="QUANTITY"/> PO</translation>
 <translation id="2983818520079887040">Setări...</translation>
 <translation id="6845383723252244143">Selectați dosarul</translation>
 <translation id="7600770490873519066"><ph name="NUMBER_FEW"/> secunde</translation>
+<translation id="5368780922436099921"><ph name="NUMBER_ZERO"/> secunde rămase</translation>
 <translation id="1095623615273566396"><ph name="NUMBER_FEW"/> secunde</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5263972071113911534">Cu <ph name="NUMBER_MANY"/> (de) zile în urmă</translation>
@@ -165,6 +170,7 @@
 <translation id="6142413573757616983"><ph name="QUANTITY"/> O/s</translation>
 <translation id="7649070708921625228">Ajutor</translation>
 <translation id="6699343763173986273">Melodia următoare din conținutul media</translation>
+<translation id="5445120697129764393"><ph name="NUMBER_DEFAULT"/> de secunde rămase</translation>
 <translation id="8226233771743600312">Nu deranja o zi</translation>
 <translation id="7457942297256758195">Ștergeți-le pe toate</translation>
 <translation id="822618367988303761">Cu <ph name="NUMBER_TWO"/> zile în urmă</translation>

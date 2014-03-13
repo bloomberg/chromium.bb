@@ -14,7 +14,9 @@
 <translation id="3358663646935160692">ይህ መለያ የሚቀናበረው በ<ph name="DOMAIN_NAME"/> ነው።
 
 በሚቀናበር መለያ እየገቡ ነው፣ ይህም የChrome መገለጫዎ ቁጥጥር ለአስተዳዳሪው ይሰጠዋል። የእርስዎ Chrome ውሂብ እስከመጨረሻው ከዚህ መለያ ጋር የተሳሰረ ይሆናል። ከዚህ መለያ ማላቀቅ አካባቢያዊውን የChrome ውሂብ ይሰርዘዋል።</translation>
+<translation id="1966710179511230534">እባክዎ የመግቢያ ዝርዝሮችዎን ያዘምኑ።</translation>
 <translation id="1623104350909869708">ይህ ገጽ ተጨማሪ መገናኛዎችን እንዳይፈጥር አግድ</translation>
+<translation id="8218346974737627104">በመለያ መግባትን ያረጋግጡ</translation>
 <translation id="624558823898732418">የትርጉም ቋንቋ፦ <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">የማረጋገጫ የእውቅና ማረጋገጫ ይምረጡ</translation>
 <translation id="3896036286668839683">የእውቅና ማረጋገጫ መመልከቻ</translation>
@@ -29,7 +31,6 @@
 <translation id="5684874026226664614">ውይ። ይህ ገጽ ሊተረጎም አይችልም።</translation>
 <translation id="4619298195800598081">ኦሪጂናል ምስሉን በአዲስ ትር ክፈት</translation>
 <translation id="907015151729920253">ስማርት ካርድ</translation>
-<translation id="3136378934686431938">እባክዎ የመግቢያ ዝርዝሮችዎን ያዘምኑ።</translation>
 <translation id="3063601790762993062">ቪዲዮ አስቀምጥ</translation>
 <translation id="6042308850641462728">ተጨማሪ</translation>
 <translation id="3992315671621218278">አገናኝ አስቀምጥ</translation>
@@ -59,5 +60,4 @@
 <translation id="6277522088822131679">ገጹን ማተም ላይ ችግር ነበር። እባክዎ እንደገና ይሞክሩ።</translation>
 <translation id="1742134235943978220">ወደ <ph name="TARGET_LANGUAGE"/> ተተርጉሟል።</translation>
 <translation id="6965382102122355670">ይሁን</translation>
-<translation id="7495038789730067783">በመለያ መግባት ያረጋግጡ</translation>
 </translationbundle>

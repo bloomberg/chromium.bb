@@ -14,7 +14,9 @@
 <translation id="3358663646935160692">Ce compte est géré par <ph name="DOMAIN_NAME"/>.
 
 Vous vous connectez avec un compte géré, et vous donnez à l'administrateur le contrôle de votre profil Google Chrome. Vos données Chrome vont être associées à ce compte de manière définitive. Si vous vous en déconnectez, les données Chrome locales sont supprimées.</translation>
+<translation id="1966710179511230534">Veuillez mettre à jour vos informations de connexion.</translation>
 <translation id="1623104350909869708">Empêcher cette page de générer des boîtes de dialogue supplémentaires</translation>
+<translation id="8218346974737627104">Confirmer la connexion</translation>
 <translation id="624558823898732418">Langue cible : <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">Sélectionnez un certificat pour l'authentification</translation>
 <translation id="3896036286668839683">Lecteur de certificats</translation>
@@ -29,7 +31,6 @@ Vous vous connectez avec un compte géré, et vous donnez à l'administrateur le
 <translation id="5684874026226664614">Petit problème… Impossible de traduire cette page.</translation>
 <translation id="4619298195800598081">Ouvrir original autre onglet</translation>
 <translation id="907015151729920253">Carte à puce</translation>
-<translation id="3136378934686431938">Veuillez mettre à jour vos informations de connexion.</translation>
 <translation id="3063601790762993062">Enregistrer la vidéo</translation>
 <translation id="6042308850641462728">Plus</translation>
 <translation id="3992315671621218278">Enregistrer le lien</translation>
@@ -59,5 +60,4 @@ Vous vous connectez avec un compte géré, et vous donnez à l'administrateur le
 <translation id="6277522088822131679">Un problème est survenu lors de l'impression de la page. Veuillez réessayer.</translation>
 <translation id="1742134235943978220">Traduction en <ph name="TARGET_LANGUAGE"/> terminée.</translation>
 <translation id="6965382102122355670">OK</translation>
-<translation id="7495038789730067783">Confirmer la connexion</translation>
 </translationbundle>

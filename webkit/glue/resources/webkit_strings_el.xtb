@@ -3,7 +3,6 @@
 <translationbundle lang="el">
 <translation id="4763480195061959176">βίντεο</translation>
 <translation id="5843503607508392247">Άλλες…</translation>
-<translation id="2426432199384958866">επιστροφή ροής ταινίας σε πραγματικό χρόνο</translation>
 <translation id="248395913932153421">Ημέρα</translation>
 <translation id="1729654308190250600">Καταχωρίστε μια διεύθυνση ηλεκτρονικού ταχυδρομείου.</translation>
 <translation id="6015796118275082299">Έτος</translation>
@@ -22,7 +21,6 @@
 <translation id="7057186640035488495">χρόνος ταινίας</translation>
 <translation id="8199524924445686405">εεεε</translation>
 <translation id="795667975304826397">Δεν έχει επιλεγεί κανένα αρχείο</translation>
-<translation id="1320012872283894746">γρήγορη αναζήτηση προς τα πίσω</translation>
 <translation id="7789962463072032349">παύση</translation>
 <translation id="6853785296079745596">απόκρυψη υπότιτλων</translation>
 <translation id="4360991593054037559">Καταχωρίστε μια έγκυρη τιμή. Οι δύο πιο κοντινές έγκυρες τιμές είναι <ph name="VALID_VALUE_LOW"/> και <ph name="VALID_VALUE_HIGHER"/>.</translation>
@@ -36,7 +34,6 @@
 <translation id="6845533974506654842">πατήστε</translation>
 <translation id="8244226242650769279">χάρτης εικόνας</translation>
 <translation id="310520048233152454">Εισαγάγετε μια διεύθυνση URL.</translation>
-<translation id="9039488204461337220">γρήγορη αναζήτηση προς τα εμπρός</translation>
 <translation id="4812940957355064477">Εισαγάγετε έναν αριθμό.</translation>
 <translation id="2548326553472216322">Δεν υπάρχουν πρόσφατες αναζητήσεις</translation>
 <translation id="1938124657309484470">Η τιμή πρέπει να είναι <ph name="MAXIMUM_DATE_OR_TIME"/> ή προγενέστερη.</translation>
@@ -49,7 +46,6 @@
 <translation id="3075154866155599887">Καταχωρίστε μια έγκυρη τιμή. Το πεδίο είναι ελλιπές ή περιέχει μη έγκυρη ημερομηνία.</translation>
 <translation id="3040011195152428237">σύνδεσμος</translation>
 <translation id="1014825444426747588">κενό</translation>
-<translation id="3356679314312413792">αναζήτηση προς τα πίσω στην ταινία για 30 δευτερόλεπτα</translation>
 <translation id="9050748414552849310">εμφάνιση υπότιτλων</translation>
 <translation id="4522570452068850558">Λεπτομέρειες</translation>
 <translation id="8451268428117625855">Επιλέξτε ένα αρχείο.</translation>
@@ -101,7 +97,6 @@
 <translation id="7673697353781729403">Ώρες</translation>
 <translation id="4664250907885839816">Το τμήμα της διεύθυνσης μετά το σύμβολο &quot;<ph name="ATSIGN"/>&quot; δεν πρέπει να περιέχει το σύμβολο &quot;<ph name="INVALIDCHARACTER"/>&quot;.</translation>
 <translation id="3450233048674729344">Η τιμή πρέπει να είναι μικρότερη ή ίση του <ph name="MAXIMUM"/>.</translation>
-<translation id="3471999216963526757">πίσω για 30 δευτερόλεπτα</translation>
 <translation id="668171684555832681">Άλλο...</translation>
 <translation id="6270583010843788609">δείκτης κύλισης χρονικού πλαισίου ταινίας</translation>
 <translation id="5641012560118721995">παύση αναπαραγωγής</translation>
@@ -110,15 +105,12 @@
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> αρχεία</translation>
 <translation id="6643016212128521049">Εκκαθάριση</translation>
 <translation id="7888071071722539607">Συμπεριλάβετε το σύμβολο &quot;<ph name="ATSIGN"/>&quot; στη διεύθυνση ηλεκτρονικού ταχυδρομείου. Από τη διεύθυνση &quot;<ph name="INVALIDADDRESS"/>&quot; λείπει το σύμβολο &quot;<ph name="ATSIGN"/>&quot;.</translation>
-<translation id="4851297395436456855">γρήγορη προώθηση</translation>
 <translation id="1088086359088493902">Δευτερόλεπτα</translation>
 <translation id="3934680773876859118">Δεν ήταν δυνατή η φόρτωση του εγγράφου PDF</translation>
 <translation id="3632707345189162177">αριθμός δευτερολέπτων της ταινίας που απομένουν</translation>
 <translation id="6359256949422175976">δείκτης κύλισης χρόνου ταινίας</translation>
 <translation id="8597182159515967513">επικεφαλίδα</translation>
 <translation id="6843725295806269523">σίγαση</translation>
-<translation id="2615751259741237794">επιστροφή σε πραγματικό χρόνο</translation>
 <translation id="2653659639078652383">Υποβολή</translation>
 <translation id="3732799496749320381">μμ</translation>
-<translation id="4484359737905287537">γρήγορη επαναφορά</translation>
 </translationbundle>

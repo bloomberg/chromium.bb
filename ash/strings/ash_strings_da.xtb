@@ -15,6 +15,7 @@
 <translation id="370649949373421643">Aktivér Wi-Fi</translation>
 <translation id="3626281679859535460">Lysstyrke</translation>
 <translation id="3621202678540785336">Input</translation>
+<translation id="7348093485538360975">Skærmtastatur</translation>
 <translation id="595202126637698455">Sporing af ydelsen er aktiveret</translation>
 <translation id="8054466585765276473">Beregner batteritid.</translation>
 <translation id="7982789257301363584">Netværk</translation>
@@ -27,6 +28,7 @@
 <translation id="2297568595583585744">Statusbakke</translation>
 <translation id="1661867754829461514">Pinkode mangler</translation>
 <translation id="4508225577814909926"><ph name="NAME"/> : Opretter forbindelse...</translation>
+<translation id="2248649616066688669">Du kan fortsætte med at bruge din Chromebook, mens den er sluttet til en ekstern skærm, også selvom låget er klappet ned.</translation>
 <translation id="40400351611212369">Fejl under aktivering af netværk</translation>
 <translation id="4237016987259239829">Netværkforbindelsesfejl</translation>
 <translation id="2946640296642327832">Aktivér Bluetooth</translation>
@@ -34,11 +36,14 @@
 <translation id="8206859287963243715">Mobil</translation>
 <translation id="6596816719288285829">IP-adresse</translation>
 <translation id="4508265954913339219">Aktiveringen mislykkedes</translation>
+<translation id="8688591111840995413">Forkert adgangskode</translation>
 <translation id="3621712662352432595">Lydindstillinger</translation>
 <translation id="1812696562331527143">Din inputmetode er ændret til <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>tredjepart<ph name="END_LINK"/>).
 Tryk på Shift+Alt for at ændre den.</translation>
+<translation id="6043994281159824495">Log ud nu</translation>
 <translation id="2127372758936585790">Oplader ved lav kraft</translation>
 <translation id="3846575436967432996">Der er ingen tilgængelige netværksoplysninger</translation>
+<translation id="3799026279081545374">Din oplader er muligvis beskadiget. Hvis du er bosiddende i USA, skal du ringe på 866-628-1371 for at få hjælp og en ny oplader. Hvis du er bosiddende i Storbritannien, skal du ringe på 0800-026-0613. Hvis du er bosiddende i Irland, skal du ringe på 1-800-832-664. Hvis du er bosiddende i Canada, skal du ringe på 866-628-1372. Hvis du er bosiddende i Australien, skal du ringe på 1-800-067-460.</translation>
 <translation id="3026237328237090306">Konfigurer mobildata</translation>
 <translation id="5871632337994001636">Administrer enheder...</translation>
 <translation id="785750925697875037">Vis mobilkonto</translation>
@@ -57,6 +62,8 @@ Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME"/> (<ph name="ANNOTATION"/>)</translation>
 <translation id="2942516765047364088">Hyldeplacering</translation>
 <translation id="8676770494376880701">Oplader med lav kraft er tilsluttet</translation>
+<translation id="5238774010593222950">Det er ikke muligt at logge på en anden konto.</translation>
+<translation id="1723752762323179280">Afslutter session</translation>
 <translation id="7170041865419449892">Intet signal</translation>
 <translation id="4804818685124855865">Afbryd</translation>
 <translation id="2544853746127077729">Godkendelsescertifikatet blev afvist af netværk</translation>
@@ -72,7 +79,6 @@ Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="3892641579809465218">Internt display</translation>
 <translation id="7823564328645135659">Sproget er blevet ændret fra &quot;<ph name="FROM_LOCALE"/>&quot; til &quot;<ph name="TO_LOCALE"/>&quot;, efter at du har synkroniseret dine indstillinger.</translation>
 <translation id="3368922792935385530">Tilsluttet</translation>
-<translation id="8340999562596018839">Talefeedback</translation>
 <translation id="8654520615680304441">Slå Wi-Fi til...</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="5825747213122829519">Din inputmetode er ændret til <ph name="INPUT_METHOD_ID"/>.
@@ -98,9 +104,7 @@ Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="3963445509666917109">Højttaler (indbygget)</translation>
 <translation id="2825619548187458965">Hylde</translation>
 <translation id="2614835198358683673">Din Chromebook oplades muligvis ikke, når den er tændt. Anvend eventuelt den officielle oplader.</translation>
-<translation id="1895658205118569222">Nedlukning</translation>
 <translation id="4430019312045809116">Lydstyrke</translation>
-<translation id="8681498213689260554">Genstart, og udfør PowerWash for at opdatere</translation>
 <translation id="4442424173763614572">DNS-opslag mislykkedes</translation>
 <translation id="7874779702599364982">Søger efter mobilnetværk...</translation>
 <translation id="583281660410589416">Ukendt</translation>
@@ -110,7 +114,7 @@ Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="1621499497873603021">Tid tilbage, indtil batteriet er tomt, <ph name="TIME_LEFT"/></translation>
 <translation id="5980301590375426705">Afslut gæstesession</translation>
 <translation id="8308637677604853869">Forrige menu</translation>
-<translation id="4666297444214622512">Kan ikke logge ind på en anden konto.</translation>
+<translation id="4321179778687042513">ctrl</translation>
 <translation id="3625258641415618104">Skærmbilleder er deaktiveret</translation>
 <translation id="1346748346194534595">Højre</translation>
 <translation id="1773212559869067373">Godkendelsescertifikatet blev afvist lokalt</translation>
@@ -119,10 +123,9 @@ Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="8428213095426709021">Indstillinger</translation>
 <translation id="2372145515558759244">Synkroniserer apps...</translation>
 <translation id="7256405249507348194">Ukendt fejl: <ph name="DESC"/></translation>
+<translation id="2894654529758326923">Oplysninger</translation>
 <translation id="7925247922861151263">AAA-kontrol mislykkedes</translation>
 <translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> indtil fuldt opladet</translation>
-<translation id="5787281376604286451">Talefeedback er aktiveret.
-Tryk på Ctrl+Alt+Z for at deaktivere dette.</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="6312403991423642364">Ukendt netværksfejl</translation>
 <translation id="1467432559032391204">Venstre</translation>
@@ -133,6 +136,7 @@ Tryk på Ctrl+Alt+Z for at deaktivere dette.</translation>
 <translation id="1923539912171292317">Automatiske klik</translation>
 <translation id="1398853756734560583">Maksimer</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: Opretter forbindelse...</translation>
+<translation id="6062360702481658777">Du bliver automatisk logget ud om <ph name="LOGOUT_TIME_LEFT"/>.</translation>
 <translation id="252373100621549798">Ukendt skærm</translation>
 <translation id="1882897271359938046">Spejler mod <ph name="DISPLAY_NAME"/></translation>
 <translation id="2727977024730340865">Tilsluttet en oplader med lav kraft. Batteriopladningen er muligvis ikke pålidelig.</translation>
@@ -141,6 +145,7 @@ Tryk på Ctrl+Alt+Z for at deaktivere dette.</translation>
 <translation id="1512064327686280138">Aktiveringsfejl:</translation>
 <translation id="5097002363526479830">Der kunne ikke oprettes forbindelse til netværket &quot;<ph name="NAME"/>&quot;: <ph name="DETAILS"/></translation>
 <translation id="1850504506766569011">Wi-Fi er slået fra.</translation>
+<translation id="2872961005593481000">Luk</translation>
 <translation id="2966449113954629791">Du har muligvis opbrugt den tilladte mobildatamængde. Gå til aktiveringsportalen for <ph name="NAME"/> for at købe mere data.</translation>
 <translation id="8132793192354020517">Forbundet til <ph name="NAME"/></translation>
 <translation id="7052914147756339792">Angiv baggrundsbillede...</translation>
@@ -153,8 +158,10 @@ Tryk på Ctrl+Alt+Z for at deaktivere dette.</translation>
 <translation id="7005812687360380971">Fejl:</translation>
 <translation id="882279321799040148">Klik for at se det</translation>
 <translation id="1753067873202720523">Din Chromebook oplades muligvis ikke, når den er tændt.</translation>
+<translation id="7561014039265304140"><ph name="DISPLAY_NAME"/> understøtter ikke <ph name="SPECIFIED_RESOLUTION"/>. Opløsningen blev ændret til <ph name="FALLBACK_RESOLUTION"/></translation>
 <translation id="5045550434625856497">Ugyldig adgangskode</translation>
 <translation id="1602076796624386989">Aktivér mobildata</translation>
+<translation id="68610848741840742">ChromeVox (talefeedback)</translation>
 <translation id="6981982820502123353">Hjælpefunktioner</translation>
 <translation id="3157931365184549694">Gendan</translation>
 <translation id="4274292172790327596">Fejlen genkendes ikke</translation>
@@ -167,10 +174,12 @@ Tryk på Ctrl+Alt+Z for at deaktivere dette.</translation>
 <translation id="8401662262483418323">Der kunne ikke oprettes forbindelse til &quot;<ph name="NAME"/>&quot;: <ph name="DETAILS"/>
 Servermeddelelse: <ph name="SERVER_MSG"/></translation>
 <translation id="2475982808118771221">Der opstod en fejl</translation>
+<translation id="3783640748446814672">alt</translation>
 <translation id="7229570126336867161">EVDO mangler</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> er en offentlig session administreret af <ph name="DOMAIN"/></translation>
 <translation id="9044646465488564462">Det var ikke muligt at oprette forbindelse til netværket: <ph name="DETAILS"/></translation>
 <translation id="7029814467594812963">Afslut session</translation>
+<translation id="479989351350248267">søg</translation>
 <translation id="8454013096329229812">Wi-Fi er slået til.</translation>
 <translation id="4872237917498892622">Alt+Søg eller Skift</translation>
 <translation id="9201131092683066720">Batteriet er <ph name="PERCENTAGE"/> % opladet.</translation>
@@ -193,14 +202,13 @@ Servermeddelelse: <ph name="SERVER_MSG"/></translation>
 <translation id="5947494881799873997">Fortryd</translation>
 <translation id="7593891976182323525">Søg eller skift</translation>
 <translation id="7649070708921625228">Hjælp</translation>
-<translation id="747833637904845037">Din Chromebook vil forblive tændt, når den er sluttet til en ekstern skærm, selv når låget er lukket.</translation>
 <translation id="3050422059534974565">CAPS LOCK er slået til.
 Tryk på Søg eller Skift for at annullere.</translation>
 <translation id="397105322502079400">Beregner...</translation>
 <translation id="158849752021629804">Hjemmenetværk mangler</translation>
 <translation id="6857811139397017780">Aktiver <ph name="NETWORKSERVICE"/></translation>
 <translation id="5864471791310927901">DHCP-opslag mislykkedes</translation>
-<translation id="6692173217867674490">Ugyldig adgangssætning</translation>
+<translation id="2819276065543622893">Du bliver logget ud nu.</translation>
 <translation id="6165508094623778733">Flere oplysninger</translation>
 <translation id="9046895021617826162">Forbindelsen mislykkedes</translation>
 <translation id="7168224885072002358">Fortryder og vender tilbage til den gamle opløsning om <ph name="TIMEOUT_SECONDS"/> sekunder.</translation>
@@ -209,6 +217,8 @@ Tryk på Søg eller Skift for at annullere.</translation>
 <translation id="6636709850131805001">Tilstanden genkendes ikke</translation>
 <translation id="3573179567135747900">Skift tilbage til &quot;<ph name="FROM_LOCALE"/>&quot; (kræver genstart)</translation>
 <translation id="8103386449138765447">sms-beskeder: <ph name="MESSAGE_COUNT"/></translation>
+<translation id="7097613348211027502">ChromeVox (talefeedback) er aktiveret.
+Tryk på Ctrl+Alt+Z for at deaktivere dette.</translation>
 <translation id="5045002648206642691">Google Drev-indstillinger...</translation>
 <translation id="7209101170223508707">CAPS LOCK er slået til.
 Tryk på Alt+Søg eller Skift for at annullere.</translation>
@@ -224,6 +234,7 @@ Tryk på Alt+Søg eller Skift for at annullere.</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">Datatjenesten &quot;<ph name="NAME"/>&quot; er blevet aktiveret og er klar til brug.</translation>
 <translation id="412065659894267608"><ph name="HOUR"/> t <ph name="MINUTE"/> m, indtil det er fuldt opladet</translation>
+<translation id="3077734595579995578">shift</translation>
 <translation id="7297443947353982503">Brugernavn/adgangskode er forkert, eller også mislykkedes EAP-godkendelsen</translation>
 <translation id="6359806961507272919">Sms fra <ph name="PHONE_NUMBER"/></translation>
 <translation id="1244147615850840081">Mobilselskab</translation>

@@ -24,6 +24,7 @@
 <translation id="7222373446505536781">F11</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY"/> B</translation>
 <translation id="3660179305079774227">മുകളിലേക്കുള്ള അമ്പടയാളം</translation>
+<translation id="7062130397825382308"><ph name="NUMBER_ONE"/> നിമിഷം ശേഷിക്കുന്നു</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY"/> MB/s</translation>
 <translation id="5608669887400696928"><ph name="NUMBER_DEFAULT"/> മണിക്കൂര്‍</translation>
 <translation id="3990502903496589789">വലത് അഗ്രം</translation>
@@ -45,6 +46,7 @@
 <translation id="7770995925463083016"><ph name="NUMBER_TWO"/> mins ago</translation>
 <translation id="3234408098842461169">താഴേക്കുള്ള ആരോ അടയാളം</translation>
 <translation id="3087734570205094154">താഴെ</translation>
+<translation id="8828991073132329143"><ph name="NUMBER_MANY"/> നിമിഷം ശേഷിക്കുന്നു</translation>
 <translation id="5935630983280450497"><ph name="NUMBER_ONE"/> മിനിറ്റ് ശേഷിക്കുന്നു</translation>
 <translation id="1860796786778352021">അറിയിപ്പ് അടയ്‌ക്കൽ</translation>
 <translation id="6364916375976753737">ഇടത്തേക്ക് സ്ക്രോള്‍ ചെയ്യുക</translation>
@@ -68,6 +70,7 @@
 <translation id="7781829728241885113">ഇന്നലെ</translation>
 <translation id="3424538384153559412"><ph name="NUMBER_TWO"/> മിനിറ്റ്</translation>
 <translation id="50960180632766478"><ph name="NUMBER_FEW"/> മിനിറ്റ്‍ അവശേഷിക്കുന്നു</translation>
+<translation id="5517291721709019259"><ph name="NUMBER_FEW"/> നിമിഷം ശേഷിക്കുന്നു</translation>
 <translation id="6659594942844771486">ടാബ്</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY"/> MB</translation>
 <translation id="4988273303304146523"><ph name="NUMBER_DEFAULT"/> days ago</translation>
@@ -137,12 +140,14 @@
 <translation id="1285266685456062655"><ph name="NUMBER_FEW"/> hours ago</translation>
 <translation id="6918245111648057970">ഇനിപ്പറയുന്നതിൽ നിന്ന് ഓരോ ഉപയോക്താവിനും അറിയിപ്പുകൾ അനുവദിക്കുക:</translation>
 <translation id="5489830104927132166"><ph name="NUMBER_ONE"/> സെക്കൻഡ്</translation>
+<translation id="1270251962578273213"><ph name="NUMBER_TWO"/> നിമിഷം ശേഷിക്കുന്നു</translation>
 <translation id="3994835489895548312"><ph name="NUMBER_MANY"/> മിനിറ്റ് ശേഷിക്കുന്നു</translation>
 <translation id="6358975074282722691"><ph name="NUMBER_TWO"/> secs ago</translation>
 <translation id="520299402983819650"><ph name="QUANTITY"/> PB</translation>
 <translation id="2983818520079887040">ക്രമീകരണങ്ങള്‍...</translation>
 <translation id="6845383723252244143">ഫോള്‍ഡര്‍ തിരഞ്ഞെടുക്കുക</translation>
 <translation id="7600770490873519066"><ph name="NUMBER_FEW"/> സെക്കൻഡ്</translation>
+<translation id="5368780922436099921"><ph name="NUMBER_ZERO"/> നിമിഷം ശേഷിക്കുന്നു</translation>
 <translation id="1095623615273566396"><ph name="NUMBER_FEW"/> സെക്കന്റ്</translation>
 <translation id="5583640892426849032">ബാക്ക്‌സ്പെയ്‌സ്</translation>
 <translation id="5263972071113911534"><ph name="NUMBER_MANY"/> days ago</translation>
@@ -165,6 +170,7 @@
 <translation id="6142413573757616983"><ph name="QUANTITY"/> B/s</translation>
 <translation id="7649070708921625228">സഹായം</translation>
 <translation id="6699343763173986273">അടുത്ത മീഡിയ ട്രാക്ക്</translation>
+<translation id="5445120697129764393"><ph name="NUMBER_DEFAULT"/> നിമിഷം ശേഷിക്കുന്നു</translation>
 <translation id="8226233771743600312">ഒരു ദിവസത്തേക്ക് ശല്യപ്പെടുത്തരുത്</translation>
 <translation id="7457942297256758195">എല്ലാം മായ്‌ക്കുക</translation>
 <translation id="822618367988303761"><ph name="NUMBER_TWO"/> days ago</translation>

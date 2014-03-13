@@ -14,7 +14,9 @@
 <translation id="3358663646935160692">Tento účet spravuje doména <ph name="DOMAIN_NAME"/>.
 
 Prihlasujete sa pomocou spravovaného účtu a jeho správcovi tak umožňujete úplnú kontrolu nad vaším profilom Chrome. Vaše údaje prehliadača Chrome sa natrvalo prepoja s týmto účtom. Po odpojení tohto účtu sa odstránia miestne údaje prehliadača Chrome.</translation>
+<translation id="1966710179511230534">Aktualizujte svoje prihlasovacie údaje.</translation>
 <translation id="1623104350909869708">Zakázať tejto stránke otvárať ďalšie dialógové okná</translation>
+<translation id="8218346974737627104">Potvrdenie prihlásenia</translation>
 <translation id="624558823898732418">Jazyk prekladu: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">Vyberte certifikát na overenie totožnosti</translation>
 <translation id="3896036286668839683">Zobrazovač certifikátov</translation>
@@ -29,7 +31,6 @@ Prihlasujete sa pomocou spravovaného účtu a jeho správcovi tak umožňujete 
 <translation id="5684874026226664614">Hops. Túto stránku nebolo možné preložiť.</translation>
 <translation id="4619298195800598081">Pôv. obrázok na novej karte</translation>
 <translation id="907015151729920253">Karta Smart card</translation>
-<translation id="3136378934686431938">Aktualizujte svoje prihlasovacie údaje.</translation>
 <translation id="3063601790762993062">Uložiť video</translation>
 <translation id="6042308850641462728">Viac</translation>
 <translation id="3992315671621218278">Uložiť odkaz</translation>
@@ -59,5 +60,4 @@ Prihlasujete sa pomocou spravovaného účtu a jeho správcovi tak umožňujete 
 <translation id="6277522088822131679">Pri tlačení stránky sa vyskytol problém. Skúste to znova.</translation>
 <translation id="1742134235943978220">Preložené do jazyka <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="6965382102122355670">OK</translation>
-<translation id="7495038789730067783">Potvrdenie prihlásenia</translation>
 </translationbundle>

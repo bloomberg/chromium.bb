@@ -15,6 +15,7 @@
 <translation id="370649949373421643">Povoliť Wi-Fi</translation>
 <translation id="3626281679859535460">Jas</translation>
 <translation id="3621202678540785336">Vstup</translation>
+<translation id="7348093485538360975">Klávesnica na obrazovke</translation>
 <translation id="595202126637698455">Sledovanie výkonnosti je povolené</translation>
 <translation id="8054466585765276473">Výpočet času výdrže batérie.</translation>
 <translation id="7982789257301363584">Sieť</translation>
@@ -27,6 +28,7 @@
 <translation id="2297568595583585744">Stavový panel</translation>
 <translation id="1661867754829461514">Chýba kód PIN</translation>
 <translation id="4508225577814909926"><ph name="NAME"/>: pripája sa...</translation>
+<translation id="2248649616066688669">Chromebook môžete používať aj počas jeho pripojenia k externej obrazovke (dokonca aj so zavretým krytom).</translation>
 <translation id="40400351611212369">Chyba aktivácie siete</translation>
 <translation id="4237016987259239829">Chyba sieťového pripojenia</translation>
 <translation id="2946640296642327832">Povoliť rozhranie Bluetooth</translation>
@@ -34,11 +36,14 @@
 <translation id="8206859287963243715">Mobilné</translation>
 <translation id="6596816719288285829">Adresa IP</translation>
 <translation id="4508265954913339219">Aktivácia zlyhala</translation>
+<translation id="8688591111840995413">Nesprávne heslo</translation>
 <translation id="3621712662352432595">Nastavenia zvuku</translation>
 <translation id="1812696562331527143">Metóda vstupu sa zmenila na <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>tretia strana<ph name="END_LINK"/>).
         Prepnete ju stlačením klávesov Shift + Alt.</translation>
+<translation id="6043994281159824495">Odhlásiť sa</translation>
 <translation id="2127372758936585790">Nabíjačka s nízkym výkonom</translation>
 <translation id="3846575436967432996">Informácie o sieti nie sú k dispozícii</translation>
+<translation id="3799026279081545374">Je možné, že máte chybnú nabíjačku. Ak žijete v USA, požiadajte o pomoc a výmenu na čísle 866-628-1371. Ak žijete v Spojenom kráľovstve, volajte na číslo 0800-026-0613. Ak žijete v Írsku, volajte na číslo 1-800-832-664. Ak žijete v Kanade, volajte na číslo 866-628-1372. Ak žijete v Austrálii, volajte na číslo 1-800-067-460.</translation>
 <translation id="3026237328237090306">Nastavenie mobilného dátového pripojenia</translation>
 <translation id="5871632337994001636">Spravovať zariadenia...</translation>
 <translation id="785750925697875037">Zobraziť mobilný účet</translation>
@@ -57,6 +62,8 @@
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME"/> (<ph name="ANNOTATION"/>)</translation>
 <translation id="2942516765047364088">Pozícia poličky</translation>
 <translation id="8676770494376880701">Pripojila sa nabíjačka s nízkym výkonom</translation>
+<translation id="5238774010593222950">Nie je možné prihlásiť sa do iného účtu.</translation>
+<translation id="1723752762323179280">Ukončenie relácie</translation>
 <translation id="7170041865419449892">Mimo rozsah</translation>
 <translation id="4804818685124855865">Odpojiť</translation>
 <translation id="2544853746127077729">Certifikát na overenie totožnosti bol zamietnutý sieťou</translation>
@@ -72,7 +79,6 @@
 <translation id="3892641579809465218">Interný displej</translation>
 <translation id="7823564328645135659">Po synchronizácii vašich nastavení bol zmenený jazyk „<ph name="FROM_LOCALE"/>“ na jazyk „<ph name="TO_LOCALE"/>“.</translation>
 <translation id="3368922792935385530">Pripojené</translation>
-<translation id="8340999562596018839">Hlasová odozva</translation>
 <translation id="8654520615680304441">Zapnúť sieť Wi-Fi...</translation>
 <translation id="8828714802988429505">90 °</translation>
 <translation id="5825747213122829519">Metóda vstupu sa zmenila na <ph name="INPUT_METHOD_ID"/>.
@@ -98,9 +104,7 @@
 <translation id="3963445509666917109">Reproduktor (vnútorný)</translation>
 <translation id="2825619548187458965">Polička</translation>
 <translation id="2614835198358683673">Chromebook sa nesmie dobíjať v čase, keď je zapnutý. Zvážte použitie oficiálnej nabíjačky.</translation>
-<translation id="1895658205118569222">Vypnúť</translation>
 <translation id="4430019312045809116">Hlasitosť</translation>
-<translation id="8681498213689260554">Aktualizáciu uskutočníte reštartovaním a použitím funkcie Powerwash</translation>
 <translation id="4442424173763614572">Vyhľadanie DNS zlyhalo</translation>
 <translation id="7874779702599364982">Prebieha vyhľadávanie mobilných sietí...</translation>
 <translation id="583281660410589416">Neznámy</translation>
@@ -110,7 +114,7 @@
 <translation id="1621499497873603021">Čas zostávajúci do vybitia batérie: <ph name="TIME_LEFT"/></translation>
 <translation id="5980301590375426705">Ukončiť reláciu hosťa</translation>
 <translation id="8308637677604853869">Predchádzajúca ponuka</translation>
-<translation id="4666297444214622512">Nepodarilo sa prihlásiť do iného účtu.</translation>
+<translation id="4321179778687042513">ctrl</translation>
 <translation id="3625258641415618104">Snímky obrazovky sú zakázané</translation>
 <translation id="1346748346194534595">Doprava</translation>
 <translation id="1773212559869067373">Certifikát na overenie totožnosti bol zamietnutý miestne</translation>
@@ -119,10 +123,9 @@
 <translation id="8428213095426709021">Nastavenia</translation>
 <translation id="2372145515558759244">Prebieha synchronizácia aplikácií...</translation>
 <translation id="7256405249507348194">Nerozpoznaná chyba: <ph name="DESC"/></translation>
+<translation id="2894654529758326923">Informácie</translation>
 <translation id="7925247922861151263">Kontrola AAA zlyhala</translation>
 <translation id="8456362689280298700">čas do úplného nabitia: <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
-<translation id="5787281376604286451">Hlasová odozva je povolená.
-Zakážete ju stlačením klávesov Ctrl+Alt+Z.</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="6312403991423642364">Neznáma chyba siete</translation>
 <translation id="1467432559032391204">Doľava</translation>
@@ -133,6 +136,7 @@ Zakážete ju stlačením klávesov Ctrl+Alt+Z.</translation>
 <translation id="1923539912171292317">Automatické kliknutia</translation>
 <translation id="1398853756734560583">Maximalizovať</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: pripája sa...</translation>
+<translation id="6062360702481658777">Odhlásenie prebehne automaticky o <ph name="LOGOUT_TIME_LEFT"/>.</translation>
 <translation id="252373100621549798">Neznáma obrazovka</translation>
 <translation id="1882897271359938046">Zrkadlenie na displej <ph name="DISPLAY_NAME"/></translation>
 <translation id="2727977024730340865">Batéria je zapojená do nabíjačky s nízkym výkonom. Nabíjanie batérie nemusí byť spoľahlivé.</translation>
@@ -141,6 +145,7 @@ Zakážete ju stlačením klávesov Ctrl+Alt+Z.</translation>
 <translation id="1512064327686280138">Zlyhanie aktivácie</translation>
 <translation id="5097002363526479830">K sieti „<ph name="NAME"/>“ sa nepodarilo pripojiť: <ph name="DETAILS"/></translation>
 <translation id="1850504506766569011">Pripojenie Wi-Fi je vypnuté.</translation>
+<translation id="2872961005593481000">Vypnúť</translation>
 <translation id="2966449113954629791">Možno ste dosiahli povolený limit mobilných dát. Ďalšie údaje si môžete zakúpiť na aktivačnom portáli <ph name="NAME"/>.</translation>
 <translation id="8132793192354020517">Pripojené k stránke <ph name="NAME"/></translation>
 <translation id="7052914147756339792">Nastavenie tapety...</translation>
@@ -153,8 +158,10 @@ Zakážete ju stlačením klávesov Ctrl+Alt+Z.</translation>
 <translation id="7005812687360380971">Zlyhanie</translation>
 <translation id="882279321799040148">Zobrazíte ju kliknutím tu</translation>
 <translation id="1753067873202720523">Keď bude Chromebook zapnutý, možno sa nedobije.</translation>
+<translation id="7561014039265304140">Obrazovka <ph name="DISPLAY_NAME"/> nepodporuje rozlíšenie <ph name="SPECIFIED_RESOLUTION"/>. Rozlíšenie bolo zmenené na <ph name="FALLBACK_RESOLUTION"/></translation>
 <translation id="5045550434625856497">Nesprávne heslo</translation>
 <translation id="1602076796624386989">Povoliť mobilné dátové pripojenie</translation>
+<translation id="68610848741840742">ChromeVox (hlasová spätná väzba)</translation>
 <translation id="6981982820502123353">Dostupnosť</translation>
 <translation id="3157931365184549694">Obnoviť</translation>
 <translation id="4274292172790327596">Nerozpoznaná chyba</translation>
@@ -167,10 +174,12 @@ Zakážete ju stlačením klávesov Ctrl+Alt+Z.</translation>
 <translation id="8401662262483418323">Nepodarilo sa pripojiť k účtu <ph name="NAME"/>: <ph name="DETAILS"/>
 Správa zo servera: <ph name="SERVER_MSG"/></translation>
 <translation id="2475982808118771221">Vyskytla sa chyba</translation>
+<translation id="3783640748446814672">alt</translation>
 <translation id="7229570126336867161">Je potrebné pripojenie EVDO</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> je verejná relácia spravovaná stránkami <ph name="DOMAIN"/></translation>
 <translation id="9044646465488564462">Nepodarilo sa pripojiť k sieti: <ph name="DETAILS"/></translation>
 <translation id="7029814467594812963">Ukončiť reláciu</translation>
+<translation id="479989351350248267">hľadať</translation>
 <translation id="8454013096329229812">Pripojenie Wi-Fi je zapnuté.</translation>
 <translation id="4872237917498892622">Alt + Hľadať alebo Shift</translation>
 <translation id="9201131092683066720">Batéria je nabitá na <ph name="PERCENTAGE"/> %.</translation>
@@ -193,14 +202,13 @@ Správa zo servera: <ph name="SERVER_MSG"/></translation>
 <translation id="5947494881799873997">Vrátiť</translation>
 <translation id="7593891976182323525">Hľadať alebo Shift</translation>
 <translation id="7649070708921625228">Pomocník</translation>
-<translation id="747833637904845037">Počas pripojenia k externému displeju zostane váš Chromebook zapnutý, dokonca aj keď bude zavretý.</translation>
 <translation id="3050422059534974565">Kláves CAPS LOCK je zapnutý.
 Ak ho chcete zrušiť, stlačte klávesy Hľadať alebo Shift.</translation>
 <translation id="397105322502079400">Prebieha výpočet...</translation>
 <translation id="158849752021629804">Je potrebná domáca sieť</translation>
 <translation id="6857811139397017780">Aktivovať zariadenie <ph name="NETWORKSERVICE"/></translation>
 <translation id="5864471791310927901">Vyhľadanie servera DHCP zlyhalo</translation>
-<translation id="6692173217867674490">Zlá prístupová fráza</translation>
+<translation id="2819276065543622893">Teraz prebehne odhlásenie.</translation>
 <translation id="6165508094623778733">Viac informácií</translation>
 <translation id="9046895021617826162">Zlyhanie pripojenia</translation>
 <translation id="7168224885072002358">Vrátenie starého rozlíšenia prebehne o <ph name="TIMEOUT_SECONDS"/></translation>
@@ -209,6 +217,8 @@ Ak ho chcete zrušiť, stlačte klávesy Hľadať alebo Shift.</translation>
 <translation id="6636709850131805001">Nerozpoznaný stav</translation>
 <translation id="3573179567135747900">Zmeniť späť na miestne nastavenie „<ph name="FROM_LOCALE"/>“ (vyžaduje sa reštart)</translation>
 <translation id="8103386449138765447">Správy SMS: <ph name="MESSAGE_COUNT"/></translation>
+<translation id="7097613348211027502">Hlasová odozva ChromeVox je aktívna.
+Deaktivujete ju stlačením kombinácie klávesov Ctrl+Alt+Z.</translation>
 <translation id="5045002648206642691">Nastavenia služby Disk Google...</translation>
 <translation id="7209101170223508707">Kláves CAPS LOCK je zapnutý.
 Ak ho chcete zrušiť, stlačte klávesy Alt + Hľadať alebo Shift.</translation>
@@ -224,6 +234,7 @@ Ak ho chcete zrušiť, stlačte klávesy Alt + Hľadať alebo Shift.</translatio
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">Gratulujeme! Dátová služba <ph name="NAME"/> sa aktivovala a je pripravená na použitie.</translation>
 <translation id="412065659894267608"><ph name="HOUR"/>h <ph name="MINUTE"/>min do nabitia</translation>
+<translation id="3077734595579995578">shift</translation>
 <translation id="7297443947353982503">Používateľské meno alebo heslo je nesprávne alebo zlyhalo overenie EAP-auth</translation>
 <translation id="6359806961507272919">SMS z č. <ph name="PHONE_NUMBER"/></translation>
 <translation id="1244147615850840081">Operátor</translation>

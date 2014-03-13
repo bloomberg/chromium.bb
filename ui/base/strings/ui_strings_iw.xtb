@@ -24,6 +24,7 @@
 <translation id="7222373446505536781">F11</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY"/> B</translation>
 <translation id="3660179305079774227">חץ למעלה</translation>
+<translation id="7062130397825382308">נותרה שנייה <ph name="NUMBER_ONE"/></translation>
 <translation id="1809410197924942083"><ph name="QUANTITY"/> MB/s</translation>
 <translation id="5608669887400696928"><ph name="NUMBER_DEFAULT"/> שעות</translation>
 <translation id="3990502903496589789">קצה ימני</translation>
@@ -45,6 +46,7 @@
 <translation id="7770995925463083016">לפני <ph name="NUMBER_TWO"/> דקות</translation>
 <translation id="3234408098842461169">חץ למטה</translation>
 <translation id="3087734570205094154">תחתית</translation>
+<translation id="8828991073132329143">נותרו <ph name="NUMBER_MANY"/> שניות</translation>
 <translation id="5935630983280450497">נותרה <ph name="NUMBER_ONE"/> דקה</translation>
 <translation id="1860796786778352021">סגירת הודעה</translation>
 <translation id="6364916375976753737">גלול שמאלה</translation>
@@ -68,6 +70,7 @@
 <translation id="7781829728241885113">אתמול</translation>
 <translation id="3424538384153559412"><ph name="NUMBER_TWO"/> דקות</translation>
 <translation id="50960180632766478">נותרו <ph name="NUMBER_FEW"/> דקות</translation>
+<translation id="5517291721709019259">נותרו <ph name="NUMBER_FEW"/> שניות</translation>
 <translation id="6659594942844771486">Tab</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY"/> MB</translation>
 <translation id="4988273303304146523">לפני <ph name="NUMBER_DEFAULT"/> ימים</translation>
@@ -137,12 +140,14 @@
 <translation id="1285266685456062655">לפני <ph name="NUMBER_FEW"/> שעות</translation>
 <translation id="6918245111648057970">אפשר קבלת הודעות מהגורמים הבאים עבור כל משתמש:</translation>
 <translation id="5489830104927132166"><ph name="NUMBER_ONE"/> שנייה</translation>
+<translation id="1270251962578273213">נותרו <ph name="NUMBER_TWO"/> שניות</translation>
 <translation id="3994835489895548312">נותרו <ph name="NUMBER_MANY"/> דקות</translation>
 <translation id="6358975074282722691">לפני <ph name="NUMBER_TWO"/> שניות</translation>
 <translation id="520299402983819650"><ph name="QUANTITY"/> PB</translation>
 <translation id="2983818520079887040">הגדרות...</translation>
 <translation id="6845383723252244143">בחר תיקייה</translation>
 <translation id="7600770490873519066"><ph name="NUMBER_FEW"/> שניות</translation>
+<translation id="5368780922436099921">נותרו <ph name="NUMBER_ZERO"/> שניות</translation>
 <translation id="1095623615273566396"><ph name="NUMBER_FEW"/> שניות</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5263972071113911534">לפני <ph name="NUMBER_MANY"/> ימים</translation>
@@ -165,6 +170,7 @@
 <translation id="6142413573757616983"><ph name="QUANTITY"/> B/s</translation>
 <translation id="7649070708921625228">עזרה</translation>
 <translation id="6699343763173986273">הרצועה הבאה במדיה</translation>
+<translation id="5445120697129764393">נותרו <ph name="NUMBER_DEFAULT"/> שניות</translation>
 <translation id="8226233771743600312">נא לא להפריע ליום אחד</translation>
 <translation id="7457942297256758195">נקה הכל</translation>
 <translation id="822618367988303761">לפני <ph name="NUMBER_TWO"/> ימים</translation>

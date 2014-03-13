@@ -3,7 +3,6 @@
 <translationbundle lang="pl">
 <translation id="4763480195061959176">film</translation>
 <translation id="5843503607508392247">Inny...</translation>
-<translation id="2426432199384958866">powróć do czasu rzeczywistego strumieniowo przesyłanego filmu</translation>
 <translation id="248395913932153421">Dzień</translation>
 <translation id="1729654308190250600">Podaj adres e-mail.</translation>
 <translation id="6015796118275082299">Rok</translation>
@@ -22,7 +21,6 @@
 <translation id="7057186640035488495">czas filmu</translation>
 <translation id="8199524924445686405">rrrr</translation>
 <translation id="795667975304826397">Nie wybrano pliku</translation>
-<translation id="1320012872283894746">szybko przewiń do tyłu</translation>
 <translation id="7789962463072032349">wstrzymaj</translation>
 <translation id="6853785296079745596">ukryj napisy</translation>
 <translation id="4360991593054037559">Podaj prawidłową wartość. Dwie najbliższe prawidłowe wartości to <ph name="VALID_VALUE_LOW"/> i <ph name="VALID_VALUE_HIGHER"/>.</translation>
@@ -36,7 +34,6 @@
 <translation id="6845533974506654842">naciśnij</translation>
 <translation id="8244226242650769279">mapa grafiki</translation>
 <translation id="310520048233152454">Wprowadź adres URL.</translation>
-<translation id="9039488204461337220">szybko przewiń do przodu</translation>
 <translation id="4812940957355064477">Wpisz liczbę.</translation>
 <translation id="2548326553472216322">Brak ostatnich wyszukiwań</translation>
 <translation id="1938124657309484470">Musisz podać wartość <ph name="MAXIMUM_DATE_OR_TIME"/> lub wcześniejszą.</translation>
@@ -49,7 +46,6 @@
 <translation id="3075154866155599887">Wpisz prawidłową wartość. Pole jest niekompletne lub zawiera nieprawidłową datę.</translation>
 <translation id="3040011195152428237">link</translation>
 <translation id="1014825444426747588">puste</translation>
-<translation id="3356679314312413792">przewiń film 30 sekund do tyłu</translation>
 <translation id="9050748414552849310">pokaż napisy</translation>
 <translation id="4522570452068850558">Szczegóły</translation>
 <translation id="8451268428117625855">Wybierz plik.</translation>
@@ -101,7 +97,6 @@
 <translation id="7673697353781729403">Godziny</translation>
 <translation id="4664250907885839816">Część po znaku „<ph name="ATSIGN"/>” nie może zawierać symbolu „<ph name="INVALIDCHARACTER"/>”.</translation>
 <translation id="3450233048674729344">Wartość nie może być większa niż <ph name="MAXIMUM"/>.</translation>
-<translation id="3471999216963526757">30 sekund do tyłu</translation>
 <translation id="668171684555832681">Inny...</translation>
 <translation id="6270583010843788609">miniatura osi czasu filmu</translation>
 <translation id="5641012560118721995">wstrzymaj odtwarzanie</translation>
@@ -110,15 +105,12 @@
 <translation id="8444882422881193423">Liczba plików: <ph name="NUMBER_OF_FILES"/></translation>
 <translation id="6643016212128521049">Wyczyść</translation>
 <translation id="7888071071722539607">Uwzględnij znak „<ph name="ATSIGN"/>” w adresie e-mail. W adresie „<ph name="INVALIDADDRESS"/>” brakuje znaku „<ph name="ATSIGN"/>”.</translation>
-<translation id="4851297395436456855">przewiń do przodu</translation>
 <translation id="1088086359088493902">Sekundy</translation>
 <translation id="3934680773876859118">Nie można wczytać dokumentu PDF</translation>
 <translation id="3632707345189162177">pozostały czas filmu w sekundach</translation>
 <translation id="6359256949422175976">miniatura paska czasu odtwarzania filmu</translation>
 <translation id="8597182159515967513">nagłówek</translation>
 <translation id="6843725295806269523">wyciszenie</translation>
-<translation id="2615751259741237794">powróć do czasu rzeczywistego</translation>
 <translation id="2653659639078652383">Prześlij</translation>
 <translation id="3732799496749320381">mm</translation>
-<translation id="4484359737905287537">szybko przewiń do tyłu</translation>
 </translationbundle>

@@ -6,26 +6,24 @@
 <translation id="6373523479360886564">‏האם אתה בטוח שברצונך להסיר את התקנת Chromium?</translation>
 <translation id="5065199687811594072">‏האם ברצונך ש-Chromium ישמור פרטים אלה של כרטיס האשראי להשלמת טופסי אינטרנט?</translation>
 <translation id="6510925080656968729">‏הסר את התקנת Chromium</translation>
+<translation id="2615699638672665509">‏קבלת העדכונים של Chromium תופסק בקרוב למחשב זה מאחר והחומרה שלו אינה נתמכת עוד.</translation>
 <translation id="6893813176749746474">‏Chromium עודכן, אך לא השתמשת בו לפחות 30 ימים.</translation>
 <translation id="1550579416447684632">‏הפעל יישומי Chromium</translation>
 <translation id="4267347018362241535">‏Chromium App Launcher הוא פלטפורמה עצמאית ליישומי Chromium.</translation>
 <translation id="2770231113462710648">שנה את דפדפן ברירת המחדל ל:</translation>
 <translation id="6613594504749178791">‏השינויים שביצעת ייכנסו לתוקף בפעם הבאה שתפעיל מחדש את Chromium‏.</translation>
 <translation id="3748537968684000502">‏אתה מציג דף Chromium מאובטח.</translation>
-<translation id="8971920611044657379">Chromium Frame</translation>
 <translation id="2077129598763517140">השתמש בהאצת חומרה כשניתן</translation>
 <translation id="1065672644894730302">לא היתה אפשרות לקרוא את ההעדפות שלך. ייתכן שחלק מהתכונות לא יהיו זמינות ושינויים בהעדפות לא יישמרו.</translation>
-<translation id="4222661289444749267">‏עדכון Chrome Frame.</translation>
 <translation id="4423735387467980091">‏התאם אישית ושלוט ב-Chromium</translation>
 <translation id="1881322772814446296">‏אתה נכנס עם חשבון מנוהל ונותן למנהל המערכת שלו שליטה על הפרופיל שלך ב-Chromium. הנתונים שלך ב-Chromium, כגון יישומים, סימניות, היסטוריה, סיסמאות והגדרות אחרות ייקשרו באופן קבוע ל-<ph name="USER_NAME"/>. תוכל למחוק את הנתונים האלה באמצעות מרכז השליטה של חשבונות Google, אבל לא תוכל לשייך את הנתונים האלה לחשבון אחר. לחלופין, תוכל ליצור פרופיל חדש כדי לשמור את הנתונים הקיימים שלך ב-Chromium בנפרד.<ph name="LEARN_MORE"/></translation>
-<translation id="7128196614940529818">‏Chromium Frame כבר מותקן וזמין לכל המשתמשים במחשב זה. אם ברצונך להתקין את Chromium Frame ברמת המשתמש, עליך ראשית להסיר התקנת את הגרסה ברמת המערכת שהותקנה על ידי מנהל המערכת.</translation>
 <translation id="731644333568559921">‏עדכן את &amp;מערכת ההפעלה של Chromium‏</translation>
 <translation id="7421823331379285070">‏Chromium דורש גרסת Windows XP או מאוחרת יותר. תכונות מסוימות עלולות שלא לפעול.</translation>
 <translation id="7023267510504981715">‏עליך לשדרג את Chromium כדי להשתמש בארנק Google‏‏ [<ph name="ERROR_CODE"/>].</translation>
 <translation id="7419987137528340081">‏אם אתה מעדיף לשמור את נתוני Chromium הקיימים שלך בנפרד, תוכל ליצור משתמש Chromium חדש עבור <ph name="USER_NAME"/>.</translation>
+<translation id="5427571867875391349">‏הגדר את Chromium כדפדפן ברירת המחדל שלך</translation>
 <translation id="8030318113982266900">מעדכן את המכשיר שלך לערוץ <ph name="CHANNEL_NAME"/>...</translation>
 <translation id="3549345495227188780">‏תחילת העבודה עם Chromium OS</translation>
-<translation id="4330297532943865716">‏התקנה מתנגשת של Chromium או Chromium Frame נמצאה במערכת. הסר אותה ונסה שוב.</translation>
 <translation id="6953661834318318668">‏סרגל הכלים של Chromium</translation>
 <translation id="4285930937574705105">‏ההתקנה נכשלה בשל שגיאה לא צפויה. אם Chromium  פועל כעת, סגור אותו ונסה שוב.</translation>
 <translation id="1396446129537741364">‏Chromium מנסה להציג סיסמאות.</translation>
@@ -40,8 +38,10 @@
           <ph name="PROXIES_TITLE"/>
           ובדוק שהתצורה שלך מוגדרת לאפשרות &quot;ללא שרת proxy‏&quot; או &quot;ישיר&quot;.</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE"/> - Chromium</translation>
+<translation id="7729447699958282447">‏Chromium לא הצליח לסנכרן את הנתונים שלך מפני שסנכרון אינו זמין עבור הדומיין שלך.</translation>
 <translation id="1989424089625731201">‏ניסית להגיע אל &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, אך האישור שהשרת הציג מכיל שגיאות. Chromium אינו יכול להשתמש באישור שמכיל שגיאות ואינו יכול לאמת את הזהות של האתר שאליו ניסית להתחבר.</translation>
 <translation id="3103660991484857065">‏המתקין לא הצליח לבטל את דחיסת הארכיון. הורד שוב את Chromium.</translation>
+<translation id="7064610482057367130">‏לא נמצאה התקנה של Chromium שיש לעדכן.</translation>
 <translation id="872034308864968620">‏אפשר ל-Chromium לפעול ברקע</translation>
 <translation id="459535195905078186">‏יישומי Chromium</translation>
 <translation id="5109068449432240255">‏כן, צא מ-Chromium</translation>
@@ -55,12 +55,10 @@
 <translation id="8628626585870903697">‏Chromium אינו כולל מציג PDF, הנדרש להפעלת תצוגה מקדימה של הדפסה.</translation>
 <translation id="7138853919861947730">‏Chromium עשוי להשתמש בשירותי אינטרנט כדי לשפר את חווית הגלישה שלך.</translation>
 <translation id="466053073629175099">‏נכנסת ל-Chromium! הסימניות, ההיסטוריה, והגדרות אחרות שלך יסונכרנו עם חשבון Google שלך.</translation>
-<translation id="4179848566211676653">‏יציאה מ-Chromium</translation>
 <translation id="3849925841547750267">‏למרבה הצער, הגדרות Mozilla Firefox שלך אינן זמינות בזמן שהדפדפן פועל. כדי לייבא הגדרות אלו ל-Chromium, שמור את עבודתך וסגור את כל חלונות Firefox. לאחר מכן לחץ על המשך.</translation>
 <translation id="7771626876550251690">‏במקרה כזה, הכתובת שמופיעה באישור אינה תואמת לכתובת של האתר שאליו הדפדפן שלך ניסה להגיע. סיבה אפשרית  לכך היא שהתקשורת שלך יורטה על ידי תוקף שמציג אישור עבור אתר שונה, וכך נוצרה אי התאמה. סיבה אפשרית נוספת היא שהשרת מוגדר להחזיר את אותו אישור עבור אתרים מרובים, כולל האתר שבו אתה מנסה לבקר, אפילו שהאישור אינו תקף לכל אותם אתרים. Chromium יכול לומר בוודאות שהגעת אל &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/ strong&gt;, אך אינו יכול לאמת שהוא זהה ל-&lt;strong&gt;<ph name="DOMAIN"/>&lt;/ strong&gt;, שאליו ניסית להגיע. אם תמשיך, Chromium לא יחפש אי התאמות שמיות נוספות.</translation>
 <translation id="4330585738697551178">‏מודול זה מתנגש עם Chromium.</translation>
 <translation id="3190315855212034486">‏וואו! Chromium קרס. להפעיל מחדש עכשיו?</translation>
-<translation id="6714487516757221107">‏לא נמצאה התקנה של Chromium או Chromium Frame שיש לעדכן.</translation>
 <translation id="3197823471738295152">המכשיר שלך מעודכן.</translation>
 <translation id="8551886023433311834">כמעט מעודכן! הפעל מחדש את המכשיר שלך כדי לסיים את העדכון.</translation>
 <translation id="8353224596138547809">‏האם אתה מעוניין ש-Chromium ישמור את הסיסמה עבור אתר זה?</translation>
@@ -85,19 +83,20 @@
 <translation id="6944967875980567883">‏מודולים שנטענו ב-Chromium</translation>
 <translation id="6899795326977034905">‏ב-Mac, סיסמאות נשמרות ב-Keychain שלך ומשתמשי Chromium אחרים המשתפים חשבון OS X זה יכולים לגשת אליהן או לסנכרן אותן.</translation>
 <translation id="118298050220780080">‏ניסית להגיע אל &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, אך השרת הציג אישור שהונפק על ידי ישות שמערכת ההפעלה של המחשב אינה בוטחת בה. ייתכן שהשרת יצר את פרטי הכניסה בעצמו, ו-Chromium אינו יכול להסתמך עליהם לשם השגת פרטי זיהוי, או שייתכן שתוקף מנסה ליירט את התקשורת שלך.</translation>
+<translation id="3046695367536568084">‏עליך להיות מחובר ל-Chromium כדי להשתמש ביישומים. כך Chromium יכול לסנכרן את היישומים, הסימניות, ההיסטוריה, הסיסמאות והגדרות נוספות בין מכשירים שונים.</translation>
 <translation id="3296368748942286671">‏המשך הפעלת יישומים ברקע כאשר Chromium סגור</translation>
 <translation id="473775607612524610">עדכן</translation>
 <translation id="5714819759736651024">‏כדי להשתמש ביישומי Chrome‏, עליך להפעיל מחדש את Chromium בשולחן העבודה.</translation>
 <translation id="7707841053049645517">‏אתר זה משתמש בפלאגין Chromium Frame, שבקרוב לא ייתמך. הסר את התקנתו ושדרג לדפדפן מתקדם.</translation>
 <translation id="7338384957110970244">‏Chromium לא הצליח ליצור קיצור דרך ליישום.</translation>
+<translation id="3656661827369545115">‏הפעל את Chromium אוטומטית בעת הפעלת המחשב</translation>
 <translation id="6055895534982063517">‏גרסה חדשה של Chromium זמינה, והיא מהירה יותר מאי פעם.</translation>
-<translation id="2407806170074302369">‏מידע על Chromium Frame...</translation>
+<translation id="8821041990367117597">‏Chromium לא הצליח לסנכרן את הנתונים שלך מפני שפרטי הכניסה של חשבונך אינם מעודכנים.</translation>
 <translation id="4677944499843243528">‏נראה שהפרופיל נמצא בשימוש על ידי תהליך Chromium אחר (<ph name="PROCESS_ID"/>) במחשב אחר (<ph name="HOST_NAME"/>)‏. Chromium נעל את הפרופיל כדי שלא ייפגם. אם אתה משוכנע שאף תהליך אחר אינו משתמש בפרופיל זה, תוכל לבטל את נעילת הפרופיל ולהפעיל את Chromium מחדש.</translation>
 <translation id="5405650547142096840">‏להסיר מ-‏Chromium‏</translation>
 <translation id="7747138024166251722">המתקין לא הצליח ליצור ספריה זמנית. בדוק את המקום הפנוי בדיסק ואת האישור להתקנת תוכנה.</translation>
 <translation id="3258596308407688501">‏Chromium אינו יכול לקרוא ולכתוב בספריית הנתונים שלו: <ph name="USER_DATA_DIRECTORY"/></translation>
 <translation id="4932687624772039103">‏Chromium אינו תומך ב-<ph name="OS_NAME"/> .</translation>
-<translation id="8738921060445980047">גרסה לא ידועה.</translation>
 <translation id="6970811910055250180">מעדכן את המכשיר שלך...</translation>
 <translation id="2485422356828889247">הסר התקנה</translation>
 <translation id="85843667276690461">‏קבלת עזרה באמצעות Chromium</translation>
@@ -132,6 +131,7 @@
 <translation id="1779356040007214683">‏כדי לשפר את האבטחה של Chromium, השבתנו חלק מהתוספים שלא רשומים ב<ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> וייתכן שנוספו ללא ידיעתך.</translation>
 <translation id="6638567566961868659">‏מצא את הסימניות שלך בתפריט Chromium או בסרגל הסימניות.</translation>
 <translation id="2673087257647337101">‏כמעט מעודכן! הפעל מחדש את Chromium‏ כדי לסיים את העדכון.</translation>
+<translation id="1293235220023151515">‏נמצאה במערכת התקנה מתנגשת של Chromium. הסר את ההתקנה ונסה שוב.</translation>
 <translation id="5398878173008909840">‏גרסה חדשה של Chromium זמינה כעת.</translation>
 <translation id="2648074677641340862">‏במהלך ההתקנה ארעה שגיאה של מערכת ההפעלה. הורד שוב את Chromium.</translation>
 <translation id="5942520288919337908">‏<ph name="EXTENSION_NAME"/> נוסף ל-‏Chromium‏.</translation>
@@ -152,13 +152,13 @@
 <translation id="8907580949721785412">‏Chromium מנסה להציג סיסמאות. הקלד את הסיסמה שלך ל-Windows כדי לאפשר זאת.</translation>
 <translation id="9013087743919948559">‏הוסף ל-‏Chromium‏</translation>
 <translation id="6212496753309875659">‏במחשב זה קיימת כבר גרסה מתקדמת יותר של Chromium. אם התוכנה אינה פועלת, הסר את ההתקנה של Chromium ונסה שוב.</translation>
+<translation id="1115445892567829615">‏Chromium לא הצליח לסנכרן את הנתונים שלך. עדכן את משפט הסיסמה לסנכרון.</translation>
 <translation id="1298199220304005244">‏קבלת עזרה באמצעות מערכת ההפעלה של Chromium</translation>
 <translation id="8187289872471304532">‏עבור אל
           'יישומים' &gt; 'העדפות מערכת' &gt; 'רשת' &gt; 'מתקדם' &gt; שרתי Proxy'
           ובטל את הבחירה בשרתי proxy שנבחרו.</translation>
 <translation id="2801146392936645542">‏<ph name="FILE_NAME"/> הוא קובץ זדוני, ו-Chromium חסם אותו.</translation>
 <translation id="4488676065623537541">‏פרטי החיוב שלך נשמרו ב-Chromium.</translation>
-<translation id="1691304614444223855">‏Chromium Frame עודכן. הפעל מחדש את הדפדפן. גרסת Chromium‏ : <ph name="TODO_0001"/>, גרסת Chromium Frame‏: <ph name="TODO_0002"/></translation>
 <translation id="130631256467250065">השינויים ייכנסו לתוקף בפעם הבאה שתפעיל מחדש את המכשיר.</translation>
 <translation id="3244477511402911926">‏מרכז ההתראות של Chromium</translation>
 <translation id="1105130903706696483">‏Chromium לא נסגר כראוי. לפתיחה מחדש של הדפים שפתחת, לחץ על 'שחזר'.</translation>
@@ -171,11 +171,10 @@
 <translation id="1231416733874080281">‏הצג את תפריט Chromium</translation>
 <translation id="5772805321386874569">‏(נדרש <ph name="BEGIN_BUTTON"/>אתחול<ph name="END_BUTTON"/> של Chromium)</translation>
 <translation id="1688750314291223739">‏הגדר סנכרון כדי לשמור את תכונות הדפדפן המותאמות אישית שלך באינטרנט ולגשת אליהן מ-Chromium בכל מחשב.</translation>
-<translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">דפדפן אינטרנט</translation>
 <translation id="8610831143142469229">‏אפשר ל-Chromium לגשת לרשת בהגדרות חומת האש או האנטי-וירוס שלך.</translation>
 <translation id="6424492062988593837">‏‫Chromium ממשיך להשתפר! קיימת גירסה חדשה.</translation>
-<translation id="6601972021154586963">‏עליך להיכנס ל-Chromium כדי להשתמש ביישומים. כך Chromium יכול לסנכרן את היישומים, הסימניות, ההיסטוריה, הסיסמאות והגדרות אחרות שלך בין מכשירים שונים.</translation>
+<translation id="811857857463334932">‏קבלת העדכונים של Chromium תופסק בקרוב למחשב זה מאחר והחומרה שלו אינה נתמכת עוד.</translation>
 <translation id="2910007522516064972">‏מידע על &amp;Chromium‏</translation>
 <translation id="8453117565092476964">‏הארכיון של המתקין פגום או שאינו חוקי. הורד שוב את Chromium.</translation>
 <translation id="6763060723530774166">‏כדי להשתמש במפעיל היישומים, עליך להפעיל מחדש את Chromium בשולחן העבודה.</translation>
@@ -193,6 +192,7 @@
 <translation id="1708666629004767631">‏גרסה חדשה ובטוחה יותר של Chromium זמינה כעת.</translation>
 <translation id="378917192836375108">‏Chromium מאפשר לך ללחוץ על מספר טלפון באינטרנט ולהתקשר אליו באמצעות Skype!</translation>
 <translation id="8724049448828509830">‏הורדה מתבצעת כעת. האם ברצונך לצאת מ-Chromium ולבטל את ההורדה?</translation>
+<translation id="608189560609172163">‏Chromium לא הצליח לסנכרן את הנתונים שלך בשל שגיאת כניסה.</translation>
 <translation id="3360567213983886831">Chromium Binaries</translation>
 <translation id="8985587603644336029">‏מישהו נכנס בעבר ל-Chromuim מהמחשב הזה כ-<ph name="ACCOUNT_EMAIL_LAST"/>. אם זה לא החשבון שלך, צור משתמש חדש ל-Chromuim כדי לשמור על הפרדת המידע שלך.
 
@@ -208,7 +208,6 @@
 
 Chromium לא יכול לשחזר את ההגדרות שלך.</translation>
 <translation id="6403826409255603130">‏Chromium הוא דפדפן אינטרנט המפעיל דפי אינטרנט ואפליקציות במהירות הבזק. זהו דפדפן מהיר, יציב וקל לשימוש. תוכל לגלוש באינטרנט בצורה מאובטחת יותר הודות להגנה מפני תוכנות זדוניות ודיוג המובנית ב-Chromium.</translation>
-<translation id="2927042866129133279">‏ארגומנטים לא חוקיים. לא ניתן להתקין את Chromium Frame במצב מוכן מבלי להתקין גם את Chromium.</translation>
 <translation id="4019464536895378627">‏ניסית להגיע אל &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, אך השרת הציג אישור שהונפק על ידי ישות ש-Chromium אינו בוטח בה. ייתכן שהשרת יצר את פרטי הכניסה בעצמו, ו-Chromium אינו יכול להסתמך עליהם כפרטי זהות, או שתוקף מנסה ליירט את התקשורת שלך.</translation>
 <translation id="4230135487732243613">‏האם לקשר את הנתונים שלך ב-Chromium לחשבון זה?</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>

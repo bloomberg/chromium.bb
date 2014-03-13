@@ -15,6 +15,7 @@
 <translation id="370649949373421643">Wi-fiని ప్రారంభించు</translation>
 <translation id="3626281679859535460">ప్రకాశం</translation>
 <translation id="3621202678540785336">ఇన్‌పుట్</translation>
+<translation id="7348093485538360975">ఆన్-స్క్రీన్ కీబోర్డ్</translation>
 <translation id="595202126637698455">పనితీరుని గుర్తించడం ప్రారంభించబడింది</translation>
 <translation id="8054466585765276473">బ్యాటరీ సమయాన్ని లెక్కిస్తోంది.</translation>
 <translation id="7982789257301363584">నెట్‌వర్క్</translation>
@@ -27,6 +28,7 @@
 <translation id="2297568595583585744">స్థితి ట్రే</translation>
 <translation id="1661867754829461514">PIN లేదు</translation>
 <translation id="4508225577814909926"><ph name="NAME"/>: కనెక్ట్ అవుతోంది...</translation>
+<translation id="2248649616066688669">మీ Chromebook బాహ్య డిస్‌ప్లేకి కనెక్ట్ చేయబడినప్పుడు మూత మూసివేసి ఉన్నప్పటికీ కూడా మీరు దాన్ని ఉపయోగించడం కొనసాగించవచ్చు.</translation>
 <translation id="40400351611212369">నెట్‌వర్క్‌ను సక్రియం చేయడంలో లోపం</translation>
 <translation id="4237016987259239829">నెట్‌వర్క్ కనెక్షన్ లోపం</translation>
 <translation id="2946640296642327832">Bluetoothని ప్రారంభించు</translation>
@@ -34,11 +36,14 @@
 <translation id="8206859287963243715">సెల్యులార్</translation>
 <translation id="6596816719288285829">IP చిరునామా</translation>
 <translation id="4508265954913339219">సక్రియం  చేయడం విఫలమైంది</translation>
+<translation id="8688591111840995413">పాస్‌వర్డ్ చెల్లదు</translation>
 <translation id="3621712662352432595">ఆడియో సెట్టింగ్‌‍లు</translation>
 <translation id="1812696562331527143">మీ ఇన్‌పుట్ పద్ధతి <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>3వ పక్షం<ph name="END_LINK"/>)కు మార్చబడింది.
 మారడానికి Shift + Altను నొక్కండి.</translation>
+<translation id="6043994281159824495">ఇప్పుడే సైన్ అవుట్ చేయి</translation>
 <translation id="2127372758936585790">తక్కువ-పవర్ గల ఛార్జర్</translation>
 <translation id="3846575436967432996">నెట్‌వర్క్ సమాచారం అందుబాటులో లేదు</translation>
+<translation id="3799026279081545374">మీరు పని చేయని ఛార్జర్‌ను కలిగి ఉండవచ్చు. మీరు USలో నివసిస్తుంటే, దయచేసి సహాయం పొందడానికి మరియు భర్తీ అభ్యర్థించడానికి 866-628-1371కి కాల్ చేయండి. మీరు UKలో నివసిస్తుంటే, దయచేసి 0800-026-0613కి కాల్ చేయండి. మీరు ఐర్లాండ్‌లో నివసిస్తుంటే, దయచేసి 1-800-832-664కి కాల్ చేయండి. మీరు కెనడాలో నివసిస్తుంటే, దయచేసి 866-628-1372కి కాల్ చేయండి. మీరు ఆస్ట్రేలియాలో నివసిస్తుంటే, దయచేసి 1-800-067-460కి కాల్ చేయండి.</translation>
 <translation id="3026237328237090306">మొబైల్ డేటాను సెటప్ చేయి</translation>
 <translation id="5871632337994001636">పరికరాలను నిర్వహించండి...</translation>
 <translation id="785750925697875037">మొబైల్ ఖాతాని వీక్షించండి</translation>
@@ -57,6 +62,8 @@
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME"/> (<ph name="ANNOTATION"/>)</translation>
 <translation id="2942516765047364088">అర స్థానం</translation>
 <translation id="8676770494376880701">తక్కువ-పవర్ గల ఛార్జర్ కనెక్ట్ చేయబడింది</translation>
+<translation id="5238774010593222950">మరొక ఖాతాకు సైన్ ఇన్ చేయడం సాధ్యపడదు.</translation>
+<translation id="1723752762323179280">సెషన్ నుండి నిష్క్రమిస్తోంది</translation>
 <translation id="7170041865419449892">పరిధిని దాటింది</translation>
 <translation id="4804818685124855865">డిస్‌కనెక్ట్ చెయ్యి</translation>
 <translation id="2544853746127077729">ప్రామాణీకరణ ప్రమాణపత్రం నెట్‌వర్క్ ద్వారా తిరస్కరించబడింది</translation>
@@ -72,7 +79,6 @@
 <translation id="3892641579809465218">అంతర్గత ప్రదర్శన</translation>
 <translation id="7823564328645135659">మీ సెట్టింగ్‌లను సమకాలీకరించిన తర్వాత Chrome యొక్క భాష &quot;<ph name="FROM_LOCALE"/>&quot; నుండి &quot;<ph name="TO_LOCALE"/>&quot;కి మార్చబడింది.</translation>
 <translation id="3368922792935385530">కనెక్ట్ అయింది</translation>
-<translation id="8340999562596018839">చదవబడే అభిప్రాయం</translation>
 <translation id="8654520615680304441">Wi-Fiని ప్రారంభించు...</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="5825747213122829519">మీ ఇన్‌పుట్ పద్ధతి <ph name="INPUT_METHOD_ID"/>కు మార్చబడింది.
@@ -98,9 +104,7 @@
 <translation id="3963445509666917109">స్పీకర్ (అంతర్గతం)</translation>
 <translation id="2825619548187458965">అర</translation>
 <translation id="2614835198358683673">మీ Chromebook ప్రారంభించబడినప్పుడు ఛార్జ్ కాకపోవచ్చు. అధికారిక ఛార్జర్‌ను ఉపయోగించడానికి ప్రయత్నించండి.</translation>
-<translation id="1895658205118569222">షట్‌డౌన్</translation>
 <translation id="4430019312045809116">వాల్యూమ్</translation>
-<translation id="8681498213689260554">నవీకరించడానికి పునఃప్రారంభించి పవర్‌వాష్ చేయండి</translation>
 <translation id="4442424173763614572">DNS శోధన విఫలమైంది</translation>
 <translation id="7874779702599364982">సెల్యులార్ నెట్‌వర్క్‌ల కోసం శోధిస్తోంది...</translation>
 <translation id="583281660410589416">తెలియనిది</translation>
@@ -110,7 +114,7 @@
 <translation id="1621499497873603021">బ్యాటరీ ఖాళీ కావడానికి మిగిలి ఉన్న సమయం, <ph name="TIME_LEFT"/></translation>
 <translation id="5980301590375426705">అతిథిగా నిష్క్రమించు</translation>
 <translation id="8308637677604853869">మునుపటి మెను</translation>
-<translation id="4666297444214622512">మరో ఖాతాకు సైన్ ఇన్ చేయలేరు.</translation>
+<translation id="4321179778687042513">ctrl</translation>
 <translation id="3625258641415618104">స్క్రీన్‌షాట్‌లు నిలిపివేయబడ్డాయి</translation>
 <translation id="1346748346194534595">కుడి</translation>
 <translation id="1773212559869067373">ప్రామాణీకరణ ప్రమాణపత్రం స్థానికంగా తిరస్కరించబడింది</translation>
@@ -119,10 +123,9 @@
 <translation id="8428213095426709021">సెట్టింగ్‌లు</translation>
 <translation id="2372145515558759244">అనువర్తనాలను సమకాలీకరిస్తోంది...</translation>
 <translation id="7256405249507348194">గుర్తించబడని లోపం: <ph name="DESC"/></translation>
+<translation id="2894654529758326923">సమాచారం</translation>
 <translation id="7925247922861151263">AAA తనిఖీ విఫలమైంది</translation>
 <translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/>లో పూర్తవుతుంది</translation>
-<translation id="5787281376604286451">చదవబడే అభిప్రాయం ప్రారంభించబడింది.
-నిలిపివేయడానికి Ctrl+Alt+Zను నొక్కండి.</translation>
 <translation id="4479639480957787382">ఈథర్నెట్</translation>
 <translation id="6312403991423642364">తెలియని నెట్‌వర్క్ లోపం</translation>
 <translation id="1467432559032391204">ఎడమ</translation>
@@ -133,6 +136,7 @@
 <translation id="1923539912171292317">స్వయంచాలక క్లిక్‌లు</translation>
 <translation id="1398853756734560583">గరిష్ఠీకరించు</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: కనెక్ట్ అవుతోంది...</translation>
+<translation id="6062360702481658777">మీరు <ph name="LOGOUT_TIME_LEFT"/>లో స్వయంచాలకంగా సైన్ అవుట్ చేయబడతారు.</translation>
 <translation id="252373100621549798">తెలియని ప్రదర్శన</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME"/>కు దర్పణం చేస్తోంది</translation>
 <translation id="2727977024730340865">తక్కువ-పవర్ గల ఛార్జర్‌కు ప్లగిన్ చేయబడింది. బ్యాటరీ ఛార్జింగ్ విశ్వసనీయంగా ఉండకపోవచ్చు.</translation>
@@ -141,6 +145,7 @@
 <translation id="1512064327686280138">సక్రియా విఫలం</translation>
 <translation id="5097002363526479830">'<ph name="NAME"/>'కు నెట్‌వర్క్‌కు కనెక్ట్ చేయడానికి విఫలమైంది: <ph name="DETAILS"/></translation>
 <translation id="1850504506766569011">Wi-Fi నిలిపివేయబడింది.</translation>
+<translation id="2872961005593481000">షట్ డౌన్ చెయ్యండి</translation>
 <translation id="2966449113954629791">మీకు అనుమతించిన మొబైల్ డేటాను మీరు ఉపయోగించి ఉండవచ్చు. మరింత డేటాను కొనుగోలు చేయడానికి <ph name="NAME"/> సక్రియ పోర్టల్‌ను సందర్శించండి.</translation>
 <translation id="8132793192354020517"><ph name="NAME"/>కు కనెక్ట్ చేయబడింది</translation>
 <translation id="7052914147756339792">వాల్‌పేపర్‌ను సెట్ చేయి...</translation>
@@ -153,8 +158,10 @@
 <translation id="7005812687360380971">విఫలం</translation>
 <translation id="882279321799040148">వీక్షించడానికి క్లిక్ చేసినప్పుడు</translation>
 <translation id="1753067873202720523">మీ Chromebook ఆన్‌లో ఉన్నప్పుడు ఛార్జ్ కాకపోవచ్చు.</translation>
+<translation id="7561014039265304140"><ph name="DISPLAY_NAME"/> <ph name="SPECIFIED_RESOLUTION"/>కి మద్దతివ్వదు. రిజల్యూషన్ <ph name="FALLBACK_RESOLUTION"/>కి మార్చబడింది</translation>
 <translation id="5045550434625856497">తప్పు పాస్‌వర్డ్</translation>
 <translation id="1602076796624386989">మొబైల్ డేటాను ప్రారంభించు</translation>
+<translation id="68610848741840742">ChromeVox (చదవబడే అభిప్రాయం)</translation>
 <translation id="6981982820502123353">ప్రాప్యత</translation>
 <translation id="3157931365184549694">పునరుద్ధరించు</translation>
 <translation id="4274292172790327596">గుర్తించబడని లోపం</translation>
@@ -167,10 +174,12 @@
 <translation id="8401662262483418323">'<ph name="NAME"/>'కు కనెక్ట్ చేయడంలో విఫలమైంది: <ph name="DETAILS"/>
 సర్వర్ సందేశం: <ph name="SERVER_MSG"/></translation>
 <translation id="2475982808118771221">ఒక లోపం సంభవించింది</translation>
+<translation id="3783640748446814672">alt</translation>
 <translation id="7229570126336867161">EVDO అవసరం</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> అనేది <ph name="DOMAIN"/> ద్వారా నిర్వహించబడుతున్న పబ్లిక్ సెషన్</translation>
 <translation id="9044646465488564462">నెట్‌వర్క్‌కు కనెక్ట్ చేయడంలో విఫలమైంది: <ph name="DETAILS"/></translation>
 <translation id="7029814467594812963">సెషన్‌ని నిష్క్రమించు</translation>
+<translation id="479989351350248267">శోధించండి</translation>
 <translation id="8454013096329229812">Wi-Fi ప్రారంభించబడింది.</translation>
 <translation id="4872237917498892622">Alt+Search లేదా Shift</translation>
 <translation id="9201131092683066720">బ్యాటరీ <ph name="PERCENTAGE"/>% నిండింది.</translation>
@@ -193,14 +202,13 @@
 <translation id="5947494881799873997">తిరిగి పూర్వ స్థితికి మార్చు</translation>
 <translation id="7593891976182323525">Search లేదా Shift</translation>
 <translation id="7649070708921625228">సహాయం</translation>
-<translation id="747833637904845037">మీ Chromebook బాహ్య డిస్‌ప్లేకి కనెక్ట్ చేయబడినప్పుడు మూత మూసివేసి ఉన్నప్పటికీ కూడా అలాగే ఆన్‌లో ఉంటుంది.</translation>
 <translation id="3050422059534974565">CAPS LOCK ఆన్‌లో ఉంది.
 రద్దు చేయడానికి Search లేదా Shiftని నొక్కండి.</translation>
 <translation id="397105322502079400">గణిస్తోంది...</translation>
 <translation id="158849752021629804"> హోమ్  నెట్‌వర్క్ అవసరం</translation>
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE"/>ని సక్రియం చెయ్యి</translation>
 <translation id="5864471791310927901">DHCP లుక్‌అప్ విఫలమైంది</translation>
-<translation id="6692173217867674490">తప్పుడు పాస్‌ఫ్రేజ్</translation>
+<translation id="2819276065543622893">మీరు ఇప్పుడు సైన్ అవుట్ చేయబడతారు.</translation>
 <translation id="6165508094623778733">మరింత తెలుసుకోండి</translation>
 <translation id="9046895021617826162">కనెక్ట్ విఫలమైంది</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS"/>లో తిరిగి పాత రిజల్యూషన్‌కి మార్చబడుతోంది</translation>
@@ -209,6 +217,8 @@
 <translation id="6636709850131805001">గుర్తించబడని రాష్ట్రం</translation>
 <translation id="3573179567135747900">&quot;<ph name="FROM_LOCALE"/>&quot;కు వెనుకకి మార్చండి (పునఃప్రారంభం అవసరం)</translation>
 <translation id="8103386449138765447">SMS సందేశాలు: <ph name="MESSAGE_COUNT"/></translation>
+<translation id="7097613348211027502">ChromeVox (చదవబడే అభిప్రాయం) ప్రారంభించబడింది.
+నిలిపివేయడానికి Ctrl+Alt+Z నొక్కండి.</translation>
 <translation id="5045002648206642691">Google డిస్క్ సెట్టింగ్‌లు...</translation>
 <translation id="7209101170223508707">CAPS LOCK ఆన్‌లో ఉంది.
 రద్దు చేయడానికి Alt+Search లేదా Shiftని నొక్కండి.</translation>
@@ -224,6 +234,7 @@
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">అభినందనలు! మీ '<ph name="NAME"/>' డేటా సేవ సక్రియం చేయబడింది మరియు పని చేయడానికి సిద్ధంగా ఉంది.</translation>
 <translation id="412065659894267608">నిండే వరకు <ph name="HOUR"/>h <ph name="MINUTE"/>m అవుతుంది</translation>
+<translation id="3077734595579995578">shift</translation>
 <translation id="7297443947353982503">వినియోగదారు పేరు/పాస్‌వర్డ్ తప్పు లేదా EAP-ప్రామాణీకరణ విఫలమైంది</translation>
 <translation id="6359806961507272919"><ph name="PHONE_NUMBER"/> నుండి SMS</translation>
 <translation id="1244147615850840081">కారియర్</translation>

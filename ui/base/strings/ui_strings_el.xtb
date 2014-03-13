@@ -24,6 +24,7 @@
 <translation id="7222373446505536781">F11</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY"/> Β</translation>
 <translation id="3660179305079774227">Πάνω βέλος</translation>
+<translation id="7062130397825382308">Απομένει <ph name="NUMBER_ONE"/> δευτερόλεπτο</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY"/> MB/s</translation>
 <translation id="5608669887400696928"><ph name="NUMBER_DEFAULT"/> ώρες</translation>
 <translation id="3990502903496589789">Δεξιά άκρη</translation>
@@ -45,6 +46,7 @@
 <translation id="7770995925463083016">Πριν από <ph name="NUMBER_TWO"/> λεπτά</translation>
 <translation id="3234408098842461169">Κάτω βέλος</translation>
 <translation id="3087734570205094154">Κάτω</translation>
+<translation id="8828991073132329143">Απομένουν <ph name="NUMBER_MANY"/> δευτερόλεπτα</translation>
 <translation id="5935630983280450497">Υπολείπεται <ph name="NUMBER_ONE"/> λεπτό</translation>
 <translation id="1860796786778352021">Κλείσιμο ειδοποίησης</translation>
 <translation id="6364916375976753737">Κύλιση αριστερά</translation>
@@ -68,6 +70,7 @@
 <translation id="7781829728241885113">Χθες</translation>
 <translation id="3424538384153559412"><ph name="NUMBER_TWO"/> λεπτά</translation>
 <translation id="50960180632766478">Υπολείπονται <ph name="NUMBER_FEW"/> λεπτά</translation>
+<translation id="5517291721709019259">Απομένουν <ph name="NUMBER_FEW"/> δευτερόλεπτα</translation>
 <translation id="6659594942844771486">Καρτέλα</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY"/> MB</translation>
 <translation id="4988273303304146523">Πριν από <ph name="NUMBER_DEFAULT"/> ημέρες</translation>
@@ -137,12 +140,14 @@
 <translation id="1285266685456062655">Πριν από <ph name="NUMBER_FEW"/> ώρες</translation>
 <translation id="6918245111648057970">Να επιτρέπονται οι ειδοποιήσεις από τις παρακάτω πηγές για κάθε χρήστη:</translation>
 <translation id="5489830104927132166"><ph name="NUMBER_ONE"/> δευτερόλεπτο</translation>
+<translation id="1270251962578273213">Απομένουν <ph name="NUMBER_TWO"/> δευτερόλεπτα</translation>
 <translation id="3994835489895548312"><ph name="NUMBER_MANY"/> minutes left</translation>
 <translation id="6358975074282722691">Πριν από <ph name="NUMBER_TWO"/> δευτερόλεπτα</translation>
 <translation id="520299402983819650"><ph name="QUANTITY"/> PB</translation>
 <translation id="2983818520079887040">Ρυθμίσεις...</translation>
 <translation id="6845383723252244143">Επιλογή Φακέλου</translation>
 <translation id="7600770490873519066"><ph name="NUMBER_FEW"/> δευτερόλεπτα</translation>
+<translation id="5368780922436099921">Απομένουν <ph name="NUMBER_ZERO"/> δευτερόλεπτα</translation>
 <translation id="1095623615273566396"><ph name="NUMBER_FEW"/> δευτερόλεπτα</translation>
 <translation id="5583640892426849032">Πλήκτρο Backspace</translation>
 <translation id="5263972071113911534">Πριν από <ph name="NUMBER_MANY"/> ημέρες</translation>
@@ -165,6 +170,7 @@
 <translation id="6142413573757616983"><ph name="QUANTITY"/> B/s</translation>
 <translation id="7649070708921625228">Βοήθεια</translation>
 <translation id="6699343763173986273">Επόμενο κομμάτι πολυμέσων</translation>
+<translation id="5445120697129764393">Απομένουν <ph name="NUMBER_DEFAULT"/> δευτερόλεπτα</translation>
 <translation id="8226233771743600312">Μην ενοχλείτε για μία ημέρα</translation>
 <translation id="7457942297256758195">Εκκαθάριση όλων</translation>
 <translation id="822618367988303761">Πριν από <ph name="NUMBER_TWO"/> ημέρες</translation>

@@ -14,7 +14,9 @@
 <translation id="3358663646935160692">Ennek a fióknak <ph name="DOMAIN_NAME"/> a kezelője.
 
 Ön jelenleg kezelt fiókkal jelentkezik be, és engedélyezi a rendszergazdának az Ön Chrome-profiljához való hozzáférést. Chrome-adatai ezután véglegesen ehhez a fiókhoz társulnak. A fiók leválasztásával törölheti a helyi Chrome-adatokat.</translation>
+<translation id="1966710179511230534">Kérjük, frissítse bejelentkezési adatait.</translation>
 <translation id="1623104350909869708">Akadályozza meg, hogy ez az oldal további párbeszédablakokat hozzon létre.</translation>
+<translation id="8218346974737627104">Bejelentkezés megerősítése</translation>
 <translation id="624558823898732418">A fordítás nyelve: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">Tanúsítvány kiválasztása a hitelesítéshez</translation>
 <translation id="3896036286668839683">Tanúsítványmegtekintő</translation>
@@ -29,7 +31,6 @@
 <translation id="5684874026226664614">Hoppá! Az oldalt nem sikerült lefordítani.</translation>
 <translation id="4619298195800598081">Eredeti kép megnyitása új lapon</translation>
 <translation id="907015151729920253">Intelligens kártya</translation>
-<translation id="3136378934686431938">Kérjük, frissítse bejelentkezési adatait.</translation>
 <translation id="3063601790762993062">Videó mentése</translation>
 <translation id="6042308850641462728">Hosszabban</translation>
 <translation id="3992315671621218278">Link mentése</translation>
@@ -59,5 +60,4 @@
 <translation id="6277522088822131679">Hiba történt az oldal nyomtatásakor. Próbálja újra.</translation>
 <translation id="1742134235943978220">Lefordítva <ph name="TARGET_LANGUAGE"/> nyelvre.</translation>
 <translation id="6965382102122355670">OK</translation>
-<translation id="7495038789730067783">Bejelentkezés megerősítése</translation>
 </translationbundle>

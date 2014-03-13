@@ -15,6 +15,7 @@
 <translation id="370649949373421643">Ativar Wi-Fi</translation>
 <translation id="3626281679859535460">Brilho</translation>
 <translation id="3621202678540785336">Entrada</translation>
+<translation id="7348093485538360975">Teclado virtual</translation>
 <translation id="595202126637698455">Rastreamento de desempenho ativado</translation>
 <translation id="8054466585765276473">Calculando duração da bateria.</translation>
 <translation id="7982789257301363584">Rede</translation>
@@ -27,6 +28,7 @@
 <translation id="2297568595583585744">Bandeja de status</translation>
 <translation id="1661867754829461514">PIN ausente</translation>
 <translation id="4508225577814909926"><ph name="NAME"/>: conectando...</translation>
+<translation id="2248649616066688669">Você pode continuar usando o Chromebook enquanto estiver conectado a uma tela externa, mesmo com a tampa fechada.</translation>
 <translation id="40400351611212369">Erro de ativação de rede</translation>
 <translation id="4237016987259239829">Erro de conexão da rede</translation>
 <translation id="2946640296642327832">Ativar bluetooth</translation>
@@ -34,11 +36,14 @@
 <translation id="8206859287963243715">Celular</translation>
 <translation id="6596816719288285829">Endereço IP</translation>
 <translation id="4508265954913339219">Falha na ativação</translation>
+<translation id="8688591111840995413">Senha incorreta</translation>
 <translation id="3621712662352432595">Configurações de áudio</translation>
 <translation id="1812696562331527143">Seu método de entrada mudou para <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>terceiros<ph name="END_LINK"/>). 
 Pressione Shift + Alt para alternar.</translation>
+<translation id="6043994281159824495">Sair agora</translation>
 <translation id="2127372758936585790">Carregador de baixa potência</translation>
 <translation id="3846575436967432996">Não há informações de rede disponíveis</translation>
+<translation id="3799026279081545374">Seu carregador pode estar com defeito. Se você mora nos EUA, ligue para 866-628-1371 para receber ajuda e uma substituição. Se você mora no Reino Unido, ligue para 0800-026-0613. Se você mora na Irlanda, ligue para 1-800-832-664. Se você mora no Canadá, ligue para 866-628-1372. Se você mora na Austrália, ligue para 1-800-067-460.</translation>
 <translation id="3026237328237090306">Configurar dados móveis</translation>
 <translation id="5871632337994001636">Gerenciar dispositivos...</translation>
 <translation id="785750925697875037">Exibir conta de celular</translation>
@@ -57,6 +62,8 @@ Pressione Shift + Alt para alternar.</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME"/> (<ph name="ANNOTATION"/>)</translation>
 <translation id="2942516765047364088">Posição da estante</translation>
 <translation id="8676770494376880701">Carregador de baixa potência conectado</translation>
+<translation id="5238774010593222950">Não é possível fazer login em outra conta.</translation>
+<translation id="1723752762323179280">Saindo da sessão</translation>
 <translation id="7170041865419449892">Fora de alcance</translation>
 <translation id="4804818685124855865">Desconectar</translation>
 <translation id="2544853746127077729">Certificado de autenticação rejeitado pela rede</translation>
@@ -72,7 +79,6 @@ Pressione Shift + Alt para alternar.</translation>
 <translation id="3892641579809465218">Display interno</translation>
 <translation id="7823564328645135659">O idioma foi alterado de &quot;<ph name="FROM_LOCALE"/>&quot; para &quot;<ph name="TO_LOCALE"/>&quot; após a sincronização de suas configurações.</translation>
 <translation id="3368922792935385530">Conectado</translation>
-<translation id="8340999562596018839">Feedback falado</translation>
 <translation id="8654520615680304441">Ativar Wi-Fi...</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="5825747213122829519">Seu método de entrada mudou para <ph name="INPUT_METHOD_ID"/>.
@@ -98,9 +104,7 @@ Pressione Shift + Alt para alternar.</translation>
 <translation id="3963445509666917109">Alto-falante (interno)</translation>
 <translation id="2825619548187458965">Estante</translation>
 <translation id="2614835198358683673">Seu Chromebook pode não carregar enquanto estiver ligado. Considere usar o carregador oficial.</translation>
-<translation id="1895658205118569222">Encerramento</translation>
 <translation id="4430019312045809116">Volume</translation>
-<translation id="8681498213689260554">Reiniciar e executar Powerwash para atualizar</translation>
 <translation id="4442424173763614572">A busca de DNS falhou</translation>
 <translation id="7874779702599364982">Procurando redes de celular...</translation>
 <translation id="583281660410589416">Desconhecido</translation>
@@ -110,7 +114,7 @@ Pressione Shift + Alt para alternar.</translation>
 <translation id="1621499497873603021">O tempo restante até que a bateria se esgote é de <ph name="TIME_LEFT"/></translation>
 <translation id="5980301590375426705">Sair da sessão de visitante</translation>
 <translation id="8308637677604853869">Menu anterior</translation>
-<translation id="4666297444214622512">Não é possível fazer login em outra conta.</translation>
+<translation id="4321179778687042513">ctrl</translation>
 <translation id="3625258641415618104">Capturas de tela desativadas</translation>
 <translation id="1346748346194534595">Para a direita</translation>
 <translation id="1773212559869067373">Certificado de autenticação rejeitado localmente</translation>
@@ -119,10 +123,9 @@ Pressione Shift + Alt para alternar.</translation>
 <translation id="8428213095426709021">Configurações</translation>
 <translation id="2372145515558759244">Sincronizando aplicativos...</translation>
 <translation id="7256405249507348194">Erro não reconhecido: <ph name="DESC"/></translation>
+<translation id="2894654529758326923">Informações</translation>
 <translation id="7925247922861151263">Falha ao verificar AAA</translation>
 <translation id="8456362689280298700"><ph name="HOUR"/>:<ph name="MINUTE"/> para carga completa</translation>
-<translation id="5787281376604286451">O feedback falado está ativado.
-Pressione Ctrl+Alt+Z para desativá-lo.</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="6312403991423642364">Erro de rede desconhecido</translation>
 <translation id="1467432559032391204">Para a esquerda</translation>
@@ -133,6 +136,7 @@ Pressione Ctrl+Alt+Z para desativá-lo.</translation>
 <translation id="1923539912171292317">Cliques automáticos</translation>
 <translation id="1398853756734560583">Maximizar</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: conectando...</translation>
+<translation id="6062360702481658777">Você sairá automaticamente em <ph name="LOGOUT_TIME_LEFT"/>.</translation>
 <translation id="252373100621549798">Exibição desconhecida</translation>
 <translation id="1882897271359938046">Espelhamento de <ph name="DISPLAY_NAME"/></translation>
 <translation id="2727977024730340865">Conectado a um carregador de baixa potência. O carregamento da bateria pode não ser confiável.</translation>
@@ -141,6 +145,7 @@ Pressione Ctrl+Alt+Z para desativá-lo.</translation>
 <translation id="1512064327686280138">Falha na ativação</translation>
 <translation id="5097002363526479830">Falha na conexão à rede &quot;<ph name="NAME"/>&quot;: <ph name="DETAILS"/></translation>
 <translation id="1850504506766569011">O Wi-Fi está desligado.</translation>
+<translation id="2872961005593481000">Encerrar</translation>
 <translation id="2966449113954629791">Você pode ter usado a cota de dados do seu dispositivo móvel. Visite o portal de ativação do <ph name="NAME"/> para comprar mais dados.</translation>
 <translation id="8132793192354020517">Conectado à <ph name="NAME"/></translation>
 <translation id="7052914147756339792">Definir plano de fundo...</translation>
@@ -153,8 +158,10 @@ Pressione Ctrl+Alt+Z para desativá-lo.</translation>
 <translation id="7005812687360380971">Falha</translation>
 <translation id="882279321799040148">Clique para visualizar</translation>
 <translation id="1753067873202720523">Seu Chromebook não pode ser carregado enquanto está ligado.</translation>
+<translation id="7561014039265304140"><ph name="DISPLAY_NAME"/> não suporta <ph name="SPECIFIED_RESOLUTION"/>. A resolução foi alterada para <ph name="FALLBACK_RESOLUTION"/></translation>
 <translation id="5045550434625856497">Senha incorreta</translation>
 <translation id="1602076796624386989">Ativar dados móveis</translation>
+<translation id="68610848741840742">ChromeVox (feedback falado)</translation>
 <translation id="6981982820502123353">Acessibilidade</translation>
 <translation id="3157931365184549694">Restaurar</translation>
 <translation id="4274292172790327596">Erro desconhecido</translation>
@@ -167,10 +174,12 @@ Pressione Ctrl+Alt+Z para desativá-lo.</translation>
 <translation id="8401662262483418323">Falha ao se conectar a &quot;<ph name="NAME"/>&quot;: <ph name="DETAILS"/>
 Mensagem do servidor: <ph name="SERVER_MSG"/></translation>
 <translation id="2475982808118771221">Ocorreu um erro</translation>
+<translation id="3783640748446814672">alt</translation>
 <translation id="7229570126336867161">EVDO ausente</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> é uma sessão pública gerenciada por <ph name="DOMAIN"/></translation>
 <translation id="9044646465488564462">Falha na conexão à rede: <ph name="DETAILS"/></translation>
 <translation id="7029814467594812963">Sair da sessão</translation>
+<translation id="479989351350248267">pesquisar</translation>
 <translation id="8454013096329229812">O Wi-Fi está ligado.</translation>
 <translation id="4872237917498892622">Alt + Pesquisar ou Shift</translation>
 <translation id="9201131092683066720">A bateria está <ph name="PERCENTAGE"/>% carregada.</translation>
@@ -193,13 +202,12 @@ Mensagem do servidor: <ph name="SERVER_MSG"/></translation>
 <translation id="5947494881799873997">Reverter</translation>
 <translation id="7593891976182323525">Pesquisar ou Shift</translation>
 <translation id="7649070708921625228">Ajuda</translation>
-<translation id="747833637904845037">Seu Chromebook permanecerá ligado enquanto estiver conectado a um display externo, mesmo com a tampa fechada.</translation>
 <translation id="3050422059534974565">A tecla CAPS LOCK está ativada. Pressione Pesquisar ou Shift para cancelar.</translation>
 <translation id="397105322502079400">Calculando...</translation>
 <translation id="158849752021629804">Rede doméstica ausente</translation>
 <translation id="6857811139397017780">Ativar <ph name="NETWORKSERVICE"/></translation>
 <translation id="5864471791310927901">Falha ao procurar DHCP</translation>
-<translation id="6692173217867674490">Senha incorreta</translation>
+<translation id="2819276065543622893">Você sairá agora.</translation>
 <translation id="6165508094623778733">Saiba mais</translation>
 <translation id="9046895021617826162">Falha na conexão</translation>
 <translation id="7168224885072002358">Revertendo para resolução anterior em <ph name="TIMEOUT_SECONDS"/></translation>
@@ -208,6 +216,9 @@ Mensagem do servidor: <ph name="SERVER_MSG"/></translation>
 <translation id="6636709850131805001">Estado não reconhecido</translation>
 <translation id="3573179567135747900">Voltar a &quot;<ph name="FROM_LOCALE"/>&quot; (exige reinicialização)</translation>
 <translation id="8103386449138765447">Mensagens SMS: <ph name="MESSAGE_COUNT"/></translation>
+<translation id="7097613348211027502">O ChromeVox (feedback falado) está ativado.
+
+Pressione Ctrl+Alt+Z para desativar.</translation>
 <translation id="5045002648206642691">Configurações do Google Drive...</translation>
 <translation id="7209101170223508707">A tecla CAPS LOCK está ativada. Pressione Alt + Pesquisar ou Shift para cancelar.</translation>
 <translation id="8940956008527784070">Nível de bateria baixo (<ph name="PERCENTAGE"/>%)</translation>
@@ -222,6 +233,7 @@ Mensagem do servidor: <ph name="SERVER_MSG"/></translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">Parabéns! Seu serviço de dados &quot;<ph name="NAME"/>&quot; foi ativado e está pronto para ser usado.</translation>
 <translation id="412065659894267608"><ph name="HOUR"/>h<ph name="MINUTE"/>m até a carga total</translation>
+<translation id="3077734595579995578">shift</translation>
 <translation id="7297443947353982503">Nome de usuário/senha incorretos ou falha de autenticação EAP</translation>
 <translation id="6359806961507272919">SMS de <ph name="PHONE_NUMBER"/></translation>
 <translation id="1244147615850840081">Operadora</translation>

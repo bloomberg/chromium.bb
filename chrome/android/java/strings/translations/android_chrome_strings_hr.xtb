@@ -14,7 +14,9 @@
 <translation id="3358663646935160692">Ovim računom upravlja domena <ph name="DOMAIN_NAME"/>.
 
 Prijavljujete se svojim upravljanim računom i njenom administratoru dajete nadzor nad svojim Chrome profilom. Vaši podaci na Chromeu bit će trajno povezani s ovim računom. Prekidanje veze s ovim računom dovest će do brisanja lokalnih podataka na Chromeu.</translation>
+<translation id="1966710179511230534">Ažurirajte pojedinosti prijave.</translation>
 <translation id="1623104350909869708">Spriječi da ova stranica stvori dodatne dijaloške okvire</translation>
+<translation id="8218346974737627104">Potvrda prijave</translation>
 <translation id="624558823898732418">Jezik prijevoda: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">Odabir certifikata za autentifikaciju</translation>
 <translation id="3896036286668839683">Preglednik certifikata</translation>
@@ -29,7 +31,6 @@ Prijavljujete se svojim upravljanim računom i njenom administratoru dajete nadz
 <translation id="5684874026226664614">Ups. Stranicu nije bilo moguće prevesti.</translation>
 <translation id="4619298195800598081">Izvornik na novoj kartici</translation>
 <translation id="907015151729920253">Pametna kartica</translation>
-<translation id="3136378934686431938">Ažurirajte pojedinosti prijave.</translation>
 <translation id="3063601790762993062">Spremi videozapis</translation>
 <translation id="6042308850641462728">Više</translation>
 <translation id="3992315671621218278">Spremi vezu</translation>
@@ -59,5 +60,4 @@ Prijavljujete se svojim upravljanim računom i njenom administratoru dajete nadz
 <translation id="6277522088822131679">Pojavio se problem prilikom ispisivanja stranice. Pokušajte ponovo.</translation>
 <translation id="1742134235943978220">Prevedeno na <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="6965382102122355670">U redu</translation>
-<translation id="7495038789730067783">Potvrda prijave</translation>
 </translationbundle>

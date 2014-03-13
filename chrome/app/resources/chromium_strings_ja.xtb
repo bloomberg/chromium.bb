@@ -6,26 +6,24 @@
 <translation id="6373523479360886564">Chromium をアンインストールしてもよろしいですか？</translation>
 <translation id="5065199687811594072">このクレジット カード情報を Chromium に保存してウェブ フォームの自動入力に使用しますか？</translation>
 <translation id="6510925080656968729">Chromium をアンインストール</translation>
+<translation id="2615699638672665509">このパソコンは、ハードウェアのサポートが終了しているため、まもなく Chromium アップデートの受信を停止します。</translation>
 <translation id="6893813176749746474">Chromium が更新されましたが、30 日以上使用されていません。</translation>
 <translation id="1550579416447684632">Chromium アプリを起動</translation>
 <translation id="4267347018362241535">Chromium アプリ ランチャーは、Chromium アプリ用のスタンドアロン プラットフォームです。</translation>
 <translation id="2770231113462710648">既定のブラウザを変更:</translation>
 <translation id="6613594504749178791">変更内容は次に Chromium を再起動したときに有効になります。</translation>
 <translation id="3748537968684000502">Chromium の安全なページを表示しています。</translation>
-<translation id="8971920611044657379">Chromium Frame</translation>
 <translation id="2077129598763517140">ハードウェア アクセラレーションが使用可能な場合は使用する</translation>
 <translation id="1065672644894730302">ユーザー設定ファイルを読み込むことができません。一部の機能が利用できない可能性があります。また、設定への変更は保存されません。</translation>
-<translation id="4222661289444749267">Chromium Frame が更新されました。</translation>
 <translation id="4423735387467980091">Chromium の設定</translation>
 <translation id="1881322772814446296">現在、管理対象アカウントでログインしており、あなたの Chromium プロフィールを管理者が制御できる状態になっています。あなたの Chromium データ（アプリ、ブックマーク、履歴、パスワードなどの設定）は永続的に <ph name="USER_NAME"/> に関連付けられます。このデータは Google アカウントのダッシュボードを介して削除できますが、このデータを別のアカウントに関連付けることはできなくなります。新しいプロフィールを作成して、既存の Chromium データを別に保管することができます。<ph name="LEARN_MORE"/></translation>
-<translation id="7128196614940529818">このパソコンには既に Chromium Frame がインストールされており、パソコンのすべてのユーザーが使用できます。ユーザー レベルで Chromium Frame をインストールする場合は、管理者がインストールしたシステム レベルの Chromium Frame を最初にアンインストールする必要があります。</translation>
 <translation id="731644333568559921">Chromium OS を更新(&amp;C)</translation>
 <translation id="7421823331379285070">Chromium は、Windows XP 以降が必要です。一部の機能が動作しない場合があります。</translation>
 <translation id="7023267510504981715">Google ウォレットを使用するには Chromium をアップグレードする必要があります [<ph name="ERROR_CODE"/>]。</translation>
 <translation id="7419987137528340081">既存の Chromium データを個別に保持したい場合は、<ph name="USER_NAME"/> 用の新しい Chromium ユーザーを作成できます。</translation>
+<translation id="5427571867875391349">Chromium をデフォルト ブラウザに設定する</translation>
 <translation id="8030318113982266900">デバイスを <ph name="CHANNEL_NAME"/> チャンネルに更新しています...</translation>
 <translation id="3549345495227188780">Chromium OS のスタート ガイド</translation>
-<translation id="4330297532943865716">システム上に競合している Chromium または Chromium Frame が見つかりました。こちらをアンインストールしてからもう一度お試しください。</translation>
 <translation id="6953661834318318668">Chromium ツールバー</translation>
 <translation id="4285930937574705105">原因不明のエラーによりインストールが失敗しました。実行中の Chromium を終了してからもう一度お試しください。</translation>
 <translation id="1396446129537741364">Chromium はパスワードを表示しようとしています。</translation>
@@ -40,8 +38,10 @@
           <ph name="PROXIES_TITLE"/>
           の順に移動して、設定が [プロキシなし] または [直接] になっていることを確認します。</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE"/> - Chromium</translation>
+<translation id="7729447699958282447">お使いのドメインでは同期を利用できないため、Chromium はデータを同期できませんでした。</translation>
 <translation id="1989424089625731201">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; にアクセスしようとしましたが、サーバーから提示された証明書にはエラーがあります。Chromium ではエラーのある証明書を使用することはできず、そのサイトが確かに接続しようとしたサイトであるかどうかを検証することはできません。</translation>
 <translation id="3103660991484857065">インストーラ アーカイブを解凍できませんでした。Chromium をダウンロードし直してください。</translation>
+<translation id="7064610482057367130">更新対象の Chromium のインストールは見つかりませんでした。</translation>
 <translation id="872034308864968620">Chromium をバックグラウンドで実行する</translation>
 <translation id="459535195905078186">Chromium アプリ</translation>
 <translation id="5109068449432240255">はい、Chromium を終了します</translation>
@@ -55,12 +55,10 @@
 <translation id="8628626585870903697">印刷プレビューの表示に必要な PDF ビューアが Chromium にインストールされていません。</translation>
 <translation id="7138853919861947730">Chromium は、より快適なブラウジングを提供する目的でウェブサービスを使用することがあります。</translation>
 <translation id="466053073629175099">Chromium にログインしています。ブックマーク、履歴、その他の設定は Google アカウントに同期されます。</translation>
-<translation id="4179848566211676653">Chromium を終了</translation>
 <translation id="3849925841547750267">Mozilla Firefox の設定は現在ブラウザが実行されているため使用できません。設定をインポートするには、作業内容を保存し、Firefox のウィンドウをすべて閉じてから、[続行] をクリックしてください。</translation>
 <translation id="7771626876550251690">証明書に記載されているアドレスが、ブラウザがアクセスしようとしたウェブサイトのアドレスと一致しません。理由の 1 つとして、通信が悪意のあるユーザーによって傍受され、そのユーザーから別のウェブサイトの証明書が提示されているために、アドレスが一致しないことが考えられます。あるいは、アクセスしようとしているウェブサイトを含む複数のウェブサイトについて同じ証明書を返すようにサーバーが設定されているが、その証明書がすべてのサイトについて有効とは限らないことが考えられます。Chromium では、アクセスしているサイトが確かに &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; であることは保証できますが、アクセスしようとした &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; と同じサイトであるかどうかは検証できません。次に進むと、以降 Chromium ではアドレスの不一致がチェックされなくなります。</translation>
 <translation id="4330585738697551178">このモジュールは Chromium と競合することがわかっています。</translation>
 <translation id="3190315855212034486">エラー: Chromium で問題が発生しました。今すぐ再起動しますか？</translation>
-<translation id="6714487516757221107">現在、インストールできる Chromium と Chromium Frame のアップデートはありません。</translation>
 <translation id="3197823471738295152">お使いの端末は最新の状態です。</translation>
 <translation id="8551886023433311834">更新を完了するには、端末を再起動してください。</translation>
 <translation id="8353224596138547809">Chromium でこのサイトのパスワードを保存しますか？</translation>
@@ -85,13 +83,15 @@
 <translation id="6944967875980567883">Chromium に読み込まれているモジュール</translation>
 <translation id="6899795326977034905">Mac では、パスワードはキーチェーンに保存され、この Mac OS X アカウントを共有する別の Chromium ユーザーがアクセスしたり同期したりできます。</translation>
 <translation id="118298050220780080">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; にアクセスしようとしましたが、サーバーから提示された証明書の発行元は、お使いのパソコンのオペレーティング システムによって信頼されていない発行元です。サーバーが独自のセキュリティ認証情報を生成し、それが Chromium では認証情報として信頼できないものであるか、悪意のあるユーザーが通信を傍受しようとしている可能性があります。</translation>
+<translation id="3046695367536568084">アプリを使用するには Chromium にログインする必要があります。ログインすると、Chromium ではアプリ、ブックマーク、履歴、パスワードなどの設定をデバイス間で同期できるようになります。</translation>
 <translation id="3296368748942286671">Chromium を閉じた際にバックグラウンド アプリの処理を続行する</translation>
 <translation id="473775607612524610">アップデート</translation>
 <translation id="5714819759736651024">Chrome アプリを使用するには、Chromium をデスクトップ モードで再起動する必要があります。</translation>
 <translation id="7707841053049645517">このサイトで使用されている Chromium Frame プラグインは、間もなくサポートが終了します。プラグインをアンインストールし、新しいブラウザにアップグレードしてください。</translation>
 <translation id="7338384957110970244">Chromium ではアプリケーションのショートカットを作成できませんでした。</translation>
+<translation id="3656661827369545115">パソコンの起動時に Chromium を自動的に起動する</translation>
 <translation id="6055895534982063517">Chromium がさらに速くなりました！最新バージョンをぜひお試しください。</translation>
-<translation id="2407806170074302369">Chromium Frame について...</translation>
+<translation id="8821041990367117597">アカウントのログイン情報が最新ではないため、Chromium はデータを同期できませんでした。</translation>
 <translation id="4677944499843243528">プロフィールは、別のコンピュータ（<ph name="HOST_NAME"/>）の別の Chromium プロセス（<ph name="PROCESS_ID"/>）で使用されているようです。Chromium はプロフィールが破損しないようにプロフィールをロックしています。他のプロセスがこのプロフィールを使用していないことが確実であれば、プロフィールのロックを解除して Chromium を再起動できます。</translation>
 <translation id="5405650547142096840">Chromium から削除</translation>
 <translation id="7747138024166251722">インストーラーの一時ディレクトリを作成できませんでした。ディスクの空き領域とソフトウェアのインストール許可があることを確認してください。</translation>
@@ -99,7 +99,6 @@
 
 <ph name="USER_DATA_DIRECTORY"/></translation>
 <translation id="4932687624772039103">Chromium は <ph name="OS_NAME"/> をサポートしていません。</translation>
-<translation id="8738921060445980047">バージョンが不明です。</translation>
 <translation id="6970811910055250180">お使いの端末を更新しています...</translation>
 <translation id="2485422356828889247">アンインストール</translation>
 <translation id="85843667276690461">Chromium の使用に関するアドバイス</translation>
@@ -134,6 +133,7 @@
 <translation id="1779356040007214683">Chromium をより安全にご利用いただくため、<ph name="IDS_EXTENSION_WEB_STORE_TITLE"/>で提供していない一部の拡張機能を無効にしました。これらは知らないうちに追加された可能性があります。</translation>
 <translation id="6638567566961868659">ブックマークは Chromium メニューやブックマーク バーに表示されます。</translation>
 <translation id="2673087257647337101">Chromium を再起動して更新を完了してください</translation>
+<translation id="1293235220023151515">競合する Chromium のインストールがシステムに見つかりました。アンインストールして、もう一度お試しください。</translation>
 <translation id="5398878173008909840">Chromium の最新バージョンをぜひお試しください。</translation>
 <translation id="2648074677641340862">インストール中にオペレーティング システム エラーが発生しました。Chromium をダウンロードし直してください。</translation>
 <translation id="5942520288919337908">「<ph name="EXTENSION_NAME"/>」を Chromium に追加しました。</translation>
@@ -154,13 +154,13 @@
 <translation id="8907580949721785412">Chromium でパスワードを表示しようとしています。続行するには、Windows のパスワードを入力してください。</translation>
 <translation id="9013087743919948559">Chromium に追加</translation>
 <translation id="6212496753309875659">新しいバージョンの Chromium が既にインストールされています。ソフトウェアが動作しない場合は、Chromium をアンインストールしてからもう一度お試しください。</translation>
+<translation id="1115445892567829615">Chromium はデータを同期できませんでした。同期パスフレーズを更新してください。</translation>
 <translation id="1298199220304005244">Chromium OS の使用に関するアドバイス</translation>
 <translation id="8187289872471304532">このオプションを無効にするには:
           [アプリケーション] &gt; [システム環境設定] &gt; [ネットワーク] &gt; [詳細] &gt; [プロキシ] の順に移動して、
           選択されているプロキシの選択を解除します。</translation>
 <translation id="2801146392936645542"><ph name="FILE_NAME"/> は不正なファイルです。Chromium はこのファイルをブロックしました。</translation>
 <translation id="4488676065623537541">お支払い情報を Chromium に保存しました。</translation>
-<translation id="1691304614444223855">Chromium Frame が更新されました。ブラウザを再起動してください。Chromium バージョン: <ph name="TODO_0001"/>、Chromium Frame バージョン: <ph name="TODO_0002"/></translation>
 <translation id="130631256467250065">変更内容は、次回の端末の起動時に反映されます。</translation>
 <translation id="3244477511402911926">Chromium 通知センター</translation>
 <translation id="1105130903706696483">Chromium は正しく終了しませんでした。前回アクセスしたページをもう一度開くには、[復元] をクリックします。</translation>
@@ -173,12 +173,11 @@
 <translation id="1231416733874080281">Chromium メニューを表示する</translation>
 <translation id="5772805321386874569">（Chromium を<ph name="BEGIN_BUTTON"/>再起動<ph name="END_BUTTON"/>する必要があります）</translation>
 <translation id="1688750314291223739">同期を設定すると、パーソナライズされたブラウザ機能をウェブ上に保存して、どのパソコンの Chromium からでも使用できるようになります。</translation>
-<translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">インターネット ブラウザ</translation>
 <translation id="8610831143142469229">ファイアウォールやウイルス対策の設定で、Chromium からネットワークへのアクセスを
         許可します。</translation>
 <translation id="6424492062988593837">Chromium のアップデートが見つかりました。新しいバージョンが利用可能です。</translation>
-<translation id="6601972021154586963">アプリを使用するには Chromium にログインする必要があります。ログインすると、Chromium ではアプリ、ブックマーク、履歴、パスワード、その他の設定をデバイス間で同期できます。</translation>
+<translation id="811857857463334932">このパソコンは、ハードウェアのサポートが終了しているため、今後 Chromium アップデートを受信することはありません。</translation>
 <translation id="2910007522516064972">Chromium について(&amp;C)</translation>
 <translation id="8453117565092476964">インストーラ アーカイブが壊れているか無効です。Chromium をダウンロードし直してください。</translation>
 <translation id="6763060723530774166">アプリ ランチャーを使用するには、Chromium をデスクトップ モードで再起動する必要があります。</translation>
@@ -196,6 +195,7 @@
 <translation id="1708666629004767631">Chromium がさらに安全になりました。最新バージョンをぜひお試しください。</translation>
 <translation id="378917192836375108">Chromium では、ウェブサイト上の電話番号をクリックするだけで Skype で通話を発信できます。</translation>
 <translation id="8724049448828509830">現在ダウンロードを実行中です。ダウンロードがキャンセルされますが、Chromium を終了してもよろしいですか？</translation>
+<translation id="608189560609172163">ログイン時にエラーが発生したため、Chromium はデータを同期できませんでした。</translation>
 <translation id="3360567213983886831">Chromium Binaries</translation>
 <translation id="8985587603644336029">別のユーザーが前回このパソコンから <ph name="ACCOUNT_EMAIL_LAST"/> として Chromium にログインしました。このメール アドレスがご自分のアカウントでない場合は、新しい Chromium ユーザーを作成して情報を個別に保持してください。
 
@@ -211,7 +211,6 @@
 
 設定を復元できません。</translation>
 <translation id="6403826409255603130">Chromium は、ウェブページやアプリケーションを高速に実行できるスピードと、高い安定性を兼ね備えた非常に使いやすいウェブブラウザです。不正なソフトウェアやフィッシングに対する保護機能が組み込まれており、ウェブを安全にブラウジングできます。</translation>
-<translation id="2927042866129133279">引数が無効です。Chromium Frame を準備完了モードでインストールするには、一緒に Chromium をインストールする必要があります。</translation>
 <translation id="4019464536895378627">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; にアクセスしようとしましたが、サーバーから提示された証明書の発行元は、Chromium で信頼されていない発行元です。サーバーで独自に生成されたセキュリティ認証情報が、Chromium で認証情報として使用できないものであるか、悪意のあるユーザーが通信を傍受しようとしている可能性があります。</translation>
 <translation id="4230135487732243613">Chromium データをこのアカウントにリンクしますか？</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>

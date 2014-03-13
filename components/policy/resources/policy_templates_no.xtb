@@ -74,6 +74,32 @@ Denne regelen brukes internt av Chrome.</translation>
 
           Hvis denne innstillingen ikke angis, deaktiveres den store musepekeren når påloggingsskjermen vises for første gang. Brukere kan aktivere eller deaktivere den store musepekeren når som helst, og dens status på påloggingssiden forblir den samme mellom brukere.</translation>
 <translation id="3185009703220253572">siden versjon <ph name="SINCE_VERSION"/></translation>
+<translation id="5298412045697677971">Konfigurer brukerbildet.
+
+      Med denne innstillingen kan du konfigurere brukerbildet som representerer brukeren på påloggingsskjermen. Innstillingen konfigureres ved å angi nettadressen <ph name="PRODUCT_OS_NAME"/> kan laste ned brukerbildet fra, og en kryptografisk hash-kode brukes for å sikre integriteten for nedlastingen. Bildet må være i JPEG-format og størrelsen kan ikke overgå 512 kB. Nettadressen må være offentlig tilgjengelig.
+
+      Brukerbildet lastes ned og bufres. Det lastes ned på nytt hvis nettadressen eller hash-koden endres.
+
+      Innstillingen må angis som en streng som inneholder nettadressen og hash-koden i JSON-format, og må følge dette skjemaet:
+      {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;url&quot;: {
+            &quot;description&quot;: &quot;Nettadressen brukerbildet kan lastes ned fra.&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          },
+          &quot;hash&quot;: {
+            &quot;description&quot;: &quot;SHA-256-hash-koden til brukerbildet.&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          }
+        }
+      }
+
+      Hvis denne innstillingen er angitt, laster <ph name="PRODUCT_OS_NAME"/> ned brukerbildet.
+
+      Hvis du angir denne innstillingen, kan ikke brukere endre eller overstyre den.
+
+      Hvis du ikke angir innstillingen, kan brukerne velge sine egne brukerbilder for påloggingskjermen.</translation>
 <translation id="2204753382813641270">Kontrollér automatisk skjuling av hyllen</translation>
 <translation id="3816312845600780067">Aktiver hurtigtasten for avbrytelse av automatisk pålogging</translation>
 <translation id="3214164532079860003">Denne retningslinjen tvinger startsiden til å bli importert fra nåværende standard nettleser hvis den er aktivert. Hvis retningslinjen er deaktivert, importeres ikke startsiden. Hvis retningslinjen ikke er angitt, er det mulig at brukeren får spørsmål om hvorvidt vedkommende ønsker å importere, eller så kan importeringen skje automatisk.</translation>
@@ -87,6 +113,7 @@ Denne regelen brukes internt av Chrome.</translation>
 <translation id="5469825884154817306">Blokkér bilder på disse nettstedene</translation>
 <translation id="5827231192798670332">Velger strategien som brukes for å frigjøre diskplass ved automatisk opprydding</translation>
 <translation id="8412312801707973447">Angir om OCSP/CRL-kontroller utføres på nettet</translation>
+<translation id="2482676533225429905">Innebygde meldinger</translation>
 <translation id="6649397154027560979">Denne innstillingen er avviklet. Bruk URLBlacklist i stedet.
 
       Deaktiverer det opplistede protokolloppsettet i <ph name="PRODUCT_NAME"/>.
@@ -158,9 +185,6 @@ Denne regelen brukes internt av Chrome.</translation>
 
           Verdien for innstillingen må angis i millisekunder. Verdien er låst til å være lavere enn inaktivitetsforsinkelsen.</translation>
 <translation id="4157003184375321727">Rapportering av operativsystem og maskinvareversjon</translation>
-<translation id="4752214355598028025">Safe Browsing-tjenesten viser en advarselsside når brukere går til et nettsted som er rapportert som potensielt skadelig. Hvis du aktiverer denne innstillingen, forhindrer du brukere fra å ignorere advarselssiden og fortsette til det potensielt skadelig nettstedet.
-
-      Hvis denne innstillingen er deaktivert eller ikke konfigurert, kan brukere velge å fortsette til det rapporterte nettstedet etter å ha sett advarselen.</translation>
 <translation id="5255162913209987122">Kan anbefales</translation>
 <translation id="1861037019115362154">Angir en liste over programtillegg deaktivert på <ph name="PRODUCT_NAME"/>, og forhindrer brukere fra å endre denne innstillingen.
 
@@ -187,6 +211,19 @@ Denne regelen brukes internt av Chrome.</translation>
 <translation id="1096105751829466145">Standard søkeleverandør</translation>
 <translation id="7567380065339179813">Tillat programtillegg på disse nettstedene</translation>
 <translation id="4555850956567117258">Slå på ekstern attestasjon for brukeren</translation>
+<translation id="4418909344122918381">Kontroller brukeratferden i en flerprofiløkt på <ph name="PRODUCT_OS_NAME"/>-enheter.
+
+      Hvis denne innstillingen angis som MultiProfileUserBehaviorUnrestricted, kan brukeren være enten primær- eller sekundærbruker i en flerprofiløkt.
+
+      Hvis denne innstillingen angis som MultiProfileUserBehaviorMustBePrimary, kan brukeren bare være primærbrukeren i en flerprofiløkt.
+
+      Hvis denne innstillingen angis som MultiProfileUserBehaviorNotAllowed, kan ikke brukeren være del av en flerprofiløkt.
+
+      Hvis du angir denne innstillingen, kan ikke brukere endre eller overstyre den.
+
+      Hvis innstillingen endres mens brukeren er logget på en flerprofiløkt, blir alle brukerne i denne økten kontrollert mot de tilsvarende innstillingene. Økten lukkes hvis noen av brukerne ikke lenger har tillatelse til å ta del i den.
+
+      Hvis innstillingen ikke angis, blir standardverdien MultiProfileUserBehaviorUnrestricted brukt.</translation>
 <translation id="5966615072639944554">Utvidelser kan bruke API-et for ekstern attestasjon</translation>
 <translation id="1617235075406854669">Gjør det mulig å slette nettleser- og nedlastingslogg</translation>
 <translation id="5290940294294002042">Angi en liste over programtillegg som brukeren kan aktivere eller deaktivere</translation>
@@ -225,6 +262,15 @@ Denne regelen brukes internt av Chrome.</translation>
 
       Hvis innstillingen ikke angis, aktiveres dette, men brukeren kan endre det.</translation>
 <translation id="268577405881275241">Aktiver proxy-tjenerfunksjonen for datakomprimering</translation>
+<translation id="3820526221169548563">Slå på tilgjengelighetsfunksjonen for skjermtastaturet.
+
+          Hvis denne innstillingen angis som sann, aktiveres alltid skjermtastaturet.
+
+          Hvis denne innstillingen angis som usann, deaktiveres alltid skjermtastaturet.
+
+          Hvis du angir denne innstillingen, kan ikke brukere endre eller overstyre den.
+
+          Hvis denne innstillingen ikke angis, blir skjermtastaturet i utgangspunktet slått av, men kan slås på av brukeren når som helst.</translation>
 <translation id="8369602308428138533">Forsinkelse for avslått skjerm når du bruker strømadapteren</translation>
 <translation id="6513756852541213407">Gjør at du kan angi proxytjeneren som brukes av <ph name="PRODUCT_NAME"/>, og hindrer brukerne i å endre innstillinger for mellomtjener.
 
@@ -256,12 +302,16 @@ Denne regelen brukes internt av Chrome.</translation>
 
       Hvis denne innstillingen ikke angis, vil kan brukeren selv velge om Google Synkronisering skal brukes eller ikke.</translation>
 <translation id="7953256619080733119">Verter for manuelle unntak for administrerte brukere</translation>
-<translation id="7412982067535265896">Lar deg angi en liste over nettadresse-mønstre som spesifiserer nettsteder som kan angi øktspesifikke informasjonskapsler.
-
-        Hvis denne retningslinjen ikke angis, blir den globale standardverdien brukt for alle nettsteder – enten fra «DefaultCookiesSetting»-retningslinjen, om angitt, eller brukerens personlige konfigurering, om ikke.
-
-          Hvis «RestoreOnStartup»-retningslinjen er angitt til å gjenopprette nettadresser fra tidligere økter, blir ikke denne retningslinjen overholdt, og informasjonskapsler lagres permanent for de aktuelle nettstedene.</translation>
 <translation id="4807950475297505572">Det fjernes brukere til nok plass er frigjort, i rekkefølgen «lengst tid siden forrige gang brukt»</translation>
+<translation id="8789506358653607371">Tillat fullskjermmodus.
+
+      Denne innstillingen kontrollerer tilgjengeligheten for fullskjermmodus, der alle <ph name="PRODUCT_NAME"/>-brukergrensesnitt er skjult og bare nettinnhold er synlig.
+
+      Hvis denne innstillingen angis som sann eller ikke konfigurert, kan brukeren, apper og utvidelser med de riktige tillatelsene gå til fullskjermmodus.
+
+      Hvis denne innstillingen angis som usann, kan verken brukeren, apper eller utvidelser gå til fullskjermmodus.
+
+      På alle plattformer unntatt <ph name="PRODUCT_OS_NAME"/>, er kioskmodus utilgjengelig når fullskjermmodus er deaktivert.</translation>
 <translation id="8828766846428537606">Angir standard startside i <ph name="PRODUCT_NAME"/> og forhindrer brukerne i å endre den. Brukerens innstillinger for startside blir kun fullstendig overstyrt dersom du enten angir nettstedet på siden Ny fane som startside, eller angir den til å være en spesifikk nettadresse du velger. Hvis du ikke spesifiserer nettadressen for startsiden, kan brukeren fremdeles angi nettstedet på siden Ny fane som startside ved å spesifisere «chrome://newtab».</translation>
 <translation id="2231817271680715693">Importér nettleserlogg fra standard nettleser ved første kjøring</translation>
 <translation id="1353966721814789986">Oppstartssider</translation>
@@ -280,8 +330,29 @@ Denne regelen brukes internt av Chrome.</translation>
 <translation id="6561396069801924653">Vis tilgjengelighetsalternativer i systemmenyen</translation>
 <translation id="8104962233214241919">Automatisk valg av klientsertifikater for disse nettstedene</translation>
 <translation id="2906874737073861391">Liste over AppPack-utvidelser</translation>
+<translation id="4386578721025870401">Begrens hvor lenge en bruker som er autentisert via SAML kan logge på uten nett.
+
+      Under pålogging kan Chrome OS autentisere via en tjener (på nettet) eller et bufret passord (uten nett).
+
+      Når denne innstillingen er angitt til -1, kan brukere autentisere uten nett så lenge de vil. Når innstillingen er angitt til en annen verdi, spesifiserer den hvor lang tid som kan ha gått siden den siste autentiseringen på nettet, før brukeren må autentisere på nettet igjen.
+
+      Hvis du ikke angir denne innstillingen, bruker <ph name="PRODUCT_OS_NAME"/> en standardgrense på 14 dager før brukeren må autentisere på nettet igjen.
+
+      Denne innstillingen påvirker bare brukere som autentiserer via SAML.
+
+      Denne innstillingsverdien skal angis i sekunder.</translation>
 <translation id="3758249152301468420">Deaktiver utviklerverktøy</translation>
 <translation id="8665076741187546529">Konfigurer listen over tvangsinstallerte utvidelser</translation>
+<translation id="2386768843390156671">Aktiverer brukernivåinstallasjon av innebygde meldingsverter.
+
+          Hvis denne innstillingen er aktivert, tillater <ph name="PRODUCT_NAME"/>
+          bruk av integrerte meldingsverter som er installert på brukernivå.
+
+          Hvis denne innstillingen er deaktivert, bruker <ph name="PRODUCT_NAME"/>
+          bare integrerte meldingsverter som er installert på systemnivå.
+
+          Hvis denne innstillingen ikke angis, tillater <ph name="PRODUCT_NAME"/>
+          bruk av integrerte meldingsverter på brukernivå.</translation>
 <translation id="410478022164847452">Angir hvor lenge brukeren kan være inaktiv før inaktivitetshandlingen blir utført når enheten kjører på vekselstrøm.
 
           Når denne innstillingen er konfigurert, angir den hvor lenge brukeren må være inaktiv før <ph name="PRODUCT_OS_NAME"/> utfører inaktivitetshandlingen, som kan konfigureres separat.
@@ -335,6 +406,9 @@ Denne regelen brukes internt av Chrome.</translation>
       Hvis du deaktiverer denne innstillingen, kan bokmerker ikke legges til, fjernes eller endres. Eksisterende bokmerker vil fremdeles være tilgjengelige.</translation>
 <translation id="3496296378755072552">Passordbehandling</translation>
 <translation id="4372704773119750918">Ikke tilllat bedriftsbrukeren å være en del av flerprofilen (primær eller sekundær)</translation>
+<translation id="7027785306666625591">Konfigurer strømstyring i <ph name="PRODUCT_OS_NAME"/>.
+
+      Disse innstillingene lar deg konfigurere hvordan <ph name="PRODUCT_OS_NAME"/> oppfører seg når brukeren er inaktiv i en periode.</translation>
 <translation id="2565967352111237512">Aktiverer anonym rapportering av bruk og programstopprelaterte data om <ph name="PRODUCT_NAME"/> til Google, og hindrer brukere i å endre denne innstillingen.
 Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og programstopprelaterte data til Google. Hvis du deaktiverer denne innstillingen, sendes aldri anonym rapportering av bruk og programstopprelaterte data til Google. 
 
@@ -510,6 +584,7 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
           Mulige verdier er «grunnleggende», «sammendrag», «ntlm» og «forhandle».
 
           Hvis denne retningslinjen ikke angis, vil alle de fire skjemaene brukes.</translation>
+<translation id="1017967144265860778">Strømstyring på påloggingssiden</translation>
 <translation id="4914647484900375533">Aktiverer Instant for <ph name="PRODUCT_NAME"/> og forhindrer brukere fra å endre denne innstillingen.
 
       Hvis du aktiverer denne innstillingen, aktiveres Instant for <ph name="PRODUCT_NAME"/>.
@@ -523,9 +598,6 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
       Denne innstillingen er fjernet fra Chrome 29 og nyere versjoner.</translation>
 <translation id="6114416803310251055">avskrevet</translation>
 <translation id="8493645415242333585">Deaktiver lagring av nettleserlogg</translation>
-<translation id="5319306267766543020">Konfigurer strømbehandling for <ph name="PRODUCT_OS_NAME"/>.
-
-      Disse innstillingene lar deg konfigurere atferden til <ph name="PRODUCT_OS_NAME"/> når brukeren er inaktiv over en periode.</translation>
 <translation id="2747783890942882652">Konfigurerer det ønskede vertsdomenenavnet som tilordnes verter med ekstern adgang, og forhindrer brukere fra å endre det.
 
           Hvis denne innstillingen er aktivert, kan verter deles utelukkende ved hjelp av kontoer registrert på det spesifiserte domenenavnet.
@@ -554,6 +626,7 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
 
          Hvis denne retningslinjen ikke angis, kan brukeren avinstallere alle utvidelser i <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="6899705656741990703">Gjenkjenn mellomtjenerinnstillinger automatisk</translation>
+<translation id="4639407427807680016">Navnene på de innebygde meldingsvertene som skal unntas fra svartelisten.</translation>
 <translation id="8382184662529825177">Slå på bruken av ekstern attestasjon for innholdsbeskyttelse på enheten</translation>
 <translation id="7003334574344702284">Denne retningslinjen tvinger import av de lagrede passordene fra forrige standardnettleser hvis den er aktivert. Hvis den er aktivert, påvirker retningslinjen også importeringsdialogen.
 
@@ -584,6 +657,9 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
 <translation id="8704831857353097849">Liste over deaktiverte programtillegg</translation>
 <translation id="8391419598427733574">Operativsystem for rapportering og fastvareversjon for registrerte enheter. Hvis denne innstillingen er aktivert, rapporterer registrerte enheter om eget operativsystem og fastvareversjon med jevne mellomrom. Hvis denne innstillingen ikke er angitt eller deaktivert, blir ikke versjonsinformasjon rapportert.</translation>
 <translation id="467449052039111439">Åpne en liste over nettadresser</translation>
+<translation id="1988371335297483117">Nyttelaster med automatisk oppdatering på <ph name="PRODUCT_OS_NAME"/>, kan lastes ned via HTTP i stedet for HTTPS. Dette tillater åpen HTTP-bufring av HTTP-nedlastinger.
+
+      Hvis denne innstillingen angis som sann, prøver <ph name="PRODUCT_OS_NAME"/> å laste ned nyttelaster med automatisk oppdatering via HTTP. Hvis innstillingen angis som usann eller ikke angis i det hele tatt, blir HTTPS brukt til å laste ned nyttelaster med automatisk oppdatering.</translation>
 <translation id="5883015257301027298">Standardinnstilling for informasjonskapsler</translation>
 <translation id="5017500084427291117">Blokkerer tilgang til de angitte nettadressene. 
 
@@ -601,22 +677,6 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
 
       Hvert bidrag på listen spesifiserer en identifikator, som brukes internt for å skille de ulike lokale kontoene på enheten fra hverandre.</translation>
 <translation id="8955719471735800169">Tilbake til toppen</translation>
-<translation id="2534584045044686957">Konfigurerer bufferstørrelsen som <ph name="PRODUCT_NAME"/> bruker for lagring av bufrede mediefiler på disken.
-
-      Hvis du tar i bruk denne retningslinjen, kommer <ph name="PRODUCT_NAME"/> til å bruke angitt bufferstørrelse uavhengig om brukeren har spesifisert «--media-cache-size»-flagget eller ikke.
-
-      Hvis verdien for denne retningslinjen er 0, brukes standard bufferstørrelse, og brukeren kan ikke endre den.
-
-      Hvis denne retningslinjen ikke er angitt, brukes standardstørrelsen, og brukeren kan ikke overstyre den ved hjelp av «--media-cache-size»-flagget.</translation>
-<translation id="3723474915949495925">Spesifiserer en liste over programtillegg som bruker kan aktivere eller deaktivere på <ph name="PRODUCT_NAME"/>.
-
-      Du kan bruke jokertegnene «*» og «?» til å matche sekvenser av vilkårlige tegn. «*» matcher et vilkårlig antall tegn, mens  «?» spesifiserer et valgfritt enkelttegn – det matcher med andre ord null eller ett tegn. Escape-tegnet er «\», så om du vil matche tegnene «*», «?», eller «\», kan du plassere «\» foran dem.
-
-      Hvis du aktiverer denne innstillingen, kan den spesifiserte listen over programtillegg brukes på <ph name="PRODUCT_NAME"/>. Brukere kan aktivere eller deaktivere dem i «about:plugins»-delen, selv om programtillegget også matcher et mønster i DisabledPlugins. Brukere kan dessuten aktivere og deaktivere programtillegg som ikke stemmer overens med mønstre i DisabledPlugins, DisabledPluginsExceptions og EnabledPlugins.
-
-      Denne retningslinjen er på plass for å tillate streng sperrelisting av programtillegg i tilfeller der DisabledPlugins-listen inneholder oppføringer av jokertegn – eksempelvis deaktiver alle programtillegg (*) eller deaktiver alle Java-programtillegg (*Java*), men der administratoren ønsker å aktivere en bestemt versjon, som for eksempel IcedTea Java 2.3. Disse spesifikke versjonene kan angis i denne retningslinjen.
-
-      Hvis denne retningslinjen ikke tilordnes et valg, kommer ethvert programtillegg som matcher mønstrene i DisabledPlugins, til å låses som deaktivert, og bruker kan ikke gjøre noe med dette.</translation>
 <translation id="4557134566541205630">Nettadresse for ny fane for standard søkeleverandør</translation>
 <translation id="546726650689747237">Forsinkelse for lysdemping på skjermen når enheten kjører på vekselstrøm</translation>
 <translation id="4988291787868618635">Handling som skal utføres når inaktivitetsforsinkelsen blir overskredet</translation>
@@ -652,6 +712,11 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
       Hvis du aktiverer eller deaktiverer av innstillingen, kan ikke brukere endre eller overstyre den.
 
       Hvis retningslinjen ikke spesifiseres, kan brukeren velge om enheten skal passordaktiveres etter en periode i hvilemodus eller ikke.</translation>
+<translation id="383466854578875212">Lar deg spesifisere hvilke innebygde meldingsverter som ikke er underlagt svartelisten.
+
+          Svartelisteverdien * betyr at alle innebygde meldingsverter er svartelistet, og bare de innebygde meldingsvertene som er registrert som godkjente, blir lastet inn.
+
+          Som standard er alle innebygde meldingsverter godkjente, men hvis alle meldingsverter har blitt svartelistet av retningslinjene, kan godkjenningslisten brukes for å overkjøre dem.</translation>
 <translation id="6022948604095165524">Handling ved oppstart</translation>
 <translation id="9042911395677044526">Tillater skyving av nettverkskonfigurasjon for enkeltbrukere på en <ph name="PRODUCT_OS_NAME"/>-enhet. Nettverkskonfigurasjon er en JSON-formatert streng, som definert av Open Network Configuration-formatet beskrevet på <ph name="ONC_SPEC_URL"/></translation>
 <translation id="7128918109610518786">Viser en liste over programidentifikatorene <ph name="PRODUCT_OS_NAME"/> viser som festede programmer i programlisteraden.
@@ -718,11 +783,6 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
        Denne retningslinjen er begrenset til 1000 oppføringer. Oppføringer etter de 1000 første blir ignorert. 
 
       Hvis denne retningslinjen ikke angis, er det ingen unntak fra retningslinjen URLBlacklist.</translation>
-<translation id="4163644371169597382">IT-administratoren for bedriftsenheter kan bruke denne markeringen til å kontrollere om brukerne kan løse inn tilbud via Chrome OS-registrering.
-
-      Hvis innstillingen er konfigurert som «true» eller ikke angitt, kan brukerne løse inn tilbud via Chrome OS-registrering.
-
-      Hvis innstillingen er konfigurert som «false» kan ikke brukerne løse inn tilbud.</translation>
 <translation id="8148901634826284024">Aktiver tilgjengelighetsfunksjon for høykontrastmodus.
 
           Hvis denne innstillingen angis til «true», er høykontrastmodus alltid aktivert.
@@ -732,6 +792,7 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
           Hvis du angir denne innstillingen, kan ikke brukere endre eller overstyre den.
 
           Hvis denne innstillingen ikke angis, deaktiveres høykontrastmodus til å begynne med, men brukere kan aktivere den når som helst.</translation>
+<translation id="2201555246697292490">Konfigurer godkjenning av innebygde meldinger</translation>
 <translation id="6177482277304066047">Angir en målversjon for automatiske oppdateringer.
 
       Spesifiserer prefikset for en målversjon som <ph name="PRODUCT_OS_NAME"/> skal oppdateres til. Hvis enheten kjører en versjon som er en forløper til det spesifiserte prefikset, oppdateres enheten til den siste versjonen med det gitte prefikset. Hvis enheten allerede bruker en nyere versjon, skjer det ikke noe (enheten blir med andre ord ikke nedgradert), og enheten beholder den nåværende versjonen. Prefiksformatet fungerer komponentvis, som demonstrert i det følgende eksemplet:
@@ -742,6 +803,7 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
       &quot;1412.24.34&quot;: Oppdater bare til denne spesifikke versjonen.</translation>
 <translation id="8102913158860568230">Standard innstilling for direkteavspilling av medieinnhold</translation>
 <translation id="6641981670621198190">Deaktiver støtte for programmeringsgrensesnitt for 3D-grafikk</translation>
+<translation id="1265053460044691532">Begrens hvor lenge en bruker som er autentisert via SAML kan logge på uten nett</translation>
 <translation id="7929480864713075819">Aktiver rapportering av minneinformasjon (heap-størrelse for JS) til nettside</translation>
 <translation id="5703863730741917647">Angi handlingen som skal utføres når inaktivitetsforsinkelsen blir overgått.
 
@@ -894,6 +956,9 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
 
       Hvis denne retningslinjen er angitt som Usann eller ikke er konfigurert, tillates det oppretting av nye brukerkontoer dersom <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME"/> ikke forhindrer brukeren fra å logge seg på.</translation>
 <translation id="4389091865841123886">Konfigurer ekstern attestering med TPM-mekanisme</translation>
+<translation id="9175109938712007705">Som et resultat av at opphevelsekontroller for myke systemstopp ikke gir noen effektiv sikkerhetsfordel, er de deaktivert som standard i <ph name="PRODUCT_NAME"/> versjon 19 og nyere. Ved å angi denne innstillingen som sann, gjenopprettes tidligere atferd. I tillegg blir OCSP/CRL-kontroller på nettet utført.
+
+      Hvis innstillingen ikke angis eller angis som usann, utfører ikke Chrome opphevelsekontroller i Chrome 19 og nyere.</translation>
 <translation id="8256688113167012935">Kontrollerer hvilket kontonavn <ph name="PRODUCT_OS_NAME"/> viser på påloggingsskjermen for enhetens tilhørende lokale konto.
 
       Hvis denne innstillingen angis, bruker påloggingsskjermen den spesifiserte strengen i den bildebaserte påloggingsvelgeren for enhetens tilhørende lokale konto.
@@ -929,35 +994,7 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
 
           Hvis handlingen er å suspendere økten, kan <ph name="PRODUCT_OS_NAME"/> konfigureres til å enten låse eller ikke låse skjermen før økten suspenderes.</translation>
 <translation id="7750991880413385988">Åpne Ny fane-siden</translation>
-<translation id="741903087521737762">Lar deg angi atferden ved oppstart.
-
-         Hvis du velger «Åpne Ny fane-siden», blir denne alltid åpnet når du starter <ph name="PRODUCT_NAME"/>.
-
-          Hvis du velger «Åpne på nytt sidene som sist var åpne», blir nettadressene som var åpne sist du lukket <ph name="PRODUCT_NAME"/> åpnet på nytt, og du kan fortsette der du avsluttet.
-          Å velge dette alternativet deaktiverer enkelte innstillinger som er tilknyttet økter eller utfører handlinger når du avslutter (som f.eks. sletting av nettleserdata ved avslutting eller øktspesifikke informasjonskapsler).
-
-          Hvis du velger «Åpne en liste med nettadresser», blir listen med nettadresser som åpnes ved oppstart åpnet når en bruker starter <ph name="PRODUCT_NAME"/>.
-
-          Hvis du aktiverer denne innstillingen, kan ikke andre brukere endre eller overstyre dette i <ph name="PRODUCT_NAME"/>.
-
-          Deaktivering av denne innstillingen er det samme som å ikke konfigurere den. Brukere kan fortsatt endre det i <ph name="PRODUCT_NAME"/>.</translation>
-<translation id="8161570238552664224">Tillatelse til avspilling av lyd.
-
-      Når denne retningslinjen er angitt til usann, er ikke lydutganger tilgjengelige på enheten mens brukeren er pålogget.
-
-      Denne retningslinjen påvirker alle typer lydutganger, og ikke bare de innebygde høyttalerne. Lydtilgjengelighetsfunksjoner hindres også av denne retningslinjen. Ikke aktiver denne retningslinjen hvis brukeren har behov for å bruke en skjermleser.
-
-      Hvis denne innstillingen er angitt til sann eller ikke er konfigurert, kan brukere benytte alle lydutganger som støttes på enheten.</translation>
 <translation id="5761030451068906335">Konfigurerer innstillinger for mellomtjener i <ph name="PRODUCT_NAME"/>. Disse retningslinjene er ikke klare for bruk ennå, så vi ber deg om ikke å bruke dem.</translation>
-<translation id="3006443857675504368">Vis <ph name="PRODUCT_OS_NAME"/>-tilgjengelighetsalternativer i systemmenyen.
-
-          Hvis denne innstillingen aktiveres, vises alltid tilgjengelighetsalternativer i systemmenyen.
-
-         Hvis denne innstillingen deaktiveres, vises aldri tilgjengelighetsalternativer i systemmenyen.
-
-          Hvis denne innstillingen angis, kan ikke brukere endre eller overstyre den.
-
-          Hvis denne innstillingen ikke angis, vises ikke tilgjengelighetsalternativer i systemmenyen, men brukeren kan velge å vise tilgjengelighetsalternativene gjennom Innstillinger-siden.</translation>
 <translation id="8344454543174932833">Importer bokmerker fra standard nettleser ved første kjøring</translation>
 <translation id="1019101089073227242">Angi katalog for brukerdata</translation>
 <translation id="5826047473100157858">Angir om brukeren kan åpne sider i inkognitomodus i <ph name="PRODUCT_NAME"/>.
@@ -997,6 +1034,13 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
       Hvis du aktiverer eller deaktiverer denne innstillingen, kan ikke brukerne endre eller overstyre den i <ph name="PRODUCT_NAME"/>.
 
       Hvis denne innstillingen ikke angis, kan brukeren selv avgjøre om denne funksjonen skal brukes eller ikke.</translation>
+<translation id="7593523670408385997">Konfigurerer bufferstørrelsen som <ph name="PRODUCT_NAME"/> bruker for lagring av bufrede filer på disken.
+
+      Hvis du angir denne innstillingen, bruker <ph name="PRODUCT_NAME"/> den tildelte bufferstørrelsen uansett om brukeren har spesifisert «--disk-cache-size»-flagget eller ikke. Verdien som er angitt i denne innstillingen er ikke en hard grense, men et forslag til buffersystemet. Alle verdier under et par megabyte er for små og blir avrundet oppover til et logisk minimum.
+
+      Hvis verdien for innstillingen er 0, brukes standard bufferstørrelse, og brukeren kan ikke endre den.
+
+      Hvis innstillingen ikke er angitt, brukes standard bufferstørrelse, og brukeren kan overstyre den med «--disk-cache-size»-flagget.</translation>
 <translation id="5475361623548884387">Aktiver utskrift</translation>
 <translation id="7287359148642300270">Angi hvilke tjenere som skal godkjennes for integrert autentisering. Integrert autentisering er bare aktivert når <ph name="PRODUCT_NAME"/> mottar en autentiseringoppgave fra en mellomtjener eller en tjener i denne tillatte listen.
 
@@ -1004,6 +1048,18 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
 
           Hvis du ikke angir denne innstillingen, forsøker Chrome å registrere om en tjener er på intranett og bare da svare på IWA-forespørsler.  Hvis en tjener registreres som Internett, ignorerer Chrome IWA-forespørsler fra tjeneren.</translation>
 <translation id="3653237928288822292">Ikon for standard søkeleverandør</translation>
+<translation id="4721232045439708965">Lar deg angi oppstartsatferd.
+
+          Hvis du velger Åpne ny fane åpnes den nye fanen alltid når du starter <ph name="PRODUCT_NAME"/>.
+
+          Hvis du velger Gjenopprett forrige økt, vil nettadressene som var åpne sist gang <ph name="PRODUCT_NAME"/> ble lukket, åpnes på nytt og leserøkten gjenopprettes til slik den var da den ble forlatt.
+          Velges dette alternativet, deaktiveres noen innstillinger som er avhengige av enkelte økter eller som utfører handlinger ved avslutning (som klar leserdata ved avslutning eller informasjonskapsler bare for økten).
+
+          Hvis du velger Åpne en liste med nettadresser, åpnes listen med Nettadresser som skal åpnes ved oppstart, når en bruker starter <ph name="PRODUCT_NAME"/>.
+
+          Hvis du aktiverer denne innstillingen, kan ikke brukere endre eller overstyre den i <ph name="PRODUCT_NAME"/>.
+
+          Deaktivering av denne innstillingen er det samme som å la den være ukonfigurert. Brukeren kan fremdeles endre den i <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="2872961005593481000">Avslutt</translation>
 <translation id="4445684791305970001">Deaktiverer utviklerverktøyene og JavaScript-konsollen.
 
@@ -1071,6 +1127,20 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
 <translation id="6190022522129724693">Standardinnstillinger for forgrunnsvinduer</translation>
 <translation id="847472800012384958">Ikke la noen nettsteder vise forgrunnsvinduer</translation>
 <translation id="4733471537137819387">Retningslinjer knyttet til integrert HTTP-autentisering.</translation>
+<translation id="8501011084242226370">Angir en liste over programtillegg som brukeren kan aktivere eller deaktivere i <ph name="PRODUCT_NAME"/>.
+
+      Jokertegn som stjerne (*) og spørsmålstegn (?) kan brukes til å samsvare sekvenser av vilkårlige tegn. Stjerne (*) samsvarer med et vilkårlig antall tegn, mens spørsmålstegn angir et valgfritt enkelt tegn, f.eks. samsvarer den med ingen eller ett tegn. Skiftetegnet er en backslash (\), så hvis du vil samsvare faktiske tegn som *, ?, eller \, kan du sette inn en backslash (\) før dem.
+
+      Hvis du aktiverer denne innstillingen, kan den angitte listen over programtillegg brukes i <ph name="PRODUCT_NAME"/>. Brukere kan aktivere eller deaktivere dem i about:plugins, selv om programtillegget også samsvarer med et mønster i DisabledPlugins. Brukere kan også aktivere og deaktivere programtillegg som ikke samsvarer med noen mønstre i DisabledPlugins, DisabledPluginsExceptions og EnabledPlugins.
+
+      Denne innstillingen er ment å tillate streng svartelisting av programtillegg når DisabledPlugins-listen inneholder jokertegnoppføringer som deaktiver alle programtillegg * eller
+deaktiver alle Java-programtillegg *Java*, men administratoren ønsker å aktivere bestemte versjoner som IcedTea Java 2.3. Disse
+bestemte versjonene kan angis i denne innstillingen.
+
+      Merk at både programtilleggsnavnet og programtilleggets gruppenavn må fritas. Hver programtilleggsgruppe vises i et eget avsnitt i about:plugins. Hvert avsnitt kan ha én eller flere
+programtillegg. Shockwave Flash-programtillegget tilhører for eksempel Adobe Flash Player-gruppen, og begge navnene må ha en match i unntakslisten hvis det programtillegget skal fritas fra svartelisten.
+
+      Hvis denne innstillingen ikke angis, blir alle programtillegg som samsvarer med mønstrene i DisabledPlugins låst som deaktivert, og brukeren vil ikke være i stand til å aktivere dem.</translation>
 <translation id="8951350807133946005">Angi katalog for diskbufring</translation>
 <translation id="603410445099326293">Parametere for forslagsnettadressser som bruker POST</translation>
 <translation id="2592091433672667839">Varighet av inaktivitet før skjermspareren vises på påloggingssiden i detaljistmodus</translation>
@@ -1078,6 +1148,16 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
 <translation id="2805707493867224476">Tillat alle nettsteder å vise forgrunnsvinduer</translation>
 <translation id="1727394138581151779">Blokkér alle programtillegg</translation>
 <translation id="8118665053362250806">Angi størrelse på mediediskbuffer</translation>
+<translation id="6565312346072273043">Angi standardtilstanden til skjermtastaturets tilgjengelighetsfunksjon på påloggingsskjermen.
+
+          Hvis denne innstillingen er angitt som sann, aktiveres skjermtastaturet når påloggingsskjermen vises.
+
+          Hvis denne innstillingen er angitt som usann, deaktiveres skjermtastaturet når påloggingsskjermen vises.
+
+          Hvis du angir denne innstillingen, kan brukere midlertidig overstyre den ved å aktivere eller deaktivere skjermtastaturet. Brukerens valg er imidlertid ikke vedvarende og standardinnstillingene gjenopprettes når påloggingsskjermen vises på nytt, eller brukeren er inaktiv på påloggingsskjermen i et minutt.
+
+          Hvis denne innstillingen ikke angis, deaktiveres skjermtastaturet når påloggingsskjermen først vises. Brukere kan aktivere eller deaktivere
+skjermtastaturet når som helst og statusen den har på påloggingsskjermen er vedvarende mellom brukerne.</translation>
 <translation id="7079519252486108041">Blokkér forgrunnsvinder på disse nettstedene</translation>
 <translation id="1859633270756049523">Begrens innloggingstiden</translation>
 <translation id="7433714841194914373">Aktiver Instant</translation>
@@ -1119,6 +1199,7 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
 <translation id="8519264904050090490">Nettadresser med manuelle unntak for administrerte brukere</translation>
 <translation id="4480694116501920047">Tving Sikkert Søk</translation>
 <translation id="465099050592230505">Nettadresse for bedriftens nettbutikk (avviklet)</translation>
+<translation id="2006530844219044261">Strømstyring</translation>
 <translation id="1221359380862872747">Last inn angitte nettadresser ved demo-pålogging</translation>
 <translation id="2431811512983100641">Angir om domene-bundet utvidelse av sertifikater for TLS skal aktiveres.
 
@@ -1137,9 +1218,7 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
       Hvis du ikke angir denne innstillingen, bruker <ph name="PRODUCT_NAME"/> standardverdien på 5 000 millisekunder.</translation>
 <translation id="8099880303030573137">Inaktivitetsforsinkelse når enheten kjører på batteristrøm</translation>
 <translation id="2761483219396643566">Forsinkelse for advarsel om inaktivitet når enheten kjører på batteristrøm</translation>
-<translation id="5058056679422616660">Nyttelaster med automatisk oppdatering på <ph name="PRODUCT_OS_NAME"/> kan lastes ned via HTTP i stedet for HTTPS. Dette tillater åpen HTTP-bufring av HTTP-nedlastinger.
-
-      Hvis innstillingen angis til «true», kommer <ph name="PRODUCT_OS_NAME"/> til å laste ned nyttelaster med automatisk oppdatering via HTTP. Hvis innstillingen angis til «false», eller ikke angis i det hele tatt, brukes HTTPS for nedlasting av nyttelaster med automatisk oppdatering.</translation>
+<translation id="6281043242780654992">Konfigurer innstillinger for innebygde meldinger. Innebygde meldingsverter som er svartelistet tillates ikke med mindre de godkjennes.</translation>
 <translation id="1468307069016535757">Angi standard tilstand for tilgjengelighetsfunksjonen for høykontrastmodus på påloggingsskjermen.
 
           Hvis denne innstillingen angis til «true», aktiveres høykontrastmodus når påloggingssiden vises.
@@ -1191,7 +1270,6 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
 <translation id="5366977351895725771">Hvis angitt til «false» kan ikke denne brukeren opprette overvåkede brukere. Eksisterende overvåkede brukere er fortsatt tilgjengelige.
 
           Hvis angitt til «true» eller ikke konfigurert, kan denne brukeren opprette og administrere overvåkede brukere.</translation>
-<translation id="8101760444435022591">Som et resultat av at opphevelsekontroller for myke systemstopp ikke gir noen effektiv sikkerhetsfordel, blir de som standard deaktivert for versjon 19 og nyere av <ph name="PRODUCT_NAME"/>. Hvis du angir denne innstillingen som Sann, gjenopprettes tidligere atferd. I tillegg blir OCSP/CRL-kontroller på nettet utført.</translation>
 <translation id="5469484020713359236">Gjør at du kan angi en liste over nettadressemønstre som spesifiserer hvilke nettsteder som får angi informasjonskapsler.
 
           Hvis denne retningslinjen ikke angis, brukes den globale standardverdien for alle nettsteder, enten fra retningslinjen DefaultCookiesSetting hvis den er angitt, eller fra brukerens egen konfigurasjon hvis den nevnte retningslinjen ikke er angitt.</translation>
@@ -1212,13 +1290,6 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
 
           Hvis innstillingen er satt til False eller ikke er angitt, begynner tidtakingen av strømstyringsforsinkelser og øktens varighet å løpe umiddelbart når økten starter.</translation>
 <translation id="4600786265870346112">Aktiver stor markør</translation>
-<translation id="8592105098257899882">Konfigurerer bufferstørrelsen <ph name="PRODUCT_NAME"/> vil bruke for lagring av bufrede filer på disken.
-
-      Hvis du angir denne retningslinjen, bruker <ph name="PRODUCT_NAME"/> den oppgitte bufferstørrelsen uansett om brukeren har angitt «--disk-cache-size»-flagget eller ikke.
-
-      Hvis denne retningslinjens verdi er 0, brukes standard bufferstørrelse, men brukeren kan ikke endre på dette.
-
-      Hvis denne retningslinjen ikke er angitt, brukes standard størrelse, og brukeren kan overstyre den med «--disk-cache-size»-flagget.</translation>
 <translation id="5887414688706570295">Konfigurerer TalkGadget-prefikset som skal brukes av verter med ekstern adgang, og forhindrer brukere fra å endre det.
 
           Hvis dette prefikset er angitt, legges det til i basisnavnet for TalkGadget for slik å lage et fullstendig domenenavn for TalkGadget. Basisdomenenavnet for TalkGadget er «.talkgadget.google.com».
@@ -1250,7 +1321,6 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
 
       Hvis denne innstillingen deaktiveres eller ikke angis, er det mulig å tillate nettsider bruk av programmeringsgrensesnittet WebGL, og programtillegg bruk av programmeringsgrensesnittet Pepper 3D. Standardinnstillingene til nettleseren kan likevel kreve at kommandolinjeargumenter skal bestås for at disse programmeringsgrensesnittene skal brukes.</translation>
 <translation id="2077273864382355561">Forsinkelse for avslått skjerm når enheten kjører på batteristrøm</translation>
-<translation id="909184783177222836">Strømbehandling</translation>
 <translation id="3417418267404583991">Hvis denne retningslinjen er angitt som Sann eller ikke er konfigurert, aktiverer <ph name="PRODUCT_OS_NAME"/> gjestepålogging. Gjestepålogginger er anonyme brukerøkter og krever ikke passord.
 
       Hvis denne retningslinjen er angitt som Usann, tillater ikke <ph name="PRODUCT_OS_NAME"/> at gjesteøkter startes.</translation>
@@ -1259,33 +1329,12 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
       Når DeviceIdleLogoutTimeout er spesifisert, definerer denne retningslinjen varigheten av advarselfeltet med en nedtellingsklokke som vises til brukeren før den blir logget av.
 
       Retningslinjeverdien må angis i millisekunder.</translation>
-<translation id="54795286564479339">Konfigurer brukerbildet.
-
-      Denne innstillingen gir deg muligheten til å konfigurere brukerbildet som representerer brukeren på påloggingsskjermen. Innstillingen angis ved å oppgi nettadressen <ph name="PRODUCT_OS_NAME"/> kan laste ned brukerbildet fra, og en kryptografisk hash som brukes til å bekrefte nedlastingens integritet. Bildet må være i JPEG-format og størrelsen må være mindre enn 512 kB. Nettadressen må være tilgjengelig uten autentisering.
-
-      Brukerbildet lastes ned og lagres i bufferen. Det lastes ned på nytt hver gang nettadressen eller hash-en endres.
-
-      Innstillingen må angis som en enkel &lt;/string&gt; som inneholder nettadressen og hash-en i JSON-format, og må være i henhold til dette skjemaet:
-      {
-        &quot;type&quot;: &quot;object&quot;,
-        &quot;properties&quot;: {
-          &quot;url&quot;: {
-            &quot;description&quot;: &quot;Nettadressen brukerbildet kan lastes ned fra.&quot;,
-            &quot;type&quot;: &quot;string&quot;
-          },
-          &quot;hash&quot;: {
-            &quot;description&quot;: &quot;SHA-1-hash-en for brukerbildet.&quot;,
-            &quot;type&quot;: &quot;string&quot;
-          }
-        }
-      }
-
-      Hvis denne innstillingen er angitt, laster <ph name="PRODUCT_OS_NAME"/> ned og benytter brukerbildet.
-
-      Hvis du angir denne innstillingen, kan ikke brukere endre eller overstyre den.
-
-      Hvis innstillingen ikke blir angitt, kan brukeren selv velge brukerbildet som skal representere vedkommende på påloggingsskjermen.</translation>
 <translation id="237494535617297575">Gjør at du kan angi en liste over nettadressemønstre som spesifiserer hvilke nettsteder som får vise varsler. Hvis denne retningslinjen ikke angis, brukes den globale verdien for alle nettsteder, enten fra retningslinjen DefaultNotificationsSetting hvis den er angitt, eller av brukerens egen konfigurasjon hvis den nevnte retningslinjen ikke er angitt.</translation>
+<translation id="527237119693897329">Lar deg spesifisere hvilke innebygde meldingsverter som ikke skal lastes inn.
+
+          En svartelisteverdi på «*» betyr at alle innebygde meldingsverter er svartelistet, med mindre de er eksplistitt oppført på godkjenningslisten.
+
+          Hvis denne innstillingen ikke angis, laster <ph name="PRODUCT_NAME"/> inn alle installerte innebygde verter.</translation>
 <translation id="7258823566580374486">Aktiver begrensning (curtaining) av verter for fjerntilgang</translation>
 <translation id="5560039246134246593">Legg til et parameter for hentingen av startverdien for variasjoner i <ph name="PRODUCT_NAME"/>.
 
@@ -1395,15 +1444,6 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
 
           Hvis denne retningslinjen ikke er angitt, brukes PromptOnAccess, og brukeren kan ikke endre denne innstillingen.</translation>
 <translation id="2299220924812062390">Angi en liste over aktiverte programtillegg</translation>
-<translation id="328908658998820373">Tillat fullskjermmodus.
-
-      Denne innstillingen kontrollerer tilgjengeligheten av fullskjermmodus hvor alle <ph name="PRODUCT_NAME"/>-brukergrensesnitt skjules, og bare nettinnhold vises.
-
-      Hvis denne innstillingen angis til «true», eller ikke konfigureres, kan brukeren, apper og utvidelser med aktuelle tillatelser bruke fullskjermmodus.
-
-      Hvis innstillingen angis til «false», kan verken brukeren, apper eller innstillinger bruke fullskjermmodus.
-
-      På alle plattformer bortsett fra <ph name="PRODUCT_OS_NAME"/>, er kioskmodus utilgjengelig når fullskjermmodus deaktiveres.</translation>
 <translation id="4325690621216251241">Legg til en avloggingsknapp for systemstatusfeltet</translation>
 <translation id="924557436754151212">Importér lagrede passord fra standard nettleser ved første kjøring</translation>
 <translation id="1465619815762735808">Klikk for å spille av</translation>
@@ -1420,24 +1460,18 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
 
           Innstillingsverdien må angis i millisekunder. Verdiene er låst til å være lavere enn inaktivitetsforsinkelsen.</translation>
 <translation id="1897365952389968758">Tillat alle nettsteder å kjøre JavaScript</translation>
-<translation id="5244714491205147861">Administrasjon av strømforbruk på påloggingsskjermen</translation>
 <translation id="922540222991413931">Konfigurering av installeringskilder for utvidelser, programmer og brukerskript</translation>
 <translation id="7323896582714668701">Ytterligere kommandolinjeparametere for <ph name="PRODUCT_NAME"/></translation>
 <translation id="6931242315485576290">Deaktiver synkronisering av data med Google</translation>
+<translation id="1330145147221172764">Aktiver skjermtastaturet</translation>
 <translation id="7006788746334555276">Innstillinger for innhold</translation>
-<translation id="63659515616919367">Kontrollér brukeratferden i flerprofiløkter på <ph name="PRODUCT_OS_NAME"/>-enheter.
+<translation id="450537894712826981">Konfigurerer bufferstørrelsen som <ph name="PRODUCT_NAME"/> bruker for lagring av bufrede mediafiler på disken.
 
-      Hvis innstillingen angis til «MultiProfileUserBehaviorUnrestricted», kan brukeren enten være en primær eller sekundær bruker i en flerprofilsøkt.
+      Hvis du angir denne innstillingen, bruker <ph name="PRODUCT_NAME"/> den tildelte bufferstørrelsen uansett om brukeren har spesifisert «--media-cache-size»-flagget eller ikke. Verdien som er angitt i denne innstillingen er ikke en hard grense, men et forslag til buffersystemet. Alle verdier under et par megabyte er for små og blir avrundet oppover til et logisk minimum.
 
-      Hvis innstillingen angis til «MultiProfileUserBehaviorMustBePrimary», kan brukeren bare være primær bruker i en flerprofilsøkt.
+      Hvis verdien for innstillingen er 0, brukes standard bufferstørrelse, og brukeren kan ikke endre den.
 
-      Hvis innstillingen angis til «MultiProfileUserBehaviorNotAllowed», kan ikke brukeren være en del av en flerprofilsøkt.
-
-      Hvis du angir denne innstillingen, kan ikke brukere endre eller overkjøre den.
-
-      Hvis innstillingen endres mens brukeren er logget på en flerprofilsøkt, kontrolleres alle brukere i økten mot sine korresponderende innstillinger. Økten lukkes hvis noen av brukerne ikke lenger har tillatelse til å være i økten.
-
-      Hvis innstillingen ikke angis, brukes standardverdien «MultiProfileUserBehaviorUnrestricted».</translation>
+      Hvis innstillingen ikke er angitt, brukes standard bufferstørrelse, og brukeren kan overstyre den med «--media-cache-size»-flagget.</translation>
 <translation id="5142301680741828703">Alltid gjengi følgende nettadressemønstre i <ph name="PRODUCT_FRAME_NAME"/></translation>
 <translation id="4625915093043961294">Konfigurer godkjenningslisten for installasjon av utvidelser</translation>
 <translation id="187819629719252111">Gir tilgang til lokale filer på maskinen ved å tillate <ph name="PRODUCT_NAME"/> å vise dialoger om filutvalg.
@@ -1455,9 +1489,11 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
 <translation id="1062011392452772310">Slå på ekstern attestasjon for enheten</translation>
 <translation id="7774768074957326919">Bruk systeminnstillingene for mellomtjener</translation>
 <translation id="3891357445869647828">Aktiver JavaScript</translation>
+<translation id="6774533686631353488">Tillat bruk av integrerte meldingsverter på brukernivå (installert uten administratorrettigheter).</translation>
 <translation id="868187325500643455">Tillat alle nettsteder å kjøre programtillegg</translation>
 <translation id="7421483919690710988">Angi størrelse på mediediskbuffer i byte</translation>
 <translation id="5226033722357981948">Angir hvorvidt programtilleggssøket skal deaktiveres</translation>
+<translation id="7234280155140786597">Navnene på de forbudte innebygde meldingsvertene (eller * for alle)</translation>
 <translation id="4890209226533226410">Angi type forstørrelsesskjerm som er aktivert.
 
           Hvis denne innstillingen aktiveres, kontrollerer den typen forstørrelsesskjerm som aktiveres. Hvis innstillingen angis til «None», deaktiveres forstørrelsesskjermen.
@@ -1512,6 +1548,11 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
      Hvis denne innstillingen ikke angis, skjer det ingen automatisk pålogging.</translation>
 <translation id="5983708779415553259">Standard atferd for nettsteder som ikke inngår i noen innholdspakker.</translation>
 <translation id="3866530186104388232">Hvis denne retningslinjen er angitt som Sann eller ikke er konfigurert, viser <ph name="PRODUCT_OS_NAME"/> eksisterende brukere på påloggingssiden og tillate valg av én. Hvis denne retningslinjen er angitt som Usann, ber <ph name="PRODUCT_OS_NAME"/> om brukernavn og passord ved pålogging.</translation>
+<translation id="7384902298286534237">Lar deg angi en liste over nettadressemønstre som angir nettsteder som kan angi øktspesifikke informasjonskapsler.
+
+          Hvis denne innstillingen ikke angis, blir den globale standardverdien brukt for alle nettsteder, enten fra DefaultCookiesSetting-innstillingen, om angitt, eller brukerens personlige konfigurasjon, om ikke.
+
+          Hvis RestoreOnStartup-innstillingen er angitt til å gjenopprette nettadresser fra tidligere økter, blir ikke denne innstillingen overholdt og informasjonskapsler lagres permanent for de aktuelle nettstedene.</translation>
 <translation id="2098658257603918882">Aktiver rapportering av bruk og programstopprelaterte data</translation>
 <translation id="2324547593752594014">Tillat pålogginger til Chrome</translation>
 <translation id="172374442286684480">Lar alle nettsteder angi lokale data</translation>
@@ -1589,6 +1630,11 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
 <translation id="7715711044277116530">Prosentandelen det skaleres etter for forsinkelse av skjermdemping i presentasjonsmodus</translation>
 <translation id="8777120694819070607">Lar <ph name="PRODUCT_NAME"/> kjøre programtillegg som er foreldede. Hvis du aktiverer denne innstillingen, brukes foreldede programtillegg som normale programtillegg. Hvis du deaktiverer denne innstillingen, brukes ikke foreldede programtillegg, og brukerne blir ikke bedt om tillatelse til å kjøre dem. Hvis denne innstillingen ikke er angitt, blir brukerne spurt om tillatelse til å kjøre foreldede programtillegg.</translation>
 <translation id="2629448496147630947">Konfigurer eksterne tilgangsalternativer i <ph name="PRODUCT_NAME"/>. Disse funksjonene ignoreres dersom nettprogrammet for fjerntilgang ikke er installert.</translation>
+<translation id="4001275826058808087">IT-administratorer for bedriftsenheter kan bruke denne markeringen til å kontrollere om brukerne kan innløse tilbud via Chrome OS- registrering.
+
+      Hvis denne innstillingen angis som sann eller ikke angis, kan brukere innløse tilbud via Chrome OS-registrering.
+
+      Hvis denne innstillingen angis som usann, kan ikke brukeren innløse tilbud.</translation>
 <translation id="1310699457130669094">Du kan angi nettadresse til en .pac-fil til mellomtjener her.
 
           Denne retningslinjen trer i kraft bare hvis du har valgt manuelle mellomtjenerinnstulinger under «Velg hvordan du skal angi proxytjenerinnstillinger».
@@ -1629,6 +1675,7 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
 <translation id="8970205333161758602">Ignorer avslagsforespørsel for <ph name="PRODUCT_FRAME_NAME"/></translation>
 <translation id="3273221114520206906">Standard JavaScript-innstilling</translation>
 <translation id="4025586928523884733">Blokkerer informasjonskapsler fra tredjepart. Aktivering av denne innstillingen hindrer informasjonskapsler i å bli angitt av nettsideelementer som ikke kommer fra domenet som er i nettleserens adresselinje. Deaktivering av denne innstillingen tillater at informasjonskapsler angis av nettstedelementer som ikke kommer fra domenet som er i nettleserens adresselinje, og hindrer brukerne i å endre denne innstillingen. Hvis denne retningslinjen ikke angis, aktiveres informasjonskapsler fra tredjepart, men brukeren har mulighet til å endre på dette.</translation>
+<translation id="4604931264910482931">Konfigurer svarteliste for innebygde meldinger</translation>
 <translation id="6810445994095397827">Blokkér JavaScript på disse nettstedene</translation>
 <translation id="6672934768721876104">Denne retningsinjen er foreldet. Bruk ProxyMode i stedet.
 
@@ -1674,6 +1721,7 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
           Hvis du vil ha mer detaljerte eksempler, kan du gå til:
           <ph name="PROXY_HELP_URL"/></translation>
 <translation id="6658245400435704251">Angir grensen for hvor mange sekunder en enhet tilfeldig kan utsette nedlastingen av en oppdatering, fra tidspunktet oppdateringen første ble sendt til tjeneren. Enheten kan sette av en del av denne tiden i form av faktisk ventetid, og den gjenværende delen i form av antall oppdateringer som skal kontrolleres. I alle tilfelle er det den øvre grensen for spredning knyttet til en konstant tidsmengde, slik at enheten aldri blir stående fast og vente på å laste ned en oppdatering for alltid.</translation>
+<translation id="102492767056134033">Angi skjermtastaturets standardtilstand på påloggingssiden</translation>
 <translation id="523505283826916779">Tilgjengelighetsinnstillinger</translation>
 <translation id="1948757837129151165">Retningslinjer for HTTP-autentisering</translation>
 <translation id="5946082169633555022">Betakanal</translation>
@@ -1689,6 +1737,15 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
       Når denne innstillingen er angitt, er Adminstrerte bokmerker-mappen standardmappen som åpnes når bokmerkervisningen åpnes i Chrome.
 
       Administrerte bokmerker synkroniseres ikke til brukerkontoen.</translation>
+<translation id="6757375960964186754">Vis <ph name="PRODUCT_OS_NAME"/>-tilgjengelighetsalternativer i systemmenyen.
+
+          Hvis denne innstillingen angis som sann, vises alltid tilgjengelighetsalternativer i systemstatusfeltet.
+
+          Hvis denne innstillingen angis som usann, vises aldri tilgjengelighetsalternativer i systemstatusfeltet.
+
+          Hvis du angir denne innstillingen, kan ikke brukere endre eller overstyre den.
+
+          Hvis denne innstillingen ikke angis, vises ikke tilgjengelighetsalternativer i systemstatusfeltet, men brukeren kan få tilgjengelighetsalternativene frem via Innstillinger-siden.</translation>
 <translation id="8303314579975657113">Angir hvilket GSSAPI-bibliotek som skal brukes for HTTP-autentisering. Du kan angi enten et biblioteksnavn eller en fullstendig bane.
 
           Hvis ingen innstillinger oppgis, går <ph name="PRODUCT_NAME"/> tilbake til å bruke et standard biblioteknavn.</translation>
@@ -1745,6 +1802,9 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
 <translation id="8197918588508433925">Denne innstillingen angir hvilke utvidelser som har tillatelse til å bruke Enterprise Platform Keys API-en chrome.enterprise.platformKeysPrivate.challengeUserKey() for ekstern attestering. Utvidelser må legges til på listen for å bruke API-en.
 
           Hvis en utvidelse ikke er på listen, eller listen ikke er angitt, vil kall av API-en returnere en feilkode.</translation>
+<translation id="2811293057593285123">Safe Browsing-tjenesten viser en varselside når brukere går til nettsteder som er rapportert som potensielt skadelige. Hvis du aktiverer denne innstillingen, forhindrer du brukere fra å ignorere varselsiden og fortsette til det potensielt skadelige nettstedet.
+
+      Hvis denne innstillingen er deaktivert eller ikke konfigurert, kan brukerne velge å fortsette til det rapporterte nettstedet etter å ha sett advarselen.</translation>
 <translation id="7649638372654023172">Konfigurerer standard nettadresse for startsiden på <ph name="PRODUCT_NAME"/>, og forhindrer brukere fra å endre den.
 
           Startsiden er siden som åpnes når du klikker på Startside-knappen. Sidene som åpnes ved oppstart kontrolleres av RestoreOnStartup-retningslinjene.
@@ -1754,5 +1814,12 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
           Hvis du aktiverer denne innstillingen, kan ikke brukere endre sine respektive startsider på <ph name="PRODUCT_NAME"/>, men de kan fortsatt velge Ny fane-siden som startside.
 
           Hvis du ikke angir et valg for denne innstillingen, kan brukeren velge startside selv hvis HomepageIsNewTabPage heller ikke er valgt.</translation>
+<translation id="3806576699227917885">Tillat avspilling av lyd.
+
+      Når denne innstillingen angis som usann, er ikke lydutganger tilgjengelig på enheten mens brukeren er logget på.
+
+      Denne innstillingen påvirker alle typer lydutganger og ikke bare de innebygde høyttalerne. Lydtilgjengelighetsfunksjoner hemmes også av denne innstillingen. Ikke aktiver denne innstillingen dersom en skjermleser er nødvendig for brukeren.
+
+      Hvis denne innstillingen angis som sann eller ikke konfigurert, kan brukerne bruke alle støttede lydutganger på enhet sin.</translation>
 <translation id="4858735034935305895">Tillat fullskjermmodus</translation>
 </translationbundle>

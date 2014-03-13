@@ -14,7 +14,9 @@
 <translation id="3358663646935160692">Ta račun upravlja domena <ph name="DOMAIN_NAME"/>.
 
 Prijavljate se z upravljanim računom in s tem njegovemu skrbniku omogočate nadziranje vašega profila v Google Chromu. Vaši podatki v Google Chromu bodo trajno povezani s tem računom. Če prekinete povezavo s tem računom, se izbrišejo lokalni podatki v Google Chromu.</translation>
+<translation id="1966710179511230534">Posodobite podrobnosti prijave.</translation>
 <translation id="1623104350909869708">Tej strani prepreči, da bi ustvarila dodatna pogovorna okna</translation>
+<translation id="8218346974737627104">Potrditev prijave</translation>
 <translation id="624558823898732418">Jezik prevoda: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">Izberite potrdilo za preverjanje pristnosti</translation>
 <translation id="3896036286668839683">Pregledovalnik potrdil</translation>
@@ -29,7 +31,6 @@ Prijavljate se z upravljanim računom in s tem njegovemu skrbniku omogočate nad
 <translation id="5684874026226664614">Ojoj, te strani bi bilo mogoče prevesti.</translation>
 <translation id="4619298195800598081">Izvirna slika na novem zavihku</translation>
 <translation id="907015151729920253">Pametna kartica</translation>
-<translation id="3136378934686431938">Posodobite podrobnosti prijave.</translation>
 <translation id="3063601790762993062">Shrani videoposnetek</translation>
 <translation id="6042308850641462728">Več</translation>
 <translation id="3992315671621218278">Shrani povezavo</translation>
@@ -59,5 +60,4 @@ Prijavljate se z upravljanim računom in s tem njegovemu skrbniku omogočate nad
 <translation id="6277522088822131679">Pri tiskanju strani je prišlo do težave. Poskusite znova.</translation>
 <translation id="1742134235943978220">Prevedeno v ta jezik: <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="6965382102122355670">V redu</translation>
-<translation id="7495038789730067783">Potrditev prijave</translation>
 </translationbundle>

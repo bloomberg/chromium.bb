@@ -14,7 +14,9 @@
 <translation id="3358663646935160692">यह खाता <ph name="DOMAIN_NAME"/> द्वारा प्रबंधित है.
 
 आप प्रबंधित खाते से प्रवेश कर रहे हैं और अपनी Chrome प्रोफ़ाइल को इसका व्यवस्थापक नियंत्रण दे रहे हैं. आपका Chrome डेटा इस खाते से स्थायी रूप से जुड़ जाएगा. इस खाते से डिस्कनेक्ट करने से स्थानीय Chrome डेटा हट जाएगा.</translation>
+<translation id="1966710179511230534">कृपया अपने प्रवेश विवरण अपडेट करें.</translation>
 <translation id="1623104350909869708">इस पृष्ठ को अतिरिक्त संवाद बनाने से रोकें</translation>
+<translation id="8218346974737627104">प्रवेश की पुष्टि करें</translation>
 <translation id="624558823898732418">अनुवाद की भाषा: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">प्रमाणीकरण के लिए प्रमाणपत्र चुनें</translation>
 <translation id="3896036286668839683">प्रमाणपत्र व्यूअर</translation>
@@ -29,7 +31,6 @@
 <translation id="5684874026226664614">ओह. इस पृष्ठ का अनुवाद नहीं किया जा सका.</translation>
 <translation id="4619298195800598081">मूल चित्र नए टैब में खोलें</translation>
 <translation id="907015151729920253">स्मार्ट कार्ड</translation>
-<translation id="3136378934686431938">कृपया अपने प्रवेश विवरण अपडेट करें.</translation>
 <translation id="3063601790762993062">वीडियो सहेजें</translation>
 <translation id="6042308850641462728">अधिक</translation>
 <translation id="3992315671621218278">लिंक सहेजें</translation>
@@ -59,5 +60,4 @@
 <translation id="6277522088822131679">पृष्ठ को प्रिंट करने में समस्या थी. कृपया पुनः प्रयास करें.</translation>
 <translation id="1742134235943978220"><ph name="TARGET_LANGUAGE"/> में अनुवाद किया गया.</translation>
 <translation id="6965382102122355670">ठीक</translation>
-<translation id="7495038789730067783">प्रवेश की पुष्टि करें</translation>
 </translationbundle>

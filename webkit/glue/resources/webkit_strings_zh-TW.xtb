@@ -3,7 +3,6 @@
 <translationbundle lang="zh-TW">
 <translation id="4763480195061959176">影片</translation>
 <translation id="5843503607508392247">其他...</translation>
-<translation id="2426432199384958866">將串流影片恢復為即時播放</translation>
 <translation id="248395913932153421">日</translation>
 <translation id="1729654308190250600">請輸入電子郵件地址。</translation>
 <translation id="6015796118275082299">年</translation>
@@ -22,7 +21,6 @@
 <translation id="7057186640035488495">電影時間</translation>
 <translation id="8199524924445686405"> 年 </translation>
 <translation id="795667975304826397">未選擇檔案</translation>
-<translation id="1320012872283894746">影片倒轉</translation>
 <translation id="7789962463072032349">暫停</translation>
 <translation id="6853785296079745596">不顯示隱藏式輔助字幕</translation>
 <translation id="4360991593054037559">請輸入有效值。最接近的兩個有效值分別是 <ph name="VALID_VALUE_LOW"/> 和 <ph name="VALID_VALUE_HIGHER"/>。</translation>
@@ -36,7 +34,6 @@
 <translation id="6845533974506654842">按下</translation>
 <translation id="8244226242650769279">圖片點擊區</translation>
 <translation id="310520048233152454">請輸入網址。</translation>
-<translation id="9039488204461337220">影片快轉</translation>
 <translation id="4812940957355064477">請輸入一個數字。</translation>
 <translation id="2548326553472216322">沒有近期的搜尋</translation>
 <translation id="1938124657309484470">必須輸入 <ph name="MAXIMUM_DATE_OR_TIME"/> 或之前的值。</translation>
@@ -49,7 +46,6 @@
 <translation id="3075154866155599887">欄位內容不完整或日期無效，請輸入有效的值。</translation>
 <translation id="3040011195152428237">連結</translation>
 <translation id="1014825444426747588">空白</translation>
-<translation id="3356679314312413792">影片倒轉 (30 秒)</translation>
 <translation id="9050748414552849310">顯示隱藏式輔助字幕</translation>
 <translation id="4522570452068850558">詳細資訊</translation>
 <translation id="8451268428117625855">請選取檔案。</translation>
@@ -101,7 +97,6 @@
 <translation id="7673697353781729403">小時</translation>
 <translation id="4664250907885839816">「<ph name="ATSIGN"/>」後面的部分不應包含「<ph name="INVALIDCHARACTER"/>」符號。</translation>
 <translation id="3450233048674729344">值必須小於或等於 <ph name="MAXIMUM"/>。</translation>
-<translation id="3471999216963526757">倒轉 30 秒</translation>
 <translation id="668171684555832681">其他...</translation>
 <translation id="6270583010843788609">電影時間軸捲動方塊</translation>
 <translation id="5641012560118721995">暫停播放</translation>
@@ -110,15 +105,12 @@
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> 個檔案</translation>
 <translation id="6643016212128521049">清除</translation>
 <translation id="7888071071722539607">請在電子郵件地址中包含「<ph name="ATSIGN"/>」。「<ph name="INVALIDADDRESS"/>」未包含「<ph name="ATSIGN"/>」。</translation>
-<translation id="4851297395436456855">向前快轉</translation>
 <translation id="1088086359088493902">秒</translation>
 <translation id="3934680773876859118">無法載入 PDF 文件</translation>
 <translation id="3632707345189162177">電影剩餘秒數</translation>
 <translation id="6359256949422175976">影片時間拖曳工具捲動方塊</translation>
 <translation id="8597182159515967513">標題</translation>
 <translation id="6843725295806269523">忽略的項目</translation>
-<translation id="2615751259741237794">返回即時播放模式</translation>
 <translation id="2653659639078652383">提交</translation>
 <translation id="3732799496749320381">月</translation>
-<translation id="4484359737905287537">向後快轉</translation>
 </translationbundle>

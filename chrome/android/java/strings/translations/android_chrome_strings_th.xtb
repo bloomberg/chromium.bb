@@ -14,7 +14,9 @@
 <translation id="3358663646935160692">ผู้จัดการบัญชีนี้คือ <ph name="DOMAIN_NAME"/>
 
 คุณกำลังลงชื่อเข้าใช้ด้วยบัญชีที่มีผู้อื่นเป็นผู้จัดการ และคุณอนุญาตให้ผู้ดูแลระบบควบคุมโปรไฟล์ Chrome ของคุณได้ ข้อมูล Chrome ของคุณจะเชื่อมโยงกับบัญชีนี้อย่างถาวร การยกเลิกการเชื่อมต่อกับบัญชีนี้จะเป็นการลบข้อมูล Chrome ในเครื่อง</translation>
+<translation id="1966710179511230534">โปรดอัปเดตรายละเอียดการลงชื่อเข้าใช้ของคุณ</translation>
 <translation id="1623104350909869708">ป้องกันหน้าเว็บนี้จากการสร้างการโต้ตอบเพิ่มเติม</translation>
+<translation id="8218346974737627104">ยืนยันการลงชื่อเข้าใช้</translation>
 <translation id="624558823898732418">ภาษาที่แปล: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="8872441722924401214">เลือกใบรับรองสำหรับการตรวจสอบสิทธิ์</translation>
 <translation id="3896036286668839683">เครื่องมือดูใบรับรอง</translation>
@@ -29,7 +31,6 @@
 <translation id="5684874026226664614">อ๊ะ หน้านี้ไม่สามารถแปลได้</translation>
 <translation id="4619298195800598081">เปิดภาพต้นฉบับในแท็บใหม่</translation>
 <translation id="907015151729920253">สมาร์ทการ์ด</translation>
-<translation id="3136378934686431938">โปรดอัปเดตรายละเอียดการลงชื่อเข้าใช้ของคุณ</translation>
 <translation id="3063601790762993062">บันทึกวิดีโอ</translation>
 <translation id="6042308850641462728">เพิ่มเติม</translation>
 <translation id="3992315671621218278">บันทึกลิงก์</translation>
@@ -59,5 +60,4 @@
 <translation id="6277522088822131679">เกิดปัญหาในการพิมพ์หน้านี้ โปรดลองอีกครั้ง</translation>
 <translation id="1742134235943978220">แปลเป็นภาษา<ph name="TARGET_LANGUAGE"/>แล้ว</translation>
 <translation id="6965382102122355670">ตกลง</translation>
-<translation id="7495038789730067783">ยืนยันการลงชื่อเข้าใช้</translation>
 </translationbundle>

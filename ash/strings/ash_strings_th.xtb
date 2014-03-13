@@ -15,6 +15,7 @@
 <translation id="370649949373421643">เปิดใช้งาน Wi-Fi</translation>
 <translation id="3626281679859535460">ความสว่าง</translation>
 <translation id="3621202678540785336">อินพุต</translation>
+<translation id="7348093485538360975">แป้นพิมพ์บนหน้าจอ</translation>
 <translation id="595202126637698455">เปิดใช้งานการติดตามการปฏิบัติงานแล้ว</translation>
 <translation id="8054466585765276473">กำลังคำนวณเวลาใช้งานแบตเตอรี่</translation>
 <translation id="7982789257301363584">เครือข่าย</translation>
@@ -27,6 +28,7 @@
 <translation id="2297568595583585744">ถาดสถานะ</translation>
 <translation id="1661867754829461514">ไม่พบ PIN</translation>
 <translation id="4508225577814909926"><ph name="NAME"/>: กำลังเชื่อมต่อ...</translation>
+<translation id="2248649616066688669">คุณสามารถใช้ Chromebook ต่อไปในขณะที่เชื่อมต่อกับจอแสดงผลภายนอก แม้ฝาจะปิดอยู่ก็ตาม</translation>
 <translation id="40400351611212369">ข้อผิดพลาดการเปิดใช้งานเครือข่าย</translation>
 <translation id="4237016987259239829">ข้อผิดพลาดการเชื่อมต่อเครือข่าย</translation>
 <translation id="2946640296642327832">เปิดใช้งานบลูทูธ</translation>
@@ -34,11 +36,14 @@
 <translation id="8206859287963243715">โทรศัพท์มือถือ</translation>
 <translation id="6596816719288285829">ที่อยู่ IP</translation>
 <translation id="4508265954913339219">การเปิดใช้งานล้มเหลว</translation>
+<translation id="8688591111840995413">รหัสผ่านไม่ถูกต้อง</translation>
 <translation id="3621712662352432595">การตั้งค่าเสียง</translation>
 <translation id="1812696562331527143">วิธีการป้อนข้อมูลของคุณเปลี่ยนแปลงเป็น <ph name="INPUT_METHOD_ID"/>* (<ph name="BEGIN_LINK"/>บุคคลที่สาม<ph name="END_LINK"/>)
 กด Shift + Alt เพื่อสลับ</translation>
+<translation id="6043994281159824495">ออกจากระบบเลย</translation>
 <translation id="2127372758936585790">ที่ชาร์จพลังงานต่ำ</translation>
 <translation id="3846575436967432996">ไม่มีข้อมูลเครือข่ายที่สามารถใช้งานได้</translation>
+<translation id="3799026279081545374">ที่ชาร์จของคุณอาจเสีย หากคุณอาศัยในสหรัฐอเมริกา โปรดโทรไปที่ 866-628-1371 เพื่อขอความช่วยเหลือหรือขอเปลี่ยนสินค้า หากคุณอาศัยในสหราชอาณาจักร โปรดโทรไปที่ 0800-026-0613 หากคุณอาศัยในไอร์แลนด์ โปรดโทรไปที่ 1-800-832-664 หากคุณอาศัยในแคนาดา โปรดโทรไปที่ 866-628-1372 หากคุณอาศัยในออสเตรเลีย โปรดโทรไปที่ 1-800-067-460</translation>
 <translation id="3026237328237090306">ตั้งค่าข้อมูลมือถือ</translation>
 <translation id="5871632337994001636">จัดการอุปกรณ์...</translation>
 <translation id="785750925697875037">ดูบัญชีมือถือ</translation>
@@ -57,6 +62,8 @@
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME"/> (<ph name="ANNOTATION"/>)</translation>
 <translation id="2942516765047364088">ตำแหน่งของชั้นวาง</translation>
 <translation id="8676770494376880701">เชื่อมต่อกับที่ชาร์จพลังงานต่ำ</translation>
+<translation id="5238774010593222950">ไม่สามารถลงชื่อเข้าใช้บัญชีอื่น</translation>
+<translation id="1723752762323179280">กำลังออกจากเซสชัน</translation>
 <translation id="7170041865419449892">อยู่นอกระยะสัญญาณ</translation>
 <translation id="4804818685124855865">ตัดการเชื่อมต่อ</translation>
 <translation id="2544853746127077729">ใบรับรองการตรวจสอบสิทธิ์ได้รับการปฏิเสธจากเครือข่าย</translation>
@@ -72,7 +79,6 @@
 <translation id="3892641579809465218">จอแสดงผลภายใน</translation>
 <translation id="7823564328645135659">เปลี่ยนภาษาจาก &quot;<ph name="FROM_LOCALE"/>&quot; เป็น &quot;<ph name="TO_LOCALE"/>&quot; หลังจากซิงค์การตั้งค่าของคุณ</translation>
 <translation id="3368922792935385530">เชื่อมต่อแล้ว</translation>
-<translation id="8340999562596018839">การตอบสนองด้วยเสียง</translation>
 <translation id="8654520615680304441">เปิด WiFi...</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="5825747213122829519">วิธีการป้อนข้อมูลของคุณเปลี่ยนแปลงเป็น <ph name="INPUT_METHOD_ID"/> แล้ว
@@ -98,9 +104,7 @@
 <translation id="3963445509666917109">ลำโพง (ภายใน)</translation>
 <translation id="2825619548187458965">ชั้นวาง</translation>
 <translation id="2614835198358683673">Chromebook ของคุณอาจไม่ได้ชาร์จในขณะที่เปิดอยู่ ลองใช้ที่ชาร์จมาตรฐาน</translation>
-<translation id="1895658205118569222">ปิด</translation>
 <translation id="4430019312045809116">ระดับเสียง</translation>
-<translation id="8681498213689260554">รีสตาร์ทและ Powerwash เพื่ออัปเดต</translation>
 <translation id="4442424173763614572">การค้นหา DNS ล้มเหลว</translation>
 <translation id="7874779702599364982">กำลังค้นหาเครือข่ายโทรศัพท์มือถือ...</translation>
 <translation id="583281660410589416">ไม่รู้จัก</translation>
@@ -110,7 +114,7 @@
 <translation id="1621499497873603021">เวลาที่เหลือกว่าแบตเตอรี่จะหมด, <ph name="TIME_LEFT"/></translation>
 <translation id="5980301590375426705">ออกจากเซสชันผู้มาเยือน</translation>
 <translation id="8308637677604853869">เมนูก่อนหน้า</translation>
-<translation id="4666297444214622512">ไม่สามารถลงชื่อเข้าใช้บัญชีอื่น</translation>
+<translation id="4321179778687042513">ctrl</translation>
 <translation id="3625258641415618104">ปิดใช้การจับภาพหน้าจอ</translation>
 <translation id="1346748346194534595">ขวา</translation>
 <translation id="1773212559869067373">ใบรับรองการตรวจสอบสิทธิ์ได้รับการปฏิเสธในท้องถิ่น</translation>
@@ -119,10 +123,9 @@
 <translation id="8428213095426709021">การตั้งค่า</translation>
 <translation id="2372145515558759244">กำลังซิงค์แอปพลิเคชัน...</translation>
 <translation id="7256405249507348194">ข้อผิดพลาดที่ไม่รู้จัก: <ph name="DESC"/></translation>
+<translation id="2894654529758326923">ข้อมูล</translation>
 <translation id="7925247922861151263">การตรวจสอบ AAA ล้มเหลว</translation>
 <translation id="8456362689280298700">อีก <ph name="HOUR"/>:<ph name="MINUTE"/> จึงจะเต็ม</translation>
-<translation id="5787281376604286451">เปิดใช้งานการตอบสนองด้วยเสียงอยู่
-กด Ctrl+Alt+Z เพื่อปิดใช้งาน</translation>
 <translation id="4479639480957787382">อีเทอร์เน็ต</translation>
 <translation id="6312403991423642364">ข้อผิดพลาดเครือข่ายที่ไม่รู้จัก</translation>
 <translation id="1467432559032391204">ซ้าย</translation>
@@ -133,6 +136,7 @@
 <translation id="1923539912171292317">การคลิกอัตโนมัติ</translation>
 <translation id="1398853756734560583">ย่อ</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: กำลังเชื่อมต่อ...</translation>
+<translation id="6062360702481658777">คุณจะออกจากระบบโดยอัตโนมัติใน <ph name="LOGOUT_TIME_LEFT"/></translation>
 <translation id="252373100621549798">หน้าจอที่ไม่รู้จัก</translation>
 <translation id="1882897271359938046">กำลังแสดงผลไปที่ <ph name="DISPLAY_NAME"/></translation>
 <translation id="2727977024730340865">เสียบอยู่กับที่ชาร์จพลังงานต่ำ การชาร์จแบตเตอรี่อาจไม่น่าเชื่อถือ</translation>
@@ -141,6 +145,7 @@
 <translation id="1512064327686280138">การเปิดใช้งานล้มเหลว</translation>
 <translation id="5097002363526479830">ไม่สามารถเชื่อมต่อเครือข่าย &quot;<ph name="NAME"/>&quot;: <ph name="DETAILS"/></translation>
 <translation id="1850504506766569011">WiFi ปิดอยู่</translation>
+<translation id="2872961005593481000">ปิด</translation>
 <translation id="2966449113954629791">คุณอาจใช้ข้อมูลมือถือตามปริมาณที่อนุญาตหมดแล้ว ไปที่พอร์ทัลการเปิดใช้งาน <ph name="NAME"/> เพื่อซื้อข้อมูลเพิ่มเติม</translation>
 <translation id="8132793192354020517">เชื่อมต่อกับ <ph name="NAME"/></translation>
 <translation id="7052914147756339792">ตั้งค่าวอลเปเปอร์...</translation>
@@ -153,8 +158,10 @@
 <translation id="7005812687360380971">ล้มเหลว</translation>
 <translation id="882279321799040148">คลิกเพื่อดู</translation>
 <translation id="1753067873202720523">Chromebook อาจไม่ชาร์จขณะที่เปิดอยู่</translation>
+<translation id="7561014039265304140"><ph name="DISPLAY_NAME"/> ไม่สนับสนุน <ph name="SPECIFIED_RESOLUTION"/> ความละเอียดเปลี่ยนเป็น <ph name="FALLBACK_RESOLUTION"/></translation>
 <translation id="5045550434625856497">รหัสผ่านไม่ถูกต้อง</translation>
 <translation id="1602076796624386989">เปิดใช้งานข้อมูลมือถือ</translation>
+<translation id="68610848741840742">ChromeVox (การตอบสนองด้วยเสียง)</translation>
 <translation id="6981982820502123353">การเข้าถึง</translation>
 <translation id="3157931365184549694">คืนค่า</translation>
 <translation id="4274292172790327596">ข้อผิดพลาดที่ไม่รู้จัก</translation>
@@ -167,10 +174,12 @@
 <translation id="8401662262483418323">การเชื่อมต่อกับ &quot;<ph name="NAME"/>&quot; ล้มเหลว: <ph name="DETAILS"/>
 ข้อความเซิร์ฟเวอร์: <ph name="SERVER_MSG"/></translation>
 <translation id="2475982808118771221">มีข้อผิดพลาดเกิดขึ้น</translation>
+<translation id="3783640748446814672">alt</translation>
 <translation id="7229570126336867161">ต้องใช้ EVDO</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> เป็นเซสชันสาธารณะซึ่งจัดการโดย <ph name="DOMAIN"/></translation>
 <translation id="9044646465488564462">ไม่สามารถเชื่อมต่อเครือข่าย: <ph name="DETAILS"/></translation>
 <translation id="7029814467594812963">ออกจากเซสชัน</translation>
+<translation id="479989351350248267">ค้นหา</translation>
 <translation id="8454013096329229812">WiFi เปิดอยู่</translation>
 <translation id="4872237917498892622">Alt+ค้นหา หรือ Shift</translation>
 <translation id="9201131092683066720">มีแบตเตอรี่ <ph name="PERCENTAGE"/>%</translation>
@@ -193,14 +202,13 @@
 <translation id="5947494881799873997">ย้อนกลับ</translation>
 <translation id="7593891976182323525">ค้นหาหรือ Shift</translation>
 <translation id="7649070708921625228">ช่วยเหลือ</translation>
-<translation id="747833637904845037">Chromebook ของคุณจะยังคงเปิดอยู่ขณะเชื่อมต่อจอภาพภายนอก แม้จะปิดฝาอยู่</translation>
 <translation id="3050422059534974565">CAPS LOCK เปิดอยู่
 กด &quot;ค้นหา&quot; หรือ Shift เพื่อยกเิลิก</translation>
 <translation id="397105322502079400">กำลังคำนวณ...</translation>
 <translation id="158849752021629804">ต้องใช้เครือข่ายในประเทศ</translation>
 <translation id="6857811139397017780">เปิดใช้งาน <ph name="NETWORKSERVICE"/></translation>
 <translation id="5864471791310927901">การค้นหา DHCP ล้มเหลว</translation>
-<translation id="6692173217867674490">ข้อความรหัสผ่านไม่ถูกต้อง</translation>
+<translation id="2819276065543622893">คุณจะออกจากระบบในตอนนี้</translation>
 <translation id="6165508094623778733">เรียนรู้เพิ่มเติม</translation>
 <translation id="9046895021617826162">การเชื่อมต่อล้มเหลว</translation>
 <translation id="7168224885072002358">เปลี่ยนกลับไปเป็นความละเอียดเดิมภายใน <ph name="TIMEOUT_SECONDS"/></translation>
@@ -209,6 +217,8 @@
 <translation id="6636709850131805001">สถานะที่ไม่รู้จัก</translation>
 <translation id="3573179567135747900">เปลี่ยนกลับเป็น &quot;<ph name="FROM_LOCALE"/>&quot; (จำเป็นต้องรีสตาร์ต)</translation>
 <translation id="8103386449138765447">ข้อความ SMS: <ph name="MESSAGE_COUNT"/></translation>
+<translation id="7097613348211027502">เปิดใช้ ChromeVox (การตอบสนองด้วยเสียง) อยู่
+กด Ctrl+Alt+Z เพื่อปิด</translation>
 <translation id="5045002648206642691">การตั้งค่า Google ไดรฟ์...</translation>
 <translation id="7209101170223508707">CAPS LOCK เปิดอยู่
 กด Alt+ค้นหา หรือ Shift เพื่อยกเลิก</translation>
@@ -224,6 +234,7 @@
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">ขอแสดงความยินดี! บริการข้อมูล &quot;<ph name="NAME"/>&quot; ของคุณได้เปิดใช้งานและพร้อมใช้งานแล้ว</translation>
 <translation id="412065659894267608">อีก <ph name="HOUR"/>ชม. <ph name="MINUTE"/>นาทีจึงจะเต็ม</translation>
+<translation id="3077734595579995578">shift</translation>
 <translation id="7297443947353982503">ชื่อผู้ใช้/รหัสผ่านไม่ถูกต้องหรือการตรวจสอบสิทธิ์ EAP ล้มเหลว</translation>
 <translation id="6359806961507272919">SMS จาก <ph name="PHONE_NUMBER"/></translation>
 <translation id="1244147615850840081">ผู้ให้บริการ</translation>

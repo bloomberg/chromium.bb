@@ -24,6 +24,7 @@
 <translation id="7222373446505536781">F11</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY"/> B</translation>
 <translation id="3660179305079774227">上矢印キー</translation>
+<translation id="7062130397825382308">残り <ph name="NUMBER_ONE"/> 秒</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY"/> MB/秒</translation>
 <translation id="5608669887400696928"><ph name="NUMBER_DEFAULT"/> 時間</translation>
 <translation id="3990502903496589789">右端</translation>
@@ -45,6 +46,7 @@
 <translation id="7770995925463083016"><ph name="NUMBER_TWO"/> 分前</translation>
 <translation id="3234408098842461169">下矢印キー</translation>
 <translation id="3087734570205094154">下</translation>
+<translation id="8828991073132329143">残り <ph name="NUMBER_MANY"/> 秒</translation>
 <translation id="5935630983280450497">残り <ph name="NUMBER_ONE"/> 分</translation>
 <translation id="1860796786778352021">通知を閉じる</translation>
 <translation id="6364916375976753737">左にスクロール</translation>
@@ -68,6 +70,7 @@
 <translation id="7781829728241885113">昨日</translation>
 <translation id="3424538384153559412"><ph name="NUMBER_TWO"/> 分</translation>
 <translation id="50960180632766478">残り <ph name="NUMBER_FEW"/> 分</translation>
+<translation id="5517291721709019259">残り <ph name="NUMBER_FEW"/> 秒</translation>
 <translation id="6659594942844771486">Tab</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY"/> MB</translation>
 <translation id="4988273303304146523"><ph name="NUMBER_DEFAULT"/> 日前</translation>
@@ -137,12 +140,14 @@
 <translation id="1285266685456062655"><ph name="NUMBER_FEW"/> 時間前</translation>
 <translation id="6918245111648057970">ユーザーごとに次の通知を許可:</translation>
 <translation id="5489830104927132166"><ph name="NUMBER_ONE"/> 秒</translation>
+<translation id="1270251962578273213">残り <ph name="NUMBER_TWO"/> 秒</translation>
 <translation id="3994835489895548312">残り <ph name="NUMBER_MANY"/> 分</translation>
 <translation id="6358975074282722691"><ph name="NUMBER_TWO"/> 秒前</translation>
 <translation id="520299402983819650"><ph name="QUANTITY"/> PB</translation>
 <translation id="2983818520079887040">設定...</translation>
 <translation id="6845383723252244143">フォルダを選択</translation>
 <translation id="7600770490873519066"><ph name="NUMBER_FEW"/> 秒</translation>
+<translation id="5368780922436099921">残り <ph name="NUMBER_ZERO"/> 秒</translation>
 <translation id="1095623615273566396"><ph name="NUMBER_FEW"/> 秒</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5263972071113911534"><ph name="NUMBER_MANY"/> 日前</translation>
@@ -165,6 +170,7 @@
 <translation id="6142413573757616983"><ph name="QUANTITY"/> B/秒</translation>
 <translation id="7649070708921625228">ヘルプ</translation>
 <translation id="6699343763173986273">メディアの次のトラック</translation>
+<translation id="5445120697129764393">残り <ph name="NUMBER_DEFAULT"/> 秒</translation>
 <translation id="8226233771743600312">通知を 1 日間ミュート</translation>
 <translation id="7457942297256758195">すべて消去</translation>
 <translation id="822618367988303761"><ph name="NUMBER_TWO"/> 日前</translation>

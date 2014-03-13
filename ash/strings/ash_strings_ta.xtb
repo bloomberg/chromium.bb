@@ -15,6 +15,7 @@
 <translation id="370649949373421643">Wi-fi ஐ இயக்கு</translation>
 <translation id="3626281679859535460">ஒளிர்வு</translation>
 <translation id="3621202678540785336">உள்ளீடு</translation>
+<translation id="7348093485538360975">ஆன்-ஸ்கிரீன் விசைப்பலகை</translation>
 <translation id="595202126637698455">செயல்திறனைத் தடமறிதல் இயக்கப்பட்டுள்ளது</translation>
 <translation id="8054466585765276473">பேட்டரி நேரத்தைக் கணக்கிடுகிறது.</translation>
 <translation id="7982789257301363584">நெட்வொர்க்</translation>
@@ -27,6 +28,7 @@
 <translation id="2297568595583585744">நிலைத் தட்டு</translation>
 <translation id="1661867754829461514">PIN இல்லை</translation>
 <translation id="4508225577814909926"><ph name="NAME"/>: இணைக்கிறது...</translation>
+<translation id="2248649616066688669">வெளிப்புற காட்சியுடன் இணைக்கப்பட்டிருக்கும்போது, மூடியை மூடி வைத்தும் உங்கள் Chromebook ஐத் தொடர்ந்து பயன்படுத்தலாம்.</translation>
 <translation id="40400351611212369">பிணைய செயலாக்கத்தின் பிழை</translation>
 <translation id="4237016987259239829">பிணைய இணைப்புப் பிழை</translation>
 <translation id="2946640296642327832">Bluetooth ஐ இயக்கு</translation>
@@ -34,11 +36,14 @@
 <translation id="8206859287963243715">செல்லுலர்</translation>
 <translation id="6596816719288285829">IP முகவரி</translation>
 <translation id="4508265954913339219">செயலாக்கம் தோல்வியுற்றது</translation>
+<translation id="8688591111840995413">எளிதான கடவுச்சொல்</translation>
 <translation id="3621712662352432595">ஆடியோ அமைப்புகள்</translation>
 <translation id="1812696562331527143">உங்கள் உள்ளீட்டு முறையானது <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>மூன்றாம் தரப்பு<ph name="END_LINK"/>) க்கு மாற்றப்பட்டது.
 மாற்ற Shift + Alt ஐ அழுத்தவும்.</translation>
+<translation id="6043994281159824495">இப்போது வெளியேறு</translation>
 <translation id="2127372758936585790">குறைந்த சக்திகொண்ட சார்ஜர்</translation>
 <translation id="3846575436967432996">நெட்வொர்க் தகவல் எதுவும் இல்லை</translation>
+<translation id="3799026279081545374">உங்களிடம் நல்ல நிலையில் இல்லாத சார்ஜர் இருக்கலாம். நீங்கள் US இல் வசிக்கிறீர்கள் எனில், உதவி மற்றும் மாற்று சார்ஜரைப் பெறுவதற்கு 866-628-1371 ஐ அழைக்கவும். நீங்கள் UK இல் வசிக்கிறீர்கள் எனில், 0800-026-0613 ஐ அழைக்கவும். நீங்கள் அயர்லாந்தில் வசிக்கிறீர்கள் எனில், 1-800-832-664 ஐ அழைக்கவும். நீங்கள் கனடாவில் வசிக்கிறீர்கள் எனில், 866-628-1372 ஐ அழைக்கவும். நீங்கள் ஆஸ்திரேலியாவில் வசிக்கிறீர்கள் எனில், 1-800-067-460 ஐ அழைக்கவும்.</translation>
 <translation id="3026237328237090306">மொபைல் தரவை அமை</translation>
 <translation id="5871632337994001636">சாதனங்களை நிர்வகி...</translation>
 <translation id="785750925697875037">மொபைல் கணக்கைப் பார்க்கவும்</translation>
@@ -57,6 +62,8 @@
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME"/> (<ph name="ANNOTATION"/>)</translation>
 <translation id="2942516765047364088">அடுக்கின் நிலை</translation>
 <translation id="8676770494376880701">குறைந்த சக்தியிலான சார்ஜர் இணைக்கப்பட்டுள்ளது</translation>
+<translation id="5238774010593222950">மற்றொரு கணக்கில் உள்நுழைய முடியாது.</translation>
+<translation id="1723752762323179280">அமர்விலிருந்து வெளியேறுகிறது</translation>
 <translation id="7170041865419449892">வரம்புக்கு வெளியே</translation>
 <translation id="4804818685124855865">தொடர்பைத் துண்டி</translation>
 <translation id="2544853746127077729">அங்கீகரிப்புச் சான்றிதழ் பிணையத்தால் நிராகரிக்கப்பட்டது</translation>
@@ -72,7 +79,6 @@
 <translation id="3892641579809465218">இணையக் காட்சி</translation>
 <translation id="7823564328645135659">உங்கள் அமைப்புகளை ஒத்திசைத்த பிறகு, மொழியானது &quot;<ph name="FROM_LOCALE"/>&quot; இலிருந்து &quot;<ph name="TO_LOCALE"/>&quot; க்கு மாற்றப்பட்டுள்ளது.</translation>
 <translation id="3368922792935385530">இணைக்கப்பட்டது</translation>
-<translation id="8340999562596018839">பேச்சுவடிவ கருத்து</translation>
 <translation id="8654520615680304441">Wi-Fi ஐ இயக்கு...</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="5825747213122829519">உங்கள் உள்ளீட்டு முறையானது <ph name="INPUT_METHOD_ID"/> க்கு மாற்றப்பட்டது.
@@ -98,9 +104,7 @@
 <translation id="3963445509666917109">ஸ்பீக்கர் (உட்புறம்)</translation>
 <translation id="2825619548187458965">அடுக்கு</translation>
 <translation id="2614835198358683673">உங்கள் Chromebook இயக்கத்தில் இருக்கும்போது சார்ஜ் செய்ய முடியாது. அதிகாரப்பூர்வ சார்ஜரைப் பயன்படுத்தவும்.</translation>
-<translation id="1895658205118569222">நிறுத்தம்</translation>
 <translation id="4430019312045809116">அளவு</translation>
-<translation id="8681498213689260554">புதுப்பிப்பதற்கு மீண்டும் தொடங்கி, பவர்வாஷ் செய்க</translation>
 <translation id="4442424173763614572">DNS தேடுதல் தோல்வி</translation>
 <translation id="7874779702599364982">செல்லுலார் நெட்வொர்க்குகளைத் தேடுகிறது...</translation>
 <translation id="583281660410589416">அறியப்படாத</translation>
@@ -110,7 +114,7 @@
 <translation id="1621499497873603021">இன்னும் <ph name="TIME_LEFT"/> இல் பேட்டரி காலியாகிவிடும்</translation>
 <translation id="5980301590375426705">விருந்தினரிலிருந்து வெளியேறவும்</translation>
 <translation id="8308637677604853869">முந்தைய மெனு</translation>
-<translation id="4666297444214622512">இன்னொரு கணக்கில் உள்நுழைய முடியாது.</translation>
+<translation id="4321179778687042513">ctrl</translation>
 <translation id="3625258641415618104">ஸ்கிரீன்ஷாட்கள் முடக்கப்பட்டன</translation>
 <translation id="1346748346194534595">வலது</translation>
 <translation id="1773212559869067373">அங்கீகரிப்புச் சான்றிதழ் உள்ளிடையாக நிராகரிக்கப்பட்டது</translation>
@@ -119,10 +123,9 @@
 <translation id="8428213095426709021">அமைப்புகள்</translation>
 <translation id="2372145515558759244">பயன்பாடுகளை ஒத்திசைக்கிறது...</translation>
 <translation id="7256405249507348194">அறியப்படாத பிழை: <ph name="DESC"/></translation>
+<translation id="2894654529758326923">தகவல்</translation>
 <translation id="7925247922861151263">AAA சோதனை தோல்வியுற்றது</translation>
 <translation id="8456362689280298700">நிரம்ப <ph name="HOUR"/>:<ph name="MINUTE"/> உள்ளது</translation>
-<translation id="5787281376604286451">பேச்சுவடிவ கருத்து செயலாக்கப்பட்டது.
-முடக்க Ctrl+Alt+Z அழுத்தவும்.</translation>
 <translation id="4479639480957787382">ஈத்தர்நெட்</translation>
 <translation id="6312403991423642364">அறியப்படாத பிணையப் பிழை</translation>
 <translation id="1467432559032391204">இடது</translation>
@@ -133,6 +136,7 @@
 <translation id="1923539912171292317">தன்னியக்க கிளிக்குகள்</translation>
 <translation id="1398853756734560583">பெரிதாக்கு</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: இணைக்கிறது...</translation>
+<translation id="6062360702481658777"><ph name="LOGOUT_TIME_LEFT"/> இல் தானாகவே வெளியேற்றப்படுவீர்கள்.</translation>
 <translation id="252373100621549798">அறியாதது</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME"/> ஐப் பிரதிபலிக்கிறது</translation>
 <translation id="2727977024730340865">குறைந்த சக்தியிலான சார்ஜர் செருகப்பட்டுள்ளது. பேட்டரி சார்ஜிங் நம்பகமானதாக இல்லாமல் இருக்கலாம்.</translation>
@@ -141,6 +145,7 @@
 <translation id="1512064327686280138">செயலாக்கம் தோல்வி</translation>
 <translation id="5097002363526479830">'<ph name="NAME"/>' நெட்வொர்க்குடன் இணைப்பதில் தோல்வி: <ph name="DETAILS"/> </translation>
 <translation id="1850504506766569011">Wi-Fi முடக்கத்தில் உள்ளது.</translation>
+<translation id="2872961005593481000">நிறுத்து</translation>
 <translation id="2966449113954629791">உங்கள் மொபைல் தரவுப் படியை, நீங்கள் பயன்படுத்தியிருக்கலாம். கூடுதல் தரவை வாங்க, <ph name="NAME"/> செயல்பாடு போர்ட்டலைப் பார்வையிடவும்.</translation>
 <translation id="8132793192354020517"><ph name="NAME"/> உடன் இணைக்கப்பட்டது</translation>
 <translation id="7052914147756339792">வால்பேப்பரை அமை...</translation>
@@ -153,8 +158,10 @@
 <translation id="7005812687360380971">தோல்வி</translation>
 <translation id="882279321799040148">காண கிளிக் செய்க</translation>
 <translation id="1753067873202720523">உங்கள் Chromebook இயக்கத்தில் இருக்கும்போது சார்ஜ் செய்ய முடியாது.</translation>
+<translation id="7561014039265304140"><ph name="SPECIFIED_RESOLUTION"/> ஐ <ph name="DISPLAY_NAME"/> ஆதரிக்கவில்லை. <ph name="FALLBACK_RESOLUTION"/> க்குத் தெளிவு மாற்றப்பட்டது</translation>
 <translation id="5045550434625856497">தவறான கடவுச்சொல்</translation>
 <translation id="1602076796624386989">மொபைல் தரவை இயக்கு</translation>
+<translation id="68610848741840742">ChromeVox (பேச்சுவடிவ கருத்து)</translation>
 <translation id="6981982820502123353">அணுகல்தன்மை</translation>
 <translation id="3157931365184549694">மீட்டமை</translation>
 <translation id="4274292172790327596">அறியப்படாத பிழை</translation>
@@ -167,10 +174,12 @@
 <translation id="8401662262483418323">'<ph name="NAME"/>' உடன் இணைக்கத் தவறியது: <ph name="DETAILS"/>
 சேவையகச் செய்தி: <ph name="SERVER_MSG"/></translation>
 <translation id="2475982808118771221">ஒரு பிழை ஏற்பட்டது</translation>
+<translation id="3783640748446814672">alt</translation>
 <translation id="7229570126336867161">EVDO தேவை</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> ஆனது <ph name="DOMAIN"/> ஆல் நிர்வகிக்கப்படும் பொது அமர்வாகும்</translation>
 <translation id="9044646465488564462">பிணையத்துடன் இணைப்பதில் தோல்வி: <ph name="DETAILS"/></translation>
 <translation id="7029814467594812963">அமர்விலிருந்து வெளியேறவும்</translation>
+<translation id="479989351350248267">தேடு</translation>
 <translation id="8454013096329229812">Wi-Fi இயக்கத்தில் உள்ளது.</translation>
 <translation id="4872237917498892622">Alt+Search அல்லது Shift</translation>
 <translation id="9201131092683066720">பேட்டரி <ph name="PERCENTAGE"/>% நிரம்பியது.</translation>
@@ -193,14 +202,13 @@
 <translation id="5947494881799873997">மாற்றியமை</translation>
 <translation id="7593891976182323525">Search அல்லது Shift</translation>
 <translation id="7649070708921625228">உதவி</translation>
-<translation id="747833637904845037">உங்கள் Chromebook வெளிப்புறக் காட்சியுடன் இணைக்கப்படும்போது, மூடப்பட்ட மூடியுடன் இருக்கும்போதும் இயக்கத்தில் இருக்கும்.</translation>
 <translation id="3050422059534974565">CAPS LOCK இயக்கத்தில் உள்ளது.
 ரத்துசெய்ய Search அல்லது Shift ஐ அழுத்தவும்.</translation>
 <translation id="397105322502079400">கணக்கிடுகிறது...</translation>
 <translation id="158849752021629804">உள்ளூர் பிணையம் தேவை</translation>
 <translation id="6857811139397017780"><ph name="NETWORKSERVICE"/> ஐ செயல்படுத்து</translation>
 <translation id="5864471791310927901">DHCP பார்வையிடுதல் தோல்வி</translation>
-<translation id="6692173217867674490">மோசமான கடவுச்சொற்றொடர்</translation>
+<translation id="2819276065543622893">இப்போது வெளியேற்றப்படுவீர்கள்.</translation>
 <translation id="6165508094623778733">மேலும் அறிக</translation>
 <translation id="9046895021617826162">இணைப்பு தோல்வியடைந்தது</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS"/> வினாடிகளில் பழைய தெளிவுதிறனுக்கு மாற்றியமைக்கப்படும்</translation>
@@ -209,6 +217,8 @@
 <translation id="6636709850131805001">அறியப்படாத நிலை</translation>
 <translation id="3573179567135747900">&quot;<ph name="FROM_LOCALE"/>&quot; க்கு மீண்டும் மாற்று (மறுதொடக்கம் தேவை)</translation>
 <translation id="8103386449138765447">SMS செய்திகள்: <ph name="MESSAGE_COUNT"/></translation>
+<translation id="7097613348211027502">ChromeVox (பேச்சுவடிவ கருத்து) இயக்கப்பட்டது.
+முடக்குவதற்கு, Ctrl+Alt+Z ஐ அழுத்தவும்.</translation>
 <translation id="5045002648206642691">Google இயக்கக அமைப்புகள்...</translation>
 <translation id="7209101170223508707">CAPS LOCK இயக்கத்தில் உள்ளது.
 ரத்துசெய்ய Alt+Search அல்லது Shift ஐ அழுத்தவும்.</translation>
@@ -224,6 +234,7 @@
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">வாழ்த்துகள்! உங்கள் '<ph name="NAME"/>' தரவு சேவை செயல்படுத்தப்பட்டது, அது பயன்படுத்துவதற்கு தயாராக உள்ளது.</translation>
 <translation id="412065659894267608">முழுவதும் சார்ஜ் ஆகும் நேரம் - <ph name="HOUR"/>ம <ph name="MINUTE"/>நி</translation>
+<translation id="3077734595579995578">shift</translation>
 <translation id="7297443947353982503">பயனர்பெயர்/கடவுச்சொல் தவறானது அல்லது EAP-அங்கீகாரம் தோல்வி</translation>
 <translation id="6359806961507272919"><ph name="PHONE_NUMBER"/> என்ற எண்ணிலிருந்து வந்த SMS</translation>
 <translation id="1244147615850840081">சேவை வழங்குநர்</translation>

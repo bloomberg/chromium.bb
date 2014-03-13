@@ -3,7 +3,6 @@
 <translationbundle lang="te">
 <translation id="4763480195061959176">వీడియో</translation>
 <translation id="5843503607508392247">ఇతర...</translation>
-<translation id="2426432199384958866">చలనచిత్రాన్ని నిజ సమయంలో ప్రసారం చేయడానికి తిరిగి వెళ్లు</translation>
 <translation id="248395913932153421">రోజు</translation>
 <translation id="1729654308190250600">దయచేసి ఖాళీ-కాని ఇమెయిల్ చిరునామాని నమోదు చేయండి.</translation>
 <translation id="6015796118275082299">సంవత్సరం</translation>
@@ -22,7 +21,6 @@
 <translation id="7057186640035488495">చలనచిత్ర నిడివి</translation>
 <translation id="8199524924445686405">yyyy</translation>
 <translation id="795667975304826397">ఫైల్ ఏదీ ఎంచుకోలేదు</translation>
-<translation id="1320012872283894746">త్వరగా వెనుకకు వెళ్లు</translation>
 <translation id="7789962463072032349">నిలిపివేయి</translation>
 <translation id="6853785296079745596">సంవృత శీర్షికలను దాచు</translation>
 <translation id="4360991593054037559">దయచేసి చెల్లుబాటు అయ్యే విలువను నమోదు చేయండి. <ph name="VALID_VALUE_LOW"/> మరియు <ph name="VALID_VALUE_HIGHER"/> అనేవి రెండు సమీప చెల్లుబాటు విలువలు.</translation>
@@ -36,7 +34,6 @@
 <translation id="6845533974506654842">నొక్కండి</translation>
 <translation id="8244226242650769279">చిత్రం మ్యాప్‌</translation>
 <translation id="310520048233152454">దయచేసి ఒక URLని ఎంటర్ చెయ్యండి.</translation>
-<translation id="9039488204461337220">త్వరగా ముందుకు వెళ్లు</translation>
 <translation id="4812940957355064477">దయచేసి సంఖ్యను నమోదు చేయండి.</translation>
 <translation id="2548326553472216322">ఇటీవల శోధనలు లేవు</translation>
 <translation id="1938124657309484470">విలువ తప్పనిసరిగా <ph name="MAXIMUM_DATE_OR_TIME"/> లేదా అంతకంటే మునుపటిది అయి ఉండాలి.</translation>
@@ -49,7 +46,6 @@
 <translation id="3075154866155599887">దయచేసి చెల్లుబాటు అయ్యే విలువను నమోదు చేయండి. ఫీల్డ్ అసంపూర్ణంగా ఉంది లేదా చెల్లని తేదీని కలిగి ఉంది.</translation>
 <translation id="3040011195152428237">లింక్</translation>
 <translation id="1014825444426747588">ఖాళీ</translation>
-<translation id="3356679314312413792">చలనచిత్రంలో 30 సెకన్లు వెనుకకు వెళ్లు</translation>
 <translation id="9050748414552849310">సంవృత శీర్షికలను చూపు</translation>
 <translation id="4522570452068850558">వివరాలు</translation>
 <translation id="8451268428117625855">దయచేసి ఒక ఫైల్‌ని ఎంచుకోండి.</translation>
@@ -101,7 +97,6 @@
 <translation id="7673697353781729403">గంటలు</translation>
 <translation id="4664250907885839816">'<ph name="ATSIGN"/>'కి తర్వాత ఉన్న భాగంలో '<ph name="INVALIDCHARACTER"/>' చిహ్నం ఉండకూడదు.</translation>
 <translation id="3450233048674729344">విలువ ఖచ్చితంగా <ph name="MAXIMUM"/> కంటే తగ్గువగా లేదా సమానంగా ఉండాలి.</translation>
-<translation id="3471999216963526757">30 సెకన్లు వెనుకకు</translation>
 <translation id="668171684555832681">ఇతర...</translation>
 <translation id="6270583010843788609">చలనచిత్ర టైమ్‌లైన్ సూక్ష్మచిత్రం</translation>
 <translation id="5641012560118721995">ప్లేబ్యాక్‌ను పాజ్ చేయి</translation>
@@ -110,15 +105,12 @@
 <translation id="8444882422881193423"><ph name="NUMBER_OF_FILES"/> ఫైళ్ళు</translation>
 <translation id="6643016212128521049">క్లియర్ చేయి</translation>
 <translation id="7888071071722539607">దయచేసి ఇమెయిల్ చిరునామాలో '<ph name="ATSIGN"/>'ని చేర్చండి. '<ph name="INVALIDADDRESS"/>'లో '<ph name="ATSIGN"/>' లేదు.</translation>
-<translation id="4851297395436456855">వేగంగా ముందుకు వెళ్లు</translation>
 <translation id="1088086359088493902">సెకన్లు</translation>
 <translation id="3934680773876859118">PDF పత్రాన్ని లోడ్ చెయ్యడానికి విఫలమైంది</translation>
 <translation id="3632707345189162177">చలనచిత్రంలో మిగిలి ఉన్న సెకన్లు</translation>
 <translation id="6359256949422175976">చలనచిత్ర సమయ స్క్రబ్బర్ సూక్ష్మచిత్రం</translation>
 <translation id="8597182159515967513">శీర్షిక</translation>
 <translation id="6843725295806269523">మ్యూట్ చేయి</translation>
-<translation id="2615751259741237794">నిజ సమయానికి తిరిగి వెళ్లు</translation>
 <translation id="2653659639078652383">సమర్పించు</translation>
 <translation id="3732799496749320381">mm</translation>
-<translation id="4484359737905287537">త్వరగా వెనుకకు వెళ్లు</translation>
 </translationbundle>

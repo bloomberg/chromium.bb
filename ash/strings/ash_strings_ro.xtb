@@ -15,6 +15,7 @@
 <translation id="370649949373421643">Activați Wi-Fi</translation>
 <translation id="3626281679859535460">Luminozitate</translation>
 <translation id="3621202678540785336">Intrări</translation>
+<translation id="7348093485538360975">Tastatură pe ecran</translation>
 <translation id="595202126637698455">Urmărirea performanței este activată</translation>
 <translation id="8054466585765276473">Se calculează durata bateriei.</translation>
 <translation id="7982789257301363584">Rețea</translation>
@@ -27,6 +28,7 @@
 <translation id="2297568595583585744">Bara de stare</translation>
 <translation id="1661867754829461514">Codul PIN lipsește</translation>
 <translation id="4508225577814909926"><ph name="NAME"/>: se conectează...</translation>
+<translation id="2248649616066688669">Puteți folosi în continuare Chromebookul când este conectat la un afișaj extern, chiar și cu ecranul închis.</translation>
 <translation id="40400351611212369">Eroare de activare a rețelei</translation>
 <translation id="4237016987259239829">Eroare de conectare la rețea</translation>
 <translation id="2946640296642327832">Activați Bluetooth</translation>
@@ -34,11 +36,14 @@
 <translation id="8206859287963243715">Celular</translation>
 <translation id="6596816719288285829">Adresă IP</translation>
 <translation id="4508265954913339219">Activarea nu a reușit</translation>
+<translation id="8688591111840995413">Parolă greșită</translation>
 <translation id="3621712662352432595">Setări audio</translation>
 <translation id="1812696562331527143">Metoda de introducere s-a schimbat la <ph name="INPUT_METHOD_ID"/>*(<ph name="BEGIN_LINK"/>terță parte<ph name="END_LINK"/>).
         Apăsați pe Shift + Alt pentru a comuta.</translation>
+<translation id="6043994281159824495">Deconectați-vă acum</translation>
 <translation id="2127372758936585790">Încărcător de putere joasă</translation>
 <translation id="3846575436967432996">Nu sunt disponibile informații despre rețele</translation>
+<translation id="3799026279081545374">Este posibil să aveți un încărcător defect. Dacă locuiți în S.U.A., sunați la 866-628-1371 pentru a primi asistență și un încărcător de schimb. Dacă locuiți în Regatul Unit, sunați la 0800-026-0613. Dacă locuiți în Irlanda, sunați la 1-800-832-664. Dacă locuiți în Canada, sunați la 866-628-1372. Dacă locuiți în Australia, sunați la 1-800-067-460.</translation>
 <translation id="3026237328237090306">Configurați datele mobile</translation>
 <translation id="5871632337994001636">Gestionați dispozitivele...</translation>
 <translation id="785750925697875037">Afișați contul mobil</translation>
@@ -57,6 +62,8 @@
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME"/> (<ph name="ANNOTATION"/>)</translation>
 <translation id="2942516765047364088">Poziție raft</translation>
 <translation id="8676770494376880701">A fost conectat un încărcător de putere joasă</translation>
+<translation id="5238774010593222950">Nu vă puteți conecta la alt cont.</translation>
+<translation id="1723752762323179280">Se iese din sesiune</translation>
 <translation id="7170041865419449892">Fără acoperire</translation>
 <translation id="4804818685124855865">Deconectați-vă</translation>
 <translation id="2544853746127077729">Certificatul de autentificare a fost respins de rețea</translation>
@@ -72,7 +79,6 @@
 <translation id="3892641579809465218">Afișaj intern</translation>
 <translation id="7823564328645135659">După sincronizarea setărilor, limba a fost modificată de la „<ph name="FROM_LOCALE"/>” la „<ph name="TO_LOCALE"/>”.</translation>
 <translation id="3368922792935385530">Conectat</translation>
-<translation id="8340999562596018839">Feedback vocal</translation>
 <translation id="8654520615680304441">Activați Wi-Fi...</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="5825747213122829519">Metoda de introducere s-a schimbat la <ph name="INPUT_METHOD_ID"/>.
@@ -98,9 +104,7 @@
 <translation id="3963445509666917109">Difuzor (intern)</translation>
 <translation id="2825619548187458965">Raft</translation>
 <translation id="2614835198358683673">Este posibil ca laptopul Chromebook să nu se încarce în timp ce este pornit. Se recomandă să utilizați încărcătorul original.</translation>
-<translation id="1895658205118569222">Închideți</translation>
 <translation id="4430019312045809116">Volum</translation>
-<translation id="8681498213689260554">Pentru a actualiza, reporniți și efectuați Powerwash</translation>
 <translation id="4442424173763614572">Căutarea DNS a eșuat</translation>
 <translation id="7874779702599364982">Se caută rețele mobile...</translation>
 <translation id="583281660410589416">Necunoscut</translation>
@@ -110,7 +114,7 @@
 <translation id="1621499497873603021">Timp rămas până la descărcarea bateriei: <ph name="TIME_LEFT"/></translation>
 <translation id="5980301590375426705">Ieșiți din sesiunea pentru invitați</translation>
 <translation id="8308637677604853869">Meniul anterior</translation>
-<translation id="4666297444214622512">Nu vă mai puteți conecta la alt cont.</translation>
+<translation id="4321179778687042513">ctrl</translation>
 <translation id="3625258641415618104">Capturile de ecran sunt dezactivate</translation>
 <translation id="1346748346194534595">Dreapta</translation>
 <translation id="1773212559869067373">Certificatul de autentificare a fost respins local</translation>
@@ -119,10 +123,9 @@
 <translation id="8428213095426709021">Setări</translation>
 <translation id="2372145515558759244">Se sincronizează aplicațiile...</translation>
 <translation id="7256405249507348194">Eroare nerecunoscută: <ph name="DESC"/></translation>
+<translation id="2894654529758326923">Informații</translation>
 <translation id="7925247922861151263">Verificarea AAA a eșuat</translation>
 <translation id="8456362689280298700">Se încarcă în: <ph name="HOUR"/>:<ph name="MINUTE"/></translation>
-<translation id="5787281376604286451">Este activat feedbackul vocal.
-Apăsați Ctrl+Alt+Z pentru a-l dezactiva.</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="6312403991423642364">Eroare de rețea necunoscută</translation>
 <translation id="1467432559032391204">Stânga</translation>
@@ -133,6 +136,7 @@ Apăsați Ctrl+Alt+Z pentru a-l dezactiva.</translation>
 <translation id="1923539912171292317">Clicuri automate</translation>
 <translation id="1398853756734560583">Maximizați</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: se conectează...</translation>
+<translation id="6062360702481658777">Veți fi deconectat(ă) automat peste <ph name="LOGOUT_TIME_LEFT"/>.</translation>
 <translation id="252373100621549798">Afișaj necunoscut</translation>
 <translation id="1882897271359938046">Se oglindește pe <ph name="DISPLAY_NAME"/></translation>
 <translation id="2727977024730340865">V-ați conectat la un încărcător de putere joasă. Încărcarea bateriei poate fi nesigură.</translation>
@@ -141,6 +145,7 @@ Apăsați Ctrl+Alt+Z pentru a-l dezactiva.</translation>
 <translation id="1512064327686280138">Activare nereușită</translation>
 <translation id="5097002363526479830">A eșuat conectarea la rețeaua „<ph name="NAME"/>”: <ph name="DETAILS"/></translation>
 <translation id="1850504506766569011">Conexiunea Wi-Fi este dezactivată.</translation>
+<translation id="2872961005593481000">Închideți</translation>
 <translation id="2966449113954629791">Este posibil să fi epuizat datele mobile puse la dispoziție. Accesați portalul de activare <ph name="NAME"/> pentru a cumpăra mai multe date.</translation>
 <translation id="8132793192354020517">Conectat la <ph name="NAME"/></translation>
 <translation id="7052914147756339792">Setați o imagine de fundal...</translation>
@@ -153,8 +158,10 @@ Apăsați Ctrl+Alt+Z pentru a-l dezactiva.</translation>
 <translation id="7005812687360380971">Nereușită</translation>
 <translation id="882279321799040148">Dați clic pentru afișare</translation>
 <translation id="1753067873202720523">Chromebookul nu se poate încărca dacă este pornit.</translation>
+<translation id="7561014039265304140"><ph name="DISPLAY_NAME"/> nu acceptă <ph name="SPECIFIED_RESOLUTION"/>. Rezoluția a fost modificată la <ph name="FALLBACK_RESOLUTION"/></translation>
 <translation id="5045550434625856497">Parolă incorectă</translation>
 <translation id="1602076796624386989">Activați datele mobile</translation>
+<translation id="68610848741840742">ChromeVox (feedback rostit)</translation>
 <translation id="6981982820502123353">Accesibilitate</translation>
 <translation id="3157931365184549694">Restabiliți</translation>
 <translation id="4274292172790327596">Eroare nerecunoscută</translation>
@@ -167,10 +174,12 @@ Apăsați Ctrl+Alt+Z pentru a-l dezactiva.</translation>
 <translation id="8401662262483418323">Nu s-a putut stabili conexiunea la „<ph name="NAME"/>”: <ph name="DETAILS"/>
 Mesaj server: <ph name="SERVER_MSG"/></translation>
 <translation id="2475982808118771221">A apărut o eroare</translation>
+<translation id="3783640748446814672">alt</translation>
 <translation id="7229570126336867161">Este necesar EVDO</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME"/> este o sesiune publică gestionată de <ph name="DOMAIN"/></translation>
 <translation id="9044646465488564462">Conectarea la rețea nu s-a realizat: <ph name="DETAILS"/></translation>
 <translation id="7029814467594812963">Ieșiți din sesiune</translation>
+<translation id="479989351350248267">căutați</translation>
 <translation id="8454013096329229812">Conexiunea Wi-Fi este activată.</translation>
 <translation id="4872237917498892622">Alt+Căutare sau Shift</translation>
 <translation id="9201131092683066720">Nivelul bateriei este de <ph name="PERCENTAGE"/>%.</translation>
@@ -193,14 +202,13 @@ Mesaj server: <ph name="SERVER_MSG"/></translation>
 <translation id="5947494881799873997">Reveniți</translation>
 <translation id="7593891976182323525">Căutare sau Shift</translation>
 <translation id="7649070708921625228">Ajutor</translation>
-<translation id="747833637904845037">Chromebookul va continua să funcționeze cât timp este conectat la un afișaj extern, chiar și cu capacul închis.</translation>
 <translation id="3050422059534974565">Tasta CAPS LOCK este activată.
 Apăsați Căutare sau Shift pentru a anula.</translation>
 <translation id="397105322502079400">Se calculează...</translation>
 <translation id="158849752021629804">Este necesară rețeaua de domiciliu</translation>
 <translation id="6857811139397017780">Activați <ph name="NETWORKSERVICE"/></translation>
 <translation id="5864471791310927901">Căutarea DHCP a eșuat</translation>
-<translation id="6692173217867674490">Expresie de acces greșită</translation>
+<translation id="2819276065543622893">Veți fi deconectat(ă) acum.</translation>
 <translation id="6165508094623778733">Aflați mai multe</translation>
 <translation id="9046895021617826162">Conectarea a eșuat</translation>
 <translation id="7168224885072002358">Se revine la rezoluția anterioară în <ph name="TIMEOUT_SECONDS"/></translation>
@@ -209,6 +217,8 @@ Apăsați Căutare sau Shift pentru a anula.</translation>
 <translation id="6636709850131805001">Stare nerecunoscută</translation>
 <translation id="3573179567135747900">Modificați înapoi la „<ph name="FROM_LOCALE"/>” (este necesară repornirea)</translation>
 <translation id="8103386449138765447">Mesaje SMS: <ph name="MESSAGE_COUNT"/></translation>
+<translation id="7097613348211027502">ChromeVox (feedbackul rostit) este activat.
+Apăsați pe Ctrl+Alt+Z pentru dezactivare.</translation>
 <translation id="5045002648206642691">Setări Disc Google...</translation>
 <translation id="7209101170223508707">Tasta CAPS LOCK este activată.
 Apăsați Alt+Căutare sau Shift pentru a anula.</translation>
@@ -224,6 +234,7 @@ Apăsați Alt+Căutare sau Shift pentru a anula.</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">Felicitări! Serviciul de date „<ph name="NAME"/>” a fost activat și este gata de utilizare.</translation>
 <translation id="412065659894267608"><ph name="HOUR"/> h. <ph name="MINUTE"/> min. până la încărcare completă</translation>
+<translation id="3077734595579995578">shift</translation>
 <translation id="7297443947353982503">Numele de utilizator sau parola sunt incorecte sau autentificarea EAP nu a reușit</translation>
 <translation id="6359806961507272919">SMS de la <ph name="PHONE_NUMBER"/></translation>
 <translation id="1244147615850840081">Operator</translation>

@@ -24,6 +24,7 @@
 <translation id="7222373446505536781">F11</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY"/> ባ</translation>
 <translation id="3660179305079774227">የላይ ቀስት</translation>
+<translation id="7062130397825382308"><ph name="NUMBER_ONE"/> ሁለተኛ ግራ</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY"/> ሜባ/ሰ</translation>
 <translation id="5608669887400696928"><ph name="NUMBER_DEFAULT"/> ሰዓት</translation>
 <translation id="3990502903496589789">የቀኝ ጠርዝ</translation>
@@ -45,6 +46,7 @@
 <translation id="7770995925463083016">ከ<ph name="NUMBER_TWO"/> ደቂቃ በፊት</translation>
 <translation id="3234408098842461169">ዝቅዝቅ ቀስት</translation>
 <translation id="3087734570205094154">ግርጌ</translation>
+<translation id="8828991073132329143"><ph name="NUMBER_MANY"/> ሰከንዶች ቀርተዋል</translation>
 <translation id="5935630983280450497"><ph name="NUMBER_ONE"/> ደቂቃ ይቀራል</translation>
 <translation id="1860796786778352021">ማሳወቂያ ዝጋ</translation>
 <translation id="6364916375976753737">ወደ ግራ ሸብልል</translation>
@@ -68,6 +70,7 @@
 <translation id="7781829728241885113">ትናንት</translation>
 <translation id="3424538384153559412"><ph name="NUMBER_TWO"/> ደቂቃዎች</translation>
 <translation id="50960180632766478"><ph name="NUMBER_FEW"/> ደቂቃ ይቀራል</translation>
+<translation id="5517291721709019259"><ph name="NUMBER_FEW"/> ሰከንዶች ቀርተዋል</translation>
 <translation id="6659594942844771486">ትር</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY"/> ሜባ</translation>
 <translation id="4988273303304146523">ከ<ph name="NUMBER_DEFAULT"/> ቀን በፊት</translation>
@@ -137,12 +140,14 @@
 <translation id="1285266685456062655">ከ<ph name="NUMBER_FEW"/> ሰዓቶች በፊት</translation>
 <translation id="6918245111648057970">ከሚከተሉት ውስጥ ለእያንዳንዱ ተጠቃሚ ማሳወቂያዎችን ይፍቀዱ፦</translation>
 <translation id="5489830104927132166"><ph name="NUMBER_ONE"/> ሴኮንድ</translation>
+<translation id="1270251962578273213"><ph name="NUMBER_TWO"/> ሰከንዶች ቀርተዋል</translation>
 <translation id="3994835489895548312"><ph name="NUMBER_MANY"/> ደቂቃዎች ቀርተዋል</translation>
 <translation id="6358975074282722691">ከ<ph name="NUMBER_TWO"/> ሴኮንድ በፊት</translation>
 <translation id="520299402983819650"><ph name="QUANTITY"/> ፔታ</translation>
 <translation id="2983818520079887040">ቅንብሮች ...</translation>
 <translation id="6845383723252244143">አቃፊ ምረጥ</translation>
 <translation id="7600770490873519066"><ph name="NUMBER_FEW"/> ሰከንዶች</translation>
+<translation id="5368780922436099921"><ph name="NUMBER_ZERO"/> ሰከንዶች ቀርተዋል</translation>
 <translation id="1095623615273566396"><ph name="NUMBER_FEW"/> ሴኮንድ</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5263972071113911534">ከ<ph name="NUMBER_MANY"/> ቀናት በፊት</translation>
@@ -165,6 +170,7 @@
 <translation id="6142413573757616983"><ph name="QUANTITY"/> ባ/ሰ</translation>
 <translation id="7649070708921625228">እገዛ</translation>
 <translation id="6699343763173986273">የሚዲያ ቀጣይ ትራክ</translation>
+<translation id="5445120697129764393"><ph name="NUMBER_DEFAULT"/> ሰከንዶች ቀርተዋል</translation>
 <translation id="8226233771743600312">ለአንድ ቀን አትረብሽ</translation>
 <translation id="7457942297256758195">ሁሉንም አጽዳ</translation>
 <translation id="822618367988303761">ከ<ph name="NUMBER_TWO"/> ቀናት በፊት</translation>
