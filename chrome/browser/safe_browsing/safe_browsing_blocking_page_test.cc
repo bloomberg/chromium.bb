@@ -567,7 +567,7 @@ class SafeBrowsingBlockingPageTest : public InProcessBrowserTest {
     std::string ready_state;
     do {
       scoped_ptr<base::Value> value = content::ExecuteScriptAndGetValue(
-          rvh, "document.readyState");
+          rvh->GetMainFrame(), "document.readyState");
       if (!value.get() || !value->GetAsString(&ready_state))
         return false;
     } while (ready_state != "complete");
@@ -580,7 +580,7 @@ class SafeBrowsingBlockingPageTest : public InProcessBrowserTest {
     if (!rvh)
       return VISIBILITY_ERROR;
     scoped_ptr<base::Value> value = content::ExecuteScriptAndGetValue(
-        rvh,
+        rvh->GetMainFrame(),
         "var node = document.getElementById('" + node_id + "');\n"
         "if (node)\n"
         "   node.offsetWidth > 0 && node.offsetHeight > 0;"

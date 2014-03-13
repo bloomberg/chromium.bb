@@ -129,7 +129,7 @@ void WebUIScreenLockerTester::SetPassword(const std::string& password) {
 std::string WebUIScreenLockerTester::GetPassword() {
   std::string result;
   scoped_ptr<base::Value> v = content::ExecuteScriptAndGetValue(
-      RenderViewHost(),
+      RenderViewHost()->GetMainFrame(),
       "$('pod-row').pods[0].passwordElement.value;");
   CHECK(v->GetAsString(&result));
   return result;
@@ -144,7 +144,7 @@ void WebUIScreenLockerTester::EnterPassword(const std::string& password) {
 
   // Verify that "signin" button is hidden.
   scoped_ptr<base::Value> v = content::ExecuteScriptAndGetValue(
-      RenderViewHost(),
+      RenderViewHost()->GetMainFrame(),
       "$('pod-row').pods[0].signinButtonElement.hidden;");
   ASSERT_TRUE(v->GetAsBoolean(&result));
   ASSERT_TRUE(result);
@@ -152,7 +152,7 @@ void WebUIScreenLockerTester::EnterPassword(const std::string& password) {
   // Attempt to sign in.
   LoginAttemptObserver login;
   v = content::ExecuteScriptAndGetValue(
-      RenderViewHost(),
+      RenderViewHost()->GetMainFrame(),
       "$('pod-row').pods[0].activate();");
   ASSERT_TRUE(v->GetAsBoolean(&result));
   ASSERT_TRUE(result);

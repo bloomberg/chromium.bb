@@ -11,8 +11,8 @@
 #include "base/values.h"
 #include "content/public/browser/browser_child_process_host_iterator.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/common/process_type.h"
 #include "content/public/test/test_launcher.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -135,12 +135,10 @@ base::Closure GetQuitTaskForRunLoop(base::RunLoop* run_loop) {
 }
 
 scoped_ptr<base::Value> ExecuteScriptAndGetValue(
-    RenderViewHost* render_view_host,
-    const std::string& script) {
+    RenderFrameHost* render_frame_host, const std::string& script) {
   ScriptCallback observer;
 
-  render_view_host->ExecuteJavascriptInWebFrameCallbackResult(
-      base::string16(),  // frame_xpath,
+  render_frame_host->ExecuteJavaScript(
       base::UTF8ToUTF16(script),
       base::Bind(&ScriptCallback::ResultCallback, base::Unretained(&observer)));
   base::MessageLoop* loop = base::MessageLoop::current();

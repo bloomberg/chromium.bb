@@ -9,9 +9,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_timeouts.h"
 #include "base/values.h"
-#include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_contents/web_contents_view_aura.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
@@ -123,9 +123,9 @@ class TouchEditableImplAuraTest : public ContentBrowserTest {
 
   // Executes the javascript synchronously and makes sure the returned value is
   // freed properly.
-  void ExecuteSyncJSFunction(RenderViewHost* rvh, const std::string& jscript) {
+  void ExecuteSyncJSFunction(RenderFrameHost* rfh, const std::string& jscript) {
     scoped_ptr<base::Value> value =
-        content::ExecuteScriptAndGetValue(rvh, jscript);
+        content::ExecuteScriptAndGetValue(rfh, jscript);
   }
 
   // Starts the test server and navigates to the given url. Sets a large enough
@@ -145,8 +145,7 @@ class TouchEditableImplAuraTest : public ContentBrowserTest {
         StartTestWithPage("files/touch_selection.html"));
     WebContentsImpl* web_contents =
         static_cast<WebContentsImpl*>(shell()->web_contents());
-    RenderViewHostImpl* view_host = static_cast<RenderViewHostImpl*>(
-        web_contents->GetRenderViewHost());
+    RenderFrameHost* main_frame = web_contents->GetMainFrame();
     WebContentsViewAura* view_aura = static_cast<WebContentsViewAura*>(
         web_contents->GetView());
     TestTouchEditableImplAura* touch_editable =
@@ -159,7 +158,7 @@ class TouchEditableImplAuraTest : public ContentBrowserTest {
     gfx::Rect bounds = content->GetBoundsInRootWindow();
 
     touch_editable->Reset();
-    ExecuteSyncJSFunction(view_host, "select_all_text()");
+    ExecuteSyncJSFunction(main_frame, "select_all_text()");
     touch_editable->WaitForSelectionChangeCallback();
 
     // Tap inside selection to bring up selection handles.
@@ -167,7 +166,7 @@ class TouchEditableImplAuraTest : public ContentBrowserTest {
     EXPECT_EQ(touch_editable->rwhva_, rwhva);
 
     scoped_ptr<base::Value> value =
-        content::ExecuteScriptAndGetValue(view_host, "get_selection()");
+        content::ExecuteScriptAndGetValue(main_frame, "get_selection()");
     std::string selection;
     value->GetAsString(&selection);
 
@@ -185,7 +184,7 @@ class TouchEditableImplAuraTest : public ContentBrowserTest {
     touch_editable->WaitForSelectionChangeCallback();
 
     EXPECT_TRUE(touch_editable->touch_selection_controller_.get());
-    value = content::ExecuteScriptAndGetValue(view_host, "get_selection()");
+    value = content::ExecuteScriptAndGetValue(main_frame, "get_selection()");
     value->GetAsString(&selection);
 
     // It is hard to tell what exactly the selection would be now. But it would
@@ -198,8 +197,7 @@ class TouchEditableImplAuraTest : public ContentBrowserTest {
         StartTestWithPage("files/touch_selection.html"));
     WebContentsImpl* web_contents =
         static_cast<WebContentsImpl*>(shell()->web_contents());
-    RenderViewHostImpl* view_host = static_cast<RenderViewHostImpl*>(
-        web_contents->GetRenderViewHost());
+    RenderFrameHost* main_frame = web_contents->GetMainFrame();
     WebContentsViewAura* view_aura = static_cast<WebContentsViewAura*>(
         web_contents->GetView());
     TestTouchEditableImplAura* touch_editable = new TestTouchEditableImplAura;
@@ -230,7 +228,7 @@ class TouchEditableImplAuraTest : public ContentBrowserTest {
     EXPECT_TRUE(controller);
 
     scoped_ptr<base::Value> value =
-        content::ExecuteScriptAndGetValue(view_host, "get_selection()");
+        content::ExecuteScriptAndGetValue(main_frame, "get_selection()");
     std::string selection;
     value->GetAsString(&selection);
     EXPECT_STREQ("Some", selection.c_str());
@@ -241,8 +239,7 @@ class TouchEditableImplAuraTest : public ContentBrowserTest {
         StartTestWithPage("files/touch_selection.html"));
     WebContentsImpl* web_contents =
         static_cast<WebContentsImpl*>(shell()->web_contents());
-    RenderViewHostImpl* view_host = static_cast<RenderViewHostImpl*>(
-        web_contents->GetRenderViewHost());
+    RenderFrameHost* main_frame = web_contents->GetMainFrame();
     WebContentsViewAura* view_aura = static_cast<WebContentsViewAura*>(
         web_contents->GetView());
     TestTouchEditableImplAura* touch_editable = new TestTouchEditableImplAura;
@@ -273,7 +270,7 @@ class TouchEditableImplAuraTest : public ContentBrowserTest {
     EXPECT_TRUE(controller);
 
     scoped_ptr<base::Value> value =
-        content::ExecuteScriptAndGetValue(view_host, "get_selection()");
+        content::ExecuteScriptAndGetValue(main_frame, "get_selection()");
     std::string selection;
     value->GetAsString(&selection);
     EXPECT_STREQ("Some", selection.c_str());
@@ -308,8 +305,7 @@ class TouchEditableImplAuraTest : public ContentBrowserTest {
         StartTestWithPage("files/touch_selection.html"));
     WebContentsImpl* web_contents =
         static_cast<WebContentsImpl*>(shell()->web_contents());
-    RenderViewHostImpl* view_host = static_cast<RenderViewHostImpl*>(
-        web_contents->GetRenderViewHost());
+    RenderFrameHost* main_frame = web_contents->GetMainFrame();
     WebContentsViewAura* view_aura = static_cast<WebContentsViewAura*>(
         web_contents->GetView());
     TestTouchEditableImplAura* touch_editable =
@@ -322,7 +318,7 @@ class TouchEditableImplAuraTest : public ContentBrowserTest {
     gfx::Rect bounds = content->GetBoundsInRootWindow();
     EXPECT_EQ(touch_editable->rwhva_, rwhva);
 
-    ExecuteSyncJSFunction(view_host, "focus_textfield()");
+    ExecuteSyncJSFunction(main_frame, "focus_textfield()");
     touch_editable->WaitForSelectionChangeCallback();
 
     // Tap textfield
@@ -339,7 +335,7 @@ class TouchEditableImplAuraTest : public ContentBrowserTest {
     EXPECT_TRUE(controller);
 
     scoped_ptr<base::Value> value =
-        content::ExecuteScriptAndGetValue(view_host, "get_cursor_position()");
+        content::ExecuteScriptAndGetValue(main_frame, "get_cursor_position()");
     int cursor_pos = -1;
     value->GetAsInteger(&cursor_pos);
     EXPECT_NE(-1, cursor_pos);
@@ -352,7 +348,7 @@ class TouchEditableImplAuraTest : public ContentBrowserTest {
         1);
     touch_editable->WaitForSelectionChangeCallback();
     EXPECT_TRUE(touch_editable->touch_selection_controller_.get());
-    value = content::ExecuteScriptAndGetValue(view_host,
+    value = content::ExecuteScriptAndGetValue(main_frame,
                                               "get_cursor_position()");
     int new_cursor_pos = -1;
     value->GetAsInteger(&new_cursor_pos);
