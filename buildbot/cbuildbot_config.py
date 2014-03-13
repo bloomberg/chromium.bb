@@ -1992,7 +1992,6 @@ _release.add_config('sonic-release',
 
 _release.add_config('squawks-release',
   boards=['squawks'],
-  hw_tests=[],
 )
 
 _release.add_config('stout-release',
