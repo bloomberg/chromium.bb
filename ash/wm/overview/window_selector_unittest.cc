@@ -1072,9 +1072,10 @@ TEST_F(WindowSelectorTest, HitTestingInOverview) {
   aura::Window* windows[] = { window1.get(), window2.get() };
   for (size_t w = 0; w < arraysize(windows); ++w) {
     gfx::RectF bounds = GetTransformedBoundsInRootWindow(windows[w]);
+    // The close button covers the top-right corner of the window so we skip
+    // this in hit testing.
     gfx::Point points[] = {
       gfx::Point(bounds.x(), bounds.y()),
-      gfx::Point(bounds.right() - 1, bounds.y()),
       gfx::Point(bounds.x(), bounds.bottom() - 1),
       gfx::Point(bounds.right() - 1, bounds.bottom() - 1),
     };

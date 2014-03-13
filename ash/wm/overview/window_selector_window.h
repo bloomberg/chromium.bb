@@ -8,17 +8,24 @@
 #include "ash/wm/overview/scoped_transform_overview_window.h"
 #include "ash/wm/overview/window_selector_item.h"
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "ui/gfx/rect.h"
+#include "ui/views/controls/button/button.h"
 
 namespace aura {
 class Window;
+}
+
+namespace views {
+class Widget;
 }
 
 namespace ash {
 
 // This implements a window overview item with a single window which can be
 // selected.
-class WindowSelectorWindow : public WindowSelectorItem {
+class WindowSelectorWindow : public WindowSelectorItem,
+                             public views::ButtonListener {
  public:
   WindowSelectorWindow(aura::Window* window);
   virtual ~WindowSelectorWindow();
@@ -36,8 +43,20 @@ class WindowSelectorWindow : public WindowSelectorItem {
                              const gfx::Rect& target_bounds,
                              bool animate) OVERRIDE;
 
+  // views::ButtonListener:
+  virtual void ButtonPressed(views::Button* sender,
+                             const ui::Event& event) OVERRIDE;
+
  private:
+  // Creates the close button window if it does not exist and updates the bounds
+  // to match the window selector item.
+  void UpdateCloseButtonBounds();
+
+  // The window with a scoped transform represented by this selector item.
   ScopedTransformOverviewWindow transform_window_;
+
+  // An easy to access close button for the window in this item.
+  scoped_ptr<views::Widget> close_button_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowSelectorWindow);
 };
