@@ -480,12 +480,6 @@ void InspectorPageAgent::navigate(ErrorString*, const String& url)
     frame->loader().load(request);
 }
 
-void InspectorPageAgent::getNavigationHistory(ErrorString*, int*, RefPtr<TypeBuilder::Array<TypeBuilder::Page::NavigationEntry> >&)
-{ }
-
-void InspectorPageAgent::navigateToHistoryEntry(ErrorString*, int)
-{ }
-
 static PassRefPtr<TypeBuilder::Page::Cookie> buildObjectForCookie(const Cookie& cookie)
 {
     return TypeBuilder::Page::Cookie::create()
@@ -1223,36 +1217,6 @@ bool InspectorPageAgent::forceCompositingMode(ErrorString* errorString)
     if (mainFrame)
         mainFrame->view()->updateCompositingLayersAfterStyleChange();
     return true;
-}
-
-void InspectorPageAgent::captureScreenshot(ErrorString*, const String*, const int*, const int*, const int*, String*, RefPtr<TypeBuilder::Page::ScreencastFrameMetadata>&)
-{
-    // Handled on the browser level.
-}
-
-void InspectorPageAgent::canScreencast(ErrorString*, bool*)
-{
-    // Handled on the browser level.
-}
-
-void InspectorPageAgent::startScreencast(ErrorString*, const String*, const int*, const int*, const int*)
-{
-    // Handled on the browser level.
-}
-
-void InspectorPageAgent::stopScreencast(ErrorString*)
-{
-    // Handled on the browser level.
-}
-
-void InspectorPageAgent::handleJavaScriptDialog(ErrorString* errorString, bool accept, const String* promptText)
-{
-    // Handled on the browser level.
-}
-
-void InspectorPageAgent::queryUsageAndQuota(WebCore::ErrorString*, const WTF::String&, WTF::RefPtr<WebCore::TypeBuilder::Page::Quota>&, WTF::RefPtr<WebCore::TypeBuilder::Page::Usage>&)
-{
-    // Handled on the browser level.
 }
 
 void InspectorPageAgent::setShowViewportSizeOnResize(ErrorString*, bool show, const bool* showGrid)

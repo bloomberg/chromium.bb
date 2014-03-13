@@ -1849,6 +1849,9 @@ class Generator:
 
     @staticmethod
     def process_event(json_event, domain_name, frontend_method_declaration_lines):
+        if (("handlers" in json_event) and (not ("renderer" in json_event["handlers"]))):
+            return
+
         event_name = json_event["name"]
 
         ad_hoc_type_output = []
@@ -1879,6 +1882,9 @@ class Generator:
 
     @staticmethod
     def process_command(json_command, domain_name, agent_field_name, agent_interface_name):
+        if (("handlers" in json_command) and (not ("renderer" in json_command["handlers"]))):
+            return
+
         json_command_name = json_command["name"]
 
         cmd_enum_name = "k%s_%sCmd" % (domain_name, json_command["name"])

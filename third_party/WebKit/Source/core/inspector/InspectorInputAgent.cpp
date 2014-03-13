@@ -271,10 +271,5 @@ void InspectorInputAgent::dispatchTouchEvent(ErrorString* error, const String& t
     m_page->mainFrame()->eventHandler().handleTouchEvent(event);
 }
 
-void InspectorInputAgent::dispatchGestureEvent(ErrorString*, const String& type, int x, int y, const double* timestamp, const int* deltaX, const int* deltaY, const double* scale)
-{
-    // Handled on the browser level.
-}
-
 } // namespace WebCore
 

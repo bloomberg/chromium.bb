@@ -96,8 +96,6 @@ public:
     virtual void removeScriptToEvaluateOnLoad(ErrorString*, const String& identifier) OVERRIDE;
     virtual void reload(ErrorString*, const bool* optionalIgnoreCache, const String* optionalScriptToEvaluateOnLoad, const String* optionalScriptPreprocessor) OVERRIDE;
     virtual void navigate(ErrorString*, const String& url) OVERRIDE;
-    virtual void getNavigationHistory(ErrorString*, int*, RefPtr<TypeBuilder::Array<TypeBuilder::Page::NavigationEntry> >&) OVERRIDE;
-    virtual void navigateToHistoryEntry(ErrorString*, int) OVERRIDE;
     virtual void getCookies(ErrorString*, RefPtr<TypeBuilder::Array<TypeBuilder::Page::Cookie> >& cookies) OVERRIDE;
     virtual void deleteCookie(ErrorString*, const String& cookieName, const String& url) OVERRIDE;
     virtual void getResourceTree(ErrorString*, RefPtr<TypeBuilder::Page::FrameResourceTree>&) OVERRIDE;
@@ -114,12 +112,6 @@ public:
     virtual void setScriptExecutionDisabled(ErrorString*, bool) OVERRIDE;
     virtual void setTouchEmulationEnabled(ErrorString*, bool) OVERRIDE;
     virtual void setEmulatedMedia(ErrorString*, const String&) OVERRIDE;
-    virtual void captureScreenshot(ErrorString*, const String* format, const int* quality, const int* maxWidth, const int* maxHeight, String* data, RefPtr<TypeBuilder::Page::ScreencastFrameMetadata>& out_metadata) OVERRIDE;
-    virtual void canScreencast(ErrorString*, bool*) OVERRIDE;
-    virtual void startScreencast(ErrorString*, const String* format, const int* quality, const int* maxWidth, const int* maxHeight) OVERRIDE;
-    virtual void stopScreencast(ErrorString*) OVERRIDE;
-    virtual void handleJavaScriptDialog(ErrorString*, bool accept, const String* promptText) OVERRIDE;
-    virtual void queryUsageAndQuota(WebCore::ErrorString*, const WTF::String&, WTF::RefPtr<WebCore::TypeBuilder::Page::Quota>&, WTF::RefPtr<WebCore::TypeBuilder::Page::Usage>&) OVERRIDE;
     virtual void setShowViewportSizeOnResize(ErrorString*, bool show, const bool* showGrid) OVERRIDE;
 
     // InspectorInstrumentation API
