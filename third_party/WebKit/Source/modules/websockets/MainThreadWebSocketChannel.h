@@ -116,6 +116,9 @@ private:
 
     void disconnectHandle();
 
+    // Calls didReceiveMessageError() on m_client if we haven't yet.
+    void callDidReceiveMessageError();
+
     bool appendToBuffer(const char* data, size_t len);
     void skipBuffer(size_t len);
     // Repeats parsing data from m_buffer until instructed to stop.

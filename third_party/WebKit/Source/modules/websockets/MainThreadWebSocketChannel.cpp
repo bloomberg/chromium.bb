@@ -195,6 +195,14 @@ void MainThreadWebSocketChannel::disconnectHandle()
     m_handle->disconnect();
 }
 
+void MainThreadWebSocketChannel::callDidReceiveMessageError()
+{
+    if (!m_client || m_didFailOfClientAlreadyRun)
+        return;
+    m_didFailOfClientAlreadyRun = true;
+    m_client->didReceiveMessageError();
+}
+
 void MainThreadWebSocketChannel::fail(const String& reason, MessageLevel level, const String& sourceURL, unsigned lineNumber)
 {
     WTF_LOG(Network, "MainThreadWebSocketChannel %p fail() reason='%s'", this, reason.utf8().data());
@@ -213,11 +221,9 @@ void MainThreadWebSocketChannel::fail(const String& reason, MessageLevel level, 
     m_perMessageDeflate.didFail();
     m_hasContinuousFrame = false;
     m_continuousFrameData.clear();
-    if (!m_didFailOfClientAlreadyRun) {
-        m_didFailOfClientAlreadyRun = true;
-        if (m_client)
-            m_client->didReceiveMessageError();
-    }
+
+    callDidReceiveMessageError();
+
     if (m_state != ChannelClosed)
         disconnectHandle(); // Will call didCloseSocketStream().
 }
@@ -347,11 +353,12 @@ void MainThreadWebSocketChannel::didFailSocketStream(SocketStreamHandle* handle,
     if (failingURL.isNull())
         failingURL = m_handshake->url().string();
     WTF_LOG(Network, "Error Message: '%s', FailURL: '%s'", message.utf8().data(), failingURL.utf8().data());
+
     RefPtr<WebSocketChannel> protect(this);
-    if (m_client && (m_state != ChannelClosing && m_state != ChannelClosed) && !m_didFailOfClientAlreadyRun) {
-        m_didFailOfClientAlreadyRun = true;
-        m_client->didReceiveMessageError();
-    }
+
+    if (m_state != ChannelClosing && m_state != ChannelClosed)
+        callDidReceiveMessageError();
+
     if (m_state != ChannelClosed)
         disconnectHandle();
 }
