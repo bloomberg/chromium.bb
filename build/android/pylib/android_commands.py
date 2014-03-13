@@ -1800,6 +1800,37 @@ class AndroidCommands(object):
       logging.error('Still showing a %s dialog for %s' % match.groups())
     return package
 
+  def EfficientDeviceDirectoryCopy(self, source, dest):
+    """ Copy a directory efficiently on the device
+
+    Uses a shell script running on the target to copy new and changed files the
+    source directory to the destination directory and remove added files. This
+    is in some cases much faster than cp -r.
+
+    Args:
+      source: absolute path of source directory
+      dest: absolute path of destination directory
+    """
+    logging.info('In EfficientDeviceDirectoryCopy %s %s', source, dest)
+    temp_script_file = self._GetDeviceTempFileName(
+        AndroidCommands._TEMP_SCRIPT_FILE_BASE_FMT)
+    host_script_path = os.path.join(constants.DIR_SOURCE_ROOT,
+                                    'build',
+                                    'android',
+                                    'pylib',
+                                    'efficient_android_directory_copy.sh')
+    self._adb.Push(host_script_path, temp_script_file)
+    self.EnableAdbRoot
+    out = self.RunShellCommand('sh %s %s %s' % (temp_script_file, source, dest),
+                               timeout_time=120)
+    if self._device:
+      device_repr = self._device[-4:]
+    else:
+      device_repr = '????'
+    for line in out:
+      logging.info('[%s]> %s', device_repr, line)
+    self.RunShellCommand('rm %s' % temp_script_file)
+
 
 class NewLineNormalizer(object):
   """A file-like object to normalize EOLs to '\n'.
