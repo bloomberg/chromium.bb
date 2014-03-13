@@ -147,7 +147,7 @@ private:
     // FIXME: This path "only works" on Android. It is a workaround for the problem that Skia could not handle Android's GL_TEXTURE_EXTERNAL_OES
     // texture internally. It should be removed and replaced by the normal paint path.
     // https://code.google.com/p/skia/issues/detail?id=1189
-    void paintOnAndroid(WebCore::GraphicsContext*, WebGraphicsContext3D*, const WebCore::IntRect&, uint8_t alpha);
+    void paintOnAndroid(WebCore::GraphicsContext*, const WebCore::IntRect&, uint8_t alpha);
     SkBitmap m_bitmap;
 #endif
 
