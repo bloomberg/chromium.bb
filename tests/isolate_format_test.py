@@ -165,6 +165,30 @@ class IsolateFormatTest(unittest.TestCase):
     except AssertionError:
       pass
 
+  def test_load_isolate_as_config_no_variable(self):
+    value = {
+      'variables': {
+        'command': ['echo', 'You should get an Atari'],
+        KEY_TRACKED: ['a'],
+        KEY_UNTRACKED: ['b'],
+        KEY_TOUCHED: ['touched'],
+        'read_only': 1,
+      },
+    }
+    # The key is the empty tuple, since there is no variable to bind to.
+    expected = {
+      (): {
+        'command': ['echo', 'You should get an Atari'],
+        KEY_TRACKED: ['a'],
+        KEY_UNTRACKED: ['b'],
+        KEY_TOUCHED: ['touched'],
+        'read_only': 1,
+      },
+    }
+    self.assertEqual(
+        expected, isolate_format.load_isolate_as_config(
+            FAKE_DIR, value, None).flatten())
+
   def test_invert_map(self):
     value = {
       ('amiga',): {

@@ -96,6 +96,7 @@ class IsolateTestCases(unittest.TestCase):
     cmd = [
       sys.executable, 'isolate.py',
       'check',
+      '--config-variable', 'OS', 'amiga',
       '--extra-variable', 'FLAG', 'run',
       '--isolate', os.path.join(self.tempdir, gtest_fake_pass_isolate),
       '--isolated', isolated,
@@ -121,7 +122,6 @@ class IsolateTestCases(unittest.TestCase):
           u's': os.stat(root_dir_gtest_fake_pass_py).st_size,
         },
       },
-      u'os': unicode(isolate.get_flavor()),
       u'relative_cwd': u'isolate_test_cases',
       u'version': unicode(isolate.isolateserver.ISOLATED_FILE_VERSION),
     }
@@ -168,7 +168,7 @@ class IsolateTestCases(unittest.TestCase):
     )
     expected = {
       'conditions': [
-        ['OS=="%s"' % isolate.get_flavor(), {
+        ['OS=="amiga"', {
           'variables': {
             'isolate_dependency_untracked': [
               '../gtest_fake/',
@@ -189,7 +189,7 @@ class IsolateTestCases(unittest.TestCase):
       actual = eval(f.read(), {'__builtins__': None}, None)
     expected = {
       'conditions': [
-        ['OS=="%s"' % isolate.get_flavor(), {
+        ['OS=="amiga"', {
           'variables': {
             'isolate_dependency_untracked': [
               '../gtest_fake/',

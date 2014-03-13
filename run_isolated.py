@@ -64,17 +64,6 @@ RUN_ISOLATED_LOG_FILE = 'run_isolated.log'
 RUN_TEST_CASES_LOG = 'run_test_cases.log'
 
 
-# Used by get_flavor().
-FLAVOR_MAPPING = {
-  'cygwin': 'win',
-  'win32': 'win',
-  'darwin': 'mac',
-  'sunos5': 'solaris',
-  'freebsd7': 'freebsd',
-  'freebsd8': 'freebsd',
-}
-
-
 def get_as_zip_package(executable=True):
   """Returns ZipPackage with this module and all its dependencies.
 
@@ -93,11 +82,6 @@ def get_as_zip_package(executable=True):
   package.add_directory(os.path.join(BASE_DIR, 'third_party'))
   package.add_directory(os.path.join(BASE_DIR, 'utils'))
   return package
-
-
-def get_flavor():
-  """Returns the system default flavor. Copied from gyp/pylib/gyp/common.py."""
-  return FLAVOR_MAPPING.get(sys.platform, 'linux')
 
 
 def hardlink(source, link_name):
@@ -686,7 +670,6 @@ def run_tha_test(isolated_hash, storage, cache, algo, extra_args):
           cache=cache,
           algo=algo,
           outdir=run_dir,
-          os_flavor=get_flavor(),
           require_command=True)
     except isolateserver.ConfigError as e:
       tools.report_error(e)

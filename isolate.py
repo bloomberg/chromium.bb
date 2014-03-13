@@ -28,9 +28,6 @@ import isolateserver
 import run_isolated
 import trace_inputs
 
-# Import here directly so isolate is easier to use as a library.
-from run_isolated import get_flavor
-
 from third_party import colorama
 from third_party.depot_tools import fix_encoding
 from third_party.depot_tools import subcommand
@@ -362,7 +359,6 @@ def chromium_save_isolated(isolated, data, path_variables, algo):
     new_slave = {
       'algo': data['algo'],
       'files': {},
-      'os': data['os'],
       'version': data['version'],
     }
     for f in data['files'].keys():
@@ -446,6 +442,10 @@ class SavedState(Flattenable):
   separator instead of '/' used in .isolate file.
   """
   MEMBERS = (
+    # Value of sys.platform so that the file is rejected if loaded from a
+    # different OS. While this should never happen in practice, users are ...
+    # "creative".
+    'OS',
     # Algorithm used to generate the hash. The only supported value is at the
     # time of writting 'sha-1'.
     'algo',
@@ -490,6 +490,7 @@ class SavedState(Flattenable):
     self.isolated_basedir = isolated_basedir
 
     # The default algorithm used.
+    self.OS = sys.platform
     self.algo = isolateserver.SUPPORTED_ALGOS['sha-1']
     self.child_isolated_files = []
     self.command = []
@@ -556,8 +557,6 @@ class SavedState(Flattenable):
           (filepath, strip(data)) for filepath, data in self.files.iteritems()),
       'version': self.version,
     }
-    if self.config_variables.get('OS'):
-      out['os'] = self.config_variables['OS']
     if self.command:
       out['command'] = self.command
     if self.read_only is not None:
@@ -581,11 +580,11 @@ class SavedState(Flattenable):
     file is saved in OS-specific format.
     """
     out = super(SavedState, cls).load(data, isolated_basedir)
-    if data.get('os'):
-      out.config_variables['OS'] = data['os']
+    if data.get('OS') != sys.platform:
+      raise isolateserver.ConfigError('Unexpected OS %s', data.get('OS'))
 
     # Converts human readable form back into the proper class type.
-    algo = data.get('algo', 'sha-1')
+    algo = data.get('algo')
     if not algo in isolateserver.SUPPORTED_ALGOS:
       raise isolateserver.ConfigError('Unknown algo \'%s\'' % out.algo)
     out.algo = isolateserver.SUPPORTED_ALGOS[algo]
@@ -733,7 +732,7 @@ class CompleteState(object):
           file_path.normpath(os.path.join(relative_base_dir, f)), root_dir)
       for f in touched
     ]
-    follow_symlinks = config_variables['OS'] != 'win'
+    follow_symlinks = sys.platform != 'win32'
     # Expand the directories by listing each file inside. Up to now, trailing
     # os.path.sep must be kept. Do not expand 'touched'.
     infiles = expand_directories_and_symlinks(
@@ -775,7 +774,6 @@ class CompleteState(object):
             filepath,
             self.saved_state.files[infile],
             self.saved_state.read_only,
-            self.saved_state.config_variables['OS'],
             self.saved_state.algo)
 
   def save_files(self):
@@ -1384,7 +1382,7 @@ def add_variable_option(parser):
       '--config-variable',
       action='callback',
       callback=_process_variable_arg,
-      default=[('OS', get_flavor())],
+      default=[],
       dest='config_variables',
       metavar='FOO BAR',
       help='Config variables are used to determine which conditions should be '

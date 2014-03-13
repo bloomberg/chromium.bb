@@ -38,7 +38,7 @@ import auth
 # Version of isolate protocol passed to the server in /handshake request.
 ISOLATE_PROTOCOL_VERSION = '1.0'
 # Version stored and expected in .isolated files.
-ISOLATED_FILE_VERSION = '1.3'
+ISOLATED_FILE_VERSION = '1.4'
 
 
 # The number of files to check the isolate server per /pre-upload query.
@@ -1484,7 +1484,7 @@ def expand_directory_and_symlink(indir, relfile, blacklist, follow_symlinks):
     return symlinks + [relfile]
 
 
-def process_input(filepath, prevdict, read_only, flavor, algo):
+def process_input(filepath, prevdict, read_only, algo):
   """Processes an input file, a dependency, and return meta data about it.
 
   Behaviors:
@@ -1500,7 +1500,6 @@ def process_input(filepath, prevdict, read_only, flavor, algo):
                one of 4 modes: 0755 (rwx), 0644 (rw), 0555 (rx), 0444 (r). On
                windows, mode is not set since all files are 'executable' by
                default.
-    flavor:    One isolated flavor, like 'linux', 'mac' or 'win'.
     algo:      Hashing algorithm used.
 
   Returns:
@@ -1511,8 +1510,6 @@ def process_input(filepath, prevdict, read_only, flavor, algo):
   # TODO(csharp): Fix crbug.com/150823 and enable the touched logic again.
   # if prevdict.get('T') == True:
   #   # The file's content is ignored. Skip the time and hard code mode.
-  #   if get_flavor() != 'win':
-  #     out['m'] = stat.S_IRUSR | stat.S_IRGRP
   #   out['s'] = 0
   #   out['h'] = algo().hexdigest()
   #   out['T'] = True
@@ -1530,7 +1527,7 @@ def process_input(filepath, prevdict, read_only, flavor, algo):
     raise MappingError('%s is missing' % filepath)
   is_link = stat.S_ISLNK(filestats.st_mode)
 
-  if flavor != 'win':
+  if sys.platform != 'win32':
     # Ignore file mode on Windows since it's not really useful there.
     filemode = stat.S_IMODE(filestats.st_mode)
     # Remove write access for group and all access to 'others'.
@@ -1588,7 +1585,7 @@ def save_isolated(isolated, data):
   """
   # Make sure the data is valid .isolated data by 'reloading' it.
   algo = SUPPORTED_ALGOS[data['algo']]
-  load_isolated(json.dumps(data), data.get('flavor'), algo)
+  load_isolated(json.dumps(data), algo)
   tools.write_json(isolated, data, True)
   return []
 
@@ -1624,13 +1621,12 @@ def upload_tree(base_url, indir, infiles, namespace):
   return 0
 
 
-def load_isolated(content, os_flavor, algo):
+def load_isolated(content, algo):
   """Verifies the .isolated file is valid and loads this object with the json
   data.
 
   Arguments:
   - content: raw serialized content to load.
-  - os_flavor: OS to load this file on. Optional.
   - algo: hashlib algorithm class. Used to confirm the algorithm matches the
           algorithm used on the Isolate Server.
   """
@@ -1643,13 +1639,17 @@ def load_isolated(content, os_flavor, algo):
     raise ConfigError('Expected dict, got %r' % data)
 
   # Check 'version' first, since it could modify the parsing after.
-  # TODO(maruel): Drop support for unversioned .isolated file around Jan 2014.
-  value = data.get('version', ISOLATED_FILE_VERSION)
+  value = data.get('version', '1.0')
   if not isinstance(value, basestring):
     raise ConfigError('Expected string, got %r' % value)
-  if not re.match(r'^(\d+)\.(\d+)$', value):
-    raise ConfigError('Expected a compatible version, got %r' % value)
-  if value.split('.', 1)[0] != ISOLATED_FILE_VERSION.split('.', 1)[0]:
+  try:
+    version = tuple(map(int, value.split('.')))
+  except ValueError:
+    raise ConfigError('Expected valid version, got %r' % value)
+
+  expected_version = tuple(map(int, ISOLATED_FILE_VERSION.split('.')))
+  # Major version must match.
+  if version[0] != expected_version[0]:
     raise ConfigError(
         'Expected compatible \'%s\' version, got %r' %
         (ISOLATED_FILE_VERSION, value))
@@ -1730,6 +1730,10 @@ def load_isolated(content, os_flavor, algo):
         if not is_valid_hash(subvalue, algo):
           raise ConfigError('Expected sha-1, got %r' % subvalue)
 
+    elif key == 'os':
+      if version >= (1, 4):
+        raise ConfigError('Key \'os\' is not allowed starting version 1.4')
+
     elif key == 'read_only':
       if not value in (0, 1, 2):
         raise ConfigError('Expected 0, 1 or 2, got %r' % value)
@@ -1737,12 +1741,6 @@ def load_isolated(content, os_flavor, algo):
     elif key == 'relative_cwd':
       if not isinstance(value, basestring):
         raise ConfigError('Expected string, got %r' % value)
-
-    elif key == 'os':
-      if os_flavor and value != os_flavor:
-        raise ConfigError(
-            'Expected \'os\' to be \'%s\' but got \'%s\'' %
-            (os_flavor, value))
 
     elif key == 'version':
       # Already checked above.
@@ -1792,13 +1790,13 @@ class IsolatedFile(object):
     # Set once the files are fetched.
     self.files_fetched = False
 
-  def load(self, os_flavor, content):
+  def load(self, content):
     """Verifies the .isolated file is valid and loads this object with the json
     data.
     """
     logging.debug('IsolatedFile.load(%s)' % self.obj_hash)
     assert not self._is_parsed
-    self.data = load_isolated(content, os_flavor, self.algo)
+    self.data = load_isolated(content, self.algo)
     self.children = [
         IsolatedFile(i, self.algo) for i in self.data.get('includes', [])
     ]
@@ -1837,7 +1835,7 @@ class Settings(object):
     # The main .isolated file, a IsolatedFile instance.
     self.root = None
 
-  def load(self, fetch_queue, root_isolated_hash, os_flavor, algo):
+  def load(self, fetch_queue, root_isolated_hash, algo):
     """Loads the .isolated and all the included .isolated asynchronously.
 
     It enables support for "included" .isolated files. They are processed in
@@ -1876,7 +1874,7 @@ class Settings(object):
     while pending:
       item_hash = fetch_queue.wait(pending)
       item = pending.pop(item_hash)
-      item.load(os_flavor, fetch_queue.cache.read(item_hash))
+      item.load(fetch_queue.cache.read(item_hash))
       if item_hash == root_isolated_hash:
         # It's the root item.
         item.can_fetch = True
@@ -1924,7 +1922,7 @@ class Settings(object):
 
 
 def fetch_isolated(
-    isolated_hash, storage, cache, algo, outdir, os_flavor, require_command):
+    isolated_hash, storage, cache, algo, outdir, require_command):
   """Aggressively downloads the .isolated file(s), then download all the files.
 
   Arguments:
@@ -1933,7 +1931,6 @@ def fetch_isolated(
     cache: LocalCache class that knows how to store and map files locally.
     algo: hash algorithm to use.
     outdir: Output directory to map file tree to.
-    os_flavor: OS flavor to choose when reading sections of *.isolated file.
     require_command: Ensure *.isolated specifies a command to run.
 
   Returns:
@@ -1949,7 +1946,7 @@ def fetch_isolated(
         isolated_hash = fetch_queue.inject_local_file(isolated_hash, algo)
 
       # Load all *.isolated and start loading rest of the files.
-      settings.load(fetch_queue, isolated_hash, os_flavor, algo)
+      settings.load(fetch_queue, isolated_hash, algo)
       if require_command and not settings.command:
         # TODO(vadimsh): All fetch operations are already enqueue and there's no
         # easy way to cancel them.
@@ -2007,10 +2004,8 @@ def directory_to_metadata(root, algo, blacklist):
   """Returns the FileItem list and .isolated metadata for a directory."""
   root = file_path.get_native_path_case(root)
   metadata = dict(
-      (relpath, process_input(
-        os.path.join(root, relpath), {}, False, sys.platform, algo))
-      for relpath in expand_directory_and_symlink(
-        root, './', blacklist, True)
+      (relpath, process_input(os.path.join(root, relpath), {}, False, algo))
+      for relpath in expand_directory_and_symlink(root, './', blacklist, True)
   )
   for v in metadata.itervalues():
     v.pop('t')
@@ -2190,7 +2185,6 @@ def CMDdownload(parser, args):
           cache=MemoryCache(),
           algo=get_hash_algo(options.namespace),
           outdir=options.target,
-          os_flavor=None,
           require_command=False)
       rel = os.path.join(options.target, settings.relative_cwd)
       print('To run this test please run from the directory %s:' %

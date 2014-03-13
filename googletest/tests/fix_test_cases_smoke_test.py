@@ -61,9 +61,7 @@ class FixTestCases(unittest.TestCase):
   def test_simple(self):
     # Create a directory with nothing in it and progressively add more stuff.
     isolate = os.path.join(self.srcdir, 'gtest_fake_pass.isolate')
-    chromeos_value = int(run_isolated.get_flavor() == 'linux')
-    condition = 'OS=="%s" and chromeos==%d' % (run_isolated.get_flavor(),
-                                               chromeos_value)
+    condition = 'OS=="linux" and chromeos==1'
     with open(isolate, 'w') as f:
       # Write a minimal .isolate file.
       f.write(str({
@@ -96,7 +94,8 @@ class FixTestCases(unittest.TestCase):
         [
           os.path.join(ROOT_DIR, 'isolate.py'),
           'check', '-i', isolate, '-s', isolated,
-          '--config-variable', 'chromeos', str(chromeos_value),
+          '--config-variable', 'OS', 'linux',
+          '--config-variable', 'chromeos', '1',
         ])
     if not VERBOSE:
       self.assertEqual('', out)
@@ -143,7 +142,6 @@ class FixTestCases(unittest.TestCase):
           u's': os.stat(run_test_cases_py).st_size,
         },
       },
-      u'os': unicode(run_isolated.get_flavor()),
       u'relative_cwd': u'.',
       u'version': unicode(isolateserver.ISOLATED_FILE_VERSION),
     }

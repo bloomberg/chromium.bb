@@ -846,6 +846,7 @@ class IsolateServerDownloadTest(TestCase):
       'files': dict(
           (k, {'h': ALGO(v).hexdigest(), 's': len(v)})
           for k, v in files.iteritems()),
+      'version': isolateserver.ISOLATED_FILE_VERSION,
     }
     isolated_data = json.dumps(isolated, sort_keys=True, separators=(',',':'))
     isolated_hash = ALGO(isolated_data).hexdigest()
@@ -881,7 +882,7 @@ class IsolateServerDownloadTest(TestCase):
 
 class TestIsolated(auto_stub.TestCase):
   def test_load_isolated_empty(self):
-    m = isolateserver.load_isolated('{}', None, ALGO)
+    m = isolateserver.load_isolated('{}', ALGO)
     self.assertEqual({}, m)
 
   def test_load_isolated_good(self):
@@ -898,11 +899,11 @@ class TestIsolated(auto_stub.TestCase):
         }
       },
       u'includes': [u'0123456789abcdef0123456789abcdef01234567'],
-      u'os': 'oPhone',
       u'read_only': 1,
-      u'relative_cwd': u'somewhere_else'
+      u'relative_cwd': u'somewhere_else',
+      u'version': isolateserver.ISOLATED_FILE_VERSION,
     }
-    m = isolateserver.load_isolated(json.dumps(data), None, ALGO)
+    m = isolateserver.load_isolated(json.dumps(data), ALGO)
     self.assertEqual(data, m)
 
   def test_load_isolated_bad(self):
@@ -913,29 +914,30 @@ class TestIsolated(auto_stub.TestCase):
           u'h': u'0123456789abcdef0123456789abcdef01234567'
         }
       },
+      u'version': isolateserver.ISOLATED_FILE_VERSION,
     }
     try:
-      isolateserver.load_isolated(json.dumps(data), None, ALGO)
+      isolateserver.load_isolated(json.dumps(data), ALGO)
       self.fail()
     except isolateserver.ConfigError:
       pass
 
   def test_load_isolated_os_only(self):
+    # Tolerate 'os' on older version.
     data = {
       u'os': 'HP/UX',
+      u'version': '1.3',
     }
-    m = isolateserver.load_isolated(json.dumps(data), 'HP/UX', ALGO)
+    m = isolateserver.load_isolated(json.dumps(data), ALGO)
     self.assertEqual(data, m)
 
-  def test_load_isolated_os_bad(self):
+  def test_load_isolated_os_only_bad(self):
     data = {
-      u'os': 'foo',
+      u'os': 'HP/UX',
+      u'version': isolateserver.ISOLATED_FILE_VERSION,
     }
-    try:
-      isolateserver.load_isolated(json.dumps(data), 'AS/400', ALGO)
-      self.fail()
-    except isolateserver.ConfigError:
-      pass
+    with self.assertRaises(isolateserver.ConfigError):
+      isolateserver.load_isolated(json.dumps(data), ALGO)
 
   def test_load_isolated_path(self):
     # Automatically convert the path case.
@@ -948,12 +950,12 @@ class TestIsolated(auto_stub.TestCase):
             u'l': path_sep.join(('..', 'somewhere')),
           },
         },
-        u'os': u'oPhone',
         u'relative_cwd': path_sep.join(('somewhere', 'else')),
+        u'version': isolateserver.ISOLATED_FILE_VERSION,
       }
 
     data = gen_data(wrong_path_sep)
-    actual = isolateserver.load_isolated(json.dumps(data), None, ALGO)
+    actual = isolateserver.load_isolated(json.dumps(data), ALGO)
     expected = gen_data(os.path.sep)
     self.assertEqual(expected, actual)
 
@@ -1029,7 +1031,7 @@ class SymlinkTest(unittest.TestCase):
       linkdir = os.path.join(self.cwd, 'linkdir')
       os.symlink('subDir', linkdir)
       actual = isolateserver.process_input(
-          unicode(linkdir.upper()), {}, True, 'mac', ALGO)
+          unicode(linkdir.upper()), {}, True, ALGO)
       expected = {'l': u'subdir', 'm': 360, 't': int(os.stat(linkdir).st_mtime)}
       self.assertEqual(expected, actual)
 
@@ -1049,14 +1051,14 @@ class SymlinkTest(unittest.TestCase):
       os.symlink('linkedDir1', subsymlinkdir)
 
       actual = isolateserver.process_input(
-          unicode(subsymlinkdir.upper()), {}, True, 'mac', ALGO)
+          unicode(subsymlinkdir.upper()), {}, True, ALGO)
       expected = {
         'l': u'linkeddir1', 'm': 360, 't': int(os.stat(subsymlinkdir).st_mtime),
       }
       self.assertEqual(expected, actual)
 
       actual = isolateserver.process_input(
-          unicode(linkeddir1.upper()), {}, True, 'mac', ALGO)
+          unicode(linkeddir1.upper()), {}, True, ALGO)
       expected = {
         'l': u'../linkeddir2', 'm': 360, 't': int(os.stat(linkeddir1).st_mtime),
       }
@@ -1160,7 +1162,7 @@ class TestArchive(TestCase):
       # If you modify isolateserver.ISOLATED_FILE_VERSION, you'll have to update
       # the hash below. Sorry about that.
       self.checkOutput(
-          '189dbab83102b8ebcff92c1332a25fe26c1a5d7d %s\n' % p,
+          '1501166255279df1509408567340798d1cf089e7 %s\n' % p,
           '')
     finally:
       os.chdir(old_cwd)

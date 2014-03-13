@@ -142,12 +142,10 @@ def _wrap_in_condition(variables):
 
   Returns the equivalent string.
   """
-  flavor = isolate.get_flavor()
-  chromeos_value = int(flavor == 'linux')
   return _isolate_dict_to_string(
       {
         'conditions': [
-          ['OS=="%s" and chromeos==%d' % (flavor, chromeos_value), {
+          ['OS=="mac" and chromeos==0', {
             'variables': variables
           }],
         ],
@@ -227,7 +225,7 @@ class IsolateTempdir(unittest.TestCase):
       is_link = stat.S_ISLNK(filestats.st_mode)
       if not is_link:
         v[u's'] = filestats.st_size
-        if isolate.get_flavor() != 'win':
+        if sys.platform != 'win32':
           v[u'm'] = _fix_file_mode(relfile, read_only)
       if with_time:
         # Used to skip recalculating the hash. Use the most recent update
@@ -257,7 +255,6 @@ class IsolateTempdir(unittest.TestCase):
     expected = {
       u'algo': u'sha-1',
       u'files': self._gen_files(read_only, empty_file, False),
-      u'os': unicode(isolate.get_flavor()),
       u'relative_cwd': unicode(RELATIVE_CWD[self.case()]),
       u'version': unicode(isolate.isolateserver.ISOLATED_FILE_VERSION),
     }
@@ -268,18 +265,17 @@ class IsolateTempdir(unittest.TestCase):
     self.assertEqual(expected, json.load(open(self.isolated, 'r')))
 
   def _expected_saved_state(self, args, read_only, empty_file, extra_vars):
-    flavor = isolate.get_flavor()
-    chromeos_value = int(flavor == 'linux')
     expected = {
+      u'OS': unicode(sys.platform),
       u'algo': u'sha-1',
       u'child_isolated_files': [],
       u'command': [],
       u'config_variables': {
-        u'OS': unicode(flavor),
-        u'chromeos': chromeos_value,
+        u'OS': u'mac',
+        u'chromeos': 0,
       },
       u'extra_variables': {
-        u'EXECUTABLE_SUFFIX': u'.exe' if flavor == 'win' else u'',
+        u'EXECUTABLE_SUFFIX': u'.exe' if sys.platform == 'win32' else u'',
       },
       u'files': self._gen_files(read_only, empty_file, True),
       u'isolate_file': file_path.safe_relpath(
@@ -298,9 +294,8 @@ class IsolateTempdir(unittest.TestCase):
     self._expected_isolated(args, read_only, empty_file)
     self._expected_saved_state(args, read_only, empty_file, extra_vars)
     # Also verifies run_isolated.py will be able to read it.
-    isolate.isolateserver.load_isolated(
-        open(self.isolated, 'r').read(),
-        isolate.run_isolated.get_flavor(), ALGO)
+    with open(self.isolated, 'rb') as f:
+      isolate.isolateserver.load_isolated(f.read(), ALGO)
 
   def _expect_no_result(self):
     self.assertFalse(os.path.exists(self.isolated))
@@ -311,6 +306,8 @@ class IsolateTempdir(unittest.TestCase):
       mode,
       '--isolated', self.isolated,
       '--isolate', self.filename(),
+      '--config-variable', 'OS', 'mac',
+      '--config-variable', 'chromeos', '0',
     ]
 
   def _execute(self, mode, case, args, need_output, cwd=ROOT_DIR):
@@ -319,9 +316,7 @@ class IsolateTempdir(unittest.TestCase):
         case,
         self.case() + '.isolate',
         'Rename the test case to test_%s()' % case)
-    chromeos_value = int(isolate.get_flavor() == 'linux')
     cmd = self._get_cmd(mode)
-    cmd.extend(('--config-variable', 'chromeos', str(chromeos_value)))
     cmd.extend(args)
 
     env = os.environ.copy()
@@ -558,7 +553,6 @@ class Isolate_hashtable(IsolateOutdir):
       u'command': [u'python', u'split.py'],
       u'files': {u'split.py': files['split.py']},
       u'includes': isolated_hashes,
-      u'os': unicode(isolate.get_flavor()),
       u'relative_cwd': unicode(RELATIVE_CWD[self.case()]),
       u'version': unicode(isolate.isolateserver.ISOLATED_FILE_VERSION),
     }
@@ -568,7 +562,6 @@ class Isolate_hashtable(IsolateOutdir):
     expected = {
       u'algo': u'sha-1',
       u'files': {key: files[key]},
-      u'os': unicode(isolate.get_flavor()),
       u'version': unicode(isolate.isolateserver.ISOLATED_FILE_VERSION),
     }
     self.assertEqual(
@@ -578,7 +571,6 @@ class Isolate_hashtable(IsolateOutdir):
     expected = {
       u'algo': u'sha-1',
       u'files': {key: files[key]},
-      u'os': unicode(isolate.get_flavor()),
       u'version': unicode(isolate.isolateserver.ISOLATED_FILE_VERSION),
     }
     self.assertEqual(
@@ -937,12 +929,12 @@ class IsolateNoOutdir(IsolateTempdir):
 
   def _execute(self, mode, args, need_output):  # pylint: disable=W0221
     """Executes isolate.py."""
-    chromeos_value = int(isolate.get_flavor() == 'linux')
     cmd = [
       sys.executable, os.path.join(ROOT_DIR, 'isolate.py'),
       mode,
       '--isolated', self.isolated,
-      '--config-variable', 'chromeos', str(chromeos_value),
+      '--config-variable', 'OS', 'mac',
+      '--config-variable', 'chromeos', '0',
     ]
     cmd.extend(args)
 
@@ -1065,6 +1057,7 @@ class IsolateOther(IsolateTempdir):
           'check',
           '-i', os.path.join(indir, 'simple.isolate'),
           '-s', os.path.join(indir, 'simple.isolated'),
+          '--config-variable', 'OS', 'mac',
         ],
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
