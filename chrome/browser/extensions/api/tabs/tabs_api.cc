@@ -1420,14 +1420,14 @@ bool TabsMoveFunction::RunImpl() {
 
   int new_index = params->move_properties.index;
   int* window_id = params->move_properties.window_id.get();
-  base::ListValue tab_values;
+  scoped_ptr<base::ListValue> tab_values(new base::ListValue());
 
   size_t num_tabs = 0;
   if (params->tab_ids.as_integers) {
     std::vector<int>& tab_ids = *params->tab_ids.as_integers;
     num_tabs = tab_ids.size();
     for (size_t i = 0; i < tab_ids.size(); ++i) {
-      if (!MoveTab(tab_ids[i], &new_index, i, &tab_values, window_id))
+      if (!MoveTab(tab_ids[i], &new_index, i, tab_values.get(), window_id))
         return false;
     }
   } else {
@@ -1436,7 +1436,7 @@ bool TabsMoveFunction::RunImpl() {
     if (!MoveTab(*params->tab_ids.as_integer,
                  &new_index,
                  0,
-                 &tab_values,
+                 tab_values.get(),
                  window_id)) {
       return false;
     }
@@ -1445,14 +1445,18 @@ bool TabsMoveFunction::RunImpl() {
   if (!has_callback())
     return true;
 
-  // Only return the results as an array if there are multiple tabs.
-  if (num_tabs > 1) {
-    SetResult(tab_values.DeepCopy());
+  if (num_tabs == 0) {
+    error_ = "No tabs given.";
+    return false;
+  } else if (num_tabs == 1) {
+    scoped_ptr<base::Value> value;
+    CHECK(tab_values.get()->Remove(0, &value));
+    SetResult(value.release());
   } else {
-    base::Value* value = NULL;
-    CHECK(tab_values.Get(0, &value));
-    SetResult(value->DeepCopy());
+    // Only return the results as an array if there are multiple tabs.
+    SetResult(tab_values.release());
   }
+
   return true;
 }
 

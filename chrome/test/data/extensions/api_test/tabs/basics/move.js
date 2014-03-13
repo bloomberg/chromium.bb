@@ -156,6 +156,11 @@ chrome.test.runTests([
     }));
   },
 
+  // Check that attempting to move an empty list of tabs doesn't crash browser
+  function moveEmptyTabList() {
+    chrome.tabs.move([], {"index": 0}, fail("No tabs given."));
+  },
+
   // Move a tab to the current window.
   function moveToCurrentWindow() {
     chrome.windows.getCurrent(pass(function(win) {
