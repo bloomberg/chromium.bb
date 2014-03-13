@@ -2692,8 +2692,6 @@ void CSSPropertyParser::parseFillPosition(CSSParserValueList* valueList, RefPtrW
 
 void CSSPropertyParser::parse2ValuesFillPosition(CSSParserValueList* valueList, RefPtrWillBeRawPtr<CSSValue>& value1, RefPtrWillBeRawPtr<CSSValue>& value2)
 {
-    CSSParserValue* value = valueList->current();
-
     // Parse the first value.  We're just making sure that it is one of the valid keywords or a percentage/length.
     unsigned cumulativeFlags = 0;
     FillPositionFlag value1Flag = InvalidFillPosition;
@@ -2705,7 +2703,7 @@ void CSSPropertyParser::parse2ValuesFillPosition(CSSParserValueList* valueList, 
     // It only takes one value for background-position to be correctly parsed if it was specified in a shorthand (since we
     // can assume that any other values belong to the rest of the shorthand).  If we're not parsing a shorthand, though, the
     // value was explicitly specified for our property.
-    value = valueList->next();
+    CSSParserValue* value = valueList->next();
 
     // First check for the comma.  If so, we are finished parsing this value or value pair.
     if (isComma(value))
