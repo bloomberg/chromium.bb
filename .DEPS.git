@@ -80,5 +80,17 @@ hooks = [
 ],
     'pattern':
          '.'
+},
+    {
+    'action':
+         [
+    'python',
+    'tools/clang/scripts/update.py',
+    '--mac-only'
+],
+    'pattern':
+         '.',
+    'name':
+         'clang'
 }
 ]
