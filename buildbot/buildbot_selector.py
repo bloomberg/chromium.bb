@@ -82,7 +82,7 @@ BOT_ASSIGNMENT = {
     # Coverage.
     'mac10.6-newlib-coverage':
          python + (' buildbot/buildbot_standard.py '
-                   'coverage 64 newlib --coverage --clang'),
+                   'coverage 64 newlib --coverage'),
     'precise-64-32-newlib-coverage':
          python + (' buildbot/buildbot_standard.py '
                    'coverage 32 newlib --coverage'),
@@ -105,7 +105,7 @@ BOT_ASSIGNMENT = {
     # Coverage trybots.
     'nacl-mac10.6-newlib-coverage':
          python + (' buildbot/buildbot_standard.py '
-                   'coverage 64 newlib --coverage --clang'),
+                   'coverage 64 newlib --coverage'),
     'nacl-precise-64-32-newlib-coverage':
          python + (' buildbot/buildbot_standard.py '
                    'coverage 32 newlib --coverage'),
@@ -262,8 +262,6 @@ for platform in [
     if arch == '':
       arch_part = ''
       real_arch = '32'
-    if platform.startswith('mac'):
-      arch_flags += ' --clang'
     # Test with Breakpad tools only on basic Linux builds.
     if sys.platform.startswith('linux'):
       arch_flags += ' --use-breakpad-tools'

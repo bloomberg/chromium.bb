@@ -31,6 +31,13 @@
     # Set this to true when building with Clang.
     'clang%': 0,
 
+    'conditions': [
+      ['OS=="mac"', {
+        # On Mac only clang is new enough to build the trusted code.
+        'clang%': 1,
+      }],
+    ],
+
     # Set to 1 to enable code coverage.  In addition to build changes
     # (e.g. extra CFLAGS), also creates a new target in the src/chrome
     # project file called "coverage".

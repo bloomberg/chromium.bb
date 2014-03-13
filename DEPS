@@ -77,6 +77,11 @@ hooks = [
     "pattern": ".",
     "action": ["python", "native_client/build/gyp_nacl"],
   },
+  {
+    "name": "clang",
+    "pattern": ".",
+    "action": ["python", "tools/clang/scripts/update.py", "--mac-only"],
+  },
 ]
 
 include_rules = [

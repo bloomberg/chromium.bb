@@ -2392,6 +2392,9 @@ def MakeMacEnv(platform=None):
       LINK = '$CXX',
       PLUGIN_SUFFIX = '.bundle',
   )
+  # On Mac, only the newer clang toolchains can parse some of the trusted
+  # code's assembly syntax, so turn clang on by default.
+  mac_env.SetBits('clang')
 
   # This should be kept in synch with mac_deployment_target
   # in build/common.gypi, which in turn should be kept in synch

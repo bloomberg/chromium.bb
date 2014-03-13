@@ -545,15 +545,15 @@ tc-tests-all() {
 
 tc-tests-fast() {
   local arch="$1"
-  local scons_flags="-j8 -k skip_trusted_tests=1"
+  local scons_flags="-k skip_trusted_tests=1"
 
   llvm-regression
   ${DRIVER_TESTS} --platform="$arch"
 
-  scons-stage-noirt "${arch}" "${scons_flags}" "${SCONS_TC_TESTS}"
+  scons-stage-noirt "${arch}" "${scons_flags} -j8" "${SCONS_TC_TESTS}"
   # Large tests cannot be run in parallel
-  scons-stage-noirt "${arch}" "-j1 -k skip_trusted_tests=1" "large_tests"
-  scons-stage-noirt "${arch}" "${scons_flags} pnacl_generate_pexe=0" \
+  scons-stage-noirt "${arch}" "${scons_flags} -j1" "large_tests"
+  scons-stage-noirt "${arch}" "${scons_flags} -j8 pnacl_generate_pexe=0" \
     "nonpexe_tests"
 }
 
