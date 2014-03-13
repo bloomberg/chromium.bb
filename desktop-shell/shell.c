@@ -3417,6 +3417,17 @@ xdg_surface_set_app_id(struct wl_client *client,
 }
 
 static void
+xdg_surface_show_window_menu(struct wl_client *client,
+			     struct wl_resource *surface_resource,
+			     struct wl_resource *seat_resource,
+			     uint32_t serial,
+			     int32_t x,
+			     int32_t y)
+{
+	/* TODO */
+}
+
+static void
 xdg_surface_set_title(struct wl_client *client,
 			struct wl_resource *resource, const char *title)
 {
@@ -3528,6 +3539,7 @@ static const struct xdg_surface_interface xdg_surface_implementation = {
 	xdg_surface_set_margin,
 	xdg_surface_set_title,
 	xdg_surface_set_app_id,
+	xdg_surface_show_window_menu,
 	xdg_surface_move,
 	xdg_surface_resize,
 	xdg_surface_ack_configure,
