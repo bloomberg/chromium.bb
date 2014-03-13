@@ -46,6 +46,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/inspector/ScriptCallStack.h"
+#include "platform/TraceEvent.h"
 #include "public/platform/Platform.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
@@ -151,6 +152,15 @@ static bool codeGenerationCheckCallbackInMainThread(v8::Local<v8::Context> conte
     return false;
 }
 
+static void timerTraceProfilerInMainThread(const char* name, int status)
+{
+    if (!status) {
+        TRACE_EVENT_BEGIN0("V8", name);
+    } else {
+        TRACE_EVENT_END0("V8", name);
+    }
+}
+
 static void initializeV8Common(v8::Isolate* isolate)
 {
     v8::ResourceConstraints constraints;
@@ -179,6 +189,9 @@ void V8Initializer::initializeMainThreadIfNeeded(v8::Isolate* isolate)
     v8::V8::AddMessageListener(messageHandlerInMainThread);
     v8::V8::SetFailedAccessCheckCallbackFunction(failedAccessCheckCallbackInMainThread);
     v8::V8::SetAllowCodeGenerationFromStringsCallback(codeGenerationCheckCallbackInMainThread);
+
+    isolate->SetEventLogger(timerTraceProfilerInMainThread);
+
     ScriptProfiler::initialize();
 }
 
