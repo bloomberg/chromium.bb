@@ -36,26 +36,16 @@
             'target_name': 'blink',
             'type': 'none',
             'dependencies': [
-                '../Source/web/web.gyp:blink_web',
                 '../Source/platform/blink_platform.gyp:blink_platform',
+                '../Source/web/web.gyp:blink_web',
+                'blink_headers.gyp:blink_headers',
                 'blink_minimal',
-                'blink_headers',
             ],
             'export_dependent_settings': [
                 '../Source/web/web.gyp:blink_web',
                 '../Source/platform/blink_platform.gyp:blink_platform',
                 'blink_minimal',
             ],
-        },
-        {
-          # Depend on this target to use public blink API headers for things
-          # like enums and public structures without actually linking against any Blink
-          # libraries.
-          'target_name': 'blink_headers',
-          'type': 'none',
-          'direct_dependent_settings': {
-            'include_dirs': [ '..' ],
-          },
         },
         {
             # This target provides a minimal set of Blink APIs such as WebString to use in
