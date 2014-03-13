@@ -87,6 +87,27 @@ bool PopulateShellFunctions() {
 
 }  // namespace
 
+// Turn off optimization to make sure these calls don't get inlined.
+#pragma optimize("", off)
+// Wrapper method for kernel32!CreateFile, to avoid setting off caller
+// mitigation detectors.
+HANDLE CreateFileWImpl(LPCWSTR file_name,
+                       DWORD desired_access,
+                       DWORD share_mode,
+                       LPSECURITY_ATTRIBUTES security_attributes,
+                       DWORD creation_disposition,
+                       DWORD flags_and_attributes,
+                       HANDLE template_file) {
+  return CreateFile(file_name,
+                    desired_access,
+                    share_mode,
+                    security_attributes,
+                    creation_disposition,
+                    flags_and_attributes,
+                    template_file);
+
+}
+
 HANDLE WINAPI CreateFileWRedirect(
     LPCWSTR file_name,
     DWORD desired_access,
@@ -105,15 +126,15 @@ HANDLE WINAPI CreateFileWRedirect(
                            flags_and_attributes,
                            template_file);
   }
-  return CreateFile(file_name,
-                    desired_access,
-                    share_mode,
-                    security_attributes,
-                    creation_disposition,
-                    flags_and_attributes,
-                    template_file);
-
+  return CreateFileWImpl(file_name,
+                         desired_access,
+                         share_mode,
+                         security_attributes,
+                         creation_disposition,
+                         flags_and_attributes,
+                         template_file);
 }
+#pragma optimize("", on)
 
 int GetRedirectCount() {
   return g_redirect_count;
