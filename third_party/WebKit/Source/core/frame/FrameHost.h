@@ -31,6 +31,7 @@
 #ifndef FrameHost_h
 #define FrameHost_h
 
+#include "core/frame/PinchViewport.h"
 #include "wtf/FastAllocBase.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
@@ -38,9 +39,10 @@
 
 namespace WebCore {
 
+class Chrome;
 class Page;
 class PageConsole;
-class Chrome;
+class PinchViewport;
 class Settings;
 class UseCounter;
 
@@ -72,11 +74,14 @@ public:
     // This value does not account for Page zoom, use LocalFrame::devicePixelRatio instead.
     float deviceScaleFactor() const;
 
+    PinchViewport& pinchViewport();
+
 private:
     explicit FrameHost(Page&);
 
     Page& m_page;
     const OwnPtr<PageConsole> m_console;
+    PinchViewport m_pinchViewport;
 };
 
 }

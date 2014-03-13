@@ -62,46 +62,18 @@ using WebCore::GraphicsLayerFactory;
 
 namespace WebCore {
 
-PassOwnPtr<PinchViewport> PinchViewport::create(FrameHost& owner, GraphicsLayerFactory* graphicsLayerFactory)
-{
-    return adoptPtr(new PinchViewport(owner, graphicsLayerFactory));
-}
-
-PinchViewport::PinchViewport(FrameHost& owner, GraphicsLayerFactory* graphicsLayerFactory)
+PinchViewport::PinchViewport(FrameHost& owner)
     : m_owner(owner)
-    , m_innerViewportContainerLayer(GraphicsLayer::create(graphicsLayerFactory, this))
-    , m_pageScaleLayer(GraphicsLayer::create(graphicsLayerFactory, this))
-    , m_innerViewportScrollLayer(GraphicsLayer::create(graphicsLayerFactory, this))
-    , m_overlayScrollbarHorizontal(GraphicsLayer::create(graphicsLayerFactory, this))
-    , m_overlayScrollbarVertical(GraphicsLayer::create(graphicsLayerFactory, this))
 {
-    WebCore::ScrollingCoordinator* coordinator = m_owner.page().scrollingCoordinator();
-    ASSERT(coordinator);
-    coordinator->setLayerIsContainerForFixedPositionLayers(m_innerViewportScrollLayer.get(), true);
-
-    // No need for the inner viewport to clip, since the compositing
-    // surface takes care of it -- and clipping here would interfere with
-    // dynamically-sized viewports on Android.
-    m_innerViewportContainerLayer->setMasksToBounds(false);
-
-    m_innerViewportScrollLayer->platformLayer()->setScrollClipLayer(
-        m_innerViewportContainerLayer->platformLayer());
-    m_innerViewportScrollLayer->platformLayer()->setUserScrollable(true, true);
-
-    m_innerViewportContainerLayer->addChild(m_pageScaleLayer.get());
-    m_pageScaleLayer->addChild(m_innerViewportScrollLayer.get());
-    m_innerViewportContainerLayer->addChild(m_overlayScrollbarHorizontal.get());
-    m_innerViewportContainerLayer->addChild(m_overlayScrollbarVertical.get());
-
-    // Setup the inner viewport overlay scrollbars.
-    setupScrollbar(WebScrollbar::Horizontal);
-    setupScrollbar(WebScrollbar::Vertical);
 }
 
 PinchViewport::~PinchViewport() { }
 
 void PinchViewport::setViewportSize(const WebCore::IntSize& newSize)
 {
+    if (!m_innerViewportContainerLayer || !m_innerViewportScrollLayer)
+        return;
+
     m_innerViewportContainerLayer->setSize(newSize);
     // The innerviewport scroll layer always has the same size as its clip layer, but
     // the page scale layer lives between them, allowing for non-zero max scroll
@@ -131,15 +103,53 @@ void PinchViewport::setViewportSize(const WebCore::IntSize& newSize)
 //  +- *horizontalScrollbarLayer (overlay)
 //  +- *verticalScrollbarLayer (overlay)
 //
-void PinchViewport::setOverflowControlsHostLayer(GraphicsLayer* layer)
+void PinchViewport::attachToLayerTree(GraphicsLayer* currentLayerTreeRoot, GraphicsLayerFactory* graphicsLayerFactory)
 {
-    if (layer) {
-        ASSERT(!m_innerViewportScrollLayer->children().size());
-        m_innerViewportScrollLayer->addChild(layer);
-    } else {
+    if (!currentLayerTreeRoot) {
         m_innerViewportScrollLayer->removeAllChildren();
         return;
     }
+
+    if (currentLayerTreeRoot->parent() && currentLayerTreeRoot->parent() == m_innerViewportScrollLayer)
+        return;
+
+    if (!m_innerViewportScrollLayer) {
+        ASSERT(!m_overlayScrollbarHorizontal
+            && !m_overlayScrollbarVertical
+            && !m_pageScaleLayer
+            && !m_innerViewportContainerLayer);
+
+        m_innerViewportContainerLayer = GraphicsLayer::create(graphicsLayerFactory, this);
+        m_pageScaleLayer = GraphicsLayer::create(graphicsLayerFactory, this);
+        m_innerViewportScrollLayer = GraphicsLayer::create(graphicsLayerFactory, this);
+        m_overlayScrollbarHorizontal = GraphicsLayer::create(graphicsLayerFactory, this);
+        m_overlayScrollbarVertical = GraphicsLayer::create(graphicsLayerFactory, this);
+
+        WebCore::ScrollingCoordinator* coordinator = m_owner.page().scrollingCoordinator();
+        ASSERT(coordinator);
+        coordinator->setLayerIsContainerForFixedPositionLayers(m_innerViewportScrollLayer.get(), true);
+
+        // No need for the inner viewport to clip, since the compositing
+        // surface takes care of it -- and clipping here would interfere with
+        // dynamically-sized viewports on Android.
+        m_innerViewportContainerLayer->setMasksToBounds(false);
+
+        m_innerViewportScrollLayer->platformLayer()->setScrollClipLayer(
+            m_innerViewportContainerLayer->platformLayer());
+        m_innerViewportScrollLayer->platformLayer()->setUserScrollable(true, true);
+
+        m_innerViewportContainerLayer->addChild(m_pageScaleLayer.get());
+        m_pageScaleLayer->addChild(m_innerViewportScrollLayer.get());
+        m_innerViewportContainerLayer->addChild(m_overlayScrollbarHorizontal.get());
+        m_innerViewportContainerLayer->addChild(m_overlayScrollbarVertical.get());
+
+        // Setup the inner viewport overlay scrollbars.
+        setupScrollbar(WebScrollbar::Horizontal);
+        setupScrollbar(WebScrollbar::Vertical);
+    }
+
+    m_innerViewportScrollLayer->removeAllChildren();
+    m_innerViewportScrollLayer->addChild(currentLayerTreeRoot);
 
     // We only need to disable the existing (outer viewport) scrollbars
     // if the existing ones are already overlay.

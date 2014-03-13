@@ -84,6 +84,7 @@
 #include "core/editing/TextIterator.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/events/WheelEvent.h"
+#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/PinchViewport.h"
@@ -1530,8 +1531,8 @@ void WebViewImpl::resize(const WebSize& newSize)
     WebFrameImpl* webFrame = mainFrameImpl();
     if (webFrame->frameView()) {
         webFrame->frameView()->resize(m_size);
-        if (m_pinchViewports)
-            m_pinchViewports->setViewportSize(m_size);
+        if (page()->settings().pinchVirtualViewportEnabled())
+            page()->frameHost().pinchViewport().setViewportSize(m_size);
     }
 
     if (settings()->viewportEnabled() && !m_fixedLayoutSizeLock) {
@@ -3600,17 +3601,16 @@ bool WebViewImpl::allowsAcceleratedCompositing()
 
 void WebViewImpl::setRootGraphicsLayer(GraphicsLayer* layer)
 {
+    bool pinchVirtualViewportEnabled = page()->settings().pinchVirtualViewportEnabled();
     suppressInvalidations(true);
 
-    if (page()->settings().pinchVirtualViewportEnabled()) {
-        if (!m_pinchViewports)
-            m_pinchViewports = PinchViewport::create(page()->frameHost(), graphicsLayerFactory());
-
-        m_pinchViewports->setOverflowControlsHostLayer(layer);
-        m_pinchViewports->setViewportSize(mainFrameImpl()->frame()->view()->frameRect().size());
+    if (pinchVirtualViewportEnabled) {
+        PinchViewport& pinchViewport = page()->frameHost().pinchViewport();
+        pinchViewport.attachToLayerTree(layer, graphicsLayerFactory());
+        pinchViewport.setViewportSize(mainFrameImpl()->frame()->view()->frameRect().size());
         if (layer) {
-            m_rootGraphicsLayer = m_pinchViewports->rootGraphicsLayer();
-            m_rootLayer = m_pinchViewports->rootGraphicsLayer()->platformLayer();
+            m_rootGraphicsLayer = pinchViewport.rootGraphicsLayer();
+            m_rootLayer = pinchViewport.rootGraphicsLayer()->platformLayer();
             m_rootTransformLayer = 0;
         } else {
             m_rootGraphicsLayer = 0;
@@ -3632,8 +3632,8 @@ void WebViewImpl::setRootGraphicsLayer(GraphicsLayer* layer)
             m_layerTreeView->setRootLayer(*m_rootLayer);
             // We register viewport layers here since there may not be a layer
             // tree view prior to this point.
-            if (m_pinchViewports) {
-                m_pinchViewports->registerViewportLayersWithTreeView(m_layerTreeView);
+            if (pinchVirtualViewportEnabled) {
+                page()->frameHost().pinchViewport().registerViewportLayersWithTreeView(m_layerTreeView);
             } else {
                 GraphicsLayer* rootScrollLayer = compositor()->scrollLayer();
                 ASSERT(rootScrollLayer);
@@ -3642,8 +3642,8 @@ void WebViewImpl::setRootGraphicsLayer(GraphicsLayer* layer)
             }
         } else {
             m_layerTreeView->clearRootLayer();
-            if (m_pinchViewports)
-                m_pinchViewports->clearViewportLayersForTreeView(m_layerTreeView);
+            if (pinchVirtualViewportEnabled)
+                page()->frameHost().pinchViewport().clearViewportLayersForTreeView(m_layerTreeView);
             else
                 m_layerTreeView->clearViewportLayers();
         }

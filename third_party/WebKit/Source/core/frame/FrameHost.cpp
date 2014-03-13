@@ -32,6 +32,8 @@
 #include "core/frame/FrameHost.h"
 
 #include "core/frame/PageConsole.h"
+#include "core/page/Chrome.h"
+#include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 
 namespace WebCore {
@@ -44,6 +46,7 @@ PassOwnPtr<FrameHost> FrameHost::create(Page& page)
 FrameHost::FrameHost(Page& page)
     : m_page(page)
     , m_console(PageConsole::create(*this))
+    , m_pinchViewport(*this)
 {
 }
 
@@ -75,6 +78,11 @@ UseCounter& FrameHost::useCounter() const
 float FrameHost::deviceScaleFactor() const
 {
     return m_page.deviceScaleFactor();
+}
+
+PinchViewport& FrameHost::pinchViewport()
+{
+    return m_pinchViewport;
 }
 
 }

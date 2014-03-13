@@ -54,10 +54,10 @@ class IntSize;
 
 class PinchViewport FINAL : WebCore::GraphicsLayerClient {
 public:
-    static PassOwnPtr<PinchViewport> create(WebCore::FrameHost&, WebCore::GraphicsLayerFactory*);
+    PinchViewport(FrameHost&);
     virtual ~PinchViewport();
 
-    void setOverflowControlsHostLayer(WebCore::GraphicsLayer*);
+    void attachToLayerTree(WebCore::GraphicsLayer*, GraphicsLayerFactory*);
     WebCore::GraphicsLayer* rootGraphicsLayer()
     {
         return m_innerViewportContainerLayer.get();
@@ -73,8 +73,6 @@ private:
     virtual void notifyAnimationStarted(const WebCore::GraphicsLayer*, double monotonicTime) OVERRIDE;
     virtual void paintContents(const WebCore::GraphicsLayer*, WebCore::GraphicsContext&, WebCore::GraphicsLayerPaintingPhase, const WebCore::IntRect& inClip) OVERRIDE;
     virtual String debugName(const WebCore::GraphicsLayer*) OVERRIDE;
-
-    explicit PinchViewport(WebCore::FrameHost&, WebCore::GraphicsLayerFactory*);
 
     void setupScrollbar(blink::WebScrollbar::Orientation);
 
