@@ -172,10 +172,4 @@ bool CrossOriginPreflightResultCache::canSkipPreflight(const String& origin, con
     return false;
 }
 
-void CrossOriginPreflightResultCache::empty()
-{
-    ASSERT(isMainThread());
-    m_preflightHashMap.clear();
-}
-
 } // namespace WebCore
