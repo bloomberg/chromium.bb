@@ -110,10 +110,6 @@ blink::WebCryptoAlgorithm CreateAesGcmAlgorithm(
 blink::WebCryptoAlgorithm CreateHmacKeyGenAlgorithm(
     blink::WebCryptoAlgorithmId hash_id,
     unsigned int key_length_bits) {
-#if !defined(WEBCRYPTO_HMAC_BITS)
-  // TODO(eroman): Delete
-  key_length_bits /= 8;
-#endif
   DCHECK(IsHashAlgorithm(hash_id));
   // key_length_bytes == 0 means unspecified
   return blink::WebCryptoAlgorithm::adoptParamsAndCreate(

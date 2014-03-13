@@ -315,15 +315,10 @@ Status GenerateSecretKey(const blink::WebCryptoAlgorithm& algorithm,
       const blink::WebCryptoHmacKeyGenParams* params =
           algorithm.hmacKeyGenParams();
       DCHECK(params);
-#if defined(WEBCRYPTO_HMAC_BITS)
       if (params->hasLengthBits()) {
         if (params->optionalLengthBits() % 8)
           return Status::ErrorGenerateKeyLength();
         keylen_bytes = params->optionalLengthBits() / 8;
-#else
-      if (params->hasLengthBytes()) {
-        keylen_bytes = params->optionalLengthBytes();
-#endif
       } else {
         keylen_bytes = ShaBlockSizeBytes(params->hash().id());
         if (keylen_bytes == 0)
