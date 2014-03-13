@@ -378,7 +378,7 @@
  "linux-release/sizes/nacl_helper_bootstrap-bss/bss": {"reva": 114822, "revb": 115019, "type": "absolute", "better": "lower", "improve": 1019980807, "regress": 1127347209, "sha1": "a4ff54ab"},
  "linux-release/sizes/nacl_helper_bootstrap-data/data": {"reva": 114822, "revb": 115019, "type": "absolute", "better": "lower", "improve": 19, "regress": 21, "sha1": "6a3e92f4"},
  "linux-release/sizes/nacl_helper_bootstrap-si/initializers": {"reva": 114822, "revb": 115019, "type": "absolute", "better": "lower", "improve": 0, "regress": 0, "sha1": "dd908f29"},
- "linux-release/sizes/nacl_helper_bootstrap-text/text": {"reva": 150377, "revb": 150377, "type": "absolute", "better": "lower", "improve": 4596, "regress": 5080, "sha1": "4bb41c07"},
+ "linux-release/sizes/nacl_helper_bootstrap-text/text": {"reva": 256743, "revb": 256743, "type": "absolute", "better": "lower", "improve": 4882, "regress": 5396, "sha1": "ffc106e5"},
  "linux-release/sizes/nacl_helper_bootstrap/nacl_helper_bootstrap": {"reva": 114822, "revb": 115019, "type": "absolute", "better": "lower", "improve": 8776, "regress": 9700, "sha1": "3f284fed"},
  "linux-release/sizes/totals-textrel/textrel": {"reva": 205083, "revb": 206071, "type": "absolute", "better": "lower", "improve": 1075, "regress": 1189, "sha1": "69d07fda"},
  "mac-release/sizes/Chromium.app/Chromium.app": {"reva": 236254, "revb": 236257, "type": "absolute", "better": "lower", "improve": 120545484, "regress": 133234484, "sha1": "6971d225"},
