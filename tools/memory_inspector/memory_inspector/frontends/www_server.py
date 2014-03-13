@@ -109,6 +109,11 @@ def _ListBackends(args, req_vars):  # pylint: disable=W0613
 def _ListDevices(args, req_vars):  # pylint: disable=W0613
   resp = []
   for device in backends.ListDevices():
+    # The device settings must loaded at discovery time (i.e. here), not during
+    # startup, because it might have been plugged later.
+    for k, v in _persistent_storage.LoadSettings(device.id).iteritems():
+      device.settings[k] = v
+
     resp += [{'backend': device.backend.name,
               'id': device.id,
               'name': device.name}]
@@ -254,6 +259,48 @@ def _GetProcessStats(args, req_vars):  # pylint: disable=W0613
   return _HTTP_OK, [], {'cpu': cpu_stats, 'mem': mem_stats}
 
 
+@AjaxHandler(r'/ajax/settings/(\w+)/?(\w+)?$')  # /ajax/settings/Android[/id]
+def _GetDeviceOrBackendSettings(args, req_vars):  # pylint: disable=W0613
+  backend = backends.GetBackend(args[0])
+  if not backend:
+    return _HTTP_GONE, [], 'Backend not found'
+  if args[1]:
+    device = _GetDevice(args)
+    if not device:
+      return _HTTP_GONE, [], 'Device not found'
+    settings = device.settings
+  else:
+    settings = backend.settings
+
+  assert(isinstance(settings, backends.Settings))
+  resp = {}
+  for key  in settings.expected_keys:
+    resp[key] = {'description': settings.expected_keys[key],
+                 'value': settings.values[key]}
+  return _HTTP_OK, [], resp
+
+
+@AjaxHandler(r'/ajax/settings/(\w+)/?(\w+)?$', 'POST')
+def _SetDeviceOrBackendSettings(args, req_vars):  # pylint: disable=W0613
+  backend = backends.GetBackend(args[0])
+  if not backend:
+    return _HTTP_GONE, [], 'Backend not found'
+  if args[1]:
+    device = _GetDevice(args)
+    if not device:
+      return _HTTP_GONE, [], 'Device not found'
+    settings = device.settings
+    storage_name = device.id
+  else:
+    settings = backend.settings
+    storage_name = backend.name
+
+  for key in req_vars.iterkeys():
+    settings[key] = req_vars[key]
+  _persistent_storage.StoreSettings(storage_name, settings.values)
+  return _HTTP_OK, [], ''
+
+
 @UriHandler(r'^(?!/ajax)/(.*)$')
 def _StaticContent(args, req_vars):  # pylint: disable=W0613
   # Give the browser a 1-day TTL cache to minimize the start-up time.
@@ -307,5 +354,11 @@ def _HttpRequestHandler(environ, start_response):
 
 
 def Start(http_port):
+  # Load the saved backends' settings (some of them might be needed to bootstrap
+  # as, for instance, the adb path for the Android backend).
+  for backend in backends.ListBackends():
+    for k, v in _persistent_storage.LoadSettings(backend.name).iteritems():
+      backend.settings[k] = v
+
   httpd = wsgiref.simple_server.make_server('', http_port, _HttpRequestHandler)
   httpd.serve_forever()

@@ -36,6 +36,15 @@ this.showTab = function(tabId) {
     $('#tabs').tabs('option', 'active', index - 1);
 };
 
+this.showDialog = function(message) {
+  var dialog = $("#message_dialog");
+  if (dialog.length == 0) {
+    dialog = $('<div id="message_dialog"/>');
+    $('body').append(dialog);
+  }
+  $("#message_dialog").text(message).dialog({ modal: true });
+};
+
 $(document).ready(this.onDomReady_.bind(this));
 
 })();

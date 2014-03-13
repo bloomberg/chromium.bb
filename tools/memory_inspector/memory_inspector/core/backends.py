@@ -189,12 +189,12 @@ class Settings(object):
       expected_keys: A dict. (key-name -> description) of expected settings
     """
     self.expected_keys = expected_keys or {}
-    self._settings = dict((k, '') for k in self.expected_keys.iterkeys())
+    self.values = dict((k, '') for k in self.expected_keys.iterkeys())
 
   def __getitem__(self, key):
-    assert(key in self.expected_keys)
-    return self._settings.get(key)
+    assert(key in self.expected_keys), 'Unexpected setting: ' + key
+    return self.values.get(key)
 
   def __setitem__(self, key, value):
-    assert(key in self.expected_keys)
-    self._settings[key] = value
+    assert(key in self.expected_keys), 'Unexpected setting: ' + key
+    self.values[key] = value

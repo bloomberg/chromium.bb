@@ -38,10 +38,13 @@ this.refresh = function() {
 this.onBackendsAjaxResponse_ = function(data) {
   if (!data || !data.length)
   {
-    rootUi.ShowDialog('No backends detected! Memory Inspector looks terribly' +
+    rootUi.showDialog('No backends detected! Memory Inspector looks terribly' +
                        ' broken. Please file a bug');
   }
   this.backends_ = data;
+
+  // Reload settings now that both devices and backends have been enumerated.
+  settings.reload();
 };
 
 this.onDevicesAjaxResponse_ = function(data) {
@@ -56,7 +59,12 @@ this.onDevicesAjaxResponse_ = function(data) {
     this.devices_[deviceUri] = device;
   }, this);
 
-  this.onDeviceSelectionChange_();  // start monitoring the first device.
+  if (data.length > 0) {
+    this.onDeviceSelectionChange_();  // Start monitoring the first device.
+  } else {
+    rootUi.showDialog('No devices could be detected. Check the settings tab ' +
+                      'to ensure that the adb path is properly configured.');
+  }
 };
 
 this.onDeviceSelectionChange_ = function() {
