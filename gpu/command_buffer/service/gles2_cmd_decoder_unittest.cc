@@ -119,7 +119,13 @@ class GLES2DecoderRGBBackbufferTest : public GLES2DecoderWithShaderTest {
   GLES2DecoderRGBBackbufferTest() { }
 
   virtual void SetUp() {
-    InitDecoder(
+    // Test codepath with workaround clear_alpha_in_readpixels because
+    // ReadPixelsEmulator emulates the incorrect driver behavior.
+    CommandLine command_line(0, NULL);
+    command_line.AppendSwitchASCII(
+        switches::kGpuDriverBugWorkarounds,
+        base::IntToString(gpu::CLEAR_ALPHA_IN_READPIXELS));
+    InitDecoderWithCommandLine(
         "",     // extensions
         "3.0",  // gl version
         false,  // has alpha
@@ -128,7 +134,8 @@ class GLES2DecoderRGBBackbufferTest : public GLES2DecoderWithShaderTest {
         false,  // request alpha
         false,  // request depth
         false,  // request stencil
-        true);   // bind generates resource
+        true,   // bind generates resource
+        &command_line);
     SetupDefaultProgram();
   }
 };
@@ -298,6 +305,41 @@ TEST_F(GLES2DecoderWithShaderTest,
 }
 
 TEST_F(GLES2DecoderWithShaderTest, DrawArraysValidAttributesSucceeds) {
+  SetupTexture();
+  SetupVertexBuffer();
+  DoEnableVertexAttribArray(1);
+  DoVertexAttribPointer(1, 2, GL_FLOAT, 0, 0);
+  AddExpectationsForSimulatedAttrib0(kNumVertices, kServiceBufferId);
+  SetupExpectationsForApplyingDefaultDirtyState();
+
+  EXPECT_CALL(*gl_, DrawArrays(GL_TRIANGLES, 0, kNumVertices))
+      .Times(1)
+      .RetiresOnSaturation();
+  DrawArrays cmd;
+  cmd.Init(GL_TRIANGLES, 0, kNumVertices);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
+// Same as DrawArraysValidAttributesSucceeds, but with workaround
+// |init_vertex_attributes|.
+TEST_F(GLES2DecoderManualInitTest, InitVertexAttributes) {
+  CommandLine command_line(0, NULL);
+  command_line.AppendSwitchASCII(
+      switches::kGpuDriverBugWorkarounds,
+      base::IntToString(gpu::INIT_VERTEX_ATTRIBUTES));
+  InitDecoderWithCommandLine(
+      "",     // extensions
+      "3.0",  // gl version
+      true,   // has alpha
+      true,   // has depth
+      false,  // has stencil
+      true,   // request alpha
+      true,   // request depth
+      false,  // request stencil
+      true,   // bind generates resource
+      &command_line);
+  SetupDefaultProgram();
   SetupTexture();
   SetupVertexBuffer();
   DoEnableVertexAttribArray(1);
@@ -1846,16 +1888,8 @@ TEST_F(GLES2DecoderTest, GenerateMipmapHandlesOutOfMemory) {
   DoTexImage2D(
       GL_TEXTURE_2D, 0, GL_RGBA, 16, 16, 0, GL_RGBA, GL_UNSIGNED_BYTE,
       kSharedMemoryId, kSharedMemoryOffset);
-  EXPECT_CALL(*gl_, TexParameteri(
-      GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST))
-      .Times(1)
-      .RetiresOnSaturation();
   EXPECT_CALL(*gl_, GenerateMipmapEXT(GL_TEXTURE_2D))
       .Times(1);
-  EXPECT_CALL(*gl_, TexParameteri(
-      GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR))
-      .Times(1)
-      .RetiresOnSaturation();
   EXPECT_CALL(*gl_, GetError())
       .WillOnce(Return(GL_NO_ERROR))
       .WillOnce(Return(GL_OUT_OF_MEMORY))
@@ -1868,6 +1902,44 @@ TEST_F(GLES2DecoderTest, GenerateMipmapHandlesOutOfMemory) {
 }
 
 TEST_F(GLES2DecoderTest, GenerateMipmapClearsUnclearedTexture) {
+  EXPECT_CALL(*gl_, GenerateMipmapEXT(_))
+       .Times(0);
+  DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
+  DoTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+               0, 0);
+  SetupClearTextureExpectations(
+      kServiceTextureId, kServiceTextureId, GL_TEXTURE_2D, GL_TEXTURE_2D,
+      0, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, 2, 2);
+  EXPECT_CALL(*gl_, GenerateMipmapEXT(GL_TEXTURE_2D));
+  EXPECT_CALL(*gl_, GetError())
+      .WillOnce(Return(GL_NO_ERROR))
+      .WillOnce(Return(GL_NO_ERROR))
+      .RetiresOnSaturation();
+  GenerateMipmap cmd;
+  cmd.Init(GL_TEXTURE_2D);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
+// Same as GenerateMipmapClearsUnclearedTexture, but with workaround
+// |set_texture_filters_before_generating_mipmap|.
+TEST_F(GLES2DecoderManualInitTest, SetTextureFiltersBeforeGenerateMipmap) {
+  CommandLine command_line(0, NULL);
+  command_line.AppendSwitchASCII(
+      switches::kGpuDriverBugWorkarounds,
+      base::IntToString(gpu::SET_TEXTURE_FILTER_BEFORE_GENERATING_MIPMAP));
+  InitDecoderWithCommandLine(
+      "",     // extensions
+      "3.0",  // gl version
+      false,  // has alpha
+      false,  // has depth
+      false,  // has stencil
+      false,  // request alpha
+      false,  // request depth
+      false,  // request stencil
+      true,   // bind generates resource
+      &command_line);
+
   EXPECT_CALL(*gl_, GenerateMipmapEXT(_))
        .Times(0);
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);

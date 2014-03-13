@@ -112,7 +112,6 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
  private:
   friend class base::RefCounted<FeatureInfo>;
   friend class BufferManagerClientSideArraysTest;
-  friend class GLES2DecoderTestBase;
 
   typedef base::hash_map<GLenum, ValueValidator<GLenum> > ValidatorMap;
   ValidatorMap texture_format_validators_;

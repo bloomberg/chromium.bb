@@ -134,12 +134,6 @@ void GLES2DecoderTestBase::InitDecoderWithCommandLine(
       memory_tracker_,
       feature_info.get(),
       bind_generates_resource));
-  // These three workarounds are always turned on in testing.
-  // TODO(zmo): Test code paths without these workarounds.
-  group_->feature_info(
-      )->workarounds_.set_texture_filter_before_generating_mipmap = true;
-  group_->feature_info()->workarounds_.clear_alpha_in_readpixels = true;
-  group_->feature_info()->workarounds_.init_vertex_attributes = true;
 
   InSequence sequence;
 
@@ -166,7 +160,8 @@ void GLES2DecoderTestBase::InitDecoderWithCommandLine(
   EXPECT_TRUE(
       group_->Initialize(mock_decoder_.get(), DisallowedFeatures()));
 
-  AddExpectationsForVertexAttribManager();
+  if (group_->feature_info()->workarounds().init_vertex_attributes)
+    AddExpectationsForVertexAttribManager();
 
   AddExpectationsForBindVertexArrayOES();
 
