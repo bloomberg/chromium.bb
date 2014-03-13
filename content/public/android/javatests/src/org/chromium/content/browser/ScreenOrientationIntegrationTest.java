@@ -78,7 +78,10 @@ public class ScreenOrientationIntegrationTest extends ContentShellTestBase {
     @SmallTest
     @Feature({"ScreenOrientation"})
     public void testExpectedValues() throws Throwable {
-        int[] values = { 90, -90, 180, 0 };
+        int[] values = { 90, -90, 180, 0, 90 };
+
+        // The first value should depend on the current orientation.
+        values[0] = getWindowOrientation() == 0 ? 90 : 0;
 
         for (int i = 0; i < values.length; ++i) {
             updateScreenOrientationForContent(values[i]);
@@ -92,16 +95,19 @@ public class ScreenOrientationIntegrationTest extends ContentShellTestBase {
     @SmallTest
     @Feature({"ScreenOrientation"})
     public void testNoChange() throws Throwable {
-        updateScreenOrientationForContent(90);
-        assertEquals(90, getWindowOrientation());
+        // The target angle for that test should depend on the current orientation.
+        int angle = getWindowOrientation() == 0 ? 90 : 0;
+
+        updateScreenOrientationForContent(angle);
+        assertEquals(angle, getWindowOrientation());
         assertEquals(1, getWindowOrientationChangeCount());
 
-        updateScreenOrientationForContent(90);
-        assertEquals(90, getWindowOrientation());
+        updateScreenOrientationForContent(angle);
+        assertEquals(angle, getWindowOrientation());
         assertEquals(1, getWindowOrientationChangeCount());
 
-        updateScreenOrientationForContent(90);
-        assertEquals(90, getWindowOrientation());
+        updateScreenOrientationForContent(angle);
+        assertEquals(angle, getWindowOrientation());
         assertEquals(1, getWindowOrientationChangeCount());
     }
 }
