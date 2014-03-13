@@ -137,7 +137,6 @@ void SharedWorkerHost::WorkerContextDestroyed() {
 
 void SharedWorkerHost::WorkerScriptLoaded() {
   // TODO(horo): implement this.
-  NOTIMPLEMENTED();
 }
 
 void SharedWorkerHost::WorkerScriptLoadFailed() {
