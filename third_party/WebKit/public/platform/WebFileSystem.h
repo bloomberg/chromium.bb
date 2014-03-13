@@ -36,9 +36,6 @@
 #include "WebFileSystemType.h"
 #include "WebURL.h"
 
-// FIXME: Remove this #define.
-#define READ_DIRECTORY_RETURNS_INT
-
 namespace blink {
 
 class WebFileWriter;
