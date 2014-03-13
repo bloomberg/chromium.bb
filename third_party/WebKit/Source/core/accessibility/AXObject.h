@@ -426,6 +426,10 @@ public:
     virtual AXObject* activeDescendant() const { return 0; }
     virtual String ariaDescribedByAttribute() const { return String(); }
     virtual void ariaFlowToElements(AccessibilityChildrenVector&) const { }
+    virtual void ariaControlsElements(AccessibilityChildrenVector&) const { }
+    virtual void ariaDescribedbyElements(AccessibilityChildrenVector& describedby) const { };
+    virtual void ariaLabelledbyElements(AccessibilityChildrenVector& labelledby) const { };
+    virtual void ariaOwnsElements(AccessibilityChildrenVector& owns) const { };
     virtual bool ariaHasPopup() const { return false; }
     bool ariaIsMultiline() const;
     virtual String ariaLabeledByAttribute() const { return String(); }

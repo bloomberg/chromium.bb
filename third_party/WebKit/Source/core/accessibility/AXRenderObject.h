@@ -126,6 +126,11 @@ protected:
     // ARIA attributes.
     virtual AXObject* activeDescendant() const OVERRIDE;
     virtual void ariaFlowToElements(AccessibilityChildrenVector&) const OVERRIDE;
+    virtual void ariaControlsElements(AccessibilityChildrenVector&) const OVERRIDE;
+    virtual void ariaDescribedbyElements(AccessibilityChildrenVector&) const OVERRIDE;
+    virtual void ariaLabelledbyElements(AccessibilityChildrenVector&) const OVERRIDE;
+    virtual void ariaOwnsElements(AccessibilityChildrenVector&) const OVERRIDE;
+
     virtual bool ariaHasPopup() const OVERRIDE;
     virtual bool ariaRoleHasPresentationalChildren() const OVERRIDE;
     virtual bool isPresentationalChildOfAriaRole() const OVERRIDE;
@@ -227,6 +232,7 @@ private:
     LayoutRect computeElementRect() const;
     VisibleSelection selection() const;
     int indexForVisiblePosition(const VisiblePosition&) const;
+    void accessibilityChildrenFromAttribute(QualifiedName attr, AccessibilityChildrenVector&) const;
 };
 
 DEFINE_AX_OBJECT_TYPE_CASTS(AXRenderObject, isAXRenderObject());

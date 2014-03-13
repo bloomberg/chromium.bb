@@ -935,7 +935,10 @@ AXObject* AXRenderObject::activeDescendant() const
 
     if (m_renderer->node() && !m_renderer->node()->isElementNode())
         return 0;
+
     Element* element = toElement(m_renderer->node());
+    if (!element)
+        return 0;
 
     const AtomicString& activeDescendantAttrStr = element->getAttribute(aria_activedescendantAttr);
     if (activeDescendantAttrStr.isNull() || activeDescendantAttrStr.isEmpty())
@@ -954,19 +957,44 @@ AXObject* AXRenderObject::activeDescendant() const
     return 0;
 }
 
-void AXRenderObject::ariaFlowToElements(AccessibilityChildrenVector& flowTo) const
+void AXRenderObject::accessibilityChildrenFromAttribute(QualifiedName attr, AccessibilityChildrenVector& children) const
 {
     Vector<Element*> elements;
-    elementsFromAttribute(elements, aria_flowtoAttr);
+    elementsFromAttribute(elements, attr);
 
     AXObjectCache* cache = axObjectCache();
     unsigned count = elements.size();
     for (unsigned k = 0; k < count; ++k) {
         Element* element = elements[k];
-        AXObject* flowToElement = cache->getOrCreate(element);
-        if (flowToElement)
-            flowTo.append(flowToElement);
+        AXObject* child = cache->getOrCreate(element);
+        if (child)
+            children.append(child);
     }
+}
+
+void AXRenderObject::ariaFlowToElements(AccessibilityChildrenVector& flowTo) const
+{
+    accessibilityChildrenFromAttribute(aria_flowtoAttr, flowTo);
+}
+
+void AXRenderObject::ariaControlsElements(AccessibilityChildrenVector& controls) const
+{
+    accessibilityChildrenFromAttribute(aria_controlsAttr, controls);
+}
+
+void AXRenderObject::ariaDescribedbyElements(AccessibilityChildrenVector& describedby) const
+{
+    accessibilityChildrenFromAttribute(aria_describedbyAttr, describedby);
+}
+
+void AXRenderObject::ariaLabelledbyElements(AccessibilityChildrenVector& labelledby) const
+{
+    accessibilityChildrenFromAttribute(aria_labelledbyAttr, labelledby);
+}
+
+void AXRenderObject::ariaOwnsElements(AccessibilityChildrenVector& owns) const
+{
+    accessibilityChildrenFromAttribute(aria_ownsAttr, owns);
 }
 
 bool AXRenderObject::ariaHasPopup() const
@@ -1002,25 +1030,21 @@ bool AXRenderObject::isPresentationalChildOfAriaRole() const
 bool AXRenderObject::shouldFocusActiveDescendant() const
 {
     switch (ariaRoleAttribute()) {
+    case ComboBoxRole:
+    case GridRole:
     case GroupRole:
     case ListBoxRole:
     case MenuRole:
     case MenuBarRole:
-    case RadioGroupRole:
-    case RowRole:
+    case OutlineRole:
     case PopUpButtonRole:
     case ProgressIndicatorRole:
+    case RadioGroupRole:
+    case RowRole:
+    case TabListRole:
     case ToolbarRole:
-    case OutlineRole:
     case TreeRole:
-    case GridRole:
-    /* FIXME: replace these with actual roles when they are added to AccessibilityRole
-    composite
-    alert
-    alertdialog
-    status
-    timer
-    */
+    case TreeGridRole:
         return true;
     default:
         return false;

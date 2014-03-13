@@ -414,12 +414,84 @@ WebString WebAXObject::accessKey() const
     return WebString(m_private->accessKey());
 }
 
+WebAXObject WebAXObject::ariaActiveDescendant() const
+{
+    if (isDetached())
+        return WebAXObject();
+
+    return WebAXObject(m_private->activeDescendant());
+}
+
+bool WebAXObject::ariaControls(WebVector<WebAXObject>& controlsElements) const
+{
+    if (isDetached())
+        return false;
+
+    AXObject::AccessibilityChildrenVector controls;
+    m_private->ariaControlsElements(controls);
+
+    WebVector<WebAXObject> result(controls.size());
+    for (size_t i = 0; i < controls.size(); i++)
+        result[i] = WebAXObject(controls[i]);
+    controlsElements.swap(result);
+
+    return true;
+}
+
+bool WebAXObject::ariaDescribedby(WebVector<WebAXObject>& describedbyElements) const
+{
+    if (isDetached())
+        return false;
+
+    AXObject::AccessibilityChildrenVector describedby;
+    m_private->ariaDescribedbyElements(describedby);
+
+    WebVector<WebAXObject> result(describedby.size());
+    for (size_t i = 0; i < describedby.size(); i++)
+        result[i] = WebAXObject(describedby[i]);
+    describedbyElements.swap(result);
+
+    return true;
+}
+
 bool WebAXObject::ariaHasPopup() const
 {
     if (isDetached())
         return 0;
 
     return m_private->ariaHasPopup();
+}
+
+bool WebAXObject::ariaFlowTo(WebVector<WebAXObject>& flowToElements) const
+{
+    if (isDetached())
+        return false;
+
+    AXObject::AccessibilityChildrenVector flowTo;
+    m_private->ariaFlowToElements(flowTo);
+
+    WebVector<WebAXObject> result(flowTo.size());
+    for (size_t i = 0; i < flowTo.size(); i++)
+        result[i] = WebAXObject(flowTo[i]);
+    flowToElements.swap(result);
+
+    return true;
+}
+
+bool WebAXObject::ariaLabelledby(WebVector<WebAXObject>& labelledbyElements) const
+{
+    if (isDetached())
+        return false;
+
+    AXObject::AccessibilityChildrenVector labelledby;
+    m_private->ariaLabelledbyElements(labelledby);
+
+    WebVector<WebAXObject> result(labelledby.size());
+    for (size_t i = 0; i < labelledby.size(); i++)
+        result[i] = WebAXObject(labelledby[i]);
+    labelledbyElements.swap(result);
+
+    return true;
 }
 
 bool WebAXObject::ariaLiveRegionAtomic() const
@@ -452,6 +524,22 @@ WebString WebAXObject::ariaLiveRegionStatus() const
         return WebString();
 
     return m_private->ariaLiveRegionStatus();
+}
+
+bool WebAXObject::ariaOwns(WebVector<WebAXObject>& ownsElements) const
+{
+    if (isDetached())
+        return false;
+
+    AXObject::AccessibilityChildrenVector owns;
+    m_private->ariaOwnsElements(owns);
+
+    WebVector<WebAXObject> result(owns.size());
+    for (size_t i = 0; i < owns.size(); i++)
+        result[i] = WebAXObject(owns[i]);
+    ownsElements.swap(result);
+
+    return true;
 }
 
 WebRect WebAXObject::boundingBoxRect() const
