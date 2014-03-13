@@ -16,13 +16,10 @@
 #include "ash/system/drive/drive_observer.h"
 #include "ash/system/ime/ime_observer.h"
 #include "ash/system/locale/locale_observer.h"
-#include "ash/system/session/logout_button_observer.h"
-#include "ash/system/session/session_length_limit_observer.h"
 #include "ash/system/tray_accessibility.h"
 #include "ash/system/user/update_observer.h"
 #include "ash/system/user/user_observer.h"
 #include "base/observer_list.h"
-#include "base/time/time.h"
 
 #if defined(OS_CHROMEOS)
 #include "ash/system/chromeos/enterprise/enterprise_domain_observer.h"
@@ -30,6 +27,9 @@
 #include "ash/system/chromeos/network/network_portal_detector_observer.h"
 #include "ash/system/chromeos/screen_security/screen_capture_observer.h"
 #include "ash/system/chromeos/screen_security/screen_share_observer.h"
+#include "ash/system/chromeos/session/logout_button_observer.h"
+#include "ash/system/chromeos/session/session_length_limit_observer.h"
+#include "base/time/time.h"
 #endif
 
 namespace ash {
@@ -64,12 +64,6 @@ class ASH_EXPORT SystemTrayNotifier {
   void AddLocaleObserver(LocaleObserver* observer);
   void RemoveLocaleObserver(LocaleObserver* observer);
 
-  void AddLogoutButtonObserver(LogoutButtonObserver* observer);
-  void RemoveLogoutButtonObserver(LogoutButtonObserver* observer);
-
-  void AddSessionLengthLimitObserver(SessionLengthLimitObserver* observer);
-  void RemoveSessionLengthLimitObserver(SessionLengthLimitObserver* observer);
-
   void AddTracingObserver(TracingObserver* observer);
   void RemoveTracingObserver(TracingObserver* observer);
 
@@ -80,6 +74,12 @@ class ASH_EXPORT SystemTrayNotifier {
   void RemoveUserObserver(UserObserver* observer);
 
 #if defined(OS_CHROMEOS)
+  void AddLogoutButtonObserver(LogoutButtonObserver* observer);
+  void RemoveLogoutButtonObserver(LogoutButtonObserver* observer);
+
+  void AddSessionLengthLimitObserver(SessionLengthLimitObserver* observer);
+  void RemoveSessionLengthLimitObserver(SessionLengthLimitObserver* observer);
+
   void AddNetworkObserver(NetworkObserver* observer);
   void RemoveNetworkObserver(NetworkObserver* observer);
 
@@ -113,18 +113,18 @@ class ASH_EXPORT SystemTrayNotifier {
   void NotifySystemClockTimeUpdated();
   void NotifyDriveJobUpdated(const DriveOperationStatus& status);
   void NotifyRefreshIME();
-  void NotifyShowLoginButtonChanged(bool show_login_button);
-  void NotifyLogoutDialogDurationChanged(base::TimeDelta duration);
   void NotifyLocaleChanged(LocaleObserver::Delegate* delegate,
                            const std::string& cur_locale,
                            const std::string& from_locale,
                            const std::string& to_locale);
-  void NotifySessionStartTimeChanged();
-  void NotifySessionLengthLimitChanged();
   void NotifyUpdateRecommended(UpdateObserver::UpdateSeverity severity);
   void NotifyUserUpdate();
   void NotifyUserAddedToSession();
 #if defined(OS_CHROMEOS)
+  void NotifyShowLoginButtonChanged(bool show_login_button);
+  void NotifyLogoutDialogDurationChanged(base::TimeDelta duration);
+  void NotifySessionStartTimeChanged();
+  void NotifySessionLengthLimitChanged();
   void NotifyRequestToggleWifi();
   void NotifyOnCaptivePortalDetected(const std::string& service_path);
   void NotifyEnterpriseDomainChanged();
@@ -148,12 +148,12 @@ class ASH_EXPORT SystemTrayNotifier {
   ObserverList<DriveObserver> drive_observers_;
   ObserverList<IMEObserver> ime_observers_;
   ObserverList<LocaleObserver> locale_observers_;
-  ObserverList<LogoutButtonObserver> logout_button_observers_;
-  ObserverList<SessionLengthLimitObserver> session_length_limit_observers_;
   ObserverList<TracingObserver> tracing_observers_;
   ObserverList<UpdateObserver> update_observers_;
   ObserverList<UserObserver> user_observers_;
 #if defined(OS_CHROMEOS)
+  ObserverList<LogoutButtonObserver> logout_button_observers_;
+  ObserverList<SessionLengthLimitObserver> session_length_limit_observers_;
   ObserverList<NetworkObserver> network_observers_;
   ObserverList<NetworkPortalDetectorObserver>
       network_portal_detector_observers_;

@@ -11,7 +11,6 @@
 #include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
 #include "ash/system/bluetooth/bluetooth_observer.h"
-#include "ash/system/session/logout_button_tray.h"
 #include "ash/system/status_area_widget_delegate.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_delegate.h"
@@ -22,6 +21,7 @@
 #include "ui/gfx/screen.h"
 
 #if defined(OS_CHROMEOS)
+#include "ash/system/chromeos/session/logout_button_tray.h"
 #include "ash/system/chromeos/virtual_keyboard/virtual_keyboard_tray.h"
 #endif
 
@@ -35,8 +35,8 @@ StatusAreaWidget::StatusAreaWidget(aura::Window* status_container)
     : status_area_widget_delegate_(new internal::StatusAreaWidgetDelegate),
       system_tray_(NULL),
       web_notification_tray_(NULL),
-      logout_button_tray_(NULL),
 #if defined(OS_CHROMEOS)
+      logout_button_tray_(NULL),
       virtual_keyboard_tray_(NULL),
 #endif
       login_status_(user::LOGGED_IN_NONE) {
@@ -57,8 +57,8 @@ StatusAreaWidget::~StatusAreaWidget() {
 void StatusAreaWidget::CreateTrayViews() {
   AddSystemTray();
   AddWebNotificationTray();
-  AddLogoutButtonTray();
 #if defined(OS_CHROMEOS)
+  AddLogoutButtonTray();
   AddVirtualKeyboardTray();
 #endif
   SystemTrayDelegate* delegate =
@@ -69,9 +69,9 @@ void StatusAreaWidget::CreateTrayViews() {
     system_tray_->InitializeTrayItems(delegate);
   if (web_notification_tray_)
     web_notification_tray_->Initialize();
+#if defined(OS_CHROMEOS)
   if (logout_button_tray_)
     logout_button_tray_->Initialize();
-#if defined(OS_CHROMEOS)
   if (virtual_keyboard_tray_)
     virtual_keyboard_tray_->Initialize();
 #endif
@@ -82,8 +82,6 @@ void StatusAreaWidget::Shutdown() {
   // Destroy the trays early, causing them to be removed from the view
   // hierarchy. Do not used scoped pointers since we don't want to destroy them
   // in the destructor if Shutdown() is not called (e.g. in tests).
-  delete logout_button_tray_;
-  logout_button_tray_ = NULL;
   delete web_notification_tray_;
   web_notification_tray_ = NULL;
   delete system_tray_;
@@ -91,6 +89,8 @@ void StatusAreaWidget::Shutdown() {
 #if defined(OS_CHROMEOS)
   delete virtual_keyboard_tray_;
   virtual_keyboard_tray_ = NULL;
+  delete logout_button_tray_;
+  logout_button_tray_ = NULL;
 #endif
 }
 
@@ -132,12 +132,12 @@ void StatusAreaWidget::AddWebNotificationTray() {
   status_area_widget_delegate_->AddTray(web_notification_tray_);
 }
 
+#if defined(OS_CHROMEOS)
 void StatusAreaWidget::AddLogoutButtonTray() {
   logout_button_tray_ = new LogoutButtonTray(this);
   status_area_widget_delegate_->AddTray(logout_button_tray_);
 }
 
-#if defined(OS_CHROMEOS)
 void StatusAreaWidget::AddVirtualKeyboardTray() {
   virtual_keyboard_tray_ = new VirtualKeyboardTray(this);
   status_area_widget_delegate_->AddTray(virtual_keyboard_tray_);
@@ -150,9 +150,9 @@ void StatusAreaWidget::SetShelfAlignment(ShelfAlignment alignment) {
     system_tray_->SetShelfAlignment(alignment);
   if (web_notification_tray_)
     web_notification_tray_->SetShelfAlignment(alignment);
+#if defined(OS_CHROMEOS)
   if (logout_button_tray_)
     logout_button_tray_->SetShelfAlignment(alignment);
-#if defined(OS_CHROMEOS)
   if (virtual_keyboard_tray_)
     virtual_keyboard_tray_->SetShelfAlignment(alignment);
 #endif
@@ -173,8 +173,10 @@ void StatusAreaWidget::UpdateAfterLoginStatusChange(
     system_tray_->UpdateAfterLoginStatusChange(login_status);
   if (web_notification_tray_)
     web_notification_tray_->UpdateAfterLoginStatusChange(login_status);
+#if defined(OS_CHROMEOS)
   if (logout_button_tray_)
     logout_button_tray_->UpdateAfterLoginStatusChange(login_status);
+#endif
 }
 
 }  // namespace internal

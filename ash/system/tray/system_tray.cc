@@ -15,7 +15,6 @@
 #include "ash/system/date/tray_date.h"
 #include "ash/system/drive/tray_drive.h"
 #include "ash/system/ime/tray_ime.h"
-#include "ash/system/session/tray_session_length_limit.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_item.h"
@@ -56,6 +55,7 @@
 #include "ash/system/chromeos/power/tray_power.h"
 #include "ash/system/chromeos/screen_security/screen_capture_tray_item.h"
 #include "ash/system/chromeos/screen_security/screen_share_tray_item.h"
+#include "ash/system/chromeos/session/tray_session_length_limit.h"
 #include "ash/system/chromeos/settings/tray_settings.h"
 #include "ash/system/chromeos/tray_caps_lock.h"
 #include "ash/system/chromeos/tray_display.h"
@@ -161,8 +161,10 @@ void SystemTray::InitializeTrayItems(SystemTrayDelegate* delegate) {
 }
 
 void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
-#if !defined(OS_WIN)
+#if defined(OS_CHROMEOS)
   AddTrayItem(new internal::TraySessionLengthLimit(this));
+#endif
+#if !defined(OS_WIN)
   // Create user items for each possible user.
   ash::Shell* shell = ash::Shell::GetInstance();
   int maximum_user_profiles =

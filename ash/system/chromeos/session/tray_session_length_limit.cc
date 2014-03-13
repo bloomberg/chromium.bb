@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/session/tray_session_length_limit.h"
+#include "ash/system/chromeos/session/tray_session_length_limit.h"
 
 #include <algorithm>
 

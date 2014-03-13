@@ -18,9 +18,9 @@ class WebNotificationTray;
 
 namespace internal {
 
-class LogoutButtonTray;
 class StatusAreaWidgetDelegate;
 #if defined(OS_CHROMEOS)
+class LogoutButtonTray;
 class VirtualKeyboardTray;
 #endif
 
@@ -73,8 +73,8 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget {
  private:
   void AddSystemTray();
   void AddWebNotificationTray();
-  void AddLogoutButtonTray();
 #if defined(OS_CHROMEOS)
+  void AddLogoutButtonTray();
   void AddVirtualKeyboardTray();
 #endif
 
@@ -82,8 +82,8 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget {
   internal::StatusAreaWidgetDelegate* status_area_widget_delegate_;
   SystemTray* system_tray_;
   WebNotificationTray* web_notification_tray_;
-  LogoutButtonTray* logout_button_tray_;
 #if defined(OS_CHROMEOS)
+  LogoutButtonTray* logout_button_tray_;
   VirtualKeyboardTray* virtual_keyboard_tray_;
 #endif
   user::LoginStatus login_status_;

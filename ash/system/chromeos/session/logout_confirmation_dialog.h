@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_SESSION_LOGOUT_CONFIRMATION_DIALOG_H_
-#define ASH_SYSTEM_SESSION_LOGOUT_CONFIRMATION_DIALOG_H_
+#ifndef ASH_SYSTEM_CHROMEOS_SESSION_LOGOUT_CONFIRMATION_DIALOG_H_
+#define ASH_SYSTEM_CHROMEOS_SESSION_LOGOUT_CONFIRMATION_DIALOG_H_
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -56,4 +56,4 @@ class LogoutConfirmationDialog : public views::DialogDelegateView {
 }  // namespace internal
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_SESSION_LOGOUT_CONFIRMATION_DIALOG_H_
+#endif  // ASH_SYSTEM_CHROMEOS_SESSION_LOGOUT_CONFIRMATION_DIALOG_H_

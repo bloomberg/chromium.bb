@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/session/logout_button_tray.h"
+#include "ash/system/chromeos/session/logout_button_tray.h"
 
 #include "ash/shelf/shelf_types.h"
 #include "ash/shell.h"
-#include "ash/system/session/logout_confirmation_controller.h"
+#include "ash/system/chromeos/session/logout_confirmation_controller.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"

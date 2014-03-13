@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_SESSION_LOGOUT_BUTTON_OBSERVER_H_
-#define ASH_SYSTEM_SESSION_LOGOUT_BUTTON_OBSERVER_H_
+#ifndef ASH_SYSTEM_CHROMEOS_SESSION_LOGOUT_BUTTON_OBSERVER_H_
+#define ASH_SYSTEM_CHROMEOS_SESSION_LOGOUT_BUTTON_OBSERVER_H_
 
 #include "ash/ash_export.h"
 #include "base/time/time.h"
@@ -27,4 +27,4 @@ class ASH_EXPORT LogoutButtonObserver {
 
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_SESSION_LOGOUT_BUTTON_OBSERVER_H_
+#endif  // ASH_SYSTEM_CHROMEOS_SESSION_LOGOUT_BUTTON_OBSERVER_H_

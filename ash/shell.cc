@@ -48,7 +48,6 @@
 #include "ash/shell_factory.h"
 #include "ash/shell_window_ids.h"
 #include "ash/system/locale/locale_notification_controller.h"
-#include "ash/system/session/logout_confirmation_controller.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
@@ -79,7 +78,6 @@
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace_controller.h"
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/debug/trace_event.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
@@ -132,6 +130,8 @@
 #include "ash/system/chromeos/power/power_status.h"
 #include "ash/system/chromeos/power/user_activity_notifier.h"
 #include "ash/system/chromeos/power/video_activity_notifier.h"
+#include "ash/system/chromeos/session/logout_confirmation_controller.h"
+#include "base/bind_helpers.h"
 #endif  // defined(OS_CHROMEOS)
 
 namespace ash {
@@ -663,8 +663,10 @@ Shell::~Shell() {
   // TODO(xiyuan): Move it back when app list container is no longer needed.
   app_list_controller_.reset();
 
+#if defined(OS_CHROMEOS)
   // Destroy the LogoutConfirmationController before the SystemTrayDelegate.
   logout_confirmation_controller_.reset();
+#endif
 
   // Destroy SystemTrayDelegate before destroying the status area(s).
   system_tray_delegate_->Shutdown();
@@ -958,11 +960,13 @@ void Shell::Init() {
   // Initialize system_tray_delegate_ after StatusAreaWidget is created.
   system_tray_delegate_->Initialize();
 
+#if defined(OS_CHROMEOS)
   // Create the LogoutConfirmationController after the SystemTrayDelegate.
   logout_confirmation_controller_.reset(
       new internal::LogoutConfirmationController(
           base::Bind(&SystemTrayDelegate::SignOut,
                      base::Unretained(system_tray_delegate_.get()))));
+#endif
 
   // TODO(oshima): Initialize all RootWindowControllers once, and
   // initialize controller/delegates above when initializing the

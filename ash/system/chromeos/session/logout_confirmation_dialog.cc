@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/session/logout_confirmation_dialog.h"
+#include "ash/system/chromeos/session/logout_confirmation_dialog.h"
 
 #include "ash/shell.h"
-#include "ash/system/session/logout_confirmation_controller.h"
+#include "ash/system/chromeos/session/logout_confirmation_controller.h"
 #include "ash/system/tray/tray_constants.h"
 #include "base/location.h"
 #include "base/time/tick_clock.h"

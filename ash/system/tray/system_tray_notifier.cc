@@ -77,26 +77,6 @@ void SystemTrayNotifier::RemoveLocaleObserver(LocaleObserver* observer) {
   locale_observers_.RemoveObserver(observer);
 }
 
-void SystemTrayNotifier::AddLogoutButtonObserver(
-    LogoutButtonObserver* observer) {
-  logout_button_observers_.AddObserver(observer);
-}
-
-void SystemTrayNotifier::RemoveLogoutButtonObserver(
-    LogoutButtonObserver* observer) {
-  logout_button_observers_.RemoveObserver(observer);
-}
-
-void SystemTrayNotifier::AddSessionLengthLimitObserver(
-    SessionLengthLimitObserver* observer) {
-  session_length_limit_observers_.AddObserver(observer);
-}
-
-void SystemTrayNotifier::RemoveSessionLengthLimitObserver(
-    SessionLengthLimitObserver* observer) {
-  session_length_limit_observers_.RemoveObserver(observer);
-}
-
 void SystemTrayNotifier::AddTracingObserver(TracingObserver* observer) {
   tracing_observers_.AddObserver(observer);
 }
@@ -122,6 +102,26 @@ void SystemTrayNotifier::RemoveUserObserver(UserObserver* observer) {
 }
 
 #if defined(OS_CHROMEOS)
+
+void SystemTrayNotifier::AddLogoutButtonObserver(
+    LogoutButtonObserver* observer) {
+  logout_button_observers_.AddObserver(observer);
+}
+
+void SystemTrayNotifier::RemoveLogoutButtonObserver(
+    LogoutButtonObserver* observer) {
+  logout_button_observers_.RemoveObserver(observer);
+}
+
+void SystemTrayNotifier::AddSessionLengthLimitObserver(
+    SessionLengthLimitObserver* observer) {
+  session_length_limit_observers_.AddObserver(observer);
+}
+
+void SystemTrayNotifier::RemoveSessionLengthLimitObserver(
+    SessionLengthLimitObserver* observer) {
+  session_length_limit_observers_.RemoveObserver(observer);
+}
 
 void SystemTrayNotifier::AddNetworkObserver(NetworkObserver* observer) {
   network_observers_.AddObserver(observer);
@@ -263,19 +263,6 @@ void SystemTrayNotifier::NotifyRefreshIME() {
                     OnIMERefresh());
 }
 
-void SystemTrayNotifier::NotifyShowLoginButtonChanged(bool show_login_button) {
-  FOR_EACH_OBSERVER(LogoutButtonObserver,
-                    logout_button_observers_,
-                    OnShowLogoutButtonInTrayChanged(show_login_button));
-}
-
-void SystemTrayNotifier::NotifyLogoutDialogDurationChanged(
-    base::TimeDelta duration) {
-  FOR_EACH_OBSERVER(LogoutButtonObserver,
-                    logout_button_observers_,
-                    OnLogoutDialogDurationChanged(duration));
-}
-
 void SystemTrayNotifier::NotifyLocaleChanged(
     LocaleObserver::Delegate* delegate,
     const std::string& cur_locale,
@@ -285,18 +272,6 @@ void SystemTrayNotifier::NotifyLocaleChanged(
       LocaleObserver,
       locale_observers_,
       OnLocaleChanged(delegate, cur_locale, from_locale, to_locale));
-}
-
-void SystemTrayNotifier::NotifySessionStartTimeChanged() {
-  FOR_EACH_OBSERVER(SessionLengthLimitObserver,
-                    session_length_limit_observers_,
-                    OnSessionStartTimeChanged());
-}
-
-void SystemTrayNotifier::NotifySessionLengthLimitChanged() {
-  FOR_EACH_OBSERVER(SessionLengthLimitObserver,
-                    session_length_limit_observers_,
-                    OnSessionLengthLimitChanged());
 }
 
 void SystemTrayNotifier::NotifyUpdateRecommended(
@@ -319,6 +294,31 @@ void SystemTrayNotifier::NotifyUserAddedToSession() {
 }
 
 #if defined(OS_CHROMEOS)
+
+void SystemTrayNotifier::NotifyShowLoginButtonChanged(bool show_login_button) {
+  FOR_EACH_OBSERVER(LogoutButtonObserver,
+                    logout_button_observers_,
+                    OnShowLogoutButtonInTrayChanged(show_login_button));
+}
+
+void SystemTrayNotifier::NotifyLogoutDialogDurationChanged(
+    base::TimeDelta duration) {
+  FOR_EACH_OBSERVER(LogoutButtonObserver,
+                    logout_button_observers_,
+                    OnLogoutDialogDurationChanged(duration));
+}
+
+void SystemTrayNotifier::NotifySessionStartTimeChanged() {
+  FOR_EACH_OBSERVER(SessionLengthLimitObserver,
+                    session_length_limit_observers_,
+                    OnSessionStartTimeChanged());
+}
+
+void SystemTrayNotifier::NotifySessionLengthLimitChanged() {
+  FOR_EACH_OBSERVER(SessionLengthLimitObserver,
+                    session_length_limit_observers_,
+                    OnSessionLengthLimitChanged());
+}
 
 void SystemTrayNotifier::NotifyRequestToggleWifi() {
   FOR_EACH_OBSERVER(NetworkObserver,

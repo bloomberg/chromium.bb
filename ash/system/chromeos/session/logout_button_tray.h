@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_SESSION_LOGOUT_BUTTON_TRAY_H_
-#define ASH_SYSTEM_SESSION_LOGOUT_BUTTON_TRAY_H_
+#ifndef ASH_SYSTEM_CHROMEOS_SESSION_LOGOUT_BUTTON_TRAY_H_
+#define ASH_SYSTEM_CHROMEOS_SESSION_LOGOUT_BUTTON_TRAY_H_
 
 #include "ash/ash_export.h"
-#include "ash/system/session/logout_button_observer.h"
+#include "ash/system/chromeos/session/logout_button_observer.h"
 #include "ash/system/tray/tray_background_view.h"
 #include "ash/system/user/login_status.h"
 #include "base/basictypes.h"
@@ -63,4 +63,4 @@ class ASH_EXPORT LogoutButtonTray : public TrayBackgroundView,
 }  // namespace internal
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_SESSION_LOGOUT_BUTTON_TRAY_H_
+#endif  // ASH_SYSTEM_CHROMEOS_SESSION_LOGOUT_BUTTON_TRAY_H_
