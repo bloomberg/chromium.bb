@@ -39,6 +39,7 @@ function finishRepaintTest()
     internals.stopTrackingRepaints(document);
 
     var pre = document.createElement('pre');
+    pre.style.opacity = 0;  // appear in text dumps, but not images
     document.body.appendChild(pre);
     pre.textContent += repaintRects;
 
