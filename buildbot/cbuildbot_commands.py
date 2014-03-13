@@ -40,7 +40,6 @@ _CHROME_BINHOST = 'CHROME_BINHOST'
 _CROS_ARCHIVE_URL = 'CROS_ARCHIVE_URL'
 _FACTORY_SHIM = 'factory_shim'
 _FACTORY_TEST = 'factory_test'
-_FACTORY_HWID = 'hwid'
 _FULL_BINHOST = 'FULL_BINHOST'
 _PRIVATE_BINHOST_CONF_DIR = ('src/private-overlays/chromeos-partner-overlay/'
                              'chromeos/binhost')
@@ -1663,13 +1662,10 @@ def BuildFactoryZip(buildroot, board, archive_dir, image_root, version=None):
       ['*factory_install*.bin', '*partition*', os.path.join('netboot', '*')],
     os.path.join(image_root, _FACTORY_TEST):
       ['*factory_image*.bin', '*partition*', 'install_factory_toolkit.run'],
-    os.path.join(image_root, _FACTORY_TEST, _FACTORY_HWID):
-      ['*'],
   }
 
   # Special files that must not be included.
   excludes_list = [
-    os.path.join(_FACTORY_TEST, _FACTORY_HWID, '*'),
   ]
 
   for folder, patterns in rules.items():
