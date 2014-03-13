@@ -13,6 +13,18 @@ const char kEnablePixelOutputInTests[] = "enable-pixel-output-in-tests";
 
 const char kUIDisableThreadedCompositing[] = "ui-disable-threaded-compositing";
 
+const char kUIEnableImplSidePainting[] = "ui-enable-impl-side-painting";
+
 const char kUIShowPaintRects[] = "ui-show-paint-rects";
 
 }  // namespace switches
+
+namespace ui {
+
+bool IsUIImplSidePaintingEnabled() {
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+
+  return command_line.HasSwitch(switches::kUIEnableImplSidePainting);
+}
+
+}  // namespace ui

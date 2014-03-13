@@ -243,6 +243,8 @@ Compositor::Compositor(gfx::AcceleratedWidget widget)
   settings.initial_debug_state.SetRecordRenderingStats(
       command_line->HasSwitch(cc::switches::kEnableGpuBenchmarking));
 
+  settings.impl_side_painting = IsUIImplSidePaintingEnabled();
+
   base::TimeTicks before_create = base::TimeTicks::Now();
   if (!!g_compositor_thread) {
     host_ = cc::LayerTreeHost::CreateThreaded(

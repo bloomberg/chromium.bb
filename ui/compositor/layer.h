@@ -71,6 +71,8 @@ class COMPOSITOR_EXPORT Layer
   explicit Layer(LayerType type);
   virtual ~Layer();
 
+  static bool UsingPictureLayer();
+
   // Retrieves the Layer's compositor. The Layer will walk up its parent chain
   // to locate it. Returns NULL if the Layer is not attached to a compositor.
   Compositor* GetCompositor();
@@ -464,7 +466,7 @@ class COMPOSITOR_EXPORT Layer
 
   // Ownership of the layer is held through one of the strongly typed layer
   // pointers, depending on which sort of layer this is.
-  scoped_refptr<cc::ContentLayer> content_layer_;
+  scoped_refptr<cc::Layer> content_layer_;
   scoped_refptr<cc::TextureLayer> texture_layer_;
   scoped_refptr<cc::SolidColorLayer> solid_color_layer_;
   scoped_refptr<cc::DelegatedRendererLayer> delegated_renderer_layer_;

@@ -14,6 +14,7 @@
 #include "cc/base/scoped_ptr_algorithm.h"
 #include "cc/layers/content_layer.h"
 #include "cc/layers/delegated_renderer_layer.h"
+#include "cc/layers/picture_layer.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/layers/texture_layer.h"
 #include "cc/output/copy_output_request.h"
@@ -39,6 +40,15 @@ const ui::Layer* GetRoot(const ui::Layer* layer) {
     layer = layer->parent();
   return layer;
 }
+
+struct UIImplSidePaintingStatus {
+  UIImplSidePaintingStatus()
+      : enabled(ui::IsUIImplSidePaintingEnabled()) {
+  }
+  bool enabled;
+};
+base::LazyInstance<UIImplSidePaintingStatus> g_ui_impl_side_painting_status =
+    LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
@@ -111,6 +121,11 @@ Layer::~Layer() {
     children_[i]->parent_ = NULL;
   cc_layer_->RemoveLayerAnimationEventObserver(this);
   cc_layer_->RemoveFromParent();
+}
+
+// static
+bool Layer::UsingPictureLayer() {
+  return g_ui_impl_side_painting_status.Get().enabled;
 }
 
 Compositor* Layer::GetCompositor() {
@@ -471,7 +486,11 @@ void Layer::SwitchToLayer(scoped_refptr<cc::Layer> new_layer) {
 }
 
 void Layer::SwitchCCLayerForTest() {
-  scoped_refptr<cc::ContentLayer> new_layer = cc::ContentLayer::Create(this);
+  scoped_refptr<cc::Layer> new_layer;
+  if (Layer::UsingPictureLayer())
+    new_layer = cc::PictureLayer::Create(this);
+  else
+    new_layer = cc::ContentLayer::Create(this);
   SwitchToLayer(new_layer);
   content_layer_ = new_layer;
 }
@@ -538,7 +557,11 @@ void Layer::SetShowPaintedContent() {
   if (content_layer_.get())
     return;
 
-  scoped_refptr<cc::ContentLayer> new_layer = cc::ContentLayer::Create(this);
+  scoped_refptr<cc::Layer> new_layer;
+  if (Layer::UsingPictureLayer())
+    new_layer = cc::PictureLayer::Create(this);
+  else
+    new_layer = cc::ContentLayer::Create(this);
   SwitchToLayer(new_layer);
   content_layer_ = new_layer;
 
@@ -884,7 +907,10 @@ void Layer::CreateWebLayer() {
     solid_color_layer_ = cc::SolidColorLayer::Create();
     cc_layer_ = solid_color_layer_.get();
   } else {
-    content_layer_ = cc::ContentLayer::Create(this);
+    if (Layer::UsingPictureLayer())
+      content_layer_ = cc::PictureLayer::Create(this);
+    else
+      content_layer_ = cc::ContentLayer::Create(this);
     cc_layer_ = content_layer_.get();
   }
   cc_layer_->SetAnchorPoint(gfx::PointF());
