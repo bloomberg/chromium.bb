@@ -138,9 +138,6 @@ SelectorChecker::Match SelectorChecker::match(const SelectorCheckingContext& con
         if (context.selector->isCustomPseudoElement()) {
             if (!matchesCustomPseudoElement(context.element, *context.selector))
                 return SelectorFailsLocally;
-        } else if (context.selector->isContentPseudoElement()) {
-            if (!context.element->isInShadowTree() || !context.element->isInsertionPoint())
-                return SelectorFailsLocally;
         } else {
             if ((!context.elementStyle && m_mode == ResolvingStyle) || m_mode == QueryingRules)
                 return SelectorFailsLocally;
@@ -263,6 +260,10 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
             nextContext.elementStyle = 0;
             return match(nextContext, siblingTraversalStrategy, result);
         }
+
+    case CSSSelector::ShadowContent:
+        return matchForShadowDistributed(context.element, siblingTraversalStrategy, nextContext, result);
+
     case CSSSelector::DirectAdjacent:
         if (m_mode == ResolvingStyle) {
             if (Node* parent = context.element->parentElementOrShadowRoot())

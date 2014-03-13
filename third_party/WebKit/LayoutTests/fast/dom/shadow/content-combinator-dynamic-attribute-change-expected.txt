@@ -1,0 +1,6 @@
+PASS window.getComputedStyle(document.querySelector("#host > #child")).color is not "rgb(0, 128, 0)"
+PASS window.getComputedStyle(document.querySelector("#host > #child")).color is "rgb(0, 128, 0)"
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

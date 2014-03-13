@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="resources/shadow-dom.js"></script>
+<script src="../../../resources/js-test.js"></script>
+</head>
+<body>
+  <div id="sandbox"></div>
+  <pre id="console"></pre>
+<script>
+
+function colorOf(node)
+{
+    return document.defaultView.getComputedStyle(node, null).getPropertyValue('color');
+}
+
+function cleanUp()
+{
+    document.getElementById('sandbox').innerHTML = '';
+}
+
+var sandbox = document.getElementById('sandbox');
+sandbox.appendChild(
+    createDOM('div', {'id': 'host'},
+        createShadowRoot(
+            createDOM('content', {'select': '#host-child1'}),
+            createDOM('div', {},
+                createDOM('content', {'select': '#host-child2'}),
+                createDOM('style', {'scoped': 'scoped'},
+                    document.createTextNode('content /content/ div { color: green; }')))),
+        createDOM('div', {'id': 'host-child1'},
+            document.createTextNode('normal')),
+        createDOM('div', {'id': 'host-child2'},
+            document.createTextNode('green'))));
+
+shouldNotBe('colorOf(document.querySelector("#host > div#host-child1"))', '"rgb(0, 128, 0)"');
+shouldBe('colorOf(document.querySelector("#host > div#host-child2"))', '"rgb(0, 128, 0)"');
+
+cleanUp();
+</script>
+</body>
+</html>

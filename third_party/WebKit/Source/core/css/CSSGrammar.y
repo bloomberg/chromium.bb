@@ -1055,6 +1055,8 @@ combinator:
             $$ = CSSSelector::ShadowAll;
         else if ($2.equalIgnoringCase("shadow-deep"))
             $$ = CSSSelector::ShadowDeep;
+        else if ($2.equalIgnoringCase("content"))
+            $$ = CSSSelector::ShadowContent;
         else
             YYERROR;
     }
@@ -1139,8 +1141,6 @@ selector:
         while (end->tagHistory())
             end = end->tagHistory();
         end->setRelation(CSSSelector::Descendant);
-        if ($1->isContentPseudoElement())
-            end->setRelationIsAffectedByPseudoContent();
         end->setTagHistory(parser->sinkFloatingSelector($1));
     }
     | selector combinator simple_selector {
@@ -1149,8 +1149,6 @@ selector:
         while (end->tagHistory())
             end = end->tagHistory();
         end->setRelation($2);
-        if ($1->isContentPseudoElement())
-            end->setRelationIsAffectedByPseudoContent();
         end->setTagHistory(parser->sinkFloatingSelector($1));
     }
     ;

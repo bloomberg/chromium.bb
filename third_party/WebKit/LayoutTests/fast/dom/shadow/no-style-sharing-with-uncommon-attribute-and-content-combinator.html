@@ -1,20 +1,22 @@
 <!doctype html>
 <html>
 <head>
+<script src="../../../resources/js-test.js"></script>
 <script>
 if (window.testRunner)
     testRunner.waitUntilDone();
 
+var shadow;
+
 function runTest() {
-    var shadow = host.createShadowRoot();
-    shadow.applyAuthorStyles = false;
+    shadow = host.createShadowRoot();
     shadow.innerHTML = "<div id='hostInShadow'><div class='parent'><p ishidden='false'>NotHidden</p><p ishidden='true' id='target'>Hidden</p></div></div>";
 
     var innerShadow = shadow.getElementById('hostInShadow').createShadowRoot();
-    innerShadow.applyAuthorStyles = false;
-    innerShadow.innerHTML = "<style>content::content .parent [ishidden=true] { display: none; }</style><content>";
-
+    innerShadow.innerHTML = "<style>content /content/ .parent [ishidden=true] { display: none; }</style><content>";
     window.setTimeout(function() {
+        shouldBe('window.getComputedStyle(shadow.querySelector("#hostInShadow > .parent > p[isHidden=false]")).display', '"block"');
+        shouldBe('window.getComputedStyle(shadow.querySelector("#hostInShadow > .parent > p[isHidden=true]")).display', '"none"');
         if (window.testRunner)
             testRunner.notifyDone();
     }, 0);

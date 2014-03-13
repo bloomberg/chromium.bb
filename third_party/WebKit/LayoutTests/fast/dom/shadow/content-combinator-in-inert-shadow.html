@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="resources/shadow-dom.js"></script>
+<script src="../../../resources/js-test.js"></script>
+</head>
+<body>
+<div id="sandbox"></div>
+<script>
+var borderColor;
+
+function borderColorOf(node)
+{
+    return document.defaultView.getComputedStyle(node, null).getPropertyValue('border-color');
+}
+
+function borderColorShouldNotBe(selector, color)
+{
+    var text = 'borderColorOf(getNodeInTreeOfTrees("' + selector + '"))';
+    var unevaledString = '"' + color.replace(/\\/g, "\\\\").replace(/"/g, "\"") + '"';
+    shouldNotBe(text, unevaledString);
+}
+
+function cleanUp()
+{
+    document.getElementById('sandbox').innerHTML = '';
+}
+
+description('crbug.com/341372: Test for rules with /content/ combinator declared in inert shadow trees');
+
+var sandbox = document.getElementById('sandbox');
+sandbox.appendChild(
+    createDOM('div', {'id': 'host'},
+        createShadowRoot(
+            createDOM('style', {},
+                document.createTextNode('content /content/ div { border: 1px solid red; }'),
+            createDOM('div', {},
+                document.createTextNode('inert')))),
+        createShadowRoot(
+            createDOM('content')),
+        createDOM('div', {'id': 'target'},
+            document.createTextNode('no border'))));
+
+borderColorShouldNotBe('target', 'rgb(255, 0, 0)');
+
+cleanUp();
+</script>
+</body>
+</html>

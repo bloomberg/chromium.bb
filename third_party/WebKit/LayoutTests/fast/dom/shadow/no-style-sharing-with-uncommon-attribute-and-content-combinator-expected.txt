@@ -1,0 +1,6 @@
+PASS successfullyParsed is true
+
+TEST COMPLETE
+PASS window.getComputedStyle(shadow.querySelector("#hostInShadow > .parent > p[isHidden=false]")).display is "block"
+PASS window.getComputedStyle(shadow.querySelector("#hostInShadow > .parent > p[isHidden=true]")).display is "none"
+

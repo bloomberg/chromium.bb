@@ -1,0 +1,10 @@
+crbug.com/341372: Test for rules with /content/ combinator declared in inert shadow trees
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS borderColorOf(getNodeInTreeOfTrees("target")) is not "rgb(255, 0, 0)"
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

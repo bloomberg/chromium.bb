@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>/content/ combinator with dynamic attribute change</title>
+<script src="resources/shadow-dom.js"></script>
+<script src="../../../resources/js-test.js"></script>
+</head>
+<body>
+<div id="sandbox">
+</div>
+<pre id="console"></pre>
+<script>
+var sandbox = document.getElementById('sandbox');
+sandbox.appendChild(
+    createDOM('div', {'id': 'host'},
+        createShadowRoot(
+            createDOM('style', {},
+                document.createTextNode('content /content/ .selected { color: green; }')),
+            createDOM('content')),
+        createDOM('div', {'id': 'child'},
+            document.createTextNode('I should be green.'))));
+shouldNotBe('window.getComputedStyle(document.querySelector("#host > #child")).color', '"rgb(0, 128, 0)"');
+document.body.offsetLeft;
+
+document.getElementById('child').classList.add('selected');
+shouldBe('window.getComputedStyle(document.querySelector("#host > #child")).color', '"rgb(0, 128, 0)"');
+
+sandbox.innerHTML = '';
+</script>
+</body>
+</html>

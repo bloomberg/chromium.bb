@@ -162,6 +162,10 @@ void SelectorFilter::collectIdentifierHashes(const CSSSelector& selector, unsign
             skipOverSubselectors = false;
             collectDescendantSelectorIdentifierHashes(*current, hash);
             break;
+        case CSSSelector::ShadowContent:
+            // Disable fastRejectSelector.
+            *identifierHashes = 0;
+            return;
         }
         if (hash == end)
             return;

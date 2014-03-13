@@ -1934,9 +1934,6 @@ CSSParserSelector* BisonCSSParser::rewriteSpecifiersWithElementName(const Atomic
     if (specifiers->needsCrossingTreeScopeBoundary())
         return rewriteSpecifiersWithElementNameForCustomPseudoElement(tag, elementName, specifiers, tagIsForNamespaceRule);
 
-    if (specifiers->isContentPseudoElement())
-        return rewriteSpecifiersWithElementNameForContentPseudoElement(tag, elementName, specifiers, tagIsForNamespaceRule);
-
     if (tag == anyQName())
         return specifiers;
     if (!(specifiers->pseudoType() == CSSSelector::PseudoCue))
@@ -1977,7 +1974,7 @@ CSSParserSelector* BisonCSSParser::rewriteSpecifiersWithElementNameForContentPse
     CSSParserSelector* history = specifiers;
     while (history->tagHistory()) {
         history = history->tagHistory();
-        if (history->isContentPseudoElement() || history->relationIsAffectedByPseudoContent())
+        if (history->relationIsAffectedByPseudoContent())
             last = history;
     }
 
@@ -2030,17 +2027,9 @@ CSSParserSelector* BisonCSSParser::rewriteSpecifiers(CSSParserSelector* specifie
         newSpecifier->appendTagHistory(CSSSelector::ShadowPseudo, sinkFloatingSelector(specifiers));
         return newSpecifier;
     }
-    if (newSpecifier->isContentPseudoElement()) {
-        newSpecifier->appendTagHistory(CSSSelector::SubSelector, sinkFloatingSelector(specifiers));
-        return newSpecifier;
-    }
     if (specifiers->needsCrossingTreeScopeBoundary()) {
         // Specifiers for unknown pseudo element go right behind it in the chain.
         specifiers->insertTagHistory(CSSSelector::SubSelector, sinkFloatingSelector(newSpecifier), CSSSelector::ShadowPseudo);
-        return specifiers;
-    }
-    if (specifiers->isContentPseudoElement()) {
-        specifiers->insertTagHistory(CSSSelector::SubSelector, sinkFloatingSelector(newSpecifier), CSSSelector::SubSelector);
         return specifiers;
     }
     specifiers->appendTagHistory(CSSSelector::SubSelector, sinkFloatingSelector(newSpecifier));

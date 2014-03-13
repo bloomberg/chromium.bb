@@ -132,7 +132,8 @@ namespace WebCore {
             // FIXME: implement named combinator and replace the following /shadow/, /shadow-all/ and
             // /shadow-deep/ with named combinator's implementation.
             ShadowAll,
-            ShadowDeep
+            ShadowDeep,
+            ShadowContent // /content/ for shadow styling
         };
 
         enum PseudoType {
@@ -216,7 +217,6 @@ namespace WebCore {
             PseudoPastCue,
             PseudoDistributed,
             PseudoUnresolved,
-            PseudoContent,
             PseudoHost,
             PseudoAncestor
         };
@@ -288,7 +288,6 @@ namespace WebCore {
         bool isSiblingSelector() const;
         bool isAttributeSelector() const;
         bool isDistributedPseudoElement() const;
-        bool isContentPseudoElement() const;
         bool isHostPseudoClass() const;
 
         // FIXME: selectors with no tagHistory() get a relation() of Descendant. It should instead be
@@ -309,7 +308,7 @@ namespace WebCore {
         bool relationIsAffectedByPseudoContent() const { return m_relationIsAffectedByPseudoContent; }
         void setRelationIsAffectedByPseudoContent() { m_relationIsAffectedByPseudoContent = true; }
 
-        unsigned m_relation           : 3; // enum Relation
+        unsigned m_relation           : 4; // enum Relation
         mutable unsigned m_match      : 4; // enum Match
         mutable unsigned m_pseudoType : 8; // PseudoType
 
@@ -417,11 +416,6 @@ inline bool CSSSelector::isAttributeSelector() const
 inline bool CSSSelector::isDistributedPseudoElement() const
 {
     return m_match == PseudoElement && pseudoType() == PseudoDistributed;
-}
-
-inline bool CSSSelector::isContentPseudoElement() const
-{
-    return m_match == PseudoElement && pseudoType() == PseudoContent;
 }
 
 inline void CSSSelector::setValue(const AtomicString& value)

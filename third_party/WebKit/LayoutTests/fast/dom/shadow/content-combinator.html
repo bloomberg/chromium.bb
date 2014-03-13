@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="resources/shadow-dom.js"></script>
+<script src="../../../resources/js-test.js"></script>
+</head>
+<body>
+  <div id="sandbox"></div>
+  <pre id="console"></pre>
+<script>
+
+function colorOf(selector)
+{
+    return document.defaultView.getComputedStyle(document.querySelector(selector), null).getPropertyValue('color');
+}
+
+function colorOfNodeInTreeOfTrees(selector)
+{
+    return document.defaultView.getComputedStyle(getNodeInTreeOfTrees(selector), null).getPropertyValue('color');
+}
+
+function cleanUp()
+{
+    document.getElementById('sandbox').innerHTML = '';
+}
+
+var sandbox = document.getElementById('sandbox');
+
+// From content-pseudo-element.html
+sandbox.appendChild(
+    createDOM('div', {'id': 'host'},
+        createShadowRoot(
+            createDOM('style', {},
+                document.createTextNode('content /content/ div { color: green; }')),
+            createDOM('content')),
+        createDOM('div', {},
+            document.createTextNode('green'))));
+
+shouldBe('colorOf("#host > div")', '"rgb(0, 128, 0)"');
+
+cleanUp();
+
+// From content-pseudo-element-used-in-selector-list.html
+sandbox.appendChild(
+    createDOM('div', {'id': 'host'},
+        createShadowRoot(
+            createDOM('style', {},
+                document.createTextNode('content /content/ div, p { color: green; }')),
+            createDOM('content'),
+            createDOM('p', {'id': 'p-in-shadow'},
+                document.createTextNode('green'))),
+        createDOM('div', {},
+            document.createTextNode('green')),
+        createDOM('p', {'class': 'hello'},
+            document.createTextNode('normal'))));
+
+shouldBe('colorOf("#host > div")', '"rgb(0, 128, 0)"');
+shouldBe('colorOfNodeInTreeOfTrees("host/p-in-shadow")', '"rgb(0, 128, 0)"');
+shouldNotBe('colorOf("#host > p")', '"rgb(0, 128, 0)"');
+
+cleanUp();
+
+// From content-pseudo-element-support-selector.html
+sandbox.appendChild(
+    createDOM('div', {'id': 'host'},
+        createShadowRoot(
+            createDOM('style', {},
+                document.createTextNode('content /content/ div.hello div { color: green; }')),
+            createDOM('content')),
+        createDOM('div', {'class': 'hello'},
+            document.createTextNode('normal'),
+                createDOM('div', {},
+                    document.createTextNode('green'))),
+        createDOM('div', {},
+            document.createTextNode('normal'),
+                createDOM('div', {},
+                    document.createTextNode('normal')))));
+
+shouldBe('colorOf("#host > div.hello > div")', '"rgb(0, 128, 0)"');
+shouldNotBe('colorOf("#host > div:not(.hello) > div")', '"rgb(0, 128, 0)"');
+cleanUp();
+
+// From content-pseudo-element-reprojection.html
+sandbox.appendChild(
+    createDOM('div', {'id': 'host'},
+        createShadowRoot(
+            createDOM('div', {'id': 'host2'},
+                createShadowRoot(
+                    createDOM('style', {},
+                        document.createTextNode('content /content/ .foo { color: green; }')),
+                    createDOM('content', {'select': '.foo'})),
+                createDOM('content'))),
+        createDOM('div', {'class': 'foo'},
+            document.createTextNode('green'))));
+
+shouldBe('colorOf("#host > div.foo")', '"rgb(0, 128, 0)"');
+cleanUp();
+
+// From content-pseudo-element-match-all.html
+sandbox.appendChild(
+    createDOM('div', {'id': 'host'},
+        createShadowRoot(
+            createDOM('style', {},
+                document.createTextNode('content /content/ .hello { color: green; }')),
+            createDOM('content')),
+        createDOM('div', {'class': 'hello', 'id': 'first-child'},
+            document.createTextNode('green')),
+        createDOM('div', {'class': 'hello', 'id': 'last-child'},
+            document.createTextNode('green'))));
+
+shouldBe('colorOf("#host > div.hello#first-child")', '"rgb(0, 128, 0)"');
+shouldBe('colorOf("#host > div.hello#last-child")', '"rgb(0, 128, 0)"');
+
+cleanUp();
+
+// From content-pseudo-element-match-descendant.html
+sandbox.appendChild(
+    createDOM('div', {'id': 'host'},
+        createShadowRoot(
+            createDOM('style',
+                document.createTextNode('content /content/ div { color: red; }')),
+            createDOM('content')),
+        createDOM('p', {},
+            createDOM('div', {},
+                document.createTextNode('not red')))));
+
+shouldNotBe('colorOf("#host > p > div")', '"rgb(255, 0, 0)"');
+cleanUp();
+
+// From content-pseudo-element-for-shadow-element.html
+sandbox.appendChild(
+    createDOM('div', {'id': 'host'},
+        createShadowRoot(
+            createDOM('div', {'id': 'target'},
+                document.createTextNode('green'))),
+        createShadowRoot(
+            createDOM('style', {},
+                document.createTextNode('shadow /content/ div { color: green; }')),
+            createDOM('shadow'))));
+
+shouldBe('colorOfNodeInTreeOfTrees("host/target")', '"rgb(0, 128, 0)"');
+cleanUp();
+
+// From content-pseudo-element-with-any.html
+sandbox.appendChild(
+    createDOM('div', {'id': 'host'},
+        createShadowRoot(
+            createDOM('style', {},
+                document.createTextNode('* /content/ div { color: green; }')),
+            createDOM('div', {'id': 'div-in-shadow'},
+                document.createTextNode('normal')),
+            createDOM('content')),
+        createDOM('div', {},
+            document.createTextNode('green'))));
+
+shouldBe('colorOf("#host > div")', '"rgb(0, 128, 0)"');
+shouldNotBe('colorOfNodeInTreeOfTrees("host/div-in-shadow")', '"rgb(0, 128, 0)"');
+cleanUp();
+
+sandbox.appendChild(
+    createDOM('div', {'id': 'host'},
+        createShadowRoot(
+            createDOM('style', {},
+                document.createTextNode('content /content/ * { color: green; }')),
+            createDOM('div', {'id': 'div-in-shadow'},
+                document.createTextNode('normal')),
+        createDOM('content')),
+    createDOM('div', {},
+        document.createTextNode('green'))));
+
+shouldBe('colorOf("#host > div")', '"rgb(0, 128, 0)"');
+shouldNotBe('colorOfNodeInTreeOfTrees("host/div-in-shadow")', '"rgb(0, 128, 0)"');
+cleanUp();
+
+sandbox.appendChild(
+    createDOM('div', {'id': 'host'},
+        createShadowRoot(
+            createDOM('style', {},
+                document.createTextNode('* /content/ * { color: green; }')),
+            createDOM('div', {'id': 'div-in-shadow'},
+                document.createTextNode('normal')),
+        createDOM('content')),
+    createDOM('div', {},
+        document.createTextNode('green'))));
+
+shouldBe('colorOf("#host > div")', '"rgb(0, 128, 0)"');
+shouldNotBe('colorOfNodeInTreeOfTrees("host/div-in-shadow")', '"rgb(0, 128, 0)"');
+cleanUp();
+
+// from content-pseudo-element-overriden-2.html / crbug.com/274059
+// Compare rules from a style in a shadow tree with ::content in a different shadow tree.');
+sandbox.appendChild(
+    createDOM('div', {'id': 'host'},
+        createShadowRoot(
+            createDOM('style', {},
+                document.createTextNode('content /content/ * { color: green; }')),
+            createDOM('content', {})),
+        createDOM('div', {'id': 'hostChild', 'class': 'contentClass'},
+            createShadowRoot(
+                createDOM('style', {},
+                    document.createTextNode(':host { color: red; }')),
+                createDOM('span', {},
+                    document.createTextNode('Hello'))))));
+shouldBe('colorOfNodeInTreeOfTrees("hostChild")', '"rgb(0, 128, 0)"');
+cleanUp();
+
+// from content-pseudo-element-overriden.html
+// crbug.com/274059.
+// Should be able to override ::content styles in shadow root style sheet from the document.
+sandbox.appendChild(
+    createDOM('div', {},
+        createDOM('style', {},
+            document.createTextNode('.contentClass { color: green; }')),
+        createDOM('div', {'id': 'host', 'class': 'hostClass'},
+            createShadowRoot(
+                createDOM('style', {},
+                    document.createTextNode('content /content/ * { color: red; }')),
+                createDOM('content')),
+            createDOM('div', {'class': 'contentClass'},
+                document.createTextNode('content')))));
+shouldBe('colorOf(".contentClass")', '"rgb(0, 128, 0)"');
+cleanUp();
+</script>
+</body>
+</html>

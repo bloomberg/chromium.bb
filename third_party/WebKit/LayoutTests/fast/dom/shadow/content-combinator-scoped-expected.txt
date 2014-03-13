@@ -1,0 +1,6 @@
+PASS colorOf(document.querySelector("#host > div#host-child1")) is not "rgb(0, 128, 0)"
+PASS colorOf(document.querySelector("#host > div#host-child2")) is "rgb(0, 128, 0)"
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

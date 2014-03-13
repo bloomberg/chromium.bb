@@ -9,9 +9,14 @@
   <pre id="console"></pre>
 </body>
 <script>
-description("Test for ::content with /shadow-deep/ and :host.");
+description("Test for /content/ with /shadow-all/ and :host.");
 
 var sandbox = document.getElementById('sandbox');
+
+function colorOf(selector)
+{
+    return document.defaultView.getComputedStyle(document.querySelector(selector), null).getPropertyValue('color');
+}
 
 function cleanUp()
 {
@@ -23,7 +28,7 @@ sandbox.appendChild(
         createShadowRoot(
             createDOM('style', {},
                 document.createTextNode(
-                    ':host(#host1) /shadow-deep/ #content1::content > .content { color: green; }')),
+                    ':host(#host1) /shadow-all/ #content1 /content/ .content { color: green; }')),
             createDOM('div', {},
                 createDOM('div', {'id': 'host2'},
                     createShadowRoot(
@@ -33,7 +38,7 @@ sandbox.appendChild(
         createDOM('div', {'class': 'content'},
             document.createTextNode('content'))));
 
-shouldBe('window.getComputedStyle(document.querySelector("#host1 > .content")).color', '"rgb(0, 128, 0)"');
+shouldBe('colorOf("#host1 > .content")', '"rgb(0, 128, 0)"');
 
 cleanUp();
 
@@ -42,7 +47,7 @@ sandbox.appendChild(
         createShadowRoot(
             createDOM('style', {},
                 document.createTextNode(
-                    '#host2 /shadow-deep/ #content2::content > #parentOfContent1 > #content1::content > .content { color: green; }')),
+                    '#host2 /shadow-all/ #content2 /content/ #parentOfContent1 > #content1 /content/ .content { color: green; }')),
             createDOM('div', {},
                 createDOM('div', {'id': 'host2'},
                     createShadowRoot(
@@ -52,7 +57,7 @@ sandbox.appendChild(
         createDOM('div', {'class': 'content'},
             document.createTextNode('content'))));
 
-shouldBe('window.getComputedStyle(document.querySelector("#host1 > .content")).color', '"rgb(0, 128, 0)"');
+shouldBe('colorOf("#host1 > .content")', '"rgb(0, 128, 0)"');
 
 cleanUp();
 
@@ -61,8 +66,7 @@ sandbox.appendChild(
         createShadowRoot(
             createDOM('style', {},
                 document.createTextNode(
-                    ':host /shadow-deep/ #content2::content > #parentOfShadow1 > #shadow1::content > .content { color: green; }' +
-                    ':host /shadow-deep/ #content2::content > #shadow1::content > #content1::content > .content { color: red; }')),
+                    ':host /shadow-all/ #content2 /content/ #shadow1 /content/ #content1 /content/ .content { color: red; }')),
             createDOM('content', {'id': 'content1'})),
         createShadowRoot(
             createDOM('div', {},
@@ -70,12 +74,11 @@ sandbox.appendChild(
                     createShadowRoot(
                         createDOM('content', {'id': 'content2'})),
                     createDOM('div', {'id': 'parentOfShadow1'},
-                        createDOM('shadow', {'id': 'shadow1'},
-                                  createDOM('content', {})))))),
+                        createDOM('shadow', {'id': 'shadow1'}))))),
         createDOM('div', {'class': 'content'},
             document.createTextNode('content'))));
 
-shouldBe('window.getComputedStyle(document.querySelector("#host1 > .content")).color', '"rgb(0, 128, 0)"');
+shouldNotBe('colorOf("#host1 > .content")', '"rgb(255, 0, 0)"');
 
 cleanUp();
 
@@ -84,29 +87,7 @@ sandbox.appendChild(
         createShadowRoot(
             createDOM('style', {},
                 document.createTextNode(
-                    ':host /shadow-deep/ :host > #content2::content > #shadow1::content > #content1::content > .content { color: red; }')),
-            createDOM('content', {'id': 'content1'})),
-        createShadowRoot(
-            createDOM('div', {},
-                createDOM('div', {'id': 'host2'},
-                    createShadowRoot(
-                        createDOM('content', {'id': 'content2'})),
-                    createDOM('div', {'id': 'parentOfShadow1'},
-                        createDOM('shadow', {'id': 'shadow1'},
-                                  createDOM('content', {})))))),
-        createDOM('div', {'class': 'content'},
-            document.createTextNode('content'))));
-
-shouldNotBe('window.getComputedStyle(document.querySelector("#host1 > .content")).color', '"rgb(255, 0, 0)"');
-
-cleanUp();
-
-sandbox.appendChild(
-    createDOM('div', {'id': 'host1'},
-        createShadowRoot(
-            createDOM('style', {},
-                document.createTextNode(
-                    ':host /shadow-deep/ #content2::content > #parentOfContent1 > #content1::content > .content { color: green; }')),
+                    ':host /shadow-all/ #content2 /content/ #parentOfContent1 > #content1 /content/ .content { color: red; }')),
             createDOM('div', {},
                 createDOM('div', {'id': 'host2'},
                     createShadowRoot(
@@ -116,7 +97,7 @@ sandbox.appendChild(
         createDOM('div', {'class': 'content'},
             document.createTextNode('content'))));
 
-shouldBe('window.getComputedStyle(document.querySelector("#host1 > .content")).color', '"rgb(0, 128, 0)"');
+shouldNotBe('colorOf("#host1 > .content")', '"rgb(255, 0, 0)"');
 
 cleanUp();
 

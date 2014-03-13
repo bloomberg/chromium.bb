@@ -1,0 +1,23 @@
+PASS colorOf("#host > div") is "rgb(0, 128, 0)"
+PASS colorOf("#host > div") is "rgb(0, 128, 0)"
+PASS colorOfNodeInTreeOfTrees("host/p-in-shadow") is "rgb(0, 128, 0)"
+PASS colorOf("#host > p") is not "rgb(0, 128, 0)"
+PASS colorOf("#host > div.hello > div") is "rgb(0, 128, 0)"
+PASS colorOf("#host > div:not(.hello) > div") is not "rgb(0, 128, 0)"
+PASS colorOf("#host > div.foo") is "rgb(0, 128, 0)"
+PASS colorOf("#host > div.hello#first-child") is "rgb(0, 128, 0)"
+PASS colorOf("#host > div.hello#last-child") is "rgb(0, 128, 0)"
+PASS colorOf("#host > p > div") is not "rgb(255, 0, 0)"
+PASS colorOfNodeInTreeOfTrees("host/target") is "rgb(0, 128, 0)"
+PASS colorOf("#host > div") is "rgb(0, 128, 0)"
+PASS colorOfNodeInTreeOfTrees("host/div-in-shadow") is not "rgb(0, 128, 0)"
+PASS colorOf("#host > div") is "rgb(0, 128, 0)"
+PASS colorOfNodeInTreeOfTrees("host/div-in-shadow") is not "rgb(0, 128, 0)"
+PASS colorOf("#host > div") is "rgb(0, 128, 0)"
+PASS colorOfNodeInTreeOfTrees("host/div-in-shadow") is not "rgb(0, 128, 0)"
+PASS colorOfNodeInTreeOfTrees("hostChild") is "rgb(0, 128, 0)"
+PASS colorOf(".contentClass") is "rgb(0, 128, 0)"
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

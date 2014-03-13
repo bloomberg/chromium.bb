@@ -252,7 +252,6 @@ PseudoId CSSSelector::pseudoId(PseudoType type)
     case PseudoPastCue:
     case PseudoDistributed:
     case PseudoUnresolved:
-    case PseudoContent:
     case PseudoHost:
     case PseudoAncestor:
     case PseudoFullScreen:
@@ -346,7 +345,6 @@ static HashMap<StringImpl*, CSSSelector::PseudoType>* nameToPseudoTypeMap()
     DEFINE_STATIC_LOCAL(AtomicString, outOfRange, ("out-of-range", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(AtomicString, scope, ("scope", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(AtomicString, unresolved, ("unresolved", AtomicString::ConstructFromLiteral));
-    DEFINE_STATIC_LOCAL(AtomicString, content, ("content", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(AtomicString, host, ("host", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(AtomicString, hostWithParams, ("host(", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(AtomicString, ancestor, ("ancestor", AtomicString::ConstructFromLiteral));
@@ -435,7 +433,6 @@ static HashMap<StringImpl*, CSSSelector::PseudoType>* nameToPseudoTypeMap()
             nameToPseudoType->set(hostWithParams.impl(), CSSSelector::PseudoHost);
             nameToPseudoType->set(ancestor.impl(), CSSSelector::PseudoAncestor);
             nameToPseudoType->set(ancestorWithParams.impl(), CSSSelector::PseudoAncestor);
-            nameToPseudoType->set(content.impl(), CSSSelector::PseudoContent);
         }
     }
     return nameToPseudoType;
@@ -519,7 +516,6 @@ void CSSSelector::extractPseudoType() const
     case PseudoSelection:
     case PseudoUserAgentCustomElement:
     case PseudoWebKitCustomElement:
-    case PseudoContent:
         element = true;
         break;
     case PseudoUnknown:
@@ -701,11 +697,6 @@ String CSSSelector::selectorText(const String& rightSide) const
         } else if (cs->m_match == CSSSelector::PseudoElement) {
             str.appendLiteral("::");
             str.append(cs->value());
-
-            if (cs->pseudoType() == PseudoContent) {
-                if (cs->relation() == CSSSelector::SubSelector && cs->tagHistory())
-                    return cs->tagHistory()->selectorText() + str.toString() + rightSide;
-            }
         } else if (cs->isAttributeSelector()) {
             str.append('[');
             const AtomicString& prefix = cs->attribute().prefix();
@@ -753,11 +744,11 @@ String CSSSelector::selectorText(const String& rightSide) const
     if (const CSSSelector* tagHistory = cs->tagHistory()) {
         switch (cs->relation()) {
         case CSSSelector::Descendant:
-            if (cs->relationIsAffectedByPseudoContent() && tagHistory->pseudoType() != CSSSelector::PseudoContent)
+            if (cs->relationIsAffectedByPseudoContent())
                 return tagHistory->selectorText("::-webkit-distributed(" + str.toString() + rightSide + ")");
             return tagHistory->selectorText(" " + str.toString() + rightSide);
         case CSSSelector::Child:
-            if (cs->relationIsAffectedByPseudoContent() && tagHistory->pseudoType() != CSSSelector::PseudoContent)
+            if (cs->relationIsAffectedByPseudoContent())
                 return tagHistory->selectorText("::-webkit-distributed(> " + str.toString() + rightSide + ")");
             return tagHistory->selectorText(" > " + str.toString() + rightSide);
         case CSSSelector::ShadowAll:
@@ -772,6 +763,8 @@ String CSSSelector::selectorText(const String& rightSide) const
             ASSERT_NOT_REACHED();
         case CSSSelector::ShadowPseudo:
             return tagHistory->selectorText(str.toString() + rightSide);
+        case CSSSelector::ShadowContent:
+            return tagHistory->selectorText(" /content/ " + str.toString() + rightSide);
         }
     }
     return str.toString() + rightSide;

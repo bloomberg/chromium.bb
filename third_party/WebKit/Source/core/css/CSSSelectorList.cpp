@@ -186,7 +186,7 @@ class SelectorHasCombinatorCrossingTreeBoundary {
 public:
     bool operator()(const CSSSelector& selector)
     {
-        return selector.relation() == CSSSelector::ShadowAll || selector.relation() == CSSSelector::ShadowDeep;
+        return selector.relation() == CSSSelector::ShadowAll || selector.relation() == CSSSelector::ShadowDeep || selector.relation() == CSSSelector::ShadowContent;
     }
 };
 
