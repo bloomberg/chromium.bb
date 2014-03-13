@@ -44,9 +44,6 @@ class CONTENT_EXPORT DOMStorageContextWrapper :
       RecreateSessionStorage(const std::string& persistent_id) OVERRIDE;
   virtual void StartScavengingUnusedSessionStorage() OVERRIDE;
 
-  // Called to free up memory that's not strictly needed.
-  void PurgeMemory();
-
   // Used by content settings to alter the behavior around
   // what data to keep and what data to discard at shutdown.
   // The policy is not so straight forward to describe, see

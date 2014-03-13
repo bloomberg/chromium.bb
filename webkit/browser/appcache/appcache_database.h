@@ -83,7 +83,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheDatabase {
   explicit AppCacheDatabase(const base::FilePath& path);
   ~AppCacheDatabase();
 
-  void CloseConnection();
   void Disable();
   bool is_disabled() const { return is_disabled_; }
   bool was_corruption_detected() const { return was_corruption_detected_; }

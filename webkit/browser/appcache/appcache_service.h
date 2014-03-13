@@ -16,7 +16,6 @@
 #include "base/timer/timer.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
-#include "webkit/browser/appcache/appcache_storage.h"
 #include "webkit/browser/quota/quota_manager_proxy.h"
 #include "webkit/browser/webkit_storage_browser_export.h"
 #include "webkit/common/appcache/appcache_interfaces.h"
@@ -40,6 +39,7 @@ class AppCacheBackendImpl;
 class AppCacheExecutableHandlerFactory;
 class AppCacheQuotaClient;
 class AppCachePolicy;
+class AppCacheStorage;
 
 // Refcounted container to avoid copying the collection in callbacks.
 struct WEBKIT_STORAGE_BROWSER_EXPORT AppCacheInfoCollection
@@ -104,12 +104,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheService {
   // For use in catastrophic failure modes to reboot the appcache system
   // without relaunching the browser.
   void ScheduleReinitialize();
-
-  // Purges any memory not needed.
-  void PurgeMemory() {
-    if (storage_)
-      storage_->PurgeMemory();
-  }
 
   // Determines if a request for 'url' can be satisfied while offline.
   // This method always completes asynchronously.

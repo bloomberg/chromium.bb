@@ -82,7 +82,6 @@ TEST_F(DOMStorageContextImplTest, Basics) {
   EXPECT_EQ(temp_dir_.path(), context_->localstorage_directory());
   EXPECT_EQ(base::FilePath(), context_->sessionstorage_directory());
   EXPECT_EQ(storage_policy_.get(), context_->special_storage_policy_.get());
-  context_->PurgeMemory();
   context_->DeleteLocalStorage(GURL("http://chromium.org/"));
   const int kFirstSessionStorageNamespaceId = 1;
   EXPECT_TRUE(context_->GetStorageNamespace(kLocalStorageNamespaceId));

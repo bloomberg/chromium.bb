@@ -117,7 +117,6 @@ class CONTENT_EXPORT DOMStorageContextImpl
   void GetSessionStorageUsage(std::vector<SessionStorageUsageInfo>* infos);
   void DeleteLocalStorage(const GURL& origin);
   void DeleteSessionStorage(const SessionStorageUsageInfo& usage_info);
-  void PurgeMemory();
 
   // Used by content settings to alter the behavior around
   // what data to keep and what data to discard at shutdown.

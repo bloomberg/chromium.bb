@@ -59,7 +59,6 @@ class MockAppCacheStorage : public AppCacheStorage {
   virtual void DeleteResponses(
       const GURL& manifest_url,
       const std::vector<int64>& response_ids) OVERRIDE;
-  virtual void PurgeMemory() OVERRIDE {}
 
  private:
   friend class AppCacheRequestHandlerTest;

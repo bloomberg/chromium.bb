@@ -173,8 +173,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheStorage {
   virtual void DeleteResponses(
       const GURL& manifest_url, const std::vector<int64>& response_ids) = 0;
 
-  virtual void PurgeMemory() = 0;
-
   // Generates unique storage ids for different object types.
   int64 NewCacheId() {
     return ++last_cache_id_;

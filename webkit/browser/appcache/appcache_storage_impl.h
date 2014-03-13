@@ -64,7 +64,6 @@ class AppCacheStorageImpl : public AppCacheStorage {
                              const std::vector<int64>& response_ids) OVERRIDE;
   virtual void DeleteResponses(const GURL& manifest_url,
                                const std::vector<int64>& response_ids) OVERRIDE;
-  virtual void PurgeMemory() OVERRIDE;
 
  private:
   // The AppCacheStorageImpl class methods and datamembers may only be
@@ -72,7 +71,6 @@ class AppCacheStorageImpl : public AppCacheStorage {
   // which access the DB on a seperate background thread.
   class DatabaseTask;
   class InitTask;
-  class CloseConnectionTask;
   class DisableDatabaseTask;
   class GetAllInfoTask;
   class StoreOrLoadTask;

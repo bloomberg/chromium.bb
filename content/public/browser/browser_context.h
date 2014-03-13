@@ -87,9 +87,6 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   // across the next restart.
   static void SaveSessionState(BrowserContext* browser_context);
 
-  // Tells the HTML5 objects on this context to purge any uneeded memory.
-  static void PurgeMemory(BrowserContext* browser_context);
-
   virtual ~BrowserContext();
 
   // Returns the path of the directory where this context's data is stored.

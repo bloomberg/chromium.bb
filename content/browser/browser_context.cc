@@ -5,12 +5,9 @@
 #include "content/public/browser/browser_context.h"
 
 #if !defined(OS_IOS)
-#include "content/browser/appcache/chrome_appcache_service.h"
-#include "content/browser/dom_storage/dom_storage_context_wrapper.h"
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
-#include "content/browser/storage_partition_impl.h"
 #include "content/browser/storage_partition_impl_map.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/public/browser/browser_thread.h"
@@ -68,12 +65,6 @@ StoragePartition* GetStoragePartitionFromConfig(
   return partition_map->Get(partition_domain, partition_name, in_memory);
 }
 
-// Run |callback| on each DOMStorageContextWrapper in |browser_context|.
-void PurgeDOMStorageContextInPartition(StoragePartition* storage_partition) {
-  static_cast<StoragePartitionImpl*>(storage_partition)->
-      GetDOMStorageContext()->PurgeMemory();
-}
-
 void SaveSessionStateOnIOThread(
     const scoped_refptr<net::URLRequestContextGetter>& context_getter,
     appcache::AppCacheService* appcache_service) {
@@ -88,10 +79,6 @@ void SaveSessionStateOnIOThread(
 void SaveSessionStateOnIndexedDBThread(
     scoped_refptr<IndexedDBContextImpl> indexed_db_context) {
   indexed_db_context->SetForceKeepSessionState();
-}
-
-void PurgeMemoryOnIOThread(appcache::AppCacheService* appcache_service) {
-  appcache_service->PurgeMemory();
 }
 
 }  // namespace
@@ -251,20 +238,6 @@ void BrowserContext::SaveSessionState(BrowserContext* browser_context) {
         base::Bind(&SaveSessionStateOnIndexedDBThread,
                    make_scoped_refptr(indexed_db_context_impl)));
   }
-}
-
-void BrowserContext::PurgeMemory(BrowserContext* browser_context) {
-  if (BrowserThread::IsMessageLoopValid(BrowserThread::IO)) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(
-            &PurgeMemoryOnIOThread,
-            BrowserContext::GetDefaultStoragePartition(browser_context)->
-                GetAppCacheService()));
-  }
-
-  ForEachStoragePartition(browser_context,
-                          base::Bind(&PurgeDOMStorageContextInPartition));
 }
 
 #endif  // !OS_IOS

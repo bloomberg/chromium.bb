@@ -321,20 +321,6 @@ void AppCacheStorageImpl::InitTask::RunCompleted() {
     storage_->service()->quota_client()->NotifyAppCacheReady();
 }
 
-// CloseConnectionTask -------
-
-class AppCacheStorageImpl::CloseConnectionTask : public DatabaseTask {
- public:
-  explicit CloseConnectionTask(AppCacheStorageImpl* storage)
-      : DatabaseTask(storage) {}
-
-  // DatabaseTask:
-  virtual void Run() OVERRIDE { database_->CloseConnection(); }
-
- protected:
-  virtual ~CloseConnectionTask() {}
-};
-
 // DisableDatabaseTask -------
 
 class AppCacheStorageImpl::DisableDatabaseTask : public DatabaseTask {
@@ -1664,11 +1650,6 @@ void AppCacheStorageImpl::DeleteResponses(
   if (response_ids.empty())
     return;
   StartDeletingResponses(response_ids);
-}
-
-void AppCacheStorageImpl::PurgeMemory() {
-  scoped_refptr<CloseConnectionTask> task(new CloseConnectionTask(this));
-  task->Schedule();
 }
 
 void AppCacheStorageImpl::DelayedStartDeletingUnusedResponses() {

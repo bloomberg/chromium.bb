@@ -160,17 +160,6 @@ void DOMStorageContextImpl::DeleteSessionStorage(
     NotifyAreaCleared(area, usage_info.origin);
 }
 
-void DOMStorageContextImpl::PurgeMemory() {
-  // We can only purge memory from the local storage namespace
-  // which is backed by disk.
-  // TODO(marja): Purge sessionStorage, too. (Requires changes to the FastClear
-  // functionality.)
-  StorageNamespaceMap::iterator found =
-      namespaces_.find(kLocalStorageNamespaceId);
-  if (found != namespaces_.end())
-    found->second->PurgeMemory(DOMStorageNamespace::PURGE_AGGRESSIVE);
-}
-
 void DOMStorageContextImpl::Shutdown() {
   is_shutdown_ = true;
   StorageNamespaceMap::const_iterator it = namespaces_.begin();

@@ -146,14 +146,6 @@ void DOMStorageContextWrapper::StartScavengingUnusedSessionStorage() {
                  context_));
 }
 
-void DOMStorageContextWrapper::PurgeMemory() {
-  DCHECK(context_.get());
-  context_->task_runner()->PostShutdownBlockingTask(
-      FROM_HERE,
-      DOMStorageTaskRunner::PRIMARY_SEQUENCE,
-      base::Bind(&DOMStorageContextImpl::PurgeMemory, context_));
-}
-
 void DOMStorageContextWrapper::SetForceKeepSessionState() {
   DCHECK(context_.get());
   context_->task_runner()->PostShutdownBlockingTask(

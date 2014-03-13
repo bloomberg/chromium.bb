@@ -29,6 +29,7 @@
 #include "webkit/browser/appcache/appcache_policy.h"
 #include "webkit/browser/appcache/appcache_response.h"
 #include "webkit/browser/appcache/appcache_service.h"
+#include "webkit/browser/appcache/appcache_storage.h"
 
 namespace appcache {
 namespace {

@@ -45,8 +45,9 @@ class CONTENT_EXPORT ChromeAppCacheService
  public:
   explicit ChromeAppCacheService(quota::QuotaManagerProxy* proxy);
 
+  // If |cache_path| is empty we will use in-memory structs.
   void InitializeOnIOThread(
-      const base::FilePath& cache_path,  // May be empty to use in-memory structs.
+      const base::FilePath& cache_path,
       ResourceContext* resource_context,
       net::URLRequestContextGetter* request_context_getter,
       scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy);

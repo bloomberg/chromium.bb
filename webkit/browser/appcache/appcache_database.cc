@@ -211,13 +211,6 @@ AppCacheDatabase::AppCacheDatabase(const base::FilePath& path)
 AppCacheDatabase::~AppCacheDatabase() {
 }
 
-void AppCacheDatabase::CloseConnection() {
-  // We can't close the connection for an in-memory database w/o
-  // losing all of the data, so we don't do that.
-  if (!db_file_path_.empty())
-    ResetConnectionAndTables();
-}
-
 void AppCacheDatabase::Disable() {
   VLOG(1) << "Disabling appcache database.";
   is_disabled_ = true;
