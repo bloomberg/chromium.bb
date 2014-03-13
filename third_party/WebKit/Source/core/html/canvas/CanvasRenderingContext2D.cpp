@@ -1389,6 +1389,10 @@ void CanvasRenderingContext2D::drawImageInternal(CanvasImageSource* imageSource,
             return;
     }
 
+    GraphicsContext* c = drawingContext();
+    if (!c)
+        return;
+
     if (!state().m_invertibleCTM)
         return;
 
@@ -1398,7 +1402,7 @@ void CanvasRenderingContext2D::drawImageInternal(CanvasImageSource* imageSource,
         return;
 
     FloatRect clipBounds;
-    if (!drawingContext()->getTransformedClipBounds(&clipBounds))
+    if (!c->getTransformedClipBounds(&clipBounds))
         return;
 
     FloatRect srcRect = normalizeRect(FloatRect(sx, sy, sw, sh));
@@ -1409,10 +1413,6 @@ void CanvasRenderingContext2D::drawImageInternal(CanvasImageSource* imageSource,
     imageSource->adjustDrawRects(&srcRect, &dstRect);
 
     if (srcRect.isEmpty())
-        return;
-
-    GraphicsContext* c = drawingContext();
-    if (!c)
         return;
 
     FloatRect dirtyRect = clipBounds;

@@ -1,0 +1,9 @@
+This test checks behavior of drawImage on a canvas that failed to allocate its backing store. This test passes by not crashing.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS successfullyParsed is true
+
+TEST COMPLETE
+
