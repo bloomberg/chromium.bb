@@ -131,10 +131,7 @@ void BrowseFullHashesToCheck(const GURL& url,
   for (size_t i = 0; i < hosts.size(); ++i) {
     for (size_t j = 0; j < paths.size(); ++j) {
       const std::string& path = paths[j];
-      SBFullHash full_hash;
-      crypto::SHA256HashString(hosts[i] + path, &full_hash,
-                               sizeof(full_hash));
-      full_hashes->push_back(full_hash);
+      full_hashes->push_back(SBFullHashForString(hosts[i] + path));
 
       // We may have /foo as path-prefix in the whitelist which should
       // also match with /foo/bar and /foo?bar.  Hence, for every path
@@ -142,9 +139,8 @@ void BrowseFullHashesToCheck(const GURL& url,
       if (include_whitelist_hashes &&
           path.size() > 1 &&
           path[path.size() - 1] == '/') {
-        crypto::SHA256HashString(hosts[i] + path.substr(0, path.size() - 1),
-                                 &full_hash, sizeof(full_hash));
-        full_hashes->push_back(full_hash);
+        full_hashes->push_back(
+            SBFullHashForString(hosts[i] + path.substr(0, path.size() - 1)));
       }
     }
   }
@@ -323,6 +319,11 @@ int64 GetFileSizeOrZero(const base::FilePath& file_path) {
   if (!base::GetFileSize(file_path, &size_64))
     return 0;
   return size_64;
+}
+
+// Used to order whitelist storage in memory.
+bool SBFullHashLess(const SBFullHash& a, const SBFullHash& b) {
+  return memcmp(a.full_hash, b.full_hash, sizeof(a.full_hash)) < 0;
 }
 
 }  // namespace
@@ -766,7 +767,6 @@ bool SafeBrowsingDatabaseNew::ContainsExtensionPrefixes(
 
 bool SafeBrowsingDatabaseNew::ContainsSideEffectFreeWhitelistUrl(
     const GURL& url) {
-  SBFullHash full_hash;
   std::string host;
   std::string path;
   std::string query;
@@ -774,7 +774,7 @@ bool SafeBrowsingDatabaseNew::ContainsSideEffectFreeWhitelistUrl(
   std::string url_to_check = host + path;
   if (!query.empty())
     url_to_check +=  "?" + query;
-  crypto::SHA256HashString(url_to_check, &full_hash, sizeof(full_hash));
+  SBFullHash full_hash = SBFullHashForString(url_to_check);
 
   // This function can be called on any thread, so lock against any changes
   base::AutoLock locked(lookup_lock_);
@@ -828,10 +828,8 @@ bool SafeBrowsingDatabaseNew::ContainsMalwareIP(const std::string& ip_address) {
 
 bool SafeBrowsingDatabaseNew::ContainsDownloadWhitelistedString(
     const std::string& str) {
-  SBFullHash hash;
-  crypto::SHA256HashString(str, &hash, sizeof(hash));
   std::vector<SBFullHash> hashes;
-  hashes.push_back(hash);
+  hashes.push_back(SBFullHashForString(str));
   return ContainsWhitelistedHashes(download_whitelist_, hashes);
 }
 
@@ -843,8 +841,10 @@ bool SafeBrowsingDatabaseNew::ContainsWhitelistedHashes(
     return true;
   for (std::vector<SBFullHash>::const_iterator it = hashes.begin();
        it != hashes.end(); ++it) {
-    if (std::binary_search(whitelist.first.begin(), whitelist.first.end(), *it))
+    if (std::binary_search(whitelist.first.begin(), whitelist.first.end(),
+                           *it, SBFullHashLess)) {
       return true;
+    }
   }
   return false;
 }
@@ -1656,13 +1656,11 @@ void SafeBrowsingDatabaseNew::LoadWhitelist(
        it != full_hashes.end(); ++it) {
     new_whitelist.push_back(it->full_hash);
   }
-  std::sort(new_whitelist.begin(), new_whitelist.end());
+  std::sort(new_whitelist.begin(), new_whitelist.end(), SBFullHashLess);
 
-  SBFullHash kill_switch;
-  crypto::SHA256HashString(kWhitelistKillSwitchUrl, &kill_switch,
-                           sizeof(kill_switch));
+  SBFullHash kill_switch = SBFullHashForString(kWhitelistKillSwitchUrl);
   if (std::binary_search(new_whitelist.begin(), new_whitelist.end(),
-                         kill_switch)) {
+                         kill_switch, SBFullHashLess)) {
     // The kill switch is whitelisted hence we whitelist all URLs.
     WhitelistEverything(whitelist);
   } else {
@@ -1715,9 +1713,7 @@ void SafeBrowsingDatabaseNew::LoadIpBlacklist(
 }
 
 bool SafeBrowsingDatabaseNew::IsMalwareIPMatchKillSwitchOn() {
-  SBFullHash malware_kill_switch;
-  crypto::SHA256HashString(kMalwareIPKillSwitchUrl, &malware_kill_switch,
-                           sizeof(malware_kill_switch));
+  SBFullHash malware_kill_switch = SBFullHashForString(kMalwareIPKillSwitchUrl);
   std::vector<SBFullHash> full_hashes;
   full_hashes.push_back(malware_kill_switch);
   return ContainsWhitelistedHashes(csd_whitelist_, full_hashes);

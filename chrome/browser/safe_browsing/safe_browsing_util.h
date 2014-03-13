@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/strings/string_piece.h"
 #include "chrome/browser/safe_browsing/chunk_range.h"
 
 class GURL;
@@ -35,13 +36,12 @@ union SBFullHash {
   SBPrefix prefix;
 };
 
-inline bool operator==(const SBFullHash& lhash, const SBFullHash& rhash) {
-  return memcmp(lhash.full_hash, rhash.full_hash, sizeof(SBFullHash)) == 0;
+inline bool SBFullHashEqual(const SBFullHash& a, const SBFullHash& b) {
+  return !memcmp(a.full_hash, b.full_hash, sizeof(a.full_hash));
 }
 
-inline bool operator<(const SBFullHash& lhash, const SBFullHash& rhash) {
-  return memcmp(lhash.full_hash, rhash.full_hash, sizeof(SBFullHash)) < 0;
-}
+// Generate full hash for the given string.
+SBFullHash SBFullHashForString(const base::StringPiece& str);
 
 // Container for information about a specific host in an add/sub chunk.
 struct SBChunkHost {

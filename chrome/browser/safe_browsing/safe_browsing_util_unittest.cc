@@ -6,7 +6,6 @@
 
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
-#include "crypto/sha2.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -283,9 +282,7 @@ TEST(SafeBrowsingUtilTest, CanonicalizeUrl) {
 TEST(SafeBrowsingUtilTest, GetUrlHashIndex) {
   GURL url("http://www.evil.com/phish.html");
   SBFullHashResult full_hash;
-  crypto::SHA256HashString(url.host() + url.path(),
-                         &full_hash.hash,
-                         sizeof(SBFullHash));
+  full_hash.hash = SBFullHashForString(url.host() + url.path());
   std::vector<SBFullHashResult> full_hashes;
   full_hashes.push_back(full_hash);
 

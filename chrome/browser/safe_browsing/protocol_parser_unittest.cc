@@ -86,8 +86,8 @@ TEST(SafeBrowsingProtocolParsingTest, TestAddFullChunk) {
   EXPECT_TRUE(entry->IsAdd());
   EXPECT_FALSE(entry->IsPrefix());
   EXPECT_EQ(entry->prefix_count(), 2);
-  EXPECT_TRUE(entry->FullHashAt(0) == full_hash1);
-  EXPECT_TRUE(entry->FullHashAt(1) == full_hash2);
+  EXPECT_TRUE(SBFullHashEqual(entry->FullHashAt(0), full_hash1));
+  EXPECT_TRUE(SBFullHashEqual(entry->FullHashAt(1), full_hash2));
 }
 
 // Test parsing multiple add chunks. We'll use the same chunk as above, and add
@@ -326,9 +326,9 @@ TEST(SafeBrowsingProtocolParsingTest, TestSubFullChunk) {
   EXPECT_FALSE(entry->IsPrefix());
   EXPECT_EQ(entry->prefix_count(), 2);
   EXPECT_EQ(entry->ChunkIdAtPrefix(0), 0x79797979);
-  EXPECT_TRUE(entry->FullHashAt(0) == full_hash1);
+  EXPECT_TRUE(SBFullHashEqual(entry->FullHashAt(0), full_hash1));
   EXPECT_EQ(entry->ChunkIdAtPrefix(1), 0x7a7a7a7a);
-  EXPECT_TRUE(entry->FullHashAt(1) == full_hash2);
+  EXPECT_TRUE(SBFullHashEqual(entry->FullHashAt(1), full_hash2));
 }
 
 // Test parsing the SafeBrowsing update response.
@@ -743,7 +743,7 @@ TEST(SafeBrowsingProtocolParsingTest, TestAddDownloadWhitelistChunk) {
   EXPECT_EQ(entry->prefix_count(), 1);
   SBFullHash full;
   memcpy(full.full_hash, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", 32);
-  EXPECT_TRUE(entry->FullHashAt(0) == full);
+  EXPECT_TRUE(SBFullHashEqual(entry->FullHashAt(0), full));
 
   EXPECT_EQ(chunks[1].chunk_number, 2);
   EXPECT_EQ(chunks[1].hosts.size(), 1U);
@@ -753,9 +753,9 @@ TEST(SafeBrowsingProtocolParsingTest, TestAddDownloadWhitelistChunk) {
   EXPECT_FALSE(entry->IsPrefix());
   EXPECT_EQ(entry->prefix_count(), 2);
   memcpy(full.full_hash, "yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy", 32);
-  EXPECT_TRUE(entry->FullHashAt(0) == full);
+  EXPECT_TRUE(SBFullHashEqual(entry->FullHashAt(0), full));
   memcpy(full.full_hash, "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz", 32);
-  EXPECT_TRUE(entry->FullHashAt(1) == full);
+  EXPECT_TRUE(SBFullHashEqual(entry->FullHashAt(1), full));
 }
 
 // Test parsing one sub chunk.
@@ -783,7 +783,7 @@ TEST(SafeBrowsingProtocolParsingTest, TestSubDownloadWhitelistChunk) {
   EXPECT_EQ(entry->ChunkIdAtPrefix(0), 0x31313131);
   SBFullHash full;
   memcpy(full.full_hash, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", 32);
-  EXPECT_TRUE(entry->FullHashAt(0) == full);
+  EXPECT_TRUE(SBFullHashEqual(entry->FullHashAt(0), full));
 }
 
 // There should be one test case for every list added here.  Each list

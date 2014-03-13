@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/safe_browsing/safe_browsing_store.h"
-#include "chrome/browser/safe_browsing/safe_browsing_store_unittest_helper.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -129,10 +128,10 @@ TEST(SafeBrowsingStoreTest, SBProcessSubsEmpty) {
 // Test that subs knock out adds.
 TEST(SafeBrowsingStoreTest, SBProcessSubsKnockout) {
   const base::Time kNow = base::Time::Now();
-  const SBFullHash kHash1(SBFullHashFromString("one"));
-  const SBFullHash kHash2(SBFullHashFromString("two"));
-  const SBFullHash kHash3(SBFullHashFromString("three"));
-  const SBFullHash kHash4(SBFullHashFromString("four"));
+  const SBFullHash kHash1(SBFullHashForString("one"));
+  const SBFullHash kHash2(SBFullHashForString("two"));
+  const SBFullHash kHash3(SBFullHashForString("three"));
+  const SBFullHash kHash4(SBFullHashForString("four"));
   const int kAddChunk1 = 1;  // Use different chunk numbers just in case.
   const int kSubChunk1 = 2;
 
@@ -191,9 +190,9 @@ TEST(SafeBrowsingStoreTest, SBProcessSubsKnockout) {
   ASSERT_LE(2U, add_hashes.size());
   EXPECT_EQ(2U, add_hashes.size());
   EXPECT_EQ(kAddChunk1, add_hashes[0].chunk_id);
-  EXPECT_TRUE(SBFullHashEq(kHash4, add_hashes[0].full_hash));
+  EXPECT_TRUE(SBFullHashEqual(kHash4, add_hashes[0].full_hash));
   EXPECT_EQ(kAddChunk1, add_hashes[1].chunk_id);
-  EXPECT_TRUE(SBFullHashEq(kHash2, add_hashes[1].full_hash));
+  EXPECT_TRUE(SBFullHashEqual(kHash2, add_hashes[1].full_hash));
 
   ASSERT_LE(1U, sub_prefixes.size());
   EXPECT_EQ(1U, sub_prefixes.size());
@@ -205,16 +204,16 @@ TEST(SafeBrowsingStoreTest, SBProcessSubsKnockout) {
   EXPECT_EQ(1U, sub_hashes.size());
   EXPECT_EQ(kSubChunk1, sub_hashes[0].chunk_id);
   EXPECT_EQ(kAddChunk1, sub_hashes[0].add_chunk_id);
-  EXPECT_TRUE(SBFullHashEq(kHash3, sub_hashes[0].full_hash));
+  EXPECT_TRUE(SBFullHashEqual(kHash3, sub_hashes[0].full_hash));
 }
 
 // Test chunk deletions, and ordering of deletions WRT subs knocking
 // out adds.
 TEST(SafeBrowsingStoreTest, SBProcessSubsDeleteChunk) {
   const base::Time kNow = base::Time::Now();
-  const SBFullHash kHash1(SBFullHashFromString("one"));
-  const SBFullHash kHash2(SBFullHashFromString("two"));
-  const SBFullHash kHash3(SBFullHashFromString("three"));
+  const SBFullHash kHash1(SBFullHashForString("one"));
+  const SBFullHash kHash2(SBFullHashForString("two"));
+  const SBFullHash kHash3(SBFullHashForString("three"));
   const int kAddChunk1 = 1;  // Use different chunk numbers just in case.
   const int kSubChunk1 = 2;
 
@@ -265,7 +264,7 @@ TEST(SafeBrowsingStoreTest, SBProcessSubsDeleteChunk) {
   EXPECT_EQ(1U, sub_hashes.size());
   EXPECT_EQ(kSubChunk1, sub_hashes[0].chunk_id);
   EXPECT_EQ(kAddChunk1, sub_hashes[0].add_chunk_id);
-  EXPECT_TRUE(SBFullHashEq(kHash3, sub_hashes[0].full_hash));
+  EXPECT_TRUE(SBFullHashEqual(kHash3, sub_hashes[0].full_hash));
 
   base::hash_set<int32> sub_deletions;
   sub_deletions.insert(kSubChunk1);

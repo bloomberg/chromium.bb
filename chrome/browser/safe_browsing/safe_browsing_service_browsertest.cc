@@ -42,7 +42,6 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
-#include "crypto/sha2.h"
 #include "net/cookies/cookie_store.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
@@ -340,8 +339,7 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
     std::string host;
     std::string path;
     safe_browsing_util::CanonicalizeUrl(url, &host, &path, NULL);
-    crypto::SHA256HashString(host + path, &full_hash->hash,
-                             sizeof(SBFullHash));
+    full_hash->hash = SBFullHashForString(host + path);
     full_hash->list_name = list_name;
     full_hash->add_chunk_id = add_chunk_id;
   }

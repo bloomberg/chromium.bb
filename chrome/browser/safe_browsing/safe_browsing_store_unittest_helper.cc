@@ -16,11 +16,11 @@ const int kAddChunk4 = 7;
 const int kSubChunk1 = 2;
 const int kSubChunk2 = 4;
 
-const SBFullHash kHash1 = SBFullHashFromString("one");
-const SBFullHash kHash2 = SBFullHashFromString("two");
-const SBFullHash kHash3 = SBFullHashFromString("three");
-const SBFullHash kHash4 = SBFullHashFromString("four");
-const SBFullHash kHash5 = SBFullHashFromString("five");
+const SBFullHash kHash1 = SBFullHashForString("one");
+const SBFullHash kHash2 = SBFullHashForString("two");
+const SBFullHash kHash3 = SBFullHashForString("three");
+const SBFullHash kHash4 = SBFullHashForString("four");
+const SBFullHash kHash5 = SBFullHashForString("five");
 
 }  // namespace
 
@@ -103,7 +103,7 @@ void SafeBrowsingStoreTestStorePrefix(SafeBrowsingStore* store) {
   EXPECT_EQ(kAddChunk1, add_full_hashes_result[0].chunk_id);
   // EXPECT_TRUE(add_full_hashes_result[0].received == now)?
   EXPECT_EQ(now.ToTimeT(), add_full_hashes_result[0].received);
-  EXPECT_TRUE(SBFullHashEq(kHash2, add_full_hashes_result[0].full_hash));
+  EXPECT_TRUE(SBFullHashEqual(kHash2, add_full_hashes_result[0].full_hash));
 
   add_prefixes_result.clear();
   add_full_hashes_result.clear();
@@ -136,7 +136,7 @@ void SafeBrowsingStoreTestStorePrefix(SafeBrowsingStore* store) {
   ASSERT_EQ(1U, add_full_hashes_result.size());
   EXPECT_EQ(kAddChunk1, add_full_hashes_result[0].chunk_id);
   EXPECT_EQ(now.ToTimeT(), add_full_hashes_result[0].received);
-  EXPECT_TRUE(SBFullHashEq(kHash2, add_full_hashes_result[0].full_hash));
+  EXPECT_TRUE(SBFullHashEqual(kHash2, add_full_hashes_result[0].full_hash));
 }
 
 void SafeBrowsingStoreTestSubKnockout(SafeBrowsingStore* store) {
@@ -269,7 +269,7 @@ void SafeBrowsingStoreTestDeleteChunks(SafeBrowsingStore* store) {
   EXPECT_EQ(1U, add_full_hashes_result.size());
   EXPECT_EQ(kAddChunk2, add_full_hashes_result[0].chunk_id);
   EXPECT_EQ(now.ToTimeT(), add_full_hashes_result[0].received);
-  EXPECT_TRUE(SBFullHashEq(kHash3, add_full_hashes_result[0].full_hash));
+  EXPECT_TRUE(SBFullHashEqual(kHash3, add_full_hashes_result[0].full_hash));
 
   // Expected chunks are there in another update.
   EXPECT_TRUE(store->BeginUpdate());

@@ -19,6 +19,12 @@
 
 static const char kReportParams[] = "?tpl=%s&url=%s";
 
+SBFullHash SBFullHashForString(const base::StringPiece& str) {
+  SBFullHash h;
+  crypto::SHA256HashString(str, &h.full_hash, sizeof(h.full_hash));
+  return h;
+}
+
 // SBChunk ---------------------------------------------------------------------
 
 SBChunk::SBChunk()
@@ -465,7 +471,7 @@ void GeneratePatternsToCheck(const GURL& url, std::vector<std::string>* urls) {
 int GetHashIndex(const SBFullHash& hash,
                  const std::vector<SBFullHashResult>& full_hashes) {
   for (size_t i = 0; i < full_hashes.size(); ++i) {
-    if (hash == full_hashes[i].hash)
+    if (SBFullHashEqual(hash, full_hashes[i].hash))
       return static_cast<int>(i);
   }
   return -1;
@@ -480,8 +486,7 @@ int GetUrlHashIndex(const GURL& url,
   GeneratePatternsToCheck(url, &patterns);
 
   for (size_t i = 0; i < patterns.size(); ++i) {
-    SBFullHash key;
-    crypto::SHA256HashString(patterns[i], key.full_hash, sizeof(SBFullHash));
+    SBFullHash key = SBFullHashForString(patterns[i]);
     int index = GetHashIndex(key, full_hashes);
     if (index != -1)
       return index;

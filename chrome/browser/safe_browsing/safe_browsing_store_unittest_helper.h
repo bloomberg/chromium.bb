@@ -7,24 +7,10 @@
 
 #include "chrome/browser/safe_browsing/safe_browsing_store.h"
 
-#include "crypto/sha2.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // Helper code for testing that a SafeBrowsingStore implementation
 // works to spec.
-
-// Helper to make it easy to initialize SBFullHash constants.
-inline const SBFullHash SBFullHashFromString(const char* str) {
-  SBFullHash h;
-  crypto::SHA256HashString(str, &h.full_hash, sizeof(h.full_hash));
-  return h;
-}
-
-// TODO(shess): There's an == operator defined in
-// safe_browsing_utils.h, but using it gives me the heebie-jeebies.
-inline bool SBFullHashEq(const SBFullHash& a, const SBFullHash& b) {
-  return !memcmp(a.full_hash, b.full_hash, sizeof(a.full_hash));
-}
 
 // Test that the empty store looks empty.
 void SafeBrowsingStoreTestEmpty(SafeBrowsingStore* store);
