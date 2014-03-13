@@ -68,7 +68,7 @@ private:
         : LightSource(LS_SPOT)
         , m_position(position)
         , m_direction(direction)
-        , m_specularExponent(specularExponent)
+        , m_specularExponent(std::min(std::max(specularExponent, 1.0f), 128.0f))
         , m_limitingConeAngle(limitingConeAngle)
     {
     }

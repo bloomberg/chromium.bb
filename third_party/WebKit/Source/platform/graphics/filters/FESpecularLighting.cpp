@@ -80,6 +80,7 @@ float FESpecularLighting::specularConstant() const
 
 bool FESpecularLighting::setSpecularConstant(float specularConstant)
 {
+    specularConstant = std::max(specularConstant, 0.0f);
     if (m_specularConstant == specularConstant)
         return false;
     m_specularConstant = specularConstant;
@@ -93,6 +94,7 @@ float FESpecularLighting::specularExponent() const
 
 bool FESpecularLighting::setSpecularExponent(float specularExponent)
 {
+    specularExponent = std::min(std::max(specularExponent, 1.0f), 128.0f);
     if (m_specularExponent == specularExponent)
         return false;
     m_specularExponent = specularExponent;

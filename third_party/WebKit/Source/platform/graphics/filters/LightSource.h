@@ -57,7 +57,6 @@ public:
         FloatPoint3D privateColorVector;
         float coneCutOffLimit;
         float coneFullLight;
-        int specularExponent;
     };
 
     LightSource(LightType type)

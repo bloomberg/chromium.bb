@@ -60,14 +60,6 @@ void SpotLightSource::initPaintingData(PaintingData& paintingData) const
         paintingData.coneCutOffLimit = cosf(deg2rad(180.0f - limitingConeAngle));
         paintingData.coneFullLight = paintingData.coneCutOffLimit - antiAliasTreshold;
     }
-
-    // Optimization for common specularExponent values
-    if (!m_specularExponent)
-        paintingData.specularExponent = 0;
-    else if (m_specularExponent == 1.0f)
-        paintingData.specularExponent = 1;
-    else // It is neither 0.0f nor 1.0f
-        paintingData.specularExponent = 2;
 }
 
 void SpotLightSource::updatePaintingData(PaintingData& paintingData, int x, int y, float z) const
@@ -88,16 +80,10 @@ void SpotLightSource::updatePaintingData(PaintingData& paintingData, int x, int 
 
     // Set the color of the pixel
     float lightStrength;
-    switch (paintingData.specularExponent) {
-    case 0:
-        lightStrength = 1.0f; // -cosineOfAngle ^ 0 == 1
-        break;
-    case 1:
+    if (1.0f == m_specularExponent) {
         lightStrength = -cosineOfAngle; // -cosineOfAngle ^ 1 == -cosineOfAngle
-        break;
-    default:
+    } else {
         lightStrength = powf(-cosineOfAngle, m_specularExponent);
-        break;
     }
 
     if (cosineOfAngle > paintingData.coneFullLight)
@@ -161,6 +147,7 @@ bool SpotLightSource::setPointsAtZ(float pointsAtZ)
 
 bool SpotLightSource::setSpecularExponent(float specularExponent)
 {
+    specularExponent = std::min(std::max(specularExponent, 1.0f), 128.0f);
     if (m_specularExponent == specularExponent)
         return false;
     m_specularExponent = specularExponent;

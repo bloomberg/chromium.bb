@@ -78,6 +78,7 @@ float FEDiffuseLighting::diffuseConstant() const
 
 bool FEDiffuseLighting::setDiffuseConstant(float diffuseConstant)
 {
+    diffuseConstant = std::max(diffuseConstant, 0.0f);
     if (m_diffuseConstant == diffuseConstant)
         return false;
     m_diffuseConstant = diffuseConstant;
