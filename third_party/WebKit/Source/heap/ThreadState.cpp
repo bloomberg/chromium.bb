@@ -206,7 +206,6 @@ public:
     {
         if (atomicIncrement(&m_unparkedThreadCount) > 0)
             checkAndPark(state);
-        state->performPendingSweep();
     }
 
 private:
@@ -433,7 +432,10 @@ static bool increasedEnoughToGC(size_t newSize, size_t oldSize)
 // into account.
 bool ThreadState::shouldGC()
 {
-    return increasedEnoughToGC(m_stats.totalObjectSpace(), m_statsAfterLastGC.totalObjectSpace());
+    // Do not GC during sweeping. We allow allocation during
+    // finalization, but those allocations are not allowed
+    // to lead to nested garbage collections.
+    return !m_sweepInProgress && increasedEnoughToGC(m_stats.totalObjectSpace(), m_statsAfterLastGC.totalObjectSpace());
 }
 
 // Trigger conservative garbage collection on a 100% increase in size,
@@ -450,7 +452,10 @@ static bool increasedEnoughToForceConservativeGC(size_t newSize, size_t oldSize)
 // into account.
 bool ThreadState::shouldForceConservativeGC()
 {
-    return increasedEnoughToForceConservativeGC(m_stats.totalObjectSpace(), m_statsAfterLastGC.totalObjectSpace());
+    // Do not GC during sweeping. We allow allocation during
+    // finalization, but those allocations are not allowed
+    // to lead to nested garbage collections.
+    return !m_sweepInProgress && increasedEnoughToForceConservativeGC(m_stats.totalObjectSpace(), m_statsAfterLastGC.totalObjectSpace());
 }
 
 bool ThreadState::sweepRequested()
@@ -641,6 +646,7 @@ void ThreadState::leaveSafePoint()
     m_atSafePoint = false;
     m_stackState = HeapPointersOnStack;
     clearSafePointScopeMarker();
+    performPendingSweep();
 }
 
 void ThreadState::copyStackUntilSafePointScope()
@@ -666,17 +672,15 @@ void ThreadState::performPendingSweep()
 {
     if (sweepRequested()) {
         m_sweepInProgress = true;
-        {
-            // Disallow allocation during weak processing, sweeping and finalization.
-            enterNoAllocationScope();
-            // Perform thread-specific weak processing.
-            while (popAndInvokeWeakPointerCallback(Heap::s_markingVisitor)) { }
-            // Perform sweeping and finalization.
-            m_stats.clear(); // Sweeping will recalculate the stats
-            for (int i = 0; i < NumberOfHeaps; i++)
-                m_heaps[i]->sweep();
-            leaveNoAllocationScope();
-        }
+        // Disallow allocation during weak processing.
+        enterNoAllocationScope();
+        // Perform thread-specific weak processing.
+        while (popAndInvokeWeakPointerCallback(Heap::s_markingVisitor)) { }
+        leaveNoAllocationScope();
+        // Perform sweeping and finalization.
+        m_stats.clear(); // Sweeping will recalculate the stats
+        for (int i = 0; i < NumberOfHeaps; i++)
+            m_heaps[i]->sweep();
         getStats(m_statsAfterLastGC);
         m_sweepInProgress = false;
         clearGCRequested();

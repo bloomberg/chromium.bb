@@ -1122,6 +1122,41 @@ template<> struct VectorTraits<WebCore::VectorObjectNoTrace> : public SimpleClas
 
 namespace WebCore {
 
+class OneKiloByteObject : public GarbageCollectedFinalized<OneKiloByteObject> {
+public:
+    ~OneKiloByteObject() { s_destructorCalls++; }
+    char* data() { return m_data; }
+    void trace(Visitor* visitor) { }
+    static int s_destructorCalls;
+
+private:
+    static const size_t s_length = 1024;
+    char m_data[s_length];
+};
+
+int OneKiloByteObject::s_destructorCalls = 0;
+
+class FinalizationAllocator : public GarbageCollectedFinalized<FinalizationAllocator> {
+public:
+    FinalizationAllocator(Persistent<IntWrapper>* wrapper)
+        : m_wrapper(wrapper)
+    {
+    }
+
+    ~FinalizationAllocator()
+    {
+        for (int i = 0; i < 10; ++i)
+            *m_wrapper = IntWrapper::create(42);
+        for (int i = 0; i < 512; ++i)
+            new OneKiloByteObject();
+    }
+
+    void trace(Visitor*) { }
+
+private:
+    Persistent<IntWrapper>* m_wrapper;
+};
+
 TEST(HeapTest, Transition)
 {
     {
@@ -2850,6 +2885,28 @@ TEST(HeapTest, HeapLinkedStack)
     Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
     EXPECT_EQ(stackSize, static_cast<size_t>(IntWrapper::s_destructorCalls));
     EXPECT_EQ(0u, pStack->size());
+}
+
+TEST(HeapTest, AllocationDuringFinalization)
+{
+    HeapStats initialHeapSize;
+    clearOutOldGarbage(&initialHeapSize);
+    IntWrapper::s_destructorCalls = 0;
+    OneKiloByteObject::s_destructorCalls = 0;
+
+    Persistent<IntWrapper> wrapper;
+    new FinalizationAllocator(&wrapper);
+
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+    EXPECT_EQ(0, IntWrapper::s_destructorCalls);
+    // Check that the wrapper allocated during finalization is not
+    // swept away and zapped later in the same sweeping phase.
+    EXPECT_EQ(42, wrapper->value());
+
+    wrapper.clear();
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+    EXPECT_EQ(10, IntWrapper::s_destructorCalls);
+    EXPECT_EQ(512, OneKiloByteObject::s_destructorCalls);
 }
 
 } // WebCore namespace

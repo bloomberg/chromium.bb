@@ -269,7 +269,8 @@ public:
         // FIXME: in an unlikely coincidence that two threads decide
         // to collect garbage at the same time, avoid doing two GCs in
         // a row.
-        ASSERT(!m_state->isInGC());
+        RELEASE_ASSERT(!m_state->isInGC());
+        RELEASE_ASSERT(!m_state->isSweepInProgress());
         ThreadState::stopThreads();
         m_state->enterGC();
     }
@@ -661,6 +662,12 @@ void ThreadHeap<Header>::allocatePage(const GCInfo* gcInfo)
         RELEASE_ASSERT(pageMemory);
     }
     HeapPage<Header>* page = new (pageMemory->writableStart()) HeapPage<Header>(pageMemory, this, gcInfo);
+    // FIXME: Oilpan: Linking new pages into the front of the list is
+    // crucial when performing allocations during finalization because
+    // it ensures that those pages are not swept in the current GC
+    // round. We should create a separate page list for that to
+    // separate out the pages allocated during finalization clearly
+    // from the pages currently being swept.
     page->link(&m_firstPage);
     addToFreeList(page->payload(), HeapPage<Header>::payloadSize());
 }
@@ -724,7 +731,7 @@ void ThreadHeap<Header>::sweep()
 template<typename Header>
 void ThreadHeap<Header>::assertEmpty()
 {
-    // No nested GCs are permitted. The thread is exiting.
+    // No allocations are permitted. The thread is exiting.
     NoAllocationScope<AnyThread> noAllocation;
     makeConsistentForGC();
     for (HeapPage<Header>* page = m_firstPage; page; page = page->next()) {
@@ -1301,8 +1308,11 @@ void Heap::collectGarbage(ThreadState::StackState stackState, GCType gcType)
     ThreadState::current()->clearGCRequested();
     GCScope gcScope(stackState);
 
-    // Disallow allocation during garbage collection.
+    // Disallow allocation during garbage collection (but not
+    // during the finalization that happens when the gcScope is
+    // torn down).
     NoAllocationScope<AnyThread> noAllocationScope;
+
     prepareForGC();
 
     ThreadState::visitRoots(s_markingVisitor);
