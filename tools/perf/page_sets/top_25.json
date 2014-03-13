@@ -4,6 +4,7 @@
   "credentials_path": "data/credentials.json",
   "user_agent_type": "desktop",
   "smoothness": { "action": "scroll" },
+  "repaint": { "action": "repaint_continuously", "seconds": 5 },
   "pages": [
     {
       "url": "https://www.google.com/#hl=en&q=barack+obama",
