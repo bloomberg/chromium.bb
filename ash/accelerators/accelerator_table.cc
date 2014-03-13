@@ -19,11 +19,6 @@ const AcceleratorData kAcceleratorData[] = {
   { false, ui::VKEY_LSHIFT, ui::EF_ALT_DOWN, NEXT_IME },
   { false, ui::VKEY_SHIFT, ui::EF_ALT_DOWN, NEXT_IME },
   { false, ui::VKEY_RSHIFT, ui::EF_ALT_DOWN, NEXT_IME },
-  // Single shift release turns off caps lock.
-  { false, ui::VKEY_LSHIFT, ui::EF_NONE, DISABLE_CAPS_LOCK },
-  { false, ui::VKEY_SHIFT, ui::EF_NONE, DISABLE_CAPS_LOCK },
-  { false, ui::VKEY_RSHIFT, ui::EF_NONE, DISABLE_CAPS_LOCK },
-
   { true, ui::VKEY_SPACE, ui::EF_CONTROL_DOWN, PREVIOUS_IME },
   { false, ui::VKEY_SPACE, ui::EF_CONTROL_DOWN, PREVIOUS_IME },
   // Shortcuts for Japanese IME.
@@ -89,6 +84,11 @@ const AcceleratorData kAcceleratorData[] = {
   // TODO(skuhne): Remove once the test isn't needed anymore.
   { true, ui::VKEY_D, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN | ui::EF_SHIFT_DOWN,
     TOGGLE_TOUCH_VIEW_TESTING },
+  // Single shift release turns off caps lock.
+  { false, ui::VKEY_LSHIFT, ui::EF_NONE, DISABLE_CAPS_LOCK },
+  { false, ui::VKEY_SHIFT, ui::EF_NONE, DISABLE_CAPS_LOCK },
+  { false, ui::VKEY_RSHIFT, ui::EF_NONE, DISABLE_CAPS_LOCK },
+  { false, ui::VKEY_LWIN, ui::EF_ALT_DOWN, TOGGLE_CAPS_LOCK },
 #endif  // defined(OS_CHROMEOS)
   { true, ui::VKEY_I, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN, OPEN_FEEDBACK_PAGE },
 #if !defined(OS_WIN)
@@ -115,7 +115,6 @@ const AcceleratorData kAcceleratorData[] = {
   // act on release instead of press when using Search as a modifier key for
   // extended keyboard shortcuts.
   { false, ui::VKEY_LWIN, ui::EF_NONE, TOGGLE_APP_LIST },
-  { false, ui::VKEY_LWIN, ui::EF_ALT_DOWN, TOGGLE_CAPS_LOCK },
   { true, ui::VKEY_MEDIA_LAUNCH_APP2, ui::EF_NONE, TOGGLE_FULLSCREEN },
   { true, ui::VKEY_MEDIA_LAUNCH_APP2, ui::EF_SHIFT_DOWN, TOGGLE_FULLSCREEN },
   { true, ui::VKEY_VOLUME_MUTE, ui::EF_NONE, VOLUME_MUTE },
