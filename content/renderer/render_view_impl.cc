@@ -377,16 +377,6 @@ Referrer RenderViewImpl::GetReferrerFromRequest(
 }
 
 // static
-void RenderViewImpl::NotifyTimezoneChange(blink::WebFrame* frame) {
-  v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
-  v8::Context::Scope context_scope(frame->mainWorldScriptContext());
-  v8::Date::DateTimeConfigurationChangeNotification(v8::Isolate::GetCurrent());
-  blink::WebFrame* child = frame->firstChild();
-  for (; child; child = child->nextSibling())
-    NotifyTimezoneChange(child);
-}
-
-// static
 WindowOpenDisposition RenderViewImpl::NavigationPolicyToDisposition(
     WebNavigationPolicy policy) {
   switch (policy) {
@@ -1123,7 +1113,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_SetInitialFocus, OnSetInitialFocus)
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateTargetURL_ACK, OnUpdateTargetURLAck)
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateWebPreferences, OnUpdateWebPreferences)
-    IPC_MESSAGE_HANDLER(ViewMsg_TimezoneChange, OnUpdateTimezone)
     IPC_MESSAGE_HANDLER(ViewMsg_EnumerateDirectoryResponse,
                         OnEnumerateDirectoryResponse)
     IPC_MESSAGE_HANDLER(ViewMsg_RunFileChooserResponse, OnFileChooserResponse)
@@ -3758,11 +3747,6 @@ void RenderViewImpl::OnDragSourceSystemDragEnded() {
 void RenderViewImpl::OnUpdateWebPreferences(const WebPreferences& prefs) {
   webkit_preferences_ = prefs;
   ApplyWebPreferences(webkit_preferences_, webview());
-}
-
-void RenderViewImpl::OnUpdateTimezone() {
-  if (webview())
-    NotifyTimezoneChange(webview()->mainFrame());
 }
 
 void RenderViewImpl::OnEnumerateDirectoryResponse(

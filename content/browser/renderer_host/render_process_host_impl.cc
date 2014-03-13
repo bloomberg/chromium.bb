@@ -845,6 +845,10 @@ void RenderProcessHostImpl::ResumeDeferredNavigation(
   widget_helper_->ResumeDeferredNavigation(request_id);
 }
 
+void RenderProcessHostImpl::NotifyTimezoneChange() {
+  Send(new ViewMsg_TimezoneChange());
+}
+
 void RenderProcessHostImpl::AddRoute(
     int32 routing_id,
     IPC::Listener* listener) {

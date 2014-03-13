@@ -801,8 +801,6 @@ class CONTENT_EXPORT RenderViewImpl
       blink::WebFrame* frame,
       const blink::WebURLRequest& request);
 
-  static void NotifyTimezoneChange(blink::WebFrame* frame);
-
   static WindowOpenDisposition NavigationPolicyToDisposition(
       blink::WebNavigationPolicy policy);
 
@@ -937,7 +935,6 @@ class CONTENT_EXPORT RenderViewImpl
   void OnSwapOut();
   void OnThemeChanged();
   void OnUpdateTargetURLAck();
-  void OnUpdateTimezone();
   void OnUpdateWebPreferences(const WebPreferences& prefs);
   void OnZoom(PageZoom zoom);
   void OnZoomFactor(PageZoom zoom, int zoom_center_x, int zoom_center_y);

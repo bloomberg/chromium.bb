@@ -252,6 +252,9 @@ base::TimeDelta MockRenderProcessHost::GetChildProcessIdleTime() const {
 void MockRenderProcessHost::ResumeRequestsForView(int route_id) {
 }
 
+void MockRenderProcessHost::NotifyTimezoneChange() {
+}
+
 void MockRenderProcessHost::FilterURL(bool empty_allowed, GURL* url) {
   RenderProcessHostImpl::FilterURL(this, empty_allowed, url);
 }

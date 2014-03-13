@@ -251,6 +251,13 @@ void EnableBlinkPlatformLogChannels(const std::string& channels) {
     blink::enableLogChannel(t.token().c_str());
 }
 
+void NotifyTimezoneChangeOnThisThread() {
+  v8::Isolate* isolate = v8::Isolate::GetCurrent();
+  if (!isolate)
+    return;
+  v8::Date::DateTimeConfigurationChangeNotification(isolate);
+}
+
 }  // namespace
 
 RenderThreadImpl::HistogramCustomizer::HistogramCustomizer() {
@@ -791,6 +798,12 @@ void RenderThreadImpl::RegisterSchemes() {
   WebSecurityPolicy::registerURLSchemeAsEmptyDocument(swappedout_scheme);
 }
 
+void RenderThreadImpl::NotifyTimezoneChange() {
+  NotifyTimezoneChangeOnThisThread();
+  RenderThread::Get()->PostTaskToAllWebWorkers(
+      base::Bind(&NotifyTimezoneChangeOnThisThread));
+}
+
 void RenderThreadImpl::RecordAction(const base::UserMetricsAction& action) {
   Send(new ViewHostMsg_UserMetricsRecordAction(action.str_));
 }
@@ -1203,6 +1216,7 @@ bool RenderThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewMsg_NetworkStateChanged, OnNetworkStateChanged)
     IPC_MESSAGE_HANDLER(ViewMsg_TempCrashWithData, OnTempCrashWithData)
     IPC_MESSAGE_HANDLER(WorkerProcessMsg_CreateWorker, OnCreateNewSharedWorker)
+    IPC_MESSAGE_HANDLER(ViewMsg_TimezoneChange, OnUpdateTimezone)
 #if defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(ViewMsg_SetWebKitSharedTimersSuspended,
                         OnSetWebKitSharedTimersSuspended)
@@ -1336,6 +1350,11 @@ void RenderThreadImpl::OnTempCrashWithData(const GURL& data) {
   GetContentClient()->SetActiveURL(data);
   CHECK(false);
 }
+
+void RenderThreadImpl::OnUpdateTimezone() {
+  NotifyTimezoneChange();
+}
+
 
 #if defined(OS_ANDROID)
 void RenderThreadImpl::OnSetWebKitSharedTimersSuspended(bool suspend) {

@@ -1643,10 +1643,6 @@ void RenderViewHostImpl::UpdateWebkitPreferences(const WebPreferences& prefs) {
   Send(new ViewMsg_UpdateWebPreferences(GetRoutingID(), prefs));
 }
 
-void RenderViewHostImpl::NotifyTimezoneChange() {
-  Send(new ViewMsg_TimezoneChange(GetRoutingID()));
-}
-
 void RenderViewHostImpl::GetAudioOutputControllers(
     const GetAudioOutputControllersCallback& callback) const {
   AudioRendererHost* audio_host =

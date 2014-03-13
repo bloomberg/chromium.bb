@@ -129,6 +129,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
 #endif
   virtual void ResumeDeferredNavigation(const GlobalRequestID& request_id)
       OVERRIDE;
+  virtual void NotifyTimezoneChange() OVERRIDE;
 
   // IPC::Sender via RenderProcessHost.
   virtual bool Send(IPC::Message* msg) OVERRIDE;

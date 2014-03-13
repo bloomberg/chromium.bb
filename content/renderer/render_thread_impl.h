@@ -121,6 +121,10 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   // module are registered properly.  Static to allow sharing with tests.
   static void RegisterSchemes();
 
+  // Notify V8 that the date/time configuration of the system might have
+  // changed.
+  static void NotifyTimezoneChange();
+
   // RenderThread implementation:
   virtual bool Send(IPC::Message* msg) OVERRIDE;
   virtual base::MessageLoop* GetMessageLoop() OVERRIDE;
@@ -402,6 +406,7 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   void OnNetworkStateChanged(bool online);
   void OnGetAccessibilityTree();
   void OnTempCrashWithData(const GURL& data);
+  void OnUpdateTimezone();
   void OnMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
 #if defined(OS_ANDROID)

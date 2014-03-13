@@ -228,6 +228,10 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // transferring it to a new renderer process.
   virtual void ResumeDeferredNavigation(const GlobalRequestID& request_id) = 0;
 
+  // Notifies the renderer that the timezone configuration of the system might
+  // have changed.
+  virtual void NotifyTimezoneChange() = 0;
+
   // Static management functions -----------------------------------------------
 
   // Flag to run the renderer in process.  This is primarily

@@ -226,9 +226,6 @@ class CONTENT_EXPORT RenderViewHost : virtual public RenderWidgetHost {
   // Passes a list of Webkit preferences to the renderer.
   virtual void UpdateWebkitPreferences(const WebPreferences& prefs) = 0;
 
-  // Informs the renderer process of a change in timezone.
-  virtual void NotifyTimezoneChange() = 0;
-
   // Retrieves the list of AudioOutputController objects associated
   // with this object and passes it to the callback you specify, on
   // the same thread on which you called the method.

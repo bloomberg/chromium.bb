@@ -604,7 +604,7 @@ IPC_MESSAGE_ROUTED1(ViewMsg_UpdateWebPreferences,
                     WebPreferences)
 
 // Informs the renderer that the timezone has changed.
-IPC_MESSAGE_ROUTED0(ViewMsg_TimezoneChange)
+IPC_MESSAGE_CONTROL0(ViewMsg_TimezoneChange)
 
 // Tells the render view to close.
 IPC_MESSAGE_ROUTED0(ViewMsg_Close)
