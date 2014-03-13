@@ -1,5 +1,5 @@
 {
-  "description": [ 
+  "description": [
   "Pages for testing starting Chrome with a URL. ",
   "Note that this file can't be used with record_wpr, since record_wpr ",
   "requires a true navigate step, which we do not want for startup testing.",
@@ -8,25 +8,25 @@
   "pages": [
     {
       "url": "about:blank",
+      "startup_url": "about:blank",
       "why": "typical page",
       "navigate_steps" : [
-        {"action": "set_startup_url", "startup_url": "about:blank"},
         {"action": "wait", "seconds": 10 }
       ]
     },
     {
       "url": "http://bbc.co.uk",
       "why": "typical page",
+      "startup_url": "http://bbc.co.uk",
       "navigate_steps" : [
-        {"action": "set_startup_url", "startup_url": "http://bbc.co.uk"},
         {"action": "wait", "seconds": 10 }
       ]
     },
     {
       "url": "http://kapook.com",
       "why": "Horribly complex page - stress test!",
+      "startup_url": "http://kapook.com",
       "navigate_steps" : [
-        {"action": "set_startup_url", "startup_url": "http://kapook.com"},
         {"action": "wait", "seconds": 10 }
       ]
     }
