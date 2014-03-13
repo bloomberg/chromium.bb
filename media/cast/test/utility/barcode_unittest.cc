@@ -16,7 +16,7 @@ TEST(BarcodeTest, Small) {
       media::VideoFrame::CreateBlackFrame(gfx::Size(320, 10));
   for (unsigned char in_bits = 0; in_bits < 255; in_bits++) {
     EXPECT_TRUE(EncodeBarcode(in_bits, frame));
-    unsigned char out_bits;
+    unsigned char out_bits = ~in_bits;
     EXPECT_TRUE(DecodeBarcode(frame, &out_bits));
     EXPECT_EQ(in_bits, out_bits);
   }
