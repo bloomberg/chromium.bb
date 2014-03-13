@@ -15,7 +15,7 @@
         '../../base/base.gyp:base_i18n',
         '../../skia/skia.gyp:skia',
         '../base/strings/ui_strings.gyp:ui_strings',
-        '../ui.gyp:ui',
+        '../base/ui_base.gyp:ui_base',
       ],
       'defines': [
         'SHELL_DIALOGS_IMPLEMENTATION',
@@ -62,7 +62,7 @@
         ['OS=="android"',
           {
             'dependencies': [
-              '../ui.gyp:ui_base_jni_headers',
+              '../base/ui_base.gyp:ui_base_jni_headers',
             ],
             'include_dirs': [
               '<(SHARED_INTERMEDIATE_DIR)/ui',

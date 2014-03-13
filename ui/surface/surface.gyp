@@ -25,11 +25,11 @@
         '<(DEPTH)/base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '<(DEPTH)/media/media.gyp:media',
         '<(DEPTH)/skia/skia.gyp:skia',
+        '<(DEPTH)/ui/base/ui_base.gyp:ui_base',
         '<(DEPTH)/ui/events/events.gyp:events_base',
         '<(DEPTH)/ui/gfx/gfx.gyp:gfx',
         '<(DEPTH)/ui/gfx/gfx.gyp:gfx_geometry',
         '<(DEPTH)/ui/gl/gl.gyp:gl',
-        '<(DEPTH)/ui/ui.gyp:ui',
       ],
       'sources': [
         'accelerated_surface_mac.cc',

@@ -15,9 +15,9 @@
         '../../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../../net/net.gyp:net',
         '../../third_party/libxml/libxml.gyp:libxml',
+        '../../ui/base/ui_base.gyp:ui_base',
         '../../ui/gfx/gfx.gyp:gfx',
         '../../ui/gfx/gfx.gyp:gfx_geometry',
-        '../../ui/ui.gyp:ui',
         'bluetooth_strings.gyp:device_bluetooth_strings',
       ],
       'sources': [

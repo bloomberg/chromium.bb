@@ -143,8 +143,8 @@
             '../sync/sync.gyp:test_support_sync_api',
             '../testing/gmock.gyp:gmock',
             '../testing/gtest.gyp:gtest',
+            '../ui/base/ui_base.gyp:ui_base',
             '../ui/gfx/gfx.gyp:gfx',
-            '../ui/ui.gyp:ui',
 
             'component_resources.gyp:component_resources',
 

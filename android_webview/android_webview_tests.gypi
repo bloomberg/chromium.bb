@@ -86,7 +86,7 @@
         '../testing/android/native_test.gyp:native_test_native_code',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
-        '../ui/ui.gyp:ui_base_jni_headers',
+        '../ui/base/ui_base.gyp:ui_base_jni_headers',
         'android_webview_common',
         'android_webview_unittests_jni',
       ],

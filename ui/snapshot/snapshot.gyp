@@ -13,9 +13,9 @@
       'dependencies': [
         '../../skia/skia.gyp:skia',
         '../../base/base.gyp:base',
+        '../base/ui_base.gyp:ui_base',
         '../gfx/gfx.gyp:gfx',
         '../gfx/gfx.gyp:gfx_geometry',
-        '../ui.gyp:ui',
       ],
       'defines': [
         'SNAPSHOT_IMPLEMENTATION',
@@ -52,9 +52,9 @@
         '../../base/base.gyp:base',
         '../../base/base.gyp:test_support_base',
         '../../testing/gtest.gyp:gtest',
+        '../base/ui_base.gyp:ui_base',
         '../gfx/gfx.gyp:gfx',
         '../gfx/gfx.gyp:gfx_geometry',
-        '../ui.gyp:ui',
         'snapshot'
       ],
       'sources': [

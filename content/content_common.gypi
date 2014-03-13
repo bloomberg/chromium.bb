@@ -11,10 +11,10 @@
     '../third_party/icu/icu.gyp:icuuc',
     '../third_party/libjingle/libjingle.gyp:libjingle',
     '../ui/accessibility/accessibility.gyp:accessibility',
+    '../ui/base/ui_base.gyp:ui_base',
     '../ui/gfx/gfx.gyp:gfx',
     '../ui/gfx/gfx.gyp:gfx_geometry',
     '../ui/shell_dialogs/shell_dialogs.gyp:shell_dialogs',
-    '../ui/ui.gyp:ui',
     '../url/url.gyp:url_lib',
   ],
   'include_dirs': [

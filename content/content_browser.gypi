@@ -4,24 +4,24 @@
 
 {
   'dependencies': [
-    '../third_party/re2/re2.gyp:re2',
     '../base/base.gyp:base_static',
     '../crypto/crypto.gyp:crypto',
     '../google_apis/google_apis.gyp:google_apis',
     '../net/net.gyp:net',
     '../skia/skia.gyp:skia',
     '../sql/sql.gyp:sql',
+    '../third_party/re2/re2.gyp:re2',
     '../third_party/zlib/google/zip.gyp:zip',
     '../third_party/zlib/zlib.gyp:zlib',
     '../ui/accessibility/accessibility.gyp:accessibility',
     '../ui/accessibility/accessibility.gyp:ax_gen',
+    '../ui/base/ui_base.gyp:ui_base',
     '../ui/events/events.gyp:events_base',
     '../ui/events/events.gyp:gesture_detection',
     '../ui/gfx/gfx.gyp:gfx',
     '../ui/gfx/gfx.gyp:gfx_geometry',
     '../ui/resources/ui_resources.gyp:ui_resources',
     '../ui/snapshot/snapshot.gyp:snapshot',
-    '../ui/ui.gyp:ui',
     'browser/speech/proto/speech_proto.gyp:speech_proto',
   ],
   'export_dependent_settings': [

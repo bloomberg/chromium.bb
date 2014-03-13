@@ -16,9 +16,9 @@
             '../content/content.gyp:content_common',
             '../net/net.gyp:net',
             '../skia/skia.gyp:skia',
+            '../ui/base/ui_base.gyp:ui_base',
             '../ui/gfx/gfx.gyp:gfx',
             '../ui/gfx/gfx.gyp:gfx_geometry',
-            '../ui/ui.gyp:ui',
             'web_contents_delegate_android_jni_headers',
           ],
           'include_dirs': [

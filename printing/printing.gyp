@@ -236,13 +236,13 @@
       'target_name': 'printing_unittests',
       'type': 'executable',
       'dependencies': [
-        'printing',
-        '../testing/gtest.gyp:gtest',
         '../base/base.gyp:run_all_unittests',
         '../base/base.gyp:test_support_base',
+        '../testing/gtest.gyp:gtest',
+        '../ui/base/ui_base.gyp:ui_base',
         '../ui/gfx/gfx.gyp:gfx',
         '../ui/gfx/gfx.gyp:gfx_geometry',
-        '../ui/ui.gyp:ui',
+        'printing',
       ],
       'sources': [
         'emf_win_unittest.cc',

@@ -70,11 +70,11 @@
         '../third_party/libpng/libpng.gyp:libpng',
         '../url/url.gyp:url_lib',
         'base/strings/ui_strings.gyp:ui_strings',
+        'base/ui_base.gyp:ui_base',
         'events/events.gyp:events_base',
         'gfx/gfx.gyp:gfx_test_support',
         'resources/ui_resources.gyp:ui_resources',
         'resources/ui_resources.gyp:ui_test_pak',
-        'ui.gyp:ui',
         'ui_test_support',
       ],
       # iOS uses a small subset of ui. common_sources are the only files that

@@ -35,14 +35,14 @@
       'type': 'static_library',
       'dependencies': [
         '../../base/base.gyp:base',
-        '../../gpu/gpu.gyp:gpu',
-        '../../gpu/gpu.gyp:gles2_implementation_client_side_arrays_no_check',
         '../../gpu/gpu.gyp:command_buffer_service',
+        '../../gpu/gpu.gyp:gles2_implementation_client_side_arrays_no_check',
+        '../../gpu/gpu.gyp:gpu',
         '../../third_party/khronos/khronos.gyp:khronos_headers',
+        '../../ui/base/ui_base.gyp:ui_base',
         '../../ui/gfx/gfx.gyp:gfx',
         '../../ui/gfx/gfx.gyp:gfx_geometry',
         '../../ui/gl/gl.gyp:gl',
-        '../../ui/ui.gyp:ui',
       ],
       'sources': [
         'egl/config.cc',

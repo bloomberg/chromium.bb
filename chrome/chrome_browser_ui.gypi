@@ -50,6 +50,7 @@
         '../third_party/zlib/zlib.gyp:zlib',
         '../ui/accessibility/accessibility.gyp:accessibility',
         '../ui/base/strings/ui_strings.gyp:ui_strings',
+        '../ui/base/ui_base.gyp:ui_base',
         '../ui/events/events.gyp:events',
         '../ui/gfx/gfx.gyp:gfx',
         '../ui/gfx/gfx.gyp:gfx_geometry',
@@ -57,7 +58,6 @@
         '../ui/native_theme/native_theme.gyp:native_theme',
         '../ui/resources/ui_resources.gyp:ui_resources',
         '../ui/snapshot/snapshot.gyp:snapshot',
-        '../ui/ui.gyp:ui',
       ],
       'include_dirs': [
         '..',

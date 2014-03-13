@@ -14,9 +14,9 @@
         '../../base/base.gyp:base',
         '../../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../../skia/skia.gyp:skia',
+        '../base/ui_base.gyp:ui_base',
         '../native_theme/native_theme.gyp:native_theme',
         '../resources/ui_resources.gyp:ui_resources',
-        '../ui.gyp:ui',
       ],
       'defines': [
         'LINUX_UI_IMPLEMENTATION',

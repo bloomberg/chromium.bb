@@ -8,9 +8,9 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../ppapi/ppapi_internal.gyp:ppapi_ipc',
+        '../ui/base/ui_base.gyp:ui_base',
         '../ui/gfx/gfx.gyp:gfx',
         '../ui/gfx/gfx.gyp:gfx_geometry',
-        '../ui/ui.gyp:ui',
       ],
       'sources': [
         'ppapi_plugin/broker_process_dispatcher.cc',

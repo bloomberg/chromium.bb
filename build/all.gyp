@@ -30,8 +30,8 @@
         '../third_party/sqlite/sqlite.gyp:*',
         '../third_party/zlib/zlib.gyp:*',
         '../ui/accessibility/accessibility.gyp:*',
+        '../ui/base/ui_base.gyp:*',
         '../ui/snapshot/snapshot.gyp:*',
-        '../ui/ui.gyp:*',
         '../url/url.gyp:*',
       ],
       'conditions': [

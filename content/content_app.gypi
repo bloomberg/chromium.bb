@@ -10,9 +10,9 @@
     '../base/base.gyp:base',
     '../base/base.gyp:base_i18n',
     '../crypto/crypto.gyp:crypto',
+    '../ui/base/ui_base.gyp:ui_base',
     '../ui/gfx/gfx.gyp:gfx',
     '../ui/gfx/gfx.gyp:gfx_geometry',
-    '../ui/ui.gyp:ui',
   ],
   'sources': [
     'app/android/app_jni_registrar.cc',

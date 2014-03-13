@@ -697,9 +697,9 @@
           'dependencies': [
             'chrome_resources.gyp:chrome_strings',
             '../base/base.gyp:base',
+            '../ui/base/ui_base.gyp:ui_base',
             '../ui/gfx/gfx.gyp:gfx',
             '../ui/gfx/gfx.gyp:gfx_geometry',
-            '../ui/ui.gyp:ui',
           ],
           'include_dirs': [
             '<(grit_out_dir)',
