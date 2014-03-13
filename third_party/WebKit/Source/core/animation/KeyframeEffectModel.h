@@ -63,7 +63,7 @@ public:
     double offset() const { return m_offset; }
     void setComposite(AnimationEffect::CompositeOperation composite) { m_composite = composite; }
     AnimationEffect::CompositeOperation composite() const { return m_composite; }
-    void setEasing(PassRefPtr<TimingFunction> easing) { m_easing = easing; }
+    void setEasing(PassRefPtr<TimingFunction>);
     TimingFunction* easing() const { return m_easing.get(); }
     void setPropertyValue(CSSPropertyID, const AnimatableValue*);
     void clearPropertyValue(CSSPropertyID);

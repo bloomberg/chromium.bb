@@ -52,7 +52,7 @@ private:
 
     static void getAnimationOnCompositor(const Timing&, const KeyframeEffectModel&, Vector<OwnPtr<blink::WebAnimation> >& animations);
 
-    static void addKeyframesToCurve(blink::WebAnimationCurve&, const KeyframeVector&, const TimingFunction&);
+    static void addKeyframesToCurve(blink::WebAnimationCurve&, const KeyframeVector&, bool reverse);
 
     friend class CompositorAnimations;
     friend class AnimationCompositorAnimationsTest;

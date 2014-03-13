@@ -97,6 +97,7 @@ namespace WebCore {
 Keyframe::Keyframe()
     : m_offset(nullValue())
     , m_composite(AnimationEffect::CompositeReplace)
+    , m_easing(LinearTimingFunction::preset())
 { }
 
 Keyframe::Keyframe(const Keyframe& copyFrom)
@@ -104,8 +105,15 @@ Keyframe::Keyframe(const Keyframe& copyFrom)
     , m_composite(copyFrom.m_composite)
     , m_easing(copyFrom.m_easing)
 {
+    ASSERT(m_easing);
     for (PropertyValueMap::const_iterator iter = copyFrom.m_propertyValues.begin(); iter != copyFrom.m_propertyValues.end(); ++iter)
         setPropertyValue(iter->key, iter->value.get());
+}
+
+void Keyframe::setEasing(PassRefPtr<TimingFunction> easing)
+{
+    ASSERT(easing);
+    m_easing = easing;
 }
 
 void Keyframe::setPropertyValue(CSSPropertyID property, const AnimatableValue* value)

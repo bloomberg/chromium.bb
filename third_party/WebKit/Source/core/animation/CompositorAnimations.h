@@ -49,7 +49,6 @@ class CompositorAnimationsTimingFunctionReverser {
 public:
     static PassRefPtr<TimingFunction> reverse(const LinearTimingFunction* timefunc);
     static PassRefPtr<TimingFunction> reverse(const CubicBezierTimingFunction* timefunc);
-    static PassRefPtr<TimingFunction> reverse(const ChainedTimingFunction* timefunc);
     static PassRefPtr<TimingFunction> reverse(const TimingFunction* timefunc);
 };
 

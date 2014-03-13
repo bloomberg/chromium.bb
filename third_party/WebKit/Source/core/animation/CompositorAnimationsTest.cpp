@@ -144,6 +144,7 @@ public:
         keyframe->setPropertyValue(id, value);
         keyframe->setComposite(AnimationEffect::CompositeReplace);
         keyframe->setOffset(offset);
+        keyframe->setEasing(LinearTimingFunction::preset());
         return keyframe;
     }
 
@@ -449,191 +450,65 @@ TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositorTim
     EXPECT_FALSE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect5.get()));
 }
 
-TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositorTimingFunctionChainedEmpty)
-{
-    RefPtr<ChainedTimingFunction> chainedEmpty = ChainedTimingFunction::create();
-    m_timing.timingFunction = chainedEmpty;
-    EXPECT_FALSE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect2.get()));
-    EXPECT_FALSE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect5.get()));
-}
-
 TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositorTimingFunctionChainedLinear)
 {
-    RefPtr<ChainedTimingFunction> chainedLinearSingle = ChainedTimingFunction::create();
-    chainedLinearSingle->appendSegment(1.0, m_linearTimingFunction.get());
-    m_timing.timingFunction = chainedLinearSingle;
     EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect2.get()));
-
-    RefPtr<ChainedTimingFunction> chainedLinearMultiple = ChainedTimingFunction::create();
-    chainedLinearMultiple->appendSegment(0.25, m_linearTimingFunction.get());
-    chainedLinearMultiple->appendSegment(0.5, m_linearTimingFunction.get());
-    chainedLinearMultiple->appendSegment(0.75, m_linearTimingFunction.get());
-    chainedLinearMultiple->appendSegment(1.0, m_linearTimingFunction.get());
-    m_timing.timingFunction = chainedLinearMultiple;
     EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect5.get()));
-
-    // FIXME: Technically a chained timing function of linear functions don't
-    // have to be aligned to keyframes. We don't support that currently as
-    // nothing generates that yet.
 }
 
 TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositorTimingFunctionChainedCubicMatchingOffsets)
 {
-    RefPtr<ChainedTimingFunction> chainedSingleAGood = ChainedTimingFunction::create();
-    chainedSingleAGood->appendSegment(1.0, m_cubicEaseTimingFunction.get());
-    m_timing.timingFunction = chainedSingleAGood;
+    (*m_keyframeVector2)[0]->setEasing(m_cubicEaseTimingFunction.get());
+    m_keyframeAnimationEffect2 = KeyframeEffectModel::create(*m_keyframeVector2);
     EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect2.get()));
 
-    RefPtr<ChainedTimingFunction> chainedSingleBGood = ChainedTimingFunction::create();
-    chainedSingleBGood->appendSegment(1.0, m_cubicCustomTimingFunction.get());
-    m_timing.timingFunction = chainedSingleBGood;
+    (*m_keyframeVector2)[0]->setEasing(m_cubicCustomTimingFunction.get());
+    m_keyframeAnimationEffect2 = KeyframeEffectModel::create(*m_keyframeVector2);
     EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect2.get()));
 
-    RefPtr<ChainedTimingFunction> chainedMultipleGood = ChainedTimingFunction::create();
-    chainedMultipleGood->appendSegment(0.25, m_cubicEaseTimingFunction.get());
-    chainedMultipleGood->appendSegment(0.5, m_cubicCustomTimingFunction.get());
-    chainedMultipleGood->appendSegment(0.75, m_cubicCustomTimingFunction.get());
-    chainedMultipleGood->appendSegment(1.0, m_cubicCustomTimingFunction.get());
-    m_timing.timingFunction = chainedMultipleGood;
+    (*m_keyframeVector5)[0]->setEasing(m_cubicEaseTimingFunction.get());
+    (*m_keyframeVector5)[1]->setEasing(m_cubicCustomTimingFunction.get());
+    (*m_keyframeVector5)[2]->setEasing(m_cubicCustomTimingFunction.get());
+    (*m_keyframeVector5)[3]->setEasing(m_cubicCustomTimingFunction.get());
+    m_keyframeAnimationEffect5 = KeyframeEffectModel::create(*m_keyframeVector5);
     EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect5.get()));
-}
-
-TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositorTimingFunctionChainedCubicNonMatchingOffsets)
-{
-    RefPtr<ChainedTimingFunction> chained0 = ChainedTimingFunction::create();
-    chained0->appendSegment(0.5, m_cubicEaseTimingFunction.get());
-    m_timing.timingFunction = chained0;
-    EXPECT_FALSE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect2.get()));
-
-    RefPtr<ChainedTimingFunction> chained1 = ChainedTimingFunction::create();
-    chained1->appendSegment(0.24, m_cubicEaseTimingFunction.get());
-    chained1->appendSegment(0.5, m_cubicEaseTimingFunction.get());
-    chained1->appendSegment(0.75, m_cubicEaseTimingFunction.get());
-    chained1->appendSegment(1.0, m_cubicEaseTimingFunction.get());
-    m_timing.timingFunction = chained1;
-    EXPECT_FALSE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect5.get()));
-
-    RefPtr<ChainedTimingFunction> chained2 = ChainedTimingFunction::create();
-    chained2->appendSegment(0.25, m_cubicEaseTimingFunction.get());
-    chained2->appendSegment(0.51, m_cubicEaseTimingFunction.get());
-    chained2->appendSegment(0.75, m_cubicEaseTimingFunction.get());
-    chained2->appendSegment(1.0, m_cubicEaseTimingFunction.get());
-    m_timing.timingFunction = chained2;
-    EXPECT_FALSE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect5.get()));
-
-    RefPtr<ChainedTimingFunction> chained3 = ChainedTimingFunction::create();
-    chained3->appendSegment(0.25, m_cubicEaseTimingFunction.get());
-    chained3->appendSegment(0.5, m_cubicEaseTimingFunction.get());
-    chained3->appendSegment(0.75, m_cubicEaseTimingFunction.get());
-    chained3->appendSegment(0.8, m_cubicEaseTimingFunction.get());
-    m_timing.timingFunction = chained3;
-    EXPECT_FALSE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect5.get()));
-
-    RefPtr<ChainedTimingFunction> chained4 = ChainedTimingFunction::create();
-    chained4->appendSegment(0.25, m_cubicEaseTimingFunction.get());
-    chained4->appendSegment(0.5, m_cubicEaseTimingFunction.get());
-    chained4->appendSegment(0.75, m_cubicEaseTimingFunction.get());
-    chained4->appendSegment(1.1, m_cubicEaseTimingFunction.get());
-    m_timing.timingFunction = chained4;
-    EXPECT_FALSE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect5.get()));
-}
-
-TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositorTimingFunctionMissingFrames)
-{
-    // Missing first
-    RefPtr<ChainedTimingFunction> chained1 = ChainedTimingFunction::create();
-    chained1->appendSegment(0.5, m_cubicEaseTimingFunction.get());
-    chained1->appendSegment(0.75, m_cubicEaseTimingFunction.get());
-    chained1->appendSegment(1.0, m_cubicEaseTimingFunction.get());
-    m_timing.timingFunction = chained1;
-    EXPECT_FALSE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect5.get()));
-
-    // Missing middle
-    RefPtr<ChainedTimingFunction> chained2 = ChainedTimingFunction::create();
-    chained2->appendSegment(0.25, m_cubicEaseTimingFunction.get());
-    chained2->appendSegment(0.75, m_cubicEaseTimingFunction.get());
-    chained2->appendSegment(1.0, m_cubicEaseTimingFunction.get());
-    m_timing.timingFunction = chained2;
-    EXPECT_FALSE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect5.get()));
-
-    // Missing last
-    RefPtr<ChainedTimingFunction> chained3 = ChainedTimingFunction::create();
-    chained3->appendSegment(0.25, m_cubicEaseTimingFunction.get());
-    chained3->appendSegment(0.5, m_cubicEaseTimingFunction.get());
-    chained3->appendSegment(0.75, m_cubicEaseTimingFunction.get());
-    m_timing.timingFunction = chained3;
-    EXPECT_FALSE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect5.get()));
-}
-
-TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositorTimingFunctionToManyFrames)
-{
-    RefPtr<ChainedTimingFunction> chained1 = ChainedTimingFunction::create();
-    chained1->appendSegment(0.1, m_cubicEaseTimingFunction.get());
-    chained1->appendSegment(0.5, m_cubicEaseTimingFunction.get());
-    m_timing.timingFunction = chained1;
-    EXPECT_FALSE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect2.get()));
-
-    RefPtr<ChainedTimingFunction> chained2 = ChainedTimingFunction::create();
-    chained2->appendSegment(0.1, m_cubicEaseTimingFunction.get());
-    chained2->appendSegment(0.25, m_cubicEaseTimingFunction.get());
-    chained2->appendSegment(0.5, m_cubicEaseTimingFunction.get());
-    chained2->appendSegment(0.75, m_cubicEaseTimingFunction.get());
-    chained2->appendSegment(1.0, m_cubicEaseTimingFunction.get());
-    m_timing.timingFunction = chained2;
-    EXPECT_FALSE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect5.get()));
 }
 
 TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositorTimingFunctionMixedGood)
 {
-    RefPtr<ChainedTimingFunction> chainedMixed = ChainedTimingFunction::create();
-    chainedMixed->appendSegment(0.25, m_linearTimingFunction.get());
-    chainedMixed->appendSegment(0.5, m_cubicEaseTimingFunction.get());
-    chainedMixed->appendSegment(0.75, m_cubicEaseTimingFunction.get());
-    chainedMixed->appendSegment(1.0, m_linearTimingFunction.get());
-    m_timing.timingFunction = chainedMixed;
+    (*m_keyframeVector5)[0]->setEasing(m_linearTimingFunction.get());
+    (*m_keyframeVector5)[1]->setEasing(m_cubicEaseTimingFunction.get());
+    (*m_keyframeVector5)[2]->setEasing(m_cubicEaseTimingFunction.get());
+    (*m_keyframeVector5)[3]->setEasing(m_linearTimingFunction.get());
+    m_keyframeAnimationEffect5 = KeyframeEffectModel::create(*m_keyframeVector5);
     EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect5.get()));
 }
 
 TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositorTimingFunctionWithStepNotOkay)
 {
-    RefPtr<ChainedTimingFunction> chainedStepSingle = ChainedTimingFunction::create();
-    chainedStepSingle->appendSegment(1.0, m_stepTimingFunction.get());
-    m_timing.timingFunction = chainedStepSingle;
+    (*m_keyframeVector2)[0]->setEasing(m_stepTimingFunction.get());
+    m_keyframeAnimationEffect2 = KeyframeEffectModel::create(*m_keyframeVector2);
     EXPECT_FALSE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect2.get()));
 
-    RefPtr<ChainedTimingFunction> chainedStepMixedA = ChainedTimingFunction::create();
-    chainedStepMixedA->appendSegment(0.25, m_stepTimingFunction.get());
-    chainedStepMixedA->appendSegment(0.5, m_linearTimingFunction.get());
-    chainedStepMixedA->appendSegment(1.0, m_cubicEaseTimingFunction.get());
-    m_timing.timingFunction = chainedStepMixedA;
+    (*m_keyframeVector5)[0]->setEasing(m_stepTimingFunction.get());
+    (*m_keyframeVector5)[1]->setEasing(m_linearTimingFunction.get());
+    (*m_keyframeVector5)[2]->setEasing(m_cubicEaseTimingFunction.get());
+    (*m_keyframeVector5)[3]->setEasing(m_linearTimingFunction.get());
+    m_keyframeAnimationEffect5 = KeyframeEffectModel::create(*m_keyframeVector5);
     EXPECT_FALSE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect5.get()));
 
-    RefPtr<ChainedTimingFunction> chainedStepMixedB = ChainedTimingFunction::create();
-    chainedStepMixedB->appendSegment(0.25, m_linearTimingFunction.get());
-    chainedStepMixedB->appendSegment(0.5, m_stepTimingFunction.get());
-    chainedStepMixedB->appendSegment(1.0, m_cubicEaseTimingFunction.get());
-    m_timing.timingFunction = chainedStepMixedB;
+    (*m_keyframeVector5)[0]->setEasing(m_linearTimingFunction.get());
+    (*m_keyframeVector5)[1]->setEasing(m_stepTimingFunction.get());
+    (*m_keyframeVector5)[2]->setEasing(m_cubicEaseTimingFunction.get());
+    (*m_keyframeVector5)[3]->setEasing(m_linearTimingFunction.get());
+    m_keyframeAnimationEffect5 = KeyframeEffectModel::create(*m_keyframeVector5);
     EXPECT_FALSE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect5.get()));
 
-    RefPtr<ChainedTimingFunction> chainedStepMixedC = ChainedTimingFunction::create();
-    chainedStepMixedC->appendSegment(0.25, m_linearTimingFunction.get());
-    chainedStepMixedC->appendSegment(0.5, m_cubicEaseTimingFunction.get());
-    chainedStepMixedC->appendSegment(1.0, m_stepTimingFunction.get());
-    m_timing.timingFunction = chainedStepMixedC;
-    EXPECT_FALSE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect5.get()));
-}
-
-TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositorTimingFunctionNestedNotOkay)
-{
-    RefPtr<ChainedTimingFunction> chainedChild = ChainedTimingFunction::create();
-    chainedChild->appendSegment(1.0, m_linearTimingFunction.get());
-
-    RefPtr<ChainedTimingFunction> chainedParent = ChainedTimingFunction::create();
-    chainedParent->appendSegment(0.25, m_linearTimingFunction.get());
-    chainedParent->appendSegment(0.5, chainedChild.get());
-    chainedParent->appendSegment(0.75, m_linearTimingFunction.get());
-    chainedParent->appendSegment(1.0, m_linearTimingFunction.get());
-    m_timing.timingFunction = chainedParent;
+    (*m_keyframeVector5)[0]->setEasing(m_linearTimingFunction.get());
+    (*m_keyframeVector5)[1]->setEasing(m_cubicEaseTimingFunction.get());
+    (*m_keyframeVector5)[2]->setEasing(m_cubicEaseTimingFunction.get());
+    (*m_keyframeVector5)[3]->setEasing(m_stepTimingFunction.get());
+    m_keyframeAnimationEffect5 = KeyframeEffectModel::create(*m_keyframeVector5);
     EXPECT_FALSE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect5.get()));
 }
 
@@ -641,35 +516,27 @@ TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositor)
 {
     Timing linearTiming(createCompositableTiming());
 
-    RefPtr<TimingFunction> cubicTimingFunc = CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseIn);
-    Timing cubicTiming(createCompositableTiming());
-    cubicTiming.timingFunction = cubicTimingFunc;
-
-    RefPtr<ChainedTimingFunction> chainedTimingFunc = ChainedTimingFunction::create();
-    chainedTimingFunc->appendSegment(0.5, m_linearTimingFunction.get());
-    chainedTimingFunc->appendSegment(1.0, cubicTimingFunc.get());
-    Timing chainedTiming(createCompositableTiming());
-    chainedTiming.timingFunction = chainedTimingFunc;
-
     KeyframeEffectModel::KeyframeVector basicFramesVector;
     basicFramesVector.append(createDefaultKeyframe(CSSPropertyOpacity, AnimationEffect::CompositeReplace, 0.0).get());
     basicFramesVector.append(createDefaultKeyframe(CSSPropertyOpacity, AnimationEffect::CompositeReplace, 1.0).get());
-    RefPtrWillBeRawPtr<KeyframeEffectModel> basicFrames = KeyframeEffectModel::create(basicFramesVector).get();
-
-    EXPECT_TRUE(isCandidateForAnimationOnCompositor(linearTiming, *basicFrames.get()));
-    EXPECT_TRUE(isCandidateForAnimationOnCompositor(cubicTiming, *basicFrames.get()));
-    // number of timing function and keyframes don't match
-    EXPECT_FALSE(isCandidateForAnimationOnCompositor(chainedTiming, *basicFrames.get()));
 
     KeyframeEffectModel::KeyframeVector nonBasicFramesVector;
     nonBasicFramesVector.append(createDefaultKeyframe(CSSPropertyOpacity, AnimationEffect::CompositeReplace, 0.0).get());
     nonBasicFramesVector.append(createDefaultKeyframe(CSSPropertyOpacity, AnimationEffect::CompositeReplace, 0.5).get());
     nonBasicFramesVector.append(createDefaultKeyframe(CSSPropertyOpacity, AnimationEffect::CompositeReplace, 1.0).get());
-    RefPtrWillBeRawPtr<KeyframeEffectModel> nonBasicFrames = KeyframeEffectModel::create(nonBasicFramesVector).get();
 
+    basicFramesVector[0]->setEasing(m_linearTimingFunction.get());
+    RefPtrWillBeRawPtr<KeyframeEffectModel> basicFrames = KeyframeEffectModel::create(basicFramesVector).get();
+    EXPECT_TRUE(isCandidateForAnimationOnCompositor(linearTiming, *basicFrames.get()));
+
+    basicFramesVector[0]->setEasing(CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseIn));
+    basicFrames = KeyframeEffectModel::create(basicFramesVector).get();
+    EXPECT_TRUE(isCandidateForAnimationOnCompositor(linearTiming, *basicFrames.get()));
+
+    nonBasicFramesVector[0]->setEasing(m_linearTimingFunction.get());
+    nonBasicFramesVector[1]->setEasing(CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseIn));
+    RefPtrWillBeRawPtr<KeyframeEffectModel> nonBasicFrames = KeyframeEffectModel::create(nonBasicFramesVector).get();
     EXPECT_TRUE(CompositorAnimations::instance()->isCandidateForAnimationOnCompositor(linearTiming, *nonBasicFrames.get()));
-    EXPECT_FALSE(CompositorAnimations::instance()->isCandidateForAnimationOnCompositor(cubicTiming, *nonBasicFrames.get()));
-    EXPECT_TRUE(CompositorAnimations::instance()->isCandidateForAnimationOnCompositor(chainedTiming, *nonBasicFrames.get()));
 }
 
 // -----------------------------------------------------------------------
@@ -872,18 +739,17 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationStartDelay
 TEST_F(AnimationCompositorAnimationsTest, createMultipleKeyframeOpacityAnimationChained)
 {
     // Animation to convert
-    RefPtrWillBeRawPtr<KeyframeEffectModel> effect = createKeyframeEffectModel(
-        createReplaceOpKeyframe(CSSPropertyOpacity, AnimatableDouble::create(2.0).get(), 0),
-        createReplaceOpKeyframe(CSSPropertyOpacity, AnimatableDouble::create(-1.0).get(), 0.25),
-        createReplaceOpKeyframe(CSSPropertyOpacity, AnimatableDouble::create(20.0).get(), 0.5),
-        createReplaceOpKeyframe(CSSPropertyOpacity, AnimatableDouble::create(5.0).get(), 1.0));
+    KeyframeEffectModel::KeyframeVector frames;
+    frames.append(createReplaceOpKeyframe(CSSPropertyOpacity, AnimatableDouble::create(2.0).get(), 0));
+    frames.append(createReplaceOpKeyframe(CSSPropertyOpacity, AnimatableDouble::create(-1.0).get(), 0.25));
+    frames.append(createReplaceOpKeyframe(CSSPropertyOpacity, AnimatableDouble::create(20.0).get(), 0.5));
+    frames.append(createReplaceOpKeyframe(CSSPropertyOpacity, AnimatableDouble::create(5.0).get(), 1.0));
+    frames[0]->setEasing(m_cubicEaseTimingFunction.get());
+    frames[1]->setEasing(m_linearTimingFunction.get());
+    frames[2]->setEasing(m_cubicCustomTimingFunction.get());
+    RefPtrWillBeRawPtr<KeyframeEffectModel> effect = KeyframeEffectModel::create(frames);
 
-    RefPtr<ChainedTimingFunction> chainedTimingFunction = ChainedTimingFunction::create();
-    chainedTimingFunction->appendSegment(0.25, m_cubicEaseTimingFunction.get());
-    chainedTimingFunction->appendSegment(0.5, m_linearTimingFunction.get());
-    chainedTimingFunction->appendSegment(1.0, m_cubicCustomTimingFunction.get());
-
-    m_timing.timingFunction = chainedTimingFunction;
+    m_timing.timingFunction = m_linearTimingFunction.get();
     m_timing.iterationDuration = 2.0;
     m_timing.iterationCount = 10;
     m_timing.direction = Timing::PlaybackDirectionAlternate;
@@ -931,20 +797,20 @@ TEST_F(AnimationCompositorAnimationsTest, createMultipleKeyframeOpacityAnimation
 
 TEST_F(AnimationCompositorAnimationsTest, createReversedOpacityAnimation)
 {
-    // Animation to convert
-    RefPtrWillBeRawPtr<KeyframeEffectModel> effect = createKeyframeEffectModel(
-        createReplaceOpKeyframe(CSSPropertyOpacity, AnimatableDouble::create(2.0).get(), 0),
-        createReplaceOpKeyframe(CSSPropertyOpacity, AnimatableDouble::create(-1.0).get(), 0.25),
-        createReplaceOpKeyframe(CSSPropertyOpacity, AnimatableDouble::create(20.0).get(), 0.5),
-        createReplaceOpKeyframe(CSSPropertyOpacity, AnimatableDouble::create(5.0).get(), 1.0));
-
     RefPtr<TimingFunction> cubicEasyFlipTimingFunction = CubicBezierTimingFunction::create(0.0, 0.0, 0.0, 1.0);
-    RefPtr<ChainedTimingFunction> chainedTimingFunction = ChainedTimingFunction::create();
-    chainedTimingFunction->appendSegment(0.25, CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseIn));
-    chainedTimingFunction->appendSegment(0.5, m_linearTimingFunction.get());
-    chainedTimingFunction->appendSegment(1.0, cubicEasyFlipTimingFunction.get());
 
-    m_timing.timingFunction = chainedTimingFunction;
+    // Animation to convert
+    KeyframeEffectModel::KeyframeVector frames;
+    frames.append(createReplaceOpKeyframe(CSSPropertyOpacity, AnimatableDouble::create(2.0).get(), 0));
+    frames.append(createReplaceOpKeyframe(CSSPropertyOpacity, AnimatableDouble::create(-1.0).get(), 0.25));
+    frames.append(createReplaceOpKeyframe(CSSPropertyOpacity, AnimatableDouble::create(20.0).get(), 0.5));
+    frames.append(createReplaceOpKeyframe(CSSPropertyOpacity, AnimatableDouble::create(5.0).get(), 1.0));
+    frames[0]->setEasing(CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseIn));
+    frames[1]->setEasing(m_linearTimingFunction.get());
+    frames[2]->setEasing(cubicEasyFlipTimingFunction.get());
+    RefPtr<KeyframeEffectModel> effect = KeyframeEffectModel::create(frames);
+
+    m_timing.timingFunction = m_linearTimingFunction.get();
     m_timing.iterationCount = 10;
     m_timing.direction = Timing::PlaybackDirectionAlternateReverse;
     // --
