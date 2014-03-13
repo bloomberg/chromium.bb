@@ -1490,9 +1490,6 @@ const char kEnableContextualSearch[]        = "contextual-search";
 // Enables the new NTP.
 const char kEnableNewNTP[]                  = "enable-new-ntp";
 
-// Pops the translate infobar if possible.
-const char kEnableTranslate[]               = "enable-translate";
-
 // Enables zero suggest functionality on Dev channel, showing contextual
 // suggestions (EtherSuggest) for http pages and google.com search queries.
 const char kEnableZeroSuggestEtherSerp[] =

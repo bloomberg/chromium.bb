@@ -413,7 +413,6 @@ extern const char kDisableZeroSuggest[];
 extern const char kEnableAccessibilityTabSwitcher[];
 extern const char kEnableContextualSearch[];
 extern const char kEnableNewNTP[];
-extern const char kEnableTranslate[];
 extern const char kEnableZeroSuggestEtherSerp[];
 extern const char kEnableZeroSuggestEtherNoSerp[];
 extern const char kEnableZeroSuggestMostVisited[];
