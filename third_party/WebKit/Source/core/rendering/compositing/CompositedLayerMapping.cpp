@@ -161,6 +161,8 @@ CompositedLayerMapping::CompositedLayerMapping(RenderLayer& layer)
     , m_requiresOwnBackingStoreForAncestorReasons(true)
     , m_canCompositeFilters(false)
     , m_backgroundLayerPaintsFixedRootBackground(false)
+    , m_needToUpdateGeometry(false)
+    , m_needToUpdateGeometryOfAllDecendants(false)
 {
     if (layer.isRootLayer() && renderer()->frame()->isMainFrame())
         m_isMainFrameRenderViewLayer = true;

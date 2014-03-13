@@ -3544,8 +3544,14 @@ CompositedLayerMappingPtr RenderLayer::ensureCompositedLayerMapping()
 
 void RenderLayer::clearCompositedLayerMapping(bool layerBeingDestroyed)
 {
-    if (!layerBeingDestroyed)
-        m_compositedLayerMapping->setNeedsGeometryUpdate();
+    if (!layerBeingDestroyed) {
+        // We need to make sure our decendants get a geometry update. In principle,
+        // we could call setNeedsGeometryUpdate on our children, but that would
+        // require walking the z-order lists to find them. Instead, we over-invalidate
+        // by marking our parent as needing a geometry update.
+        if (RenderLayer* compositingParent = enclosingCompositingLayer(ExcludeSelf))
+            compositingParent->compositedLayerMapping()->setNeedsGeometryUpdate();
+    }
 
     m_compositedLayerMapping.clear();
 
