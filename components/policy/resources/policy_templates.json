@@ -312,7 +312,7 @@
       'name': 'QuickCheckEnabled',
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': [ 'chrome.*:33-', 'chrome_os:33-' ],
+      'supported_on': [ 'chrome.*:35-', 'chrome_os:35-' ],
       'features': {
         'dynamic_refresh': False,
         'per_profile': False,
