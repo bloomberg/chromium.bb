@@ -229,7 +229,7 @@ class WebNavigationAPI : public BrowserContextKeyedAPI,
   explicit WebNavigationAPI(content::BrowserContext* context);
   virtual ~WebNavigationAPI();
 
-  // BrowserContextKeyedService implementation.
+  // KeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
   // BrowserContextKeyedAPI implementation.

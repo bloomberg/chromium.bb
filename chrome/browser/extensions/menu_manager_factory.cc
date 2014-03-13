@@ -6,7 +6,7 @@
 
 #include "chrome/browser/extensions/menu_manager.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_system_provider.h"
 #include "extensions/browser/extensions_browser_client.h"
@@ -34,9 +34,8 @@ MenuManagerFactory::MenuManagerFactory()
 
 MenuManagerFactory::~MenuManagerFactory() {}
 
-BrowserContextKeyedService*
-    MenuManagerFactory::BuildServiceInstanceFor(
-        content::BrowserContext* context) const {
+KeyedService* MenuManagerFactory::BuildServiceInstanceFor(
+    content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
   return new MenuManager(
       profile,

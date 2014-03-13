@@ -17,7 +17,7 @@
 #include "base/supports_user_data.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "components/wifi/wifi_service.h"
 #include "content/public/browser/utility_process_host.h"
 #include "content/public/browser/utility_process_host_client.h"
@@ -40,7 +40,7 @@ using wifi::WiFiService;
 // them to WiFiService on worker thread to |UpdateConnectedNetwork|. Always used
 // from UI thread only.
 class NetworkingPrivateServiceClient
-    : public BrowserContextKeyedService,
+    : public KeyedService,
       net::NetworkChangeNotifier::NetworkChangeObserver {
  public:
   // Interface for Verify* methods implementation.

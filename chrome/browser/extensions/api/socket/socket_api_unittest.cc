@@ -16,8 +16,7 @@
 
 namespace extensions {
 
-BrowserContextKeyedService* ApiResourceManagerTestFactory(
-    content::BrowserContext* context) {
+KeyedService* ApiResourceManagerTestFactory(content::BrowserContext* context) {
   content::BrowserThread::ID id;
   CHECK(content::BrowserThread::GetCurrentThreadIdentifier(&id));
   return ApiResourceManager<Socket>::CreateApiResourceManagerForTest(context,

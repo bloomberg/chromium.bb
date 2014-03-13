@@ -83,7 +83,7 @@ ChromeDirectSettingAPI::ChromeDirectSettingAPI(content::BrowserContext* context)
 
 ChromeDirectSettingAPI::~ChromeDirectSettingAPI() {}
 
-// BrowserContextKeyedService implementation.
+// KeyedService implementation.
 void ChromeDirectSettingAPI::Shutdown() {}
 
 // BrowserContextKeyedAPI implementation.

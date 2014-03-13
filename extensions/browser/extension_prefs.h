@@ -14,7 +14,7 @@
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "extensions/browser/app_sorting.h"
 #include "extensions/browser/blacklist_state.h"
 #include "extensions/browser/extension_scoped_prefs.h"
@@ -56,8 +56,7 @@ class URLPatternSet;
 //       preference. Extension-controlled preferences are stored in
 //       PrefValueStore::extension_prefs(), which this class populates and
 //       maintains as the underlying extensions change.
-class ExtensionPrefs : public ExtensionScopedPrefs,
-                       public BrowserContextKeyedService {
+class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
  public:
   typedef std::vector<linked_ptr<ExtensionInfo> > ExtensionsInfo;
 

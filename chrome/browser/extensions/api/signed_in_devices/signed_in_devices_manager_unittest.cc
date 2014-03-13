@@ -17,8 +17,7 @@
 namespace extensions {
 
 namespace {
-BrowserContextKeyedService* CreateProfileSyncServiceMock(
-    content::BrowserContext* profile) {
+KeyedService* CreateProfileSyncServiceMock(content::BrowserContext* profile) {
   return NULL;
 }
 }  // namespace

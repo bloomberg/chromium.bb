@@ -34,7 +34,7 @@ class GaiaAuthExtensionLoader : public BrowserContextKeyedAPI {
  private:
   friend class BrowserContextKeyedAPIFactory<GaiaAuthExtensionLoader>;
 
-  // BrowserContextKeyedService overrides:
+  // KeyedService overrides:
   virtual void Shutdown() OVERRIDE;
 
   // BrowserContextKeyedAPI implementation.

@@ -10,7 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "extensions/common/extension_set.h"
 
 namespace content {
@@ -24,7 +24,7 @@ class ExtensionRegistryObserver;
 // ExtensionRegistry holds sets of the installed extensions for a given
 // BrowserContext. An incognito browser context and its master browser context
 // share a single registry.
-class ExtensionRegistry : public BrowserContextKeyedService {
+class ExtensionRegistry : public KeyedService {
  public:
   // Flags to pass to GetExtensionById() to select which sets to look in.
   enum IncludeFlag {
@@ -108,7 +108,7 @@ class ExtensionRegistry : public BrowserContextKeyedService {
   void SetDisabledModificationCallback(
       const ExtensionSet::ModificationCallback& callback);
 
-  // BrowserContextKeyedService implementation:
+  // KeyedService implementation:
   virtual void Shutdown() OVERRIDE;
 
  private:

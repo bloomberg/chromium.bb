@@ -96,7 +96,7 @@ class PreferenceAPI : public PreferenceAPIBase,
   explicit PreferenceAPI(content::BrowserContext* context);
   virtual ~PreferenceAPI();
 
-  // BrowserContextKeyedService implementation.
+  // KeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
   // BrowserContextKeyedAPI implementation.

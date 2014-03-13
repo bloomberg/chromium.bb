@@ -45,7 +45,7 @@ class FakeProfileSyncService : public ProfileSyncService {
 
   virtual ~FakeProfileSyncService() {}
 
-  static BrowserContextKeyedService* BuildFakeProfileSyncService(
+  static KeyedService* BuildFakeProfileSyncService(
       content::BrowserContext* context) {
     return new FakeProfileSyncService(static_cast<Profile*>(context));
   }

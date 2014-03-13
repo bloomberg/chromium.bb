@@ -58,7 +58,7 @@ class HistoryAPI : public BrowserContextKeyedAPI, public EventRouter::Observer {
   explicit HistoryAPI(content::BrowserContext* context);
   virtual ~HistoryAPI();
 
-  // BrowserContextKeyedService implementation.
+  // KeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
   // BrowserContextKeyedAPI implementation.

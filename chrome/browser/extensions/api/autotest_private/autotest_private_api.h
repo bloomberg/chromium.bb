@@ -111,7 +111,7 @@ class AutotestPrivateAPI : public BrowserContextKeyedAPI {
 };
 
 template <>
-BrowserContextKeyedService*
+KeyedService*
     BrowserContextKeyedAPIFactory<AutotestPrivateAPI>::BuildServiceInstanceFor(
         content::BrowserContext* context) const;
 

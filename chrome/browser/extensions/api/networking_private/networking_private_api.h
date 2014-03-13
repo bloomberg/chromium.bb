@@ -14,7 +14,7 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 
 // Implements the chrome.networkingPrivate.getProperties method.
 class NetworkingPrivateGetPropertiesFunction

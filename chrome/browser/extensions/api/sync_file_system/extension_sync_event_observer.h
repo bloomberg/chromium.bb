@@ -35,7 +35,7 @@ class ExtensionSyncEventObserver : public sync_file_system::SyncEventObserver,
   void InitializeForService(
       sync_file_system::SyncFileSystemService* sync_service);
 
-  // BrowserContextKeyedService override.
+  // KeyedService override.
   virtual void Shutdown() OVERRIDE;
 
   // sync_file_system::SyncEventObserver interface implementation.

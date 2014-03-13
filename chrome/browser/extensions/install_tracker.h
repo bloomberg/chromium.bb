@@ -8,7 +8,7 @@
 #include "base/observer_list.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "chrome/browser/extensions/install_observer.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -18,7 +18,7 @@ namespace extensions {
 
 class ExtensionPrefs;
 
-class InstallTracker : public BrowserContextKeyedService,
+class InstallTracker : public KeyedService,
                        public content::NotificationObserver {
  public:
   InstallTracker(Profile* profile,
@@ -34,7 +34,7 @@ class InstallTracker : public BrowserContextKeyedService,
                           int percent_downloaded);
   void OnInstallFailure(const std::string& extension_id);
 
-  // Overriddes for BrowserContextKeyedService:
+  // Overriddes for KeyedService:
   virtual void Shutdown() OVERRIDE;
 
   // content::NotificationObserver

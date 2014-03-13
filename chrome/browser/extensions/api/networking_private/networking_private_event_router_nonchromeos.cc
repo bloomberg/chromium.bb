@@ -23,7 +23,7 @@ class NetworkingPrivateEventRouterImpl
   virtual ~NetworkingPrivateEventRouterImpl();
 
  protected:
-  // BrowserContextKeyedService overrides:
+  // KeyedService overrides:
   virtual void Shutdown() OVERRIDE;
 
   // EventRouter::Observer overrides:

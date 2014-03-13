@@ -7,7 +7,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/system_indicator/system_indicator_manager.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "extensions/browser/extension_system_provider.h"
 #include "extensions/browser/extensions_browser_client.h"
 
@@ -34,8 +34,7 @@ SystemIndicatorManagerFactory::SystemIndicatorManagerFactory()
 
 SystemIndicatorManagerFactory::~SystemIndicatorManagerFactory() {}
 
-BrowserContextKeyedService*
-SystemIndicatorManagerFactory::BuildServiceInstanceFor(
+KeyedService* SystemIndicatorManagerFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
 
   StatusTray* status_tray = g_browser_process->status_tray();

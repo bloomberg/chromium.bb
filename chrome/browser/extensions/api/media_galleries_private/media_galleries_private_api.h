@@ -35,7 +35,7 @@ class MediaGalleriesPrivateAPI : public BrowserContextKeyedAPI,
   explicit MediaGalleriesPrivateAPI(content::BrowserContext* context);
   virtual ~MediaGalleriesPrivateAPI();
 
-  // BrowserContextKeyedService implementation.
+  // KeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
   // BrowserContextKeyedAPI implementation.

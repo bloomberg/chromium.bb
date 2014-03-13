@@ -12,7 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/time/time.h"
 #include "chrome/browser/signin/signin_manager_base.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 
 class Profile;
 
@@ -21,7 +21,7 @@ namespace extensions {
 // This class caches tokens for the current user.  It will clear tokens out
 // when the user logs out or after the specified timeout interval, or when
 // the instance of chrome shuts down.
-class TokenCacheService : public BrowserContextKeyedService,
+class TokenCacheService : public KeyedService,
                           public SigninManagerBase::Observer {
  public:
   explicit TokenCacheService(Profile* profile);
@@ -38,7 +38,7 @@ class TokenCacheService : public BrowserContextKeyedService,
   // string if the token was not found or timed out.
   std::string RetrieveToken(const std::string& token_name);
 
-  // BrowserContextKeyedService:
+  // KeyedService:
   virtual void Shutdown() OVERRIDE;
 
  private:

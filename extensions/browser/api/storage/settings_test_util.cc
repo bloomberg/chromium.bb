@@ -111,8 +111,7 @@ EventRouter* MockExtensionSystem::event_router() {
   return event_router_.get();
 }
 
-BrowserContextKeyedService* BuildMockExtensionSystem(
-    content::BrowserContext* profile) {
+KeyedService* BuildMockExtensionSystem(content::BrowserContext* profile) {
   return new MockExtensionSystem(static_cast<Profile*>(profile));
 }
 

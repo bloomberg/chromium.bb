@@ -4,7 +4,7 @@
 
 #include "extensions/browser/process_map_factory.h"
 
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/process_map.h"
 
@@ -32,7 +32,7 @@ ProcessMapFactory::ProcessMapFactory()
 
 ProcessMapFactory::~ProcessMapFactory() {}
 
-BrowserContextKeyedService* ProcessMapFactory::BuildServiceInstanceFor(
+KeyedService* ProcessMapFactory::BuildServiceInstanceFor(
     BrowserContext* context) const {
   return new ProcessMap;
 }

@@ -4,7 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/prefs/pref_service.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/extension_pref_value_map.h"
 #include "extensions/browser/extension_pref_value_map_factory.h"
@@ -41,7 +41,7 @@ ExtensionPrefsFactory::ExtensionPrefsFactory()
 ExtensionPrefsFactory::~ExtensionPrefsFactory() {
 }
 
-BrowserContextKeyedService* ExtensionPrefsFactory::BuildServiceInstanceFor(
+KeyedService* ExtensionPrefsFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   ExtensionsBrowserClient* client = ExtensionsBrowserClient::Get();
   return ExtensionPrefs::Create(

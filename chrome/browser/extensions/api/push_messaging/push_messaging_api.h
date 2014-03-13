@@ -120,7 +120,7 @@ class PushMessagingAPI : public BrowserContextKeyedAPI,
   // Convenience method to get the PushMessagingAPI for a profile.
   static PushMessagingAPI* Get(content::BrowserContext* context);
 
-  // BrowserContextKeyedService implementation.
+  // KeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
   // BrowserContextKeyedAPI implementation.

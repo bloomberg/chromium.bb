@@ -7,8 +7,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/singleton.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
+#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -24,7 +24,7 @@ namespace extensions {
 // and non-extension renderers, as the non-extension renderers may have content
 // scripts. Lives on the UI thread. Shared between incognito and non-incognito
 // browser contexts.
-class RendererStartupHelper : public BrowserContextKeyedService,
+class RendererStartupHelper : public KeyedService,
                               public content::NotificationObserver {
  public:
   // This class sends messages to all renderers started for |browser_context|.
@@ -60,7 +60,7 @@ class RendererStartupHelperFactory : public BrowserContextKeyedServiceFactory {
   virtual ~RendererStartupHelperFactory();
 
   // BrowserContextKeyedServiceFactory implementation:
-  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
+  virtual KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const OVERRIDE;
   virtual content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const OVERRIDE;

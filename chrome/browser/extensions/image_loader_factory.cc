@@ -5,7 +5,7 @@
 #include "chrome/browser/extensions/image_loader_factory.h"
 
 #include "chrome/browser/extensions/image_loader.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "extensions/browser/extensions_browser_client.h"
 
 namespace extensions {
@@ -30,7 +30,7 @@ ImageLoaderFactory::ImageLoaderFactory()
 ImageLoaderFactory::~ImageLoaderFactory() {
 }
 
-BrowserContextKeyedService* ImageLoaderFactory::BuildServiceInstanceFor(
+KeyedService* ImageLoaderFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   return new ImageLoader;
 }

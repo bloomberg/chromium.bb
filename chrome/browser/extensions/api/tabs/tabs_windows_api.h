@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_API_TABS_TABS_WINDOWS_API_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/event_router.h"
 
@@ -26,7 +26,7 @@ class TabsWindowsAPI : public BrowserContextKeyedAPI,
   TabsEventRouter* tabs_event_router();
   WindowsEventRouter* windows_event_router();
 
-  // BrowserContextKeyedService implementation.
+  // KeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
   // BrowserContextKeyedAPI implementation.

@@ -14,7 +14,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/idle.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/event_router.h"
@@ -39,7 +39,7 @@ struct IdleMonitor {
 
 class IdleManager : public content::NotificationObserver,
                     public EventRouter::Observer,
-                    public BrowserContextKeyedService {
+                    public KeyedService {
  public:
   class IdleTimeProvider {
    public:
@@ -72,7 +72,7 @@ class IdleManager : public content::NotificationObserver,
 
   void Init();
 
-  // BrowserContextKeyedService implementation.
+  // KeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
   // content::NotificationDelegate implementation.

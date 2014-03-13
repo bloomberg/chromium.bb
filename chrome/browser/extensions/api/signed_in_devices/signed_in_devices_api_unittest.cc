@@ -112,8 +112,7 @@ class ProfileSyncServiceMockForExtensionTests:
   MOCK_METHOD0(Shutdown, void());
 };
 
-BrowserContextKeyedService* CreateProfileSyncServiceMock(
-    content::BrowserContext* profile) {
+KeyedService* CreateProfileSyncServiceMock(content::BrowserContext* profile) {
   return new ProfileSyncServiceMockForExtensionTests(
       Profile::FromBrowserContext(profile));
 }

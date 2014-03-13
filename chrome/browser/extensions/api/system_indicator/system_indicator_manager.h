@@ -11,7 +11,7 @@
 #include "base/memory/linked_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/extensions/extension_action_icon_factory.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/event_router.h"
@@ -30,12 +30,12 @@ class ExtensionIndicatorIcon;
 // that are currently visible in the UI.  Use SystemIndicatorManagerFactory to
 // create a SystemIndicatorManager object.
 class SystemIndicatorManager : public content::NotificationObserver,
-                               public BrowserContextKeyedService {
+                               public KeyedService {
  public:
   SystemIndicatorManager(Profile* profile, StatusTray* status_tray);
   virtual ~SystemIndicatorManager();
 
-  // BrowserContextKeyedService implementation.
+  // KeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
   // content::NotificationDelegate implementation.

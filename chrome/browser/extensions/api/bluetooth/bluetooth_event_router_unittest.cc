@@ -75,8 +75,7 @@ class FakeExtensionSystem : public extensions::TestExtensionSystem {
   DISALLOW_COPY_AND_ASSIGN(FakeExtensionSystem);
 };
 
-BrowserContextKeyedService* BuildFakeExtensionSystem(
-    content::BrowserContext* profile) {
+KeyedService* BuildFakeExtensionSystem(content::BrowserContext* profile) {
   return new FakeExtensionSystem(static_cast<Profile*>(profile));
 }
 

@@ -39,7 +39,7 @@ typedef std::list<QuotaLimitHeuristic*> QuotaLimitHeuristics;
 //
 // The QuotaService needs to live entirely on one thread, i.e. be created,
 // called and destroyed on the same thread, due to its use of a RepeatingTimer.
-// It is not a BrowserContextKeyedService because instances exist on both the UI
+// It is not a KeyedService because instances exist on both the UI
 // and IO threads.
 class QuotaService : public base::NonThreadSafe {
  public:

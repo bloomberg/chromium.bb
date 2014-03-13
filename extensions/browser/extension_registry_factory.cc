@@ -4,7 +4,7 @@
 
 #include "extensions/browser/extension_registry_factory.h"
 
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extensions_browser_client.h"
 
@@ -33,7 +33,7 @@ ExtensionRegistryFactory::ExtensionRegistryFactory()
 
 ExtensionRegistryFactory::~ExtensionRegistryFactory() {}
 
-BrowserContextKeyedService* ExtensionRegistryFactory::BuildServiceInstanceFor(
+KeyedService* ExtensionRegistryFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   return new ExtensionRegistry;
 }

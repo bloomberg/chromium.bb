@@ -199,7 +199,7 @@ class CookiesAPI : public BrowserContextKeyedAPI,
   explicit CookiesAPI(content::BrowserContext* context);
   virtual ~CookiesAPI();
 
-  // BrowserContextKeyedService implementation.
+  // KeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
   // BrowserContextKeyedAPI implementation.

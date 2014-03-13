@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_NETWORKING_PRIVATE_NETWORKING_PRIVATE_EVENT_ROUTER_H_
 #define CHROME_BROWSER_EXTENSIONS_API_NETWORKING_PRIVATE_NETWORKING_PRIVATE_EVENT_ROUTER_H_
 
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "extensions/browser/event_router.h"
 
 class Profile;
@@ -15,7 +15,7 @@ namespace extensions {
 // This is an event router that will observe listeners to |NetworksChanged| and
 // |NetworkListChanged| events. On ChromeOS it will forward these events
 // from the NetworkStateHandler to the JavaScript Networking API.
-class NetworkingPrivateEventRouter : public BrowserContextKeyedService,
+class NetworkingPrivateEventRouter : public KeyedService,
                                      public EventRouter::Observer {
  public:
   static NetworkingPrivateEventRouter* Create(Profile* profile);

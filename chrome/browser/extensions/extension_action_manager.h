@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/memory/linked_ptr.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -22,7 +22,7 @@ class Extension;
 
 // Owns the ExtensionActions associated with each extension.  These actions live
 // while an extension is loaded and are destroyed on unload.
-class ExtensionActionManager : public BrowserContextKeyedService,
+class ExtensionActionManager : public KeyedService,
                                public content::NotificationObserver {
  public:
   explicit ExtensionActionManager(Profile* profile);

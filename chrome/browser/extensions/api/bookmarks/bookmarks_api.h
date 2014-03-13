@@ -78,7 +78,7 @@ class BookmarksAPI : public BrowserContextKeyedAPI,
   explicit BookmarksAPI(content::BrowserContext* context);
   virtual ~BookmarksAPI();
 
-  // BrowserContextKeyedService implementation.
+  // KeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
   // BrowserContextKeyedAPI implementation.

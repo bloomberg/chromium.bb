@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "extensions/common/extension.h"
 
 class ExtensionService;
@@ -43,9 +43,9 @@ class UserScriptMaster;
 
 // ExtensionSystem manages the lifetime of many of the services used by the
 // extensions and apps system, and it handles startup and shutdown as needed.
-// Eventually, we'd like to make more of these services into
-// BrowserContextKeyedServices in their own right.
-class ExtensionSystem : public BrowserContextKeyedService {
+// Eventually, we'd like to make more of these services into KeyedServices in
+// their own right.
+class ExtensionSystem : public KeyedService {
  public:
   ExtensionSystem();
   virtual ~ExtensionSystem();

@@ -28,7 +28,7 @@ class MockHotwordService : public HotwordService {
     service_available_ = available;
   }
 
-  static BrowserContextKeyedService* Build(content::BrowserContext* profile) {
+  static KeyedService* Build(content::BrowserContext* profile) {
     return new MockHotwordService(static_cast<Profile*>(profile));
   }
 

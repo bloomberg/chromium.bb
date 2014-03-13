@@ -13,7 +13,7 @@
 #include "base/prefs/pref_value_map.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "extensions/browser/extension_prefs_scope.h"
 
 // Non-persistent data container that is shared by ExtensionPrefStores. All
@@ -53,7 +53,7 @@
 // .reg_only = regular-only value
 // .inc = incognito value
 // Extension B has higher precedence than A.
-class ExtensionPrefValueMap : public BrowserContextKeyedService {
+class ExtensionPrefValueMap : public KeyedService {
  public:
   // Observer interface for monitoring ExtensionPrefValueMap.
   class Observer {
@@ -75,7 +75,7 @@ class ExtensionPrefValueMap : public BrowserContextKeyedService {
   ExtensionPrefValueMap();
   virtual ~ExtensionPrefValueMap();
 
-  // BrowserContextKeyedService implementation.
+  // KeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
   // Set an extension preference |value| for |key| of extension |ext_id|.

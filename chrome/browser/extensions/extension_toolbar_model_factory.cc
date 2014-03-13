@@ -6,7 +6,7 @@
 
 #include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_prefs_factory.h"
 #include "extensions/browser/extensions_browser_client.h"
@@ -32,9 +32,8 @@ ExtensionToolbarModelFactory::ExtensionToolbarModelFactory()
 
 ExtensionToolbarModelFactory::~ExtensionToolbarModelFactory() {}
 
-BrowserContextKeyedService*
-    ExtensionToolbarModelFactory::BuildServiceInstanceFor(
-        content::BrowserContext* context) const {
+KeyedService* ExtensionToolbarModelFactory::BuildServiceInstanceFor(
+    content::BrowserContext* context) const {
   return new ExtensionToolbarModel(
       Profile::FromBrowserContext(context),
       extensions::ExtensionPrefsFactory::GetForBrowserContext(context));

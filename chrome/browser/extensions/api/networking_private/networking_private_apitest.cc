@@ -256,8 +256,8 @@ class ExtensionNetworkingPrivateApiTest :
                                     "epcifkihnkjgphfkloaaleeakhpmgdmn");
   }
 
-  static BrowserContextKeyedService*
-      CreateNetworkingPrivateServiceClient(content::BrowserContext* profile) {
+  static KeyedService* CreateNetworkingPrivateServiceClient(
+      content::BrowserContext* profile) {
     return new extensions::NetworkingPrivateServiceClient(
         wifi::WiFiService::CreateForTest(),
         new CryptoVerifyStub());

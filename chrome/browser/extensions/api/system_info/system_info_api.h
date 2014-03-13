@@ -21,7 +21,7 @@ class SystemInfoAPI : public BrowserContextKeyedAPI,
   explicit SystemInfoAPI(content::BrowserContext* context);
   virtual ~SystemInfoAPI();
 
-  // BrowserContextKeyedService implementation.
+  // KeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
   // EventRouter::Observer implementation.

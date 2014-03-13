@@ -10,7 +10,7 @@
 #include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "extensions/common/extension_resource.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/layout.h"
@@ -35,7 +35,7 @@ typedef base::Callback<void(const gfx::Image&)> ImageLoaderCallback;
 // The views need to load their icons asynchronously might be deleted before
 // the images have loaded. If you pass your callback using a weak_ptr, this
 // will make sure the callback won't be called after the view is deleted.
-class ImageLoader : public BrowserContextKeyedService {
+class ImageLoader : public KeyedService {
  public:
   // Information about a singe image representation to load from an extension
   // resource.

@@ -8,7 +8,7 @@
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/install_tracker.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_prefs_factory.h"
 #include "extensions/browser/extensions_browser_client.h"
@@ -36,7 +36,7 @@ InstallTrackerFactory::InstallTrackerFactory()
 InstallTrackerFactory::~InstallTrackerFactory() {
 }
 
-BrowserContextKeyedService* InstallTrackerFactory::BuildServiceInstanceFor(
+KeyedService* InstallTrackerFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
   return new InstallTracker(profile, ExtensionPrefs::Get(context));

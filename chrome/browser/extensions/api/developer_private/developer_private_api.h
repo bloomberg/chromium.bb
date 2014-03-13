@@ -109,7 +109,7 @@ class DeveloperPrivateAPI : public BrowserContextKeyedAPI,
     return last_unpacked_directory_;
   }
 
-  // BrowserContextKeyedService implementation
+  // KeyedService implementation
   virtual void Shutdown() OVERRIDE;
 
   // EventRouter::Observer implementation.

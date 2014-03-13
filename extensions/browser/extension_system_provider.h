@@ -5,7 +5,7 @@
 #ifndef EXTENSIONS_BROWSER_EXTENSION_SYSTEM_PROVIDER_H_
 #define EXTENSIONS_BROWSER_EXTENSION_SYSTEM_PROVIDER_H_
 
-#include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
+#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
 class BrowserContextDependencyManager;
 

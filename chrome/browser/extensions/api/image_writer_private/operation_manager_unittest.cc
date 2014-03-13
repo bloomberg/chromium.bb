@@ -52,8 +52,7 @@ class FakeExtensionSystem : public extensions::TestExtensionSystem {
 };
 
 // Factory function to register for the ExtensionSystem.
-BrowserContextKeyedService* BuildFakeExtensionSystem(
-    content::BrowserContext* profile) {
+KeyedService* BuildFakeExtensionSystem(content::BrowserContext* profile) {
   return new FakeExtensionSystem(static_cast<Profile*>(profile));
 }
 

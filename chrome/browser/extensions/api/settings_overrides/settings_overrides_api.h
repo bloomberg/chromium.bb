@@ -43,7 +43,7 @@ class SettingsOverridesAPI : public BrowserContextKeyedAPI,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
-  // BrowserContextKeyedService implementation.
+  // KeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
   void OnTemplateURLsLoaded();

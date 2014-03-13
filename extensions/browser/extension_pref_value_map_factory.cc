@@ -4,7 +4,7 @@
 
 #include "extensions/browser/extension_pref_value_map_factory.h"
 
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "extensions/browser/extension_pref_value_map.h"
 
 ExtensionPrefValueMapFactory::ExtensionPrefValueMapFactory()
@@ -28,8 +28,7 @@ ExtensionPrefValueMapFactory* ExtensionPrefValueMapFactory::GetInstance() {
   return Singleton<ExtensionPrefValueMapFactory>::get();
 }
 
-BrowserContextKeyedService*
-ExtensionPrefValueMapFactory::BuildServiceInstanceFor(
+KeyedService* ExtensionPrefValueMapFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   return new ExtensionPrefValueMap();
 }

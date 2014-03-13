@@ -25,7 +25,7 @@ class ChromeDirectSettingAPI : public BrowserContextKeyedAPI,
 
   virtual ~ChromeDirectSettingAPI();
 
-  // BrowserContextKeyedService implementation.
+  // KeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
   // BrowserContextKeyedAPI implementation.

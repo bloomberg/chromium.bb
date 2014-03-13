@@ -42,7 +42,7 @@ class Extension;
 class MediaGalleriesEventRouter : public BrowserContextKeyedAPI,
                                   public MediaScanManagerObserver {
  public:
-  // BrowserContextKeyedService implementation.
+  // KeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
   // BrowserContextKeyedAPI implementation.

@@ -30,7 +30,7 @@ namespace extensions {
 namespace {
 
 // Caller owns the returned object.
-BrowserContextKeyedService* CreateSettingsFrontendForTesting(
+KeyedService* CreateSettingsFrontendForTesting(
     content::BrowserContext* context) {
   return SettingsFrontend::CreateForTesting(new LeveldbSettingsStorageFactory(),
                                             context);
@@ -91,7 +91,7 @@ class StorageApiUnittest : public ExtensionApiUnittest {
 
 TEST_F(StorageApiUnittest, RestoreCorruptedStorage) {
   // Ensure a SettingsFrontend can be created on demand. The SettingsFrontend
-  // will be owned by the BrowserContextKeyedService system.
+  // will be owned by the KeyedService system.
   SettingsFrontend::GetFactoryInstance()->SetTestingFactory(
       profile(), &CreateSettingsFrontendForTesting);
 

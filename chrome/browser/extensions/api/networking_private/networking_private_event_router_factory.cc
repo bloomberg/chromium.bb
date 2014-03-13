@@ -7,7 +7,7 @@
 #include "chrome/browser/extensions/api/networking_private/networking_private_event_router.h"
 #include "chrome/browser/extensions/api/networking_private/networking_private_service_client_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "extensions/browser/extension_system_provider.h"
 #include "extensions/browser/extensions_browser_client.h"
 
@@ -40,8 +40,7 @@ NetworkingPrivateEventRouterFactory::NetworkingPrivateEventRouterFactory()
 NetworkingPrivateEventRouterFactory::~NetworkingPrivateEventRouterFactory() {
 }
 
-BrowserContextKeyedService*
-NetworkingPrivateEventRouterFactory::BuildServiceInstanceFor(
+KeyedService* NetworkingPrivateEventRouterFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   return NetworkingPrivateEventRouter::Create(
       Profile::FromBrowserContext(context));

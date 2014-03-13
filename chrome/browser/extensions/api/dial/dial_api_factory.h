@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_API_DIAL_DIAL_API_FACTORY_H_
 
 #include "base/memory/singleton.h"
-#include "components/browser_context_keyed_service/refcounted_browser_context_keyed_service_factory.h"
+#include "components/keyed_service/content/refcounted_browser_context_keyed_service_factory.h"
 
 namespace extensions {
 

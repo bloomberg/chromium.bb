@@ -5,9 +5,9 @@
 #ifndef EXTENSIONS_BROWSER_BROWSER_CONTEXT_KEYED_API_FACTORY_H_
 #define EXTENSIONS_BROWSER_BROWSER_CONTEXT_KEYED_API_FACTORY_H_
 
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "extensions/browser/extension_system_provider.h"
 #include "extensions/browser/extensions_browser_client.h"
 
@@ -20,7 +20,7 @@ class BrowserContextKeyedAPIFactory;
 // and also define a static const char* service_name() function (used in the
 // BrowserContextKeyedBaseFactory constructor). These fields should
 // be accessible to the BrowserContextKeyedAPIFactory for the service.
-class BrowserContextKeyedAPI : public BrowserContextKeyedService {
+class BrowserContextKeyedAPI : public KeyedService {
  protected:
   // Defaults for flags that control BrowserContextKeyedAPIFactory behavior.
   // These can be overridden by subclasses to change that behavior.
@@ -65,10 +65,9 @@ class BrowserContextKeyedAPI : public BrowserContextKeyedService {
   //   }
 };
 
-// A template for factories for BrowserContextKeyedServices that manage
-// extension APIs. T is a BrowserContextKeyedService that uses this factory
-// template instead of its own separate factory definition to manage its
-// per-profile instances.
+// A template for factories for KeyedServices that manage extension APIs. T is
+// a KeyedService that uses this factory template instead of its own separate
+// factory definition to manage its per-profile instances.
 template <typename T>
 class BrowserContextKeyedAPIFactory : public BrowserContextKeyedServiceFactory {
  public:
@@ -103,7 +102,7 @@ class BrowserContextKeyedAPIFactory : public BrowserContextKeyedServiceFactory {
 
  private:
   // BrowserContextKeyedServiceFactory implementation.
-  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
+  virtual KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const OVERRIDE {
     return new T(context);
   }

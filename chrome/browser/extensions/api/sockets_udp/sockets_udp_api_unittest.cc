@@ -21,7 +21,7 @@ namespace utils = extension_function_test_utils;
 namespace extensions {
 namespace core_api {
 
-static BrowserContextKeyedService* ApiResourceManagerTestFactory(
+static KeyedService* ApiResourceManagerTestFactory(
     content::BrowserContext* context) {
   content::BrowserThread::ID id;
   CHECK(content::BrowserThread::GetCurrentThreadIdentifier(&id));

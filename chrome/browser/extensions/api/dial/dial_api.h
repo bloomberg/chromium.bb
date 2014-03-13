@@ -9,7 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/api/dial/dial_device_data.h"
 #include "chrome/browser/extensions/api/dial/dial_registry.h"
-#include "components/browser_context_keyed_service/refcounted_browser_context_keyed_service.h"
+#include "components/keyed_service/content/refcounted_browser_context_keyed_service.h"
 #include "extensions/browser/api/async_api_function.h"
 #include "extensions/browser/event_router.h"
 
@@ -17,7 +17,7 @@ namespace extensions {
 
 class DialRegistry;
 
-// Dial API which is a ref-counted BrowserContextKeyedService that manages
+// Dial API which is a ref-counted KeyedService that manages
 // the DIAL registry. It takes care of creating the registry on the IO thread
 // and is an observer of the registry. It makes sure devices events are sent out
 // to extension listeners on the right thread.

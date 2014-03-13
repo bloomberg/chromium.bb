@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 
 namespace content {
 class BrowserContext;
@@ -66,7 +66,7 @@ namespace extensions {
 //    RenderProcessHost::FromID() and check the profile of the resulting object.
 //
 // TODO(aa): The above warnings suggest this class could use improvement :).
-class ProcessMap : public BrowserContextKeyedService {
+class ProcessMap : public KeyedService {
  public:
   ProcessMap();
   virtual ~ProcessMap();

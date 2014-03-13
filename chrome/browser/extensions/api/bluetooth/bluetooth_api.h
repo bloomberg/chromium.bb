@@ -48,7 +48,7 @@ class BluetoothAPI : public BrowserContextKeyedAPI,
 
   ExtensionBluetoothEventRouter* bluetooth_event_router();
 
-  // BrowserContextKeyedService implementation.
+  // KeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
   // EventRouter::Observer implementation.

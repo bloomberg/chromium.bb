@@ -18,7 +18,7 @@
 #include "base/strings/string16.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_icon_manager.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/common/url_pattern_set.h"
@@ -267,7 +267,7 @@ class MenuItem {
 // This class keeps track of menu items added by extensions.
 class MenuManager : public content::NotificationObserver,
                     public base::SupportsWeakPtr<MenuManager>,
-                    public BrowserContextKeyedService {
+                    public KeyedService {
  public:
   MenuManager(Profile* profile, StateStore* store_);
   virtual ~MenuManager();

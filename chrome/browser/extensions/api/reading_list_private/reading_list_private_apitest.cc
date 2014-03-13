@@ -23,7 +23,7 @@ using dom_distiller::test::MockDistillerFactory;
 
 class ReadingListPrivateApiTest : public ExtensionApiTest {
  public:
-  static BrowserContextKeyedService* Build(content::BrowserContext* context) {
+  static KeyedService* Build(content::BrowserContext* context) {
     FakeDB* fake_db = new FakeDB(new FakeDB::EntryMap);
     FakeDistiller* distiller = new FakeDistiller(true);
     MockDistillerFactory* factory = new MockDistillerFactory();

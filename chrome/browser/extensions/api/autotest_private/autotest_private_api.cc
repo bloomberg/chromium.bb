@@ -235,7 +235,7 @@ AutotestPrivateAPI::GetFactoryInstance() {
 }
 
 template <>
-BrowserContextKeyedService*
+KeyedService*
 BrowserContextKeyedAPIFactory<AutotestPrivateAPI>::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   return new AutotestPrivateAPI();

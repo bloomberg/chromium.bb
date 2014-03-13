@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_API_NETWORKING_PRIVATE_NETWORKING_PRIVATE_SERVICE_CLIENT_FACTORY_H_
 
 #include "base/memory/singleton.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
+#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
 class Profile;
 
@@ -28,8 +28,8 @@ class NetworkingPrivateServiceClientFactory
   virtual ~NetworkingPrivateServiceClientFactory();
 
   // BrowserContextKeyedServiceFactory:
-  virtual BrowserContextKeyedService*
-      BuildServiceInstanceFor(content::BrowserContext* profile) const OVERRIDE;
+  virtual KeyedService* BuildServiceInstanceFor(
+      content::BrowserContext* profile) const OVERRIDE;
   virtual bool ServiceIsCreatedWithBrowserContext() const OVERRIDE;
   virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
 

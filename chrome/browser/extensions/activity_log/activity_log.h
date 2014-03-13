@@ -53,7 +53,7 @@ class ActivityLog : public BrowserContextKeyedAPI,
 
   static BrowserContextKeyedAPIFactory<ActivityLog>* GetFactoryInstance();
 
-  // ActivityLog is a BrowserContextKeyedService, so don't instantiate it with
+  // ActivityLog is a KeyedService, so don't instantiate it with
   // the constructor; use GetInstance instead.
   static ActivityLog* GetInstance(content::BrowserContext* context);
 
@@ -98,7 +98,7 @@ class ActivityLog : public BrowserContextKeyedAPI,
       const std::string& api_name,
       scoped_ptr<base::ListValue> event_args) OVERRIDE;
 
-  // BrowserContextKeyedService
+  // KeyedService
   virtual void Shutdown() OVERRIDE;
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);

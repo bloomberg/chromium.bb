@@ -16,7 +16,7 @@
 #include "chromeos/network/network_state_handler_observer.h"
 #include "chromeos/network/onc/onc_signature.h"
 #include "chromeos/network/onc/onc_translator.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/onc/onc_constants.h"
 #include "extensions/browser/extension_system.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -35,7 +35,7 @@ class NetworkingPrivateEventRouterImpl
   virtual ~NetworkingPrivateEventRouterImpl();
 
  protected:
-  // BrowserContextKeyedService overrides:
+  // KeyedService overrides:
   virtual void Shutdown() OVERRIDE;
 
   // EventRouter::Observer overrides:
