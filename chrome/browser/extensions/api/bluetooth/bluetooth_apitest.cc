@@ -614,3 +614,50 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, GetDevices) {
 
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
+
+IN_PROC_BROWSER_TEST_F(BluetoothApiTest, DeviceInfo) {
+  ResultCatcher catcher;
+  catcher.RestrictToProfile(browser()->profile());
+
+  // Set up the first device object to reflect a real-world device.
+  BluetoothAdapter::ConstDeviceList devices;
+
+  EXPECT_CALL(*device1_.get(), GetAddress())
+    .WillRepeatedly(testing::Return("A4:17:31:00:00:00"));
+  EXPECT_CALL(*device1_.get(), GetDeviceName())
+    .WillRepeatedly(testing::Return("Chromebook Pixel"));
+  EXPECT_CALL(*device1_.get(), GetName())
+    .WillRepeatedly(testing::Return(base::UTF8ToUTF16("Chromebook Pixel")));
+  EXPECT_CALL(*device1_.get(), GetBluetoothClass())
+    .WillRepeatedly(testing::Return(0x080104));
+  EXPECT_CALL(*device1_.get(), GetDeviceType())
+    .WillRepeatedly(testing::Return(BluetoothDevice::DEVICE_COMPUTER));
+  EXPECT_CALL(*device1_.get(), GetVendorIDSource())
+    .WillRepeatedly(testing::Return(BluetoothDevice::VENDOR_ID_BLUETOOTH));
+  EXPECT_CALL(*device1_.get(), GetVendorID())
+    .WillRepeatedly(testing::Return(0x00E0));
+  EXPECT_CALL(*device1_.get(), GetProductID())
+    .WillRepeatedly(testing::Return(0x240A));
+  EXPECT_CALL(*device1_.get(), GetDeviceID())
+    .WillRepeatedly(testing::Return(0x0400));
+
+  devices.push_back(device1_.get());
+
+  // Leave the second largely empty so we can check a device without
+  // available information.
+  devices.push_back(device2_.get());
+
+  EXPECT_CALL(*mock_adapter_, GetDevices())
+      .Times(1)
+      .WillRepeatedly(testing::Return(devices));
+
+  // Load and wait for setup
+  ExtensionTestMessageListener listener("ready", true);
+  ASSERT_TRUE(
+      LoadExtension(test_data_dir_.AppendASCII("bluetooth/device_info")));
+  EXPECT_TRUE(listener.WaitUntilSatisfied());
+
+  listener.Reply("go");
+
+  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+}

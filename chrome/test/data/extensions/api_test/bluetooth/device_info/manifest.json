@@ -1,0 +1,11 @@
+{
+  "manifest_version": 2,
+  "name": "Test the information in the Bluetooth Device object",
+  "version": "1.0",
+  "app": {
+    "background": {
+      "scripts": ["runtest.js"]
+    }
+  },
+  "bluetooth": {}
+}

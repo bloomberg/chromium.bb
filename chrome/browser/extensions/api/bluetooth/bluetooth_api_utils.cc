@@ -10,6 +10,83 @@
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_device.h"
 
+namespace bluetooth = extensions::api::bluetooth;
+
+using device::BluetoothDevice;
+using bluetooth::VendorIdSource;
+
+namespace {
+
+bool ConvertVendorIDSourceToApi(const BluetoothDevice::VendorIDSource& input,
+                                bluetooth::VendorIdSource* output) {
+  switch (input) {
+    case BluetoothDevice::VENDOR_ID_UNKNOWN:
+      *output = bluetooth::VENDOR_ID_SOURCE_NONE;
+      return true;
+    case BluetoothDevice::VENDOR_ID_BLUETOOTH:
+      *output = bluetooth::VENDOR_ID_SOURCE_BLUETOOTH;
+      return true;
+    case BluetoothDevice::VENDOR_ID_USB:
+      *output = bluetooth::VENDOR_ID_SOURCE_USB;
+      return true;
+    default:
+      NOTREACHED();
+      return false;
+  }
+}
+
+bool ConvertDeviceTypeToApi(const BluetoothDevice::DeviceType& input,
+                            bluetooth::DeviceType* output) {
+  switch (input) {
+    case BluetoothDevice::DEVICE_UNKNOWN:
+      *output = bluetooth::DEVICE_TYPE_NONE;
+      return true;
+    case BluetoothDevice::DEVICE_COMPUTER:
+      *output = bluetooth::DEVICE_TYPE_COMPUTER;
+      return true;
+    case BluetoothDevice::DEVICE_PHONE:
+      *output = bluetooth::DEVICE_TYPE_PHONE;
+      return true;
+    case BluetoothDevice::DEVICE_MODEM:
+      *output = bluetooth::DEVICE_TYPE_MODEM;
+      return true;
+    case BluetoothDevice::DEVICE_AUDIO:
+      *output = bluetooth::DEVICE_TYPE_AUDIO;
+      return true;
+    case BluetoothDevice::DEVICE_CAR_AUDIO:
+      *output = bluetooth::DEVICE_TYPE_CARAUDIO;
+      return true;
+    case BluetoothDevice::DEVICE_VIDEO:
+      *output = bluetooth::DEVICE_TYPE_VIDEO;
+      return true;
+    case BluetoothDevice::DEVICE_PERIPHERAL:
+      *output = bluetooth::DEVICE_TYPE_PERIPHERAL;
+      return true;
+    case BluetoothDevice::DEVICE_JOYSTICK:
+      *output = bluetooth::DEVICE_TYPE_JOYSTICK;
+      return true;
+    case BluetoothDevice::DEVICE_GAMEPAD:
+      *output = bluetooth::DEVICE_TYPE_GAMEPAD;
+      return true;
+    case BluetoothDevice::DEVICE_KEYBOARD:
+      *output = bluetooth::DEVICE_TYPE_KEYBOARD;
+      return true;
+    case BluetoothDevice::DEVICE_MOUSE:
+      *output = bluetooth::DEVICE_TYPE_MOUSE;
+      return true;
+    case BluetoothDevice::DEVICE_TABLET:
+      *output = bluetooth::DEVICE_TYPE_TABLET;
+      return true;
+    case BluetoothDevice::DEVICE_KEYBOARD_MOUSE_COMBO:
+      *output = bluetooth::DEVICE_TYPE_KEYBOARDMOUSECOMBO;
+      return true;
+    default:
+      return false;
+  }
+}
+
+}  // namespace
+
 namespace extensions {
 namespace api {
 namespace bluetooth {
@@ -18,6 +95,20 @@ void BluetoothDeviceToApiDevice(const device::BluetoothDevice& device,
                                 Device* out) {
   out->address = device.GetAddress();
   out->name.reset(new std::string(base::UTF16ToUTF8(device.GetName())));
+  out->device_class = device.GetBluetoothClass();
+
+  // Only include the Device ID members when one exists for the device, and
+  // always include all or none.
+  if (ConvertVendorIDSourceToApi(device.GetVendorIDSource(),
+                                 &(out->vendor_id_source)) &&
+      out->vendor_id_source != VENDOR_ID_SOURCE_NONE) {
+    out->vendor_id.reset(new int(device.GetVendorID()));
+    out->product_id.reset(new int(device.GetProductID()));
+    out->device_id.reset(new int(device.GetDeviceID()));
+  }
+
+  ConvertDeviceTypeToApi(device.GetDeviceType(), &(out->type));
+
   out->paired.reset(new bool(device.IsPaired()));
   out->connected.reset(new bool(device.IsConnected()));
 }

@@ -23,7 +23,8 @@ chrome.bluetooth.getProfiles(
     name: 'device',
     address: '11:12:13:14:15:16',
     paired: false,
-    connected: false
+    connected: false,
+    deviceClass: 0x0
     }
   },
   function(results) {

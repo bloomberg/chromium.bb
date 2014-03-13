@@ -24,6 +24,16 @@ MockBluetoothDevice::MockBluetoothDevice(MockBluetoothAdapter* adapter,
       .WillByDefault(testing::Return(name_));
   ON_CALL(*this, GetAddress())
       .WillByDefault(testing::Return(address_));
+  ON_CALL(*this, GetDeviceType())
+      .WillByDefault(testing::Return(DEVICE_UNKNOWN));
+  ON_CALL(*this, GetVendorIDSource())
+      .WillByDefault(testing::Return(VENDOR_ID_UNKNOWN));
+  ON_CALL(*this, GetVendorID())
+      .WillByDefault(testing::Return(0));
+  ON_CALL(*this, GetProductID())
+      .WillByDefault(testing::Return(0));
+  ON_CALL(*this, GetDeviceID())
+      .WillByDefault(testing::Return(0));
   ON_CALL(*this, IsPaired())
       .WillByDefault(testing::Return(paired));
   ON_CALL(*this, IsConnected())

@@ -5,6 +5,14 @@
 // Use the <code>chrome.bluetooth</code> API to connect to a Bluetooth
 // device. All functions report failures via chrome.runtime.lastError.
 namespace bluetooth {
+  // Allocation authorities for Vendor IDs.
+  enum VendorIdSource {bluetooth, usb};
+
+  // Common device types recognized by Chrome.
+  enum DeviceType {computer, phone, modem, audio, carAudio, video, peripheral,
+                   joystick, gamepad, keyboard, mouse, tablet,
+                   keyboardMouseCombo};
+
   dictionary AdapterState {
     // The address of the adapter, in the format 'XX:XX:XX:XX:XX:XX'.
     DOMString address;
@@ -28,6 +36,22 @@ namespace bluetooth {
 
     // The human-readable name of the device.
     DOMString? name;
+
+    // The class of the device, a bit-field defined by
+    // http://www.bluetooth.org/en-us/specification/assigned-numbers/baseband.
+    long deviceClass;
+
+    // The Device ID record of the device, where available.
+    VendorIdSource? vendorIdSource;
+    long? vendorId;
+    long? productId;
+    long? deviceId;
+
+    // The type of the device, if recognized by Chrome. This is obtained from
+    // the |deviceClass| field and only represents a small fraction of the
+    // possible device types. When in doubt you should use the |deviceClass|
+    // field directly.
+    DeviceType? type;
 
     // Indicates whether or not the device is paired with the system.
     boolean? paired;
