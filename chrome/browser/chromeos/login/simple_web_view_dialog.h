@@ -98,6 +98,8 @@ class SimpleWebViewDialog : public views::ButtonListener,
       WindowOpenDisposition) OVERRIDE;
 
  private:
+  friend class SimpleWebViewDialogTest;
+
   void LoadImages();
   void UpdateButtons();
   void UpdateReload(bool is_loading, bool force);

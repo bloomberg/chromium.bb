@@ -68,6 +68,7 @@ class CaptivePortalWindowProxy : public views::WidgetObserver {
 
  private:
   friend class CaptivePortalWindowTest;
+  friend class SimpleWebViewDialogTest;
 
   // Possible transitions between states:
   //
@@ -97,6 +98,10 @@ class CaptivePortalWindowProxy : public views::WidgetObserver {
   // notifications from |widget_| and resets it.
   void DetachFromWidget(views::Widget* widget);
 
+  CaptivePortalView* captive_portal_view_for_testing() {
+    return captive_portal_view_for_testing_;
+  }
+
   // Not owned by this class.
   Delegate* delegate_;
   // Not owned by this class.
@@ -105,6 +110,8 @@ class CaptivePortalWindowProxy : public views::WidgetObserver {
 
   // Not owned by this class.
   content::WebContents* web_contents_;
+
+  CaptivePortalView* captive_portal_view_for_testing_;
 
   DISALLOW_COPY_AND_ASSIGN(CaptivePortalWindowProxy);
 };

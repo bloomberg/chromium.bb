@@ -22,7 +22,8 @@ CaptivePortalWindowProxy::CaptivePortalWindowProxy(
     content::WebContents* web_contents)
     : delegate_(delegate),
       widget_(NULL),
-      web_contents_(web_contents) {
+      web_contents_(web_contents),
+      captive_portal_view_for_testing_(NULL) {
   DCHECK(GetState() == STATE_IDLE);
 }
 
@@ -74,6 +75,7 @@ void CaptivePortalWindowProxy::Close() {
   if (GetState() == STATE_DISPLAYED)
     widget_->Close();
   captive_portal_view_.reset();
+  captive_portal_view_for_testing_ = NULL;
 }
 
 void CaptivePortalWindowProxy::OnRedirected() {
@@ -109,6 +111,7 @@ void CaptivePortalWindowProxy::InitCaptivePortalView() {
   if (!captive_portal_view_.get()) {
     captive_portal_view_.reset(
         new CaptivePortalView(ProfileHelper::GetSigninProfile(), this));
+    captive_portal_view_for_testing_ = captive_portal_view_.get();
   }
   captive_portal_view_->StartLoad();
 }

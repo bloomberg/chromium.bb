@@ -1046,6 +1046,7 @@
         'browser/chromeos/login/screens/mock_update_screen.h',
         'browser/chromeos/login/screens/network_screen_browsertest.cc',
         'browser/chromeos/login/screens/update_screen_browsertest.cc',
+        'browser/chromeos/login/simple_web_view_dialog_browsertest.cc',
         'browser/chromeos/login/test/https_forwarder.cc',
         'browser/chromeos/login/test/https_forwarder.h',
         'browser/chromeos/login/test_login_utils.cc',
