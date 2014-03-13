@@ -574,5 +574,8 @@ void RenderWidgetHostViewGuest::ProcessGestures(
   }
 }
 
+SkBitmap::Config RenderWidgetHostViewGuest::PreferredReadbackFormat() {
+  return SkBitmap::kARGB_8888_Config;
+}
 
 }  // namespace content

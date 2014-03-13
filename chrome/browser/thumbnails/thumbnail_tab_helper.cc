@@ -118,11 +118,11 @@ void AsyncProcessThumbnail(content::WebContents* web_contents,
       ui::GetScaleFactorForNativeView(view->GetNativeView()),
       &copy_rect,
       &context->requested_copy_size);
-
   render_widget_host->CopyFromBackingStore(
       copy_rect,
       context->requested_copy_size,
-      base::Bind(&ProcessCapturedBitmap, context, algorithm));
+      base::Bind(&ProcessCapturedBitmap, context, algorithm),
+      SkBitmap::kARGB_8888_Config);
 }
 
 }  // namespace

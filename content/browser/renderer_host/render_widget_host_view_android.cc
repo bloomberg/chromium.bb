@@ -6,6 +6,7 @@
 
 #include <android/bitmap.h>
 
+#include "base/android/sys_utils.h"
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -1384,6 +1385,17 @@ bool RenderWidgetHostViewAndroid::IsReadbackConfigSupported(
   if (!gl_helper)
     return false;
   return gl_helper->IsReadbackConfigSupported(bitmap_config);
+}
+
+SkBitmap::Config RenderWidgetHostViewAndroid::PreferredReadbackFormat() {
+  // Define the criteria here. If say the 16 texture readback is
+  // supported we should go with that (this degrades quality)
+  // or stick back to the default format.
+  if (base::android::SysUtils::IsLowEndDevice()) {
+    if (IsReadbackConfigSupported(SkBitmap::kRGB_565_Config))
+      return SkBitmap::kRGB_565_Config;
+  }
+  return SkBitmap::kARGB_8888_Config;
 }
 
 // static

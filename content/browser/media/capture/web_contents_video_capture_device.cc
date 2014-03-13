@@ -671,7 +671,10 @@ void WebContentsCaptureMachine::Capture(
         fitted_size,  // Size here is a request not always honored.
         base::Bind(&WebContentsCaptureMachine::DidCopyFromBackingStore,
                    weak_ptr_factory_.GetWeakPtr(),
-                   start_time, target, deliver_frame_cb));
+                   start_time,
+                   target,
+                   deliver_frame_cb),
+        SkBitmap::kARGB_8888_Config);
   }
 }
 

@@ -172,7 +172,8 @@ class RenderWidgetHostViewBrowserTest : public ContentBrowserTest {
           base::Bind(
               &RenderWidgetHostViewBrowserTest::FinishCopyFromBackingStore,
               base::Unretained(this),
-              run_loop.QuitClosure()));
+              run_loop.QuitClosure()),
+          SkBitmap::kARGB_8888_Config);
       run_loop.Run();
 
       if (frames_captured())
@@ -376,7 +377,9 @@ IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTest,
       gfx::Rect(),
       frame_size(),
       base::Bind(&RenderWidgetHostViewBrowserTest::FinishCopyFromBackingStore,
-                 base::Unretained(this), run_loop.QuitClosure()));
+                 base::Unretained(this),
+                 run_loop.QuitClosure()),
+      SkBitmap::kARGB_8888_Config);
   // Delete the surface before the callback is run.
   GetRenderWidgetHostViewPort()->AcceleratedSurfaceRelease();
   run_loop.Run();

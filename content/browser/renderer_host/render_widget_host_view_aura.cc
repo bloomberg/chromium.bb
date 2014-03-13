@@ -3583,6 +3583,10 @@ void RenderWidgetHostViewAura::UnlockResources() {
   delegated_frame_evictor_->UnlockFrame();
 }
 
+SkBitmap::Config RenderWidgetHostViewAura::PreferredReadbackFormat() {
+  return SkBitmap::kARGB_8888_Config;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostView, public:
 

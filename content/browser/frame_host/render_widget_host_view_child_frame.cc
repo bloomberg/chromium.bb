@@ -366,4 +366,8 @@ gfx::NativeViewId RenderWidgetHostViewChildFrame::GetParentForWindowlessPlugin()
 }
 #endif // defined(OS_WIN)
 
+SkBitmap::Config RenderWidgetHostViewChildFrame::PreferredReadbackFormat() {
+  return SkBitmap::kARGB_8888_Config;
+}
+
 }  // namespace content

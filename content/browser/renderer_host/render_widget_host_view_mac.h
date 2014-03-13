@@ -345,6 +345,8 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
       uint32 output_surface_id, unsigned frame_id) OVERRIDE;
   virtual void ReleaseReferencesToSoftwareFrame() OVERRIDE;
 
+  virtual SkBitmap::Config PreferredReadbackFormat() OVERRIDE;
+
   // Forwards the mouse event to the renderer.
   void ForwardMouseEvent(const blink::WebMouseEvent& event);
 

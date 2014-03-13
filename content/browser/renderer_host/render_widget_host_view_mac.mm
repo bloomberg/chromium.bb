@@ -2215,6 +2215,10 @@ void RenderWidgetHostViewMac::SendPendingSwapAck() {
   pending_swap_ack_.reset();
 }
 
+SkBitmap::Config RenderWidgetHostViewMac::PreferredReadbackFormat() {
+  return SkBitmap::kARGB_8888_Config;
+}
+
 }  // namespace content
 
 // RenderWidgetHostViewCocoa ---------------------------------------------------

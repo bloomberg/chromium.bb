@@ -1612,4 +1612,8 @@ void RenderWidgetHostViewGtk::OnDestroyPluginContainer(
   plugin_container_manager_.DestroyPluginContainer(id);
 }
 
+SkBitmap::Config RenderWidgetHostViewGtk::PreferredReadbackFormat() {
+  return SkBitmap::kARGB_8888_Config;
+}
+
 }  // namespace content

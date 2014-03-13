@@ -384,6 +384,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   virtual void OnUpdateVSyncParameters(base::TimeTicks timebase,
                                        base::TimeDelta interval) OVERRIDE;
 
+  virtual SkBitmap::Config PreferredReadbackFormat() OVERRIDE;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest, SetCompositionText);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest, TouchEventState);

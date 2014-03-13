@@ -134,11 +134,14 @@ void NavigationEntryScreenshotManager::TakeScreenshotImpl(
     NavigationEntryImpl* entry) {
   DCHECK(host && host->GetView());
   DCHECK(entry);
-  host->CopyFromBackingStore(gfx::Rect(),
+  SkBitmap::Config preferred_format = host->PreferredReadbackFormat();
+  host->CopyFromBackingStore(
+      gfx::Rect(),
       host->GetView()->GetViewBounds().size(),
       base::Bind(&NavigationEntryScreenshotManager::OnScreenshotTaken,
                  screenshot_factory_.GetWeakPtr(),
-                 entry->GetUniqueID()));
+                 entry->GetUniqueID()),
+      preferred_format);
 }
 
 void NavigationEntryScreenshotManager::SetMinScreenshotIntervalMS(

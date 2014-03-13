@@ -326,6 +326,8 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView,
   // the renderer.
   virtual void DidReceiveRendererFrame() = 0;
 
+  virtual SkBitmap::Config PreferredReadbackFormat() = 0;
+
 #if defined(OS_MACOSX)
   // Does any event handling necessary for plugin IME; should be called after
   // the plugin has already had a chance to process the event. If plugin IME is

@@ -162,6 +162,8 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   virtual void DispatchPostponedGestureEvent(ui::GestureEvent* event) OVERRIDE;
   virtual void DispatchCancelTouchEvent(ui::TouchEvent* event) OVERRIDE;
 
+  virtual SkBitmap::Config PreferredReadbackFormat() OVERRIDE;
+
  protected:
   friend class RenderWidgetHostView;
 

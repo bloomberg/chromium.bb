@@ -176,6 +176,8 @@ class CONTENT_EXPORT RenderWidgetHostViewGtk
   virtual gfx::Point GetLastTouchEventLocation() const OVERRIDE;
   virtual void FatalAccessibilityTreeError() OVERRIDE;
 
+  virtual SkBitmap::Config PreferredReadbackFormat() OVERRIDE;
+
   // Get the root of the AtkObject* tree for accessibility.
   AtkObject* GetAccessible();
 

@@ -90,6 +90,8 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   virtual uint32 RendererFrameNumber() OVERRIDE;
   virtual void DidReceiveRendererFrame() OVERRIDE;
 
+  virtual SkBitmap::Config PreferredReadbackFormat() OVERRIDE;
+
   void SetBrowserAccessibilityManager(BrowserAccessibilityManager* manager);
 
   // Notification that a resize or move session ended on the native widget.

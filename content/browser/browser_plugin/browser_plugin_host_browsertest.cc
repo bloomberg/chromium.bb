@@ -910,10 +910,14 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginThreadedCompositorPixelTest,
   bool result = false;
   while (!result) {
     base::RunLoop loop;
-    guest_widget_host->CopyFromBackingStore(gfx::Rect(),
+    guest_widget_host->CopyFromBackingStore(
+        gfx::Rect(),
         guest_widget_host->GetView()->GetViewBounds().size(),
-        base::Bind(&CompareSkBitmapAndRun, loop.QuitClosure(), expected_bitmap,
-                   &result));
+        base::Bind(&CompareSkBitmapAndRun,
+                   loop.QuitClosure(),
+                   expected_bitmap,
+                   &result),
+        SkBitmap::kARGB_8888_Config);
     loop.Run();
   }
 }

@@ -166,6 +166,8 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   virtual gfx::NativeViewId GetParentForWindowlessPlugin() const OVERRIDE;
 #endif
 
+  virtual SkBitmap::Config PreferredReadbackFormat() OVERRIDE;
+
  protected:
   friend class RenderWidgetHostView;
 

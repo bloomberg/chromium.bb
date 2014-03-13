@@ -76,7 +76,8 @@ bool CaptureWebContentsFunction::RunImpl() {
       gfx::Rect(),
       view->GetViewBounds().size(),
       base::Bind(&CaptureWebContentsFunction::CopyFromBackingStoreComplete,
-                 this));
+                 this),
+      SkBitmap::kARGB_8888_Config);
   return true;
 }
 
