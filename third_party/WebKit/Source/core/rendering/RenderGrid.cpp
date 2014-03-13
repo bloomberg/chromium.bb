@@ -970,13 +970,21 @@ GridSpan RenderGrid::resolveGridPositionsFromAutoPlacementPosition(const RenderB
 
 PassOwnPtr<GridSpan> RenderGrid::resolveGridPositionsFromStyle(const RenderBox* gridItem, GridTrackSizingDirection direction) const
 {
-    const GridPosition& initialPosition = (direction == ForColumns) ? gridItem->style()->gridColumnStart() : gridItem->style()->gridRowStart();
+    GridPosition initialPosition = (direction == ForColumns) ? gridItem->style()->gridColumnStart() : gridItem->style()->gridRowStart();
     const GridPositionSide initialPositionSide = (direction == ForColumns) ? ColumnStartSide : RowStartSide;
-    const GridPosition& finalPosition = (direction == ForColumns) ? gridItem->style()->gridColumnEnd() : gridItem->style()->gridRowEnd();
+    GridPosition finalPosition = (direction == ForColumns) ? gridItem->style()->gridColumnEnd() : gridItem->style()->gridRowEnd();
     const GridPositionSide finalPositionSide = (direction == ForColumns) ? ColumnEndSide : RowEndSide;
 
-    // We should NEVER see both spans as they should have been handled during style resolve.
-    ASSERT(!initialPosition.isSpan() || !finalPosition.isSpan());
+    // We must handle the placement error handling code here instead of in the StyleAdjuster because we don't want to
+    // overwrite the specified values.
+    if (initialPosition.isSpan() && finalPosition.isSpan())
+        finalPosition.setAutoPosition();
+
+    if (initialPosition.isNamedGridArea() && !style()->namedGridArea().contains(initialPosition.namedGridLine()))
+        initialPosition.setAutoPosition();
+
+    if (finalPosition.isNamedGridArea() && !style()->namedGridArea().contains(finalPosition.namedGridLine()))
+        finalPosition.setAutoPosition();
 
     if (initialPosition.shouldBeResolvedAgainstOppositePosition() && finalPosition.shouldBeResolvedAgainstOppositePosition()) {
         if (style()->gridAutoFlow() == AutoFlowNone)

@@ -16,6 +16,11 @@
     width: 200px;
 }
 
+#fixedGrid {
+    grid-template-columns: 10px 20px 40px 80px;
+    grid-template-rows: 15px 30px 60px 120px;
+}
+
 .negativeOverflowRowFirstColumn {
     grid-row: 1 / -5;
     grid-column: 1;
@@ -70,6 +75,17 @@
     grid-column: span 3 / 3;
     grid-row: span 8 / 4;
 }
+
+.doubleSpan {
+    grid-column: span 2 / span 2;
+    grid-row: span 3 / span 1;
+}
+
+.spanAndAuto {
+    grid-column: auto / span 2;
+    grid-row: span 3 / auto;
+}
+
 </style>
 <script src="../../resources/check-layout.js"></script>
 <body onload="checkLayout('.grid');">
@@ -175,5 +191,17 @@
     <div class="sizedToGridArea underflowSpanning" data-offset-x="0" data-offset-y="0" data-expected-width="100" data-expected-height="75"></div>
 </div>
 
+<!-- Check that the end span is ignored when two opposing spans are specified-->
+<div style="position: relative">
+<div class="grid" id="fixedGrid" style="grid-auto-flow: row;">
+    <div class="sizedToGridArea" style="grid-column: 1; grid-row: 1;" data-offset-x="0" data-offset-y="0" data-expected-width="10" data-expected-height="15"></div>
+    <div class="sizedToGridArea doubleSpan" data-offset-x="10" data-offset-y="0" data-expected-width="20" data-expected-height="15"></div>
+</div>
+
+<div style="position: relative">
+<div class="grid" id="fixedGrid" style="grid-auto-flow: column;">
+    <div class="sizedToGridArea" style="grid-column: 1; grid-row: 1;" data-offset-x="0" data-offset-y="0" data-expected-width="10" data-expected-height="15"></div>
+    <div class="sizedToGridArea doubleSpan" data-offset-x="0" data-offset-y="15" data-expected-width="10" data-expected-height="30"></div>
+</div>
 </body>
 </html>

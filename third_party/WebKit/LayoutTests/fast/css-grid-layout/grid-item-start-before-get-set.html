@@ -106,8 +106,8 @@
     testColumnStartRowStartJSParsing("span 'nav'", "span 'last'", "span 1 nav", "span 1 last");
     testColumnStartRowStartJSParsing("auto", "auto");
     testColumnStartRowStartJSParsing("thirdArea", "secondArea");
-    testColumnStartRowStartJSParsing("nonExistentArea", "secondArea", "auto", "secondArea");
-    testColumnStartRowStartJSParsing("secondArea", "nonExistentArea", "secondArea", "auto");
+    testColumnStartRowStartJSParsing("nonExistentArea", "secondArea");
+    testColumnStartRowStartJSParsing("secondArea", "nonExistentArea");
 
     debug("");
     debug("Test setting grid-column-start and grid-row-start to 'inherit' through JS");
