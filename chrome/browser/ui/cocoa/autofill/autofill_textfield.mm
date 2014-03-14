@@ -215,10 +215,6 @@ const CGFloat kMinimumHeight = 27.0;  // Enforced minimum height for text cells.
 - (void)drawInteriorWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
   NSRect textFrame = [self textFrameForFrame:cellFrame];
   [super drawInteriorWithFrame:textFrame inView:controlView];
-}
-
-- (void)drawWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
-  [super drawWithFrame:cellFrame inView:controlView];
 
   if (icon_) {
     NSRect iconFrame = [self decorationFrameForFrame:cellFrame];
@@ -229,6 +225,14 @@ const CGFloat kMinimumHeight = 27.0;  // Enforced minimum height for text cells.
        respectFlipped:YES
                 hints:nil];
   }
+}
+
+- (void)drawWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
+  // If the control is disabled and doesn't have text, don't draw it.
+  if (![self isEnabled]  && ([[self stringValue] length] == 0))
+    return;
+
+  [super drawWithFrame:cellFrame inView:controlView];
 
   if (invalid_) {
     gfx::ScopedNSGraphicsContextSaveGState state;
