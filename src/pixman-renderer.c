@@ -258,7 +258,8 @@ repaint_region(struct weston_view *ev, struct weston_output *output,
 					   pixman_double_to_fixed ((double)-ev->geometry.y));
 	}
 
-	if (vp->buffer.viewport_set) {
+	if (vp->buffer.src_width != wl_fixed_from_int(-1) &&
+	    vp->surface.width != -1) {
 		double viewport_x, viewport_y, viewport_width, viewport_height;
 		double ratio_x, ratio_y;
 

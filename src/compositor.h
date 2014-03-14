@@ -662,16 +662,18 @@ struct weston_buffer_viewport {
 		/* wl_surface.set_scaling_factor */
 		int32_t scale;
 
-		/* bool for whether wl_viewport.set has been
-		 * called yet (before this is called there is no
-		 * cropping or scaling on the surface) */
-		int viewport_set; /* bool */
-
+		/*
+		 * If src_width != wl_fixed_from_int(-1),
+		 * then and only then src_* are used.
+		 */
 		wl_fixed_t src_x, src_y;
 		wl_fixed_t src_width, src_height;
 	} buffer;
 
 	struct {
+		/*
+		 * If width == -1, the size is inferred from the buffer.
+		 */
 		int32_t width, height;
 	} surface;
 };

@@ -402,7 +402,8 @@ weston_surface_create(struct weston_compositor *compositor)
 
 	surface->buffer_viewport.buffer.transform = WL_OUTPUT_TRANSFORM_NORMAL;
 	surface->buffer_viewport.buffer.scale = 1;
-	surface->buffer_viewport.buffer.viewport_set = 0;
+	surface->buffer_viewport.buffer.src_width = wl_fixed_from_int(-1);
+	surface->buffer_viewport.surface.width = -1;
 	surface->pending.buffer_viewport = surface->buffer_viewport;
 	surface->output = NULL;
 	surface->pending.newly_attached = 0;
@@ -641,7 +642,8 @@ scaler_surface_to_buffer(struct weston_surface *surface,
 {
 	struct weston_buffer_viewport *vp = &surface->buffer_viewport;
 
-	if (vp->buffer.viewport_set) {
+	if (vp->buffer.src_width != wl_fixed_from_int(-1) &&
+	    vp->surface.width != -1) {
 		double a, b;
 
 		a = sx / vp->surface.width;
@@ -1204,7 +1206,8 @@ weston_surface_set_size_from_buffer(struct weston_surface *surface)
 		return;
 	}
 
-	if (vp->buffer.viewport_set) {
+	if (vp->buffer.src_width != wl_fixed_from_int(-1) &&
+	    vp->surface.width != -1) {
 		surface_set_size(surface, vp->surface.width,
 				 vp->surface.height);
 		return;
@@ -3359,7 +3362,9 @@ destroy_viewport(struct wl_resource *resource)
 		wl_resource_get_user_data(resource);
 
 	surface->viewport_resource = NULL;
-	surface->pending.buffer_viewport.buffer.viewport_set = 0;
+	surface->pending.buffer_viewport.buffer.src_width =
+		wl_fixed_from_int(-1);
+	surface->pending.buffer_viewport.surface.width = -1;
 }
 
 static void
@@ -3401,8 +3406,6 @@ viewport_set(struct wl_client *client,
 			dst_width, dst_height);
 		return;
 	}
-
-	surface->pending.buffer_viewport.buffer.viewport_set = 1;
 
 	surface->pending.buffer_viewport.buffer.src_x = src_x;
 	surface->pending.buffer_viewport.buffer.src_y = src_y;
