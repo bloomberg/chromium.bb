@@ -624,6 +624,11 @@ Press Shift + Alt to switch.
         search
       </message>
 
+      <!-- Overview Mode -->
+      <message name="IDS_ASH_OVERVIEW_BUTTON_ACCESSIBLE_NAME" desc="The accessible name for the Overview button in the system tray.">
+        Toggle window overview
+      </message>
+
       <!-- ChromeOS-specific strings -->
       <if expr="chromeos">
         <part file="ash_chromeos_strings.grdp" />

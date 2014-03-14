@@ -299,6 +299,13 @@ class ASH_EXPORT Shell
   // to their final position).
   void OnOverviewModeEnding();
 
+  // Called after maximize mode has started, windows might still animate though.
+  void OnMaximizeModeStarted();
+
+  // Called after maximize mode has ended, windows might still be returning to
+  // their original position.
+  void OnMaximizeModeEnded();
+
   // Initializes |shelf_|.  Does nothing if it's already initialized.
   void CreateShelf();
 
