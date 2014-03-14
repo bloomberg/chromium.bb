@@ -2003,14 +2003,6 @@ content.dll!content::BrowserAccessibilityManager::UpdateNode
 content.dll!content::BrowserAccessibilityManager::UpdateNodes
 
 UNINITIALIZED READ
-name=bug_349416_a
-...
-MSVCP120.dll!std::num_get<>::_Getffld
-MSVCP120.dll!std::num_get<>::do_get
-MSVCP120.dll!std::basic_istream<>::operator>>
-translator.dll!pp::numeric_lex_float<>
-
-UNINITIALIZED READ
 name=bug_347976
 osmesa.dll!unpack_RGB*888
 osmesa.dll!_mesa_unpack_rgba_row
