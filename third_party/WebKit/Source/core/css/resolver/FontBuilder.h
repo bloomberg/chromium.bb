@@ -55,9 +55,9 @@ public:
     void setFontFamilyInherit(const FontDescription&);
     void setFontFamilyValue(CSSValue*, float effectiveZoom);
 
-    void setFontSizeInitial(float effectiveZoom);
-    void setFontSizeInherit(const FontDescription&, float effectiveZoom);
-    void setFontSizeValue(CSSValue*, RenderStyle* parentStyle, const RenderStyle* rootElementStyle, float effectiveZoom);
+    void setFontSizeInitial();
+    void setFontSizeInherit(const FontDescription&);
+    void setFontSizeValue(CSSValue*, RenderStyle* parentStyle, const RenderStyle* rootElementStyle);
 
     void setWeight(FontWeight);
     void setWeightBolder();
@@ -105,7 +105,7 @@ private:
     void checkForOrientationChange(RenderStyle*);
     // This function fixes up the default font size if it detects that the current generic font family has changed. -dwh
     void checkForGenericFamilyChange(RenderStyle*, const RenderStyle* parentStyle);
-    void checkForZoomChange(RenderStyle*, const RenderStyle* parentStyle);
+    void updateComputedSize(RenderStyle*, const RenderStyle* parentStyle);
 
     float getComputedSizeFromSpecifiedSize(FontDescription&, float effectiveZoom, float specifiedSize);
 

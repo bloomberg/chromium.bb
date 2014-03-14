@@ -240,7 +240,7 @@ void FontBuilder::setFontFamilyValue(CSSValue* value, float effectiveZoom)
         setSize(scope.fontDescription(), effectiveZoom, FontSize::fontSizeForKeyword(m_document, CSSValueXxSmall + scope.fontDescription().keywordSize() - 1, !oldFamilyUsedFixedDefaultSize));
 }
 
-void FontBuilder::setFontSizeInitial(float effectiveZoom)
+void FontBuilder::setFontSizeInitial()
 {
     FontDescriptionChangeScope scope(this);
 
@@ -250,10 +250,10 @@ void FontBuilder::setFontSizeInitial(float effectiveZoom)
         return;
 
     scope.fontDescription().setKeywordSize(CSSValueMedium - CSSValueXxSmall + 1);
-    setSize(scope.fontDescription(), effectiveZoom, size);
+    scope.fontDescription().setSpecifiedSize(size);
 }
 
-void FontBuilder::setFontSizeInherit(const FontDescription& parentFontDescription, float effectiveZoom)
+void FontBuilder::setFontSizeInherit(const FontDescription& parentFontDescription)
 {
     FontDescriptionChangeScope scope(this);
 
@@ -263,7 +263,7 @@ void FontBuilder::setFontSizeInherit(const FontDescription& parentFontDescriptio
         return;
 
     scope.fontDescription().setKeywordSize(parentFontDescription.keywordSize());
-    setSize(scope.fontDescription(), effectiveZoom, size);
+    scope.fontDescription().setSpecifiedSize(size);
 }
 
 // FIXME: Figure out where we fall in the size ranges (xx-small to xxx-large)
@@ -279,7 +279,7 @@ static float smallerFontSize(float size)
 }
 
 // FIXME: Have to pass RenderStyles here for calc/computed values. This shouldn't be neecessary.
-void FontBuilder::setFontSizeValue(CSSValue* value, RenderStyle* parentStyle, const RenderStyle* rootElementStyle, float effectiveZoom)
+void FontBuilder::setFontSizeValue(CSSValue* value, RenderStyle* parentStyle, const RenderStyle* rootElementStyle)
 {
     if (!value->isPrimitiveValue())
         return;
@@ -350,7 +350,8 @@ void FontBuilder::setFontSizeValue(CSSValue* value, RenderStyle* parentStyle, co
     // Cap font size here to make sure that doesn't happen.
     size = std::min(maximumAllowedFontSize, size);
 
-    setSize(scope.fontDescription(), effectiveZoom, size);
+
+    scope.fontDescription().setSpecifiedSize(size);
 }
 
 void FontBuilder::setWeight(FontWeight fontWeight)
@@ -631,14 +632,11 @@ void FontBuilder::checkForGenericFamilyChange(RenderStyle* style, const RenderSt
     setSize(scope.fontDescription(), style->effectiveZoom(), size);
 }
 
-void FontBuilder::checkForZoomChange(RenderStyle* style, const RenderStyle* parentStyle)
+void FontBuilder::updateComputedSize(RenderStyle* style, const RenderStyle* parentStyle)
 {
     FontDescriptionChangeScope scope(this);
 
-    if (style->effectiveZoom() == parentStyle->effectiveZoom())
-        return;
-
-    setSize(scope.fontDescription(), style->effectiveZoom(), scope.fontDescription().specifiedSize());
+    scope.fontDescription().setComputedSize(getComputedSizeFromSpecifiedSize(scope.fontDescription(), style->effectiveZoom(), scope.fontDescription().specifiedSize()));
 }
 
 // FIXME: style param should come first
@@ -647,8 +645,8 @@ void FontBuilder::createFont(PassRefPtr<FontSelector> fontSelector, const Render
     if (!m_fontDirty)
         return;
 
+    updateComputedSize(style, parentStyle);
     checkForGenericFamilyChange(style, parentStyle);
-    checkForZoomChange(style, parentStyle);
     checkForOrientationChange(style);
     style->font().update(fontSelector);
     m_fontDirty = false;

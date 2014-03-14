@@ -250,17 +250,17 @@ void StyleBuilderFunctions::applyValueCSSPropertyFontFamily(StyleResolverState& 
 
 void StyleBuilderFunctions::applyInitialCSSPropertyFontSize(StyleResolverState& state)
 {
-    state.fontBuilder().setFontSizeInitial(state.style()->effectiveZoom());
+    state.fontBuilder().setFontSizeInitial();
 }
 
 void StyleBuilderFunctions::applyInheritCSSPropertyFontSize(StyleResolverState& state)
 {
-    state.fontBuilder().setFontSizeInherit(state.parentFontDescription(), state.style()->effectiveZoom());
+    state.fontBuilder().setFontSizeInherit(state.parentFontDescription());
 }
 
 void StyleBuilderFunctions::applyValueCSSPropertyFontSize(StyleResolverState& state, CSSValue* value)
 {
-    state.fontBuilder().setFontSizeValue(value, state.parentStyle(), state.rootElementStyle(), state.style()->effectiveZoom());
+    state.fontBuilder().setFontSizeValue(value, state.parentStyle(), state.rootElementStyle());
 }
 
 void StyleBuilderFunctions::applyInitialCSSPropertyFontWeight(StyleResolverState& state)
