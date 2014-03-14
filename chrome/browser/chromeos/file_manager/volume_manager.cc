@@ -437,7 +437,8 @@ void VolumeManager::OnDiskEvent(
     return;
 
   switch (event) {
-    case chromeos::disks::DiskMountManager::DISK_ADDED: {
+    case chromeos::disks::DiskMountManager::DISK_ADDED:
+    case chromeos::disks::DiskMountManager::DISK_CHANGED: {
       if (disk->device_path().empty()) {
         DVLOG(1) << "Empty system path for " << disk->device_path();
         return;
@@ -475,10 +476,6 @@ void VolumeManager::OnDiskEvent(
       // Notify to observers.
       FOR_EACH_OBSERVER(VolumeManagerObserver, observers_,
                         OnDiskRemoved(*disk));
-      return;
-
-    case chromeos::disks::DiskMountManager::DISK_CHANGED:
-      DVLOG(1) << "Ignore CHANGED event.";
       return;
   }
   NOTREACHED();

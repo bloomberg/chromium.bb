@@ -378,18 +378,18 @@ TEST_F(VolumeManagerTest, OnDiskEvent_RemovedNotMounted) {
 }
 
 TEST_F(VolumeManagerTest, OnDiskEvent_Changed) {
-  // Changed event is just ignored.
+  // Changed event should cause mounting (if possible).
   LoggingObserver observer;
   volume_manager_->AddObserver(&observer);
 
   const chromeos::disks::DiskMountManager::Disk kDisk(
       "device1", "", "", "", "", "", "", "", "", "", "", "",
-      chromeos::DEVICE_TYPE_UNKNOWN, 0, false, false, false, false, false);
+      chromeos::DEVICE_TYPE_UNKNOWN, 0, false, false, true, false, false);
   volume_manager_->OnDiskEvent(
       chromeos::disks::DiskMountManager::DISK_CHANGED, &kDisk);
 
-  EXPECT_EQ(0U, observer.events().size());
-  EXPECT_EQ(0U, disk_mount_manager_->mount_requests().size());
+  EXPECT_EQ(1U, observer.events().size());
+  EXPECT_EQ(1U, disk_mount_manager_->mount_requests().size());
   EXPECT_EQ(0U, disk_mount_manager_->unmount_requests().size());
 
   volume_manager_->RemoveObserver(&observer);
