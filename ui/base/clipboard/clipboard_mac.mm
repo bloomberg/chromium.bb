@@ -70,6 +70,10 @@ Clipboard::FormatType& Clipboard::FormatType::operator=(
   return *this;
 }
 
+bool Clipboard::FormatType::Equals(const FormatType& other) const {
+  return [data_ isEqualToString:other.data_];
+}
+
 Clipboard::FormatType::~FormatType() {
   [data_ release];
 }

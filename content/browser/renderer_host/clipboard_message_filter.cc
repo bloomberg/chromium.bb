@@ -31,6 +31,33 @@ void WriteObjectsOnUIThread(ui::Clipboard::ObjectMap* objects) {
   clipboard->WriteObjects(ui::CLIPBOARD_TYPE_COPY_PASTE, *objects);
 }
 
+enum BitmapPolicy {
+  kFilterBitmap,
+  kAllowBitmap,
+};
+void SanitizeObjectMap(ui::Clipboard::ObjectMap* objects,
+                       BitmapPolicy bitmap_policy) {
+  if (bitmap_policy != kAllowBitmap)
+    objects->erase(ui::Clipboard::CBF_SMBITMAP);
+
+  ui::Clipboard::ObjectMap::iterator data_it =
+      objects->find(ui::Clipboard::CBF_DATA);
+  if (data_it != objects->end()) {
+    const ui::Clipboard::FormatType& web_custom_format =
+        ui::Clipboard::GetWebCustomDataFormatType();
+    if (data_it->second.size() != 2 ||
+        !web_custom_format.Equals(
+            ui::Clipboard::FormatType::Deserialize(std::string(
+                &data_it->second[0].front(),
+                data_it->second[0].size())))) {
+      // CBF_DATA should always have two parameters associated with it, and the
+      // associated FormatType should always be web custom data. If not, then
+      // data is malformed and we'll ignore it.
+      objects->erase(ui::Clipboard::CBF_DATA);
+    }
+  }
+}
+
 }  // namespace
 
 
@@ -102,6 +129,7 @@ void ClipboardMessageFilter::OnWriteObjectsSync(
   // to the clipboard later.
   scoped_ptr<ui::Clipboard::ObjectMap> long_living_objects(
       new ui::Clipboard::ObjectMap(objects));
+  SanitizeObjectMap(long_living_objects.get(), kAllowBitmap);
   // Splice the shared memory handle into the data. |long_living_objects| now
   // contains a heap-allocated SharedMemory object that references
   // |bitmap_handle|. This reference will keep the shared memory section alive
@@ -124,7 +152,7 @@ void ClipboardMessageFilter::OnWriteObjectsAsync(
   // be removed otherwise we might dereference a rubbish pointer.
   scoped_ptr<ui::Clipboard::ObjectMap> sanitized_objects(
       new ui::Clipboard::ObjectMap(objects));
-  sanitized_objects->erase(ui::Clipboard::CBF_SMBITMAP);
+  SanitizeObjectMap(sanitized_objects.get(), kFilterBitmap);
 
 #if defined(OS_WIN)
   // We cannot write directly from the IO thread, and cannot service the IPC
