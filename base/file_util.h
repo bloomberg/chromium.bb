@@ -426,6 +426,32 @@ struct ScopedFILEClose {
 // Automatically closes |FILE*|s.
 typedef scoped_ptr<FILE, ScopedFILEClose> ScopedFILE;
 
+#if defined(OS_POSIX)
+// Functor for |ScopedFD| (below).
+struct ScopedFDClose {
+  inline void operator()(int* x) const {
+    if (x && *x >= 0) {
+      // It's important to crash here.
+      // There are security implications to not closing a file descriptor
+      // properly. As file descriptors are "capabilities", keeping them open
+      // would make the current process keep access to a resource. Much of
+      // Chrome relies on being able to "drop" such access.
+      // It's especially problematic on Linux with the setuid sandbox, where
+      // a single open directory would bypass the entire security model.
+      PCHECK(0 == IGNORE_EINTR(close(*x)));
+    }
+  }
+};
+
+// Automatically closes FDs (note: doesn't store the FD).
+// TODO(viettrungluu): This is a very odd API, since (unlike |FILE*|s, you'll
+// need to store the FD separately and keep its memory alive). This should
+// probably be called |ScopedFDCloser| or something like that.
+typedef scoped_ptr<int, ScopedFDClose> ScopedFD;
+// Let new users use ScopedFDCloser already, while ScopedFD is replaced.
+typedef ScopedFD ScopedFDCloser;
+#endif  // OS_POSIX
+
 }  // namespace file_util
 
 // Internal --------------------------------------------------------------------

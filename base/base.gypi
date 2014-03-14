@@ -219,8 +219,6 @@
           'files/memory_mapped_file.h',
           'files/memory_mapped_file_posix.cc',
           'files/memory_mapped_file_win.cc',
-          'files/scoped_file.cc',
-          'files/scoped_file.h',
           'files/scoped_platform_file_closer.cc',
           'files/scoped_platform_file_closer.h',
           'files/scoped_temp_dir.cc',

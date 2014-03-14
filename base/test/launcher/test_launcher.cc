@@ -14,7 +14,6 @@
 #include "base/environment.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
-#include "base/files/scoped_file.h"
 #include "base/format_macros.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
@@ -245,14 +244,16 @@ void DoLaunchChildTestProcess(
   options.new_process_group = true;
 
   base::FileHandleMappingVector fds_mapping;
-  base::ScopedFD output_file_fd;
+  file_util::ScopedFD output_file_fd_closer;
 
   if (redirect_stdio) {
-    output_file_fd.reset(open(output_file.value().c_str(), O_RDWR));
-    CHECK(output_file_fd.is_valid());
+    int output_file_fd = open(output_file.value().c_str(), O_RDWR);
+    CHECK_GE(output_file_fd, 0);
 
-    fds_mapping.push_back(std::make_pair(output_file_fd.get(), STDOUT_FILENO));
-    fds_mapping.push_back(std::make_pair(output_file_fd.get(), STDERR_FILENO));
+    output_file_fd_closer.reset(&output_file_fd);
+
+    fds_mapping.push_back(std::make_pair(output_file_fd, STDOUT_FILENO));
+    fds_mapping.push_back(std::make_pair(output_file_fd, STDERR_FILENO));
     options.fds_to_remap = &fds_mapping;
   }
 #endif
@@ -263,10 +264,10 @@ void DoLaunchChildTestProcess(
 
   if (redirect_stdio) {
 #if defined(OS_WIN)
-    FlushFileBuffers(handle.Get());
-    handle.Close();
+  FlushFileBuffers(handle.Get());
+  handle.Close();
 #elif defined(OS_POSIX)
-    output_file_fd.reset();
+  output_file_fd_closer.reset();
 #endif
   }
 

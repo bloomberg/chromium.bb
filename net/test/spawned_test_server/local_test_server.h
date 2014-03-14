@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/file_util.h"
-#include "base/files/scoped_file.h"
 #include "base/process/process_handle.h"
 #include "net/test/spawned_test_server/base_test_server.h"
 
@@ -106,7 +105,8 @@ class LocalTestServer : public BaseTestServer {
 
 #if defined(OS_POSIX)
   // The file descriptor the child writes to when it starts.
-  base::ScopedFD child_fd_;
+  int child_fd_;
+  file_util::ScopedFD child_fd_closer_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(LocalTestServer);

@@ -13,7 +13,6 @@
 #include <string>
 
 #include "base/file_util.h"
-#include "base/files/scoped_file.h"
 #include "base/threading/thread.h"
 #include "media/video/capture/video_capture_device.h"
 #include "media/video/capture/video_capture_types.h"
@@ -61,7 +60,8 @@ class VideoCaptureDeviceLinux : public VideoCaptureDevice {
   InternalState state_;
   scoped_ptr<VideoCaptureDevice::Client> client_;
   Name device_name_;
-  base::ScopedFD device_fd_;  // File descriptor for the opened camera device.
+  int device_fd_;  // File descriptor for the opened camera device.
+  file_util::ScopedFD device_fd_closer_;
   base::Thread v4l2_thread_;  // Thread used for reading data from the device.
   Buffer* buffer_pool_;
   int buffer_pool_size_;  // Number of allocated buffers.

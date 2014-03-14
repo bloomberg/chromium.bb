@@ -180,8 +180,6 @@ component("base") {
     "files/memory_mapped_file.h",
     "files/memory_mapped_file_posix.cc",
     "files/memory_mapped_file_win.cc",
-    "files/scoped_file.cc",
-    "files/scoped_file.h",
     "files/scoped_temp_dir.cc",
     "files/scoped_temp_dir.h",
     "float_util.h",
