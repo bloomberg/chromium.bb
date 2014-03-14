@@ -23,6 +23,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <assert.h>
 #include <cairo.h>
 
 #include <linux/input.h>
@@ -47,8 +48,71 @@ struct box {
 	int width, height;
 
 	struct wl_scaler *scaler;
+	int scaler_version;
 	struct wl_viewport *viewport;
+
+	enum {
+		MODE_NO_VIEWPORT,
+		MODE_SRC_ONLY,
+		MODE_DST_ONLY,
+		MODE_SRC_DST
+	} mode;
 };
+
+static void
+set_my_viewport(struct box *box)
+{
+	wl_fixed_t src_x, src_y, src_width, src_height;
+	int32_t dst_width = SURFACE_WIDTH;
+	int32_t dst_height = SURFACE_HEIGHT;
+
+	if (box->mode == MODE_NO_VIEWPORT)
+		return;
+
+	/* Cut the green border in half, take white border fully in,
+	 * and black border fully out. The borders are 1px wide in buffer.
+	 *
+	 * The gl-renderer uses linear texture sampling, this means the
+	 * top and left edges go to 100% green, bottom goes to 50% blue/black,
+	 * right edge has thick white sliding to 50% red.
+	 */
+	src_x = wl_fixed_from_double((RECT_X + 0.5) / BUFFER_SCALE);
+	src_y = wl_fixed_from_double((RECT_Y + 0.5) / BUFFER_SCALE);
+	src_width = wl_fixed_from_double((RECT_W - 0.5) / BUFFER_SCALE);
+	src_height = wl_fixed_from_double((RECT_H - 0.5) / BUFFER_SCALE);
+
+	if (box->scaler_version < 2 && box->mode != MODE_SRC_DST) {
+		fprintf(stderr, "Error: server's wl_scaler interface version "
+			"%d does not support this mode.\n",
+			box->scaler_version);
+		exit(1);
+	}
+
+	switch (box->mode){
+	case MODE_SRC_ONLY:
+		wl_viewport_set_source(box->viewport, src_x, src_y,
+				       src_width, src_height);
+		break;
+	case MODE_DST_ONLY:
+		wl_viewport_set_destination(box->viewport,
+					    dst_width, dst_height);
+		break;
+	case MODE_SRC_DST:
+		if (box->scaler_version < 2) {
+			wl_viewport_set(box->viewport,
+					src_x, src_y, src_width, src_height,
+					dst_width, dst_height);
+		} else {
+			wl_viewport_set_source(box->viewport, src_x, src_y,
+					       src_width, src_height);
+			wl_viewport_set_destination(box->viewport,
+						    dst_width, dst_height);
+		}
+		break;
+	default:
+		assert(!"not reached");
+	}
+}
 
 static void
 resize_handler(struct widget *widget,
@@ -120,30 +184,18 @@ global_handler(struct display *display, uint32_t name,
 	       const char *interface, uint32_t version, void *data)
 {
 	struct box *box = data;
-	wl_fixed_t src_x, src_y, src_width, src_height;
-
-	/* Cut the green border in half, take white border fully in,
-	 * and black border fully out. The borders are 1px wide in buffer.
-	 *
-	 * The gl-renderer uses linear texture sampling, this means the
-	 * top and left edges go to 100% green, bottom goes to 50% blue/black,
-	 * right edge has thick white sliding to 50% red.
-	 */
-	src_x = wl_fixed_from_double((RECT_X + 0.5) / BUFFER_SCALE);
-	src_y = wl_fixed_from_double((RECT_Y + 0.5) / BUFFER_SCALE);
-	src_width = wl_fixed_from_double((RECT_W - 0.5) / BUFFER_SCALE);
-	src_height = wl_fixed_from_double((RECT_H - 0.5) / BUFFER_SCALE);
 
 	if (strcmp(interface, "wl_scaler") == 0) {
+		box->scaler_version = version < 2 ? version : 2;
+
 		box->scaler = display_bind(display, name,
-					   &wl_scaler_interface, 1);
+					   &wl_scaler_interface,
+					   box->scaler_version);
 
 		box->viewport = wl_scaler_get_viewport(box->scaler,
 			widget_get_wl_surface(box->widget));
 
-		wl_viewport_set(box->viewport,
-				src_x, src_y, src_width, src_height,
-				SURFACE_WIDTH, SURFACE_HEIGHT); /* dst */
+		set_my_viewport(box);
 	}
 }
 
@@ -173,17 +225,74 @@ touch_down_handler(struct widget *widget, struct input *input,
 		    display_get_serial(box->display));
 }
 
+static void
+usage(const char *progname)
+{
+	fprintf(stderr, "Usage: %s [mode]\n"
+		"where 'mode' is one of\n"
+		"  -b\tset both src and dst in viewport (default)\n"
+		"  -d\tset only dst in viewport\n"
+		"  -s\tset only src in viewport\n"
+		"  -n\tdo not set viewport at all\n\n",
+		progname);
+
+	fprintf(stderr, "Expected output with output_scale=1:\n");
+
+	fprintf(stderr, "Mode -n:\n"
+		"  window size %dx%d px\n"
+		"  Red box with a blue box in the upper left part.\n"
+		"  The blue box has white right edge, black bottom edge,\n"
+		"  and thin green left and top edges that can really\n"
+		"  be seen only when zoomed in.\n\n",
+		BUFFER_WIDTH / BUFFER_SCALE, BUFFER_HEIGHT / BUFFER_SCALE);
+
+	fprintf(stderr, "Mode -b:\n"
+		"  window size %dx%d px\n"
+		"  Blue box with green top and left edge,\n"
+		"  thick white right edge with a hint of red,\n"
+		"  and a hint of black in bottom edge.\n\n",
+		SURFACE_WIDTH, SURFACE_HEIGHT);
+
+	fprintf(stderr, "Mode -s:\n"
+		"  window size %.0fx%.0f px\n"
+		"  The same as mode -b, but scaled a lot smaller.\n\n",
+		RECT_W / BUFFER_SCALE, RECT_H / BUFFER_SCALE);
+
+	fprintf(stderr, "Mode -d:\n"
+		"  window size %dx%d px\n"
+		"  This is horizontally squashed version of the -n mode.\n\n",
+		SURFACE_WIDTH, SURFACE_HEIGHT);
+}
+
 int
 main(int argc, char *argv[])
 {
 	struct box box;
 	struct display *d;
 	struct timeval tv;
+	int i;
 
 	d = display_create(&argc, argv);
 	if (d == NULL) {
 		fprintf(stderr, "failed to create display: %m\n");
 		return -1;
+	}
+
+	box.mode = MODE_SRC_DST;
+
+	for (i = 1; i < argc; i++) {
+		if (strcmp("-s", argv[i]) == 0)
+			box.mode = MODE_SRC_ONLY;
+		else if (strcmp("-d", argv[i]) == 0)
+			box.mode = MODE_DST_ONLY;
+		else if (strcmp("-b", argv[i]) == 0)
+			box.mode = MODE_SRC_DST;
+		else if (strcmp("-n", argv[i]) == 0)
+			box.mode = MODE_NO_VIEWPORT;
+		else {
+			usage(argv[0]);
+			exit(1);
+		}
 	}
 
 	gettimeofday(&tv, NULL);
