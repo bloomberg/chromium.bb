@@ -102,16 +102,16 @@ bool IsDirectory(IPortableDeviceValues* properties_values) {
           content_type == WPD_CONTENT_TYPE_FUNCTIONAL_OBJECT);
 }
 
-// Returns the friendly name of the object from the property key values
-// specified by the |properties_values|.
-base::string16 GetObjectName(IPortableDeviceValues* properties_values,
-                       bool is_directory) {
+// Returns the name of the object from |properties_values|. If the object has
+// no filename, try to use a friendly name instead. e.g. with MTP storage roots.
+base::string16 GetObjectName(IPortableDeviceValues* properties_values) {
   DCHECK(properties_values);
-  base::win::ScopedCoMem<base::char16> buffer;
-  REFPROPERTYKEY key =
-      is_directory ? WPD_OBJECT_NAME : WPD_OBJECT_ORIGINAL_FILE_NAME;
-  HRESULT hr = properties_values->GetStringValue(key, &buffer);
   base::string16 result;
+  base::win::ScopedCoMem<base::char16> buffer;
+  HRESULT hr = properties_values->GetStringValue(WPD_OBJECT_ORIGINAL_FILE_NAME,
+                                                 &buffer);
+  if (FAILED(hr))
+    hr = properties_values->GetStringValue(WPD_OBJECT_NAME, &buffer);
   if (SUCCEEDED(hr))
     result.assign(buffer);
   return result;
@@ -208,7 +208,7 @@ bool GetObjectDetails(IPortableDevice* device,
     return false;
 
   *is_directory = IsDirectory(properties_values.get());
-  *name = GetObjectName(properties_values.get(), *is_directory);
+  *name = GetObjectName(properties_values.get());
   if (name->empty())
     return false;
 
