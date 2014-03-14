@@ -92,6 +92,51 @@
         border-top-color: #4f4f4f;
       }
 
+      :host(:not(.dark):not(.active)) {
+        -webkit-box-shadow: inset 0px 1px #6f6f6f, inset 0px -1px #565656;
+        background-image: -webkit-linear-gradient(#636363, #5b5b5b);
+        background-size: cover;
+        border-bottom-color: #4a4a4a;
+        border-top-color: #878787;
+      }
+
+      /** TODO(rsadam@): Move to kb-row once /shadow/ is supported. */
+      :ancestor(kb-row:nth-child(2)):host(:not(.dark):not(.active)) {
+        -webkit-box-shadow: inset 0px 1px #666666, inset 0px -1px #4c4c4c;
+        background-image: -webkit-linear-gradient(#5a5a5a, #515151);
+        background-size: cover;
+        border-bottom-color: #414141;
+        border-top-color: #7f7f7f;
+      }
+
+      :ancestor(kb-row:nth-child(3)):host(:not(.dark):not(.active)) {
+        -webkit-box-shadow: inset 0px 1px #5d5d5d, inset 0px -1px #444444;
+        background-image: -webkit-linear-gradient(#505050, #494949);
+        background-size: cover;
+        border-bottom-color: #3a3a3a;
+        border-top-color: #787878;
+      }
+
+      :ancestor(kb-row:nth-child(n+3)):host(:not(.dark):not(.active)) {
+        -webkit-box-shadow: inset 0px 1px #565656, inset 0px -1px #434343;
+        background-image: -webkit-linear-gradient(#484848, #474747);
+        background-size: cover;
+        border-bottom-color: #393939;
+        border-top-color: #717171;
+      }
+
+      :ancestor(kb-row:nth-child(2)):host(:not([invert])) .hint {
+        color: #2C2C2C;
+      }
+
+      :ancestor(kb-row:nth-child(3)):host(:not([invert])) .hint {
+        color: #272727;
+      }
+
+      :ancestor(kb-row:nth-child(n+3)):host(:not([invert])) .hint {
+        color: #232323;
+      }
+
       /**
        * The microphone key is handled separately from other images since the
        * image displayed changes depending on whether it's pressed or not.
