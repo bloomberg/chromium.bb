@@ -390,7 +390,7 @@ def overload_check_argument(index, argument):
     def null_or_optional_check():
         # If undefined is passed for an optional argument, the argument should
         # be treated as missing; otherwise undefined is not allowed.
-        if argument['is_nullable']:
+        if idl_type.is_nullable:
             if argument['is_optional']:
                 return 'isUndefinedOrNull(%s)'
             return '%s->IsNull()'
@@ -411,8 +411,8 @@ def overload_check_argument(index, argument):
         return ' || '.join(['%s->IsNull()' % cpp_value,
                             '%s->IsFunction()' % cpp_value])
     if v8_types.is_wrapper_type(idl_type):
-        type_check = 'V8{idl_type}::hasInstance({cpp_value}, info.GetIsolate())'.format(idl_type=idl_type.name, cpp_value=cpp_value)
-        if argument['is_nullable']:
+        type_check = 'V8{idl_type}::hasInstance({cpp_value}, info.GetIsolate())'.format(idl_type=idl_type.base_type, cpp_value=cpp_value)
+        if idl_type.is_nullable:
             type_check = ' || '.join(['%s->IsNull()' % cpp_value, type_check])
         return type_check
     if idl_type.is_interface_type:
@@ -471,12 +471,13 @@ def constructor_argument_list(interface, constructor):
 
 
 def constructor_argument(argument, index):
+    idl_type = argument.idl_type
     return {
         'has_default': 'Default' in argument.extended_attributes,
-        'idl_type_object': argument.idl_type,
-        'idl_type': str(argument.idl_type),
+        'idl_type_object': idl_type,
+        # Dictionary is special-cased, but arrays and sequences shouldn't be
+        'idl_type': not idl_type.array_or_sequence_type and idl_type.base_type,
         'index': index,
-        'is_nullable': False,  # Required for overload resolution
         'is_optional': argument.is_optional,
         'is_strict_type_checking': False,  # Required for overload resolution
         'name': argument.name,
@@ -591,7 +592,7 @@ def property_setter(setter):
         'has_strict_type_checking':
             'StrictTypeChecking' in extended_attributes and
             v8_types.is_wrapper_type(idl_type),
-        'idl_type': str(idl_type),
+        'idl_type': idl_type.base_type,
         'is_custom': 'Custom' in extended_attributes,
         'has_exception_state': is_raises_exception or
                                idl_type.is_integer_type,

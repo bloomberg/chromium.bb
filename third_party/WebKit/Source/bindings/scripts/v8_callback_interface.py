@@ -63,8 +63,8 @@ def cpp_to_v8_conversion(idl_type, name):
 def cpp_type(idl_type):
     # FIXME: remove this function by making callback types consistent
     # (always use usual v8_types.cpp_type)
-    idl_type_name = str(idl_type)
-    if idl_type_name == 'DOMString':
+    idl_type_name = idl_type.name
+    if idl_type_name == 'String':
         return 'const String&'
     if idl_type_name == 'void':
         return 'void'
@@ -101,8 +101,8 @@ def add_includes_for_operation(operation):
 def generate_method(operation):
     extended_attributes = operation.extended_attributes
     idl_type = operation.idl_type
-    idl_type_name = str(idl_type)
-    if idl_type_name not in ['boolean', 'void']:
+    idl_type_str = str(idl_type)
+    if idl_type_str not in ['boolean', 'void']:
         raise Exception('We only support callbacks that return boolean or void values.')
     is_custom = 'Custom' in extended_attributes
     if not is_custom:
@@ -113,7 +113,7 @@ def generate_method(operation):
         'call_with_this_handle': call_with_this_handle,
         'cpp_type': cpp_type(idl_type),
         'custom': is_custom,
-        'idl_type': idl_type_name,
+        'idl_type': idl_type_str,
         'name': operation.name,
     }
     contents.update(generate_arguments_contents(operation.arguments, call_with_this_handle))

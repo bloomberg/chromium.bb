@@ -37,6 +37,7 @@
         TestInterfaceEmpty testInterfaceEmptyArg,
         Dictionary dictionaryArg,
         sequence<DOMString> sequenceStringArg,
+        sequence<Dictionary> sequenceDictionaryArg,
         optional Dictionary optionalDictionaryArg,
         [Default=Undefined] optional TestInterfaceEmpty optionalTestInterfaceEmptyArg),
     ConstructorCallWith=ExecutionContext&Document,

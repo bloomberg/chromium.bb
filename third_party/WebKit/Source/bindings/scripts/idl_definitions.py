@@ -284,7 +284,6 @@ class IdlAttribute(TypedObject):
         self.name = node.GetName()
         # Defaults, overridden below
         self.idl_type = None
-        self.is_nullable = False
         self.extended_attributes = {}
 
         children = node.GetChildren()
@@ -292,7 +291,6 @@ class IdlAttribute(TypedObject):
             child_class = child.GetClass()
             if child_class == 'Type':
                 self.idl_type = type_node_to_type(child)
-                self.is_nullable = child.GetProperty('NULLABLE') or False
             elif child_class == 'ExtAttributes':
                 self.extended_attributes = ext_attributes_node_to_extended_attributes(child)
             else:
@@ -407,9 +405,8 @@ class IdlArgument(TypedObject):
     def __init__(self, node):
         self.extended_attributes = {}
         self.idl_type = None
-        self.is_nullable = False  # (T?)
-        self.is_optional = node.GetProperty('OPTIONAL')  # (optional T)
-        self.is_variadic = False  # (T...)
+        self.is_optional = node.GetProperty('OPTIONAL')  # syntax: (optional T)
+        self.is_variadic = False  # syntax: (T...)
         self.name = node.GetName()
 
         children = node.GetChildren()
@@ -417,9 +414,6 @@ class IdlArgument(TypedObject):
             child_class = child.GetClass()
             if child_class == 'Type':
                 self.idl_type = type_node_to_type(child)
-                # FIXME: Doesn't handle nullable arrays (Foo[]?), and arrays of
-                # nullable (Foo?[]) are treated as nullable arrays. No actual use.
-                self.is_nullable = child.GetProperty('NULLABLE')
             elif child_class == 'ExtAttributes':
                 self.extended_attributes = ext_attributes_node_to_extended_attributes(child)
             elif child_class == 'Argument':
@@ -580,31 +574,33 @@ def type_node_to_type(node):
     else:
         is_array = False
 
-    return type_node_inner_to_type(type_node_child, is_array=is_array)
+    is_nullable = node.GetProperty('NULLABLE') or False  # syntax: T?
+
+    return type_node_inner_to_type(type_node_child, is_array=is_array, is_nullable=is_nullable)
 
 
-def type_node_inner_to_type(node, is_array=False):
-    # FIXME: remove is_array once have IdlArrayType
+def type_node_inner_to_type(node, is_array=False, is_nullable=False):
+    # FIXME: remove is_array and is_nullable once have IdlArrayType and IdlNullableType
     node_class = node.GetClass()
     # Note Type*r*ef, not Typedef, meaning the type is an identifier, thus
     # either a typedef shorthand (but not a Typedef declaration itself) or an
     # interface type. We do not distinguish these, and just use the type name.
     if node_class in ['PrimitiveType', 'Typeref']:
-        return IdlType(node.GetName(), is_array=is_array)
+        return IdlType(node.GetName(), is_array=is_array, is_nullable=is_nullable)
     elif node_class == 'Any':
-        return IdlType('any', is_array=is_array)
+        return IdlType('any', is_array=is_array, is_nullable=is_nullable)
     elif node_class == 'Sequence':
         if is_array:
             raise ValueError('Arrays of sequences are not supported')
-        return sequence_node_to_type(node)
+        return sequence_node_to_type(node, is_nullable=is_nullable)
     elif node_class == 'UnionType':
         if is_array:
             raise ValueError('Arrays of unions are not supported')
-        return union_type_node_to_idl_union_type(node)
+        return union_type_node_to_idl_union_type(node, is_nullable=is_nullable)
     raise ValueError('Unrecognized node class: %s' % node_class)
 
 
-def sequence_node_to_type(node):
+def sequence_node_to_type(node, is_nullable=False):
     children = node.GetChildren()
     if len(children) != 1:
         raise ValueError('Sequence node expects exactly 1 child, got %s' % len(children))
@@ -613,7 +609,7 @@ def sequence_node_to_type(node):
     if sequence_child_class != 'Type':
         raise ValueError('Unrecognized node class: %s' % sequence_child_class)
     element_type = type_node_to_type(sequence_child).base_type
-    return IdlType(element_type, is_sequence=True)
+    return IdlType(element_type, is_sequence=True, is_nullable=is_nullable)
 
 
 def typedef_node_to_type(node):
@@ -627,7 +623,7 @@ def typedef_node_to_type(node):
     return type_node_to_type(child)
 
 
-def union_type_node_to_idl_union_type(node):
+def union_type_node_to_idl_union_type(node, is_nullable=False):
     member_types = [type_node_to_type(member_type_node)
                     for member_type_node in node.GetChildren()]
-    return IdlUnionType(member_types)
+    return IdlUnionType(member_types, is_nullable=is_nullable)

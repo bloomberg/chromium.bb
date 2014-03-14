@@ -87,7 +87,7 @@ def generate_method(interface, method):
                 ['DoNotCheckSecurity', 'DoNotCheckSignature', 'NotEnumerable',
                  'ReadOnly', 'RuntimeEnabled', 'Unforgeable'])),
         'function_template': function_template(),
-        'idl_type': str(idl_type),
+        'idl_type': idl_type.base_type,
         'has_exception_state':
             is_raises_exception or
             is_check_security_for_frame or
@@ -145,11 +145,12 @@ def generate_argument(interface, method, argument, index):
         'enum_validation_expression': v8_utilities.enum_validation_expression(idl_type),
         'has_default': 'Default' in extended_attributes,
         'idl_type_object': idl_type,
-        'idl_type': str(idl_type),
+        # Dictionary is special-cased, but arrays and sequences shouldn't be
+        'idl_type': not idl_type.array_or_sequence_type and idl_type.base_type,
         'index': index,
         'is_clamp': 'Clamp' in extended_attributes,
         'is_callback_interface': idl_type.is_callback_interface,
-        'is_nullable': argument.is_nullable,
+        'is_nullable': idl_type.is_nullable,
         'is_optional': argument.is_optional,
         'is_strict_type_checking': 'StrictTypeChecking' in extended_attributes,
         'is_variadic_wrapper_type': is_variadic_wrapper_type,
@@ -196,7 +197,7 @@ def cpp_value(interface, method, number_of_arguments):
 def v8_set_return_value(interface_name, method, cpp_value, for_main_world=False):
     idl_type = method.idl_type
     extended_attributes = method.extended_attributes
-    if str(idl_type) == 'void':
+    if idl_type.name == 'void':
         return None
     is_union_type = idl_type.is_union_type
 

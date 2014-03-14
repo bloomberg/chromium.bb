@@ -102,16 +102,17 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info)
         return;
     }
     V8TRYCATCH_VOID(Vector<String>, sequenceStringArg, toNativeArray<String>(info[4], 5, info.GetIsolate()));
-    V8TRYCATCH_VOID(Dictionary, optionalDictionaryArg, Dictionary(info[5], info.GetIsolate()));
+    V8TRYCATCH_VOID(Vector<Dictionary>, sequenceDictionaryArg, toNativeArray<Dictionary>(info[5], 6, info.GetIsolate()));
+    V8TRYCATCH_VOID(Dictionary, optionalDictionaryArg, Dictionary(info[6], info.GetIsolate()));
     if (!optionalDictionaryArg.isUndefinedOrNull() && !optionalDictionaryArg.isObject()) {
-        exceptionState.throwTypeError("parameter 6 ('optionalDictionaryArg') is not an object.");
+        exceptionState.throwTypeError("parameter 7 ('optionalDictionaryArg') is not an object.");
         exceptionState.throwIfNeeded();
         return;
     }
-    V8TRYCATCH_VOID(TestInterfaceEmpty*, optionalTestInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[6]));
+    V8TRYCATCH_VOID(TestInterfaceEmpty*, optionalTestInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[7]));
     ExecutionContext* context = currentExecutionContext(info.GetIsolate());
     Document& document = *toDocument(currentExecutionContext(info.GetIsolate()));
-    RefPtr<TestInterfaceConstructor> impl = TestInterfaceConstructor::create(context, document, doubleArg, stringArg, testInterfaceEmptyArg, dictionaryArg, sequenceStringArg, optionalDictionaryArg, optionalTestInterfaceEmptyArg, exceptionState);
+    RefPtr<TestInterfaceConstructor> impl = TestInterfaceConstructor::create(context, document, doubleArg, stringArg, testInterfaceEmptyArg, dictionaryArg, sequenceStringArg, sequenceDictionaryArg, optionalDictionaryArg, optionalTestInterfaceEmptyArg, exceptionState);
     v8::Handle<v8::Object> wrapper = info.Holder();
     if (exceptionState.throwIfNeeded())
         return;
@@ -126,7 +127,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
         TestInterfaceConstructorV8Internal::constructor1(info);
         return;
     }
-    if (((info.Length() == 5) && (V8TestInterfaceEmpty::hasInstance(info[2], info.GetIsolate())) && (info[3]->IsObject()) && (info[4]->IsArray())) || ((info.Length() == 6) && (V8TestInterfaceEmpty::hasInstance(info[2], info.GetIsolate())) && (info[3]->IsObject()) && (info[4]->IsArray()) && (info[5]->IsUndefined() || info[5]->IsObject())) || ((info.Length() == 7) && (V8TestInterfaceEmpty::hasInstance(info[2], info.GetIsolate())) && (info[3]->IsObject()) && (info[4]->IsArray()) && (info[5]->IsUndefined() || info[5]->IsObject()) && (V8TestInterfaceEmpty::hasInstance(info[6], info.GetIsolate())))) {
+    if (((info.Length() == 6) && (V8TestInterfaceEmpty::hasInstance(info[2], info.GetIsolate())) && (info[3]->IsObject()) && (info[4]->IsArray()) && (info[5]->IsArray())) || ((info.Length() == 7) && (V8TestInterfaceEmpty::hasInstance(info[2], info.GetIsolate())) && (info[3]->IsObject()) && (info[4]->IsArray()) && (info[5]->IsArray()) && (info[6]->IsUndefined() || info[6]->IsObject())) || ((info.Length() == 8) && (V8TestInterfaceEmpty::hasInstance(info[2], info.GetIsolate())) && (info[3]->IsObject()) && (info[4]->IsArray()) && (info[5]->IsArray()) && (info[6]->IsUndefined() || info[6]->IsObject()) && (V8TestInterfaceEmpty::hasInstance(info[7], info.GetIsolate())))) {
         TestInterfaceConstructorV8Internal::constructor2(info);
         return;
     }

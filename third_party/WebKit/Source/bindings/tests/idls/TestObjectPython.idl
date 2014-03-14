@@ -59,6 +59,15 @@ interface TestObjectPython {
 
 
     // Attributes
+    //
+    // Naming convention:
+    // [ExtAttr] attribute Type extAttrTypeNameAttribute;
+    // E.g.,
+    // [Foo] attribute DOMString? fooStringOrNullAttribute
+    //
+    // Type name reference:
+    // http://heycam.github.io/webidl/#dfn-type-name
+    //
     // TestInterfaceEmpty is used as a stub interface type, for testing behavior
     // that should not depend on particular type (beyond "interface or not").
     // read only
@@ -113,6 +122,7 @@ interface TestObjectPython {
     // Exceptions for is_keep_alive_for_gc
     readonly attribute TestInterfaceEmpty self;
     readonly attribute EventTarget readonlyEventTargetAttribute;
+    readonly attribute EventTarget? readonlyEventTargetOrNullAttribute;
     readonly attribute Window readonlyWindowAttribute;
     readonly attribute HTMLCollection htmlCollectionAttribute;
     readonly attribute HTMLElement htmlElementAttribute;
@@ -121,9 +131,9 @@ interface TestObjectPython {
     attribute TestInterfaceEmpty[] testInterfaceEmptyArrayAttribute;
     attribute float[] floatArrayAttribute;
     // Nullable attributes
-    attribute DOMString? nullableStringAttribute;
-    attribute long? nullableLongAttribute;
-    attribute TestInterface? nullableTestInterfaceAttribute;
+    attribute DOMString? stringOrNullAttribute;
+    attribute long? longOrNullAttribute;
+    attribute TestInterface? testInterfaceOrNullAttribute;
     // Enumerations
     attribute TestEnum testEnumAttribute;
     // Static attributes
@@ -219,6 +229,11 @@ interface TestObjectPython {
 
 
     // Methods
+    //
+    // Naming convention:
+    // ReturnType returnTypeMethodTypeName1ArgTypeName2Arg(Type1 typeName1Arg, Type2 typeName2Arg);
+    // E.g.,
+    // void voidMethodStringArgLongArrayArg(DOMString stringArg, long[] longArrayArg);
     void voidMethod();
     static void staticVoidMethod();
 
@@ -282,6 +297,7 @@ interface TestObjectPython {
     Int32Array int32ArrayMethod();
     Uint8Array uint8ArrayMethod();
     void voidMethodArrayBufferArg(ArrayBuffer arrayBufferArg);
+    void voidMethodArrayBufferOrNullArg(ArrayBuffer? arrayBufferArg);
     void voidMethodArrayBufferViewArg(ArrayBufferView arrayBufferViewArg);
     void voidMethodFloat32ArrayArg(Float32Array float32ArrayArg);
     void voidMethodInt32ArrayArg(Int32Array int32ArrayArg);
@@ -294,19 +310,19 @@ interface TestObjectPython {
     void voidMethodArrayStringArg(DOMString[] arrayStringArg);
     void voidMethodArrayTestInterfaceEmptyArg(TestInterfaceEmpty[] arrayTestInterfaceEmptyArg);
     // Sequences
-    sequence<long> sequenceLongMethod();
-    sequence<DOMString> sequenceStringMethod();
-    sequence<TestInterfaceEmpty> sequenceTestInterfaceEmptyMethod();
-    void voidMethodSequenceLongArg(sequence<long> sequenceLongArg);
-    void voidMethodSequenceStringArg(sequence<DOMString> sequenceStringArg);
-    void voidMethodSequenceTestInterfaceEmptyArg(sequence<TestInterfaceEmpty> sequenceTestInterfaceEmptyArg);
+    sequence<long> longSequenceMethod();
+    sequence<DOMString> stringSequenceMethod();
+    sequence<TestInterfaceEmpty> testInterfaceEmptySequenceMethod();
+    void voidMethodSequenceLongArg(sequence<long> longSequenceArg);
+    void voidMethodSequenceStringArg(sequence<DOMString> stringSequenceArg);
+    void voidMethodSequenceTestInterfaceEmptyArg(sequence<TestInterfaceEmpty> testInterfaceEmptySequenceArg);
     // Nullable types
     // Currently only used on interface type arguments
-    void voidMethodNullableStringArg(TestInterfaceEmpty? nullableTestInterfaceEmptyArg);
+    void voidMethodTestInterfaceEmptyOrNullArg(TestInterfaceEmpty? nullableTestInterfaceEmptyArg);
     // Callback interface types
     void voidMethodTestCallbackInterfaceArg(TestCallbackInterface testCallbackInterfaceArg);
     void voidMethodOptionalTestCallbackInterfaceArg(optional TestCallbackInterface optionalTestCallbackInterfaceArg);
-    void voidMethodNullableTestCallbackInterfaceArg(TestCallbackInterface? testCallbackInterfaceArg);
+    void voidMethodTestCallbackInterfaceOrNullArg(TestCallbackInterface? testCallbackInterfaceArg);
     // Enumerations
     TestEnum testEnumMethod();
     void voidMethodTestEnumArg(TestEnum testEnumTypeArg);
@@ -321,7 +337,7 @@ interface TestObjectPython {
     void voidMethodPromiseArg(Promise promiseArg);
     void voidMethodSerializedScriptValueArg(SerializedScriptValue serializedScriptValueArg);
     void voidMethodXPathNSResolverArg(XPathNSResolver xPathNSResolverArg);
-    void voidMethodSequenceDictionaryArg(sequence<Dictionary> sequenceDictionaryArg);
+    void voidMethodSequenceDictionaryArg(sequence<Dictionary> dictionarySequenceArg);
 
     // Arguments
     void voidMethodStringArgLongArg(DOMString stringArg, long longArg);
@@ -433,16 +449,17 @@ interface TestObjectPython {
     [RuntimeEnabled=FeatureName] void runtimeEnabledVoidMethod();
     [PerWorldBindings, RuntimeEnabled=FeatureName] void perWorldBindingsRuntimeEnabledVoidMethod();
     [StrictTypeChecking] void strictTypeCheckingVoidMethodTestInterfaceEmptyArg(TestInterfaceEmpty testInterfaceEmptyArg);
-    [StrictTypeChecking] void strictTypeCheckingVoidMethodNullableTestInterfaceEmptyArg(TestInterfaceEmpty? testInterfaceEmptyArg);
+    [StrictTypeChecking] void strictTypeCheckingVoidMethodTestInterfaceEmptyOrNullArg(TestInterfaceEmpty? testInterfaceEmptyArg);
     [TreatReturnedNullStringAs=Null] DOMString treatReturnedNullStringAsNullStringMethod();
     [TreatReturnedNullStringAs=Undefined] DOMString treatReturnedNullStringAsUndefinedStringMethod();
     [Unforgeable] void unforgeableVoidMethod();
     // [WillBeGarbageCollected]
-    void voidMethodSequenceTestInterfaceWillBeGarbageCollectedArg(sequence<TestInterfaceWillBeGarbageCollected> sequenceTestInterfaceWillBeGarbageCollectedArg);
-    void voidMethodArrayTestInterfaceWillBeGarbageCollectedArg(TestInterfaceWillBeGarbageCollected[] arrayTestInterfaceWillBeGarbageCollectedArg);
+    void voidMethodTestInterfaceWillBeGarbageCollectedSequenceArg(sequence<TestInterfaceWillBeGarbageCollected> testInterfaceWillBeGarbageCollectedSequenceArg);
+    void voidMethodTestInterfaceWillBeGarbageCollectedArrayArg(TestInterfaceWillBeGarbageCollected[] testInterfaceWillBeGarbageCollectedArrayArg);
 
     // Extended attributes on referenced interfaces
     // (not self; self-reference tests at interface themselves)
     attribute TestInterfacePython testInterfacePythonAttribute; // [ImplementedAs]
-    attribute TestInterfaceWillBeGarbageCollected? testInterfaceWillBeGarbageCollectedAttribute; // [WillBeGarbageCollected]
+    attribute TestInterfaceWillBeGarbageCollected testInterfaceWillBeGarbageCollectedAttribute; // [WillBeGarbageCollected]
+    attribute TestInterfaceWillBeGarbageCollected? testInterfaceWillBeGarbageCollectedOrNullAttribute; // [WillBeGarbageCollected]
 };

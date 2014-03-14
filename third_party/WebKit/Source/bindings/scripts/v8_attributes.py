@@ -40,7 +40,7 @@ from v8_utilities import capitalize, cpp_name, has_extended_attribute, uncapital
 
 def generate_attribute(interface, attribute):
     idl_type = attribute.idl_type
-    idl_type_str = str(idl_type)
+    base_idl_type = idl_type.base_type
     extended_attributes = attribute.extended_attributes
 
     v8_types.add_includes_for_type(idl_type)
@@ -70,7 +70,7 @@ def generate_attribute(interface, attribute):
          'StrictTypeChecking' in interface.extended_attributes) and
         v8_types.is_wrapper_type(idl_type))
 
-    if (idl_type_str == 'EventHandler' and
+    if (base_idl_type == 'EventHandler' and
         interface.name in ['Window', 'WorkerGlobalScope'] and
         attribute.name == 'onerror'):
         includes.add('bindings/v8/V8ErrorHandler.h')
@@ -91,7 +91,7 @@ def generate_attribute(interface, attribute):
         'has_custom_getter': has_custom_getter,
         'has_custom_setter': has_custom_setter,
         'has_strict_type_checking': has_strict_type_checking,
-        'idl_type': idl_type_str,
+        'idl_type': str(idl_type),  # need trailing [] on array for Dictionary::ConversionContext::setConversionType
         'is_call_with_execution_context': v8_utilities.has_extended_attribute_value(attribute, 'CallWith', 'ExecutionContext'),
         'is_check_security_for_node': is_check_security_for_node,
         'is_custom_element_callbacks': is_custom_element_callbacks,
@@ -103,7 +103,7 @@ def generate_attribute(interface, attribute):
         'is_initialized_by_event_constructor':
             'InitializedByEventConstructor' in extended_attributes,
         'is_keep_alive_for_gc': is_keep_alive_for_gc(interface, attribute),
-        'is_nullable': attribute.is_nullable,
+        'is_nullable': attribute.idl_type.is_nullable,
         'is_per_world_bindings': 'PerWorldBindings' in extended_attributes,
         'is_read_only': attribute.is_read_only,
         'is_reflect': is_reflect,
@@ -127,7 +127,7 @@ def generate_attribute(interface, attribute):
         'reflect_only': extended_attributes['ReflectOnly'].split('|')
             if 'ReflectOnly' in extended_attributes else None,
         'setter_callback': setter_callback_name(interface, attribute),
-        'v8_type': v8_types.v8_type(idl_type.name),
+        'v8_type': v8_types.v8_type(base_idl_type),
         'runtime_enabled_function': v8_utilities.runtime_enabled_function_name(attribute),  # [RuntimeEnabled]
         'world_suffixes': ['', 'ForMainWorld']
                           if 'PerWorldBindings' in extended_attributes
@@ -152,7 +152,7 @@ def generate_attribute(interface, attribute):
 
 def generate_getter(interface, attribute, contents):
     idl_type = attribute.idl_type
-    idl_type_str = str(idl_type)
+    base_idl_type = idl_type.base_type
     extended_attributes = attribute.extended_attributes
 
     cpp_value = getter_expression(interface, attribute, contents)
@@ -163,14 +163,14 @@ def generate_getter(interface, attribute, contents):
     # FIXME: check if compilers are smart enough to inline this, and if so,
     # always use a local variable (for readability and CG simplicity).
     release = False
-    if (attribute.is_nullable or
-        idl_type_str == 'EventHandler' or
+    if (idl_type.is_nullable or
+        base_idl_type == 'EventHandler' or
         'CachedAttribute' in extended_attributes or
         contents['is_getter_raises_exception']):
         contents['cpp_value_original'] = cpp_value
         cpp_value = 'jsValue'
         # EventHandler has special handling
-        if idl_type_str != 'EventHandler' and idl_type.is_interface_type:
+        if base_idl_type != 'EventHandler' and idl_type.is_interface_type:
             release = True
 
     if 'ReflectOnly' in extended_attributes:
@@ -199,7 +199,7 @@ def getter_expression(interface, attribute, contents):
     if ('ImplementedBy' in attribute.extended_attributes and
         not attribute.is_static):
         arguments.append('*imp')
-    if attribute.is_nullable:
+    if attribute.idl_type.is_nullable:
         arguments.append('isNull')
     if contents['is_getter_raises_exception']:
         arguments.append('exceptionState')
@@ -225,9 +225,9 @@ def getter_base_name(interface, attribute, arguments):
 
     arguments.append(scoped_content_attribute_name(interface, attribute))
 
-    idl_type_str = str(attribute.idl_type)
-    if idl_type_str in CONTENT_ATTRIBUTE_GETTER_NAMES:
-        return CONTENT_ATTRIBUTE_GETTER_NAMES[idl_type_str]
+    base_idl_type = attribute.idl_type.base_type
+    if base_idl_type in CONTENT_ATTRIBUTE_GETTER_NAMES:
+        return CONTENT_ATTRIBUTE_GETTER_NAMES[base_idl_type]
     if 'URL' in attribute.extended_attributes:
         return 'getURLAttribute'
     return 'fastGetAttribute'
@@ -235,7 +235,7 @@ def getter_base_name(interface, attribute, arguments):
 
 def is_keep_alive_for_gc(interface, attribute):
     idl_type = attribute.idl_type
-    idl_type_name = idl_type.name
+    base_idl_type = idl_type.base_type
     extended_attributes = attribute.extended_attributes
     return (
         # For readonly attributes, for performance reasons we keep the attribute
@@ -247,12 +247,12 @@ def is_keep_alive_for_gc(interface, attribute):
          not(
              # Node lifetime is managed by object grouping.
              idl_types.inherits_interface(interface.name, 'Node') or
-             idl_types.inherits_interface(idl_type_name, 'Node') or
+             idl_types.inherits_interface(base_idl_type, 'Node') or
              # A self-reference is unnecessary.
              attribute.name == 'self' or
              # FIXME: Remove these hard-coded hacks.
-             idl_type_name in ['EventTarget', 'Window'] or
-             idl_type_name.startswith(('HTML', 'SVG')))))
+             base_idl_type in ['EventTarget', 'Window'] or
+             base_idl_type.startswith(('HTML', 'SVG')))))
 
 
 ################################################################################
@@ -261,7 +261,7 @@ def is_keep_alive_for_gc(interface, attribute):
 
 def generate_setter(interface, attribute, contents):
     def target_attribute():
-        target_interface_name = attribute.idl_type.name
+        target_interface_name = attribute.idl_type.base_type
         target_attribute_name = extended_attributes['PutForwards']
         target_interface = interfaces[target_interface_name]
         try:
@@ -297,7 +297,7 @@ def setter_expression(interface, attribute, contents):
         not attribute.is_static):
         arguments.append('*imp')
     idl_type = attribute.idl_type
-    if str(idl_type) == 'EventHandler':
+    if idl_type.base_type == 'EventHandler':
         getter_name = v8_utilities.scoped_name(interface, attribute, cpp_name(attribute))
         contents['event_handler_getter_expression'] = '%s(%s)' % (
             getter_name, ', '.join(arguments))
@@ -330,9 +330,9 @@ def setter_base_name(interface, attribute, arguments):
         return 'set%s' % capitalize(cpp_name(attribute))
     arguments.append(scoped_content_attribute_name(interface, attribute))
 
-    idl_type_name = str(attribute.idl_type)
-    if idl_type_name in CONTENT_ATTRIBUTE_SETTER_NAMES:
-        return CONTENT_ATTRIBUTE_SETTER_NAMES[idl_type_name]
+    base_idl_type = attribute.idl_type.base_type
+    if base_idl_type in CONTENT_ATTRIBUTE_SETTER_NAMES:
+        return CONTENT_ATTRIBUTE_SETTER_NAMES[base_idl_type]
     return 'setAttribute'
 
 
@@ -397,7 +397,7 @@ def property_attributes(attribute):
 
 def is_constructor_attribute(attribute):
     # FIXME: replace this with [ConstructorAttribute] extended attribute
-    return str(attribute.idl_type).endswith('Constructor')
+    return attribute.idl_type.base_type.endswith('Constructor')
 
 
 def generate_constructor_getter(interface, attribute, contents):

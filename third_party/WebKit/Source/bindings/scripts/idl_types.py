@@ -92,12 +92,13 @@ class IdlType(object):
     callback_interfaces = set()
     enums = {}  # name -> values
 
-    def __init__(self, base_type, is_array=False, is_sequence=False):
+    def __init__(self, base_type, is_array=False, is_sequence=False, is_nullable=False):
         if is_array and is_sequence:
             raise ValueError('Array of Sequences are not allowed.')
         self.base_type = base_type
         self.is_array = is_array
         self.is_sequence = is_sequence
+        self.is_nullable = is_nullable
 
     def __str__(self):
         type_string = self.base_type
@@ -105,6 +106,13 @@ class IdlType(object):
             return type_string + '[]'
         if self.is_sequence:
             return 'sequence<%s>' % type_string
+        if self.is_nullable:
+            # FIXME: Dictionary::ConversionContext::setConversionType can't
+            # handle the '?' in nullable types (passes nullability separately).
+            # Update that function to handle nullability from the type name,
+            # simplifying its signature.
+            # return type_string + '?'
+            return type_string
         return type_string
 
     # FIXME: rename to native_array_element_type and move to v8_types.py
@@ -124,15 +132,15 @@ class IdlType(object):
 
     @property
     def is_basic_type(self):
-        return str(self) in BASIC_TYPES
+        return self.base_type in BASIC_TYPES and not self.array_or_sequence_type
 
     @property
     def is_callback_function(self):
-        return self.name in IdlType.callback_functions
+        return self.base_type in IdlType.callback_functions
 
     @property
     def is_callback_interface(self):
-        return self.name in IdlType.callback_interfaces
+        return self.base_type in IdlType.callback_interfaces
 
     @property
     def is_composite_type(self):
@@ -151,7 +159,7 @@ class IdlType(object):
 
     @property
     def is_integer_type(self):
-        return str(self) in INTEGER_TYPES
+        return self.base_type in INTEGER_TYPES and not self.array_or_sequence_type
 
     @property
     def is_interface_type(self):
@@ -182,6 +190,8 @@ class IdlType(object):
             return base_type_name + 'Array'
         if self.is_sequence:
             return base_type_name + 'Sequence'
+        if self.is_nullable:
+            return base_type_name + 'OrNull'
         return base_type_name
 
     @classmethod
@@ -226,8 +236,9 @@ class IdlUnionType(object):
     # http://heycam.github.io/webidl/#idl-union
     # FIXME: derive from IdlType, instead of stand-alone class, to reduce
     # duplication.
-    def __init__(self, member_types):
+    def __init__(self, member_types, is_nullable=False):
         self.member_types = member_types
+        self.is_nullable = is_nullable
 
     @property
     def array_or_sequence_type(self):
@@ -241,6 +252,10 @@ class IdlUnionType(object):
     def is_array(self):
         # We do not support arrays of union types
         return False
+
+    @property
+    def base_type(self):
+        return None
 
     @property
     def is_basic_type(self):
