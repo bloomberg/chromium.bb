@@ -676,7 +676,14 @@ TEST(TimeTicks, HighResNow) {
   HighResClockTest(&TimeTicks::HighResNow);
 }
 
-TEST(TimeTicks, ThreadNow) {
+// Fails frequently on Android http://crbug.com/352633 with:
+// Expected: (delta_thread.InMicroseconds()) > (0), actual: 0 vs 0
+#if defined(OS_ANDROID)
+#define MAYBE_ThreadNow DISABLED_ThreadNow
+#else
+#define MAYBE_ThreadNow ThreadNow
+#endif
+TEST(TimeTicks, MAYBE_ThreadNow) {
   if (TimeTicks::IsThreadNowSupported()) {
     TimeTicks begin = TimeTicks::Now();
     TimeTicks begin_thread = TimeTicks::ThreadNow();
