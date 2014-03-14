@@ -29,7 +29,6 @@
 
 namespace WebCore {
 
-class CSSFontFaceSource;
 struct GlyphData;
 class GlyphPage;
 class SimpleFontData;
@@ -45,7 +44,7 @@ public:
     virtual bool isLoading() const { return false; }
     virtual bool isLoadingFallback() const { return false; }
     virtual bool shouldSkipDrawing() const { return false; }
-    virtual void clearCSSFontFaceSource() { }
+    virtual void clearFontFaceSource() { }
 
     virtual bool isSVGFont() const { return false; }
     virtual void initializeFontData(SimpleFontData*, float) { }

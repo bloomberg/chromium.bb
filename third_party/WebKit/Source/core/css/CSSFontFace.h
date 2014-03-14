@@ -39,6 +39,7 @@ class CSSFontSelector;
 class CSSSegmentedFontFace;
 class Document;
 class FontDescription;
+class RemoteFontFaceSource;
 class SimpleFontData;
 class StyleRuleFontFace;
 
@@ -67,8 +68,8 @@ public:
     void addSource(PassOwnPtr<CSSFontFaceSource>);
 
     void beginLoadIfNeeded(CSSFontFaceSource*, CSSFontSelector* = 0);
-    void fontLoaded(CSSFontFaceSource*);
-    void fontLoadWaitLimitExceeded(CSSFontFaceSource*);
+    void fontLoaded(RemoteFontFaceSource*);
+    void fontLoadWaitLimitExceeded(RemoteFontFaceSource*);
 
     PassRefPtr<SimpleFontData> getFontData(const FontDescription&);
 

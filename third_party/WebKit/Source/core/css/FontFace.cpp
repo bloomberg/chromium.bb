@@ -44,6 +44,8 @@
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSUnicodeRangeValue.h"
 #include "core/css/CSSValueList.h"
+#include "core/css/LocalFontFaceSource.h"
+#include "core/css/RemoteFontFaceSource.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/StyleRule.h"
 #include "core/css/parser/BisonCSSParser.h"
@@ -54,6 +56,8 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/svg/SVGFontFaceElement.h"
+#include "core/svg/SVGFontFaceSource.h"
+#include "core/svg/SVGRemoteFontFaceSource.h"
 #include "platform/fonts/FontDescription.h"
 
 namespace WebCore {
@@ -514,23 +518,29 @@ void FontFace::initCSSFontFace(Document* document)
             if (allowDownloading && item->isSupportedFormat() && document) {
                 FontResource* fetched = item->fetch(document);
                 if (fetched) {
-                    source = adoptPtr(new CSSFontFaceSource(item->resource(), fetched));
 #if ENABLE(SVG_FONTS)
-                    if (foundSVGFont)
-                        source->setHasExternalSVGFont(true);
+                    if (foundSVGFont) {
+                        source = adoptPtr(new SVGRemoteFontFaceSource(item->resource(), fetched));
+                    } else
 #endif
+                    {
+                        source = adoptPtr(new RemoteFontFaceSource(fetched));
+                    }
                 }
             }
         } else {
-            source = adoptPtr(new CSSFontFaceSource(item->resource()));
+#if ENABLE(SVG_FONTS)
+            if (item->svgFontFaceElement()) {
+                source = adoptPtr(new SVGFontFaceSource(item->svgFontFaceElement()));
+            } else
+#endif
+            {
+                source = adoptPtr(new LocalFontFaceSource(item->resource()));
+            }
         }
 
-        if (source) {
-#if ENABLE(SVG_FONTS)
-            source->setSVGFontFaceElement(item->svgFontFaceElement());
-#endif
+        if (source)
             m_cssFontFace->addSource(source.release());
-        }
     }
 }
 

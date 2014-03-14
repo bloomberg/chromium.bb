@@ -30,7 +30,7 @@ class CSSCustomFontData FINAL : public CustomFontData {
 public:
     enum FallbackVisibility { InvisibleFallback, VisibleFallback };
 
-    static PassRefPtr<CSSCustomFontData> create(CSSFontFaceSource* source, FallbackVisibility visibility)
+    static PassRefPtr<CSSCustomFontData> create(RemoteFontFaceSource* source, FallbackVisibility visibility)
     {
         return adoptRef(new CSSCustomFontData(source, visibility));
     }
@@ -54,17 +54,17 @@ public:
 
     virtual bool isLoading() const OVERRIDE { return m_isUsed; }
     virtual bool isLoadingFallback() const OVERRIDE { return true; }
-    virtual void clearCSSFontFaceSource() OVERRIDE { m_fontFaceSource = 0; }
+    virtual void clearFontFaceSource() OVERRIDE { m_fontFaceSource = 0; }
 
 private:
-    CSSCustomFontData(CSSFontFaceSource* source, FallbackVisibility visibility)
+    CSSCustomFontData(RemoteFontFaceSource* source, FallbackVisibility visibility)
         : m_fontFaceSource(source)
         , m_fallbackVisibility(visibility)
         , m_isUsed(false)
     {
     }
 
-    CSSFontFaceSource* m_fontFaceSource;
+    RemoteFontFaceSource* m_fontFaceSource;
     FallbackVisibility m_fallbackVisibility;
     mutable bool m_isUsed;
 };
