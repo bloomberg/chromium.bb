@@ -658,12 +658,8 @@ function requestCards() {
     updateCardsAttempts.isRunning(function(running) {
       if (running) {
         updateCardsAttempts.planForNext(function() {
-          processPendingDismissals(function(success) {
-            if (success) {
-              // The cards are requested only if there are no unsent dismissals.
-              requestNotificationCards();
-            }
-          });
+          // The cards are requested only if there are no unsent dismissals.
+          processPendingDismissals().then(requestNotificationCards);
         });
       }
     });
@@ -677,11 +673,10 @@ function requestCards() {
  * @param {number} dismissalTimeMs Time of the user's dismissal of the card in
  *     milliseconds since epoch.
  * @param {DismissalData} dismissalData Data to build a dismissal request.
- * @param {function(boolean)} callbackBoolean Completion callback with 'done'
- *     parameter.
+ * @return {Promise} A promise to request the card dismissal, rejects on error.
  */
 function requestCardDismissal(
-    chromeNotificationId, dismissalTimeMs, dismissalData, callbackBoolean) {
+    chromeNotificationId, dismissalTimeMs, dismissalData) {
   console.log('requestDismissingCard ' + chromeNotificationId +
       ' from ' + NOTIFICATION_CARDS_URL +
       ', dismissalData=' + JSON.stringify(dismissalData));
@@ -705,7 +700,7 @@ function requestCardDismissal(
 
   console.log('requestCardDismissal: requestParameters=' + requestParameters);
 
-  requestFromServer('DELETE', requestParameters).then(function(request) {
+  return requestFromServer('DELETE', requestParameters).then(function(request) {
     console.log('requestDismissingCard-onloadend ' + request.status);
     if (request.status == HTTP_NOCONTENT)
       recordEvent(GoogleNowEvent.DISMISS_REQUEST_SUCCESS);
@@ -715,19 +710,17 @@ function requestCardDismissal(
     var done = request.status == HTTP_NOCONTENT ||
         request.status == HTTP_BAD_REQUEST ||
         request.status == HTTP_METHOD_NOT_ALLOWED;
-    callbackBoolean(done);
-  }).catch(function() {
-    callbackBoolean(false);
+    return done ? Promise.resolve() : Promise.reject();
   });
 }
 
 /**
  * Tries to send dismiss requests for all pending dismissals.
- * @param {function(boolean)} callbackBoolean Completion callback with 'success'
- *     parameter. Success means that no pending dismissals are left.
+ * @return {Promise} A promise to process the pending dismissals.
+ *     The promise is rejected if a problem was encountered.
  */
-function processPendingDismissals(callbackBoolean) {
-  fillFromChromeLocalStorage({
+function processPendingDismissals() {
+  return fillFromChromeLocalStorage({
     /** @type {Array.<PendingDismissal>} */
     pendingDismissals: [],
     /** @type {Object.<NotificationId, number>} */
@@ -745,39 +738,34 @@ function processPendingDismissals(callbackBoolean) {
           recentDismissals: items.recentDismissals
         });
       }
-      callbackBoolean(success);
+      return success ? Promise.resolve() : Promise.reject();
     }
 
     function doProcessDismissals() {
       if (items.pendingDismissals.length == 0) {
         dismissalAttempts.stop();
-        onFinish(true);
-        return;
+        return onFinish(true);
       }
 
       // Send dismissal for the first card, and if successful, repeat
       // recursively with the rest.
       /** @type {PendingDismissal} */
       var dismissal = items.pendingDismissals[0];
-      requestCardDismissal(
+      return requestCardDismissal(
           dismissal.chromeNotificationId,
           dismissal.time,
-          dismissal.dismissalData,
-          function(done) {
-            if (done) {
-              dismissalsChanged = true;
-              items.pendingDismissals.splice(0, 1);
-              items.recentDismissals[
-                  dismissal.dismissalData.notificationId] =
-                  Date.now();
-              doProcessDismissals();
-            } else {
-              onFinish(false);
-            }
+          dismissal.dismissalData).then(function() {
+            dismissalsChanged = true;
+            items.pendingDismissals.splice(0, 1);
+            items.recentDismissals[dismissal.dismissalData.notificationId] =
+                Date.now();
+            return doProcessDismissals();
+          }).catch(function() {
+            return onFinish(false);
           });
     }
 
-    doProcessDismissals();
+    return doProcessDismissals();
   });
 }
 
@@ -787,7 +775,7 @@ function processPendingDismissals(callbackBoolean) {
 function retryPendingDismissals() {
   tasks.add(RETRY_DISMISS_TASK_NAME, function() {
     dismissalAttempts.planForNext(function() {
-      processPendingDismissals(function(success) {});
+      processPendingDismissals();
      });
   });
 }
@@ -884,7 +872,7 @@ function onNotificationClosed(chromeNotificationId, byUser) {
 
       chrome.storage.local.set(items);
 
-      processPendingDismissals(function(success) {});
+      processPendingDismissals();
     });
   });
 }
