@@ -60,6 +60,14 @@ class ExtensionUninstallDialog
   // 2) Handle the load icon response and show the UI (OnImageLoaded).
   void ConfirmUninstall(const extensions::Extension* extension);
 
+  // This shows the same dialog as above, except it also shows which extension
+  // triggered the dialog by calling chrome.management.uninstall API.
+  void ConfirmProgrammaticUninstall(
+      const extensions::Extension* extension,
+      const extensions::Extension* triggering_extension);
+
+  std::string GetHeadingText();
+
  protected:
   // Constructor used by the derived classes.
   ExtensionUninstallDialog(Profile* profile,
@@ -75,6 +83,10 @@ class ExtensionUninstallDialog
 
   // The extension we are showing the dialog for.
   const extensions::Extension* extension_;
+
+  // The extension triggering the dialog if the dialog was shown by
+  // chrome.management.uninstall.
+  const extensions::Extension* triggering_extension_;
 
   // The extensions icon.
   gfx::ImageSkia icon_;

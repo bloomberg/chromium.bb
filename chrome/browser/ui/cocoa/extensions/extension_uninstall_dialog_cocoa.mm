@@ -57,9 +57,7 @@ void ExtensionUninstallDialogCocoa::Show() {
       IDS_CANCEL)];
   [cancelButton setKeyEquivalent:@"\r"];
 
-  [alert setMessageText:l10n_util::GetNSStringF(
-       IDS_EXTENSION_UNINSTALL_PROMPT_HEADING,
-       base::UTF8ToUTF16(extension_->name()))];
+  [alert setMessageText:base::SysUTF8ToNSString(GetHeadingText())];
   [alert setAlertStyle:NSWarningAlertStyle];
   [alert setIcon:gfx::NSImageFromImageSkia(icon_)];
 

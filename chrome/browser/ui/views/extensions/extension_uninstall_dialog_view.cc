@@ -71,6 +71,7 @@ class ExtensionUninstallDialogDelegateView : public views::DialogDelegateView {
   ExtensionUninstallDialogDelegateView(
       ExtensionUninstallDialogViews* dialog_view,
       const extensions::Extension* extension,
+      const extensions::Extension* triggering_extension,
       gfx::ImageSkia* icon);
   virtual ~ExtensionUninstallDialogDelegateView();
 
@@ -135,7 +136,8 @@ void ExtensionUninstallDialogViews::Show() {
     return;
   }
 
-  view_ = new ExtensionUninstallDialogDelegateView(this, extension_, &icon_);
+  view_ = new ExtensionUninstallDialogDelegateView(
+      this, extension_, triggering_extension_, &icon_);
   CreateBrowserModalDialogViews(view_, parent)->Show();
 }
 
@@ -154,6 +156,7 @@ void ExtensionUninstallDialogViews::ExtensionUninstallCanceled() {
 ExtensionUninstallDialogDelegateView::ExtensionUninstallDialogDelegateView(
     ExtensionUninstallDialogViews* dialog_view,
     const extensions::Extension* extension,
+    const extensions::Extension* triggering_extension,
     gfx::ImageSkia* icon)
     : dialog_(dialog_view) {
   // Scale down to icon size, but allow smaller icons (don't scale up).
@@ -165,10 +168,9 @@ ExtensionUninstallDialogDelegateView::ExtensionUninstallDialogDelegateView(
   icon_->SetImage(*icon);
   AddChildView(icon_);
 
-  heading_ = new views::Label(
-      l10n_util::GetStringFUTF16(IDS_EXTENSION_UNINSTALL_PROMPT_HEADING,
-                                 base::UTF8ToUTF16(extension->name())));
+  heading_ = new views::Label(base::UTF8ToUTF16(dialog_->GetHeadingText()));
   heading_->SetMultiLine(true);
+  heading_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   AddChildView(heading_);
 }
 

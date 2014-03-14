@@ -528,11 +528,12 @@ ManagementUninstallFunctionBase::~ManagementUninstallFunctionBase() {
 }
 
 bool ManagementUninstallFunctionBase::Uninstall(
-    const std::string& extension_id,
+    const std::string& target_extension_id,
     bool show_confirm_dialog) {
-  extension_id_ = extension_id;
-  const Extension* extension = service()->GetExtensionById(extension_id_, true);
-  if (!extension || extension->ShouldNotBeVisible()) {
+  extension_id_ = target_extension_id;
+  const Extension* target_extension =
+      service()->GetExtensionById(extension_id_, true);
+  if (!target_extension || target_extension->ShouldNotBeVisible()) {
     error_ = ErrorUtils::FormatErrorMessage(
         keys::kNoExtensionError, extension_id_);
     return false;
@@ -540,7 +541,7 @@ bool ManagementUninstallFunctionBase::Uninstall(
 
   if (!ExtensionSystem::Get(GetProfile())
            ->management_policy()
-           ->UserMayModifySettings(extension, NULL)) {
+           ->UserMayModifySettings(target_extension, NULL)) {
     error_ = ErrorUtils::FormatErrorMessage(
         keys::kUserCantModifyError, extension_id_);
     return false;
@@ -551,7 +552,13 @@ bool ManagementUninstallFunctionBase::Uninstall(
       AddRef(); // Balanced in ExtensionUninstallAccepted/Canceled
       extension_uninstall_dialog_.reset(ExtensionUninstallDialog::Create(
           GetProfile(), GetCurrentBrowser(), this));
-      extension_uninstall_dialog_->ConfirmUninstall(extension);
+      if (extension_id() != target_extension_id) {
+        extension_uninstall_dialog_->ConfirmProgrammaticUninstall(
+            target_extension, GetExtension());
+      } else {
+        // If this is a self uninstall, show the generic uninstall dialog.
+        extension_uninstall_dialog_->ConfirmUninstall(target_extension);
+      }
     } else {
       Finish(true);
     }
