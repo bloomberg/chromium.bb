@@ -366,8 +366,8 @@ InspectorTest.addSniffer = function(receiver, methodName, override, opt_sticky)
 
 InspectorTest.addConsoleSniffer = function(override, opt_sticky)
 {
-    var sniffer = function (messageIndex) {
-        var message = WebInspector.console.messages[messageIndex];
+    var sniffer = function (viewMessage) {
+        var message = viewMessage.consoleMessage();
         override(message);
     };
 
