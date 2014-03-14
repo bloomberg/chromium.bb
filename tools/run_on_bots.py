@@ -69,8 +69,8 @@ def archive(isolate_server, script):
 
 
 def run_serial(
-    swarming_server, isolate_server, priority, deadline, isolated_hash, name,
-    bots):
+    swarming_server, isolate_server, priority, deadline, repeat, isolated_hash,
+    name, bots):
   """Runs the task one at a time.
 
   This will be mainly bound by task scheduling latency, especially if the slaves
@@ -78,37 +78,41 @@ def run_serial(
   """
   result = 0
   now = parallel_execution.timestamp()
-  for bot in bots:
-    # Use an unique task name to ensure the task is executed.
-    task_name = parallel_execution.unique_task_to_name(
-        name, {'hostname': bot}, isolated_hash, now)
-    cmd = [
-      sys.executable, 'swarming.py', 'run',
-      '--swarming', swarming_server,
-      '--isolate-server', isolate_server,
-      '--priority', priority,
-      '--deadline', deadline,
-      '--dimension', 'hostname', bot,
-      '--task-name', task_name,
-      isolated_hash,
-    ]
-    r = subprocess.call(cmd, cwd=ROOT_DIR)
-    result = max(r, result)
+  for i in xrange(repeat):
+    for bot in bots:
+      # Use an unique task name to ensure the task is executed.
+      suffix = '/%d' % i if repeat > 1 else ''
+      task_name = parallel_execution.unique_task_to_name(
+          name, {'hostname': bot}, isolated_hash, now) + suffix
+      cmd = [
+        sys.executable, 'swarming.py', 'run',
+        '--swarming', swarming_server,
+        '--isolate-server', isolate_server,
+        '--priority', priority,
+        '--deadline', deadline,
+        '--dimension', 'hostname', bot,
+        '--task-name', task_name,
+        isolated_hash,
+      ]
+      r = subprocess.call(cmd, cwd=ROOT_DIR)
+      result = max(r, result)
   return result
 
 
 def run_parallel(
-    swarming_server, isolate_server, priority, deadline, isolated_hash, name,
-    bots):
+    swarming_server, isolate_server, priority, deadline, repeat, isolated_hash,
+    name, bots):
   now = parallel_execution.timestamp()
-  tasks = [
-    (
-      parallel_execution.unique_task_to_name(
-          name, {'hostname': bot}, isolated_hash, now),
-      isolated_hash,
-      {'hostname': bot},
-    ) for bot in bots
-  ]
+  tasks = []
+  for i in xrange(repeat):
+    suffix = '/%d' % i if repeat > 1 else ''
+    tasks.extend(
+        (
+          parallel_execution.unique_task_to_name(
+              name, {'hostname': bot}, isolated_hash, now) + suffix,
+          isolated_hash,
+          {'hostname': bot},
+        ) for bot in bots)
   extra_args = ['--priority', priority, '--deadline', deadline]
   print('Using priority %s' % priority)
   for failed_task in parallel_execution.run_swarming_tasks_parallel(
@@ -125,6 +129,10 @@ def main():
       '--serial', action='store_true',
       help='Runs the task serially, to be used when debugging problems since '
            'it\'s slow')
+  parser.add_option(
+      '--repeat', type='int', default=1,
+      help='Runs the task multiple time on each bot, meant to be used as a '
+           'load test')
   options, args = parser.parse_args()
 
   if len(args) != 1:
@@ -149,6 +157,7 @@ def main():
         options.isolate_server,
         str(options.priority),
         str(options.deadline),
+        options.repeat,
         isolated_hash,
         name,
         bots)
@@ -158,6 +167,7 @@ def main():
       options.isolate_server,
       str(options.priority),
       str(options.deadline),
+      options.repeat,
       isolated_hash,
       name,
       bots)
