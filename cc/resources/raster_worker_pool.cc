@@ -287,7 +287,7 @@ class ImageDecodeWorkerPoolTaskImpl : public internal::WorkerPoolTask {
   skia::RefPtr<SkPixelRef> pixel_ref_;
   int layer_id_;
   RenderingStatsInstrumentation* rendering_stats_;
-  const base::Callback<void(bool was_canceled)>& reply_;
+  const base::Callback<void(bool was_canceled)> reply_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageDecodeWorkerPoolTaskImpl);
 };
