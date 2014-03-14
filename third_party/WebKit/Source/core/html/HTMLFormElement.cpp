@@ -298,10 +298,11 @@ bool HTMLFormElement::prepareForSubmission(Event* event)
 
     frame->loader().client()->dispatchWillSendSubmitEvent(this);
 
+    // Set flag before submission as dispatchEvent could trigger another event
+    m_isSubmittingOrPreparingForSubmission = false;
+
     if (dispatchEvent(Event::createCancelableBubble(EventTypeNames::submit)))
         m_shouldSubmit = true;
-
-    m_isSubmittingOrPreparingForSubmission = false;
 
     if (m_shouldSubmit)
         submit(event, true, true, NotSubmittedByJavaScript);
