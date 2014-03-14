@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/drive/drive_api_util.h"
 #include "chrome/browser/drive/fake_drive_service.h"
+#include "google_apis/drive/gdata_wapi_parser.h"
 #include "google_apis/drive/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -123,13 +124,14 @@ TEST_F(CopyOperationTest, TransferFileFromLocalToRemote_Overwrite) {
       remote_dest_path.DirName()));
 }
 
-TEST_F(CopyOperationTest, TransferFileFromLocalToRemote_HostedDocument) {
+TEST_F(CopyOperationTest,
+       TransferFileFromLocalToRemote_ExistingHostedDocument) {
   const base::FilePath local_src_path = temp_dir().AppendASCII("local.gdoc");
   const base::FilePath remote_dest_path(FILE_PATH_LITERAL(
-      "drive/root/Directory 1/Document 1 excludeDir-test.gdoc"));
+      "drive/root/Directory 1/copied.gdoc"));
 
   // Prepare a local file, which is a json file of a hosted document, which
-  // matches "Document 1" in root_feed.json.
+  // matches "drive/root/Document 1 excludeDir-test" in root_feed.json.
   ASSERT_TRUE(util::CreateGDocFile(
       local_src_path,
       GURL("https://3_document_self_link/document:5_document_resource_id"),
@@ -153,8 +155,88 @@ TEST_F(CopyOperationTest, TransferFileFromLocalToRemote_HostedDocument) {
   EXPECT_EQ(1U, observer()->get_changed_paths().size());
   EXPECT_TRUE(
       observer()->get_changed_paths().count(remote_dest_path.DirName()));
+  // New copy is created.
+  EXPECT_NE("document:5_document_resource_id", entry.resource_id());
 }
 
+TEST_F(CopyOperationTest, TransferFileFromLocalToRemote_OrphanHostedDocument) {
+  const base::FilePath local_src_path = temp_dir().AppendASCII("local.gdoc");
+  const base::FilePath remote_dest_path(FILE_PATH_LITERAL(
+      "drive/root/Directory 1/moved.gdoc"));
+
+  // Prepare a local file, which is a json file of a hosted document, which
+  // matches "drive/other/Orphan Document" in root_feed.json.
+  ASSERT_TRUE(util::CreateGDocFile(
+      local_src_path,
+      GURL("https://3_document_self_link/document:orphan_doc_1"),
+      "document:orphan_doc_1"));
+
+  ResourceEntry entry;
+  ASSERT_EQ(FILE_ERROR_NOT_FOUND,
+            GetLocalResourceEntry(remote_dest_path, &entry));
+
+  // Transfer the local file to Drive.
+  FileError error = FILE_ERROR_FAILED;
+  operation_->TransferFileFromLocalToRemote(
+      local_src_path,
+      remote_dest_path,
+      google_apis::test_util::CreateCopyResultCallback(&error));
+  test_util::RunBlockingPoolTask();
+  EXPECT_EQ(FILE_ERROR_OK, error);
+
+  EXPECT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(remote_dest_path, &entry));
+  EXPECT_EQ(ResourceEntry::DIRTY, entry.metadata_edit_state());
+  EXPECT_TRUE(observer()->updated_local_ids().count(entry.local_id()));
+
+  EXPECT_EQ(1U, observer()->get_changed_paths().size());
+  EXPECT_TRUE(
+      observer()->get_changed_paths().count(remote_dest_path.DirName()));
+  // The original document got new parent.
+  EXPECT_EQ("document:orphan_doc_1", entry.resource_id());
+}
+
+TEST_F(CopyOperationTest, TransferFileFromLocalToRemote_NewHostedDocument) {
+  const base::FilePath local_src_path = temp_dir().AppendASCII("local.gdoc");
+  const base::FilePath remote_dest_path(FILE_PATH_LITERAL(
+      "drive/root/Directory 1/moved.gdoc"));
+
+  // Create a hosted document on the server that is not synced to local yet.
+  google_apis::GDataErrorCode gdata_error = google_apis::GDATA_OTHER_ERROR;
+  scoped_ptr<google_apis::ResourceEntry> new_gdoc_entry;
+  fake_service()->AddNewFile(
+      "application/vnd.google-apps.document", "", "", "title", true,
+      google_apis::test_util::CreateCopyResultCallback(&gdata_error,
+                                                       &new_gdoc_entry));
+  test_util::RunBlockingPoolTask();
+  ASSERT_EQ(google_apis::HTTP_CREATED, gdata_error);
+
+  // Prepare a local file, which is a json file of the added hosted document.
+  ASSERT_TRUE(util::CreateGDocFile(
+      local_src_path,
+      GURL("https://3_document_self_link/" + new_gdoc_entry->resource_id()),
+      new_gdoc_entry->resource_id()));
+
+  ResourceEntry entry;
+  ASSERT_EQ(FILE_ERROR_NOT_FOUND,
+            GetLocalResourceEntry(remote_dest_path, &entry));
+
+  // Transfer the local file to Drive.
+  FileError error = FILE_ERROR_FAILED;
+  operation_->TransferFileFromLocalToRemote(
+      local_src_path,
+      remote_dest_path,
+      google_apis::test_util::CreateCopyResultCallback(&error));
+  test_util::RunBlockingPoolTask();
+  EXPECT_EQ(FILE_ERROR_OK, error);
+
+  EXPECT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(remote_dest_path, &entry));
+
+  EXPECT_EQ(1U, observer()->get_changed_paths().size());
+  EXPECT_TRUE(
+      observer()->get_changed_paths().count(remote_dest_path.DirName()));
+  // The original document got new parent.
+  EXPECT_EQ(new_gdoc_entry->resource_id(), entry.resource_id());
+}
 
 TEST_F(CopyOperationTest, CopyNotExistingFile) {
   base::FilePath src_path(FILE_PATH_LITERAL("drive/root/Dummy file.txt"));

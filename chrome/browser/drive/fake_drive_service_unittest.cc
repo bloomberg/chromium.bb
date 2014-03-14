@@ -119,7 +119,7 @@ TEST_F(FakeDriveServiceTest, GetAllResourceList) {
   EXPECT_EQ(HTTP_SUCCESS, error);
   ASSERT_TRUE(resource_list);
   // Do some sanity check.
-  EXPECT_EQ(14U, resource_list->entries().size());
+  EXPECT_EQ(15U, resource_list->entries().size());
   EXPECT_EQ(1, fake_service_.resource_list_load_count());
 }
 
@@ -574,7 +574,7 @@ TEST_F(FakeDriveServiceTest, GetRemainingChangeList_GetAllResourceList) {
   EXPECT_EQ(HTTP_SUCCESS, error);
   ASSERT_TRUE(resource_list);
 
-  EXPECT_EQ(2U, resource_list->entries().size());
+  EXPECT_EQ(3U, resource_list->entries().size());
   EXPECT_EQ(1, fake_service_.resource_list_load_count());
 }
 

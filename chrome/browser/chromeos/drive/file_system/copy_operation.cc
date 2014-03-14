@@ -34,6 +34,38 @@ struct CopyOperation::CopyParams {
   ResourceEntry parent_entry;
 };
 
+// Enum for categorizing where a gdoc represented by a JSON file exists.
+enum JsonGdocLocationType {
+  NOT_IN_METADATA,
+  IS_ORPHAN,
+  HAS_PARENT,
+};
+
+struct CopyOperation::TransferJsonGdocParams {
+  TransferJsonGdocParams(const FileOperationCallback& callback,
+                         const std::string& resource_id,
+                         const ResourceEntry& parent_entry,
+                         const std::string& new_title)
+      : callback(callback),
+        resource_id(resource_id),
+        parent_resource_id(parent_entry.resource_id()),
+        parent_local_id(parent_entry.local_id()),
+        new_title(new_title),
+        location_type(NOT_IN_METADATA) {
+  }
+  // Parameters supplied or calculated from operation arguments.
+  const FileOperationCallback callback;
+  const std::string resource_id;
+  const std::string parent_resource_id;
+  const std::string parent_local_id;
+  const std::string new_title;
+
+  // Values computed during operation.
+  JsonGdocLocationType location_type;  // types where the gdoc file is located.
+  std::string local_id;  // the local_id of the file (if exists in metadata.)
+  base::FilePath changed_path;
+};
+
 namespace {
 
 FileError TryToCopyLocally(internal::ResourceMetadata* metadata,
@@ -127,8 +159,8 @@ FileError TryToCopyLocally(internal::ResourceMetadata* metadata,
                       internal::FileCache::FILE_OPERATION_COPY);
 }
 
-// Stores the copied entry and returns its path.
-FileError UpdateLocalStateForServerSideCopy(
+// Stores the entry returned from the server and returns its path.
+FileError UpdateLocalStateForServerSideOperation(
     internal::ResourceMetadata* metadata,
     scoped_ptr<google_apis::ResourceEntry> resource_entry,
     base::FilePath* file_path) {
@@ -188,24 +220,53 @@ FileError PrepareTransferFileFromLocalToRemote(
     const base::FilePath& local_src_path,
     const base::FilePath& remote_dest_path,
     std::string* gdoc_resource_id,
-    std::string* parent_resource_id) {
-  ResourceEntry parent_entry;
+    ResourceEntry* parent_entry) {
   FileError error = metadata->GetResourceEntryByPath(
-      remote_dest_path.DirName(), &parent_entry);
+      remote_dest_path.DirName(), parent_entry);
   if (error != FILE_ERROR_OK)
     return error;
 
   // The destination's parent must be a directory.
-  if (!parent_entry.file_info().is_directory())
+  if (!parent_entry->file_info().is_directory())
     return FILE_ERROR_NOT_A_DIRECTORY;
 
   // Try to parse GDoc File and extract the resource id, if necessary.
   // Failing isn't problem. It'd be handled as a regular file, then.
-  if (util::HasGDocFileExtension(local_src_path)) {
+  if (util::HasGDocFileExtension(local_src_path))
     *gdoc_resource_id = util::ReadResourceIdFromGDocFile(local_src_path);
-    *parent_resource_id = parent_entry.resource_id();
+  return FILE_ERROR_OK;
+}
+
+// Performs local work before server-side work for transferring JSON-represented
+// gdoc files.
+FileError LocalWorkForTransferJsonGdocFile(
+    internal::ResourceMetadata* metadata,
+    CopyOperation::TransferJsonGdocParams* params) {
+  std::string local_id;
+  FileError error = metadata->GetIdByResourceId(params->resource_id, &local_id);
+  if (error != FILE_ERROR_OK) {
+    params->location_type = NOT_IN_METADATA;
+    return error == FILE_ERROR_NOT_FOUND ? FILE_ERROR_OK : error;
   }
 
+  ResourceEntry entry;
+  error = metadata->GetResourceEntryById(local_id, &entry);
+  if (error != FILE_ERROR_OK)
+    return error;
+  params->local_id = entry.local_id();
+
+  if (entry.parent_local_id() == util::kDriveOtherDirLocalId) {
+    params->location_type = IS_ORPHAN;
+    entry.set_title(params->new_title);
+    entry.set_parent_local_id(params->parent_local_id);
+    entry.set_metadata_edit_state(ResourceEntry::DIRTY);
+    error = metadata->RefreshEntry(entry);
+    if (error == FILE_ERROR_OK)
+      params->changed_path = metadata->GetFilePath(local_id);
+    return error;
+  }
+
+  params->location_type = HAS_PARENT;
   return FILE_ERROR_OK;
 }
 
@@ -306,19 +367,19 @@ void CopyOperation::TransferFileFromLocalToRemote(
   DCHECK(!callback.is_null());
 
   std::string* gdoc_resource_id = new std::string;
-  std::string* parent_resource_id = new std::string;
+  ResourceEntry* parent_entry = new ResourceEntry;
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(),
       FROM_HERE,
       base::Bind(
           &PrepareTransferFileFromLocalToRemote,
           metadata_, local_src_path, remote_dest_path,
-          gdoc_resource_id, parent_resource_id),
+          gdoc_resource_id, parent_entry),
       base::Bind(
           &CopyOperation::TransferFileFromLocalToRemoteAfterPrepare,
           weak_ptr_factory_.GetWeakPtr(),
           local_src_path, remote_dest_path, callback,
-          base::Owned(gdoc_resource_id), base::Owned(parent_resource_id)));
+          base::Owned(gdoc_resource_id), base::Owned(parent_entry)));
 }
 
 void CopyOperation::TransferFileFromLocalToRemoteAfterPrepare(
@@ -326,7 +387,7 @@ void CopyOperation::TransferFileFromLocalToRemoteAfterPrepare(
     const base::FilePath& remote_dest_path,
     const FileOperationCallback& callback,
     std::string* gdoc_resource_id,
-    std::string* parent_resource_id,
+    ResourceEntry* parent_entry,
     FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -342,20 +403,73 @@ void CopyOperation::TransferFileFromLocalToRemoteAfterPrepare(
     return;
   }
 
-  // This is uploading a JSON file representing a hosted document.
-  // Copy the document on the Drive server.
-
   // GDoc file may contain a resource ID in the old format.
   const std::string canonicalized_resource_id =
       id_canonicalizer_.Run(*gdoc_resource_id);
 
-  CopyResourceOnServer(
-      canonicalized_resource_id, *parent_resource_id,
-      // Drop the document extension, which should not be in the title.
-      // TODO(yoshiki): Remove this code with crbug.com/223304.
-      remote_dest_path.BaseName().RemoveExtension().AsUTF8Unsafe(),
-      base::Time(),
-      callback);
+  // Drop the document extension, which should not be in the title.
+  // TODO(yoshiki): Remove this code with crbug.com/223304.
+  const std::string new_title =
+      remote_dest_path.BaseName().RemoveExtension().AsUTF8Unsafe();
+
+  // This is uploading a JSON file representing a hosted document.
+  TransferJsonGdocParams* params = new TransferJsonGdocParams(
+      callback, canonicalized_resource_id, *parent_entry, new_title);
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner_.get(),
+      FROM_HERE,
+      base::Bind(&LocalWorkForTransferJsonGdocFile, metadata_, params),
+      base::Bind(&CopyOperation::TransferJsonGdocFileAfterLocalWork,
+                 weak_ptr_factory_.GetWeakPtr(), base::Owned(params)));
+}
+
+void CopyOperation::TransferJsonGdocFileAfterLocalWork(
+    TransferJsonGdocParams* params,
+    FileError error) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (error != FILE_ERROR_OK) {
+    params->callback.Run(error);
+    return;
+  }
+
+  switch (params->location_type) {
+    // When |resource_id| is found in the local metadata and it has a specific
+    // parent folder, we assume the user's intention is to copy the document and
+    // thus perform the server-side copy operation.
+    case HAS_PARENT:
+      CopyResourceOnServer(params->resource_id,
+                           params->parent_resource_id,
+                           params->new_title,
+                           base::Time(),
+                           params->callback);
+      break;
+    // When |resource_id| has no parent, we just set the new destination folder
+    // as the parent, for sharing the document between the original source.
+    // This reparenting is already done in LocalWorkForTransferJsonGdocFile().
+    case IS_ORPHAN:
+      DCHECK(!params->changed_path.empty());
+      observer_->OnEntryUpdatedByOperation(params->local_id);
+      observer_->OnDirectoryChangedByOperation(params->changed_path.DirName());
+      params->callback.Run(error);
+      break;
+    // When the |resource_id| is not in the local metadata, assume it to be a
+    // document just now shared on the server but not synced locally.
+    // Same as the IS_ORPHAN case, we want to deal the case by setting parent,
+    // but this time we need to resort to server side operation.
+    case NOT_IN_METADATA:
+      scheduler_->UpdateResource(
+          params->resource_id,
+          params->parent_resource_id,
+          params->new_title,
+          base::Time(),
+          base::Time(),
+          ClientContext(USER_INITIATED),
+          base::Bind(&CopyOperation::UpdateAfterServerSideOperation,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     params->callback));
+      break;
+  }
 }
 
 void CopyOperation::CopyResourceOnServer(
@@ -369,12 +483,12 @@ void CopyOperation::CopyResourceOnServer(
 
   scheduler_->CopyResource(
       resource_id, parent_resource_id, new_title, last_modified,
-      base::Bind(&CopyOperation::CopyResourceOnServerAfterServerSideCopy,
+      base::Bind(&CopyOperation::UpdateAfterServerSideOperation,
                  weak_ptr_factory_.GetWeakPtr(),
                  callback));
 }
 
-void CopyOperation::CopyResourceOnServerAfterServerSideCopy(
+void CopyOperation::UpdateAfterServerSideOperation(
     const FileOperationCallback& callback,
     google_apis::GDataErrorCode status,
     scoped_ptr<google_apis::ResourceEntry> resource_entry) {
@@ -393,14 +507,14 @@ void CopyOperation::CopyResourceOnServerAfterServerSideCopy(
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(),
       FROM_HERE,
-      base::Bind(&UpdateLocalStateForServerSideCopy,
+      base::Bind(&UpdateLocalStateForServerSideOperation,
                  metadata_, base::Passed(&resource_entry), file_path),
-      base::Bind(&CopyOperation::CopyResourceOnServerAfterUpdateLocalState,
+      base::Bind(&CopyOperation::UpdateAfterLocalStateUpdate,
                  weak_ptr_factory_.GetWeakPtr(),
                  callback, base::Owned(file_path)));
 }
 
-void CopyOperation::CopyResourceOnServerAfterUpdateLocalState(
+void CopyOperation::UpdateAfterLocalStateUpdate(
     const FileOperationCallback& callback,
     base::FilePath* file_path,
     FileError error) {

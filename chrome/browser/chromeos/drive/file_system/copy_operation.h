@@ -77,6 +77,9 @@ class CopyOperation {
   // Params for Copy().
   struct CopyParams;
 
+  // Params for TransferJsonGdocFileAfterLocalWork.
+  struct TransferJsonGdocParams;
+
  private:
   // Part of Copy(). Called after trying to copy locally.
   void CopyAfterTryToCopyLocally(
@@ -94,8 +97,12 @@ class CopyOperation {
       const base::FilePath& remote_dest_path,
       const FileOperationCallback& callback,
       std::string* gdoc_resource_id,
-      std::string* parent_resource_id,
+      ResourceEntry* parent_entry,
       FileError error);
+
+  // Part of TransferFileFromLocalToRemote().
+  void TransferJsonGdocFileAfterLocalWork(TransferJsonGdocParams* params,
+                                          FileError error);
 
   // Copies resource with |resource_id| into the directory |parent_resource_id|
   // with renaming it to |new_title|.
@@ -105,14 +112,16 @@ class CopyOperation {
                             const base::Time& last_modified,
                             const FileOperationCallback& callback);
 
-  // Part of CopyResourceOnServer. Called after server side copy is done.
-  void CopyResourceOnServerAfterServerSideCopy(
+  // Part of CopyResourceOnServer and TransferFileFromLocalToRemote.
+  // Called after server side operation is done.
+  void UpdateAfterServerSideOperation(
       const FileOperationCallback& callback,
       google_apis::GDataErrorCode status,
       scoped_ptr<google_apis::ResourceEntry> resource_entry);
 
-  // Part of CopyResourceOnServer. Called after local state update is done.
-  void CopyResourceOnServerAfterUpdateLocalState(
+  // Part of CopyResourceOnServer and TransferFileFromLocalToRemote.
+  // Called after local state update is done.
+  void UpdateAfterLocalStateUpdate(
       const FileOperationCallback& callback,
       base::FilePath* file_path,
       FileError error);
