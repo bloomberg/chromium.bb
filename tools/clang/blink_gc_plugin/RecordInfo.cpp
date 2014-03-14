@@ -113,6 +113,21 @@ bool RecordInfo::IsGCFinalized() {
   return false;
 }
 
+// A mixin has not yet been "mixed in" if its only GC base is the mixin base.
+bool RecordInfo::IsUnmixedGCMixin() {
+  if (!IsGCDerived() || base_paths_->begin() == base_paths_->end())
+    return false;
+  // Get the last element of the first path.
+  CXXBasePaths::paths_iterator it = base_paths_->begin();
+  const CXXBasePathElement& elem = (*it)[it->size() - 1];
+  CXXRecordDecl* base = elem.Base->getType()->getAsCXXRecordDecl();
+  // If it is not a mixin base we are done.
+  if (!Config::IsGCMixinBase(base->getName()))
+    return false;
+  // Otherwise, this is unmixed if there are no other paths to GC bases.
+  return ++it == base_paths_->end();
+}
+
 // Test if a record is allocated on the managed heap.
 bool RecordInfo::IsGCAllocated() {
   return IsGCDerived() || IsHeapAllocatedCollection();
@@ -171,16 +186,20 @@ bool RecordInfo::InheritsNonPureTrace() {
 RecordInfo::Bases* RecordInfo::CollectBases() {
   // Compute the collection locally to avoid inconsistent states.
   Bases* bases = new Bases;
+  if (!record_->hasDefinition())
+    return bases;
   for (CXXRecordDecl::base_class_iterator it = record_->bases_begin();
        it != record_->bases_end();
        ++it) {
-    if (CXXRecordDecl* base = it->getType()->getAsCXXRecordDecl()) {
-      RecordInfo* info = cache_->Lookup(base);
-      TracingStatus status = info->InheritsNonPureTrace()
-                                 ? TracingStatus::Needed()
-                                 : TracingStatus::Unneeded();
-      bases->insert(std::make_pair(base, BasePoint(info, status)));
-    }
+    const CXXBaseSpecifier& spec = *it;
+    RecordInfo* info = cache_->Lookup(spec.getType());
+    if (!info)
+      continue;
+    CXXRecordDecl* base = info->record();
+    TracingStatus status = info->InheritsNonPureTrace()
+                               ? TracingStatus::Needed()
+                               : TracingStatus::Unneeded();
+    bases->insert(std::make_pair(base, BasePoint(spec, info, status)));
   }
   return bases;
 }
@@ -194,6 +213,8 @@ RecordInfo::Fields& RecordInfo::GetFields() {
 RecordInfo::Fields* RecordInfo::CollectFields() {
   // Compute the collection locally to avoid inconsistent states.
   Fields* fields = new Fields;
+  if (!record_->hasDefinition())
+    return fields;
   TracingStatus fields_status = TracingStatus::Unneeded();
   for (RecordDecl::field_iterator it = record_->field_begin();
        it != record_->field_end();
@@ -241,13 +262,27 @@ void RecordInfo::DetermineTracingMethods() {
   }
 }
 
+// TODO: Add classes with a finalize() method that specialize FinalizerTrait.
+bool RecordInfo::NeedsFinalization() {
+  return record_->hasNonTrivialDestructor();
+}
+
 // A class needs tracing if:
 // - it is allocated on the managed heap,
-// - it defines a trace method (of the proper signature), or
+// - it is derived from a class that needs tracing, or
 // - it contains fields that need tracing.
+// TODO: Defining NeedsTracing based on whether a class defines a trace method
+// (of the proper signature) over approximates too much. The use of transition
+// types causes some classes to have trace methods without them needing to be
+// traced.
 TracingStatus RecordInfo::NeedsTracing(Edge::NeedsTracingOption option) {
-  if (IsGCAllocated() || GetTraceMethod())
+  if (IsGCAllocated())
     return TracingStatus::Needed();
+
+  for (Bases::iterator it = GetBases().begin(); it != GetBases().end(); ++it) {
+    if (it->second.info()->NeedsTracing(option).IsNeeded())
+      return TracingStatus::Needed();
+  }
 
   if (option == Edge::kRecursive)
     GetFields();
@@ -266,14 +301,12 @@ Edge* RecordInfo::CreateEdge(const Type* type) {
     return 0;
   }
 
-  CXXRecordDecl* record = type->getAsCXXRecordDecl();
+  RecordInfo* info = cache_->Lookup(type);
 
   // If the type is neither a pointer or a C++ record we ignore it.
-  if (!record) {
+  if (!info) {
     return 0;
   }
-
-  RecordInfo* info = cache_->Lookup(record);
 
   TemplateArgs args;
 
@@ -328,7 +361,7 @@ Edge* RecordInfo::CreateEdge(const Type* type) {
     size_t count = Config::CollectionDimension(info->name());
     if (!info->GetTemplateArgs(count, &args))
       return 0;
-    Collection* edge = new Collection(on_heap, is_root);
+    Collection* edge = new Collection(info, on_heap, is_root);
     for (TemplateArgs::iterator it = args.begin(); it != args.end(); ++it) {
       if (Edge* member = CreateEdge(*it)) {
         edge->members().push_back(member);

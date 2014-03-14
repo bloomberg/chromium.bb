@@ -10,6 +10,9 @@ TracingStatus Value::NeedsTracing(NeedsTracingOption option) {
   return value_->NeedsTracing(option);
 }
 
+bool Value::NeedsFinalization() { return value_->NeedsFinalization(); }
+bool Collection::NeedsFinalization() { return info_->NeedsFinalization(); }
+
 void RecursiveEdgeVisitor::AtValue(Value*) {}
 void RecursiveEdgeVisitor::AtRawPtr(RawPtr*) {}
 void RecursiveEdgeVisitor::AtRefPtr(RefPtr*) {}

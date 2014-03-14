@@ -41,8 +41,8 @@ const char kClassContainsInvalidFields[] =
 const char kClassContainsGCRoot[] =
     "[blink-gc] Class %0 contains GC root in field %1.";
 
-const char kFinalizerInNonFinalizedClass[] =
-    "[blink-gc] Non-finalized class %0 has a user-declared finalizer %1.";
+const char kClassRequiresFinalization[] =
+    "[blink-gc] Class %0 requires finalization.";
 
 const char kFinalizerAccessesFinalizedField[] =
     "[blink-gc] Finalizer %0 accesses potentially finalized field %1.";
@@ -64,6 +64,15 @@ const char kFieldContainsGCRoot[] =
 
 const char kFinalizedFieldNote[] =
     "[blink-gc] Potentially finalized field %0 declared here:";
+
+const char kUserDeclaredDestructorNote[] =
+    "[blink-gc] User-declared destructor declared here:";
+
+const char kBaseRequiresFinalizationNote[] =
+    "[blink-gc] Base class %0 requiring finalization declared here:";
+
+const char kFieldRequiresFinalizationNote[] =
+    "[blink-gc] Field %0 requiring finalization declared here:";
 
 struct BlinkGCPluginOptions {
   BlinkGCPluginOptions() : enable_oilpan(false) {}
@@ -409,8 +418,8 @@ class BlinkGCPluginConsumer : public ASTConsumer {
                                     kClassContainsInvalidFields);
     diag_class_contains_gc_root_ =
         diagnostic_.getCustomDiagID(getErrorLevel(), kClassContainsGCRoot);
-    diag_finalizer_in_nonfinalized_class_ = diagnostic_.getCustomDiagID(
-        getErrorLevel(), kFinalizerInNonFinalizedClass);
+    diag_class_requires_finalization_ = diagnostic_.getCustomDiagID(
+        getErrorLevel(), kClassRequiresFinalization);
     diag_finalizer_accesses_finalized_field_ = diagnostic_.getCustomDiagID(
         getErrorLevel(), kFinalizerAccessesFinalizedField);
 
@@ -429,6 +438,12 @@ class BlinkGCPluginConsumer : public ASTConsumer {
         DiagnosticsEngine::Note, kFieldContainsGCRoot);
     diag_finalized_field_note_ = diagnostic_.getCustomDiagID(
         DiagnosticsEngine::Note, kFinalizedFieldNote);
+    diag_user_declared_destructor_note_ = diagnostic_.getCustomDiagID(
+        DiagnosticsEngine::Note, kUserDeclaredDestructorNote);
+    diag_base_requires_finalization_note_ = diagnostic_.getCustomDiagID(
+        DiagnosticsEngine::Note, kBaseRequiresFinalizationNote);
+    diag_field_requires_finalization_note_ = diagnostic_.getCustomDiagID(
+        DiagnosticsEngine::Note, kFieldRequiresFinalizationNote);
   }
 
   virtual void HandleTranslationUnit(ASTContext& context) {
@@ -490,37 +505,56 @@ class BlinkGCPluginConsumer : public ASTConsumer {
     }
 
     if (info->IsGCDerived()) {
-      {
-        CheckGCRootsVisitor visitor;
-        if (visitor.ContainsGCRoots(info))
-          ReportClassContainsGCRoots(info, &visitor.gc_roots());
-      }
+      CheckGCRootsVisitor visitor;
+      if (visitor.ContainsGCRoots(info))
+        ReportClassContainsGCRoots(info, &visitor.gc_roots());
 
-      // TODO: check for non-user defined and non-trivial destructors too.
-      // TODO: support overridden finalize().
-      if (CXXDestructorDecl* dtor = info->record()->getDestructor()) {
-        if (dtor->isUserProvided() && !info->IsGCFinalized()) {
-          // Don't report if using transition types and the body is empty.
-          if (!options_.enable_oilpan) {
-            ReportFinalizerInNonFinalizedClass(info, dtor);
-          } else {
-            if (dtor->hasBody()) {
-              CompoundStmt* stmt = cast<CompoundStmt>(dtor->getBody());
-              if (stmt && !stmt->body_empty())
-                ReportFinalizerInNonFinalizedClass(info, dtor);
-            }
-          }
-        }
+      if (info->NeedsFinalization())
+        CheckFinalization(info);
+    }
+  }
 
-        if (dtor->hasBody()) {
-          CheckFinalizerVisitor visitor(&cache_);
-          visitor.TraverseCXXMethodDecl(dtor);
-          if (!visitor.finalized_fields().empty()) {
-            ReportFinalizerAccessesFinalizedFields(dtor,
-                                                   &visitor.finalized_fields());
-          }
+  void CheckFinalization(RecordInfo* info) {
+    // TODO: Should we collect destructors similar to trace methods?
+    // TODO: Check overridden finalize().
+    CXXDestructorDecl* dtor = info->record()->getDestructor();
+
+    // For finalized classes, check the finalization method if possible.
+    if (info->IsGCFinalized()) {
+      if (dtor && dtor->hasBody()) {
+        CheckFinalizerVisitor visitor(&cache_);
+        visitor.TraverseCXXMethodDecl(dtor);
+        if (!visitor.finalized_fields().empty()) {
+          ReportFinalizerAccessesFinalizedFields(
+              dtor, &visitor.finalized_fields());
         }
       }
+      return;
+    }
+
+    // Don't require finalization of a mixin that has not yet been "mixed in".
+    if (info->IsUnmixedGCMixin())
+      return;
+
+    // Report the finalization error, and proceed to print possible causes for
+    // the finalization requirement.
+    ReportClassRequiresFinalization(info);
+
+    if (dtor && dtor->isUserProvided())
+      NoteUserDeclaredDestructor(dtor);
+
+    for (RecordInfo::Bases::iterator it = info->GetBases().begin();
+         it != info->GetBases().end();
+         ++it) {
+      if (it->second.info()->NeedsFinalization())
+        NoteBaseRequiresFinalization(&it->second);
+    }
+
+    for (RecordInfo::Fields::iterator it = info->GetFields().begin();
+         it != info->GetFields().end();
+         ++it) {
+      if (it->second.edge()->NeedsFinalization())
+        NoteField(&it->second, diag_field_requires_finalization_note_);
     }
   }
 
@@ -725,15 +759,6 @@ class BlinkGCPluginConsumer : public ASTConsumer {
     }
   }
 
-  void ReportFinalizerInNonFinalizedClass(RecordInfo* info,
-                                          CXXMethodDecl* dtor) {
-    SourceLocation loc = dtor->getLocStart();
-    SourceManager& manager = instance_.getSourceManager();
-    FullSourceLoc full_loc(loc, manager);
-    diagnostic_.Report(full_loc, diag_finalizer_in_nonfinalized_class_)
-        << info->record() << dtor;
-  }
-
   void ReportFinalizerAccessesFinalizedFields(
       CXXMethodDecl* dtor,
       CheckFinalizerVisitor::Errors* fields) {
@@ -747,6 +772,14 @@ class BlinkGCPluginConsumer : public ASTConsumer {
           << dtor << it->second->field();
       NoteField(it->second, diag_finalized_field_note_);
     }
+  }
+
+  void ReportClassRequiresFinalization(RecordInfo* info) {
+    SourceLocation loc = info->record()->getInnerLocStart();
+    SourceManager& manager = instance_.getSourceManager();
+    FullSourceLoc full_loc(loc, manager);
+    diagnostic_.Report(full_loc, diag_class_requires_finalization_)
+        << info->record();
   }
 
   void NoteFieldRequiresTracing(RecordInfo* holder, FieldDecl* field) {
@@ -766,6 +799,21 @@ class BlinkGCPluginConsumer : public ASTConsumer {
     NoteField(point, diag_field_contains_gc_root_note_);
   }
 
+  void NoteUserDeclaredDestructor(CXXMethodDecl* dtor) {
+    SourceLocation loc = dtor->getLocStart();
+    SourceManager& manager = instance_.getSourceManager();
+    FullSourceLoc full_loc(loc, manager);
+    diagnostic_.Report(full_loc, diag_user_declared_destructor_note_);
+  }
+
+  void NoteBaseRequiresFinalization(BasePoint* base) {
+    SourceLocation loc = base->spec().getLocStart();
+    SourceManager& manager = instance_.getSourceManager();
+    FullSourceLoc full_loc(loc, manager);
+    diagnostic_.Report(full_loc, diag_base_requires_finalization_note_)
+        << base->info()->record();
+  }
+
   void NoteField(FieldPoint* point, unsigned note) {
     NoteField(point->field(), note);
   }
@@ -782,7 +830,7 @@ class BlinkGCPluginConsumer : public ASTConsumer {
   unsigned diag_fields_require_tracing_;
   unsigned diag_class_contains_invalid_fields_;
   unsigned diag_class_contains_gc_root_;
-  unsigned diag_finalizer_in_nonfinalized_class_;
+  unsigned diag_class_requires_finalization_;
   unsigned diag_finalizer_accesses_finalized_field_;
 
   unsigned diag_field_requires_tracing_note_;
@@ -792,6 +840,9 @@ class BlinkGCPluginConsumer : public ASTConsumer {
   unsigned diag_part_object_contains_gc_root_note_;
   unsigned diag_field_contains_gc_root_note_;
   unsigned diag_finalized_field_note_;
+  unsigned diag_user_declared_destructor_note_;
+  unsigned diag_base_requires_finalization_note_;
+  unsigned diag_field_requires_finalization_note_;
 
   CompilerInstance& instance_;
   DiagnosticsEngine& diagnostic_;

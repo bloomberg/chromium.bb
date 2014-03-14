@@ -18,20 +18,45 @@ public:
 
 template<typename T> class RefPtr {
 public:
+    ~RefPtr() { }
     operator T*() const { return 0; }
 };
 
 template<typename T> class OwnPtr {
 public:
+    ~OwnPtr() { }
     operator T*() const { return 0; }
 };
 
-class DefaultAllocator { };
+class DefaultAllocator {
+public:
+    static const bool isGarbageCollected = false;
+};
+
+template<typename T>
+struct VectorTraits {
+    static const bool needsDestruction = true;
+};
+
+template<size_t inlineCapacity, bool isGarbageCollected, bool tNeedsDestruction>
+class VectorDestructorBase {
+public:
+    ~VectorDestructorBase() {}
+};
+
+template<size_t inlineCapacity>
+class VectorDestructorBase<inlineCapacity, true, false> {};
+
+template<>
+class VectorDestructorBase<0, true, true> {};
 
 template<typename T,
          size_t inlineCapacity = 0,
          typename Allocator = DefaultAllocator>
-class Vector { };
+class Vector : public VectorDestructorBase<inlineCapacity,
+                                           Allocator::isGarbageCollected,
+                                           VectorTraits<T>::needsDestruction> {
+};
 
 }
 
@@ -71,10 +96,13 @@ public:
     operator T*() const { return 0; }
 };
 
-class HeapAllocator { };
+class HeapAllocator {
+public:
+    static const bool isGarbageCollected = true;
+};
 
-template<typename T>
-class HeapVector : public Vector<T, 0, HeapAllocator> { };
+template<typename T, size_t inlineCapacity = 0>
+class HeapVector : public Vector<T, inlineCapacity, HeapAllocator> { };
 
 template<typename T>
 class PersistentHeapVector : public Vector<T, 0, HeapAllocator> { };
@@ -87,6 +115,15 @@ public:
 class GarbageCollectedMixin {
     virtual void adjustAndMark(Visitor*) const = 0;
     virtual bool isAlive(Visitor*) const = 0;
+};
+
+}
+
+namespace WTF {
+
+template<typename T>
+struct VectorTraits<WebCore::Member<T> > {
+    static const bool needsDestruction = false;
 };
 
 }

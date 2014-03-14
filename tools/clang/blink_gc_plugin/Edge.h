@@ -75,6 +75,7 @@ class Edge {
 
   virtual ~Edge() { }
   virtual void Accept(EdgeVisitor*) = 0;
+  virtual bool NeedsFinalization() = 0;
   virtual TracingStatus NeedsTracing(NeedsTracingOption) {
     return TracingStatus::Unknown();
   }
@@ -94,6 +95,7 @@ class Value : public Edge {
  public:
   explicit Value(RecordInfo* value) : value_(value) {};
   bool IsValue() { return true; }
+  bool NeedsFinalization();
   TracingStatus NeedsTracing(NeedsTracingOption);
   void Accept(EdgeVisitor* visitor) { visitor->VisitValue(this); }
   RecordInfo* value() { return value_; }
@@ -118,6 +120,7 @@ class RawPtr : public PtrEdge {
  public:
   explicit RawPtr(Edge* ptr) : PtrEdge(ptr) { }
   bool IsRawPtr() { return true; }
+  bool NeedsFinalization() { return false; }
   TracingStatus NeedsTracing(NeedsTracingOption) {
     return TracingStatus::Unneeded();
   }
@@ -128,6 +131,7 @@ class RefPtr : public PtrEdge {
  public:
   explicit RefPtr(Edge* ptr) : PtrEdge(ptr) { }
   bool IsRefPtr() { return true; }
+  bool NeedsFinalization() { return true; }
   TracingStatus NeedsTracing(NeedsTracingOption) {
     return TracingStatus::Unneeded();
   }
@@ -138,6 +142,7 @@ class OwnPtr : public PtrEdge {
  public:
   explicit OwnPtr(Edge* ptr) : PtrEdge(ptr) { }
   bool IsOwnPtr() { return true; }
+  bool NeedsFinalization() { return true; }
   TracingStatus NeedsTracing(NeedsTracingOption) {
     return TracingStatus::Unneeded();
   }
@@ -148,6 +153,7 @@ class Member : public PtrEdge {
  public:
   explicit Member(Edge* ptr) : PtrEdge(ptr) { }
   bool IsMember() { return true; }
+  bool NeedsFinalization() { return false; }
   TracingStatus NeedsTracing(NeedsTracingOption) {
     return TracingStatus::Needed();
   }
@@ -158,6 +164,7 @@ class WeakMember : public PtrEdge {
  public:
   explicit WeakMember(Edge* ptr) : PtrEdge(ptr) { }
   bool IsWeakMember() { return true; }
+  bool NeedsFinalization() { return false; }
   TracingStatus NeedsTracing(NeedsTracingOption) {
     return TracingStatus::Needed();
   }
@@ -168,6 +175,7 @@ class Persistent : public PtrEdge {
  public:
   explicit Persistent(Edge* ptr) : PtrEdge(ptr) { }
   bool IsPersistent() { return true; }
+  bool NeedsFinalization() { return true; }
   TracingStatus NeedsTracing(NeedsTracingOption) {
     return TracingStatus::Unneeded();
   }
@@ -177,8 +185,10 @@ class Persistent : public PtrEdge {
 class Collection : public Edge {
  public:
   typedef std::vector<Edge*> Members;
-  Collection(bool on_heap, bool is_root)
-      : on_heap_(on_heap), is_root_(is_root) {}
+  Collection(RecordInfo* info, bool on_heap, bool is_root)
+      : info_(info),
+        on_heap_(on_heap),
+        is_root_(is_root) {}
   ~Collection() {
     for (Members::iterator it = members_.begin(); it != members_.end(); ++it) {
       assert(*it && "Collection-edge members must be non-null");
@@ -194,6 +204,7 @@ class Collection : public Edge {
     for (Members::iterator it = members_.begin(); it != members_.end(); ++it)
       (*it)->Accept(visitor);
   }
+  bool NeedsFinalization();
   TracingStatus NeedsTracing(NeedsTracingOption) {
     if (is_root_)
       return TracingStatus::Unneeded();
@@ -208,6 +219,7 @@ class Collection : public Edge {
     return status;
   }
  private:
+  RecordInfo* info_;
   Members members_;
   bool on_heap_;
   bool is_root_;

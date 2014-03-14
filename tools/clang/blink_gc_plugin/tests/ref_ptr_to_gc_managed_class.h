@@ -17,7 +17,7 @@ private:
     RefPtr<HeapObject> m_obj;
 };
 
-class HeapObject : public GarbageCollected<HeapObject> {
+class HeapObject : public GarbageCollectedFinalized<HeapObject> {
 public:
     void trace(Visitor*);
 private:

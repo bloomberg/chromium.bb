@@ -6,7 +6,7 @@ class PartObject {
     OwnPtr<HeapObject> m_obj;
     ^
 ./own_ptr_to_gc_managed_class.h:20:1: warning: [blink-gc] Class 'HeapObject' contains invalid fields.
-class HeapObject : public GarbageCollected<HeapObject> {
+class HeapObject : public GarbageCollectedFinalized<HeapObject> {
 ^
 ./own_ptr_to_gc_managed_class.h:24:5: note: [blink-gc] OwnPtr field 'm_objs' to a GC managed class declared here:
     Vector<OwnPtr<HeapObject> > m_objs;

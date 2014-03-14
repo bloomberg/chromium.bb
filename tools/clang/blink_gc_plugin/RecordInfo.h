@@ -32,13 +32,17 @@ class GraphPoint {
 
 class BasePoint : public GraphPoint {
  public:
-  BasePoint(RecordInfo* info, const TracingStatus& status)
-      : info_(info), status_(status) {}
-  RecordInfo* info() { return info_; }
+  BasePoint(const clang::CXXBaseSpecifier& spec,
+            RecordInfo* info,
+            const TracingStatus& status)
+      : spec_(spec), info_(info), status_(status) {}
   const TracingStatus NeedsTracing() { return status_; }
   // Needed to change the status of bases with a pure-virtual trace.
   void MarkUnneeded() { status_ = TracingStatus::Unneeded(); }
+  const clang::CXXBaseSpecifier& spec() { return spec_; }
+  RecordInfo* info() { return info_; }
  private:
+  const clang::CXXBaseSpecifier& spec_;
   RecordInfo* info_;
   TracingStatus status_;
 };
@@ -82,9 +86,11 @@ class RecordInfo {
   bool IsGCDerived();
   bool IsGCAllocated();
   bool IsGCFinalized();
+  bool IsUnmixedGCMixin();
 
   bool IsStackAllocated();
   bool RequiresTraceMethod();
+  bool NeedsFinalization();
   TracingStatus NeedsTracing(Edge::NeedsTracingOption);
 
  private:
@@ -132,6 +138,14 @@ class RecordCache {
 
   RecordInfo* Lookup(clang::Decl* decl) {
     return Lookup(clang::dyn_cast<clang::CXXRecordDecl>(decl));
+  }
+
+  RecordInfo* Lookup(const clang::Type* type) {
+    return Lookup(type->getAsCXXRecordDecl());
+  }
+
+  RecordInfo* Lookup(const clang::QualType& type) {
+    return Lookup(type.getTypePtr());
   }
 
   ~RecordCache() {

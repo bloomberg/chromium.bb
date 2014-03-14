@@ -6,7 +6,7 @@ class PartObject {
     RefPtr<HeapObject> m_obj;
     ^
 ./ref_ptr_to_gc_managed_class.h:20:1: warning: [blink-gc] Class 'HeapObject' contains invalid fields.
-class HeapObject : public GarbageCollected<HeapObject> {
+class HeapObject : public GarbageCollectedFinalized<HeapObject> {
 ^
 ./ref_ptr_to_gc_managed_class.h:25:5: note: [blink-gc] RefPtr field 'm_objs' to a GC managed class declared here:
     Vector<RefPtr<HeapObject> > m_objs;
