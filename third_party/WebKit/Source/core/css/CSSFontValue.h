@@ -46,7 +46,6 @@ public:
     RefPtrWillBeMember<CSSPrimitiveValue> style;
     RefPtrWillBeMember<CSSPrimitiveValue> variant;
     RefPtrWillBeMember<CSSPrimitiveValue> weight;
-    RefPtrWillBeMember<CSSPrimitiveValue> stretch;
     RefPtrWillBeMember<CSSPrimitiveValue> size;
     RefPtrWillBeMember<CSSPrimitiveValue> lineHeight;
     RefPtrWillBeMember<CSSValueList> family;

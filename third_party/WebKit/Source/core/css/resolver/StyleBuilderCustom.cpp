@@ -295,58 +295,6 @@ void StyleBuilderFunctions::applyValueCSSPropertyFontWeight(StyleResolverState& 
     }
 }
 
-
-void StyleBuilderFunctions::applyInitialCSSPropertyFontStretch(StyleResolverState& state)
-{
-    state.fontBuilder().setStretch(FontStretchNormal);
-}
-
-void StyleBuilderFunctions::applyInheritCSSPropertyFontStretch(StyleResolverState& state)
-{
-    state.fontBuilder().setStretch(state.parentFontDescription().stretch());
-}
-
-void StyleBuilderFunctions::applyValueCSSPropertyFontStretch(StyleResolverState& state, CSSValue* value)
-{
-    if (!value->isPrimitiveValue())
-        return;
-    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-    switch (primitiveValue->getValueID()) {
-    case CSSValueInvalid:
-        ASSERT_NOT_REACHED();
-        break;
-    case CSSValueUltraCondensed:
-        state.fontBuilder().setStretch(FontStretchUltraCondensed);
-        break;
-    case CSSValueExtraCondensed:
-        state.fontBuilder().setStretch(FontStretchExtraCondensed);
-        break;
-    case CSSValueCondensed:
-        state.fontBuilder().setStretch(FontStretchCondensed);
-        break;
-    case CSSValueSemiCondensed:
-        state.fontBuilder().setStretch(FontStretchSemiCondensed);
-        break;
-    case CSSValueNormal:
-        state.fontBuilder().setStretch(FontStretchNormal);
-        break;
-    case CSSValueSemiExpanded:
-        state.fontBuilder().setStretch(FontStretchSemiExpanded);
-        break;
-    case CSSValueExpanded:
-        state.fontBuilder().setStretch(FontStretchExpanded);
-        break;
-    case CSSValueExtraExpanded:
-        state.fontBuilder().setStretch(FontStretchExtraExpanded);
-        break;
-    case CSSValueUltraExpanded:
-        state.fontBuilder().setStretch(FontStretchUltraExpanded);
-        break;
-    default:
-        return;
-    }
-}
-
 void StyleBuilderFunctions::applyValueCSSPropertyLineHeight(StyleResolverState& state, CSSValue* value)
 {
     if (!value->isPrimitiveValue())
@@ -1562,6 +1510,7 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
         ASSERT(newId != id);
         return applyProperty(newId, state, value);
     }
+    case CSSPropertyFontStretch:
     case CSSPropertyPage:
     case CSSPropertyTextLineThroughColor:
     case CSSPropertyTextLineThroughMode:
@@ -1855,7 +1804,6 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
     case CSSPropertyFloat:
     case CSSPropertyFontKerning:
     case CSSPropertyFontSize:
-    case CSSPropertyFontStretch:
     case CSSPropertyFontStyle:
     case CSSPropertyFontVariant:
     case CSSPropertyFontVariantLigatures:

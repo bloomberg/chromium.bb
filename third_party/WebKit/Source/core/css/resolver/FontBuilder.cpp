@@ -374,13 +374,6 @@ void FontBuilder::setWeightLighter()
     scope.fontDescription().setWeight(scope.fontDescription().lighterWeight());
 }
 
-void FontBuilder::setStretch(FontStretch fontStretch)
-{
-    FontDescriptionChangeScope scope(this);
-
-    scope.fontDescription().setStretch(fontStretch);
-}
-
 void FontBuilder::setFontVariantLigaturesInitial()
 {
     FontDescriptionChangeScope scope(this);
