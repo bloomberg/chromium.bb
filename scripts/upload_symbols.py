@@ -620,6 +620,12 @@ def UploadSymbols(board=None, official=False, breakpad_dir=None,
                   dedupe_len < counters.upload_limit):
                 continue
 
+            # We check the counter before _Upload so that we don't keep talking
+            # to the dedupe server.  Otherwise, we end up sending one symbol at
+            # a time to it and that slows things down a lot.
+            if counters.upload_limit == 0:
+              break
+
             _Upload(queue, counters, dedupe_list)
             dedupe_list = []
           _Upload(queue, counters, dedupe_list)
