@@ -7776,9 +7776,6 @@ def main(argv):
   """This is the main function."""
   parser = OptionParser()
   parser.add_option(
-      "-g", "--generate-implementation-templates", action="store_true",
-      help="generates files that are generally hand edited..")
-  parser.add_option(
       "--output-dir",
       help="base directory for resulting files, under chrome/src. default is "
       "empty. Use this if you want the result stored under gen.")
