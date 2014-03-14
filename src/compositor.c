@@ -2006,13 +2006,15 @@ weston_surface_commit(struct weston_surface *surface)
 	struct weston_view *view;
 	pixman_region32_t opaque;
 
+	/* XXX: wl_viewport.set without an attach should call configure */
+
 	/* wl_surface.set_buffer_transform */
 	/* wl_surface.set_buffer_scale */
 	/* wl_viewport.set */
 	surface->buffer_viewport = surface->pending.buffer_viewport;
 
 	/* wl_surface.attach */
-	if (surface->pending.buffer || surface->pending.newly_attached)
+	if (surface->pending.newly_attached)
 		weston_surface_attach(surface, surface->pending.buffer);
 
 	if (surface->configure && surface->pending.newly_attached)
@@ -2236,7 +2238,7 @@ weston_subsurface_commit_from_cache(struct weston_subsurface *sub)
 	surface->buffer_viewport = sub->cached.buffer_viewport;
 
 	/* wl_surface.attach */
-	if (sub->cached.buffer_ref.buffer || sub->cached.newly_attached)
+	if (sub->cached.newly_attached)
 		weston_surface_attach(surface, sub->cached.buffer_ref.buffer);
 	weston_buffer_reference(&sub->cached.buffer_ref, NULL);
 
@@ -2314,6 +2316,10 @@ weston_subsurface_commit_to_cache(struct weston_subsurface *sub)
 	}
 	sub->cached.sx += surface->pending.sx;
 	sub->cached.sy += surface->pending.sy;
+
+	if (surface->pending.buffer)
+		wl_list_remove(&surface->pending.buffer_destroy_listener.link);
+	surface->pending.buffer = NULL;
 	surface->pending.sx = 0;
 	surface->pending.sy = 0;
 	surface->pending.newly_attached = 0;
