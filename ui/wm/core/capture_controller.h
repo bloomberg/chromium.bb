@@ -13,8 +13,7 @@
 #include "ui/aura/window_observer.h"
 #include "ui/wm/core/wm_core_export.h"
 
-namespace views {
-namespace corewm {
+namespace wm {
 
 // Internal CaptureClient implementation. See ScopedCaptureClient for details.
 class WM_CORE_EXPORT CaptureController : public aura::client::CaptureClient {
@@ -82,7 +81,6 @@ class WM_CORE_EXPORT ScopedCaptureClient : public aura::WindowObserver {
   DISALLOW_COPY_AND_ASSIGN(ScopedCaptureClient);
 };
 
-}  // namespace corewm
-}  // namespace views
+}  // namespace wm
 
 #endif  // UI_WM_CORE_CAPTURE_CONTROLLER_H_

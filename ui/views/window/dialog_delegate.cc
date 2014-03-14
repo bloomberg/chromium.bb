@@ -167,7 +167,7 @@ NonClientFrameView* DialogDelegate::CreateDialogFrameView(Widget* widget) {
       frame->SetTitlebarExtraView(titlebar_view);
   }
   // TODO(msw): Add a matching shadow type and remove the bubble frame border?
-  corewm::SetShadowType(widget->GetNativeWindow(), corewm::SHADOW_TYPE_NONE);
+  wm::SetShadowType(widget->GetNativeWindow(), wm::SHADOW_TYPE_NONE);
   return frame;
 }
 

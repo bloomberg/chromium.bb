@@ -281,7 +281,7 @@ void AppWindowLauncherItemController::ActivateOrAdvanceToNextAppWindow(
     // Coming here, only a single window is active. For keyboard activations
     // the window gets animated.
     AnimateWindow(window_to_show->GetNativeWindow(),
-                  views::corewm::WINDOW_ANIMATION_TYPE_BOUNCE);
+                  wm::WINDOW_ANIMATION_TYPE_BOUNCE);
   } else {
     ShowAndActivateOrMinimize(window_to_show);
   }

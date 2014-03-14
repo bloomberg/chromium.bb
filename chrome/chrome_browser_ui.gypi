@@ -2812,7 +2812,7 @@
         }],
         ['toolkit_views == 1', {
           'dependencies': [
-            '../ui/wm/wm.gyp:wm_public',
+            '../ui/wm/wm.gyp:wm_core',
           ],
           'sources!': [
             'browser/ui/profile_reset_bubble_stub.cc',

@@ -87,7 +87,7 @@ bool IsWindowTransientChildOf(aura::Window* maybe_transient,
     return false;
 
   for (aura::Window* window = maybe_transient; window;
-       window = views::corewm::GetTransientParent(window)) {
+       window = ::wm::GetTransientParent(window)) {
     if (window == toplevel)
       return true;
   }
@@ -527,7 +527,7 @@ void ImmersiveFullscreenController::EnableWindowObservers(bool enable) {
     widget_->AddObserver(this);
     focus_manager->AddFocusChangeListener(this);
     Shell::GetInstance()->AddPreTargetHandler(this);
-    views::corewm::TransientWindowManager::Get(native_window_)->
+    ::wm::TransientWindowManager::Get(native_window_)->
         AddObserver(this);
 
     RecreateBubbleManager();
@@ -535,7 +535,7 @@ void ImmersiveFullscreenController::EnableWindowObservers(bool enable) {
     widget_->RemoveObserver(this);
     focus_manager->RemoveFocusChangeListener(this);
     Shell::GetInstance()->RemovePreTargetHandler(this);
-    views::corewm::TransientWindowManager::Get(native_window_)->
+    ::wm::TransientWindowManager::Get(native_window_)->
         RemoveObserver(this);
 
     // We have stopped observing whether transient children are added or removed
@@ -919,7 +919,7 @@ bool ImmersiveFullscreenController::ShouldHandleGestureEvent(
 void ImmersiveFullscreenController::RecreateBubbleManager() {
   bubble_manager_.reset(new BubbleManager(this));
   const std::vector<aura::Window*> transient_children =
-      views::corewm::GetTransientChildren(native_window_);
+      ::wm::GetTransientChildren(native_window_);
   for (size_t i = 0; i < transient_children.size(); ++i) {
     aura::Window* transient_child = transient_children[i];
     views::BubbleDelegateView* bubble_delegate =

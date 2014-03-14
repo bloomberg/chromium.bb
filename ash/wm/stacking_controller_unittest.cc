@@ -49,7 +49,7 @@ TEST_F(StackingControllerTest, TransientParent) {
 
   // Window with a transient parent.
   scoped_ptr<Window> w1(CreateTestWindow());
-  views::corewm::AddTransientChild(w2.get(), w1.get());
+  ::wm::AddTransientChild(w2.get(), w1.get());
   w1->SetBounds(gfx::Rect(10, 11, 250, 251));
   ParentWindowInPrimaryRootWindow(w1.get());
   w1->Show();

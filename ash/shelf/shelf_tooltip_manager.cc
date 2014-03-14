@@ -324,8 +324,8 @@ void ShelfTooltipManager::CancelHidingAnimation() {
     return;
 
   gfx::NativeView native_view = widget_->GetNativeView();
-  views::corewm::SetWindowVisibilityAnimationTransition(
-      native_view, views::corewm::ANIMATE_NONE);
+  wm::SetWindowVisibilityAnimationTransition(
+      native_view, wm::ANIMATE_NONE);
 }
 
 void ShelfTooltipManager::CloseSoon() {
@@ -359,10 +359,10 @@ void ShelfTooltipManager::CreateBubble(views::View* anchor,
   view_->SetText(text_);
 
   gfx::NativeView native_view = widget_->GetNativeView();
-  views::corewm::SetWindowVisibilityAnimationType(
-      native_view, views::corewm::WINDOW_VISIBILITY_ANIMATION_TYPE_VERTICAL);
-  views::corewm::SetWindowVisibilityAnimationTransition(
-      native_view, views::corewm::ANIMATE_HIDE);
+  wm::SetWindowVisibilityAnimationType(
+      native_view, wm::WINDOW_VISIBILITY_ANIMATION_TYPE_VERTICAL);
+  wm::SetWindowVisibilityAnimationTransition(
+      native_view, wm::ANIMATE_HIDE);
 }
 
 void ShelfTooltipManager::CreateTimer(int delay_in_ms) {

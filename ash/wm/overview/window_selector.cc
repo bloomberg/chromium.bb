@@ -361,7 +361,7 @@ void WindowSelector::OnWindowAdded(aura::Window* new_window) {
 
   for (size_t i = 0; i < kSwitchableWindowContainerIdsLength; ++i) {
     if (new_window->parent()->id() == kSwitchableWindowContainerIds[i] &&
-        !views::corewm::GetTransientParent(new_window)) {
+        !::wm::GetTransientParent(new_window)) {
       // The new window is in one of the switchable containers, abort overview.
       CancelSelection();
       return;

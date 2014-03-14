@@ -191,9 +191,9 @@ CandidateWindowView::~CandidateWindowView() {
 views::Widget* CandidateWindowView::InitWidget() {
   views::Widget* widget = BubbleDelegateView::CreateBubble(this);
 
-  views::corewm::SetWindowVisibilityAnimationType(
+  wm::SetWindowVisibilityAnimationType(
       widget->GetNativeView(),
-      views::corewm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
+      wm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
 
   GetBubbleFrameView()->SetBubbleBorder(scoped_ptr<views::BubbleBorder>(
       new CandidateWindowBorder(parent_window())));

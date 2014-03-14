@@ -63,13 +63,16 @@ namespace views {
 class NonClientFrameView;
 class Widget;
 namespace corewm {
+class TooltipController;
+}
+}
+
+namespace wm {
 class CompoundEventFilter;
 class InputMethodEventFilter;
 class ShadowController;
-class TooltipController;
 class VisibilityController;
 class WindowModalityController;
-}
 }
 
 namespace ash {
@@ -341,10 +344,10 @@ class ASH_EXPORT Shell
   internal::DisplayManager* display_manager() {
     return display_manager_.get();
   }
-  views::corewm::InputMethodEventFilter* input_method_filter() {
+  ::wm::InputMethodEventFilter* input_method_filter() {
     return input_method_filter_.get();
   }
-  views::corewm::CompoundEventFilter* env_filter() {
+  ::wm::CompoundEventFilter* env_filter() {
     return env_filter_.get();
   }
   views::corewm::TooltipController* tooltip_controller() {
@@ -386,7 +389,7 @@ class ASH_EXPORT Shell
   internal::EventTransformationHandler* event_transformation_handler() {
     return event_transformation_handler_.get();
   }
-  views::corewm::CursorManager* cursor_manager() { return &cursor_manager_; }
+  ::wm::CursorManager* cursor_manager() { return &cursor_manager_; }
 
   ShellDelegate* delegate() { return delegate_.get(); }
 
@@ -494,7 +497,7 @@ class ASH_EXPORT Shell
   }
 
   // Made available for tests.
-  views::corewm::ShadowController* shadow_controller() {
+  ::wm::ShadowController* shadow_controller() {
     return shadow_controller_.get();
   }
 
@@ -617,7 +620,7 @@ class ASH_EXPORT Shell
   aura::Window* scoped_target_root_window_;
 
   // The CompoundEventFilter owned by aura::Env object.
-  scoped_ptr<views::corewm::CompoundEventFilter> env_filter_;
+  scoped_ptr< ::wm::CompoundEventFilter> env_filter_;
 
   std::vector<WindowAndBoundsPair> to_restore_;
 
@@ -644,10 +647,9 @@ class ASH_EXPORT Shell
 
   scoped_ptr<internal::DragDropController> drag_drop_controller_;
   scoped_ptr<internal::ResizeShadowController> resize_shadow_controller_;
-  scoped_ptr<views::corewm::ShadowController> shadow_controller_;
-  scoped_ptr<views::corewm::VisibilityController> visibility_controller_;
-  scoped_ptr<views::corewm::WindowModalityController>
-      window_modality_controller_;
+  scoped_ptr< ::wm::ShadowController> shadow_controller_;
+  scoped_ptr< ::wm::VisibilityController> visibility_controller_;
+  scoped_ptr< ::wm::WindowModalityController> window_modality_controller_;
   scoped_ptr<views::corewm::TooltipController> tooltip_controller_;
   scoped_ptr<DesktopBackgroundController> desktop_background_controller_;
   scoped_ptr<PowerButtonController> power_button_controller_;
@@ -689,7 +691,7 @@ class ASH_EXPORT Shell
   scoped_ptr<internal::AcceleratorFilter> accelerator_filter_;
 
   // An event filter that pre-handles all key events to send them to an IME.
-  scoped_ptr<views::corewm::InputMethodEventFilter> input_method_filter_;
+  scoped_ptr< ::wm::InputMethodEventFilter> input_method_filter_;
 
   scoped_ptr<internal::DisplayManager> display_manager_;
   scoped_ptr<base::WeakPtrFactory<internal::DisplayManager> >
@@ -733,7 +735,7 @@ class ASH_EXPORT Shell
   // |native_cursor_manager_| is owned by |cursor_manager_|, but we keep a
   // pointer to vend to test code.
   AshNativeCursorManager* native_cursor_manager_;
-  views::corewm::CursorManager cursor_manager_;
+  ::wm::CursorManager cursor_manager_;
 
   ObserverList<ShellObserver> observers_;
 

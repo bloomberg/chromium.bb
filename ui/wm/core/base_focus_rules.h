@@ -9,8 +9,7 @@
 #include "base/compiler_specific.h"
 #include "ui/wm/core/focus_rules.h"
 
-namespace views {
-namespace corewm {
+namespace wm {
 
 // A set of basic focus and activation rules. Specializations should most likely
 // subclass this and call up to these methods rather than reimplementing them.
@@ -41,7 +40,6 @@ class WM_CORE_EXPORT BaseFocusRules : public FocusRules {
   DISALLOW_COPY_AND_ASSIGN(BaseFocusRules);
 };
 
-}  // namespace corewm
-}  // namespace views
+}  // namespace wm
 
 #endif  // UI_WM_CORE_BASE_FOCUS_RULES_H_

@@ -144,13 +144,13 @@ using views::Widget;
 
 // A Corewm VisibilityController subclass that calls the Ash animation routine
 // so we can pick up our extended animations. See ash/wm/window_animations.h.
-class AshVisibilityController : public views::corewm::VisibilityController {
+class AshVisibilityController : public ::wm::VisibilityController {
  public:
   AshVisibilityController() {}
   virtual ~AshVisibilityController() {}
 
  private:
-  // Overridden from views::corewm::VisibilityController:
+  // Overridden from ::wm::VisibilityController:
   virtual bool CallAnimateOnChildWindowVisibilityChanged(
       aura::Window* window,
       bool visible) OVERRIDE {
@@ -610,7 +610,7 @@ Shell::Shell(ShellDelegate* delegate)
       output_configurator_(new chromeos::OutputConfigurator()),
 #endif  // defined(OS_CHROMEOS) && defined(USE_X11)
       native_cursor_manager_(new AshNativeCursorManager),
-      cursor_manager_(scoped_ptr<views::corewm::NativeCursorManager>(
+      cursor_manager_(scoped_ptr< ::wm::NativeCursorManager>(
           native_cursor_manager_)),
       simulate_modal_window_open_for_testing_(false),
       is_touch_hud_projection_enabled_(false) {
@@ -826,15 +826,15 @@ void Shell::Init() {
   // pretarget handler list to ensure that it processes input events when modal
   // windows are active.
   window_modality_controller_.reset(
-      new views::corewm::WindowModalityController(this));
+      new ::wm::WindowModalityController(this));
 
   AddPreTargetHandler(this);
 
-  env_filter_.reset(new views::corewm::CompoundEventFilter);
+  env_filter_.reset(new ::wm::CompoundEventFilter);
   AddPreTargetHandler(env_filter_.get());
 
-  views::corewm::FocusController* focus_controller =
-      new views::corewm::FocusController(new wm::AshFocusRules);
+  ::wm::FocusController* focus_controller =
+      new ::wm::FocusController(new wm::AshFocusRules);
   focus_client_.reset(focus_controller);
   activation_client_ = focus_controller;
   activation_client_->AddObserver(this);
@@ -883,7 +883,7 @@ void Shell::Init() {
   AddPreTargetHandler(overlay_filter_.get());
   AddShellObserver(overlay_filter_.get());
 
-  input_method_filter_.reset(new views::corewm::InputMethodEventFilter(
+  input_method_filter_.reset(new ::wm::InputMethodEventFilter(
       root_window->GetHost()->GetAcceleratedWidget()));
   AddPreTargetHandler(input_method_filter_.get());
 
@@ -958,7 +958,7 @@ void Shell::Init() {
 
   resize_shadow_controller_.reset(new internal::ResizeShadowController());
   shadow_controller_.reset(
-      new views::corewm::ShadowController(activation_client_));
+      new ::wm::ShadowController(activation_client_));
 
   // Create system_tray_notifier_ before the delegate.
   system_tray_notifier_.reset(new ash::SystemTrayNotifier());
@@ -1053,8 +1053,8 @@ void Shell::InitRootWindow(aura::Window* root_window) {
   aura::client::SetFocusClient(root_window, focus_client_.get());
   input_method_filter_->SetInputMethodPropertyInRootWindow(root_window);
   aura::client::SetActivationClient(root_window, activation_client_);
-  views::corewm::FocusController* focus_controller =
-      static_cast<views::corewm::FocusController*>(activation_client_);
+  ::wm::FocusController* focus_controller =
+      static_cast< ::wm::FocusController*>(activation_client_);
   root_window->AddPreTargetHandler(focus_controller);
   aura::client::SetVisibilityClient(root_window, visibility_controller_.get());
   aura::client::SetDragDropClient(root_window, drag_drop_controller_.get());

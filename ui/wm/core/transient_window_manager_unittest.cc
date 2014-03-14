@@ -19,8 +19,7 @@ using aura::Window;
 using aura::test::ChildWindowIDsAsString;
 using aura::test::CreateTestWindowWithId;
 
-namespace views {
-namespace corewm {
+namespace wm {
 
 class TestTransientWindowObserver : public TransientWindowObserver {
  public:
@@ -57,7 +56,7 @@ class TransientWindowManagerTest : public aura::test::AuraTestBase {
 
   virtual void SetUp() OVERRIDE {
     AuraTestBase::SetUp();
-    wm_state_.reset(new views::corewm::WMState);
+    wm_state_.reset(new wm::WMState);
   }
 
   virtual void TearDown() OVERRIDE {
@@ -78,7 +77,7 @@ class TransientWindowManagerTest : public aura::test::AuraTestBase {
   }
 
  private:
-  scoped_ptr<views::corewm::WMState> wm_state_;
+  scoped_ptr<wm::WMState> wm_state_;
 
   DISALLOW_COPY_AND_ASSIGN(TransientWindowManagerTest);
 };
@@ -634,5 +633,4 @@ TEST_F(TransientWindowManagerTest, TransientWindowObserverNotified) {
   TransientWindowManager::Get(parent.get())->RemoveObserver(&test_observer);
 }
 
-}  // namespace corewm
-}  // namespace views
+}  // namespace wm

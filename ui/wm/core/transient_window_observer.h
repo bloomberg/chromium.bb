@@ -11,8 +11,7 @@ namespace aura {
 class Window;
 }
 
-namespace views {
-namespace corewm {
+namespace wm {
 
 class WM_CORE_EXPORT TransientWindowObserver {
  public:
@@ -28,7 +27,6 @@ class WM_CORE_EXPORT TransientWindowObserver {
   virtual ~TransientWindowObserver() {}
 };
 
-}  // namespace corewm
-}  // namespace views
+}  // namespace wm
 
 #endif  // UI_WM_CORE_TRANSIENT_WINDOW_OBSERVER_H_

@@ -20,7 +20,7 @@ TestViewsDelegate::TestViewsDelegate()
     : use_transparent_windows_(false) {
   DCHECK(!ViewsDelegate::views_delegate);
   ViewsDelegate::views_delegate = this;
-  wm_state_.reset(new views::corewm::WMState);
+  wm_state_.reset(new wm::WMState);
 }
 
 TestViewsDelegate::~TestViewsDelegate() {

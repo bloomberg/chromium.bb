@@ -69,7 +69,7 @@ int64 Round64(float f) {
 base::TimeDelta GetCrossFadeDuration(aura::Window* window,
                                      const gfx::Rect& old_bounds,
                                      const gfx::Rect& new_bounds) {
-  if (views::corewm::WindowAnimationsDisabled(window))
+  if (::wm::WindowAnimationsDisabled(window))
     return base::TimeDelta();
 
   int old_area = old_bounds.width() * old_bounds.height();
@@ -165,8 +165,8 @@ void AnimateShowWindow_Minimize(aura::Window* window) {
 
   // Now that the window has been restored, we need to clear its animation style
   // to default so that normal animation applies.
-  views::corewm::SetWindowVisibilityAnimationType(
-      window, views::corewm::WINDOW_VISIBILITY_ANIMATION_TYPE_DEFAULT);
+  ::wm::SetWindowVisibilityAnimationType(
+      window, ::wm::WINDOW_VISIBILITY_ANIMATION_TYPE_DEFAULT);
 }
 
 void AnimateHideWindow_Minimize(aura::Window* window) {
@@ -178,7 +178,7 @@ void AnimateHideWindow_Minimize(aura::Window* window) {
       kLayerAnimationsForMinimizeDurationMS);
   settings.SetTransitionDuration(duration);
   settings.AddObserver(
-      views::corewm::CreateHidingWindowAnimationObserver(window));
+      ::wm::CreateHidingWindowAnimationObserver(window));
   window->layer()->SetVisible(false);
 
   AddLayerAnimationsForMinimize(window, false);
@@ -211,7 +211,7 @@ void AnimateShowHideWindowCommon_BrightnessGrayscale(aura::Window* window,
   settings.SetTransitionDuration(duration);
   if (!show) {
     settings.AddObserver(
-        views::corewm::CreateHidingWindowAnimationObserver(window));
+        ::wm::CreateHidingWindowAnimationObserver(window));
   }
 
   window->layer()->GetAnimator()->
@@ -232,12 +232,12 @@ void AnimateHideWindow_BrightnessGrayscale(aura::Window* window) {
 }
 
 bool AnimateShowWindow(aura::Window* window) {
-  if (!views::corewm::HasWindowVisibilityAnimationTransition(
-          window, views::corewm::ANIMATE_SHOW)) {
+  if (!::wm::HasWindowVisibilityAnimationTransition(
+          window, ::wm::ANIMATE_SHOW)) {
     return false;
   }
 
-  switch (views::corewm::GetWindowVisibilityAnimationType(window)) {
+  switch (::wm::GetWindowVisibilityAnimationType(window)) {
     case WINDOW_VISIBILITY_ANIMATION_TYPE_MINIMIZE:
       AnimateShowWindow_Minimize(window);
       return true;
@@ -251,12 +251,12 @@ bool AnimateShowWindow(aura::Window* window) {
 }
 
 bool AnimateHideWindow(aura::Window* window) {
-  if (!views::corewm::HasWindowVisibilityAnimationTransition(
-          window, views::corewm::ANIMATE_HIDE)) {
+  if (!::wm::HasWindowVisibilityAnimationTransition(
+          window, ::wm::ANIMATE_HIDE)) {
     return false;
   }
 
-  switch (views::corewm::GetWindowVisibilityAnimationType(window)) {
+  switch (::wm::GetWindowVisibilityAnimationType(window)) {
     case WINDOW_VISIBILITY_ANIMATION_TYPE_MINIMIZE:
       AnimateHideWindow_Minimize(window);
       return true;
@@ -401,11 +401,11 @@ base::TimeDelta CrossFadeAnimation(
 }
 
 bool AnimateOnChildWindowVisibilityChanged(aura::Window* window, bool visible) {
-  if (views::corewm::WindowAnimationsDisabled(window))
+  if (::wm::WindowAnimationsDisabled(window))
     return false;
 
   // Attempt to run CoreWm supplied animation types.
-  if (views::corewm::AnimateOnChildWindowVisibilityChanged(window, visible))
+  if (::wm::AnimateOnChildWindowVisibilityChanged(window, visible))
     return true;
 
   // Otherwise try to run an Ash-specific animation.

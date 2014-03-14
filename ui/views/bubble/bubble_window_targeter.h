@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "ui/views/views_export.h"
-#include "ui/wm/public/masked_window_targeter.h"
+#include "ui/wm/core/masked_window_targeter.h"
 
 namespace aura {
 class Window;

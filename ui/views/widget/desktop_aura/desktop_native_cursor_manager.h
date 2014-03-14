@@ -20,18 +20,18 @@ namespace ui {
 class CursorLoader;
 }
 
-namespace views {
-class DesktopCursorLoaderUpdater;
-
-namespace corewm {
+namespace wm {
 class NativeCursorManagerDelegate;
 }
+
+namespace views {
+class DesktopCursorLoaderUpdater;
 
 // A NativeCursorManager that performs the desktop-specific setting of cursor
 // state. Similar to AshNativeCursorManager, it also communicates these changes
 // to all root windows.
 class VIEWS_EXPORT DesktopNativeCursorManager
-    : public views::corewm::NativeCursorManager {
+    : public wm::NativeCursorManager {
  public:
   DesktopNativeCursorManager(
       scoped_ptr<DesktopCursorLoaderUpdater> cursor_loader_updater);
@@ -47,25 +47,25 @@ class VIEWS_EXPORT DesktopNativeCursorManager
   void RemoveHost(aura::WindowTreeHost* host);
 
  private:
-  // Overridden from views::corewm::NativeCursorManager:
+  // Overridden from wm::NativeCursorManager:
   virtual void SetDisplay(
       const gfx::Display& display,
-      views::corewm::NativeCursorManagerDelegate* delegate) OVERRIDE;
+      wm::NativeCursorManagerDelegate* delegate) OVERRIDE;
   virtual void SetCursor(
       gfx::NativeCursor cursor,
-      views::corewm::NativeCursorManagerDelegate* delegate) OVERRIDE;
+      wm::NativeCursorManagerDelegate* delegate) OVERRIDE;
   virtual void SetVisibility(
       bool visible,
-      views::corewm::NativeCursorManagerDelegate* delegate) OVERRIDE;
+      wm::NativeCursorManagerDelegate* delegate) OVERRIDE;
   virtual void SetCursorSet(
       ui::CursorSetType cursor_set,
-      views::corewm::NativeCursorManagerDelegate* delegate) OVERRIDE;
+      wm::NativeCursorManagerDelegate* delegate) OVERRIDE;
   virtual void SetScale(
       float scale,
-      views::corewm::NativeCursorManagerDelegate* delegate) OVERRIDE;
+      wm::NativeCursorManagerDelegate* delegate) OVERRIDE;
   virtual void SetMouseEventsEnabled(
       bool enabled,
-      views::corewm::NativeCursorManagerDelegate* delegate) OVERRIDE;
+      wm::NativeCursorManagerDelegate* delegate) OVERRIDE;
 
   // The set of hosts to notify of changes in cursor state.
   typedef std::set<aura::WindowTreeHost*> Hosts;

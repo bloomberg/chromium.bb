@@ -33,8 +33,7 @@ bool ShelfWindowWatcherItemDelegate::ItemSelected(const ui::Event& event) {
   wm::WindowState* window_state = wm::GetWindowState(window_);
   if (window_state->IsActive()) {
     if (event.type() & ui::ET_KEY_RELEASED) {
-      views::corewm::AnimateWindow(window_,
-                                   views::corewm::WINDOW_ANIMATION_TYPE_BOUNCE);
+      ::wm::AnimateWindow(window_, ::wm::WINDOW_ANIMATION_TYPE_BOUNCE);
     } else {
       window_state->Minimize();
     }

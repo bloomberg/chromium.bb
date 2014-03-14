@@ -52,7 +52,7 @@ void PrepareBrowserCommandLineForTests(CommandLine* command_line) {
   // Disable window animations under Ash as the animations effect the
   // coordinates returned and result in flake.
   command_line->AppendSwitch(
-      views::corewm::switches::kWindowAnimationsDisabled);
+      wm::switches::kWindowAnimationsDisabled);
 #endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_CHROMEOS)

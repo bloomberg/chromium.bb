@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_WM_PUBLIC_MASKED_WINDOW_TARGETER_H_
-#define UI_WM_PUBLIC_MASKED_WINDOW_TARGETER_H_
+#ifndef UI_WM_CORE_MASKED_WINDOW_TARGETER_H_
+#define UI_WM_CORE_MASKED_WINDOW_TARGETER_H_
 
 #include "ui/aura/window_targeter.h"
+#include "ui/wm/core/wm_core_export.h"
 
 namespace gfx {
 class Path;
@@ -13,7 +14,7 @@ class Path;
 
 namespace wm {
 
-class MaskedWindowTargeter : public aura::WindowTargeter {
+class WM_CORE_EXPORT MaskedWindowTargeter : public aura::WindowTargeter {
  public:
   explicit MaskedWindowTargeter(aura::Window* masked_window);
   virtual ~MaskedWindowTargeter();
@@ -36,4 +37,4 @@ class MaskedWindowTargeter : public aura::WindowTargeter {
 
 }  // namespace wm
 
-#endif  // UI_WM_PUBLIC_MASKED_WINDOW_TARGETER_H_
+#endif  // UI_WM_CORE_MASKED_WINDOW_TARGETER_H_

@@ -5,12 +5,6 @@
 #ifndef UI_WM_CORE_WM_CORE_EXPORT_H_
 #define UI_WM_CORE_WM_CORE_EXPORT_H_
 
-#include "ui/views/views_export.h"
-
-#if 1
-#define WM_CORE_EXPORT VIEWS_EXPORT
-#else
-
 // Defines WM_CORE_EXPORT so that functionality implemented by the Views module
 // can be exported to consumers.
 
@@ -33,8 +27,6 @@
 
 #else  // defined(COMPONENT_BUILD)
 #define WM_CORE_EXPORT
-#endif
-
 #endif
 
 #endif  // UI_WM_CORE_WM_CORE_EXPORT_H_

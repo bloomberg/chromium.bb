@@ -442,7 +442,7 @@ void DefaultState::UpdateBounds(WindowState* window_state,
     // Save the previous show state so that we can correctly restore it.
     window_state->window()->SetProperty(aura::client::kRestoreShowStateKey,
                                         ToWindowShowState(old_state_type));
-    views::corewm::SetWindowVisibilityAnimationType(
+    ::wm::SetWindowVisibilityAnimationType(
         window_state->window(), WINDOW_VISIBILITY_ANIMATION_TYPE_MINIMIZE);
 
     // Hide the window.
