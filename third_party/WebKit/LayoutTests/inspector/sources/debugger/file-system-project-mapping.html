@@ -63,7 +63,7 @@ function test()
             dumpFileSystemUISourceCodesMappings();
             var uiSourceCode = InspectorTest.testWorkspace.uiSourceCode(fileSystemProjectId, "html/foo.js");
             var networkUISourceCode = InspectorTest.testWorkspace.uiSourceCode("http://localhost", "html/foo.js");
-            InspectorTest.override(WebInspector, "suggestReload", function() { });
+            InspectorTest.override(WebInspector.SourcesPanel.prototype, "_suggestReload", function() { });
             InspectorTest.addResult("Adding mapping between network and file system resources.");
             InspectorTest.testWorkspace.addMapping(networkUISourceCode, uiSourceCode, manager.fileSystemWorkspaceProvider);
             var setting = InspectorTest.testFileSystemMapping._fileSystemMappingSetting;
@@ -75,7 +75,6 @@ function test()
             manager.addMockFileSystem(fileSystemPath, true);
             manager.addFiles(fileSystemPath, files);
             dumpFileSystemUISourceCodesMappings();
-            InspectorTest.override(WebInspector, "suggestReload", function() { });
             InspectorTest.addResult("Removing mapping between network and file system resources.");
             uiSourceCode = InspectorTest.testWorkspace.uiSourceCode(fileSystemProjectId, "html/foo.js");
             InspectorTest.testWorkspace.removeMapping(uiSourceCode);
