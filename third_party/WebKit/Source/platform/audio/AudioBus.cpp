@@ -635,10 +635,10 @@ void AudioBus::clearSilentFlag()
         m_channels[i]->clearSilentFlag();
 }
 
-PassRefPtr<AudioBus> decodeAudioFileData(const char* data, size_t size, double sampleRate)
+PassRefPtr<AudioBus> decodeAudioFileData(const char* data, size_t size)
 {
     blink::WebAudioBus webAudioBus;
-    if (blink::Platform::current()->loadAudioResource(&webAudioBus, data, size, sampleRate))
+    if (blink::Platform::current()->loadAudioResource(&webAudioBus, data, size))
         return webAudioBus.release();
     return nullptr;
 }
@@ -649,8 +649,7 @@ PassRefPtr<AudioBus> AudioBus::loadPlatformResource(const char* name, float samp
     if (resource.isEmpty())
         return nullptr;
 
-    // FIXME: the sampleRate parameter is ignored. It should be removed from the API.
-    RefPtr<AudioBus> audioBus = decodeAudioFileData(resource.data(), resource.size(), sampleRate);
+    RefPtr<AudioBus> audioBus = decodeAudioFileData(resource.data(), resource.size());
 
     if (!audioBus.get())
         return nullptr;
@@ -664,8 +663,7 @@ PassRefPtr<AudioBus> AudioBus::loadPlatformResource(const char* name, float samp
 
 PassRefPtr<AudioBus> createBusFromInMemoryAudioFile(const void* data, size_t dataSize, bool mixToMono, float sampleRate)
 {
-    // FIXME: the sampleRate parameter is ignored. It should be removed from the API.
-    RefPtr<AudioBus> audioBus = decodeAudioFileData(static_cast<const char*>(data), dataSize, sampleRate);
+    RefPtr<AudioBus> audioBus = decodeAudioFileData(static_cast<const char*>(data), dataSize);
     if (!audioBus.get())
         return nullptr;
 
