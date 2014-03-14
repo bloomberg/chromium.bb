@@ -137,7 +137,8 @@ class PPAPI_PROXY_EXPORT PluginGlobals : public PpapiGlobals {
   // Interval to limit how many IPC messages are sent indicating that the plugin
   // is active and should be kept alive. The value must be smaller than any
   // threshold used to kill inactive plugins by the embedder host.
-  void set_keepalive_throttle_interval_milliseconds(unsigned i);
+  int keepalive_throttle_interval_milliseconds() const;
+  void set_keepalive_throttle_interval_milliseconds(int i);
 
  private:
   class BrowserSender;
@@ -182,7 +183,7 @@ class PPAPI_PROXY_EXPORT PluginGlobals : public PpapiGlobals {
   // all considered active.
   bool plugin_recently_active_;
 
-  unsigned keepalive_throttle_interval_milliseconds_;
+  int keepalive_throttle_interval_milliseconds_;
 
   // Member variables should appear before the WeakPtrFactory, see weak_ptr.h.
   base::WeakPtrFactory<PluginGlobals> weak_factory_;

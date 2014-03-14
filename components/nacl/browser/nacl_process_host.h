@@ -78,9 +78,6 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
   // Do any minimal work that must be done at browser startup.
   static void EarlyStartup();
 
-  // Specifies throttling time in milliseconds for PpapiHostMsg_Keepalive IPCs.
-  static void SetPpapiKeepAliveThrottleForTesting(unsigned milliseconds);
-
   // Initialize the new NaCl process. Result is returned by sending ipc
   // message reply_msg.
   void Launch(NaClHostMessageFilter* nacl_host_message_filter,
@@ -222,9 +219,6 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
   scoped_ptr<content::BrowserPpapiHost> ppapi_host_;
 
   int render_view_id_;
-
-  // Throttling time in milliseconds for PpapiHostMsg_Keepalive IPCs.
-  static unsigned keepalive_throttle_interval_milliseconds_;
 
   DISALLOW_COPY_AND_ASSIGN(NaClProcessHost);
 };
