@@ -122,15 +122,7 @@ class RecordInfo {
 
 class RecordCache {
  public:
-  RecordInfo* Lookup(clang::CXXRecordDecl* record) {
-    if (!record)
-      return 0;
-    Cache::iterator it = cache_.find(record);
-    if (it != cache_.end())
-      return &it->second;
-    return &cache_.insert(std::make_pair(record, RecordInfo(record, this)))
-                .first->second;
-  }
+  RecordInfo* Lookup(clang::CXXRecordDecl* record);
 
   RecordInfo* Lookup(const clang::CXXRecordDecl* record) {
     return Lookup(const_cast<clang::CXXRecordDecl*>(record));

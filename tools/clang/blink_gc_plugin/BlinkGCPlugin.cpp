@@ -516,7 +516,7 @@ class BlinkGCPluginConsumer : public ASTConsumer {
   // Check a class-like object (eg, class, specialization, instantiation).
   void CheckClass(RecordInfo* info) {
     // Don't enforce tracing of stack allocated objects.
-    if (info->IsStackAllocated())
+    if (!info || info->IsStackAllocated())
       return;
 
     if (info->RequiresTraceMethod() && !info->GetTraceMethod())
@@ -651,7 +651,8 @@ class BlinkGCPluginConsumer : public ASTConsumer {
   }
 
   bool IsIgnored(RecordInfo* record) {
-    return !InCheckedNamespace(record) ||
+    return !record ||
+           !InCheckedNamespace(record) ||
            IsIgnoredClass(record) ||
            InIgnoredDirectory(record);
   }

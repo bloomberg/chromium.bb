@@ -138,6 +138,17 @@ static bool IsAnnotated(Decl* decl, const string& anno) {
   return attr && (attr->getAnnotation() == anno);
 }
 
+RecordInfo* RecordCache::Lookup(CXXRecordDecl* record) {
+  // Ignore classes annotated with the GC_PLUGIN_IGNORE macro.
+  if (!record || IsAnnotated(record, "blink_gc_plugin_ignore"))
+    return 0;
+  Cache::iterator it = cache_.find(record);
+  if (it != cache_.end())
+    return &it->second;
+  return &cache_.insert(std::make_pair(record, RecordInfo(record, this)))
+      .first->second;
+}
+
 bool RecordInfo::IsStackAllocated() {
   for (CXXRecordDecl::method_iterator it = record_->method_begin();
        it != record_->method_end();
@@ -220,8 +231,8 @@ RecordInfo::Fields* RecordInfo::CollectFields() {
        it != record_->field_end();
        ++it) {
     FieldDecl* field = *it;
-    // Ignore fields annotated with the NO_TRACE_CHECKING macro.
-    if (IsAnnotated(field, "blink_no_trace_checking"))
+    // Ignore fields annotated with the GC_PLUGIN_IGNORE macro.
+    if (IsAnnotated(field, "blink_gc_plugin_ignore"))
       continue;
     if (Edge* edge = CreateEdge(field->getType().getTypePtrOrNull())) {
       fields->insert(std::make_pair(field, FieldPoint(field, edge)));

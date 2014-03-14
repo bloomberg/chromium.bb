@@ -74,13 +74,13 @@ using namespace WTF;
     private:                                    \
     void* operator new(size_t) = delete;
 
-#define STACK_ALLOCATED()                           \
-    private:                                        \
-    __attribute__((annotate("blink_stack_allocated")))    \
+#define STACK_ALLOCATED()                               \
+    private:                                            \
+    __attribute__((annotate("blink_stack_allocated")))  \
     void* operator new(size_t) = delete;
 
-#define NO_TRACE_CHECKING(bug)                      \
-    __attribute__((annotate("blink_no_trace_checking")))
+#define GC_PLUGIN_IGNORE(bug)                           \
+    __attribute__((annotate("blink_gc_plugin_ignore")))
 
 #define USING_GARBAGE_COLLECTED_MIXIN(type)             \
     public:                                             \

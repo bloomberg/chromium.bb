@@ -9,12 +9,33 @@
 
 namespace WebCore {
 
-class HeapObject : public GarbageCollected<HeapObject> { };
+class HeapObject : public GarbageCollected<HeapObject> {
+public:
+    virtual void trace(Visitor*) { }
+};
 
-class A {
+// Don't warn about raw pointers to heap allocated objects.
+class A : public GarbageCollected<A>{
 private:
-    NO_TRACE_CHECKING("http://crbug.com/12345")
+    GC_PLUGIN_IGNORE("http://crbug.com/12345")
     HeapObject* m_obj;
+};
+
+// Don't require trace method when (all) GC fields are ignored.
+class B : public GarbageCollected<B> {
+private:
+    GC_PLUGIN_IGNORE("http://crbug.com/12345")
+    Member<HeapObject> m_one;
+};
+
+// Don't require tracing an ignored field.
+class C : public GarbageCollected<C> {
+public:
+    void trace(Visitor*);
+private:
+    Member<HeapObject> m_one;
+    GC_PLUGIN_IGNORE("http://crbug.com/12345")
+    Member<HeapObject> m_two;
 };
 
 }
