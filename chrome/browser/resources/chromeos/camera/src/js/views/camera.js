@@ -1634,17 +1634,20 @@ camera.views.Camera.prototype.start_ = function() {
 
 /**
  * Draws the effects' ribbon.
+ * @param {camera.views.Camera.DrawMode} mode Drawing mode.
  * @private
  */
-camera.views.Camera.prototype.drawEffectsRibbon_ = function() {
+camera.views.Camera.prototype.drawEffectsRibbon_ = function(mode) {
   var notDrawn = [];
 
-  // Draw visible frames only.
+  // Draw visible frames only when in DrawMode.FULL mode. Otherwise, only
+  // one per method call.
   for (var index = 0; index < this.previewProcessors_.length; index++) {
     var processor = this.previewProcessors_[index];
     var effectRect = processor.output.getBoundingClientRect();
     if (effectRect.right >= 0 &&
-        effectRect.left < document.body.offsetWidth) {
+        effectRect.left < document.body.offsetWidth &&
+        mode == camera.views.Camera.DrawMode.FULL) {
       processor.processFrame();
     } else {
       notDrawn.push(processor);
@@ -1832,14 +1835,19 @@ camera.views.Camera.prototype.onAnimationFrame_ = function() {
   {
     var finishMeasuring =
         this.performanceMonitors_.startMeasuring('draw-ribbon');
-    if (this.expanded_ && !this.taking_ && !this.controlsEffect_.animating &&
+    if (!this.taking_ && !this.controlsEffect_.animating &&
         !this.context.isUIAnimating() && !this.scrollTracker_.scrolling &&
-        !this.toastEffect_.animating || this.ribbonInitialization_) {
+        !this.toolbarEffect_.animating && !this.toastEffect_.animating ||
+        this.ribbonInitialization_) {
 
-      // Every third frame draw only the visible effects. Also, other frames
-      // are periodically refreshed, to avoid stale pictures.
-      if (this.frame_ % camera.views.Camera.PREVIEW_BUFFER_SKIP_FRAMES == 0)
-        this.drawEffectsRibbon_();
+      if (this.expanded_ &&
+          this.frame_ % camera.views.Camera.PREVIEW_BUFFER_SKIP_FRAMES == 0) {
+        // Render all visible + one not visible.
+        this.drawEffectsRibbon_(camera.views.Camera.DrawMode.FULL);
+      } else {
+        // Render only one effect per frame. This is to avoid stale images.
+        this.drawEffectsRibbon_(camera.views.Camera.DrawMode.OPTIMIZED);
+      }
     }
     finishMeasuring();
   }
