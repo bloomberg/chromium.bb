@@ -51,13 +51,15 @@ static const char defaultFontFamily[] = "sans-serif";
 
 class LoadFontPromiseResolver : public CSSSegmentedFontFace::LoadFontCallback {
 public:
-    static PassRefPtr<LoadFontPromiseResolver> create(const FontFamily& family, ScriptPromise promise, ExecutionContext* context)
+    static PassRefPtr<LoadFontPromiseResolver> create(const FontFamily& family, ExecutionContext* context)
     {
         int numFamilies = 0;
         for (const FontFamily* f = &family; f; f = f->next())
             numFamilies++;
-        return adoptRef<LoadFontPromiseResolver>(new LoadFontPromiseResolver(numFamilies, promise, context));
+        return adoptRef<LoadFontPromiseResolver>(new LoadFontPromiseResolver(numFamilies, context));
     }
+
+    ScriptPromise promise() { return m_resolver->promise(); }
 
     virtual void notifyLoaded(CSSSegmentedFontFace*) OVERRIDE { loaded(); }
     virtual void notifyError(CSSSegmentedFontFace*) OVERRIDE { error(); }
@@ -65,11 +67,11 @@ public:
     void error();
 
 private:
-    LoadFontPromiseResolver(int numLoading, ScriptPromise promise, ExecutionContext* context)
+    LoadFontPromiseResolver(int numLoading, ExecutionContext* context)
         : m_numLoading(numLoading)
         , m_errorOccured(false)
         , m_scriptState(ScriptState::current())
-        , m_resolver(ScriptPromiseResolver::create(promise, context))
+        , m_resolver(ScriptPromiseResolver::create(context))
     { }
 
     int m_numLoading;
@@ -99,9 +101,9 @@ void LoadFontPromiseResolver::error()
 
 class FontsReadyPromiseResolver {
 public:
-    static PassOwnPtr<FontsReadyPromiseResolver> create(ScriptPromise promise, ExecutionContext* context)
+    static PassOwnPtr<FontsReadyPromiseResolver> create(ExecutionContext* context)
     {
-        return adoptPtr(new FontsReadyPromiseResolver(promise, context));
+        return adoptPtr(new FontsReadyPromiseResolver(context));
     }
 
     void resolve(PassRefPtr<FontFaceSet> fontFaceSet)
@@ -110,10 +112,12 @@ public:
         m_resolver->resolve(fontFaceSet);
     }
 
+    ScriptPromise promise() { return m_resolver->promise(); }
+
 private:
-    FontsReadyPromiseResolver(ScriptPromise promise, ExecutionContext* context)
+    FontsReadyPromiseResolver(ExecutionContext* context)
         : m_scriptState(ScriptState::current())
-        , m_resolver(ScriptPromiseResolver::create(promise, context))
+        , m_resolver(ScriptPromiseResolver::create(context))
     { }
     ScriptState* m_scriptState;
     RefPtr<ScriptPromiseResolver> m_resolver;
@@ -254,8 +258,8 @@ ScriptPromise FontFaceSet::ready()
 {
     if (!inActiveDocumentContext())
         return ScriptPromise();
-    ScriptPromise promise = ScriptPromise::createPending(executionContext());
-    OwnPtr<FontsReadyPromiseResolver> resolver = FontsReadyPromiseResolver::create(promise, executionContext());
+    OwnPtr<FontsReadyPromiseResolver> resolver = FontsReadyPromiseResolver::create(executionContext());
+    ScriptPromise promise = resolver->promise();
     m_readyResolvers.append(resolver.release());
     handlePendingEventsAndPromisesSoon();
     return promise;
@@ -432,8 +436,8 @@ ScriptPromise FontFaceSet::load(const String& fontString, const String& text, Ex
 
     CSSFontSelector* fontSelector = document()->styleEngine()->fontSelector();
     FontFaceCache* fontFaceCache = fontSelector->fontFaceCache();
-    ScriptPromise promise = ScriptPromise::createPending(executionContext());
-    RefPtr<LoadFontPromiseResolver> resolver = LoadFontPromiseResolver::create(font.fontDescription().family(), promise, executionContext());
+    RefPtr<LoadFontPromiseResolver> resolver = LoadFontPromiseResolver::create(font.fontDescription().family(), executionContext());
+    ScriptPromise promise = resolver->promise();
     for (const FontFamily* f = &font.fontDescription().family(); f; f = f->next()) {
         CSSSegmentedFontFace* face = fontFaceCache->get(font.fontDescription(), f->family());
         if (!face) {

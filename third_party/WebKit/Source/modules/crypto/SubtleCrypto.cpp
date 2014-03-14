@@ -73,8 +73,8 @@ ScriptPromise startCryptoOperation(const Dictionary& rawAlgorithm, Key* key, Alg
         return ScriptPromise();
     }
 
-    ScriptPromise promise = ScriptPromise::createPending();
-    RefPtr<CryptoResultImpl> result = CryptoResultImpl::create(promise);
+    RefPtr<CryptoResultImpl> result = CryptoResultImpl::create();
+    ScriptPromise promise = result->promise();
 
     blink::WebCryptoAlgorithm algorithm;
     if (!parseAlgorithm(rawAlgorithm, operationType, algorithm, exceptionState, result.get()))
@@ -144,8 +144,8 @@ ScriptPromise SubtleCrypto::digest(const Dictionary& rawAlgorithm, ArrayBufferVi
 
 ScriptPromise SubtleCrypto::generateKey(const Dictionary& rawAlgorithm, bool extractable, const Vector<String>& rawKeyUsages, ExceptionState& exceptionState)
 {
-    ScriptPromise promise = ScriptPromise::createPending();
-    RefPtr<CryptoResultImpl> result = CryptoResultImpl::create(promise);
+    RefPtr<CryptoResultImpl> result = CryptoResultImpl::create();
+    ScriptPromise promise = result->promise();
 
     blink::WebCryptoKeyUsageMask keyUsages;
     if (!Key::parseUsageMask(rawKeyUsages, keyUsages, result.get()))
@@ -166,8 +166,8 @@ ScriptPromise SubtleCrypto::importKey(const String& rawFormat, ArrayBufferView* 
         return ScriptPromise();
     }
 
-    ScriptPromise promise = ScriptPromise::createPending();
-    RefPtr<CryptoResultImpl> result = CryptoResultImpl::create(promise);
+    RefPtr<CryptoResultImpl> result = CryptoResultImpl::create();
+    ScriptPromise promise = result->promise();
 
     blink::WebCryptoKeyFormat format;
     if (!Key::parseFormat(rawFormat, format, result.get()))
@@ -195,8 +195,8 @@ ScriptPromise SubtleCrypto::exportKey(const String& rawFormat, Key* key, Excepti
         return ScriptPromise();
     }
 
-    ScriptPromise promise = ScriptPromise::createPending();
-    RefPtr<CryptoResultImpl> result = CryptoResultImpl::create(promise);
+    RefPtr<CryptoResultImpl> result = CryptoResultImpl::create();
+    ScriptPromise promise = result->promise();
 
     blink::WebCryptoKeyFormat format;
     if (!Key::parseFormat(rawFormat, format, result.get()))
@@ -223,8 +223,8 @@ ScriptPromise SubtleCrypto::wrapKey(const String& rawFormat, Key* key, Key* wrap
         return ScriptPromise();
     }
 
-    ScriptPromise promise = ScriptPromise::createPending();
-    RefPtr<CryptoResultImpl> result = CryptoResultImpl::create(promise);
+    RefPtr<CryptoResultImpl> result = CryptoResultImpl::create();
+    ScriptPromise promise = result->promise();
 
     blink::WebCryptoKeyFormat format;
     if (!Key::parseFormat(rawFormat, format, result.get()))
@@ -258,8 +258,8 @@ ScriptPromise SubtleCrypto::unwrapKey(const String& rawFormat, ArrayBufferView* 
         return ScriptPromise();
     }
 
-    ScriptPromise promise = ScriptPromise::createPending();
-    RefPtr<CryptoResultImpl> result = CryptoResultImpl::create(promise);
+    RefPtr<CryptoResultImpl> result = CryptoResultImpl::create();
+    ScriptPromise promise = result->promise();
 
     blink::WebCryptoKeyFormat format;
     if (!Key::parseFormat(rawFormat, format, result.get()))

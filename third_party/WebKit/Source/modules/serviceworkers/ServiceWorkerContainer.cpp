@@ -67,8 +67,8 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(ExecutionContext* ex
 {
     RegistrationOptionList options(dictionary);
     ASSERT(RuntimeEnabledFeatures::serviceWorkerEnabled());
-    ScriptPromise promise = ScriptPromise::createPending(executionContext);
-    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(promise, executionContext);
+    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(executionContext);
+    ScriptPromise promise = resolver->promise();
 
     RefPtr<SecurityOrigin> documentOrigin = executionContext->securityOrigin();
     KURL patternURL = executionContext->completeURL(options.scope);
@@ -90,8 +90,8 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(ExecutionContext* ex
 ScriptPromise ServiceWorkerContainer::unregisterServiceWorker(ExecutionContext* executionContext, const String& pattern)
 {
     ASSERT(RuntimeEnabledFeatures::serviceWorkerEnabled());
-    ScriptPromise promise = ScriptPromise::createPending(executionContext);
-    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(promise, executionContext);
+    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(executionContext);
+    ScriptPromise promise = resolver->promise();
 
     RefPtr<SecurityOrigin> documentOrigin = executionContext->securityOrigin();
     KURL patternURL = executionContext->completeURL(pattern);

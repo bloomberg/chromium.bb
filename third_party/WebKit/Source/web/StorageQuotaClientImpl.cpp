@@ -79,8 +79,8 @@ ScriptPromise StorageQuotaClientImpl::requestPersistentQuota(ExecutionContext* e
 {
     ASSERT(executionContext);
 
-    ScriptPromise promise = ScriptPromise::createPending(executionContext);
-    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(promise, executionContext);
+    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(executionContext);
+    ScriptPromise promise = resolver->promise();
 
     if (executionContext->isDocument()) {
         Document* document = toDocument(executionContext);

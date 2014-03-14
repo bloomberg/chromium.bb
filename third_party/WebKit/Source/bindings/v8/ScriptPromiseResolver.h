@@ -50,7 +50,7 @@ class ExecutionContext;
 // (resolve / reject) from C++ world.
 // ScriptPromiseResolver holds a PromiseResolver.
 // Here is a typical usage:
-//  1. Create a ScriptPromiseResolver from a ScriptPromise.
+//  1. Create a ScriptPromiseResolver.
 //  2. Pass the promise object of the holder to a JavaScript program
 //     (such as XMLHttpRequest return value).
 //  3. Call resolve or reject when the operation completes or
@@ -67,8 +67,8 @@ class ExecutionContext;
 class ScriptPromiseResolver : public RefCounted<ScriptPromiseResolver> {
     WTF_MAKE_NONCOPYABLE(ScriptPromiseResolver);
 public:
-    static PassRefPtr<ScriptPromiseResolver> create(ScriptPromise, ExecutionContext*);
-    static PassRefPtr<ScriptPromiseResolver> create(ScriptPromise);
+    static PassRefPtr<ScriptPromiseResolver> create(ExecutionContext*);
+    static PassRefPtr<ScriptPromiseResolver> create(v8::Isolate*);
 
     // A ScriptPromiseResolver should be resolved / rejected before
     // its destruction.
@@ -134,7 +134,9 @@ public:
     void reject(ScriptValue);
 
 private:
-    ScriptPromiseResolver(ScriptPromise);
+    ScriptPromiseResolver(ExecutionContext*);
+    ScriptPromiseResolver(v8::Isolate*);
+
     void resolve(v8::Handle<v8::Value>);
     void reject(v8::Handle<v8::Value>);
 

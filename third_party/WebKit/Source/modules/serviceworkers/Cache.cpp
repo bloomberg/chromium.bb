@@ -27,8 +27,8 @@ Cache::~Cache()
 
 ScriptPromise Cache::match(ExecutionContext* executionContext, const String& urlString)
 {
-    ScriptPromise promise = ScriptPromise::createPending(executionContext);
-    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(promise, executionContext);
+    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(executionContext);
+    ScriptPromise promise = resolver->promise();
 
     // FIXME: Implement.
     notImplemented();
@@ -38,8 +38,8 @@ ScriptPromise Cache::match(ExecutionContext* executionContext, const String& url
 
 ScriptPromise Cache::ready(ExecutionContext* executionContext)
 {
-    ScriptPromise promise = ScriptPromise::createPending(executionContext);
-    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(promise, executionContext);
+    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(executionContext);
+    ScriptPromise promise = resolver->promise();
 
     // FIXME: Implement.
     notImplemented();

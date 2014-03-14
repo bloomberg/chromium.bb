@@ -41,9 +41,15 @@
 
 namespace WebCore {
 
-ScriptPromiseResolver::ScriptPromiseResolver(ScriptPromise promise)
-    : m_isolate(promise.isolate())
-    , m_promise(promise)
+ScriptPromiseResolver::ScriptPromiseResolver(ExecutionContext* context)
+    : m_isolate(toIsolate(context))
+    , m_promise(ScriptPromise::createPending(context))
+{
+}
+
+ScriptPromiseResolver::ScriptPromiseResolver(v8::Isolate* isolate)
+    : m_isolate(isolate)
+    , m_promise(ScriptPromise::createPending(isolate))
 {
 }
 
@@ -55,17 +61,17 @@ ScriptPromiseResolver::~ScriptPromiseResolver()
     m_promise.clear();
 }
 
-PassRefPtr<ScriptPromiseResolver> ScriptPromiseResolver::create(ScriptPromise promise, ExecutionContext* context)
+PassRefPtr<ScriptPromiseResolver> ScriptPromiseResolver::create(ExecutionContext* context)
 {
-    ASSERT(promise.isolate()->InContext());
     ASSERT(context);
-    return adoptRef(new ScriptPromiseResolver(promise));
+    ASSERT(toIsolate(context)->InContext());
+    return adoptRef(new ScriptPromiseResolver(context));
 }
 
-PassRefPtr<ScriptPromiseResolver> ScriptPromiseResolver::create(ScriptPromise promise)
+PassRefPtr<ScriptPromiseResolver> ScriptPromiseResolver::create(v8::Isolate* isolate)
 {
-    ASSERT(promise.isolate()->InContext());
-    return adoptRef(new ScriptPromiseResolver(promise));
+    ASSERT(isolate->InContext());
+    return adoptRef(new ScriptPromiseResolver(isolate));
 }
 
 bool ScriptPromiseResolver::isPending() const

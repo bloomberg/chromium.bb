@@ -33,6 +33,7 @@
 
 #include "bindings/v8/DOMRequestState.h"
 #include "bindings/v8/ScriptPromise.h"
+#include "bindings/v8/ScriptPromiseResolver.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "platform/CryptoResult.h"
 #include "public/platform/WebCrypto.h"
@@ -51,7 +52,7 @@ class CryptoResultImpl FINAL : public CryptoResult, public ContextLifecycleObser
 public:
     ~CryptoResultImpl();
 
-    static PassRefPtr<CryptoResultImpl> create(ScriptPromise);
+    static PassRefPtr<CryptoResultImpl> create();
 
     virtual void completeWithError() OVERRIDE;
     virtual void completeWithError(const blink::WebString&) OVERRIDE;
@@ -60,8 +61,10 @@ public:
     virtual void completeWithKey(const blink::WebCryptoKey&) OVERRIDE;
     virtual void completeWithKeyPair(const blink::WebCryptoKey& publicKey, const blink::WebCryptoKey& privateKey) OVERRIDE;
 
+    ScriptPromise promise() { return m_promiseResolver->promise(); }
+
 private:
-    CryptoResultImpl(ExecutionContext*, ScriptPromise);
+    CryptoResultImpl(ExecutionContext*);
     void finish();
     void CheckValidThread() const;
 

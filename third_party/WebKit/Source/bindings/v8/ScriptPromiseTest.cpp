@@ -32,6 +32,7 @@
 #include "bindings/v8/ScriptPromise.h"
 
 #include "bindings/v8/DOMWrapperWorld.h"
+#include "bindings/v8/ScriptPromiseResolver.h"
 #include "bindings/v8/ScriptValue.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/custom/V8PromiseCustom.h"
@@ -81,7 +82,7 @@ TEST_F(ScriptPromiseTest, constructFromNonPromise)
 
 TEST_F(ScriptPromiseTest, castPromise)
 {
-    ScriptPromise promise = ScriptPromise::createPending();
+    ScriptPromise promise = ScriptPromiseResolver::create(m_isolate)->promise();
     ScriptPromise newPromise = ScriptPromise::cast(ScriptValue(promise.v8Value(), m_isolate));
 
     ASSERT_FALSE(promise.hasNoValue());

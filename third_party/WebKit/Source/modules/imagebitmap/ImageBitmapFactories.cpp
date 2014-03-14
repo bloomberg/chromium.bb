@@ -65,8 +65,8 @@ static IntSize sizeFor(HTMLVideoElement* video)
 
 static ScriptPromise fulfillImageBitmap(ExecutionContext* context, PassRefPtrWillBeRawPtr<ImageBitmap> imageBitmap)
 {
-    ScriptPromise promise = ScriptPromise::createPending(context);
-    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(promise, context);
+    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(context);
+    ScriptPromise promise = resolver->promise();
     resolver->resolve(imageBitmap);
     return promise;
 }
@@ -195,8 +195,8 @@ ScriptPromise ImageBitmapFactories::createImageBitmap(EventTarget& eventTarget, 
         exceptionState.throwTypeError("The blob provided is invalid.");
         return ScriptPromise();
     }
-    ScriptPromise promise = ScriptPromise::createPending(eventTarget.executionContext());
-    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(promise, eventTarget.executionContext());
+    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(eventTarget.executionContext());
+    ScriptPromise promise = resolver->promise();
     RefPtr<ImageBitmapLoader> loader = ImageBitmapFactories::ImageBitmapLoader::create(from(eventTarget), resolver, IntRect());
     from(eventTarget).addLoader(loader);
     loader->loadBlobAsync(eventTarget.executionContext(), blob);
@@ -213,8 +213,8 @@ ScriptPromise ImageBitmapFactories::createImageBitmap(EventTarget& eventTarget, 
         exceptionState.throwDOMException(IndexSizeError, String::format("The source %s provided is 0.", sw ? "height" : "width"));
         return ScriptPromise();
     }
-    ScriptPromise promise = ScriptPromise::createPending(eventTarget.executionContext());
-    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(promise, eventTarget.executionContext());
+    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(eventTarget.executionContext());
+    ScriptPromise promise = resolver->promise();
     RefPtr<ImageBitmapLoader> loader = ImageBitmapFactories::ImageBitmapLoader::create(from(eventTarget), resolver, IntRect(sx, sy, sw, sh));
     from(eventTarget).addLoader(loader);
     loader->loadBlobAsync(eventTarget.executionContext(), blob);

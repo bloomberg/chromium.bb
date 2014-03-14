@@ -47,9 +47,9 @@ CryptoResultImpl::~CryptoResultImpl()
 {
 }
 
-PassRefPtr<CryptoResultImpl> CryptoResultImpl::create(ScriptPromise promise)
+PassRefPtr<CryptoResultImpl> CryptoResultImpl::create()
 {
-    return adoptRef(new CryptoResultImpl(callingExecutionContext(v8::Isolate::GetCurrent()), promise));
+    return adoptRef(new CryptoResultImpl(callingExecutionContext(v8::Isolate::GetCurrent())));
 }
 
 void CryptoResultImpl::completeWithError(const blink::WebString& errorDetails)
@@ -119,16 +119,15 @@ void CryptoResultImpl::completeWithKeyPair(const blink::WebCryptoKey& publicKey,
     finish();
 }
 
-CryptoResultImpl::CryptoResultImpl(ExecutionContext* context, ScriptPromise promise)
+CryptoResultImpl::CryptoResultImpl(ExecutionContext* context)
     : ContextLifecycleObserver(context)
-    , m_promiseResolver(ScriptPromiseResolver::create(promise))
+    , m_promiseResolver(ScriptPromiseResolver::create(context))
     , m_requestState(context)
 #if !ASSERT_DISABLED
     , m_owningThread(currentThread())
     , m_finished(false)
 #endif
 {
-    ASSERT(toIsolate(context) == promise.isolate());
 }
 
 void CryptoResultImpl::finish()

@@ -64,9 +64,9 @@ namespace WebCore {
 
 class FontFaceReadyPromiseResolver {
 public:
-    static PassOwnPtr<FontFaceReadyPromiseResolver> create(ScriptPromise promise, ExecutionContext* context)
+    static PassOwnPtr<FontFaceReadyPromiseResolver> create(ExecutionContext* context)
     {
-        return adoptPtr(new FontFaceReadyPromiseResolver(promise, context));
+        return adoptPtr(new FontFaceReadyPromiseResolver(context));
     }
 
     void resolve(PassRefPtr<FontFace> fontFace)
@@ -84,10 +84,12 @@ public:
         }
     }
 
+    ScriptPromise promise() { return m_resolver->promise(); }
+
 private:
-    FontFaceReadyPromiseResolver(ScriptPromise promise, ExecutionContext* context)
+    FontFaceReadyPromiseResolver(ExecutionContext* context)
         : m_scriptState(ScriptState::current())
-        , m_resolver(ScriptPromiseResolver::create(promise, context))
+        , m_resolver(ScriptPromiseResolver::create(context))
     { }
     ScriptState* m_scriptState;
     RefPtr<ScriptPromiseResolver> m_resolver;
@@ -374,8 +376,8 @@ void FontFace::load(ExecutionContext* context)
 
 ScriptPromise FontFace::ready(ExecutionContext* context)
 {
-    ScriptPromise promise = ScriptPromise::createPending(context);
-    OwnPtr<FontFaceReadyPromiseResolver> resolver = FontFaceReadyPromiseResolver::create(promise, context);
+    OwnPtr<FontFaceReadyPromiseResolver> resolver = FontFaceReadyPromiseResolver::create(context);
+    ScriptPromise promise = resolver->promise();
     if (m_status == Loaded || m_status == Error)
         resolver->resolve(this);
     else

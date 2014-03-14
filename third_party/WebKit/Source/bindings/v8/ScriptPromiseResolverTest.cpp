@@ -53,8 +53,8 @@ public:
     void SetUp()
     {
         m_scope = V8ExecutionScope::create(m_isolate);
-        m_promise = ScriptPromise::createPending();
-        m_resolver = ScriptPromiseResolver::create(m_promise);
+        m_resolver = ScriptPromiseResolver::create(m_isolate);
+        m_promise = m_resolver->promise();
     }
 
     void TearDown()

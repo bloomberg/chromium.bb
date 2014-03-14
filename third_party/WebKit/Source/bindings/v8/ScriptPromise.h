@@ -93,14 +93,18 @@ public:
         m_promise.clear();
     }
 
-    static ScriptPromise createPending();
-    static ScriptPromise createPending(ExecutionContext*);
     // Constructs and returns a ScriptPromise from |value|.
     // if |value| is not a Promise object, returns a Promise object
     // resolved with |value|.
     static ScriptPromise cast(const ScriptValue& /*value*/);
 
 private:
+    friend class ScriptPromiseResolver;
+
+    static ScriptPromise createPending();
+    static ScriptPromise createPending(ExecutionContext*);
+    static ScriptPromise createPending(v8::Isolate*) { return createPending(); }
+
     ScriptValue m_promise;
 };
 
