@@ -918,13 +918,9 @@ class VMTestStageTest(AbstractStageTest):
   def setUp(self):
     for cmd in ('RunTestSuite', 'CreateTestRoot', 'GenerateStackTraces',
                 'ArchiveFile', 'ArchiveTestResults', 'UploadArchivedFile',
-                'RunDevModeTest', 'RunCrosVMTest', 'ListFailedTests',
-                'GetTestResultsDir', 'BuildAndArchiveTestResultsTarball'):
+                'RunDevModeTest', 'RunCrosVMTest'):
       self.PatchObject(commands, cmd, autospec=True)
 
-    self.PatchObject(osutils, 'RmDir', autospec=True)
-    self.PatchObject(os.path, 'isdir', autospec=True)
-    self.PatchObject(os, 'listdir', autospec=True)
     self.StartPatcher(BuilderRunMock())
 
     self._Prepare()
