@@ -40,7 +40,7 @@ bool DoDeserializeEvents(char* data,
   PacketEventMap packet_event_map;
 
   int num_frame_events = metadata->num_frame_events();
-
+  RtpTimestamp relative_rtp_timestamp = 0;
   for (int i = 0; i < num_frame_events; i++) {
     if (!reader.ReadU16(&proto_size))
       return false;
@@ -50,6 +50,13 @@ bool DoDeserializeEvents(char* data,
       return false;
     if (!reader.Skip(proto_size))
       return false;
+
+    // During serialization the RTP timestamp in proto is relative to previous
+    // frame.
+    // Adjust RTP timestamp back to value relative to first RTP timestamp.
+    frame_event->set_relative_rtp_timestamp(
+        frame_event->relative_rtp_timestamp() + relative_rtp_timestamp);
+    relative_rtp_timestamp = frame_event->relative_rtp_timestamp();
 
     std::pair<FrameEventMap::iterator, bool> result = frame_event_map.insert(
         std::make_pair(frame_event->relative_rtp_timestamp(), frame_event));
@@ -63,6 +70,7 @@ bool DoDeserializeEvents(char* data,
   frame_events->swap(frame_event_map);
 
   int num_packet_events = metadata->num_packet_events();
+  relative_rtp_timestamp = 0;
   for (int i = 0; i < num_packet_events; i++) {
     if (!reader.ReadU16(&proto_size))
       return false;
@@ -72,6 +80,10 @@ bool DoDeserializeEvents(char* data,
       return false;
     if (!reader.Skip(proto_size))
       return false;
+
+    packet_event->set_relative_rtp_timestamp(
+        packet_event->relative_rtp_timestamp() + relative_rtp_timestamp);
+    relative_rtp_timestamp = packet_event->relative_rtp_timestamp();
 
     std::pair<PacketEventMap::iterator, bool> result = packet_event_map.insert(
         std::make_pair(packet_event->relative_rtp_timestamp(), packet_event));

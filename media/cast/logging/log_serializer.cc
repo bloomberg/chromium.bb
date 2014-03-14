@@ -49,30 +49,46 @@ bool DoSerializeEvents(const LogMetadata& metadata,
   if (!writer.Skip(proto_size))
     return false;
 
+  RtpTimestamp prev_rtp_timestamp = 0;
   for (media::cast::FrameEventMap::const_iterator it = frame_events.begin();
        it != frame_events.end();
        ++it) {
-    proto_size = it->second->ByteSize();
+    media::cast::proto::AggregatedFrameEvent frame_event(*(it->second));
+
+    // Adjust relative RTP timestamp so that it is relative to previous frame,
+    // rather than relative to first RTP timestamp.
+    // This is done to improve encoding size.
+    frame_event.set_relative_rtp_timestamp(
+        frame_event.relative_rtp_timestamp() - prev_rtp_timestamp);
+    prev_rtp_timestamp = it->first;
+
+    proto_size = frame_event.ByteSize();
 
     // Write size of the proto, then write the proto.
     if (!writer.WriteU16(proto_size))
       return false;
-    if (!it->second->SerializeToArray(writer.ptr(), writer.remaining()))
+    if (!frame_event.SerializeToArray(writer.ptr(), writer.remaining()))
       return false;
     if (!writer.Skip(proto_size))
       return false;
   }
 
   // Write packet events.
+  prev_rtp_timestamp = 0;
   for (media::cast::PacketEventMap::const_iterator it = packet_events.begin();
        it != packet_events.end();
        ++it) {
-    proto_size = it->second->ByteSize();
+    media::cast::proto::AggregatedPacketEvent packet_event(*(it->second));
+    packet_event.set_relative_rtp_timestamp(
+        packet_event.relative_rtp_timestamp() - prev_rtp_timestamp);
+    prev_rtp_timestamp = it->first;
+
+    proto_size = packet_event.ByteSize();
 
     // Write size of the proto, then write the proto.
     if (!writer.WriteU16(proto_size))
       return false;
-    if (!it->second->SerializeToArray(writer.ptr(), writer.remaining()))
+    if (!packet_event.SerializeToArray(writer.ptr(), writer.remaining()))
       return false;
     if (!writer.Skip(proto_size))
       return false;
