@@ -12,3 +12,4 @@ per-file (*.idl|*.in)=tkent@chromium.org
 # You should ask the following members when you make changes or have questions
 # about IDL syntax that doesn't affect web-facing behavior.
 per-file *.idl=haraken@chromium.org
+per-file *.idl=nbarth@chromium.org
