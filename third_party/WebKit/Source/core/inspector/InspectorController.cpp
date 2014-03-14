@@ -181,6 +181,7 @@ void InspectorController::inspectedPageDestroyed()
     m_injectedScriptManager->disconnect();
     m_inspectorClient = 0;
     m_page = 0;
+    m_instrumentingAgents->reset();
 }
 
 void InspectorController::registerModuleAgent(PassOwnPtr<InspectorAgent> agent)
