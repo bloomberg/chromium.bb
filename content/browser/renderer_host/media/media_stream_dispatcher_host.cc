@@ -36,15 +36,19 @@ void MediaStreamDispatcherHost::StreamGenerated(
       video_devices));
 }
 
-void MediaStreamDispatcherHost::StreamGenerationFailed(int render_view_id,
-                                                       int page_request_id) {
+void MediaStreamDispatcherHost::StreamGenerationFailed(
+    int render_view_id,
+    int page_request_id,
+    content::MediaStreamRequestResult result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DVLOG(1) << "MediaStreamDispatcherHost::StreamGenerationFailed("
-           << ", {page_request_id = " << page_request_id <<  "})";
+           << ", {page_request_id = " << page_request_id <<  "}"
+           << ", { result= " << result << "})";
 
 
   Send(new MediaStreamMsg_StreamGenerationFailed(render_view_id,
-                                                 page_request_id));
+                                                 page_request_id,
+                                                 result));
 }
 
 void MediaStreamDispatcherHost::DeviceStopped(int render_view_id,

@@ -1585,10 +1585,13 @@ RenderWidgetHostView* WebContentsImpl::GetCreatedWidget(int route_id) {
 void WebContentsImpl::RequestMediaAccessPermission(
     const MediaStreamRequest& request,
     const MediaResponseCallback& callback) {
-  if (delegate_)
+  if (delegate_) {
     delegate_->RequestMediaAccessPermission(this, request, callback);
-  else
-    callback.Run(MediaStreamDevices(), scoped_ptr<MediaStreamUI>());
+  } else {
+    callback.Run(MediaStreamDevices(),
+                 MEDIA_DEVICE_INVALID_STATE,
+                 scoped_ptr<MediaStreamUI>());
+  }
 }
 
 SessionStorageNamespace* WebContentsImpl::GetSessionStorageNamespace(

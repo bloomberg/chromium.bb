@@ -87,8 +87,10 @@ class MockMediaStreamRequester : public MediaStreamRequester {
                     const std::string& label,
                     const StreamDeviceInfoArray& audio_devices,
                     const StreamDeviceInfoArray& video_devices));
-  MOCK_METHOD2(StreamGenerationFailed, void(int render_view_id,
-                                            int page_request_id));
+  MOCK_METHOD3(StreamGenerationFailed,
+      void(int render_view_id,
+           int page_request_id,
+           content::MediaStreamRequestResult result));
   MOCK_METHOD3(DeviceStopped, void(int render_view_id,
                                    const std::string& label,
                                    const StreamDeviceInfo& device));

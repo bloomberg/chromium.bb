@@ -2727,6 +2727,7 @@ class MediaStreamDevicesControllerBrowserTest
   }
 
   void Accept(const content::MediaStreamDevices& devices,
+              content::MediaStreamRequestResult result,
               scoped_ptr<content::MediaStreamUI> ui) {
     if (policy_value_ || request_url_allowed_via_whitelist_) {
       ASSERT_EQ(1U, devices.size());

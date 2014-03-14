@@ -23,6 +23,9 @@ IPC_ENUM_TRAITS_MAX_VALUE(content::MediaStreamType,
 IPC_ENUM_TRAITS_MAX_VALUE(content::VideoFacingMode,
                           content::NUM_MEDIA_VIDEO_FACING_MODE - 1)
 
+IPC_ENUM_TRAITS_MAX_VALUE(content::MediaStreamRequestResult,
+                          content::NUM_MEDIA_REQUEST_RESULTS - 1)
+
 IPC_STRUCT_TRAITS_BEGIN(content::StreamOptions::Constraint)
   IPC_STRUCT_TRAITS_MEMBER(name)
   IPC_STRUCT_TRAITS_MEMBER(value)
@@ -63,8 +66,9 @@ IPC_MESSAGE_ROUTED4(MediaStreamMsg_StreamGenerated,
                     content::StreamDeviceInfoArray /* video_device_list */)
 
 // The browser has failed to generate a stream.
-IPC_MESSAGE_ROUTED1(MediaStreamMsg_StreamGenerationFailed,
-                    int /* request id */)
+IPC_MESSAGE_ROUTED2(MediaStreamMsg_StreamGenerationFailed,
+                    int /* request id */,
+                    content::MediaStreamRequestResult /* result */)
 
 // The browser reports that a media device has been stopped. Stopping was
 // triggered from the browser process.

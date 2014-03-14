@@ -352,7 +352,9 @@ void MediaStreamImpl::OnStreamGenerated(
 
 // Callback from MediaStreamDispatcher.
 // The requested stream failed to be generated.
-void MediaStreamImpl::OnStreamGenerationFailed(int request_id) {
+void MediaStreamImpl::OnStreamGenerationFailed(
+    int request_id,
+    content::MediaStreamRequestResult result) {
   DCHECK(CalledOnValidThread());
   DVLOG(1) << "MediaStreamImpl::OnStreamGenerationFailed("
            << request_id << ")";
@@ -365,7 +367,7 @@ void MediaStreamImpl::OnStreamGenerationFailed(int request_id) {
   }
   CompleteGetUserMediaRequest(request_info->web_stream,
                               &request_info->request,
-                              false);
+                              result);
   DeleteUserMediaRequestInfo(request_info);
 }
 
@@ -528,13 +530,13 @@ void MediaStreamImpl::CreateAudioTracks(
 
 void MediaStreamImpl::OnCreateNativeTracksCompleted(
     UserMediaRequestInfo* request,
-    bool request_succeeded) {
+    content::MediaStreamRequestResult result) {
   DVLOG(1) << "MediaStreamImpl::OnCreateNativeTracksComplete("
            << "{request_id = " << request->request_id << "} "
-           << "{request_succeeded = " << request_succeeded << "})";
+           << "{result = " << result << "})";
   CompleteGetUserMediaRequest(request->web_stream, &request->request,
-                              request_succeeded);
-  if (!request_succeeded) {
+                              result);
+  if (result != MEDIA_DEVICE_OK) {
     // TODO(perkj): Once we don't support MediaStream::Stop the |request_info|
     // can be deleted even if the request succeeds.
     DeleteUserMediaRequestInfo(request);
@@ -568,11 +570,45 @@ void MediaStreamImpl::OnDeviceOpenFailed(int request_id) {
 void MediaStreamImpl::CompleteGetUserMediaRequest(
     const blink::WebMediaStream& stream,
     blink::WebUserMediaRequest* request_info,
-    bool request_succeeded) {
-  if (request_succeeded) {
-    request_info->requestSucceeded(stream);
-  } else {
-    request_info->requestFailed();
+    content::MediaStreamRequestResult result) {
+
+  DVLOG(1) << "MediaStreamImpl::CompleteGetUserMediaRequest("
+           << "result=" << result;
+
+  switch (result) {
+    case MEDIA_DEVICE_OK:
+      request_info->requestSucceeded(stream);
+      break;
+    case MEDIA_DEVICE_PERMISSION_DENIED:
+      request_info->requestDenied();
+      break;
+    case MEDIA_DEVICE_PERMISSION_DISMISSED:
+      request_info->requestFailedUASpecific("PermissionDismissedError");
+      break;
+    case MEDIA_DEVICE_INVALID_STATE:
+      request_info->requestFailedUASpecific("InvalidStateError");
+      break;
+    case MEDIA_DEVICE_NO_HARDWARE:
+      request_info->requestFailedUASpecific("DevicesNotFoundError");
+      break;
+    case MEDIA_DEVICE_INVALID_SECURITY_ORIGIN:
+      request_info->requestFailedUASpecific("InvalidSecurityOriginError");
+      break;
+    case MEDIA_DEVICE_TAB_CAPTURE_FAILURE:
+      request_info->requestFailedUASpecific("TabCaptureError");
+      break;
+    case MEDIA_DEVICE_SCREEN_CAPTURE_FAILURE:
+      request_info->requestFailedUASpecific("ScreenCaptureError");
+      break;
+    case MEDIA_DEVICE_CAPTURE_FAILURE:
+      request_info->requestFailedUASpecific("DeviceCaptureError");
+      break;
+    case MEDIA_DEVICE_TRACK_START_FAILURE:
+      request_info->requestFailedUASpecific("TrackStartError");
+      break;
+    default:
+      request_info->requestFailed();
+      break;
   }
 }
 
@@ -873,8 +909,11 @@ void MediaStreamImpl::UserMediaRequestInfo::OnTrackStarted(
 }
 
 void MediaStreamImpl::UserMediaRequestInfo::CheckAllTracksStarted() {
-  if (!ready_callback_.is_null() && sources_waiting_for_callback_.empty())
-    ready_callback_.Run(this, !request_failed_);
+  if (!ready_callback_.is_null() && sources_waiting_for_callback_.empty()) {
+    ready_callback_.Run(
+        this,
+        request_failed_ ? MEDIA_DEVICE_TRACK_START_FAILURE : MEDIA_DEVICE_OK);
+  }
 }
 
 bool MediaStreamImpl::UserMediaRequestInfo::IsSourceUsed(

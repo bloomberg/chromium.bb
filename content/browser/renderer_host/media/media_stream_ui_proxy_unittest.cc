@@ -38,8 +38,9 @@ class MockRenderViewHostDelegate : public RenderViewHostDelegate {
 
 class MockResponseCallback {
  public:
-  MOCK_METHOD1(OnAccessRequestResponse,
-               void(const MediaStreamDevices& devices));
+  MOCK_METHOD2(OnAccessRequestResponse,
+               void(const MediaStreamDevices& devices,
+               content::MediaStreamRequestResult result));
 };
 
 class MockMediaStreamUI : public MediaStreamUI {
@@ -107,10 +108,10 @@ TEST_F(MediaStreamUIProxyTest, Deny) {
   ASSERT_FALSE(callback.is_null());
 
   MediaStreamDevices devices;
-  callback.Run(devices, scoped_ptr<MediaStreamUI>());
+  callback.Run(devices, MEDIA_DEVICE_OK, scoped_ptr<MediaStreamUI>());
 
   MediaStreamDevices response;
-  EXPECT_CALL(response_callback_, OnAccessRequestResponse(_))
+  EXPECT_CALL(response_callback_, OnAccessRequestResponse(_, _))
     .WillOnce(SaveArg<0>(&response));
   message_loop_.RunUntilIdle();
 
@@ -137,10 +138,10 @@ TEST_F(MediaStreamUIProxyTest, AcceptAndStart) {
       MediaStreamDevice(MEDIA_DEVICE_AUDIO_CAPTURE, "Mic", "Mic"));
   scoped_ptr<MockMediaStreamUI> ui(new MockMediaStreamUI());
   EXPECT_CALL(*ui, OnStarted(_));
-  callback.Run(devices, ui.PassAs<MediaStreamUI>());
+  callback.Run(devices, MEDIA_DEVICE_OK, ui.PassAs<MediaStreamUI>());
 
   MediaStreamDevices response;
-  EXPECT_CALL(response_callback_, OnAccessRequestResponse(_))
+  EXPECT_CALL(response_callback_, OnAccessRequestResponse(_, _))
     .WillOnce(SaveArg<0>(&response));
   message_loop_.RunUntilIdle();
 
@@ -170,7 +171,7 @@ TEST_F(MediaStreamUIProxyTest, DeleteBeforeAccepted) {
 
   MediaStreamDevices devices;
   scoped_ptr<MediaStreamUI> ui;
-  callback.Run(devices, ui.Pass());
+  callback.Run(devices, MEDIA_DEVICE_OK, ui.Pass());
 }
 
 TEST_F(MediaStreamUIProxyTest, StopFromUI) {
@@ -196,10 +197,10 @@ TEST_F(MediaStreamUIProxyTest, StopFromUI) {
   scoped_ptr<MockMediaStreamUI> ui(new MockMediaStreamUI());
   EXPECT_CALL(*ui, OnStarted(_))
       .WillOnce(SaveArg<0>(&stop_callback));
-  callback.Run(devices, ui.PassAs<MediaStreamUI>());
+  callback.Run(devices, MEDIA_DEVICE_OK, ui.PassAs<MediaStreamUI>());
 
   MediaStreamDevices response;
-  EXPECT_CALL(response_callback_, OnAccessRequestResponse(_))
+  EXPECT_CALL(response_callback_, OnAccessRequestResponse(_, _))
     .WillOnce(SaveArg<0>(&response));
   message_loop_.RunUntilIdle();
 

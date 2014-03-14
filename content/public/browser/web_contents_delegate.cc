@@ -160,7 +160,9 @@ void WebContentsDelegate::RequestMediaAccessPermission(
     WebContents* web_contents,
     const MediaStreamRequest& request,
     const MediaResponseCallback& callback) {
-  callback.Run(MediaStreamDevices(), scoped_ptr<MediaStreamUI>());
+  callback.Run(MediaStreamDevices(),
+               MEDIA_DEVICE_INVALID_STATE,
+               scoped_ptr<MediaStreamUI>());
 }
 
 bool WebContentsDelegate::RequestPpapiBrokerPermission(

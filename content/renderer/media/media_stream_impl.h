@@ -77,7 +77,9 @@ class CONTENT_EXPORT MediaStreamImpl
       const std::string& label,
       const StreamDeviceInfoArray& audio_array,
       const StreamDeviceInfoArray& video_array) OVERRIDE;
-  virtual void OnStreamGenerationFailed(int request_id) OVERRIDE;
+  virtual void OnStreamGenerationFailed(
+      int request_id,
+      content::MediaStreamRequestResult result) OVERRIDE;
   virtual void OnDeviceStopped(const std::string& label,
                                const StreamDeviceInfo& device_info) OVERRIDE;
   virtual void OnDevicesEnumerated(
@@ -111,7 +113,7 @@ class CONTENT_EXPORT MediaStreamImpl
   virtual void CompleteGetUserMediaRequest(
       const blink::WebMediaStream& stream,
       blink::WebUserMediaRequest* request_info,
-      bool request_succeeded);
+      content::MediaStreamRequestResult result);
 
   // Returns the WebKit representation of a MediaStream given an URL.
   // This is virtual for test purposes.
@@ -130,7 +132,8 @@ class CONTENT_EXPORT MediaStreamImpl
       : public base::SupportsWeakPtr<UserMediaRequestInfo> {
    public:
     typedef base::Callback<void(UserMediaRequestInfo* request_info,
-                                bool request_succeeded)> ResourcesReady;
+                                content::MediaStreamRequestResult result)>
+      ResourcesReady;
 
     UserMediaRequestInfo(int request_id,
                          blink::WebFrame* frame,
@@ -207,7 +210,7 @@ class CONTENT_EXPORT MediaStreamImpl
   // underlying media sources and tracks have been created and started.
   void OnCreateNativeTracksCompleted(
       UserMediaRequestInfo* request,
-      bool request_succeeded);
+      content::MediaStreamRequestResult result);
 
   UserMediaRequestInfo* FindUserMediaRequestInfo(int request_id);
   UserMediaRequestInfo* FindUserMediaRequestInfo(

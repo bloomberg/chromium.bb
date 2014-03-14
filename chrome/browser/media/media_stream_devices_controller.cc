@@ -131,6 +131,7 @@ MediaStreamDevicesController::MediaStreamDevicesController(
 MediaStreamDevicesController::~MediaStreamDevicesController() {
   if (!callback_.is_null()) {
     callback_.Run(content::MediaStreamDevices(),
+                  content::MEDIA_DEVICE_INVALID_STATE,
                   scoped_ptr<content::MediaStreamUI>());
   }
 }
@@ -157,20 +158,20 @@ bool MediaStreamDevicesController::DismissInfoBarAndTakeActionOnSettings() {
   // extensions.
   if (request_.audio_type == content::MEDIA_TAB_AUDIO_CAPTURE ||
       request_.video_type == content::MEDIA_TAB_VIDEO_CAPTURE) {
-    Deny(false);
+    Deny(false, content::MEDIA_DEVICE_INVALID_STATE);
     return true;
   }
 
   // Deny the request if the security origin is empty, this happens with
   // file access without |--allow-file-access-from-files| flag.
   if (request_.security_origin.is_empty()) {
-    Deny(false);
+    Deny(false, content::MEDIA_DEVICE_INVALID_SECURITY_ORIGIN);
     return true;
   }
 
   // Deny the request if there is no device attached to the OS.
   if (!HasAnyAvailableDevice()) {
-    Deny(false);
+    Deny(false, content::MEDIA_DEVICE_NO_HARDWARE);
     return true;
   }
 
@@ -183,13 +184,13 @@ bool MediaStreamDevicesController::DismissInfoBarAndTakeActionOnSettings() {
   // Filter any parts of the request that have been blocked by default and deny
   // it if nothing is left to accept.
   if (FilterBlockedByDefaultDevices() == 0) {
-    Deny(false);
+    Deny(false, content::MEDIA_DEVICE_PERMISSION_DENIED);
     return true;
   }
 
   // Check if the media default setting is set to block.
   if (IsDefaultMediaAccessBlocked()) {
-    Deny(false);
+    Deny(false, content::MEDIA_DEVICE_PERMISSION_DENIED);
     return true;
   }
 
@@ -205,7 +206,7 @@ bool MediaStreamDevicesController::DismissInfoBarAndTakeActionOnSettings() {
          MediaCaptureDevicesDispatcher::GetInstance()->GetRequestedVideoDevice(
              request_.requested_video_device_id) == NULL);
     if (no_matched_audio_device || no_matched_video_device) {
-      Deny(false);
+      Deny(false, content::MEDIA_DEVICE_PERMISSION_DENIED);
       return true;
     }
   }
@@ -335,10 +336,13 @@ void MediaStreamDevicesController::Accept(bool update_content_setting) {
   }
   content::MediaResponseCallback cb = callback_;
   callback_.Reset();
-  cb.Run(devices, ui.Pass());
+  cb.Run(devices, content::MEDIA_DEVICE_OK, ui.Pass());
 }
 
-void MediaStreamDevicesController::Deny(bool update_content_setting) {
+void MediaStreamDevicesController::Deny(
+    bool update_content_setting,
+    content::MediaStreamRequestResult result) {
+  DLOG(WARNING) << "MediaStreamDevicesController::Deny: " << result;
   NotifyUIRequestDenied();
 
   if (update_content_setting)
@@ -346,7 +350,9 @@ void MediaStreamDevicesController::Deny(bool update_content_setting) {
 
   content::MediaResponseCallback cb = callback_;
   callback_.Reset();
-  cb.Run(content::MediaStreamDevices(), scoped_ptr<content::MediaStreamUI>());
+  cb.Run(content::MediaStreamDevices(),
+         result,
+         scoped_ptr<content::MediaStreamUI>());
 }
 
 int MediaStreamDevicesController::GetIconID() const {
@@ -399,13 +405,13 @@ void MediaStreamDevicesController::PermissionGranted() {
 void MediaStreamDevicesController::PermissionDenied() {
   UMA_HISTOGRAM_ENUMERATION("Media.DevicePermissionActions",
                             kDeny, kPermissionActionsMax);
-  Deny(true);
+  Deny(true, content::MEDIA_DEVICE_PERMISSION_DENIED);
 }
 
 void MediaStreamDevicesController::Cancelled() {
   UMA_HISTOGRAM_ENUMERATION("Media.DevicePermissionActions",
                             kCancel, kPermissionActionsMax);
-  Deny(true);
+  Deny(true, content::MEDIA_DEVICE_PERMISSION_DISMISSED);
 }
 
 void MediaStreamDevicesController::RequestFinished() {

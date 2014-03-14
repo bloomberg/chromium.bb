@@ -69,7 +69,8 @@ class MediaStreamDevicesController : public PermissionBubbleRequest {
   bool HasVideo() const;
   const std::string& GetSecurityOriginSpec() const;
   void Accept(bool update_content_setting);
-  void Deny(bool update_content_setting);
+  void Deny(bool update_content_setting,
+            content::MediaStreamRequestResult result);
 
   // PermissionBubbleRequest:
   virtual int GetIconID() const OVERRIDE;

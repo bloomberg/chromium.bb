@@ -47,7 +47,7 @@ bool MediaStreamInfoBarDelegate::Create(
   if (!infobar_service) {
     // Deny the request if there is no place to show the infobar, e.g. when
     // the request comes from a background extension page.
-    controller->Deny(false);
+    controller->Deny(false, content::MEDIA_DEVICE_INVALID_STATE);
     return false;
   }
 
@@ -78,7 +78,7 @@ void MediaStreamInfoBarDelegate::InfoBarDismissed() {
   // we don't want WebRTC to be waiting for an answer that will never come.
   UMA_HISTOGRAM_ENUMERATION("Media.DevicePermissionActions",
                             kCancel, kPermissionActionsMax);
-  controller_->Deny(false);
+  controller_->Deny(false, content::MEDIA_DEVICE_PERMISSION_DISMISSED);
 }
 
 int MediaStreamInfoBarDelegate::GetIconID() const {
@@ -127,7 +127,7 @@ bool MediaStreamInfoBarDelegate::Accept() {
 bool MediaStreamInfoBarDelegate::Cancel() {
   UMA_HISTOGRAM_ENUMERATION("Media.DevicePermissionActions",
                             kDeny, kPermissionActionsMax);
-  controller_->Deny(true);
+  controller_->Deny(true, content::MEDIA_DEVICE_PERMISSION_DENIED);
   return true;
 }
 

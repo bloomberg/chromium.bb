@@ -264,14 +264,16 @@ void MediaStreamDispatcher::OnStreamGenerated(
   }
 }
 
-void MediaStreamDispatcher::OnStreamGenerationFailed(int request_id) {
+void MediaStreamDispatcher::OnStreamGenerationFailed(
+    int request_id,
+    content::MediaStreamRequestResult result) {
   DCHECK(main_loop_->BelongsToCurrentThread());
   for (RequestList::iterator it = requests_.begin();
        it != requests_.end(); ++it) {
     Request& request = *it;
     if (request.ipc_request == request_id) {
       if (request.handler.get()) {
-        request.handler->OnStreamGenerationFailed(request.request_id);
+        request.handler->OnStreamGenerationFailed(request.request_id, result);
         DVLOG(1) << "MediaStreamDispatcher::OnStreamGenerationFailed("
                  << request.request_id << ")\n";
       }

@@ -151,7 +151,9 @@ void PepperMediaDeviceManager::OnStreamGenerated(
     const StreamDeviceInfoArray& video_device_array) {
 }
 
-void PepperMediaDeviceManager::OnStreamGenerationFailed(int request_id) {
+void PepperMediaDeviceManager::OnStreamGenerationFailed(
+    int request_id,
+    content::MediaStreamRequestResult result) {
 }
 
 void PepperMediaDeviceManager::OnDeviceStopped(

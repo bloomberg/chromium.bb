@@ -23,7 +23,9 @@ class CONTENT_EXPORT MediaStreamDispatcherEventHandler {
 
   // Creation of a new media stream failed. The user might have denied access
   // to the requested devices or no device is available.
-  virtual void OnStreamGenerationFailed(int request_id) = 0;
+  virtual void OnStreamGenerationFailed(
+      int request_id,
+      content::MediaStreamRequestResult result) = 0;
 
   // A device has been stopped in the browser processes.
   virtual void OnDeviceStopped(

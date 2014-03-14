@@ -59,6 +59,21 @@ enum VideoFacingMode {
   NUM_MEDIA_VIDEO_FACING_MODE
 };
 
+enum MediaStreamRequestResult {
+  MEDIA_DEVICE_OK = 0,
+  MEDIA_DEVICE_PERMISSION_DENIED,
+  MEDIA_DEVICE_PERMISSION_DISMISSED,
+  MEDIA_DEVICE_INVALID_STATE,
+  MEDIA_DEVICE_NO_HARDWARE,
+  MEDIA_DEVICE_INVALID_SECURITY_ORIGIN,
+  MEDIA_DEVICE_TAB_CAPTURE_FAILURE,
+  MEDIA_DEVICE_SCREEN_CAPTURE_FAILURE,
+  MEDIA_DEVICE_CAPTURE_FAILURE,
+  MEDIA_DEVICE_TRACK_START_FAILURE,
+
+  NUM_MEDIA_REQUEST_RESULTS
+};
+
 // Convenience predicates to determine whether the given type represents some
 // audio or some video device.
 CONTENT_EXPORT bool IsAudioMediaType(MediaStreamType type);
@@ -225,6 +240,7 @@ class MediaStreamUI {
 // Callback used return results of media access requests.
 typedef base::Callback<void(
     const MediaStreamDevices& devices,
+    content::MediaStreamRequestResult result,
     scoped_ptr<MediaStreamUI> ui)> MediaResponseCallback;
 
 }  // namespace content

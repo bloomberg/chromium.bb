@@ -61,7 +61,7 @@ class MediaStreamDependencyFactoryTest : public ::testing::Test {
 
     if (audio) {
       StreamDeviceInfo info;
-      info.device.type = content::MEDIA_DEVICE_AUDIO_CAPTURE;
+      info.device.type = MEDIA_DEVICE_AUDIO_CAPTURE;
       info.device.name = "audio";
       info.session_id = 99;
       audio_sources[0].initialize("audio",
@@ -74,7 +74,7 @@ class MediaStreamDependencyFactoryTest : public ::testing::Test {
     }
     if (video) {
       StreamDeviceInfo info;
-      info.device.type = content::MEDIA_DEVICE_VIDEO_CAPTURE;
+      info.device.type = MEDIA_DEVICE_VIDEO_CAPTURE;
       info.device.name = "video";
       info.session_id = 98;
       video_sources[0].initialize("video",

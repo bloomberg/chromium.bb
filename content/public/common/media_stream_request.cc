@@ -9,13 +9,13 @@
 namespace content {
 
 bool IsAudioMediaType(MediaStreamType type) {
-  return (type == content::MEDIA_DEVICE_AUDIO_CAPTURE ||
+  return (type == MEDIA_DEVICE_AUDIO_CAPTURE ||
           type == content::MEDIA_TAB_AUDIO_CAPTURE ||
           type == content::MEDIA_LOOPBACK_AUDIO_CAPTURE);
 }
 
 bool IsVideoMediaType(MediaStreamType type) {
-  return (type == content::MEDIA_DEVICE_VIDEO_CAPTURE ||
+  return (type == MEDIA_DEVICE_VIDEO_CAPTURE ||
           type == content::MEDIA_TAB_VIDEO_CAPTURE ||
           type == content::MEDIA_DESKTOP_VIDEO_CAPTURE);
 }

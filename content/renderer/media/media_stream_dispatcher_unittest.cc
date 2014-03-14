@@ -53,7 +53,9 @@ class MockMediaStreamDispatcherEventHandler
     }
   }
 
-  virtual void OnStreamGenerationFailed(int request_id) OVERRIDE {
+  virtual void OnStreamGenerationFailed(
+      int request_id,
+      content::MediaStreamRequestResult result) OVERRIDE {
     request_id_ = request_id;
   }
 
@@ -313,7 +315,7 @@ TEST_F(MediaStreamDispatcherTest, TestFailure) {
   dispatcher->GenerateStream(kRequestId1, handler.get()->AsWeakPtr(),
                              components, security_origin);
   dispatcher->OnMessageReceived(MediaStreamMsg_StreamGenerationFailed(
-      kRouteId, ipc_request_id1));
+      kRouteId, ipc_request_id1, MEDIA_DEVICE_PERMISSION_DENIED));
 
   // Verify that the request have been completed.
   EXPECT_EQ(handler->request_id_, kRequestId1);

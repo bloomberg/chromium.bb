@@ -24,8 +24,10 @@ class CONTENT_EXPORT MediaStreamRequester {
                                const StreamDeviceInfoArray& audio_devices,
                                const StreamDeviceInfoArray& video_devices) = 0;
   // Called if GenerateStream failed.
-  virtual void StreamGenerationFailed(int render_view_id,
-                                      int page_request_id) = 0;
+  virtual void StreamGenerationFailed(
+      int render_view_id,
+      int page_request_id,
+      content::MediaStreamRequestResult result) = 0;
   // Called if a device has been stopped by a user from UI or the device
   // has become unavailable.  |render_view_id| is the render view that requested
   // the device and |label| is the label of the request|.

@@ -193,6 +193,7 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver,
   void ProcessQueuedAccessRequest(content::WebContents* web_contents);
   void OnAccessRequestResponse(content::WebContents* web_contents,
                                const content::MediaStreamDevices& devices,
+                               content::MediaStreamRequestResult result,
                                scoped_ptr<content::MediaStreamUI> ui);
 
   // Called by the MediaObserver() functions, executed on UI thread.

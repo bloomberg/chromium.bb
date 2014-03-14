@@ -56,9 +56,10 @@ class MediaStreamImplUnderTest : public MediaStreamImpl {
   virtual void CompleteGetUserMediaRequest(
       const blink::WebMediaStream& stream,
       blink::WebUserMediaRequest* request_info,
-      bool request_succeeded) OVERRIDE {
+      content::MediaStreamRequestResult result) OVERRIDE {
     last_generated_stream_ = stream;
-    state_ = request_succeeded ? REQUEST_SUCCEEDED : REQUEST_FAILED;
+    result_ = result;
+    state_ = (result == MEDIA_DEVICE_OK ? REQUEST_SUCCEEDED : REQUEST_FAILED);
   }
 
   virtual blink::WebMediaStream GetMediaStream(
@@ -87,10 +88,12 @@ class MediaStreamImplUnderTest : public MediaStreamImpl {
   }
 
   RequestState request_state() const { return state_; }
+  content::MediaStreamRequestResult error_reason() const { return result_; }
 
  private:
   blink::WebMediaStream last_generated_stream_;
   RequestState state_;
+  content::MediaStreamRequestResult result_;
   MediaStreamDependencyFactory* factory_;
   MockMediaStreamVideoCapturerSource* video_source_;
 };
@@ -290,6 +293,8 @@ TEST_F(MediaStreamImplTest, MediaSourceFailToStart) {
   FailToStartMockedVideoSource();
   EXPECT_EQ(MediaStreamImplUnderTest::REQUEST_FAILED,
             ms_impl_->request_state());
+  EXPECT_EQ(MEDIA_DEVICE_TRACK_START_FAILURE,
+            ms_impl_->error_reason());
   EXPECT_EQ(1, ms_dispatcher_->request_stream_counter());
   EXPECT_EQ(1, ms_dispatcher_->stop_audio_device_counter());
   EXPECT_EQ(1, ms_dispatcher_->stop_video_device_counter());

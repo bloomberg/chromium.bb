@@ -221,7 +221,8 @@ class CONTENT_EXPORT MediaStreamManager
                             const StreamDeviceInfoArray& devices);
 
   void HandleAccessRequestResponse(const std::string& label,
-                                   const MediaStreamDevices& devices);
+                                   const MediaStreamDevices& devices,
+                                   content::MediaStreamRequestResult result);
   void StopMediaStreamFromBrowser(const std::string& label);
 
   void DoEnumerateDevices(const std::string& label);
@@ -284,7 +285,8 @@ class CONTENT_EXPORT MediaStreamManager
   void FinalizeGenerateStream(const std::string& label,
                               DeviceRequest* request);
   void FinalizeRequestFailed(const std::string& label,
-                             DeviceRequest* request);
+                             DeviceRequest* request,
+                             content::MediaStreamRequestResult result);
   void FinalizeOpenDevice(const std::string& label,
                           DeviceRequest* request);
   void FinalizeMediaAccessRequest(const std::string& label,

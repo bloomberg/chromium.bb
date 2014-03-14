@@ -88,7 +88,7 @@ void ParseStreamType(const StreamOptions& options,
        }
      } else {
        // This is normal audio device capture.
-       *audio_type = content::MEDIA_DEVICE_AUDIO_CAPTURE;
+       *audio_type = MEDIA_DEVICE_AUDIO_CAPTURE;
      }
   }
   if (options.video_requested) {
@@ -108,7 +108,7 @@ void ParseStreamType(const StreamOptions& options,
        }
      } else {
        // This is normal video device capture.
-       *video_type = content::MEDIA_DEVICE_VIDEO_CAPTURE;
+       *video_type = MEDIA_DEVICE_VIDEO_CAPTURE;
      }
   }
 }
@@ -1052,7 +1052,9 @@ void MediaStreamManager::SetupRequest(const std::string& label) {
   if (!request->security_origin.is_valid()) {
     LOG(ERROR) << "Invalid security origin. "
                << request->security_origin;
-    FinalizeRequestFailed(label, request);
+    FinalizeRequestFailed(label,
+                          request,
+                          MEDIA_DEVICE_INVALID_SECURITY_ORIGIN);
     return;
   }
 
@@ -1066,14 +1068,18 @@ void MediaStreamManager::SetupRequest(const std::string& label) {
       audio_type == MEDIA_TAB_AUDIO_CAPTURE ||
       video_type == MEDIA_TAB_VIDEO_CAPTURE;
   if (is_web_contents_capture && !SetupTabCaptureRequest(request)) {
-    FinalizeRequestFailed(label, request);
+    FinalizeRequestFailed(label,
+                          request,
+                          MEDIA_DEVICE_TAB_CAPTURE_FAILURE);
     return;
   }
 
   bool is_screen_capture =
       video_type == MEDIA_DESKTOP_VIDEO_CAPTURE;
   if (is_screen_capture && !SetupScreenCaptureRequest(request)) {
-    FinalizeRequestFailed(label, request);
+    FinalizeRequestFailed(label,
+                          request,
+                          MEDIA_DEVICE_SCREEN_CAPTURE_FAILURE);
     return;
   }
 
@@ -1100,7 +1106,7 @@ void MediaStreamManager::SetupRequest(const std::string& label) {
     }
 
     if (!SetupDeviceCaptureRequest(request)) {
-      FinalizeRequestFailed(label, request);
+      FinalizeRequestFailed(label, request, MEDIA_DEVICE_CAPTURE_FAILURE);
       return;
     }
   }
@@ -1295,11 +1301,13 @@ void MediaStreamManager::FinalizeGenerateStream(const std::string& label,
 
 void MediaStreamManager::FinalizeRequestFailed(
     const std::string& label,
-    DeviceRequest* request) {
+    DeviceRequest* request,
+    content::MediaStreamRequestResult result) {
   if (request->requester)
     request->requester->StreamGenerationFailed(
         request->requesting_view_id,
-        request->page_request_id);
+        request->page_request_id,
+        result);
 
   if (request->request_type == MEDIA_DEVICE_ACCESS &&
       !request->callback.is_null()) {
@@ -1545,10 +1553,13 @@ void MediaStreamManager::DevicesEnumerated(
           // the device lists to handle the request.
           break;
         }
-        if (!SetupDeviceCaptureRequest(request))
-          FinalizeRequestFailed(*it, request);
-        else
+        if (!SetupDeviceCaptureRequest(request)) {
+          FinalizeRequestFailed(*it,
+                                request,
+                                MEDIA_DEVICE_CAPTURE_FAILURE);
+        } else {
           PostRequestToUI(*it, request);
+        }
         break;
     }
   }
@@ -1612,7 +1623,8 @@ void MediaStreamManager::AddLogMessageOnUIThread(
 
 void MediaStreamManager::HandleAccessRequestResponse(
     const std::string& label,
-    const MediaStreamDevices& devices) {
+    const MediaStreamDevices& devices,
+    content::MediaStreamRequestResult result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DVLOG(1) << "HandleAccessRequestResponse("
            << ", {label = " << label <<  "})";
@@ -1629,8 +1641,8 @@ void MediaStreamManager::HandleAccessRequestResponse(
   }
 
   // Handle the case when the request was denied.
-  if (devices.empty()) {
-    FinalizeRequestFailed(label, request);
+  if (result != MEDIA_DEVICE_OK) {
+    FinalizeRequestFailed(label, request, result);
     return;
   }
 

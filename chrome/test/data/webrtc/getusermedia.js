@@ -78,10 +78,6 @@ function doGetUserMedia(constraints) {
  *     callback) depending on which callback got called by WebRTC.
  */
 function obtainGetUserMediaResult() {
-  // Translate from the old error to the new. Remove when rename fully deployed.
-  if (gRequestWebcamAndMicrophoneResult === 'PERMISSION_DENIED')
-    gRequestWebcamAndMicrophoneResult = 'PermissionDeniedError';
-
   returnToTest(gRequestWebcamAndMicrophoneResult);
   return gRequestWebcamAndMicrophoneResult;
 }
@@ -326,8 +322,6 @@ function getSourcesFromField(audio_select, video_select) {
 function getUserMediaFailedCallback_(error) {
   // Translate from the old error to the new. Remove when rename fully deployed.
   var errorName = error.name;
-  if (errorName === 'PERMISSION_DENIED')
-    errorName = 'PermissionDeniedError';
 
   debug('GetUserMedia FAILED: Maybe the camera is in use by another process?');
   gRequestWebcamAndMicrophoneResult = 'failed-with-error-' + errorName;

@@ -60,7 +60,9 @@ class PepperMediaDeviceManager
       const std::string& label,
       const StreamDeviceInfoArray& audio_device_array,
       const StreamDeviceInfoArray& video_device_array) OVERRIDE;
-  virtual void OnStreamGenerationFailed(int request_id) OVERRIDE;
+  virtual void OnStreamGenerationFailed(
+      int request_id,
+      content::MediaStreamRequestResult result) OVERRIDE;
   virtual void OnDeviceStopped(const std::string& label,
                                const StreamDeviceInfo& device_info) OVERRIDE;
   virtual void OnDevicesEnumerated(

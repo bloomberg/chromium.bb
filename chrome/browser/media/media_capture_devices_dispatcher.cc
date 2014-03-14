@@ -351,7 +351,7 @@ void MediaCaptureDevicesDispatcher::ProcessDesktopCaptureAccessRequest(
   scoped_ptr<content::MediaStreamUI> ui;
 
   if (request.video_type != content::MEDIA_DESKTOP_VIDEO_CAPTURE) {
-    callback.Run(devices, ui.Pass());
+    callback.Run(devices, content::MEDIA_DEVICE_INVALID_STATE, ui.Pass());
     return;
   }
 
@@ -374,7 +374,7 @@ void MediaCaptureDevicesDispatcher::ProcessDesktopCaptureAccessRequest(
 
   // Received invalid device id.
   if (media_id.type == content::DesktopMediaID::TYPE_NONE) {
-    callback.Run(devices, ui.Pass());
+    callback.Run(devices, content::MEDIA_DEVICE_INVALID_STATE, ui.Pass());
     return;
   }
 
@@ -395,7 +395,7 @@ void MediaCaptureDevicesDispatcher::ProcessDesktopCaptureAccessRequest(
       GetApplicationTitle(web_contents, extension),
       base::UTF8ToUTF16(original_extension_name));
 
-  callback.Run(devices, ui.Pass());
+  callback.Run(devices, content::MEDIA_DEVICE_OK, ui.Pass());
 }
 
 void MediaCaptureDevicesDispatcher::ProcessScreenCaptureAccessRequest(
@@ -485,7 +485,11 @@ void MediaCaptureDevicesDispatcher::ProcessScreenCaptureAccessRequest(
     }
   }
 
-  callback.Run(devices, ui.Pass());
+  callback.Run(
+    devices,
+    devices.empty() ? content::MEDIA_DEVICE_INVALID_STATE :
+                      content::MEDIA_DEVICE_OK,
+    ui.Pass());
 }
 
 void MediaCaptureDevicesDispatcher::ProcessTabCaptureAccessRequest(
@@ -498,7 +502,7 @@ void MediaCaptureDevicesDispatcher::ProcessTabCaptureAccessRequest(
 
 #if defined(OS_ANDROID)
   // Tab capture is not supported on Android.
-  callback.Run(devices, ui.Pass());
+  callback.Run(devices, content::MEDIA_DEVICE_TAB_CAPTURE_FAILURE, ui.Pass());
 #else  // defined(OS_ANDROID)
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
@@ -506,7 +510,7 @@ void MediaCaptureDevicesDispatcher::ProcessTabCaptureAccessRequest(
       extensions::TabCaptureRegistry::Get(profile);
   if (!tab_capture_registry) {
     NOTREACHED();
-    callback.Run(devices, ui.Pass());
+    callback.Run(devices, content::MEDIA_DEVICE_INVALID_STATE, ui.Pass());
     return;
   }
   bool tab_capture_allowed =
@@ -531,7 +535,11 @@ void MediaCaptureDevicesDispatcher::ProcessTabCaptureAccessRequest(
     ui = media_stream_capture_indicator_->RegisterMediaStream(
         web_contents, devices);
   }
-  callback.Run(devices, ui.Pass());
+  callback.Run(
+    devices,
+    devices.empty() ? content::MEDIA_DEVICE_INVALID_STATE :
+                      content::MEDIA_DEVICE_OK,
+    ui.Pass());
 #endif  // !defined(OS_ANDROID)
 }
 
@@ -560,7 +568,11 @@ void MediaCaptureDevicesDispatcher::
     ui = media_stream_capture_indicator_->RegisterMediaStream(
         web_contents, devices);
   }
-  callback.Run(devices, ui.Pass());
+  callback.Run(
+    devices,
+    devices.empty() ? content::MEDIA_DEVICE_INVALID_STATE :
+                      content::MEDIA_DEVICE_OK,
+    ui.Pass());
 }
 
 void MediaCaptureDevicesDispatcher::ProcessRegularMediaAccessRequest(
@@ -615,6 +627,7 @@ void MediaCaptureDevicesDispatcher::ProcessQueuedAccessRequest(
 void MediaCaptureDevicesDispatcher::OnAccessRequestResponse(
     content::WebContents* web_contents,
     const content::MediaStreamDevices& devices,
+    content::MediaStreamRequestResult result,
     scoped_ptr<content::MediaStreamUI> ui) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -642,7 +655,7 @@ void MediaCaptureDevicesDispatcher::OnAccessRequestResponse(
                    base::Unretained(this), web_contents));
   }
 
-  callback.Run(devices, ui.Pass());
+  callback.Run(devices, result, ui.Pass());
 }
 
 void MediaCaptureDevicesDispatcher::GetDefaultDevicesForProfile(

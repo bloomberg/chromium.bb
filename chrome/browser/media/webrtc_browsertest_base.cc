@@ -25,6 +25,8 @@ const char WebRtcTestBase::kAudioOnlyCallConstraints[] = "'{audio: true}'";
 const char WebRtcTestBase::kVideoOnlyCallConstraints[] = "'{video: true}'";
 const char WebRtcTestBase::kFailedWithPermissionDeniedError[] =
     "failed-with-error-PermissionDeniedError";
+const char WebRtcTestBase::kFailedWithPermissionDismissedError[] =
+    "failed-with-error-PermissionDismissedError";
 
 namespace {
 
@@ -116,7 +118,8 @@ void WebRtcTestBase::GetUserMediaAndDismiss(
 
   // A dismiss should be treated like a deny.
   EXPECT_TRUE(PollingWaitUntil("obtainGetUserMediaResult()",
-                               kFailedWithPermissionDeniedError, tab_contents));
+                               kFailedWithPermissionDismissedError,
+                               tab_contents));
 }
 
 void WebRtcTestBase::GetUserMedia(content::WebContents* tab_contents,

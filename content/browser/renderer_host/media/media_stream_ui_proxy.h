@@ -21,7 +21,9 @@ class RenderViewHostDelegate;
 class CONTENT_EXPORT MediaStreamUIProxy {
  public:
   typedef base::Callback<
-      void (const MediaStreamDevices& devices)> ResponseCallback;
+      void (const MediaStreamDevices& devices,
+            content::MediaStreamRequestResult result)>
+        ResponseCallback;
 
   static scoped_ptr<MediaStreamUIProxy> Create();
   static scoped_ptr<MediaStreamUIProxy> CreateForTests(
@@ -52,7 +54,9 @@ class CONTENT_EXPORT MediaStreamUIProxy {
   friend class Core;
   friend class FakeMediaStreamUIProxy;
 
-  void ProcessAccessRequestResponse(const MediaStreamDevices& devices);
+  void ProcessAccessRequestResponse(
+      const MediaStreamDevices& devices,
+      content::MediaStreamRequestResult result);
   void ProcessStopRequestFromUI();
 
   scoped_ptr<Core> core_;

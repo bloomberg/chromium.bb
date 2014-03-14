@@ -179,7 +179,9 @@ class BrowserPluginGuest::MediaRequest : public PermissionRequest {
       web_contents->RequestMediaAccessPermission(request_, callback_);
     } else {
       // Deny the request.
-      callback_.Run(MediaStreamDevices(), scoped_ptr<MediaStreamUI>());
+      callback_.Run(MediaStreamDevices(),
+                    MEDIA_DEVICE_INVALID_STATE,
+                    scoped_ptr<MediaStreamUI>());
     }
   }
 
