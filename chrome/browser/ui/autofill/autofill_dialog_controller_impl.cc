@@ -3153,6 +3153,9 @@ base::string16 AutofillDialogControllerImpl::GetValueFromSection(
 bool AutofillDialogControllerImpl::CanAcceptCountry(
     DialogSection section,
     const std::string& country_code) {
+  if (section == SECTION_CC_BILLING)
+    return LowerCaseEqualsASCII(country_code, "us");
+
   CountryComboboxModel* model = CountryComboboxModelForSection(section);
   const std::vector<AutofillCountry*>& countries = model->countries();
   for (size_t i = 0; i < countries.size(); ++i) {
@@ -3166,8 +3169,9 @@ bool AutofillDialogControllerImpl::CanAcceptCountry(
 bool AutofillDialogControllerImpl::ShouldSuggestProfile(
     DialogSection section,
     const AutofillProfile& profile) {
-  return CanAcceptCountry(
-      section, UTF16ToASCII(profile.GetRawInfo(ADDRESS_HOME_COUNTRY)));
+  std::string country_code =
+      UTF16ToASCII(profile.GetRawInfo(ADDRESS_HOME_COUNTRY));
+  return country_code.empty() || CanAcceptCountry(section, country_code);
 }
 
 SuggestionsMenuModel* AutofillDialogControllerImpl::
