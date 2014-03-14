@@ -210,10 +210,7 @@ int SpdyHttpStream::SendRequest(const HttpRequestHeaders& request_headers,
                                 HttpResponseInfo* response,
                                 const CompletionCallback& callback) {
   if (stream_closed_) {
-    if (stream_->type() == SPDY_PUSH_STREAM)
-      return closed_stream_status_;
-
-    return (closed_stream_status_ == OK) ? ERR_FAILED : closed_stream_status_;
+    return closed_stream_status_;
   }
 
   base::Time request_time = base::Time::Now();
