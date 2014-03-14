@@ -1312,6 +1312,17 @@ weston_surface_unmap(struct weston_surface *surface)
 	surface->output = NULL;
 }
 
+static void
+weston_surface_reset_pending_buffer(struct weston_surface *surface)
+{
+	if (surface->pending.buffer)
+		wl_list_remove(&surface->pending.buffer_destroy_listener.link);
+	surface->pending.buffer = NULL;
+	surface->pending.sx = 0;
+	surface->pending.sy = 0;
+	surface->pending.newly_attached = 0;
+}
+
 struct weston_frame_callback {
 	struct wl_resource *resource;
 	struct wl_list link;
@@ -2021,12 +2032,7 @@ weston_surface_commit(struct weston_surface *surface)
 		surface->configure(surface,
 				   surface->pending.sx, surface->pending.sy);
 
-	if (surface->pending.buffer)
-		wl_list_remove(&surface->pending.buffer_destroy_listener.link);
-	surface->pending.buffer = NULL;
-	surface->pending.sx = 0;
-	surface->pending.sy = 0;
-	surface->pending.newly_attached = 0;
+	weston_surface_reset_pending_buffer(surface);
 
 	/* wl_surface.damage */
 	pixman_region32_union(&surface->damage, &surface->damage,
@@ -2317,12 +2323,7 @@ weston_subsurface_commit_to_cache(struct weston_subsurface *sub)
 	sub->cached.sx += surface->pending.sx;
 	sub->cached.sy += surface->pending.sy;
 
-	if (surface->pending.buffer)
-		wl_list_remove(&surface->pending.buffer_destroy_listener.link);
-	surface->pending.buffer = NULL;
-	surface->pending.sx = 0;
-	surface->pending.sy = 0;
-	surface->pending.newly_attached = 0;
+	weston_surface_reset_pending_buffer(surface);
 
 	sub->cached.buffer_viewport = surface->pending.buffer_viewport;
 
