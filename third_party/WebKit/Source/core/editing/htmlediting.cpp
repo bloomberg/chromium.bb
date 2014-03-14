@@ -72,6 +72,8 @@ bool isAtomicNode(const Node *node)
 // could be inside a shadow tree. Only works for non-null values.
 int comparePositions(const Position& a, const Position& b)
 {
+    ASSERT(a.isNotNull());
+    ASSERT(b.isNotNull());
     TreeScope* commonScope = commonTreeScope(a.containerNode(), b.containerNode());
 
     ASSERT(commonScope);

@@ -149,9 +149,19 @@ bool PositionIterator::isCandidate() const
     if (renderer->style()->visibility() != VISIBLE)
         return false;
 
-    if (renderer->isBR())
-        return !m_offsetInAnchor && !Position::nodeIsUserSelectNone(m_anchorNode->parentNode());
-
+    if (renderer->isBR()) {
+        // For br element, the condition
+        // |(!m_anchorNode->hasChildren() || m_nodeAfterPositionInAnchor)|
+        // corresponds to the condition
+        // |m_anchorType != PositionIsAfterAnchor| in Position.isCandaite.
+        // Both conditions say this position is not in tail of the element.
+        // If conditions lose consitency, VisiblePosition::canonicalPosition
+        // will fail on |canonicalizeCandidate(previousCandidate(position))|,
+        // because previousCandidate returns a Position converted from
+        // a "Candidate" PositionIterator and cannonicalizeCandidate(Position)
+        // assumes the Position is "Candidate".
+        return !m_offsetInAnchor && (!m_anchorNode->hasChildren() || m_nodeAfterPositionInAnchor) && !Position::nodeIsUserSelectNone(m_anchorNode->parentNode());
+    }
     if (renderer->isText())
         return !Position::nodeIsUserSelectNone(m_anchorNode) && Position(*this).inRenderedText();
 
