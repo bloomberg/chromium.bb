@@ -90,9 +90,11 @@ void NewAvatarMenuButtonTest::StartAvatarMenu() {
   EXPECT_TRUE(ProfileChooserView::IsShowing());
 }
 
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || defined (OS_LINUX) || defined (OS_WIN)
 // This test doesn't make sense for ChromeOS since it has a different
 // multi-profiles menu in the system tray instead.
+//
+// Test fails flakily on Linux and Windows http://crbug.com/352710
 #define MAYBE_SignOut DISABLED_SignOut
 #else
 #define MAYBE_SignOut SignOut
