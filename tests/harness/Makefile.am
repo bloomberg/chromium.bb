@@ -1,6 +1,7 @@
 harness_TESTS =					\
 	da-dk-g16-dictionary_harness.txt	\
 	da-dk-g18-dictionary_harness.txt 	\
+	da-dk-g26-dictionary_harness.txt	\
 	da-dk-g28-dictionary_harness.txt	\
 	en-gb-g1_harness.txt			\
 	en-GB-g2_harness.txt			\
