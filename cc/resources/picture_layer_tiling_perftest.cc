@@ -67,7 +67,6 @@ class PictureLayerTilingPerfTest : public testing::Test {
     start_time_ = base::TimeTicks();
     num_runs_ = 0;
 
-    gfx::Size layer_bounds(50 * 256, 50 * 256);
     gfx::Rect viewport_rect(0, 0, 1024, 768);
     do {
       picture_layer_tiling_->UpdateTilePriorities(
@@ -87,7 +86,6 @@ class PictureLayerTilingPerfTest : public testing::Test {
     start_time_ = base::TimeTicks();
     num_runs_ = 0;
 
-    gfx::Size layer_bounds(50 * 256, 50 * 256);
     gfx::Size viewport_size(1024, 768);
     gfx::Rect viewport_rect(viewport_size);
     int xoffsets[] = {10, 0, -10, 0};
@@ -111,6 +109,35 @@ class PictureLayerTilingPerfTest : public testing::Test {
     } while (DidRun());
 
     perf_test::PrintResult("update_tile_priorities_scrolling",
+                           "",
+                           test_name,
+                           num_runs_ / elapsed_.InSecondsF(),
+                           "runs/s",
+                           true);
+  }
+
+  void RunTilingRasterTileIteratorTest(const std::string& test_name,
+                                       int num_tiles,
+                                       const gfx::Rect& viewport) {
+    start_time_ = base::TimeTicks();
+    num_runs_ = 0;
+
+    gfx::Size bounds(10000, 10000);
+    picture_layer_tiling_ =
+        PictureLayerTiling::Create(1, bounds, &picture_layer_tiling_client_);
+    picture_layer_tiling_->UpdateTilePriorities(
+        ACTIVE_TREE, viewport, 1.0f, 1.0);
+    do {
+      int count = num_tiles;
+      for (PictureLayerTiling::TilingRasterTileIterator it(
+               picture_layer_tiling_.get(), ACTIVE_TREE);
+           it && count;
+           ++it) {
+        --count;
+      }
+    } while (DidRun());
+
+    perf_test::PrintResult("tiling_raster_tile_iterator",
                            "",
                            test_name,
                            num_runs_ / elapsed_.InSecondsF(),
@@ -156,6 +183,13 @@ TEST_F(PictureLayerTilingPerfTest, UpdateTilePriorities) {
   transform.ApplyPerspectiveDepth(10);
   RunUpdateTilePrioritiesStationaryTest("perspective", transform);
   RunUpdateTilePrioritiesScrollingTest("perspective", transform);
+}
+
+TEST_F(PictureLayerTilingPerfTest, TilingRasterTileIterator) {
+  RunTilingRasterTileIteratorTest("32_100x100", 32, gfx::Rect(0, 0, 100, 100));
+  RunTilingRasterTileIteratorTest("32_500x500", 32, gfx::Rect(0, 0, 500, 500));
+  RunTilingRasterTileIteratorTest("64_100x100", 64, gfx::Rect(0, 0, 100, 100));
+  RunTilingRasterTileIteratorTest("64_500x500", 64, gfx::Rect(0, 0, 500, 500));
 }
 
 }  // namespace

@@ -5,10 +5,14 @@
 #include "cc/resources/picture_layer_tiling.h"
 
 #include <limits>
+#include <set>
 
 #include "cc/base/math_util.h"
 #include "cc/resources/picture_layer_tiling_set.h"
+#include "cc/test/fake_output_surface.h"
+#include "cc/test/fake_output_surface_client.h"
 #include "cc/test/fake_picture_layer_tiling_client.h"
+#include "cc/test/test_context_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/size_conversions.h"
@@ -492,16 +496,22 @@ TEST(PictureLayerTilingTest, ViewportDistanceWithScale) {
       TilePriority priority = tile->priority(ACTIVE_TREE);
 
       if (viewport_in_content_space.Intersects(tile->content_rect())) {
-        EXPECT_EQ(TilePriority::NOW, priority.priority_bin);
-        EXPECT_FLOAT_EQ(0.f, priority.distance_to_visible);
+        EXPECT_EQ(TilePriority::NOW, priority.priority_bin) << "i: " << i
+                                                            << " j: " << j;
+        EXPECT_FLOAT_EQ(0.f, priority.distance_to_visible) << "i: " << i
+                                                           << " j: " << j;
         have_now = true;
       } else if (skewport.Intersects(tile->content_rect())) {
-        EXPECT_EQ(TilePriority::SOON, priority.priority_bin);
-        EXPECT_GT(priority.distance_to_visible, 0.f);
+        EXPECT_EQ(TilePriority::SOON, priority.priority_bin) << "i: " << i
+                                                             << " j: " << j;
+        EXPECT_GT(priority.distance_to_visible, 0.f) << "i: " << i
+                                                     << " j: " << j;
         have_soon = true;
       } else {
-        EXPECT_EQ(TilePriority::EVENTUALLY, priority.priority_bin);
-        EXPECT_GT(priority.distance_to_visible, 0.f);
+        EXPECT_EQ(TilePriority::EVENTUALLY, priority.priority_bin)
+            << "i: " << i << " j: " << j;
+        EXPECT_GT(priority.distance_to_visible, 0.f) << "i: " << i
+                                                     << " j: " << j;
         have_eventually = true;
       }
     }
@@ -749,6 +759,164 @@ TEST(PictureLayerTilingTest, EmptyStartingRect) {
   gfx::Rect out = PictureLayerTiling::ExpandRectEquallyToAreaBoundedBy(
       in, target_area, bounds, NULL);
   EXPECT_TRUE(out.IsEmpty());
+}
+
+TEST(PictureLayerTilingTest, TilingRasterTileIteratorStaticViewport) {
+  FakePictureLayerTilingClient client;
+  scoped_ptr<TestablePictureLayerTiling> tiling;
+
+  gfx::Rect viewport(50, 50, 100, 100);
+  gfx::Size layer_bounds(200, 200);
+
+  client.SetTileSize(gfx::Size(30, 30));
+
+  tiling = TestablePictureLayerTiling::Create(1.0f, layer_bounds, &client);
+  tiling->UpdateTilePriorities(ACTIVE_TREE, viewport, 1.0f, 1.0);
+
+  PictureLayerTiling::TilingRasterTileIterator empty_iterator;
+  EXPECT_FALSE(empty_iterator);
+
+  std::vector<Tile*> all_tiles = tiling->AllTilesForTesting();
+
+  // Sanity check.
+  EXPECT_EQ(64u, all_tiles.size());
+
+  // The explanation of each iteration is as follows:
+  // 1. First iteration tests that we can get all of the tiles correctly.
+  // 2. Second iteration ensures that we can get all of the tiles again (first
+  //    iteration didn't change any tiles), as well set all tiles to be ready to
+  //    draw.
+  // 3. Third iteration ensures that no tiles are returned, since they were all
+  //    marked as ready to draw.
+  for (int i = 0; i < 3; ++i) {
+    PictureLayerTiling::TilingRasterTileIterator it(tiling.get(), ACTIVE_TREE);
+
+    // There are 3 bins in TilePriority.
+    bool have_tiles[3] = {};
+
+    // On the third iteration, we should get no tiles since everything was
+    // marked as ready to draw.
+    if (i == 2) {
+      EXPECT_FALSE(it);
+      continue;
+    }
+
+    EXPECT_TRUE(it);
+    std::set<Tile*> unique_tiles;
+    unique_tiles.insert(*it);
+    Tile* last_tile = *it;
+    have_tiles[last_tile->priority(ACTIVE_TREE).priority_bin] = true;
+
+    // On the second iteration, mark everything as ready to draw (solid color).
+    if (i == 1) {
+      ManagedTileState::TileVersion& tile_version =
+          last_tile->GetTileVersionForTesting(
+              last_tile->DetermineRasterModeForTree(ACTIVE_TREE));
+      tile_version.SetSolidColorForTesting(SK_ColorRED);
+    }
+    ++it;
+    int eventually_bin_order_correct_count = 0;
+    int eventually_bin_order_incorrect_count = 0;
+    while (it) {
+      Tile* new_tile = *it;
+      ++it;
+      unique_tiles.insert(new_tile);
+
+      TilePriority last_priority = last_tile->priority(ACTIVE_TREE);
+      TilePriority new_priority = new_tile->priority(ACTIVE_TREE);
+      EXPECT_LE(last_priority.priority_bin, new_priority.priority_bin);
+      if (last_priority.priority_bin == new_priority.priority_bin) {
+        if (last_priority.priority_bin == TilePriority::EVENTUALLY) {
+          bool order_correct = last_priority.distance_to_visible <=
+                               new_priority.distance_to_visible;
+          eventually_bin_order_correct_count += order_correct;
+          eventually_bin_order_incorrect_count += !order_correct;
+        } else {
+          EXPECT_LE(last_priority.distance_to_visible,
+                    new_priority.distance_to_visible);
+        }
+      }
+      have_tiles[new_priority.priority_bin] = true;
+
+      last_tile = new_tile;
+
+      // On the second iteration, mark everything as ready to draw (solid
+      // color).
+      if (i == 1) {
+        ManagedTileState::TileVersion& tile_version =
+            last_tile->GetTileVersionForTesting(
+                last_tile->DetermineRasterModeForTree(ACTIVE_TREE));
+        tile_version.SetSolidColorForTesting(SK_ColorRED);
+      }
+    }
+
+    EXPECT_GT(eventually_bin_order_correct_count,
+              eventually_bin_order_incorrect_count);
+
+    // We should have now and eventually tiles, but not soon tiles because the
+    // viewport is static.
+    EXPECT_TRUE(have_tiles[TilePriority::NOW]);
+    EXPECT_FALSE(have_tiles[TilePriority::SOON]);
+    EXPECT_TRUE(have_tiles[TilePriority::EVENTUALLY]);
+
+    EXPECT_EQ(unique_tiles.size(), all_tiles.size());
+  }
+}
+
+TEST(PictureLayerTilingTest, TilingRasterTileIteratorMovingViewport) {
+  FakePictureLayerTilingClient client;
+  scoped_ptr<TestablePictureLayerTiling> tiling;
+
+  gfx::Rect viewport(50, 0, 100, 100);
+  gfx::Rect moved_viewport(50, 0, 100, 250);
+  gfx::Size layer_bounds(500, 500);
+
+  client.SetTileSize(gfx::Size(30, 30));
+
+  tiling = TestablePictureLayerTiling::Create(1.f, layer_bounds, &client);
+  tiling->UpdateTilePriorities(ACTIVE_TREE, viewport, 1.0f, 1.0);
+  tiling->UpdateTilePriorities(ACTIVE_TREE, moved_viewport, 1.0f, 2.0);
+
+  // There are 3 bins in TilePriority.
+  bool have_tiles[3] = {};
+  Tile* last_tile = NULL;
+  int eventually_bin_order_correct_count = 0;
+  int eventually_bin_order_incorrect_count = 0;
+  for (PictureLayerTiling::TilingRasterTileIterator it(tiling.get(),
+                                                       ACTIVE_TREE);
+       it;
+       ++it) {
+    if (!last_tile)
+      last_tile = *it;
+
+    Tile* new_tile = *it;
+
+    TilePriority last_priority = last_tile->priority(ACTIVE_TREE);
+    TilePriority new_priority = new_tile->priority(ACTIVE_TREE);
+
+    have_tiles[new_priority.priority_bin] = true;
+
+    EXPECT_LE(last_priority.priority_bin, new_priority.priority_bin);
+    if (last_priority.priority_bin == new_priority.priority_bin) {
+      if (last_priority.priority_bin == TilePriority::EVENTUALLY) {
+        bool order_correct = last_priority.distance_to_visible <=
+                             new_priority.distance_to_visible;
+        eventually_bin_order_correct_count += order_correct;
+        eventually_bin_order_incorrect_count += !order_correct;
+      } else {
+        EXPECT_LE(last_priority.distance_to_visible,
+                  new_priority.distance_to_visible);
+      }
+    }
+    last_tile = new_tile;
+  }
+
+  EXPECT_GT(eventually_bin_order_correct_count,
+            eventually_bin_order_incorrect_count);
+
+  EXPECT_TRUE(have_tiles[TilePriority::NOW]);
+  EXPECT_TRUE(have_tiles[TilePriority::SOON]);
+  EXPECT_TRUE(have_tiles[TilePriority::EVENTUALLY]);
 }
 
 static void TileExists(bool exists, Tile* tile,

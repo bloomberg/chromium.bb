@@ -89,6 +89,7 @@ class CC_EXPORT TilingData {
   // Iterate through all indices whose bounds + border intersect with |rect|.
   class CC_EXPORT Iterator : public BaseIterator {
    public:
+    Iterator();
     Iterator(const TilingData* tiling_data, const gfx::Rect& tiling_rect);
     Iterator& operator++();
 
@@ -129,6 +130,7 @@ class CC_EXPORT TilingData {
   // order is a counterclockwise spiral around the given center.
   class CC_EXPORT SpiralDifferenceIterator : public BaseIterator {
    public:
+    SpiralDifferenceIterator();
     SpiralDifferenceIterator(const TilingData* tiling_data,
                              const gfx::Rect& consider_rect,
                              const gfx::Rect& ignore_rect,

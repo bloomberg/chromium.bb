@@ -79,6 +79,18 @@ class CC_EXPORT Tile : public RefCountedManaged<Tile> {
     return !!(flags_ & USE_GPU_RASTERIZATION);
   }
 
+  bool NeedsRasterForMode(RasterMode mode) const {
+    return !managed_state_.tile_versions[mode].IsReadyToDraw();
+  }
+
+  bool HasResources() const {
+    for (int mode = 0; mode < NUM_RASTER_MODES; ++mode) {
+      if (managed_state_.tile_versions[mode].has_resource())
+        return true;
+    }
+    return false;
+  }
+
   scoped_ptr<base::Value> AsValue() const;
 
   inline bool IsReadyToDraw() const {
@@ -116,14 +128,18 @@ class CC_EXPORT Tile : public RefCountedManaged<Tile> {
 
   size_t GPUMemoryUsageInBytes() const;
 
+  gfx::Size size() const { return tile_size_.size(); }
+
+  RasterMode DetermineRasterModeForTree(WhichTree tree) const;
+  RasterMode DetermineOverallRasterMode() const;
+
+  // Functionality used in tests.
   RasterMode GetRasterModeForTesting() const {
     return managed_state().raster_mode;
   }
   ManagedTileState::TileVersion& GetTileVersionForTesting(RasterMode mode) {
     return managed_state_.tile_versions[mode];
   }
-
-  gfx::Size size() const { return tile_size_.size(); }
 
  private:
   friend class TileManager;
@@ -146,6 +162,7 @@ class CC_EXPORT Tile : public RefCountedManaged<Tile> {
 
   ManagedTileState& managed_state() { return managed_state_; }
   const ManagedTileState& managed_state() const { return managed_state_; }
+  RasterMode DetermineRasterModeForResolution(TileResolution resolution) const;
 
   TileManager* tile_manager_;
   scoped_refptr<PicturePileImpl> picture_pile_;

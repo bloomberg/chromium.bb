@@ -4,6 +4,8 @@
 
 #include "cc/resources/tile.h"
 
+#include <algorithm>
+
 #include "cc/base/math_util.h"
 #include "cc/debug/traced_value.h"
 #include "cc/resources/tile_manager.h"
@@ -79,6 +81,29 @@ size_t Tile::GPUMemoryUsageInBytes() const {
   for (int mode = 0; mode < NUM_RASTER_MODES; ++mode)
     total_size += managed_state_.tile_versions[mode].GPUMemoryUsageInBytes();
   return total_size;
+}
+
+RasterMode Tile::DetermineRasterModeForTree(WhichTree tree) const {
+  return DetermineRasterModeForResolution(priority(tree).resolution);
+}
+
+RasterMode Tile::DetermineOverallRasterMode() const {
+  return DetermineRasterModeForResolution(managed_state_.resolution);
+}
+
+RasterMode Tile::DetermineRasterModeForResolution(
+    TileResolution resolution) const {
+  RasterMode current_mode = managed_state_.raster_mode;
+  RasterMode raster_mode = HIGH_QUALITY_RASTER_MODE;
+  if (resolution == LOW_RESOLUTION)
+    raster_mode = LOW_QUALITY_RASTER_MODE;
+  else if (can_use_lcd_text())
+    raster_mode = HIGH_QUALITY_RASTER_MODE;
+  else if (managed_state_.tile_versions[current_mode].has_text_ ||
+           !managed_state_.tile_versions[current_mode].IsReadyToDraw())
+    raster_mode = HIGH_QUALITY_NO_LCD_RASTER_MODE;
+
+  return std::min(raster_mode, current_mode);
 }
 
 }  // namespace cc

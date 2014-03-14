@@ -174,7 +174,6 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient,
                                      raster_worker_pool_->GetResourceFormat());
   }
 
-  RasterMode DetermineRasterMode(const Tile* tile) const;
   void FreeResourceForTile(Tile* tile, RasterMode mode);
   void FreeResourcesForTile(Tile* tile);
   void FreeUnusedResourcesForTile(Tile* tile);
