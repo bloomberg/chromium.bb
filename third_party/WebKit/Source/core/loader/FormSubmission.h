@@ -102,15 +102,11 @@ public:
     const KURL& action() const { return m_action; }
     const AtomicString& target() const { return m_target; }
     void clearTarget() { m_target = nullAtom; }
-    const AtomicString& contentType() const { return m_contentType; }
     FormState* state() const { return m_formState.get(); }
     FormData* data() const { return m_formData.get(); }
-    const String boundary() const { return m_boundary; }
     Event* event() const { return m_event.get(); }
 
-    const Referrer& referrer() const { return m_referrer; }
     void setReferrer(const Referrer& referrer) { m_referrer = referrer; }
-    const String& origin() const { return m_origin; }
     void setOrigin(const String& origin) { m_origin = origin; }
 
     const String& result() const { return m_result; }
