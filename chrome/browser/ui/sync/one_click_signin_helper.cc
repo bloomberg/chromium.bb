@@ -645,9 +645,12 @@ void OneClickSigninHelper::LogHistogramValue(
       UMA_HISTOGRAM_ENUMERATION("Signin.AvatarBubbleActions", action,
                                 one_click_signin::HISTOGRAM_MAX);
       break;
+    case signin::SOURCE_DEVICES_PAGE:
+      UMA_HISTOGRAM_ENUMERATION("Signin.DevicesPageActions", action,
+                                one_click_signin::HISTOGRAM_MAX);
     default:
       // This switch statement needs to be updated when the enum Source changes.
-      COMPILE_ASSERT(signin::SOURCE_UNKNOWN == 11,
+      COMPILE_ASSERT(signin::SOURCE_UNKNOWN == 12,
                      kSourceEnumHasChangedButNotThisSwitchStatement);
       NOTREACHED();
       return;

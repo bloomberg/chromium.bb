@@ -218,9 +218,7 @@ void LocalDiscoveryUIHandler::HandleShowSyncUI(
       web_ui()->GetWebContents());
   DCHECK(browser);
 
-  // We use SOURCE_SETTINGS because the URL for SOURCE_SETTINGS is detected on
-  // redirect.
-  GURL url(signin::GetPromoURL(signin::SOURCE_SETTINGS,
+  GURL url(signin::GetPromoURL(signin::SOURCE_DEVICES_PAGE,
                                true));  // auto close after success.
 
   browser->OpenURL(
