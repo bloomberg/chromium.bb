@@ -50,10 +50,16 @@ namespace WebCore {
 
 static const RenderObject* parentElementRenderer(const RenderObject* renderer)
 {
-    for (RenderObject* parent = renderer->parent(); parent; parent = parent->parent()) {
-        Node* node = parent->generatingNode();
-        if (node && node->isElementNode())
-            return parent;
+    // At style recalc, the renderer's parent may not be attached,
+    // so we need to obtain this from the DOM tree.
+
+    const Node* node = renderer->node();
+    if (!node)
+        return 0;
+
+    while ((node = node->parentNode())) {
+        if (node->isElementNode())
+            return node->renderer();
     }
     return 0;
 }
@@ -181,7 +187,16 @@ void FastTextAutosizer::inflateTable(RenderTable* table)
                 if (!cell->isTableCell())
                     continue;
                 RenderTableCell* renderTableCell = toRenderTableCell(cell);
-                if (clusterWouldHaveEnoughTextToAutosize(renderTableCell, table)) {
+
+                bool shouldAutosize;
+                if (!TextAutosizer::containerShouldBeAutosized(renderTableCell))
+                    shouldAutosize = false;
+                else if (Supercluster* supercluster = getSupercluster(renderTableCell))
+                    shouldAutosize = anyClusterHasEnoughTextToAutosize(supercluster->m_roots, table);
+                else
+                    shouldAutosize = clusterWouldHaveEnoughTextToAutosize(renderTableCell, table);
+
+                if (shouldAutosize) {
                     for (RenderObject* child = cell; child; child = child->nextInPreOrder(cell)) {
                         if (child->isText()) {
                             applyMultiplier(child, multiplier);
@@ -312,8 +327,9 @@ bool FastTextAutosizer::clusterHasEnoughTextToAutosize(Cluster* cluster, const R
             if (TextAutosizer::isAutosizingContainer(block)) {
                 // Note: Ideally we would check isWiderOrNarrowerDescendant here but we only know that
                 //       after the block has entered layout, which may not be the case.
-                bool isAutosizingClusterRoot = TextAutosizer::isIndependentDescendant(block);
-                if (isAutosizingClusterRoot || !TextAutosizer::containerShouldBeAutosized(block)) {
+                bool isAutosizingClusterRoot = TextAutosizer::isIndependentDescendant(block) || block->isTable();
+                if ((isAutosizingClusterRoot && !block->isTableCell())
+                    || !TextAutosizer::containerShouldBeAutosized(block)) {
                     descendant = descendant->nextInPreOrderAfterChildren(root);
                     continue;
                 }
@@ -375,6 +391,12 @@ FastTextAutosizer::Fingerprint FastTextAutosizer::computeFingerprint(const Rende
 
         data.m_width = style->width().getFloatValue();
     }
+
+    // Use nodeIndex as a rough approximation of column number
+    // (it's too early to call RenderTableCell::col).
+    // FIXME: account for colspan
+    if (renderer->isTableCell())
+        data.m_column = renderer->node()->nodeIndex();
 
     return StringHasher::computeHash<UChar>(
         static_cast<const UChar*>(static_cast<const void*>(&data)),
@@ -448,10 +470,8 @@ float FastTextAutosizer::clusterMultiplier(Cluster* cluster)
             || TextAutosizer::isIndependentDescendant(cluster->m_root)
             || isWiderOrNarrowerDescendant(cluster)) {
 
-            // FIXME: The table cell ancestor check disables superclusters in tables until we
-            //        work out exactly how tables and superclusters should interact.
-            if (cluster->m_supercluster && !cluster->m_hasTableAncestor) {
-                cluster->m_multiplier = superclusterMultiplier(cluster->m_supercluster);
+            if (cluster->m_supercluster) {
+                cluster->m_multiplier = superclusterMultiplier(cluster);
             } else if (clusterHasEnoughTextToAutosize(cluster)) {
                 cluster->m_multiplier = multiplierFromBlock(clusterWidthProvider(cluster->m_root));
                 // Do not inflate table descendants above the table's multiplier. See inflateTable(...) for details.
@@ -468,24 +488,33 @@ float FastTextAutosizer::clusterMultiplier(Cluster* cluster)
     return cluster->m_multiplier;
 }
 
-float FastTextAutosizer::superclusterMultiplier(Supercluster* supercluster)
+bool FastTextAutosizer::anyClusterHasEnoughTextToAutosize(const BlockSet* roots, const RenderBlock* widthProvider)
 {
+    for (BlockSet::iterator it = roots->begin(); it != roots->end(); ++it) {
+        if (clusterWouldHaveEnoughTextToAutosize(*it, widthProvider))
+            return true;
+    }
+    return false;
+}
+
+float FastTextAutosizer::superclusterMultiplier(Cluster* cluster)
+{
+    Supercluster* supercluster = cluster->m_supercluster;
     if (!supercluster->m_multiplier) {
         const BlockSet* roots = supercluster->m_roots;
-        BlockSet widthProviders;
-        for (BlockSet::iterator it = roots->begin(); it != roots->end(); ++it)
-            widthProviders.add(clusterWidthProvider(*it));
-        const RenderBlock* widthProvider = deepestCommonAncestor(widthProviders);
+        const RenderBlock* widthProvider;
 
-        bool anyClusterHasEnoughTextToAutosize = false;
-        for (BlockSet::iterator it = roots->begin(); it != roots->end(); ++it) {
-            if (clusterWouldHaveEnoughTextToAutosize(*it, widthProvider)) {
-                anyClusterHasEnoughTextToAutosize = true;
-                break;
-            }
+        if (cluster->m_root->isTableCell()) {
+            widthProvider = clusterWidthProvider(cluster->m_root);
+        } else {
+            BlockSet widthProviders;
+            for (BlockSet::iterator it = roots->begin(); it != roots->end(); ++it)
+                widthProviders.add(clusterWidthProvider(*it));
+            widthProvider = deepestCommonAncestor(widthProviders);
         }
 
-        supercluster->m_multiplier = anyClusterHasEnoughTextToAutosize ? multiplierFromBlock(widthProvider) : 1.0f;
+        supercluster->m_multiplier = anyClusterHasEnoughTextToAutosize(roots, widthProvider)
+            ? multiplierFromBlock(widthProvider) : 1.0f;
     }
     ASSERT(supercluster->m_multiplier);
     return supercluster->m_multiplier;
@@ -493,10 +522,8 @@ float FastTextAutosizer::superclusterMultiplier(Supercluster* supercluster)
 
 const RenderBlock* FastTextAutosizer::clusterWidthProvider(const RenderBlock* root)
 {
-    if (root->isTableCell())
-        return toRenderTableCell(root)->table();
-    if (root->isTable())
-        return toRenderTable(root);
+    if (root->isTable() || root->isTableCell())
+        return root;
 
     return deepestBlockContainingAllText(root);
 }

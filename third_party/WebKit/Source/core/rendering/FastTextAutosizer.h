@@ -144,6 +144,7 @@ private:
             : m_parentHash(0)
             , m_qualifiedNameHash(0)
             , m_packedStyleProperties(0)
+            , m_column(0)
             , m_width(0)
         {
         }
@@ -152,6 +153,7 @@ private:
         unsigned m_qualifiedNameHash;
         // Style specific selection of signals
         unsigned m_packedStyleProperties;
+        unsigned m_column;
         float m_width;
     };
     // Ensures efficient hashing using StringHasher.
@@ -193,6 +195,7 @@ private:
     void prepareClusterStack(const RenderObject*);
     bool isFingerprintingCandidate(const RenderBlock*);
     bool clusterHasEnoughTextToAutosize(Cluster*, const RenderBlock* widthProvider = 0);
+    bool anyClusterHasEnoughTextToAutosize(const BlockSet* roots, const RenderBlock* widthProvider = 0);
     bool clusterWouldHaveEnoughTextToAutosize(const RenderBlock* root, const RenderBlock* widthProvider = 0);
     Fingerprint getFingerprint(const RenderObject*);
     Fingerprint computeFingerprint(const RenderObject*);
@@ -200,7 +203,7 @@ private:
     Supercluster* getSupercluster(const RenderBlock*);
     const RenderBlock* deepestCommonAncestor(BlockSet&);
     float clusterMultiplier(Cluster*);
-    float superclusterMultiplier(Supercluster*);
+    float superclusterMultiplier(Cluster*);
     // A cluster's width provider is typically the deepest block containing all text.
     // There are exceptions, such as tables and table cells which use the table itself for width.
     const RenderBlock* clusterWidthProvider(const RenderBlock*);
