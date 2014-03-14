@@ -129,10 +129,11 @@ gfx::GLFence* CreateFence(bool flush) {
   if (gfx::g_driver_egl.ext.b_EGL_KHR_fence_sync)
     return new EGLFenceSync(flush);
 #endif
-  if (gfx::g_driver_gl.ext.b_GL_NV_fence)
-    return new GLFenceNVFence(flush);
+  // Prefer ARB_sync which supports server-side wait.
   if (gfx::g_driver_gl.ext.b_GL_ARB_sync)
     return new GLFenceARBSync(flush);
+  if (gfx::g_driver_gl.ext.b_GL_NV_fence)
+    return new GLFenceNVFence(flush);
   return NULL;
 }
 
