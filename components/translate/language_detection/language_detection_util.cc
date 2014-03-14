@@ -113,9 +113,10 @@ std::string DetermineTextLanguage(const base::string16& text,
       std::string utf8_text(base::UTF16ToUTF8(text));
       CLD2::Language language3[3];
       int percent3[3];
-      cld_language = CLD2::DetectLanguageSummary(
+      CLD2::DetectLanguageSummary(
           utf8_text.c_str(), (int)utf8_text.size(), true, language3, percent3,
           &text_bytes, &is_reliable);
+      cld_language = language3[0];
       is_valid_language = cld_language != CLD2::NUM_LANGUAGES &&
           cld_language != CLD2::UNKNOWN_LANGUAGE &&
           cld_language != CLD2::TG_UNKNOWN_LANGUAGE;
