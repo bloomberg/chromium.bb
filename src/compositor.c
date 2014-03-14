@@ -1203,8 +1203,8 @@ weston_surface_set_size_from_buffer(struct weston_surface *surface)
 	}
 
 	if (surface->buffer_viewport.viewport_set) {
-		surface->width = surface->buffer_viewport.dst_width;
-		surface->height = surface->buffer_viewport.dst_height;
+		surface_set_size(surface, surface->buffer_viewport.dst_width,
+				 surface->buffer_viewport.dst_height);
 		return;
 	}
 
