@@ -86,6 +86,20 @@ PlatformFile CreatePlatformFileUnsafe(const FilePath& name,
   HANDLE file = CreateFile(name.value().c_str(), access, sharing, NULL,
                            disposition, create_flags, NULL);
 
+  if (INVALID_HANDLE_VALUE != file){
+    // Don't allow directories to be opened without the proper flag (block ADS).
+    if (!(flags & PLATFORM_FILE_BACKUP_SEMANTICS)) {
+      BY_HANDLE_FILE_INFORMATION info = { 0 };
+      BOOL result = GetFileInformationByHandle(file, &info);
+      DCHECK(result);
+      if (info.dwFileAttributes & (FILE_ATTRIBUTE_DIRECTORY |
+                                   FILE_ATTRIBUTE_REPARSE_POINT)) {
+        CloseHandle(file);
+        file = INVALID_HANDLE_VALUE;
+      }
+    }
+  }
+
   if (created && (INVALID_HANDLE_VALUE != file)) {
     if (flags & (PLATFORM_FILE_OPEN_ALWAYS))
       *created = (ERROR_ALREADY_EXISTS != GetLastError());
