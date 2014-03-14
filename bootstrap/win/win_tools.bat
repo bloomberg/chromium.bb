@@ -25,6 +25,40 @@ if "%1" == "force" (
 )
 
 
+:PYTHON_CHECK
+if not exist "%WIN_TOOLS_ROOT_DIR%\python276_bin" goto :PY27_INSTALL
+if not exist "%WIN_TOOLS_ROOT_DIR%\python.bat" goto :PY27_INSTALL
+set ERRORLEVEL=0
+goto :GIT_CHECK
+
+
+:PY27_INSTALL
+echo Installing python 2.7.6...
+:: Cleanup python directory if it was existing.
+if exist "%WIN_TOOLS_ROOT_DIR%\python276_bin\." rd /q /s "%WIN_TOOLS_ROOT_DIR%\python276_bin"
+if exist "%ZIP_DIR%\python276.zip" del "%ZIP_DIR%\python276.zip"
+echo Fetching from %WIN_TOOLS_ROOT_URL%/third_party/python276_bin.zip
+cscript //nologo //e:jscript "%~dp0get_file.js" %WIN_TOOLS_ROOT_URL%/third_party/python276_bin.zip "%ZIP_DIR%\python276_bin.zip"
+if errorlevel 1 goto :PYTHON_FAIL
+:: Will create python276_bin\...
+cscript //nologo //e:jscript "%~dp0unzip.js" "%ZIP_DIR%\python276_bin.zip" "%WIN_TOOLS_ROOT_DIR%"
+:: Create the batch files.
+call copy /y "%~dp0python276.new.bat" "%WIN_TOOLS_ROOT_DIR%\python.bat" 1>nul
+call copy /y "%~dp0pylint.new.bat" "%WIN_TOOLS_ROOT_DIR%\pylint.bat" 1>nul
+del "%ZIP_DIR%\python276_bin.zip"
+set ERRORLEVEL=0
+goto :GIT_CHECK
+
+
+:PYTHON_FAIL
+echo ... Failed to checkout python automatically.
+echo Please visit http://python.org to download the latest python 2.7.x client before
+echo continuing.
+echo You can also get the "prebacked" version used at %WIN_TOOLS_ROOT_URL%/third_party/
+set ERRORLEVEL=1
+goto :END
+
+
 :GIT_CHECK
 if "%DEPOT_TOOLS_GIT_1852%" == "0" goto :GIT_1852_UNINSTALL
 goto :GIT_1852_CHECK
@@ -121,11 +155,11 @@ goto :END
 
 :SVN_CHECK
 :: If the batch file exists, skip the svn check.
-if exist "%WIN_TOOLS_ROOT_DIR%\svn.bat" goto :PYTHON_CHECK
+if exist "%WIN_TOOLS_ROOT_DIR%\svn.bat" goto :END
 if "%WIN_TOOLS_FORCE%" == "1" goto :SVN_INSTALL
 call svn --version 2>nul 1>nul
 if errorlevel 1 goto :SVN_INSTALL
-goto :PYTHON_CHECK
+goto :END
 
 
 :SVN_INSTALL
@@ -146,75 +180,13 @@ del "%ZIP_DIR%\svn.zip"
 :: Create the batch file.
 call copy /y "%~dp0svn.new.bat" "%WIN_TOOLS_ROOT_DIR%\svn.bat" 1>nul
 call copy /y "%~dp0svnversion.new.bat" "%WIN_TOOLS_ROOT_DIR%\svnversion.bat" 1>nul
-goto :PYTHON_CHECK
+goto :END
 
 
 :SVN_FAIL
 echo ... Failed to checkout svn automatically.
 echo Please visit http://subversion.tigris.org to download the latest subversion client
 echo before continuing.
-echo You can also get the "prebacked" version used at %WIN_TOOLS_ROOT_URL%/third_party/
-set ERRORLEVEL=1
-goto :END
-
-
-:PYTHON_CHECK
-:: Note: while the variable talks about 2.7.5, we are now installing 2.7.6.
-:: Sorry for the confusion. :(
-if "%DEPOT_TOOLS_PYTHON_275%" == "0" goto :PY26_CHECK
-if "%DEPOT_TOOLS_PYTHON_27%" == "0" goto :PY26_CHECK
-goto :PY27_CHECK
-
-
-:PY26_CHECK
-if not exist "%WIN_TOOLS_ROOT_DIR%\python_bin" goto :PY26_INSTALL
-if not exist "%WIN_TOOLS_ROOT_DIR%\python.bat" goto :PY26_INSTALL
-set ERRORLEVEL=0
-goto :END
-
-
-:PY27_CHECK
-if not exist "%WIN_TOOLS_ROOT_DIR%\python276_bin" goto :PY27_INSTALL
-if not exist "%WIN_TOOLS_ROOT_DIR%\python.bat" goto :PY27_INSTALL
-set ERRORLEVEL=0
-goto :END
-
-
-:PY27_INSTALL
-echo Installing python 2.7.6...
-:: Cleanup python directory if it was existing.
-if exist "%WIN_TOOLS_ROOT_DIR%\python276_bin\." rd /q /s "%WIN_TOOLS_ROOT_DIR%\python276_bin"
-if exist "%ZIP_DIR%\python276.zip" del "%ZIP_DIR%\python276.zip"
-echo Fetching from %WIN_TOOLS_ROOT_URL%/third_party/python276_bin.zip
-cscript //nologo //e:jscript "%~dp0get_file.js" %WIN_TOOLS_ROOT_URL%/third_party/python276_bin.zip "%ZIP_DIR%\python276_bin.zip"
-if errorlevel 1 goto :PYTHON_FAIL
-:: Will create python276_bin\...
-cscript //nologo //e:jscript "%~dp0unzip.js" "%ZIP_DIR%\python276_bin.zip" "%WIN_TOOLS_ROOT_DIR%"
-:: Create the batch files.
-call copy /y "%~dp0python276.new.bat" "%WIN_TOOLS_ROOT_DIR%\python.bat" 1>nul
-call copy /y "%~dp0pylint.new.bat" "%WIN_TOOLS_ROOT_DIR%\pylint.bat" 1>nul
-del "%ZIP_DIR%\python276_bin.zip"
-set ERRORLEVEL=0
-goto :END
-
-
-:PY26_INSTALL
-echo Installing python 2.6...
-:: Cleanup python directory if it was existing.
-if exist "%WIN_TOOLS_ROOT_DIR%\python_bin\." rd /q /s "%WIN_TOOLS_ROOT_DIR%\python_bin"
-call svn co -q %WIN_TOOLS_ROOT_URL%/third_party/python_26 "%WIN_TOOLS_ROOT_DIR%\python_bin"
-if errorlevel 1 goto :PYTHON_FAIL
-:: Create the batch files.
-call copy /y "%~dp0python.new.bat" "%WIN_TOOLS_ROOT_DIR%\python.bat" 1>nul
-call copy /y "%~dp0pylint.new.bat" "%WIN_TOOLS_ROOT_DIR%\pylint.bat" 1>nul
-set ERRORLEVEL=0
-goto :END
-
-
-:PYTHON_FAIL
-echo ... Failed to checkout python automatically.
-echo Please visit http://python.org to download the latest python 2.7.x client before
-echo continuing.
 echo You can also get the "prebacked" version used at %WIN_TOOLS_ROOT_URL%/third_party/
 set ERRORLEVEL=1
 goto :END
