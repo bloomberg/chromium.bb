@@ -52,9 +52,7 @@ InjectedScriptHostClass.prototype.isHTMLAllCollection = function(object) { }
  * @param {*} object
  */
 InjectedScriptHostClass.prototype.internalConstructorName = function(object) { }
-/**
- * @param {*} object
- */
+
 InjectedScriptHostClass.prototype.clearConsoleMessages = function() { }
 /**
  * @param {number} index
