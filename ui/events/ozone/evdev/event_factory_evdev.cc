@@ -10,6 +10,7 @@
 #include "base/debug/trace_event.h"
 #include "base/stl_util.h"
 #include "base/task_runner.h"
+#include "ui/events/ozone/evdev/cursor_delegate_evdev.h"
 #include "ui/events/ozone/evdev/device_manager_evdev.h"
 #include "ui/events/ozone/evdev/event_device_info.h"
 #include "ui/events/ozone/evdev/key_event_converter_evdev.h"
@@ -44,6 +45,7 @@ bool IsTouchScreen(const EventDeviceInfo& devinfo) {
 void OpenInputDevice(
     const base::FilePath& path,
     EventModifiersEvdev* modifiers,
+    CursorDelegateEvdev* cursor,
     scoped_refptr<base::TaskRunner> reply_runner,
     base::Callback<void(scoped_ptr<EventConverterEvdev>)> reply_callback) {
   TRACE_EVENT1("ozone", "OpenInputDevice", "path", path.value());
@@ -97,6 +99,13 @@ void CloseInputDevice(const base::FilePath& path,
 EventFactoryEvdev::EventFactoryEvdev()
     : ui_task_runner_(base::MessageLoopProxy::current()),
       file_task_runner_(base::MessageLoopProxy::current()),
+      cursor_(NULL),
+      weak_ptr_factory_(this) {}
+
+EventFactoryEvdev::EventFactoryEvdev(CursorDelegateEvdev* cursor)
+    : ui_task_runner_(base::MessageLoopProxy::current()),
+      file_task_runner_(base::MessageLoopProxy::current()),
+      cursor_(cursor),
       weak_ptr_factory_(this) {}
 
 EventFactoryEvdev::~EventFactoryEvdev() { STLDeleteValues(&converters_); }
@@ -126,6 +135,7 @@ void EventFactoryEvdev::OnDeviceAdded(const base::FilePath& path) {
       base::Bind(&OpenInputDevice,
                  path,
                  &modifiers_,
+                 cursor_,
                  ui_task_runner_,
                  base::Bind(&EventFactoryEvdev::AttachInputDevice,
                             weak_ptr_factory_.GetWeakPtr(),
@@ -177,6 +187,18 @@ void EventFactoryEvdev::StartProcessingEvents() {
 void EventFactoryEvdev::SetFileTaskRunner(
     scoped_refptr<base::TaskRunner> task_runner) {
   file_task_runner_ = task_runner;
+}
+
+void EventFactoryEvdev::WarpCursorTo(gfx::AcceleratedWidget widget,
+                                     const gfx::PointF& location) {
+  if (cursor_)
+    cursor_->MoveCursorTo(widget, location);
+  scoped_ptr<Event> ev(new MouseEvent(ET_MOUSE_MOVED,
+                                      cursor_->location(),
+                                      cursor_->location(),
+                                      modifiers_.GetModifierFlags(),
+                                      /* changed_button_flags */ 0));
+  DispatchEvent(ev.Pass());
 }
 
 }  // namespace ui

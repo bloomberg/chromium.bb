@@ -17,19 +17,22 @@
 
 namespace ui {
 
+class CursorDelegateEvdev;
 class DeviceManagerEvdev;
 
 // Ozone events implementation for the Linux input subsystem ("evdev").
 class EVENTS_EXPORT EventFactoryEvdev : public EventFactoryOzone {
  public:
   EventFactoryEvdev();
+  explicit EventFactoryEvdev(CursorDelegateEvdev* cursor);
   virtual ~EventFactoryEvdev();
 
+  // EventFactoryOzone:
   virtual void StartProcessingEvents() OVERRIDE;
-
-  // Set task runner to use for device polling & initialization.
   virtual void SetFileTaskRunner(scoped_refptr<base::TaskRunner> task_runner)
       OVERRIDE;
+  virtual void WarpCursorTo(gfx::AcceleratedWidget widget,
+                            const gfx::PointF& location) OVERRIDE;
 
  private:
   // Open device at path & starting processing events (on UI thread).
@@ -59,6 +62,9 @@ class EVENTS_EXPORT EventFactoryEvdev : public EventFactoryOzone {
 
   // Modifier key state (shift, ctrl, etc).
   EventModifiersEvdev modifiers_;
+
+  // Cursor movement.
+  CursorDelegateEvdev* cursor_;
 
   // Support weak pointers for attach & detach callbacks.
   base::WeakPtrFactory<EventFactoryEvdev> weak_ptr_factory_;

@@ -11,6 +11,11 @@
 #include "base/message_loop/message_pump_libevent.h"
 #include "base/task_runner.h"
 #include "ui/events/events_export.h"
+#include "ui/gfx/native_widget_types.h"
+
+namespace gfx {
+class PointF;
+}
 
 namespace ui {
 
@@ -38,6 +43,12 @@ class EVENTS_EXPORT EventFactoryOzone {
   // StartProcessingEvents() should only be used for I/O that is critical
   // to event dispatching.
   virtual void SetFileTaskRunner(scoped_refptr<base::TaskRunner> task_runner);
+
+  // Request to warp the cursor to a location within an AccelerateWidget.
+  // If the cursor actually moves, the implementation must dispatch a mouse
+  // move event with the new location.
+  virtual void WarpCursorTo(gfx::AcceleratedWidget widget,
+                            const gfx::PointF& location);
 
   // Returns the static instance last set using SetInstance().
   static EventFactoryOzone* GetInstance();

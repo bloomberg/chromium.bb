@@ -9,10 +9,6 @@
 #include "ui/base/ui_base_export.h"
 #include "ui/gfx/native_widget_types.h"
 
-namespace gfx {
-class Point;
-}
-
 namespace ui {
 
 class UI_BASE_EXPORT CursorFactoryOzone {
@@ -46,11 +42,6 @@ class UI_BASE_EXPORT CursorFactoryOzone {
   // Change the active cursor for an AcceleratedWidget.
   // TODO(spang): Move this.
   virtual void SetCursor(gfx::AcceleratedWidget widget, PlatformCursor cursor);
-
-  // Warp the cursor within an AccelerateWidget.
-  // TODO(spang): Move this.
-  virtual void MoveCursorTo(gfx::AcceleratedWidget widget,
-                            const gfx::Point& location);
 
  private:
   static CursorFactoryOzone* impl_;  // not owned

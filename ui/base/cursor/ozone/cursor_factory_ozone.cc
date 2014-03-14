@@ -34,17 +34,16 @@ PlatformCursor CursorFactoryOzone::CreateImageCursor(
   return NULL;
 }
 
-void CursorFactoryOzone::RefImageCursor(PlatformCursor cursor) {}
-
-void CursorFactoryOzone::UnrefImageCursor(PlatformCursor cursor) {}
-
-void CursorFactoryOzone::SetCursor(gfx::AcceleratedWidget widget,
-                                   PlatformCursor cursor) {
+void CursorFactoryOzone::RefImageCursor(PlatformCursor cursor) {
   NOTIMPLEMENTED();
 }
 
-void CursorFactoryOzone::MoveCursorTo(gfx::AcceleratedWidget widget,
-                                      const gfx::Point& location) {
+void CursorFactoryOzone::UnrefImageCursor(PlatformCursor cursor) {
+  NOTIMPLEMENTED();
+}
+
+void CursorFactoryOzone::SetCursor(gfx::AcceleratedWidget widget,
+                                   PlatformCursor cursor) {
   NOTIMPLEMENTED();
 }
 

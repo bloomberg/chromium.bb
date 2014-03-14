@@ -41,6 +41,11 @@ void EventFactoryOzone::StartProcessingEvents() {}
 void EventFactoryOzone::SetFileTaskRunner(
     scoped_refptr<base::TaskRunner> task_runner) {}
 
+void EventFactoryOzone::WarpCursorTo(gfx::AcceleratedWidget widget,
+                                     const gfx::PointF& location) {
+  NOTIMPLEMENTED();
+}
+
 // static
 void EventFactoryOzone::DispatchEvent(scoped_ptr<ui::Event> event) {
   base::MessageLoop::current()->PostTask(

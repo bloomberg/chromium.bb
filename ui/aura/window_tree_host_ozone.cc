@@ -104,8 +104,8 @@ void WindowTreeHostOzone::SetCursorNative(gfx::NativeCursor cursor) {
 }
 
 void WindowTreeHostOzone::MoveCursorToNative(const gfx::Point& location) {
-  ui::CursorFactoryOzone::GetInstance()->MoveCursorTo(GetAcceleratedWidget(),
-                                                      location);
+  ui::EventFactoryOzone::GetInstance()->WarpCursorTo(GetAcceleratedWidget(),
+                                                     location);
 }
 
 void WindowTreeHostOzone::OnCursorVisibilityChangedNative(bool show) {
