@@ -238,7 +238,7 @@ void UpgradeDetectorImpl::DetectUpgradeTask(
   }
 #elif defined(OS_MACOSX)
   installed_version =
-      Version(UTF16ToASCII(keystone_glue::CurrentlyInstalledVersion()));
+      Version(base::UTF16ToASCII(keystone_glue::CurrentlyInstalledVersion()));
 #elif defined(OS_POSIX)
   // POSIX but not Mac OS X: Linux, etc.
   CommandLine command_line(*CommandLine::ForCurrentProcess());

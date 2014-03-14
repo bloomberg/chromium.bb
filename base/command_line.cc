@@ -81,7 +81,8 @@ void AppendSwitchesAndArguments(CommandLine& command_line,
     parse_switches &= (arg != kSwitchTerminator);
     if (parse_switches && IsSwitch(arg, &switch_string, &switch_value)) {
 #if defined(OS_WIN)
-      command_line.AppendSwitchNative(WideToASCII(switch_string), switch_value);
+      command_line.AppendSwitchNative(base::UTF16ToASCII(switch_string),
+                                      switch_value);
 #elif defined(OS_POSIX)
       command_line.AppendSwitchNative(switch_string, switch_value);
 #endif
@@ -308,7 +309,7 @@ std::string CommandLine::GetSwitchValueASCII(
     return std::string();
   }
 #if defined(OS_WIN)
-  return WideToASCII(value);
+  return base::UTF16ToASCII(value);
 #else
   return value;
 #endif

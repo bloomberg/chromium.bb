@@ -19,8 +19,6 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"  // For implicit conversions.
 
-// Safe standard library wrappers for all platforms.
-
 namespace base {
 
 // C standard-library functions like "strncasecmp" and "snprintf" that aren't
@@ -245,11 +243,6 @@ BASE_EXPORT bool ContainsOnlyChars(const StringPiece16& input,
 #else
 #error Define string operations appropriately for your platform
 #endif
-
-// Converts to 7-bit ASCII by truncating. The result must be known to be ASCII
-// beforehand.
-BASE_EXPORT std::string WideToASCII(const std::wstring& wide);
-BASE_EXPORT std::string UTF16ToASCII(const base::string16& utf16);
 
 // Returns true if the specified string matches the criteria. How can a wide
 // string be 8-bit or UTF8? It contains only characters that are < 256 (in the

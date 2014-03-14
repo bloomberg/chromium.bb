@@ -409,7 +409,7 @@ RendererWebKitPlatformSupportImpl::MimeRegistry::supportsMediaMIMEType(
       return IsNotSupported;
 
     std::string key_system_ascii =
-        GetUnprefixedKeySystemName(UTF16ToASCII(key_system));
+        GetUnprefixedKeySystemName(base::UTF16ToASCII(key_system));
     std::vector<std::string> strict_codecs;
     bool strip_suffix = !net::IsStrictMediaMimeType(mime_type_ascii);
     net::ParseCodecString(ToASCIIOrEmpty(codecs), &strict_codecs, strip_suffix);
@@ -475,14 +475,15 @@ RendererWebKitPlatformSupportImpl::MimeRegistry::supportsEncryptedMediaMIMEType(
   if (key_system.isEmpty())
     return false;
 
-  const std::string mime_type_ascii = UTF16ToASCII(mime_type);
+  const std::string mime_type_ascii = base::UTF16ToASCII(mime_type);
 
   std::vector<std::string> codec_vector;
   bool strip_suffix = !net::IsStrictMediaMimeType(mime_type_ascii);
-  net::ParseCodecString(UTF16ToASCII(codecs), &codec_vector, strip_suffix);
+  net::ParseCodecString(base::UTF16ToASCII(codecs), &codec_vector,
+                        strip_suffix);
 
   return IsSupportedKeySystemWithMediaMimeType(
-      mime_type_ascii, codec_vector, UTF16ToASCII(key_system));
+      mime_type_ascii, codec_vector, base::UTF16ToASCII(key_system));
 }
 
 WebString

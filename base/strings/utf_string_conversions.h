@@ -44,6 +44,10 @@ BASE_EXPORT std::string UTF16ToUTF8(const string16& utf16);
 BASE_EXPORT std::wstring ASCIIToWide(const StringPiece& ascii);
 BASE_EXPORT string16 ASCIIToUTF16(const StringPiece& ascii);
 
+// Converts to 7-bit ASCII by truncating. The result must be known to be ASCII
+// beforehand.
+BASE_EXPORT std::string UTF16ToASCII(const string16& utf16);
+
 }  // namespace base
 
 // We are trying to get rid of wstring as much as possible, but it's too big a

@@ -27,9 +27,6 @@
 
 namespace autofill {
 
-using base::ASCIIToUTF16;
-using base::UTF16ToUTF8;
-
 DataModelWrapper::~DataModelWrapper() {}
 
 void DataModelWrapper::FillInputs(DetailInputs* inputs) {
@@ -67,9 +64,9 @@ bool DataModelWrapper::GetDisplayText(
   base::string16 non_address_info;
   base::string16 email = GetInfoForDisplay(AutofillType(EMAIL_ADDRESS));
   if (!email.empty())
-    non_address_info += ASCIIToUTF16("\n") + email;
+    non_address_info += base::ASCIIToUTF16("\n") + email;
 
-  non_address_info += ASCIIToUTF16("\n") + phone;
+  non_address_info += base::ASCIIToUTF16("\n") + phone;
 
   // The separator is locale-specific.
   std::string compact_separator =
@@ -137,8 +134,9 @@ base::string16 AutofillProfileWrapper::GetInfoForDisplay(
 
     // If there is no user-defined formatting at all, add some standard
     // formatting.
-    if (base::ContainsOnlyChars(phone_number, ASCIIToUTF16("0123456789"))) {
-      std::string region = UTF16ToASCII(
+    if (base::ContainsOnlyChars(phone_number,
+                                base::ASCIIToUTF16("0123456789"))) {
+      std::string region = base::UTF16ToASCII(
           GetInfo(AutofillType(HTML_TYPE_COUNTRY_CODE, HTML_MODE_NONE)));
       i18n::PhoneObject phone(phone_number, region);
       return phone.GetFormattedNumber();
@@ -289,7 +287,8 @@ bool WalletInstrumentWrapper::GetDisplayText(
 
   // TODO(estade): descriptive_name() is user-provided. Should we use it or
   // just type + last 4 digits?
-  base::string16 line1 = instrument_->descriptive_name() + ASCIIToUTF16("\n");
+  base::string16 line1 =
+      instrument_->descriptive_name() + base::ASCIIToUTF16("\n");
   *vertically_compact = line1 + *vertically_compact;
   *horizontally_compact = line1 + *horizontally_compact;
   return true;

@@ -244,10 +244,10 @@ PrefService* InitializeLocalState(
     // language the user selected when downloading the installer. This
     // becomes our default language in the prefs.
     // Other platforms obey the system locale.
-    std::wstring install_lang;
+    base::string16 install_lang;
     if (GoogleUpdateSettings::GetLanguage(&install_lang)) {
       local_state->SetString(prefs::kApplicationLocale,
-                             WideToASCII(install_lang));
+                             base::UTF16ToASCII(install_lang));
     }
   }
 #endif  // defined(OS_WIN)

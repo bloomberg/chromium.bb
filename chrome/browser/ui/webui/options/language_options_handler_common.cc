@@ -227,7 +227,8 @@ void LanguageOptionsHandlerCommon::LanguageOptionsOpenCallback(
 
 void LanguageOptionsHandlerCommon::UiLanguageChangeCallback(
     const base::ListValue* args) {
-  const std::string language_code = UTF16ToASCII(ExtractStringValue(args));
+  const std::string language_code =
+      base::UTF16ToASCII(ExtractStringValue(args));
   CHECK(!language_code.empty());
   const std::string action = base::StringPrintf(
       "LanguageOptions_UiLanguageChange_%s", language_code.c_str());
@@ -240,7 +241,8 @@ void LanguageOptionsHandlerCommon::UiLanguageChangeCallback(
 
 void LanguageOptionsHandlerCommon::SpellCheckLanguageChangeCallback(
     const base::ListValue* args) {
-  const std::string language_code = UTF16ToASCII(ExtractStringValue(args));
+  const std::string language_code =
+      base::UTF16ToASCII(ExtractStringValue(args));
   CHECK(!language_code.empty());
   const std::string action = base::StringPrintf(
       "LanguageOptions_SpellCheckLanguageChange_%s", language_code.c_str());

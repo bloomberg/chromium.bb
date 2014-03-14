@@ -90,12 +90,14 @@ std::string TreeViewTest::TreeViewContentsAsString() {
 
 std::string TreeViewTest::GetSelectedNodeTitle() {
   TreeModelNode* model_node = tree_.GetSelectedNode();
-  return model_node ? UTF16ToASCII(model_node->GetTitle()) : std::string();
+  return model_node ? base::UTF16ToASCII(model_node->GetTitle())
+                    : std::string();
 }
 
 std::string TreeViewTest::GetEditingNodeTitle() {
   TreeModelNode* model_node = tree_.GetEditingNode();
-  return model_node ? UTF16ToASCII(model_node->GetTitle()) : std::string();
+  return model_node ? base::UTF16ToASCII(model_node->GetTitle())
+                    : std::string();
 }
 
 TestNode* TreeViewTest::GetNodeByTitle(const std::string& title) {
@@ -133,7 +135,7 @@ TestNode* TreeViewTest::GetNodeByTitleImpl(TestNode* node,
 
 std::string TreeViewTest::InternalNodeAsString(
     TreeView::InternalNode* node) {
-  std::string result = UTF16ToASCII(node->model_node()->GetTitle());
+  std::string result = base::UTF16ToASCII(node->model_node()->GetTitle());
   if (node->is_expanded() && node->child_count()) {
     result += " [";
     for (int i = 0; i < node->child_count(); ++i) {

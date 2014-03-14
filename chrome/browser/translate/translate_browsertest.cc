@@ -190,7 +190,7 @@ IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, TranslateInIsolatedWorld) {
 
   // Wait for the page title is changed after the test finished.
   const base::string16 result = watcher.WaitAndGetTitle();
-  EXPECT_EQ("PASS", UTF16ToASCII(result));
+  EXPECT_EQ("PASS", base::UTF16ToASCII(result));
 }
 
 IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, IgnoreRefreshMetaTag) {
@@ -220,7 +220,7 @@ IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, IgnoreRefreshMetaTag) {
 
   // Wait for the page title is changed after the test finished.
   const base::string16 result = watcher.WaitAndGetTitle();
-  EXPECT_EQ("PASS", UTF16ToASCII(result));
+  EXPECT_EQ("PASS", base::UTF16ToASCII(result));
 
   // Check if there is no Translate infobar.
   translate = GetExistingTranslateInfoBarDelegate();
@@ -255,7 +255,7 @@ IN_PROC_BROWSER_TEST_F(TranslateBrowserTest,
 
   // Wait for the page title is changed after the test finished.
   const base::string16 result = watcher.WaitAndGetTitle();
-  EXPECT_EQ("PASS", UTF16ToASCII(result));
+  EXPECT_EQ("PASS", base::UTF16ToASCII(result));
 
   // Check if there is no Translate infobar.
   translate = GetExistingTranslateInfoBarDelegate();
@@ -289,7 +289,7 @@ IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, IgnoreRefreshMetaTagAtOnload) {
 
   // Wait for the page title is changed after the test finished.
   const base::string16 result = watcher.WaitAndGetTitle();
-  EXPECT_EQ("PASS", UTF16ToASCII(result));
+  EXPECT_EQ("PASS", base::UTF16ToASCII(result));
 
   // Check if there is no Translate infobar.
   translate = GetExistingTranslateInfoBarDelegate();
@@ -323,7 +323,7 @@ IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, UpdateLocation) {
 
   // Wait for the page title is changed after the test finished.
   const base::string16 result = watcher.WaitAndGetTitle();
-  EXPECT_EQ("PASS", UTF16ToASCII(result));
+  EXPECT_EQ("PASS", base::UTF16ToASCII(result));
 
   // Check if there is no Translate infobar.
   translate = GetExistingTranslateInfoBarDelegate();
@@ -357,7 +357,7 @@ IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, UpdateLocationAtOnload) {
 
   // Wait for the page title is changed after the test finished.
   const base::string16 result = watcher.WaitAndGetTitle();
-  EXPECT_EQ("PASS", UTF16ToASCII(result));
+  EXPECT_EQ("PASS", base::UTF16ToASCII(result));
 
   // Check if there is no Translate infobar.
   translate = GetExistingTranslateInfoBarDelegate();

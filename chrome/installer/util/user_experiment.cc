@@ -476,7 +476,7 @@ void LaunchBrowserUserExperiment(const CommandLine& base_cmd_line,
   cmd_line.AppendSwitchASCII(switches::kInactiveUserToast,
                              base::IntToString(flavor));
   cmd_line.AppendSwitchASCII(switches::kExperimentGroup,
-                             WideToASCII(base_group));
+                             base::UTF16ToASCII(base_group));
   LaunchSetup(&cmd_line, system_level);
 }
 

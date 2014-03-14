@@ -85,7 +85,7 @@ class SessionHistoryTest : public ContentBrowserTest {
   }
 
   std::string GetTabTitle() {
-    return UTF16ToASCII(shell()->web_contents()->GetTitle());
+    return base::UTF16ToASCII(shell()->web_contents()->GetTitle());
   }
 
   GURL GetTabURL() {

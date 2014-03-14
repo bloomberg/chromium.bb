@@ -16,6 +16,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "net/base/address_list.h"
 #include "net/base/ip_endpoint.h"
@@ -361,7 +362,7 @@ bool GDig::ParseCommandLine(int argc, const char* argv[]) {
     ReplayLogEntry entry;
     entry.start_time = base::TimeDelta();
 #if defined(OS_WIN)
-    entry.domain_name = WideToASCII(parsed_command_line.GetArgs()[0]);
+    entry.domain_name = base::UTF16ToASCII(parsed_command_line.GetArgs()[0]);
 #else
     entry.domain_name = parsed_command_line.GetArgs()[0];
 #endif

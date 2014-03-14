@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/win/registry.h"
 
 namespace device {
@@ -34,7 +35,7 @@ void SerialDeviceEnumeratorWin::GetDevices(SerialDeviceInfoList* devices) {
   for (; iter_key.Valid(); ++iter_key) {
     base::string16 value(iter_key.Value());
     linked_ptr<SerialDeviceInfo> info(new SerialDeviceInfo);
-    info->path = WideToASCII(value);
+    info->path = base::UTF16ToASCII(value);
     devices->push_back(info);
   }
 }

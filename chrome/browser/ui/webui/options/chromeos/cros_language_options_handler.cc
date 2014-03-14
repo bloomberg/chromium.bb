@@ -408,7 +408,8 @@ void CrosLanguageOptionsHandler::RestartCallback(const base::ListValue* args) {
 
 void CrosLanguageOptionsHandler::InputMethodDisableCallback(
     const base::ListValue* args) {
-  const std::string input_method_id = UTF16ToASCII(ExtractStringValue(args));
+  const std::string input_method_id =
+      base::UTF16ToASCII(ExtractStringValue(args));
   const std::string action = base::StringPrintf(
       "LanguageOptions_DisableInputMethod_%s", input_method_id.c_str());
   content::RecordComputedAction(action);
@@ -416,7 +417,8 @@ void CrosLanguageOptionsHandler::InputMethodDisableCallback(
 
 void CrosLanguageOptionsHandler::InputMethodEnableCallback(
     const base::ListValue* args) {
-  const std::string input_method_id = UTF16ToASCII(ExtractStringValue(args));
+  const std::string input_method_id =
+      base::UTF16ToASCII(ExtractStringValue(args));
   const std::string action = base::StringPrintf(
       "LanguageOptions_EnableInputMethod_%s", input_method_id.c_str());
   content::RecordComputedAction(action);
@@ -424,7 +426,8 @@ void CrosLanguageOptionsHandler::InputMethodEnableCallback(
 
 void CrosLanguageOptionsHandler::InputMethodOptionsOpenCallback(
     const base::ListValue* args) {
-  const std::string input_method_id = UTF16ToASCII(ExtractStringValue(args));
+  const std::string input_method_id =
+      base::UTF16ToASCII(ExtractStringValue(args));
   const std::string extension_id =
       extension_ime_util::GetExtensionIDFromInputMethodID(input_method_id);
   if (extension_id.empty())

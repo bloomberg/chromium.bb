@@ -137,8 +137,8 @@ bool SendFinancialPing(const std::string& brand,
   rlz_lib::AccessPoint points[] = {RLZTracker::CHROME_OMNIBOX,
                                    RLZTracker::CHROME_HOME_PAGE,
                                    rlz_lib::NO_ACCESS_POINT};
-  std::string lang_ascii(UTF16ToASCII(lang));
-  std::string referral_ascii(UTF16ToASCII(referral));
+  std::string lang_ascii(base::UTF16ToASCII(lang));
+  std::string referral_ascii(base::UTF16ToASCII(referral));
   std::string product_signature;
 #if defined(OS_CHROMEOS)
   product_signature = "chromeos";

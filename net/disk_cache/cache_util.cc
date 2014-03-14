@@ -9,6 +9,7 @@
 #include "base/location.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/worker_pool.h"
 
@@ -118,7 +119,7 @@ bool DelayedCacheCleanup(const base::FilePath& full_path) {
   std::string name_str = name.value();
 #elif defined(OS_WIN)
   // We created this file so it should only contain ASCII.
-  std::string name_str = WideToASCII(name.value());
+  std::string name_str = base::UTF16ToASCII(name.value());
 #endif
 
   base::FilePath to_delete = GetTempCacheName(path, name_str);

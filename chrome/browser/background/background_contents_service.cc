@@ -431,7 +431,7 @@ void BackgroundContentsService::Observe(
       if (type == chrome::NOTIFICATION_BACKGROUND_CONTENTS_TERMINATED) {
         BackgroundContents* bg =
             content::Details<BackgroundContents>(details).ptr();
-        std::string extension_id = UTF16ToASCII(
+        std::string extension_id = base::UTF16ToASCII(
             BackgroundContentsServiceFactory::GetForProfile(profile)->
                 GetParentApplicationId(bg));
         extension =
@@ -738,7 +738,7 @@ void BackgroundContentsService::BackgroundContentsOpened(
   contents_map_[details->application_id].contents = details->contents;
   contents_map_[details->application_id].frame_name = details->frame_name;
 
-  ScheduleCloseBalloon(UTF16ToASCII(details->application_id));
+  ScheduleCloseBalloon(base::UTF16ToASCII(details->application_id));
 }
 
 // Used by test code and debug checks to verify whether a given

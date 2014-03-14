@@ -260,7 +260,7 @@ void TemplateURLParsingContext::EndElementImpl(void* ctx, const xmlChar* name) {
       break;
     }
     case TemplateURLParsingContext::INPUT_ENCODING: {
-      std::string input_encoding = UTF16ToASCII(context->string_);
+      std::string input_encoding = base::UTF16ToASCII(context->string_);
       if (IsValidEncodingString(input_encoding))
         context->data_.input_encodings.push_back(input_encoding);
       break;

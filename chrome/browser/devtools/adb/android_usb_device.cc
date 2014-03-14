@@ -13,6 +13,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/devtools/adb/android_rsa.h"
 #include "chrome/browser/devtools/adb/android_usb_socket.h"
 #include "chrome/browser/usb/usb_device.h"
@@ -98,7 +99,7 @@ scoped_refptr<AndroidUsbDevice> ClaimInterface(
   if (!usb_handle->GetSerial(&serial) || serial.empty())
     return NULL;
 
-  return new AndroidUsbDevice(rsa_key, usb_handle, UTF16ToASCII(serial),
+  return new AndroidUsbDevice(rsa_key, usb_handle, base::UTF16ToASCII(serial),
                               inbound_address, outbound_address, zero_mask);
 }
 

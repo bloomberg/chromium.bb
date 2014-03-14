@@ -326,20 +326,6 @@ bool ContainsOnlyChars(const StringPiece16& input,
 
 }  // namespace base
 
-#if !defined(WCHAR_T_IS_UTF16)
-bool IsStringASCII(const std::wstring& str);
-#endif
-
-std::string WideToASCII(const std::wstring& wide) {
-  DCHECK(IsStringASCII(wide)) << wide;
-  return std::string(wide.begin(), wide.end());
-}
-
-std::string UTF16ToASCII(const string16& utf16) {
-  DCHECK(IsStringASCII(utf16)) << utf16;
-  return std::string(utf16.begin(), utf16.end());
-}
-
 template<class STR>
 static bool DoIsStringASCII(const STR& str) {
   for (size_t i = 0; i < str.length(); i++) {
@@ -350,17 +336,11 @@ static bool DoIsStringASCII(const STR& str) {
   return true;
 }
 
-#if !defined(WCHAR_T_IS_UTF16)
-bool IsStringASCII(const std::wstring& str) {
-  return DoIsStringASCII(str);
-}
-#endif
-
-bool IsStringASCII(const string16& str) {
-  return DoIsStringASCII(str);
-}
-
 bool IsStringASCII(const base::StringPiece& str) {
+  return DoIsStringASCII(str);
+}
+
+bool IsStringASCII(const base::string16& str) {
   return DoIsStringASCII(str);
 }
 

@@ -4,6 +4,7 @@
 
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/test/render_view_test.h"
 #include "content/renderer/render_view_impl.h"
@@ -103,7 +104,7 @@ TEST_F(RenderViewTest, MacTestCmdUp) {
   ProcessPendingMessages();
   ExecuteJavaScript("scroll.textContent = window.pageYOffset");
   output = GetMainFrame()->contentAsText(kMaxOutputCharacters);
-  EXPECT_EQ(kArrowDownScrollDown, UTF16ToASCII(output));
+  EXPECT_EQ(kArrowDownScrollDown, base::UTF16ToASCII(output));
 
   const char* kArrowUpScrollUp = "38,false,false,true,false\n0\np1";
   view->OnSetEditCommandsForNextKeyEvent(
@@ -112,7 +113,7 @@ TEST_F(RenderViewTest, MacTestCmdUp) {
   ProcessPendingMessages();
   ExecuteJavaScript("scroll.textContent = window.pageYOffset");
   output = GetMainFrame()->contentAsText(kMaxOutputCharacters);
-  EXPECT_EQ(kArrowUpScrollUp, UTF16ToASCII(output));
+  EXPECT_EQ(kArrowUpScrollUp, base::UTF16ToASCII(output));
 
   // Now let javascript eat the key events -- no scrolling should happen.
   // Set a scroll position slightly down the page to ensure that it does not
@@ -126,7 +127,7 @@ TEST_F(RenderViewTest, MacTestCmdUp) {
   ProcessPendingMessages();
   ExecuteJavaScript("scroll.textContent = window.pageYOffset");
   output = GetMainFrame()->contentAsText(kMaxOutputCharacters);
-  EXPECT_EQ(kArrowDownNoScroll, UTF16ToASCII(output));
+  EXPECT_EQ(kArrowDownNoScroll, base::UTF16ToASCII(output));
 
   const char* kArrowUpNoScroll = "38,false,false,true,false\n100\np1";
   view->OnSetEditCommandsForNextKeyEvent(
@@ -135,7 +136,7 @@ TEST_F(RenderViewTest, MacTestCmdUp) {
   ProcessPendingMessages();
   ExecuteJavaScript("scroll.textContent = window.pageYOffset");
   output = GetMainFrame()->contentAsText(kMaxOutputCharacters);
-  EXPECT_EQ(kArrowUpNoScroll, UTF16ToASCII(output));
+  EXPECT_EQ(kArrowUpNoScroll, base::UTF16ToASCII(output));
 }
 
 }  // namespace content

@@ -8,6 +8,7 @@
 #include "chrome/browser/download/download_extensions.h"
 
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_util.h"
 
@@ -211,7 +212,7 @@ DownloadDangerLevel GetFileDangerLevel(const base::FilePath& path) {
   if (!IsStringASCII(extension))
     return NOT_DANGEROUS;
 #if defined(OS_WIN)
-  std::string ascii_extension = WideToASCII(extension);
+  std::string ascii_extension = base::UTF16ToASCII(extension);
 #elif defined(OS_POSIX)
   std::string ascii_extension = extension;
 #endif

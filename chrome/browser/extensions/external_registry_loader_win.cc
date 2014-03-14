@@ -86,7 +86,7 @@ void ExternalRegistryLoader::LoadOnFileThread() {
       }
     }
 
-    std::string id = WideToASCII(*it);
+    std::string id = base::UTF16ToASCII(*it);
     StringToLowerASCII(&id);
     if (!Extension::IdIsValid(id)) {
       LOG(ERROR) << "Invalid id value " << id
@@ -101,7 +101,7 @@ void ExternalRegistryLoader::LoadOnFileThread() {
         == ERROR_SUCCESS) {
       prefs->SetString(
           id + "." + ExternalProviderImpl::kExternalUpdateUrl,
-          WideToASCII(extension_update_url));
+          base::UTF16ToASCII(extension_update_url));
       continue;
     }
 
@@ -146,7 +146,7 @@ void ExternalRegistryLoader::LoadOnFileThread() {
       continue;
     }
 
-    Version version(WideToASCII(extension_version));
+    Version version(base::UTF16ToASCII(extension_version));
     if (!version.IsValid()) {
       LOG(ERROR) << "Invalid version value " << extension_version
                  << " for key " << key_path << ".";
@@ -155,7 +155,7 @@ void ExternalRegistryLoader::LoadOnFileThread() {
 
     prefs->SetString(
         id + "." + ExternalProviderImpl::kExternalVersion,
-        WideToASCII(extension_version));
+        base::UTF16ToASCII(extension_version));
     prefs->SetString(
         id + "." + ExternalProviderImpl::kExternalCrx,
         extension_path_str);

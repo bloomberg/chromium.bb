@@ -2128,7 +2128,8 @@ TEST_F(SuppressErrorPageTest, MAYBE_Suppresses) {
   // An error occurred.
   view()->main_render_frame()->didFailProvisionalLoad(web_frame, error);
   const int kMaxOutputCharacters = 22;
-  EXPECT_EQ("", UTF16ToASCII(web_frame->contentAsText(kMaxOutputCharacters)));
+  EXPECT_EQ("",
+            base::UTF16ToASCII(web_frame->contentAsText(kMaxOutputCharacters)));
 }
 
 #if defined(OS_ANDROID)
@@ -2158,7 +2159,7 @@ TEST_F(SuppressErrorPageTest, MAYBE_DoesNotSuppress) {
   ProcessPendingMessages();
   const int kMaxOutputCharacters = 22;
   EXPECT_EQ("A suffusion of yellow.",
-            UTF16ToASCII(web_frame->contentAsText(kMaxOutputCharacters)));
+            base::UTF16ToASCII(web_frame->contentAsText(kMaxOutputCharacters)));
 }
 
 // Tests if IME API's candidatewindow* events sent from browser are handled

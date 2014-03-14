@@ -183,11 +183,11 @@ void X509Certificate::GetSubjectAltName(
     int num_entries = alt_name->cAltEntry;
     for (int i = 0; i < num_entries; i++) {
       // dNSName is an ASN.1 IA5String representing a string of ASCII
-      // characters, so we can use WideToASCII here.
+      // characters, so we can use UTF16ToASCII here.
       const CERT_ALT_NAME_ENTRY& entry = alt_name->rgAltEntry[i];
 
       if (dns_names && entry.dwAltNameChoice == CERT_ALT_NAME_DNS_NAME) {
-        dns_names->push_back(WideToASCII(entry.pwszDNSName));
+        dns_names->push_back(base::UTF16ToASCII(entry.pwszDNSName));
       } else if (ip_addrs &&
                  entry.dwAltNameChoice == CERT_ALT_NAME_IP_ADDRESS) {
         ip_addrs->push_back(std::string(

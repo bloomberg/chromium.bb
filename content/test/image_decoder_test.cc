@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "third_party/WebKit/public/platform/WebData.h"
 #include "third_party/WebKit/public/platform/WebImage.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
@@ -131,7 +132,7 @@ std::vector<base::FilePath> ImageDecoderTest::GetImageFiles() const {
   while (!(next_file_name = enumerator.Next()).empty()) {
     base::FilePath base_name = next_file_name.BaseName();
 #if defined(OS_WIN)
-    std::string base_name_ascii = WideToASCII(base_name.value());
+    std::string base_name_ascii = base::UTF16ToASCII(base_name.value());
 #else
     std::string base_name_ascii = base_name.value();
 #endif

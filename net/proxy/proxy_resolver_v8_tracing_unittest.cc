@@ -75,7 +75,7 @@ class MockErrorObserver : public ProxyResolverErrorObserver {
     {
       base::AutoLock l(lock_);
       output += base::StringPrintf("Error: line %d: %s\n", line_number,
-                                   UTF16ToASCII(error).c_str());
+                                   base::UTF16ToASCII(error).c_str());
     }
     event_.Signal();
   }

@@ -108,7 +108,7 @@ void Address::SetRawInfo(ServerFieldType type, const base::string16& value) {
     case ADDRESS_HOME_COUNTRY:
       DCHECK(value.empty() ||
              (value.length() == 2u && IsStringASCII(value)));
-      country_code_ = UTF16ToASCII(value);
+      country_code_ = base::UTF16ToASCII(value);
       break;
 
     case ADDRESS_HOME_ZIP:
@@ -149,7 +149,7 @@ bool Address::SetInfo(const AutofillType& type,
       return false;
     }
 
-    country_code_ = StringToUpperASCII(UTF16ToASCII(value));
+    country_code_ = StringToUpperASCII(base::UTF16ToASCII(value));
     return true;
   }
 

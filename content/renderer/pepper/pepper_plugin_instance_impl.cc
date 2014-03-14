@@ -1363,7 +1363,7 @@ bool PepperPluginInstanceImpl::StartFind(const base::string16& search_text,
   return PP_ToBool(
       plugin_find_interface_->StartFind(
           pp_instance(),
-          base::UTF16ToUTF8(search_text.c_str()).c_str(),
+          base::UTF16ToUTF8(search_text).c_str(),
           PP_FromBool(case_sensitive)));
 }
 

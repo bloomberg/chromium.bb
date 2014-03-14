@@ -237,15 +237,17 @@ TEST_F(InstantSearchPrerendererTest, GetSearchTermsFromPrerenderedPage) {
   GURL url(GetPrerenderURL());
   EXPECT_EQ(GURL("https://www.google.com/instant?ion=1&foo=foo#foo=foo&strk"),
             url);
-  EXPECT_EQ(UTF16ToASCII(prerenderer->get_last_query()),
-            UTF16ToASCII(chrome::ExtractSearchTermsFromURL(profile(), url)));
+  EXPECT_EQ(base::UTF16ToASCII(prerenderer->get_last_query()),
+            base::UTF16ToASCII(
+                chrome::ExtractSearchTermsFromURL(profile(), url)));
 
   // Assume the prerendered page prefetched search results for the query
   // "flowers".
   SetLastQuery(ASCIIToUTF16("flowers"));
-  EXPECT_EQ("flowers", UTF16ToASCII(prerenderer->get_last_query()));
-  EXPECT_EQ(UTF16ToASCII(prerenderer->get_last_query()),
-            UTF16ToASCII(chrome::ExtractSearchTermsFromURL(profile(), url)));
+  EXPECT_EQ("flowers", base::UTF16ToASCII(prerenderer->get_last_query()));
+  EXPECT_EQ(base::UTF16ToASCII(prerenderer->get_last_query()),
+            base::UTF16ToASCII(
+                chrome::ExtractSearchTermsFromURL(profile(), url)));
 }
 
 TEST_F(InstantSearchPrerendererTest, PrefetchSearchResults) {
@@ -254,7 +256,7 @@ TEST_F(InstantSearchPrerendererTest, PrefetchSearchResults) {
   InstantSearchPrerenderer* prerenderer = GetInstantSearchPrerenderer();
   prerenderer->Prerender(
       InstantSuggestion(ASCIIToUTF16("flowers"), std::string()));
-  EXPECT_EQ("flowers", UTF16ToASCII(prerenderer->get_last_query()));
+  EXPECT_EQ("flowers", base::UTF16ToASCII(prerenderer->get_last_query()));
   EXPECT_TRUE(MessageWasSent(
       ChromeViewMsg_SearchBoxSetSuggestionToPrefetch::ID));
 }
@@ -266,7 +268,7 @@ TEST_F(InstantSearchPrerendererTest, DoNotPrefetchSearchResults) {
   InstantSearchPrerenderer* prerenderer = GetInstantSearchPrerenderer();
   prerenderer->Prerender(
       InstantSuggestion(ASCIIToUTF16("flowers"), std::string()));
-  EXPECT_EQ("", UTF16ToASCII(prerenderer->get_last_query()));
+  EXPECT_EQ("", base::UTF16ToASCII(prerenderer->get_last_query()));
   EXPECT_FALSE(MessageWasSent(
       ChromeViewMsg_SearchBoxSetSuggestionToPrefetch::ID));
 }

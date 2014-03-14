@@ -215,7 +215,7 @@ void AddCommandWithParameterWorkItems(const InstallerState& installer_state,
   if (installer_state.operation() == InstallerState::UNINSTALL) {
     work_item_list->AddDeleteRegKeyWorkItem(
         installer_state.root_key(), full_cmd_key)->set_log_message(
-            "removing " + WideToASCII(command_key) + " command");
+            "removing " + base::UTF16ToASCII(command_key) + " command");
   } else {
     CommandLine cmd_line(installer_state.target_path().Append(app));
     cmd_line.AppendSwitchASCII(command_with_parameter, "%1");
@@ -1446,7 +1446,7 @@ void AddQuickEnableChromeFrameWorkItems(const InstallerState& installer_state,
   // not left behind in any case.
   work_item_list->AddDeleteRegKeyWorkItem(
       installer_state.root_key(), cmd_key)->set_log_message(
-          "removing " + WideToASCII(kCmdQuickEnableCf) + " command");
+          "removing " + base::UTF16ToASCII(kCmdQuickEnableCf) + " command");
 
 }
 

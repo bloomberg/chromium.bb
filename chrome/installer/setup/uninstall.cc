@@ -176,7 +176,7 @@ void ClearRlzProductState() {
   // If chrome has been reactivated, clear all events for this brand as well.
   base::string16 reactivation_brand_wide;
   if (GoogleUpdateSettings::GetReactivationBrand(&reactivation_brand_wide)) {
-    std::string reactivation_brand(WideToASCII(reactivation_brand_wide));
+    std::string reactivation_brand(base::UTF16ToASCII(reactivation_brand_wide));
     rlz_lib::SupplementaryBranding branding(reactivation_brand.c_str());
     rlz_lib::ClearProductState(rlz_lib::CHROME, points);
   }

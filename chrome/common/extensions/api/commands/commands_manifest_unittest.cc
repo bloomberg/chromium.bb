@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/commands/commands_handler.h"
 #include "chrome/common/extensions/features/feature_channel.h"
@@ -43,7 +44,8 @@ TEST_F(CommandsManifestTest, CommandManifestSimple) {
   ASSERT_TRUE(commands->end() != iter);
   const Command* named_command = &(*iter).second;
   ASSERT_STREQ("feature1", named_command->command_name().c_str());
-  ASSERT_STREQ("desc", UTF16ToASCII(named_command->description()).c_str());
+  ASSERT_STREQ("desc",
+               base::UTF16ToASCII(named_command->description()).c_str());
   ASSERT_EQ(ctrl_shift_f, named_command->accelerator());
 
   const Command* browser_action =
@@ -51,7 +53,7 @@ TEST_F(CommandsManifestTest, CommandManifestSimple) {
   ASSERT_TRUE(NULL != browser_action);
   ASSERT_STREQ("_execute_browser_action",
                browser_action->command_name().c_str());
-  ASSERT_STREQ("", UTF16ToASCII(browser_action->description()).c_str());
+  ASSERT_STREQ("", base::UTF16ToASCII(browser_action->description()).c_str());
   ASSERT_EQ(alt_shift_f, browser_action->accelerator());
 
   const Command* page_action =
@@ -59,7 +61,7 @@ TEST_F(CommandsManifestTest, CommandManifestSimple) {
   ASSERT_TRUE(NULL != page_action);
   ASSERT_STREQ("_execute_page_action",
       page_action->command_name().c_str());
-  ASSERT_STREQ("", UTF16ToASCII(page_action->description()).c_str());
+  ASSERT_STREQ("", base::UTF16ToASCII(page_action->description()).c_str());
   ASSERT_EQ(ctrl_f, page_action->accelerator());
 }
 

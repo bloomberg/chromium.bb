@@ -431,5 +431,5 @@ TEST_F(BookmarkEditorViewTest, NewFolderTitleUpdatedOnCommit) {
   ASSERT_EQ(1, parent->child_count());
   const BookmarkNode* new_folder = parent->GetChild(0);
   ASSERT_TRUE(new_folder->is_folder());
-  EXPECT_EQ("modified", UTF16ToASCII(new_folder->GetTitle()));
+  EXPECT_EQ("modified", base::UTF16ToASCII(new_folder->GetTitle()));
 }

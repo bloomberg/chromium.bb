@@ -537,7 +537,7 @@ void Me2MeNativeMessagingHost::EnsureElevatedHostCreated() {
   // Create a security descriptor that gives full access to the caller and
   // denies access by anyone else.
   std::string security_descriptor = base::StringPrintf(
-      "O:%1$sG:%1$sD:(A;;GA;;;%1$s)", WideToASCII(user_sid).c_str());
+      "O:%1$sG:%1$sD:(A;;GA;;;%1$s)", base::UTF16ToASCII(user_sid).c_str());
 
   ScopedSd sd = ConvertSddlToSd(security_descriptor);
   if (!sd) {

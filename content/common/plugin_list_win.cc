@@ -16,6 +16,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/win/pe_image.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_handle.h"
@@ -284,8 +285,8 @@ bool PluginList::ReadWebPluginInfo(const base::FilePath& filename,
 
   // TODO(evan): Move the ParseMimeTypes code inline once Pepper is updated.
   if (!PluginList::ParseMimeTypes(
-          UTF16ToASCII(version_info_win->GetStringValue(L"MIMEType")),
-          UTF16ToASCII(version_info_win->GetStringValue(L"FileExtents")),
+          base::UTF16ToASCII(version_info_win->GetStringValue(L"MIMEType")),
+          base::UTF16ToASCII(version_info_win->GetStringValue(L"FileExtents")),
           version_info_win->GetStringValue(L"FileOpenName"),
           &info->mime_types)) {
     LOG_IF(ERROR, PluginList::DebugPluginLoading())

@@ -400,20 +400,20 @@ TEST(StringUtilTest, ConvertASCII) {
 
   for (size_t i = 0; i < arraysize(char_cases); ++i) {
     EXPECT_TRUE(IsStringASCII(char_cases[i]));
-    std::wstring wide = ASCIIToWide(char_cases[i]);
-    EXPECT_EQ(wchar_cases[i], wide);
+    string16 utf16 = ASCIIToUTF16(char_cases[i]);
+    EXPECT_EQ(WideToUTF16(wchar_cases[i]), utf16);
 
-    std::string ascii = WideToASCII(wchar_cases[i]);
+    std::string ascii = UTF16ToASCII(WideToUTF16(wchar_cases[i]));
     EXPECT_EQ(char_cases[i], ascii);
   }
 
   EXPECT_FALSE(IsStringASCII("Google \x80Video"));
 
   // Convert empty strings.
-  std::wstring wempty;
+  string16 empty16;
   std::string empty;
-  EXPECT_EQ(empty, WideToASCII(wempty));
-  EXPECT_EQ(wempty, ASCIIToWide(empty));
+  EXPECT_EQ(empty, UTF16ToASCII(empty16));
+  EXPECT_EQ(empty16, ASCIIToUTF16(empty));
 
   // Convert strings with an embedded NUL character.
   const char chars_with_nul[] = "test\0string";
@@ -422,7 +422,7 @@ TEST(StringUtilTest, ConvertASCII) {
   std::wstring wide_with_nul = ASCIIToWide(string_with_nul);
   EXPECT_EQ(static_cast<std::wstring::size_type>(length_with_nul),
             wide_with_nul.length());
-  std::string narrow_with_nul = WideToASCII(wide_with_nul);
+  std::string narrow_with_nul = UTF16ToASCII(WideToUTF16(wide_with_nul));
   EXPECT_EQ(static_cast<std::string::size_type>(length_with_nul),
             narrow_with_nul.length());
   EXPECT_EQ(0, string_with_nul.compare(narrow_with_nul));

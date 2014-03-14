@@ -384,7 +384,7 @@ ModuleEnumerator::ModuleStatus ModuleEnumerator::Match(
           location_hash == blacklisted.location)) {
     // We have a name match against the blacklist (and possibly location match
     // also), so check version.
-    Version module_version(UTF16ToASCII(module.version));
+    Version module_version(base::UTF16ToASCII(module.version));
     Version version_min(blacklisted.version_from);
     Version version_max(blacklisted.version_to);
     bool version_ok = !version_min.IsValid() && !version_max.IsValid();
@@ -644,7 +644,7 @@ void ModuleEnumerator::PreparePathMappings() {
   for (std::vector<base::string16>::const_iterator variable = env_vars.begin();
        variable != env_vars.end(); ++variable) {
     std::string path;
-    if (environment->GetVar(WideToASCII(*variable).c_str(), &path)) {
+    if (environment->GetVar(base::UTF16ToASCII(*variable).c_str(), &path)) {
       path_mapping_.push_back(
           std::make_pair(base::i18n::ToLower(base::UTF8ToUTF16(path)) + L"\\",
                          L"%" + base::i18n::ToLower(*variable) + L"%"));

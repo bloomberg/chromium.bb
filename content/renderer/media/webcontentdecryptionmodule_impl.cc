@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "content/renderer/media/cdm_session_adapter.h"
 #include "content/renderer/media/webcontentdecryptionmodulesession_impl.h"
 #include "media/base/media_keys.h"
@@ -39,7 +40,7 @@ WebContentDecryptionModuleImpl* WebContentDecryptionModuleImpl::Create(
           base::Bind(&PepperCdmWrapperImpl::Create,
                      static_cast<blink::WebFrame*>(NULL)),
 #endif
-          UTF16ToASCII(key_system))) {
+          base::UTF16ToASCII(key_system))) {
     return NULL;
   }
 

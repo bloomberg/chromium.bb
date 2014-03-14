@@ -7,6 +7,7 @@
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "content/renderer/media/cdm_session_adapter.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 
@@ -42,7 +43,7 @@ void WebContentDecryptionModuleSessionImpl::initializeNewSession(
   }
 
   adapter_->InitializeNewSession(
-      session_id_, UTF16ToASCII(mime_type), init_data, init_data_length);
+      session_id_, base::UTF16ToASCII(mime_type), init_data, init_data_length);
 }
 
 void WebContentDecryptionModuleSessionImpl::update(const uint8* response,

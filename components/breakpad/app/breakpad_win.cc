@@ -653,7 +653,7 @@ static void InitPipeNameEnvVar(bool is_per_user_install) {
     pipe_name = kGoogleUpdatePipeName;
     pipe_name += user_sid;
   }
-  env->SetVar(kPipeNameVar, WideToASCII(pipe_name));
+  env->SetVar(kPipeNameVar, base::UTF16ToASCII(pipe_name));
 }
 
 void InitDefaultCrashCallback(LPTOP_LEVEL_EXCEPTION_FILTER filter) {

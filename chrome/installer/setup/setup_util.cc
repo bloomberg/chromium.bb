@@ -18,6 +18,7 @@
 #include "base/process/launch.h"
 #include "base/process/process_handle.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/version.h"
 #include "base/win/registry.h"
 #include "base/win/windows_version.h"
@@ -155,7 +156,7 @@ Version* GetMaxVersionFromArchiveDir(const base::FilePath& chrome_path) {
     VLOG(1) << "directory found: " << find_data.GetName().value();
 
     scoped_ptr<Version> found_version(
-        new Version(WideToASCII(find_data.GetName().value())));
+        new Version(base::UTF16ToASCII(find_data.GetName().value())));
     if (found_version->IsValid() &&
         found_version->CompareTo(*max_version.get()) > 0) {
       max_version.reset(found_version.release());

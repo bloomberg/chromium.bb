@@ -17,6 +17,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "components/wifi/wifi_service.h"
 
@@ -99,7 +100,7 @@ bool WiFiTest::ParseCommandLine(int argc, const char* argv[]) {
 
   if (parsed_command_line.GetArgs().size() == 1) {
 #if defined(OS_WIN)
-    network_guid = WideToASCII(parsed_command_line.GetArgs()[0]);
+    network_guid = base::UTF16ToASCII(parsed_command_line.GetArgs()[0]);
 #else
     network_guid = parsed_command_line.GetArgs()[0];
 #endif

@@ -42,6 +42,7 @@
 #include "base/process/launch.h"
 #include "base/process/process_handle.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/version.h"
 #include "base/win/pe_image.h"
 #include "base/win/scoped_handle.h"
@@ -667,7 +668,7 @@ bool GenerateAlternatePEFileVersion(const base::FilePath& original_file,
     return false;
   }
 
-  Version new_version(WideToASCII(ctx.new_version_str));
+  Version new_version(base::UTF16ToASCII(ctx.new_version_str));
   GenerateSpecificPEFileVersion(original_file, target_file, new_version);
 
   return true;

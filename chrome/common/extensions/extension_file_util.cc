@@ -351,7 +351,7 @@ void GarbageCollectExtensions(
 
     // Parse directory name as a potential extension ID.
     if (IsStringASCII(basename.value())) {
-      extension_id = UTF16ToASCII(basename.LossyDisplayName());
+      extension_id = base::UTF16ToASCII(basename.LossyDisplayName());
       if (!Extension::IdIsValid(extension_id))
         extension_id.clear();
     }

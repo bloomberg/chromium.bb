@@ -827,8 +827,8 @@ TEST_F(SearchTest, ExtractSearchTermsFromURL) {
     const ExtractSearchTermsTestCase& test = kTestCases[i];
     EXPECT_EQ(
         test.expected_result,
-        UTF16ToASCII(chrome::ExtractSearchTermsFromURL(profile(),
-                                                       GURL(test.url))))
+        base::UTF16ToASCII(chrome::ExtractSearchTermsFromURL(profile(),
+                                                             GURL(test.url))))
             << test.url << " " << test.comment;
   }
 }

@@ -859,7 +859,7 @@ void PopulateBookmarkNode(TestNode* parent,
       PopulateBookmarkNode(child, model, new_bb_node);
     } else {
       model->AddURL(bb_node, i, child->GetTitle(),
-          GURL("http://" + UTF16ToASCII(child->GetTitle())));
+          GURL("http://" + base::UTF16ToASCII(child->GetTitle())));
     }
   }
 }
@@ -1022,10 +1022,10 @@ TEST_F(BookmarkModelTest, Reorder) {
 
   // Make sure the order matches is correct (it should be reversed).
   ASSERT_EQ(4, parent->child_count());
-  EXPECT_EQ("D", UTF16ToASCII(parent->GetChild(0)->GetTitle()));
-  EXPECT_EQ("C", UTF16ToASCII(parent->GetChild(1)->GetTitle()));
-  EXPECT_EQ("B", UTF16ToASCII(parent->GetChild(2)->GetTitle()));
-  EXPECT_EQ("A", UTF16ToASCII(parent->GetChild(3)->GetTitle()));
+  EXPECT_EQ("D", base::UTF16ToASCII(parent->GetChild(0)->GetTitle()));
+  EXPECT_EQ("C", base::UTF16ToASCII(parent->GetChild(1)->GetTitle()));
+  EXPECT_EQ("B", base::UTF16ToASCII(parent->GetChild(2)->GetTitle()));
+  EXPECT_EQ("A", base::UTF16ToASCII(parent->GetChild(3)->GetTitle()));
 }
 
 TEST_F(BookmarkModelTest, NodeVisibility) {

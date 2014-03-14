@@ -108,7 +108,7 @@ int ProxyResolverWinHttp::GetProxyForURL(const GURL& query_url,
       // things like "foopy1:80;foopy2:80". It strips out the non-HTTP
       // proxy types, and stops the list when PAC encounters a "DIRECT".
       // So UseNamedProxy() should work OK.
-      results->UseNamedProxy(WideToASCII(info.lpszProxy));
+      results->UseNamedProxy(base::UTF16ToASCII(info.lpszProxy));
       break;
     default:
       NOTREACHED();

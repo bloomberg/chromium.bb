@@ -32,7 +32,8 @@ namespace autofill {
 
 // So we can compare AutofillKeys with EXPECT_EQ().
 std::ostream& operator<<(std::ostream& os, const AutofillKey& key) {
-  return os << UTF16ToASCII(key.name()) << ", " << UTF16ToASCII(key.value());
+  return os << base::UTF16ToASCII(key.name()) << ", "
+            << base::UTF16ToASCII(key.value());
 }
 
 // So we can compare AutofillChanges with EXPECT_EQ().

@@ -9,6 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/install_util.h"
 
@@ -30,7 +31,7 @@ std::string VersionInfo::GetVersionStringModifier() {
   if (base::debug::IsBinaryInstrumented())
     channel += L" SyzyASan";
 #endif
-  return UTF16ToASCII(channel);
+  return base::UTF16ToASCII(channel);
 #else
   return std::string();
 #endif

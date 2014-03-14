@@ -8,6 +8,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_global_error.h"
@@ -105,7 +106,7 @@ void InlineLoginHandlerImpl::HandleSwitchToFullTabMessage(
   content::WebContents* web_contents = web_ui()->GetWebContents();
   GURL main_frame_url(web_contents->GetURL());
   main_frame_url = net::AppendOrReplaceQueryParameter(
-      main_frame_url, "frameUrl", UTF16ToASCII(url_str));
+      main_frame_url, "frameUrl", base::UTF16ToASCII(url_str));
   chrome::NavigateParams params(
       Profile::FromWebUI(web_ui()),
       net::AppendOrReplaceQueryParameter(main_frame_url, "constrained", "0"),
@@ -145,10 +146,10 @@ void InlineLoginHandlerImpl::CompleteLogin(const base::ListValue* args) {
   base::string16 email;
   dict->GetString("email", &email);
   DCHECK(!email.empty());
-  email_ = UTF16ToASCII(email);
+  email_ = base::UTF16ToASCII(email);
   base::string16 password;
   dict->GetString("password", &password);
-  password_ = UTF16ToASCII(password);
+  password_ = base::UTF16ToASCII(password);
 
   // When doing a SAML sign in, this email check may result in a false
   // positive.  This happens when the user types one email address in the
@@ -168,7 +169,7 @@ void InlineLoginHandlerImpl::CompleteLogin(const base::ListValue* args) {
 
   base::string16 session_index;
   dict->GetString("sessionIndex", &session_index);
-  session_index_ = UTF16ToASCII(session_index);
+  session_index_ = base::UTF16ToASCII(session_index);
   DCHECK(!session_index_.empty());
   dict->GetBoolean("chooseWhatToSync", &choose_what_to_sync_);
 

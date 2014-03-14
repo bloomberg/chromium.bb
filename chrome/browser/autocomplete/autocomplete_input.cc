@@ -186,7 +186,7 @@ AutocompleteInput::Type AutocompleteInput::Parse(
     // the renderer handles internally without reaching the net::URLRequest
     // logic.  They thus won't be listed as "handled protocols", but we should
     // still claim to handle them.
-    if (ProfileIOData::IsHandledProtocol(UTF16ToASCII(parsed_scheme)) ||
+    if (ProfileIOData::IsHandledProtocol(base::UTF16ToASCII(parsed_scheme)) ||
         LowerCaseEqualsASCII(parsed_scheme, content::kViewSourceScheme) ||
         LowerCaseEqualsASCII(parsed_scheme, content::kJavaScriptScheme) ||
         LowerCaseEqualsASCII(parsed_scheme, content::kDataScheme))

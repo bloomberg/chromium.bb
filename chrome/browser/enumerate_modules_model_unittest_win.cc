@@ -204,7 +204,7 @@ TEST_F(EnumerateModulesTest, MatchFunction) {
         kMatchineEntryList[i].blacklist;
 
     SCOPED_TRACE("Test case no " + base::IntToString(i) +
-                 ": '" + UTF16ToASCII(test.name) + "'");
+                 ": '" + base::UTF16ToASCII(test.name) + "'");
     EXPECT_EQ(kMatchineEntryList[i].expected_result,
               ModuleEnumerator::Match(test, blacklist));
   }
@@ -235,8 +235,8 @@ TEST_F(EnumerateModulesTest, CollapsePath) {
     module.location = kCollapsePathList[i].test_case;
     module_enumerator->CollapsePath(&module);
 
-    SCOPED_TRACE("Test case no " + base::IntToString(i) +
-                 ": '" + UTF16ToASCII(kCollapsePathList[i].expected_result) +
+    SCOPED_TRACE("Test case no " + base::IntToString(i) + ": '" +
+                 base::UTF16ToASCII(kCollapsePathList[i].expected_result) +
                  "'");
     EXPECT_EQ(kCollapsePathList[i].expected_result, module.location);
   }

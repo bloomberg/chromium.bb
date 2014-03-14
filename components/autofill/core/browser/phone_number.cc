@@ -31,7 +31,7 @@ std::string GetRegion(const AutofillProfile& profile,
                       const std::string& app_locale) {
   base::string16 country_code = profile.GetRawInfo(ADDRESS_HOME_COUNTRY);
   if (!country_code.empty())
-    return UTF16ToASCII(country_code);
+    return base::UTF16ToASCII(country_code);
 
   return AutofillCountry::CountryCodeForLocale(app_locale);
 }

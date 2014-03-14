@@ -117,7 +117,7 @@ bool GetPacUrlFromExtensionPref(const base::DictionaryValue* proxy_config,
              "(encode URLs in Punycode format).";
     return false;
   }
-  *out = UTF16ToASCII(pac_url16);
+  *out = base::UTF16ToASCII(pac_url16);
   return true;
 }
 
@@ -142,7 +142,7 @@ bool GetPacDataFromExtensionPref(const base::DictionaryValue* proxy_config,
              "(encode URLs in Punycode format).";
     return false;
   }
-  *out = UTF16ToASCII(pac_data16);
+  *out = base::UTF16ToASCII(pac_data16);
   return true;
 }
 
@@ -176,7 +176,7 @@ bool GetProxyServer(const base::DictionaryValue* proxy_server,
         base::UTF16ToUTF8(host16));
     return false;
   }
-  std::string host = UTF16ToASCII(host16);
+  std::string host = base::UTF16ToASCII(host16);
 
   int port;  // optional.
   if (!proxy_server->GetInteger(keys::kProxyConfigRulePort, &port))
@@ -277,7 +277,7 @@ bool JoinUrlList(const base::ListValue* list,
                "(encode URLs in Punycode format).";
       return false;
     }
-    result.append(UTF16ToASCII(entry));
+    result.append(base::UTF16ToASCII(entry));
   }
   *out = result;
   return true;

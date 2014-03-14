@@ -75,7 +75,7 @@ base::DictionaryValue* ProtocolHandler::Encode() const {
 std::string ProtocolHandler::ToString() const {
   return "{ protocol=" + protocol_ +
          ", url=" + url_.spec() +
-         ", title=" + UTF16ToASCII(title_) +
+         ", title=" + base::UTF16ToASCII(title_) +
          " }";
 }
 #endif

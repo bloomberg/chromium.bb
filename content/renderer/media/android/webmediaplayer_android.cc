@@ -14,6 +14,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "cc/layers/video_layer.h"
 #include "content/public/common/content_client.h"
 #include "content/public/renderer/render_frame.h"
@@ -1100,7 +1101,7 @@ const gfx::RectF WebMediaPlayerAndroid::GetBoundaryRectangle() {
 // Convert a WebString to ASCII, falling back on an empty string in the case
 // of a non-ASCII string.
 static std::string ToASCIIOrEmpty(const blink::WebString& string) {
-  return IsStringASCII(string) ? UTF16ToASCII(string) : std::string();
+  return IsStringASCII(string) ? base::UTF16ToASCII(string) : std::string();
 }
 
 // Helper functions to report media EME related stats to UMA. They follow the

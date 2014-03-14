@@ -334,7 +334,7 @@ void SupervisedUserManagerImpl::StartCreationTransaction(
       const base::string16& display_name) {
   g_browser_process->local_state()->
       SetString(kLocallyManagedUserCreationTransactionDisplayName,
-           UTF16ToASCII(display_name));
+                base::UTF16ToASCII(display_name));
   g_browser_process->local_state()->CommitPendingWrite();
 }
 

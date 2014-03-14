@@ -589,7 +589,7 @@ TEST_F(InstallerStateTest, RemoveOldVersionDirs) {
   for (base::FilePath next_version = version_enum.Next(); !next_version.empty();
        next_version = version_enum.Next()) {
     base::FilePath dir_name(next_version.BaseName());
-    Version version(WideToASCII(dir_name.value()));
+    Version version(base::UTF16ToASCII(dir_name.value()));
     if (version.IsValid()) {
       EXPECT_TRUE(expected_remaining_dirs.erase(version.GetString()))
           << "Unexpected version dir found: " << version.GetString();

@@ -216,7 +216,7 @@ void LogDuplicatesHistogram(
   std::map<std::string, int> duplicates;
   for (TemplateURLService::TemplateURLVector::const_iterator it =
       template_urls.begin(); it != template_urls.end(); ++it) {
-    std::string keyword = UTF16ToASCII((*it)->keyword());
+    std::string keyword = base::UTF16ToASCII((*it)->keyword());
     base::TrimString(keyword, "_", &keyword);
     duplicates[keyword]++;
   }

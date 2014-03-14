@@ -116,13 +116,13 @@ class ResourceChangeObserver : public TaskManagerModelObserver {
     testing::Message task_manager_state_dump;
     task_manager_state_dump << "Waiting for exactly " << required_count_
                             << " matches of wildcard pattern \""
-                            << UTF16ToASCII(title_pattern_) << "\"\n";
+                            << base::UTF16ToASCII(title_pattern_) << "\"\n";
     task_manager_state_dump << "Currently there are " << CountMatches()
                             << " matches.\n";
     task_manager_state_dump << "Current Task Manager Model is:\n";
     for (int i = 0; i < model_->ResourceCount(); i++) {
       task_manager_state_dump
-          << "  > " << UTF16ToASCII(model_->GetResourceTitle(i)) << "\n";
+          << "  > " << base::UTF16ToASCII(model_->GetResourceTitle(i)) << "\n";
     }
     return task_manager_state_dump;
   }

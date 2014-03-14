@@ -211,7 +211,7 @@ void PromoHandler::HandleGetPromotions(const base::ListValue* /*args*/) {
 void PromoHandler::HandleRecordImpression(const base::ListValue* args) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(args && !args->empty());
-  RecordPromotionImpression(UTF16ToASCII(ExtractStringValue(args)));
+  RecordPromotionImpression(base::UTF16ToASCII(ExtractStringValue(args)));
 }
 
 void PromoHandler::InjectPromoDecorations() {

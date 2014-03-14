@@ -140,7 +140,7 @@ bool ParseDomainASCII(const base::string16& widestr, std::string* domain) {
 
   // Check if already ASCII.
   if (IsStringASCII(widestr)) {
-    *domain = UTF16ToASCII(widestr);
+    *domain = base::UTF16ToASCII(widestr);
     return true;
   }
 

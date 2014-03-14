@@ -137,7 +137,7 @@ void OomMemoryDetails::OnDetailsAvailable() {
   base::SystemMemoryInfoKB memory;
   if (base::GetSystemMemoryInfo(&memory) && memory.gem_size != -1) {
     log_string += "Graphics ";
-    log_string += UTF16ToASCII(ui::FormatBytes(memory.gem_size));
+    log_string += base::UTF16ToASCII(ui::FormatBytes(memory.gem_size));
   }
   LOG(WARNING) << "OOM details (" << delta.InMilliseconds() << " ms):\n"
       << log_string;

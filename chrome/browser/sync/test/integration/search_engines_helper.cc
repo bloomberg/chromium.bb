@@ -39,8 +39,9 @@ GUIDToTURLMap CreateGUIDToTURLMap(TemplateURLService* service) {
 
 std::string GetTURLInfoString(const TemplateURL* turl) {
   DCHECK(turl);
-  return "TemplateURL: shortname: " + UTF16ToASCII(turl->short_name()) +
-      " keyword: " + UTF16ToASCII(turl->keyword()) + " url: " + turl->url();
+  return "TemplateURL: shortname: " + base::UTF16ToASCII(turl->short_name()) +
+      " keyword: " + base::UTF16ToASCII(turl->keyword()) + " url: " +
+      turl->url();
 }
 
 bool TURLsMatch(const TemplateURL* turl1, const TemplateURL* turl2) {

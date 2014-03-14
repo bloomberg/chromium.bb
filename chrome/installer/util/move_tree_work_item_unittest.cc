@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/installer/util/installer_util_test_common.h"
 #include "chrome/installer/util/move_tree_work_item.h"
 #include "chrome/installer/util/work_item.h"
@@ -33,7 +34,7 @@ class MoveTreeWorkItemTest : public testing::Test {
 void CreateTextFile(const std::wstring& filename,
                     const std::wstring& contents) {
   std::wofstream file;
-  file.open(WideToASCII(filename).c_str());
+  file.open(base::UTF16ToASCII(filename).c_str());
   ASSERT_TRUE(file.is_open());
   file << contents;
   file.close();
@@ -43,7 +44,7 @@ void CreateTextFile(const std::wstring& filename,
 std::wstring ReadTextFile(const base::FilePath& path) {
   WCHAR contents[64];
   std::wifstream file;
-  file.open(WideToASCII(path.value()).c_str());
+  file.open(base::UTF16ToASCII(path.value()).c_str());
   EXPECT_TRUE(file.is_open());
   file.getline(contents, arraysize(contents));
   file.close();

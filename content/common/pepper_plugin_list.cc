@@ -134,9 +134,9 @@ bool MakePepperPluginInfo(const WebPluginInfo& webplugin_info,
       WebPluginInfo::PLUGIN_TYPE_PEPPER_UNSANDBOXED;
 
   pepper_info->path = base::FilePath(webplugin_info.path);
-  pepper_info->name = UTF16ToASCII(webplugin_info.name);
-  pepper_info->description = UTF16ToASCII(webplugin_info.desc);
-  pepper_info->version = UTF16ToASCII(webplugin_info.version);
+  pepper_info->name = base::UTF16ToASCII(webplugin_info.name);
+  pepper_info->description = base::UTF16ToASCII(webplugin_info.desc);
+  pepper_info->version = base::UTF16ToASCII(webplugin_info.version);
   pepper_info->mime_types = webplugin_info.mime_types;
   pepper_info->permissions = webplugin_info.pepper_permissions;
 

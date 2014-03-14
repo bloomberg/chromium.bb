@@ -32,7 +32,7 @@ bool DatabaseUtil::CrackVfsFileName(const base::string16& vfs_file_name,
   }
 
   if (origin_identifier) {
-    *origin_identifier = UTF16ToASCII(
+    *origin_identifier = base::UTF16ToASCII(
         vfs_file_name.substr(0, first_slash_index));
   }
   if (database_name) {
@@ -61,7 +61,7 @@ base::FilePath DatabaseUtil::GetFullFilePathForVfsFile(
   if (!full_path.empty() && !sqlite_suffix.empty()) {
     DCHECK(full_path.Extension().empty());
     full_path = full_path.InsertBeforeExtensionASCII(
-        UTF16ToASCII(sqlite_suffix));
+        base::UTF16ToASCII(sqlite_suffix));
   }
   // Watch out for directory traversal attempts from a compromised renderer.
   if (full_path.value().find(FILE_PATH_LITERAL("..")) !=

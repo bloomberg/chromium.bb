@@ -436,7 +436,7 @@ void CoreOptionsHandler::HandleFetchPrefs(const base::ListValue* args) {
 
     result_value.Set(pref_name.c_str(), FetchPref(pref_name));
   }
-  web_ui()->CallJavascriptFunction(UTF16ToASCII(callback_function),
+  web_ui()->CallJavascriptFunction(base::UTF16ToASCII(callback_function),
                                    result_value);
 }
 

@@ -113,7 +113,7 @@ Address::Address() {}
 
 Address::Address(const AutofillProfile& profile)
     : country_name_code_(
-          UTF16ToASCII(profile.GetRawInfo(ADDRESS_HOME_COUNTRY))),
+          base::UTF16ToASCII(profile.GetRawInfo(ADDRESS_HOME_COUNTRY))),
       recipient_name_(profile.GetRawInfo(NAME_FULL)),
       locality_name_(profile.GetRawInfo(ADDRESS_HOME_CITY)),
       dependent_locality_name_(

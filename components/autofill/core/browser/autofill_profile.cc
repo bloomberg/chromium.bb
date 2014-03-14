@@ -482,7 +482,7 @@ bool AutofillProfile::IsSubsetOf(const AutofillProfile& profile,
       } else if (!i18n::PhoneNumbersMatch(
             GetRawInfo(*it),
             profile.GetRawInfo(*it),
-            UTF16ToASCII(GetRawInfo(ADDRESS_HOME_COUNTRY)),
+            base::UTF16ToASCII(GetRawInfo(ADDRESS_HOME_COUNTRY)),
             app_locale)) {
         return false;
       }
@@ -650,7 +650,8 @@ void AutofillProfile::AddPhoneIfUnique(
   DCHECK(existing_phones);
   // Phones allow "fuzzy" matching, so "1-800-FLOWERS", "18003569377",
   // "(800)356-9377" and "356-9377" are considered the same.
-  std::string country_code = UTF16ToASCII(GetRawInfo(ADDRESS_HOME_COUNTRY));
+  std::string country_code =
+      base::UTF16ToASCII(GetRawInfo(ADDRESS_HOME_COUNTRY));
   if (std::find_if(existing_phones->begin(), existing_phones->end(),
                    FindByPhone(phone, country_code, app_locale)) ==
       existing_phones->end()) {

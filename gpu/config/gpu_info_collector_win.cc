@@ -27,6 +27,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread.h"
 #include "base/threading/worker_pool.h"
 #include "base/win/registry.h"
@@ -186,7 +187,7 @@ Version DisplayLinkVersion() {
   if (key.ReadValue(L"Version", &version))
     return Version();
 
-  return Version(WideToASCII(version));
+  return Version(base::UTF16ToASCII(version));
 }
 
 // Returns whether Lenovo dCute is installed.
@@ -407,7 +408,7 @@ bool CollectDriverInfoD3D(const std::wstring& device_id,
             key, L"DriverVersion", NULL, NULL,
             reinterpret_cast<LPBYTE>(value), &dwcb_data);
         if (result == ERROR_SUCCESS)
-          driver_version = WideToASCII(std::wstring(value));
+          driver_version = base::UTF16ToASCII(std::wstring(value));
 
         std::string driver_date;
         dwcb_data = sizeof(value);
@@ -415,7 +416,7 @@ bool CollectDriverInfoD3D(const std::wstring& device_id,
             key, L"DriverDate", NULL, NULL,
             reinterpret_cast<LPBYTE>(value), &dwcb_data);
         if (result == ERROR_SUCCESS)
-          driver_date = WideToASCII(std::wstring(value));
+          driver_date = base::UTF16ToASCII(std::wstring(value));
 
         std::string driver_vendor;
         dwcb_data = sizeof(value);
@@ -423,7 +424,7 @@ bool CollectDriverInfoD3D(const std::wstring& device_id,
             key, L"ProviderName", NULL, NULL,
             reinterpret_cast<LPBYTE>(value), &dwcb_data);
         if (result == ERROR_SUCCESS) {
-          driver_vendor = WideToASCII(std::wstring(value));
+          driver_vendor = base::UTF16ToASCII(std::wstring(value));
           if (driver_vendor == "Advanced Micro Devices, Inc." ||
               driver_vendor == "ATI Technologies Inc.") {
             // We are conservative and assume that in the absence of a clear
@@ -537,8 +538,8 @@ GpuIDResult CollectGpuID(uint32* vendor_id, uint32* device_id) {
     int vendor = 0, device = 0;
     std::wstring vendor_string = id.substr(8, 4);
     std::wstring device_string = id.substr(17, 4);
-    base::HexStringToInt(WideToASCII(vendor_string), &vendor);
-    base::HexStringToInt(WideToASCII(device_string), &device);
+    base::HexStringToInt(base::UTF16ToASCII(vendor_string), &vendor);
+    base::HexStringToInt(base::UTF16ToASCII(device_string), &device);
     *vendor_id = vendor;
     *device_id = device;
     return kGpuIDSuccess;
@@ -592,8 +593,8 @@ bool CollectBasicGraphicsInfo(GPUInfo* gpu_info) {
   int vendor_id = 0, device_id = 0;
   base::string16 vendor_id_string = id.substr(8, 4);
   base::string16 device_id_string = id.substr(17, 4);
-  base::HexStringToInt(WideToASCII(vendor_id_string), &vendor_id);
-  base::HexStringToInt(WideToASCII(device_id_string), &device_id);
+  base::HexStringToInt(base::UTF16ToASCII(vendor_id_string), &vendor_id);
+  base::HexStringToInt(base::UTF16ToASCII(device_id_string), &device_id);
   gpu_info->gpu.vendor_id = vendor_id;
   gpu_info->gpu.device_id = device_id;
   // TODO(zmo): we only need to call CollectDriverInfoD3D() if we use ANGLE.

@@ -633,8 +633,8 @@ string16 FilePath::LossyDisplayName() const {
 
 std::string FilePath::MaybeAsASCII() const {
   if (IsStringASCII(path_))
-    return WideToASCII(path_);
-  return "";
+    return UTF16ToASCII(path_);
+  return std::string();
 }
 
 std::string FilePath::AsUTF8Unsafe() const {

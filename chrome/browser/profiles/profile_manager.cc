@@ -364,7 +364,7 @@ void ProfileManager::CreateProfileAsync(
     ProfileInfoCache& cache = GetProfileInfoCache();
     // Get the icon index from the user's icon url
     size_t icon_index;
-    std::string icon_url_std = UTF16ToASCII(icon_url);
+    std::string icon_url_std = base::UTF16ToASCII(icon_url);
     if (cache.IsDefaultAvatarIconUrl(icon_url_std, &icon_index)) {
       // add profile to cache with user selected name and avatar
       cache.AddProfileToCache(profile_path, name, base::string16(), icon_index,

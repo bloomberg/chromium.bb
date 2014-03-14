@@ -2924,7 +2924,7 @@ void AutofillDialogControllerImpl::SuggestionsUpdated() {
         const AutofillProfile& profile = *profiles[i];
         if (!i18ninput::AddressHasCompleteAndVerifiedData(profile) ||
             !i18ninput::CountryIsFullySupported(
-                UTF16ToASCII(profile.GetRawInfo(ADDRESS_HOME_COUNTRY)))) {
+                base::UTF16ToASCII(profile.GetRawInfo(ADDRESS_HOME_COUNTRY)))) {
           continue;
         }
 
@@ -3170,7 +3170,7 @@ bool AutofillDialogControllerImpl::ShouldSuggestProfile(
     DialogSection section,
     const AutofillProfile& profile) {
   std::string country_code =
-      UTF16ToASCII(profile.GetRawInfo(ADDRESS_HOME_COUNTRY));
+      base::UTF16ToASCII(profile.GetRawInfo(ADDRESS_HOME_COUNTRY));
   return country_code.empty() || CanAcceptCountry(section, country_code);
 }
 

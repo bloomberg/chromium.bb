@@ -145,14 +145,14 @@ void TableExample::GetGroupRange(int model_index, GroupRange* range) {
 
 void TableExample::OnSelectionChanged() {
   PrintStatus("Selected: %s",
-              UTF16ToASCII(GetText(table_->selection_model().active(),
-                                   0)).c_str());
+              base::UTF16ToASCII(GetText(table_->selection_model().active(),
+                                         0)).c_str());
 }
 
 void TableExample::OnDoubleClick() {
   PrintStatus("Double Click: %s",
-              UTF16ToASCII(GetText(table_->selection_model().active(),
-                                   0)).c_str());
+              base::UTF16ToASCII(GetText(table_->selection_model().active(),
+                                         0)).c_str());
 }
 
 void TableExample::OnMiddleClick() {}

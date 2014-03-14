@@ -254,7 +254,7 @@ class ImageTest : public testing::Test {
     // Hack for a quick lowercase. We assume all the test data file names are
     // ASCII.
 #if defined(OS_WIN)
-    std::string tmp = WideToASCII(filename);
+    std::string tmp = base::UTF16ToASCII(filename);
 #else
     std::string tmp(filename);
 #endif
