@@ -641,22 +641,29 @@ scaler_surface_to_buffer(struct weston_surface *surface,
 			 float sx, float sy, float *bx, float *by)
 {
 	struct weston_buffer_viewport *vp = &surface->buffer_viewport;
+	double src_width, src_height;
+	double src_x, src_y;
 
-	if (vp->buffer.src_width != wl_fixed_from_int(-1) &&
-	    vp->surface.width != -1) {
-		double a, b;
+	if (vp->buffer.src_width == wl_fixed_from_int(-1)) {
+		if (vp->surface.width == -1) {
+			*bx = sx;
+			*by = sy;
+			return;
+		}
 
-		a = sx / vp->surface.width;
-		b = a * wl_fixed_to_double(vp->buffer.src_width);
-		*bx = b + wl_fixed_to_double(vp->buffer.src_x);
-
-		a = sy / vp->surface.height;
-		b = a * wl_fixed_to_double(vp->buffer.src_height);
-		*by = b + wl_fixed_to_double(vp->buffer.src_y);
+		src_x = 0.0;
+		src_y = 0.0;
+		src_width = surface->width_from_buffer;
+		src_height = surface->height_from_buffer;
 	} else {
-		*bx = sx;
-		*by = sy;
+		src_x = wl_fixed_to_double(vp->buffer.src_x);
+		src_y = wl_fixed_to_double(vp->buffer.src_y);
+		src_width = wl_fixed_to_double(vp->buffer.src_width);
+		src_height = wl_fixed_to_double(vp->buffer.src_height);
 	}
+
+	*bx = sx * src_width / surface->width + src_x;
+	*by = sy * src_height / surface->height + src_y;
 }
 
 WL_EXPORT void
@@ -1195,6 +1202,12 @@ weston_surface_set_size(struct weston_surface *surface,
 	surface_set_size(surface, width, height);
 }
 
+static int
+fixed_round_up_to_int(wl_fixed_t f)
+{
+	return wl_fixed_to_int(wl_fixed_from_int(1) - 1 + f);
+}
+
 static void
 weston_surface_set_size_from_buffer(struct weston_surface *surface)
 {
@@ -1203,13 +1216,8 @@ weston_surface_set_size_from_buffer(struct weston_surface *surface)
 
 	if (!surface->buffer_ref.buffer) {
 		surface_set_size(surface, 0, 0);
-		return;
-	}
-
-	if (vp->buffer.src_width != wl_fixed_from_int(-1) &&
-	    vp->surface.width != -1) {
-		surface_set_size(surface, vp->surface.width,
-				 vp->surface.height);
+		surface->width_from_buffer = 0;
+		surface->height_from_buffer = 0;
 		return;
 	}
 
@@ -1218,17 +1226,31 @@ weston_surface_set_size_from_buffer(struct weston_surface *surface)
 	case WL_OUTPUT_TRANSFORM_270:
 	case WL_OUTPUT_TRANSFORM_FLIPPED_90:
 	case WL_OUTPUT_TRANSFORM_FLIPPED_270:
-		width = surface->buffer_ref.buffer->height;
-		height = surface->buffer_ref.buffer->width;
+		width = surface->buffer_ref.buffer->height / vp->buffer.scale;
+		height = surface->buffer_ref.buffer->width / vp->buffer.scale;
 		break;
 	default:
-		width = surface->buffer_ref.buffer->width;
-		height = surface->buffer_ref.buffer->height;
+		width = surface->buffer_ref.buffer->width / vp->buffer.scale;
+		height = surface->buffer_ref.buffer->height / vp->buffer.scale;
 		break;
 	}
 
-	width = width / vp->buffer.scale;
-	height = height / vp->buffer.scale;
+	surface->width_from_buffer = width;
+	surface->height_from_buffer = height;
+
+	if (vp->surface.width != -1) {
+		surface_set_size(surface,
+				 vp->surface.width, vp->surface.height);
+		return;
+	}
+
+	if (vp->buffer.src_width != wl_fixed_from_int(-1)) {
+		surface_set_size(surface,
+				 fixed_round_up_to_int(vp->buffer.src_width),
+				 fixed_round_up_to_int(vp->buffer.src_height));
+		return;
+	}
+
 	surface_set_size(surface, width, height);
 }
 
@@ -3415,9 +3437,55 @@ viewport_set(struct wl_client *client,
 	surface->pending.buffer_viewport.surface.height = dst_height;
 }
 
+static void
+viewport_set_source(struct wl_client *client,
+		    struct wl_resource *resource,
+		    wl_fixed_t src_x,
+		    wl_fixed_t src_y,
+		    wl_fixed_t src_width,
+		    wl_fixed_t src_height)
+{
+	struct weston_surface *surface =
+		wl_resource_get_user_data(resource);
+
+	assert(surface->viewport_resource != NULL);
+
+	if (wl_fixed_to_double(src_width) < 0 ||
+	    wl_fixed_to_double(src_height) < 0) {
+		surface->pending.buffer_viewport.buffer.src_width =
+			wl_fixed_from_int(-1);
+	} else {
+		surface->pending.buffer_viewport.buffer.src_x = src_x;
+		surface->pending.buffer_viewport.buffer.src_y = src_y;
+		surface->pending.buffer_viewport.buffer.src_width = src_width;
+		surface->pending.buffer_viewport.buffer.src_height = src_height;
+	}
+}
+
+static void
+viewport_set_destination(struct wl_client *client,
+			 struct wl_resource *resource,
+			 int32_t dst_width,
+			 int32_t dst_height)
+{
+	struct weston_surface *surface =
+		wl_resource_get_user_data(resource);
+
+	assert(surface->viewport_resource != NULL);
+
+	if (dst_width <= 0 || dst_height <= 0) {
+		surface->pending.buffer_viewport.surface.width = -1;
+	} else {
+		surface->pending.buffer_viewport.surface.width = dst_width;
+		surface->pending.buffer_viewport.surface.height = dst_height;
+	}
+}
+
 static const struct wl_viewport_interface viewport_interface = {
 	viewport_destroy,
-	viewport_set
+	viewport_set,
+	viewport_set_source,
+	viewport_set_destination
 };
 
 static void
@@ -3433,7 +3501,9 @@ scaler_get_viewport(struct wl_client *client,
 		    uint32_t id,
 		    struct wl_resource *surface_resource)
 {
-	struct weston_surface *surface = wl_resource_get_user_data(surface_resource);
+	int version = wl_resource_get_version(scaler);
+	struct weston_surface *surface =
+		wl_resource_get_user_data(surface_resource);
 	struct wl_resource *resource;
 
 	if (surface->viewport_resource) {
@@ -3444,7 +3514,7 @@ scaler_get_viewport(struct wl_client *client,
 	}
 
 	resource = wl_resource_create(client, &wl_viewport_interface,
-				      1, id);
+				      version, id);
 	if (resource == NULL) {
 		wl_client_post_no_memory(client);
 		return;
@@ -3468,7 +3538,7 @@ bind_scaler(struct wl_client *client,
 	struct wl_resource *resource;
 
 	resource = wl_resource_create(client, &wl_scaler_interface,
-				      1, id);
+				      MIN(version, 2), id);
 	if (resource == NULL) {
 		wl_client_post_no_memory(client);
 		return;
@@ -3568,7 +3638,7 @@ weston_compositor_init(struct weston_compositor *ec,
 			      ec, bind_subcompositor))
 		return -1;
 
-	if (!wl_global_create(ec->wl_display, &wl_scaler_interface, 1,
+	if (!wl_global_create(ec->wl_display, &wl_scaler_interface, 2,
 			      ec, bind_scaler))
 		return -1;
 

@@ -864,6 +864,8 @@ struct weston_surface {
 
 	struct weston_buffer_reference buffer_ref;
 	struct weston_buffer_viewport buffer_viewport;
+	int32_t width_from_buffer; /* before applying viewport */
+	int32_t height_from_buffer;
 	int keep_buffer; /* bool for backends to prevent early release */
 
 	/* wl_viewport resource for this surface */

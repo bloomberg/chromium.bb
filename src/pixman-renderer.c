@@ -139,6 +139,35 @@ region_global_to_output(struct weston_output *output, pixman_region32_t *region)
 #define D2F(v) pixman_double_to_fixed((double)v)
 
 static void
+transform_apply_viewport(pixman_transform_t *transform,
+			 struct weston_surface *surface)
+{
+	struct weston_buffer_viewport *vp = &surface->buffer_viewport;
+	double src_width, src_height;
+	double src_x, src_y;
+
+	if (vp->buffer.src_width == wl_fixed_from_int(-1)) {
+		if (vp->surface.width == -1)
+			return;
+
+		src_x = 0.0;
+		src_y = 0.0;
+		src_width = surface->width_from_buffer;
+		src_height = surface->height_from_buffer;
+	} else {
+		src_x = wl_fixed_to_double(vp->buffer.src_x);
+		src_y = wl_fixed_to_double(vp->buffer.src_y);
+		src_width = wl_fixed_to_double(vp->buffer.src_width);
+		src_height = wl_fixed_to_double(vp->buffer.src_height);
+	}
+
+	pixman_transform_scale(transform, NULL,
+			       D2F(src_width / surface->width),
+			       D2F(src_height / surface->height));
+	pixman_transform_translate(transform, NULL, D2F(src_x), D2F(src_y));
+}
+
+static void
 repaint_region(struct weston_view *ev, struct weston_output *output,
 	       pixman_region32_t *region, pixman_region32_t *surf_region,
 	       pixman_op_t pixman_op)
@@ -258,25 +287,7 @@ repaint_region(struct weston_view *ev, struct weston_output *output,
 					   pixman_double_to_fixed ((double)-ev->geometry.y));
 	}
 
-	if (vp->buffer.src_width != wl_fixed_from_int(-1) &&
-	    vp->surface.width != -1) {
-		double viewport_x, viewport_y, viewport_width, viewport_height;
-		double ratio_x, ratio_y;
-
-		viewport_x = wl_fixed_to_double(vp->buffer.src_x);
-		viewport_y = wl_fixed_to_double(vp->buffer.src_y);
-		viewport_width = wl_fixed_to_double(vp->buffer.src_width);
-		viewport_height = wl_fixed_to_double(vp->buffer.src_height);
-
-		ratio_x = viewport_width / vp->surface.width;
-		ratio_y = viewport_height / vp->surface.height;
-
-		pixman_transform_scale(&transform, NULL,
-				       pixman_double_to_fixed(ratio_x),
-				       pixman_double_to_fixed(ratio_y));
-		pixman_transform_translate(&transform, NULL, pixman_double_to_fixed(viewport_x),
-							     pixman_double_to_fixed(viewport_y));
-	}
+	transform_apply_viewport(&transform, ev->surface);
 
 	fw = pixman_int_to_fixed(ev->surface->width);
 	fh = pixman_int_to_fixed(ev->surface->height);
