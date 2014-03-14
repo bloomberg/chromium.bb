@@ -316,13 +316,13 @@ def GetPreferredTryMasters(project, change):
             'blink_presubmit': set(['defaulttests']),
             'linux_blink_dbg': set(['defaulttests']),
             'linux_blink_rel': set(['defaulttests']),
+            'mac_blink_compile_dbg': set(['defaulttests']),
+            'mac_blink_rel': set(['defaulttests']),
+            'win_blink_compile_dbg': set(['defaulttests']),
+            'win_blink_rel': set(['defaulttests']),
         },
         'tryserver.chromium': {
             'blink_android_compile_dbg': set(['defaulttests']),
             'blink_android_compile_rel': set(['defaulttests']),
-            'mac_blink_compile': set(['defaulttests']),
-            'mac_blink_rel': set(['defaulttests']),
-            'win_blink_compile': set(['defaulttests']),
-            'win_blink_rel': set(['defaulttests']),
         }
     }
