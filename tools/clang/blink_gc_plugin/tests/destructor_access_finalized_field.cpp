@@ -8,8 +8,14 @@ namespace WebCore {
 
 HeapObject::~HeapObject()
 {
-    if (m_ref && m_obj)
-        (void)m_objs;
+    // Valid access to fields.
+    if (m_ref->foo() && !m_obj)
+        m_objs.size();
+
+    // Invalid access to fields.
+    bar(m_obj);
+    m_obj->foo();
+    m_objs[0];
 }
 
 void HeapObject::trace(Visitor* visitor)

@@ -14,18 +14,21 @@ template<typename T> class RefCounted { };
 template<typename T> class RawPtr {
 public:
     operator T*() const { return 0; }
+    T* operator->() { return 0; }
 };
 
 template<typename T> class RefPtr {
 public:
     ~RefPtr() { }
     operator T*() const { return 0; }
+    T* operator->() { return 0; }
 };
 
 template<typename T> class OwnPtr {
 public:
     ~OwnPtr() { }
     operator T*() const { return 0; }
+    T* operator->() { return 0; }
 };
 
 class DefaultAllocator {
@@ -56,6 +59,9 @@ template<typename T,
 class Vector : public VectorDestructorBase<inlineCapacity,
                                            Allocator::isGarbageCollected,
                                            VectorTraits<T>::needsDestruction> {
+public:
+    size_t size();
+    T& operator[](size_t);
 };
 
 }
@@ -89,11 +95,15 @@ class GarbageCollectedFinalized : public GarbageCollected<T> { };
 template<typename T> class Member {
 public:
     operator T*() const { return 0; }
+    T* operator->() { return 0; }
+    bool operator!() const { return false; }
 };
 
 template<typename T> class Persistent {
 public:
     operator T*() const { return 0; }
+    T* operator->() { return 0; }
+    bool operator!() const { return false; }
 };
 
 class HeapAllocator {

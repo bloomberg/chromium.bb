@@ -9,12 +9,17 @@
 
 namespace WebCore {
 
-class Other : public RefCounted<Other> {};
+class Other : public RefCounted<Other> {
+public:
+    bool foo() { return true; }
+};
 
 class HeapObject : public GarbageCollectedFinalized<HeapObject> {
 public:
     ~HeapObject();
     void trace(Visitor*);
+    bool foo() { return true; }
+    void bar(HeapObject*) { }
 private:
     RefPtr<Other> m_ref;
     Member<HeapObject> m_obj;

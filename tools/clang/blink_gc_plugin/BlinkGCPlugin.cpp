@@ -135,9 +135,11 @@ class CollectVisitor : public RecursiveASTVisitor<CollectVisitor> {
   MethodVector trace_decls_;
 };
 
-// This visitor checks that a finalizer method does not access fields that are
-// potentially finalized. A potentially finalized field is either a Member, a
-// heap-allocated collection or an off-heap collection that contains Members.
+// This visitor checks that a finalizer method does not have invalid access to
+// fields that are potentially finalized. A potentially finalized field is
+// either a Member, a heap-allocated collection or an off-heap collection that
+// contains Members.  Invalid uses are currently identified as passing the field
+// as the argument of a procedure call or using the -> or [] operators on it.
 class CheckFinalizerVisitor
     : public RecursiveASTVisitor<CheckFinalizerVisitor> {
  private:
@@ -163,9 +165,30 @@ class CheckFinalizerVisitor
  public:
   typedef std::vector<std::pair<MemberExpr*, FieldPoint*> > Errors;
 
-  CheckFinalizerVisitor(RecordCache* cache) : cache_(cache) {}
+  CheckFinalizerVisitor(RecordCache* cache)
+      : blacklist_context_(false), cache_(cache) {}
 
   Errors& finalized_fields() { return finalized_fields_; }
+
+  bool WalkUpFromCXXOperatorCallExpr(CXXOperatorCallExpr* expr) {
+    // Only continue the walk-up if the operator is a blacklisted one.
+    switch (expr->getOperator()) {
+      case OO_Arrow:
+      case OO_Subscript:
+        this->WalkUpFromCallExpr(expr);
+    }
+    return true;
+  }
+
+  // We consider all non-operator calls to be blacklisted contexts.
+  bool WalkUpFromCallExpr(CallExpr* expr) {
+    bool prev_blacklist_context = blacklist_context_;
+    blacklist_context_ = true;
+    for (size_t i = 0; i < expr->getNumArgs(); ++i)
+      this->TraverseStmt(expr->getArg(i));
+    blacklist_context_ = prev_blacklist_context;
+    return true;
+  }
 
   bool VisitMemberExpr(MemberExpr* member) {
     FieldDecl* field = dyn_cast<FieldDecl>(member->getMemberDecl());
@@ -180,7 +203,7 @@ class CheckFinalizerVisitor
     if (it == info->GetFields().end())
       return true;
 
-    if (MightBeCollected(&it->second))
+    if (blacklist_context_ && MightBeCollected(&it->second))
       finalized_fields_.push_back(std::make_pair(member, &it->second));
     return true;
   }
@@ -192,6 +215,7 @@ class CheckFinalizerVisitor
   }
 
  private:
+  bool blacklist_context_;
   Errors finalized_fields_;
   RecordCache* cache_;
 };
