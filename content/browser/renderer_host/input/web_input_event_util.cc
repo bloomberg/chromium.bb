@@ -251,15 +251,21 @@ WebGestureEvent CreateWebGestureEventFromGestureEventData(
       break;
     case ui::ET_GESTURE_DOUBLE_TAP:
       gesture.type = WebInputEvent::GestureDoubleTap;
+      DCHECK_EQ(1, data.details.tap.tap_count);
+      gesture.data.tap.tapCount = data.details.tap.tap_count;
+      gesture.data.tap.width = data.details.tap.width * scale;
+      gesture.data.tap.height = data.details.tap.height * scale;
       break;
     case ui::ET_GESTURE_TAP:
       gesture.type = WebInputEvent::GestureTap;
+      DCHECK_EQ(1, data.details.tap.tap_count);
       gesture.data.tap.tapCount = data.details.tap.tap_count;
       gesture.data.tap.width = data.details.tap.width * scale;
       gesture.data.tap.height = data.details.tap.height * scale;
       break;
     case ui::ET_GESTURE_TAP_UNCONFIRMED:
       gesture.type = WebInputEvent::GestureTapUnconfirmed;
+      DCHECK_EQ(1, data.details.tap.tap_count);
       gesture.data.tap.tapCount = data.details.tap.tap_count;
       gesture.data.tap.width = data.details.tap.width * scale;
       gesture.data.tap.height = data.details.tap.height * scale;

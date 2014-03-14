@@ -207,6 +207,11 @@ TEST_F(GestureProviderTest, GestureTapTap) {
                             MotionEvent::ACTION_UP);
   EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
   EXPECT_EQ(ET_GESTURE_TAP, GetMostRecentGestureEventType());
+  // Ensure tap details have been set.
+  EXPECT_EQ(10, GetMostRecentGestureEvent().details.tap.width);
+  EXPECT_EQ(10, GetMostRecentGestureEvent().details.tap.height);
+  EXPECT_EQ(1, GetMostRecentGestureEvent().details.tap.tap_count);
+
 }
 
 // Verify that a DOWN followed shortly by an UP will trigger
@@ -225,6 +230,11 @@ TEST_F(GestureProviderTest, GestureTapTapWithDelay) {
                             MotionEvent::ACTION_UP);
   EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
   EXPECT_EQ(ET_GESTURE_TAP_UNCONFIRMED, GetMostRecentGestureEventType());
+  // Ensure tap details have been set.
+  EXPECT_EQ(10, GetMostRecentGestureEvent().details.tap.width);
+  EXPECT_EQ(10, GetMostRecentGestureEvent().details.tap.height);
+  EXPECT_EQ(1, GetMostRecentGestureEvent().details.tap.tap_count);
+
   EXPECT_FALSE(HasReceivedGesture(ET_GESTURE_TAP));
 }
 
@@ -387,7 +397,13 @@ TEST_F(GestureProviderTest, DoubleTap) {
                             kFakeCoordX,
                             kFakeCoordY + 1);
   EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
-  EXPECT_EQ(ET_GESTURE_DOUBLE_TAP, GetMostRecentGestureEventType());
+
+  const GestureEventData& double_tap = GetMostRecentGestureEvent();
+  EXPECT_EQ(ET_GESTURE_DOUBLE_TAP, double_tap.type);
+  // Ensure tap details have been set.
+  EXPECT_EQ(10, double_tap.details.tap.width);
+  EXPECT_EQ(10, double_tap.details.tap.height);
+  EXPECT_EQ(1, double_tap.details.tap.tap_count);
 }
 
 TEST_F(GestureProviderTest, DoubleTapDragZoom) {

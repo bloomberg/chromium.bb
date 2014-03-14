@@ -61,6 +61,16 @@ float Round(float f) {
   return (f > 0.f) ? std::floor(f + 0.5f) : std::ceil(f - 0.5f);
 }
 
+GestureEventData::Details CreateTapGestureDetails(const MotionEvent& event) {
+  GestureEventData::Details tap_details;
+  // Set the tap count to 1 even for ET_GESTURE_DOUBLE_TAP, in order to be
+  // consistent with double tap behavior on a mobile viewport. See
+  // crbug.com/234986 for context.
+  tap_details.tap.tap_count = 1;
+  tap_details.tap.width = tap_details.tap.height = event.GetTouchMajor();
+  return tap_details;
+}
+
 }  // namespace
 
 // GestureProvider:::Config
@@ -339,9 +349,10 @@ class GestureProvider::GestureListenerImpl
         // for the double-tap timeout.
         return OnSingleTapConfirmed(e);
       } else {
-        // Notify Blink about this tapUp event anyway,
-        // when none of the above conditions applied.
-        provider_->Send(CreateGesture(ET_GESTURE_TAP_UNCONFIRMED, e));
+        // Notify Blink about this tapUp event anyway, when none of the above
+        // conditions applied.
+        provider_->Send(CreateGesture(
+            ET_GESTURE_TAP_UNCONFIRMED, e, CreateTapGestureDetails(e)));
       }
     }
 
@@ -359,10 +370,8 @@ class GestureProvider::GestureListenerImpl
 
     ignore_single_tap_ = true;
 
-    GestureEventData::Details tap_details;
-    tap_details.tap.tap_count = 1;
-    tap_details.tap.width = tap_details.tap.height = e.GetTouchMajor();
-    provider_->Send(CreateGesture(ET_GESTURE_TAP, e, tap_details));
+    provider_->Send(
+        CreateGesture(ET_GESTURE_TAP, e, CreateTapGestureDetails(e)));
     return true;
   }
 
@@ -422,7 +431,8 @@ class GestureProvider::GestureListenerImpl
       case MotionEvent::ACTION_UP:
         if (double_tap_mode_ != DOUBLE_TAP_MODE_DRAG_ZOOM) {
           // Normal double-tap gesture.
-          provider_->Send(CreateGesture(ET_GESTURE_DOUBLE_TAP, e));
+          provider_->Send(CreateGesture(
+              ET_GESTURE_DOUBLE_TAP, e, CreateTapGestureDetails(e)));
         }
         EndDoubleTapDragIfNecessary(e);
         break;

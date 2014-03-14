@@ -33,6 +33,8 @@ struct GESTURE_DETECTION_EXPORT GestureEventData {
   struct GESTURE_DETECTION_EXPORT Details {
     Details();
     union {
+      // Tap information must be set for ET_GESTURE_TAP,
+      // ET_GESTURE_TAP_UNCONFIRMED, and ET_GESTURE_DOUBLE_TAP events.
       struct {
         int tap_count;
         float width;

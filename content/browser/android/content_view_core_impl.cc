@@ -1189,6 +1189,10 @@ void ContentViewCoreImpl::DoubleTap(JNIEnv* env, jobject obj, jlong time_ms,
                                     jfloat x, jfloat y) {
   WebGestureEvent event = MakeGestureEvent(
       WebInputEvent::GestureDoubleTap, time_ms, x, y);
+  // Set the tap count to 1 even for DoubleTap, in order to be consistent with
+  // double tap behavior on a mobile viewport. See crbug.com/234986 for context.
+  event.data.tap.tapCount = 1;
+
   SendGestureEvent(event);
 }
 

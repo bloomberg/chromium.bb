@@ -86,6 +86,13 @@ WebGestureEvent SyntheticWebGestureEventBuilder::Build(
   WebGestureEvent result;
   result.type = type;
   result.sourceDevice = source_device;
+  if (type == WebInputEvent::GestureTap ||
+      type == WebInputEvent::GestureTapUnconfirmed ||
+      type == WebInputEvent::GestureDoubleTap) {
+    result.data.tap.tapCount = 1;
+    result.data.tap.width = 10;
+    result.data.tap.height = 10;
+  }
   return result;
 }
 

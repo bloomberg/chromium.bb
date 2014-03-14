@@ -88,6 +88,7 @@ bool TouchActionFilter::FilterGestureEvent(WebGestureEvent* gesture_event) {
     // The double tap gesture is a tap ending event. If a double tap gesture is
     // filtered out, replace it with a tap event.
     case WebInputEvent::GestureDoubleTap:
+      DCHECK_EQ(1, gesture_event->data.tap.tapCount);
       if (!allow_current_double_tap_event_)
         gesture_event->type = WebInputEvent::GestureTap;
       allow_current_double_tap_event_ = true;
@@ -95,6 +96,7 @@ bool TouchActionFilter::FilterGestureEvent(WebGestureEvent* gesture_event) {
 
     // If double tap is disabled, there's no reason for the tap delay.
     case WebInputEvent::GestureTapUnconfirmed:
+      DCHECK_EQ(1, gesture_event->data.tap.tapCount);
       allow_current_double_tap_event_ =
           allowed_touch_action_ == TOUCH_ACTION_AUTO;
       if (!allow_current_double_tap_event_) {
