@@ -46,7 +46,7 @@ class RasterWorkerPoolDelegate : public RasterWorkerPoolClient {
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   typedef std::vector<RasterWorkerPool*> RasterWorkerPoolVector;
   RasterWorkerPoolVector raster_worker_pools_;
-  std::vector<bool> has_scheduled_tasks_;
+  std::vector<bool> did_finish_running_tasks_pending_;
   size_t did_finish_running_tasks_pending_count_;
   size_t did_finish_running_tasks_required_for_activation_pending_count_;
   bool run_did_finish_running_tasks_pending_;
