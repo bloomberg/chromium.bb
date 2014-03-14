@@ -4,12 +4,14 @@
 
 #include "mojo/shell/task_runners.h"
 
-#include "base/message_loop/message_loop_proxy.h"
-#include "base/threading/thread.h"
+#include "base/threading/sequenced_worker_pool.h"
 
 namespace mojo {
 namespace shell {
+
 namespace {
+
+const size_t kMaxBlockingPoolThreads = 3;
 
 scoped_ptr<base::Thread> CreateIOThread(const char* name) {
   scoped_ptr<base::Thread> thread(new base::Thread(name));
@@ -25,11 +27,14 @@ TaskRunners::TaskRunners(base::SingleThreadTaskRunner* ui_runner)
     : ui_runner_(ui_runner),
       cache_thread_(CreateIOThread("cache_thread")),
       io_thread_(CreateIOThread("io_thread")),
-      file_thread_(new base::Thread("file_thread")) {
+      file_thread_(new base::Thread("file_thread")),
+      blocking_pool_(new base::SequencedWorkerPool(kMaxBlockingPoolThreads,
+                                                   "blocking_pool")) {
   file_thread_->Start();
 }
 
 TaskRunners::~TaskRunners() {
+  blocking_pool_->Shutdown();
 }
 
 }  // namespace shell

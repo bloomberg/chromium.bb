@@ -5,9 +5,15 @@
 #ifndef MOJO_SHELL_TASK_RUNNERS_H_
 #define MOJO_SHELL_TASK_RUNNERS_H_
 
+#include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/threading/thread.h"
+
+namespace base {
+class SequencedWorkerPool;
+}
 
 namespace mojo {
 namespace shell {
@@ -34,12 +40,18 @@ class TaskRunners {
     return cache_thread_->message_loop_proxy();
   }
 
+  base::SequencedWorkerPool* blocking_pool() const {
+    return blocking_pool_.get();
+  }
+
  private:
   // TODO(beng): should this be named shell_runner_?
   scoped_refptr<base::SingleThreadTaskRunner> ui_runner_;
   scoped_ptr<base::Thread> cache_thread_;
   scoped_ptr<base::Thread> io_thread_;
   scoped_ptr<base::Thread> file_thread_;
+
+  scoped_refptr<base::SequencedWorkerPool> blocking_pool_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskRunners);
 };

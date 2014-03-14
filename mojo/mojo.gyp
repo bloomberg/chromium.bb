@@ -356,6 +356,7 @@
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
+        '../base/base.gyp:base_static',
         '../net/net.gyp:net',
         '../url/url.gyp:url_lib',
         'mojo_gles2_impl',
@@ -366,6 +367,10 @@
         'mojo_native_viewport_service',
       ],
       'sources': [
+        'shell/child_process.cc',
+        'shell/child_process.h',
+        'shell/child_process_host.cc',
+        'shell/child_process_host.h',
         'shell/context.cc',
         'shell/context.h',
         'shell/dynamic_service_loader.cc',
@@ -386,6 +391,8 @@
         'shell/switches.h',
         'shell/task_runners.cc',
         'shell/task_runners.h',
+        'shell/test_child_process.cc',
+        'shell/test_child_process.h',
         'shell/url_request_context_getter.cc',
         'shell/url_request_context_getter.h',
       ],

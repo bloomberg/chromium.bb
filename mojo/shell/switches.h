@@ -7,6 +7,9 @@
 
 namespace switches {
 
+// All switches in alphabetical order. The switches should be documented
+// alongside the definition of their values in the .cc file.
+extern const char kChildProcessType[];
 extern const char kDisableCache[];
 extern const char kOrigin[];
 
