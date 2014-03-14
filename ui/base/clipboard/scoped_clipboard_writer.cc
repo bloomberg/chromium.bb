@@ -91,6 +91,10 @@ void ScopedClipboardWriter::WriteWebSmartPaste() {
 
 void ScopedClipboardWriter::WritePickledData(
     const Pickle& pickle, const Clipboard::FormatType& format) {
+  // |format| may originate from the renderer, so sanity check it.
+  if (!Clipboard::IsRegisteredFormatType(format))
+    return;
+
   std::string format_string = format.Serialize();
   Clipboard::ObjectMapParam format_parameter(format_string.begin(),
                                              format_string.end());

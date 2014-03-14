@@ -154,7 +154,7 @@ bool BookmarkMenuDelegate::GetDropFormats(
     int* formats,
     std::set<ui::OSExchangeData::CustomFormat>* custom_formats) {
   *formats = ui::OSExchangeData::URL;
-  custom_formats->insert(BookmarkNodeData::GetBookmarkCustomFormat());
+  custom_formats->insert(BookmarkNodeData::GetFormatType());
   return true;
 }
 

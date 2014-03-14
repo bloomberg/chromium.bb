@@ -83,10 +83,7 @@ class UI_BASE_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
     std::string Serialize() const;
     static FormatType Deserialize(const std::string& serialization);
 
-#if defined(OS_WIN) || defined(USE_AURA)
-    // FormatType can be used in a set on some platforms.
     bool operator<(const FormatType& other) const;
-#endif
 
 #if defined(OS_WIN)
     const FORMATETC& ToFormatEtc() const { return data_; }
@@ -273,6 +270,9 @@ class UI_BASE_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
   // limitiations, |format_string| must never be controlled by the user.
   static FormatType GetFormatType(const std::string& format_string);
 
+  // Returns true if the |format| was registered with GetFormatType().
+  static bool IsRegisteredFormatType(const FormatType& format);
+
   // Get format identifiers for various types.
   static const FormatType& GetUrlFormatType();
   static const FormatType& GetUrlWFormatType();
@@ -316,6 +316,8 @@ class UI_BASE_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
 
   Clipboard();
   ~Clipboard();
+
+  static FormatType GetFormatTypeInternal(const std::string& format_string);
 
   void DispatchObject(ObjectType type, const ObjectMapParams& params);
 
