@@ -694,6 +694,20 @@
             }],
           ],
         },
+        {
+          'target_name': 'chromium_builder_nacl_sdk',
+          'type': 'none',
+          'dependencies': [
+            '../chrome/chrome.gyp:chrome',
+          ],
+          'conditions': [
+            ['OS=="win"', {
+              'dependencies': [
+                '../chrome/chrome.gyp:chrome_nacl_win64',
+              ]
+            }],
+          ],
+        },  #target_name: chromium_builder_nacl_sdk
       ],  # targets
     }], #OS!=ios and OS!=android
     ['OS=="android"', {
