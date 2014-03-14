@@ -1669,8 +1669,9 @@ class LayerTreeHostTestDelegatingRendererAtomicCommit
   }
 };
 
-MULTI_THREAD_DELEGATING_RENDERER_NOIMPL_TEST_F(
-    LayerTreeHostTestDelegatingRendererAtomicCommit);
+// Failing flakily http://crbug.com/352797
+// MULTI_THREAD_DELEGATING_RENDERER_NOIMPL_TEST_F(
+//     LayerTreeHostTestDelegatingRendererAtomicCommit);
 
 static void SetLayerPropertiesForTesting(Layer* layer,
                                          Layer* parent,
