@@ -291,18 +291,24 @@ _DISABLE_NACL = 'disable_nacl'
 _USE_DRM = 'use_drm'
 
 
+_APP_SHELL_FLAG = 'app_shell'
 _CHROME_INTERNAL_FLAG = 'chrome_internal'
 _CONTENT_SHELL_FLAG = 'content_shell'
 _HIGHDPI_FLAG = 'highdpi'
 _PDF_FLAG = 'chrome_pdf'
-STAGING_FLAGS = (_CHROME_INTERNAL_FLAG, _CONTENT_SHELL_FLAG, _HIGHDPI_FLAG,
-                 _PDF_FLAG)
+STAGING_FLAGS = (_APP_SHELL_FLAG, _CHROME_INTERNAL_FLAG, _CONTENT_SHELL_FLAG,
+                 _HIGHDPI_FLAG, _PDF_FLAG)
 
 _CHROME_SANDBOX_DEST = 'chrome-sandbox'
 C = Conditions
 
 
 _COPY_PATHS = (
+  Path('app_shell',
+       exe=True,
+       cond=C.StagingFlagSet(_APP_SHELL_FLAG)),
+  Path('app_shell.pak',
+       cond=C.StagingFlagSet(_APP_SHELL_FLAG)),
   Path('ash_shell',
        cond=C.GypSet(_USE_DRM)),
   Path('aura_demo',
