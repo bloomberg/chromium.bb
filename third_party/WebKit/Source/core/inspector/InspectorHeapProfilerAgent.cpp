@@ -226,14 +226,18 @@ void InspectorHeapProfilerAgent::takeHeapSnapshot(ErrorString* errorString, cons
         }
         virtual void Worked(int workDone) OVERRIDE
         {
-            if (m_frontend)
+            if (m_frontend) {
                 m_frontend->reportHeapSnapshotProgress(workDone, m_totalWork, 0);
+                m_frontend->flush();
+            }
         }
         virtual void Done() OVERRIDE
         {
             const bool finished = true;
-            if (m_frontend)
+            if (m_frontend) {
                 m_frontend->reportHeapSnapshotProgress(m_totalWork, m_totalWork, &finished);
+                m_frontend->flush();
+            }
         }
         virtual bool isCanceled() OVERRIDE { return false; }
     private:
@@ -253,7 +257,11 @@ void InspectorHeapProfilerAgent::takeHeapSnapshot(ErrorString* errorString, cons
     public:
         explicit OutputStream(InspectorFrontend::HeapProfiler* frontend)
             : m_frontend(frontend) { }
-        void Write(const String& chunk) { m_frontend->addHeapSnapshotChunk(chunk); }
+        void Write(const String& chunk)
+        {
+            m_frontend->addHeapSnapshotChunk(chunk);
+            m_frontend->flush();
+        }
         void Close() { }
     private:
         InspectorFrontend::HeapProfiler* m_frontend;

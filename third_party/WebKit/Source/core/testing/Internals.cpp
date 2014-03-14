@@ -146,7 +146,8 @@ class InspectorFrontendChannelDummy : public InspectorFrontendChannel {
 public:
     explicit InspectorFrontendChannelDummy(Page*);
     virtual ~InspectorFrontendChannelDummy() { }
-    virtual bool sendMessageToFrontend(const String& message) OVERRIDE;
+    virtual void sendMessageToFrontend(PassRefPtr<JSONObject> message) OVERRIDE;
+    virtual void flush() OVERRIDE { }
 
 private:
     Page* m_frontendPage;
@@ -157,9 +158,9 @@ InspectorFrontendChannelDummy::InspectorFrontendChannelDummy(Page* page)
 {
 }
 
-bool InspectorFrontendChannelDummy::sendMessageToFrontend(const String& message)
+void InspectorFrontendChannelDummy::sendMessageToFrontend(PassRefPtr<JSONObject> message)
 {
-    return InspectorClient::doDispatchMessageOnFrontendPage(m_frontendPage, message);
+    InspectorClient::doDispatchMessageOnFrontendPage(m_frontendPage, message->toJSONString());
 }
 
 static bool markerTypesFrom(const String& markerType, DocumentMarker::MarkerTypes& result)

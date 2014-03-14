@@ -560,13 +560,16 @@ void WebDevToolsAgentImpl::hideHighlight()
     m_webViewImpl->removePageOverlay(this);
 }
 
-bool WebDevToolsAgentImpl::sendMessageToFrontend(const String& message)
+void WebDevToolsAgentImpl::sendMessageToFrontend(PassRefPtr<WebCore::JSONObject> message)
 {
-    WebDevToolsAgentImpl* devToolsAgent = static_cast<WebDevToolsAgentImpl*>(m_webViewImpl->devToolsAgent());
-    if (!devToolsAgent)
-        return false;
-    m_client->sendMessageToInspectorFrontend(message);
-    return true;
+    m_frontendMessageQueue.append(message);
+}
+
+void WebDevToolsAgentImpl::flush()
+{
+    for (size_t i = 0; i < m_frontendMessageQueue.size(); ++i)
+        m_client->sendMessageToInspectorFrontend(m_frontendMessageQueue[i]->toJSONString());
+    m_frontendMessageQueue.clear();
 }
 
 void WebDevToolsAgentImpl::updateInspectorStateCookie(const String& state)
@@ -610,6 +613,7 @@ void WebDevToolsAgentImpl::didProcessTask()
 {
     if (InspectorController* ic = inspectorController())
         ic->didProcessTask();
+    flush();
 }
 
 WebString WebDevToolsAgent::inspectorProtocolVersion()

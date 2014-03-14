@@ -40,6 +40,7 @@
 #include "public/platform/WebThread.h"
 #include "wtf/Forward.h"
 #include "wtf/OwnPtr.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 class Document;
@@ -102,7 +103,8 @@ public:
     virtual void highlight() OVERRIDE;
     virtual void hideHighlight() OVERRIDE;
     virtual void updateInspectorStateCookie(const WTF::String&) OVERRIDE;
-    virtual bool sendMessageToFrontend(const WTF::String&) OVERRIDE;
+    virtual void sendMessageToFrontend(PassRefPtr<WebCore::JSONObject> message) OVERRIDE;
+    virtual void flush() OVERRIDE;
 
     virtual void clearBrowserCache() OVERRIDE;
     virtual void clearBrowserCookies() OVERRIDE;
@@ -142,6 +144,8 @@ private:
     bool m_emulateViewportEnabled;
     bool m_originalViewportEnabled;
     bool m_isOverlayScrollbarsEnabled;
+    typedef Vector<RefPtr<WebCore::JSONObject> > FrontendMessageQueue;
+    FrontendMessageQueue m_frontendMessageQueue;
 };
 
 } // namespace blink

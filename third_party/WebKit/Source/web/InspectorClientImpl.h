@@ -51,7 +51,8 @@ public:
     virtual void highlight() OVERRIDE;
     virtual void hideHighlight() OVERRIDE;
 
-    virtual bool sendMessageToFrontend(const WTF::String&) OVERRIDE;
+    virtual void sendMessageToFrontend(PassRefPtr<WebCore::JSONObject>) OVERRIDE;
+    virtual void flush() OVERRIDE;
 
     virtual void updateInspectorStateCookie(const WTF::String&) OVERRIDE;
 

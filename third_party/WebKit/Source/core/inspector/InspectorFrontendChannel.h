@@ -26,6 +26,7 @@
 #ifndef InspectorFrontendChannel_h
 #define InspectorFrontendChannel_h
 
+#include "platform/JSONValues.h"
 #include "wtf/Forward.h"
 
 namespace WebCore {
@@ -33,7 +34,8 @@ namespace WebCore {
 class InspectorFrontendChannel {
 public:
     virtual ~InspectorFrontendChannel() { }
-    virtual bool sendMessageToFrontend(const String& message) = 0;
+    virtual void sendMessageToFrontend(PassRefPtr<JSONObject> message) = 0;
+    virtual void flush() = 0;
 };
 
 } // namespace WebCore

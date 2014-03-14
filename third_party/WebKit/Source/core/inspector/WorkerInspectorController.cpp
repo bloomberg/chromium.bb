@@ -62,11 +62,11 @@ public:
     explicit PageInspectorProxy(WorkerGlobalScope* workerGlobalScope) : m_workerGlobalScope(workerGlobalScope) { }
     virtual ~PageInspectorProxy() { }
 private:
-    virtual bool sendMessageToFrontend(const String& message) OVERRIDE
+    virtual void sendMessageToFrontend(PassRefPtr<JSONObject> message) OVERRIDE
     {
-        m_workerGlobalScope->thread()->workerReportingProxy().postMessageToPageInspector(message);
-        return true;
+        m_workerGlobalScope->thread()->workerReportingProxy().postMessageToPageInspector(message->toJSONString());
     }
+    virtual void flush() OVERRIDE { }
     WorkerGlobalScope* m_workerGlobalScope;
 };
 

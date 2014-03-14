@@ -38,6 +38,7 @@
 #include "core/frame/DOMWindow.h"
 #include "core/page/Page.h"
 #include "core/frame/Settings.h"
+#include "platform/JSONValues.h"
 #include "platform/geometry/FloatRect.h"
 #include "public/platform/WebRect.h"
 #include "public/platform/WebURL.h"
@@ -70,11 +71,16 @@ void InspectorClientImpl::hideHighlight()
         agent->hideHighlight();
 }
 
-bool InspectorClientImpl::sendMessageToFrontend(const WTF::String& message)
+void InspectorClientImpl::sendMessageToFrontend(PassRefPtr<WebCore::JSONObject> message)
 {
     if (WebDevToolsAgentImpl* agent = devToolsAgent())
-        return agent->sendMessageToFrontend(message);
-    return false;
+        agent->sendMessageToFrontend(message);
+}
+
+void InspectorClientImpl::flush()
+{
+    if (WebDevToolsAgentImpl* agent = devToolsAgent())
+        agent->flush();
 }
 
 void InspectorClientImpl::updateInspectorStateCookie(const WTF::String& inspectorState)
