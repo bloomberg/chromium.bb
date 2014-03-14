@@ -793,11 +793,14 @@ void ThreadData::EnsureCleanupWasCalled(int major_threads_shutdown_count) {
   base::AutoLock lock(*list_lock_.Pointer());
   if (worker_thread_data_creation_count_ == 0)
     return;  // We haven't really run much, and couldn't have leaked.
+
+  // TODO(jar): until this is working on XP, don't run the real test.
+#if 0
   // Verify that we've at least shutdown/cleanup the major namesd threads.  The
   // caller should tell us how many thread shutdowns should have taken place by
   // now.
-  return;  // TODO(jar): until this is working on XP, don't run the real test.
   CHECK_GT(cleanup_count_, major_threads_shutdown_count);
+#endif
 }
 
 // static

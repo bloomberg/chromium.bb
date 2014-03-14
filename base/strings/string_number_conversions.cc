@@ -78,24 +78,19 @@ struct IntToStringT {
     // unsigned, even the presence of the unary operation causes a warning.
     UINT res = ToUnsignedT<INT, UINT, NEG>::ToUnsigned(value);
 
-    for (typename STR::iterator it = outbuf.end();;) {
+    typename STR::iterator it(outbuf.end());
+    do {
       --it;
       DCHECK(it != outbuf.begin());
       *it = static_cast<typename STR::value_type>((res % 10) + '0');
       res /= 10;
-
-      // We're done..
-      if (res == 0) {
-        if (is_neg) {
-          --it;
-          DCHECK(it != outbuf.begin());
-          *it = static_cast<typename STR::value_type>('-');
-        }
-        return STR(it, outbuf.end());
-      }
+    } while (res != 0);
+    if (is_neg) {
+      --it;
+      DCHECK(it != outbuf.begin());
+      *it = static_cast<typename STR::value_type>('-');
     }
-    NOTREACHED();
-    return STR();
+    return STR(it, outbuf.end());
   }
 };
 
