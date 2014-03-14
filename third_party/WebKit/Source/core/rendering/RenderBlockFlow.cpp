@@ -1326,7 +1326,7 @@ void RenderBlockFlow::marginBeforeEstimateForChild(RenderBox* child, LayoutUnit&
     // Give up if in quirks mode and we're a body/table cell and the top margin of the child box is quirky.
     // Give up if the child specified -webkit-margin-collapse: separate that prevents collapsing.
     // FIXME: Use writing mode independent accessor for marginBeforeCollapse.
-    if ((document().inQuirksMode() && hasMarginAfterQuirk(child) && (isTableCell() || isBody())) || child->style()->marginBeforeCollapse() == MSEPARATE)
+    if ((document().inQuirksMode() && hasMarginBeforeQuirk(child) && (isTableCell() || isBody())) || child->style()->marginBeforeCollapse() == MSEPARATE)
         return;
 
     // The margins are discarded by a child that specified -webkit-margin-collapse: discard.

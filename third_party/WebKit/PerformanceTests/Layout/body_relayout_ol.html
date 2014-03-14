@@ -1,0 +1,15 @@
+<html>
+    <head>
+        <title>Avoid relaying out a body element with floats when it has a child with a quirky margin-before.</title>
+        <link rel="stylesheet" href="resources/body_relayout.css" TYPE="text/css"></link>
+        <script src="../resources/runner.js"></script>
+        <script src="resources/body_relayout.js"></script>
+    </head>
+    <body id="body">
+        <div style="float:left"></div>
+        <ol style="height:0px;"></ol>
+        <script>
+            PerfTestRunner.measureTime({run: createBodyRelayoutTestFunction(1000, 1000, 100, 300)});
+        </script>
+    </body>
+</html>
