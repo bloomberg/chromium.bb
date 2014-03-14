@@ -157,7 +157,7 @@ void UnitTests::RunTestInProcess(UnitTests::Test test,
   // Make sure read() will never block as we'll use poll() to
   // block with a timeout instead.
   const int fcntl_ret = fcntl(fds[0], F_SETFL, O_NONBLOCK);
-  ASSERT_EQ(fcntl_ret, 0);
+  ASSERT_EQ(0, fcntl_ret);
   struct pollfd poll_fd = {fds[0], POLLIN | POLLRDHUP, 0};
 
   int poll_ret;
@@ -232,7 +232,7 @@ void UnitTests::DeathExitCode(int status,
   bool subprocess_terminated_normally = WIFEXITED(status);
   ASSERT_TRUE(subprocess_terminated_normally) << details;
   int subprocess_exit_status = WEXITSTATUS(status);
-  ASSERT_EQ(subprocess_exit_status, expected_exit_code) << details;
+  ASSERT_EQ(expected_exit_code, subprocess_exit_status) << details;
 }
 
 void UnitTests::DeathBySignal(int status,
@@ -244,7 +244,7 @@ void UnitTests::DeathBySignal(int status,
   bool subprocess_terminated_by_signal = WIFSIGNALED(status);
   ASSERT_TRUE(subprocess_terminated_by_signal) << details;
   int subprocess_signal_number = WTERMSIG(status);
-  ASSERT_EQ(subprocess_signal_number, expected_signo) << details;
+  ASSERT_EQ(expected_signo, subprocess_signal_number) << details;
 }
 
 void UnitTests::AssertionFailure(const char* expr, const char* file, int line) {
