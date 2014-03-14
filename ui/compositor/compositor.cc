@@ -245,6 +245,7 @@ Compositor::Compositor(gfx::AcceleratedWidget widget)
       command_line->HasSwitch(cc::switches::kEnableGpuBenchmarking));
 
   settings.impl_side_painting = IsUIImplSidePaintingEnabled();
+  settings.use_map_image = IsUIMapImageEnabled();
 
   base::TimeTicks before_create = base::TimeTicks::Now();
   if (!!g_compositor_thread) {
