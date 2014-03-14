@@ -39,6 +39,7 @@
 #include "core/editing/TextIterator.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/htmlediting.h"
+#include "core/html/HTMLBRElement.h"
 #include "core/rendering/InlineTextBox.h"
 #include "core/rendering/RenderBlockFlow.h"
 #include "core/rendering/RenderObject.h"
@@ -89,7 +90,7 @@ static Position previousRootInlineBoxCandidatePosition(Node* node, const Visible
         if (highestEditableRoot(firstPositionInOrBeforeNode(previousNode), editableType) != highestRoot)
             break;
 
-        Position pos = previousNode->hasTagName(brTag) ? positionBeforeNode(previousNode) :
+        Position pos = isHTMLBRElement(*previousNode) ? positionBeforeNode(previousNode) :
             createLegacyEditingPosition(previousNode, caretMaxOffset(previousNode));
 
         if (pos.isCandidate())
@@ -813,7 +814,7 @@ static VisiblePosition endPositionForLine(const VisiblePosition& c, LineEndpoint
     }
 
     Position pos;
-    if (endNode->hasTagName(brTag))
+    if (isHTMLBRElement(*endNode))
         pos = positionBeforeNode(endNode);
     else if (endBox->isInlineTextBox() && endNode->isTextNode()) {
         InlineTextBox* endTextBox = toInlineTextBox(endBox);

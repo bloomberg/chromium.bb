@@ -97,7 +97,7 @@ private:
 static bool isInterchangeNewlineNode(const Node *node)
 {
     DEFINE_STATIC_LOCAL(String, interchangeNewlineClassString, (AppleInterchangeNewline));
-    return node && node->hasTagName(brTag) && toElement(node)->getAttribute(classAttr) == interchangeNewlineClassString;
+    return isHTMLBRElement(node) && toElement(node)->getAttribute(classAttr) == interchangeNewlineClassString;
 }
 
 static bool isInterchangeConvertedSpaceSpan(const Node *node)
@@ -399,7 +399,7 @@ bool ReplaceSelectionCommand::shouldMergeStart(bool selectionStartWasStartOfPara
     return !selectionStartWasStartOfParagraph
         && !fragmentHasInterchangeNewlineAtStart
         && isStartOfParagraph(startOfInsertedContent)
-        && !startOfInsertedContent.deepEquivalent().deprecatedNode()->hasTagName(brTag)
+        && !isHTMLBRElement(*startOfInsertedContent.deepEquivalent().deprecatedNode())
         && shouldMerge(startOfInsertedContent, prev);
 }
 
@@ -412,13 +412,13 @@ bool ReplaceSelectionCommand::shouldMergeEnd(bool selectionEndWasEndOfParagraph)
 
     return !selectionEndWasEndOfParagraph
         && isEndOfParagraph(endOfInsertedContent)
-        && !endOfInsertedContent.deepEquivalent().deprecatedNode()->hasTagName(brTag)
+        && !isHTMLBRElement(*endOfInsertedContent.deepEquivalent().deprecatedNode())
         && shouldMerge(endOfInsertedContent, next);
 }
 
 static bool isMailPasteAsQuotationNode(const Node* node)
 {
-    return node && node->hasTagName(blockquoteTag) && node->isElementNode() && toElement(node)->getAttribute(classAttr) == ApplePasteAsQuotation;
+    return node && node->hasTagName(blockquoteTag) && toElement(node)->getAttribute(classAttr) == ApplePasteAsQuotation;
 }
 
 static bool isHeaderElement(const Node* a)
@@ -698,11 +698,11 @@ static void removeHeadContents(ReplacementFragment& fragment)
 {
     Node* next = 0;
     for (Node* node = fragment.firstChild(); node; node = next) {
-        if (node->hasTagName(baseTag)
-            || node->hasTagName(linkTag)
-            || node->hasTagName(metaTag)
-            || node->hasTagName(styleTag)
-            || node->hasTagName(titleTag)) {
+        if (isHTMLBaseElement(*node)
+            || isHTMLLinkElement(*node)
+            || isHTMLMetaElement(*node)
+            || isHTMLStyleElement(*node)
+            || isHTMLTitleElement(*node)) {
             next = NodeTraversal::nextSkippingChildren(*node);
             fragment.removeNode(node);
         } else {
@@ -840,7 +840,7 @@ void ReplaceSelectionCommand::mergeEndIfNeeded()
 static Node* enclosingInline(Node* node)
 {
     while (ContainerNode* parent = node->parentNode()) {
-        if (parent->isBlockFlowElement() || parent->hasTagName(bodyTag))
+        if (parent->isBlockFlowElement() || isHTMLBodyElement(*parent))
             return node;
         // Stop if any previous sibling is a block.
         for (Node* sibling = node->previousSibling(); sibling; sibling = sibling->previousSibling()) {
@@ -971,7 +971,7 @@ void ReplaceSelectionCommand::doApply()
         applyCommandToComposite(BreakBlockquoteCommand::create(document()));
         // This will leave a br between the split.
         Node* br = endingSelection().start().deprecatedNode();
-        ASSERT(br->hasTagName(brTag));
+        ASSERT(isHTMLBRElement(br));
         // Insert content between the two blockquotes, but remove the br (since it was just a placeholder).
         insertionPos = positionInParentBeforeNode(*br);
         removeNode(br);
@@ -987,7 +987,7 @@ void ReplaceSelectionCommand::doApply()
     // NOTE: This would be an incorrect usage of downstream() if downstream() were changed to mean the last position after
     // p that maps to the same visible position as p (since in the case where a br is at the end of a block and collapsed
     // away, there are positions after the br which map to the same visible position as [br, 0]).
-    Node* endBR = insertionPos.downstream().deprecatedNode()->hasTagName(brTag) ? insertionPos.downstream().deprecatedNode() : 0;
+    Node* endBR = isHTMLBRElement(*insertionPos.downstream().deprecatedNode()) ? insertionPos.downstream().deprecatedNode() : 0;
     VisiblePosition originalVisPosBeforeEndBR;
     if (endBR)
         originalVisPosBeforeEndBR = VisiblePosition(positionBeforeNode(endBR), DOWNSTREAM).previous();
@@ -1254,7 +1254,7 @@ bool ReplaceSelectionCommand::shouldPerformSmartReplace() const
         return false;
 
     Element* textControl = enclosingTextFormControl(positionAtStartOfInsertedContent().deepEquivalent());
-    if (textControl && textControl->hasTagName(inputTag) && toHTMLInputElement(textControl)->isPasswordField())
+    if (isHTMLInputElement(textControl) && toHTMLInputElement(textControl)->isPasswordField())
         return false; // Disable smart replace for password fields.
 
     return true;
@@ -1489,7 +1489,7 @@ bool ReplaceSelectionCommand::performTrivialReplace(const ReplacementFragment& f
     if (end.isNull())
         return false;
 
-    if (nodeAfterInsertionPos && nodeAfterInsertionPos->parentNode() && nodeAfterInsertionPos->hasTagName(brTag)
+    if (nodeAfterInsertionPos && nodeAfterInsertionPos->parentNode() && isHTMLBRElement(*nodeAfterInsertionPos)
         && shouldRemoveEndBR(nodeAfterInsertionPos.get(), VisiblePosition(positionBeforeNode(nodeAfterInsertionPos.get()))))
         removeNodeAndPruneAncestors(nodeAfterInsertionPos.get());
 

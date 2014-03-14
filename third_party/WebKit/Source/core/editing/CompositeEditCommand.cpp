@@ -277,7 +277,8 @@ void CompositeEditCommand::insertParagraphSeparator(bool useDefaultParagraphElem
 
 bool CompositeEditCommand::isRemovableBlock(const Node* node)
 {
-    if (!node->hasTagName(divTag))
+    ASSERT(node);
+    if (!isHTMLDivElement(*node))
         return false;
 
     Node* parentNode = node->parentNode();
@@ -292,7 +293,7 @@ bool CompositeEditCommand::isRemovableBlock(const Node* node)
 
 void CompositeEditCommand::insertNodeBefore(PassRefPtr<Node> insertChild, PassRefPtr<Node> refChild, ShouldAssumeContentIsAlwaysEditable shouldAssumeContentIsAlwaysEditable)
 {
-    ASSERT(!refChild->hasTagName(bodyTag));
+    ASSERT(!isHTMLBodyElement(*refChild));
     applyCommandToComposite(InsertNodeBeforeCommand::create(insertChild, refChild, shouldAssumeContentIsAlwaysEditable));
 }
 
@@ -300,7 +301,7 @@ void CompositeEditCommand::insertNodeAfter(PassRefPtr<Node> insertChild, PassRef
 {
     ASSERT(insertChild);
     ASSERT(refChild);
-    ASSERT(!refChild->hasTagName(bodyTag));
+    ASSERT(!isHTMLBodyElement(*refChild));
     ContainerNode* parent = refChild->parentNode();
     ASSERT(parent);
     ASSERT(!parent->isShadowRoot());
@@ -684,7 +685,7 @@ void CompositeEditCommand::replaceCollapsibleWhitespaceWithNonBreakingSpaceIfNee
     if (!isCollapsibleWhitespace(visiblePosition.characterAfter()))
         return;
     Position pos = visiblePosition.deepEquivalent().downstream();
-    if (!pos.containerNode() || !pos.containerNode()->isTextNode() || pos.containerNode()->hasTagName(brTag))
+    if (!pos.containerNode() || !pos.containerNode()->isTextNode())
         return;
     replaceTextInNodePreservingMarkers(pos.containerText(), pos.offsetInContainerNode(), 1, nonBreakingSpaceString());
 }
@@ -864,7 +865,7 @@ void CompositeEditCommand::removePlaceholderAt(const Position& p)
     ASSERT(lineBreakExistsAtPosition(p));
 
     // We are certain that the position is at a line break, but it may be a br or a preserved newline.
-    if (p.anchorNode()->hasTagName(brTag)) {
+    if (isHTMLBRElement(*p.anchorNode())) {
         removeNode(p.anchorNode());
         return;
     }
@@ -933,11 +934,11 @@ PassRefPtr<Node> CompositeEditCommand::moveParagraphContentsToNewBlockIfNecessar
 
     RefPtr<Node> newBlock = insertNewDefaultParagraphElementAt(upstreamStart);
 
-    bool endWasBr = visibleParagraphEnd.deepEquivalent().deprecatedNode()->hasTagName(brTag);
+    bool endWasBr = isHTMLBRElement(*visibleParagraphEnd.deepEquivalent().deprecatedNode());
 
     moveParagraphs(visibleParagraphStart, visibleParagraphEnd, VisiblePosition(firstPositionInNode(newBlock.get())));
 
-    if (newBlock->lastChild() && newBlock->lastChild()->hasTagName(brTag) && !endWasBr)
+    if (newBlock->lastChild() && isHTMLBRElement(*newBlock->lastChild()) && !endWasBr)
         removeNode(newBlock->lastChild());
 
     return newBlock.release();
@@ -1048,7 +1049,7 @@ void CompositeEditCommand::cleanupAfterDeletion(VisiblePosition destination)
             return;
 
         // Normally deletion will leave a br as a placeholder.
-        if (node->hasTagName(brTag)) {
+        if (isHTMLBRElement(*node)) {
             removeNodeAndPruneAncestors(node, destinationNode);
 
             // If the selection to move was empty and in an empty block that
@@ -1264,14 +1265,14 @@ bool CompositeEditCommand::breakOutOfEmptyListItem()
     RefPtr<ContainerNode> listNode = emptyListItem->parentNode();
     // FIXME: Can't we do something better when the immediate parent wasn't a list node?
     if (!listNode
-        || (!listNode->hasTagName(ulTag) && !listNode->hasTagName(olTag))
+        || (!isHTMLUListElement(*listNode) && !isHTMLOListElement(*listNode))
         || !listNode->rendererIsEditable()
         || listNode == emptyListItem->rootEditableElement())
         return false;
 
     RefPtr<Element> newBlock = nullptr;
     if (ContainerNode* blockEnclosingList = listNode->parentNode()) {
-        if (blockEnclosingList->hasTagName(liTag)) { // listNode is inside another list item
+        if (isHTMLLIElement(*blockEnclosingList)) { // listNode is inside another list item
             if (visiblePositionAfterNode(*blockEnclosingList) == visiblePositionAfterNode(*listNode)) {
                 // If listNode appears at the end of the outer list item, then move listNode outside of this list item
                 // e.g. <ul><li>hello <ul><li><br></li></ul> </li></ul> should become <ul><li>hello</li> <ul><li><br></li></ul> </ul> after this section
@@ -1282,7 +1283,7 @@ bool CompositeEditCommand::breakOutOfEmptyListItem()
                 newBlock = createListItemElement(document());
             }
             // If listNode does NOT appear at the end of the outer list item, then behave as if in a regular paragraph.
-        } else if (blockEnclosingList->hasTagName(olTag) || blockEnclosingList->hasTagName(ulTag)) {
+        } else if (isHTMLOListElement(*blockEnclosingList) || isHTMLUListElement(*blockEnclosingList)) {
             newBlock = createListItemElement(document());
         }
     }
@@ -1355,9 +1356,9 @@ bool CompositeEditCommand::breakOutOfEmptyMailBlockquotedParagraph()
 
     Position caretPos(caret.deepEquivalent().downstream());
     // A line break is either a br or a preserved newline.
-    ASSERT(caretPos.deprecatedNode()->hasTagName(brTag) || (caretPos.deprecatedNode()->isTextNode() && caretPos.deprecatedNode()->renderer()->style()->preserveNewline()));
+    ASSERT(isHTMLBRElement(caretPos.deprecatedNode()) || (caretPos.deprecatedNode()->isTextNode() && caretPos.deprecatedNode()->renderer()->style()->preserveNewline()));
 
-    if (caretPos.deprecatedNode()->hasTagName(brTag))
+    if (isHTMLBRElement(*caretPos.deprecatedNode()))
         removeNodeAndPruneAncestors(caretPos.deprecatedNode());
     else if (caretPos.deprecatedNode()->isTextNode()) {
         ASSERT(caretPos.deprecatedEditingOffset() == 0);

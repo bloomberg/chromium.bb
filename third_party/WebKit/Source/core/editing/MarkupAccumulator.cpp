@@ -139,7 +139,7 @@ void MarkupAccumulator::serializeNodesWithNamespaces(Node& targetNode, EChildren
         appendStartTag(targetNode, &namespaceHash);
 
     if (!(serializeAsHTMLDocument(targetNode) && elementCannotHaveEndTag(targetNode))) {
-        Node* current = targetNode.hasTagName(templateTag) ? toHTMLTemplateElement(targetNode).content()->firstChild() : targetNode.firstChild();
+        Node* current = isHTMLTemplateElement(targetNode) ? toHTMLTemplateElement(targetNode).content()->firstChild() : targetNode.firstChild();
         for ( ; current; current = current->nextSibling())
             serializeNodesWithNamespaces(*current, IncludeNode, &namespaceHash, tagNamesToSkip);
     }

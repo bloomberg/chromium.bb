@@ -144,11 +144,11 @@ void BreakBlockquoteCommand::doApply()
     for (size_t i = ancestors.size(); i != 0; --i) {
         RefPtr<Element> clonedChild = ancestors[i - 1]->cloneElementWithoutChildren();
         // Preserve list item numbering in cloned lists.
-        if (clonedChild->isElementNode() && clonedChild->hasTagName(olTag)) {
+        if (isHTMLOListElement(*clonedChild)) {
             Node* listChildNode = i > 1 ? ancestors[i - 2].get() : startNode;
             // The first child of the cloned list might not be a list item element,
             // find the first one so that we know where to start numbering.
-            while (listChildNode && !listChildNode->hasTagName(liTag))
+            while (listChildNode && !isHTMLLIElement(*listChildNode))
                 listChildNode = listChildNode->nextSibling();
             if (listChildNode && listChildNode->renderer() && listChildNode->renderer()->isListItem())
                 setNodeAttribute(clonedChild, startAttr, AtomicString::number(toRenderListItem(listChildNode->renderer())->value()));

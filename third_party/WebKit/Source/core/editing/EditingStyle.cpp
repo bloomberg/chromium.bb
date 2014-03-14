@@ -881,8 +881,9 @@ bool EditingStyle::styleIsPresentInComputedStyleOfNode(Node* node) const
 
 bool EditingStyle::elementIsStyledSpanOrHTMLEquivalent(const HTMLElement* element)
 {
+    ASSERT(element);
     bool elementIsSpanOrElementEquivalent = false;
-    if (element->hasTagName(HTMLNames::spanTag))
+    if (isHTMLSpanElement(*element))
         elementIsSpanOrElementEquivalent = true;
     else {
         const Vector<OwnPtr<HTMLElementEquivalent> >& HTMLElementEquivalents = htmlElementEquivalents();

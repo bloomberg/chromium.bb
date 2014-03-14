@@ -85,21 +85,21 @@ static bool hasNoAttributeOrOnlyStyleAttribute(const Element* element, ShouldSty
 
 bool isStyleSpanOrSpanWithOnlyStyleAttribute(const Element* element)
 {
-    if (!element || !element->hasTagName(spanTag))
+    if (!isHTMLSpanElement(element))
         return false;
     return hasNoAttributeOrOnlyStyleAttribute(toHTMLElement(element), AllowNonEmptyStyleAttribute);
 }
 
 static inline bool isSpanWithoutAttributesOrUnstyledStyleSpan(const Node* node)
 {
-    if (!node || !node->isHTMLElement() || !node->hasTagName(spanTag))
+    if (!isHTMLSpanElement(node))
         return false;
     return hasNoAttributeOrOnlyStyleAttribute(toHTMLElement(node), StyleAttributeShouldBeEmpty);
 }
 
 bool isEmptyFontTag(const Element* element, ShouldStyleAttributeBeEmpty shouldStyleAttributeBeEmpty)
 {
-    if (!element || !element->hasTagName(fontTag))
+    if (!isHTMLFontElement(element))
         return false;
 
     return hasNoAttributeOrOnlyStyleAttribute(toHTMLElement(element), shouldStyleAttributeBeEmpty);
@@ -695,7 +695,7 @@ void ApplyStyleCommand::fixRangeAndApplyInlineStyle(EditingStyle* style, const P
 
     // FIXME: Callers should perform this operation on a Range that includes the br
     // if they want style applied to the empty line.
-    if (start == end && start.deprecatedNode()->hasTagName(brTag))
+    if (start == end && isHTMLBRElement(*start.deprecatedNode()))
         pastEndNode = NodeTraversal::next(*start.deprecatedNode());
 
     // Start from the highest fully selected ancestor so that we can modify the fully selected node.
@@ -795,7 +795,7 @@ void ApplyStyleCommand::applyInlineStyleToNodeRange(EditingStyle* style, PassRef
         Node* runEnd = node.get();
         Node* sibling = node->nextSibling();
         while (sibling && sibling != pastEndNode && !sibling->contains(pastEndNode.get())
-            && (!isBlock(sibling) || sibling->hasTagName(brTag))
+            && (!isBlock(sibling) || isHTMLBRElement(*sibling))
             && !containsNonEditableRegion(*sibling)) {
             runEnd = sibling;
             sibling = runEnd->nextSibling();
@@ -998,7 +998,7 @@ void ApplyStyleCommand::applyInlineStyleToPushDown(Node* node, EditingStyle* sty
 
     node->document().updateStyleIfNeeded();
 
-    if (!style || style->isEmpty() || !node->renderer() || node->hasTagName(iframeTag))
+    if (!style || style->isEmpty() || !node->renderer() || isHTMLIFrameElement(*node))
         return;
 
     RefPtr<EditingStyle> newInlineStyle = style;
@@ -1304,7 +1304,7 @@ bool ApplyStyleCommand::mergeEndWithNextIfIdentical(const Position& start, const
         endNode = end.deprecatedNode()->parentNode();
     }
 
-    if (!endNode->isElementNode() || endNode->hasTagName(brTag))
+    if (!endNode->isElementNode() || isHTMLBRElement(*endNode))
         return false;
 
     Node* nextSibling = endNode->nextSibling();
@@ -1420,12 +1420,12 @@ void ApplyStyleCommand::applyInlineStyleChange(PassRefPtr<Node> passedStart, Pas
     HTMLElement* fontContainer = 0;
     HTMLElement* styleContainer = 0;
     for (Node* container = startNode.get(); container && startNode == endNode; container = container->firstChild()) {
-        if (container->isHTMLElement() && container->hasTagName(fontTag))
+        if (isHTMLFontElement(*container))
             fontContainer = toHTMLElement(container);
-        bool styleContainerIsNotSpan = !styleContainer || !styleContainer->hasTagName(spanTag);
+        bool styleContainerIsNotSpan = !isHTMLSpanElement(styleContainer);
         if (container->isHTMLElement()) {
             HTMLElement* containerElement = toHTMLElement(container);
-            if (containerElement->hasTagName(spanTag) || (styleContainerIsNotSpan && containerElement->hasChildren()))
+            if (isHTMLSpanElement(*containerElement) || (styleContainerIsNotSpan && containerElement->hasChildren()))
                 styleContainer = toHTMLElement(container);
         }
         if (!container->firstChild())

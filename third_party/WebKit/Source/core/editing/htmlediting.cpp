@@ -49,6 +49,7 @@
 #include "core/html/HTMLLIElement.h"
 #include "core/html/HTMLOListElement.h"
 #include "core/html/HTMLParagraphElement.h"
+#include "core/html/HTMLTableCellElement.h"
 #include "core/html/HTMLUListElement.h"
 #include "core/rendering/RenderObject.h"
 #include "wtf/Assertions.h"
@@ -122,14 +123,14 @@ Node* highestEditableRoot(const Position& position, EditableType editableType)
     if (!highestRoot)
         return 0;
 
-    if (highestRoot->hasTagName(bodyTag))
+    if (isHTMLBodyElement(*highestRoot))
         return highestRoot;
 
     node = highestRoot->parentNode();
     while (node) {
         if (node->rendererIsEditable(editableType))
             highestRoot = node;
-        if (node->hasTagName(bodyTag))
+        if (isHTMLBodyElement(*node))
             break;
         node = node->parentNode();
     }
@@ -142,7 +143,7 @@ Node* lowestEditableAncestor(Node* node)
     while (node) {
         if (node->rendererIsEditable())
             return node->rootEditableElement();
-        if (node->hasTagName(bodyTag))
+        if (isHTMLBodyElement(*node))
             break;
         node = node->parentNode();
     }
@@ -533,12 +534,12 @@ PassRefPtr<Range> createRange(Document& document, const VisiblePosition& start, 
     return selectedRange.release();
 }
 
-bool isListElement(Node *n)
+bool isListElement(Node* n)
 {
-    return (n && (n->hasTagName(ulTag) || n->hasTagName(olTag) || n->hasTagName(dlTag)));
+    return (n && (isHTMLUListElement(*n) || isHTMLOListElement(*n) || isHTMLDListElement(*n)));
 }
 
-bool isListItem(const Node *n)
+bool isListItem(const Node* n)
 {
     return n && n->renderer() && n->renderer()->isListItem();
 }
@@ -651,7 +652,7 @@ HTMLElement* enclosingList(Node* node)
     Node* root = highestEditableRoot(firstPositionInOrBeforeNode(node));
 
     for (ContainerNode* n = node->parentNode(); n; n = n->parentNode()) {
-        if (n->hasTagName(ulTag) || n->hasTagName(olTag))
+        if (isHTMLUListElement(*n) || isHTMLOListElement(*n))
             return toHTMLElement(n);
         if (n == root)
             return 0;
@@ -670,7 +671,7 @@ Node* enclosingListChild(Node *node)
 
     // FIXME: This function is inappropriately named if it starts with node instead of node->parentNode()
     for (Node* n = node; n && n->parentNode(); n = n->parentNode()) {
-        if (n->hasTagName(liTag) || (isListElement(n->parentNode()) && n != root))
+        if (isHTMLLIElement(*n) || (isListElement(n->parentNode()) && n != root))
             return n;
         if (n == root || isTableCell(n))
             return 0;
@@ -725,10 +726,7 @@ bool canMergeLists(Element* firstList, Element* secondList)
 
 bool isRenderedTableElement(const Node* node)
 {
-    if (!node || !node->isElementNode())
-        return false;
-
-    return node->renderer() && node->hasTagName(tableTag);
+    return isHTMLTableElement(*node) && node->renderer();
 }
 
 bool isRenderedTable(const Node* node)
@@ -742,11 +740,9 @@ bool isRenderedTable(const Node* node)
 
 bool isTableCell(const Node* node)
 {
+    ASSERT(node);
     RenderObject* r = node->renderer();
-    if (!r)
-        return node->hasTagName(tdTag) || node->hasTagName(thTag);
-
-    return r->isTableCell();
+    return r ? r->isTableCell() : isHTMLTableCellElement(*node);
 }
 
 bool isEmptyTableCell(const Node* node)
@@ -825,17 +821,17 @@ PassRefPtr<HTMLElement> createHTMLElement(Document& document, const AtomicString
     return HTMLElementFactory::createHTMLElement(tagName, document, 0, false);
 }
 
-bool isTabSpanNode(const Node *node)
+bool isTabSpanNode(const Node* node)
 {
-    return node && node->hasTagName(spanTag) && node->isElementNode() && toElement(node)->getAttribute(classAttr) == AppleTabSpanClass;
+    return isHTMLSpanElement(node) && toElement(node)->getAttribute(classAttr) == AppleTabSpanClass;
 }
 
-bool isTabSpanTextNode(const Node *node)
+bool isTabSpanTextNode(const Node* node)
 {
     return node && node->isTextNode() && node->parentNode() && isTabSpanNode(node->parentNode());
 }
 
-Node* tabSpanNode(const Node *node)
+Node* tabSpanNode(const Node* node)
 {
     return isTabSpanTextNode(node) ? node->parentNode() : 0;
 }
@@ -956,7 +952,7 @@ bool lineBreakExistsAtPosition(const Position& position)
     if (position.isNull())
         return false;
 
-    if (position.anchorNode()->hasTagName(brTag) && position.atFirstEditingPositionForNode())
+    if (isHTMLBRElement(*position.anchorNode()) && position.atFirstEditingPositionForNode())
         return true;
 
     if (!position.anchorNode()->renderer())

@@ -41,7 +41,7 @@ using namespace HTMLNames;
 
 static bool isListOrIndentBlockquote(const Node* node)
 {
-    return node && (node->hasTagName(ulTag) || node->hasTagName(olTag) || node->hasTagName(blockquoteTag));
+    return node && (isHTMLUListElement(*node) || isHTMLOListElement(*node) || node->hasTagName(blockquoteTag));
 }
 
 IndentOutdentCommand::IndentOutdentCommand(Document& document, EIndentType typeOfAction)
@@ -62,7 +62,7 @@ bool IndentOutdentCommand::tryIndentingAsListItem(const Position& start, const P
     RefPtr<Element> selectedListItem = enclosingBlock(lastNodeInSelectedParagraph.get());
 
     // FIXME: we need to deal with the case where there is no li (malformed HTML)
-    if (!selectedListItem->hasTagName(liTag))
+    if (!isHTMLLIElement(*selectedListItem))
         return false;
 
     // FIXME: previousElementSibling does not ignore non-rendered content like <span></span>.  Should we?
@@ -134,11 +134,11 @@ void IndentOutdentCommand::outdentParagraph()
         return;
 
     // Use InsertListCommand to remove the selection from the list
-    if (enclosingNode->hasTagName(olTag)) {
+    if (isHTMLOListElement(*enclosingNode)) {
         applyCommandToComposite(InsertListCommand::create(document(), InsertListCommand::OrderedList));
         return;
     }
-    if (enclosingNode->hasTagName(ulTag)) {
+    if (isHTMLUListElement(*enclosingNode)) {
         applyCommandToComposite(InsertListCommand::create(document(), InsertListCommand::UnorderedList));
         return;
     }

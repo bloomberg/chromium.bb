@@ -156,7 +156,7 @@ Node* enclosingBlockToSplitTreeTo(Node* startNode)
     for (Node* n = startNode; n; n = n->parentNode()) {
         if (!n->rendererIsEditable())
             return lastBlock;
-        if (isTableCell(n) || n->hasTagName(bodyTag) || !n->parentNode() || !n->parentNode()->rendererIsEditable() || isElementForFormatBlock(n))
+        if (isTableCell(n) || isHTMLBodyElement(*n) || !n->parentNode() || !n->parentNode()->rendererIsEditable() || isElementForFormatBlock(n))
             return n;
         if (isBlock(n))
             lastBlock = n;

@@ -55,7 +55,7 @@ namespace {
 bool isSelectionInTextField(const VisibleSelection& selection)
 {
     HTMLTextFormControlElement* textControl = enclosingTextFormControl(selection.start());
-    return textControl && textControl->hasTagName(inputTag) && toHTMLInputElement(textControl)->isTextField();
+    return isHTMLInputElement(textControl) && toHTMLInputElement(textControl)->isTextField();
 }
 
 } // namespace
@@ -128,7 +128,7 @@ void SpellChecker::didBeginEditing(Element* element)
             HTMLTextFormControlElement* textControl = toHTMLTextFormControlElement(element);
             parent = textControl;
             element = textControl->innerTextElement();
-            isTextField = textControl->hasTagName(inputTag) && toHTMLInputElement(textControl)->isTextField();
+            isTextField = isHTMLInputElement(*textControl) && toHTMLInputElement(*textControl).isTextField();
         }
 
         if (isTextField || !parent->isAlreadySpellChecked()) {

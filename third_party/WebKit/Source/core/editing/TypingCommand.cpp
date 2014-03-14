@@ -41,6 +41,7 @@
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
 #include "core/frame/LocalFrame.h"
+#include "core/html/HTMLBRElement.h"
 #include "core/rendering/RenderObject.h"
 
 namespace WebCore {
@@ -384,7 +385,7 @@ bool TypingCommand::makeEditableRootEmpty()
 
     if (root->firstChild() == root->lastChild()) {
         Element* firstElementChild = ElementTraversal::firstWithin(*root);
-        if (firstElementChild && firstElementChild->hasTagName(brTag)) {
+        if (isHTMLBRElement(firstElementChild)) {
             // If there is a single child and it could be a placeholder, leave it alone.
             if (root->renderer() && root->renderer()->isRenderBlockFlow())
                 return false;

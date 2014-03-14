@@ -53,6 +53,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLBodyElement.h"
 #include "core/html/HTMLElement.h"
+#include "core/html/HTMLTableCellElement.h"
 #include "core/html/HTMLTextFormControlElement.h"
 #include "core/rendering/RenderObject.h"
 #include "platform/weborigin/KURL.h"
@@ -418,8 +419,8 @@ Node* StyledMarkupAccumulator::traverseNodesForSerialization(Node* startNode, No
 
 static bool isHTMLBlockElement(const Node* node)
 {
-    return node->hasTagName(tdTag)
-        || node->hasTagName(thTag)
+    ASSERT(node);
+    return isHTMLTableCellElement(*node)
         || isNonTableCellHTMLBlockElement(node);
 }
 
@@ -428,9 +429,9 @@ static Node* ancestorToRetainStructureAndAppearanceForBlock(Node* commonAncestor
     if (!commonAncestorBlock)
         return 0;
 
-    if (commonAncestorBlock->hasTagName(tbodyTag) || commonAncestorBlock->hasTagName(trTag)) {
+    if (commonAncestorBlock->hasTagName(tbodyTag) || isHTMLTableRowElement(*commonAncestorBlock)) {
         ContainerNode* table = commonAncestorBlock->parentNode();
-        while (table && !table->hasTagName(tableTag))
+        while (table && !isHTMLTableElement(*table))
             table = table->parentNode();
 
         return table;
@@ -471,7 +472,7 @@ static bool needInterchangeNewlineAfter(const VisiblePosition& v)
     Node* upstreamNode = next.deepEquivalent().upstream().deprecatedNode();
     Node* downstreamNode = v.deepEquivalent().downstream().deprecatedNode();
     // Add an interchange newline if a paragraph break is selected and a br won't already be added to the markup to represent it.
-    return isEndOfParagraph(v) && isStartOfParagraph(next) && !(upstreamNode->hasTagName(brTag) && upstreamNode == downstreamNode);
+    return isEndOfParagraph(v) && isStartOfParagraph(next) && !(isHTMLBRElement(*upstreamNode) && upstreamNode == downstreamNode);
 }
 
 static PassRefPtr<EditingStyle> styleFromMatchedRulesAndInlineDecl(const Node* node)
@@ -784,11 +785,12 @@ static void fillContainerFromString(ContainerNode* paragraph, const String& stri
 
 bool isPlainTextMarkup(Node* node)
 {
+    ASSERT(node);
     if (!node->isElementNode())
         return false;
 
     Element* element = toElement(node);
-    if (!element->hasTagName(divTag) || !element->hasAttributes())
+    if (!isHTMLDivElement(*element) || !element->hasAttributes())
         return false;
 
     if (element->hasOneChild() && (element->firstChild()->isTextNode() || (element->firstChild()->firstChild())))
@@ -848,8 +850,8 @@ PassRefPtr<DocumentFragment> createFragmentFromText(Range* context, const String
     Element* block = toElement(blockNode);
     bool useClonesOfEnclosingBlock = blockNode
         && blockNode->isElementNode()
-        && !block->hasTagName(bodyTag)
-        && !block->hasTagName(htmlTag)
+        && !isHTMLBodyElement(*block)
+        && !isHTMLHtmlElement(*block)
         && block != editableRootForPosition(context->startPosition());
     bool useLineBreak = enclosingTextFormControl(context->startPosition());
 
@@ -910,7 +912,8 @@ String urlToMarkup(const KURL& url, const String& title)
 
 PassRefPtr<DocumentFragment> createFragmentForInnerOuterHTML(const String& markup, Element* contextElement, ParserContentPolicy parserContentPolicy, const char* method, ExceptionState& exceptionState)
 {
-    Document& document = contextElement->hasTagName(templateTag) ? contextElement->document().ensureTemplateDocument() : contextElement->document();
+    ASSERT(contextElement);
+    Document& document = isHTMLTemplateElement(*contextElement) ? contextElement->document().ensureTemplateDocument() : contextElement->document();
     RefPtr<DocumentFragment> fragment = DocumentFragment::create(document);
 
     if (document.isHTMLDocument()) {
@@ -981,7 +984,7 @@ PassRefPtr<DocumentFragment> createContextualFragment(const String& markup, HTML
     RefPtr<Node> nextNode;
     for (RefPtr<Node> node = fragment->firstChild(); node; node = nextNode) {
         nextNode = node->nextSibling();
-        if (node->hasTagName(htmlTag) || node->hasTagName(headTag) || node->hasTagName(bodyTag)) {
+        if (isHTMLHtmlElement(*node) || isHTMLHeadElement(*node) || isHTMLBodyElement(*node)) {
             HTMLElement* element = toHTMLElement(node);
             if (Node* firstChild = element->firstChild())
                 nextNode = firstChild;

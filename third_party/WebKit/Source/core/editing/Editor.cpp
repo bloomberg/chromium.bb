@@ -80,6 +80,7 @@
 #include "core/page/Page.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderImage.h"
+#include "core/svg/SVGImageElement.h"
 #include "platform/KillRing.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/unicode/CharacterNames.h"
@@ -224,9 +225,7 @@ static HTMLImageElement* imageElementFromImageDocument(Document* document)
         return 0;
 
     Node* node = body->firstChild();
-    if (!node)
-        return 0;
-    if (!node->hasTagName(imgTag))
+    if (!isHTMLImageElement(node))
         return 0;
     return toHTMLImageElement(node);
 }
@@ -440,11 +439,11 @@ static void writeImageNodeToPasteboard(Pasteboard* pasteboard, Node* node, const
 
     // FIXME: This should probably be reconciled with HitTestResult::absoluteImageURL.
     AtomicString urlString;
-    if (node->hasTagName(imgTag) || node->hasTagName(inputTag))
+    if (isHTMLImageElement(*node) || isHTMLInputElement(*node))
         urlString = toElement(node)->getAttribute(srcAttr);
-    else if (node->hasTagName(SVGNames::imageTag))
+    else if (isSVGImageElement(*node))
         urlString = toElement(node)->getAttribute(XLinkNames::hrefAttr);
-    else if (node->hasTagName(embedTag) || node->hasTagName(objectTag))
+    else if (isHTMLEmbedElement(*node) || isHTMLObjectElement(*node))
         urlString = toElement(node)->imageSourceURL();
     KURL url = urlString.isEmpty() ? KURL() : node->document().completeURL(stripLeadingAndTrailingHTMLSpaces(urlString));
 

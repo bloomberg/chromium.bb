@@ -43,11 +43,6 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-static bool isTableRow(const Node* node)
-{
-    return node && node->hasTagName(trTag);
-}
-
 static bool isTableCellEmpty(Node* cell)
 {
     ASSERT(isTableCell(cell));
@@ -56,7 +51,7 @@ static bool isTableCellEmpty(Node* cell)
 
 static bool isTableRowEmpty(Node* row)
 {
-    if (!isTableRow(row))
+    if (!isHTMLTableRowElement(row))
         return false;
 
     for (Node* child = row->firstChild(); child; child = child->nextSibling())
@@ -111,9 +106,9 @@ void DeleteSelectionCommand::initializeStartEnd(Position& start, Position& end)
 
     // For HRs, we'll get a position at (HR,1) when hitting delete from the beginning of the previous line, or (HR,0) when forward deleting,
     // but in these cases, we want to delete it, so manually expand the selection
-    if (start.deprecatedNode()->hasTagName(hrTag))
+    if (isHTMLHRElement(*start.deprecatedNode()))
         start = positionBeforeNode(start.deprecatedNode());
-    else if (end.deprecatedNode()->hasTagName(hrTag))
+    else if (isHTMLHRElement(*end.deprecatedNode()))
         end = positionAfterNode(end.deprecatedNode());
 
     // FIXME: This is only used so that moveParagraphs can avoid the bugs in special element expansion.
@@ -177,8 +172,8 @@ void DeleteSelectionCommand::initializePositionData()
     m_startRoot = editableRootForPosition(start);
     m_endRoot = editableRootForPosition(end);
 
-    m_startTableRow = enclosingNodeOfType(start, &isTableRow);
-    m_endTableRow = enclosingNodeOfType(end, &isTableRow);
+    m_startTableRow = enclosingNodeOfType(start, &isHTMLTableRowElement);
+    m_endTableRow = enclosingNodeOfType(end, &isHTMLTableRowElement);
 
     // Don't move content out of a table cell.
     // If the cell is non-editable, enclosingNodeOfType won't return it by default, so
@@ -305,8 +300,8 @@ bool DeleteSelectionCommand::handleSpecialCaseBRDelete()
         return false;
 
     // Check for special-case where the selection contains only a BR on a line by itself after another BR.
-    bool upstreamStartIsBR = nodeAfterUpstreamStart->hasTagName(brTag);
-    bool downstreamStartIsBR = nodeAfterDownstreamStart->hasTagName(brTag);
+    bool upstreamStartIsBR = isHTMLBRElement(*nodeAfterUpstreamStart);
+    bool downstreamStartIsBR = isHTMLBRElement(*nodeAfterDownstreamStart);
     bool isBROnLineByItself = upstreamStartIsBR && downstreamStartIsBR && nodeAfterDownstreamStart == nodeAfterUpstreamEnd;
     if (isBROnLineByItself) {
         removeNode(nodeAfterDownstreamStart);
@@ -421,7 +416,7 @@ void DeleteSelectionCommand::makeStylingElementsDirectChildrenOfEditableRootToPr
     RefPtr<Node> node = range->firstNode();
     while (node && node != range->pastLastNode()) {
         RefPtr<Node> nextNode = NodeTraversal::next(*node);
-        if ((node->hasTagName(styleTag) && !(toElement(node)->hasAttribute(scopedAttr))) || node->hasTagName(linkTag)) {
+        if ((isHTMLStyleElement(*node) && !(toElement(node)->hasAttribute(scopedAttr))) || isHTMLLinkElement(*node)) {
             nextNode = NodeTraversal::nextSkippingChildren(*node);
             RefPtr<ContainerNode> rootEditableElement = node->rootEditableElement();
             if (rootEditableElement.get()) {
@@ -445,7 +440,7 @@ void DeleteSelectionCommand::handleGeneralDelete()
     makeStylingElementsDirectChildrenOfEditableRootToPreventStyleLoss();
 
     // Never remove the start block unless it's a table, in which case we won't merge content in.
-    if (startNode->isSameNode(m_startBlock.get()) && !startOffset && canHaveChildrenForEditing(startNode) && !startNode->hasTagName(tableTag)) {
+    if (startNode->isSameNode(m_startBlock.get()) && !startOffset && canHaveChildrenForEditing(startNode) && !isHTMLTableElement(*startNode)) {
         startOffset = 0;
         startNode = NodeTraversal::next(*startNode);
         if (!startNode)
@@ -643,7 +638,7 @@ void DeleteSelectionCommand::mergeParagraphs()
     // The rule for merging into an empty block is: only do so if its farther to the right.
     // FIXME: Consider RTL.
     if (!m_startsAtEmptyLine && isStartOfParagraph(mergeDestination) && startOfParagraphToMove.absoluteCaretBounds().x() > mergeDestination.absoluteCaretBounds().x()) {
-        if (mergeDestination.deepEquivalent().downstream().deprecatedNode()->hasTagName(brTag)) {
+        if (isHTMLBRElement(*mergeDestination.deepEquivalent().downstream().deprecatedNode())) {
             removeNodeAndPruneAncestors(mergeDestination.deepEquivalent().downstream().deprecatedNode());
             m_endingPosition = startOfParagraphToMove.deepEquivalent();
             return;

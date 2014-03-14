@@ -47,6 +47,7 @@
 #include "core/editing/htmlediting.h"
 #include "core/frame/DOMWindow.h"
 #include "core/frame/LocalFrame.h"
+#include "core/html/HTMLBodyElement.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLFrameElementBase.h"
 #include "core/html/HTMLInputElement.h"
@@ -1361,7 +1362,7 @@ void FrameSelection::selectAll()
 {
     Document* document = m_frame->document();
 
-    if (document->focusedElement() && document->focusedElement()->hasTagName(selectTag)) {
+    if (isHTMLSelectElement(document->focusedElement())) {
         HTMLSelectElement* selectElement = toHTMLSelectElement(document->focusedElement());
         if (selectElement->canSelectAll()) {
             selectElement->selectAll();
@@ -1437,7 +1438,7 @@ PassRefPtr<Range> FrameSelection::firstRange() const
 bool FrameSelection::isInPasswordField() const
 {
     HTMLTextFormControlElement* textControl = enclosingTextFormControl(start());
-    return textControl && textControl->hasTagName(inputTag) && toHTMLInputElement(textControl)->isPasswordField();
+    return isHTMLInputElement(textControl) && toHTMLInputElement(textControl)->isPasswordField();
 }
 
 void FrameSelection::notifyAccessibilityForSelectionChange()
@@ -1724,17 +1725,16 @@ static HTMLFormElement* scanForForm(Node* start)
 {
     if (!start)
         return 0;
-    Element* element = start->isElementNode() ? toElement(start) : ElementTraversal::next(*start);
-    for (; element; element = ElementTraversal::next(*element)) {
-        if (element->hasTagName(formTag))
+    HTMLElement* element = start->isHTMLElement() ? toHTMLElement(start) : Traversal<HTMLElement>::next(*start);
+    for (; element; element = Traversal<HTMLElement>::next(*element)) {
+        if (isHTMLFormElement(*element))
             return toHTMLFormElement(element);
-        if (element->isHTMLElement()) {
-            HTMLFormElement* owner = toHTMLElement(element)->formOwner();
-            if (owner)
+
+        if (HTMLFormElement* owner = element->formOwner())
                 return owner;
-        }
-        if (element->hasTagName(frameTag) || element->hasTagName(iframeTag)) {
-            Node* childDocument = toHTMLFrameElementBase(element)->contentDocument();
+
+        if (isHTMLFrameElement(*element) || isHTMLIFrameElement(*element)) {
+            Node* childDocument = toHTMLFrameElementBase(*element).contentDocument();
             if (HTMLFormElement* frameResult = scanForForm(childDocument))
                 return frameResult;
         }
@@ -1753,7 +1753,7 @@ HTMLFormElement* FrameSelection::currentForm() const
     // Try walking up the node tree to find a form element.
     Node* node;
     for (node = start; node; node = node->parentNode()) {
-        if (node->hasTagName(formTag))
+        if (isHTMLFormElement(*node))
             return toHTMLFormElement(node);
         if (node->isHTMLElement()) {
             HTMLFormElement* owner = toHTMLElement(node)->formOwner();
@@ -1803,10 +1803,11 @@ void FrameSelection::setSelectionFromNone()
         return;
 
     Node* node = document->documentElement();
-    while (node && !node->hasTagName(bodyTag))
-        node = NodeTraversal::next(*node);
-    if (node)
-        setSelection(VisibleSelection(firstPositionInOrBeforeNode(node), DOWNSTREAM));
+    if (!node)
+        return;
+    Node* body = isHTMLBodyElement(*node) ? node : Traversal<HTMLBodyElement>::next(*node);
+    if (body)
+        setSelection(VisibleSelection(firstPositionInOrBeforeNode(body), DOWNSTREAM));
 }
 
 bool FrameSelection::dispatchSelectStart()

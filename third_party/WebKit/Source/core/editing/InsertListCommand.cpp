@@ -262,7 +262,8 @@ void InsertListCommand::unlistifyParagraph(const VisiblePosition& originalStart,
     Node* previousListChild;
     VisiblePosition start;
     VisiblePosition end;
-    if (listChildNode->hasTagName(liTag)) {
+    ASSERT(listChildNode);
+    if (isHTMLLIElement(*listChildNode)) {
         start = VisiblePosition(firstPositionInNode(listChildNode));
         end = VisiblePosition(lastPositionInNode(listChildNode));
         nextListChild = listChildNode->nextSibling();
@@ -374,7 +375,7 @@ PassRefPtr<HTMLElement> InsertListCommand::listifyParagraph(const VisiblePositio
         Position insertionPos(start.deepEquivalent().upstream());
         // Also avoid the containing list item.
         Node* listChild = enclosingListChild(insertionPos.deprecatedNode());
-        if (listChild && listChild->hasTagName(liTag))
+        if (isHTMLLIElement(listChild))
             insertionPos = positionInParentBeforeNode(*listChild);
 
         insertNodeAt(listElement, insertionPos);
