@@ -754,12 +754,6 @@ IPC_MESSAGE_ROUTED1(ViewMsg_Zoom,
 IPC_MESSAGE_ROUTED1(ViewMsg_SetZoomLevel,
                     double /* zoom_level */)
 
-// Zooms the page by the factor defined in the renderer.
-IPC_MESSAGE_ROUTED3(ViewMsg_ZoomFactor,
-                    content::PageZoom,
-                    int /* zoom center_x */,
-                    int /* zoom center_y */)
-
 // Set the zoom level for a particular url that the renderer is in the
 // process of loading.  This will be stored, to be used if the load commits
 // and ignored otherwise.

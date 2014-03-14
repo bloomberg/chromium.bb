@@ -348,8 +348,6 @@ const int kDelaySecondsForContentStateSync = 1;
 
 const size_t kExtraCharsBeforeAndAfterSelection = 100;
 
-const float kScalingIncrementForGesture = 0.01f;
-
 #if defined(OS_ANDROID)
 // Delay between tapping in content and launching the associated android intent.
 // Used to allow users see what has been recognized as content.
@@ -1095,7 +1093,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_StopFinding, OnStopFinding)
     IPC_MESSAGE_HANDLER(ViewMsg_Zoom, OnZoom)
     IPC_MESSAGE_HANDLER(ViewMsg_SetZoomLevel, OnSetZoomLevel)
-    IPC_MESSAGE_HANDLER(ViewMsg_ZoomFactor, OnZoomFactor)
     IPC_MESSAGE_HANDLER(ViewMsg_SetZoomLevelForLoadingURL,
                         OnSetZoomLevelForLoadingURL)
     IPC_MESSAGE_HANDLER(ViewMsg_SetPageEncoding, OnSetPageEncoding)
@@ -3568,33 +3565,6 @@ void RenderViewImpl::OnZoom(PageZoom zoom) {
   }
   webview()->setZoomLevel(zoom_level);
   zoomLevelChanged();
-}
-
-void RenderViewImpl::OnZoomFactor(PageZoom zoom, int zoom_center_x,
-                                  int zoom_center_y) {
-  ZoomFactorHelper(zoom, zoom_center_x, zoom_center_y,
-                   kScalingIncrementForGesture);
-}
-
-void RenderViewImpl::ZoomFactorHelper(PageZoom zoom,
-                                      int zoom_center_x,
-                                      int zoom_center_y,
-                                      float scaling_increment) {
-  if (!webview())  // Not sure if this can happen, but no harm in being safe.
-    return;
-
-  double old_page_scale_factor = webview()->pageScaleFactor();
-  double page_scale_factor;
-  if (zoom == PAGE_ZOOM_RESET) {
-    page_scale_factor = 1.0;
-  } else {
-    page_scale_factor = old_page_scale_factor +
-        (zoom > 0 ? scaling_increment : -scaling_increment);
-  }
-  if (page_scale_factor > 0) {
-    webview()->setPageScaleFactor(page_scale_factor,
-                                  WebPoint(zoom_center_x, zoom_center_y));
-  }
 }
 
 void RenderViewImpl::OnSetZoomLevel(double zoom_level) {

@@ -937,7 +937,6 @@ class CONTENT_EXPORT RenderViewImpl
   void OnUpdateTargetURLAck();
   void OnUpdateWebPreferences(const WebPreferences& prefs);
   void OnZoom(PageZoom zoom);
-  void OnZoomFactor(PageZoom zoom, int zoom_center_x, int zoom_center_y);
   void OnEnableViewSourceMode();
   void OnDisownOpener();
   void OnWindowSnapshotCompleted(const int snapshot_id,
@@ -968,9 +967,6 @@ class CONTENT_EXPORT RenderViewImpl
   // and put it in the same position in the .cc file.
 
   // Misc private functions ----------------------------------------------------
-  void ZoomFactorHelper(PageZoom zoom, int zoom_center_x, int zoom_center_y,
-                        float scaling_increment);
-
   // Check whether the preferred size has changed.
   void CheckPreferredSize();
 
