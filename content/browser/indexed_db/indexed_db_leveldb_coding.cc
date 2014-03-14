@@ -44,6 +44,12 @@
 // <0, 0, 0, 0> => backing store schema version [SchemaVersionKey]
 // <0, 0, 0, 1> => maximum allocated database [MaxDatabaseIdKey]
 // <0, 0, 0, 2> => SerializedScriptValue version [DataVersionKey]
+// <0, 0, 0, 3>
+//   => Blob journal
+//     The format of the journal is: {database_id, blobKey}*.
+//     If the blobKey is kAllBlobsKey, the whole database should be deleted.
+//     [BlobJournalKey]
+// <0, 0, 0, 4> => Live blob journal; same format. [LiveBlobJournalKey]
 // <0, 0, 0, 100, database id>
 //   => Existence implies the database id is in the free list
 //      [DatabaseFreeListKey]
@@ -59,6 +65,7 @@
 // <database id, 0, 0, 2> => IDB string version data (obsolete)
 // <database id, 0, 0, 3> => maximum allocated object store id
 // <database id, 0, 0, 4> => IDB integer version (var int)
+// <database id, 0, 0, 5> => blob key generator current number
 //
 //
 // Object store metadata: [ObjectStoreMetaDataKey]
@@ -133,6 +140,14 @@
 // <database id, object store id, 2, user key> => "version"
 //
 //
+// Blob entry table: [BlobEntryKey]
+// --------------------------------
+//
+// The prefix is followed by a type byte and the encoded IDB primary key.
+//
+// <database id, object store id, 3, user key> => array of IndexedDBBlobInfo
+//
+//
 // Index data
 // ----------
 // The prefix is followed by a type byte, the encoded IDB index key, a
@@ -144,7 +159,6 @@
 // The sequence number is obsolete; it was used to allow two entries with the
 // same user (index) key in non-unique indexes prior to the inclusion of the
 // primary key in the data.
-
 
 using base::StringPiece;
 using blink::WebIDBKeyType;
@@ -164,8 +178,8 @@ using blink::WebIDBKeyPathTypeString;
 namespace content {
 
 // As most of the IndexedDBKeys and encoded values are short, we
-// initialize some Vectors with a default inline buffer size to reduce
-// the memory re-allocations when the Vectors are appended.
+// initialize some std::vectors with a default inline buffer size to reduce
+// the memory re-allocations when the std::vectors are appended.
 static const size_t kDefaultInlineBufferSize = 32;
 
 static const unsigned char kIndexedDBKeyNullTypeByte = 0;
@@ -181,12 +195,15 @@ static const unsigned char kIndexedDBKeyPathTypeCodedByte2 = 0;
 
 static const unsigned char kObjectStoreDataIndexId = 1;
 static const unsigned char kExistsEntryIndexId = 2;
+static const unsigned char kBlobEntryIndexId = 3;
 
 static const unsigned char kSchemaVersionTypeByte = 0;
 static const unsigned char kMaxDatabaseIdTypeByte = 1;
 static const unsigned char kDataVersionTypeByte = 2;
+static const unsigned char kBlobJournalTypeByte = 3;
+static const unsigned char kLiveBlobJournalTypeByte = 4;
 static const unsigned char kMaxSimpleGlobalMetaDataTypeByte =
-    3;  // Insert before this and increment.
+    5;  // Insert before this and increment.
 static const unsigned char kDatabaseFreeListTypeByte = 100;
 static const unsigned char kDatabaseNameTypeByte = 201;
 
@@ -878,6 +895,14 @@ int CompareSuffix<ObjectStoreDataKey>(StringPiece* slice_a,
 }
 
 template <>
+int CompareSuffix<BlobEntryKey>(StringPiece* slice_a,
+                                StringPiece* slice_b,
+                                bool only_compare_index_keys,
+                                bool* ok) {
+  return CompareEncodedIDBKeys(slice_a, slice_b, ok);
+}
+
+template <>
 int CompareSuffix<IndexDataKey>(StringPiece* slice_a,
                                 StringPiece* slice_b,
                                 bool only_compare_index_keys,
@@ -1035,6 +1060,15 @@ int Compare(const StringPiece& a,
         return CompareSizes(slice_a.size(), slice_b.size());
 
       return CompareSuffix<ExistsEntryKey>(
+          &slice_a, &slice_b, /*only_compare_index_keys*/ false, ok);
+    }
+
+    case KeyPrefix::BLOB_ENTRY: {
+      // Provide a stable ordering for invalid data.
+      if (slice_a.empty() || slice_b.empty())
+        return CompareSizes(slice_a.size(), slice_b.size());
+
+      return CompareSuffix<BlobEntryKey>(
           &slice_a, &slice_b, /*only_compare_index_keys*/ false, ok);
     }
 
@@ -1239,6 +1273,8 @@ KeyPrefix::Type KeyPrefix::type() const {
     return OBJECT_STORE_DATA;
   if (index_id_ == kExistsEntryIndexId)
     return EXISTS_ENTRY;
+  if (index_id_ == kBlobEntryIndexId)
+    return BLOB_ENTRY;
   if (index_id_ >= kMinimumIndexId)
     return INDEX_DATA;
 
@@ -1261,6 +1297,18 @@ std::string MaxDatabaseIdKey::Encode() {
 std::string DataVersionKey::Encode() {
   std::string ret = KeyPrefix::EncodeEmpty();
   ret.push_back(kDataVersionTypeByte);
+  return ret;
+}
+
+std::string BlobJournalKey::Encode() {
+  std::string ret = KeyPrefix::EncodeEmpty();
+  ret.push_back(kBlobJournalTypeByte);
+  return ret;
+}
+
+std::string LiveBlobJournalKey::Encode() {
+  std::string ret = KeyPrefix::EncodeEmpty();
+  ret.push_back(kLiveBlobJournalTypeByte);
   return ret;
 }
 
@@ -1346,6 +1394,10 @@ int DatabaseNameKey::Compare(const DatabaseNameKey& other) {
   if (int x = origin_.compare(other.origin_))
     return x;
   return database_name_.compare(other.database_name_);
+}
+
+bool DatabaseMetaDataKey::IsValidBlobKey(int64 blob_key) {
+  return blob_key >= kBlobKeyGeneratorInitialNumber;
 }
 
 std::string DatabaseMetaDataKey::Encode(int64 database_id,
@@ -1746,6 +1798,86 @@ scoped_ptr<IndexedDBKey> ExistsEntryKey::user_key() const {
 }
 
 const int64 ExistsEntryKey::kSpecialIndexNumber = kExistsEntryIndexId;
+
+bool BlobEntryKey::Decode(StringPiece* slice, BlobEntryKey* result) {
+  KeyPrefix prefix;
+  if (!KeyPrefix::Decode(slice, &prefix))
+    return false;
+  DCHECK(prefix.database_id_);
+  DCHECK(prefix.object_store_id_);
+  DCHECK_EQ(prefix.index_id_, kSpecialIndexNumber);
+
+  if (!ExtractEncodedIDBKey(slice, &result->encoded_user_key_))
+    return false;
+  result->database_id_ = prefix.database_id_;
+  result->object_store_id_ = prefix.object_store_id_;
+
+  return true;
+}
+
+bool BlobEntryKey::FromObjectStoreDataKey(StringPiece* slice,
+                                          BlobEntryKey* result) {
+  KeyPrefix prefix;
+  if (!KeyPrefix::Decode(slice, &prefix))
+    return false;
+  DCHECK(prefix.database_id_);
+  DCHECK(prefix.object_store_id_);
+  DCHECK_EQ(prefix.index_id_, ObjectStoreDataKey::kSpecialIndexNumber);
+
+  if (!ExtractEncodedIDBKey(slice, &result->encoded_user_key_))
+    return false;
+  result->database_id_ = prefix.database_id_;
+  result->object_store_id_ = prefix.object_store_id_;
+  return true;
+}
+
+std::string BlobEntryKey::ReencodeToObjectStoreDataKey(StringPiece* slice) {
+  // TODO(ericu): We could be more efficient here, since the suffix is the same.
+  BlobEntryKey key;
+  if (!Decode(slice, &key))
+    return std::string();
+
+  return ObjectStoreDataKey::Encode(
+      key.database_id_, key.object_store_id_, key.encoded_user_key_);
+}
+
+std::string BlobEntryKey::EncodeMinKeyForObjectStore(int64 database_id,
+                                                     int64 object_store_id) {
+  // Our implied encoded_user_key_ here is empty, the lowest possible key.
+  return Encode(database_id, object_store_id, std::string());
+}
+
+std::string BlobEntryKey::EncodeStopKeyForObjectStore(int64 database_id,
+                                                      int64 object_store_id) {
+  DCHECK(KeyPrefix::ValidIds(database_id, object_store_id));
+  KeyPrefix prefix(KeyPrefix::CreateWithSpecialIndex(
+      database_id, object_store_id, kSpecialIndexNumber + 1));
+  return prefix.Encode();
+}
+
+std::string BlobEntryKey::Encode() const {
+  DCHECK(!encoded_user_key_.empty());
+  return Encode(database_id_, object_store_id_, encoded_user_key_);
+}
+
+std::string BlobEntryKey::Encode(int64 database_id,
+                                 int64 object_store_id,
+                                 const IndexedDBKey& user_key) {
+  std::string encoded_key;
+  EncodeIDBKey(user_key, &encoded_key);
+  return Encode(database_id, object_store_id, encoded_key);
+}
+
+std::string BlobEntryKey::Encode(int64 database_id,
+                                 int64 object_store_id,
+                                 const std::string& encoded_user_key) {
+  DCHECK(KeyPrefix::ValidIds(database_id, object_store_id));
+  KeyPrefix prefix(KeyPrefix::CreateWithSpecialIndex(
+      database_id, object_store_id, kSpecialIndexNumber));
+  return prefix.Encode() + encoded_user_key;
+}
+
+const int64 BlobEntryKey::kSpecialIndexNumber = kBlobEntryIndexId;
 
 IndexDataKey::IndexDataKey()
     : database_id_(-1),

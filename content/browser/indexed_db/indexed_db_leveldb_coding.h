@@ -92,13 +92,16 @@ class KeyPrefix {
   static std::string EncodeEmpty();
   int Compare(const KeyPrefix& other) const;
 
+  // These are serialized to disk; any new items must be appended, and none can
+  // be deleted.
   enum Type {
     GLOBAL_METADATA,
     DATABASE_METADATA,
     OBJECT_STORE_DATA,
     EXISTS_ENTRY,
     INDEX_DATA,
-    INVALID_TYPE
+    INVALID_TYPE,
+    BLOB_ENTRY
   };
 
   static const size_t kMaxDatabaseIdSizeBits = 3;
@@ -172,6 +175,16 @@ class DataVersionKey {
   static std::string Encode();
 };
 
+class BlobJournalKey {
+ public:
+  static std::string Encode();
+};
+
+class LiveBlobJournalKey {
+ public:
+  static std::string Encode();
+};
+
 class DatabaseFreeListKey {
  public:
   DatabaseFreeListKey();
@@ -212,9 +225,15 @@ class DatabaseMetaDataKey {
     USER_VERSION = 2,
     MAX_OBJECT_STORE_ID = 3,
     USER_INT_VERSION = 4,
-    MAX_SIMPLE_METADATA_TYPE = 5
+    BLOB_KEY_GENERATOR_CURRENT_NUMBER = 5,
+    MAX_SIMPLE_METADATA_TYPE = 6
   };
 
+  static const int64 kAllBlobsKey = 1;
+  static const int64 kBlobKeyGeneratorInitialNumber = 2;
+  static const int64 kInvalidBlobKey = -1;  // All keys <= 0 are invalid.
+
+  static bool IsValidBlobKey(int64 blobKey);
   CONTENT_EXPORT static std::string Encode(int64 database_id,
                                            MetaDataType type);
 };
@@ -382,6 +401,37 @@ class ExistsEntryKey {
  private:
   std::string encoded_user_key_;
   DISALLOW_COPY_AND_ASSIGN(ExistsEntryKey);
+};
+
+class BlobEntryKey {
+ public:
+  BlobEntryKey() : database_id_(0), object_store_id_(0) {}
+  static bool Decode(base::StringPiece* slice, BlobEntryKey* result);
+  static bool FromObjectStoreDataKey(base::StringPiece* slice,
+                                     BlobEntryKey* result);
+  static std::string ReencodeToObjectStoreDataKey(base::StringPiece* slice);
+  static std::string EncodeMinKeyForObjectStore(int64 database_id,
+                                                int64 object_store_id);
+  static std::string EncodeStopKeyForObjectStore(int64 database_id,
+                                                 int64 object_store_id);
+  static std::string Encode(int64 database_id,
+                            int64 object_store_id,
+                            const IndexedDBKey& user_key);
+  std::string Encode() const;
+  int64 database_id() const { return database_id_; }
+  int64 object_store_id() const { return object_store_id_; }
+
+  static const int64 kSpecialIndexNumber;
+
+ private:
+  static std::string Encode(int64 database_id,
+                            int64 object_store_id,
+                            const std::string& encoded_user_key);
+  int64 database_id_;
+  int64 object_store_id_;
+  // This is the user's ObjectStoreDataKey, not the BlobEntryKey itself.
+  std::string encoded_user_key_;
+  DISALLOW_COPY_AND_ASSIGN(BlobEntryKey);
 };
 
 class IndexDataKey {
