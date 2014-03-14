@@ -373,6 +373,14 @@ void RuleFeatureSet::computeStyleInvalidation(Document& document)
     m_pendingInvalidationMap.clear();
 }
 
+void RuleFeatureSet::clearStyleInvalidation(Node* node)
+{
+    node->clearChildNeedsStyleInvalidation();
+    node->clearNeedsStyleInvalidation();
+    if (node->isElementNode())
+        m_pendingInvalidationMap.remove(toElement(node));
+}
+
 bool RuleFeatureSet::invalidateStyleForClassChangeOnChildren(Element* element, Vector<AtomicString>& invalidationClasses, bool foundInvalidationSet)
 {
     bool someChildrenNeedStyleRecalc = false;

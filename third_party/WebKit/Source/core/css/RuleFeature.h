@@ -30,6 +30,7 @@
 namespace WebCore {
 
 class Document;
+class Node;
 class ShadowRoot;
 class StyleRule;
 class CSSSelector;
@@ -87,6 +88,9 @@ public:
     void scheduleStyleInvalidationForClassChange(const SpaceSplitString& oldClasses, const SpaceSplitString& newClasses, Element*);
 
     void computeStyleInvalidation(Document&);
+
+    // Clears all style invalidation state for the passed node.
+    void clearStyleInvalidation(Node*);
 
     int hasIdsInSelectors() const
     {

@@ -648,7 +648,8 @@ void Node::setNeedsStyleInvalidation()
 
 void Node::markAncestorsWithChildNeedsStyleInvalidation()
 {
-    for (Node* node = this; node && !node->childNeedsStyleInvalidation(); node = node->parentOrShadowHostNode())
+    Node* node = this;
+    for (; node && !node->childNeedsStyleInvalidation(); node = node->parentOrShadowHostNode())
         node->setChildNeedsStyleInvalidation();
     if (document().childNeedsStyleInvalidation())
         document().scheduleStyleRecalc();
@@ -1005,6 +1006,8 @@ void Node::detach(const AttachContext& context)
 
     setStyleChange(NeedsReattachStyleChange);
     setChildNeedsStyleRecalc();
+    if (StyleResolver* resolver = document().styleResolver())
+        resolver->ruleFeatureSet().clearStyleInvalidation(this);
 
 #ifndef NDEBUG
     detachingNode = 0;
