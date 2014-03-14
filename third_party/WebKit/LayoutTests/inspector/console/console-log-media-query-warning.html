@@ -6,14 +6,14 @@
 @media
     only screen and (                min-resolution: 192dpi),
     only screen and (                min-resolution: 2dppx) { 
-      /* No warning because dpi value is overriden by dppx once */
+      /* No warning because dppx value used */
   }
 </style>
 <style>
 @media
     only screen and (                min-resolution: 2dppx)
     only screen and (                min-resolution: 192dpi) {
-      /* Warning */
+      /* No warning because dppx value used */
   }
 </style>
 <style>

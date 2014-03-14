@@ -246,7 +246,7 @@ static void addResolutionWarningMessageToConsole(Document* document, const Strin
     ASSERT(document);
     ASSERT(value);
 
-    DEFINE_STATIC_LOCAL(String, mediaQueryMessage, ("Consider using 'dppx' units instead of '%replacementUnits%', as in CSS '%replacementUnits%' means dots-per-CSS-%lengthUnit%, not dots-per-physical-%lengthUnit%, so does not correspond to the actual '%replacementUnits%' of a screen. In media query expression: "));
+    DEFINE_STATIC_LOCAL(String, mediaQueryMessage, ("Consider using 'dppx' units, as in CSS '%replacementUnits%' means dots-per-CSS-%lengthUnit%, not dots-per-physical-%lengthUnit%, so does not correspond to the actual '%replacementUnits%' of a screen. In media query expression: "));
     DEFINE_STATIC_LOCAL(String, mediaValueDPI, ("dpi"));
     DEFINE_STATIC_LOCAL(String, mediaValueDPCM, ("dpcm"));
     DEFINE_STATIC_LOCAL(String, lengthUnitInch, ("inch"));
@@ -283,26 +283,31 @@ void reportMediaQueryWarningIfNeeded(Document* document, const MediaQuerySet* me
     if (!queryCount)
         return;
 
+    CSSPrimitiveValue* suspiciousValue = 0;
+    bool dotsPerPixelUsed = false;
     for (size_t i = 0; i < queryCount; ++i) {
         const MediaQuery* query = mediaQueries[i].get();
         if (equalIgnoringCase(query->mediaType(), "print"))
             continue;
 
-        HashSet<String> overriden;
         const ExpressionHeapVector& expressions = query->expressions();
-        for (size_t j = expressions.size(); j > 0; --j) {
-            const MediaQueryExp* expression = expressions.at(j - 1).get();
+        for (size_t j = 0; j < expressions.size(); ++j) {
+            const MediaQueryExp* expression = expressions.at(j).get();
             if (isResolutionMediaFeature(expression->mediaFeature())) {
                 CSSValue* cssValue =  expression->value();
                 if (cssValue && cssValue->isPrimitiveValue()) {
                     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(cssValue);
-                    if ((primitiveValue->isDotsPerInch() || primitiveValue->isDotsPerCentimeter()) && !overriden.contains(expression->mediaFeature()))
-                        addResolutionWarningMessageToConsole(document, mediaQuerySet->mediaText(), primitiveValue);
+                    if (primitiveValue->isDotsPerPixel())
+                        dotsPerPixelUsed = true;
+                    else if (primitiveValue->isDotsPerInch() || primitiveValue->isDotsPerCentimeter())
+                        suspiciousValue = primitiveValue;
                 }
-                overriden.add(expression->mediaFeature());
             }
         }
     }
+
+    if (suspiciousValue && !dotsPerPixelUsed)
+        addResolutionWarningMessageToConsole(document, mediaQuerySet->mediaText(), suspiciousValue);
 }
 
 }
