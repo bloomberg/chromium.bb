@@ -108,8 +108,7 @@ class User {
     DEFAULT = 2,
     UNKNOWN = 3,
     ONLINE = 4,
-    POLICY = 5,  // Controlled by policy, can't be changed by the user.
-    WALLPAPER_TYPE_COUNT = 6
+    WALLPAPER_TYPE_COUNT = 5
   };
 
   // Returns the user type.

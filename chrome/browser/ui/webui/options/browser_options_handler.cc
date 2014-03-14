@@ -104,7 +104,6 @@
 #include "chrome/browser/chromeos/extensions/wallpaper_manager_util.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
-#include "chrome/browser/chromeos/login/wallpaper_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/system/timezone_util.h"
@@ -808,10 +807,6 @@ void BrowserOptionsHandler::InitializeHandler() {
         policy::key::kUserAvatarImage,
         base::Bind(&BrowserOptionsHandler::OnUserImagePolicyChanged,
                    base::Unretained(this)));
-    policy_registrar_->Observe(
-        policy::key::kWallpaperImage,
-        base::Bind(&BrowserOptionsHandler::OnWallpaperPolicyChanged,
-                   base::Unretained(this)));
   }
 #else  // !defined(OS_CHROMEOS)
   profile_pref_registrar_.Add(
@@ -867,10 +862,6 @@ void BrowserOptionsHandler::InitializePage() {
               policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME,
                                       std::string()))
              .Get(policy::key::kUserAvatarImage));
-
-  OnWallpaperManagedChanged(
-      chromeos::WallpaperManager::Get()->IsPolicyControlled(
-          chromeos::UserManager::Get()->GetActiveUser()->email()));
 #endif
 }
 
@@ -1258,11 +1249,6 @@ void BrowserOptionsHandler::OnAccountPictureManagedChanged(bool managed) {
   web_ui()->CallJavascriptFunction("BrowserOptions.setAccountPictureManaged",
                                    base::FundamentalValue(managed));
 }
-
-void BrowserOptionsHandler::OnWallpaperManagedChanged(bool managed) {
-  web_ui()->CallJavascriptFunction("BrowserOptions.setWallpaperManaged",
-                                   base::FundamentalValue(managed));
-}
 #endif
 
 scoped_ptr<base::DictionaryValue>
@@ -1368,15 +1354,6 @@ void BrowserOptionsHandler::OnUserImagePolicyChanged(
   const bool has_policy = !!current_policy;
   if (had_policy != has_policy)
     OnAccountPictureManagedChanged(has_policy);
-}
-
-void BrowserOptionsHandler::OnWallpaperPolicyChanged(
-    const base::Value* previous_policy,
-    const base::Value* current_policy) {
-  const bool had_policy = previous_policy;
-  const bool has_policy = current_policy;
-  if (had_policy != has_policy)
-    OnWallpaperManagedChanged(has_policy);
 }
 
 #endif  // defined(OS_CHROMEOS)

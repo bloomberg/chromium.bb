@@ -590,58 +590,6 @@ void WallpaperManager::ResizeAndSaveWallpaper(const UserImage& wallpaper,
   }
 }
 
-bool WallpaperManager::IsPolicyControlled(const std::string& user_id) const {
-  chromeos::WallpaperInfo info;
-  if (!GetUserWallpaperInfo(user_id, &info))
-    return false;
-  return info.type == chromeos::User::POLICY;
-}
-
-void WallpaperManager::OnPolicySet(const std::string& policy,
-                                   const std::string& user_id) {
-  WallpaperInfo info;
-  GetUserWallpaperInfo(user_id, &info);
-  info.type = User::POLICY;
-  SetUserWallpaperInfo(user_id, info, true /* is_persistent */);
-}
-
-void WallpaperManager::OnPolicyCleared(const std::string& policy,
-                                       const std::string& user_id) {
-  WallpaperInfo info;
-  GetUserWallpaperInfo(user_id, &info);
-  info.type = User::DEFAULT;
-  SetUserWallpaperInfo(user_id, info, true /* is_persistent */);
-  SetDefaultWallpaperNow(user_id);
-}
-
-void WallpaperManager::OnPolicyFetched(const std::string& policy,
-                                       const std::string& user_id,
-                                       scoped_ptr<std::string> data) {
-  wallpaper_loader_->Start(
-      data.Pass(),
-      0,  // Do not crop.
-      base::Bind(&WallpaperManager::SetPolicyControlledWallpaper,
-                 weak_factory_.GetWeakPtr(),
-                 user_id));
-}
-
-void WallpaperManager::SetPolicyControlledWallpaper(
-    const std::string& user_id,
-    const UserImage& wallpaper) {
-  const User *user = chromeos::UserManager::Get()->FindUser(user_id);
-  if (!user) {
-    NOTREACHED() << "Unknown user.";
-    return;
-  }
-  SetCustomWallpaper(user_id,
-                     user->username_hash(),
-                     "policy-controlled.jpeg",
-                     ash::WALLPAPER_LAYOUT_CENTER_CROPPED,
-                     User::POLICY,
-                     wallpaper,
-                     true /* update wallpaper */);
-}
-
 void WallpaperManager::SetCustomWallpaper(const std::string& user_id,
                                           const std::string& user_id_hash,
                                           const std::string& file,
@@ -652,12 +600,8 @@ void WallpaperManager::SetCustomWallpaper(const std::string& user_id,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(UserManager::Get()->IsUserLoggedIn());
 
-  // There is no visible background in kiosk mode.
+  // There is no visible background in  kiosk mode.
   if (UserManager::Get()->IsLoggedInAsKioskApp())
-    return;
-
-  // Don't allow custom wallpapers while policy is in effect.
-  if (type != User::POLICY && IsPolicyControlled(user_id))
     return;
 
   base::FilePath wallpaper_path =
@@ -705,7 +649,7 @@ void WallpaperManager::SetCustomWallpaper(const std::string& user_id,
   WallpaperInfo info = {
       relative_path,
       layout,
-      type,
+      User::CUSTOMIZED,
       base::Time::Now().LocalMidnight()
   };
   SetUserWallpaperInfo(user_id, info, is_persistent);
@@ -1145,7 +1089,7 @@ void WallpaperManager::LoadWallpaper(const std::string& user_id,
 }
 
 bool WallpaperManager::GetUserWallpaperInfo(const std::string& user_id,
-                                            WallpaperInfo* info) const {
+                                            WallpaperInfo* info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (UserManager::Get()->IsUserNonCryptohomeDataEphemeral(user_id)) {
@@ -1390,7 +1334,7 @@ void WallpaperManager::StartLoad(const std::string& user_id,
   TRACE_EVENT_ASYNC_BEGIN0("ui", "LoadAndDecodeWallpaper", this);
 
   wallpaper_loader_->Start(wallpaper_path.value(),
-                           0,  // Do not crop.
+                           0,
                            base::Bind(&WallpaperManager::OnWallpaperDecoded,
                                       base::Unretained(this),
                                       user_id,

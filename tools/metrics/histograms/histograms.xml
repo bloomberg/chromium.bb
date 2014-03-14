@@ -26813,7 +26813,6 @@ other types of suffix sets.
   <int value="259" label="Screen lock delays"/>
   <int value="260" label="Media keys default to function keys"/>
   <int value="261" label="Enable WPAD quick check"/>
-  <int value="262" label="Wallpaper image"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations" type="int">

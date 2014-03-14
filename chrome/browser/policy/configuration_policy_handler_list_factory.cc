@@ -707,8 +707,6 @@ scoped_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
               new ScreenLockDelayPolicyHandler(chrome_schema)))));
   handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
       new ExternalDataPolicyHandler(key::kUserAvatarImage)));
-  handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
-      new ExternalDataPolicyHandler(key::kWallpaperImage)));
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
