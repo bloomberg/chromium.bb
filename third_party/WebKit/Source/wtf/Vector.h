@@ -141,6 +141,10 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
                 }
             }
         }
+        static void swap(T* src, T* srcEnd, T* dst)
+        {
+            std::swap_ranges(src, srcEnd, dst);
+        }
     };
 
     template<typename T>
@@ -153,6 +157,17 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         static void moveOverlapping(const T* src, const T* srcEnd, T* dst)
         {
             memmove(dst, src, reinterpret_cast<const char*>(srcEnd) - reinterpret_cast<const char*>(src));
+        }
+        static void swap(T* src, T* srcEnd, T* dst)
+        {
+            char* srcC = reinterpret_cast<char*>(src);
+            char* srcEndC = reinterpret_cast<char*>(srcEnd);
+            char* dstC = reinterpret_cast<char*>(dst);
+
+            // FIXME: Below performs per-byte swap. This can be optimized by doing coarce-grained swap before-hand.
+            size_t size = srcEndC - srcC;
+            for (size_t i = 0; i < size; ++i)
+              std::swap(srcC[i], dstC[i]);
         }
     };
 
@@ -260,6 +275,11 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         static void moveOverlapping(const T* src, const T* srcEnd, T* dst)
         {
             VectorMover<VectorTraits<T>::canMoveWithMemcpy, T>::moveOverlapping(src, srcEnd, dst);
+        }
+
+        static void swap(T* src, T* srcEnd, T* dst)
+        {
+            VectorMover<VectorTraits<T>::canMoveWithMemcpy, T>::swap(src, srcEnd, dst);
         }
 
         static void uninitializedCopy(const T* src, const T* srcEnd, T* dst)
@@ -440,18 +460,26 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
 
         void swapVectorBuffer(VectorBuffer<T, inlineCapacity, Allocator>& other)
         {
+            typedef VectorTypeOperations<T> TypeOperations;
+
             if (buffer() == inlineBuffer() && other.buffer() == other.inlineBuffer()) {
-                WTF::swap(m_inlineBuffer, other.m_inlineBuffer);
-                std::swap(m_capacity, other.m_capacity);
+                ASSERT(m_capacity == other.m_capacity);
+                if (m_size > other.m_size) {
+                    TypeOperations::swap(inlineBuffer(), inlineBuffer() + other.m_size, other.inlineBuffer());
+                    TypeOperations::move(inlineBuffer() + other.m_size, inlineBuffer() + m_size, other.inlineBuffer() + other.m_size);
+                } else {
+                    TypeOperations::swap(inlineBuffer(), inlineBuffer() + m_size, other.inlineBuffer());
+                    TypeOperations::move(other.inlineBuffer() + m_size, other.inlineBuffer() + other.m_size, inlineBuffer() + m_size);
+                }
             } else if (buffer() == inlineBuffer()) {
                 m_buffer = other.m_buffer;
                 other.m_buffer = other.inlineBuffer();
-                WTF::swap(m_inlineBuffer, other.m_inlineBuffer);
+                TypeOperations::move(inlineBuffer(), inlineBuffer() + m_size, other.inlineBuffer());
                 std::swap(m_capacity, other.m_capacity);
             } else if (other.buffer() == other.inlineBuffer()) {
                 other.m_buffer = m_buffer;
                 m_buffer = inlineBuffer();
-                WTF::swap(m_inlineBuffer, other.m_inlineBuffer);
+                TypeOperations::move(other.inlineBuffer(), other.inlineBuffer() + other.m_size, inlineBuffer());
                 std::swap(m_capacity, other.m_capacity);
             } else {
                 std::swap(m_buffer, other.m_buffer);
@@ -682,8 +710,8 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
 
         void swap(Vector& other)
         {
-            std::swap(m_size, other.m_size);
             Base::swapVectorBuffer(other);
+            std::swap(m_size, other.m_size);
         }
 
         void reverse();

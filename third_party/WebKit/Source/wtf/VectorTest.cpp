@@ -25,6 +25,7 @@
 
 #include "config.h"
 
+#include "wtf/HashSet.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
@@ -192,6 +193,94 @@ TEST(WTF_Vector, OwnPtr)
 
     copyVector.clear();
     ASSERT_EQ(count, static_cast<size_t>(destructNumber));
+}
+
+// WrappedInt class will fail if it was memmoved or memcpyed.
+static HashSet<void*> constructedWrappedInts;
+class WrappedInt {
+public:
+    WrappedInt(int i = 0)
+        : m_originalThisPtr(this)
+        , m_i(i)
+    {
+        constructedWrappedInts.add(this);
+    }
+
+    WrappedInt(const WrappedInt& other)
+        : m_originalThisPtr(this)
+        , m_i(other.m_i)
+    {
+        constructedWrappedInts.add(this);
+    }
+
+    WrappedInt& operator=(const WrappedInt& other)
+    {
+        m_i = other.m_i;
+        return *this;
+    }
+
+    ~WrappedInt()
+    {
+        EXPECT_EQ(m_originalThisPtr, this);
+        EXPECT_TRUE(constructedWrappedInts.contains(this));
+        constructedWrappedInts.remove(this);
+    }
+
+    int get() const { return m_i; }
+
+private:
+    void* m_originalThisPtr;
+    int m_i;
+};
+
+TEST(WTF_Vector, SwapWithInlineCapacity)
+{
+    const size_t inlineCapacity = 2;
+    Vector<WrappedInt, inlineCapacity> vectorA;
+    vectorA.append(WrappedInt(1));
+    Vector<WrappedInt, inlineCapacity> vectorB;
+    vectorB.append(WrappedInt(2));
+
+    ASSERT_EQ(vectorA.size(), vectorB.size());
+    vectorA.swap(vectorB);
+
+    ASSERT_EQ(1u, vectorA.size());
+    EXPECT_EQ(2, vectorA.at(0).get());
+    ASSERT_EQ(1u, vectorB.size());
+    EXPECT_EQ(1, vectorB.at(0).get());
+
+    vectorA.append(WrappedInt(3));
+
+    ASSERT_GT(vectorA.size(), vectorB.size());
+    vectorA.swap(vectorB);
+
+    ASSERT_EQ(1u, vectorA.size());
+    EXPECT_EQ(1, vectorA.at(0).get());
+    ASSERT_EQ(2u, vectorB.size());
+    EXPECT_EQ(2, vectorB.at(0).get());
+    EXPECT_EQ(3, vectorB.at(1).get());
+
+    ASSERT_LT(vectorA.size(), vectorB.size());
+    vectorA.swap(vectorB);
+
+    ASSERT_EQ(2u, vectorA.size());
+    EXPECT_EQ(2, vectorA.at(0).get());
+    EXPECT_EQ(3, vectorA.at(1).get());
+    ASSERT_EQ(1u, vectorB.size());
+    EXPECT_EQ(1, vectorB.at(0).get());
+
+    vectorA.append(WrappedInt(4));
+    ASSERT_GT(vectorA.size(), inlineCapacity);
+    vectorA.swap(vectorB);
+
+    ASSERT_EQ(1u, vectorA.size());
+    EXPECT_EQ(1, vectorA.at(0).get());
+    ASSERT_EQ(3u, vectorB.size());
+    EXPECT_EQ(2, vectorB.at(0).get());
+    EXPECT_EQ(3, vectorB.at(1).get());
+    EXPECT_EQ(4, vectorB.at(2).get());
+
+    vectorB.swap(vectorA);
 }
 
 } // namespace
