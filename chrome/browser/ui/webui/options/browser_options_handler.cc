@@ -1295,7 +1295,7 @@ BrowserOptionsHandler::GetSyncStateDictionary() {
   DCHECK(signin);
   sync_status->SetBoolean("signoutAllowed", !signout_prohibited);
   sync_status->SetBoolean("signinAllowed", signin->IsSigninAllowed());
-  sync_status->SetBoolean("syncSystemEnabled", !!service);
+  sync_status->SetBoolean("syncSystemEnabled", (service != NULL));
   sync_status->SetBoolean("setupCompleted",
                           service && service->HasSyncSetupCompleted());
   sync_status->SetBoolean("setupInProgress",
@@ -1364,8 +1364,8 @@ void BrowserOptionsHandler::MouseExists(bool exists) {
 void BrowserOptionsHandler::OnUserImagePolicyChanged(
     const base::Value* previous_policy,
     const base::Value* current_policy) {
-  const bool had_policy = !!previous_policy;
-  const bool has_policy = !!current_policy;
+  const bool had_policy = previous_policy;
+  const bool has_policy = current_policy;
   if (had_policy != has_policy)
     OnAccountPictureManagedChanged(has_policy);
 }
