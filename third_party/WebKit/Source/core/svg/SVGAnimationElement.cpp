@@ -413,12 +413,15 @@ static inline double solveEpsilon(double duration) { return 1 / (200 * duration)
 
 unsigned SVGAnimationElement::calculateKeyTimesIndex(float percent) const
 {
+    ASSERT(calcMode() != CalcModePaced);
     unsigned index;
     unsigned keyTimesCount = m_keyTimes.size();
-    // Compare index + 1 to keyTimesCount because the last keyTimes entry is
-    // required to be 1, and percent can never exceed 1; i.e., the second last
-    // keyTimes entry defines the beginning of the final interval
-    for (index = 1; index + 1 < keyTimesCount; ++index) {
+    // For linear and spline animations, the last value must be '1'. In those
+    // cases we don't need to consider the last value, since |percent| is never
+    // greater than one.
+    if (keyTimesCount && calcMode() != CalcModeDiscrete)
+        keyTimesCount--;
+    for (index = 1; index < keyTimesCount; ++index) {
         if (m_keyTimes[index] > percent)
             break;
     }
@@ -447,14 +450,15 @@ float SVGAnimationElement::calculatePercentFromKeyPoints(float percent) const
         return m_keyPoints[m_keyPoints.size() - 1];
 
     unsigned index = calculateKeyTimesIndex(percent);
-    float fromPercent = m_keyTimes[index];
-    float toPercent = m_keyTimes[index + 1];
     float fromKeyPoint = m_keyPoints[index];
-    float toKeyPoint = m_keyPoints[index + 1];
 
     if (calcMode() == CalcModeDiscrete)
         return fromKeyPoint;
 
+    ASSERT(index + 1 < m_keyTimes.size());
+    float fromPercent = m_keyTimes[index];
+    float toPercent = m_keyTimes[index + 1];
+    float toKeyPoint = m_keyPoints[index + 1];
     float keyPointPercent = (percent - fromPercent) / (toPercent - fromPercent);
 
     if (calcMode() == CalcModeSpline) {
