@@ -29,22 +29,20 @@
 #include "config.h"
 #include "core/loader/FormState.h"
 
-#include "core/dom/Document.h"
 #include "core/html/HTMLFormElement.h"
 
 namespace WebCore {
 
-inline FormState::FormState(PassRefPtr<HTMLFormElement> form, StringPairVector& textFieldValuesToAdopt, PassRefPtr<Document> sourceDocument, FormSubmissionTrigger formSubmissionTrigger)
+inline FormState::FormState(HTMLFormElement& form, FormSubmissionTrigger formSubmissionTrigger)
     : m_form(form)
-    , m_sourceDocument(sourceDocument)
+    , m_sourceDocument(form.document())
     , m_formSubmissionTrigger(formSubmissionTrigger)
 {
-    m_textFieldValues.swap(textFieldValuesToAdopt);
 }
 
-PassRefPtr<FormState> FormState::create(PassRefPtr<HTMLFormElement> form, StringPairVector& textFieldValuesToAdopt, PassRefPtr<Document> sourceDocument, FormSubmissionTrigger formSubmissionTrigger)
+PassRefPtr<FormState> FormState::create(HTMLFormElement& form, FormSubmissionTrigger formSubmissionTrigger)
 {
-    return adoptRef(new FormState(form, textFieldValuesToAdopt, sourceDocument, formSubmissionTrigger));
+    return adoptRef(new FormState(form, formSubmissionTrigger));
 }
 
 }

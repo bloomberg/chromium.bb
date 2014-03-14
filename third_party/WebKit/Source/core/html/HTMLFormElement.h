@@ -27,7 +27,6 @@
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLFormControlElement.h"
 #include "core/html/forms/RadioButtonGroupScope.h"
-#include "core/loader/FormState.h"
 #include "core/loader/FormSubmission.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/WeakPtr.h"
@@ -114,7 +113,6 @@ public:
     const Vector<FormAssociatedElement*>& associatedElements() const;
     const Vector<HTMLImageElement*>& imageElements();
 
-    void getTextFieldValues(StringPairVector& fieldNamesAndValues) const;
     void anonymousNamedGetter(const AtomicString& name, bool&, RefPtr<RadioNodeList>&, bool&, RefPtr<Element>&);
 
 private:

@@ -320,26 +320,6 @@ void HTMLFormElement::submitFromJavaScript()
     submit(0, false, UserGestureIndicator::processingUserGesture(), SubmittedByJavaScript);
 }
 
-void HTMLFormElement::getTextFieldValues(StringPairVector& fieldNamesAndValues) const
-{
-    ASSERT_ARG(fieldNamesAndValues, fieldNamesAndValues.isEmpty());
-
-    const Vector<FormAssociatedElement*>& elements = associatedElements();
-    fieldNamesAndValues.reserveCapacity(elements.size());
-    for (unsigned i = 0; i < elements.size(); ++i) {
-        FormAssociatedElement* control = elements[i];
-        HTMLElement& element = toHTMLElement(*control);
-        if (!isHTMLInputElement(element))
-            continue;
-
-        HTMLInputElement& input = toHTMLInputElement(element);
-        if (!input.isTextField())
-            continue;
-
-        fieldNamesAndValues.append(make_pair(input.name().string(), input.value()));
-    }
-}
-
 void HTMLFormElement::submitDialog(PassRefPtr<FormSubmission> formSubmission)
 {
     for (Node* node = this; node; node = node->parentOrShadowHostNode()) {

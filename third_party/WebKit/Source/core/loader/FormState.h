@@ -30,7 +30,7 @@
 #define FormState_h
 
 #include "wtf/RefCounted.h"
-#include "wtf/text/WTFString.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 
@@ -42,22 +42,18 @@ namespace WebCore {
         NotSubmittedByJavaScript
     };
 
-    typedef Vector<std::pair<String, String> > StringPairVector;
-
     class FormState : public RefCounted<FormState> {
     public:
-        static PassRefPtr<FormState> create(PassRefPtr<HTMLFormElement>, StringPairVector& textFieldValuesToAdopt, PassRefPtr<Document>, FormSubmissionTrigger);
+        static PassRefPtr<FormState> create(HTMLFormElement&, FormSubmissionTrigger);
 
         HTMLFormElement* form() const { return m_form.get(); }
-        const StringPairVector& textFieldValues() const { return m_textFieldValues; }
         Document* sourceDocument() const { return m_sourceDocument.get(); }
         FormSubmissionTrigger formSubmissionTrigger() const { return m_formSubmissionTrigger; }
 
     private:
-        FormState(PassRefPtr<HTMLFormElement>, StringPairVector& textFieldValuesToAdopt, PassRefPtr<Document>, FormSubmissionTrigger);
+        FormState(HTMLFormElement&, FormSubmissionTrigger);
 
         RefPtr<HTMLFormElement> m_form;
-        StringPairVector m_textFieldValues;
         RefPtr<Document> m_sourceDocument;
         FormSubmissionTrigger m_formSubmissionTrigger;
     };
