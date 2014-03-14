@@ -81,8 +81,7 @@ scoped_ptr<ui::MenuModel> CreateMultiUserContextMenu(aura::Window* window) {
     chrome::MultiUserWindowManager* manager =
         chrome::MultiUserWindowManager::GetInstance();
     const std::string user_id = manager->GetWindowOwner(window);
-    if (user_id.empty() || !window ||
-        manager->GetWindowOwner(window).empty())
+    if (user_id.empty() || !window)
       return model.Pass();
     chromeos::MultiUserContextMenuChromeos* menu =
         new chromeos::MultiUserContextMenuChromeos(window);
