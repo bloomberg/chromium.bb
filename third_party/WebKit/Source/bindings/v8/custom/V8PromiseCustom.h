@@ -70,10 +70,6 @@ public:
     // |internal| must be a Promise internal object.
     static PromiseState getState(v8::Handle<v8::Object> internal);
 
-    // |internal| must be a Promise internal object.
-    // Set a |promise|'s state and result that correspond to the state.
-    static void setState(v8::Handle<v8::Object> internal, PromiseState, v8::Handle<v8::Value>, v8::Isolate*);
-
     // Return true if |maybePromise| is a Promise instance.
     static bool isPromise(v8::Handle<v8::Value> maybePromise, v8::Isolate*);
 

@@ -45,7 +45,7 @@
 #include "core/dom/ExecutionContextTask.h"
 #include "core/frame/DOMWindow.h"
 #include "core/frame/UseCounter.h"
-#include "core/inspector/InspectorInstrumentation.h"
+#include "core/inspector/InspectorPromiseInstrumentation.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "platform/Task.h"
 #include "wtf/Deque.h"
@@ -198,6 +198,20 @@ void addToDerived(v8::Handle<v8::Object> internal, v8::Handle<v8::Object> derive
     // Since they are treated as a tuple,
     // we need to guaranteed that the length of these arrays are same.
     ASSERT(fulfillCallbacks->Length() == rejectCallbacks->Length() && rejectCallbacks->Length() == derivedPromises->Length());
+}
+
+// Set a |promise|'s state and result that correspond to the state.
+// |promise| must be a Promise instance.
+void setStateForPromise(v8::Handle<v8::Object> promise, V8PromiseCustom::PromiseState state, v8::Handle<v8::Value> value, v8::Isolate* isolate)
+{
+    ASSERT(!value.IsEmpty());
+    ASSERT(state == V8PromiseCustom::Pending || state == V8PromiseCustom::Fulfilled || state == V8PromiseCustom::Rejected || state == V8PromiseCustom::Following);
+    v8::Local<v8::Object> internal = V8PromiseCustom::getInternal(promise);
+    internal->SetInternalField(V8PromiseCustom::InternalStateIndex, v8::Integer::New(isolate, state));
+    internal->SetInternalField(V8PromiseCustom::InternalResultIndex, value);
+    ExecutionContext* context = currentExecutionContext(isolate);
+    if (InspectorInstrumentation::isPromiseTrackerEnabled(context))
+        InspectorInstrumentation::didUpdatePromiseState(context, ScriptObject(ScriptState::forContext(isolate->GetCurrentContext()), promise), state, ScriptValue(value, isolate));
 }
 
 class TaskPerformScopeForInstrumentation {
@@ -400,17 +414,15 @@ void PromisePropagator::performPropagation(v8::Isolate* isolate)
 
 void PromisePropagator::setValue(v8::Handle<v8::Object> promise, v8::Handle<v8::Value> value, v8::Isolate* isolate)
 {
-    v8::Local<v8::Object> internal = V8PromiseCustom::getInternal(promise);
-    ASSERT(V8PromiseCustom::getState(internal) != V8PromiseCustom::Fulfilled && V8PromiseCustom::getState(internal) != V8PromiseCustom::Rejected);
-    V8PromiseCustom::setState(internal, V8PromiseCustom::Fulfilled, value, isolate);
+    ASSERT(V8PromiseCustom::getState(V8PromiseCustom::getInternal(promise)) != V8PromiseCustom::Fulfilled && V8PromiseCustom::getState(V8PromiseCustom::getInternal(promise)) != V8PromiseCustom::Rejected);
+    setStateForPromise(promise, V8PromiseCustom::Fulfilled, value, isolate);
     propagateToDerived(promise, isolate);
 }
 
 void PromisePropagator::setReason(v8::Handle<v8::Object> promise, v8::Handle<v8::Value> reason, v8::Isolate* isolate)
 {
-    v8::Local<v8::Object> internal = V8PromiseCustom::getInternal(promise);
-    ASSERT(V8PromiseCustom::getState(internal) != V8PromiseCustom::Fulfilled && V8PromiseCustom::getState(internal) != V8PromiseCustom::Rejected);
-    V8PromiseCustom::setState(internal, V8PromiseCustom::Rejected, reason, isolate);
+    ASSERT(V8PromiseCustom::getState(V8PromiseCustom::getInternal(promise)) != V8PromiseCustom::Fulfilled && V8PromiseCustom::getState(V8PromiseCustom::getInternal(promise)) != V8PromiseCustom::Rejected);
+    setStateForPromise(promise, V8PromiseCustom::Rejected, reason, isolate);
     propagateToDerived(promise, isolate);
 }
 
@@ -490,6 +502,11 @@ void PromisePropagator::updateDerivedFromPromise(v8::Handle<v8::Object> derivedP
         updateDerived(derivedPromise, onFulfilled, onRejected, promise, isolate);
     } else {
         addToDerived(internal, derivedPromise, onFulfilled, onRejected, isolate);
+    }
+    ExecutionContext* context = currentExecutionContext(isolate);
+    if (InspectorInstrumentation::isPromiseTrackerEnabled(context)) {
+        ScriptState* scriptState = ScriptState::forContext(isolate->GetCurrentContext());
+        InspectorInstrumentation::didUpdatePromiseParent(context, ScriptObject(scriptState, derivedPromise), ScriptObject(scriptState, promise));
     }
 }
 
@@ -660,9 +677,13 @@ v8::Local<v8::Object> V8PromiseCustom::createPromise(v8::Handle<v8::Object> crea
     v8::Local<v8::Object> promise = V8DOMWrapper::createWrapper(creationContext, &V8Promise::wrapperTypeInfo, 0, isolate);
 
     clearDerived(internal, isolate);
-    setState(internal, Pending, v8::Undefined(isolate), isolate);
-
     promise->SetInternalField(v8DOMWrapperObjectIndex, internal);
+
+    ExecutionContext* context = currentExecutionContext(isolate);
+    if (InspectorInstrumentation::isPromiseTrackerEnabled(context))
+        InspectorInstrumentation::didCreatePromise(context, ScriptObject(ScriptState::forContext(isolate->GetCurrentContext()), promise));
+
+    setStateForPromise(promise, Pending, v8::Undefined(isolate), isolate);
     return promise;
 }
 
@@ -678,14 +699,6 @@ V8PromiseCustom::PromiseState V8PromiseCustom::getState(v8::Handle<v8::Object> i
     uint32_t number = toInt32(value);
     ASSERT(number == Pending || number == Fulfilled || number == Rejected || number == Following);
     return static_cast<PromiseState>(number);
-}
-
-void V8PromiseCustom::setState(v8::Handle<v8::Object> internal, PromiseState state, v8::Handle<v8::Value> value, v8::Isolate* isolate)
-{
-    ASSERT(!value.IsEmpty());
-    ASSERT(state == Pending || state == Fulfilled || state == Rejected || state == Following);
-    internal->SetInternalField(InternalStateIndex, v8::Integer::New(isolate, state));
-    internal->SetInternalField(InternalResultIndex, value);
 }
 
 bool V8PromiseCustom::isPromise(v8::Handle<v8::Value> maybePromise, v8::Isolate* isolate)
@@ -725,7 +738,7 @@ void V8PromiseCustom::resolve(v8::Handle<v8::Object> promise, v8::Handle<v8::Val
             setReason(promise, reason, isolate);
         } else if (valueState == Following) {
             v8::Local<v8::Object> valuePromiseFollowing = valueInternal->GetInternalField(InternalResultIndex).As<v8::Object>();
-            setState(internal, Following, valuePromiseFollowing, isolate);
+            setStateForPromise(promise, Following, valuePromiseFollowing, isolate);
             addToDerived(getInternal(valuePromiseFollowing), promise, v8::Handle<v8::Function>(), v8::Handle<v8::Function>(), isolate);
         } else if (valueState == Fulfilled) {
             setValue(promise, valueInternal->GetInternalField(InternalResultIndex), isolate);
@@ -733,7 +746,7 @@ void V8PromiseCustom::resolve(v8::Handle<v8::Object> promise, v8::Handle<v8::Val
             setReason(promise, valueInternal->GetInternalField(InternalResultIndex), isolate);
         } else {
             ASSERT(valueState == Pending);
-            setState(internal, Following, valuePromise, isolate);
+            setStateForPromise(promise, Following, valuePromise, isolate);
             addToDerived(valueInternal, promise, v8::Handle<v8::Function>(), v8::Handle<v8::Function>(), isolate);
         }
     } else {
