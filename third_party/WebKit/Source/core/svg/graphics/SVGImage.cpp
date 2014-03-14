@@ -93,6 +93,8 @@ private:
         Vector<Entry>::const_iterator it = m_entries.begin();
         Vector<Entry>::const_iterator itEnd = m_entries.end();
         for (; it != itEnd; ++it) {
+            ASSERT(it->page);
+            ASSERT(it->chromeClient);
             it->page->mainFrame()->loader().frameDetached();
             delete it->page;
             delete it->chromeClient;
@@ -111,8 +113,12 @@ private:
 
 SVGImage::~SVGImage()
 {
-    m_chromeClient->clearImage();
-    DelayedSVGImageDestructor::get()->add(m_chromeClient.release(), m_page.release());
+    ASSERT(!!m_chromeClient.get() == !!m_page.get());
+
+    if (m_chromeClient) {
+        m_chromeClient->clearImage();
+        DelayedSVGImageDestructor::get()->add(m_chromeClient.release(), m_page.release());
+    }
 }
 
 bool SVGImage::isInSVGImage(const Element* element)
