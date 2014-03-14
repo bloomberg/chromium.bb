@@ -40,6 +40,8 @@ void PyUITestSuiteBase::SetCrSourceRoot(const base::FilePath& path) {
   PathService::Override(base::DIR_SOURCE_ROOT, path);
 }
 
+bool PyUITestSuiteBase::IsBrowserTestSuite() { return true; }
+
 // PyUITestBase
 PyUITestBase::PyUITestBase(bool clear_profile, std::wstring homepage)
     : UITestBase() {

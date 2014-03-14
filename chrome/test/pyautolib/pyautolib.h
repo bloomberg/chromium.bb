@@ -38,6 +38,8 @@ class PyUITestSuiteBase : public UITestSuite {
 
   void SetCrSourceRoot(const base::FilePath& path);
 
+  virtual bool IsBrowserTestSuite() OVERRIDE;
+
  private:
 #if defined(OS_MACOSX)
   base::mac::ScopedNSAutoreleasePool pool_;
