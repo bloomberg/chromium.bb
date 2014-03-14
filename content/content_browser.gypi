@@ -1130,6 +1130,8 @@
     'browser/screen_orientation/screen_orientation_dispatcher_host.cc',
     'browser/screen_orientation/screen_orientation_dispatcher_host.h',
     'browser/screen_orientation/screen_orientation_provider.h',
+    'browser/screen_orientation/screen_orientation_provider_android.h',
+    'browser/screen_orientation/screen_orientation_provider_android.cc',
     'browser/service_worker/embedded_worker_instance.cc',
     'browser/service_worker/embedded_worker_instance.h',
     'browser/service_worker/embedded_worker_registry.cc',

@@ -24,7 +24,8 @@ import org.chromium.base.ThreadUtils;
  * ScreenOrientationListener is a class that informs its observers when the
  * screen orientation changes.
  */
-class ScreenOrientationListener {
+@VisibleForTesting
+public class ScreenOrientationListener {
 
     /**
      * Observes changes in screen orientation.

@@ -419,6 +419,7 @@
             'result_codes_java',
             'speech_recognition_error_java',
             'top_controls_state_java',
+            'screen_orientation_values_java',
           ],
           'variables': {
             'java_in_dir': '../content/public/android/java',
@@ -506,6 +507,18 @@
           'variables': {
             'package_name': 'org/chromium/content/common',
             'template_deps': ['public/common/top_controls_state_list.h'],
+          },
+          'includes': [ '../build/android/java_cpp_template.gypi' ],
+        },
+        {
+          'target_name': 'screen_orientation_values_java',
+          'type': 'none',
+          'sources': [
+            'public/android/java/src/org/chromium/content/common/ScreenOrientationValues.template',
+          ],
+          'variables': {
+            'package_name': 'org/chromium/content/common',
+            'template_deps': ['public/common/screen_orientation_values_list.h'],
           },
           'includes': [ '../build/android/java_cpp_template.gypi' ],
         },

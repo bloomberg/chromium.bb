@@ -32,6 +32,7 @@
 #include "content/browser/renderer_host/input/motion_event_android.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target_android.h"
 #include "content/browser/renderer_host/java/java_bound_object.h"
+#include "content/browser/screen_orientation/screen_orientation_provider_android.h"
 #include "content/browser/speech/speech_recognizer_impl_android.h"
 #include "content/browser/vibration/vibration_provider_android.h"
 #include "content/browser/web_contents/web_contents_android.h"
@@ -68,6 +69,8 @@ base::android::RegistrationMethod kContentRegisteredMethods[] = {
      content::NavigationControllerAndroid::Register},
     {"PowerSaveBlock", content::RegisterPowerSaveBlocker},
     {"RegisterImeAdapter", content::RegisterImeAdapter},
+    {"ScreenOrientationProvider",
+     content::ScreenOrientationProviderAndroid::Register},
     {"SensorManagerAndroid", content::SensorManagerAndroid::Register},
     {"SpeechRecognizerImplAndroid",
      content::SpeechRecognizerImplAndroid::RegisterSpeechRecognizer},

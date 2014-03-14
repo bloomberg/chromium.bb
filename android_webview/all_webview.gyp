@@ -15,12 +15,14 @@
         'android_webview.gyp:libwebviewchromium',
 
         # Needed by android_webview_java
+        # Generated java files from templates should then be listed in android_webview/Android.mk
         '../base/base.gyp:base_java_application_state',
         '../base/base.gyp:base_java_memory_pressure_level_list',
         '../content/content.gyp:gesture_event_type_java',
         '../content/content.gyp:page_transition_types_java',
         '../content/content.gyp:popup_item_type_java',
         '../content/content.gyp:result_codes_java',
+        '../content/content.gyp:screen_orientation_values_java',
         '../content/content.gyp:speech_recognition_error_java',
         '../media/media.gyp:media_android_imageformat_list',
         '../net/net.gyp:certificate_mime_types_java',

@@ -58,9 +58,11 @@ void ScreenOrientationDispatcherHost::OnUnlockRequest() {
   provider_->UnlockOrientation();
 }
 
+#if !defined(OS_ANDROID)
 // static
 ScreenOrientationProvider* ScreenOrientationDispatcherHost::CreateProvider() {
   return NULL;
 }
+#endif
 
 }  // namespace content

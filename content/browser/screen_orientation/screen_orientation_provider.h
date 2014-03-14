@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_SCREEN_ORIENTATION_PROVIDER_H_
 #define CONTENT_BROWSER_SCREEN_ORIENTATION_PROVIDER_H_
 
+#include "third_party/WebKit/public/platform/WebScreenOrientation.h"
+
 namespace content {
 
 // Interface that needs to be implemented by any backend that wants to handle

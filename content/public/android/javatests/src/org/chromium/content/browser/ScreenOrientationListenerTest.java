@@ -11,9 +11,9 @@ import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
-import org.chromium.content.browser.ScreenOrientationListener.ScreenOrientationObserver;
-import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content.browser.test.util.MockOrientationObserver;
+import org.chromium.content.browser.test.util.OrientationChangeObserverCriteria;
 import org.chromium.content_shell_apk.ContentShellActivity;
 import org.chromium.content_shell_apk.ContentShellTestBase;
 
@@ -29,60 +29,7 @@ public class ScreenOrientationListenerTest extends ContentShellTestBase {
     private static final String DEFAULT_URL =
             UrlUtils.encodeHtmlDataUri("<html><body>foo</body></html>");
 
-    private static class OrientationObserver
-            implements ScreenOrientationObserver {
-
-        public int mOrientation = -1;
-        public boolean mHasChanged = false;
-
-        @Override
-        public void onScreenOrientationChanged(int orientation) {
-            mOrientation = orientation;
-            mHasChanged = true;
-        }
-    }
-
-    /**
-     * Criteria used to know when an orientation change happens.
-     */
-    private static class OrientationChangeObserverCriteria implements Criteria {
-
-        private final OrientationObserver mObserver;
-        private final int mTarget;
-        private final boolean mCheckTarget;
-
-        // Constructor to be used when the criteria is that there is an
-        // orientation change but the new orientation value does not matter.
-        private OrientationChangeObserverCriteria(
-                OrientationObserver observer) {
-            mObserver = observer;
-            mObserver.mHasChanged = false;
-
-            mCheckTarget = false;
-            mTarget = -1;
-        }
-
-        // Constructor to be used when the criteria cares about a change
-        // happening to a specific orientation value.
-        private OrientationChangeObserverCriteria(
-                OrientationObserver observer, int target) {
-            mObserver = observer;
-            mObserver.mHasChanged = false;
-
-            mTarget = target;
-            mCheckTarget = true;
-        }
-
-        @Override
-        public boolean isSatisfied() {
-            if (!mObserver.mHasChanged)
-                return false;
-
-            return !mCheckTarget || mObserver.mOrientation == mTarget;
-        }
-    }
-
-    private OrientationObserver mObserver;
+    private MockOrientationObserver mObserver;
 
     /**
      * Returns the expected orientation angle based on the orientation type.
@@ -136,7 +83,7 @@ public class ScreenOrientationListenerTest extends ContentShellTestBase {
     public void setUp() throws Exception {
         super.setUp();
 
-        mObserver = new OrientationObserver();
+        mObserver = new MockOrientationObserver();
     }
 
     @Override
