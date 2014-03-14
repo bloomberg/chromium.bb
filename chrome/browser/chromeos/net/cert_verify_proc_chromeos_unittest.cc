@@ -319,6 +319,10 @@ TEST_P(CertVerifyProcChromeOSOrderingTest, TrustThenVerify) {
     EXPECT_TRUE(db_1_->ImportCACerts(
         root_1_, net::NSSCertDatabase::TRUSTED_SSL, &failed));
     EXPECT_EQ(0U, failed.size());
+    for (size_t i = 0; i < failed.size(); ++i) {
+      LOG(ERROR) << "import fail " << failed[i].net_error << " for "
+                 << failed[i].certificate->subject().GetDisplayName();
+    }
   }
 
   if (trust_bitmask & 2) {
@@ -328,6 +332,10 @@ TEST_P(CertVerifyProcChromeOSOrderingTest, TrustThenVerify) {
     EXPECT_TRUE(db_2_->ImportCACerts(
         root_2_, net::NSSCertDatabase::TRUSTED_SSL, &failed));
     EXPECT_EQ(0U, failed.size());
+    for (size_t i = 0; i < failed.size(); ++i) {
+      LOG(ERROR) << "import fail " << failed[i].net_error << " for "
+                 << failed[i].certificate->subject().GetDisplayName();
+    }
   }
 
   // Repeat the tests twice, they should return the same each time.
