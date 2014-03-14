@@ -949,3 +949,4 @@ crbug.com/352385 [ Win Debug ] virtual/threaded/animations/3d/transform-perspect
 crbug.com/352703 [ Win Debug ] virtual/serviceworker/http/tests/serviceworker/registration.html [ Crash Pass ]
 crbug.com/352705 [ Win Debug ] virtual/threaded/animations/sample-on-last-keyframe.html [ Timeout Pass ]
 crbug.com/352705 [ Linux ] virtual/threaded/animations/sample-on-last-keyframe.html [ Timeout Pass ]
+crbug.com/352801 [ Mavericks ] http/tests/security/link-crossorigin-stylesheet-no-cors.html [ Pass Failure ]
