@@ -81,8 +81,7 @@ static inline RenderSVGResource* requestPaintingResource(RenderSVGResourceMode m
 
     bool applyToFill = mode == ApplyToFillMode;
     SVGPaint::SVGPaintType paintType = applyToFill ? svgStyle->fillPaintType() : svgStyle->strokePaintType();
-    if (paintType == SVGPaint::SVG_PAINTTYPE_NONE)
-        return 0;
+    ASSERT(paintType != SVGPaint::SVG_PAINTTYPE_NONE);
 
     Color color;
     bool hasColor = false;
