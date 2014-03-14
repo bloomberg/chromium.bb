@@ -42,15 +42,9 @@ static BOOL forceMagicMouse = NO;
 
   return NO;
 }
-
-- (void)gotWheelEventConsumed:(BOOL)consumed {
-  if (consumed) {
-    gestureHandledState_ = history_swiper::kHandled;
-  } else if (gestureHandledState_ == history_swiper::kPending) {
-    gestureHandledState_ = history_swiper::kUnhandled;
-  }
+- (void)gotUnhandledWheelEvent {
+  gotUnhandledWheelEvent_ = YES;
 }
-
 - (void)scrollOffsetPinnedToLeft:(BOOL)left toRight:(BOOL)right {
   isPinnedLeft_ = left;
   isPinnedRight_ = right;
@@ -71,7 +65,7 @@ static BOOL forceMagicMouse = NO;
   // Reset state pertaining to previous gestures.
   historySwipeCancelled_ = NO;
   gestureStartPointValid_ = NO;
-  gestureHandledState_ = history_swiper::kPending;
+  gotUnhandledWheelEvent_ = NO;
   receivedTouch_ = NO;
   mouseScrollDelta_ = NSZeroSize;
 }
@@ -465,9 +459,9 @@ static BOOL forceMagicMouse = NO;
   if (![delegate_ shouldAllowHistorySwiping])
     return NO;
 
-  // Only enable history swiping if blink has never handled any of the events in
-  // the gesture.
-  if (gestureHandledState_ != history_swiper::kUnhandled)
+  // Don't even consider enabling history swiping until blink has decided it is
+  // not going to handle the event.
+  if (!gotUnhandledWheelEvent_)
     return NO;
 
   // If the window has a horizontal scroll bar, sometimes Cocoa gets confused

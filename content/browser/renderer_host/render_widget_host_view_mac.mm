@@ -142,7 +142,7 @@ static float ScaleFactorForView(NSView* view) {
 
 + (BOOL)shouldAutohideCursorForEvent:(NSEvent*)event;
 - (id)initWithRenderWidgetHostViewMac:(RenderWidgetHostViewMac*)r;
-- (void)gotWheelEventConsumed:(BOOL)consumed;
+- (void)gotUnhandledWheelEvent;
 - (void)scrollOffsetPinnedToLeft:(BOOL)left toRight:(BOOL)right;
 - (void)setHasHorizontalScrollbar:(BOOL)has_horizontal_scrollbar;
 - (void)keyEvent:(NSEvent*)theEvent wasKeyEquivalent:(BOOL)equiv;
@@ -1940,11 +1940,12 @@ void RenderWidgetHostViewMac::UnlockMouse() {
     render_widget_host_->LostMouseLock();
 }
 
-void RenderWidgetHostViewMac::HandledWheelEvent(
-    const blink::WebMouseWheelEvent& event,
-    bool consumed) {
+void RenderWidgetHostViewMac::UnhandledWheelEvent(
+    const blink::WebMouseWheelEvent& event) {
+  // Only record a wheel event as unhandled if JavaScript handlers got a chance
+  // to see it (no-op wheel events are ignored by the event dispatcher)
   if (event.deltaX || event.deltaY)
-    [cocoa_view_ gotWheelEventConsumed:consumed];
+    [cocoa_view_ gotUnhandledWheelEvent];
 }
 
 bool RenderWidgetHostViewMac::Send(IPC::Message* message) {
@@ -2295,8 +2296,12 @@ SkBitmap::Config RenderWidgetHostViewMac::PreferredReadbackFormat() {
   }
 }
 
-- (void)gotWheelEventConsumed:(BOOL)consumed {
-  [responderDelegate_ gotWheelEventConsumed:consumed];
+- (void)gotUnhandledWheelEvent {
+  if (responderDelegate_ &&
+      [responderDelegate_
+          respondsToSelector:@selector(gotUnhandledWheelEvent)]) {
+    [responderDelegate_ gotUnhandledWheelEvent];
+  }
 }
 
 - (void)scrollOffsetPinnedToLeft:(BOOL)left toRight:(BOOL)right {

@@ -453,9 +453,8 @@ bool RenderWidgetHostViewBase::IsMouseLocked() {
   return mouse_locked_;
 }
 
-void RenderWidgetHostViewBase::HandledWheelEvent(
-    const blink::WebMouseWheelEvent& event,
-    bool consumed) {
+void RenderWidgetHostViewBase::UnhandledWheelEvent(
+    const blink::WebMouseWheelEvent& event) {
   // Most implementations don't need to do anything here.
 }
 

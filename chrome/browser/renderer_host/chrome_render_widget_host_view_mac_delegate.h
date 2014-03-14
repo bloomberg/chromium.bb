@@ -39,6 +39,7 @@ class SpellCheckObserver;
 
 - (void)viewGone:(NSView*)view;
 - (BOOL)handleEvent:(NSEvent*)event;
+- (void)gotUnhandledWheelEvent;
 - (void)scrollOffsetPinnedToLeft:(BOOL)left toRight:(BOOL)right;
 - (void)setHasHorizontalScrollbar:(BOOL)hasHorizontalScrollbar;
 - (BOOL)validateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)item

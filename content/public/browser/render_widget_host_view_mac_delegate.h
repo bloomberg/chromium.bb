@@ -27,6 +27,9 @@
 // normal processing should take place.
 - (BOOL)handleEvent:(NSEvent*)event;
 
+// Notification that a wheel event was unhandled.
+- (void)gotUnhandledWheelEvent;
+
 // Notification of scroll offset pinning.
 - (void)scrollOffsetPinnedToLeft:(BOOL)left toRight:(BOOL)right;
 
@@ -51,11 +54,6 @@
 - (void)touchesBeganWithEvent:(NSEvent*)event;
 - (void)touchesCancelledWithEvent:(NSEvent*)event;
 - (void)touchesEndedWithEvent:(NSEvent*)event;
-
-// Notification that a wheel event was received.
-// |consumed| indicates whether the renderer or the render_widget_host_view
-// delegate consumed the event.
-- (void)gotWheelEventConsumed:(BOOL)consumed;
 
 @end
 
