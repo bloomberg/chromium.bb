@@ -10,6 +10,7 @@
 #include <unistd.h>
 
 #include "base/file_util.h"
+#include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/process/process_iterator.h"
@@ -273,16 +274,15 @@ static bool WaitForSingleNonChildProcess(ProcessHandle handle,
   DCHECK_GT(handle, 0);
   DCHECK(wait.InMilliseconds() == base::kNoTimeout || wait > base::TimeDelta());
 
-  int kq = kqueue();
-  if (kq == -1) {
+  ScopedFD kq(kqueue());
+  if (!kq.is_valid()) {
     DPLOG(ERROR) << "kqueue";
     return false;
   }
-  file_util::ScopedFD kq_closer(&kq);
 
   struct kevent change = {0};
   EV_SET(&change, handle, EVFILT_PROC, EV_ADD, NOTE_EXIT, 0, NULL);
-  int result = HANDLE_EINTR(kevent(kq, &change, 1, NULL, 0, NULL));
+  int result = HANDLE_EINTR(kevent(kq.get(), &change, 1, NULL, 0, NULL));
   if (result == -1) {
     if (errno == ESRCH) {
       // If the process wasn't found, it must be dead.
@@ -316,7 +316,7 @@ static bool WaitForSingleNonChildProcess(ProcessHandle handle,
       remaining_timespec_ptr = &remaining_timespec;
     }
 
-    result = kevent(kq, NULL, 0, &event, 1, remaining_timespec_ptr);
+    result = kevent(kq.get(), NULL, 0, &event, 1, remaining_timespec_ptr);
 
     if (result == -1 && errno == EINTR) {
       if (!wait_forever) {

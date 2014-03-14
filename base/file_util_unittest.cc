@@ -26,6 +26,7 @@
 #include "base/file_util.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
+#include "base/files/scoped_file.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
@@ -2473,9 +2474,9 @@ TEST(ScopedFD, ScopedFDDoesClose) {
   char c = 0;
   ASSERT_EQ(0, pipe(fds));
   const int write_end = fds[1];
-  file_util::ScopedFDCloser read_end_closer(fds);
+  base::ScopedFD read_end_closer(fds[0]);
   {
-    file_util::ScopedFDCloser write_end_closer(fds + 1);
+    base::ScopedFD write_end_closer(fds[1]);
   }
   // This is the only thread. This file descriptor should no longer be valid.
   int ret = close(write_end);
@@ -2489,14 +2490,14 @@ TEST(ScopedFD, ScopedFDDoesClose) {
 
 #if defined(GTEST_HAS_DEATH_TEST)
 void CloseWithScopedFD(int fd) {
-  file_util::ScopedFDCloser fd_closer(&fd);
+  base::ScopedFD fd_closer(fd);
 }
 #endif
 
 TEST(ScopedFD, ScopedFDCrashesOnCloseFailure) {
   int fds[2];
   ASSERT_EQ(0, pipe(fds));
-  file_util::ScopedFDCloser read_end_closer(fds);
+  base::ScopedFD read_end_closer(fds[0]);
   EXPECT_EQ(0, IGNORE_EINTR(close(fds[1])));
 #if defined(GTEST_HAS_DEATH_TEST)
   // This is the only thread. This file descriptor should no longer be valid.

@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/file_util.h"
+#include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/threading/platform_thread.h"
@@ -73,13 +74,13 @@ TEST(ScopedProcess, ScopedProcessSignaled) {
 TEST(ScopedProcess, DiesForReal) {
   int pipe_fds[2];
   ASSERT_EQ(0, pipe(pipe_fds));
-  file_util::ScopedFDCloser read_end_closer(pipe_fds);
-  file_util::ScopedFDCloser write_end_closer(pipe_fds + 1);
+  base::ScopedFD read_end_closer(pipe_fds[0]);
+  base::ScopedFD write_end_closer(pipe_fds[1]);
 
   { ScopedProcess process(base::Bind(&DoExit)); }
 
   // Close writing end of the pipe.
-  ASSERT_EQ(0, IGNORE_EINTR(close(pipe_fds[1])));
+  write_end_closer.reset();
   pipe_fds[1] = -1;
 
   ASSERT_EQ(0, fcntl(pipe_fds[0], F_SETFL, O_NONBLOCK));
@@ -108,8 +109,8 @@ void SleepInMsAndWriteOneByte(int time_to_sleep, int fd) {
 TEST(ScopedProcess, SynchronizationWorks) {
   int pipe_fds[2];
   ASSERT_EQ(0, pipe(pipe_fds));
-  file_util::ScopedFDCloser read_end_closer(pipe_fds);
-  file_util::ScopedFDCloser write_end_closer(pipe_fds + 1);
+  base::ScopedFD read_end_closer(pipe_fds[0]);
+  base::ScopedFD write_end_closer(pipe_fds[1]);
 
   // Start a process with a closure that takes a little bit to run.
   ScopedProcess process(

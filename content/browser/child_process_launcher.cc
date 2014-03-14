@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
@@ -228,7 +229,7 @@ class ChildProcessLauncher::Context
     base::ProcessHandle handle = base::kNullProcessHandle;
     // We need to close the client end of the IPC channel to reliably detect
     // child termination.
-    file_util::ScopedFD ipcfd_closer(&ipcfd);
+    base::ScopedFD ipcfd_closer(ipcfd);
 
 #if !defined(OS_MACOSX)
     GetContentClient()->browser()->
@@ -319,7 +320,7 @@ class ChildProcessLauncher::Context
       base::ProcessHandle handle) {
 #if defined(OS_ANDROID)
     // Finally close the ipcfd
-    file_util::ScopedFD ipcfd_closer(&ipcfd_);
+    base::ScopedFD ipcfd_closer(ipcfd_);
 #endif
     starting_ = false;
     process_.set_handle(handle);

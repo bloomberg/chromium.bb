@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/posix/eintr_wrapper.h"
@@ -58,18 +59,18 @@ bool NativeProcessLauncher::LaunchNativeProcess(
     LOG(ERROR) << "Bad read pipe";
     return false;
   }
-  file_util::ScopedFD read_pipe_read_fd(&read_pipe_fds[0]);
-  file_util::ScopedFD read_pipe_write_fd(&read_pipe_fds[1]);
-  fd_map.push_back(std::make_pair(*read_pipe_write_fd, STDOUT_FILENO));
+  base::ScopedFD read_pipe_read_fd(read_pipe_fds[0]);
+  base::ScopedFD read_pipe_write_fd(read_pipe_fds[1]);
+  fd_map.push_back(std::make_pair(read_pipe_write_fd.get(), STDOUT_FILENO));
 
   int write_pipe_fds[2] = {0};
   if (HANDLE_EINTR(pipe(write_pipe_fds)) != 0) {
     LOG(ERROR) << "Bad write pipe";
     return false;
   }
-  file_util::ScopedFD write_pipe_read_fd(&write_pipe_fds[0]);
-  file_util::ScopedFD write_pipe_write_fd(&write_pipe_fds[1]);
-  fd_map.push_back(std::make_pair(*write_pipe_read_fd, STDIN_FILENO));
+  base::ScopedFD write_pipe_read_fd(write_pipe_fds[0]);
+  base::ScopedFD write_pipe_write_fd(write_pipe_fds[1]);
+  fd_map.push_back(std::make_pair(write_pipe_read_fd.get(), STDIN_FILENO));
 
   base::LaunchOptions options;
   options.fds_to_remap = &fd_map;
@@ -82,8 +83,8 @@ bool NativeProcessLauncher::LaunchNativeProcess(
   write_pipe_read_fd.reset();
   read_pipe_write_fd.reset();
 
-  *read_file = *read_pipe_read_fd.release();
-  *write_file = *write_pipe_write_fd.release();
+  *read_file = read_pipe_read_fd.release();
+  *write_file = write_pipe_write_fd.release();
 
   return true;
 }

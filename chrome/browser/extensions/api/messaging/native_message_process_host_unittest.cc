@@ -5,6 +5,7 @@
 #include "base/bind.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
+#include "base/files/scoped_file.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_reader.h"
 #include "base/memory/scoped_ptr.h"
@@ -214,8 +215,8 @@ TEST_F(NativeMessagingTest, SingleSendMessageWrite) {
 #else  // defined(OS_WIN)
   base::PlatformFile pipe_handles[2];
   ASSERT_EQ(0, pipe(pipe_handles));
-  file_util::ScopedFD read_fd(pipe_handles);
-  file_util::ScopedFD write_fd(pipe_handles + 1);
+  base::ScopedFD read_fd(pipe_handles[0]);
+  base::ScopedFD write_fd(pipe_handles[1]);
 
   read_file = pipe_handles[0];
 #endif  // !defined(OS_WIN)

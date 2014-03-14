@@ -5,6 +5,7 @@
 #include "ipc/ipc_channel_factory.h"
 
 #include "base/file_util.h"
+#include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "ipc/unix_domain_socket_util.h"
 
@@ -58,14 +59,14 @@ void ChannelFactory::OnFileCanReadWithoutBlocking(int fd) {
     return;
   }
 
-  file_util::ScopedFD scoped_fd(&new_fd);
+  base::ScopedFD scoped_fd(new_fd);
 
   // Verify that the IPC channel peer is running as the same user.
   if (!IsPeerAuthorized(new_fd))
     return;
 
   ChannelHandle handle(std::string(),
-                       base::FileDescriptor(*scoped_fd.release(), true));
+                       base::FileDescriptor(scoped_fd.release(), true));
   delegate_->OnClientConnected(handle);
 }
 

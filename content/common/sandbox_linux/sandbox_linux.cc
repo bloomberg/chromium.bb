@@ -15,6 +15,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
@@ -42,10 +43,6 @@ struct FDCloser {
     *fd = -1;
   }
 };
-
-// Don't use base::ScopedFD since it doesn't CHECK that the file descriptor was
-// closed.
-typedef scoped_ptr<int, FDCloser> SafeScopedFD;
 
 void LogSandboxStarted(const std::string& sandbox_name) {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
@@ -203,25 +200,25 @@ int LinuxSandbox::GetStatus() {
 // of using the pid.
 bool LinuxSandbox::IsSingleThreaded() const {
   bool is_single_threaded = false;
-  int proc_self_task = OpenProcTaskFd(proc_fd_);
+  base::ScopedFD proc_self_task(OpenProcTaskFd(proc_fd_));
 
 // In Debug mode, it's mandatory to be able to count threads to catch bugs.
 #if !defined(NDEBUG)
   // Using CHECK here since we want to check all the cases where
   // !defined(NDEBUG)
   // gets built.
-  CHECK_LE(0, proc_self_task) << "Could not count threads, the sandbox was not "
-                              << "pre-initialized properly.";
+  CHECK(proc_self_task.is_valid())
+      << "Could not count threads, the sandbox was not "
+      << "pre-initialized properly.";
 #endif  // !defined(NDEBUG)
 
-  if (proc_self_task < 0) {
+  if (!proc_self_task.is_valid()) {
     // Pretend to be monothreaded if it can't be determined (for instance the
     // setuid sandbox is already engaged but no proc_fd_ is available).
     is_single_threaded = true;
   } else {
-    SafeScopedFD task_closer(&proc_self_task);
     is_single_threaded =
-        sandbox::ThreadHelpers::IsSingleThreaded(proc_self_task);
+        sandbox::ThreadHelpers::IsSingleThreaded(proc_self_task.get());
   }
 
   return is_single_threaded;
@@ -391,11 +388,10 @@ void LinuxSandbox::CheckForBrokenPromises(const std::string& process_type) {
 
 void LinuxSandbox::StopThreadAndEnsureNotCounted(base::Thread* thread) const {
   DCHECK(thread);
-  int proc_self_task = OpenProcTaskFd(proc_fd_);
-  PCHECK(proc_self_task >= 0);
-  SafeScopedFD task_closer(&proc_self_task);
-  CHECK(
-      sandbox::ThreadHelpers::StopThreadAndWatchProcFS(proc_self_task, thread));
+  base::ScopedFD proc_self_task(OpenProcTaskFd(proc_fd_));
+  PCHECK(proc_self_task.is_valid());
+  CHECK(sandbox::ThreadHelpers::StopThreadAndWatchProcFS(proc_self_task.get(),
+                                                         thread));
 }
 
 }  // namespace content

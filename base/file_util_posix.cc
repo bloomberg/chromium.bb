@@ -33,6 +33,7 @@
 #include "base/basictypes.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
+#include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
@@ -172,15 +173,15 @@ int CreateAndOpenFdForTemporaryFile(FilePath directory, FilePath* path) {
 bool DetermineDevShmExecutable() {
   bool result = false;
   FilePath path;
-  int fd = CreateAndOpenFdForTemporaryFile(FilePath("/dev/shm"), &path);
-  if (fd >= 0) {
-    file_util::ScopedFD shm_fd_closer(&fd);
+
+  ScopedFD fd(CreateAndOpenFdForTemporaryFile(FilePath("/dev/shm"), &path));
+  if (fd.is_valid()) {
     DeleteFile(path, false);
     long sysconf_result = sysconf(_SC_PAGESIZE);
     CHECK_GE(sysconf_result, 0);
     size_t pagesize = static_cast<size_t>(sysconf_result);
     CHECK_GE(sizeof(pagesize), sizeof(sysconf_result));
-    void *mapping = mmap(NULL, pagesize, PROT_READ, MAP_SHARED, fd, 0);
+    void *mapping = mmap(NULL, pagesize, PROT_READ, MAP_SHARED, fd.get(), 0);
     if (mapping != MAP_FAILED) {
       if (mprotect(mapping, pagesize, PROT_READ | PROT_EXEC) == 0)
         result = true;
@@ -660,11 +661,10 @@ bool GetFileInfo(const FilePath& file_path, File::Info* results) {
   stat_wrapper_t file_info;
 #if defined(OS_ANDROID)
   if (file_path.IsContentUri()) {
-    int fd = OpenContentUriForRead(file_path);
-    if (fd < 0)
+    ScopedFD fd(OpenContentUriForRead(file_path));
+    if (!fd.is_valid())
       return false;
-    file_util::ScopedFD scoped_fd(&fd);
-    if (CallFstat(fd, &file_info) != 0)
+    if (CallFstat(fd.get(), &file_info) != 0)
       return false;
   } else {
 #endif  // defined(OS_ANDROID)
