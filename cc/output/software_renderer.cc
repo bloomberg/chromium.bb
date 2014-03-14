@@ -53,7 +53,12 @@ class OnDemandRasterTaskImpl : public internal::Task {
   // Overridden from internal::Task:
   virtual void RunOnWorkerThread(unsigned thread_index) OVERRIDE {
     TRACE_EVENT0("cc", "OnDemandRasterTaskImpl::RunOnWorkerThread");
-    picture_pile_->RasterDirect(canvas_, content_rect_, contents_scale_, NULL);
+
+    PicturePileImpl* picture_pile =
+        picture_pile_->GetCloneForDrawingOnThread(thread_index);
+    DCHECK(picture_pile);
+
+    picture_pile->RasterDirect(canvas_, content_rect_, contents_scale_, NULL);
   }
 
  protected:

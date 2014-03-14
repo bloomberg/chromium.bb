@@ -96,8 +96,12 @@ class OnDemandRasterTaskImpl : public internal::Task {
   virtual void RunOnWorkerThread(unsigned thread_index) OVERRIDE {
     TRACE_EVENT0("cc", "OnDemandRasterTaskImpl::RunOnWorkerThread");
     SkCanvas canvas(*bitmap_);
-    picture_pile_->RasterToBitmap(
-        &canvas, content_rect_, contents_scale_, NULL);
+
+    PicturePileImpl* picture_pile =
+        picture_pile_->GetCloneForDrawingOnThread(thread_index);
+    DCHECK(picture_pile);
+
+    picture_pile->RasterToBitmap(&canvas, content_rect_, contents_scale_, NULL);
   }
 
  protected:
