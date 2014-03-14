@@ -15,6 +15,7 @@ InspectorTest.HARPropertyFormatters = {
     timings: "formatAsTypeName",
     version: "formatAsTypeName",
     wait: "formatAsTypeName",
+    _error: "skip",
 };
 
 // addObject checks own properties only, so make a deep copy rather than use prototype.

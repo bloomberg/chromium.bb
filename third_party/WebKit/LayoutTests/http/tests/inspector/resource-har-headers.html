@@ -45,7 +45,7 @@ var test = function()
         "response": {
             "headers": testRequest.responseHeaders,
             "headersText": visibleNewlines(testRequest.responseHeadersText),
-            "headersSize": testRequest.responseHeadersSize,
+            "headersSize": testRequest.responseHeadersText.length,
             "resourceSize": testRequest.resourceSize,
             "transferSize": testRequest.transferSize
         }
@@ -55,7 +55,8 @@ var test = function()
     var stillNondeterministic = {
         "startedDateTime": "formatAsTypeName",
         "time": "formatAsTypeName",
-        "timings": "formatAsTypeName"
+        "timings": "formatAsTypeName",
+        "_error": "skip"
     };
     InspectorTest.addObject(new WebInspector.HAREntry(testRequest).build(), stillNondeterministic, "", "HAR:");
     InspectorTest.completeTest();
