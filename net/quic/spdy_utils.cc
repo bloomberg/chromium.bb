@@ -15,7 +15,7 @@ namespace net {
 
 // static
 string SpdyUtils::SerializeUncompressedHeaders(const SpdyHeaderBlock& headers) {
-  int length = SpdyFramer::GetSerializedLength(SPDY3, &headers);
+  int length = SpdyFramer::GetSerializedLength(SPDY3, &headers, true);
   SpdyFrameBuilder builder(length);
   SpdyFramer::WriteHeaderBlock(&builder, SPDY3, &headers);
   scoped_ptr<SpdyFrame> block(builder.take());

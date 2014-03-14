@@ -754,8 +754,6 @@ class NET_EXPORT_PRIVATE SpdyPushPromiseIR
   DISALLOW_COPY_AND_ASSIGN(SpdyPushPromiseIR);
 };
 
-// TODO(jgraettinger): This representation needs review. SpdyContinuationIR
-// needs to frame a portion of a single, arbitrarily-broken encoded buffer.
 class NET_EXPORT_PRIVATE SpdyContinuationIR
     : public SpdyFrameWithNameValueBlockIR {
  public:

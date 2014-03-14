@@ -16,8 +16,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/sys_byteorder.h"
 #include "net/base/net_export.h"
-#include "net/spdy/hpack_decoder.h"
-#include "net/spdy/hpack_encoder.h"
 #include "net/spdy/spdy_header_block.h"
 #include "net/spdy/spdy_protocol.h"
 
@@ -324,7 +322,8 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   // Retrieve serialized length of SpdyHeaderBlock.
   // TODO(hkhalil): Remove, or move to quic code.
   static size_t GetSerializedLength(const int spdy_version,
-                                    const SpdyHeaderBlock* headers);
+                                    const SpdyHeaderBlock* headers,
+                                    bool begin_block);
 
   // Create a new Framer, provided a SPDY version.
   explicit SpdyFramer(SpdyMajorVersion version);
@@ -419,9 +418,6 @@ class NET_EXPORT_PRIVATE SpdyFramer {
 
   // Serializes a CONTINUATION frame. The CONTINUATION frame is used
   // to continue a sequence of header block fragments.
-  // TODO(jgraettinger): This implementation is incorrect. The continuation
-  // frame continues a previously-begun HPACK encoding; it doesn't begin a
-  // new one. Figure out whether it makes sense to keep SerializeContinuation().
   SpdySerializedFrame* SerializeContinuation(
       const SpdyContinuationIR& continuation);
 
@@ -538,23 +534,12 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   size_t ProcessCommonHeader(const char* data, size_t len);
   size_t ProcessControlFramePayload(const char* data, size_t len);
   size_t ProcessControlFrameBeforeHeaderBlock(const char* data, size_t len);
-  // HPACK data is re-encoded as SPDY3 and re-entrantly delivered through
-  // |ProcessControlFrameHeaderBlock()|. |is_hpack_header_block| controls
-  // whether data is treated as HPACK- vs SPDY3-encoded.
-  size_t ProcessControlFrameHeaderBlock(const char* data,
-                                        size_t len,
-                                        bool is_hpack_header_block);
+  size_t ProcessControlFrameHeaderBlock(const char* data, size_t len);
   size_t ProcessDataFramePayload(const char* data, size_t len);
   size_t ProcessGoAwayFramePayload(const char* data, size_t len);
   size_t ProcessRstStreamFramePayload(const char* data, size_t len);
   size_t ProcessSettingsFramePayload(const char* data, size_t len);
 
-  // TODO(jgraettinger): To be removed with migration to
-  // SpdyHeadersHandlerInterface.
-  // Serializes the last-processed header block of |hpack_decoder_| as
-  // a SPDY3 format block, and delivers it to the visitor via reentrant
-  // call to ProcessControlFrameHeaderBlock().
-  void DeliverHpackBlockAsSpdy3Block();
 
   // Helpers for above internal breakouts from ProcessInput.
   void ProcessControlFrameHeader(uint16 control_frame_type_field);
@@ -563,7 +548,7 @@ class NET_EXPORT_PRIVATE SpdyFramer {
 
   // Retrieve serialized length of SpdyHeaderBlock. If compression is enabled, a
   // maximum estimate is returned.
-  size_t GetSerializedLength(const SpdyHeaderBlock& headers);
+  size_t GetSerializedLength(const SpdyHeaderBlock& headers, bool begin_block);
 
   // Get (and lazily initialize) the ZLib state.
   z_stream* GetHeaderCompressor();
@@ -591,12 +576,14 @@ class NET_EXPORT_PRIVATE SpdyFramer {
 
   void SerializeNameValueBlockWithoutCompression(
       SpdyFrameBuilder* builder,
-      const SpdyNameValueBlock& name_value_block) const;
+      const SpdyNameValueBlock& name_value_block,
+      bool begin_block) const;
 
   // Compresses automatically according to enable_compression_.
   void SerializeNameValueBlock(
       SpdyFrameBuilder* builder,
-      const SpdyFrameWithNameValueBlockIR& frame);
+      const SpdyFrameWithNameValueBlockIR& frame,
+      bool begin_block);
 
   // Set the error code and moves the framer into the error state.
   void set_error(SpdyError error);
@@ -661,9 +648,6 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   // SPDY header compressors.
   scoped_ptr<z_stream> header_compressor_;
   scoped_ptr<z_stream> header_decompressor_;
-
-  HpackEncoder hpack_encoder_;
-  HpackDecoder hpack_decoder_;
 
   SpdyFramerVisitorInterface* visitor_;
   SpdyFramerDebugVisitorInterface* debug_visitor_;
