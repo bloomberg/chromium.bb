@@ -484,13 +484,6 @@ void BrowserMainLoop::MainMessageLoopStart() {
     TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:AudioMirroringManager")
     audio_mirroring_manager_.reset(new AudioMirroringManager());
   }
-
-  // Start tracing to a file if needed.
-  if (is_tracing_startup_) {
-    TRACE_EVENT0("startup", "BrowserMainLoop::InitStartupTracing")
-    InitStartupTracing(parsed_command_line_);
-  }
-
   {
     TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:OnlineStateObserver")
     online_state_observer_.reset(new BrowserOnlineStateObserver);
@@ -508,6 +501,16 @@ void BrowserMainLoop::MainMessageLoopStart() {
 
   if (parts_)
     parts_->PostMainMessageLoopStart();
+
+#if !defined(OS_IOS)
+  // Start tracing to a file if needed. Only do this after starting the main
+  // message loop to avoid calling MessagePumpForUI::ScheduleWork() before
+  // MessagePumpForUI::Start() as it will crash the browser.
+  if (is_tracing_startup_) {
+    TRACE_EVENT0("startup", "BrowserMainLoop::InitStartupTracing")
+    InitStartupTracing(parsed_command_line_);
+  }
+#endif  // !defined(OS_IOS)
 
 #if defined(OS_ANDROID)
   {
