@@ -582,10 +582,11 @@ def UploadSymbols(board=None, official=False, breakpad_dir=None,
 
     missing_count = 0
     for item in SymbolDeduplicator(storage_query, files):
-      if counters.upload_limit == 0:
-        break
-
       missing_count += 1
+
+      if counters.upload_limit == 0:
+        continue
+
       queue.put((item,))
       counters.uploaded_count += 1
       if counters.upload_limit is not None:
