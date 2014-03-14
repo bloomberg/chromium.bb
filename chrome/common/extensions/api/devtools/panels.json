@@ -99,8 +99,10 @@
             "parameters": [
               {
                 "name": "window",
-                "$ref": "windows.Window",
-                "description": "The <code>window</code> object of panel's page."
+                "type": "object",
+                "isInstanceOf": "global",
+                "additionalProperties": { "type": "any" },
+                "description": "The JavaScript <code>window</code> object of panel's page."
               }
             ]
           },
@@ -197,9 +199,10 @@
             "parameters": [
               {
                 "name": "window",
-                "$ref": "windows.Window",
-                "optional": true,
-                "description": "The <code>window</code> object of the sidebar page, if one was set with the <code>setPage()</code> method."
+                "type": "object",
+                "isInstanceOf": "global",
+                "additionalProperties": { "type": "any" },
+                "description": "The JavaScript <code>window</code> object of the sidebar page, if one was set with the <code>setPage()</code> method."
               }
             ]
           },
