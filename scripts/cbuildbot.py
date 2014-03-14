@@ -17,6 +17,7 @@ import glob
 import logging
 import optparse
 import os
+import multiprocessing
 import pickle
 import sys
 import time
@@ -147,6 +148,7 @@ class Builder(object):
 
     self.archive_stages = {}
     self.patch_pool = trybot_patch_pool.TrybotPatchPool()
+    self._build_image_lock = multiprocessing.Lock()
 
   def Initialize(self):
     """Runs through the initialization steps of an actual build."""
@@ -414,13 +416,12 @@ class SimpleBuilder(Builder):
 
       raise
 
-  def _RunBackgroundStagesForBoard(self, builder_run, board, compilecheck):
+  def _RunBackgroundStagesForBoard(self, builder_run, board):
     """Run background board-specific stages for the specified board.
 
     Args:
       builder_run: BuilderRun object for these background stages.
       board: Board name.
-      compilecheck: Boolean.  If True, run only the compile steps.
     """
     config = builder_run.config
 
@@ -432,18 +433,26 @@ class SimpleBuilder(Builder):
       self._RunParallelStages([archive_stage])
       return
 
-    if compilecheck:
+    # signer_results can't complete without push_image.
+    assert not config.signer_results or config.push_image
+
+    # paygen can't complete without signer_results.
+    assert not config.paygen or config.signer_results
+
+    if config.build_packages_in_background:
       self._RunStage(stages.BuildPackagesStage, board, archive_stage,
                      builder_run=builder_run)
+
+    if builder_run.config.compilecheck or builder_run.options.compilecheck:
       self._RunStage(stages.UnitTestStage, board,
                      builder_run=builder_run)
       return
 
-    # signer_results can't complete without push_image.
-    assert not config['signer_results'] or config['push_image']
-
-    # paygen can't complete without signer_results.
-    assert not config['paygen'] or config['signer_results']
+    # Build the image first before doing anything else.
+    # TODO(davidjames): Remove this lock once http://crbug.com/352994 is fixed.
+    with self._build_image_lock:
+      self._RunStage(stages.BuildImageStage, board, archive_stage=archive_stage,
+                     builder_run=builder_run, pgo_use=config.pgo_use)
 
     # While this stage list is run in parallel, the order here dictates the
     # order that things will be shown in the log.  So group things together
@@ -547,11 +556,9 @@ class SimpleBuilder(Builder):
     task_runner = self._RunBackgroundStagesForBoard
     with parallel.BackgroundTaskRunner(task_runner) as queue:
       for builder_run, board, archive_stage in tasks:
-        compilecheck = (builder_run.config.compilecheck or
-                        builder_run.options.compilecheck)
-        if not compilecheck:
-          # Run BuildPackages and BuildImage in the foreground, generating
-          # or using PGO data if requested.
+        if not builder_run.config.build_packages_in_background:
+          # Run BuildPackages in the foreground, generating or using PGO data
+          # if requested.
           kwargs = {'archive_stage': archive_stage, 'builder_run': builder_run}
           if builder_run.config.pgo_generate:
             kwargs['pgo_generate'] = True
@@ -559,15 +566,16 @@ class SimpleBuilder(Builder):
             kwargs['pgo_use'] = True
 
           self._RunStage(stages.BuildPackagesStage, board, **kwargs)
-          self._RunStage(stages.BuildImageStage, board, **kwargs)
 
           if builder_run.config.pgo_generate:
+            # Generate the PGO data before allowing any other tasks to run.
+            self._RunStage(stages.BuildImageStage, board, **kwargs)
             suite = cbuildbot_config.PGORecordTest()
             self._RunStage(stages.HWTestStage, board, archive_stage, suite,
                            builder_run=builder_run)
 
         # Kick off our background stages.
-        queue.put([builder_run, board, compilecheck])
+        queue.put([builder_run, board])
 
   def RunStages(self):
     """Runs through build process."""
