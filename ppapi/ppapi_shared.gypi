@@ -46,6 +46,7 @@
           'shared_impl/media_stream_video_track_shared.cc',
           'shared_impl/platform_file.cc',
           'shared_impl/platform_file.h',
+          'shared_impl/ppapi_constants.h',
           'shared_impl/ppapi_globals.cc',
           'shared_impl/ppapi_globals.h',
           'shared_impl/ppapi_nacl_plugin_args.cc',
