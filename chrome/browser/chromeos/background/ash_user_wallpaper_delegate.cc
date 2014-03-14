@@ -12,6 +12,8 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/extensions/wallpaper_manager_util.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
+#include "chrome/browser/chromeos/login/user.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wallpaper_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chromeos/chromeos_switches.h"
@@ -92,7 +94,14 @@ class UserWallpaperDelegate : public ash::UserWallpaperDelegate {
   }
 
   virtual bool CanOpenSetWallpaperPage() OVERRIDE {
-    return LoginState::Get()->IsUserAuthenticated();
+    if (!LoginState::Get()->IsUserAuthenticated())
+      return false;
+    const User* user = chromeos::UserManager::Get()->GetActiveUser();
+    if (!user)
+      return false;
+    if (chromeos::WallpaperManager::Get()->IsPolicyControlled(user->email()))
+      return false;
+    return true;
   }
 
   virtual void OnWallpaperAnimationFinished() OVERRIDE {

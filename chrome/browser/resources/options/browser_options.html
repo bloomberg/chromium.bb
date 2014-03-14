@@ -34,6 +34,8 @@
 <if expr="chromeos">
       <button id="set-wallpaper" i18n-content="setWallpaper"
           guest-visibility="disabled"></button>
+      <span id="wallpaper-indicator" class="controlled-setting-indicator">
+      </span>
 </if>
 <if expr="not chromeos and is_posix and not is_macosx">
       <button id="themes-gallery" i18n-content="themesGallery"></button>
