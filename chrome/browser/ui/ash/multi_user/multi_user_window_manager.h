@@ -10,7 +10,10 @@
 #include <string>
 
 class Browser;
-class Profile;
+
+namespace content {
+class BrowserContext;
+}
 
 namespace aura {
 class Window;
@@ -75,6 +78,11 @@ class MultiUserWindowManager {
   // will get returned.
   static MultiProfileMode GetMultiProfileMode();
 
+  // Whether or not the window's title should show the avatar. On chromeos,
+  // this is true when the owner of the window is different from the owner of
+  // the desktop.
+  static bool ShouldShowAvatar(aura::Window* window);
+
   // Removes the instance.
   static void DeleteInstance();
 
@@ -124,7 +132,7 @@ class MultiUserWindowManager {
   // known to the manager. Note: This function is not implemented as a
   // SessionStateObserver to coordinate the timing of the addition with other
   // modules.
-  virtual void AddUser(Profile* profile) = 0;
+  virtual void AddUser(content::BrowserContext* profile) = 0;
 
   // Manages observers.
   virtual void AddObserver(Observer* observer) = 0;

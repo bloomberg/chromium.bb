@@ -591,33 +591,16 @@ bool BrowserView::ShouldShowAvatar() const {
 #if defined(OS_CHROMEOS)
   if (IsOffTheRecord() && !IsGuestSession())
     return true;
-
-  // Note: In case of the M-31 mode the window manager won't exist.
-  if (chrome::MultiUserWindowManager::GetMultiProfileMode() ==
-          chrome::MultiUserWindowManager::MULTI_PROFILE_MODE_SEPARATED) {
-    // This function is called via BrowserNonClientFrameView::UpdateAvatarInfo
-    // during the creation of the BrowserWindow, so browser->window() will not
-    // yet be set. In this case we can safely return false.
-    if (!browser_->window())
-      return false;
-
-    // If the window is shown on a different desktop than the user, it should
-    // have the avatar icon.
-    aura::Window* window = browser_->window()->GetNativeWindow();
-
-    // Note: When the window manager the window is either on it's owners desktop
-    // (and shows no icon) or it is now (in which it will show an icon). So we
-    // can return here.
-    chrome::MultiUserWindowManager* window_manager =
-        chrome::MultiUserWindowManager::GetInstance();
-    return !window_manager->IsWindowOnDesktopOfUser(
-        window,
-        window_manager->GetWindowOwner(window));
-  }
+  // This function is called via BrowserNonClientFrameView::UpdateAvatarInfo
+  // during the creation of the BrowserWindow, so browser->window() will not
+  // yet be set. In this case we can safely return false.
+  if (!browser_->window())
+    return false;
+  return chrome::MultiUserWindowManager::ShouldShowAvatar(
+      browser_->window()->GetNativeWindow());
 #else
   if (IsOffTheRecord())  // Desktop guest is incognito and needs avatar.
     return true;
-#endif
   // Tests may not have a profile manager.
   if (!g_browser_process->profile_manager())
     return false;
@@ -629,6 +612,7 @@ bool BrowserView::ShouldShowAvatar() const {
   }
 
   return AvatarMenu::ShouldShowAvatarMenu();
+#endif
 }
 
 bool BrowserView::GetAccelerator(int cmd_id, ui::Accelerator* accelerator) {

@@ -43,7 +43,7 @@ const std::string& MultiUserWindowManagerStub::GetUserPresentingWindow(
   return base::EmptyString();
 }
 
-void MultiUserWindowManagerStub::AddUser(Profile* profile) {
+void MultiUserWindowManagerStub::AddUser(content::BrowserContext* context) {
   NOTIMPLEMENTED();
 }
 

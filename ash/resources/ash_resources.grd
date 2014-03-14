@@ -279,6 +279,8 @@
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_POSITION_RIGHT_RESTORE" file="common/window_position_right_normal_restore.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_POSITION_RIGHT_RESTORE_H" file="common/window_position_right_hover_restore.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_POSITION_RIGHT_RESTORE_P" file="common/window_position_right_pressed_restore.png" />
+      <structure type="chrome_scaled_image" name="IDR_AVATAR_HOLDER" file="cros/avatar_holder.png" />
+      <structure type="chrome_scaled_image" name="IDR_AVATAR_HOLDER_MASK" file="cros/avatar_holder_mask.png" />
     </structures>
   </release>
 </grit>

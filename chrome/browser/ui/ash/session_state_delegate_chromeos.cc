@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -26,6 +27,15 @@ SessionStateDelegateChromeos::SessionStateDelegateChromeos() {
 }
 
 SessionStateDelegateChromeos::~SessionStateDelegateChromeos() {
+}
+
+content::BrowserContext* SessionStateDelegateChromeos::GetBrowserContextByIndex(
+    ash::MultiProfileIndex index) {
+  DCHECK_LT(index, NumberOfLoggedInUsers());
+  chromeos::User* user =
+      chromeos::UserManager::Get()->GetLRULoggedInUsers()[index];
+  DCHECK(user);
+  return chromeos::UserManager::Get()->GetProfileByUser(user);
 }
 
 int SessionStateDelegateChromeos::GetMaximumNumberOfLoggedInUsers() const {
@@ -114,19 +124,15 @@ const std::string SessionStateDelegateChromeos::GetUserID(
 }
 
 const gfx::ImageSkia& SessionStateDelegateChromeos::GetUserImage(
-    ash::MultiProfileIndex index) const {
-  DCHECK_LT(index, NumberOfLoggedInUsers());
-  return chromeos::UserManager::Get()->GetLRULoggedInUsers()[index]->image();
+    content::BrowserContext* context) const {
+  DCHECK(context);
+  return chromeos::UserManager::Get()->GetUserByProfile(
+      Profile::FromBrowserContext(context))->image();
 }
 
-void SessionStateDelegateChromeos::GetLoggedInUsers(ash::UserIdList* users) {
-  const chromeos::UserList& logged_in_users =
-      chromeos::UserManager::Get()->GetLoggedInUsers();
-  for (chromeos::UserList::const_iterator it = logged_in_users.begin();
-       it != logged_in_users.end(); ++it) {
-    const chromeos::User* user = (*it);
-    users->push_back(user->email());
-  }
+bool SessionStateDelegateChromeos::ShouldShowAvatar(aura::Window* window) {
+  return chrome::MultiUserWindowManager::GetInstance()->
+      ShouldShowAvatar(window);
 }
 
 void SessionStateDelegateChromeos::SwitchActiveUser(

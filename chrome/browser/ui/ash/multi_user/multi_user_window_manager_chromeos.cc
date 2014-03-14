@@ -373,7 +373,8 @@ const std::string& MultiUserWindowManagerChromeOS::GetUserPresentingWindow(
   return it->second->show_for_user();
 }
 
-void MultiUserWindowManagerChromeOS::AddUser(Profile* profile) {
+void MultiUserWindowManagerChromeOS::AddUser(content::BrowserContext* context) {
+  Profile* profile = Profile::FromBrowserContext(context);
   const std::string& user_id = multi_user_util::GetUserIDFromProfile(profile);
   if (user_id_to_app_observer_.find(user_id) != user_id_to_app_observer_.end())
     return;

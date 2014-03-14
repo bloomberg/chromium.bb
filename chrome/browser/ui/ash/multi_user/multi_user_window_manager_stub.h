@@ -12,13 +12,6 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 
-class Browser;
-class Profile;
-
-namespace aura {
-class Window;
-}
-
 namespace chrome {
 
 // This is the implementation of MultiUserWindowManager for single user mode.
@@ -40,7 +33,7 @@ class MultiUserWindowManagerStub : public MultiUserWindowManager {
                                        const std::string& user_id) OVERRIDE;
   virtual const std::string& GetUserPresentingWindow(
       aura::Window* window) OVERRIDE;
-  virtual void AddUser(Profile* profile) OVERRIDE;
+  virtual void AddUser(content::BrowserContext* context) OVERRIDE;
   virtual void AddObserver(Observer* observer) OVERRIDE;
   virtual void RemoveObserver(Observer* observer) OVERRIDE;
 

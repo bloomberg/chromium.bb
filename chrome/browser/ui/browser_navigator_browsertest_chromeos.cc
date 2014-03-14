@@ -49,7 +49,7 @@ class TestMultiUserWindowManager : public chrome::MultiUserWindowManager {
                                        const std::string& user_id) OVERRIDE;
   virtual const std::string& GetUserPresentingWindow(
       aura::Window* window) OVERRIDE;
-  virtual void AddUser(Profile* profile) OVERRIDE;
+  virtual void AddUser(content::BrowserContext* profile) OVERRIDE;
   virtual void AddObserver(Observer* observer) OVERRIDE;
   virtual void RemoveObserver(Observer* observer) OVERRIDE;
 
@@ -136,7 +136,7 @@ const std::string& TestMultiUserWindowManager::GetUserPresentingWindow(
   return browser_owner_;
 }
 
-void TestMultiUserWindowManager::AddUser(Profile* profile) {
+void TestMultiUserWindowManager::AddUser(content::BrowserContext* profile) {
 }
 
 void TestMultiUserWindowManager::AddObserver(Observer* observer) {

@@ -17,6 +17,12 @@ SessionStateDelegateStub::SessionStateDelegateStub() : screen_locked_(false) {
 SessionStateDelegateStub::~SessionStateDelegateStub() {
 }
 
+content::BrowserContext*
+SessionStateDelegateStub::GetBrowserContextByIndex(
+    MultiProfileIndex index) {
+  return NULL;
+}
+
 int SessionStateDelegateStub::GetMaximumNumberOfLoggedInUsers() const {
   return 3;
 }
@@ -72,11 +78,12 @@ const std::string SessionStateDelegateStub::GetUserID(
 }
 
 const gfx::ImageSkia& SessionStateDelegateStub::GetUserImage(
-    MultiProfileIndex index) const {
+    content::BrowserContext* context) const {
   return null_image_;
 }
 
-void SessionStateDelegateStub::GetLoggedInUsers(UserIdList* users) {
+bool SessionStateDelegateStub::ShouldShowAvatar(aura::Window* window) {
+  return false;
 }
 
 void SessionStateDelegateStub::SwitchActiveUser(const std::string& user_id) {

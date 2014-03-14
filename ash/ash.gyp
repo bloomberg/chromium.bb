@@ -175,6 +175,8 @@
         'frame/custom_frame_view_ash.h',
         'frame/frame_border_hit_test_controller.cc',
         'frame/frame_border_hit_test_controller.h',
+	'frame/frame_util.cc',
+	'frame/frame_util.h',
         'frame/header_painter.cc',
         'frame/header_painter.h',
         'gpu_support.h',

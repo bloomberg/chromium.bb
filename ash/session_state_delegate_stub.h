@@ -19,6 +19,8 @@ class SessionStateDelegateStub : public SessionStateDelegate {
   virtual ~SessionStateDelegateStub();
 
   // SessionStateDelegate:
+  virtual content::BrowserContext* GetBrowserContextByIndex(
+      MultiProfileIndex index) OVERRIDE;
   virtual int GetMaximumNumberOfLoggedInUsers() const OVERRIDE;
   virtual int NumberOfLoggedInUsers() const OVERRIDE;
   virtual bool IsActiveUserSessionStarted() const OVERRIDE;
@@ -35,8 +37,8 @@ class SessionStateDelegateStub : public SessionStateDelegate {
   virtual const std::string GetUserID(
       ash::MultiProfileIndex index) const OVERRIDE;
   virtual const gfx::ImageSkia& GetUserImage(
-      ash::MultiProfileIndex index) const OVERRIDE;
-  virtual void GetLoggedInUsers(UserIdList* users) OVERRIDE;
+      content::BrowserContext* context) const OVERRIDE;
+  virtual bool ShouldShowAvatar(aura::Window* window) OVERRIDE;
   virtual void SwitchActiveUser(const std::string& user_id) OVERRIDE;
   virtual void CycleActiveUser(CycleUser cycle_user) OVERRIDE;
   virtual void AddSessionStateObserver(

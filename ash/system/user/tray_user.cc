@@ -921,10 +921,12 @@ views::View* UserView::CreateIconForUserCard(user::LoginStatus login) {
         GetImageNamed(IDR_AURA_UBER_TRAY_GUEST_ICON).ToImageSkia(),
         gfx::Size(kUserIconSize, kUserIconSize));
   } else {
-    icon->SetImage(
-        Shell::GetInstance()->session_state_delegate()->
-            GetUserImage(multiprofile_index_),
-        gfx::Size(kUserIconSize, kUserIconSize));
+    SessionStateDelegate* delegate =
+        Shell::GetInstance()->session_state_delegate();
+    content::BrowserContext* context = delegate->GetBrowserContextByIndex(
+        multiprofile_index_);
+    icon->SetImage(delegate->GetUserImage(context),
+                   gfx::Size(kUserIconSize, kUserIconSize));
   }
   return icon;
 }
@@ -1332,10 +1334,10 @@ void TrayUser::UpdateAvatarImage(user::LoginStatus status) {
   int icon_size = switches::UseAlternateShelfLayout() ?
       kUserIconLargeSize : kUserIconSize;
 
-  avatar_->SetImage(
-      Shell::GetInstance()->session_state_delegate()->GetUserImage(
-          GetTrayIndex()),
-      gfx::Size(icon_size, icon_size));
+  content::BrowserContext* context = session_state_delegate->
+      GetBrowserContextByIndex(GetTrayIndex());
+  avatar_->SetImage(session_state_delegate->GetUserImage(context),
+                    gfx::Size(icon_size, icon_size));
 
   // Unit tests might come here with no images for some users.
   if (avatar_->size().IsEmpty())

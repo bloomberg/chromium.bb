@@ -20,6 +20,12 @@ SessionStateDelegate::SessionStateDelegate() {
 SessionStateDelegate::~SessionStateDelegate() {
 }
 
+content::BrowserContext* SessionStateDelegate::GetBrowserContextByIndex(
+    ash::MultiProfileIndex index) {
+  NOTIMPLEMENTED();
+  return NULL;
+}
+
 int SessionStateDelegate::GetMaximumNumberOfLoggedInUsers() const {
   return 3;
 }
@@ -73,14 +79,14 @@ const std::string SessionStateDelegate::GetUserID(
 }
 
 const gfx::ImageSkia& SessionStateDelegate::GetUserImage(
-    ash::MultiProfileIndex index) const {
+    content::BrowserContext* context) const {
   NOTIMPLEMENTED();
   // To make the compiler happy.
   return null_image;
 }
 
-void SessionStateDelegate::GetLoggedInUsers(ash::UserIdList* users) {
-  NOTIMPLEMENTED();
+bool SessionStateDelegate::ShouldShowAvatar(aura::Window* window) {
+  return false;
 }
 
 void SessionStateDelegate::SwitchActiveUser(const std::string& user_id) {

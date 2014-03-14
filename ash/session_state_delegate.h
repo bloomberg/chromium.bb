@@ -15,6 +15,10 @@ namespace aura {
 class Window;
 }  // namespace aura
 
+namespace content {
+class BrowserContext;
+}
+
 namespace gfx {
 class ImageSkia;
 }  // namespace gfx
@@ -31,6 +35,8 @@ typedef int MultiProfileIndex;
 typedef std::vector<std::string> UserIdList;
 
 // Delegate for checking and modifying the session state.
+// TODO(oshima): Replace MultiProfileIndex with BrowsreContext, bacause
+// GetUserXXX are useful for non multi profile scenario in ash_shell.
 class ASH_EXPORT SessionStateDelegate {
  public:
   // Defines the cycle direction for |CycleActiveUser|.
@@ -40,6 +46,10 @@ class ASH_EXPORT SessionStateDelegate {
   };
 
   virtual ~SessionStateDelegate() {};
+
+  // Returns the browser context for the user given by |index|.
+  virtual content::BrowserContext* GetBrowserContextByIndex(
+      MultiProfileIndex index) = 0;
 
   // Returns the maximum possible number of logged in users.
   virtual int GetMaximumNumberOfLoggedInUsers() const = 0;
@@ -91,12 +101,12 @@ class ASH_EXPORT SessionStateDelegate {
   // Note that |index| can at maximum be |NumberOfLoggedInUsers() - 1|.
   virtual const std::string GetUserID(MultiProfileIndex index) const = 0;
 
-  // Gets the avatar image for the user with the given |index|.
-  // Note that |index| can at maximum be |NumberOfLoggedInUsers() - 1|.
-  virtual const gfx::ImageSkia& GetUserImage(MultiProfileIndex index) const = 0;
+  // Gets the avatar image for the user associated with the |context|.
+  virtual const gfx::ImageSkia& GetUserImage(
+      content::BrowserContext* context) const = 0;
 
-  // Returns a list of all logged in users.
-  virtual void GetLoggedInUsers(UserIdList* users) = 0;
+  // Whether or not the window's title should show the avatar.
+  virtual bool ShouldShowAvatar(aura::Window* window) = 0;
 
   // Switches to another active user with |user_id|
   // (if that user has already signed in).

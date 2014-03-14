@@ -66,6 +66,19 @@ MultiUserWindowManager::GetMultiProfileMode() {
   return multi_user_mode_;
 }
 
+// satic
+bool MultiUserWindowManager::ShouldShowAvatar(aura::Window* window) {
+  // Note: In case of the M-31 mode the window manager won't exist.
+  if (GetMultiProfileMode() == MULTI_PROFILE_MODE_SEPARATED) {
+    // If the window is shown on a different desktop than the user, it should
+    // have the avatar icon
+    MultiUserWindowManager* instance = GetInstance();
+    return !instance->IsWindowOnDesktopOfUser(window,
+                                              instance->GetWindowOwner(window));
+  }
+  return false;
+}
+
 // static
 void MultiUserWindowManager::DeleteInstance() {
   DCHECK(g_instance);

@@ -22,7 +22,10 @@
 class Browser;
 class MultiUserNotificationBlockerChromeOS;
 class MultiUserNotificationBlockerChromeOSTest;
-class Profile;
+
+namespace content {
+class BrowserContext;
+}
 
 namespace aura {
 class Window;
@@ -75,7 +78,7 @@ class MultiUserWindowManagerChromeOS
                                        const std::string& user_id) OVERRIDE;
   virtual const std::string& GetUserPresentingWindow(
       aura::Window* window) OVERRIDE;
-  virtual void AddUser(Profile* profile) OVERRIDE;
+  virtual void AddUser(content::BrowserContext* context) OVERRIDE;
   virtual void AddObserver(Observer* observer) OVERRIDE;
   virtual void RemoveObserver(Observer* observer) OVERRIDE;
 

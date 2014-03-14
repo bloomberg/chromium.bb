@@ -40,6 +40,12 @@ TestSessionStateDelegate::TestSessionStateDelegate()
 TestSessionStateDelegate::~TestSessionStateDelegate() {
 }
 
+content::BrowserContext*
+TestSessionStateDelegate::GetBrowserContextByIndex(
+    MultiProfileIndex index) {
+  return NULL;
+}
+
 int TestSessionStateDelegate::GetMaximumNumberOfLoggedInUsers() const {
   return 3;
 }
@@ -133,11 +139,12 @@ const std::string TestSessionStateDelegate::GetUserID(
 }
 
 const gfx::ImageSkia& TestSessionStateDelegate::GetUserImage(
-    MultiProfileIndex index) const {
+    content::BrowserContext* context) const {
   return null_image_;
 }
 
-void TestSessionStateDelegate::GetLoggedInUsers(UserIdList* users) {
+bool TestSessionStateDelegate::ShouldShowAvatar(aura::Window* window) {
+  return false;
 }
 
 void TestSessionStateDelegate::SwitchActiveUser(const std::string& user_id) {
