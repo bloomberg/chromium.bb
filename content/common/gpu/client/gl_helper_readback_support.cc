@@ -54,6 +54,10 @@ void GLHelperReadbackSupport::CheckForReadbackSupport(
 }
 
 bool GLHelperReadbackSupport::SupportsFormat(GLint format, GLint type) {
+  // GLES2.0 Specification says this pairing is always supported
+  // with additional format from GL_IMPLEMENTATION_COLOR_READ_FORMAT/TYPE
+  if (format == GL_RGBA && type == GL_UNSIGNED_BYTE)
+    return true;
   const int kTestSize = 64;
   bool supports_format = false;
   content::ScopedTexture dst_texture(gl_);
