@@ -322,12 +322,13 @@ DebuggerScript._frameMirrorToJSCallFrame = function(frameMirror, callerFrame)
     var isAtReturn = !!frameMirror.details_.isAtReturn();
     var returnValue = isAtReturn ? frameMirror.details_.returnValue() : undefined;
 
-    var scopeChain = [];
-    var scopeType = [];
-    for (var i = 0, n = frameMirror.scopeCount(); i < n; ++i) {
-        var scopeMirror = frameMirror.scope(i);
-        scopeType.push(scopeMirror.scopeType());
-        scopeChain.push(DebuggerScript._buildScopeObject(scopeMirror));
+    var scopeMirrors = frameMirror.allScopes();
+    var scopeType = new Array(scopeMirrors.length);
+    var scopeChain = new Array(scopeMirrors.length);
+    for (var i = 0; i < scopeMirrors.length; ++i) {
+        var scopeMirror = scopeMirrors[i];
+        scopeType[i] = scopeMirror.scopeType();
+        scopeChain[i] = DebuggerScript._buildScopeObject(scopeMirror);
     }
 
     var location;
