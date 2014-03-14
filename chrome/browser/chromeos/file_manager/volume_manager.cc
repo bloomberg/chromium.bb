@@ -146,10 +146,12 @@ VolumeInfo CreateDownloadsVolumeInfo(const base::FilePath& downloads_path) {
   return volume_info;
 }
 
-VolumeInfo CreateTestingVolumeInfo(const base::FilePath& path) {
+VolumeInfo CreateTestingVolumeInfo(const base::FilePath& path,
+                                   VolumeType volume_type,
+                                   chromeos::DeviceType device_type) {
   VolumeInfo volume_info;
-  volume_info.type = VOLUME_TYPE_TESTING;
-  volume_info.device_type = chromeos::DEVICE_TYPE_UNKNOWN;
+  volume_info.type = volume_type;
+  volume_info.device_type = device_type;
   // Keep source_path empty.
   volume_info.mount_path = path;
   volume_info.mount_condition = chromeos::disks::MOUNT_CONDITION_NONE;
@@ -398,12 +400,13 @@ bool VolumeManager::RegisterDownloadsDirectoryForTesting(
   return success;
 }
 
-void VolumeManager::AddVolumeInfoForTesting(const base::FilePath& path) {
+void VolumeManager::AddVolumeInfoForTesting(const base::FilePath& path,
+                                            VolumeType volume_type,
+                                            chromeos::DeviceType device_type) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  DoMountEvent(
-      chromeos::MOUNT_ERROR_NONE,
-      CreateTestingVolumeInfo(path),
-      false /* is_remounting */);
+  DoMountEvent(chromeos::MOUNT_ERROR_NONE,
+               CreateTestingVolumeInfo(path, volume_type, device_type),
+               false /* is_remounting */);
 }
 
 void VolumeManager::OnFileSystemMounted() {

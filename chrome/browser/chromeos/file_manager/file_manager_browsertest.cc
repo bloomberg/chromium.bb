@@ -69,10 +69,7 @@ enum EntryType {
   DIRECTORY,
 };
 
-enum TargetVolume {
-  LOCAL_VOLUME,
-  DRIVE_VOLUME,
-};
+enum TargetVolume { LOCAL_VOLUME, DRIVE_VOLUME, USB_VOLUME, };
 
 enum SharedOption {
   NONE,
@@ -120,6 +117,8 @@ bool MapStringToTargetVolume(const base::StringPiece& value,
     *output = DRIVE_VOLUME;
   else if (value == "local")
     *output = LOCAL_VOLUME;
+  else if (value == "usb")
+    *output = USB_VOLUME;
   else
     return false;
   return true;
@@ -203,25 +202,39 @@ void AddEntriesMessage::RegisterJSONConverter(
       &AddEntriesMessage::entries);
 }
 
+// Test volume.
+class TestVolume {
+ protected:
+  explicit TestVolume(const std::string& name) : name_(name) {}
+  virtual ~TestVolume() {}
+
+  bool CreateRootDirectory(const Profile* profile) {
+    return root_.Set(profile->GetPath().Append(name_));
+  }
+
+  const std::string& name() { return name_; }
+  const base::FilePath root_path() { return root_.path(); }
+
+ private:
+  std::string name_;
+  base::ScopedTempDir root_;
+};
+
 // The local volume class for test.
 // This class provides the operations for a test volume that simulates local
 // drive.
-class LocalTestVolume {
+class LocalTestVolume : public TestVolume {
  public:
+  explicit LocalTestVolume(const std::string& name) : TestVolume(name) {}
+  virtual ~LocalTestVolume() {}
+
   // Adds this volume to the file system as a local volume. Returns true on
   // success.
-  bool Mount(Profile* profile) {
-    if (local_path_.empty()) {
-      local_path_ = profile->GetPath().Append("Downloads");
-    }
-
-    return VolumeManager::Get(profile)->RegisterDownloadsDirectoryForTesting(
-        local_path_) && base::CreateDirectory(local_path_);
-  }
+  virtual bool Mount(Profile* profile) = 0;
 
   void CreateEntry(const TestEntryInfo& entry) {
     const base::FilePath target_path =
-        local_path_.AppendASCII(entry.target_path);
+        root_path().AppendASCII(entry.target_path);
 
     entries_.insert(std::make_pair(target_path, entry));
     switch (entry.type) {
@@ -246,14 +259,14 @@ class LocalTestVolume {
   // Updates ModifiedTime of the entry and its parents by referring
   // TestEntryInfo. Returns true on success.
   bool UpdateModifiedTime(const TestEntryInfo& entry) {
-    const base::FilePath path = local_path_.AppendASCII(entry.target_path);
+    const base::FilePath path = root_path().AppendASCII(entry.target_path);
     if (!base::TouchFile(path, entry.last_modified_time,
                          entry.last_modified_time))
       return false;
 
     // Update the modified time of parent directories because it may be also
     // affected by the update of child items.
-    if (path.DirName() != local_path_) {
+    if (path.DirName() != root_path()) {
       const std::map<base::FilePath, const TestEntryInfo>::iterator it =
           entries_.find(path.DirName());
       if (it == entries_.end())
@@ -263,32 +276,59 @@ class LocalTestVolume {
     return true;
   }
 
-  base::FilePath local_path_;
   std::map<base::FilePath, const TestEntryInfo> entries_;
+};
+
+class DownloadsTestVolume : public LocalTestVolume {
+ public:
+  DownloadsTestVolume() : LocalTestVolume("Downloads") {}
+  virtual ~DownloadsTestVolume() {}
+
+  virtual bool Mount(Profile* profile) OVERRIDE {
+    return CreateRootDirectory(profile) &&
+           VolumeManager::Get(profile)
+               ->RegisterDownloadsDirectoryForTesting(root_path());
+  }
+};
+
+class FakeUsbTestVolume : public LocalTestVolume {
+ public:
+  FakeUsbTestVolume() : LocalTestVolume("fake-usb") {}
+  virtual ~FakeUsbTestVolume() {}
+
+  virtual bool Mount(Profile* profile) OVERRIDE {
+    if (!CreateRootDirectory(profile))
+      return false;
+    fileapi::ExternalMountPoints* const mount_points =
+        fileapi::ExternalMountPoints::GetSystemInstance();
+
+    // First revoke the existing mount point (if any).
+    mount_points->RevokeFileSystem(name());
+    const bool result =
+        mount_points->RegisterFileSystem(name(),
+                                         fileapi::kFileSystemTypeNativeLocal,
+                                         fileapi::FileSystemMountOption(),
+                                         root_path());
+    if (!result)
+      return false;
+
+    VolumeManager::Get(profile)
+        ->AddVolumeInfoForTesting(root_path(),
+                                  VOLUME_TYPE_REMOVABLE_DISK_PARTITION,
+                                  chromeos::DEVICE_TYPE_USB);
+    return true;
+  }
 };
 
 // The drive volume class for test.
 // This class provides the operations for a test volume that simulates Google
 // drive.
-class DriveTestVolume {
+class DriveTestVolume : public TestVolume {
  public:
-  DriveTestVolume() : integration_service_(NULL) {
-  }
+  DriveTestVolume() : TestVolume("drive"), integration_service_(NULL) {}
+  virtual ~DriveTestVolume() {}
 
-  // Sends request to add this volume to the file system as Google drive.
-  // This method must be called at SetUp method of FileManagerBrowserTestBase.
-  // Returns true on success.
-  bool SetUp() {
-    create_drive_integration_service_ =
-        base::Bind(&DriveTestVolume::CreateDriveIntegrationService,
-                   base::Unretained(this));
-    service_factory_for_test_.reset(
-        new DriveIntegrationServiceFactory::ScopedFactoryForTest(
-            &create_drive_integration_service_));
-    return true;
-  }
-
-  void CreateEntry(Profile* profile, const TestEntryInfo& entry) {
+  void CreateEntry(const TestEntryInfo& entry) {
     const base::FilePath path =
         base::FilePath::FromUTF8Unsafe(entry.target_path);
     const std::string target_name = path.BaseName().AsUTF8Unsafe();
@@ -306,8 +346,7 @@ class DriveTestVolume {
 
     switch (entry.type) {
       case FILE:
-        CreateFile(profile,
-                   entry.source_file_name,
+        CreateFile(entry.source_file_name,
                    parent_entry->resource_id(),
                    target_name,
                    entry.mime_type,
@@ -315,24 +354,19 @@ class DriveTestVolume {
                    entry.last_modified_time);
         break;
       case DIRECTORY:
-        CreateDirectory(profile,
-                        parent_entry->resource_id(),
-                        target_name,
-                        entry.last_modified_time);
+        CreateDirectory(
+            parent_entry->resource_id(), target_name, entry.last_modified_time);
         break;
     }
   }
 
   // Creates an empty directory with the given |name| and |modification_time|.
-  void CreateDirectory(Profile* profile,
-                       const std::string& parent_id,
+  void CreateDirectory(const std::string& parent_id,
                        const std::string& target_name,
                        const base::Time& modification_time) {
-    DCHECK(fake_drive_service_.count(profile));
-
     google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
     scoped_ptr<google_apis::ResourceEntry> resource_entry;
-    fake_drive_service_[profile]->AddNewDirectory(
+    fake_drive_service_->AddNewDirectory(
         parent_id,
         target_name,
         drive::DriveServiceInterface::AddNewDirectoryOptions(),
@@ -342,7 +376,7 @@ class DriveTestVolume {
     ASSERT_EQ(google_apis::HTTP_CREATED, error);
     ASSERT_TRUE(resource_entry);
 
-    fake_drive_service_[profile]->SetLastModifiedTime(
+    fake_drive_service_->SetLastModifiedTime(
         resource_entry->resource_id(),
         modification_time,
         google_apis::test_util::CreateCopyResultCallback(&error,
@@ -355,15 +389,12 @@ class DriveTestVolume {
 
   // Creates a test file with the given spec.
   // Serves |test_file_name| file. Pass an empty string for an empty file.
-  void CreateFile(Profile* profile,
-                  const std::string& source_file_name,
+  void CreateFile(const std::string& source_file_name,
                   const std::string& parent_id,
                   const std::string& target_name,
                   const std::string& mime_type,
                   bool shared_with_me,
                   const base::Time& modification_time) {
-    DCHECK(fake_drive_service_.count(profile));
-
     google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
 
     std::string content_data;
@@ -375,7 +406,7 @@ class DriveTestVolume {
     }
 
     scoped_ptr<google_apis::ResourceEntry> resource_entry;
-    fake_drive_service_[profile]->AddNewFile(
+    fake_drive_service_->AddNewFile(
         mime_type,
         content_data,
         parent_id,
@@ -387,7 +418,7 @@ class DriveTestVolume {
     ASSERT_EQ(google_apis::HTTP_CREATED, error);
     ASSERT_TRUE(resource_entry);
 
-    fake_drive_service_[profile]->SetLastModifiedTime(
+    fake_drive_service_->SetLastModifiedTime(
         resource_entry->resource_id(),
         modification_time,
         google_apis::test_util::CreateCopyResultCallback(&error,
@@ -409,41 +440,30 @@ class DriveTestVolume {
 
   // Sets the url base for the test server to be used to generate share urls
   // on the files and directories.
-  void ConfigureShareUrlBase(Profile* profile, const GURL& share_url_base) {
-    DCHECK(fake_drive_service_.count(profile));
-    fake_drive_service_[profile]->set_share_url_base(share_url_base);
+  void ConfigureShareUrlBase(const GURL& share_url_base) {
+    fake_drive_service_->set_share_url_base(share_url_base);
   }
 
   drive::DriveIntegrationService* CreateDriveIntegrationService(
       Profile* profile) {
-    base::FilePath subdir;
-    if (!base::CreateTemporaryDirInDir(profile->GetPath(),
-                                       base::FilePath::StringType(),
-                                       &subdir)) {
-      return NULL;
-    }
-
-    drive::FakeDriveService* const fake_drive_service =
-        new drive::FakeDriveService;
-    fake_drive_service->LoadResourceListForWapi(
-        "gdata/empty_feed.json");
-    fake_drive_service->LoadAccountMetadataForWapi(
+    profile_ = profile;
+    fake_drive_service_ = new drive::FakeDriveService;
+    fake_drive_service_->LoadResourceListForWapi("gdata/empty_feed.json");
+    fake_drive_service_->LoadAccountMetadataForWapi(
         "gdata/account_metadata.json");
-    fake_drive_service->LoadAppListForDriveApi("drive/applist.json");
+    fake_drive_service_->LoadAppListForDriveApi("drive/applist.json");
 
+    if (!CreateRootDirectory(profile))
+      return NULL;
     integration_service_ = new drive::DriveIntegrationService(
-        profile, NULL, fake_drive_service, std::string(), subdir, NULL);
-    fake_drive_service_[profile] = fake_drive_service;
+        profile, NULL, fake_drive_service_, std::string(), root_path(), NULL);
     return integration_service_;
   }
 
  private:
-  std::map<Profile*, drive::FakeDriveService*> fake_drive_service_;
+  Profile* profile_;
+  drive::FakeDriveService* fake_drive_service_;
   drive::DriveIntegrationService* integration_service_;
-  DriveIntegrationServiceFactory::FactoryCallback
-      create_drive_integration_service_;
-  scoped_ptr<DriveIntegrationServiceFactory::ScopedFactoryForTest>
-      service_factory_for_test_;
 };
 
 // Listener to obtain the test relative messages synchronously.
@@ -516,17 +536,31 @@ class FileManagerBrowserTestBase : public ExtensionApiTest {
                                 const base::Value* value);
 
   scoped_ptr<LocalTestVolume> local_volume_;
-  scoped_ptr<DriveTestVolume> drive_volume_;
+  linked_ptr<DriveTestVolume> drive_volume_;
+  std::map<Profile*, linked_ptr<DriveTestVolume> > drive_volumes_;
+  scoped_ptr<LocalTestVolume> usb_volume_;
+
+ private:
+  drive::DriveIntegrationService* CreateDriveIntegrationService(
+      Profile* profile);
+  DriveIntegrationServiceFactory::FactoryCallback
+      create_drive_integration_service_;
+  scoped_ptr<DriveIntegrationServiceFactory::ScopedFactoryForTest>
+      service_factory_for_test_;
 };
 
 void FileManagerBrowserTestBase::SetUpInProcessBrowserTestFixture() {
   ExtensionApiTest::SetUpInProcessBrowserTestFixture();
   extensions::ComponentLoader::EnableBackgroundExtensionsForTesting();
 
-  local_volume_.reset(new LocalTestVolume);
+  local_volume_.reset(new DownloadsTestVolume);
   if (GetGuestModeParam() != IN_GUEST_MODE) {
-    drive_volume_.reset(new DriveTestVolume);
-    ASSERT_TRUE(drive_volume_->SetUp());
+    create_drive_integration_service_ =
+        base::Bind(&FileManagerBrowserTestBase::CreateDriveIntegrationService,
+                   base::Unretained(this));
+    service_factory_for_test_.reset(
+        new DriveIntegrationServiceFactory::ScopedFactoryForTest(
+            &create_drive_integration_service_));
   }
 }
 
@@ -534,12 +568,13 @@ void FileManagerBrowserTestBase::SetUpOnMainThread() {
   ExtensionApiTest::SetUpOnMainThread();
   ASSERT_TRUE(local_volume_->Mount(profile()));
 
-  if (drive_volume_) {
+  if (GetGuestModeParam() != IN_GUEST_MODE) {
     // Install the web server to serve the mocked share dialog.
     ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
     const GURL share_url_base(embedded_test_server()->GetURL(
         "/chromeos/file_manager/share_dialog_mock/index.html"));
-    drive_volume_->ConfigureShareUrlBase(profile(), share_url_base);
+    drive_volume_ = drive_volumes_[profile()];
+    drive_volume_->ConfigureShareUrlBase(share_url_base);
     test_util::WaitUntilDriveMountPointIsAdded(profile());
   }
 }
@@ -635,8 +670,12 @@ std::string FileManagerBrowserTestBase::OnMessage(const std::string& name,
           local_volume_->CreateEntry(*message.entries[i]);
           break;
         case DRIVE_VOLUME:
-          if (drive_volume_)
-            drive_volume_->CreateEntry(profile(), *message.entries[i]);
+          if (drive_volume_.get())
+            drive_volume_->CreateEntry(*message.entries[i]);
+          break;
+        case USB_VOLUME:
+          if (usb_volume_)
+            usb_volume_->CreateEntry(*message.entries[i]);
           break;
         default:
           NOTREACHED();
@@ -644,8 +683,18 @@ std::string FileManagerBrowserTestBase::OnMessage(const std::string& name,
       }
     }
     return "onEntryAdded";
+  } else if (name == "mountFakeUsb") {
+    usb_volume_.reset(new FakeUsbTestVolume());
+    usb_volume_->Mount(profile());
+    return "true";
   }
   return "unknownMessage";
+}
+
+drive::DriveIntegrationService*
+FileManagerBrowserTestBase::CreateDriveIntegrationService(Profile* profile) {
+  drive_volumes_[profile].reset(new DriveTestVolume());
+  return drive_volumes_[profile]->CreateDriveIntegrationService(profile);
 }
 
 // Parameter of FileManagerBrowserTest.
@@ -804,7 +853,10 @@ INSTANTIATE_TEST_CASE_P(
 INSTANTIATE_TEST_CASE_P(
     CopyBetweenWindows,
     FileManagerBrowserTest,
-    ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "copyBetweenWindows")));
+    ::testing::Values(
+        TestParameter(NOT_IN_GUEST_MODE, "copyBetweenWindowsLocalToDrive"),
+        TestParameter(NOT_IN_GUEST_MODE, "copyBetweenWindowsLocalToUsb"),
+        TestParameter(NOT_IN_GUEST_MODE, "copyBetweenWindowsUsbToDrive")));
 
 // Structure to describe an account info.
 struct TestAccountInfo {

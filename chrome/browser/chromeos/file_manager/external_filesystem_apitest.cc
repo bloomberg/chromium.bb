@@ -257,7 +257,7 @@ class LocalFileSystemExtensionApiTest : public FileSystemExtensionApiTestBase {
                            fileapi::FileSystemMountOption(),
                            mount_point_dir_));
     VolumeManager::Get(browser()->profile())->AddVolumeInfoForTesting(
-        mount_point_dir_);
+        mount_point_dir_, VOLUME_TYPE_TESTING, chromeos::DEVICE_TYPE_UNKNOWN);
   }
 
  private:
@@ -287,7 +287,7 @@ class RestrictedFileSystemExtensionApiTest
                            fileapi::FileSystemMountOption(),
                            mount_point_dir_));
     VolumeManager::Get(browser()->profile())->AddVolumeInfoForTesting(
-        mount_point_dir_);
+        mount_point_dir_, VOLUME_TYPE_TESTING, chromeos::DEVICE_TYPE_UNKNOWN);
   }
 
  private:
