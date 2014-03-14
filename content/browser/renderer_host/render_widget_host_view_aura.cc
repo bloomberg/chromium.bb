@@ -2177,7 +2177,7 @@ void RenderWidgetHostViewAura::ProcessAckedTouchEvent(
     return;
 
   aura::WindowTreeHost* host = window_->GetHost();
-  // |dispatcher| is NULL during tests.
+  // |host| is NULL during tests.
   if (!host)
     return;
 
