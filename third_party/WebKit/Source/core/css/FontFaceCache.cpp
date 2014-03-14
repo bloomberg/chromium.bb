@@ -126,11 +126,11 @@ static inline bool compareFontFaces(CSSSegmentedFontFace* first, CSSSegmentedFon
         return firstHasDesiredVariant;
 
     // We need to check font-variant css property for CSS2.1 compatibility.
-    if (desiredTraits.variant() == FontSmallCapsOn) {
+    if (desiredTraits.variant() == FontVariantSmallCaps) {
         // Prefer a font that has indicated that it can only support small-caps to a font that claims to support
         // all variants. The specialized font is more likely to be true small-caps and not require synthesis.
-        bool firstRequiresSmallCaps = firstTraits.variant() == FontSmallCapsOn;
-        bool secondRequiresSmallCaps = secondTraits.variant() == FontSmallCapsOn;
+        bool firstRequiresSmallCaps = firstTraits.variant() == FontVariantSmallCaps;
+        bool secondRequiresSmallCaps = secondTraits.variant() == FontVariantSmallCaps;
         if (firstRequiresSmallCaps != secondRequiresSmallCaps)
             return firstRequiresSmallCaps;
     }
@@ -205,7 +205,7 @@ CSSSegmentedFontFace* FontFaceCache::get(const FontDescription& fontDescription,
             FontTraits candidateTraits = candidate->traits();
             if (traits.style() == FontItalicOff && candidateTraits.style() != FontItalicOff)
                 continue;
-            if (traits.variant() == FontSmallCapsOff && candidateTraits.variant() != FontSmallCapsOff)
+            if (traits.variant() == FontVariantNormal && candidateTraits.variant() != FontVariantNormal)
                 continue;
             if (!face || compareFontFaces(candidate, face.get(), traits))
                 face = candidate;

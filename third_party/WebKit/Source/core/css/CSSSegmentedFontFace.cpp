@@ -163,7 +163,7 @@ PassRefPtr<FontData> CSSSegmentedFontFace::getFontData(const FontDescription& fo
 #if ENABLE(SVG_FONTS)
             // For SVG Fonts that specify that they only support the "normal" variant, we will assume they are incapable
             // of small-caps synthesis and just ignore the font face.
-            if (faceFontData->isSVGFont() && desiredTraits.variant() == FontSmallCapsOn && m_traits.variant() == FontSmallCapsOff)
+            if (faceFontData->isSVGFont() && desiredTraits.variant() == FontVariantSmallCaps && m_traits.variant() == FontVariantNormal)
                 continue;
 #endif
             appendFontData(fontData.get(), faceFontData.release(), (*it)->cssFontFace()->ranges());

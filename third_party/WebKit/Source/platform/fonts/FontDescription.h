@@ -60,7 +60,7 @@ public:
         , m_nonCJKGlyphOrientation(NonCJKGlyphOrientationVerticalRight)
         , m_widthVariant(RegularWidth)
         , m_italic(FontItalicOff)
-        , m_smallCaps(FontSmallCapsOff)
+        , s_variant(FontVariantNormal)
         , m_isAbsoluteSize(false)
         , m_weight(FontWeightNormal)
         , m_stretch(FontStretchNormal)
@@ -92,7 +92,7 @@ public:
     float computedSize() const { return m_computedSize; }
     FontItalic italic() const { return static_cast<FontItalic>(m_italic); }
     int computedPixelSize() const { return int(m_computedSize + 0.5f); }
-    FontSmallCaps smallCaps() const { return static_cast<FontSmallCaps>(m_smallCaps); }
+    FontVariant variant() const { return static_cast<FontVariant>(s_variant); }
     bool isAbsoluteSize() const { return m_isAbsoluteSize; }
     FontWeight weight() const { return static_cast<FontWeight>(m_weight); }
     FontStretch stretch() const { return static_cast<FontStretch>(m_stretch); }
@@ -137,8 +137,7 @@ public:
     void setSpecifiedSize(float s) { m_specifiedSize = clampToFloat(s); }
     void setItalic(FontItalic i) { m_italic = i; }
     void setItalic(bool i) { setItalic(i ? FontItalicOn : FontItalicOff); }
-    void setSmallCaps(FontSmallCaps c) { m_smallCaps = c; }
-    void setSmallCaps(bool c) { setSmallCaps(c ? FontSmallCapsOn : FontSmallCapsOff); }
+    void setVariant(FontVariant c) { s_variant = c; }
     void setIsAbsoluteSize(bool s) { m_isAbsoluteSize = s; }
     void setWeight(FontWeight w) { m_weight = w; }
     void setStretch(FontStretch s) { m_stretch = s; }
@@ -191,7 +190,7 @@ private:
     unsigned m_widthVariant : 2; // FontWidthVariant
 
     unsigned m_italic : 1; // FontItalic
-    unsigned m_smallCaps : 1; // FontSmallCaps
+    unsigned s_variant : 1; // FontVariant
     unsigned m_isAbsoluteSize : 1; // Whether or not CSS specified an explicit size
                                   // (logical sizes like "medium" don't count).
     unsigned m_weight : 4; // FontWeight
@@ -233,7 +232,7 @@ inline bool FontDescription::operator==(const FontDescription& other) const
         && m_letterSpacing == other.m_letterSpacing
         && m_wordSpacing == other.m_wordSpacing
         && m_italic == other.m_italic
-        && m_smallCaps == other.m_smallCaps
+        && s_variant == other.s_variant
         && m_isAbsoluteSize == other.m_isAbsoluteSize
         && m_weight == other.m_weight
         && m_stretch == other.m_stretch

@@ -244,7 +244,7 @@ void ComplexTextController::collectComplexTextRuns()
     } else
         cp = m_run.characters16();
 
-    if (m_font.fontDescription().smallCaps())
+    if (m_font.fontDescription().variant())
         m_smallCapsBuffer.resize(m_end);
 
     unsigned indexOfFontTransition = 0;
@@ -265,7 +265,7 @@ void ComplexTextController::collectComplexTextRuns()
     UChar uppercaseCharacter = 0;
 
     bool isSmallCaps;
-    bool nextIsSmallCaps = m_font.fontDescription().smallCaps() && !(U_GET_GC_MASK(baseCharacter) & U_GC_M_MASK) && (uppercaseCharacter = u_toupper(baseCharacter)) != baseCharacter;
+    bool nextIsSmallCaps = m_font.fontDescription().variant() && !(U_GET_GC_MASK(baseCharacter) & U_GC_M_MASK) && (uppercaseCharacter = u_toupper(baseCharacter)) != baseCharacter;
 
     if (nextIsSmallCaps) {
         m_smallCapsBuffer[sequenceStart - cp] = uppercaseCharacter;
@@ -287,7 +287,7 @@ void ComplexTextController::collectComplexTextRuns()
         if (!advanceByCombiningCharacterSequence(curr, end, baseCharacter, markCount))
             return;
 
-        if (m_font.fontDescription().smallCaps()) {
+        if (m_font.fontDescription().variant()) {
             nextIsSmallCaps = (uppercaseCharacter = u_toupper(baseCharacter)) != baseCharacter;
             if (nextIsSmallCaps) {
                 m_smallCapsBuffer[index] = uppercaseCharacter;

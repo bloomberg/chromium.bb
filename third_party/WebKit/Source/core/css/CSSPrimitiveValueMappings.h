@@ -3516,15 +3516,15 @@ template<> inline CSSPrimitiveValue::operator FontItalic() const
     return FontItalicOff;
 }
 
-template<> inline CSSPrimitiveValue::CSSPrimitiveValue(FontSmallCaps smallCaps)
+template<> inline CSSPrimitiveValue::CSSPrimitiveValue(FontVariant smallCaps)
     : CSSValue(PrimitiveClass)
 {
     m_primitiveUnitType = CSS_VALUE_ID;
     switch (smallCaps) {
-    case FontSmallCapsOff:
+    case FontVariantNormal:
         m_value.valueID = CSSValueNormal;
         return;
-    case FontSmallCapsOn:
+    case FontVariantSmallCaps:
         m_value.valueID = CSSValueSmallCaps;
         return;
     }
@@ -3533,19 +3533,19 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(FontSmallCaps smallCaps)
     m_value.valueID = CSSValueNormal;
 }
 
-template<> inline CSSPrimitiveValue::operator FontSmallCaps() const
+template<> inline CSSPrimitiveValue::operator FontVariant() const
 {
     ASSERT(isValueID());
     switch (m_value.valueID) {
     case CSSValueSmallCaps:
-        return FontSmallCapsOn;
+        return FontVariantSmallCaps;
     case CSSValueNormal:
-        return FontSmallCapsOff;
+        return FontVariantNormal;
     default:
         break;
     }
     ASSERT_NOT_REACHED();
-    return FontSmallCapsOff;
+    return FontVariantNormal;
 }
 
 template<> inline CSSPrimitiveValue::CSSPrimitiveValue(TextRenderingMode e)

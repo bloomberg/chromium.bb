@@ -64,15 +64,15 @@ enum FontItalic {
     FontItalicOn = 1
 };
 
-enum FontSmallCaps {
-    FontSmallCapsOff = 0,
-    FontSmallCapsOn = 1
+enum FontVariant {
+    FontVariantNormal = 0,
+    FontVariantSmallCaps = 1
 };
 
 typedef unsigned FontTraitsMask;
 
 struct FontTraits {
-    FontTraits(FontItalic style, FontSmallCaps variant, FontWeight weight, FontStretch stretch)
+    FontTraits(FontItalic style, FontVariant variant, FontWeight weight, FontStretch stretch)
         : m_style(style), m_variant(variant), m_weight(weight), m_stretch(stretch), m_filler(0)
     {
         ASSERT(!m_filler);
@@ -85,7 +85,7 @@ struct FontTraits {
         ASSERT(!(m_mask >> 10));
     }
     FontItalic style() const { return static_cast<FontItalic>(m_style); }
-    FontSmallCaps variant() const { return static_cast<FontSmallCaps>(m_variant); }
+    FontVariant variant() const { return static_cast<FontVariant>(m_variant); }
     FontWeight weight() const { return static_cast<FontWeight>(m_weight); }
     FontStretch stretch() const { return static_cast<FontStretch>(m_stretch); }
     FontTraitsMask mask() const { return m_mask; }

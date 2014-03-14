@@ -72,7 +72,7 @@ public:
 
     void setScript(const String& locale);
     void setItalic(FontItalic);
-    void setSmallCaps(FontSmallCaps);
+    void setVariant(FontVariant);
     void setTextRendering(TextRenderingMode);
     void setKerning(FontDescription::Kerning);
     void setFontSmoothing(FontSmoothingMode);
@@ -91,7 +91,7 @@ public:
     bool fontDirty() const { return m_fontDirty; }
 
     static TextRenderingMode initialTextRendering() { return AutoTextRendering; }
-    static FontSmallCaps initialSmallCaps() { return FontSmallCapsOff; }
+    static FontVariant initialVariant() { return FontVariantNormal; }
     static FontItalic initialItalic() { return FontItalicOff; }
     static FontDescription::Kerning initialKerning() { return FontDescription::AutoKerning; }
     static FontSmoothingMode initialFontSmoothing() { return AutoSmoothing; }

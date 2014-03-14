@@ -454,7 +454,7 @@ FontTraits FontFace::traits() const
         }
     }
 
-    FontSmallCaps variant = FontSmallCapsOff;
+    FontVariant variant = FontVariantNormal;
     if (RefPtrWillBeRawPtr<CSSValue> fontVariant = m_variant) {
         // font-variant descriptor can be a value list.
         if (fontVariant->isPrimitiveValue()) {
@@ -473,10 +473,10 @@ FontTraits FontFace::traits() const
         for (unsigned i = 0; i < numVariants; ++i) {
             switch (toCSSPrimitiveValue(variantList->itemWithoutBoundsCheck(i))->getValueID()) {
             case CSSValueNormal:
-                variant = FontSmallCapsOff;
+                variant = FontVariantNormal;
                 break;
             case CSSValueSmallCaps:
-                variant = FontSmallCapsOn;
+                variant = FontVariantSmallCaps;
                 break;
             default:
                 break;

@@ -59,7 +59,7 @@ font-family custom_all
 font-kerning font, type_name=FontDescription::Kerning, name_for_methods=Kerning
 font-size custom_all
 font-style font, type_name=FontItalic, name_for_methods=Italic
-font-variant font, type_name=FontSmallCaps, name_for_methods=SmallCaps
+font-variant font, type_name=FontVariant, name_for_methods=Variant
 font-variant-ligatures custom_all
 font-weight custom_all
 grid-auto-flow type_name=GridAutoFlow

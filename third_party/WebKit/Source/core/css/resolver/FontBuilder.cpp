@@ -469,11 +469,11 @@ void FontBuilder::setItalic(FontItalic italic)
     scope.fontDescription().setItalic(italic);
 }
 
-void FontBuilder::setSmallCaps(FontSmallCaps smallCaps)
+void FontBuilder::setVariant(FontVariant smallCaps)
 {
     FontDescriptionChangeScope scope(this);
 
-    scope.fontDescription().setSmallCaps(smallCaps);
+    scope.fontDescription().setVariant(smallCaps);
 }
 
 void FontBuilder::setTextRendering(TextRenderingMode textRenderingMode)
