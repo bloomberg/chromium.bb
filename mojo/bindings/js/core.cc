@@ -40,7 +40,7 @@ MojoResult WriteMessage(MojoHandle handle,
   return MojoWriteMessage(handle,
                           buffer.bytes(),
                           static_cast<uint32_t>(buffer.num_bytes()),
-                          handles.empty() ? NULL : handles.data(),
+                          handles.empty() ? NULL : &handles[0],
                           static_cast<uint32_t>(handles.size()),
                           flags);
 }
@@ -68,7 +68,7 @@ gin::Dictionary ReadMessage(const gin::Arguments& args, MojoHandle handle,
   result = MojoReadMessage(handle,
                            buffer.bytes(),
                            &num_bytes,
-                           handles.empty() ? NULL : handles.data(),
+                           handles.empty() ? NULL : &handles[0],
                            &num_handles,
                            flags);
 

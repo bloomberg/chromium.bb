@@ -574,8 +574,8 @@
           '../base/allocator/allocator.gyp:allocator',
       ],
     }],
-    # TODO(sky): temporary until mojo is building on android and mac.
-    ['OS=="android" or OS=="mac"', {
+    # TODO(sky): temporary until mojo runs on mac.
+    ['OS=="mac"', {
       'sources!': [
         'renderer/web_ui_mojo.cc',
         'renderer/web_ui_mojo.h',

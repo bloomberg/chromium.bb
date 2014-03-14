@@ -135,10 +135,12 @@ MessageInTransit::~MessageInTransit() {
 bool MessageInTransit::GetNextMessageSize(const void* buffer,
                                           size_t buffer_size,
                                           size_t* next_message_size) {
+  DCHECK(next_message_size);
+  if (!buffer_size)
+    return false;
   DCHECK(buffer);
   DCHECK_EQ(reinterpret_cast<uintptr_t>(buffer) %
                 MessageInTransit::kMessageAlignment, 0u);
-  DCHECK(next_message_size);
 
   if (buffer_size < sizeof(Header))
     return false;
