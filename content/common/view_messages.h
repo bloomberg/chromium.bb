@@ -1042,10 +1042,6 @@ IPC_MESSAGE_ROUTED2(ViewMsg_SelectPopupMenuItems,
                     bool /* user canceled the popup */,
                     std::vector<int> /* selected indices */)
 
-// Tells the renderer to try to revert to the zoom level we were at before
-// ViewMsg_ScrollFocusedEditableNodeIntoView was called.
-IPC_MESSAGE_ROUTED0(ViewMsg_UndoScrollFocusedEditableNodeIntoView)
-
 // Notifies the renderer whether hiding/showing the top controls is enabled
 // and whether or not to animate to the proper state.
 IPC_MESSAGE_ROUTED3(ViewMsg_UpdateTopControlsState,

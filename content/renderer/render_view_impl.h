@@ -1266,6 +1266,11 @@ class CONTENT_EXPORT RenderViewImpl
   bool cached_has_main_frame_horizontal_scrollbar_;
   bool cached_has_main_frame_vertical_scrollbar_;
 
+  // Bookkeeping to suppress redundant scroll and focus requests for an already
+  // scrolled and focused editable node.
+  bool has_scrolled_focused_editable_node_into_rect_;
+  gfx::Rect rect_for_scrolled_focused_editable_node_;
+
   // Helper objects ------------------------------------------------------------
 
   scoped_ptr<RenderFrameImpl> main_render_frame_;

@@ -1542,14 +1542,6 @@ int ContentViewCoreImpl::GetNativeImeAdapter(JNIEnv* env, jobject obj) {
   return rwhva->GetNativeImeAdapter();
 }
 
-void ContentViewCoreImpl::UndoScrollFocusedEditableNodeIntoView(
-    JNIEnv* env,
-    jobject obj) {
-  RenderViewHost* host = web_contents_->GetRenderViewHost();
-  host->Send(
-      new ViewMsg_UndoScrollFocusedEditableNodeIntoView(host->GetRoutingID()));
-}
-
 namespace {
 void JavaScriptResultCallback(const ScopedJavaGlobalRef<jobject>& callback,
                               const base::Value* result) {

@@ -660,6 +660,7 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
       cached_is_main_frame_pinned_to_right_(false),
       cached_has_main_frame_horizontal_scrollbar_(false),
       cached_has_main_frame_vertical_scrollbar_(false),
+      has_scrolled_focused_editable_node_into_rect_(false),
       notification_provider_(NULL),
       geolocation_dispatcher_(NULL),
       input_tag_speech_dispatcher_(NULL),
@@ -1157,8 +1158,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
                         OnActivateNearestFindResult)
     IPC_MESSAGE_HANDLER(ViewMsg_FindMatchRects, OnFindMatchRects)
     IPC_MESSAGE_HANDLER(ViewMsg_SelectPopupMenuItems, OnSelectPopupMenuItems)
-    IPC_MESSAGE_HANDLER(ViewMsg_UndoScrollFocusedEditableNodeIntoView,
-                        OnUndoScrollFocusedEditableNodeIntoRect)
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateTopControlsState,
                         OnUpdateTopControlsState)
     IPC_MESSAGE_HANDLER(ViewMsg_PauseVideo, OnPauseVideo)
@@ -1329,12 +1328,16 @@ void RenderViewImpl::OnReplaceMisspelling(const base::string16& text) {
 
 void RenderViewImpl::OnScrollFocusedEditableNodeIntoRect(
     const gfx::Rect& rect) {
+  if (has_scrolled_focused_editable_node_into_rect_ &&
+      rect == rect_for_scrolled_focused_editable_node_) {
+    return;
+  }
+
   blink::WebElement element = GetFocusedElement();
-  if (!element.isNull()) {
-    if (IsEditableNode(element)) {
-      webview()->saveScrollAndScaleState();
-      webview()->scrollFocusedNodeIntoRect(rect);
-    }
+  if (!element.isNull() && IsEditableNode(element)) {
+    rect_for_scrolled_focused_editable_node_ = rect;
+    has_scrolled_focused_editable_node_into_rect_ = true;
+    webview()->scrollFocusedNodeIntoRect(rect);
   }
 }
 
@@ -1466,12 +1469,6 @@ void RenderViewImpl::OnSetInLiveResize(bool in_live_resize) {
 #endif
 
 #if defined(OS_ANDROID)
-void RenderViewImpl::OnUndoScrollFocusedEditableNodeIntoRect() {
-  const WebElement element = GetFocusedElement();
-  if (!element.isNull() && IsEditableNode(element))
-    webview()->restoreScrollAndScaleState();
-}
-
 void RenderViewImpl::OnPauseVideo() {
   // Inform RendererMediaPlayerManager to release all video player resources.
   // If something is in progress the resource will not be freed, it will
@@ -2155,6 +2152,8 @@ void RenderViewImpl::focusPrevious() {
 }
 
 void RenderViewImpl::focusedNodeChanged(const WebNode& node) {
+  has_scrolled_focused_editable_node_into_rect_ = false;
+
   Send(new ViewHostMsg_FocusedNodeChanged(routing_id_, IsEditableNode(node)));
 
   FOR_EACH_OBSERVER(RenderViewObserver, observers_, FocusedNodeChanged(node));
