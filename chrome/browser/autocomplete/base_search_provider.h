@@ -364,9 +364,12 @@ class BaseSearchProvider : public AutocompleteProvider,
   // already exists, whichever one has lower relevance is eliminated.
   // |metadata| and |accepted_suggestion| are used for generating an
   // AutocompleteMatch.
+  // |mark_as_deletable| indicates whether the match should be marked deletable.
+  // NOTE: Any result containing a deletion URL is always marked deletable.
   void AddMatchToMap(const SuggestResult& result,
                      const std::string& metadata,
                      int accepted_suggestion,
+                     bool mark_as_deletable,
                      MatchMap* map);
 
   // Parses results from the suggest server and updates the appropriate suggest

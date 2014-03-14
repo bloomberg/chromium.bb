@@ -4060,6 +4060,31 @@ TEST_F(SearchProviderTest, TestDeleteMatch) {
   EXPECT_FALSE(provider_->is_success());
 }
 
+TEST_F(SearchProviderTest, TestDeleteHistoryQueryMatch) {
+  GURL term_url(
+      AddSearchToHistory(default_t_url_, ASCIIToUTF16("flash games"), 1));
+  profile_.BlockUntilHistoryProcessesPendingRequests();
+
+  AutocompleteMatch games;
+  QueryForInput(ASCIIToUTF16("fla"), false, false);
+  profile_.BlockUntilHistoryProcessesPendingRequests();
+  ASSERT_NO_FATAL_FAILURE(FinishDefaultSuggestQuery());
+  ASSERT_TRUE(FindMatchWithContents(ASCIIToUTF16("flash games"), &games));
+
+  size_t matches_before = provider_->matches().size();
+  provider_->DeleteMatch(games);
+  EXPECT_EQ(matches_before - 1, provider_->matches().size());
+
+  // Process history deletions.
+  profile_.BlockUntilHistoryProcessesPendingRequests();
+
+  // Check that the match is gone.
+  QueryForInput(ASCIIToUTF16("fla"), false, false);
+  profile_.BlockUntilHistoryProcessesPendingRequests();
+  ASSERT_NO_FATAL_FAILURE(FinishDefaultSuggestQuery());
+  EXPECT_FALSE(FindMatchWithContents(ASCIIToUTF16("flash games"), &games));
+}
+
 // Verifies that duplicates are preserved in AddMatchToMap().
 TEST_F(SearchProviderTest, CheckDuplicateMatchesSaved) {
   AddSearchToHistory(default_t_url_, ASCIIToUTF16("a"), 1);

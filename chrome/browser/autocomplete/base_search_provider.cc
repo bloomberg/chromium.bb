@@ -131,11 +131,13 @@ void BaseSearchProvider::Stop(bool clear_cached_results) {
 void BaseSearchProvider::DeleteMatch(const AutocompleteMatch& match) {
   DCHECK(match.deletable);
 
-  deletion_handlers_.push_back(new SuggestionDeletionHandler(
-      match.GetAdditionalInfo(BaseSearchProvider::kDeletionUrlKey),
-      profile_,
-      base::Bind(&BaseSearchProvider::OnDeletionComplete,
-                 base::Unretained(this))));
+  if (!match.GetAdditionalInfo(BaseSearchProvider::kDeletionUrlKey).empty()) {
+    deletion_handlers_.push_back(new SuggestionDeletionHandler(
+        match.GetAdditionalInfo(BaseSearchProvider::kDeletionUrlKey),
+        profile_,
+        base::Bind(&BaseSearchProvider::OnDeletionComplete,
+                   base::Unretained(this))));
+  }
 
   HistoryService* const history_service =
       HistoryServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);
@@ -572,6 +574,7 @@ bool BaseSearchProvider::CanSendURL(
 void BaseSearchProvider::AddMatchToMap(const SuggestResult& result,
                                        const std::string& metadata,
                                        int accepted_suggestion,
+                                       bool mark_as_deletable,
                                        MatchMap* map) {
   InstantService* instant_service =
       InstantServiceFactory::GetForProfile(profile_);
@@ -598,6 +601,8 @@ void BaseSearchProvider::AddMatchToMap(const SuggestResult& result,
       match.RecordAdditionalInfo(kDeletionUrlKey, url.spec());
       match.deletable = true;
     }
+  } else if (mark_as_deletable) {
+    match.deletable = true;
   }
 
   // Metadata is needed only for prefetching queries.

@@ -761,8 +761,8 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
         input_.text(), base::string16(), base::string16(), std::string(),
         std::string(), false, verbatim_relevance, relevance_from_server, false,
         input_.text());
-    AddMatchToMap(
-        verbatim, std::string(), did_not_accept_default_suggestion, &map);
+    AddMatchToMap(verbatim, std::string(), did_not_accept_default_suggestion,
+                  false, &map);
   }
   if (!keyword_input_.text().empty()) {
     const TemplateURL* keyword_url = providers_.GetKeywordProviderURL();
@@ -783,8 +783,8 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
             keyword_input_.text(), base::string16(), base::string16(),
             std::string(), std::string(), true, keyword_verbatim_relevance,
             keyword_relevance_from_server, false, keyword_input_.text());
-        AddMatchToMap(
-            verbatim, std::string(), did_not_accept_keyword_suggestion, &map);
+        AddMatchToMap(verbatim, std::string(),
+                      did_not_accept_keyword_suggestion, false, &map);
       }
     }
   }
@@ -1082,7 +1082,7 @@ void SearchProvider::AddHistoryResultsToMap(const HistoryResults& results,
                                          is_keyword);
   for (SuggestResults::const_iterator i(scored_results.begin());
        i != scored_results.end(); ++i) {
-    AddMatchToMap(*i, std::string(), did_not_accept_suggestion, map);
+    AddMatchToMap(*i, std::string(), did_not_accept_suggestion, true, map);
   }
   UMA_HISTOGRAM_TIMES("Omnibox.SearchProvider.AddHistoryResultsTime",
                       base::TimeTicks::Now() - start_time);
@@ -1159,7 +1159,7 @@ void SearchProvider::AddSuggestResultsToMap(const SuggestResults& results,
                                             const std::string& metadata,
                                             MatchMap* map) {
   for (size_t i = 0; i < results.size(); ++i)
-    AddMatchToMap(results[i], metadata, i, map);
+    AddMatchToMap(results[i], metadata, i, false, map);
 }
 
 int SearchProvider::GetVerbatimRelevance(bool* relevance_from_server) const {
