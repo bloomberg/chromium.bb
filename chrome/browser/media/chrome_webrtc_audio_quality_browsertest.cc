@@ -372,8 +372,7 @@ INSTANTIATE_TEST_CASE_P(WebRtcAudioQualityBrowserTests,
                         WebRtcAudioQualityBrowserTest,
                         testing::ValuesIn(kRunTestsWithFlag));
 
-// Should be enabled for Linux, but is flaky. http://crbug.com/340197.
-#if defined(OS_WIN)
+#if defined(OS_LINUX) || defined(OS_WIN)
 // Only implemented on Linux and Windows for now.
 #define MAYBE_MANUAL_TestAudioQuality MANUAL_TestAudioQuality
 #else
