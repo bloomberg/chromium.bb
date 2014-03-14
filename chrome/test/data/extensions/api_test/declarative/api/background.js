@@ -7,6 +7,7 @@ var declarative = chrome.declarative;
 var RequestMatcher = chrome.declarativeWebRequest.RequestMatcher;
 var CancelRequest = chrome.declarativeWebRequest.CancelRequest;
 var RedirectRequest = chrome.declarativeWebRequest.RedirectRequest;
+var SetRequestHeader = chrome.declarativeWebRequest.SetRequestHeader;
 
 var inputRule0 = {
   // No 'id', this should be filled by the API.
@@ -59,6 +60,10 @@ var invalidRule1 = {
   // "actions" contains an invalid action (separate test because this validation
   // happens on a different code path).
   actions: [{key: "value"}]
+};
+var invalidRule2 = {
+  conditions: [new RequestMatcher({url: {hostPrefix: "test1"}})],
+  actions: [new SetRequestHeader({name: '\x00', value: 'whatever'})]
 };
 
 var testEvent = chrome.declarativeWebRequest.onRequest;
@@ -212,6 +217,14 @@ chrome.test.runTests([
       chrome.test.succeed();
     };
     testEvent.getRules(null, callback);
+  },
+  // Check that errors are propagated
+  function testValidationAsync() {
+    var callback = function() {
+      chrome.test.assertLastError('Invalid header name.');
+      chrome.test.succeed();
+    };
+    testEvent.addRules([invalidRule2], callback);
   },
   // Finally we add one additional rule, to check that is is removed
   // on page unload.

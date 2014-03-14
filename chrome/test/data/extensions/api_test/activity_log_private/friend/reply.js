@@ -91,7 +91,7 @@ function doWebRequestModifications() {
   resetStatus();
   // Install a webRequest handler that will add an HTTP header to the outgoing
   // request for the main page.
-  function doModifyHeaders(details) {
+  function doModifyRequestHeaders(details) {
     var response = {};
 
     var headers = details.requestHeaders;
@@ -101,6 +101,11 @@ function doWebRequestModifications() {
     headers.push({'name': 'X-Test-Activity-Log-Send',
                   'value': 'Present'});
     response['requestHeaders'] = headers;
+
+    return response;
+  }
+  function doModifyResponseHeaders(details) {
+    var response = {};
 
     headers = details.responseHeaders;
     if (headers === undefined) {
@@ -117,11 +122,11 @@ function doWebRequestModifications() {
     return response;
   }
   chrome.webRequest.onBeforeSendHeaders.addListener(
-      doModifyHeaders,
+      doModifyRequestHeaders,
       {'urls': ['http://*/*'], 'types': ['main_frame']},
       ['blocking', 'requestHeaders']);
   chrome.webRequest.onHeadersReceived.addListener(
-      doModifyHeaders,
+      doModifyResponseHeaders,
       {'urls': ['http://*/*'], 'types': ['main_frame']},
       ['blocking', 'responseHeaders']);
 
@@ -131,8 +136,10 @@ function doWebRequestModifications() {
     function closeTab(tabId, changeInfo, tab) {
       if (changeInfo['status'] === 'complete' &&
           tab.url.match(/google\.com/g)) {
-        chrome.webRequest.onBeforeSendHeaders.removeListener(doModifyHeaders);
-        chrome.webRequest.onHeadersReceived.removeListener(doModifyHeaders);
+        chrome.webRequest.onBeforeSendHeaders.removeListener(
+            doModifyRequestHeaders);
+        chrome.webRequest.onHeadersReceived.removeListener(
+            doModifyResponseHeaders);
         chrome.tabs.onUpdated.removeListener(closeTab);
         chrome.tabs.remove(tabId);
         appendCompleted('doWebRequestModifications');

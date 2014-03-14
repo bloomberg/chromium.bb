@@ -119,4 +119,41 @@ chrome.test.runTests([
 
     chrome.test.succeed();
   },
+
+  // Checks that a header with NUL bytes does not cause a crash.
+  // Regression test for http://crbug.com/348417
+  function badResponseHeaderDoesNotCauseCrash() {
+    var callbackWithBadHeadersResponse = function (details) {
+      var responseHeaders = [
+        {name: "X-Header-With-Invalid-Value", value: "\x00"}
+      ];
+      return {responseHeaders: responseHeaders};
+    };
+    chrome.webRequest.onHeadersReceived.addListener(
+        callbackWithBadHeadersResponse,
+        {types: ["xmlhttprequest"], urls: ["*://*/*"]},
+        ["blocking", "responseHeaders"]);
+
+    chrome.test.getConfig(function(config) {
+      var url = 'http://127.0.0.1:' + config.testServer.port + '/simple.html';
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', url);
+      xhr.onload = function() {
+        chrome.webRequest.onHeadersReceived.removeListener(
+            callbackWithBadHeadersResponse);
+
+        chrome.test.fail();
+      };
+      xhr.onerror = function() {
+        chrome.webRequest.onHeadersReceived.removeListener(
+            callbackWithBadHeadersResponse);
+        // When the returned header is invalid, the request should be canceled.
+        // TODO(robwu): If possible, check whether an error with the following
+        // message has been logged to the JavaScript console:
+        // "Header 'X-Header-With-Invalid-Value' has an invalid value"
+        chrome.test.succeed();
+      };
+      xhr.send();
+    });
+  }
 ]);

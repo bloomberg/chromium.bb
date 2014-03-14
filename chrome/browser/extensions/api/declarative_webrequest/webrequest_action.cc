@@ -15,10 +15,12 @@
 #include "chrome/browser/extensions/api/declarative_webrequest/request_stage.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_condition.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_constants.h"
+#include "chrome/browser/extensions/api/web_request/web_request_api_constants.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api_helpers.h"
 #include "chrome/browser/extensions/api/web_request/web_request_permissions.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/info_map.h"
+#include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/url_request/url_request.h"
@@ -166,6 +168,15 @@ scoped_refptr<const WebRequestAction> CreateSetRequestHeaderAction(
   std::string value;
   INPUT_FORMAT_VALIDATE(dict->GetString(keys::kNameKey, &name));
   INPUT_FORMAT_VALIDATE(dict->GetString(keys::kValueKey, &value));
+  if (!helpers::IsValidHeaderName(name)) {
+    *error = extension_web_request_api_constants::kInvalidHeaderName;
+    return scoped_refptr<const WebRequestAction>(NULL);
+  }
+  if (!helpers::IsValidHeaderValue(value)) {
+    *error = ErrorUtils::FormatErrorMessage(
+        extension_web_request_api_constants::kInvalidHeaderValue, name);
+    return scoped_refptr<const WebRequestAction>(NULL);
+  }
   return scoped_refptr<const WebRequestAction>(
       new WebRequestSetRequestHeaderAction(name, value));
 }
@@ -179,6 +190,10 @@ scoped_refptr<const WebRequestAction> CreateRemoveRequestHeaderAction(
   CHECK(value->GetAsDictionary(&dict));
   std::string name;
   INPUT_FORMAT_VALIDATE(dict->GetString(keys::kNameKey, &name));
+  if (!helpers::IsValidHeaderName(name)) {
+    *error = extension_web_request_api_constants::kInvalidHeaderName;
+    return scoped_refptr<const WebRequestAction>(NULL);
+  }
   return scoped_refptr<const WebRequestAction>(
       new WebRequestRemoveRequestHeaderAction(name));
 }
@@ -194,6 +209,15 @@ scoped_refptr<const WebRequestAction> CreateAddResponseHeaderAction(
   std::string value;
   INPUT_FORMAT_VALIDATE(dict->GetString(keys::kNameKey, &name));
   INPUT_FORMAT_VALIDATE(dict->GetString(keys::kValueKey, &value));
+  if (!helpers::IsValidHeaderName(name)) {
+    *error = extension_web_request_api_constants::kInvalidHeaderName;
+    return scoped_refptr<const WebRequestAction>(NULL);
+  }
+  if (!helpers::IsValidHeaderValue(value)) {
+    *error = ErrorUtils::FormatErrorMessage(
+        extension_web_request_api_constants::kInvalidHeaderValue, name);
+    return scoped_refptr<const WebRequestAction>(NULL);
+  }
   return scoped_refptr<const WebRequestAction>(
       new WebRequestAddResponseHeaderAction(name, value));
 }
@@ -209,6 +233,15 @@ scoped_refptr<const WebRequestAction> CreateRemoveResponseHeaderAction(
   std::string value;
   INPUT_FORMAT_VALIDATE(dict->GetString(keys::kNameKey, &name));
   bool has_value = dict->GetString(keys::kValueKey, &value);
+  if (!helpers::IsValidHeaderName(name)) {
+    *error = extension_web_request_api_constants::kInvalidHeaderName;
+    return scoped_refptr<const WebRequestAction>(NULL);
+  }
+  if (has_value && !helpers::IsValidHeaderValue(value)) {
+    *error = ErrorUtils::FormatErrorMessage(
+        extension_web_request_api_constants::kInvalidHeaderValue, name);
+    return scoped_refptr<const WebRequestAction>(NULL);
+  }
   return scoped_refptr<const WebRequestAction>(
       new WebRequestRemoveResponseHeaderAction(name, value, has_value));
 }

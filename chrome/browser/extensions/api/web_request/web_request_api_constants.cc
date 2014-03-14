@@ -72,6 +72,10 @@ const char kBlockingPermissionRequired[] =
 const char kHostPermissionsRequired[] =
     "You need to request host permissions in the manifest file in order to "
     "be notified about requests from the webRequest API.";
+const char kInvalidHeaderKeyCombination[] =
+    "requestHeaders and responseHeaders cannot both be present.";
 const char kInvalidHeader[] = "Invalid header specification '*'.";
+const char kInvalidHeaderName[] = "Invalid header name.";
+const char kInvalidHeaderValue[] = "Header '*' has an invalid value.";
 
 }  // namespace extension_web_request_api_constants
