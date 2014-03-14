@@ -147,6 +147,7 @@ repaint_region(struct weston_view *ev, struct weston_output *output,
 		(struct pixman_renderer *) output->compositor->renderer;
 	struct pixman_surface_state *ps = get_surface_state(ev->surface);
 	struct pixman_output_state *po = get_output_state(output);
+	struct weston_buffer_viewport *vp = &ev->surface->buffer_viewport;
 	pixman_region32_t final_region;
 	float view_x, view_y;
 	pixman_transform_t transform;
@@ -257,17 +258,17 @@ repaint_region(struct weston_view *ev, struct weston_output *output,
 					   pixman_double_to_fixed ((double)-ev->geometry.y));
 	}
 
-	if (ev->surface->buffer_viewport.viewport_set) {
+	if (vp->buffer.viewport_set) {
 		double viewport_x, viewport_y, viewport_width, viewport_height;
 		double ratio_x, ratio_y;
 
-		viewport_x = wl_fixed_to_double(ev->surface->buffer_viewport.src_x);
-		viewport_y = wl_fixed_to_double(ev->surface->buffer_viewport.src_y);
-		viewport_width = wl_fixed_to_double(ev->surface->buffer_viewport.src_width);
-		viewport_height = wl_fixed_to_double(ev->surface->buffer_viewport.src_height);
+		viewport_x = wl_fixed_to_double(vp->buffer.src_x);
+		viewport_y = wl_fixed_to_double(vp->buffer.src_y);
+		viewport_width = wl_fixed_to_double(vp->buffer.src_width);
+		viewport_height = wl_fixed_to_double(vp->buffer.src_height);
 
-		ratio_x = viewport_width / ev->surface->buffer_viewport.dst_width;
-		ratio_y = viewport_height / ev->surface->buffer_viewport.dst_height;
+		ratio_x = viewport_width / vp->surface.width;
+		ratio_y = viewport_height / vp->surface.height;
 
 		pixman_transform_scale(&transform, NULL,
 				       pixman_double_to_fixed(ratio_x),
@@ -279,7 +280,7 @@ repaint_region(struct weston_view *ev, struct weston_output *output,
 	fw = pixman_int_to_fixed(ev->surface->width);
 	fh = pixman_int_to_fixed(ev->surface->height);
 
-	switch (ev->surface->buffer_viewport.transform) {
+	switch (vp->buffer.transform) {
 	case WL_OUTPUT_TRANSFORM_FLIPPED:
 	case WL_OUTPUT_TRANSFORM_FLIPPED_90:
 	case WL_OUTPUT_TRANSFORM_FLIPPED_180:
@@ -291,7 +292,7 @@ repaint_region(struct weston_view *ev, struct weston_output *output,
 		break;
 	}
 
-	switch (ev->surface->buffer_viewport.transform) {
+	switch (vp->buffer.transform) {
 	default:
 	case WL_OUTPUT_TRANSFORM_NORMAL:
 	case WL_OUTPUT_TRANSFORM_FLIPPED:
@@ -314,12 +315,12 @@ repaint_region(struct weston_view *ev, struct weston_output *output,
 	}
 
 	pixman_transform_scale(&transform, NULL,
-			       pixman_double_to_fixed(ev->surface->buffer_viewport.scale),
-			       pixman_double_to_fixed(ev->surface->buffer_viewport.scale));
+			       pixman_double_to_fixed(vp->buffer.scale),
+			       pixman_double_to_fixed(vp->buffer.scale));
 
 	pixman_image_set_transform(ps->image, &transform);
 
-	if (ev->transform.enabled || output->current_scale != ev->surface->buffer_viewport.scale)
+	if (ev->transform.enabled || output->current_scale != vp->buffer.scale)
 		pixman_image_set_filter(ps->image, PIXMAN_FILTER_BILINEAR, NULL, 0);
 	else
 		pixman_image_set_filter(ps->image, PIXMAN_FILTER_NEAREST, NULL, 0);

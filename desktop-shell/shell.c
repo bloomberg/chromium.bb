@@ -2661,11 +2661,11 @@ shell_configure_fullscreen(struct shell_surface *shsurf)
 	case WL_SHELL_SURFACE_FULLSCREEN_METHOD_DRIVER:
 		if (shell_surface_is_top_fullscreen(shsurf)) {
 			struct weston_mode mode = {0,
-				surf_width * surface->buffer_viewport.scale,
-				surf_height * surface->buffer_viewport.scale,
+				surf_width * surface->buffer_viewport.buffer.scale,
+				surf_height * surface->buffer_viewport.buffer.scale,
 				shsurf->fullscreen.framerate};
 
-			if (weston_output_switch_mode(output, &mode, surface->buffer_viewport.scale,
+			if (weston_output_switch_mode(output, &mode, surface->buffer_viewport.buffer.scale,
 					WESTON_MODE_SWITCH_SET_TEMPORARY) == 0) {
 				weston_view_set_position(shsurf->view,
 							 output->x - surf_x,

@@ -455,6 +455,7 @@ drm_output_prepare_scanout_view(struct weston_output *_output,
 	struct drm_compositor *c =
 		(struct drm_compositor *) output->base.compositor;
 	struct weston_buffer *buffer = ev->surface->buffer_ref.buffer;
+	struct weston_buffer_viewport *viewport = &ev->surface->buffer_viewport;
 	struct gbm_bo *bo;
 	uint32_t format;
 
@@ -463,7 +464,7 @@ drm_output_prepare_scanout_view(struct weston_output *_output,
 	    buffer == NULL || c->gbm == NULL ||
 	    buffer->width != output->base.current_mode->width ||
 	    buffer->height != output->base.current_mode->height ||
-	    output->base.transform != ev->surface->buffer_viewport.transform ||
+	    output->base.transform != viewport->buffer.transform ||
 	    ev->transform.enabled)
 		return NULL;
 
@@ -808,6 +809,7 @@ drm_output_prepare_overlay_view(struct weston_output *output_base,
 {
 	struct weston_compositor *ec = output_base->compositor;
 	struct drm_compositor *c =(struct drm_compositor *) ec;
+	struct weston_buffer_viewport *viewport = &ev->surface->buffer_viewport;
 	struct drm_sprite *s;
 	int found = 0;
 	struct gbm_bo *bo;
@@ -819,10 +821,10 @@ drm_output_prepare_overlay_view(struct weston_output *output_base,
 	if (c->gbm == NULL)
 		return NULL;
 
-	if (ev->surface->buffer_viewport.transform != output_base->transform)
+	if (viewport->buffer.transform != output_base->transform)
 		return NULL;
 
-	if (ev->surface->buffer_viewport.scale != output_base->current_scale)
+	if (viewport->buffer.scale != output_base->current_scale)
 		return NULL;
 
 	if (c->sprites_are_broken)
@@ -932,8 +934,8 @@ drm_output_prepare_overlay_view(struct weston_output *output_base,
 
 	tbox = weston_transformed_rect(wl_fixed_from_int(ev->surface->width),
 				       wl_fixed_from_int(ev->surface->height),
-				       ev->surface->buffer_viewport.transform,
-				       ev->surface->buffer_viewport.scale,
+				       viewport->buffer.transform,
+				       viewport->buffer.scale,
 				       tbox);
 
 	s->src_x = tbox.x1 << 8;

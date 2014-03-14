@@ -553,7 +553,7 @@ draw_view(struct weston_view *ev, struct weston_output *output,
 	shader_uniforms(gs->shader, ev, output);
 
 	if (ev->transform.enabled || output->zoom.active ||
-	    output->current_scale != ev->surface->buffer_viewport.scale)
+	    output->current_scale != ev->surface->buffer_viewport.buffer.scale)
 		filter = GL_LINEAR;
 	else
 		filter = GL_NEAREST;

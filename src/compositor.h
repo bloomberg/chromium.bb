@@ -655,20 +655,25 @@ struct weston_buffer_reference {
 };
 
 struct weston_buffer_viewport {
-	/* wl_surface.set_buffer_transform */
-	uint32_t transform;
+	struct {
+		/* wl_surface.set_buffer_transform */
+		uint32_t transform;
 
-	/* wl_surface.set_scaling_factor */
-	int32_t scale;
+		/* wl_surface.set_scaling_factor */
+		int32_t scale;
 
-	/* bool for whether wl_viewport.set has been
-	 * called yet (before this is called there is no
-	 * cropping or scaling on the surface) */
-	int viewport_set; /* bool */
+		/* bool for whether wl_viewport.set has been
+		 * called yet (before this is called there is no
+		 * cropping or scaling on the surface) */
+		int viewport_set; /* bool */
 
-	wl_fixed_t src_x, src_y;
-	wl_fixed_t src_width, src_height;
-	int32_t dst_width, dst_height;
+		wl_fixed_t src_x, src_y;
+		wl_fixed_t src_width, src_height;
+	} buffer;
+
+	struct {
+		int32_t width, height;
+	} surface;
 };
 
 struct weston_region {
