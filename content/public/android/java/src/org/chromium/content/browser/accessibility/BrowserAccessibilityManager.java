@@ -61,10 +61,13 @@ public class BrowserAccessibilityManager {
     @CalledByNative
     private static BrowserAccessibilityManager create(long nativeBrowserAccessibilityManagerAndroid,
             ContentViewCore contentViewCore) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            return new KitKatBrowserAccessibilityManager(
-                    nativeBrowserAccessibilityManagerAndroid, contentViewCore);
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+        // A bug in the KitKat framework prevents us from using these new APIs.
+        // http://crbug.com/348088/
+        // if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+        //     return new KitKatBrowserAccessibilityManager(
+        //             nativeBrowserAccessibilityManagerAndroid, contentViewCore);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
             return new JellyBeanBrowserAccessibilityManager(
                     nativeBrowserAccessibilityManagerAndroid, contentViewCore);
         } else {
