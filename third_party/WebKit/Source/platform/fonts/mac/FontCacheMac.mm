@@ -144,7 +144,7 @@ PassRefPtr<SimpleFontData> FontCache::platformFallbackForCharacter(const FontDes
         size = [nsFont pointSize];
     } else {
         // For custom fonts nsFont is nil.
-        traits = fontDescription.italic() ? NSFontItalicTrait : 0;
+        traits = fontDescription.style() ? NSFontItalicTrait : 0;
         weight = toAppKitFontWeight(fontDescription.weight());
         size = fontDescription.computedPixelSize();
     }
@@ -193,7 +193,7 @@ PassRefPtr<SimpleFontData> FontCache::getLastResortFallbackFont(const FontDescri
 
 FontPlatformData* FontCache::createFontPlatformData(const FontDescription& fontDescription, const AtomicString& family, float fontSize)
 {
-    NSFontTraitMask traits = fontDescription.italic() ? NSFontItalicTrait : 0;
+    NSFontTraitMask traits = fontDescription.style() ? NSFontItalicTrait : 0;
     NSInteger weight = toAppKitFontWeight(fontDescription.weight());
     float size = fontSize;
 
@@ -203,7 +203,7 @@ FontPlatformData* FontCache::createFontPlatformData(const FontDescription& fontD
 
     NSFontManager *fontManager = [NSFontManager sharedFontManager];
     NSFontTraitMask actualTraits = 0;
-    if (fontDescription.italic())
+    if (fontDescription.style())
         actualTraits = [fontManager traitsOfFont:nsFont];
     NSInteger actualWeight = [fontManager weightOfFont:nsFont];
 

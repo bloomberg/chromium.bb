@@ -462,11 +462,11 @@ void FontBuilder::setScript(const String& locale)
     scope.fontDescription().setScript(localeToScriptCodeForFontSelection(locale));
 }
 
-void FontBuilder::setItalic(FontItalic italic)
+void FontBuilder::setStyle(FontStyle italic)
 {
     FontDescriptionChangeScope scope(this);
 
-    scope.fontDescription().setItalic(italic);
+    scope.fontDescription().setStyle(italic);
 }
 
 void FontBuilder::setVariant(FontVariant smallCaps)
