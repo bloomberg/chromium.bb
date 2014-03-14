@@ -12,6 +12,7 @@ import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.Picture;
 import android.graphics.Rect;
 import android.net.http.SslCertificate;
@@ -176,6 +177,7 @@ public class AwContents {
 
     // The base background color, i.e. not accounting for any CSS body from the current page.
     private int mBaseBackgroundColor = Color.WHITE;
+    private int mLayerType = View.LAYER_TYPE_NONE;
 
     // Must call nativeUpdateLastHitTestData first to update this before use.
     private final HitTestData mPossiblyStaleHitTestData = new HitTestData();
@@ -942,6 +944,21 @@ public class AwContents {
         if (mNativeAwContents != 0) nativeSetBackgroundColor(mNativeAwContents, color);
     }
 
+    /**
+     * @see android.view.View#setLayerType()
+     */
+    public void setLayerType(int layerType, Paint paint) {
+        mLayerType = layerType;
+        updateHardwareAcceleratedFeaturesToggle();
+    }
+
+    private void updateHardwareAcceleratedFeaturesToggle() {
+        mSettings.setEnableSupportedHardwareAcceleratedFeatures(
+                mIsAttachedToWindow && mContainerView.isHardwareAccelerated() &&
+                (mLayerType == View.LAYER_TYPE_NONE || mLayerType == View.LAYER_TYPE_HARDWARE));
+    }
+
+
     private int getEffectiveBackgroundColor() {
         // Do not ask the ContentViewCore for the background color, as it will always
         // report white prior to initial navigation or post destruction,  whereas we want
@@ -1556,8 +1573,7 @@ public class AwContents {
         mContentViewCore.onAttachedToWindow();
         nativeOnAttachedToWindow(mNativeAwContents, mContainerView.getWidth(),
                 mContainerView.getHeight());
-        mSettings.setEnableSupportedHardwareAcceleratedFeatures(
-                mContainerView.isHardwareAccelerated());
+        updateHardwareAcceleratedFeaturesToggle();
 
         if (mComponentCallbacks != null) return;
         mComponentCallbacks = new AwComponentCallbacks();
@@ -1588,8 +1604,7 @@ public class AwContents {
         }
 
         mContentViewCore.onDetachedFromWindow();
-
-        mSettings.setEnableSupportedHardwareAcceleratedFeatures(false);
+        updateHardwareAcceleratedFeaturesToggle();
 
         if (mComponentCallbacks != null) {
             mContainerView.getContext().unregisterComponentCallbacks(mComponentCallbacks);
