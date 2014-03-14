@@ -250,13 +250,17 @@ function recordEvent(event) {
 /**
  * Checks the result of the HTTP Request and updates the authentication
  * manager on any failure.
- * @param {XMLHttpRequest} request XMLHttpRequest that sent the authenticated
- *     request.
+ * @param {string} token Authentication token to validate against an
+ *     XMLHttpRequest.
+ * @return {function(XMLHttpRequest)} Function that validates the token with the
+ *     supplied XMLHttpRequest.
  */
-function checkAuthenticationStatus(request) {
-  if (request.status == HTTP_FORBIDDEN ||
-      request.status == HTTP_UNAUTHORIZED) {
-    authenticationManager.removeToken(token);
+function checkAuthenticationStatus(token) {
+  return function(request) {
+    if (request.status == HTTP_FORBIDDEN ||
+        request.status == HTTP_UNAUTHORIZED) {
+      authenticationManager.removeToken(token);
+    }
   }
 }
 
@@ -278,7 +282,7 @@ function requestFromServer(method, handlerName, opt_contentType) {
       }, false);
       request.send();
     });
-    requestPromise.then(checkAuthenticationStatus);
+    requestPromise.then(checkAuthenticationStatus(token));
     return requestPromise;
   });
 }
