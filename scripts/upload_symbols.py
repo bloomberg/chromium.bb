@@ -594,62 +594,64 @@ def UploadSymbols(board=None, official=False, breakpad_dir=None,
 
     counters.deduped_count += (len(files) - missing_count)
 
-  with osutils.TempDir(prefix='upload_symbols.') as tempdir:
+  try:
     storage_notify_proc.start()
-    # For the first run, we collect the symbols that failed.  If the
-    # overall failure rate was low, we'll retry them on the second run.
-    for retry in (retry, False):
-      # We need to limit ourselves to one upload at a time to avoid the server
-      # kicking in DoS protection.  See these bugs for more details:
-      # http://crbug.com/209442
-      # http://crbug.com/212496
-      with parallel.BackgroundTaskRunner(uploader, processes=1) as queue:
-        dedupe_list = []
-        for sym_file in SymbolFinder(tempdir, sym_paths):
-          dedupe_list.append(sym_file)
-          dedupe_len = len(dedupe_list)
-          if dedupe_len < dedupe_limit:
-            if (counters.upload_limit is None or
-                dedupe_len < counters.upload_limit):
-              continue
 
-          _Upload(queue, counters, dedupe_list)
+    with osutils.TempDir(prefix='upload_symbols.') as tempdir:
+      # For the first run, we collect the symbols that failed.  If the
+      # overall failure rate was low, we'll retry them on the second run.
+      for retry in (retry, False):
+        # We need to limit ourselves to one upload at a time to avoid the server
+        # kicking in DoS protection.  See these bugs for more details:
+        # http://crbug.com/209442
+        # http://crbug.com/212496
+        with parallel.BackgroundTaskRunner(uploader, processes=1) as queue:
           dedupe_list = []
-        _Upload(queue, counters, dedupe_list)
+          for sym_file in SymbolFinder(tempdir, sym_paths):
+            dedupe_list.append(sym_file)
+            dedupe_len = len(dedupe_list)
+            if dedupe_len < dedupe_limit:
+              if (counters.upload_limit is None or
+                  dedupe_len < counters.upload_limit):
+                continue
 
-      # See if we need to retry, and if we haven't failed too many times yet.
-      if not retry or ErrorLimitHit(bg_errors, watermark_errors):
-        break
+            _Upload(queue, counters, dedupe_list)
+            dedupe_list = []
+          _Upload(queue, counters, dedupe_list)
 
-      sym_paths = []
-      failed_queue.put(None)
-      while True:
-        sym_path = failed_queue.get()
-        if sym_path is None:
+        # See if we need to retry, and if we haven't failed too many times yet.
+        if not retry or ErrorLimitHit(bg_errors, watermark_errors):
           break
-        sym_paths.append(sym_path)
 
-      if sym_paths:
-        cros_build_lib.Warning('retrying %i symbols', len(sym_paths))
-        if counters.upload_limit is not None:
-          counters.upload_limit += len(sym_paths)
-        # Decrement the error count in case we recover in the second pass.
-        assert bg_errors.value >= len(sym_paths), \
-               'more failed files than errors?'
-        bg_errors.value -= len(sym_paths)
-      else:
-        # No failed symbols, so just return now.
-        break
+        sym_paths = []
+        failed_queue.put(None)
+        while True:
+          sym_path = failed_queue.get()
+          if sym_path is None:
+            break
+          sym_paths.append(sym_path)
 
-  # If the user has requested it, save all the symbol files that we failed to
-  # upload to a listing file.  This should help with recovery efforts later.
-  failed_queue.put(None)
-  WriteQueueToFile(failed_list, failed_queue, breakpad_dir)
+        if sym_paths:
+          cros_build_lib.Warning('retrying %i symbols', len(sym_paths))
+          if counters.upload_limit is not None:
+            counters.upload_limit += len(sym_paths)
+          # Decrement the error count in case we recover in the second pass.
+          assert bg_errors.value >= len(sym_paths), \
+                 'more failed files than errors?'
+          bg_errors.value -= len(sym_paths)
+        else:
+          # No failed symbols, so just return now.
+          break
 
-  if dedupe_queue:
-    dedupe_queue.put(None)
-    dedupe_queue.close()
-  storage_notify_proc.join()
+    # If the user has requested it, save all the symbol files that we failed to
+    # upload to a listing file.  This should help with recovery efforts later.
+    failed_queue.put(None)
+    WriteQueueToFile(failed_list, failed_queue, breakpad_dir)
+
+  finally:
+    if dedupe_queue:
+      dedupe_queue.put(None)
+    storage_notify_proc.join()
 
   cros_build_lib.Info('uploaded %i symbols (%i were deduped) which took: %s',
                       counters.uploaded_count, counters.deduped_count,
