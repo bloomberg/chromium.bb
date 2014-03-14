@@ -8,6 +8,8 @@
 #include <string>
 #include <vector>
 #include "base/basictypes.h"
+#include "base/strings/string_piece.h"
+#include "base/values.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebArrayBuffer.h"
 #include "third_party/WebKit/public/platform/WebCrypto.h"  // TODO(eroman): delete
@@ -73,9 +75,9 @@ class CONTENT_EXPORT Status {
   // base64 decoded.
   static Status ErrorJwkBase64Decode(const std::string& property);
 
-  // The "extractable" parameter was specified but was
+  // The "ext" parameter was specified but was
   // incompatible with the value requested by the Web Crypto call.
-  static Status ErrorJwkExtractableInconsistent();
+  static Status ErrorJwkExtInconsistent();
 
   // The "alg" parameter could not be converted to an equivalent
   // WebCryptoAlgorithm. Either it was malformed or unrecognized.
@@ -91,11 +93,23 @@ class CONTENT_EXPORT Status {
 
   // The "use" parameter was specified, however it couldn't be converted to an
   // equivalent Web Crypto usage.
-  static Status ErrorJwkUnrecognizedUsage();
+  static Status ErrorJwkUnrecognizedUse();
+
+  // The "key_ops" parameter was specified, however one of the values in the
+  // array couldn't be converted to an equivalent Web Crypto usage.
+  static Status ErrorJwkUnrecognizedKeyop();
 
   // The "use" parameter was specified, however it is incompatible with that
   // specified by the Web Crypto import operation.
-  static Status ErrorJwkUsageInconsistent();
+  static Status ErrorJwkUseInconsistent();
+
+  // The "key_ops" parameter was specified, however it is incompatible with that
+  // specified by the Web Crypto import operation.
+  static Status ErrorJwkKeyopsInconsistent();
+
+  // Both the "key_ops" and the "use" parameters were specified, however they
+  // are incompatible with each other.
+  static Status ErrorJwkUseAndKeyopsInconsistent();
 
   // TODO(eroman): Private key import through JWK is not yet supported.
   static Status ErrorJwkRsaPrivateKeyUnsupported();
@@ -218,7 +232,21 @@ blink::WebArrayBuffer CreateArrayBuffer(const uint8* data,
 // This function decodes unpadded 'base64url' encoded data, as described in
 // RFC4648 (http://www.ietf.org/rfc/rfc4648.txt) Section 5.
 // In Web Crypto, this type of encoding is only used inside JWK.
-bool Base64DecodeUrlSafe(const std::string& input, std::string* output);
+CONTENT_EXPORT bool Base64DecodeUrlSafe(const std::string& input,
+                                        std::string* output);
+
+// Returns an unpadded 'base64url' encoding of the input data, the opposite of
+// Base64DecodeUrlSafe() above.
+std::string Base64EncodeUrlSafe(const base::StringPiece& input);
+
+// Composes a Web Crypto usage mask from an array of JWK key_ops values.
+CONTENT_EXPORT Status GetWebCryptoUsagesFromJwkKeyOps(
+    const base::ListValue* jwk_key_ops_value,
+    blink::WebCryptoKeyUsageMask* jwk_key_ops_mask);
+
+// Composes a JWK key_ops array from a Web Crypto usage mask.
+base::ListValue* CreateJwkKeyOpsFromWebCryptoUsages(
+    blink::WebCryptoKeyUsageMask usage_mask);
 
 CONTENT_EXPORT bool IsHashAlgorithm(blink::WebCryptoAlgorithmId alg_id);
 

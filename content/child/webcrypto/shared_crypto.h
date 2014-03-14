@@ -132,6 +132,9 @@ CONTENT_EXPORT Status
                  blink::WebCryptoKey* key);
 
 CONTENT_EXPORT Status
+    ExportKeyJwk(const blink::WebCryptoKey& key, blink::WebArrayBuffer* buffer);
+
+CONTENT_EXPORT Status
     WrapKey(blink::WebCryptoKeyFormat format,
             const blink::WebCryptoKey& wrapping_key,
             const blink::WebCryptoKey& key_to_wrap,
