@@ -919,7 +919,8 @@ crbug.com/351807 svg/W3C-SVG-1.1/filters-light-04-f.svg [ NeedsRebaseline ]
 
 crbug.com/349523 [ Win ] webaudio/dynamicscompressor-simple.html [ Failure ]
 crbug.com/349523 [ Win ] webaudio/realtimeanalyser-fft-scaling.html [ Failure ]
-
+crbug.com/352466 [ Linux Win ] inspector/jump-to-previous-editing-location.html [ Pass Timeout ]
+crbug.com/352464 http/tests/security/dataURL/xss-DENIED-to-data-url-in-foreign-domain-subframe-location-change.html [ Pass Missing ]
 crbug.com/349528 [ Debug ] fast/mediastream/RTCPeerConnection-lifetime.html [ Crash Pass ]
 
 # Failing on Mac since r168339
