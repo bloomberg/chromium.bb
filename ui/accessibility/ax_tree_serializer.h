@@ -344,6 +344,7 @@ void AXTreeSerializer<AXSourceNode>::DeleteClientSubtree(
     DeleteClientSubtree(client_node->children[i]);
   }
   client_node->children.clear();
+  delete client_node;
 }
 
 template<typename AXSourceNode>

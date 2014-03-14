@@ -427,6 +427,8 @@ void Widget::ViewHierarchyChanged(
       focus_manager->ViewRemoved(details.child);
     ViewStorage::GetInstance()->ViewRemoved(details.child);
     native_widget_->ViewRemoved(details.child);
+    FOR_EACH_OBSERVER(
+        WidgetObserver, observers_, OnViewRemoved(this, details.child));
   }
 }
 

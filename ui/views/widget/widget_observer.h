@@ -14,6 +14,7 @@ class Rect;
 namespace views {
 
 class Widget;
+class View;
 
 // Observers can listen to various events on the Widgets.
 class VIEWS_EXPORT WidgetObserver {
@@ -44,6 +45,9 @@ class VIEWS_EXPORT WidgetObserver {
 
   virtual void OnWidgetBoundsChanged(Widget* widget,
                                      const gfx::Rect& new_bounds) {}
+
+  // Called after a descendant view of |widget| is removed.
+  virtual void OnViewRemoved(Widget* widget, View* view) {}
 
  protected:
   virtual ~WidgetObserver() {}
