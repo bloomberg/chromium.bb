@@ -98,6 +98,9 @@ class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
   // Returns the machine model, or an empty string if not available.
   static std::string GetMachineModel();
 
+  // Returns the stable device state key.
+  static std::string GetDeviceStateKey();
+
   // Returns the robot 'email address' associated with the device robot
   // account (sometimes called a service account) associated with this device
   // during enterprise enrollment.
@@ -117,6 +120,9 @@ class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
 
   // Initializes requisition settings at OOBE with values from VPD.
   void InitalizeRequisition();
+
+  // Gets the device restore mode as stored in |local_state_|.
+  std::string GetRestoreMode() const;
 
   // Points to the same object as the base CloudPolicyManager::store(), but with
   // actual device policy specific type.

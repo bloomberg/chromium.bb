@@ -555,6 +555,42 @@ message DeviceAutoEnrollmentResponse {
   repeated bytes hash = 2;
 }
 
+// Sent by the client to the server. The device management server keeps a
+// mapping of device identifiers to device state. Devices query this table after
+// hard reset in order recover state. This request is keyed just by the opaque
+// server-backed state key; there is no further authentication.
+message DeviceStateRetrievalRequest {
+  // Opaque, client-determined, unpredictable, stable and unique device
+  // identifier to retrieve state for. This field contains 32 bytes of data that
+  // looks essentially random to the server. It may be generated e.g. by running
+  // a concatenation of suitable device identifiers through a cryptographic hash
+  // algorithm such as SHA-256.
+  optional bytes server_backed_state_key = 1;
+}
+
+// Server to client message carrying the device state response. Because the
+// request is not authenticated, the only protection against state extraction
+// from server is the unpredictability of the server-backed state ID. Thus, the
+// response should not contain any sensitive data. If the server doesn't know
+// the requested identifier, it just return a message with restore_mode set to
+// RESTORE_MODE_NONE.
+message DeviceStateRetrievalResponse {
+  // Restorative action to take after device reset.
+  enum RestoreMode {
+    // No state restoration.
+    RESTORE_MODE_NONE = 0;
+    // Enterprise enrollment requested, but user may skip.
+    RESTORE_MODE_REENROLLMENT_REQUESTED = 1;
+    // Enterprise enrollment is enforced and cannot be skipped.
+    RESTORE_MODE_REENROLLMENT_ENFORCED = 2;
+  };
+  // The server-indicated restore mode.
+  optional RestoreMode restore_mode = 1 [default = RESTORE_MODE_NONE];
+
+  // Primary domain the device is associated with.
+  optional string management_domain = 2;
+}
+
 // Request from the DMAgent on the device to the DMServer.  This is
 // container for all requests from device to server.  The overall HTTP
 // request MUST be in the following format:
@@ -565,6 +601,7 @@ message DeviceAutoEnrollmentResponse {
 //   * request: MUST BE one of
 //     * cert_upload
 //     * enterprise_check
+//     * device_state_retrieval
 //     * ping
 //     * policy
 //     * register
@@ -592,6 +629,7 @@ message DeviceAutoEnrollmentResponse {
 // container will be ignored.
 //   cert_upload: cert_upload_request
 //   enterprise_check: auto_enrollment_request
+//   device_state_retrieval: device_state_retrieval_request
 //   ping: policy_request
 //   policy: policy_request
 //   register: register_request
@@ -621,6 +659,9 @@ message DeviceManagementRequest {
 
   // Request for OAuth2 authorization codes to access Google services.
   optional DeviceServiceApiAccessRequest service_api_access_request = 8;
+
+  // Device-state retrieval.
+  optional DeviceStateRetrievalRequest device_state_retrieval_request = 9;
 }
 
 // Response from server to device.
@@ -666,4 +707,7 @@ message DeviceManagementResponse {
 
   // Response to OAuth2 authorization code request.
   optional DeviceServiceApiAccessResponse service_api_access_response = 10;
+
+  // Device-state retrieval.
+  optional DeviceStateRetrievalResponse device_state_retrieval_response = 11;
 }

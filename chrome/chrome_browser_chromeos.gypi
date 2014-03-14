@@ -754,6 +754,8 @@
         'browser/chromeos/policy/recommendation_restorer.h',
         'browser/chromeos/policy/recommendation_restorer_factory.cc',
         'browser/chromeos/policy/recommendation_restorer_factory.h',
+        'browser/chromeos/policy/server_backed_device_state.cc',
+        'browser/chromeos/policy/server_backed_device_state.h',
         'browser/chromeos/policy/user_cloud_external_data_manager.cc',
         'browser/chromeos/policy/user_cloud_external_data_manager.h',
         'browser/chromeos/policy/user_cloud_policy_manager_chromeos.cc',

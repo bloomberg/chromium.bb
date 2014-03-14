@@ -97,6 +97,10 @@ const char kEnableKioskMode[]               = "enable-kiosk-mode";
 // Enables request of tablet site (via user agent override).
 const char kEnableRequestTabletSite[]       = "enable-request-tablet-site";
 
+// Whether to enable forced enterprise re-enrollment.
+const char kEnterpriseEnableForcedReEnrollment[] =
+    "enterprise-enable-forced-re-enrollment";
+
 // Power of the power-of-2 initial modulus that will be used by the
 // auto-enrollment client. E.g. "4" means the modulus will be 2^4 = 16.
 const char kEnterpriseEnrollmentInitialModulus[] =

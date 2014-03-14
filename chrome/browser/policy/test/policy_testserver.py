@@ -285,17 +285,23 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         len(self.GetUniqueParam('agent')) >= 64):
       return (400, 'Invalid request parameter')
     if request_type == 'register':
-      return self.ProcessRegister(rmsg.register_request)
-    if request_type == 'api_authorization':
-      return self.ProcessApiAuthorization(rmsg.service_api_access_request)
+      response = self.ProcessRegister(rmsg.register_request)
+    elif request_type == 'api_authorization':
+      response = self.ProcessApiAuthorization(rmsg.service_api_access_request)
     elif request_type == 'unregister':
-      return self.ProcessUnregister(rmsg.unregister_request)
+      response = self.ProcessUnregister(rmsg.unregister_request)
     elif request_type == 'policy' or request_type == 'ping':
-      return self.ProcessPolicy(rmsg.policy_request, request_type)
+      response = self.ProcessPolicy(rmsg.policy_request, request_type)
     elif request_type == 'enterprise_check':
-      return self.ProcessAutoEnrollment(rmsg.auto_enrollment_request)
+      response = self.ProcessAutoEnrollment(rmsg.auto_enrollment_request)
+    elif request_type == 'device_state_retrieval':
+      response = self.ProcessDeviceStateRetrievalRequest(
+          rmsg.device_state_retrieval_request)
     else:
       return (400, 'Invalid request parameter')
+
+    self.DumpMessage('Response', response[1])
+    return (response[0], response[1].SerializeToString())
 
   def CreatePolicyForExternalPolicyData(self, policy_key):
     """Returns an ExternalPolicyData protobuf for policy_key.
@@ -372,9 +378,7 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     response.register_response.machine_name = token_info['machine_name']
     response.register_response.enrollment_type = token_info['enrollment_mode']
 
-    self.DumpMessage('Response', response)
-
-    return (200, response.SerializeToString())
+    return (200, response)
 
   def ProcessApiAuthorization(self, msg):
     """Handles an API authorization request.
@@ -392,9 +396,8 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     response = dm.DeviceManagementResponse()
     response.service_api_access_response.auth_code = policy.get(
         'robot_api_auth_code', 'policy_testserver.py-auth_code')
-    self.DumpMessage('Response', response)
 
-    return (200, response.SerializeToString())
+    return (200, response)
 
   def ProcessUnregister(self, msg):
     """Handles a register request.
@@ -420,9 +423,7 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     response = dm.DeviceManagementResponse()
     response.unregister_response.CopyFrom(dm.DeviceUnregisterResponse())
 
-    self.DumpMessage('Response', response)
-
-    return (200, response.SerializeToString())
+    return (200, response)
 
   def ProcessPolicy(self, msg, request_type):
     """Handles a policy request.
@@ -460,7 +461,7 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         fetch_response.error_code = 400
         fetch_response.error_message = 'Invalid policy_type'
 
-    return (200, response.SerializeToString())
+    return (200, response)
 
   def ProcessAutoEnrollment(self, msg):
     """Handles an auto-enrollment check request.
@@ -499,7 +500,30 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
     response = dm.DeviceManagementResponse()
     response.auto_enrollment_response.CopyFrom(auto_enrollment_response)
-    return (200, response.SerializeToString())
+    return (200, response)
+
+  def ProcessDeviceStateRetrievalRequest(self, msg):
+    """Handles a device state retrieval request.
+
+    Response data is taken from server configuration.
+
+    Returns:
+      A tuple of HTTP status code and response data to send to the client.
+    """
+    device_state_retrieval_response = dm.DeviceStateRetrievalResponse()
+    state = self.server.GetPolicies().get('device_state', {})
+    FIELDS = [
+        'management_domain',
+        'device_mode',
+    ]
+    for field in FIELDS:
+      if field in state:
+        setattr(device_state_retrieval_response, field, state[field])
+
+    response = dm.DeviceManagementResponse()
+    response.device_state_retrieval_response.CopyFrom(
+        device_state_retrieval_response)
+    return (200, response)
 
   def SetProtobufMessageField(self, group_message, field, field_value):
     '''Sets a field in a protobuf message.
@@ -724,8 +748,6 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         if req_key:
           response.new_public_key_signature = (
               req_key.hashAndSign(response.new_public_key).tostring())
-
-    self.DumpMessage('Response', response)
 
     return (200, response.SerializeToString())
 

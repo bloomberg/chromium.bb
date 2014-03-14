@@ -38,17 +38,35 @@ class DeviceManagementService;
 class AutoEnrollmentClient
     : public net::NetworkChangeNotifier::NetworkChangeObserver {
  public:
-  // |completion_callback| will be invoked on completion of the protocol, after
-  // Start() is invoked.
+  // Indicates the current state of the auto-enrollment check.
+  enum State {
+    // Working, another event will be fired eventually.
+    STATE_PENDING,
+    // Failed to connect to DMServer.
+    STATE_CONNECTION_ERROR,
+    // Connection successful, but the server failed to generate a valid reply.
+    STATE_SERVER_ERROR,
+    // Check completed successfully, enrollment should be triggered.
+    STATE_TRIGGER_ENROLLMENT,
+    // Check completed successfully, enrollment not applicable.
+    STATE_NO_ENROLLMENT,
+  };
+
+  // Used for signaling progress to a consumer.
+  typedef base::Callback<void(State)> ProgressCallback;
+
+  // |progress_callback| will be invoked whenever some significant event happens
+  // as part of the protocol, after Start() is invoked.
   // The result of the protocol will be cached in |local_state|.
   // |power_initial| and |power_limit| are exponents of power-of-2 values which
   // will be the initial modulus and the maximum modulus used by this client.
   AutoEnrollmentClient(
-      const base::Closure& completion_callback,
+      const ProgressCallback& progress_callback,
       DeviceManagementService* device_management_service,
       PrefService* local_state,
       scoped_refptr<net::URLRequestContextGetter> system_request_context,
-      const std::string& serial_number,
+      const std::string& server_backed_state_key,
+      bool retrieve_device_state,
       int power_initial,
       int power_limit);
   virtual ~AutoEnrollmentClient();
@@ -61,7 +79,9 @@ class AutoEnrollmentClient
   static bool IsDisabled();
 
   // Convenience method to create instances of this class.
-  static AutoEnrollmentClient* Create(const base::Closure& completion_callback);
+  // TODO(mnissler): Convert callers to pass a ProgressCallback here.
+  static AutoEnrollmentClient* Create(
+      const base::Closure& completion_callback);
 
   // Cancels auto-enrollment.
   // This function does not interrupt a running auto-enrollment check. It only
@@ -71,70 +91,111 @@ class AutoEnrollmentClient
 
   // Starts the auto-enrollment check protocol with the device management
   // service. Subsequent calls drop any previous requests. Notice that this
-  // call can invoke the |completion_callback_| if errors occur.
+  // call can invoke the |progress_callback_| if errors occur.
   void Start();
 
-  // Cancels any pending requests. |completion_callback_| will not be invoked.
+  // Cancels any pending requests. |progress_callback_| will not be invoked.
   // |this| will delete itself.
   void CancelAndDeleteSoon();
 
   // Returns true if the protocol completed successfully and determined that
   // this device should do enterprise enrollment.
-  bool should_auto_enroll() const { return should_auto_enroll_; }
+  // TODO(mnissler): Remove once callers have been converted to state().
+  bool should_auto_enroll() const {
+    return state_ == STATE_TRIGGER_ENROLLMENT;
+  };
 
   // Returns the device_id randomly generated for the auto-enrollment requests.
   // It can be reused for subsequent requests to the device management service.
   std::string device_id() const { return device_id_; }
+
+  // Current state.
+  State state() const { return state_; }
 
   // Implementation of net::NetworkChangeNotifier::NetworkChangeObserver:
   virtual void OnNetworkChanged(
       net::NetworkChangeNotifier::ConnectionType type) OVERRIDE;
 
  private:
+  typedef bool (AutoEnrollmentClient::*RequestCompletionHandler)(
+      DeviceManagementStatus,
+      int,
+      const enterprise_management::DeviceManagementResponse&);
+
   // Tries to load the result of a previous execution of the protocol from
   // local state. Returns true if that decision has been made and is valid.
   bool GetCachedDecision();
 
-  // Sends an auto-enrollment check request to the device management service.
-  // |power| is the power of the power-of-2 to use as a modulus for this
-  // request.
-  void SendRequest(int power);
+  // Kicks protocol processing, restarting the current step if applicable.
+  // Returns true if progress has been made, false if the protocol is done.
+  bool RetryStep();
 
-  // Handles auto-enrollment request completion.
-  void OnRequestCompletion(
+  // Cleans up and invokes |progress_callback_|.
+  void ReportProgress(State state);
+
+  // Calls RetryStep() to make progress or determine that all is done. In the
+  // latter case, calls ReportProgress().
+  void NextStep();
+
+  // Sends an auto-enrollment check request to the device management service.
+  bool SendBucketDownloadRequest();
+
+  // Sends a device state download request to the device management service.
+  bool SendDeviceStateRequest();
+
+  // Runs the response handler for device management requests and calls
+  // NextStep().
+  void HandleRequestCompletion(
+      RequestCompletionHandler handler,
       DeviceManagementStatus status,
       int net_error,
       const enterprise_management::DeviceManagementResponse& response);
 
-  // Returns true if |serial_number_hash_| is contained in |hashes|.
-  bool IsSerialInProtobuf(
+  // Parses the server response to a bucket download request.
+  bool OnBucketDownloadRequestCompletion(
+      DeviceManagementStatus status,
+      int net_error,
+      const enterprise_management::DeviceManagementResponse& response);
+
+  // Parses the server response to a device state request.
+  bool OnDeviceStateRequestCompletion(
+      DeviceManagementStatus status,
+      int net_error,
+      const enterprise_management::DeviceManagementResponse& response);
+
+  // Returns true if |server_backed_state_key_hash_| is contained in |hashes|.
+  bool IsIdHashInProtobuf(
       const google::protobuf::RepeatedPtrField<std::string>& hashes);
 
-  // Invoked when the protocol completes. This invokes the callback and records
-  // some UMA metrics.
-  void OnProtocolDone();
+  // Updates UMA histograms for bucket download timings.
+  void UpdateBucketDownloadTimingHistograms();
 
-  // Invoked when a request job completes. Resets the internal state, and
-  // deletes the client if necessary.
-  void OnRequestDone();
+  // Callback to invoke when the protocol generates a relevant event. This can
+  // be either successful completion or an error that requires external action.
+  ProgressCallback progress_callback_;
 
-  // Callback to invoke when the protocol completes.
-  base::Closure completion_callback_;
+  // Current state.
+  State state_;
 
-  // Whether to auto-enroll or not. This is reset by calls to Start(), and only
-  // turns true if the protocol and the serial number check succeed.
-  bool should_auto_enroll_;
+  // Whether the hash bucket check succeeded, indicating that the server knows
+  // this device and might have keep state for it.
+  bool has_server_state_;
+
+  // Whether the download of server-kept device state completed successfully.
+  bool device_state_available_;
 
   // Randomly generated device id for the auto-enrollment requests.
   std::string device_id_;
 
-  // SHA256 hash of the device's serial number. Empty if the serial couldn't be
-  // retrieved.
-  std::string serial_number_hash_;
+  // Stable state key and its SHA-256 digest.
+  std::string server_backed_state_key_;
+  std::string server_backed_state_key_hash_;
 
-  // Power of the power-of-2 modulus used in the initial auto-enrollment
-  // request.
-  int power_initial_;
+  // Whether device state should be retrieved from the server.
+  bool retrieve_device_state_;
+
+  // Power-of-2 modulus to try next.
+  int current_power_;
 
   // Power of the maximum power-of-2 modulus that this client will accept from
   // a retry response from the server.

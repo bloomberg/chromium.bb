@@ -2248,6 +2248,10 @@ const char kDeviceRegistered[] = "DeviceRegistered";
 // This is used to prevent these users from joining multiprofile sessions.
 const char kUsedPolicyCertificates[] = "policy.used_policy_certificates";
 
+// A dictionary containing server-provided device state pulled form the cloud
+// after recovery.
+const char kServerBackedDeviceState[] = "server_backed_device_state";
+
 #endif
 
 // Whether there is a Flash version installed that supports clearing LSO data.

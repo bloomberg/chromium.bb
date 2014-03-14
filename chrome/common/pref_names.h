@@ -769,6 +769,7 @@ extern const char kInitialLocale[];
 extern const char kOobeComplete[];
 extern const char kDeviceRegistered[];
 extern const char kUsedPolicyCertificates[];
+extern const char kServerBackedDeviceState[];
 #endif
 
 extern const char kClearPluginLSODataEnabled[];
