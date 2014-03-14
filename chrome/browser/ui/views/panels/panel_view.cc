@@ -311,8 +311,6 @@ PanelView::PanelView(Panel* panel, const gfx::Rect& bounds, bool always_on_top)
 }
 
 PanelView::~PanelView() {
-  if (window_)
-    window_->RemoveObserver(this);
 }
 
 void PanelView::ShowPanel() {
@@ -781,7 +779,6 @@ gfx::ImageSkia PanelView::GetWindowIcon() {
 }
 
 void PanelView::WindowClosing() {
-
   // When closing a panel via window.close, API or the close button,
   // ClosePanel() is called first, destroying the native |window_|
   // which results in this method being called. ClosePanel() sets
@@ -951,10 +948,7 @@ bool PanelView::AcceleratorPressed(const ui::Accelerator& accelerator) {
 }
 
 void PanelView::OnWidgetDestroying(views::Widget* widget) {
-  if (window_) {
-    window_->RemoveObserver(this);
-    window_ = NULL;
-  }
+  window_ = NULL;
 }
 
 void PanelView::OnWidgetActivationChanged(views::Widget* widget, bool active) {
