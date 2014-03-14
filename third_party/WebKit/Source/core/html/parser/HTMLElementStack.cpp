@@ -31,6 +31,7 @@
 #include "MathMLNames.h"
 #include "SVGNames.h"
 #include "core/dom/Element.h"
+#include "core/html/HTMLElement.h"
 
 namespace WebCore {
 
@@ -400,7 +401,7 @@ void HTMLElementStack::removeHTMLHeadElement(Element* element)
 
 void HTMLElementStack::remove(Element* element)
 {
-    ASSERT(!element->hasTagName(HTMLNames::headTag));
+    ASSERT(!isHTMLHeadElement(element));
     if (m_top->element() == element) {
         pop();
         return;
@@ -576,8 +577,8 @@ void HTMLElementStack::popCommon()
 
 void HTMLElementStack::removeNonTopCommon(Element* element)
 {
-    ASSERT(!element->hasTagName(htmlTag));
-    ASSERT(!element->hasTagName(bodyTag));
+    ASSERT(!isHTMLHtmlElement(element));
+    ASSERT(!isHTMLBodyElement(element));
     ASSERT(top() != element);
     for (ElementRecord* pos = m_top.get(); pos; pos = pos->next()) {
         if (pos->next()->element() == element) {

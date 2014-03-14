@@ -137,7 +137,7 @@ static HTMLFormElement* closestFormAncestor(Element* element)
 {
     ASSERT(isMainThread());
     while (element) {
-        if (element->hasTagName(formTag))
+        if (isHTMLFormElement(*element))
             return toHTMLFormElement(element);
         ContainerNode* parent = element->parentNode();
         if (!parent || !parent->isElementNode())
@@ -311,7 +311,7 @@ HTMLTreeBuilder::HTMLTreeBuilder(HTMLDocumentParser* parser, DocumentFragment* f
         // and instead use the DocumentFragment as a root node.
         m_tree.openElements()->pushRootNode(HTMLStackItem::create(fragment, HTMLStackItem::ItemForDocumentFragmentNode));
 
-        if (contextElement->hasTagName(templateTag))
+        if (isHTMLTemplateElement(*contextElement))
             m_templateInsertionModes.append(TemplateContentsMode);
 
         resetInsertionModeAppropriately();
@@ -912,7 +912,7 @@ bool HTMLTreeBuilder::processTemplateEndTag(AtomicHTMLToken* token)
 {
     ASSERT(token->name() == templateTag.localName());
     if (!m_tree.openElements()->hasTemplateInHTMLScope()) {
-        ASSERT(m_templateInsertionModes.isEmpty() || (m_templateInsertionModes.size() == 1 && m_fragmentContext.contextElement()->hasTagName(templateTag)));
+        ASSERT(m_templateInsertionModes.isEmpty() || (m_templateInsertionModes.size() == 1 && isHTMLTemplateElement(m_fragmentContext.contextElement())));
         parseError(token);
         return false;
     }
@@ -938,7 +938,7 @@ bool HTMLTreeBuilder::processEndOfFileForInTemplateContents(AtomicHTMLToken* tok
 
 bool HTMLTreeBuilder::processColgroupEndTagForInColumnGroup()
 {
-    if (m_tree.currentIsRootNode() || m_tree.currentNode()->hasTagName(templateTag)) {
+    if (m_tree.currentIsRootNode() || isHTMLTemplateElement(*m_tree.currentNode())) {
         ASSERT(isParsingFragmentOrTemplateContents());
         // FIXME: parse error
         return false;
@@ -2455,7 +2455,7 @@ void HTMLTreeBuilder::processEndOfFile(AtomicHTMLToken* token)
             ASSERT(isParsingFragment());
             return; // FIXME: Should we break here instead of returning?
         }
-        ASSERT(m_tree.currentNode()->hasTagName(colgroupTag) || m_tree.currentNode()->hasTagName(templateTag));
+        ASSERT(m_tree.currentNode()->hasTagName(colgroupTag) || isHTMLTemplateElement(m_tree.currentNode()));
         processColgroupEndTagForInColumnGroup();
         // Fall through
     case InFramesetMode:

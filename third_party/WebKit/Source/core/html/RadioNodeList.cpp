@@ -38,7 +38,7 @@ namespace WebCore {
 using namespace HTMLNames;
 
 RadioNodeList::RadioNodeList(ContainerNode& rootNode, const AtomicString& name, CollectionType type)
-    : LiveNodeList(rootNode, type, InvalidateForFormControls, rootNode.hasTagName(formTag) ? NodeListIsRootedAtDocument : NodeListIsRootedAtNode)
+    : LiveNodeList(rootNode, type, InvalidateForFormControls, isHTMLFormElement(rootNode) ? NodeListIsRootedAtDocument : NodeListIsRootedAtNode)
     , m_name(name)
     , m_onlyMatchImgElements(type == RadioImgNodeListType)
 {
@@ -50,15 +50,15 @@ RadioNodeList::~RadioNodeList()
     ownerNode().nodeLists()->removeCache(this, m_onlyMatchImgElements ? RadioImgNodeListType : RadioNodeListType, m_name);
 }
 
-static inline HTMLInputElement* toRadioButtonInputElement(Node* node)
+static inline HTMLInputElement* toRadioButtonInputElement(Node& node)
 {
-    ASSERT(node->isElementNode());
-    if (!node->hasTagName(inputTag))
+    ASSERT(node.isElementNode());
+    if (!isHTMLInputElement(node))
         return 0;
-    HTMLInputElement* inputElement = toHTMLInputElement(node);
-    if (!inputElement->isRadioButton() || inputElement->value().isEmpty())
+    HTMLInputElement& inputElement = toHTMLInputElement(node);
+    if (!inputElement.isRadioButton() || inputElement.value().isEmpty())
         return 0;
-    return inputElement;
+    return &inputElement;
 }
 
 String RadioNodeList::value() const
@@ -67,7 +67,7 @@ String RadioNodeList::value() const
         return String();
     for (unsigned i = 0; i < length(); ++i) {
         Node* node = item(i);
-        const HTMLInputElement* inputElement = toRadioButtonInputElement(node);
+        const HTMLInputElement* inputElement = toRadioButtonInputElement(*node);
         if (!inputElement || !inputElement->checked())
             continue;
         return inputElement->value();
@@ -81,7 +81,7 @@ void RadioNodeList::setValue(const String& value)
         return;
     for (unsigned i = 0; i < length(); ++i) {
         Node* node = item(i);
-        HTMLInputElement* inputElement = toRadioButtonInputElement(node);
+        HTMLInputElement* inputElement = toRadioButtonInputElement(*node);
         if (!inputElement || inputElement->value() != value)
             continue;
         inputElement->setChecked(true);
@@ -92,8 +92,8 @@ void RadioNodeList::setValue(const String& value)
 bool RadioNodeList::checkElementMatchesRadioNodeListFilter(const Element& testElement) const
 {
     ASSERT(!m_onlyMatchImgElements);
-    ASSERT(testElement.hasTagName(objectTag) || testElement.isFormControlElement());
-    if (ownerNode().hasTagName(formTag)) {
+    ASSERT(isHTMLObjectElement(testElement) || testElement.isFormControlElement());
+    if (isHTMLFormElement(ownerNode())) {
         HTMLFormElement* formElement = toHTMLElement(testElement).formOwner();
         if (!formElement || formElement != ownerNode())
             return false;
@@ -105,12 +105,12 @@ bool RadioNodeList::checkElementMatchesRadioNodeListFilter(const Element& testEl
 bool RadioNodeList::elementMatches(const Element& element) const
 {
     if (m_onlyMatchImgElements)
-        return element.hasTagName(imgTag);
+        return isHTMLImageElement(element);
 
-    if (!element.hasTagName(objectTag) && !element.isFormControlElement())
+    if (!isHTMLObjectElement(element) && !element.isFormControlElement())
         return false;
 
-    if (element.hasTagName(inputTag) && toHTMLInputElement(element).isImageButton())
+    if (isHTMLInputElement(element) && toHTMLInputElement(element).isImageButton())
         return false;
 
     return checkElementMatchesRadioNodeListFilter(element);

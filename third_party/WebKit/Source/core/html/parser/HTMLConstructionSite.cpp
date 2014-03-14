@@ -46,6 +46,7 @@
 #include "core/html/parser/HTMLToken.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
+#include "core/svg/SVGScriptElement.h"
 #include "platform/NotImplemented.h"
 #include "platform/text/TextBreakIterator.h"
 #include <limits>
@@ -75,14 +76,14 @@ static bool hasImpliedEndTag(const HTMLStackItem* item)
         || item->hasTagName(rtTag);
 }
 
-static bool shouldUseLengthLimit(const ContainerNode* node)
+static bool shouldUseLengthLimit(const ContainerNode& node)
 {
-    return !node->hasTagName(scriptTag)
-        && !node->hasTagName(styleTag)
-        && !node->hasTagName(SVGNames::scriptTag);
+    return !isHTMLScriptElement(node)
+        && !isHTMLStyleElement(node)
+        && !isSVGScriptElement(node);
 }
 
-static unsigned textLengthLimitForContainer(const ContainerNode* node)
+static unsigned textLengthLimitForContainer(const ContainerNode& node)
 {
     return shouldUseLengthLimit(node) ? Text::defaultLengthLimit : std::numeric_limits<unsigned>::max();
 }
@@ -94,7 +95,7 @@ static inline bool isAllWhitespace(const String& string)
 
 static inline void insert(HTMLConstructionSiteTask& task)
 {
-    if (task.parent->hasTagName(templateTag))
+    if (isHTMLTemplateElement(*task.parent))
         task.parent = toHTMLTemplateElement(task.parent.get())->content();
 
     if (ContainerNode* parent = task.child->parentNode())
@@ -131,7 +132,7 @@ static inline void executeInsertTextTask(HTMLConstructionSiteTask& task)
     Node* previousChild = task.nextChild ? task.nextChild->previousSibling() : task.parent->lastChild();
     if (previousChild && previousChild->isTextNode()) {
         Text* previousText = toText(previousChild);
-        unsigned lengthLimit = textLengthLimitForContainer(task.parent.get());
+        unsigned lengthLimit = textLengthLimitForContainer(*task.parent);
         if (previousText->length() + newText->length() < lengthLimit) {
             previousText->parserAppendData(newText->data());
             return;
@@ -239,7 +240,7 @@ void HTMLConstructionSite::flushPendingText()
 
     // Splitting text nodes into smaller chunks contradicts HTML5 spec, but is necessary
     // for performance, see: https://bugs.webkit.org/show_bug.cgi?id=55898
-    unsigned lengthLimit = textLengthLimitForContainer(pendingText.parent.get());
+    unsigned lengthLimit = textLengthLimitForContainer(*pendingText.parent);
 
     unsigned currentPosition = 0;
     const StringBuilder& string = pendingText.stringBuilder;
@@ -597,7 +598,7 @@ void HTMLConstructionSite::insertHTMLBodyElement(AtomicHTMLToken* token)
 void HTMLConstructionSite::insertHTMLFormElement(AtomicHTMLToken* token, bool isDemoted)
 {
     RefPtr<Element> element = createHTMLElement(token);
-    ASSERT(element->hasTagName(formTag));
+    ASSERT(isHTMLFormElement(element));
     m_form = static_pointer_cast<HTMLFormElement>(element.release());
     m_form->setDemoted(isDemoted);
     attachLater(currentNode(), m_form);
@@ -668,7 +669,7 @@ void HTMLConstructionSite::insertTextNode(const String& string, WhitespaceMode w
         findFosterSite(dummyTask);
 
     // FIXME: This probably doesn't need to be done both here and in insert(Task).
-    if (dummyTask.parent->hasTagName(templateTag))
+    if (isHTMLTemplateElement(*dummyTask.parent))
         dummyTask.parent = toHTMLTemplateElement(dummyTask.parent.get())->content();
 
     // Unclear when parent != case occurs. Somehow we insert text into two separate nodes while processing the same Token.
@@ -726,7 +727,7 @@ PassRefPtr<Element> HTMLConstructionSite::createElement(AtomicHTMLToken* token, 
 
 inline Document& HTMLConstructionSite::ownerDocumentForCurrentNode()
 {
-    if (currentNode()->hasTagName(templateTag))
+    if (isHTMLTemplateElement(*currentNode()))
         return toHTMLTemplateElement(currentElement())->content()->document();
     return currentNode()->document();
 }
