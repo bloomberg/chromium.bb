@@ -214,6 +214,14 @@ void NetworkStateNotifier::ConnectErrorPropertiesSucceeded(
     const std::string& shill_error,
     const std::string& service_path,
     const base::DictionaryValue& shill_properties) {
+  std::string state;
+  shill_properties.GetStringWithoutPathExpansion(shill::kStateProperty, &state);
+  if (chromeos::NetworkState::StateIsConnected(state) ||
+      chromeos::NetworkState::StateIsConnecting(state)) {
+    // Network is no longer in an error state. This can happen if an unexpected
+    // Idle state transition occurs, see crbug.com/333955.
+    return;
+  }
   ShowConnectErrorNotification(error_name, shill_error, service_path,
                                shill_properties);
 }
