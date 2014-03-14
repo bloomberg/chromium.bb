@@ -175,6 +175,9 @@ class ChromeDriver(object):
   def Load(self, url):
     self.ExecuteCommand(Command.GET, {'url': url})
 
+  def LaunchApp(self, app_id):
+    self.ExecuteCommand(Command.LAUNCH_APP, {'id': app_id})
+
   def ExecuteScript(self, script, *args):
     converted_args = list(args)
     return self.ExecuteCommand(
