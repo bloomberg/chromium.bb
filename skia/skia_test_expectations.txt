@@ -55,4 +55,8 @@ crbug.com/341448 svg/W3C-SVG-1.1/filters-morph-01-f.svg [ ImageOnlyFailure ]
 # The Skia roll to r13482 altered the following layout tests:
 crbug.com/344497 virtual/deferred/fast/images/webp-color-profile-lossy.html [ ImageOnlyFailure ]
 
+# Skia 13798 change to spot lights
+crbug.com/352628 css3/filters/effect-combined-hw.html [ ImageOnlyFailure ]
+crbug.com/352628 css3/filters/effect-reference-ordering-hw.html [ ImageOnlyFailure ]
+
 # END OVERRIDES HERE (this line ensures that the file is newline-terminated)
