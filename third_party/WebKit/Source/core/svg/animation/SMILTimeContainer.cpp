@@ -37,6 +37,8 @@ using namespace std;
 
 namespace WebCore {
 
+static const double initialFrameDelay = 0.025;
+
 // Every entry-point that calls updateAnimations() should instantiate a
 // DiscardScope to prevent deletion of the ownerElement (and hence itself.)
 class DiscardScope {
@@ -116,13 +118,18 @@ bool SMILTimeContainer::hasAnimations() const
     return !m_scheduledAnimations.isEmpty();
 }
 
+bool SMILTimeContainer::hasPendingSynchronization() const
+{
+    return m_frameSchedulingState == SynchronizeAnimations && m_wakeupTimer.isActive() && !m_wakeupTimer.nextFireInterval();
+}
+
 void SMILTimeContainer::notifyIntervalsChanged()
 {
     if (!isStarted())
         return;
     // Schedule updateAnimations() to be called asynchronously so multiple intervals
     // can change with updateAnimations() only called once at the end.
-    if (m_frameSchedulingState == SynchronizeAnimations && m_wakeupTimer.isActive() && !m_wakeupTimer.nextFireInterval())
+    if (hasPendingSynchronization())
         return;
     cancelAnimationFrame();
     scheduleWakeUp(0, SynchronizeAnimations);
@@ -163,14 +170,18 @@ void SMILTimeContainer::begin()
 
     if (m_pauseTime) {
         m_pauseTime = now;
-        cancelAnimationFrame();
-    } else {
+        // If updateAnimations() caused new syncbase instance to be generated,
+        // we don't want to cancel those. Excepting that, no frame should've
+        // been scheduled at this point.
+        ASSERT(m_frameSchedulingState == Idle || m_frameSchedulingState == SynchronizeAnimations);
+    } else if (!hasPendingSynchronization()) {
         ASSERT(isTimelineRunning());
         // If the timeline is running, and there's pending animation updates,
         // always perform the first update after the timeline was started using
         // the wake-up mechanism.
         if (earliestFireTime.isFinite()) {
-            scheduleWakeUp(DocumentTimeline::s_minimumDelay, SynchronizeAnimations);
+            SMILTime delay = earliestFireTime - elapsed();
+            scheduleWakeUp(std::max(initialFrameDelay, delay.value()), SynchronizeAnimations);
         }
     }
 }
@@ -193,7 +204,7 @@ void SMILTimeContainer::resume()
     m_resumeTime = currentTime();
 
     m_pauseTime = 0;
-    serviceOnNextFrame();
+    scheduleWakeUp(0, SynchronizeAnimations);
 }
 
 void SMILTimeContainer::setElapsed(SMILTime time)
@@ -242,12 +253,13 @@ bool SMILTimeContainer::isTimelineRunning() const
 void SMILTimeContainer::scheduleAnimationFrame(SMILTime fireTime)
 {
     ASSERT(isTimelineRunning() && fireTime.isFinite());
+    ASSERT(!m_wakeupTimer.isActive());
 
     SMILTime delay = fireTime - elapsed();
     if (delay.value() < DocumentTimeline::s_minimumDelay) {
         serviceOnNextFrame();
     } else {
-        scheduleWakeUp(delay.value() - DocumentTimeline::s_minimumDelay, AnimationFrame);
+        scheduleWakeUp(delay.value() - DocumentTimeline::s_minimumDelay, FutureAnimationFrame);
     }
 }
 
@@ -259,19 +271,19 @@ void SMILTimeContainer::cancelAnimationFrame()
 
 void SMILTimeContainer::scheduleWakeUp(double delayTime, FrameSchedulingState frameSchedulingState)
 {
-    ASSERT(frameSchedulingState != Idle);
+    ASSERT(frameSchedulingState == SynchronizeAnimations || frameSchedulingState == FutureAnimationFrame);
     m_wakeupTimer.startOneShot(delayTime, FROM_HERE);
     m_frameSchedulingState = frameSchedulingState;
 }
 
 void SMILTimeContainer::wakeupTimerFired(Timer<SMILTimeContainer>*)
 {
-    if (m_frameSchedulingState == AnimationFrame) {
+    ASSERT(m_frameSchedulingState == SynchronizeAnimations || m_frameSchedulingState == FutureAnimationFrame);
+    if (m_frameSchedulingState == FutureAnimationFrame) {
         ASSERT(isTimelineRunning());
         m_frameSchedulingState = Idle;
         serviceOnNextFrame();
     } else {
-        ASSERT(m_frameSchedulingState == SynchronizeAnimations);
         m_frameSchedulingState = Idle;
         DiscardScope discardScope(m_ownerSVGElement);
         updateAnimationsAndScheduleFrameIfNeeded(elapsed());
@@ -342,6 +354,11 @@ void SMILTimeContainer::serviceAnimations(double monotonicAnimationStartTime)
 void SMILTimeContainer::updateAnimationsAndScheduleFrameIfNeeded(SMILTime elapsed, bool seekToTime)
 {
     SMILTime earliestFireTime = updateAnimations(elapsed, seekToTime);
+    // If updateAnimations() ended up triggering a synchronization (most likely
+    // via syncbases), then give that priority.
+    if (hasPendingSynchronization())
+        return;
+
     if (!isTimelineRunning())
         return;
 

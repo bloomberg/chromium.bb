@@ -76,6 +76,8 @@ private:
         Idle,
         // Scheduled a wakeup to update the animation values.
         SynchronizeAnimations,
+        // Scheduled a wakeup to trigger an animation frame.
+        FutureAnimationFrame,
         // Scheduled a animation frame for continuous update.
         AnimationFrame
     };
@@ -88,6 +90,7 @@ private:
     SMILTime updateAnimations(SMILTime elapsed, bool seekToTime = false);
     void serviceOnNextFrame();
     void scheduleWakeUp(double delayTime, FrameSchedulingState);
+    bool hasPendingSynchronization() const;
 
     void updateDocumentOrderIndexes();
     double lastResumeTime() const { return m_resumeTime ? m_resumeTime : m_beginTime; }
