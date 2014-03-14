@@ -3580,7 +3580,12 @@ TEST_P(SpdyNetworkTransactionTest, InvalidSynReply) {
 }
 
 // Verify that we don't crash on some corrupt frames.
+// TODO(jgraettinger): SPDY4 and up treats a header decompression failure as a
+// connection error. I'd like to backport this behavior to SPDY3 as well.
 TEST_P(SpdyNetworkTransactionTest, CorruptFrameSessionError) {
+  if (spdy_util_.spdy_version() >= SPDY4) {
+    return;
+  }
   // This is the length field that's too short.
   scoped_ptr<SpdyFrame> syn_reply_wrong_length(
       spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
@@ -3625,6 +3630,46 @@ TEST_P(SpdyNetworkTransactionTest, CorruptFrameSessionError) {
     TransactionHelperResult out = helper.output();
     EXPECT_EQ(ERR_SPDY_PROTOCOL_ERROR, out.rv);
   }
+}
+
+// SPDY4 treats a header decompression failure as a connection-level error.
+TEST_P(SpdyNetworkTransactionTest, CorruptFrameSessionErrorSpdy4) {
+  if (spdy_util_.spdy_version() < SPDY4) {
+    return;
+  }
+  // This is the length field that's too short.
+  scoped_ptr<SpdyFrame> syn_reply_wrong_length(
+      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  BufferedSpdyFramer framer(spdy_util_.spdy_version(), false);
+  size_t right_size =
+      (spdy_util_.spdy_version() < SPDY4) ?
+      syn_reply_wrong_length->size() - framer.GetControlFrameHeaderSize() :
+      syn_reply_wrong_length->size();
+  size_t wrong_size = right_size - 4;
+  test::SetFrameLength(syn_reply_wrong_length.get(),
+                       wrong_size,
+                       spdy_util_.spdy_version());
+
+  // TODO(jgraettinger): SpdySession::OnError() should send a GOAWAY before
+  // breaking the connection.
+  scoped_ptr<SpdyFrame> req(
+      spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, LOWEST, true));
+  MockWrite writes[] = {
+    CreateMockWrite(*req),
+  };
+
+  scoped_ptr<SpdyFrame> body(spdy_util_.ConstructSpdyBodyFrame(1, true));
+  MockRead reads[] = {
+    MockRead(ASYNC, syn_reply_wrong_length->data(), wrong_size),
+  };
+
+  DelayedSocketData data(1, reads, arraysize(reads),
+                         writes, arraysize(writes));
+  NormalSpdyTransactionHelper helper(CreateGetRequest(), DEFAULT_PRIORITY,
+                                     BoundNetLog(), GetParam(), NULL);
+  helper.RunToCompletion(&data);
+  TransactionHelperResult out = helper.output();
+  EXPECT_EQ(ERR_SPDY_PROTOCOL_ERROR, out.rv);
 }
 
 // Test that we shutdown correctly on write errors.
@@ -3689,6 +3734,10 @@ TEST_P(SpdyNetworkTransactionTest, PartialWrite) {
 // In this test, we enable compression, but get a uncompressed SynReply from
 // the server.  Verify that teardown is all clean.
 TEST_P(SpdyNetworkTransactionTest, DecompressFailureOnSynReply) {
+  if (spdy_util_.spdy_version() >= SPDY4) {
+    // HPACK doesn't use deflate compression.
+    return;
+  }
   scoped_ptr<SpdyFrame> compressed(
       spdy_util_.ConstructSpdyGet(NULL, 0, true, 1, LOWEST, true));
   scoped_ptr<SpdyFrame> rst(
