@@ -51,9 +51,9 @@ public:
     void inheritFrom(const FontDescription&);
     void fromSystemFont(CSSValueID, float effectiveZoom);
 
-    void setFontFamilyInitial(float effectiveZoom);
+    void setFontFamilyInitial();
     void setFontFamilyInherit(const FontDescription&);
-    void setFontFamilyValue(CSSValue*, float effectiveZoom);
+    void setFontFamilyValue(CSSValue*);
 
     void setFontSizeInitial();
     void setFontSizeInherit(const FontDescription&);

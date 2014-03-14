@@ -235,7 +235,7 @@ void StyleBuilderFunctions::applyValueCSSPropertyDisplay(StyleResolverState& sta
 
 void StyleBuilderFunctions::applyInitialCSSPropertyFontFamily(StyleResolverState& state)
 {
-    state.fontBuilder().setFontFamilyInitial(state.style()->effectiveZoom());
+    state.fontBuilder().setFontFamilyInitial();
 }
 
 void StyleBuilderFunctions::applyInheritCSSPropertyFontFamily(StyleResolverState& state)
@@ -245,7 +245,7 @@ void StyleBuilderFunctions::applyInheritCSSPropertyFontFamily(StyleResolverState
 
 void StyleBuilderFunctions::applyValueCSSPropertyFontFamily(StyleResolverState& state, CSSValue* value)
 {
-    state.fontBuilder().setFontFamilyValue(value, state.style()->effectiveZoom());
+    state.fontBuilder().setFontFamilyValue(value);
 }
 
 void StyleBuilderFunctions::applyInitialCSSPropertyFontSize(StyleResolverState& state)

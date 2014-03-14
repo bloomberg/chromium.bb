@@ -134,7 +134,7 @@ void FontBuilder::fromSystemFont(CSSValueID valueId, float effectiveZoom)
     scope.set(fontDescription);
 }
 
-void FontBuilder::setFontFamilyInitial(float effectiveZoom)
+void FontBuilder::setFontFamilyInitial()
 {
     FontDescriptionChangeScope scope(this);
 
@@ -142,7 +142,7 @@ void FontBuilder::setFontFamilyInitial(float effectiveZoom)
 
     // We need to adjust the size to account for the generic family change from monospace to non-monospace.
     if (scope.fontDescription().keywordSize() && scope.fontDescription().useFixedDefaultSize())
-        setSize(scope.fontDescription(), effectiveZoom, FontSize::fontSizeForKeyword(m_document, CSSValueXxSmall + scope.fontDescription().keywordSize() - 1, false));
+        scope.fontDescription().setSpecifiedSize(FontSize::fontSizeForKeyword(m_document, CSSValueXxSmall + scope.fontDescription().keywordSize() - 1, false));
     scope.fontDescription().setGenericFamily(initialDesc.genericFamily());
     if (!initialDesc.firstFamily().familyIsEmpty())
         scope.fontDescription().setFamily(initialDesc.firstFamily());
@@ -158,7 +158,7 @@ void FontBuilder::setFontFamilyInherit(const FontDescription& parentFontDescript
 }
 
 // FIXME: I am not convinced FontBuilder needs to know anything about CSSValues.
-void FontBuilder::setFontFamilyValue(CSSValue* value, float effectiveZoom)
+void FontBuilder::setFontFamilyValue(CSSValue* value)
 {
     FontDescriptionChangeScope scope(this);
 
@@ -237,7 +237,7 @@ void FontBuilder::setFontFamilyValue(CSSValue* value, float effectiveZoom)
         return;
 
     if (scope.fontDescription().keywordSize() && scope.fontDescription().useFixedDefaultSize() != oldFamilyUsedFixedDefaultSize)
-        setSize(scope.fontDescription(), effectiveZoom, FontSize::fontSizeForKeyword(m_document, CSSValueXxSmall + scope.fontDescription().keywordSize() - 1, !oldFamilyUsedFixedDefaultSize));
+        scope.fontDescription().setSpecifiedSize(FontSize::fontSizeForKeyword(m_document, CSSValueXxSmall + scope.fontDescription().keywordSize() - 1, !oldFamilyUsedFixedDefaultSize));
 }
 
 void FontBuilder::setFontSizeInitial()
