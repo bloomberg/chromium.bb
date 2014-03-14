@@ -111,6 +111,7 @@
         "filesystem:*.html",
         "filesystem:*.mht",
         "filesystem:*.mhtml",
+        "filesystem:*.svg",
         "filesystem:*.txt"
       ]
     },
