@@ -601,7 +601,7 @@ void Clipboard::WriteData(const FormatType& format,
 }
 
 // static
-Clipboard::FormatType Clipboard::GetFormatType(
+Clipboard::FormatType Clipboard::GetFormatTypeInternal(
     const std::string& format_string) {
   return FormatType::Deserialize(format_string);
 }
@@ -665,13 +665,15 @@ const Clipboard::FormatType& Clipboard::GetWebKitSmartPasteFormatType() {
 
 // static
 const Clipboard::FormatType& Clipboard::GetWebCustomDataFormatType() {
-  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypeWebCustomData));
+  CR_DEFINE_STATIC_LOCAL(
+      FormatType, type, (GetFormatType(kMimeTypeWebCustomData)));
   return type;
 }
 
 // static
 const Clipboard::FormatType& Clipboard::GetPepperCustomDataFormatType() {
-  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypePepperCustomData));
+  CR_DEFINE_STATIC_LOCAL(
+      FormatType, type, (GetFormatType(kMimeTypePepperCustomData)));
   return type;
 }
 

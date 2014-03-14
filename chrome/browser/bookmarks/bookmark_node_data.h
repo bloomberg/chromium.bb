@@ -11,6 +11,7 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/clipboard_types.h"
 
 #include "url/gurl.h"
@@ -81,8 +82,8 @@ struct BookmarkNodeData {
     int64 id_;
   };
 
-  // The MIME type for the clipboard format for BookmarkNodeData.
-  static const char* kClipboardFormatString;
+  // The Bookmark format type for BookmarkNodeData.
+  static const ui::Clipboard::FormatType& GetFormatType();
 
   BookmarkNodeData();
 
@@ -91,10 +92,6 @@ struct BookmarkNodeData {
   explicit BookmarkNodeData(const std::vector<const BookmarkNode*>& nodes);
 
   ~BookmarkNodeData();
-
-#if defined(TOOLKIT_VIEWS)
-  static const ui::OSExchangeData::CustomFormat& GetBookmarkCustomFormat();
-#endif
 
   static bool ClipboardContainsBookmarks();
 
