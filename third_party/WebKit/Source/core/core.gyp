@@ -555,6 +555,11 @@
         '<@(webcore_html_files)',
       ],
       'conditions': [
+        # Shard this taret into parts to work around linker limitations.
+        # on link time code generation builds.
+        ['OS=="win" and buildtype=="Official"', {
+          'msvs_shard': 5,
+        }],
         ['OS!="android"', {
           'sources/': [
             ['exclude', 'Android\\.cpp$'],
