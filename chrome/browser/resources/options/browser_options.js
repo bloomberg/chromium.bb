@@ -1312,6 +1312,20 @@ cr.define('options', function() {
       }
     },
 
+    setWallpaperManaged_: function(managed) {
+      var button = $('set-wallpaper');
+      button.disabled = !!managed;
+
+      // Create a synthetic pref change event decorated as
+      // CoreOptionsHandler::CreateValueForPref() does.
+      var event = new Event('account-picture');
+      if (managed)
+        event.value = { controlledBy: 'policy' };
+      else
+        event.value = {};
+      $('wallpaper-indicator').handlePrefChange(event);
+    },
+
     /**
      * Handle the 'add device' button click.
      * @private
@@ -1646,6 +1660,7 @@ cr.define('options', function() {
     'removeCloudPrintConnectorSection',
     'scrollToSection',
     'setAccountPictureManaged',
+    'setWallpaperManaged',
     'setAutoOpenFileTypesDisplayed',
     'setBluetoothState',
     'setFontSize',

@@ -1569,10 +1569,21 @@
     "test_policy": {
       "UserAvatarImage": {
         "url": "http://localhost/",
-        "hash": "01234567890012345678900123456789001234567890"
+        "hash": "deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef"
       }
     },
     "indicator_selector": "#account-picture-indicator"
+  },
+
+  "WallpaperImage": {
+    "os": ["chromeos"],
+    "test_policy": {
+      "WallpaperImage": {
+        "url": "http://localhost/",
+        "hash": "baddecafbaddecafbaddecafbaddecafbaddecafbaddecafbaddecafbaddecaf"
+      }
+    },
+    "indicator_selector": "#wallpaper-indicator"
   },
 
   "----- Chrome OS policies ------------------------------------------------": {},

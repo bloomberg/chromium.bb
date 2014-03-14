@@ -101,6 +101,10 @@ class BrowserOptionsHandler
   // Will be called when the policy::key::kUserAvatarImage policy changes.
   void OnUserImagePolicyChanged(const base::Value* previous_policy,
                                 const base::Value* current_policy);
+
+  // Will be called when the policy::key::kWallpaperImage policy changes.
+  void OnWallpaperPolicyChanged(const base::Value* previous_policy,
+                                const base::Value* current_policy);
 #endif
 
   void UpdateSyncState();
@@ -179,6 +183,11 @@ class BrowserOptionsHandler
   // is |false| and preventing the user from changing the avatar image if
   // |managed| is |true|.
   void OnAccountPictureManagedChanged(bool managed);
+
+  // Updates the UI, allowing the user to change the wallpaper if |managed| is
+  // |false| and preventing the user from changing the wallpaper if |managed| is
+  // |true|.
+  void OnWallpaperManagedChanged(bool managed);
 #endif
 
   // Callback for the "selectDownloadLocation" message. This will prompt the

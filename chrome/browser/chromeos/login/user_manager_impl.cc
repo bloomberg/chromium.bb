@@ -239,13 +239,21 @@ UserManagerImpl::UserManagerImpl()
 
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  policy_observer_.reset(new policy::CloudExternalDataPolicyObserver(
+  avatar_policy_observer_.reset(new policy::CloudExternalDataPolicyObserver(
       cros_settings_,
       this,
       connector->GetDeviceLocalAccountPolicyService(),
       policy::key::kUserAvatarImage,
       this));
-  policy_observer_->Init();
+  avatar_policy_observer_->Init();
+
+  wallpaper_policy_observer_.reset(new policy::CloudExternalDataPolicyObserver(
+      cros_settings_,
+      this,
+      connector->GetDeviceLocalAccountPolicyService(),
+      policy::key::kWallpaperImage,
+      this));
+  wallpaper_policy_observer_->Init();
 
   UpdateLoginState();
 }
@@ -279,7 +287,8 @@ void UserManagerImpl::Shutdown() {
     it->second->Shutdown();
   }
   multi_profile_user_controller_.reset();
-  policy_observer_.reset();
+  avatar_policy_observer_.reset();
+  wallpaper_policy_observer_.reset();
 }
 
 MultiProfileUserController* UserManagerImpl::GetMultiProfileUserController() {
@@ -898,7 +907,8 @@ bool UserManagerImpl::RespectLocalePreference(
 }
 
 void UserManagerImpl::StopPolicyObserverForTesting() {
-  policy_observer_.reset();
+  avatar_policy_observer_.reset();
+  wallpaper_policy_observer_.reset();
 }
 
 void UserManagerImpl::Observe(int type,
@@ -965,18 +975,33 @@ void UserManagerImpl::Observe(int type,
 
 void UserManagerImpl::OnExternalDataSet(const std::string& policy,
                                         const std::string& user_id) {
-  GetUserImageManager(user_id)->OnExternalDataSet(policy);
+  if (policy == policy::key::kUserAvatarImage)
+    GetUserImageManager(user_id)->OnExternalDataSet(policy);
+  else if (policy == policy::key::kWallpaperImage)
+    WallpaperManager::Get()->OnPolicySet(policy, user_id);
+  else
+    NOTREACHED();
 }
 
 void UserManagerImpl::OnExternalDataCleared(const std::string& policy,
                                             const std::string& user_id) {
-  GetUserImageManager(user_id)->OnExternalDataCleared(policy);
+  if (policy == policy::key::kUserAvatarImage)
+    GetUserImageManager(user_id)->OnExternalDataCleared(policy);
+  else if (policy == policy::key::kWallpaperImage)
+    WallpaperManager::Get()->OnPolicyCleared(policy, user_id);
+  else
+    NOTREACHED();
 }
 
 void UserManagerImpl::OnExternalDataFetched(const std::string& policy,
                                             const std::string& user_id,
                                             scoped_ptr<std::string> data) {
-  GetUserImageManager(user_id)->OnExternalDataFetched(policy, data.Pass());
+  if (policy == policy::key::kUserAvatarImage)
+    GetUserImageManager(user_id)->OnExternalDataFetched(policy, data.Pass());
+  else if (policy == policy::key::kWallpaperImage)
+    WallpaperManager::Get()->OnPolicyFetched(policy, user_id, data.Pass());
+  else
+    NOTREACHED();
 }
 
 void UserManagerImpl::OnPolicyUpdated(const std::string& user_id) {

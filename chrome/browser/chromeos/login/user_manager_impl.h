@@ -480,7 +480,11 @@ class UserManagerImpl
       multi_profile_first_run_notification_;
 
   // Observer for the policy that can be used to manage user images.
-  scoped_ptr<policy::CloudExternalDataPolicyObserver> policy_observer_;
+  scoped_ptr<policy::CloudExternalDataPolicyObserver> avatar_policy_observer_;
+
+  // Observer for the policy that can be used to manage wallpapers.
+  scoped_ptr<policy::CloudExternalDataPolicyObserver>
+      wallpaper_policy_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(UserManagerImpl);
 };
