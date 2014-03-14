@@ -1223,7 +1223,6 @@ class KioskHiddenWebUITest : public KioskTest,
     KioskTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(switches::kDeviceRegistered, "1");
     command_line->AppendSwitch(switches::kDisableBootAnimation);
-    command_line->AppendSwitch(switches::kDisableOobeAnimation);
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {

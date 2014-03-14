@@ -64,9 +64,6 @@ const char kDisableVolumeAdjustSound[] = "disable-volume-adjust-sound";
 const char kDisableNetworkPortalNotification[] =
     "disable-network-portal-notification";
 
-// Avoid doing animations upon oobe.
-const char kDisableOobeAnimation[]          = "disable-oobe-animation";
-
 // Disables portal detection and network error handling before auto
 // update.
 const char kDisableOOBEBlockingUpdate[] =

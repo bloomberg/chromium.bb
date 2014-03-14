@@ -306,11 +306,8 @@ LoginDisplayHostImpl::LoginDisplayHostImpl(const gfx::Rect& background_bounds)
   bool zero_delay_enabled = WizardController::IsZeroDelayEnabled();
   bool disable_boot_animation = CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableBootAnimation);
-  bool disable_oobe_animation = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableOobeAnimation);
 
   waiting_for_wallpaper_load_ = !zero_delay_enabled &&
-                                (is_registered || !disable_oobe_animation) &&
                                 (!is_registered || !disable_boot_animation);
 
   // For slower hardware we have boot animation disabled so
