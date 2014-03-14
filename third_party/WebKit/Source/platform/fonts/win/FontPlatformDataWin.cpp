@@ -34,9 +34,7 @@
 
 #include "platform/LayoutTestSupport.h"
 #include "platform/fonts/FontCache.h"
-#if USE(HARFBUZZ)
 #include "platform/fonts/harfbuzz/HarfBuzzFace.h"
-#endif
 #include "platform/fonts/win/SkiaFontWin.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/win/HWndDC.h"
@@ -137,10 +135,6 @@ FontPlatformData::FontPlatformData(WTF::HashTableDeletedValueType)
     , m_isHashTableDeletedValue(true)
     , m_useSubpixelPositioning(false)
 {
-#if !USE(HARFBUZZ)
-    m_font = nullptr;
-    m_scriptCache = nullptr;
-#endif
 }
 
 FontPlatformData::FontPlatformData()
@@ -153,10 +147,6 @@ FontPlatformData::FontPlatformData()
     , m_isHashTableDeletedValue(false)
     , m_useSubpixelPositioning(false)
 {
-#if !USE(HARFBUZZ)
-    m_font = nullptr;
-    m_scriptCache = nullptr;
-#endif
 }
 
 // FIXME: this constructor is needed for SVG fonts but doesn't seem to do much
@@ -170,10 +160,6 @@ FontPlatformData::FontPlatformData(float size, bool bold, bool oblique)
     , m_isHashTableDeletedValue(false)
     , m_useSubpixelPositioning(false)
 {
-#if !USE(HARFBUZZ)
-    m_font = nullptr;
-    m_scriptCache = nullptr;
-#endif
 }
 
 FontPlatformData::FontPlatformData(const FontPlatformData& data)
@@ -186,10 +172,6 @@ FontPlatformData::FontPlatformData(const FontPlatformData& data)
     , m_isHashTableDeletedValue(false)
     , m_useSubpixelPositioning(data.m_useSubpixelPositioning)
 {
-#if !USE(HARFBUZZ)
-    m_font = data.m_font;
-    m_scriptCache = nullptr;
-#endif
 }
 
 FontPlatformData::FontPlatformData(const FontPlatformData& data, float textSize)
@@ -202,10 +184,6 @@ FontPlatformData::FontPlatformData(const FontPlatformData& data, float textSize)
     , m_isHashTableDeletedValue(false)
     , m_useSubpixelPositioning(data.m_useSubpixelPositioning)
 {
-#if !USE(HARFBUZZ)
-    m_font = data.m_font;
-    m_scriptCache = nullptr;
-#endif
 }
 
 FontPlatformData::FontPlatformData(PassRefPtr<SkTypeface> tf, const char* family,
@@ -220,16 +198,6 @@ FontPlatformData::FontPlatformData(PassRefPtr<SkTypeface> tf, const char* family
     , m_useSubpixelPositioning(useSubpixelPositioning)
 {
     m_paintTextFlags = computePaintTextFlags(fontFamilyName());
-#if !USE(HARFBUZZ)
-    // FIXME: This can be removed together with m_font once the last few
-    // uses of hfont() has been eliminated.
-    LOGFONT logFont;
-    SkLOGFONTFromTypeface(m_typeface.get(), &logFont);
-    logFont.lfHeight = -textSize;
-    HFONT hFont = CreateFontIndirect(&logFont);
-    m_font = hFont ? RefCountedHFONT::create(hFont) : nullptr;
-    m_scriptCache = nullptr;
-#endif
 }
 
 FontPlatformData& FontPlatformData::operator=(const FontPlatformData& data)
@@ -241,24 +209,12 @@ FontPlatformData& FontPlatformData::operator=(const FontPlatformData& data)
         m_orientation = data.m_orientation;
         m_typeface = data.m_typeface;
         m_paintTextFlags = data.m_paintTextFlags;
-
-#if !USE(HARFBUZZ)
-        m_font = data.m_font;
-        // The following fields will get re-computed if necessary.
-        ScriptFreeCache(&m_scriptCache);
-        m_scriptCache = nullptr;
-        m_scriptFontProperties.clear();
-#endif
     }
     return *this;
 }
 
 FontPlatformData::~FontPlatformData()
 {
-#if !USE(HARFBUZZ)
-    ScriptFreeCache(&m_scriptCache);
-    m_scriptCache = nullptr;
-#endif
 }
 
 String FontPlatformData::fontFamilyName() const
@@ -286,7 +242,6 @@ bool FontPlatformData::operator==(const FontPlatformData& a) const
         && m_isHashTableDeletedValue == a.m_isHashTableDeletedValue;
 }
 
-#if USE(HARFBUZZ)
 HarfBuzzFace* FontPlatformData::harfBuzzFace() const
 {
     if (!m_harfBuzzFace)
@@ -294,48 +249,6 @@ HarfBuzzFace* FontPlatformData::harfBuzzFace() const
 
     return m_harfBuzzFace.get();
 }
-
-#else
-FontPlatformData::RefCountedHFONT::~RefCountedHFONT()
-{
-    DeleteObject(m_hfont);
-}
-
-SCRIPT_FONTPROPERTIES* FontPlatformData::scriptFontProperties() const
-{
-    if (!m_scriptFontProperties) {
-        m_scriptFontProperties = adoptPtr(new SCRIPT_FONTPROPERTIES);
-        memset(m_scriptFontProperties.get(), 0, sizeof(SCRIPT_FONTPROPERTIES));
-        m_scriptFontProperties->cBytes = sizeof(SCRIPT_FONTPROPERTIES);
-        HRESULT result = ScriptGetFontProperties(0, scriptCache(), m_scriptFontProperties.get());
-        if (result == E_PENDING) {
-            HWndDC dc(0);
-            HGDIOBJ oldFont = SelectObject(dc, hfont());
-            HRESULT hr = ScriptGetFontProperties(dc, scriptCache(), m_scriptFontProperties.get());
-            if (S_OK != hr) {
-                if (FontPlatformData::ensureFontLoaded(hfont())) {
-                    // FIXME: Handle gracefully the error if this call also fails.
-                    hr = ScriptGetFontProperties(dc, scriptCache(), m_scriptFontProperties.get());
-                    if (S_OK != hr) {
-                        WTF_LOG_ERROR("Unable to get the font properties after second attempt");
-                    }
-                }
-            }
-
-            SelectObject(dc, oldFont);
-        }
-    }
-    return m_scriptFontProperties.get();
-}
-
-bool FontPlatformData::ensureFontLoaded(HFONT font)
-{
-    blink::WebSandboxSupport* sandboxSupport = blink::Platform::current()->sandboxSupport();
-    // if there is no sandbox, then we can assume the font
-    // was able to be loaded successfully already
-    return sandboxSupport ? sandboxSupport->ensureFontLoaded(font) : true;
-}
-#endif
 
 bool FontPlatformData::defaultUseSubpixelPositioning()
 {

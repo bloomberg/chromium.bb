@@ -53,22 +53,6 @@ void paintSkiaText(GraphicsContext*,
     const SkPoint& origin,
     const SkRect& textRect);
 
-#if !USE(HARFBUZZ)
-// Note that the offsets parameter is optional. If not null it represents a
-// per glyph offset (such as returned by ScriptPlace Windows API function).
-// Note: this is less efficient than calling the version with FontPlatformData,
-// as that caches the SkTypeface object.
-void paintSkiaText(GraphicsContext*,
-    const FontPlatformData&,
-    HFONT,
-    unsigned numGlyphs,
-    const WORD* glyphs,
-    const int* advances,
-    const GOFFSET* offsets,
-    const SkPoint& origin,
-    const SkRect& textRect);
-#endif
-
 } // namespace WebCore
 
 #endif // SkiaFontWin_h
