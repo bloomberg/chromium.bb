@@ -23,7 +23,6 @@
 #ifndef HTMLElement_h
 #define HTMLElement_h
 
-#include "HTMLElementTypeHelpers.h"
 #include "core/dom/Element.h"
 
 namespace WebCore {
@@ -128,6 +127,9 @@ private:
 
 DEFINE_ELEMENT_TYPE_CASTS(HTMLElement, isHTMLElement());
 
+template <typename T> bool isElementOfType(const HTMLElement&);
+template <> inline bool isElementOfType<HTMLElement>(const HTMLElement&) { return true; }
+
 inline HTMLElement::HTMLElement(const QualifiedName& tagName, Document& document, ConstructionType type = CreateHTMLElement)
     : Element(tagName, &document, type)
 {
@@ -136,5 +138,7 @@ inline HTMLElement::HTMLElement(const QualifiedName& tagName, Document& document
 }
 
 } // namespace WebCore
+
+#include "HTMLElementTypeHelpers.h"
 
 #endif // HTMLElement_h
