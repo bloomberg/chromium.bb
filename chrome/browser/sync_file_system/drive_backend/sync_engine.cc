@@ -97,15 +97,14 @@ scoped_ptr<SyncEngine> SyncEngine::CreateForBrowserContext(
           base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
 
   scoped_ptr<drive_backend::SyncEngine> sync_engine(
-      new SyncEngine(
-          GetSyncFileSystemDir(context->GetPath()),
-          task_runner.get(),
-          drive_service.Pass(),
-          drive_uploader.Pass(),
-          notification_manager,
-          extension_service,
-          token_service,
-          NULL));
+      new SyncEngine(GetSyncFileSystemDir(context->GetPath()),
+                     task_runner.get(),
+                     drive_service.Pass(),
+                     drive_uploader.Pass(),
+                     notification_manager,
+                     extension_service,
+                     signin_manager,
+                     NULL));
   sync_engine->Initialize();
 
   return sync_engine.Pass();
@@ -115,7 +114,7 @@ void SyncEngine::AppendDependsOnFactories(
     std::set<BrowserContextKeyedServiceFactory*>* factories) {
   DCHECK(factories);
   factories->insert(drive::DriveNotificationManagerFactory::GetInstance());
-  factories->insert(ProfileOAuth2TokenServiceFactory::GetInstance());
+  factories->insert(SigninManagerFactory::GetInstance());
   factories->insert(
       extensions::ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
 }
@@ -391,10 +390,8 @@ void SyncEngine::OnReadyToSendRequests() {
     return;
   UpdateServiceState(REMOTE_SERVICE_OK, "Authenticated");
 
-  if (!metadata_database_ && auth_token_service_) {
-    SigninManagerBase* signin_manager =
-        SigninManagerFactory::GetForProfile(auth_token_service_->profile());
-    drive_service_->Initialize(signin_manager->GetAuthenticatedAccountId());
+  if (!metadata_database_ && signin_manager_) {
+    drive_service_->Initialize(signin_manager_->GetAuthenticatedAccountId());
     PostInitializeTask();
     return;
   }
@@ -444,15 +441,14 @@ base::SequencedTaskRunner* SyncEngine::GetBlockingTaskRunner() {
   return task_runner_.get();
 }
 
-SyncEngine::SyncEngine(
-    const base::FilePath& base_dir,
-    base::SequencedTaskRunner* task_runner,
-    scoped_ptr<drive::DriveServiceInterface> drive_service,
-    scoped_ptr<drive::DriveUploaderInterface> drive_uploader,
-    drive::DriveNotificationManager* notification_manager,
-    ExtensionServiceInterface* extension_service,
-    ProfileOAuth2TokenService* auth_token_service,
-    leveldb::Env* env_override)
+SyncEngine::SyncEngine(const base::FilePath& base_dir,
+                       base::SequencedTaskRunner* task_runner,
+                       scoped_ptr<drive::DriveServiceInterface> drive_service,
+                       scoped_ptr<drive::DriveUploaderInterface> drive_uploader,
+                       drive::DriveNotificationManager* notification_manager,
+                       ExtensionServiceInterface* extension_service,
+                       SigninManagerBase* signin_manager,
+                       leveldb::Env* env_override)
     : base_dir_(base_dir),
       task_runner_(task_runner),
       env_override_(env_override),
@@ -460,7 +456,7 @@ SyncEngine::SyncEngine(
       drive_uploader_(drive_uploader.Pass()),
       notification_manager_(notification_manager),
       extension_service_(extension_service),
-      auth_token_service_(auth_token_service),
+      signin_manager_(signin_manager),
       remote_change_processor_(NULL),
       service_state_(REMOTE_SERVICE_TEMPORARY_UNAVAILABLE),
       should_check_conflict_(true),
@@ -470,8 +466,7 @@ SyncEngine::SyncEngine(
       default_conflict_resolution_policy_(
           CONFLICT_RESOLUTION_POLICY_LAST_WRITE_WIN),
       network_available_(false),
-      weak_ptr_factory_(this) {
-}
+      weak_ptr_factory_(this) {}
 
 void SyncEngine::DoDisableApp(const std::string& app_id,
                               const SyncStatusCallback& callback) {

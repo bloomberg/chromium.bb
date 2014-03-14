@@ -20,7 +20,7 @@
 #include "net/base/network_change_notifier.h"
 
 class ExtensionServiceInterface;
-class ProfileOAuth2TokenService;
+class SigninManagerBase;
 
 namespace base {
 class SequencedTaskRunner;
@@ -148,7 +148,7 @@ class SyncEngine : public RemoteFileSyncService,
              scoped_ptr<drive::DriveUploaderInterface> drive_uploader,
              drive::DriveNotificationManager* notification_manager,
              ExtensionServiceInterface* extension_service,
-             ProfileOAuth2TokenService* auth_token_service,
+             SigninManagerBase* signin_manager,
              leveldb::Env* env_override);
 
   void DoDisableApp(const std::string& app_id,
@@ -192,7 +192,7 @@ class SyncEngine : public RemoteFileSyncService,
   // KeyedService::DependsOn().
   drive::DriveNotificationManager* notification_manager_;
   ExtensionServiceInterface* extension_service_;
-  ProfileOAuth2TokenService* auth_token_service_;
+  SigninManagerBase* signin_manager_;
 
   ObserverList<SyncServiceObserver> service_observers_;
   ObserverList<FileStatusObserver> file_status_observers_;

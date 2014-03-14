@@ -77,8 +77,6 @@ class ProfileOAuth2TokenService : public OAuth2TokenService {
     return signin_global_error_.get();
   }
 
-  Profile* profile() const { return profile_; }
-
   SigninClient* client() const { return client_; }
 
  protected:

@@ -120,7 +120,7 @@ class SyncEngineTest
         scoped_ptr<drive::DriveUploaderInterface>(),
         NULL /* notification_manager */,
         extension_service_.get(),
-        NULL /* auth_token_service */,
+        NULL /* signin_manager */,
         in_memory_env_.get()));
     sync_engine_->Initialize();
     sync_engine_->SetSyncEnabled(true);

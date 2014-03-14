@@ -8,12 +8,9 @@
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_source.h"
 #include "net/url_request/url_request_context_getter.h"
 
 ProfileOAuth2TokenService::ProfileOAuth2TokenService()
