@@ -55,10 +55,10 @@ void ExternalComponentLoader::StartLoading() {
                       extension_urls::GetWebstoreUpdateUrl().spec());
   }
 
-  BookmarksExperimentState experiment_state =
+  BookmarksExperimentState bookmarks_experiment_state_before =
       static_cast<BookmarksExperimentState>(profile_->GetPrefs()->GetInteger(
           prefs::kEnhancedBookmarksExperimentEnabled));
-  if (experiment_state == kBookmarksExperimentEnabled) {
+  if (bookmarks_experiment_state_before == kBookmarksExperimentEnabled) {
     // kEnhancedBookmarksExperiment flag could have values "", "1" and "0".
     // "0" - user opted out.
     if (CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
@@ -69,21 +69,17 @@ void ExternalComponentLoader::StartLoading() {
       if (!ext_id.empty()) {
         prefs_->SetString(ext_id + ".external_update_url",
                           extension_urls::GetWebstoreUpdateUrl().spec());
-        OptInIntoBookmarksExperiment(kBookmarksExperimentEnabled);
       }
     } else {
       // Experiment enabled but user opted out.
       profile_->GetPrefs()->SetInteger(
           prefs::kEnhancedBookmarksExperimentEnabled,
           kBookmarksExperimentEnabledUserOptOut);
-      OptInIntoBookmarksExperiment(kBookmarksExperimentEnabledUserOptOut);
     }
-  } else if (experiment_state == kBookmarksExperimentEnabledUserOptOut) {
+  } else if (bookmarks_experiment_state_before ==
+             kBookmarksExperimentEnabledUserOptOut) {
     if (CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-            switches::kEnhancedBookmarksExperiment) == "0") {
-      // User opted out.
-      OptInIntoBookmarksExperiment(kBookmarksExperimentEnabledUserOptOut);
-    } else {
+            switches::kEnhancedBookmarksExperiment) != "0") {
       // User opted in again.
       profile_->GetPrefs()->SetInteger(
           prefs::kEnhancedBookmarksExperimentEnabled,
@@ -93,13 +89,19 @@ void ExternalComponentLoader::StartLoading() {
       if (!ext_id.empty()) {
         prefs_->SetString(ext_id + ".external_update_url",
                           extension_urls::GetWebstoreUpdateUrl().spec());
-        OptInIntoBookmarksExperiment(kBookmarksExperimentEnabled);
       }
     }
   } else {
     // Experiment disabled.
     profile_->GetPrefs()->ClearPref(prefs::kEnhancedBookmarksExperimentEnabled);
     profile_->GetPrefs()->ClearPref(prefs::kEnhancedBookmarksExtensionId);
+  }
+  BookmarksExperimentState bookmarks_experiment_state =
+      static_cast<BookmarksExperimentState>(profile_->GetPrefs()->GetInteger(
+          prefs::kEnhancedBookmarksExperimentEnabled));
+  if (bookmarks_experiment_state_before != bookmarks_experiment_state) {
+    UpdateBookmarksExperiment(g_browser_process->local_state(),
+                              bookmarks_experiment_state);
   }
 
   LoadFinished();

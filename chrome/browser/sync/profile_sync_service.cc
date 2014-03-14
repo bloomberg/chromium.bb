@@ -1009,6 +1009,8 @@ void ProfileSyncService::OnExperimentsChanged(
     profile()->GetPrefs()->ClearPref(prefs::kGCMChannelEnabled);
   }
 
+  int bookmarks_experiment_state_before = profile_->GetPrefs()->GetInteger(
+      prefs::kEnhancedBookmarksExperimentEnabled);
   // kEnhancedBookmarksExperiment flag could have values "", "1" and "0".
   // "" and "1" means experiment is enabled.
   if ((CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
@@ -1033,6 +1035,14 @@ void ProfileSyncService::OnExperimentsChanged(
           prefs::kEnhancedBookmarksExperimentEnabled);
       profile_->GetPrefs()->ClearPref(prefs::kEnhancedBookmarksExtensionId);
     }
+  }
+  BookmarksExperimentState bookmarks_experiment_state =
+      static_cast<BookmarksExperimentState>(profile_->GetPrefs()->GetInteger(
+          prefs::kEnhancedBookmarksExperimentEnabled));
+  // If bookmark experiment state was changed update about flags experiment.
+  if (bookmarks_experiment_state_before != bookmarks_experiment_state) {
+    UpdateBookmarksExperiment(g_browser_process->local_state(),
+                              bookmarks_experiment_state);
   }
 
   // If this is a first time sync for a client, this will be called before

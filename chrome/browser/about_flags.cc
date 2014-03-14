@@ -1730,6 +1730,20 @@ const Experiment kExperiments[] = {
         switches::kEnhancedBookmarksExperiment, "1",
         switches::kEnhancedBookmarksExperiment, "0")
   },
+  {
+    "manual-enhanced-bookmarks",
+    IDS_FLAGS_ENABLE_ENHANCED_BOOKMARKS_NAME,
+    IDS_FLAGS_ENABLE_ENHANCED_BOOKMARKS_DESCRIPTION,
+    kOsDesktop,
+    SINGLE_VALUE_TYPE(switches::kManualEnhancedBookmarks)
+  },
+  {
+    "manual-enhanced-bookmarks-optout",
+    IDS_FLAGS_ENABLE_ENHANCED_BOOKMARKS_NAME,
+    IDS_FLAGS_ENABLE_ENHANCED_BOOKMARKS_DESCRIPTION,
+    kOsDesktop,
+    SINGLE_VALUE_TYPE(switches::kManualEnhancedBookmarksOptout)
+  },
 #if defined(OS_ANDROID)
   {
     "enable-zero-suggest-experiment",
@@ -1962,6 +1976,11 @@ bool SkipConditionalExperiment(const Experiment& experiment) {
       return false;
 
     return !IsEnhancedBookmarksExperimentEnabled();
+  }
+  if ((experiment.internal_name == std::string("manual-enhanced-bookmarks")) ||
+      (experiment.internal_name ==
+           std::string("manual-enhanced-bookmarks-optout"))) {
+    return true;
   }
 
   return false;
