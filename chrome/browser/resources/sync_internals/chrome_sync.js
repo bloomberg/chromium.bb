@@ -34,11 +34,6 @@ cr.define('chrome.sync', function() {
   }
 
   var syncFunctions = [
-    // Notification functions.  See chrome/browser/sync/engine/syncapi.h
-    // for docs.
-    'getNotificationState',
-    'getNotificationInfo',
-
     // Client server communication logging functions.
     'getClientServerTraffic',
 

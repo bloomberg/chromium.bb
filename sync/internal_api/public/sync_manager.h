@@ -184,34 +184,6 @@ class SYNC_EXPORT SyncManager : public syncer::InvalidationHandler {
     // notification is illegal!
     // WARNING: Calling methods on the SyncManager before receiving this
     // message, unless otherwise specified, produces undefined behavior.
-    //
-    // |js_backend| is what about:sync interacts with.  It can emit
-    // the following events:
-
-    /**
-     * @param {{ enabled: boolean }} details A dictionary containing:
-     *     - enabled: whether or not notifications are enabled.
-     */
-    // function onNotificationStateChange(details);
-
-    /**
-     * @param {{ changedTypes: Array.<string> }} details A dictionary
-     *     containing:
-     *     - changedTypes: a list of types (as strings) for which there
-             are new updates.
-     */
-    // function onIncomingNotification(details);
-
-    // Also, it responds to the following messages (all other messages
-    // are ignored):
-
-    /**
-     * Gets the current notification state.
-     *
-     * @param {function(boolean)} callback Called with whether or not
-     *     notifications are enabled.
-     */
-    // function getNotificationState(callback);
 
     virtual void OnInitializationComplete(
         const WeakHandle<JsBackend>& js_backend,

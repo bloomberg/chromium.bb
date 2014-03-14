@@ -20,7 +20,6 @@
       <include name="IDR_SYNC_INTERNALS_ABOUT_JS"  file="sync_internals/about.js" type="BINDATA" />
       <include name="IDR_SYNC_INTERNALS_DATA_JS"  file="sync_internals/data.js" type="BINDATA" />
       <include name="IDR_SYNC_INTERNALS_EVENTS_JS"  file="sync_internals/events.js" type="BINDATA" />
-      <include name="IDR_SYNC_INTERNALS_NOTIFICATIONS_JS"  file="sync_internals/notifications.js" type="BINDATA" />
       <include name="IDR_SYNC_INTERNALS_SEARCH_JS"  file="sync_internals/search.js" type="BINDATA" />
       <include name="IDR_SYNC_INTERNALS_TRAFFIC_JS"  file="sync_internals/traffic.js" type="BINDATA" />
     </includes>

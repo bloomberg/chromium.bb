@@ -259,10 +259,6 @@ class SYNC_EXPORT_PRIVATE SyncManagerImpl :
                                 bool existed_before,
                                 bool exists_now);
 
-  // Called for every notification. This updates the notification statistics
-  // to be displayed in about:sync.
-  void UpdateNotificationInfo(const ObjectIdInvalidationMap& invalidation_map);
-
   // Checks for server reachabilty and requests a nudge.
   void OnNetworkConnectivityChangedImpl();
 
@@ -270,16 +266,7 @@ class SYNC_EXPORT_PRIVATE SyncManagerImpl :
   void BindJsMessageHandler(
     const std::string& name, UnboundJsMessageHandler unbound_message_handler);
 
-  // Returned pointer is owned by the caller.
-  static base::DictionaryValue* NotificationInfoToValue(
-      const NotificationInfoMap& notification_info);
-
-  static std::string NotificationInfoToString(
-      const NotificationInfoMap& notification_info);
-
   // JS message handlers.
-  JsArgList GetNotificationState(const JsArgList& args);
-  JsArgList GetNotificationInfo(const JsArgList& args);
   JsArgList GetAllNodes(const JsArgList& args);
   JsArgList GetNodeSummariesById(const JsArgList& args);
   JsArgList GetNodeDetailsById(const JsArgList& args);
@@ -359,7 +346,6 @@ class SYNC_EXPORT_PRIVATE SyncManagerImpl :
 
   // These are for interacting with chrome://sync-internals.
   JsMessageHandlerMap js_message_handlers_;
-  WeakHandle<JsEventHandler> js_event_handler_;
   JsSyncManagerObserver js_sync_manager_observer_;
   JsMutationEventObserver js_mutation_event_observer_;
   JsSyncEncryptionHandlerObserver js_sync_encryption_handler_observer_;

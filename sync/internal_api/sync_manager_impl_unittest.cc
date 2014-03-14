@@ -938,20 +938,6 @@ class SyncManagerTest : public testing::Test,
   InternalComponentsFactory::Switches switches_;
 };
 
-TEST_F(SyncManagerTest, ProcessJsMessage) {
-  const JsArgList kNoArgs;
-
-  StrictMock<MockJsReplyHandler> reply_handler;
-
-  EXPECT_CALL(reply_handler,
-              HandleJsReply("getNotificationInfo", _));
-
-  // This message should be dropped.
-  SendJsMessage("unknownMessage", kNoArgs, reply_handler.AsWeakHandle());
-
-  SendJsMessage("getNotificationInfo", kNoArgs, reply_handler.AsWeakHandle());
-}
-
 TEST_F(SyncManagerTest, GetAllNodesTest) {
   StrictMock<MockJsReplyHandler> reply_handler;
   JsArgList return_args;
@@ -991,100 +977,6 @@ TEST_F(SyncManagerTest, GetAllNodesTest) {
   ASSERT_TRUE(node_list->GetDictionary(0, &first_result));
   EXPECT_TRUE(first_result->HasKey("ID"));
   EXPECT_TRUE(first_result->HasKey("NON_UNIQUE_NAME"));
-}
-
-// Simulate various invalidator state changes.  Those should propagate
-// JS events.
-TEST_F(SyncManagerTest, OnInvalidatorStateChangeJsEvents) {
-  StrictMock<MockJsEventHandler> event_handler;
-
-  base::DictionaryValue enabled_details;
-  enabled_details.SetString("state", "INVALIDATIONS_ENABLED");
-  base::DictionaryValue credentials_rejected_details;
-  credentials_rejected_details.SetString(
-      "state", "INVALIDATION_CREDENTIALS_REJECTED");
-  base::DictionaryValue transient_error_details;
-  transient_error_details.SetString("state", "TRANSIENT_INVALIDATION_ERROR");
-  base::DictionaryValue auth_error_details;
-  auth_error_details.SetString("status", "CONNECTION_AUTH_ERROR");
-
-  EXPECT_CALL(event_handler,
-              HandleJsEvent("onNotificationStateChange",
-                            HasDetailsAsDictionary(enabled_details)));
-
-  EXPECT_CALL(
-      event_handler,
-      HandleJsEvent("onNotificationStateChange",
-                    HasDetailsAsDictionary(credentials_rejected_details)))
-      .Times(2);
-
-  EXPECT_CALL(event_handler,
-              HandleJsEvent("onNotificationStateChange",
-                            HasDetailsAsDictionary(transient_error_details)));
-
-  // Test needs to simulate INVALIDATION_CREDENTIALS_REJECTED with event handler
-  // attached because this is the only time when CONNECTION_AUTH_ERROR
-  // notification will be generated, therefore the only chance to verify that
-  // "onConnectionStatusChange" event is delivered
-  SetJsEventHandler(event_handler.AsWeakHandle());
-  SimulateInvalidatorStateChangeForTest(INVALIDATION_CREDENTIALS_REJECTED);
-  SetJsEventHandler(WeakHandle<JsEventHandler>());
-
-  SimulateInvalidatorStateChangeForTest(INVALIDATIONS_ENABLED);
-  SimulateInvalidatorStateChangeForTest(INVALIDATION_CREDENTIALS_REJECTED);
-  SimulateInvalidatorStateChangeForTest(TRANSIENT_INVALIDATION_ERROR);
-
-  SetJsEventHandler(event_handler.AsWeakHandle());
-  SimulateInvalidatorStateChangeForTest(INVALIDATIONS_ENABLED);
-  SimulateInvalidatorStateChangeForTest(INVALIDATION_CREDENTIALS_REJECTED);
-  SimulateInvalidatorStateChangeForTest(TRANSIENT_INVALIDATION_ERROR);
-  SetJsEventHandler(WeakHandle<JsEventHandler>());
-
-  SimulateInvalidatorStateChangeForTest(INVALIDATIONS_ENABLED);
-  SimulateInvalidatorStateChangeForTest(INVALIDATION_CREDENTIALS_REJECTED);
-  SimulateInvalidatorStateChangeForTest(TRANSIENT_INVALIDATION_ERROR);
-
-  // Should trigger the replies.
-  PumpLoop();
-}
-
-TEST_F(SyncManagerTest, OnIncomingNotification) {
-  StrictMock<MockJsEventHandler> event_handler;
-
-  const ModelTypeSet empty_model_types;
-  const ModelTypeSet model_types(
-      BOOKMARKS, THEMES);
-
-  // Build expected_args to have a single argument with the string
-  // equivalents of model_types.
-  base::DictionaryValue expected_details;
-  {
-    base::ListValue* model_type_list = new base::ListValue();
-    expected_details.SetString("source", "REMOTE_INVALIDATION");
-    expected_details.Set("changedTypes", model_type_list);
-    for (ModelTypeSet::Iterator it = model_types.First();
-         it.Good(); it.Inc()) {
-      model_type_list->Append(
-          new base::StringValue(ModelTypeToString(it.Get())));
-    }
-  }
-
-  EXPECT_CALL(event_handler,
-              HandleJsEvent("onIncomingNotification",
-                            HasDetailsAsDictionary(expected_details)));
-
-  TriggerOnIncomingNotificationForTest(empty_model_types);
-  TriggerOnIncomingNotificationForTest(model_types);
-
-  SetJsEventHandler(event_handler.AsWeakHandle());
-  TriggerOnIncomingNotificationForTest(model_types);
-  SetJsEventHandler(WeakHandle<JsEventHandler>());
-
-  TriggerOnIncomingNotificationForTest(empty_model_types);
-  TriggerOnIncomingNotificationForTest(model_types);
-
-  // Should trigger the replies.
-  PumpLoop();
 }
 
 TEST_F(SyncManagerTest, RefreshEncryptionReady) {
