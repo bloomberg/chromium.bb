@@ -15,7 +15,7 @@ description("Test for Bug: 75799 - Calling intersectsNode on a detached range sh
 var range = document.createRange();
 range.selectNode(document.getElementById("a1"));
 range.detach();
-shouldThrow("range.intersectsNode(document.getElementById('b1'))", '"InvalidStateError: Failed to execute \'intersectsNode\' on \'Range\': The range has no container. Perhaps \'detatch()\' has been invoked on this object?"');
+shouldThrow("range.intersectsNode(document.getElementById('b1'))", '"InvalidStateError: Failed to execute \'intersectsNode\' on \'Range\': The range has no container. Perhaps \'detach()\' has been invoked on this object?"');
 </script>
 </body>
 </html>

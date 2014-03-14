@@ -13,10 +13,10 @@
 
     <script>
         function execute(method) {
-            return '"InvalidStateError: Failed to execute \'' + method + '\' on \'Range\': The range has no container. Perhaps \'detatch()\' has been invoked on this object?"';
+            return '"InvalidStateError: Failed to execute \'' + method + '\' on \'Range\': The range has no container. Perhaps \'detach()\' has been invoked on this object?"';
         }
         function read(property) {
-            return '"InvalidStateError: Failed to read the \'' + property + '\' property from \'Range\': The range has no container. Perhaps \'detatch()\' has been invoked on this object?"';
+            return '"InvalidStateError: Failed to read the \'' + property + '\' property from \'Range\': The range has no container. Perhaps \'detach()\' has been invoked on this object?"';
         }
 
         description("A variety of Range methods should throw if called on a detached range.");

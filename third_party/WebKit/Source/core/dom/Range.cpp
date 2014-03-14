@@ -128,7 +128,7 @@ void Range::setDocument(Document& document)
 Node* Range::startContainer(ExceptionState& exceptionState) const
 {
     if (!m_start.container()) {
-        exceptionState.throwDOMException(InvalidStateError, "The range has no container. Perhaps 'detatch()' has been invoked on this object?");
+        exceptionState.throwDOMException(InvalidStateError, "The range has no container. Perhaps 'detach()' has been invoked on this object?");
         return 0;
     }
 
@@ -138,7 +138,7 @@ Node* Range::startContainer(ExceptionState& exceptionState) const
 int Range::startOffset(ExceptionState& exceptionState) const
 {
     if (!m_start.container()) {
-        exceptionState.throwDOMException(InvalidStateError, "The range has no container. Perhaps 'detatch()' has been invoked on this object?");
+        exceptionState.throwDOMException(InvalidStateError, "The range has no container. Perhaps 'detach()' has been invoked on this object?");
         return 0;
     }
 
@@ -148,7 +148,7 @@ int Range::startOffset(ExceptionState& exceptionState) const
 Node* Range::endContainer(ExceptionState& exceptionState) const
 {
     if (!m_start.container()) {
-        exceptionState.throwDOMException(InvalidStateError, "The range has no container. Perhaps 'detatch()' has been invoked on this object?");
+        exceptionState.throwDOMException(InvalidStateError, "The range has no container. Perhaps 'detach()' has been invoked on this object?");
         return 0;
     }
 
@@ -158,7 +158,7 @@ Node* Range::endContainer(ExceptionState& exceptionState) const
 int Range::endOffset(ExceptionState& exceptionState) const
 {
     if (!m_start.container()) {
-        exceptionState.throwDOMException(InvalidStateError, "The range has no container. Perhaps 'detatch()' has been invoked on this object?");
+        exceptionState.throwDOMException(InvalidStateError, "The range has no container. Perhaps 'detach()' has been invoked on this object?");
         return 0;
     }
 
@@ -168,7 +168,7 @@ int Range::endOffset(ExceptionState& exceptionState) const
 Node* Range::commonAncestorContainer(ExceptionState& exceptionState) const
 {
     if (!m_start.container()) {
-        exceptionState.throwDOMException(InvalidStateError, "The range has no container. Perhaps 'detatch()' has been invoked on this object?");
+        exceptionState.throwDOMException(InvalidStateError, "The range has no container. Perhaps 'detach()' has been invoked on this object?");
         return 0;
     }
 
@@ -189,7 +189,7 @@ Node* Range::commonAncestorContainer(Node* containerA, Node* containerB)
 bool Range::collapsed(ExceptionState& exceptionState) const
 {
     if (!m_start.container()) {
-        exceptionState.throwDOMException(InvalidStateError, "The range has no container. Perhaps 'detatch()' has been invoked on this object?");
+        exceptionState.throwDOMException(InvalidStateError, "The range has no container. Perhaps 'detach()' has been invoked on this object?");
         return 0;
     }
 
@@ -211,7 +211,7 @@ static inline bool checkForDifferentRootContainer(const RangeBoundaryPoint& star
 void Range::setStart(PassRefPtr<Node> refNode, int offset, ExceptionState& exceptionState)
 {
     if (!m_start.container()) {
-        exceptionState.throwDOMException(InvalidStateError, "The range has no container. Perhaps 'detatch()' has been invoked on this object?");
+        exceptionState.throwDOMException(InvalidStateError, "The range has no container. Perhaps 'detach()' has been invoked on this object?");
         return;
     }
 
@@ -239,7 +239,7 @@ void Range::setStart(PassRefPtr<Node> refNode, int offset, ExceptionState& excep
 void Range::setEnd(PassRefPtr<Node> refNode, int offset, ExceptionState& exceptionState)
 {
     if (!m_start.container()) {
-        exceptionState.throwDOMException(InvalidStateError, "The range has no container. Perhaps 'detatch()' has been invoked on this object?");
+        exceptionState.throwDOMException(InvalidStateError, "The range has no container. Perhaps 'detach()' has been invoked on this object?");
         return;
     }
 
@@ -279,7 +279,7 @@ void Range::setEnd(const Position& end, ExceptionState& exceptionState)
 void Range::collapse(bool toStart, ExceptionState& exceptionState)
 {
     if (!m_start.container()) {
-        exceptionState.throwDOMException(InvalidStateError, "The range has no container. Perhaps 'detatch()' has been invoked on this object?");
+        exceptionState.throwDOMException(InvalidStateError, "The range has no container. Perhaps 'detach()' has been invoked on this object?");
         return;
     }
 
@@ -292,7 +292,7 @@ void Range::collapse(bool toStart, ExceptionState& exceptionState)
 bool Range::isPointInRange(Node* refNode, int offset, ExceptionState& exceptionState)
 {
     if (!m_start.container()) {
-        exceptionState.throwDOMException(InvalidStateError, "The range has no container. Perhaps 'detatch()' has been invoked on this object?");
+        exceptionState.throwDOMException(InvalidStateError, "The range has no container. Perhaps 'detach()' has been invoked on this object?");
         return false;
     }
 
@@ -320,7 +320,7 @@ short Range::comparePoint(Node* refNode, int offset, ExceptionState& exceptionSt
     // refNode node and an offset within the node is before, same as, or after the range respectively.
 
     if (!m_start.container()) {
-        exceptionState.throwDOMException(InvalidStateError, "The range has no container. Perhaps 'detatch()' has been invoked on this object?");
+        exceptionState.throwDOMException(InvalidStateError, "The range has no container. Perhaps 'detach()' has been invoked on this object?");
         return 0;
     }
 
@@ -408,7 +408,7 @@ Range::CompareResults Range::compareNode(Node* refNode, ExceptionState& exceptio
 short Range::compareBoundaryPoints(CompareHow how, const Range* sourceRange, ExceptionState& exceptionState) const
 {
     if (!m_start.container()) {
-        exceptionState.throwDOMException(InvalidStateError, "The range has no container. Perhaps 'detatch()' has been invoked on this object?");
+        exceptionState.throwDOMException(InvalidStateError, "The range has no container. Perhaps 'detach()' has been invoked on this object?");
         return 0;
     }
 
@@ -575,7 +575,7 @@ bool Range::intersectsNode(Node* refNode, ExceptionState& exceptionState)
 
     // Throw exception if the range is already detached.
     if (!m_start.container()) {
-        exceptionState.throwDOMException(InvalidStateError, "The range has no container. Perhaps 'detatch()' has been invoked on this object?");
+        exceptionState.throwDOMException(InvalidStateError, "The range has no container. Perhaps 'detach()' has been invoked on this object?");
         return false;
     }
     if (!refNode) {
@@ -938,7 +938,7 @@ PassRefPtr<DocumentFragment> Range::extractContents(ExceptionState& exceptionSta
 PassRefPtr<DocumentFragment> Range::cloneContents(ExceptionState& exceptionState)
 {
     if (!m_start.container()) {
-        exceptionState.throwDOMException(InvalidStateError, "The range has no container. Perhaps 'detatch()' has been invoked on this object?");
+        exceptionState.throwDOMException(InvalidStateError, "The range has no container. Perhaps 'detach()' has been invoked on this object?");
         return nullptr;
     }
 
@@ -950,7 +950,7 @@ void Range::insertNode(PassRefPtr<Node> prpNewNode, ExceptionState& exceptionSta
     RefPtr<Node> newNode = prpNewNode;
 
     if (!m_start.container()) {
-        exceptionState.throwDOMException(InvalidStateError, "The range has no container. Perhaps 'detatch()' has been invoked on this object?");
+        exceptionState.throwDOMException(InvalidStateError, "The range has no container. Perhaps 'detach()' has been invoked on this object?");
         return;
     }
 
@@ -1060,7 +1060,7 @@ void Range::insertNode(PassRefPtr<Node> prpNewNode, ExceptionState& exceptionSta
 String Range::toString(ExceptionState& exceptionState) const
 {
     if (!m_start.container()) {
-        exceptionState.throwDOMException(InvalidStateError, "The range has no container. Perhaps 'detatch()' has been invoked on this object?");
+        exceptionState.throwDOMException(InvalidStateError, "The range has no container. Perhaps 'detach()' has been invoked on this object?");
         return String();
     }
 
@@ -1100,7 +1100,7 @@ String Range::text() const
 PassRefPtr<DocumentFragment> Range::createContextualFragment(const String& markup, ExceptionState& exceptionState)
 {
     if (!m_start.container()) {
-        exceptionState.throwDOMException(InvalidStateError, "The range has no container. Perhaps 'detatch()' has been invoked on this object?");
+        exceptionState.throwDOMException(InvalidStateError, "The range has no container. Perhaps 'detach()' has been invoked on this object?");
         return nullptr;
     }
 
@@ -1122,7 +1122,7 @@ void Range::detach(ExceptionState& exceptionState)
 {
     // Check first to see if we've already detached:
     if (!m_start.container()) {
-        exceptionState.throwDOMException(InvalidStateError, "The range has no container. Perhaps 'detatch()' has been invoked on this object?");
+        exceptionState.throwDOMException(InvalidStateError, "The range has no container. Perhaps 'detach()' has been invoked on this object?");
         return;
     }
 
@@ -1167,7 +1167,7 @@ Node* Range::checkNodeWOffset(Node* n, int offset, ExceptionState& exceptionStat
 void Range::checkNodeBA(Node* n, ExceptionState& exceptionState) const
 {
     if (!m_start.container()) {
-        exceptionState.throwDOMException(InvalidStateError, "The range has no container. Perhaps 'detatch()' has been invoked on this object?");
+        exceptionState.throwDOMException(InvalidStateError, "The range has no container. Perhaps 'detach()' has been invoked on this object?");
         return;
     }
 
@@ -1223,7 +1223,7 @@ void Range::checkNodeBA(Node* n, ExceptionState& exceptionState) const
 PassRefPtr<Range> Range::cloneRange(ExceptionState& exceptionState) const
 {
     if (!m_start.container()) {
-        exceptionState.throwDOMException(InvalidStateError, "The range has no container. Perhaps 'detatch()' has been invoked on this object?");
+        exceptionState.throwDOMException(InvalidStateError, "The range has no container. Perhaps 'detach()' has been invoked on this object?");
         return nullptr;
     }
 
@@ -1260,7 +1260,7 @@ void Range::setEndAfter(Node* refNode, ExceptionState& exceptionState)
 void Range::selectNode(Node* refNode, ExceptionState& exceptionState)
 {
     if (!m_start.container()) {
-        exceptionState.throwDOMException(InvalidStateError, "The range has no container. Perhaps 'detatch()' has been invoked on this object?");
+        exceptionState.throwDOMException(InvalidStateError, "The range has no container. Perhaps 'detach()' has been invoked on this object?");
         return;
     }
 
@@ -1319,7 +1319,7 @@ void Range::selectNode(Node* refNode, ExceptionState& exceptionState)
 void Range::selectNodeContents(Node* refNode, ExceptionState& exceptionState)
 {
     if (!m_start.container()) {
-        exceptionState.throwDOMException(InvalidStateError, "The range has no container. Perhaps 'detatch()' has been invoked on this object?");
+        exceptionState.throwDOMException(InvalidStateError, "The range has no container. Perhaps 'detach()' has been invoked on this object?");
         return;
     }
 
@@ -1359,7 +1359,7 @@ void Range::surroundContents(PassRefPtr<Node> passNewParent, ExceptionState& exc
     RefPtr<Node> newParent = passNewParent;
 
     if (!m_start.container()) {
-        exceptionState.throwDOMException(InvalidStateError, "The range has no container. Perhaps 'detatch()' has been invoked on this object?");
+        exceptionState.throwDOMException(InvalidStateError, "The range has no container. Perhaps 'detach()' has been invoked on this object?");
         return;
     }
 
@@ -1453,7 +1453,7 @@ void Range::setStartBefore(Node* refNode, ExceptionState& exceptionState)
 void Range::checkDeleteExtract(ExceptionState& exceptionState)
 {
     if (!m_start.container()) {
-        exceptionState.throwDOMException(InvalidStateError, "The range has no container. Perhaps 'detatch()' has been invoked on this object?");
+        exceptionState.throwDOMException(InvalidStateError, "The range has no container. Perhaps 'detach()' has been invoked on this object?");
         return;
     }
 
