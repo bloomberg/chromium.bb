@@ -74,7 +74,7 @@ function test()
                     return next();
                 }
                 try {
-                    var constructorsGrid = InspectorTest.currentProfileView().dataGrid;
+                    var constructorsGrid = InspectorTest.currentProfileView()._dataGrid;
                     var constructorNodes = constructorsGrid.rootNode().children;
                     var constructorNode;
                     for (var i = 0; i < constructorNodes.length; i++) {
