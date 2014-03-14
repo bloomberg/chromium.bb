@@ -523,7 +523,6 @@
         'common/common_param_traits_unittest.cc',
         'common/dom_storage/dom_storage_map_unittest.cc',
         'common/gpu/gpu_memory_manager_unittest.cc',
-        'common/host_shared_bitmap_manager_unittest.cc',
         'common/indexed_db/indexed_db_key_unittest.cc',
         'common/input/input_param_traits_unittest.cc',
         'common/input/web_input_event_traits_unittest.cc',

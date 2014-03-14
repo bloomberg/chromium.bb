@@ -41,8 +41,6 @@
     'child/child_process.h',
     'child/child_resource_message_filter.cc',
     'child/child_resource_message_filter.h',
-    'child/child_shared_bitmap_manager.cc',
-    'child/child_shared_bitmap_manager.h',
     'child/child_thread.cc',
     'child/child_thread.h',
     'child/content_child_helpers.cc',

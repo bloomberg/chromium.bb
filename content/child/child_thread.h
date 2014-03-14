@@ -38,7 +38,6 @@ class WebFrame;
 namespace content {
 class ChildHistogramMessageFilter;
 class ChildResourceMessageFilter;
-class ChildSharedBitmapManager;
 class FileSystemDispatcher;
 class ServiceWorkerDispatcher;
 class ServiceWorkerMessageFilter;
@@ -86,10 +85,6 @@ class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
   // the |sender| passed in is safe to use on background threads.
   static base::SharedMemory* AllocateSharedMemory(size_t buf_size,
                                                   IPC::Sender* sender);
-
-  ChildSharedBitmapManager* shared_bitmap_manager() const {
-    return shared_bitmap_manager_.get();
-  }
 
   ResourceDispatcher* resource_dispatcher() const {
     return resource_dispatcher_.get();
@@ -231,8 +226,6 @@ class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
   scoped_refptr<ServiceWorkerMessageFilter> service_worker_message_filter_;
 
   scoped_refptr<QuotaMessageFilter> quota_message_filter_;
-
-  scoped_ptr<ChildSharedBitmapManager> shared_bitmap_manager_;
 
   base::WeakPtrFactory<ChildThread> channel_connected_factory_;
 

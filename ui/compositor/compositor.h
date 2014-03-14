@@ -33,7 +33,6 @@ class ContextProvider;
 class Layer;
 class LayerTreeDebugState;
 class LayerTreeHost;
-class SharedBitmapManager;
 }
 
 namespace gfx {
@@ -178,7 +177,6 @@ class COMPOSITOR_EXPORT Compositor
   static bool WasInitializedWithThread();
   static scoped_refptr<base::MessageLoopProxy> GetCompositorMessageLoop();
   static void Terminate();
-  static void SetSharedBitmapManager(cc::SharedBitmapManager* manager);
 
   // Schedules a redraw of the layer tree associated with this compositor.
   void ScheduleDraw();

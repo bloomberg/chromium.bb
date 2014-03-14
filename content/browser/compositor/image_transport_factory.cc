@@ -7,7 +7,6 @@
 #include "base/command_line.h"
 #include "content/browser/compositor/gpu_process_transport_factory.h"
 #include "content/browser/compositor/no_transport_image_transport_factory.h"
-#include "content/common/host_shared_bitmap_manager.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/gl/gl_implementation.h"
@@ -27,7 +26,6 @@ void ImageTransportFactory::Initialize() {
     return;
   g_factory = new GpuProcessTransportFactory;
   ui::ContextFactory::SetInstance(g_factory->AsContextFactory());
-  ui::Compositor::SetSharedBitmapManager(HostSharedBitmapManager::current());
 }
 
 void ImageTransportFactory::InitializeForUnitTests(
