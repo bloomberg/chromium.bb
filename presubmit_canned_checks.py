@@ -956,11 +956,11 @@ def PanProjectChecks(input_api, output_api,
   project_name = project_name or 'Chromium'
 
   # Accept any year number from 2006 to the current year, or the special
-  # 2006-2008 string used on the oldest files. 2006-2008 is deprecated, but
-  # tolerate it until it's removed from all files.
+  # 2006-20xx string used on the oldest files. 2006-20xx is deprecated, but
+  # tolerated on old files.
   current_year = int(input_api.time.strftime('%Y'))
   allowed_years = (str(s) for s in reversed(xrange(2006, current_year + 1)))
-  years_re = '(' + '|'.join(allowed_years) + '|2006-2008)'
+  years_re = '(' + '|'.join(allowed_years) + '|2006-2008|2006-2009|2006-2010)'
 
   # The (c) is deprecated, but tolerate it until it's removed from all files.
   license_header = license_header or (
