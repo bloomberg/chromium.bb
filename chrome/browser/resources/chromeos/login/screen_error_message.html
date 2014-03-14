@@ -28,6 +28,8 @@
         <span id="kiosk-offline-message-text"
             i18n-content="kioskOfflineMessageBody"
             class="show-with-ui-state-kiosk-mode"></span>
+        <span id="auto-enrollment-offline-message-text"
+            class="show-with-ui-state-auto-enrollment-error"></span>
       </div>
       <div id="captive-portal-message-body"
           class="error-message-paragraph
@@ -36,7 +38,8 @@
             class="show-with-ui-state-update
                    show-with-ui-state-signin
                    show-with-ui-state-locally-managed
-                   show-with-ui-state-kiosk-mode"></span>
+                   show-with-ui-state-kiosk-mode
+                   show-with-ui-state-auto-enrollment-error"></span>
       </div>
       <div id="captive-portal-proxy-message-body"
           class="error-message-paragraph
@@ -46,13 +49,15 @@
             class="show-with-ui-state-update
                    show-with-ui-state-signin
                    show-with-ui-state-locally-managed
-                   show-with-ui-state-kiosk-mode"></span>
+                   show-with-ui-state-kiosk-mode
+                   show-with-ui-state-auto-enrollment-error"></span>
       </div>
       <div id="proxy-message-body"
           class="error-message-paragraph
                  show-with-error-state-proxy">
         <span id="update-proxy-message-text"
-            class="show-with-ui-state-update"></span>
+            class="show-with-ui-state-update
+                   show-with-ui-state-auto-enrollment-error"></span>
         <span id="signin-proxy-message-text"
             class="show-with-ui-state-signin
                    show-with-ui-state-locally-managed
@@ -62,7 +67,8 @@
           class="show-with-ui-state-update
                  show-with-ui-state-signin
                  show-with-ui-state-locally-managed
-                 show-with-ui-state-kiosk-mode">
+                 show-with-ui-state-kiosk-mode
+                 show-with-ui-state-auto-enrollment-error">
         <div id="offline-network-control" class="error-message-paragraph">
           <label for="offline-networks-list-dropdown"
               i18n-content="selectNetwork"
@@ -93,6 +99,8 @@
       </div>
       <div id="error-offline-login"
           class="error-message-paragraph offline-login"></div>
+      <div id="connecting-indicator"
+          class="connecting-indicator error-message-paragraph"></div>
     </div>
   </div>
   <div class="error-controls">

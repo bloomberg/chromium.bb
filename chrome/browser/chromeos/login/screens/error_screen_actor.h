@@ -68,6 +68,8 @@ class ErrorScreenActor {
   virtual void AllowGuestSignin(bool allowed) = 0;
   virtual void AllowOfflineLogin(bool allowed) = 0;
 
+  virtual void ShowConnectingIndicator(bool show) = 0;
+
   static const char* ErrorReasonString(ErrorReason reason);
 
  protected:
@@ -76,6 +78,7 @@ class ErrorScreenActor {
   std::string network_;
   bool guest_signin_allowed_;
   bool offline_login_allowed_;
+  bool show_connecting_indicator_;
 
   OobeUI::Screen parent_screen_;
 

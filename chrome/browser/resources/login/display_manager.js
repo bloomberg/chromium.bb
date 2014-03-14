@@ -54,7 +54,8 @@
   SIGNIN: 'ui-state-signin',
   MANAGED_USER_CREATION_FLOW: 'ui-state-locally-managed',
   KIOSK_MODE: 'ui-state-kiosk-mode',
-  LOCAL_STATE_ERROR: 'ui-state-local-state-error'
+  LOCAL_STATE_ERROR: 'ui-state-local-state-error',
+  AUTO_ENROLLMENT_ERROR: 'ui-state-auto-enrollment-error'
 };
 
 /* Possible types of UI. */

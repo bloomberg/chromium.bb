@@ -18,6 +18,7 @@ class ListValue;
 
 namespace chromeos {
 
+class HelpAppLauncher;
 class OobeUI;
 
 // The core handler for Javascript messages related to the "oobe" view.
@@ -88,6 +89,7 @@ class CoreOobeHandler : public BaseScreenHandler,
   void HandleSetDeviceRequisition(const std::string& requisition);
   void HandleScreenAssetsLoaded(const std::string& screen_async_load_id);
   void HandleSkipToLoginForTesting(const base::ListValue* args);
+  void HandleLaunchHelpApp(double help_topic_id);
 
   // Updates a11y menu state based on the current a11y features state(on/off).
   void UpdateA11yState();
@@ -113,6 +115,9 @@ class CoreOobeHandler : public BaseScreenHandler,
 
   // Updates when version info is changed.
   VersionInfoUpdater version_info_updater_;
+
+  // Help application used for help dialogs.
+  scoped_refptr<HelpAppLauncher> help_app_;
 
   Delegate* delegate_;
 

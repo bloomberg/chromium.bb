@@ -126,6 +126,8 @@ void CoreOobeHandler::RegisterMessages() {
               &CoreOobeHandler::HandleScreenAssetsLoaded);
   AddRawCallback("skipToLoginForTesting",
                  &CoreOobeHandler::HandleSkipToLoginForTesting);
+  AddCallback("launchHelpApp",
+              &CoreOobeHandler::HandleLaunchHelpApp);
 }
 
 void CoreOobeHandler::ShowSignInError(
@@ -321,6 +323,13 @@ void CoreOobeHandler::OnAccessibilityStatusChanged(
     accessibility_subscription_.reset();
   else
     UpdateA11yState();
+}
+
+void CoreOobeHandler::HandleLaunchHelpApp(double help_topic_id) {
+  if (!help_app_)
+    help_app_ = new HelpAppLauncher(GetNativeWindow());
+  help_app_->ShowHelpTopic(
+      static_cast<HelpAppLauncher::HelpTopic>(help_topic_id));
 }
 
 }  // namespace chromeos

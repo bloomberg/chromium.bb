@@ -25,6 +25,7 @@ ErrorScreenActor::ErrorScreenActor()
       error_state_(ErrorScreen::ERROR_STATE_UNKNOWN),
       guest_signin_allowed_(false),
       offline_login_allowed_(false),
+      show_connecting_indicator_(false),
       parent_screen_(OobeUI::SCREEN_UNKNOWN) {}
 
 ErrorScreenActor::~ErrorScreenActor() {}

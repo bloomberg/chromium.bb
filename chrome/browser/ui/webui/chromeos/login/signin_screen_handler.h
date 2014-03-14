@@ -15,7 +15,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/login/login_display.h"
 #include "chrome/browser/chromeos/login/screens/error_screen_actor.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -354,7 +353,6 @@ class SigninScreenHandler
   void HandleToggleKioskEnableScreen();
   void HandleToggleResetScreen();
   void HandleToggleKioskAutolaunchScreen();
-  void HandleLaunchHelpApp(double help_topic_id);
   void HandleCreateAccount();
   void HandleAccountPickerReady();
   void HandleWallpaperReady();
@@ -485,9 +483,6 @@ class SigninScreenHandler
 
   // True if cookie jar cleanup is done.
   bool cookies_cleared_;
-
-  // Help application used for help dialogs.
-  scoped_refptr<HelpAppLauncher> help_app_;
 
   // Network state informer used to keep signin screen up.
   scoped_refptr<NetworkStateInformer> network_state_informer_;

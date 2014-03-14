@@ -68,4 +68,9 @@ void ErrorScreen::SetErrorState(ErrorState error_state,
   actor_->SetErrorState(error_state, network);
 }
 
+void ErrorScreen::ShowConnectingIndicator(bool show) {
+  DCHECK(actor_);
+  actor_->ShowConnectingIndicator(show);
+}
+
 }  // namespace chromeos

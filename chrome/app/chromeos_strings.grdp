@@ -4669,6 +4669,9 @@ Battery full
   <message name="IDS_UPDATE_OFFLINE_MESSAGE" desc="An offline message that shows up in the OOBE update screen.">
     Please connect to the Internet to update your Chromebook.
   </message>
+  <message name="IDS_LOGIN_AUTO_ENROLLMENT_OFFLINE_MESSAGE" desc="An offline message that shows in the error screen when auto-enrollment state failed to be downloaded.">
+    Your Chromebook is unable to connect to the Internet using <ph name="NETWORK_NAME">$1<ex>Ethernet</ex></ph>. Please choose another network. <ph name="LEARN_MORE_LINK_START">$2<ex>&gt;a&lt;</ex></ph>Learn more<ph name="LEARN_MORE_LINK_END">$3<ex>&gt;/a&lt;</ex></ph>
+  </message>
   <message name="IDS_UPDATE_PROXY_ERROR_MESSAGE" desc="An offline message that shows up when a proxy error has appeared in the OOBE update screen.">
     The update check failed using the current proxy settings. Please adjust your <ph name="PROXY_SETTINGS_LINK_START">$1<ex>&gt;a&lt;</ex></ph>proxy settings<ph name="PROXY_SETTINGS_LINK_END">$2<ex>&gt;/a&lt;</ex></ph>.
   </message>
@@ -4704,6 +4707,9 @@ Battery full
   </message>
   <message name="IDS_LOGIN_CONFIRM_KIOSK_DIAGNOSTIC_FORMAT" desc="Text to be shown on a dialog to confirm launching kiosk app in diagnostic mode.">
     Are you sure you want to launch "<ph name="APP_NAME">$1<ex>Kiosk App</ex></ph>" in diagnostic mode?
+  </message>
+  <message name="IDS_LOGIN_CONNECTING_INDICATOR_TEXT" desc="A message to show telling the user that the device is attempting to re-connect to the network.">
+    Connecting and verifying<ph name="ANIMATED_ELLIPSIS">$1<ex>...</ex></ph>
   </message>
 
   <!-- Idle warning dialog -->

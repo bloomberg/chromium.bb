@@ -93,6 +93,7 @@ void ErrorScreenHandler::HideCaptivePortal() {
 }
 
 void ErrorScreenHandler::SetUIState(ErrorScreen::UIState ui_state) {
+  show_connecting_indicator_ = false;
   ui_state_ = ui_state;
   if (page_is_ready())
     CallJS("setUIState", static_cast<int>(ui_state_));
@@ -116,6 +117,12 @@ void ErrorScreenHandler::AllowOfflineLogin(bool allowed) {
   offline_login_allowed_ = allowed;
   if (page_is_ready())
     CallJS("allowOfflineLogin", allowed);
+}
+
+void ErrorScreenHandler::ShowConnectingIndicator(bool show) {
+  show_connecting_indicator_ = show;
+  if (page_is_ready())
+    CallJS("showConnectingIndicator", show);
 }
 
 void ErrorScreenHandler::NetworkErrorShown() {
@@ -194,6 +201,8 @@ void ErrorScreenHandler::DeclareLocalizedValues(
   builder->Add("loginErrorTitle", IDS_LOGIN_ERROR_TITLE);
   builder->Add("signinOfflineMessageBody", IDS_LOGIN_OFFLINE_MESSAGE);
   builder->Add("kioskOfflineMessageBody", IDS_KIOSK_OFFLINE_MESSAGE);
+  builder->Add("autoEnrollmentOfflineMessageBody",
+               IDS_LOGIN_AUTO_ENROLLMENT_OFFLINE_MESSAGE);
   builder->Add("captivePortalTitle", IDS_LOGIN_MAYBE_CAPTIVE_PORTAL_TITLE);
   builder->Add("captivePortalMessage", IDS_LOGIN_MAYBE_CAPTIVE_PORTAL);
   builder->Add("captivePortalProxyMessage",
@@ -208,6 +217,7 @@ void ErrorScreenHandler::DeclareLocalizedValues(
   builder->Add("localStateErrorText1", IDS_LOCAL_STATE_ERROR_TEXT_1);
   builder->Add("localStateErrorPowerwashButton",
                IDS_LOCAL_STATE_ERROR_POWERWASH_BUTTON);
+  builder->Add("connectingIndicatorText", IDS_LOGIN_CONNECTING_INDICATOR_TEXT);
   builder->Add("rebootButton", IDS_RELAUNCH_BUTTON);
   builder->Add("diagnoseButton", IDS_DIAGNOSE_BUTTON);
 }
@@ -222,6 +232,7 @@ void ErrorScreenHandler::Initialize() {
     params.SetString("network", network_);
     params.SetBoolean("guestSigninAllowed", guest_signin_allowed_);
     params.SetBoolean("offlineLoginAllowed", offline_login_allowed_);
+    params.SetBoolean("showConnectingIndicator", show_connecting_indicator_);
     Show(parent_screen_, &params);
     show_on_init_ = false;
   }

@@ -42,6 +42,7 @@ class ErrorScreenHandler : public BaseScreenHandler,
                              const std::string& network) OVERRIDE;
   virtual void AllowGuestSignin(bool allowed) OVERRIDE;
   virtual void AllowOfflineLogin(bool allowed) OVERRIDE;
+  virtual void ShowConnectingIndicator(bool show) OVERRIDE;
 
  private:
   // Sends notification that error message is shown.

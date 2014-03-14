@@ -17,7 +17,8 @@
 .show-with-error-state-proxy,
 .show-with-error-state-auth-ext-timeout,
 .guest-signin,
-.offline-login {
+.offline-login,
+.connecting-indicator {
   display: none;
 }
 
@@ -26,12 +27,14 @@
 .ui-state-locally-managed .show-with-ui-state-locally-managed,
 .ui-state-kiosk-mode .show-with-ui-state-kiosk-mode,
 .ui-state-local-state-error .show-with-ui-state-local-state-error,
+.ui-state-auto-enrollment-error .show-with-ui-state-auto-enrollment-error,
 .error-state-portal .show-with-error-state-portal,
 .error-state-offline .show-with-error-state-offline,
 .error-state-proxy .show-with-error-state-proxy,
 .error-state-auth-ext-timeout .show-with-error-state-auth-ext-timeout,
 .allow-guest-signin .guest-signin,
-.allow-offline-login .offline-login {
+.allow-offline-login .offline-login,
+.show-connecting-indicator .connecting-indicator {
   display: block;
 }
 
@@ -93,4 +96,31 @@
 
 .button-spacer {
   -webkit-box-flex: 1;
+}
+
+@-webkit-keyframes connecting-indicator-ellipsis {
+  0% {
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  50% {
+    opacity: .8;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+#connecting-indicator-ellipsis-1 {
+  -webkit-animation: connecting-indicator-ellipsis 3s 0 infinite;
+}
+
+#connecting-indicator-ellipsis-2 {
+  -webkit-animation: connecting-indicator-ellipsis 3s 500ms infinite;
+}
+
+#connecting-indicator-ellipsis-3 {
+  -webkit-animation: connecting-indicator-ellipsis 3s 1s infinite;
 }

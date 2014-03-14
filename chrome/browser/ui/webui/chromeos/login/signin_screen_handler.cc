@@ -761,7 +761,6 @@ void SigninScreenHandler::RegisterMessages() {
               &SigninScreenHandler::HandleToggleKioskEnableScreen);
   AddCallback("toggleResetScreen",
               &SigninScreenHandler::HandleToggleResetScreen);
-  AddCallback("launchHelpApp", &SigninScreenHandler::HandleLaunchHelpApp);
   AddCallback("createAccount", &SigninScreenHandler::HandleCreateAccount);
   AddCallback("accountPickerReady",
               &SigninScreenHandler::HandleAccountPickerReady);
@@ -1265,15 +1264,6 @@ void SigninScreenHandler::HandleToggleKioskAutolaunchScreen() {
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   if (delegate_ && !connector->IsEnterpriseManaged())
     delegate_->ShowKioskAutolaunchScreen();
-}
-
-void SigninScreenHandler::HandleLaunchHelpApp(double help_topic_id) {
-  if (!delegate_)
-    return;
-  if (!help_app_.get())
-    help_app_ = new HelpAppLauncher(GetNativeWindow());
-  help_app_->ShowHelpTopic(
-      static_cast<HelpAppLauncher::HelpTopic>(help_topic_id));
 }
 
 void SigninScreenHandler::FillUserDictionary(User* user,

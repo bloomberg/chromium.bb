@@ -8,7 +8,6 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/chromeos/login/oobe_display.h"
-#include "chrome/browser/chromeos/login/oobe_display.h"
 #include "chrome/browser/chromeos/login/screens/wizard_screen.h"
 
 namespace chromeos {
@@ -25,7 +24,8 @@ class ErrorScreen : public WizardScreen {
     UI_STATE_SIGNIN,
     UI_STATE_LOCALLY_MANAGED,
     UI_STATE_KIOSK_MODE,
-    UI_STATE_LOCAL_STATE_ERROR
+    UI_STATE_LOCAL_STATE_ERROR,
+    UI_STATE_AUTO_ENROLLMENT_ERROR
   };
 
   enum ErrorState {
@@ -62,6 +62,9 @@ class ErrorScreen : public WizardScreen {
   // Sets current error screen content according to current UI state,
   // |error_state|, and |network|.
   void SetErrorState(ErrorState error_state, const std::string& network);
+
+  // Toggles the connection pending indicator.
+  void ShowConnectingIndicator(bool show);
 
   void set_parent_screen(OobeDisplay::Screen parent_screen) {
     parent_screen_ = parent_screen;

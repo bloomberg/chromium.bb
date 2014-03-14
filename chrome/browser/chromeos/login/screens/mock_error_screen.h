@@ -33,6 +33,7 @@ class MockErrorScreenActor : public ErrorScreenActor {
                                    const std::string& network));
   MOCK_METHOD1(AllowGuestSignin, void(bool allowed));
   MOCK_METHOD1(AllowOfflineLogin, void(bool allowed));
+  MOCK_METHOD1(ShowConnectingIndicator, void(bool show));
 };
 
 }  // namespace chromeos
