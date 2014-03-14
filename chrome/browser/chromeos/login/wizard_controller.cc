@@ -56,8 +56,10 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/chromeos_constants.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
+#include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/breakpad/app/breakpad_linux.h"
@@ -479,7 +481,7 @@ void WizardController::OnConnectionFailed() {
 }
 
 void WizardController::OnUpdateCompleted() {
-  OnOOBECompleted();
+  CheckAutoEnrollmentState();
 }
 
 void WizardController::OnEulaAccepted() {
@@ -512,7 +514,7 @@ void WizardController::OnUpdateErrorCheckingForUpdate() {
   // screen if there is any error checking for an update.
   // They could use "browse without sign-in" feature to set up the network to be
   // able to perform the update later.
-  OnOOBECompleted();
+  OnUpdateCompleted();
 }
 
 void WizardController::OnUpdateErrorUpdating() {
@@ -521,7 +523,7 @@ void WizardController::OnUpdateErrorUpdating() {
   // TODO(nkostylev): Show message to the user explaining update error.
   // TODO(nkostylev): Update should be required during OOBE.
   // Temporary fix, need to migrate to new API. http://crosbug.com/4321
-  OnOOBECompleted();
+  OnUpdateCompleted();
 }
 
 void WizardController::EnableUserImageScreenReturnToPreviousHack() {
@@ -890,6 +892,55 @@ void WizardController::OnLocalStateInitialized(bool /* succeeded */) {
   GetErrorScreen()->SetUIState(ErrorScreen::UI_STATE_LOCAL_STATE_ERROR);
   SetStatusAreaVisible(false);
   ShowErrorScreen();
+}
+
+void WizardController::CheckAutoEnrollmentState() {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kEnterpriseEnableForcedReEnrollment)) {
+    auto_enrollment_progress_subscription_ =
+        host_->RegisterAutoEnrollmentProgressHandler(
+            base::Bind(&WizardController::OnAutoEnrollmentCheckProgressed,
+                       weak_factory_.GetWeakPtr()));
+  } else {
+    OnOOBECompleted();
+  }
+}
+
+void WizardController::OnAutoEnrollmentCheckProgressed(
+    policy::AutoEnrollmentClient::State state) {
+  ErrorScreen* error_screen = GetErrorScreen();
+  switch (state) {
+    case policy::AutoEnrollmentClient::STATE_PENDING:
+      if (current_screen_ == error_screen &&
+          error_screen->GetUIState() ==
+              ErrorScreen::UI_STATE_AUTO_ENROLLMENT_ERROR) {
+        error_screen->ShowConnectingIndicator(true);
+      }
+      return;
+    case policy::AutoEnrollmentClient::STATE_CONNECTION_ERROR: {
+      // Show an error screen and ask the user to fix the network connection.
+      const NetworkState* default_network =
+          NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
+      DCHECK(default_network);
+      error_screen->SetUIState(ErrorScreen::UI_STATE_AUTO_ENROLLMENT_ERROR);
+      error_screen->SetErrorState(
+          ErrorScreen::ERROR_STATE_OFFLINE,
+          default_network ? default_network->name() : std::string());
+      error_screen->ShowConnectingIndicator(false);
+      ShowErrorScreen();
+      return;
+    }
+    case policy::AutoEnrollmentClient::STATE_SERVER_ERROR:
+      // Server errors don't block OOBE.
+    case policy::AutoEnrollmentClient::STATE_TRIGGER_ENROLLMENT:
+    case policy::AutoEnrollmentClient::STATE_NO_ENROLLMENT:
+      // Decision made, ready to proceed.
+      auto_enrollment_progress_subscription_.reset();
+      OnOOBECompleted();
+      return;
+  }
+
+  NOTREACHED();
 }
 
 PrefService* WizardController::GetLocalState() {

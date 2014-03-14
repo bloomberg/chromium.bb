@@ -67,8 +67,9 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
   virtual void OpenProxySettings() OVERRIDE;
   virtual void SetStatusAreaVisible(bool visible) OVERRIDE;
   virtual void CheckForAutoEnrollment() OVERRIDE;
-  virtual void GetAutoEnrollmentCheckResult(
-      const GetAutoEnrollmentCheckResultCallback& callback) OVERRIDE;
+  virtual scoped_ptr<AutoEnrollmentProgressCallbackSubscription>
+      RegisterAutoEnrollmentProgressHandler(
+          const AutoEnrollmentProgressCallback& callback) OVERRIDE;
   virtual void StartWizard(
       const std::string& first_screen_name,
       scoped_ptr<base::DictionaryValue> screen_parameters) OVERRIDE;
@@ -147,8 +148,12 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
   void OnOwnershipStatusCheckDone(
       DeviceSettingsService::OwnershipStatus status);
 
-  // Callback for completion of the |auto_enrollment_client_|.
-  void OnAutoEnrollmentClientDone();
+  // Progress callback registered with |auto_enrollment_client_|.
+  void OnAutoEnrollmentClientProgress(
+      policy::AutoEnrollmentClient::State state);
+
+  // Records auto-enrollment progress and notifies subscribers.
+  void SetAutoEnrollmentState(policy::AutoEnrollmentClient::State new_state);
 
   // Forces auto-enrollment on the appropriate controller.
   void ForceAutoEnrollment();
@@ -175,9 +180,6 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
   // Toggles OOBE progress bar visibility, the bar is hidden by default.
   void SetOobeProgressBarVisible(bool visible);
 
-  // Notifies the interested parties of the auto enrollment check result.
-  void NotifyAutoEnrollmentCheckResult(bool should_auto_enroll);
-
   // Tries to play startup sound. If sound can't be played right now,
   // for instance, because cras server is not initialized, playback
   // will be delayed.
@@ -186,12 +188,21 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
   // Called when login-prompt-visible signal is caught.
   void OnLoginPromptVisible();
 
+  // Checks whether to silently enroll on login.
+  bool ShouldEnrollSilently();
+
   // Used to calculate position of the screens and background.
   gfx::Rect background_bounds_;
 
   content::NotificationRegistrar registrar_;
 
   base::WeakPtrFactory<LoginDisplayHostImpl> pointer_factory_;
+
+  // Current auto-enrollment check state.
+  policy::AutoEnrollmentClient::State auto_enrollment_state_;
+
+  // Callbacks to notify when auto enrollment client progresses.
+  AutoEnrollmentProgressCallbackList auto_enrollment_progress_callbacks_;
 
   // Default LoginDisplayHost.
   static LoginDisplayHost* default_host_;
@@ -278,13 +289,6 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
 
   // Handles special keys for keyboard driven oobe.
   scoped_ptr<KeyboardDrivenOobeKeyHandler> keyboard_driven_oobe_key_handler_;
-
-  // Whether auto enrollment client has done the check.
-  bool auto_enrollment_check_done_;
-
-  // Callbacks to notify when auto enrollment client has done the check.
-  std::vector<GetAutoEnrollmentCheckResultCallback>
-      get_auto_enrollment_result_callbacks_;
 
   FinalizeAnimationType finalize_animation_type_;
 

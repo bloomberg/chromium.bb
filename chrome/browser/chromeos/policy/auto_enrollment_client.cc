@@ -116,22 +116,6 @@ std::string ConvertRestoreMode(
   return std::string();
 }
 
-// Helper that calls |completion_callback| if |state| indicates termination.
-void CheckCompletion(const base::Closure& completion_callback,
-                     AutoEnrollmentClient::State state) {
-  switch (state) {
-    case AutoEnrollmentClient::STATE_PENDING:
-    case AutoEnrollmentClient::STATE_CONNECTION_ERROR:
-    case AutoEnrollmentClient::STATE_SERVER_ERROR:
-      break;
-    case AutoEnrollmentClient::STATE_TRIGGER_ENROLLMENT:
-    case AutoEnrollmentClient::STATE_NO_ENROLLMENT:
-      if (!completion_callback.is_null())
-        completion_callback.Run();
-      break;
-  }
-}
-
 }  // namespace
 
 AutoEnrollmentClient::AutoEnrollmentClient(
@@ -192,7 +176,7 @@ bool AutoEnrollmentClient::IsDisabled() {
 
 // static
 AutoEnrollmentClient* AutoEnrollmentClient::Create(
-    const base::Closure& completion_callback) {
+    const ProgressCallback& progress_callback) {
   // The client won't do anything if |service| is NULL.
   DeviceManagementService* service = NULL;
   if (IsDisabled()) {
@@ -225,7 +209,7 @@ AutoEnrollmentClient* AutoEnrollmentClient::Create(
   }
 
   return new AutoEnrollmentClient(
-      base::Bind(&CheckCompletion, completion_callback),
+      progress_callback,
       service,
       g_browser_process->local_state(),
       g_browser_process->system_request_context(),

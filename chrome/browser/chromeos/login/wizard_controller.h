@@ -15,8 +15,10 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
+#include "chrome/browser/chromeos/login/login_display_host.h"
 #include "chrome/browser/chromeos/login/screens/screen_observer.h"
 #include "chrome/browser/chromeos/login/screens/wizard_screen.h"
+#include "chrome/browser/chromeos/policy/auto_enrollment_client.h"
 #include "ui/gfx/rect.h"
 #include "url/gurl.h"
 
@@ -35,7 +37,6 @@ class EulaScreen;
 class KioskAutolaunchScreen;
 class KioskEnableScreen;
 class LocallyManagedUserCreationScreen;
-class LoginDisplayHost;
 class LoginScreenContext;
 class NetworkScreen;
 class OobeDisplay;
@@ -251,6 +252,13 @@ class WizardController : public ScreenObserver {
   // Called when LocalState is initialized.
   void OnLocalStateInitialized(bool /* succeeded */);
 
+  // Checks auto enrollment state and eventually triggers the next wizard step.
+  void CheckAutoEnrollmentState();
+
+  // Handles update notifications regarding the auto-enrollment check.
+  void OnAutoEnrollmentCheckProgressed(
+      policy::AutoEnrollmentClient::State state);
+
   // Returns local state.
   PrefService* GetLocalState();
 
@@ -340,6 +348,8 @@ class WizardController : public ScreenObserver {
   friend class WizardControllerBrokenLocalStateTest;
 
   scoped_ptr<AccessibilityStatusSubscription> accessibility_subscription_;
+  scoped_ptr<LoginDisplayHost::AutoEnrollmentProgressCallbackSubscription>
+      auto_enrollment_progress_subscription_;
 
   base::WeakPtrFactory<WizardController> weak_factory_;
 

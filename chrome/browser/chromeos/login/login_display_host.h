@@ -8,10 +8,12 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/callback_list.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/login/login_display.h"
+#include "chrome/browser/chromeos/policy/auto_enrollment_client.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace views {
@@ -30,11 +32,14 @@ class WizardController;
 // UI implementation (such as LoginDisplay).
 class LoginDisplayHost {
  public:
-  // Callback for GetAutoEnrollmentCheckResult. It is invoked with when
-  // a decision is made for auto enrollment. It is invoked with "true" when
-  // auto enrollment check is finished and auto enrollment should be enforced.
-  // Otherwise, it is invoked with "false".
-  typedef base::Callback<void(bool)> GetAutoEnrollmentCheckResultCallback;
+  // Callback for RegisterAutoEnrollmentProgressHandler. It is invoked with when
+  // the auto-enrollment check progresses.
+  typedef base::Callback<void(policy::AutoEnrollmentClient::State)>
+      AutoEnrollmentProgressCallback;
+  typedef base::CallbackList<void(policy::AutoEnrollmentClient::State)>
+      AutoEnrollmentProgressCallbackList;
+  typedef AutoEnrollmentProgressCallbackList::Subscription
+      AutoEnrollmentProgressCallbackSubscription;
 
   virtual ~LoginDisplayHost() {}
 
@@ -69,11 +74,12 @@ class LoginDisplayHost {
   // Auto-Enrollment checks now.
   virtual void CheckForAutoEnrollment() = 0;
 
-  // Gets the auto enrollment check results. If the check is still pending,
-  // |callback| will be invoked asynchronously after it is finished. Otherwise,
-  // |callback| is invoked synchronously before this call returns.
-  virtual void GetAutoEnrollmentCheckResult(
-      const GetAutoEnrollmentCheckResultCallback& callback) = 0;
+  // Registers a callback for auto enrollment state changes. The callback will
+  // be invoked synchronously once to report the initial state and then whenever
+  // the state changes until the subscription is dropped.
+  virtual scoped_ptr<AutoEnrollmentProgressCallbackSubscription>
+      RegisterAutoEnrollmentProgressHandler(
+          const AutoEnrollmentProgressCallback& callback) = 0;
 
   // Starts out-of-box-experience flow or shows other screen handled by
   // Wizard controller i.e. camera, recovery.

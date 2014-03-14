@@ -79,9 +79,8 @@ class AutoEnrollmentClient
   static bool IsDisabled();
 
   // Convenience method to create instances of this class.
-  // TODO(mnissler): Convert callers to pass a ProgressCallback here.
   static AutoEnrollmentClient* Create(
-      const base::Closure& completion_callback);
+      const ProgressCallback& progress_callback);
 
   // Cancels auto-enrollment.
   // This function does not interrupt a running auto-enrollment check. It only
@@ -97,13 +96,6 @@ class AutoEnrollmentClient
   // Cancels any pending requests. |progress_callback_| will not be invoked.
   // |this| will delete itself.
   void CancelAndDeleteSoon();
-
-  // Returns true if the protocol completed successfully and determined that
-  // this device should do enterprise enrollment.
-  // TODO(mnissler): Remove once callers have been converted to state().
-  bool should_auto_enroll() const {
-    return state_ == STATE_TRIGGER_ENROLLMENT;
-  };
 
   // Returns the device_id randomly generated for the auto-enrollment requests.
   // It can be reused for subsequent requests to the device management service.

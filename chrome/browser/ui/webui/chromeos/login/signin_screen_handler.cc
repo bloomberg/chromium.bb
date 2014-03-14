@@ -462,6 +462,8 @@ void SigninScreenHandler::SetDelegate(SigninScreenHandlerDelegate* delegate) {
   delegate_ = delegate;
   if (delegate_)
     delegate_->SetWebUIHandler(this);
+  else
+    auto_enrollment_progress_subscription_.reset();
 }
 
 void SigninScreenHandler::SetNativeWindowDelegate(
@@ -1242,13 +1244,13 @@ void SigninScreenHandler::HandleToggleKioskEnableScreen() {
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   if (delegate_ &&
-      !wait_for_auto_enrollment_check_ &&
+      !auto_enrollment_progress_subscription_ &&
       !connector->IsEnterpriseManaged()) {
-    wait_for_auto_enrollment_check_ = true;
-
-    LoginDisplayHostImpl::default_host()->GetAutoEnrollmentCheckResult(
-        base::Bind(&SigninScreenHandler::ContinueKioskEnableFlow,
-                   weak_factory_.GetWeakPtr()));
+    auto_enrollment_progress_subscription_ =
+        LoginDisplayHostImpl::default_host()
+            ->RegisterAutoEnrollmentProgressHandler(
+                base::Bind(&SigninScreenHandler::ContinueKioskEnableFlow,
+                           weak_factory_.GetWeakPtr()));
   }
 }
 
@@ -1719,22 +1721,30 @@ void SigninScreenHandler::SubmitLoginFormForTest() {
   // if they are cleared here.
 }
 
-void SigninScreenHandler::ContinueKioskEnableFlow(bool should_auto_enroll) {
-  wait_for_auto_enrollment_check_ = false;
-
+void SigninScreenHandler::ContinueKioskEnableFlow(
+    policy::AutoEnrollmentClient::State state) {
   // Do not proceed with kiosk enable when auto enroll will be enforced.
   // TODO(xiyuan): Add an error UI feedkback so user knows what happens.
-  if (should_auto_enroll) {
-    LOG(WARNING) << "Kiosk enable flow aborted because auto enrollment is "
-                    "going to be enforced.";
-
-    if (!kiosk_enable_flow_aborted_callback_for_test_.is_null())
-      kiosk_enable_flow_aborted_callback_for_test_.Run();
-    return;
+  switch (state) {
+    case policy::AutoEnrollmentClient::STATE_PENDING:
+    case policy::AutoEnrollmentClient::STATE_CONNECTION_ERROR:
+      // Wait for the next callback.
+      return;
+    case policy::AutoEnrollmentClient::STATE_TRIGGER_ENROLLMENT:
+      // Auto-enrollment is on.
+      LOG(WARNING) << "Kiosk enable flow aborted because auto enrollment is "
+                      "going to be enforced.";
+      if (!kiosk_enable_flow_aborted_callback_for_test_.is_null())
+        kiosk_enable_flow_aborted_callback_for_test_.Run();
+      break;
+    case policy::AutoEnrollmentClient::STATE_SERVER_ERROR:
+    case policy::AutoEnrollmentClient::STATE_NO_ENROLLMENT:
+      // Auto-enrollment not applicable.
+      if (delegate_)
+        delegate_->ShowKioskEnableScreen();
+      break;
   }
-
-  if (delegate_)
-    delegate_->ShowKioskEnableScreen();
+  auto_enrollment_progress_subscription_.reset();
 }
 
 void SigninScreenHandler::OnShowAddUser(const std::string& email) {

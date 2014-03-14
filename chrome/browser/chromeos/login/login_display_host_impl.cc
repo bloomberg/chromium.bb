@@ -257,6 +257,7 @@ const int LoginDisplayHostImpl::kShowLoginWebUIid = 0x1111;
 LoginDisplayHostImpl::LoginDisplayHostImpl(const gfx::Rect& background_bounds)
     : background_bounds_(background_bounds),
       pointer_factory_(this),
+      auto_enrollment_state_(policy::AutoEnrollmentClient::STATE_PENDING),
       shutting_down_(false),
       oobe_progress_bar_visible_(false),
       session_starting_(false),
@@ -268,7 +269,6 @@ LoginDisplayHostImpl::LoginDisplayHostImpl(const gfx::Rect& background_bounds)
       status_area_saved_visibility_(false),
       crash_count_(0),
       restore_path_(RESTORE_UNKNOWN),
-      auto_enrollment_check_done_(false),
       finalize_animation_type_(ANIMATION_WORKSPACE),
       animation_weak_ptr_factory_(this),
       startup_sound_played_(false),
@@ -461,7 +461,7 @@ void LoginDisplayHostImpl::CheckForAutoEnrollment() {
 
   if (policy::AutoEnrollmentClient::IsDisabled()) {
     VLOG(1) << "CheckForAutoEnrollment: auto-enrollment disabled";
-    auto_enrollment_check_done_ = true;
+    SetAutoEnrollmentState(policy::AutoEnrollmentClient::STATE_NO_ENROLLMENT);
     return;
   }
 
@@ -472,17 +472,16 @@ void LoginDisplayHostImpl::CheckForAutoEnrollment() {
                  pointer_factory_.GetWeakPtr()));
 }
 
-void LoginDisplayHostImpl::GetAutoEnrollmentCheckResult(
-    const GetAutoEnrollmentCheckResultCallback& callback) {
+scoped_ptr<LoginDisplayHost::AutoEnrollmentProgressCallbackSubscription>
+LoginDisplayHostImpl::RegisterAutoEnrollmentProgressHandler(
+    const AutoEnrollmentProgressCallback& callback) {
   DCHECK(!callback.is_null());
 
-  if (auto_enrollment_check_done_) {
-    callback.Run(auto_enrollment_client_ &&
-                 auto_enrollment_client_->should_auto_enroll());
-    return;
-  }
+  scoped_ptr<AutoEnrollmentProgressCallbackSubscription>
+      subscription(auto_enrollment_progress_callbacks_.Add(callback));
 
-  get_auto_enrollment_result_callbacks_.push_back(callback);
+  callback.Run(auto_enrollment_state_);
+  return subscription.Pass();
 }
 
 void LoginDisplayHostImpl::StartWizard(
@@ -848,8 +847,7 @@ void LoginDisplayHostImpl::OnOwnershipStatusCheckDone(
   if (status != DeviceSettingsService::OWNERSHIP_NONE) {
     // The device is already owned. No need for auto-enrollment checks.
     VLOG(1) << "CheckForAutoEnrollment: device already owned";
-    auto_enrollment_check_done_ = true;
-    NotifyAutoEnrollmentCheckResult(false);
+    SetAutoEnrollmentState(policy::AutoEnrollmentClient::STATE_NO_ENROLLMENT);
     return;
   }
 
@@ -865,26 +863,30 @@ void LoginDisplayHostImpl::OnOwnershipStatusCheckDone(
 
     // If the client already started and already finished too, pass the decision
     // to the |sign_in_controller_| now.
-    if (auto_enrollment_client_->should_auto_enroll())
+    if (ShouldEnrollSilently())
       ForceAutoEnrollment();
   } else {
     VLOG(1) << "CheckForAutoEnrollment: starting auto-enrollment client";
     auto_enrollment_client_.reset(policy::AutoEnrollmentClient::Create(
-        base::Bind(&LoginDisplayHostImpl::OnAutoEnrollmentClientDone,
+        base::Bind(&LoginDisplayHostImpl::OnAutoEnrollmentClientProgress,
                    base::Unretained(this))));
     auto_enrollment_client_->Start();
   }
 }
 
-void LoginDisplayHostImpl::OnAutoEnrollmentClientDone() {
-  bool auto_enroll = auto_enrollment_client_->should_auto_enroll();
-  VLOG(1) << "OnAutoEnrollmentClientDone, decision is " << auto_enroll;
+void LoginDisplayHostImpl::OnAutoEnrollmentClientProgress(
+    policy::AutoEnrollmentClient::State state) {
+  VLOG(1) << "OnAutoEnrollmentClientProgress, state " << state;
+  SetAutoEnrollmentState(state);
 
-  if (auto_enroll)
+  if (ShouldEnrollSilently())
     ForceAutoEnrollment();
+}
 
-  auto_enrollment_check_done_ = true;
-  NotifyAutoEnrollmentCheckResult(auto_enroll);
+void LoginDisplayHostImpl::SetAutoEnrollmentState(
+    policy::AutoEnrollmentClient::State new_state) {
+  auto_enrollment_state_ = new_state;
+  auto_enrollment_progress_callbacks_.Notify(auto_enrollment_state_);
 }
 
 void LoginDisplayHostImpl::ForceAutoEnrollment() {
@@ -1027,14 +1029,6 @@ void LoginDisplayHostImpl::SetOobeProgressBarVisible(bool visible) {
   GetOobeUI()->ShowOobeUI(visible);
 }
 
-void LoginDisplayHostImpl::NotifyAutoEnrollmentCheckResult(
-    bool should_auto_enroll) {
-  std::vector<GetAutoEnrollmentCheckResultCallback> callbacks;
-  callbacks.swap(get_auto_enrollment_result_callbacks_);
-  for (size_t i = 0; i < callbacks.size(); ++i)
-    callbacks[i].Run(should_auto_enroll);
-}
-
 void LoginDisplayHostImpl::TryToPlayStartupSound() {
   if (startup_sound_played_ || login_prompt_visible_time_.is_null() ||
       !CrasAudioHandler::Get()->GetActiveOutputNode()) {
@@ -1074,6 +1068,13 @@ void LoginDisplayHostImpl::OnLoginPromptVisible() {
     return;
   login_prompt_visible_time_ = base::TimeTicks::Now();
   TryToPlayStartupSound();
+}
+
+bool LoginDisplayHostImpl::ShouldEnrollSilently() {
+  return !CommandLine::ForCurrentProcess()->HasSwitch(
+             chromeos::switches::kEnterpriseEnableForcedReEnrollment) &&
+         auto_enrollment_state_ ==
+             policy::AutoEnrollmentClient::STATE_TRIGGER_ENROLLMENT;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

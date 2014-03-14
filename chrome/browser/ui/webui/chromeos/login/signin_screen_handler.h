@@ -16,9 +16,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/login/login_display.h"
+#include "chrome/browser/chromeos/login/login_display_host.h"
 #include "chrome/browser/chromeos/login/screens/error_screen_actor.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/net/network_portal_detector.h"
+#include "chrome/browser/chromeos/policy/auto_enrollment_client.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
@@ -433,10 +435,10 @@ class SigninScreenHandler
   // Update current input method (namely keyboard layout) to LRU by this user.
   void SetUserInputMethod(const std::string& username);
 
-  // Invoked when auto enrollment check is finished to decide whether to
+  // Invoked when auto enrollment check progresses to decide whether to
   // continue kiosk enable flow. Kiosk enable flow is resumed when
-  // |should_auto_enroll| is false.
-  void ContinueKioskEnableFlow(bool should_auto_enroll);
+  // |state| indicates that enrollment is not applicable.
+  void ContinueKioskEnableFlow(policy::AutoEnrollmentClient::State state);
 
   // Shows signin screen for |email|.
   void OnShowAddUser(const std::string& email);
@@ -526,6 +528,8 @@ class SigninScreenHandler
 
   scoped_ptr<CrosSettings::ObserverSubscription> allow_new_user_subscription_;
   scoped_ptr<CrosSettings::ObserverSubscription> allow_guest_subscription_;
+  scoped_ptr<LoginDisplayHost::AutoEnrollmentProgressCallbackSubscription>
+      auto_enrollment_progress_subscription_;
 
   bool wait_for_auto_enrollment_check_;
 
