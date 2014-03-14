@@ -1,0 +1,12 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+package org.chromium.chrome.browser.banners;
+
+public class AppBannerMetricsIds {
+#define DEFINE_APP_BANNER_METRICS_ID_ENUM_START(identifier)
+#define DEFINE_APP_BANNER_METRICS_ID(identifier,id) public static final int identifier = id;
+#define DEFINE_APP_BANNER_METRICS_ID_ENUM_END()
+#include "chrome/browser/android/banners/app_banner_metrics_id_list.h"
+}

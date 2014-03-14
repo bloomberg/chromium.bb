@@ -192,6 +192,33 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="AppBanners.DismissEvent" enum="AppBannersDismissEvent">
+  <summary>
+    App banners promote an application related to the current website, and are
+    requested specifically through the current page's HTML.  This stat tracks
+    the different ways that an app banner left the screen, e.g. through an
+    automatic dismissal after navigation or an explicit user action.
+  </summary>
+</histogram>
+
+<histogram name="AppBanners.DisplayEvent" enum="AppBannersDisplayEvent">
+  <summary>
+    App banners promote an application related to the current website, and are
+    requested specifically through the current page's HTML.  This stat tracks
+    when an app banner was requested and how the request was handled, e.g. the
+    user blocked its appearance or the banner was ultimately created.
+  </summary>
+</histogram>
+
+<histogram name="AppBanners.InstallEvent" enum="AppBannersInstallEvent">
+  <summary>
+    App banners promote an application related to the current website, and are
+    requested specifically through the current page's HTML.  This stat tracks
+    when a user triggers an install dialog for the app promoted by the banner,
+    as well as whether or not the user ultimately decided to install the app.
+  </summary>
+</histogram>
+
 <histogram name="appcache.CheckResponseResult"
     enum="AppCacheCheckResponseResult">
   <summary>AppCache check response result code.</summary>
@@ -24718,6 +24745,29 @@ other types of suffix sets.
   <int value="1" label="TrimMemoryRunningLow"/>
   <int value="2" label="TrimMemoryRunningCritical"/>
   <int value="3" label="LowMemory"/>
+</enum>
+
+<enum name="AppBannersDismissEvent" type="int">
+  <int value="41" label="Error/unknown reason for dismissal"/>
+  <int value="42" label="User opened the application after installing it"/>
+  <int value="43" label="User clicked on the banner"/>
+  <int value="44" label="User swiped the banner away"/>
+  <int value="45" label="User hit the X button"/>
+  <int value="46" label="User began app install, but it didn't finish in time"/>
+  <int value="47" label="Automatic dismissal: User navigated elsewhere"/>
+</enum>
+
+<enum name="AppBannersDisplayEvent" type="int">
+  <int value="1" label="Banner was requested by the site"/>
+  <int value="2" label="User previously blocked the same banner"/>
+  <int value="3" label="User blocked too many other banners from the site"/>
+  <int value="4" label="Banner created."/>
+</enum>
+
+<enum name="AppBannersInstallEvent" type="int">
+  <int value="21" label="User triggered the app install dialog"/>
+  <int value="22" label="User began installing the app"/>
+  <int value="23" label="User waited for the app to finish installing"/>
 </enum>
 
 <enum name="AppCacheCheckResponseResult" type="int">

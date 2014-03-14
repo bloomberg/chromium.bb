@@ -989,6 +989,7 @@
           'type': 'none',
           'dependencies': [
             'activity_type_ids_java',
+            'app_banner_metrics_ids_java',
             'chrome_resources.gyp:chrome_strings',
             'profile_sync_service_model_type_selection_java',
             'resource_id_java',

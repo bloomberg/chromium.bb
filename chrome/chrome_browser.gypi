@@ -115,8 +115,12 @@
         'browser/android/activity_type_ids.h',
         'browser/android/banners/app_banner_manager.cc',
         'browser/android/banners/app_banner_manager.h',
+        'browser/android/banners/app_banner_metrics_id_list.h',
+        'browser/android/banners/app_banner_metrics_ids.h',
         'browser/android/banners/app_banner_settings_helper.cc',
         'browser/android/banners/app_banner_settings_helper.h',
+        'browser/android/banners/app_banner_utilities.cc',
+        'browser/android/banners/app_banner_utilities.h',
         'browser/android/bookmarks/managed_bookmarks_shim.cc',
         'browser/android/bookmarks/managed_bookmarks_shim.h',
         'browser/android/bookmarks/bookmarks_bridge.cc',
@@ -3766,6 +3770,18 @@
           'variables': {
             'package_name': 'org/chromium/chrome/browser',
             'template_deps': ['browser/android/activity_type_id_list.h'],
+          },
+          'includes': [ '../build/android/java_cpp_template.gypi' ],
+        },
+        {
+          'target_name': 'app_banner_metrics_ids_java',
+          'type': 'none',
+          'sources': [
+            'android/java/AppBannerMetricsIds.template',
+          ],
+          'variables': {
+            'package_name': 'org/chromium/chrome/browser/banners',
+            'template_deps': ['browser/android/banners/app_banner_metrics_id_list.h'],
           },
           'includes': [ '../build/android/java_cpp_template.gypi' ],
         },
