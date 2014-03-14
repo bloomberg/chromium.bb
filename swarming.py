@@ -5,7 +5,7 @@
 
 """Client tool to trigger tasks or retrieve results from a Swarming server."""
 
-__version__ = '0.4.3'
+__version__ = '0.4.4'
 
 import datetime
 import getpass
@@ -60,7 +60,7 @@ class Manifest(object):
   """
   def __init__(
       self, isolate_server, namespace, isolated_hash, task_name, shards, env,
-      dimensions, working_dir, verbose, profile, priority):
+      dimensions, working_dir, deadline, verbose, profile, priority):
     """Populates a manifest object.
       Args:
         isolate_server - isolate server url.
@@ -71,6 +71,7 @@ class Manifest(object):
         env - environment variables to set.
         dimensions - dimensions to filter the task on.
         working_dir - Relative working directory to start the script.
+        deadline - maximum pending time before this task expires.
         verbose - if True, have the slave print more details.
         profile - if True, have the slave print more timing data.
         priority - int between 0 and 1000, lower the higher priority.
@@ -90,6 +91,7 @@ class Manifest(object):
     self._env = env.copy()
     self._dimensions = dimensions.copy()
     self._working_dir = working_dir
+    self._deadline = deadline
 
     self.verbose = bool(verbose)
     self.profile = bool(profile)
@@ -129,13 +131,13 @@ class Manifest(object):
         # Is a TestConfiguration.
         {
           'config_name': 'isolated',
+          'deadline_to_run': self._deadline,
           'dimensions': self._dimensions,
           'min_instances': self._shards,
           'priority': self.priority,
         },
       ],
       'data': [],
-      # TODO: Let the encoding get set from the command line.
       'encoding': 'UTF-8',
       'env_vars': self._env,
       'restart_on_failure': True,
@@ -363,7 +365,7 @@ def archive(isolate_server, namespace, isolated, algo, verbose):
 
 def process_manifest(
     swarming, isolate_server, namespace, isolated_hash, task_name, shards,
-    dimensions, env, working_dir, verbose, profile, priority):
+    dimensions, env, working_dir, deadline, verbose, profile, priority):
   """Processes the manifest file and send off the swarming task request."""
   try:
     manifest = Manifest(
@@ -375,6 +377,7 @@ def process_manifest(
         dimensions=dimensions,
         env=env,
         working_dir=working_dir,
+        deadline=deadline,
         verbose=verbose,
         profile=profile,
         priority=priority)
@@ -439,6 +442,7 @@ def trigger(
     dimensions,
     env,
     working_dir,
+    deadline,
     verbose,
     profile,
     priority):
@@ -470,6 +474,7 @@ def trigger(
       task_name=task_name,
       shards=shards,
       dimensions=dimensions,
+      deadline=deadline,
       env=env,
       working_dir=working_dir,
       verbose=verbose,
@@ -555,6 +560,10 @@ def add_trigger_options(parser):
            'Defaults to <base_name>/<dimensions>/<isolated hash> if an '
            'isolated file is provided, if a hash is provided, it defaults to '
            '<user>/<dimensions>/<isolated hash>')
+  parser.task_group.add_option(
+      '--deadline', type='int', default=6*60*60,
+      help='Seconds to allow the task to be pending for a bot to run before '
+           'this task request expires.')
   parser.add_option_group(parser.task_group)
   # TODO(maruel): This is currently written in a chromium-specific way.
   parser.group_logging.add_option(
@@ -681,6 +690,7 @@ def CMDrun(parser, args):
         dimensions=options.dimensions,
         env=dict(options.env),
         working_dir=options.working_dir,
+        deadline=options.deadline,
         verbose=options.verbose,
         profile=options.profile,
         priority=options.priority)
@@ -730,6 +740,7 @@ def CMDtrigger(parser, args):
         shards=options.shards,
         env=dict(options.env),
         working_dir=options.working_dir,
+        deadline=options.deadline,
         verbose=options.verbose,
         profile=options.profile,
         priority=options.priority)

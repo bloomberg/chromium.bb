@@ -69,7 +69,8 @@ def archive(isolate_server, script):
 
 
 def run_serial(
-    swarming_server, isolate_server, priority, isolated_hash, name, bots):
+    swarming_server, isolate_server, priority, deadline, isolated_hash, name,
+    bots):
   """Runs the task one at a time.
 
   This will be mainly bound by task scheduling latency, especially if the slaves
@@ -86,6 +87,7 @@ def run_serial(
       '--swarming', swarming_server,
       '--isolate-server', isolate_server,
       '--priority', priority,
+      '--deadline', deadline,
       '--dimension', 'hostname', bot,
       '--task-name', task_name,
       isolated_hash,
@@ -96,7 +98,8 @@ def run_serial(
 
 
 def run_parallel(
-    swarming_server, isolate_server, priority, isolated_hash, name, bots):
+    swarming_server, isolate_server, priority, deadline, isolated_hash, name,
+    bots):
   now = parallel_execution.timestamp()
   tasks = [
     (
@@ -106,7 +109,7 @@ def run_parallel(
       {'hostname': bot},
     ) for bot in bots
   ]
-  extra_args = ['--priority', priority]
+  extra_args = ['--priority', priority, '--deadline', deadline]
   print('Using priority %s' % priority)
   for failed_task in parallel_execution.run_swarming_tasks_parallel(
       swarming_server, isolate_server, extra_args, tasks):
@@ -145,6 +148,7 @@ def main():
         options.swarming,
         options.isolate_server,
         str(options.priority),
+        str(options.deadline),
         isolated_hash,
         name,
         bots)
@@ -153,6 +157,7 @@ def main():
       options.swarming,
       options.isolate_server,
       str(options.priority),
+      str(options.deadline),
       isolated_hash,
       name,
       bots)

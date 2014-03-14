@@ -473,6 +473,7 @@ def generate_expected_json(
     u'configurations': [
       {
         u'config_name': u'isolated',
+        u'deadline_to_run': 60*60,
         u'dimensions': dimensions,
         u'min_instances': shards,
         u'priority': 101,
@@ -527,6 +528,7 @@ class ManifestTest(TestCase):
         env=env,
         dimensions=dimensions,
         working_dir='swarm_tests',
+        deadline=60*60,
         verbose=False,
         profile=False,
         priority=101)
@@ -557,6 +559,7 @@ class ManifestTest(TestCase):
         env={},
         dimensions=dimensions,
         working_dir='swarm_tests',
+        deadline=60*60,
         verbose=False,
         profile=False,
         priority=101)
@@ -584,6 +587,7 @@ class ManifestTest(TestCase):
         env={},
         dimensions=dimensions,
         working_dir='swarm_tests',
+        deadline=60*60,
         verbose=False,
         profile=True,
         priority=101)
@@ -615,6 +619,7 @@ class ManifestTest(TestCase):
         dimensions={},
         env={},
         working_dir='swarm_tests',
+        deadline=60*60,
         verbose=False,
         profile=False,
         priority=101)
@@ -636,6 +641,7 @@ class ManifestTest(TestCase):
         dimensions=dimensions,
         env={},
         working_dir='swarm_tests',
+        deadline=60*60,
         verbose=False,
         profile=False,
         priority=101)
@@ -759,6 +765,7 @@ class MainTest(TestCase):
         '--priority', '101',
         '--dimension', 'foo', 'bar',
         '--dimension', 'os', 'Mac',
+        '--deadline', '3600',
         FILE_HASH,
       ])
     actual = sys.stdout.getvalue()
@@ -807,6 +814,7 @@ class MainTest(TestCase):
         '--priority', '101',
         '--dimension', 'foo', 'bar',
         '--dimension', 'os', 'Mac',
+        '--deadline', '3600',
         isolated,
       ])
     actual = sys.stdout.getvalue()
@@ -1050,6 +1058,7 @@ class MainTest(TestCase):
         '--env', 'foo', 'bar',
         '--dimension', 'os', 'Mac',
         '--task-name', TEST_NAME,
+        '--deadline', '3600',
         FILE_HASH,
       ])
     actual = sys.stdout.getvalue()
@@ -1086,6 +1095,7 @@ class MainTest(TestCase):
         '--dimension', 'foo', 'bar',
         '--dimension', 'os', 'Mac',
         '--task-name', TEST_NAME,
+        '--deadline', '3600',
         FILE_HASH,
       ])
     actual = sys.stdout.getvalue()

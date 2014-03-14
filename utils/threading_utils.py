@@ -79,8 +79,7 @@ class ThreadPool(object):
         'New ThreadPool(%d, %d, %d): %s', initial_threads, max_threads,
         queue_size, prefix)
     assert initial_threads <= max_threads
-    # Update this check once 256 cores CPU are common.
-    assert max_threads <= 256
+    assert max_threads <= 1024
 
     self.tasks = self.QUEUE_CLASS(queue_size)
     self._max_threads = max_threads

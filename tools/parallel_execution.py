@@ -171,6 +171,10 @@ class OptionParser(tools.OptionParserWithLogging):
         help='The lower value, the more important the task is. It may be '
             'important to specify a higher priority since the default value '
             'will make the task to be triggered only when the slaves are idle.')
+    self.add_option(
+        '--deadline', type='int', default=6*60*60,
+        help='Seconds to allow the task to be pending for a bot to run before '
+            'this task request expires.')
 
   def parse_args(self, *args, **kwargs):
     options, args = tools.OptionParserWithLogging.parse_args(
