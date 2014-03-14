@@ -19,6 +19,10 @@ if (!('securityPolicy' in document))
 if (!('allowsEval' in document.securityPolicy))
   document.securityPolicy['allowsEval'] = false;
 
+// Force Polymer into dirty-checking mode, see http://crbug.com/351967
+Object['observe'] = undefined;
+Object['unobserve'] = undefined;
+
 //<include src="../../../../../../third_party/polymer/platform/platform.js">
 //<include src="../../../../../../third_party/polymer/polymer/polymer.js">
 
