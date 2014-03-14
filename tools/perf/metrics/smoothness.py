@@ -76,7 +76,7 @@ class SmoothnessMetric(Metric):
   def AddResults(self, tab, results):
     if self._stats.mouse_wheel_scroll_latency:
       mean_mouse_wheel_scroll_latency = statistics.ArithmeticMean(
-          stats.mouse_wheel_scroll_latency)
+          self._stats.mouse_wheel_scroll_latency)
       mouse_wheel_scroll_latency_discrepancy = statistics.DurationsDiscrepancy(
           self._stats.mouse_wheel_scroll_latency)
       results.Add('mean_mouse_wheel_scroll_latency', 'ms',
@@ -86,7 +86,7 @@ class SmoothnessMetric(Metric):
 
     if self._stats.touch_scroll_latency:
       mean_touch_scroll_latency = statistics.ArithmeticMean(
-          stats.touch_scroll_latency)
+          self._stats.touch_scroll_latency)
       touch_scroll_latency_discrepancy = statistics.DurationsDiscrepancy(
           self._stats.touch_scroll_latency)
       results.Add('mean_touch_scroll_latency', 'ms',
@@ -96,7 +96,7 @@ class SmoothnessMetric(Metric):
 
     if self._stats.js_touch_scroll_latency:
       mean_js_touch_scroll_latency = statistics.ArithmeticMean(
-          stats.js_touch_scroll_latency)
+          self._stats.js_touch_scroll_latency)
       js_touch_scroll_latency_discrepancy = statistics.DurationsDiscrepancy(
           self._stats.js_touch_scroll_latency)
       results.Add('mean_js_touch_scroll_latency', 'ms',
