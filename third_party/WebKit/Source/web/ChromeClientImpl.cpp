@@ -304,6 +304,17 @@ void ChromeClientImpl::show(NavigationPolicy navigationPolicy)
     m_webView->client()->show(policy);
 }
 
+bool ChromeClientImpl::canRunModal()
+{
+    return !!m_webView->client();
+}
+
+void ChromeClientImpl::runModal()
+{
+    if (m_webView->client())
+        m_webView->client()->runModal();
+}
+
 void ChromeClientImpl::setToolbarsVisible(bool value)
 {
     m_toolbarsVisible = value;
@@ -785,7 +796,7 @@ void ChromeClientImpl::openPasswordGenerator(HTMLInputElement* input)
 
 bool ChromeClientImpl::shouldRunModalDialogDuringPageDismissal(const DialogType& dialogType, const String& dialogMessage, Document::PageDismissalType dismissalType) const
 {
-    const char* kDialogs[] = {"alert", "confirm", "prompt"};
+    const char* kDialogs[] = {"alert", "confirm", "prompt", "showModalDialog"};
     int dialog = static_cast<int>(dialogType);
     ASSERT_WITH_SECURITY_IMPLICATION(0 <= dialog && dialog < static_cast<int>(arraysize(kDialogs)));
 

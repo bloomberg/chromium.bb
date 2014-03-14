@@ -56,6 +56,7 @@ var functionNames = [
     'scrollY',
     'setInterval',
     'setTimeout',
+    'showModalDialog',
     'status',
     'stop',
     'window',

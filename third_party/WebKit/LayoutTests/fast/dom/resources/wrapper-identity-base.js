@@ -158,6 +158,7 @@ var staticWindowProperties = [
     'self',
     'setInterval',
     'setTimeout',
+    'showModalDialog',
     'status',
     'statusbar',
     'stop',

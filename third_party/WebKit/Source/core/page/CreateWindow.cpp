@@ -115,7 +115,7 @@ static LocalFrame* createWindow(LocalFrame& openerFrame, LocalFrame& lookupFrame
 }
 
 LocalFrame* createWindow(const String& urlString, const AtomicString& frameName, const WindowFeatures& windowFeatures,
-    DOMWindow& callingWindow, LocalFrame& firstFrame, LocalFrame& openerFrame)
+    DOMWindow& callingWindow, LocalFrame& firstFrame, LocalFrame& openerFrame, DOMWindow::PrepareDialogFunction function, void* functionContext)
 {
     LocalFrame* activeFrame = callingWindow.frame();
     ASSERT(activeFrame);
@@ -146,6 +146,9 @@ LocalFrame* createWindow(const String& urlString, const AtomicString& frameName,
 
     if (newFrame->domWindow()->isInsecureScriptAccess(callingWindow, completedURL))
         return newFrame;
+
+    if (function)
+        function(newFrame->domWindow(), functionContext);
 
     if (created) {
         FrameLoadRequest request(callingWindow.document(), ResourceRequest(completedURL, referrer));

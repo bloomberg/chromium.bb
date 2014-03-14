@@ -118,6 +118,8 @@ enum PageshowEventPersistence {
 
         bool allowPopUp(); // Call on first window, not target window.
         static bool allowPopUp(LocalFrame& firstFrame);
+        static bool canShowModalDialog(const LocalFrame*);
+        static bool canShowModalDialogNow(const LocalFrame*);
 
         // DOM Level 0
 
@@ -148,6 +150,10 @@ enum PageshowEventPersistence {
 
         PassRefPtr<DOMWindow> open(const String& urlString, const AtomicString& frameName, const String& windowFeaturesString,
             DOMWindow* callingWindow, DOMWindow* enteredWindow);
+
+        typedef void (*PrepareDialogFunction)(DOMWindow*, void* context);
+        void showModalDialog(const String& urlString, const String& dialogFeaturesString,
+            DOMWindow* callingWindow, DOMWindow* enteredWindow, PrepareDialogFunction, void* functionContext);
 
         void alert(const String& message);
         bool confirm(const String& message);

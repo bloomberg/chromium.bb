@@ -32,6 +32,7 @@ var windowFunctions = [
     "clearInterval",
     "addEventListener",
     "removeEventListener",
+    "showModalDialog",
     "captureEvents",
     "releaseEvents",
 

@@ -27,6 +27,7 @@ var propertyInfo = [
     ["scrollTo", "function"],
     ["setInterval", "function"],
     ["setTimeout", "function"],
+    ["showModalDialog", "function"],
     ["stop", "function"],
     ["toString", "function"],
 

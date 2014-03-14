@@ -87,6 +87,8 @@ public:
     virtual WebCore::Page* createWindow(
         WebCore::LocalFrame*, const WebCore::FrameLoadRequest&, const WebCore::WindowFeatures&, WebCore::NavigationPolicy, WebCore::ShouldSendReferrer) OVERRIDE;
     virtual void show(WebCore::NavigationPolicy) OVERRIDE;
+    virtual bool canRunModal() OVERRIDE;
+    virtual void runModal() OVERRIDE;
     virtual void setToolbarsVisible(bool) OVERRIDE;
     virtual bool toolbarsVisible() OVERRIDE;
     virtual void setStatusbarVisible(bool) OVERRIDE;
