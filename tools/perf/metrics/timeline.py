@@ -51,12 +51,7 @@ class TimelineMetric(Metric):
     if self._mode == TRACING_MODE:
       if not tab.browser.supports_tracing:
         raise Exception('Not supported')
-      if self.trace_categories:
-        categories = [self.trace_categories] + \
-            page.GetSyntheticDelayCategories()
-      else:
-        categories = page.GetSyntheticDelayCategories()
-      tab.browser.StartTracing(','.join(categories))
+      tab.browser.StartTracing(self.trace_categories)
     else:
       assert self._mode == TIMELINE_MODE
       tab.StartTimelineRecording()

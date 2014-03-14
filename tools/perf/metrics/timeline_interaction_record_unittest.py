@@ -21,7 +21,7 @@ class ParseTests(unittest.TestCase):
     s = async_slice.AsyncSlice(
       'cat', event_name,
       timestamp=1, duration=2)
-    return timeline_interaction_record.TimelineInteractionRecord.FromEvent(s)
+    return timeline_interaction_record.TimelineInteractionRecord(s)
 
   def testCreate(self):
     r = self.CreateRecord('Interaction.LogicalName')
