@@ -29,6 +29,10 @@ SUPPORTED_SANITIZERS = {
                       '-gline-tables-only -fPIC -w',
     'linker_flags': '-fsanitize=memory -Wl,-z,origin -Wl,-R,XORIGIN/.'
   },
+  'tsan': {
+    'compiler_flags': '-fsanitize=thread -gline-tables-only -fPIC -w',
+    'linker_flags': '-fsanitize=thread -Wl,-z,origin -Wl,-R,XORIGIN/.'
+  },
 }
 
 
