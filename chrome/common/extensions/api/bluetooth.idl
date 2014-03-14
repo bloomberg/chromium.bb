@@ -39,7 +39,7 @@ namespace bluetooth {
 
     // The class of the device, a bit-field defined by
     // http://www.bluetooth.org/en-us/specification/assigned-numbers/baseband.
-    long deviceClass;
+    long? deviceClass;
 
     // The Device ID record of the device, where available.
     VendorIdSource? vendorIdSource;
