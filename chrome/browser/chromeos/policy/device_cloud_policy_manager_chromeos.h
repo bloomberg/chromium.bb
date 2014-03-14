@@ -118,6 +118,9 @@ class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
   void EnrollmentCompleted(const EnrollmentCallback& callback,
                            EnrollmentStatus status);
 
+  // Starts the connection via |client_to_connect|.
+  void StartConnection(scoped_ptr<CloudPolicyClient> client_to_connect);
+
   // Initializes requisition settings at OOBE with values from VPD.
   void InitalizeRequisition();
 

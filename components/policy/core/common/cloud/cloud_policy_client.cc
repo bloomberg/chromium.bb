@@ -199,6 +199,18 @@ void CloudPolicyClient::FetchPolicy() {
     }
   }
 
+  // Add device state keys.
+  if (!state_keys_to_upload_.empty()) {
+    em::DeviceStateKeyUpdateRequest* key_update_request =
+        request->mutable_device_state_key_update_request();
+    for (std::vector<std::string>::const_iterator key(
+             state_keys_to_upload_.begin());
+         key != state_keys_to_upload_.end();
+         ++key) {
+      key_update_request->add_server_backed_state_key(*key);
+    }
+  }
+
   // Set the fetched invalidation version to the latest invalidation version
   // since it is now the invalidation version used for the latest fetch.
   fetched_invalidation_version_ = invalidation_version_;
@@ -279,6 +291,11 @@ void CloudPolicyClient::AddNamespaceToFetch(const PolicyNamespaceKey& key) {
 
 void CloudPolicyClient::RemoveNamespaceToFetch(const PolicyNamespaceKey& key) {
   namespaces_to_fetch_.erase(key);
+}
+
+void CloudPolicyClient::SetStateKeysToUpload(
+    const std::vector<std::string>& keys) {
+  state_keys_to_upload_ = keys;
 }
 
 const em::PolicyFetchResponse* CloudPolicyClient::GetPolicyFor(
@@ -395,6 +412,7 @@ void CloudPolicyClient::OnPolicyFetchCompleted(
     }
     if (status_provider_)
       status_provider_->OnSubmittedSuccessfully();
+    state_keys_to_upload_.clear();
     NotifyPolicyFetched();
   } else {
     NotifyClientError();

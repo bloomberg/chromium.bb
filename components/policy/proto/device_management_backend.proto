@@ -568,6 +568,17 @@ message DeviceStateRetrievalRequest {
   optional bytes server_backed_state_key = 1;
 }
 
+// Sent by the client to the server when in registered state to update the
+// device-determined device state keys.
+message DeviceStateKeyUpdateRequest {
+  // The client-determined state keys. To the server, these look like 32 bytes
+  // of random data. The client should generate these keys using a deterministic
+  // algorithm that takes stable device identifiers as an input and produces a
+  // key as the output, possibly by running the identifiers through a
+  // cryptographic hash function such as SHA-256.
+  repeated bytes server_backed_state_key = 1;
+}
+
 // Server to client message carrying the device state response. Because the
 // request is not authenticated, the only protection against state extraction
 // from server is the unpredictability of the server-backed state ID. Thus, the
@@ -662,6 +673,9 @@ message DeviceManagementRequest {
 
   // Device-state retrieval.
   optional DeviceStateRetrievalRequest device_state_retrieval_request = 9;
+
+  // Device state key update.
+  optional DeviceStateKeyUpdateRequest device_state_key_update_request = 10;
 }
 
 // Response from server to device.

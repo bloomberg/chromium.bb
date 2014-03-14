@@ -96,9 +96,6 @@ except ImportError:
 # ASN.1 object identifier for PKCS#1/RSA.
 PKCS1_RSA_OID = '\x2a\x86\x48\x86\xf7\x0d\x01\x01\x01'
 
-# SHA256 sum of "0".
-SHA256_0 = hashlib.sha256('0').digest()
-
 # List of bad machine identifiers that trigger the |valid_serial_number_missing|
 # flag to be set set in the policy fetch response.
 BAD_MACHINE_IDS = [ '123490EN400015' ]
@@ -291,7 +288,7 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     elif request_type == 'unregister':
       response = self.ProcessUnregister(rmsg.unregister_request)
     elif request_type == 'policy' or request_type == 'ping':
-      response = self.ProcessPolicy(rmsg.policy_request, request_type)
+      response = self.ProcessPolicy(rmsg, request_type)
     elif request_type == 'enterprise_check':
       response = self.ProcessAutoEnrollment(rmsg.auto_enrollment_request)
     elif request_type == 'device_state_retrieval':
@@ -432,7 +429,7 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     and constructs the response.
 
     Args:
-      msg: The DevicePolicyRequest message received from the client.
+      msg: The DeviceManagementRequest message received from the client.
 
     Returns:
       A tuple of HTTP status code and response data to send to the client.
@@ -441,8 +438,13 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     if not token_info:
       return error
 
+    key_update_request = msg.device_state_key_update_request
+    if len(key_update_request.server_backed_state_key) > 0:
+      self.server.UpdateStateKeys(token_info['device_token'],
+                                  key_update_request.server_backed_state_key)
+
     response = dm.DeviceManagementResponse()
-    for request in msg.request:
+    for request in msg.policy_request.request:
       fetch_response = response.policy_response.response.add()
       if (request.policy_type in
              ('google/android/user',
@@ -486,7 +488,9 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     auto_enrollment_response = dm.DeviceAutoEnrollmentResponse()
 
     if msg.modulus == 1:
-      auto_enrollment_response.hash.append(SHA256_0)
+      keys = self.server.GetMatchingStateKeys(msg.modulus, msg.remainder)
+      auto_enrollment_response.hash.extend(
+          map(lambda key : hashlib.sha256(key.decode('hex')).digest(), keys))
     elif msg.modulus == 2:
       auto_enrollment_response.expected_modulus = 4
     elif msg.modulus == 4:
@@ -511,14 +515,17 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       A tuple of HTTP status code and response data to send to the client.
     """
     device_state_retrieval_response = dm.DeviceStateRetrievalResponse()
-    state = self.server.GetPolicies().get('device_state', {})
-    FIELDS = [
-        'management_domain',
-        'device_mode',
-    ]
-    for field in FIELDS:
-      if field in state:
-        setattr(device_state_retrieval_response, field, state[field])
+
+    client = self.server.LookupByStateKey(msg.server_backed_state_key)
+    if client is not None:
+      state = self.server.GetPolicies().get('device_state', {})
+      FIELDS = [
+          'management_domain',
+          'restore_mode',
+      ]
+      for field in FIELDS:
+        if field in state:
+          setattr(device_state_retrieval_response, field, state[field])
 
     response = dm.DeviceManagementResponse()
     response.device_state_retrieval_response.CopyFrom(
@@ -966,6 +973,18 @@ class PolicyTestServer(testserver_base.BrokenPipeHandlerMixIn,
       self._registered_tokens[dmtoken]['machine_id'] = machine_id
       self.WriteClientState()
 
+  def UpdateStateKeys(self, dmtoken, state_keys):
+    """Updates the state keys for a given client.
+
+    Args:
+      dmtoken: The device management token provided by the client.
+      state_keys: The state keys to set.
+    """
+    if dmtoken in self._registered_tokens:
+      self._registered_tokens[dmtoken]['state_keys'] = map(
+          lambda key : key.encode('hex'), state_keys)
+      self.WriteClientState()
+
   def LookupToken(self, dmtoken):
     """Looks up a device or a user by DM token.
 
@@ -977,6 +996,32 @@ class PolicyTestServer(testserver_base.BrokenPipeHandlerMixIn,
       dmtoken, or None if the token is not found.
     """
     return self._registered_tokens.get(dmtoken, None)
+
+  def LookupByStateKey(self, state_key):
+    """Looks up a device or a user by a state key.
+
+    Args:
+      state_key: The state key provided by the client.
+
+    Returns:
+      A dictionary with information about a device or user or None if there is
+      no matching record.
+    """
+    for client in self._registered_tokens.values():
+      if state_key.encode('hex') in client.get('state_keys', []):
+        return client
+
+    return None
+
+  def GetMatchingStateKeys(self, modulus, remainder):
+    """Returns all clients registered with the server.
+
+    Returns:
+      The list of registered clients.
+    """
+    state_keys = sum([ c.get('state_keys', [])
+                       for c in self._registered_tokens.values() ], [])
+    return filter(lambda key : int(key, 16) & modulus == remainder, state_keys)
 
   def UnregisterDevice(self, dmtoken):
     """Unregisters a device identified by the given DM token.
