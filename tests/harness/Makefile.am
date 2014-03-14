@@ -1,4 +1,5 @@
 harness_TESTS =					\
+	da-dk-g28-dictionary_harness.txt	\
 	en-gb-g1_harness.txt			\
 	en-GB-g2_harness.txt			\
 	en-ueb-g2-dictionary_harness.txt	\
