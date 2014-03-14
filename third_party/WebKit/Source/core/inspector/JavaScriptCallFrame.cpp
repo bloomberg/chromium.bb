@@ -104,7 +104,9 @@ String JavaScriptCallFrame::functionName() const
 
 v8::Handle<v8::Value> JavaScriptCallFrame::scopeChain() const
 {
-    v8::Handle<v8::Array> scopeChain = v8::Handle<v8::Array>::Cast(m_callFrame.newLocal(m_isolate)->Get(v8AtomicString(m_isolate, "scopeChain")));
+    v8::Handle<v8::Object> callFrame = m_callFrame.newLocal(m_isolate);
+    v8::Handle<v8::Function> func = v8::Handle<v8::Function>::Cast(callFrame->Get(v8AtomicString(m_isolate, "scopeChain")));
+    v8::Handle<v8::Array> scopeChain = v8::Handle<v8::Array>::Cast(func->Call(callFrame, 0, 0));
     v8::Handle<v8::Array> result = v8::Array::New(m_isolate, scopeChain->Length());
     for (uint32_t i = 0; i < scopeChain->Length(); i++)
         result->Set(i, scopeChain->Get(i));
