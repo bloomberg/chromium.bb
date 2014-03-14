@@ -220,6 +220,20 @@
                     'chrome_dll_pdb_workaround',
                    ],
                 }],
+                ['chrome_pgo_phase==1', {
+                  'msvs_settings': {
+                    'VCLinkerTool': {
+                      'LinkTimeCodeGeneration': '2',
+                    },
+                  },
+                }],
+                ['chrome_pgo_phase==2', {
+                  'msvs_settings': {
+                    'VCLinkerTool': {
+                      'LinkTimeCodeGeneration': '3',
+                    },
+                  },
+                }],
               ]
             }],
             ['chrome_multiple_dll==1', {
@@ -368,6 +382,22 @@
               'dependencies': [
                 '<(DEPTH)/chrome_elf/chrome_elf.gyp:chrome_elf',
               ],
+              'conditions': [
+                ['chrome_pgo_phase==1', {
+                  'msvs_settings': {
+                    'VCLinkerTool': {
+                      'LinkTimeCodeGeneration': '2',
+                    },
+                  },
+                }],
+                ['chrome_pgo_phase==2', {
+                  'msvs_settings': {
+                    'VCLinkerTool': {
+                      'LinkTimeCodeGeneration': '3',
+                    },
+                  },
+                }],
+              ]
             }],
           ],
         },  # target chrome_child_dll

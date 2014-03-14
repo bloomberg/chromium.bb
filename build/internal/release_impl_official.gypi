@@ -31,7 +31,6 @@
         # headroom as of Dec 16, 2011.
         '/expectedoutputsize:41943040',
       ],
-      'LinkTimeCodeGeneration': '1',
       # The /PROFILE flag causes the linker to add a "FIXUP" debug stream to
       # the generated PDB. According to MSDN documentation, this flag is only
       # available (or perhaps supported) in the Enterprise (team development)

@@ -1087,6 +1087,9 @@
     # process type.
     'chrome_multiple_dll%': '0',
 
+    # Experimental setting to optimize Chrome's DLLs with PGO.
+    'chrome_pgo_phase%': '0',
+
     # The default settings for third party code for treating
     # warnings-as-errors. Ideally, this would not be required, however there
     # is some third party code that takes a long time to fix/roll. So, this
@@ -4539,6 +4542,12 @@
               #   sparingly.
               'variables': {
                 'optimize%': 'size',
+              },
+              'msvs_settings': {
+                'VCLinkerTool': {
+                  # Set /LTCG for the official builds.
+                  'LinkTimeCodeGeneration': '1',
+                },
               },
               'target_conditions': [
                 ['optimize=="size"', {
