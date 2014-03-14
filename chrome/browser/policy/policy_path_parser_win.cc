@@ -16,19 +16,13 @@
 
 namespace {
 
-// Checks if the registry key exists in the given hive and expands any
-// variables in the string.
-bool LoadUserDataDirPolicyFromRegistry(HKEY hive,
-                                       const std::wstring& key_name,
-                                       base::FilePath* user_data_dir) {
+// Checks if the key exists in the given hive and expands any string variables.
+bool LoadUserDataDirPolicyFromRegistry(HKEY hive, base::FilePath* dir) {
   std::wstring value;
-
-  base::win::RegKey policy_key(hive,
-                               policy::kRegistryChromePolicyKey,
-                               KEY_READ);
-  if (policy_key.ReadValue(key_name.c_str(), &value) == ERROR_SUCCESS) {
-    *user_data_dir =
-        base::FilePath(policy::path_parser::ExpandPathVariables(value));
+  std::wstring key_name(base::ASCIIToWide(policy::key::kUserDataDir));
+  base::win::RegKey key(hive, policy::kRegistryChromePolicyKey, KEY_READ);
+  if (key.ReadValue(key_name.c_str(), &value) == ERROR_SUCCESS) {
+    *dir = base::FilePath(policy::path_parser::ExpandPathVariables(value));
     return true;
   }
   return false;
@@ -134,15 +128,9 @@ base::FilePath::StringType ExpandPathVariables(
 
 void CheckUserDataDirPolicy(base::FilePath* user_data_dir) {
   DCHECK(user_data_dir);
-
-  // Policy from the HKLM hive has precedence over HKCU so if we have one here
-  // we don't have to try to load HKCU.
-  std::wstring key_name(base::ASCIIToWide(policy::key::kUserDataDir));
-  if (!LoadUserDataDirPolicyFromRegistry(HKEY_LOCAL_MACHINE, key_name,
-                                         user_data_dir)) {
-    LoadUserDataDirPolicyFromRegistry(
-        HKEY_CURRENT_USER, key_name, user_data_dir);
-  }
+  // Policy from the HKLM hive has precedence over HKCU.
+  if (!LoadUserDataDirPolicyFromRegistry(HKEY_LOCAL_MACHINE, user_data_dir))
+    LoadUserDataDirPolicyFromRegistry(HKEY_CURRENT_USER, user_data_dir);
 }
 
 }  // namespace path_parser

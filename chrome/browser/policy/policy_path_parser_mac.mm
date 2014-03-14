@@ -105,8 +105,7 @@ void CheckUserDataDirPolicy(base::FilePath* user_data_dir) {
   if (value && [defaults objectIsForcedForKey:key]) {
     std::string string_value = base::SysNSStringToUTF8(value);
     // Now replace any vars the user might have used.
-    string_value =
-        policy::path_parser::ExpandPathVariables(string_value);
+    string_value = policy::path_parser::ExpandPathVariables(string_value);
     *user_data_dir = base::FilePath(string_value);
   }
 }
