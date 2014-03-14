@@ -5,6 +5,8 @@
 #ifndef NET_BASE_REQUEST_PRIORITY_H_
 #define NET_BASE_REQUEST_PRIORITY_H_
 
+#include "net/base/net_export.h"
+
 namespace net {
 
 // Prioritization used in various parts of the networking code such
@@ -27,7 +29,7 @@ enum RequestPrioritySize {
   NUM_PRIORITIES = MAXIMUM_PRIORITY + 1,
 };
 
-const char* RequestPriorityToString(RequestPriority priority);
+NET_EXPORT const char* RequestPriorityToString(RequestPriority priority);
 
 }  // namespace net
 
