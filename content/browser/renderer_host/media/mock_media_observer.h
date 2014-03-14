@@ -20,10 +20,6 @@ class MockMediaObserver : public MediaObserver {
   MockMediaObserver();
   virtual ~MockMediaObserver();
 
-  MOCK_METHOD1(OnAudioCaptureDevicesChanged,
-               void(const MediaStreamDevices& devices));
-  MOCK_METHOD1(OnVideoCaptureDevicesChanged,
-                 void(const MediaStreamDevices& devices));
   MOCK_METHOD6(OnMediaRequestStateChanged,
                void(int render_process_id, int render_view_id,
                     int page_request_id, const GURL& security_origin,

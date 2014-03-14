@@ -16,12 +16,10 @@ namespace content {
 class MediaObserver {
  public:
   // Called when a audio capture device is plugged in or unplugged.
-  virtual void OnAudioCaptureDevicesChanged(
-      const MediaStreamDevices& devices) = 0;
+  virtual void OnAudioCaptureDevicesChanged() = 0;
 
   // Called when a video capture device is plugged in or unplugged.
-  virtual void OnVideoCaptureDevicesChanged(
-      const MediaStreamDevices& devices) = 0;
+  virtual void OnVideoCaptureDevicesChanged() = 0;
 
   // Called when a media request changes state.
   virtual void OnMediaRequestStateChanged(

@@ -112,10 +112,8 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver,
   void DisableDeviceEnumerationForTesting();
 
   // Overridden from content::MediaObserver:
-  virtual void OnAudioCaptureDevicesChanged(
-      const content::MediaStreamDevices& devices) OVERRIDE;
-  virtual void OnVideoCaptureDevicesChanged(
-      const content::MediaStreamDevices& devices) OVERRIDE;
+  virtual void OnAudioCaptureDevicesChanged() OVERRIDE;
+  virtual void OnVideoCaptureDevicesChanged() OVERRIDE;
   virtual void OnMediaRequestStateChanged(
       int render_process_id,
       int render_view_id,
@@ -140,6 +138,10 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver,
   DesktopStreamsRegistry* GetDesktopStreamsRegistry();
 
   bool IsDesktopCaptureInProgress();
+
+  // Only for testing.
+  void SetTestAudioCaptureDevices(const content::MediaStreamDevices& devices);
+  void SetTestVideoCaptureDevices(const content::MediaStreamDevices& devices);
 
  private:
   friend struct DefaultSingletonTraits<MediaCaptureDevicesDispatcher>;
@@ -197,8 +199,8 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver,
                                scoped_ptr<content::MediaStreamUI> ui);
 
   // Called by the MediaObserver() functions, executed on UI thread.
-  void UpdateAudioDevicesOnUIThread(const content::MediaStreamDevices& devices);
-  void UpdateVideoDevicesOnUIThread(const content::MediaStreamDevices& devices);
+  void NotifyAudioDevicesChangedOnUIThread();
+  void NotifyVideoDevicesChangedOnUIThread();
   void UpdateMediaRequestStateOnUIThread(
       int render_process_id,
       int render_view_id,
@@ -209,18 +211,14 @@ class MediaCaptureDevicesDispatcher : public content::MediaObserver,
   void OnCreatingAudioStreamOnUIThread(int render_process_id,
                                        int render_frame_id);
 
-  // A list of cached audio capture devices.
-  content::MediaStreamDevices audio_devices_;
+  // Only for testing, a list of cached audio capture devices.
+  content::MediaStreamDevices test_audio_devices_;
 
-  // A list of cached video capture devices.
-  content::MediaStreamDevices video_devices_;
+  // Only for testing, a list of cached video capture devices.
+  content::MediaStreamDevices test_video_devices_;
 
   // A list of observers for the device update notifications.
   ObserverList<Observer> observers_;
-
-  // Flag to indicate if device enumeration has been done/doing.
-  // Only accessed on UI thread.
-  bool devices_enumerated_;
 
   // Flag used by unittests to disable device enumeration.
   bool is_device_enumeration_disabled_;

@@ -2795,7 +2795,7 @@ IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
 
   content::BrowserThread::PostTaskAndReply(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&MediaCaptureDevicesDispatcher::OnAudioCaptureDevicesChanged,
+      base::Bind(&MediaCaptureDevicesDispatcher::SetTestAudioCaptureDevices,
                  base::Unretained(MediaCaptureDevicesDispatcher::GetInstance()),
                  audio_devices),
       base::Bind(&MediaStreamDevicesControllerBrowserTest::FinishAudioTest,
@@ -2828,7 +2828,7 @@ IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
     content::BrowserThread::PostTaskAndReply(
         content::BrowserThread::IO, FROM_HERE,
         base::Bind(
-            &MediaCaptureDevicesDispatcher::OnAudioCaptureDevicesChanged,
+            &MediaCaptureDevicesDispatcher::SetTestAudioCaptureDevices,
             base::Unretained(MediaCaptureDevicesDispatcher::GetInstance()),
             audio_devices),
         base::Bind(
@@ -2852,7 +2852,7 @@ IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
 
   content::BrowserThread::PostTaskAndReply(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&MediaCaptureDevicesDispatcher::OnVideoCaptureDevicesChanged,
+      base::Bind(&MediaCaptureDevicesDispatcher::SetTestVideoCaptureDevices,
                  base::Unretained(MediaCaptureDevicesDispatcher::GetInstance()),
                  video_devices),
       base::Bind(&MediaStreamDevicesControllerBrowserTest::FinishVideoTest,
@@ -2884,8 +2884,7 @@ IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
 
     content::BrowserThread::PostTaskAndReply(
         content::BrowserThread::IO, FROM_HERE,
-        base::Bind(
-            &MediaCaptureDevicesDispatcher::OnVideoCaptureDevicesChanged,
+        base::Bind(&MediaCaptureDevicesDispatcher::SetTestVideoCaptureDevices,
             base::Unretained(MediaCaptureDevicesDispatcher::GetInstance()),
             video_devices),
         base::Bind(

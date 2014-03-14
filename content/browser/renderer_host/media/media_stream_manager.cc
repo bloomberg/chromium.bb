@@ -19,6 +19,7 @@
 #include "content/browser/media/capture/web_contents_capture_util.h"
 #include "content/browser/renderer_host/media/audio_input_device_manager.h"
 #include "content/browser/renderer_host/media/device_request_message_filter.h"
+#include "content/browser/renderer_host/media/media_capture_devices_impl.h"
 #include "content/browser/renderer_host/media/media_stream_requester.h"
 #include "content/browser/renderer_host/media/media_stream_ui_proxy.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
@@ -1791,9 +1792,13 @@ void MediaStreamManager::NotifyDevicesChanged(
   }
 
   if (IsAudioMediaType(stream_type)) {
-    media_observer->OnAudioCaptureDevicesChanged(new_devices);
+    MediaCaptureDevicesImpl::GetInstance()->OnAudioCaptureDevicesChanged(
+        new_devices);
+    media_observer->OnAudioCaptureDevicesChanged();
   } else if (IsVideoMediaType(stream_type)) {
-    media_observer->OnVideoCaptureDevicesChanged(new_devices);
+    MediaCaptureDevicesImpl::GetInstance()->OnVideoCaptureDevicesChanged(
+        new_devices);
+    media_observer->OnVideoCaptureDevicesChanged();
   } else {
     NOTREACHED();
   }
