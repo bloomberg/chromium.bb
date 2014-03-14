@@ -15,7 +15,6 @@ import org.chromium.android_webview.AwBrowserContext;
 import org.chromium.android_webview.AwBrowserProcess;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContentsClient;
-import org.chromium.android_webview.AwLayoutSizer;
 import org.chromium.android_webview.AwSettings;
 import org.chromium.android_webview.test.util.JSUtils;
 import org.chromium.base.test.util.InMemorySharedPreferences;
@@ -257,10 +256,7 @@ public class AwTestBase
      * Test cases can provide subclass instances to the createAwTest* methods in order to create an
      * AwContents instance with injected test dependencies.
      */
-    public static class TestDependencyFactory {
-        public AwLayoutSizer createLayoutSizer() {
-            return new AwLayoutSizer();
-        }
+    public static class TestDependencyFactory extends AwContents.DependencyFactory {
         public AwTestContainerView createAwTestContainerView(AwTestRunnerActivity activity) {
             return new AwTestContainerView(activity);
         }
@@ -305,7 +301,7 @@ public class AwTestBase
                 supportsLegacyQuirks);
         testContainerView.initialize(new AwContents(
                 mBrowserContext, testContainerView, testContainerView.getInternalAccessDelegate(),
-                awContentsClient, awSettings, testDependencyFactory.createLayoutSizer()));
+                awContentsClient, awSettings, testDependencyFactory));
         return testContainerView;
     }
 

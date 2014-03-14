@@ -64,6 +64,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.Callable;
 
+
 /**
  * Exposes the native AwContents class, and together these classes wrap the ContentViewCore
  * and Browser components that are required to implement Android WebView API. This is the
@@ -145,6 +146,21 @@ public class AwContents {
          * See hidden View#executeHardwareAction for details.
          */
         public boolean executeHardwareAction(Runnable action);
+    }
+
+    /**
+     * Class to facilitate dependency injection. Subclasses by test code to provide mock versions of
+     * certain AwContents dependencies.
+     */
+    public static class DependencyFactory {
+        public AwLayoutSizer createLayoutSizer() {
+            return new AwLayoutSizer();
+        }
+
+        public AwScrollOffsetManager createScrollOffsetManager(
+                AwScrollOffsetManager.Delegate delegate, OverScroller overScroller) {
+            return new AwScrollOffsetManager(delegate, overScroller);
+        }
     }
 
     private long mNativeAwContents;
@@ -468,24 +484,25 @@ public class AwContents {
             InternalAccessDelegate internalAccessAdapter, AwContentsClient contentsClient,
             AwSettings awSettings) {
         this(browserContext, containerView, internalAccessAdapter, contentsClient, awSettings,
-                new AwLayoutSizer());
+                new DependencyFactory());
     }
 
     /**
-     * @param layoutSizer the AwLayoutSizer instance implementing the sizing policy for the view.
+     * @param dependencyFactory an instance of the DependencyFactory used to provide instances of
+     *                          classes that this class depends on.
      *
      * This version of the constructor is used in test code to inject test versions of the above
      * documented classes.
      */
     public AwContents(AwBrowserContext browserContext, ViewGroup containerView,
             InternalAccessDelegate internalAccessAdapter, AwContentsClient contentsClient,
-            AwSettings settings, AwLayoutSizer layoutSizer) {
+            AwSettings settings, DependencyFactory dependencyFactory) {
         mBrowserContext = browserContext;
         mContainerView = containerView;
         mInternalAccessAdapter = internalAccessAdapter;
         mContentsClient = contentsClient;
         mContentViewClient = new AwContentViewClient(contentsClient, settings);
-        mLayoutSizer = layoutSizer;
+        mLayoutSizer = dependencyFactory.createLayoutSizer();
         mSettings = settings;
         mDIPScale = DeviceDisplayInfo.create(mContainerView.getContext()).getDIPScale();
         mLayoutSizer.setDelegate(new AwLayoutSizerDelegate());
@@ -511,8 +528,8 @@ public class AwContents {
         mSettings.setDefaultVideoPosterURL(
                 mDefaultVideoPosterRequestHandler.getDefaultVideoPosterURL());
         mSettings.setDIPScale(mDIPScale);
-        mScrollOffsetManager = new AwScrollOffsetManager(new AwScrollOffsetManagerDelegate(),
-                new OverScroller(mContainerView.getContext()));
+        mScrollOffsetManager = dependencyFactory.createScrollOffsetManager(
+                new AwScrollOffsetManagerDelegate(), new OverScroller(mContainerView.getContext()));
         mScrollAccessibilityHelper = new ScrollAccessibilityHelper(mContainerView);
 
         setOverScrollMode(mContainerView.getOverScrollMode());

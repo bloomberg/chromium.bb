@@ -7,8 +7,10 @@ package org.chromium.android_webview.test;
 import android.content.Context;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.view.View;
+import android.widget.OverScroller;
 
 import org.chromium.android_webview.AwContents;
+import org.chromium.android_webview.AwScrollOffsetManager;
 import org.chromium.android_webview.test.util.AwTestTouchUtils;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.android_webview.test.util.JavascriptEventObserver;
@@ -98,6 +100,19 @@ public class AndroidScrollIntegrationTest extends AwTestBase {
     protected TestDependencyFactory createTestDependencyFactory() {
         return new TestDependencyFactory() {
             @Override
+            public AwScrollOffsetManager createScrollOffsetManager(
+                    AwScrollOffsetManager.Delegate delegate, OverScroller overScroller) {
+                return new AwScrollOffsetManager(delegate, overScroller) {
+                    @Override
+                    public void onUnhandledFlingStartEvent(int velocityX, int velocityY) {
+                        // Intentional no-op. The synthetic scroll gestures this test creates all
+                        // happen at the same time which triggers the fling detection logic.
+                        // NOTE: this simply disables handling the gesture, flinging the AwContents
+                        // via the flingScroll API is still possible.
+                    }
+                };
+            }
+            @Override
             public AwTestContainerView createAwTestContainerView(AwTestRunnerActivity activity) {
                 return new ScrollTestContainerView(activity);
             }
@@ -129,7 +144,7 @@ public class AndroidScrollIntegrationTest extends AwTestBase {
         if (firstFrameObserver != null) {
             content +=
                     "<script> " +
-                    "   window.framesToIgnore = 10; " +
+                    "   window.framesToIgnore = 20; " +
                     "   window.onAnimationFrame = function(timestamp) { " +
                     "     if (window.framesToIgnore == 0) { " +
                     "         " + firstFrameObserver + ".notifyJava(); " +
@@ -398,7 +413,7 @@ public class AndroidScrollIntegrationTest extends AwTestBase {
         enableJavaScriptOnUiThread(testContainerView.getAwContents());
 
         final int dragSteps = 1;
-        final int targetScrollYPix = 24;
+        final int targetScrollYPix = 40;
 
         setMaxScrollOnMainSync(testContainerView, 0, 0);
 
