@@ -59,9 +59,9 @@ enum FontStretch {
     FontStretchUltraExpanded = 9
 };
 
-enum FontStyle {
-    FontStyleNormal = 0,
-    FontStyleItalic = 1
+enum FontItalic {
+    FontItalicOff = 0,
+    FontItalicOn = 1
 };
 
 enum FontVariant {
@@ -72,7 +72,7 @@ enum FontVariant {
 typedef unsigned FontTraitsMask;
 
 struct FontTraits {
-    FontTraits(FontStyle style, FontVariant variant, FontWeight weight, FontStretch stretch)
+    FontTraits(FontItalic style, FontVariant variant, FontWeight weight, FontStretch stretch)
         : m_style(style), m_variant(variant), m_weight(weight), m_stretch(stretch), m_filler(0)
     {
         ASSERT(!m_filler);
@@ -84,7 +84,7 @@ struct FontTraits {
         ASSERT(!m_filler);
         ASSERT(!(m_mask >> 10));
     }
-    FontStyle style() const { return static_cast<FontStyle>(m_style); }
+    FontItalic style() const { return static_cast<FontItalic>(m_style); }
     FontVariant variant() const { return static_cast<FontVariant>(m_variant); }
     FontWeight weight() const { return static_cast<FontWeight>(m_weight); }
     FontStretch stretch() const { return static_cast<FontStretch>(m_stretch); }

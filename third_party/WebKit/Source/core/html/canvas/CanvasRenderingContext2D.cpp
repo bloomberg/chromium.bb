@@ -1836,7 +1836,7 @@ String CanvasRenderingContext2D::font() const
     StringBuilder serializedFont;
     const FontDescription& fontDescription = state().m_font.fontDescription();
 
-    if (fontDescription.style() == FontStyleItalic)
+    if (fontDescription.italic())
         serializedFont.appendLiteral("italic ");
     if (fontDescription.weight() == FontWeightBold)
         serializedFont.appendLiteral("bold ");

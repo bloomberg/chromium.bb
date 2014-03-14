@@ -394,18 +394,18 @@ void FontFace::resolveReadyPromises()
 
 FontTraits FontFace::traits() const
 {
-    FontStyle style = FontStyleNormal;
+    FontItalic style = FontItalicOff;
     if (m_style) {
         if (!m_style->isPrimitiveValue())
             return 0;
 
         switch (toCSSPrimitiveValue(m_style.get())->getValueID()) {
         case CSSValueNormal:
-            style = FontStyleNormal;
+            style = FontItalicOff;
             break;
         case CSSValueItalic:
         case CSSValueOblique:
-            style = FontStyleItalic;
+            style = FontItalicOn;
             break;
         default:
             break;

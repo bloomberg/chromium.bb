@@ -141,11 +141,11 @@ static inline bool compareFontFaces(CSSSegmentedFontFace* first, CSSSegmentedFon
     if (firstHasDesiredStyle != secondHasDesiredStyle)
         return firstHasDesiredStyle;
 
-    if (desiredTraits.style() == FontStyleItalic) {
+    if (desiredTraits.style() == FontItalicOn) {
         // Prefer a font that has indicated that it can only support italics to a font that claims to support
         // all styles. The specialized font is more likely to be the one the author wants used.
-        bool firstRequiresItalics = firstTraits.style() == FontStyleItalic;
-        bool secondRequiresItalics = secondTraits.style() == FontStyleItalic;
+        bool firstRequiresItalics = firstTraits.style() == FontItalicOn;
+        bool secondRequiresItalics = secondTraits.style() == FontItalicOn;
         if (firstRequiresItalics != secondRequiresItalics)
             return firstRequiresItalics;
     }
@@ -203,7 +203,7 @@ CSSSegmentedFontFace* FontFaceCache::get(const FontDescription& fontDescription,
         for (TraitsMap::const_iterator i = familyFontFaces->begin(); i != familyFontFaces->end(); ++i) {
             CSSSegmentedFontFace* candidate = i->value.get();
             FontTraits candidateTraits = candidate->traits();
-            if (traits.style() == FontStyleNormal && candidateTraits.style() != FontStyleNormal)
+            if (traits.style() == FontItalicOff && candidateTraits.style() != FontItalicOff)
                 continue;
             if (traits.variant() == FontVariantNormal && candidateTraits.variant() != FontVariantNormal)
                 continue;

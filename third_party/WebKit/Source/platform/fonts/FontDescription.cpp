@@ -97,12 +97,12 @@ FontWeight FontDescription::bolderWeight(void) const
 
 FontTraits FontDescription::traits() const
 {
-    return FontTraits(style(), variant(), weight(), stretch());
+    return FontTraits(italic(), variant(), weight(), stretch());
 }
 
 void FontDescription::setTraits(FontTraits traits)
 {
-    setStyle(traits.style());
+    setItalic(traits.style());
     setVariant(traits.variant());
     setWeight(traits.weight());
     setStretch(traits.stretch());

@@ -70,11 +70,11 @@ PassRefPtr<SimpleFontData> FontCache::platformFallbackForCharacter(const FontDes
         shouldSetSyntheticBold = true;
         description.setWeight(FontWeightNormal);
     }
-    if (family.isItalic && description.style() == FontStyleNormal)
-        description.setStyle(FontStyleItalic);
-    if (!family.isItalic && description.style() == FontStyleItalic) {
+    if (family.isItalic && description.italic() == FontItalicOff)
+        description.setItalic(FontItalicOn);
+    if (!family.isItalic && description.italic() == FontItalicOn) {
         shouldSetSyntheticItalic = true;
-        description.setStyle(FontStyleNormal);
+        description.setItalic(FontItalicOff);
     }
 
     FontPlatformData* substitutePlatformData = getFontPlatformData(description, atomicFamily);
@@ -121,7 +121,7 @@ PassRefPtr<SkTypeface> FontCache::createTypeface(const FontDescription& fontDesc
     int style = SkTypeface::kNormal;
     if (fontDescription.weight() >= FontWeightBold)
         style |= SkTypeface::kBold;
-    if (fontDescription.style())
+    if (fontDescription.italic())
         style |= SkTypeface::kItalic;
 
     // FIXME: Use SkFontStyle and matchFamilyStyle instead of legacyCreateTypeface.
@@ -145,7 +145,7 @@ FontPlatformData* FontCache::createFontPlatformData(const FontDescription& fontD
         name.data(),
         fontSize,
         (fontDescription.weight() >= FontWeightBold && !tf->isBold()) || fontDescription.isSyntheticBold(),
-        (fontDescription.style() && !tf->isItalic()) || fontDescription.isSyntheticItalic(),
+        (fontDescription.italic() && !tf->isItalic()) || fontDescription.isSyntheticItalic(),
         fontDescription.orientation(),
         fontDescription.useSubpixelPositioning());
     return result;

@@ -3552,15 +3552,15 @@ template<> inline CSSPrimitiveValue::operator FontStretch() const
     return FontStretchNormal;
 }
 
-template<> inline CSSPrimitiveValue::CSSPrimitiveValue(FontStyle italic)
+template<> inline CSSPrimitiveValue::CSSPrimitiveValue(FontItalic italic)
     : CSSValue(PrimitiveClass)
 {
     m_primitiveUnitType = CSS_VALUE_ID;
     switch (italic) {
-    case FontStyleNormal:
+    case FontItalicOff:
         m_value.valueID = CSSValueNormal;
         return;
-    case FontStyleItalic:
+    case FontItalicOn:
         m_value.valueID = CSSValueItalic;
         return;
     }
@@ -3569,21 +3569,21 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(FontStyle italic)
     m_value.valueID = CSSValueNormal;
 }
 
-template<> inline CSSPrimitiveValue::operator FontStyle() const
+template<> inline CSSPrimitiveValue::operator FontItalic() const
 {
     ASSERT(isValueID());
     switch (m_value.valueID) {
     case CSSValueOblique:
     // FIXME: oblique is the same as italic for the moment...
     case CSSValueItalic:
-        return FontStyleItalic;
+        return FontItalicOn;
     case CSSValueNormal:
-        return FontStyleNormal;
+        return FontItalicOff;
     default:
         break;
     }
     ASSERT_NOT_REACHED();
-    return FontStyleNormal;
+    return FontItalicOff;
 }
 
 template<> inline CSSPrimitiveValue::CSSPrimitiveValue(FontVariant smallCaps)

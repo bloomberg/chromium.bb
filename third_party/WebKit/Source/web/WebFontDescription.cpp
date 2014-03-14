@@ -42,7 +42,7 @@ WebFontDescription::WebFontDescription(const FontDescription& desc)
     family = desc.family().family();
     genericFamily = static_cast<GenericFamily>(desc.genericFamily());
     size = desc.specifiedSize();
-    italic = desc.style() == FontStyleItalic;
+    italic = desc.italic();
     smallCaps = desc.variant() == FontVariantSmallCaps;
     weight = static_cast<Weight>(desc.weight());
     smoothing = static_cast<Smoothing>(desc.fontSmoothing());
@@ -60,7 +60,7 @@ WebFontDescription::operator WebCore::FontDescription() const
     desc.setGenericFamily(static_cast<FontDescription::GenericFamilyType>(genericFamily));
     desc.setSpecifiedSize(size);
     desc.setComputedSize(size);
-    desc.setStyle(italic ? FontStyleItalic : FontStyleNormal);
+    desc.setItalic(italic);
     desc.setVariant(smallCaps ? FontVariantSmallCaps : FontVariantNormal);
     desc.setWeight(static_cast<FontWeight>(weight));
     desc.setFontSmoothing(static_cast<FontSmoothingMode>(smoothing));

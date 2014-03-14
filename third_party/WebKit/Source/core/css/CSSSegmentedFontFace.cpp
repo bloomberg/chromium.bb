@@ -153,7 +153,7 @@ PassRefPtr<FontData> CSSSegmentedFontFace::getFontData(const FontDescription& fo
     FontDescription requestedFontDescription(fontDescription);
     requestedFontDescription.setTraits(m_traits);
     requestedFontDescription.setSyntheticBold(m_traits.weight() < FontWeight600 && desiredTraits.weight() >= FontWeight600);
-    requestedFontDescription.setSyntheticItalic(m_traits.style() == FontStyleNormal && desiredTraits.style() == FontStyleItalic);
+    requestedFontDescription.setSyntheticItalic(m_traits.style() == FontItalicOff && desiredTraits.style() == FontItalicOn);
 
     for (FontFaceList::reverse_iterator it = m_fontFaces.rbegin(); it != m_fontFaces.rend(); ++it) {
         if (!(*it)->cssFontFace()->isValid())
