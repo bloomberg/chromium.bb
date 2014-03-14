@@ -330,13 +330,6 @@
           ],
         }
       ],
-      ['OS=="win" and "ENABLE_HARFBUZZ_ON_WINDOWS=0" in feature_defines',
-        {
-          'web_unittest_files': [
-            'tests/UniscribeHelperTest.cpp',
-          ]
-        }
-      ],
       ['OS=="mac"',
         {
           'web_unittest_files': [
