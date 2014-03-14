@@ -134,8 +134,8 @@ void EnableTypingDetection(AudioProcessing* audio_processing,
       webrtc::VoiceDetection::kVeryLowLikelihood);
   CHECK_EQ(err, 0);
 
-  // Configure the update period to 100ms (10 * 10ms) in the typing detector.
-  typing_detector->SetParameters(0, 0, 0, 0, 0, 10);
+  // Configure the update period to 1s (100 * 10ms) in the typing detector.
+  typing_detector->SetParameters(0, 0, 0, 0, 0, 100);
 }
 
 void EnableExperimentalEchoCancellation(AudioProcessing* audio_processing) {
