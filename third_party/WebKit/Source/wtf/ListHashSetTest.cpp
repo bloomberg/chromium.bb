@@ -200,8 +200,10 @@ TEST(WTF, ListHashSetWithRefPtr)
 
     ListHashSet<RefPtr<DummyRefCounted> > list;
     list.add(ptr);
+    // Referenced only once (to store a copy in the container).
+    ASSERT_EQ(1, DummyRefCounted::m_refInvokesCount);
     ASSERT_EQ(ptr, list.first());
-    int storedRefInvokesCount = DummyRefCounted::m_refInvokesCount;
+
     DummyRefCounted* rawPtr = ptr.get();
 
     ASSERT_TRUE(list.contains(ptr));
@@ -213,7 +215,7 @@ TEST(WTF, ListHashSetWithRefPtr)
     list.remove(rawPtr);
     ASSERT_TRUE(isDeleted);
 
-    ASSERT_EQ(storedRefInvokesCount, DummyRefCounted::m_refInvokesCount);
+    ASSERT_EQ(1, DummyRefCounted::m_refInvokesCount);
 }
 
 } // namespace
