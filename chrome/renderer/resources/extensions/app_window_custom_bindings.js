@@ -13,6 +13,10 @@ var renderViewObserverNatives = requireNative('renderViewObserverNatives');
 
 var appWindowData = null;
 var currentAppWindow = null;
+var currentWindowInternal = null;
+
+var kSetBoundsFunction = 'setBounds';
+var kSetSizeConstraintsFunction = 'setSizeConstraints';
 
 // Bounds class definition.
 var Bounds = function(boundsKey) {
@@ -22,11 +26,17 @@ Object.defineProperty(Bounds.prototype, 'left', {
   get: function() {
     return appWindowData[privates(this).boundsKey_].left;
   },
+  set: function(left) {
+    this.setPosition(left, null);
+  },
   enumerable: true
 });
 Object.defineProperty(Bounds.prototype, 'top', {
   get: function() {
     return appWindowData[privates(this).boundsKey_].top;
+  },
+  set: function(top) {
+    this.setPosition(null, top);
   },
   enumerable: true
 });
@@ -34,11 +44,17 @@ Object.defineProperty(Bounds.prototype, 'width', {
   get: function() {
     return appWindowData[privates(this).boundsKey_].width;
   },
+  set: function(width) {
+    this.setSize(width, null);
+  },
   enumerable: true
 });
 Object.defineProperty(Bounds.prototype, 'height', {
   get: function() {
     return appWindowData[privates(this).boundsKey_].height;
+  },
+  set: function(height) {
+    this.setSize(null, height);
   },
   enumerable: true
 });
@@ -46,11 +62,17 @@ Object.defineProperty(Bounds.prototype, 'minWidth', {
   get: function() {
     return appWindowData[privates(this).boundsKey_].minWidth;
   },
+  set: function(minWidth) {
+    updateSizeConstraints(privates(this).boundsKey_, { minWidth: minWidth });
+  },
   enumerable: true
 });
 Object.defineProperty(Bounds.prototype, 'maxWidth', {
   get: function() {
     return appWindowData[privates(this).boundsKey_].maxWidth;
+  },
+  set: function(maxWidth) {
+    updateSizeConstraints(privates(this).boundsKey_, { maxWidth: maxWidth });
   },
   enumerable: true
 });
@@ -58,14 +80,34 @@ Object.defineProperty(Bounds.prototype, 'minHeight', {
   get: function() {
     return appWindowData[privates(this).boundsKey_].minHeight;
   },
+  set: function(minHeight) {
+    updateSizeConstraints(privates(this).boundsKey_, { minHeight: minHeight });
+  },
   enumerable: true
 });
 Object.defineProperty(Bounds.prototype, 'maxHeight', {
   get: function() {
     return appWindowData[privates(this).boundsKey_].maxHeight;
   },
+  set: function(maxHeight) {
+    updateSizeConstraints(privates(this).boundsKey_, { maxHeight: maxHeight });
+  },
   enumerable: true
 });
+Bounds.prototype.setPosition = function(left, top) {
+  updateBounds(privates(this).boundsKey_, { left: left, top: top });
+};
+Bounds.prototype.setSize = function(width, height) {
+  updateBounds(privates(this).boundsKey_, { width: width, height: height });
+};
+Bounds.prototype.setMinimumSize = function(minWidth, minHeight) {
+  updateSizeConstraints(privates(this).boundsKey_,
+                        { minWidth: minWidth, minHeight: minHeight });
+};
+Bounds.prototype.setMaximumSize = function(maxWidth, maxHeight) {
+  updateSizeConstraints(privates(this).boundsKey_,
+                        { maxWidth: maxWidth, maxHeight: maxHeight });
+};
 
 var appWindow = Binding.create('app.window');
 appWindow.registerCustomHook(function(bindingsAPI) {
@@ -74,7 +116,9 @@ appWindow.registerCustomHook(function(bindingsAPI) {
   apiFunctions.setCustomCallback('create',
                                  function(name, request, windowParams) {
     var view = null;
-    if (windowParams.viewId) {
+
+    // When window creation fails, |windowParams| will be undefined.
+    if (windowParams && windowParams.viewId) {
       view = appWindowNatives.GetView(
           windowParams.viewId, windowParams.injectTitlebar);
     }
@@ -149,17 +193,21 @@ appWindow.registerCustomHook(function(bindingsAPI) {
     return windows.length > 0 ? windows[0] : null;
   });
 
-  // This is an internal function, but needs to be bound with setHandleRequest
-  // because it is called from a different JS context.
+  // This is an internal function, but needs to be bound into a closure
+  // so the correct JS context is used for global variables such as
+  // currentWindowInternal, appWindowData, etc.
   apiFunctions.setHandleRequest('initializeAppWindow', function(params) {
-    var currentWindowInternal =
+    currentWindowInternal =
         Binding.create('app.currentWindowInternal').generate();
     var AppWindow = function() {
       this.innerBounds = new Bounds('innerBounds');
       this.outerBounds = new Bounds('outerBounds');
     };
     forEach(currentWindowInternal, function(key, value) {
-      AppWindow.prototype[key] = value;
+      // Do not add internal functions that should not appear in the AppWindow
+      // interface. They are called by Bounds mutators.
+      if (key !== kSetBoundsFunction && key !== kSetSizeConstraintsFunction)
+        AppWindow.prototype[key] = value;
     });
     AppWindow.prototype.moveTo = $Function.bind(window.moveTo, window);
     AppWindow.prototype.resizeTo = $Function.bind(window.resizeTo, window);
@@ -177,17 +225,8 @@ appWindow.registerCustomHook(function(bindingsAPI) {
       return { left: outerBounds.left, top: outerBounds.top,
                width: innerBounds.width, height: innerBounds.height };
     };
-    AppWindow.prototype.getMinWidth = function() {
-      return appWindowData.innerBounds.minWidth;
-    };
-    AppWindow.prototype.getMinHeight = function() {
-      return appWindowData.innerBounds.minHeight;
-    };
-    AppWindow.prototype.getMaxWidth = function() {
-      return appWindowData.innerBounds.maxWidth;
-    };
-    AppWindow.prototype.getMaxHeight = function() {
-      return appWindowData.innerBounds.maxHeight;
+    AppWindow.prototype.setBounds = function(bounds) {
+      updateBounds('bounds', bounds);
     };
     AppWindow.prototype.isFullscreen = function() {
       return appWindowData.fullscreen;
@@ -298,6 +337,28 @@ function onAppWindowClosed() {
   if (!currentAppWindow)
     return;
   dispatchEventIfExists(currentAppWindow, "onClosed");
+}
+
+function updateBounds(boundsType, bounds) {
+  if (!currentWindowInternal)
+    return;
+
+  currentWindowInternal.setBounds(boundsType, bounds);
+}
+
+function updateSizeConstraints(boundsType, constraints) {
+  if (!currentWindowInternal)
+    return;
+
+  forEach(constraints, function(key, value) {
+    // From the perspective of the API, null is used to reset constraints.
+    // We need to convert this to 0 because a value of null is interpreted
+    // the same as undefined in the browser and leaves the constraint unchanged.
+    if (value === null)
+      constraints[key] = 0;
+  });
+
+  currentWindowInternal.setSizeConstraints(boundsType, constraints);
 }
 
 exports.binding = appWindow.generate();

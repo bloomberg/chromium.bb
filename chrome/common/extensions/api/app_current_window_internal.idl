@@ -6,14 +6,21 @@
 // the shell window.
 [nodoc] namespace app.currentWindowInternal {
 
-  // TODO(asargent) - We need to add support for referencing types in
-  // other namespaces (crbug.com/158654). For now just duplicate this
-  // dictionary from app.window.
+  // Null or undefined indicates that a value should not change.
   dictionary Bounds {
     long? left;
     long? top;
     long? width;
     long? height;
+  };
+
+  // Null or undefined indicates that a value should not change. A value of 0
+  // will clear the constraints.
+  dictionary SizeConstraints {
+    long? minWidth;
+    long? minHeight;
+    long? maxWidth;
+    long? maxHeight;
   };
 
   dictionary RegionRect {
@@ -37,11 +44,9 @@
     static void clearAttention();
     static void show(optional boolean focused);
     static void hide();
-    static void setBounds(Bounds bounds);
-    static void setMinWidth(optional long minWidth);
-    static void setMinHeight(optional long minHeight);
-    static void setMaxWidth(optional long maxWidth);
-    static void setMaxHeight(optional long maxHeight);
+    static void setBounds(DOMString boundsType, Bounds bounds);
+    static void setSizeConstraints(DOMString boundsType,
+                                   SizeConstraints constraints);
     static void setIcon(DOMString icon_url);
     static void setBadgeIcon(DOMString icon_url);
     static void clearBadge();

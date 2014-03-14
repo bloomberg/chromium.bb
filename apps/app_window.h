@@ -319,8 +319,8 @@ class AppWindow : public content::NotificationObserver,
   void ForcedFullscreen();
 
   // Set the minimum and maximum size of the content bounds.
-  void SetContentMinimumSize(const gfx::Size& min_size);
-  void SetContentMaximumSize(const gfx::Size& max_size);
+  void SetContentSizeConstraints(const gfx::Size& min_size,
+                                 const gfx::Size& max_size);
 
   enum ShowType { SHOW_ACTIVE, SHOW_INACTIVE };
 
@@ -438,9 +438,6 @@ class AppWindow : public content::NotificationObserver,
 
   // Load the app's image, firing a load state change when loaded.
   void UpdateExtensionAppIcon();
-
-  // Called when size_constraints is changed.
-  void OnSizeConstraintsChanged();
 
   // Set the fullscreen state in the native app window.
   void SetNativeWindowFullscreen();

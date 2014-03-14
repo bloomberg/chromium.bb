@@ -632,14 +632,20 @@ void AppWindow::ForcedFullscreen() {
   SetNativeWindowFullscreen();
 }
 
-void AppWindow::SetContentMinimumSize(const gfx::Size& min_size) {
-  native_app_window_->SetContentMinimumSize(min_size);
-  OnSizeConstraintsChanged();
-}
+void AppWindow::SetContentSizeConstraints(const gfx::Size& min_size,
+                                          const gfx::Size& max_size) {
+  SizeConstraints constraints(min_size, max_size);
+  native_app_window_->SetContentSizeConstraints(constraints.GetMinimumSize(),
+                                                constraints.GetMaximumSize());
 
-void AppWindow::SetContentMaximumSize(const gfx::Size& max_size) {
-  native_app_window_->SetContentMaximumSize(max_size);
-  OnSizeConstraintsChanged();
+  gfx::Rect bounds = GetClientBounds();
+  gfx::Size constrained_size = constraints.ClampSize(bounds.size());
+  if (bounds.size() != constrained_size) {
+    bounds.set_size(constrained_size);
+    bounds.Inset(-native_app_window_->GetFrameInsets());
+    native_app_window_->SetBounds(bounds);
+  }
+  OnNativeWindowChanged();
 }
 
 void AppWindow::Show(ShowType show_type) {
@@ -779,19 +785,6 @@ void AppWindow::UpdateExtensionAppIcon() {
   // Triggers actual image loading with 1x resources. The 2x resource will
   // be handled by IconImage class when requested.
   app_icon_image_->image_skia().GetRepresentation(1.0f);
-}
-
-void AppWindow::OnSizeConstraintsChanged() {
-  SizeConstraints size_constraints(native_app_window_->GetContentMinimumSize(),
-                                   native_app_window_->GetContentMaximumSize());
-  gfx::Rect bounds = GetClientBounds();
-  gfx::Size constrained_size = size_constraints.ClampSize(bounds.size());
-  if (bounds.size() != constrained_size) {
-    bounds.set_size(constrained_size);
-    bounds.Inset(-native_app_window_->GetFrameInsets());
-    native_app_window_->SetBounds(bounds);
-  }
-  OnNativeWindowChanged();
 }
 
 void AppWindow::SetNativeWindowFullscreen() {

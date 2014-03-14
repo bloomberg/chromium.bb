@@ -134,43 +134,13 @@ class AppCurrentWindowInternalSetBoundsFunction
   virtual bool RunWithWindow(apps::AppWindow* window) OVERRIDE;
 };
 
-class AppCurrentWindowInternalSetMinWidthFunction
+class AppCurrentWindowInternalSetSizeConstraintsFunction
     : public AppCurrentWindowInternalExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("app.currentWindowInternal.setMinWidth",
-                             APP_CURRENTWINDOWINTERNAL_SETMINWIDTH)
+  DECLARE_EXTENSION_FUNCTION("app.currentWindowInternal.setSizeConstraints",
+                             APP_CURRENTWINDOWINTERNAL_SETSIZECONSTRAINTS)
  protected:
-  virtual ~AppCurrentWindowInternalSetMinWidthFunction() {}
-  virtual bool RunWithWindow(apps::AppWindow* window) OVERRIDE;
-};
-
-class AppCurrentWindowInternalSetMinHeightFunction
-    : public AppCurrentWindowInternalExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("app.currentWindowInternal.setMinHeight",
-                             APP_CURRENTWINDOWINTERNAL_SETMINHEIGHT)
- protected:
-  virtual ~AppCurrentWindowInternalSetMinHeightFunction() {}
-  virtual bool RunWithWindow(apps::AppWindow* window) OVERRIDE;
-};
-
-class AppCurrentWindowInternalSetMaxWidthFunction
-    : public AppCurrentWindowInternalExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("app.currentWindowInternal.setMaxWidth",
-                             APP_CURRENTWINDOWINTERNAL_SETMAXWIDTH)
- protected:
-  virtual ~AppCurrentWindowInternalSetMaxWidthFunction() {}
-  virtual bool RunWithWindow(apps::AppWindow* window) OVERRIDE;
-};
-
-class AppCurrentWindowInternalSetMaxHeightFunction
-    : public AppCurrentWindowInternalExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("app.currentWindowInternal.setMaxHeight",
-                             APP_CURRENTWINDOWINTERNAL_SETMAXHEIGHT)
- protected:
-  virtual ~AppCurrentWindowInternalSetMaxHeightFunction() {}
+  virtual ~AppCurrentWindowInternalSetSizeConstraintsFunction() {}
   virtual bool RunWithWindow(apps::AppWindow* window) OVERRIDE;
 };
 

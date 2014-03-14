@@ -995,55 +995,46 @@ bool NativeAppWindowCocoa::IsWithinDraggableRegion(NSPoint point) const {
   return draggable_region_->contains(point.x, webViewHeight - point.y);
 }
 
-void NativeAppWindowCocoa::HideWithApp() {
-  is_hidden_with_app_ = true;
-  HideWithoutMarkingHidden();
-}
-
 void NativeAppWindowCocoa::ShowWithApp() {
   is_hidden_with_app_ = false;
   if (!is_hidden_)
     ShowInactive();
 }
 
-void NativeAppWindowCocoa::SetAlwaysOnTop(bool always_on_top) {
-  [window() setLevel:(always_on_top ? AlwaysOnTopWindowLevel() :
-                                      NSNormalWindowLevel)];
+void NativeAppWindowCocoa::HideWithApp() {
+  is_hidden_with_app_ = true;
+  HideWithoutMarkingHidden();
 }
 
-void NativeAppWindowCocoa::HideWithoutMarkingHidden() {
-  [window() orderOut:window_controller_];
+void NativeAppWindowCocoa::UpdateShelfMenu() {
+  // TODO(tmdiep): To be implemented for Mac.
+  NOTIMPLEMENTED();
 }
 
-NativeAppWindowCocoa::~NativeAppWindowCocoa() {
+gfx::Size NativeAppWindowCocoa::GetContentMinimumSize() const {
+  return size_constraints_.GetMinimumSize();
 }
 
-ShellNSWindow* NativeAppWindowCocoa::window() const {
-  NSWindow* window = [window_controller_ window];
-  CHECK(!window || [window isKindOfClass:[ShellNSWindow class]]);
-  return static_cast<ShellNSWindow*>(window);
-}
-
-void NativeAppWindowCocoa::UpdateRestoredBounds() {
-  if (IsRestored(*this))
-    restored_bounds_ = [window() frame];
+gfx::Size NativeAppWindowCocoa::GetContentMaximumSize() const {
+  return size_constraints_.GetMaximumSize();
 }
 
 void NativeAppWindowCocoa::SetContentSizeConstraints(
-    const gfx::Size& minimum_size, const gfx::Size& maximum_size) {
+    const gfx::Size& min_size, const gfx::Size& max_size) {
   // Update the size constraints.
-  size_constraints_.set_minimum_size(minimum_size);
-  size_constraints_.set_maximum_size(maximum_size);
+  size_constraints_.set_minimum_size(min_size);
+  size_constraints_.set_maximum_size(max_size);
 
-  gfx::Size min_size = size_constraints_.GetMinimumSize();
-  [window() setContentMinSize:NSMakeSize(min_size.width(), min_size.height())];
+  gfx::Size minimum_size = size_constraints_.GetMinimumSize();
+  [window() setContentMinSize:NSMakeSize(minimum_size.width(),
+                                         minimum_size.height())];
 
-  gfx::Size max_size = size_constraints_.GetMaximumSize();
+  gfx::Size maximum_size = size_constraints_.GetMaximumSize();
   const int kUnboundedSize = apps::SizeConstraints::kUnboundedSize;
-  CGFloat max_width = max_size.width() == kUnboundedSize ?
-      CGFLOAT_MAX : max_size.width();
-  CGFloat max_height = max_size.height() == kUnboundedSize ?
-      CGFLOAT_MAX : max_size.height();
+  CGFloat max_width = maximum_size.width() == kUnboundedSize ?
+      CGFLOAT_MAX : maximum_size.width();
+  CGFloat max_height = maximum_size.height() == kUnboundedSize ?
+      CGFLOAT_MAX : maximum_size.height();
   [window() setContentMaxSize:NSMakeSize(max_width, max_height)];
 
   // Update the window controls.
@@ -1060,25 +1051,33 @@ void NativeAppWindowCocoa::SetContentSizeConstraints(
     // only shown for apps that have unbounded size.
     SetFullScreenCollectionBehavior(window(), shows_fullscreen_controls_);
   }
+
+  if (has_frame_) {
+    [window() setShowsResizeIndicator:shows_resize_controls_];
+    [[window() standardWindowButton:NSWindowZoomButton]
+        setEnabled:shows_fullscreen_controls_];
+  }
 }
 
-void NativeAppWindowCocoa::UpdateShelfMenu() {
-  // TODO(tmdiep): To be implemented for Mac.
-  NOTIMPLEMENTED();
+void NativeAppWindowCocoa::SetAlwaysOnTop(bool always_on_top) {
+  [window() setLevel:(always_on_top ? AlwaysOnTopWindowLevel() :
+                                      NSNormalWindowLevel)];
 }
 
-gfx::Size NativeAppWindowCocoa::GetContentMinimumSize() const {
-  return size_constraints_.GetMinimumSize();
+NativeAppWindowCocoa::~NativeAppWindowCocoa() {
 }
 
-void NativeAppWindowCocoa::SetContentMinimumSize(const gfx::Size& size) {
-  SetContentSizeConstraints(size, size_constraints_.GetMaximumSize());
+ShellNSWindow* NativeAppWindowCocoa::window() const {
+  NSWindow* window = [window_controller_ window];
+  CHECK(!window || [window isKindOfClass:[ShellNSWindow class]]);
+  return static_cast<ShellNSWindow*>(window);
 }
 
-gfx::Size NativeAppWindowCocoa::GetContentMaximumSize() const {
-  return size_constraints_.GetMaximumSize();
+void NativeAppWindowCocoa::UpdateRestoredBounds() {
+  if (IsRestored(*this))
+    restored_bounds_ = [window() frame];
 }
 
-void NativeAppWindowCocoa::SetContentMaximumSize(const gfx::Size& size) {
-  SetContentSizeConstraints(size_constraints_.GetMinimumSize(), size);
+void NativeAppWindowCocoa::HideWithoutMarkingHidden() {
+  [window() orderOut:window_controller_];
 }

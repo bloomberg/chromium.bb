@@ -151,9 +151,9 @@ class NativeAppWindowViews : public NativeAppWindow,
   virtual void ShowWithApp() OVERRIDE;
   virtual void UpdateShelfMenu() OVERRIDE;
   virtual gfx::Size GetContentMinimumSize() const OVERRIDE;
-  virtual void SetContentMinimumSize(const gfx::Size& size) OVERRIDE;
   virtual gfx::Size GetContentMaximumSize() const OVERRIDE;
-  virtual void SetContentMaximumSize(const gfx::Size& size) OVERRIDE;
+  virtual void SetContentSizeConstraints(const gfx::Size& min_size,
+                                         const gfx::Size& max_size) OVERRIDE;
 
   // web_modal::WebContentsModalDialogHost implementation.
   virtual gfx::NativeView GetHostView() const OVERRIDE;

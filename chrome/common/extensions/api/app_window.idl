@@ -42,33 +42,57 @@ namespace app.window {
   };
 
   dictionary Bounds {
-    // The current X coordinate of the content or window.
+    // This property can be used to read or write the current X coordinate of
+    // the content or window.
     long left;
 
-    // The current Y coordinate of the content or window.
+    // This property can be used to read or write the current Y coordinate of
+    // the content or window.
     long top;
 
-    // The current width of the content or window.
+    // This property can be used to read or write the current width of the
+    // content or window.
     long width;
 
-    // The current height of the content or window.
+    // This property can be used to read or write the current height of the
+    // content or window.
     long height;
 
-    // The current minimum width of the content or window.
-    // Will be <code>null</code> if not specified.
+    // This property can be used to read or write the current minimum width of
+    // the content or window. A value of <code>null</code> indicates
+    // 'unspecified'.
     long? minWidth;
 
-    // The current minimum height of the content or window.
-    // Will be <code>null</code> if not specified.
+    // This property can be used to read or write the current minimum height of
+    // the content or window. A value of <code>null</code> indicates
+    // 'unspecified'.
     long? minHeight;
 
-    // The current maximum width of the content or window.
-    // Will be <code>null</code> if not specified.
+    // This property can be used to read or write the current maximum width of
+    // the content or window. A value of <code>null</code> indicates
+    // 'unspecified'.
     long? maxWidth;
 
-    // The current maximum height of the content or window.
-    // Will be <code>null</code> if not specified.
+    // This property can be used to read or write the current maximum height of
+    // the content or window. A value of <code>null</code> indicates
+    // 'unspecified'.
     long? maxHeight;
+
+    // Set the left and top position of the content or window.
+    static void setPosition(long left, long top);
+
+    // Set the width and height of the content or window.
+    static void setSize(long width, long height);
+
+    // Set the minimum size constraints of the content or window. The minimum
+    // width or height can be set to <code>null</code> to remove the constraint.
+    // A value of <code>undefined</code> will leave a constraint unchanged.
+    static void setMinimumSize(long minWidth, long minHeight);
+
+    // Set the maximum size constraints of the content or window. The maximum
+    // width or height can be set to <code>null</code> to remove the constraint.
+    // A value of <code>undefined</code> will leave a constraint unchanged.
+    static void setMaximumSize(long maxWidth, long maxHeight);
   };
 
   // TODO(benwells): document this once we are happy with it.
@@ -278,39 +302,7 @@ namespace app.window {
     [nocompile] static ContentBounds getBounds();
 
     // Set the window's inner bounds.
-    static void setBounds(ContentBounds bounds);
-
-    // Get the current minimum width of the window. Returns <code>null</code> if
-    // there is no minimum. Currently only available on the Dev channel.
-    [nocompile] static long getMinWidth();
-
-    // Get the current minimum height of the window. Returns <code>null</code>
-    // if there is no minimum. Currently only available on the Dev channel.
-    [nocompile] static long getMinHeight();
-
-    // Get the current maximum width of the window. Returns <code>null</code> if
-    // there is no maximum. Currently only available on the Dev channel.
-    [nocompile] static long getMaxWidth();
-
-    // Get the current maximum height of the window. Returns <code>null</code>
-    // if there is no maximum. Currently only available on the Dev channel.
-    [nocompile] static long getMaxHeight();
-
-    // Set the current minimum width of the window. Set to <code>null</code> to
-    // remove the constraint. Currently only available on the Dev channel.
-    static void setMinWidth(optional long minWidth);
-
-    // Set the current minimum height of the window. Set to <code>null</code> to
-    // remove the constraint. Currently only available on the Dev channel.
-    static void setMinHeight(optional long minHeight);
-
-    // Set the current maximum width of the window. Set to <code>null</code> to
-    // remove the constraint. Currently only available on the Dev channel.
-    static void setMaxWidth(optional long maxWidth);
-
-    // Set the current maximum height of the window. Set to <code>null</code> to
-    // remove the constraint. Currently only available on the Dev channel.
-    static void setMaxHeight(optional long maxHeight);
+    [nocompile] static void setBounds(ContentBounds bounds);
 
     // Set the app icon for the window (experimental).
     // Currently this is only being implemented on Ash.

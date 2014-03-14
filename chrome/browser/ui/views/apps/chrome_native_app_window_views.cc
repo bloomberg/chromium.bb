@@ -241,8 +241,8 @@ void ChromeNativeAppWindowViews::InitializeDefaultWindow(
   // correctly. So we set the window bounds and constraints now.
   gfx::Insets frame_insets = GetFrameInsets();
   gfx::Rect window_bounds = create_params.GetInitialWindowBounds(frame_insets);
-  SetContentMinimumSize(create_params.GetContentMinimumSize(frame_insets));
-  SetContentMaximumSize(create_params.GetContentMaximumSize(frame_insets));
+  SetContentSizeConstraints(create_params.GetContentMinimumSize(frame_insets),
+                            create_params.GetContentMaximumSize(frame_insets));
   if (!window_bounds.IsEmpty()) {
     typedef apps::AppWindow::BoundsSpecification BoundsSpecification;
     bool position_specified =

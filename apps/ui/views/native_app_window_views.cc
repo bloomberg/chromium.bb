@@ -411,16 +411,14 @@ gfx::Size NativeAppWindowViews::GetContentMinimumSize() const {
   return size_constraints_.GetMinimumSize();
 }
 
-void NativeAppWindowViews::SetContentMinimumSize(const gfx::Size& size) {
-  size_constraints_.set_minimum_size(size);
-}
-
 gfx::Size NativeAppWindowViews::GetContentMaximumSize() const {
   return size_constraints_.GetMaximumSize();
 }
 
-void NativeAppWindowViews::SetContentMaximumSize(const gfx::Size& size) {
-  size_constraints_.set_maximum_size(size);
+void NativeAppWindowViews::SetContentSizeConstraints(
+    const gfx::Size& min_size, const gfx::Size& max_size) {
+  size_constraints_.set_minimum_size(min_size);
+  size_constraints_.set_maximum_size(max_size);
 }
 
 }  // namespace apps

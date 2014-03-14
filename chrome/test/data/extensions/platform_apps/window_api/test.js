@@ -108,6 +108,98 @@ function testConflictingBoundsProperty(propertyName) {
   );
 }
 
+function assertBoundsEq(expectedBounds, actualBounds) {
+  chrome.test.assertEq(expectedBounds.left, actualBounds.left);
+  chrome.test.assertEq(expectedBounds.top, actualBounds.top);
+  chrome.test.assertEq(expectedBounds.width, actualBounds.width);
+  chrome.test.assertEq(expectedBounds.height, actualBounds.height);
+}
+
+function assertConstraintsEq(expectedConstraints, actualConstraints) {
+  chrome.test.assertEq(expectedConstraints.minWidth,
+                       actualConstraints.minWidth);
+  chrome.test.assertEq(expectedConstraints.minHeight,
+                       actualConstraints.minHeight);
+  chrome.test.assertEq(expectedConstraints.maxWidth,
+                       actualConstraints.maxWidth);
+  chrome.test.assertEq(expectedConstraints.maxHeight,
+                       actualConstraints.maxHeight);
+}
+
+function runSetBoundsTest(boundsType, initialState, changeFields,
+                          expectedBounds, hasConstraints) {
+  var createOptions = {};
+  createOptions[boundsType] = initialState;
+  chrome.app.window.create('test.html', createOptions, callbackPass(
+  function(win) {
+    // Change the bounds.
+    if (typeof(changeFields.left) !== 'undefined' &&
+        typeof(changeFields.top) !== 'undefined') {
+      win[boundsType].setPosition(changeFields.left, changeFields.top);
+    } else if (typeof(changeFields.left) !== 'undefined')
+      win[boundsType].left = changeFields.left;
+    else if (typeof(changeFields.top) !== 'undefined')
+      win[boundsType].top = changeFields.top;
+
+    if (typeof(changeFields.width) !== 'undefined' &&
+        typeof(changeFields.height) !== 'undefined') {
+      win[boundsType].setSize(changeFields.width, changeFields.height);
+    } else if (typeof(changeFields.width) !== 'undefined')
+      win[boundsType].width = changeFields.width;
+    else if (typeof(changeFields.height) !== 'undefined')
+      win[boundsType].height = changeFields.height;
+
+    // Dummy call to wait for bounds to be changed in the browser.
+    chrome.test.waitForRoundTrip('msg', callbackPass(function(msg) {
+      assertBoundsConsistent(win);
+      assertBoundsEq(expectedBounds, win[boundsType]);
+      if (!hasConstraints)
+        assertConstraintsUnspecified(win);
+      win.close();
+    }));
+  }));
+}
+
+function runSetConstraintsTest(boundsType, initialState, changeFields,
+                               expectedConstraints, expectedBounds) {
+  var createOptions = {};
+  createOptions[boundsType] = initialState;
+  chrome.app.window.create('test.html', createOptions, callbackPass(
+  function(win) {
+    assertConstraintsEq(initialState, win[boundsType]);
+
+    // Change the constraints.
+    if (typeof(changeFields.minWidth) !== 'undefined' &&
+        typeof(changeFields.minHeight) !== 'undefined') {
+      win[boundsType].setMinimumSize(changeFields.minWidth,
+                                     changeFields.minHeight);
+    } else if (typeof(changeFields.minWidth) !== 'undefined')
+      win[boundsType].minWidth = changeFields.minWidth;
+    else if (typeof(changeFields.minHeight) !== 'undefined')
+      win[boundsType].minHeight = changeFields.minHeight;
+
+    if (typeof(changeFields.maxWidth) !== 'undefined' &&
+        typeof(changeFields.maxHeight) !== 'undefined') {
+      win[boundsType].setMaximumSize(changeFields.maxWidth,
+                                     changeFields.maxHeight);
+    } else if (typeof(changeFields.maxWidth) !== 'undefined')
+      win[boundsType].maxWidth = changeFields.maxWidth;
+    else if (typeof(changeFields.maxHeight) !== 'undefined')
+      win[boundsType].maxHeight = changeFields.maxHeight;
+
+    // Dummy call to wait for the constraints to be changed in the browser.
+    chrome.test.waitForRoundTrip('msg', callbackPass(function(msg) {
+      assertBoundsConsistent(win);
+      assertConstraintsEq(expectedConstraints, win[boundsType]);
+      if (expectedBounds) {
+        chrome.test.assertEq(expectedBounds.width, win[boundsType].width);
+        chrome.test.assertEq(expectedBounds.height, win[boundsType].height);
+      }
+      win.close();
+    }));
+  }));
+}
+
 function testCreate() {
   chrome.test.runTests([
     function basic() {
@@ -294,10 +386,7 @@ function testInitialBounds() {
         innerBounds: innerBounds
       }, callbackPass(function(win) {
         chrome.test.assertTrue(win != null);
-        chrome.test.assertEq(innerBounds.left, win.innerBounds.left);
-        chrome.test.assertEq(innerBounds.top, win.innerBounds.top);
-        chrome.test.assertEq(innerBounds.width, win.innerBounds.width);
-        chrome.test.assertEq(innerBounds.height, win.innerBounds.height);
+        assertBoundsEq(innerBounds, win.innerBounds);
         assertBoundsConsistent(win);
         assertConstraintsUnspecified(win);
         win.close();
@@ -315,10 +404,7 @@ function testInitialBounds() {
         outerBounds: outerBounds
       }, callbackPass(function(win) {
         chrome.test.assertTrue(win != null);
-        chrome.test.assertEq(outerBounds.left, win.outerBounds.left);
-        chrome.test.assertEq(outerBounds.top, win.outerBounds.top);
-        chrome.test.assertEq(outerBounds.width, win.outerBounds.width);
-        chrome.test.assertEq(outerBounds.height, win.outerBounds.height);
+        assertBoundsEq(outerBounds, win.outerBounds);
         assertBoundsConsistent(win);
         assertConstraintsUnspecified(win);
         win.close();
@@ -337,14 +423,8 @@ function testInitialBounds() {
         frame: 'none'
       }, callbackPass(function(win) {
         chrome.test.assertTrue(win != null);
-        chrome.test.assertEq(outerBounds.left, win.outerBounds.left);
-        chrome.test.assertEq(outerBounds.top, win.outerBounds.top);
-        chrome.test.assertEq(outerBounds.width, win.outerBounds.width);
-        chrome.test.assertEq(outerBounds.height, win.outerBounds.height);
-        chrome.test.assertEq(outerBounds.left, win.innerBounds.left);
-        chrome.test.assertEq(outerBounds.top, win.innerBounds.top);
-        chrome.test.assertEq(outerBounds.width, win.innerBounds.width);
-        chrome.test.assertEq(outerBounds.height, win.innerBounds.height);
+        assertBoundsEq(outerBounds, win.outerBounds);
+        assertBoundsEq(outerBounds, win.innerBounds);
         assertConstraintsUnspecified(win);
         win.close();
       }));
@@ -449,9 +529,9 @@ function testInitialBounds() {
   ]);
 }
 
-function testInitialBoundsInStable() {
+function testNewBoundsApiInStable() {
   chrome.test.runTests([
-    function testInnerBounds() {
+    function testInitInnerBounds() {
       var innerBounds = {
         width: 600,
         height: 400
@@ -463,7 +543,7 @@ function testInitialBoundsInStable() {
       );
     },
 
-    function testOuterBounds() {
+    function testInitOuterBounds() {
       var outerBounds = {
         width: 600,
         height: 400
@@ -473,7 +553,39 @@ function testInitialBoundsInStable() {
       }, callbackFail('innerBounds and outerBounds are only available in'+
                       ' dev channel.')
       );
-    }
+    },
+
+    function testSetBounds() {
+      var init = {
+        bounds: { width: 198, height: 159 }
+      };
+      chrome.app.window.create('test.html', init, callbackPass(function(win) {
+        chrome.test.assertTrue(win != null);
+        win.innerBounds.setSize(250, 100);
+        chrome.test.waitForRoundTrip('msg', callbackPass(function(msg) {
+          var bounds = win.getBounds();
+          chrome.test.assertEq(init.bounds.width, bounds.width);
+          chrome.test.assertEq(init.bounds.height, bounds.height);
+          win.close();
+        }));
+      }));
+    },
+
+    function testSetConstraints() {
+      var init = {
+        bounds: { width: 198, height: 159 }
+      };
+      chrome.app.window.create('test.html', init, callbackPass(function(win) {
+        chrome.test.assertTrue(win != null);
+        win.innerBounds.setMaximumSize(80, 80);
+        chrome.test.waitForRoundTrip('msg', callbackPass(function(msg) {
+          var bounds = win.getBounds();
+          chrome.test.assertEq(init.bounds.width, bounds.width);
+          chrome.test.assertEq(init.bounds.height, bounds.height);
+          win.close();
+        }));
+      }));
+    },
   ]);
 }
 
@@ -618,17 +730,337 @@ function testInitialConstraints() {
         frame: 'none'
       }, callbackPass(function(win) {
         chrome.test.assertTrue(win != null);
-        chrome.test.assertEq(outerBounds.minWidth, win.outerBounds.minWidth);
-        chrome.test.assertEq(outerBounds.minHeight, win.outerBounds.minHeight);
-        chrome.test.assertEq(outerBounds.maxWidth, win.outerBounds.maxWidth);
-        chrome.test.assertEq(outerBounds.maxHeight, win.outerBounds.maxHeight);
-        chrome.test.assertEq(outerBounds.minWidth, win.innerBounds.minWidth);
-        chrome.test.assertEq(outerBounds.minHeight, win.innerBounds.minHeight);
-        chrome.test.assertEq(outerBounds.maxWidth, win.innerBounds.maxWidth);
-        chrome.test.assertEq(outerBounds.maxHeight, win.innerBounds.maxHeight);
+        assertConstraintsEq(outerBounds, win.outerBounds);
+        assertConstraintsEq(outerBounds, win.innerBounds);
         win.close();
       }));
     }
+  ]);
+}
+
+function testSetBounds() {
+  chrome.test.runTests([
+    function testLeft() {
+      var init = { left: 150, top: 100, width: 300, height: 200 };
+      var change = { left: 189 };
+      var expected = { left: 189, top: 100, width: 300, height: 200 };
+      runSetBoundsTest('innerBounds', init, change, expected);
+      runSetBoundsTest('outerBounds', init, change, expected);
+    },
+
+    function testLeftNull() {
+      var init = { left: 150, top: 100, width: 300, height: 200 };
+      var change = { left: null };
+      runSetBoundsTest('innerBounds', init, change, init);
+      runSetBoundsTest('outerBounds', init, change, init);
+    },
+
+    function testTop() {
+      var init = { left: 150, top: 100, width: 300, height: 200 };
+      var change = { top: 167 };
+      var expected = { left: 150, top: 167, width: 300, height: 200 };
+      runSetBoundsTest('innerBounds', init, change, expected);
+      runSetBoundsTest('outerBounds', init, change, expected);
+    },
+
+    function testTopNull() {
+      var init = { left: 150, top: 100, width: 300, height: 200 };
+      var change = { top: null };
+      runSetBoundsTest('innerBounds', init, change, init);
+      runSetBoundsTest('outerBounds', init, change, init);
+    },
+
+    function testWidth() {
+      var init = { left: 150, top: 100, width: 300, height: 200 };
+      var change = { width: 245 };
+      var expected = { left: 150, top: 100, width: 245, height: 200 };
+      runSetBoundsTest('innerBounds', init, change, expected);
+      runSetBoundsTest('outerBounds', init, change, expected);
+    },
+
+    function testWidthNull() {
+      var init = { left: 150, top: 100, width: 300, height: 200 };
+      var change = { width: null };
+      runSetBoundsTest('innerBounds', init, change, init);
+      runSetBoundsTest('outerBounds', init, change, init);
+    },
+
+    function testHeight() {
+      var init = { left: 150, top: 100, width: 300, height: 200 };
+      var change = { height: 196 };
+      var expected = { left: 150, top: 100, width: 300, height: 196 };
+      runSetBoundsTest('innerBounds', init, change, expected);
+      runSetBoundsTest('outerBounds', init, change, expected);
+    },
+
+    function testHeightNull() {
+      var init = { left: 150, top: 100, width: 300, height: 200 };
+      var change = { height: null };
+      runSetBoundsTest('innerBounds', init, change, init);
+      runSetBoundsTest('outerBounds', init, change, init);
+    },
+
+    function testPosition() {
+      var init = { left: 150, top: 100, width: 300, height: 200 };
+      var change = { left: 162, top: 112 };
+      var expected = { left: 162, top: 112, width: 300, height: 200 };
+      runSetBoundsTest('innerBounds', init, change, expected);
+      runSetBoundsTest('outerBounds', init, change, expected);
+    },
+
+    function testPositionNull() {
+      var init = { left: 150, top: 100, width: 300, height: 200 };
+      var change = { left: null, top: null };
+      runSetBoundsTest('innerBounds', init, change, init);
+      runSetBoundsTest('outerBounds', init, change, init);
+    },
+
+    function testSize() {
+      var init = { left: 150, top: 100, width: 300, height: 200 };
+      var change = { width: 306, height: 216 };
+      var expected = { left: 150, top: 100, width: 306, height: 216 };
+      runSetBoundsTest('innerBounds', init, change, expected);
+      runSetBoundsTest('outerBounds', init, change, expected);
+    },
+
+    function testSizeNull() {
+      var init = { left: 150, top: 100, width: 300, height: 200 };
+      var change = { width: null, height: null };
+      runSetBoundsTest('innerBounds', init, change, init);
+      runSetBoundsTest('outerBounds', init, change, init);
+    },
+
+    function testMinSize() {
+      var init = { left: 150, top: 100, width: 300, height: 200,
+                   minWidth: 235, minHeight: 170 };
+      var change = { width: 50, height: 60 };
+      var expected = { left: 150, top: 100, width: 235, height: 170 };
+      runSetBoundsTest('innerBounds', init, change, expected, true);
+      runSetBoundsTest('outerBounds', init, change, expected, true);
+    },
+
+    function testMaxSize() {
+      var init = { left: 150, top: 100, width: 300, height: 200,
+                   maxWidth: 330, maxHeight: 230 };
+      var change = { width: 400, height: 300 };
+      var expected = { left: 150, top: 100, width: 330, height: 230 };
+      runSetBoundsTest('innerBounds', init, change, expected, true);
+      runSetBoundsTest('outerBounds', init, change, expected, true);
+    },
+
+    function testMinAndMaxSize() {
+      var init = { left: 150, top: 100, width: 300, height: 200,
+                   minWidth: 120, minHeight: 170,
+                   maxWidth: 330, maxHeight: 230 };
+      var change = { width: 225, height: 195 };
+      var expected = { left: 150, top: 100, width: 225, height: 195 };
+      runSetBoundsTest('innerBounds', init, change, expected, true);
+      runSetBoundsTest('outerBounds', init, change, expected, true);
+    },
+  ]);
+}
+
+function testSetSizeConstraints() {
+  chrome.test.runTests([
+    function testMinWidth() {
+      var init = { minWidth: 300, minHeight: 200,
+                   maxWidth: 350, maxHeight: 250 };
+      var change = { minWidth: 111 };
+      var expected = { minWidth: 111, minHeight: 200,
+                       maxWidth: 350, maxHeight: 250 };
+      runSetConstraintsTest('innerBounds', init, change, expected);
+      runSetConstraintsTest('outerBounds', init, change, expected);
+    },
+
+    function testClearMinWidth() {
+      var init = { minWidth: 300, minHeight: 200,
+                   maxWidth: 350, maxHeight: 250 };
+      var change = { minWidth: null };
+      var expected = { minWidth: null, minHeight: 200,
+                       maxWidth: 350, maxHeight: 250 };
+      runSetConstraintsTest('innerBounds', init, change, expected);
+      runSetConstraintsTest('outerBounds', init, change, expected);
+    },
+
+    function testMaxWidth() {
+      var init = { minWidth: 300, minHeight: 200,
+                   maxWidth: 350, maxHeight: 250 };
+      var change = { maxWidth: 347 };
+      var expected = { minWidth: 300, minHeight: 200,
+                       maxWidth: 347, maxHeight: 250 };
+      runSetConstraintsTest('innerBounds', init, change, expected);
+      runSetConstraintsTest('outerBounds', init, change, expected);
+    },
+
+    function testClearMaxWidth() {
+      var init = { minWidth: 300, minHeight: 200,
+                   maxWidth: 350, maxHeight: 250 };
+      var change = { maxWidth: null };
+      var expected = { minWidth: 300, minHeight: 200,
+                       maxWidth: null, maxHeight: 250 };
+      runSetConstraintsTest('innerBounds', init, change, expected);
+      runSetConstraintsTest('outerBounds', init, change, expected);
+    },
+
+    function testMinHeight() {
+      var init = { minWidth: 300, minHeight: 200,
+                   maxWidth: 350, maxHeight: 250 };
+      var change = { minHeight: 198 };
+      var expected = { minWidth: 300, minHeight: 198,
+                       maxWidth: 350, maxHeight: 250 };
+      runSetConstraintsTest('innerBounds', init, change, expected);
+      runSetConstraintsTest('outerBounds', init, change, expected);
+    },
+
+    function testClearMinHeight() {
+      var init = { minWidth: 300, minHeight: 200,
+                   maxWidth: 350, maxHeight: 250 };
+      var change = { minHeight: null };
+      var expected = { minWidth: 300, minHeight: null,
+                       maxWidth: 350, maxHeight: 250 };
+      runSetConstraintsTest('innerBounds', init, change, expected);
+      runSetConstraintsTest('outerBounds', init, change, expected);
+    },
+
+    function testMaxHeight() {
+      var init = { minWidth: 300, minHeight: 200,
+                   maxWidth: 350, maxHeight: 250 };
+      var change = { maxHeight: 278 };
+      var expected = { minWidth: 300, minHeight: 200,
+                       maxWidth: 350, maxHeight: 278 };
+      runSetConstraintsTest('innerBounds', init, change, expected);
+      runSetConstraintsTest('outerBounds', init, change, expected);
+    },
+
+    function testClearMaxHeight() {
+      var init = { minWidth: 300, minHeight: 200,
+                   maxWidth: 350, maxHeight: 250 };
+      var change = { maxHeight: null };
+      var expected = { minWidth: 300, minHeight: 200,
+                       maxWidth: 350, maxHeight: null };
+      runSetConstraintsTest('innerBounds', init, change, expected);
+      runSetConstraintsTest('outerBounds', init, change, expected);
+    },
+
+    function testSetMinSize() {
+      // This test expects the bounds to be changed.
+      var init = { width: 225, height: 125,
+                   minWidth: null, minHeight: null,
+                   maxWidth: null, maxHeight: null };
+      var change = { minWidth: 235, minHeight: 135 };
+      var expected = { width: 235, height: 135,
+                       minWidth: 235, minHeight: 135,
+                       maxWidth: null, maxHeight: null };
+      runSetConstraintsTest('innerBounds', init, change, expected, expected);
+      runSetConstraintsTest('outerBounds', init, change, expected, expected);
+    },
+
+    function testSetMaxSize() {
+      // This test expects the bounds to be changed.
+      var init = { width: 225, height: 125,
+                   minWidth: null, minHeight: null,
+                   maxWidth: null, maxHeight: null };
+      var change = { maxWidth: 198, maxHeight: 107 };
+      var expected = { width: 198, height: 107,
+                       minWidth: null, minHeight: null,
+                       maxWidth: 198, maxHeight: 107 };
+      runSetConstraintsTest('innerBounds', init, change, expected, expected);
+      runSetConstraintsTest('outerBounds', init, change, expected, expected);
+    },
+
+    function testChangeMinAndMaxSize() {
+      var init = { width: 325, height: 225,
+                   minWidth: 300, minHeight: 200,
+                   maxWidth: 350, maxHeight: 250 };
+      var change = { minWidth: 287, minHeight: 198,
+                     maxWidth: 334, maxHeight: 278 };
+      runSetConstraintsTest('innerBounds', init, change, change, init);
+      runSetConstraintsTest('outerBounds', init, change, change, init);
+    },
+
+    function testClearMinAndMaxSize() {
+      var init = { width: 325, height: 225,
+                   minWidth: 300, minHeight: 200,
+                   maxWidth: 350, maxHeight: 250 };
+      var change = { minWidth: null, minHeight: null,
+                     maxWidth: null, maxHeight: null };
+      runSetConstraintsTest('innerBounds', init, change, change, init);
+      runSetConstraintsTest('outerBounds', init, change, change, init);
+    },
+
+    function testClearConstraints() {
+      // This checks that bounds are not clipped once constraints are removed.
+      var createOptions = {
+        innerBounds: {
+          width: 325, height: 225,
+          minWidth: 300, minHeight: 200,
+          maxWidth: 350, maxHeight: 250
+        }
+      };
+      chrome.app.window.create('test.html', createOptions, callbackPass(
+      function(win) {
+        win.innerBounds.setMinimumSize(null, null);
+        win.innerBounds.setMaximumSize(null, null);
+
+        // Set the size smaller than the initial min.
+        win.innerBounds.setSize(234, 198);
+
+        // Dummy call to wait for bounds to be changed in the browser.
+        chrome.test.waitForRoundTrip('msg', callbackPass(function(msg) {
+          chrome.test.assertEq(234, win.innerBounds.width);
+          chrome.test.assertEq(198, win.innerBounds.height);
+
+          // Set the size larger than the initial max.
+          win.innerBounds.setSize(361, 278);
+
+          chrome.test.waitForRoundTrip('msg', callbackPass(function(msg) {
+            chrome.test.assertEq(361, win.innerBounds.width);
+            chrome.test.assertEq(278, win.innerBounds.height);
+            win.close();
+          }));
+        }));
+      }));
+    },
+
+    function testMinWidthLargerThanMaxWidth() {
+      var init = { width: 102, height: 103,
+                   minWidth: 100, minHeight: 101,
+                   maxWidth: 104, maxHeight: 105 };
+      var change = { minWidth: 200 };
+      var expected = { minWidth: 200, minHeight: 101,
+                       maxWidth: 200, maxHeight: 105 };
+      runSetConstraintsTest('innerBounds', init, change, expected);
+    },
+
+    function testMinHeightLargerThanMaxHeight() {
+      var init = { width: 102, height: 103,
+                   minWidth: 100, minHeight: 101,
+                   maxWidth: 104, maxHeight: 105 };
+      var change = { minHeight: 200 };
+      var expected = { minWidth: 100, minHeight: 200,
+                       maxWidth: 104, maxHeight: 200 };
+      runSetConstraintsTest('innerBounds', init, change, expected);
+    },
+
+    function testMaxWidthSmallerThanMinWidth() {
+      var init = { width: 102, height: 103,
+                   minWidth: 100, minHeight: 101,
+                   maxWidth: 104, maxHeight: 105 };
+      var change = { maxWidth: 50 };
+      var expected = { minWidth: 100, minHeight: 101,
+                       maxWidth: 100, maxHeight: 105 };
+      runSetConstraintsTest('innerBounds', init, change, expected);
+    },
+
+    function testMaxHeightSmallerThanMinHeight() {
+      var init = { width: 102, height: 103,
+                   minWidth: 100, minHeight: 101,
+                   maxWidth: 104, maxHeight: 105 };
+      var change = { maxHeight: 50 };
+      var expected = { minWidth: 100, minHeight: 101,
+                       maxWidth: 104, maxHeight: 101 };
+      runSetConstraintsTest('innerBounds', init, change, expected);
+    },
   ]);
 }
 
@@ -850,150 +1282,6 @@ function testRestoreAfterGeometryCacheChange() {
           });
         })}));
       })}));
-    },
-  ]);
-}
-
-function testSizeConstraints() {
-  chrome.test.runTests([
-    function testUndefinedMinAndMaxSize() {
-      chrome.app.window.create('test.html', {
-        bounds: { width: 250, height: 250 }
-      }, callbackPass(function(win) {
-        chrome.test.assertEq(null, win.getMinWidth());
-        chrome.test.assertEq(null, win.getMinHeight());
-        chrome.test.assertEq(null, win.getMaxWidth());
-        chrome.test.assertEq(null, win.getMaxHeight());
-        win.close();
-      }));
-    },
-
-    function testSetUndefinedMinAndMaxSize() {
-      chrome.app.window.create('test.html', {
-        bounds: { width: 102, height: 103 },
-        minWidth: 100, minHeight: 101,
-        maxWidth: 104, maxHeight: 105
-      }, callbackPass(function(win) {
-        chrome.test.assertEq(100, win.getMinWidth());
-        chrome.test.assertEq(101, win.getMinHeight());
-        chrome.test.assertEq(104, win.getMaxWidth());
-        chrome.test.assertEq(105, win.getMaxHeight());
-        win.setMinWidth(null);
-        win.setMinHeight(null);
-        win.setMaxWidth(null);
-        win.setMaxHeight(null);
-
-        // dummy call to ensure constraints have been changed in the browser
-        chrome.test.waitForRoundTrip("msg", callbackPass(function(message) {
-          chrome.test.assertEq(null, win.getMinWidth());
-          chrome.test.assertEq(null, win.getMinHeight());
-          chrome.test.assertEq(null, win.getMaxWidth());
-          chrome.test.assertEq(null, win.getMaxHeight());
-          win.close();
-        }));
-      }));
-    },
-
-    function testChangingMinAndMaxSize() {
-      chrome.app.window.create('test.html', {
-        bounds: { width: 102, height: 103 },
-        minWidth: 100, minHeight: 101,
-        maxWidth: 104, maxHeight: 105
-      }, callbackPass(function(win) {
-        chrome.test.assertEq(100, win.getMinWidth());
-        chrome.test.assertEq(101, win.getMinHeight());
-        chrome.test.assertEq(104, win.getMaxWidth());
-        chrome.test.assertEq(105, win.getMaxHeight());
-        win.setMinWidth(98);
-        win.setMinHeight(99);
-        win.setMaxWidth(106);
-        win.setMaxHeight(107);
-
-        // dummy call to ensure constraints have been changed in the browser
-        chrome.test.waitForRoundTrip("msg", callbackPass(function(message) {
-          chrome.test.assertEq(98, win.getMinWidth());
-          chrome.test.assertEq(99, win.getMinHeight());
-          chrome.test.assertEq(106, win.getMaxWidth());
-          chrome.test.assertEq(107, win.getMaxHeight());
-          win.close();
-        }));
-      }));
-    },
-
-    function testMinWidthLargerThanMaxWidth() {
-      chrome.app.window.create('test.html', {
-        bounds: { width: 102, height: 103 },
-        minWidth: 100, minHeight: 101,
-        maxWidth: 104, maxHeight: 105
-      }, callbackPass(function(win) {
-        win.setMinWidth(200);
-
-        // dummy call to ensure constraints have been changed in the browser
-        chrome.test.waitForRoundTrip("msg", callbackPass(function(message) {
-          chrome.test.assertEq(200, win.getMinWidth());
-          chrome.test.assertEq(101, win.getMinHeight());
-          chrome.test.assertEq(200, win.getMaxWidth());
-          chrome.test.assertEq(105, win.getMaxHeight());
-          win.close();
-        }));
-      }));
-    },
-
-    function testMinHeightLargerThanMaxHeight() {
-      chrome.app.window.create('test.html', {
-        bounds: { width: 102, height: 103 },
-        minWidth: 100, minHeight: 101,
-        maxWidth: 104, maxHeight: 105
-      }, callbackPass(function(win) {
-        win.setMinHeight(200);
-
-        // dummy call to ensure constraints have been changed in the browser
-        chrome.test.waitForRoundTrip("msg", callbackPass(function(message) {
-          chrome.test.assertEq(100, win.getMinWidth());
-          chrome.test.assertEq(200, win.getMinHeight());
-          chrome.test.assertEq(104, win.getMaxWidth());
-          chrome.test.assertEq(200, win.getMaxHeight());
-          win.close();
-        }));
-      }));
-    },
-
-    function testMaxWidthSmallerThanMinWidth() {
-      chrome.app.window.create('test.html', {
-        bounds: { width: 102, height: 103 },
-        minWidth: 100, minHeight: 101,
-        maxWidth: 104, maxHeight: 105
-      }, callbackPass(function(win) {
-        win.setMaxWidth(50);
-
-        // dummy call to ensure constraints have been changed in the browser
-        chrome.test.waitForRoundTrip("msg", callbackPass(function(message) {
-          chrome.test.assertEq(100, win.getMinWidth());
-          chrome.test.assertEq(101, win.getMinHeight());
-          chrome.test.assertEq(100, win.getMaxWidth());
-          chrome.test.assertEq(105, win.getMaxHeight());
-          win.close();
-        }));
-      }));
-    },
-
-    function testMaxHeightSmallerThanMinHeight() {
-      chrome.app.window.create('test.html', {
-        bounds: { width: 102, height: 103 },
-        minWidth: 100, minHeight: 101,
-        maxWidth: 104, maxHeight: 105
-      }, callbackPass(function(win) {
-        win.setMaxHeight(50);
-
-        // dummy call to ensure constraints have been changed in the browser
-        chrome.test.waitForRoundTrip("msg", callbackPass(function(message) {
-          chrome.test.assertEq(100, win.getMinWidth());
-          chrome.test.assertEq(101, win.getMinHeight());
-          chrome.test.assertEq(104, win.getMaxWidth());
-          chrome.test.assertEq(101, win.getMaxHeight());
-          win.close();
-        }));
-      }));
     },
   ]);
 }

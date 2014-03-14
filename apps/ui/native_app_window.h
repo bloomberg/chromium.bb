@@ -79,14 +79,12 @@ class NativeAppWindow : public ui::BaseWindow,
   // Returns the minimum size constraints of the content.
   virtual gfx::Size GetContentMinimumSize() const = 0;
 
-  // Updates the minimum size constraints of the content.
-  virtual void SetContentMinimumSize(const gfx::Size& size) = 0;
-
   // Returns the maximum size constraints of the content.
   virtual gfx::Size GetContentMaximumSize() const = 0;
 
-  // Updates the maximum size constraints of the content.
-  virtual void SetContentMaximumSize(const gfx::Size& size) = 0;
+  // Updates the minimum and maximum size constraints of the content.
+  virtual void SetContentSizeConstraints(const gfx::Size& min_size,
+                                         const gfx::Size& max_size) = 0;
 
   virtual ~NativeAppWindow() {}
 };

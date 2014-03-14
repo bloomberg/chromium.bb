@@ -130,47 +130,6 @@ IN_PROC_BROWSER_TEST_F(AppWindowAPITest, TestCreate) {
   ASSERT_TRUE(RunAppWindowAPITest("testCreate")) << message_;
 }
 
-#if defined(TOOLKIT_GTK)
-#define MAYBE_TestDeprecatedBounds DISABLED_TestDeprecatedBounds
-#else
-#define MAYBE_TestDeprecatedBounds TestDeprecatedBounds
-#endif
-
-IN_PROC_BROWSER_TEST_F(AppWindowAPITest, MAYBE_TestDeprecatedBounds) {
-  ASSERT_TRUE(RunAppWindowAPITest("testDeprecatedBounds")) << message_;
-}
-
-#if defined(TOOLKIT_GTK) || defined(OS_LINUX)
-#define MAYBE_TestInitialBounds DISABLED_TestInitialBounds
-#else
-#define MAYBE_TestInitialBounds TestInitialBounds
-#endif
-
-IN_PROC_BROWSER_TEST_F(AppWindowAPITest, MAYBE_TestInitialBounds) {
-  ASSERT_TRUE(RunAppWindowAPITest("testInitialBounds")) << message_;
-}
-
-#if defined(TOOLKIT_GTK)
-#define MAYBE_TestInitialBoundsInStable DISABLED_TestInitialBoundsInStable
-#else
-#define MAYBE_TestInitialBoundsInStable TestInitialBoundsInStable
-#endif
-
-IN_PROC_BROWSER_TEST_F(AppWindowAPITest, MAYBE_TestInitialBoundsInStable) {
-  extensions::ScopedCurrentChannel channel(chrome::VersionInfo::CHANNEL_STABLE);
-  ASSERT_TRUE(RunAppWindowAPITest("testInitialBoundsInStable")) << message_;
-}
-
-#if defined(TOOLKIT_GTK)
-#define MAYBE_TestInitialConstraints DISABLED_TestInitialConstraints
-#else
-#define MAYBE_TestInitialConstraints TestInitialConstraints
-#endif
-
-IN_PROC_BROWSER_TEST_F(AppWindowAPITest, MAYBE_TestInitialConstraints) {
-  ASSERT_TRUE(RunAppWindowAPITest("testInitialConstraints")) << message_;
-}
-
 IN_PROC_BROWSER_TEST_F(AppWindowAPITest, TestSingleton) {
   ASSERT_TRUE(RunAppWindowAPITest("testSingleton")) << message_;
 }
@@ -191,8 +150,44 @@ IN_PROC_BROWSER_TEST_F(AppWindowAPITest, DISABLED_TestRestoreAfterClose) {
   ASSERT_TRUE(RunAppWindowAPITest("testRestoreAfterClose")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(AppWindowAPITest, TestSizeConstraints) {
-  ASSERT_TRUE(RunAppWindowAPITest("testSizeConstraints")) << message_;
+// These tests will be flaky in Linux as window bounds change asynchronously.
+#if defined(OS_LINUX)
+#define MAYBE_TestDeprecatedBounds DISABLED_TestDeprecatedBounds
+#define MAYBE_TestInitialBounds DISABLED_TestInitialBounds
+#define MAYBE_TestInitialConstraints DISABLED_TestInitialConstraints
+#define MAYBE_TestSetBounds DISABLED_TestSetBounds
+#define MAYBE_TestSetSizeConstraints DISABLED_TestSetSizeConstraints
+#else
+#define MAYBE_TestDeprecatedBounds TestDeprecatedBounds
+#define MAYBE_TestInitialBounds TestInitialBounds
+#define MAYBE_TestInitialConstraints TestInitialConstraints
+#define MAYBE_TestSetBounds TestSetBounds
+#define MAYBE_TestSetSizeConstraints TestSetSizeConstraints
+#endif
+
+IN_PROC_BROWSER_TEST_F(AppWindowAPITest, MAYBE_TestDeprecatedBounds) {
+  ASSERT_TRUE(RunAppWindowAPITest("testDeprecatedBounds")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(AppWindowAPITest, MAYBE_TestInitialBounds) {
+  ASSERT_TRUE(RunAppWindowAPITest("testInitialBounds")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(AppWindowAPITest, MAYBE_TestInitialConstraints) {
+  ASSERT_TRUE(RunAppWindowAPITest("testInitialConstraints")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(AppWindowAPITest, MAYBE_TestSetBounds) {
+  ASSERT_TRUE(RunAppWindowAPITest("testSetBounds")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(AppWindowAPITest, MAYBE_TestSetSizeConstraints) {
+  ASSERT_TRUE(RunAppWindowAPITest("testSetSizeConstraints")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(AppWindowAPITest, TestNewBoundsApiInStable) {
+  extensions::ScopedCurrentChannel channel(chrome::VersionInfo::CHANNEL_STABLE);
+  ASSERT_TRUE(RunAppWindowAPITest("testNewBoundsApiInStable")) << message_;
 }
 
 // Flaky failures on mac_rel and WinXP, see http://crbug.com/324915.

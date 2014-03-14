@@ -137,9 +137,9 @@ class NativeAppWindowCocoa : public apps::NativeAppWindow,
   virtual void HideWithApp() OVERRIDE;
   virtual void UpdateShelfMenu() OVERRIDE;
   virtual gfx::Size GetContentMinimumSize() const OVERRIDE;
-  virtual void SetContentMinimumSize(const gfx::Size& size) OVERRIDE;
   virtual gfx::Size GetContentMaximumSize() const OVERRIDE;
-  virtual void SetContentMaximumSize(const gfx::Size& size) OVERRIDE;
+  virtual void SetContentSizeConstraints(const gfx::Size& min_size,
+                                         const gfx::Size& max_size) OVERRIDE;
 
   // WebContentsObserver implementation.
   virtual void RenderViewCreated(content::RenderViewHost* rvh) OVERRIDE;
@@ -184,11 +184,6 @@ class NativeAppWindowCocoa : public apps::NativeAppWindow,
 
   // Cache |restored_bounds_| only if the window is currently restored.
   void UpdateRestoredBounds();
-
-  // Update the minimum and maximum size constraints, fullscreen and resize
-  // controls.
-  void SetContentSizeConstraints(const gfx::Size& minimum_size,
-                                 const gfx::Size& maximum_size);
 
   // Hides the window unconditionally. Used by Hide and HideWithApp.
   void HideWithoutMarkingHidden();

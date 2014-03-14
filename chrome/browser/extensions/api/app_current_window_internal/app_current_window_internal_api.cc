@@ -22,10 +22,7 @@ namespace app_current_window_internal =
 
 namespace Show = app_current_window_internal::Show;
 namespace SetBounds = app_current_window_internal::SetBounds;
-namespace SetMinWidth = app_current_window_internal::SetMinWidth;
-namespace SetMinHeight = app_current_window_internal::SetMinHeight;
-namespace SetMaxWidth = app_current_window_internal::SetMaxWidth;
-namespace SetMaxHeight = app_current_window_internal::SetMaxHeight;
+namespace SetSizeConstraints = app_current_window_internal::SetSizeConstraints;
 namespace SetIcon = app_current_window_internal::SetIcon;
 namespace SetBadgeIcon = app_current_window_internal::SetBadgeIcon;
 namespace SetShape = app_current_window_internal::SetShape;
@@ -35,6 +32,7 @@ using apps::AppWindow;
 using app_current_window_internal::Bounds;
 using app_current_window_internal::Region;
 using app_current_window_internal::RegionRect;
+using app_current_window_internal::SizeConstraints;
 
 namespace extensions {
 
@@ -53,9 +51,71 @@ const char kRequiresFramelessWindow[] =
 const char kAlwaysOnTopPermission[] =
     "The \"alwaysOnTopWindows\" permission is required.";
 
+const char kInvalidParameters[] = "Invalid parameters.";
+
 const int kUnboundedSize = apps::SizeConstraints::kUnboundedSize;
 
+void GetBoundsFields(const Bounds& bounds_spec, gfx::Rect* bounds) {
+  if (bounds_spec.left)
+    bounds->set_x(*bounds_spec.left);
+  if (bounds_spec.top)
+    bounds->set_y(*bounds_spec.top);
+  if (bounds_spec.width)
+    bounds->set_width(*bounds_spec.width);
+  if (bounds_spec.height)
+    bounds->set_height(*bounds_spec.height);
+}
+
+// Copy the constraint value from the API to our internal representation of
+// content size constraints. A value of zero resets the constraints. The insets
+// are used to transform window constraints to content constraints.
+void GetConstraintWidth(const scoped_ptr<int>& width,
+                        const gfx::Insets& insets,
+                        gfx::Size* size) {
+  if (!width.get())
+    return;
+
+  size->set_width(*width > 0 ? std::max(0, *width - insets.width())
+                             : kUnboundedSize);
+}
+
+void GetConstraintHeight(const scoped_ptr<int>& height,
+                         const gfx::Insets& insets,
+                         gfx::Size* size) {
+  if (!height.get())
+    return;
+
+  size->set_height(*height > 0 ? std::max(0, *height - insets.height())
+                               : kUnboundedSize);
+}
+
 }  // namespace
+
+namespace bounds {
+
+enum BoundsType {
+  INNER_BOUNDS,
+  OUTER_BOUNDS,
+  DEPRECATED_BOUNDS,
+  INVALID_TYPE
+};
+
+const char kInnerBoundsType[] = "innerBounds";
+const char kOuterBoundsType[] = "outerBounds";
+const char kDeprecatedBoundsType[] = "bounds";
+
+BoundsType GetBoundsType(const std::string& type_as_string) {
+  if (type_as_string == kInnerBoundsType)
+    return INNER_BOUNDS;
+  else if (type_as_string == kOuterBoundsType)
+    return OUTER_BOUNDS;
+  else if (type_as_string == kDeprecatedBoundsType)
+    return DEPRECATED_BOUNDS;
+  else
+    return INVALID_TYPE;
+}
+
+}  // namespace bounds
 
 bool AppCurrentWindowInternalExtensionFunction::RunImpl() {
   apps::AppWindowRegistry* registry =
@@ -131,91 +191,116 @@ bool AppCurrentWindowInternalHideFunction::RunWithWindow(AppWindow* window) {
 
 bool AppCurrentWindowInternalSetBoundsFunction::RunWithWindow(
     AppWindow* window) {
-  // Start with the current bounds, and change any values that are specified in
-  // the incoming parameters.
-  gfx::Rect window_bounds = window->GetBaseWindow()->GetBounds();
-  gfx::Rect content_bounds = window->GetClientBounds();
-
-  // We need to maintain backcompatibility with a bug on Windows and ChromeOS,
-  // which returns the position of the window but the size of the content.
   scoped_ptr<SetBounds::Params> params(SetBounds::Params::Create(*args_));
   CHECK(params.get());
-  if (params->bounds.left)
-    window_bounds.set_x(*(params->bounds.left));
-  if (params->bounds.top)
-    window_bounds.set_y(*(params->bounds.top));
-  if (params->bounds.width)
-    content_bounds.set_width(*(params->bounds.width));
-  if (params->bounds.height)
-    content_bounds.set_height(*(params->bounds.height));
 
-  content_bounds.Inset(-window->GetBaseWindow()->GetFrameInsets());
-  window_bounds.set_size(content_bounds.size());
-  window->GetBaseWindow()->SetBounds(window_bounds);
+  bounds::BoundsType bounds_type = bounds::GetBoundsType(params->bounds_type);
+  if (bounds_type == bounds::INVALID_TYPE) {
+    NOTREACHED();
+    error_ = kInvalidParameters;
+    return false;
+  }
+
+  if (bounds_type != bounds::DEPRECATED_BOUNDS &&
+      GetCurrentChannel() > chrome::VersionInfo::CHANNEL_DEV) {
+    error_ = kDevChannelOnly;
+    return false;
+  }
+
+  // Start with the current bounds, and change any values that are specified in
+  // the incoming parameters.
+  gfx::Rect original_window_bounds = window->GetBaseWindow()->GetBounds();
+  gfx::Rect window_bounds = original_window_bounds;
+  gfx::Insets frame_insets = window->GetBaseWindow()->GetFrameInsets();
+  const Bounds& bounds_spec = params->bounds;
+
+  switch (bounds_type) {
+    case bounds::DEPRECATED_BOUNDS: {
+      // We need to maintain backcompatibility with a bug on Windows and
+      // ChromeOS, which sets the position of the window but the size of the
+      // content.
+      if (bounds_spec.left)
+        window_bounds.set_x(*bounds_spec.left);
+      if (bounds_spec.top)
+        window_bounds.set_y(*bounds_spec.top);
+      if (bounds_spec.width)
+        window_bounds.set_width(*bounds_spec.width + frame_insets.width());
+      if (bounds_spec.height)
+        window_bounds.set_height(*bounds_spec.height + frame_insets.height());
+      break;
+    }
+    case bounds::OUTER_BOUNDS: {
+      GetBoundsFields(bounds_spec, &window_bounds);
+      break;
+    }
+    case bounds::INNER_BOUNDS: {
+      window_bounds.Inset(frame_insets);
+      GetBoundsFields(bounds_spec, &window_bounds);
+      window_bounds.Inset(-frame_insets);
+      break;
+    }
+    default:
+      NOTREACHED();
+  }
+
+  if (original_window_bounds != window_bounds) {
+    if (original_window_bounds.size() != window_bounds.size()) {
+      apps::SizeConstraints constraints(
+          apps::SizeConstraints::AddFrameToConstraints(
+              window->GetBaseWindow()->GetContentMinimumSize(), frame_insets),
+          apps::SizeConstraints::AddFrameToConstraints(
+              window->GetBaseWindow()->GetContentMaximumSize(), frame_insets));
+
+      window_bounds.set_size(constraints.ClampSize(window_bounds.size()));
+    }
+
+    window->GetBaseWindow()->SetBounds(window_bounds);
+  }
+
   return true;
 }
 
-bool AppCurrentWindowInternalSetMinWidthFunction::RunWithWindow(
+bool AppCurrentWindowInternalSetSizeConstraintsFunction::RunWithWindow(
     AppWindow* window) {
   if (GetCurrentChannel() > chrome::VersionInfo::CHANNEL_DEV) {
     error_ = kDevChannelOnly;
     return false;
   }
 
-  scoped_ptr<SetMinWidth::Params> params(SetMinWidth::Params::Create(*args_));
+  scoped_ptr<SetSizeConstraints::Params> params(
+      SetSizeConstraints::Params::Create(*args_));
   CHECK(params.get());
-  gfx::Size min_size = window->GetBaseWindow()->GetContentMinimumSize();
-  min_size.set_width(params->min_width.get() ?
-      *(params->min_width) : kUnboundedSize);
-  window->SetContentMinimumSize(min_size);
-  return true;
-}
 
-bool AppCurrentWindowInternalSetMinHeightFunction::RunWithWindow(
-    AppWindow* window) {
-  if (GetCurrentChannel() > chrome::VersionInfo::CHANNEL_DEV) {
-    error_ = kDevChannelOnly;
+  bounds::BoundsType bounds_type = bounds::GetBoundsType(params->bounds_type);
+  if (bounds_type != bounds::INNER_BOUNDS &&
+      bounds_type != bounds::OUTER_BOUNDS) {
+    NOTREACHED();
+    error_ = kInvalidParameters;
     return false;
   }
 
-  scoped_ptr<SetMinHeight::Params> params(SetMinHeight::Params::Create(*args_));
-  CHECK(params.get());
-  gfx::Size min_size = window->GetBaseWindow()->GetContentMinimumSize();
-  min_size.set_height(params->min_height.get() ?
-      *(params->min_height) : kUnboundedSize);
-  window->SetContentMinimumSize(min_size);
-  return true;
-}
+  gfx::Size original_min_size =
+      window->GetBaseWindow()->GetContentMinimumSize();
+  gfx::Size original_max_size =
+      window->GetBaseWindow()->GetContentMaximumSize();
+  gfx::Size min_size = original_min_size;
+  gfx::Size max_size = original_max_size;
+  const SizeConstraints& constraints = params->constraints;
 
-bool AppCurrentWindowInternalSetMaxWidthFunction::RunWithWindow(
-    AppWindow* window) {
-  if (GetCurrentChannel() > chrome::VersionInfo::CHANNEL_DEV) {
-    error_ = kDevChannelOnly;
-    return false;
-  }
+  // Use the frame insets to convert window size constraints to content size
+  // constraints.
+  gfx::Insets insets;
+  if (bounds_type == bounds::OUTER_BOUNDS)
+    insets = window->GetBaseWindow()->GetFrameInsets();
 
-  scoped_ptr<SetMaxWidth::Params> params(SetMaxWidth::Params::Create(*args_));
-  CHECK(params.get());
-  gfx::Size max_size = window->GetBaseWindow()->GetContentMaximumSize();
-  max_size.set_width(params->max_width.get() ?
-      *(params->max_width) : kUnboundedSize);
-  window->SetContentMaximumSize(max_size);
-  return true;
-}
+  GetConstraintWidth(constraints.min_width, insets, &min_size);
+  GetConstraintWidth(constraints.max_width, insets, &max_size);
+  GetConstraintHeight(constraints.min_height, insets, &min_size);
+  GetConstraintHeight(constraints.max_height, insets, &max_size);
 
-bool AppCurrentWindowInternalSetMaxHeightFunction::RunWithWindow(
-    AppWindow* window) {
-  if (GetCurrentChannel() > chrome::VersionInfo::CHANNEL_DEV) {
-    error_ = kDevChannelOnly;
-    return false;
-  }
+  if (min_size != original_min_size || max_size != original_max_size)
+    window->SetContentSizeConstraints(min_size, max_size);
 
-  scoped_ptr<SetMaxHeight::Params> params(SetMaxHeight::Params::Create(*args_));
-  CHECK(params.get());
-  gfx::Size max_size = window->GetBaseWindow()->GetContentMaximumSize();
-  max_size.set_height(params->max_height.get() ?
-      *(params->max_height) : kUnboundedSize);
-  window->SetContentMaximumSize(max_size);
   return true;
 }
 
