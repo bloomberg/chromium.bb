@@ -638,7 +638,7 @@ def ArchiveTestResults(results_path, archive_dir):
     return [x for x in file_list if x.startswith(constants.VM_DISK_PREFIX) or
             x.startswith(constants.VM_MEM_PREFIX)]
 
-  shutil.copytree(results_path, archive_dir, symlinks=False,
+  shutil.copytree(results_path, archive_dir, symlinks=True,
                   ignore=_ShouldIgnore)
 
 
