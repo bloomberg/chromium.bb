@@ -144,11 +144,6 @@ class ScreenOrientationListener {
     private final ObserverList<ScreenOrientationObserver> mObservers =
             new ObserverList<ScreenOrientationObserver>();
 
-    // Number of observers currently in |mObservers|.
-    // TODO(mlamouri): hopefully, we can get ObserverList to provide that,
-    // http://crbug.com/347558
-    private int mObserverCount;
-
     // mOrientation will be updated every time the orientation changes. When not
     // listening for changes, the value will be invalid and will be updated when
     // starting to listen again.
@@ -210,10 +205,9 @@ class ScreenOrientationListener {
             Log.w(TAG, "Adding an observer that is already present!");
             return;
         }
-        mObserverCount++;
 
         // If we got our first observer, we should start listening.
-        if (mObserverCount == 1) {
+        if (mObservers.size() == 1) {
             updateOrientation();
             mBackend.startListening();
         }
@@ -240,14 +234,11 @@ class ScreenOrientationListener {
             Log.w(TAG, "Removing an inexistent observer!");
             return;
         }
-        mObserverCount--;
 
-        if (mObserverCount == 0) {
+        if (mObservers.isEmpty()) {
             // The last observer was removed, we should just stop listening.
             mBackend.stopListening();
         }
-
-        assert mObserverCount >= 0;
     }
 
     /**

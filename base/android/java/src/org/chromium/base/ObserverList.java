@@ -45,6 +45,7 @@ public class ObserverList<E> implements Iterable<E> {
 
     public final List<E> mObservers = new ArrayList<E>();
     private int mIterationDepth = 0;
+    private int mCount = 0;
 
     public ObserverList() {}
 
@@ -64,7 +65,11 @@ public class ObserverList<E> implements Iterable<E> {
 
         // Structurally modifying the underlying list here. This means we
         // cannot use the underlying list's iterator to iterate over the list.
-        return mObservers.add(obs);
+        boolean result = mObservers.add(obs);
+        assert result == true;
+
+        ++mCount;
+        return true;
     }
 
     /**
@@ -88,6 +93,8 @@ public class ObserverList<E> implements Iterable<E> {
         } else {
             mObservers.set(index, null);
         }
+        --mCount;
+        assert mCount >= 0;
 
         return true;
     }
@@ -97,6 +104,8 @@ public class ObserverList<E> implements Iterable<E> {
     }
 
     public void clear() {
+        mCount = 0;
+
         if (mIterationDepth == 0) {
             mObservers.clear();
             return;
@@ -120,6 +129,21 @@ public class ObserverList<E> implements Iterable<E> {
      */
     public RewindableIterator<E> rewindableIterator() {
         return new ObserverListIterator();
+    }
+
+    /**
+     * Returns the number of observers currently registered in the ObserverList.
+     * This is equivalent to the number of non-empty spaces in |mObservers|.
+     */
+    public int size() {
+        return mCount;
+    }
+
+    /**
+     * Returns true if the ObserverList contains no observers.
+     */
+    public boolean isEmpty() {
+        return mCount == 0;
     }
 
     /**
@@ -147,7 +171,11 @@ public class ObserverList<E> implements Iterable<E> {
             compact();
     }
 
-    private int getSize() {
+    /**
+     * Returns the size of the underlying storage of the ObserverList.
+     * It will take into account the empty spaces inside |mObservers|.
+     */
+    private int capacity() {
         return mObservers.size();
     }
 
@@ -162,14 +190,14 @@ public class ObserverList<E> implements Iterable<E> {
 
         private ObserverListIterator() {
             ObserverList.this.incrementIterationDepth();
-            mListEndMarker = ObserverList.this.getSize();
+            mListEndMarker = ObserverList.this.capacity();
         }
 
         @Override
         public void rewind() {
             compactListIfNeeded();
             ObserverList.this.incrementIterationDepth();
-            mListEndMarker = ObserverList.this.getSize();
+            mListEndMarker = ObserverList.this.capacity();
             mIsExhausted = false;
             mIndex = 0;
         }
