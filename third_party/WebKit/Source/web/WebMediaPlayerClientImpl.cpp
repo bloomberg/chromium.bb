@@ -389,10 +389,7 @@ void WebMediaPlayerClientImpl::paint(GraphicsContext* context, const IntRect& re
         // paint the video frame into the context.
 #if OS(ANDROID)
         if (m_loadType != WebMediaPlayer::LoadTypeMediaStream) {
-            OwnPtr<blink::WebGraphicsContext3DProvider> provider = adoptPtr(blink::Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
-            if (!provider)
-                return;
-            paintOnAndroid(context, provider->context3d(), rect, context->getNormalizedAlpha());
+            paintOnAndroid(context, rect, context->getNormalizedAlpha());
             return;
         }
 #endif
@@ -496,8 +493,12 @@ PassOwnPtr<MediaPlayer> WebMediaPlayerClientImpl::create(MediaPlayerClient* clie
 }
 
 #if OS(ANDROID)
-void WebMediaPlayerClientImpl::paintOnAndroid(WebCore::GraphicsContext* context, WebGraphicsContext3D* context3D, const IntRect& rect, uint8_t alpha)
+void WebMediaPlayerClientImpl::paintOnAndroid(WebCore::GraphicsContext* context, const IntRect& rect, uint8_t alpha)
 {
+    OwnPtr<blink::WebGraphicsContext3DProvider> provider = adoptPtr(blink::Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
+    if (!provider)
+        return;
+    WebGraphicsContext3D* context3D = provider->context3d();
     if (!context || !context3D || !m_webMediaPlayer || context->paintingDisabled())
         return;
 
@@ -508,9 +509,6 @@ void WebMediaPlayerClientImpl::paintOnAndroid(WebCore::GraphicsContext* context,
     // which is not supported by Skia yet. The bitmap's size needs to be the same as the video and use naturalSize() here.
     // Check if we could reuse existing texture based bitmap.
     // Otherwise, release existing texture based bitmap and allocate a new one based on video size.
-    OwnPtr<blink::WebGraphicsContext3DProvider> provider = adoptPtr(blink::Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
-    if (!provider)
-        return;
     if (!ensureTextureBackedSkBitmap(provider->grContext(), m_bitmap, naturalSize(), kTopLeft_GrSurfaceOrigin, kSkia8888_GrPixelConfig))
         return;
 
