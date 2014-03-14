@@ -260,7 +260,7 @@ void StyleEngine::addAuthorSheet(PassRefPtrWillBeRawPtr<StyleSheetContents> auth
 
 void StyleEngine::addPendingSheet()
 {
-    master()->styleEngine()->notifyPendingStyleSheetAdded();
+    m_pendingStylesheets++;
 }
 
 // This method is called whenever a top-level stylesheet has finished loading.
@@ -269,18 +269,7 @@ void StyleEngine::removePendingSheet(Node* styleSheetCandidateNode, RemovePendin
     ASSERT(styleSheetCandidateNode);
     TreeScope* treeScope = isHTMLStyleElement(*styleSheetCandidateNode) ? &styleSheetCandidateNode->treeScope() : &m_document;
     markTreeScopeDirty(*treeScope);
-    master()->styleEngine()->notifyPendingStyleSheetRemoved(notification);
-}
 
-void StyleEngine::notifyPendingStyleSheetAdded()
-{
-    ASSERT(isMaster());
-    m_pendingStylesheets++;
-}
-
-void StyleEngine::notifyPendingStyleSheetRemoved(RemovePendingSheetNotificationType notification)
-{
-    ASSERT(isMaster());
     // Make sure we knew this sheet was pending, and that our count isn't out of sync.
     ASSERT(m_pendingStylesheets > 0);
 

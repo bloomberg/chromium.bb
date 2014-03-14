@@ -73,7 +73,7 @@ public:
     virtual Document* document() const OVERRIDE;
     virtual void wasDetachedFromDocument() OVERRIDE;
     virtual void didFinishParsing() OVERRIDE;
-    virtual void didFetchAllPendingResources() OVERRIDE;
+    virtual void didRemoveAllPendingStylesheet() OVERRIDE;
     virtual bool isDone() const OVERRIDE;
     virtual bool hasLoader() const OVERRIDE;
     virtual bool ownsLoader() const OVERRIDE;

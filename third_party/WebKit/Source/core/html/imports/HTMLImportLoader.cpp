@@ -32,7 +32,7 @@
 #include "core/html/imports/HTMLImportLoader.h"
 
 #include "core/dom/Document.h"
-#include "core/fetch/ResourceFetcher.h"
+#include "core/dom/StyleEngine.h"
 #include "core/html/HTMLDocument.h"
 #include "core/html/imports/HTMLImport.h"
 #include "core/html/imports/HTMLImportLoaderClient.h"
@@ -137,7 +137,7 @@ void HTMLImportLoader::didFinishParsing()
         setState(finishLoading());
 }
 
-void HTMLImportLoader::didFetchAllPendingResources()
+void HTMLImportLoader::didRemoveAllPendingStylesheet()
 {
     if (m_state == StateParsed)
         setState(finishLoading());
@@ -145,8 +145,7 @@ void HTMLImportLoader::didFetchAllPendingResources()
 
 bool HTMLImportLoader::hasPendingResources() const
 {
-    return m_importedDocument && m_importedDocument->fetcher()->requestCount();
-
+    return m_importedDocument && m_importedDocument->styleEngine()->hasPendingSheets();
 }
 
 Document* HTMLImportLoader::importedDocument() const

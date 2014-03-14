@@ -994,7 +994,6 @@ public:
 
     ElementDataCache* elementDataCache() { return m_elementDataCache.get(); }
 
-    void didFetchAllPendingResources();
     void didRemoveAllPendingStylesheet();
     void setNeedsNotifyRemoveAllPendingStylesheet() { m_needsNotifyRemoveAllPendingStylesheet = true; }
     void clearStyleResolver();

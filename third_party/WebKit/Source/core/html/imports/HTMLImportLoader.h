@@ -75,7 +75,7 @@ public:
 
     void startLoading(const ResourcePtr<RawResource>&);
     void didFinishParsing();
-    void didFetchAllPendingResources();
+    void didRemoveAllPendingStylesheet();
     bool isOwnedBy(const HTMLImport* import) const { return m_import == import; }
 
 private:

@@ -207,9 +207,6 @@ private:
 
     void createResolver();
 
-    void notifyPendingStyleSheetAdded();
-    void notifyPendingStyleSheetRemoved(RemovePendingSheetNotificationType);
-
     static PassRefPtr<CSSStyleSheet> parseSheet(Element*, const String& text, TextPosition startPosition, bool createdByParser);
 
     Document& m_document;

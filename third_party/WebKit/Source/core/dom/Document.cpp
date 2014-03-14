@@ -2589,7 +2589,7 @@ bool Document::shouldScheduleLayout()
     //    (a) Only schedule a layout once the stylesheets are loaded.
     //    (b) Only schedule layout once we have a body element.
 
-    return (haveStylesheetsLoaded() && body())
+    return (haveStylesheetsAndImportsLoaded() && body())
         || (documentElement() && !isHTMLHtmlElement(*documentElement()));
 }
 
@@ -2843,12 +2843,6 @@ LocalFrame* Document::findUnsafeParentScrollPropagationBoundary()
     return 0;
 }
 
-void Document::didFetchAllPendingResources()
-{
-    if (m_import)
-        m_import->didFetchAllPendingResources();
-}
-
 void Document::didRemoveAllPendingStylesheet()
 {
     m_needsNotifyRemoveAllPendingStylesheet = false;
@@ -2858,6 +2852,9 @@ void Document::didRemoveAllPendingStylesheet()
 
     if (m_gotoAnchorNeededAfterStylesheetsLoad && view())
         view()->scrollToFragment(m_url);
+
+    if (m_import)
+        m_import->didRemoveAllPendingStylesheet();
 }
 
 void Document::executeScriptsWaitingForResourcesIfNeeded()

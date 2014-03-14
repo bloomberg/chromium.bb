@@ -1108,9 +1108,6 @@ void ResourceFetcher::decrementRequestCount(const Resource* res)
 
     --m_requestCount;
     ASSERT(m_requestCount > -1);
-
-    if (!m_requestCount && m_document)
-        m_document->didFetchAllPendingResources();
 }
 
 void ResourceFetcher::preload(Resource::Type type, FetchRequest& request, const String& charset)
