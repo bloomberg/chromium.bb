@@ -65,33 +65,24 @@ testing::AssertionResult ComponentsAreValid(
   return testing::AssertionSuccess();
 }
 
-// Tests for address UI functions.
-class AddressUiTest : public testing::TestWithParam<std::string> {};
-
-// Verifies that a region code consists of two characters, for example "TW".
-TEST_P(AddressUiTest, RegionCodeHasTwoCharacters) {
-  EXPECT_EQ(2U, GetParam().size());
+// 1) Verifies that a region code consists of two characters, for example "TW".
+// 2) Verifies that BuildComponents() returns valid UI components for a region
+//    code.
+// 3) Verifies that BuildComponents() returns a non-empty vector for a region
+//    code.
+TEST(AddressUiTest, RegionsAndComponentsAreValid) {
+  const std::vector<std::string>& region_codes = GetRegionCodes();
+  for (size_t i = 0; i < region_codes.size(); ++i) {
+    SCOPED_TRACE("Region code: " + region_codes[i]);
+    EXPECT_EQ(2U, region_codes[i].size());
+    EXPECT_TRUE(ComponentsAreValid(BuildComponents(region_codes[i])));
+    EXPECT_FALSE(GetRequiredFields(region_codes[i]).empty());
+  }
 }
-
-// Verifies that BuildComponents() returns valid UI components for a region
-// code.
-TEST_P(AddressUiTest, ComponentsAreValid) {
-  EXPECT_TRUE(ComponentsAreValid(BuildComponents(GetParam())));
-}
-
-// Verifies that BuildComponents() returns a non-empty vector for a region code.
-TEST_P(AddressUiTest, RequiredFieldsExist) {
-  EXPECT_FALSE(GetRequiredFields(GetParam()).empty());
-}
-
-// Test all regions codes.
-INSTANTIATE_TEST_CASE_P(
-    AllRegions, AddressUiTest,
-    testing::ValuesIn(GetRegionCodes()));
 
 // Verifies that BuildComponents() and GetRequiredFields() return an empty
 // vector for an invalid region code.
-TEST_F(AddressUiTest, InvalidRegionCodeReturnsEmptyVector) {
+TEST(AddressUiTest, InvalidRegionCodeReturnsEmptyVector) {
   EXPECT_TRUE(BuildComponents("INVALID-REGION-CODE").empty());
   EXPECT_TRUE(GetRequiredFields("INVALID-REGION-CODE").empty());
 }

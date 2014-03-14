@@ -37,8 +37,7 @@
 namespace i18n {
 namespace addressinput {
 
-class AddressValidatorTest : public testing::TestWithParam<std::string>,
-                             public LoadRulesDelegate {
+class AddressValidatorTest : public testing::Test, public LoadRulesDelegate {
  public:
   AddressValidatorTest()
       : validator_(BuildAddressValidatorForTesting(
@@ -66,18 +65,19 @@ class AddressValidatorTest : public testing::TestWithParam<std::string>,
   }
 };
 
-TEST_P(AddressValidatorTest, RegionHasRules) {
-  validator_->LoadRules(GetParam());
+TEST_F(AddressValidatorTest, RegionHasRules) {
+  const std::vector<std::string>& region_codes =
+      RegionDataConstants::GetRegionCodes();
   AddressData address;
-  address.country_code = GetParam();
-  EXPECT_EQ(
-      AddressValidator::SUCCESS,
-      validator_->ValidateAddress(address, AddressProblemFilter(), NULL));
+  for (size_t i = 0; i < region_codes.size(); ++i) {
+    SCOPED_TRACE("For region: " + region_codes[i]);
+    validator_->LoadRules(region_codes[i]);
+    address.country_code = region_codes[i];
+    EXPECT_EQ(
+        AddressValidator::SUCCESS,
+        validator_->ValidateAddress(address, AddressProblemFilter(), NULL));
+  }
 }
-
-INSTANTIATE_TEST_CASE_P(
-    AllRegions, AddressValidatorTest,
-    testing::ValuesIn(RegionDataConstants::GetRegionCodes()));
 
 TEST_F(AddressValidatorTest, EmptyAddressNoFatalFailure) {
   AddressData address;

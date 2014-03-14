@@ -30,7 +30,7 @@ namespace addressinput {
 namespace {
 
 // Tests for FakeDownloader object.
-class FakeDownloaderTest : public testing::TestWithParam<std::string> {
+class FakeDownloaderTest : public testing::Test {
  protected:
   FakeDownloaderTest() : downloader_(), success_(false), url_(), data_() {}
   virtual ~FakeDownloaderTest() {}
@@ -84,20 +84,21 @@ testing::AssertionResult DataIsValid(const std::string& data,
 }
 
 // Verifies that FakeDownloader downloads valid data for a region code.
-TEST_P(FakeDownloaderTest, FakeDownloaderHasValidDataForRegion) {
-  std::string key = "data/" + GetParam();
-  std::string url = std::string(FakeDownloader::kFakeDataUrl) + key;
-  downloader_.Download(url, BuildCallback());
+TEST_F(FakeDownloaderTest, FakeDownloaderHasValidDataForRegion) {
+  const std::vector<std::string>& region_codes =
+      RegionDataConstants::GetRegionCodes();
+  for (size_t i = 0; i < region_codes.size(); ++i) {
+    std::string key = "data/" + region_codes[i];
+    std::string url = std::string(FakeDownloader::kFakeDataUrl) + key;
+    SCOPED_TRACE("For url: " + url);
 
-  EXPECT_TRUE(success_);
-  EXPECT_EQ(url, url_);
-  EXPECT_TRUE(DataIsValid(*data_, key));
+    downloader_.Download(url, BuildCallback());
+
+    EXPECT_TRUE(success_);
+    EXPECT_EQ(url, url_);
+    EXPECT_TRUE(DataIsValid(*data_, key));
+  }
 };
-
-// Test all region codes.
-INSTANTIATE_TEST_CASE_P(
-    AllRegions, FakeDownloaderTest,
-    testing::ValuesIn(RegionDataConstants::GetRegionCodes()));
 
 // Verifies that downloading a missing key will return "{}".
 TEST_F(FakeDownloaderTest, DownloadMissingKeyReturnsEmptyDictionary) {

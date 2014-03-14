@@ -433,75 +433,76 @@ INSTANTIATE_TEST_CASE_P(
                   IDS_LIBADDRESSINPUT_I18N_STATE_LABEL,
                   IDS_LIBADDRESSINPUT_I18N_INVALID_STATE_LABEL)));
 
-// Tests for rule parsing.
-class RuleParseTest : public testing::TestWithParam<std::string> {
- protected:
-  const std::string& GetData() const {
-    return RegionDataConstants::GetRegionData(GetParam());
-  }
-
-  Rule rule_;
-};
-
 // Verifies that an address format does not contain consecutive lines with
 // multiple fields each. Such address format (e.g. {{ELEMENT, ELEMENT},
 // {ELEMENT, ELEMENT}}) will result in incorrect behavior of BuildComponents()
 // public API.
-TEST_P(RuleParseTest, ConsecutiveLinesWithMultipleFields) {
-  ASSERT_TRUE(rule_.ParseSerializedRule(GetData()));
-  bool previous_line_has_single_field = true;
-  for (std::vector<std::vector<FormatElement> >::const_iterator
-           line_it = rule_.GetFormat().begin();
-       line_it != rule_.GetFormat().end();
-       ++line_it) {
-    int num_fields = 0;
-    for (std::vector<FormatElement>::const_iterator
-             element_it = line_it->begin();
-         element_it != line_it->end();
-         ++element_it) {
-      if (element_it->IsField()) {
-        ++num_fields;
+TEST(RuleParseTest, ConsecutiveLinesWithMultipleFields) {
+  const std::vector<std::string>& region_codes =
+      RegionDataConstants::GetRegionCodes();
+  Rule rule;
+  for (size_t i = 0; i < region_codes.size(); ++i) {
+    const std::string& region_data =
+        RegionDataConstants::GetRegionData(region_codes[i]);
+    SCOPED_TRACE(region_codes[i] + ": " + region_data);
+
+    ASSERT_TRUE(rule.ParseSerializedRule(region_data));
+    bool previous_line_has_single_field = true;
+    for (std::vector<std::vector<FormatElement> >::const_iterator
+             line_it = rule.GetFormat().begin();
+         line_it != rule.GetFormat().end();
+         ++line_it) {
+      int num_fields = 0;
+      for (std::vector<FormatElement>::const_iterator
+               element_it = line_it->begin();
+           element_it != line_it->end();
+           ++element_it) {
+        if (element_it->IsField()) {
+          ++num_fields;
+        }
       }
+      if (num_fields == 0) {
+        continue;
+      }
+      ASSERT_TRUE(num_fields == 1 || previous_line_has_single_field);
+      previous_line_has_single_field = num_fields == 1;
     }
-    if (num_fields == 0) {
-      continue;
-    }
-    ASSERT_TRUE(num_fields == 1 || previous_line_has_single_field)
-        << GetParam() << ": " << GetData();
-    previous_line_has_single_field = num_fields == 1;
   }
 }
 
 // Verifies that a street line is surrounded by either newlines or spaces. A
 // different format will result in incorrect behavior in
 // AddressData::BuildDisplayLines().
-TEST_P(RuleParseTest, StreetAddressSurroundingElements) {
-  ASSERT_TRUE(rule_.ParseSerializedRule(GetData()));
-  for (std::vector<std::vector<FormatElement> >::const_iterator
-           line_it = rule_.GetFormat().begin();
-       line_it != rule_.GetFormat().end();
-       ++line_it) {
-    for (size_t i = 0; i < line_it->size(); ++i) {
-      const FormatElement& element = line_it->at(i);
-      if (element.IsField() && element.field == STREET_ADDRESS) {
-        bool surrounded_by_newlines = line_it->size() == 1;
-        bool surrounded_by_spaces =
-            i > 0 &&
-            i < line_it->size() - 1 &&
-            !line_it->at(i - 1).IsField() &&
-            line_it->at(i - 1).literal == " " &&
-            !line_it->at(i + 1).IsField() &&
-            line_it->at(i + 1).literal == " ";
-        EXPECT_TRUE(surrounded_by_newlines || surrounded_by_spaces)
-            << GetParam() << ": " << GetData();
+TEST(RuleParseTest, StreetAddressSurroundingElements) {
+  const std::vector<std::string>& region_codes =
+      RegionDataConstants::GetRegionCodes();
+  Rule rule;
+  for (size_t i = 0; i < region_codes.size(); ++i) {
+    const std::string& region_data =
+        RegionDataConstants::GetRegionData(region_codes[i]);
+    SCOPED_TRACE(region_codes[i] + ": " + region_data);
+
+    ASSERT_TRUE(rule.ParseSerializedRule(region_data));
+    for (std::vector<std::vector<FormatElement> >::const_iterator
+             line_it = rule.GetFormat().begin();
+         line_it != rule.GetFormat().end();
+         ++line_it) {
+      for (size_t i = 0; i < line_it->size(); ++i) {
+        const FormatElement& element = line_it->at(i);
+        if (element.IsField() && element.field == STREET_ADDRESS) {
+          bool surrounded_by_newlines = line_it->size() == 1;
+          bool surrounded_by_spaces =
+              i > 0 &&
+              i < line_it->size() - 1 &&
+              !line_it->at(i - 1).IsField() &&
+              line_it->at(i - 1).literal == " " &&
+              !line_it->at(i + 1).IsField() &&
+              line_it->at(i + 1).literal == " ";
+          EXPECT_TRUE(surrounded_by_newlines || surrounded_by_spaces);
+        }
       }
     }
   }
 }
-
-// Test parsing all region data.
-INSTANTIATE_TEST_CASE_P(
-    AllRulesTest, RuleParseTest,
-    testing::ValuesIn(RegionDataConstants::GetRegionCodes()));
 
 }  // namespace

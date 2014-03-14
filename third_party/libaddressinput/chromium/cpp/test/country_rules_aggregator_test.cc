@@ -37,7 +37,7 @@
 namespace i18n {
 namespace addressinput {
 
-class CountryRulesAggregatorTest : public testing::TestWithParam<std::string> {
+class CountryRulesAggregatorTest : public testing::Test {
  public:
   CountryRulesAggregatorTest()
       : aggregator_(scoped_ptr<Retriever>(new Retriever(
@@ -73,40 +73,43 @@ class CountryRulesAggregatorTest : public testing::TestWithParam<std::string> {
   DISALLOW_COPY_AND_ASSIGN(CountryRulesAggregatorTest);
 };
 
-TEST_P(CountryRulesAggregatorTest, ValidRuleset) {
-  aggregator_.AggregateRules(GetParam(), BuildCallback());
-  EXPECT_TRUE(success_);
-  EXPECT_EQ(GetParam(), country_code_);
-  ASSERT_TRUE(ruleset_ != NULL);
+TEST_F(CountryRulesAggregatorTest, ValidRulesets) {
+  const std::vector<std::string>& region_codes =
+      RegionDataConstants::GetRegionCodes();
 
-  const std::vector<std::string>& sub_keys = ruleset_->rule().GetSubKeys();
-  for (std::vector<std::string>::const_iterator sub_key_it = sub_keys.begin();
-       sub_key_it != sub_keys.end(); ++sub_key_it) {
-    EXPECT_TRUE(ruleset_->GetSubRegionRuleset(*sub_key_it) != NULL);
-  }
+  for (size_t i = 0; i < region_codes.size(); ++i) {
+    SCOPED_TRACE("For region: " + region_codes[i]);
 
-  std::vector<std::string> non_default_languages =
-      ruleset_->rule().GetLanguages();
-  std::vector<std::string>::iterator default_lang_it =
-      std::find(non_default_languages.begin(),
-                non_default_languages.end(),
-                ruleset_->rule().GetLanguage());
-  if (default_lang_it != non_default_languages.end()) {
-    non_default_languages.erase(default_lang_it);
-  }
+    aggregator_.AggregateRules(region_codes[i], BuildCallback());
+    EXPECT_TRUE(success_);
+    EXPECT_EQ(region_codes[i], country_code_);
+    ASSERT_TRUE(ruleset_ != NULL);
 
-  for (std::vector<std::string>::const_iterator
-           lang_it = non_default_languages.begin();
-       lang_it != non_default_languages.end();
-       ++lang_it) {
-    EXPECT_TRUE(ruleset_->GetLanguageCodeRule(*lang_it).GetLanguage() !=
-                ruleset_->rule().GetLanguage());
+    const std::vector<std::string>& sub_keys = ruleset_->rule().GetSubKeys();
+    for (std::vector<std::string>::const_iterator sub_key_it = sub_keys.begin();
+         sub_key_it != sub_keys.end(); ++sub_key_it) {
+      EXPECT_TRUE(ruleset_->GetSubRegionRuleset(*sub_key_it) != NULL);
+    }
+
+    std::vector<std::string> non_default_languages =
+        ruleset_->rule().GetLanguages();
+    std::vector<std::string>::iterator default_lang_it =
+        std::find(non_default_languages.begin(),
+                  non_default_languages.end(),
+                  ruleset_->rule().GetLanguage());
+    if (default_lang_it != non_default_languages.end()) {
+      non_default_languages.erase(default_lang_it);
+    }
+
+    for (std::vector<std::string>::const_iterator
+             lang_it = non_default_languages.begin();
+         lang_it != non_default_languages.end();
+         ++lang_it) {
+      EXPECT_TRUE(ruleset_->GetLanguageCodeRule(*lang_it).GetLanguage() !=
+                  ruleset_->rule().GetLanguage());
+    }
   }
 }
-
-INSTANTIATE_TEST_CASE_P(
-    AllRegions, CountryRulesAggregatorTest,
-    testing::ValuesIn(RegionDataConstants::GetRegionCodes()));
 
 }  // namespace addressinput
 }  // namespace i18n
