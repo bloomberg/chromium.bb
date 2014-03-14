@@ -280,7 +280,7 @@ public:
     void drawPosTextH(const void* text, size_t byteLength, const SkScalar xpos[], SkScalar constY, const SkRect& textRect, const SkPaint&);
     void drawTextOnPath(const void* text, size_t byteLength, const SkPath&, const SkRect& textRect, const SkMatrix*, const SkPaint&);
 
-    void clip(const IntRect& rect) { clip(FloatRect(rect)); }
+    void clip(const IntRect& rect) { clipRect(rect); }
     void clip(const FloatRect& rect) { clipRect(rect); }
     void clipRoundedRect(const RoundedRect&, SkRegion::Op = SkRegion::kIntersect_Op);
     void clipOut(const IntRect& rect) { clipRect(rect, NotAntiAliased, SkRegion::kDifference_Op); }
