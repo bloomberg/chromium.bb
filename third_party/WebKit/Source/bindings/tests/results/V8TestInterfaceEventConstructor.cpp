@@ -45,6 +45,7 @@
 #include "bindings/v8/custom/V8Uint8ArrayCustom.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
+#include "core/frame/DOMWindow.h"
 #include "core/frame/UseCounter.h"
 #include "platform/TraceEvent.h"
 #include "wtf/GetPtr.h"

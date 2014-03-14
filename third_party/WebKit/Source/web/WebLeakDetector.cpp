@@ -35,6 +35,7 @@
 #include "bindings/v8/V8Binding.h"
 #include "core/fetch/MemoryCache.h"
 #include "core/fetch/ResourceFetcher.h"
+#include "core/frame/DOMWindow.h"
 #include "core/inspector/InspectorCounters.h"
 #include "public/web/WebDocument.h"
 #include "public/web/WebFrame.h"
@@ -53,7 +54,7 @@ void cleanUpDOMObjects(blink::WebFrame* frame)
 
     // FIXME: HTML5 Notification should be closed because notification affects the result of number of DOM objects.
 
-    ResourceFetcher* fetcher = currentDocument(context->GetIsolate())->fetcher();
+    ResourceFetcher* fetcher = currentDOMWindow(context->GetIsolate())->document()->fetcher();
     if (fetcher)
         fetcher->garbageCollectDocumentResources();
 

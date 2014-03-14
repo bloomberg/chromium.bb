@@ -318,7 +318,7 @@ static NPObject* makeIntArrayImpl(const WebVector<int>& data, v8::Isolate* isola
     for (size_t i = 0; i < data.size(); ++i)
         result->Set(i, v8::Number::New(isolate, data[i]));
 
-    DOMWindow* window = toDOMWindow(isolate->GetCurrentContext());
+    DOMWindow* window = currentDOMWindow(isolate);
     return npCreateV8ScriptObject(0, result, window, isolate);
 }
 
@@ -329,7 +329,7 @@ static NPObject* makeStringArrayImpl(const WebVector<WebString>& data, v8::Isola
     for (size_t i = 0; i < data.size(); ++i)
         result->Set(i, v8String(isolate, data[i]));
 
-    DOMWindow* window = toDOMWindow(isolate->GetCurrentContext());
+    DOMWindow* window = currentDOMWindow(isolate);
     return npCreateV8ScriptObject(0, result, window, isolate);
 }
 

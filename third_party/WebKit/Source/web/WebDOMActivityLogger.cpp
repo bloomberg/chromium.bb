@@ -34,6 +34,7 @@
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMActivityLogger.h"
 #include "core/dom/Document.h"
+#include "core/frame/DOMWindow.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/WTFString.h"
 
@@ -52,7 +53,7 @@ public:
     {
         KURL url;
         String title;
-        if (Document* document = currentDocument(v8::Isolate::GetCurrent())) {
+        if (Document* document = currentDOMWindow(v8::Isolate::GetCurrent())->document()) {
             url = document->url();
             title = document->title();
         }

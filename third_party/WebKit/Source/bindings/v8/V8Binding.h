@@ -637,13 +637,12 @@ v8::Isolate* toIsolate(LocalFrame*);
 
 DOMWindow* toDOMWindow(v8::Handle<v8::Value>, v8::Isolate*);
 DOMWindow* toDOMWindow(v8::Handle<v8::Context>);
-ExecutionContext* toExecutionContext(v8::Handle<v8::Context>);
-
 DOMWindow* enteredDOMWindow(v8::Isolate*);
+DOMWindow* currentDOMWindow(v8::Isolate*);
 DOMWindow* callingDOMWindow(v8::Isolate*);
-ExecutionContext* callingExecutionContext(v8::Isolate*);
+ExecutionContext* toExecutionContext(v8::Handle<v8::Context>);
 ExecutionContext* currentExecutionContext(v8::Isolate*);
-Document* currentDocument(v8::Isolate*);
+ExecutionContext* callingExecutionContext(v8::Isolate*);
 
 // Returns a V8 context associated with a ExecutionContext and a DOMWrapperWorld.
 // This method returns an empty context if there is no frame or the frame is already detached.

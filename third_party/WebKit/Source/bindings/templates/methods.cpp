@@ -411,7 +411,7 @@ static void {{v8_class}}ConstructorCallback(const v8::FunctionCallbackInfo<v8::V
         return;
     }
 
-    Document* document = currentDocument(info.GetIsolate());
+    Document* document = currentDOMWindow(info.GetIsolate())->document();
     ASSERT(document);
 
     // Make sure the document is added to the DOM Node map. Otherwise, the {{cpp_class}} instance

@@ -86,13 +86,9 @@ static void reportFatalErrorInMainThread(const char* location, const char* messa
 static void messageHandlerInMainThread(v8::Handle<v8::Message> message, v8::Handle<v8::Value> data)
 {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    // If called during context initialization, there will be no entered context.
-    v8::Handle<v8::Context> enteredContext = isolate->GetEnteredContext();
-    if (enteredContext.IsEmpty())
-        return;
-
-    DOMWindow* enteredWindow = toDOMWindow(enteredContext);
-    if (!enteredWindow->isCurrentlyDisplayedInFrame())
+    // If called during context initialization, there will be no entered window.
+    DOMWindow* enteredWindow = enteredDOMWindow(isolate);
+    if (!enteredWindow || !enteredWindow->isCurrentlyDisplayedInFrame())
         return;
 
     String errorMessage = toCoreString(message->Get());

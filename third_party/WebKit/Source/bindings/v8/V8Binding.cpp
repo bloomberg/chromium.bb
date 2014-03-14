@@ -481,7 +481,31 @@ DOMWindow* toDOMWindow(v8::Handle<v8::Value> value, v8::Isolate* isolate)
 
 DOMWindow* toDOMWindow(v8::Handle<v8::Context> context)
 {
+    if (context.IsEmpty())
+        return 0;
     return toDOMWindow(context->Global(), context->GetIsolate());
+}
+
+DOMWindow* enteredDOMWindow(v8::Isolate* isolate)
+{
+    return toDOMWindow(isolate->GetEnteredContext());
+}
+
+DOMWindow* currentDOMWindow(v8::Isolate* isolate)
+{
+    return toDOMWindow(isolate->GetCurrentContext());
+}
+
+DOMWindow* callingDOMWindow(v8::Isolate* isolate)
+{
+    v8::Handle<v8::Context> context = isolate->GetCallingContext();
+    if (context.IsEmpty()) {
+        // Unfortunately, when processing script from a plug-in, we might not
+        // have a calling context. In those cases, we fall back to the
+        // entered context.
+        context = isolate->GetEnteredContext();
+    }
+    return toDOMWindow(context);
 }
 
 ExecutionContext* toExecutionContext(v8::Handle<v8::Context> context)
@@ -497,21 +521,9 @@ ExecutionContext* toExecutionContext(v8::Handle<v8::Context> context)
     return 0;
 }
 
-DOMWindow* enteredDOMWindow(v8::Isolate* isolate)
+ExecutionContext* currentExecutionContext(v8::Isolate* isolate)
 {
-    return toDOMWindow(isolate->GetEnteredContext());
-}
-
-DOMWindow* callingDOMWindow(v8::Isolate* isolate)
-{
-    v8::Handle<v8::Context> context = isolate->GetCallingContext();
-    if (context.IsEmpty()) {
-        // Unfortunately, when processing script from a plug-in, we might not
-        // have a calling context. In those cases, we fall back to the
-        // entered context.
-        context = isolate->GetEnteredContext();
-    }
-    return toDOMWindow(context);
+    return toExecutionContext(isolate->GetCurrentContext());
 }
 
 ExecutionContext* callingExecutionContext(v8::Isolate* isolate)
@@ -524,16 +536,6 @@ ExecutionContext* callingExecutionContext(v8::Isolate* isolate)
         context = isolate->GetEnteredContext();
     }
     return toExecutionContext(context);
-}
-
-ExecutionContext* currentExecutionContext(v8::Isolate* isolate)
-{
-    return toExecutionContext(isolate->GetCurrentContext());
-}
-
-Document* currentDocument(v8::Isolate* isolate)
-{
-    return toDOMWindow(isolate->GetCurrentContext())->document();
 }
 
 LocalFrame* toFrameIfNotDetached(v8::Handle<v8::Context> context)
