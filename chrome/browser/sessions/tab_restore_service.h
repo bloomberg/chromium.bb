@@ -14,7 +14,7 @@
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/ui/host_desktop.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "components/sessions/serialized_navigation_entry.h"
 #include "content/public/browser/session_storage_namespace.h"
 #include "ui/base/window_open_disposition.h"
@@ -38,7 +38,7 @@ class WebContents;
 //
 // To listen for changes to the set of entries managed by the TabRestoreService
 // add an observer.
-class TabRestoreService : public BrowserContextKeyedService {
+class TabRestoreService : public KeyedService {
  public:
   // Interface used to allow the test to provide a custom time.
   class TimeFactory {

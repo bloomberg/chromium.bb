@@ -27,7 +27,7 @@
 // SetKeywordSearchTermsForURL.
 class TestingTemplateURLService : public TemplateURLService {
  public:
-  static BrowserContextKeyedService* Build(content::BrowserContext* profile) {
+  static KeyedService* Build(content::BrowserContext* profile) {
     return new TestingTemplateURLService(static_cast<Profile*>(profile));
   }
 

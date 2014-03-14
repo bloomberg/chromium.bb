@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
+#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
 class PasswordStore;
 class Profile;
@@ -22,7 +22,7 @@ typedef int LocalProfileId;
 #endif
 
 // A wrapper of PasswordStore so we can use it as a profiled keyed service.
-class PasswordStoreService : public BrowserContextKeyedService {
+class PasswordStoreService : public KeyedService {
  public:
   // |password_store| needs to be not-NULL, and the constructor expects that
   // Init() was already called successfully on it.
@@ -31,7 +31,7 @@ class PasswordStoreService : public BrowserContextKeyedService {
 
   scoped_refptr<PasswordStore> GetPasswordStore();
 
-  // BrowserContextKeyedService implementation.
+  // KeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
  private:
@@ -59,7 +59,7 @@ class PasswordStoreFactory : public BrowserContextKeyedServiceFactory {
 #endif
 
   // BrowserContextKeyedServiceFactory:
-  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
+  virtual KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const OVERRIDE;
   virtual void RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable* registry) OVERRIDE;

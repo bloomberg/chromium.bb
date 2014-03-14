@@ -7,7 +7,7 @@
 #include "chrome/browser/profiles/gaia_info_update_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 
 GAIAInfoUpdateServiceFactory::GAIAInfoUpdateServiceFactory()
@@ -30,8 +30,7 @@ GAIAInfoUpdateServiceFactory* GAIAInfoUpdateServiceFactory::GetInstance() {
   return Singleton<GAIAInfoUpdateServiceFactory>::get();
 }
 
-BrowserContextKeyedService*
-GAIAInfoUpdateServiceFactory::BuildServiceInstanceFor(
+KeyedService* GAIAInfoUpdateServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = static_cast<Profile*>(context);
   if (!GAIAInfoUpdateService::ShouldUseGAIAProfileInfo(profile))

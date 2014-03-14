@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "chrome/browser/predictors/predictor_database.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 namespace predictors {
 
@@ -30,7 +30,7 @@ PredictorDatabaseFactory::PredictorDatabaseFactory()
 PredictorDatabaseFactory::~PredictorDatabaseFactory() {
 }
 
-BrowserContextKeyedService* PredictorDatabaseFactory::BuildServiceInstanceFor(
+KeyedService* PredictorDatabaseFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   return new PredictorDatabase(static_cast<Profile*>(profile));
 }

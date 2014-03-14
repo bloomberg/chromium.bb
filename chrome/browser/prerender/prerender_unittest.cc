@@ -106,7 +106,7 @@ class UnitTestPrerenderManager : public PrerenderManager {
   virtual ~UnitTestPrerenderManager() {
   }
 
-  // From BrowserContextKeyedService, via PrererenderManager:
+  // From KeyedService, via PrererenderManager:
   virtual void Shutdown() OVERRIDE {
     if (next_prerender_contents())
       next_prerender_contents_->Destroy(FINAL_STATUS_MANAGER_SHUTDOWN);

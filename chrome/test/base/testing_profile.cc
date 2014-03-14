@@ -58,7 +58,7 @@
 #include "chrome/test/base/history_index_restore_observer.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_thread.h"
@@ -156,7 +156,7 @@ class TestExtensionURLRequestContextGetter
 };
 
 #if defined(ENABLE_NOTIFICATIONS)
-BrowserContextKeyedService* CreateTestDesktopNotificationService(
+KeyedService* CreateTestDesktopNotificationService(
     content::BrowserContext* profile) {
   return new DesktopNotificationService(static_cast<Profile*>(profile), NULL);
 }
@@ -415,8 +415,7 @@ TestingProfile::~TestingProfile() {
   }
 }
 
-static BrowserContextKeyedService* BuildFaviconService(
-    content::BrowserContext* profile) {
+static KeyedService* BuildFaviconService(content::BrowserContext* profile) {
   return new FaviconService(static_cast<Profile*>(profile));
 }
 
@@ -426,8 +425,7 @@ void TestingProfile::CreateFaviconService() {
       this, BuildFaviconService);
 }
 
-static BrowserContextKeyedService* BuildHistoryService(
-    content::BrowserContext* profile) {
+static KeyedService* BuildHistoryService(content::BrowserContext* profile) {
   return new HistoryService(static_cast<Profile*>(profile));
 }
 
@@ -495,8 +493,7 @@ void TestingProfile::DestroyTopSites() {
   }
 }
 
-static BrowserContextKeyedService* BuildBookmarkModel(
-    content::BrowserContext* context) {
+static KeyedService* BuildBookmarkModel(content::BrowserContext* context) {
   Profile* profile = static_cast<Profile*>(context);
   BookmarkModel* bookmark_model = new BookmarkModel(profile);
   bookmark_model->Load(profile->GetIOTaskRunner());
@@ -522,8 +519,7 @@ void TestingProfile::CreateBookmarkModel(bool delete_file) {
   }
 }
 
-static BrowserContextKeyedService* BuildWebDataService(
-    content::BrowserContext* profile) {
+static KeyedService* BuildWebDataService(content::BrowserContext* profile) {
   return new WebDataServiceWrapper(static_cast<Profile*>(profile));
 }
 

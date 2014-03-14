@@ -14,7 +14,7 @@
 #include "chrome/browser/spellchecker/spellcheck_custom_dictionary.h"
 #include "chrome/browser/spellchecker/spellcheck_hunspell_dictionary.h"
 #include "chrome/common/spellcheck_common.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -33,7 +33,7 @@ class BrowserContext;
 // Encapsulates the browser side spellcheck service. There is one of these per
 // profile and each is created by the SpellCheckServiceFactory.  The
 // SpellcheckService maintains any per-profile information about spellcheck.
-class SpellcheckService : public BrowserContextKeyedService,
+class SpellcheckService : public KeyedService,
                           public content::NotificationObserver,
                           public SpellcheckCustomDictionary::Observer,
                           public SpellcheckHunspellDictionary::Observer {

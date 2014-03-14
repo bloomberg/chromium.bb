@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_POLICY_CLOUD_USER_CLOUD_POLICY_INVALIDATOR_H_
 
 #include "chrome/browser/policy/cloud/cloud_policy_invalidator.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -17,9 +17,9 @@ namespace policy {
 class CloudPolicyManager;
 
 // Provides invalidations to user policy. Implemented as a
-// BrowserContextKeyedService to allow profile-based lifetime management.
+// KeyedService to allow profile-based lifetime management.
 class UserCloudPolicyInvalidator : public CloudPolicyInvalidator,
-                                   public BrowserContextKeyedService,
+                                   public KeyedService,
                                    public content::NotificationObserver {
  public:
   // |profile| is profile associated with the invalidator. It is used to get
@@ -31,7 +31,7 @@ class UserCloudPolicyInvalidator : public CloudPolicyInvalidator,
       Profile* profile,
       CloudPolicyManager* policy_manager);
 
-  // BrowserContextKeyedService:
+  // KeyedService:
   virtual void Shutdown() OVERRIDE;
 
   // content::NotificationObserver implementation:

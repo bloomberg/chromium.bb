@@ -11,7 +11,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/common/pref_names.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 
 #if defined(TOOLKIT_GTK)
@@ -51,7 +51,7 @@ ThemeServiceFactory::ThemeServiceFactory()
 
 ThemeServiceFactory::~ThemeServiceFactory() {}
 
-BrowserContextKeyedService* ThemeServiceFactory::BuildServiceInstanceFor(
+KeyedService* ThemeServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   ThemeService* provider = NULL;
 #if defined(TOOLKIT_GTK)

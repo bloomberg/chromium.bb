@@ -104,7 +104,7 @@ class ProfileResetterTest : public ExtensionServiceTestBase,
 
   TestingProfile* profile() { return profile_.get(); }
 
-  static BrowserContextKeyedService* CreateTemplateURLService(
+  static KeyedService* CreateTemplateURLService(
       content::BrowserContext* context);
 
  private:
@@ -141,7 +141,7 @@ void ProfileResetterTest::SetUp() {
 }
 
 // static
-BrowserContextKeyedService* ProfileResetterTest::CreateTemplateURLService(
+KeyedService* ProfileResetterTest::CreateTemplateURLService(
     content::BrowserContext* context) {
   return new TemplateURLService(static_cast<Profile*>(context));
 }

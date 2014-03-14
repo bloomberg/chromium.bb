@@ -51,7 +51,7 @@ class UserPolicySigninService : public UserPolicySigninServiceBase {
   void CallPolicyRegistrationCallback(scoped_ptr<CloudPolicyClient> client,
                                       PolicyRegistrationCallback callback);
 
-  // BrowserContextKeyedService implementation:
+  // KeyedService implementation:
   virtual void Shutdown() OVERRIDE;
 
   // CloudPolicyService::Observer implementation:

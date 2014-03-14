@@ -7,7 +7,7 @@
 
 #include "base/memory/scoped_vector.h"
 #include "base/strings/string16.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "ui/gfx/native_widget_types.h"
 
 class GURL;
@@ -23,7 +23,7 @@ class WebContents;
 // documents, creating a TemplateURL from the OSDD, and adding the TemplateURL
 // to the TemplateURLService. Downloading is done in the background.
 //
-class TemplateURLFetcher : public BrowserContextKeyedService {
+class TemplateURLFetcher : public KeyedService {
  public:
   enum ProviderType {
     AUTODETECTED_PROVIDER,

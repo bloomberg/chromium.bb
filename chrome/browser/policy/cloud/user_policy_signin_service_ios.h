@@ -70,7 +70,7 @@ class UserPolicySigninService : public UserPolicySigninServiceBase {
   void CallPolicyFetchCallback(PolicyFetchBlockCallback callback,
                                bool succeeded);
 
-  // BrowserContextKeyedService implementation:
+  // KeyedService implementation:
   virtual void Shutdown() OVERRIDE;
 
   // CloudPolicyService::Observer implementation:

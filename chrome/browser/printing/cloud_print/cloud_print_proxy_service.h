@@ -13,7 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/prefs/pref_change_registrar.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 
 class Profile;
 class ServiceProcessControl;
@@ -28,7 +28,7 @@ struct CloudPrintProxyInfo;
 
 // Layer between the browser user interface and the cloud print proxy code
 // running in the service process.
-class CloudPrintProxyService : public BrowserContextKeyedService {
+class CloudPrintProxyService : public KeyedService {
  public:
   explicit CloudPrintProxyService(Profile* profile);
   virtual ~CloudPrintProxyService();

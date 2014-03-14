@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/singleton.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
+#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
 namespace content {
 class BrowserContext;
@@ -30,7 +30,7 @@ class PrecacheManagerFactory : public BrowserContextKeyedServiceFactory {
   virtual ~PrecacheManagerFactory();
 
   // BrowserContextKeyedServiceFactory:
-  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
+  virtual KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* browser_context) const OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(PrecacheManagerFactory);

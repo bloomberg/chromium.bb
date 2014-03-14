@@ -15,7 +15,7 @@ class BrowserContext;
 
 class TestPasswordStoreService : public PasswordStoreService {
  public:
-  static BrowserContextKeyedService* Build(content::BrowserContext* profile);
+  static KeyedService* Build(content::BrowserContext* profile);
 
  private:
   explicit TestPasswordStoreService(

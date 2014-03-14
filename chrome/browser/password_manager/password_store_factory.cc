@@ -13,8 +13,8 @@
 #include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 #include "components/encryptor/encryptor_switches.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/password_manager/core/browser/login_database.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_default.h"
@@ -116,7 +116,7 @@ LocalProfileId PasswordStoreFactory::GetLocalProfileId(
 }
 #endif
 
-BrowserContextKeyedService* PasswordStoreFactory::BuildServiceInstanceFor(
+KeyedService* PasswordStoreFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = static_cast<Profile*>(context);
 

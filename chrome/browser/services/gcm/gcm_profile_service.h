@@ -15,7 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/signin/signin_manager_base.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "google_apis/gcm/gcm_client.h"
@@ -41,7 +41,7 @@ class GCMEventRouter;
 class GCMProfileServiceTestConsumer;
 
 // Acts as a bridge between GCM API and GCMClient layer. It is profile based.
-class GCMProfileService : public BrowserContextKeyedService,
+class GCMProfileService : public KeyedService,
                           public content::NotificationObserver,
                           public SigninManagerBase::Observer {
  public:
@@ -88,7 +88,7 @@ class GCMProfileService : public BrowserContextKeyedService,
 
   void Stop();
 
-  // BrowserContextKeyedService implementation.
+  // KeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
   // Registers |sender_id| for an app. A registration ID will be returned by

@@ -207,7 +207,7 @@ SessionService::SessionService(const base::FilePath& save_path)
 
 SessionService::~SessionService() {
   // The BrowserList should outlive the SessionService since it's static and
-  // the SessionService is a BrowserContextKeyedService.
+  // the SessionService is a KeyedService.
   BrowserList::RemoveObserver(this);
   Save();
 }

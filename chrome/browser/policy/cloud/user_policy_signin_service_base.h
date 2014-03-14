@@ -13,7 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_service.h"
 #include "content/public/browser/notification_observer.h"
@@ -44,7 +44,7 @@ class UserCloudPolicyManager;
 //
 // Finally, if the user signs out, this class is responsible for shutting down
 // the policy infrastructure to ensure that any cached policy is cleared.
-class UserPolicySigninServiceBase : public BrowserContextKeyedService,
+class UserPolicySigninServiceBase : public KeyedService,
                                     public CloudPolicyClient::Observer,
                                     public CloudPolicyService::Observer,
                                     public content::NotificationObserver {
@@ -94,7 +94,7 @@ class UserPolicySigninServiceBase : public BrowserContextKeyedService,
   virtual void OnRegistrationStateChanged(CloudPolicyClient* client) OVERRIDE;
   virtual void OnClientError(CloudPolicyClient* client) OVERRIDE;
 
-  // BrowserContextKeyedService implementation:
+  // KeyedService implementation:
   virtual void Shutdown() OVERRIDE;
 
   void SetSystemRequestContext(

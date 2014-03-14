@@ -11,7 +11,7 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/common/pref_names.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/browser_context.h"
 
@@ -44,8 +44,7 @@ AutomaticProfileResetterFactory::AutomaticProfileResetterFactory()
 
 AutomaticProfileResetterFactory::~AutomaticProfileResetterFactory() {}
 
-BrowserContextKeyedService*
-AutomaticProfileResetterFactory::BuildServiceInstanceFor(
+KeyedService* AutomaticProfileResetterFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
   AutomaticProfileResetter* service = new AutomaticProfileResetter(profile);

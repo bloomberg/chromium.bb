@@ -20,7 +20,7 @@
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/ui/search/instant_search_prerenderer.h"
 #include "chrome/common/instant_types.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -41,7 +41,7 @@ class URLRequest;
 }
 
 // Tracks render process host IDs that are associated with Instant.
-class InstantService : public BrowserContextKeyedService,
+class InstantService : public KeyedService,
                        public content::NotificationObserver {
  public:
   explicit InstantService(Profile* profile);
@@ -110,7 +110,7 @@ class InstantService : public BrowserContextKeyedService,
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, ProcessIsolation);
   FRIEND_TEST_ALL_PREFIXES(InstantServiceTest, SendsSearchURLsToRenderer);
 
-  // Overridden from BrowserContextKeyedService:
+  // Overridden from KeyedService:
   virtual void Shutdown() OVERRIDE;
 
   // Overridden from content::NotificationObserver:

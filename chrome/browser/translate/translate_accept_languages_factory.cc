@@ -8,15 +8,15 @@
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "components/translate/core/browser/translate_accept_languages.h"
 
 namespace {
 
 // TranslateAcceptLanguagesService is a thin container for
 // TranslateAcceptLanguages to enable associating it with a BrowserContext.
-class TranslateAcceptLanguagesService : public BrowserContextKeyedService {
+class TranslateAcceptLanguagesService : public KeyedService {
  public:
   explicit TranslateAcceptLanguagesService(PrefService* prefs);
   virtual ~TranslateAcceptLanguagesService();
@@ -59,8 +59,7 @@ TranslateAcceptLanguagesFactory::TranslateAcceptLanguagesFactory()
 
 TranslateAcceptLanguagesFactory::~TranslateAcceptLanguagesFactory() {}
 
-BrowserContextKeyedService*
-TranslateAcceptLanguagesFactory::BuildServiceInstanceFor(
+KeyedService* TranslateAcceptLanguagesFactory::BuildServiceInstanceFor(
     content::BrowserContext* browser_context) const {
   Profile* profile = Profile::FromBrowserContext(browser_context);
   return new TranslateAcceptLanguagesService(profile->GetPrefs());

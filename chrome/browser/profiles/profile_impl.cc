@@ -77,7 +77,7 @@
 #include "chrome/common/net/url_fixer_upper.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/startup_metric_utils/startup_metric_utils.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "components/user_prefs/user_prefs.h"
@@ -987,9 +987,9 @@ ProfileImpl::CreateRequestContextForStoragePartition(
 
 net::SSLConfigService* ProfileImpl::GetSSLConfigService() {
   // If ssl_config_service_manager_ is null, this typically means that some
-  // BrowserContextKeyedService is trying to create a RequestContext at startup,
+  // KeyedService is trying to create a RequestContext at startup,
   // but SSLConfigServiceManager is not initialized until DoFinalInit() which is
-  // invoked after all BrowserContextKeyedServices have been initialized (see
+  // invoked after all KeyedServices have been initialized (see
   // http://crbug.com/171406).
   DCHECK(ssl_config_service_manager_) <<
       "SSLConfigServiceManager is not initialized yet";

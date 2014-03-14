@@ -11,7 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_base_factory.h"
+#include "components/keyed_service/content/browser_context_keyed_base_factory.h"
 
 namespace content {
 class BrowserContext;

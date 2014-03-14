@@ -13,7 +13,7 @@
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/common/pref_names.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 
 // static
@@ -28,7 +28,7 @@ TemplateURLServiceFactory* TemplateURLServiceFactory::GetInstance() {
 }
 
 // static
-BrowserContextKeyedService* TemplateURLServiceFactory::BuildInstanceFor(
+KeyedService* TemplateURLServiceFactory::BuildInstanceFor(
     content::BrowserContext* profile) {
   return new TemplateURLService(static_cast<Profile*>(profile));
 }
@@ -44,7 +44,7 @@ TemplateURLServiceFactory::TemplateURLServiceFactory()
 
 TemplateURLServiceFactory::~TemplateURLServiceFactory() {}
 
-BrowserContextKeyedService* TemplateURLServiceFactory::BuildServiceInstanceFor(
+KeyedService* TemplateURLServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   return BuildInstanceFor(static_cast<Profile*>(profile));
 }

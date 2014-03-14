@@ -10,8 +10,8 @@
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/policy/schema_registry_service.h"
 #include "chrome/browser/policy/schema_registry_service_factory.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "components/policy/core/common/cloud/cloud_external_data_manager.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
@@ -33,9 +33,8 @@ const base::FilePath::CharType kComponentsDir[] =
 
 }  // namespace
 
-// A BrowserContextKeyedService that wraps a UserCloudPolicyManager.
-class UserCloudPolicyManagerFactory::ManagerWrapper
-    : public BrowserContextKeyedService {
+// A KeyedService that wraps a UserCloudPolicyManager.
+class UserCloudPolicyManagerFactory::ManagerWrapper : public KeyedService {
  public:
   explicit ManagerWrapper(UserCloudPolicyManager* manager)
       : manager_(manager) {

@@ -6,15 +6,15 @@
 #define CHROME_BROWSER_POLICY_CLOUD_POLICY_HEADER_SERVICE_FACTORY_H_
 
 #include "base/memory/singleton.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
+#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
 namespace policy {
 
 class PolicyHeaderService;
 
 // Factory for PolicyHeaderService objects. PolicyHeaderService is not actually
-// a BrowserContextKeyedService, so this class wraps PolicyHeaderService in
-// a BrowserContextKeyedService internally.
+// a KeyedService, so this class wraps PolicyHeaderService in
+// a KeyedService internally.
 class PolicyHeaderServiceFactory : public BrowserContextKeyedServiceFactory {
  public:
   // Returns the instance of PolicyHeaderService for the passed |context|, or
@@ -27,7 +27,7 @@ class PolicyHeaderServiceFactory : public BrowserContextKeyedServiceFactory {
 
  protected:
   // BrowserContextKeyedServiceFactory implementation.
-  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
+  virtual KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const OVERRIDE;
 
  private:

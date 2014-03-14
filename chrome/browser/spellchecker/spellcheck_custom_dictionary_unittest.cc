@@ -57,8 +57,7 @@ syncer::SyncDataList GetAllSyncDataNoLimit(
 
 }  // namespace
 
-static BrowserContextKeyedService* BuildSpellcheckService(
-    content::BrowserContext* profile) {
+static KeyedService* BuildSpellcheckService(content::BrowserContext* profile) {
   return new SpellcheckService(static_cast<Profile*>(profile));
 }
 

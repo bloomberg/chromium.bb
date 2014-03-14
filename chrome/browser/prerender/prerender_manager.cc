@@ -299,7 +299,7 @@ PrerenderManager::PrerenderManager(Profile* profile,
 PrerenderManager::~PrerenderManager() {
   MediaCaptureDevicesDispatcher::GetInstance()->RemoveObserver(this);
 
-  // The earlier call to BrowserContextKeyedService::Shutdown() should have
+  // The earlier call to KeyedService::Shutdown() should have
   // emptied these vectors already.
   DCHECK(active_prerenders_.empty());
   DCHECK(to_delete_prerenders_.empty());

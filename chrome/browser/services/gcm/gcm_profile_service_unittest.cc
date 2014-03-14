@@ -255,12 +255,12 @@ class FakeGCMClientFactory : public GCMClientFactory {
 
 class GCMProfileServiceTestConsumer : public GCMProfileService::TestingDelegate{
  public:
-  static BrowserContextKeyedService* BuildFakeSigninManager(
+  static KeyedService* BuildFakeSigninManager(
       content::BrowserContext* context) {
     return new FakeSigninManager(static_cast<Profile*>(context));
   }
 
-  static BrowserContextKeyedService* BuildGCMProfileService(
+  static KeyedService* BuildGCMProfileService(
       content::BrowserContext* context) {
     return new GCMProfileService(static_cast<Profile*>(context));
   }

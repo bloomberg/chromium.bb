@@ -7,7 +7,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
@@ -27,7 +27,7 @@ namespace policy {
 
 namespace {
 
-class PolicyHeaderServiceWrapper : public BrowserContextKeyedService {
+class PolicyHeaderServiceWrapper : public KeyedService {
  public:
   explicit PolicyHeaderServiceWrapper(scoped_ptr<PolicyHeaderService> service)
       : policy_header_service_(service.Pass()) {}
@@ -74,8 +74,7 @@ PolicyHeaderService* PolicyHeaderServiceFactory::GetForBrowserContext(
     return NULL;
 }
 
-BrowserContextKeyedService*
-PolicyHeaderServiceFactory::BuildServiceInstanceFor(
+KeyedService* PolicyHeaderServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
 #if defined(OS_CHROMEOS)
   BrowserPolicyConnectorChromeOS* connector =

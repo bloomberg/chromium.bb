@@ -189,7 +189,7 @@ class SyncEngine : public RemoteFileSyncService,
   // These external services are not owned by SyncEngine.
   // The owner of the SyncEngine is responsible for their lifetime.
   // I.e. the owner should declare the dependency explicitly by calling
-  // BrowserContextKeyedService::DependsOn().
+  // KeyedService::DependsOn().
   drive::DriveNotificationManager* notification_manager_;
   ExtensionServiceInterface* extension_service_;
   ProfileOAuth2TokenService* auth_token_service_;

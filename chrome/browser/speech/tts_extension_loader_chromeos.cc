@@ -8,17 +8,17 @@
 #include "base/memory/singleton.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "extensions/browser/extension_system.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/speech/extension_api/tts_engine_extension_api.h"
 #include "chrome/browser/speech/tts_controller.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/extension_system.h"
 #include "grit/browser_resources.h"
 
 // Factory to load one instance of TtsExtensionLoaderChromeOs per profile.
@@ -52,7 +52,7 @@ class TtsExtensionLoaderChromeOsFactory
     return chrome::GetBrowserContextRedirectedInIncognito(context);
   }
 
-  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
+  virtual KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const OVERRIDE {
     return new TtsExtensionLoaderChromeOs(static_cast<Profile*>(profile));
   }

@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_PROFILE_RESETTER_AUTOMATIC_PROFILE_RESETTER_FACTORY_H_
 
 #include "base/basictypes.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
+#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
 template <typename T>
 struct DefaultSingletonTraits;
@@ -40,7 +40,7 @@ class AutomaticProfileResetterFactory
   virtual ~AutomaticProfileResetterFactory();
 
   // BrowserContextKeyedServiceFactory:
-  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
+  virtual KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const OVERRIDE;
 
   // BrowserContextKeyedBaseFactory:

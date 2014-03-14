@@ -4,7 +4,7 @@
 
 #include "components/precache/content/precache_manager_factory.h"
 
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/precache/content/precache_manager.h"
 #include "content/public/browser/browser_context.h"
 
@@ -28,7 +28,7 @@ PrecacheManagerFactory::PrecacheManagerFactory()
 
 PrecacheManagerFactory::~PrecacheManagerFactory() {}
 
-BrowserContextKeyedService* PrecacheManagerFactory::BuildServiceInstanceFor(
+KeyedService* PrecacheManagerFactory::BuildServiceInstanceFor(
     content::BrowserContext* browser_context) const {
   return new PrecacheManager(browser_context);
 }

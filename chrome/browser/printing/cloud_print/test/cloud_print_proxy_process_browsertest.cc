@@ -34,7 +34,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "ipc/ipc_descriptors.h"
@@ -501,7 +501,7 @@ TEST_F(CloudPrintProxyPolicyStartupTest, StartAndShutdown) {
   content::RunAllPendingInMessageLoop();
 }
 
-BrowserContextKeyedService* CloudPrintProxyServiceFactoryForPolicyTest(
+KeyedService* CloudPrintProxyServiceFactoryForPolicyTest(
     content::BrowserContext* profile) {
   CloudPrintProxyService* service =
       new CloudPrintProxyService(static_cast<Profile*>(profile));

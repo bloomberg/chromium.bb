@@ -75,7 +75,7 @@ ProfileSyncServiceFactory::ProfileSyncServiceFactory()
 #endif
   DependsOn(WebDataServiceFactory::GetInstance());
 
-  // The following have not been converted to BrowserContextKeyedServices yet,
+  // The following have not been converted to KeyedServices yet,
   // and for now they are explicitly destroyed after the
   // BrowserContextDependencyManager is told to DestroyBrowserContextServices,
   // so they will be around when the ProfileSyncService is destroyed.

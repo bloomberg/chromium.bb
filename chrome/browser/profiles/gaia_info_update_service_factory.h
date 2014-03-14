@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_PROFILES_GAIA_INFO_UPDATE_SERVICE_FACTORY_H_
 
 #include "base/memory/singleton.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
+#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
 class GAIAInfoUpdateService;
 class Profile;
@@ -35,7 +35,7 @@ class GAIAInfoUpdateServiceFactory : public BrowserContextKeyedServiceFactory {
   virtual ~GAIAInfoUpdateServiceFactory();
 
   // BrowserContextKeyedServiceFactory:
-  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
+  virtual KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const OVERRIDE;
 
   virtual void RegisterProfilePrefs(

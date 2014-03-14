@@ -28,7 +28,7 @@
 #include "chrome/browser/prerender/prerender_histograms.h"
 #include "chrome/browser/prerender/prerender_origin.h"
 #include "chrome/browser/prerender/prerender_tracker.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/session_storage_namespace.h"
@@ -74,7 +74,7 @@ class PrerenderLocalPredictor;
 class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
                          public base::NonThreadSafe,
                          public content::NotificationObserver,
-                         public BrowserContextKeyedService,
+                         public KeyedService,
                          public MediaCaptureDevicesDispatcher::Observer {
  public:
   // NOTE: New values need to be appended, since they are used in histograms.
@@ -108,7 +108,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
 
   virtual ~PrerenderManager();
 
-  // From BrowserContextKeyedService:
+  // From KeyedService:
   virtual void Shutdown() OVERRIDE;
 
   // Entry points for adding prerenders.

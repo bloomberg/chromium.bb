@@ -35,8 +35,7 @@ RenderViewHostTester* ChromeRenderViewHostTestHarness::rvh_tester() {
   return RenderViewHostTester::For(rvh());
 }
 
-static BrowserContextKeyedService* BuildSigninManagerFake(
-    content::BrowserContext* context) {
+static KeyedService* BuildSigninManagerFake(content::BrowserContext* context) {
   Profile* profile = static_cast<Profile*>(context);
 #if defined (OS_CHROMEOS)
   SigninManagerBase* signin = new SigninManagerBase();

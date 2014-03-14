@@ -16,7 +16,7 @@
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "extensions/browser/extension_system_provider.h"
 #include "extensions/browser/extensions_browser_client.h"
 
@@ -61,7 +61,7 @@ PrerenderManagerFactory::PrerenderManagerFactory()
 PrerenderManagerFactory::~PrerenderManagerFactory() {
 }
 
-BrowserContextKeyedService* PrerenderManagerFactory::BuildServiceInstanceFor(
+KeyedService* PrerenderManagerFactory::BuildServiceInstanceFor(
     content::BrowserContext* browser_context) const {
   Profile* profile = Profile::FromBrowserContext(browser_context);
   CHECK(g_browser_process->prerender_tracker());

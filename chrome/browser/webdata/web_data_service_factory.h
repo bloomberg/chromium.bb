@@ -9,8 +9,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
+#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "components/webdata/common/web_database_service.h"
 
 class TokenWebData;
@@ -21,7 +21,7 @@ class AutofillWebDataService;
 }  // namespace autofill
 
 // A wrapper of WebDataService so that we can use it as a profile keyed service.
-class WebDataServiceWrapper : public BrowserContextKeyedService {
+class WebDataServiceWrapper : public KeyedService {
  public:
   explicit WebDataServiceWrapper(Profile* profile);
 
@@ -30,7 +30,7 @@ class WebDataServiceWrapper : public BrowserContextKeyedService {
 
   virtual ~WebDataServiceWrapper();
 
-  // BrowserContextKeyedService:
+  // KeyedService:
   virtual void Shutdown() OVERRIDE;
 
   virtual scoped_refptr<autofill::AutofillWebDataService> GetAutofillWebData();
@@ -82,7 +82,7 @@ class WebDataServiceFactory : public BrowserContextKeyedServiceFactory {
   // |BrowserContextKeyedBaseFactory| methods:
   virtual content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const OVERRIDE;
-  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
+  virtual KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* profile) const OVERRIDE;
   virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
 

@@ -9,7 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 
 namespace chromeos {
 class User;
@@ -22,9 +22,9 @@ class ConfigurationPolicyProvider;
 class PolicyService;
 class SchemaRegistry;
 
-// A BrowserContextKeyedService that creates and manages the per-Profile policy
+// A KeyedService that creates and manages the per-Profile policy
 // components.
-class ProfilePolicyConnector : public BrowserContextKeyedService {
+class ProfilePolicyConnector : public KeyedService {
  public:
   ProfilePolicyConnector();
   virtual ~ProfilePolicyConnector();
@@ -39,7 +39,7 @@ class ProfilePolicyConnector : public BrowserContextKeyedService {
 
   void InitForTesting(scoped_ptr<PolicyService> service);
 
-  // BrowserContextKeyedService:
+  // KeyedService:
   virtual void Shutdown() OVERRIDE;
 
   // This is never NULL.

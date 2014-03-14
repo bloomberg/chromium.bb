@@ -57,7 +57,7 @@ class UserPolicySigninService : public UserPolicySigninServiceBase,
   // CloudPolicyService::Observer implementation:
   virtual void OnInitializationCompleted(CloudPolicyService* service) OVERRIDE;
 
-  // BrowserContextKeyedService implementation:
+  // KeyedService implementation:
   virtual void Shutdown() OVERRIDE;
 
  protected:

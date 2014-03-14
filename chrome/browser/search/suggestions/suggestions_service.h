@@ -13,7 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "chrome/browser/search/suggestions/proto/suggestions.pb.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
@@ -27,8 +27,7 @@ extern const char kSuggestionsFieldTrialStateParam[];
 extern const char kSuggestionsFieldTrialStateEnabled[];
 
 // An interface to fetch server suggestions asynchronously.
-class SuggestionsService : public BrowserContextKeyedService,
-                           public net::URLFetcherDelegate {
+class SuggestionsService : public KeyedService, public net::URLFetcherDelegate {
  public:
   typedef base::Callback<void(const SuggestionsProfile&)> ResponseCallback;
 
@@ -52,7 +51,7 @@ class SuggestionsService : public BrowserContextKeyedService,
   // and dispatches them to callbacks stored in queue.
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
-  // BrowserContextKeyedService implementation.
+  // KeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
   // Contains the current suggestions fetch request. Will only have a value

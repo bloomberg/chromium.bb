@@ -6,7 +6,7 @@
 
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 // static
 CloudPrintProxyService* CloudPrintProxyServiceFactory::GetForProfile(
@@ -28,8 +28,7 @@ CloudPrintProxyServiceFactory::CloudPrintProxyServiceFactory()
 CloudPrintProxyServiceFactory::~CloudPrintProxyServiceFactory() {
 }
 
-BrowserContextKeyedService*
-CloudPrintProxyServiceFactory::BuildServiceInstanceFor(
+KeyedService* CloudPrintProxyServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   CloudPrintProxyService* service =
       new CloudPrintProxyService(static_cast<Profile*>(profile));

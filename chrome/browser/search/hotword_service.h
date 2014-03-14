@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_SEARCH_HOTWORD_SERVICE_H_
 
 #include "base/basictypes.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 
 class Profile;
 
@@ -18,7 +18,7 @@ extern const char kHotwordFieldTrialDisabledGroupName[];
 
 // Provides an interface for the Hotword component that does voice triggered
 // search.
-class HotwordService : public BrowserContextKeyedService {
+class HotwordService : public KeyedService {
  public:
   // Returns true if the hotword supports the current system language.
   static bool DoesHotwordSupportLanguage(Profile* profile);

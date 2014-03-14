@@ -5,16 +5,15 @@
 #ifndef CHROME_BROWSER_SPEECH_TTS_EXTENSION_LOADER_CHROMEOS_H_
 #define CHROME_BROWSER_SPEECH_TTS_EXTENSION_LOADER_CHROMEOS_H_
 
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "extensions/browser/event_router.h"
 
 class Profile;
 
 // Profile-keyed class that loads a built-in TTS component extension
 // into a given profile on Chrome OS.
-class TtsExtensionLoaderChromeOs
-    : public BrowserContextKeyedService,
-      public extensions::EventRouter::Observer {
+class TtsExtensionLoaderChromeOs : public KeyedService,
+                                   public extensions::EventRouter::Observer {
  public:
   static TtsExtensionLoaderChromeOs* GetInstance(Profile* profile);
 
@@ -24,7 +23,7 @@ class TtsExtensionLoaderChromeOs
   // extension finishes loading.
   bool LoadTtsExtension();
 
-  // Implementation of BrowserContextKeyedService.
+  // Implementation of KeyedService.
   virtual void Shutdown() OVERRIDE;
 
   // Implementation of extensions::EventRouter::Observer.

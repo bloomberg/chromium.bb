@@ -21,7 +21,7 @@
 #include "chrome/browser/sync_file_system/remote_file_sync_service.h"
 #include "chrome/browser/sync_file_system/sync_callbacks.h"
 #include "chrome/browser/sync_file_system/sync_service_state.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "url/gurl.h"
@@ -42,7 +42,7 @@ class SyncEventObserver;
 class SyncProcessRunner;
 
 class SyncFileSystemService
-    : public BrowserContextKeyedService,
+    : public KeyedService,
       public ProfileSyncServiceObserver,
       public FileStatusObserver,
       public content::NotificationObserver,
@@ -50,7 +50,7 @@ class SyncFileSystemService
  public:
   typedef base::Callback<void(const base::ListValue* files)> DumpFilesCallback;
 
-  // BrowserContextKeyedService overrides.
+  // KeyedService overrides.
   virtual void Shutdown() OVERRIDE;
 
   void InitializeForApp(

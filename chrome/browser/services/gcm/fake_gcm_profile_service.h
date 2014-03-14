@@ -17,8 +17,8 @@ namespace gcm {
 class FakeGCMProfileService : public GCMProfileService {
  public:
   // Helper function to be used with
-  // BrowserContextKeyedService::SetTestingFactory().
-  static BrowserContextKeyedService* Build(content::BrowserContext* context);
+  // KeyedService::SetTestingFactory().
+  static KeyedService* Build(content::BrowserContext* context);
 
   explicit FakeGCMProfileService(Profile* profile);
   virtual ~FakeGCMProfileService();

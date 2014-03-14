@@ -69,7 +69,7 @@ class PrefRegistrySyncable;
 }
 
 // Instead of adding more members to Profile, consider creating a
-// BrowserContextKeyedService. See
+// KeyedService. See
 // http://dev.chromium.org/developers/design-documents/profile-architecture
 class Profile : public content::BrowserContext {
  public:

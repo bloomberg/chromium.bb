@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UNDO_BOOKMARK_UNDO_SERVICE_FACTORY_H_
 
 #include "base/memory/singleton.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
+#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
 class BookmarkUndoService;
 class Profile;
@@ -24,7 +24,7 @@ class BookmarkUndoServiceFactory : public BrowserContextKeyedServiceFactory {
   virtual ~BookmarkUndoServiceFactory();
 
   // BrowserContextKeyedServiceFactory:
-  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
+  virtual KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkUndoServiceFactory);

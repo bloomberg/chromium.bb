@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "chrome/browser/thumbnails/thumbnail_service.h"
 #include "chrome/browser/thumbnails/thumbnail_service_impl.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 using thumbnails::ThumbnailService;
 using thumbnails::ThumbnailServiceImpl;

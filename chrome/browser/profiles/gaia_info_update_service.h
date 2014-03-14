@@ -12,7 +12,7 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/profiles/profile_downloader.h"
 #include "chrome/browser/profiles/profile_downloader_delegate.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 
 class Profile;
 class ProfileDownloader;
@@ -20,7 +20,7 @@ class ProfileDownloader;
 // This service kicks off a download of the user's name and profile picture.
 // The results are saved in the profile info cache.
 class GAIAInfoUpdateService : public ProfileDownloaderDelegate,
-                              public BrowserContextKeyedService {
+                              public KeyedService {
  public:
   explicit GAIAInfoUpdateService(Profile* profile);
   virtual ~GAIAInfoUpdateService();

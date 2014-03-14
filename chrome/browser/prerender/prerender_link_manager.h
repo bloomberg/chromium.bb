@@ -11,7 +11,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/prerender/prerender_handle.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "url/gurl.h"
 
 class Profile;
@@ -35,7 +35,7 @@ class PrerenderManager;
 // being rendered in this chrome instance.  It receives messages from the
 // renderer indicating addition, cancelation and abandonment of link elements,
 // and controls the PrerenderManager accordingly.
-class PrerenderLinkManager : public BrowserContextKeyedService,
+class PrerenderLinkManager : public KeyedService,
                              public PrerenderHandle::Observer {
  public:
   explicit PrerenderLinkManager(PrerenderManager* manager);
@@ -143,7 +143,7 @@ class PrerenderLinkManager : public BrowserContextKeyedService,
   // Called when |launcher| is aborted.
   void CancelPendingPrerendersForLauncher(PrerenderContents* launcher);
 
-  // From BrowserContextKeyedService:
+  // From KeyedService:
   virtual void Shutdown() OVERRIDE;
 
   // From PrerenderHandle::Observer:

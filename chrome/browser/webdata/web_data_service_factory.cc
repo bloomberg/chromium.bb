@@ -20,7 +20,7 @@
 #include "components/autofill/core/browser/webdata/autofill_profile_syncable_service.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/signin/core/webdata/token_service_table.h"
 #include "components/signin/core/webdata/token_web_data.h"
 #include "components/webdata/common/webdata_constants.h"
@@ -228,7 +228,7 @@ content::BrowserContext* WebDataServiceFactory::GetBrowserContextToUse(
   return chrome::GetBrowserContextRedirectedInIncognito(context);
 }
 
-BrowserContextKeyedService* WebDataServiceFactory::BuildServiceInstanceFor(
+KeyedService* WebDataServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   return new WebDataServiceWrapper(static_cast<Profile*>(profile));
 }

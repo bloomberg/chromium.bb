@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_SEARCH_HOTWORD_SERVICE_FACTORY_H_
 
 #include "base/memory/singleton.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
+#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
 class HotwordService;
 class Profile;
@@ -41,7 +41,7 @@ class HotwordServiceFactory : public BrowserContextKeyedServiceFactory {
   // Overrides from BrowserContextKeyedServiceFactory:
   virtual void RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable* registry) OVERRIDE;
-  virtual BrowserContextKeyedService* BuildServiceInstanceFor(
+  virtual KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(HotwordServiceFactory);

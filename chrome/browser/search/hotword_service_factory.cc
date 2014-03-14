@@ -8,7 +8,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/hotword_service.h"
 #include "chrome/common/pref_names.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/browser_context.h"
 
@@ -69,7 +69,7 @@ void HotwordServiceFactory::RegisterProfilePrefs(
                              user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
-BrowserContextKeyedService* HotwordServiceFactory::BuildServiceInstanceFor(
+KeyedService* HotwordServiceFactory::BuildServiceInstanceFor(
     BrowserContext* context) const {
   return new HotwordService(Profile::FromBrowserContext(context));
 }

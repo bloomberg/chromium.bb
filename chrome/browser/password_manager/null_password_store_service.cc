@@ -7,7 +7,7 @@
 #include "components/password_manager/core/browser/password_store.h"
 
 // static
-BrowserContextKeyedService* NullPasswordStoreService::Build(
+KeyedService* NullPasswordStoreService::Build(
     content::BrowserContext* /*profile*/) {
   return new NullPasswordStoreService();
 }

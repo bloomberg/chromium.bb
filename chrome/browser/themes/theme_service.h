@@ -15,7 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/base/theme_provider.h"
@@ -58,7 +58,7 @@ extern "C" NSString* const kBrowserThemeDidChangeNotification;
 
 class ThemeService : public base::NonThreadSafe,
                      public content::NotificationObserver,
-                     public BrowserContextKeyedService,
+                     public KeyedService,
                      public ui::ThemeProvider {
  public:
   // Public constants used in ThemeService and its subclasses:

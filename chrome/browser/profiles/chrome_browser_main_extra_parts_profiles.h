@@ -20,7 +20,7 @@ class ChromeBrowserMainExtraPartsProfiles : public ChromeBrowserMainExtraParts {
   ChromeBrowserMainExtraPartsProfiles();
   virtual ~ChromeBrowserMainExtraPartsProfiles();
 
-  // Instantiates all chrome BrowserContextKeyedService factories, which is
+  // Instantiates all chrome KeyedService factories, which is
   // especially important for services that should be created at profile
   // creation time as compared to lazily on first access.
   static void EnsureBrowserContextKeyedServiceFactoriesBuilt();

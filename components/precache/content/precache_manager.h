@@ -12,7 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "components/precache/core/precache_fetcher.h"
 #include "url/gurl.h"
 
@@ -36,7 +36,7 @@ class URLListProvider;
 // otherwise.
 // TODO(sclittle): Delete precache history when browsing history is deleted.
 // http://crbug.com/326549
-class PrecacheManager : public BrowserContextKeyedService,
+class PrecacheManager : public KeyedService,
                         public PrecacheFetcher::PrecacheDelegate,
                         public base::SupportsWeakPtr<PrecacheManager> {
  public:
@@ -70,7 +70,7 @@ class PrecacheManager : public BrowserContextKeyedService,
                            bool was_cached);
 
  private:
-  // From BrowserContextKeyedService.
+  // From KeyedService.
   virtual void Shutdown() OVERRIDE;
 
   // From PrecacheFetcher::PrecacheDelegate.

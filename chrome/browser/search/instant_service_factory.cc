@@ -10,7 +10,7 @@
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/themes/theme_service_factory.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 // static
 InstantService* InstantServiceFactory::GetForProfile(Profile* profile) {
@@ -44,7 +44,7 @@ content::BrowserContext* InstantServiceFactory::GetBrowserContextToUse(
   return chrome::GetBrowserContextOwnInstanceInIncognito(context);
 }
 
-BrowserContextKeyedService* InstantServiceFactory::BuildServiceInstanceFor(
+KeyedService* InstantServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   return chrome::IsInstantExtendedAPIEnabled() ?
       new InstantService(static_cast<Profile*>(profile)) : NULL;

@@ -11,7 +11,7 @@
 #include "chrome/browser/sync_file_system/local/local_file_sync_service.h"
 #include "chrome/browser/sync_file_system/sync_file_system_service.h"
 #include "chrome/browser/sync_file_system/syncable_file_system_util.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 namespace sync_file_system {
 
@@ -55,8 +55,7 @@ SyncFileSystemServiceFactory::SyncFileSystemServiceFactory()
 
 SyncFileSystemServiceFactory::~SyncFileSystemServiceFactory() {}
 
-BrowserContextKeyedService*
-SyncFileSystemServiceFactory::BuildServiceInstanceFor(
+KeyedService* SyncFileSystemServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
 

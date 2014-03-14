@@ -7,7 +7,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_data_deleter.h"
 #include "chrome/browser/sessions/session_service.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 // static
 SessionService* SessionServiceFactory::GetForProfile(Profile* profile) {
@@ -75,7 +75,7 @@ SessionServiceFactory::SessionServiceFactory()
 SessionServiceFactory::~SessionServiceFactory() {
 }
 
-BrowserContextKeyedService* SessionServiceFactory::BuildServiceInstanceFor(
+KeyedService* SessionServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   SessionService* service = NULL;
   service = new SessionService(static_cast<Profile*>(profile));

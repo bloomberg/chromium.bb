@@ -14,7 +14,7 @@
 #include "base/strings/string_piece.h"
 #include "base/task_runner.h"
 #include "chrome/browser/profile_resetter/automatic_profile_resetter_mementos.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 
 class AutomaticProfileResetterDelegate;
 class Profile;
@@ -34,7 +34,7 @@ class ListValue;
 // working after a short delay.
 // All methods in this class shall be called on the UI thread, except when noted
 // otherwise.
-class AutomaticProfileResetter : public BrowserContextKeyedService {
+class AutomaticProfileResetter : public KeyedService {
  public:
   // Enumeration listing the possible outcomes of triggering the profile reset
   // prompt.
@@ -138,7 +138,7 @@ class AutomaticProfileResetter : public BrowserContextKeyedService {
   void SetTaskRunnerForWaitingForTesting(
       const scoped_refptr<base::TaskRunner>& task_runner);
 
-  // BrowserContextKeyedService:
+  // KeyedService:
   virtual void Shutdown() OVERRIDE;
 
  private:

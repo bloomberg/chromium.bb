@@ -987,7 +987,7 @@ void PersistentTabRestoreService::PruneEntries() {
   helper_.PruneEntries();
 }
 
-BrowserContextKeyedService* TabRestoreServiceFactory::BuildServiceInstanceFor(
+KeyedService* TabRestoreServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   return new PersistentTabRestoreService(static_cast<Profile*>(profile), NULL);
 }

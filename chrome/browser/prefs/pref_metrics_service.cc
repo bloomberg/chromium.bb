@@ -21,7 +21,7 @@
 #include "chrome/browser/ui/tabs/pinned_tab_codec.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/rappor/rappor_service.h"
 #include "crypto/hmac.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -213,8 +213,7 @@ PrefMetricsService::Factory::Factory()
 PrefMetricsService::Factory::~Factory() {
 }
 
-BrowserContextKeyedService*
-PrefMetricsService::Factory::BuildServiceInstanceFor(
+KeyedService* PrefMetricsService::Factory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   return new PrefMetricsService(static_cast<Profile*>(profile));
 }

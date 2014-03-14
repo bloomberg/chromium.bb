@@ -7,17 +7,16 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "components/policy/core/common/schema_registry.h"
 
 namespace policy {
 
 class Schema;
 
-// A SchemaRegistry that is also a BrowserContextKeyedService, and is associated
+// A SchemaRegistry that is also a KeyedService, and is associated
 // with a Profile.
-class SchemaRegistryService : public SchemaRegistry,
-                              public BrowserContextKeyedService {
+class SchemaRegistryService : public SchemaRegistry, public KeyedService {
  public:
   // This SchemaRegistry will initially contain only the |chrome_schema|, if
   // it's valid. The optional |global_registry| must outlive this, and will
@@ -26,7 +25,7 @@ class SchemaRegistryService : public SchemaRegistry,
                         CombinedSchemaRegistry* global_registry);
   virtual ~SchemaRegistryService();
 
-  // BrowserContextKeyedService:
+  // KeyedService:
   virtual void Shutdown() OVERRIDE;
 
  private:

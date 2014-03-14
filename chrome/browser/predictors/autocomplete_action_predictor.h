@@ -14,7 +14,7 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor_table.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -59,7 +59,7 @@ namespace predictors {
 // PostTaskAndReply without fear of crashes if it is destroyed before the reply
 // triggers. This is necessary during initialization.
 class AutocompleteActionPredictor
-    : public BrowserContextKeyedService,
+    : public KeyedService,
       public content::NotificationObserver,
       public base::SupportsWeakPtr<AutocompleteActionPredictor> {
  public:

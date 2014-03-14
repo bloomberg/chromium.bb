@@ -901,7 +901,7 @@ void TemplateURLService::Observe(int type,
 void TemplateURLService::Shutdown() {
   // This check has to be done at Shutdown() instead of in the dtor to ensure
   // that no clients of WebDataService are holding ptrs to it after the first
-  // phase of the BrowserContextKeyedService Shutdown() process.
+  // phase of the KeyedService Shutdown() process.
   if (load_handle_) {
     DCHECK(service_.get());
     service_->CancelRequest(load_handle_);

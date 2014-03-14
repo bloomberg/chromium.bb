@@ -14,13 +14,13 @@
 #include "base/prefs/pref_change_registrar.h"
 #include "chrome/browser/prefs/synced_pref_change_registrar.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
+#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
+#include "components/keyed_service/core/keyed_service.h"
 
 class PrefRegistrySimple;
 
 // PrefMetricsService is responsible for recording prefs-related UMA stats.
-class PrefMetricsService : public BrowserContextKeyedService {
+class PrefMetricsService : public KeyedService {
  public:
   explicit PrefMetricsService(Profile* profile);
   virtual ~PrefMetricsService();
@@ -36,7 +36,7 @@ class PrefMetricsService : public BrowserContextKeyedService {
     virtual ~Factory();
 
     // BrowserContextKeyedServiceFactory implementation
-    virtual BrowserContextKeyedService* BuildServiceInstanceFor(
+    virtual KeyedService* BuildServiceInstanceFor(
         content::BrowserContext* profile) const OVERRIDE;
     virtual bool ServiceIsCreatedWithBrowserContext() const OVERRIDE;
     virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
