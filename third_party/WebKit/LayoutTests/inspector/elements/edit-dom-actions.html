@@ -187,6 +187,28 @@ function test()
             {
                 editNodePartAndRun(node, "webkit-html-text-node", "\n    var i = 0;\n    var j = 0;\n", done);
             }
+        },
+
+        function testEditShadowDOMAsHTML(next)
+        {
+            domActionTestForNodeId("testEditAuthorShadowDOMAsHTML", "authorShadowDOMElement", testBody, next);
+
+            function testBody(node, done)
+            {
+                var treeElement = WebInspector.panels.elements.treeOutline.findTreeElement(node);
+                treeElement._editAsHTML();
+                InspectorTest.runAfterPendingDispatches(step2);
+
+                function step2()
+                {
+                    InspectorTest.addResult(treeElement._editing.codeMirror.getValue());
+                    treeElement._editing.codeMirror.setValue("<span foo=\"shadow-span\"><span id=\"inner-shadow-span\">Shadow span contents</span></span>");
+                    var event = InspectorTest.createKeyEvent("Enter");
+                    event.isMetaOrCtrlForTest = true;
+                    treeElement._htmlEditElement.dispatchEvent(event);
+                    InspectorTest.runAfterPendingDispatches(InspectorTest.expandElementsTree.bind(InspectorTest, done));
+                }
+            }
         }
     ]);
 
@@ -339,6 +361,12 @@ Tests that user can mutate DOM by means of elements panel.
         <!-- Comment -->
     </div>
 
+    <div id="testEditAuthorShadowDOMAsHTML" />
 </div>
+<script>
+var container = document.getElementById("testEditAuthorShadowDOMAsHTML");
+var root = container.createShadowRoot();
+root.innerHTML = "<div id='authorShadowDOMElement'></div>";
+</script>
 </body>
 </html>

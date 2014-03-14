@@ -148,3 +148,18 @@ Running: testEditScript
       </script>
   </div>
 
+Running: testEditShadowDOMAsHTML
+==== before ====
+- <div id="testEditAuthorShadowDOMAsHTML">
+    - #shadow-root
+          <div id="authorShadowDOMElement"></div>
+  </div>
+<div id="authorShadowDOMElement"></div>
+==== after ====
+- <div id="testEditAuthorShadowDOMAsHTML">
+    - #shadow-root
+        - <span foo="shadow-span">
+              <span id="inner-shadow-span">Shadow span contents</span>
+          </span>
+  </div>
+

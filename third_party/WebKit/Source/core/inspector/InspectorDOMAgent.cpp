@@ -428,8 +428,17 @@ Node* InspectorDOMAgent::assertEditableNode(ErrorString* errorString, int nodeId
         return 0;
 
     if (node->isInShadowTree()) {
-        *errorString = "Cannot edit nodes from shadow trees";
-        return 0;
+        if (node->isShadowRoot()) {
+            *errorString = "Cannot edit shadow roots";
+            return 0;
+        }
+        Node* candidate = node;
+        while (candidate && !candidate->isShadowRoot())
+            candidate = candidate->parentElementOrShadowRoot();
+        if (!candidate || (candidate->isShadowRoot() && toShadowRoot(candidate)->type() == ShadowRoot::UserAgentShadowRoot)) {
+            *errorString = "Cannot edit nodes from user-agent shadow trees";
+            return 0;
+        }
     }
 
     if (node->isPseudoElement()) {

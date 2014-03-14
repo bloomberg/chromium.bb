@@ -120,12 +120,20 @@ Node* DOMPatchSupport::patchNode(Node* node, const String& markup, ExceptionStat
     }
 
     Node* previousSibling = node->previousSibling();
-    // FIXME: This code should use one of createFragment* in markup.h
     RefPtr<DocumentFragment> fragment = DocumentFragment::create(m_document);
+    Node* targetNode = node->parentElementOrShadowRoot() ? node->parentElementOrShadowRoot() : m_document.documentElement();
+
+    // Use the document BODY as the context element when editing immediate shadow root children,
+    // as it provides an equivalent parsing context.
+    if (targetNode->isShadowRoot())
+        targetNode = m_document.body();
+    Element* targetElement = toElement(targetNode);
+
+    // FIXME: This code should use one of createFragment* in markup.h
     if (m_document.isHTMLDocument())
-        fragment->parseHTML(markup, node->parentElement() ? node->parentElement() : m_document.documentElement());
+        fragment->parseHTML(markup, targetElement);
     else
-        fragment->parseXML(markup, node->parentElement() ? node->parentElement() : m_document.documentElement());
+        fragment->parseXML(markup, targetElement);
 
     // Compose the old list.
     ContainerNode* parentNode = node->parentNode();
