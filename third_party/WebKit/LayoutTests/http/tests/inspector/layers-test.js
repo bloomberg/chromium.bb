@@ -6,7 +6,7 @@ function initialize_LayerTreeTests()
         if (extension.module().name() === "layers")
             WebInspector.inspectorView.addPanel(new WebInspector.ModuleManagerExtensionPanelDescriptor(extension));
     });
-    InspectorTest._layerTreeModel = WebInspector.inspectorView.panel("layers")._model;
+    InspectorTest.layerTreeModel = WebInspector.inspectorView.panel("layers")._model;
 
     InspectorTest.labelForLayer = function(layer)
     {
@@ -26,7 +26,7 @@ function initialize_LayerTreeTests()
         if (!prefix)
             prefix = "";
         if (!root) {
-            root = InspectorTest._layerTreeModel.contentRoot();
+            root = InspectorTest.layerTreeModel.contentRoot();
             if (!root) {
                 InspectorTest.addResult("No layer root, perhaps not in the composited mode! ");
                 InspectorTest.completeTest();
@@ -64,11 +64,11 @@ function initialize_LayerTreeTests()
     {
         function eventHandler()
         {
-            InspectorTest._layerTreeModel.removeEventListener(WebInspector.LayerTreeModel.Events.LayerTreeChanged, eventHandler);
+            InspectorTest.layerTreeModel.removeEventListener(WebInspector.LayerTreeModel.Events.LayerTreeChanged, eventHandler);
             callback();
         }
         InspectorTest.evaluateInPage(expression, function() {
-            InspectorTest._layerTreeModel.addEventListener(WebInspector.LayerTreeModel.Events.LayerTreeChanged, eventHandler);
+            InspectorTest.layerTreeModel.addEventListener(WebInspector.LayerTreeModel.Events.LayerTreeChanged, eventHandler);
         });
     }
 
@@ -85,7 +85,7 @@ function initialize_LayerTreeTests()
             result = layer;
             return true;
         }
-        InspectorTest._layerTreeModel.forEachLayer(testLayer);
+        InspectorTest.layerTreeModel.forEachLayer(testLayer);
         if (!result)
             InspectorTest.addResult("ERROR: No layer for " + nodeIdAttribute);
         return result;
@@ -93,11 +93,11 @@ function initialize_LayerTreeTests()
 
     InspectorTest.requestLayers = function(callback)
     {
-        InspectorTest._layerTreeModel.addEventListener(WebInspector.LayerTreeModel.Events.LayerTreeChanged, onLayerTreeChanged);
-        InspectorTest._layerTreeModel.enable();
+        InspectorTest.layerTreeModel.addEventListener(WebInspector.LayerTreeModel.Events.LayerTreeChanged, onLayerTreeChanged);
+        InspectorTest.layerTreeModel.enable();
         function onLayerTreeChanged()
         {
-            InspectorTest._layerTreeModel.removeEventListener(WebInspector.LayerTreeModel.Events.LayerTreeChanged, onLayerTreeChanged);
+            InspectorTest.layerTreeModel.removeEventListener(WebInspector.LayerTreeModel.Events.LayerTreeChanged, onLayerTreeChanged);
             callback();
         }
     }

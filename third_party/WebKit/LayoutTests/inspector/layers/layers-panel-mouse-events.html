@@ -70,7 +70,7 @@ InspectorTest.dispatchMouseEventTo3DView = function(eventType, button, layer)
          offsetX += Math.round(layer3DView._scale * currentLayer.offsetX()) + borderWidth;
          offsetY += Math.round(layer3DView._scale * currentLayer.offsetY()) + borderWidth;
     }
-    var rootElement = layer3DView._elementForLayer(InspectorTest._layerTreeModel.contentRoot());
+    var rootElement = layer3DView._elementForLayer(InspectorTest.layerTreeModel.contentRoot());
     InspectorTest.dispatchMouseEvent(eventType, button, rootElement, offsetX, offsetY);
 }
 

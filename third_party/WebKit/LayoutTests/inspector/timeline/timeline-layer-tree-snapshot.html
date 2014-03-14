@@ -1,0 +1,87 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/timeline-test.js"></script>
+<script src="../../http/tests/inspector/layers-test.js"></script>
+<style>
+.layer {
+    width: 100px;
+    height: 100px;
+    -webkit-transform: translateZ(10px);
+}
+</style>
+<script>
+
+function addLayer()
+{
+    var element = document.createElement("div");
+    element.className = "layer";
+    document.body.appendChild(element);
+}
+
+function pageStep0()
+{
+    requestAnimationFrame(pageStep1);
+}
+
+function pageStep1()
+{
+    addLayer();
+    requestAnimationFrame(pageStep2);
+}
+
+function pageStep2()
+{
+    addLayer();
+    console.timeStamp("DONE");
+}
+
+function test()
+{
+    InspectorTest.startTimeline(step1);
+    function step1()
+    {
+        InspectorTest.waitForRecordType(WebInspector.TimelineModel.RecordType.TimeStamp, step2);
+        InspectorTest.evaluateInPage("pageStep0()");
+    }
+
+    function step2()
+    {
+        InspectorTest.stopTimeline(step3);
+    }
+
+    function step3()
+    {
+        InspectorTest.layerTreeModel.addEventListener(WebInspector.LayerTreeModel.Events.LayerTreeChanged, onLayerTreeChanged);
+        InspectorTest.printTimelineRecords(null, loadSnapshot);
+    }
+
+    var pendingEventCount = 0;
+    function loadSnapshot(record)
+    {
+        if (record.type !== WebInspector.TimelineModel.RecordType.UpdateLayerTree)
+            return;
+        ++pendingEventCount;
+        InspectorTest.layerTreeModel.setSnapshot(new WebInspector.LayerTreeSnapshot(record.data["layerTree"]));
+    }
+
+    function onLayerTreeChanged()
+    {
+        InspectorTest.addResult("Layer tree dump:");
+        InspectorTest.dumpLayerTree();
+        if (--pendingEventCount)
+            return;
+        InspectorTest.layerTreeModel.removeEventListener(WebInspector.LayerTreeModel.Events.LayerTreeChanged, onLayerTreeChanged);
+        InspectorTest.completeTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests the Timeline API instrumentation of a Layout event
+</p>
+</body>
+</html>

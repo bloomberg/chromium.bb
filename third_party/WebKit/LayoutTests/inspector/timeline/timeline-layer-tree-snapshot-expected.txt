@@ -1,0 +1,10 @@
+Tests the Timeline API instrumentation of a Layout event
+
+Layer tree dump:
+#document
+    html > body > div:nth-child(2) 100x100
+Layer tree dump:
+#document
+    html > body > div:nth-child(2) 100x100
+    html > body > div:nth-child(3) 100x100
+
