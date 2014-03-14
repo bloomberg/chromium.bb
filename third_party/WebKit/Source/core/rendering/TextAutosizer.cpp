@@ -181,8 +181,7 @@ void TextAutosizer::recalculateMultipliers()
 
 bool TextAutosizer::processSubtree(RenderObject* layoutRoot)
 {
-    TRACE_EVENT0("webkit", "TextAutosizer::processSubtree");
-
+    TRACE_EVENT0("webkit", "TextAutosizer: check if needed");
     if (!m_document->settings() || layoutRoot->view()->document().printing() || !m_document->page())
         return false;
 
@@ -196,7 +195,6 @@ bool TextAutosizer::processSubtree(RenderObject* layoutRoot)
     if (!mainFrame->loader().stateMachine()->committedFirstRealDocumentLoad())
         return false;
 
-    InspectorInstrumentation::willAutosizeText(layoutRoot);
 
     // Window area, in logical (density-independent) pixels.
     windowInfo.windowSize = m_document->settings()->textAutosizingWindowSizeOverride();
@@ -222,11 +220,11 @@ bool TextAutosizer::processSubtree(RenderObject* layoutRoot)
     // Note: this might suppress autosizing of an inner cluster with a different writing mode.
     // It's not clear what the correct behavior is for mixed writing modes anyway.
     if (!cluster || clusterMultiplier(cluster->style()->writingMode(), windowInfo,
-        std::numeric_limits<float>::infinity()) == 1.0f) {
-        InspectorInstrumentation::didAutosizeText(layoutRoot);
+        std::numeric_limits<float>::infinity()) == 1.0f)
         return false;
-    }
 
+    TRACE_EVENT0("webkit", "TextAutosizer: process root cluster");
+    InspectorInstrumentation::willAutosizeText(layoutRoot);
     UseCounter::count(*m_document, UseCounter::TextAutosizing);
 
     TextAutosizingClusterInfo clusterInfo(cluster);

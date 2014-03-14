@@ -10,8 +10,10 @@
 }
 </style>
 <script>
-if (window.internals)
+if (window.internals) {
     window.internals.settings.setTextAutosizingEnabled(true);
+    window.internals.settings.setTextAutosizingWindowSizeOverride(320, 480);
+}
 
 function performActions()
 {
