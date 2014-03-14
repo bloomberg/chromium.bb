@@ -198,10 +198,6 @@ Clipboard::FormatType Clipboard::FormatType::Deserialize(
   return FormatType(serialization);
 }
 
-bool Clipboard::FormatType::operator<(const FormatType& other) const {
-  return data_ < other.data_;
-}
-
 bool Clipboard::FormatType::Equals(const FormatType& other) const {
   return data_ == other.data_;
 }
@@ -339,7 +335,7 @@ void Clipboard::ReadData(const Clipboard::FormatType& format,
 }
 
 // static
-Clipboard::FormatType Clipboard::GetFormatTypeInternal(
+Clipboard::FormatType Clipboard::GetFormatType(
     const std::string& format_string) {
   return FormatType::Deserialize(format_string);
 }
@@ -382,15 +378,13 @@ const Clipboard::FormatType& Clipboard::GetBitmapFormatType() {
 
 // static
 const Clipboard::FormatType& Clipboard::GetWebCustomDataFormatType() {
-  CR_DEFINE_STATIC_LOCAL(
-      FormatType, type, (GetFormatType(kMimeTypeWebCustomData)));
+  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypeWebCustomData));
   return type;
 }
 
 // static
 const Clipboard::FormatType& Clipboard::GetPepperCustomDataFormatType() {
-  CR_DEFINE_STATIC_LOCAL(
-      FormatType, type, (GetFormatType(kMimeTypePepperCustomData)));
+  CR_DEFINE_STATIC_LOCAL(FormatType, type, (kMimeTypePepperCustomData));
   return type;
 }
 
