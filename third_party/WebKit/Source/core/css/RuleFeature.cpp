@@ -100,7 +100,7 @@ static bool isSkippableComponentForInvalidation(const CSSSelector& selector)
 }
 
 // This method is somewhat conservative in what it accepts.
-static bool supportsClassDescendantInvalidation(const CSSSelector& selector)
+RuleFeatureSet::InvalidationSetMode RuleFeatureSet::supportsClassDescendantInvalidation(const CSSSelector& selector)
 {
     bool foundDescendantRelation = false;
     bool foundIdent = false;
@@ -114,7 +114,7 @@ static bool supportsClassDescendantInvalidation(const CSSSelector& selector)
             if (!foundDescendantRelation)
                 foundIdent = true;
         } else if (!isSkippableComponentForInvalidation(*component)) {
-            return false;
+            return foundDescendantRelation ? UseLocalStyleChange : UseSubtreeStyleChange;
         }
         // FIXME: We can probably support ShadowAll and ShadowDeep.
         switch (component->relation()) {
@@ -125,10 +125,10 @@ static bool supportsClassDescendantInvalidation(const CSSSelector& selector)
         case CSSSelector::SubSelector:
             continue;
         default:
-            return false;
+            return UseLocalStyleChange;
         }
     }
-    return foundIdent;
+    return foundIdent ? AddFeatures : UseLocalStyleChange;
 }
 
 void extractClassIdOrTag(const CSSSelector& selector, Vector<AtomicString>& classes, AtomicString& id, AtomicString& tagName)
@@ -146,10 +146,11 @@ RuleFeatureSet::RuleFeatureSet()
 {
 }
 
-bool RuleFeatureSet::updateClassInvalidationSets(const CSSSelector& selector)
+RuleFeatureSet::InvalidationSetMode RuleFeatureSet::updateClassInvalidationSets(const CSSSelector& selector)
 {
-    if (!supportsClassDescendantInvalidation(selector))
-        return false;
+    InvalidationSetMode mode = supportsClassDescendantInvalidation(selector);
+    if (mode != AddFeatures)
+        return mode;
 
     Vector<AtomicString> classes;
     AtomicString id;
@@ -165,7 +166,7 @@ bool RuleFeatureSet::updateClassInvalidationSets(const CSSSelector& selector)
     }
 
     if (!lastSelector)
-        return true;
+        return AddFeatures;
 
     for (const CSSSelector* current = lastSelector->tagHistory(); current; current = current->tagHistory()) {
         if (current->m_match == CSSSelector::Class) {
@@ -179,7 +180,7 @@ bool RuleFeatureSet::updateClassInvalidationSets(const CSSSelector& selector)
             }
         }
     }
-    return true;
+    return AddFeatures;
 }
 
 void RuleFeatureSet::addAttributeInASelector(const AtomicString& attributeName)
@@ -190,16 +191,11 @@ void RuleFeatureSet::addAttributeInASelector(const AtomicString& attributeName)
 void RuleFeatureSet::collectFeaturesFromRuleData(const RuleData& ruleData)
 {
     FeatureMetadata metadata;
-    bool selectorUsesClassInvalidationSet = false;
+    InvalidationSetMode mode = UseSubtreeStyleChange;
     if (m_targetedStyleRecalcEnabled)
-        selectorUsesClassInvalidationSet = updateClassInvalidationSets(ruleData.selector());
+        mode = updateClassInvalidationSets(ruleData.selector());
 
-    SelectorFeatureCollectionMode collectionMode;
-    if (selectorUsesClassInvalidationSet)
-        collectionMode = DontProcessClasses;
-    else
-        collectionMode = ProcessClasses;
-    collectFeaturesFromSelector(ruleData.selector(), metadata, collectionMode);
+    collectFeaturesFromSelector(ruleData.selector(), metadata, mode);
     m_metadata.add(metadata);
 
     if (metadata.foundSiblingSelector)
@@ -218,19 +214,20 @@ DescendantInvalidationSet& RuleFeatureSet::ensureClassInvalidationSet(const Atom
 
 void RuleFeatureSet::collectFeaturesFromSelector(const CSSSelector& selector)
 {
-    collectFeaturesFromSelector(selector, m_metadata, ProcessClasses);
+    collectFeaturesFromSelector(selector, m_metadata, UseSubtreeStyleChange);
 }
 
-void RuleFeatureSet::collectFeaturesFromSelector(const CSSSelector& selector, RuleFeatureSet::FeatureMetadata& metadata, SelectorFeatureCollectionMode collectionMode)
+void RuleFeatureSet::collectFeaturesFromSelector(const CSSSelector& selector, RuleFeatureSet::FeatureMetadata& metadata, InvalidationSetMode mode)
 {
     unsigned maxDirectAdjacentSelectors = 0;
 
     for (const CSSSelector* current = &selector; current; current = current->tagHistory()) {
         if (current->m_match == CSSSelector::Id) {
             metadata.idsInRules.add(current->value());
-        } else if (current->m_match == CSSSelector::Class && collectionMode == ProcessClasses) {
+        } else if (current->m_match == CSSSelector::Class && mode != AddFeatures) {
             DescendantInvalidationSet& invalidationSet = ensureClassInvalidationSet(current->value());
-            invalidationSet.setWholeSubtreeInvalid();
+            if (mode == UseSubtreeStyleChange)
+                invalidationSet.setWholeSubtreeInvalid();
         } else if (current->isAttributeSelector()) {
             metadata.attrsInRules.add(current->attribute().localName());
         }
@@ -246,19 +243,22 @@ void RuleFeatureSet::collectFeaturesFromSelector(const CSSSelector& selector, Ru
         if (current->isSiblingSelector())
             metadata.foundSiblingSelector = true;
 
-        collectFeaturesFromSelectorList(current->selectorList(), metadata, collectionMode);
+        collectFeaturesFromSelectorList(current->selectorList(), metadata, mode);
+
+        if (mode == UseLocalStyleChange && current->relation() != CSSSelector::SubSelector)
+            mode = UseSubtreeStyleChange;
     }
 
     ASSERT(!maxDirectAdjacentSelectors);
 }
 
-void RuleFeatureSet::collectFeaturesFromSelectorList(const CSSSelectorList* selectorList, RuleFeatureSet::FeatureMetadata& metadata, SelectorFeatureCollectionMode collectionMode)
+void RuleFeatureSet::collectFeaturesFromSelectorList(const CSSSelectorList* selectorList, RuleFeatureSet::FeatureMetadata& metadata, InvalidationSetMode mode)
 {
     if (!selectorList)
         return;
 
     for (const CSSSelector* selector = selectorList->first(); selector; selector = CSSSelectorList::next(*selector))
-        collectFeaturesFromSelector(*selector, metadata, collectionMode);
+        collectFeaturesFromSelector(*selector, metadata, mode);
 }
 
 void RuleFeatureSet::FeatureMetadata::add(const FeatureMetadata& other)

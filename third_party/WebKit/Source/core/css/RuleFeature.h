@@ -120,16 +120,19 @@ private:
         HashSet<AtomicString> attrsInRules;
     };
 
-    enum SelectorFeatureCollectionMode {
-        ProcessClasses,
-        DontProcessClasses
+    enum InvalidationSetMode {
+        AddFeatures,
+        UseLocalStyleChange,
+        UseSubtreeStyleChange
     };
 
-    void collectFeaturesFromSelector(const CSSSelector&, FeatureMetadata&, SelectorFeatureCollectionMode processClasses);
-    void collectFeaturesFromSelectorList(const CSSSelectorList*, FeatureMetadata&, SelectorFeatureCollectionMode processClasses);
+    static InvalidationSetMode supportsClassDescendantInvalidation(const CSSSelector&);
+
+    void collectFeaturesFromSelector(const CSSSelector&, FeatureMetadata&, InvalidationSetMode);
+    void collectFeaturesFromSelectorList(const CSSSelectorList*, FeatureMetadata&, InvalidationSetMode);
 
     DescendantInvalidationSet& ensureClassInvalidationSet(const AtomicString& className);
-    bool updateClassInvalidationSets(const CSSSelector&);
+    InvalidationSetMode updateClassInvalidationSets(const CSSSelector&);
 
     void addClassToInvalidationSet(const AtomicString& className, Element*);
 
