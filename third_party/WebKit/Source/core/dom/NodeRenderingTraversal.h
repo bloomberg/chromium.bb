@@ -65,6 +65,8 @@ ContainerNode* parent(const Node*, ParentDetails*);
 bool contains(const ContainerNode*, const Node*);
 Node* nextSibling(const Node*);
 Node* previousSibling(const Node*);
+Node* previous(const Node*, const Node* stayWithin);
+Node* next(const Node*, const Node* stayWithin);
 RenderObject* nextSiblingRenderer(const Node*);
 RenderObject* previousSiblingRenderer(const Node*);
 RenderObject* nextInTopLayer(const Element*);

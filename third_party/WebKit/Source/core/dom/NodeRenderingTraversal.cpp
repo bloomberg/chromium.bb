@@ -118,6 +118,115 @@ Node* previousSibling(const Node* node)
     return 0;
 }
 
+static Node* lastChild(const Node* node)
+{
+    ComposedTreeWalker walker(node);
+    walker.lastChild();
+    return walker.get();
+}
+
+static Node* pseudoAwarePreviousSibling(const Node* node)
+{
+    Node* previousNode = previousSibling(node);
+    Node* parentNode = parent(node);
+
+    if (parentNode && parentNode->isElementNode() && !previousNode) {
+        if (node->isAfterPseudoElement()) {
+            if (Node* child = lastChild(parentNode))
+                return child;
+        }
+        if (!node->isBeforePseudoElement())
+            return toElement(parentNode)->pseudoElement(BEFORE);
+    }
+    return previousNode;
+}
+
+static Node* pseudoAwareLastChild(const Node* node)
+{
+    if (node->isElementNode()) {
+        const Element* currentElement = toElement(node);
+        Node* last = currentElement->pseudoElement(AFTER);
+        if (last)
+            return last;
+
+        last = lastChild(currentElement);
+        if (!last)
+            last = currentElement->pseudoElement(BEFORE);
+        return last;
+    }
+
+    return lastChild(node);
+}
+
+Node* previous(const Node* node, const Node* stayWithin)
+{
+    if (node == stayWithin)
+        return 0;
+
+    if (Node* previousNode = pseudoAwarePreviousSibling(node)) {
+        while (Node* previousLastChild = pseudoAwareLastChild(previousNode))
+            previousNode = previousLastChild;
+        return previousNode;
+    }
+    return parent(node);
+}
+
+static Node* firstChild(const Node* node)
+{
+    ComposedTreeWalker walker(node);
+    walker.firstChild();
+    return walker.get();
+}
+
+static Node* pseudoAwareNextSibling(const Node* node)
+{
+    Node* parentNode = parent(node);
+    Node* nextNode = nextSibling(node);
+
+    if (parentNode && parentNode->isElementNode() && !nextNode) {
+        if (node->isBeforePseudoElement()) {
+            if (Node* child = firstChild(parentNode))
+                return child;
+        }
+        if (!node->isAfterPseudoElement())
+            return toElement(parentNode)->pseudoElement(AFTER);
+    }
+    return nextNode;
+}
+
+static Node* pseudoAwareFirstChild(const Node* node)
+{
+    if (node->isElementNode()) {
+        const Element* currentElement = toElement(node);
+        Node* first = currentElement->pseudoElement(BEFORE);
+        if (first)
+            return first;
+        first = firstChild(currentElement);
+        if (!first)
+            first = currentElement->pseudoElement(AFTER);
+        return first;
+    }
+
+    return firstChild(node);
+}
+
+Node* next(const Node* node, const Node* stayWithin)
+{
+    if (Node* child = pseudoAwareFirstChild(node))
+        return child;
+    if (node == stayWithin)
+        return 0;
+    if (Node* nextNode = pseudoAwareNextSibling(node))
+        return nextNode;
+    for (Node* parentNode = parent(node); parentNode; parentNode = parent(parentNode)) {
+        if (parentNode == stayWithin)
+            return 0;
+        if (Node* nextNode = pseudoAwareNextSibling(parentNode))
+            return nextNode;
+    }
+    return 0;
+}
+
 RenderObject* nextSiblingRenderer(const Node* node)
 {
     for (Node* sibling = NodeRenderingTraversal::nextSibling(node); sibling; sibling = NodeRenderingTraversal::nextSibling(sibling)) {

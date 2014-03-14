@@ -25,7 +25,7 @@
 #include "core/rendering/RenderListItem.h"
 
 #include "HTMLNames.h"
-#include "core/dom/ElementTraversal.h"
+#include "core/dom/NodeRenderingTraversal.h"
 #include "core/html/HTMLOListElement.h"
 #include "core/rendering/FastTextAutosizer.h"
 #include "core/rendering/LayoutRectRecorder.h"
@@ -103,7 +103,7 @@ static Node* enclosingList(const RenderListItem* listItem)
     Node* listItemNode = listItem->node();
     Node* firstNode = 0;
     // We use parentNode because the enclosing list could be a ShadowRoot that's not Element.
-    for (Node* parent = listItemNode->parentNode(); parent; parent = parent->parentNode()) {
+    for (Node* parent = NodeRenderingTraversal::parent(listItemNode); parent; parent = NodeRenderingTraversal::parent(parent)) {
         if (isList(parent))
             return parent;
         if (!firstNode)
@@ -124,12 +124,13 @@ static RenderListItem* nextListItem(const Node* listNode, const RenderListItem* 
 
     const Node* current = item ? item->node() : listNode;
     ASSERT(current);
-    current = ElementTraversal::nextIncludingPseudo(*current, listNode);
+    ASSERT(!current->document().childNeedsDistributionRecalc());
+    current = NodeRenderingTraversal::next(current, listNode);
 
     while (current) {
         if (isList(current)) {
             // We've found a nested, independent list: nothing to do here.
-            current = ElementTraversal::nextIncludingPseudoSkippingChildren(*current, listNode);
+            current = NodeRenderingTraversal::next(current, listNode);
             continue;
         }
 
@@ -138,7 +139,7 @@ static RenderListItem* nextListItem(const Node* listNode, const RenderListItem* 
             return toRenderListItem(renderer);
 
         // FIXME: Can this be optimized to skip the children of the elements without a renderer?
-        current = ElementTraversal::nextIncludingPseudo(*current, listNode);
+        current = NodeRenderingTraversal::next(current, listNode);
     }
 
     return 0;
@@ -149,7 +150,8 @@ static RenderListItem* previousListItem(const Node* listNode, const RenderListIt
 {
     Node* current = item->node();
     ASSERT(current);
-    for (current = ElementTraversal::previousIncludingPseudo(*current, listNode); current; current = ElementTraversal::previousIncludingPseudo(*current, listNode)) {
+    ASSERT(!current->document().childNeedsDistributionRecalc());
+    for (current = NodeRenderingTraversal::previous(current, listNode); current && current != listNode; current = NodeRenderingTraversal::previous(current, listNode)) {
         RenderObject* renderer = current->renderer();
         if (!renderer || (renderer && !renderer->isListItem()))
             continue;
@@ -162,7 +164,7 @@ static RenderListItem* previousListItem(const Node* listNode, const RenderListIt
         // be a list item itself. We need to examine it, so we do this to counteract
         // the previousIncludingPseudo() that will be done by the loop.
         if (otherList)
-            current = ElementTraversal::nextIncludingPseudo(*otherList);
+            current = NodeRenderingTraversal::next(otherList, listNode);
     }
     return 0;
 }
@@ -503,6 +505,11 @@ static RenderListItem* previousOrNextItem(bool isListReversed, Node* list, Rende
 
 void RenderListItem::updateListMarkerNumbers()
 {
+    // If distribution recalc is needed, updateListMarkerNumber will be re-invoked
+    // after distribution is calculated.
+    if (node()->document().childNeedsDistributionRecalc())
+        return;
+
     Node* listNode = enclosingList(this);
     // The list node can be the shadow root which has no renderer.
     ASSERT(listNode);
