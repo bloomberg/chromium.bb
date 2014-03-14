@@ -22,7 +22,7 @@ namespace system {
 namespace {
 
 const int64_t kMicrosPerMs = 1000;
-const int64_t kEpsilonMicros = 15 * kMicrosPerMs;  // 15 ms.
+const int64_t kEpsilonMicros = 30 * kMicrosPerMs;  // 30 ms.
 const int64_t kPollTimeMicros = 10 * kMicrosPerMs;  // 10 ms.
 
 class WaitingThread : public base::SimpleThread {
