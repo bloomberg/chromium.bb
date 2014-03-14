@@ -13,12 +13,13 @@
 
 namespace policy {
 
-bool SkipBlacklistForURL(const GURL& url) {
+bool OverrideBlacklistForURL(const GURL& url, bool* block) {
 #if defined(OS_CHROMEOS) || defined(OS_IOS)
   return false;
 #else
   static const char kServiceLoginAuth[] = "/ServiceLoginAuth";
 
+  *block = false;
   // Whitelist all the signin flow URLs flagged by the SigninManager.
   if (SigninManager::IsWebBasedSigninFlowURL(url))
     return true;

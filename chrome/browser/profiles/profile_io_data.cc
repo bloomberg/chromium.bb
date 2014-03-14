@@ -445,7 +445,7 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
                                       background_task_runner,
                                       io_message_loop_proxy,
                                       callback,
-                                      policy::SkipBlacklistForURL));
+                                      policy::OverrideBlacklistForURL));
 
   if (!is_incognito()) {
     // Add policy headers for non-incognito requests.

@@ -43,7 +43,7 @@ class TestingURLBlacklistManager : public URLBlacklistManager {
                             base::MessageLoopProxy::current(),
                             base::MessageLoopProxy::current(),
                             GetSegmentURLCallback(),
-                            SkipBlacklistForURL),
+                            OverrideBlacklistForURL),
         update_called_(0),
         set_blacklist_called_(false) {}
 

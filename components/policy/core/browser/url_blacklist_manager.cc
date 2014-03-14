@@ -269,13 +269,13 @@ URLBlacklistManager::URLBlacklistManager(
     const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
     const scoped_refptr<base::SequencedTaskRunner>& io_task_runner,
     URLBlacklist::SegmentURLCallback segment_url,
-    SkipBlacklistCallback skip_blacklist)
+    OverrideBlacklistCallback override_blacklist)
     : ui_weak_ptr_factory_(this),
       pref_service_(pref_service),
       background_task_runner_(background_task_runner),
       io_task_runner_(io_task_runner),
       segment_url_(segment_url),
-      skip_blacklist_(skip_blacklist),
+      override_blacklist_(override_blacklist),
       io_weak_ptr_factory_(this),
       ui_task_runner_(base::MessageLoopProxy::current()),
       blacklist_(new URLBlacklist(segment_url)) {
@@ -368,8 +368,9 @@ bool URLBlacklistManager::IsRequestBlocked(
     return false;
 #endif
 
-  if (skip_blacklist_(request.url()))
-    return false;
+  bool block = false;
+  if (override_blacklist_(request.url(), &block))
+    return block;
 
   return IsURLBlocked(request.url());
 }
