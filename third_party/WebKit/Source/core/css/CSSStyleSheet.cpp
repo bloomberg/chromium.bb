@@ -416,14 +416,27 @@ void CSSStyleSheet::clearChildRuleCSSOMWrappers()
 bool CSSStyleSheet::sheetLoaded()
 {
     ASSERT(m_ownerNode);
-    m_loadCompleted = m_ownerNode->sheetLoaded();
+    setLoadCompleted(m_ownerNode->sheetLoaded());
     return m_loadCompleted;
 }
 
 void CSSStyleSheet::startLoadingDynamicSheet()
 {
-    m_loadCompleted = false;
+    setLoadCompleted(false);
     m_ownerNode->startLoadingDynamicSheet();
+}
+
+void CSSStyleSheet::setLoadCompleted(bool completed)
+{
+    if (completed == m_loadCompleted)
+        return;
+
+    m_loadCompleted = completed;
+
+    if (completed)
+        m_contents->clientLoadCompleted(this);
+    else
+        m_contents->clientLoadStarted(this);
 }
 
 void CSSStyleSheet::trace(Visitor* visitor)

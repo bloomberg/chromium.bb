@@ -129,6 +129,8 @@ private:
 
     bool canAccessRules() const;
 
+    void setLoadCompleted(bool);
+
     RefPtrWillBeMember<StyleSheetContents> m_contents;
     bool m_isInlineStylesheet;
     bool m_isDisabled;

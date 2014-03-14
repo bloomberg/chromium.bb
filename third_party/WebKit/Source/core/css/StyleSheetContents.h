@@ -139,7 +139,9 @@ public:
 
     void registerClient(CSSStyleSheet*);
     void unregisterClient(CSSStyleSheet*);
-    bool hasOneClient() { return m_clients.size() == 1; }
+    bool hasOneClient() { return (m_loadingClients.size() + m_completedClients.size()) == 1; }
+    void clientLoadCompleted(CSSStyleSheet*);
+    void clientLoadStarted(CSSStyleSheet*);
 
     bool isMutable() const { return m_isMutable; }
     void setMutable() { m_isMutable = true; }
@@ -185,7 +187,8 @@ private:
 
     CSSParserContext m_parserContext;
 
-    WillBeHeapHashSet<RawPtrWillBeWeakMember<CSSStyleSheet> > m_clients;
+    WillBeHeapHashSet<RawPtrWillBeWeakMember<CSSStyleSheet> > m_loadingClients;
+    WillBeHeapHashSet<RawPtrWillBeWeakMember<CSSStyleSheet> > m_completedClients;
     typedef WillBeHeapHashSet<RawPtrWillBeWeakMember<CSSStyleSheet> >::iterator ClientsIterator;
 
     OwnPtrWillBeMember<RuleSet> m_ruleSet;
