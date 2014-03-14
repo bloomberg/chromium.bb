@@ -18,7 +18,7 @@ function test()
     function step2(event)
     {
         var script = event.data;
-        if (script.sourceURL !== WebInspector.inspectedPageURL)
+        if (script.sourceURL !== WebInspector.resourceTreeModel.inspectedPageURL())
             return;
         scripts.push(script);
         if (scripts.length === 6)

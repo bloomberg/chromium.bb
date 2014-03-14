@@ -31,13 +31,13 @@ function test()
         var scripts = WebInspector.debuggerModel.scripts;
         for (var scriptId in scripts) {
             var scriptCandidate = scripts[scriptId];
-            if (scriptCandidate.sourceURL === WebInspector.inspectedPageURL && scriptCandidate.lineOffset === 4) {
+            if (scriptCandidate.sourceURL === WebInspector.resourceTreeModel.inspectedPageURL() && scriptCandidate.lineOffset === 4) {
                 script = scriptCandidate;
                 break;
             }
         }
         
-        uiSourceCode = WebInspector.workspace.uiSourceCodeForOriginURL(WebInspector.inspectedPageURL);
+        uiSourceCode = WebInspector.workspace.uiSourceCodeForOriginURL(WebInspector.resourceTreeModel.inspectedPageURL());
         var linkifyMe = "at triggerError (http://localhost/show/:22:11)";
         var fragment = WebInspector.linkifyStringAsFragment(linkifyMe);
         var anchor = fragment.querySelector('a');
@@ -47,7 +47,7 @@ function test()
 
         linkifier = new WebInspector.Linkifier();
         var count1 = liveLocationsCount();
-        link = linkifier.linkifyLocation(WebInspector.inspectedPageURL, 8, 0, "dummy-class");
+        link = linkifier.linkifyLocation(WebInspector.resourceTreeModel.inspectedPageURL(), 8, 0, "dummy-class");
         var count2 = liveLocationsCount();
 
         InspectorTest.addResult("listeners added on raw source code: " + (count2 - count1));

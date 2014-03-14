@@ -64,7 +64,7 @@ function test()
     cssModel = new WebInspector.CSSStyleModel(InspectorTest.testWorkspace);
     new WebInspector.CSSStyleSheetMapping(cssModel, InspectorTest.testWorkspace, InspectorTest.testNetworkWorkspaceProvider);
 
-    var resourcesURL = WebInspector.ParsedURL.completeURL(WebInspector.inspectedPageURL, "resources/");
+    var resourcesURL = WebInspector.ParsedURL.completeURL(WebInspector.resourceTreeModel.inspectedPageURL(), "resources/");
     var namePrefix = "update-locations-on-filesystem-scss-load."
     var cssURL = resourcesURL + namePrefix + "css";
     var scssURL = resourcesURL + namePrefix + "scss";

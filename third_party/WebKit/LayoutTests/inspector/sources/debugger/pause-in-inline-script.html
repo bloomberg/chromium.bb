@@ -24,7 +24,7 @@ f3();
 
 var test = function()
 {
-    var testName = WebInspector.inspectedPageURL;
+    var testName = WebInspector.resourceTreeModel.inspectedPageURL();
     testName = testName.substring(testName.lastIndexOf('/') + 1);
 
     InspectorTest.startDebuggerTest(step1);

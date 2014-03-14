@@ -33,7 +33,7 @@ var test = function()
         watchExpressionsSection.watchExpressions.push("(function(a,b) { return a + b; }).bind({}, 2)");
         watchExpressionsSection.update();
 
-        var testName = WebInspector.inspectedPageURL;
+        var testName = WebInspector.resourceTreeModel.inspectedPageURL();
         testName = testName.substring(testName.lastIndexOf('/') + 1);
         InspectorTest.showScriptSource(testName, didShowScriptSource);
     }
