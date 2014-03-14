@@ -37,6 +37,16 @@ using namespace std;
 
 namespace WebCore {
 
+// Every entry-point that calls updateAnimations() should instantiate a
+// DiscardScope to prevent deletion of the ownerElement (and hence itself.)
+class DiscardScope {
+public:
+    explicit DiscardScope(SVGSVGElement& timeContainerOwner) : m_discardScopeElement(&timeContainerOwner) { }
+
+private:
+    RefPtr<SVGSVGElement> m_discardScopeElement;
+};
+
 SMILTimeContainer::SMILTimeContainer(SVGSVGElement& owner)
     : m_beginTime(0)
     , m_pauseTime(0)
@@ -147,6 +157,7 @@ void SMILTimeContainer::begin()
     // If 'm_presetStartTime' is set, the timeline was modified via setElapsed() before the document began.
     // In this case pass on 'seekToTime=true' to updateAnimations().
     m_beginTime = now - m_presetStartTime;
+    DiscardScope discardScope(m_ownerSVGElement);
     SMILTime earliestFireTime = updateAnimations(SMILTime(m_presetStartTime), m_presetStartTime ? true : false);
     m_presetStartTime = 0;
 
@@ -219,6 +230,7 @@ void SMILTimeContainer::setElapsed(SMILTime time)
     m_preventScheduledAnimationsChanges = false;
 #endif
 
+    DiscardScope discardScope(m_ownerSVGElement);
     updateAnimationsAndScheduleFrameIfNeeded(time, true);
 }
 
@@ -261,6 +273,7 @@ void SMILTimeContainer::wakeupTimerFired(Timer<SMILTimeContainer>*)
     } else {
         ASSERT(m_frameSchedulingState == SynchronizeAnimations);
         m_frameSchedulingState = Idle;
+        DiscardScope discardScope(m_ownerSVGElement);
         updateAnimationsAndScheduleFrameIfNeeded(elapsed());
     }
 }
@@ -321,6 +334,7 @@ void SMILTimeContainer::serviceAnimations(double monotonicAnimationStartTime)
 
     m_frameSchedulingState = Idle;
     animationClock().updateTime(monotonicAnimationStartTime);
+    DiscardScope discardScope(m_ownerSVGElement);
     updateAnimationsAndScheduleFrameIfNeeded(elapsed());
     animationClock().unfreeze();
 }
