@@ -56,7 +56,7 @@ ExperimentalWebSocket status=test
 FileAPIBlobClose status=experimental
 FileConstructor status=experimental
 FileSystem status=stable
-FontLoadEvents status=experimental
+FontLoadEvents status=stable
 FastTextAutosizing
 Gamepad status=stable
 HTMLImports status=test
