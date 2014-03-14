@@ -19,7 +19,7 @@ ProjectingObserver::ProjectingObserver()
 ProjectingObserver::~ProjectingObserver() {}
 
 void ProjectingObserver::OnDisplayModeChanged(
-    const std::vector<chromeos::OutputConfigurator::OutputSnapshot>& outputs) {
+    const std::vector<ui::OutputConfigurator::OutputSnapshot>& outputs) {
   has_internal_output_ = false;
   output_count_ = outputs.size();
 

@@ -14,14 +14,14 @@ namespace internal {
 
 namespace {
 
-chromeos::OutputConfigurator::OutputSnapshot CreateInternalSnapshot() {
-  chromeos::OutputConfigurator::OutputSnapshot output;
+ui::OutputConfigurator::OutputSnapshot CreateInternalSnapshot() {
+  ui::OutputConfigurator::OutputSnapshot output;
   output.type = ui::OUTPUT_TYPE_INTERNAL;
   return output;
 }
 
-chromeos::OutputConfigurator::OutputSnapshot CreateVGASnapshot() {
-  chromeos::OutputConfigurator::OutputSnapshot output;
+ui::OutputConfigurator::OutputSnapshot CreateVGASnapshot() {
+  ui::OutputConfigurator::OutputSnapshot output;
   output.type = ui::OUTPUT_TYPE_VGA;
   return output;
 }
@@ -54,7 +54,7 @@ class ProjectingObserverTest : public testing::Test {
 }  // namespace
 
 TEST_F(ProjectingObserverTest, CheckNoDisplay) {
-  std::vector<chromeos::OutputConfigurator::OutputSnapshot> outputs;
+  std::vector<ui::OutputConfigurator::OutputSnapshot> outputs;
   observer_->OnDisplayModeChanged(outputs);
 
   EXPECT_EQ(1, fake_power_client_->num_set_is_projecting_calls());
@@ -62,7 +62,7 @@ TEST_F(ProjectingObserverTest, CheckNoDisplay) {
 }
 
 TEST_F(ProjectingObserverTest, CheckWithoutInternalDisplay) {
-  std::vector<chromeos::OutputConfigurator::OutputSnapshot> outputs;
+  std::vector<ui::OutputConfigurator::OutputSnapshot> outputs;
   outputs.push_back(CreateVGASnapshot());
   observer_->OnDisplayModeChanged(outputs);
 
@@ -71,7 +71,7 @@ TEST_F(ProjectingObserverTest, CheckWithoutInternalDisplay) {
 }
 
 TEST_F(ProjectingObserverTest, CheckWithInternalDisplay) {
-  std::vector<chromeos::OutputConfigurator::OutputSnapshot> outputs;
+  std::vector<ui::OutputConfigurator::OutputSnapshot> outputs;
   outputs.push_back(CreateInternalSnapshot());
   observer_->OnDisplayModeChanged(outputs);
 
@@ -80,7 +80,7 @@ TEST_F(ProjectingObserverTest, CheckWithInternalDisplay) {
 }
 
 TEST_F(ProjectingObserverTest, CheckWithTwoVGADisplays) {
-  std::vector<chromeos::OutputConfigurator::OutputSnapshot> outputs;
+  std::vector<ui::OutputConfigurator::OutputSnapshot> outputs;
   outputs.push_back(CreateVGASnapshot());
   outputs.push_back(CreateVGASnapshot());
   observer_->OnDisplayModeChanged(outputs);
@@ -91,7 +91,7 @@ TEST_F(ProjectingObserverTest, CheckWithTwoVGADisplays) {
 }
 
 TEST_F(ProjectingObserverTest, CheckWithInternalAndVGADisplays) {
-  std::vector<chromeos::OutputConfigurator::OutputSnapshot> outputs;
+  std::vector<ui::OutputConfigurator::OutputSnapshot> outputs;
   outputs.push_back(CreateInternalSnapshot());
   outputs.push_back(CreateVGASnapshot());
   observer_->OnDisplayModeChanged(outputs);
@@ -101,7 +101,7 @@ TEST_F(ProjectingObserverTest, CheckWithInternalAndVGADisplays) {
 }
 
 TEST_F(ProjectingObserverTest, CheckWithVGADisplayAndOneCastingSession) {
-  std::vector<chromeos::OutputConfigurator::OutputSnapshot> outputs;
+  std::vector<ui::OutputConfigurator::OutputSnapshot> outputs;
   outputs.push_back(CreateVGASnapshot());
   observer_->OnDisplayModeChanged(outputs);
 
@@ -113,7 +113,7 @@ TEST_F(ProjectingObserverTest, CheckWithVGADisplayAndOneCastingSession) {
 }
 
 TEST_F(ProjectingObserverTest, CheckWithInternalDisplayAndOneCastingSession) {
-  std::vector<chromeos::OutputConfigurator::OutputSnapshot> outputs;
+  std::vector<ui::OutputConfigurator::OutputSnapshot> outputs;
   outputs.push_back(CreateInternalSnapshot());
   observer_->OnDisplayModeChanged(outputs);
 
@@ -124,7 +124,7 @@ TEST_F(ProjectingObserverTest, CheckWithInternalDisplayAndOneCastingSession) {
 }
 
 TEST_F(ProjectingObserverTest, CheckProjectingAfterClosingACastingSession) {
-  std::vector<chromeos::OutputConfigurator::OutputSnapshot> outputs;
+  std::vector<ui::OutputConfigurator::OutputSnapshot> outputs;
   outputs.push_back(CreateInternalSnapshot());
   observer_->OnDisplayModeChanged(outputs);
 
@@ -142,7 +142,7 @@ TEST_F(ProjectingObserverTest, CheckProjectingAfterClosingACastingSession) {
 
 TEST_F(ProjectingObserverTest,
        CheckStopProjectingAfterClosingAllCastingSessions) {
-  std::vector<chromeos::OutputConfigurator::OutputSnapshot> outputs;
+  std::vector<ui::OutputConfigurator::OutputSnapshot> outputs;
   outputs.push_back(CreateInternalSnapshot());
   observer_->OnDisplayModeChanged(outputs);
 
@@ -155,7 +155,7 @@ TEST_F(ProjectingObserverTest,
 
 TEST_F(ProjectingObserverTest,
        CheckStopProjectingAfterDisconnectingSecondOutput) {
-  std::vector<chromeos::OutputConfigurator::OutputSnapshot> outputs;
+  std::vector<ui::OutputConfigurator::OutputSnapshot> outputs;
   outputs.push_back(CreateInternalSnapshot());
   outputs.push_back(CreateVGASnapshot());
   observer_->OnDisplayModeChanged(outputs);

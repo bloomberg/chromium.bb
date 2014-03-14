@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/display/native_display_delegate_x11.h"
+#include "ui/display/chromeos/x11/native_display_delegate_x11.h"
 
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
@@ -17,11 +17,11 @@
 #include "base/message_loop/message_pump_x11.h"
 #include "base/x11/edid_parser_x11.h"
 #include "base/x11/x11_error_tracker.h"
-#include "chromeos/display/native_display_event_dispatcher_x11.h"
-#include "chromeos/display/native_display_observer.h"
-#include "chromeos/display/output_util.h"
+#include "ui/display/chromeos/native_display_observer.h"
+#include "ui/display/chromeos/x11/display_util.h"
+#include "ui/display/chromeos/x11/native_display_event_dispatcher_x11.h"
 
-namespace chromeos {
+namespace ui {
 
 namespace {
 
@@ -30,20 +30,10 @@ const float kMmInInch = 25.4;
 const float kDpi96 = 96.0;
 const float kPixelsToMmScale = kMmInInch / kDpi96;
 
-// Prefixes of output name
-const char kOutputName_VGA[] = "VGA";
-const char kOutputName_HDMI[] = "HDMI";
-const char kOutputName_DVI[] = "DVI";
-const char kOutputName_DisplayPort[] = "DP";
-
 const char kContentProtectionAtomName[] = "Content Protection";
 const char kProtectionUndesiredAtomName[] = "Undesired";
 const char kProtectionDesiredAtomName[] = "Desired";
 const char kProtectionEnabledAtomName[] = "Enabled";
-
-bool IsInternalOutput(const XRROutputInfo* output_info) {
-  return IsInternalOutputName(std::string(output_info->name));
-}
 
 RRMode GetOutputNativeMode(const XRROutputInfo* output_info) {
   return output_info->nmode > 0 ? output_info->modes[0] : None;
@@ -57,23 +47,21 @@ RRMode GetOutputNativeMode(const XRROutputInfo* output_info) {
 class NativeDisplayDelegateX11::HelperDelegateX11
     : public NativeDisplayDelegateX11::HelperDelegate {
  public:
-  HelperDelegateX11(NativeDisplayDelegateX11* delegate)
-      : delegate_(delegate) {}
+  HelperDelegateX11(NativeDisplayDelegateX11* delegate) : delegate_(delegate) {}
   virtual ~HelperDelegateX11() {}
 
   // NativeDisplayDelegateX11::HelperDelegate overrides:
-  virtual void UpdateXRandRConfiguration(
-      const base::NativeEvent& event) OVERRIDE {
+  virtual void UpdateXRandRConfiguration(const base::NativeEvent& event)
+      OVERRIDE {
     XRRUpdateConfiguration(event);
   }
   virtual const std::vector<OutputConfigurator::OutputSnapshot>&
-      GetCachedOutputs() const OVERRIDE {
+  GetCachedOutputs() const OVERRIDE {
     return delegate_->cached_outputs_;
   }
   virtual void NotifyDisplayObservers() OVERRIDE {
-    FOR_EACH_OBSERVER(NativeDisplayObserver,
-                      delegate_->observers_,
-                      OnConfigurationChanged());
+    FOR_EACH_OBSERVER(
+        NativeDisplayObserver, delegate_->observers_, OnConfigurationChanged());
   }
 
  private:
@@ -92,8 +80,8 @@ class NativeDisplayDelegateX11::MessagePumpObserverX11
   virtual ~MessagePumpObserverX11();
 
   // base::MessagePumpObserver overrides:
-  virtual base::EventStatus WillProcessEvent(
-      const base::NativeEvent& event) OVERRIDE;
+  virtual base::EventStatus WillProcessEvent(const base::NativeEvent& event)
+      OVERRIDE;
   virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE;
 
  private:
@@ -103,7 +91,8 @@ class NativeDisplayDelegateX11::MessagePumpObserverX11
 };
 
 NativeDisplayDelegateX11::MessagePumpObserverX11::MessagePumpObserverX11(
-    HelperDelegate* delegate) : delegate_(delegate) {}
+    HelperDelegate* delegate)
+    : delegate_(delegate) {}
 
 NativeDisplayDelegateX11::MessagePumpObserverX11::~MessagePumpObserverX11() {}
 
@@ -124,8 +113,7 @@ NativeDisplayDelegateX11::MessagePumpObserverX11::WillProcessEvent(
 }
 
 void NativeDisplayDelegateX11::MessagePumpObserverX11::DidProcessEvent(
-    const base::NativeEvent& event) {
-}
+    const base::NativeEvent& event) {}
 
 ////////////////////////////////////////////////////////////////////////////////
 // NativeDisplayDelegateX11 implementation:
@@ -149,8 +137,8 @@ void NativeDisplayDelegateX11::Initialize() {
   helper_delegate_.reset(new HelperDelegateX11(this));
   message_pump_dispatcher_.reset(new NativeDisplayEventDispatcherX11(
       helper_delegate_.get(), xrandr_event_base));
-  message_pump_observer_.reset(new MessagePumpObserverX11(
-      helper_delegate_.get()));
+  message_pump_observer_.reset(
+      new MessagePumpObserverX11(helper_delegate_.get()));
 
   base::MessagePumpX11::Current()->AddDispatcherForRootWindow(
       message_pump_dispatcher_.get());
@@ -224,7 +212,8 @@ NativeDisplayDelegateX11::GetOutputs() {
 }
 
 void NativeDisplayDelegateX11::AddMode(
-    const OutputConfigurator::OutputSnapshot& output, RRMode mode) {
+    const OutputConfigurator::OutputSnapshot& output,
+    RRMode mode) {
   CHECK(screen_) << "Server not grabbed";
   VLOG(1) << "AddOutputMode: output=" << output.output << " mode=" << mode;
   XRRAddOutputMode(display_, output.output, mode);
@@ -238,12 +227,11 @@ bool NativeDisplayDelegateX11::Configure(
   return ConfigureCrtc(output.crtc, mode, output.output, x, y);
 }
 
-bool NativeDisplayDelegateX11::ConfigureCrtc(
-    RRCrtc crtc,
-    RRMode mode,
-    RROutput output,
-    int x,
-    int y) {
+bool NativeDisplayDelegateX11::ConfigureCrtc(RRCrtc crtc,
+                                             RRMode mode,
+                                             RROutput output,
+                                             int x,
+                                             int y) {
   CHECK(screen_) << "Server not grabbed";
   VLOG(1) << "ConfigureCrtc: crtc=" << crtc << " mode=" << mode
           << " output=" << output << " x=" << x << " y=" << y;
@@ -319,12 +307,15 @@ OutputConfigurator::OutputSnapshot NativeDisplayDelegateX11::InitOutputSnapshot(
   output.height_mm = info->mm_height;
   output.has_display_id = base::GetDisplayId(id, index, &output.display_id);
   output.index = index;
-  bool is_internal = IsInternalOutput(info);
+  output.type = GetOutputTypeFromName(info->name);
+
+  if (output.type == OUTPUT_TYPE_UNKNOWN)
+    LOG(ERROR) << "Unknown link type: " << info->name;
 
   // Use the index as a valid display ID even if the internal
   // display doesn't have valid EDID because the index
   // will never change.
-  if (!output.has_display_id && is_internal)
+  if (!output.has_display_id && output.type == OUTPUT_TYPE_INTERNAL)
     output.has_display_id = true;
 
   if (info->crtc) {
@@ -357,27 +348,12 @@ OutputConfigurator::OutputSnapshot NativeDisplayDelegateX11::InitOutputSnapshot(
       LOG(WARNING) << "Unable to find XRRModeInfo for mode " << mode;
   }
 
-  std::string name(info->name);
-  if (is_internal) {
-    output.type = ui::OUTPUT_TYPE_INTERNAL;
-  } else if (name.find(kOutputName_VGA) == 0) {
-    output.type = ui::OUTPUT_TYPE_VGA;
-  } else if (name.find(kOutputName_HDMI) == 0) {
-    output.type = ui::OUTPUT_TYPE_HDMI;
-  } else if (name.find(kOutputName_DVI) == 0) {
-    output.type = ui::OUTPUT_TYPE_DVI;
-  } else if (name.find(kOutputName_DisplayPort) == 0) {
-    output.type = ui::OUTPUT_TYPE_DISPLAYPORT;
-  } else {
-    LOG(ERROR) << "Unknown link type: " << name;
-    output.type = ui::OUTPUT_TYPE_UNKNOWN;
-  }
-
   return output;
 }
 
 bool NativeDisplayDelegateX11::GetHDCPState(
-    const OutputConfigurator::OutputSnapshot& output, ui::HDCPState* state) {
+    const OutputConfigurator::OutputSnapshot& output,
+    HDCPState* state) {
   unsigned char* values = NULL;
   int actual_format = 0;
   unsigned long nitems = 0;
@@ -411,13 +387,13 @@ bool NativeDisplayDelegateX11::GetHDCPState(
              actual_format == 32 && nitems == 1) {
     Atom value = reinterpret_cast<Atom*>(values)[0];
     if (value == XInternAtom(display_, kProtectionUndesiredAtomName, False)) {
-      *state = ui::HDCP_STATE_UNDESIRED;
+      *state = HDCP_STATE_UNDESIRED;
     } else if (value ==
                XInternAtom(display_, kProtectionDesiredAtomName, False)) {
-      *state = ui::HDCP_STATE_DESIRED;
+      *state = HDCP_STATE_DESIRED;
     } else if (value ==
                XInternAtom(display_, kProtectionEnabledAtomName, False)) {
-      *state = ui::HDCP_STATE_ENABLED;
+      *state = HDCP_STATE_ENABLED;
     } else {
       LOG(ERROR) << "Unknown " << kContentProtectionAtomName
                  << " value: " << value;
@@ -435,14 +411,15 @@ bool NativeDisplayDelegateX11::GetHDCPState(
 }
 
 bool NativeDisplayDelegateX11::SetHDCPState(
-    const OutputConfigurator::OutputSnapshot& output, ui::HDCPState state) {
+    const OutputConfigurator::OutputSnapshot& output,
+    HDCPState state) {
   Atom name = XInternAtom(display_, kContentProtectionAtomName, False);
   Atom value = None;
   switch (state) {
-    case ui::HDCP_STATE_UNDESIRED:
+    case HDCP_STATE_UNDESIRED:
       value = XInternAtom(display_, kProtectionUndesiredAtomName, False);
       break;
-    case ui::HDCP_STATE_DESIRED:
+    case HDCP_STATE_DESIRED:
       value = XInternAtom(display_, kProtectionDesiredAtomName, False);
       break;
     default:
@@ -568,4 +545,4 @@ void NativeDisplayDelegateX11::RemoveObserver(NativeDisplayObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-}  // namespace chromeos
+}  // namespace ui

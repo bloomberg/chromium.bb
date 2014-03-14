@@ -16,10 +16,6 @@
 #include "ui/aura/client/capture_client.h"
 #endif
 
-#if defined(OS_CHROMEOS)
-#include "chromeos/display/output_configurator.h"
-#endif
-
 namespace chrome {
 
 void HandleAppExitingForPlatform() {

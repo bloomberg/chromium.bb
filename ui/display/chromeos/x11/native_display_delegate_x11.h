@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_DISPLAY_NATIVE_DISPLAY_DELEGATE_X11_H_
-#define CHROMEOS_DISPLAY_NATIVE_DISPLAY_DELEGATE_X11_H_
+#ifndef UI_DISPLAY_CHROMEOS_X11_NATIVE_DISPLAY_DELEGATE_X11_H_
+#define UI_DISPLAY_CHROMEOS_X11_NATIVE_DISPLAY_DELEGATE_X11_H_
 
 #include <vector>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "chromeos/display/native_display_delegate.h"
+#include "ui/display/chromeos/native_display_delegate.h"
 
 typedef XID Window;
 
@@ -20,7 +20,7 @@ typedef _XRROutputInfo XRROutputInfo;
 struct _XRRScreenResources;
 typedef _XRRScreenResources XRRScreenResources;
 
-namespace chromeos {
+namespace ui {
 
 class NativeDisplayEventDispatcherX11;
 
@@ -128,6 +128,6 @@ class NativeDisplayDelegateX11 : public NativeDisplayDelegate {
   DISALLOW_COPY_AND_ASSIGN(NativeDisplayDelegateX11);
 };
 
-}  // namespace chromeos
+}  // namespace ui
 
-#endif  // CHROMEOS_DISPLAY_NATIVE_DISPLAY_DELEGATE_X11_H_
+#endif  // UI_DISPLAY_CHROMEOS_X11_NATIVE_DISPLAY_DELEGATE_X11_H_

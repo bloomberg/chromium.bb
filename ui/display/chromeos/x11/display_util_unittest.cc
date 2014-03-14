@@ -1,15 +1,15 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/display/output_util.h"
+#include "ui/display/chromeos/x11/display_util.h"
 
 #include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #include <X11/extensions/Xrandr.h>
 
-namespace chromeos {
+namespace ui {
 
 namespace {
 
@@ -77,10 +77,10 @@ const unsigned char kMisdetecedDisplay[] =
 
 }  // namespace
 
-TEST(OutputUtilTest, ParseOverscanFlag) {
+TEST(DisplayUtilTest, ParseOverscanFlag) {
   bool flag = false;
-  EXPECT_FALSE(ParseOutputOverscanFlag(
-      kNormalDisplay, charsize(kNormalDisplay), &flag));
+  EXPECT_FALSE(
+      ParseOutputOverscanFlag(kNormalDisplay, charsize(kNormalDisplay), &flag));
 
   flag = false;
   EXPECT_FALSE(ParseOutputOverscanFlag(
@@ -104,11 +104,12 @@ TEST(OutputUtilTest, ParseOverscanFlag) {
   display_data[150] = '\0';
   EXPECT_TRUE(ParseOutputOverscanFlag(
       reinterpret_cast<const unsigned char*>(display_data.data()),
-      display_data.size(), &flag));
+      display_data.size(),
+      &flag));
   EXPECT_FALSE(flag);
 }
 
-TEST(OutputUtilTest, ParseBrokenOverscanData) {
+TEST(DisplayUtilTest, ParseBrokenOverscanData) {
   // Do not fill valid data here because it anyway fails to parse the data.
   scoped_ptr<unsigned char[]> data(new unsigned char[126]);
   bool flag = false;
@@ -123,21 +124,34 @@ TEST(OutputUtilTest, ParseBrokenOverscanData) {
   EXPECT_FALSE(ParseOutputOverscanFlag(data.get(), 150, &flag));
 }
 
-TEST(OutputUtilTest, IsInternalOutputName) {
-  EXPECT_TRUE(IsInternalOutputName("LVDS"));
-  EXPECT_TRUE(IsInternalOutputName("eDP"));
-  EXPECT_TRUE(IsInternalOutputName("DSI"));
-  EXPECT_TRUE(IsInternalOutputName("LVDSxx"));
-  EXPECT_TRUE(IsInternalOutputName("eDPzz"));
-  EXPECT_TRUE(IsInternalOutputName("DSIyy"));
+TEST(DisplayUtilTest, GetOutputTypeFromName) {
+  EXPECT_EQ(OUTPUT_TYPE_INTERNAL, GetOutputTypeFromName("LVDS"));
+  EXPECT_EQ(OUTPUT_TYPE_INTERNAL, GetOutputTypeFromName("eDP"));
+  EXPECT_EQ(OUTPUT_TYPE_INTERNAL, GetOutputTypeFromName("DSI"));
+  EXPECT_EQ(OUTPUT_TYPE_INTERNAL, GetOutputTypeFromName("LVDSxx"));
+  EXPECT_EQ(OUTPUT_TYPE_INTERNAL, GetOutputTypeFromName("eDPzz"));
+  EXPECT_EQ(OUTPUT_TYPE_INTERNAL, GetOutputTypeFromName("DSIyy"));
 
-  EXPECT_FALSE(IsInternalOutputName("xyz"));
-  EXPECT_FALSE(IsInternalOutputName("abcLVDS"));
-  EXPECT_FALSE(IsInternalOutputName("cdeeDP"));
-  EXPECT_FALSE(IsInternalOutputName("abcDSI"));
-  EXPECT_FALSE(IsInternalOutputName("LVD"));
-  EXPECT_FALSE(IsInternalOutputName("eD"));
-  EXPECT_FALSE(IsInternalOutputName("DS"));
+  EXPECT_EQ(OUTPUT_TYPE_VGA, GetOutputTypeFromName("VGA"));
+  EXPECT_EQ(OUTPUT_TYPE_VGA, GetOutputTypeFromName("VGAxx"));
+  EXPECT_EQ(OUTPUT_TYPE_HDMI, GetOutputTypeFromName("HDMI"));
+  EXPECT_EQ(OUTPUT_TYPE_HDMI, GetOutputTypeFromName("HDMIyy"));
+  EXPECT_EQ(OUTPUT_TYPE_DVI, GetOutputTypeFromName("DVI"));
+  EXPECT_EQ(OUTPUT_TYPE_DVI, GetOutputTypeFromName("DVIzz"));
+  EXPECT_EQ(OUTPUT_TYPE_DISPLAYPORT, GetOutputTypeFromName("DP"));
+  EXPECT_EQ(OUTPUT_TYPE_DISPLAYPORT, GetOutputTypeFromName("DPww"));
+
+  EXPECT_EQ(OUTPUT_TYPE_UNKNOWN, GetOutputTypeFromName("xyz"));
+  EXPECT_EQ(OUTPUT_TYPE_UNKNOWN, GetOutputTypeFromName("abcLVDS"));
+  EXPECT_EQ(OUTPUT_TYPE_UNKNOWN, GetOutputTypeFromName("cdeeDP"));
+  EXPECT_EQ(OUTPUT_TYPE_UNKNOWN, GetOutputTypeFromName("abcDSI"));
+  EXPECT_EQ(OUTPUT_TYPE_UNKNOWN, GetOutputTypeFromName("LVD"));
+  EXPECT_EQ(OUTPUT_TYPE_UNKNOWN, GetOutputTypeFromName("eD"));
+  EXPECT_EQ(OUTPUT_TYPE_UNKNOWN, GetOutputTypeFromName("DS"));
+  EXPECT_EQ(OUTPUT_TYPE_UNKNOWN, GetOutputTypeFromName("VG"));
+  EXPECT_EQ(OUTPUT_TYPE_UNKNOWN, GetOutputTypeFromName("HDM"));
+  EXPECT_EQ(OUTPUT_TYPE_UNKNOWN, GetOutputTypeFromName("DV"));
+  EXPECT_EQ(OUTPUT_TYPE_UNKNOWN, GetOutputTypeFromName("D"));
 }
 
-}   // namespace chromeos
+}  // namespace ui

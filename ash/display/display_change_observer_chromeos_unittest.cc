@@ -5,10 +5,10 @@
 #include "ash/display/display_change_observer_chromeos.h"
 
 #include "ash/display/display_info.h"
-#include "chromeos/display/output_configurator.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/display/chromeos/output_configurator.h"
 
-using chromeos::OutputConfigurator;
+using ui::OutputConfigurator;
 
 typedef testing::Test DisplayChangeObserverTest;
 

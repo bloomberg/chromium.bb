@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 
 #if defined(OS_CHROMEOS) && defined(USE_X11)
-#include "chromeos/display/output_configurator.h"
+#include "ui/display/chromeos/output_configurator.h"
 #endif
 
 namespace gfx {
@@ -36,9 +36,9 @@ class ASH_EXPORT PowerButtonController
 // TODO(derat): Remove these ifdefs after OutputConfigurator becomes
 // cross-platform.
 #if defined(OS_CHROMEOS) && defined(USE_X11)
-    : public chromeos::OutputConfigurator::Observer
+    : public ui::OutputConfigurator::Observer
 #endif
-    {
+      {
  public:
   explicit PowerButtonController(LockStateController* controller);
   virtual ~PowerButtonController();
@@ -55,10 +55,9 @@ class ASH_EXPORT PowerButtonController
   void OnLockButtonEvent(bool down, const base::TimeTicks& timestamp);
 
 #if defined(OS_CHROMEOS) && defined(USE_X11)
-  // Overriden from chromeos::OutputConfigurator::Observer:
-  virtual void OnDisplayModeChanged(
-      const std::vector<chromeos::OutputConfigurator::OutputSnapshot>& outputs)
-      OVERRIDE;
+  // Overriden from ui::OutputConfigurator::Observer:
+  virtual void OnDisplayModeChanged(const std::vector<
+      ui::OutputConfigurator::OutputSnapshot>& outputs) OVERRIDE;
 #endif
 
  private:

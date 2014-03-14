@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_DISPLAY_OUTPUT_CONFIGURATOR_H_
-#define CHROMEOS_DISPLAY_OUTPUT_CONFIGURATOR_H_
+#ifndef UI_DISPLAY_CHROMEOS_OUTPUT_CONFIGURATOR_H_
+#define UI_DISPLAY_CHROMEOS_OUTPUT_CONFIGURATOR_H_
 
 #include <map>
 #include <string>
@@ -14,10 +14,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
-#include "chromeos/chromeos_export.h"
-#include "chromeos/display/native_display_observer.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
+#include "ui/display/chromeos/native_display_observer.h"
 #include "ui/display/display_constants.h"
+#include "ui/display/display_export.h"
 
 // Forward declarations for Xlib and Xrandr.
 // This is so unused X definitions don't pollute the namespace.
@@ -26,14 +26,13 @@ typedef XID RROutput;
 typedef XID RRCrtc;
 typedef XID RRMode;
 
-namespace chromeos {
+namespace ui {
 
 class NativeDisplayDelegate;
 
 // This class interacts directly with the underlying Xrandr API to manipulate
 // CTRCs and Outputs.
-class CHROMEOS_EXPORT OutputConfigurator
-    : public NativeDisplayObserver {
+class DISPLAY_EXPORT OutputConfigurator : public NativeDisplayObserver {
  public:
   typedef uint64_t OutputProtectionClientId;
   static const OutputProtectionClientId kInvalidClientId = 0;
@@ -94,7 +93,7 @@ class CHROMEOS_EXPORT OutputConfigurator
     bool is_aspect_preserving_scaling;
 
     // The type of output.
-    ui::OutputType type;
+    OutputType type;
 
     // Map from mode IDs to details about the corresponding modes.
     ModeInfoMap mode_infos;
@@ -127,7 +126,7 @@ class CHROMEOS_EXPORT OutputConfigurator
 
     // Called after a display mode change attempt failed. |failed_new_state| is
     // the new state which the system failed to enter.
-    virtual void OnDisplayModeChangeFailed(ui::OutputState failed_new_state) {}
+    virtual void OnDisplayModeChangeFailed(OutputState failed_new_state) {}
   };
 
   // Interface for classes that make decisions about which output state
@@ -137,7 +136,7 @@ class CHROMEOS_EXPORT OutputConfigurator
     virtual ~StateController() {}
 
     // Called when displays are detected.
-    virtual ui::OutputState GetStateForDisplayIds(
+    virtual OutputState GetStateForDisplayIds(
         const std::vector<int64>& display_ids) const = 0;
 
     // Queries the resolution (|width|x|height|) in pixels
@@ -180,8 +179,7 @@ class CHROMEOS_EXPORT OutputConfigurator
   // Helper class used by tests.
   class TestApi {
    public:
-    TestApi(OutputConfigurator* configurator)
-        : configurator_(configurator) {}
+    TestApi(OutputConfigurator* configurator) : configurator_(configurator) {}
     ~TestApi() {}
 
     // If |configure_timer_| is started, stops the timer, runs
@@ -195,9 +193,9 @@ class CHROMEOS_EXPORT OutputConfigurator
   };
 
   // Flags that can be passed to SetDisplayPower().
-  static const int kSetDisplayPowerNoFlags                     = 0;
+  static const int kSetDisplayPowerNoFlags = 0;
   // Configure displays even if the passed-in state matches |power_state_|.
-  static const int kSetDisplayPowerForceProbe                  = 1 << 0;
+  static const int kSetDisplayPowerForceProbe = 1 << 0;
   // Do not change the state if multiple displays are connected or if the
   // only connected display is external.
   static const int kSetDisplayPowerOnlyIfSingleInternalDisplay = 1 << 1;
@@ -213,8 +211,7 @@ class CHROMEOS_EXPORT OutputConfigurator
 
   // Returns a pointer to the ModeInfo struct in |output| corresponding to
   // |mode|, or NULL if the struct isn't present.
-  static const ModeInfo* GetModeInfo(const OutputSnapshot& output,
-                                     RRMode mode);
+  static const ModeInfo* GetModeInfo(const OutputSnapshot& output, RRMode mode);
 
   // Returns the mode within |output| that matches the given size with highest
   // refresh rate. Returns None if no matching output was found.
@@ -225,8 +222,8 @@ class CHROMEOS_EXPORT OutputConfigurator
   OutputConfigurator();
   virtual ~OutputConfigurator();
 
-  ui::OutputState output_state() const { return output_state_; }
-  DisplayPowerState power_state() const { return power_state_; }
+  OutputState output_state() const { return output_state_; }
+  chromeos::DisplayPowerState power_state() const { return power_state_; }
   const std::vector<OutputSnapshot>& cached_outputs() const {
     return cached_outputs_;
   }
@@ -247,7 +244,7 @@ class CHROMEOS_EXPORT OutputConfigurator
       scoped_ptr<TouchscreenDelegate> delegate);
 
   // Sets the initial value of |power_state_|.  Must be called before Start().
-  void SetInitialDisplayPower(DisplayPowerState power_state);
+  void SetInitialDisplayPower(chromeos::DisplayPowerState power_state);
 
   // Initialization, must be called right after constructor.
   // |is_panel_fitting_enabled| indicates hardware panel fitting support.
@@ -266,12 +263,12 @@ class CHROMEOS_EXPORT OutputConfigurator
   // on or off.  This requires enabling or disabling the CRTC associated with
   // the display(s) in question so that the low power state is engaged.
   // |flags| contains bitwise-or-ed kSetDisplayPower* values.
-  bool SetDisplayPower(DisplayPowerState power_state, int flags);
+  bool SetDisplayPower(chromeos::DisplayPowerState power_state, int flags);
 
   // Force switching the display mode to |new_state|. Returns false if
   // switching failed (possibly because |new_state| is invalid for the
   // current set of connected outputs).
-  bool SetDisplayMode(ui::OutputState new_state);
+  bool SetDisplayMode(OutputState new_state);
 
   // NativeDisplayDelegate::Observer overrides:
   virtual void OnConfigurationChanged() OVERRIDE;
@@ -304,27 +301,25 @@ class CHROMEOS_EXPORT OutputConfigurator
   // OutputType values. |protection_mask| is the desired protection methods,
   // which is a bitmask of the OutputProtectionMethod values.
   // Returns true on success.
-  bool QueryOutputProtectionStatus(
-      OutputProtectionClientId client_id,
-      int64 display_id,
-      uint32_t* link_mask,
-      uint32_t* protection_mask);
+  bool QueryOutputProtectionStatus(OutputProtectionClientId client_id,
+                                   int64 display_id,
+                                   uint32_t* link_mask,
+                                   uint32_t* protection_mask);
 
   // Requests the desired protection methods.
   // |protection_mask| is the desired protection methods, which is a bitmask
   // of the OutputProtectionMethod values.
   // Returns true when the protection request has been made.
-  bool EnableOutputProtection(
-      OutputProtectionClientId client_id,
-      int64 display_id,
-      uint32_t desired_protection_mask);
+  bool EnableOutputProtection(OutputProtectionClientId client_id,
+                              int64 display_id,
+                              uint32_t desired_protection_mask);
 
  private:
   // Mapping a display_id to a protection request bitmask.
   typedef std::map<int64, uint32_t> DisplayProtections;
   // Mapping a client to its protection request.
-  typedef std::map<OutputProtectionClientId,
-                   DisplayProtections> ProtectionRequests;
+  typedef std::map<OutputProtectionClientId, DisplayProtections>
+      ProtectionRequests;
 
   // Updates |cached_outputs_| to contain currently-connected outputs. Calls
   // |delegate_->GetOutputs()| and then does additional work, like finding the
@@ -352,7 +347,7 @@ class CHROMEOS_EXPORT OutputConfigurator
   void ConfigureOutputs();
 
   // Notifies observers about an attempted state change.
-  void NotifyObservers(bool success, ui::OutputState attempted_state);
+  void NotifyObservers(bool success, OutputState attempted_state);
 
   // Switches to the state specified in |output_state| and |power_state|.
   // If the hardware mirroring failed and |mirroring_controller_| is set,
@@ -360,17 +355,19 @@ class CHROMEOS_EXPORT OutputConfigurator
   // to enable software based mirroring.
   // On success, updates |output_state_|, |power_state_|, and |cached_outputs_|
   // and returns true.
-  bool EnterStateOrFallBackToSoftwareMirroring(ui::OutputState output_state,
-                                               DisplayPowerState power_state);
+  bool EnterStateOrFallBackToSoftwareMirroring(
+      OutputState output_state,
+      chromeos::DisplayPowerState power_state);
 
   // Switches to the state specified in |output_state| and |power_state|.
   // On success, updates |output_state_|, |power_state_|, and
   // |cached_outputs_| and returns true.
-  bool EnterState(ui::OutputState output_state, DisplayPowerState power_state);
+  bool EnterState(OutputState output_state,
+                  chromeos::DisplayPowerState power_state);
 
   // Returns the output state that should be used with |cached_outputs_| while
   // in |power_state|.
-  ui::OutputState ChooseOutputState(DisplayPowerState power_state) const;
+  OutputState ChooseOutputState(chromeos::DisplayPowerState power_state) const;
 
   // Computes the relevant transformation for mirror mode.
   // |output| is the output on which mirror mode is being applied.
@@ -419,10 +416,10 @@ class CHROMEOS_EXPORT OutputConfigurator
   bool configure_display_;
 
   // The current display state.
-  ui::OutputState output_state_;
+  OutputState output_state_;
 
   // The current power state.
-  DisplayPowerState power_state_;
+  chromeos::DisplayPowerState power_state_;
 
   // Most-recently-used output configuration. Note that the actual
   // configuration changes asynchronously.
@@ -445,6 +442,6 @@ class CHROMEOS_EXPORT OutputConfigurator
 
 typedef std::vector<OutputConfigurator::OutputSnapshot> OutputSnapshotList;
 
-}  // namespace chromeos
+}  // namespace ui
 
-#endif  // CHROMEOS_DISPLAY_OUTPUT_CONFIGURATOR_H_
+#endif  // UI_DISPLAY_CHROMEOS_OUTPUT_CONFIGURATOR_H_

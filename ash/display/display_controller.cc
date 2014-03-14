@@ -43,7 +43,6 @@
 #include "base/time/time.h"
 #if defined(USE_X11)
 #include "ash/display/output_configurator_animation.h"
-#include "chromeos/display/output_configurator.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/x/x11_types.h"
 

@@ -7,16 +7,17 @@
 #undef Bool
 #undef None
 
-#include "chromeos/display/native_display_delegate_x11.h"
-#include "chromeos/display/native_display_event_dispatcher_x11.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/display/chromeos/x11/native_display_delegate_x11.h"
+#include "ui/display/chromeos/x11/native_display_event_dispatcher_x11.h"
 
-namespace chromeos {
+namespace ui {
 
 namespace {
 
-OutputConfigurator::OutputSnapshot CreateOutput(
-    RROutput output, RRCrtc crtc, RRMode mode) {
+OutputConfigurator::OutputSnapshot CreateOutput(RROutput output,
+                                                RRCrtc crtc,
+                                                RRMode mode) {
   OutputConfigurator::OutputSnapshot snapshot;
   snapshot.output = output;
   snapshot.crtc = crtc;
@@ -34,9 +35,7 @@ class TestHelperDelegate : public NativeDisplayDelegateX11::HelperDelegate {
     return num_calls_update_xrandr_config_;
   }
 
-  int num_calls_notify_observers() const {
-    return num_calls_notify_observers_;
-  }
+  int num_calls_notify_observers() const { return num_calls_notify_observers_; }
 
   void set_cached_outputs(
       const std::vector<OutputConfigurator::OutputSnapshot>& outputs) {
@@ -44,8 +43,8 @@ class TestHelperDelegate : public NativeDisplayDelegateX11::HelperDelegate {
   }
 
   // NativeDisplayDelegateX11::HelperDelegate overrides:
-  virtual void UpdateXRandRConfiguration(
-      const base::NativeEvent& event) OVERRIDE;
+  virtual void UpdateXRandRConfiguration(const base::NativeEvent& event)
+      OVERRIDE;
   virtual const std::vector<OutputConfigurator::OutputSnapshot>&
       GetCachedOutputs() const OVERRIDE;
   virtual void NotifyDisplayObservers() OVERRIDE;
@@ -60,8 +59,7 @@ class TestHelperDelegate : public NativeDisplayDelegateX11::HelperDelegate {
 };
 
 TestHelperDelegate::TestHelperDelegate()
-    : num_calls_update_xrandr_config_(0),
-      num_calls_notify_observers_(0) {}
+    : num_calls_update_xrandr_config_(0), num_calls_notify_observers_(0) {}
 
 TestHelperDelegate::~TestHelperDelegate() {}
 
@@ -89,8 +87,10 @@ class NativeDisplayEventDispatcherX11Test : public testing::Test {
 
  protected:
   void DispatchScreenChangeEvent();
-  void DispatchOutputChangeEvent(
-      RROutput output, RRCrtc crtc, RRMode mode, bool connected);
+  void DispatchOutputChangeEvent(RROutput output,
+                                 RRCrtc crtc,
+                                 RRMode mode,
+                                 bool connected);
 
   int xrandr_event_base_;
   scoped_ptr<TestHelperDelegate> helper_delegate_;
@@ -104,8 +104,7 @@ NativeDisplayEventDispatcherX11Test::NativeDisplayEventDispatcherX11Test()
     : xrandr_event_base_(10),
       helper_delegate_(new TestHelperDelegate()),
       dispatcher_(new NativeDisplayEventDispatcherX11(helper_delegate_.get(),
-                                                      xrandr_event_base_)) {
-}
+                                                      xrandr_event_base_)) {}
 
 NativeDisplayEventDispatcherX11Test::~NativeDisplayEventDispatcherX11Test() {}
 
@@ -117,7 +116,10 @@ void NativeDisplayEventDispatcherX11Test::DispatchScreenChangeEvent() {
 }
 
 void NativeDisplayEventDispatcherX11Test::DispatchOutputChangeEvent(
-    RROutput output, RRCrtc crtc, RRMode mode, bool connected) {
+    RROutput output,
+    RRCrtc crtc,
+    RRMode mode,
+    bool connected) {
   XRROutputChangeNotifyEvent event = {0};
   event.type = xrandr_event_base_ + RRNotify;
   event.subtype = RRNotify_OutputChange;
@@ -229,4 +231,4 @@ TEST_F(NativeDisplayEventDispatcherX11Test,
   EXPECT_EQ(1, helper_delegate_->num_calls_notify_observers());
 }
 
-}  // namespace chromeos
+}  // namespace ui

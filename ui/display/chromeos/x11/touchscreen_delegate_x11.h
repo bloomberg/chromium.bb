@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_DISPLAY_TOUCHSCREEN_DELEGATE_X11_H_
-#define CHROMEOS_DISPLAY_TOUCHSCREEN_DELEGATE_X11_H_
+#ifndef UI_DISPLAY_CHROMEOS_X11_TOUCHSCREEN_DELEGATE_X11_H_
+#define UI_DISPLAY_CHROMEOS_X11_TOUCHSCREEN_DELEGATE_X11_H_
 
-#include "chromeos/display/output_configurator.h"
+#include "ui/display/chromeos/output_configurator.h"
 
 struct _XDisplay;
 typedef struct _XDisplay Display;
 
-namespace chromeos {
+namespace ui {
 
 class TouchscreenDelegateX11 : public OutputConfigurator::TouchscreenDelegate {
  public:
@@ -30,6 +30,6 @@ class TouchscreenDelegateX11 : public OutputConfigurator::TouchscreenDelegate {
   DISALLOW_COPY_AND_ASSIGN(TouchscreenDelegateX11);
 };
 
-}  // namespace chromeos
+}  // namespace ui
 
-#endif  // CHROMEOS_DISPLAY_TOUCHSCREEN_DELEGATE_X11_H_
+#endif  // UI_DISPLAY_CHROMEOS_X11_TOUCHSCREEN_DELEGATE_X11_H_

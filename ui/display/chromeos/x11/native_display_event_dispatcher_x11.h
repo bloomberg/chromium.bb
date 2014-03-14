@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_DISPLAY_NATIVE_DISPLAY_EVENT_DISPATCHER_X11_H_
-#define CHROMEOS_DISPLAY_NATIVE_DISPLAY_EVENT_DISPATCHER_X11_H_
+#ifndef UI_DISPLAY_CHROMEOS_X11_NATIVE_DISPLAY_EVENT_DISPATCHER_X11_H_
+#define UI_DISPLAY_CHROMEOS_X11_NATIVE_DISPLAY_EVENT_DISPATCHER_X11_H_
 
 #include "base/message_loop/message_pump_dispatcher.h"
-#include "chromeos/display/native_display_delegate_x11.h"
+#include "ui/display/chromeos/x11/native_display_delegate_x11.h"
 
-namespace chromeos {
+namespace ui {
 
-class CHROMEOS_EXPORT NativeDisplayEventDispatcherX11
+class DISPLAY_EXPORT NativeDisplayEventDispatcherX11
     : public base::MessagePumpDispatcher {
  public:
   NativeDisplayEventDispatcherX11(
@@ -37,6 +37,6 @@ class CHROMEOS_EXPORT NativeDisplayEventDispatcherX11
   DISALLOW_COPY_AND_ASSIGN(NativeDisplayEventDispatcherX11);
 };
 
-}  // namespace chromeos
+}  // namespace ui
 
-#endif  // CHROMEOS_DISPLAY_NATIVE_DISPLAY_EVENT_DISPATCHER_X11_H_
+#endif  // UI_DISPLAY_CHROMEOS_X11_NATIVE_DISPLAY_EVENT_DISPATCHER_X11_H_

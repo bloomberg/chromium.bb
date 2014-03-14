@@ -26,7 +26,7 @@
 #include "ui/gfx/size.h"
 
 #if defined(OS_CHROMEOS) && defined(USE_X11)
-#include "chromeos/display/output_configurator.h"
+#include "ui/display/chromeos/output_configurator.h"
 #include "ui/display/display_constants.h"
 #endif
 
@@ -999,11 +999,11 @@ TEST_F(LockStateControllerTest, IgnorePowerButtonIfScreenIsOff) {
 #if defined(OS_CHROMEOS) && defined(USE_X11)
 TEST_F(LockStateControllerTest, HonorPowerButtonInDockedMode) {
   // Create two outputs, the first internal and the second external.
-  std::vector<chromeos::OutputConfigurator::OutputSnapshot> outputs;
-  chromeos::OutputConfigurator::OutputSnapshot internal_output;
+  std::vector<ui::OutputConfigurator::OutputSnapshot> outputs;
+  ui::OutputConfigurator::OutputSnapshot internal_output;
   internal_output.type = ui::OUTPUT_TYPE_INTERNAL;
   outputs.push_back(internal_output);
-  chromeos::OutputConfigurator::OutputSnapshot external_output;
+  ui::OutputConfigurator::OutputSnapshot external_output;
   external_output.type = ui::OUTPUT_TYPE_HDMI;
   outputs.push_back(external_output);
 

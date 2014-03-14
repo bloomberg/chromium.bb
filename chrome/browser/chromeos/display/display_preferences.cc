@@ -20,7 +20,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/display/output_configurator.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/insets.h"

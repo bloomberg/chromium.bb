@@ -117,11 +117,11 @@ void PowerButtonController::OnLockButtonEvent(
 
 #if defined(OS_CHROMEOS) && defined(USE_X11)
 void PowerButtonController::OnDisplayModeChanged(
-    const std::vector<chromeos::OutputConfigurator::OutputSnapshot>& outputs) {
+    const std::vector<ui::OutputConfigurator::OutputSnapshot>& outputs) {
   bool internal_display_off = false;
   bool external_display_on = false;
   for (size_t i = 0; i < outputs.size(); ++i) {
-    const chromeos::OutputConfigurator::OutputSnapshot& output = outputs[i];
+    const ui::OutputConfigurator::OutputSnapshot& output = outputs[i];
     if (output.type == ui::OUTPUT_TYPE_INTERNAL) {
       if (!output.current_mode)
         internal_display_off = true;

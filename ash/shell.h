@@ -42,9 +42,6 @@ class ActivationClient;
 class FocusClient;
 }
 }
-namespace chromeos {
-class OutputConfigurator;
-}
 
 namespace gfx {
 class ImageSkia;
@@ -58,6 +55,7 @@ class KeyboardController;
 
 namespace ui {
 class Layer;
+class OutputConfigurator;
 }
 namespace views {
 class NonClientFrameView;
@@ -507,7 +505,7 @@ class ASH_EXPORT Shell
 #if defined(OS_CHROMEOS)
 #if defined(USE_X11)
   // TODO(oshima): Move these objects to DisplayController.
-  chromeos::OutputConfigurator* output_configurator() {
+  ui::OutputConfigurator* output_configurator() {
     return output_configurator_.get();
   }
   internal::OutputConfiguratorAnimation* output_configurator_animation() {
@@ -718,7 +716,7 @@ class ASH_EXPORT Shell
       last_window_closed_logout_reminder_;
 #if defined(USE_X11)
   // Controls video output device state.
-  scoped_ptr<chromeos::OutputConfigurator> output_configurator_;
+  scoped_ptr<ui::OutputConfigurator> output_configurator_;
   scoped_ptr<internal::OutputConfiguratorAnimation>
       output_configurator_animation_;
   scoped_ptr<internal::DisplayErrorObserver> display_error_observer_;

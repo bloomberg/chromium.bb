@@ -17,7 +17,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/display/display_preferences.h"
-#include "chromeos/display/output_configurator.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/ash_strings.h"
 #include "grit/generated_resources.h"

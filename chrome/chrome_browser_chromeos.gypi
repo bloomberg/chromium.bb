@@ -86,6 +86,7 @@
         '../third_party/zlib/zlib.gyp:zlib',
         '../ui/base/strings/ui_strings.gyp:ui_strings',
         '../ui/base/ui_base.gyp:ui_base',
+        '../ui/display/display.gyp:display',
         '../ui/events/events.gyp:dom4_keycode_converter',
         '../ui/resources/ui_resources.gyp:ui_resources',
         '../ui/surface/surface.gyp:surface',

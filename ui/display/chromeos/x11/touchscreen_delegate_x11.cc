@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/display/touchscreen_delegate_x11.h"
+#include "ui/display/chromeos/x11/touchscreen_delegate_x11.h"
 
 #include <X11/extensions/XInput.h>
 #include <X11/extensions/XInput2.h>
@@ -12,7 +12,7 @@
 
 #include "base/message_loop/message_pump_x11.h"
 
-namespace chromeos {
+namespace ui {
 
 TouchscreenDelegateX11::TouchscreenDelegateX11()
     : display_(base::MessagePumpX11::GetDefaultXDisplay()) {}
@@ -90,10 +90,9 @@ void TouchscreenDelegateX11::AssociateTouchscreens(
             std::abs(mode_info->height - height) <= 1.0) {
           output->touch_device_id = info[i].deviceid;
 
-          VLOG(2) << "Found touchscreen for output #" << k
-                  << " id " << output->touch_device_id
-                  << " width " << width
-                  << " height " << height;
+          VLOG(2) << "Found touchscreen for output #" << k << " id "
+                  << output->touch_device_id << " width " << width << " height "
+                  << height;
           break;
         }
       }
@@ -101,11 +100,9 @@ void TouchscreenDelegateX11::AssociateTouchscreens(
       if (k == outputs->size()) {
         no_match_touchscreen.insert(info[i].deviceid);
         VLOG(2) << "No matching output for touchscreen"
-                << " id " << info[i].deviceid
-                << " width " << width
+                << " id " << info[i].deviceid << " width " << width
                 << " height " << height;
       }
-
     }
   }
 
@@ -134,9 +131,9 @@ void TouchscreenDelegateX11::AssociateTouchscreens(
 void TouchscreenDelegateX11::ConfigureCTM(
     int touch_device_id,
     const OutputConfigurator::CoordinateTransformation& ctm) {
-  VLOG(1) << "ConfigureCTM: id=" << touch_device_id
-          << " scale=" << ctm.x_scale << "x" << ctm.y_scale
-          << " offset=(" << ctm.x_offset << ", " << ctm.y_offset << ")";
+  VLOG(1) << "ConfigureCTM: id=" << touch_device_id << " scale=" << ctm.x_scale
+          << "x" << ctm.y_scale << " offset=(" << ctm.x_offset << ", "
+          << ctm.y_offset << ")";
   int ndevices = 0;
   XIDeviceInfo* info = XIQueryDevice(display_, touch_device_id, &ndevices);
   Atom prop = XInternAtom(display_, "Coordinate Transformation Matrix", False);
@@ -148,15 +145,25 @@ void TouchscreenDelegateX11::ConfigureCTM(
     unsigned long bytes_after;
     unsigned char* data = NULL;
     // Verify that the property exists with correct format, type, etc.
-    int status = XIGetProperty(display_, info->deviceid, prop, 0, 0, False,
-        AnyPropertyType, &type, &format, &num_items, &bytes_after, &data);
+    int status = XIGetProperty(display_,
+                               info->deviceid,
+                               prop,
+                               0,
+                               0,
+                               False,
+                               AnyPropertyType,
+                               &type,
+                               &format,
+                               &num_items,
+                               &bytes_after,
+                               &data);
     if (data)
       XFree(data);
     if (status == Success && type == float_atom && format == 32) {
       float value[3][3] = {
-          { ctm.x_scale,         0.0, ctm.x_offset },
-          {         0.0, ctm.y_scale, ctm.y_offset },
-          {         0.0,         0.0,          1.0 }
+        { ctm.x_scale,         0.0, ctm.x_offset },
+        {         0.0, ctm.y_scale, ctm.y_offset },
+        {         0.0,         0.0,          1.0 }
       };
       XIChangeProperty(display_,
                        info->deviceid,
@@ -171,4 +178,4 @@ void TouchscreenDelegateX11::ConfigureCTM(
   XIFreeDeviceInfo(info);
 }
 
-}  // namespace chromeos
+}  // namespace ui

@@ -17,7 +17,7 @@
 #include "ui/gfx/display.h"
 
 #if defined(OS_CHROMEOS)
-#include "chromeos/display/output_configurator.h"
+#include "ui/display/chromeos/output_configurator.h"
 #endif
 
 namespace gfx {
@@ -45,7 +45,7 @@ class DisplayLayoutStore;
 // TODO(oshima): Make this non internal.
 class ASH_EXPORT DisplayManager
 #if defined(OS_CHROMEOS)
-    : public chromeos::OutputConfigurator::SoftwareMirroringController
+    : public ui::OutputConfigurator::SoftwareMirroringController
 #endif
       {
  public:

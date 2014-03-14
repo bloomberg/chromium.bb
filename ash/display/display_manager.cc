@@ -35,7 +35,6 @@
 #if defined(OS_CHROMEOS)
 #include "ash/display/output_configurator_animation.h"
 #include "base/sys_info.h"
-#include "chromeos/display/output_configurator.h"
 #endif
 
 #if defined(OS_WIN)

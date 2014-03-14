@@ -7,10 +7,10 @@
 #include "ash/shell.h"
 #include "ash/wm/user_activity_detector.h"
 #include "base/bind.h"
-#include "chromeos/display/output_configurator.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
+#include "ui/display/chromeos/output_configurator.h"
 
 namespace chromeos {
 
@@ -62,7 +62,7 @@ void DisplayPowerServiceProvider::SetDisplayPower(
 
     DisplayPowerState state = static_cast<DisplayPowerState>(int_state);
     ash::Shell::GetInstance()->output_configurator()->SetDisplayPower(
-        state, OutputConfigurator::kSetDisplayPowerNoFlags);
+        state, ui::OutputConfigurator::kSetDisplayPowerNoFlags);
   } else {
     LOG(ERROR) << "Unable to parse " << kSetDisplayPower << " request";
   }

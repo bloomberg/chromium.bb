@@ -10,7 +10,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/display/output_configurator_animation.h"
-#include "chromeos/display/output_configurator.h"
+#include "ui/display/chromeos/output_configurator.h"
 #endif
 
 namespace ash {

@@ -681,7 +681,8 @@
             '../chromeos/chromeos.gyp:chromeos',
             # Ash #includes power_supply_properties.pb.h directly.
             '../chromeos/chromeos.gyp:power_manager_proto',
-	    '../device/bluetooth/bluetooth.gyp:device_bluetooth',
+            '../device/bluetooth/bluetooth.gyp:device_bluetooth',
+            '../ui/display/display.gyp:display',
           ],
         }, { # else: chromeos!=1
           'sources/': [
@@ -1028,7 +1029,8 @@
         ['chromeos==1', {
           'dependencies': [
             '../chromeos/chromeos.gyp:power_manager_proto',
-	    '../device/bluetooth/bluetooth.gyp:device_bluetooth',
+            '../device/bluetooth/bluetooth.gyp:device_bluetooth',
+            '../ui/display/display.gyp:display',
           ],
           'sources': [
             'first_run/first_run_helper_unittest.cc',

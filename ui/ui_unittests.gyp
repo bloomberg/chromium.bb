@@ -161,6 +161,9 @@
         'gfx/transform_util_unittest.cc',
         'gfx/utf16_indexing_unittest.cc',
       ],
+      'includes': [
+        'display/display_unittests.gypi',
+      ],
       'include_dirs': [
         '../',
       ],

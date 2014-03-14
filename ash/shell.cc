@@ -121,7 +121,7 @@
 #include "ash/system/chromeos/session/last_window_closed_logout_reminder.h"
 #include "base/message_loop/message_pump_x11.h"
 #include "base/sys_info.h"
-#include "chromeos/display/output_configurator.h"
+#include "ui/display/chromeos/output_configurator.h"
 #endif  // defined(USE_X11)
 #include "ash/display/resolution_notification_controller.h"
 #include "ash/sticky_keys/sticky_keys_controller.h"
@@ -607,7 +607,7 @@ Shell::Shell(ShellDelegate* delegate)
       window_positioner_(new WindowPositioner),
       activation_client_(NULL),
 #if defined(OS_CHROMEOS) && defined(USE_X11)
-      output_configurator_(new chromeos::OutputConfigurator()),
+      output_configurator_(new ui::OutputConfigurator()),
 #endif  // defined(OS_CHROMEOS) && defined(USE_X11)
       native_cursor_manager_(new AshNativeCursorManager),
       cursor_manager_(scoped_ptr< ::wm::NativeCursorManager>(

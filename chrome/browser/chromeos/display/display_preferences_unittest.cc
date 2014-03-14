@@ -20,7 +20,7 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "chromeos/display/output_configurator.h"
+#include "ui/display/chromeos/output_configurator.h"
 #include "ui/message_center/message_center.h"
 
 using ash::internal::ResolutionNotificationController;

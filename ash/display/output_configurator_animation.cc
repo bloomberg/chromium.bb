@@ -204,7 +204,7 @@ void OutputConfiguratorAnimation::StartFadeInAnimation() {
 }
 
 void OutputConfiguratorAnimation::OnDisplayModeChanged(
-    const std::vector<chromeos::OutputConfigurator::OutputSnapshot>& outputs) {
+    const std::vector<ui::OutputConfigurator::OutputSnapshot>& outputs) {
   if (!hiding_layers_.empty())
     StartFadeInAnimation();
 }

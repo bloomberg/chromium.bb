@@ -8,10 +8,6 @@
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/host/resource_message_filter.h"
 
-#if defined(OS_CHROMEOS)
-#include "chromeos/display/output_configurator.h"
-#endif
-
 namespace content {
 class BrowserPpapiHost;
 }  // namespace content

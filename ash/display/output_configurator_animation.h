@@ -10,7 +10,7 @@
 #include "ash/ash_export.h"
 #include "base/callback.h"
 #include "base/timer/timer.h"
-#include "chromeos/display/output_configurator.h"
+#include "ui/display/chromeos/output_configurator.h"
 
 namespace aura {
 class RootWindow;
@@ -25,10 +25,10 @@ namespace ash {
 namespace internal {
 
 // OutputConfiguratorAnimation provides the visual effects for
-// chromeos::OutputConfigurator, such like fade-out/in during changing
+// ui::OutputConfigurator, such like fade-out/in during changing
 // the display mode.
 class ASH_EXPORT OutputConfiguratorAnimation
-    : public chromeos::OutputConfigurator::Observer {
+    : public ui::OutputConfigurator::Observer {
  public:
   OutputConfiguratorAnimation();
   virtual ~OutputConfiguratorAnimation();
@@ -42,10 +42,9 @@ class ASH_EXPORT OutputConfiguratorAnimation
   void StartFadeInAnimation();
 
  protected:
-  // chromeos::OutputConfigurator::Observer overrides:
-  virtual void OnDisplayModeChanged(
-      const std::vector<chromeos::OutputConfigurator::OutputSnapshot>& outputs)
-      OVERRIDE;
+  // ui::OutputConfigurator::Observer overrides:
+  virtual void OnDisplayModeChanged(const std::vector<
+      ui::OutputConfigurator::OutputSnapshot>& outputs) OVERRIDE;
   virtual void OnDisplayModeChangeFailed(ui::OutputState failed_new_state)
       OVERRIDE;
 

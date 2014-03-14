@@ -16,17 +16,17 @@
 #include "ash/shell.h"
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "chromeos/display/output_util.h"
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/compositor/dip_util.h"
+#include "ui/display/chromeos/x11/display_util.h"
 #include "ui/gfx/display.h"
 
 namespace ash {
 namespace internal {
 
-using chromeos::OutputConfigurator;
+using ui::OutputConfigurator;
 
 namespace {
 
@@ -149,13 +149,13 @@ void DisplayChangeObserver::OnDisplayModeChanged(
 
     std::string name =
         output.type == ui::OUTPUT_TYPE_INTERNAL
-            ? l10n_util::GetStringUTF8(IDS_ASH_INTERNAL_DISPLAY_NAME)
-            : chromeos::GetDisplayName(output.output);
+            ? l10n_util::GetStringUTF8(IDS_ASH_INTERNAL_DISPLAY_NAME) :
+              ui::GetDisplayName(output);
     if (name.empty())
       name = l10n_util::GetStringUTF8(IDS_ASH_STATUS_TRAY_UNKNOWN_DISPLAY_NAME);
 
     bool has_overscan = false;
-    chromeos::GetOutputOverscanFlag(output.output, &has_overscan);
+    ui::GetOutputOverscanFlag(output, &has_overscan);
 
     int64 id = output.display_id;
     if (id == gfx::Display::kInvalidDisplayID || ids.find(id) != ids.end())

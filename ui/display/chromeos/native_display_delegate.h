@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_DISPLAY_NATIVE_DISPLAY_DELEGATE_H_
-#define CHROMEOS_DISPLAY_NATIVE_DISPLAY_DELEGATE_H_
+#ifndef UI_DISPLAY_CHROMEOS_NATIVE_DISPLAY_DELEGATE_H_
+#define UI_DISPLAY_CHROMEOS_NATIVE_DISPLAY_DELEGATE_H_
 
-#include "chromeos/display/output_configurator.h"
+#include "ui/display/chromeos/output_configurator.h"
 #include "ui/display/display_constants.h"
 
-namespace chromeos {
+namespace ui {
 
 class NativeDisplayObserver;
 
@@ -66,17 +66,17 @@ class NativeDisplayDelegate {
 
   // Gets HDCP state of output.
   virtual bool GetHDCPState(const OutputConfigurator::OutputSnapshot& output,
-                            ui::HDCPState* state) = 0;
+                            HDCPState* state) = 0;
 
   // Sets HDCP state of output.
   virtual bool SetHDCPState(const OutputConfigurator::OutputSnapshot& output,
-                            ui::HDCPState state) = 0;
+                            HDCPState state) = 0;
 
   virtual void AddObserver(NativeDisplayObserver* observer) = 0;
 
   virtual void RemoveObserver(NativeDisplayObserver* observer) = 0;
 };
 
-}  // namespace chromeos
+}  //  namespace ui
 
-#endif  // CHROMEOS_DISPLAY_NATIVE_DISPLAY_DELEGATE_H_
+#endif  // UI_DISPLAY_CHROMEOS_NATIVE_DISPLAY_DELEGATE_H_
