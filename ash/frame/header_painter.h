@@ -129,8 +129,13 @@ class ASH_EXPORT HeaderPainter : public gfx::AnimationDelegate {
  private:
   FRIEND_TEST_ALL_PREFIXES(HeaderPainterTest, TitleIconAlignment);
 
-  // Paints the border around the header.
-  void PaintBorder(gfx::Canvas* canvas, Mode mode);
+  // Paints highlight around the edge of the header for restored browser
+  // windows.
+  void PaintHighlightForRestoredBrowserWindow(gfx::Canvas* canvas);
+
+  // Paints highlight around the edge of the header for inactive restored
+  // non-browser windows.
+  void PaintHighlightForInactiveRestoredWindow(gfx::Canvas* canvas);
 
   // Updates the images used for the minimize, restore and close buttons.
   void UpdateCaptionButtonImages();

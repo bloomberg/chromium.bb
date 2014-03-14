@@ -39,10 +39,12 @@ const int kTitleLogoSpacing = 5;
 const int kTitleIconOffsetX = 5;
 // Space between window edge and title text, when there is no icon.
 const int kTitleNoIconOffsetX = 8;
-// Color for the non-maximized window title text.
-const SkColor kNonMaximizedWindowTitleTextColor = SkColorSetRGB(40, 40, 40);
-// Color for the maximized window title text.
-const SkColor kMaximizedWindowTitleTextColor = SK_ColorWHITE;
+// Color for the non-browser window title text.
+const SkColor kWindowTitleTextColor = SkColorSetRGB(40, 40, 40);
+// Color for the restored browser window title text.
+const SkColor kRestoredBrowserWindowTitleTextColor = SkColorSetRGB(40, 40, 40);
+// Color for the maximized browser window title text.
+const SkColor kMaximizedBrowserWindowTitleTextColor = SK_ColorWHITE;
 // Size of header/content separator line below the header image for non-browser
 // windows.
 const int kHeaderContentSeparatorSize = 1;
@@ -308,7 +310,14 @@ void HeaderPainter::PaintHeader(gfx::Canvas* canvas,
   previous_theme_frame_id_ = theme_frame_id;
   previous_theme_frame_overlay_id_ = theme_frame_overlay_id;
 
-  PaintBorder(canvas, mode);
+  if (!frame_->IsMaximized() && !frame_->IsFullscreen()) {
+    if (style_ == STYLE_BROWSER) {
+      PaintHighlightForRestoredBrowserWindow(canvas);
+    } else {
+      if (mode == MODE_INACTIVE)
+        PaintHighlightForInactiveRestoredWindow(canvas);
+    }
+  }
 }
 
 void HeaderPainter::PaintHeaderContentSeparator(gfx::Canvas* canvas,
@@ -336,8 +345,12 @@ void HeaderPainter::PaintTitleBar(gfx::Canvas* canvas,
   if (delegate && delegate->ShouldShowWindowTitle()) {
     gfx::Rect title_bounds = GetTitleBounds(title_font_list);
     title_bounds.set_x(header_view_->GetMirroredXForRect(title_bounds));
-    SkColor title_color = (frame_->IsMaximized() || frame_->IsFullscreen()) ?
-        kMaximizedWindowTitleTextColor : kNonMaximizedWindowTitleTextColor;
+    SkColor title_color = kWindowTitleTextColor;
+    if (style_ == STYLE_BROWSER) {
+      title_color = (frame_->IsMaximized() || frame_->IsFullscreen()) ?
+          kMaximizedBrowserWindowTitleTextColor :
+          kRestoredBrowserWindowTitleTextColor;
+    }
     canvas->DrawStringRectWithFlags(delegate->GetWindowTitle(),
                                     title_font_list,
                                     title_color,
@@ -402,86 +415,82 @@ void HeaderPainter::AnimationProgressed(const gfx::Animation* animation) {
 ///////////////////////////////////////////////////////////////////////////////
 // HeaderPainter, private:
 
-void HeaderPainter::PaintBorder(gfx::Canvas* canvas, Mode mode) {
-  if (frame_->IsMaximized() ||
-      frame_->IsFullscreen() ||
-      (style_ == STYLE_OTHER && mode == MODE_ACTIVE)) {
-    return;
-  }
-
-  gfx::ImageSkia top_left_corner;
-  gfx::ImageSkia top_right_corner;
-  gfx::ImageSkia top_edge;
-  gfx::ImageSkia left_edge;
-  gfx::ImageSkia right_edge;
-  gfx::ImageSkia bottom_edge;
-
+void HeaderPainter::PaintHighlightForRestoredBrowserWindow(
+    gfx::Canvas* canvas) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  if (style_ == STYLE_BROWSER) {
-    top_left_corner = *rb.GetImageSkiaNamed(
-        IDR_AURA_BROWSER_WINDOW_HEADER_SHADE_TOP_LEFT);
-    top_right_corner = *rb.GetImageSkiaNamed(
-        IDR_AURA_BROWSER_WINDOW_HEADER_SHADE_TOP_RIGHT);
-    top_edge = *rb.GetImageSkiaNamed(IDR_AURA_BROWSER_WINDOW_HEADER_SHADE_TOP);
-    left_edge = *rb.GetImageSkiaNamed(
-        IDR_AURA_BROWSER_WINDOW_HEADER_SHADE_LEFT);
-    right_edge = *rb.GetImageSkiaNamed(
-        IDR_AURA_BROWSER_WINDOW_HEADER_SHADE_RIGHT);
-  } else {
-    top_edge = *rb.GetImageSkiaNamed(
-        IDR_AURA_WINDOW_HEADER_SHADE_INACTIVE_TOP);
-    left_edge = *rb.GetImageSkiaNamed(
-        IDR_AURA_WINDOW_HEADER_SHADE_INACTIVE_LEFT);
-    right_edge = *rb.GetImageSkiaNamed(
-        IDR_AURA_WINDOW_HEADER_SHADE_INACTIVE_RIGHT);
-    bottom_edge = *rb.GetImageSkiaNamed(
-        IDR_AURA_WINDOW_HEADER_SHADE_INACTIVE_BOTTOM);
-  }
-
-  DCHECK(!top_edge.isNull());
-  DCHECK(!left_edge.isNull());
-  DCHECK(!right_edge.isNull());
+  gfx::ImageSkia top_left_corner = *rb.GetImageSkiaNamed(
+      IDR_AURA_BROWSER_WINDOW_HEADER_SHADE_TOP_LEFT);
+  gfx::ImageSkia top_right_corner = *rb.GetImageSkiaNamed(
+      IDR_AURA_BROWSER_WINDOW_HEADER_SHADE_TOP_RIGHT);
+  gfx::ImageSkia top_edge = *rb.GetImageSkiaNamed(
+      IDR_AURA_BROWSER_WINDOW_HEADER_SHADE_TOP);
+  gfx::ImageSkia left_edge = *rb.GetImageSkiaNamed(
+      IDR_AURA_BROWSER_WINDOW_HEADER_SHADE_LEFT);
+  gfx::ImageSkia right_edge = *rb.GetImageSkiaNamed(
+      IDR_AURA_BROWSER_WINDOW_HEADER_SHADE_RIGHT);
 
   int top_left_width = top_left_corner.width();
   int top_left_height = top_left_corner.height();
-  if (!top_left_corner.isNull()) {
-    canvas->DrawImageInt(top_left_corner, 0, 0);
-  }
+  canvas->DrawImageInt(top_left_corner, 0, 0);
 
+  int top_right_width = top_right_corner.width();
   int top_right_height = top_right_corner.height();
-  if (!top_right_corner.isNull()) {
-    canvas->DrawImageInt(top_right_corner,
-                         header_view_->width() - top_right_corner.width(),
-                         top_right_height);
-  }
+  canvas->DrawImageInt(top_right_corner,
+                       header_view_->width() - top_right_width,
+                       0);
 
-  canvas->TileImageInt(top_edge,
+  canvas->TileImageInt(
+      top_edge,
       top_left_width,
       0,
-      header_view_->width() - top_left_width - top_right_corner.width(),
+      header_view_->width() - top_left_width - top_right_width,
       top_edge.height());
 
-  // TODO(pkotwicz): Compute |bottom| more accurately. The computation is
-  // inaccurate for browser windows.
-  int bottom = header_height_ - kHeaderContentSeparatorSize;
-  int bottom_height = bottom_edge.height();
-  if (!bottom_edge.isNull()) {
-    canvas->TileImageInt(bottom_edge,
-                         0, bottom - bottom_height,
-                         header_view_->width(), bottom_height);
-  }
-
-  int left_edge_height = bottom - bottom_height - top_left_height;
   canvas->TileImageInt(left_edge,
-                       0, top_left_height,
-                       left_edge.width(), left_edge_height);
+                       0,
+                       top_left_height,
+                       left_edge.width(),
+                       header_height_ - top_left_height);
 
-  int right_edge_height = bottom - bottom_height - top_right_height;
   canvas->TileImageInt(right_edge,
                        header_view_->width() - right_edge.width(),
                        top_right_height,
                        right_edge.width(),
-                       right_edge_height);
+                       header_height_ - top_right_height);
+}
+
+void HeaderPainter::PaintHighlightForInactiveRestoredWindow(
+    gfx::Canvas* canvas) {
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  gfx::ImageSkia top_edge = *rb.GetImageSkiaNamed(
+      IDR_AURA_WINDOW_HEADER_SHADE_INACTIVE_TOP);
+  gfx::ImageSkia left_edge = *rb.GetImageSkiaNamed(
+      IDR_AURA_WINDOW_HEADER_SHADE_INACTIVE_LEFT);
+  gfx::ImageSkia right_edge = *rb.GetImageSkiaNamed(
+      IDR_AURA_WINDOW_HEADER_SHADE_INACTIVE_RIGHT);
+  gfx::ImageSkia bottom_edge = *rb.GetImageSkiaNamed(
+      IDR_AURA_WINDOW_HEADER_SHADE_INACTIVE_BOTTOM);
+
+  int left_edge_width = left_edge.width();
+  int right_edge_width = right_edge.width();
+  canvas->DrawImageInt(left_edge, 0, 0);
+  canvas->DrawImageInt(right_edge, header_view_->width() - right_edge_width, 0);
+  canvas->TileImageInt(
+      top_edge,
+      left_edge_width,
+      0,
+      header_view_->width() - left_edge_width - right_edge_width,
+      top_edge.height());
+
+  DCHECK_EQ(left_edge.height(), right_edge.height());
+  int bottom = left_edge.height();
+  int bottom_height = bottom_edge.height();
+  canvas->TileImageInt(
+      bottom_edge,
+      left_edge_width,
+      bottom - bottom_height,
+      header_view_->width() - left_edge_width - right_edge_width,
+      bottom_height);
 }
 
 void HeaderPainter::UpdateCaptionButtonImages() {
