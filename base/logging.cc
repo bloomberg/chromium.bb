@@ -597,13 +597,13 @@ LogMessage::~LogMessage() {
     }
     __android_log_write(priority, "chromium", str_newline.c_str());
 #endif
-    fprintf(stderr, "%s", str_newline.c_str());
+    fwrite(str_newline.data(), str_newline.size(), 1, stderr);
     fflush(stderr);
   } else if (severity_ >= kAlwaysPrintErrorLevel) {
     // When we're only outputting to a log file, above a certain log level, we
     // should still output to stderr so that we can better detect and diagnose
     // problems with unit tests, especially on the buildbots.
-    fprintf(stderr, "%s", str_newline.c_str());
+    fwrite(str_newline.data(), str_newline.size(), 1, stderr);
     fflush(stderr);
   }
 
@@ -628,7 +628,7 @@ LogMessage::~LogMessage() {
                 &num_written,
                 NULL);
 #else
-      fprintf(log_file, "%s", str_newline.c_str());
+      fwrite(str_newline.data(), str_newline.size(), 1, log_file);
       fflush(log_file);
 #endif
     }
