@@ -371,12 +371,10 @@ static Element* siblingWithAriaRole(String role, Node* node)
     if (!parent)
         return 0;
 
-    for (Node* sibling = parent->firstChild(); sibling; sibling = sibling->nextSibling()) {
-        if (sibling->isElementNode()) {
-            const AtomicString& siblingAriaRole = toElement(sibling)->getAttribute(roleAttr);
-            if (equalIgnoringCase(siblingAriaRole, role))
-                return toElement(sibling);
-        }
+    for (Element* sibling = ElementTraversal::firstChild(*parent); sibling; sibling = ElementTraversal::nextSibling(*sibling)) {
+        const AtomicString& siblingAriaRole = sibling->getAttribute(roleAttr);
+        if (equalIgnoringCase(siblingAriaRole, role))
+            return sibling;
     }
 
     return 0;
