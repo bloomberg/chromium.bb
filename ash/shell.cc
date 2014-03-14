@@ -118,6 +118,7 @@
 #include "ash/display/display_error_observer_chromeos.h"
 #include "ash/display/output_configurator_animation.h"
 #include "ash/display/projecting_observer_chromeos.h"
+#include "ash/system/chromeos/session/last_window_closed_logout_reminder.h"
 #include "base/message_loop/message_pump_x11.h"
 #include "base/sys_info.h"
 #include "chromeos/display/output_configurator.h"
@@ -672,6 +673,10 @@ Shell::~Shell() {
   app_list_controller_.reset();
 
 #if defined(OS_CHROMEOS)
+  // Destroy the LastWindowClosedLogoutReminder before the
+  // LogoutConfirmationController.
+  last_window_closed_logout_reminder_.reset();
+
   // Destroy the LogoutConfirmationController before the SystemTrayDelegate.
   logout_confirmation_controller_.reset();
 #endif
@@ -1008,6 +1013,8 @@ void Shell::Init() {
       new internal::VideoActivityNotifier(video_detector_.get()));
   bluetooth_notification_controller_.reset(
       new internal::BluetoothNotificationController);
+  last_window_closed_logout_reminder_.reset(
+      new internal::LastWindowClosedLogoutReminder);
 #endif
 
   weak_display_manager_factory_.reset(

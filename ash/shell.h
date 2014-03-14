@@ -127,6 +127,7 @@ class EventRewriterEventFilter;
 class EventTransformationHandler;
 class FocusCycler;
 class KeyboardUMAEventFilter;
+class LastWindowClosedLogoutReminder;
 class LocaleNotificationController;
 class LogoutConfirmationController;
 class MaximizeModeWindowManager;
@@ -711,6 +712,8 @@ class ASH_EXPORT Shell
       bluetooth_notification_controller_;
   scoped_ptr<internal::LogoutConfirmationController>
       logout_confirmation_controller_;
+  scoped_ptr<internal::LastWindowClosedLogoutReminder>
+      last_window_closed_logout_reminder_;
 #if defined(USE_X11)
   // Controls video output device state.
   scoped_ptr<chromeos::OutputConfigurator> output_configurator_;

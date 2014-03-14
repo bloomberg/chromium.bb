@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_ASH_SYSTEM_TRAY_DELEGATE_CHROMEOS_H_
 #define CHROME_BROWSER_UI_ASH_SYSTEM_TRAY_DELEGATE_CHROMEOS_H_
 
+#include "apps/app_window_registry.h"
 #include "ash/ime/input_method_menu_manager.h"
 #include "ash/session_state_observer.h"
 #include "ash/system/tray/system_tray.h"
@@ -20,6 +21,7 @@
 #include "chrome/browser/chromeos/drive/job_list.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/system_tray_delegate_chromeos.h"
+#include "chrome/browser/ui/browser_list_observer.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/ime/input_method_manager.h"
@@ -43,7 +45,9 @@ class SystemTrayDelegateChromeOS
       public chromeos::CrasAudioHandler::AudioObserver,
       public device::BluetoothAdapter::Observer,
       public policy::CloudPolicyStore::Observer,
-      public ash::SessionStateObserver {
+      public ash::SessionStateObserver,
+      public chrome::BrowserListObserver,
+      public apps::AppWindowRegistry::Observer {
  public:
   SystemTrayDelegateChromeOS();
 
@@ -162,6 +166,12 @@ class SystemTrayDelegateChromeOS
 
   void UpdateSessionLengthLimit();
 
+  void StopObservingAppWindowRegistry();
+
+  // Notify observers if the current user has no more open browser or app
+  // windows.
+  void NotifyIfLastWindowClosed();
+
   // LoginState::Observer overrides.
   virtual void LoggedInStateChanged() OVERRIDE;
 
@@ -232,8 +242,17 @@ class SystemTrayDelegateChromeOS
   // Overridden from CloudPolicyStore::Observer
   virtual void OnStoreLoaded(policy::CloudPolicyStore* store) OVERRIDE;
   virtual void OnStoreError(policy::CloudPolicyStore* store) OVERRIDE;
+
   // Overridden from ash::SessionStateObserver
   virtual void UserAddedToSession(const std::string& user_id) OVERRIDE;
+
+  // Overridden from chrome::BrowserListObserver:
+  virtual void OnBrowserRemoved(Browser* browser) OVERRIDE;
+
+  // Overridden from apps::AppWindowRegistry::Observer:
+  virtual void OnAppWindowAdded(apps::AppWindow* app_window) OVERRIDE;
+  virtual void OnAppWindowIconChanged(apps::AppWindow* app_window) OVERRIDE;
+  virtual void OnAppWindowRemoved(apps::AppWindow* app_window) OVERRIDE;
 
   void OnAccessibilityStatusChanged(
       const AccessibilityStatusEventDetails& details);

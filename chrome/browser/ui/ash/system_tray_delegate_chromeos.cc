@@ -80,6 +80,7 @@
 #include "chrome/browser/ui/ash/volume_controller_chromeos.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
@@ -303,6 +304,8 @@ void SystemTrayDelegateChromeOS::Initialize() {
 
   if (CrasAudioHandler::IsInitialized())
     CrasAudioHandler::Get()->AddAudioObserver(this);
+
+  BrowserList::AddObserver(this);
 }
 
 void SystemTrayDelegateChromeOS::Shutdown() {
@@ -344,7 +347,7 @@ SystemTrayDelegateChromeOS::~SystemTrayDelegateChromeOS() {
   local_state_registrar_.reset();
   user_pref_registrar_.reset();
 
-  // Unregister content notifications befure destroying any components.
+  // Unregister content notifications before destroying any components.
   registrar_.reset();
 
   // Unregister a11y status subscription.
@@ -362,7 +365,10 @@ SystemTrayDelegateChromeOS::~SystemTrayDelegateChromeOS() {
   if (CrasAudioHandler::IsInitialized())
     CrasAudioHandler::Get()->RemoveAudioObserver(this);
 
-// Stop observing Drive operations.
+  BrowserList::RemoveObserver(this);
+  StopObservingAppWindowRegistry();
+
+  // Stop observing Drive operations.
   UnobserveDriveUpdates();
 
   policy::BrowserPolicyConnectorChromeOS* connector =
@@ -927,13 +933,17 @@ ash::SystemTrayNotifier* SystemTrayDelegateChromeOS::GetSystemTrayNotifier() {
 }
 
 void SystemTrayDelegateChromeOS::SetProfile(Profile* profile) {
-  // Stop observing the current |user_profile_| on Drive integration status.
+  // Stop observing the Drive integration status and the AppWindowRegistry of
+  // the current |user_profile_|.
   UnobserveDriveUpdates();
+  StopObservingAppWindowRegistry();
 
   user_profile_ = profile;
 
-  // Restart observation, now for the newly set |profile|.
+  // Start observing the Drive integration status and the AppWindowRegistry of
+  // the newly set |user_profile_|.
   ObserveDriveUpdates();
+  apps::AppWindowRegistry::Get(user_profile_)->AddObserver(this);
 
   PrefService* prefs = profile->GetPrefs();
   user_pref_registrar_.reset(new PrefChangeRegistrar);
@@ -986,6 +996,7 @@ bool SystemTrayDelegateChromeOS::UnsetProfile(Profile* profile) {
   if (profile != user_profile_)
     return false;
   user_pref_registrar_.reset();
+  user_profile_ = NULL;
   return true;
 }
 
@@ -1080,6 +1091,40 @@ void SystemTrayDelegateChromeOS::UpdateSessionLengthLimit() {
     session_length_limit_ = base::TimeDelta();
   }
   GetSystemTrayNotifier()->NotifySessionLengthLimitChanged();
+}
+
+void SystemTrayDelegateChromeOS::StopObservingAppWindowRegistry() {
+  if (!user_profile_)
+    return;
+
+  apps::AppWindowRegistry* registry =
+      apps::AppWindowRegistry::Factory::GetForBrowserContext(user_profile_,
+                                                             false);
+  if (registry)
+    registry->RemoveObserver(this);
+}
+
+void SystemTrayDelegateChromeOS::NotifyIfLastWindowClosed() {
+  if (!user_profile_)
+    return;
+
+  BrowserList* browser_list =
+      BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH);
+  for (BrowserList::const_iterator it = browser_list->begin();
+       it != browser_list->end();
+       ++it) {
+    if ((*it)->profile()->IsSameProfile(user_profile_)) {
+      // The current user has at least one open browser window.
+      return;
+    }
+  }
+
+  if (!apps::AppWindowRegistry::Get(user_profile_)->app_windows().empty()) {
+    // The current user has at least one open app window.
+    return;
+  }
+
+  GetSystemTrayNotifier()->NotifyLastWindowClosed();
 }
 
 // LoginState::Observer overrides.
@@ -1337,6 +1382,23 @@ void SystemTrayDelegateChromeOS::OnStoreError(policy::CloudPolicyStore* store) {
 void SystemTrayDelegateChromeOS::UserAddedToSession(
     const std::string& user_id) {
   GetSystemTrayNotifier()->NotifyUserAddedToSession();
+}
+
+// Overridden from chrome::BrowserListObserver.
+void SystemTrayDelegateChromeOS::OnBrowserRemoved(Browser* browser) {
+  NotifyIfLastWindowClosed();
+}
+
+// Overridden from apps::AppWindowRegistry::Observer.
+void SystemTrayDelegateChromeOS::OnAppWindowAdded(apps::AppWindow* app_window) {
+}
+
+void SystemTrayDelegateChromeOS::OnAppWindowIconChanged(
+    apps::AppWindow* app_window) {}
+
+void SystemTrayDelegateChromeOS::OnAppWindowRemoved(
+    apps::AppWindow* app_window) {
+  NotifyIfLastWindowClosed();
 }
 
 void SystemTrayDelegateChromeOS::OnAccessibilityStatusChanged(

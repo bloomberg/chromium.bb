@@ -52,6 +52,8 @@ class ASH_EXPORT LogoutConfirmationController : public ShellObserver {
   // Called by the |dialog_| when it is closed.
   void OnDialogClosed();
 
+  LogoutConfirmationDialog* dialog_for_testing() const { return dialog_; }
+
  private:
   scoped_ptr<base::TickClock> clock_;
   base::Closure logout_closure_;

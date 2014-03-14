@@ -170,6 +170,16 @@ void SystemTrayNotifier::RemoveScreenShareObserver(
     ScreenShareObserver* observer) {
   screen_share_observers_.RemoveObserver(observer);
 }
+
+void SystemTrayNotifier::AddLastWindowClosedObserver(
+    LastWindowClosedObserver* observer) {
+  last_window_closed_observers_.AddObserver(observer);
+}
+
+void SystemTrayNotifier::RemoveLastWindowClosedObserver(
+    LastWindowClosedObserver* observer) {
+  last_window_closed_observers_.RemoveObserver(observer);
+}
 #endif
 
 void SystemTrayNotifier::NotifyAccessibilityModeChanged(
@@ -360,6 +370,12 @@ void SystemTrayNotifier::NotifyScreenShareStart(
 void SystemTrayNotifier::NotifyScreenShareStop() {
   FOR_EACH_OBSERVER(ScreenShareObserver, screen_share_observers_,
                     OnScreenShareStop());
+}
+
+void SystemTrayNotifier::NotifyLastWindowClosed() {
+  FOR_EACH_OBSERVER(LastWindowClosedObserver,
+                    last_window_closed_observers_,
+                    OnLastWindowClosed());
 }
 
 #endif  // OS_CHROMEOS

@@ -27,6 +27,7 @@
 #include "ash/system/chromeos/network/network_portal_detector_observer.h"
 #include "ash/system/chromeos/screen_security/screen_capture_observer.h"
 #include "ash/system/chromeos/screen_security/screen_share_observer.h"
+#include "ash/system/chromeos/session/last_window_closed_observer.h"
 #include "ash/system/chromeos/session/logout_button_observer.h"
 #include "ash/system/chromeos/session/session_length_limit_observer.h"
 #include "base/time/time.h"
@@ -96,6 +97,9 @@ class ASH_EXPORT SystemTrayNotifier {
 
   void AddScreenShareObserver(ScreenShareObserver* observer);
   void RemoveScreenShareObserver(ScreenShareObserver* observer);
+
+  void AddLastWindowClosedObserver(LastWindowClosedObserver* observer);
+  void RemoveLastWindowClosedObserver(LastWindowClosedObserver* observer);
 #endif
 
   void NotifyAccessibilityModeChanged(
@@ -134,6 +138,7 @@ class ASH_EXPORT SystemTrayNotifier {
   void NotifyScreenShareStart(const base::Closure& stop_callback,
                               const base::string16& helper_name);
   void NotifyScreenShareStop();
+  void NotifyLastWindowClosed();
 
   NetworkStateNotifier* network_state_notifier() {
     return network_state_notifier_.get();
@@ -160,6 +165,7 @@ class ASH_EXPORT SystemTrayNotifier {
   ObserverList<EnterpriseDomainObserver> enterprise_domain_observers_;
   ObserverList<ScreenCaptureObserver> screen_capture_observers_;
   ObserverList<ScreenShareObserver> screen_share_observers_;
+  ObserverList<LastWindowClosedObserver> last_window_closed_observers_;
   scoped_ptr<NetworkStateNotifier> network_state_notifier_;
 #endif
 
