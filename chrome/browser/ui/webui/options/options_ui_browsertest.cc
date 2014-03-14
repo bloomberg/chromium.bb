@@ -85,8 +85,15 @@ IN_PROC_BROWSER_TEST_F(OptionsUIBrowserTest, DISABLED_LoadOptionsByURL) {
   VerifyNavbar();
 }
 
+// Flaky on win_rel http://crbug.com/352546
+#if defined(OS_WIN)
+#define MAYBE_VerifyManagedSignout DISABLED_VerifyManagedSignout
+#else
+#define MAYBE_VerifyManagedSignout VerifyManagedSignout
+#endif
+
 #if !defined(OS_CHROMEOS)
-IN_PROC_BROWSER_TEST_F(OptionsUIBrowserTest, VerifyManagedSignout) {
+IN_PROC_BROWSER_TEST_F(OptionsUIBrowserTest, MAYBE_VerifyManagedSignout) {
   SigninManager* signin =
       SigninManagerFactory::GetForProfile(browser()->profile());
   signin->OnExternalSigninCompleted("test@example.com");
