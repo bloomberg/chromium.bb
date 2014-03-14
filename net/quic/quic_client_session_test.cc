@@ -13,6 +13,7 @@
 #include "net/quic/crypto/crypto_protocol.h"
 #include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/crypto/quic_encrypter.h"
+#include "net/quic/crypto/quic_server_info.h"
 #include "net/quic/quic_default_packet_writer.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/quic_client_session_peer.h"
@@ -66,7 +67,8 @@ class QuicClientSessionTest : public ::testing::TestWithParam<QuicVersion> {
       : writer_(new TestPacketWriter()),
         connection_(
             new PacketSavingConnection(false, SupportedVersions(GetParam()))),
-        session_(connection_, GetSocket().Pass(), writer_.Pass(), NULL, NULL,
+        session_(connection_, GetSocket().Pass(), writer_.Pass(), NULL,
+                 make_scoped_ptr((QuicServerInfo*)NULL), NULL,
                  kServerHostname, DefaultQuicConfig(), &crypto_config_,
                  &net_log_) {
     session_.config()->SetDefaults();

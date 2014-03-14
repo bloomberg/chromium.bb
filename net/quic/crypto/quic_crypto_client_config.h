@@ -22,8 +22,6 @@ class CryptoHandshakeMessage;
 class ProofVerifier;
 class ProofVerifyDetails;
 class QuicRandom;
-class QuicServerInfo;
-class QuicServerInfoFactory;
 
 // QuicCryptoClientConfig contains crypto-related configuration settings for a
 // client. Note that this object isn't thread-safe. It's designed to be used on
@@ -36,7 +34,6 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
   class NET_EXPORT_PRIVATE CachedState {
    public:
     CachedState();
-    explicit CachedState(scoped_ptr<QuicServerInfo> quic_server_info);
     ~CachedState();
 
     // IsComplete returns true if this object contains enough information to
@@ -70,8 +67,7 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
     void ClearProof();
 
     // SetProofValid records that the certificate chain and signature have been
-    // validated and that it's safe to assume that the server is legitimate. It
-    // persists the server config information to disk cache.
+    // validated and that it's safe to assume that the server is legitimate.
     // (Note: this does not check the chain or signature.)
     void SetProofValid();
 
@@ -87,7 +83,6 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
     bool proof_valid() const;
     uint64 generation_counter() const;
     const ProofVerifyDetails* proof_verify_details() const;
-    QuicServerInfo* quic_server_info() const;
 
     void set_source_address_token(base::StringPiece token);
 
@@ -100,16 +95,13 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
     // unchanged.
     void InitializeFrom(const CachedState& other);
 
-    // Fill out the |server_config_|, |source_address_token_|, |certs_| and
-    // |server_config_sig_| fields from |quic_server_info_|. |quic_server_info_|
-    // reads this information from the disk cache. |now| is used to judge
-    // whether server config from disk cache has expired. Returns true if it has
-    // loaded the data from disk cache successfully.
-    bool LoadQuicServerInfo(QuicWallTime now);
-
-    // Save the server config information so that we can perform 0-RTT handshake
-    // with a server.
-    void SaveQuicServerInfo();
+    // Initializes this cached state based on the arguments provided.
+    // Returns false if there is a problem parsing the server config.
+    bool Initialize(base::StringPiece server_config,
+                    base::StringPiece source_address_token,
+                    const std::vector<std::string>& certs,
+                    base::StringPiece signature,
+                    QuicWallTime now);
 
    private:
     std::string server_config_;         // A serialized handshake message.
@@ -120,7 +112,6 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
     bool server_config_valid_;          // True if |server_config_| is correctly
                                         // signed and |certs_| has been
                                         // validated.
-    bool need_to_persist_;              // Persist to disk if True.
     // Generation counter associated with the |server_config_|, |certs_| and
     // |server_config_sig_| combination. It is incremented whenever we set
     // server_config_valid_ to false.
@@ -131,9 +122,6 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
     // scfg contains the cached, parsed value of |server_config|.
     mutable scoped_ptr<CryptoHandshakeMessage> scfg_;
 
-    // |quic_server_info_| is used to fetch crypto config information from disk.
-    scoped_ptr<QuicServerInfo> quic_server_info_;
-
     DISALLOW_COPY_AND_ASSIGN(CachedState);
   };
 
@@ -143,17 +131,8 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
   // Sets the members to reasonable, default values.
   void SetDefaults();
 
-  // Create returns a CachedState for the given hostname. It creates a
-  // CachedState and caches it. If |quic_server_info_factory| is not NULL, then
-  // it is used to create QuicServerInfo which is used to fetch crypto config
-  // information from disk for the given hostname.
-  CachedState* Create(const std::string& server_hostname,
-                      QuicServerInfoFactory* quic_server_info_factory);
-
   // LookupOrCreate returns a CachedState for the given hostname. If no such
   // CachedState currently exists, it will be created and cached.
-  // TODO(rtenneti): fix the server code and pass QuicServerInfoFactory as
-  // argument.
   CachedState* LookupOrCreate(const std::string& server_hostname);
 
   // FillInchoateClientHello sets |out| to be a CHLO message that elicits a

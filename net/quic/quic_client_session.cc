@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
+#include "net/quic/crypto/quic_server_info.h"
 #include "net/quic/quic_connection_helper.h"
 #include "net/quic/quic_crypto_client_stream_factory.h"
 #include "net/quic/quic_default_packet_writer.h"
@@ -85,6 +86,7 @@ QuicClientSession::QuicClientSession(
     scoped_ptr<DatagramClientSocket> socket,
     scoped_ptr<QuicDefaultPacketWriter> writer,
     QuicStreamFactory* stream_factory,
+    scoped_ptr<QuicServerInfo> server_info,
     QuicCryptoClientStreamFactory* crypto_client_stream_factory,
     const string& server_hostname,
     const QuicConfig& config,
@@ -107,6 +109,8 @@ QuicClientSession::QuicClientSession(
           crypto_client_stream_factory->CreateQuicCryptoClientStream(
               server_hostname, this, crypto_config) :
           new QuicCryptoClientStream(server_hostname, this, crypto_config));
+
+  crypto_stream_->SetQuicServerInfo(server_info.Pass());
 
   connection->set_debug_visitor(&logger_);
   // TODO(rch): pass in full host port proxy pair

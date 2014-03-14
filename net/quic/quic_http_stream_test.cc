@@ -16,6 +16,7 @@
 #include "net/quic/crypto/crypto_protocol.h"
 #include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/crypto/quic_encrypter.h"
+#include "net/quic/crypto/quic_server_info.h"
 #include "net/quic/quic_client_session.h"
 #include "net/quic/quic_connection.h"
 #include "net/quic/quic_connection_helper.h"
@@ -203,6 +204,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
         new QuicClientSession(connection_,
                               scoped_ptr<DatagramClientSocket>(socket),
                               writer_.Pass(), NULL,
+                              make_scoped_ptr((QuicServerInfo*)NULL),
                               &crypto_client_stream_factory_,
                               "www.google.com", DefaultQuicConfig(),
                               &crypto_config_, NULL));

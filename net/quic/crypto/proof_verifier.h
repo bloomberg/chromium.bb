@@ -15,7 +15,7 @@ namespace net {
 
 // ProofVerifyDetails is an abstract class that acts as a container for any
 // implementation specific details that a ProofVerifier wishes to return. These
-// details are saved in the CachedInfo for the origin in question.
+// details are saved in the CachedState for the origin in question.
 class NET_EXPORT_PRIVATE ProofVerifyDetails {
  public:
   virtual ~ProofVerifyDetails() {}

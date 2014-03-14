@@ -18,7 +18,7 @@
 
 namespace net {
 
-class ProofVerifyDetails;
+class QuicServerInfo;
 class QuicSession;
 class SSLInfo;
 
@@ -51,6 +51,8 @@ class NET_EXPORT_PRIVATE QuicCryptoClientStream : public QuicCryptoStream {
   virtual bool GetSSLInfo(SSLInfo* ssl_info);
 
   void OnIOComplete(int result);
+
+  void SetQuicServerInfo(scoped_ptr<QuicServerInfo> server_info);
 
  private:
   // ProofVerifierCallbackImpl is passed as the callback method to VerifyProof.
@@ -103,6 +105,10 @@ class NET_EXPORT_PRIVATE QuicCryptoClientStream : public QuicCryptoStream {
   // LoadQuicServerInfo is a helper function for DoLoadQuicServerInfoComplete.
   void LoadQuicServerInfo(QuicCryptoClientConfig::CachedState* cached);
 
+  // Should be aclled whenever cached->SetProofValid() is called.
+  // TODO(rch): move this to some chrome-specific class.
+  void SaveQuicServerInfo(const QuicCryptoClientConfig::CachedState& cached);
+
   State next_state_;
   // num_client_hellos_ contains the number of client hello messages that this
   // connection has sent.
@@ -131,6 +137,8 @@ class NET_EXPORT_PRIVATE QuicCryptoClientStream : public QuicCryptoStream {
 
   // The result of certificate verification.
   scoped_ptr<CertVerifyResult> cert_verify_result_;
+
+  scoped_ptr<QuicServerInfo> quic_server_info_;
 
   // This member is used to store the result of an asynchronous disk cache read.
   // It must not be used after STATE_LOAD_QUIC_SERVER_INFO_COMPLETE.

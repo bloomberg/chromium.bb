@@ -90,6 +90,7 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicSession {
                     scoped_ptr<DatagramClientSocket> socket,
                     scoped_ptr<QuicDefaultPacketWriter> writer,
                     QuicStreamFactory* stream_factory,
+                    scoped_ptr<QuicServerInfo> server_info,
                     QuicCryptoClientStreamFactory* crypto_client_stream_factory,
                     const std::string& server_hostname,
                     const QuicConfig& config,

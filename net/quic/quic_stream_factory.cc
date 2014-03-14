@@ -77,6 +77,7 @@ class QuicStreamFactory::Job {
       bool is_https,
       base::StringPiece method,
       CertVerifier* cert_verifier,
+      QuicServerInfo* server_info,
       const BoundNetLog& net_log);
 
   ~Job();
@@ -84,6 +85,8 @@ class QuicStreamFactory::Job {
   int Run(const CompletionCallback& callback);
 
   int DoLoop(int rv);
+  int DoLoadServerInfo();
+  int DoLoadServerInfoComplete(int rv);
   int DoResolveHost();
   int DoResolveHostComplete(int rv);
   int DoConnect();
@@ -102,6 +105,8 @@ class QuicStreamFactory::Job {
  private:
   enum IoState {
     STATE_NONE,
+    STATE_LOAD_SERVER_INFO,
+    STATE_LOAD_SERVER_INFO_COMPLETE,
     STATE_RESOLVE_HOST,
     STATE_RESOLVE_HOST_COMPLETE,
     STATE_CONNECT,
@@ -115,6 +120,7 @@ class QuicStreamFactory::Job {
   QuicSessionKey session_key_;
   bool is_post_;
   CertVerifier* cert_verifier_;
+  scoped_ptr<QuicServerInfo> server_info_;
   const BoundNetLog net_log_;
   QuicClientSession* session_;
   CompletionCallback callback_;
@@ -128,6 +134,7 @@ QuicStreamFactory::Job::Job(QuicStreamFactory* factory,
                             bool is_https,
                             base::StringPiece method,
                             CertVerifier* cert_verifier,
+                            QuicServerInfo* server_info,
                             const BoundNetLog& net_log)
     : factory_(factory),
       host_resolver_(host_resolver),
@@ -135,6 +142,7 @@ QuicStreamFactory::Job::Job(QuicStreamFactory* factory,
       session_key_(host_port_pair, is_https),
       is_post_(method == "POST"),
       cert_verifier_(cert_verifier),
+      server_info_(server_info),
       net_log_(net_log),
       session_(NULL) {}
 
@@ -142,7 +150,7 @@ QuicStreamFactory::Job::~Job() {
 }
 
 int QuicStreamFactory::Job::Run(const CompletionCallback& callback) {
-  io_state_ = STATE_RESOLVE_HOST;
+  io_state_ = STATE_LOAD_SERVER_INFO;
   int rv = DoLoop(OK);
   if (rv == ERR_IO_PENDING)
     callback_ = callback;
@@ -155,6 +163,13 @@ int QuicStreamFactory::Job::DoLoop(int rv) {
     IoState state = io_state_;
     io_state_ = STATE_NONE;
     switch (state) {
+      case STATE_LOAD_SERVER_INFO:
+        CHECK_EQ(OK, rv);
+        rv = DoLoadServerInfo();
+        break;
+      case STATE_LOAD_SERVER_INFO_COMPLETE:
+        rv = DoLoadServerInfoComplete(rv);
+        break;
       case STATE_RESOLVE_HOST:
         CHECK_EQ(OK, rv);
         rv = DoResolveHost();
@@ -183,6 +198,23 @@ void QuicStreamFactory::Job::OnIOComplete(int rv) {
   if (rv != ERR_IO_PENDING && !callback_.is_null()) {
     callback_.Run(rv);
   }
+}
+
+int QuicStreamFactory::Job::DoLoadServerInfo() {
+  io_state_ = STATE_LOAD_SERVER_INFO_COMPLETE;
+
+  if (server_info_)
+    server_info_->Start();
+
+  return OK;
+}
+
+int QuicStreamFactory::Job::DoLoadServerInfoComplete(int rv) {
+  if (rv != OK)
+    return rv;
+
+  io_state_ = STATE_RESOLVE_HOST;
+  return OK;
 }
 
 int QuicStreamFactory::Job::DoResolveHost() {
@@ -263,7 +295,8 @@ int QuicStreamFactory::Job::DoConnect() {
   io_state_ = STATE_CONNECT_COMPLETE;
 
   int rv = factory_->CreateSession(session_key_.host_port_pair(), is_https_,
-      cert_verifier_, address_list_, net_log_, &session_);
+                                   cert_verifier_, server_info_.Pass(),
+                                   address_list_, net_log_, &session_);
   if (rv != OK) {
     DCHECK(rv != ERR_IO_PENDING);
     DCHECK(!session_);
@@ -361,13 +394,21 @@ int QuicStreamFactory::Create(const HostPortPair& host_port_pair,
     return ERR_IO_PENDING;
   }
 
-  // Create crypto config and start the process of loading QUIC server
-  // information from disk cache.
-  QuicCryptoClientConfig* crypto_config = GetOrCreateCryptoConfig(session_key);
-  DCHECK(crypto_config);
-
+  QuicServerInfo* quic_server_info = NULL;
+  if (quic_server_info_factory_) {
+    QuicCryptoClientConfig* crypto_config =
+        GetOrCreateCryptoConfig(session_key);
+    QuicCryptoClientConfig::CachedState* cached =
+        crypto_config->LookupOrCreate(session_key.host_port_pair().host());
+    DCHECK(cached);
+    if (cached->IsEmpty()) {
+      quic_server_info =
+          quic_server_info_factory_->GetForHost(host_port_pair.host());
+    }
+  }
   scoped_ptr<Job> job(new Job(this, host_resolver_, host_port_pair,
-                              is_https, method, cert_verifier, net_log));
+                              is_https, method, cert_verifier,
+                              quic_server_info, net_log));
   int rv = job->Run(base::Bind(&QuicStreamFactory::OnJobComplete,
                                base::Unretained(this), job.get()));
 
@@ -593,6 +634,7 @@ int QuicStreamFactory::CreateSession(
     const HostPortPair& host_port_pair,
     bool is_https,
     CertVerifier* cert_verifier,
+    scoped_ptr<QuicServerInfo> server_info,
     const AddressList& address_list,
     const BoundNetLog& net_log,
     QuicClientSession** session) {
@@ -672,7 +714,7 @@ int QuicStreamFactory::CreateSession(
   }
 
   *session = new QuicClientSession(
-      connection, socket.Pass(), writer.Pass(), this,
+      connection, socket.Pass(), writer.Pass(), this, server_info.Pass(),
       quic_crypto_client_stream_factory_, host_port_pair.host(),
       config, crypto_config, net_log.net_log());
   all_sessions_.insert(*session);  // owning pointer
@@ -710,12 +752,6 @@ QuicCryptoClientConfig* QuicStreamFactory::GetOrCreateCryptoConfig(
     // TODO(rtenneti): if two quic_sessions for the same host_port_pair
     // share the same crypto_config, will it cause issues?
     crypto_config = new QuicCryptoClientConfig();
-    if (quic_server_info_factory_) {
-      QuicCryptoClientConfig::CachedState* cached =
-          crypto_config->Create(session_key.host_port_pair().host(),
-                                quic_server_info_factory_);
-      DCHECK(cached);
-    }
     crypto_config->SetDefaults();
     all_crypto_configs_[session_key] = crypto_config;
     PopulateFromCanonicalConfig(session_key, crypto_config);

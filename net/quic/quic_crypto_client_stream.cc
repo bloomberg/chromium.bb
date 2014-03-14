@@ -65,7 +65,6 @@ void QuicCryptoClientStream::ProofVerifierCallbackImpl::Cancel() {
   stream_ = NULL;
 }
 
-
 QuicCryptoClientStream::QuicCryptoClientStream(
     const string& server_hostname,
     QuicSession* session,
@@ -278,6 +277,7 @@ void QuicCryptoClientStream::DoHandshakeLoop(
           if (!verifier) {
             // If no verifier is set then we don't check the certificates.
             cached->SetProofValid();
+            SaveQuicServerInfo(*cached);
           } else if (!cached->signature().empty()) {
             next_state_ = STATE_VERIFY_PROOF;
             break;
@@ -332,6 +332,7 @@ void QuicCryptoClientStream::DoHandshakeLoop(
         } else {
           cached->SetProofValid();
           cached->SetProofVerifyDetails(verify_details_.release());
+          SaveQuicServerInfo(*cached);
           next_state_ = STATE_SEND_CHLO;
         }
         break;
@@ -415,11 +416,15 @@ void QuicCryptoClientStream::OnIOComplete(int result) {
   DoHandshakeLoop(NULL);
 }
 
+void QuicCryptoClientStream::SetQuicServerInfo(
+    scoped_ptr<QuicServerInfo> server_info) {
+  quic_server_info_.reset(server_info.release());
+}
+
 int QuicCryptoClientStream::DoLoadQuicServerInfo(
     QuicCryptoClientConfig::CachedState* cached) {
   next_state_ = STATE_SEND_CHLO;
-  QuicServerInfo* quic_server_info = cached->quic_server_info();
-  if (!quic_server_info) {
+  if (!quic_server_info_) {
     return OK;
   }
 
@@ -437,7 +442,7 @@ int QuicCryptoClientStream::DoLoadQuicServerInfo(
   // quic_server_info->Persist requires quic_server_info to be ready, so we
   // always call WaitForDataReady, even though we might have initialized
   // |cached| config from the cached state for a canonical hostname.
-  int rv = quic_server_info->WaitForDataReady(
+  int rv = quic_server_info_->WaitForDataReady(
       base::Bind(&QuicCryptoClientStream::OnIOComplete,
                  weak_factory_.GetWeakPtr()));
 
@@ -450,7 +455,7 @@ int QuicCryptoClientStream::DoLoadQuicServerInfo(
 void QuicCryptoClientStream::DoLoadQuicServerInfoComplete(
     QuicCryptoClientConfig::CachedState* cached) {
   LoadQuicServerInfo(cached);
-  QuicServerInfo::State* state = cached->quic_server_info()->mutable_state();
+  QuicServerInfo::State* state = quic_server_info_->mutable_state();
   state->Clear();
 }
 
@@ -468,8 +473,12 @@ void QuicCryptoClientStream::LoadQuicServerInfo(
   UMA_HISTOGRAM_TIMES("Net.QuicServerInfo.DiskCacheReadTime",
                       base::TimeTicks::Now() - disk_cache_load_start_time_);
 
-  if (disk_cache_load_result_ != OK || !cached->LoadQuicServerInfo(
-          session()->connection()->clock()->WallNow())) {
+  if (disk_cache_load_result_ != OK ||
+      !cached->Initialize(quic_server_info_->state().server_config,
+                          quic_server_info_->state().source_address_token,
+                          quic_server_info_->state().certs,
+                          quic_server_info_->state().server_config_sig,
+                          session()->connection()->clock()->WallNow())) {
     // It is ok to proceed to STATE_SEND_CHLO when we cannot load QuicServerInfo
     // from the disk cache.
     DCHECK(cached->IsEmpty());
@@ -481,9 +490,30 @@ void QuicCryptoClientStream::LoadQuicServerInfo(
   if (!verifier) {
     // If no verifier is set then we don't check the certificates.
     cached->SetProofValid();
+    SaveQuicServerInfo(*cached);
   } else if (!cached->signature().empty()) {
     next_state_ = STATE_VERIFY_PROOF;
   }
+}
+
+void QuicCryptoClientStream::SaveQuicServerInfo(
+    const QuicCryptoClientConfig::CachedState& cached) {
+  DCHECK(cached.proof_valid());
+
+  // If the QuicServerInfo hasn't managed to load from disk yet then we can't
+  // save anything. TODO(rtenneti): we should fix this.
+  if (!quic_server_info_ || !quic_server_info_->IsDataReady()) {
+    return;
+  }
+
+  QuicServerInfo::State* state = quic_server_info_->mutable_state();
+
+  state->server_config = cached.server_config();
+  state->source_address_token = cached.source_address_token();
+  state->server_config_sig = cached.signature();
+  state->certs = cached.certs();
+
+  quic_server_info_->Persist();
 }
 
 }  // namespace net

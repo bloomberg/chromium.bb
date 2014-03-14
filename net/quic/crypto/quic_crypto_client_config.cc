@@ -15,7 +15,6 @@
 #include "net/quic/crypto/p256_key_exchange.h"
 #include "net/quic/crypto/proof_verifier.h"
 #include "net/quic/crypto/quic_encrypter.h"
-#include "net/quic/crypto/quic_server_info.h"
 #include "net/quic/quic_utils.h"
 
 #if defined(OS_WIN)
@@ -37,15 +36,7 @@ QuicCryptoClientConfig::~QuicCryptoClientConfig() {
 
 QuicCryptoClientConfig::CachedState::CachedState()
     : server_config_valid_(false),
-      need_to_persist_(false),
       generation_counter_(0) {}
-
-QuicCryptoClientConfig::CachedState::CachedState(
-    scoped_ptr<QuicServerInfo> quic_server_info)
-    : server_config_valid_(false),
-      need_to_persist_(false),
-      generation_counter_(0),
-      quic_server_info_(quic_server_info.Pass()) {}
 
 QuicCryptoClientConfig::CachedState::~CachedState() {}
 
@@ -123,7 +114,6 @@ QuicErrorCode QuicCryptoClientConfig::CachedState::SetServerConfig(
     server_config_ = server_config.as_string();
     SetProofInvalid();
     scfg_.reset(new_scfg_storage.release());
-    need_to_persist_ = true;
   }
   return QUIC_NO_ERROR;
 }
@@ -166,12 +156,37 @@ void QuicCryptoClientConfig::CachedState::ClearProof() {
 
 void QuicCryptoClientConfig::CachedState::SetProofValid() {
   server_config_valid_ = true;
-  SaveQuicServerInfo();
 }
 
 void QuicCryptoClientConfig::CachedState::SetProofInvalid() {
   server_config_valid_ = false;
   ++generation_counter_;
+}
+
+bool QuicCryptoClientConfig::CachedState::Initialize(
+    StringPiece server_config,
+    StringPiece source_address_token,
+    const vector<string>& certs,
+    StringPiece signature,
+    QuicWallTime now) {
+  DCHECK(server_config_.empty());
+
+  if (server_config.empty()) {
+    return false;
+  }
+
+  string error_details;
+  QuicErrorCode error = SetServerConfig(server_config, now,
+                                        &error_details);
+  if (error != QUIC_NO_ERROR) {
+    DVLOG(1) << "SetServerConfig failed with " << error_details;
+    return false;
+  }
+
+  signature.CopyToString(&server_config_sig_);
+  source_address_token.CopyToString(&source_address_token_);
+  certs_ = certs;
+  return true;
 }
 
 const string& QuicCryptoClientConfig::CachedState::server_config() const {
@@ -204,10 +219,6 @@ QuicCryptoClientConfig::CachedState::proof_verify_details() const {
   return proof_verify_details_.get();
 }
 
-QuicServerInfo* QuicCryptoClientConfig::CachedState::quic_server_info() const {
-  return quic_server_info_.get();
-}
-
 void QuicCryptoClientConfig::CachedState::set_source_address_token(
     StringPiece token) {
   source_address_token_ = token.as_string();
@@ -230,59 +241,6 @@ void QuicCryptoClientConfig::CachedState::InitializeFrom(
   ++generation_counter_;
 }
 
-// An issue to be solved: while we are loading the data from disk cache, it is
-// possible for another request for the same hostname update the CachedState
-// because that request has sent FillInchoateClientHello and got REJ message.
-// Loading of data from disk cache shouldn't blindly overwrite what is in
-// CachedState.
-bool QuicCryptoClientConfig::CachedState::LoadQuicServerInfo(QuicWallTime now) {
-  DCHECK(server_config_.empty());
-  DCHECK(quic_server_info_.get());
-  DCHECK(quic_server_info_->IsDataReady());
-
-  const QuicServerInfo::State& state(quic_server_info_->state());
-  if (state.server_config.empty()) {
-    return false;
-  }
-
-  string error_details;
-  QuicErrorCode error = SetServerConfig(state.server_config, now,
-                                        &error_details);
-  if (error != QUIC_NO_ERROR) {
-    DVLOG(1) << "SetServerConfig failed with " << error_details;
-    return false;
-  }
-
-  source_address_token_ = state.source_address_token;
-  server_config_sig_ = state.server_config_sig;
-  certs_ = state.certs;
-  need_to_persist_ = false;
-  return true;
-}
-
-void QuicCryptoClientConfig::CachedState::SaveQuicServerInfo() {
-  if (!quic_server_info_.get() || !need_to_persist_) {
-    return;
-  }
-  DCHECK(server_config_valid_);
-
-  // If the QuicServerInfo hasn't managed to load from disk yet then we can't
-  // save anything. TODO(rtenneti): we should fix this.
-  if (!quic_server_info_->IsDataReady()) {
-    return;
-  }
-
-  QuicServerInfo::State* state = quic_server_info_->mutable_state();
-
-  state->server_config = server_config_;
-  state->source_address_token = source_address_token_;
-  state->server_config_sig = server_config_sig_;
-  state->certs = certs_;
-
-  quic_server_info_->Persist();
-  need_to_persist_ = false;
-}
-
 void QuicCryptoClientConfig::SetDefaults() {
   // Key exchange methods.
   kexs.resize(2);
@@ -294,22 +252,6 @@ void QuicCryptoClientConfig::SetDefaults() {
   aead[0] = kAESG;
 }
 
-QuicCryptoClientConfig::CachedState* QuicCryptoClientConfig::Create(
-    const string& server_hostname,
-    QuicServerInfoFactory* quic_server_info_factory) {
-  DCHECK(cached_states_.find(server_hostname) == cached_states_.end());
-  scoped_ptr<QuicServerInfo> quic_server_info;
-  if (quic_server_info_factory) {
-    quic_server_info.reset(
-        quic_server_info_factory->GetForHost(server_hostname));
-    quic_server_info->Start();
-  }
-
-  CachedState* cached = new CachedState(quic_server_info.Pass());
-  cached_states_.insert(make_pair(server_hostname, cached));
-  return cached;
-}
-
 QuicCryptoClientConfig::CachedState* QuicCryptoClientConfig::LookupOrCreate(
     const string& server_hostname) {
   map<string, CachedState*>::const_iterator it =
@@ -317,7 +259,10 @@ QuicCryptoClientConfig::CachedState* QuicCryptoClientConfig::LookupOrCreate(
   if (it != cached_states_.end()) {
     return it->second;
   }
-  return Create(server_hostname, NULL);
+
+  CachedState* cached = new CachedState;
+  cached_states_.insert(make_pair(server_hostname, cached));
+  return cached;
 }
 
 void QuicCryptoClientConfig::FillInchoateClientHello(

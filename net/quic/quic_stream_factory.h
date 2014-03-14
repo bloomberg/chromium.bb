@@ -206,6 +206,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   int CreateSession(const HostPortPair& host_port_pair,
                     bool is_https,
                     CertVerifier* cert_verifier,
+                    scoped_ptr<QuicServerInfo> quic_server_info,
                     const AddressList& address_list,
                     const BoundNetLog& net_log,
                     QuicClientSession** session);
