@@ -388,6 +388,7 @@ SVGZoomEvent
 Screen
 ScriptProcessorNode
 Selection
+ShadowRoot
 SharedWorker
 SpeechInputEvent
 SpeechSynthesisEvent
