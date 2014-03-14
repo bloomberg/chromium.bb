@@ -59,6 +59,10 @@ static void StartOnUIThread(
     // download.
     if (!started_cb.is_null())
       started_cb.Run(NULL, DOWNLOAD_INTERRUPT_REASON_USER_CANCELED);
+
+    // |stream| gets deleted on non-FILE thread, but it's ok since
+    // we're not using stream_writer_ yet.
+
     return;
   }
 

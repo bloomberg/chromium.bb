@@ -194,6 +194,9 @@ ByteStreamWriterImpl::ByteStreamWriterImpl(
 }
 
 ByteStreamWriterImpl::~ByteStreamWriterImpl() {
+  // No RunsTasksOnCurrentThread() check to allow deleting a created writer
+  // before we start using it. Once started, should be deleted on the specified
+  // task runner.
   my_lifetime_flag_->is_alive = false;
 }
 
@@ -323,6 +326,9 @@ ByteStreamReaderImpl::ByteStreamReaderImpl(
 }
 
 ByteStreamReaderImpl::~ByteStreamReaderImpl() {
+  // No RunsTasksOnCurrentThread() check to allow deleting a created writer
+  // before we start using it. Once started, should be deleted on the specified
+  // task runner.
   my_lifetime_flag_->is_alive = false;
 }
 
