@@ -42,6 +42,8 @@
       'type': 'none',
       'variables': {
         'prune_self_dependency': 1,
+        # Don't add this target to the dependencies of targets with type=none.
+        'link_dependency': 1,
       },
       'dependencies': [
         '<(_sanitizer_type)-libcairo2',
