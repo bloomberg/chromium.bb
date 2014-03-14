@@ -2,6 +2,18 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# Note to maintainers: In the January 2014 release (*_0122*), there are some
+# options for building:
+# Pick one quadgram file (cld2_generated_quadchrome*.cc):
+#   0122_16 = 160K entries, smallest size, lowest accuracy
+#   0122_19 = 192K entries, medium size, medium accuracy
+#   0122_2  = 256K entries, largest size, highest accuracy
+#
+# For the CJK bigram file (cld_generated_cjk_delta_bi*.cc), always use
+# cld_generated_cjk_delta_bi_4.cc, as this is intended for use with Chromium.
+# The _32 variant of the file is intended for applications that use the full
+# 175-language version of CLD2.
+
 {
   'targets': [
     {
@@ -13,13 +25,13 @@
       ],
       'sources': [
         'src/internal/cld2_generated_cjk_compatible.cc',
-        'src/internal/cld2_generated_deltaoctachrome0614.cc',
-        'src/internal/cld2_generated_distinctoctachrome0604.cc',
-        'src/internal/cld2_generated_quadchrome0715.cc',
+        'src/internal/cld2_generated_deltaoctachrome0122.cc',
+        'src/internal/cld2_generated_distinctoctachrome0122.cc',
+        'src/internal/cld2_generated_quadchrome0122_2.cc',
         'src/internal/cld2tablesummary.h',
         'src/internal/cld_generated_cjk_delta_bi_4.cc',
         'src/internal/cld_generated_cjk_uni_prop_80.cc',
-        'src/internal/cld_generated_score_quad_octa_1024_256.cc',
+        'src/internal/cld_generated_score_quad_octa_0122_2.cc',
         'src/internal/cldutil.cc',
         'src/internal/cldutil.h',
         'src/internal/cldutil_shared.cc',
