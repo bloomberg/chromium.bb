@@ -29,7 +29,7 @@ ws.onopen = function(event)
 ws.onmessage = function(event)
 {
     debug("Check the value of the Sec-WebSocket-Extensions header sent to the server:");
-    shouldBeEqualToString("event.data", "permessage-deflate; client_max_window_bits, x-webkit-deflate-frame");
+    debug('event.data is "' + event.data + '"');
     finishJSTest();
 };
 
