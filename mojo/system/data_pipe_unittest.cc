@@ -144,7 +144,7 @@ TEST(DataPipeTest, ValidateOptionsValidInputs) {
 TEST(DataPipeTest, ValidateOptionsInvalidInputs) {
   // Invalid |struct_size|.
   // Note: If/when we extend |MojoCreateDataPipeOptions|, this will have to be
-  // updated
+  // updated.
   for (uint32_t struct_size = 0; struct_size < kSizeOfOptions; struct_size++) {
     MojoCreateDataPipeOptions options = {
       struct_size,  // |struct_size|.

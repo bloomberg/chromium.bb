@@ -614,7 +614,7 @@ TEST(LocalDataPipeTest, BasicMayDiscardWaiting) {
             dp->ProducerWriteData(&element, &num_bytes, false));
   EXPECT_EQ(static_cast<uint32_t>(sizeof(int32_t)), num_bytes);
 
-  // Still writable (even though it's full.
+  // Still writable (even though it's full).
   waiter.Init();
   EXPECT_EQ(MOJO_RESULT_ALREADY_EXISTS,
             dp->ProducerAddWaiter(&waiter, MOJO_WAIT_FLAG_WRITABLE, 2));
@@ -1239,7 +1239,7 @@ TEST(LocalDataPipeTest, WrapAround) {
   EXPECT_EQ(80u, num_bytes);
   EXPECT_EQ(MOJO_RESULT_OK, dp->ProducerEndWriteData(0u));
 
-  // Write as much data as we can (using |ProducerWriteData()|. We should write
+  // Write as much data as we can (using |ProducerWriteData()|). We should write
   // 90 bytes.
   num_bytes = 200u;
   EXPECT_EQ(MOJO_RESULT_OK,
@@ -1257,7 +1257,7 @@ TEST(LocalDataPipeTest, WrapAround) {
   EXPECT_EQ(90u, num_bytes);
   EXPECT_EQ(MOJO_RESULT_OK, dp->ConsumerEndReadData(0u));
 
-  // Read as much as possible (using |ConsumerReadData()|. We should read 100
+  // Read as much as possible (using |ConsumerReadData()|). We should read 100
   // bytes.
   num_bytes =
       static_cast<uint32_t>(arraysize(read_buffer) * sizeof(read_buffer[0]));
@@ -1554,6 +1554,78 @@ TEST(LocalDataPipeTest, TwoPhaseMoreInvalidArguments) {
   num_bytes = 0u;
   EXPECT_EQ(MOJO_RESULT_OK, dp->ConsumerQueryData(&num_bytes));
   EXPECT_EQ(1u * sizeof(int32_t), num_bytes);
+
+  dp->ProducerClose();
+  dp->ConsumerClose();
+}
+
+// Tests that even with "may discard", the data won't change under a two-phase
+// read.
+// TODO(vtl): crbug.com/348644: We currently don't pass this. (There are two
+// related issues: First, we don't recognize that the data given to
+// |ConsumerBeginReadData()| isn't discardable until |ConsumerEndReadData()|,
+// and thus we erroneously allow |ProducerWriteData()| to succeed. Second, the
+// |ProducerWriteData()| then changes the data underneath the two-phase read.)
+TEST(LocalDataPipeTest, DISABLED_MayDiscardTwoPhaseConsistent) {
+  const MojoCreateDataPipeOptions options = {
+    kSizeOfOptions,  // |struct_size|.
+    MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_MAY_DISCARD,  // |flags|.
+    1,  // |element_num_bytes|.
+    2  // |capacity_num_bytes|.
+  };
+  MojoCreateDataPipeOptions validated_options = { 0 };
+  EXPECT_EQ(MOJO_RESULT_OK,
+            DataPipe::ValidateOptions(&options, &validated_options));
+
+  scoped_refptr<LocalDataPipe> dp(new LocalDataPipe(validated_options));
+
+  // Write some elements.
+  char elements[2] = { 'a', 'b' };
+  uint32_t num_bytes = 2u;
+  EXPECT_EQ(MOJO_RESULT_OK, dp->ProducerWriteData(elements, &num_bytes, false));
+  EXPECT_EQ(2u, num_bytes);
+
+  // Begin reading.
+  const void* read_ptr = NULL;
+  num_bytes = 2u;
+  EXPECT_EQ(MOJO_RESULT_OK,
+            dp->ConsumerBeginReadData(&read_ptr, &num_bytes, false));
+  EXPECT_EQ(2u, num_bytes);
+  EXPECT_EQ('a', static_cast<const char*>(read_ptr)[0]);
+  EXPECT_EQ('b', static_cast<const char*>(read_ptr)[1]);
+
+  // Try to write some more. But nothing should be discardable right now.
+  elements[0] = 'x';
+  elements[1] = 'y';
+  num_bytes = 2u;
+  // TODO(vtl): This should be:
+  //  EXPECT_EQ(MOJO_RESULT_SHOULD_WAIT,
+  //            dp->ProducerWriteData(elements, &num_bytes, false));
+  // but we incorrectly think that the bytes being read are discardable. Letting
+  // this through reveals the significant consequence.
+  EXPECT_EQ(MOJO_RESULT_OK, dp->ProducerWriteData(elements, &num_bytes, false));
+
+  // Check that our read buffer hasn't changed underneath us.
+  EXPECT_EQ('a', static_cast<const char*>(read_ptr)[0]);
+  EXPECT_EQ('b', static_cast<const char*>(read_ptr)[1]);
+
+  // End reading.
+  EXPECT_EQ(MOJO_RESULT_OK, dp->ConsumerEndReadData(2u));
+
+  // Now writing should succeed.
+  EXPECT_EQ(MOJO_RESULT_OK, dp->ProducerWriteData(elements, &num_bytes, false));
+
+  // And if we read, we should get the new values.
+  read_ptr = NULL;
+  num_bytes = 2u;
+  EXPECT_EQ(MOJO_RESULT_OK,
+            dp->ConsumerBeginReadData(&read_ptr, &num_bytes, false));
+  EXPECT_EQ(2u, num_bytes);
+  EXPECT_EQ('x', static_cast<const char*>(read_ptr)[0]);
+  EXPECT_EQ('y', static_cast<const char*>(read_ptr)[1]);
+
+  // End reading.
+  EXPECT_EQ(MOJO_RESULT_OK, dp->ConsumerEndReadData(2u));
 
   dp->ProducerClose();
   dp->ConsumerClose();
