@@ -1124,6 +1124,10 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_SelectionChanged, OnSelectionChanged)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SelectionBoundsChanged,
                         OnSelectionBoundsChanged)
+#if defined(OS_ANDROID)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_SelectionRootBoundsChanged,
+                        OnSelectionRootBoundsChanged)
+#endif
     IPC_MESSAGE_HANDLER(ViewHostMsg_ScriptEvalResponse, OnScriptEvalResponse)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidZoomURL, OnDidZoomURL)
     IPC_MESSAGE_HANDLER(DesktopNotificationHostMsg_RequestPermission,
@@ -1360,6 +1364,15 @@ void RenderViewHostImpl::OnSelectionBoundsChanged(
     view_->SelectionBoundsChanged(params);
   }
 }
+
+#if defined(OS_ANDROID)
+void RenderViewHostImpl::OnSelectionRootBoundsChanged(
+    const gfx::Rect& bounds) {
+  if (view_) {
+    view_->SelectionRootBoundsChanged(bounds);
+  }
+}
+#endif
 
 void RenderViewHostImpl::OnRouteCloseEvent() {
   // Have the delegate route this to the active RenderViewHost.

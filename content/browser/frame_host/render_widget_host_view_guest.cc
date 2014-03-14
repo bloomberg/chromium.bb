@@ -367,6 +367,21 @@ void RenderWidgetHostViewGuest::SelectionBoundsChanged(
   rwhv->SelectionBoundsChanged(guest_params);
 }
 
+#if defined(OS_ANDROID)
+void RenderWidgetHostViewGuest::SelectionRootBoundsChanged(
+    const gfx::Rect& bounds) {
+  if (!guest_)
+    return;
+
+  RenderWidgetHostViewPort* rwhv = RenderWidgetHostViewPort::FromRWHV(
+      guest_->GetEmbedderRenderWidgetHostView());
+  if (!rwhv)
+    return;
+
+  rwhv->SelectionRootBoundsChanged(guest_->ToGuestRect(bounds));
+}
+#endif
+
 void RenderWidgetHostViewGuest::CopyFromCompositingSurface(
     const gfx::Rect& src_subrect,
     const gfx::Size& dst_size,

@@ -1580,6 +1580,12 @@ IPC_MESSAGE_ROUTED3(ViewHostMsg_SelectionChanged,
 IPC_MESSAGE_ROUTED1(ViewHostMsg_SelectionBoundsChanged,
                     ViewHostMsg_SelectionBounds_Params)
 
+#if defined(OS_ANDROID)
+// Notification that the selection root bounds have changed.
+IPC_MESSAGE_ROUTED1(ViewHostMsg_SelectionRootBoundsChanged,
+                    gfx::Rect /* bounds of the selection root */)
+#endif
+
 // Asks the browser to open the color chooser.
 IPC_MESSAGE_ROUTED3(ViewHostMsg_OpenColorChooser,
                     int /* id */,

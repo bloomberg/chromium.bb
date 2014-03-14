@@ -546,6 +546,9 @@ class CONTENT_EXPORT RenderViewHostImpl
                           const gfx::Range& range);
   void OnSelectionBoundsChanged(
       const ViewHostMsg_SelectionBounds_Params& params);
+#if defined(OS_ANDROID)
+  void OnSelectionRootBoundsChanged(const gfx::Rect& bounds);
+#endif
   void OnPasteFromSelectionClipboard();
   void OnRouteCloseEvent();
   void OnRouteMessageEvent(const ViewMsg_PostMessage_Params& params);

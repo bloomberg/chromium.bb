@@ -195,6 +195,12 @@ void RenderWidgetHostViewChildFrame::SelectionBoundsChanged(
     const ViewHostMsg_SelectionBounds_Params& params) {
 }
 
+#if defined(OS_ANDROID)
+void RenderWidgetHostViewChildFrame::SelectionRootBoundsChanged(
+    const gfx::Rect& bounds) {
+}
+#endif
+
 void RenderWidgetHostViewChildFrame::ScrollOffsetChanged() {
 }
 

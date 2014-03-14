@@ -163,6 +163,11 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView,
   virtual void SelectionBoundsChanged(
       const ViewHostMsg_SelectionBounds_Params& params) = 0;
 
+#if defined(OS_ANDROID)
+  // Notifies the View that the renderer selection root bounds has changed.
+  virtual void SelectionRootBoundsChanged(const gfx::Rect& bounds) = 0;
+#endif
+
   // Notifies the view that the scroll offset has changed.
   virtual void ScrollOffsetChanged() = 0;
 

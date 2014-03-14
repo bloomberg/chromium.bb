@@ -122,6 +122,9 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
   virtual void SetTooltipText(const base::string16& tooltip_text) OVERRIDE {}
   virtual void SelectionBoundsChanged(
       const ViewHostMsg_SelectionBounds_Params& params) OVERRIDE {}
+#if defined(OS_ANDROID)
+  virtual void SelectionRootBoundsChanged(const gfx::Rect&) OVERRIDE {}
+#endif
   virtual void ScrollOffsetChanged() OVERRIDE {}
   virtual BackingStore* AllocBackingStore(const gfx::Size& size) OVERRIDE;
   virtual void CopyFromCompositingSurface(

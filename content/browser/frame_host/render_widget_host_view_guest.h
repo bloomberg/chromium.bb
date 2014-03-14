@@ -96,6 +96,9 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
                                 const gfx::Range& range) OVERRIDE;
   virtual void SelectionBoundsChanged(
       const ViewHostMsg_SelectionBounds_Params& params) OVERRIDE;
+#if defined(OS_ANDROID)
+  virtual void SelectionRootBoundsChanged(const gfx::Rect& bounds) OVERRIDE;
+#endif
   virtual void CopyFromCompositingSurface(
       const gfx::Rect& src_subrect,
       const gfx::Size& dst_size,

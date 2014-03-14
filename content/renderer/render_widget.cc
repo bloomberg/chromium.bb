@@ -1499,6 +1499,9 @@ void RenderWidget::DoDeferredUpdate() {
   // enable GPU acceleration so they need to be called before any painting
   // is done.
   UpdateTextInputType();
+#if defined(OS_ANDROID)
+  UpdateSelectionRootBounds();
+#endif
   UpdateSelectionBounds();
 
   // Suppress painting if nothing is dirty.  This has to be done after updating
@@ -1916,6 +1919,7 @@ void RenderWidget::willBeginCompositorFrame() {
   UpdateTextInputType();
 #if defined(OS_ANDROID)
   UpdateTextInputState(false, true);
+  UpdateSelectionRootBounds();
 #endif
   UpdateSelectionBounds();
 }
@@ -2419,6 +2423,9 @@ void RenderWidget::FinishHandlingImeEvent() {
   // While handling an ime event, text input state and selection bounds updates
   // are ignored. These must explicitly be updated once finished handling the
   // ime event.
+#if defined(OS_ANDROID)
+  UpdateSelectionRootBounds();
+#endif
   UpdateSelectionBounds();
 #if defined(OS_ANDROID)
   UpdateTextInputState(false, false);
@@ -2760,6 +2767,11 @@ void RenderWidget::setTouchAction(
        static_cast<content::TouchAction>(web_touch_action);
   Send(new InputHostMsg_SetTouchAction(routing_id_, content_touch_action));
 }
+
+#if defined(OS_ANDROID)
+void RenderWidget::UpdateSelectionRootBounds() {
+}
+#endif
 
 bool RenderWidget::HasTouchEventHandlersAt(const gfx::Point& point) const {
   return true;

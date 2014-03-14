@@ -537,6 +537,12 @@ class CONTENT_EXPORT RenderWidget
   // Tell the browser about the actions permitted for a new touch point.
   virtual void setTouchAction(blink::WebTouchAction touch_action);
 
+#if defined(OS_ANDROID)
+  // Checks if the selection root bounds have changed. If they have changed, the
+  // new value will be sent to the browser process.
+  virtual void UpdateSelectionRootBounds();
+#endif
+
   // Creates a 3D context associated with this view.
   scoped_ptr<WebGraphicsContext3DCommandBufferImpl> CreateGraphicsContext3D(
       const blink::WebGraphicsContext3D::Attributes& attributes);
@@ -679,6 +685,11 @@ class CONTENT_EXPORT RenderWidget
   // Stores the current selection bounds.
   gfx::Rect selection_focus_rect_;
   gfx::Rect selection_anchor_rect_;
+
+  // Stores the current selection root bounds.
+#if defined(OS_ANDROID)
+  gfx::Rect selection_root_rect_;
+#endif
 
   // Stores the current composition character bounds.
   std::vector<gfx::Rect> composition_character_bounds_;
