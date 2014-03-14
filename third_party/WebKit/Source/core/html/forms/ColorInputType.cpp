@@ -135,7 +135,7 @@ void ColorInputType::createShadowSubtree()
     wrapperElement->appendChild(colorSwatch.release());
     element().userAgentShadowRoot()->appendChild(wrapperElement.release());
 
-    updateColorSwatch();
+    element().updateView();
 }
 
 void ColorInputType::setValue(const String& value, bool valueChanged, TextFieldEventBehavior eventBehavior)
@@ -145,7 +145,7 @@ void ColorInputType::setValue(const String& value, bool valueChanged, TextFieldE
     if (!valueChanged)
         return;
 
-    updateColorSwatch();
+    element().updateView();
     if (m_chooser)
         m_chooser->setSelectedColor(valueAsColor());
 }
@@ -185,7 +185,7 @@ void ColorInputType::didChooseColor(const Color& color)
     if (element().isDisabledFormControl() || color == valueAsColor())
         return;
     element().setValueFromRenderer(color.serialized());
-    updateColorSwatch();
+    element().updateView();
     element().dispatchFormControlChangeEvent();
 }
 
@@ -200,7 +200,7 @@ void ColorInputType::endColorChooser()
         m_chooser->endChooser();
 }
 
-void ColorInputType::updateColorSwatch()
+void ColorInputType::updateView()
 {
     HTMLElement* colorSwatch = shadowColorSwatch();
     if (!colorSwatch)
