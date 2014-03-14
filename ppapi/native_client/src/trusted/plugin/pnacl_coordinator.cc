@@ -37,7 +37,10 @@ namespace plugin {
 // that are part of Chrome.
 class PnaclManifest : public Manifest {
  public:
-  PnaclManifest() : manifest_base_url_(PnaclUrls::GetBaseUrl()) { }
+  PnaclManifest(const nacl::string& sandbox_arch)
+      : manifest_base_url_(PnaclUrls::GetBaseUrl()),
+        sandbox_arch_(sandbox_arch) { }
+
   virtual ~PnaclManifest() { }
 
   virtual bool GetProgramURL(nacl::string* full_url,
@@ -89,7 +92,7 @@ class PnaclManifest : public Manifest {
     // Resolve the full URL to the file. Provide it with a platform-specific
     // prefix.
     nacl::string key_basename = key.substr(kFilesPrefix.length());
-    return ResolveURL(PnaclUrls::PrependPlatformPrefix(key_basename),
+    return ResolveURL(sandbox_arch_ + "/" + key_basename,
                       full_url, error_info);
   }
 
@@ -97,6 +100,7 @@ class PnaclManifest : public Manifest {
   NACL_DISALLOW_COPY_AND_ASSIGN(PnaclManifest);
 
   nacl::string manifest_base_url_;
+  nacl::string sandbox_arch_;
 };
 
 //////////////////////////////////////////////////////////////////////
@@ -222,7 +226,7 @@ PnaclCoordinator::PnaclCoordinator(
     plugin_(plugin),
     translate_notify_callback_(translate_notify_callback),
     translation_finished_reported_(false),
-    manifest_(new PnaclManifest()),
+    manifest_(new PnaclManifest(plugin->nacl_interface()->GetSandboxArch())),
     pexe_url_(pexe_url),
     pnacl_options_(pnacl_options),
     split_module_count_(1),
@@ -508,7 +512,7 @@ void PnaclCoordinator::ResourcesDidLoad(int32_t pp_error) {
           parser.GetHeader("last-modified").c_str(),
           parser.GetHeader("etag").c_str(),
           PP_FromBool(parser.CacheControlNoStore()),
-          GetSandboxISA(),
+          plugin_->nacl_interface()->GetSandboxArch(),
           "", // No extra compile flags yet.
           &is_cache_hit_,
           temp_nexe_file_->existing_handle(),

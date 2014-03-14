@@ -24,24 +24,6 @@
       'temporary_file.cc',
       'utility.cc',
     ],
-    # Append the arch-specific ISA code to common_sources.
-    'conditions': [
-      ['target_arch=="arm"', {
-        'common_sources': [
-          'arch_arm/sandbox_isa.cc',
-        ],
-      }],
-      ['target_arch=="mipsel"', {
-        'common_sources': [
-          'arch_mips/sandbox_isa.cc',
-        ],
-      }],
-      ['target_arch=="ia32" or target_arch=="x64"', {
-        'common_sources': [
-          'arch_x86/sandbox_isa.cc',
-        ],
-      }],
-    ],
   },
   'includes': [
     '../../../../../native_client/build/common.gypi',

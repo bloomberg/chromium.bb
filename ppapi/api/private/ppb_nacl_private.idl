@@ -277,4 +277,9 @@ interface PPB_NaCl_Private {
    * will be attached to a debugger.
    */
   PP_Bool NaClDebugStubEnabled();
+
+  /* Returns the kind of SFI sandbox implemented by NaCl on this
+  /* platform.
+   */
+  str_t GetSandboxArch();
 };

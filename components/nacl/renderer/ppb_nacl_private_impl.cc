@@ -16,6 +16,7 @@
 #include "components/nacl/common/nacl_switches.h"
 #include "components/nacl/common/nacl_types.h"
 #include "components/nacl/renderer/pnacl_translation_resource_host.h"
+#include "components/nacl/renderer/sandbox_arch.h"
 #include "components/nacl/renderer/trusted_plugin_channel.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
@@ -554,6 +555,10 @@ PP_Bool NaClDebugStubEnabled() {
                          switches::kEnableNaClDebug));
 }
 
+const char* GetSandboxArch() {
+  return nacl::GetSandboxArch();
+}
+
 const PPB_NaCl_Private nacl_interface = {
   &LaunchSelLdr,
   &StartPpapiProxy,
@@ -571,7 +576,8 @@ const PPB_NaCl_Private nacl_interface = {
   &SetReadOnlyProperty,
   &ReportLoadError,
   &InstanceDestroyed,
-  &NaClDebugStubEnabled
+  &NaClDebugStubEnabled,
+  &GetSandboxArch
 };
 
 }  // namespace

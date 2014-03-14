@@ -146,6 +146,8 @@
             'nacl/renderer/pnacl_translation_resource_host.h',
             'nacl/renderer/ppb_nacl_private_impl.cc',
             'nacl/renderer/ppb_nacl_private_impl.h',
+            'nacl/renderer/sandbox_arch.cc',
+            'nacl/renderer/sandbox_arch.h',
             'nacl/renderer/trusted_plugin_channel.cc',
             'nacl/renderer/trusted_plugin_channel.h',
           ],

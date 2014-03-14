@@ -119,7 +119,8 @@ NaClSubprocess* PnaclTranslateThread::StartSubprocess(
   // so that NaCl GDB can filter-out the translator processes (and not debug
   // the translator itself). Must have a full URL with schema, otherwise the
   // string gets silently dropped by GURL.
-  nacl::string full_url = resources_->GetFullUrl(url_for_nexe);
+  nacl::string full_url = resources_->GetFullUrl(
+      url_for_nexe, plugin_->nacl_interface()->GetSandboxArch());
   nacl::scoped_ptr<NaClSubprocess> subprocess(
       plugin_->LoadHelperNaClModule(full_url, wrapper, manifest, error_info));
   if (subprocess.get() == NULL) {

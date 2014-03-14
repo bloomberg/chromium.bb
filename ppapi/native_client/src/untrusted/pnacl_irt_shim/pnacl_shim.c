@@ -3176,6 +3176,11 @@ static PP_Bool Pnacl_M25_PPB_NaCl_Private_NaClDebugStubEnabled(void) {
   return iface->NaClDebugStubEnabled();
 }
 
+static const char* Pnacl_M25_PPB_NaCl_Private_GetSandboxArch(void) {
+  const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
+  return iface->GetSandboxArch();
+}
+
 /* End wrapper methods for PPB_NaCl_Private_1_0 */
 
 /* Begin wrapper methods for PPB_NetAddress_Private_0_1 */
@@ -5063,7 +5068,8 @@ static const struct PPB_NaCl_Private_1_0 Pnacl_Wrappers_PPB_NaCl_Private_1_0 = {
     .SetReadOnlyProperty = (void (*)(PP_Instance instance, struct PP_Var key, struct PP_Var value))&Pnacl_M25_PPB_NaCl_Private_SetReadOnlyProperty,
     .ReportLoadError = (void (*)(PP_Instance instance, PP_NaClError error, PP_Bool is_installed))&Pnacl_M25_PPB_NaCl_Private_ReportLoadError,
     .InstanceDestroyed = (void (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_InstanceDestroyed,
-    .NaClDebugStubEnabled = (PP_Bool (*)(void))&Pnacl_M25_PPB_NaCl_Private_NaClDebugStubEnabled
+    .NaClDebugStubEnabled = (PP_Bool (*)(void))&Pnacl_M25_PPB_NaCl_Private_NaClDebugStubEnabled,
+    .GetSandboxArch = (const char* (*)(void))&Pnacl_M25_PPB_NaCl_Private_GetSandboxArch
 };
 
 static const struct PPB_NetAddress_Private_0_1 Pnacl_Wrappers_PPB_NetAddress_Private_0_1 = {

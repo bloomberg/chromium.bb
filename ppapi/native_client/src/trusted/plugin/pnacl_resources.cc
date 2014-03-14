@@ -17,16 +17,20 @@
 #include "third_party/jsoncpp/source/include/json/value.h"
 
 namespace plugin {
+namespace {
+const PPB_NaCl_Private* GetNaClInterface() {
+  pp::Module *module = pp::Module::Get();
+  CHECK(module);
+  return static_cast<const PPB_NaCl_Private*>(
+      module->GetBrowserInterface(PPB_NACL_PRIVATE_INTERFACE));
+}
+}  // namespace
 
 static const char kPnaclBaseUrl[] = "chrome://pnacl-translator/";
 const char PnaclUrls::kResourceInfoUrl[] = "pnacl.json";
 
 nacl::string PnaclUrls::GetBaseUrl() {
   return nacl::string(kPnaclBaseUrl);
-}
-
-nacl::string PnaclUrls::PrependPlatformPrefix(const nacl::string& url) {
-  return nacl::string(GetSandboxISA()) + "/" + url;
 }
 
 // Determine if a URL is for a pnacl-component file, or if it is some other
@@ -188,12 +192,14 @@ bool PnaclResources::ParseResourceInfo(const nacl::string& buf,
   return true;
 }
 
-nacl::string PnaclResources::GetFullUrl(const nacl::string& partial_url) const {
+nacl::string PnaclResources::GetFullUrl(
+    const nacl::string& partial_url, const nacl::string& sandbox_arch) const {
   nacl::string full_url;
   ErrorInfo error_info;
   const nacl::string& url_with_platform_prefix =
-      PnaclUrls::PrependPlatformPrefix(partial_url);
-  if (!manifest_->ResolveURL(url_with_platform_prefix, &full_url,
+      sandbox_arch + "/" + partial_url;
+  if (!manifest_->ResolveURL(url_with_platform_prefix,
+                             &full_url,
                              &error_info)) {
     PLUGIN_PRINTF(("PnaclResources::GetFullUrl failed: %s.\n",
                    error_info.message().c_str()));
@@ -214,7 +220,8 @@ void PnaclResources::StartLoad(
   // Do a blocking load of each of the resources.
   int32_t result = PP_OK;
   for (size_t i = 0; i < resource_urls.size(); ++i) {
-    nacl::string full_url = GetFullUrl(resource_urls[i]);
+    nacl::string full_url = GetFullUrl(
+        resource_urls[i], plugin_->nacl_interface()->GetSandboxArch());
     if (full_url == "") {
       coordinator_->ReportNonPpapiError(
           PP_NACL_ERROR_PNACL_RESOURCE_FETCH,

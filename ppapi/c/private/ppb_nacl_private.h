@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_nacl_private.idl modified Fri Mar  7 13:41:05 2014. */
+/* From private/ppb_nacl_private.idl modified Wed Mar 12 14:00:41 2014. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
@@ -282,6 +282,10 @@ struct PPB_NaCl_Private_1_0 {
    * will be attached to a debugger.
    */
   PP_Bool (*NaClDebugStubEnabled)(void);
+  /* Returns the kind of SFI sandbox implemented by NaCl on this
+   * platform.
+   */
+  const char* (*GetSandboxArch)(void);
 };
 
 typedef struct PPB_NaCl_Private_1_0 PPB_NaCl_Private;

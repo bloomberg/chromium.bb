@@ -15,7 +15,6 @@
 #include "ppapi/c/private/pp_file_handle.h"
 #include "ppapi/cpp/completion_callback.h"
 
-#include "ppapi/native_client/src/trusted/plugin/nexe_arch.h"
 #include "ppapi/native_client/src/trusted/plugin/plugin_error.h"
 
 namespace plugin {
@@ -29,9 +28,6 @@ class PnaclUrls {
  public:
   // Get the base URL prefix for Pnacl resources (without platform prefix).
   static nacl::string GetBaseUrl();
-
-  // Return {platform_prefix}/url
-  static nacl::string PrependPlatformPrefix(const nacl::string& url);
 
   static bool IsPnaclComponent(const nacl::string& full_url);
   static nacl::string PnaclComponentURLToFilename(
@@ -78,7 +74,8 @@ class PnaclResources {
     return ld_tool_name;
   }
 
-  nacl::string GetFullUrl(const nacl::string& partial_url) const;
+  nacl::string GetFullUrl(const nacl::string& partial_url,
+                          const nacl::string& sandbox_arch) const;
 
   // Get file descs by name. Only valid after StartLoad's completion callback
   // fired.

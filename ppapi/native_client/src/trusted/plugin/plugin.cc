@@ -41,7 +41,6 @@
 #include "ppapi/native_client/src/trusted/plugin/json_manifest.h"
 #include "ppapi/native_client/src/trusted/plugin/nacl_entry_points.h"
 #include "ppapi/native_client/src/trusted/plugin/nacl_subprocess.h"
-#include "ppapi/native_client/src/trusted/plugin/nexe_arch.h"
 #include "ppapi/native_client/src/trusted/plugin/plugin_error.h"
 #include "ppapi/native_client/src/trusted/plugin/service_runtime.h"
 #include "ppapi/native_client/src/trusted/plugin/utility.h"
@@ -60,8 +59,8 @@ const char* const kSrcManifestAttribute = "src";
 // MIME type because the "src" attribute is used to supply us with the resource
 // of that MIME type that we're supposed to display.
 const char* const kNaClManifestAttribute = "nacl";
-// The pseudo-ISA used to indicate portable native client.
-const char* const kPortableISA = "portable";
+// The pseudo-architecture used to indicate portable native client.
+const char* const kPortableArch = "portable";
 // This is a pretty arbitrary limit on the byte size of the NaCl manfest file.
 // Note that the resulting string object has to have at least one byte extra
 // for the null termination character.
@@ -529,7 +528,7 @@ Plugin* Plugin::New(PP_Instance pp_instance) {
 // failure. Note that module loading functions will log their own errors.
 bool Plugin::Init(uint32_t argc, const char* argn[], const char* argv[]) {
   PLUGIN_PRINTF(("Plugin::Init (argc=%" NACL_PRIu32 ")\n", argc));
-  HistogramEnumerateOsArch(GetSandboxISA());
+  HistogramEnumerateOsArch(nacl_interface_->GetSandboxArch());
   init_time_ = NaClGetTimeOfDayMicroseconds();
   url_util_ = pp::URLUtil_Dev::Get();
   if (url_util_ == NULL)
@@ -1149,10 +1148,11 @@ bool Plugin::SetManifestObject(const nacl::string& manifest_json,
   bool nonsfi_mode_enabled =
       PP_ToBool(nacl_interface_->IsNonSFIModeEnabled());
   bool pnacl_debug = GetNaClInterface()->NaClDebugStubEnabled();
+  const char* sandbox_isa = nacl_interface_->GetSandboxArch();
   nacl::scoped_ptr<JsonManifest> json_manifest(
       new JsonManifest(url_util_,
                        manifest_base_url(),
-                       (is_pnacl ? kPortableISA : GetSandboxISA()),
+                       (is_pnacl ? kPortableArch : sandbox_isa),
                        nonsfi_mode_enabled,
                        pnacl_debug));
   if (!json_manifest->Init(manifest_json, error_info)) {
