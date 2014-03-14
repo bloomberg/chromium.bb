@@ -26,12 +26,14 @@
   background-color: lime;
 }
 
-.animatedGif {
+.repaintdiv {
   position: absolute;
   z-index: 1;
   top: 260px;
   left: 260px;
-  background-color: magenta;
+  width: 182px;
+  height: 29px;
+  background-color:red;
 }
 
 .top {
@@ -48,51 +50,33 @@ div:hover {
 }
 
 </style>
-
 <script>
     if (window.internals)
         internals.settings.setLayerSquashingEnabled(true);
-    if (window.testRunner) {
-        testRunner.waitUntilDone();
+    if (window.testRunner)
         testRunner.dumpAsText();
-    }
-    
-    function runTest()
-    {
-        document.getElementById("animatedGif").src = "animated.gif";
-    }
 
-    function imageLoaded()
+    function runTest()
     {
         if (!window.internals)
             return;
-        testRunner.display();
+        document.body.offsetTop;
         window.internals.startTrackingRepaints(document);
-        setTimeout(checkRepaint, 1500);
-    }
-
-    function checkRepaint()
-    {
-        // Case 2
-        testRunner.display();
-
-        document.getElementById('Case1').textContent = window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_REPAINT_RECTS);
+        document.getElementById('repaintdiv').style.background = 'salmon';
+        document.getElementById('testResults').textContent = window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_REPAINT_RECTS);
         window.internals.stopTrackingRepaints(document);
 
         // Display the test results only after test is done so that it does not affect repaint rect results.
         document.getElementById('testResults').style.display = "block";
-        testRunner.notifyDone();
     }
 </script>
 </head>
 <body onload="runTest()">
     <div class="composited box behind"></div>
     <div class="box middle"></div>
-    <img id="animatedGif" class="animatedGif" onload="imageLoaded()"></img>
+    <img id="repaintdiv" class="repaintdiv"></img>
     <div class="box top"></div>
 
-    <div id="testResults" style="display:none">
-        Repaint rect of the animated gif:
-        <pre id="Case1"></pre>
+    <pre id="testResults" style="display:none">
     </div>
 </body>

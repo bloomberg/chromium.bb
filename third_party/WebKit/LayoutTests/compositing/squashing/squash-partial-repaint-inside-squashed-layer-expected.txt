@@ -1,5 +1,4 @@
 
-Repaint rect of the animated gif:
 (GraphicsLayer
   (bounds 800.00 600.00)
   (children 1
@@ -22,6 +21,7 @@ Repaint rect of the animated gif:
               (bounds 262.00 200.00)
               (drawsContent 1)
               (repaint rects
+                (rect 80.00 80.00 182.00 29.00)
                 (rect 80.00 80.00 182.00 29.00)
                 (rect 80.00 80.00 182.00 29.00)
               )
