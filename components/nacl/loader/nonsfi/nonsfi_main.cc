@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/platform_thread.h"
+#include "base/threading/thread_restrictions.h"
 #include "components/nacl/loader/nonsfi/elf_loader.h"
 #include "components/nacl/loader/nonsfi/irt_interfaces.h"
 #include "native_client/src/include/elf_auxv.h"
@@ -38,6 +39,9 @@ class PluginMainDelegate : public base::PlatformThread::Delegate {
   virtual void ThreadMain() OVERRIDE {
     base::PlatformThread::SetName("NaClMainThread");
 
+    // This will only happen once per process, so we give the permission to
+    // create Singletons.
+    base::ThreadRestrictions::SetSingletonAllowed(true);
     uintptr_t info[] = {
       0,  // Do not use fini.
       0,  // envc.
