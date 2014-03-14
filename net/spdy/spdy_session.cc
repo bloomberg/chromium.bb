@@ -1260,7 +1260,7 @@ int SpdySession::DoReadComplete(int result) {
     DCHECK_EQ(error_on_close_, result);
     return result;
   }
-
+  CHECK_LE(result, kReadBufferSize);
   total_bytes_received_ += result;
 
   last_activity_time_ = time_func_();
@@ -1925,6 +1925,7 @@ void SpdySession::OnStreamFrameData(SpdyStreamId stream_id,
   scoped_ptr<SpdyBuffer> buffer;
   if (data) {
     DCHECK_GT(len, 0u);
+    CHECK_LE(len, static_cast<size_t>(kReadBufferSize));
     buffer.reset(new SpdyBuffer(data, len));
 
     if (flow_control_state_ == FLOW_CONTROL_STREAM_AND_SESSION) {

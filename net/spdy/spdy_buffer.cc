@@ -15,11 +15,15 @@ namespace net {
 
 namespace {
 
+// Bound on largest frame any SPDY version has allowed.
+const size_t kMaxSpdyFrameSize = 0x00ffffff;
+
 // Makes a SpdyFrame with |size| bytes of data copied from
 // |data|. |data| must be non-NULL and |size| must be positive.
 scoped_ptr<SpdyFrame> MakeSpdyFrame(const char* data, size_t size) {
   DCHECK(data);
-  DCHECK_GT(size, 0u);
+  CHECK_GT(size, 0u);
+  CHECK_LE(size, kMaxSpdyFrameSize);
   scoped_ptr<char[]> frame_data(new char[size]);
   std::memcpy(frame_data.get(), data, size);
   scoped_ptr<SpdyFrame> frame(
@@ -63,6 +67,8 @@ SpdyBuffer::SpdyBuffer(scoped_ptr<SpdyFrame> frame)
 SpdyBuffer::SpdyBuffer(const char* data, size_t size) :
     shared_frame_(new SharedFrame()),
     offset_(0) {
+  CHECK_GT(size, 0u);
+  CHECK_LE(size, kMaxSpdyFrameSize);
   shared_frame_->data = MakeSpdyFrame(data, size);
 }
 
