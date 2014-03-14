@@ -9,32 +9,26 @@
   src: url(roboto_bold.ttf);
 }
 
-body {
-  -webkit-user-select: none;
-  background-image: -webkit-linear-gradient(#282828, #000000);
-  background-size: cover;
-  cursor: default;
-  margin: 0;
-  overflow: hidden;
-  padding: 0;
-}
-
+/**
+ * TODO(rsadam@): Remove all these rules once we switch to native
+ * shadow dom.
+ */
 kb-keyboard.ctrl-active kb-modifier-key[char=Ctrl],
 kb-keyboard.alt-active kb-modifier-key[char=Alt] {
   color: lightblue;
 }
 
 /** TODO(rsadam@): Use different assets for caps-lock and highlight **/
-.caps-locked kb-shift-key.dark [part=key],
+.caps-locked kb-shift-key.dark .key,
 /**
 * Controls whether the shift key should be highlighted or not.
 * Only highlights if we are in the upper keyset, but not capslocked.
 */
-kb-keyboard:not(.caps-locked)[keyset=upper] kb-shift-key [part=key]{
+kb-keyboard:not(.caps-locked)[keyset=upper] kb-shift-key .key{
   background-image: url('images/shift-filled.svg');
 }
 
-kb-keyboard:not(.caps-locked)[keyset=lower] kb-shift-key [part=key]{
+kb-keyboard:not(.caps-locked)[keyset=lower] kb-shift-key .key{
   background-image: url('images/shift.svg');
 }
 
@@ -61,11 +55,11 @@ kb-keyboard:not(.caps-locked)[keyset=lower] kb-shift-key [part=key]{
  * The microphone key is handled separately from other images since the image
  * displayed changes depending on whether it's pressed or not.
  */
-.microphone [part=key] {
+.microphone .key {
   background-image: url('images/microphone.svg');
   background-position: 10%;
 }
 
-.audio .microphone [part=key] {
+.audio .microphone .key {
   background-image: url('images/microphone-green.svg');
 }

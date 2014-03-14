@@ -17,21 +17,21 @@
         position: relative;
       }
 
-      :host.active {
+      :host(.active) {
         background-color: #afafaf;
       }
 
-      :host:first-child {
+      :host(:first-child) {
         border-top-left-radius: 2px;
         border-bottom-left-radius: 2px;
       }
 
-      :host:last-child {
+      :host(:last-child) {
         border-top-right-radius: 2px;
         border-bottom-right-radius: 2px;
       }
 
-      ::part(key) {
+      :host .key {
         bottom: 0;
         color: #ffffff;
         font-family: roboto-bold;
@@ -45,7 +45,7 @@
         text-align: center;
       }
     </style>
-    <div part="key">
+    <div class="key">
       <content></content>
     </div>
   </template>

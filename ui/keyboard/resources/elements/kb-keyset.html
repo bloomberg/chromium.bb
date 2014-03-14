@@ -10,9 +10,7 @@
     on-key-up="{{keyUp}}" on-key-longpress="{{keyLongpress}}">
   <template>
     <style>
-      :host {
-      }
-      :host:not(.activeKeyset) {
+      :host(:not(.activeKeyset)) {
         display: none;
       }
     </style>

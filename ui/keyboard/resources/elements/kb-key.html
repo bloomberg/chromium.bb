@@ -9,10 +9,6 @@
   <template>
     <style>
       :host {
-        /* TODO(kevers): A regression in the Polymer library broke
-         * handling of {{}} in CSS rules. Switch back to
-         * "-webkit-box-flex: {{weight}}" once the regression is fixed
-         * (https://github.com/Polymer/polymer/issues/270). */
         background-color: #3b3b3e;
         border-radius: 2px;
         border-style: solid;
@@ -22,7 +18,7 @@
         font-weight: 300;
       }
 
-      ::part(key) {
+      :host .key {
         background-image: none;
         background-position: center;
         background-repeat: no-repeat;
@@ -36,29 +32,32 @@
         top: 0;
       }
 
-      :host[align=left]::part(key) {
+      :host([align=left]) .key {
         padding-left: 1em;
       }
 
-      kb-shift-key::part(key),
-      :host[image]::part(key) {
+      /* TODO(rsadam@): Remove when we fully switch to native shadow dom. */
+      /* TODO(rsadam@): Move shift key rules to kb-shift-key. */
+      kb-shift-key .key,
+      :host(kb-shift-key) .key,
+      :host([image]) .key {
         height: 70%;
         width: auto;
       }
 
-      :host[image].cursor::part(key) {
+      :host([image].cursor) .key {
         height: 85%;
       }
 
-      :host[image].hide-keyboard::part(key) {
+      :host([image].hide-keyboard) .key {
         height: 100%;
       }
 
-      :host[image].search::part(key) {
+      :host([image].search) .key {
         height: 80%;
       }
 
-      ::part(hint) {
+      :host .hint {
         color: #313131;
         font-size: 70%;
         position: absolute;
@@ -66,18 +65,74 @@
         top: 5%;
       }
 
-      :host[invert] ::part(key) {
+      :host([invert]) .key {
         color: #313131;
       }
 
-      :host[invert] ::part(hint) {
+      :host([invert]) .hint {
         color: #ffffff;
       }
+
+      :host(.dark) {
+        font-size: 70%;
+      }
+
+      :host(.active) {
+        -webkit-box-shadow: inset 0px 1px #969696, inset 0px -1px #6f6f6f;
+        background-image: -webkit-linear-gradient(#8b8b8b, #7d7d7d);
+        background-size: cover;
+        border-bottom-color: #5b5b5b;
+        border-top-color: #a4a4a4;
+      }
+
+      :host(.dark:not(.active)) {
+        -webkit-box-shadow: inset 0px 1px #313131, inset 0px -1px #202020;
+        background-color: #222222;
+        border-bottom-color: #1c1c1c;
+        border-top-color: #4f4f4f;
+      }
+
+      /**
+       * The microphone key is handled separately from other images since the
+       * image displayed changes depending on whether it's pressed or not.
+       */
+      :ancestor(.microphone) .key {
+        background-image: url('../images/microphone.svg');
+        background-position: 10%;
+      }
+
+      :ancestor(.audio .microphone) .key {
+        background-image: url('../images/microphone-green.svg');
+      }
+
+      /* TODO(rsadam@): Use different assets for caps-lock and highlight. */
+      :ancestor(.caps-locked):host(kb-shift-key.dark) .key,
+      /**
+       * Controls whether the shift key should be highlighted.
+       * Only highlights if we are in the upper keyset, but not
+       * capslocked.
+       */
+      :ancestor(kb-keyboard:not(.caps-locked)[keyset=upper]):host(
+          kb-shift-key) .key {
+        background-image: url('../images/shift-filled.svg');
+      }
+
+      :ancestor(kb-keyboard:not(.caps-locked)[keyset=lower]):host(
+          kb-shift-key) .key {
+        background-image: url('../images/shift.svg');
+      }
+
+      :ancestor(kb-keyboard.ctrl-active):host(
+          kb-modifier-key[char=Ctrl]),
+      :ancestor(kb-keyboard.alt-active):host(
+          kb-modifier-key[char=Alt]) {
+        color: lightblue;
+      }
     </style>
-    <div id="key" part="key">
+    <div id="key" class="key">
       <content></content>
     </div>
-    <div part="hint">{{hintText}}</div>
+    <div class="hint" part="hint">{{hintText}}</div>
   </template>
   <script>
     Polymer('kb-key', {
@@ -142,10 +197,12 @@
        * TODO(rsadam): Remove when polymer {{}} syntax regression is fixed.
        */
       imageChanged: function() {
-        if (!this.image)
+        if (!this.image) {
           this.$.key.style.backgroundImage = "none";
-        else
-          this.$.key.style.backgroundImage = "url(images/" + this.image + ".svg)";
+        } else {
+          this.$.key.style.backgroundImage =
+              "url(images/" + this.image + ".svg)";
+        }
       },
 
       /**
