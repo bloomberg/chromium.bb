@@ -127,6 +127,13 @@ const base::FilePath& GetDriveMyDriveRootPath() {
   return drive_root_path;
 }
 
+base::FilePath GetDriveMountPointPathForUserIdHash(
+    const std::string user_id_hash) {
+  return base::FilePath(kSpecialMountPointRoot).AppendASCII(
+      net::EscapePath(kDriveMountPointNameBase +
+                      (user_id_hash.empty() ? "" : "-" + user_id_hash)));
+}
+
 base::FilePath GetDriveMountPointPath(Profile* profile) {
   std::string id = chromeos::ProfileHelper::GetUserIdHashFromProfile(profile);
   if (id.empty()) {
@@ -141,8 +148,7 @@ base::FilePath GetDriveMountPointPath(Profile* profile) {
     if (user)
       id = user->username_hash();
   }
-  return base::FilePath(kSpecialMountPointRoot).AppendASCII(
-      net::EscapePath(kDriveMountPointNameBase + (id.empty() ? "" : "-" + id)));
+  return GetDriveMountPointPathForUserIdHash(id);
 }
 
 FileSystemInterface* GetFileSystemByProfile(Profile* profile) {

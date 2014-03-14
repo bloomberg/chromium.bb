@@ -19,6 +19,7 @@ namespace policy {
 
 class ConfigurationPolicyHandler;
 class PolicyErrorMap;
+struct PolicyHandlerParameters;
 class PolicyMap;
 struct PolicyToPreferenceMapEntry;
 class Schema;
@@ -28,7 +29,11 @@ class Schema;
 // cleaning up policy values for displaying.
 class POLICY_EXPORT ConfigurationPolicyHandlerList {
  public:
+  typedef base::Callback<void(PolicyHandlerParameters*)>
+      PopulatePolicyHandlerParametersCallback;
+
   explicit ConfigurationPolicyHandlerList(
+      const PopulatePolicyHandlerParametersCallback& parameters_callback,
       const GetChromePolicyDetailsCallback& details_callback);
   ~ConfigurationPolicyHandlerList();
 
@@ -47,7 +52,8 @@ class POLICY_EXPORT ConfigurationPolicyHandlerList {
 
  private:
   std::vector<ConfigurationPolicyHandler*> handlers_;
-  GetChromePolicyDetailsCallback details_callback_;
+  const PopulatePolicyHandlerParametersCallback parameters_callback_;
+  const GetChromePolicyDetailsCallback details_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ConfigurationPolicyHandlerList);
 };

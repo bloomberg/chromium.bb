@@ -7,14 +7,17 @@
 #include "base/prefs/pref_value_map.h"
 #include "base/stl_util.h"
 #include "components/policy/core/browser/configuration_policy_handler.h"
+#include "components/policy/core/browser/configuration_policy_handler_parameters.h"
 #include "components/policy/core/browser/policy_error_map.h"
 #include "components/policy/core/common/policy_map.h"
 #include "grit/component_strings.h"
 
 namespace policy {
 ConfigurationPolicyHandlerList::ConfigurationPolicyHandlerList(
+    const PopulatePolicyHandlerParametersCallback& parameters_callback,
     const GetChromePolicyDetailsCallback& details_callback)
-    : details_callback_(details_callback) {}
+    : parameters_callback_(parameters_callback),
+      details_callback_(details_callback) {}
 
 ConfigurationPolicyHandlerList::~ConfigurationPolicyHandlerList() {
   STLDeleteElements(&handlers_);
@@ -33,10 +36,14 @@ void ConfigurationPolicyHandlerList::ApplyPolicySettings(
   if (!errors)
     errors = &scoped_errors;
 
+  policy::PolicyHandlerParameters parameters;
+  parameters_callback_.Run(&parameters);
+
   std::vector<ConfigurationPolicyHandler*>::const_iterator handler;
   for (handler = handlers_.begin(); handler != handlers_.end(); ++handler) {
     if ((*handler)->CheckPolicySettings(policies, errors) && prefs)
-      (*handler)->ApplyPolicySettings(policies, prefs);
+      (*handler)
+          ->ApplyPolicySettingsWithParameters(policies, parameters, prefs);
   }
 
   for (PolicyMap::const_iterator it = policies.begin();

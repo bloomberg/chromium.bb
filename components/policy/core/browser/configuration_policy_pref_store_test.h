@@ -16,6 +16,7 @@
 
 namespace policy {
 
+struct PolicyHandlerParameters;
 class PolicyMap;
 class PolicyService;
 class ConfigurationPolicyPrefStore;
@@ -26,6 +27,11 @@ class ConfigurationPolicyPrefStoreTest : public testing::Test {
   virtual ~ConfigurationPolicyPrefStoreTest();
   virtual void TearDown() OVERRIDE;
   void UpdateProviderPolicy(const PolicyMap& policy);
+
+  // A unit test can override this method to populate the policy handler
+  // parameters as suited to its needs.
+  virtual void PopulatePolicyHandlerParameters(
+      PolicyHandlerParameters* parameters);
 
   PolicyServiceImpl::Providers providers_;
   ConfigurationPolicyHandlerList handler_list_;

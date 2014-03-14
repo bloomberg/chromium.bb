@@ -2637,8 +2637,12 @@
         }],  # OS == android
         ['OS!="android" and OS!="ios" and chromeos==0 and configuration_policy==1', {
           'sources': [
-            'browser/download/download_dir_policy_handler_unittest.cc',
             'browser/net/disk_cache_dir_policy_handler_unittest.cc',
+          ],
+        }],
+        ['OS!="android" and OS!="ios" and configuration_policy==1', {
+          'sources': [
+            'browser/download/download_dir_policy_handler_unittest.cc'
           ],
         }],
         ['enable_printing!=1', {

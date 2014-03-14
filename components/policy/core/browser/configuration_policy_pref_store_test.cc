@@ -6,7 +6,10 @@
 
 #include <string>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/run_loop.h"
+#include "components/policy/core/browser/configuration_policy_handler_parameters.h"
 #include "components/policy/core/browser/configuration_policy_pref_store.h"
 #include "components/policy/core/common/policy_details.h"
 #include "components/policy/core/common/policy_map.h"
@@ -19,7 +22,10 @@ using testing::_;
 namespace policy {
 
 ConfigurationPolicyPrefStoreTest::ConfigurationPolicyPrefStoreTest()
-    : handler_list_(GetChromePolicyDetailsCallback()) {
+    : handler_list_(base::Bind(&ConfigurationPolicyPrefStoreTest::
+                                   PopulatePolicyHandlerParameters,
+                               base::Unretained(this)),
+                    GetChromePolicyDetailsCallback()) {
   EXPECT_CALL(provider_, IsInitializationComplete(_))
       .WillRepeatedly(Return(false));
   provider_.Init();
@@ -30,6 +36,9 @@ ConfigurationPolicyPrefStoreTest::ConfigurationPolicyPrefStoreTest()
 }
 
 ConfigurationPolicyPrefStoreTest::~ConfigurationPolicyPrefStoreTest() {}
+
+void ConfigurationPolicyPrefStoreTest::PopulatePolicyHandlerParameters(
+    PolicyHandlerParameters* parameters) {}
 
 void ConfigurationPolicyPrefStoreTest::TearDown() {
   provider_.Shutdown();

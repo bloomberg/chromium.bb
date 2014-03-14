@@ -16,6 +16,7 @@
 #include "components/policy/core/browser/autofill_policy_handler.h"
 #include "components/policy/core/browser/configuration_policy_handler.h"
 #include "components/policy/core/browser/configuration_policy_handler_list.h"
+#include "components/policy/core/browser/configuration_policy_handler_parameters.h"
 #include "components/policy/core/browser/url_blacklist_policy_handler.h"
 #include "components/policy/core/common/policy_details.h"
 #include "components/policy/core/common/policy_map.h"
@@ -39,6 +40,8 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/magnifier/magnifier_constants.h"
+#include "chrome/browser/chromeos/login/user.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/policy/configuration_policy_handler_chromeos.h"
 #include "chromeos/dbus/power_policy_controller.h"
 #endif
@@ -47,7 +50,7 @@
 #include "chrome/browser/policy/managed_bookmarks_policy_handler.h"
 #endif
 
-#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_IOS)
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
 #include "chrome/browser/download/download_dir_policy_handler.h"
 #endif
 
@@ -489,10 +492,22 @@ StringToIntEnumListPolicyHandler::MappingEntry kExtensionAllowedTypesMap[] = {
 
 }  // namespace
 
+void PopulatePolicyHandlerParameters(PolicyHandlerParameters* parameters) {
+#if defined(OS_CHROMEOS)
+  if (chromeos::UserManager::IsInitialized()) {
+    const chromeos::User* user = chromeos::UserManager::Get()->GetActiveUser();
+    if (user)
+      parameters->user_id_hash = user->username_hash();
+  }
+#endif
+}
+
 scoped_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
     const Schema& chrome_schema) {
   scoped_ptr<ConfigurationPolicyHandlerList> handlers(
-      new ConfigurationPolicyHandlerList(base::Bind(&GetChromePolicyDetails)));
+      new ConfigurationPolicyHandlerList(
+          base::Bind(&PopulatePolicyHandlerParameters),
+          base::Bind(&GetChromePolicyDetails)));
   for (size_t i = 0; i < arraysize(kSimplePolicyMap); ++i) {
     handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
         new SimplePolicyHandler(kSimplePolicyMap[i].policy_name,
@@ -548,8 +563,6 @@ scoped_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_IOS)
   handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
       new DiskCacheDirPolicyHandler()));
-  handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
-      new DownloadDirPolicyHandler));
 
   handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
       new extensions::NativeMessagingHostListPolicyHandler(
@@ -562,6 +575,11 @@ scoped_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
           extensions::pref_names::kNativeMessagingBlacklist,
           true)));
 #endif  // !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_IOS)
+
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+  handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(
+      new DownloadDirPolicyHandler));
+#endif
 
 #if defined(OS_CHROMEOS)
   handlers->AddHandler(make_scoped_ptr<ConfigurationPolicyHandler>(

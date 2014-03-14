@@ -413,7 +413,7 @@
   },
 
   "DownloadDirectory": {
-    "os": ["win", "mac", "linux"],
+    "os": ["win", "mac", "linux", "chromeos"],
     "can_be_recommended": true,
     "test_policy": { "DownloadDirectory": "${user_home}/test-downloads" },
     "pref_mappings": [

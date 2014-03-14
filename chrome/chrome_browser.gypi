@@ -2741,10 +2741,14 @@
         }],
         ['OS!="android" and OS!="ios" and chromeos==0 and configuration_policy==1', {
           'sources': [
-            'browser/download/download_dir_policy_handler.cc',
-            'browser/download/download_dir_policy_handler.h',
             'browser/net/disk_cache_dir_policy_handler.cc',
             'browser/net/disk_cache_dir_policy_handler.h',
+          ],
+        }],
+        ['OS!="android" and OS!="ios" and configuration_policy==1', {
+          'sources': [
+            'browser/download/download_dir_policy_handler.cc',
+            'browser/download/download_dir_policy_handler.h',
           ],
         }],
         ['OS=="mac"', {

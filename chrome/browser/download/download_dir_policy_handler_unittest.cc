@@ -2,25 +2,69 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
+
+#include "base/compiler_specific.h"
+#include "base/files/file_path.h"
 #include "base/values.h"
 #include "chrome/browser/download/download_dir_policy_handler.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/common/pref_names.h"
+#include "components/policy/core/browser/configuration_policy_handler_parameters.h"
 #include "components/policy/core/browser/configuration_policy_pref_store.h"
 #include "components/policy/core/browser/configuration_policy_pref_store_test.h"
+#include "components/policy/core/common/policy_details.h"
 #include "components/policy/core/common/policy_map.h"
+#include "components/policy/core/common/policy_types.h"
 #include "policy/policy_constants.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/drive/file_system_util.h"
+#endif
+
+namespace {
+
+const char* kUserIDHash = "deadbeef";
+
+#if defined(OS_CHROMEOS)
+const char* kDriveNamePolicyVariableName = "${google_drive}";
+const base::FilePath::CharType* kRootRelativeToDriveMount =
+    FILE_PATH_LITERAL("root");
+const char* kRelativeToDriveRoot = "/home/";
+
+std::string GetExpectedDownloadDirectory() {
+  return drive::util::GetDriveMountPointPathForUserIdHash(kUserIDHash)
+      .Append(kRootRelativeToDriveMount)
+      .value();
+}
+
+#endif
+
+}  // namespace
 
 class DownloadDirPolicyHandlerTest
     : public policy::ConfigurationPolicyPrefStoreTest {
  public:
   virtual void SetUp() OVERRIDE {
+    recommended_store_ = new policy::ConfigurationPolicyPrefStore(
+        policy_service_.get(),
+        &handler_list_,
+        policy::POLICY_LEVEL_RECOMMENDED);
     handler_list_.AddHandler(
         make_scoped_ptr<policy::ConfigurationPolicyHandler>(
             new DownloadDirPolicyHandler));
   }
+
+  virtual void PopulatePolicyHandlerParameters(
+      policy::PolicyHandlerParameters* parameters) OVERRIDE {
+    parameters->user_id_hash = kUserIDHash;
+  }
+
+ protected:
+  scoped_refptr<policy::ConfigurationPolicyPrefStore> recommended_store_;
 };
 
+#if !defined(OS_CHROMEOS)
 TEST_F(DownloadDirPolicyHandlerTest, SetDownloadDirectory) {
   policy::PolicyMap policy;
   EXPECT_FALSE(store_->GetValue(prefs::kPromptForDownload, NULL));
@@ -40,3 +84,51 @@ TEST_F(DownloadDirPolicyHandlerTest, SetDownloadDirectory) {
   ASSERT_TRUE(result);
   EXPECT_FALSE(prompt_for_download);
 }
+#endif
+
+#if defined(OS_CHROMEOS)
+TEST_F(DownloadDirPolicyHandlerTest, SetDownloadToDrive) {
+  EXPECT_FALSE(store_->GetValue(prefs::kPromptForDownload, NULL));
+
+  policy::PolicyMap policy;
+  policy.Set(policy::key::kDownloadDirectory,
+             policy::POLICY_LEVEL_MANDATORY,
+             policy::POLICY_SCOPE_USER,
+             new base::StringValue(kDriveNamePolicyVariableName),
+             NULL);
+  UpdateProviderPolicy(policy);
+
+  const base::Value* value = NULL;
+  bool prompt_for_download;
+  EXPECT_TRUE(store_->GetValue(prefs::kPromptForDownload, &value));
+  EXPECT_TRUE(value);
+  EXPECT_TRUE(value->GetAsBoolean(&prompt_for_download));
+  EXPECT_FALSE(prompt_for_download);
+
+  std::string download_directory;
+  EXPECT_TRUE(store_->GetValue(prefs::kDownloadDefaultDirectory, &value));
+  EXPECT_TRUE(value);
+  EXPECT_TRUE(value->GetAsString(&download_directory));
+  EXPECT_EQ(GetExpectedDownloadDirectory(), download_directory);
+
+  policy.Set(policy::key::kDownloadDirectory,
+             policy::POLICY_LEVEL_RECOMMENDED,
+             policy::POLICY_SCOPE_USER,
+             new base::StringValue(std::string(kDriveNamePolicyVariableName) +
+                                   kRelativeToDriveRoot),
+             NULL);
+  UpdateProviderPolicy(policy);
+
+  EXPECT_TRUE(recommended_store_->GetValue(prefs::kPromptForDownload, &value));
+  EXPECT_TRUE(value);
+  EXPECT_TRUE(value->GetAsBoolean(&prompt_for_download));
+  EXPECT_FALSE(prompt_for_download);
+
+  EXPECT_TRUE(
+      recommended_store_->GetValue(prefs::kDownloadDefaultDirectory, &value));
+  EXPECT_TRUE(value);
+  EXPECT_TRUE(value->GetAsString(&download_directory));
+  EXPECT_EQ(GetExpectedDownloadDirectory() + kRelativeToDriveRoot,
+            download_directory);
+}
+#endif

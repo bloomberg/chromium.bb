@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_DOWNLOAD_DOWNLOAD_DIR_POLICY_HANDLER_H_
 #define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_DIR_POLICY_HANDLER_H_
 
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "components/policy/core/browser/configuration_policy_handler.h"
 
 class PrefValueMap;
@@ -20,8 +22,13 @@ class DownloadDirPolicyHandler : public policy::TypeCheckingPolicyHandler {
   virtual ~DownloadDirPolicyHandler();
 
   // ConfigurationPolicyHandler methods:
-  virtual void ApplyPolicySettings(const policy::PolicyMap& policies,
-                                   PrefValueMap* prefs) OVERRIDE;
+  virtual bool CheckPolicySettings(const policy::PolicyMap& policies,
+                                   policy::PolicyErrorMap* errors) OVERRIDE;
+
+  virtual void ApplyPolicySettingsWithParameters(
+      const policy::PolicyMap& policies,
+      const policy::PolicyHandlerParameters& parameters,
+      PrefValueMap* prefs) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DownloadDirPolicyHandler);

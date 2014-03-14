@@ -197,6 +197,9 @@
   <message name="IDS_POLICY_JSON_PARSE_ERROR" desc="The text displayed in the status column when a policy that should have been specified in JSON format could not be parsed.">
     Failed to parse JSON format: <ph name="JSON_PARSE_ERROR">$1<ex>Unexpected token.</ex></ph>
   </message>
+  <message name="IDS_POLICY_SCOPE_ERROR" desc="Text displayed in the status column when a policy is set in an unsupported scope.">
+    Policy scope is not supported.
+  </message>
   <message name="IDS_POLICY_OK" desc="Text displayed in the status column when a valid value is set for a policy.">
     OK
   </message>

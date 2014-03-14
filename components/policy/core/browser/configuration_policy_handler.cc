@@ -48,6 +48,18 @@ ConfigurationPolicyHandler::~ConfigurationPolicyHandler() {
 void ConfigurationPolicyHandler::PrepareForDisplaying(
     PolicyMap* policies) const {}
 
+void ConfigurationPolicyHandler::ApplyPolicySettings(
+    const policy::PolicyMap& policies,
+    PrefValueMap* prefs) {
+  NOTREACHED();
+}
+
+void ConfigurationPolicyHandler::ApplyPolicySettingsWithParameters(
+    const PolicyMap& policies,
+    const PolicyHandlerParameters& parameters,
+    PrefValueMap* prefs) {
+  ApplyPolicySettings(policies, prefs);
+}
 
 // TypeCheckingPolicyHandler implementation ------------------------------------
 

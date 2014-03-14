@@ -1058,7 +1058,7 @@
       'name': 'DownloadDirectory',
       'type': 'string',
       'schema': { 'type': 'string' },
-      'supported_on': ['chrome.*:11-'],
+      'supported_on': ['chrome.*:11-', 'chrome_os:35-'],
       'features': {
         'can_be_recommended': True,
         'dynamic_refresh': True,

@@ -21,6 +21,7 @@ class PrefValueMap;
 namespace policy {
 
 class PolicyErrorMap;
+struct PolicyHandlerParameters;
 class PolicyMap;
 
 // Maps a policy type to a preference path, and to the expected value type.
@@ -48,8 +49,17 @@ class POLICY_EXPORT ConfigurationPolicyHandler {
 
   // Processes the policies handled by this ConfigurationPolicyHandler and sets
   // the appropriate preferences in |prefs|.
+  virtual void ApplyPolicySettingsWithParameters(
+      const PolicyMap& policies,
+      const PolicyHandlerParameters& parameters,
+      PrefValueMap* prefs);
+
+  // This is a convenience version of ApplyPolicySettingsWithParameters()
+  // that leaves out the |parameters|. Anyone extending
+  // ConfigurationPolicyHandler should implement either ApplyPolicySettings or
+  // ApplyPolicySettingsWithParameters.
   virtual void ApplyPolicySettings(const PolicyMap& policies,
-                                   PrefValueMap* prefs) = 0;
+                                   PrefValueMap* prefs);
 
   // Modifies the values of some of the policies in |policies| so that they
   // are more suitable to display to the user. This can be used to remove
