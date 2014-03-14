@@ -172,7 +172,7 @@ class AutofillDialogViewDelegate {
   // Called when focus has changed position within the view.
   virtual void FocusMoved() = 0;
 
-  // Whether the view should show a validation error bubble.
+  // Whether the view is allowed to show a validation error bubble.
   virtual bool ShouldShowErrorBubble() const = 0;
 
   // Miscellany ----------------------------------------------------------------

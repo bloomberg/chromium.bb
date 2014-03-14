@@ -88,8 +88,7 @@ void MockCallback(const FormStructure*) {}
 class MockAutofillMetrics : public AutofillMetrics {
  public:
   MockAutofillMetrics()
-      : dialog_dismissal_action_(
-            static_cast<AutofillMetrics::DialogDismissalAction>(-1)) {}
+      : dialog_dismissal_action_(static_cast<DialogDismissalAction>(-1)) {}
   virtual ~MockAutofillMetrics() {}
 
   virtual void LogDialogUiDuration(
@@ -108,7 +107,7 @@ class MockAutofillMetrics : public AutofillMetrics {
                      void(DialogDismissalState state));
 
  private:
-  AutofillMetrics::DialogDismissalAction dialog_dismissal_action_;
+  DialogDismissalAction dialog_dismissal_action_;
 
   DISALLOW_COPY_AND_ASSIGN(MockAutofillMetrics);
 };
@@ -170,7 +169,7 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
   // Saving to Chrome is tested in AutofillDialogControllerImpl unit tests.
   // TODO(estade): test that the view defaults to saving to Chrome.
   virtual bool ShouldOfferToSaveInChrome() const OVERRIDE {
-    return false;
+    return true;
   }
 
   void ForceFinishSubmit() {
@@ -307,7 +306,7 @@ class NavEntryCommittedObserver : public content::WindowedNotificationObserver {
 
 class AutofillDialogControllerTest : public InProcessBrowserTest {
  public:
-  AutofillDialogControllerTest() {}
+  AutofillDialogControllerTest() : controller_(NULL) {}
   virtual ~AutofillDialogControllerTest() {}
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
@@ -341,6 +340,9 @@ class AutofillDialogControllerTest : public InProcessBrowserTest {
   }
 
   void InitializeControllerWithoutShowing() {
+    if (controller_)
+      controller_->Hide();
+
     FormData form;
     form.name = ASCIIToUTF16("TestForm");
     form.method = ASCIIToUTF16("POST");
@@ -543,7 +545,6 @@ class AutofillDialogControllerTest : public InProcessBrowserTest {
 // Submit the form data.
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, Submit) {
   GetViewTester()->SubmitForTesting();
-
   RunMessageLoop();
 
   EXPECT_EQ(AutofillMetrics::DIALOG_ACCEPTED,
@@ -552,8 +553,11 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, Submit) {
 
 // Cancel out of the dialog.
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, Cancel) {
-  GetViewTester()->CancelForTesting();
+  EXPECT_CALL(metric_logger(),
+              LogDialogDismissalState(
+                  AutofillMetrics::DIALOG_CANCELED_NO_INVALID_FIELDS));
 
+  GetViewTester()->CancelForTesting();
   RunMessageLoop();
 
   EXPECT_EQ(AutofillMetrics::DIALOG_CANCELED,
@@ -562,11 +566,56 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, Cancel) {
 
 // Take some other action that dismisses the dialog.
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, Hide) {
+  EXPECT_CALL(metric_logger(),
+              LogDialogDismissalState(
+                  AutofillMetrics::DIALOG_CANCELED_NO_INVALID_FIELDS));
   controller()->Hide();
 
   RunMessageLoop();
 
   EXPECT_EQ(AutofillMetrics::DIALOG_CANCELED,
+            metric_logger().dialog_dismissal_action());
+}
+
+IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, CancelWithSuggestions) {
+  EXPECT_CALL(metric_logger(),
+              LogDialogDismissalState(
+                  AutofillMetrics::DIALOG_CANCELED_NO_EDITS));
+
+  CreditCard card(test::GetVerifiedCreditCard());
+  controller()->GetTestingManager()->AddTestingCreditCard(&card);
+  AutofillProfile profile(test::GetVerifiedProfile());
+  controller()->GetTestingManager()->AddTestingProfile(&profile);
+
+  EXPECT_FALSE(controller()->IsManuallyEditingSection(SECTION_CC));
+  EXPECT_FALSE(controller()->IsManuallyEditingSection(SECTION_BILLING));
+  EXPECT_FALSE(controller()->IsManuallyEditingSection(SECTION_SHIPPING));
+
+  GetViewTester()->CancelForTesting();
+  RunMessageLoop();
+
+  EXPECT_EQ(AutofillMetrics::DIALOG_CANCELED,
+            metric_logger().dialog_dismissal_action());
+}
+
+IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, AcceptWithSuggestions) {
+  EXPECT_CALL(metric_logger(),
+              LogDialogDismissalState(
+                  AutofillMetrics::DIALOG_ACCEPTED_EXISTING_AUTOFILL_DATA));
+
+  CreditCard card(test::GetVerifiedCreditCard());
+  controller()->GetTestingManager()->AddTestingCreditCard(&card);
+  AutofillProfile profile(test::GetVerifiedProfile());
+  controller()->GetTestingManager()->AddTestingProfile(&profile);
+
+  EXPECT_FALSE(controller()->IsManuallyEditingSection(SECTION_CC));
+  EXPECT_FALSE(controller()->IsManuallyEditingSection(SECTION_BILLING));
+  EXPECT_FALSE(controller()->IsManuallyEditingSection(SECTION_SHIPPING));
+
+  GetViewTester()->SubmitForTesting();
+  RunMessageLoop();
+
+  EXPECT_EQ(AutofillMetrics::DIALOG_ACCEPTED,
             metric_logger().dialog_dismissal_action());
 }
 
@@ -658,6 +707,11 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, FillInputFromAutofill) {
       continue;
     EXPECT_EQ(expectations[i], view->GetTextContentsOfInput(inputs[i].type));
   }
+
+  EXPECT_CALL(metric_logger(),
+              LogDialogDismissalState(
+                  AutofillMetrics::DIALOG_ACCEPTED_SAVE_TO_AUTOFILL));
+  view->SubmitForTesting();
 }
 
 // This test makes sure that picking a profile variant in the Autofill
@@ -796,12 +850,14 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
 }
 
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, ShouldShowErrorBubble) {
+  controller()->set_use_validation(true);
   EXPECT_TRUE(controller()->ShouldShowErrorBubble());
 
   CreditCard card(test::GetCreditCard());
   ASSERT_FALSE(card.IsVerified());
   controller()->GetTestingManager()->AddTestingCreditCard(&card);
 
+  EXPECT_TRUE(controller()->IsManuallyEditingSection(SECTION_CC));
   scoped_ptr<AutofillDialogViewTester> view = GetViewTester();
   view->SetTextContentsOfInput(
       CREDIT_CARD_NUMBER,
@@ -812,6 +868,11 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, ShouldShowErrorBubble) {
 
   controller()->FocusMoved();
   EXPECT_TRUE(controller()->ShouldShowErrorBubble());
+
+  EXPECT_CALL(metric_logger(),
+              LogDialogDismissalState(
+                  AutofillMetrics::DIALOG_CANCELED_WITH_INVALID_FIELDS));
+  controller()->Hide();
 }
 
 // Ensure that expired cards trigger invalid suggestions.
@@ -1029,6 +1090,10 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
   controller()->OnAccept();
   EXPECT_TRUE(test_view->IsShowingOverlay());
 
+  EXPECT_CALL(metric_logger(),
+              LogDialogDismissalState(
+                  AutofillMetrics::DIALOG_ACCEPTED_EXISTING_WALLET_DATA));
+
   EXPECT_CALL(*controller()->GetTestingWalletClient(), GetFullWallet(_));
   controller()->OnDidAuthenticateInstrument(true);
   controller()->OnDidGetFullWallet(wallet::GetTestFullWallet());
@@ -1086,6 +1151,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, SimulateSuccessfulSignIn) {
                                 CURRENT_TAB,
                                 content::PAGE_TRANSITION_LINK,
                                 true);
+
   sign_in_contents->GetDelegate()->OpenURLFromTab(sign_in_contents, params);
 
   EXPECT_CALL(*controller()->GetTestingWalletClient(), GetWalletItems());
@@ -1094,12 +1160,23 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, SimulateSuccessfulSignIn) {
 
   EXPECT_FALSE(controller()->ShouldShowSignInWebView());
 
-  controller()->OnDidGetWalletItems(
-      wallet::GetTestWalletItems(wallet::AMEX_DISALLOWED));
+  scoped_ptr<wallet::WalletItems> wallet_items =
+      wallet::GetTestWalletItems(wallet::AMEX_DISALLOWED);
+  wallet_items->AddInstrument(wallet::GetTestMaskedInstrument());
+  controller()->OnDidGetWalletItems(wallet_items.Pass());
 
   // Wallet should now be selected and Chrome shouldn't have crashed (which can
   // happen if the WebContents is deleted while proccessing a nav entry commit).
   EXPECT_TRUE(account_chooser_model->WalletIsSelected());
+  EXPECT_FALSE(controller()->IsManuallyEditingSection(SECTION_CC_BILLING));
+  EXPECT_FALSE(controller()->IsManuallyEditingSection(SECTION_SHIPPING));
+
+  EXPECT_CALL(metric_logger(),
+              LogDialogDismissalState(
+                  AutofillMetrics::DIALOG_ACCEPTED_EXISTING_WALLET_DATA));
+  view->SubmitForTesting();
+  controller()->OnDidGetFullWallet(wallet::GetTestFullWallet());
+  controller()->ForceFinishSubmit();
 }
 
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, AddAccount) {

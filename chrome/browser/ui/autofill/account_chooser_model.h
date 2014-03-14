@@ -119,6 +119,9 @@ class AccountChooserModel : public ui::SimpleMenuModel,
   // Reconstructs the set of menu items.
   void ReconstructMenuItems();
 
+  // Switches to the account option represented by |command_id|.
+  void DoAccountSwitch(int command_id);
+
   AccountChooserModelDelegate* delegate_;
 
   // The command id of the currently selected item.

@@ -3745,14 +3745,17 @@ void AutofillDialogControllerImpl::LogOnFinishSubmitMetrics() {
   GetMetricLogger().LogDialogUiEvent(AutofillMetrics::DIALOG_UI_ACCEPTED);
 
   AutofillMetrics::DialogDismissalState dismissal_state;
-  if (!IsManuallyEditingAnySection())
-    dismissal_state = AutofillMetrics::DIALOG_ACCEPTED_EXISTING_DATA;
-  else if (IsPayingWithWallet())
+  if (!IsManuallyEditingAnySection()) {
+    dismissal_state = IsPayingWithWallet() ?
+        AutofillMetrics::DIALOG_ACCEPTED_EXISTING_WALLET_DATA :
+        AutofillMetrics::DIALOG_ACCEPTED_EXISTING_AUTOFILL_DATA;
+  } else if (IsPayingWithWallet()) {
     dismissal_state = AutofillMetrics::DIALOG_ACCEPTED_SAVE_TO_WALLET;
-  else if (ShouldSaveDetailsLocally())
+  } else if (ShouldSaveDetailsLocally()) {
     dismissal_state = AutofillMetrics::DIALOG_ACCEPTED_SAVE_TO_AUTOFILL;
-  else
+  } else {
     dismissal_state = AutofillMetrics::DIALOG_ACCEPTED_NO_SAVE;
+  }
 
   GetMetricLogger().LogDialogDismissalState(dismissal_state);
 }

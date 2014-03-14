@@ -39,7 +39,7 @@ class AutofillMetrics {
   // The state of the Autofill dialog when it was dismissed.
   enum DialogDismissalState {
     // The user submitted with no data available to save.
-    DIALOG_ACCEPTED_EXISTING_DATA,
+    DEPRECATED_DIALOG_ACCEPTED_EXISTING_DATA,
     // The saved details to Online Wallet on submit.
     DIALOG_ACCEPTED_SAVE_TO_WALLET,
     // The saved details to the local Autofill database on submit.
@@ -54,6 +54,10 @@ class AutofillMetrics {
     DIALOG_CANCELED_WITH_INVALID_FIELDS,
     // The user canceled while the sign-in form was showing.
     DIALOG_CANCELED_DURING_SIGNIN,
+    // The user submitted using data already stored in Wallet.
+    DIALOG_ACCEPTED_EXISTING_WALLET_DATA,
+    // The user submitted using data already stored in Autofill.
+    DIALOG_ACCEPTED_EXISTING_AUTOFILL_DATA,
     NUM_DIALOG_DISMISSAL_STATES
   };
 

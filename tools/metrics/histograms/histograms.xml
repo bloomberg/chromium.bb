@@ -25010,7 +25010,7 @@ other types of suffix sets.
 </enum>
 
 <enum name="AutofillDialogDismissalState" type="int">
-  <int value="0" label="Submitted, existing data"/>
+  <int value="0" label="Submitted, existing data (deprecated)"/>
   <int value="1" label="Submitted, saved to Wallet"/>
   <int value="2" label="Submitted, saved locally"/>
   <int value="3" label="Submitted, no save"/>
@@ -25018,6 +25018,8 @@ other types of suffix sets.
   <int value="5" label="Canceled, no invalid fields"/>
   <int value="6" label="Canceled, 1+ invalid fields"/>
   <int value="7" label="Canceled during sign-in"/>
+  <int value="8" label="Submitted, existing data came from Wallet"/>
+  <int value="9" label="Submitted, existing data came from Autofill"/>
 </enum>
 
 <enum name="AutofillDialogInitialUserState" type="int">
@@ -25044,7 +25046,8 @@ other types of suffix sets.
   <int value="0" label="Dialog shown"/>
   <int value="1" label="Dialog submitted"/>
   <int value="2" label="Dialog canceled"/>
-  <int value="3" label="Account switched: Wallet-&gt;Autofill"/>
+  <int value="3"
+      label="Account switched: Wallet-&gt;Autofill (M35+: user actions only)"/>
   <int value="4" label="Account switched: Autofill-&gt;Wallet"/>
   <int value="5" label="Account switched: Wallet-&gt;Wallet"/>
   <int value="6" label="Sign-in UI shown"/>
