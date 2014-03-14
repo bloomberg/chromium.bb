@@ -27,13 +27,13 @@ class WebView;
 namespace content {
 class AccessibilityController;
 class GamepadController;
+class TestRunner;
 class TextInputController;
 }
 
 namespace WebTestRunner {
 
 class EventSender;
-class TestRunner;
 class WebTestDelegate;
 class WebTestProxyBase;
 
@@ -55,7 +55,7 @@ public:
 
     content::AccessibilityController* accessibilityController();
     EventSender* eventSender();
-    TestRunner* testRunner();
+    content::TestRunner* testRunner();
     WebTestDelegate* delegate();
     WebTestProxyBase* proxy();
     const std::vector<WebTestProxyBase*>& windowList();
@@ -66,7 +66,7 @@ private:
     scoped_ptr<EventSender> m_eventSender;
     scoped_ptr<content::GamepadController> m_gamepadController;
     scoped_ptr<content::TextInputController> m_textInputController;
-    scoped_ptr<TestRunner> m_testRunner;
+    scoped_ptr<content::TestRunner> m_testRunner;
     WebTestDelegate* m_delegate;
     WebTestProxyBase* m_proxy;
 

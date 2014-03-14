@@ -56,6 +56,17 @@ class GIN_EXPORT Arguments {
     return true;
   }
 
+  bool Skip() {
+    if (next_ >= info_->Length())
+      return false;
+    next_++;
+    return true;
+  }
+
+  int Length() const {
+    return info_->Length();
+  }
+
   template<typename T>
   void Return(T val) {
     info_->GetReturnValue().Set(ConvertToV8(isolate_, val));

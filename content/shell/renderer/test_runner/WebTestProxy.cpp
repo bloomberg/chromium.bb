@@ -14,12 +14,12 @@
 #include "content/shell/renderer/test_runner/TestCommon.h"
 #include "content/shell/renderer/test_runner/TestInterfaces.h"
 #include "content/shell/renderer/test_runner/TestPlugin.h"
-#include "content/shell/renderer/test_runner/TestRunner.h"
 #include "content/shell/renderer/test_runner/WebTestDelegate.h"
 #include "content/shell/renderer/test_runner/WebTestInterfaces.h"
 #include "content/shell/renderer/test_runner/WebTestRunner.h"
 #include "content/shell/renderer/test_runner/WebUserMediaClientMock.h"
 #include "content/shell/renderer/test_runner/accessibility_controller.h"
+#include "content/shell/renderer/test_runner/test_runner.h"
 // FIXME: Including platform_canvas.h here is a layering violation.
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/platform/WebCString.h"
@@ -717,7 +717,7 @@ void WebTestProxyBase::scheduleComposite()
 
 void WebTestProxyBase::scheduleAnimation()
 {
-    if (!m_testInterfaces->testRunner()->testIsRunning())
+    if (!m_testInterfaces->testRunner()->TestIsRunning())
         return;
 
     if (!m_animateScheduled) {
@@ -976,12 +976,12 @@ WebSpeechRecognizer* WebTestProxyBase::speechRecognizer()
 
 bool WebTestProxyBase::requestPointerLock()
 {
-    return m_testInterfaces->testRunner()->requestPointerLock();
+    return m_testInterfaces->testRunner()->RequestPointerLock();
 }
 
 void WebTestProxyBase::requestPointerUnlock()
 {
-    m_testInterfaces->testRunner()->requestPointerUnlock();
+    m_testInterfaces->testRunner()->RequestPointerUnlock();
 }
 
 bool WebTestProxyBase::isPointerLocked()

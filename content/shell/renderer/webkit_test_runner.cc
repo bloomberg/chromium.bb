@@ -631,12 +631,8 @@ void WebKitTestRunner::CaptureDump() {
       ShellRenderProcessObserver::GetInstance()->test_interfaces();
 
   if (interfaces->testRunner()->shouldDumpAsAudio()) {
-    const WebArrayBufferView* audio_data =
-        interfaces->testRunner()->audioData();
-    std::vector<unsigned char> vector_data(
-        static_cast<const unsigned char*>(audio_data->baseAddress()),
-        static_cast<const unsigned char*>(audio_data->baseAddress()) +
-            audio_data->byteLength());
+    std::vector<unsigned char> vector_data;
+    interfaces->testRunner()->getAudioData(&vector_data);
     Send(new ShellViewHostMsg_AudioDump(routing_id(), vector_data));
   } else {
     Send(new ShellViewHostMsg_TextDump(routing_id(),

@@ -5,8 +5,9 @@
 #ifndef CONTENT_SHELL_RENDERER_TEST_RUNNER_WEBTESTRUNNER_H_
 #define CONTENT_SHELL_RENDERER_TEST_RUNNER_WEBTESTRUNNER_H_
 
+#include <vector>
+
 namespace blink {
-class WebArrayBufferView;
 class WebPermissionClient;
 }
 
@@ -25,7 +26,7 @@ public:
     // If true, WebTestDelegate::audioData returns an audio dump and no text
     // or pixel results are available.
     virtual bool shouldDumpAsAudio() const = 0;
-    virtual const blink::WebArrayBufferView* audioData() const = 0;
+    virtual void getAudioData(std::vector<unsigned char>* bufferView) const = 0;
 
     // Returns true if the call to WebTestProxy::captureTree will invoke
     // WebTestDelegate::captureHistoryForWindow.

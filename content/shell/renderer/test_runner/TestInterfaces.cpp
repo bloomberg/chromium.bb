@@ -8,11 +8,11 @@
 
 #include "base/strings/stringprintf.h"
 #include "content/shell/renderer/test_runner/EventSender.h"
-#include "content/shell/renderer/test_runner/TestRunner.h"
 #include "content/shell/renderer/test_runner/WebTestProxy.h"
 #include "content/shell/renderer/test_runner/accessibility_controller.h"
 #include "content/shell/renderer/test_runner/gamepad_controller.h"
 #include "content/shell/renderer/test_runner/text_input_controller.h"
+#include "content/shell/renderer/test_runner/test_runner.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/web/WebCache.h"
@@ -30,7 +30,7 @@ TestInterfaces::TestInterfaces()
     , m_eventSender(new EventSender(this))
     , m_gamepadController(new content::GamepadController())
     , m_textInputController(new content::TextInputController())
-    , m_testRunner(new TestRunner(this))
+    , m_testRunner(new content::TestRunner(this))
     , m_delegate(0)
 {
     blink::setLayoutTestMode(true);
@@ -47,13 +47,13 @@ TestInterfaces::~TestInterfaces()
     m_eventSender->setWebView(0);
     // m_gamepadController doesn't depend on WebView.
     m_textInputController->SetWebView(NULL);
-    m_testRunner->setWebView(0, 0);
+    m_testRunner->SetWebView(0, 0);
 
     m_accessibilityController->SetDelegate(0);
     m_eventSender->setDelegate(0);
     m_gamepadController->SetDelegate(0);
     // m_textInputController doesn't depend on WebTestDelegate.
-    m_testRunner->setDelegate(0);
+    m_testRunner->SetDelegate(0);
 }
 
 void TestInterfaces::setWebView(WebView* webView, WebTestProxyBase* proxy)
@@ -63,7 +63,7 @@ void TestInterfaces::setWebView(WebView* webView, WebTestProxyBase* proxy)
     m_eventSender->setWebView(webView);
     // m_gamepadController doesn't depend on WebView.
     m_textInputController->SetWebView(webView);
-    m_testRunner->setWebView(webView, proxy);
+    m_testRunner->SetWebView(webView, proxy);
 }
 
 void TestInterfaces::setDelegate(WebTestDelegate* delegate)
@@ -72,7 +72,7 @@ void TestInterfaces::setDelegate(WebTestDelegate* delegate)
     m_eventSender->setDelegate(delegate);
     m_gamepadController->SetDelegate(delegate);
     // m_textInputController doesn't depend on WebTestDelegate.
-    m_testRunner->setDelegate(delegate);
+    m_testRunner->SetDelegate(delegate);
     m_delegate = delegate;
 }
 
@@ -82,8 +82,7 @@ void TestInterfaces::bindTo(WebFrame* frame)
     m_eventSender->bindToJavascript(frame, WebString::fromUTF8("eventSender"));
     m_gamepadController->Install(frame);
     m_textInputController->Install(frame);
-    m_testRunner->bindToJavascript(frame, WebString::fromUTF8("testRunner"));
-    m_testRunner->bindToJavascript(frame, WebString::fromUTF8("layoutTestController"));
+    m_testRunner->Install(frame);
 }
 
 void TestInterfaces::resetTestHelperControllers()
@@ -98,12 +97,12 @@ void TestInterfaces::resetTestHelperControllers()
 void TestInterfaces::resetAll()
 {
     resetTestHelperControllers();
-    m_testRunner->reset();
+    m_testRunner->Reset();
 }
 
 void TestInterfaces::setTestIsRunning(bool running)
 {
-    m_testRunner->setTestIsRunning(running);
+    m_testRunner->SetTestIsRunning(running);
 }
 
 void TestInterfaces::configureForTestWithURL(const WebURL& testURL, bool generatePixels)
@@ -163,7 +162,7 @@ EventSender* TestInterfaces::eventSender()
     return m_eventSender.get();
 }
 
-TestRunner* TestInterfaces::testRunner()
+content::TestRunner* TestInterfaces::testRunner()
 {
     return m_testRunner.get();
 }
@@ -185,7 +184,7 @@ const vector<WebTestProxyBase*>& TestInterfaces::windowList()
 
 WebThemeEngine* TestInterfaces::themeEngine()
 {
-    if (!m_testRunner->useMockTheme())
+    if (!m_testRunner->UseMockTheme())
         return 0;
 #if defined(__APPLE__)
     if (!m_themeEngine.get())

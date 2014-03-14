@@ -9,7 +9,7 @@
 #include "content/shell/renderer/test_runner/MockWebMediaStreamCenter.h"
 #include "content/shell/renderer/test_runner/MockWebRTCPeerConnectionHandler.h"
 #include "content/shell/renderer/test_runner/TestInterfaces.h"
-#include "content/shell/renderer/test_runner/TestRunner.h"
+#include "content/shell/renderer/test_runner/test_runner.h"
 
 using namespace blink;
 
