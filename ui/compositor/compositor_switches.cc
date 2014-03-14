@@ -15,6 +15,8 @@ const char kUIDisableThreadedCompositing[] = "ui-disable-threaded-compositing";
 
 const char kUIEnableImplSidePainting[] = "ui-enable-impl-side-painting";
 
+const char kUIEnableMapImage[] = "ui-enable-map-image";
+
 const char kUIShowPaintRects[] = "ui-show-paint-rects";
 
 }  // namespace switches
@@ -25,6 +27,12 @@ bool IsUIImplSidePaintingEnabled() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
   return command_line.HasSwitch(switches::kUIEnableImplSidePainting);
+}
+
+bool IsUIMapImageEnabled() {
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+
+  return command_line.HasSwitch(switches::kUIEnableMapImage);
 }
 
 }  // namespace ui
