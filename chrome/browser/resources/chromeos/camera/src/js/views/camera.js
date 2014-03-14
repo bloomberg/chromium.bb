@@ -1724,19 +1724,17 @@ camera.views.Camera.prototype.onAnimationFrame_ = function() {
   if (this.context.resizing)
     return;
 
-  var finishFrameMeasuring = this.performanceMonitors_.startMeasuring('main');
-
   // If the animation is called more often than the video provides input, then
-  // there is no reason to process it. This will cup FPS to the WebCam frame
+  // there is no reason to process it. This will cup FPS to the Web Cam frame
   // rate (eg. head tracker interpolation, nor ghost effect will not be updated
   // more often than frames provided). Since we can assume that the webcam
   // serves frames with 30 FPS speed it should be OK. As a result, we will
   // significantly reduce CPU usage.
-  if (this.lastFrameTime_ == this.video_.currentTime) {
-    this.frame_++;
-    finishFrameMeasuring();
+  if (this.lastFrameTime_ == this.video_.currentTime)
     return;
-  }
+
+  var finishFrameMeasuring = this.performanceMonitors_.startMeasuring('main');
+  this.frame_++;
 
   // Copy the video frame to the back buffer. The back buffer is low
   // resolution, since it is only used by the effects' previews.
