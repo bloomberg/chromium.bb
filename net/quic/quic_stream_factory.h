@@ -5,6 +5,7 @@
 #ifndef NET_QUIC_QUIC_STREAM_FACTORY_H_
 #define NET_QUIC_QUIC_STREAM_FACTORY_H_
 
+#include <list>
 #include <map>
 #include <string>
 #include <vector>
@@ -221,6 +222,9 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       const QuicSessionKey& session_key,
       QuicCryptoClientConfig* crypto_config);
 
+  void ExpireBrokenAlternateProtocolMappings();
+  void ScheduleBrokenAlternateProtocolMappingsExpiration();
+
   bool require_confirmation_;
   HostResolver* host_resolver_;
   ClientSocketFactory* client_socket_factory_;
@@ -262,6 +266,21 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // Contains list of suffixes (for exmaple ".c.youtube.com",
   // ".googlevideo.com") of canoncial hostnames.
   std::vector<std::string> canoncial_suffixes_;
+
+
+  // List of broken host:ports and the times when they can be expired.
+  struct BrokenAlternateProtocolEntry {
+    HostPortPair origin;
+    base::TimeTicks when;
+  };
+  typedef std::list<BrokenAlternateProtocolEntry>
+      BrokenAlternateProtocolList;
+  BrokenAlternateProtocolList broken_alternate_protocol_list_;
+
+  // Map from host:port to the number of times alternate protocol has
+  // been marked broken.
+  typedef std::map<HostPortPair, int> BrokenAlternateProtocolMap;
+  BrokenAlternateProtocolMap broken_alternate_protocol_map_;
 
   QuicConfig config_;
 
