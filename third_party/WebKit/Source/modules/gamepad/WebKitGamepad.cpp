@@ -8,17 +8,12 @@
 namespace WebCore {
 
 WebKitGamepad::WebKitGamepad()
-    : m_index(0)
-    , m_timestamp(0)
 {
     ScriptWrappable::init(this);
 }
 
-void WebKitGamepad::setAxes(unsigned count, const float* data)
+WebKitGamepad::~WebKitGamepad()
 {
-    m_axes.resize(count);
-    if (count)
-        std::copy(data, data + count, m_axes.begin());
 }
 
 void WebKitGamepad::setButtons(unsigned count, const blink::WebGamepadButton* data)
@@ -26,14 +21,6 @@ void WebKitGamepad::setButtons(unsigned count, const blink::WebGamepadButton* da
     m_buttons.resize(count);
     for (unsigned i = 0; i < count; ++i)
         m_buttons[i] = data[i].value;
-}
-
-void WebKitGamepad::trace(Visitor* visitor)
-{
-}
-
-WebKitGamepad::~WebKitGamepad()
-{
 }
 
 } // namespace WebCore

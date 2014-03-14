@@ -7,6 +7,11 @@
 
 namespace WebCore {
 
+WebKitGamepadList::WebKitGamepadList()
+{
+    ScriptWrappable::init(this);
+}
+
 WebKitGamepadList::~WebKitGamepadList()
 {
 }
@@ -16,11 +21,6 @@ void WebKitGamepadList::set(unsigned index, PassRefPtrWillBeRawPtr<WebKitGamepad
     if (index >= blink::WebGamepads::itemsLengthCap)
         return;
     m_items[index] = gamepad;
-}
-
-unsigned WebKitGamepadList::length() const
-{
-    return blink::WebGamepads::itemsLengthCap;
 }
 
 WebKitGamepad* WebKitGamepadList::item(unsigned index)

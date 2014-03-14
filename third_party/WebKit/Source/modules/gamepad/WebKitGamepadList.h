@@ -15,23 +15,22 @@
 
 namespace WebCore {
 
-class WebKitGamepadList : public RefCountedWillBeGarbageCollectedFinalized<WebKitGamepadList>, public ScriptWrappable {
+class WebKitGamepadList FINAL : public RefCountedWillBeGarbageCollectedFinalized<WebKitGamepadList>, public ScriptWrappable {
 public:
-    static PassRefPtrWillBeRawPtr<WebKitGamepadList> create() { return adoptRefWillBeNoop(new WebKitGamepadList); }
+    static PassRefPtrWillBeRawPtr<WebKitGamepadList> create()
+    {
+        return adoptRefWillBeNoop(new WebKitGamepadList);
+    }
     ~WebKitGamepadList();
 
     void set(unsigned index, PassRefPtrWillBeRawPtr<WebKitGamepad>);
     WebKitGamepad* item(unsigned index);
-    unsigned length() const;
+    unsigned length() const { return blink::WebGamepads::itemsLengthCap; }
 
     void trace(Visitor*);
 
 private:
-    WebKitGamepadList()
-    {
-        ScriptWrappable::init(this);
-    }
-
+    WebKitGamepadList();
     RefPtrWillBeMember<WebKitGamepad> m_items[blink::WebGamepads::itemsLengthCap];
 };
 

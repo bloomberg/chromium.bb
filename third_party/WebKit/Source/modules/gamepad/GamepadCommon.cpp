@@ -23,36 +23,26 @@
  * DAMAGE.
  */
 
-#ifndef Gamepad_h
-#define Gamepad_h
-
-#include "bindings/v8/ScriptWrappable.h"
-#include "heap/Handle.h"
-#include "modules/gamepad/GamepadButton.h"
+#include "config.h"
 #include "modules/gamepad/GamepadCommon.h"
-#include "public/platform/WebGamepad.h"
-#include "wtf/RefCounted.h"
 
 namespace WebCore {
 
-class Gamepad FINAL : public RefCountedWillBeGarbageCollectedFinalized<Gamepad>, public GamepadCommon, public ScriptWrappable {
-public:
-    static PassRefPtrWillBeRawPtr<Gamepad> create()
-    {
-        return adoptRefWillBeNoop(new Gamepad);
-    }
-    ~Gamepad();
+GamepadCommon::GamepadCommon()
+    : m_index(0)
+    , m_timestamp(0)
+{
+}
 
-    const GamepadButtonVector& buttons() const { return m_buttons; }
-    void setButtons(unsigned count, const blink::WebGamepadButton* data);
+GamepadCommon::~GamepadCommon()
+{
+}
 
-    void trace(Visitor*);
-
-private:
-    Gamepad();
-    GamepadButtonVector m_buttons;
-};
+void GamepadCommon::setAxes(unsigned count, const float* data)
+{
+    m_axes.resize(count);
+    if (count)
+        std::copy(data, data + count, m_axes.begin());
+}
 
 } // namespace WebCore
-
-#endif // Gamepad_h

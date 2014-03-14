@@ -36,23 +36,22 @@
 
 namespace WebCore {
 
-class GamepadList : public RefCountedWillBeGarbageCollectedFinalized<GamepadList>, public ScriptWrappable {
+class GamepadList FINAL : public RefCountedWillBeGarbageCollectedFinalized<GamepadList>, public ScriptWrappable {
 public:
-    static PassRefPtrWillBeRawPtr<GamepadList> create() { return adoptRefWillBeNoop(new GamepadList); }
+    static PassRefPtrWillBeRawPtr<GamepadList> create()
+    {
+        return adoptRefWillBeNoop(new GamepadList);
+    }
     ~GamepadList();
 
     void set(unsigned index, PassRefPtrWillBeRawPtr<Gamepad>);
     Gamepad* item(unsigned index);
-    unsigned length() const;
+    unsigned length() const { return blink::WebGamepads::itemsLengthCap; }
 
     void trace(Visitor*);
 
 private:
-    GamepadList()
-    {
-        ScriptWrappable::init(this);
-    }
-
+    GamepadList();
     RefPtrWillBeMember<Gamepad> m_items[blink::WebGamepads::itemsLengthCap];
 };
 

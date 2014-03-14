@@ -28,6 +28,11 @@
 
 namespace WebCore {
 
+GamepadList::GamepadList()
+{
+    ScriptWrappable::init(this);
+}
+
 GamepadList::~GamepadList()
 {
 }
@@ -37,11 +42,6 @@ void GamepadList::set(unsigned index, PassRefPtrWillBeRawPtr<Gamepad> gamepad)
     if (index >= blink::WebGamepads::itemsLengthCap)
         return;
     m_items[index] = gamepad;
-}
-
-unsigned GamepadList::length() const
-{
-    return blink::WebGamepads::itemsLengthCap;
 }
 
 Gamepad* GamepadList::item(unsigned index)

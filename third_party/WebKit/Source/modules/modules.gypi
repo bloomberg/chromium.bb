@@ -369,6 +369,8 @@
       'gamepad/Gamepad.h',
       'gamepad/GamepadButton.cpp',
       'gamepad/GamepadButton.h',
+      'gamepad/GamepadCommon.cpp',
+      'gamepad/GamepadCommon.h',
       'gamepad/GamepadList.cpp',
       'gamepad/GamepadList.h',
       'gamepad/NavigatorGamepad.cpp',
