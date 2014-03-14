@@ -40,7 +40,6 @@ public:
     explicit SVGImageChromeClient(SVGImage*);
     virtual bool isSVGImageChromeClient() const OVERRIDE;
 
-    void clearImage() { m_image = 0; }
     SVGImage* image() const { return m_image; }
 
 private:

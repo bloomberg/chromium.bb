@@ -63,14 +63,6 @@ void SVGImageChromeClient::invalidateContentsAndRootView(const IntRect& r)
 
 void SVGImageChromeClient::scheduleAnimation()
 {
-    // m_image can be 0 here when the SVGImage is (invalid and) destroyed -
-    // deferring destruction of it's Page, and said page contains a plugin and
-    // a marquee (or presumably other entity that schedules animations using
-    // the ScriptedAnimationController). The core issue is of course the
-    // deferred destruction since it creates this race window in the first
-    // place. (Relevant test: svg/as-image/svg-invalid-image-1.html)
-    if (!m_image)
-        return;
     // Because a single SVGImage can be shared by multiple pages, we can't key
     // our svg image layout on the page's real animation frame. Therefore, we
     // run this fake animation timer to trigger layout in SVGImages. The name,
