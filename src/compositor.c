@@ -3245,7 +3245,7 @@ weston_output_move(struct weston_output *output, int x, int y)
 	wl_signal_emit(&output->compositor->output_moved_signal, output);
 
 	/* Notify clients of the change for output position. */
-	wl_resource_for_each(resource, &output->resource_list)
+	wl_resource_for_each(resource, &output->resource_list) {
 		wl_output_send_geometry(resource,
 					output->x,
 					output->y,
@@ -3255,6 +3255,10 @@ weston_output_move(struct weston_output *output, int x, int y)
 					output->make,
 					output->model,
 					output->transform);
+
+		if (wl_resource_get_version(resource) >= 2)
+			wl_output_send_done(resource);
+	}
 }
 
 WL_EXPORT void
