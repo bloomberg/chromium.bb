@@ -30,6 +30,7 @@
 #include "policy/policy_constants.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #else  // !defined(OS_CHROMEOS)
+#include "chrome/browser/extensions/api/networking_private/networking_private_credentials_getter.h"
 #include "chrome/browser/extensions/api/networking_private/networking_private_service_client.h"
 #include "chrome/browser/extensions/api/networking_private/networking_private_service_client_factory.h"
 #include "components/wifi/wifi_service.h"
@@ -68,6 +69,13 @@ class CryptoVerifyStub
                                  bool* verified,
                                  std::string* error) OVERRIDE {
     *verified = true;
+  }
+
+  virtual void VerifyAndEncryptCredentials(
+      scoped_ptr<base::ListValue> args,
+      const extensions::NetworkingPrivateServiceClient::CryptoVerify::
+          VerifyAndEncryptCredentialsCallback& callback) OVERRIDE {
+    callback.Run("encrypted_credentials", "");
   }
 
   virtual void VerifyAndEncryptData(scoped_ptr<base::ListValue> args,

@@ -42,6 +42,7 @@
         '<(DEPTH)/components/components.gyp:translate_core_common',
         '<(DEPTH)/components/components.gyp:variations',
         '<(DEPTH)/content/content.gyp:content_common',
+        '<(DEPTH)/crypto/crypto.gyp:crypto',
         '<(DEPTH)/net/net.gyp:net',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/third_party/icu/icu.gyp:icui18n',
@@ -397,6 +398,8 @@
         }],
         ['OS=="win" or OS=="mac"', {
           'sources': [
+            'common/extensions/api/networking_private/networking_private_crypto.cc',
+            'common/extensions/api/networking_private/networking_private_crypto.h',
             'common/media_galleries/itunes_library.cc',
             'common/media_galleries/itunes_library.h',
             'common/media_galleries/picasa_types.cc',
@@ -688,6 +691,8 @@
         }],
         ['use_openssl==1', {
             'sources!': [
+              # networking_private_crypto.cc uses NSS functions.
+              'common/extensions/api/networking_private/networking_private_crypto.cc',
               'common/net/x509_certificate_model_nss.cc',
             ],
           },

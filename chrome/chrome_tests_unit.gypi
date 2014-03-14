@@ -416,6 +416,7 @@
         }],
         ['OS=="win" or OS=="mac"', {
           'sources': [
+            'common/extensions/api/networking_private/networking_private_crypto_unittest.cc',
             'common/media_galleries/picasa_test_util.cc',
             'common/media_galleries/picasa_test_util.cc',
             'common/media_galleries/pmp_test_util.cc',
@@ -2470,7 +2471,6 @@
             '<(DEPTH)/third_party/wtl/include',
           ],
           'sources': [
-            'browser/extensions/api/networking_private/networking_private_crypto_unittest.cc',
             # TODO:  It would be nice to have these pulled in
             # automatically from direct_dependent_settings in
             # their various targets (net.gyp:net_resources, etc.),
@@ -2686,7 +2686,7 @@
         ['use_openssl==1', {
           'sources!': [
             # networking_private_crypto.cc uses NSS functions.
-            'browser/extensions/api/networking_private/networking_private_crypto_unittest.cc',
+            'common/extensions/api/networking_private/networking_private_crypto_unittest.cc',
           ],
           'sources/': [
             # OpenSSL build does not support firefox importer. See

@@ -7,9 +7,14 @@
 
 namespace chrome {
 
-const uint32 kMessageWhitelist[] = {ChromeUtilityMsg_ImageWriter_Cancel::ID,
-                                    ChromeUtilityMsg_ImageWriter_Write::ID,
-                                    ChromeUtilityMsg_ImageWriter_Verify::ID};
+const uint32 kMessageWhitelist[] = {
+#ifdef OS_WIN
+    ChromeUtilityHostMsg_GetAndEncryptWiFiCredentials::ID,
+#endif  // OS_WIN
+    ChromeUtilityMsg_ImageWriter_Cancel::ID,
+    ChromeUtilityMsg_ImageWriter_Write::ID,
+    ChromeUtilityMsg_ImageWriter_Verify::ID};
+
 const size_t kMessageWhitelistSize = arraysize(kMessageWhitelist);
 
 }  // namespace chrome

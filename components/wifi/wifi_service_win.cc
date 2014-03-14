@@ -703,9 +703,34 @@ void WiFiServiceImpl::SetEventObservers(
     scoped_refptr<base::MessageLoopProxy> message_loop_proxy,
     const NetworkGuidListCallback& networks_changed_observer,
     const NetworkGuidListCallback& network_list_changed_observer) {
+  DWORD error_code = EnsureInitialized();
+  if (error_code != ERROR_SUCCESS)
+    return;
   message_loop_proxy_.swap(message_loop_proxy);
+  if (!networks_changed_observer_.is_null() ||
+      !network_list_changed_observer_.is_null()) {
+    // Stop listening to WLAN notifications.
+    WlanRegisterNotification_function_(client_,
+                                       WLAN_NOTIFICATION_SOURCE_NONE,
+                                       FALSE,
+                                       OnWlanNotificationCallback,
+                                       this,
+                                       NULL,
+                                       NULL);
+  }
   networks_changed_observer_ = networks_changed_observer;
   network_list_changed_observer_ = network_list_changed_observer;
+  if (!networks_changed_observer_.is_null() ||
+      !network_list_changed_observer_.is_null()) {
+    // Start listening to WLAN notifications.
+    WlanRegisterNotification_function_(client_,
+                                       WLAN_NOTIFICATION_SOURCE_ALL,
+                                       FALSE,
+                                       OnWlanNotificationCallback,
+                                       this,
+                                       NULL,
+                                       NULL);
+  }
 }
 
 void WiFiServiceImpl::OnWlanNotificationCallback(
@@ -943,13 +968,6 @@ DWORD WiFiServiceImpl::OpenClientHandle() {
             break;
           }
         }
-        WlanRegisterNotification_function_(client_,
-                                           WLAN_NOTIFICATION_SOURCE_ALL,
-                                           FALSE,
-                                           OnWlanNotificationCallback,
-                                           this,
-                                           NULL,
-                                           NULL);
       } else {
         error = ERROR_NOINTERFACE;
       }

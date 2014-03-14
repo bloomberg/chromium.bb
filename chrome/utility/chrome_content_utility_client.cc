@@ -47,7 +47,9 @@
 #if defined(OS_WIN)
 #include "base/win/iat_patch_function.h"
 #include "base/win/scoped_handle.h"
+#include "chrome/common/extensions/api/networking_private/networking_private_crypto.h"
 #include "chrome/utility/media_galleries/itunes_pref_parser_win.h"
+#include "components/wifi/wifi_service.h"
 #include "printing/emf_win.h"
 #include "ui/gfx/gdi_util.h"
 #endif  // defined(OS_WIN)
@@ -401,6 +403,11 @@ bool ChromeContentUtilityClient::OnMessageReceived(
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_IndexPicasaAlbumsContents,
                         OnIndexPicasaAlbumsContents)
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
+
+#if defined(OS_WIN)
+    IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_GetAndEncryptWiFiCredentials,
+                        OnGetAndEncryptWiFiCredentials)
+#endif  // defined(OS_WIN)
 
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -905,5 +912,28 @@ void ChromeContentUtilityClient::OnIndexPicasaAlbumsContents(
   ReleaseProcessIfNeeded();
 }
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
+
+#if defined(OS_WIN)
+void ChromeContentUtilityClient::OnGetAndEncryptWiFiCredentials(
+    const std::string& network_guid,
+    const std::vector<uint8>& public_key) {
+  scoped_ptr<wifi::WiFiService> wifi_service(wifi::WiFiService::Create());
+  wifi_service->Initialize(NULL);
+
+  std::string key_data;
+  std::string error;
+  wifi_service->GetKeyFromSystem(network_guid, &key_data, &error);
+
+  std::vector<uint8> ciphertext;
+  bool success = error.empty() && !key_data.empty();
+  if (success) {
+    NetworkingPrivateCrypto crypto;
+    success = crypto.EncryptByteString(public_key, key_data, &ciphertext);
+  }
+
+  Send(new ChromeUtilityHostMsg_GotEncryptedWiFiCredentials(ciphertext,
+                                                            success));
+}
+#endif  // defined(OS_WIN)
 
 }  // namespace chrome

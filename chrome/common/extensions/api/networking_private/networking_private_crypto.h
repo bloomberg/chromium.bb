@@ -1,11 +1,12 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_NETWORKING_PRIVATE_NETWORKING_PRIVATE_CRYPTO_H_
-#define CHROME_BROWSER_EXTENSIONS_API_NETWORKING_PRIVATE_NETWORKING_PRIVATE_CRYPTO_H_
+#ifndef CHROME_COMMON_EXTENSIONS_API_NETWORKING_PRIVATE_NETWORKING_PRIVATE_CRYPTO_H_
+#define CHROME_COMMON_EXTENSIONS_API_NETWORKING_PRIVATE_NETWORKING_PRIVATE_CRYPTO_H_
 
 #include <string>
+#include <vector>
 #include "base/basictypes.h"
 
 // Implementation of Crypto support for networking private API.
@@ -33,9 +34,9 @@ class NetworkingPrivateCrypto {
   //
   // Returns true on success, storing the encrypted result in
   // |encrypted_output|.
-  bool EncryptByteString(const std::string& public_key,
+  bool EncryptByteString(const std::vector<uint8>& public_key,
                          const std::string& data,
-                         std::string* encrypted_output);
+                         std::vector<uint8>* encrypted_output);
 
  private:
   friend class NetworkingPrivateCryptoTest;
@@ -47,11 +48,10 @@ class NetworkingPrivateCrypto {
   // Returns true on success, storing the decrypted result in
   // |decrypted_output|.
   bool DecryptByteString(const std::string& private_key_pem,
-                         const std::string& encrypted_data,
+                         const std::vector<uint8>& encrypted_data,
                          std::string* decrypted_output);
 
   DISALLOW_COPY_AND_ASSIGN(NetworkingPrivateCrypto);
 };
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_NETWORKING_PRIVATE_NETWORKING_PRIVATE_CRYPTO_H_
-
+#endif  // CHROME_COMMON_EXTENSIONS_API_NETWORKING_PRIVATE_NETWORKING_PRIVATE_CRYPTO_H_

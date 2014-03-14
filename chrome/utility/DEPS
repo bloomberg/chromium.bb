@@ -1,6 +1,7 @@
 include_rules = [
   "+content/public/child",
   "+content/public/utility",
+  "+components/wifi",
   "+extensions/common",
 
   # For generated headers.

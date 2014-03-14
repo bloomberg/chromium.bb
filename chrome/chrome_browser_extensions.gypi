@@ -1050,8 +1050,9 @@
           'sources': [
             'browser/extensions/api/networking_private/networking_private_api.h',
             'browser/extensions/api/networking_private/networking_private_api_nonchromeos.cc',
-            'browser/extensions/api/networking_private/networking_private_crypto.cc',
-            'browser/extensions/api/networking_private/networking_private_crypto.h',
+            'browser/extensions/api/networking_private/networking_private_credentials_getter.h',
+            'browser/extensions/api/networking_private/networking_private_credentials_getter_mac.cc',
+            'browser/extensions/api/networking_private/networking_private_credentials_getter_win.cc',
             'browser/extensions/api/networking_private/networking_private_event_router.h',
             'browser/extensions/api/networking_private/networking_private_event_router_factory.cc',
             'browser/extensions/api/networking_private/networking_private_event_router_factory.h',
@@ -1104,8 +1105,6 @@
         }],
         ['use_openssl==1', {
           'sources!': [
-            # networking_private_crypto.cc uses NSS functions.
-            'browser/extensions/api/networking_private/networking_private_crypto.cc',
             # cast_auth_util_nss.cc uses NSS functions.
             'browser/extensions/api/cast_channel/cast_auth_util_nss.cc',
           ],

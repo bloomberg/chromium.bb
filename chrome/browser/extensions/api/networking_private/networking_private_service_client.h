@@ -46,6 +46,10 @@ class NetworkingPrivateServiceClient
   // Interface for Verify* methods implementation.
   class CryptoVerify {
    public:
+    typedef base::Callback<
+        void(const std::string& key_data, const std::string& error)>
+        VerifyAndEncryptCredentialsCallback;
+
     CryptoVerify() {}
     virtual ~CryptoVerify() {}
 
@@ -54,6 +58,10 @@ class NetworkingPrivateServiceClient
     virtual void VerifyDestination(scoped_ptr<base::ListValue> args,
                                    bool* verified,
                                    std::string* error) = 0;
+
+    virtual void VerifyAndEncryptCredentials(
+        scoped_ptr<base::ListValue> args,
+        const VerifyAndEncryptCredentialsCallback& callback) = 0;
 
     virtual void VerifyAndEncryptData(scoped_ptr<base::ListValue> args,
                                       std::string* base64_encoded_ciphertext,
@@ -180,6 +188,13 @@ class NetworkingPrivateServiceClient
                          const CryptoErrorCallback& error_callback);
 
   // Verify that Chromecast provides valid cryptographically signed properties.
+  // If valid, then get WiFi credentials from the system and encrypt them using
+  // Chromecast's public key.
+  void VerifyAndEncryptCredentials(scoped_ptr<base::ListValue> args,
+                                   const StringResultCallback& callback,
+                                   const CryptoErrorCallback& error_callback);
+
+  // Verify that Chromecast provides valid cryptographically signed properties.
   // If valid, then encrypt data using Chromecast's public key.
   void VerifyAndEncryptData(scoped_ptr<base::ListValue> args,
                             const StringResultCallback& callback,
@@ -215,6 +230,7 @@ class NetworkingPrivateServiceClient
 
     BoolResultCallback verify_destination_callback;
     StringResultCallback verify_and_encrypt_data_callback;
+    StringResultCallback verify_and_encrypt_credentials_callback;
     CryptoErrorCallback crypto_error_callback;
 
     ServiceCallbacksID id;
@@ -245,6 +261,9 @@ class NetworkingPrivateServiceClient
   void AfterVerifyAndEncryptData(ServiceCallbacksID callback_id,
                                  const std::string* result,
                                  const std::string* error);
+  void AfterVerifyAndEncryptCredentials(ServiceCallbacksID callback_id,
+                                        const std::string& encrypted_data,
+                                        const std::string& error);
 
   void OnNetworksChangedEventOnUIThread(
       const WiFiService::NetworkGuidList& network_guid_list);

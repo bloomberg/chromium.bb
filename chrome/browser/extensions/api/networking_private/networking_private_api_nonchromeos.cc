@@ -410,9 +410,30 @@ bool NetworkingPrivateVerifyAndEncryptCredentialsFunction::RunImpl() {
   scoped_ptr<api::VerifyAndEncryptCredentials::Params> params =
       api::VerifyAndEncryptCredentials::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
-  SetResult(new base::StringValue("encrypted_credentials"));
-  SendResponse(true);
+  NetworkingPrivateServiceClient* service_client =
+      NetworkingPrivateServiceClientFactory::GetForProfile(GetProfile());
+  service_client->VerifyAndEncryptCredentials(
+      args_.Pass(),
+      base::Bind(
+          &NetworkingPrivateVerifyAndEncryptCredentialsFunction::ResultCallback,
+          this),
+      base::Bind(
+          &NetworkingPrivateVerifyAndEncryptCredentialsFunction::ErrorCallback,
+          this));
   return true;
+}
+
+void NetworkingPrivateVerifyAndEncryptCredentialsFunction::ResultCallback(
+    const std::string& result) {
+  SetResult(new base::StringValue(result));
+  SendResponse(true);
+}
+
+void NetworkingPrivateVerifyAndEncryptCredentialsFunction::ErrorCallback(
+    const std::string& error_name,
+    const std::string& error) {
+  error_ = error_name;
+  SendResponse(false);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
