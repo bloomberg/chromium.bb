@@ -7,25 +7,40 @@
 
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_request.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "url/gurl.h"
 
 class MockPermissionBubbleRequest : public PermissionBubbleRequest {
  public:
+  MockPermissionBubbleRequest();
   explicit MockPermissionBubbleRequest(const std::string& text);
+  explicit MockPermissionBubbleRequest(const std::string& text,
+                                       const std::string& accept_label,
+                                       const std::string& deny_label);
   virtual ~MockPermissionBubbleRequest();
 
   virtual int GetIconID() const OVERRIDE;
-  MOCK_CONST_METHOD0(GetMessageText, base::string16());
-  MOCK_CONST_METHOD0(GetMessageTextFragment, base::string16());
+  virtual base::string16 GetMessageText() const OVERRIDE;
+  virtual base::string16 GetMessageTextFragment() const OVERRIDE;
   virtual bool HasUserGesture() const OVERRIDE;
   virtual GURL GetRequestingHostname() const OVERRIDE;
-  MOCK_METHOD0(PermissionGranted, void());
-  MOCK_METHOD0(PermissionDenied, void());
-  MOCK_METHOD0(Cancelled, void());
-  MOCK_METHOD0(RequestFinished, void());
 
-  void SetText(const base::string16& text);
+  virtual void PermissionGranted() OVERRIDE;
+  virtual void PermissionDenied() OVERRIDE;
+  virtual void Cancelled() OVERRIDE;
+  virtual void RequestFinished() OVERRIDE;
+
+  bool granted();
+  bool cancelled();
+  bool finished();
+
+ private:
+  bool granted_;
+  bool cancelled_;
+  bool finished_;
+
+  base::string16 text_;
+  base::string16 accept_label_;
+  base::string16 deny_label_;
 };
 
 #endif  // CHROME_BROWSER_UI_WEBSITE_SETTINGS_MOCK_PERMISSION_BUBBLE_REQUEST_H_

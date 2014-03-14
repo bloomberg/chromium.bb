@@ -13,8 +13,10 @@
 #import "chrome/browser/ui/cocoa/website_settings/permission_bubble_cocoa.h"
 #include "chrome/browser/ui/website_settings/mock_permission_bubble_request.h"
 #include "grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #import "ui/events/test/cocoa_test_event_utils.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 @interface PermissionBubbleController (ExposedForTesting)
 - (void)ok:(id)sender;
@@ -57,10 +59,11 @@ class PermissionBubbleControllerTest : public CocoaTest,
   }
 
   void AddRequest(const std::string& title) {
-    MockPermissionBubbleRequest* request =
-        new MockPermissionBubbleRequest(title);
+    MockPermissionBubbleRequest* request = new MockPermissionBubbleRequest(
+        title,
+        l10n_util::GetStringUTF8(IDS_PERMISSION_ALLOW),
+        l10n_util::GetStringUTF8(IDS_PERMISSION_DENY));
     requests_.push_back(request);
-    EXPECT_CALL(*request, GetMessageTextFragment()).Times(1);
   }
 
   NSButton* FindButtonWithTitle(const std::string& title) {

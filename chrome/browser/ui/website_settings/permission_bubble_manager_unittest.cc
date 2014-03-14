@@ -5,6 +5,7 @@
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ui/website_settings/mock_permission_bubble_request.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_request.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_view.h"
@@ -13,60 +14,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
-
-class MockRequest : public PermissionBubbleRequest {
- public:
-  explicit MockRequest(const base::string16& message)
-      : message_(message),
-        granted_(false),
-        cancelled_(false),
-        finished_(false) {}
-
-  virtual ~MockRequest() {}
-
-  // PermissionBubbleRequest:
-  virtual int GetIconID() const OVERRIDE {
-    return 5;
-  }
-
-  virtual base::string16 GetMessageText() const OVERRIDE {
-    return message_;
-  }
-
-  virtual base::string16 GetMessageTextFragment() const OVERRIDE {
-    return message_;
-  }
-
-  virtual bool HasUserGesture() const OVERRIDE {
-    return false;
-  }
-
-  virtual GURL GetRequestingHostname() const OVERRIDE {
-    return GURL("http://www.google.com/");
-  }
-
-  virtual void PermissionGranted() OVERRIDE {
-    granted_ = true;
-  }
-
-  virtual void PermissionDenied() OVERRIDE {
-    granted_ = false;
-  }
-
-  virtual void Cancelled() OVERRIDE {
-    granted_ = false;
-    cancelled_ = true;
-  }
-
-  virtual void RequestFinished() OVERRIDE {
-    finished_ = true;
-  }
-
-  base::string16 message_;
-  bool granted_;
-  bool cancelled_;
-  bool finished_;
-};
 
 class MockView : public PermissionBubbleView {
  public:
@@ -132,8 +79,8 @@ class PermissionBubbleManagerTest : public testing::Test {
   }
 
  protected:
-  MockRequest request1_;
-  MockRequest request2_;
+  MockPermissionBubbleRequest request1_;
+  MockPermissionBubbleRequest request2_;
   MockView view_;
   scoped_ptr<PermissionBubbleManager> manager_;
 
@@ -142,8 +89,8 @@ class PermissionBubbleManagerTest : public testing::Test {
 };
 
 PermissionBubbleManagerTest::PermissionBubbleManagerTest()
-    : request1_(base::ASCIIToUTF16("test1")),
-      request2_(base::ASCIIToUTF16("test2")),
+    : request1_("test1"),
+      request2_("test2"),
       manager_(new PermissionBubbleManager(NULL)),
       ui_thread_(content::BrowserThread::UI, &message_loop_) {
   manager_->SetCoalesceIntervalForTesting(0);
@@ -168,7 +115,7 @@ TEST_F(PermissionBubbleManagerTest, SingleRequest) {
 
   ToggleAccept(0, true);
   Accept();
-  EXPECT_TRUE(request1_.granted_);
+  EXPECT_TRUE(request1_.granted());
 }
 
 TEST_F(PermissionBubbleManagerTest, SingleRequestViewFirst) {
@@ -183,7 +130,7 @@ TEST_F(PermissionBubbleManagerTest, SingleRequestViewFirst) {
 
   ToggleAccept(0, true);
   Accept();
-  EXPECT_TRUE(request1_.granted_);
+  EXPECT_TRUE(request1_.granted());
 }
 
 TEST_F(PermissionBubbleManagerTest, TwoRequests) {
@@ -201,8 +148,8 @@ TEST_F(PermissionBubbleManagerTest, TwoRequests) {
   ToggleAccept(0, true);
   ToggleAccept(1, false);
   Accept();
-  EXPECT_TRUE(request1_.granted_);
-  EXPECT_FALSE(request2_.granted_);
+  EXPECT_TRUE(request1_.granted());
+  EXPECT_FALSE(request2_.granted());
 }
 
 TEST_F(PermissionBubbleManagerTest, TwoRequestsTabSwitch) {
@@ -235,8 +182,8 @@ TEST_F(PermissionBubbleManagerTest, TwoRequestsTabSwitch) {
   EXPECT_FALSE(view_.permission_states_[1]);
 
   Accept();
-  EXPECT_TRUE(request1_.granted_);
-  EXPECT_FALSE(request2_.granted_);
+  EXPECT_TRUE(request1_.granted());
+  EXPECT_FALSE(request2_.granted());
 }
 
 TEST_F(PermissionBubbleManagerTest, NoRequests) {
@@ -312,7 +259,7 @@ TEST_F(PermissionBubbleManagerTest, SequentialRequests) {
   EXPECT_TRUE(view_.shown_);
 
   Accept();
-  EXPECT_TRUE(request1_.granted_);
+  EXPECT_TRUE(request1_.granted());
 
   EXPECT_FALSE(view_.shown_);
 
@@ -321,14 +268,14 @@ TEST_F(PermissionBubbleManagerTest, SequentialRequests) {
   EXPECT_TRUE(view_.shown_);
   Accept();
   EXPECT_FALSE(view_.shown_);
-  EXPECT_TRUE(request2_.granted_);
+  EXPECT_TRUE(request2_.granted());
 }
 
 TEST_F(PermissionBubbleManagerTest, SameRequestRejected) {
   manager_->SetView(&view_);
   manager_->AddRequest(&request1_);
   manager_->AddRequest(&request1_);
-  EXPECT_FALSE(request1_.finished_);
+  EXPECT_FALSE(request1_.finished());
 
   WaitForCoalescing();
   EXPECT_TRUE(view_.shown_);
@@ -339,10 +286,10 @@ TEST_F(PermissionBubbleManagerTest, SameRequestRejected) {
 TEST_F(PermissionBubbleManagerTest, DuplicateRequestRejected) {
   manager_->SetView(&view_);
   manager_->AddRequest(&request1_);
-  MockRequest dupe_request(base::ASCIIToUTF16("test1"));
+  MockPermissionBubbleRequest dupe_request("test1");
   manager_->AddRequest(&dupe_request);
-  EXPECT_TRUE(dupe_request.finished_);
-  EXPECT_FALSE(request1_.finished_);
+  EXPECT_TRUE(dupe_request.finished());
+  EXPECT_FALSE(request1_.finished());
 }
 
 TEST_F(PermissionBubbleManagerTest, DuplicateQueuedRequest) {
@@ -351,13 +298,13 @@ TEST_F(PermissionBubbleManagerTest, DuplicateQueuedRequest) {
   WaitForCoalescing();
   manager_->AddRequest(&request2_);
 
-  MockRequest dupe_request(base::ASCIIToUTF16("test1"));
+  MockPermissionBubbleRequest dupe_request("test1");
   manager_->AddRequest(&dupe_request);
-  EXPECT_TRUE(dupe_request.finished_);
-  EXPECT_FALSE(request1_.finished_);
+  EXPECT_TRUE(dupe_request.finished());
+  EXPECT_FALSE(request1_.finished());
 
-  MockRequest dupe_request2(base::ASCIIToUTF16("test2"));
+  MockPermissionBubbleRequest dupe_request2("test1");
   manager_->AddRequest(&dupe_request2);
-  EXPECT_TRUE(dupe_request2.finished_);
-  EXPECT_FALSE(request2_.finished_);
+  EXPECT_TRUE(dupe_request2.finished());
+  EXPECT_FALSE(request2_.finished());
 }
