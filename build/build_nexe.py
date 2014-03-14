@@ -233,7 +233,11 @@ class Builder(object):
     if self.irt_layout:
       # IRT constraints for auto layout.
       # IRT text can only go up to 256MB. Addresses after that are for data.
-      self.irt_text_max = 0x10000000
+      # Reserve an extra page because:
+      # * sel_ldr requires a HLT sled at the end of the dynamic code area;
+      # * dynamic_load_test currently tests loading at the end of the dynamic
+      #   code area.
+      self.irt_text_max = 0x10000000 - 0x10000
       # Data can only go up to the sandbox_top - sizeof(stack).
       # NaCl allocates 16MB for the initial thread's stack (see
       # NACL_DEFAULT_STACK_MAX in sel_ldr.h).
