@@ -34,6 +34,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/content_switches.h"
+#include "extensions/browser/extension_prefs.h"
 #include "extensions/common/constants.h"
 #include "net/base/net_errors.h"
 #include "net/base/static_cookie_policy.h"
@@ -119,7 +120,8 @@ void HostContentSettingsMap::RegisterExtensionService(
 
   content_settings::ObservableProvider* custom_extension_provider =
       new content_settings::CustomExtensionProvider(
-          extension_service->GetContentSettingsStore(),
+          extensions::ExtensionPrefs::Get(
+              extension_service->GetBrowserContext())->content_settings_store(),
           is_off_the_record_);
   custom_extension_provider->AddObserver(this);
   content_settings_providers_[CUSTOM_EXTENSION_PROVIDER] =

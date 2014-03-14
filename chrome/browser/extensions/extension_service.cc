@@ -1255,10 +1255,6 @@ content::BrowserContext* ExtensionService::GetBrowserContext() const {
   return profile_;
 }
 
-extensions::ContentSettingsStore* ExtensionService::GetContentSettingsStore() {
-  return extension_prefs_->content_settings_store();
-}
-
 bool ExtensionService::is_ready() {
   return ready_->is_signaled();
 }

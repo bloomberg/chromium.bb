@@ -50,7 +50,6 @@ class Version;
 namespace extensions {
 class BrowserEventRouter;
 class ComponentLoader;
-class ContentSettingsStore;
 class CrxInstaller;
 class ExtensionActionStorageManager;
 class ExtensionRegistry;
@@ -421,8 +420,6 @@ class ExtensionService
       ExtensionSyncService* extension_sync_service) {
     extension_sync_service_ = extension_sync_service;
   }
-
-  extensions::ContentSettingsStore* GetContentSettingsStore();
 
   // Whether the extension service is ready.
   virtual bool is_ready() OVERRIDE;
