@@ -423,6 +423,7 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
 #if defined(OS_LINUX)
   if (params.uses_nonsfi_mode) {
     nacl::nonsfi::MainStart(args->imc_bootstrap_handle);
+    NOTREACHED();
     return;
   }
 #endif
