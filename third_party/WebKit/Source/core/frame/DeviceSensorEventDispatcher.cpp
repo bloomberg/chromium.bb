@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "modules/device_orientation/DeviceSensorEventDispatcher.h"
+#include "core/frame/DeviceSensorEventDispatcher.h"
 
 namespace WebCore {
 
@@ -57,9 +57,10 @@ void DeviceSensorEventDispatcher::removeController(DeviceSensorEventController* 
     // Do not actually remove the controller from the vector, instead zero them out.
     // The zeros are removed in these two cases:
     // 1. either immediately if we are not dispatching any events,
-    // 2. or after didChangeDeviceMotion/Orientation has dispatched all events.
+    // 2. or after events to all controllers have dispatched
+    // (see e.g. DeviceOrientationDispatcher::didChangeDeviceOrientation).
     // This is to correctly handle the re-entrancy case when a controller is destroyed
-    // while in the didChangeDeviceMotion/Orientation method.
+    // while the events are still being dispatched.
     size_t index = m_controllers.find(controller);
     if (index == kNotFound)
         return;

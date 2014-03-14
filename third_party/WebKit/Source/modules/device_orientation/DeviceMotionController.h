@@ -30,7 +30,7 @@
 #include "core/dom/DocumentSupplementable.h"
 #include "core/events/Event.h"
 #include "core/frame/DOMWindowLifecycleObserver.h"
-#include "modules/device_orientation/DeviceSensorEventController.h"
+#include "core/frame/DeviceSensorEventController.h"
 
 namespace WebCore {
 

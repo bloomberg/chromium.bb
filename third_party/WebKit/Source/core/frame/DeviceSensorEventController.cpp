@@ -25,7 +25,7 @@
  */
 
 #include "config.h"
-#include "modules/device_orientation/DeviceSensorEventController.h"
+#include "core/frame/DeviceSensorEventController.h"
 
 #include "core/dom/Document.h"
 #include "core/frame/DOMWindow.h"
@@ -78,7 +78,7 @@ void DeviceSensorEventController::startUpdating()
         return;
 
     if (hasLastData() && !m_timer.isActive()) {
-        // Make sure to fire the device motion data as soon as possible.
+        // Make sure to fire the data as soon as possible.
         m_timer.startOneShot(0, FROM_HERE);
     }
 
