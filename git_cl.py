@@ -2184,6 +2184,10 @@ def CMDtry(parser, args):
   if not options.name:
     options.name = cl.GetBranch()
 
+  if options.bot and not options.master:
+    parser.error('For manually specified bots please also specify the '
+                 'tryserver master, e.g. "-m tryserver.chromium".')
+
   def GetMasterMap():
     # Process --bot and --testfilter.
     if not options.bot:
