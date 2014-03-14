@@ -103,6 +103,11 @@ void ScrollableArea::setScrollOrigin(const IntPoint& origin)
     }
 }
 
+GraphicsLayer* ScrollableArea::layerForContainer() const
+{
+    return layerForScrolling() ? layerForScrolling()->parent() : 0;
+}
+
 bool ScrollableArea::scroll(ScrollDirection direction, ScrollGranularity granularity, float delta)
 {
     ScrollbarOrientation orientation;

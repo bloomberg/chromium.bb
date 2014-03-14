@@ -122,9 +122,6 @@ public:
 protected:
     explicit ScrollingCoordinator(Page*);
 
-    static GraphicsLayer* scrollLayerForScrollableArea(ScrollableArea*);
-    static GraphicsLayer* horizontalScrollbarLayerForScrollableArea(ScrollableArea*);
-    static GraphicsLayer* verticalScrollbarLayerForScrollableArea(ScrollableArea*);
     bool isForMainFrame(ScrollableArea*) const;
 
     unsigned computeCurrentWheelEventHandlerCount();
@@ -143,9 +140,6 @@ private:
     void setShouldUpdateScrollLayerPositionOnMainThread(MainThreadScrollingReasons);
 
     bool hasVisibleSlowRepaintViewportConstrainedObjects(FrameView*) const;
-
-    static blink::WebLayer* scrollingWebLayerForScrollableArea(ScrollableArea*);
-    static blink::WebLayer* containerWebLayerForScrollableArea(ScrollableArea*);
 
     bool touchHitTestingEnabled() const;
     void setShouldHandleScrollGestureOnMainThreadRegion(const Region&);

@@ -313,6 +313,18 @@ public:
     // false.
     bool isSubtreeLayout() const { return !!m_layoutSubtreeRoot; }
 
+    // ScrollableArea interface
+    virtual void invalidateScrollbarRect(Scrollbar*, const IntRect&) OVERRIDE;
+    virtual void getTickmarks(Vector<IntRect>&) const OVERRIDE;
+    virtual void scrollTo(const IntSize&) OVERRIDE;
+    virtual IntRect scrollableAreaBoundingBox() const OVERRIDE;
+    virtual bool scrollAnimatorEnabled() const OVERRIDE;
+    virtual bool usesCompositedScrolling() const OVERRIDE;
+    virtual GraphicsLayer* layerForScrolling() const OVERRIDE;
+    virtual GraphicsLayer* layerForHorizontalScrollbar() const OVERRIDE;
+    virtual GraphicsLayer* layerForVerticalScrollbar() const OVERRIDE;
+    virtual GraphicsLayer* layerForScrollCorner() const OVERRIDE;
+
 protected:
     virtual bool scrollContentsFastPath(const IntSize& scrollDelta, const IntRect& rectToScroll, const IntRect& clipRect) OVERRIDE;
     virtual void scrollContentsSlowPath(const IntRect& updateRect) OVERRIDE;
@@ -362,18 +374,6 @@ private:
     virtual IntRect convertFromContainingView(const IntRect&) const OVERRIDE;
     virtual IntPoint convertToContainingView(const IntPoint&) const OVERRIDE;
     virtual IntPoint convertFromContainingView(const IntPoint&) const OVERRIDE;
-
-    // ScrollableArea interface
-    virtual void invalidateScrollbarRect(Scrollbar*, const IntRect&) OVERRIDE;
-    virtual void getTickmarks(Vector<IntRect>&) const OVERRIDE;
-    virtual void scrollTo(const IntSize&) OVERRIDE;
-    virtual IntRect scrollableAreaBoundingBox() const OVERRIDE;
-    virtual bool scrollAnimatorEnabled() const OVERRIDE;
-    virtual bool usesCompositedScrolling() const OVERRIDE;
-    virtual GraphicsLayer* layerForScrolling() const OVERRIDE;
-    virtual GraphicsLayer* layerForHorizontalScrollbar() const OVERRIDE;
-    virtual GraphicsLayer* layerForVerticalScrollbar() const OVERRIDE;
-    virtual GraphicsLayer* layerForScrollCorner() const OVERRIDE;
 
     void sendResizeEventIfNeeded();
 
