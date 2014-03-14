@@ -28,14 +28,11 @@
   var maybeForceIsac16K = function(sdp) { return sdp; };
   function forceIsac16KInSdp() {
     maybeForceIsac16K = function(sdp) {
-      // Remove all other codecs (not the video codecs though). Also leave
-      // 126 for DTMF.
       sdp = sdp.replace(/m=audio (\d+) RTP\/SAVPF.*\r\n/g,
                         'm=audio $1 RTP/SAVPF 103 126\r\n');
       sdp = sdp.replace('a=fmtp:111 minptime=10', 'a=fmtp:103 minptime=10');
-      sdp = sdp.replace(
-          /a=rtpmap:(?!(103|126|101))\d{1,3} (?!X?VP8|red|ulpfec).*\r\n/g,
-          '');
+      if (sdp.search('a=rtpmap:103 ISAC/16000') == -1)
+        failTest('Missing iSAC 16K codec on Android; cannot force codec.');
       return sdp;
     };
     sendValueToTest('isac-forced');
