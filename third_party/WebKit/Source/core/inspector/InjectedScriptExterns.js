@@ -39,6 +39,12 @@ InjectedScriptHostClass.prototype.getInternalProperties = function(object) { }
  */
 InjectedScriptHostClass.prototype.functionDetails = function(func) { }
 /**
+ * @param {!Object} receiver
+ * @param {!Function} func
+ * @param {...*} args
+ */
+InjectedScriptHostClass.prototype.suppressWarningsAndCall = function(receiver, func, args) { }
+/**
  * @param {*} object
  */
 InjectedScriptHostClass.prototype.isHTMLAllCollection = function(object) { }
@@ -49,7 +55,6 @@ InjectedScriptHostClass.prototype.internalConstructorName = function(object) { }
 /**
  * @param {*} object
  */
-InjectedScriptHostClass.prototype.copyText = function(object) { }
 InjectedScriptHostClass.prototype.clearConsoleMessages = function() { }
 /**
  * @param {number} index

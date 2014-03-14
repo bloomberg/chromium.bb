@@ -335,9 +335,16 @@ public:
 
     static int mapCSSPropertyIdToCSSSampleIdForHistogram(int id);
 
+    static void muteForInspector();
+    static void unmuteForInspector();
+
 private:
+    static int m_muteCount;
+
     bool recordMeasurement(Feature feature)
     {
+        if (UseCounter::m_muteCount)
+            return false;
         ASSERT(feature != PageDestruction); // PageDestruction is reserved as a scaling factor.
         ASSERT(feature < NumberOfFeatures);
         if (!m_countBits) {

@@ -68,6 +68,9 @@ public:
     virtual PassOwnPtr<ScriptSourceCode> preprocess(LocalFrame*, const ScriptSourceCode&) OVERRIDE;
     virtual String preprocessEventListener(LocalFrame*, const String& source, const String& url, const String& functionName) OVERRIDE;
 
+    virtual void muteWarningsAndDeprecations() OVERRIDE;
+    virtual void unmuteWarningsAndDeprecations() OVERRIDE;
+
 private:
     PageScriptDebugServer();
     virtual ~PageScriptDebugServer() { }

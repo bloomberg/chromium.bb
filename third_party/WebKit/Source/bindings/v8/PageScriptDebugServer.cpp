@@ -41,6 +41,8 @@
 #include "bindings/v8/V8WindowShell.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/PageConsole.h"
+#include "core/frame/UseCounter.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/ScriptDebugListener.h"
 #include "core/page/Page.h"
@@ -280,6 +282,18 @@ String PageScriptDebugServer::preprocessEventListener(LocalFrame* frame, const S
         return source;
 
     return m_scriptPreprocessor->preprocessSourceCode(source, url, functionName);
+}
+
+void PageScriptDebugServer::muteWarningsAndDeprecations()
+{
+    PageConsole::mute();
+    UseCounter::muteForInspector();
+}
+
+void PageScriptDebugServer::unmuteWarningsAndDeprecations()
+{
+    PageConsole::unmute();
+    UseCounter::unmuteForInspector();
 }
 
 } // namespace WebCore

@@ -63,7 +63,7 @@ void PageConsole::addMessage(MessageSource source, MessageLevel level, const Str
 
 void PageConsole::addMessage(MessageSource source, MessageLevel level, const String& message, const String& url, unsigned lineNumber, unsigned columnNumber, PassRefPtr<ScriptCallStack> callStack, ScriptState* state, unsigned long requestIdentifier)
 {
-    if (muteCount && source != ConsoleAPIMessageSource)
+    if (muteCount)
         return;
 
     // FIXME: This should not need to reach for the main-frame.

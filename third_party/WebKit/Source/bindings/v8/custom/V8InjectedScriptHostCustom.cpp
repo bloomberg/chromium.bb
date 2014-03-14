@@ -425,4 +425,25 @@ void V8InjectedScriptHost::unmonitorFunctionMethodCustom(const v8::FunctionCallb
     host->unmonitorFunction(scriptId, lineNumber, columnNumber);
 }
 
+void V8InjectedScriptHost::suppressWarningsAndCallMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (info.Length() < 2 || !info[0]->IsObject() || !info[1]->IsFunction())
+        return;
+
+    InjectedScriptHost* host = V8InjectedScriptHost::toNative(info.Holder());
+    ScriptDebugServer& debugServer = host->scriptDebugServer();
+    debugServer.muteWarningsAndDeprecations();
+
+    v8::Handle<v8::Object> receiver = v8::Handle<v8::Object>::Cast(info[0]);
+    v8::Handle<v8::Function> function = v8::Handle<v8::Function>::Cast(info[1]);
+    size_t argc = info.Length() - 2;
+    OwnPtr<v8::Handle<v8::Value>[]> argv = adoptArrayPtr(new v8::Handle<v8::Value>[argc]);
+    for (size_t i = 0; i < argc; ++i)
+        argv[i] = info[i + 2];
+
+    v8::Local<v8::Value> result = function->Call(receiver, argc, argv.get());
+    debugServer.unmuteWarningsAndDeprecations();
+    v8SetReturnValue(info, result);
+}
+
 } // namespace WebCore

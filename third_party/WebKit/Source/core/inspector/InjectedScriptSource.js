@@ -458,7 +458,7 @@ InjectedScript.prototype = {
 
                 try {
                     nameProcessed[name] = true;
-                    var descriptor = nullifyObjectProto(Object.getOwnPropertyDescriptor(/** @type {!Object} */ (o), name));
+                    var descriptor = nullifyObjectProto(InjectedScriptHost.suppressWarningsAndCall(Object, Object.getOwnPropertyDescriptor, o, name));
                     if (descriptor) {
                         if (accessorPropertiesOnly && !("get" in descriptor || "set" in descriptor))
                             continue;

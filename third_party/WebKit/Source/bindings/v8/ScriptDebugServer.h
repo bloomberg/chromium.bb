@@ -104,6 +104,9 @@ public:
     virtual PassOwnPtr<ScriptSourceCode> preprocess(LocalFrame*, const ScriptSourceCode&);
     virtual String preprocessEventListener(LocalFrame*, const String& source, const String& url, const String& functionName);
 
+    virtual void muteWarningsAndDeprecations() { }
+    virtual void unmuteWarningsAndDeprecations() { }
+
 protected:
     explicit ScriptDebugServer(v8::Isolate*);
     virtual ~ScriptDebugServer();
