@@ -383,6 +383,8 @@ void InspectorDOMAgent::unbind(Node* node, NodeToIdMap* nodesMap)
             child = innerNextSibling(child);
         }
     }
+    if (nodesMap == &m_documentNodeToIdMap)
+        m_cachedChildCount.remove(id);
 }
 
 Node* InspectorDOMAgent::assertNode(ErrorString* errorString, int nodeId)
@@ -518,6 +520,7 @@ void InspectorDOMAgent::discardFrontendBindings()
     m_idToNode.clear();
     releaseDanglingNodes();
     m_childrenRequested.clear();
+    m_cachedChildCount.clear();
     if (m_revalidateStyleAttrTask)
         m_revalidateStyleAttrTask->reset();
 }
@@ -1569,6 +1572,8 @@ PassRefPtr<TypeBuilder::DOM::Node> InspectorDOMAgent::buildObjectForNode(Node* n
     if (node->isContainerNode()) {
         int nodeCount = innerChildNodeCount(node);
         value->setChildNodeCount(nodeCount);
+        if (nodesMap == &m_documentNodeToIdMap)
+            m_cachedChildCount.set(id, nodeCount);
         if (forcePushChildren && !depth)
             depth = 1;
         RefPtr<TypeBuilder::Array<TypeBuilder::DOM::Node> > children = buildArrayForContainerChildren(node, depth, nodesMap);
@@ -1783,15 +1788,16 @@ void InspectorDOMAgent::didInsertDOMNode(Node* node)
     ContainerNode* parent = node->parentNode();
     if (!parent)
         return;
-
     int parentId = m_documentNodeToIdMap.get(parent);
     // Return if parent is not mapped yet.
     if (!parentId)
         return;
 
     if (!m_childrenRequested.contains(parentId)) {
-        // No children are mapped yet -> only notify on changes of hasChildren.
-        m_frontend->childNodeCountUpdated(parentId, innerChildNodeCount(parent));
+        // No children are mapped yet -> only notify on changes of child count.
+        int count = m_cachedChildCount.get(parentId) + 1;
+        m_cachedChildCount.set(parentId, count);
+        m_frontend->childNodeCountUpdated(parentId, count);
     } else {
         // Children have been requested -> return value of a new child.
         Node* prevSibling = innerPreviousSibling(node);
@@ -1815,11 +1821,13 @@ void InspectorDOMAgent::willRemoveDOMNode(Node* node)
     int parentId = m_documentNodeToIdMap.get(parent);
 
     if (!m_childrenRequested.contains(parentId)) {
-        // No children are mapped yet -> only notify on changes of hasChildren.
-        if (innerChildNodeCount(parent) == 1)
-            m_frontend->childNodeCountUpdated(parentId, 0);
-    } else
+        // No children are mapped yet -> only notify on changes of child count.
+        int count = m_cachedChildCount.get(parentId) - 1;
+        m_cachedChildCount.set(parentId, count);
+        m_frontend->childNodeCountUpdated(parentId, count);
+    } else {
         m_frontend->childNodeRemoved(parentId, m_documentNodeToIdMap.get(node));
+    }
     unbind(node, &m_documentNodeToIdMap);
 }
 

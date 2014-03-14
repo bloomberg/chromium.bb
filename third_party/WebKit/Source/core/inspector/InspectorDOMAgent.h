@@ -259,6 +259,7 @@ private:
     HashMap<int, Node*> m_idToNode;
     HashMap<int, NodeToIdMap*> m_idToNodesMap;
     HashSet<int> m_childrenRequested;
+    HashMap<int, int> m_cachedChildCount;
     typedef HashMap<BackendNodeId, std::pair<Node*, String> > BackendIdToNodeMap;
     BackendIdToNodeMap m_backendIdToNode;
     int m_lastNodeId;
