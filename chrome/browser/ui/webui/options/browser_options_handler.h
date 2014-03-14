@@ -275,6 +275,9 @@ class BrowserOptionsHandler
   // Callback for "requestHotwordAvailable" message.
   void HandleRequestHotwordAvailable(const base::ListValue* args);
 
+  // Callback for "requestHotwordSetupRetry" message.
+  void HandleRequestHotwordSetupRetry(const base::ListValue* args);
+
 #if defined(OS_CHROMEOS)
   // Opens the wallpaper manager component extension.
   void HandleOpenWallpaperManager(const base::ListValue* args);

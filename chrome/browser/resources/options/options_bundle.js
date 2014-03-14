@@ -9,6 +9,7 @@
 <include src="controlled_setting.js"></include>
 <include src="deletable_item_list.js"></include>
 <include src="editable_text_field.js"></include>
+<include src="hotword_search_setting_indicator.js"></include>
 <include src="inline_editable_list.js"></include>
 <include src="options_page.js"></include>
 <include src="pref_ui.js"></include>

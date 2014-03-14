@@ -7031,6 +7031,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_HOTWORD_CONFIRM_BUBBLE_DISABLE" desc="The button text that disallows the hotword voice search trigger.">
         Cancel
       </message>
+      <message name="IDS_HOTWORD_GENERIC_ERROR_MESSAGE" desc="The default error message text when no additional details are known.">
+        There was a problem downloading this feature.
+      </message>
+      <message name="IDS_HOTWORD_RETRY_DOWNLOAD_BUTTON" desc="The button text that retries a failed hotword setup in the settings page.">
+        Retry
+      </message>
 
       <!-- Conflicts page -->
       <message name="IDS_CONFLICTS_CHECK_PAGE_TABLE_TITLE_SUFFIX_ONE" desc="What gets appended after the page title if no conflicts were found.">

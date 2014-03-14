@@ -249,6 +249,7 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
     { "hotwordConfirmEnable", IDS_HOTWORD_CONFIRM_BUBBLE_ENABLE },
     { "hotwordConfirmDisable", IDS_HOTWORD_CONFIRM_BUBBLE_DISABLE },
     { "hotwordConfirmMessage", IDS_HOTWORD_SEARCH_PREF_DESCRIPTION },
+    { "hotwordRetryDownloadButton", IDS_HOTWORD_RETRY_DOWNLOAD_BUTTON },
     { "importData", IDS_OPTIONS_IMPORT_DATA_BUTTON },
     { "improveBrowsingExperience", IDS_OPTIONS_IMPROVE_BROWSING_EXPERIENCE },
     { "languageAndSpellCheckSettingsButton",
@@ -702,6 +703,11 @@ void BrowserOptionsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "requestHotwordAvailable",
       base::Bind(&BrowserOptionsHandler::HandleRequestHotwordAvailable,
+                 base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback(
+      "requestHotwordSetupRetry",
+      base::Bind(&BrowserOptionsHandler::HandleRequestHotwordSetupRetry,
                  base::Unretained(this)));
 }
 
@@ -1561,10 +1567,23 @@ void BrowserOptionsHandler::HandleRequestHotwordAvailable(
     const base::ListValue* args) {
   Profile* profile = Profile::FromWebUI(web_ui());
   std::string group = base::FieldTrialList::FindFullName("VoiceTrigger");
-  if (group != "" && group != "Disabled" &&
-      HotwordServiceFactory::IsServiceAvailable(profile)) {
-    web_ui()->CallJavascriptFunction("BrowserOptions.showHotwordSection");
+  if (group != "" && group != "Disabled") {
+    if (HotwordServiceFactory::IsServiceAvailable(profile)) {
+      web_ui()->CallJavascriptFunction("BrowserOptions.showHotwordSection");
+    } else if (HotwordServiceFactory::IsHotwordAllowed(profile)) {
+      base::StringValue error_message(l10n_util::GetStringUTF16(
+          IDS_HOTWORD_GENERIC_ERROR_MESSAGE));
+      web_ui()->CallJavascriptFunction("BrowserOptions.showHotwordSection",
+                                       error_message);
+    }
   }
+}
+
+void BrowserOptionsHandler::HandleRequestHotwordSetupRetry(
+    const base::ListValue* args) {
+  // TODO(joshtrask): invoke BrowserOptions.showHotwordSection again, passing
+  // the new error message if any.
+  HotwordServiceFactory::RetryHotwordExtension(Profile::FromWebUI(web_ui()));
 }
 
 #if defined(OS_CHROMEOS)
