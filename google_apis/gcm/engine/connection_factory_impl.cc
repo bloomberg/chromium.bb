@@ -48,13 +48,19 @@ ConnectionFactoryImpl::ConnectionFactoryImpl(
   : mcs_endpoint_(mcs_endpoint),
     backoff_policy_(backoff_policy),
     network_session_(network_session),
-    net_log_(net_log),
+    bound_net_log_(
+        net::BoundNetLog::Make(net_log, net::NetLog::SOURCE_SOCKET)),
+    pac_request_(NULL),
     connecting_(false),
     logging_in_(false),
     weak_ptr_factory_(this) {
 }
 
 ConnectionFactoryImpl::~ConnectionFactoryImpl() {
+  if (pac_request_) {
+    network_session_->proxy_service()->CancelPacRequest(pac_request_);
+    pac_request_ = NULL;
+  }
 }
 
 void ConnectionFactoryImpl::Initialize(
@@ -128,12 +134,7 @@ void ConnectionFactoryImpl::SignalConnectionReset(
     // connection.
   }
 
-  if (connection_handler_)
-    connection_handler_->Reset();
-
-  if (socket_handle_.socket() && socket_handle_.socket()->IsConnected())
-    socket_handle_.socket()->Disconnect();
-  socket_handle_.Reset();
+  CloseSocket();
 
   if (logging_in_) {
     // Failures prior to login completion just reuse the existing backoff entry.
@@ -147,7 +148,7 @@ void ConnectionFactoryImpl::SignalConnectionReset(
     backoff_entry_->InformOfRequest(false);
   } else {
     // We shouldn't be in backoff in thise case.
-    DCHECK(backoff_entry_->CanDiscard());
+    DCHECK_EQ(0, backoff_entry_->failure_count());
   }
 
   // At this point the last login time has been consumed or deemed irrelevant,
@@ -187,25 +188,15 @@ void ConnectionFactoryImpl::ConnectImpl() {
   DCHECK(connecting_);
   DCHECK(!socket_handle_.socket());
 
-  // TODO(zea): resolve proxies.
-  net::ProxyInfo proxy_info;
-  proxy_info.UseDirect();
-  net::SSLConfig ssl_config;
-  network_session_->ssl_config_service()->GetSSLConfig(&ssl_config);
-
-  int status = net::InitSocketHandleForTlsConnect(
-      net::HostPortPair::FromURL(mcs_endpoint_),
-      network_session_.get(),
-      proxy_info,
-      ssl_config,
-      ssl_config,
-      net::kPrivacyModeDisabled,
-      net::BoundNetLog::Make(net_log_, net::NetLog::SOURCE_SOCKET),
-      &socket_handle_,
-      base::Bind(&ConnectionFactoryImpl::OnConnectDone,
-                 weak_ptr_factory_.GetWeakPtr()));
+  int status = network_session_->proxy_service()->ResolveProxy(
+      mcs_endpoint_,
+      &proxy_info_,
+      base::Bind(&ConnectionFactoryImpl::OnProxyResolveDone,
+                 weak_ptr_factory_.GetWeakPtr()),
+      &pac_request_,
+      bound_net_log_);
   if (status != net::ERR_IO_PENDING)
-    OnConnectDone(status);
+    OnProxyResolveDone(status);
 }
 
 void ConnectionFactoryImpl::InitHandler() {
@@ -229,15 +220,26 @@ base::TimeTicks ConnectionFactoryImpl::NowTicks() {
 }
 
 void ConnectionFactoryImpl::OnConnectDone(int result) {
-  UMA_HISTOGRAM_BOOLEAN("GCM.ConnectionSuccessRate", (result == net::OK));
-
   if (result != net::OK) {
+    // If the connection fails, try another proxy.
+    result = ReconsiderProxyAfterError(result);
+    // ReconsiderProxyAfterError either returns an error (in which case it is
+    // not reconsidering a proxy) or returns ERR_IO_PENDING if it is considering
+    // another proxy.
+    DCHECK_NE(result, net::OK);
+    if (result == net::ERR_IO_PENDING)
+      return;  // Proxy reconsideration pending. Return.
     LOG(ERROR) << "Failed to connect to MCS endpoint with error " << result;
+    UMA_HISTOGRAM_BOOLEAN("GCM.ConnectionSuccessRate", false);
+    CloseSocket();
     backoff_entry_->InformOfRequest(false);
     UMA_HISTOGRAM_SPARSE_SLOWLY("GCM.ConnectionFailureErrorCode", result);
     Connect();
     return;
   }
+
+  UMA_HISTOGRAM_BOOLEAN("GCM.ConnectionSuccessRate", true);
+  ReportSuccessfulProxyConnection();
 
   connecting_ = false;
   logging_in_ = true;
@@ -258,10 +260,163 @@ void ConnectionFactoryImpl::ConnectionHandlerCallback(int result) {
   // Handshake complete, reset backoff. If the login failed with an error,
   // the client should invoke SignalConnectionReset(LOGIN_FAILURE), which will
   // restore the previous backoff.
+  DVLOG(1) << "Handshake complete.";
   last_login_time_ = NowTicks();
   previous_backoff_.swap(backoff_entry_);
   backoff_entry_->Reset();
   logging_in_ = false;
+}
+
+// This has largely been copied from
+// HttpStreamFactoryImpl::Job::DoResolveProxyComplete. This should be
+// refactored into some common place.
+void ConnectionFactoryImpl::OnProxyResolveDone(int status) {
+  pac_request_ = NULL;
+  DVLOG(1) << "Proxy resolution status: " << status;
+
+  DCHECK_NE(status, net::ERR_IO_PENDING);
+  if (status == net::OK) {
+    // Remove unsupported proxies from the list.
+    proxy_info_.RemoveProxiesWithoutScheme(
+        net::ProxyServer::SCHEME_DIRECT |
+        net::ProxyServer::SCHEME_HTTP | net::ProxyServer::SCHEME_HTTPS |
+        net::ProxyServer::SCHEME_SOCKS4 | net::ProxyServer::SCHEME_SOCKS5);
+
+    if (proxy_info_.is_empty()) {
+      // No proxies/direct to choose from. This happens when we don't support
+      // any of the proxies in the returned list.
+      status = net::ERR_NO_SUPPORTED_PROXIES;
+    }
+  }
+
+  if (status != net::OK) {
+    // Failed to resolve proxy. Retry later.
+    OnConnectDone(status);
+    return;
+  }
+
+  DVLOG(1) << "Resolved proxy with PAC:" << proxy_info_.ToPacString();
+
+  net::SSLConfig ssl_config;
+  network_session_->ssl_config_service()->GetSSLConfig(&ssl_config);
+  status = net::InitSocketHandleForTlsConnect(
+      net::HostPortPair::FromURL(mcs_endpoint_),
+      network_session_.get(),
+      proxy_info_,
+      ssl_config,
+      ssl_config,
+      net::kPrivacyModeDisabled,
+      bound_net_log_,
+      &socket_handle_,
+      base::Bind(&ConnectionFactoryImpl::OnConnectDone,
+                 weak_ptr_factory_.GetWeakPtr()));
+  if (status != net::ERR_IO_PENDING)
+    OnConnectDone(status);
+}
+
+// This has largely been copied from
+// HttpStreamFactoryImpl::Job::ReconsiderProxyAfterError. This should be
+// refactored into some common place.
+// This method reconsiders the proxy on certain errors. If it does reconsider
+// a proxy it always returns ERR_IO_PENDING and posts a call to
+// OnProxyResolveDone with the result of the reconsideration.
+int ConnectionFactoryImpl::ReconsiderProxyAfterError(int error) {
+  DCHECK(!pac_request_);
+  DCHECK_NE(error, net::OK);
+  DCHECK_NE(error, net::ERR_IO_PENDING);
+  // A failure to resolve the hostname or any error related to establishing a
+  // TCP connection could be grounds for trying a new proxy configuration.
+  //
+  // Why do this when a hostname cannot be resolved?  Some URLs only make sense
+  // to proxy servers.  The hostname in those URLs might fail to resolve if we
+  // are still using a non-proxy config.  We need to check if a proxy config
+  // now exists that corresponds to a proxy server that could load the URL.
+  //
+  switch (error) {
+    case net::ERR_PROXY_CONNECTION_FAILED:
+    case net::ERR_NAME_NOT_RESOLVED:
+    case net::ERR_INTERNET_DISCONNECTED:
+    case net::ERR_ADDRESS_UNREACHABLE:
+    case net::ERR_CONNECTION_CLOSED:
+    case net::ERR_CONNECTION_TIMED_OUT:
+    case net::ERR_CONNECTION_RESET:
+    case net::ERR_CONNECTION_REFUSED:
+    case net::ERR_CONNECTION_ABORTED:
+    case net::ERR_TIMED_OUT:
+    case net::ERR_TUNNEL_CONNECTION_FAILED:
+    case net::ERR_SOCKS_CONNECTION_FAILED:
+    // This can happen in the case of trying to talk to a proxy using SSL, and
+    // ending up talking to a captive portal that supports SSL instead.
+    case net::ERR_PROXY_CERTIFICATE_INVALID:
+    // This can happen when trying to talk SSL to a non-SSL server (Like a
+    // captive portal).
+    case net::ERR_SSL_PROTOCOL_ERROR:
+      break;
+    case net::ERR_SOCKS_CONNECTION_HOST_UNREACHABLE:
+      // Remap the SOCKS-specific "host unreachable" error to a more
+      // generic error code (this way consumers like the link doctor
+      // know to substitute their error page).
+      //
+      // Note that if the host resolving was done by the SOCKS5 proxy, we can't
+      // differentiate between a proxy-side "host not found" versus a proxy-side
+      // "address unreachable" error, and will report both of these failures as
+      // ERR_ADDRESS_UNREACHABLE.
+      return net::ERR_ADDRESS_UNREACHABLE;
+    default:
+      return error;
+  }
+
+  net::SSLConfig ssl_config;
+  network_session_->ssl_config_service()->GetSSLConfig(&ssl_config);
+  if (proxy_info_.is_https() && ssl_config.send_client_cert) {
+    network_session_->ssl_client_auth_cache()->Remove(
+        proxy_info_.proxy_server().host_port_pair());
+  }
+
+  int status = network_session_->proxy_service()->ReconsiderProxyAfterError(
+      mcs_endpoint_, &proxy_info_,
+      base::Bind(&ConnectionFactoryImpl::OnProxyResolveDone,
+                 weak_ptr_factory_.GetWeakPtr()),
+      &pac_request_,
+      bound_net_log_);
+  if (status == net::OK || status == net::ERR_IO_PENDING) {
+    CloseSocket();
+  } else {
+    // If ReconsiderProxyAfterError() failed synchronously, it means
+    // there was nothing left to fall-back to, so fail the transaction
+    // with the last connection error we got.
+    status = error;
+  }
+
+  // We either have new proxy info or there was an error in falling back.
+  // In both cases we want to post OnProxyResolveDone (in the error case
+  // we might still want to fall back a direct connection).
+  if (status != net::ERR_IO_PENDING) {
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&ConnectionFactoryImpl::OnProxyResolveDone,
+                   weak_ptr_factory_.GetWeakPtr(), status));
+    // Since we potentially have another try to go (trying the direct connect)
+    // set the return code code to ERR_IO_PENDING.
+    status = net::ERR_IO_PENDING;
+  }
+  return status;
+}
+
+void ConnectionFactoryImpl::ReportSuccessfulProxyConnection() {
+  if (network_session_ && network_session_->proxy_service())
+    network_session_->proxy_service()->ReportSuccess(proxy_info_);
+}
+
+void ConnectionFactoryImpl::CloseSocket() {
+  // The connection handler needs to be reset, else it'll attempt to keep using
+  // the destroyed socket.
+  if (connection_handler_)
+    connection_handler_->Reset();
+
+  if (socket_handle_.socket() && socket_handle_.socket()->IsConnected())
+    socket_handle_.socket()->Disconnect();
+  socket_handle_.Reset();
 }
 
 }  // namespace gcm

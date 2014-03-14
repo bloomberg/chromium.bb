@@ -12,6 +12,8 @@
 #include "google_apis/gcm/protocol/mcs.pb.h"
 #include "net/base/backoff_entry.h"
 #include "net/base/network_change_notifier.h"
+#include "net/proxy/proxy_info.h"
+#include "net/proxy/proxy_service.h"
 #include "net/socket/client_socket_handle.h"
 #include "url/gurl.h"
 
@@ -79,6 +81,14 @@ class GCM_EXPORT ConnectionFactoryImpl :
   void ConnectionHandlerCallback(int result);
 
  private:
+  // Proxy resolution and connection functions.
+  void OnProxyResolveDone(int status);
+  void OnProxyConnectDone(int status);
+  int ReconsiderProxyAfterError(int error);
+  void ReportSuccessfulProxyConnection();
+
+  void CloseSocket();
+
   // The MCS endpoint to make connections to.
   const GURL mcs_endpoint_;
 
@@ -89,7 +99,11 @@ class GCM_EXPORT ConnectionFactoryImpl :
   // Network session for creating new connections.
   const scoped_refptr<net::HttpNetworkSession> network_session_;
   // Net log to use in connection attempts.
-  net::NetLog* const net_log_;
+  net::BoundNetLog bound_net_log_;
+  // The current PAC request, if one exists. Owned by the proxy service.
+  net::ProxyService::PacRequest* pac_request_;
+  // The current proxy info.
+  net::ProxyInfo proxy_info_;
   // The handle to the socket for the current connection, if one exists.
   net::ClientSocketHandle socket_handle_;
   // Current backoff entry.
