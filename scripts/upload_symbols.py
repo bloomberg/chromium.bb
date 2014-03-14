@@ -484,6 +484,11 @@ def WriteQueueToFile(listing, queue, relpath=None):
     relpath: If set, write out paths relative to this one.
   """
   if not listing:
+    # Still drain the queue so we make sure the producer has finished
+    # before we return.  Otherwise, the queue might get destroyed too
+    # quickly which will trigger a traceback in the producer.
+    while queue.get() is not None:
+      continue
     return
 
   with cros_build_lib.Open(listing, 'wb+') as f:
