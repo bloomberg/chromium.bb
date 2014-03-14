@@ -174,7 +174,6 @@ crbug.com/330083 w3c/web-platform-tests/shadow-dom/events/event-dispatch/test-00
 crbug.com/330083 w3c/web-platform-tests/shadow-dom/events/event-retargeting/test-002.html [ Failure ]
 crbug.com/330083 w3c/web-platform-tests/shadow-dom/events/event-retargeting/test-004.html [ Failure ]
 crbug.com/330083 w3c/web-platform-tests/shadow-dom/events/events-that-are-always-stopped/test-001.html [ Failure ]
-crbug.com/330083 w3c/web-platform-tests/shadow-dom/events/retargeting-focus-events/test-002.html [ Failure ]
 crbug.com/330083 w3c/web-platform-tests/shadow-dom/events/retargeting-relatedtarget/test-003.html [ Failure ]
 crbug.com/330083 w3c/web-platform-tests/shadow-dom/html-elements-and-their-shadow-trees/test-001.html [ Failure ]
 crbug.com/330083 w3c/web-platform-tests/shadow-dom/html-elements-and-their-shadow-trees/test-002.html [ Failure ]
@@ -199,8 +198,6 @@ crbug.com/330083 w3c/web-platform-tests/shadow-dom/styles/test-011.html [ Failur
 crbug.com/330083 w3c/web-platform-tests/shadow-dom/user-interaction/focus-navigation/test-002.html [ Failure ]
 crbug.com/330083 w3c/web-platform-tests/shadow-dom/user-interaction/focus-navigation/test-003.html [ Failure ]
 crbug.com/330083 w3c/web-platform-tests/shadow-dom/user-interaction/focus-navigation/test-004.html [ Failure ]
-crbug.com/330083 w3c/web-platform-tests/shadow-dom/shadow-trees/lower-boundary-encapsulation/distribution-001.html [ ImageOnlyFailure ]
-crbug.com/330083 w3c/web-platform-tests/shadow-dom/shadow-trees/lower-boundary-encapsulation/distribution-002.html [ ImageOnlyFailure ]
 crbug.com/337573 w3c/web-platform-tests/shadow-dom/shadow-trees/upper-boundary-encapsulation/test-009.html [ Failure ]
 
 # Untriaged Aura-specific failure.
@@ -793,8 +790,6 @@ crbug.com/328234 fast/css/mask-missing-image-crash.html [ Pass Failure ]
 crbug.com/331576 [ Mac ] fullscreen/parent-flow-inline-with-block-child.html [ Pass ImageOnlyFailure Crash ]
 
 crbug.com/326524 virtual/threaded/compositing/visibility/visibility-simple-video-layer.html [ Pass ImageOnlyFailure Timeout ]
-
-crbug.com/328749 virtual/threaded/transitions/position-background-transition.html [ ImageOnlyFailure ]
 
 # ASSERT fails in debug since editing attempts to put a Position on a pseudo element.
 crbug.com/342574 [ Debug ] fast/css-generated-content/crash-selection-editing-removes-pseudo.html [ Crash ]
