@@ -2504,7 +2504,7 @@ libs-support-native() {
 
 libs-support-unsandboxed() {
   if ${BUILD_PLATFORM_LINUX}; then
-    local arch=linux-x86-32
+    local arch=x86-32-linux
     StepBanner "LIBS-SUPPORT (${arch})" "Install unsandboxed_irt.o"
     local destdir="${INSTALL_LIB_NATIVE}"${arch}
     mkdir -p ${destdir}

@@ -573,7 +573,7 @@ if __name__ == '__main__':
       packages.update(pnacl_targetlibs.BitcodeLibs(hosts[0], bias))
     for arch in ALL_ARCHES:
       packages.update(pnacl_targetlibs.NativeLibs(hosts[0], arch))
-    packages.update(pnacl_targetlibs.NativeLibsUnsandboxed('linux-x86-32'))
+    packages.update(pnacl_targetlibs.NativeLibsUnsandboxed('x86-32-linux'))
   packages.update(Metadata())
 
   tb = toolchain_main.PackageBuilder(packages,

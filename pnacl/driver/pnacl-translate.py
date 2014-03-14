@@ -95,7 +95,7 @@ EXTRA_ENV = {
   'TRIPLE_X8632': 'i686-none-nacl-gnu',
   'TRIPLE_X8664': 'x86_64-none-nacl-gnu',
   'TRIPLE_MIPS32': 'mipsel-none-nacl-gnu',
-  'TRIPLE_LINUX_X8632': 'i686-linux-gnu',
+  'TRIPLE_X8632_LINUX': 'i686-linux-gnu',
 
   # BE CAREFUL: anything added here can introduce skew between
   # the pnacl-translate commandline tool and the in-browser translator.
@@ -121,7 +121,7 @@ EXTRA_ENV = {
   # When linking against Linux glibc, don't use %gs:0 to read the
   # thread pointer because that's not compatible with glibc's use of
   # %gs.
-  'LLC_FLAGS_LINUX_X8632' : '-mtls-use-call',
+  'LLC_FLAGS_X8632_LINUX' : '-mtls-use-call',
 
   # LLC flags which set the target and output type.
   'LLC_FLAGS_TARGET' : '-mtriple=${TRIPLE} -filetype=${outfiletype}',
@@ -147,7 +147,7 @@ EXTRA_ENV = {
   'LLC_FLAGS_FAST_X8664': '-O0 ',
   'LLC_FLAGS_FAST_ARM':   '-O0 ',
   'LLC_FLAGS_FAST_MIPS32': '-fast-isel',
-  'LLC_FLAGS_FAST_LINUX_X8632': '-O0',
+  'LLC_FLAGS_FAST_X8632_LINUX': '-O0',
 
   'LLC_FLAGS': '${LLC_FLAGS_TARGET} ${LLC_FLAGS_COMMON} ${LLC_FLAGS_%ARCH%} ' +
                '${LLC_FLAGS_EXTRA}',
@@ -163,7 +163,7 @@ EXTRA_ENV = {
   'LLC_MCPU_X8632'  : 'pentium4',
   'LLC_MCPU_X8664'  : 'core2',
   'LLC_MCPU_MIPS32' : 'mips32r2',
-  'LLC_MCPU_LINUX_X8632' : '${LLC_MCPU_X8632}',
+  'LLC_MCPU_X8632_LINUX' : '${LLC_MCPU_X8632}',
 
   # Note: this is only used in the unsandboxed case
   'RUN_LLC'       : '${LLVM_PNACL_LLC} ${LLC_FLAGS} ${LLC_MCPU} '
@@ -284,7 +284,7 @@ def main(argv):
   elif int(env.getone('SPLIT_MODULE')) < 1:
     Log.Fatal('Value given for -split-module must be > 0')
   if (env.getbool('ALLOW_LLVM_BITCODE_INPUT') or
-      env.getone('ARCH') == 'LINUX_X8632' or
+      env.getone('ARCH') == 'X8632_LINUX' or
       env.getbool('USE_EMULATOR')):
     # When llvm input is allowed, the pexe may not be ABI-stable, so do not
     # split it. For now also do not support threading non-SFI baremetal mode.
@@ -343,7 +343,7 @@ def main(argv):
       TempFiles.add(filename)
       env.append('INPUTS', filename)
 
-  if env.getone('ARCH') == 'LINUX_X8632':
+  if env.getone('ARCH') == 'X8632_LINUX':
     RunHostLD(ofile, output)
   else:
     RunLD(ofile, output)
@@ -379,7 +379,7 @@ def RunLD(infile, outfile):
 
 def RunHostLD(infile, outfile):
   driver_tools.Run(['objcopy', '--redefine-sym', '_start=_user_start', infile])
-  lib_dir = env.getone('BASE_LIB_NATIVE') + 'linux-x86-32'
+  lib_dir = env.getone('BASE_LIB_NATIVE') + 'x86-32-linux'
   driver_tools.Run(['gcc', '-m32', infile,
                     os.path.join(lib_dir, 'unsandboxed_irt.o'),
                     '-lpthread',
