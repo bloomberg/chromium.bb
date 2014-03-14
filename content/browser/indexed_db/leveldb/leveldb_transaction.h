@@ -135,16 +135,22 @@ class CONTENT_EXPORT LevelDBTransaction
   std::set<TransactionIterator*> iterators_;
 };
 
-class LevelDBWriteOnlyTransaction {
+// Reads go straight to the database, ignoring any writes cached in
+// write_batch_, and writes are write-through, without consolidation.
+class LevelDBDirectTransaction {
  public:
-  static scoped_ptr<LevelDBWriteOnlyTransaction> Create(LevelDBDatabase* db);
+  static scoped_ptr<LevelDBDirectTransaction> Create(LevelDBDatabase* db);
 
-  ~LevelDBWriteOnlyTransaction();
+  ~LevelDBDirectTransaction();
+  void Put(const base::StringPiece& key, const std::string* value);
+  leveldb::Status Get(const base::StringPiece& key,
+                      std::string* value,
+                      bool* found);
   void Remove(const base::StringPiece& key);
   leveldb::Status Commit();
 
  private:
-  explicit LevelDBWriteOnlyTransaction(LevelDBDatabase* db);
+  explicit LevelDBDirectTransaction(LevelDBDatabase* db);
 
   LevelDBDatabase* db_;
   scoped_ptr<LevelDBWriteBatch> write_batch_;

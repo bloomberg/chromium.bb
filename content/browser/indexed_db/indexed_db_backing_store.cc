@@ -834,8 +834,8 @@ static void DeleteRange(LevelDBTransaction* transaction,
 leveldb::Status IndexedDBBackingStore::DeleteDatabase(
     const base::string16& name) {
   IDB_TRACE("IndexedDBBackingStore::DeleteDatabase");
-  scoped_ptr<LevelDBWriteOnlyTransaction> transaction =
-      LevelDBWriteOnlyTransaction::Create(db_.get());
+  scoped_ptr<LevelDBDirectTransaction> transaction =
+      LevelDBDirectTransaction::Create(db_.get());
 
   IndexedDBDatabaseMetadata metadata;
   bool success = false;
