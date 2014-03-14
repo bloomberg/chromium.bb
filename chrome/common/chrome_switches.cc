@@ -196,9 +196,6 @@ const char kComponentUpdater[]              = "component-updater";
 // conflicts and warn the user.
 const char kConflictingModulesCheck[]       = "conflicting-modules-check";
 
-// Toggles a new version of the content settings dialog in options.
-const char kContentSettings2[]              = "new-content-settings";
-
 // Comma-separated list of BrowserThreads that cause browser process to crash
 // if the given browser thread is not responsive. UI,IO,DB,FILE,CACHE are the
 // list of BrowserThreads that are supported.
@@ -746,9 +743,6 @@ const char kEnableStackedTabStrip[]         = "enable-stacked-tab-strip";
 // Enables an experimental hosted app experience.
 const char kEnableStreamlinedHostedApps[]   = "enable-streamlined-hosted-apps";
 
-// Enables experimental suggestions pane in New Tab page.
-const char kEnableSuggestionsTabPage[]      = "enable-suggestions-ntp";
-
 // Enables synced notifications.
 const char kEnableSyncSyncedNotifications[] =
     "enable-sync-synced-notifications";
@@ -1066,9 +1060,6 @@ const char kOnlyBlockSettingThirdPartyCookies[] =
 
 // Launches URL in new browser window.
 const char kOpenInNewWindow[]               = "new-window";
-
-// Simulates an organic Chrome install.
-const char kOrganicInstall[]                = "organic";
 
 // Force use of QUIC for requests to the specified origin.
 const char kOriginToForceQuicOn[]           = "origin-to-force-quic-on";

@@ -243,10 +243,6 @@ bool IsGoogleSearchUrl(const GURL& url) {
 }
 
 bool IsOrganic(const std::string& brand) {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kOrganicInstall))
-    return true;
-
 #if defined(OS_MACOSX)
   if (brand.empty()) {
     // An empty brand string on Mac is used for channels other than stable,
@@ -276,11 +272,6 @@ bool IsOrganic(const std::string& brand) {
 }
 
 bool IsOrganicFirstRun(const std::string& brand) {
-  // Used for testing, to force search engine selector to appear.
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kOrganicInstall))
-    return true;
-
 #if defined(OS_MACOSX)
   if (brand.empty()) {
     // An empty brand string on Mac is used for channels other than stable,

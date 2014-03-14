@@ -908,13 +908,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kSilentDebuggerExtensionAPI)
   },
   {
-    "enable-suggestions-ntp",
-    IDS_FLAGS_NTP_SUGGESTIONS_PAGE_NAME,
-    IDS_FLAGS_NTP_SUGGESTIONS_PAGE_DESCRIPTION,
-    kOsDesktop,
-    SINGLE_VALUE_TYPE(switches::kEnableSuggestionsTabPage)
-  },
-  {
     "spellcheck-autocorrect",
     IDS_FLAGS_SPELLCHECK_AUTOCORRECT,
     IDS_FLAGS_SPELLCHECK_AUTOCORRECT_DESCRIPTION,

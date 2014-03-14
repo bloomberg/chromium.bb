@@ -25,11 +25,9 @@ namespace {
 
 const char kProdWalletServiceUrl[] = "https://wallet.google.com/";
 
-// TODO(ahutter): Remove this once production is ready.
 const char kSandboxWalletServiceUrl[] =
     "https://wallet-web.sandbox.google.com/";
 
-// TODO(ahutter): Remove this once production is ready.
 const char kSandboxWalletSecureServiceUrl[] =
     "https://wallet-web.sandbox.google.com/";
 
@@ -91,7 +89,6 @@ GURL GetBaseSecureUrl() {
 
 GURL GetBaseEncryptedFrontendUrl(size_t user_index) {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  // TODO(ahutter): Stop checking these switches once we switch over to prod.
   GURL base_url = IsWalletProductionEnabled() ||
       command_line.HasSwitch(switches::kWalletServiceUrl) ?
           GetWalletHostUrl() : GetBaseSecureUrl();

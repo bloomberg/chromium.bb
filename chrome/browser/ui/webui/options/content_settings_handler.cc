@@ -439,8 +439,6 @@ void ContentSettingsHandler::GetLocalizedValues(
   RegisterTitle(localized_strings, "midi-sysex",
                 IDS_MIDI_SYSEX_TAB_LABEL);
 
-  localized_strings->SetBoolean("newContentSettings",
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kContentSettings2));
   localized_strings->SetString(
       "exceptionsLearnMoreUrl",
       google_util::StringAppendGoogleLocaleParam(
