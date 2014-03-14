@@ -1165,18 +1165,20 @@ scoped_ptr<ResourceHandler> ResourceDispatcherHostImpl::CreateResourceHandler(
     handler.reset(new SyncResourceHandler(request, sync_result, this));
   } else {
     handler.reset(new AsyncResourceHandler(request, this));
-    if (IsDetachableResourceType(request_data.resource_type)) {
-      handler.reset(new DetachableResourceHandler(
-          request,
-          base::TimeDelta::FromMilliseconds(kDefaultDetachableCancelDelayMs),
-          handler.Pass()));
-    }
   }
 
   // The RedirectToFileResourceHandler depends on being next in the chain.
   if (request_data.download_to_file) {
     handler.reset(
-        new RedirectToFileResourceHandler(handler.Pass(), request, this));
+        new RedirectToFileResourceHandler(handler.Pass(), request));
+  }
+
+  // Prefetches and <a ping> requests outlive their child process.
+  if (!sync_result && IsDetachableResourceType(request_data.resource_type)) {
+    handler.reset(new DetachableResourceHandler(
+        request,
+        base::TimeDelta::FromMilliseconds(kDefaultDetachableCancelDelayMs),
+        handler.Pass()));
   }
 
   // Install a CrossSiteResourceHandler for all main frame requests.  This will
@@ -1231,7 +1233,11 @@ void ResourceDispatcherHostImpl::OnDataDownloadedACK(int request_id) {
 }
 
 void ResourceDispatcherHostImpl::RegisterDownloadedTempFile(
-    int child_id, int request_id, ShareableFileReference* reference) {
+    int child_id, int request_id, const base::FilePath& file_path) {
+  scoped_refptr<ShareableFileReference> reference =
+      ShareableFileReference::Get(file_path);
+  DCHECK(reference);
+
   registered_temp_files_[child_id][request_id] = reference;
   ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadFile(
       child_id, reference->path());

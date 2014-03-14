@@ -418,6 +418,7 @@
         'browser/loader/resource_dispatcher_host_unittest.cc',
         'browser/loader/resource_loader_unittest.cc',
         'browser/loader/resource_scheduler_unittest.cc',
+        'browser/loader/temporary_file_stream_unittest.cc',
         'browser/loader/upload_data_stream_builder_unittest.cc',
         'browser/mach_broker_mac_unittest.cc',
         'browser/media/capture/audio_mirroring_manager_unittest.cc',
