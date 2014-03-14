@@ -507,8 +507,17 @@ void OmniboxEditModel::SetInputInProgress(bool in_progress) {
     controller_->GetToolbarModel()->set_url_replacement_enabled(true);
   }
 
-  if (chrome::GetOriginChipV2HideTrigger() ==
-      chrome::ORIGIN_CHIP_V2_HIDE_ON_USER_INPUT)
+  // The following code handles three cases:
+  // * For HIDE_ON_USER_INPUT, it hides the chip when user input begins.
+  // * For HIDE_ON_MOUSE_RELEASE, which only hides the chip on mouse release if
+  //   the omnibox is empty, it handles the "omnibox was not empty" case by
+  //   acting like HIDE_ON_USER_INPUT.  (If the omnibox was empty, it
+  //   effectively no-ops.)
+  // * For both hide behaviors, it allows the chip to be reshown once input
+  //   ends.  (The chip won't actually be re-shown until there's no pending
+  //   typed navigation; see OriginChipView::ShouldShow() and
+  //   OriginChipDecoration::ShouldShow().)
+  if (chrome::ShouldDisplayOriginChipV2())
     controller()->GetToolbarModel()->set_origin_chip_enabled(!in_progress);
 
   controller_->GetToolbarModel()->set_input_in_progress(in_progress);

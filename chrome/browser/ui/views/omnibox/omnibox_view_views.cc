@@ -227,16 +227,7 @@ void OmniboxViewViews::OnMouseReleased(const ui::MouseEvent& event) {
       SelectAll(true);
     }
 
-    // If we should hide the origin chip in response to mouse release, check
-    // first that only the left or only the right button was pressed prior to
-    // the release.  If multiple buttons were pressed, we don't want to hide the
-    // chip yet.  If only the middle mouse button was pressed, the Omnibox won't
-    // receive focus so we don't want to hide the chip in this case.
-    if (chrome::GetOriginChipV2HideTrigger() ==
-        chrome::ORIGIN_CHIP_V2_HIDE_ON_MOUSE_RELEASE) {
-      controller()->GetToolbarModel()->set_origin_chip_enabled(false);
-      controller()->OnChanged();
-    }
+    HandleOriginChipMouseRelease();
   }
   select_all_on_mouse_release_ = false;
 }
@@ -337,11 +328,9 @@ void OmniboxViewViews::OnGestureEvent(ui::GestureEvent* event) {
 }
 
 void OmniboxViewViews::AboutToRequestFocusFromTabTraversal(bool reverse) {
-  if (chrome::GetOriginChipV2HideTrigger() ==
-      chrome::ORIGIN_CHIP_V2_HIDE_ON_MOUSE_RELEASE) {
-    controller()->GetToolbarModel()->set_origin_chip_enabled(false);
-    controller()->OnChanged();
-  }
+  // Tabbing into the omnibox should affect the origin chip in the same way
+  // clicking it should.
+  HandleOriginChipMouseRelease();
 }
 
 bool OmniboxViewViews::SkipDefaultKeyEventProcessing(
@@ -417,18 +406,7 @@ void OmniboxViewViews::OnBlur() {
   // Tell the model to reset itself.
   model()->OnKillFocus();
 
-  // If user input is not in progress, re-enable the origin chip and URL
-  // replacement.  This addresses the case where the URL was shown by a call
-  // to ShowURL().  If the Omnibox achieved focus by other means, the calls to
-  // set_url_replacement_enabled, UpdatePermanentText and RevertAll are not
-  // required (a call to OnChanged would be sufficient) but do no harm.
-  if (chrome::ShouldDisplayOriginChipV2() &&
-      !model()->user_input_in_progress()) {
-    controller()->GetToolbarModel()->set_origin_chip_enabled(true);
-    controller()->GetToolbarModel()->set_url_replacement_enabled(true);
-    model()->UpdatePermanentText();
-    RevertAll();
-  }
+  OnDidKillFocus();
 
   // Make sure the beginning of the text is visible.
   SelectRange(gfx::Range(0));

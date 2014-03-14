@@ -788,11 +788,7 @@ void OmniboxViewMac::OnSetFocus(bool control_down) {
   model()->OnSetFocus(control_down);
   controller()->OnSetFocus();
 
-  if (chrome::GetOriginChipV2HideTrigger() ==
-      chrome::ORIGIN_CHIP_V2_HIDE_ON_MOUSE_RELEASE) {
-    controller()->GetToolbarModel()->set_origin_chip_enabled(false);
-    controller()->OnChanged();
-  }
+  HandleOriginChipMouseRelease();
 }
 
 void OmniboxViewMac::OnKillFocus() {
@@ -800,18 +796,7 @@ void OmniboxViewMac::OnKillFocus() {
   model()->OnWillKillFocus(NULL);
   model()->OnKillFocus();
 
-  // If user input is not in progress, re-enable the origin chip and URL
-  // replacement.  This addresses the case where the URL was shown by a call
-  // to ShowURL().  If the Omnibox achieved focus by other means, the calls to
-  // set_url_replacement_enabled, UpdatePermanentText and RevertAll are not
-  // required (a call to OnChanged would be sufficient) but do no harm.
-  if (chrome::ShouldDisplayOriginChipV2() &&
-      !model()->user_input_in_progress()) {
-    controller()->GetToolbarModel()->set_origin_chip_enabled(true);
-    controller()->GetToolbarModel()->set_url_replacement_enabled(true);
-    model()->UpdatePermanentText();
-    RevertAll();
-  }
+  OnDidKillFocus();
 }
 
 void OmniboxViewMac::OnMouseDown(NSInteger button_number) {

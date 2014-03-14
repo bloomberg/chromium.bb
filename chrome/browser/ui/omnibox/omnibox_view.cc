@@ -11,6 +11,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
+#include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -84,6 +85,32 @@ base::string16 OmniboxView::GetClipboardText() {
 }
 
 OmniboxView::~OmniboxView() {
+}
+
+void OmniboxView::HandleOriginChipMouseRelease() {
+  // HIDE_ON_MOUSE_RELEASE only hides if there isn't any current text in the
+  // Omnibox (e.g. search terms).
+  if ((chrome::GetOriginChipV2HideTrigger() ==
+       chrome::ORIGIN_CHIP_V2_HIDE_ON_MOUSE_RELEASE) &&
+      controller()->GetToolbarModel()->GetText().empty()) {
+    controller()->GetToolbarModel()->set_origin_chip_enabled(false);
+    controller()->OnChanged();
+  }
+}
+
+void OmniboxView::OnDidKillFocus() {
+  // If user input is not in progress, re-enable the origin chip and URL
+  // replacement.  This addresses the case where the URL was shown by a call
+  // to ShowURL().  If the Omnibox achieved focus by other means, the calls to
+  // set_url_replacement_enabled, UpdatePermanentText and RevertAll are not
+  // required (a call to OnChanged would be sufficient) but do no harm.
+  if (chrome::ShouldDisplayOriginChipV2() &&
+      !model()->user_input_in_progress()) {
+    controller()->GetToolbarModel()->set_origin_chip_enabled(true);
+    controller()->GetToolbarModel()->set_url_replacement_enabled(true);
+    model()->UpdatePermanentText();
+    RevertAll();
+  }
 }
 
 void OmniboxView::OpenMatch(const AutocompleteMatch& match,

@@ -44,6 +44,12 @@ class OmniboxView {
   CommandUpdater* command_updater() { return command_updater_; }
   const CommandUpdater* command_updater() const { return command_updater_; }
 
+  // Handle mouse release events concerning the origin chip.
+  void HandleOriginChipMouseRelease();
+
+  // Shared cross-platform focus handling.
+  void OnDidKillFocus();
+
   // For use when switching tabs, this saves the current state onto the tab so
   // that it can be restored during a later call to Update().
   virtual void SaveStateToTab(content::WebContents* tab) = 0;
