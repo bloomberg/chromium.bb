@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+            #test {
+                font-family: arial;
+            }
+            #test > div > span, #test > header > span {
+                display: inline-block;
+                width: 20ex;
+            }
+            #test > header {
+                font-weight: bold;
+                border-bottom: 1px solid black;
+            }
+        </style>
+    </head>
+    <body>
+        <section id="test">
+            <header><span>Assigned</span><span>Computed</span><span>Result</span></header>
+        </section>
+        <section>
+            <p>
+                Tests that all supported <code>font-stretch</code> values
+                are correctly parsed, recognized and returned from
+                <code>getComputedStyle</code>.
+            </p>
+            <p>
+                Also tests that a few invalid <code>font-stretch</code>
+                values are ignored as expected.
+            </p>
+        </section>
+        <script>
+            if (self.testRunner)
+                testRunner.dumpAsText();
+
+            function createElement(tagName, opt_style, opt_textContent)
+            {
+                var element = document.createElement(tagName);
+                element.style.cssText  = opt_style || '';
+                if (opt_textContent)
+                    element.appendChild(document.createTextNode(opt_textContent));
+                return element;
+            }
+            function testValues(containerElement, values, isValid)
+            {
+                
+                for (var value, i = 0; value = values[i]; i++) {
+                    var testElement = createElement('div');
+                    var style = 'font-stretch: ' + value + '; font-weight: bold;';
+                    testElement.appendChild(createElement('span', style, value));
+                    containerElement.appendChild(testElement);
+                    var style = window.getComputedStyle(testElement.firstChild);
+                    testElement.appendChild(createElement('span', undefined, style.fontStretch));
+                    var result;
+                    if (style.fontStretch == value && isValid)
+                        result = 'PASS';
+                    else if (style.fontStretch == 'normal' && !isValid)
+                        result = 'PASS';
+                    else 
+                        result = 'FAIL';
+                    testElement.appendChild(createElement('span', undefined, result));    
+                }
+            }
+            var stretchValues = [
+                'normal', 'ultra-condensed', 'extra-condensed',
+                'condensed', 'semi-condensed', 'semi-expanded',
+                'expanded', 'extra-expanded', 'ultra-expanded'
+            ];
+            var invalidValues = [
+                'bold', 'semi-normal', 'very-condensed',
+                'compact', 'foobar', '900'
+            ];
+            var containerElement = document.getElementById('test');
+            testValues(containerElement, stretchValues, true);
+            containerElement.appendChild(createElement('div', 'border-bottom: 1px solid black'));
+            testValues(containerElement, invalidValues, false);
+        </script>
+    </body>
+</html>

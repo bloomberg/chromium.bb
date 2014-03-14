@@ -62,6 +62,7 @@ public:
     void setWeight(FontWeight);
     void setWeightBolder();
     void setWeightLighter();
+    void setStretch(FontStretch);
 
     void setFontVariantLigaturesInitial();
     void setFontVariantLigaturesInherit(const FontDescription&);

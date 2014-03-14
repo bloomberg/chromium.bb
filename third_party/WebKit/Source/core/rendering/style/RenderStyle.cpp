@@ -1267,6 +1267,15 @@ void RenderStyle::setFontWeight(FontWeight weight)
     font().update(currentFontSelector);
 }
 
+void RenderStyle::setFontStretch(FontStretch stretch)
+{
+    FontSelector* currentFontSelector = font().fontSelector();
+    FontDescription desc(fontDescription());
+    desc.setStretch(stretch);
+    setFontDescription(desc);
+    font().update(currentFontSelector);
+}
+
 void RenderStyle::getShadowExtent(const ShadowList* shadowList, LayoutUnit &top, LayoutUnit &right, LayoutUnit &bottom, LayoutUnit &left) const
 {
     top = 0;

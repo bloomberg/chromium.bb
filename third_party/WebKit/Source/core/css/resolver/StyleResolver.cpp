@@ -1122,6 +1122,7 @@ static inline bool isValidCueStyleProperty(CSSPropertyID id)
     case CSSPropertyFont:
     case CSSPropertyFontFamily:
     case CSSPropertyFontSize:
+    case CSSPropertyFontStretch:
     case CSSPropertyFontStyle:
     case CSSPropertyFontVariant:
     case CSSPropertyFontWeight:
@@ -1159,7 +1160,7 @@ bool StyleResolver::isPropertyForPass(CSSPropertyID property)
     const CSSPropertyID firstHighPriorityProperty = CSSPropertyColor;
     const CSSPropertyID lastHighPriorityProperty = CSSPropertyLineHeight;
     COMPILE_ASSERT(lastAnimationProperty + 1 == firstHighPriorityProperty, CSS_color_is_first_high_priority_property);
-    COMPILE_ASSERT(CSSPropertyLineHeight == firstHighPriorityProperty + 17, CSS_line_height_is_end_of_high_prioity_property_range);
+    COMPILE_ASSERT(CSSPropertyLineHeight == firstHighPriorityProperty + 18, CSS_line_height_is_end_of_high_prioity_property_range);
     COMPILE_ASSERT(CSSPropertyZoom == lastHighPriorityProperty - 1, CSS_zoom_is_before_line_height);
     switch (pass) {
     case AnimationProperties:

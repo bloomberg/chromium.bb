@@ -1091,6 +1091,7 @@ public:
     bool setFontDescription(const FontDescription&);
     // Only used for blending font sizes when animating and for text autosizing.
     void setFontSize(float);
+    void setFontStretch(FontStretch);
     void setFontWeight(FontWeight);
 
     void setTextAutosizingMultiplier(float v)

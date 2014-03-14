@@ -1,0 +1,19 @@
+AssignedComputedResult
+normalnormalPASS
+ultra-condensedultra-condensedPASS
+extra-condensedextra-condensedPASS
+condensedcondensedPASS
+semi-condensedsemi-condensedPASS
+semi-expandedsemi-expandedPASS
+expandedexpandedPASS
+extra-expandedextra-expandedPASS
+ultra-expandedultra-expandedPASS
+boldnormalPASS
+semi-normalnormalPASS
+very-condensednormalPASS
+compactnormalPASS
+foobarnormalPASS
+900normalPASS
+Tests that all supported font-stretch values are correctly parsed, recognized and returned from getComputedStyle.
+
+Also tests that a few invalid font-stretch values are ignored as expected.
