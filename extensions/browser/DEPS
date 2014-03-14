@@ -20,7 +20,6 @@ include_rules = [
   "+chrome/browser/extensions/api/runtime/runtime_api.h",
   "+chrome/browser/extensions/extension_function_dispatcher.h",
   "+chrome/browser/extensions/extension_host.h",
-  "+chrome/browser/extensions/extension_service.h",
   "+chrome/browser/renderer_host/chrome_render_message_filter.h",
   "+chrome/common/extensions/api/sockets/sockets_manifest_data.h",
   "+chrome/common/extensions/features/feature_channel.h",

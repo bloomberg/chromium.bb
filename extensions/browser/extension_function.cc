@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "base/metrics/sparse_histogram.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/renderer_host/chrome_render_message_filter.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
