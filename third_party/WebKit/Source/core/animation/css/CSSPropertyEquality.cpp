@@ -225,8 +225,8 @@ bool CSSPropertyEquality::propertiesEqual(CSSPropertyID prop, const RenderStyle&
     case CSSPropertyStrokeWidth:
         return ptrsOrValuesEqual<PassRefPtr<SVGLength> >(a.strokeWidth(), b.strokeWidth());
     case CSSPropertyTextDecorationColor:
-        // FIXME: transitions of text-decoration-color are broken
-        return true;
+        return a.textDecorationColor().resolve(a.color()) == b.textDecorationColor().resolve(b.color())
+            && a.visitedLinkTextDecorationColor().resolve(a.color()) == b.visitedLinkTextDecorationColor().resolve(b.color());
     case CSSPropertyTextIndent:
         return a.textIndent() == b.textIndent();
     case CSSPropertyTextShadow:
