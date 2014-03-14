@@ -7,6 +7,7 @@
 
 #include "core/events/EventTarget.h"
 #include "core/frame/DOMWindowProperty.h"
+#include "heap/Handle.h"
 #include "platform/Supplementable.h"
 #include "platform/Timer.h"
 #include "public/platform/WebScreenOrientation.h"
@@ -19,7 +20,8 @@ namespace WebCore {
 class Document;
 class Screen;
 
-class ScreenOrientation FINAL : public Supplement<Screen>, DOMWindowProperty {
+class ScreenOrientation FINAL : public NoBaseWillBeGarbageCollectedFinalized<ScreenOrientation>, public WillBeHeapSupplement<Screen>, DOMWindowProperty {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ScreenOrientation);
 public:
     static ScreenOrientation& from(Screen&);
     virtual ~ScreenOrientation();
@@ -30,6 +32,8 @@ public:
     static bool lockOrientation(Screen&, const Vector<String>& orientations);
     static bool lockOrientation(Screen&, const AtomicString& orientation);
     static void unlockOrientation(Screen&);
+
+    virtual void trace(Visitor*) { }
 
 private:
     explicit ScreenOrientation(Screen&);

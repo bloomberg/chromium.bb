@@ -109,10 +109,10 @@ Document* ScreenOrientation::document() const
 
 ScreenOrientation& ScreenOrientation::from(Screen& screen)
 {
-    ScreenOrientation* supplement = static_cast<ScreenOrientation*>(Supplement<Screen>::from(screen, supplementName()));
+    ScreenOrientation* supplement = static_cast<ScreenOrientation*>(WillBeHeapSupplement<Screen>::from(screen, supplementName()));
     if (!supplement) {
         supplement = new ScreenOrientation(screen);
-        provideTo(screen, supplementName(), adoptPtr(supplement));
+        provideTo(screen, supplementName(), adoptPtrWillBeNoop(supplement));
     }
     return *supplement;
 }

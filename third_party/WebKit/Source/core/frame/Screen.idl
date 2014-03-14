@@ -27,7 +27,9 @@
  */
 
 
-interface Screen : EventTarget {
+[
+    WillBeGarbageCollected,
+] interface Screen : EventTarget {
     readonly attribute unsigned long height;
     readonly attribute unsigned long width;
     readonly attribute unsigned long colorDepth;

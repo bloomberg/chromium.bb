@@ -132,4 +132,11 @@ ExecutionContext* Screen::executionContext() const
     return m_frame->document();
 }
 
+void Screen::trace(Visitor* visitor)
+{
+#if ENABLE(OILPAN)
+    HeapSupplementable<Screen>::trace(visitor);
+#endif
+}
+
 } // namespace WebCore

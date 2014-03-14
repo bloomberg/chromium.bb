@@ -31,6 +31,7 @@
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/events/EventTarget.h"
 #include "core/frame/FrameDestructionObserver.h"
+#include "heap/Handle.h"
 #include "platform/LifecycleContext.h"
 #include "platform/Supplementable.h"
 
@@ -336,7 +337,7 @@ enum PageshowEventPersistence {
 
         HashSet<DOMWindowProperty*> m_properties;
 
-        mutable RefPtr<Screen> m_screen;
+        mutable RefPtrWillBePersistent<Screen> m_screen;
         mutable RefPtr<History> m_history;
         mutable RefPtr<BarProp> m_locationbar;
         mutable RefPtr<BarProp> m_menubar;
