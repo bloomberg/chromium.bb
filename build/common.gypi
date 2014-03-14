@@ -1531,7 +1531,6 @@
         ],
       }],  # OS=="mac"
       ['OS=="mac" or OS=="ios"', {
-        # Enable clang on mac by default!  All iOS builds already use clang.
         'clang%': 1,
 
         'variables': {
