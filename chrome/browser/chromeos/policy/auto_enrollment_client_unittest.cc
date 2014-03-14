@@ -98,8 +98,8 @@ class AutoEnrollmentClientTest : public testing::Test {
     if (modulus >= 0)
       enrollment_response->set_expected_modulus(modulus);
     if (with_hashes) {
-      for (size_t i = 0; i < 10; ++i) {
-        std::string state_key = base::StringPrintf("state_key %lu", i);
+      for (int i = 0; i < 10; ++i) {
+        std::string state_key = base::StringPrintf("state_key %d", i);
         std::string hash = crypto::SHA256HashString(state_key);
         enrollment_response->mutable_hash()->Add()->assign(hash);
       }
