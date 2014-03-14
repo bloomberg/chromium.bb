@@ -210,7 +210,7 @@ FontPlatformData* FontCache::createFontPlatformData(const FontDescription& fontD
         name.data(),
         fontSize,
         fontDescription.weight() >= FontWeightBold && !tf->isBold() || fontDescription.isSyntheticBold(),
-        fontDescription.italic() && !tf->isItalic() || fontDescription.isSyntheticItalic(),
+        fontDescription.style() == FontStyleItalic && !tf->isItalic() || fontDescription.isSyntheticItalic(),
         fontDescription.orientation(),
         m_useSubpixelPositioning);
     return result;

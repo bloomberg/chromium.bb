@@ -1420,14 +1420,14 @@ static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> valueForFontStretch(RenderStyle
 
 static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> valueForFontStyle(RenderStyle& style)
 {
-    if (style.fontDescription().italic())
+    if (style.fontDescription().style() == FontStyleItalic)
         return cssValuePool().createIdentifierValue(CSSValueItalic);
     return cssValuePool().createIdentifierValue(CSSValueNormal);
 }
 
 static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> valueForFontVariant(RenderStyle& style)
 {
-    if (style.fontDescription().variant())
+    if (style.fontDescription().variant() == FontVariantSmallCaps)
         return cssValuePool().createIdentifierValue(CSSValueSmallCaps);
     return cssValuePool().createIdentifierValue(CSSValueNormal);
 }

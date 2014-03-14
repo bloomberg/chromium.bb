@@ -72,7 +72,7 @@ public:
     void setFeatureSettingsValue(CSSValue*);
 
     void setScript(const String& locale);
-    void setItalic(FontItalic);
+    void setStyle(FontStyle);
     void setVariant(FontVariant);
     void setTextRendering(TextRenderingMode);
     void setKerning(FontDescription::Kerning);
@@ -93,7 +93,7 @@ public:
 
     static TextRenderingMode initialTextRendering() { return AutoTextRendering; }
     static FontVariant initialVariant() { return FontVariantNormal; }
-    static FontItalic initialItalic() { return FontItalicOff; }
+    static FontStyle initialStyle() { return FontStyleNormal; }
     static FontDescription::Kerning initialKerning() { return FontDescription::AutoKerning; }
     static FontSmoothingMode initialFontSmoothing() { return AutoSmoothing; }
 
