@@ -29,13 +29,7 @@ class CompositingIOSurfaceShaderPrograms;
 class CompositingIOSurfaceContext
     : public base::RefCounted<CompositingIOSurfaceContext> {
  public:
-  enum {
-    // The number used to look up the context used for async readback and for
-    // initializing the IOSurface.
-    kOffscreenContextWindowNumber = -2,
-    // The number used to look up the context used by CAOpenGLLayers.
-    kCALayerContextWindowNumber = -3,
-  };
+  enum { kOffscreenContextWindowNumber = -2 };
 
   // Get or create a GL context for the specified window with the specified
   // surface ordering. Share these GL contexts as much as possible because
