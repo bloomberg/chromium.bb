@@ -211,7 +211,9 @@ void TtsPlatformImplMac::GetVoices(std::vector<VoiceData>* outVoices) {
   NSMutableArray* orderedVoices =
       [NSMutableArray arrayWithCapacity:[voices count]];
   NSString* defaultVoice = [NSSpeechSynthesizer defaultVoice];
-  [orderedVoices addObject:defaultVoice];
+  if (defaultVoice) {
+    [orderedVoices addObject:defaultVoice];
+  }
   for (NSString* voiceIdentifier in voices) {
     if (![voiceIdentifier isEqualToString:defaultVoice])
       [orderedVoices addObject:voiceIdentifier];
