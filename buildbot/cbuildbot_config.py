@@ -1986,7 +1986,6 @@ _release.add_config('quawks-release',
 
 _release.add_config('rambi-release',
   boards=['rambi'],
-  hw_tests=[],
 )
 
 _release.add_config('samus-release',
