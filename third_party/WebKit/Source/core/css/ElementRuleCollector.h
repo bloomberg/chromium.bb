@@ -47,9 +47,9 @@ const CascadeScope ignoreCascadeScope = 0;
 const CascadeOrder ignoreCascadeOrder = 0;
 
 class MatchedRule {
-    ALLOW_ONLY_INLINE_ALLOCATION();
+    WTF_MAKE_FAST_ALLOCATED;
 public:
-    MatchedRule(const RuleData* ruleData, unsigned specificity, CascadeScope cascadeScope, CascadeOrder cascadeOrder, unsigned styleSheetIndex, const CSSStyleSheet* parentStyleSheet)
+    explicit MatchedRule(const RuleData* ruleData, unsigned specificity, CascadeScope cascadeScope, CascadeOrder cascadeOrder, unsigned styleSheetIndex, const CSSStyleSheet* parentStyleSheet)
         : m_ruleData(ruleData)
         , m_specificity(specificity)
         , m_cascadeScope(cascadeScope)
@@ -66,33 +66,14 @@ public:
     uint64_t position() const { return m_position; }
     unsigned specificity() const { return ruleData()->specificity() + m_specificity; }
     const CSSStyleSheet* parentStyleSheet() const { return m_parentStyleSheet; }
-    void trace(Visitor* visitor)
-    {
-        visitor->trace(m_ruleData);
-        visitor->trace(m_parentStyleSheet);
-    }
 
 private:
-    RawPtrWillBeMember<const RuleData> m_ruleData;
+    const RuleData* m_ruleData;
     unsigned m_specificity;
     CascadeScope m_cascadeScope;
     uint64_t m_position;
-    RawPtrWillBeMember<const CSSStyleSheet> m_parentStyleSheet;
+    const CSSStyleSheet* m_parentStyleSheet;
 };
-
-} // namespace WebCore
-
-
-namespace WTF {
-
-template <> struct VectorTraits<WebCore::MatchedRule> : VectorTraitsBase<WebCore::MatchedRule> {
-    static const bool canInitializeWithMemset = true;
-    static const bool canMoveWithMemcpy = true;
-};
-
-} // namespace WTF
-
-namespace WebCore {
 
 // FIXME: oilpan: when transition types are gone this class can be replaced with HeapVector.
 class StyleRuleList : public RefCounted<StyleRuleList> {
@@ -169,7 +150,7 @@ private:
     bool m_sameOriginOnly;
     bool m_matchingUARules;
 
-    OwnPtrWillBeMember<WillBeHeapVector<MatchedRule, 32> > m_matchedRules;
+    OwnPtr<Vector<MatchedRule, 32> > m_matchedRules;
 
     // Output.
     RefPtrWillBeMember<StaticCSSRuleList> m_cssRuleList;

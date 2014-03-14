@@ -56,6 +56,7 @@ public:
     void removeStyleSheetCandidateNode(Node*, ContainerNode* scopingNode);
     bool hasStyleSheetCandidateNodes() const { return !m_styleSheetCandidateNodes.isEmpty(); }
 
+
     bool usesRemUnits() const { return m_usesRemUnits; }
 
     DocumentOrderedList& styleSheetCandidateNodes() { return m_styleSheetCandidateNodes; }
@@ -63,11 +64,6 @@ public:
     ListHashSet<Node*, 4>* scopingNodesRemoved() { return m_scopingNodesForStyleScoped.scopingNodesRemoved(); }
 
     void clearMediaQueryRuleSetStyleSheets();
-
-    virtual void trace(Visitor* visitor) OVERRIDE
-    {
-        StyleSheetCollection::trace(visitor);
-    }
 
 protected:
     explicit TreeScopeStyleSheetCollection(TreeScope&);

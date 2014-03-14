@@ -167,9 +167,9 @@ TreeScopeStyleSheetCollection* StyleEngine::ensureStyleSheetCollectionFor(TreeSc
     if (treeScope == m_document)
         return &m_documentStyleSheetCollection;
 
-    WillBeHeapHashMap<TreeScope*, OwnPtrWillBeMember<ShadowTreeStyleSheetCollection> >::AddResult result = m_styleSheetCollectionMap.add(&treeScope, nullptr);
+    HashMap<TreeScope*, OwnPtr<TreeScopeStyleSheetCollection> >::AddResult result = m_styleSheetCollectionMap.add(&treeScope, nullptr);
     if (result.isNewEntry)
-        result.storedValue->value = adoptPtrWillBeNoop(new ShadowTreeStyleSheetCollection(toShadowRoot(treeScope)));
+        result.storedValue->value = adoptPtr(new ShadowTreeStyleSheetCollection(toShadowRoot(treeScope)));
     return result.storedValue->value.get();
 }
 
@@ -178,7 +178,7 @@ TreeScopeStyleSheetCollection* StyleEngine::styleSheetCollectionFor(TreeScope& t
     if (treeScope == m_document)
         return &m_documentStyleSheetCollection;
 
-    WillBeHeapHashMap<TreeScope*, OwnPtrWillBeMember<ShadowTreeStyleSheetCollection> >::iterator it = m_styleSheetCollectionMap.find(&treeScope);
+    HashMap<TreeScope*, OwnPtr<TreeScopeStyleSheetCollection> >::iterator it = m_styleSheetCollectionMap.find(&treeScope);
     if (it == m_styleSheetCollectionMap.end())
         return 0;
     return it->value.get();
@@ -597,9 +597,9 @@ void StyleEngine::markDocumentDirty()
         m_document.import()->master()->styleEngine()->markDocumentDirty();
 }
 
-PassRefPtrWillBeRawPtr<CSSStyleSheet> StyleEngine::createSheet(Element* e, const String& text, TextPosition startPosition, bool createdByParser)
+PassRefPtr<CSSStyleSheet> StyleEngine::createSheet(Element* e, const String& text, TextPosition startPosition, bool createdByParser)
 {
-    RefPtrWillBeRawPtr<CSSStyleSheet> styleSheet;
+    RefPtr<CSSStyleSheet> styleSheet;
 
     e->document().styleEngine()->addPendingSheet();
 
@@ -627,9 +627,9 @@ PassRefPtrWillBeRawPtr<CSSStyleSheet> StyleEngine::createSheet(Element* e, const
     return styleSheet;
 }
 
-PassRefPtrWillBeRawPtr<CSSStyleSheet> StyleEngine::parseSheet(Element* e, const String& text, TextPosition startPosition, bool createdByParser)
+PassRefPtr<CSSStyleSheet> StyleEngine::parseSheet(Element* e, const String& text, TextPosition startPosition, bool createdByParser)
 {
-    RefPtrWillBeRawPtr<CSSStyleSheet> styleSheet;
+    RefPtr<CSSStyleSheet> styleSheet;
     styleSheet = CSSStyleSheet::createInline(e, KURL(), startPosition, e->document().inputEncoding());
     styleSheet->contents()->parseStringAtPosition(text, startPosition, createdByParser);
     return styleSheet;
@@ -649,8 +649,6 @@ void StyleEngine::trace(Visitor* visitor)
 {
     visitor->trace(m_injectedAuthorStyleSheets);
     visitor->trace(m_authorStyleSheets);
-    visitor->trace(m_documentStyleSheetCollection);
-    visitor->trace(m_styleSheetCollectionMap);
 }
 
 }

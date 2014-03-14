@@ -55,7 +55,7 @@ public:
 
 private:
     RefPtr<Document> m_document;
-    RefPtrWillBePersistent<CSSStyleSheet> m_styleSheet;
+    RefPtr<CSSStyleSheet> m_styleSheet;
 };
 
 } // namespace WebCore

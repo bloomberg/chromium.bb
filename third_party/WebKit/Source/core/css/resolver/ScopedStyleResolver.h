@@ -72,7 +72,7 @@ private:
     ContainerNode& m_scopingNode;
     ScopedStyleResolver* m_parent;
 
-    WillBePersistentHeapVector<RawPtrWillBeMember<CSSStyleSheet> > m_authorStyleSheets;
+    Vector<CSSStyleSheet*> m_authorStyleSheets;
 
     typedef WillBePersistentHeapHashMap<const StringImpl*, RefPtrWillBeMember<StyleRuleKeyframes> > KeyframesRuleMap;
     KeyframesRuleMap m_keyframesRuleMap;

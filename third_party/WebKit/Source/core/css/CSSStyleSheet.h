@@ -92,14 +92,13 @@ public:
 
     class RuleMutationScope {
         WTF_MAKE_NONCOPYABLE(RuleMutationScope);
-        STACK_ALLOCATED();
     public:
-        explicit RuleMutationScope(CSSStyleSheet*);
-        explicit RuleMutationScope(CSSRule*);
+        RuleMutationScope(CSSStyleSheet*);
+        RuleMutationScope(CSSRule*);
         ~RuleMutationScope();
 
     private:
-        RawPtrWillBeMember<CSSStyleSheet> m_styleSheet;
+        CSSStyleSheet* m_styleSheet;
     };
 
     void willMutateRules();

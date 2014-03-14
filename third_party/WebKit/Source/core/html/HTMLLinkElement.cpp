@@ -230,7 +230,7 @@ void HTMLLinkElement::removedFrom(ContainerNode* insertionPoint)
     }
     document().styleEngine()->removeStyleSheetCandidateNode(this);
 
-    RefPtrWillBeRawPtr<StyleSheet> removedSheet = sheet();
+    RefPtr<StyleSheet> removedSheet = sheet();
 
     if (m_link)
         m_link->ownerRemoved();
@@ -616,7 +616,7 @@ void LinkStyle::process()
         }
     } else if (m_sheet) {
         // we no longer contain a stylesheet, e.g. perhaps rel or type was changed
-        RefPtrWillBeRawPtr<StyleSheet> removedSheet = m_sheet.get();
+        RefPtr<StyleSheet> removedSheet = m_sheet;
         clearSheet();
         document().removedStyleSheet(removedSheet.get());
     }

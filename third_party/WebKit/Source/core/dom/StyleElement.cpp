@@ -76,7 +76,7 @@ void StyleElement::removedFromDocument(Document& document, Element* element, Con
     ASSERT(element);
     document.styleEngine()->removeStyleSheetCandidateNode(element, scopingNode, treeScope);
 
-    RefPtrWillBeRawPtr<StyleSheet> removedSheet = m_sheet.get();
+    RefPtr<StyleSheet> removedSheet = m_sheet;
 
     if (m_sheet)
         clearSheet(element);
