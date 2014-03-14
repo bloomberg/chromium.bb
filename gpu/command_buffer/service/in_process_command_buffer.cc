@@ -30,6 +30,7 @@
 #include "gpu/command_buffer/service/gpu_control_service.h"
 #include "gpu/command_buffer/service/gpu_scheduler.h"
 #include "gpu/command_buffer/service/image_manager.h"
+#include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/transfer_buffer_manager.h"
 #include "ui/gfx/size.h"
 #include "ui/gl/gl_context.h"
@@ -170,10 +171,6 @@ base::LazyInstance<SyncPointManager> g_sync_point_manager =
 bool WaitSyncPoint(uint32 sync_point) {
   g_sync_point_manager.Get().WaitSyncPoint(sync_point);
   return true;
-}
-
-void RetireSyncPoint(uint32 sync_point) {
-  g_sync_point_manager.Get().RetireSyncPoint(sync_point);
 }
 
 }  // anonyous namespace
@@ -621,8 +618,18 @@ void InProcessCommandBuffer::DestroyGpuMemoryBuffer(int32 id) {
 
 uint32 InProcessCommandBuffer::InsertSyncPoint() {
   uint32 sync_point = g_sync_point_manager.Get().GenerateSyncPoint();
-  QueueTask(base::Bind(&RetireSyncPoint, sync_point));
+  QueueTask(base::Bind(&InProcessCommandBuffer::RetireSyncPointOnGpuThread,
+                       base::Unretained(this),
+                       sync_point));
   return sync_point;
+}
+
+void InProcessCommandBuffer::RetireSyncPointOnGpuThread(uint32 sync_point) {
+  gles2::MailboxManager* mailbox_manager =
+      decoder_->GetContextGroup()->mailbox_manager();
+  if (mailbox_manager->UsesSync() && MakeCurrent())
+    mailbox_manager->PushTextureUpdates();
+  g_sync_point_manager.Get().RetireSyncPoint(sync_point);
 }
 
 void InProcessCommandBuffer::SignalSyncPoint(unsigned sync_point,

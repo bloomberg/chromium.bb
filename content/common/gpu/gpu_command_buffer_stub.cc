@@ -30,6 +30,7 @@
 #include "gpu/command_buffer/service/gpu_control_service.h"
 #include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/logger.h"
+#include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/query_manager.h"
 #include "ui/gl/gl_bindings.h"
@@ -770,6 +771,8 @@ void GpuCommandBufferStub::AddSyncPoint(uint32 sync_point) {
 void GpuCommandBufferStub::OnRetireSyncPoint(uint32 sync_point) {
   DCHECK(!sync_points_.empty() && sync_points_.front() == sync_point);
   sync_points_.pop_front();
+  if (context_group_->mailbox_manager()->UsesSync() && MakeCurrent())
+    context_group_->mailbox_manager()->PushTextureUpdates();
   GpuChannelManager* manager = channel_->gpu_channel_manager();
   manager->sync_point_manager()->RetireSyncPoint(sync_point);
 }

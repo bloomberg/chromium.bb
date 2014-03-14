@@ -12,7 +12,7 @@ namespace {
 
 class GLFenceNVFence: public gfx::GLFence {
  public:
-  GLFenceNVFence() {
+  GLFenceNVFence(bool flush) {
     // What if either of these GL calls fails? TestFenceNV will return true.
     // See spec:
     // http://www.opengl.org/registry/specs/NV/fence.txt
@@ -25,7 +25,8 @@ class GLFenceNVFence: public gfx::GLFence {
     //     We will arbitrarily return TRUE for consistency.
     glGenFencesNV(1, &fence_);
     glSetFenceNV(fence_, GL_ALL_COMPLETED_NV);
-    glFlush();
+    if (flush)
+      glFlush();
   }
 
   virtual bool HasCompleted() OVERRIDE {
@@ -33,6 +34,10 @@ class GLFenceNVFence: public gfx::GLFence {
   }
 
   virtual void ClientWait() OVERRIDE {
+    glFinishFenceNV(fence_);
+  }
+
+  virtual void ServerWait() OVERRIDE {
     glFinishFenceNV(fence_);
   }
 
@@ -46,9 +51,10 @@ class GLFenceNVFence: public gfx::GLFence {
 
 class GLFenceARBSync: public gfx::GLFence {
  public:
-  GLFenceARBSync() {
+  GLFenceARBSync(bool flush) {
     sync_ = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
-    glFlush();
+    if (flush)
+      glFlush();
   }
 
   virtual bool HasCompleted() OVERRIDE {
@@ -66,6 +72,10 @@ class GLFenceARBSync: public gfx::GLFence {
     glClientWaitSync(sync_, GL_SYNC_FLUSH_COMMANDS_BIT, GL_TIMEOUT_IGNORED);
   }
 
+  virtual void ServerWait() OVERRIDE {
+    glWaitSync(sync_, 0, GL_TIMEOUT_IGNORED);
+  }
+
  private:
   virtual ~GLFenceARBSync() {
     glDeleteSync(sync_);
@@ -77,10 +87,11 @@ class GLFenceARBSync: public gfx::GLFence {
 #if !defined(OS_MACOSX)
 class EGLFenceSync : public gfx::GLFence {
  public:
-  EGLFenceSync() {
+  EGLFenceSync(bool flush) {
     display_ = eglGetCurrentDisplay();
     sync_ = eglCreateSyncKHR(display_, EGL_SYNC_FENCE_KHR, NULL);
-    glFlush();
+    if (flush)
+      glFlush();
   }
 
   virtual bool HasCompleted() OVERRIDE {
@@ -96,6 +107,12 @@ class EGLFenceSync : public gfx::GLFence {
     eglClientWaitSyncKHR(display_, sync_, flags, time);
   }
 
+  virtual void ServerWait() OVERRIDE {
+    EGLint flags = 0;
+    eglWaitSyncKHR(display_, sync_, flags);
+  }
+
+
  private:
   virtual ~EGLFenceSync() {
     eglDestroySyncKHR(display_, sync_);
@@ -105,6 +122,19 @@ class EGLFenceSync : public gfx::GLFence {
   EGLDisplay display_;
 };
 #endif // !OS_MACOSX
+
+// static
+gfx::GLFence* CreateFence(bool flush) {
+#if !defined(OS_MACOSX)
+  if (gfx::g_driver_egl.ext.b_EGL_KHR_fence_sync)
+    return new EGLFenceSync(flush);
+#endif
+  if (gfx::g_driver_gl.ext.b_GL_NV_fence)
+    return new GLFenceNVFence(flush);
+  if (gfx::g_driver_gl.ext.b_GL_ARB_sync)
+    return new GLFenceARBSync(flush);
+  return NULL;
+}
 
 }  // namespace
 
@@ -116,17 +146,12 @@ GLFence::GLFence() {
 GLFence::~GLFence() {
 }
 
-// static
 GLFence* GLFence::Create() {
-#if !defined(OS_MACOSX)
-  if (gfx::g_driver_egl.ext.b_EGL_KHR_fence_sync)
-    return new EGLFenceSync();
-#endif
-  if (gfx::g_driver_gl.ext.b_GL_NV_fence)
-    return new GLFenceNVFence();
-  if (gfx::g_driver_gl.ext.b_GL_ARB_sync)
-    return new GLFenceARBSync();
-  return NULL;
+  return CreateFence(true);
+}
+
+GLFence* GLFence::CreateWithoutFlush() {
+  return CreateFence(false);
 }
 
 }  // namespace gfx

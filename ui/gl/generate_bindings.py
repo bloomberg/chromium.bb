@@ -764,6 +764,10 @@ GL_FUNCTIONS = [
   'names': ['glClientWaitSync'],
   'arguments':
     'GLsync sync, GLbitfield flags, GLuint64 timeout', },
+{ 'return_type': 'GLenum',
+  'names': ['glWaitSync'],
+  'arguments':
+    'GLsync sync, GLbitfield flags, GLuint64 timeout', },
 { 'return_type': 'void',
   'known_as': 'glDrawArraysInstancedANGLE',
   'names': ['glDrawArraysInstancedARB', 'glDrawArraysInstancedANGLE'],

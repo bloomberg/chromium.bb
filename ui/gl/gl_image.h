@@ -39,6 +39,12 @@ class GL_EXPORT GLImage : public base::RefCounted<GLImage> {
   // Called after the texture has been used for drawing.
   virtual void DidUseTexImage();
 
+  // Called before the texture image data will be modified.
+  virtual void WillModifyTexImage();
+
+  // Called after the texture image data has been modified.
+  virtual void DidModifyTexImage();
+
   // Indicate that image should be released after use.
   // (For an Android work-around only).
   virtual void SetReleaseAfterUse();

@@ -7871,6 +7871,24 @@ TEST_F(GLES2DecoderTest, BindTexImage2DCHROMIUMCubeMapNotAllowed) {
   EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
 }
 
+TEST_F(GLES2DecoderTest, OrphanGLImageWithTexImage2D) {
+  group().image_manager()->AddImage(gfx::GLImage::CreateGLImage(0).get(), 1);
+  DoBindTexture(GL_TEXTURE_CUBE_MAP, client_texture_id_, kServiceTextureId);
+
+  BindTexImage2DCHROMIUM bind_tex_image_2d_cmd;
+  bind_tex_image_2d_cmd.Init(GL_TEXTURE_CUBE_MAP, 1);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(bind_tex_image_2d_cmd));
+  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
+
+  DoTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 3, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+               0, 0);
+  TextureRef* texture_ref = group().texture_manager()->GetTexture(
+      client_texture_id_);
+  ASSERT_TRUE(texture_ref != NULL);
+  Texture* texture = texture_ref->texture();
+  EXPECT_TRUE(texture->GetLevelImage(GL_TEXTURE_2D, 0) == NULL);
+}
+
 TEST_F(GLES2DecoderTest, ReleaseTexImage2DCHROMIUM) {
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
   DoTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 3, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,

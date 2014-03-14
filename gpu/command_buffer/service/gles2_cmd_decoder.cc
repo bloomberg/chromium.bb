@@ -304,7 +304,7 @@ class ScopedGLErrorSuppressor {
 // unit zero in case the client has changed that to something invalid.
 class ScopedTextureBinder {
  public:
-  ScopedTextureBinder(ContextState* state, GLuint id, GLenum target);
+  explicit ScopedTextureBinder(ContextState* state, GLuint id, GLenum target);
   ~ScopedTextureBinder();
 
  private:
@@ -317,7 +317,7 @@ class ScopedTextureBinder {
 // object goes out of scope.
 class ScopedRenderBufferBinder {
  public:
-  ScopedRenderBufferBinder(ContextState* state, GLuint id);
+  explicit ScopedRenderBufferBinder(ContextState* state, GLuint id);
   ~ScopedRenderBufferBinder();
 
  private:
@@ -329,7 +329,7 @@ class ScopedRenderBufferBinder {
 // object goes out of scope.
 class ScopedFrameBufferBinder {
  public:
-  ScopedFrameBufferBinder(GLES2DecoderImpl* decoder, GLuint id);
+  explicit ScopedFrameBufferBinder(GLES2DecoderImpl* decoder, GLuint id);
   ~ScopedFrameBufferBinder();
 
  private:
@@ -343,9 +343,9 @@ class ScopedFrameBufferBinder {
 // true, the resolved framebuffer is not visible to the parent.
 class ScopedResolvedFrameBufferBinder {
  public:
-  ScopedResolvedFrameBufferBinder(GLES2DecoderImpl* decoder,
-                                  bool enforce_internal_framebuffer,
-                                  bool internal);
+  explicit ScopedResolvedFrameBufferBinder(GLES2DecoderImpl* decoder,
+                                           bool enforce_internal_framebuffer,
+                                           bool internal);
   ~ScopedResolvedFrameBufferBinder();
 
  private:
@@ -353,6 +353,45 @@ class ScopedResolvedFrameBufferBinder {
   bool resolve_and_bind_;
   DISALLOW_COPY_AND_ASSIGN(ScopedResolvedFrameBufferBinder);
 };
+
+class ScopedModifyPixels {
+ public:
+  explicit ScopedModifyPixels(TextureRef* ref);
+  ~ScopedModifyPixels();
+
+ private:
+  TextureRef* ref_;
+};
+
+ScopedModifyPixels::ScopedModifyPixels(TextureRef* ref) : ref_(ref) {
+  if (ref_)
+    ref_->texture()->OnWillModifyPixels();
+}
+
+ScopedModifyPixels::~ScopedModifyPixels() {
+  if (ref_)
+    ref_->texture()->OnDidModifyPixels();
+}
+
+class ScopedRenderTo {
+ public:
+  explicit ScopedRenderTo(Framebuffer* framebuffer);
+  ~ScopedRenderTo();
+
+ private:
+  const Framebuffer* framebuffer_;
+};
+
+ScopedRenderTo::ScopedRenderTo(Framebuffer* framebuffer)
+    : framebuffer_(framebuffer) {
+  if (framebuffer)
+    framebuffer_->OnWillRenderTo();
+}
+
+ScopedRenderTo::~ScopedRenderTo() {
+  if (framebuffer_)
+    framebuffer_->OnDidRenderTo();
+}
 
 // Encapsulates an OpenGL texture.
 class BackTexture {
@@ -6308,6 +6347,7 @@ error::Error GLES2DecoderImpl::DoDrawArrays(
         primcount)) {
       bool textures_set = !PrepareTexturesForRender();
       ApplyDirtyState();
+      ScopedRenderTo do_render(framebuffer_state_.bound_draw_framebuffer.get());
       if (!instanced) {
         glDrawArrays(mode, first, count);
       } else {
@@ -6437,6 +6477,7 @@ error::Error GLES2DecoderImpl::DoDrawElements(
         indices = element_array_buffer->GetRange(offset, 0);
       }
 
+      ScopedRenderTo do_render(framebuffer_state_.bound_draw_framebuffer.get());
       if (!instanced) {
         glDrawElements(mode, count, type, indices);
       } else {
@@ -8264,11 +8305,13 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
       GLint dy = copyY - y;
       GLint destX = dx;
       GLint destY = dy;
+      ScopedModifyPixels modify(texture_ref);
       glCopyTexSubImage2D(target, level,
                           destX, destY, copyX, copyY,
                           copyWidth, copyHeight);
     }
   } else {
+    ScopedModifyPixels modify(texture_ref);
     glCopyTexImage2D(target, level, internal_format,
                      copyX, copyY, copyWidth, copyHeight, border);
   }
@@ -8368,6 +8411,7 @@ void GLES2DecoderImpl::DoCopyTexSubImage2D(
     }
     scoped_ptr<char[]> zero(new char[pixels_size]);
     memset(zero.get(), 0, pixels_size);
+    ScopedModifyPixels modify(texture_ref);
     glTexSubImage2D(
         target, level, xoffset, yoffset, width, height,
         format, type, zero.get());
@@ -8378,6 +8422,7 @@ void GLES2DecoderImpl::DoCopyTexSubImage2D(
     GLint dy = copyY - y;
     GLint destX = xoffset + dx;
     GLint destY = yoffset + dy;
+    ScopedModifyPixels modify(texture_ref);
     glCopyTexSubImage2D(target, level,
                         destX, destY, copyX, copyY,
                         copyWidth, copyHeight);
@@ -9249,6 +9294,7 @@ error::Error GLES2DecoderImpl::HandleInsertSyncPointCHROMIUM(
 
 error::Error GLES2DecoderImpl::HandleWaitSyncPointCHROMIUM(
     uint32 immediate_data_size, const cmds::WaitSyncPointCHROMIUM& c) {
+  group_->mailbox_manager()->PullTextureUpdates();
   if (wait_sync_point_callback_.is_null())
     return error::kNoError;
 
@@ -9798,6 +9844,7 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
   }
 
   DoWillUseTexImageIfNeeded(source_texture, source_texture->target());
+  ScopedModifyPixels modify(dest_texture_ref);
 
   // GL_TEXTURE_EXTERNAL_OES texture requires apply a transform matrix
   // before presenting.

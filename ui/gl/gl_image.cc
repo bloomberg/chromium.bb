@@ -27,6 +27,10 @@ void GLImage::DidUseTexImage() {
   NOTIMPLEMENTED();
 }
 
+void GLImage::WillModifyTexImage() {}
+
+void GLImage::DidModifyTexImage() {}
+
 void GLImage::SetReleaseAfterUse() {
   // Default no-op implementation for workaround.
 }

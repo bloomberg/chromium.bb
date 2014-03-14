@@ -19,6 +19,7 @@ typedef signed char GLbyte;
 namespace gpu {
 namespace gles2 {
 
+class MailboxSynchronizer;
 class Texture;
 class TextureManager;
 
@@ -35,11 +36,20 @@ class GPU_EXPORT MailboxManager : public base::RefCounted<MailboxManager> {
                       const Mailbox& mailbox,
                       Texture* texture);
 
+  // Returns whether this manager synchronizes with other instances.
+  bool UsesSync() { return sync_ != NULL; }
+
+  // Used with the MailboxSynchronizer to push/pull texture state to/from
+  // other manager instances.
+  void PushTextureUpdates();
+  void PullTextureUpdates();
+
   // Destroy any mailbox that reference the given texture.
   void TextureDeleted(Texture* texture);
 
  private:
   friend class base::RefCounted<MailboxManager>;
+  friend class MailboxSynchronizer;
 
   ~MailboxManager();
 
@@ -48,6 +58,7 @@ class GPU_EXPORT MailboxManager : public base::RefCounted<MailboxManager> {
     unsigned target;
     Mailbox mailbox;
   };
+  void InsertTexture(TargetName target_name, Texture* texture);
 
   static bool TargetNameLess(const TargetName& lhs, const TargetName& rhs);
 
@@ -64,6 +75,8 @@ class GPU_EXPORT MailboxManager : public base::RefCounted<MailboxManager> {
 
   MailboxToTextureMap mailbox_to_textures_;
   TextureToMailboxMap textures_to_mailboxes_;
+
+  MailboxSynchronizer* sync_;
 
   DISALLOW_COPY_AND_ASSIGN(MailboxManager);
 };

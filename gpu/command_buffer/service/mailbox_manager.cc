@@ -7,13 +7,15 @@
 #include <algorithm>
 
 #include "crypto/random.h"
+#include "gpu/command_buffer/service/mailbox_synchronizer.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 
 namespace gpu {
 namespace gles2 {
 
 MailboxManager::MailboxManager()
-    : mailbox_to_textures_(std::ptr_fun(&MailboxManager::TargetNameLess)) {
+    : mailbox_to_textures_(std::ptr_fun(&MailboxManager::TargetNameLess)),
+      sync_(MailboxSynchronizer::GetInstance()) {
 }
 
 MailboxManager::~MailboxManager() {
@@ -23,25 +25,43 @@ MailboxManager::~MailboxManager() {
 
 Texture* MailboxManager::ConsumeTexture(unsigned target,
                                         const Mailbox& mailbox) {
+  TargetName target_name(target, mailbox);
   MailboxToTextureMap::iterator it =
-      mailbox_to_textures_.find(TargetName(target, mailbox));
-  if (it == mailbox_to_textures_.end())
-    return NULL;
+      mailbox_to_textures_.find(target_name);
+  if (it != mailbox_to_textures_.end())
+    return it->second->first;
 
-  return it->second->first;
+  if (sync_) {
+    // See if it's visible in another mailbox manager, and if so make it visible
+    // here too.
+    Texture* texture = sync_->CreateTextureFromMailbox(target, mailbox);
+    if (texture) {
+      InsertTexture(target_name, texture);
+      DCHECK_EQ(0U, texture->refs_.size());
+    }
+    return texture;
+  }
+
+  return NULL;
 }
 
 void MailboxManager::ProduceTexture(unsigned target,
                                     const Mailbox& mailbox,
                                     Texture* texture) {
-  texture->SetMailboxManager(this);
   TargetName target_name(target, mailbox);
   MailboxToTextureMap::iterator it = mailbox_to_textures_.find(target_name);
   if (it != mailbox_to_textures_.end()) {
+    if (it->second->first == texture)
+      return;
     TextureToMailboxMap::iterator texture_it = it->second;
     mailbox_to_textures_.erase(it);
     textures_to_mailboxes_.erase(texture_it);
   }
+  InsertTexture(target_name, texture);
+}
+
+void MailboxManager::InsertTexture(TargetName target_name, Texture* texture) {
+  texture->SetMailboxManager(this);
   TextureToMailboxMap::iterator texture_it =
       textures_to_mailboxes_.insert(std::make_pair(texture, target_name));
   mailbox_to_textures_.insert(std::make_pair(target_name, texture_it));
@@ -59,6 +79,19 @@ void MailboxManager::TextureDeleted(Texture* texture) {
   }
   textures_to_mailboxes_.erase(range.first, range.second);
   DCHECK_EQ(mailbox_to_textures_.size(), textures_to_mailboxes_.size());
+
+  if (sync_)
+    sync_->TextureDeleted(texture);
+}
+
+void MailboxManager::PushTextureUpdates() {
+  if (sync_)
+    sync_->PushTextureUpdates(this);
+}
+
+void MailboxManager::PullTextureUpdates() {
+  if (sync_)
+    sync_->PullTextureUpdates(this);
 }
 
 MailboxManager::TargetName::TargetName(unsigned target, const Mailbox& mailbox)

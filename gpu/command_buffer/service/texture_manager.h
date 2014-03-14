@@ -162,9 +162,13 @@ class GPU_EXPORT Texture {
   // Initialize TEXTURE_MAX_ANISOTROPY to 1 if we haven't done so yet.
   void InitTextureMaxAnisotropyIfNeeded(GLenum target);
 
+  void OnWillModifyPixels();
+  void OnDidModifyPixels();
+
  private:
   friend class MailboxManager;
   friend class MailboxManagerTest;
+  friend class TextureDefinition;
   friend class TextureManager;
   friend class TextureRef;
   friend class TextureTestHelper;

@@ -840,6 +840,11 @@ void Texture::SetLevelImage(
 }
 
 gfx::GLImage* Texture::GetLevelImage(GLint target, GLint level) const {
+  if (target != GL_TEXTURE_2D && target != GL_TEXTURE_EXTERNAL_OES &&
+      target != GL_TEXTURE_RECTANGLE_ARB) {
+    return NULL;
+  }
+
   size_t face_index = GLTargetToFaceIndex(target);
   if (level >= 0 && face_index < level_infos_.size() &&
       static_cast<size_t>(level) < level_infos_[face_index].size()) {
@@ -851,6 +856,17 @@ gfx::GLImage* Texture::GetLevelImage(GLint target, GLint level) const {
   return 0;
 }
 
+void Texture::OnWillModifyPixels() {
+  gfx::GLImage* image = GetLevelImage(target(), 0);
+  if (image)
+    image->WillModifyTexImage();
+}
+
+void Texture::OnDidModifyPixels() {
+  gfx::GLImage* image = GetLevelImage(target(), 0);
+  if (image)
+    image->DidModifyTexImage();
+}
 
 TextureRef::TextureRef(TextureManager* manager,
                        GLuint client_id,

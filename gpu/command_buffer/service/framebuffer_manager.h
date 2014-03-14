@@ -49,6 +49,8 @@ class GPU_EXPORT Framebuffer : public base::RefCounted<Framebuffer> {
         GLenum attachment_type, uint32 max_color_attachments) = 0;
     virtual void AddToSignature(
         TextureManager* texture_manager, std::string* signature) const = 0;
+    virtual void OnWillRenderTo() const = 0;
+    virtual void OnDidRenderTo() const = 0;
 
    protected:
     friend class base::RefCounted<Attachment>;
@@ -137,6 +139,8 @@ class GPU_EXPORT Framebuffer : public base::RefCounted<Framebuffer> {
   }
 
   void OnTextureRefDetached(TextureRef* texture);
+  void OnWillRenderTo() const;
+  void OnDidRenderTo() const;
 
  private:
   friend class FramebufferManager;
