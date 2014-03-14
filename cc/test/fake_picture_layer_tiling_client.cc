@@ -6,14 +6,26 @@
 
 #include <limits>
 
-#include "cc/test/fake_picture_pile_impl.h"
 #include "cc/test/fake_tile_manager.h"
 
 namespace cc {
 
+class FakeInfinitePicturePileImpl : public PicturePileImpl {
+ public:
+  FakeInfinitePicturePileImpl() {
+    gfx::Size size(std::numeric_limits<int>::max(),
+                   std::numeric_limits<int>::max());
+    Resize(size);
+    recorded_region_ = Region(gfx::Rect(size));
+  }
+
+ protected:
+  virtual ~FakeInfinitePicturePileImpl() {}
+};
+
 FakePictureLayerTilingClient::FakePictureLayerTilingClient()
     : tile_manager_(new FakeTileManager(&tile_manager_client_)),
-      pile_(FakePicturePileImpl::CreateInfiniteFilledPile()),
+      pile_(new FakeInfinitePicturePileImpl()),
       twin_tiling_(NULL),
       allow_create_tile_(true),
       max_tiles_for_interest_area_(10000),
@@ -24,7 +36,7 @@ FakePictureLayerTilingClient::FakePictureLayerTilingClient(
     ResourceProvider* resource_provider)
     : tile_manager_(
           new FakeTileManager(&tile_manager_client_, resource_provider)),
-      pile_(FakePicturePileImpl::CreateInfiniteFilledPile()),
+      pile_(new FakeInfinitePicturePileImpl()),
       twin_tiling_(NULL),
       allow_create_tile_(true),
       max_tiles_for_interest_area_(10000),

@@ -489,10 +489,12 @@ TEST_F(PictureLayerImplTest, AddTilesFromNewRecording) {
          ++iter) {
       EXPECT_FALSE(iter.full_tile_geometry_rect().IsEmpty());
       // Ensure there is a recording for this tile.
-      bool in_pending = pending_pile->CanRaster(tiling->contents_scale(),
-                                                iter.full_tile_geometry_rect());
-      bool in_active = active_pile->CanRaster(tiling->contents_scale(),
-                                              iter.full_tile_geometry_rect());
+      gfx::Rect layer_rect = gfx::ScaleToEnclosingRect(
+          iter.full_tile_geometry_rect(), 1.f / tiling->contents_scale());
+      layer_rect.Intersect(gfx::Rect(layer_bounds));
+
+      bool in_pending = pending_pile->recorded_region().Contains(layer_rect);
+      bool in_active = active_pile->recorded_region().Contains(layer_rect);
 
       if (in_pending && !in_active)
         EXPECT_EQ(pending_pile, iter->picture_pile());
@@ -632,7 +634,7 @@ TEST_F(PictureLayerImplTest, CreateTilingsEvenIfTwinHasNone) {
   gfx::Size layer_bounds(1300, 1900);
 
   scoped_refptr<FakePicturePileImpl> empty_pile =
-      FakePicturePileImpl::CreateEmptyPile(tile_size, layer_bounds);
+      FakePicturePileImpl::CreateFilledPile(tile_size, gfx::Size(1000, 0));
   scoped_refptr<FakePicturePileImpl> valid_pile =
       FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
 
@@ -1319,13 +1321,13 @@ TEST_F(PictureLayerImplTest, NothingRequiredIfActiveMissingTiles) {
   gfx::Size tile_size(100, 100);
   scoped_refptr<FakePicturePileImpl> pending_pile =
       FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
-  // This pile will create tilings, but has no recordings so will not create any
-  // tiles.  This is attempting to simulate scrolling past the end of recorded
-  // content on the active layer, where the recordings are so far away that
-  // no tiles are created.
+  // An arbitrary bogus outside the layer recording.  Enough for the layer to
+  // think it can create tiles, but not in bounds so all tiles are null.
+  Region active_recorded_region;
+  active_recorded_region.Union(gfx::Rect(1000, 1000, 1, 1));
   scoped_refptr<FakePicturePileImpl> active_pile =
-      FakePicturePileImpl::CreateEmptyPileThatThinksItHasRecordings(
-          tile_size, layer_bounds);
+      FakePicturePileImpl::CreatePileWithRecordedRegion(
+          tile_size, layer_bounds, active_recorded_region);
   SetupTrees(pending_pile, active_pile);
   pending_layer_->set_fixed_tile_size(tile_size);
   active_layer_->set_fixed_tile_size(tile_size);
@@ -1338,7 +1340,8 @@ TEST_F(PictureLayerImplTest, NothingRequiredIfActiveMissingTiles) {
   EXPECT_EQ(active_layer_->HighResTiling()->AllTilesForTesting().size(), 0u);
 
   // Since the active layer has no tiles at all, the pending layer doesn't
-  // need content in order to activate.
+  // need content in order to activate.  This is attempting to simulate
+  // scrolling past the end of recorded content on the active layer.
   pending_layer_->MarkVisibleResourcesAsRequired();
   AssertNoTilesRequired(pending_layer_->HighResTiling());
   AssertNoTilesRequired(pending_layer_->LowResTiling());

@@ -46,7 +46,7 @@ class TileManagerPerfTest : public testing::Test {
         make_scoped_ptr(new FakeTileManager(&tile_manager_client_,
                                             resource_provider_.get(),
                                             raster_task_limit_bytes));
-    picture_pile_ = FakePicturePileImpl::CreateInfiniteFilledPile();
+    picture_pile_ = FakePicturePileImpl::CreatePile();
   }
 
   GlobalStateThatImpactsTilePriority GlobalStateForTest() {
