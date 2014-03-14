@@ -1478,6 +1478,8 @@ weston_surface_attach(struct weston_surface *surface,
 	}
 
 	surface->compositor->renderer->attach(surface, buffer);
+
+	weston_surface_set_size_from_buffer(surface);
 }
 
 WL_EXPORT void
@@ -2010,10 +2012,8 @@ weston_surface_commit(struct weston_surface *surface)
 	surface->buffer_viewport = surface->pending.buffer_viewport;
 
 	/* wl_surface.attach */
-	if (surface->pending.buffer || surface->pending.newly_attached) {
+	if (surface->pending.buffer || surface->pending.newly_attached)
 		weston_surface_attach(surface, surface->pending.buffer);
-		weston_surface_set_size_from_buffer(surface);
-	}
 
 	if (surface->configure && surface->pending.newly_attached)
 		surface->configure(surface,
@@ -2236,10 +2236,8 @@ weston_subsurface_commit_from_cache(struct weston_subsurface *sub)
 	surface->buffer_viewport = sub->cached.buffer_viewport;
 
 	/* wl_surface.attach */
-	if (sub->cached.buffer_ref.buffer || sub->cached.newly_attached) {
+	if (sub->cached.buffer_ref.buffer || sub->cached.newly_attached)
 		weston_surface_attach(surface, sub->cached.buffer_ref.buffer);
-		weston_surface_set_size_from_buffer(surface);
-	}
 	weston_buffer_reference(&sub->cached.buffer_ref, NULL);
 
 	if (surface->configure && sub->cached.newly_attached)
