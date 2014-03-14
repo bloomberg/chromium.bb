@@ -14,6 +14,7 @@
 #include "base/environment.h"
 #include "base/file_util.h"
 #include "base/files/file_enumerator.h"
+#include "base/files/scoped_file.h"
 #include "base/linux_util.h"
 #include "base/logging.h"
 #include "base/memory/linked_ptr.h"
@@ -318,7 +319,7 @@ pid_t ZygoteHostImpl::ForkRequest(
   std::vector<int> fds;
   // Scoped pointers cannot be stored in containers, so we have to use a
   // linked_ptr.
-  std::vector<linked_ptr<file_util::ScopedFD> > autodelete_fds;
+  std::vector<linked_ptr<base::ScopedFD> > autodelete_fds;
   for (std::vector<FileDescriptorInfo>::const_iterator
        i = mapping.begin(); i != mapping.end(); ++i) {
     pickle.WriteUInt32(i->id);
@@ -326,8 +327,7 @@ pid_t ZygoteHostImpl::ForkRequest(
     if (i->fd.auto_close) {
       // Auto-close means we need to close the FDs after they have been passed
       // to the other process.
-      linked_ptr<file_util::ScopedFD> ptr(
-          new file_util::ScopedFD(&(fds.back())));
+      linked_ptr<base::ScopedFD> ptr(new base::ScopedFD(fds.back()));
       autodelete_fds.push_back(ptr);
     }
   }

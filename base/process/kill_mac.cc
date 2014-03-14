@@ -10,6 +10,7 @@
 #include <sys/wait.h>
 
 #include "base/file_util.h"
+#include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
 
@@ -76,15 +77,13 @@ void WaitForChildToDie(pid_t child, int timeout) {
 
   int result;
 
-  int kq = HANDLE_EINTR(kqueue());
-  if (kq == -1) {
+  ScopedFD kq(HANDLE_EINTR(kqueue()));
+  if (!kq.is_valid()) {
     DPLOG(ERROR) << "kqueue()";
   } else {
-    file_util::ScopedFD auto_close_kq(&kq);
-
     struct kevent change = {0};
     EV_SET(&change, child, EVFILT_PROC, EV_ADD, NOTE_EXIT, 0, NULL);
-    result = HANDLE_EINTR(kevent(kq, &change, 1, NULL, 0, NULL));
+    result = HANDLE_EINTR(kevent(kq.get(), &change, 1, NULL, 0, NULL));
 
     if (result == -1) {
       if (errno != ESRCH) {
@@ -120,7 +119,7 @@ void WaitForChildToDie(pid_t child, int timeout) {
       struct kevent event = {0};
       while (remaining_delta.InMilliseconds() > 0) {
         const struct timespec remaining_timespec = remaining_delta.ToTimeSpec();
-        result = kevent(kq, NULL, 0, &event, 1, &remaining_timespec);
+        result = kevent(kq.get(), NULL, 0, &event, 1, &remaining_timespec);
         if (result == -1 && errno == EINTR) {
           remaining_delta = deadline - TimeTicks::Now();
           result = 0;

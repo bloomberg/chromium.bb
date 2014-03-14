@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
+#include "base/files/scoped_file.h"
 #include "base/format_macros.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
@@ -250,15 +251,14 @@ Status LaunchDesktopChrome(
 
 #if defined(OS_POSIX)
   base::FileHandleMappingVector no_stderr;
-  int devnull = -1;
-  file_util::ScopedFD scoped_devnull(&devnull);
+  base::ScopedFD devnull;
   if (!CommandLine::ForCurrentProcess()->HasSwitch("verbose")) {
     // Redirect stderr to /dev/null, so that Chrome log spew doesn't confuse
     // users.
-    devnull = open("/dev/null", O_WRONLY);
-    if (devnull == -1)
+    devnull.reset(open("/dev/null", O_WRONLY));
+    if (!devnull.is_valid())
       return Status(kUnknownError, "couldn't open /dev/null");
-    no_stderr.push_back(std::make_pair(devnull, STDERR_FILENO));
+    no_stderr.push_back(std::make_pair(devnull.get(), STDERR_FILENO));
     options.fds_to_remap = &no_stderr;
   }
 #endif

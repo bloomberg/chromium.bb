@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
+#include "base/files/scoped_file.h"
 #include "base/message_loop/message_loop.h"
 #include "base/posix/global_descriptors.h"
 #include "base/process/kill.h"
@@ -47,13 +48,12 @@ bool LaunchNSSDecrypterChildProcess(const base::FilePath& nss_path,
   base::LaunchOptions options;
   options.environ["DYLD_FALLBACK_LIBRARY_PATH"] = nss_path.value();
 
-  int ipcfd = channel->TakeClientFileDescriptor();
-  if (ipcfd == -1)
+  base::ScopedFD ipcfd(channel->TakeClientFileDescriptor());
+  if (!ipcfd.is_valid())
     return false;
 
-  file_util::ScopedFD client_file_descriptor_closer(&ipcfd);
   base::FileHandleMappingVector fds_to_map;
-  fds_to_map.push_back(std::pair<int,int>(ipcfd,
+  fds_to_map.push_back(std::pair<int,int>(ipcfd.get(),
       kPrimaryIPCChannel + base::GlobalDescriptors::kBaseDescriptor));
 
   bool debug_on_start = CommandLine::ForCurrentProcess()->HasSwitch(

@@ -17,6 +17,7 @@ extern "C" {
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/file_util.h"
+#include "base/files/scoped_file.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
@@ -607,16 +608,15 @@ bool Sandbox::SandboxIsCurrentlyActive() {
 
 // static
 base::FilePath Sandbox::GetCanonicalSandboxPath(const base::FilePath& path) {
-  int fd = HANDLE_EINTR(open(path.value().c_str(), O_RDONLY));
-  if (fd < 0) {
+  base::ScopedFD fd(HANDLE_EINTR(open(path.value().c_str(), O_RDONLY)));
+  if (!fd.is_valid()) {
     DPLOG(FATAL) << "GetCanonicalSandboxPath() failed for: "
                  << path.value();
     return path;
   }
-  file_util::ScopedFD file_closer(&fd);
 
   base::FilePath::CharType canonical_path[MAXPATHLEN];
-  if (HANDLE_EINTR(fcntl(fd, F_GETPATH, canonical_path)) != 0) {
+  if (HANDLE_EINTR(fcntl(fd.get(), F_GETPATH, canonical_path)) != 0) {
     DPLOG(FATAL) << "GetCanonicalSandboxPath() failed for: "
                  << path.value();
     return path;
