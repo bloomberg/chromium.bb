@@ -41,17 +41,17 @@ public:
     static PassRefPtrWillBeRawPtr<XSLStyleSheet> create(XSLImportRule* parentImport, const String& originalURL, const KURL& finalURL)
     {
         ASSERT(RuntimeEnabledFeatures::xsltEnabled());
-        return adoptRefWillBeRefCountedGarbageCollected(new XSLStyleSheet(parentImport, originalURL, finalURL));
+        return adoptRefWillBeNoop(new XSLStyleSheet(parentImport, originalURL, finalURL));
     }
     static PassRefPtrWillBeRawPtr<XSLStyleSheet> create(ProcessingInstruction* parentNode, const String& originalURL, const KURL& finalURL)
     {
         ASSERT(RuntimeEnabledFeatures::xsltEnabled());
-        return adoptRefWillBeRefCountedGarbageCollected(new XSLStyleSheet(parentNode, originalURL, finalURL, false));
+        return adoptRefWillBeNoop(new XSLStyleSheet(parentNode, originalURL, finalURL, false));
     }
     static PassRefPtrWillBeRawPtr<XSLStyleSheet> createEmbedded(ProcessingInstruction* parentNode, const KURL& finalURL)
     {
         ASSERT(RuntimeEnabledFeatures::xsltEnabled());
-        return adoptRefWillBeRefCountedGarbageCollected(new XSLStyleSheet(parentNode, finalURL.string(), finalURL, true));
+        return adoptRefWillBeNoop(new XSLStyleSheet(parentNode, finalURL.string(), finalURL, true));
     }
 
     // Taking an arbitrary node is unsafe, because owner node pointer can become stale.
@@ -59,7 +59,7 @@ public:
     static PassRefPtrWillBeRawPtr<XSLStyleSheet> createForXSLTProcessor(Node* parentNode, const String& originalURL, const KURL& finalURL)
     {
         ASSERT(RuntimeEnabledFeatures::xsltEnabled());
-        return adoptRefWillBeRefCountedGarbageCollected(new XSLStyleSheet(parentNode, originalURL, finalURL, false));
+        return adoptRefWillBeNoop(new XSLStyleSheet(parentNode, originalURL, finalURL, false));
     }
 
     virtual ~XSLStyleSheet();
@@ -119,7 +119,7 @@ private:
     bool m_stylesheetDocTaken;
     bool m_compilationFailed;
 
-    XSLStyleSheet* m_parentStyleSheet;
+    RawPtrWillBeMember<XSLStyleSheet> m_parentStyleSheet;
 };
 
 DEFINE_TYPE_CASTS(XSLStyleSheet, StyleSheet, sheet, !sheet->isCSSStyleSheet(), !sheet.isCSSStyleSheet());

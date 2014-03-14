@@ -31,6 +31,7 @@ namespace WebCore {
 class ContainerNode;
 
 class MatchRequest {
+    STACK_ALLOCATED();
 public:
     MatchRequest(RuleSet* ruleSet, bool includeEmptyRules = false, const ContainerNode* scope = 0, bool elementApplyAuthorStyles = true, unsigned styleSheetIndex = 0, const CSSStyleSheet* cssSheet = 0)
         : ruleSet(ruleSet)
@@ -45,12 +46,12 @@ public:
         ruleSet->compactRulesIfNeeded();
     }
 
-    const RuleSet* ruleSet;
+    RawPtrWillBeMember<const RuleSet> ruleSet;
     const bool includeEmptyRules;
     const ContainerNode* scope;
     const bool elementApplyAuthorStyles;
     const unsigned styleSheetIndex;
-    const CSSStyleSheet* styleSheet;
+    RawPtrWillBeMember<const CSSStyleSheet> styleSheet;
 };
 
 } // namespace WebCore

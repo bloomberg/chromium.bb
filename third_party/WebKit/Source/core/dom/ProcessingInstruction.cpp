@@ -176,7 +176,7 @@ void ProcessingInstruction::setCSSStyleSheet(const String& href, const KURL& bas
 
     RefPtrWillBeRawPtr<StyleSheetContents> newSheet = StyleSheetContents::create(href, parserContext);
 
-    RefPtr<CSSStyleSheet> cssSheet = CSSStyleSheet::create(newSheet, this);
+    RefPtrWillBeRawPtr<CSSStyleSheet> cssSheet = CSSStyleSheet::create(newSheet, this);
     cssSheet->setDisabled(m_alternate);
     cssSheet->setTitle(m_title);
     cssSheet->setMediaQueries(MediaQuerySet::create(m_media));
@@ -212,7 +212,7 @@ void ProcessingInstruction::parseStyleSheet(const String& sheet)
         toXSLStyleSheet(m_sheet.get())->checkLoaded();
 }
 
-void ProcessingInstruction::setCSSStyleSheet(PassRefPtr<CSSStyleSheet> sheet)
+void ProcessingInstruction::setCSSStyleSheet(PassRefPtrWillBeRawPtr<CSSStyleSheet> sheet)
 {
     ASSERT(!resource());
     ASSERT(!m_loading);
@@ -239,7 +239,7 @@ void ProcessingInstruction::removedFrom(ContainerNode* insertionPoint)
 
     document().styleEngine()->removeStyleSheetCandidateNode(this);
 
-    RefPtr<StyleSheet> removedSheet = m_sheet;
+    RefPtrWillBeRawPtr<StyleSheet> removedSheet = m_sheet;
 
     if (m_sheet) {
         ASSERT(m_sheet->ownerNode() == this);

@@ -236,11 +236,11 @@ PassRefPtr<XMLDocument> DOMImplementation::createDocument(const AtomicString& na
     return doc.release();
 }
 
-PassRefPtr<CSSStyleSheet> DOMImplementation::createCSSStyleSheet(const String&, const String& media)
+PassRefPtrWillBeRawPtr<CSSStyleSheet> DOMImplementation::createCSSStyleSheet(const String&, const String& media)
 {
     // FIXME: Title should be set.
     // FIXME: Media could have wrong syntax, in which case we should generate an exception.
-    RefPtr<CSSStyleSheet> sheet = CSSStyleSheet::create(StyleSheetContents::create(strictCSSParserContext()));
+    RefPtrWillBeRawPtr<CSSStyleSheet> sheet = CSSStyleSheet::create(StyleSheetContents::create(strictCSSParserContext()));
     sheet->setMediaQueries(MediaQuerySet::create(media));
     return sheet;
 }

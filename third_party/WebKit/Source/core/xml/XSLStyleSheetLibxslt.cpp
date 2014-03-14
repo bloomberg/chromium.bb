@@ -62,7 +62,7 @@ XSLStyleSheet::XSLStyleSheet(Node* parentNode, const String& originalURL, const 
     , m_stylesheetDoc(0)
     , m_stylesheetDocTaken(false)
     , m_compilationFailed(false)
-    , m_parentStyleSheet(0)
+    , m_parentStyleSheet(nullptr)
 {
 }
 
@@ -303,8 +303,9 @@ void XSLStyleSheet::markAsProcessed()
     m_stylesheetDocTaken = true;
 }
 
-void XSLStyleSheet::trace(Visitor*)
+void XSLStyleSheet::trace(Visitor* visitor)
 {
+    visitor->trace(m_parentStyleSheet);
 }
 
 } // namespace WebCore

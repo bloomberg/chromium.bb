@@ -48,7 +48,7 @@ public:
     }
     ~XSLTProcessor();
 
-    void setXSLStyleSheet(PassRefPtr<XSLStyleSheet> styleSheet) { m_stylesheet = styleSheet; }
+    void setXSLStyleSheet(PassRefPtrWillBeRawPtr<XSLStyleSheet> styleSheet) { m_stylesheet = styleSheet; }
     bool transformToString(Node* source, String& resultMIMEType, String& resultString, String& resultEncoding);
     PassRefPtr<Document> createDocumentFromSource(const String& source, const String& sourceEncoding, const String& sourceMIMEType, Node* sourceNode, LocalFrame* frame);
 
@@ -76,7 +76,7 @@ public:
 
     typedef HashMap<String, String> ParameterMap;
 
-    void trace(Visitor*) { }
+    void trace(Visitor*);
 
 private:
     XSLTProcessor()
@@ -84,7 +84,7 @@ private:
         ScriptWrappable::init(this);
     }
 
-    RefPtr<XSLStyleSheet> m_stylesheet;
+    RefPtrWillBeMember<XSLStyleSheet> m_stylesheet;
     RefPtr<Node> m_stylesheetRootNode;
     ParameterMap m_parameters;
 };

@@ -32,6 +32,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/DocumentOrderedList.h"
 #include "core/dom/DocumentStyleSheetCollection.h"
+#include "heap/Handle.h"
 #include "wtf/FastAllocBase.h"
 #include "wtf/ListHashSet.h"
 #include "wtf/RefPtr.h"
@@ -74,7 +75,6 @@ private:
 class StyleEngine : public NoBaseWillBeGarbageCollectedFinalized<StyleEngine> {
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
-
     class IgnoringPendingStylesheet : public TemporaryChange<bool> {
     public:
         IgnoringPendingStylesheet(StyleEngine* engine)
@@ -184,7 +184,7 @@ public:
 
     void markDocumentDirty();
 
-    static PassRefPtr<CSSStyleSheet> createSheet(Element*, const String& text, TextPosition startPosition, bool createdByParser);
+    static PassRefPtrWillBeRawPtr<CSSStyleSheet> createSheet(Element*, const String& text, TextPosition startPosition, bool createdByParser);
     static void removeSheet(StyleSheetContents*);
 
     void trace(Visitor*);
@@ -210,7 +210,7 @@ private:
     void notifyPendingStyleSheetAdded();
     void notifyPendingStyleSheetRemoved(RemovePendingSheetNotificationType);
 
-    static PassRefPtr<CSSStyleSheet> parseSheet(Element*, const String& text, TextPosition startPosition, bool createdByParser);
+    static PassRefPtrWillBeRawPtr<CSSStyleSheet> parseSheet(Element*, const String& text, TextPosition startPosition, bool createdByParser);
 
     Document& m_document;
     bool m_isMaster;
@@ -227,7 +227,7 @@ private:
     WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet> > m_authorStyleSheets;
 
     DocumentStyleSheetCollection m_documentStyleSheetCollection;
-    HashMap<TreeScope*, OwnPtr<TreeScopeStyleSheetCollection> > m_styleSheetCollectionMap;
+    WillBeHeapHashMap<TreeScope*, OwnPtrWillBeMember<ShadowTreeStyleSheetCollection> > m_styleSheetCollectionMap;
 
     bool m_documentScopeDirty;
     TreeScopeSet m_dirtyTreeScopes;

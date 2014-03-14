@@ -43,7 +43,7 @@ public:
 
     const String& localHref() const { return m_localHref; }
     StyleSheet* sheet() const { return m_sheet.get(); }
-    void setCSSStyleSheet(PassRefPtr<CSSStyleSheet>);
+    void setCSSStyleSheet(PassRefPtrWillBeRawPtr<CSSStyleSheet>);
 
     bool isCSS() const { return m_isCSS; }
     bool isXSL() const { return m_isXSL; }
@@ -73,7 +73,7 @@ private:
     String m_localHref;
     String m_title;
     String m_media;
-    RefPtr<StyleSheet> m_sheet;
+    RefPtrWillBePersistent<StyleSheet> m_sheet;
     bool m_loading;
     bool m_alternate;
     bool m_createdByParser;

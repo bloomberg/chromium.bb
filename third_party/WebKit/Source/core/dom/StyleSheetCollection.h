@@ -38,14 +38,15 @@ namespace WebCore {
 class CSSStyleSheet;
 class StyleSheet;
 
-class StyleSheetCollection {
-    WTF_MAKE_NONCOPYABLE(StyleSheetCollection); WTF_MAKE_FAST_ALLOCATED;
+class StyleSheetCollection : public NoBaseWillBeGarbageCollectedFinalized<StyleSheetCollection> {
+    WTF_MAKE_NONCOPYABLE(StyleSheetCollection);
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
     friend class ActiveDocumentStyleSheetCollector;
     friend class ImportedDocumentStyleSheetCollector;
 
     StyleSheetCollection();
-    ~StyleSheetCollection();
+    virtual ~StyleSheetCollection();
 
     WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet> >& activeAuthorStyleSheets() { return m_activeAuthorStyleSheets; }
     WillBeHeapVector<RefPtrWillBeMember<StyleSheet> >& styleSheetsForStyleSheetList() { return m_styleSheetsForStyleSheetList; }
@@ -54,13 +55,15 @@ public:
 
     void swap(StyleSheetCollection&);
     void swapSheetsForSheetList(WillBeHeapVector<RefPtrWillBeMember<StyleSheet> >&);
-    void appendActiveStyleSheets(const WillBePersistentHeapVector<RefPtrWillBeMember<CSSStyleSheet> >&);
+    void appendActiveStyleSheets(const WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet> >&);
     void appendActiveStyleSheet(CSSStyleSheet*);
     void appendSheetForList(StyleSheet*);
 
+    virtual void trace(Visitor*);
+
 protected:
-    WillBePersistentHeapVector<RefPtrWillBeMember<StyleSheet> > m_styleSheetsForStyleSheetList;
-    WillBePersistentHeapVector<RefPtrWillBeMember<CSSStyleSheet> > m_activeAuthorStyleSheets;
+    WillBeHeapVector<RefPtrWillBeMember<StyleSheet> > m_styleSheetsForStyleSheetList;
+    WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet> > m_activeAuthorStyleSheets;
 };
 
 }

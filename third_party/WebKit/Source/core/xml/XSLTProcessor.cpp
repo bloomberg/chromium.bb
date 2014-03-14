@@ -54,8 +54,10 @@ static inline void transformTextStringToXHTMLDocumentString(String& text)
 
 XSLTProcessor::~XSLTProcessor()
 {
+#if !ENABLE(OILPAN)
     // Stylesheet shouldn't outlive its root node.
     ASSERT(!m_stylesheetRootNode || !m_stylesheet || m_stylesheet->hasOneRef());
+#endif
 }
 
 PassRefPtr<Document> XSLTProcessor::createDocumentFromSource(const String& sourceString,
@@ -155,6 +157,11 @@ void XSLTProcessor::reset()
     m_stylesheet.clear();
     m_stylesheetRootNode.clear();
     m_parameters.clear();
+}
+
+void XSLTProcessor::trace(Visitor* visitor)
+{
+    visitor->trace(m_stylesheet);
 }
 
 } // namespace WebCore
