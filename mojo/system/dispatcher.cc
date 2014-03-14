@@ -416,8 +416,11 @@ bool Dispatcher::SerializeAndClose(Channel* channel,
 
   // We have to call |GetMaximumSerializedSizeImplNoLock()| first, because we
   // leave it to |SerializeAndCloseImplNoLock()| to close the thing.
-  size_t max_size = DCHECK_IS_ON() ?
-      GetMaximumSerializedSizeImplNoLock(channel) : static_cast<size_t>(-1);
+#if DCHECK_IS_ON
+  size_t max_size = GetMaximumSerializedSizeImplNoLock(channel);
+#else
+  size_t max_size = static_cast<size_t>(-1);
+#endif
 
   // Like other |...Close()| methods, we mark ourselves as closed before calling
   // the impl.

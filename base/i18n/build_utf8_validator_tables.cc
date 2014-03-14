@@ -248,12 +248,12 @@ void MoveAllCharsToSets(PairVector* pairs) {
   for (int i = 0; i < 4; ++i) {
     MoveRightMostCharToSet(pairs);
   }
-  if (DCHECK_IS_ON()) {
-    for (PairVector::const_iterator it = pairs->begin(); it != pairs->end();
-         ++it) {
-      DCHECK(it->character.empty());
-    }
+#if DCHECK_IS_ON
+  for (PairVector::const_iterator it = pairs->begin(); it != pairs->end();
+       ++it) {
+    DCHECK(it->character.empty());
   }
+#endif
 }
 
 // Logs the generated string sets in regular-expression style, ie. [\x00-\x7f],

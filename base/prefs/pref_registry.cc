@@ -31,13 +31,11 @@ PrefRegistry::const_iterator PrefRegistry::end() const {
 void PrefRegistry::SetDefaultPrefValue(const char* pref_name,
                                        base::Value* value) {
   DCHECK(value);
-  if (DCHECK_IS_ON()) {
-    const base::Value* current_value = NULL;
-    DCHECK(defaults_->GetValue(pref_name, &current_value))
-        << "Setting default for unregistered pref: " << pref_name;
-    DCHECK(value->IsType(current_value->GetType()))
-        << "Wrong type for new default: " << pref_name;
-  }
+  const base::Value* current_value = NULL;
+  DCHECK(defaults_->GetValue(pref_name, &current_value))
+      << "Setting default for unregistered pref: " << pref_name;
+  DCHECK(value->IsType(current_value->GetType()))
+      << "Wrong type for new default: " << pref_name;
 
   defaults_->ReplaceDefaultValue(pref_name, make_scoped_ptr(value));
 }

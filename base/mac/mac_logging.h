@@ -81,7 +81,7 @@ class BASE_EXPORT OSStatusLogMessage : public logging::LogMessage {
 
 #define OSSTATUS_DCHECK(condition, status) \
     LAZY_STREAM(OSSTATUS_LOG_STREAM(FATAL, status), \
-                DCHECK_IS_ON() && !(condition)) \
+                DCHECK_IS_ON && !(condition)) \
     << "Check failed: " # condition << ". "
 
 #endif  // BASE_MAC_MAC_LOGGING_H_

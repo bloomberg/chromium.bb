@@ -104,12 +104,12 @@ FontListImpl::FontListImpl(const std::vector<Font>& fonts)
   DCHECK(!fonts.empty());
   font_style_ = fonts[0].GetStyle();
   font_size_ = fonts[0].GetFontSize();
-  if (DCHECK_IS_ON()) {
-    for (size_t i = 1; i < fonts.size(); ++i) {
-      DCHECK_EQ(fonts[i].GetStyle(), font_style_);
-      DCHECK_EQ(fonts[i].GetFontSize(), font_size_);
-    }
+#if DCHECK_IS_ON
+  for (size_t i = 1; i < fonts.size(); ++i) {
+    DCHECK_EQ(fonts[i].GetStyle(), font_style_);
+    DCHECK_EQ(fonts[i].GetFontSize(), font_size_);
   }
+#endif
 }
 
 FontListImpl::FontListImpl(const Font& font)

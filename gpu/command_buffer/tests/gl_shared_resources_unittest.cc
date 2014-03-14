@@ -17,14 +17,7 @@ class GLSharedResources : public testing::Test {
  protected:
   virtual void SetUp() {
     GLManager::Options options;
-#if ENABLE_DCHECK
-    // This can't be false if DCHECK is enabled because a DCHECK in
-    // gpu/command_buffer/client/share_group.h will trigger.
-    // The test below is making sure things don't break in release.
-    options.bind_generates_resource = false;
-#else
     options.bind_generates_resource = true;
-#endif
     gl1_.Initialize(options);
     options.share_group_manager = &gl1_;
     gl2_.Initialize(options);

@@ -136,13 +136,13 @@ void TopSitesCache::CountForcedURLs() {
       break;
     num_forced_urls_++;
   }
+#if DCHECK_IS_ON
   // In debug, ensure the cache user has no forced URLs pass that point.
-  if (DCHECK_IS_ON()) {
-    for (size_t i = num_forced_urls_; i < top_sites_.size(); ++i) {
-      DCHECK(top_sites_[i].last_forced_time.is_null())
-          << "All the forced URLs must appear before non-forced URLs.";
-    }
+  for (size_t i = num_forced_urls_; i < top_sites_.size(); ++i) {
+    DCHECK(top_sites_[i].last_forced_time.is_null())
+        << "All the forced URLs must appear before non-forced URLs.";
   }
+#endif
 }
 
 void TopSitesCache::GenerateCanonicalURLs() {

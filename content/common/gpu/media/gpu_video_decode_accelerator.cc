@@ -55,26 +55,16 @@ static bool MakeDecoderContextCurrent(
   return true;
 }
 
-// A helper class that works like AutoLock but only acquires the lock when
+// DebugAutoLock works like AutoLock but only acquires the lock when
 // DCHECK is on.
+#if DCHECK_IS_ON
+typedef base::AutoLock DebugAutoLock;
+#else
 class DebugAutoLock {
  public:
-  explicit DebugAutoLock(base::Lock& lock) : lock_(lock) {
-    if (DCHECK_IS_ON())
-      lock_.Acquire();
-  }
-
-  ~DebugAutoLock() {
-    if (DCHECK_IS_ON()) {
-      lock_.AssertAcquired();
-      lock_.Release();
-    }
-  }
-
- private:
-  base::Lock& lock_;
-  DISALLOW_COPY_AND_ASSIGN(DebugAutoLock);
+  explicit DebugAutoLock(base::Lock&) {}
 };
+#endif
 
 class GpuVideoDecodeAccelerator::MessageFilter
     : public IPC::ChannelProxy::MessageFilter {
@@ -213,10 +203,8 @@ void GpuVideoDecodeAccelerator::PictureReady(
     SetTextureCleared(picture);
   } else {
     DCHECK(io_message_loop_->BelongsToCurrentThread());
-    if (DCHECK_IS_ON()) {
-      DebugAutoLock auto_lock(debug_uncleared_textures_lock_);
-      DCHECK_EQ(0u, uncleared_textures_.count(picture.picture_buffer_id()));
-    }
+    DebugAutoLock auto_lock(debug_uncleared_textures_lock_);
+    DCHECK_EQ(0u, uncleared_textures_.count(picture.picture_buffer_id()));
   }
 
   if (!Send(new AcceleratedVideoDecoderHostMsg_PictureReady(

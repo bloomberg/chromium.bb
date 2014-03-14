@@ -198,13 +198,15 @@ void HttpBridge::SetExtraRequestHeaders(const char * headers) {
 }
 
 void HttpBridge::SetURL(const char* url, int port) {
+#if DCHECK_IS_ON
   DCHECK_EQ(base::MessageLoop::current(), created_on_loop_);
-  if (DCHECK_IS_ON()) {
+  {
     base::AutoLock lock(fetch_state_lock_);
     DCHECK(!fetch_state_.request_completed);
   }
   DCHECK(url_for_request_.is_empty())
       << "HttpBridge::SetURL called more than once?!";
+#endif
   GURL temp(url);
   GURL::Replacements replacements;
   std::string port_str = base::IntToString(port);
@@ -216,13 +218,15 @@ void HttpBridge::SetURL(const char* url, int port) {
 void HttpBridge::SetPostPayload(const char* content_type,
                                 int content_length,
                                 const char* content) {
+#if DCHECK_IS_ON
   DCHECK_EQ(base::MessageLoop::current(), created_on_loop_);
-  if (DCHECK_IS_ON()) {
+  {
     base::AutoLock lock(fetch_state_lock_);
     DCHECK(!fetch_state_.request_completed);
   }
   DCHECK(content_type_.empty()) << "Bridge payload already set.";
   DCHECK_GE(content_length, 0) << "Content length < 0";
+#endif
   content_type_ = content_type;
   if (!content || (content_length == 0)) {
     DCHECK_EQ(content_length, 0);
@@ -235,13 +239,15 @@ void HttpBridge::SetPostPayload(const char* content_type,
 }
 
 bool HttpBridge::MakeSynchronousPost(int* error_code, int* response_code) {
+#if DCHECK_IS_ON
   DCHECK_EQ(base::MessageLoop::current(), created_on_loop_);
-  if (DCHECK_IS_ON()) {
+  {
     base::AutoLock lock(fetch_state_lock_);
     DCHECK(!fetch_state_.request_completed);
   }
   DCHECK(url_for_request_.is_valid()) << "Invalid URL for request";
   DCHECK(!content_type_.empty()) << "Payload not set";
+#endif
 
   if (!network_task_runner_->PostTask(
           FROM_HERE,

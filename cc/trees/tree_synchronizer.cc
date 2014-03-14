@@ -291,9 +291,9 @@ void TreeSynchronizer::PushProperties(Layer* layer,
   size_t num_dependents_need_push_properties = 0;
   PushPropertiesInternal(
       layer, layer_impl, &num_dependents_need_push_properties);
-  if (DCHECK_IS_ON()) {
-    CheckScrollAndClipPointersRecursive(layer, layer_impl);
-  }
+#if DCHECK_IS_ON
+  CheckScrollAndClipPointersRecursive(layer, layer_impl);
+#endif
 }
 
 void TreeSynchronizer::PushProperties(LayerImpl* layer, LayerImpl* layer_impl) {

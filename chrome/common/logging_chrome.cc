@@ -358,13 +358,10 @@ void InitChromeLogging(const CommandLine& command_line,
   logging::LogEventProvider::Initialize(kChromeTraceProviderName);
 #endif
 
-#ifdef NDEBUG
-  if (command_line.HasSwitch(switches::kSilentDumpOnDCHECK) && DCHECK_IS_ON()) {
-#if defined(OS_WIN)
+#if DCHECK_IS_ON && defined(NDEBUG) && defined(OS_WIN)
+  if (command_line.HasSwitch(switches::kSilentDumpOnDCHECK))
     logging::SetLogReportHandler(DumpProcessAssertHandler);
 #endif
-  }
-#endif  // NDEBUG
 
   chrome_logging_initialized_ = true;
 }

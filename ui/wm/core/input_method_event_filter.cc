@@ -61,8 +61,7 @@ void InputMethodEventFilter::OnKeyEvent(ui::KeyEvent* event) {
 bool InputMethodEventFilter::DispatchKeyEventPostIME(
     const ui::KeyEvent& event) {
 #if defined(OS_WIN)
-  if (DCHECK_IS_ON() && event.HasNativeEvent())
-    DCHECK_NE(event.native_event().message, static_cast<UINT>(WM_CHAR));
+  DCHECK(!event.HasNativeEvent() || event.native_event().message != WM_CHAR);
 #endif
   ui::TranslatedKeyEvent aura_event(event);
   ui::EventDispatchDetails details =

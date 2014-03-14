@@ -367,11 +367,11 @@ void TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
     EXPECT_CALL(*gl, BindTexture(GL_TEXTURE_2D, gl_ids[0]))
         .Times(1)
         .RetiresOnSaturation();
-    if (DCHECK_IS_ON()) {
-      EXPECT_CALL(*gl, GetError())
-          .WillOnce(Return(GL_NO_ERROR))
-          .RetiresOnSaturation();
-    }
+#if DCHECK_IS_ON
+    EXPECT_CALL(*gl, GetError())
+        .WillOnce(Return(GL_NO_ERROR))
+        .RetiresOnSaturation();
+#endif
   }
 }
 

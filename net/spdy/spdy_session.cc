@@ -756,17 +756,17 @@ void SpdySession::CancelStreamRequest(
   CHECK_GE(priority, MINIMUM_PRIORITY);
   CHECK_LE(priority, MAXIMUM_PRIORITY);
 
-  if (DCHECK_IS_ON()) {
-    // |request| should not be in a queue not matching its priority.
-    for (int i = MINIMUM_PRIORITY; i <= MAXIMUM_PRIORITY; ++i) {
-      if (priority == i)
-        continue;
-      PendingStreamRequestQueue* queue = &pending_create_stream_queues_[i];
-      DCHECK(std::find_if(queue->begin(),
-                          queue->end(),
-                          RequestEquals(request)) == queue->end());
-    }
+#if DCHECK_IS_ON
+  // |request| should not be in a queue not matching its priority.
+  for (int i = MINIMUM_PRIORITY; i <= MAXIMUM_PRIORITY; ++i) {
+    if (priority == i)
+      continue;
+    PendingStreamRequestQueue* queue = &pending_create_stream_queues_[i];
+    DCHECK(std::find_if(queue->begin(),
+                        queue->end(),
+                        RequestEquals(request)) == queue->end());
   }
+#endif
 
   PendingStreamRequestQueue* queue =
       &pending_create_stream_queues_[priority];
@@ -1459,13 +1459,13 @@ int SpdySession::DoWriteComplete(int result) {
 }
 
 void SpdySession::DcheckGoingAway() const {
+#if DCHECK_IS_ON
   DCHECK_GE(availability_state_, STATE_GOING_AWAY);
-  if (DCHECK_IS_ON()) {
-    for (int i = MINIMUM_PRIORITY; i <= MAXIMUM_PRIORITY; ++i) {
-      DCHECK(pending_create_stream_queues_[i].empty());
-    }
+  for (int i = MINIMUM_PRIORITY; i <= MAXIMUM_PRIORITY; ++i) {
+    DCHECK(pending_create_stream_queues_[i].empty());
   }
   DCHECK(created_streams_.empty());
+#endif
 }
 
 void SpdySession::DcheckClosed() const {
@@ -3015,8 +3015,9 @@ void SpdySession::ResumeSendStalledStreams() {
 
   while (availability_state_ != STATE_CLOSED && !IsSendStalled()) {
     size_t old_size = 0;
-    if (DCHECK_IS_ON())
-      old_size = GetTotalSize(stream_send_unstall_queue_);
+#if DCHECK_IS_ON
+    old_size = GetTotalSize(stream_send_unstall_queue_);
+#endif
 
     SpdyStreamId stream_id = PopStreamToPossiblyResume();
     if (stream_id == 0)

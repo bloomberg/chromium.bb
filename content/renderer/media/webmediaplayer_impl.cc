@@ -643,11 +643,11 @@ bool WebMediaPlayerImpl::copyVideoTextureToPlatformTexture(
   // avoid it in user builds. As a result assume (below) that |texture| is
   // bound when this method is called, and only verify this fact when
   // DCHECK_IS_ON.
-  if (DCHECK_IS_ON()) {
-    GLint bound_texture = 0;
-    web_graphics_context->getIntegerv(GL_TEXTURE_BINDING_2D, &bound_texture);
-    DCHECK_EQ(static_cast<GLuint>(bound_texture), texture);
-  }
+#if DCHECK_IS_ON
+  GLint bound_texture = 0;
+  web_graphics_context->getIntegerv(GL_TEXTURE_BINDING_2D, &bound_texture);
+  DCHECK_EQ(static_cast<GLuint>(bound_texture), texture);
+#endif
 
   uint32 source_texture = web_graphics_context->createTexture();
 

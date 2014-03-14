@@ -1191,9 +1191,7 @@ bool PictureLayerImpl::CanHaveTilingWithScale(float contents_scale) const {
 }
 
 void PictureLayerImpl::SanityCheckTilingState() const {
-  if (!DCHECK_IS_ON())
-    return;
-
+#if DCHECK_IS_ON
   if (!CanHaveTilings()) {
     DCHECK_EQ(0u, tilings_->num_tilings());
     return;
@@ -1204,6 +1202,7 @@ void PictureLayerImpl::SanityCheckTilingState() const {
   // MarkVisibleResourcesAsRequired depends on having exactly 1 high res
   // tiling to mark its tiles as being required for activation.
   DCHECK_EQ(1, tilings_->NumHighResTilings());
+#endif
 }
 
 void PictureLayerImpl::GetDebugBorderProperties(

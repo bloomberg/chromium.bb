@@ -155,7 +155,7 @@ class Lock;
       base::subtle::Release_Store(&atomic_histogram_pointer, \
           reinterpret_cast<base::subtle::AtomicWord>(histogram_pointer)); \
     } \
-    if (DCHECK_IS_ON()) \
+    if (DCHECK_IS_ON) \
       histogram_pointer->CheckName(constant_histogram_name); \
     histogram_pointer->histogram_add_method_invocation; \
   } while (0)

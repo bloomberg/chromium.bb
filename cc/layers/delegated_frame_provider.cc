@@ -28,10 +28,10 @@ DelegatedFrameProvider::~DelegatedFrameProvider() {
 }
 
 void DelegatedFrameProvider::AddObserver(DelegatedRendererLayer* layer) {
-  if (DCHECK_IS_ON()) {
-    for (size_t i = 0; i < observers_.size(); ++i)
-      DCHECK(observers_[i].layer != layer);
-  }
+#if DCHECK_IS_ON
+  for (size_t i = 0; i < observers_.size(); ++i)
+    DCHECK(observers_[i].layer != layer);
+#endif
 
   observers_.push_back(Observer(layer, gfx::RectF(frame_size_)));
 

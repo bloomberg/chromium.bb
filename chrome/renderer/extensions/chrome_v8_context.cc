@@ -173,12 +173,8 @@ void ChromeV8Context::OnResponseReceived(const std::string& name,
 
   // In debug, the js will validate the callback parameters and return a
   // string if a validation error has occured.
-  if (DCHECK_IS_ON()) {
-    if (!retval.IsEmpty() && !retval->IsUndefined()) {
-      std::string error = *v8::String::Utf8Value(retval);
-      DCHECK(false) << error;
-    }
-  }
+  DCHECK(retval.IsEmpty() || retval->IsUndefined())
+      << *v8::String::Utf8Value(retval);
 }
 
 }  // namespace extensions
