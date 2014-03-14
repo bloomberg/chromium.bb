@@ -1949,7 +1949,8 @@ void ResourceProvider::BeginSetPixels(ResourceId id) {
     DCHECK(resource->pixel_buffer);
     DCHECK_EQ(RGBA_8888, resource->format);
 
-    std::swap(resource->pixels, resource->pixel_buffer);
+    memcpy(
+        resource->pixels, resource->pixel_buffer, 4 * resource->size.GetArea());
     delete[] resource->pixel_buffer;
     resource->pixel_buffer = NULL;
   }

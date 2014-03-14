@@ -35,6 +35,7 @@
 #include "content/common/desktop_notification_messages.h"
 #include "content/common/frame_messages.h"
 #include "content/common/gpu/client/gpu_memory_buffer_impl.h"
+#include "content/common/host_shared_bitmap_manager.h"
 #include "content/common/media/media_param_traits.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_child_process_host.h"
@@ -354,6 +355,7 @@ RenderMessageFilter::~RenderMessageFilter() {
 }
 
 void RenderMessageFilter::OnChannelClosing() {
+  HostSharedBitmapManager::current()->ProcessRemoved(PeerHandle());
 #if defined(ENABLE_PLUGINS)
   for (std::set<OpenChannelToNpapiPluginCallback*>::iterator it =
        plugin_host_clients_.begin(); it != plugin_host_clients_.end(); ++it) {
@@ -430,8 +432,14 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message,
                         OnCheckNotificationPermission)
     IPC_MESSAGE_HANDLER(ChildProcessHostMsg_SyncAllocateSharedMemory,
                         OnAllocateSharedMemory)
+    IPC_MESSAGE_HANDLER(ChildProcessHostMsg_SyncAllocateSharedBitmap,
+                        OnAllocateSharedBitmap)
     IPC_MESSAGE_HANDLER(ChildProcessHostMsg_SyncAllocateGpuMemoryBuffer,
                         OnAllocateGpuMemoryBuffer)
+    IPC_MESSAGE_HANDLER(ChildProcessHostMsg_AllocatedSharedBitmap,
+                        OnAllocatedSharedBitmap)
+    IPC_MESSAGE_HANDLER(ChildProcessHostMsg_DeletedSharedBitmap,
+                        OnDeletedSharedBitmap)
 #if defined(OS_POSIX) && !defined(TOOLKIT_GTK) && !defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AllocTransportDIB, OnAllocTransportDIB)
     IPC_MESSAGE_HANDLER(ViewHostMsg_FreeTransportDIB, OnFreeTransportDIB)
@@ -924,6 +932,26 @@ void RenderMessageFilter::OnAllocateSharedMemory(
     base::SharedMemoryHandle* handle) {
   ChildProcessHostImpl::AllocateSharedMemory(
       buffer_size, PeerHandle(), handle);
+}
+
+void RenderMessageFilter::OnAllocateSharedBitmap(
+    uint32 buffer_size,
+    const cc::SharedBitmapId& id,
+    base::SharedMemoryHandle* handle) {
+  HostSharedBitmapManager::current()->AllocateSharedBitmapForChild(
+      PeerHandle(), buffer_size, id, handle);
+}
+
+void RenderMessageFilter::OnAllocatedSharedBitmap(
+    size_t buffer_size,
+    const base::SharedMemoryHandle& handle,
+    const cc::SharedBitmapId& id) {
+  HostSharedBitmapManager::current()->ChildAllocatedSharedBitmap(
+      buffer_size, handle, PeerHandle(), id);
+}
+
+void RenderMessageFilter::OnDeletedSharedBitmap(const cc::SharedBitmapId& id) {
+  HostSharedBitmapManager::current()->ChildDeletedSharedBitmap(id);
 }
 
 net::CookieStore* RenderMessageFilter::GetCookieStoreForURL(

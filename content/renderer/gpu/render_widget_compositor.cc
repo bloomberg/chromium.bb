@@ -24,6 +24,7 @@
 #include "cc/debug/micro_benchmark.h"
 #include "cc/layers/layer.h"
 #include "cc/trees/layer_tree_host.h"
+#include "content/child/child_shared_bitmap_manager.h"
 #include "content/common/content_switches_internal.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/public/common/content_switches.h"
@@ -395,10 +396,13 @@ void RenderWidgetCompositor::Initialize(cc::LayerTreeSettings settings) {
       RenderThreadImpl::current()->compositor_message_loop_proxy();
   if (compositor_message_loop_proxy.get()) {
     layer_tree_host_ = cc::LayerTreeHost::CreateThreaded(
-        this, NULL, settings, compositor_message_loop_proxy);
+        this,
+        ChildThread::current()->shared_bitmap_manager(),
+        settings,
+        compositor_message_loop_proxy);
   } else {
     layer_tree_host_ = cc::LayerTreeHost::CreateSingleThreaded(
-        this, this, NULL, settings);
+        this, this, ChildThread::current()->shared_bitmap_manager(), settings);
   }
   DCHECK(layer_tree_host_);
 }

@@ -11,6 +11,7 @@
 #include "base/memory/shared_memory.h"
 #include "base/tracked_objects.h"
 #include "base/values.h"
+#include "cc/resources/shared_bitmap_manager.h"
 #include "content/common/content_export.h"
 #include "ipc/ipc_message_macros.h"
 #include "ui/gfx/gpu_memory_buffer.h"
@@ -145,6 +146,23 @@ IPC_MESSAGE_CONTROL0(ChildProcessHostMsg_ReleaseCachedFonts)
 IPC_SYNC_MESSAGE_CONTROL1_1(ChildProcessHostMsg_SyncAllocateSharedMemory,
                             uint32 /* buffer size */,
                             base::SharedMemoryHandle)
+
+// Asks the browser to create a block of shared memory for the child process to
+// fill in and pass back to the browser.
+IPC_SYNC_MESSAGE_CONTROL2_1(ChildProcessHostMsg_SyncAllocateSharedBitmap,
+                            uint32 /* buffer size */,
+                            cc::SharedBitmapId,
+                            base::SharedMemoryHandle)
+
+// Informs the browser that the child allocated a shared bitmap.
+IPC_MESSAGE_CONTROL3(ChildProcessHostMsg_AllocatedSharedBitmap,
+                     uint32 /* buffer size */,
+                     base::SharedMemoryHandle,
+                     cc::SharedBitmapId)
+
+// Informs the browser that the child deleted a shared bitmap.
+IPC_MESSAGE_CONTROL1(ChildProcessHostMsg_DeletedSharedBitmap,
+                     cc::SharedBitmapId)
 
 #if defined(USE_TCMALLOC)
 // Reply to ChildProcessMsg_GetTcmallocStats.
