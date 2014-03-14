@@ -940,9 +940,6 @@ crbug.com/350828 svg/custom/animate-initial-pause-unpause.html [ Failure Pass ]
 crbug.com/350543 [ Linux ] svg/as-image/image-change-with-equal-sizes.html [ Crash Pass ]
 crbug.com/350829 [ Linux Win ] virtual/threaded/animations/missing-keyframe-properties-repeating.html [ Timeout Pass ]
 
-# Temporary while the test is fixed
-crbug.com/349472 fast/forms/select/menulist-oninput-fired.html [ Skip ]
-
 crbug.com/352035 [ Debug ] inspector/sources/debugger/async-callstack-promises.html [ Crash ]
 crbug.com/352035 [ Debug ] inspector/sources/debugger/async-callstack-scopes.html [ Crash ]
 crbug.com/352035 [ Debug ] inspector/sources/debugger/async-callstack.html [ Crash ]

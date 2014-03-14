@@ -3,12 +3,6 @@ Selecting menu list options should fire oninput event
 
 Pressing 2 key
 PASS
-Pressing 4 key
-PASS
-Pressing 1 key
-PASS
-Pressing 5 key
-PASS
 PASS successfullyParsed is true
 
 TEST COMPLETE
