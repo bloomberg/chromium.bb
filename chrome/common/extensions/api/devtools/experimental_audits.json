@@ -134,7 +134,7 @@
             "description": "Children of this node."
           },
           "expanded": {
-            "optional": "true",
+            "optional": true,
             "type": "boolean",
             "description": "Whether the node is expanded by default."
           }

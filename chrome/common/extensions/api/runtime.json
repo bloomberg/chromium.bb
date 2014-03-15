@@ -434,7 +434,7 @@
         ],
         "returns": {
           "type": "boolean",
-          "optional": "true",
+          "optional": true,
           "description": "Return true from the event listener if you wish to call <code>sendResponse</code> after the event listener returns."
         }
       },
@@ -452,7 +452,7 @@
         ],
         "returns": {
           "type": "boolean",
-          "optional": "true",
+          "optional": true,
           "description": "Return true from the event listener if you wish to call <code>sendResponse</code> after the event listener returns."
         }
       },

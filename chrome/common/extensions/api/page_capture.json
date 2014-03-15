@@ -31,7 +31,7 @@
               {
                 "name": "mhtmlData",
                 "type": "binary",
-                "optional": "true",
+                "optional": true,
                 "description": "The MHTML data as a Blob."
               }
             ]

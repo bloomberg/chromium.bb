@@ -33,7 +33,7 @@
           {
             "name": "callback",
             "type": "function",
-            "optional": "false",
+            "optional": false,
             "parameters": [
               { "name": "is_enabled", "type": "boolean" }
             ]
@@ -49,7 +49,7 @@
           {
             "name": "callback",
             "type": "function",
-            "optional": "false",
+            "optional": false,
             "parameters": [
               { "name": "group", "type": "string" }
             ]
@@ -65,7 +65,7 @@
           {
             "name": "callback",
             "type": "function",
-            "optional": "false",
+            "optional": false,
             "parameters": [
               {
                 "name": "params",

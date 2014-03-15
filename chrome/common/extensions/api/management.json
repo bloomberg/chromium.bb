@@ -151,7 +151,7 @@
           {
             "type": "function",
             "name": "callback",
-            "optional": "true",
+            "optional": true,
             "parameters": [
               {
                 "name": "result",
@@ -172,7 +172,7 @@
           {
             "name": "callback",
             "type": "function",
-            "optional": "true",
+            "optional": true,
             "parameters": [
               {
                 "name": "permissionWarnings",
@@ -195,7 +195,7 @@
           {
             "name": "callback",
             "type": "function",
-            "optional": "true",
+            "optional": true,
             "parameters": [
               {
                 "name": "permissionWarnings",
@@ -223,7 +223,7 @@
           {
             "name": "callback",
             "type": "function",
-            "optional": "true",
+            "optional": true,
             "parameters": []
           }
         ]
@@ -240,7 +240,7 @@
           {
             "type": "object",
             "name": "options",
-            "optional": "true",
+            "optional": true,
             "properties": {
               "showConfirmDialog": {
                 "type": "boolean",
@@ -252,7 +252,7 @@
           {
             "name": "callback",
             "type": "function",
-            "optional": "true",
+            "optional": true,
             "parameters": []
           }
         ]
@@ -264,7 +264,7 @@
           {
             "type": "object",
             "name": "options",
-            "optional": "true",
+            "optional": true,
             "properties": {
               "showConfirmDialog": {
                 "type": "boolean",
@@ -276,7 +276,7 @@
           {
             "name": "callback",
             "type": "function",
-            "optional": "true",
+            "optional": true,
             "parameters": []
           }
         ]
@@ -293,7 +293,7 @@
           {
             "name": "callback",
             "type": "function",
-            "optional": "true",
+            "optional": true,
             "parameters": []
           }
         ]

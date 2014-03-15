@@ -117,7 +117,7 @@
               },
               "collapseKey": {
                 "type": "string",
-                "optional": "true",
+                "optional": true,
                 "desctription": "The collapse key of a message. See <a href='cloudMessagingV2#collapsible_messages'>Collapsible Messages</a> section of Cloud Messaging documentation for details."
               }
             }
