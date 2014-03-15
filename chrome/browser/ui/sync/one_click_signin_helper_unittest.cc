@@ -4,6 +4,7 @@
 
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -851,4 +852,153 @@ TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThreadDisabledByPolicy) {
   EXPECT_EQ(OneClickSigninHelper::CAN_OFFER,
             OneClickSigninHelper::CanOfferOnIOThreadImpl(
                 valid_gaia_url_, &request_, io_data.get()));
+}
+
+
+class MockStarterWrapper
+    : public testing::StrictMock<OneClickSigninHelper::SyncStarterWrapper> {
+ public:
+  MockStarterWrapper(
+      const OneClickSigninHelper::StartSyncArgs& args,
+      OneClickSigninSyncStarter::StartSyncMode start_mode);
+
+  MOCK_METHOD1(DisplayErrorBubble, void(const std::string& error_message));
+  MOCK_METHOD0(StartSigninOAuthHelper, void());
+  MOCK_METHOD2(StartOneClickSigninSyncStarter,
+               void(const std::string& email,
+                    const std::string& refresh_token));
+};
+
+MockStarterWrapper::MockStarterWrapper(
+    const OneClickSigninHelper::StartSyncArgs& args,
+    OneClickSigninSyncStarter::StartSyncMode start_mode)
+    : testing::StrictMock<OneClickSigninHelper::SyncStarterWrapper>(
+          args, start_mode) {
+}
+
+class OneClickSyncStarterWrapperTest : public testing::Test {
+ public:
+  virtual void SetUp() OVERRIDE {
+    TestingProfile::Builder builder;
+    profile_ = builder.Build();
+  }
+
+  virtual void TearDown() OVERRIDE {
+    // Let the SyncStarterWrapper delete itself.
+    base::RunLoop().RunUntilIdle();
+  }
+
+  void SetCookie(const std::string& value) {
+    // Set a valid LSID cookie in the test cookie store.
+    scoped_refptr<net::CookieMonster> cookie_monster =
+        profile()->GetCookieMonster();
+    net::CookieOptions options;
+    options.set_include_httponly();
+    cookie_monster->SetCookieWithOptionsAsync(
+          GURL("https://accounts.google.com"),
+          value, options,
+          net::CookieMonster::SetCookiesCallback());
+  }
+
+  void SimulateRefreshTokenFetched(
+      SigninOAuthHelper::Consumer* consumer,
+      const std::string& email,
+      const std::string& display_email,
+      const std::string& refresh_token) {
+    consumer->OnSigninOAuthInformationAvailable(
+        email, display_email, refresh_token);
+  }
+
+  TestingProfile* profile() { return profile_.get(); }
+
+ private:
+  content::TestBrowserThreadBundle thread_bundle_;
+  scoped_ptr<TestingProfile> profile_;
+};
+
+TEST_F(OneClickSyncStarterWrapperTest, SignInWithRefreshToken) {
+  OneClickSigninHelper::StartSyncArgs args;
+  args.email = "foo@gmail.com";
+  args.password = "password";
+  args.refresh_token = "refresh_token";
+  MockStarterWrapper* wrapper = new MockStarterWrapper(
+      args, OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS);
+
+  EXPECT_CALL(*wrapper,
+              StartOneClickSigninSyncStarter("foo@gmail.com",
+                                             "refresh_token"));
+  wrapper->Start();
+}
+
+TEST_F(OneClickSyncStarterWrapperTest, SignInWithPasswordNoRefreshToken) {
+  OneClickSigninHelper::StartSyncArgs args;
+  args.email = "foo@gmail.com";
+  args.password = "password";
+  MockStarterWrapper* wrapper = new MockStarterWrapper(
+      args, OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS);
+
+  EXPECT_CALL(*wrapper, StartSigninOAuthHelper());
+  EXPECT_CALL(*wrapper,
+              StartOneClickSigninSyncStarter("foo@gmail.com",
+                                             "refresh_token"));
+  wrapper->Start();
+  SimulateRefreshTokenFetched(wrapper, "foo@gmail.com", "foo@gmail.com",
+                              "refresh_token");
+}
+
+TEST_F(OneClickSyncStarterWrapperTest, SignInWithWrongEmail) {
+  OneClickSigninHelper::StartSyncArgs args;
+  args.email = "foo@gmail.com";
+  args.password = "password";
+  MockStarterWrapper* wrapper = new MockStarterWrapper(
+      args, OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS);
+
+  EXPECT_CALL(*wrapper, StartSigninOAuthHelper());
+  EXPECT_CALL(*wrapper, DisplayErrorBubble(_));
+  wrapper->Start();
+  SimulateRefreshTokenFetched(wrapper, "bar@gmail.com", "bar@gmail.com",
+                              "refresh_token");
+}
+
+TEST_F(OneClickSyncStarterWrapperTest, SignInWithEmptyPasswordValidCookie) {
+  OneClickSigninHelper::StartSyncArgs args;
+  args.email = "foo@gmail.com";
+  args.profile = profile();
+  MockStarterWrapper* wrapper = new MockStarterWrapper(
+      args, OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS);
+  SetCookie("LSID=1234; secure; httponly");
+
+  EXPECT_CALL(*wrapper, StartSigninOAuthHelper());
+  EXPECT_CALL(*wrapper,
+              StartOneClickSigninSyncStarter("foo@gmail.com",
+                                             "refresh_token"));
+  wrapper->Start();
+  base::RunLoop().RunUntilIdle();
+  SimulateRefreshTokenFetched(wrapper, "foo@gmail.com", "foo@gmail.com",
+                              "refresh_token");
+}
+
+TEST_F(OneClickSyncStarterWrapperTest, SignInWithEmptyPasswordNoCookie) {
+  OneClickSigninHelper::StartSyncArgs args;
+  args.email = "foo@gmail.com";
+  args.profile = profile();
+  MockStarterWrapper* wrapper = new MockStarterWrapper(
+      args, OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS);
+
+  EXPECT_CALL(*wrapper, DisplayErrorBubble(_));
+  wrapper->Start();
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(OneClickSyncStarterWrapperTest, SignInWithEmptyPasswordInvalidCookie) {
+  OneClickSigninHelper::StartSyncArgs args;
+  args.email = "foo@gmail.com";
+  args.profile = profile();
+  MockStarterWrapper* wrapper = new MockStarterWrapper(
+      args, OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS);
+  SetCookie("LSID=1234; domain=google.com; secure; httponly");
+
+  EXPECT_CALL(*wrapper, DisplayErrorBubble(_));
+  wrapper->Start();
+  base::RunLoop().RunUntilIdle();
 }

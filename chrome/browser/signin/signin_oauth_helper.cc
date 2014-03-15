@@ -5,65 +5,65 @@
 #include "chrome/browser/signin/signin_oauth_helper.h"
 
 #include "base/message_loop/message_loop.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/profile_oauth2_token_service.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/gaia_constants.h"
 
-// TODO(guohui): needs to figure out the UI for error cases.
-
-SigninOAuthHelper::SigninOAuthHelper(Profile* profile)
-    : profile_(profile) {}
+SigninOAuthHelper::SigninOAuthHelper(net::URLRequestContextGetter* getter,
+                                     const std::string& session_index,
+                                     Consumer* consumer)
+    : gaia_auth_fetcher_(this, GaiaConstants::kChromeSource, getter),
+      consumer_(consumer) {
+  DCHECK(consumer_);
+  DCHECK(getter);
+  DCHECK(!session_index.empty());
+  gaia_auth_fetcher_.StartCookieForOAuthLoginTokenExchange(session_index);
+}
 
 SigninOAuthHelper::~SigninOAuthHelper() {}
 
-void SigninOAuthHelper::StartAddingAccount(const std::string& oauth_code) {
-  gaia_auth_fetcher_.reset(new GaiaAuthFetcher(
-      this, GaiaConstants::kChromeSource, profile_->GetRequestContext()));
-  gaia_auth_fetcher_->StartAuthCodeForOAuth2TokenExchange(oauth_code);
-}
-
 void SigninOAuthHelper::OnClientOAuthSuccess(const ClientOAuthResult& result) {
-  DVLOG(1) << "SigninOAuthHelper::OnClientOAuthSuccess";
-
   refresh_token_ = result.refresh_token;
-  gaia_auth_fetcher_->StartOAuthLogin(result.access_token,
-                                      GaiaConstants::kGaiaService);
+  gaia_auth_fetcher_.StartOAuthLogin(result.access_token,
+                                     GaiaConstants::kGaiaService);
 }
 
 void SigninOAuthHelper::OnClientOAuthFailure(
       const GoogleServiceAuthError& error) {
-  VLOG(1) << "SigninOAuthHelper::OnClientOAuthFailure : " << error.ToString();
-  base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+  VLOG(1) << "SigninOAuthHelper::OnClientOAuthFailure: " << error.ToString();
+  consumer_->OnSigninOAuthInformationFailure(error);
 }
 
 void SigninOAuthHelper::OnClientLoginSuccess(const ClientLoginResult& result) {
-  DVLOG(1) << "SigninOAuthHelper::OnClientLoginSuccess";
-  gaia_auth_fetcher_->StartGetUserInfo(result.lsid);
+  gaia_auth_fetcher_.StartGetUserInfo(result.lsid);
 }
 
 void SigninOAuthHelper::OnClientLoginFailure(
     const GoogleServiceAuthError& error) {
-  VLOG(1) << "SigninOAuthHelper::OnClientLoginFailure : " << error.ToString();
-  base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+  VLOG(1) << "SigninOAuthHelper::OnClientLoginFailure: " << error.ToString();
+  consumer_->OnSigninOAuthInformationFailure(error);
 }
 
 void SigninOAuthHelper::OnGetUserInfoSuccess(const UserInfoMap& data) {
-  DVLOG(1) << "SigninOAuthHelper::OnGetUserInfoSuccess";
-
   UserInfoMap::const_iterator email_iter = data.find("email");
-  if (email_iter == data.end()) {
-    VLOG(1) << "SigninOAuthHelper::OnGetUserInfoSuccess : no email found ";
+  UserInfoMap::const_iterator display_email_iter = data.find("displayEmail");
+  if (email_iter == data.end() || display_email_iter == data.end()) {
+    VLOG(1) << "SigninOAuthHelper::OnGetUserInfoSuccess: no email found:"
+            << " email=" << email_iter->second
+            << " displayEmail=" << display_email_iter->second;
+    consumer_->OnSigninOAuthInformationFailure(
+        GoogleServiceAuthError(GoogleServiceAuthError::SERVICE_ERROR));
   } else {
-    ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)
-        ->UpdateCredentials(email_iter->second, refresh_token_);
+    VLOG(1) << "SigninOAuthHelper::OnGetUserInfoSuccess:"
+            << " email=" << email_iter->second
+            << " displayEmail=" << display_email_iter->second;
+    consumer_->OnSigninOAuthInformationAvailable(email_iter->second,
+                                                 display_email_iter->second,
+                                                 refresh_token_);
   }
-  base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
 void SigninOAuthHelper::OnGetUserInfoFailure(
     const GoogleServiceAuthError& error) {
   VLOG(1) << "SigninOAuthHelper::OnGetUserInfoFailure : " << error.ToString();
-  base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+  consumer_->OnSigninOAuthInformationFailure(error);
 }

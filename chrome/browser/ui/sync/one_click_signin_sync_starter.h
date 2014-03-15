@@ -82,10 +82,9 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
   // It can be empty.
   OneClickSigninSyncStarter(Profile* profile,
                             Browser* browser,
-                            const std::string& session_index,
                             const std::string& email,
                             const std::string& password,
-                            const std::string& oauth_code,
+                            const std::string& refresh_token,
                             StartSyncMode start_mode,
                             content::WebContents* web_contents,
                             ConfirmationRequired display_confirmation,
@@ -93,6 +92,13 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
 
   // chrome::BrowserListObserver override.
   virtual void OnBrowserRemoved(Browser* browser) OVERRIDE;
+
+  // If the |browser| argument is non-null, returns the pointer directly.
+  // Otherwise creates a new browser for the given profile on the given
+  // desktop, adds an empty tab and makes sure the browser is visible.
+  static Browser* EnsureBrowser(Browser* browser,
+                                Profile* profile,
+                                chrome::HostDesktopType desktop_type);
 
  private:
   friend class OneClickSigninSyncStarterTest;
@@ -195,11 +201,6 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
   // Shows the post-signin confirmation bubble. If |custom_message| is empty,
   // the default "You are signed in" message is displayed.
   void DisplayFinalConfirmationBubble(const base::string16& custom_message);
-
-  // Makes sure browser_ points to a valid browser (opens a new browser if
-  // necessary). Useful in the case where the user has created a new Profile as
-  // part of the signin process.
-  void EnsureBrowser();
 
   Profile* profile_;
   Browser* browser_;

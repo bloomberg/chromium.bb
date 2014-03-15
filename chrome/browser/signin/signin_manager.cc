@@ -7,7 +7,6 @@
 #include <string>
 #include <vector>
 
-#include "base/memory/ref_counted.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -23,8 +22,6 @@
 #include "chrome/browser/signin/signin_account_id_helper.h"
 #include "chrome/browser/signin/signin_internals_util.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/ui/global_error/global_error_service.h"
-#include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/profile_management_switches.h"
 #include "components/signin/core/signin_client.h"
@@ -33,12 +30,9 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/child_process_host.h"
-#include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/gaia_auth_util.h"
-#include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/escape.h"
-#include "net/url_request/url_request_context.h"
 #include "third_party/icu/source/i18n/unicode/regex.h"
 
 using namespace signin_internals_util;
@@ -48,9 +42,6 @@ using content::ChildProcessHost;
 using content::RenderProcessHost;
 
 namespace {
-
-const char kGetInfoDisplayEmailKey[] = "displayEmail";
-const char kGetInfoEmailKey[] = "email";
 
 const char kChromiumSyncService[] = "service=chromiumsync";
 
@@ -83,7 +74,6 @@ bool SigninManager::IsWebBasedSigninFlowURL(const GURL& url) {
 
 SigninManager::SigninManager(SigninClient* client)
     : prohibit_signout_(false),
-      had_two_factor_error_(false),
       type_(SIGNIN_TYPE_NONE),
       weak_pointer_factory_(this),
       signin_host_id_(ChildProcessHost::kInvalidUniqueID),
@@ -148,10 +138,8 @@ std::string SigninManager::SigninTypeToString(
   switch (type) {
     case SIGNIN_TYPE_NONE:
       return "No Signin";
-    case SIGNIN_TYPE_WITH_CREDENTIALS:
-      return "Signin with credentials";
-    case SIGNIN_TYPE_WITH_OAUTH_CODE:
-      return "Signin with oauth code";
+    case SIGNIN_TYPE_WITH_REFRESH_TOKEN:
+      return "Signin with refresh token";
   }
 
   NOTREACHED();
@@ -168,7 +156,7 @@ bool SigninManager::PrepareForSignin(SigninType type,
   if (!IsAllowedUsername(username)) {
     // Account is not allowed by admin policy.
     HandleAuthError(GoogleServiceAuthError(
-        GoogleServiceAuthError::ACCOUNT_DISABLED), true);
+        GoogleServiceAuthError::ACCOUNT_DISABLED));
     return false;
   }
 
@@ -181,135 +169,52 @@ bool SigninManager::PrepareForSignin(SigninType type,
   type_ = type;
   possibly_invalid_username_.assign(username);
   password_.assign(password);
-
-  client_login_.reset(new GaiaAuthFetcher(this,
-                                          GaiaConstants::kChromeSource,
-                                          profile_->GetRequestContext()));
   NotifyDiagnosticsObservers(SIGNIN_TYPE, SigninTypeToString(type));
   return true;
 }
 
-void SigninManager::StartSignInWithCredentials(
-    const std::string& session_index,
+void SigninManager::StartSignInWithRefreshToken(
+    const std::string& refresh_token,
     const std::string& username,
     const std::string& password,
     const OAuthTokenFetchedCallback& callback) {
   DCHECK(GetAuthenticatedUsername().empty() ||
          gaia::AreEmailsSame(username, GetAuthenticatedUsername()));
 
-  if (!PrepareForSignin(SIGNIN_TYPE_WITH_CREDENTIALS, username, password))
+  if (!PrepareForSignin(SIGNIN_TYPE_WITH_REFRESH_TOKEN, username, password))
     return;
 
-  // Store our callback.
-  DCHECK(oauth_token_fetched_callback_.is_null());
-  oauth_token_fetched_callback_ = callback;
+  // Store our callback and token.
+  temp_refresh_token_ = refresh_token;
+  possibly_invalid_username_ = username;
 
-  if (password.empty()) {
-    // Chrome must verify the GAIA cookies first if auto sign-in is triggered
-    // with no password provided. This is to protect Chrome against forged
-    // GAIA cookies from a super-domain.
-    VerifyGaiaCookiesBeforeSignIn(session_index);
+  NotifyDiagnosticsObservers(GET_USER_INFO_STATUS, "Successful");
+
+  if (!callback.is_null() && !temp_refresh_token_.empty()) {
+    callback.Run(temp_refresh_token_);
   } else {
-    // This function starts with the current state of the web session's cookie
-    // jar and mints a new ClientLogin-style SID/LSID pair.  This involves going
-    // through the follow process or requests to GAIA and LSO:
-    //
-    // - call /o/oauth2/programmatic_auth with the returned token to get oauth2
-    //   access and refresh tokens
-    // - call /accounts/OAuthLogin with the oauth2 access token and get SID/LSID
-    //   pair for use by the token service
-    //
-    // The resulting SID/LSID can then be used just as if
-    // client_login_->StartClientLogin() had completed successfully.
-    client_login_->StartCookieForOAuthLoginTokenExchange(session_index);
-  }
-}
-
-void SigninManager::StartSignInWithOAuthCode(
-    const std::string& username,
-    const std::string& password,
-    const std::string& oauth_code,
-    const OAuthTokenFetchedCallback& callback) {
-  DCHECK(GetAuthenticatedUsername().empty() ||
-         gaia::AreEmailsSame(username, GetAuthenticatedUsername()));
-
-  if (!PrepareForSignin(SIGNIN_TYPE_WITH_OAUTH_CODE, username, password))
-    return;
-
-  DCHECK(oauth_token_fetched_callback_.is_null());
-  oauth_token_fetched_callback_ = callback;
-
-  client_login_->StartAuthCodeForOAuth2TokenExchange(oauth_code);
-}
-
-void SigninManager::VerifyGaiaCookiesBeforeSignIn(
-    const std::string& session_index) {
-  scoped_refptr<SigninManagerCookieHelper> cookie_helper(
-      new SigninManagerCookieHelper(
-          profile_->GetRequestContext(),
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
-  cookie_helper->StartFetchingGaiaCookiesOnUIThread(
-      base::Bind(&SigninManager::OnGaiaCookiesFetched,
-                 weak_pointer_factory_.GetWeakPtr(), session_index));
-}
-
-void SigninManager::OnGaiaCookiesFetched(
-    const std::string session_index, const net::CookieList& cookie_list) {
-  net::CookieList::const_iterator it;
-  bool success = false;
-  for (it = cookie_list.begin(); it != cookie_list.end(); ++it) {
-    // Make sure the LSID cookie is set on the GAIA host, instead of a super-
-    // domain.
-    if (it->Name() == "LSID") {
-      if (it->IsHostCookie() && it->IsHttpOnly() && it->IsSecure()) {
-        // Found a valid LSID cookie. Continue loop to make sure we don't have
-        // invalid LSID cookies on any super-domain.
-        success = true;
-      } else {
-        success = false;
-        break;
-      }
-    }
-  }
-
-  if (success) {
-    client_login_->StartCookieForOAuthLoginTokenExchange(session_index);
-  } else {
-    HandleAuthError(GoogleServiceAuthError(
-        GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS), true);
+    // No oauth token or callback, so just complete our pending signin.
+    CompletePendingSignin();
   }
 }
 
 void SigninManager::CopyCredentialsFrom(const SigninManager& source) {
   DCHECK_NE(this, &source);
   possibly_invalid_username_ = source.possibly_invalid_username_;
-  last_result_ = source.last_result_;
-  temp_oauth_login_tokens_ = source.temp_oauth_login_tokens_;
+  temp_refresh_token_ = source.temp_refresh_token_;
 }
 
 void SigninManager::ClearTransientSigninData() {
   DCHECK(IsInitialized());
 
-  client_login_.reset();
-  last_result_ = ClientLoginResult();
   possibly_invalid_username_.clear();
   password_.clear();
-  had_two_factor_error_ = false;
   type_ = SIGNIN_TYPE_NONE;
-  temp_oauth_login_tokens_ = ClientOAuthResult();
-  oauth_token_fetched_callback_.Reset();
+  temp_refresh_token_.clear();
 }
 
-void SigninManager::HandleAuthError(const GoogleServiceAuthError& error,
-                                    bool clear_transient_data) {
-  // In some cases, the user should not be signed out.  For example, the failure
-  // may be due to a captcha or OTP challenge.  In these cases, the transient
-  // data must be kept to properly handle the follow up. This routine clears
-  // the data before sending out the notification so the SigninManager is no
-  // longer in the AuthInProgress state when the notification goes out.
-  if (clear_transient_data)
-    ClearTransientSigninData();
+void SigninManager::HandleAuthError(const GoogleServiceAuthError& error) {
+  ClearTransientSigninData();
 
   // TODO(blundell): Eliminate this notification send once crbug.com/333997 is
   // fixed.
@@ -329,7 +234,7 @@ void SigninManager::SignOut() {
       // If the user is in the process of signing in, then treat a call to
       // SignOut as a cancellation request.
       GoogleServiceAuthError error(GoogleServiceAuthError::REQUEST_CANCELED);
-      HandleAuthError(error, true);
+      HandleAuthError(error);
     } else {
       // Clean up our transient data and exit if we aren't signed in.
       // This avoids a perf regression from clearing out the TokenDB if
@@ -354,6 +259,15 @@ void SigninManager::SignOut() {
   // Erase (now) stale information from AboutSigninInternals.
   NotifyDiagnosticsObservers(USERNAME, "");
 
+  // Revoke all tokens before sending signed_out notification, because there
+  // may be components that don't listen for token service events when the
+  // profile is not connected to an account.
+  ProfileOAuth2TokenService* token_service =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
+  LOG(WARNING) << "Revoking refresh token on server. Reason: sign out, "
+               << "IsSigninAllowed: " << IsSigninAllowed();
+  token_service->RevokeAllCredentials();
+
   // TODO(blundell): Eliminate this notification send once crbug.com/333997 is
   // fixed.
   GoogleServiceSignoutDetails details(username);
@@ -363,12 +277,6 @@ void SigninManager::SignOut() {
       content::Details<const GoogleServiceSignoutDetails>(&details));
 
   FOR_EACH_OBSERVER(Observer, observer_list_, GoogleSignedOut(username));
-
-  ProfileOAuth2TokenService* token_service =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
-  LOG(WARNING) << "Revoking refresh token on server. Reason: sign out, "
-               << "IsSigninAllowed: " << IsSigninAllowed();
-  token_service->RevokeAllCredentials();
 }
 
 void SigninManager::Initialize(Profile* profile, PrefService* local_state) {
@@ -467,7 +375,7 @@ bool SigninManager::IsUsernameAllowedByPolicy(const std::string& username,
 bool SigninManager::IsAllowedUsername(const std::string& username) const {
   const PrefService* local_state = local_state_pref_registrar_.prefs();
   if (!local_state)
-    return true; // In a unit test with no local state - all names are allowed.
+    return true;  // In a unit test with no local state - all names are allowed.
 
   std::string pattern = local_state->GetString(
       prefs::kGoogleServicesUsernamePattern);
@@ -482,108 +390,9 @@ const std::string& SigninManager::GetUsernameForAuthInProgress() const {
   return possibly_invalid_username_;
 }
 
-void SigninManager::OnGetUserInfoKeyNotFound(const std::string& key) {
-  DCHECK(key == kGetInfoDisplayEmailKey || key == kGetInfoEmailKey);
-  LOG(ERROR) << "Account is not associated with a valid email address. "
-             << "Login failed.";
-  OnClientLoginFailure(GoogleServiceAuthError(
-      GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
-}
-
 void SigninManager::DisableOneClickSignIn(Profile* profile) {
   PrefService* pref_service = profile->GetPrefs();
   pref_service->SetBoolean(prefs::kReverseAutologinEnabled, false);
-}
-
-void SigninManager::OnClientLoginSuccess(const ClientLoginResult& result) {
-  last_result_ = result;
-  // Update signin_internals_
-  NotifyDiagnosticsObservers(CLIENT_LOGIN_STATUS, "Successful");
-  // Make a request for the canonical email address and services.
-  client_login_->StartGetUserInfo(result.lsid);
-}
-
-void SigninManager::OnClientLoginFailure(const GoogleServiceAuthError& error) {
-  // If we got a bad ASP, prompt for an ASP again by forcing another TWO_FACTOR
-  // error.  This function does not call HandleAuthError() because dealing
-  // with TWO_FACTOR errors needs special handling: we don't want to clear the
-  // transient signin data in such error cases.
-  bool invalid_gaia = error.state() ==
-      GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS;
-
-  GoogleServiceAuthError current_error =
-      (invalid_gaia && had_two_factor_error_) ?
-      GoogleServiceAuthError(GoogleServiceAuthError::TWO_FACTOR) : error;
-
-  if (current_error.state() == GoogleServiceAuthError::TWO_FACTOR)
-    had_two_factor_error_ = true;
-
-  NotifyDiagnosticsObservers(CLIENT_LOGIN_STATUS, error.ToString());
-  HandleAuthError(current_error, !had_two_factor_error_);
-}
-
-void SigninManager::OnClientOAuthSuccess(const ClientOAuthResult& result) {
-  DVLOG(1) << "SigninManager::OnClientOAuthSuccess access_token="
-           << result.access_token;
-
-  NotifyDiagnosticsObservers(OAUTH_LOGIN_STATUS, "Successful");
-
-  switch (type_) {
-    case SIGNIN_TYPE_WITH_CREDENTIALS:
-    case SIGNIN_TYPE_WITH_OAUTH_CODE:
-      temp_oauth_login_tokens_ = result;
-      client_login_->StartOAuthLogin(result.access_token,
-                                     GaiaConstants::kGaiaService);
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
-}
-
-void SigninManager::OnClientOAuthFailure(const GoogleServiceAuthError& error) {
-  bool clear_transient_data = true;
-  NotifyDiagnosticsObservers(OAUTH_LOGIN_STATUS, error.ToString());
-  LOG(WARNING) << "SigninManager::OnClientOAuthFailure";
-  HandleAuthError(error, clear_transient_data);
-}
-
-void SigninManager::OnGetUserInfoSuccess(const UserInfoMap& data) {
-  NotifyDiagnosticsObservers(GET_USER_INFO_STATUS, "Successful");
-
-  UserInfoMap::const_iterator email_iter = data.find(kGetInfoEmailKey);
-  UserInfoMap::const_iterator display_email_iter =
-      data.find(kGetInfoDisplayEmailKey);
-  if (email_iter == data.end()) {
-    OnGetUserInfoKeyNotFound(kGetInfoEmailKey);
-    return;
-  }
-  if (display_email_iter == data.end()) {
-    OnGetUserInfoKeyNotFound(kGetInfoDisplayEmailKey);
-    return;
-  }
-  DCHECK(email_iter->first == kGetInfoEmailKey);
-  DCHECK(display_email_iter->first == kGetInfoDisplayEmailKey);
-
-  // When signing in with credentials, the possibly invalid name is the Gaia
-  // display name. If the name returned by GetUserInfo does not match what is
-  // expected, return an error.
-  if (type_ == SIGNIN_TYPE_WITH_CREDENTIALS &&
-      !gaia::AreEmailsSame(display_email_iter->second,
-                           possibly_invalid_username_)) {
-    OnGetUserInfoKeyNotFound(kGetInfoDisplayEmailKey);
-    return;
-  }
-
-  possibly_invalid_username_ = email_iter->second;
-
-  if (!oauth_token_fetched_callback_.is_null() &&
-      !temp_oauth_login_tokens_.refresh_token.empty()) {
-    oauth_token_fetched_callback_.Run(temp_oauth_login_tokens_.refresh_token);
-  } else {
-    // No oauth token or callback, so just complete our pending signin.
-    CompletePendingSignin();
-  }
 }
 
 void SigninManager::CompletePendingSignin() {
@@ -604,11 +413,11 @@ void SigninManager::CompletePendingSignin() {
         token_service, profile_->GetRequestContext(), NULL));
   }
 
-  DCHECK(!temp_oauth_login_tokens_.refresh_token.empty());
+  DCHECK(!temp_refresh_token_.empty());
   DCHECK(!GetAuthenticatedUsername().empty());
   token_service->UpdateCredentials(GetAuthenticatedUsername(),
-                                   temp_oauth_login_tokens_.refresh_token);
-  temp_oauth_login_tokens_ = ClientOAuthResult();
+                                   temp_refresh_token_);
+  temp_refresh_token_.clear();
 
   if (do_merge_session_in_signin_manager)
     merge_session_helper_->LogIn(GetAuthenticatedUsername());
@@ -643,13 +452,6 @@ void SigninManager::OnSignedIn(const std::string& username) {
 
   password_.clear();  // Don't need it anymore.
   DisableOneClickSignIn(profile_);  // Don't ever offer again.
-}
-
-void SigninManager::OnGetUserInfoFailure(const GoogleServiceAuthError& error) {
-  LOG(ERROR) << "Unable to retreive the canonical email address. Login failed.";
-  NotifyDiagnosticsObservers(GET_USER_INFO_STATUS, error.ToString());
-  // REVIEW: why does this call OnClientLoginFailure?
-  OnClientLoginFailure(error);
 }
 
 void SigninManager::RenderProcessHostDestroyed(RenderProcessHost* host) {

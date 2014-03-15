@@ -9,6 +9,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/signin/signin_oauth_helper.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "chrome/browser/ui/sync/one_click_signin_sync_starter.h"
@@ -85,6 +86,87 @@ class OneClickSigninHelper
     // interstitial.
   };
 
+  // Arguments used with StartSync function.  base::Bind() cannot support too
+  // many args for performance reasons, so they are packaged up into a struct.
+  struct StartSyncArgs {
+    // Default contructor for testing only.
+    StartSyncArgs();
+    StartSyncArgs(Profile* profile,
+                  Browser* browser,
+                  OneClickSigninHelper::AutoAccept auto_accept,
+                  const std::string& session_index,
+                  const std::string& email,
+                  const std::string& password,
+                  const std::string& refresh_token,
+                  content::WebContents* web_contents,
+                  bool untrusted_confirmation_required,
+                  signin::Source source,
+                  OneClickSigninSyncStarter::Callback callback);
+    ~StartSyncArgs();
+
+    Profile* profile;
+    Browser* browser;
+    OneClickSigninHelper::AutoAccept auto_accept;
+    std::string session_index;
+    std::string email;
+    std::string password;
+    std::string refresh_token;
+
+    // Web contents in which the sync setup page should be displayed,
+    // if necessary. Can be NULL.
+    content::WebContents* web_contents;
+
+    OneClickSigninSyncStarter::ConfirmationRequired confirmation_required;
+    signin::Source source;
+    OneClickSigninSyncStarter::Callback callback;
+  };
+
+  // Wrapper to call OneClickSigninSyncStarter after fetching the refresh
+  // token if needed.  Also verifies that the cookie are correct if no password
+  // is specified, and checks that the email from the cookies match the expected
+  // email address.
+  class SyncStarterWrapper : public SigninOAuthHelper::Consumer,
+                             public chrome::BrowserListObserver {
+   public:
+    SyncStarterWrapper(
+        const OneClickSigninHelper::StartSyncArgs& args,
+        OneClickSigninSyncStarter::StartSyncMode start_mode);
+    virtual ~SyncStarterWrapper();
+
+    void Start();
+
+   private:
+    void VerifyGaiaCookiesBeforeSignIn();
+    void OnGaiaCookiesFetched(const std::string session_index,
+                              const net::CookieList& cookie_list);
+
+    // Virtual to be overridden in tests.
+    virtual void DisplayErrorBubble(const std::string& error_message);
+    virtual void StartSigninOAuthHelper();
+    virtual void StartOneClickSigninSyncStarter(
+        const std::string& email,
+        const std::string& refresh_token);
+
+    // Overriden from SigninOAuthHelper::Consumer.
+    virtual void OnSigninOAuthInformationAvailable(
+        const std::string& email,
+        const std::string& display_email,
+        const std::string& refresh_token) OVERRIDE;
+    virtual void OnSigninOAuthInformationFailure(
+        const GoogleServiceAuthError& error) OVERRIDE;
+
+    // Overriden from chrome::BrowserListObserver.
+    virtual void OnBrowserRemoved(Browser* browser) OVERRIDE;
+
+    OneClickSigninHelper::StartSyncArgs args_;
+    chrome::HostDesktopType desktop_type_;
+    OneClickSigninSyncStarter::StartSyncMode start_mode_;
+    scoped_ptr<SigninOAuthHelper> signin_oauth_helper_;
+    base::WeakPtrFactory<SyncStarterWrapper> weak_pointer_factory_;
+
+    DISALLOW_COPY_AND_ASSIGN(SyncStarterWrapper);
+  };
+
   static void LogHistogramValue(signin::Source source, int action);
 
   static void CreateForWebContentsWithPasswordManager(
@@ -134,7 +216,7 @@ class OneClickSigninHelper
       const std::string& session_index,
       const std::string& email,
       const std::string& password,
-      const std::string& oauth_code,
+      const std::string& refresh_token,
       OneClickSigninHelper::AutoAccept auto_accept,
       signin::Source source,
       OneClickSigninSyncStarter::StartSyncMode start_mode,

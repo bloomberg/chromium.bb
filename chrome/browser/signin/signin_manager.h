@@ -36,20 +36,17 @@
 #include "chrome/browser/signin/signin_manager_base.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/render_process_host_observer.h"
-#include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/merge_session_helper.h"
 #include "net/cookies/canonical_cookie.h"
 
 class CookieSettings;
-class GaiaAuthFetcher;
 class ProfileIOData;
 class PrefService;
 class SigninAccountIdHelper;
 class SigninClient;
 
 class SigninManager : public SigninManagerBase,
-                      public GaiaAuthConsumer,
                       public content::RenderProcessHostObserver {
  public:
   // The callback invoked once the OAuth token has been fetched during signin,
@@ -76,30 +73,16 @@ class SigninManager : public SigninManagerBase,
   static bool IsUsernameAllowedByPolicy(const std::string& username,
                                         const std::string& policy);
 
-  // Attempt to sign in this user with existing credentials from the cookie jar.
-  // |session_index| indicates which user account to use if the cookie jar
-  // contains a multi-login session. Otherwise the end result of this call is
-  // the same as StartSignIn().
-  // If non-null, the passed |signin_complete| callback is invoked once signin
-  // has been completed and the oauth login token has been generated - the
-  // callback will not be invoked if no token is generated (either because of
-  // a failed signin or because web-based signin is not enabled).
+  // Attempt to sign in this user with a refresh token.
+  // If non-null, the passed |oauth_fetched_callback| callback is invoked once
+  // signin has been completed.
   // The callback should invoke SignOut() or CompletePendingSignin() to either
   // continue or cancel the in-process signin.
-  virtual void StartSignInWithCredentials(
-      const std::string& session_index,
+  virtual void StartSignInWithRefreshToken(
+      const std::string& refresh_token,
       const std::string& username,
       const std::string& password,
       const OAuthTokenFetchedCallback& oauth_fetched_callback);
-
-  // Attempt to sign in this user with the given oauth code. The cookie jar
-  // may not be set up properly for the same user, thus will call the
-  // mergeSession endpoint to populate the cookie jar.
-  virtual void StartSignInWithOAuthCode(
-      const std::string& username,
-      const std::string& password,
-      const std::string& oauth_code,
-      const OAuthTokenFetchedCallback& callback);
 
   // Copies auth credentials from one SigninManager to this one. This is used
   // when creating a new profile during the signin process to transfer the
@@ -136,24 +119,9 @@ class SigninManager : public SigninManagerBase,
   // authenticated. Returns an empty string if no auth is in progress.
   const std::string& GetUsernameForAuthInProgress() const;
 
-  // Handles errors if a required user info key is not returned from the
-  // GetUserInfo call.
-  void OnGetUserInfoKeyNotFound(const std::string& key);
-
   // Set the profile preference to turn off one-click sign-in so that it won't
   // ever show it again in this profile (even if the user tries a new account).
   static void DisableOneClickSignIn(Profile* profile);
-
-  // GaiaAuthConsumer
-  virtual void OnClientLoginSuccess(const ClientLoginResult& result) OVERRIDE;
-  virtual void OnClientLoginFailure(
-      const GoogleServiceAuthError& error) OVERRIDE;
-  virtual void OnClientOAuthSuccess(const ClientOAuthResult& result) OVERRIDE;
-  virtual void OnClientOAuthFailure(
-      const GoogleServiceAuthError& error) OVERRIDE;
-  virtual void OnGetUserInfoSuccess(const UserInfoMap& data) OVERRIDE;
-  virtual void OnGetUserInfoFailure(
-      const GoogleServiceAuthError& error) OVERRIDE;
 
   // content::RenderProcessHostObserver
   virtual void RenderProcessHostDestroyed(
@@ -195,8 +163,7 @@ class SigninManager : public SigninManagerBase,
  private:
   enum SigninType {
     SIGNIN_TYPE_NONE,
-    SIGNIN_TYPE_WITH_CREDENTIALS,
-    SIGNIN_TYPE_WITH_OAUTH_CODE
+    SIGNIN_TYPE_WITH_REFRESH_TOKEN
   };
 
   std::string SigninTypeToString(SigninType type);
@@ -217,15 +184,6 @@ class SigninManager : public SigninManagerBase,
                         const std::string& username,
                         const std::string& password);
 
-  // Called to verify GAIA cookies asynchronously before starting auto sign-in
-  // without password.
-  void VerifyGaiaCookiesBeforeSignIn(const std::string& session_index);
-
-  // Called when GAIA cookies are fetched. If LSID cookie is valid, then start
-  // auto sign-in by exchanging cookies for an oauth code.
-  void OnGaiaCookiesFetched(
-      const std::string session_index, const net::CookieList& cookie_list);
-
   // Persists |username| as the currently signed-in account, and triggers
   // a sign-in success notification.
   void OnSignedIn(const std::string& username);
@@ -236,10 +194,9 @@ class SigninManager : public SigninManagerBase,
   void ClearTransientSigninData();
 
   // Called to handle an error from a GAIA auth fetch.  Sets the last error
-  // to |error|, sends out a notification of login failure, and clears the
-  // transient signin data if |clear_transient_data| is true.
-  void HandleAuthError(const GoogleServiceAuthError& error,
-                       bool clear_transient_data);
+  // to |error|, sends out a notification of login failure and clears the
+  // transient signin data.
+  void HandleAuthError(const GoogleServiceAuthError& error);
 
   void OnSigninAllowedPrefChanged();
   void OnGoogleServicesUsernamePatternChanged();
@@ -247,17 +204,6 @@ class SigninManager : public SigninManagerBase,
   // ClientLogin identity.
   std::string possibly_invalid_username_;
   std::string password_;  // This is kept empty whenever possible.
-  bool had_two_factor_error_;
-
-  // Result of the last client login, kept pending the lookup of the
-  // canonical email.
-  ClientLoginResult last_result_;
-
-  // Actual client login handler.
-  scoped_ptr<GaiaAuthFetcher> client_login_;
-
-  // OAuth revocation fetcher for sign outs.
-  scoped_ptr<GaiaAuthFetcher> revoke_token_fetcher_;
 
   // Fetcher for the obfuscated user id.
   scoped_ptr<SigninAccountIdHelper> account_id_helper_;
@@ -267,10 +213,9 @@ class SigninManager : public SigninManagerBase,
   // successful or not.
   SigninType type_;
 
-  // Temporarily saves the oauth2 refresh and access tokens when signing in
-  // with credentials.  These will be passed to TokenService so that it does
-  // not need to mint new ones.
-  ClientOAuthResult temp_oauth_login_tokens_;
+  // Temporarily saves the oauth2 refresh token.  It will be passed to the
+  // token service so that it does not need to mint new ones.
+  std::string temp_refresh_token_;
 
   base::WeakPtrFactory<SigninManager> weak_pointer_factory_;
 
@@ -280,10 +225,6 @@ class SigninManager : public SigninManagerBase,
 
   // The RenderProcessHosts being observed.
   std::set<content::RenderProcessHost*> signin_hosts_observed_;
-
-  // Callback invoked during signin after an OAuth token has been fetched
-  // but before signin is complete.
-  OAuthTokenFetchedCallback oauth_token_fetched_callback_;
 
   // The SigninClient object associated with this object. Must outlive this
   // object.

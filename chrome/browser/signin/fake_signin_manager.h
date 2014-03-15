@@ -49,13 +49,13 @@ class FakeSigninManager : public SigninManager {
 
   void FailSignin(const GoogleServiceAuthError& error);
 
-  virtual void SignOut() OVERRIDE;
-
-  virtual void StartSignInWithCredentials(
-      const std::string& session_index,
+  virtual void StartSignInWithRefreshToken(
+      const std::string& refresh_token,
       const std::string& username,
       const std::string& password,
       const OAuthTokenFetchedCallback& oauth_fetched_callback) OVERRIDE;
+
+  virtual void SignOut() OVERRIDE;
 
   virtual void CompletePendingSignin() OVERRIDE;
 };

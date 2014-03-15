@@ -46,16 +46,17 @@ FakeSigninManager::FakeSigninManager(Profile* profile)
 FakeSigninManager::~FakeSigninManager() {
 }
 
-void FakeSigninManager::StartSignInWithCredentials(
-    const std::string& session_index,
+void FakeSigninManager::StartSignInWithRefreshToken(
+    const std::string& refresh_token,
     const std::string& username,
     const std::string& password,
     const OAuthTokenFetchedCallback& oauth_fetched_callback) {
   set_auth_in_progress(username);
   set_password(password);
   if (!oauth_fetched_callback.is_null())
-    oauth_fetched_callback.Run("fake_oauth_token");
+    oauth_fetched_callback.Run(refresh_token);
 }
+
 
 void FakeSigninManager::CompletePendingSignin() {
   SetAuthenticatedUsername(GetUsernameForAuthInProgress());
@@ -67,7 +68,7 @@ void FakeSigninManager::CompletePendingSignin() {
 
 void FakeSigninManager::SignIn(const std::string& username,
                                const std::string& password) {
-  StartSignInWithCredentials(
+  StartSignInWithRefreshToken(
       std::string(), username, password, OAuthTokenFetchedCallback());
   CompletePendingSignin();
 }

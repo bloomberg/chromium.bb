@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/signin/inline_login_handler_impl.h"
 
+#include <string>
+
 #include "base/bind.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
@@ -34,7 +36,141 @@
 
 namespace {
 
-} // empty namespace
+class InlineSigninHelper : public SigninOAuthHelper,
+                           public SigninOAuthHelper::Consumer {
+ public:
+  InlineSigninHelper(
+      base::WeakPtr<InlineLoginHandlerImpl> handler,
+      net::URLRequestContextGetter* getter,
+      Profile* profile,
+      const GURL& current_url,
+      const std::string& email,
+      const std::string& password,
+      const std::string& session_index,
+      bool choose_what_to_sync);
+
+ private:
+  // Overriden from SigninOAuthHelper::Consumer.
+  virtual void OnSigninOAuthInformationAvailable(
+      const std::string& email,
+      const std::string& display_email,
+      const std::string& refresh_token) OVERRIDE;
+  virtual void OnSigninOAuthInformationFailure(
+      const GoogleServiceAuthError& error) OVERRIDE;
+
+  base::WeakPtr<InlineLoginHandlerImpl> handler_;
+  Profile* profile_;
+  GURL current_url_;
+  std::string email_;
+  std::string password_;
+  std::string session_index_;
+  bool choose_what_to_sync_;
+
+  DISALLOW_COPY_AND_ASSIGN(InlineSigninHelper);
+};
+
+InlineSigninHelper::InlineSigninHelper(
+    base::WeakPtr<InlineLoginHandlerImpl> handler,
+    net::URLRequestContextGetter* getter,
+    Profile* profile,
+    const GURL& current_url,
+    const std::string& email,
+    const std::string& password,
+    const std::string& session_index,
+    bool choose_what_to_sync)
+    : SigninOAuthHelper(getter, session_index, this),
+      handler_(handler),
+      profile_(profile),
+      current_url_(current_url),
+      email_(email),
+      password_(password),
+      session_index_(session_index),
+      choose_what_to_sync_(choose_what_to_sync) {
+  DCHECK(profile_);
+  DCHECK(!email_.empty());
+  DCHECK(!session_index_.empty());
+}
+
+void InlineSigninHelper::OnSigninOAuthInformationAvailable(
+    const std::string& email,
+    const std::string& display_email,
+    const std::string& refresh_token) {
+  content::WebContents* contents = NULL;
+  Browser* browser = NULL;
+  if (handler_) {
+    contents = handler_->web_ui()->GetWebContents();
+    browser = handler_->GetDesktopBrowser();
+  }
+
+  signin::Source source = signin::GetSourceForPromoURL(current_url_);
+  if (source == signin::SOURCE_AVATAR_BUBBLE_ADD_ACCOUNT) {
+    ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)->
+        UpdateCredentials(email, refresh_token);
+
+    if (signin::IsAutoCloseEnabledInURL(current_url_)) {
+      // Close the gaia sign in tab via a task to make sure we aren't in the
+      // middle of any webui handler code.
+      base::MessageLoop::current()->PostTask(
+          FROM_HERE,
+          base::Bind(&InlineLoginHandlerImpl::CloseTab,
+          handler_));
+    }
+  } else {
+    ProfileSyncService* sync_service =
+        ProfileSyncServiceFactory::GetForProfile(profile_);
+    SigninErrorController* error_controller =
+        ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)->
+            signin_error_controller();
+    OneClickSigninSyncStarter::StartSyncMode start_mode =
+        source == signin::SOURCE_SETTINGS || choose_what_to_sync_ ?
+            (error_controller->HasError() &&
+              sync_service && sync_service->HasSyncSetupCompleted()) ?
+                OneClickSigninSyncStarter::SHOW_SETTINGS_WITHOUT_CONFIGURE :
+                OneClickSigninSyncStarter::CONFIGURE_SYNC_FIRST :
+                OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS;
+    OneClickSigninSyncStarter::ConfirmationRequired confirmation_required =
+        source == signin::SOURCE_SETTINGS ||
+        source == signin::SOURCE_WEBSTORE_INSTALL ||
+        choose_what_to_sync_ ?
+            OneClickSigninSyncStarter::NO_CONFIRMATION :
+            OneClickSigninSyncStarter::CONFIRM_AFTER_SIGNIN;
+    bool start_signin = true;
+
+    if (source != signin::SOURCE_AVATAR_BUBBLE_ADD_ACCOUNT) {
+      start_signin = !OneClickSigninHelper::HandleCrossAccountError(
+            contents, "",
+            email, password_, refresh_token,
+            OneClickSigninHelper::AUTO_ACCEPT_EXPLICIT,
+            source, start_mode,
+            base::Bind(&InlineLoginHandlerImpl::SyncStarterCallback,
+                       handler_));
+    }
+
+    if (start_signin) {
+      // Call OneClickSigninSyncStarter to exchange oauth code for tokens.
+      // OneClickSigninSyncStarter will delete itself once the job is done.
+      new OneClickSigninSyncStarter(
+          profile_, browser,
+          email, password_, refresh_token,
+          start_mode,
+          contents,
+          confirmation_required,
+          base::Bind(&InlineLoginHandlerImpl::SyncStarterCallback, handler_));
+    }
+  }
+
+  base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+}
+
+void InlineSigninHelper::OnSigninOAuthInformationFailure(
+  const GoogleServiceAuthError& error) {
+  if (handler_)
+    handler_->HandleLoginError(error.ToString());
+
+  base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+}
+
+}  // namespace
 
 InlineLoginHandlerImpl::InlineLoginHandlerImpl()
       : weak_factory_(this),
@@ -63,7 +199,7 @@ void InlineLoginHandlerImpl::SetExtraInitParams(base::DictionaryValue& params) {
     // Drop the leading slash in the path.
     params.SetString("gaiaPath",
         GaiaUrls::GetInstance()->embedded_signin_url().path().substr(1));
-  }
+}
 
   params.SetString("service", "chromiumsync");
   params.SetString("continueUrl",
@@ -202,87 +338,16 @@ void InlineLoginHandlerImpl::CompleteLogin(const base::ListValue* args) {
           contents->GetBrowserContext(),
           GURL(chrome::kChromeUIChromeSigninURL));
 
-  auth_fetcher_.reset(new GaiaAuthFetcher(this,
-                                          GaiaConstants::kChromeSource,
-                                          partition->GetURLRequestContext()));
-  auth_fetcher_->StartCookieForOAuthCodeExchange(session_index_);
-}
-
-void InlineLoginHandlerImpl::OnClientOAuthCodeSuccess(
-    const std::string& oauth_code) {
-  DCHECK(!oauth_code.empty());
-
-  content::WebContents* contents = web_ui()->GetWebContents();
-  Profile* profile = Profile::FromWebUI(web_ui());
-  ProfileSyncService* sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile);
-  const GURL& current_url = contents->GetURL();
-  signin::Source source = signin::GetSourceForPromoURL(current_url);
-
-  if (source == signin::SOURCE_AVATAR_BUBBLE_ADD_ACCOUNT) {
-    // SigninOAuthHelper will delete itself.
-    SigninOAuthHelper* helper = new SigninOAuthHelper(profile);
-    helper->StartAddingAccount(oauth_code);
-
-    if (signin::IsAutoCloseEnabledInURL(current_url)) {
-      // Close the gaia sign in tab via a task to make sure we aren't in the
-      // middle of any webui handler code.
-      base::MessageLoop::current()->PostTask(
-          FROM_HERE,
-          base::Bind(&InlineLoginHandlerImpl::CloseTab,
-                     weak_factory_.GetWeakPtr()));
-    }
-  } else {
-    SigninErrorController* error_controller =
-        ProfileOAuth2TokenServiceFactory::GetForProfile(profile)->
-            signin_error_controller();
-    OneClickSigninSyncStarter::StartSyncMode start_mode =
-        source == signin::SOURCE_SETTINGS || choose_what_to_sync_ ?
-            (error_controller->HasError() &&
-             sync_service && sync_service->HasSyncSetupCompleted()) ?
-                OneClickSigninSyncStarter::SHOW_SETTINGS_WITHOUT_CONFIGURE :
-                OneClickSigninSyncStarter::CONFIGURE_SYNC_FIRST :
-            OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS;
-    OneClickSigninSyncStarter::ConfirmationRequired confirmation_required =
-        source == signin::SOURCE_SETTINGS ||
-        source == signin::SOURCE_WEBSTORE_INSTALL ||
-        choose_what_to_sync_?
-            OneClickSigninSyncStarter::NO_CONFIRMATION :
-            OneClickSigninSyncStarter::CONFIRM_AFTER_SIGNIN;
-      OneClickSigninSyncStarter::Callback sync_callback = base::Bind(
-          &InlineLoginHandlerImpl::SyncStarterCallback,
-          weak_factory_.GetWeakPtr());
-
-      bool cross_account_error_handled =
-          OneClickSigninHelper::HandleCrossAccountError(
-              contents, "" /* session_index, not used */,
-              email_, password_, oauth_code,
-              OneClickSigninHelper::AUTO_ACCEPT_EXPLICIT,
-              source, start_mode, sync_callback);
-
-      if (!cross_account_error_handled) {
-        // Call OneClickSigninSyncStarter to exchange oauth code for tokens.
-        // OneClickSigninSyncStarter will delete itself once the job is done.
-        new OneClickSigninSyncStarter(
-            profile, GetDesktopBrowser(), "" /* session_index, not used */,
-            email_, password_, oauth_code,
-            start_mode,
-            contents,
-            confirmation_required,
-            sync_callback);
-      }
-  }
+  // InlineSigninHelper will delete itself.
+  new InlineSigninHelper(GetWeakPtr(), partition->GetURLRequestContext(),
+                         Profile::FromWebUI(web_ui()), current_url,
+                         email_, password_, session_index_,
+                         choose_what_to_sync_);
 
   email_.clear();
   password_.clear();
   session_index_.clear();
   web_ui()->CallJavascriptFunction("inline.login.closeDialog");
-}
-
-void InlineLoginHandlerImpl::OnClientOAuthCodeFailure(
-    const GoogleServiceAuthError& error) {
-  LOG(ERROR) << "InlineLoginUI::OnClientOAuthCodeFailure";
-  HandleLoginError(error.ToString());
 }
 
 void InlineLoginHandlerImpl::HandleLoginError(const std::string& error_msg) {

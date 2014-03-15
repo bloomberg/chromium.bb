@@ -54,17 +54,15 @@ class OneClickSigninSyncStarterTest : public testing::Test {
  protected:
   void CreateSyncStarter(OneClickSigninSyncStarter::Callback callback) {
     sync_starter_ = new OneClickSigninSyncStarter(
-      profile_.get(),
-      NULL,
-      std::string(),
-      kTestingUsername,
-      std::string(),
-      std::string(),
-      OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS,
-      NULL,
-      OneClickSigninSyncStarter::NO_CONFIRMATION,
-      callback
-    );
+        profile_.get(),
+        NULL,
+        kTestingUsername,
+        std::string(),
+        "refresh_token",
+        OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS,
+        NULL,
+        OneClickSigninSyncStarter::NO_CONFIRMATION,
+        callback);
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
