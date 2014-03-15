@@ -25,7 +25,6 @@
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/client/gl_in_process_context.h"
 #include "gpu/command_buffer/service/in_process_command_buffer.h"
-#include "gpu/command_buffer/service/mailbox_synchronizer.h"
 #include "media/base/media_switches.h"
 #include "webkit/common/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
 
@@ -67,8 +66,6 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   cl->AppendSwitch(switches::kDisableExperimentalWebGL);
   cl->AppendSwitch(switches::kDisableSharedWorkers);
 
-  if (!gpu::gles2::MailboxSynchronizer::Initialize())
-    cl->AppendSwitch(switches::kDisableAccelerated2dCanvas);
 
   // File system API not supported (requires some new API; internal bug 6930981)
   cl->AppendSwitch(switches::kDisableFileSystem);

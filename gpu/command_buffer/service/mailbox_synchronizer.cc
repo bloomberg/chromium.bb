@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/texture_manager.h"
+#include "ui/gl/gl_implementation.h"
 
 namespace gpu {
 namespace gles2 {
@@ -20,6 +21,29 @@ MailboxSynchronizer* g_instance = NULL;
 // static
 bool MailboxSynchronizer::Initialize() {
   DCHECK(!g_instance);
+  DCHECK(gfx::GetGLImplementation() != gfx::kGLImplementationNone)
+      << "GL bindings not initialized";
+  switch (gfx::GetGLImplementation()) {
+    case gfx::kGLImplementationMockGL:
+      break;
+    case gfx::kGLImplementationEGLGLES2:
+#if !defined(OS_MACOSX)
+      {
+        if (!gfx::g_driver_egl.ext.b_EGL_KHR_image_base ||
+            !gfx::g_driver_egl.ext.b_EGL_KHR_gl_texture_2D_image ||
+            !gfx::g_driver_gl.ext.b_GL_OES_EGL_image ||
+            !gfx::g_driver_egl.ext.b_EGL_KHR_fence_sync) {
+          LOG(WARNING) << "MailboxSync not supported due to missing EGL "
+                          "image/fence support";
+          return false;
+        }
+      }
+      break;
+#endif
+    default:
+      NOTREACHED();
+      return false;
+  }
   g_instance = new MailboxSynchronizer;
   return true;
 }

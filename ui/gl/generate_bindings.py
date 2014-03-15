@@ -906,7 +906,8 @@ EGL_FUNCTIONS = [
       'EGLDisplay dpy, EGLConfig config, EGLint attribute, EGLint* value', },
 { 'return_type': 'EGLImageKHR',
   'versions': [{ 'name': 'eglCreateImageKHR',
-                 'extensions': ['EGL_KHR_image_base'] }],
+                 'extensions':
+                     ['EGL_KHR_image_base', 'EGL_KHR_gl_texture_2D_image'] }],
   'arguments':
       'EGLDisplay dpy, EGLContext ctx, EGLenum target, EGLClientBuffer buffer, '
       'const EGLint* attrib_list' },

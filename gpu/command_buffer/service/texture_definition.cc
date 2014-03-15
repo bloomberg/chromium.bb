@@ -120,11 +120,10 @@ scoped_refptr<NativeImageBufferEGL> NativeImageBufferEGL::Create(
   DCHECK_NE(EGL_NO_DISPLAY, egl_display);
   DCHECK(glIsTexture(texture_id));
 
-  // TODO: Need to generate and check EGL_KHR_gl_texture_2D_image
-  if (!gfx::g_driver_egl.ext.b_EGL_KHR_image_base ||
-      !gfx::g_driver_gl.ext.b_GL_OES_EGL_image) {
-    return NULL;
-  }
+  DCHECK(gfx::g_driver_egl.ext.b_EGL_KHR_image_base &&
+         gfx::g_driver_egl.ext.b_EGL_KHR_gl_texture_2D_image &&
+         gfx::g_driver_gl.ext.b_GL_OES_EGL_image &&
+         gfx::g_driver_egl.ext.b_EGL_KHR_fence_sync);
 
   const EGLint egl_attrib_list[] = {
       EGL_GL_TEXTURE_LEVEL_KHR, 0, EGL_IMAGE_PRESERVED_KHR, EGL_TRUE, EGL_NONE};
