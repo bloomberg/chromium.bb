@@ -11,6 +11,7 @@
 #include "mojo/public/shell/shell.mojom.h"
 #include "mojo/public/system/core_cpp.h"
 #include "mojo/service_manager/service_loader.h"
+#include "mojo/shell/dynamic_service_runner.h"
 #include "mojo/shell/keep_alive.h"
 #include "url/gurl.h"
 
@@ -18,12 +19,14 @@ namespace mojo {
 namespace shell {
 
 class Context;
+class DynamicServiceRunnerFactory;
 
 // A subclass of ServiceManager::Loader that loads a dynamic library containing
 // the implementation of the service.
 class DynamicServiceLoader : public ServiceLoader {
  public:
-  explicit DynamicServiceLoader(Context* context);
+  DynamicServiceLoader(Context* context,
+                       scoped_ptr<DynamicServiceRunnerFactory> runner_factory);
   virtual ~DynamicServiceLoader();
 
   // Initiates the dynamic load. If the url is a mojo: scheme then the name
@@ -39,9 +42,11 @@ class DynamicServiceLoader : public ServiceLoader {
 
   void AppCompleted(const GURL& url);
 
+  Context* const context_;
+  scoped_ptr<DynamicServiceRunnerFactory> runner_factory_;
+
   typedef std::map<GURL, LoadContext*> LoadContextMap;
   LoadContextMap url_to_load_context_;
-  Context* context_;
 
   DISALLOW_COPY_AND_ASSIGN(DynamicServiceLoader);
 };

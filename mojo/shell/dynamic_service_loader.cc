@@ -4,19 +4,15 @@
 
 #include "mojo/shell/dynamic_service_loader.h"
 
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
-#include "base/file_util.h"
-#include "base/scoped_native_library.h"
-#include "base/threading/simple_thread.h"
+#include "base/location.h"
 #include "mojo/shell/context.h"
 #include "mojo/shell/keep_alive.h"
 #include "mojo/shell/switches.h"
 
-typedef MojoResult (*MojoMainFunction)(MojoHandle pipe);
-
 namespace mojo {
 namespace shell {
+
 namespace {
 
 std::string MakeSharedLibraryName(const std::string& file_name) {
@@ -34,17 +30,16 @@ std::string MakeSharedLibraryName(const std::string& file_name) {
 
 }  // namespace
 
-class DynamicServiceLoader::LoadContext
-    : public mojo::shell::Loader::Delegate,
-      public base::DelegateSimpleThread::Delegate {
+class DynamicServiceLoader::LoadContext : public mojo::shell::Loader::Delegate {
  public:
   LoadContext(DynamicServiceLoader* loader,
               const GURL& url,
-              ScopedShellHandle service_handle)
-      : thread_(this, "app_thread"),
-        loader_(loader),
+              ScopedShellHandle service_handle,
+              scoped_ptr<DynamicServiceRunner> runner)
+      : loader_(loader),
         url_(url),
         service_handle_(service_handle.Pass()),
+        runner_(runner.Pass()),
         keep_alive_(loader->context_) {
     GURL url_to_load;
 
@@ -62,68 +57,48 @@ class DynamicServiceLoader::LoadContext
   }
 
   virtual ~LoadContext() {
-    thread_.Join();
   }
 
  private:
-  // From Loader::Delegate.
+  // |Loader::Delegate| method:
   virtual void DidCompleteLoad(const GURL& app_url,
                                const base::FilePath& app_path,
                                const std::string* mime_type) OVERRIDE {
-    app_path_ = app_path;
-    thread_.Start();
+    DVLOG(2) << "Completed load of " << app_url << " (" << url_ << ") to "
+             << app_path.value();
+
+    runner_->Start(
+        app_path,
+        service_handle_.Pass(),
+        base::Bind(&LoadContext::AppCompleted,
+                   scoped_refptr<base::TaskRunner>(
+                       loader_->context_->task_runners()->ui_runner()),
+                   base::Unretained(loader_), url_));
   }
 
-  // From base::DelegateSimpleThread::Delegate.
-  virtual void Run() OVERRIDE {
-    base::ScopedClosureRunner app_deleter(
-        base::Bind(base::IgnoreResult(&base::DeleteFile), app_path_, false));
-
-    do {
-      std::string load_error;
-      base::ScopedNativeLibrary app_library(
-          base::LoadNativeLibrary(app_path_, &load_error));
-      if (!app_library.is_valid()) {
-        LOG(ERROR) << "Failed to load library: " << app_path_.value() << " ("
-                   << url_.spec() << ")";
-        LOG(ERROR) << "error: " << load_error;
-        break;
-      }
-
-      MojoMainFunction main_function = reinterpret_cast<MojoMainFunction>(
-          app_library.GetFunctionPointer("MojoMain"));
-      if (!main_function) {
-        LOG(ERROR) << "Entrypoint MojoMain not found.";
-        break;
-      }
-
-      // |MojoMain()| takes ownership of the service handle.
-      // TODO(darin): What if MojoMain does not close the service handle?
-      MojoResult result = main_function(service_handle_.release().value());
-      if (result < MOJO_RESULT_OK)
-        LOG(ERROR) << "MojoMain returned an error: " << result;
-    } while (false);
-
-    loader_->context_->task_runners()->ui_runner()->PostTask(
-        FROM_HERE,
-        base::Bind(&LoadContext::AppCompleted, base::Unretained(this)));
+  static void AppCompleted(scoped_refptr<base::TaskRunner> task_runner,
+                           DynamicServiceLoader* loader,
+                           const GURL& url) {
+    task_runner->PostTask(FROM_HERE,
+                          base::Bind(&DynamicServiceLoader::AppCompleted,
+                                     base::Unretained(loader), url));
   }
 
-  void AppCompleted() {
-    loader_->AppCompleted(url_);
-  }
-
-  base::DelegateSimpleThread thread_;
-  DynamicServiceLoader* loader_;
-  GURL url_;
-  base::FilePath app_path_;
+  DynamicServiceLoader* const loader_;
+  const GURL url_;
   scoped_ptr<mojo::shell::Loader::Job> request_;
   ScopedShellHandle service_handle_;
+  scoped_ptr<DynamicServiceRunner> runner_;
   KeepAlive keep_alive_;
+
+  DISALLOW_COPY_AND_ASSIGN(LoadContext);
 };
 
-DynamicServiceLoader::DynamicServiceLoader(Context* context)
-    : context_(context) {
+DynamicServiceLoader::DynamicServiceLoader(
+    Context* context,
+    scoped_ptr<DynamicServiceRunnerFactory> runner_factory)
+    : context_(context),
+      runner_factory_(runner_factory.Pass()) {
 }
 
 DynamicServiceLoader::~DynamicServiceLoader() {
@@ -134,12 +109,13 @@ void DynamicServiceLoader::LoadService(ServiceManager* manager,
                                        const GURL& url,
                                        ScopedShellHandle service_handle) {
   DCHECK(url_to_load_context_.find(url) == url_to_load_context_.end());
-  url_to_load_context_[url] = new LoadContext(this, url, service_handle.Pass());
+  url_to_load_context_[url] = new LoadContext(this, url, service_handle.Pass(),
+                                              runner_factory_->Create());
 }
 
 void DynamicServiceLoader::AppCompleted(const GURL& url) {
   LoadContextMap::iterator it = url_to_load_context_.find(url);
-  DCHECK(it != url_to_load_context_.end());
+  DCHECK(it != url_to_load_context_.end()) << url;
 
   LoadContext* doomed = it->second;
   url_to_load_context_.erase(it);

@@ -6,6 +6,7 @@
 
 #include "mojo/gles2/gles2_support_impl.h"
 #include "mojo/shell/dynamic_service_loader.h"
+#include "mojo/shell/in_process_dynamic_service_runner.h"
 #include "mojo/shell/network_delegate.h"
 #include "mojo/system/embedder/embedder.h"
 
@@ -22,7 +23,11 @@ Context::Context()
               storage_.profile_path()) {
   embedder::Init();
   gles2::GLES2SupportImpl::Init();
-  dynamic_service_loader_.reset(new DynamicServiceLoader(this));
+
+  scoped_ptr<DynamicServiceRunnerFactory> runner_factory(
+      new InProcessDynamicServiceRunnerFactory());
+  dynamic_service_loader_.reset(
+      new DynamicServiceLoader(this, runner_factory.Pass()));
   service_manager_.set_default_loader(dynamic_service_loader_.get());
 }
 
