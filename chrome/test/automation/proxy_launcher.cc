@@ -9,7 +9,6 @@
 #include "base/environment.h"
 #include "base/file_util.h"
 #include "base/files/file_enumerator.h"
-#include "base/files/scoped_file.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
 #include "base/strings/string_number_conversions.h"
@@ -490,11 +489,12 @@ bool ProxyLauncher::LaunchBrowserHelper(const LaunchState& state,
 #if defined(OS_WIN)
   options.start_hidden = !state.show_window;
 #elif defined(OS_POSIX)
-  base::ScopedFD ipcfd;
+  int ipcfd = -1;
+  file_util::ScopedFD ipcfd_closer(&ipcfd);
   base::FileHandleMappingVector fds;
   if (main_launch && automation_proxy_.get()) {
-    ipcfd.reset(automation_proxy_->channel()->TakeClientFileDescriptor());
-    fds.push_back(std::make_pair(ipcfd.get(),
+    ipcfd = automation_proxy_->channel()->TakeClientFileDescriptor();
+    fds.push_back(std::make_pair(ipcfd,
         kPrimaryIPCChannel + base::GlobalDescriptors::kBaseDescriptor));
     options.fds_to_remap = &fds;
   }

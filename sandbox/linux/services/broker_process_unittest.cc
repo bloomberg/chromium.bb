@@ -17,13 +17,14 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/file_util.h"
-#include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/posix/eintr_wrapper.h"
 #include "sandbox/linux/tests/test_utils.h"
 #include "sandbox/linux/tests/unit_tests.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using file_util::ScopedFD;
 
 namespace sandbox {
 
@@ -268,7 +269,7 @@ void TestOpenCpuinfo(bool fast_check_in_client) {
 
   int fd = -1;
   fd = open_broker->Open(kFileCpuInfo, O_RDWR);
-  base::ScopedFD fd_closer(fd);
+  ScopedFD fd_closer(&fd);
   ASSERT_EQ(fd, -EPERM);
 
   // Check we can read /proc/cpuinfo.
@@ -280,7 +281,7 @@ void TestOpenCpuinfo(bool fast_check_in_client) {
 
   // Open cpuinfo via the broker.
   int cpuinfo_fd = open_broker->Open(kFileCpuInfo, O_RDONLY);
-  base::ScopedFD cpuinfo_fd_closer(cpuinfo_fd);
+  ScopedFD cpuinfo_fd_closer(&cpuinfo_fd);
   ASSERT_GE(cpuinfo_fd, 0);
   char buf[3];
   memset(buf, 0, sizeof(buf));
@@ -289,7 +290,7 @@ void TestOpenCpuinfo(bool fast_check_in_client) {
 
   // Open cpuinfo directly.
   int cpuinfo_fd2 = open(kFileCpuInfo, O_RDONLY);
-  base::ScopedFD cpuinfo_fd2_closer(cpuinfo_fd2);
+  ScopedFD cpuinfo_fd2_closer(&cpuinfo_fd2);
   ASSERT_GE(cpuinfo_fd2, 0);
   char buf2[3];
   memset(buf2, 1, sizeof(buf2));

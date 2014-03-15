@@ -12,7 +12,6 @@
 
 #include "base/basictypes.h"
 #include "base/file_util.h"
-#include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
 
@@ -79,17 +78,18 @@ int Yama::GetStatus() {
 
   static const char kPtraceScopePath[] = "/proc/sys/kernel/yama/ptrace_scope";
 
-  base::ScopedFD yama_scope(open(kPtraceScopePath, O_RDONLY));
+  int yama_scope = open(kPtraceScopePath, O_RDONLY);
 
-  if (!yama_scope.is_valid()) {
+  if (yama_scope < 0) {
     const int open_errno = errno;
     DCHECK(ENOENT == open_errno);
     // The status is known, yama is not present.
     return STATUS_KNOWN;
   }
 
+  file_util::ScopedFDCloser yama_scope_closer(&yama_scope);
   char yama_scope_value = 0;
-  ssize_t num_read = read(yama_scope.get(), &yama_scope_value, 1);
+  ssize_t num_read = read(yama_scope, &yama_scope_value, 1);
   PCHECK(1 == num_read);
 
   switch (yama_scope_value) {

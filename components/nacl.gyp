@@ -213,7 +213,6 @@
                 'nacl/loader/nonsfi/irt_util.h',
                 'nacl/loader/nonsfi/nonsfi_main.cc',
                 'nacl/loader/nonsfi/nonsfi_main.h',
-                '../base/files/scoped_file.cc',
                 '../base/posix/unix_domain_socket_linux.cc',
                 '../content/common/child_process_sandbox_support_impl_shm_linux.cc',
                 '../content/common/sandbox_linux/sandbox_bpf_base_policy_linux.cc',

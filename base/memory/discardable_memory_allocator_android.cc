@@ -16,7 +16,6 @@
 #include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
 #include "base/file_util.h"
-#include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/memory/discardable_memory.h"
 #include "base/memory/scoped_vector.h"
@@ -66,13 +65,14 @@ bool CreateAshmemRegion(const char* name,
                         size_t size,
                         int* out_fd,
                         void** out_address) {
-  base::ScopedFD fd(ashmem_create_region(name, size));
-  if (!fd.is_valid()) {
+  int fd = ashmem_create_region(name, size);
+  if (fd < 0) {
     DLOG(ERROR) << "ashmem_create_region() failed";
     return false;
   }
+  file_util::ScopedFD fd_closer(&fd);
 
-  const int err = ashmem_set_prot_region(fd.get(), PROT_READ | PROT_WRITE);
+  const int err = ashmem_set_prot_region(fd, PROT_READ | PROT_WRITE);
   if (err < 0) {
     DLOG(ERROR) << "Error " << err << " when setting protection of ashmem";
     return false;
@@ -82,13 +82,14 @@ bool CreateAshmemRegion(const char* name,
   // Lock() and Unlock(), data could get lost if they are not written to the
   // underlying file when Unlock() gets called.
   void* const address = mmap(
-      NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd.get(), 0);
+      NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
   if (address == MAP_FAILED) {
     DPLOG(ERROR) << "Failed to map memory.";
     return false;
   }
 
-  *out_fd = fd.release();
+  ignore_result(fd_closer.release());
+  *out_fd = fd;
   *out_address = address;
   return true;
 }

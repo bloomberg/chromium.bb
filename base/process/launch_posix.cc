@@ -26,7 +26,6 @@
 #include "base/debug/stack_trace.h"
 #include "base/file_util.h"
 #include "base/files/dir_reader_posix.h"
-#include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/posix/eintr_wrapper.h"
@@ -333,13 +332,14 @@ bool LaunchProcess(const std::vector<std::string>& argv,
     // If a child process uses the readline library, the process block forever.
     // In BSD like OSes including OS X it is safe to assign /dev/null as stdin.
     // See http://crbug.com/56596.
-    base::ScopedFD null_fd(HANDLE_EINTR(open("/dev/null", O_RDONLY)));
-    if (!null_fd.is_valid()) {
+    int null_fd = HANDLE_EINTR(open("/dev/null", O_RDONLY));
+    if (null_fd < 0) {
       RAW_LOG(ERROR, "Failed to open /dev/null");
       _exit(127);
     }
 
-    int new_fd = HANDLE_EINTR(dup2(null_fd.get(), STDIN_FILENO));
+    file_util::ScopedFD null_fd_closer(&null_fd);
+    int new_fd = HANDLE_EINTR(dup2(null_fd, STDIN_FILENO));
     if (new_fd != STDIN_FILENO) {
       RAW_LOG(ERROR, "Failed to dup /dev/null for stdin");
       _exit(127);

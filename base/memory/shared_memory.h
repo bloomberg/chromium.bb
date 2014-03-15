@@ -22,7 +22,6 @@
 #if defined(OS_POSIX)
 #include "base/file_descriptor_posix.h"
 #include "base/file_util.h"
-#include "base/files/scoped_file.h"
 #endif
 
 namespace base {
@@ -260,7 +259,7 @@ class BASE_EXPORT SharedMemory {
 
  private:
 #if defined(OS_POSIX) && !defined(OS_NACL)
-  bool PrepareMapFile(file_util::ScopedFILE fp, base::ScopedFD readonly);
+  bool PrepareMapFile(file_util::ScopedFILE fp, file_util::ScopedFD readonly);
   bool FilePathForMemoryName(const std::string& mem_name, FilePath* path);
   void LockOrUnlockCommon(int function);
 #endif

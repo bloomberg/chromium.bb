@@ -13,7 +13,6 @@
 
 #include "base/file_util.h"
 #include "base/files/file_path.h"
-#include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
 
@@ -46,14 +45,15 @@ int MakeUnixAddrForPath(const std::string& socket_name,
   }
 
   // Create socket.
-  base::ScopedFD fd(socket(AF_UNIX, SOCK_STREAM, 0));
-  if (!fd.is_valid()) {
+  int fd = socket(AF_UNIX, SOCK_STREAM, 0);
+  if (fd < 0) {
     PLOG(ERROR) << "socket";
     return -1;
   }
+  file_util::ScopedFD scoped_fd(&fd);
 
   // Make socket non-blocking
-  if (HANDLE_EINTR(fcntl(fd.get(), F_SETFL, O_NONBLOCK)) < 0) {
+  if (HANDLE_EINTR(fcntl(fd, F_SETFL, O_NONBLOCK)) < 0) {
     PLOG(ERROR) << "fcntl(O_NONBLOCK)";
     return -1;
   }
@@ -64,7 +64,7 @@ int MakeUnixAddrForPath(const std::string& socket_name,
   strncpy(unix_addr->sun_path, socket_name.c_str(), kMaxSocketNameLength);
   *unix_addr_len =
       offsetof(struct sockaddr_un, sun_path) + socket_name.length();
-  return fd.release();
+  return *scoped_fd.release();
 }
 
 }  // namespace
@@ -78,10 +78,10 @@ bool CreateServerUnixDomainSocket(const base::FilePath& socket_path,
 
   struct sockaddr_un unix_addr;
   size_t unix_addr_len;
-  base::ScopedFD fd(
-      MakeUnixAddrForPath(socket_name, &unix_addr, &unix_addr_len));
-  if (!fd.is_valid())
+  int fd = MakeUnixAddrForPath(socket_name, &unix_addr, &unix_addr_len);
+  if (fd < 0)
     return false;
+  file_util::ScopedFD scoped_fd(&fd);
 
   // Make sure the path we need exists.
   if (!base::CreateDirectory(socket_dir)) {
@@ -96,20 +96,20 @@ bool CreateServerUnixDomainSocket(const base::FilePath& socket_path,
   }
 
   // Bind the socket.
-  if (bind(fd.get(), reinterpret_cast<const sockaddr*>(&unix_addr),
+  if (bind(fd, reinterpret_cast<const sockaddr*>(&unix_addr),
            unix_addr_len) < 0) {
     PLOG(ERROR) << "bind " << socket_path.value();
     return false;
   }
 
   // Start listening on the socket.
-  if (listen(fd.get(), SOMAXCONN) < 0) {
+  if (listen(fd, SOMAXCONN) < 0) {
     PLOG(ERROR) << "listen " << socket_path.value();
     unlink(socket_name.c_str());
     return false;
   }
 
-  *server_listen_fd = fd.release();
+  *server_listen_fd = *scoped_fd.release();
   return true;
 }
 
@@ -122,18 +122,18 @@ bool CreateClientUnixDomainSocket(const base::FilePath& socket_path,
 
   struct sockaddr_un unix_addr;
   size_t unix_addr_len;
-  base::ScopedFD fd(
-      MakeUnixAddrForPath(socket_name, &unix_addr, &unix_addr_len));
-  if (!fd.is_valid())
+  int fd = MakeUnixAddrForPath(socket_name, &unix_addr, &unix_addr_len);
+  if (fd < 0)
     return false;
+  file_util::ScopedFD scoped_fd(&fd);
 
-  if (HANDLE_EINTR(connect(fd.get(), reinterpret_cast<sockaddr*>(&unix_addr),
+  if (HANDLE_EINTR(connect(fd, reinterpret_cast<sockaddr*>(&unix_addr),
                            unix_addr_len)) < 0) {
     PLOG(ERROR) << "connect " << socket_path.value();
     return false;
   }
 
-  *client_socket = fd.release();
+  *client_socket = *scoped_fd.release();
   return true;
 }
 
@@ -184,17 +184,18 @@ bool ServerAcceptConnection(int server_listen_fd, int* server_socket) {
   DCHECK(server_socket);
   *server_socket = -1;
 
-  base::ScopedFD accept_fd(HANDLE_EINTR(accept(server_listen_fd, NULL, 0)));
-  if (!accept_fd.is_valid())
+  int accept_fd = HANDLE_EINTR(accept(server_listen_fd, NULL, 0));
+  if (accept_fd < 0)
     return IsRecoverableError(errno);
-  if (HANDLE_EINTR(fcntl(accept_fd.get(), F_SETFL, O_NONBLOCK)) < 0) {
-    PLOG(ERROR) << "fcntl(O_NONBLOCK) " << accept_fd.get();
+  file_util::ScopedFD scoped_fd(&accept_fd);
+  if (HANDLE_EINTR(fcntl(accept_fd, F_SETFL, O_NONBLOCK)) < 0) {
+    PLOG(ERROR) << "fcntl(O_NONBLOCK) " << accept_fd;
     // It's safe to keep listening on |server_listen_fd| even if the attempt to
     // set O_NONBLOCK failed on the client fd.
     return true;
   }
 
-  *server_socket = accept_fd.release();
+  *server_socket = *scoped_fd.release();
   return true;
 }
 

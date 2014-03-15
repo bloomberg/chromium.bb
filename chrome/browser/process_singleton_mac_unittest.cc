@@ -9,7 +9,6 @@
 #include "chrome/browser/process_singleton.h"
 
 #include "base/file_util.h"
-#include "base/files/scoped_file.h"
 #include "base/path_service.h"
 #include "base/posix/eintr_wrapper.h"
 #include "chrome/common/chrome_constants.h"
@@ -40,13 +39,15 @@ class ProcessSingletonMacTest : public PlatformTest {
   // Return |true| if the file exists and is locked.  Forces a failure
   // in the containing test in case of error condition.
   bool IsLocked() {
-    base::ScopedFD fd(HANDLE_EINTR(open(lock_path_.value().c_str(), O_RDONLY)));
-    if (!fd.is_valid()) {
+    int fd = HANDLE_EINTR(open(lock_path_.value().c_str(), O_RDONLY));
+    if (fd == -1) {
       EXPECT_EQ(ENOENT, errno) << "Unexpected error opening lockfile.";
       return false;
     }
 
-    int rc = HANDLE_EINTR(flock(fd.get(), LOCK_EX|LOCK_NB));
+    file_util::ScopedFD auto_close(&fd);
+
+    int rc = HANDLE_EINTR(flock(fd, LOCK_EX|LOCK_NB));
 
     // Got the lock, so it wasn't already locked.  Close releases.
     if (rc != -1)
