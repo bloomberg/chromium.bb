@@ -25,6 +25,7 @@ namespace test {
 namespace {
 
 const char kServerHostname[] = "www.example.com";
+const uint16 kPort = 80;
 
 class ToolsQuicClientSessionTest
     : public ::testing::TestWithParam<QuicVersion> {
@@ -33,8 +34,9 @@ class ToolsQuicClientSessionTest
       : connection_(new PacketSavingConnection(false,
                                                SupportedVersions(GetParam()))) {
     crypto_config_.SetDefaults();
-    session_.reset(new QuicClientSession(kServerHostname, DefaultQuicConfig(),
-                                         connection_, &crypto_config_));
+    session_.reset(new QuicClientSession(
+        QuicSessionKey(kServerHostname, kPort, false),
+        DefaultQuicConfig(), connection_, &crypto_config_));
     session_->config()->SetDefaults();
   }
 

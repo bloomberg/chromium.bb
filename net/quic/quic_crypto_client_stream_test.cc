@@ -9,6 +9,7 @@
 #include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/crypto/quic_encrypter.h"
 #include "net/quic/quic_protocol.h"
+#include "net/quic/quic_session_key.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/quic/test_tools/simple_quic_framer.h"
@@ -20,14 +21,16 @@ namespace test {
 namespace {
 
 const char kServerHostname[] = "example.com";
+const uint16 kServerPort = 80;
 
 class QuicCryptoClientStreamTest : public ::testing::Test {
  public:
   QuicCryptoClientStreamTest()
       : connection_(new PacketSavingConnection(false)),
         session_(new TestSession(connection_, DefaultQuicConfig())),
-        stream_(new QuicCryptoClientStream(kServerHostname, session_.get(),
-                                           &crypto_config_)) {
+        server_key_(kServerHostname, kServerPort, false),
+        stream_(new QuicCryptoClientStream(
+            server_key_, session_.get(), &crypto_config_)) {
     session_->SetCryptoStream(stream_.get());
     crypto_config_.SetDefaults();
   }
@@ -44,6 +47,7 @@ class QuicCryptoClientStreamTest : public ::testing::Test {
 
   PacketSavingConnection* connection_;
   scoped_ptr<TestSession> session_;
+  QuicSessionKey server_key_;
   scoped_ptr<QuicCryptoClientStream> stream_;
   CryptoHandshakeMessage message_;
   scoped_ptr<QuicData> message_data_;
@@ -101,7 +105,8 @@ TEST_F(QuicCryptoClientStreamTest, NegotiatedParameters) {
 }
 
 TEST_F(QuicCryptoClientStreamTest, InvalidHostname) {
-  stream_.reset(new QuicCryptoClientStream("invalid", session_.get(),
+  QuicSessionKey server_key("invalid", 80, false);
+  stream_.reset(new QuicCryptoClientStream(server_key, session_.get(),
                                            &crypto_config_));
   session_->SetCryptoStream(stream_.get());
 
@@ -116,7 +121,7 @@ TEST_F(QuicCryptoClientStreamTest, ExpiredServerConfig) {
 
   connection_ = new PacketSavingConnection(true);
   session_.reset(new TestSession(connection_, DefaultQuicConfig()));
-  stream_.reset(new QuicCryptoClientStream(kServerHostname, session_.get(),
+  stream_.reset(new QuicCryptoClientStream(server_key_, session_.get(),
                                            &crypto_config_));
 
   session_->SetCryptoStream(stream_.get());

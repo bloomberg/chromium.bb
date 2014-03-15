@@ -13,6 +13,7 @@
 #include "base/time/time.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_export.h"
+#include "net/quic/quic_session_key.h"
 
 namespace net {
 
@@ -24,7 +25,7 @@ class X509Certificate;
 // crypto config.
 class NET_EXPORT_PRIVATE QuicServerInfo {
  public:
-  QuicServerInfo(const std::string& hostname);
+  QuicServerInfo(const QuicSessionKey& server_key);
   virtual ~QuicServerInfo();
 
   // Start will commence the lookup. This must be called before any other
@@ -92,17 +93,18 @@ class NET_EXPORT_PRIVATE QuicServerInfo {
   // SerializeInner is a helper function for Serialize.
   std::string SerializeInner() const;
 
-  // This is the QUIC server hostname for which we restore the crypto_config.
-  const std::string hostname_;
+  // This is the QUIC server (hostname, port, is_https) tuple for which we
+  // restore the crypto_config.
+  const QuicSessionKey server_key_;
 };
 
 class QuicServerInfoFactory {
  public:
   virtual ~QuicServerInfoFactory();
 
-  // GetForHost returns a fresh, allocated QuicServerInfo for the given
-  // hostname or NULL on failure.
-  virtual QuicServerInfo* GetForHost(const std::string& hostname) = 0;
+  // GetForServer returns a fresh, allocated QuicServerInfo for the given
+  // |server_key| or NULL on failure.
+  virtual QuicServerInfo* GetForServer(const QuicSessionKey& server_key) = 0;
 };
 
 }  // namespace net

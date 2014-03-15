@@ -22,6 +22,7 @@ class CryptoHandshakeMessage;
 class ProofVerifier;
 class ProofVerifyDetails;
 class QuicRandom;
+class QuicSessionKey;
 
 // QuicCryptoClientConfig contains crypto-related configuration settings for a
 // client. Note that this object isn't thread-safe. It's designed to be used on
@@ -131,9 +132,9 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
   // Sets the members to reasonable, default values.
   void SetDefaults();
 
-  // LookupOrCreate returns a CachedState for the given hostname. If no such
+  // LookupOrCreate returns a CachedState for the given |server_key|. If no such
   // CachedState currently exists, it will be created and cached.
-  CachedState* LookupOrCreate(const std::string& server_hostname);
+  CachedState* LookupOrCreate(const QuicSessionKey& server_key);
 
   // FillInchoateClientHello sets |out| to be a CHLO message that elicits a
   // source-address token or SCFG from a server. If |cached| is non-NULL, the
@@ -211,17 +212,16 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
   void SetChannelIDSigner(ChannelIDSigner* signer);
 
   // Initialize the CachedState from |canonical_crypto_config| for the
-  // |canonical_server_hostname| as the initial CachedState for
-  // |server_hostname|. We will copy config data only if
-  // |canonical_crypto_config| has valid proof.
-  void InitializeFrom(const std::string& server_hostname,
-                      const std::string& canonical_server_hostname,
+  // |canonical_server_key| as the initial CachedState for |server_key|. We will
+  // copy config data only if |canonical_crypto_config| has valid proof.
+  void InitializeFrom(const QuicSessionKey& server_key,
+                      const QuicSessionKey& canonical_server_key,
                       QuicCryptoClientConfig* canonical_crypto_config);
 
  private:
-  // cached_states_ maps from the server hostname to the cached information
-  // about that server.
-  std::map<std::string, CachedState*> cached_states_;
+  // cached_states_ maps from the server_key to the cached information about
+  // that server.
+  std::map<QuicSessionKey, CachedState*> cached_states_;
 
   scoped_ptr<ProofVerifier> proof_verifier_;
   scoped_ptr<ChannelIDSigner> channel_id_signer_;

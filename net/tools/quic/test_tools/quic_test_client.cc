@@ -10,6 +10,7 @@
 #include "net/cert/cert_verify_result.h"
 #include "net/cert/x509_certificate.h"
 #include "net/quic/crypto/proof_verifier.h"
+#include "net/quic/quic_session_key.h"
 #include "net/quic/test_tools/quic_connection_peer.h"
 #include "net/tools/balsa/balsa_headers.h"
 #include "net/tools/quic/quic_epoll_connection_helper.h"
@@ -99,17 +100,17 @@ BalsaHeaders* MungeHeaders(const BalsaHeaders* const_headers,
 class MockableQuicClient : public QuicClient {
  public:
   MockableQuicClient(IPEndPoint server_address,
-                     const string& server_hostname,
+                     const QuicSessionKey& server_key,
                      const QuicVersionVector& supported_versions)
-      : QuicClient(server_address, server_hostname, supported_versions, false),
+      : QuicClient(server_address, server_key, supported_versions, false),
         override_connection_id_(0),
         test_writer_(NULL) {}
 
   MockableQuicClient(IPEndPoint server_address,
-                     const string& server_hostname,
+                     const QuicSessionKey& server_key,
                      const QuicConfig& config,
                      const QuicVersionVector& supported_versions)
-      : QuicClient(server_address, server_hostname, config, supported_versions),
+      : QuicClient(server_address, server_key, config, supported_versions),
         override_connection_id_(0),
         test_writer_(NULL) {}
 
@@ -145,34 +146,36 @@ class MockableQuicClient : public QuicClient {
   QuicPacketWriterWrapper* test_writer_;
 };
 
-QuicTestClient::QuicTestClient(IPEndPoint address, const string& hostname,
+QuicTestClient::QuicTestClient(IPEndPoint address,
+                               const QuicSessionKey& server_key,
                                const QuicVersionVector& supported_versions)
-    : client_(new MockableQuicClient(address, hostname, supported_versions)) {
-  Initialize(address, hostname, true);
+    : client_(new MockableQuicClient(address, server_key, supported_versions)) {
+  Initialize(address, server_key, true);
 }
 
 QuicTestClient::QuicTestClient(IPEndPoint address,
-                               const string& hostname,
+                               const QuicSessionKey& server_key,
                                bool secure,
                                const QuicVersionVector& supported_versions)
-    : client_(new MockableQuicClient(address, hostname, supported_versions)) {
-  Initialize(address, hostname, secure);
+    : client_(new MockableQuicClient(address, server_key, supported_versions)) {
+  Initialize(address, server_key, secure);
 }
 
 QuicTestClient::QuicTestClient(IPEndPoint address,
-                               const string& hostname,
+                               const QuicSessionKey& server_key,
                                bool secure,
                                const QuicConfig& config,
                                const QuicVersionVector& supported_versions)
-    : client_(new MockableQuicClient(
-        address, hostname, config, supported_versions)) {
-  Initialize(address, hostname, secure);
+    : client_(new MockableQuicClient(address, server_key, config,
+                                     supported_versions)) {
+  Initialize(address, server_key, secure);
 }
 
 void QuicTestClient::Initialize(IPEndPoint address,
-                                const string& hostname,
+                                const QuicSessionKey& server_key,
                                 bool secure) {
   server_address_ = address;
+  server_key_ = server_key;
   priority_ = 3;
   connect_attempted_ = false;
   secure_ = secure;
@@ -211,7 +214,9 @@ ssize_t QuicTestClient::SendMessage(const HTTPMessage& message) {
   if (!connected()) {
     GURL url(message.headers()->request_uri().as_string());
     if (!url.host().empty()) {
-      client_->set_server_hostname(url.host());
+      client_->set_server_key(
+          QuicSessionKey(url.host(), url.EffectiveIntPort(),
+                         url.SchemeIs("https") ? true : false));
     }
   }
 
@@ -292,7 +297,7 @@ QuicTagValueMap QuicTestClient::GetServerConfig() const {
   net::QuicCryptoClientConfig* config =
       QuicClientPeer::GetCryptoConfig(client_.get());
   net::QuicCryptoClientConfig::CachedState* state =
-      config->LookupOrCreate(client_->server_hostname());
+      config->LookupOrCreate(client_->server_key());
   const net::CryptoHandshakeMessage* handshake_msg = state->GetServerConfig();
   if (handshake_msg != NULL) {
     return handshake_msg->tag_value_map();

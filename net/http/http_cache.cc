@@ -275,8 +275,9 @@ class HttpCache::QuicServerInfoFactoryAdaptor : public QuicServerInfoFactory {
       : http_cache_(http_cache) {
   }
 
-  virtual QuicServerInfo* GetForHost(const std::string& hostname) OVERRIDE {
-    return new DiskCacheBasedQuicServerInfo(hostname, http_cache_);
+  virtual QuicServerInfo* GetForServer(
+      const QuicSessionKey& server_key) OVERRIDE {
+    return new DiskCacheBasedQuicServerInfo(server_key, http_cache_);
   }
 
  private:

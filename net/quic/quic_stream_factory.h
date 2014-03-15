@@ -23,7 +23,6 @@
 #include "net/quic/quic_crypto_stream.h"
 #include "net/quic/quic_http_stream.h"
 #include "net/quic/quic_protocol.h"
-#include "net/quic/quic_session_key.h"
 
 namespace net {
 
@@ -37,6 +36,7 @@ class QuicConnectionHelper;
 class QuicCryptoClientStreamFactory;
 class QuicRandom;
 class QuicServerInfoFactory;
+class QuicSessionKey;
 class QuicStreamFactory;
 
 namespace test {

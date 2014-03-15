@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "net/quic/crypto/crypto_protocol.h"
+#include "net/quic/quic_session_key.h"
 #include "net/tools/quic/quic_spdy_client_stream.h"
 
 using std::string;
@@ -14,12 +15,12 @@ namespace net {
 namespace tools {
 
 QuicClientSession::QuicClientSession(
-    const string& server_hostname,
+    const QuicSessionKey& server_key,
     const QuicConfig& config,
     QuicConnection* connection,
     QuicCryptoClientConfig* crypto_config)
     : QuicSession(connection, config),
-      crypto_stream_(server_hostname, this, crypto_config) {
+      crypto_stream_(server_key, this, crypto_config) {
 }
 
 QuicClientSession::~QuicClientSession() {

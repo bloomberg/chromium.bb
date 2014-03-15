@@ -25,6 +25,7 @@
 namespace net {
 
 class ProofVerifier;
+class QuicSessionKey;
 
 namespace tools {
 
@@ -47,11 +48,11 @@ class QuicClient : public EpollCallbackInterface,
   };
 
   QuicClient(IPEndPoint server_address,
-             const string& server_hostname,
+             const QuicSessionKey& server_key,
              const QuicVersionVector& supported_versions,
              bool print_response);
   QuicClient(IPEndPoint server_address,
-             const std::string& server_hostname,
+             const QuicSessionKey& server_key,
              const QuicConfig& config,
              const QuicVersionVector& supported_versions);
 
@@ -134,13 +135,11 @@ class QuicClient : public EpollCallbackInterface,
 
   int fd() { return fd_; }
 
-  string server_hostname() {
-    return server_hostname_;
-  }
+  const QuicSessionKey& server_key() const { return server_key_; }
 
   // This should only be set before the initial Connect()
-  void set_server_hostname(const string& hostname) {
-    server_hostname_ = hostname;
+  void set_server_key(const QuicSessionKey& server_key) {
+    server_key_ = server_key;
   }
 
   // SetProofVerifier sets the ProofVerifier that will be used to verify the
@@ -181,8 +180,8 @@ class QuicClient : public EpollCallbackInterface,
   // Address of the server.
   const IPEndPoint server_address_;
 
-  // Hostname of the server. This may be a DNS name or an IP address literal.
-  std::string server_hostname_;
+  // |server_key_| is a tuple (hostname, port, is_https) of the server.
+  QuicSessionKey server_key_;
 
   // config_ and crypto_config_ contain configuration and cached state about
   // servers.

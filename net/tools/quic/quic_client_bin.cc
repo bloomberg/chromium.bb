@@ -4,6 +4,7 @@
 
 // A binary wrapper for QuicClient.  Connects to --hostname via --address
 // on --port and requests URLs specified on the command line.
+// --secure to check the certificates using proof verifier .
 //
 // For example:
 //  quic_client --address=127.0.0.1 --port=6122 --hostname=www.google.com
@@ -22,6 +23,7 @@
 int32 FLAGS_port = 6121;
 std::string FLAGS_address = "127.0.0.1";
 std::string FLAGS_hostname = "localhost";
+bool FLAGS_secure = false;
 
 int main(int argc, char *argv[]) {
   CommandLine::Init(argc, argv);
@@ -39,7 +41,8 @@ int main(int argc, char *argv[]) {
         "-h, --help                  show this help message and exit\n"
         "--port=<port>               specify the port to connect to\n"
         "--address=<address>         specify the IP address to connect to\n"
-        "--host=<host>               specify the SNI hostname to use\n";
+        "--host=<host>               specify the SNI hostname to use\n"
+        "--secure                    check certificates\n";
     std::cout << help_str;
     exit(0);
   }
@@ -55,9 +58,13 @@ int main(int argc, char *argv[]) {
   if (line->HasSwitch("hostname")) {
     FLAGS_hostname = line->GetSwitchValueASCII("hostname");
   }
+  if (line->HasSwitch("secure")) {
+    FLAGS_secure = true;
+  }
   VLOG(1) << "server port: " << FLAGS_port
           << " address: " << FLAGS_address
-          << " hostname: " << FLAGS_hostname;
+          << " hostname: " << FLAGS_hostname
+          << " secure: " << FLAGS_secure;
 
   base::AtExitManager exit_manager;
 
@@ -65,7 +72,8 @@ int main(int argc, char *argv[]) {
   CHECK(net::ParseIPLiteralToNumber(FLAGS_address, &addr));
   // TODO(rjshade): Set version on command line.
   net::tools::QuicClient client(
-      net::IPEndPoint(addr, FLAGS_port), FLAGS_hostname,
+      net::IPEndPoint(addr, FLAGS_port),
+      net::QuicSessionKey(FLAGS_hostname, FLAGS_port, FLAGS_secure),
       net::QuicSupportedVersions(), true);
 
   client.Initialize();

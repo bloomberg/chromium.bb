@@ -13,13 +13,15 @@
 
 namespace net {
 
+class QuicSessionKey;
+
 class MockCryptoClientStreamFactory : public QuicCryptoClientStreamFactory  {
  public:
   MockCryptoClientStreamFactory();
   virtual ~MockCryptoClientStreamFactory() {}
 
   virtual QuicCryptoClientStream* CreateQuicCryptoClientStream(
-      const string& server_hostname,
+      const QuicSessionKey& server_key,
       QuicSession* session,
       QuicCryptoClientConfig* crypto_config) OVERRIDE;
 

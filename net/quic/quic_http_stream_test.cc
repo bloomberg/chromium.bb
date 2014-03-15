@@ -49,6 +49,8 @@ namespace test {
 namespace {
 
 const char kUploadData[] = "hello world!";
+const char kServerHostname[] = "www.google.com";
+const uint16 kServerPort = 80;
 
 class TestQuicConnection : public QuicConnection {
  public:
@@ -206,8 +208,9 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
                               writer_.Pass(), NULL,
                               make_scoped_ptr((QuicServerInfo*)NULL),
                               &crypto_client_stream_factory_,
-                              "www.google.com", DefaultQuicConfig(),
-                              &crypto_config_, NULL));
+                              QuicSessionKey(kServerHostname, kServerPort,
+                                             false),
+                              DefaultQuicConfig(), &crypto_config_, NULL));
     session_->GetCryptoStream()->CryptoConnect();
     EXPECT_TRUE(session_->IsCryptoHandshakeConfirmed());
     stream_.reset(use_closing_stream_ ?

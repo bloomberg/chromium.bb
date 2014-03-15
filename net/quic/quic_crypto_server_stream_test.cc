@@ -49,6 +49,9 @@ class QuicCryptoServerConfigPeer {
 
 namespace {
 
+const char kServerHostname[] = "test.example.com";
+const uint16 kServerPort = 80;
+
 class QuicCryptoServerStreamTest : public ::testing::TestWithParam<bool> {
  public:
   QuicCryptoServerStreamTest()
@@ -142,8 +145,9 @@ TEST_P(QuicCryptoServerStreamTest, ZeroRTT) {
   QuicCryptoClientConfig client_crypto_config;
   client_crypto_config.SetDefaults();
 
+  QuicSessionKey server_key(kServerHostname, kServerPort, false);
   scoped_ptr<QuicCryptoClientStream> client(new QuicCryptoClientStream(
-        "test.example.com", client_session.get(), &client_crypto_config));
+      server_key, client_session.get(), &client_crypto_config));
   client_session->SetCryptoStream(client.get());
 
   // Do a first handshake in order to prime the client config with the server's
@@ -176,7 +180,7 @@ TEST_P(QuicCryptoServerStreamTest, ZeroRTT) {
   client_session.reset(new TestSession(client_conn, client_config));
   server_session.reset(new TestSession(server_conn, config_));
   client.reset(new QuicCryptoClientStream(
-        "test.example.com", client_session.get(), &client_crypto_config));
+      server_key, client_session.get(), &client_crypto_config));
   client_session->SetCryptoStream(client.get());
 
   server.reset(new QuicCryptoServerStream(crypto_config_,

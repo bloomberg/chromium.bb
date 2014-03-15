@@ -44,24 +44,24 @@ class QuicStreamFactoryPeer {
       QuicStreamFactory* factory,
       const HostPortPair& host_port_pair,
       bool is_https) {
-    QuicSessionKey session_key(host_port_pair, is_https);
-    return factory->GetOrCreateCryptoConfig(session_key);
+    QuicSessionKey server_key(host_port_pair, is_https);
+    return factory->GetOrCreateCryptoConfig(server_key);
   }
 
   static bool HasActiveSession(QuicStreamFactory* factory,
                                const HostPortPair& host_port_pair,
                                bool is_https) {
-    QuicSessionKey session_key(host_port_pair, is_https);
-    return factory->HasActiveSession(session_key);
+    QuicSessionKey server_key(host_port_pair, is_https);
+    return factory->HasActiveSession(server_key);
   }
 
   static QuicClientSession* GetActiveSession(
       QuicStreamFactory* factory,
       const HostPortPair& host_port_pair,
       bool is_https) {
-    QuicSessionKey session_key(host_port_pair, is_https);
-    DCHECK(factory->HasActiveSession(session_key));
-    return factory->active_sessions_[session_key];
+    QuicSessionKey server_key(host_port_pair, is_https);
+    DCHECK(factory->HasActiveSession(server_key));
+    return factory->active_sessions_[server_key];
   }
 
   static scoped_ptr<QuicHttpStream> CreateIfSessionExists(
@@ -69,8 +69,8 @@ class QuicStreamFactoryPeer {
       const HostPortPair& host_port_pair,
       bool is_https,
       const BoundNetLog& net_log) {
-    QuicSessionKey session_key(host_port_pair, is_https);
-    return factory->CreateIfSessionExists(session_key, net_log);
+    QuicSessionKey server_key(host_port_pair, is_https);
+    return factory->CreateIfSessionExists(server_key, net_log);
   }
 
   static bool IsLiveSession(QuicStreamFactory* factory,
@@ -1029,8 +1029,9 @@ TEST_P(QuicStreamFactoryTest, SharedCryptoConfig) {
         QuicStreamFactoryPeer::GetOrCreateCryptoConfig(
             &factory_, host_port_pair1, is_https_);
     DCHECK(crypto_config1);
+    QuicSessionKey server_key1(host_port_pair1, is_https_);
     QuicCryptoClientConfig::CachedState* cached1 =
-        crypto_config1->LookupOrCreate(host_port_pair1.host());
+        crypto_config1->LookupOrCreate(server_key1);
     EXPECT_FALSE(cached1->proof_valid());
     EXPECT_TRUE(cached1->source_address_token().empty());
 
@@ -1044,8 +1045,9 @@ TEST_P(QuicStreamFactoryTest, SharedCryptoConfig) {
         QuicStreamFactoryPeer::GetOrCreateCryptoConfig(
             &factory_, host_port_pair2, is_https_);
     DCHECK(crypto_config2);
+    QuicSessionKey server_key2(host_port_pair2, is_https_);
     QuicCryptoClientConfig::CachedState* cached2 =
-        crypto_config2->LookupOrCreate(host_port_pair2.host());
+        crypto_config2->LookupOrCreate(server_key2);
     EXPECT_EQ(cached1->source_address_token(), cached2->source_address_token());
     EXPECT_TRUE(cached2->proof_valid());
   }
@@ -1067,8 +1069,9 @@ TEST_P(QuicStreamFactoryTest, CryptoConfigWhenProofIsInvalid) {
         QuicStreamFactoryPeer::GetOrCreateCryptoConfig(
             &factory_, host_port_pair1, is_https_);
     DCHECK(crypto_config1);
+    QuicSessionKey server_key1(host_port_pair1, is_https_);
     QuicCryptoClientConfig::CachedState* cached1 =
-        crypto_config1->LookupOrCreate(host_port_pair1.host());
+        crypto_config1->LookupOrCreate(server_key1);
     EXPECT_FALSE(cached1->proof_valid());
     EXPECT_TRUE(cached1->source_address_token().empty());
 
@@ -1082,8 +1085,9 @@ TEST_P(QuicStreamFactoryTest, CryptoConfigWhenProofIsInvalid) {
         QuicStreamFactoryPeer::GetOrCreateCryptoConfig(
             &factory_, host_port_pair2, is_https_);
     DCHECK(crypto_config2);
+    QuicSessionKey server_key2(host_port_pair2, is_https_);
     QuicCryptoClientConfig::CachedState* cached2 =
-        crypto_config2->LookupOrCreate(host_port_pair2.host());
+        crypto_config2->LookupOrCreate(server_key2);
     EXPECT_NE(cached1->source_address_token(), cached2->source_address_token());
     EXPECT_TRUE(cached2->source_address_token().empty());
     EXPECT_FALSE(cached2->proof_valid());

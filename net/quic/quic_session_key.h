@@ -17,6 +17,7 @@ class NET_EXPORT_PRIVATE QuicSessionKey {
  public:
   QuicSessionKey();
   QuicSessionKey(const HostPortPair& host_port_pair, bool is_https);
+  QuicSessionKey(const std::string& host, uint16 port, bool is_https);
   ~QuicSessionKey();
 
   // Needed to be an element of std::set.
@@ -30,6 +31,10 @@ class NET_EXPORT_PRIVATE QuicSessionKey {
   const HostPortPair& host_port_pair() const {
     return host_port_pair_;
   }
+
+  const std::string& host() const { return host_port_pair_.host(); }
+
+  uint16 port() const { return host_port_pair_.port(); }
 
   bool is_https() const { return is_https_; }
 

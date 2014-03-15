@@ -15,6 +15,7 @@
 #include "net/quic/crypto/quic_crypto_client_config.h"
 #include "net/quic/quic_config.h"
 #include "net/quic/quic_crypto_stream.h"
+#include "net/quic/quic_session_key.h"
 
 namespace net {
 
@@ -28,7 +29,7 @@ class CryptoTestUtils;
 
 class NET_EXPORT_PRIVATE QuicCryptoClientStream : public QuicCryptoStream {
  public:
-  QuicCryptoClientStream(const string& server_hostname,
+  QuicCryptoClientStream(const QuicSessionKey& server_key,
                          QuicSession* session,
                          QuicCryptoClientConfig* crypto_config);
   virtual ~QuicCryptoClientStream();
@@ -118,8 +119,8 @@ class NET_EXPORT_PRIVATE QuicCryptoClientStream : public QuicCryptoStream {
 
   // Client's connection nonce (4-byte timestamp + 28 random bytes)
   std::string nonce_;
-  // Server's hostname
-  std::string server_hostname_;
+  // Server's (hostname, port, is_https) tuple.
+  const QuicSessionKey server_key_;
 
   // Generation counter from QuicCryptoClientConfig's CachedState.
   uint64 generation_counter_;

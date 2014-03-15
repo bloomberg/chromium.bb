@@ -13,6 +13,12 @@ QuicSessionKey::QuicSessionKey(const HostPortPair& host_port_pair,
     : host_port_pair_(host_port_pair),
       is_https_(is_https) {}
 
+QuicSessionKey::QuicSessionKey(const std::string& host,
+                               uint16 port,
+                               bool is_https)
+    : host_port_pair_(host, port),
+      is_https_(is_https) {}
+
 QuicSessionKey::~QuicSessionKey() {}
 
 bool QuicSessionKey::operator<(const QuicSessionKey &other) const {

@@ -66,14 +66,14 @@ void QuicCryptoClientStream::ProofVerifierCallbackImpl::Cancel() {
 }
 
 QuicCryptoClientStream::QuicCryptoClientStream(
-    const string& server_hostname,
+    const QuicSessionKey& server_key,
     QuicSession* session,
     QuicCryptoClientConfig* crypto_config)
     : QuicCryptoStream(session),
       next_state_(STATE_IDLE),
       num_client_hellos_(0),
       crypto_config_(crypto_config),
-      server_hostname_(server_hostname),
+      server_key_(server_key),
       generation_counter_(0),
       proof_verify_callback_(NULL),
       disk_cache_load_result_(ERR_UNEXPECTED),
@@ -152,7 +152,7 @@ void QuicCryptoClientStream::DoHandshakeLoop(
   QuicErrorCode error;
   string error_details;
   QuicCryptoClientConfig::CachedState* cached =
-      crypto_config_->LookupOrCreate(server_hostname_);
+      crypto_config_->LookupOrCreate(server_key_);
 
   if (in != NULL) {
     DVLOG(1) << "Client: Received " << in->DebugString();
@@ -183,7 +183,7 @@ void QuicCryptoClientStream::DoHandshakeLoop(
 
         if (!cached->IsComplete(session()->connection()->clock()->WallNow())) {
           crypto_config_->FillInchoateClientHello(
-              server_hostname_,
+              server_key_.host(),
               session()->connection()->supported_versions().front(),
               cached, &crypto_negotiated_params_, &out);
           // Pad the inchoate client hello to fill up a packet.
@@ -209,7 +209,7 @@ void QuicCryptoClientStream::DoHandshakeLoop(
         }
         session()->config()->ToHandshakeMessage(&out);
         error = crypto_config_->FillClientHello(
-            server_hostname_,
+            server_key_.host(),
             session()->connection()->connection_id(),
             session()->connection()->supported_versions().front(),
             cached,
@@ -297,7 +297,7 @@ void QuicCryptoClientStream::DoHandshakeLoop(
         verify_ok_ = false;
 
         ProofVerifier::Status status = verifier->VerifyProof(
-            server_hostname_,
+            server_key_.host(),
             cached->server_config(),
             cached->certs(),
             cached->signature(),

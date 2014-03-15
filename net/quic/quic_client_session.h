@@ -29,6 +29,7 @@ class DatagramClientSocket;
 class QuicConnectionHelper;
 class QuicCryptoClientStreamFactory;
 class QuicDefaultPacketWriter;
+class QuicSessionKey;
 class QuicStreamFactory;
 class SSLInfo;
 
@@ -92,7 +93,7 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicSession {
                     QuicStreamFactory* stream_factory,
                     scoped_ptr<QuicServerInfo> server_info,
                     QuicCryptoClientStreamFactory* crypto_client_stream_factory,
-                    const std::string& server_hostname,
+                    const QuicSessionKey& server_key,
                     const QuicConfig& config,
                     QuicCryptoClientConfig* crypto_config,
                     NetLog* net_log);

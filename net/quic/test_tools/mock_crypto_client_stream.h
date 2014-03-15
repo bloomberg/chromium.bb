@@ -14,6 +14,8 @@
 
 namespace net {
 
+class QuicSessionKey;
+
 class MockCryptoClientStream : public QuicCryptoClientStream {
  public:
   // HandshakeMode enumerates the handshake mode MockCryptoClientStream should
@@ -34,7 +36,7 @@ class MockCryptoClientStream : public QuicCryptoClientStream {
   };
 
   MockCryptoClientStream(
-      const string& server_hostname,
+      const QuicSessionKey& server_key,
       QuicSession* session,
       QuicCryptoClientConfig* crypto_config,
       HandshakeMode handshake_mode,

@@ -18,13 +18,14 @@
 namespace net {
 
 class QuicConnection;
+class QuicSessionKey;
 class ReliableQuicStream;
 
 namespace tools {
 
 class QuicClientSession : public QuicSession {
  public:
-  QuicClientSession(const std::string& server_hostname,
+  QuicClientSession(const QuicSessionKey& server_key,
                     const QuicConfig& config,
                     QuicConnection* connection,
                     QuicCryptoClientConfig* crypto_config);

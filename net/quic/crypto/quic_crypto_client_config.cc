@@ -15,6 +15,7 @@
 #include "net/quic/crypto/p256_key_exchange.h"
 #include "net/quic/crypto/proof_verifier.h"
 #include "net/quic/crypto/quic_encrypter.h"
+#include "net/quic/quic_session_key.h"
 #include "net/quic/quic_utils.h"
 
 #if defined(OS_WIN)
@@ -22,6 +23,7 @@
 #endif
 
 using base::StringPiece;
+using std::make_pair;
 using std::map;
 using std::string;
 using std::vector;
@@ -253,15 +255,15 @@ void QuicCryptoClientConfig::SetDefaults() {
 }
 
 QuicCryptoClientConfig::CachedState* QuicCryptoClientConfig::LookupOrCreate(
-    const string& server_hostname) {
-  map<string, CachedState*>::const_iterator it =
-      cached_states_.find(server_hostname);
+    const QuicSessionKey& server_key) {
+  map<QuicSessionKey, CachedState*>::const_iterator it =
+      cached_states_.find(server_key);
   if (it != cached_states_.end()) {
     return it->second;
   }
 
   CachedState* cached = new CachedState;
-  cached_states_.insert(make_pair(server_hostname, cached));
+  cached_states_.insert(make_pair(server_key, cached));
   return cached;
 }
 
@@ -666,15 +668,15 @@ void QuicCryptoClientConfig::SetChannelIDSigner(ChannelIDSigner* signer) {
 }
 
 void QuicCryptoClientConfig::InitializeFrom(
-    const std::string& server_hostname,
-    const std::string& canonical_server_hostname,
+    const QuicSessionKey& server_key,
+    const QuicSessionKey& canonical_server_key,
     QuicCryptoClientConfig* canonical_crypto_config) {
   CachedState* canonical_cached =
-      canonical_crypto_config->LookupOrCreate(canonical_server_hostname);
+      canonical_crypto_config->LookupOrCreate(canonical_server_key);
   if (!canonical_cached->proof_valid()) {
     return;
   }
-  CachedState* cached = LookupOrCreate(server_hostname);
+  CachedState* cached = LookupOrCreate(server_key);
   cached->InitializeFrom(*canonical_cached);
 }
 

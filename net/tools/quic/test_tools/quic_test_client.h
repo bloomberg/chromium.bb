@@ -17,6 +17,7 @@
 namespace net {
 
 class ProofVerifier;
+class QuicSessionKey;
 
 namespace tools {
 
@@ -30,14 +31,15 @@ class MockableQuicClient;
 // A toy QUIC client used for testing.
 class QuicTestClient :  public QuicDataStream::Visitor {
  public:
-  QuicTestClient(IPEndPoint server_address, const string& server_hostname,
+  QuicTestClient(IPEndPoint server_address,
+                 const QuicSessionKey& server_key,
                  const QuicVersionVector& supported_versions);
   QuicTestClient(IPEndPoint server_address,
-                 const string& server_hostname,
+                 const QuicSessionKey& server_key,
                  bool secure,
                  const QuicVersionVector& supported_versions);
   QuicTestClient(IPEndPoint server_address,
-                 const string& server_hostname,
+                 const QuicSessionKey& server_key,
                  bool secure,
                  const QuicConfig& config,
                  const QuicVersionVector& supported_versions);
@@ -118,10 +120,13 @@ class QuicTestClient :  public QuicDataStream::Visitor {
   void WaitForWriteToFlush();
 
  private:
-  void Initialize(IPEndPoint address, const string& hostname, bool secure);
+  void Initialize(IPEndPoint address,
+                  const QuicSessionKey& server_key,
+                  bool secure);
 
   IPEndPoint server_address_;
   IPEndPoint client_address_;
+  QuicSessionKey server_key_;
   scoped_ptr<MockableQuicClient> client_;  // The actual client
   QuicSpdyClientStream* stream_;
 

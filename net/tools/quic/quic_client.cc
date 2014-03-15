@@ -16,6 +16,7 @@
 #include "net/quic/quic_connection.h"
 #include "net/quic/quic_data_reader.h"
 #include "net/quic/quic_protocol.h"
+#include "net/quic/quic_session_key.h"
 #include "net/tools/balsa/balsa_headers.h"
 #include "net/tools/quic/quic_epoll_connection_helper.h"
 #include "net/tools/quic/quic_socket_utils.h"
@@ -31,11 +32,11 @@ namespace tools {
 const int kEpollFlags = EPOLLIN | EPOLLOUT | EPOLLET;
 
 QuicClient::QuicClient(IPEndPoint server_address,
-                       const string& server_hostname,
+                       const QuicSessionKey& server_key,
                        const QuicVersionVector& supported_versions,
                        bool print_response)
     : server_address_(server_address),
-      server_hostname_(server_hostname),
+      server_key_(server_key),
       local_port_(0),
       fd_(-1),
       helper_(CreateQuicConnectionHelper()),
@@ -48,11 +49,11 @@ QuicClient::QuicClient(IPEndPoint server_address,
 }
 
 QuicClient::QuicClient(IPEndPoint server_address,
-                       const string& server_hostname,
+                       const QuicSessionKey& server_key,
                        const QuicConfig& config,
                        const QuicVersionVector& supported_versions)
     : server_address_(server_address),
-      server_hostname_(server_hostname),
+      server_key_(server_key),
       config_(config),
       local_port_(0),
       fd_(-1),
@@ -162,7 +163,7 @@ bool QuicClient::StartConnect() {
   }
 
   session_.reset(new QuicClientSession(
-      server_hostname_,
+      server_key_,
       config_,
       new QuicConnection(GenerateConnectionId(), server_address_, helper_.get(),
                          writer_.get(), false, supported_versions_),

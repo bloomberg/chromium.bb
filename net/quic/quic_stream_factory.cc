@@ -31,6 +31,7 @@
 #include "net/quic/quic_default_packet_writer.h"
 #include "net/quic/quic_http_stream.h"
 #include "net/quic/quic_protocol.h"
+#include "net/quic/quic_session_key.h"
 #include "net/socket/client_socket_factory.h"
 
 using std::string;
@@ -399,11 +400,10 @@ int QuicStreamFactory::Create(const HostPortPair& host_port_pair,
     QuicCryptoClientConfig* crypto_config =
         GetOrCreateCryptoConfig(session_key);
     QuicCryptoClientConfig::CachedState* cached =
-        crypto_config->LookupOrCreate(session_key.host_port_pair().host());
+        crypto_config->LookupOrCreate(session_key);
     DCHECK(cached);
     if (cached->IsEmpty()) {
-      quic_server_info =
-          quic_server_info_factory_->GetForHost(host_port_pair.host());
+      quic_server_info = quic_server_info_factory_->GetForServer(session_key);
     }
   }
   scoped_ptr<Job> job(new Job(this, host_resolver_, host_port_pair,
@@ -438,7 +438,7 @@ bool QuicStreamFactory::OnResolution(
     for (SessionSet::const_iterator i = sessions.begin();
          i != sessions.end(); ++i) {
       QuicClientSession* session = *i;
-      if (!session->CanPool(session_key.host_port_pair().host()))
+      if (!session->CanPool(session_key.host()))
         continue;
       active_sessions_[session_key] = session;
       session_aliases_[session].insert(session_key);
@@ -715,8 +715,8 @@ int QuicStreamFactory::CreateSession(
 
   *session = new QuicClientSession(
       connection, socket.Pass(), writer.Pass(), this, server_info.Pass(),
-      quic_crypto_client_stream_factory_, host_port_pair.host(),
-      config, crypto_config, net_log.net_log());
+      quic_crypto_client_stream_factory_, session_key, config, crypto_config,
+      net_log.net_log());
   all_sessions_.insert(*session);  // owning pointer
   if (is_https) {
     crypto_config->SetProofVerifier(
@@ -762,8 +762,7 @@ QuicCryptoClientConfig* QuicStreamFactory::GetOrCreateCryptoConfig(
 void QuicStreamFactory::PopulateFromCanonicalConfig(
     const QuicSessionKey& session_key,
     QuicCryptoClientConfig* crypto_config) {
-  const string server_hostname = session_key.host_port_pair().host();
-  const uint16 server_port = session_key.host_port_pair().port();
+  const string server_hostname = session_key.host();
   unsigned i = 0;
   for (; i < canoncial_suffixes_.size(); ++i) {
     if (EndsWith(server_hostname, canoncial_suffixes_[i], false)) {
@@ -773,7 +772,8 @@ void QuicStreamFactory::PopulateFromCanonicalConfig(
   if (i == canoncial_suffixes_.size())
     return;
 
-  HostPortPair suffix_host_port_pair(canoncial_suffixes_[i], server_port);
+  HostPortPair suffix_host_port_pair(canoncial_suffixes_[i],
+                                     session_key.port());
   QuicSessionKey suffix_session_key(suffix_host_port_pair,
                                     session_key.is_https());
   if (!ContainsKey(canonical_hostname_to_origin_map_, suffix_session_key)) {
@@ -788,13 +788,10 @@ void QuicStreamFactory::PopulateFromCanonicalConfig(
   QuicCryptoClientConfig* canonical_crypto_config =
       all_crypto_configs_[canonical_session_key];
   DCHECK(canonical_crypto_config);
-  const HostPortPair& canonical_host_port_pair =
-      canonical_session_key.host_port_pair();
 
   // Copy the CachedState for the canonical server from canonical_crypto_config
   // as the initial CachedState for the server_hostname in crypto_config.
-  crypto_config->InitializeFrom(server_hostname,
-                                canonical_host_port_pair.host(),
+  crypto_config->InitializeFrom(session_key, canonical_session_key,
                                 canonical_crypto_config);
   // Update canonical version to point at the "most recent" crypto_config.
   canonical_hostname_to_origin_map_[suffix_session_key] =

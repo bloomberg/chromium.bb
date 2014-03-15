@@ -20,6 +20,7 @@
 #include "net/quic/quic_packet_creator.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_sent_packet_manager.h"
+#include "net/quic/quic_session_key.h"
 #include "net/quic/test_tools/quic_connection_peer.h"
 #include "net/quic/test_tools/quic_session_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
@@ -149,12 +150,13 @@ class ClientDelegate : public PacketDroppingTestWriter::Delegate {
 class EndToEndTest : public ::testing::TestWithParam<TestParams> {
  protected:
   EndToEndTest()
-      : server_hostname_("example.com"),
-        server_started_(false),
+      : server_started_(false),
         strike_register_no_startup_period_(false) {
     net::IPAddressNumber ip;
     CHECK(net::ParseIPLiteralToNumber("127.0.0.1", &ip));
-    server_address_ = IPEndPoint(ip, 0);
+    uint port = 0;
+    server_address_ = IPEndPoint(ip, port);
+    server_key_ = QuicSessionKey("example.com", port, false);
 
     client_supported_versions_ = GetParam().client_supported_versions;
     server_supported_versions_ = GetParam().server_supported_versions;
@@ -182,7 +184,7 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
 
   QuicTestClient* CreateQuicClient(QuicPacketWriterWrapper* writer) {
     QuicTestClient* client = new QuicTestClient(server_address_,
-                                                server_hostname_,
+                                                server_key_,
                                                 false,  // not secure
                                                 client_config_,
                                                 client_supported_versions_);
@@ -223,6 +225,9 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
     server_thread_->Initialize();
     server_address_ = IPEndPoint(server_address_.address(),
                                  server_thread_->GetPort());
+    server_key_ = QuicSessionKey(server_key_.host(),
+                                  server_thread_->GetPort(), false);
+
     QuicDispatcher* dispatcher =
         QuicServerPeer::GetDispatcher(server_thread_->server());
     QuicDispatcherPeer::UseWriter(dispatcher, server_writer_);
@@ -276,7 +281,7 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
   }
 
   IPEndPoint server_address_;
-  string server_hostname_;
+  QuicSessionKey server_key_;
   scoped_ptr<ServerThread> server_thread_;
   scoped_ptr<QuicTestClient> client_;
   PacketDroppingTestWriter* client_writer_;

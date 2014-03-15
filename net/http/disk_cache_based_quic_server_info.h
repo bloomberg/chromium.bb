@@ -18,6 +18,7 @@ namespace net {
 
 class HttpCache;
 class IOBuffer;
+class QuicSessionKey;
 
 // DiskCacheBasedQuicServerInfo fetches information about a QUIC server from
 // our standard disk cache. Since the information is defined to be
@@ -26,7 +27,7 @@ class NET_EXPORT_PRIVATE DiskCacheBasedQuicServerInfo
     : public QuicServerInfo,
       public NON_EXPORTED_BASE(base::NonThreadSafe) {
  public:
-  DiskCacheBasedQuicServerInfo(const std::string& hostname,
+  DiskCacheBasedQuicServerInfo(const QuicSessionKey& server_key,
                                HttpCache* http_cache);
 
   // QuicServerInfo implementation.
@@ -89,7 +90,7 @@ class NET_EXPORT_PRIVATE DiskCacheBasedQuicServerInfo
   bool ready_;
   bool found_entry_;  // Controls the behavior of DoCreateOrOpen.
   std::string new_data_;
-  const std::string hostname_;
+  const QuicSessionKey server_key_;
   HttpCache* const http_cache_;
   disk_cache::Backend* backend_;
   disk_cache::Entry* entry_;

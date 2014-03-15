@@ -5,6 +5,7 @@
 #include "net/quic/crypto/quic_crypto_client_config.h"
 
 #include "net/quic/crypto/proof_verifier.h"
+#include "net/quic/quic_session_key.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -90,15 +91,16 @@ TEST(QuicCryptoClientConfigTest, ProcessServerDowngradeAttack) {
 
 TEST(QuicCryptoClientConfigTest, InitializeFrom) {
   QuicCryptoClientConfig config;
+  QuicSessionKey canonical_key1("www.google.com", 80, false);
   QuicCryptoClientConfig::CachedState* state =
-      config.LookupOrCreate("www.google.com");
+      config.LookupOrCreate(canonical_key1);
   // TODO(rch): Populate other fields of |state|.
   state->set_source_address_token("TOKEN");
   state->SetProofValid();
 
-  config.InitializeFrom("mail.google.com", "www.google.com", &config);
-  QuicCryptoClientConfig::CachedState* other =
-      config.LookupOrCreate("mail.google.com");
+  QuicSessionKey other_key("mail.google.com", 80, false);
+  config.InitializeFrom(other_key, canonical_key1, &config);
+  QuicCryptoClientConfig::CachedState* other = config.LookupOrCreate(other_key);
 
   EXPECT_EQ(state->server_config(), other->server_config());
   EXPECT_EQ(state->source_address_token(), other->source_address_token());
