@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "mojo/common/time_helper.h"
 #include "mojo/public/system/core_cpp.h"
 #include "mojo/public/tests/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -96,12 +97,12 @@ class HandleWatcherTest : public testing::Test {
  public:
   HandleWatcherTest() {}
   virtual ~HandleWatcherTest() {
-    HandleWatcher::tick_clock_ = NULL;
+    test::SetTickClockForTest(NULL);
   }
 
  protected:
   void InstallTickClock() {
-    HandleWatcher::tick_clock_ = &tick_clock_;
+    test::SetTickClockForTest(&tick_clock_);
   }
 
   base::SimpleTestTickClock tick_clock_;

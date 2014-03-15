@@ -8,13 +8,12 @@
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/run_loop.h"
 #include "mojo/common/mojo_common_export.h"
 #include "mojo/public/system/core_cpp.h"
 
 namespace base {
 class Thread;
-class TickClock;
-class TimeTicks;
 }
 
 namespace mojo {
@@ -43,14 +42,7 @@ class MOJO_COMMON_EXPORT HandleWatcher {
   // Stops listening. Does nothing if not in the process of listening.
   void Stop();
 
-  // Returns now. Used internally; generally not useful.
-  static base::TimeTicks NowTicks();
-
-  // Converts a MojoDeadline into a TimeTicks.
-  static base::TimeTicks MojoDeadlineToTimeTicks(MojoDeadline deadline);
-
  private:
-  friend class test::HandleWatcherTest;
   struct StartState;
 
   // See description of |StartState::weak_factory| for details.
@@ -58,9 +50,6 @@ class MOJO_COMMON_EXPORT HandleWatcher {
 
   // If non-NULL Start() has been invoked.
   scoped_ptr<StartState> start_state_;
-
-  // Used for getting the time. Only set by tests.
-  static base::TickClock* tick_clock_;
 
   DISALLOW_COPY_AND_ASSIGN(HandleWatcher);
 };
