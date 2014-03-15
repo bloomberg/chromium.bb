@@ -48,6 +48,7 @@ BrowserProcessResource::BrowserProcessResource()
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     default_icon_ = rb.GetImageSkiaNamed(IDR_PRODUCT_LOGO_16);
   }
+#else
   // TODO(port): Port icon code.
   NOTIMPLEMENTED();
 #endif  // defined(OS_WIN)
