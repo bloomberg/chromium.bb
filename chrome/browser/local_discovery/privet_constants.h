@@ -40,7 +40,8 @@ extern const char kPrivetActionCancel[];
 
 extern const char kPrivetDefaultDeviceType[];
 extern const char kPrivetSubtypeTemplate[];
-extern const char kPrivetSubtypePrinter[];
+
+extern const char kPrivetTypePrinter[];
 
 const double kPrivetMaximumTimeScaling = 1.2;
 

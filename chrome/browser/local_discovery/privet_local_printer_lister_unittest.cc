@@ -19,79 +19,54 @@ namespace local_discovery {
 namespace {
 
 const uint8 kAnnouncePacket[] = {
-  // Header
-  0x00, 0x00,               // ID is zeroed out
-  0x80, 0x00,               // Standard query response, no error
-  0x00, 0x00,               // No questions (for simplicity)
-  0x00, 0x05,               // 5 RR (answers)
-  0x00, 0x00,               // 0 authority RRs
-  0x00, 0x00,               // 0 additional RRs
-
-  0x08, '_', 'p', 'r', 'i', 'n', 't', 'e', 'r',
-  0x04, '_', 's', 'u', 'b',
-  0x07, '_', 'p', 'r', 'i', 'v', 'e', 't',
-  0x04, '_', 't', 'c', 'p',
-  0x05, 'l', 'o', 'c', 'a', 'l',
-  0x00,
-  0x00, 0x0c,        // TYPE is PTR.
-  0x00, 0x01,        // CLASS is IN.
-  0x00, 0x00,        // TTL (4 bytes) is 32768 second.
-  0x10, 0x00,
-  0x00, 0x0c,        // RDLENGTH is 12 bytes.
-  0x09, 'm', 'y', 'S', 'e', 'r', 'v', 'i', 'c', 'e',
-  0xc0, 0x0c,
-
-  0x09, 'm', 'y', 'S', 'e', 'r', 'v', 'i', 'c', 'e',
-  0xc0, 0x0c,
-  0x00, 0x10,        // TYPE is TXT.
-  0x00, 0x01,        // CLASS is IN.
-  0x00, 0x00,        // TTL (4 bytes) is 32768 seconds.
-  0x01, 0x00,
-  0x00, 0x37,        // RDLENGTH is 55 bytes.
-  0x06, 'i', 'd', '=', 'r', 'e', 'g',
-  0x10, 't', 'y', '=', 'S', 'a', 'm', 'p', 'l', 'e', ' ',
-        'd', 'e', 'v', 'i', 'c', 'e',
-  0x1e, 'n', 'o', 't', 'e', '=',
-        'S', 'a', 'm', 'p', 'l', 'e', ' ', 'd', 'e', 'v', 'i', 'c', 'e', ' ',
-        'd', 'e', 's', 'c', 'r', 'i', 'p', 't', 'i', 'o', 'n',
-
-  0x09, 'm', 'y', 'S', 'e', 'r', 'v', 'i', 'c', 'e',
-  0xc0, 0x0c,
-  0x00, 0x21,        // Type is SRV
-  0x00, 0x01,        // CLASS is IN
-  0x00, 0x00,        // TTL (4 bytes) is 32768 second.
-  0x10, 0x00,
-  0x00, 0x17,        // RDLENGTH is 23
-  0x00, 0x00,
-  0x00, 0x00,
-  0x22, 0xb8,        // port 8888
-  0x09, 'm', 'y', 'S', 'e', 'r', 'v', 'i', 'c', 'e',
-  0x05, 'l', 'o', 'c', 'a', 'l',
-  0x00,
-
-  0x09, 'm', 'y', 'S', 'e', 'r', 'v', 'i', 'c', 'e',
-  0x05, 'l', 'o', 'c', 'a', 'l',
-  0x00,
-  0x00, 0x01,        // Type is A
-  0x00, 0x01,        // CLASS is IN
-  0x00, 0x00,        // TTL (4 bytes) is 32768 second.
-  0x10, 0x00,
-  0x00, 0x04,        // RDLENGTH is 4
-  0x01, 0x02, 0x03, 0x04,  // 1.2.3.4
-
-  0x09, 'm', 'y', 'S', 'e', 'r', 'v', 'i', 'c', 'e',
-  0x05, 'l', 'o', 'c', 'a', 'l',
-  0x00,
-  0x00, 0x1C,        // Type is AAAA
-  0x00, 0x01,        // CLASS is IN
-  0x00, 0x00,        // TTL (4 bytes) is 32768 second.
-  0x10, 0x00,
-  0x00, 0x10,        // RDLENGTH is 16
-  0x01, 0x02, 0x03, 0x04,  // 1.2.3.4
-  0x01, 0x02, 0x03, 0x04,
-  0x01, 0x02, 0x03, 0x04,
-  0x01, 0x02, 0x03, 0x04,
-};
+    // Header
+    0x00, 0x00,  // ID is zeroed out
+    0x80, 0x00,  // Standard query response, no error
+    0x00, 0x00,  // No questions (for simplicity)
+    0x00, 0x05,  // 5 RR (answers)
+    0x00, 0x00,  // 0 authority RRs
+    0x00, 0x00,  // 0 additional RRs
+    0x07, '_',  'p',  'r',  'i',  'v',  'e',  't',  0x04, '_',
+    't',  'c',  'p',  0x05, 'l',  'o',  'c',  'a',  'l',  0x00,
+    0x00, 0x0c,              // TYPE is PTR.
+    0x00, 0x01,              // CLASS is IN.
+    0x00, 0x00,              // TTL (4 bytes) is 32768 second.
+    0x10, 0x00, 0x00, 0x0c,  // RDLENGTH is 12 bytes.
+    0x09, 'm',  'y',  'S',  'e',  'r',  'v',  'i',  'c',  'e',
+    0xc0, 0x0c, 0x09, 'm',  'y',  'S',  'e',  'r',  'v',  'i',
+    'c',  'e',  0xc0, 0x0c, 0x00, 0x10,  // TYPE is TXT.
+    0x00, 0x01,                          // CLASS is IN.
+    0x00, 0x00,                          // TTL (4 bytes) is 32768 seconds.
+    0x01, 0x00, 0x00, 0x44,              // RDLENGTH is 55 bytes.
+    0x06, 'i',  'd',  '=',  'r',  'e',  'g',  0x10, 't',  'y',
+    '=',  'S',  'a',  'm',  'p',  'l',  'e',  ' ',  'd',  'e',
+    'v',  'i',  'c',  'e',  0x1e, 'n',  'o',  't',  'e',  '=',
+    'S',  'a',  'm',  'p',  'l',  'e',  ' ',  'd',  'e',  'v',
+    'i',  'c',  'e',  ' ',  'd',  'e',  's',  'c',  'r',  'i',
+    'p',  't',  'i',  'o',  'n',  0x0c, 't',  'y',  'p',  'e',
+    '=',  'p',  'r',  'i',  'n',  't',  'e',  'r',  0x09, 'm',
+    'y',  'S',  'e',  'r',  'v',  'i',  'c',  'e',  0xc0, 0x0c,
+    0x00, 0x21,                          // Type is SRV
+    0x00, 0x01,                          // CLASS is IN
+    0x00, 0x00,                          // TTL (4 bytes) is 32768 second.
+    0x10, 0x00, 0x00, 0x17,              // RDLENGTH is 23
+    0x00, 0x00, 0x00, 0x00, 0x22, 0xb8,  // port 8888
+    0x09, 'm',  'y',  'S',  'e',  'r',  'v',  'i',  'c',  'e',
+    0x05, 'l',  'o',  'c',  'a',  'l',  0x00, 0x09, 'm',  'y',
+    'S',  'e',  'r',  'v',  'i',  'c',  'e',  0x05, 'l',  'o',
+    'c',  'a',  'l',  0x00, 0x00, 0x01,  // Type is A
+    0x00, 0x01,                          // CLASS is IN
+    0x00, 0x00,                          // TTL (4 bytes) is 32768 second.
+    0x10, 0x00, 0x00, 0x04,              // RDLENGTH is 4
+    0x01, 0x02, 0x03, 0x04,              // 1.2.3.4
+    0x09, 'm',  'y',  'S',  'e',  'r',  'v',  'i',  'c',  'e',
+    0x05, 'l',  'o',  'c',  'a',  'l',  0x00, 0x00, 0x1C,  // Type is AAAA
+    0x00, 0x01,                                            // CLASS is IN
+    0x00, 0x00,              // TTL (4 bytes) is 32768 second.
+    0x10, 0x00, 0x00, 0x10,  // RDLENGTH is 16
+    0x01, 0x02, 0x03, 0x04,  // 1.2.3.4
+    0x01, 0x02, 0x03, 0x04, 0x01, 0x02, 0x03, 0x04, 0x01, 0x02,
+    0x03, 0x04, };
 
 const char kInfoIsLocalPrinter[] = "{"
     "\"api\" : [ \"/privet/printer/submitdoc\" ],"
@@ -103,7 +78,7 @@ const char kInfoIsNotLocalPrinter[] = "{"
     "\"x-privet-token\" : \"sample\""
     "}";
 
-const char kServiceName[] = "myService._printer._sub._privet._tcp.local";
+const char kServiceName[] = "myService._privet._tcp.local";
 
 const char kPrivetInfoURL[] = "http://1.2.3.4:8888/privet/info";
 

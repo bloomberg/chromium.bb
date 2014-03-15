@@ -32,9 +32,8 @@ PrivetLocalPrinterLister::PrivetLocalPrinterLister(
     ServiceDiscoveryClient* service_discovery_client,
     net::URLRequestContextGetter* request_context,
     Delegate* delegate) : delegate_(delegate) {
-  privet_lister_.reset(new PrivetDeviceListerImpl(service_discovery_client,
-                                                  this,
-                                                  kPrivetSubtypePrinter));
+  privet_lister_.reset(
+      new PrivetDeviceListerImpl(service_discovery_client, this));
   privet_http_factory_ = PrivetHTTPAsynchronousFactory::CreateInstance(
       service_discovery_client,
       request_context);
@@ -56,6 +55,9 @@ void PrivetLocalPrinterLister::DeviceChanged(
     bool added,
     const std::string& name,
     const DeviceDescription& description) {
+  if (description.type != kPrivetTypePrinter)
+    return;
+
   DeviceContextMap::iterator i = device_contexts_.find(name);
 
   if (i != device_contexts_.end()) {
