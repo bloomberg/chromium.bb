@@ -76,4 +76,10 @@ void GLImageIOSurface::WillUseTexImage() {
 void GLImageIOSurface::DidUseTexImage() {
 }
 
+void GLImageIOSurface::WillModifyTexImage() {
+}
+
+void GLImageIOSurface::DidModifyTexImage() {
+}
+
 }  // namespace gfx

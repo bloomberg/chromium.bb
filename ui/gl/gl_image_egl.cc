@@ -120,6 +120,12 @@ void GLImageEGL::DidUseTexImage() {
                &zero);
 }
 
+void GLImageEGL::WillModifyTexImage() {
+}
+
+void GLImageEGL::DidModifyTexImage() {
+}
+
 void GLImageEGL::SetReleaseAfterUse() {
   release_after_use_ = true;
 }

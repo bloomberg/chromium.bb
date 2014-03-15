@@ -34,8 +34,12 @@ class StreamTexture : public gfx::GLImage,
   // gfx::GLImage implementation:
   virtual void Destroy() OVERRIDE;
   virtual gfx::Size GetSize() OVERRIDE;
+  virtual bool BindTexImage(unsigned target) OVERRIDE;
+  virtual void ReleaseTexImage(unsigned target) OVERRIDE;
   virtual void WillUseTexImage() OVERRIDE;
   virtual void DidUseTexImage() OVERRIDE {}
+  virtual void WillModifyTexImage() OVERRIDE {}
+  virtual void DidModifyTexImage() OVERRIDE {}
 
   // GpuCommandBufferStub::DestructionObserver implementation.
   virtual void OnWillDestroyStub() OVERRIDE;

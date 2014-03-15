@@ -10,27 +10,6 @@ namespace gfx {
 
 GLImage::GLImage() {}
 
-bool GLImage::BindTexImage(unsigned target) {
-  NOTIMPLEMENTED();
-  return false;
-}
-
-void GLImage::ReleaseTexImage(unsigned target) {
-  NOTIMPLEMENTED();
-}
-
-void GLImage::WillUseTexImage() {
-  NOTIMPLEMENTED();
-}
-
-void GLImage::DidUseTexImage() {
-  NOTIMPLEMENTED();
-}
-
-void GLImage::WillModifyTexImage() {}
-
-void GLImage::DidModifyTexImage() {}
-
 void GLImage::SetReleaseAfterUse() {
   // Default no-op implementation for workaround.
 }

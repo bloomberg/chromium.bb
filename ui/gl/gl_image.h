@@ -28,22 +28,22 @@ class GL_EXPORT GLImage : public base::RefCounted<GLImage> {
   virtual gfx::Size GetSize() = 0;
 
   // Bind image to texture currently bound to |target|.
-  virtual bool BindTexImage(unsigned target);
+  virtual bool BindTexImage(unsigned target) = 0;
 
   // Release image from texture currently bound to |target|.
-  virtual void ReleaseTexImage(unsigned target);
+  virtual void ReleaseTexImage(unsigned target) = 0;
 
   // Called before the texture is used for drawing.
-  virtual void WillUseTexImage();
+  virtual void WillUseTexImage() = 0;
 
   // Called after the texture has been used for drawing.
-  virtual void DidUseTexImage();
+  virtual void DidUseTexImage() = 0;
 
   // Called before the texture image data will be modified.
-  virtual void WillModifyTexImage();
+  virtual void WillModifyTexImage() = 0;
 
   // Called after the texture image data has been modified.
-  virtual void DidModifyTexImage();
+  virtual void DidModifyTexImage() = 0;
 
   // Indicate that image should be released after use.
   // (For an Android work-around only).

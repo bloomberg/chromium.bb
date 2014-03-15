@@ -23,6 +23,8 @@ class GL_EXPORT GLImageEGL : public GLImage {
   virtual void ReleaseTexImage(unsigned target) OVERRIDE;
   virtual void WillUseTexImage() OVERRIDE;
   virtual void DidUseTexImage() OVERRIDE;
+  virtual void WillModifyTexImage() OVERRIDE;
+  virtual void DidModifyTexImage() OVERRIDE;
   virtual void SetReleaseAfterUse() OVERRIDE;
 
  protected:

@@ -183,4 +183,10 @@ void GLImageGLX::WillUseTexImage() {
 void GLImageGLX::DidUseTexImage() {
 }
 
+void GLImageGLX::WillModifyTexImage() {
+}
+
+void GLImageGLX::DidModifyTexImage() {
+}
+
 }  // namespace gfx

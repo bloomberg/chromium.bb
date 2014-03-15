@@ -21,6 +21,8 @@ class GL_EXPORT GLImageStub : public GLImage {
   virtual void ReleaseTexImage(unsigned target) OVERRIDE;
   virtual void WillUseTexImage() OVERRIDE;
   virtual void DidUseTexImage() OVERRIDE;
+  virtual void WillModifyTexImage() OVERRIDE;
+  virtual void DidModifyTexImage() OVERRIDE;
 
  protected:
   virtual ~GLImageStub();

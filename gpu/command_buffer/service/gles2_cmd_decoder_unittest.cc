@@ -7953,6 +7953,8 @@ class MockGLImage : public gfx::GLImage {
   MOCK_METHOD1(ReleaseTexImage, void(unsigned));
   MOCK_METHOD0(WillUseTexImage, void());
   MOCK_METHOD0(DidUseTexImage, void());
+  MOCK_METHOD0(WillModifyTexImage, void());
+  MOCK_METHOD0(DidModifyTexImage, void());
 
  protected:
   virtual ~MockGLImage() {}

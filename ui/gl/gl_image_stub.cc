@@ -33,4 +33,10 @@ void GLImageStub::WillUseTexImage() {
 void GLImageStub::DidUseTexImage() {
 }
 
+void GLImageStub::WillModifyTexImage() {
+}
+
+void GLImageStub::DidModifyTexImage() {
+}
+
 }  // namespace gfx

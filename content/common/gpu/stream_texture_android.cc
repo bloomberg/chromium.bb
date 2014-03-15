@@ -195,4 +195,13 @@ void StreamTexture::OnEstablishPeer(int32 primary_id, int32 secondary_id) {
       process, surface_texture_, primary_id, secondary_id);
 }
 
+bool StreamTexture::BindTexImage(unsigned target) {
+  NOTREACHED();
+  return false;
+}
+
+void StreamTexture::ReleaseTexImage(unsigned target) {
+  NOTREACHED();
+}
+
 }  // namespace content
