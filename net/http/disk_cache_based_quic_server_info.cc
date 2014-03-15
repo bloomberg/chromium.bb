@@ -88,7 +88,7 @@ int DiskCacheBasedQuicServerInfo::WaitForDataReady(
 }
 
 bool DiskCacheBasedQuicServerInfo::IsDataReady() {
-  return ready_;
+  return ready_ && state_ == NONE;
 }
 
 void DiskCacheBasedQuicServerInfo::Persist() {
