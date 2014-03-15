@@ -14,6 +14,9 @@
         'HAVE_OT',
         'HAVE_ICU',
         'HB_NO_MT',
+         # Suppress warning in hb-unicode.cc. We use hb_unicode_funcs_get_icu()
+         # instead of hb_unicode_funcs_get_default().
+        'HB_NO_UNICODE_FUNCS',
       ],
       'sources': [
         'src/hb-atomic-private.hh',
@@ -61,6 +64,8 @@
         'src/hb-ot-shape-complex-arabic-table.hh',
         'src/hb-ot-shape-complex-arabic.cc',
         'src/hb-ot-shape-complex-default.cc',
+        'src/hb-ot-shape-complex-hangul.cc',
+        'src/hb-ot-shape-complex-hebrew.cc',
         'src/hb-ot-shape-complex-indic-machine.hh',
         'src/hb-ot-shape-complex-indic-private.hh',
         'src/hb-ot-shape-complex-indic-table.cc',
@@ -71,11 +76,13 @@
         'src/hb-ot-shape-complex-sea-machine.hh',
         'src/hb-ot-shape-complex-sea.cc',
         'src/hb-ot-shape-complex-thai.cc',
+        'src/hb-ot-shape-complex-tibetan.cc',
         'src/hb-ot-shape-fallback-private.hh',
         'src/hb-ot-shape-fallback.cc',
         'src/hb-ot-shape-normalize-private.hh',
         'src/hb-ot-shape-normalize.cc',
         'src/hb-ot-shape-private.hh',
+        'src/hb-ot-shape.h',
         'src/hb-ot-shape.cc',
         'src/hb-ot-tag.cc',
         'src/hb-ot-tag.h',

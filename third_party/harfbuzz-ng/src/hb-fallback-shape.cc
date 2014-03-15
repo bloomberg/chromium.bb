@@ -95,8 +95,19 @@ _hb_fallback_shape (hb_shape_plan_t    *shape_plan HB_UNUSED,
 		    const hb_feature_t *features HB_UNUSED,
 		    unsigned int        num_features HB_UNUSED)
 {
+  /* TODO
+   *
+   * - Apply fallback kern.
+   * - Handle Variation Selectors?
+   * - Apply normalization?
+   *
+   * This will make the fallback shaper into a dumb "TrueType"
+   * shaper which many people unfortunately still request.
+   */
+
+  bool has_space;
   hb_codepoint_t space;
-  font->get_glyph (' ', 0, &space);
+  has_space = font->get_glyph (' ', 0, &space);
 
   buffer->clear_positions ();
 
@@ -104,7 +115,7 @@ _hb_fallback_shape (hb_shape_plan_t    *shape_plan HB_UNUSED,
 
   for (unsigned int i = 0; i < count; i++)
   {
-    if (buffer->unicode->is_default_ignorable (buffer->info[i].codepoint)) {
+    if (has_space && buffer->unicode->is_default_ignorable (buffer->info[i].codepoint)) {
       buffer->info[i].codepoint = space;
       buffer->pos[i].x_advance = 0;
       buffer->pos[i].y_advance = 0;
