@@ -69,12 +69,14 @@ void RecordRepeatHistograms(Result result,
   result_duration_histogram->AddTime(result_duration);
 }
 
-bool HasNativeCaptivePortalDetection() {
-  // Lion and Windows 8 have their own captive portal detection that will open
-  // a browser window as needed.
-#if defined(OS_MACOSX)
-  return base::mac::IsOSLionOrLater();
-#elif defined(OS_WIN)
+bool ShouldDeferToNativeCaptivePortalDetection() {
+  // On Windows 8, defer to the native captive portal detection.  OSX Lion and
+  // later also have captive portal detection, but experimentally, this code
+  // works in cases its does not.
+  //
+  // TODO(mmenke): Investigate how well Windows 8's captive portal detection
+  // works.
+#if defined(OS_WIN)
   return base::win::GetVersion() >= base::win::VERSION_WIN8;
 #else
   return false;
@@ -300,7 +302,7 @@ void CaptivePortalService::UpdateEnabledState() {
              resolve_errors_with_web_service_.GetValue();
 
   if (testing_state_ != SKIP_OS_CHECK_FOR_TESTING &&
-      HasNativeCaptivePortalDetection()) {
+      ShouldDeferToNativeCaptivePortalDetection()) {
     enabled_ = false;
   }
 
