@@ -215,10 +215,6 @@ class ExtensionService
   virtual const extensions::Extension* GetExtensionById(
       const std::string& id, bool include_disabled) const OVERRIDE;
 
-  // Returns the site of the given |extension_id|. Suitable for use with
-  // BrowserContext::GetStoragePartitionForSite().
-  GURL GetSiteForExtensionId(const std::string& extension_id);
-
   // Looks up a terminated (crashed) extension by ID.
   // DEPRECATED: Replace with:
   // ExtensionRegistry::GetExtensionById(id, ExtensionRegistry::TERMINATED).

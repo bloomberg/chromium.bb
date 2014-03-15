@@ -171,5 +171,11 @@ bool IsExtensionInstalledPermanently(const std::string& extension_id,
   return extension && !extension->is_ephemeral();
 }
 
+GURL GetSiteForExtensionId(const std::string& extension_id,
+                           content::BrowserContext* context) {
+  return content::SiteInstance::GetSiteForURL(
+      context, Extension::GetBaseURLFromExtensionId(extension_id));
+}
+
 }  // namespace util
 }  // namespace extensions

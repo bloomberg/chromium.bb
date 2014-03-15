@@ -6,6 +6,7 @@
 
 #include "base/stl_util.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync_file_system/file_change.h"
 #include "chrome/browser/sync_file_system/local/local_file_change_tracker.h"
@@ -223,7 +224,8 @@ void LocalFileSyncService::PrepareForProcessRemoteChange(
                    SyncFileMetadata(), FileChangeList());
       return;
     }
-    GURL site_url = extension_service->GetSiteForExtensionId(extension->id());
+    GURL site_url =
+        extensions::util::GetSiteForExtensionId(extension->id(), profile_);
     DCHECK(!site_url.is_empty());
     scoped_refptr<fileapi::FileSystemContext> file_system_context =
         content::BrowserContext::GetStoragePartitionForSite(

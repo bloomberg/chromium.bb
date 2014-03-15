@@ -69,7 +69,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/url_data_source.h"
 #include "extensions/browser/app_sorting.h"
@@ -491,12 +490,6 @@ const Extension* ExtensionService::GetExtensionById(
                     ExtensionRegistry::BLACKLISTED;
   }
   return registry_->GetExtensionById(id, include_mask);
-}
-
-GURL ExtensionService::GetSiteForExtensionId(const std::string& extension_id) {
-  return content::SiteInstance::GetSiteForURL(
-      profile_,
-      Extension::GetBaseURLFromExtensionId(extension_id));
 }
 
 void ExtensionService::Init() {
@@ -1232,7 +1225,8 @@ void ExtensionService::NotifyExtensionUnloaded(
   // Revoke external file access for the extension from its file system context.
   // It is safe to access the extension's storage partition at this point. The
   // storage partition may get destroyed only after the extension gets unloaded.
-  GURL site = GetSiteForExtensionId(extension->id());
+  GURL site =
+      extensions::util::GetSiteForExtensionId(extension->id(), profile_);
   fileapi::FileSystemContext* filesystem_context =
       BrowserContext::GetStoragePartitionForSite(profile_, site)->
           GetFileSystemContext();
@@ -2697,7 +2691,9 @@ void ExtensionService::GarbageCollectIsolatedStorage() {
        it != extensions.end(); ++it) {
     if (extensions::AppIsolationInfo::HasIsolatedStorage(it->get())) {
       active_paths->insert(BrowserContext::GetStoragePartitionForSite(
-          profile_, GetSiteForExtensionId((*it)->id()))->GetPath());
+                               profile_,
+                               extensions::util::GetSiteForExtensionId(
+                                   (*it)->id(), profile()))->GetPath());
     }
   }
 

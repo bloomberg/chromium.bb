@@ -6,6 +6,7 @@
 
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/manifest_handlers/app_isolation_info.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
@@ -15,6 +16,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "extensions/browser/api/storage/storage_frontend.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -23,6 +25,8 @@ using base::WeakPtr;
 using content::BrowserContext;
 using content::BrowserThread;
 using content::StoragePartition;
+
+namespace extensions {
 
 namespace {
 
@@ -35,7 +39,7 @@ void DeleteOrigin(Profile* profile,
   DCHECK(profile);
   DCHECK(partition);
 
-  if (origin.SchemeIs(extensions::kExtensionScheme)) {
+  if (origin.SchemeIs(kExtensionScheme)) {
     // TODO(ajwong): Cookies are not properly isolated for
     // chrome-extension:// scheme.  (http://crbug.com/158386).
     //
@@ -66,28 +70,26 @@ void DeleteOrigin(Profile* profile,
 void OnNeedsToGarbageCollectIsolatedStorage(WeakPtr<ExtensionService> es) {
   if (!es)
     return;
-  extensions::ExtensionPrefs::Get(es->profile())
-      ->SetNeedsStorageGarbageCollection(true);
+  ExtensionPrefs::Get(es->profile())->SetNeedsStorageGarbageCollection(true);
 }
 
 } // namespace
-
-namespace extensions {
 
 // static
 void DataDeleter::StartDeleting(Profile* profile, const Extension* extension) {
   DCHECK(profile);
   DCHECK(extension);
 
-  if (extensions::AppIsolationInfo::HasIsolatedStorage(extension)) {
+  if (AppIsolationInfo::HasIsolatedStorage(extension)) {
     BrowserContext::AsyncObliterateStoragePartition(
         profile,
-        profile->GetExtensionService()->GetSiteForExtensionId(extension->id()),
-        base::Bind(&OnNeedsToGarbageCollectIsolatedStorage,
-                   profile->GetExtensionService()->AsWeakPtr()));
+        util::GetSiteForExtensionId(extension->id(), profile),
+        base::Bind(
+            &OnNeedsToGarbageCollectIsolatedStorage,
+            ExtensionSystem::Get(profile)->extension_service()->AsWeakPtr()));
   } else {
     GURL launch_web_url_origin(
-      extensions::AppLaunchInfo::GetLaunchWebURL(extension).GetOrigin());
+        AppLaunchInfo::GetLaunchWebURL(extension).GetOrigin());
 
     StoragePartition* partition = BrowserContext::GetStoragePartitionForSite(
         profile,

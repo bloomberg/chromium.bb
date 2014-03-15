@@ -7,13 +7,13 @@
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
-#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
-#include "extensions/browser/extension_system.h"
+#include "extensions/common/extension.h"
 #include "net/base/escape.h"
 #include "url/gurl.h"
 #include "webkit/browser/fileapi/file_system_context.h"
@@ -99,18 +99,13 @@ FileDefinitionListConverter::FileDefinitionListConverter(
       result_(new EntryDefinitionList) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  // May be NULL during unit_tests.
-  ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile)->extension_service();
-  if (service) {
-    // File browser APIs are meant to be used only from extension context, so
-    // the extension's site is the one in whose file system context the virtual
-    // path should be found.
-    GURL site = service->GetSiteForExtensionId(extension_id_);
-    file_system_context_ =
-        content::BrowserContext::GetStoragePartitionForSite(
-            profile, site)->GetFileSystemContext();
-  }
+  // File browser APIs are meant to be used only from extension context, so
+  // the extension's site is the one in whose file system context the virtual
+  // path should be found.
+  GURL site = extensions::util::GetSiteForExtensionId(extension_id_, profile);
+  file_system_context_ =
+      content::BrowserContext::GetStoragePartitionForSite(
+          profile, site)->GetFileSystemContext();
 
   // Deletes the converter, once the scoped pointer gets out of scope. It is
   // either, if the conversion is finished, or ResolveURL() is terminated, and
@@ -223,8 +218,7 @@ EntryDefinition::~EntryDefinition() {
 fileapi::FileSystemContext* GetFileSystemContextForExtensionId(
     Profile* profile,
     const std::string& extension_id) {
-  GURL site = extensions::ExtensionSystem::Get(profile)->
-      extension_service()->GetSiteForExtensionId(extension_id);
+  GURL site = extensions::util::GetSiteForExtensionId(extension_id, profile);
   return content::BrowserContext::GetStoragePartitionForSite(profile, site)->
       GetFileSystemContext();
 }
@@ -285,16 +279,10 @@ bool ConvertAbsoluteFilePathToRelativeFileSystemPath(
     const std::string& extension_id,
     const base::FilePath& absolute_path,
     base::FilePath* virtual_path) {
-  ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile)->extension_service();
-  // May be NULL during unit_tests.
-  if (!service)
-    return false;
-
   // File browser APIs are meant to be used only from extension context, so the
   // extension's site is the one in whose file system context the virtual path
   // should be found.
-  GURL site = service->GetSiteForExtensionId(extension_id);
+  GURL site = extensions::util::GetSiteForExtensionId(extension_id, profile);
   fileapi::ExternalFileSystemBackend* backend =
       content::BrowserContext::GetStoragePartitionForSite(profile, site)->
           GetFileSystemContext()->external_backend();
