@@ -188,17 +188,9 @@ IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest,
 
 void DomDistillerViewerSourceBrowserTest::ViewSingleDistilledPage(
     const GURL& url) {
-  // Create the service.
-  DomDistillerContextKeyedService* service =
-      static_cast<DomDistillerContextKeyedService*>(
-          dom_distiller::DomDistillerServiceFactory::GetInstance()
-              ->SetTestingFactoryAndUse(browser()->profile(), &Build));
-
-  // Ensure the source is registered.
-  // TODO(nyquist): Remove when the source is always registered on startup.
-  DomDistillerViewerSource* source =
-      new DomDistillerViewerSource(service, chrome::kDomDistillerScheme);
-  content::URLDataSource::Add(browser()->profile(), source);
+  // Ensure the correct factory is used for the DomDistillerService.
+  dom_distiller::DomDistillerServiceFactory::GetInstance()
+      ->SetTestingFactoryAndUse(browser()->profile(), &Build);
 
   // Setup observer to inspect the RenderViewHost after committed navigation.
   content::WebContents* contents =
@@ -224,12 +216,6 @@ void DomDistillerViewerSourceBrowserTest::ViewSingleDistilledPage(
 // Chrome or provided by an extension.
 IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest,
                        NoWebUIBindingsDisplayCSS) {
-  // Ensure the source is registered.
-  // TODO(nyquist): Remove when the source is always registered on startup.
-  DomDistillerViewerSource* source =
-      new DomDistillerViewerSource(NULL, chrome::kDomDistillerScheme);
-  content::URLDataSource::Add(browser()->profile(), source);
-
   // Setup observer to inspect the RenderViewHost after committed navigation.
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();

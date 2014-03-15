@@ -15,6 +15,7 @@
 #include "chrome/browser/chrome_browser_main.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
+#include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/geolocation/chrome_geolocation_permission_context_factory.h"
@@ -229,6 +230,7 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
 #if defined(ENABLE_NOTIFICATIONS)
   DesktopNotificationServiceFactory::GetInstance();
 #endif
+  dom_distiller::DomDistillerServiceFactory::GetInstance();
   DownloadServiceFactory::GetInstance();
 #if defined(ENABLE_EXTENSIONS)
   AppShortcutManagerFactory::GetInstance();

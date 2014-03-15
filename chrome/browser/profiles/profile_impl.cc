@@ -32,6 +32,8 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
+#include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
+#include "chrome/browser/dom_distiller/lazy_dom_distiller_service.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
@@ -77,6 +79,7 @@
 #include "chrome/common/net/url_fixer_upper.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "components/dom_distiller/content/dom_distiller_viewer_source.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/startup_metric_utils/startup_metric_utils.h"
 #include "components/user_prefs/pref_registry_syncable.h"
@@ -87,6 +90,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/browser/url_data_source.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/content_constants.h"
 #include "extensions/browser/extension_pref_store.h"
@@ -244,6 +248,23 @@ std::string ExitTypeToSessionTypePrefValue(Profile::ExitType type) {
   }
   NOTREACHED();
   return std::string();
+}
+
+// Setup URLDataSource for the chrome-distiller:// scheme for the given
+// |profile|.
+void RegisterDomDistillerViewerSource(Profile* profile) {
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kEnableDomDistiller)) {
+    dom_distiller::DomDistillerServiceFactory* dom_distiller_service_factory =
+        dom_distiller::DomDistillerServiceFactory::GetInstance();
+    // The LazyDomDistillerService deletes itself when the profile is destroyed.
+    dom_distiller::LazyDomDistillerService* lazy_service =
+        new dom_distiller::LazyDomDistillerService(
+            profile, dom_distiller_service_factory);
+    content::URLDataSource::Add(profile,
+                                new dom_distiller::DomDistillerViewerSource(
+                                    lazy_service, chrome::kDomDistillerScheme));
+  }
 }
 
 }  // namespace
@@ -598,6 +619,10 @@ void ProfileImpl::DoFinalInit() {
   TRACE_EVENT0("browser", "ProfileImpl::SetSaveSessionStorageOnDisk");
   content::BrowserContext::GetDefaultStoragePartition(this)->
       GetDOMStorageContext()->SetSaveSessionStorageOnDisk();
+
+  // The DomDistillerViewerSource is not a normal WebUI so it must be registered
+  // as a URLDataSource early.
+  RegisterDomDistillerViewerSource(this);
 
   // Creation has been finished.
   if (delegate_) {
