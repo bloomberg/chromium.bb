@@ -950,3 +950,4 @@ crbug.com/352703 [ Win Debug ] virtual/serviceworker/http/tests/serviceworker/re
 crbug.com/352705 [ Win Debug ] virtual/threaded/animations/sample-on-last-keyframe.html [ Timeout Pass ]
 crbug.com/352705 [ Linux ] virtual/threaded/animations/sample-on-last-keyframe.html [ Timeout Pass ]
 crbug.com/352801 [ Mavericks ] http/tests/security/link-crossorigin-stylesheet-no-cors.html [ Pass Failure ]
+crbug.com/352856 [ Mac ] svg/batik/text/textPosition2.svg [ Pass Failure ]
