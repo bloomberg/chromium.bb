@@ -6,6 +6,7 @@
 
 #include "ash/display/display_controller.h"
 #include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "chrome/browser/chromeos/display/display_preferences.h"
 
 namespace chromeos {
@@ -18,7 +19,10 @@ DisplayConfigurationObserver::~DisplayConfigurationObserver() {
   ash::Shell::GetInstance()->display_controller()->RemoveObserver(this);
 }
 
-void DisplayConfigurationObserver::OnDisplayConfigurationChanging() {
+void DisplayConfigurationObserver::OnDisplaysInitialized() {
+  // Update the display pref with the initial power state.
+  if (ash::Shell::GetInstance()->delegate()->IsFirstRunAfterBoot())
+    StoreDisplayPrefs();
 }
 
 void DisplayConfigurationObserver::OnDisplayConfigurationChanged() {

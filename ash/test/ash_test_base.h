@@ -114,6 +114,8 @@ class AshTestBase : public testing::Test {
 
   void set_start_session(bool start_session) { start_session_ = start_session; }
 
+  AshTestHelper* ash_test_helper() { return ash_test_helper_.get(); }
+
   void RunAllPendingInMessageLoop();
 
   TestScreenshotDelegate* GetScreenshotDelegate();

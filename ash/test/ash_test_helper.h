@@ -54,6 +54,9 @@ class AshTestHelper {
 
   base::MessageLoopForUI* message_loop() { return message_loop_; }
   TestShellDelegate* test_shell_delegate() { return test_shell_delegate_; }
+  void set_test_shell_delegate(TestShellDelegate* test_shell_delegate) {
+    test_shell_delegate_ = test_shell_delegate;
+  }
   TestScreenshotDelegate* test_screenshot_delegate() {
     return test_screenshot_delegate_;
   }

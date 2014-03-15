@@ -111,6 +111,10 @@ void TouchObserverHUD::OnDisplayModeChanged(
 }
 #endif  // defined(OS_CHROMEOS)
 
+void TouchObserverHUD::OnDisplaysInitialized() {
+  OnDisplayConfigurationChanged();
+}
+
 void TouchObserverHUD::OnDisplayConfigurationChanging() {
   if (!root_window_)
     return;

@@ -246,11 +246,7 @@ void DisplayController::Start() {
   Shell::GetScreen()->AddObserver(this);
   Shell::GetInstance()->display_manager()->set_delegate(this);
 
-  if (Shell::GetInstance()->delegate()->IsFirstRunAfterBoot()) {
-    // Update the display pref with the initial power state.
-    FOR_EACH_OBSERVER(Observer, observers_, OnDisplayConfigurationChanging());
-    FOR_EACH_OBSERVER(Observer, observers_, OnDisplayConfigurationChanged());
-  }
+  FOR_EACH_OBSERVER(Observer, observers_, OnDisplaysInitialized());
 }
 
 void DisplayController::Shutdown() {

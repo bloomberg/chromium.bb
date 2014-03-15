@@ -55,6 +55,10 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver,
  public:
   class ASH_EXPORT Observer {
    public:
+    // Invoked only once after all displays are initialized
+    // after startup.
+    virtual void OnDisplaysInitialized() {}
+
     // Invoked when the display configuration change is requested,
     // but before the change is applied to aura/ash.
     virtual void OnDisplayConfigurationChanging() {}

@@ -63,7 +63,8 @@ void AshTestHelper::SetUp(bool start_session) {
   ui::InitializeContextFactoryForTests(enable_pixel_output);
 
   // Creates Shell and hook with Desktop.
-  test_shell_delegate_ = new TestShellDelegate;
+  if (!test_shell_delegate_)
+    test_shell_delegate_ = new TestShellDelegate;
 
   // Creates MessageCenter since g_browser_process is not created in AshTestBase
   // tests.

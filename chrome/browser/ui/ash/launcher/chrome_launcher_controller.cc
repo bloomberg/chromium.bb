@@ -1219,9 +1219,6 @@ void ChromeLauncherController::OnShelfAlignmentChanged(
   }
 }
 
-void ChromeLauncherController::OnDisplayConfigurationChanging() {
-}
-
 void ChromeLauncherController::OnDisplayConfigurationChanged() {
   SetShelfBehaviorsFromPrefs();
 }

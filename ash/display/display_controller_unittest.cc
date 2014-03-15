@@ -13,8 +13,10 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/ash_test_helper.h"
 #include "ash/test/cursor_manager_test_api.h"
 #include "ash/test/display_manager_test_api.h"
+#include "ash/test/test_shell_delegate.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
 #include "base/command_line.h"
@@ -183,6 +185,9 @@ void SetDefaultDisplayLayout(DisplayLayout::Position position) {
 
 class DisplayControllerShutdownTest : public test::AshTestBase {
  public:
+  DisplayControllerShutdownTest() {}
+  virtual ~DisplayControllerShutdownTest() {}
+
   virtual void TearDown() OVERRIDE {
     test::AshTestBase::TearDown();
     if (!SupportsMultipleDisplays())
@@ -193,6 +198,59 @@ class DisplayControllerShutdownTest : public test::AshTestBase {
     EXPECT_EQ("0,0 444x333", primary.bounds().ToString());
     EXPECT_EQ(2, Shell::GetScreen()->GetNumDisplays());
   }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DisplayControllerShutdownTest);
+};
+
+class StartupHelper : public test::TestShellDelegate,
+                      public DisplayController::Observer {
+ public:
+  StartupHelper() : displays_initialized_(false) {}
+  virtual ~StartupHelper() {}
+
+  // ash::ShellSelegate:
+  virtual void PreInit() OVERRIDE {
+    Shell::GetInstance()->display_controller()->AddObserver(this);
+  }
+
+  // ash::DisplayController::Observer:
+  virtual void OnDisplaysInitialized() OVERRIDE {
+    DCHECK(!displays_initialized_);
+    displays_initialized_ = true;
+  }
+
+  const bool displays_initialized() const {
+    return displays_initialized_;
+  }
+
+ private:
+  bool displays_initialized_;
+
+  DISALLOW_COPY_AND_ASSIGN(StartupHelper);
+};
+
+class DisplayControllerStartupTest : public test::AshTestBase {
+ public:
+  DisplayControllerStartupTest() : startup_helper_(new StartupHelper) {}
+  virtual ~DisplayControllerStartupTest() {}
+
+  // ash::test::AshTestBase:
+  virtual void SetUp() OVERRIDE {
+    ash_test_helper()->set_test_shell_delegate(startup_helper_);
+    test::AshTestBase::SetUp();
+  }
+  virtual void TearDown() OVERRIDE {
+    Shell::GetInstance()->display_controller()->RemoveObserver(startup_helper_);
+    test::AshTestBase::TearDown();
+  }
+
+  const StartupHelper* startup_helper() const { return startup_helper_; }
+
+ private:
+  StartupHelper* startup_helper_;  // Owned by ash::Shell.
+
+  DISALLOW_COPY_AND_ASSIGN(DisplayControllerStartupTest);
 };
 
 class TestEventHandler : public ui::EventHandler {
@@ -308,6 +366,13 @@ TEST_F(DisplayControllerShutdownTest, Shutdown) {
     return;
 
   UpdateDisplay("444x333, 200x200");
+}
+
+TEST_F(DisplayControllerStartupTest, Startup) {
+  if (!SupportsMultipleDisplays())
+    return;
+
+  EXPECT_TRUE(startup_helper()->displays_initialized());
 }
 
 TEST_F(DisplayControllerTest, SecondaryDisplayLayout) {
@@ -734,7 +799,7 @@ TEST_F(DisplayControllerTest, SwapPrimaryForLegacyShelfLayout) {
     return;
 
   CommandLine::ForCurrentProcess()->AppendSwitch(
-      ash::switches::kAshDisableAlternateShelfLayout);
+      switches::kAshDisableAlternateShelfLayout);
 
   DisplayController* display_controller =
       Shell::GetInstance()->display_controller();

@@ -71,6 +71,7 @@ class ASH_EXPORT TouchObserverHUD : public ui::EventHandler,
 #endif  // defined(OS_CHROMEOS)
 
   // Overriden form DisplayController::Observer.
+  virtual void OnDisplaysInitialized() OVERRIDE;
   virtual void OnDisplayConfigurationChanging() OVERRIDE;
   virtual void OnDisplayConfigurationChanged() OVERRIDE;
 

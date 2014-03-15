@@ -314,7 +314,6 @@ class ChromeLauncherController : public ash::ShelfDelegate,
   virtual void OnShelfAlignmentChanged(aura::Window* root_window) OVERRIDE;
 
   // ash::DisplayController::Observer overrides:
-  virtual void OnDisplayConfigurationChanging() OVERRIDE;
   virtual void OnDisplayConfigurationChanged() OVERRIDE;
 
   // PrefServiceSyncableObserver overrides:
