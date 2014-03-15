@@ -11,11 +11,11 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/timer/elapsed_timer.h"
-#include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "extensions/browser/extension_function_dispatcher.h"
 #include "extensions/common/stack_frame.h"
 #include "extensions/common/view_type.h"
 

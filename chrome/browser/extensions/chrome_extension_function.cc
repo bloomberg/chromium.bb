@@ -4,7 +4,6 @@
 
 #include "chrome/browser/extensions/chrome_extension_function.h"
 
-#include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/window_controller.h"
 #include "chrome/browser/extensions/window_controller_list.h"
 #include "chrome/browser/profiles/profile.h"
@@ -13,6 +12,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "extensions/browser/extension_function_dispatcher.h"
 
 using content::RenderViewHost;
 using content::WebContents;

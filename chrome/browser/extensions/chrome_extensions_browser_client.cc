@@ -19,6 +19,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/extension_util.h"
+#include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_modal_dialogs/javascript_dialog_manager.h"
@@ -187,6 +188,10 @@ bool ChromeExtensionsBrowserClient::DidVersionUpdate(
     return true;
 
   return last_version.IsOlderThan(current_version);
+}
+
+void ChromeExtensionsBrowserClient::PermitExternalProtocolHandler() {
+  ExternalProtocolHandler::PermitLaunchUrl();
 }
 
 scoped_ptr<AppSorting> ChromeExtensionsBrowserClient::CreateAppSorting() {

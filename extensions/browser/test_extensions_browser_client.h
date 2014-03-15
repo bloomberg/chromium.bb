@@ -53,6 +53,7 @@ class TestExtensionsBrowserClient : public ExtensionsBrowserClient {
   virtual void OnRenderViewCreatedForBackgroundPage(ExtensionHost* host)
       OVERRIDE;
   virtual bool DidVersionUpdate(content::BrowserContext* context) OVERRIDE;
+  virtual void PermitExternalProtocolHandler() OVERRIDE;
   virtual scoped_ptr<AppSorting> CreateAppSorting() OVERRIDE;
   virtual bool IsRunningInForcedAppMode() OVERRIDE;
   virtual content::JavaScriptDialogManager* GetJavaScriptDialogManager()

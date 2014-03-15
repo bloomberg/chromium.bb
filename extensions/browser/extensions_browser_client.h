@@ -108,6 +108,10 @@ class ExtensionsBrowserClient {
   // version for later comparison.
   virtual bool DidVersionUpdate(content::BrowserContext* context) = 0;
 
+  // Permits an external protocol handler to be launched. See
+  // ExternalProtocolHandler::PermitLaunchUrl() in Chrome.
+  virtual void PermitExternalProtocolHandler() = 0;
+
   // Creates a new AppSorting instance.
   virtual scoped_ptr<AppSorting> CreateAppSorting() = 0;
 

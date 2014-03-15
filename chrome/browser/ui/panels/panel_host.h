@@ -7,10 +7,10 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/page_zoom.h"
+#include "extensions/browser/extension_function_dispatcher.h"
 
 class FaviconTabHelper;
 class GURL;

@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_function_dispatcher.h"
+#include "extensions/browser/extension_function_dispatcher.h"
 
 #include "base/bind.h"
 #include "base/json/json_string_value_serializer.h"
@@ -12,7 +12,6 @@
 #include "base/process/process.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/renderer_host/chrome_render_message_filter.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
@@ -35,7 +34,6 @@
 #include "extensions/common/extension_set.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
-#include "webkit/common/resource_type.h"
 
 using extensions::Extension;
 using extensions::ExtensionAPI;
@@ -385,7 +383,7 @@ void ExtensionFunctionDispatcher::DispatchWithCallbackInternal(
     scoped_ptr<base::ListValue> args(params.arguments.DeepCopy());
 
     // See crbug.com/39178.
-    ExternalProtocolHandler::PermitLaunchUrl();
+    ExtensionsBrowserClient::Get()->PermitExternalProtocolHandler();
     NotifyApiFunctionCalled(
         extension->id(), params.name, args.Pass(), browser_context_);
     function->Run();
