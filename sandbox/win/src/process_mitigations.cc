@@ -264,9 +264,7 @@ MitigationFlags FilterPostStartupProcessMitigations(MitigationFlags flags) {
 
   // Windows Vista
   if (version < base::win::VERSION_WIN7) {
-    return flags & (MITIGATION_DEP |
-                    MITIGATION_DEP_NO_ATL_THUNK |
-                    MITIGATION_BOTTOM_UP_ASLR |
+    return flags & (MITIGATION_BOTTOM_UP_ASLR |
                     MITIGATION_DLL_SEARCH_ORDER |
                     MITIGATION_HEAP_TERMINATE);
   }
