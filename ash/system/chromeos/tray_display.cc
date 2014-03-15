@@ -159,6 +159,7 @@ class DisplayView : public internal::ActionableView {
       message = GetDisplayInfoLine(GetDisplayManager()->first_display_id());
     SetVisible(!message.empty());
     label_->SetText(message);
+    SetAccessibleName(message);
     Layout();
   }
 
@@ -424,6 +425,15 @@ base::string16 TrayDisplay::GetDefaultViewMessage() const {
     return base::string16();
 
   return static_cast<DisplayView*>(default_)->label()->text();
+}
+
+bool TrayDisplay::GetAccessibleStateForTesting(ui::AXViewState* state) {
+  views::View* view = default_;
+  if (view) {
+    view->GetAccessibleState(state);
+    return true;
+  }
+  return false;
 }
 
 }  // namespace internal

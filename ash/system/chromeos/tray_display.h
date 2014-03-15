@@ -63,6 +63,7 @@ class ASH_EXPORT TrayDisplay : public SystemTrayItem,
 
   // Test accessors.
   base::string16 GetDefaultViewMessage() const;
+  bool GetAccessibleStateForTesting(ui::AXViewState* state);
   const views::View* default_view() const {
     return reinterpret_cast<views::View*>(default_);
   }

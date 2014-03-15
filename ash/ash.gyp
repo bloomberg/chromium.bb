@@ -826,6 +826,7 @@
         '../testing/gtest.gyp:gtest',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
+        '../ui/accessibility/accessibility.gyp:accessibility',
         '../ui/app_list/app_list.gyp:app_list',
         '../ui/aura/aura.gyp:aura',
         '../ui/aura/aura.gyp:aura_test_support',
