@@ -121,8 +121,6 @@
         'autofill/core/browser/autofill_data_model.h',
         'autofill/core/browser/autofill_download.cc',
         'autofill/core/browser/autofill_download.h',
-        'autofill/core/browser/autofill_download_url.cc',
-        'autofill/core/browser/autofill_download_url.h',
         'autofill/core/browser/autofill_driver.h',
         'autofill/core/browser/autofill_external_delegate.cc',
         'autofill/core/browser/autofill_external_delegate.h',

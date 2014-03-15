@@ -7,9 +7,6 @@
 namespace autofill {
 namespace switches {
 
-// Flag used to tell Chrome the base url of the Autofill service.
-const char kAutofillServiceUrl[]            = "autofill-service-url";
-
 // Forces the password manager to not ignore autocomplete='off' for password
 // forms.
 const char kDisableIgnoreAutocompleteOff[]  = "do-not-ignore-autocomplete-off";

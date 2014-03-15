@@ -33,10 +33,7 @@ class FormStructure;
 // Handles getting and updating Autofill heuristics.
 class AutofillDownloadManager : public net::URLFetcherDelegate {
  public:
-  enum AutofillRequestType {
-    REQUEST_QUERY,
-    REQUEST_UPLOAD,
-  };
+  enum RequestType { REQUEST_QUERY, REQUEST_UPLOAD, };
 
   // An interface used to notify clients of AutofillDownloadManager.
   class Observer {
@@ -54,7 +51,7 @@ class AutofillDownloadManager : public net::URLFetcherDelegate {
     // |request_type| - type of request that failed.
     // |http_error| - HTTP error code.
     virtual void OnServerRequestError(const std::string& form_signature,
-                                      AutofillRequestType request_type,
+                                      RequestType request_type,
                                       int http_error) {}
 
    protected:

@@ -25,7 +25,6 @@
             'autofill/core/browser/autofill_country_unittest.cc',
             'autofill/core/browser/autofill_data_model_unittest.cc',
             'autofill/core/browser/autofill_download_unittest.cc',
-            'autofill/core/browser/autofill_download_url_unittest.cc',
             'autofill/core/browser/autofill_external_delegate_unittest.cc',
             'autofill/core/browser/autofill_field_unittest.cc',
             'autofill/core/browser/autofill_ie_toolbar_import_win_unittest.cc',

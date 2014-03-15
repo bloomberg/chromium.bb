@@ -9,7 +9,6 @@
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
-#include "components/autofill/core/browser/autofill_download_url.h"
 #include "components/autofill/core/browser/autofill_driver.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/autofill_xml_parser.h"
@@ -28,8 +27,13 @@ namespace {
 const char kAutofillQueryServerNameStartInHeader[] = "GFE/";
 const size_t kMaxFormCacheSize = 16;
 
-std::string AutofillRequestTypeToString(
-    AutofillDownloadManager::AutofillRequestType type) {
+#if defined(GOOGLE_CHROME_BUILD)
+const char kClientName[] = "Google Chrome";
+#else
+const char kClientName[] = "Chromium";
+#endif  // defined(GOOGLE_CHROME_BUILD)
+
+std::string RequestTypeToString(AutofillDownloadManager::RequestType type) {
   switch (type) {
     case AutofillDownloadManager::REQUEST_QUERY:
       return "query";
@@ -40,11 +44,16 @@ std::string AutofillRequestTypeToString(
   return std::string();
 }
 
+GURL GetRequestUrl(AutofillDownloadManager::RequestType request_type) {
+  return GURL("https://clients1.google.com/tbproxy/af/" +
+              RequestTypeToString(request_type) + "?client=" + kClientName);
+}
+
 }  // namespace
 
 struct AutofillDownloadManager::FormRequestData {
   std::vector<std::string> form_signatures;
-  AutofillRequestType request_type;
+  RequestType request_type;
 };
 
 AutofillDownloadManager::AutofillDownloadManager(AutofillDriver* driver,
@@ -165,11 +174,7 @@ bool AutofillDownloadManager::StartRequest(
   net::URLRequestContextGetter* request_context =
       driver_->GetURLRequestContext();
   DCHECK(request_context);
-  GURL request_url;
-  if (request_data.request_type == AutofillDownloadManager::REQUEST_QUERY)
-    request_url = autofill::GetAutofillQueryUrl();
-  else
-    request_url = autofill::GetAutofillUploadUrl();
+  GURL request_url = GetRequestUrl(request_data.request_type);
 
   // Id is ignored for regular chrome, in unit test id's for fake fetcher
   // factory will be 0, 1, 2, ...
@@ -185,7 +190,7 @@ bool AutofillDownloadManager::StartRequest(
   fetcher->Start();
 
   DVLOG(1) << "Sending AutofillDownloadManager "
-           << AutofillRequestTypeToString(request_data.request_type)
+           << RequestTypeToString(request_data.request_type)
            << " request: " << form_xml;
 
   return true;
@@ -254,8 +259,7 @@ void AutofillDownloadManager::OnURLFetchComplete(
     // with unknown fetcher when network is refreshed.
     return;
   }
-  std::string type_of_request(
-      AutofillRequestTypeToString(it->second.request_type));
+  std::string request_type(RequestTypeToString(it->second.request_type));
   const int kHttpResponseOk = 200;
   const int kHttpInternalServerError = 500;
   const int kHttpBadGateway = 502;
@@ -290,7 +294,7 @@ void AutofillDownloadManager::OnURLFetchComplete(
       }
     }
 
-    DVLOG(1) << "AutofillDownloadManager: " << type_of_request
+    DVLOG(1) << "AutofillDownloadManager: " << request_type
              << " request has failed with response "
              << source->GetResponseCode();
     observer_->OnServerRequestError(it->second.form_signatures[0],
@@ -299,9 +303,8 @@ void AutofillDownloadManager::OnURLFetchComplete(
   } else {
     std::string response_body;
     source->GetResponseAsString(&response_body);
-    DVLOG(1) << "AutofillDownloadManager: " << type_of_request
-             << " request has succeeded with response body: "
-             << response_body;
+    DVLOG(1) << "AutofillDownloadManager: " << request_type
+             << " request has succeeded with response body: " << response_body;
     if (it->second.request_type == AutofillDownloadManager::REQUEST_QUERY) {
       CacheQueryRequest(it->second.form_signatures, response_body);
       observer_->OnLoadedServerPredictions(response_body);

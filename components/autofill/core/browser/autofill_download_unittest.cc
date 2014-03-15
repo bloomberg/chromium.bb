@@ -93,7 +93,7 @@ class AutofillDownloadTest : public AutofillDownloadManager::Observer,
 
   virtual void OnServerRequestError(
       const std::string& form_signature,
-      AutofillDownloadManager::AutofillRequestType request_type,
+      AutofillDownloadManager::RequestType request_type,
       int http_error) OVERRIDE {
     ResponseData response;
     response.signature = form_signature;
