@@ -12,20 +12,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "string_compare.h"
+#ifndef I18N_ADDRESSINPUT_UTIL_CANONICALIZE_STRING_H_
+#define I18N_ADDRESSINPUT_UTIL_CANONICALIZE_STRING_H_
 
 #include <libaddressinput/util/scoped_ptr.h>
 
-#include "canonicalize_string.h"
+#include <string>
 
 namespace i18n {
 namespace addressinput {
 
-bool LooseStringCompare(const std::string& a, const std::string& b) {
-  scoped_ptr<StringCanonicalizer> canonicalizer(StringCanonicalizer::Build());
-  return canonicalizer->CanonicalizeString(a) ==
-         canonicalizer->CanonicalizeString(b);
-}
+class StringCanonicalizer {
+ public:
+  static scoped_ptr<StringCanonicalizer> Build();
+
+  virtual ~StringCanonicalizer() {}
+
+  // Returns |original| string modified to enable loose comparisons and sorting.
+  virtual std::string CanonicalizeString(const std::string& original) = 0;
+};
 
 }  // namespace addressinput
 }  // namespace i18n
+
+#endif  // I18N_ADDRESSINPUT_UTIL_CANONICALIZE_STRING_H_

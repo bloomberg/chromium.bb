@@ -20,13 +20,15 @@
 #include <libaddressinput/util/scoped_ptr.h>
 
 #include <map>
+#include <set>
 #include <string>
-#include <vector>
+
+#include "rule.h"
+#include "util/canonicalize_string.h"
+#include "util/trie.h"
 
 namespace i18n {
 namespace addressinput {
-
-class Rule;
 
 // A recursive data structure that stores a set of rules for a region. Can store
 // the rules for a country, its administrative areas, localities, and dependent
@@ -93,12 +95,69 @@ class Ruleset {
     return sub_regions_;
   }
 
+  // Enables using FindRulesetsByPrefix() method. Should be called only once and
+  // on a COUNTRY level ruleset.
+  void BuildPrefixSearchIndex();
+
+  // Returns true if BuildPrefixSearchIndex() has been called.
+  bool prefix_search_index_ready() const { return !tries_.empty(); }
+
+  // Returns the deepest possible ruleset level for this country. Must be called
+  // on a COUNTRY level ruleset. Must be called after BuildPrefixSearchIndex()
+  // has been called.
+  AddressField deepest_ruleset_level() const { return deepest_ruleset_level_; }
+
+  // Finds all rulesets at |ruleset_level| where the rule for |language_code|
+  // has the |identity_field| that starts with |prefix|. Ignores diacritics and
+  // capitalization differences between the rule data and |prefix|.
+  //
+  // If there're no rules for |language_code| (or |language_code| is an empty
+  // string), then the default language code is used.
+  //
+  // Should be called only on a COUNTRY level ruleset. Should be called only
+  // after BuildPrefixSearchIndex() has been called.
+  //
+  // The |field| parameter should be only ADMIN_AREA, LOCALITY, or
+  // DEPENDENT_LOCALITY. The result parameter should not be NULL.
+  void FindRulesetsByPrefix(const std::string& language_code,
+                            AddressField ruleset_level,
+                            Rule::IdentityField identity_field,
+                            const std::string& prefix,
+                            std::set<const Ruleset*>* result) const;
+
  private:
+  // The type that maps rule identity field to tries of rulesets.
+  typedef std::map<Rule::IdentityField, Trie<const Ruleset*>*>
+      IdentityFieldTries;
+
+  // The type that maps address field to IdentityFieldTries.
+  typedef std::map<AddressField, IdentityFieldTries*> AddressFieldTries;
+
+  // The type that maps language code to AddressFieldTries.
+  typedef std::map<std::string, AddressFieldTries*> LanguageCodeTries;
+
+  // Adds all children of |parent_ruleset| into |tries_| of this ruleset. Should
+  // be called only on a COUNTRY level ruleset.
+  void AddSubRegionRulesetsToTrie(const Ruleset& parent_ruleset);
+
+  // The tries to lookup rulesets by a prefix of key, name, or latin-name in a
+  // rule. Has data only in a COUNTRY level ruleset. Owns the map and trie
+  // objects. Does not own the ruleset objects.
+  LanguageCodeTries tries_;
+
+  // Canonicalizes region keys, names, and latin names when building a trie.
+  scoped_ptr<StringCanonicalizer> canonicalizer_;
+
   // The parent ruleset of this object. The parent ruleset owns this object.
   Ruleset* parent_;
 
   // The field of this ruleset.
   const AddressField field_;
+
+  // The deepest possible ruleset level for this country. Set in
+  // BuildPrefixSearchIndex() method and, therefore, meaningful only on a
+  // COUNTRY level ruleset.
+  AddressField deepest_ruleset_level_;
 
   // The region-wide rule in the default language of the country.
   const scoped_ptr<const Rule> rule_;

@@ -22,6 +22,7 @@
 #include <libaddressinput/util/scoped_ptr.h>
 
 #include <algorithm>
+#include <bitset>
 #include <cassert>
 #include <cstddef>
 #include <map>
@@ -46,187 +47,23 @@ namespace addressinput {
 
 namespace {
 
-// A bit map of MatchingRuleField values.
-typedef int MatchingRuleFields;
+// A type to store a list of pointers to Ruleset objects.
+typedef std::set<const Ruleset*> Rulesets;
 
-// The field in the rule that matches a user input. Can be used in a bitmask.
-enum MatchingRuleField {
-  NONE       = 0,
-  KEY        = 1,
-  NAME       = 2,
-  LATIN_NAME = 4
-};
+// A type to map the field in a rule to rulesets.
+typedef std::map<Rule::IdentityField, Rulesets> IdentityFieldRulesets;
+
+// A type to map the field in an address to rulesets.
+typedef std::map<AddressField, IdentityFieldRulesets> AddressFieldRulesets;
+
+// A set of Rule::IdentityField values that match user input.
+typedef std::bitset<Rule::IDENTITY_FIELDS_SIZE> MatchingRuleFields;
 
 // Returns true if |prefix_regex| matches a prefix of |value|. For example,
 // "(90|81)" matches a prefix of "90291".
 bool ValueMatchesPrefixRegex(const std::string& value,
                              const std::string& prefix_regex) {
   return RE2::FullMatch(value, "^(" + prefix_regex + ").*");
-}
-
-// Returns true if the first |length| characters of |a| are loosely equal to the
-// first |length| characters of |b|.
-bool LoosePrefixCompare(const std::string& a,
-                        const std::string& b,
-                        size_t length) {
-  return LooseStringCompare(a.substr(0, length), b.substr(0, length));
-}
-
-// Returns true if the fields of |address| are empty strings between the |begin|
-// field exclusively and the |end| field inclusively.
-bool AddressFieldsEmpty(const AddressData& address,
-                        AddressField begin,
-                        AddressField end) {
-  for (int field = begin + 1; field <= end; ++field) {
-    if (!address.GetFieldValue(static_cast<AddressField>(field)).empty()) {
-      return false;
-    }
-  }
-  return true;
-}
-
-// Finds the most accurate rulesets that match |user_input| and adds them to
-// |suggestions| as address data structures.
-//
-// Converts the rulesets into data structures by copying either the ruleset key,
-// name, or latinized name into the field of the data structure. Traverses the
-// tree of rulesets up to its root to capture the most complete suggestion. For
-// example, converts the ruleset for "data/CN/北京市/昌平区" into (latinized)
-// "Changping Qu, Beijing Shi, CN" address.
-//
-// Note that both "data/US" and "data/US/CA" rulesets match a "California, US,
-// 90291" user input, but only "data/US/CA" ends up in |suggestions|, because
-// it's more accurate than "data/US".
-//
-// Considers only |parent_matching_rule_fields| when comparing rules to user
-// input values. For example, if |parent_matching_rule_fields| is KEY | NAME,
-// then the function ignores the latinized name for the ruleset.
-//
-// If the number of |suggestions| is over the |suggestions_limit|, then clears
-// |suggestions| and returns false.
-//
-// The |suggestions| parameter should not be NULL.
-bool FindSuggestions(const AddressData& user_input,
-                     AddressField focused_field,
-                     size_t suggestions_limit,
-                     const Ruleset& ruleset,
-                     MatchingRuleFields parent_matching_rule_fields,
-                     std::vector<AddressData>* suggestions) {
-  assert(suggestions != NULL);
-
-  // Compare the postal code of |user_input| with the |ruleset|.
-  const Rule& rule = ruleset.GetLanguageCodeRule(user_input.language_code);
-  if (!rule.GetPostalCodeFormat().empty() &&
-      !user_input.postal_code.empty() &&
-      !ValueMatchesPrefixRegex(
-          user_input.postal_code, rule.GetPostalCodeFormat())) {
-    return true;
-  }
-
-  // Compare the value of |ruleset->field()| in |user input|  with the key,
-  // name, and latinized name for |ruleset|.
-  const std::string& input = user_input.GetFieldValue(ruleset.field());
-  MatchingRuleFields matching_rule_fields = NONE;
-  if (input.empty() || ruleset.field() == COUNTRY) {
-    matching_rule_fields = parent_matching_rule_fields;
-  } else {
-    if ((parent_matching_rule_fields & KEY) &&
-        LoosePrefixCompare(input, rule.GetKey(), input.length())) {
-      matching_rule_fields |= KEY;
-    }
-    if ((parent_matching_rule_fields & NAME) &&
-        LoosePrefixCompare(input, rule.GetName(), input.length())) {
-      matching_rule_fields |= NAME;
-    }
-    if ((parent_matching_rule_fields & LATIN_NAME) &&
-        LoosePrefixCompare(input, rule.GetLatinName(), input.length())) {
-      matching_rule_fields |= LATIN_NAME;
-    }
-  }
-
-  if (matching_rule_fields == NONE) {
-    return true;
-  }
-
-  // Add a suggestion based on |ruleset|.
-  if (ruleset.field() == DEPENDENT_LOCALITY ||
-      ruleset.field() == focused_field ||
-      (ruleset.GetSubRegionRulesets().empty() &&
-       AddressFieldsEmpty(user_input, ruleset.field(), DEPENDENT_LOCALITY))) {
-    if (suggestions->size() >= suggestions_limit) {
-      suggestions->clear();
-      return false;
-    }
-
-    // If the user's language is not one of the supported languages of a country
-    // that has latinized names for its regions, then prefer to suggest the
-    // latinized region names. If the user types in local script instead, then
-    // the local script names will be suggested.
-    bool prefer_latin_name =
-        !rule.GetLanguage().empty() &&
-        rule.GetLanguage() != user_input.language_code &&
-        !rule.GetLatinName().empty();
-
-    MatchingRuleField rule_field = NONE;
-    if (prefer_latin_name && (matching_rule_fields & LATIN_NAME)) {
-      rule_field = LATIN_NAME;
-    } else if (matching_rule_fields & KEY) {
-      rule_field = KEY;
-    } else if (matching_rule_fields & NAME) {
-      rule_field = NAME;
-    } else if (matching_rule_fields & LATIN_NAME) {
-      rule_field = LATIN_NAME;
-    } else {
-      assert(false);
-    }
-
-    AddressData suggestion;
-    suggestion.postal_code = user_input.postal_code;
-
-    // Traverse the tree of rulesets from the most specific |ruleset| to the
-    // country-wide "root" of the tree. Use the region names found at each of
-    // the levels of the ruleset tree to build the |suggestion|.
-    for (const Ruleset* suggestion_ruleset = &ruleset;
-         suggestion_ruleset->parent() != NULL;
-         suggestion_ruleset = suggestion_ruleset->parent()) {
-      const Rule& suggestion_rule =
-          suggestion_ruleset->GetLanguageCodeRule(user_input.language_code);
-      switch (rule_field) {
-        case KEY:
-          suggestion.SetFieldValue(
-              suggestion_ruleset->field(), suggestion_rule.GetKey());
-          break;
-        case NAME:
-          suggestion.SetFieldValue(
-              suggestion_ruleset->field(), suggestion_rule.GetName());
-          break;
-        case LATIN_NAME:
-          suggestion.SetFieldValue(
-              suggestion_ruleset->field(), suggestion_rule.GetLatinName());
-          break;
-        default:
-          assert(false);
-          break;
-      }
-    }
-
-    suggestions->push_back(suggestion);
-    return true;
-  }
-
-  for (std::map<std::string, Ruleset*>::const_iterator
-           subregion_ruleset_it = ruleset.GetSubRegionRulesets().begin();
-       subregion_ruleset_it != ruleset.GetSubRegionRulesets().end();
-       ++subregion_ruleset_it) {
-    assert(subregion_ruleset_it->second != NULL);
-    if (!FindSuggestions(user_input, focused_field, suggestions_limit,
-                         *subregion_ruleset_it->second, matching_rule_fields,
-                         suggestions)) {
-      return false;
-    }
-  }
-
-  return true;
 }
 
 // Returns true if the filter is empty (all problems allowed) or contains the
@@ -259,6 +96,37 @@ bool IsEmptyStreetAddress(const std::vector<std::string>& street_address) {
   }
   return true;
 }
+
+// Collects rulesets based on whether they have a parent in the given list.
+class ParentedRulesetCollector {
+ public:
+  // Retains a reference to both of the parameters. Does not make a copy of
+  // |parent_rulesets|. Does not take ownership of |rulesets_with_parents|. The
+  // |rulesets_with_parents| parameter should not be NULL.
+  ParentedRulesetCollector(const Rulesets& parent_rulesets,
+                           Rulesets* rulesets_with_parents)
+      : parent_rulesets_(parent_rulesets),
+        rulesets_with_parents_(rulesets_with_parents) {
+    assert(rulesets_with_parents_ != NULL);
+  }
+
+  ~ParentedRulesetCollector() {}
+
+  // Adds |ruleset_to_test| to the |rulesets_with_parents_| collection, if the
+  // given ruleset has a parent in |parent_rulesets_|. The |ruleset_to_test|
+  // parameter should not be NULL.
+  void operator()(const Ruleset* ruleset_to_test) {
+    assert(ruleset_to_test != NULL);
+    if (parent_rulesets_.find(ruleset_to_test->parent()) !=
+            parent_rulesets_.end()) {
+      rulesets_with_parents_->insert(ruleset_to_test);
+    }
+  }
+
+ private:
+  const Rulesets& parent_rulesets_;
+  Rulesets* rulesets_with_parents_;
+};
 
 // Validates AddressData structure.
 class AddressValidatorImpl : public AddressValidator {
@@ -297,7 +165,7 @@ class AddressValidatorImpl : public AddressValidator {
       const AddressData& address,
       const AddressProblemFilter& filter,
       AddressProblems* problems) const {
-    std::map<std::string, const Ruleset*>::const_iterator ruleset_it =
+    std::map<std::string, Ruleset*>::const_iterator ruleset_it =
         rules_.find(address.country_code);
 
     // We can still validate the required fields even if the full ruleset isn't
@@ -386,7 +254,7 @@ class AddressValidatorImpl : public AddressValidator {
                                 AddressField focused_field,
                                 size_t suggestions_limit,
                                 std::vector<AddressData>* suggestions) const {
-    std::map<std::string, const Ruleset*>::const_iterator ruleset_it =
+    std::map<std::string, Ruleset*>::const_iterator ruleset_it =
         rules_.find(user_input.country_code);
 
     if (ruleset_it == rules_.end()) {
@@ -401,16 +269,154 @@ class AddressValidatorImpl : public AddressValidator {
     }
     suggestions->clear();
 
-    const Ruleset* country_ruleset = ruleset_it->second;
-    assert(country_ruleset != NULL);
+    assert(ruleset_it->second != NULL);
 
-    FindSuggestions(user_input, focused_field, suggestions_limit,
-                    *country_ruleset, KEY | NAME | LATIN_NAME, suggestions);
+    // Initialize the prefix search index lazily.
+    if (!ruleset_it->second->prefix_search_index_ready()) {
+      ruleset_it->second->BuildPrefixSearchIndex();
+    }
+
+    const Ruleset& country_ruleset = *ruleset_it->second;
+    const Rule& country_rule =
+        country_ruleset.GetLanguageCodeRule(user_input.language_code);
+
+    // Do not suggest anything if the user is typing the postal code that is not
+    // valid for the country.
+    if (!user_input.postal_code.empty() &&
+        focused_field == POSTAL_CODE &&
+        !country_rule.GetPostalCodeFormat().empty() &&
+        !ValueMatchesPrefixRegex(
+            user_input.postal_code, country_rule.GetPostalCodeFormat())) {
+      return SUCCESS;
+    }
+
+    // Determine the most specific address field that can be suggested.
+    AddressField suggestion_field = focused_field != POSTAL_CODE
+        ? focused_field : DEPENDENT_LOCALITY;
+    if (suggestion_field > country_ruleset.deepest_ruleset_level()) {
+      suggestion_field = country_ruleset.deepest_ruleset_level();
+    }
+    if (focused_field != POSTAL_CODE) {
+      while (user_input.GetFieldValue(suggestion_field).empty() &&
+             suggestion_field > ADMIN_AREA) {
+        suggestion_field = static_cast<AddressField>(suggestion_field - 1);
+      }
+    }
+
+    // Find all rulesets that match user input.
+    AddressFieldRulesets rulesets;
+    for (int i = ADMIN_AREA; i <= suggestion_field; ++i) {
+      for (int j = Rule::KEY; j <= Rule::LATIN_NAME; ++j) {
+        AddressField address_field = static_cast<AddressField>(i);
+        Rule::IdentityField rule_field = static_cast<Rule::IdentityField>(j);
+
+        // Find all rulesets at |address_field| level whose |rule_field| starts
+        // with user input value.
+        country_ruleset.FindRulesetsByPrefix(
+            user_input.language_code, address_field, rule_field,
+            user_input.GetFieldValue(address_field),
+            &rulesets[address_field][rule_field]);
+
+        // Filter out the rulesets whose parents do not match the user input.
+        if (address_field > ADMIN_AREA) {
+          AddressField parent_field =
+              static_cast<AddressField>(address_field - 1);
+          Rulesets rulesets_with_parents;
+          std::for_each(
+              rulesets[address_field][rule_field].begin(),
+              rulesets[address_field][rule_field].end(),
+              ParentedRulesetCollector(rulesets[parent_field][rule_field],
+                                       &rulesets_with_parents));
+          rulesets[address_field][rule_field].swap(rulesets_with_parents);
+        }
+      }
+    }
+
+    // Determine the fields in the rules that match the user input. This
+    // operation converts a map of Rule::IdentityField value -> Ruleset into a
+    // map of Ruleset -> Rule::IdentityField bitset.
+    std::map<const Ruleset*, MatchingRuleFields> suggestion_rulesets;
+    for (IdentityFieldRulesets::const_iterator rule_field_it =
+             rulesets[suggestion_field].begin();
+         rule_field_it != rulesets[suggestion_field].end();
+         ++rule_field_it) {
+      const Rule::IdentityField rule_identity_field = rule_field_it->first;
+      for (Rulesets::const_iterator ruleset_it = rule_field_it->second.begin();
+           ruleset_it != rule_field_it->second.end();
+           ++ruleset_it) {
+        suggestion_rulesets[*ruleset_it].set(rule_identity_field);
+      }
+    }
+
+    // Generate suggestions based on the rulesets. Use a Rule::IdentityField
+    // from the bitset to generate address field values.
+    for (std::map<const Ruleset*, MatchingRuleFields>::const_iterator
+             suggestion_it = suggestion_rulesets.begin();
+         suggestion_it != suggestion_rulesets.end();
+         ++suggestion_it) {
+      const Ruleset& ruleset = *suggestion_it->first;
+      const Rule& rule = ruleset.GetLanguageCodeRule(user_input.language_code);
+      const MatchingRuleFields& matching_rule_fields = suggestion_it->second;
+
+      // Do not suggest this region if the postal code in user input does not
+      // match it.
+      if (!user_input.postal_code.empty() &&
+          !rule.GetPostalCodeFormat().empty() &&
+          !ValueMatchesPrefixRegex(
+              user_input.postal_code, rule.GetPostalCodeFormat())) {
+        continue;
+      }
+
+      // Do not add more suggestions than |suggestions_limit|.
+      if (suggestions->size() >= suggestions_limit) {
+        suggestions->clear();
+        return SUCCESS;
+      }
+
+      // If the user's language is not one of the supported languages of a
+      // country that has latinized names for its regions, then prefer to
+      // suggest the latinized region names. If the user types in local script
+      // instead, then the local script names will be suggested.
+      Rule::IdentityField rule_field = Rule::KEY;
+      if (!country_rule.GetLanguage().empty() &&
+          country_rule.GetLanguage() != user_input.language_code &&
+          !rule.GetLatinName().empty() &&
+          matching_rule_fields.test(Rule::LATIN_NAME)) {
+        rule_field = Rule::LATIN_NAME;
+      } else if (matching_rule_fields.test(Rule::KEY)) {
+        rule_field = Rule::KEY;
+      } else if (matching_rule_fields.test(Rule::NAME)) {
+        rule_field = Rule::NAME;
+      } else if (matching_rule_fields.test(Rule::LATIN_NAME)) {
+        rule_field = Rule::LATIN_NAME;
+      } else {
+        assert(false);
+      }
+
+      AddressData suggestion;
+      suggestion.postal_code = user_input.postal_code;
+
+      // Traverse the tree of rulesets from the most specific |ruleset| to the
+      // country-wide "root" of the tree. Use the region names found at each of
+      // the levels of the ruleset tree to build the |suggestion|.
+      for (const Ruleset* suggestion_ruleset = &ruleset;
+           suggestion_ruleset->parent() != NULL;
+           suggestion_ruleset = suggestion_ruleset->parent()) {
+        const Rule& suggestion_rule =
+            suggestion_ruleset->GetLanguageCodeRule(user_input.language_code);
+        suggestion.SetFieldValue(suggestion_ruleset->field(),
+                                 suggestion_rule.GetIdentityField(rule_field));
+      }
+
+      suggestions->push_back(suggestion);
+    }
+
     return SUCCESS;
   }
 
+  // AddressValidator implementation.
   virtual bool CanonicalizeAdministrativeArea(AddressData* address_data) const {
-    std::map<std::string, const Ruleset*>::const_iterator ruleset_it =
+    std::map<std::string, Ruleset*>::const_iterator ruleset_it =
         rules_.find(address_data->country_code);
     if (ruleset_it == rules_.end()) {
       return false;
@@ -475,7 +481,7 @@ class AddressValidatorImpl : public AddressValidator {
   std::set<std::string> loading_rules_;
 
   // A mapping of a country code to the owned ruleset for that country code.
-  std::map<std::string, const Ruleset*> rules_;
+  std::map<std::string, Ruleset*> rules_;
 
   DISALLOW_COPY_AND_ASSIGN(AddressValidatorImpl);
 };

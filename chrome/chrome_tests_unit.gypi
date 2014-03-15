@@ -2233,6 +2233,8 @@
             'browser/ui/autofill/autofill_dialog_i18n_input_unittest.cc',
             'browser/ui/autofill/country_combobox_model_unittest.cc',
             'browser/ui/autofill/data_model_wrapper_unittest.cc',
+            'browser/ui/autofill/mock_address_validator.cc',
+            'browser/ui/autofill/mock_address_validator.h',
             'browser/ui/autofill/mock_autofill_dialog_view_delegate.cc',
             'browser/ui/autofill/mock_autofill_dialog_view_delegate.h',
             'browser/ui/autofill/test_autofill_credit_card_bubble.cc',
@@ -2509,7 +2511,7 @@
           ],
         }],
         ['OS=="android"', {
-          '!dependencies': [
+          'dependencies!': [
             '../third_party/libaddressinput/libaddressinput.gyp:libaddressinput',
           ],
           'sources!': [
@@ -2538,7 +2540,6 @@
             'browser/sync/sessions2/sessions_sync_manager_unittest.cc',
             'browser/sync/sync_global_error_unittest.cc',
             'browser/translate/translate_manager_render_view_host_unittest.cc',
-            'browser/ui/autofill/autofill_dialog_controller_unittest.cc',
             'browser/ui/browser_instant_controller_unittest.cc',
             'browser/ui/bookmarks/bookmark_bubble_sign_in_delegate_unittest.cc',
             'browser/ui/bookmarks/bookmark_context_menu_controller_unittest.cc',

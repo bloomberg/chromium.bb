@@ -335,6 +335,20 @@ void Rule::ParseJsonRule(const Json& json_rule) {
   }
 }
 
+const std::string& Rule::GetIdentityField(IdentityField identity_field) const {
+  switch (identity_field) {
+    case KEY:
+      return key_;
+    case NAME:
+      return name_;
+    case LATIN_NAME:
+      return latin_name_;
+    case IDENTITY_FIELDS_SIZE:
+      assert(false);
+  }
+  return key_;
+}
+
 int Rule::GetInvalidFieldMessageId(AddressField field) const {
   switch (field) {
     case ADMIN_AREA:

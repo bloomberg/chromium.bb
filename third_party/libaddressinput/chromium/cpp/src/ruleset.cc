@@ -20,17 +20,23 @@
 #include <cassert>
 #include <cstddef>
 #include <map>
+#include <set>
 #include <string>
+#include <utility>
 
 #include "rule.h"
+#include "util/canonicalize_string.h"
 #include "util/stl_util.h"
 
 namespace i18n {
 namespace addressinput {
 
 Ruleset::Ruleset(AddressField field, scoped_ptr<Rule> rule)
-    : parent_(NULL),
+    : tries_(),
+      canonicalizer_(),
+      parent_(NULL),
       field_(field),
+      deepest_ruleset_level_(field),
       rule_(rule.Pass()),
       sub_regions_(),
       language_codes_() {
@@ -42,6 +48,33 @@ Ruleset::Ruleset(AddressField field, scoped_ptr<Rule> rule)
 Ruleset::~Ruleset() {
   STLDeleteValues(&sub_regions_);
   STLDeleteValues(&language_codes_);
+
+  // Delete the maps and trie objects owned by |tries_| field.
+  for (LanguageCodeTries::const_iterator lang_it = tries_.begin();
+       lang_it != tries_.end(); ++lang_it) {
+    AddressFieldTries* address_field_tries = lang_it->second;
+    assert(address_field_tries != NULL);
+
+    for (AddressFieldTries::const_iterator address_field_it =
+             address_field_tries->begin();
+         address_field_it != address_field_tries->end();
+         ++address_field_it) {
+      IdentityFieldTries* identity_field_tries = address_field_it->second;
+      assert(identity_field_tries != NULL);
+
+      for (IdentityFieldTries::const_iterator identity_field_it =
+               identity_field_tries->begin();
+           identity_field_it != identity_field_tries->end();
+           ++identity_field_it) {
+        // The tries do not own the ruleset objects.
+        Trie<const Ruleset*>* trie = identity_field_it->second;
+        assert(trie != NULL);
+        delete trie;
+      }
+      delete identity_field_tries;
+    }
+    delete address_field_tries;
+  }
 }
 
 void Ruleset::AddSubRegionRuleset(const std::string& sub_region,
@@ -72,6 +105,154 @@ const Rule& Ruleset::GetLanguageCodeRule(
   std::map<std::string, const Rule*>::const_iterator it =
       language_codes_.find(language_code);
   return it != language_codes_.end() ? *it->second : *rule_;
+}
+
+void Ruleset::BuildPrefixSearchIndex() {
+  assert(field_ == COUNTRY);
+  assert(tries_.empty());
+
+  // Default language tries.
+  tries_[""] = new AddressFieldTries;
+
+  // Non-default language tries.
+  for (std::vector<std::string>::const_iterator lang_it =
+           rule_->GetLanguages().begin();
+       lang_it != rule_->GetLanguages().end();
+       ++lang_it) {
+    if (*lang_it != rule_->GetLanguage() && !lang_it->empty()) {
+      tries_[*lang_it] = new AddressFieldTries;
+    }
+  }
+
+  for (LanguageCodeTries::const_iterator lang_it = tries_.begin();
+       lang_it != tries_.end(); ++lang_it) {
+    AddressFieldTries* address_field_tries = lang_it->second;
+    address_field_tries->insert(
+        std::make_pair(ADMIN_AREA, new IdentityFieldTries));
+    address_field_tries->insert(
+        std::make_pair(LOCALITY, new IdentityFieldTries));
+    address_field_tries->insert(
+        std::make_pair(DEPENDENT_LOCALITY, new IdentityFieldTries));
+
+    for (AddressFieldTries::const_iterator address_field_it =
+             address_field_tries->begin();
+         address_field_it != address_field_tries->end();
+         ++address_field_it) {
+      IdentityFieldTries* identity_field_tries = address_field_it->second;
+      identity_field_tries->insert(
+          std::make_pair(Rule::KEY, new Trie<const Ruleset*>));
+      identity_field_tries->insert(
+          std::make_pair(Rule::NAME, new Trie<const Ruleset*>));
+      identity_field_tries->insert(
+          std::make_pair(Rule::LATIN_NAME, new Trie<const Ruleset*>));
+    }
+  }
+
+  canonicalizer_ = StringCanonicalizer::Build();
+  AddSubRegionRulesetsToTrie(*this);
+}
+
+void Ruleset::FindRulesetsByPrefix(const std::string& language_code,
+                                   AddressField ruleset_level,
+                                   Rule::IdentityField identity_field,
+                                   const std::string& prefix,
+                                   std::set<const Ruleset*>* result) const {
+  assert(field_ == COUNTRY);
+  assert(ruleset_level >= ADMIN_AREA);
+  assert(ruleset_level <= DEPENDENT_LOCALITY);
+  assert(result != NULL);
+  assert(canonicalizer_ != NULL);
+
+  LanguageCodeTries::const_iterator lang_it = tries_.find(language_code);
+  AddressFieldTries* address_field_tries = lang_it != tries_.end()
+      ? lang_it->second : tries_.find("")->second;
+  assert(address_field_tries != NULL);
+
+  AddressFieldTries::const_iterator address_field_it =
+      address_field_tries->find(ruleset_level);
+  assert(address_field_it != address_field_tries->end());
+
+  IdentityFieldTries* identity_field_tries = address_field_it->second;
+  assert(identity_field_tries != NULL);
+
+  IdentityFieldTries::const_iterator identity_field_it =
+      identity_field_tries->find(identity_field);
+  assert(identity_field_it != identity_field_tries->end());
+
+  Trie<const Ruleset*>* trie = identity_field_it->second;
+  assert(trie != NULL);
+
+  trie->FindDataForKeyPrefix(
+      canonicalizer_->CanonicalizeString(prefix), result);
+}
+
+void Ruleset::AddSubRegionRulesetsToTrie(const Ruleset& parent_ruleset) {
+  assert(field_ == COUNTRY);
+  assert(canonicalizer_ != NULL);
+
+  for (std::map<std::string, Ruleset*>::const_iterator sub_region_it =
+           parent_ruleset.sub_regions_.begin();
+       sub_region_it != parent_ruleset.sub_regions_.end();
+       ++sub_region_it) {
+    const Ruleset* ruleset = sub_region_it->second;
+    assert(ruleset != NULL);
+
+    if (deepest_ruleset_level_ < ruleset->field()) {
+      deepest_ruleset_level_ = ruleset->field();
+    }
+
+    for (LanguageCodeTries::const_iterator lang_it = tries_.begin();
+         lang_it != tries_.end(); ++lang_it) {
+      const std::string& language_code = lang_it->first;
+      const Rule& rule = ruleset->GetLanguageCodeRule(language_code);
+
+      AddressFieldTries* address_field_tries = lang_it->second;
+      assert(address_field_tries != NULL);
+
+      AddressFieldTries::const_iterator address_field_it =
+          address_field_tries->find(ruleset->field());
+      assert(address_field_it != address_field_tries->end());
+
+      IdentityFieldTries* identity_field_tries = address_field_it->second;
+      assert(identity_field_tries != NULL);
+
+      IdentityFieldTries::const_iterator identity_field_it =
+          identity_field_tries->find(Rule::KEY);
+      assert(identity_field_it != identity_field_tries->end());
+
+      Trie<const Ruleset*>* key_trie = identity_field_it->second;
+      assert(key_trie != NULL);
+
+      identity_field_it = identity_field_tries->find(Rule::NAME);
+      assert(identity_field_it != identity_field_tries->end());
+
+      Trie<const Ruleset*>* name_trie = identity_field_it->second;
+      assert(name_trie != NULL);
+
+      identity_field_it = identity_field_tries->find(Rule::LATIN_NAME);
+      assert(identity_field_it != identity_field_tries->end());
+
+      Trie<const Ruleset*>* latin_name_trie = identity_field_it->second;
+      assert(latin_name_trie != NULL);
+
+      if (!rule.GetKey().empty()) {
+        key_trie->AddDataForKey(
+            canonicalizer_->CanonicalizeString(rule.GetKey()), ruleset);
+      }
+
+      if (!rule.GetName().empty()) {
+        name_trie->AddDataForKey(
+             canonicalizer_->CanonicalizeString(rule.GetName()), ruleset);
+      }
+
+      if (!rule.GetLatinName().empty()) {
+        latin_name_trie->AddDataForKey(
+            canonicalizer_->CanonicalizeString(rule.GetLatinName()), ruleset);
+      }
+    }
+
+    AddSubRegionRulesetsToTrie(*ruleset);
+  }
 }
 
 }  // namespace addressinput

@@ -43,10 +43,12 @@
         'src/rule.cc',
         'src/ruleset.cc',
         'src/time_to_string.cc',
+        'src/util/canonicalize_string.cc',
         'src/util/json.cc',
         'src/util/md5.cc',
         'src/util/string_compare.cc',
         'src/util/string_split.cc',
+        'src/util/trie.cc',
       ],
       'defines': [
         'VALIDATION_DATA_URL="https://i18napis.appspot.com/ssl-aggregate-address/"',
@@ -80,6 +82,7 @@
         'test/util/scoped_ptr_unittest.cc',
         'test/util/stl_util_unittest.cc',
         'test/util/string_split_unittest.cc',
+        'test/util/trie_test.cc',
       ],
       'defines': [
         'TEST_DATA_DIR="../testdata"',

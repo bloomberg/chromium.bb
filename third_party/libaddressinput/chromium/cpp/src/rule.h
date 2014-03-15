@@ -62,6 +62,14 @@ struct FormatElement {
 //    }
 class Rule {
  public:
+  // The types of fields that describe the rule.
+  enum IdentityField {
+    KEY,
+    NAME,
+    LATIN_NAME,
+    IDENTITY_FIELDS_SIZE
+  };
+
   Rule();
   ~Rule();
 
@@ -79,6 +87,11 @@ class Rule {
 
   // Parses |json_rule|, which must contain parsed serialized rule.
   void ParseJsonRule(const Json& json_rule);
+
+  // Returns the value of the |identity_field| for this rule, for example, can
+  // return "TX" or "Texas". The |identity_field| parameter should not be
+  // IDENTITY_FIELDS_SIZE.
+  const std::string& GetIdentityField(IdentityField identity_field) const;
 
   // Returns the key for this rule. For example, can return "TX".
   const std::string& GetKey() const { return key_; }
