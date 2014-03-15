@@ -89,8 +89,7 @@ void MenuController::RunMessageLoop(bool nested_menu) {
     scoped_ptr<ActivationChangeObserverImpl> observer;
     if (!nested_menu)
       observer.reset(new ActivationChangeObserverImpl(this, root));
-    aura::client::GetDispatcherClient(root)->
-        RunWithDispatcher(this, owner_->GetNativeWindow());
+    aura::client::GetDispatcherClient(root)->RunWithDispatcher(this);
   } else {
     base::MessageLoopForUI* loop = base::MessageLoopForUI::current();
     base::MessageLoop::ScopedNestableTaskAllower allow(loop);

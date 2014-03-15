@@ -15,6 +15,7 @@
 #include "grit/generated_resources.h"
 #include "ui/aura/client/dispatcher_client.h"
 #include "ui/aura/env.h"
+#include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/native_widget_types.h"
@@ -224,7 +225,7 @@ MessageBoxResult ShowMessageBoxImpl(gfx::NativeWindow parent,
   aura::Window* anchor = dialog->GetWidget()->GetNativeWindow();
   aura::client::DispatcherClient* client =
       aura::client::GetDispatcherClient(anchor->GetRootWindow());
-  client->RunWithDispatcher(NULL, anchor);
+  client->RunWithDispatcher(NULL);
   return dialog->result();
 }
 

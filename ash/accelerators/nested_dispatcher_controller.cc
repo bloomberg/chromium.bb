@@ -18,12 +18,11 @@ NestedDispatcherController::~NestedDispatcherController() {
 }
 
 void NestedDispatcherController::RunWithDispatcher(
-    base::MessagePumpDispatcher* nested_dispatcher,
-    aura::Window* associated_window) {
+    base::MessagePumpDispatcher* nested_dispatcher) {
   base::MessageLoopForUI* loop = base::MessageLoopForUI::current();
   base::MessageLoopForUI::ScopedNestableTaskAllower allow_nested(loop);
 
-  AcceleratorDispatcher dispatcher(nested_dispatcher, associated_window);
+  AcceleratorDispatcher dispatcher(nested_dispatcher);
 
   // TODO(jbates) crbug.com/134753 Find quitters of this RunLoop and have them
   //              use run_loop.QuitClosure().

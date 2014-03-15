@@ -213,7 +213,7 @@ TEST_F(DesktopNativeWidgetAuraTest, WidgetCanBeDestroyedFromNestedLoop) {
   // |RunWithDispatcher()| below.
   message_loop()->PostTask(FROM_HERE,
       base::Bind(&QuitNestedLoopAndCloseWidget, base::Passed(&widget), client));
-  client->RunWithDispatcher(NULL, NULL);
+  client->RunWithDispatcher(NULL);
 }
 
 }  // namespace views

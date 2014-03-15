@@ -16,8 +16,7 @@ DesktopDispatcherClient::~DesktopDispatcherClient() {
 }
 
 void DesktopDispatcherClient::RunWithDispatcher(
-    base::MessagePumpDispatcher* nested_dispatcher,
-    aura::Window* associated_window) {
+    base::MessagePumpDispatcher* nested_dispatcher) {
   // TODO(erg): This class has been copypastad from
   // ash/accelerators/nested_dispatcher_controller.cc. I have left my changes
   // commented out because I don't entirely understand the implications of the

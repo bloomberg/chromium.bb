@@ -20,8 +20,8 @@ class VIEWS_EXPORT DesktopDispatcherClient
   DesktopDispatcherClient();
   virtual ~DesktopDispatcherClient();
 
-  virtual void RunWithDispatcher(base::MessagePumpDispatcher* dispatcher,
-                                 aura::Window* associated_window) OVERRIDE;
+  virtual void RunWithDispatcher(
+      base::MessagePumpDispatcher* dispatcher) OVERRIDE;
   virtual void QuitNestedMessageLoop() OVERRIDE;
 
  private:

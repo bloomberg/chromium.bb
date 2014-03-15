@@ -20,6 +20,7 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/views/controls/menu/menu_controller.h"
 #include "ui/wm/core/compound_event_filter.h"
 
 #if defined(OS_CHROMEOS)
@@ -615,6 +616,7 @@ void LockStateController::PostLockAnimationFinished() {
     lock_screen_displayed_callback_.Run();
     lock_screen_displayed_callback_.Reset();
   }
+  CHECK(!views::MenuController::GetActiveInstance());
   if (shutdown_after_lock_) {
     shutdown_after_lock_ = false;
     StartLockToShutdownTimer();

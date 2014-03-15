@@ -6,9 +6,8 @@
 #define ASH_ACCELERATORS_ACCELERATOR_DISPATCHER_H_
 
 #include "ash/ash_export.h"
+#include "base/macros.h"
 #include "base/message_loop/message_pump_dispatcher.h"
-#include "ui/aura/window.h"
-#include "ui/aura/window_observer.h"
 
 namespace ash {
 
@@ -19,25 +18,16 @@ namespace ash {
 // passed back to the default dispatcher.
 // TODO(pkotwicz): Add support for a |nested_dispatcher| which sends
 //  events to a system IME.
-class ASH_EXPORT AcceleratorDispatcher : public base::MessagePumpDispatcher,
-                                         public aura::WindowObserver {
+class ASH_EXPORT AcceleratorDispatcher : public base::MessagePumpDispatcher {
  public:
-  AcceleratorDispatcher(base::MessagePumpDispatcher* nested_dispatcher,
-                        aura::Window* associated_window);
+  explicit AcceleratorDispatcher(base::MessagePumpDispatcher* dispatcher);
   virtual ~AcceleratorDispatcher();
 
   // MessagePumpDispatcher overrides:
   virtual uint32_t Dispatch(const base::NativeEvent& event) OVERRIDE;
 
-  // aura::WindowObserver overrides:
-  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
-
  private:
   base::MessagePumpDispatcher* nested_dispatcher_;
-
-  // Window associated with |nested_dispatcher_| which is used to determine
-  // whether the |nested_dispatcher_| is allowed to receive events.
-  aura::Window* associated_window_;
 
   DISALLOW_COPY_AND_ASSIGN(AcceleratorDispatcher);
 };

@@ -17,6 +17,7 @@
 #include "grit/theme_resources.h"
 #include "ui/aura/client/dispatcher_client.h"
 #include "ui/aura/env.h"
+#include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/button/checkbox.h"
@@ -65,7 +66,7 @@ bool FirstRunDialog::Show(Profile* profile) {
     aura::Window* anchor = dialog->GetWidget()->GetNativeWindow();
     aura::client::DispatcherClient* client =
         aura::client::GetDispatcherClient(anchor->GetRootWindow());
-    client->RunWithDispatcher(NULL, anchor);
+    client->RunWithDispatcher(NULL);
     dialog_shown = true;
   }
 #endif  // defined(GOOGLE_CHROME_BUILD)

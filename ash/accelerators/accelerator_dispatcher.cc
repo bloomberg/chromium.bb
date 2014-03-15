@@ -6,11 +6,6 @@
 
 #if defined(USE_X11)
 #include <X11/Xlib.h>
-
-// Xlib defines RootWindow
-#ifdef RootWindow
-#undef RootWindow
-#endif
 #endif  // defined(USE_X11)
 
 #include "ash/accelerators/accelerator_controller.h"
@@ -66,30 +61,14 @@ bool IsPossibleAcceleratorNotForMenu(const ui::KeyEvent& key_event) {
 }  // namespace
 
 AcceleratorDispatcher::AcceleratorDispatcher(
-    base::MessagePumpDispatcher* nested_dispatcher,
-    aura::Window* associated_window)
-    : nested_dispatcher_(nested_dispatcher),
-      associated_window_(associated_window) {
-  associated_window_->AddObserver(this);
+    base::MessagePumpDispatcher* nested_dispatcher)
+    : nested_dispatcher_(nested_dispatcher) {
 }
 
 AcceleratorDispatcher::~AcceleratorDispatcher() {
-  if (associated_window_)
-    associated_window_->RemoveObserver(this);
-}
-
-void AcceleratorDispatcher::OnWindowDestroying(aura::Window* window) {
-  if (associated_window_ == window)
-    associated_window_ = NULL;
 }
 
 uint32_t AcceleratorDispatcher::Dispatch(const base::NativeEvent& event) {
-  if (!associated_window_)
-    return POST_DISPATCH_QUIT_LOOP;
-
-  if (!associated_window_->CanReceiveEvents())
-    return POST_DISPATCH_PERFORM_DEFAULT;
-
   if (IsKeyEvent(event)) {
     ui::KeyEvent key_event(event, false);
     if (IsPossibleAcceleratorNotForMenu(key_event)) {
