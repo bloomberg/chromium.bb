@@ -93,7 +93,7 @@ void X11WindowEventFilter::OnMouseEvent(ui::MouseEvent* event) {
   if (event->type() != ui::ET_MOUSE_PRESSED)
     return;
 
-  if (!event->IsLeftMouseButton())
+  if (!(event->IsLeftMouseButton() || event->IsMiddleMouseButton()))
     return;
 
   aura::Window* target = static_cast<aura::Window*>(event->target());
@@ -105,6 +105,13 @@ void X11WindowEventFilter::OnMouseEvent(ui::MouseEvent* event) {
   if (component == HTCLIENT)
     return;
 
+  if (event->IsMiddleMouseButton() && (component == HTCAPTION)) {
+    XLowerWindow(xdisplay_, xwindow_);
+    event->SetHandled();
+    return;
+  }
+
+  // Left button case.
   if (event->flags() & ui::EF_IS_DOUBLE_CLICK &&
       component == HTCAPTION &&
       target->GetProperty(aura::client::kCanMaximizeKey)) {
