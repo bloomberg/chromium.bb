@@ -5,10 +5,13 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_MEDIA_AUDIO_INPUT_SYNC_WRITER_H_
 #define CONTENT_BROWSER_RENDERER_HOST_MEDIA_AUDIO_INPUT_SYNC_WRITER_H_
 
-#include "base/file_descriptor_posix.h"
 #include "base/process/process.h"
 #include "base/sync_socket.h"
 #include "media/audio/audio_input_controller.h"
+
+#if defined(OS_POSIX)
+#include "base/file_descriptor_posix.h"
+#endif
 
 namespace base {
 class SharedMemory;

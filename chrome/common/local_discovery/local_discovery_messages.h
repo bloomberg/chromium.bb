@@ -4,14 +4,18 @@
 
 // Defines local discovery messages between the browser and utility process.
 
+// Multiple-included file, no traditional include guard.
 #include <vector>
 
-#include "base/file_descriptor_posix.h"
 #include "chrome/common/local_discovery/service_discovery_client.h"
 #include "ipc/ipc_message_macros.h"
 
 #ifndef CHROME_COMMON_LOCAL_DISCOVERY_LOCAL_DISCOVERY_MESSAGES_H_
 #define CHROME_COMMON_LOCAL_DISCOVERY_LOCAL_DISCOVERY_MESSAGES_H_
+
+#if defined(OS_POSIX)
+#include "base/file_descriptor_posix.h"
+#endif
 
 #if defined(OS_POSIX)
 struct LocalDiscoveryMsg_SocketInfo {

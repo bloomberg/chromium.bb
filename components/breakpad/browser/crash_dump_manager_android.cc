@@ -55,22 +55,20 @@ CrashDumpManager::~CrashDumpManager() {
   BrowserChildProcessObserver::Remove(this);
 }
 
-int CrashDumpManager::CreateMinidumpFile(int child_process_id) {
+base::File CrashDumpManager::CreateMinidumpFile(int child_process_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::PROCESS_LAUNCHER));
   base::FilePath minidump_path;
   if (!base::CreateTemporaryFile(&minidump_path))
-    return base::kInvalidPlatformFileValue;
+    return base::File();
 
-  base::PlatformFileError error;
   // We need read permission as the minidump is generated in several phases
   // and needs to be read at some point.
-  int flags = base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ |
-      base::PLATFORM_FILE_WRITE;
-  base::PlatformFile minidump_file =
-      base::CreatePlatformFile(minidump_path, flags, NULL, &error);
-  if (minidump_file == base::kInvalidPlatformFileValue) {
+  int flags = base::File::FLAG_OPEN | base::File::FLAG_READ |
+              base::File::FLAG_WRITE;
+  base::File minidump_file(minidump_path, flags);
+  if (!minidump_file.IsValid()) {
     LOG(ERROR) << "Failed to create temporary file, crash won't be reported.";
-    return base::kInvalidPlatformFileValue;
+    return base::File();
   }
 
   {
@@ -78,7 +76,7 @@ int CrashDumpManager::CreateMinidumpFile(int child_process_id) {
     DCHECK(!ContainsKey(child_process_id_to_minidump_path_, child_process_id));
     child_process_id_to_minidump_path_[child_process_id] = minidump_path;
   }
-  return minidump_file;
+  return minidump_file.Pass();
 }
 
 // static
@@ -116,7 +114,7 @@ void CrashDumpManager::ProcessMinidump(const base::FilePath& minidump_path,
     base::DeleteFile(minidump_path, false);
     return;
   }
-  LOG(INFO) << "Crash minidump successfully generated: " <<
+  VLOG(1) << "Crash minidump successfully generated: " <<
       instance_->crash_dump_dir_.Append(filename).value();
 }
 

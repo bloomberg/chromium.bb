@@ -5,7 +5,6 @@
 #include "printing/pdf_metafile_skia.h"
 
 #include "base/containers/hash_tables.h"
-#include "base/file_descriptor_posix.h"
 #include "base/file_util.h"
 #include "base/metrics/histogram.h"
 #include "base/numerics/safe_conversions.h"
@@ -25,6 +24,10 @@
 
 #if defined(OS_MACOSX)
 #include "printing/pdf_metafile_cg_mac.h"
+#endif
+
+#if defined(OS_POSIX)
+#include "base/file_descriptor_posix.h"
 #endif
 
 namespace printing {

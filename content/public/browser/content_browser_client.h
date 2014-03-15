@@ -16,7 +16,6 @@
 #include "base/memory/scoped_vector.h"
 #include "base/values.h"
 #include "content/public/browser/certificate_request_result_type.h"
-#include "content/public/browser/file_descriptor_info.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/socket_permission_request.h"
 #include "content/public/common/window_container_type.h"
@@ -29,6 +28,10 @@
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 #include "base/posix/global_descriptors.h"
+#endif
+
+#if defined(OS_POSIX)
+#include "content/public/browser/file_descriptor_info.h"
 #endif
 
 class CommandLine;

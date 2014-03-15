@@ -7,8 +7,8 @@
 
 #include <map>
 
+#include "base/files/file.h"
 #include "base/files/file_path.h"
-#include "base/platform_file.h"
 #include "base/process/process.h"
 #include "base/synchronization/lock.h"
 #include "content/public/browser/browser_child_process_observer.h"
@@ -41,9 +41,9 @@ class CrashDumpManager : public content::BrowserChildProcessObserver,
 
   virtual ~CrashDumpManager();
 
-  // Returns a file descriptor that should be used to generate a minidump for
-  // the process |child_process_id|.
-  int CreateMinidumpFile(int child_process_id);
+  // Returns a file that should be used to generate a minidump for the process
+  // |child_process_id|.
+  base::File CreateMinidumpFile(int child_process_id);
 
  private:
   typedef std::map<int, base::FilePath> ChildProcessIDToMinidumpPath;
