@@ -158,6 +158,77 @@ bool BuildRtcpReceiverLogMessage(
   VLOG(3) << "rtcp log size: " << *rtcp_log_size;
   return *number_of_frames > 0;
 }
+
+// A class to build a string representing the NACK list in Cast message.
+//
+// The string will look like "23:3-6 25:1,5-6", meaning packets 3 to 6 in frame
+// 23 are being NACK'ed (i.e. they are missing from the receiver's point of
+// view) and packets 1, 5 and 6 are missing in frame 25. A frame that is
+// completely missing will show as "26:65535".
+class NackStringBuilder {
+ public:
+  NackStringBuilder()
+      : frame_count_(0),
+        packet_count_(0),
+        last_frame_id_(-1),
+        last_packet_id_(-1),
+        contiguous_sequence_(false) {}
+  ~NackStringBuilder() {}
+
+  bool Empty() const { return frame_count_ == 0; }
+
+  void PushFrame(int frame_id) {
+    DCHECK_GE(frame_id, 0);
+    if (frame_count_ > 0) {
+      if (frame_id == last_frame_id_) {
+        return;
+      }
+      if (contiguous_sequence_) {
+        stream_ << "-" << last_packet_id_;
+      }
+      stream_ << ", ";
+    }
+    stream_ << frame_id;
+    last_frame_id_ = frame_id;
+    packet_count_ = 0;
+    contiguous_sequence_ = false;
+    ++frame_count_;
+  }
+
+  void PushPacket(int packet_id) {
+    DCHECK_GE(last_frame_id_, 0);
+    DCHECK_GE(packet_id, 0);
+    if (packet_count_ == 0) {
+      stream_ << ":" << packet_id;
+    } else if (packet_id == last_packet_id_ + 1) {
+      contiguous_sequence_ = true;
+    } else {
+      if (contiguous_sequence_) {
+        stream_ << "-" << last_packet_id_;
+        contiguous_sequence_ = false;
+      }
+      stream_ << "," << packet_id;
+    }
+    ++packet_count_;
+    last_packet_id_ = packet_id;
+  }
+
+  std::string GetString() {
+    if (contiguous_sequence_) {
+      stream_ << "-" << last_packet_id_;
+      contiguous_sequence_ = false;
+    }
+    return stream_.str();
+  }
+
+ private:
+  std::ostringstream stream_;
+  int frame_count_;
+  int packet_count_;
+  int last_frame_id_;
+  int last_packet_id_;
+  bool contiguous_sequence_;
+};
 }  // namespace
 
 // TODO(mikhal): This is only used by the receiver. Consider renaming.
@@ -583,9 +654,11 @@ void RtcpSender::BuildCast(const RtcpCastMessage* cast,
   MissingFramesAndPacketsMap::const_iterator frame_it =
       cast->missing_frames_and_packets_.begin();
 
+  NackStringBuilder nack_string_builder;
   for (; frame_it != cast->missing_frames_and_packets_.end() &&
              number_of_loss_fields < max_number_of_loss_fields;
        ++frame_it) {
+    nack_string_builder.PushFrame(frame_it->first);
     // Iterate through all frames with missing packets.
     if (frame_it->second.empty()) {
       // Special case all packets in a frame is missing.
@@ -596,6 +669,7 @@ void RtcpSender::BuildCast(const RtcpCastMessage* cast,
       big_endian_nack_writer.WriteU8(static_cast<uint8>(frame_it->first));
       big_endian_nack_writer.WriteU16(kRtcpCastAllPacketsLost);
       big_endian_nack_writer.WriteU8(0);
+      nack_string_builder.PushPacket(kRtcpCastAllPacketsLost);
       ++number_of_loss_fields;
     } else {
       PacketIdSet::const_iterator packet_it = frame_it->second.begin();
@@ -610,12 +684,14 @@ void RtcpSender::BuildCast(const RtcpCastMessage* cast,
         // Write frame and packet id to buffer before calculating bitmask.
         big_endian_nack_writer.WriteU8(static_cast<uint8>(frame_it->first));
         big_endian_nack_writer.WriteU16(packet_id);
+        nack_string_builder.PushPacket(packet_id);
 
         uint8 bitmask = 0;
         ++packet_it;
         while (packet_it != frame_it->second.end()) {
           int shift = static_cast<uint8>(*packet_it - packet_id) - 1;
           if (shift >= 0 && shift <= 7) {
+            nack_string_builder.PushPacket(*packet_it);
             bitmask |= (1 << shift);
             ++packet_it;
           } else {
@@ -627,6 +703,10 @@ void RtcpSender::BuildCast(const RtcpCastMessage* cast,
       }
     }
   }
+  VLOG_IF(1, !nack_string_builder.Empty())
+      << "SSRC: " << cast->media_ssrc_
+      << ", ACK: " << cast->ack_frame_id_
+      << ", NACK: " << nack_string_builder.GetString();
   DCHECK_LE(number_of_loss_fields, kRtcpMaxCastLossFields);
   (*packet)[cast_size_pos] = static_cast<uint8>(4 + number_of_loss_fields);
   (*packet)[cast_loss_field_pos] = static_cast<uint8>(number_of_loss_fields);
