@@ -214,38 +214,39 @@ class ValidatorBase(page_test.PageTest):
                                screenshot, None)
       raise
 
+
 class TestBase(test.Test):
-  @staticmethod
-  def _AddTestCommandLineOptions(parser, option_group):
-    option_group.add_option('--build-revision',
+  @classmethod
+  def AddTestCommandLineArgs(cls, group):
+    group.add_option('--build-revision',
         help='Chrome revision being tested.',
         default="unknownrev")
-    option_group.add_option('--upload-refimg-to-cloud-storage',
+    group.add_option('--upload-refimg-to-cloud-storage',
         dest='upload_refimg_to_cloud_storage',
         action='store_true', default=False,
         help='Upload resulting images to cloud storage as reference images')
-    option_group.add_option('--download-refimg-from-cloud-storage',
+    group.add_option('--download-refimg-from-cloud-storage',
         dest='download_refimg_from_cloud_storage',
         action='store_true', default=False,
         help='Download reference images from cloud storage')
-    option_group.add_option('--refimg-cloud-storage-bucket',
+    group.add_option('--refimg-cloud-storage-bucket',
         help='Name of the cloud storage bucket to use for reference images; '
         'required with --upload-refimg-to-cloud-storage and '
         '--download-refimg-from-cloud-storage. Example: '
         '"chromium-gpu-archive/reference-images"')
-    option_group.add_option('--os-type',
+    group.add_option('--os-type',
         help='Type of operating system on which the pixel test is being run, '
         'used only to distinguish different operating systems with the same '
         'graphics card. Any value is acceptable, but canonical values are '
         '"win", "mac", and "linux", and probably, eventually, "chromeos" '
         'and "android").',
         default='')
-    option_group.add_option('--test-machine-name',
+    group.add_option('--test-machine-name',
         help='Name of the test machine. Specifying this argument causes this '
         'script to upload failure images and diffs to cloud storage directly, '
         'instead of relying on the archive_gpu_pixel_test_results.py script.',
         default='')
-    option_group.add_option('--generated-dir',
+    group.add_option('--generated-dir',
         help='Overrides the default on-disk location for generated test images '
         '(only used for local testing without a cloud storage account)',
         default=default_generated_data_dir)

@@ -11,10 +11,10 @@ class RecordPerArea(page_measurement.PageMeasurement):
   def __init__(self):
     super(RecordPerArea, self).__init__('', True)
 
-  def AddCommandLineOptions(self, parser):
-    parser.add_option('--start-wait-time', dest='start_wait_time',
+  def AddCommandLineArgs(self, parser):
+    parser.add_option('--start-wait-time', type='float',
                       default=2,
-                      help='Wait time before the benchmark is started ' +
+                      help='Wait time before the benchmark is started '
                       '(must be long enought to load all content)')
 
   def CustomizeBrowserOptions(self, options):
@@ -29,7 +29,7 @@ class RecordPerArea(page_measurement.PageMeasurement):
   def MeasurePage(self, page, tab, results):
     # Wait until the page has loaded and come to a somewhat steady state.
     # Needs to be adjusted for every device (~2 seconds for workstation).
-    time.sleep(float(self.options.start_wait_time))
+    time.sleep(self.options.start_wait_time)
 
     # Enqueue benchmark
     tab.ExecuteJavaScript("""

@@ -56,7 +56,18 @@ class MeasurementUnitTest(unittest.TestCase):
           return ps
 
       logging.info('running: %s', benchmark)
+
+      # Set the benchmark's default arguments.
       options = options_for_unittests.GetCopy()
       options.output_format = 'none'
+      parser = options.CreateParser()
+
+      benchmark.AddCommandLineArgs(parser)
+      test.AddCommandLineArgs(parser)
+      options.MergeDefaultValues(parser.get_default_values())
+
+      benchmark.ProcessCommandLineArgs(None, options)
+      test.ProcessCommandLineArgs(None, options)
+
       self.assertEqual(0, SinglePageBenchmark().Run(options),
                        msg='Failed: %s' % benchmark)

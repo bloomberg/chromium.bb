@@ -35,8 +35,6 @@ class PageCycler(page_measurement.PageMeasurement):
                            'page_cycler.js'), 'r') as f:
       self._page_cycler_js = f.read()
 
-    self._record_v8_object_stats = False
-    self._report_speed_index = False
     self._speedindex_metric = speedindex.SpeedIndexMetric()
     self._memory_metric = None
     self._power_metric = power.PowerMetric()
@@ -45,14 +43,9 @@ class PageCycler(page_measurement.PageMeasurement):
     self._cold_run_start_index = None
     self._has_loaded_page = collections.defaultdict(int)
 
-  def AddCommandLineOptions(self, parser):
-    # The page cyclers should default to 10 iterations. In order to change the
-    # default of an option, we must remove and re-add it.
-    # TODO: Remove this after transition to run_benchmark.
-    pageset_repeat_option = parser.get_option('--pageset-repeat')
-    pageset_repeat_option.default = 10
-    parser.remove_option('--pageset-repeat')
-    parser.add_option(pageset_repeat_option)
+  @classmethod
+  def AddCommandLineArgs(cls, parser):
+    parser.set_default('pageset_repeat', 10)
 
     parser.add_option('--v8-object-stats',
         action='store_true',
@@ -64,6 +57,11 @@ class PageCycler(page_measurement.PageMeasurement):
 
     parser.add_option('--cold-load-percent', type='int',
                       help='%d of page visits for which a cold load is forced')
+
+  @classmethod
+  def ProcessCommandLineArgs(cls, parser, args):
+    cls._record_v8_object_stats = args.v8_object_stats
+    cls._report_speed_index = args.report_speed_index
 
   def DidStartBrowser(self, browser):
     """Initialize metrics once right after the browser has been launched."""
@@ -101,14 +99,12 @@ class PageCycler(page_measurement.PageMeasurement):
     iometric.IOMetric.CustomizeBrowserOptions(options)
     options.AppendExtraBrowserArgs('--js-flags=--expose_gc')
 
-    if options.v8_object_stats:
-      self._record_v8_object_stats = True
+    if self._record_v8_object_stats:
       v8_object_stats.V8ObjectStatsMetric.CustomizeBrowserOptions(options)
-
-    if options.report_speed_index:
-      self._report_speed_index = True
+    if self._report_speed_index:
       self._speedindex_metric.CustomizeBrowserOptions(options)
 
+    # TODO: Move the rest of this method to ProcessCommandLineArgs.
     cold_runs_percent_set = (options.cold_load_percent != None)
     # Handle requests for cold cache runs
     if (cold_runs_percent_set and

@@ -78,7 +78,8 @@ class TimelineBasedMeasurement(page_measurement.PageMeasurement):
   def __init__(self):
     super(TimelineBasedMeasurement, self).__init__('smoothness')
 
-  def AddCommandLineOptions(self, parser):
+  @classmethod
+  def AddCommandLineArgs(cls, parser):
     parser.add_option(
         '--overhead-level', type='choice',
         choices=ALL_OVERHEAD_LEVELS,

@@ -22,19 +22,20 @@ class RasterizeAndRecord(page_measurement.PageMeasurement):
     self._metrics = None
     self._compositing_features_enabled = False
 
-  def AddCommandLineOptions(self, parser):
-    parser.add_option('--raster-record-repeat', dest='raster_record_repeat',
+  @classmethod
+  def AddCommandLineArgs(cls, parser):
+    parser.add_option('--raster-record-repeat', type='int',
                       default=20,
-                      help='Repetitions in raster and record loops.' +
-                      'Higher values reduce variance, but can cause' +
+                      help='Repetitions in raster and record loops.'
+                      'Higher values reduce variance, but can cause'
                       'instability (timeouts, event buffer overflows, etc.).')
-    parser.add_option('--start-wait-time', dest='start_wait_time',
+    parser.add_option('--start-wait-time', type='float',
                       default=5,
-                      help='Wait time before the benchmark is started ' +
+                      help='Wait time before the benchmark is started '
                       '(must be long enought to load all content)')
-    parser.add_option('--stop-wait-time', dest='stop_wait_time',
+    parser.add_option('--stop-wait-time', type='float',
                       default=15,
-                      help='Wait time before measurement is taken ' +
+                      help='Wait time before measurement is taken '
                       '(must be long enough to render one frame)')
 
   def CustomizeBrowserOptions(self, options):
@@ -43,8 +44,7 @@ class RasterizeAndRecord(page_measurement.PageMeasurement):
     # de-scheduled.
     options.AppendExtraBrowserArgs([
         '--enable-gpu-benchmarking',
-        '--slow-down-raster-scale-factor=%d' % int(
-            options.raster_record_repeat),
+        '--slow-down-raster-scale-factor=%d' % options.raster_record_repeat,
         # Enable impl-side-painting. Current version of benchmark only works for
         # this mode.
         '--enable-impl-side-painting',
@@ -72,7 +72,7 @@ class RasterizeAndRecord(page_measurement.PageMeasurement):
 
     # Wait until the page has loaded and come to a somewhat steady state.
     # Needs to be adjusted for every device (~2 seconds for workstation).
-    time.sleep(float(self.options.start_wait_time))
+    time.sleep(self.options.start_wait_time)
 
     # Render one frame before we start gathering a trace. On some pages, the
     # first frame requested has more variance in the number of pixels
@@ -84,7 +84,7 @@ class RasterizeAndRecord(page_measurement.PageMeasurement):
           'window.__rafFired  = true;'
         '});')
 
-    time.sleep(float(self.options.stop_wait_time))
+    time.sleep(self.options.stop_wait_time)
     tab.browser.StartTracing('webkit.console,benchmark', 60)
 
     tab.ExecuteJavaScript(
@@ -98,7 +98,7 @@ class RasterizeAndRecord(page_measurement.PageMeasurement):
     # Needs to be adjusted for every device and for different
     # raster_record_repeat counts.
     # TODO(ernstm): replace by call-back.
-    time.sleep(float(self.options.stop_wait_time))
+    time.sleep(self.options.stop_wait_time)
     tab.ExecuteJavaScript(
         'console.timeEnd("' + TIMELINE_MARKER + '")')
 

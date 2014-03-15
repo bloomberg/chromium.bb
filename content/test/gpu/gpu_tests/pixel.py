@@ -136,15 +136,13 @@ class Pixel(cloud_storage_test_base.TestBase):
   test = PixelValidator
   page_set = 'page_sets/pixel_tests.json'
 
-  @staticmethod
-  def AddTestCommandLineOptions(parser):
-    group = optparse.OptionGroup(parser, 'Pixel test options')
-    cloud_storage_test_base.TestBase._AddTestCommandLineOptions(parser, group)
+  @classmethod
+  def AddTestCommandLineArgs(cls, group):
+    super(Pixel, cls).AddTestCommandLineArgs(group)
     group.add_option('--reference-dir',
         help='Overrides the default on-disk location for reference images '
         '(only used for local testing without a cloud storage account)',
         default=default_reference_image_dir)
-    parser.add_option_group(group)
 
   def CreatePageSet(self, options):
     page_set = super(Pixel, self).CreatePageSet(options)

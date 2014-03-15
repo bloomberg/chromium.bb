@@ -80,13 +80,11 @@ class WebglConformance(test_module.Test):
   """Conformance with Khronos WebGL Conformance Tests"""
   test = WebglConformanceValidator
 
-  @staticmethod
-  def AddTestCommandLineOptions(parser):
-    group = optparse.OptionGroup(parser, 'WebGL conformance options')
+  @classmethod
+  def AddTestCommandLineArgs(cls, group):
     group.add_option('--webgl-conformance-version',
         help='Version of the WebGL conformance tests to run.',
         default='1.0.1')
-    parser.add_option_group(group)
 
   def CreatePageSet(self, options):
     tests = self._ParseTests('00_test_list.txt',

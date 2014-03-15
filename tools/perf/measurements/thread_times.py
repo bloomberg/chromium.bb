@@ -10,7 +10,8 @@ class ThreadTimes(page_measurement.PageMeasurement):
     super(ThreadTimes, self).__init__('smoothness')
     self._metric = None
 
-  def AddCommandLineOptions(self, parser):
+  @classmethod
+  def AddCommandLineArgs(cls, parser):
     parser.add_option('--report-silk-results', action='store_true',
                       help='Report results relevant to silk.')
     parser.add_option('--report-silk-details', action='store_true',

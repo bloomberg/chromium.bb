@@ -11,9 +11,16 @@ _JS = 'chrome.gpuBenchmarking.printToSkPicture("{0}");'
 
 
 class SkpicturePrinter(page_measurement.PageMeasurement):
-  def AddCommandLineOptions(self, parser):
+  @classmethod
+  def AddCommandLineArgs(cls, parser):
     parser.add_option('-s', '--skp-outdir',
                       help='Output directory for the SKP files')
+
+  @classmethod
+  def ProcessCommandLineArgs(cls, parser, args):
+    if not args.skp_outdir:
+      parser.error('Please specify --skp-outdir')
+    cls._skp_outdir = args.skp_outdir
 
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArgs(['--enable-gpu-benchmarking',
@@ -26,13 +33,9 @@ class SkpicturePrinter(page_measurement.PageMeasurement):
       raise page_measurement.MeasurementFailure(
           'SkPicture printing not supported on this platform')
 
-    skp_outdir = self.options.skp_outdir
-    if not skp_outdir:
-      raise Exception('Please specify --skp-outdir')
-    outpath = os.path.abspath(
-        os.path.join(skp_outdir,
-                     page.file_safe_name))
     # Replace win32 path separator char '\' with '\\'.
+    outpath = os.path.abspath(
+        os.path.join(self._skp_outdir, page.file_safe_name))
     js = _JS.format(outpath.replace('\\', '\\\\'))
     tab.EvaluateJavaScript(js)
     pictures = glob.glob(os.path.join(outpath, '*.skp'))

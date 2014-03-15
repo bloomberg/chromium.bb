@@ -76,12 +76,6 @@ class Maps(cloud_storage_test_base.TestBase):
   """Google Maps pixel tests."""
   test = MapsValidator
 
-  @staticmethod
-  def AddTestCommandLineOptions(parser):
-    group = optparse.OptionGroup(parser, 'Maps test options')
-    cloud_storage_test_base.TestBase._AddTestCommandLineOptions(parser, group)
-    parser.add_option_group(group)
-
   def CreateExpectations(self, page_set):
     return maps_expectations.MapsExpectations()
 

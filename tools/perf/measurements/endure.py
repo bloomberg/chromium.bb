@@ -53,14 +53,8 @@ class Endure(page_measurement.PageMeasurement):
     self._iterations = 0
     self._last_sample_iterations = 0
 
-    # Interval between stats sampling. One of these attributes will be set when
-    # the perf stats interval option is parsed. The other shall remain as None.
-    self._interval_seconds = None
-    self._interval_iterations = None
-
-  def AddCommandLineOptions(self, parser):
-    # TODO(tdu): When ProcessCommandLine is added to replace this method,
-    # move the logic in _ParseIntervalOption there to ProcessCommandLine.
+  @classmethod
+  def AddCommandLineArgs(cls, parser):
     group = optparse.OptionGroup(parser, 'Endure options')
     group.add_option('--perf-stats-interval',
                      dest='perf_stats_interval',
@@ -70,6 +64,23 @@ class Endure(page_measurement.PageMeasurement):
                           'seconds (specified by appending \'s\') or in number '
                           'of iterations')
     parser.add_option_group(group)
+
+  @classmethod
+  def ProcessCommandLineArgs(cls, parser, args):
+    """Parses the --perf-stats-interval option that was passed in."""
+    cls._interval_seconds = None
+    cls._interval_iterations = None
+
+    match = re.match('([0-9]+)([sS]?)$', args.perf_stats_interval)
+    if not match:
+      parser.error('Invalid value for --perf-stats-interval: %s' %
+                   args.perf_stats_interval)
+
+    if match.group(2):
+      cls._interval_seconds = int(match.group(1))
+    else:
+      cls._interval_iterations = int(match.group(1))
+    assert cls._interval_seconds or cls._interval_iterations
 
   def DidStartBrowser(self, browser):
     """Saves the Browser object. Called after the browser is started."""
@@ -95,11 +106,6 @@ class Endure(page_measurement.PageMeasurement):
 
   def MeasurePage(self, page, tab, results):
     """Takes a sample and adds a result if enough time has passed."""
-    # Parse the interval option, setting either or seconds or iterations.
-    # This is done here because self.options is not set when any of the above
-    # methods are run.
-    self._ParseIntervalOption()
-
     # Check whether the sample interval is specified in seconds or iterations,
     # and take a sample if it's time.
     self._iterations += 1
@@ -117,19 +123,6 @@ class Endure(page_measurement.PageMeasurement):
       if iterations_elapsed >= self._interval_iterations:
         self._SampleStats(tab, results, iterations=self._iterations)
         self._last_sample_iterations = self._iterations
-
-  def _ParseIntervalOption(self):
-    """Parses the --perf-stats-interval option that was passed in."""
-    if self._interval_seconds or self._interval_iterations:
-      return
-    interval = self.options.perf_stats_interval
-    match = re.match('([0-9]+)([sS]?)$', interval)
-    assert match, ('Invalid value for --perf-stats-interval: %s' % interval)
-    if match.group(2):
-      self._interval_seconds = int(match.group(1))
-    else:
-      self._interval_iterations = int(match.group(1))
-    assert self._interval_seconds or self._interval_iterations
 
   def _SampleStats(self, tab, results, seconds=None, iterations=None):
     """Records information and add it to the results."""

@@ -1,19 +1,22 @@
 # Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+
 import unittest
 
-from measurements import page_cycler
 from telemetry.core import browser_options
 from telemetry.page import page_measurement_results
 from telemetry.unittest import simple_mock
 
+from measurements import page_cycler
+
+
 # Allow testing protected members in the unit test.
 # pylint: disable=W0212
 
-# Used instead of simple_mock.MockObject so that the precise order and
-# number of calls need not be specified.
 class MockMemoryMetric(object):
+  """Used instead of simple_mock.MockObject so that the precise order and
+  number of calls need not be specified."""
   def __init__(self):
     pass
 
@@ -29,13 +32,15 @@ class MockMemoryMetric(object):
   def AddSummaryResults(self, tab, results):
     pass
 
-# Used to mock loading a page.
+
 class FakePage(object):
+  """Used to mock loading a page."""
   def __init__(self, url):
     self.url = url
 
-# Used to mock a browser tab.
+
 class FakeTab(object):
+  """Used to mock a browser tab."""
   def __init__(self):
     self.clear_cache_calls = 0
   def ClearCache(self, force=False):
@@ -46,14 +51,16 @@ class FakeTab(object):
   def WaitForJavaScriptExpression(self, _, __):
     pass
 
+
 class PageCyclerUnitTest(unittest.TestCase):
 
-  def setupCycler(self, args, setup_memory_module=False):
+  def SetUpCycler(self, args, setup_memory_module=False):
     cycler = page_cycler.PageCycler()
     options = browser_options.BrowserFinderOptions()
     parser = options.CreateParser()
-    cycler.AddCommandLineOptions(parser)
+    cycler.AddCommandLineArgs(parser)
     parser.parse_args(args)
+    cycler.ProcessCommandLineArgs(parser, options)
     cycler.CustomizeBrowserOptions(options)
 
     if setup_memory_module:
@@ -75,17 +82,17 @@ class PageCyclerUnitTest(unittest.TestCase):
     return cycler
 
   def testOptionsColdLoadNoArgs(self):
-    cycler = self.setupCycler([])
+    cycler = self.SetUpCycler([])
 
     self.assertEquals(cycler._cold_run_start_index, 10)
 
   def testOptionsColdLoadPagesetRepeat(self):
-    cycler = self.setupCycler(['--pageset-repeat=20', '--page-repeat=2'])
+    cycler = self.SetUpCycler(['--pageset-repeat=20', '--page-repeat=2'])
 
     self.assertEquals(cycler._cold_run_start_index, 40)
 
   def testOptionsColdLoadRequested(self):
-    cycler = self.setupCycler(['--pageset-repeat=21', '--page-repeat=2',
+    cycler = self.SetUpCycler(['--pageset-repeat=21', '--page-repeat=2',
                                '--cold-load-percent=40'])
 
     self.assertEquals(cycler._cold_run_start_index, 26)
@@ -93,7 +100,7 @@ class PageCyclerUnitTest(unittest.TestCase):
   def testIncompatibleOptions(self):
     exception_seen = False
     try:
-      self.setupCycler(['--pageset-repeat=20s', '--page-repeat=2s',
+      self.SetUpCycler(['--pageset-repeat=20s', '--page-repeat=2s',
                         '--cold-load-percent=40'])
     except Exception as e:
       exception_seen = True
@@ -103,7 +110,7 @@ class PageCyclerUnitTest(unittest.TestCase):
     self.assertTrue(exception_seen)
 
   def testCacheHandled(self):
-    cycler = self.setupCycler(['--pageset-repeat=5',
+    cycler = self.SetUpCycler(['--pageset-repeat=5',
                                '--cold-load-percent=50'],
                               True)
 
@@ -133,7 +140,7 @@ class PageCyclerUnitTest(unittest.TestCase):
       cycler.DidNavigateToPage(page, tab)
 
   def testColdWarm(self):
-    cycler = self.setupCycler(['--pageset-repeat=3'], True)
+    cycler = self.SetUpCycler(['--pageset-repeat=3'], True)
     pages = [FakePage("http://fakepage1.com"), FakePage("http://fakepage2.com")]
     tab = FakeTab()
     results = page_measurement_results.PageMeasurementResults()

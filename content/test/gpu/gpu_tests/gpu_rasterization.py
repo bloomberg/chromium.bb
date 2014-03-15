@@ -63,16 +63,11 @@ class GpuRasterizationValidator(cloud_storage_test_base.ValidatorBase):
         page.expectations,
         device_pixel_ratio)
 
+
 class GpuRasterization(cloud_storage_test_base.TestBase):
   """Tests that GPU rasterization produces valid content"""
   test = GpuRasterizationValidator
   page_set = 'page_sets/gpu_rasterization_tests.json'
-
-  @staticmethod
-  def AddTestCommandLineOptions(parser):
-    group = optparse.OptionGroup(parser, 'GpuRasterization test options')
-    cloud_storage_test_base.TestBase._AddTestCommandLineOptions(parser, group)
-    parser.add_option_group(group)
 
   def CreatePageSet(self, options):
     page_set = super(GpuRasterization, self).CreatePageSet(options)
