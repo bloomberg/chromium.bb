@@ -154,8 +154,7 @@ class BASE_EXPORT SharedMemory {
   // Maps the shared memory into the caller's address space.
   // Returns true on success, false otherwise.  The memory address
   // is accessed via the memory() accessor.  The mapped address is guaranteed to
-  // have an alignment of at least MAP_MINIMUM_ALIGNMENT. This method will fail
-  // if this object is currently mapped.
+  // have an alignment of at least MAP_MINIMUM_ALIGNMENT.
   bool Map(size_t bytes) {
     return MapAt(0, bytes);
   }

@@ -164,9 +164,6 @@ bool SharedMemory::MapAt(off_t offset, size_t bytes) {
   if (bytes > static_cast<size_t>(std::numeric_limits<int>::max()))
     return false;
 
-  if (memory_)
-    return false;
-
   memory_ = MapViewOfFile(mapped_file_,
                           read_only_ ? FILE_MAP_READ : FILE_MAP_READ |
                               FILE_MAP_WRITE,

@@ -91,9 +91,6 @@ bool SharedMemory::MapAt(off_t offset, size_t bytes) {
   if (bytes > static_cast<size_t>(std::numeric_limits<int>::max()))
     return false;
 
-  if (memory_)
-    return false;
-
   memory_ = mmap(NULL, bytes, PROT_READ | (read_only_ ? 0 : PROT_WRITE),
                  MAP_SHARED, mapped_file_, offset);
 
