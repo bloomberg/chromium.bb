@@ -10,6 +10,17 @@
 #include "content/public/common/url_constants.h"
 #include "ui/base/clipboard/clipboard.h"
 
+// static
+const ui::OSExchangeData::CustomFormat&
+BookmarkNodeData::GetBookmarkCustomFormat() {
+  CR_DEFINE_STATIC_LOCAL(
+      ui::OSExchangeData::CustomFormat,
+      format,
+      (ui::Clipboard::GetFormatType(BookmarkNodeData::kClipboardFormatString)));
+
+  return format;
+}
+
 void BookmarkNodeData::Write(Profile* profile, ui::OSExchangeData* data) const {
   DCHECK(data);
 
@@ -26,7 +37,7 @@ void BookmarkNodeData::Write(Profile* profile, ui::OSExchangeData* data) const {
   Pickle data_pickle;
   WriteToPickle(profile, &data_pickle);
 
-  data->SetPickledData(GetFormatType(), data_pickle);
+  data->SetPickledData(GetBookmarkCustomFormat(), data_pickle);
 }
 
 bool BookmarkNodeData::Read(const ui::OSExchangeData& data) {
@@ -34,9 +45,9 @@ bool BookmarkNodeData::Read(const ui::OSExchangeData& data) {
 
   profile_path_.clear();
 
-  if (data.HasCustomFormat(GetFormatType())) {
+  if (data.HasCustomFormat(GetBookmarkCustomFormat())) {
     Pickle drag_data_pickle;
-    if (data.GetPickledData(GetFormatType(), &drag_data_pickle)) {
+    if (data.GetPickledData(GetBookmarkCustomFormat(), &drag_data_pickle)) {
       if (!ReadFromPickle(&drag_data_pickle))
         return false;
     }

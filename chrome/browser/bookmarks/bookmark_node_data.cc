@@ -15,6 +15,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 
+const char* BookmarkNodeData::kClipboardFormatString =
+    "chromium/x-bookmark-entries";
+
 BookmarkNodeData::Element::Element() : is_url(false), id_(0) {
 }
 
@@ -96,15 +99,6 @@ bool BookmarkNodeData::Element::ReadFromPickle(Pickle* pickle,
 
 // BookmarkNodeData -----------------------------------------------------------
 
-// static
-const ui::Clipboard::FormatType& BookmarkNodeData::GetFormatType() {
-  CR_DEFINE_STATIC_LOCAL(
-      ui::Clipboard::FormatType,
-      type,
-      (ui::Clipboard::GetFormatType("chromium/x-bookmark-entries")));
-  return type;
-}
-
 BookmarkNodeData::BookmarkNodeData() {
 }
 
@@ -124,7 +118,7 @@ BookmarkNodeData::~BookmarkNodeData() {
 // static
 bool BookmarkNodeData::ClipboardContainsBookmarks() {
   return ui::Clipboard::GetForCurrentThread()->IsFormatAvailable(
-      GetFormatType(),
+      ui::Clipboard::GetFormatType(kClipboardFormatString),
       ui::CLIPBOARD_TYPE_COPY_PASTE);
 }
 #endif
@@ -186,14 +180,16 @@ void BookmarkNodeData::WriteToClipboard(ui::ClipboardType type) {
 
   Pickle pickle;
   WriteToPickle(NULL, &pickle);
-  scw.WritePickledData(pickle, GetFormatType());
+  scw.WritePickledData(pickle,
+                       ui::Clipboard::GetFormatType(kClipboardFormatString));
 }
 
 bool BookmarkNodeData::ReadFromClipboard(ui::ClipboardType type) {
   DCHECK_EQ(type, ui::CLIPBOARD_TYPE_COPY_PASTE);
   std::string data;
   ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
-  clipboard->ReadData(GetFormatType(), &data);
+  clipboard->ReadData(ui::Clipboard::GetFormatType(kClipboardFormatString),
+                      &data);
 
   if (!data.empty()) {
     Pickle pickle(data.data(), data.size());

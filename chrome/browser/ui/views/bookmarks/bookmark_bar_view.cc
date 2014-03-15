@@ -785,7 +785,7 @@ bool BookmarkBarView::GetDropFormats(
   if (!model_ || !model_->loaded())
     return false;
   *formats = ui::OSExchangeData::URL;
-  custom_formats->insert(BookmarkNodeData::GetFormatType());
+  custom_formats->insert(BookmarkNodeData::GetBookmarkCustomFormat());
   return true;
 }
 
