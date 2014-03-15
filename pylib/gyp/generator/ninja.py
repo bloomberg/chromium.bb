@@ -1095,11 +1095,14 @@ class NinjaWriter:
       extra_bindings.append(('lib',
                             gyp.common.EncodePOSIXShellArgument(output)))
       if self.flavor != 'win':
-        link_file_list = output + '.rsp'
+        link_file_list = output
         if self.is_mac_bundle:
           # 'Dependency Framework.framework/Versions/A/Dependency Framework' ->
           # 'Dependency Framework.framework.rsp'
-          link_file_list = self.xcode_settings.GetWrapperName() + '.rsp'
+          link_file_list = self.xcode_settings.GetWrapperName()
+        if arch:
+          link_file_list += '.' + arch
+        link_file_list += '.rsp'
         # If an rspfile contains spaces, ninja surrounds the filename with
         # quotes around it and then passes it to open(), creating a file with
         # quotes in its name (and when looking for the rsp file, the name

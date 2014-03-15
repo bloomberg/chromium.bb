@@ -39,8 +39,9 @@ if sys.platform == 'darwin':
     # Build all targets except 'exe_32_64_no_sources' that does build
     # but should not cause error when generating ninja files
     targets = [
-        'static_32_64', 'shared_32_64', 'module_32_64', 'exe_32_64',
-        'exe_32_64_bundle', 'precompiled_prefix_header_mm_32_64',
+        'static_32_64', 'shared_32_64', 'shared_32_64_bundle',
+        'module_32_64', 'module_32_64_bundle',
+        'exe_32_64', 'exe_32_64_bundle', 'precompiled_prefix_header_mm_32_64',
     ]
 
     test.run_gyp('test-archs-multiarch.gyp', chdir='archs')
@@ -56,6 +57,17 @@ if sys.platform == 'darwin':
         'shared_32_64', chdir='archs', type=test.SHARED_LIB)
     test.must_exist(result_file)
     TestMac.CheckFileType(test, result_file, ['i386', 'x86_64'])
+
+    result_file = test.built_file_path('My Framework.framework/My Framework',
+                                       chdir='archs')
+    test.must_exist(result_file)
+    TestMac.CheckFileType(test, result_file, ['i386', 'x86_64'])
+    # Check that symbol "_x" made it into both versions of the binary:
+    if not all(['D _x' in subprocess.check_output(
+        ['nm', '-arch', arch, result_file]) for arch in ['i386', 'x86_64']]):
+      # This can only flakily fail, due to process ordering issues. If this
+      # does fail flakily, then something's broken, it's not the test at fault.
+      test.fail_test()
 
     result_file = test.built_file_path(
         'exe_32_64', chdir='archs', type=test.EXECUTABLE)
