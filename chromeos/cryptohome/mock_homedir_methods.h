@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_CRYPTOHOME_MOCK_HOMEDIR_METHODS_H_
-#define CHROME_BROWSER_CHROMEOS_LOGIN_CRYPTOHOME_MOCK_HOMEDIR_METHODS_H_
+#ifndef CHROMEOS_CRYPTOHOME_MOCK_HOMEDIR_METHODS_H_
+#define CHROMEOS_CRYPTOHOME_MOCK_HOMEDIR_METHODS_H_
 
 #include <string>
 
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "chrome/browser/chromeos/login/cryptohome/homedir_methods.h"
+#include "chromeos/cryptohome/homedir_methods.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace cryptohome {
 
-class MockHomedirMethods : public HomedirMethods {
+class CHROMEOS_EXPORT MockHomedirMethods : public HomedirMethods {
  public:
   MockHomedirMethods();
   virtual ~MockHomedirMethods();
@@ -55,4 +55,4 @@ class MockHomedirMethods : public HomedirMethods {
 
 }  // namespace cryptohome
 
-#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_CRYPTOHOME_MOCK_HOMEDIR_METHODS_H_
+#endif  // CHROMEOS_CRYPTOHOME_MOCK_HOMEDIR_METHODS_H_

@@ -74,8 +74,6 @@
         'browser/chromeos/input_method/mock_input_method_engine.h',
         'browser/chromeos/input_method/mock_input_method_manager.cc',
         'browser/chromeos/input_method/mock_input_method_manager.h',
-        'browser/chromeos/login/cryptohome/mock_homedir_methods.cc',
-        'browser/chromeos/login/cryptohome/mock_homedir_methods.h',
         'browser/chromeos/login/fake_login_utils.cc',
         'browser/chromeos/login/fake_login_utils.h',
         'browser/chromeos/login/fake_supervised_user_manager.cc',

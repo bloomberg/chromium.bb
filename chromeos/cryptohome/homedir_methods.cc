@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/login/cryptohome/homedir_methods.h"
+#include "chromeos/cryptohome/homedir_methods.h"
 
 #include "base/bind.h"
 #include "chromeos/dbus/cryptohome/key.pb.h"

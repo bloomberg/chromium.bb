@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_CRYPTOHOME_CRYPTOHOME_PARAMETERS_H_
-#define CHROME_BROWSER_CHROMEOS_LOGIN_CRYPTOHOME_CRYPTOHOME_PARAMETERS_H_
+#ifndef CHROMEOS_CRYPTOHOME_CRYPTOHOME_PARAMETERS_H_
+#define CHROMEOS_CRYPTOHOME_CRYPTOHOME_PARAMETERS_H_
 
 #include <string>
 #include <vector>
 
 #include "base/basictypes.h"
+#include "chromeos/chromeos_export.h"
 
 namespace cryptohome {
 
@@ -22,7 +23,7 @@ enum AuthKeyPrivileges {
 };
 
 // Identification of the user calling cryptohome method.
-struct Identification {
+struct CHROMEOS_EXPORT Identification {
   explicit Identification(const std::string& user_id) : user_id(user_id) {}
   std::string user_id;
 };
@@ -30,7 +31,7 @@ struct Identification {
 // Definition of the key (e.g. password) for the cryptohome.
 // It contains authorization data along with extra parameters like perimissions
 // associated with this key.
-struct KeyDefinition {
+struct CHROMEOS_EXPORT KeyDefinition {
   KeyDefinition(const std::string& key,
                 const std::string& label,
                 int /*AuthKeyPrivileges*/ privileges);
@@ -47,7 +48,7 @@ struct KeyDefinition {
 };
 
 // Authorization attempt data for user.
-struct Authorization {
+struct CHROMEOS_EXPORT Authorization {
   Authorization(const std::string& key, const std::string& label);
   explicit Authorization(const KeyDefinition& key);
   std::string key;
@@ -55,7 +56,7 @@ struct Authorization {
 };
 
 // Parameters for Mount call.
-class MountParameters {
+class CHROMEOS_EXPORT MountParameters {
  public:
   explicit MountParameters(bool ephemeral);
   ~MountParameters();
@@ -71,4 +72,4 @@ class MountParameters {
 
 }  // namespace cryptohome
 
-#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_CRYPTOHOME_CRYPTOHOME_PARAMETERS_H_
+#endif  // CHROMEOS_CRYPTOHOME_CRYPTOHOME_PARAMETERS_H_

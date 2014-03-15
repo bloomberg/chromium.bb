@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_CRYPTOHOME_HOMEDIR_METHODS_H_
-#define CHROME_BROWSER_CHROMEOS_LOGIN_CRYPTOHOME_HOMEDIR_METHODS_H_
+#ifndef CHROMEOS_CRYPTOHOME_HOMEDIR_METHODS_H_
+#define CHROMEOS_CRYPTOHOME_HOMEDIR_METHODS_H_
 
 #include <string>
 
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
-#include "chrome/browser/chromeos/login/cryptohome/cryptohome_parameters.h"
-#include "chromeos/attestation/attestation_constants.h"
+#include "chromeos/chromeos_export.h"
+#include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace cryptohome {
 // This class manages calls to Cryptohome service's home directory methods:
 // Mount, CheckKey, Add/UpdateKey.
-class HomedirMethods {
+class CHROMEOS_EXPORT HomedirMethods {
  public:
   // A callback type which is called back on the UI thread when the results of
   // method calls are ready.
@@ -89,4 +89,4 @@ class HomedirMethods {
 
 }  // namespace cryptohome
 
-#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_CRYPTOHOME_HOMEDIR_METHODS_H_
+#endif  // CHROMEOS_CRYPTOHOME_HOMEDIR_METHODS_H_
