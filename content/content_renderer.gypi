@@ -304,6 +304,8 @@
     'renderer/menu_item_builder.h',
     'renderer/mhtml_generator.cc',
     'renderer/mhtml_generator.h',
+    'renderer/mojo/mojo_render_process_observer.cc',
+    'renderer/mojo/mojo_render_process_observer.h',
     'renderer/mouse_lock_dispatcher.cc',
     'renderer/mouse_lock_dispatcher.h',
     'renderer/notification_provider.cc',
@@ -575,8 +577,10 @@
       ],
     }],
     # TODO(sky): temporary until mojo runs on mac.
-    ['OS=="mac"', {
+    ['OS=="mac" or OS=="ios"', {
       'sources!': [
+        'renderer/mojo/mojo_render_process_observer.cc',
+        'renderer/mojo/mojo_render_process_observer.h',
         'renderer/web_ui_mojo.cc',
         'renderer/web_ui_mojo.h',
         'renderer/web_ui_mojo_context_state.cc',

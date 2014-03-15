@@ -146,6 +146,11 @@
 #include "content/renderer/npapi/plugin_channel_host.h"
 #endif
 
+// TODO(sky): remove ifdef, temporary until mac sorted out.
+#if !defined(OS_MACOSX)
+#include "content/renderer/mojo/mojo_render_process_observer.h"
+#endif
+
 using base::ThreadRestrictions;
 using blink::WebDocument;
 using blink::WebFrame;
@@ -392,6 +397,12 @@ void RenderThreadImpl::Init() {
   AddFilter((new IndexedDBMessageFilter(thread_safe_sender()))->GetFilter());
 
   AddFilter((new EmbeddedWorkerContextMessageFilter())->GetFilter());
+
+// TODO(sky): remove ifdef, temporary until mac sorted out.
+#if !defined(OS_MACOSX)
+  // MojoRenderProcessObserver deletes itself as necessary.
+  new MojoRenderProcessObserver(this);
+#endif
 
   GetContentClient()->renderer()->RenderThreadStarted();
 
