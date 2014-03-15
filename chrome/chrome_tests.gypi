@@ -2818,6 +2818,15 @@
         '..',
         '<(SHARED_INTERMEDIATE_DIR)',
       ],
+      'conditions': [
+        ['enable_pepper_cdms==1', {
+          'dependencies': [
+            # Runtime dependencies.
+            '../media/media.gyp:clearkeycdmadapter',
+            '../third_party/widevine/cdm/widevine_cdm.gyp:widevinecdmadapter',
+          ],
+        }],
+      ],
     },  # target 'load_library_perf_tests'
   ],
   'conditions': [
