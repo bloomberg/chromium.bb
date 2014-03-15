@@ -477,7 +477,6 @@ TEST(SharedMemoryTest, MapAt) {
 
   SharedMemory memory;
   ASSERT_TRUE(memory.CreateAndMapAnonymous(kDataSize));
-  ASSERT_TRUE(memory.Map(kDataSize));
   uint32* ptr = static_cast<uint32*>(memory.memory());
   ASSERT_NE(ptr, static_cast<void*>(NULL));
 
@@ -495,6 +494,19 @@ TEST(SharedMemoryTest, MapAt) {
   for (size_t i = offset; i < kCount; ++i) {
     EXPECT_EQ(ptr[i - offset], i);
   }
+}
+
+TEST(SharedMemoryTest, MapTwice) {
+  const uint32 kDataSize = 1024;
+  SharedMemory memory;
+  bool rv = memory.CreateAndMapAnonymous(kDataSize);
+  EXPECT_TRUE(rv);
+
+  void* old_address = memory.memory();
+
+  rv = memory.Map(kDataSize);
+  EXPECT_FALSE(rv);
+  EXPECT_EQ(old_address, memory.memory());
 }
 
 #if defined(OS_POSIX)
