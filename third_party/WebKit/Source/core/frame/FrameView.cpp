@@ -1079,8 +1079,8 @@ void FrameView::repaintTree(RenderObject* root)
             }
         }
 
-        if (!didFullRepaint && renderer->shouldRepaintOverflowIfNeeded())
-            renderer->repaintOverflow();
+        if (!didFullRepaint)
+            renderer->repaintOverflowIfNeeded();
 
         // Repaint any scrollbars if there is a scrollable area for this renderer.
         if (renderer->enclosingLayer()) {

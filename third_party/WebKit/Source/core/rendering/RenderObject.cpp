@@ -1613,6 +1613,12 @@ void RenderObject::repaintOverflow()
 {
 }
 
+void RenderObject::repaintOverflowIfNeeded()
+{
+    if (shouldRepaintOverflow())
+        repaintOverflow();
+}
+
 bool RenderObject::checkForRepaint() const
 {
     return !document().view()->needsFullRepaint() && !hasLayer() && everHadLayout();

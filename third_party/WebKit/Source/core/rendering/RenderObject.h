@@ -808,6 +808,7 @@ public:
         const LayoutRect& oldBounds, const LayoutRect& oldOutlineBox, const LayoutRect* newBoundsPtr = 0, const LayoutRect* newOutlineBoxPtr = 0);
 
     virtual void repaintOverflow();
+    void repaintOverflowIfNeeded();
 
     bool checkForRepaint() const;
     bool checkForRepaintDuringLayout() const;
@@ -975,7 +976,7 @@ public:
 
     bool shouldDoFullRepaintAfterLayout() const { return m_bitfields.shouldDoFullRepaintAfterLayout(); }
     void setShouldDoFullRepaintAfterLayout(bool b) { m_bitfields.setShouldDoFullRepaintAfterLayout(b); }
-    bool shouldRepaintOverflowIfNeeded() const { return m_bitfields.shouldRepaintOverflowIfNeeded(); }
+    bool shouldRepaintOverflow() const { return m_bitfields.shouldRepaintOverflow(); }
 
     void clearRepaintRects()
     {
@@ -983,7 +984,7 @@ public:
         setOldRepaintRect(LayoutRect());
 
         setShouldDoFullRepaintAfterLayout(false);
-        setShouldRepaintOverflowIfNeeded(false);
+        setShouldRepaintOverflow(false);
         setLayoutDidGetCalled(false);
     }
 
@@ -1102,7 +1103,7 @@ private:
             // Holding the layout bits until after repaint would remove the need
             // for this flag.
             , m_shouldDoFullRepaintAfterLayout(false)
-            , m_shouldRepaintOverflowIfNeeded(false)
+            , m_shouldRepaintOverflow(false)
             , m_needsPositionedMovementLayout(false)
             , m_normalChildNeedsLayout(false)
             , m_posChildNeedsLayout(false)
@@ -1137,7 +1138,7 @@ private:
         // 32 bits have been used in the first word, and 3 in the second.
         ADD_BOOLEAN_BITFIELD(selfNeedsLayout, SelfNeedsLayout);
         ADD_BOOLEAN_BITFIELD(shouldDoFullRepaintAfterLayout, ShouldDoFullRepaintAfterLayout);
-        ADD_BOOLEAN_BITFIELD(shouldRepaintOverflowIfNeeded, ShouldRepaintOverflowIfNeeded);
+        ADD_BOOLEAN_BITFIELD(shouldRepaintOverflow, ShouldRepaintOverflow);
         ADD_BOOLEAN_BITFIELD(needsPositionedMovementLayout, NeedsPositionedMovementLayout);
         ADD_BOOLEAN_BITFIELD(normalChildNeedsLayout, NormalChildNeedsLayout);
         ADD_BOOLEAN_BITFIELD(posChildNeedsLayout, PosChildNeedsLayout);
@@ -1211,7 +1212,7 @@ private:
     void setNeedsSimplifiedNormalFlowLayout(bool b) { m_bitfields.setNeedsSimplifiedNormalFlowLayout(b); }
     void setIsDragging(bool b) { m_bitfields.setIsDragging(b); }
     void setEverHadLayout(bool b) { m_bitfields.setEverHadLayout(b); }
-    void setShouldRepaintOverflowIfNeeded(bool b) { m_bitfields.setShouldRepaintOverflowIfNeeded(b); }
+    void setShouldRepaintOverflow(bool b) { m_bitfields.setShouldRepaintOverflow(b); }
 
 private:
     // Store state between styleWillChange and styleDidChange

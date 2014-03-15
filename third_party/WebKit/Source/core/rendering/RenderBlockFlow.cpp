@@ -446,7 +446,7 @@ inline bool RenderBlockFlow::layoutBlockFlow(bool relayoutChildren, LayoutUnit &
     bool didFullRepaint = repainter.repaintAfterLayout();
     if (!didFullRepaint && m_repaintLogicalTop != m_repaintLogicalBottom && (style()->visibility() == VISIBLE || enclosingLayer()->hasVisibleContent())) {
         if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled())
-            setShouldRepaintOverflowIfNeeded(true);
+            setShouldRepaintOverflow(true);
         else
             repaintOverflow();
     }
