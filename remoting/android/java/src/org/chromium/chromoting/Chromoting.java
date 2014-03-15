@@ -64,7 +64,7 @@ public class Chromoting extends Activity implements JniInterface.ConnectionListe
     private HostListLoader mHostListLoader;
 
     /** List of hosts. */
-    private HostInfo[] mHosts;
+    private HostInfo[] mHosts = new HostInfo[0];
 
     /** Refresh button. */
     private MenuItem mRefreshButton;
@@ -352,7 +352,7 @@ public class Chromoting extends Activity implements JniInterface.ConnectionListe
     private void updateUi() {
         mRefreshButton.setEnabled(mAccount != null);
 
-        if (mHosts == null) {
+        if (mHosts.length == 0) {
             mGreeting.setText(getString(R.string.host_list_empty_android));
             mList.setAdapter(null);
             return;

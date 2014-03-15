@@ -133,27 +133,30 @@ public class HostListLoader {
         ArrayList<HostInfo> hostList = new ArrayList<HostInfo>();
         try {
             JSONObject data = new JSONObject(response).getJSONObject("data");
-            JSONArray hostsJson = data.getJSONArray("items");
-            Log.i("hostlist", "Received host listing from directory server");
+            if (data.has("items")) {
+                JSONArray hostsJson = data.getJSONArray("items");
+                Log.i("hostlist", "Received host listing from directory server");
 
-            int index = 0;
-            while (!hostsJson.isNull(index)) {
-                JSONObject hostJson = hostsJson.getJSONObject(index);
-                // If a host is only recently registered, it may be missing some of the keys below.
-                // It should still be visible in the list, even though a connection attempt will
-                // fail because of the missing keys. The failed attempt will trigger reloading of
-                // the host-list (once crbug.com/304719 is fixed), by which time the keys will
-                // hopefully be present, and the retried connection can succeed.
-                HostInfo host = new HostInfo(
-                        hostJson.getString("hostName"),
-                        hostJson.getString("hostId"),
-                        hostJson.optString("jabberId"),
-                        hostJson.optString("publicKey"),
-                        hostJson.optString("status").equals("ONLINE"));
-                hostList.add(host);
-                ++index;
+                int index = 0;
+                while (!hostsJson.isNull(index)) {
+                    JSONObject hostJson = hostsJson.getJSONObject(index);
+                    // If a host is only recently registered, it may be missing some of the keys
+                    // below. It should still be visible in the list, even though a connection
+                    // attempt will fail because of the missing keys. The failed attempt will
+                    // trigger reloading of the host-list, by which time the keys will hopefully be
+                    // present, and the retried connection can succeed.
+                    HostInfo host = new HostInfo(
+                            hostJson.getString("hostName"),
+                            hostJson.getString("hostId"),
+                            hostJson.optString("jabberId"),
+                            hostJson.optString("publicKey"),
+                            hostJson.optString("status").equals("ONLINE"));
+                    hostList.add(host);
+                    ++index;
+                }
             }
         } catch (JSONException ex) {
+            Log.e("hostlist", "Error parsing host list response: ", ex);
             postError(callback, Error.UNEXPECTED_RESPONSE);
             return;
         }
