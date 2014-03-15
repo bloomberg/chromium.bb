@@ -39,6 +39,7 @@
 #include "core/events/MouseEvent.h"
 #include "core/events/TouchEvent.h"
 #include "core/events/TouchEventContext.h"
+#include "core/html/HTMLMediaElement.h"
 #include "core/svg/SVGElementInstance.h"
 #include "core/svg/SVGUseElement.h"
 
@@ -86,7 +87,7 @@ static inline EventDispatchBehavior determineDispatchBehavior(Event* event, Shad
     if (Element* element = FullscreenElementStack::currentFullScreenElementFrom(target->toNode()->document())) {
         // FIXME: We assume that if the full screen element is a media element that it's
         // the video-only full screen. Both here and elsewhere. But that is probably wrong.
-        if (element->isMediaElement() && shadowRoot && shadowRoot->host() == element)
+        if (isHTMLMediaElement(*element) && shadowRoot && shadowRoot->host() == element)
             return StayInsideShadowDOM;
     }
 

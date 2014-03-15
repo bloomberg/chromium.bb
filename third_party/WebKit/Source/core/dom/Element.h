@@ -439,8 +439,6 @@ public:
 
     DOMStringMap& dataset();
 
-    virtual bool isMediaElement() const { return false; }
-
 #if ENABLE(INPUT_SPEECH)
     virtual bool isInputFieldSpeechButtonElement() const { return false; }
 #endif

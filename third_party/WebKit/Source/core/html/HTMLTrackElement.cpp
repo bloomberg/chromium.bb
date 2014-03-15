@@ -267,8 +267,8 @@ const AtomicString& HTMLTrackElement::mediaElementCrossOriginAttribute() const
 HTMLMediaElement* HTMLTrackElement::mediaElement() const
 {
     Element* parent = parentElement();
-    if (parent && parent->isMediaElement())
-        return toHTMLMediaElement(parentNode());
+    if (isHTMLMediaElement(parent))
+        return toHTMLMediaElement(parent);
     return 0;
 }
 

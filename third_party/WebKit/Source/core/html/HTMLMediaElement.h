@@ -285,8 +285,6 @@ protected:
     DisplayMode displayMode() const { return m_displayMode; }
     virtual void setDisplayMode(DisplayMode mode) { m_displayMode = mode; }
 
-    virtual bool isMediaElement() const OVERRIDE FINAL { return true; }
-
     void setControllerInternal(PassRefPtr<MediaController>);
 
     bool ignoreTrackDisplayUpdateRequests() const { return m_ignoreTrackDisplayUpdate > 0; }
@@ -545,7 +543,12 @@ struct ValueToString<TextTrackCue*> {
 
 inline bool isHTMLMediaElement(const Node& node)
 {
-    return node.isElementNode() && toElement(node).isMediaElement();
+    return isHTMLAudioElement(node) || isHTMLVideoElement(node);
+}
+
+inline bool isHTMLMediaElement(const Node* node)
+{
+    return node && isHTMLMediaElement(*node);
 }
 
 DEFINE_ELEMENT_TYPE_CASTS_WITH_FUNCTION(HTMLMediaElement);

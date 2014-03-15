@@ -35,6 +35,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLFrameOwnerElement.h"
+#include "core/html/HTMLMediaElement.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/rendering/RenderFullScreen.h"
@@ -189,7 +190,7 @@ void FullscreenElementStack::requestFullScreenForElement(Element* element, unsig
         //   - an activation behavior is currently being processed whose click event was trusted, or
         //   - the event listener for a trusted click event is being handled.
         // FIXME: Does this need to null-check settings()?
-        if (!UserGestureIndicator::processingUserGesture() && (!element->isMediaElement() || document()->settings()->mediaFullscreenRequiresUserGesture()))
+        if (!UserGestureIndicator::processingUserGesture() && (!isHTMLMediaElement(*element) || document()->settings()->mediaFullscreenRequiresUserGesture()))
             break;
 
         // There is a previously-established user preference, security risk, or platform limitation.

@@ -88,7 +88,7 @@ void FullscreenController::didEnterFullScreen()
             if (RuntimeEnabledFeatures::overlayFullscreenVideoEnabled()) {
                 Element* element = FullscreenElementStack::currentFullScreenElementFrom(*doc);
                 ASSERT(element);
-                if (element->isMediaElement() && m_webViewImpl->layerTreeView())
+                if (isHTMLMediaElement(*element) && m_webViewImpl->layerTreeView())
                     m_webViewImpl->layerTreeView()->setHasTransparentBackground(true);
             }
         }
@@ -157,7 +157,7 @@ void FullscreenController::enterFullScreenForElement(WebCore::Element* element)
     }
 
     if (RuntimeEnabledFeatures::overlayFullscreenVideoEnabled()
-        && element && element->isMediaElement()
+        && isHTMLMediaElement(element)
         // FIXME: There is no embedder-side handling in layout test mode.
         && !isRunningLayoutTest()) {
         HTMLMediaElement* mediaElement = toHTMLMediaElement(element);
@@ -181,7 +181,7 @@ void FullscreenController::exitFullScreenForElement(WebCore::Element* element)
     if (m_isCancelingFullScreen)
         return;
     if (RuntimeEnabledFeatures::overlayFullscreenVideoEnabled()
-        && element && element->isMediaElement()
+        && isHTMLMediaElement(element)
         // FIXME: There is no embedder-side handling in layout test mode.
         && !isRunningLayoutTest()) {
         HTMLMediaElement* mediaElement = toHTMLMediaElement(element);
