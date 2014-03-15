@@ -52,6 +52,16 @@ static bool isSkippableComponentForInvalidation(const CSSSelector& selector)
         || selector.m_match == CSSSelector::Id
         || selector.isAttributeSelector())
         return true;
+    if (selector.m_match == CSSSelector::PseudoElement) {
+        switch (selector.m_pseudoType) {
+        case CSSSelector::PseudoBefore:
+        case CSSSelector::PseudoAfter:
+        case CSSSelector::PseudoBackdrop:
+            return true;
+        default:
+            return false;
+        }
+    }
     if (selector.m_match != CSSSelector::PseudoClass)
         return false;
     switch (selector.pseudoType()) {
