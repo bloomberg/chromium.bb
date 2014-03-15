@@ -6,6 +6,7 @@
 #include "chrome/browser/signin/mutable_profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/signin_error_controller.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/signin/core/webdata/token_web_data.h"
@@ -343,5 +344,5 @@ TEST_F(MutableProfileOAuth2TokenServiceTest, FetchTransientError) {
       oauth2_service_->StartRequest(kEmail, scope_list, &consumer_));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(GoogleServiceAuthError::AuthErrorNone(),
-      oauth2_service_->signin_global_error()->GetLastAuthError());
+      oauth2_service_->signin_error_controller()->auth_error());
 }

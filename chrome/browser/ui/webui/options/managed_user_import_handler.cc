@@ -10,7 +10,6 @@
 #include "base/prefs/pref_service.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/managed_mode/managed_user_constants.h"
 #include "chrome/browser/managed_mode/managed_user_shared_settings_service.h"
 #include "chrome/browser/managed_mode/managed_user_shared_settings_service_factory.h"
@@ -19,13 +18,13 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/signin/signin_global_error.h"
+#include "chrome/browser/signin/profile_oauth2_token_service.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/signin_error_controller.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -48,7 +47,8 @@ scoped_ptr<base::ListValue> GetAvatarIcons() {
 namespace options {
 
 ManagedUserImportHandler::ManagedUserImportHandler()
-    : weak_ptr_factory_(this) {}
+    : observer_(this),
+      weak_ptr_factory_(this) {}
 
 ManagedUserImportHandler::~ManagedUserImportHandler() {
   Profile* profile = Profile::FromWebUI(web_ui());
@@ -85,8 +85,6 @@ void ManagedUserImportHandler::GetLocalizedValues(
 
 void ManagedUserImportHandler::InitializeHandler() {
   Profile* profile = Profile::FromWebUI(web_ui());
-  registrar_.Add(this, chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED,
-                 content::Source<Profile>(profile));
   if (!profile->IsManaged()) {
     ManagedUserSyncService* sync_service =
         ManagedUserSyncServiceFactory::GetForProfile(profile);
@@ -103,24 +101,15 @@ void ManagedUserImportHandler::InitializeHandler() {
                  profile));
     }
   }
+
+  observer_.Add(ProfileOAuth2TokenServiceFactory::GetForProfile(profile)->
+                    signin_error_controller());
 }
 
 void ManagedUserImportHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("requestManagedUserImportUpdate",
       base::Bind(&ManagedUserImportHandler::RequestManagedUserImportUpdate,
                  base::Unretained(this)));
-}
-
-void ManagedUserImportHandler::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED) {
-    SigninGlobalError* error =
-        SigninGlobalError::GetForProfile(Profile::FromWebUI(web_ui()));
-    if (content::Details<SigninGlobalError>(details).ptr() == error)
-      FetchManagedUsers();
-  }
 }
 
 void ManagedUserImportHandler::OnManagedUsersChanged() {
@@ -226,10 +215,11 @@ bool ManagedUserImportHandler::IsAccountConnected() const {
 
 bool ManagedUserImportHandler::HasAuthError() const {
   Profile* profile = Profile::FromWebUI(web_ui());
-  SigninGlobalError* signin_global_error =
-      SigninGlobalError::GetForProfile(profile);
-  GoogleServiceAuthError::State state =
-      signin_global_error->GetLastAuthError().state();
+  SigninErrorController* error_controller =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile)->
+          signin_error_controller();
+
+  GoogleServiceAuthError::State state = error_controller->auth_error().state();
 
   return state == GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS ||
       state == GoogleServiceAuthError::USER_NOT_SIGNED_UP ||
@@ -242,6 +232,10 @@ void ManagedUserImportHandler::OnSharedSettingChanged(
     const std::string& key) {
   if (key == managed_users::kChromeAvatarIndex)
     FetchManagedUsers();
+}
+
+void ManagedUserImportHandler::OnErrorChanged() {
+  FetchManagedUsers();
 }
 
 }  // namespace options

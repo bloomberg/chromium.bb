@@ -19,8 +19,10 @@
 namespace extensions {
 
 AccountTracker::AccountTracker(Profile* profile) : profile_(profile) {
-  ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)->AddObserver(this);
-  SigninGlobalError::GetForProfile(profile_)->AddProvider(this);
+  ProfileOAuth2TokenService* service =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
+  service->AddObserver(this);
+  service->signin_error_controller()->AddProvider(this);
   SigninManagerFactory::GetForProfile(profile_)->AddObserver(this);
 }
 
@@ -29,16 +31,18 @@ AccountTracker::~AccountTracker() {}
 void AccountTracker::ReportAuthError(const std::string& account_id,
                                      const GoogleServiceAuthError& error) {
   account_errors_.insert(make_pair(account_id, error));
-  SigninGlobalError::GetForProfile(profile_)->AuthStatusChanged();
+  ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)->
+      signin_error_controller()->AuthStatusChanged();
   UpdateSignInState(account_id, false);
 }
 
 void AccountTracker::Shutdown() {
   STLDeleteValues(&user_info_requests_);
   SigninManagerFactory::GetForProfile(profile_)->RemoveObserver(this);
-  SigninGlobalError::GetForProfile(profile_)->RemoveProvider(this);
-  ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)->
-      RemoveObserver(this);
+  ProfileOAuth2TokenService* service =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
+  service->signin_error_controller()->RemoveProvider(this);
+  service->RemoveObserver(this);
 }
 
 void AccountTracker::AddObserver(Observer* observer) {
@@ -111,7 +115,8 @@ void AccountTracker::NotifySignInChanged(const AccountState& account) {
 
 void AccountTracker::ClearAuthError(const std::string& account_key) {
   account_errors_.erase(account_key);
-  SigninGlobalError::GetForProfile(profile_)->AuthStatusChanged();
+  ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)->
+      signin_error_controller()->AuthStatusChanged();
 }
 
 void AccountTracker::UpdateSignInState(const std::string& account_key,

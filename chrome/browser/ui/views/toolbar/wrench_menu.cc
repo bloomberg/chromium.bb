@@ -1202,7 +1202,8 @@ void WrenchMenu::Observe(int type,
     case chrome::NOTIFICATION_GLOBAL_ERRORS_CHANGED:
       // A change in the global errors list can add or remove items from the
       // menu. Close the menu to avoid have a stale menu on-screen.
-      root_->Cancel();
+      if (root_)
+        root_->Cancel();
       break;
     default:
       NOTREACHED();

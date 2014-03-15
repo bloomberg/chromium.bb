@@ -36,7 +36,9 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/signin/chrome_signin_client.h"
-#include "chrome/browser/signin/signin_global_error.h"
+#include "chrome/browser/signin/profile_oauth2_token_service.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/signin_error_controller.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_names_io_thread.h"
@@ -1418,9 +1420,13 @@ void OneClickSigninHelper::DidStopLoading(
       //   sync was already setup, simply navigate back to the settings page.
       ProfileSyncService* sync_service =
           ProfileSyncServiceFactory::GetForProfile(profile);
+      SigninErrorController* error_controller =
+          ProfileOAuth2TokenServiceFactory::GetForProfile(profile)->
+              signin_error_controller();
+
       OneClickSigninSyncStarter::StartSyncMode start_mode =
           source_ == signin::SOURCE_SETTINGS ?
-              (SigninGlobalError::GetForProfile(profile)->HasMenuItem() &&
+              (error_controller->HasError() &&
                sync_service && sync_service->HasSyncSetupCompleted()) ?
                   OneClickSigninSyncStarter::SHOW_SETTINGS_WITHOUT_CONFIGURE :
                   OneClickSigninSyncStarter::CONFIGURE_SYNC_FIRST :

@@ -926,19 +926,35 @@ Signing in anyway will merge Chromium information like bookmarks, history, and o
         </message>
       </if>
 
-      <!-- Sync sign-in global error message-->
-      <message name="IDS_SYNC_PASSPHRASE_ERROR_BUBBLE_VIEW_MESSAGE" desc="Message in the sync error bubble view when the user needs to update their sync passphrase.">
-        Chromium could not sync your data. Please update your Sync passphrase.
-      </message>
-      <message name="IDS_SYNC_SIGN_IN_ERROR_BUBBLE_VIEW_MESSAGE" desc="Message in the sync error bubble view when the user's sign-in credentials are out of date.">
-        Chromium could not sync your data because your account sign-in details are out of date.
-      </message>
-      <message name="IDS_SYNC_UNAVAILABLE_ERROR_BUBBLE_VIEW_MESSAGE" desc="Message in the sync error bubble view when sync is not available for their domain.">
-        Chromium could not sync your data because Sync is not available for your domain.
-      </message>
-      <message name="IDS_SYNC_OTHER_SIGN_IN_ERROR_BUBBLE_VIEW_MESSAGE" desc="Message in the sync error bubble view when there's an error signing in.">
-        Chromium could not sync your data due to an error signing in.
-      </message>
+      <!-- Sync/sign-in error messages -->
+      <if expr="not chromeos">
+        <message name="IDS_SYNC_PASSPHRASE_ERROR_BUBBLE_VIEW_MESSAGE" desc="Message in the sync error bubble view when the user needs to update their sync passphrase.">
+          Chromium could not sync your data. Please update your Sync passphrase.
+        </message>
+        <message name="IDS_SYNC_SIGN_IN_ERROR_BUBBLE_VIEW_MESSAGE" desc="Message in the sign-in error bubble view when the user's sign-in credentials are out of date.">
+          Chromium could not sync your data because your account sign-in details are out of date.
+        </message>
+        <message name="IDS_SYNC_UNAVAILABLE_ERROR_BUBBLE_VIEW_MESSAGE" desc="Message in the sign-in error bubble view when sync is not available for their domain.">
+          Chromium could not sync your data because Sync is not available for your domain.
+        </message>
+        <message name="IDS_SYNC_OTHER_SIGN_IN_ERROR_BUBBLE_VIEW_MESSAGE" desc="Message in the sign-in error bubble view when there's an error signing in.">
+          Chromium could not sync your data due to an error signing in.
+        </message>
+      </if>
+      <if expr="chromeos">
+        <message name="IDS_SYNC_PASSPHRASE_ERROR_BUBBLE_VIEW_MESSAGE" desc="Message in the sync error bubble view when the user needs to update their sync passphrase.">
+          Chromium OS could not sync your data. Please update your Sync passphrase.
+        </message>
+        <message name="IDS_SYNC_SIGN_IN_ERROR_BUBBLE_VIEW_MESSAGE" desc="Message in the sign-in error notification when the user's sign-in credentials are out of date.">
+          Chromium OS could not sync your data because your account sign-in details are out of date.
+        </message>
+        <message name="IDS_SYNC_UNAVAILABLE_ERROR_BUBBLE_VIEW_MESSAGE" desc="Message in the sign-in error notification when sync is not available for their domain.">
+          Chromium OS could not sync your data because Sync is not available for your domain.
+        </message>
+        <message name="IDS_SYNC_OTHER_SIGN_IN_ERROR_BUBBLE_VIEW_MESSAGE" desc="Message in the sign-in error notification when there's an error signing in.">
+          Chromium OS could not sync your data due to an error signing in.
+        </message>
+      </if>
 
       <message name="IDS_OPTIONS_PASSWORDS_MAC_WARNING" desc="The warning for OS X that passwords are shared across profiles in the keychain.">
         On Mac, passwords are saved to your Keychain and may be accessed or synced by other Chromium users sharing this OS X account.

@@ -89,18 +89,18 @@ MutableProfileOAuth2TokenService::AccountInfo::AccountInfo(
     last_auth_error_(GoogleServiceAuthError::NONE) {
   DCHECK(token_service_);
   DCHECK(!account_id_.empty());
-  token_service_->signin_global_error()->AddProvider(this);
+  token_service_->signin_error_controller()->AddProvider(this);
 }
 
 MutableProfileOAuth2TokenService::AccountInfo::~AccountInfo() {
-  token_service_->signin_global_error()->RemoveProvider(this);
+  token_service_->signin_error_controller()->RemoveProvider(this);
 }
 
 void MutableProfileOAuth2TokenService::AccountInfo::SetLastAuthError(
     const GoogleServiceAuthError& error) {
   if (error.state() != last_auth_error_.state()) {
     last_auth_error_ = error;
-    token_service_->signin_global_error()->AuthStatusChanged();
+    token_service_->signin_error_controller()->AuthStatusChanged();
   }
 }
 

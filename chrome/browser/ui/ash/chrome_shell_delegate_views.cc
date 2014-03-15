@@ -13,7 +13,9 @@
 #include "chrome/browser/accessibility/accessibility_events.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/signin/signin_error_notifier_factory_ash.h"
 #include "chrome/browser/ui/ash/chrome_new_window_delegate.h"
 #include "chrome/browser/ui/ash/session_state_delegate_views.h"
 #include "chrome/browser/ui/browser.h"
@@ -194,6 +196,10 @@ void ChromeShellDelegate::Observe(int type,
                                   const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_ASH_SESSION_STARTED: {
+      Profile* profile = ProfileManager::GetActiveUserProfile();
+      // Start the error notifier service to show auth notifications.
+      SigninErrorNotifierFactory::GetForProfile(profile);
+
 #if defined(OS_WIN)
       // If we are launched to service a windows 8 search request then let the
       // IPC which carries the search string create the browser and initiate
@@ -219,7 +225,7 @@ void ChromeShellDelegate::Observe(int type,
             dummy,
             chrome::startup::IS_NOT_FIRST_RUN);
         startup_impl.Launch(
-            ProfileManager::GetActiveUserProfile(),
+            profile,
             std::vector<GURL>(),
             true,
             chrome::HOST_DESKTOP_TYPE_ASH);
@@ -232,7 +238,7 @@ void ChromeShellDelegate::Observe(int type,
         }
 
         chrome::ScopedTabbedBrowserDisplayer displayer(
-            ProfileManager::GetActiveUserProfile(),
+            profile,
             chrome::HOST_DESKTOP_TYPE_ASH);
         chrome::AddTabAt(displayer.browser(), GURL(), -1, true);
       }

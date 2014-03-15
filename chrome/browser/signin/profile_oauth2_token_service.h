@@ -9,7 +9,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/linked_ptr.h"
-#include "chrome/browser/signin/signin_global_error.h"
+#include "chrome/browser/signin/signin_error_controller.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
@@ -20,7 +20,6 @@ class URLRequestContextGetter;
 class GoogleServiceAuthError;
 class Profile;
 class SigninClient;
-class SigninGlobalError;
 
 // ProfileOAuth2TokenService is a class that retrieves
 // OAuth2 access tokens for a given set of scopes using the OAuth2 login
@@ -69,12 +68,12 @@ class ProfileOAuth2TokenService : public OAuth2TokenService {
   // Revokes all credentials handled by the object.
   virtual void RevokeAllCredentials();
 
-  SigninGlobalError* signin_global_error() {
-    return signin_global_error_.get();
+  SigninErrorController* signin_error_controller() {
+    return signin_error_controller_.get();
   }
 
-  const SigninGlobalError* signin_global_error() const {
-    return signin_global_error_.get();
+  const SigninErrorController* signin_error_controller() const {
+    return signin_error_controller_.get();
   }
 
   SigninClient* client() const { return client_; }
@@ -102,11 +101,8 @@ class ProfileOAuth2TokenService : public OAuth2TokenService {
   // The profile with which this instance was initialized, or NULL.
   Profile* profile_;
 
-  // Used to show auth errors in the wrench menu. The SigninGlobalError is
-  // different than most GlobalErrors in that its lifetime is controlled by
-  // ProfileOAuth2TokenService (so we can expose a reference for use in the
-  // wrench menu).
-  scoped_ptr<SigninGlobalError> signin_global_error_;
+  // Used to expose auth errors to the UI.
+  scoped_ptr<SigninErrorController> signin_error_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileOAuth2TokenService);
 };

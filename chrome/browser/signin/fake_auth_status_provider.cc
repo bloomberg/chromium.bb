@@ -4,14 +4,14 @@
 
 #include "chrome/browser/signin/fake_auth_status_provider.h"
 
-FakeAuthStatusProvider::FakeAuthStatusProvider(SigninGlobalError* error)
-  : global_error_(error),
+FakeAuthStatusProvider::FakeAuthStatusProvider(SigninErrorController* error)
+  : error_provider_(error),
     auth_error_(GoogleServiceAuthError::AuthErrorNone()) {
-  global_error_->AddProvider(this);
+  error_provider_->AddProvider(this);
 }
 
 FakeAuthStatusProvider::~FakeAuthStatusProvider() {
-  global_error_->RemoveProvider(this);
+  error_provider_->RemoveProvider(this);
 }
 
 std::string FakeAuthStatusProvider::GetAccountId() const {
@@ -26,5 +26,5 @@ void FakeAuthStatusProvider::SetAuthError(const std::string& account_id,
                                           const GoogleServiceAuthError& error) {
   account_id_ = account_id;
   auth_error_ = error;
-  global_error_->AuthStatusChanged();
+  error_provider_->AuthStatusChanged();
 }

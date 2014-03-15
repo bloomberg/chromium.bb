@@ -11,7 +11,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/signin/signin_global_error.h"
+#include "chrome/browser/signin/profile_oauth2_token_service.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/signin_error_controller.h"
 #include "chrome/browser/signin/signin_manager_base.h"
 #include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -169,8 +171,8 @@ MessageType GetStatusInfo(ProfileSyncService* service,
     if (service) {
       // Since there is no auth in progress, check for an auth error first.
       AuthError auth_error =
-          SigninGlobalError::GetForProfile(service->profile())->
-              GetLastAuthError();
+          ProfileOAuth2TokenServiceFactory::GetForProfile(service->profile())->
+              signin_error_controller()->auth_error();
       if (auth_error.state() != AuthError::NONE) {
         if (status_label && link_label)
           signin_ui_util::GetStatusLabelsForAuthError(
@@ -232,8 +234,8 @@ MessageType GetStatusInfo(ProfileSyncService* service,
       ProfileSyncService::Status status;
       service->QueryDetailedSyncStatus(&status);
       AuthError auth_error =
-          SigninGlobalError::GetForProfile(
-              service->profile())->GetLastAuthError();
+          ProfileOAuth2TokenServiceFactory::GetForProfile(service->profile())->
+              signin_error_controller()->auth_error();
       if (status_label) {
         status_label->assign(
             l10n_util::GetStringUTF16(IDS_SYNC_NTP_SETUP_IN_PROGRESS));

@@ -84,6 +84,14 @@
 #include "ui/native_theme/native_theme_aura.h"
 #endif
 
+#if !defined(OS_CHROMEOS)
+#include "chrome/browser/signin/signin_global_error_factory.h"
+#endif
+
+#if defined(USE_ASH)
+#include "ash/shell.h"
+#endif
+
 using base::UserMetricsAction;
 using content::WebContents;
 
@@ -109,6 +117,16 @@ bool IsStreamlinedHostedAppsEnabled() {
   return CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableStreamlinedHostedApps);
 }
+
+#if !defined(OS_CHROMEOS)
+bool HasAshShell() {
+#if defined(USE_ASH)
+  return ash::Shell::HasInstance();
+#else
+  return false;
+#endif  // USE_ASH
+}
+#endif  // OS_CHROMEOS
 
 }  // namespace
 
@@ -244,6 +262,13 @@ void ToolbarView::Init() {
   AddChildView(app_menu_);
 
   LoadImages();
+
+  // Start signin global error service now so we badge the menu correctly
+  // in non-Ash.
+#if !defined(OS_CHROMEOS)
+  if (!HasAshShell())
+    SigninGlobalErrorFactory::GetForProfile(browser_->profile());
+#endif  // OS_CHROMEOS
 
   // Add any necessary badges to the menu item based on the system state.
   // Do this after |app_menu_| has been added as a bubble may be shown that

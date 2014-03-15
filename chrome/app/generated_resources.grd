@@ -12230,12 +12230,15 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Just now
       </message>
 
-      <!-- Sync sign in global error message-->
-      <message name="IDS_SIGNIN_ERROR_BUBBLE_VIEW_TITLE" desc="Title in the sign-in error bubble view.">
+      <!-- Sync/sign-in error messages -->
+      <message name="IDS_SIGNIN_ERROR_BUBBLE_VIEW_TITLE" desc="Title in the sign-in error bubble view/notification.">
         Sign-in Error
       </message>
       <message name="IDS_SYNC_ERROR_BUBBLE_VIEW_TITLE" desc="Title in the sync error bubble view.">
         Sync Error
+      </message>
+      <message name="IDS_SIGNIN_ERROR_NOTIFICATION_TITLE_MULTIPROFILE" desc="Title in the sign-in error notification when multiple users are logged in.">
+        Sign-in Error: <ph name="USER_NAME">$1<ex>foo@example.com</ex></ph>
       </message>
 
       <if expr="not use_titlecase">

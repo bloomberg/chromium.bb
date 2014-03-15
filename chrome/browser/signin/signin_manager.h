@@ -46,7 +46,6 @@ class GaiaAuthFetcher;
 class ProfileIOData;
 class PrefService;
 class SigninAccountIdHelper;
-class SigninGlobalError;
 class SigninClient;
 
 class SigninManager : public SigninManagerBase,

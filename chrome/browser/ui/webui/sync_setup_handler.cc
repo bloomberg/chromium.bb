@@ -25,7 +25,7 @@
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/signin_global_error.h"
+#include "chrome/browser/signin/signin_error_controller.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -510,12 +510,12 @@ void SyncSetupHandler::DisplayGaiaLoginInNewTabOrWindow() {
                               signin::HISTOGRAM_SHOWN,
                               signin::HISTOGRAM_MAX);
 
-    SigninGlobalError* signin_error =
+    SigninErrorController* error_controller =
         ProfileOAuth2TokenServiceFactory::GetForProfile(browser->profile())->
-            signin_global_error();
-    DCHECK(signin_error->HasMenuItem());
+            signin_error_controller();
+    DCHECK(error_controller->HasError());
     url = signin::GetReauthURL(browser->profile(),
-                               signin_error->GetAccountIdOfLastAuthError());
+                               error_controller->error_account_id());
   } else {
     url = signin::GetPromoURL(signin::SOURCE_SETTINGS, true);
   }
@@ -854,7 +854,8 @@ void SyncSetupHandler::OpenSyncSetup() {
       SigninManagerFactory::GetForProfile(GetProfile());
 
   if (signin->GetAuthenticatedUsername().empty() ||
-      SigninGlobalError::GetForProfile(GetProfile())->HasMenuItem()) {
+      ProfileOAuth2TokenServiceFactory::GetForProfile(GetProfile())->
+          signin_error_controller()->HasError()) {
     // User is not logged in (cases 1-2), or login has been specially requested
     // because previously working credentials have expired (case 3). Close sync
     // setup including any visible overlays, and display the gaia auth page.

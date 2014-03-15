@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/observer_list.h"
-#include "chrome/browser/signin/signin_global_error.h"
+#include "chrome/browser/signin/signin_error_controller.h"
 #include "chrome/browser/signin/signin_manager_base.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
 #include "google_apis/gaia/oauth2_token_service.h"
@@ -37,7 +37,7 @@ class AccountIdFetcher;
 // 3. SignIn follows Add, and there will be a SignOut between SignIn & Remove.
 // 4. If there is no primary account, there are no other accounts.
 class AccountTracker : public OAuth2TokenService::Observer,
-                       public SigninGlobalError::AuthStatusProvider,
+                       public SigninErrorController::AuthStatusProvider,
                        public SigninManagerBase::Observer {
  public:
   explicit AccountTracker(Profile* profile);

@@ -7,7 +7,10 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/profile_oauth2_token_service.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_global_error.h"
+#include "chrome/browser/signin/signin_global_error_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -37,11 +40,16 @@ GlobalError* GetSignedInServiceError(Profile* profile) {
 std::vector<GlobalError*> GetSignedInServiceErrors(Profile* profile) {
   std::vector<GlobalError*> errors;
 
+  // On Chrome OS, we don't use SigninGlobalError. Other platforms use
+  // SigninGlobalError to show sign-in errors in the toolbar menu.
+#if !defined(OS_CHROMEOS)
   // Auth errors have the highest priority - after that, individual service
   // errors.
-  SigninGlobalError* signin_error = SigninGlobalError::GetForProfile(profile);
+  SigninGlobalError* signin_error =
+      SigninGlobalErrorFactory::GetForProfile(profile);
   if (signin_error && signin_error->HasMenuItem())
     errors.push_back(signin_error);
+#endif
 
   // No auth error - now try other services. Currently the list is just hard-
   // coded but in the future if we add more we can create some kind of
@@ -98,7 +106,8 @@ void GetStatusLabelsForAuthError(Profile* profile,
     link_label->assign(l10n_util::GetStringUTF16(IDS_SYNC_RELOGIN_LINK_LABEL));
 
   const GoogleServiceAuthError::State state =
-      SigninGlobalError::GetForProfile(profile)->GetLastAuthError().state();
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile)->
+          signin_error_controller()->auth_error().state();
   switch (state) {
     case GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS:
     case GoogleServiceAuthError::SERVICE_ERROR:

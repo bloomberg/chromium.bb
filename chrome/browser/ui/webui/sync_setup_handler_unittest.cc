@@ -857,7 +857,8 @@ TEST_F(SyncSetupHandlerTest, ShowSigninOnAuthError) {
   SetupInitializedProfileSyncService();
   mock_signin_->SetAuthenticatedUsername(kTestUser);
   FakeAuthStatusProvider provider(
-      SigninGlobalError::GetForProfile(profile_.get()));
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile_.get())->
+          signin_error_controller());
   provider.SetAuthError(kTestUser, error_);
   EXPECT_CALL(*mock_pss_, IsSyncEnabledAndLoggedIn())
       .WillRepeatedly(Return(true));

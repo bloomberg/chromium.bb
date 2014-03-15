@@ -36,7 +36,7 @@ class MutableProfileOAuth2TokenService : public ProfileOAuth2TokenService,
   void RevokeCredentials(const std::string& account_id);
 
  protected:
-  class AccountInfo : public SigninGlobalError::AuthStatusProvider {
+  class AccountInfo : public SigninErrorController::AuthStatusProvider {
    public:
     AccountInfo(ProfileOAuth2TokenService* token_service,
                 const std::string& account_id,
@@ -50,7 +50,7 @@ class MutableProfileOAuth2TokenService : public ProfileOAuth2TokenService,
 
     void SetLastAuthError(const GoogleServiceAuthError& error);
 
-    // SigninGlobalError::AuthStatusProvider implementation.
+    // SigninErrorController::AuthStatusProvider implementation.
     virtual std::string GetAccountId() const OVERRIDE;
     virtual GoogleServiceAuthError GetAuthStatus() const OVERRIDE;
 

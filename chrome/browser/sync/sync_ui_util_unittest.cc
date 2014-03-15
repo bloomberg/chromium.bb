@@ -8,6 +8,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/fake_auth_status_provider.h"
 #include "chrome/browser/signin/fake_signin_manager.h"
+#include "chrome/browser/signin/profile_oauth2_token_service.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/browser/sync/sync_ui_util.h"
@@ -88,6 +90,7 @@ TEST_F(SyncUIUtilTest, PassphraseGlobalError) {
               .WillRepeatedly(Return(true));
   EXPECT_CALL(service, IsPassphraseRequiredForDecryption())
               .WillRepeatedly(Return(true));
+
   VerifySyncGlobalErrorResult(
       &service, signin, GoogleServiceAuthError::NONE, true, true);
 }
@@ -331,9 +334,9 @@ TEST_F(SyncUIUtilTest, DistinctCasesReportUniqueMessageSets) {
     EXPECT_CALL(service, GetAuthError()).WillRepeatedly(ReturnRef(error));
     FakeSigninManagerForSyncUIUtilTest signin(profile.get());
     signin.SetAuthenticatedUsername(kTestUser);
-    scoped_ptr<FakeAuthStatusProvider> provider(
-        new FakeAuthStatusProvider(
-            SigninGlobalError::GetForProfile(profile.get())));
+    scoped_ptr<FakeAuthStatusProvider> provider(new FakeAuthStatusProvider(
+        ProfileOAuth2TokenServiceFactory::GetForProfile(profile.get())->
+            signin_error_controller()));
     GetDistinctCase(service, &signin, provider.get(), idx);
     base::string16 status_label;
     base::string16 link_label;
@@ -371,9 +374,9 @@ TEST_F(SyncUIUtilTest, HtmlNotIncludedInStatusIfNotRequested) {
     EXPECT_CALL(service, GetAuthError()).WillRepeatedly(ReturnRef(error));
     FakeSigninManagerForSyncUIUtilTest signin(profile.get());
     signin.SetAuthenticatedUsername(kTestUser);
-    scoped_ptr<FakeAuthStatusProvider> provider(
-        new FakeAuthStatusProvider(
-            SigninGlobalError::GetForProfile(profile.get())));
+    scoped_ptr<FakeAuthStatusProvider> provider(new FakeAuthStatusProvider(
+        ProfileOAuth2TokenServiceFactory::GetForProfile(profile.get())->
+            signin_error_controller()));
     GetDistinctCase(service, &signin, provider.get(), idx);
     base::string16 status_label;
     base::string16 link_label;

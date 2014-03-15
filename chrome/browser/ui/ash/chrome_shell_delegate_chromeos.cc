@@ -22,7 +22,10 @@
 #include "chrome/browser/chromeos/display/display_preferences.h"
 #include "chrome/browser/chromeos/extensions/media_player_api.h"
 #include "chrome/browser/chromeos/extensions/media_player_event_router.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/signin/signin_error_notifier_factory_ash.h"
 #include "chrome/browser/speech/tts_controller.h"
 #include "chrome/browser/ui/ash/chrome_new_window_delegate_chromeos.h"
 #include "chrome/browser/ui/ash/session_state_delegate_chromeos.h"
@@ -268,9 +271,16 @@ void ChromeShellDelegate::Observe(int type,
                                   const content::NotificationSource& source,
                                   const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED:
+    case chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED: {
+      Profile* profile = content::Details<Profile>(details).ptr();
+      if (!chromeos::ProfileHelper::IsSigninProfile(profile) &&
+          !profile->IsGuestSession() && !profile->IsManaged()) {
+        // Start the error notifier service to show auth notifications.
+        SigninErrorNotifierFactory::GetForProfile(profile);
+      }
       ash::Shell::GetInstance()->OnLoginUserProfilePrepared();
       break;
+    }
     case chrome::NOTIFICATION_SESSION_STARTED:
       InitAfterSessionStart();
       ash::Shell::GetInstance()->ShowShelf();

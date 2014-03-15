@@ -11,6 +11,8 @@
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_wrapper.h"
 #include "chrome/browser/signin/fake_signin_manager.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/signin_error_controller.h"
+#include "chrome/browser/signin/signin_global_error_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
@@ -21,7 +23,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 static const char kTestAccountId[] = "testuser@test.com";
-static const char kOtherTestAccountId[] = "otheruser@test.com";
 
 class SigninGlobalErrorTest : public testing::Test {
  public:
@@ -33,111 +34,54 @@ class SigninGlobalErrorTest : public testing::Test {
     builder.AddTestingFactory(SigninManagerFactory::GetInstance(),
                               FakeSigninManagerBase::Build);
     profile_ = builder.Build();
-    SigninManagerFactory::GetForProfile(profile_.get());
+
     profile_->GetPrefs()->SetString(
         prefs::kGoogleServicesUsername, kTestAccountId);
     SigninManagerFactory::GetForProfile(profile_.get())
         ->SetAuthenticatedUsername(kTestAccountId);
-    global_error_ = SigninGlobalError::GetForProfile(profile_.get());
+
+    global_error_ = SigninGlobalErrorFactory::GetForProfile(profile_.get());
+    error_controller_ = ProfileOAuth2TokenServiceFactory::GetForProfile(
+        profile_.get())->signin_error_controller();
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<TestingProfile> profile_;
   SigninGlobalError* global_error_;
+  SigninErrorController* error_controller_;
 };
 
-TEST_F(SigninGlobalErrorTest, NoAuthStatusProviders) {
-  ASSERT_FALSE(global_error_->HasMenuItem());
-}
-
 TEST_F(SigninGlobalErrorTest, NoErrorAuthStatusProviders) {
-  {
-    // Add a provider (removes itself on exiting this scope).
-    FakeAuthStatusProvider provider(global_error_);
-    ASSERT_FALSE(global_error_->HasMenuItem());
-  }
+  scoped_ptr<FakeAuthStatusProvider> provider;
+
+  ASSERT_FALSE(global_error_->HasMenuItem());
+
+  // Add a provider.
+  provider.reset(new FakeAuthStatusProvider(error_controller_));
+  ASSERT_FALSE(global_error_->HasMenuItem());
+
+  // Remove the provider.
+  provider.reset();
   ASSERT_FALSE(global_error_->HasMenuItem());
 }
 
 TEST_F(SigninGlobalErrorTest, ErrorAuthStatusProvider) {
-  {
-    FakeAuthStatusProvider provider(global_error_);
-    ASSERT_FALSE(global_error_->HasMenuItem());
-    {
-      FakeAuthStatusProvider error_provider(global_error_);
-      error_provider.SetAuthError(kTestAccountId, GoogleServiceAuthError(
-          GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
-      ASSERT_TRUE(global_error_->HasMenuItem());
-    }
-    // error_provider is removed now that we've left that scope.
-    ASSERT_FALSE(global_error_->HasMenuItem());
-  }
-  // All providers should be removed now.
+  scoped_ptr<FakeAuthStatusProvider> provider;
+  scoped_ptr<FakeAuthStatusProvider> error_provider;
+
+  provider.reset(new FakeAuthStatusProvider(error_controller_));
   ASSERT_FALSE(global_error_->HasMenuItem());
-}
 
-TEST_F(SigninGlobalErrorTest, AuthStatusProviderErrorTransition) {
-  {
-    FakeAuthStatusProvider provider0(global_error_);
-    FakeAuthStatusProvider provider1(global_error_);
-    ASSERT_FALSE(global_error_->HasMenuItem());
-    provider0.SetAuthError(
-        kTestAccountId,
-        GoogleServiceAuthError(
-            GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
-    ASSERT_TRUE(global_error_->HasMenuItem());
-    provider1.SetAuthError(
-        kTestAccountId,
-        GoogleServiceAuthError(GoogleServiceAuthError::ACCOUNT_DISABLED));
-    ASSERT_TRUE(global_error_->HasMenuItem());
+  error_provider.reset(new FakeAuthStatusProvider(error_controller_));
+  error_provider->SetAuthError(kTestAccountId, GoogleServiceAuthError(
+      GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
+  ASSERT_TRUE(global_error_->HasMenuItem());
 
-    // Now resolve the auth errors - the menu item should go away.
-    provider0.SetAuthError(kTestAccountId,
-                           GoogleServiceAuthError::AuthErrorNone());
-    ASSERT_TRUE(global_error_->HasMenuItem());
-    provider1.SetAuthError(kTestAccountId,
-                           GoogleServiceAuthError::AuthErrorNone());
-    ASSERT_FALSE(global_error_->HasMenuItem());
-  }
+  error_provider.reset();
   ASSERT_FALSE(global_error_->HasMenuItem());
-}
 
-TEST_F(SigninGlobalErrorTest, AuthStatusProviderAccountTransition) {
-  {
-    FakeAuthStatusProvider provider0(global_error_);
-    FakeAuthStatusProvider provider1(global_error_);
-    ASSERT_FALSE(global_error_->HasMenuItem());
-
-    provider0.SetAuthError(
-        kTestAccountId,
-        GoogleServiceAuthError(
-            GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
-    provider1.SetAuthError(
-        kOtherTestAccountId,
-        GoogleServiceAuthError(GoogleServiceAuthError::NONE));
-    ASSERT_TRUE(global_error_->HasMenuItem());
-    ASSERT_STREQ(kTestAccountId,
-                 global_error_->GetAccountIdOfLastAuthError().c_str());
-
-    // Swap providers reporting errors.
-    provider1.set_error_without_status_change(
-        GoogleServiceAuthError(
-            GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
-    provider0.set_error_without_status_change(
-        GoogleServiceAuthError(GoogleServiceAuthError::NONE));
-    global_error_->AuthStatusChanged();
-    ASSERT_TRUE(global_error_->HasMenuItem());
-    ASSERT_STREQ(kOtherTestAccountId,
-                 global_error_->GetAccountIdOfLastAuthError().c_str());
-
-    // Now resolve the auth errors - the menu item should go away.
-    provider0.set_error_without_status_change(
-        GoogleServiceAuthError::AuthErrorNone());
-    provider1.set_error_without_status_change(
-        GoogleServiceAuthError::AuthErrorNone());
-    global_error_->AuthStatusChanged();
-    ASSERT_FALSE(global_error_->HasMenuItem());
-  }
+  provider.reset();
+  error_provider.reset();
   ASSERT_FALSE(global_error_->HasMenuItem());
 }
 
@@ -167,13 +111,10 @@ TEST_F(SigninGlobalErrorTest, AuthStatusEnumerateAllErrors) {
       kTable_size_does_not_match_number_of_auth_error_types);
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(table); ++i) {
-    FakeAuthStatusProvider provider(global_error_);
+    FakeAuthStatusProvider provider(error_controller_);
     provider.SetAuthError(kTestAccountId,
                           GoogleServiceAuthError(table[i].error_state));
-    EXPECT_EQ(global_error_->HasMenuItem(), table[i].is_error);
-    // Only on chromeos do we have a separate menu item - on other platforms
-    // there's code in WrenchMenuModel to re-use the "sign in to chrome"
-    // menu item to display auth status/errors.
+
     EXPECT_EQ(global_error_->HasMenuItem(), table[i].is_error);
     EXPECT_EQ(global_error_->MenuItemLabel().empty(), !table[i].is_error);
     EXPECT_EQ(global_error_->GetBubbleViewMessages().empty(),

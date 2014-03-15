@@ -27,6 +27,7 @@
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/launcher_application_menu_item_model.h"
 #include "chrome/browser/ui/ash/launcher/launcher_item_controller.h"
+#include "chrome/browser/ui/ash/test_views_delegate_with_parent.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -64,7 +65,6 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/test_utils.h"
 #include "ui/aura/window.h"
-#include "ui/views/test/test_views_delegate.h"
 #endif
 
 using base::ASCIIToUTF16;
@@ -684,27 +684,6 @@ scoped_ptr<TestBrowserWindowAura> CreateTestBrowserWindow(
   return browser_window.Pass();
 }
 
-// A views delegate which allows creating app windows.
-class TestViewsDelegateForAppTest : public views::TestViewsDelegate {
- public:
-  TestViewsDelegateForAppTest() {}
-  virtual ~TestViewsDelegateForAppTest() {}
-
-  // views::TestViewsDelegate overrides.
-  virtual void OnBeforeWidgetInit(
-      views::Widget::InitParams* params,
-      views::internal::NativeWidgetDelegate* delegate) OVERRIDE {
-    if (!params->parent && !params->context) {
-      // If the window has neither a parent nor a context we add the root window
-      // as parent.
-      params->parent = ash::Shell::GetInstance()->GetPrimaryRootWindow();
-    }
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestViewsDelegateForAppTest);
-};
-
 // Watches WebContents and blocks until it is destroyed. This is needed for
 // the destruction of a V2 application.
 class WebContentsDestroyedWatcher : public content::WebContentsObserver {
@@ -947,7 +926,7 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest
   }
 
   virtual views::ViewsDelegate* CreateViewsDelegate() OVERRIDE {
-    return new TestViewsDelegateForAppTest;
+    return new TestViewsDelegateWithParent;
   }
 
  private:

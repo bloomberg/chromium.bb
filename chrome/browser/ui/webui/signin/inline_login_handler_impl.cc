@@ -11,7 +11,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/signin_global_error.h"
+#include "chrome/browser/signin/profile_oauth2_token_service.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/signin_error_controller.h"
 #include "chrome/browser/signin/signin_oauth_helper.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -231,10 +233,13 @@ void InlineLoginHandlerImpl::OnClientOAuthCodeSuccess(
                      weak_factory_.GetWeakPtr()));
     }
   } else {
+    SigninErrorController* error_controller =
+        ProfileOAuth2TokenServiceFactory::GetForProfile(profile)->
+            signin_error_controller();
     OneClickSigninSyncStarter::StartSyncMode start_mode =
         source == signin::SOURCE_SETTINGS || choose_what_to_sync_ ?
-            (SigninGlobalError::GetForProfile(profile)->HasMenuItem() &&
-              sync_service && sync_service->HasSyncSetupCompleted()) ?
+            (error_controller->HasError() &&
+             sync_service && sync_service->HasSyncSetupCompleted()) ?
                 OneClickSigninSyncStarter::SHOW_SETTINGS_WITHOUT_CONFIGURE :
                 OneClickSigninSyncStarter::CONFIGURE_SYNC_FIRST :
             OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS;

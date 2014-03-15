@@ -9,15 +9,15 @@
 #include "base/stl_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/global_error/global_error_service.h"
-#include "chrome/browser/ui/global_error/global_error_service_factory.h"
+#include "chrome/browser/signin/signin_error_controller.h"
+#include "chrome/browser/signin/signin_global_error_factory.h"
 #include "net/url_request/url_request_context_getter.h"
 
 ProfileOAuth2TokenService::ProfileOAuth2TokenService()
     : client_(NULL), profile_(NULL) {}
 
 ProfileOAuth2TokenService::~ProfileOAuth2TokenService() {
-  DCHECK(!signin_global_error_.get()) <<
+  DCHECK(!signin_error_controller_.get()) <<
       "ProfileOAuth2TokenService::Initialize called but not "
       "ProfileOAuth2TokenService::Shutdown";
 }
@@ -31,16 +31,12 @@ void ProfileOAuth2TokenService::Initialize(SigninClient* client,
   DCHECK(!profile_);
   profile_ = profile;
 
-  signin_global_error_.reset(new SigninGlobalError(profile));
-  GlobalErrorServiceFactory::GetForProfile(profile_)->AddGlobalError(
-      signin_global_error_.get());
+  signin_error_controller_.reset(new SigninErrorController());
 }
 
 void ProfileOAuth2TokenService::Shutdown() {
   DCHECK(profile_) << "Shutdown() called without matching call to Initialize()";
-  GlobalErrorServiceFactory::GetForProfile(profile_)->RemoveGlobalError(
-      signin_global_error_.get());
-  signin_global_error_.reset();
+  signin_error_controller_.reset();
 }
 
 net::URLRequestContextGetter* ProfileOAuth2TokenService::GetRequestContext() {

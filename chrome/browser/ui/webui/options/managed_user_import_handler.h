@@ -7,10 +7,10 @@
 
 #include "base/callback_list.h"
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observer.h"
 #include "chrome/browser/managed_mode/managed_user_sync_service_observer.h"
+#include "chrome/browser/signin/signin_error_controller.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 
 namespace base {
 class DictionaryValue;
@@ -21,8 +21,8 @@ namespace options {
 
 // Handler for the 'import existing managed user' dialog.
 class ManagedUserImportHandler : public OptionsPageUIHandler,
-                                 public content::NotificationObserver,
-                                 public ManagedUserSyncServiceObserver {
+                                 public ManagedUserSyncServiceObserver,
+                                 public SigninErrorController::Observer {
  public:
   typedef base::CallbackList<void(const std::string&, const std::string&)>
       CallbackList;
@@ -38,16 +38,14 @@ class ManagedUserImportHandler : public OptionsPageUIHandler,
   // WebUIMessageHandler implementation.
   virtual void RegisterMessages() OVERRIDE;
 
-  // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
   // ManagedUserSyncServiceObserver implementation.
   virtual void OnManagedUserAcknowledged(const std::string& managed_user_id)
       OVERRIDE {}
   virtual void OnManagedUsersSyncingStopped() OVERRIDE {}
   virtual void OnManagedUsersChanged() OVERRIDE;
+
+  // SigninErrorController::Observer implementation.
+  virtual void OnErrorChanged() OVERRIDE;
 
  private:
   // Clears the cached list of managed users and fetches the new list of managed
@@ -85,6 +83,8 @@ class ManagedUserImportHandler : public OptionsPageUIHandler,
                               const std::string& key);
 
   scoped_ptr<CallbackList::Subscription> subscription_;
+
+  ScopedObserver<SigninErrorController, ManagedUserImportHandler> observer_;
 
   base::WeakPtrFactory<ManagedUserImportHandler> weak_ptr_factory_;
 
