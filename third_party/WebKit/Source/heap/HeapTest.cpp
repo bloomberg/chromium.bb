@@ -535,6 +535,7 @@ public:
         m_magic = 0;
         s_live--;
     }
+    bool hasBeenFinalized() const { return !m_magic; }
 
     virtual void trace(Visitor* visitor) { }
     static unsigned s_live;
@@ -565,6 +566,12 @@ public:
     }
 
     void clear() { m_bar.release(); }
+
+    // willFinalize is called by FinalizationObserver.
+    void willFinalize()
+    {
+        EXPECT_TRUE(!m_bar->hasBeenFinalized());
+    }
 
 private:
     explicit Baz(Bar* bar)
@@ -869,6 +876,61 @@ private:
     WeakMember<Bar> m_weakBar;
 };
 
+class Observable : public GarbageCollectedFinalized<Observable> {
+public:
+    static Observable* create(Bar* bar) { return new Observable(bar);  }
+    ~Observable() { m_wasDestructed = true; }
+    void trace(Visitor* visitor) { visitor->trace(m_bar); }
+
+    // willFinalize is called by FinalizationObserver. willFinalize can touch
+    // other on-heap objects.
+    void willFinalize()
+    {
+        EXPECT_FALSE(m_wasDestructed);
+        EXPECT_FALSE(m_bar->hasBeenFinalized());
+    }
+
+private:
+    explicit Observable(Bar* bar)
+        : m_bar(bar)
+        , m_wasDestructed(false)
+    {
+    }
+
+    Member<Bar> m_bar;
+    bool m_wasDestructed;
+};
+
+template <typename T> class FinalizationObserver : public GarbageCollected<FinalizationObserver<T> > {
+public:
+    static FinalizationObserver* create(T* data) { return new FinalizationObserver(data); }
+    bool didCallWillFinalize() const { return m_didCallWillFinalize; }
+
+    void trace(Visitor* visitor)
+    {
+        visitor->registerWeakMembers(this, zapWeakMembers);
+    }
+
+private:
+    FinalizationObserver(T* data)
+        : m_data(data)
+        , m_didCallWillFinalize(false)
+    {
+    }
+
+    static void zapWeakMembers(Visitor* visitor, void* self)
+    {
+        FinalizationObserver* o = reinterpret_cast<FinalizationObserver*>(self);
+        if (o->m_data && !visitor->isAlive(o->m_data)) {
+            o->m_data->willFinalize();
+            o->m_data = nullptr;
+            o->m_didCallWillFinalize = true;
+        }
+    }
+
+    WeakMember<T> m_data;
+    bool m_didCallWillFinalize;
+};
 
 class SuperClass;
 
@@ -2531,6 +2593,21 @@ TEST(HeapTest, WeakMembers)
     // h4 and h5 have gone out of scope now and they were keeping h2 alive.
     Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
     EXPECT_EQ(0u, Bar::s_live); // All gone.
+}
+
+TEST(HeapTest, FinalizationObserver)
+{
+    Persistent<FinalizationObserver<Observable> > o;
+    {
+        Observable* foo = Observable::create(Bar::create());
+        // |o| observes |foo|.
+        o = FinalizationObserver<Observable>::create(foo);
+    }
+    // FinalizationObserver doesn't have a strong reference to |foo|. So |foo|
+    // and its member will be collected.
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+    EXPECT_EQ(0u, Bar::s_live);
+    EXPECT_TRUE(o->didCallWillFinalize());
 }
 
 TEST(HeapTest, Comparisons)
