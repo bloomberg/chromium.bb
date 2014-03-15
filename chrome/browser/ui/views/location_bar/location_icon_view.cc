@@ -20,13 +20,25 @@ LocationIconView::~LocationIconView() {
 }
 
 bool LocationIconView::OnMousePressed(const ui::MouseEvent& event) {
-  // We want to show the dialog on mouse release; that is the standard behavior
-  // for buttons.
+  if (event.IsOnlyMiddleMouseButton() &&
+      ui::Clipboard::IsSupportedClipboardType(ui::CLIPBOARD_TYPE_SELECTION)) {
+    base::string16 text;
+    ui::Clipboard::GetForCurrentThread()->ReadText(
+        ui::CLIPBOARD_TYPE_SELECTION, &text);
+    text = OmniboxView::SanitizeTextForPaste(text);
+    OmniboxEditModel* model =
+        page_info_helper_.location_bar()->omnibox_view()->model();
+    if (model->CanPasteAndGo(text))
+      model->PasteAndGo(text);
+  }
+
+  // Showing the bubble on mouse release is standard button behavior.
   return true;
 }
 
 void LocationIconView::OnMouseReleased(const ui::MouseEvent& event) {
-  if (!chrome::ShouldDisplayOriginChip() &&
+  if (!event.IsOnlyMiddleMouseButton() &&
+      !chrome::ShouldDisplayOriginChip() &&
       !chrome::ShouldDisplayOriginChipV2())
     page_info_helper_.ProcessEvent(event);
 }

@@ -25,6 +25,8 @@ class PageInfoHelper {
 
   void ProcessEvent(const ui::LocatedEvent& event);
 
+  LocationBarView* location_bar() const { return location_bar_; }
+
  private:
   const views::View* owner_;
   LocationBarView* location_bar_;
