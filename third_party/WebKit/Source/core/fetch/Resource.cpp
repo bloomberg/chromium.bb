@@ -141,6 +141,7 @@ Resource::~Resource()
     ASSERT(!m_resourceToRevalidate); // Should be true because canDelete() checks this.
     ASSERT(canDelete());
     RELEASE_ASSERT(!inCache());
+    RELEASE_ASSERT(!ResourceCallback::callbackHandler()->isScheduled(this));
     ASSERT(!m_deleted);
     ASSERT(url().isNull() || memoryCache()->resourceForURL(KURL(ParsedURLString, url())) != this);
 
@@ -890,6 +891,11 @@ void Resource::ResourceCallback::cancel(Resource* resource)
     m_resourcesWithPendingClients.remove(resource);
     if (m_callbackTimer.isActive() && m_resourcesWithPendingClients.isEmpty())
         m_callbackTimer.stop();
+}
+
+bool Resource::ResourceCallback::isScheduled(Resource* resource) const
+{
+    return m_resourcesWithPendingClients.contains(resource);
 }
 
 void Resource::ResourceCallback::timerFired(Timer<ResourceCallback>*)

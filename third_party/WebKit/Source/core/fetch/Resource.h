@@ -296,6 +296,7 @@ protected:
         static ResourceCallback* callbackHandler();
         void schedule(Resource*);
         void cancel(Resource*);
+        bool isScheduled(Resource*) const;
     private:
         ResourceCallback();
         void timerFired(Timer<ResourceCallback>*);
