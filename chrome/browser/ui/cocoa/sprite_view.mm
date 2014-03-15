@@ -25,11 +25,64 @@ static const CGFloat kFrameDuration = 0.03;  // 30ms for each animation frame.
   return self;
 }
 
+- (void)dealloc {
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
+  [super dealloc];
+}
+
+- (void)viewWillMoveToWindow:(NSWindow*)newWindow {
+  if ([self window]) {
+    [[NSNotificationCenter defaultCenter]
+        removeObserver:self
+                  name:NSWindowWillMiniaturizeNotification
+                object:[self window]];
+    [[NSNotificationCenter defaultCenter]
+        removeObserver:self
+                  name:NSWindowDidDeminiaturizeNotification
+                object:[self window]];
+  }
+
+  if (newWindow) {
+    [[NSNotificationCenter defaultCenter]
+        addObserver:self
+           selector:@selector(updateAnimation:)
+               name:NSWindowWillMiniaturizeNotification
+             object:newWindow];
+    [[NSNotificationCenter defaultCenter]
+        addObserver:self
+           selector:@selector(updateAnimation:)
+               name:NSWindowDidDeminiaturizeNotification
+             object:newWindow];
+  }
+
+  [self updateAnimation:nil];
+}
+
+- (void)updateAnimation:(NSNotification*)notification {
+  if (spriteAnimation_.get()) {
+    // Only animate the sprites if we are attached to a window, and that window
+    // is not currently minimized or in the middle of a minimize animation.
+    // http://crbug.com/350329
+    CALayer* layer = [self layer];
+    if ([self window] && ![[self window] isMiniaturized]) {
+      if ([layer animationForKey:[spriteAnimation_ keyPath]] == nil)
+        [layer addAnimation:spriteAnimation_.get()
+                     forKey:[spriteAnimation_ keyPath]];
+    } else {
+      [layer removeAnimationForKey:[spriteAnimation_ keyPath]];
+    }
+  }
+}
+
 - (void)setImage:(NSImage*)image {
   ScopedCAActionDisabler disabler;
-
   CALayer* layer = [self layer];
-  [layer removeAnimationForKey:@"contentsRect.origin.x"];
+
+  if (spriteAnimation_.get()) {
+    [layer removeAnimationForKey:[spriteAnimation_ keyPath]];
+    spriteAnimation_.reset();
+  }
+
   [layer setContents:image];
 
   if (image != nil) {
@@ -56,7 +109,9 @@ static const CGFloat kFrameDuration = 0.03;  // 30ms for each animation frame.
       [animation setCalculationMode:kCAAnimationDiscrete];
       [animation setRepeatCount:HUGE_VALF];
       [animation setDuration:kFrameDuration * [xOffsets count]];
-      [layer addAnimation:animation forKey:[animation keyPath]];
+      spriteAnimation_.reset([animation retain]);
+
+      [self updateAnimation:nil];
     }
   }
 }

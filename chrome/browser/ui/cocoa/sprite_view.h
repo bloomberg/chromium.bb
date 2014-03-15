@@ -7,9 +7,16 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/mac/scoped_nsobject.h"
+
+@class CAKeyframeAnimation;
+
 // A class that knows how to repeatedly animate sprites from an image containing
 // the sprites in the form of a horizontal strip.
-@interface SpriteView : NSView
+@interface SpriteView : NSView {
+ @private
+  base::scoped_nsobject<CAKeyframeAnimation> spriteAnimation_;
+}
 
 // |image| contains square sprites in a horizontal strip.
 // The sprites will be animated, with each sprite shown for 30ms.
