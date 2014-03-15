@@ -323,12 +323,16 @@ bool test_close(const char *test_file) {
     return failed(testname, "EBADF != errno");
 
   // directory OK
-  fd = open(".", O_RDWR);
-  if (fd == -1)
-    return failed(testname, "open(., O_RDWR)");
-  ret_val = close(fd);
-  if (ret_val == -1)
-    return failed(testname, "close(., O_RDWR)");
+  // Linux's open() (unsandboxed) does not allow O_RDWR on a directory.
+  // TODO(mseaborn): sel_ldr should reject O_RDWR on a directory too.
+  if (!PNACL_UNSANDBOXED) {
+    fd = open(".", O_RDWR);
+    if (fd == -1)
+      return failed(testname, "open(., O_RDWR)");
+    ret_val = close(fd);
+    if (ret_val == -1)
+      return failed(testname, "close(., O_RDWR)");
+  }
 
   // directory not OK
   fd = open("nosuchdir", O_RDWR);
@@ -373,12 +377,16 @@ bool test_read(const char *test_file) {
 
   errno = 0;
   // fd OK, buffer OK, count not OK
-  ret_val = read(fd, out_char, -1);
-  if (ret_val != -1)
-    return failed(testname, "read(fd, out_char, -1)");
-  // bad address
-  if (EFAULT != errno)
-    return failed(testname, "EFAULT != errno");
+  // Linux's read() (unsandboxed) does not reject this buffer size.
+  if (!PNACL_UNSANDBOXED) {
+    ret_val = read(fd, out_char, -1);
+    if (ret_val != -1)
+      return failed(testname, "read(fd, out_char, -1)");
+    // bad address
+    ASSERT_EQ(errno, EFAULT);
+    if (EFAULT != errno)
+      return failed(testname, "EFAULT != errno");
+  }
 
   errno = 0;
   // fd not OK, buffer OK, count not OK
@@ -427,12 +435,15 @@ bool test_write(const char *test_file) {
 
   errno = 0;
   // invalid count
-  ret_val = write(fd, out_char, -1);
-  if (ret_val != -1)
-    return failed(testname, "write(fd, out_char, -1)");
-  // bad address
-  if (EFAULT != errno)
-    return failed(testname, "EFAULT != errno");
+  // Linux's write() (unsandboxed) does not reject this buffer size.
+  if (!PNACL_UNSANDBOXED) {
+    ret_val = write(fd, out_char, -1);
+    if (ret_val != -1)
+      return failed(testname, "write(fd, out_char, -1)");
+    // bad address
+    if (EFAULT != errno)
+      return failed(testname, "EFAULT != errno");
+  }
 
   errno = 0;
   // invalid fd
@@ -533,6 +544,10 @@ bool test_lseek(const char *test_file) {
 }
 
 bool test_readdir(const char *test_file) {
+  // TODO(mseaborn): Implement listing directories for unsandboxed mode.
+  if (PNACL_UNSANDBOXED)
+    return true;
+
   // Read the directory containing the test file
   char dirname[PATH_MAX];
   strncpy(dirname, test_file, PATH_MAX);
@@ -576,10 +591,16 @@ bool test_readdir(const char *test_file) {
 
 // isatty returns 1 for TTY descriptors and 0 on error (setting errno)
 bool test_isatty(const char *test_file) {
+  // TODO(mseaborn): Implement isatty() for unsandboxed mode.
+  if (PNACL_UNSANDBOXED)
+    return true;
   // TODO(sbc): isatty() in glibc is not yet hooked up to the IRT
   // interfaces. Remove this conditional once this gets addressed:
   // https://code.google.com/p/nativeclient/issues/detail?id=3709
-#if !defined(__GLIBC__)
+#if defined(__GLIBC__)
+  return true;
+#endif
+
   // Open a regular file that check that it is not a tty.
   int fd = open(test_file, O_RDONLY);
   ASSERT_NE_MSG(fd, -1, "open() failed");
@@ -601,7 +622,6 @@ bool test_isatty(const char *test_file) {
     ASSERT_EQ(errno, 0);
     close(fd);
   }
-#endif
 
   return passed("test_isatty", "all");
 }

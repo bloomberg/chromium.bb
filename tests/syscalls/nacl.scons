@@ -14,6 +14,8 @@ if 'TRUSTED_ENV' in env and env['TRUSTED_ENV'].Bit('windows'):
 
 env.ComponentLibrary('syscall_test_framework', ['test.cc'])
 
+env.Append(CPPDEFINES=[['PNACL_UNSANDBOXED',
+                        str(int(env.Bit('pnacl_unsandboxed')))]])
 syscalls_nexe = env.ComponentProgram('syscalls',
                                      'syscalls.cc',
                                      EXTRA_LIBS=['${PTHREAD_LIBS}',
@@ -36,7 +38,6 @@ node = env.CommandSelLdrTestNacl(
     'syscalls_test.out',
     syscalls_nexe,
     args=[env.File('file_ok_rdwr.txt')],
-    stdout_golden=env.File('syscalls.stdout'),
     sel_ldr_flags=['-a'])
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_syscall_test')
 

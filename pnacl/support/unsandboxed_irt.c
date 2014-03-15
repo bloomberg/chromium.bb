@@ -6,6 +6,7 @@
 
 #include <assert.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <limits.h>
 #include <linux/futex.h>
 #include <pthread.h>
@@ -13,6 +14,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/mman.h>
+#include <sys/stat.h>
 #include <sys/syscall.h>
 #include <unistd.h>
 
@@ -20,9 +22,11 @@
 #include "native_client/src/include/elf_auxv.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/trusted/service_runtime/include/machine/_types.h"
+#include "native_client/src/trusted/service_runtime/include/sys/stat.h"
 #include "native_client/src/trusted/service_runtime/include/sys/time.h"
 #include "native_client/src/trusted/service_runtime/include/sys/unistd.h"
 #include "native_client/src/untrusted/irt/irt.h"
+#include "native_client/src/untrusted/irt/irt_dev.h"
 
 /*
  * This is an implementation of NaCl's IRT interfaces that runs
@@ -72,6 +76,27 @@ static void convert_to_nacl_timeval(struct timeval *dest_nacl,
   dest->nacl_abi_tv_usec = src->tv_usec;
 }
 
+static void convert_to_nacl_stat(struct stat *dest_nacl,
+                                 const struct stat *src) {
+  struct nacl_abi_stat *dest = (struct nacl_abi_stat *) dest_nacl;
+  dest->nacl_abi_st_dev = src->st_dev;
+  dest->nacl_abi_st_ino = src->st_ino;
+  dest->nacl_abi_st_mode = src->st_mode;
+  dest->nacl_abi_st_nlink = src->st_nlink;
+  dest->nacl_abi_st_uid = src->st_uid;
+  dest->nacl_abi_st_gid = src->st_gid;
+  dest->nacl_abi_st_rdev = src->st_rdev;
+  dest->nacl_abi_st_size = src->st_size;
+  dest->nacl_abi_st_blksize = src->st_blksize;
+  dest->nacl_abi_st_blocks = src->st_blocks;
+  dest->nacl_abi_st_atime = src->st_atim.tv_sec;
+  dest->nacl_abi_st_atimensec = src->st_atim.tv_nsec;
+  dest->nacl_abi_st_mtime = src->st_mtim.tv_sec;
+  dest->nacl_abi_st_mtimensec = src->st_mtim.tv_nsec;
+  dest->nacl_abi_st_ctime = src->st_ctim.tv_sec;
+  dest->nacl_abi_st_ctimensec = src->st_ctim.tv_nsec;
+}
+
 static int check_error(int result) {
   if (result != 0) {
     /*
@@ -117,6 +142,15 @@ static int irt_write(int fd, const void *buf, size_t count, size_t *nwrote) {
   if (result < 0)
     return errno;
   *nwrote = result;
+  return 0;
+}
+
+static int irt_seek(int fd, nacl_abi_off_t offset, int whence,
+                    nacl_abi_off_t *new_offset) {
+  off_t result = lseek(fd, offset, whence);
+  if (result < 0)
+    return errno;
+  *new_offset = result;
   return 0;
 }
 
@@ -171,6 +205,13 @@ static int irt_sysconf(int name, int *value) {
        */
       *value = getpagesize();
       return 0;
+    case NACL_ABI__SC_NPROCESSORS_ONLN: {
+      int result = sysconf(_SC_NPROCESSORS_ONLN);
+      if (result == 0)
+        return errno;
+      *value = result;
+      return 0;
+    }
     default:
       return EINVAL;
   }
@@ -306,6 +347,44 @@ static int irt_clock_gettime(clockid_t clk_id, struct timespec *time_nacl) {
   return result;
 }
 
+static int irt_open(const char *pathname, int flags, mode_t mode, int *new_fd) {
+  int fd = open(pathname, flags, mode);
+  if (fd < 0)
+    return errno;
+  *new_fd = fd;
+  return 0;
+}
+
+static int irt_stat(const char *pathname, struct stat *stat_info_nacl) {
+  struct stat stat_info;
+  if (stat(pathname, &stat_info) != 0)
+    return errno;
+  convert_to_nacl_stat(stat_info_nacl, &stat_info);
+  return 0;
+}
+
+static int irt_mkdir(const char *pathname, mode_t mode) {
+  return check_error(mkdir(pathname, mode));
+}
+
+static int irt_rmdir(const char *pathname) {
+  return check_error(rmdir(pathname));
+}
+
+static int irt_chdir(const char *pathname) {
+  return check_error(chdir(pathname));
+}
+
+static int irt_getcwd(char *pathname, size_t len) {
+  if (getcwd(pathname, len) == NULL)
+    return errno;
+  return 0;
+}
+
+static int irt_unlink(const char *pathname) {
+  return check_error(unlink(pathname));
+}
+
 static void irt_stub_func(const char *name) {
   fprintf(stderr, "Error: Unimplemented IRT function: %s\n", name);
   abort();
@@ -324,7 +403,6 @@ static const struct nacl_irt_basic irt_basic = {
   irt_sysconf,
 };
 
-DEFINE_STUB(seek)
 DEFINE_STUB(getdents)
 static const struct nacl_irt_fdio irt_fdio = {
   irt_close,
@@ -332,7 +410,7 @@ static const struct nacl_irt_fdio irt_fdio = {
   irt_dup2,
   irt_read,
   irt_write,
-  USE_STUB(irt_fdio, seek),
+  (typeof(irt_fdio.seek)) irt_seek,
   irt_fstat,
   USE_STUB(irt_fdio, getdents),
 };
@@ -365,6 +443,34 @@ const static struct nacl_irt_clock irt_clock = {
   irt_clock_gettime,
 };
 
+DEFINE_STUB(truncate)
+DEFINE_STUB(lstat)
+DEFINE_STUB(link)
+DEFINE_STUB(rename)
+DEFINE_STUB(symlink)
+DEFINE_STUB(chmod)
+DEFINE_STUB(access)
+DEFINE_STUB(readlink)
+DEFINE_STUB(utimes)
+const static struct nacl_irt_dev_filename irt_dev_filename = {
+  irt_open,
+  irt_stat,
+  irt_mkdir,
+  irt_rmdir,
+  irt_chdir,
+  irt_getcwd,
+  irt_unlink,
+  USE_STUB(irt_dev_filename, truncate),
+  USE_STUB(irt_dev_filename, lstat),
+  USE_STUB(irt_dev_filename, link),
+  USE_STUB(irt_dev_filename, rename),
+  USE_STUB(irt_dev_filename, symlink),
+  USE_STUB(irt_dev_filename, chmod),
+  USE_STUB(irt_dev_filename, access),
+  USE_STUB(irt_dev_filename, readlink),
+  USE_STUB(irt_dev_filename, utimes),
+};
+
 struct nacl_interface_table {
   const char *name;
   const void *table;
@@ -379,6 +485,7 @@ static const struct nacl_interface_table irt_interfaces[] = {
   { NACL_IRT_THREAD_v0_1, &irt_thread, sizeof(irt_thread) },
   { NACL_IRT_FUTEX_v0_1, &irt_futex, sizeof(irt_futex) },
   { NACL_IRT_CLOCK_v0_1, &irt_clock, sizeof(irt_clock) },
+  { NACL_IRT_DEV_FILENAME_v0_3, &irt_dev_filename, sizeof(irt_dev_filename) },
 };
 
 static size_t irt_interface_query(const char *interface_ident,

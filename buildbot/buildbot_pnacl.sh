@@ -586,7 +586,8 @@ mode-buildbot-tc-x8632-linux() {
     run_float_test_irt \
     run_malloc_realloc_calloc_free_test_irt \
     run_dup_test_irt \
-    run_cond_timedwait_test_irt
+    run_cond_timedwait_test_irt \
+    run_syscall_test_irt
 }
 
 mode-buildbot-tc-x8632-mac() {
