@@ -18,6 +18,7 @@
 #include "content/public/browser/dom_operation_notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -79,18 +80,25 @@ class DOMOperationObserver : public NotificationObserver,
 };
 
 // Specifying a prototype so that we can add the WARN_UNUSED_RESULT attribute.
-bool ExecuteScriptHelper(RenderViewHost* render_view_host,
-                         const std::string& frame_xpath,
-                         const std::string& original_script,
-                         scoped_ptr<base::Value>* result) WARN_UNUSED_RESULT;
+bool ExecuteScriptInFrameHelper(
+    RenderViewHost* render_view_host,
+    const std::string& frame_xpath,
+    const std::string& original_script,
+    scoped_ptr<base::Value>* result) WARN_UNUSED_RESULT;
+
+// Specifying a prototype so that we can add the WARN_UNUSED_RESULT attribute.
+bool ExecuteScriptHelper(
+    RenderFrameHost* render_frame_host,
+    const std::string& original_script,
+    scoped_ptr<base::Value>* result) WARN_UNUSED_RESULT;
 
 // Executes the passed |original_script| in the frame pointed to by
 // |frame_xpath|.  If |result| is not NULL, stores the value that the evaluation
 // of the script in |result|.  Returns true on success.
-bool ExecuteScriptHelper(RenderViewHost* render_view_host,
-                         const std::string& frame_xpath,
-                         const std::string& original_script,
-                         scoped_ptr<base::Value>* result) {
+bool ExecuteScriptInFrameHelper(RenderViewHost* render_view_host,
+                                const std::string& frame_xpath,
+                                const std::string& original_script,
+                                scoped_ptr<base::Value>* result) {
   // TODO(jcampan): we should make the domAutomationController not require an
   //                automation id.
   std::string script =
@@ -98,6 +106,38 @@ bool ExecuteScriptHelper(RenderViewHost* render_view_host,
   DOMOperationObserver dom_op_observer(render_view_host);
   render_view_host->ExecuteJavascriptInWebFrame(base::UTF8ToUTF16(frame_xpath),
                                                 base::UTF8ToUTF16(script));
+  std::string json;
+  if (!dom_op_observer.WaitAndGetResponse(&json)) {
+    DLOG(ERROR) << "Cannot communicate with DOMOperationObserver.";
+    return false;
+  }
+
+  // Nothing more to do for callers that ignore the returned JS value.
+  if (!result)
+    return true;
+
+  base::JSONReader reader(base::JSON_ALLOW_TRAILING_COMMAS);
+  result->reset(reader.ReadToValue(json));
+  if (!result->get()) {
+    DLOG(ERROR) << reader.GetErrorMessage();
+    return false;
+  }
+
+  return true;
+}
+
+// Executes the passed |original_script| in the frame specified by
+// |render_frame_host|.  If |result| is not NULL, stores the value that the
+// evaluation of the script in |result|.  Returns true on success.
+bool ExecuteScriptHelper(RenderFrameHost* render_frame_host,
+                         const std::string& original_script,
+                         scoped_ptr<base::Value>* result) {
+  // TODO(jcampan): we should make the domAutomationController not require an
+  //                automation id.
+  std::string script =
+      "window.domAutomationController.setAutomationId(0);" + original_script;
+  DOMOperationObserver dom_op_observer(render_frame_host->GetRenderViewHost());
+  render_frame_host->ExecuteJavaScript(base::UTF8ToUTF16(script));
   std::string json;
   if (!dom_op_observer.WaitAndGetResponse(&json)) {
     DLOG(ERROR) << "Cannot communicate with DOMOperationObserver.";
@@ -397,6 +437,18 @@ ToRenderViewHost::ToRenderViewHost(RenderViewHost* render_view_host)
     : render_view_host_(render_view_host) {
 }
 
+ToRenderFrameHost::ToRenderFrameHost(WebContents* web_contents)
+    : render_frame_host_(web_contents->GetMainFrame()) {
+}
+
+ToRenderFrameHost::ToRenderFrameHost(RenderViewHost* render_view_host)
+    : render_frame_host_(render_view_host->GetMainFrame()) {
+}
+
+ToRenderFrameHost::ToRenderFrameHost(RenderFrameHost* render_frame_host)
+    : render_frame_host_(render_frame_host) {
+}
+
 }  // namespace internal
 
 bool ExecuteScriptInFrame(const internal::ToRenderViewHost& adapter,
@@ -404,8 +456,8 @@ bool ExecuteScriptInFrame(const internal::ToRenderViewHost& adapter,
                           const std::string& original_script) {
   std::string script =
       original_script + ";window.domAutomationController.send(0);";
-  return ExecuteScriptHelper(adapter.render_view_host(), frame_xpath, script,
-                             NULL);
+  return ExecuteScriptInFrameHelper(
+      adapter.render_view_host(), frame_xpath, script, NULL);
 }
 
 bool ExecuteScriptInFrameAndExtractInt(
@@ -415,9 +467,11 @@ bool ExecuteScriptInFrameAndExtractInt(
     int* result) {
   DCHECK(result);
   scoped_ptr<base::Value> value;
-  if (!ExecuteScriptHelper(adapter.render_view_host(), frame_xpath, script,
-                           &value) || !value.get())
+  if (!ExecuteScriptInFrameHelper(adapter.render_view_host(),
+                                  frame_xpath, script, &value) ||
+      !value.get()) {
     return false;
+  }
 
   return value->GetAsInteger(result);
 }
@@ -429,9 +483,11 @@ bool ExecuteScriptInFrameAndExtractBool(
     bool* result) {
   DCHECK(result);
   scoped_ptr<base::Value> value;
-  if (!ExecuteScriptHelper(adapter.render_view_host(), frame_xpath, script,
-                           &value) || !value.get())
+  if (!ExecuteScriptInFrameHelper(adapter.render_view_host(),
+                                  frame_xpath, script, &value) ||
+      !value.get()) {
     return false;
+  }
 
   return value->GetAsBoolean(result);
 }
@@ -443,40 +499,61 @@ bool ExecuteScriptInFrameAndExtractString(
     std::string* result) {
   DCHECK(result);
   scoped_ptr<base::Value> value;
-  if (!ExecuteScriptHelper(adapter.render_view_host(), frame_xpath, script,
-                           &value) || !value.get())
+  if (!ExecuteScriptInFrameHelper(adapter.render_view_host(),
+                                  frame_xpath, script, &value) ||
+      !value.get()) {
     return false;
+  }
 
   return value->GetAsString(result);
 }
 
-bool ExecuteScript(const internal::ToRenderViewHost& adapter,
+bool ExecuteScript(const internal::ToRenderFrameHost& adapter,
                    const std::string& script) {
-  return ExecuteScriptInFrame(adapter, std::string(), script);
+  std::string new_script =
+      script + ";window.domAutomationController.send(0);";
+  return ExecuteScriptHelper(adapter.render_frame_host(), new_script, NULL);
 }
 
-bool ExecuteScriptAndExtractInt(const internal::ToRenderViewHost& adapter,
+bool ExecuteScriptAndExtractInt(const internal::ToRenderFrameHost& adapter,
                                 const std::string& script, int* result) {
-  return ExecuteScriptInFrameAndExtractInt(adapter, std::string(), script,
-                                           result);
+  DCHECK(result);
+  scoped_ptr<base::Value> value;
+  if (!ExecuteScriptHelper(adapter.render_frame_host(), script, &value) ||
+      !value.get()) {
+    return false;
+  }
+
+  return value->GetAsInteger(result);
 }
 
-bool ExecuteScriptAndExtractBool(const internal::ToRenderViewHost& adapter,
+bool ExecuteScriptAndExtractBool(const internal::ToRenderFrameHost& adapter,
                                  const std::string& script, bool* result) {
-  return ExecuteScriptInFrameAndExtractBool(adapter, std::string(), script,
-                                            result);
+  DCHECK(result);
+  scoped_ptr<base::Value> value;
+  if (!ExecuteScriptHelper(adapter.render_frame_host(), script, &value) ||
+      !value.get()) {
+    return false;
+  }
+
+  return value->GetAsBoolean(result);
 }
 
-bool ExecuteScriptAndExtractString(const internal::ToRenderViewHost& adapter,
+bool ExecuteScriptAndExtractString(const internal::ToRenderFrameHost& adapter,
                                    const std::string& script,
                                    std::string* result) {
-  return ExecuteScriptInFrameAndExtractString(adapter, std::string(), script,
-                                              result);
+  DCHECK(result);
+  scoped_ptr<base::Value> value;
+  if (!ExecuteScriptHelper(adapter.render_frame_host(), script, &value) ||
+      !value.get()) {
+    return false;
+  }
+
+  return value->GetAsString(result);
 }
 
-bool ExecuteWebUIResourceTest(
-    const internal::ToRenderViewHost& adapter,
-    const std::vector<int>& js_resource_ids) {
+bool ExecuteWebUIResourceTest(WebContents* web_contents,
+                              const std::vector<int>& js_resource_ids) {
   // Inject WebUI test runner script first prior to other scripts required to
   // run the test as scripts may depend on it being declared.
   std::vector<int> ids;
@@ -491,11 +568,11 @@ bool ExecuteWebUIResourceTest(
         .AppendToString(&script);
     script.append("\n");
   }
-  if (!content::ExecuteScript(adapter, script))
+  if (!content::ExecuteScript(web_contents, script))
     return false;
 
   content::DOMMessageQueue message_queue;
-  if (!content::ExecuteScript(adapter, "runTests()"))
+  if (!content::ExecuteScript(web_contents, "runTests()"))
     return false;
 
   std::string message;

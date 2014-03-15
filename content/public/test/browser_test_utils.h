@@ -113,12 +113,14 @@ void SimulateKeyPressWithCode(WebContents* web_contents,
                               bool alt,
                               bool command);
 
-// Allow ExecuteScript* methods to target either a WebContents or a
-// RenderViewHost.  Targetting a WebContents means executing script in the
+namespace internal {
+// Allow ExecuteScriptInFrame* methods to target either a WebContents or a
+// RenderViewHost.  Targetting a WebContents means executing the script in the
 // RenderViewHost returned by WebContents::GetRenderViewHost(), which is the
 // "current" RenderViewHost.  Pass a specific RenderViewHost to target, for
 // example, a "swapped-out" RenderViewHost.
-namespace internal {
+// OBSOLETE; DO NOT USE! Use ExecuteScript* methods that target a
+// RenderFrameHost instead.
 class ToRenderViewHost {
  public:
   ToRenderViewHost(WebContents* web_contents);
@@ -129,13 +131,30 @@ class ToRenderViewHost {
  private:
   RenderViewHost* render_view_host_;
 };
+
+// Allow ExecuteScript* methods to target either a WebContents or a
+// RenderFrameHost.  Targetting a WebContents means executing the script in the
+// RenderFrameHost returned by WebContents::GetMainFrame(), which is the
+// main frame.  Pass a specific RenderFrameHost to target it.
+class ToRenderFrameHost {
+ public:
+  ToRenderFrameHost(WebContents* web_contents);
+  ToRenderFrameHost(RenderViewHost* render_view_host);
+  ToRenderFrameHost(RenderFrameHost* render_frame_host);
+
+  RenderFrameHost* render_frame_host() const { return render_frame_host_; }
+
+ private:
+  RenderFrameHost* render_frame_host_;
+};
 }  // namespace internal
 
 // Executes the passed |script| in the frame pointed to by |frame_xpath| (use
-// empty string for main frame).  The |script| should not invoke
+// empty string for main frame). The |script| should not invoke
 // domAutomationController.send(); otherwise, your test will hang or be flaky.
 // If you want to extract a result, use one of the below functions.
 // Returns true on success.
+// OBSOLETE; DO NOT USE! Use ExecuteScript and specify a RenderFrameHost.
 bool ExecuteScriptInFrame(const internal::ToRenderViewHost& adapter,
                           const std::string& frame_xpath,
                           const std::string& script) WARN_UNUSED_RESULT;
@@ -145,6 +164,8 @@ bool ExecuteScriptInFrame(const internal::ToRenderViewHost& adapter,
 // value passed to "window.domAutomationController.send" by the executed script.
 // They return true on success, false if the script execution failed or did not
 // evaluate to the expected type.
+// OBSOLETE; DO NOT USE! Use ExecuteScriptAndExtract[Int|Bool|String] and
+// specify a RenderFrameHost.
 bool ExecuteScriptInFrameAndExtractInt(
     const internal::ToRenderViewHost& adapter,
     const std::string& frame_xpath,
@@ -161,16 +182,24 @@ bool ExecuteScriptInFrameAndExtractString(
     const std::string& script,
     std::string* result) WARN_UNUSED_RESULT;
 
-// Top-frame script execution helpers (a.k.a., the common case):
-bool ExecuteScript(const internal::ToRenderViewHost& adapter,
+// Executes the passed |script| in the specified frame. The |script| should not
+// invoke domAutomationController.send(); otherwise, your test will hang or be
+// flaky. If you want to extract a result, use one of the below functions.
+// Returns true on success.
+bool ExecuteScript(const internal::ToRenderFrameHost& adapter,
                    const std::string& script) WARN_UNUSED_RESULT;
-bool ExecuteScriptAndExtractInt(const internal::ToRenderViewHost& adapter,
+
+// The following methods executes the passed |script| in the specified frame and
+// sets |result| to the value passed to "window.domAutomationController.send" by
+// the executed script. They return true on success, false if the script
+// execution failed or did not evaluate to the expected type.
+bool ExecuteScriptAndExtractInt(const internal::ToRenderFrameHost& adapter,
                                 const std::string& script,
                                 int* result) WARN_UNUSED_RESULT;
-bool ExecuteScriptAndExtractBool(const internal::ToRenderViewHost& adapter,
+bool ExecuteScriptAndExtractBool(const internal::ToRenderFrameHost& adapter,
                                  const std::string& script,
                                  bool* result) WARN_UNUSED_RESULT;
-bool ExecuteScriptAndExtractString(const internal::ToRenderViewHost& adapter,
+bool ExecuteScriptAndExtractString(const internal::ToRenderFrameHost& adapter,
                                    const std::string& script,
                                    std::string* result) WARN_UNUSED_RESULT;
 
@@ -178,7 +207,7 @@ bool ExecuteScriptAndExtractString(const internal::ToRenderViewHost& adapter,
 // |js_resource_ids| prior to executing the tests.
 //
 // Returns true if tests ran successfully, false otherwise.
-bool ExecuteWebUIResourceTest(const internal::ToRenderViewHost& adapter,
+bool ExecuteWebUIResourceTest(WebContents* web_contents,
                               const std::vector<int>& js_resource_ids);
 
 // Returns the cookies for the given url.

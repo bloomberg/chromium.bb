@@ -27,9 +27,9 @@ class WebUIResourceBrowserTest : public ContentBrowserTest {
     ASSERT_TRUE(PathExists(file));
     NavigateToURL(shell(), net::FilePathToFileURL(file));
 
-    RenderViewHost* rvh = shell()->web_contents()->GetRenderViewHost();
-    ASSERT_TRUE(rvh);
-    EXPECT_TRUE(ExecuteWebUIResourceTest(rvh, include_libraries_));
+    content::WebContents* web_contents = shell()->web_contents();
+    ASSERT_TRUE(web_contents);
+    EXPECT_TRUE(ExecuteWebUIResourceTest(web_contents, include_libraries_));
   }
 
   void RunMediaInternalsTest(const base::FilePath::CharType* file) {

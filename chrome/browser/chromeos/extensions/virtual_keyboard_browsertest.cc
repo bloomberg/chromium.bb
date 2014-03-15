@@ -50,13 +50,13 @@ class VirtualKeyboardBrowserTest : public InProcessBrowserTest {
         keyboard::switches::kEnableVirtualKeyboard);
   }
 
-  //Injects javascript in |file| into the keyboard page and runs test methods.
+  // Injects javascript in |file| into the keyboard page and runs test methods.
   void RunTest(const base::FilePath& file) {
     ui_test_utils::NavigateToURL(browser(), GURL("chrome://keyboard"));
 
-    content::RenderViewHost* rvh = browser()->tab_strip_model()
-        ->GetActiveWebContents()->GetRenderViewHost();
-    ASSERT_TRUE(rvh);
+    content::WebContents* web_contents =
+        browser()->tab_strip_model()->GetActiveWebContents();
+    ASSERT_TRUE(web_contents);
 
     // Inject testing scripts.
     InjectJavascript(kWebuiTestDir, kMockController);
@@ -64,11 +64,11 @@ class VirtualKeyboardBrowserTest : public InProcessBrowserTest {
     InjectJavascript(kVirtualKeyboardTestDir, kBaseKeyboardTestFramework);
     InjectJavascript(kVirtualKeyboardTestDir, file);
 
-    ASSERT_TRUE(content::ExecuteScript(rvh, utf8_content_));
+    ASSERT_TRUE(content::ExecuteScript(web_contents, utf8_content_));
 
     // Inject DOM-automation test harness and run tests.
     std::vector<int> resource_ids;
-    EXPECT_TRUE(ExecuteWebUIResourceTest(rvh, resource_ids));
+    EXPECT_TRUE(ExecuteWebUIResourceTest(web_contents, resource_ids));
   }
 
   void showVirtualKeyboard() {

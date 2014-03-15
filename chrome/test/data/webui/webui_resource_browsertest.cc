@@ -9,7 +9,6 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "grit/webui_resources.h"
@@ -22,10 +21,10 @@ class WebUIResourceBrowserTest : public InProcessBrowserTest {
         base::FilePath(FILE_PATH_LITERAL("webui")), file);
     ui_test_utils::NavigateToURL(browser(), url);
 
-    content::RenderViewHost* rvh = browser()->tab_strip_model()
-        ->GetActiveWebContents()->GetRenderViewHost();
-    ASSERT_TRUE(rvh);
-    EXPECT_TRUE(ExecuteWebUIResourceTest(rvh, include_libraries_));
+    content::WebContents* web_contents =
+        browser()->tab_strip_model()->GetActiveWebContents();
+    ASSERT_TRUE(web_contents);
+    EXPECT_TRUE(ExecuteWebUIResourceTest(web_contents, include_libraries_));
   }
 
   // Queues the library corresponding to |resource_id| for injection into the

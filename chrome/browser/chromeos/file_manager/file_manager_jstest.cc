@@ -19,12 +19,12 @@ class FileManagerJsTest : public InProcessBrowserTest {
         base::FilePath(FILE_PATH_LITERAL("file_manager/unit_tests")), file);
     ui_test_utils::NavigateToURL(browser(), url);
 
-    content::RenderViewHost* rvh = browser()->tab_strip_model()
-        ->GetActiveWebContents()->GetRenderViewHost();
-    ASSERT_TRUE(rvh);
+    content::WebContents* web_contents =
+        browser()->tab_strip_model()->GetActiveWebContents();
+    ASSERT_TRUE(web_contents);
 
     const std::vector<int> empty_libraries;
-    EXPECT_TRUE(ExecuteWebUIResourceTest(rvh, empty_libraries));
+    EXPECT_TRUE(ExecuteWebUIResourceTest(web_contents, empty_libraries));
   }
 };
 

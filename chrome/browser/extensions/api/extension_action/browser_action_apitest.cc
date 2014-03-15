@@ -729,9 +729,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, TestTriggerBrowserAction) {
       "window.domAutomationController.send(document.body.style."
       "backgroundColor);";
   std::string result;
-  const std::string frame_xpath;
-  EXPECT_TRUE(content::ExecuteScriptInFrameAndExtractString(
-      tab, frame_xpath, script, &result));
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(tab, script, &result));
   EXPECT_EQ(result, "red");
 }
 
