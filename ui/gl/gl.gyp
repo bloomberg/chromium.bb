@@ -359,5 +359,10 @@
         },
       ],
     }],
+    ['OS=="android" and android_webview_build==0', {
+      'dependencies': [
+        '../android/ui_android.gyp:ui_java',
+      ],
+    }],
   ],
 }

@@ -285,6 +285,7 @@
         '<(angle_path)/src/build_angle.gyp:translator',
         '../ui/gfx/gfx.gyp:gfx',
         '../ui/gfx/gfx.gyp:gfx_geometry',
+        '../ui/gl/gl.gyp:gl',
         'command_buffer/command_buffer.gyp:gles2_utils',
         'command_buffer_client',
         'command_buffer_common',
