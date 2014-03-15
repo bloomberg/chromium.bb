@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 {
-  # This file is not used when use_system_libjepg==1. Settings for building with
+  # This file is not used when use_system_libjpeg==1. Settings for building with
   # the system libjpeg is in third_party/libjpeg/libjpeg.gyp.
   'variables': {
     'shared_generated_dir': '<(SHARED_INTERMEDIATE_DIR)/third_party/libjpeg_turbo',
@@ -240,7 +240,7 @@
             ],
           },
         }],
-        [ 'OS=="linux" or (OS=="android" and target_arch!="arm")', {
+        [ 'OS=="linux" or OS=="freebsd" or (OS=="android" and target_arch!="arm")', {
           'conditions': [
             [ 'use_system_yasm==0', {
               'dependencies': [
@@ -272,6 +272,9 @@
               }],
             ],
           },
+          'include_dirs': [
+            '<(prefix_dir)/include',
+          ],
         }],
       ],
       'rules': [
