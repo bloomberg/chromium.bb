@@ -14142,7 +14142,7 @@ Do you accept?
     <message name="IDS_FLAGS_ENABLE_OFFLINE_AUTO_RELOAD_NAME" desc="Name of the flag to make pages which failed to load while offline auto-reload">
       Enable Offline Auto-Reload Mode
     </message>
-    <message name="IDS_FLAGS_ENABLE_OFFLINE_AUTO_RELOAD_DESCRIPTION" desc="Description of the flag to make make pages which failed to load while offline auto-reload">
+    <message name="IDS_FLAGS_ENABLE_OFFLINE_AUTO_RELOAD_DESCRIPTION" desc="Description of the flag to make pages which failed to load while offline auto-reload">
       Pages that fail to load while the browser is offline will be auto-reloaded when the browser is online again.
     </message>
 

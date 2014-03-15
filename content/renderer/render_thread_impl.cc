@@ -1344,6 +1344,8 @@ void RenderThreadImpl::OnPurgePluginListCache(bool reload_pages) {
 void RenderThreadImpl::OnNetworkStateChanged(bool online) {
   EnsureWebKitInitialized();
   WebNetworkStateNotifier::setOnLine(online);
+  FOR_EACH_OBSERVER(RenderProcessObserver, observers_,
+      NetworkStateChanged(online));
 }
 
 void RenderThreadImpl::OnTempCrashWithData(const GURL& data) {

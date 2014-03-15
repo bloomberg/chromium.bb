@@ -984,6 +984,17 @@ bool ChromeContentRendererClient::HasErrorPage(int http_status_code,
 bool ChromeContentRendererClient::ShouldSuppressErrorPage(
     content::RenderFrame* render_frame,
     const GURL& url) {
+  // Unit tests for ChromeContentRendererClient pass a NULL RenderFrame here.
+  // Unfortunately it's very difficult to construct a mock RenderView, so skip
+  // this functionality in this case.
+  if (render_frame) {
+    content::RenderView* render_view = render_frame->GetRenderView();
+    content::RenderFrame* main_render_frame = render_view->GetMainRenderFrame();
+    blink::WebFrame* web_frame = render_frame->GetWebFrame();
+    NetErrorHelper* net_error_helper = NetErrorHelper::Get(main_render_frame);
+    if (net_error_helper->ShouldSuppressErrorPage(web_frame, url))
+      return true;
+  }
   // Do not flash an error page if the Instant new tab page fails to load.
   return search_bouncer_.get() && search_bouncer_->IsNewTabPage(url);
 }

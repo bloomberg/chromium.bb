@@ -1580,6 +1580,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kEnableNaClDebug,
       switches::kEnableNaClNonSfiMode,
       switches::kEnableNetBenchmarking,
+      switches::kEnableOfflineAutoReload,
       switches::kEnableStreamlinedHostedApps,
       switches::kEnableWatchdog,
       switches::kMemoryProfiling,

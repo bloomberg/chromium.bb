@@ -35,6 +35,9 @@ class CONTENT_EXPORT RenderProcessObserver {
 
   virtual void IdleNotification() {}
 
+  // Called when the network state changes.
+  virtual void NetworkStateChanged(bool online) {}
+
  private:
   DISALLOW_COPY_AND_ASSIGN(RenderProcessObserver);
 };

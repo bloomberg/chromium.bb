@@ -7,8 +7,10 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/timer/timer.h"
 #include "chrome/common/localized_error.h"
 #include "chrome/common/net/net_error_info.h"
 #include "url/gurl.h"
@@ -69,6 +71,9 @@ class NetErrorHelperCore {
     // ongoing.
     virtual void CancelFetchNavigationCorrections() = 0;
 
+    // Starts a reload of the page in the observed frame.
+    virtual void ReloadPage() = 0;
+
    protected:
     virtual ~Delegate() {}
   };
@@ -95,6 +100,8 @@ class NetErrorHelperCore {
   void OnFinishLoad(FrameType frame_type);
   void OnStop();
 
+  void CancelPendingFetches();
+
   // Called when an error page have has been retrieved over the network.  |html|
   // must be an empty string on error.
   void OnNavigationCorrectionsFetched(const std::string& corrections,
@@ -110,6 +117,30 @@ class NetErrorHelperCore {
                                      const std::string& country_code,
                                      const std::string& api_key,
                                      const GURL& search_url);
+  // Notifies |this| that the network's online status changed.
+  // Handler for NetworkStateChanged notification from the browser process. If
+  // the network state changes to online, this method is responsible for
+  // starting the auto-reload process.
+  //
+  // Warning: if there are many tabs sitting at an error page, this handler will
+  // be run at the same time for each of their top-level renderframes, which can
+  // cause many requests to be started at the same time. There's no current
+  // protection against this kind of "reload storm".
+  //
+  // TODO(rdsmith): prevent the reload storm.
+  void NetworkStateChanged(bool online);
+
+  void set_auto_reload_enabled(bool auto_reload_enabled) {
+    auto_reload_enabled_ = auto_reload_enabled;
+  }
+
+  int auto_reload_count() const { return auto_reload_count_; }
+
+  bool ShouldSuppressErrorPage(FrameType frame_type, const GURL& url);
+
+  void set_timer_for_testing(scoped_ptr<base::Timer> timer) {
+    auto_reload_timer_.reset(timer.release());
+  }
 
  private:
   struct ErrorPageInfo;
@@ -127,6 +158,12 @@ class NetErrorHelperCore {
       std::string* error_html);
 
   blink::WebURLError GetUpdatedError(const blink::WebURLError& error) const;
+
+  void Reload();
+  bool MaybeStartAutoReloadTimer();
+  void StartAutoReloadTimer();
+
+  static bool IsReloadableError(const ErrorPageInfo& info);
 
   Delegate* delegate_;
 
@@ -146,6 +183,15 @@ class NetErrorHelperCore {
   std::string country_code_;
   std::string api_key_;
   GURL search_url_;
+
+  bool auto_reload_enabled_;
+  scoped_ptr<base::Timer> auto_reload_timer_;
+
+  // Is the browser online?
+  bool online_;
+
+  int auto_reload_count_;
+  bool can_auto_reload_page_;
 };
 
 #endif  // CHROME_RENDERER_NET_NET_ERROR_HELPER_CORE_H_

@@ -6,11 +6,14 @@
 
 #include <string>
 
+#include "base/command_line.h"
 #include "base/i18n/rtl.h"
 #include "base/json/json_writer.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/common/chrome_switches.h"
+#include "chrome/common/localized_error.h"
 #include "chrome/common/net/net_error_info.h"
 #include "chrome/common/render_messages.h"
 #include "content/public/common/content_client.h"
@@ -80,9 +83,15 @@ NetErrorHelper::NetErrorHelper(RenderFrame* render_view)
     : RenderFrameObserver(render_view),
       content::RenderFrameObserverTracker<NetErrorHelper>(render_view),
       core_(this) {
+  RenderThread::Get()->AddObserver(this);
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  bool auto_reload_enabled =
+      command_line->HasSwitch(switches::kEnableOfflineAutoReload);
+  core_.set_auto_reload_enabled(auto_reload_enabled);
 }
 
 NetErrorHelper::~NetErrorHelper() {
+  RenderThread::Get()->RemoveObserver(this);
 }
 
 void NetErrorHelper::DidStartProvisionalLoad() {
@@ -117,12 +126,21 @@ bool NetErrorHelper::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
+void NetErrorHelper::NetworkStateChanged(bool enabled) {
+  core_.NetworkStateChanged(enabled);
+}
+
 void NetErrorHelper::GetErrorHTML(
     blink::WebFrame* frame,
     const blink::WebURLError& error,
     bool is_failed_post,
     std::string* error_html) {
   core_.GetErrorHTML(GetFrameType(frame), error, is_failed_post, error_html);
+}
+
+bool NetErrorHelper::ShouldSuppressErrorPage(blink::WebFrame* frame,
+                                             const GURL& url) {
+  return core_.ShouldSuppressErrorPage(GetFrameType(frame), url);
 }
 
 void NetErrorHelper::GenerateLocalizedErrorPage(
@@ -215,6 +233,10 @@ void NetErrorHelper::FetchNavigationCorrections(
 
 void NetErrorHelper::CancelFetchNavigationCorrections() {
   correction_fetcher_.reset();
+}
+
+void NetErrorHelper::ReloadPage() {
+  render_frame()->GetWebFrame()->reload(false);
 }
 
 void NetErrorHelper::OnNetErrorInfo(int status_num) {

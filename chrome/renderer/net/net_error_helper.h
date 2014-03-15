@@ -7,12 +7,14 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/common/localized_error.h"
 #include "chrome/common/net/net_error_info.h"
 #include "chrome/renderer/net/net_error_helper_core.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_frame_observer_tracker.h"
+#include "content/public/renderer/render_process_observer.h"
 
 class GURL;
 
@@ -32,6 +34,7 @@ struct WebURLError;
 class NetErrorHelper
     : public content::RenderFrameObserver,
       public content::RenderFrameObserverTracker<NetErrorHelper>,
+      public content::RenderProcessObserver,
       public NetErrorHelperCore::Delegate {
  public:
   explicit NetErrorHelper(content::RenderFrame* render_view);
@@ -46,6 +49,9 @@ class NetErrorHelper
   // IPC::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
+  // RenderProcessObserver implementation.
+  virtual void NetworkStateChanged(bool online) OVERRIDE;
+
   // Examines |frame| and |error| to see if this is an error worthy of a DNS
   // probe.  If it is, initializes |error_strings| based on |error|,
   // |is_failed_post|, and |locale| with suitable strings and returns true.
@@ -58,6 +64,10 @@ class NetErrorHelper
                     const blink::WebURLError& error,
                     bool is_failed_post,
                     std::string* error_html);
+
+  // Returns whether a load for |url| in |frame| should have its error page
+  // suppressed.
+  bool ShouldSuppressErrorPage(blink::WebFrame* frame, const GURL& url);
 
  private:
   // NetErrorHelperCore::Delegate implementation:
@@ -74,6 +84,7 @@ class NetErrorHelper
       const GURL& navigation_correction_url,
       const std::string& navigation_correction_request_body) OVERRIDE;
   virtual void CancelFetchNavigationCorrections() OVERRIDE;
+  virtual void ReloadPage() OVERRIDE;
 
   void OnNetErrorInfo(int status);
   void OnSetNavigationCorrectionInfo(const GURL& navigation_correction_url,
@@ -88,6 +99,8 @@ class NetErrorHelper
   scoped_ptr<content::ResourceFetcher> correction_fetcher_;
 
   NetErrorHelperCore core_;
+
+  DISALLOW_COPY_AND_ASSIGN(NetErrorHelper);
 };
 
 #endif  // CHROME_RENDERER_NET_NET_ERROR_HELPER_H_
