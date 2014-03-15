@@ -6009,6 +6009,80 @@ TEST_F(URLRequestTestHTTP, SetSubsequentJobPriority) {
   EXPECT_EQ(LOW, job->priority());
 }
 
+// Check that creating a network request while entering/exiting suspend mode
+// fails as it should.  This is the only case where an HttpTransactionFactory
+// does not return an HttpTransaction.
+TEST_F(URLRequestTestHTTP, NetworkSuspendTest) {
+  // Create a new HttpNetworkLayer that thinks it's suspended.
+  HttpNetworkSession::Params params;
+  params.host_resolver = default_context_.host_resolver();
+  params.cert_verifier = default_context_.cert_verifier();
+  params.transport_security_state = default_context_.transport_security_state();
+  params.proxy_service = default_context_.proxy_service();
+  params.ssl_config_service = default_context_.ssl_config_service();
+  params.http_auth_handler_factory =
+      default_context_.http_auth_handler_factory();
+  params.network_delegate = &default_network_delegate_;
+  params.http_server_properties = default_context_.http_server_properties();
+  scoped_ptr<HttpNetworkLayer> network_layer(
+      new HttpNetworkLayer(new HttpNetworkSession(params)));
+  network_layer->OnSuspend();
+
+  HttpCache http_cache(network_layer.release(), default_context_.net_log(),
+                       HttpCache::DefaultBackend::InMemory(0));
+
+  TestURLRequestContext context(true);
+  context.set_http_transaction_factory(&http_cache);
+  context.Init();
+
+  TestDelegate d;
+  URLRequest req(GURL("http://127.0.0.1/"),
+                 DEFAULT_PRIORITY,
+                 &d,
+                 &context);
+  req.Start();
+  base::RunLoop().Run();
+
+  EXPECT_TRUE(d.request_failed());
+  EXPECT_EQ(URLRequestStatus::FAILED, req.status().status());
+  EXPECT_EQ(ERR_NETWORK_IO_SUSPENDED, req.status().error());
+}
+
+// Check that creating a network request while entering/exiting suspend mode
+// fails as it should in the case there is no cache.  This is the only case
+// where an HttpTransactionFactory does not return an HttpTransaction.
+TEST_F(URLRequestTestHTTP, NetworkSuspendTestNoCache) {
+  // Create a new HttpNetworkLayer that thinks it's suspended.
+  HttpNetworkSession::Params params;
+  params.host_resolver = default_context_.host_resolver();
+  params.cert_verifier = default_context_.cert_verifier();
+  params.transport_security_state = default_context_.transport_security_state();
+  params.proxy_service = default_context_.proxy_service();
+  params.ssl_config_service = default_context_.ssl_config_service();
+  params.http_auth_handler_factory =
+      default_context_.http_auth_handler_factory();
+  params.network_delegate = &default_network_delegate_;
+  params.http_server_properties = default_context_.http_server_properties();
+  HttpNetworkLayer network_layer(new HttpNetworkSession(params));
+  network_layer.OnSuspend();
+
+  TestURLRequestContext context(true);
+  context.set_http_transaction_factory(&network_layer);
+  context.Init();
+
+  TestDelegate d;
+  URLRequest req(GURL("http://127.0.0.1/"),
+                 DEFAULT_PRIORITY,
+                 &d,
+                 &context);
+  req.Start();
+  base::RunLoop().Run();
+
+  EXPECT_TRUE(d.request_failed());
+  EXPECT_EQ(URLRequestStatus::FAILED, req.status().status());
+  EXPECT_EQ(ERR_NETWORK_IO_SUSPENDED, req.status().error());
+}
+
 class HTTPSRequestTest : public testing::Test {
  public:
   HTTPSRequestTest() : default_context_(true) {

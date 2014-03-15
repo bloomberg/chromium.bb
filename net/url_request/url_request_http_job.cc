@@ -770,9 +770,9 @@ void URLRequestHttpJob::OnStartCompleted(int result) {
   if (!request_)
     return;
 
-  // If the transaction was destroyed, then the job was cancelled, and
-  // we can just ignore this notification.
-  if (!transaction_.get())
+  // If the job is done (due to cancellation), can just ignore this
+  // notification.
+  if (done_)
     return;
 
   receive_headers_end_ = base::TimeTicks::Now();
