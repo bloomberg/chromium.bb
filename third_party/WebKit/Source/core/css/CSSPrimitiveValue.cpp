@@ -112,40 +112,6 @@ static inline bool isValidCSSUnitTypeForDoubleConversion(CSSPrimitiveValue::Unit
     return false;
 }
 
-CSSPrimitiveValue::UnitTable createUnitTable()
-{
-    CSSPrimitiveValue::UnitTable table;
-    table.set(String("em"), CSSPrimitiveValue::CSS_EMS);
-    table.set(String("ex"), CSSPrimitiveValue::CSS_EXS);
-    table.set(String("px"), CSSPrimitiveValue::CSS_PX);
-    table.set(String("cm"), CSSPrimitiveValue::CSS_CM);
-    table.set(String("mm"), CSSPrimitiveValue::CSS_MM);
-    table.set(String("in"), CSSPrimitiveValue::CSS_IN);
-    table.set(String("pt"), CSSPrimitiveValue::CSS_PT);
-    table.set(String("pc"), CSSPrimitiveValue::CSS_PC);
-    table.set(String("deg"), CSSPrimitiveValue::CSS_DEG);
-    table.set(String("rad"), CSSPrimitiveValue::CSS_RAD);
-    table.set(String("grad"), CSSPrimitiveValue::CSS_GRAD);
-    table.set(String("ms"), CSSPrimitiveValue::CSS_MS);
-    table.set(String("s"), CSSPrimitiveValue::CSS_S);
-    table.set(String("hz"), CSSPrimitiveValue::CSS_HZ);
-    table.set(String("khz"), CSSPrimitiveValue::CSS_KHZ);
-    table.set(String("dpi"), CSSPrimitiveValue::CSS_DPI);
-    table.set(String("dpcm"), CSSPrimitiveValue::CSS_DPCM);
-    table.set(String("dppx"), CSSPrimitiveValue::CSS_DPPX);
-    table.set(String("vw"), CSSPrimitiveValue::CSS_VW);
-    table.set(String("vh"), CSSPrimitiveValue::CSS_VH);
-    table.set(String("vmax"), CSSPrimitiveValue::CSS_VMIN);
-    table.set(String("vmin"), CSSPrimitiveValue::CSS_VMAX);
-    return table;
-}
-
-CSSPrimitiveValue::UnitTable& CSSPrimitiveValue::getUnitTable()
-{
-    DEFINE_STATIC_LOCAL(UnitTable, unitTable, (createUnitTable()));
-    return unitTable;
-}
-
 CSSPrimitiveValue::UnitCategory CSSPrimitiveValue::unitCategory(CSSPrimitiveValue::UnitTypes type)
 {
     // Here we violate the spec (http://www.w3.org/TR/DOM-Level-2-Style/css.html#CSS-CSSPrimitiveValue) and allow conversions
