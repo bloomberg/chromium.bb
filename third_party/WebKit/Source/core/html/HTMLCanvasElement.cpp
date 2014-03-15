@@ -91,7 +91,7 @@ PassRefPtr<HTMLCanvasElement> HTMLCanvasElement::create(Document& document)
 
 HTMLCanvasElement::~HTMLCanvasElement()
 {
-    setExternallyAllocatedMemory(0);
+    v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(-m_externallyAllocatedMemory);
     HashSet<CanvasObserver*>::iterator end = m_observers.end();
     for (HashSet<CanvasObserver*>::iterator it = m_observers.begin(); it != end; ++it)
         (*it)->canvasDestroyed(this);
@@ -195,8 +195,10 @@ CanvasRenderingContext* HTMLCanvasElement::getContext(const String& type, Canvas
             if (!m_context) {
                 blink::Platform::current()->histogramEnumeration("Canvas.ContextType", contextType, ContextTypeCount);
                 m_context = WebGLRenderingContext::create(this, static_cast<WebGLContextAttributes*>(attrs));
-                if (m_context)
+                if (m_context) {
                     scheduleLayerUpdate();
+                    updateExternallyAllocatedMemory();
+                }
             }
             return m_context.get();
         }
@@ -340,12 +342,14 @@ void HTMLCanvasElement::makePresentationCopy()
     if (!m_presentedImage) {
         // The buffer contains the last presented data, so save a copy of it.
         m_presentedImage = buffer()->copyImage(CopyBackingStore, Unscaled);
+        updateExternallyAllocatedMemory();
     }
 }
 
 void HTMLCanvasElement::clearPresentationCopy()
 {
     m_presentedImage.clear();
+    updateExternallyAllocatedMemory();
 }
 
 void HTMLCanvasElement::setSurfaceSize(const IntSize& size)
@@ -353,7 +357,6 @@ void HTMLCanvasElement::setSurfaceSize(const IntSize& size)
     m_size = size;
     m_didFailToCreateImageBuffer = false;
     discardImageBuffer();
-    setExternallyAllocatedMemory(0);
     clearCopiedImage();
 }
 
@@ -471,7 +474,7 @@ void HTMLCanvasElement::createImageBuffer()
 
     m_didFailToCreateImageBuffer = false;
 
-    setExternallyAllocatedMemory(4 * width() * height());
+    updateExternallyAllocatedMemory();
 
     if (is3D()) {
         // Early out for WebGL canvases
@@ -496,8 +499,26 @@ void HTMLCanvasElement::createImageBuffer()
         scheduleLayerUpdate();
 }
 
-void HTMLCanvasElement::setExternallyAllocatedMemory(intptr_t externallyAllocatedMemory)
+void HTMLCanvasElement::updateExternallyAllocatedMemory() const
 {
+    int bufferCount = 0;
+    if (m_imageBuffer)
+        bufferCount++;
+    if (is3D())
+        bufferCount += 2;
+    if (m_copiedImage)
+        bufferCount++;
+    if (m_presentedImage)
+        bufferCount++;
+
+    Checked<intptr_t, RecordOverflow> checkedExternallyAllocatedMemory = 4 * bufferCount;
+    checkedExternallyAllocatedMemory *= width();
+    checkedExternallyAllocatedMemory *= height();
+    intptr_t externallyAllocatedMemory;
+    if (checkedExternallyAllocatedMemory.safeGet(externallyAllocatedMemory) == CheckedState::DidOverflow)
+        externallyAllocatedMemory = std::numeric_limits<intptr_t>::max();
+
+    // Subtracting two intptr_t that are known to be positive will never underflow.
     v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(externallyAllocatedMemory - m_externallyAllocatedMemory);
     m_externallyAllocatedMemory = externallyAllocatedMemory;
 }
@@ -540,6 +561,7 @@ Image* HTMLCanvasElement::copiedImage() const
         if (m_context)
             m_context->paintRenderingResultsToCanvas();
         m_copiedImage = buffer()->copyImage(CopyBackingStore, Unscaled);
+        updateExternallyAllocatedMemory();
     }
     return m_copiedImage.get();
 }
@@ -563,12 +585,14 @@ void HTMLCanvasElement::discardImageBuffer()
 {
     m_contextStateSaver.clear(); // uses context owned by m_imageBuffer
     m_imageBuffer.clear();
+    updateExternallyAllocatedMemory();
 }
 
 void HTMLCanvasElement::clearCopiedImage()
 {
     m_copiedImage.clear();
     m_didClearImageBuffer = false;
+    updateExternallyAllocatedMemory();
 }
 
 AffineTransform HTMLCanvasElement::baseTransform() const

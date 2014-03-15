@@ -158,7 +158,7 @@ private:
 
     bool paintsIntoCanvasBuffer() const;
 
-    void setExternallyAllocatedMemory(intptr_t);
+    void updateExternallyAllocatedMemory() const;
 
     HashSet<CanvasObserver*> m_observers;
 
@@ -172,7 +172,7 @@ private:
     bool m_accelerationDisabled;
     FloatRect m_dirtyRect;
 
-    intptr_t m_externallyAllocatedMemory;
+    mutable intptr_t m_externallyAllocatedMemory;
 
     bool m_originClean;
 
