@@ -247,6 +247,7 @@ CONTENT_EXPORT extern const char kTabCaptureUpscaleQuality[];
 CONTENT_EXPORT extern const char kTestingFixedHttpPort[];
 CONTENT_EXPORT extern const char kTestingFixedHttpsPort[];
 CONTENT_EXPORT extern const char kTestSandbox[];
+CONTENT_EXPORT extern const char kTestType[];
 CONTENT_EXPORT extern const char kTouchAckTimeoutDelayMs[];
 CONTENT_EXPORT extern const char kTouchScrollingMode[];
 CONTENT_EXPORT extern const char kTouchScrollingModeAbsorbTouchmove[];

@@ -705,6 +705,7 @@
     "contexts": ["blessed_extension"]
   },
   "test": {
+    "internal": true,
     "channel": "stable",
     "extension_types": "all",
     "contexts": ["blessed_extension", "unblessed_extension", "content_script"]

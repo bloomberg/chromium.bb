@@ -1381,9 +1381,6 @@ const char kSyncfsEnableDirectoryOperation[] =
 // Passes the name of the current running automated test to Chrome.
 const char kTestName[]                      = "test-name";
 
-// Type of the current test harness ("browser" or "ui").
-const char kTestType[]                      = "test-type";
-
 // Tells the app to listen for and broadcast testing-related messages on IPC
 // channel with the given ID.
 const char kTestingChannelID[]              = "testing-channel";

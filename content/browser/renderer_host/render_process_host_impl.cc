@@ -1128,6 +1128,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kSitePerProcess,
     switches::kStatsCollectionController,
     switches::kTestSandbox,
+    switches::kTestType,
     switches::kTouchEvents,
     switches::kTraceToConsole,
     switches::kUseDiscardableMemory,

@@ -775,6 +775,9 @@ void Dispatcher::AddOrRemoveBindingsForContext(ChromeV8Context* context) {
         if (context->IsAnyFeatureAvailableToContext(*feature))
           RegisterBinding(api_name, context);
       }
+      if (CommandLine::ForCurrentProcess()->HasSwitch(::switches::kTestType)) {
+        RegisterBinding("test", context);
+      }
       break;
     }
   }

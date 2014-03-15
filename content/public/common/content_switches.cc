@@ -868,6 +868,9 @@ const char kTestingFixedHttpsPort[]         = "testing-fixed-https-port";
 // Runs the security test for the renderer sandbox.
 const char kTestSandbox[]                   = "test-sandbox";
 
+// Type of the current test harness ("browser" or "ui").
+const char kTestType[]                      = "test-type";
+
 // Enable timeout-based touch event cancellation if a touch ack is delayed.
 // If unspecified, touch timeout behavior will be disabled.
 const char kTouchAckTimeoutDelayMs[]        = "touch-ack-timeout-delay-ms";
