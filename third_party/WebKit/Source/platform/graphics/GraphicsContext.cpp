@@ -428,18 +428,17 @@ void GraphicsContext::setMatrix(const SkMatrix& matrix)
     m_canvas->setMatrix(matrix);
 }
 
-bool GraphicsContext::concat(const SkMatrix& matrix)
+void GraphicsContext::concat(const SkMatrix& matrix)
 {
     if (paintingDisabled())
-        return false;
-
+        return;
 
     if (matrix.isIdentity())
-        return true;
+        return;
 
     realizeCanvasSave(SkCanvas::kMatrix_SaveFlag);
 
-    return m_canvas->concat(matrix);
+    m_canvas->concat(matrix);
 }
 
 void GraphicsContext::beginTransparencyLayer(float opacity, const FloatRect* bounds)

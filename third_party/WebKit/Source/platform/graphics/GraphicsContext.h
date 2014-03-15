@@ -422,7 +422,7 @@ private:
     void clipPath(const SkPath&, AntiAliasingMode = NotAntiAliased, SkRegion::Op = SkRegion::kIntersect_Op);
     void clipRRect(const SkRRect&, AntiAliasingMode = NotAntiAliased, SkRegion::Op = SkRegion::kIntersect_Op);
 
-    bool concat(const SkMatrix&);
+    void concat(const SkMatrix&);
 
     // common code between setupPaintFor[Filling,Stroking]
     void setupShader(SkPaint*, Gradient*, Pattern*, SkColor) const;
