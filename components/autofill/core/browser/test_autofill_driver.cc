@@ -62,7 +62,11 @@ void TestAutofillDriver::SetURLRequestContext(
   url_request_context_ = url_request_context;
 }
 
-void TestAutofillDriver::RendererShouldSetNodeText(
+void TestAutofillDriver::RendererShouldFillFieldWithValue(
+    const base::string16& value) {
+}
+
+void TestAutofillDriver::RendererShouldPreviewFieldWithValue(
     const base::string16& value) {
 }
 

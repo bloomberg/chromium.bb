@@ -148,7 +148,9 @@ bool AutofillAgent::OnMessageReceived(const IPC::Message& message) {
                         OnFieldTypePredictionsAvailable)
     IPC_MESSAGE_HANDLER(AutofillMsg_ClearForm, OnClearForm)
     IPC_MESSAGE_HANDLER(AutofillMsg_ClearPreviewedForm, OnClearPreviewedForm)
-    IPC_MESSAGE_HANDLER(AutofillMsg_SetNodeText, OnSetNodeText)
+    IPC_MESSAGE_HANDLER(AutofillMsg_FillFieldWithValue, OnFillFieldWithValue)
+    IPC_MESSAGE_HANDLER(AutofillMsg_PreviewFieldWithValue,
+                        OnPreviewFieldWithValue)
     IPC_MESSAGE_HANDLER(AutofillMsg_AcceptDataListSuggestion,
                         OnAcceptDataListSuggestion)
     IPC_MESSAGE_HANDLER(AutofillMsg_AcceptPasswordAutofillSuggestion,
@@ -384,7 +386,7 @@ void AutofillAgent::AcceptDataListSuggestion(
 
     new_value = JoinString(parts, ',');
   }
-  SetNodeText(new_value, &element_);
+  FillFieldWithValue(new_value, &element_);
 }
 
 void AutofillAgent::OnFieldTypePredictionsAvailable(
@@ -433,8 +435,12 @@ void AutofillAgent::OnClearPreviewedForm() {
   }
 }
 
-void AutofillAgent::OnSetNodeText(const base::string16& value) {
-  SetNodeText(value, &element_);
+void AutofillAgent::OnFillFieldWithValue(const base::string16& value) {
+  FillFieldWithValue(value, &element_);
+}
+
+void AutofillAgent::OnPreviewFieldWithValue(const base::string16& value) {
+  PreviewFieldWithValue(value, &element_);
 }
 
 void AutofillAgent::OnAcceptDataListSuggestion(const base::string16& value) {
@@ -567,10 +573,18 @@ void AutofillAgent::QueryAutofillSuggestions(const WebInputElement& element,
                                                   display_warning_if_disabled));
 }
 
-void AutofillAgent::SetNodeText(const base::string16& value,
-                                blink::WebInputElement* node) {
+void AutofillAgent::FillFieldWithValue(const base::string16& value,
+                                       blink::WebInputElement* node) {
   did_set_node_text_ = true;
   node->setEditingValue(value.substr(0, node->maxLength()));
+  node->setAutofilled(true);
+}
+
+void AutofillAgent::PreviewFieldWithValue(const base::string16& value,
+                                          blink::WebInputElement* node) {
+  was_query_node_autofilled_ = element_.isAutofilled();
+  node->setSuggestedValue(value.substr(0, node->maxLength()));
+  node->setAutofilled(true);
 }
 
 void AutofillAgent::HidePopup() {

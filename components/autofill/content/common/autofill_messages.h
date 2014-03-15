@@ -122,8 +122,12 @@ IPC_MESSAGE_ROUTED0(AutofillMsg_ClearForm)
 IPC_MESSAGE_ROUTED0(AutofillMsg_ClearPreviewedForm)
 
 // Sets the currently selected node's value.
-IPC_MESSAGE_ROUTED1(AutofillMsg_SetNodeText,
-                    base::string16 /* new node text */)
+IPC_MESSAGE_ROUTED1(AutofillMsg_FillFieldWithValue,
+                    base::string16 /* value */)
+
+// Sets the suggested value for the currently previewed node.
+IPC_MESSAGE_ROUTED1(AutofillMsg_PreviewFieldWithValue,
+                    base::string16 /* value */)
 
 // Sets the currently selected node's value to be the given data list value.
 IPC_MESSAGE_ROUTED1(AutofillMsg_AcceptDataListSuggestion,

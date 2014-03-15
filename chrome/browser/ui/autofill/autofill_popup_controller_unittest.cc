@@ -43,7 +43,8 @@ class MockAutofillExternalDelegate : public AutofillExternalDelegate {
       : AutofillExternalDelegate(autofill_manager, autofill_driver) {}
   virtual ~MockAutofillExternalDelegate() {}
 
-  virtual void DidSelectSuggestion(int identifier) OVERRIDE {}
+  virtual void DidSelectSuggestion(const base::string16& value,
+                                   int identifier) OVERRIDE {}
   virtual void RemoveSuggestion(const base::string16& value,
                                 int identifier) OVERRIDE {}
   virtual void ClearPreviewedForm() OVERRIDE {}

@@ -162,12 +162,16 @@ bool AutofillExternalDelegate::ShouldRepostEvent(const ui::MouseEvent& event) {
   return true;
 }
 
-void AutofillExternalDelegate::DidSelectSuggestion(int identifier) {
+void AutofillExternalDelegate::DidSelectSuggestion(
+    const base::string16& value,
+    int identifier) {
   ClearPreviewedForm();
 
   // Only preview the data if it is a profile.
   if (identifier > 0)
     FillAutofillFormData(identifier, true);
+  else if (identifier == POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY)
+    driver_->RendererShouldPreviewFieldWithValue(value);
 }
 
 void AutofillExternalDelegate::DidAcceptSuggestion(const base::string16& value,
@@ -186,7 +190,7 @@ void AutofillExternalDelegate::DidAcceptSuggestion(const base::string16& value,
     driver_->RendererShouldAcceptDataListSuggestion(value);
   } else if (identifier == POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY) {
     // User selected an Autocomplete, so we fill directly.
-    driver_->RendererShouldSetNodeText(value);
+    driver_->RendererShouldFillFieldWithValue(value);
   } else {
     FillAutofillFormData(identifier, false);
   }

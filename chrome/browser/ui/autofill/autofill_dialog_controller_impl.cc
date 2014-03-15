@@ -2250,7 +2250,9 @@ bool AutofillDialogControllerImpl::ShouldRepostEvent(
   return !view_->HitTestInput(popup_input_type_, event.location());
 }
 
-void AutofillDialogControllerImpl::DidSelectSuggestion(int identifier) {
+void AutofillDialogControllerImpl::DidSelectSuggestion(
+    const base::string16& value,
+    int identifier) {
   // TODO(estade): implement.
 }
 

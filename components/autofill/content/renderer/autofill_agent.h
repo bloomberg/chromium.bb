@@ -97,7 +97,8 @@ class AutofillAgent : public content::RenderViewObserver,
   // For external Autofill selection.
   void OnClearForm();
   void OnClearPreviewedForm();
-  void OnSetNodeText(const base::string16& value);
+  void OnFillFieldWithValue(const base::string16& value);
+  void OnPreviewFieldWithValue(const base::string16& value);
   void OnAcceptDataListSuggestion(const base::string16& value);
   void OnAcceptPasswordAutofillSuggestion(const base::string16& username);
 
@@ -151,7 +152,14 @@ class AutofillAgent : public content::RenderViewObserver,
       FormFieldData* field) WARN_UNUSED_RESULT;
 
   // Set |node| to display the given |value|.
-  void SetNodeText(const base::string16& value, blink::WebInputElement* node);
+  void FillFieldWithValue(const base::string16& value,
+                          blink::WebInputElement* node);
+
+  // Set |node| to display the given |value| as a preview.  The preview is
+  // visible on screen to the user, but not visible to the page via the DOM or
+  // JavaScript.
+  void PreviewFieldWithValue(const base::string16& value,
+                             blink::WebInputElement* node);
 
   // Hides any currently showing Autofill popup.
   void HidePopup();

@@ -80,7 +80,13 @@ class AutofillDriver {
   virtual void RendererShouldClearPreviewedForm() = 0;
 
   // Tells the renderer to set the node text.
-  virtual void RendererShouldSetNodeText(const base::string16& value) = 0;
+  virtual void RendererShouldFillFieldWithValue(
+      const base::string16& value) = 0;
+
+  // Tells the renderer to preview the node with suggested text.
+  virtual void RendererShouldPreviewFieldWithValue(
+      const base::string16& value) = 0;
+
 };
 
 }  // namespace autofill

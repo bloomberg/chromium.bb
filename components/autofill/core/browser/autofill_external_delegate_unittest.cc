@@ -41,7 +41,9 @@ class MockAutofillDriver : public TestAutofillDriver {
                void(const base::string16&));
   MOCK_METHOD0(RendererShouldClearFilledForm, void());
   MOCK_METHOD0(RendererShouldClearPreviewedForm, void());
-  MOCK_METHOD1(RendererShouldSetNodeText, void(const base::string16&));
+  MOCK_METHOD1(RendererShouldFillFieldWithValue, void(const base::string16&));
+  MOCK_METHOD1(RendererShouldPreviewFieldWithValue,
+               void(const base::string16&));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAutofillDriver);
@@ -354,7 +356,7 @@ TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateInvalidUniqueId) {
   // Ensure it doesn't try to preview the negative id.
   EXPECT_CALL(*autofill_manager_, FillOrPreviewForm(_, _, _, _, _)).Times(0);
   EXPECT_CALL(*autofill_driver_, RendererShouldClearPreviewedForm()).Times(1);
-  external_delegate_->DidSelectSuggestion(-1);
+  external_delegate_->DidSelectSuggestion(base::string16(), -1);
 
   // Ensure it doesn't try to fill the form in with the negative id.
   EXPECT_CALL(manager_delegate_, HideAutofillPopup());
@@ -368,12 +370,21 @@ TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateClearPreviewedForm) {
   // Ensure selecting a new password entries or Autofill entries will
   // cause any previews to get cleared.
   EXPECT_CALL(*autofill_driver_, RendererShouldClearPreviewedForm()).Times(1);
-  external_delegate_->DidSelectSuggestion(POPUP_ITEM_ID_PASSWORD_ENTRY);
+  external_delegate_->DidSelectSuggestion(ASCIIToUTF16("baz foo"),
+                                          POPUP_ITEM_ID_PASSWORD_ENTRY);
   EXPECT_CALL(*autofill_driver_, RendererShouldClearPreviewedForm()).Times(1);
   EXPECT_CALL(*autofill_manager_,
               FillOrPreviewForm(
                   AutofillDriver::FORM_DATA_ACTION_PREVIEW, _, _, _, _));
-  external_delegate_->DidSelectSuggestion(1);
+  external_delegate_->DidSelectSuggestion(ASCIIToUTF16("baz foo"), 1);
+
+  // Ensure selecting an autocomplete entry will cause any previews to
+  // get cleared.
+  EXPECT_CALL(*autofill_driver_, RendererShouldClearPreviewedForm()).Times(1);
+  EXPECT_CALL(*autofill_driver_, RendererShouldPreviewFieldWithValue(
+                                     ASCIIToUTF16("baz foo")));
+  external_delegate_->DidSelectSuggestion(ASCIIToUTF16("baz foo"),
+                                          POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY);
 }
 
 // Test that the popup is hidden once we are done editing the autofill field.
@@ -479,11 +490,11 @@ TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateHideWarning) {
                                             autofill_ids);
 }
 
-TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateSetNodeText) {
+TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateFillFieldWithValue) {
   EXPECT_CALL(manager_delegate_, HideAutofillPopup());
   base::string16 dummy_string(ASCIIToUTF16("baz foo"));
   EXPECT_CALL(*autofill_driver_,
-              RendererShouldSetNodeText(dummy_string));
+              RendererShouldFillFieldWithValue(dummy_string));
   external_delegate_->DidAcceptSuggestion(dummy_string,
                                           POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY);
 }

@@ -29,7 +29,8 @@ class AutofillPopupDelegate {
 
   // Called when the autofill suggestion indicated by |identifier| has been
   // temporarily selected (e.g., hovered).
-  virtual void DidSelectSuggestion(int identifier) = 0;
+  virtual void DidSelectSuggestion(const base::string16& value,
+                                   int identifier) = 0;
 
   // Inform the delegate that a row in the popup has been chosen.
   virtual void DidAcceptSuggestion(const base::string16& value,

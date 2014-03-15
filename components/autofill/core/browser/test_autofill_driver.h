@@ -40,7 +40,10 @@ class TestAutofillDriver : public AutofillDriver {
       const base::string16& username) OVERRIDE;
   virtual void RendererShouldClearFilledForm() OVERRIDE;
   virtual void RendererShouldClearPreviewedForm() OVERRIDE;
-  virtual void RendererShouldSetNodeText(const base::string16& value) OVERRIDE;
+  virtual void RendererShouldFillFieldWithValue(
+      const base::string16& value) OVERRIDE;
+  virtual void RendererShouldPreviewFieldWithValue(
+      const base::string16& value) OVERRIDE;
 
   // Methods that tests can use to specialize functionality.
 

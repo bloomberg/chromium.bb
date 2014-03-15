@@ -157,8 +157,12 @@ class ContentAutofillDriverTest : public ChromeRenderViewHostTestHarness {
       return false;
     Tuple1<base::string16> autofill_param;
     switch (messageID) {
-      case AutofillMsg_SetNodeText::ID:
-        if (!AutofillMsg_SetNodeText::Read(message, &autofill_param))
+      case AutofillMsg_FillFieldWithValue::ID:
+        if (!AutofillMsg_FillFieldWithValue::Read(message, &autofill_param))
+          return false;
+        break;
+      case AutofillMsg_PreviewFieldWithValue::ID:
+        if (!AutofillMsg_PreviewFieldWithValue::Read(message, &autofill_param))
           return false;
         break;
       case AutofillMsg_AcceptDataListSuggestion::ID:
@@ -310,12 +314,23 @@ TEST_F(ContentAutofillDriverTest, ClearPreviewedFormSentToRenderer) {
   EXPECT_TRUE(HasMessageMatchingID(AutofillMsg_ClearPreviewedForm::ID));
 }
 
-TEST_F(ContentAutofillDriverTest, SetNodeText) {
+TEST_F(ContentAutofillDriverTest, FillFieldWithValue) {
   base::string16 input_value(base::ASCIIToUTF16("barqux"));
   base::string16 output_value;
-  driver_->RendererShouldSetNodeText(input_value);
-  EXPECT_TRUE(
-      GetString16FromMessageWithID(AutofillMsg_SetNodeText::ID, &output_value));
+
+  driver_->RendererShouldFillFieldWithValue(input_value);
+  EXPECT_TRUE(GetString16FromMessageWithID(AutofillMsg_FillFieldWithValue::ID,
+                                           &output_value));
+  EXPECT_EQ(input_value, output_value);
+}
+
+TEST_F(ContentAutofillDriverTest, PreviewFieldWithValue) {
+  base::string16 input_value(base::ASCIIToUTF16("barqux"));
+  base::string16 output_value;
+  driver_->RendererShouldPreviewFieldWithValue(input_value);
+  EXPECT_TRUE(GetString16FromMessageWithID(
+      AutofillMsg_PreviewFieldWithValue::ID,
+      &output_value));
   EXPECT_EQ(input_value, output_value);
 }
 

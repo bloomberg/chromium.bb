@@ -438,10 +438,12 @@ void AutofillPopupControllerImpl::SetSelectedLine(int selected_line) {
 
   selected_line_ = selected_line;
 
-  if (selected_line_ != kNoSelection)
-    delegate_->DidSelectSuggestion(identifiers_[selected_line_]);
-  else
+  if (selected_line_ != kNoSelection) {
+    delegate_->DidSelectSuggestion(names_[selected_line_],
+                                   identifiers_[selected_line_]);
+  } else {
     delegate_->ClearPreviewedForm();
+  }
 }
 
 void AutofillPopupControllerImpl::SelectNextLine() {
