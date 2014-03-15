@@ -14,8 +14,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "extensions/browser/api/storage/settings_frontend.h"
 #include "extensions/browser/api/storage/settings_namespace.h"
+#include "extensions/browser/api/storage/storage_frontend.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/value_builder.h"
 #include "sync/api/fake_sync_change_processor.h"
@@ -402,7 +402,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, IsStorageEnabled) {
-  SettingsFrontend* frontend = SettingsFrontend::Get(browser()->profile());
+  StorageFrontend* frontend = StorageFrontend::Get(browser()->profile());
   EXPECT_TRUE(frontend->IsStorageEnabled(LOCAL));
   EXPECT_TRUE(frontend->IsStorageEnabled(SYNC));
 
@@ -570,7 +570,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest,
 IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, ManagedStorageDisabled) {
   // Disable the 'managed' namespace. This is redundant when
   // ENABLE_CONFIGURATION_POLICY is not defined.
-  SettingsFrontend* frontend = SettingsFrontend::Get(browser()->profile());
+  StorageFrontend* frontend = StorageFrontend::Get(browser()->profile());
   frontend->DisableStorageForTesting(MANAGED);
   EXPECT_FALSE(frontend->IsStorageEnabled(MANAGED));
   // Now run the extension.

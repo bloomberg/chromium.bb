@@ -19,7 +19,7 @@ class SyncableService;
 }
 
 namespace extensions {
-class SettingsFrontend;
+class StorageFrontend;
 }
 
 namespace browser_sync {

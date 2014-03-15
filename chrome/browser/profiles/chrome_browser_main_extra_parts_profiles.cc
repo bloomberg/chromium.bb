@@ -110,7 +110,7 @@
 #include "extensions/browser/api/sockets_tcp/tcp_socket_event_dispatcher.h"
 #include "extensions/browser/api/sockets_tcp_server/tcp_server_socket_event_dispatcher.h"
 #include "extensions/browser/api/sockets_udp/udp_socket_event_dispatcher.h"
-#include "extensions/browser/api/storage/settings_frontend.h"
+#include "extensions/browser/api/storage/storage_frontend.h"
 #include "extensions/browser/extension_prefs_factory.h"
 #include "extensions/browser/renderer_startup_helper.h"
 #endif  // defined(ENABLE_EXTENSIONS)
@@ -307,12 +307,12 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   extensions::PushMessagingAPI::GetFactoryInstance();
   extensions::RendererStartupHelperFactory::GetInstance();
   extensions::RuntimeAPI::GetFactoryInstance();
-  extensions::SettingsFrontend::GetFactoryInstance();
   extensions::SettingsOverridesAPI::GetFactoryInstance();
   extensions::SignedInDevicesManager::GetFactoryInstance();
 #if defined(ENABLE_SPELLCHECK)
   extensions::SpellcheckAPI::GetFactoryInstance();
 #endif
+  extensions::StorageFrontend::GetFactoryInstance();
   extensions::StreamsPrivateAPI::GetFactoryInstance();
   extensions::SystemInfoAPI::GetFactoryInstance();
   extensions::TabCaptureRegistry::GetFactoryInstance();

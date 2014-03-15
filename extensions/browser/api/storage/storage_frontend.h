@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef EXTENSIONS_BROWSER_API_STORAGE_SETTINGS_FRONTEND_H_
-#define EXTENSIONS_BROWSER_API_STORAGE_SETTINGS_FRONTEND_H_
+#ifndef EXTENSIONS_BROWSER_API_STORAGE_STORAGE_FRONTEND_H_
+#define EXTENSIONS_BROWSER_API_STORAGE_STORAGE_FRONTEND_H_
 
 #include <map>
 #include <string>
@@ -22,19 +22,19 @@ class BrowserContext;
 
 namespace extensions {
 
-// The component of extension settings which runs on the UI thread.
-class SettingsFrontend : public BrowserContextKeyedAPI {
+// The component of the Storage API which runs on the UI thread.
+class StorageFrontend : public BrowserContextKeyedAPI {
  public:
   // Returns the current instance for |context|.
-  static SettingsFrontend* Get(content::BrowserContext* context);
+  static StorageFrontend* Get(content::BrowserContext* context);
 
   // Creates with a specific |storage_factory|. Caller owns the object.
-  static SettingsFrontend* CreateForTesting(
+  static StorageFrontend* CreateForTesting(
       const scoped_refptr<SettingsStorageFactory>& storage_factory,
       content::BrowserContext* context);
 
   // Public so tests can create and delete their own instances.
-  virtual ~SettingsFrontend();
+  virtual ~StorageFrontend();
 
   // Returns the value store cache for |settings_namespace|.
   ValueStoreCache* GetValueStoreCache(
@@ -59,22 +59,22 @@ class SettingsFrontend : public BrowserContextKeyedAPI {
       settings_namespace::Namespace settings_namespace);
 
   // BrowserContextKeyedAPI implementation.
-  static BrowserContextKeyedAPIFactory<SettingsFrontend>* GetFactoryInstance();
+  static BrowserContextKeyedAPIFactory<StorageFrontend>* GetFactoryInstance();
   static const char* service_name();
   static const bool kServiceRedirectedInIncognito = true;
   static const bool kServiceIsNULLWhileTesting = true;
 
  private:
-  friend class BrowserContextKeyedAPIFactory<SettingsFrontend>;
+  friend class BrowserContextKeyedAPIFactory<StorageFrontend>;
 
   typedef std::map<settings_namespace::Namespace, ValueStoreCache*> CacheMap;
 
   // Constructor for normal BrowserContextKeyedAPI usage.
-  explicit SettingsFrontend(content::BrowserContext* context);
+  explicit StorageFrontend(content::BrowserContext* context);
 
   // Constructor for tests.
-  SettingsFrontend(const scoped_refptr<SettingsStorageFactory>& storage_factory,
-                   content::BrowserContext* context);
+  StorageFrontend(const scoped_refptr<SettingsStorageFactory>& storage_factory,
+                  content::BrowserContext* context);
 
   void Init(const scoped_refptr<SettingsStorageFactory>& storage_factory);
 
@@ -91,9 +91,9 @@ class SettingsFrontend : public BrowserContextKeyedAPI {
   // are owned by this object.
   CacheMap caches_;
 
-  DISALLOW_COPY_AND_ASSIGN(SettingsFrontend);
+  DISALLOW_COPY_AND_ASSIGN(StorageFrontend);
 };
 
 }  // namespace extensions
 
-#endif  // EXTENSIONS_BROWSER_API_STORAGE_SETTINGS_FRONTEND_H_
+#endif  // EXTENSIONS_BROWSER_API_STORAGE_STORAGE_FRONTEND_H_

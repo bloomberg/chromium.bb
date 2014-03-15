@@ -23,18 +23,18 @@ class ValueStore;
 
 namespace extensions {
 
-class SettingsFrontend;
+class StorageFrontend;
 // Utilities for extension settings API tests.
 namespace settings_test_util {
 
 // Synchronously gets the storage area for an extension from |frontend|.
 ValueStore* GetStorage(scoped_refptr<const Extension> extension,
                        settings_namespace::Namespace setting_namespace,
-                       SettingsFrontend* frontend);
+                       StorageFrontend* frontend);
 
 // Synchronously gets the SYNC storage for an extension from |frontend|.
 ValueStore* GetStorage(scoped_refptr<const Extension> extension,
-                       SettingsFrontend* frontend);
+                       StorageFrontend* frontend);
 
 // Creates an extension with |id| and adds it to the registry for |profile|.
 scoped_refptr<const Extension> AddExtensionWithId(Profile* profile,

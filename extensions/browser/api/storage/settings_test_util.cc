@@ -5,7 +5,7 @@
 #include "extensions/browser/api/storage/settings_test_util.h"
 
 #include "base/files/file_path.h"
-#include "extensions/browser/api/storage/settings_frontend.h"
+#include "extensions/browser/api/storage/storage_frontend.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system_provider.h"
 #include "extensions/browser/extensions_browser_client.h"
@@ -23,7 +23,7 @@ static void AssignStorage(ValueStore** dst, ValueStore* src) {
 
 ValueStore* GetStorage(scoped_refptr<const Extension> extension,
                        settings_namespace::Namespace settings_namespace,
-                       SettingsFrontend* frontend) {
+                       StorageFrontend* frontend) {
   ValueStore* storage = NULL;
   frontend->RunWithStorage(
       extension, settings_namespace, base::Bind(&AssignStorage, &storage));
@@ -32,7 +32,7 @@ ValueStore* GetStorage(scoped_refptr<const Extension> extension,
 }
 
 ValueStore* GetStorage(scoped_refptr<const Extension> extension,
-                       SettingsFrontend* frontend) {
+                       StorageFrontend* frontend) {
   return GetStorage(extension, settings_namespace::SYNC, frontend);
 }
 

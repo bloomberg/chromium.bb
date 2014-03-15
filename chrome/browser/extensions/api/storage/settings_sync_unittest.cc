@@ -13,9 +13,9 @@
 #include "chrome/browser/extensions/api/storage/syncable_settings_storage.h"
 #include "content/public/test/test_browser_thread.h"
 #include "extensions/browser/api/storage/leveldb_settings_storage_factory.h"
-#include "extensions/browser/api/storage/settings_frontend.h"
 #include "extensions/browser/api/storage/settings_storage_factory.h"
 #include "extensions/browser/api/storage/settings_test_util.h"
+#include "extensions/browser/api/storage/storage_frontend.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/value_store/testing_value_store.h"
 #include "extensions/common/manifest.h"
@@ -208,7 +208,7 @@ class ExtensionSettingsSyncTest : public testing::Test {
     profile_.reset(new util::MockProfile(temp_dir_.path()));
     storage_factory_->Reset(new LeveldbSettingsStorageFactory());
     frontend_.reset(
-        SettingsFrontend::CreateForTesting(storage_factory_, profile_.get()));
+        StorageFrontend::CreateForTesting(storage_factory_, profile_.get()));
   }
 
   virtual void TearDown() OVERRIDE {
@@ -258,7 +258,7 @@ class ExtensionSettingsSyncTest : public testing::Test {
 
   base::ScopedTempDir temp_dir_;
   scoped_ptr<util::MockProfile> profile_;
-  scoped_ptr<SettingsFrontend> frontend_;
+  scoped_ptr<StorageFrontend> frontend_;
   scoped_refptr<util::ScopedSettingsStorageFactory> storage_factory_;
   scoped_ptr<MockSyncChangeProcessor> sync_processor_;
   scoped_ptr<syncer::SyncChangeProcessorWrapperForTest> sync_processor_wrapper_;

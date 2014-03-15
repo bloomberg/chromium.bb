@@ -25,7 +25,7 @@ class SettingsFunction : public UIThreadExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 
   // Extension settings function implementations should do their work here.
-  // The SettingsFrontend makes sure this is posted to the appropriate thread.
+  // The StorageFrontend makes sure this is posted to the appropriate thread.
   // Implementations should fill in args themselves, though (like RunImpl)
   // may return false to imply failure.
   virtual bool RunWithStorage(ValueStore* storage) = 0;

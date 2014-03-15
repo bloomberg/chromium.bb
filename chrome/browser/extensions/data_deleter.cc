@@ -13,7 +13,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
-#include "extensions/browser/api/storage/settings_frontend.h"
+#include "extensions/browser/api/storage/storage_frontend.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -102,8 +102,8 @@ void DataDeleter::StartDeleting(Profile* profile, const Extension* extension) {
   }
 
   // Begin removal of the settings for the current extension.
-  // SettingsFrontend may not exist in unit tests.
-  SettingsFrontend* frontend = SettingsFrontend::Get(profile);
+  // StorageFrontend may not exist in unit tests.
+  StorageFrontend* frontend = StorageFrontend::Get(profile);
   if (frontend)
     frontend->DeleteStorageSoon(extension->id());
 }

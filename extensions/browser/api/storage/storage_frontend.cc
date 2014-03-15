@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "extensions/browser/api/storage/settings_frontend.h"
+#include "extensions/browser/api/storage/storage_frontend.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -26,7 +26,7 @@ namespace extensions {
 
 namespace {
 
-base::LazyInstance<BrowserContextKeyedAPIFactory<SettingsFrontend> > g_factory =
+base::LazyInstance<BrowserContextKeyedAPIFactory<StorageFrontend> > g_factory =
     LAZY_INSTANCE_INITIALIZER;
 
 // Settings change Observer which forwards changes on to the extension
@@ -60,30 +60,30 @@ class DefaultObserver : public SettingsObserver {
 }  // namespace
 
 // static
-SettingsFrontend* SettingsFrontend::Get(BrowserContext* context) {
-  return BrowserContextKeyedAPIFactory<SettingsFrontend>::Get(context);
+StorageFrontend* StorageFrontend::Get(BrowserContext* context) {
+  return BrowserContextKeyedAPIFactory<StorageFrontend>::Get(context);
 }
 
 // static
-SettingsFrontend* SettingsFrontend::CreateForTesting(
+StorageFrontend* StorageFrontend::CreateForTesting(
     const scoped_refptr<SettingsStorageFactory>& storage_factory,
     BrowserContext* context) {
-  return new SettingsFrontend(storage_factory, context);
+  return new StorageFrontend(storage_factory, context);
 }
 
-SettingsFrontend::SettingsFrontend(BrowserContext* context)
+StorageFrontend::StorageFrontend(BrowserContext* context)
     : browser_context_(context) {
   Init(new LeveldbSettingsStorageFactory());
 }
 
-SettingsFrontend::SettingsFrontend(
+StorageFrontend::StorageFrontend(
     const scoped_refptr<SettingsStorageFactory>& factory,
     BrowserContext* context)
     : browser_context_(context) {
   Init(factory);
 }
 
-void SettingsFrontend::Init(
+void StorageFrontend::Init(
     const scoped_refptr<SettingsStorageFactory>& factory) {
   observers_ = new SettingsObserverList();
   browser_context_observer_.reset(new DefaultObserver(browser_context_));
@@ -101,7 +101,7 @@ void SettingsFrontend::Init(
       browser_context_, factory, observers_, &caches_);
 }
 
-SettingsFrontend::~SettingsFrontend() {
+StorageFrontend::~StorageFrontend() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   observers_->RemoveObserver(browser_context_observer_.get());
   for (CacheMap::iterator it = caches_.begin(); it != caches_.end(); ++it) {
@@ -111,7 +111,7 @@ SettingsFrontend::~SettingsFrontend() {
   }
 }
 
-ValueStoreCache* SettingsFrontend::GetValueStoreCache(
+ValueStoreCache* StorageFrontend::GetValueStoreCache(
     settings_namespace::Namespace settings_namespace) const {
   CacheMap::const_iterator it = caches_.find(settings_namespace);
   if (it != caches_.end())
@@ -119,12 +119,12 @@ ValueStoreCache* SettingsFrontend::GetValueStoreCache(
   return NULL;
 }
 
-bool SettingsFrontend::IsStorageEnabled(
+bool StorageFrontend::IsStorageEnabled(
     settings_namespace::Namespace settings_namespace) const {
   return caches_.find(settings_namespace) != caches_.end();
 }
 
-void SettingsFrontend::RunWithStorage(
+void StorageFrontend::RunWithStorage(
     scoped_refptr<const Extension> extension,
     settings_namespace::Namespace settings_namespace,
     const ValueStoreCache::StorageCallback& callback) {
@@ -140,8 +140,7 @@ void SettingsFrontend::RunWithStorage(
                  base::Unretained(cache), callback, extension));
 }
 
-void SettingsFrontend::DeleteStorageSoon(
-    const std::string& extension_id) {
+void StorageFrontend::DeleteStorageSoon(const std::string& extension_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   for (CacheMap::iterator it = caches_.begin(); it != caches_.end(); ++it) {
     ValueStoreCache* cache = it->second;
@@ -153,12 +152,12 @@ void SettingsFrontend::DeleteStorageSoon(
   }
 }
 
-scoped_refptr<SettingsObserverList> SettingsFrontend::GetObservers() {
+scoped_refptr<SettingsObserverList> StorageFrontend::GetObservers() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return observers_;
 }
 
-void SettingsFrontend::DisableStorageForTesting(
+void StorageFrontend::DisableStorageForTesting(
     settings_namespace::Namespace settings_namespace) {
   CacheMap::iterator it = caches_.find(settings_namespace);
   if (it != caches_.end()) {
@@ -172,14 +171,12 @@ void SettingsFrontend::DisableStorageForTesting(
 // BrowserContextKeyedAPI implementation.
 
 // static
-BrowserContextKeyedAPIFactory<SettingsFrontend>*
-SettingsFrontend::GetFactoryInstance() {
+BrowserContextKeyedAPIFactory<StorageFrontend>*
+StorageFrontend::GetFactoryInstance() {
   return g_factory.Pointer();
 }
 
 // static
-const char* SettingsFrontend::service_name() {
-  return "SettingsFrontend";
-}
+const char* StorageFrontend::service_name() { return "StorageFrontend"; }
 
 }  // namespace extensions

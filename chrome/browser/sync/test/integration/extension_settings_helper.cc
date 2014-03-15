@@ -15,7 +15,7 @@
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/sync/test/integration/sync_extension_helper.h"
 #include "content/public/browser/browser_thread.h"
-#include "extensions/browser/api/storage/settings_frontend.h"
+#include "extensions/browser/api/storage/storage_frontend.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/value_store/value_store.h"
 #include "extensions/common/extension.h"
@@ -49,7 +49,7 @@ scoped_ptr<base::DictionaryValue> GetAllSettings(
     Profile* profile, const std::string& id) {
   base::WaitableEvent signal(false, false);
   scoped_ptr<base::DictionaryValue> settings(new base::DictionaryValue());
-  extensions::SettingsFrontend::Get(profile)->RunWithStorage(
+  extensions::StorageFrontend::Get(profile)->RunWithStorage(
       ExtensionRegistry::Get(profile)->enabled_extensions().GetByID(id),
       extensions::settings_namespace::SYNC,
       base::Bind(&GetAllSettingsOnFileThread, settings.get(), &signal));
@@ -100,7 +100,7 @@ void SetExtensionSettings(
     const std::string& id,
     const base::DictionaryValue& settings) {
   base::WaitableEvent signal(false, false);
-  extensions::SettingsFrontend::Get(profile)->RunWithStorage(
+  extensions::StorageFrontend::Get(profile)->RunWithStorage(
       ExtensionRegistry::Get(profile)->enabled_extensions().GetByID(id),
       extensions::settings_namespace::SYNC,
       base::Bind(&SetSettingsOnFileThread, &settings, &signal));

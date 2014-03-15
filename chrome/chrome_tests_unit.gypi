@@ -542,11 +542,11 @@
         '../components/autofill/content/renderer/test_password_generation_agent.h',
         # TODO: Create an extensions_unittests target. http://crbug.com/348066
         '../extensions/browser/admin_policy_unittest.cc',
-        '../extensions/browser/api/storage/settings_frontend_unittest.cc',
         '../extensions/browser/api/storage/settings_quota_unittest.cc',
         '../extensions/browser/api/storage/settings_test_util.cc',
         '../extensions/browser/api/storage/settings_test_util.h',
         '../extensions/browser/api/storage/storage_api_unittest.cc',
+        '../extensions/browser/api/storage/storage_frontend_unittest.cc',
         '../extensions/browser/error_map_unittest.cc',
         '../extensions/browser/event_listener_map_unittest.cc',
         '../extensions/browser/event_router_unittest.cc',

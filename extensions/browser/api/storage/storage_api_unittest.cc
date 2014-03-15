@@ -9,10 +9,10 @@
 #include "chrome/browser/extensions/extension_api_unittest.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "extensions/browser/api/storage/leveldb_settings_storage_factory.h"
-#include "extensions/browser/api/storage/settings_frontend.h"
 #include "extensions/browser/api/storage/settings_storage_quota_enforcer.h"
 #include "extensions/browser/api/storage/settings_test_util.h"
 #include "extensions/browser/api/storage/storage_api.h"
+#include "extensions/browser/api/storage/storage_frontend.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
@@ -29,10 +29,10 @@ namespace extensions {
 namespace {
 
 // Caller owns the returned object.
-KeyedService* CreateSettingsFrontendForTesting(
+KeyedService* CreateStorageFrontendForTesting(
     content::BrowserContext* context) {
-  return SettingsFrontend::CreateForTesting(new LeveldbSettingsStorageFactory(),
-                                            context);
+  return StorageFrontend::CreateForTesting(new LeveldbSettingsStorageFactory(),
+                                           context);
 }
 
 }  // namespace
@@ -43,7 +43,7 @@ class StorageApiUnittest : public ExtensionApiUnittest {
     ExtensionApiUnittest::SetUp();
     TestExtensionSystem* extension_system =
         static_cast<TestExtensionSystem*>(ExtensionSystem::Get(profile()));
-    // SettingsFrontend requires an EventRouter.
+    // StorageFrontend requires an EventRouter.
     extension_system->SetEventRouter(scoped_ptr<EventRouter>(
         new EventRouter(profile(), ExtensionPrefs::Get(profile()))));
   }
@@ -76,10 +76,10 @@ class StorageApiUnittest : public ExtensionApiUnittest {
 };
 
 TEST_F(StorageApiUnittest, RestoreCorruptedStorage) {
-  // Ensure a SettingsFrontend can be created on demand. The SettingsFrontend
+  // Ensure a StorageFrontend can be created on demand. The StorageFrontend
   // will be owned by the KeyedService system.
-  SettingsFrontend::GetFactoryInstance()->SetTestingFactory(
-      profile(), &CreateSettingsFrontendForTesting);
+  StorageFrontend::GetFactoryInstance()->SetTestingFactory(
+      profile(), &CreateStorageFrontendForTesting);
 
   const char kKey[] = "key";
   const char kValue[] = "value";
@@ -96,7 +96,7 @@ TEST_F(StorageApiUnittest, RestoreCorruptedStorage) {
   ValueStore* store =
       settings_test_util::GetStorage(extension_ref(),
                                      settings_namespace::LOCAL,
-                                     SettingsFrontend::Get(profile()));
+                                     StorageFrontend::Get(profile()));
   ASSERT_TRUE(store);
   SettingsStorageQuotaEnforcer* quota_store =
       static_cast<SettingsStorageQuotaEnforcer*>(store);

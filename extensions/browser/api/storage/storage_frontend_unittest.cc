@@ -10,9 +10,9 @@
 #include "base/strings/stringprintf.h"
 #include "content/public/test/test_browser_thread.h"
 #include "extensions/browser/api/storage/leveldb_settings_storage_factory.h"
-#include "extensions/browser/api/storage/settings_frontend.h"
 #include "extensions/browser/api/storage/settings_namespace.h"
 #include "extensions/browser/api/storage/settings_test_util.h"
+#include "extensions/browser/api/storage/storage_frontend.h"
 #include "extensions/browser/value_store/value_store.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -48,6 +48,9 @@ scoped_ptr<base::Value> CreateMegabyte() {
 
 }  // namespace
 
+// A better name for this would be StorageFrontendTest, but the historical name
+// has been ExtensionSettingsFrontendTest. In order to preserve crash/failure
+// history, the test names are unchanged.
 class ExtensionSettingsFrontendTest : public testing::Test {
  public:
   ExtensionSettingsFrontendTest()
@@ -74,12 +77,12 @@ class ExtensionSettingsFrontendTest : public testing::Test {
   void ResetFrontend() {
     storage_factory_->Reset(new LeveldbSettingsStorageFactory());
     frontend_.reset(
-        SettingsFrontend::CreateForTesting(storage_factory_, profile_.get()));
+        StorageFrontend::CreateForTesting(storage_factory_, profile_.get()));
   }
 
   base::ScopedTempDir temp_dir_;
   scoped_ptr<util::MockProfile> profile_;
-  scoped_ptr<SettingsFrontend> frontend_;
+  scoped_ptr<StorageFrontend> frontend_;
   scoped_refptr<util::ScopedSettingsStorageFactory> storage_factory_;
 
  private:
