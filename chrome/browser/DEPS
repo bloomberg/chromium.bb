@@ -94,6 +94,7 @@ include_rules = [
   "+third_party/leveldatabase",
   "+third_party/protobuf/src/google/protobuf",
   "+third_party/re2",
+  "+third_party/smhasher",
   "+third_party/sqlite",
   "+third_party/zlib",
 

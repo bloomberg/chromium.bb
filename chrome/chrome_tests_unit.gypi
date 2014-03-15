@@ -1077,6 +1077,7 @@
         'browser/media_galleries/media_scan_manager_unittest.cc',
         'browser/media_galleries/win/mtp_device_object_enumerator_unittest.cc',
         'browser/metrics/compression_utils_unittest.cc',
+        'browser/metrics/extension_metrics_unittest.cc',
         'browser/metrics/metrics_log_unittest.cc',
         'browser/metrics/metrics_log_serializer_unittest.cc',
         'browser/metrics/metrics_reporting_scheduler_unittest.cc',

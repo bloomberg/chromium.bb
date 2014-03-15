@@ -11,7 +11,7 @@ option optimize_for = LITE_RUNTIME;
 
 package metrics;
 
-// Next tag: 18
+// Next tag: 19
 message SystemProfileProto {
   // The time when the client was compiled/linked, in seconds since the epoch.
   optional int64 build_timestamp = 1;
@@ -489,4 +489,21 @@ message SystemProfileProto {
   // A zero value indicates that the user count changed while the log is open.
   // Logged only on ChromeOS.
   optional uint32 multi_profile_user_count = 17;
+
+  // Information about extensions that are installed, masked to provide better
+  // privacy.  Only extensions from a single profile are reported; this will
+  // generally be the profile used when the browser is started.  The profile
+  // reported on will remain consistent at least until the browser is
+  // relaunched (or the profile is deleted by the user).
+  //
+  // Each client first picks a value for client_key derived from its UMA
+  // client_id:
+  //   client_key = client_id % 4096
+  // Then, each installed extension is mapped into a hash bucket according to
+  //   bucket = CityHash64(StringPrintf("%d:%s",
+  //                                    client_key, extension_id)) % 1024
+  // The client reports the set of hash buckets occupied by all installed
+  // extensions.  If multiple extensions map to the same bucket, that bucket is
+  // still only reported once.
+  repeated int32 occupied_extension_bucket = 18;
 }

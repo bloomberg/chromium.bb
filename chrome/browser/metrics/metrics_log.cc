@@ -31,6 +31,7 @@
 #include "chrome/browser/autocomplete/autocomplete_result.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/google/google_util.h"
+#include "chrome/browser/metrics/extension_metrics.h"
 #include "chrome/browser/omnibox/omnibox_log.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -373,7 +374,8 @@ static base::LazyInstance<std::string>::Leaky
 
 MetricsLog::MetricsLog(const std::string& client_id, int session_id)
     : MetricsLogBase(client_id, session_id, MetricsLog::GetVersionString()),
-      creation_time_(base::TimeTicks::Now()) {
+      creation_time_(base::TimeTicks::Now()),
+      extension_metrics_(uma_proto()->client_id()) {
 #if defined(OS_CHROMEOS)
   metrics_log_chromeos_.reset(new MetricsLogChromeOS(uma_proto()));
 #endif  // OS_CHROMEOS
@@ -750,6 +752,7 @@ void MetricsLog::RecordEnvironment(
   WriteGoogleUpdateProto(google_update_metrics);
 
   WritePluginList(plugin_list);
+  extension_metrics_.WriteExtensionList(uma_proto()->mutable_system_profile());
 
   std::vector<ActiveGroupId> field_trial_ids;
   GetFieldTrialIds(&field_trial_ids);
