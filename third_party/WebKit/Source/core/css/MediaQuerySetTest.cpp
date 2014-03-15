@@ -94,7 +94,7 @@ TEST(MediaQueryParserTest, Basic)
         {"all and(color)", "not all"},
         {"all and (", "not all"},
         {"test;,all", "not all, all"},
-        // {"(color:20example)", "not all"}, // BisonCSSParser fails to parse that MQ, producing an infinitesimal float.
+        {"(color:20example)", "not all"},
         {"not braille", 0},
         {",screen", "not all, screen"},
         {",all", "not all, all"},
@@ -104,7 +104,7 @@ TEST(MediaQueryParserTest, Basic)
         {",screen,,(invalid,),,", "not all, screen, not all, not all, not all, not all"},
         {",(all,),,", "not all, not all, not all, not all"},
         {",", "not all, not all"},
-        // {"  ", ""}, // BisonCSSParser fails to parse that MQ, producing "not all, not all".
+        {"  ", ""},
         {"(color", "(color)"},
         {"(min-color: 2", "(min-color: 2)"},
         {"(orientation: portrait)", 0},

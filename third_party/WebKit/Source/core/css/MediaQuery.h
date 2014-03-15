@@ -47,6 +47,8 @@ public:
         Only, Not, None
     };
 
+    static PassOwnPtrWillBeRawPtr<MediaQuery> createNotAll();
+
     MediaQuery(Restrictor, const String& mediaType, PassOwnPtrWillBeRawPtr<ExpressionHeapVector> exprs);
     ~MediaQuery();
 

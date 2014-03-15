@@ -75,6 +75,11 @@ static bool expressionCompare(const OwnPtrWillBeMember<MediaQueryExp>& a, const 
     return codePointCompare(a->serialize(), b->serialize()) < 0;
 }
 
+PassOwnPtrWillBeRawPtr<MediaQuery> MediaQuery::createNotAll()
+{
+    return adoptPtrWillBeNoop(new MediaQuery(MediaQuery::Not, "all", nullptr));
+}
+
 MediaQuery::MediaQuery(Restrictor r, const String& mediaType, PassOwnPtrWillBeRawPtr<ExpressionHeapVector> expressions)
     : m_restrictor(r)
     , m_mediaType(attemptStaticStringCreation(mediaType.lower()))

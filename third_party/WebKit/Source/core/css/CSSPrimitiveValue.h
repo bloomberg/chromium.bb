@@ -149,6 +149,9 @@ public:
     };
     static UnitCategory unitCategory(CSSPrimitiveValue::UnitTypes);
 
+    typedef HashMap<String, CSSPrimitiveValue::UnitTypes> UnitTable;
+    static UnitTable& getUnitTable();
+
     bool isAngle() const
     {
         return m_primitiveUnitType == CSS_DEG
