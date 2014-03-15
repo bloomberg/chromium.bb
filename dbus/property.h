@@ -466,6 +466,11 @@ template <> bool Property<std::vector<ObjectPath> >::PopValueFromReader(
 template <> void Property<std::vector<ObjectPath> >::AppendSetValueToWriter(
   MessageWriter* writer);
 
+template <> bool Property<std::vector<uint8> >::PopValueFromReader(
+  MessageReader* reader);
+template <> void Property<std::vector<uint8> >::AppendSetValueToWriter(
+  MessageWriter* writer);
+
 }  // namespace dbus
 
 #endif  // DBUS_PROPERTY_H_

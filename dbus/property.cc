@@ -449,4 +449,32 @@ void Property<std::vector<ObjectPath> >::AppendSetValueToWriter(
   writer->CloseContainer(&variant_writer);
 }
 
+//
+// Property<std::vector<uint8> > specialization.
+//
+
+template <>
+bool Property<std::vector<uint8> >::PopValueFromReader(MessageReader* reader) {
+  MessageReader variant_reader(NULL);
+  if (!reader->PopVariant(&variant_reader))
+    return false;
+
+  value_.clear();
+  const uint8* bytes = NULL;
+  size_t length = 0;
+  if (!variant_reader.PopArrayOfBytes(&bytes, &length))
+    return false;
+  value_.assign(bytes, bytes + length);
+  return true;
+}
+
+template <>
+void Property<std::vector<uint8> >::AppendSetValueToWriter(
+    MessageWriter* writer) {
+  MessageWriter variant_writer(NULL);
+  writer->OpenVariant("ay", &variant_writer);
+  variant_writer.AppendArrayOfBytes(set_value_.data(), set_value_.size());
+  writer->CloseContainer(&variant_writer);
+}
+
 }  // namespace dbus

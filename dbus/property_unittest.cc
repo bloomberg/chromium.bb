@@ -33,6 +33,7 @@ class PropertyTest : public testing::Test {
     Property<int16> version;
     Property<std::vector<std::string> > methods;
     Property<std::vector<ObjectPath> > objects;
+    Property<std::vector<uint8> > bytes;
 
     Properties(ObjectProxy* object_proxy,
                PropertyChangedCallback property_changed_callback)
@@ -43,6 +44,7 @@ class PropertyTest : public testing::Test {
       RegisterProperty("Version", &version);
       RegisterProperty("Methods", &methods);
       RegisterProperty("Objects", &objects);
+      RegisterProperty("Bytes", &bytes);
     }
   };
 
@@ -122,7 +124,7 @@ class PropertyTest : public testing::Test {
   }
 
   // Name, Version, Methods, Objects
-  static const int kExpectedSignalUpdates = 4;
+  static const int kExpectedSignalUpdates = 5;
 
   // Waits for initial values to be set.
   void WaitForGetAll() {
@@ -166,6 +168,13 @@ TEST_F(PropertyTest, InitialValues) {
   std::vector<ObjectPath> objects = properties_->objects.value();
   ASSERT_EQ(1U, objects.size());
   EXPECT_EQ(ObjectPath("/TestObjectPath"), objects[0]);
+
+  std::vector<uint8> bytes = properties_->bytes.value();
+  ASSERT_EQ(4U, bytes.size());
+  EXPECT_EQ('T', bytes[0]);
+  EXPECT_EQ('e', bytes[1]);
+  EXPECT_EQ('s', bytes[2]);
+  EXPECT_EQ('t', bytes[3]);
 }
 
 TEST_F(PropertyTest, UpdatedValues) {
@@ -215,6 +224,21 @@ TEST_F(PropertyTest, UpdatedValues) {
   std::vector<ObjectPath> objects = properties_->objects.value();
   ASSERT_EQ(1U, objects.size());
   EXPECT_EQ(ObjectPath("/TestObjectPath"), objects[0]);
+
+  // Update the value of the "Bytes" property, this value should not change
+  // and should not grow to contain duplicate entries.
+  properties_->bytes.Get(base::Bind(&PropertyTest::PropertyCallback,
+                                    base::Unretained(this),
+                                   "Bytes"));
+  WaitForCallback("Bytes");
+  WaitForUpdates(1);
+
+  std::vector<uint8> bytes = properties_->bytes.value();
+  ASSERT_EQ(4U, bytes.size());
+  EXPECT_EQ('T', bytes[0]);
+  EXPECT_EQ('e', bytes[1]);
+  EXPECT_EQ('s', bytes[2]);
+  EXPECT_EQ('t', bytes[3]);
 }
 
 TEST_F(PropertyTest, Get) {

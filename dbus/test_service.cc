@@ -408,6 +408,20 @@ void TestService::GetProperty(MethodCall* method_call,
     writer.CloseContainer(&variant_writer);
 
     response_sender.Run(response.Pass());
+  } else if (name == "Bytes") {
+    // Return the previous value for the "Bytes" property:
+    // Variant<[0x54, 0x65, 0x73, 0x74]>
+    scoped_ptr<Response> response = Response::FromMethodCall(method_call);
+    MessageWriter writer(response.get());
+    MessageWriter variant_writer(NULL);
+    MessageWriter variant_array_writer(NULL);
+
+    writer.OpenVariant("ay", &variant_writer);
+    const uint8 bytes[] = { 0x54, 0x65, 0x73, 0x74 };
+    variant_writer.AppendArrayOfBytes(bytes, sizeof(bytes));
+    writer.CloseContainer(&variant_writer);
+
+    response_sender.Run(response.Pass());
   } else {
     // Return error.
     response_sender.Run(scoped_ptr<Response>());
@@ -554,6 +568,7 @@ void TestService::AddPropertiesToWriter(MessageWriter* writer) {
   //   "Version": Variant<10>,
   //   "Methods": Variant<["Echo", "SlowEcho", "AsyncEcho", "BrokenMethod"]>,
   //   "Objects": Variant<[objectpath:"/TestObjectPath"]>
+  //   "Bytes": Variant<[0x54, 0x65, 0x73, 0x74]>
   // }
 
   MessageWriter array_writer(NULL);
@@ -591,6 +606,14 @@ void TestService::AddPropertiesToWriter(MessageWriter* writer) {
   variant_writer.OpenArray("o", &variant_array_writer);
   variant_array_writer.AppendObjectPath(ObjectPath("/TestObjectPath"));
   variant_writer.CloseContainer(&variant_array_writer);
+  dict_entry_writer.CloseContainer(&variant_writer);
+  array_writer.CloseContainer(&dict_entry_writer);
+
+  array_writer.OpenDictEntry(&dict_entry_writer);
+  dict_entry_writer.AppendString("Bytes");
+  dict_entry_writer.OpenVariant("ay", &variant_writer);
+  const uint8 bytes[] = { 0x54, 0x65, 0x73, 0x74 };
+  variant_writer.AppendArrayOfBytes(bytes, sizeof(bytes));
   dict_entry_writer.CloseContainer(&variant_writer);
   array_writer.CloseContainer(&dict_entry_writer);
 
