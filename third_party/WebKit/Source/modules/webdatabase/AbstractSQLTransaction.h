@@ -26,6 +26,7 @@
 #ifndef AbstractSQLTransaction_h
 #define AbstractSQLTransaction_h
 
+#include "heap/Handle.h"
 #include "modules/webdatabase/SQLTransactionState.h"
 #include "wtf/ThreadSafeRefCounted.h"
 
@@ -33,9 +34,10 @@ namespace WebCore {
 
 class AbstractSQLTransactionBackend;
 
-class AbstractSQLTransaction : public ThreadSafeRefCounted<AbstractSQLTransaction> {
+class AbstractSQLTransaction : public ThreadSafeRefCountedWillBeGarbageCollectedFinalized<AbstractSQLTransaction> {
 public:
     virtual ~AbstractSQLTransaction() { }
+    virtual void trace(Visitor*) = 0;
 
     virtual void requestTransitToState(SQLTransactionState) = 0;
 

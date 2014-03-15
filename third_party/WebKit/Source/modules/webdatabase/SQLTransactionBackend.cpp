@@ -341,13 +341,13 @@
 namespace WebCore {
 
 PassRefPtr<SQLTransactionBackend> SQLTransactionBackend::create(DatabaseBackend* db,
-    PassRefPtr<AbstractSQLTransaction> frontend, PassRefPtr<SQLTransactionWrapper> wrapper, bool readOnly)
+    PassRefPtrWillBeRawPtr<AbstractSQLTransaction> frontend, PassRefPtr<SQLTransactionWrapper> wrapper, bool readOnly)
 {
     return adoptRef(new SQLTransactionBackend(db, frontend, wrapper, readOnly));
 }
 
 SQLTransactionBackend::SQLTransactionBackend(DatabaseBackend* db,
-    PassRefPtr<AbstractSQLTransaction> frontend, PassRefPtr<SQLTransactionWrapper> wrapper, bool readOnly)
+    PassRefPtrWillBeRawPtr<AbstractSQLTransaction> frontend, PassRefPtr<SQLTransactionWrapper> wrapper, bool readOnly)
     : m_frontend(frontend)
     , m_database(db)
     , m_wrapper(wrapper)

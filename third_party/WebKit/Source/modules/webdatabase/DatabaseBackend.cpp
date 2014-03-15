@@ -104,7 +104,7 @@ void DatabaseBackend::close()
     databaseContext()->databaseThread()->recordDatabaseClosed(this);
 }
 
-PassRefPtr<SQLTransactionBackend> DatabaseBackend::runTransaction(PassRefPtr<SQLTransaction> transaction,
+PassRefPtr<SQLTransactionBackend> DatabaseBackend::runTransaction(PassRefPtrWillBeRawPtr<SQLTransaction> transaction,
     bool readOnly, const ChangeVersionData* data)
 {
     MutexLocker locker(m_transactionInProgressMutex);

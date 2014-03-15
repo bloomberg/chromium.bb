@@ -60,7 +60,7 @@ public:
 class SQLTransactionBackend FINAL : public SQLTransactionStateMachine<SQLTransactionBackend>, public AbstractSQLTransactionBackend {
 public:
     static PassRefPtr<SQLTransactionBackend> create(DatabaseBackend*,
-        PassRefPtr<AbstractSQLTransaction>, PassRefPtr<SQLTransactionWrapper>, bool readOnly);
+        PassRefPtrWillBeRawPtr<AbstractSQLTransaction>, PassRefPtr<SQLTransactionWrapper>, bool readOnly);
 
     virtual ~SQLTransactionBackend();
 
@@ -72,7 +72,7 @@ public:
     void notifyDatabaseThreadIsShuttingDown();
 
 private:
-    SQLTransactionBackend(DatabaseBackend*, PassRefPtr<AbstractSQLTransaction>,
+    SQLTransactionBackend(DatabaseBackend*, PassRefPtrWillBeRawPtr<AbstractSQLTransaction>,
         PassRefPtr<SQLTransactionWrapper>, bool readOnly);
 
     // APIs called from the frontend published via AbstractSQLTransactionBackend:
@@ -108,7 +108,7 @@ private:
 
     void getNextStatement();
 
-    RefPtr<AbstractSQLTransaction> m_frontend; // Has a reference cycle, and will break in doCleanup().
+    RefPtrWillBeCrossThreadPersistent<AbstractSQLTransaction> m_frontend; // Has a reference cycle, and will break in doCleanup().
     RefPtr<SQLStatementBackend> m_currentStatementBackend;
 
     RefPtrWillBeCrossThreadPersistent<DatabaseBackend> m_database;

@@ -48,11 +48,11 @@
 
 namespace WebCore {
 
-PassRefPtr<SQLTransaction> SQLTransaction::create(Database* db, PassOwnPtr<SQLTransactionCallback> callback,
+PassRefPtrWillBeRawPtr<SQLTransaction> SQLTransaction::create(Database* db, PassOwnPtr<SQLTransactionCallback> callback,
     PassOwnPtr<VoidCallback> successCallback, PassOwnPtr<SQLTransactionErrorCallback> errorCallback,
     bool readOnly)
 {
-    return adoptRef(new SQLTransaction(db, callback, successCallback, errorCallback, readOnly));
+    return adoptRefWillBeNoop(new SQLTransaction(db, callback, successCallback, errorCallback, readOnly));
 }
 
 SQLTransaction::SQLTransaction(Database* db, PassOwnPtr<SQLTransactionCallback> callback,
@@ -67,6 +67,11 @@ SQLTransaction::SQLTransaction(Database* db, PassOwnPtr<SQLTransactionCallback> 
 {
     ASSERT(m_database);
     ScriptWrappable::init(this);
+}
+
+void SQLTransaction::trace(Visitor* visitor)
+{
+    visitor->trace(m_database);
 }
 
 bool SQLTransaction::hasCallback() const

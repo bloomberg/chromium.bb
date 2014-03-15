@@ -143,7 +143,7 @@ void Database::runTransaction(PassOwnPtr<SQLTransactionCallback> callback, PassO
 #if !ASSERT_DISABLED
     SQLTransactionErrorCallback* originalErrorCallback = errorCallback.get();
 #endif
-    RefPtr<SQLTransaction> transaction = SQLTransaction::create(this, callback, successCallback, errorCallback, readOnly);
+    RefPtrWillBeRawPtr<SQLTransaction> transaction = SQLTransaction::create(this, callback, successCallback, errorCallback, readOnly);
     RefPtr<SQLTransactionBackend> transactionBackend = backend()->runTransaction(transaction, readOnly, changeVersionData);
     if (!transactionBackend) {
         OwnPtr<SQLTransactionErrorCallback> callback = transaction->releaseErrorCallback();
@@ -155,9 +155,11 @@ void Database::runTransaction(PassOwnPtr<SQLTransactionCallback> callback, PassO
     }
 }
 
+// This object is constructed in a database thread, and destructed in the
+// context thread.
 class DeliverPendingCallbackTask FINAL : public ExecutionContextTask {
 public:
-    static PassOwnPtr<DeliverPendingCallbackTask> create(PassRefPtr<SQLTransaction> transaction)
+    static PassOwnPtr<DeliverPendingCallbackTask> create(PassRefPtrWillBeRawPtr<SQLTransaction> transaction)
     {
         return adoptPtr(new DeliverPendingCallbackTask(transaction));
     }
@@ -168,12 +170,12 @@ public:
     }
 
 private:
-    DeliverPendingCallbackTask(PassRefPtr<SQLTransaction> transaction)
+    DeliverPendingCallbackTask(PassRefPtrWillBeRawPtr<SQLTransaction> transaction)
         : m_transaction(transaction)
     {
     }
 
-    RefPtr<SQLTransaction> m_transaction;
+    RefPtrWillBeCrossThreadPersistent<SQLTransaction> m_transaction;
 };
 
 void Database::scheduleTransactionCallback(SQLTransaction* transaction)
