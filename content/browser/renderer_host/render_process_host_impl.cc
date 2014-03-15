@@ -138,7 +138,6 @@
 #include "media/base/media_switches.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ppapi/shared_impl/ppapi_switches.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/events/event_switches.h"
 #include "ui/gfx/switches.h"
@@ -159,12 +158,7 @@
 #include "content/common/media/media_stream_messages.h"
 #endif
 
-// TODO(sky): remove, see header for details.
-#if !defined(OS_MACOSX)
-#include "content/common/mojo/mojo_channel_init.h"
-#include "content/common/mojo/mojo_messages.h"
-#include "mojo/system/embedder/platform_channel_pair.h"
-#endif
+#include "third_party/skia/include/core/SkBitmap.h"
 
 extern bool g_exited_main_message_loop;
 
@@ -331,18 +325,6 @@ class RendererSandboxedProcessLauncherDelegate
 #endif  // OS_POSIX
 };
 
-// TODO(sky): remove, see header for details.
-#if !defined(OS_MACOSX)
-base::PlatformFile PlatformFileFromScopedPlatformHandle(
-    mojo::embedder::ScopedPlatformHandle handle) {
-#if defined(OS_POSIX)
-  return handle.release().fd;
-#elif defined(OS_WIN)
-  return handle.release().handle;
-#endif
-}
-#endif
-
 }  // namespace
 
 RendererMainThreadFactoryFunction g_renderer_main_thread_factory = NULL;
@@ -440,9 +422,9 @@ RenderProcessHostImpl::RenderProcessHostImpl(
       within_process_died_observer_(false),
       power_monitor_broadcaster_(this),
       geolocation_dispatcher_host_(NULL),
+      weak_factory_(this),
       screen_orientation_dispatcher_host_(NULL),
-      worker_ref_count_(0),
-      weak_factory_(this) {
+      worker_ref_count_(0) {
   widget_helper_ = new RenderWidgetHelper();
 
   ChildProcessSecurityPolicyImpl::GetInstance()->Add(GetID());
@@ -2154,29 +2136,6 @@ void RenderProcessHostImpl::DecrementWorkerRefCount() {
   --worker_ref_count_;
   if (worker_ref_count_ == 0)
     Cleanup();
-}
-
-void RenderProcessHostImpl::CreateMojoChannel() {
-// TODO(sky): remove, see header for details.
-#if !defined(OS_MACOSX)
-  if (mojo_channel_init_.get())
-    return;
-
-  mojo::embedder::PlatformChannelPair channel_pair;
-  mojo_channel_init_.reset(new MojoChannelInit);
-  mojo_channel_init_->Init(
-      PlatformFileFromScopedPlatformHandle(channel_pair.PassServerHandle()),
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
-  if (mojo_channel_init_->is_handle_valid()) {
-    base::ProcessHandle process_handle = run_renderer_in_process() ?
-        base::Process::Current().handle() :
-        child_process_launcher_->GetHandle();
-    base::PlatformFile client_file =
-        PlatformFileFromScopedPlatformHandle(channel_pair.PassClientHandle());
-    Send(new MojoMsg_ChannelCreated(
-             IPC::GetFileHandleForProcess(client_file, process_handle, true)));
-  }
-#endif
 }
 
 }  // namespace content
