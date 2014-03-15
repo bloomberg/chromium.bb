@@ -271,7 +271,8 @@ void WebUILoginView::OpenProxySettings() {
     return;
   }
   ProxySettingsDialog* dialog =
-      new ProxySettingsDialog(*network, NULL, GetNativeWindow());
+      new ProxySettingsDialog(ProfileHelper::GetSigninProfile(),
+                              *network, NULL, GetNativeWindow());
   dialog->Show();
 }
 

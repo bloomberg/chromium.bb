@@ -322,7 +322,8 @@ OptionsUI::OptionsUI(content::WebUI* web_ui)
                           new chromeos::options::StatsOptionsHandler());
 #endif
 #if defined(USE_NSS)
-  AddOptionsPageUIHandler(localized_strings, new CertificateManagerHandler());
+  AddOptionsPageUIHandler(localized_strings,
+                          new CertificateManagerHandler(false));
 #endif
   AddOptionsPageUIHandler(localized_strings, new HandlerOptionsHandler());
 

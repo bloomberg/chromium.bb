@@ -15,6 +15,8 @@
 #include "ui/web_dialogs/web_dialog_delegate.h"
 #include "url/gurl.h"
 
+class Profile;
+
 namespace chromeos {
 
 class BubbleFrameView;
@@ -38,7 +40,8 @@ class LoginWebDialog : public ui::WebDialogDelegate,
     STYLE_BUBBLE   // Use chromeos::BubbleWindow as a host.
   };
 
-  LoginWebDialog(Delegate* delegate,
+  LoginWebDialog(Profile* profile,
+                 Delegate* delegate,
                  gfx::NativeWindow parent_window,
                  const base::string16& title,
                  const GURL& url,
@@ -57,6 +60,8 @@ class LoginWebDialog : public ui::WebDialogDelegate,
 
   bool is_open() const { return is_open_; }
 
+  static content::WebContents* GetCurrentWebContents();
+
  protected:
   // ui::WebDialogDelegate implementation.
   virtual ui::ModalType GetDialogModalType() const OVERRIDE;
@@ -67,6 +72,9 @@ class LoginWebDialog : public ui::WebDialogDelegate,
   virtual void GetDialogSize(gfx::Size* size) const OVERRIDE;
   virtual void GetMinimumDialogSize(gfx::Size* size) const OVERRIDE;
   virtual std::string GetDialogArgs() const OVERRIDE;
+  virtual void OnDialogShown(
+      content::WebUI* webui,
+      content::RenderViewHost* render_view_host) OVERRIDE;
   // NOTE: This function deletes this object at the end.
   virtual void OnDialogClosed(const std::string& json_retval) OVERRIDE;
   virtual void OnCloseContents(
@@ -81,10 +89,11 @@ class LoginWebDialog : public ui::WebDialogDelegate,
                        const content::NotificationDetails& details) OVERRIDE;
 
  private:
+  Profile* profile_;
+  gfx::NativeWindow parent_window_;
   // Notifications receiver.
   Delegate* delegate_;
 
-  gfx::NativeWindow parent_window_;
   base::string16 title_;
   GURL url_;
   Style style_;

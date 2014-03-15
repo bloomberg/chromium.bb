@@ -51,10 +51,12 @@ namespace chromeos {
 // static
 int ProxySettingsDialog::instance_count_ = 0;
 
-ProxySettingsDialog::ProxySettingsDialog(const NetworkState& network,
+ProxySettingsDialog::ProxySettingsDialog(Profile* profile,
+                                         const NetworkState& network,
                                          LoginWebDialog::Delegate* delegate,
                                          gfx::NativeWindow window)
-    : LoginWebDialog(delegate,
+    : LoginWebDialog(profile,
+                     delegate,
                      window,
                      base::string16(),
                      GetURLForProxySettings(network.path()),

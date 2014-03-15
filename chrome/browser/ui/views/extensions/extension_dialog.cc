@@ -47,7 +47,7 @@ ExtensionDialog::~ExtensionDialog() {
 // static
 ExtensionDialog* ExtensionDialog::Show(
     const GURL& url,
-    ui::BaseWindow* base_window,
+    aura::Window* parent_window,
     Profile* profile,
     WebContents* web_contents,
     int width,
@@ -66,10 +66,10 @@ ExtensionDialog* ExtensionDialog::Show(
   host->view()->set_minimum_size(gfx::Size(min_width, min_height));
   host->SetAssociatedWebContents(web_contents);
 
-  CHECK(base_window);
+  DCHECK(parent_window);
   ExtensionDialog* dialog = new ExtensionDialog(host, observer);
   dialog->set_title(title);
-  dialog->InitWindow(base_window, width, height);
+  dialog->InitWindow(parent_window, width, height);
 
   // Show a white background while the extension loads.  This is prettier than
   // flashing a black unfilled window frame.
@@ -82,14 +82,13 @@ ExtensionDialog* ExtensionDialog::Show(
   return dialog;
 }
 
-void ExtensionDialog::InitWindow(ui::BaseWindow* base_window,
+void ExtensionDialog::InitWindow(aura::Window* parent,
                                  int width,
                                  int height) {
-  gfx::NativeWindow parent = base_window->GetNativeWindow();
   views::Widget* window = CreateBrowserModalDialogViews(this, parent);
 
   // Center the window over the browser.
-  gfx::Point center = base_window->GetBounds().CenterPoint();
+  gfx::Point center = parent->GetBoundsInScreen().CenterPoint();
   int x = center.x() - width / 2;
   int y = center.y() - height / 2;
   // Ensure the top left and top right of the window are on screen, with

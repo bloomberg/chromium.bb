@@ -27,7 +27,7 @@ class CertificateManagerHandler
       public CertificateManagerModel::Observer,
       public ui::SelectFileDialog::Listener {
  public:
-  CertificateManagerHandler();
+  explicit CertificateManagerHandler(bool show_certs_in_modal_dialog);
   virtual ~CertificateManagerHandler();
 
   // OptionsPageUIHandler implementation.
@@ -159,6 +159,9 @@ class CertificateManagerHandler
 
   gfx::NativeWindow GetParentWindow() const;
 
+  // True if certificate viewer should be shown in modal instead of constrianed
+  // dialog.
+  bool show_certs_in_modal_dialog_;
   // The Certificates Manager model
   bool requested_certificate_manager_model_;
   scoped_ptr<CertificateManagerModel> certificate_manager_model_;

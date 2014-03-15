@@ -13,10 +13,12 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop/message_loop.h"
+#include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/file_manager/select_file_dialog_util.h"
 #include "chrome/browser/chromeos/file_manager/url_util.h"
+#include "chrome/browser/chromeos/login/login_web_dialog.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_view_host.h"
 #include "chrome/browser/profiles/profile.h"
@@ -88,6 +90,61 @@ scoped_refptr<SelectFileDialogExtension> PendingDialog::Find(
   if (it == map_.end())
     return NULL;
   return it->second;
+}
+
+
+// Given |owner_window| finds corresponding |base_window|, it's associated
+// |web_contents| and |profile|.
+void FindRuntimeContext(
+    gfx::NativeWindow owner_window,
+    ui::BaseWindow** base_window,
+    content::WebContents** web_contents,
+    Profile** profile) {
+  *base_window = NULL;
+  *web_contents = NULL;
+  *profile = NULL;
+  // To get the base_window and profile, either a Browser or AppWindow is
+  // needed.
+  Browser* owner_browser =  NULL;
+  AppWindow* app_window = NULL;
+
+  // If owner_window is supplied, use that to find a browser or a app window.
+  if (owner_window) {
+    owner_browser = chrome::FindBrowserWithWindow(owner_window);
+    if (!owner_browser) {
+      // If an owner_window was supplied but we couldn't find a browser, this
+      // could be for a app window.
+      app_window =
+          apps::AppWindowRegistry::GetAppWindowForNativeWindowAnyProfile(
+              owner_window);
+    }
+  }
+
+  if (app_window) {
+    DCHECK(!app_window->window_type_is_panel());
+    *base_window = app_window->GetBaseWindow();
+    *web_contents = app_window->web_contents();
+  } else {
+    // If the owning window is still unknown, this could be a background page or
+    // and extension popup. Use the last active browser.
+    if (!owner_browser) {
+      owner_browser =
+          chrome::FindLastActiveWithHostDesktopType(chrome::GetActiveDesktop());
+    }
+    if (owner_browser) {
+      *base_window = owner_browser->window();
+      *web_contents = owner_browser->tab_strip_model()->GetActiveWebContents();
+    }
+  }
+
+  // In ChromeOS kiosk launch mode, we can still show file picker for
+  // certificate manager dialog. There are no browser or webapp window
+  // instances present in this case.
+  if (chrome::IsRunningInForcedAppMode() && !(*web_contents))
+    *web_contents = chromeos::LoginWebDialog::GetCurrentWebContents();
+
+  CHECK(web_contents);
+  *profile = Profile::FromBrowserContext((*web_contents)->GetBrowserContext());
 }
 
 }  // namespace
@@ -278,43 +335,8 @@ void SelectFileDialogExtension::SelectFileImpl(
   // The web contents to associate the dialog with.
   content::WebContents* web_contents = NULL;
 
-  // To get the base_window and profile, either a Browser or AppWindow is
-  // needed.
-  Browser* owner_browser =  NULL;
-  AppWindow* app_window = NULL;
-
-  // If owner_window is supplied, use that to find a browser or a app window.
-  if (owner_window) {
-    owner_browser = chrome::FindBrowserWithWindow(owner_window);
-    if (!owner_browser) {
-      // If an owner_window was supplied but we couldn't find a browser, this
-      // could be for a app window.
-      app_window =
-          apps::AppWindowRegistry::GetAppWindowForNativeWindowAnyProfile(
-              owner_window);
-    }
-  }
-
-  if (app_window) {
-    DCHECK(!app_window->window_type_is_panel());
-    base_window = app_window->GetBaseWindow();
-    web_contents = app_window->web_contents();
-  } else {
-    // If the owning window is still unknown, this could be a background page or
-    // and extension popup. Use the last active browser.
-    if (!owner_browser) {
-      owner_browser =
-          chrome::FindLastActiveWithHostDesktopType(chrome::GetActiveDesktop());
-    }
-    DCHECK(owner_browser);
-    base_window = owner_browser->window();
-    web_contents = owner_browser->tab_strip_model()->GetActiveWebContents();
-  }
-
-  DCHECK(base_window);
-  DCHECK(web_contents);
-  profile_ = Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  DCHECK(profile_);
+  FindRuntimeContext(owner_window, &base_window, &web_contents, &profile_);
+  CHECK(profile_);
 
   // Check if we have another dialog opened for the contents. It's unlikely, but
   // possible. In such situation, discard this request.
@@ -386,9 +408,13 @@ void SelectFileDialogExtension::SelectFileImpl(
           file_type_index,
           default_extension);
 
-  ExtensionDialog* dialog = ExtensionDialog::Show(file_manager_url,
-      base_window, profile_, web_contents,
-      kFileManagerWidth, kFileManagerHeight,
+  ExtensionDialog* dialog = ExtensionDialog::Show(
+      file_manager_url,
+      base_window ? base_window->GetNativeWindow() : owner_window,
+      profile_,
+      web_contents,
+      kFileManagerWidth,
+      kFileManagerHeight,
       kFileManagerMinimumWidth,
       kFileManagerMinimumHeight,
 #if defined(USE_AURA)

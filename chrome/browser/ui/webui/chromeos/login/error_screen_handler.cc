@@ -9,6 +9,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/app_mode/app_session_lifetime.h"
+#include "chrome/browser/chromeos/app_mode/certificate_manager_dialog.h"
 #include "chrome/browser/chromeos/login/captive_portal_window_proxy.h"
 #include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/webui_login_view.h"
@@ -159,10 +160,7 @@ void ErrorScreenHandler::HandleRebootButtonClicked() {
 }
 
 void ErrorScreenHandler::HandleDiagnoseButtonClicked() {
-  UserManager* user_manager = UserManager::Get();
-  User* user = user_manager->GetActiveUser();
-  Profile* profile = user_manager->GetProfileByUser(user);
-
+  Profile* profile = ProfileManager::GetActiveUserProfile();
   ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
 
@@ -178,9 +176,17 @@ void ErrorScreenHandler::HandleDiagnoseButtonClicked() {
                                   NEW_WINDOW));
   InitAppSession(profile, extension_id);
 
-  user_manager->SessionStarted();
+  UserManager::Get()->SessionStarted();
 
   LoginDisplayHostImpl::default_host()->Finalize();
+}
+
+void ErrorScreenHandler::HandleConfigureCerts() {
+  CertificateManagerDialog* dialog =
+      new CertificateManagerDialog(ProfileManager::GetActiveUserProfile(),
+                                   NULL,
+                                   GetNativeWindow());
+  dialog->Show();
 }
 
 void ErrorScreenHandler::RegisterMessages() {
@@ -194,6 +200,8 @@ void ErrorScreenHandler::RegisterMessages() {
               &ErrorScreenHandler::HandleRebootButtonClicked);
   AddCallback("diagnoseButtonClicked",
               &ErrorScreenHandler::HandleDiagnoseButtonClicked);
+  AddCallback("configureCertsClicked",
+              &ErrorScreenHandler::HandleConfigureCerts);
 }
 
 void ErrorScreenHandler::DeclareLocalizedValues(
@@ -220,6 +228,7 @@ void ErrorScreenHandler::DeclareLocalizedValues(
   builder->Add("connectingIndicatorText", IDS_LOGIN_CONNECTING_INDICATOR_TEXT);
   builder->Add("rebootButton", IDS_RELAUNCH_BUTTON);
   builder->Add("diagnoseButton", IDS_DIAGNOSE_BUTTON);
+  builder->Add("configureCertsButton", IDS_MANAGE_CERTIFICATES);
 }
 
 void ErrorScreenHandler::Initialize() {

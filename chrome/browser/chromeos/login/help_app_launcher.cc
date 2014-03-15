@@ -51,7 +51,7 @@ void HelpAppLauncher::ShowHelpTopic(HelpTopic help_topic_id) {
   // HelpApp component extension presents only in official builds so we can
   // show help only when the extensions is installed.
   if (service->extensions()->GetByID(url.host()))
-    ShowHelpTopicDialog(GURL(url));
+    ShowHelpTopicDialog(profile, GURL(url));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -62,9 +62,11 @@ HelpAppLauncher::~HelpAppLauncher() {}
 ///////////////////////////////////////////////////////////////////////////////
 // HelpApp, private:
 
-void HelpAppLauncher::ShowHelpTopicDialog(const GURL& topic_url) {
+void HelpAppLauncher::ShowHelpTopicDialog(Profile* profile,
+                                          const GURL& topic_url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   LoginWebDialog* dialog = new LoginWebDialog(
+      profile,
       NULL,
       parent_window_,
       l10n_util::GetStringUTF16(IDS_LOGIN_OOBE_HELP_DIALOG_TITLE),

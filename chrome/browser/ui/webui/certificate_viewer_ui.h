@@ -6,6 +6,17 @@
 #define CHROME_BROWSER_UI_WEBUI_CERTIFICATE_VIEWER_UI_H_
 
 #include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
+#include "ui/web_dialogs/web_dialog_ui.h"
+
+// The WebUI for chrome://view-cert-dialog
+class CertificateViewerModalDialogUI : public ui::WebDialogUI {
+ public:
+  explicit CertificateViewerModalDialogUI(content::WebUI* web_ui);
+  virtual ~CertificateViewerModalDialogUI();
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(CertificateViewerModalDialogUI);
+};
 
 // The WebUI for chrome://view-cert
 class CertificateViewerUI : public ConstrainedWebDialogUI {
@@ -13,6 +24,7 @@ class CertificateViewerUI : public ConstrainedWebDialogUI {
   explicit CertificateViewerUI(content::WebUI* web_ui);
   virtual ~CertificateViewerUI();
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(CertificateViewerUI);
 };
 

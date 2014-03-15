@@ -4,6 +4,9 @@
 
 #include "chrome/browser/chromeos/login/login_web_dialog.h"
 
+#include <deque>
+
+#include "base/lazy_instance.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -11,6 +14,7 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/web_contents.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
@@ -31,6 +35,9 @@ const double kDefaultHeightRatio = 0.6;
 const double kMinimumWidthRatio = 0.25;
 const double kMinimumHeightRatio = 0.25;
 
+static base::LazyInstance<std::deque<content::WebContents*> >
+    g_web_contents_stack = LAZY_INSTANCE_INITIALIZER;
+
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -39,13 +46,15 @@ const double kMinimumHeightRatio = 0.25;
 void LoginWebDialog::Delegate::OnDialogClosed() {
 }
 
-LoginWebDialog::LoginWebDialog(Delegate* delegate,
+LoginWebDialog::LoginWebDialog(Profile* profile,
+                               Delegate* delegate,
                                gfx::NativeWindow parent_window,
                                const base::string16& title,
                                const GURL& url,
                                Style style)
-    : delegate_(delegate),
+    : profile_(profile),
       parent_window_(parent_window),
+      delegate_(delegate),
       title_(title),
       url_(url),
       style_(style),
@@ -61,7 +70,7 @@ LoginWebDialog::~LoginWebDialog() {
 
 void LoginWebDialog::Show() {
   chrome::ShowWebDialog(parent_window_,
-                        ProfileHelper::GetSigninProfile(),
+                        profile_,
                         this);
   is_open_ = true;
 }
@@ -109,6 +118,19 @@ std::string LoginWebDialog::GetDialogArgs() const {
   return std::string();
 }
 
+// static.
+content::WebContents* LoginWebDialog::GetCurrentWebContents() {
+  if (!g_web_contents_stack.Pointer()->size())
+    return NULL;
+
+  return g_web_contents_stack.Pointer()->front();
+}
+
+void LoginWebDialog::OnDialogShown(content::WebUI* webui,
+                                   content::RenderViewHost* render_view_host) {
+  g_web_contents_stack.Pointer()->push_front(webui->GetWebContents());
+}
+
 void LoginWebDialog::OnDialogClosed(const std::string& json_retval) {
   is_open_ = false;
   notification_registrar_.RemoveAll();
@@ -121,6 +143,13 @@ void LoginWebDialog::OnCloseContents(WebContents* source,
                                      bool* out_close_dialog) {
   if (out_close_dialog)
     *out_close_dialog = true;
+
+  if (g_web_contents_stack.Pointer()->size() &&
+      source == g_web_contents_stack.Pointer()->front()) {
+    g_web_contents_stack.Pointer()->pop_front();
+  } else {
+    NOTREACHED();
+  }
 }
 
 bool LoginWebDialog::ShouldShowDialogTitle() const {

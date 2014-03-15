@@ -2236,6 +2236,8 @@
         'browser/ui/webui/chrome_web_ui_controller_factory.h',
         'browser/ui/webui/chromeos/bluetooth_pairing_ui.cc',
         'browser/ui/webui/chromeos/bluetooth_pairing_ui.h',
+        'browser/ui/webui/chromeos/certificate_manager_dialog_ui.cc',
+        'browser/ui/webui/chromeos/certificate_manager_dialog_ui.h',
         'browser/ui/webui/chromeos/charger_replacement_handler.cc',
         'browser/ui/webui/chromeos/charger_replacement_handler.h',
         'browser/ui/webui/chromeos/charger_replacement_ui.cc',

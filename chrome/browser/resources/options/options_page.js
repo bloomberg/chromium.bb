@@ -58,6 +58,11 @@ cr.define('options', function() {
   OptionsPage.registeredOverlayPages = {};
 
   /**
+   * True if options page is served from a dialog.
+   */
+  OptionsPage.isDialog = false;
+
+  /**
    * Gets the default page (to be shown on initial load).
    */
   OptionsPage.getDefaultPage = function() {
@@ -216,6 +221,9 @@ cr.define('options', function() {
    * @private
    */
   OptionsPage.updateHistoryState_ = function(replace, opt_params) {
+    if (OptionsPage.isDialog)
+      return;
+
     var page = this.getTopmostVisiblePage();
     var path = window.location.pathname + window.location.hash;
     if (path)
@@ -286,7 +294,7 @@ cr.define('options', function() {
       }
     }
 
-    if ($('search-field').value == '') {
+    if ($('search-field') && $('search-field').value == '') {
       var section = overlay.associatedSection;
       if (section)
         options.BrowserOptions.scrollToSection(section);

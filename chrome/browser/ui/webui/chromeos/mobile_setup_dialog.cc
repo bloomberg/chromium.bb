@@ -50,9 +50,6 @@ class MobileSetupDialogDelegate : public WebDialogDelegate {
       std::vector<WebUIMessageHandler*>* handlers) const OVERRIDE;
   virtual void GetDialogSize(gfx::Size* size) const OVERRIDE;
   virtual std::string GetDialogArgs() const OVERRIDE;
-  virtual void OnDialogShown(
-      content::WebUI* webui,
-      content::RenderViewHost* render_view_host) OVERRIDE;
   virtual void OnDialogClosed(const std::string& json_retval) OVERRIDE;
   virtual void OnCloseContents(WebContents* source,
                                bool* out_close_dialog) OVERRIDE;
@@ -130,11 +127,6 @@ void MobileSetupDialogDelegate::GetDialogSize(gfx::Size* size) const {
 std::string MobileSetupDialogDelegate::GetDialogArgs() const {
   return std::string();
 }
-
-void MobileSetupDialogDelegate::OnDialogShown(
-    content::WebUI* webui, content::RenderViewHost* render_view_host) {
-}
-
 
 void MobileSetupDialogDelegate::OnDialogClosed(const std::string& json_retval) {
   dialog_window_ = NULL;

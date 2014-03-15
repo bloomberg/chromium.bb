@@ -1560,6 +1560,9 @@ Press any key to continue exploring.
   <message name="IDS_DIAGNOSE_BUTTON" desc="The label for the button that launches the connectivity diagnostics app from the network error page">
     Diagnose
   </message>
+  <message name="IDS_MANAGE_CERTIFICATES" desc="The label for the button that launches the certificate manager from the network error page">
+    Manage certificates
+  </message>
   <message name="IDS_OFFLINE_LOGIN_HTML" desc="Text which suggests enter as an existing user when valid network isn't presented.">
     If you've already registered on this device, you can <ph name="LINK2_START">$1<ex>&gt;a&lt;</ex></ph>sign in as an existing user<ph name="LINK2_END">$2<ex>&gt;/a&lt;</ex></ph>.
   </message>

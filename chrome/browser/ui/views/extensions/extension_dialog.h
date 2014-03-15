@@ -9,6 +9,8 @@
 #include "base/memory/ref_counted.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "ui/aura/window.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/views/window/dialog_delegate.h"
 
 class ExtensionDialogObserver;
@@ -23,10 +25,6 @@ namespace extensions {
 class ExtensionViewHost;
 }
 
-namespace ui {
-class BaseWindow;
-}
-
 // Modal dialog containing contents provided by an extension.
 // Dialog is automatically centered in the owning window and has fixed size.
 // For example, used by the Chrome OS file browser.
@@ -35,12 +33,12 @@ class ExtensionDialog : public views::DialogDelegate,
                         public base::RefCounted<ExtensionDialog> {
  public:
   // Create and show a dialog with |url| centered over the provided window.
-  // |base_window| is the window to which the pop-up will be attached.
+  // |parent_window| is the parent window to which the pop-up will be attached.
   // |profile| is the profile that the extension is registered with.
   // |web_contents| is the tab that spawned the dialog.
   // |width| and |height| are the size of the dialog in pixels.
   static ExtensionDialog* Show(const GURL& url,
-                               ui::BaseWindow* base_window,
+                               aura::Window* parent_window,
                                Profile* profile,
                                content::WebContents* web_contents,
                                int width,
@@ -93,7 +91,7 @@ class ExtensionDialog : public views::DialogDelegate,
   ExtensionDialog(extensions::ExtensionViewHost* host,
                   ExtensionDialogObserver* observer);
 
-  void InitWindow(ui::BaseWindow* base_window, int width, int height);
+  void InitWindow(aura::Window* parent_window, int width, int height);
 
   // Window Title
   base::string16 window_title_;

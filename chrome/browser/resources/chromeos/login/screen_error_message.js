@@ -211,6 +211,15 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
       });
       buttons.push(diagnoseButton);
 
+      var certsButton = this.ownerDocument.createElement('button');
+      certsButton.textContent = loadTimeData.getString('configureCertsButton');
+      certsButton.classList.add('show-with-ui-state-kiosk-mode');
+      certsButton.addEventListener('click', function(e) {
+        chrome.send('configureCertsClicked');
+        e.stopPropagation();
+      });
+      buttons.push(certsButton);
+
       var spacer = this.ownerDocument.createElement('div');
       spacer.classList.add('button-spacer');
       spacer.classList.add('show-with-ui-state-kiosk-mode');

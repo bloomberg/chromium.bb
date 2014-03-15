@@ -56,6 +56,7 @@ class ErrorScreenHandler : public BaseScreenHandler,
   void HandleLocalStateErrorPowerwashButtonClicked();
   void HandleRebootButtonClicked();
   void HandleDiagnoseButtonClicked();
+  void HandleConfigureCerts();
 
   // WebUIMessageHandler implementation:
   virtual void RegisterMessages() OVERRIDE;

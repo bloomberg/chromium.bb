@@ -5,18 +5,21 @@
 #include "chrome/browser/ui/webui/certificate_viewer_ui.h"
 
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/certificate_viewer_webui.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
+#include "ui/web_dialogs/web_dialog_delegate.h"
 
-CertificateViewerUI::CertificateViewerUI(content::WebUI* web_ui)
-    : ConstrainedWebDialogUI(web_ui) {
-  // Set up the chrome://view-cert source.
+namespace {
+
+content::WebUIDataSource* GetWebUIDataSource(const std::string& host) {
   content::WebUIDataSource* html_source =
-      content::WebUIDataSource::Create(chrome::kChromeUICertificateViewerHost);
+      content::WebUIDataSource::Create(host);
 
   // Localized strings.
   html_source->SetUseJsonJSFormatV2();
@@ -56,9 +59,31 @@ CertificateViewerUI::CertificateViewerUI(content::WebUI* web_ui)
   html_source->AddResourcePath("certificate_viewer.css",
       IDR_CERTIFICATE_VIEWER_CSS);
   html_source->SetDefaultResource(IDR_CERTIFICATE_VIEWER_HTML);
+  return html_source;
+}
 
+}  // namespace
+
+CertificateViewerModalDialogUI::CertificateViewerModalDialogUI(
+    content::WebUI* web_ui)
+    : ui::WebDialogUI(web_ui) {
+  // Set up the chrome://view-cert-dialog source.
   Profile* profile = Profile::FromWebUI(web_ui);
-  content::WebUIDataSource::Add(profile, html_source);
+  content::WebUIDataSource::Add(
+      profile,
+      GetWebUIDataSource(chrome::kChromeUICertificateViewerDialogHost));
+}
+
+CertificateViewerModalDialogUI::~CertificateViewerModalDialogUI() {
+}
+
+CertificateViewerUI::CertificateViewerUI(content::WebUI* web_ui)
+    : ConstrainedWebDialogUI(web_ui) {
+  // Set up the chrome://view-cert source.
+  Profile* profile = Profile::FromWebUI(web_ui);
+  content::WebUIDataSource::Add(
+      profile,
+      GetWebUIDataSource(chrome::kChromeUICertificateViewerHost));
 }
 
 CertificateViewerUI::~CertificateViewerUI() {

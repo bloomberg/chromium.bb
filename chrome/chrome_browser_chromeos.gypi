@@ -129,6 +129,8 @@
         'browser/chromeos/app_mode/app_session_lifetime.h',
         'browser/chromeos/app_mode/app_launch_utils.cc',
         'browser/chromeos/app_mode/app_launch_utils.h',
+        'browser/chromeos/app_mode/certificate_manager_dialog.cc',
+        'browser/chromeos/app_mode/certificate_manager_dialog.h',
         'browser/chromeos/app_mode/kiosk_app_data.cc',
         'browser/chromeos/app_mode/kiosk_app_data.h',
         'browser/chromeos/app_mode/kiosk_app_data_delegate.h',

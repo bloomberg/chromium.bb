@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_PROXY_SETTINGS_UI_H_
 
 #include "chrome/browser/ui/webui/options/options_ui.h"
-#include "content/public/browser/web_ui_controller.h"
+#include "ui/web_dialogs/web_dialog_ui.h"
 
 namespace chromeos {
 
@@ -17,7 +17,7 @@ class ProxyHandler;
 
 // A WebUI to host proxy settings splitted from settings page for better
 // performance.
-class ProxySettingsUI : public content::WebUIController,
+class ProxySettingsUI : public ui::WebDialogUI,
                         public ::options::OptionsPageUIHandlerHost {
  public:
   explicit ProxySettingsUI(content::WebUI* web_ui);
