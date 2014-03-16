@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/guid.h"
+#include "base/message_loop/message_loop.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_folder_item.h"
@@ -333,7 +334,8 @@ AppsGridView::AppsGridView(AppsGridViewDelegate* delegate,
       bounds_animator_(this),
       is_root_level_(true),
       activated_item_view_(NULL),
-      dragging_for_reparent_item_(false) {
+      dragging_for_reparent_item_(false),
+      weak_factory_(this) {
   SetPaintToLayer(true);
   SetFillsBoundsOpaquely(false);
 
@@ -1759,6 +1761,17 @@ void AppsGridView::CancelFolderItemReparent(AppListItemView* drag_item_view) {
   icon_view->TransformView();
 }
 
+void AppsGridView::RemoveFolderIfOnlyOneItemLeft(const std::string& folder_id) {
+  AppListFolderItem* folder_item = model_->FindFolderItem(folder_id);
+  DCHECK(folder_item);
+
+  if (folder_item->ChildItemCount() != 1u)
+    return;
+
+  model_->MoveItemToFolderAt(
+      folder_item->item_list()->item_at(0), "", folder_item->position());
+}
+
 void AppsGridView::CancelContextMenusOnCurrentPage() {
   int start = pagination_model_->selected_page() * tiles_per_page();
   int end = std::min(view_model_.view_size(), start + tiles_per_page());
@@ -1832,6 +1845,21 @@ void AppsGridView::OnListItemRemoved(size_t index, AppListItem* item) {
   views::View* view = view_model_.view_at(index);
   view_model_.Remove(index);
   delete view;
+
+  // If there is only one item left under the folder, remove the folder.
+  if (!is_root_level_ && item_list_->item_count() == 1) {
+    std::string folder_id = item_list_->item_at(0)->folder_id();
+    // TODO(jennyz): Don't remove the folder if this is an OEM folder, this
+    // depends on https://codereview.chromium.org/197403005/.
+    // Post the delayed task to modify data, so that it won't break the atomic
+    // data operation in the data model of RemoveItemFromFolder which originates
+    // the OnListItemRemove when calling RemoveItem.
+    base::MessageLoopForUI::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&AppsGridView::RemoveFolderIfOnlyOneItemLeft,
+                   weak_factory_.GetWeakPtr(),
+                   folder_id));
+  }
 
   UpdatePaging();
   UpdatePulsingBlockViews();
