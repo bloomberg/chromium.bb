@@ -68,10 +68,10 @@ void StickyKeysHandlerDelegateImpl::DispatchMouseEvent(ui::MouseEvent* event,
   DCHECK(target);
   // We need to send a new, untransformed mouse event to the host.
   if (event->IsMouseWheelEvent()) {
-    ui::MouseWheelEvent new_event(*static_cast<ui::MouseWheelEvent*>(event));
+    ui::MouseWheelEvent new_event(event->native_event());
     DispatchEvent(&new_event, target);
   } else {
-    ui::MouseEvent new_event(*event, target, target->GetRootWindow());
+    ui::MouseEvent new_event(event->native_event());
     DispatchEvent(&new_event, target);
   }
 }
@@ -466,10 +466,29 @@ void StickyKeysHandler::AppendModifier(ui::KeyEvent* event) {
 
 void StickyKeysHandler::AppendModifier(ui::MouseEvent* event) {
 #if defined(USE_X11)
+  // The native mouse event can either be a classic X button event or an
+  // XInput2 button event.
   XEvent* xev = event->native_event();
   if (xev) {
-    XButtonEvent* xkey = &(xev->xbutton);
-    AppendNativeEventMask(&xkey->state);
+    switch (xev->type) {
+      case ButtonPress:
+      case ButtonRelease: {
+        XButtonEvent* xkey = &(xev->xbutton);
+        AppendNativeEventMask(&xkey->state);
+        break;
+      }
+      case GenericEvent: {
+        XIDeviceEvent* xievent =
+            static_cast<XIDeviceEvent*>(xev->xcookie.data);
+        CHECK(xievent->evtype == XI_ButtonPress ||
+              xievent->evtype == XI_ButtonRelease);
+        AppendNativeEventMask(
+            reinterpret_cast<unsigned int*>(&xievent->mods.effective));
+        break;
+      }
+      default:
+        NOTREACHED();
+    }
   }
 #elif defined(USE_OZONE)
   NOTIMPLEMENTED() << "Modifier key is not handled";
