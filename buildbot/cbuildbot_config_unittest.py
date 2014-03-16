@@ -270,40 +270,6 @@ class CBuildBotTest(cros_test_lib.MoxTestCase):
           self.assertFalse(config[flag],
               'Config %s set %s without build_tests.' % (build_name, flag))
 
-  def testPGOInBackground(self):
-    """Verify that we don't try to build or use PGO data in the background."""
-    for build_name, config in cbuildbot_config.config.iteritems():
-      if config.build_packages_in_background:
-        # It is unsupported to use the build_packages_in_background flags with
-        # the pgo_generate or pgo_use config options.
-        msg = 'Config %s uses build_packages_in_background with pgo_%s'
-        self.assertFalse(config.pgo_generate, msg % (build_name, 'generate'))
-        self.assertFalse(config.pgo_use, msg % (build_name, 'use'))
-
-  def testReleaseGroupInBackground(self):
-    """Verify build_packages_in_background settings for release groups.
-
-    For each release group, the first builder should be set to run in the
-    foreground (to build binary packages), and the remainder of the builders
-    should be set to run in parallel (to install the binary packages.)
-    """
-    for build_name, config in cbuildbot_config.config.iteritems():
-      if build_name.endswith('-release-group'):
-        msg = 'Config %s should not build_packages_in_background'
-        self.assertFalse(config.build_packages_in_background, msg % build_name)
-
-        self.assertTrue(config.child_configs,
-            'Config %s should have child configs' % build_name)
-        first_config = config.child_configs[0]
-        msg = 'Primary config for %s should not build_packages_in_background'
-        self.assertFalse(first_config.build_packages_in_background,
-            msg % build_name)
-
-        msg = 'Child config %s for %s should build_packages_in_background'
-        for child_config in config.child_configs[1:]:
-          self.assertTrue(child_config.build_packages_in_background,
-              msg % (child_config.name, build_name))
-
   def testUseChromeLKGMImpliesInternal(self):
     """Currently use_chrome_lkgm refers only to internal manifests."""
     for build_name, config in cbuildbot_config.config.iteritems():

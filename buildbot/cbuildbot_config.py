@@ -339,17 +339,6 @@ _settings = dict(
 # usepkg_build_packages -- Use binary packages for build_packages.
   usepkg_build_packages=True,
 
-# build_packages_in_background -- If set, run BuildPackages in the background
-#                                 and allow subsequent stages to run in
-#                                 parallel with this one.
-#
-#                                 For each release group, the first builder
-#                                 should be set to run in the foreground (to
-#                                 build binary packages), and the remainder of
-#                                 the builders should be set to run in parallel
-#                                 (to install the binary packages.)
-  build_packages_in_background=False,
-
 # chrome_binhost_only -- Only use binaries in build_packages for Chrome itself.
   chrome_binhost_only=False,
 
@@ -1381,7 +1370,6 @@ internal_nowithdebug_paladin.add_config('x86-mario-nowithdebug-paladin',
 
 internal_pre_cq = internal_paladin.derive(
   build_type=constants.INCREMENTAL_TYPE,
-  build_packages_in_background=True,
   compilecheck=True,
   pre_cq=True,
   quick_unit=True,
@@ -1783,7 +1771,6 @@ _release = full.derive(official, internal,
 )
 
 _grouped_config = _config(
-  build_packages_in_background=True,
   chrome_sdk_build_chrome=False,
   unittests=None,
   vm_tests=[],
@@ -2086,7 +2073,7 @@ _config.add_group('beaglebone-release-group',
   ),
   _beaglebone_release.add_config('beaglebone_servo-release',
     boards=['beaglebone_servo'],
-  ).derive(_grouped_variant_config),
+  ),
 )
 
 # Note this is named full since it doesn't use manifest_versions and uses
