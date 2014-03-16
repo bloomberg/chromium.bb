@@ -351,9 +351,9 @@ class MediaGalleriesPreferences
   // The profile that owns |this|.
   Profile* profile_;
 
-  // The ExtensionPrefs used in a testing environment, where
-  // BrowserContextKeyedServices aren't used. This will be NULL unless it is
-  // set with SetExtensionPrefsForTesting().
+  // The ExtensionPrefs used in a testing environment, where KeyedServices
+  // aren't used. This will be NULL unless it is set with
+  // SetExtensionPrefsForTesting().
   extensions::ExtensionPrefs* extension_prefs_for_testing_;
 
   // An in-memory cache of known galleries.

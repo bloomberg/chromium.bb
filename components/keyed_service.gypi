@@ -50,15 +50,6 @@
             '..',
           ],
           'sources': [
-            # TODO(blundell): Remove browser_context_keyed_service/* once no
-            # clients use these forwarding headers anymore.
-            'browser_context_keyed_service/browser_context_dependency_manager.h',
-            'browser_context_keyed_service/browser_context_keyed_base_factory.h',
-            'browser_context_keyed_service/browser_context_keyed_service.h',
-            'browser_context_keyed_service/browser_context_keyed_service_factory.h',
-            'browser_context_keyed_service/refcounted_browser_context_keyed_service.h',
-            'browser_context_keyed_service/refcounted_browser_context_keyed_service_factory.h',
-            
             'keyed_service/content/browser_context_dependency_manager.cc',
             'keyed_service/content/browser_context_dependency_manager.h',
             'keyed_service/content/browser_context_keyed_base_factory.h',

@@ -11,18 +11,18 @@
 #include "base/compiler_specific.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/signin/signin_error_controller.h"
-#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "components/keyed_service/core/keyed_service.h"
 
 class Profile;
 
 // Shows signin-related errors as notifications in Ash.
 class SigninErrorNotifier : public SigninErrorController::Observer,
-                            public BrowserContextKeyedService {
+                            public KeyedService {
  public:
   SigninErrorNotifier(SigninErrorController* controller, Profile* profile);
   virtual ~SigninErrorNotifier();
 
-  // BrowserContextKeyedService:
+  // KeyedService:
   virtual void Shutdown() OVERRIDE;
 
   // SigninErrorController::Observer:

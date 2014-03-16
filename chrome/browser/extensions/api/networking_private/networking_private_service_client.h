@@ -120,7 +120,7 @@ class NetworkingPrivateServiceClient
   NetworkingPrivateServiceClient(wifi::WiFiService* wifi_service,
                                  CryptoVerify* crypto_verify);
 
-  // BrowserContextKeyedServices method override.
+  // KeyedService method override.
   virtual void Shutdown() OVERRIDE;
 
   // Gets the properties of the network with id |network_guid|. See note on

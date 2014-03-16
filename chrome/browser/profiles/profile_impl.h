@@ -277,9 +277,9 @@ class ProfileImpl : public Profile {
   //
   // and you can read the raw headers here:
   //
-  //   components/browser_context_keyed_service/browser_context_dependency_manager.{h,cc}
-  //   components/keyed_service/core/keyed_service.h
-  //   components/browser_context_keyed_service/browser_context_keyed_service_factory.{h,cc}
+  // components/keyed_service/content/browser_context_dependency_manager.*
+  // components/keyed_service/core/keyed_service.h
+  // components/keyed_service/content/browser_context_keyed_service_factory.*
 
   Profile::Delegate* delegate_;
 

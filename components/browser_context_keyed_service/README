@@ -1,3 +1,0 @@
-This directory holds forwarding headers to enable incrementally moving clients
-to using //components/keyed_service. It will go away once there are no clients
-using the forwarding headers.

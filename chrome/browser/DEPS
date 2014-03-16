@@ -13,7 +13,6 @@ include_rules = [
   "+components/autofill/core/browser",
   "+components/autofill/core/common",
   "+components/breakpad",
-  "+components/browser_context_keyed_service",
   "+components/dom_distiller",
   "+components/encryptor",
   "+components/keyed_service",
