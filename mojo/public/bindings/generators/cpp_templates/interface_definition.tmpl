@@ -76,21 +76,23 @@ params->{{param.name}}()
 {%- endmacro %}
 
 bool {{class_name}}Stub::Accept(mojo::Message* message) {
+{%- if interface.methods %}
   switch (message->header()->name) {
-{%- for method in interface.methods %}
-    case internal::k{{class_name}}_{{method.name}}_Name: {
-      internal::{{class_name}}_{{method.name}}_Params_Data* params =
-          reinterpret_cast<internal::{{class_name}}_{{method.name}}_Params_Data*>(
-              message->mutable_payload());
+{%-   for method in interface.methods %}
+      case internal::k{{class_name}}_{{method.name}}_Name: {
+        internal::{{class_name}}_{{method.name}}_Params_Data* params =
+            reinterpret_cast<internal::{{class_name}}_{{method.name}}_Params_Data*>(
+                message->mutable_payload());
 
-      if (!params->DecodePointersAndHandles(message))
-        return false;
-      sink_->{{method.name}}({{params(method)}});
-      params->CloseHandles();
-      break;
-    }
-{%- endfor %}
+        if (!params->DecodePointersAndHandles(message))
+          return false;
+        sink_->{{method.name}}({{params(method)}});
+        params->CloseHandles();
+        break;
+      }
+{%-   endfor %}
   }
+{%- endif %}
   return true;
 }
 
