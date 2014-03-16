@@ -332,6 +332,8 @@ crbug.com/350578 virtual/softwarecompositing/plugins/webplugin-alpha.html [ Need
 crbug.com/350578 virtual/softwarecompositing/plugins/webplugin-no-alpha.html [ NeedsRebaseline ]
 crbug.com/350578 virtual/softwarecompositing/plugins/webplugin-reflection.html [ NeedsRebaseline ]
 
+crbug.com/348461 fast/forms/calendar-picker/calendar-picker-appearance-minimum-date.html [ NeedsRebaseline ]
+
 crbug.com/231357 [ Win Linux Debug ] compositing/video-page-visibility.html [ ImageOnlyFailure ]
 crbug.com/231357 [ Mac ] compositing/video-page-visibility.html [ ImageOnlyFailure ]
 

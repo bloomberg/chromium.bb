@@ -1522,16 +1522,29 @@ ScrollView.prototype.setContentOffset = function(value) {
     value = Math.min(this.maximumContentOffset - this._height, Math.max(this.minimumContentOffset, Math.floor(value)));
     if (this._contentOffset === value)
         return;
-    var newPartitionNumber = Math.floor(value / ScrollView.PartitionHeight);    
+    this._contentOffset = value;
+    this._updateScrollContent();
+    if (this.delegate)
+        this.delegate.scrollViewDidChangeContentOffset(this);
+};
+
+ScrollView.prototype._updateScrollContent = function() {
+    var newPartitionNumber = Math.floor(this._contentOffset / ScrollView.PartitionHeight);
     var partitionChanged = this._partitionNumber !== newPartitionNumber;
     this._partitionNumber = newPartitionNumber;
-    this._contentOffset = value;
     this.contentElement.style.webkitTransform = "translate(0, " + (-this.contentPositionForContentOffset(this._contentOffset)) + "px)";
-    if (this.delegate) {
-        this.delegate.scrollViewDidChangeContentOffset(this);
-        if (partitionChanged)
-            this.delegate.scrollViewDidChangePartition(this);
-    }
+    if (this.delegate && partitionChanged)
+        this.delegate.scrollViewDidChangePartition(this);
+};
+
+/**
+ * @param {!View|Node} parent
+ * @param {?View|Node=} before
+ * @override
+ */
+ScrollView.prototype.attachTo = function(parent, before) {
+    View.prototype.attachTo.call(this, parent, before);
+    this._updateScrollContent();
 };
 
 /**
