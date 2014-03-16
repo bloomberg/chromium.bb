@@ -1053,11 +1053,6 @@ const char kNoManagedUserAcknowledgmentCheck[]  =
 // Autoconfig (PAC) script.
 const char kNumPacThreads[]                 = "num-pac-threads";
 
-// When the option to block third-party cookies is enabled, only block
-// third-party cookies from being set.
-const char kOnlyBlockSettingThirdPartyCookies[] =
-    "only-block-setting-third-party-cookies";
-
 // Launches URL in new browser window.
 const char kOpenInNewWindow[]               = "new-window";
 

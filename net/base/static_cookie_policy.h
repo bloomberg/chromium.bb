@@ -21,8 +21,6 @@ class NET_EXPORT StaticCookiePolicy {
   enum Type {
     // Do not perform any cookie blocking.
     ALLOW_ALL_COOKIES = 0,
-    // Prevent only third-party cookies from being set.
-    BLOCK_SETTING_THIRD_PARTY_COOKIES,
     // Block all cookies (third-party or not) from begin set or read.
     BLOCK_ALL_COOKIES,
     // Prevent only third-party cookies from being set or read.

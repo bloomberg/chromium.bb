@@ -65,15 +65,6 @@ TEST_F(CookieSettingsTest, CookiesBlockThirdParty) {
   EXPECT_FALSE(cookie_settings_->IsCookieSessionOnly(kBlockedSite));
   EXPECT_FALSE(cookie_settings_->IsSettingCookieAllowed(
       kBlockedSite, kFirstPartySite));
-
-  CommandLine* cmd = CommandLine::ForCurrentProcess();
-  base::AutoReset<CommandLine> auto_reset(cmd, *cmd);
-  cmd->AppendSwitch(switches::kOnlyBlockSettingThirdPartyCookies);
-
-  EXPECT_TRUE(cookie_settings_->IsReadingCookieAllowed(
-      kBlockedSite, kFirstPartySite));
-  EXPECT_FALSE(cookie_settings_->IsSettingCookieAllowed(
-      kBlockedSite, kFirstPartySite));
 }
 
 TEST_F(CookieSettingsTest, CookiesAllowThirdParty) {

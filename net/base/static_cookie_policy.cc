@@ -16,7 +16,6 @@ int StaticCookiePolicy::CanGetCookies(
     const GURL& first_party_for_cookies) const {
   switch (type_) {
     case StaticCookiePolicy::ALLOW_ALL_COOKIES:
-    case StaticCookiePolicy::BLOCK_SETTING_THIRD_PARTY_COOKIES:
       return OK;
     case StaticCookiePolicy::BLOCK_ALL_THIRD_PARTY_COOKIES:
       if (first_party_for_cookies.is_empty())
@@ -40,7 +39,6 @@ int StaticCookiePolicy::CanSetCookie(
   switch (type_) {
     case StaticCookiePolicy::ALLOW_ALL_COOKIES:
       return OK;
-    case StaticCookiePolicy::BLOCK_SETTING_THIRD_PARTY_COOKIES:
     case StaticCookiePolicy::BLOCK_ALL_THIRD_PARTY_COOKIES:
       if (first_party_for_cookies.is_empty())
         return OK;  // Empty first-party URL indicates a first-party request.

@@ -289,7 +289,6 @@ extern const char kNoStartupWindow[];
 extern const char kNoManagedUserAcknowledgmentCheck[];
 extern const char kNtpAppInstallHint[];
 extern const char kNumPacThreads[];
-extern const char kOnlyBlockSettingThirdPartyCookies[];
 extern const char kOpenInNewWindow[];
 extern const char kOriginToForceQuicOn[];
 extern const char kOriginalProcessStartTime[];

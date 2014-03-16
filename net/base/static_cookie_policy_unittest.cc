@@ -64,22 +64,6 @@ TEST_F(StaticCookiePolicyTest, AllowAllCookiesTest) {
   EXPECT_EQ(OK, CanSetCookie(url_google_, GURL()));
 }
 
-TEST_F(StaticCookiePolicyTest, BlockSettingThirdPartyCookiesTest) {
-  SetPolicyType(StaticCookiePolicy::BLOCK_SETTING_THIRD_PARTY_COOKIES);
-
-  EXPECT_EQ(OK, CanGetCookies(url_google_, url_google_));
-  EXPECT_EQ(OK, CanGetCookies(url_google_, url_google_secure_));
-  EXPECT_EQ(OK, CanGetCookies(url_google_, url_google_mail_));
-  EXPECT_EQ(OK, CanGetCookies(url_google_, url_google_analytics_));
-  EXPECT_EQ(OK, CanGetCookies(url_google_, GURL()));
-
-  EXPECT_EQ(OK, CanSetCookie(url_google_, url_google_));
-  EXPECT_EQ(OK, CanSetCookie(url_google_, url_google_secure_));
-  EXPECT_EQ(OK, CanSetCookie(url_google_, url_google_mail_));
-  EXPECT_NE(OK, CanSetCookie(url_google_, url_google_analytics_));
-  EXPECT_EQ(OK, CanSetCookie(url_google_, GURL()));
-}
-
 TEST_F(StaticCookiePolicyTest, BlockAllThirdPartyCookiesTest) {
   SetPolicyType(StaticCookiePolicy::BLOCK_ALL_THIRD_PARTY_COOKIES);
 

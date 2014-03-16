@@ -200,10 +200,7 @@ ContentSetting CookieSettings::GetCookieSetting(
       info.secondary_pattern.MatchesAllHosts() &&
       ShouldBlockThirdPartyCookies() &&
       !first_party_url.SchemeIs(extensions::kExtensionScheme)) {
-    bool not_strict = CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kOnlyBlockSettingThirdPartyCookies);
-    net::StaticCookiePolicy policy(not_strict ?
-        net::StaticCookiePolicy::BLOCK_SETTING_THIRD_PARTY_COOKIES :
+    net::StaticCookiePolicy policy(
         net::StaticCookiePolicy::BLOCK_ALL_THIRD_PARTY_COOKIES);
     int rv;
     if (setting_cookie)
