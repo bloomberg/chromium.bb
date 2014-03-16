@@ -564,7 +564,7 @@ class GSContext(object):
       except cros_build_lib.RunCommandError as e:
         raise GSCommandError(e.msg, e.result, e.exception)
 
-  def Copy(self, src_path, dest_path, acl=None, recursive=True,
+  def Copy(self, src_path, dest_path, acl=None, recursive=False,
            skip_symlinks=True, **kwargs):
     """Copy to/from GS bucket.
 

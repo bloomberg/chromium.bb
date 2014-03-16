@@ -261,6 +261,16 @@ class CopyTest(AbstractGSContextTest):
         error=self.gs_mock.GSResponsePreconditionFailed)
     self.assertRaises(gs.GSContextException, self.Copy)
 
+  def testNonRecursive(self):
+    """Test non-recursive copy."""
+    self.Copy(recursive=False)
+    self.gs_mock.assertCommandContains(['-r'], expected=False)
+
+  def testRecursive(self):
+    """Test recursive copy."""
+    self.Copy(recursive=True)
+    self.gs_mock.assertCommandContains(['cp', '-r'])
+
 
 class CopyIntoTest(CopyTest):
   """Test CopyInto functionality."""
@@ -379,17 +389,19 @@ class GSDoCommandTest(cros_test_lib.TestCase):
     self.ctx = gs.GSContext()
 
   def _testDoCommand(self, ctx, headers=(), retries=None, sleep=None,
-                     version=None):
+                     version=None, recursive=False):
     if retries is None:
       retries = ctx.DEFAULT_RETRIES
     if sleep is None:
       sleep = ctx.DEFAULT_SLEEP_TIME
 
     with mock.patch.object(retry_util, 'GenericRetry', autospec=True):
-      ctx.Copy('/blah', 'gs://foon', version=version)
+      ctx.Copy('/blah', 'gs://foon', version=version, recursive=recursive)
       cmd = [self.ctx.gsutil_bin] + self.ctx.gsutil_flags + list(headers)
-      cmd.append('-m')
-      cmd += ['cp', '-r', '-e', '--', '/blah', 'gs://foon']
+      cmd += ['-m', 'cp']
+      if recursive:
+        cmd += ['-r', '-e']
+      cmd += ['--', '/blah', 'gs://foon']
 
       retry_util.GenericRetry.assert_called_once_with(
           ctx._RetryFilter, retries,
@@ -411,6 +423,10 @@ class GSDoCommandTest(cros_test_lib.TestCase):
     """Test that the version field expands into the header."""
     self._testDoCommand(self.ctx, version=3,
                         headers=['-h', 'x-goog-if-generation-match:3'])
+
+  def testDoCommandRecursiveCopy(self):
+    """Test that recursive copy command is honored."""
+    self._testDoCommand(self.ctx, recursive=True)
 
 
 class GSRetryFilterTest(cros_test_lib.TestCase):

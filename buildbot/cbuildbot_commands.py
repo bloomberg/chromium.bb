@@ -1340,7 +1340,7 @@ def UploadArchivedFile(archive_path, upload_url, filename, debug,
 
   try:
     with timeout_util.Timeout(timeout):
-      gs_context.CopyInto(local_path, upload_url)
+      gs_context.CopyInto(local_path, upload_url, recursive=True)
   except timeout_util.TimeoutError:
     raise timeout_util.TimeoutError('Timed out uploading %s' % filename)
   else:
