@@ -26,6 +26,7 @@
 #include "config.h"
 #include "core/html/TimeRanges.h"
 
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/ExceptionCode.h"
@@ -116,7 +117,7 @@ void TimeRanges::unionWith(const TimeRanges* other)
 double TimeRanges::start(unsigned index, ExceptionState& exceptionState) const
 {
     if (index >= length()) {
-        exceptionState.throwDOMException(IndexSizeError, "The index provided (" + String::number(index) + ") is not less than the object's length (" + String::number(length()) + ").");
+        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::indexExceedsMaximumBound("index", index, length()));
         return 0;
     }
     return m_ranges[index].m_start;
@@ -125,7 +126,7 @@ double TimeRanges::start(unsigned index, ExceptionState& exceptionState) const
 double TimeRanges::end(unsigned index, ExceptionState& exceptionState) const
 {
     if (index >= length()) {
-        exceptionState.throwDOMException(IndexSizeError, "The index provided (" + String::number(index) + ") is not less than the object's length (" + String::number(length()) + ").");
+        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::indexExceedsMaximumBound("index", index, length()));
         return 0;
     }
     return m_ranges[index].m_end;

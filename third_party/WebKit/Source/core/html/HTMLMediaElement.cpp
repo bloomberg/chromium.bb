@@ -1847,7 +1847,7 @@ double HTMLMediaElement::currentTime() const
 void HTMLMediaElement::setCurrentTime(double time, ExceptionState& exceptionState)
 {
     if (m_mediaController) {
-        exceptionState.throwDOMException(InvalidStateError, "No media controller is available.");
+        exceptionState.throwDOMException(InvalidStateError, "The element is slaved to a MediaController.");
         return;
     }
     seek(time, exceptionState);
@@ -2066,7 +2066,7 @@ void HTMLMediaElement::setVolume(double vol, ExceptionState& exceptionState)
     WTF_LOG(Media, "HTMLMediaElement::setVolume(%f)", vol);
 
     if (vol < 0.0f || vol > 1.0f) {
-        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::indexOutsideRange("volume", vol, 0.0, ExceptionMessages::ExclusiveBound, 1.0, ExceptionMessages::ExclusiveBound));
+        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::indexOutsideRange("volume", vol, 0.0, ExceptionMessages::InclusiveBound, 1.0, ExceptionMessages::InclusiveBound));
         return;
     }
 

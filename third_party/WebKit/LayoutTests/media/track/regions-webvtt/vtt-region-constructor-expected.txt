@@ -19,36 +19,36 @@ EXPECTED (region.scroll == '') OK
 
 Invalid percentage value: -1
 RUN(region.viewportAnchorX = invalidPercentageValues[index])
-IndexSizeError: Failed to set the 'viewportAnchorX' property on 'VTTRegion': The value provided (-1) is not between 0 and 100.
+IndexSizeError: Failed to set the 'viewportAnchorX' property on 'VTTRegion': The value provided (-1) is outside the range [0, 100].
 EXPECTED (region.viewportAnchorX == '0') OK
 RUN(region.viewportAnchorY = invalidPercentageValues[index])
-IndexSizeError: Failed to set the 'viewportAnchorY' property on 'VTTRegion': The value provided (-1) is not between 0 and 100.
+IndexSizeError: Failed to set the 'viewportAnchorY' property on 'VTTRegion': The value provided (-1) is outside the range [0, 100].
 EXPECTED (region.viewportAnchorY == '100') OK
 RUN(region.regionAnchorX = invalidPercentageValues[index])
-IndexSizeError: Failed to set the 'regionAnchorX' property on 'VTTRegion': The value provided (-1) is not between 0 and 100.
+IndexSizeError: Failed to set the 'regionAnchorX' property on 'VTTRegion': The value provided (-1) is outside the range [0, 100].
 EXPECTED (region.regionAnchorX == '0') OK
 RUN(region.regionAnchorY = invalidPercentageValues[index])
-IndexSizeError: Failed to set the 'regionAnchorY' property on 'VTTRegion': The value provided (-1) is not between 0 and 100.
+IndexSizeError: Failed to set the 'regionAnchorY' property on 'VTTRegion': The value provided (-1) is outside the range [0, 100].
 EXPECTED (region.regionAnchorY == '100') OK
 RUN(region.width = invalidPercentageValues[index])
-IndexSizeError: Failed to set the 'width' property on 'VTTRegion': The value provided (-1) is not between 0 and 100.
+IndexSizeError: Failed to set the 'width' property on 'VTTRegion': The value provided (-1) is outside the range [0, 100].
 EXPECTED (region.width == '100') OK
 
 Invalid percentage value: 101
 RUN(region.viewportAnchorX = invalidPercentageValues[index])
-IndexSizeError: Failed to set the 'viewportAnchorX' property on 'VTTRegion': The value provided (101) is not between 0 and 100.
+IndexSizeError: Failed to set the 'viewportAnchorX' property on 'VTTRegion': The value provided (101) is outside the range [0, 100].
 EXPECTED (region.viewportAnchorX == '0') OK
 RUN(region.viewportAnchorY = invalidPercentageValues[index])
-IndexSizeError: Failed to set the 'viewportAnchorY' property on 'VTTRegion': The value provided (101) is not between 0 and 100.
+IndexSizeError: Failed to set the 'viewportAnchorY' property on 'VTTRegion': The value provided (101) is outside the range [0, 100].
 EXPECTED (region.viewportAnchorY == '100') OK
 RUN(region.regionAnchorX = invalidPercentageValues[index])
-IndexSizeError: Failed to set the 'regionAnchorX' property on 'VTTRegion': The value provided (101) is not between 0 and 100.
+IndexSizeError: Failed to set the 'regionAnchorX' property on 'VTTRegion': The value provided (101) is outside the range [0, 100].
 EXPECTED (region.regionAnchorX == '0') OK
 RUN(region.regionAnchorY = invalidPercentageValues[index])
-IndexSizeError: Failed to set the 'regionAnchorY' property on 'VTTRegion': The value provided (101) is not between 0 and 100.
+IndexSizeError: Failed to set the 'regionAnchorY' property on 'VTTRegion': The value provided (101) is outside the range [0, 100].
 EXPECTED (region.regionAnchorY == '100') OK
 RUN(region.width = invalidPercentageValues[index])
-IndexSizeError: Failed to set the 'width' property on 'VTTRegion': The value provided (101) is not between 0 and 100.
+IndexSizeError: Failed to set the 'width' property on 'VTTRegion': The value provided (101) is outside the range [0, 100].
 EXPECTED (region.width == '100') OK
 
 Invalid percentage value: -Infinity

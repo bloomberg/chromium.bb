@@ -75,7 +75,7 @@ static bool isInfiniteOrNonNumberOrNonPercentage(double value, const char* metho
         return true;
     }
     if (value < 0 || value > 100) {
-        exceptionState.throwDOMException(IndexSizeError, "The value provided (" + String::number(value) + ") is not between 0 and 100.");
+        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::indexOutsideRange("value", value, 0.0, ExceptionMessages::InclusiveBound, 100.0, ExceptionMessages::InclusiveBound));
         return true;
     }
     return false;
