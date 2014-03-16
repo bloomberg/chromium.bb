@@ -447,31 +447,10 @@ class MockPersonalDataManager : public PersonalDataManager {
   MOCK_METHOD0(LoadProfiles, void());
   MOCK_METHOD0(LoadCreditCards, void());
   MOCK_METHOD0(Refresh, void());
-};
 
-class MockPersonalDataManagerService
-    : public autofill::PersonalDataManagerService {
- public:
   static KeyedService* Build(content::BrowserContext* profile) {
-    return new MockPersonalDataManagerService();
+    return new MockPersonalDataManager();
   }
-
-  MockPersonalDataManagerService() {
-    personal_data_manager_.reset(new MockPersonalDataManager());
-  }
-  virtual ~MockPersonalDataManagerService() {}
-
-  virtual void Shutdown() OVERRIDE {
-    personal_data_manager_.reset();
-  }
-
-  virtual MockPersonalDataManager* GetPersonalDataManager() OVERRIDE {
-    return personal_data_manager_.get();
-  }
-
- private:
-  scoped_ptr<MockPersonalDataManager> personal_data_manager_;
-  DISALLOW_COPY_AND_ASSIGN(MockPersonalDataManagerService);
 };
 
 template <class T> class AddAutofillHelper;
@@ -525,13 +504,10 @@ class ProfileSyncServiceAutofillTest
         static_cast<WebDataServiceFake*>(wrapper->GetAutofillWebData().get());
     web_data_service_->SetDatabase(web_database_.get());
 
-    MockPersonalDataManagerService* personal_data_manager_service =
-        static_cast<MockPersonalDataManagerService*>(
-            autofill::PersonalDataManagerFactory::GetInstance()
-                ->SetTestingFactoryAndUse(
-                    profile_.get(), MockPersonalDataManagerService::Build));
-    personal_data_manager_ =
-        personal_data_manager_service->GetPersonalDataManager();
+    personal_data_manager_ = static_cast<MockPersonalDataManager*>(
+        autofill::PersonalDataManagerFactory::GetInstance()
+            ->SetTestingFactoryAndUse(profile_.get(),
+                                      MockPersonalDataManager::Build));
 
     EXPECT_CALL(*personal_data_manager_, LoadProfiles()).Times(1);
     EXPECT_CALL(*personal_data_manager_, LoadCreditCards()).Times(1);

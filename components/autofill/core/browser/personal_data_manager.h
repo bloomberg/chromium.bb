@@ -20,6 +20,7 @@
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service_observer.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "components/webdata/common/web_data_service_consumer.h"
 
 class PrefService;
@@ -43,7 +44,8 @@ namespace autofill {
 // Handles loading and saving Autofill profile information to the web database.
 // This class also stores the profiles loaded from the database for use during
 // Autofill.
-class PersonalDataManager : public WebDataServiceConsumer,
+class PersonalDataManager : public KeyedService,
+                            public WebDataServiceConsumer,
                             public AutofillWebDataServiceObserverOnUIThread {
  public:
   // A pair of GUID and variant index. Represents a single FormGroup and a

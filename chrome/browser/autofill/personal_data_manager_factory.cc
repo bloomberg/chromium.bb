@@ -15,56 +15,12 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 namespace autofill {
-namespace {
-
-class PersonalDataManagerServiceImpl : public PersonalDataManagerService {
- public:
-  explicit PersonalDataManagerServiceImpl(Profile* profile);
-  virtual ~PersonalDataManagerServiceImpl();
-
-  // PersonalDataManagerService:
-  virtual void Shutdown() OVERRIDE;
-  virtual PersonalDataManager* GetPersonalDataManager() OVERRIDE;
-
- private:
-  scoped_ptr<PersonalDataManager> personal_data_manager_;
-};
-
-PersonalDataManagerServiceImpl::PersonalDataManagerServiceImpl(
-    Profile* profile) {
-  personal_data_manager_.reset(new PersonalDataManager(
-      g_browser_process->GetApplicationLocale()));
-  personal_data_manager_->Init(
-      WebDataServiceFactory::GetAutofillWebDataForProfile(
-          profile, Profile::EXPLICIT_ACCESS),
-      profile->GetPrefs(),
-      profile->IsOffTheRecord());
-}
-
-PersonalDataManagerServiceImpl::~PersonalDataManagerServiceImpl() {}
-
-void PersonalDataManagerServiceImpl::Shutdown() {
-  personal_data_manager_.reset();
-}
-
-PersonalDataManager* PersonalDataManagerServiceImpl::GetPersonalDataManager() {
-  return personal_data_manager_.get();
-}
-
-}  // namespace
 
 // static
 PersonalDataManager* PersonalDataManagerFactory::GetForProfile(
     Profile* profile) {
-  PersonalDataManagerService* service =
-      static_cast<PersonalDataManagerService*>(
-          GetInstance()->GetServiceForBrowserContext(profile, true));
-
-  if (service)
-    return service->GetPersonalDataManager();
-
-  // |service| can be NULL in Incognito mode.
-  return NULL;
+  return static_cast<PersonalDataManager*>(
+      GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 // static
@@ -83,9 +39,14 @@ PersonalDataManagerFactory::~PersonalDataManagerFactory() {
 }
 
 KeyedService* PersonalDataManagerFactory::BuildServiceInstanceFor(
-    content::BrowserContext* profile) const {
-  PersonalDataManagerService* service =
-      new PersonalDataManagerServiceImpl(static_cast<Profile*>(profile));
+    content::BrowserContext* context) const {
+  Profile* profile = Profile::FromBrowserContext(context);
+  PersonalDataManager* service =
+      new PersonalDataManager(g_browser_process->GetApplicationLocale());
+  service->Init(WebDataServiceFactory::GetAutofillWebDataForProfile(
+                    profile, Profile::EXPLICIT_ACCESS),
+                profile->GetPrefs(),
+                profile->IsOffTheRecord());
   return service;
 }
 

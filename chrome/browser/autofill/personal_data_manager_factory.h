@@ -16,14 +16,6 @@ namespace autofill {
 
 class PersonalDataManager;
 
-// A wrapper of PersonalDataManager so we can use it as a profiled keyed
-// service. This should only be subclassed in tests, e.g. to provide a mock
-// PersonalDataManager.
-class PersonalDataManagerService : public KeyedService {
- public:
-  virtual PersonalDataManager* GetPersonalDataManager() = 0;
-};
-
 // Singleton that owns all PersonalDataManagers and associates them with
 // Profiles.
 // Listens for the Profile's destruction notification and cleans up the
