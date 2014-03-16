@@ -463,6 +463,7 @@
             'frame/WindowBase64.idl',
             'frame/WindowEventHandlers.idl',
             'frame/WindowTimers.idl',
+            'html/canvas/CanvasPathMethods.idl',
             'page/WindowPagePopup.idl',
             'svg/SVGDocument.idl',
             'svg/SVGFilterPrimitiveStandardAttributes.idl',

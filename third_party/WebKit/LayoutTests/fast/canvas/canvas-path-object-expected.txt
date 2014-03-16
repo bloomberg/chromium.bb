@@ -13,6 +13,7 @@ PASS typeof path.bezierCurveTo is "function"
 PASS typeof path.arcTo is "function"
 PASS typeof path.arc is "function"
 PASS typeof path.rect is "function"
+PASS typeof path.ellipse is "function"
 PASS successfullyParsed is true
 
 TEST COMPLETE

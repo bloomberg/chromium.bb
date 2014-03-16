@@ -12,3 +12,4 @@ shouldBe("typeof path.bezierCurveTo", '"function"');
 shouldBe("typeof path.arcTo", '"function"');
 shouldBe("typeof path.arc", '"function"');
 shouldBe("typeof path.rect", '"function"');
+shouldBe("typeof path.ellipse", '"function"');
