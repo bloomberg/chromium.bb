@@ -901,6 +901,7 @@
           'type': 'static_library',
           'dependencies': [
             'content_shell_lib',
+            'content.gyp:content_browser',
             '../skia/skia.gyp:skia',
             '../testing/gtest.gyp:gtest',
             '../ui/accessibility/accessibility.gyp:ax_gen',

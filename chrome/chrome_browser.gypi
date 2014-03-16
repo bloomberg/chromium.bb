@@ -94,6 +94,7 @@
       ],
       'export_dependent_settings': [
         '../components/components.gyp:autofill_core_browser',
+        '../content/content.gyp:content_browser',
         '../sql/sql.gyp:sql',
         '../sync/sync.gyp:sync',
       ],

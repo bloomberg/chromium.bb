@@ -64,6 +64,9 @@
         '..',
         '<(INTERMEDIATE_DIR)',
       ],
+      'export_dependent_settings': [
+        '../content/content.gyp:content_browser',
+      ],
       'sources': [
         # All .cc, .h, .m, and .mm files under browser/extensions except for
         # tests and mocks.

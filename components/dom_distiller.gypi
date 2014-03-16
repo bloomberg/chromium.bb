@@ -134,6 +134,7 @@
                 'component_resources.gyp:component_resources',
                 'component_strings.gyp:component_strings',
                 'dom_distiller_core',
+                '../content/content.gyp:content_browser',
                 '../net/net.gyp:net',
                 '../skia/skia.gyp:skia',
                 '../sync/sync.gyp:sync',

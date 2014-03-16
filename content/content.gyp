@@ -143,6 +143,9 @@
           'dependencies': [
             'content_common',
           ],
+          'export_dependent_settings': [
+            'content_common',
+          ],
         },
         {
           'target_name': 'content_browser',
@@ -337,11 +340,13 @@
           'target_name': 'content_app_both',
           'type': 'none',
           'dependencies': ['content'],
+          'export_dependent_settings': ['content'],
         },
         {
           'target_name': 'content_browser',
           'type': 'none',
           'dependencies': ['content'],
+          'export_dependent_settings': ['content'],
         },
         {
           'target_name': 'content_common',
@@ -349,6 +354,7 @@
           'dependencies': ['content', 'content_resources.gyp:content_resources'],
           # Disable c4267 warnings until we fix size_t to int truncations.
           'msvs_disabled_warnings': [ 4267, ],
+          'export_dependent_settings': ['content'],
         },
         {
           'target_name': 'content_child',
@@ -381,6 +387,7 @@
           'target_name': 'content_utility',
           'type': 'none',
           'dependencies': ['content'],
+          'export_dependent_settings': ['content'],
         },
         {
           'target_name': 'content_worker',

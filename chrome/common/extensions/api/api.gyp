@@ -178,6 +178,7 @@
         'root_namespace': 'extensions::api',
       },
       'dependencies': [
+        '<(DEPTH)/content/content.gyp:content_browser',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/sync/sync.gyp:sync',
       ],

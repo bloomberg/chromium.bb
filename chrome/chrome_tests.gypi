@@ -2351,6 +2351,9 @@
           '<(protoc_out_dir)',
         ],
       },
+      'export_dependent_settings': [
+        'browser',
+      ],
       'sources': [
         'browser/sync/test/integration/apps_helper.cc',
         'browser/sync/test/integration/apps_helper.h',

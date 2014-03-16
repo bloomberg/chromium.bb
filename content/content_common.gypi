@@ -8,6 +8,7 @@
     '../components/tracing.gyp:tracing',
     '../net/net.gyp:net',
     '../skia/skia.gyp:skia',
+    '../third_party/WebKit/public/blink_headers.gyp:blink_headers',
     '../third_party/icu/icu.gyp:icuuc',
     '../third_party/libjingle/libjingle.gyp:libjingle',
     '../ui/accessibility/accessibility.gyp:accessibility',
@@ -22,6 +23,10 @@
   ],
   'export_dependent_settings': [
     '../base/base.gyp:base',
+    # The public content API headers directly include Blink API headers, so we
+    # have to export the blink header settings so that relative paths in these
+    # headers resolve correctly.
+    '../third_party/WebKit/public/blink_headers.gyp:blink_headers',
   ],
   'sources': [
     'public/common/assert_matching_enums.cc',

@@ -401,6 +401,9 @@
       'include_dirs': [
         '..',
       ],
+      'dependencies': [
+        '../content/content.gyp:content_common',
+      ],
     },
   ]
 }

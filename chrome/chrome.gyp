@@ -247,6 +247,7 @@
             'common/extensions/api/api.gyp:chrome_api',
             '../base/base.gyp:base',
             '../components/components.gyp:wifi_component',
+            '../content/content.gyp:content_common',
             '../content/content.gyp:content_utility',
             '../media/media.gyp:media',
             '../skia/skia.gyp:skia',
