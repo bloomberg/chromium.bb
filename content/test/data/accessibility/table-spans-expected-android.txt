@@ -1,5 +1,5 @@
 #<skip - shouldn't have editable_text anywhere here
-android.view.View focusable focused scrollable name='Table example with rowspan and colspan'
+android.webkit.WebView focusable focused scrollable name='Table example with rowspan and colspan'
     android.widget.GridView
         android.view.View
             android.view.View clickable name='AD'

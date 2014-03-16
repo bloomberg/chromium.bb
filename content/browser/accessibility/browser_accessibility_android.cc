@@ -250,6 +250,9 @@ const char* BrowserAccessibilityAndroid::GetClassName() const {
     case ui::AX_ROLE_DIALOG:
       class_name = "android.app.Dialog";
       break;
+    case ui::AX_ROLE_ROOT_WEB_AREA:
+      class_name = "android.webkit.WebView";
+      break;
     default:
       class_name = "android.view.View";
       break;

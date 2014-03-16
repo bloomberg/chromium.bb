@@ -1,4 +1,4 @@
-android.view.View focusable focused scrollable
+android.webkit.WebView focusable focused scrollable
     android.view.View
         android.view.View clickable focusable name='Linkwith image at start.'
         android.view.View clickable focusable name='Link withimagein the middle.'

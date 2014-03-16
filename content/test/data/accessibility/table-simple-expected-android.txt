@@ -1,4 +1,4 @@
-android.view.View focusable focused scrollable name='Table example'
+android.webkit.WebView focusable focused scrollable name='Table example'
     android.widget.GridView collection row_count=2 column_count=3
         android.view.View
             android.view.View clickable collection_item name='A' row_span=1 column_span=1

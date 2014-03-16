@@ -1,5 +1,5 @@
 #<skip - calc is wrong
-android.view.View focusable focused scrollable
+android.webkit.WebView focusable focused scrollable
     android.view.View
         android.widget.EditText clickable editable_text focusable name='Title0'
         android.widget.EditText clickable editable_text focusable name='Title1'

@@ -1,5 +1,5 @@
 #<skip - last one should be DescribedBy5
-android.view.View focusable focused scrollable
+android.webkit.WebView focusable focused scrollable
     android.view.View
         android.widget.CheckBox checkable clickable focusable name='Title0'
         android.widget.CheckBox checkable clickable focusable name='Label1'

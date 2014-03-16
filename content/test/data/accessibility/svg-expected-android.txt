@@ -1,4 +1,4 @@
-android.view.View focusable focused scrollable
+android.webkit.WebView focusable focused scrollable
     android.view.View
         android.view.View focusable name='svg'
             android.view.View clickable focusable name='Test'

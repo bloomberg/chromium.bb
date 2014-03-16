@@ -1,4 +1,4 @@
-android.view.View focusable focused scrollable
+android.webkit.WebView focusable focused scrollable
     android.widget.ListView collection hierarchical item_count=3 row_count=3
         android.view.View collection_item
             android.view.View clickable name='•'

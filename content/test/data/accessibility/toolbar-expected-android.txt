@@ -1,2 +1,2 @@
-android.view.View focusable focused scrollable
+android.webkit.WebView focusable focused scrollable
     android.view.View clickable name='A toolbar'
