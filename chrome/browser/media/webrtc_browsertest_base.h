@@ -24,6 +24,7 @@ class WebRtcTestBase : public InProcessBrowserTest {
   static const char kAudioVideoCallConstraints[];
   static const char kAudioOnlyCallConstraints[];
   static const char kVideoOnlyCallConstraints[];
+  static const char kAudioVideoCallConstraints360p[];
 
   static const char kFailedWithPermissionDeniedError[];
   static const char kFailedWithPermissionDismissedError[];
@@ -48,6 +49,11 @@ class WebRtcTestBase : public InProcessBrowserTest {
   // Convenience method which opens the page at url, calls GetUserMediaAndAccept
   // and returns the new tab.
   content::WebContents* OpenPageAndGetUserMediaInNewTab(const GURL& url) const;
+
+  // Convenience method which opens the page at url, calls
+  // GetUserMediaAndAcceptWithSpecificConstraints and returns the new tab.
+  content::WebContents* OpenPageAndGetUserMediaInNewTabWithConstraints(
+      const GURL& url, const std::string& constraints) const;
 
   // Convenience method which gets the URL for |test_page| and calls
   // OpenPageAndGetUserMediaInNewTab().

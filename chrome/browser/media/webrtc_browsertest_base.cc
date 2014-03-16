@@ -21,6 +21,9 @@
 
 const char WebRtcTestBase::kAudioVideoCallConstraints[] =
     "'{audio: true, video: true}'";
+const char WebRtcTestBase::kAudioVideoCallConstraints360p[] =
+   "'{audio: true, video: {mandatory: {minWidth: 640, maxWidth: 640, "
+   " minHeight: 360, maxHeight: 360}}}'";
 const char WebRtcTestBase::kAudioOnlyCallConstraints[] = "'{audio: true}'";
 const char WebRtcTestBase::kVideoOnlyCallConstraints[] = "'{video: true}'";
 const char WebRtcTestBase::kFailedWithPermissionDeniedError[] =
@@ -149,7 +152,15 @@ InfoBar* WebRtcTestBase::GetUserMediaAndWaitForInfoBar(
 }
 
 content::WebContents* WebRtcTestBase::OpenPageAndGetUserMediaInNewTab(
-      const GURL& url) const {
+    const GURL& url) const {
+  return OpenPageAndGetUserMediaInNewTabWithConstraints(
+      url, kAudioVideoCallConstraints);
+}
+
+content::WebContents*
+WebRtcTestBase::OpenPageAndGetUserMediaInNewTabWithConstraints(
+    const GURL& url,
+    const std::string& constraints) const {
   chrome::AddTabAt(browser(), GURL(), -1, true);
   ui_test_utils::NavigateToURL(browser(), url);
 #if defined (OS_LINUX)
@@ -158,7 +169,7 @@ content::WebContents* WebRtcTestBase::OpenPageAndGetUserMediaInNewTab(
 #endif
   content::WebContents* new_tab =
       browser()->tab_strip_model()->GetActiveWebContents();
-  GetUserMediaAndAccept(new_tab);
+  GetUserMediaWithSpecificConstraintsAndAccept(new_tab, constraints);
   return new_tab;
 }
 

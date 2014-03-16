@@ -127,7 +127,7 @@ int64 ParseFileAndExtractVideoFormat(
 // responsible for closing it.
 base::File OpenFileForRead(const base::FilePath& file_path) {
   base::File file(file_path, base::File::FLAG_OPEN | base::File::FLAG_READ);
-  CHECK(file.IsValid());
+  CHECK(file.IsValid()) << file_path.value();
   return file.Pass();
 }
 
