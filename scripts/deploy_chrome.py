@@ -324,15 +324,21 @@ class DeployChrome(object):
       raise DeployFailure(ex)
 
   def _CheckDeployType(self):
-    if self.options.build_dir and os.path.exists(
-        os.path.join(self.options.build_dir, 'system.unand')):
-      # Content shell deployment.
-      self.content_shell = True
-      self.options.build_dir = os.path.join(self.options.build_dir,
-                                            'system.unand/chrome/')
-      self.options.dostrip = False
-      self.options.target_dir = _ANDROID_DIR
-      self.copy_paths = chrome_util.GetCopyPaths(True)
+    if self.options.build_dir:
+      if os.path.exists(os.path.join(self.options.build_dir, 'system.unand')):
+        # Unand Content shell deployment.
+        self.content_shell = True
+        self.options.build_dir = os.path.join(self.options.build_dir,
+                                              'system.unand/chrome/')
+        self.options.dostrip = False
+        self.options.target_dir = _ANDROID_DIR
+        self.copy_paths = chrome_util.GetCopyPaths(True)
+      elif os.path.exists(os.path.join(self.options.build_dir,
+                                       'content_shell')) and not os.path.exists(
+          os.path.join(self.options.build_dir, 'chrome')):
+        # Content shell deployment
+        self.content_shell = True
+        self.copy_paths = chrome_util.GetCopyPaths(True)
     elif self.options.local_pkg_path or self.options.gs_path:
       # Package deployment.
       pkg_path = self.options.local_pkg_path

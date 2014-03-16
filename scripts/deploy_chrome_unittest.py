@@ -314,13 +314,28 @@ class TestContentDeploymentType(DeployTestBuildDir):
     self.deploy._CheckDeployType()
     self.assertTrue(self.deploy.content_shell)
 
+  def testContentShellOnlyDetection(self):
+    """Check for a content_shell deployment when no chrome exists."""
+    osutils.Touch(os.path.join(self.deploy.options.build_dir, 'content_shell'),
+                  makedirs=True)
+    self.deploy._CheckDeployType()
+    self.assertTrue(self.deploy.content_shell)
+
+  def testChromeAndContentShellDetection(self):
+    """Check for a regular chrome deployment when content_shell also exists."""
+    osutils.Touch(os.path.join(self.deploy.options.build_dir, 'chrome'),
+                  makedirs=True)
+    osutils.Touch(os.path.join(self.deploy.options.build_dir, 'content_shell'),
+                  makedirs=True)
+    self.deploy._CheckDeployType()
+    self.assertFalse(self.deploy.content_shell)
+
   def testChromeDetection(self):
     """Check for a regular chrome deployment"""
     osutils.Touch(os.path.join(self.deploy.options.build_dir, 'chrome'),
                   makedirs=True)
     self.deploy._CheckDeployType()
     self.assertFalse(self.deploy.content_shell)
-
 
 if __name__ == '__main__':
   cros_test_lib.main()

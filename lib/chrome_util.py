@@ -81,6 +81,10 @@ class Conditions(object):
     return flag in staging_flags
 
   @classmethod
+  def _StagingFlagNotSet(cls, flag, gyp_defines, staging_flags):
+    return not cls._StagingFlagSet(flag, gyp_defines, staging_flags)
+
+  @classmethod
   def GypSet(cls, flag, value=None):
     """Returns condition that tests a gyp flag is set (possibly to a value)."""
     return functools.partial(cls._GypSet, flag, value)
@@ -94,6 +98,11 @@ class Conditions(object):
   def StagingFlagSet(cls, flag):
     """Returns condition that tests a staging_flag is set."""
     return functools.partial(cls._StagingFlagSet, flag)
+
+  @classmethod
+  def StagingFlagNotSet(cls, flag):
+    """Returns condition that tests a staging_flag is not set."""
+    return functools.partial(cls._StagingFlagNotSet, flag)
 
 
 class MultipleMatchError(results_lib.StepFailure):
@@ -294,6 +303,7 @@ _USE_DRM = 'use_drm'
 _APP_SHELL_FLAG = 'app_shell'
 _CHROME_INTERNAL_FLAG = 'chrome_internal'
 _CONTENT_SHELL_FLAG = 'content_shell'
+_ECS_FLAG = 'ecs'
 _HIGHDPI_FLAG = 'highdpi'
 _PDF_FLAG = 'chrome_pdf'
 STAGING_FLAGS = (_APP_SHELL_FLAG, _CHROME_INTERNAL_FLAG, _CONTENT_SHELL_FLAG,
@@ -383,25 +393,64 @@ _COPY_PATHS = (
 )
 
 _COPY_PATHS_CONTENT_SHELL = (
-  Path('chrome-sandbox',
-       exe=True, mode=0o4755, owner='root:chrome'),
-  Path('dogfood/dumpstate_uploader', exe=True),
-  Path('dogfood/fake.dmp'),
-  Path('eureka_shell', exe=True, mode=0o755, owner='chrome:chrome'),
-  Path('eureka_shell.pak', owner='chrome:chrome'),
-  Path('fake_log_report.dmp', owner='chrome:chrome'),
-  Path('libck_pe.so', owner='chrome:chrome'),
+  Path('chrome[-_]sandbox', exe=True, mode=0o4755, owner='root:chrome'),
+  Path('dogfood/dumpstate_uploader',
+       exe=True,
+       cond=C.StagingFlagNotSet(_ECS_FLAG)),
+  Path('dogfood/fake.dmp', cond=C.StagingFlagNotSet(_ECS_FLAG)),
+  Path('content_shell',
+       exe=True,
+       cond=C.StagingFlagSet(_ECS_FLAG)),
+  Path('content_shell.pak', cond=C.StagingFlagSet(_ECS_FLAG)),
+  Path('eureka_shell',
+       exe=True,
+       cond=C.StagingFlagNotSet(_ECS_FLAG),
+       mode=0o755,
+       owner='chrome:chrome'),
+  Path('eureka_shell.pak',
+       cond=C.StagingFlagNotSet(_ECS_FLAG),
+       owner='chrome:chrome'),
+  Path('fake_log_report.dmp',
+       cond=C.StagingFlagNotSet(_ECS_FLAG),
+       owner='chrome:chrome'),
+  Path('icudtl.dat', cond=C.GypSet('icu_use_data_file_flag')),
+  Path('libck_pe.so',
+       cond=C.StagingFlagNotSet(_ECS_FLAG),
+       owner='chrome:chrome'),
   Path('libffmpegsumo.so', owner='chrome:chrome'),
-  Path('locales/*.pak', owner='chrome:chrome'),
-  Path('osd.conf', owner='chrome:chrome'),
-  Path('osd_images/1080p/*.png', owner='chrome:chrome'),
-  Path('osd_images/720p/*.png', owner='chrome:chrome'),
-  Path('setup/http/jquery.min.js', owner='chrome:chrome'),
-  Path('setup/http/setup.html', owner='chrome:chrome'),
-  Path('setup/http/welcome-video.mp4', owner='chrome:chrome'),
-  Path('update_engine', exe=True, mode=0o755, owner='updater:updater'),
-  Path('v2mirroring', exe=True, mode=0o755, owner='chrome:chrome'),
-  Path('watchdog/wd.dmp'),
+  Path('libosmesa.so', exe=True, optional=True),
+  Path('locales/*.pak',
+       cond=C.StagingFlagNotSet(_ECS_FLAG),
+       owner='chrome:chrome'),
+  Path('osd.conf',
+       cond=C.StagingFlagNotSet(_ECS_FLAG),
+       owner='chrome:chrome'),
+  Path('osd_images/1080p/*.png',
+       cond=C.StagingFlagNotSet(_ECS_FLAG),
+       owner='chrome:chrome'),
+  Path('osd_images/720p/*.png',
+       cond=C.StagingFlagNotSet(_ECS_FLAG),
+       owner='chrome:chrome'),
+  Path('setup/http/jquery.min.js',
+       cond=C.StagingFlagNotSet(_ECS_FLAG),
+       owner='chrome:chrome'),
+  Path('setup/http/setup.html',
+       cond=C.StagingFlagNotSet(_ECS_FLAG),
+       owner='chrome:chrome'),
+  Path('setup/http/welcome-video.mp4',
+       cond=C.StagingFlagNotSet(_ECS_FLAG),
+       owner='chrome:chrome'),
+  Path('update_engine',
+       exe=True,
+       cond=C.StagingFlagNotSet(_ECS_FLAG),
+       mode=0o755,
+       owner='updater:updater'),
+  Path('v2mirroring',
+       exe=True,
+       cond=C.StagingFlagNotSet(_ECS_FLAG),
+       mode=0o755,
+       owner='chrome:chrome'),
+  Path('watchdog/wd.dmp', cond=C.StagingFlagNotSet(_ECS_FLAG)),
 )
 
 def _FixPermissions(dest_base):
