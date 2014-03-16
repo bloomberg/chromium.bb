@@ -204,7 +204,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   virtual void Init();
 
   // Tells the renderer to die and then calls Destroy().
-  void Shutdown();
+  virtual void Shutdown();
 
   // IPC::Listener
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
