@@ -1,6 +1,6 @@
 @charset "utf-8";
 /* Document */
-body{font-size:10px;line-height:1;}
+body{font-family:'Open Sans',sans-serif;font-size:18px;line-height:1.4;}
 #readTools a{background-color:transparent!important;background-image:url(http://kerrick.github.com/readability-js/sprite-readability.png)!important;background-repeat:no-repeat!important;}
 #readOverlay{text-rendering:optimizeLegibility;display:block;position:absolute;top:0;left:0;width:100%;}
 #readInner{max-width:800px;margin:1em auto;}

@@ -32,15 +32,20 @@ namespace dom_distiller {
 
 namespace {
 
-std::string ReplaceHtmlTemplateValues(std::string title, std::string content) {
+std::string ReplaceHtmlTemplateValues(const std::string& title,
+                                      const std::string& content,
+                                      const std::string& original_url) {
   base::StringPiece html_template =
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_DOM_DISTILLER_VIEWER_HTML);
   std::vector<std::string> substitutions;
-  substitutions.push_back(title);     // $1
-  substitutions.push_back(kCssPath);  // $2
-  substitutions.push_back(title);     // $3
-  substitutions.push_back(content);   // $4
+  substitutions.push_back(title);                                          // $1
+  substitutions.push_back(kCssPath);                                       // $2
+  substitutions.push_back(title);                                          // $3
+  substitutions.push_back(content);                                        // $4
+  substitutions.push_back(original_url);                                   // $5
+  substitutions.push_back(
+        l10n_util::GetStringUTF8(IDS_DOM_DISTILLER_VIEWER_VIEW_ORIGINAL)); // $6
   return ReplaceStringPlaceholders(html_template, substitutions, NULL);
 }
 
@@ -99,8 +104,14 @@ void DomDistillerViewerSource::RequestViewerHandle::OnArticleReady(
     unsafe_article_html =
         l10n_util::GetStringUTF8(IDS_DOM_DISTILLER_VIEWER_NO_DATA_CONTENT);
   }
+
+  std::string original_url;
+  if (article_proto->pages_size() > 0 && article_proto->pages(0).has_url()) {
+    original_url = article_proto->pages(0).url();
+  }
+
   std::string unsafe_page_html =
-      ReplaceHtmlTemplateValues(title, unsafe_article_html);
+      ReplaceHtmlTemplateValues(title, unsafe_article_html, original_url);
   callback_.Run(base::RefCountedString::TakeString(&unsafe_page_html));
   base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
@@ -167,7 +178,7 @@ void DomDistillerViewerSource::StartDataRequest(
         IDS_DOM_DISTILLER_VIEWER_FAILED_TO_FIND_ARTICLE_TITLE);
     std::string content = l10n_util::GetStringUTF8(
         IDS_DOM_DISTILLER_VIEWER_FAILED_TO_FIND_ARTICLE_CONTENT);
-    std::string html = ReplaceHtmlTemplateValues(title, content);
+    std::string html = ReplaceHtmlTemplateValues(title, content, "");
     callback.Run(base::RefCountedString::TakeString(&html));
   }
 };
