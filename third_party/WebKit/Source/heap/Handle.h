@@ -215,6 +215,9 @@ private:
     friend class ThreadState;
 };
 
+template<typename T>
+class CrossThreadPersistent;
+
 // Persistent handles are used to store pointers into the
 // managed heap. As long as the Persistent handle is alive
 // the GC will keep the object pointed to alive. Persistent
@@ -329,14 +332,20 @@ public:
 
 private:
     T* m_raw;
+
+    friend class CrossThreadPersistent<T>;
 };
 
 // Unlike Persistent, we can destruct a CrossThreadPersistent in a thread
 // different from the construction thread.
 template<typename T>
 class CrossThreadPersistent : public Persistent<T, GlobalPersistents> {
+    WTF_DISALLOW_CONSTRUCTION_FROM_ZERO(CrossThreadPersistent);
+    WTF_DISALLOW_ZERO_ASSIGNMENT(CrossThreadPersistent);
 public:
     CrossThreadPersistent(T* raw) : Persistent<T, GlobalPersistents>(raw) { }
+
+    using Persistent<T, GlobalPersistents>::operator=;
 };
 
 // FIXME: derive affinity based on the collection.
