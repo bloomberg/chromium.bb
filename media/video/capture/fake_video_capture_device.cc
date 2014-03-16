@@ -49,17 +49,17 @@ void FakeVideoCaptureDevice::GetDeviceSupportedFormats(
     const Name& device,
     VideoCaptureFormats* supported_formats) {
 
+  const size_t supported_sizes_length = 3;
+  const gfx::Size supported_sizes[] = {gfx::Size(320, 240),
+                                       gfx::Size(640, 480),
+                                       gfx::Size(1280, 720)};
+  int frame_rate = 1000 / kFakeCaptureTimeoutMs;
   supported_formats->clear();
-  VideoCaptureFormat capture_format_640x480;
-  capture_format_640x480.pixel_format = media::PIXEL_FORMAT_I420;
-  capture_format_640x480.frame_size.SetSize(640, 480);
-  capture_format_640x480.frame_rate = 1000 / kFakeCaptureTimeoutMs;
-  supported_formats->push_back(capture_format_640x480);
-  VideoCaptureFormat capture_format_320x240;
-  capture_format_320x240.pixel_format = media::PIXEL_FORMAT_I420;
-  capture_format_320x240.frame_size.SetSize(320, 240);
-  capture_format_320x240.frame_rate = 1000 / kFakeCaptureTimeoutMs;
-  supported_formats->push_back(capture_format_320x240);
+  for (size_t i=0; i < supported_sizes_length; ++i) {
+    supported_formats->push_back(VideoCaptureFormat(supported_sizes[i],
+                                                    frame_rate,
+                                                    media::PIXEL_FORMAT_I420));
+  }
 }
 
 // static
@@ -129,9 +129,16 @@ void FakeVideoCaptureDevice::OnAllocateAndStart(
     scoped_ptr<VideoCaptureDevice::Client> client) {
   DCHECK_EQ(capture_thread_.message_loop(), base::MessageLoop::current());
   client_ = client.Pass();
-  capture_format_.pixel_format = PIXEL_FORMAT_I420;
+
+  // Incoming |params| can be none of the supported formats, so we get the
+  // closest thing rounded up. TODO(mcasas): Use the |params|, if they belong to
+  // the supported ones, when http://crbug.com/309554 is verified.
+  DCHECK_EQ(params.requested_format.pixel_format, PIXEL_FORMAT_I420);
+  capture_format_.pixel_format = params.requested_format.pixel_format;
   capture_format_.frame_rate = 30;
-  if (params.requested_format.frame_size.width() > 320)
+  if (params.requested_format.frame_size.width() > 640)
+      capture_format_.frame_size.SetSize(1280, 720);
+  else if (params.requested_format.frame_size.width() > 320)
     capture_format_.frame_size.SetSize(640, 480);
   else
     capture_format_.frame_size.SetSize(320, 240);
@@ -166,13 +173,11 @@ void FakeVideoCaptureDevice::OnCaptureTask() {
                    capture_format_.frame_size.height(),
                    capture_format_.frame_size.width()),
       bitmap.setPixels(fake_frame_.get());
-
   SkCanvas canvas(bitmap);
 
   // Draw a sweeping circle to show an animation.
   int radius = std::min(capture_format_.frame_size.width(),
-                        capture_format_.frame_size.height()) /
-               4;
+                        capture_format_.frame_size.height()) / 4;
   SkRect rect =
       SkRect::MakeXYWH(capture_format_.frame_size.width() / 2 - radius,
                        capture_format_.frame_size.height() / 2 - radius,
@@ -247,13 +252,7 @@ void FakeVideoCaptureDevice::Reallocate() {
 
 void FakeVideoCaptureDevice::PopulateFormatRoster() {
   DCHECK_EQ(capture_thread_.message_loop(), base::MessageLoop::current());
-  format_roster_.push_back(
-      media::VideoCaptureFormat(gfx::Size(320, 240), 30, PIXEL_FORMAT_I420));
-  format_roster_.push_back(
-      media::VideoCaptureFormat(gfx::Size(640, 480), 30, PIXEL_FORMAT_I420));
-  format_roster_.push_back(
-      media::VideoCaptureFormat(gfx::Size(800, 600), 30, PIXEL_FORMAT_I420));
-
+  GetDeviceSupportedFormats(Name(), &format_roster_);
   format_roster_index_ = 0;
 }
 
