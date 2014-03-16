@@ -12,6 +12,8 @@ import re
 import sys
 
 from chromite.buildbot import cbuildbot_config
+from chromite.buildbot import cbuildbot_metadata
+from chromite.buildbot import constants
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import gdata_lib
@@ -20,13 +22,9 @@ from chromite.lib import gs
 from chromite.lib import table
 from chromite.lib import parallel
 
-ARCHIVE_ROOT = 'gs://chromeos-image-archive/%(target)s'
-METADATA_URL_GLOB = os.path.join(ARCHIVE_ROOT, 'R%(milestone)s**metadata.json')
-LATEST_URL = os.path.join(ARCHIVE_ROOT, 'LATEST-master')
-
 # Useful config targets.
-CQ_MASTER = 'master-paladin'
-PRE_CQ_GROUP = 'trybot-pre-cq-group'
+CQ_MASTER = constants.CQ_MASTER
+PRE_CQ_GROUP = constants.PRE_CQ_GROUP
 
 # Number of parallel processes used when uploading/downloading GS files.
 MAX_PARALLEL = 40
@@ -719,77 +717,12 @@ class StatsManager(object):
     self.gs_ctx = gs.GSContext()
     self.config_target = config_target
 
-  def _GetLatestMilestone(self):
-    """Get the latest milestone from CQ Master LATEST-master file."""
-    # Use CQ Master target to get latest milestone.
-    latest_url = LATEST_URL % {'target': CQ_MASTER}
-
-    cros_build_lib.Info('Getting latest milestone from %s', latest_url)
-    try:
-      content = self.gs_ctx.Cat(latest_url).output.strip()
-
-      # Expected syntax is like the following: "R35-1234.5.6-rc7".
-      assert content.startswith('R')
-      milestone = content.split('-')[0][1:]
-      cros_build_lib.Info('Latest milestone determined to be: %s', milestone)
-      return int(milestone)
-
-    except gs.GSNoSuchKey:
-      raise GatherStatsError('LATEST file missing: %s' % latest_url)
-
-  def _GetMetadataURLsSince(self, target, start_date):
-    """Get metadata.json URLs for |target| since |start_date|.
-
-    The modified time of the GS files is used to compare with start_date, so
-    the completion date of the builder run is what is important here.
-
-    Args:
-      target: Builder target name.
-      start_date: datetime.date object.
-
-    Returns:
-      Metadata urls for runs found.
-    """
-    urls = []
-    milestone = self._GetLatestMilestone()
-    while True:
-      base_url = METADATA_URL_GLOB % {'target': target, 'milestone': milestone}
-      cros_build_lib.Info('Getting %s builds for R%d from "%s"',
-                          target, milestone, base_url)
-
-      try:
-        # Get GS URLs as tuples (url, size, modified datetime).  We want the
-        # datetimes to quickly know when we are done collecting URLs.
-        url_details = self.gs_ctx.LSWithDetails(base_url)
-      except gs.GSNoSuchKey:
-        # We ran out of metadata to collect.  Stop searching back in time.
-        cros_build_lib.Info('No %s builds found for $%d.  I will not continue'
-                            ' search to older milestones.', target, milestone)
-        break
-
-      # Sort by timestamp.
-      url_details = sorted(url_details, key=lambda x: x[2], reverse=True)
-
-      # See if we have gone far enough back by checking datetime of oldest URL
-      # in the current batch.
-      if url_details[-1][2].date() < start_date:
-        # We want a subset of these URLs, then we are done.
-        urls.extend([url for (url, _size, dt) in url_details
-                     if dt.date() >= start_date])
-        break
-
-      else:
-        # Accept all these URLs, then continue on to the next milestone.
-        urls.extend([url for (url, _size, _dt) in url_details])
-        milestone -= 1
-        cros_build_lib.Info('Continuing on to R%d.', milestone)
-
-    return urls
 
   def Gather(self, start_date, sort_by_build_number=True):
     cros_build_lib.Info('Gathering data for %s since %s', self.config_target,
                         start_date)
-    urls = self._GetMetadataURLsSince(self.config_target, start_date)
+    urls = cbuildbot_metadata.GetMetadataURLsSince(self.config_target,
+                                                   start_date)
     cros_build_lib.Info('Found %d metadata.json URLs to process.\n'
                         '  From: %s\n  To  : %s', len(urls), urls[0], urls[-1])
 
