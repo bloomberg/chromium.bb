@@ -31,10 +31,14 @@ RtpPacketizerConfig::~RtpPacketizerConfig() {}
 
 RtpPacketizer::RtpPacketizer(PacedSender* const transport,
                              PacketStorage* packet_storage,
-                             RtpPacketizerConfig rtp_packetizer_config)
+                             RtpPacketizerConfig rtp_packetizer_config,
+                             base::TickClock* clock,
+                             LoggingImpl* logging)
     : config_(rtp_packetizer_config),
       transport_(transport),
       packet_storage_(packet_storage),
+      clock_(clock),
+      logging_(logging),
       sequence_number_(config_.sequence_number),
       rtp_timestamp_(0),
       packet_id_(0),
@@ -144,6 +148,11 @@ void RtpPacketizer::Cast(bool is_key,
     packets.push_back(packet);
   }
   DCHECK(packet_id_ == num_packets) << "Invalid state";
+
+  logging_->InsertPacketListEvent(
+      clock_->NowTicks(),
+      config_.audio ? kAudioPacketSentToPacer : kVideoPacketSentToPacer,
+      packets);
 
   // Send to network.
   transport_->SendPackets(packets);

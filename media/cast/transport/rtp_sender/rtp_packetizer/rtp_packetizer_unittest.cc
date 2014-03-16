@@ -6,6 +6,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "media/cast/logging/simple_event_subscriber.h"
 #include "media/cast/test/fake_single_thread_task_runner.h"
 #include "media/cast/transport/pacing/paced_sender.h"
 #include "media/cast/transport/rtp_sender/packet_storage/packet_storage.h"
@@ -99,16 +100,19 @@ class RtpPacketizerTest : public ::testing::Test {
   RtpPacketizerTest()
       : task_runner_(new test::FakeSingleThreadTaskRunner(&testing_clock_)),
         video_frame_(),
-        packet_storage_(&testing_clock_, kMaxPacketStorageTimeMs) {
+        packet_storage_(&testing_clock_, kMaxPacketStorageTimeMs),
+        logging_(GetLoggingConfigWithRawEventsAndStatsEnabled()) {
+    logging_.AddRawEventSubscriber(&subscriber_);
     config_.sequence_number = kSeqNum;
     config_.ssrc = kSsrc;
     config_.payload_type = kPayload;
     config_.max_payload_length = kMaxPacketLength;
     transport_.reset(new TestRtpPacketTransport(config_));
-    pacer_.reset(
-        new PacedSender(&testing_clock_, transport_.get(), task_runner_));
-    rtp_packetizer_.reset(
-        new RtpPacketizer(pacer_.get(), &packet_storage_, config_));
+    pacer_.reset(new PacedSender(
+        &testing_clock_, &logging_, transport_.get(), task_runner_));
+    pacer_->RegisterVideoSsrc(config_.ssrc);
+    rtp_packetizer_.reset(new RtpPacketizer(
+        pacer_.get(), &packet_storage_, config_, &testing_clock_, &logging_));
     video_frame_.key_frame = false;
     video_frame_.frame_id = 0;
     video_frame_.last_referenced_frame_id = kStartFrameId;
@@ -117,7 +121,9 @@ class RtpPacketizerTest : public ::testing::Test {
         GetVideoRtpTimestamp(testing_clock_.NowTicks());
   }
 
-  virtual ~RtpPacketizerTest() {}
+  virtual ~RtpPacketizerTest() {
+    logging_.RemoveRawEventSubscriber(&subscriber_);
+  }
 
   void RunTasks(int during_ms) {
     for (int i = 0; i < during_ms; ++i) {
@@ -133,6 +139,8 @@ class RtpPacketizerTest : public ::testing::Test {
   PacketStorage packet_storage_;
   RtpPacketizerConfig config_;
   scoped_ptr<TestRtpPacketTransport> transport_;
+  LoggingImpl logging_;
+  SimpleEventSubscriber subscriber_;
   scoped_ptr<PacedSender> pacer_;
   scoped_ptr<RtpPacketizer> rtp_packetizer_;
 
@@ -149,6 +157,18 @@ TEST_F(RtpPacketizerTest, SendStandardPackets) {
   rtp_packetizer_->IncomingEncodedVideoFrame(&video_frame_, time);
   RunTasks(33 + 1);
   EXPECT_EQ(expected_num_of_packets, transport_->number_of_packets_received());
+  std::vector<PacketEvent> packet_events;
+  subscriber_.GetPacketEventsAndReset(&packet_events);
+  int expected_num_video_sent_to_pacer_count = expected_num_of_packets;
+  int num_video_sent_to_pacer_count = 0;
+  for (std::vector<PacketEvent>::iterator it = packet_events.begin();
+       it != packet_events.end();
+       ++it) {
+    if (it->type == kVideoPacketSentToPacer)
+      num_video_sent_to_pacer_count++;
+  }
+  EXPECT_EQ(expected_num_video_sent_to_pacer_count,
+            num_video_sent_to_pacer_count);
 }
 
 TEST_F(RtpPacketizerTest, Stats) {

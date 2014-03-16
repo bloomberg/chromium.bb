@@ -24,8 +24,8 @@ const media::cast::CastLoggingEvent kVideoFrameEvents[] = {
     media::cast::kVideoFrameDecoded,       media::cast::kVideoRenderDelay};
 
 const media::cast::CastLoggingEvent kVideoPacketEvents[] = {
-    media::cast::kPacketSentToPacer, media::cast::kPacketSentToNetwork,
-    media::cast::kVideoPacketReceived};
+    media::cast::kVideoPacketSentToPacer,
+    media::cast::kVideoPacketSentToNetwork, media::cast::kVideoPacketReceived};
 
 // The frame event fields cycle through these numbers.
 const int kEncodedFrameSize[] = {512, 425, 399, 400, 237};

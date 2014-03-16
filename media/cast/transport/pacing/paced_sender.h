@@ -21,6 +21,9 @@
 
 namespace media {
 namespace cast {
+
+class LoggingImpl;
+
 namespace transport {
 
 // We have this pure virtual class to enable mocking.
@@ -44,10 +47,15 @@ class PacedSender : public PacedPacketSender,
   // testing.
   PacedSender(
       base::TickClock* clock,
+      LoggingImpl* logging,
       PacketSender* external_transport,
       const scoped_refptr<base::SingleThreadTaskRunner>& transport_task_runner);
 
   virtual ~PacedSender();
+
+  // These must be called before non-RTCP packets are sent.
+  void RegisterAudioSsrc(uint32 audio_ssrc);
+  void RegisterVideoSsrc(uint32 video_ssrc);
 
   // PacedPacketSender implementation.
   virtual bool SendPackets(const PacketList& packets) OVERRIDE;
@@ -66,17 +74,22 @@ class PacedSender : public PacedPacketSender,
 
  private:
   bool SendPacketsToTransport(const PacketList& packets,
-                              PacketList* packets_not_sent);
+                              PacketList* packets_not_sent,
+                              bool retransmit);
 
   // Actually sends the packets to the transport.
   bool TransmitPackets(const PacketList& packets);
   void SendStoredPackets();
   void UpdateBurstSize(size_t num_of_packets);
 
-  // Not owned by this class.
-  base::TickClock* const clock_;
-  PacketSender* transport_;  // Not owned by this class.
+  void LogPacketEvent(const Packet& packet, bool retransmit);
+
+  base::TickClock* const clock_;  // Not owned by this class.
+  LoggingImpl* const logging_;    // Not owned by this class.
+  PacketSender* transport_;       // Not owned by this class.
   scoped_refptr<base::SingleThreadTaskRunner> transport_task_runner_;
+  uint32 audio_ssrc_;
+  uint32 video_ssrc_;
   size_t burst_size_;
   size_t packets_sent_in_burst_;
   base::TimeTicks time_last_process_;

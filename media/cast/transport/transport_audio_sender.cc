@@ -16,9 +16,10 @@ namespace transport {
 TransportAudioSender::TransportAudioSender(
     const CastTransportAudioConfig& config,
     base::TickClock* clock,
+    LoggingImpl* logging,
     const scoped_refptr<base::SingleThreadTaskRunner>& transport_task_runner,
     PacedSender* const paced_packet_sender)
-    : rtp_sender_(clock, transport_task_runner, paced_packet_sender),
+    : rtp_sender_(clock, logging, transport_task_runner, paced_packet_sender),
       encryptor_() {
   rtp_sender_.InitializeAudio(config);
   initialized_ =

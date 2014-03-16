@@ -39,6 +39,10 @@ class LoggingImpl {
                                  CastLoggingEvent event, uint32 rtp_timestamp,
                                  uint32 frame_id, base::TimeDelta delay);
 
+  void InsertSinglePacketEvent(const base::TimeTicks& time_of_event,
+                               CastLoggingEvent event,
+                               const Packet& packet);
+
   void InsertPacketListEvent(const base::TimeTicks& time_of_event,
                              CastLoggingEvent event, const PacketList& packets);
 

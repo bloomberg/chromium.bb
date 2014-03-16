@@ -55,11 +55,12 @@ CastTransportSenderImpl::CastTransportSenderImpl(
                                                        local_end_point,
                                                        remote_end_point,
                                                        status_callback)),
+      logging_(logging_config),
       pacer_(clock,
+             &logging_,
              external_transport ? external_transport : transport_.get(),
              transport_task_runner),
       rtcp_builder_(&pacer_),
-      logging_(logging_config),
       raw_events_callback_(raw_events_callback) {
   if (!raw_events_callback_.is_null()) {
     DCHECK(logging_config.enable_raw_data_collection);
@@ -80,8 +81,9 @@ CastTransportSenderImpl::~CastTransportSenderImpl() {
 
 void CastTransportSenderImpl::InitializeAudio(
     const CastTransportAudioConfig& config) {
+  pacer_.RegisterAudioSsrc(config.base.ssrc);
   audio_sender_.reset(new TransportAudioSender(
-      config, clock_, transport_task_runner_, &pacer_));
+      config, clock_, &logging_, transport_task_runner_, &pacer_));
   if (audio_sender_->initialized())
     status_callback_.Run(TRANSPORT_AUDIO_INITIALIZED);
   else
@@ -90,8 +92,9 @@ void CastTransportSenderImpl::InitializeAudio(
 
 void CastTransportSenderImpl::InitializeVideo(
     const CastTransportVideoConfig& config) {
+  pacer_.RegisterVideoSsrc(config.base.ssrc);
   video_sender_.reset(new TransportVideoSender(
-      config, clock_, transport_task_runner_, &pacer_));
+      config, clock_, &logging_, transport_task_runner_, &pacer_));
   if (video_sender_->initialized())
     status_callback_.Run(TRANSPORT_VIDEO_INITIALIZED);
   else

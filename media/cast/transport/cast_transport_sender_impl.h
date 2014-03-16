@@ -92,12 +92,11 @@ class CastTransportSenderImpl : public CastTransportSender {
   scoped_refptr<base::SingleThreadTaskRunner> transport_task_runner_;
 
   scoped_ptr<UdpTransport> transport_;
+  LoggingImpl logging_;
   PacedSender pacer_;
   RtcpBuilder rtcp_builder_;
   scoped_ptr<TransportAudioSender> audio_sender_;
   scoped_ptr<TransportVideoSender> video_sender_;
-
-  LoggingImpl logging_;
 
   // This is non-null iff raw events logging is enabled.
   scoped_ptr<SimpleEventSubscriber> event_subscriber_;

@@ -12,8 +12,16 @@
 #include "base/time/time.h"
 #include "media/cast/transport/rtp_sender/packet_storage/packet_storage.h"
 
+namespace base {
+
+class TickClock;
+}
+
 namespace media {
 namespace cast {
+
+class LoggingImpl;
+
 namespace transport {
 
 class PacedSender;
@@ -47,7 +55,9 @@ class RtpPacketizer {
  public:
   RtpPacketizer(PacedSender* const transport,
                 PacketStorage* packet_storage,
-                RtpPacketizerConfig rtp_packetizer_config);
+                RtpPacketizerConfig rtp_packetizer_config,
+                base::TickClock* clock,
+                LoggingImpl* logging);
   ~RtpPacketizer();
 
   // The video_frame objects ownership is handled by the main cast thread.
@@ -81,6 +91,8 @@ class RtpPacketizer {
   RtpPacketizerConfig config_;
   PacedSender* const transport_;  // Not owned by this class.
   PacketStorage* packet_storage_;
+  base::TickClock* const clock_;  // Not owned by this class.
+  LoggingImpl* const logging_;    // Not owned by this class.
 
   base::TimeTicks time_last_sent_rtp_timestamp_;
   uint16 sequence_number_;

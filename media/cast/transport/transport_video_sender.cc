@@ -19,12 +19,13 @@ namespace transport {
 TransportVideoSender::TransportVideoSender(
     const CastTransportVideoConfig& config,
     base::TickClock* clock,
+    LoggingImpl* logging,
     const scoped_refptr<base::SingleThreadTaskRunner>& transport_task_runner,
     PacedSender* const paced_packet_sender)
     : rtp_max_delay_(base::TimeDelta::FromMilliseconds(
           config.base.rtp_config.max_delay_ms)),
       encryptor_(),
-      rtp_sender_(clock, transport_task_runner, paced_packet_sender) {
+      rtp_sender_(clock, logging, transport_task_runner, paced_packet_sender) {
   rtp_sender_.InitializeVideo(config);
   initialized_ =
       encryptor_.Initialize(config.base.aes_key, config.base.aes_iv_mask);

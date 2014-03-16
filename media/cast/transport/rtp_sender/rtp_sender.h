@@ -24,6 +24,9 @@
 
 namespace media {
 namespace cast {
+
+class LoggingImpl;
+
 namespace transport {
 
 // This object is only called from the main cast thread.
@@ -34,6 +37,7 @@ class RtpSender {
  public:
   RtpSender(
       base::TickClock* clock,
+      LoggingImpl* logging,
       const scoped_refptr<base::SingleThreadTaskRunner>& transport_task_runner,
       PacedSender* const transport);
 
@@ -68,6 +72,7 @@ class RtpSender {
   void UpdateSequenceNumber(Packet* packet);
 
   base::TickClock* clock_;  // Not owned by this class.
+  LoggingImpl* logging_;    // Not owned by this class.
   RtpPacketizerConfig config_;
   scoped_ptr<RtpPacketizer> packetizer_;
   scoped_ptr<PacketStorage> storage_;

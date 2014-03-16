@@ -78,26 +78,40 @@ void LoggingImpl::InsertFrameEventWithDelay(
   }
 }
 
+void LoggingImpl::InsertSinglePacketEvent(const base::TimeTicks& time_of_event,
+                                          CastLoggingEvent event,
+                                          const Packet& packet) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  // Parse basic properties.
+  uint32 rtp_timestamp;
+  uint16 packet_id, max_packet_id;
+  const uint8* packet_data = &packet[0];
+  base::BigEndianReader big_endian_reader(
+      reinterpret_cast<const char*>(packet_data + 4), 4);
+  big_endian_reader.ReadU32(&rtp_timestamp);
+  base::BigEndianReader cast_big_endian_reader(
+      reinterpret_cast<const char*>(packet_data + 12 + 2), 4);
+  cast_big_endian_reader.ReadU16(&packet_id);
+  cast_big_endian_reader.ReadU16(&max_packet_id);
+
+  // rtp_timestamp is enough - no need for frame_id as well.
+  InsertPacketEvent(time_of_event,
+                    event,
+                    rtp_timestamp,
+                    kFrameIdUnknown,
+                    packet_id,
+                    max_packet_id,
+                    packet.size());
+}
+
 void LoggingImpl::InsertPacketListEvent(const base::TimeTicks& time_of_event,
                                         CastLoggingEvent event,
                                         const PacketList& packets) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  for (unsigned int i = 0; i < packets.size(); ++i) {
-    const Packet& packet = packets[i];
-    // Parse basic properties.
-    uint32 rtp_timestamp;
-    uint16 packet_id, max_packet_id;
-    const uint8* packet_data = &packet[0];
-    base::BigEndianReader big_endian_reader(
-        reinterpret_cast<const char*>(packet_data + 4), 4);
-    big_endian_reader.ReadU32(&rtp_timestamp);
-    base::BigEndianReader cast_big_endian_reader(
-        reinterpret_cast<const char*>(packet_data + 12 + 2), 4);
-    cast_big_endian_reader.ReadU16(&packet_id);
-    cast_big_endian_reader.ReadU16(&max_packet_id);
-    // rtp_timestamp is enough - no need for frame_id as well.
-    InsertPacketEvent(time_of_event, event, rtp_timestamp, kFrameIdUnknown,
-                      packet_id, max_packet_id, packet.size());
+  for (PacketList::const_iterator it = packets.begin(); it != packets.end();
+       ++it) {
+    InsertSinglePacketEvent(time_of_event, event, *it);
   }
 }
 

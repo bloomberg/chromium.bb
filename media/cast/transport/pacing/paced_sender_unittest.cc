@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/big_endian.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "media/cast/logging/simple_event_subscriber.h"
 #include "media/cast/test/fake_single_thread_task_runner.h"
 #include "media/cast/transport/pacing/paced_sender.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -20,6 +22,8 @@ static const size_t kSize3 = 102;
 static const size_t kSize4 = 103;
 static const size_t kNackSize = 104;
 static const int64 kStartMillisecond = GG_INT64_C(12345678900000);
+static const uint32 kVideoSsrc = 0x1234;
+static const uint32 kAudioSsrc = 0x5678;
 
 class TestPacketSender : public PacketSender {
  public:
@@ -39,7 +43,7 @@ class TestPacketSender : public PacketSender {
     }
   }
 
- private:
+ public:
   std::list<int> expected_packet_size_;
 
   DISALLOW_COPY_AND_ASSIGN(TestPacketSender);
@@ -47,28 +51,58 @@ class TestPacketSender : public PacketSender {
 
 class PacedSenderTest : public ::testing::Test {
  protected:
-  PacedSenderTest() {
+  PacedSenderTest() : logging_(GetLoggingConfigWithRawEventsAndStatsEnabled()) {
+    logging_.AddRawEventSubscriber(&subscriber_);
     testing_clock_.Advance(
         base::TimeDelta::FromMilliseconds(kStartMillisecond));
     task_runner_ = new test::FakeSingleThreadTaskRunner(&testing_clock_);
-    paced_sender_.reset(
-        new PacedSender(&testing_clock_, &mock_transport_, task_runner_));
+    paced_sender_.reset(new PacedSender(
+        &testing_clock_, &logging_, &mock_transport_, task_runner_));
+    paced_sender_->RegisterAudioSsrc(kAudioSsrc);
+    paced_sender_->RegisterVideoSsrc(kVideoSsrc);
   }
 
-  virtual ~PacedSenderTest() {}
+  virtual ~PacedSenderTest() {
+    logging_.RemoveRawEventSubscriber(&subscriber_);
+  }
 
   static void UpdateCastTransportStatus(transport::CastTransportStatus status) {
     NOTREACHED();
   }
 
-  PacketList CreatePacketList(size_t packet_size, int num_of_packets_in_frame) {
+  PacketList CreatePacketList(size_t packet_size,
+                              int num_of_packets_in_frame,
+                              bool audio) {
+    DCHECK_GE(packet_size, 12u);
     PacketList packets;
     for (int i = 0; i < num_of_packets_in_frame; ++i) {
-      packets.push_back(Packet(packet_size, kValue));
+      Packet packet(packet_size, kValue);
+      // Write ssrc to packet so that it can be recognized as a
+      // "video frame" for logging purposes.
+      base::BigEndianWriter writer(reinterpret_cast<char*>(&packet[8]), 4);
+      bool success = writer.WriteU32(audio ? kAudioSsrc : kVideoSsrc);
+      DCHECK(success);
+      packets.push_back(packet);
     }
     return packets;
   }
 
+  // Use this function to drain the packet list in PacedSender without having
+  // to test the pacing implementation details.
+  bool RunUntilEmpty(int max_tries) {
+    for (int i = 0; i < max_tries; i++) {
+      testing_clock_.Advance(base::TimeDelta::FromMilliseconds(10));
+      task_runner_->RunTasks();
+      if (mock_transport_.expected_packet_size_.empty())
+        return true;
+      i++;
+    }
+
+    return mock_transport_.expected_packet_size_.empty();
+  }
+
+  LoggingImpl logging_;
+  SimpleEventSubscriber subscriber_;
   base::SimpleTestTickClock testing_clock_;
   TestPacketSender mock_transport_;
   scoped_refptr<test::FakeSingleThreadTaskRunner> task_runner_;
@@ -79,7 +113,7 @@ class PacedSenderTest : public ::testing::Test {
 
 TEST_F(PacedSenderTest, PassThroughRtcp) {
   mock_transport_.AddExpectedSize(kSize1, 1);
-  PacketList packets = CreatePacketList(kSize1, 1);
+  PacketList packets = CreatePacketList(kSize1, 1, true);
 
   EXPECT_TRUE(paced_sender_->SendPackets(packets));
   EXPECT_TRUE(paced_sender_->ResendPackets(packets));
@@ -90,7 +124,7 @@ TEST_F(PacedSenderTest, PassThroughRtcp) {
 
 TEST_F(PacedSenderTest, BasicPace) {
   int num_of_packets = 9;
-  PacketList packets = CreatePacketList(kSize1, num_of_packets);
+  PacketList packets = CreatePacketList(kSize1, num_of_packets, false);
 
   mock_transport_.AddExpectedSize(kSize1, 3);
   EXPECT_TRUE(paced_sender_->SendPackets(packets));
@@ -113,8 +147,21 @@ TEST_F(PacedSenderTest, BasicPace) {
   task_runner_->RunTasks();
 
   // Check that we don't get any more packets.
-  testing_clock_.Advance(timeout);
-  task_runner_->RunTasks();
+  EXPECT_TRUE(RunUntilEmpty(3));
+
+  std::vector<PacketEvent> packet_events;
+  subscriber_.GetPacketEventsAndReset(&packet_events);
+  EXPECT_EQ(num_of_packets, static_cast<int>(packet_events.size()));
+  int sent_to_network_event_count = 0;
+  for (std::vector<PacketEvent>::iterator it = packet_events.begin();
+       it != packet_events.end();
+       ++it) {
+    if (it->type == kVideoPacketSentToNetwork)
+      sent_to_network_event_count++;
+    else
+      FAIL() << "Got unexpected event type " << CastLoggingToString(it->type);
+  }
+  EXPECT_EQ(num_of_packets, sent_to_network_event_count);
 }
 
 TEST_F(PacedSenderTest, PaceWithNack) {
@@ -124,12 +171,13 @@ TEST_F(PacedSenderTest, PaceWithNack) {
   int num_of_packets_in_nack = 9;
 
   PacketList first_frame_packets =
-      CreatePacketList(kSize1, num_of_packets_in_frame);
+      CreatePacketList(kSize1, num_of_packets_in_frame, false);
 
   PacketList second_frame_packets =
-      CreatePacketList(kSize2, num_of_packets_in_frame);
+      CreatePacketList(kSize2, num_of_packets_in_frame, true);
 
-  PacketList nack_packets = CreatePacketList(kNackSize, num_of_packets_in_nack);
+  PacketList nack_packets =
+      CreatePacketList(kNackSize, num_of_packets_in_nack, false);
 
   // Check that the first burst of the frame go out on the wire.
   mock_transport_.AddExpectedSize(kSize1, 3);
@@ -174,8 +222,36 @@ TEST_F(PacedSenderTest, PaceWithNack) {
   task_runner_->RunTasks();
 
   // No more packets.
-  testing_clock_.Advance(timeout);
-  task_runner_->RunTasks();
+  EXPECT_TRUE(RunUntilEmpty(5));
+
+  std::vector<PacketEvent> packet_events;
+  subscriber_.GetPacketEventsAndReset(&packet_events);
+  int expected_video_network_event_count = num_of_packets_in_frame;
+  int expected_video_retransmitted_event_count = 2 * num_of_packets_in_nack;
+  int expected_audio_network_event_count = num_of_packets_in_frame;
+  EXPECT_EQ(expected_video_network_event_count +
+                expected_video_retransmitted_event_count +
+                expected_audio_network_event_count,
+            static_cast<int>(packet_events.size()));
+  int audio_network_event_count = 0;
+  int video_network_event_count = 0;
+  int video_retransmitted_event_count = 0;
+  for (std::vector<PacketEvent>::iterator it = packet_events.begin();
+       it != packet_events.end();
+       ++it) {
+    if (it->type == kVideoPacketSentToNetwork)
+      video_network_event_count++;
+    else if (it->type == kVideoPacketRetransmitted)
+      video_retransmitted_event_count++;
+    else if (it->type == kAudioPacketSentToNetwork)
+      audio_network_event_count++;
+    else
+      FAIL() << "Got unexpected event type " << CastLoggingToString(it->type);
+  }
+  EXPECT_EQ(expected_audio_network_event_count, audio_network_event_count);
+  EXPECT_EQ(expected_video_network_event_count, video_network_event_count);
+  EXPECT_EQ(expected_video_retransmitted_event_count,
+            video_retransmitted_event_count);
 }
 
 TEST_F(PacedSenderTest, PaceWith60fps) {
@@ -184,16 +260,16 @@ TEST_F(PacedSenderTest, PaceWith60fps) {
   int num_of_packets_in_frame = 9;
 
   PacketList first_frame_packets =
-      CreatePacketList(kSize1, num_of_packets_in_frame);
+      CreatePacketList(kSize1, num_of_packets_in_frame, false);
 
   PacketList second_frame_packets =
-      CreatePacketList(kSize2, num_of_packets_in_frame);
+      CreatePacketList(kSize2, num_of_packets_in_frame, false);
 
   PacketList third_frame_packets =
-      CreatePacketList(kSize3, num_of_packets_in_frame);
+      CreatePacketList(kSize3, num_of_packets_in_frame, false);
 
   PacketList fourth_frame_packets =
-      CreatePacketList(kSize4, num_of_packets_in_frame);
+      CreatePacketList(kSize4, num_of_packets_in_frame, false);
 
   base::TimeDelta timeout_10ms = base::TimeDelta::FromMilliseconds(10);
 
@@ -248,6 +324,9 @@ TEST_F(PacedSenderTest, PaceWith60fps) {
 
   testing_clock_.Advance(timeout_10ms);
   task_runner_->RunTasks();
+
+  // No more packets.
+  EXPECT_TRUE(RunUntilEmpty(5));
 }
 
 }  // namespace transport
