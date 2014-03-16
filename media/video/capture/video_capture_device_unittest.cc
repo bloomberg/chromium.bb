@@ -358,13 +358,7 @@ TEST_F(VideoCaptureDeviceTest, MAYBE_CaptureMjpeg) {
   device->StopAndDeAllocate();
 }
 
-#if defined(OS_ANDROID)
-// TODO(mcasas): Reenable this test that is disabled in Android due to
-// http://crbug.com/327043.
-TEST_F(VideoCaptureDeviceTest, DISABLED_GetDeviceSupportedFormats) {
-#else
 TEST_F(VideoCaptureDeviceTest, GetDeviceSupportedFormats) {
-#endif
   VideoCaptureDevice::GetDeviceNames(&names_);
   if (!names_.size()) {
     DVLOG(1) << "No camera available. Exiting test.";
