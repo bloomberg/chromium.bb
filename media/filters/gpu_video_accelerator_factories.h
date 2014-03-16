@@ -47,11 +47,11 @@ class MEDIA_EXPORT GpuVideoAcceleratorFactories
   virtual scoped_ptr<VideoEncodeAccelerator> CreateVideoEncodeAccelerator() = 0;
 
   // Allocate & delete native textures.
-  virtual uint32 CreateTextures(int32 count,
-                                const gfx::Size& size,
-                                std::vector<uint32>* texture_ids,
-                                std::vector<gpu::Mailbox>* texture_mailboxes,
-                                uint32 texture_target) = 0;
+  virtual bool CreateTextures(int32 count,
+                              const gfx::Size& size,
+                              std::vector<uint32>* texture_ids,
+                              std::vector<gpu::Mailbox>* texture_mailboxes,
+                              uint32 texture_target) = 0;
   virtual void DeleteTexture(uint32 texture_id) = 0;
 
   virtual void WaitSyncPoint(uint32 sync_point) = 0;

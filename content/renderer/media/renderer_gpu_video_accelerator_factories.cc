@@ -88,7 +88,7 @@ RendererGpuVideoAcceleratorFactories::CreateVideoEncodeAccelerator() {
   return gpu_channel_host_->CreateVideoEncoder();
 }
 
-uint32 RendererGpuVideoAcceleratorFactories::CreateTextures(
+bool RendererGpuVideoAcceleratorFactories::CreateTextures(
     int32 count,
     const gfx::Size& size,
     std::vector<uint32>* texture_ids,
@@ -99,7 +99,7 @@ uint32 RendererGpuVideoAcceleratorFactories::CreateTextures(
 
   WebGraphicsContext3DCommandBufferImpl* context = GetContext3d();
   if (!context)
-    return 0;
+    return false;
 
   gpu::gles2::GLES2Implementation* gles2 = context->GetImplementation();
   texture_ids->resize(count);
@@ -129,13 +129,13 @@ uint32 RendererGpuVideoAcceleratorFactories::CreateTextures(
                                   texture_mailboxes->at(i).name);
   }
 
-  // We need a glFlush here to guarantee the decoder (in the GPU process) can
-  // use the texture ids we return here.  Since textures are expected to be
-  // reused, this should not be unacceptably expensive.
-  gles2->Flush();
+  // We need ShallowFlushCHROMIUM() here to order the command buffer commands
+  // with respect to IPC to the GPU process, to guarantee that the decoder in
+  // the GPU process can use these textures as soon as it receives IPC
+  // notification of them.
+  gles2->ShallowFlushCHROMIUM();
   DCHECK_EQ(gles2->GetError(), static_cast<GLenum>(GL_NO_ERROR));
-
-  return gles2->InsertSyncPointCHROMIUM();
+  return true;
 }
 
 void RendererGpuVideoAcceleratorFactories::DeleteTexture(uint32 texture_id) {

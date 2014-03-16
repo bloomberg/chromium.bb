@@ -29,11 +29,11 @@ class FakeGpuVideoAcceleratorFactories : public GpuVideoAcceleratorFactories {
   //
   //  The following functions are no-op.
   //
-  virtual uint32 CreateTextures(int32 count,
-                                const gfx::Size& size,
-                                std::vector<uint32>* texture_ids,
-                                std::vector<gpu::Mailbox>* texture_mailboxes,
-                                uint32 texture_target) OVERRIDE;
+  virtual bool CreateTextures(int32 count,
+                              const gfx::Size& size,
+                              std::vector<uint32>* texture_ids,
+                              std::vector<gpu::Mailbox>* texture_mailboxes,
+                              uint32 texture_target) OVERRIDE;
 
   virtual void DeleteTexture(uint32 texture_id) OVERRIDE {}
 

@@ -37,13 +37,13 @@ FakeGpuVideoAcceleratorFactories::GetTaskRunner() {
   return fake_task_runner_;
 }
 
-uint32 FakeGpuVideoAcceleratorFactories::CreateTextures(
+bool FakeGpuVideoAcceleratorFactories::CreateTextures(
     int32 count,
     const gfx::Size& size,
     std::vector<uint32>* texture_ids,
     std::vector<gpu::Mailbox>* texture_mailboxes,
     uint32 texture_target) {
-  return 0;
+  return false;
 }
 
 scoped_ptr<VideoDecodeAccelerator>

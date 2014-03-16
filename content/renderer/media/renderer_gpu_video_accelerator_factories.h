@@ -48,13 +48,13 @@ class CONTENT_EXPORT RendererGpuVideoAcceleratorFactories
       CreateVideoDecodeAccelerator(media::VideoCodecProfile profile) OVERRIDE;
   virtual scoped_ptr<media::VideoEncodeAccelerator>
       CreateVideoEncodeAccelerator() OVERRIDE;
-  // Creates textures and produces them into mailboxes. Returns a sync point to
-  // wait on before using the mailboxes, or 0 on failure.
-  virtual uint32 CreateTextures(int32 count,
-                                const gfx::Size& size,
-                                std::vector<uint32>* texture_ids,
-                                std::vector<gpu::Mailbox>* texture_mailboxes,
-                                uint32 texture_target) OVERRIDE;
+  // Creates textures and produces them into mailboxes. Returns true on success
+  // or false on failure.
+  virtual bool CreateTextures(int32 count,
+                              const gfx::Size& size,
+                              std::vector<uint32>* texture_ids,
+                              std::vector<gpu::Mailbox>* texture_mailboxes,
+                              uint32 texture_target) OVERRIDE;
   virtual void DeleteTexture(uint32 texture_id) OVERRIDE;
   virtual void WaitSyncPoint(uint32 sync_point) OVERRIDE;
   virtual void ReadPixels(uint32 texture_id,

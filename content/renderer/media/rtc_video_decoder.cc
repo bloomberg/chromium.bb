@@ -308,8 +308,6 @@ void RTCVideoDecoder::ProvidePictureBuffers(uint32 count,
   std::vector<uint32> texture_ids;
   std::vector<gpu::Mailbox> texture_mailboxes;
   decoder_texture_target_ = texture_target;
-  // Discards the sync point returned here since PictureReady will imply that
-  // the produce has already happened, and the texture is ready for use.
   if (!factories_->CreateTextures(count,
                                   size,
                                   &texture_ids,
