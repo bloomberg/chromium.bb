@@ -7,19 +7,14 @@ window.jsTestIsAsync = true;
 if (window.testRunner)
     testRunner.dumpAsText();
 
-// valid types
-testXMLType("text/xml", true);
-testXMLType("image/svg+xml", true);
-testXMLType("application/soap+xml", true);
-testXMLType("foo/bar+xml", true);
-testXMLType("123/BAR+xml", true);
-
-// non-xml types
-testXMLType("text/html", false);
-testXMLType("image/png", false);
-
-// invalid types
-testXMLType("invalid", false);
+testXMLType("foo,bar/baz+xml", false);
+testXMLType("foo;bar/baz+xml", false);
+testXMLType("foo:bar/baz+xml", false);
+testXMLType("foo\\bar/baz+xml", false);
+testXMLType('foo"bar/baz+xml', false);
+testXMLType("foo/bar/baz+xml", false);
+testXMLType("foo?bar/baz+xml", false);
+testXMLType("foo=bar/baz+xml", false);
 
 runNextTest();
 </script>
