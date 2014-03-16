@@ -1670,15 +1670,12 @@ GraphicsContext* CanvasRenderingContext2D::drawingContext() const
 
 static PassRefPtr<ImageData> createEmptyImageData(const IntSize& size)
 {
-    Checked<int, RecordOverflow> dataSize = 4;
-    dataSize *= size.width();
-    dataSize *= size.height();
-    if (dataSize.hasOverflowed())
-        return nullptr;
+    if (RefPtr<ImageData> data = ImageData::create(size)) {
+        data->data()->zeroFill();
+        return data.release();
+    }
 
-    RefPtr<ImageData> data = ImageData::create(size);
-    data->data()->zeroFill();
-    return data.release();
+    return nullptr;
 }
 
 PassRefPtr<ImageData> CanvasRenderingContext2D::createImageData(PassRefPtr<ImageData> imageData, ExceptionState& exceptionState) const
