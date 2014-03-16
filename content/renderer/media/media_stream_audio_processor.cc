@@ -376,7 +376,8 @@ void MediaStreamAudioProcessor::InitializeCaptureConverter(
   const int sink_sample_rate = audio_processing_ ?
       kAudioProcessingSampleRate : source_params.sample_rate();
   const media::ChannelLayout sink_channel_layout = audio_processing_ ?
-      media::CHANNEL_LAYOUT_MONO : source_params.channel_layout();
+      media::GuessChannelLayout(kAudioProcessingNumberOfChannel) :
+      source_params.channel_layout();
 
   // WebRtc AudioProcessing requires 10ms as its packet size. We use this
   // native size when processing is enabled. While processing is disabled, and
