@@ -41,6 +41,16 @@ struct WhitelistedComponentExtensionIME {
     "bdgdidmhaijohebebipajioienkglgfo",
     "/usr/share/chromeos-assets/input_methods/hangul",
   },
+  {
+    // Google XKB Input.
+    "jkghodnilhceideoidjikpgommlajknk",
+    "/usr/share/chromeos-assets/input_methods/google_xkb",
+  },
+  {
+    // Google Keyboards Input.
+    "habcdindjejkmepknlhkkloncjcpcnbf",
+    "/usr/share/chromeos-assets/input_methods/google_keyboards",
+  },
 #if defined(OFFICIAL_BUILD)
   {
     // Official Google Japanese Input.
