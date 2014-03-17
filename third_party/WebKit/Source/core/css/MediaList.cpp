@@ -26,6 +26,7 @@
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/MediaQuery.h"
 #include "core/css/MediaQueryExp.h"
+#include "core/css/parser/MediaQueryParser.h"
 #include "core/dom/Document.h"
 #include "core/frame/DOMWindow.h"
 #include "wtf/text/StringBuilder.h"
@@ -70,8 +71,8 @@ PassRefPtrWillBeRawPtr<MediaQuerySet> MediaQuerySet::create(const String& mediaS
     if (mediaString.isEmpty())
         return MediaQuerySet::create();
 
-    BisonCSSParser parser(strictCSSParserContext());
-    return parser.parseMediaQueryList(mediaString);
+    return MediaQueryParser::parse(mediaString);
+
 }
 
 bool MediaQuerySet::set(const String& mediaString)
