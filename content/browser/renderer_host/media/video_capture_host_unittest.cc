@@ -7,6 +7,7 @@
 
 #include "base/bind.h"
 #include "base/file_util.h"
+#include "base/files/scoped_file.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -71,7 +72,7 @@ class DumpVideo {
   }
 
  private:
-  file_util::ScopedFILE file_;
+  base::ScopedFILE file_;
   int expected_size_;
 };
 

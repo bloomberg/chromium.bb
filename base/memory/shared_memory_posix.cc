@@ -12,6 +12,7 @@
 #include <unistd.h>
 
 #include "base/file_util.h"
+#include "base/files/scoped_file.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/process/process_metrics.h"
@@ -29,8 +30,6 @@
 #include "base/os_compat_android.h"
 #include "third_party/ashmem/ashmem.h"
 #endif
-
-using file_util::ScopedFILE;
 
 namespace base {
 

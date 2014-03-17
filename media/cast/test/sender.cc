@@ -8,6 +8,7 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread.h"
@@ -367,7 +368,7 @@ net::IPEndPoint CreateUDPAddress(std::string ip_str, int port) {
 
 void DumpLoggingData(
     scoped_ptr<media::cast::EncodingEventSubscriber> event_subscriber,
-    file_util::ScopedFILE log_file,
+    base::ScopedFILE log_file,
     bool compress) {
   media::cast::FrameEventMap frame_events;
   media::cast::PacketEventMap packet_events;
@@ -403,8 +404,8 @@ void WriteLogsToFileAndStopSubscribing(
     const scoped_refptr<media::cast::CastEnvironment>& cast_environment,
     scoped_ptr<media::cast::EncodingEventSubscriber> video_event_subscriber,
     scoped_ptr<media::cast::EncodingEventSubscriber> audio_event_subscriber,
-    file_util::ScopedFILE video_log_file,
-    file_util::ScopedFILE audio_log_file,
+    base::ScopedFILE video_log_file,
+    base::ScopedFILE audio_log_file,
     bool compress) {
   // Serialize video events.
   cast_environment->Logging()->RemoveRawEventSubscriber(
@@ -530,15 +531,13 @@ int main(int argc, char** argv) {
     cast_environment->Logging()->AddRawEventSubscriber(
         audio_event_subscriber.get());
 
-    file_util::ScopedFILE video_log_file(
-        fopen(video_log_file_name.c_str(), "w"));
+    base::ScopedFILE video_log_file(fopen(video_log_file_name.c_str(), "w"));
     if (!video_log_file) {
       VLOG(1) << "Failed to open video log file for writing.";
       exit(-1);
     }
 
-    file_util::ScopedFILE audio_log_file(
-        fopen(audio_log_file_name.c_str(), "w"));
+    base::ScopedFILE audio_log_file(fopen(audio_log_file_name.c_str(), "w"));
     if (!audio_log_file) {
       VLOG(1) << "Failed to open audio log file for writing.";
       exit(-1);

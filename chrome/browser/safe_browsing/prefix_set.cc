@@ -8,6 +8,7 @@
 #include <math.h>
 
 #include "base/file_util.h"
+#include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/md5.h"
 #include "base/metrics/histogram.h"
@@ -165,7 +166,7 @@ PrefixSet* PrefixSet::LoadFile(const base::FilePath& filter_name) {
   if (size_64 < static_cast<int64>(sizeof(FileHeader) + sizeof(MD5Digest)))
     return NULL;
 
-  file_util::ScopedFILE file(base::OpenFile(filter_name, "rb"));
+  base::ScopedFILE file(base::OpenFile(filter_name, "rb"));
   if (!file.get())
     return NULL;
 
@@ -261,7 +262,7 @@ bool PrefixSet::WriteFile(const base::FilePath& filter_name) const {
     return false;
   }
 
-  file_util::ScopedFILE file(base::OpenFile(filter_name, "wb"));
+  base::ScopedFILE file(base::OpenFile(filter_name, "wb"));
   if (!file.get())
     return false;
 

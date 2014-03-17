@@ -9,6 +9,7 @@
 
 #include "base/base_export.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/scoped_generic.h"
 #include "build/build_config.h"
 
@@ -25,7 +26,17 @@ struct BASE_EXPORT ScopedFDCloseTraits {
 };
 #endif
 
+// Functor for |ScopedFILE| (below).
+struct ScopedFILECloser {
+  inline void operator()(FILE* x) const {
+    if (x)
+      fclose(x);
+  }
+};
+
 }  // namespace internal
+
+// -----------------------------------------------------------------------------
 
 #if defined(OS_POSIX)
 // A low-level Posix file descriptor closer class. Use this when writing
@@ -41,6 +52,9 @@ struct BASE_EXPORT ScopedFDCloseTraits {
 // file manipulation functions on it.
 typedef ScopedGeneric<int, internal::ScopedFDCloseTraits> ScopedFD;
 #endif
+
+// Automatically closes |FILE*|s.
+typedef scoped_ptr<FILE, internal::ScopedFILECloser> ScopedFILE;
 
 }  // namespace base
 

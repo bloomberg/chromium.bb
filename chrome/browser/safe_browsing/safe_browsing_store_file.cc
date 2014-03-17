@@ -4,6 +4,8 @@
 
 #include "chrome/browser/safe_browsing/safe_browsing_store_file.h"
 
+#include "base/file_util.h"
+#include "base/files/scoped_file.h"
 #include "base/md5.h"
 #include "base/metrics/histogram.h"
 
@@ -292,7 +294,7 @@ bool SafeBrowsingStoreFile::WriteAddPrefix(int32 chunk_id, SBPrefix prefix) {
 bool SafeBrowsingStoreFile::GetAddPrefixes(SBAddPrefixes* add_prefixes) {
   add_prefixes->clear();
 
-  file_util::ScopedFILE file(base::OpenFile(filename_, "rb"));
+  base::ScopedFILE file(base::OpenFile(filename_, "rb"));
   if (file.get() == NULL) return false;
 
   FileHeader header;
@@ -314,7 +316,7 @@ bool SafeBrowsingStoreFile::GetAddFullHashes(
     std::vector<SBAddFullHash>* add_full_hashes) {
   add_full_hashes->clear();
 
-  file_util::ScopedFILE file(base::OpenFile(filename_, "rb"));
+  base::ScopedFILE file(base::OpenFile(filename_, "rb"));
   if (file.get() == NULL) return false;
 
   FileHeader header;
@@ -397,11 +399,11 @@ bool SafeBrowsingStoreFile::BeginUpdate() {
   corruption_seen_ = false;
 
   const base::FilePath new_filename = TemporaryFileForFilename(filename_);
-  file_util::ScopedFILE new_file(base::OpenFile(new_filename, "wb+"));
+  base::ScopedFILE new_file(base::OpenFile(new_filename, "wb+"));
   if (new_file.get() == NULL)
     return false;
 
-  file_util::ScopedFILE file(base::OpenFile(filename_, "rb"));
+  base::ScopedFILE file(base::OpenFile(filename_, "rb"));
   empty_ = (file.get() == NULL);
   if (empty_) {
     // If the file exists but cannot be opened, try to delete it (not

@@ -5,6 +5,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/file_util.h"
+#include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/memory/scoped_ptr.h"
@@ -105,7 +106,7 @@ TEST_F(MacSandboxTest, FontLoadingTest) {
   base::FilePath temp_file_path;
   FILE* temp_file = base::CreateAndOpenTemporaryFile(&temp_file_path);
   ASSERT_TRUE(temp_file);
-  file_util::ScopedFILE temp_file_closer(temp_file);
+  base::ScopedFILE temp_file_closer(temp_file);
 
   NSFont* srcFont = [NSFont fontWithName:@"Geeza Pro" size:16.0];
   FontDescriptor descriptor(srcFont);

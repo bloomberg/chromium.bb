@@ -4,6 +4,7 @@
 
 #include "base/bind.h"
 #include "base/file_util.h"
+#include "base/files/scoped_file.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "sql/connection.h"
@@ -423,7 +424,7 @@ TEST_F(SQLConnectionTest, RazeEmptyDB) {
   db().Close();
 
   {
-    file_util::ScopedFILE file(base::OpenFile(db_path(), "rb+"));
+    base::ScopedFILE file(base::OpenFile(db_path(), "rb+"));
     ASSERT_TRUE(file.get() != NULL);
     ASSERT_EQ(0, fseek(file.get(), 0, SEEK_SET));
     ASSERT_TRUE(base::TruncateFile(file.get()));
@@ -441,7 +442,7 @@ TEST_F(SQLConnectionTest, RazeNOTADB) {
   ASSERT_FALSE(base::PathExists(db_path()));
 
   {
-    file_util::ScopedFILE file(base::OpenFile(db_path(), "wb"));
+    base::ScopedFILE file(base::OpenFile(db_path(), "wb"));
     ASSERT_TRUE(file.get() != NULL);
 
     const char* kJunk = "This is the hour of our discontent.";
@@ -474,7 +475,7 @@ TEST_F(SQLConnectionTest, RazeNOTADB2) {
   db().Close();
 
   {
-    file_util::ScopedFILE file(base::OpenFile(db_path(), "rb+"));
+    base::ScopedFILE file(base::OpenFile(db_path(), "rb+"));
     ASSERT_TRUE(file.get() != NULL);
     ASSERT_EQ(0, fseek(file.get(), 0, SEEK_SET));
 

@@ -260,7 +260,7 @@ class BASE_EXPORT SharedMemory {
 
  private:
 #if defined(OS_POSIX) && !defined(OS_NACL)
-  bool PrepareMapFile(file_util::ScopedFILE fp, base::ScopedFD readonly);
+  bool PrepareMapFile(ScopedFILE fp, ScopedFD readonly);
   bool FilePathForMemoryName(const std::string& mem_name, FilePath* path);
   void LockOrUnlockCommon(int function);
 #endif

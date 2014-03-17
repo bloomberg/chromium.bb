@@ -17,6 +17,7 @@
 #include "base/bind_helpers.h"
 #include "base/containers/stack_container.h"
 #include "base/file_util.h"
+#include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
@@ -30,7 +31,6 @@
 #include "url/gurl.h"
 
 using content::BrowserThread;
-using file_util::ScopedFILE;
 
 namespace visitedlink {
 
@@ -540,7 +540,7 @@ bool VisitedLinkMaster::InitFromFile() {
 
   base::FilePath filename;
   GetDatabaseFileName(&filename);
-  ScopedFILE file_closer(base::OpenFile(filename, "rb+"));
+  base::ScopedFILE file_closer(base::OpenFile(filename, "rb+"));
   if (!file_closer.get())
     return false;
 

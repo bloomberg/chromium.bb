@@ -56,7 +56,7 @@ struct FILECloser {
   }
 };
 
-// Don't use ScopedFILE in base/file_util.h since it doesn't check fclose().
+// Don't use ScopedFILE in base since it doesn't check fclose().
 // TODO(jln): fix base/.
 typedef scoped_ptr<FILE, FILECloser> ScopedFILE;
 

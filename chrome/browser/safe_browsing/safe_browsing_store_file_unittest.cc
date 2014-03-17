@@ -5,6 +5,8 @@
 #include "chrome/browser/safe_browsing/safe_browsing_store_file.h"
 
 #include "base/bind.h"
+#include "base/file_util.h"
+#include "base/files/scoped_file.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/md5.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -413,7 +415,7 @@ TEST_F(SafeBrowsingStoreFileTest, DetectsCorruption) {
   EXPECT_FALSE(corruption_detected_);
 
   // Corrupt the store.
-  file_util::ScopedFILE file(base::OpenFile(filename_, "rb+"));
+  base::ScopedFILE file(base::OpenFile(filename_, "rb+"));
   const long kOffset = 60;
   EXPECT_EQ(fseek(file.get(), kOffset, SEEK_SET), 0);
   const uint32 kZero = 0;
@@ -479,7 +481,7 @@ TEST_F(SafeBrowsingStoreFileTest, CheckValidityPayload) {
   const size_t kOffset = 37;
 
   {
-    file_util::ScopedFILE file(base::OpenFile(filename_, "rb+"));
+    base::ScopedFILE file(base::OpenFile(filename_, "rb+"));
     EXPECT_EQ(0, fseek(file.get(), kOffset, SEEK_SET));
     EXPECT_GE(fputs("hello", file.get()), 0);
   }
@@ -499,7 +501,7 @@ TEST_F(SafeBrowsingStoreFileTest, CheckValidityChecksum) {
   const int kOffset = -static_cast<int>(sizeof(base::MD5Digest));
 
   {
-    file_util::ScopedFILE file(base::OpenFile(filename_, "rb+"));
+    base::ScopedFILE file(base::OpenFile(filename_, "rb+"));
     EXPECT_EQ(0, fseek(file.get(), kOffset, SEEK_END));
     EXPECT_GE(fputs("hello", file.get()), 0);
   }

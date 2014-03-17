@@ -8,6 +8,7 @@
 #include <iterator>
 
 #include "base/file_util.h"
+#include "base/files/scoped_file.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/md5.h"
@@ -154,7 +155,7 @@ class PrefixSetTest : public PlatformTest {
     int64 size_64;
     ASSERT_TRUE(base::GetFileSize(filename, &size_64));
 
-    file_util::ScopedFILE file(base::OpenFile(filename, "r+b"));
+    base::ScopedFILE file(base::OpenFile(filename, "r+b"));
     IncrementIntAt(file.get(), offset, inc);
     CleanChecksum(file.get());
     file.reset();
@@ -367,7 +368,7 @@ TEST_F(PrefixSetTest, CorruptionHelpers) {
   ASSERT_TRUE(GetPrefixSetFile(&filename));
 
   // This will modify data in |index_|, which will fail the digest check.
-  file_util::ScopedFILE file(base::OpenFile(filename, "r+b"));
+  base::ScopedFILE file(base::OpenFile(filename, "r+b"));
   IncrementIntAt(file.get(), kPayloadOffset, 1);
   file.reset();
   scoped_ptr<safe_browsing::PrefixSet>
@@ -437,7 +438,7 @@ TEST_F(PrefixSetTest, CorruptionPayload) {
   base::FilePath filename;
   ASSERT_TRUE(GetPrefixSetFile(&filename));
 
-  file_util::ScopedFILE file(base::OpenFile(filename, "r+b"));
+  base::ScopedFILE file(base::OpenFile(filename, "r+b"));
   ASSERT_NO_FATAL_FAILURE(IncrementIntAt(file.get(), 666, 1));
   file.reset();
   scoped_ptr<safe_browsing::PrefixSet>
@@ -452,7 +453,7 @@ TEST_F(PrefixSetTest, CorruptionDigest) {
 
   int64 size_64;
   ASSERT_TRUE(base::GetFileSize(filename, &size_64));
-  file_util::ScopedFILE file(base::OpenFile(filename, "r+b"));
+  base::ScopedFILE file(base::OpenFile(filename, "r+b"));
   long digest_offset = static_cast<long>(size_64 - sizeof(base::MD5Digest));
   ASSERT_NO_FATAL_FAILURE(IncrementIntAt(file.get(), digest_offset, 1));
   file.reset();
@@ -467,7 +468,7 @@ TEST_F(PrefixSetTest, CorruptionExcess) {
   ASSERT_TRUE(GetPrefixSetFile(&filename));
 
   // Add some junk to the trunk.
-  file_util::ScopedFILE file(base::OpenFile(filename, "ab"));
+  base::ScopedFILE file(base::OpenFile(filename, "ab"));
   const char buf[] = "im in ur base, killing ur d00dz.";
   ASSERT_EQ(strlen(buf), fwrite(buf, 1, strlen(buf), file.get()));
   file.reset();
@@ -482,7 +483,7 @@ TEST_F(PrefixSetTest, SizeTRecovery) {
   ASSERT_TRUE(GetPrefixSetFile(&filename));
 
   // Open the file for rewrite.
-  file_util::ScopedFILE file(base::OpenFile(filename, "r+b"));
+  base::ScopedFILE file(base::OpenFile(filename, "r+b"));
 
   // Leave existing magic and version.
   ASSERT_NE(-1, fseek(file.get(), sizeof(uint32) * 2, SEEK_SET));
@@ -525,7 +526,7 @@ TEST_F(PrefixSetTest, ReadWriteSigned) {
   ASSERT_TRUE(GetPrefixSetFile(&filename));
 
   // Open the file for rewrite.
-  file_util::ScopedFILE file(base::OpenFile(filename, "r+b"));
+  base::ScopedFILE file(base::OpenFile(filename, "r+b"));
 
   // Leave existing magic.
   ASSERT_NE(-1, fseek(file.get(), sizeof(uint32), SEEK_SET));
