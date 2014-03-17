@@ -203,7 +203,7 @@ PassRefPtr<FilterEffect> SVGFEConvolveMatrixElement::build(SVGFilterBuilder* fil
     if (orderXValue < 1 || orderYValue < 1)
         return nullptr;
     RefPtr<SVGNumberList> kernelMatrix = this->m_kernelMatrix->currentValue();
-    size_t kernelMatrixSize = kernelMatrix->numberOfItems();
+    size_t kernelMatrixSize = kernelMatrix->length();
     // The spec says this is a requirement, and should bail out if fails
     if (orderXValue * orderYValue != static_cast<int>(kernelMatrixSize))
         return nullptr;

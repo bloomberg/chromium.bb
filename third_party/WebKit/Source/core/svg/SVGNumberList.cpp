@@ -120,10 +120,10 @@ void SVGNumberList::add(PassRefPtr<NewSVGPropertyBase> other, SVGElement* contex
 {
     RefPtr<SVGNumberList> otherList = toSVGNumberList(other);
 
-    if (numberOfItems() != otherList->numberOfItems())
+    if (length() != otherList->length())
         return;
 
-    for (size_t i = 0; i < numberOfItems(); ++i)
+    for (size_t i = 0; i < length(); ++i)
         at(i)->setValue(at(i)->value() + otherList->at(i)->value());
 }
 
@@ -133,12 +133,12 @@ bool SVGNumberList::adjustFromToListValues(PassRefPtr<SVGNumberList> passFromLis
     RefPtr<SVGNumberList> toList = passToList;
 
     // If no 'to' value is given, nothing to animate.
-    size_t toListSize = toList->numberOfItems();
+    size_t toListSize = toList->length();
     if (!toListSize)
         return false;
 
     // If the 'from' value is given and it's length doesn't match the 'to' value list length, fallback to a discrete animation.
-    size_t fromListSize = fromList->numberOfItems();
+    size_t fromListSize = fromList->length();
     if (fromListSize != toListSize && fromListSize) {
         if (percentage < 0.5) {
             if (!isToAnimation)
@@ -151,8 +151,8 @@ bool SVGNumberList::adjustFromToListValues(PassRefPtr<SVGNumberList> passFromLis
     }
 
     ASSERT(!fromListSize || fromListSize == toListSize);
-    if (resizeAnimatedListIfNeeded && numberOfItems() < toListSize) {
-        size_t paddingCount = toListSize - numberOfItems();
+    if (resizeAnimatedListIfNeeded && length() < toListSize) {
+        size_t paddingCount = toListSize - length();
         for (size_t i = 0; i < paddingCount; ++i)
             append(SVGNumber::create());
     }
@@ -166,9 +166,9 @@ void SVGNumberList::calculateAnimatedValue(SVGAnimationElement* animationElement
     RefPtr<SVGNumberList> toList = toSVGNumberList(toValue);
     RefPtr<SVGNumberList> toAtEndOfDurationList = toSVGNumberList(toAtEndOfDurationValue);
 
-    size_t fromListSize = fromList->numberOfItems();
-    size_t toListSize = toList->numberOfItems();
-    size_t toAtEndOfDurationListSize = toAtEndOfDurationList->numberOfItems();
+    size_t fromListSize = fromList->length();
+    size_t toListSize = toList->length();
+    size_t toAtEndOfDurationListSize = toAtEndOfDurationList->length();
 
     if (!adjustFromToListValues(fromList, toList, percentage, animationElement->animationMode() == ToAnimation, true))
         return;
@@ -193,8 +193,8 @@ float SVGNumberList::calculateDistance(PassRefPtr<NewSVGPropertyBase> to, SVGEle
 Vector<float> SVGNumberList::toFloatVector() const
 {
     Vector<float> vec;
-    vec.reserveInitialCapacity(numberOfItems());
-    for (size_t i = 0; i < numberOfItems(); ++i)
+    vec.reserveInitialCapacity(length());
+    for (size_t i = 0; i < length(); ++i)
         vec.uncheckedAppend(at(i)->value());
     return vec;
 }

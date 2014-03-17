@@ -154,7 +154,7 @@ PassRefPtr<FilterEffect> SVGFEColorMatrixElement::build(SVGFilterBuilder* filter
         }
     } else {
         RefPtr<SVGNumberList> values = m_values->currentValue();
-        size_t size = values->numberOfItems();
+        size_t size = values->length();
 
         if ((filterType == FECOLORMATRIX_TYPE_MATRIX && size != 20)
             || (filterType == FECOLORMATRIX_TYPE_HUEROTATE && size != 1)

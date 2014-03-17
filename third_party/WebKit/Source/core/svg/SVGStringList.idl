@@ -28,11 +28,13 @@
     SetWrapperReferenceTo(SVGElement contextElement),
     ImplementedAs=SVGStringListTearOff
 ] interface SVGStringList {
-    readonly attribute unsigned long numberOfItems;
+    readonly attribute unsigned long length;
+    [ImplementedAs=length] readonly attribute unsigned long numberOfItems;
 
     [RaisesException] void clear();
     [RaisesException] DOMString initialize(DOMString item);
-    [RaisesException] DOMString getItem(unsigned long index);
+    [RaisesException] getter DOMString getItem(unsigned long index);
+    [RaisesException] setter DOMString (unsigned long index, DOMString value);
     [RaisesException] DOMString insertItemBefore(DOMString item, unsigned long index);
     [RaisesException] DOMString replaceItem(DOMString item, unsigned long index);
     [RaisesException] DOMString removeItem(unsigned long index);

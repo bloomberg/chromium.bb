@@ -46,9 +46,9 @@ public:
     // SVGStringList DOM interface:
 
     // WebIDL requires "unsigned long" type instead of size_t.
-    unsigned long numberOfItems()
+    unsigned long length()
     {
-        return target()->numberOfItems();
+        return target()->length();
     }
 
     void clear(ExceptionState& exceptionState)
@@ -104,6 +104,12 @@ public:
         commitChange();
 
         return item;
+    }
+
+    bool anonymousIndexedSetter(unsigned index, const String& item, ExceptionState& exceptionState)
+    {
+        replaceItem(item, index, exceptionState);
+        return true;
     }
 
     String removeItem(unsigned long index, ExceptionState& exceptionState)

@@ -28,11 +28,13 @@
     SetWrapperReferenceTo(SVGElement contextElement),
     StrictTypeChecking,
 ] interface SVGPointList {
-    readonly attribute unsigned long numberOfItems;
+    readonly attribute unsigned long length;
+    [ImplementedAs=length] readonly attribute unsigned long numberOfItems;
 
     [RaisesException] void clear();
     [RaisesException] SVGPoint initialize(SVGPoint item);
-    [RaisesException] SVGPoint getItem(unsigned long index);
+    [RaisesException] getter SVGPoint getItem(unsigned long index);
+    [RaisesException] setter SVGPoint (unsigned long index, SVGPoint value);
     [RaisesException] SVGPoint insertItemBefore(SVGPoint item, unsigned long index);
     [RaisesException] SVGPoint replaceItem(SVGPoint item, unsigned long index);
     [RaisesException] SVGPoint removeItem(unsigned long index);

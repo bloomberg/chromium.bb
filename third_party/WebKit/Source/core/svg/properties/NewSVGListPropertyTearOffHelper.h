@@ -81,9 +81,9 @@ public:
     // SVG*List DOM interface:
 
     // WebIDL requires "unsigned long" type instead of size_t.
-    unsigned long numberOfItems()
+    unsigned long length()
     {
-        return toDerived()->target()->numberOfItems();
+        return toDerived()->target()->length();
     }
 
     void clear(ExceptionState& exceptionState)
@@ -160,6 +160,12 @@ public:
         toDerived()->commitChange();
 
         return createItemTearOff(value.release());
+    }
+
+    bool anonymousIndexedSetter(unsigned index, PassRefPtr<ItemTearOffType> passItem, ExceptionState& exceptionState)
+    {
+        replaceItem(passItem, index, exceptionState);
+        return true;
     }
 
     PassRefPtr<ItemTearOffType> removeItem(unsigned long index, ExceptionState& exceptionState)

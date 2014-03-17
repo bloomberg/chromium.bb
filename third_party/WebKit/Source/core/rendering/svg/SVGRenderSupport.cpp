@@ -389,7 +389,7 @@ void SVGRenderSupport::applyStrokeStyleToStrokeData(StrokeData* strokeData, cons
         return;
 
     DashArray dashArray;
-    size_t length = dashes->numberOfItems();
+    size_t length = dashes->length();
     for (size_t i = 0; i < length; ++i)
         dashArray.append(dashes->at(i)->value(lengthContext));
 

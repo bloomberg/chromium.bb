@@ -29,11 +29,13 @@
     SetWrapperReferenceTo(SVGElement contextElement),
     ImplementedAs=SVGPathSegListTearOff
 ] interface SVGPathSegList {
-    readonly attribute unsigned long numberOfItems;
+    readonly attribute unsigned long length;
+    [ImplementedAs=length] readonly attribute unsigned long numberOfItems;
 
     [RaisesException] void clear();
     [RaisesException] SVGPathSeg initialize(SVGPathSeg newItem);
-    [RaisesException] SVGPathSeg getItem(unsigned long index);
+    [RaisesException] getter SVGPathSeg getItem(unsigned long index);
+    [RaisesException] setter SVGPathSeg (unsigned long index, SVGPathSeg value);
     [RaisesException] SVGPathSeg insertItemBefore(SVGPathSeg newItem, unsigned long index);
     [RaisesException] SVGPathSeg replaceItem(SVGPathSeg newItem, unsigned long index);
     [RaisesException] SVGPathSeg removeItem(unsigned long index);

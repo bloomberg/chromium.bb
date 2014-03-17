@@ -67,10 +67,10 @@ public:
         return Base::at(index);
     }
 
-    size_t numberOfItems()
+    size_t length()
     {
         updateListFromByteStream();
-        return Base::numberOfItems();
+        return Base::length();
     }
 
     bool isEmpty() const

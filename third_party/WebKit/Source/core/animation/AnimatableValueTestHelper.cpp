@@ -144,7 +144,7 @@ void PrintTo(const AnimatableStrokeDasharrayList& animValue, ::std::ostream* os)
 {
     *os << "AnimatableStrokeDasharrayList(";
     RefPtr<SVGLengthList> list = animValue.toSVGLengthList();
-    size_t length = list->numberOfItems();
+    size_t length = list->length();
     for (size_t i = 0; i < length; ++i) {
         *os << list->at(i)->valueAsString().utf8().data();
         if (i != length-1)

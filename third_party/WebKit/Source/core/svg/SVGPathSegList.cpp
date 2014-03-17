@@ -162,7 +162,7 @@ void SVGPathSegList::setValueAsString(const String& string, ExceptionState& exce
 void SVGPathSegList::add(PassRefPtr<NewSVGPropertyBase> other, SVGElement*)
 {
     RefPtr<SVGPathSegList> otherList = toSVGPathSegList(other);
-    if (numberOfItems() != otherList->numberOfItems())
+    if (length() != otherList->length())
         return;
 
     byteStream(); // create |m_byteStream| if not exist.

@@ -64,7 +64,7 @@ public:
     const Vector<String>& values() const { return m_values; }
 
     // SVGStringList DOM Spec implementation. These are only to be called from SVGStringListTearOff:
-    unsigned long numberOfItems() { return m_values.size(); }
+    unsigned long length() { return m_values.size(); }
     void clear() { m_values.clear(); }
     void initialize(const String&);
     String getItem(size_t, ExceptionState&);

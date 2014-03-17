@@ -288,10 +288,10 @@ void SVGTransformList::add(PassRefPtr<NewSVGPropertyBase> other, SVGElement* con
         return;
 
     RefPtr<SVGTransformList> otherList = toSVGTransformList(other);
-    if (numberOfItems() != otherList->numberOfItems())
+    if (length() != otherList->length())
         return;
 
-    ASSERT(numberOfItems() == 1);
+    ASSERT(length() == 1);
     RefPtr<SVGTransform> fromTransform = at(0);
     RefPtr<SVGTransform> toTransform = otherList->at(0);
 
@@ -313,8 +313,8 @@ void SVGTransformList::calculateAnimatedValue(SVGAnimationElement* animationElem
     RefPtr<SVGTransformList> toList = toSVGTransformList(toValue);
     RefPtr<SVGTransformList> toAtEndOfDurationList = toSVGTransformList(toAtEndOfDurationValue);
 
-    size_t fromListSize = fromList->numberOfItems();
-    size_t toListSize = toList->numberOfItems();
+    size_t fromListSize = fromList->length();
+    size_t toListSize = toList->length();
 
     if (!toListSize)
         return;
@@ -340,10 +340,10 @@ float SVGTransformList::calculateDistance(PassRefPtr<NewSVGPropertyBase> toValue
     // is paced separately. To implement this we need to treat each component as individual animation everywhere.
 
     RefPtr<SVGTransformList> toList = toSVGTransformList(toValue);
-    if (isEmpty() || numberOfItems() != toList->numberOfItems())
+    if (isEmpty() || length() != toList->length())
         return -1;
 
-    ASSERT(numberOfItems() == 1);
+    ASSERT(length() == 1);
     if (at(0)->transformType() == toList->at(0)->transformType())
         return -1;
 

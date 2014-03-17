@@ -125,12 +125,12 @@ public:
 
     bool isEmpty() const
     {
-        return !numberOfItems();
+        return !length();
     }
 
     // SVGList*Property DOM spec:
 
-    size_t numberOfItems() const
+    size_t length() const
     {
         return m_values.size();
     }
@@ -168,11 +168,11 @@ private:
 template<typename Derived, typename ItemProperty>
 bool NewSVGListPropertyHelper<Derived, ItemProperty>::operator==(const Derived& other) const
 {
-    if (numberOfItems() != other.numberOfItems())
+    if (length() != other.length())
         return false;
 
-    size_t length = numberOfItems();
-    for (size_t i = 0; i < length; ++i) {
+    size_t size = length();
+    for (size_t i = 0; i < size; ++i) {
         if (*at(i) != *other.at(i))
             return false;
     }
@@ -222,7 +222,7 @@ PassRefPtr<ItemProperty> NewSVGListPropertyHelper<Derived, ItemProperty>::getIte
 template<typename Derived, typename ItemProperty>
 PassRefPtr<ItemProperty> NewSVGListPropertyHelper<Derived, ItemProperty>::insertItemBefore(PassRefPtr<ItemProperty> passNewItem, size_t index)
 {
-    // Spec: If the index is greater than or equal to numberOfItems, then the new item is appended to the end of the list.
+    // Spec: If the index is greater than or equal to length, then the new item is appended to the end of the list.
     if (index > m_values.size())
         index = m_values.size();
 
