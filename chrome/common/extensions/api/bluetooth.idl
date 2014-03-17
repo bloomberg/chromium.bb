@@ -125,17 +125,18 @@ namespace bluetooth {
   };
 
   callback AdapterStateCallback = void(AdapterState result);
-  callback AddressCallback = void (DOMString result);
-  callback BooleanCallback = void (boolean result);
-  callback DataCallback = void (optional ArrayBuffer result);
-  callback DevicesCallback = void (Device[] result);
-  callback NameCallback = void (DOMString result);
-  callback OutOfBandPairingDataCallback = void (OutOfBandPairingData data);
+  callback AddressCallback = void(DOMString result);
+  callback BooleanCallback = void(boolean result);
+  callback DataCallback = void(optional ArrayBuffer result);
+  callback DeviceCallback = void(Device result);
+  callback DevicesCallback = void(Device[] result);
+  callback NameCallback = void(DOMString result);
+  callback OutOfBandPairingDataCallback = void(OutOfBandPairingData data);
   callback ProfilesCallback = void(Profile[] result);
-  callback ResultCallback = void ();
+  callback ResultCallback = void();
   callback ServicesCallback = void(ServiceRecord[] result);
-  callback SizeCallback = void (long result);
-  callback SocketCallback = void (Socket result);
+  callback SizeCallback = void(long result);
+  callback SocketCallback = void(Socket result);
 
   // Options for the getProfiles function.
   dictionary GetProfilesOptions {
@@ -211,6 +212,11 @@ namespace bluetooth {
     // and recently discovered devices.
     // |callback| : Called when the search is completed.
     static void getDevices(DevicesCallback callback);
+
+    // Get information about a Bluetooth device known to the system.
+    // |deviceAddress| : Address of device to get.
+    // |callback| : Called with the Device object describing the device.
+    static void getDevice(DOMString deviceAddress, DeviceCallback callback);
 
     // Returns the set of exported profiles for the device specified in options.
     // This function will not initiate a connection to the remote device.

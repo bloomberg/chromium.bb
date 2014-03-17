@@ -615,6 +615,27 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, GetDevices) {
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
+IN_PROC_BROWSER_TEST_F(BluetoothApiTest, GetDevice) {
+  ResultCatcher catcher;
+  catcher.RestrictToProfile(browser()->profile());
+
+  EXPECT_CALL(*mock_adapter_, GetDevice(device1_->GetAddress()))
+      .WillOnce(testing::Return(device1_.get()));
+  EXPECT_CALL(*mock_adapter_, GetDevice(device2_->GetAddress()))
+      .Times(1)
+      .WillRepeatedly(testing::Return(static_cast<BluetoothDevice*>(NULL)));
+
+  // Load and wait for setup
+  ExtensionTestMessageListener listener("ready", true);
+  ASSERT_TRUE(
+      LoadExtension(test_data_dir_.AppendASCII("bluetooth/get_device")));
+  EXPECT_TRUE(listener.WaitUntilSatisfied());
+
+  listener.Reply("go");
+
+  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+}
+
 IN_PROC_BROWSER_TEST_F(BluetoothApiTest, DeviceInfo) {
   ResultCatcher catcher;
   catcher.RestrictToProfile(browser()->profile());

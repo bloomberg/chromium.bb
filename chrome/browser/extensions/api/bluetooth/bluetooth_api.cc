@@ -67,6 +67,7 @@ namespace AddProfile = extensions::api::bluetooth::AddProfile;
 namespace bluetooth = extensions::api::bluetooth;
 namespace Connect = extensions::api::bluetooth::Connect;
 namespace Disconnect = extensions::api::bluetooth::Disconnect;
+namespace GetDevice = extensions::api::bluetooth::GetDevice;
 namespace GetDevices = extensions::api::bluetooth::GetDevices;
 namespace GetProfiles = extensions::api::bluetooth::GetProfiles;
 namespace GetServices = extensions::api::bluetooth::GetServices;
@@ -301,6 +302,28 @@ bool BluetoothGetDevicesFunction::DoWork(
   SendResponse(true);
 
   return true;
+}
+
+bool BluetoothGetDeviceFunction::DoWork(
+    scoped_refptr<BluetoothAdapter> adapter) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  scoped_ptr<GetDevice::Params> params(GetDevice::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
+  const std::string& device_address = params->device_address;
+
+  BluetoothDevice* device = adapter->GetDevice(device_address);
+  if (device) {
+    bluetooth::Device extension_device;
+    bluetooth::BluetoothDeviceToApiDevice(*device, &extension_device);
+    SetResult(extension_device.ToValue().release());
+    SendResponse(true);
+  } else {
+    SetError(kInvalidDevice);
+    SendResponse(false);
+  }
+
+  return false;
 }
 
 void BluetoothGetServicesFunction::GetServiceRecordsCallback(

@@ -135,6 +135,17 @@ class BluetoothGetDevicesFunction : public BluetoothExtensionFunction {
   virtual bool DoWork(scoped_refptr<device::BluetoothAdapter> adapter) OVERRIDE;
 };
 
+class BluetoothGetDeviceFunction : public BluetoothExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("bluetooth.getDevice", BLUETOOTH_GETDEVICE)
+
+ protected:
+  virtual ~BluetoothGetDeviceFunction() {}
+
+  // BluetoothExtensionFunction:
+  virtual bool DoWork(scoped_refptr<device::BluetoothAdapter> adapter) OVERRIDE;
+};
+
 class BluetoothGetServicesFunction : public BluetoothExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bluetooth.getServices", BLUETOOTH_GETSERVICES)
