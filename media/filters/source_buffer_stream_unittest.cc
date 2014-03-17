@@ -3111,16 +3111,18 @@ TEST_F(SourceBufferStreamTest, SameTimestamp_Video_Invalid_2) {
 }
 
 // Verify that a keyframe followed by a non-keyframe with the same timestamp
-// is not allowed.
-TEST_F(SourceBufferStreamTest, SameTimestamp_Video_Invalid_3) {
+// is allowed.
+TEST_F(SourceBufferStreamTest, SameTimestamp_VideoKeyFrame_TwoAppends) {
   Seek(0);
   NewSegmentAppend("0K 30K");
-  AppendBuffers_ExpectFailure("30 60");
+  AppendBuffers("30 60");
+  CheckExpectedBuffers("0K 30K 30 60");
 }
 
-TEST_F(SourceBufferStreamTest, SameTimestamp_Video_Invalid_4) {
+TEST_F(SourceBufferStreamTest, SameTimestamp_VideoKeyFrame_SingleAppend) {
   Seek(0);
-  NewSegmentAppend_ExpectFailure("0K 30K 30 60");
+  NewSegmentAppend("0K 30K 30 60");
+  CheckExpectedBuffers("0K 30K 30 60");
 }
 
 TEST_F(SourceBufferStreamTest, SameTimestamp_Video_Overlap_1) {

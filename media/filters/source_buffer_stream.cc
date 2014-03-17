@@ -14,18 +14,17 @@
 namespace media {
 
 // Buffers with the same timestamp are only allowed under certain conditions.
-// Video: Allowed when the previous frame and current frame are NOT keyframes.
-//        This is the situation for VP8 Alt-Ref frames.
-// Otherwise: Allowed in all situations except where a non-keyframe is followed
-//            by a keyframe.
+// More precisely, it is allowed in all situations except when the previous
+// frame is not a key frame and the current is a key frame.
+// Examples of situations where DTS of two consecutive frames can be equal:
+// - Video: VP8 Alt-Ref frames.
+// - Video: IPBPBP...: DTS for I frame and for P frame can be equal.
+// - Text track cues that start at same time.
 // Returns true if |prev_is_keyframe| and |current_is_keyframe| indicate a
 // same timestamp situation that is allowed. False is returned otherwise.
 static bool AllowSameTimestamp(
     bool prev_is_keyframe, bool current_is_keyframe,
     SourceBufferStream::Type type) {
-  if (type == SourceBufferStream::kVideo)
-    return !prev_is_keyframe && !current_is_keyframe;
-
   return prev_is_keyframe || !current_is_keyframe;
 }
 
