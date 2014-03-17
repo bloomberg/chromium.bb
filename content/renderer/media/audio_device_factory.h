@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
+#include "content/common/content_export.h"
 
 namespace media {
 class AudioInputDevice;
@@ -18,7 +19,7 @@ namespace content {
 // A factory for creating AudioOutputDevices and AudioInputDevices.  There is a
 // global factory function that can be installed for the purposes of testing to
 // provide specialized implementations.
-class AudioDeviceFactory {
+class CONTENT_EXPORT AudioDeviceFactory {
  public:
   // Creates an AudioOutputDevice using the currently registered factory.
   // |render_view_id| and |render_frame_id| refer to the render view and render

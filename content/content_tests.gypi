@@ -721,6 +721,7 @@
             'renderer/media/webrtc/webrtc_local_audio_track_adapter_unittest.cc',
             'renderer/media/webrtc/webrtc_video_capturer_adapter_unittest.cc',
             'renderer/media/webrtc_audio_capturer_unittest.cc',
+            'renderer/media/webrtc_audio_renderer_unittest.cc',
             'renderer/media/webrtc_identity_service_unittest.cc',
             'renderer/media/webrtc_local_audio_source_provider_unittest.cc',
             'renderer/media/webrtc_local_audio_track_unittest.cc',
