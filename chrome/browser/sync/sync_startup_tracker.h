@@ -22,6 +22,8 @@ class SyncStartupTracker : public ProfileSyncServiceObserver {
   // Observer interface used to notify observers when sync has started up.
   class Observer {
    public:
+    virtual ~Observer() {}
+
     virtual void SyncStartupCompleted() = 0;
     virtual void SyncStartupFailed() = 0;
   };

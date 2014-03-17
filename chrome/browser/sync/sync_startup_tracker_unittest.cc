@@ -20,9 +20,6 @@ namespace {
 
 class MockObserver : public SyncStartupTracker::Observer {
  public:
-  MockObserver() {}
-  ~MockObserver() {}
-
   MOCK_METHOD0(SyncStartupCompleted, void(void));
   MOCK_METHOD0(SyncStartupFailed, void(void));
 };
