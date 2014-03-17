@@ -144,7 +144,7 @@ void RenderBox::styleWillChange(StyleDifference diff, const RenderStyle* newStyl
         // The background of the root element or the body element could propagate up to
         // the canvas.  Just dirty the entire canvas when our style changes substantially.
         if (diff >= StyleDifferenceRepaint && node() &&
-            (node()->hasTagName(htmlTag) || node()->hasTagName(bodyTag))) {
+            (isHTMLHtmlElement(*node()) || isHTMLBodyElement(*node()))) {
             view()->repaint();
 
             if (oldStyle->hasEntirelyFixedBackground() != newStyle->hasEntirelyFixedBackground())
@@ -497,7 +497,7 @@ void RenderBox::scrollRectToVisible(const LayoutRect& rect, const ScrollAlignmen
             if (ownerElement && ownerElement->renderer()) {
                 HTMLFrameElementBase* frameElementBase = 0;
 
-                if (ownerElement->hasTagName(frameTag) || ownerElement->hasTagName(iframeTag))
+                if (isHTMLFrameElement(*ownerElement) || isHTMLIFrameElement(*ownerElement))
                     frameElementBase = toHTMLFrameElementBase(ownerElement);
 
                 if (frameElementAndViewPermitScroll(frameElementBase, frameView)) {
@@ -2159,7 +2159,7 @@ static float getMaxWidthListMarker(const RenderBox* renderer)
     ASSERT(renderer);
     Node* parentNode = renderer->generatingNode();
     ASSERT(parentNode);
-    ASSERT(parentNode->hasTagName(olTag) || parentNode->hasTagName(ulTag));
+    ASSERT(isHTMLOListElement(parentNode) || isHTMLUListElement(parentNode));
     ASSERT(renderer->style()->textAutosizingMultiplier() != 1);
 #endif
     float maxWidth = 0;
@@ -2268,7 +2268,7 @@ void RenderBox::computeLogicalWidth(LogicalExtentComputedValues& computedValues)
 
     if (styleToUse->textAutosizingMultiplier() != 1 && styleToUse->marginStart().type() == Fixed) {
         Node* parentNode = generatingNode();
-        if (parentNode && (parentNode->hasTagName(olTag) || parentNode->hasTagName(ulTag))) {
+        if (parentNode && (isHTMLOListElement(*parentNode) || isHTMLUListElement(*parentNode))) {
             // Make sure the markers in a list are properly positioned (i.e. not chopped off) when autosized.
             const float adjustedMargin = (1 - 1.0 / styleToUse->textAutosizingMultiplier()) * getMaxWidthListMarker(this);
             bool hasInvertedDirection = cb->style()->isLeftToRightDirection() != style()->isLeftToRightDirection();
@@ -2421,8 +2421,8 @@ bool RenderBox::sizesLogicalWidthToFitContent(SizeType widthType) const
 
 bool RenderBox::autoWidthShouldFitContent() const
 {
-    return node() && (node()->hasTagName(inputTag) || node()->hasTagName(selectTag) || node()->hasTagName(buttonTag)
-        || node()->hasTagName(textareaTag) || (node()->hasTagName(legendTag) && !style()->hasOutOfFlowPosition()));
+    return node() && (isHTMLInputElement(*node()) || isHTMLSelectElement(*node()) || isHTMLButtonElement(*node())
+        || isHTMLTextAreaElement(*node()) || (isHTMLLegendElement(*node()) && !style()->hasOutOfFlowPosition()));
 }
 
 void RenderBox::computeInlineDirectionMargins(RenderBlock* containingBlock, LayoutUnit containerWidth, LayoutUnit childWidth, LayoutUnit& marginStart, LayoutUnit& marginEnd) const

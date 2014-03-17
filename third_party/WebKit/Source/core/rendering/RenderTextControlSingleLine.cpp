@@ -47,7 +47,6 @@ RenderTextControlSingleLine::RenderTextControlSingleLine(HTMLInputElement* eleme
     , m_shouldDrawCapsLockIndicator(false)
     , m_desiredInnerTextLogicalHeight(-1)
 {
-    ASSERT(element->hasTagName(inputTag));
 }
 
 RenderTextControlSingleLine::~RenderTextControlSingleLine()

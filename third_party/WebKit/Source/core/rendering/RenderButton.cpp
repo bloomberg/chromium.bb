@@ -104,7 +104,7 @@ bool RenderButton::canHaveGeneratedChildren() const
     // Input elements can't have generated children, but button elements can. We'll
     // write the code assuming any other button types that might emerge in the future
     // can also have children.
-    return !node()->hasTagName(inputTag);
+    return !isHTMLInputElement(*node());
 }
 
 LayoutRect RenderButton::controlClipRect(const LayoutPoint& additionalOffset) const

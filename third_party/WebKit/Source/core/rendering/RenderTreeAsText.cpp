@@ -114,17 +114,17 @@ static String getTagName(Node* n)
 
 static bool isEmptyOrUnstyledAppleStyleSpan(const Node* node)
 {
-    if (!node || !node->isHTMLElement() || !node->hasTagName(spanTag))
+    if (!isHTMLSpanElement(node))
         return false;
 
-    const HTMLElement* elem = toHTMLElement(node);
-    if (elem->getAttribute(classAttr) != "Apple-style-span")
+    const HTMLElement& elem = toHTMLElement(*node);
+    if (elem.getAttribute(classAttr) != "Apple-style-span")
         return false;
 
-    if (!node->hasChildren())
+    if (!elem.hasChildren())
         return true;
 
-    const StylePropertySet* inlineStyleDecl = elem->inlineStyle();
+    const StylePropertySet* inlineStyleDecl = elem.inlineStyle();
     return (!inlineStyleDecl || inlineStyleDecl->isEmpty());
 }
 

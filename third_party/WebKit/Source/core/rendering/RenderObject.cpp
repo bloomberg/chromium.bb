@@ -42,6 +42,7 @@
 #include "core/html/HTMLAnchorElement.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLHtmlElement.h"
+#include "core/html/HTMLTableCellElement.h"
 #include "core/html/HTMLTableElement.h"
 #include "core/page/AutoscrollController.h"
 #include "core/page/EventHandler.h"
@@ -248,17 +249,17 @@ bool RenderObject::isDescendantOf(const RenderObject* obj) const
 
 bool RenderObject::isBody() const
 {
-    return node() && node()->hasTagName(bodyTag);
+    return isHTMLBodyElement(node());
 }
 
 bool RenderObject::isHR() const
 {
-    return node() && node()->hasTagName(hrTag);
+    return isHTMLHRElement(node());
 }
 
 bool RenderObject::isLegend() const
 {
-    return node() && node()->hasTagName(legendTag);
+    return isHTMLLegendElement(node());
 }
 
 void RenderObject::setFlowThreadStateIncludingDescendants(FlowThreadState state)
@@ -2474,7 +2475,7 @@ bool RenderObject::isRooted(RenderView** view) const
 RenderObject* RenderObject::rendererForRootBackground()
 {
     ASSERT(isRoot());
-    if (!hasBackground() && node() && node()->hasTagName(htmlTag)) {
+    if (!hasBackground() && isHTMLHtmlElement(node())) {
         // Locate the <body> element using the DOM. This is easier than trying
         // to crawl around a render tree with potential :before/:after content and
         // anonymous blocks created by inline <body> tags etc. We can locate the <body>
@@ -2493,7 +2494,7 @@ RespectImageOrientationEnum RenderObject::shouldRespectImageOrientation() const
     // Respect the image's orientation if it's being used as a full-page image or it's
     // an <img> and the setting to respect it everywhere is set.
     return document().isImageDocument()
-        || (document().settings() && document().settings()->shouldRespectImageOrientation() && node() && node()->hasTagName(HTMLNames::imgTag)) ? RespectImageOrientation : DoNotRespectImageOrientation;
+        || (document().settings() && document().settings()->shouldRespectImageOrientation() && isHTMLImageElement(node())) ? RespectImageOrientation : DoNotRespectImageOrientation;
 }
 
 bool RenderObject::hasOutlineAnnotation() const
@@ -3031,7 +3032,7 @@ void RenderObject::getTextDecorations(unsigned decorations, AppliedTextDecoratio
         curr = curr->parent();
         if (curr && curr->isAnonymousBlock() && toRenderBlock(curr)->continuation())
             curr = toRenderBlock(curr)->continuation();
-    } while (curr && decorations && (!quirksMode || !curr->node() || (!curr->node()->hasTagName(aTag) && !curr->node()->hasTagName(fontTag))));
+    } while (curr && decorations && (!quirksMode || !curr->node() || (!isHTMLAnchorElement(*curr->node()) && !isHTMLFontElement(*curr->node()))));
 
     // If we bailed out, use the element we bailed out at (typically a <font> or <a> element).
     if (decorations && curr) {
@@ -3177,10 +3178,10 @@ Element* RenderObject::offsetParent() const
         if (ancestor->isPositioned())
             break;
 
-        if (node->hasTagName(bodyTag))
+        if (isHTMLBodyElement(*node))
             break;
 
-        if (!isPositioned() && (node->hasTagName(tableTag) || node->hasTagName(tdTag) || node->hasTagName(thTag)))
+        if (!isPositioned() && (isHTMLTableElement(*node) || isHTMLTableCellElement(*node)))
             break;
 
         // Webkit specific extension where offsetParent stops at zoom level changes.

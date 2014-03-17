@@ -2037,7 +2037,7 @@ void RenderLayer::paintLayerContents(GraphicsContext* context, const LayerPainti
             Document& document = renderer()->document();
             // FIXME: It doesn't work with forward or external SVG references (https://bugs.webkit.org/show_bug.cgi?id=90405)
             Element* element = document.getElementById(referenceClipPathOperation->fragment());
-            if (element && element->hasTagName(SVGNames::clipPathTag) && element->renderer()) {
+            if (isSVGClipPathElement(element) && element->renderer()) {
                 if (!rootRelativeBoundsComputed) {
                     rootRelativeBounds = calculateLayerBounds(paintingInfo.rootLayer, &offsetFromRoot, 0);
                     rootRelativeBoundsComputed = true;

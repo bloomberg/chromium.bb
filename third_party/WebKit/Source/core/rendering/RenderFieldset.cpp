@@ -26,6 +26,7 @@
 
 #include "CSSPropertyNames.h"
 #include "HTMLNames.h"
+#include "core/html/HTMLLegendElement.h"
 #include "core/rendering/PaintInfo.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 
@@ -129,7 +130,7 @@ RenderBox* RenderFieldset::findLegend(FindLegendOption option) const
         if (option == IgnoreFloatingOrOutOfFlow && legend->isFloatingOrOutOfFlowPositioned())
             continue;
 
-        if (legend->node() && (legend->node()->hasTagName(legendTag)))
+        if (isHTMLLegendElement(legend->node()))
             return toRenderBox(legend);
     }
     return 0;

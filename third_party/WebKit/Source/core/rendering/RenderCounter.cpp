@@ -148,12 +148,12 @@ static bool planCounter(RenderObject& object, const AtomicString& identifier, bo
             return true;
         }
         if (Node* e = object.node()) {
-            if (e->hasTagName(olTag)) {
+            if (isHTMLOListElement(*e)) {
                 value = toHTMLOListElement(e)->start();
                 isReset = true;
                 return true;
             }
-            if (e->hasTagName(ulTag) || e->hasTagName(menuTag) || e->hasTagName(dirTag)) {
+            if (isHTMLUListElement(*e) || isHTMLMenuElement(*e) || isHTMLDirectoryElement(*e)) {
                 value = 0;
                 isReset = true;
                 return true;

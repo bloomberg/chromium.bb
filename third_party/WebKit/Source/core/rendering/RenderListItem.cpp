@@ -92,9 +92,9 @@ void RenderListItem::willBeRemovedFromTree()
     updateListMarkerNumbers();
 }
 
-static bool isList(const Node* node)
+static bool isList(const Node& node)
 {
-    return (node->hasTagName(ulTag) || node->hasTagName(olTag));
+    return isHTMLUListElement(node) || isHTMLOListElement(node);
 }
 
 // Returns the enclosing list with respect to the DOM order.
@@ -104,7 +104,7 @@ static Node* enclosingList(const RenderListItem* listItem)
     Node* firstNode = 0;
     // We use parentNode because the enclosing list could be a ShadowRoot that's not Element.
     for (Node* parent = NodeRenderingTraversal::parent(listItemNode); parent; parent = NodeRenderingTraversal::parent(parent)) {
-        if (isList(parent))
+        if (isList(*parent))
             return parent;
         if (!firstNode)
             firstNode = parent;
@@ -128,7 +128,7 @@ static RenderListItem* nextListItem(const Node* listNode, const RenderListItem* 
     current = NodeRenderingTraversal::next(current, listNode);
 
     while (current) {
-        if (isList(current)) {
+        if (isList(*current)) {
             // We've found a nested, independent list: nothing to do here.
             current = NodeRenderingTraversal::next(current, listNode);
             continue;
@@ -194,7 +194,7 @@ inline int RenderListItem::calcValue() const
         return m_explicitValue;
 
     Node* list = enclosingList(this);
-    HTMLOListElement* oListElement = (list && list->hasTagName(olTag)) ? toHTMLOListElement(list) : 0;
+    HTMLOListElement* oListElement = isHTMLOListElement(list) ? toHTMLOListElement(list) : 0;
     int valueStep = 1;
     if (oListElement && oListElement->isReversed())
         valueStep = -1;
@@ -242,7 +242,7 @@ static RenderObject* getParentOfFirstLineBox(RenderBlockFlow* curr, RenderObject
             break;
 
         if (curr->isListItem() && inQuirksMode && currChild->node() &&
-            (currChild->node()->hasTagName(ulTag)|| currChild->node()->hasTagName(olTag)))
+            (isHTMLUListElement(*currChild->node()) || isHTMLOListElement(*currChild->node())))
             break;
 
         RenderObject* lineBox = getParentOfFirstLineBox(toRenderBlockFlow(currChild), marker);
@@ -517,7 +517,7 @@ void RenderListItem::updateListMarkerNumbers()
         return;
 
     bool isListReversed = false;
-    HTMLOListElement* oListElement = (listNode && listNode->hasTagName(olTag)) ? toHTMLOListElement(listNode) : 0;
+    HTMLOListElement* oListElement = isHTMLOListElement(listNode) ? toHTMLOListElement(listNode) : 0;
     if (oListElement) {
         oListElement->itemCountChanged();
         isListReversed = oListElement->isReversed();

@@ -75,16 +75,16 @@ void RenderTableCell::willBeRemovedFromTree()
 unsigned RenderTableCell::parseColSpanFromDOM() const
 {
     ASSERT(node());
-    if (node()->hasTagName(tdTag) || node()->hasTagName(thTag))
-        return min<unsigned>(toHTMLTableCellElement(node())->colSpan(), maxColumnIndex);
+    if (isHTMLTableCellElement(*node()))
+        return min<unsigned>(toHTMLTableCellElement(*node()).colSpan(), maxColumnIndex);
     return 1;
 }
 
 unsigned RenderTableCell::parseRowSpanFromDOM() const
 {
     ASSERT(node());
-    if (node()->hasTagName(tdTag) || node()->hasTagName(thTag))
-        return min<unsigned>(toHTMLTableCellElement(node())->rowSpan(), maxRowIndex);
+    if (isHTMLTableCellElement(*node()))
+        return min<unsigned>(toHTMLTableCellElement(*node()).rowSpan(), maxRowIndex);
     return 1;
 }
 
@@ -99,7 +99,7 @@ void RenderTableCell::updateColAndRowSpanFlags()
 void RenderTableCell::colSpanOrRowSpanChanged()
 {
     ASSERT(node());
-    ASSERT(node()->hasTagName(tdTag) || node()->hasTagName(thTag));
+    ASSERT(isHTMLTableCellElement(*node()));
 
     updateColAndRowSpanFlags();
 

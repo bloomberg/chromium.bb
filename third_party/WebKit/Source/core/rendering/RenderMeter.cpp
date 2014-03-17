@@ -44,7 +44,7 @@ HTMLMeterElement* RenderMeter::meterElement() const
 {
     ASSERT(node());
 
-    if (node()->hasTagName(meterTag))
+    if (isHTMLMeterElement(*node()))
         return toHTMLMeterElement(node());
 
     ASSERT(node()->shadowHost());

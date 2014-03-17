@@ -157,7 +157,7 @@ void RenderView::positionDialogs()
     TrackedRendererListHashSet::iterator end = positionedDescendants->end();
     for (TrackedRendererListHashSet::iterator it = positionedDescendants->begin(); it != end; ++it) {
         RenderBox* box = *it;
-        if (box->node() && box->node()->hasTagName(HTMLNames::dialogTag))
+        if (isHTMLDialogElement(box->node()))
             positionDialog(box);
     }
 }

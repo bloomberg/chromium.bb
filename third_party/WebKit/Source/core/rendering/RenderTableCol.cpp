@@ -60,9 +60,9 @@ void RenderTableCol::updateFromElement()
 {
     unsigned oldSpan = m_span;
     Node* n = node();
-    if (n && (n->hasTagName(colTag) || n->hasTagName(colgroupTag))) {
-        HTMLTableColElement* tc = toHTMLTableColElement(n);
-        m_span = tc->span();
+    if (n && isHTMLTableColElement(*n)) {
+        HTMLTableColElement& tc = toHTMLTableColElement(*n);
+        m_span = tc.span();
     } else
         m_span = !(style() && style()->display() == TABLE_COLUMN_GROUP);
     if (m_span != oldSpan && style() && parent())

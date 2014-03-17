@@ -321,7 +321,7 @@ static RenderVideo* findFullscreenVideoRenderer(Document& document)
             return 0;
         fullscreenElement = FullscreenElementStack::fullscreenElementFrom(*contentDocument);
     }
-    if (!fullscreenElement || !fullscreenElement->hasTagName(videoTag))
+    if (!isHTMLVideoElement(fullscreenElement))
         return 0;
     RenderObject* renderer = fullscreenElement->renderer();
     if (!renderer)

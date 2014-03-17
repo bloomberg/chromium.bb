@@ -711,14 +711,14 @@ bool RenderTheme::isActive(const RenderObject* o) const
 
 bool RenderTheme::isChecked(const RenderObject* o) const
 {
-    if (!o->node() || !o->node()->hasTagName(inputTag))
+    if (!isHTMLInputElement(o->node()))
         return false;
     return toHTMLInputElement(o->node())->shouldAppearChecked();
 }
 
 bool RenderTheme::isIndeterminate(const RenderObject* o) const
 {
-    if (!o->node() || !o->node()->hasTagName(inputTag))
+    if (!isHTMLInputElement(o->node()))
         return false;
     return toHTMLInputElement(o->node())->shouldAppearIndeterminate();
 }
@@ -864,7 +864,7 @@ bool RenderTheme::paintMeter(RenderObject*, const PaintInfo&, const IntRect&)
 void RenderTheme::paintSliderTicks(RenderObject* o, const PaintInfo& paintInfo, const IntRect& rect)
 {
     Node* node = o->node();
-    if (!node || !node->hasTagName(inputTag))
+    if (!isHTMLInputElement(node))
         return;
 
     HTMLInputElement* input = toHTMLInputElement(node);
@@ -923,9 +923,9 @@ void RenderTheme::paintSliderTicks(RenderObject* o, const PaintInfo& paintInfo, 
     GraphicsContextStateSaver stateSaver(*paintInfo.context);
     paintInfo.context->setFillColor(o->resolveColor(CSSPropertyColor));
     for (unsigned i = 0; Element* element = options->item(i); i++) {
-        ASSERT(element->hasTagName(optionTag));
-        HTMLOptionElement* optionElement = toHTMLOptionElement(element);
-        String value = optionElement->value();
+        ASSERT(isHTMLOptionElement(*element));
+        HTMLOptionElement& optionElement = toHTMLOptionElement(*element);
+        String value = optionElement.value();
         if (!input->isValidValue(value))
             continue;
         double parsedValue = parseToDoubleForNumberType(input->sanitizeValue(value));

@@ -29,6 +29,7 @@
 #include "HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/frame/FrameView.h"
+#include "core/html/HTMLTableElement.h"
 #include "core/rendering/AutoTableLayout.h"
 #include "core/rendering/FastTextAutosizer.h"
 #include "core/rendering/FixedTableLayout.h"
@@ -332,7 +333,7 @@ LayoutUnit RenderTable::convertStyleLogicalWidthToComputedWidth(const Length& st
 
     // HTML tables' width styles already include borders and paddings, but CSS tables' width styles do not.
     LayoutUnit borders = 0;
-    bool isCSSTable = !node() || !node()->hasTagName(tableTag);
+    bool isCSSTable = !isHTMLTableElement(node());
     if (isCSSTable && styleLogicalWidth.isSpecified() && styleLogicalWidth.isPositive() && style()->boxSizing() == CONTENT_BOX)
         borders = borderStart() + borderEnd() + (collapseBorders() ? LayoutUnit() : paddingStart() + paddingEnd());
 
@@ -349,7 +350,7 @@ LayoutUnit RenderTable::convertStyleLogicalHeightToComputedHeight(const Length& 
         // HTML tables size as though CSS height includes border/padding, CSS tables do not.
         LayoutUnit borders = LayoutUnit();
         // FIXME: We cannot apply box-sizing: content-box on <table> which other browsers allow.
-        if ((node() && node()->hasTagName(tableTag)) || style()->boxSizing() == BORDER_BOX) {
+        if (isHTMLTableElement(node()) || style()->boxSizing() == BORDER_BOX) {
             borders = borderAndPadding;
         }
         computedLogicalHeight = styleLogicalHeight.value() - borders;

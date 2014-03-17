@@ -39,6 +39,7 @@
 #include "core/page/FrameTree.h"
 #include "core/rendering/RenderImage.h"
 #include "core/rendering/RenderTextFragment.h"
+#include "core/svg/SVGElement.h"
 #include "platform/scroll/Scrollbar.h"
 
 namespace WebCore {
@@ -238,14 +239,14 @@ const AtomicString& HitTestResult::altDisplayString() const
     if (!m_innerNonSharedNode)
         return nullAtom;
 
-    if (m_innerNonSharedNode->hasTagName(imgTag)) {
-        HTMLImageElement* image = toHTMLImageElement(m_innerNonSharedNode);
-        return image->getAttribute(altAttr);
+    if (isHTMLImageElement(*m_innerNonSharedNode)) {
+        HTMLImageElement& image = toHTMLImageElement(*m_innerNonSharedNode);
+        return image.getAttribute(altAttr);
     }
 
-    if (m_innerNonSharedNode->hasTagName(inputTag)) {
-        HTMLInputElement* input = toHTMLInputElement(m_innerNonSharedNode);
-        return input->alt();
+    if (isHTMLInputElement(*m_innerNonSharedNode)) {
+        HTMLInputElement& input = toHTMLInputElement(*m_innerNonSharedNode);
+        return input.alt();
     }
 
     return nullAtom;
@@ -282,13 +283,13 @@ KURL HitTestResult::absoluteImageURL() const
         return KURL();
 
     AtomicString urlString;
-    if (m_innerNonSharedNode->hasTagName(embedTag)
-        || m_innerNonSharedNode->hasTagName(imgTag)
-        || m_innerNonSharedNode->hasTagName(inputTag)
-        || m_innerNonSharedNode->hasTagName(objectTag)
-        || m_innerNonSharedNode->hasTagName(SVGNames::imageTag)
+    if (isHTMLEmbedElement(*m_innerNonSharedNode)
+        || isHTMLImageElement(*m_innerNonSharedNode)
+        || isHTMLInputElement(*m_innerNonSharedNode)
+        || isHTMLObjectElement(*m_innerNonSharedNode)
+        || isSVGImageElement(*m_innerNonSharedNode)
        ) {
-        urlString = toElement(m_innerNonSharedNode)->imageSourceURL();
+        urlString = toElement(*m_innerNonSharedNode).imageSourceURL();
     } else
         return KURL();
 
@@ -321,9 +322,9 @@ KURL HitTestResult::absoluteLinkURL() const
         return KURL();
 
     AtomicString urlString;
-    if (m_innerURLElement->hasTagName(aTag) || m_innerURLElement->hasTagName(areaTag) || m_innerURLElement->hasTagName(linkTag))
+    if (isHTMLAnchorElement(*m_innerURLElement) || isHTMLAreaElement(*m_innerURLElement) || isHTMLLinkElement(*m_innerURLElement))
         urlString = m_innerURLElement->getAttribute(hrefAttr);
-    else if (m_innerURLElement->hasTagName(SVGNames::aTag))
+    else if (isSVGAElement(*m_innerURLElement))
         urlString = m_innerURLElement->getAttribute(XLinkNames::hrefAttr);
     else
         return KURL();
@@ -336,10 +337,10 @@ bool HitTestResult::isLiveLink() const
     if (!m_innerURLElement)
         return false;
 
-    if (m_innerURLElement->hasTagName(aTag))
+    if (isHTMLAnchorElement(*m_innerURLElement))
         return toHTMLAnchorElement(m_innerURLElement)->isLiveLink();
 
-    if (m_innerURLElement->hasTagName(SVGNames::aTag))
+    if (isSVGAElement(*m_innerURLElement))
         return m_innerURLElement->isLink();
 
     return false;
@@ -385,11 +386,11 @@ bool HitTestResult::isContentEditable() const
     if (!m_innerNonSharedNode)
         return false;
 
-    if (m_innerNonSharedNode->hasTagName(textareaTag))
+    if (isHTMLTextAreaElement(*m_innerNonSharedNode))
         return true;
 
-    if (m_innerNonSharedNode->hasTagName(inputTag))
-        return toHTMLInputElement(m_innerNonSharedNode)->isTextField();
+    if (isHTMLInputElement(*m_innerNonSharedNode))
+        return toHTMLInputElement(*m_innerNonSharedNode).isTextField();
 
     return m_innerNonSharedNode->rendererIsEditable();
 }

@@ -105,7 +105,7 @@ static RenderObject* getAncestorList(const RenderObject* renderer)
     // see http://www.whatwg.org/specs/web-apps/current-work/multipage/grouping-content.html#the-li-element
     for (RenderObject* ancestor = renderer->parent(); ancestor; ancestor = ancestor->parent()) {
         Node* parentNode = ancestor->generatingNode();
-        if (parentNode && (parentNode->hasTagName(olTag) || parentNode->hasTagName(ulTag)))
+        if (parentNode && (isHTMLOListElement(*parentNode) || isHTMLUListElement(*parentNode)))
             return ancestor;
     }
     return 0;
@@ -448,7 +448,7 @@ void TextAutosizer::setMultiplierForList(RenderObject* renderer, float multiplie
 #ifndef NDEBUG
     Node* parentNode = renderer->generatingNode();
     ASSERT(parentNode);
-    ASSERT(parentNode->hasTagName(olTag) || parentNode->hasTagName(ulTag));
+    ASSERT(isHTMLOListElement(parentNode) || isHTMLUListElement(parentNode));
 #endif
     setMultiplier(renderer, multiplier);
 

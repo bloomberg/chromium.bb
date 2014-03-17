@@ -408,21 +408,21 @@ void RenderImage::paintAreaElementFocusRing(PaintInfo& paintInfo)
         return;
 
     Element* focusedElement = document.focusedElement();
-    if (!focusedElement || !focusedElement->hasTagName(areaTag))
+    if (!isHTMLAreaElement(focusedElement))
         return;
 
-    HTMLAreaElement* areaElement = toHTMLAreaElement(focusedElement);
-    if (areaElement->imageElement() != node())
+    HTMLAreaElement& areaElement = toHTMLAreaElement(*focusedElement);
+    if (areaElement.imageElement() != node())
         return;
 
     // Even if the theme handles focus ring drawing for entire elements, it won't do it for
     // an area within an image, so we don't call RenderTheme::supportsFocusRing here.
 
-    Path path = areaElement->computePath(this);
+    Path path = areaElement.computePath(this);
     if (path.isEmpty())
         return;
 
-    RenderStyle* areaElementStyle = areaElement->computedStyle();
+    RenderStyle* areaElementStyle = areaElement.computedStyle();
     unsigned short outlineWidth = areaElementStyle->outlineWidth();
     if (!outlineWidth)
         return;
@@ -464,7 +464,7 @@ void RenderImage::paintIntoRect(GraphicsContext* context, const LayoutRect& rect
     if (!img || img->isNull())
         return;
 
-    HTMLImageElement* imageElt = (node() && node()->hasTagName(imgTag)) ? toHTMLImageElement(node()) : 0;
+    HTMLImageElement* imageElt = isHTMLImageElement(node()) ? toHTMLImageElement(node()) : 0;
     CompositeOperator compositeOperator = imageElt ? imageElt->compositeOperator() : CompositeSourceOver;
     Image* image = m_imageResource->image().get();
     bool useLowQualityScaling = shouldPaintAtLowQuality(context, image, image, alignedRect.size());
@@ -522,7 +522,7 @@ LayoutUnit RenderImage::minimumReplacedHeight() const
 
 HTMLMapElement* RenderImage::imageMap() const
 {
-    HTMLImageElement* i = node() && node()->hasTagName(imgTag) ? toHTMLImageElement(node()) : 0;
+    HTMLImageElement* i = isHTMLImageElement(node()) ? toHTMLImageElement(node()) : 0;
     return i ? i->treeScope().getImageMap(i->fastGetAttribute(usemapAttr)) : 0;
 }
 
@@ -555,9 +555,9 @@ void RenderImage::updateAltText()
     if (!node())
         return;
 
-    if (node()->hasTagName(inputTag))
+    if (isHTMLInputElement(*node()))
         m_altText = toHTMLInputElement(node())->altText();
-    else if (node()->hasTagName(imgTag))
+    else if (isHTMLImageElement(*node()))
         m_altText = toHTMLImageElement(node())->altText();
 }
 

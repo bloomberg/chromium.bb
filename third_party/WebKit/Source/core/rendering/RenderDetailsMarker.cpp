@@ -23,6 +23,7 @@
 
 #include "HTMLNames.h"
 #include "core/dom/Element.h"
+#include "core/html/HTMLElement.h"
 #include "core/rendering/PaintInfo.h"
 #include "platform/graphics/GraphicsContext.h"
 
@@ -141,9 +142,9 @@ bool RenderDetailsMarker::isOpen() const
     for (RenderObject* renderer = parent(); renderer; renderer = renderer->parent()) {
         if (!renderer->node())
             continue;
-        if (renderer->node()->hasTagName(detailsTag))
+        if (isHTMLDetailsElement(*renderer->node()))
             return !toElement(renderer->node())->getAttribute(openAttr).isNull();
-        if (renderer->node()->hasTagName(inputTag))
+        if (isHTMLInputElement(*renderer->node()))
             return true;
     }
 
