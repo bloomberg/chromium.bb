@@ -325,6 +325,9 @@ void DesktopWindowTreeHostX11::ShowWindowWithState(
 
   if (show_state == ui::SHOW_STATE_NORMAL ||
       show_state == ui::SHOW_STATE_MAXIMIZED) {
+    // Note: XFCE ignores a maximize hint given before mapping the window.
+    if (show_state == ui::SHOW_STATE_MAXIMIZED)
+      Maximize();
     Activate();
   }
 
@@ -334,8 +337,7 @@ void DesktopWindowTreeHostX11::ShowWindowWithState(
 void DesktopWindowTreeHostX11::ShowMaximizedWithBounds(
     const gfx::Rect& restored_bounds) {
   restored_bounds_ = restored_bounds;
-  Maximize();
-  Show();
+  ShowWindowWithState(ui::SHOW_STATE_MAXIMIZED);
 }
 
 bool DesktopWindowTreeHostX11::IsVisible() const {
