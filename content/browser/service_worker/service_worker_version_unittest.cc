@@ -90,6 +90,13 @@ void VerifyCalled(bool* called) {
   *called = true;
 }
 
+void ObserveStatusChanges(ServiceWorkerVersion* version,
+                          std::vector<ServiceWorkerVersion::Status>* statuses) {
+  statuses->push_back(version->status());
+  version->RegisterStatusChangeCallback(
+      base::Bind(&ObserveStatusChanges, make_scoped_refptr(version), statuses));
+}
+
 }  // namespace
 
 class ServiceWorkerVersionTest : public testing::Test {
@@ -298,6 +305,33 @@ TEST_F(ServiceWorkerVersionTest, ActivateAndWaitCompletion) {
   EXPECT_EQ(SERVICE_WORKER_OK, status);
   EXPECT_TRUE(status_change_called);
   EXPECT_EQ(ServiceWorkerVersion::ACTIVE, version_->status());
+}
+
+TEST_F(ServiceWorkerVersionTest, RepeatedlyObserveStatusChanges) {
+  EXPECT_EQ(ServiceWorkerVersion::NEW, version_->status());
+
+  // Repeatedly observe status changes (the callback re-registers itself).
+  std::vector<ServiceWorkerVersion::Status> statuses;
+  version_->RegisterStatusChangeCallback(
+      base::Bind(&ObserveStatusChanges, version_, &statuses));
+
+  // Dispatch some events.
+  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
+  version_->DispatchInstallEvent(-1, CreateReceiverOnCurrentThread(&status));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(SERVICE_WORKER_OK, status);
+
+  status = SERVICE_WORKER_ERROR_FAILED;
+  version_->DispatchActivateEvent(CreateReceiverOnCurrentThread(&status));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(SERVICE_WORKER_OK, status);
+
+  // Verify that we could successfully observe repeated status changes.
+  ASSERT_EQ(4U, statuses.size());
+  ASSERT_EQ(ServiceWorkerVersion::INSTALLING, statuses[0]);
+  ASSERT_EQ(ServiceWorkerVersion::INSTALLED, statuses[1]);
+  ASSERT_EQ(ServiceWorkerVersion::ACTIVATING, statuses[2]);
+  ASSERT_EQ(ServiceWorkerVersion::ACTIVE, statuses[3]);
 }
 
 }  // namespace content

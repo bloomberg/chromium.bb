@@ -25,11 +25,12 @@ void RunSoon(const base::Closure& callback) {
 }
 
 template <typename CallbackArray, typename Arg>
-void RunCallbacks(CallbackArray* callbacks, const Arg& arg) {
-  for (typename CallbackArray::const_iterator i = callbacks->begin();
-       i != callbacks->end(); ++i)
+void RunCallbacks(CallbackArray* callbacks_ptr, const Arg& arg) {
+  CallbackArray callbacks;
+  callbacks.swap(*callbacks_ptr);
+  for (typename CallbackArray::const_iterator i = callbacks.begin();
+       i != callbacks.end(); ++i)
     (*i).Run(arg);
-  callbacks->clear();
 }
 
 // A callback adapter to start a |task| after StartWorker.
@@ -129,6 +130,7 @@ ServiceWorkerVersion::~ServiceWorkerVersion() { DCHECK(is_shutdown_); }
 void ServiceWorkerVersion::Shutdown() {
   is_shutdown_ = true;
   registration_ = NULL;
+  status_change_callbacks_.clear();
   if (embedded_worker_) {
     embedded_worker_->RemoveObserver(this);
     embedded_worker_.reset();
@@ -138,12 +140,12 @@ void ServiceWorkerVersion::Shutdown() {
 void ServiceWorkerVersion::SetStatus(Status status) {
   status_ = status;
 
-  for (std::vector<base::Closure>::const_iterator i =
-           status_change_callbacks_.begin();
-       i != status_change_callbacks_.end(); ++i) {
+  std::vector<base::Closure> callbacks;
+  callbacks.swap(status_change_callbacks_);
+  for (std::vector<base::Closure>::const_iterator i = callbacks.begin();
+       i != callbacks.end(); ++i) {
     (*i).Run();
   }
-  status_change_callbacks_.clear();
 }
 
 void ServiceWorkerVersion::RegisterStatusChangeCallback(
@@ -248,7 +250,7 @@ void ServiceWorkerVersion::DispatchInstallEvent(
     int active_version_embedded_worker_id,
     const StatusCallback& callback) {
   DCHECK_EQ(NEW, status()) << status();
-  status_ = INSTALLING;
+  SetStatus(INSTALLING);
   SendMessageAndRegisterCallback(
       ServiceWorkerMsg_InstallEvent(active_version_embedded_worker_id),
       base::Bind(&HandleEventFinished, weak_factory_.GetWeakPtr(),
@@ -259,7 +261,7 @@ void ServiceWorkerVersion::DispatchInstallEvent(
 void ServiceWorkerVersion::DispatchActivateEvent(
     const StatusCallback& callback) {
   DCHECK_EQ(INSTALLED, status()) << status();
-  status_ = ACTIVATING;
+  SetStatus(ACTIVATING);
   // TODO(kinuko): Implement.
   NOTIMPLEMENTED();
   RunSoon(base::Bind(&HandleEventFinished, weak_factory_.GetWeakPtr(),
