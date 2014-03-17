@@ -106,7 +106,7 @@ dev_list="apache2.2-bin bison curl dpkg-dev elfutils fakeroot flex g++ git-core
           mesa-common-dev openbox patch perl php5-cgi pkg-config python
           python-cherrypy3 python-dev python-psutil rpm ruby subversion
           ttf-dejavu-core ttf-indic-fonts ttf-kochi-gothic ttf-kochi-mincho
-          wdiff xfonts-mathml $chromeos_dev_list"
+          ttf-thai-tlwg wdiff xfonts-mathml $chromeos_dev_list"
 
 # 64-bit systems need a minimum set of 32-bit compat packages for the pre-built
 # NaCl binaries. These are always needed, regardless of whether or not we want
