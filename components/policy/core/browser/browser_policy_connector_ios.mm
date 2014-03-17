@@ -4,9 +4,12 @@
 
 #include "components/policy/core/browser/browser_policy_connector_ios.h"
 
+#include "base/sequenced_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
+#include "components/policy/core/common/async_policy_provider.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
+#include "components/policy/core/common/policy_loader_ios.h"
 #include "net/url_request/url_request_context_getter.h"
 
 namespace policy {
@@ -57,9 +60,16 @@ class DeviceManagementServiceConfiguration
 
 BrowserPolicyConnectorIOS::BrowserPolicyConnectorIOS(
     const HandlerListFactory& handler_list_factory,
-    const std::string& user_agent)
+    const std::string& user_agent,
+    scoped_refptr<base::SequencedTaskRunner> background_task_runner)
     : BrowserPolicyConnector(handler_list_factory),
-      user_agent_(user_agent) {}
+      user_agent_(user_agent) {
+  scoped_ptr<AsyncPolicyLoader> loader(
+      new PolicyLoaderIOS(background_task_runner));
+  scoped_ptr<ConfigurationPolicyProvider> provider(
+      new AsyncPolicyProvider(GetSchemaRegistry(), loader.Pass()));
+  SetPlatformPolicyProvider(provider.Pass());
+}
 
 BrowserPolicyConnectorIOS::~BrowserPolicyConnectorIOS() {}
 

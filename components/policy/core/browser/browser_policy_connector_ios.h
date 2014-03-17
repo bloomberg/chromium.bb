@@ -8,17 +8,24 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/policy_export.h"
+
+namespace base {
+class SequencedTaskRunner;
+}
 
 namespace policy {
 
 // Extends BrowserPolicyConnector with the setup for iOS builds.
 class POLICY_EXPORT BrowserPolicyConnectorIOS : public BrowserPolicyConnector {
  public:
-  BrowserPolicyConnectorIOS(const HandlerListFactory& handler_list_factory,
-                            const std::string& user_agent);
+  BrowserPolicyConnectorIOS(
+      const HandlerListFactory& handler_list_factory,
+      const std::string& user_agent,
+      scoped_refptr<base::SequencedTaskRunner> background_task_runner);
 
   virtual ~BrowserPolicyConnectorIOS();
 
