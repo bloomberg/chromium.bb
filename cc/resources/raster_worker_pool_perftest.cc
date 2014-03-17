@@ -5,6 +5,7 @@
 #include "cc/resources/raster_worker_pool.h"
 
 #include "base/time/time.h"
+#include "cc/output/context_provider.h"
 #include "cc/resources/direct_raster_worker_pool.h"
 #include "cc/resources/image_raster_worker_pool.h"
 #include "cc/resources/pixel_buffer_raster_worker_pool.h"
@@ -13,6 +14,7 @@
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_output_surface_client.h"
 #include "cc/test/lap_timer.h"
+#include "cc/test/test_context_support.h"
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"
@@ -20,6 +22,31 @@
 
 namespace cc {
 namespace {
+
+class PerfContextProvider : public ContextProvider {
+ public:
+  PerfContextProvider() : context_gl_(new gpu::gles2::GLES2InterfaceStub) {}
+
+  virtual bool BindToCurrentThread() OVERRIDE { return true; }
+  virtual Capabilities ContextCapabilities() OVERRIDE { return Capabilities(); }
+  virtual gpu::gles2::GLES2Interface* ContextGL() OVERRIDE {
+    return context_gl_.get();
+  }
+  virtual gpu::ContextSupport* ContextSupport() OVERRIDE { return &support_; }
+  virtual class GrContext* GrContext() OVERRIDE { return NULL; }
+  virtual bool IsContextLost() OVERRIDE { return false; }
+  virtual void VerifyContexts() OVERRIDE {}
+  virtual bool DestroyedOnMainThread() OVERRIDE { return false; }
+  virtual void SetLostContextCallback(const LostContextCallback& cb) OVERRIDE {}
+  virtual void SetMemoryPolicyChangedCallback(
+      const MemoryPolicyChangedCallback& cb) OVERRIDE {}
+
+ private:
+  virtual ~PerfContextProvider() {}
+
+  scoped_ptr<gpu::gles2::GLES2InterfaceStub> context_gl_;
+  TestContextSupport support_;
+};
 
 enum RasterWorkerPoolType {
   RASTER_WORKER_POOL_TYPE_PIXEL_BUFFER,
@@ -135,7 +162,7 @@ class RasterWorkerPoolPerfTestBase {
       RasterTaskVector;
 
   RasterWorkerPoolPerfTestBase()
-      : context_provider_(TestContextProvider::Create()),
+      : context_provider_(make_scoped_refptr(new PerfContextProvider)),
         timer_(kWarmupRuns,
                base::TimeDelta::FromMilliseconds(kTimeLimitMillis),
                kTimeCheckInterval) {
@@ -182,7 +209,7 @@ class RasterWorkerPoolPerfTestBase {
   }
 
  protected:
-  scoped_refptr<TestContextProvider> context_provider_;
+  scoped_refptr<ContextProvider> context_provider_;
   FakeOutputSurfaceClient output_surface_client_;
   scoped_ptr<FakeOutputSurface> output_surface_;
   scoped_ptr<ResourceProvider> resource_provider_;

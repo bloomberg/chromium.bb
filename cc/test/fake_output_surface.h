@@ -28,7 +28,7 @@ class FakeOutputSurface : public OutputSurface {
   }
 
   static scoped_ptr<FakeOutputSurface> Create3d(
-      scoped_refptr<TestContextProvider> context_provider) {
+      scoped_refptr<ContextProvider> context_provider) {
     return make_scoped_ptr(new FakeOutputSurface(context_provider, false));
   }
 
