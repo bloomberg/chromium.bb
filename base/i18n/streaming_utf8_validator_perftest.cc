@@ -56,10 +56,6 @@ bool IsString7Bit(const std::string& s) {
   return true;
 }
 
-bool IsStringUTF8(const std::string& s) {
-  return base::IsStringUTF8(s);
-}
-
 // Assumes that |previous| is a valid UTF-8 sequence, and attempts to return
 // the next one. Is just barely smart enough to iterate through the ranges
 // defined about.

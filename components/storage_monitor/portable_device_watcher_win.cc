@@ -59,7 +59,7 @@ base::string16 GetPnpDeviceId(LPARAM data) {
   if (!dev_interface)
     return base::string16();
   base::string16 device_id(dev_interface->dbcc_name);
-  DCHECK(base::IsStringASCII(device_id));
+  DCHECK(IsStringASCII(device_id));
   return StringToLowerASCII(device_id);
 }
 

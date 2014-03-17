@@ -51,7 +51,7 @@ url_parse::Component UTF8ComponentToUTF16Component(
 void UTF8PartsToUTF16Parts(const std::string& text_utf8,
                            const url_parse::Parsed& parts_utf8,
                            url_parse::Parsed* parts) {
-  if (base::IsStringASCII(text_utf8)) {
+  if (IsStringASCII(text_utf8)) {
     *parts = parts_utf8;
     return;
   }
@@ -80,7 +80,7 @@ base::TrimPositions TrimWhitespaceUTF8(const std::string& input,
   // This implementation is not so fast since it converts the text encoding
   // twice. Please feel free to file a bug if this function hurts the
   // performance of Chrome.
-  DCHECK(base::IsStringUTF8(input));
+  DCHECK(IsStringUTF8(input));
   base::string16 input16 = base::UTF8ToUTF16(input);
   base::string16 output16;
   base::TrimPositions result =

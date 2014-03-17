@@ -121,7 +121,7 @@ static bool ConvertJwkToKeyPair(const base::DictionaryValue& jwk,
 }
 
 bool ExtractKeysFromJWKSet(const std::string& jwk_set, KeyIdAndKeyPairs* keys) {
-  if (!base::IsStringASCII(jwk_set))
+  if (!IsStringASCII(jwk_set))
     return false;
 
   scoped_ptr<base::Value> root(base::JSONReader().ReadToValue(jwk_set));

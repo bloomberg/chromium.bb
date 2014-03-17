@@ -103,9 +103,9 @@ bool DecodeWord(const std::string& encoded_word,
   if (encoded_word.empty())
     return true;
 
-  if (!base::IsStringASCII(encoded_word)) {
+  if (!IsStringASCII(encoded_word)) {
     // Try UTF-8, referrer_charset and the native OS default charset in turn.
-    if (base::IsStringUTF8(encoded_word)) {
+    if (IsStringUTF8(encoded_word)) {
       *output = encoded_word;
     } else {
       base::string16 utf16_output;
@@ -209,7 +209,7 @@ bool DecodeWord(const std::string& encoded_word,
   if (decoded_word != encoded_word)
     *parse_result_flags |=
         net::HttpContentDisposition::HAS_PERCENT_ENCODED_STRINGS;
-  if (base::IsStringUTF8(decoded_word)) {
+  if (IsStringUTF8(decoded_word)) {
     output->swap(decoded_word);
     return true;
     // We can try either the OS default charset or 'origin charset' here,
@@ -335,7 +335,7 @@ bool DecodeExtValue(const std::string& param_value, std::string* decoded) {
     return false;
 
   // RFC 5987 value should be ASCII-only.
-  if (!base::IsStringASCII(value)) {
+  if (!IsStringASCII(value)) {
     decoded->clear();
     return true;
   }

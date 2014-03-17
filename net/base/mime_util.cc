@@ -640,7 +640,7 @@ static const char* legal_top_level_types[] = {
 bool MimeUtil::IsMimeType(const std::string& type_string) const {
   // MIME types are always ASCII and case-insensitive (at least, the top-level
   // and secondary types we care about).
-  if (!base::IsStringASCII(type_string))
+  if (!IsStringASCII(type_string))
     return false;
 
   if (type_string == "*/*" || type_string == "*")

@@ -314,7 +314,7 @@ base::string16 Address::DisplayPhoneNumber() const {
 base::string16 Address::GetInfo(const AutofillType& type,
                                 const std::string& app_locale) const {
   if (type.html_type() == HTML_TYPE_COUNTRY_CODE) {
-    DCHECK(base::IsStringASCII(country_name_code()));
+    DCHECK(IsStringASCII(country_name_code()));
     return base::ASCIIToUTF16(country_name_code());
   }
 

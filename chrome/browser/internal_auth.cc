@@ -89,7 +89,7 @@ int64 GetCurrentTick() {
 bool IsDomainSane(const std::string& domain) {
   return !domain.empty() &&
       domain.size() <= kStringLengthLimit &&
-      base::IsStringUTF8(domain) &&
+      IsStringUTF8(domain) &&
       domain.find_first_of(kItemSeparator) == std::string::npos;
 }
 
@@ -109,14 +109,14 @@ bool IsVarSane(const std::string& var) {
       kVarValueSeparator) == kAllowedChars + arraysize(kAllowedChars));
   return !var.empty() &&
       var.size() <= kStringLengthLimit &&
-      base::IsStringASCII(var) &&
+      IsStringASCII(var) &&
       var.find_first_not_of(kAllowedChars) == std::string::npos &&
       !IsAsciiDigit(var[0]);
 }
 
 bool IsValueSane(const std::string& value) {
   return value.size() <= kStringLengthLimit &&
-      base::IsStringUTF8(value) &&
+      IsStringUTF8(value) &&
       value.find_first_of(kItemSeparator) == std::string::npos;
 }
 
@@ -265,7 +265,7 @@ class InternalAuthVerificationService {
     const std::string& domain,
     int64 current_tick) {
     if (passport.size() != kPassportSize ||
-        !base::IsStringASCII(passport) ||
+        !IsStringASCII(passport) ||
         !IsDomainSane(domain) ||
         current_tick <= dark_tick_ ||
         current_tick > key_change_tick_  + kKeyRegenerationHardTicks ||

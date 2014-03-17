@@ -107,7 +107,7 @@ void Address::SetRawInfo(ServerFieldType type, const base::string16& value) {
 
     case ADDRESS_HOME_COUNTRY:
       DCHECK(value.empty() ||
-             (value.length() == 2u && base::IsStringASCII(value)));
+             (value.length() == 2u && IsStringASCII(value)));
       country_code_ = base::UTF16ToASCII(value);
       break;
 
@@ -144,7 +144,7 @@ bool Address::SetInfo(const AutofillType& type,
                       const base::string16& value,
                       const std::string& app_locale) {
   if (type.html_type() == HTML_TYPE_COUNTRY_CODE) {
-    if (!value.empty() && (value.size() != 2u || !base::IsStringASCII(value))) {
+    if (!value.empty() && (value.size() != 2u || !IsStringASCII(value))) {
       country_code_ = std::string();
       return false;
     }

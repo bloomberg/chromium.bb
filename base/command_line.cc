@@ -305,7 +305,7 @@ bool CommandLine::HasSwitch(const std::string& switch_string) const {
 std::string CommandLine::GetSwitchValueASCII(
     const std::string& switch_string) const {
   StringType value = GetSwitchValueNative(switch_string);
-  if (!base::IsStringASCII(value)) {
+  if (!IsStringASCII(value)) {
     DLOG(WARNING) << "Value of switch (" << switch_string << ") must be ASCII.";
     return std::string();
   }
@@ -387,8 +387,8 @@ CommandLine::StringVector CommandLine::GetArgs() const {
 
 void CommandLine::AppendArg(const std::string& value) {
 #if defined(OS_WIN)
-  DCHECK(base::IsStringUTF8(value));
-  AppendArgNative(base::UTF8ToWide(value));
+  DCHECK(IsStringUTF8(value));
+  AppendArgNative(UTF8ToWide(value));
 #elif defined(OS_POSIX)
   AppendArgNative(value);
 #endif

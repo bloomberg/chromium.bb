@@ -148,7 +148,7 @@ PP_Var StringVar::StringToPPVar(const std::string& var) {
 // static
 PP_Var StringVar::StringToPPVar(const char* data, uint32 len) {
   scoped_refptr<StringVar> str(new StringVar(data, len));
-  if (!str.get() || !base::IsStringUTF8(str->value()))
+  if (!str.get() || !IsStringUTF8(str->value()))
     return PP_MakeNull();
   return str->GetPPVar();
 }

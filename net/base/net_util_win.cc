@@ -119,7 +119,7 @@ bool FileURLToFilePath(const GURL& url, base::FilePath* file_path) {
   path = UnescapeURLComponent(path,
       UnescapeRule::SPACES | UnescapeRule::URL_SPECIAL_CHARS);
 
-  if (!base::IsStringUTF8(path)) {
+  if (!IsStringUTF8(path)) {
     // Not UTF-8, assume encoding is native codepage and we're done. We know we
     // are giving the conversion function a nonempty string, and it may fail if
     // the given string is not in the current encoding and give us an empty

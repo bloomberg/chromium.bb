@@ -195,7 +195,7 @@ class StoreValue : public Operation {
   StoreValue(const std::string& hashed_name, scoped_ptr<base::Value> value)
       : hashed_name_(hashed_name),
         value_(value.Pass()) {
-    DCHECK(base::IsStringUTF8(hashed_name));
+    DCHECK(IsStringUTF8(hashed_name));
     DCHECK(value_);
   }
   virtual ~StoreValue() {}
@@ -218,7 +218,7 @@ class CompareStoredValue : public Operation {
       : hashed_name_(hashed_name),
         value_(value.Pass()),
         default_value_(default_value.Pass()) {
-    DCHECK(base::IsStringUTF8(hashed_name));
+    DCHECK(IsStringUTF8(hashed_name));
     DCHECK(value_);
     DCHECK(default_value_);
   }
@@ -244,7 +244,7 @@ class StoreNodeValue : public Operation {
  public:
   explicit StoreNodeValue(const std::string& hashed_name)
       : hashed_name_(hashed_name) {
-    DCHECK(base::IsStringUTF8(hashed_name));
+    DCHECK(IsStringUTF8(hashed_name));
   }
   virtual ~StoreNodeValue() {}
   virtual bool Execute(ExecutionContext* context) OVERRIDE {
@@ -275,7 +275,7 @@ class StoreNodeRegisterableDomain : public Operation {
  public:
   explicit StoreNodeRegisterableDomain(const std::string& hashed_name)
       : hashed_name_(hashed_name) {
-    DCHECK(base::IsStringUTF8(hashed_name));
+    DCHECK(IsStringUTF8(hashed_name));
   }
   virtual ~StoreNodeRegisterableDomain() {}
   virtual bool Execute(ExecutionContext* context) OVERRIDE {
@@ -488,7 +488,7 @@ class Parser {
           break;
         case jtl_foundation::STORE_BOOL: {
           std::string hashed_name;
-          if (!ReadHash(&hashed_name) || !base::IsStringUTF8(hashed_name))
+          if (!ReadHash(&hashed_name) || !IsStringUTF8(hashed_name))
             return false;
           bool value = false;
           if (!ReadBool(&value))
@@ -500,7 +500,7 @@ class Parser {
         }
         case jtl_foundation::COMPARE_STORED_BOOL: {
           std::string hashed_name;
-          if (!ReadHash(&hashed_name) || !base::IsStringUTF8(hashed_name))
+          if (!ReadHash(&hashed_name) || !IsStringUTF8(hashed_name))
             return false;
           bool value = false;
           if (!ReadBool(&value))
@@ -517,7 +517,7 @@ class Parser {
         }
         case jtl_foundation::STORE_HASH: {
           std::string hashed_name;
-          if (!ReadHash(&hashed_name) || !base::IsStringUTF8(hashed_name))
+          if (!ReadHash(&hashed_name) || !IsStringUTF8(hashed_name))
             return false;
           std::string hashed_value;
           if (!ReadHash(&hashed_value))
@@ -529,7 +529,7 @@ class Parser {
         }
         case jtl_foundation::COMPARE_STORED_HASH: {
           std::string hashed_name;
-          if (!ReadHash(&hashed_name) || !base::IsStringUTF8(hashed_name))
+          if (!ReadHash(&hashed_name) || !IsStringUTF8(hashed_name))
             return false;
           std::string hashed_value;
           if (!ReadHash(&hashed_value))
@@ -546,21 +546,21 @@ class Parser {
         }
         case jtl_foundation::STORE_NODE_BOOL: {
           std::string hashed_name;
-          if (!ReadHash(&hashed_name) || !base::IsStringUTF8(hashed_name))
+          if (!ReadHash(&hashed_name) || !IsStringUTF8(hashed_name))
             return false;
           operators.push_back(new StoreNodeValue<true>(hashed_name));
           break;
         }
         case jtl_foundation::STORE_NODE_HASH: {
           std::string hashed_name;
-          if (!ReadHash(&hashed_name) || !base::IsStringUTF8(hashed_name))
+          if (!ReadHash(&hashed_name) || !IsStringUTF8(hashed_name))
             return false;
           operators.push_back(new StoreNodeValue<false>(hashed_name));
           break;
         }
         case jtl_foundation::STORE_NODE_REGISTERABLE_DOMAIN_HASH: {
           std::string hashed_name;
-          if (!ReadHash(&hashed_name) || !base::IsStringUTF8(hashed_name))
+          if (!ReadHash(&hashed_name) || !IsStringUTF8(hashed_name))
             return false;
           operators.push_back(new StoreNodeRegisterableDomain(hashed_name));
           break;
@@ -588,14 +588,14 @@ class Parser {
         }
         case jtl_foundation::COMPARE_NODE_TO_STORED_BOOL: {
           std::string hashed_name;
-          if (!ReadHash(&hashed_name) || !base::IsStringUTF8(hashed_name))
+          if (!ReadHash(&hashed_name) || !IsStringUTF8(hashed_name))
             return false;
           operators.push_back(new CompareNodeToStored<true>(hashed_name));
           break;
         }
         case jtl_foundation::COMPARE_NODE_TO_STORED_HASH: {
           std::string hashed_name;
-          if (!ReadHash(&hashed_name) || !base::IsStringUTF8(hashed_name))
+          if (!ReadHash(&hashed_name) || !IsStringUTF8(hashed_name))
             return false;
           operators.push_back(new CompareNodeToStored<false>(hashed_name));
           break;

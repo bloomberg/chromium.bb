@@ -507,7 +507,7 @@ bool IsLocaleNameTranslated(const char* locale,
   // the translation is available or not.  If ICU doesn't have a translated
   // name for this locale, GetDisplayNameForLocale will just return the
   // locale code.
-  return !base::IsStringASCII(display_name) ||
+  return !IsStringASCII(display_name) ||
       base::UTF16ToASCII(display_name) != locale;
 }
 

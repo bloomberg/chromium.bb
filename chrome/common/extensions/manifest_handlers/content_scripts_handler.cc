@@ -304,7 +304,7 @@ static bool IsScriptValid(const base::FilePath& path,
     return false;
   }
 
-  if (!base::IsStringUTF8(content)) {
+  if (!IsStringUTF8(content)) {
     *error = l10n_util::GetStringFUTF8(
         IDS_EXTENSION_BAD_FILE_ENCODING,
         relative_path.LossyDisplayName());

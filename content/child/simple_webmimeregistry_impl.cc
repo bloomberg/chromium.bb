@@ -18,8 +18,7 @@ namespace content {
 
 //static
 std::string SimpleWebMimeRegistryImpl::ToASCIIOrEmpty(const WebString& string) {
-  return base::IsStringASCII(string) ? base::UTF16ToASCII(string)
-                                     : std::string();
+  return IsStringASCII(string) ? base::UTF16ToASCII(string) : std::string();
 }
 
 WebMimeRegistry::SupportsType SimpleWebMimeRegistryImpl::supportsMIMEType(

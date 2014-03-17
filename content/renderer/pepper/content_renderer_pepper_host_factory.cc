@@ -158,7 +158,7 @@ scoped_ptr<ResourceHost> ContentRendererPepperHostFactory::CreateResourceHost(
         }
         // Check that the family name is valid UTF-8 before passing it to the
         // host OS.
-        if (base::IsStringUTF8(desc.family)) {
+        if (IsStringUTF8(desc.family)) {
           return scoped_ptr<ResourceHost>(new PepperTrueTypeFontHost(
               host_, instance, params.pp_resource(), desc));
         }

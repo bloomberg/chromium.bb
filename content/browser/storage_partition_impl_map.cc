@@ -159,7 +159,7 @@ const int kAllFileTypes = base::FileEnumerator::FILES |
 
 base::FilePath GetStoragePartitionDomainPath(
     const std::string& partition_domain) {
-  CHECK(base::IsStringUTF8(partition_domain));
+  CHECK(IsStringUTF8(partition_domain));
 
   return base::FilePath(kStoragePartitionDirname).Append(kExtensionsDirname)
       .Append(base::FilePath::FromUTF8Unsafe(partition_domain));

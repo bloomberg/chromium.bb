@@ -302,7 +302,7 @@ base::DictionaryValue* ToHeaderDictionary(const std::string& name,
                                           const std::string& value) {
   base::DictionaryValue* header = new base::DictionaryValue();
   header->SetString(keys::kHeaderNameKey, name);
-  if (base::IsStringUTF8(value)) {
+  if (IsStringUTF8(value)) {
     header->SetString(keys::kHeaderValueKey, value);
   } else {
     header->Set(keys::kHeaderBinaryValueKey,

@@ -55,7 +55,7 @@ TEST_F(InvalidatorStorageTest, SetGetNotifierClientId) {
 TEST_F(InvalidatorStorageTest, SetGetBootstrapData) {
   InvalidatorStorage storage(&pref_service_);
   const std::string mess("n\0tK\0\0l\344", 8);
-  ASSERT_FALSE(base::IsStringUTF8(mess));
+  ASSERT_FALSE(IsStringUTF8(mess));
 
   storage.SetBootstrapData(mess);
   EXPECT_EQ(mess, storage.GetBootstrapData());

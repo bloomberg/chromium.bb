@@ -140,14 +140,14 @@ void WebUIImpl::SetController(WebUIController* controller) {
 }
 
 void WebUIImpl::CallJavascriptFunction(const std::string& function_name) {
-  DCHECK(base::IsStringASCII(function_name));
+  DCHECK(IsStringASCII(function_name));
   base::string16 javascript = base::ASCIIToUTF16(function_name + "();");
   ExecuteJavascript(javascript);
 }
 
 void WebUIImpl::CallJavascriptFunction(const std::string& function_name,
                                        const base::Value& arg) {
-  DCHECK(base::IsStringASCII(function_name));
+  DCHECK(IsStringASCII(function_name));
   std::vector<const base::Value*> args;
   args.push_back(&arg);
   ExecuteJavascript(GetJavascriptCall(function_name, args));
@@ -156,7 +156,7 @@ void WebUIImpl::CallJavascriptFunction(const std::string& function_name,
 void WebUIImpl::CallJavascriptFunction(
     const std::string& function_name,
     const base::Value& arg1, const base::Value& arg2) {
-  DCHECK(base::IsStringASCII(function_name));
+  DCHECK(IsStringASCII(function_name));
   std::vector<const base::Value*> args;
   args.push_back(&arg1);
   args.push_back(&arg2);
@@ -166,7 +166,7 @@ void WebUIImpl::CallJavascriptFunction(
 void WebUIImpl::CallJavascriptFunction(
     const std::string& function_name,
     const base::Value& arg1, const base::Value& arg2, const base::Value& arg3) {
-  DCHECK(base::IsStringASCII(function_name));
+  DCHECK(IsStringASCII(function_name));
   std::vector<const base::Value*> args;
   args.push_back(&arg1);
   args.push_back(&arg2);
@@ -180,7 +180,7 @@ void WebUIImpl::CallJavascriptFunction(
     const base::Value& arg2,
     const base::Value& arg3,
     const base::Value& arg4) {
-  DCHECK(base::IsStringASCII(function_name));
+  DCHECK(IsStringASCII(function_name));
   std::vector<const base::Value*> args;
   args.push_back(&arg1);
   args.push_back(&arg2);
@@ -192,7 +192,7 @@ void WebUIImpl::CallJavascriptFunction(
 void WebUIImpl::CallJavascriptFunction(
     const std::string& function_name,
     const std::vector<const base::Value*>& args) {
-  DCHECK(base::IsStringASCII(function_name));
+  DCHECK(IsStringASCII(function_name));
   ExecuteJavascript(GetJavascriptCall(function_name, args));
 }
 

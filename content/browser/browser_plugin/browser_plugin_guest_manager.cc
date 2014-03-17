@@ -48,7 +48,7 @@ BrowserPluginGuest* BrowserPluginGuestManager::CreateGuest(
   // since we depend on this in other parts of the code, such as FilePath
   // creation. If the validation fails, treat it as a bad message and kill the
   // renderer process.
-  if (!base::IsStringUTF8(params.storage_partition_id)) {
+  if (!IsStringUTF8(params.storage_partition_id)) {
     content::RecordAction(
         base::UserMetricsAction("BadMessageTerminate_BPGM"));
     base::KillProcess(

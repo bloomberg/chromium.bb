@@ -139,7 +139,7 @@ bool ParseDomainASCII(const base::string16& widestr, std::string* domain) {
     return false;
 
   // Check if already ASCII.
-  if (base::IsStringASCII(widestr)) {
+  if (IsStringASCII(widestr)) {
     *domain = base::UTF16ToASCII(widestr);
     return true;
   }
@@ -155,7 +155,7 @@ bool ParseDomainASCII(const base::string16& widestr, std::string* domain) {
   // copy. Since ASCII is a subset of UTF8 the following is equivalent).
   bool success = base::UTF16ToUTF8(punycode.data(), punycode.length(), domain);
   DCHECK(success);
-  DCHECK(base::IsStringASCII(*domain));
+  DCHECK(IsStringASCII(*domain));
   return success && !domain->empty();
 }
 

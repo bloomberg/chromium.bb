@@ -321,7 +321,7 @@ void APIUtil::DidGetDirectory(const std::string& parent_resource_id,
                               google_apis::GDataErrorCode error,
                               scoped_ptr<google_apis::ResourceList> feed) {
   DCHECK(CalledOnValidThread());
-  DCHECK(base::IsStringASCII(directory_name));
+  DCHECK(IsStringASCII(directory_name));
 
   if (error != google_apis::HTTP_SUCCESS) {
     DVLOG(2) << "Error on getting Drive directory: " << error;

@@ -1220,7 +1220,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnHSTSQuery(
   CHECK(list->GetString(0, &domain));
   base::DictionaryValue* result = new base::DictionaryValue();
 
-  if (!base::IsStringASCII(domain)) {
+  if (!IsStringASCII(domain)) {
     result->SetString("error", "non-ASCII domain name");
   } else {
     net::TransportSecurityState* transport_security_state =
@@ -1261,7 +1261,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnHSTSAdd(
   // include subdomains>, <key pins>].
   std::string domain;
   CHECK(list->GetString(0, &domain));
-  if (!base::IsStringASCII(domain)) {
+  if (!IsStringASCII(domain)) {
     // Silently fail. The user will get a helpful error if they query for the
     // name.
     return;
@@ -1295,7 +1295,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnHSTSDelete(
   // |list| should be: [<domain to query>].
   std::string domain;
   CHECK(list->GetString(0, &domain));
-  if (!base::IsStringASCII(domain)) {
+  if (!IsStringASCII(domain)) {
     // There cannot be a unicode entry in the HSTS set.
     return;
   }
