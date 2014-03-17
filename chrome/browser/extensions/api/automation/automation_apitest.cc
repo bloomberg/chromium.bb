@@ -20,7 +20,8 @@ class AutomationApiTest : public ExtensionApiTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(AutomationApiTest, SanityCheck) {
+// http://crbug.com/353039
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, DISABLED_SanityCheck) {
   ASSERT_TRUE(RunComponentExtensionTest("automation/sanity_check")) << message_;
 }
 
