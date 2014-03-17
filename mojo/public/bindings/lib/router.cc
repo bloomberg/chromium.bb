@@ -27,7 +27,6 @@ class ResponderThunk : public MessageReceiver {
     if (router)
       result = router->Accept(message);
 
-    delete this;
     return result;
   }
 
@@ -94,6 +93,7 @@ bool Router::AcceptWithResponder(Message* message,
   if (!connector_.Accept(message))
     return false;
 
+  // We assume ownership of |responder|.
   responders_[request_id] = responder;
   return true;
 }
@@ -101,9 +101,11 @@ bool Router::AcceptWithResponder(Message* message,
 bool Router::HandleIncomingMessage(Message* message) {
   if (message->has_flag(kMessageExpectsResponse)) {
     if (incoming_receiver_) {
-      return incoming_receiver_->AcceptWithResponder(
-          message,
-          new ResponderThunk(weak_self_));
+      MessageReceiver* responder = new ResponderThunk(weak_self_);
+      bool ok = incoming_receiver_->AcceptWithResponder(message, responder);
+      if (!ok)
+        delete responder;
+      return ok;
     }
 
     // If we receive a request expecting a response when the client is not
@@ -119,6 +121,7 @@ bool Router::HandleIncomingMessage(Message* message) {
     MessageReceiver* responder = it->second;
     responders_.erase(it);
     responder->Accept(message);
+    delete responder;
   } else {
     if (incoming_receiver_)
       return incoming_receiver_->Accept(message);

@@ -65,6 +65,25 @@ def GetCppArrayArgWrapperType(kind):
     return "mojo::String"
   return _kind_to_cpp_type[kind]
 
+def GetCppResultWrapperType(kind):
+  if isinstance(kind, (mojom.Struct, mojom.Enum)):
+    return GetNameForKind(kind)
+  if isinstance(kind, mojom.Array):
+    return "mojo::Array<%s >" % GetCppArrayArgWrapperType(kind.kind)
+  if isinstance(kind, mojom.Interface):
+    return "mojo::Interface<%s>::ScopedHandle" % kind.name
+  if kind.spec == 's':
+    return "mojo::String"
+  if kind.spec == 'h':
+    return "mojo::ScopedHandle"
+  if kind.spec == 'h:d:c':
+    return "mojo::ScopedDataPipeConsumerHandle"
+  if kind.spec == 'h:d:p':
+    return "mojo::ScopedDataPipeProducerHandle"
+  if kind.spec == 'h:m':
+    return "mojo::ScopedMessagePipeHandle"
+  return _kind_to_cpp_type[kind]
+
 def GetCppWrapperType(kind):
   if isinstance(kind, (mojom.Struct, mojom.Enum)):
     return GetNameForKind(kind)
@@ -148,6 +167,7 @@ class Generator(mojom_generator.Generator):
     "cpp_const_wrapper_type": GetCppConstWrapperType,
     "cpp_field_type": GetCppFieldType,
     "cpp_type": GetCppType,
+    "cpp_result_type": GetCppResultWrapperType,
     "cpp_wrapper_type": GetCppWrapperType,
     "expression_to_text": ExpressionToText,
     "get_pad": mojom_pack.GetPad,
@@ -159,6 +179,7 @@ class Generator(mojom_generator.Generator):
     "is_struct_with_handles": IsStructWithHandles,
     "struct_size": lambda ps: ps.GetTotalSize() + _HEADER_SIZE,
     "struct_from_method": mojom_generator.GetStructFromMethod,
+    "response_struct_from_method": mojom_generator.GetResponseStructFromMethod,
     "stylize_method": mojom_generator.StudlyCapsToCamel,
     "verify_token_type": mojom_generator.VerifyTokenType,
   }

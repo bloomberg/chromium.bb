@@ -78,15 +78,22 @@ class Message {
 
 class MessageReceiver {
  public:
+  virtual ~MessageReceiver() {}
+
   // The receiver may mutate the given message.  Returns true if the message
   // was accepted and false otherwise, indicating that the message was invalid
   // or malformed.
   virtual bool Accept(Message* message) = 0;
 
-  // A variant on Accept that registers a receiver to handle the response
-  // message generated from the given message. The responder's Accept method
-  // will be called some time after AcceptWithResponder returns. The responder
-  // will be unregistered once its Accept method has been called.
+  // A variant on Accept that registers a MessageReceiver (known as the
+  // responder) to handle the response message generated from the given
+  // message. The responder's Accept method may be called during
+  // AcceptWithResponder or some time after its return.
+  //
+  // NOTE: Upon returning true, AcceptWithResponder assumes ownership of
+  // |responder| and will delete it after calling |responder->Accept| or upon
+  // its own destruction.
+  //
   virtual bool AcceptWithResponder(Message* message,
                                    MessageReceiver* responder) = 0;
 };

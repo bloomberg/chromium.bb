@@ -152,7 +152,9 @@ void CommandBufferImpl::DestroyTransferBuffer(int32_t id) {
   command_buffer_->DestroyTransferBuffer(id);
 }
 
-void CommandBufferImpl::Echo() { client_->EchoAck(); }
+void CommandBufferImpl::Echo(const Callback<void()>& callback) {
+  callback.Run();
+}
 
 void CommandBufferImpl::RequestAnimationFrames() {
   timer_.Start(FROM_HERE,

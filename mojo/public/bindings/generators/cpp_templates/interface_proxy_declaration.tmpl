@@ -1,13 +1,11 @@
+{%- import "interface_macros.tmpl" as interface_macros %}
 class {{interface.name}}Proxy : public {{interface.name}} {
  public:
   explicit {{interface.name}}Proxy(mojo::MessageReceiver* receiver);
 
 {%- for method in interface.methods %}
   virtual void {{method.name}}(
-{%-   for param in method.parameters -%}
-    {{param.kind|cpp_const_wrapper_type}} {{param.name}}
-{%-     if not loop.last %}, {% endif -%}
-{%-   endfor -%}
+      {{interface_macros.declare_request_params(method)}}
   ) MOJO_OVERRIDE;
 {%- endfor %}
 

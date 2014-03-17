@@ -216,8 +216,7 @@ void CommandBufferClientImpl::SendManagedMemoryStats(
 }
 
 void CommandBufferClientImpl::Echo(const base::Closure& callback) {
-  echo_closures_.push(callback);
-  command_buffer_->Echo();
+  command_buffer_->Echo(callback);
 }
 
 uint32 CommandBufferClientImpl::CreateStreamTexture(uint32 texture_id) {
@@ -245,12 +244,6 @@ void CommandBufferClientImpl::DidMakeProgress(const CommandBufferState& state) {
 
 void CommandBufferClientImpl::DidDestroy() {
   LostContext(gpu::error::kUnknown);
-}
-
-void CommandBufferClientImpl::EchoAck() {
-  base::Closure closure = echo_closures_.front();
-  echo_closures_.pop();
-  closure.Run();
 }
 
 void CommandBufferClientImpl::LostContext(int32_t lost_reason) {

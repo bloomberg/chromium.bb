@@ -212,7 +212,7 @@ def MethodFromData(module, data, interface):
       ParameterFromData(module, parameter, interface), data['parameters'])
   if data.has_key('response_parameters'):
     method.response_parameters = map(
-        lambda parameter: ParameterFromData(kinds, parameter),
+        lambda parameter: ParameterFromData(module, parameter, interface),
                           data['response_parameters'])
   return method
 

@@ -41,7 +41,7 @@ class CommandBufferImpl : public CommandBuffer {
                                       const ShmHandle& transfer_buffer,
                                       uint32_t size) OVERRIDE;
   virtual void DestroyTransferBuffer(int32_t id) OVERRIDE;
-  virtual void Echo() OVERRIDE;
+  virtual void Echo(const Callback<void()>& callback) OVERRIDE;
 
   virtual void RequestAnimationFrames() OVERRIDE;
   virtual void CancelAnimationFrames() OVERRIDE;

@@ -1,7 +1,5 @@
 {%- import "struct_macros.tmpl" as struct_macros %}
 {%- set class_name = struct.name ~ "_Data" %}
-{%- set method_name = "k%s_%s_Name"|format(interface.name, method.name) %}
-const uint32_t {{method_name}} = {{method.ordinal}};
 class {{class_name}} {
  public:
   static {{class_name}}* New(mojo::Buffer* buf) {

@@ -18,6 +18,7 @@
         '<(DEPTH)/mojo/public/bindings/generators/cpp_templates/enum_declaration.tmpl',
         '<(DEPTH)/mojo/public/bindings/generators/cpp_templates/interface_declaration.tmpl',
         '<(DEPTH)/mojo/public/bindings/generators/cpp_templates/interface_definition.tmpl',
+        '<(DEPTH)/mojo/public/bindings/generators/cpp_templates/interface_macros.tmpl',
         '<(DEPTH)/mojo/public/bindings/generators/cpp_templates/interface_proxy_declaration.tmpl',
         '<(DEPTH)/mojo/public/bindings/generators/cpp_templates/interface_stub_declaration.tmpl',
         '<(DEPTH)/mojo/public/bindings/generators/cpp_templates/module.cc.tmpl',

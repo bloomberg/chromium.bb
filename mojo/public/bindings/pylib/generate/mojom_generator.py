@@ -19,6 +19,15 @@ def GetStructFromMethod(interface, method):
   struct.packed = mojom_pack.PackedStruct(struct)
   return struct
 
+def GetResponseStructFromMethod(interface, method):
+  """Converts a method's response_parameters into the fields of a struct."""
+  params_class = "%s_%s_ResponseParams" % (interface.name, method.name)
+  struct = mojom.Struct(params_class)
+  for param in method.response_parameters:
+    struct.AddField(param.name, param.kind, param.ordinal)
+  struct.packed = mojom_pack.PackedStruct(struct)
+  return struct
+
 def GetStructInfo(exported, struct):
   struct.packed = mojom_pack.PackedStruct(struct)
   struct.bytes = mojom_pack.GetByteLayout(struct.packed)

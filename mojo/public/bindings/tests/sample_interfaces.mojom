@@ -1,0 +1,27 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module sample {
+
+struct Coord {
+  int32 x;
+  int32 y;
+};
+
+[Peer=ProviderClient]
+interface Provider {
+  EchoString(string a) => (string a);
+  EchoStrings(string a, string b) => (string a, string b);
+  EchoMessagePipeHandle(handle<message_pipe> a) => (handle<message_pipe> a);
+  //EchoVoid() => ();
+  //MakeCoord(int32 x, int32 y) => (Coord coord);
+  //Make2Coords(int32 x1, int32 y1, int32 x2, int32 y2) =>
+  //    (Coord coord1, Coord coord2);
+};
+
+[Peer=Provider]
+interface ProviderClient {
+};
+
+}

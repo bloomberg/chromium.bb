@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-private-field"
+#endif
+
 #include "{{module.path}}.h"
 
 #include "mojo/public/bindings/lib/bindings_serialization.h"
@@ -12,20 +17,21 @@ namespace internal {
 namespace {
 
 #pragma pack(push, 1)
-#if defined(__clang__)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-private-field"
-#endif
+
 {#--- Interface parameter definitions #}
 {%- for interface in interfaces %}
 {%-   for method in interface.methods %}
-{%-     set struct = interface|struct_from_method(method) %}
+{%-     set method_name = "k%s_%s_Name"|format(interface.name, method.name) %}
+const uint32_t {{method_name}} = {{method.ordinal}};
+{%      set struct = interface|struct_from_method(method) %}
 {%-     include "params_definition.tmpl" %}
+{%-     if method.response_parameters != None %}
+{%-       set struct = interface|response_struct_from_method(method) %}
+{%-       include "params_definition.tmpl" %}
+{%-     endif %}
 {%-   endfor %}
 {%- endfor %}
-#if defined(__clang__)
-#pragma clang diagnostic pop
-#endif
+
 #pragma pack(pop)
 
 }  // namespace
@@ -52,3 +58,7 @@ namespace {
 {%-   include "interface_definition.tmpl" %}
 {%- endfor %}
 }  // namespace {{namespace}}
+
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif

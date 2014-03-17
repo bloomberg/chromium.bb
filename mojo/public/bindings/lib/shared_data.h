@@ -16,6 +16,9 @@ class SharedData {
     holder_->Release();
   }
 
+  SharedData() : holder_(new Holder()) {
+  }
+
   explicit SharedData(const T& value) : holder_(new Holder(value)) {
   }
 
@@ -31,16 +34,27 @@ class SharedData {
     holder_->Retain();
   }
 
+  void reset() {
+    holder_->Release();
+    holder_ = new Holder();
+  }
+
+  void reset(const T& value) {
+    holder_->Release();
+    holder_ = new Holder(value);
+  }
+
   void set_value(const T& value) {
     holder_->value = value;
+  }
+  T* mutable_value() {
+    return &holder_->value;
   }
   const T& value() const {
     return holder_->value;
   }
 
  private:
-  SharedData();  // NOT IMPLEMENTED
-
   class Holder {
    public:
     Holder() : value(), ref_count_(1) {

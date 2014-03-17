@@ -34,11 +34,11 @@ void AllocResponseMessage(uint32_t name, const char* text,
 
 class MessageAccumulator : public MessageReceiver {
  public:
-  MessageAccumulator() {
+  explicit MessageAccumulator(internal::MessageQueue* queue) : queue_(queue) {
   }
 
   virtual bool Accept(Message* message) MOJO_OVERRIDE {
-    queue_.Push(message);
+    queue_->Push(message);
     return true;
   }
 
@@ -47,16 +47,8 @@ class MessageAccumulator : public MessageReceiver {
     return false;
   }
 
-  bool IsEmpty() const {
-    return queue_.IsEmpty();
-  }
-
-  void Pop(Message* message) {
-    queue_.Pop(message);
-  }
-
  private:
-  internal::MessageQueue queue_;
+  internal::MessageQueue* queue_;
 };
 
 class ResponseGenerator : public MessageReceiver {
@@ -79,12 +71,22 @@ class ResponseGenerator : public MessageReceiver {
                     MessageReceiver* responder) {
     Message response;
     AllocResponseMessage(name, "world", request_id, &response);
-    return responder->Accept(&response);
+
+    bool result = responder->Accept(&response);
+    delete responder;
+    return result;
   }
 };
 
 class LazyResponseGenerator : public ResponseGenerator {
  public:
+  LazyResponseGenerator() : responder_(NULL), name_(0), request_id_(0) {
+  }
+
+  virtual ~LazyResponseGenerator() {
+    delete responder_;
+  }
+
   virtual bool AcceptWithResponder(Message* message, MessageReceiver* responder)
       MOJO_OVERRIDE {
     name_ = message->name();
@@ -141,15 +143,15 @@ TEST_F(RouterTest, BasicRequestResponse) {
   Message request;
   AllocRequestMessage(1, "hello", &request);
 
-  MessageAccumulator accumulator;
-  router0.AcceptWithResponder(&request, &accumulator);
+  internal::MessageQueue message_queue;
+  router0.AcceptWithResponder(&request, new MessageAccumulator(&message_queue));
 
   PumpMessages();
 
-  EXPECT_FALSE(accumulator.IsEmpty());
+  EXPECT_FALSE(message_queue.IsEmpty());
 
   Message response;
-  accumulator.Pop(&response);
+  message_queue.Pop(&response);
 
   EXPECT_EQ(std::string("world"),
             std::string(reinterpret_cast<const char*>(response.payload())));
@@ -165,14 +167,14 @@ TEST_F(RouterTest, RequestWithNoReceiver) {
   Message request;
   AllocRequestMessage(1, "hello", &request);
 
-  MessageAccumulator accumulator;
-  router0.AcceptWithResponder(&request, &accumulator);
+  internal::MessageQueue message_queue;
+  router0.AcceptWithResponder(&request, new MessageAccumulator(&message_queue));
 
   PumpMessages();
 
   EXPECT_TRUE(router0.encountered_error());
   EXPECT_TRUE(router1.encountered_error());
-  EXPECT_TRUE(accumulator.IsEmpty());
+  EXPECT_TRUE(message_queue.IsEmpty());
 }
 
 TEST_F(RouterTest, LateResponse) {
@@ -190,8 +192,9 @@ TEST_F(RouterTest, LateResponse) {
     Message request;
     AllocRequestMessage(1, "hello", &request);
 
-    MessageAccumulator accumulator;
-    router0.AcceptWithResponder(&request, &accumulator);
+    internal::MessageQueue message_queue;
+    router0.AcceptWithResponder(&request,
+                                new MessageAccumulator(&message_queue));
 
     PumpMessages();
 

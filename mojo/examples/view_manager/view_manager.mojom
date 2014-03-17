@@ -7,22 +7,20 @@ module mojo {
 [Peer=ViewClient]
 interface View {
   SetId(int32 id);
-  GetId();
+  GetId() => (int32 id);
 };
 
 [Peer=View]
 interface ViewClient {
-  OnGotId(int32 id);
 };
 
 [Peer=ViewManagerClient]
 interface ViewManager {
-  CreateView();
+  CreateView() => (View view);
 };
 
 [Peer=ViewManager]
 interface ViewManagerClient {
-  OnViewCreated(View view);
 };
 
 }
