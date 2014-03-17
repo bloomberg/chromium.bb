@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
+#include "media/base/audio_decoder.h"
 #include "media/base/decryptor.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/media_export.h"
@@ -34,6 +35,7 @@ class MEDIA_EXPORT DecoderStream {
   typedef typename StreamTraits::DecoderType Decoder;
   typedef typename StreamTraits::OutputType Output;
   typedef typename StreamTraits::StreamInitCB InitCB;
+  typedef typename Decoder::Status DecoderStatus;
 
   enum Status {
     OK,  // Everything went as planned.
@@ -80,7 +82,13 @@ class MEDIA_EXPORT DecoderStream {
 
   // Returns true if the decoder currently has the ability to decode and return
   // an Output.
+  // TODO(rileya): Remove the need for this by refactoring Decoder queueing
+  // behavior.
   bool CanReadWithoutStalling() const;
+
+  // TODO(rileya): Remove this once channel_layout/bits_per_channel/etc getters
+  // have been removed from AudioDecoder and plumbed elsewhere.
+  Decoder* decoder() { return decoder_.get(); }
 
  private:
   enum State {
@@ -102,7 +110,8 @@ class MEDIA_EXPORT DecoderStream {
       scoped_ptr<DecryptingDemuxerStream> decrypting_demuxer_stream);
 
   // Satisfy pending |read_cb_| with |status| and |output|.
-  void SatisfyRead(Status status, const scoped_refptr<Output>& output);
+  void SatisfyRead(Status status,
+                   const scoped_refptr<Output>& output);
 
   // Abort pending |read_cb_|.
   void AbortRead();
@@ -116,7 +125,7 @@ class MEDIA_EXPORT DecoderStream {
 
   // Callback for Decoder::Decode().
   void OnDecodeOutputReady(int buffer_size,
-                           typename Decoder::Status status,
+                           DecoderStatus status,
                            const scoped_refptr<Output>& output);
 
   // Reads a buffer from |stream_| and returns the result via OnBufferReady().
@@ -162,7 +171,11 @@ class MEDIA_EXPORT DecoderStream {
   DISALLOW_IMPLICIT_CONSTRUCTORS(DecoderStream);
 };
 
+template <>
+bool DecoderStream<DemuxerStream::AUDIO>::CanReadWithoutStalling() const;
+
 typedef DecoderStream<DemuxerStream::VIDEO> VideoFrameStream;
+typedef DecoderStream<DemuxerStream::AUDIO> AudioBufferStream;
 
 }  // namespace media
 

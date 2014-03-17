@@ -45,8 +45,9 @@ AudioRendererImpl::AudioRendererImpl(
     : task_runner_(task_runner),
       weak_factory_(this),
       sink_(sink),
-      decoder_selector_(new AudioDecoderSelector(
-          task_runner, decoders.Pass(), set_decryptor_ready_cb)),
+      audio_buffer_stream_(task_runner,
+                           decoders.Pass(),
+                           set_decryptor_ready_cb),
       now_cb_(base::Bind(&base::TimeTicks::Now)),
       state_(kUninitialized),
       sink_playing_(false),
@@ -56,8 +57,7 @@ AudioRendererImpl::AudioRendererImpl(
       audio_time_buffered_(kNoTimestamp()),
       current_time_(kNoTimestamp()),
       underflow_disabled_(false),
-      preroll_aborted_(false) {
-}
+      preroll_aborted_(false) {}
 
 AudioRendererImpl::~AudioRendererImpl() {
   // Stop() should have been called and |algorithm_| should have been destroyed.
@@ -146,18 +146,8 @@ void AudioRendererImpl::DoFlush_Locked() {
   DCHECK(!pending_read_);
   DCHECK_EQ(state_, kPaused);
 
-  if (decrypting_demuxer_stream_) {
-    decrypting_demuxer_stream_->Reset(
-        base::Bind(&AudioRendererImpl::ResetDecoder, weak_this_));
-    return;
-  }
-
-  ResetDecoder();
-}
-
-void AudioRendererImpl::ResetDecoder() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  decoder_->Reset(base::Bind(&AudioRendererImpl::ResetDecoderDone, weak_this_));
+  audio_buffer_stream_.Reset(
+      base::Bind(&AudioRendererImpl::ResetDecoderDone, weak_this_));
 }
 
 void AudioRendererImpl::ResetDecoderDone() {
@@ -186,22 +176,15 @@ void AudioRendererImpl::ResetDecoderDone() {
 void AudioRendererImpl::Stop(const base::Closure& callback) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!callback.is_null());
-  DCHECK(stop_cb_.is_null());
-
-  stop_cb_ = callback;
 
   // TODO(scherkus): Consider invalidating |weak_factory_| and replacing
   // task-running guards that check |state_| with DCHECK().
 
   {
     base::AutoLock auto_lock(lock_);
-    if (state_ == kInitializing) {
-      decoder_selector_->Abort();
-      return;
-    }
 
     if (state_ == kStopped) {
-      task_runner_->PostTask(FROM_HERE, base::ResetAndReturn(&stop_cb_));
+      task_runner_->PostTask(FROM_HERE, callback);
       return;
     }
 
@@ -217,25 +200,7 @@ void AudioRendererImpl::Stop(const base::Closure& callback) {
     sink_ = NULL;
   }
 
-  if (decrypting_demuxer_stream_) {
-    decrypting_demuxer_stream_->Stop(
-        base::Bind(&AudioRendererImpl::StopDecoder, weak_this_));
-    return;
-  }
-
-  StopDecoder();
-}
-
-void AudioRendererImpl::StopDecoder() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK(!stop_cb_.is_null());
-
-  if (decoder_) {
-    decoder_->Stop(base::ResetAndReturn(&stop_cb_));
-    return;
-  }
-
-  task_runner_->PostTask(FROM_HERE, base::ResetAndReturn(&stop_cb_));
+  audio_buffer_stream_.Stop(callback);
 }
 
 void AudioRendererImpl::Preroll(base::TimeDelta time,
@@ -280,53 +245,49 @@ void AudioRendererImpl::Initialize(DemuxerStream* stream,
 
   weak_this_ = weak_factory_.GetWeakPtr();
   init_cb_ = init_cb;
-  statistics_cb_ = statistics_cb;
   underflow_cb_ = underflow_cb;
   time_cb_ = time_cb;
   ended_cb_ = ended_cb;
   disabled_cb_ = disabled_cb;
   error_cb_ = error_cb;
 
-  decoder_selector_->SelectDecoder(
+  audio_buffer_stream_.Initialize(
       stream,
       statistics_cb,
-      base::Bind(&AudioRendererImpl::OnDecoderSelected, weak_this_));
+      base::Bind(&AudioRendererImpl::OnAudioBufferStreamInitialized,
+                 weak_this_));
 }
 
-void AudioRendererImpl::OnDecoderSelected(
-    scoped_ptr<AudioDecoder> decoder,
-    scoped_ptr<DecryptingDemuxerStream> decrypting_demuxer_stream) {
+void AudioRendererImpl::OnAudioBufferStreamInitialized(bool success) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  scoped_ptr<AudioDecoderSelector> deleter(decoder_selector_.Pass());
-  decoder_ = decoder.Pass();
+  base::AutoLock auto_lock(lock_);
 
-  if (!decoder_ || !stop_cb_.is_null()) {
-    {
-      base::AutoLock auto_lock(lock_);
-      ChangeState_Locked(kUninitialized);
-    }
-    // Stop() called during initialization.
-    if (!stop_cb_.is_null()) {
-      base::ResetAndReturn(&init_cb_).Run(PIPELINE_ERROR_ABORT);
-      Stop(base::ResetAndReturn(&stop_cb_));
-    } else {
-      base::ResetAndReturn(&init_cb_).Run(DECODER_ERROR_NOT_SUPPORTED);
-    }
+  if (state_ == kStopped) {
+    base::ResetAndReturn(&init_cb_).Run(PIPELINE_ERROR_ABORT);
     return;
   }
 
-  base::AutoLock auto_lock(lock_);
-  decrypting_demuxer_stream_ = decrypting_demuxer_stream.Pass();
+  if (!success) {
+    state_ = kUninitialized;
+    base::ResetAndReturn(&init_cb_).Run(DECODER_ERROR_NOT_SUPPORTED);
+    return;
+  }
 
-  int sample_rate = decoder_->samples_per_second();
+  int sample_rate = audio_buffer_stream_.decoder()->samples_per_second();
 
   // The actual buffer size is controlled via the size of the AudioBus
   // provided to Render(), so just choose something reasonable here for looks.
-  int buffer_size = decoder_->samples_per_second() / 100;
-  audio_parameters_ = AudioParameters(
-      AudioParameters::AUDIO_PCM_LOW_LATENCY, decoder_->channel_layout(),
-      sample_rate, decoder_->bits_per_channel(), buffer_size);
+  int buffer_size = audio_buffer_stream_.decoder()->samples_per_second() / 100;
+
+  // TODO(rileya): Remove the channel_layout/bits_per_channel/samples_per_second
+  // getters from AudioDecoder, and adjust this accordingly.
+  audio_parameters_ =
+      AudioParameters(AudioParameters::AUDIO_PCM_LOW_LATENCY,
+                      audio_buffer_stream_.decoder()->channel_layout(),
+                      sample_rate,
+                      audio_buffer_stream_.decoder()->bits_per_channel(),
+                      buffer_size);
   if (!audio_parameters_.IsValid()) {
     ChangeState_Locked(kUninitialized);
     base::ResetAndReturn(&init_cb_).Run(PIPELINE_ERROR_INITIALIZATION_FAILED);
@@ -382,7 +343,7 @@ void AudioRendererImpl::SetVolume(float volume) {
 }
 
 void AudioRendererImpl::DecodedAudioReady(
-    AudioDecoder::Status status,
+    AudioBufferStream::Status status,
     const scoped_refptr<AudioBuffer>& buffer) {
   DVLOG(1) << __FUNCTION__ << "(" << status << ")";
   DCHECK(task_runner_->BelongsToCurrentThread());
@@ -393,17 +354,18 @@ void AudioRendererImpl::DecodedAudioReady(
   CHECK(pending_read_);
   pending_read_ = false;
 
-  if (status == AudioDecoder::kAborted) {
+  if (status == AudioBufferStream::ABORTED ||
+      status == AudioBufferStream::DEMUXER_READ_ABORTED) {
     HandleAbortedReadOrDecodeError(false);
     return;
   }
 
-  if (status == AudioDecoder::kDecodeError) {
+  if (status == AudioBufferStream::DECODE_ERROR) {
     HandleAbortedReadOrDecodeError(true);
     return;
   }
 
-  DCHECK_EQ(status, AudioDecoder::kOk);
+  DCHECK_EQ(status, AudioBufferStream::OK);
   DCHECK(buffer.get());
 
   if (state_ == kFlushing) {
@@ -510,7 +472,8 @@ void AudioRendererImpl::AttemptRead_Locked() {
     return;
 
   pending_read_ = true;
-  decoder_->Read(base::Bind(&AudioRendererImpl::DecodedAudioReady, weak_this_));
+  audio_buffer_stream_.Read(
+      base::Bind(&AudioRendererImpl::DecodedAudioReady, weak_this_));
 }
 
 bool AudioRendererImpl::CanRead_Locked() {

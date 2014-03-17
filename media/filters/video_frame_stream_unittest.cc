@@ -26,14 +26,17 @@ static const int kDecodingDelay = 7;
 
 namespace media {
 
-class VideoFrameStreamTest : public testing::TestWithParam<bool> {
+class VideoFrameStreamTest
+    : public testing::Test,
+      public testing::WithParamInterface<std::tr1::tuple<bool, bool> > {
  public:
   VideoFrameStreamTest()
       : demuxer_stream_(new FakeDemuxerStream(kNumConfigs,
                                               kNumBuffersInOneConfig,
-                                              GetParam())),
+                                              IsEncrypted())),
         decryptor_(new NiceMock<MockDecryptor>()),
-        decoder_(new FakeVideoDecoder(kDecodingDelay)),
+        decoder_(
+            new FakeVideoDecoder(kDecodingDelay, IsGetDecodeOutputEnabled())),
         is_initialized_(false),
         num_decoded_frames_(0),
         pending_initialize_(false),
@@ -68,6 +71,14 @@ class VideoFrameStreamTest : public testing::TestWithParam<bool> {
     if (is_initialized_)
       Stop();
     EXPECT_FALSE(is_initialized_);
+  }
+
+  bool IsEncrypted() {
+    return std::tr1::get<0>(GetParam());
+  }
+
+  bool IsGetDecodeOutputEnabled() {
+    return std::tr1::get<1>(GetParam());
   }
 
   MOCK_METHOD1(SetDecryptorReadyCallback, void(const media::DecryptorReadyCB&));
@@ -330,8 +341,14 @@ class VideoFrameStreamTest : public testing::TestWithParam<bool> {
   DISALLOW_COPY_AND_ASSIGN(VideoFrameStreamTest);
 };
 
-INSTANTIATE_TEST_CASE_P(Clear, VideoFrameStreamTest, testing::Values(false));
-INSTANTIATE_TEST_CASE_P(Encrypted, VideoFrameStreamTest, testing::Values(true));
+INSTANTIATE_TEST_CASE_P(Clear, VideoFrameStreamTest,
+  testing::Combine(testing::Values(false), testing::Values(false)));
+INSTANTIATE_TEST_CASE_P(Clear_GetDecodeOutput, VideoFrameStreamTest,
+  testing::Combine(testing::Values(false), testing::Values(true)));
+INSTANTIATE_TEST_CASE_P(Encrypted, VideoFrameStreamTest,
+  testing::Combine(testing::Values(true), testing::Values(false)));
+INSTANTIATE_TEST_CASE_P(Encrypted_GetDecodeOutput, VideoFrameStreamTest,
+  testing::Combine(testing::Values(true), testing::Values(true)));
 
 TEST_P(VideoFrameStreamTest, Initialization) {
   Initialize();
@@ -443,7 +460,7 @@ TEST_P(VideoFrameStreamTest, Stop_BeforeInitialization) {
 }
 
 TEST_P(VideoFrameStreamTest, Stop_DuringSetDecryptor) {
-  if (!GetParam()) {
+  if (!IsEncrypted()) {
     DVLOG(1) << "SetDecryptor test only runs when the stream is encrytped.";
     return;
   }

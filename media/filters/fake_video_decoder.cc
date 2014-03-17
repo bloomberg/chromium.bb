@@ -13,10 +13,12 @@
 
 namespace media {
 
-FakeVideoDecoder::FakeVideoDecoder(int decoding_delay)
+FakeVideoDecoder::FakeVideoDecoder(int decoding_delay,
+                                   bool supports_get_decode_output)
     : task_runner_(base::MessageLoopProxy::current()),
       weak_factory_(this),
       decoding_delay_(decoding_delay),
+      supports_get_decode_output_(supports_get_decode_output),
       state_(UNINITIALIZED),
       total_bytes_decoded_(0) {
   DCHECK_GE(decoding_delay, 0);
@@ -101,6 +103,15 @@ void FakeVideoDecoder::Stop(const base::Closure& closure) {
     return;
 
   DoStop();
+}
+
+scoped_refptr<VideoFrame> FakeVideoDecoder::GetDecodeOutput() {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  if (!supports_get_decode_output_ || decoded_frames_.empty())
+    return NULL;
+  scoped_refptr<VideoFrame> out = decoded_frames_.front();
+  decoded_frames_.pop_front();
+  return out;
 }
 
 void FakeVideoDecoder::HoldNextInit() {

@@ -43,10 +43,11 @@ class MEDIA_EXPORT DecryptingAudioDecoder : public AudioDecoder {
   virtual ~DecryptingAudioDecoder();
 
   // AudioDecoder implementation.
-  virtual void Initialize(DemuxerStream* stream,
-                          const PipelineStatusCB& status_cb,
-                          const StatisticsCB& statistics_cb) OVERRIDE;
-  virtual void Read(const ReadCB& read_cb) OVERRIDE;
+  virtual void Initialize(const AudioDecoderConfig& config,
+                          const PipelineStatusCB& status_cb) OVERRIDE;
+  virtual void Decode(const scoped_refptr<DecoderBuffer>& buffer,
+                      const DecodeCB& decode_cb) OVERRIDE;
+  virtual scoped_refptr<AudioBuffer> GetDecodeOutput() OVERRIDE;
   virtual void Reset(const base::Closure& closure) OVERRIDE;
   virtual void Stop(const base::Closure& closure) OVERRIDE;
   virtual int bits_per_channel() OVERRIDE;
@@ -63,8 +64,6 @@ class MEDIA_EXPORT DecryptingAudioDecoder : public AudioDecoder {
     kDecryptorRequested,
     kPendingDecoderInit,
     kIdle,
-    kPendingConfigChange,
-    kPendingDemuxerRead,
     kPendingDecode,
     kWaitingForKey,
     kDecodeFinished,
@@ -76,14 +75,6 @@ class MEDIA_EXPORT DecryptingAudioDecoder : public AudioDecoder {
 
   // Callback for Decryptor::InitializeAudioDecoder() during initialization.
   void FinishInitialization(bool success);
-
-  // Callback for Decryptor::InitializeAudioDecoder() during config change.
-  void FinishConfigChange(bool success);
-
-  // Reads from the demuxer stream with corresponding callback method.
-  void ReadFromDemuxerStream();
-  void DecryptAndDecodeBuffer(DemuxerStream::Status status,
-                              const scoped_refptr<DecoderBuffer>& buffer);
 
   void DecodePendingBuffer();
 
@@ -114,20 +105,19 @@ class MEDIA_EXPORT DecryptingAudioDecoder : public AudioDecoder {
   State state_;
 
   PipelineStatusCB init_cb_;
-  StatisticsCB statistics_cb_;
-  ReadCB read_cb_;
+  DecodeCB decode_cb_;
   base::Closure reset_cb_;
   base::Closure stop_cb_;
 
-  // Pointer to the demuxer stream that will feed us compressed buffers.
-  DemuxerStream* demuxer_stream_;
+  // The current decoder configuration.
+  AudioDecoderConfig config_;
 
   // Callback to request/cancel decryptor creation notification.
   SetDecryptorReadyCB set_decryptor_ready_cb_;
 
   Decryptor* decryptor_;
 
-  // The buffer returned by the demuxer that needs decrypting/decoding.
+  // The buffer that needs decrypting/decoding.
   scoped_refptr<media::DecoderBuffer> pending_buffer_to_decode_;
 
   // Indicates the situation where new key is added during pending decode

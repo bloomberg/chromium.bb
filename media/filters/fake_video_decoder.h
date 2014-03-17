@@ -30,7 +30,8 @@ namespace media {
 class FakeVideoDecoder : public VideoDecoder {
  public:
   // Constructs an object with a decoding delay of |decoding_delay| frames.
-  explicit FakeVideoDecoder(int decoding_delay);
+  explicit FakeVideoDecoder(int decoding_delay,
+                            bool supports_get_decode_output);
   virtual ~FakeVideoDecoder();
 
   // VideoDecoder implementation.
@@ -40,6 +41,7 @@ class FakeVideoDecoder : public VideoDecoder {
                       const DecodeCB& decode_cb) OVERRIDE;
   virtual void Reset(const base::Closure& closure) OVERRIDE;
   virtual void Stop(const base::Closure& closure) OVERRIDE;
+  virtual scoped_refptr<VideoFrame> GetDecodeOutput() OVERRIDE;
 
   // Holds the next init/read/reset/stop callback from firing.
   void HoldNextInit();
@@ -76,6 +78,8 @@ class FakeVideoDecoder : public VideoDecoder {
   base::WeakPtr<FakeVideoDecoder> weak_this_;
 
   const int decoding_delay_;
+
+  bool supports_get_decode_output_;
 
   State state_;
 

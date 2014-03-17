@@ -10,6 +10,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
+#include "media/base/audio_decoder.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/demuxer_stream.h"
@@ -26,6 +27,11 @@ static const char* GetTraceString();
 template <>
 const char* GetTraceString<DemuxerStream::VIDEO>() {
   return "DecoderStream<VIDEO>::Decode";
+}
+
+template <>
+const char* GetTraceString<DemuxerStream::AUDIO>() {
+  return "DecoderStream<AUDIO>::Decode";
 }
 
 template <DemuxerStream::Type StreamType>
@@ -65,7 +71,6 @@ void DecoderStream<StreamType>::Initialize(DemuxerStream* stream,
   // TODO(xhwang): DecoderSelector only needs a config to select a decoder.
   decoder_selector_->SelectDecoder(
       stream,
-      StatisticsCB(),
       base::Bind(&DecoderStream<StreamType>::OnDecoderSelected,
                  weak_factory_.GetWeakPtr()));
 }
@@ -92,6 +97,15 @@ void DecoderStream<StreamType>::Read(const ReadCB& read_cb) {
 
   if (state_ == STATE_FLUSHING_DECODER) {
     FlushDecoder();
+    return;
+  }
+
+  scoped_refptr<Output> output = decoder_->GetDecodeOutput();
+
+  // If the decoder has queued output ready to go we don't need a demuxer read.
+  if (output) {
+    task_runner_->PostTask(
+        FROM_HERE, base::Bind(base::ResetAndReturn(&read_cb_), OK, output));
     return;
   }
 
@@ -183,6 +197,12 @@ template <DemuxerStream::Type StreamType>
 bool DecoderStream<StreamType>::CanReadWithoutStalling() const {
   DCHECK(task_runner_->BelongsToCurrentThread());
   return decoder_->CanReadWithoutStalling();
+}
+
+template <>
+bool DecoderStream<DemuxerStream::AUDIO>::CanReadWithoutStalling() const {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  return true;
 }
 
 template <DemuxerStream::Type StreamType>
@@ -319,6 +339,7 @@ void DecoderStream<StreamType>::OnDecodeOutputReady(
     return;
   }
 
+  DCHECK(output);
   SatisfyRead(OK, output);
 }
 
@@ -387,12 +408,10 @@ void DecoderStream<StreamType>::ReinitializeDecoder() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, STATE_FLUSHING_DECODER) << state_;
 
-  // TODO(rileya): Specialize this for audio, or, better yet, change
-  // DemuxerStream config getters to be templated.
-  DCHECK(stream_->video_decoder_config().IsValidConfig());
+  DCHECK(StreamTraits::GetDecoderConfig(*stream_).IsValidConfig());
   state_ = STATE_REINITIALIZING_DECODER;
   decoder_->Initialize(
-      stream_->video_decoder_config(),
+      StreamTraits::GetDecoderConfig(*stream_),
       base::Bind(&DecoderStream<StreamType>::OnDecoderReinitialized,
                  weak_factory_.GetWeakPtr()));
 }
@@ -492,5 +511,6 @@ void DecoderStream<StreamType>::OnDecoderStopped() {
 }
 
 template class DecoderStream<DemuxerStream::VIDEO>;
+template class DecoderStream<DemuxerStream::AUDIO>;
 
 }  // namespace media

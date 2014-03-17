@@ -5,9 +5,39 @@
 #include "media/filters/decoder_stream_traits.h"
 
 #include "base/logging.h"
+#include "media/base/audio_decoder.h"
+#include "media/base/audio_decoder_config.h"
 #include "media/base/video_decoder.h"
+#include "media/base/video_decoder_config.h"
 
 namespace media {
+
+bool DecoderStreamTraits<DemuxerStream::AUDIO>::FinishInitialization(
+    const StreamInitCB& init_cb,
+    DecoderType* decoder,
+    DemuxerStream* stream) {
+  DCHECK(stream);
+  if (!decoder) {
+    init_cb.Run(false);
+    return false;
+  }
+  init_cb.Run(true);
+  return true;
+}
+
+void DecoderStreamTraits<DemuxerStream::AUDIO>::ReportStatistics(
+    const StatisticsCB& statistics_cb,
+    int bytes_decoded) {
+  PipelineStatistics statistics;
+  statistics.audio_bytes_decoded = bytes_decoded;
+  statistics_cb.Run(statistics);
+}
+
+DecoderStreamTraits<DemuxerStream::AUDIO>::DecoderConfigType
+    DecoderStreamTraits<DemuxerStream::AUDIO>::GetDecoderConfig(
+        DemuxerStream& stream) {
+  return stream.audio_decoder_config();
+}
 
 bool DecoderStreamTraits<DemuxerStream::VIDEO>::FinishInitialization(
     const StreamInitCB& init_cb,
@@ -32,6 +62,12 @@ void DecoderStreamTraits<DemuxerStream::VIDEO>::ReportStatistics(
   PipelineStatistics statistics;
   statistics.video_bytes_decoded = bytes_decoded;
   statistics_cb.Run(statistics);
+}
+
+DecoderStreamTraits<DemuxerStream::VIDEO>::DecoderConfigType
+    DecoderStreamTraits<DemuxerStream::VIDEO>::GetDecoderConfig(
+        DemuxerStream& stream) {
+  return stream.video_decoder_config();
 }
 
 }  // namespace media

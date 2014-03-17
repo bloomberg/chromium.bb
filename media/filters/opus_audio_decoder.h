@@ -32,10 +32,10 @@ class MEDIA_EXPORT OpusAudioDecoder : public AudioDecoder {
   virtual ~OpusAudioDecoder();
 
   // AudioDecoder implementation.
-  virtual void Initialize(DemuxerStream* stream,
-                          const PipelineStatusCB& status_cb,
-                          const StatisticsCB& statistics_cb) OVERRIDE;
-  virtual void Read(const ReadCB& read_cb) OVERRIDE;
+  virtual void Initialize(const AudioDecoderConfig& config,
+                          const PipelineStatusCB& status_cb) OVERRIDE;
+  virtual void Decode(const scoped_refptr<DecoderBuffer>& buffer,
+                      const DecodeCB& decode_cb) OVERRIDE;
   virtual int bits_per_channel() OVERRIDE;
   virtual ChannelLayout channel_layout() OVERRIDE;
   virtual int samples_per_second() OVERRIDE;
@@ -48,8 +48,8 @@ class MEDIA_EXPORT OpusAudioDecoder : public AudioDecoder {
 
   // Reads from the demuxer stream with corresponding callback method.
   void ReadFromDemuxerStream();
-  void BufferReady(DemuxerStream::Status status,
-                   const scoped_refptr<DecoderBuffer>& input);
+  void DecodeBuffer(const scoped_refptr<DecoderBuffer>& input,
+                    const DecodeCB& decode_cb);
 
   bool ConfigureDecoder();
   void CloseDecoder();
@@ -61,8 +61,7 @@ class MEDIA_EXPORT OpusAudioDecoder : public AudioDecoder {
   base::WeakPtrFactory<OpusAudioDecoder> weak_factory_;
   base::WeakPtr<OpusAudioDecoder> weak_this_;
 
-  DemuxerStream* demuxer_stream_;
-  StatisticsCB statistics_cb_;
+  AudioDecoderConfig config_;
   OpusMSDecoder* opus_decoder_;
 
   // Decoded audio format.
@@ -74,10 +73,6 @@ class MEDIA_EXPORT OpusAudioDecoder : public AudioDecoder {
   // Used for computing output timestamps.
   scoped_ptr<AudioTimestampHelper> output_timestamp_helper_;
   base::TimeDelta last_input_timestamp_;
-
-  ReadCB read_cb_;
-  base::Closure reset_cb_;
-  base::Closure stop_cb_;
 
   // Number of frames to be discarded from the start of the packet. This value
   // is respected for all packets except for the first one in the stream. For

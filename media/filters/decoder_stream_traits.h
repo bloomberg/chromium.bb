@@ -25,14 +25,23 @@ template <>
 struct DecoderStreamTraits<DemuxerStream::AUDIO> {
   typedef AudioBuffer OutputType;
   typedef AudioDecoder DecoderType;
+  typedef AudioDecoderConfig DecoderConfigType;
   typedef DecryptingAudioDecoder DecryptingDecoderType;
   typedef base::Callback<void(bool success)> StreamInitCB;
+
+  static bool FinishInitialization(const StreamInitCB& init_cb,
+                                   DecoderType* decoder,
+                                   DemuxerStream* stream);
+  static void ReportStatistics(const StatisticsCB& statistics_cb,
+                               int bytes_decoded);
+  static DecoderConfigType GetDecoderConfig(DemuxerStream& stream);
 };
 
 template <>
 struct DecoderStreamTraits<DemuxerStream::VIDEO> {
   typedef VideoFrame OutputType;
   typedef VideoDecoder DecoderType;
+  typedef VideoDecoderConfig DecoderConfigType;
   typedef DecryptingVideoDecoder DecryptingDecoderType;
   typedef base::Callback<void(bool success, bool has_alpha)> StreamInitCB;
 
@@ -41,6 +50,7 @@ struct DecoderStreamTraits<DemuxerStream::VIDEO> {
                                    DemuxerStream* stream);
   static void ReportStatistics(const StatisticsCB& statistics_cb,
                                int bytes_decoded);
+  static DecoderConfigType GetDecoderConfig(DemuxerStream& stream);
 };
 
 }  // namespace media

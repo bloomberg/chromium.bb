@@ -65,7 +65,6 @@ class MEDIA_EXPORT DecoderSelector {
   // Selected Decoder (and DecryptingDemuxerStream) is returned via
   // the |select_decoder_cb|.
   void SelectDecoder(DemuxerStream* stream,
-                     StatisticsCB statistics_cb,
                      const SelectDecoderCB& select_decoder_cb);
 
   // Aborts pending Decoder selection and fires |select_decoder_cb| with
@@ -78,7 +77,6 @@ class MEDIA_EXPORT DecoderSelector {
   void InitializeDecoder();
   void DecoderInitDone(PipelineStatus status);
   void ReturnNullDecoder();
-  void DoInitializeDecoder(const PipelineStatusCB& status_cb);
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   ScopedVector<Decoder> decoders_;
@@ -86,8 +84,6 @@ class MEDIA_EXPORT DecoderSelector {
 
   DemuxerStream* input_stream_;
   SelectDecoderCB select_decoder_cb_;
-
-  StatisticsCB statistics_cb_;
 
   scoped_ptr<Decoder> decoder_;
   scoped_ptr<DecryptingDemuxerStream> decrypted_stream_;
@@ -99,10 +95,6 @@ class MEDIA_EXPORT DecoderSelector {
 
 typedef DecoderSelector<DemuxerStream::VIDEO> VideoDecoderSelector;
 typedef DecoderSelector<DemuxerStream::AUDIO> AudioDecoderSelector;
-
-template <>
-void AudioDecoderSelector::DoInitializeDecoder(
-    const PipelineStatusCB& status_cb);
 
 }  // namespace media
 

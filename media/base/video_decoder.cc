@@ -4,11 +4,17 @@
 
 #include "media/base/video_decoder.h"
 
+#include "media/base/video_frame.h"
+
 namespace media {
 
 VideoDecoder::VideoDecoder() {}
 
 VideoDecoder::~VideoDecoder() {}
+
+scoped_refptr<VideoFrame> VideoDecoder::GetDecodeOutput() {
+  return NULL;
+}
 
 bool VideoDecoder::HasAlpha() const {
   return false;

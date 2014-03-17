@@ -23,20 +23,11 @@ using ::testing::StrictMock;
 
 namespace media {
 
-ACTION_P(InvokeReadPacket, test) {
-  test->ReadPacket(arg0);
-}
-
-ACTION_P(EnterPendingDemuxerReadState, test) {
-  test->EnterPendingDemuxerRead(arg0);
-}
-
 class FFmpegAudioDecoderTest : public testing::Test {
  public:
   FFmpegAudioDecoderTest()
       : decoder_(new FFmpegAudioDecoder(message_loop_.message_loop_proxy())),
-        demuxer_(new StrictMock<MockDemuxerStream>(DemuxerStream::AUDIO)),
-        pending_read_(false),
+        pending_decode_(false),
         pending_reset_(false),
         pending_stop_(false) {
     FFmpegGlue::InitializeFFmpeg();
@@ -65,7 +56,7 @@ class FFmpegAudioDecoderTest : public testing::Test {
   }
 
   virtual ~FFmpegAudioDecoderTest() {
-    EXPECT_FALSE(pending_read_);
+    EXPECT_FALSE(pending_decode_);
     EXPECT_FALSE(pending_reset_);
     EXPECT_FALSE(pending_stop_);
   }
@@ -78,48 +69,22 @@ class FFmpegAudioDecoderTest : public testing::Test {
                               vorbis_extradata_->data(),
                               vorbis_extradata_->data_size(),
                               false);  // Not encrypted.
-    demuxer_->set_audio_decoder_config(config);
-    decoder_->Initialize(demuxer_.get(),
-                         NewExpectedStatusCB(PIPELINE_OK),
-                         base::Bind(&MockStatisticsCB::OnStatistics,
-                                    base::Unretained(&statistics_cb_)));
+    decoder_->Initialize(config,
+                         NewExpectedStatusCB(PIPELINE_OK));
     base::RunLoop().RunUntilIdle();
   }
 
-  void SetupPendingReadTest() {
-    encoded_audio_.clear();
-    encoded_audio_.push_back(NULL);
-    EXPECT_CALL(*demuxer_, Read(_))
-        .WillOnce(EnterPendingDemuxerReadState(this));
+  void SatisfyPendingDecode() {
+    base::RunLoop().RunUntilIdle();
   }
 
-  void ReadPacket(const DemuxerStream::ReadCB& read_cb) {
-    CHECK(!encoded_audio_.empty()) << "ReadPacket() called too many times";
-
+  void Decode() {
+    pending_decode_ = true;
     scoped_refptr<DecoderBuffer> buffer(encoded_audio_.front());
-    DemuxerStream::Status status =
-        buffer.get() ? DemuxerStream::kOk : DemuxerStream::kAborted;
     encoded_audio_.pop_front();
-    read_cb.Run(status, buffer);
-  }
-
-  void EnterPendingDemuxerRead(const DemuxerStream::ReadCB& read_cb) {
-    // We just take note of it and ignore the callback, we'll expect it to be
-    // fired as a result of a Stop/Reset/etc.
-    DCHECK(pending_read_);
-    pending_demuxer_read_cb_ = read_cb;
-  }
-
-  void SatisfyPendingRead() {
-    DCHECK(pending_read_ && !pending_demuxer_read_cb_.is_null());
-    ReadPacket(pending_demuxer_read_cb_);
-    base::RunLoop().RunUntilIdle();
-  }
-
-  void Read() {
-    pending_read_ = true;
-    decoder_->Read(base::Bind(
-        &FFmpegAudioDecoderTest::ReadFinished, base::Unretained(this)));
+    decoder_->Decode(buffer,
+                     base::Bind(&FFmpegAudioDecoderTest::DecodeFinished,
+                                base::Unretained(this)));
     base::RunLoop().RunUntilIdle();
   }
 
@@ -137,10 +102,16 @@ class FFmpegAudioDecoderTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  void ReadFinished(AudioDecoder::Status status,
+  void DecodeFinished(AudioDecoder::Status status,
                       const scoped_refptr<AudioBuffer>& buffer) {
-    EXPECT_TRUE(pending_read_);
-    pending_read_ = false;
+    EXPECT_TRUE(pending_decode_);
+    pending_decode_ = false;
+
+    if (status == AudioDecoder::kNotEnoughData) {
+      EXPECT_TRUE(buffer.get() == NULL);
+      Decode();
+      return;
+    }
 
     decoded_audio_.push_back(buffer);
 
@@ -154,17 +125,10 @@ class FFmpegAudioDecoderTest : public testing::Test {
     EXPECT_EQ(status, AudioDecoder::kOk);
   }
 
-  void PendingReadAborted(AudioDecoder::Status status,
-                          const scoped_refptr<AudioBuffer>& buffer) {
-    EXPECT_EQ(status, AudioDecoder::kAborted);
-    EXPECT_TRUE(pending_read_);
-    pending_read_ = false;
-  }
-
   void StopFinished() {
     EXPECT_TRUE(pending_stop_);
-    // Stop should always finish after Read and Reset.
-    EXPECT_FALSE(pending_read_);
+    // Stop should always finish after Decode and Reset.
+    EXPECT_FALSE(pending_decode_);
     EXPECT_FALSE(pending_reset_);
 
     pending_stop_ = false;
@@ -172,8 +136,8 @@ class FFmpegAudioDecoderTest : public testing::Test {
 
   void ResetFinished() {
     EXPECT_TRUE(pending_reset_);
-    // Reset should always finish after Read.
-    EXPECT_FALSE(pending_read_);
+    // Reset should always finish after Decode.
+    EXPECT_FALSE(pending_decode_);
 
     pending_reset_ = false;
   }
@@ -192,10 +156,7 @@ class FFmpegAudioDecoderTest : public testing::Test {
 
   base::MessageLoop message_loop_;
   scoped_ptr<FFmpegAudioDecoder> decoder_;
-  scoped_ptr<StrictMock<MockDemuxerStream> > demuxer_;
-  MockStatisticsCB statistics_cb_;
-  DemuxerStream::ReadCB pending_demuxer_read_cb_;
-  bool pending_read_;
+  bool pending_decode_;
   bool pending_reset_;
   bool pending_stop_;
 
@@ -206,10 +167,17 @@ class FFmpegAudioDecoderTest : public testing::Test {
 };
 
 TEST_F(FFmpegAudioDecoderTest, Initialize) {
-  const AudioDecoderConfig& config = demuxer_->audio_decoder_config();
+  AudioDecoderConfig config(kCodecVorbis,
+                            kSampleFormatPlanarF32,
+                            CHANNEL_LAYOUT_STEREO,
+                            44100,
+                            vorbis_extradata_->data(),
+                            vorbis_extradata_->data_size(),
+                            false);  // Not encrypted.
   EXPECT_EQ(config.bits_per_channel(), decoder_->bits_per_channel());
   EXPECT_EQ(config.channel_layout(), decoder_->channel_layout());
   EXPECT_EQ(config.samples_per_second(), decoder_->samples_per_second());
+  Stop();
 }
 
 TEST_F(FFmpegAudioDecoderTest, ProduceAudioSamples) {
@@ -217,15 +185,9 @@ TEST_F(FFmpegAudioDecoderTest, ProduceAudioSamples) {
   //
   // This will should result in the demuxer receiving three reads for two
   // requests to produce audio samples.
-  EXPECT_CALL(*demuxer_, Read(_))
-      .Times(5)
-      .WillRepeatedly(InvokeReadPacket(this));
-  EXPECT_CALL(statistics_cb_, OnStatistics(_))
-      .Times(4);
-
-  Read();
-  Read();
-  Read();
+  Decode();
+  Decode();
+  Decode();
 
   ASSERT_EQ(3u, decoded_audio_.size());
   ExpectDecodedAudio(0, 0, 2902);
@@ -233,45 +195,41 @@ TEST_F(FFmpegAudioDecoderTest, ProduceAudioSamples) {
   ExpectDecodedAudio(2, 15963, 23220);
 
   // Call one more time to trigger EOS.
-  Read();
+  Decode();
   ASSERT_EQ(4u, decoded_audio_.size());
   ExpectEndOfStream(3);
+  Stop();
 }
 
-TEST_F(FFmpegAudioDecoderTest, ReadAbort) {
+TEST_F(FFmpegAudioDecoderTest, DecodeAbort) {
   encoded_audio_.clear();
   encoded_audio_.push_back(NULL);
-  EXPECT_CALL(*demuxer_, Read(_))
-      .WillOnce(InvokeReadPacket(this));
-  Read();
+  Decode();
 
   EXPECT_EQ(decoded_audio_.size(), 1u);
   EXPECT_TRUE(decoded_audio_[0].get() ==  NULL);
-}
-
-TEST_F(FFmpegAudioDecoderTest, PendingRead_Stop) {
-  SetupPendingReadTest();
-  Read();
   Stop();
-  DCHECK(pending_read_ && pending_stop_);
-  SatisfyPendingRead();
 }
 
-TEST_F(FFmpegAudioDecoderTest, PendingRead_Reset) {
-  SetupPendingReadTest();
-  Read();
+TEST_F(FFmpegAudioDecoderTest, PendingDecode_Stop) {
+  Decode();
+  Stop();
+  SatisfyPendingDecode();
+  Stop();
+}
+
+TEST_F(FFmpegAudioDecoderTest, PendingDecode_Reset) {
+  Decode();
   Reset();
-  DCHECK(pending_read_ && pending_reset_);
-  SatisfyPendingRead();
+  SatisfyPendingDecode();
+  Stop();
 }
 
-TEST_F(FFmpegAudioDecoderTest, PendingRead_ResetStop) {
-  SetupPendingReadTest();
-  Read();
+TEST_F(FFmpegAudioDecoderTest, PendingDecode_ResetStop) {
+  Decode();
   Reset();
   Stop();
-  DCHECK(pending_read_ && pending_reset_ && pending_stop_);
-  SatisfyPendingRead();
+  SatisfyPendingDecode();
 }
 
 }  // namespace media

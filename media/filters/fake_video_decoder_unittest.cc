@@ -21,7 +21,7 @@ static const int kDurationMs = 30;
 class FakeVideoDecoderTest : public testing::Test {
  public:
   FakeVideoDecoderTest()
-      : decoder_(new FakeVideoDecoder(kDecodingDelay)),
+      : decoder_(new FakeVideoDecoder(kDecodingDelay, false)),
         num_input_buffers_(0),
         num_decoded_frames_(0),
         decode_status_(VideoDecoder::kNotEnoughData),
@@ -275,7 +275,7 @@ TEST_F(FakeVideoDecoderTest, Read_DecodingDelay) {
 }
 
 TEST_F(FakeVideoDecoderTest, Read_ZeroDelay) {
-  decoder_.reset(new FakeVideoDecoder(0));
+  decoder_.reset(new FakeVideoDecoder(0, false));
   Initialize();
 
   while (num_input_buffers_ < kTotalBuffers) {
@@ -416,6 +416,18 @@ TEST_F(FakeVideoDecoderTest, Stop_PendingDuringPendingReadAndPendingReset) {
   SatisfyRead();
   SatisfyReset();
   SatisfyStop();
+}
+
+TEST_F(FakeVideoDecoderTest, GetDecodeOutput) {
+  decoder_.reset(new FakeVideoDecoder(kDecodingDelay, true));
+  Initialize();
+
+  while (num_input_buffers_ < kTotalBuffers) {
+    ReadOneFrame();
+    while (decoder_->GetDecodeOutput())
+      ++num_decoded_frames_;
+    EXPECT_EQ(num_input_buffers_, num_decoded_frames_);
+  }
 }
 
 }  // namespace media

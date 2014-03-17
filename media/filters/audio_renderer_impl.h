@@ -29,7 +29,7 @@
 #include "media/base/audio_renderer_sink.h"
 #include "media/base/decryptor.h"
 #include "media/filters/audio_renderer_algorithm.h"
-#include "media/filters/decoder_selector.h"
+#include "media/filters/decoder_stream.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -108,7 +108,7 @@ class MEDIA_EXPORT AudioRendererImpl
   };
 
   // Callback from the audio decoder delivering decoded audio samples.
-  void DecodedAudioReady(AudioDecoder::Status status,
+  void DecodedAudioReady(AudioBufferStream::Status status,
                          const scoped_refptr<AudioBuffer>& buffer);
 
   // Handles buffers that come out of |splicer_|.
@@ -164,14 +164,9 @@ class MEDIA_EXPORT AudioRendererImpl
   // in the kPrerolling state.
   bool IsBeforePrerollTime(const scoped_refptr<AudioBuffer>& buffer);
 
-  // Called when |decoder_selector_| has selected |decoder| or is null if no
-  // decoder could be selected.
-  //
-  // |decrypting_demuxer_stream| is non-null if a DecryptingDemuxerStream was
-  // created to help decrypt the encrypted stream.
-  void OnDecoderSelected(
-      scoped_ptr<AudioDecoder> decoder,
-      scoped_ptr<DecryptingDemuxerStream> decrypting_demuxer_stream);
+  // Called upon AudioBufferStream initialization, or failure thereof (indicated
+  // by the value of |success|).
+  void OnAudioBufferStreamInitialized(bool succes);
 
   // Used to initiate the flush operation once all pending reads have
   // completed.
@@ -184,9 +179,6 @@ class MEDIA_EXPORT AudioRendererImpl
   // Called when the |decoder_|.Reset() has completed.
   void ResetDecoderDone();
 
-  // Stops the |decoder_| if present. Ensures |stop_cb_| is called.
-  void StopDecoder();
-
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   base::WeakPtrFactory<AudioRendererImpl> weak_factory_;
   base::WeakPtr<AudioRendererImpl> weak_this_;
@@ -198,18 +190,13 @@ class MEDIA_EXPORT AudioRendererImpl
   // may deadlock between |task_runner_| and the audio callback thread.
   scoped_refptr<media::AudioRendererSink> sink_;
 
-  scoped_ptr<AudioDecoderSelector> decoder_selector_;
+  AudioBufferStream audio_buffer_stream_;
 
-  // These two will be set by AudioDecoderSelector::SelectAudioDecoder().
-  scoped_ptr<AudioDecoder> decoder_;
-  scoped_ptr<DecryptingDemuxerStream> decrypting_demuxer_stream_;
-
-  // AudioParameters constructed during Initialize() based on |decoder_|.
+  // AudioParameters constructed during Initialize().
   AudioParameters audio_parameters_;
 
   // Callbacks provided during Initialize().
   PipelineStatusCB init_cb_;
-  StatisticsCB statistics_cb_;
   base::Closure underflow_cb_;
   TimeCB time_cb_;
   base::Closure ended_cb_;
@@ -218,9 +205,6 @@ class MEDIA_EXPORT AudioRendererImpl
 
   // Callback provided to Flush().
   base::Closure flush_cb_;
-
-  // Callback provided to Stop().
-  base::Closure stop_cb_;
 
   // Callback provided to Preroll().
   PipelineStatusCB preroll_cb_;

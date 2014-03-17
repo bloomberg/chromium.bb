@@ -20,6 +20,8 @@ class VideoFrame;
 class MEDIA_EXPORT VideoDecoder {
  public:
   // Status codes for decode operations on VideoDecoder.
+  // TODO(rileya): Now that both AudioDecoder and VideoDecoder Status enums
+  // match, break them into a decoder_status.h.
   enum Status {
     kOk,  // Everything went as planned.
     kAborted,  // Decode was aborted as a result of Reset() being called.
@@ -58,6 +60,11 @@ class MEDIA_EXPORT VideoDecoder {
                               const scoped_refptr<VideoFrame>&)> DecodeCB;
   virtual void Decode(const scoped_refptr<DecoderBuffer>& buffer,
                       const DecodeCB& decode_cb) = 0;
+
+  // Some VideoDecoders may queue up multiple VideoFrames from a single
+  // DecoderBuffer, if we have any such queued frames this will return the next
+  // one. Otherwise we return a NULL VideoFrame.
+  virtual scoped_refptr<VideoFrame> GetDecodeOutput();
 
   // Resets decoder state, fulfilling all pending DecodeCB and dropping extra
   // queued decoded data. After this call, the decoder is back to an initialized
