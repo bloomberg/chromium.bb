@@ -44,19 +44,20 @@ namespace WebCore {
 
 template<typename T> class HeapTerminatedArray;
 
-#define COMPILE_ASSERT_IS_GARBAGE_COLLECTED(T, ErrorMessage)                               \
-    typedef WTF::IsSubclassOfTemplate<T, GarbageCollected> GarbageCollectedSubclass;       \
-    typedef WTF::IsSubclass<T, GarbageCollectedMixin> GarbageCollectedMixinSubclass;       \
-    typedef WTF::IsSubclassOfTemplate3<T, HeapHashSet> HeapHashSetSubclass;                \
-    typedef WTF::IsSubclassOfTemplate5<T, HeapHashMap> HeapHashMapSubclass;                \
-    typedef WTF::IsSubclassOfTemplateTypenameSize<T, HeapVector> HeapVectorSubclass;       \
-    typedef WTF::IsSubclassOfTemplate<T, HeapTerminatedArray> HeapTerminatedArraySubclass; \
-    COMPILE_ASSERT(GarbageCollectedSubclass::value ||                                      \
-        GarbageCollectedMixinSubclass::value ||                                            \
-        HeapHashSetSubclass::value ||                                                      \
-        HeapHashMapSubclass::value ||                                                      \
-        HeapVectorSubclass::value ||                                                       \
-        HeapTerminatedArraySubclass::value,                                                \
+#define COMPILE_ASSERT_IS_GARBAGE_COLLECTED(T, ErrorMessage)                                          \
+    typedef typename WTF::RemoveConst<T>::Type NonConstType;                                          \
+    typedef WTF::IsSubclassOfTemplate<NonConstType, GarbageCollected> GarbageCollectedSubclass;       \
+    typedef WTF::IsSubclass<NonConstType, GarbageCollectedMixin> GarbageCollectedMixinSubclass;       \
+    typedef WTF::IsSubclassOfTemplate3<NonConstType, HeapHashSet> HeapHashSetSubclass;                \
+    typedef WTF::IsSubclassOfTemplate5<NonConstType, HeapHashMap> HeapHashMapSubclass;                \
+    typedef WTF::IsSubclassOfTemplateTypenameSize<NonConstType, HeapVector> HeapVectorSubclass;       \
+    typedef WTF::IsSubclassOfTemplate<NonConstType, HeapTerminatedArray> HeapTerminatedArraySubclass; \
+    COMPILE_ASSERT(GarbageCollectedSubclass::value ||                                                 \
+        GarbageCollectedMixinSubclass::value ||                                                       \
+        HeapHashSetSubclass::value ||                                                                 \
+        HeapHashMapSubclass::value ||                                                                 \
+        HeapVectorSubclass::value ||                                                                  \
+        HeapTerminatedArraySubclass::value,                                                           \
         ErrorMessage);
 
 template<typename T> class Member;
@@ -242,11 +243,20 @@ public:
         COMPILE_ASSERT_IS_GARBAGE_COLLECTED(T, NonGarbageCollectedObjectInPersistent);
     }
 
-    Persistent(std::nullptr_t) : m_raw(0) { }
+    Persistent(std::nullptr_t) : m_raw(0)
+    {
+        COMPILE_ASSERT_IS_GARBAGE_COLLECTED(T, NonGarbageCollectedObjectInPersistent);
+    }
 
-    Persistent(T* raw) : m_raw(raw) { }
+    Persistent(T* raw) : m_raw(raw)
+    {
+        COMPILE_ASSERT_IS_GARBAGE_COLLECTED(T, NonGarbageCollectedObjectInPersistent);
+    }
 
-    Persistent(const Persistent& other) : m_raw(other) { }
+    Persistent(const Persistent& other) : m_raw(other)
+    {
+        COMPILE_ASSERT_IS_GARBAGE_COLLECTED(T, NonGarbageCollectedObjectInPersistent);
+    }
 
     template<typename U>
     Persistent(const Persistent<U, RootsAccessor>& other) : m_raw(other) { }
@@ -405,11 +415,20 @@ public:
         COMPILE_ASSERT_IS_GARBAGE_COLLECTED(T, NonGarbageCollectedObjectInMember);
     }
 
-    Member(std::nullptr_t) : m_raw(0) { }
+    Member(std::nullptr_t) : m_raw(0)
+    {
+        COMPILE_ASSERT_IS_GARBAGE_COLLECTED(T, NonGarbageCollectedObjectInMember);
+    }
 
-    Member(T* raw) : m_raw(raw) { }
+    Member(T* raw) : m_raw(raw)
+    {
+        COMPILE_ASSERT_IS_GARBAGE_COLLECTED(T, NonGarbageCollectedObjectInMember);
+    }
 
-    Member(WTF::HashTableDeletedValueType) : m_raw(reinterpret_cast<T*>(-1)) { }
+    Member(WTF::HashTableDeletedValueType) : m_raw(reinterpret_cast<T*>(-1))
+    {
+        COMPILE_ASSERT_IS_GARBAGE_COLLECTED(T, NonGarbageCollectedObjectInMember);
+    }
 
     bool isHashTableDeletedValue() const { return m_raw == reinterpret_cast<T*>(-1); }
 
@@ -555,11 +574,20 @@ public:
         COMPILE_ASSERT_IS_GARBAGE_COLLECTED(T, NonGarbageCollectedObjectInWeakMember);
     }
 
-    WeakMember(std::nullptr_t) : Member<T>(nullptr) { }
+    WeakMember(std::nullptr_t) : Member<T>(nullptr)
+    {
+        COMPILE_ASSERT_IS_GARBAGE_COLLECTED(T, NonGarbageCollectedObjectInWeakMember);
+    }
 
-    WeakMember(T* raw) : Member<T>(raw) { }
+    WeakMember(T* raw) : Member<T>(raw)
+    {
+        COMPILE_ASSERT_IS_GARBAGE_COLLECTED(T, NonGarbageCollectedObjectInWeakMember);
+    }
 
-    WeakMember(WTF::HashTableDeletedValueType x) : Member<T>(x) { }
+    WeakMember(WTF::HashTableDeletedValueType x) : Member<T>(x)
+    {
+        COMPILE_ASSERT_IS_GARBAGE_COLLECTED(T, NonGarbageCollectedObjectInWeakMember);
+    }
 
     template<typename U>
     WeakMember(const Persistent<U>& other) : Member<T>(other) { }

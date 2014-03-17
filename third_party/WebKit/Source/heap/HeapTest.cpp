@@ -1201,6 +1201,30 @@ private:
 
 int OneKiloByteObject::s_destructorCalls = 0;
 
+class DynamicallySizedObject : public GarbageCollected<DynamicallySizedObject> {
+public:
+    static DynamicallySizedObject* create(size_t size)
+    {
+        void* slot = Heap::allocate<DynamicallySizedObject>(size);
+        return new (slot) DynamicallySizedObject();
+    }
+
+    void* operator new(std::size_t, void* location)
+    {
+        return location;
+    }
+
+    uint8_t get(int i)
+    {
+        return *(reinterpret_cast<uint8_t*>(this) + i);
+    }
+
+    void trace(Visitor*) { }
+
+private:
+    DynamicallySizedObject() { }
+};
+
 class FinalizationAllocator : public GarbageCollectedFinalized<FinalizationAllocator> {
 public:
     FinalizationAllocator(Persistent<IntWrapper>* wrapper)
@@ -1307,10 +1331,10 @@ TEST(HeapTest, BasicFunctionality)
             EXPECT_EQ(heapStats.totalAllocatedSpace(), 0ul);
 
         // This allocates objects on the general heap which should add a page of memory.
-        uint8_t* alloc32(Heap::allocate<uint8_t>(32));
+        DynamicallySizedObject* alloc32 = DynamicallySizedObject::create(32);
         slack += 4;
         memset(alloc32, 40, 32);
-        uint8_t* alloc64(Heap::allocate<uint8_t>(64));
+        DynamicallySizedObject* alloc64 = DynamicallySizedObject::create(64);
         slack += 4;
         memset(alloc64, 27, 64);
 
@@ -1323,17 +1347,17 @@ TEST(HeapTest, BasicFunctionality)
 
         CheckWithSlack(alloc32 + 32 + sizeof(HeapObjectHeader), alloc64, slack);
 
-        EXPECT_EQ(alloc32[0], 40);
-        EXPECT_EQ(alloc32[31], 40);
-        EXPECT_EQ(alloc64[0], 27);
-        EXPECT_EQ(alloc64[63], 27);
+        EXPECT_EQ(alloc32->get(0), 40);
+        EXPECT_EQ(alloc32->get(31), 40);
+        EXPECT_EQ(alloc64->get(0), 27);
+        EXPECT_EQ(alloc64->get(63), 27);
 
         Heap::collectGarbage(ThreadState::HeapPointersOnStack);
 
-        EXPECT_EQ(alloc32[0], 40);
-        EXPECT_EQ(alloc32[31], 40);
-        EXPECT_EQ(alloc64[0], 27);
-        EXPECT_EQ(alloc64[63], 27);
+        EXPECT_EQ(alloc32->get(0), 40);
+        EXPECT_EQ(alloc32->get(31), 40);
+        EXPECT_EQ(alloc64->get(0), 27);
+        EXPECT_EQ(alloc64->get(63), 27);
     }
 
     clearOutOldGarbage(&heapStats);
@@ -1344,19 +1368,19 @@ TEST(HeapTest, BasicFunctionality)
     if (testPagesAllocated)
         EXPECT_EQ(heapStats.totalAllocatedSpace(), 0ul);
 
-    const size_t big = 1008;
-    Persistent<uint8_t> bigArea = Heap::allocate<uint8_t>(big);
+    size_t big = 1008;
+    Persistent<DynamicallySizedObject> bigArea = DynamicallySizedObject::create(big);
     total += big;
     slack += 4;
 
     size_t persistentCount = 0;
     const size_t numPersistents = 100000;
-    Persistent<uint8_t>* persistents[numPersistents];
+    Persistent<DynamicallySizedObject>* persistents[numPersistents];
 
     for (int i = 0; i < 1000; i++) {
         size_t size = 128 + i * 8;
         total += size;
-        persistents[persistentCount++] = new Persistent<uint8_t>(Heap::allocate<uint8_t>(size));
+        persistents[persistentCount++] = new Persistent<DynamicallySizedObject>(DynamicallySizedObject::create(size));
         slack += 4;
         getHeapStats(&heapStats);
         CheckWithSlack(baseLevel + total, heapStats.totalObjectSpace(), slack);
@@ -1365,10 +1389,10 @@ TEST(HeapTest, BasicFunctionality)
     }
 
     {
-        uint8_t* alloc32b(Heap::allocate<uint8_t>(32));
+        DynamicallySizedObject* alloc32b(DynamicallySizedObject::create(32));
         slack += 4;
         memset(alloc32b, 40, 32);
-        uint8_t* alloc64b(Heap::allocate<uint8_t>(64));
+        DynamicallySizedObject* alloc64b(DynamicallySizedObject::create(64));
         slack += 4;
         memset(alloc64b, 27, 64);
         EXPECT_TRUE(alloc32b != alloc64b);
@@ -1386,7 +1410,7 @@ TEST(HeapTest, BasicFunctionality)
     if (testPagesAllocated)
         EXPECT_EQ(0ul, heapStats.totalAllocatedSpace() & (blinkPageSize - 1));
 
-    Address bigAreaRaw = bigArea;
+    DynamicallySizedObject* bigAreaRaw = bigArea;
     // Clear the persistent, so that the big area will be garbage collected.
     bigArea.release();
     clearOutOldGarbage(&heapStats);
@@ -1400,7 +1424,7 @@ TEST(HeapTest, BasicFunctionality)
 
     // Endless loop unless we eventually get the memory back that we just freed.
     while (true) {
-        Persistent<uint8_t>* alloc = new Persistent<uint8_t>(Heap::allocate<uint8_t>(big / 2));
+        Persistent<DynamicallySizedObject>* alloc = new Persistent<DynamicallySizedObject>(DynamicallySizedObject::create(big / 2));
         slack += 4;
         persistents[persistentCount++] = alloc;
         EXPECT_LT(persistentCount, numPersistents);
@@ -1620,13 +1644,12 @@ TEST(HeapTest, HashMapOfMembers)
 
     clearOutOldGarbage(&initialHeapSize);
     {
-        typedef HashMap<
+        typedef HeapHashMap<
             Member<IntWrapper>,
             Member<IntWrapper>,
             DefaultHash<Member<IntWrapper> >::Hash,
             HashTraits<Member<IntWrapper> >,
-            HashTraits<Member<IntWrapper> >,
-            HeapAllocator> HeapObjectIdentityMap;
+            HashTraits<Member<IntWrapper> > > HeapObjectIdentityMap;
 
         Persistent<HeapObjectIdentityMap> map = new HeapObjectIdentityMap();
 
