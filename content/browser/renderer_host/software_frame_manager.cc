@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/debug/alias.h"
+#include "base/numerics/safe_math.h"
 #include "content/browser/renderer_host/dip_util.h"
 #include "content/public/browser/user_metrics.h"
 
@@ -96,7 +97,15 @@ bool SoftwareFrameManager::SwapToNewFrame(
 
   // The NULL handle is used in testing.
   if (base::SharedMemory::IsHandleValid(shared_memory->handle())) {
-    const size_t size_in_bytes = 4 * frame_data->size.GetArea();
+    base::CheckedNumeric<size_t> size_in_bytes_checked =
+        base::CheckedNumeric<size_t>(4) *
+        base::CheckedNumeric<size_t>(frame_data->size.width()) *
+        base::CheckedNumeric<size_t>(frame_data->size.height());
+    if (!size_in_bytes_checked.IsValid()) {
+      DLOG(ERROR) << "Integer overflow when computing bytes to map.";
+      return false;
+    }
+    size_t size_in_bytes = size_in_bytes_checked.ValueOrDie();
 #ifdef OS_WIN
     if (!shared_memory->Map(0)) {
       DLOG(ERROR) << "Unable to map renderer memory.";
