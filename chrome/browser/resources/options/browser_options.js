@@ -225,10 +225,7 @@ cr.define('options', function() {
       // Users section.
       if (loadTimeData.valueExists('profilesInfo')) {
         $('profiles-section').hidden = false;
-        $('sync-users-section').hidden =
-            $('profiles-section').hidden &&
-            $('sync-section').hidden &&
-            $('profiles-supervised-dashboard-tip').hidden;
+        this.maybeShowUserSection_();
 
         var profilesList = $('profiles-list');
         options.browser_options.ProfileList.decorate(profilesList);
@@ -799,15 +796,12 @@ cr.define('options', function() {
       if (!syncData.signinAllowed &&
           (!syncData.supervisedUser || !cr.isChromeOS)) {
         $('sync-section').hidden = true;
-        $('sync-users-section').hidden =
-            $('profiles-section').hidden &&
-            $('sync-section').hidden &&
-            $('profiles-supervised-dashboard-tip').hidden;
+        this.maybeShowUserSection_();
         return;
       }
 
       $('sync-section').hidden = false;
-      $('sync-users-section').hidden = false;
+      this.maybeShowUserSection_();
 
       var subSection = $('sync-section').firstChild;
       while (subSection) {
@@ -919,19 +913,12 @@ cr.define('options', function() {
     /**
      * Update the UI depending on whether the current profile manages any
      * supervised users.
-     * @param {boolean} value True if the current profile manages any supervised
+     * @param {boolean} show True if the current profile manages any supervised
      *     users.
      */
-    updateManagesSupervisedUsers_: function(value) {
-      if (value) {
-        $('profiles-supervised-dashboard-tip').hidden = false;
-      } else {
-        $('profiles-supervised-dashboard-tip').hidden = true;
-      }
-      $('sync-users-section').hidden =
-          $('profiles-section').hidden &&
-          $('sync-section').hidden &&
-          $('profiles-supervised-dashboard-tip').hidden;
+    updateManagesSupervisedUsers_: function(show) {
+      $('profiles-supervised-dashboard-tip').hidden = !show;
+      this.maybeShowUserSection_();
     },
 
     /**
@@ -1649,6 +1636,18 @@ cr.define('options', function() {
      */
     showImagerPickerOverlay_: function() {
       OptionsPage.navigateToPage('changePicture');
+    },
+
+    /**
+     * Shows (or not) the "User" section of the settings page based on whether
+     * any of the sub-sections are present (or not).
+     * @private
+     */
+    maybeShowUserSection_: function() {
+      $('sync-users-section').hidden =
+          $('profiles-section').hidden &&
+          $('sync-section').hidden &&
+          $('profiles-supervised-dashboard-tip').hidden;
     }
   };
 
