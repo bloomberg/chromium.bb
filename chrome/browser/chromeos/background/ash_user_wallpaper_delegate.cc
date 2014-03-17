@@ -77,8 +77,8 @@ class UserWallpaperDelegate : public ash::UserWallpaperDelegate {
     return true;
   }
 
-  virtual void UpdateWallpaper() OVERRIDE {
-    chromeos::WallpaperManager::Get()->UpdateWallpaper();
+  virtual void UpdateWallpaper(bool clear_cache) OVERRIDE {
+    chromeos::WallpaperManager::Get()->UpdateWallpaper(clear_cache);
   }
 
   virtual void InitializeWallpaper() OVERRIDE {

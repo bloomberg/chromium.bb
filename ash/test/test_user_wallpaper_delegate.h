@@ -22,7 +22,7 @@ class TestUserWallpaperDelegate : public DefaultUserWallpaperDelegate {
   }
 
   // DefaultUserWallpaperDelegate overrides:
-  virtual void UpdateWallpaper() OVERRIDE;
+  virtual void UpdateWallpaper(bool clear_cache) OVERRIDE;
 
   // Returns and clears |update_wallpaper_count_|.
   int GetUpdateWallpaperCountAndReset();

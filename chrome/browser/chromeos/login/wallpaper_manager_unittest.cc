@@ -186,7 +186,7 @@ TEST_F(WallpaperManagerCacheTest, VerifyWallpaperCache) {
   test_api->SetWallpaperCache(test_user_2, test_user_2_wallpaper);
   test_api->SetWallpaperCache(test_user_3, test_user_3_wallpaper);
 
-  test_api->ClearWallpaperCache();
+  test_api->ClearDisposableWallpaperCache();
 
   gfx::ImageSkia cached_wallpaper;
   EXPECT_TRUE(test_api->GetWallpaperFromCache(test_user_1, &cached_wallpaper));

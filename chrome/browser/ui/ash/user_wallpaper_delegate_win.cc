@@ -44,7 +44,7 @@ class UserWallpaperDelegate : public ash::UserWallpaperDelegate {
     NOTIMPLEMENTED();
   }
 
-  virtual void UpdateWallpaper() OVERRIDE {
+  virtual void UpdateWallpaper(bool clear_cache) OVERRIDE {
     SkBitmap bitmap;
     bitmap.setConfig(SkBitmap::kARGB_8888_Config, 16, 16);
     bitmap.allocPixels();
@@ -63,7 +63,7 @@ class UserWallpaperDelegate : public ash::UserWallpaperDelegate {
   }
 
   virtual void InitializeWallpaper() OVERRIDE {
-    UpdateWallpaper();
+    UpdateWallpaper(false);
   }
 
   virtual void OpenSetWallpaperPage() OVERRIDE {

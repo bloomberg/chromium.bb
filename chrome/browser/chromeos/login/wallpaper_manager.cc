@@ -289,8 +289,8 @@ void WallpaperManager::TestApi::SetWallpaperCache(const std::string& user_id,
   wallpaper_manager_->wallpaper_cache_[user_id] = image;
 }
 
-void WallpaperManager::TestApi::ClearWallpaperCache() {
-  wallpaper_manager_->ClearWallpaperCache();
+void WallpaperManager::TestApi::ClearDisposableWallpaperCache() {
+  wallpaper_manager_->ClearDisposableWallpaperCache();
 }
 
 // static
@@ -370,7 +370,7 @@ void WallpaperManager::EnsureLoggedInUserWallpaperLoaded() {
   SetUserWallpaperNow(UserManager::Get()->GetLoggedInUser()->email());
 }
 
-void WallpaperManager::ClearWallpaperCache() {
+void WallpaperManager::ClearDisposableWallpaperCache() {
   // Cancel callback for previous cache requests.
   weak_factory_.InvalidateWeakPtrs();
   if (!UserManager::IsMultipleProfilesAllowed()) {
@@ -467,7 +467,7 @@ void WallpaperManager::Observe(int type,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   switch (type) {
     case chrome::NOTIFICATION_LOGIN_USER_CHANGED: {
-      ClearWallpaperCache();
+      ClearDisposableWallpaperCache();
       BrowserThread::PostDelayedTask(
           BrowserThread::UI,
           FROM_HERE,
@@ -887,8 +887,9 @@ void WallpaperManager::SetWallpaperFromImageSkia(
   }
 }
 
-void WallpaperManager::UpdateWallpaper() {
-  ClearWallpaperCache();
+void WallpaperManager::UpdateWallpaper(bool clear_cache) {
+  if (clear_cache)
+    wallpaper_cache_.clear();
   current_wallpaper_path_.clear();
   // For GAIA login flow, the last_selected_user_ may not be set before user
   // login. If UpdateWallpaper is called at GAIA login screen, no wallpaper will

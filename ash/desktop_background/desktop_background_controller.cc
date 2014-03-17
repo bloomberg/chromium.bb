@@ -448,7 +448,7 @@ void DesktopBackgroundController::UpdateWallpaper() {
   current_default_wallpaper_path_ = base::FilePath();
   current_default_wallpaper_resource_id_ = -1;
   ash::Shell::GetInstance()->user_wallpaper_delegate()->
-      UpdateWallpaper();
+      UpdateWallpaper(true /* clear cache */);
 }
 
 // static

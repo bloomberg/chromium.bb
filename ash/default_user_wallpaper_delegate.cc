@@ -26,7 +26,7 @@ bool DefaultUserWallpaperDelegate::ShouldShowInitialAnimation() {
   return false;
 }
 
-void DefaultUserWallpaperDelegate::UpdateWallpaper() {
+void DefaultUserWallpaperDelegate::UpdateWallpaper(bool clear_cache) {
 }
 
 void DefaultUserWallpaperDelegate::InitializeWallpaper() {

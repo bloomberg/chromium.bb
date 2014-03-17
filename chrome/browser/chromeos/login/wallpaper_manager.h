@@ -86,7 +86,7 @@ class WallpaperManager: public content::NotificationObserver {
     void SetWallpaperCache(const std::string& user_id,
                            const gfx::ImageSkia& image);
 
-    void ClearWallpaperCache();
+    void ClearDisposableWallpaperCache();
 
    private:
     WallpaperManager* wallpaper_manager_;  // not owned
@@ -189,8 +189,9 @@ class WallpaperManager: public content::NotificationObserver {
   // wallpaper of logged in user.
   void EnsureLoggedInUserWallpaperLoaded();
 
-  // Clears ONLINE and CUSTOM wallpaper cache.
-  void ClearWallpaperCache();
+  // Clears disposable ONLINE and CUSTOM wallpaper cache. At multi profile
+  // world, logged in users' wallpaper cache is not disposable.
+  void ClearDisposableWallpaperCache();
 
   // Returns custom wallpaper path. Append |sub_dir|, |user_id_hash| and |file|
   // to custom wallpaper directory.
@@ -280,7 +281,7 @@ class WallpaperManager: public content::NotificationObserver {
 
   // Updates current wallpaper. It may switch the size of wallpaper based on the
   // current display's resolution. (asynchronously with zero delay)
-  void UpdateWallpaper();
+  void UpdateWallpaper(bool clear_cache);
 
   // Adds given observer to the list.
   void AddObserver(Observer* observer);

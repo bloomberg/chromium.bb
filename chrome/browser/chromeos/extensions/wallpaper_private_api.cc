@@ -631,7 +631,7 @@ bool WallpaperPrivateSetCustomWallpaperLayoutFunction::RunImpl() {
   bool is_persistent =
       !chromeos::UserManager::Get()->IsCurrentUserNonCryptohomeDataEphemeral();
   wallpaper_manager->SetUserWallpaperInfo(email, info, is_persistent);
-  wallpaper_manager->UpdateWallpaper();
+  wallpaper_manager->UpdateWallpaper(false /* clear_cache */);
   SendResponse(true);
 
   // Gets email address while at UI thread.
