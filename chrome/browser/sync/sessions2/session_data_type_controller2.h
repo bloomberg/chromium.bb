@@ -28,6 +28,7 @@ class SessionDataTypeController2 : public UIDataTypeController,
  protected:
   virtual ~SessionDataTypeController2();
   virtual bool StartModels() OVERRIDE;
+  virtual void StopModels() OVERRIDE;
 
  private:
   content::NotificationRegistrar notification_registrar_;

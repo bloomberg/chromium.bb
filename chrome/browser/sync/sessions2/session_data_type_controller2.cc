@@ -48,6 +48,10 @@ bool SessionDataTypeController2::StartModels() {
   return true;
 }
 
+void SessionDataTypeController2::StopModels() {
+  notification_registrar_.RemoveAll();
+}
+
 void SessionDataTypeController2::Observe(
     int type,
     const content::NotificationSource& source,
