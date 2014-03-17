@@ -191,14 +191,15 @@ void EventFactoryEvdev::SetFileTaskRunner(
 
 void EventFactoryEvdev::WarpCursorTo(gfx::AcceleratedWidget widget,
                                      const gfx::PointF& location) {
-  if (cursor_)
+  if (cursor_) {
     cursor_->MoveCursorTo(widget, location);
-  scoped_ptr<Event> ev(new MouseEvent(ET_MOUSE_MOVED,
+    scoped_ptr<Event> ev(new MouseEvent(ET_MOUSE_MOVED,
                                       cursor_->location(),
                                       cursor_->location(),
                                       modifiers_.GetModifierFlags(),
                                       /* changed_button_flags */ 0));
-  DispatchEvent(ev.Pass());
+    DispatchEvent(ev.Pass());
+  }
 }
 
 }  // namespace ui
