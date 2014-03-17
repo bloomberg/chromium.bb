@@ -486,6 +486,7 @@ bool AppWindowCreateFunction::GetFrameOptions(
 
 void AppWindowCreateFunction::UpdateFrameOptionsForChannel(
     apps::AppWindow::CreateParams* create_params) {
+#if defined(OS_WIN)
   if (create_params->frame == AppWindow::FRAME_CHROME &&
       GetCurrentChannel() > chrome::VersionInfo::CHANNEL_DEV) {
     // If not on trunk or dev channel, always use the standard white frame.
@@ -494,6 +495,7 @@ void AppWindowCreateFunction::UpdateFrameOptionsForChannel(
     create_params->has_frame_color = true;
     create_params->frame_color = SK_ColorWHITE;
   }
+#endif
 }
 
 }  // namespace extensions

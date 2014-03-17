@@ -1395,8 +1395,12 @@ function testFrameColorsInStable() {
   chrome.test.runTests([
     function testWithNoColor() {
       chrome.app.window.create('test.html', callbackPass(function(win) {
-        chrome.test.assertEq(true, win.hasFrameColor);
-        chrome.test.assertEq(-1, win.frameColor);
+        if (navigator.platform.substr(0, 3).toLowerCase() == "win") {
+          chrome.test.assertEq(true, win.hasFrameColor);
+          chrome.test.assertEq(-1, win.frameColor);
+        } else {
+          chrome.test.assertEq(false, win.hasFrameColor);
+        }
         win.close();
       }));
     },
