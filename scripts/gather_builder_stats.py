@@ -5,6 +5,7 @@
 """Script for gathering stats from builder runs."""
 
 import datetime
+import logging
 import os
 import re
 import sys
@@ -590,6 +591,9 @@ class CLStats(StatsManager):
     """
     actions = []
     for b in self.builds:
+      if not 'cl_actions' in b.metadata_dict:
+        logging.warn('No cl_actions for metadata at %s.', b.metadata_url)
+        continue
       for a in b.metadata_dict['cl_actions']:
         actions.append(cbuildbot_metadata.CLActionWithBuildTuple(*a,
             build_number=b.build_number))
@@ -625,11 +629,58 @@ class CLStats(StatsManager):
   def Summarize(self):
     """Process and generate a summary of cl action statistics."""
     super(CLStats, self).Summarize()
+
     self.actions = self.CollectActions()
 
     (self.per_patch_actions,
      self.per_cl_actions) = self.CollateActions(self.actions)
 
+    logging.info('      Total CL actions: %d.', len(self.actions))
+    logging.info('    Unique CLs touched: %d.', len(self.per_cl_actions))
+    logging.info('Unique patches touched: %d.', len(self.per_patch_actions))
+
+    submit_actions = [a for a in self.actions
+                      if a.action == constants.CL_ACTION_SUBMITTED]
+    reject_actions = [a for a in self.actions
+                      if a.action == constants.CL_ACTION_KICKED_OUT]
+    sbfail_actions = [a for a in self.actions
+                      if a.action == constants.CL_ACTION_SUBMIT_FAILED]
+
+    logging.info('   Total CLs submitted: %d.', len(submit_actions))
+    logging.info('      Total rejections: %d.', len(reject_actions))
+    logging.info(' Total submit failures: %d.', len(sbfail_actions))
+
+    rejected_then_submitted = {}
+    for k, v in self.per_patch_actions.iteritems():
+      if (any(a.action==constants.CL_ACTION_KICKED_OUT for a in v) and
+          any(a.action==constants.CL_ACTION_SUBMITTED for a in v)):
+        rejected_then_submitted[k] = v
+
+    logging.info(' Good patches rejected: %d.', len(rejected_then_submitted))
+
+
+    eventually_submitted_cls = {k : v
+                                for k, v, in self.per_cl_actions.iteritems()
+                                if any(a.action==constants.CL_ACTION_SUBMITTED
+                                       for a in v)}
+
+    # Count CLs that were rejected, then a subsequent patch was submitted.
+    # These are good candidates for bad CLs.
+    submitted_after_new_patch = {}
+    for k, v in eventually_submitted_cls.iteritems():
+      # The last action taken on a CL should be submit.
+      if v[-1].action != constants.CL_ACTION_SUBMITTED:
+        logging.warn('CL %s was submitted but submit was not the final '
+                     'action.', k)
+        continue
+      submitted_patch_number = v[-1].change['patch_number']
+      if any(a.action==constants.CL_ACTION_KICKED_OUT and
+             a.change['patch_number'] != submitted_patch_number for a in v):
+        submitted_after_new_patch[k] = v
+
+    logging.info('  Fixed then submitted: %s', len(submitted_after_new_patch))
+    for k in submitted_after_new_patch:
+      logging.info('Possible bad CL: %s', k)
 
 # TODO(mtennant): Add token file support.  See upload_package_status.py.
 def _PrepareCreds(email, password=None):
@@ -684,6 +735,8 @@ def GetParser():
   mode = parser.add_mutually_exclusive_group(required=True)
   mode.add_argument('--start-date', action='store', type='date', default=None,
                     help='Limit scope to a start date in the past.')
+  mode.add_argument('--past-month', action='store_true', default=False,
+                    help='Limit scope to the past 30 days up to now.')
   mode.add_argument('--past-week', action='store_true', default=False,
                     help='Limit scope to the past week up to now.')
   mode.add_argument('--past-day', action='store_true', default=False,
@@ -708,9 +761,11 @@ def main(argv):
   if options.start_date:
     start_date = options.start_date
   else:
-    assert options.past_week or options.past_day
+    assert options.past_month or options.past_week or options.past_day
     now = datetime.datetime.now()
-    if options.past_week:
+    if options.past_month:
+      start_date = (now - datetime.timedelta(days=30)).date()
+    elif options.past_week:
       start_date = (now - datetime.timedelta(days=7)).date()
     else:
       start_date = (now - datetime.timedelta(days=1)).date()
