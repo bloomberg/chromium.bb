@@ -70,7 +70,7 @@ def generate_interface(interface):
 
     parent_interface = interface.parent
     if parent_interface:
-        header_includes.update(v8_types.includes_for_type(IdlType(parent_interface)))
+        header_includes.update(v8_types.includes_for_interface(parent_interface))
     extended_attributes = interface.extended_attributes
 
     is_audio_buffer = inherits_interface(interface.name, 'AudioBuffer')
@@ -103,15 +103,15 @@ def generate_interface(interface):
     set_wrapper_reference_to_list = [{
         'name': argument.name,
         # FIXME: properly should be:
-        # 'cpp_type': v8_types.cpp_type(argument.idl_type, used_as_argument=True),
+        # 'cpp_type': argument.idl_type.cpp_type_args(used_as_argument=True),
         # (if type is non-wrapper type like NodeFilter, normally RefPtr)
         # Raw pointers faster though, and NodeFilter hacky anyway.
-        'cpp_type': v8_types.implemented_as(argument.idl_type) + '*',
+        'cpp_type': argument.idl_type.implemented_as + '*',
         'idl_type': argument.idl_type,
         'v8_type': v8_types.v8_type(argument.idl_type.name),
     } for argument in extended_attributes.get('SetWrapperReferenceTo', [])]
     for set_wrapper_reference_to in set_wrapper_reference_to_list:
-        v8_types.add_includes_for_type(set_wrapper_reference_to['idl_type'])
+        set_wrapper_reference_to['idl_type'].add_includes_for_type()
 
     # [SpecialWrapFor]
     if 'SpecialWrapFor' in extended_attributes:
@@ -119,7 +119,7 @@ def generate_interface(interface):
     else:
         special_wrap_for = []
     for special_wrap_interface in special_wrap_for:
-        v8_types.add_includes_for_type(IdlType(special_wrap_interface))
+        v8_types.add_includes_for_interface(special_wrap_interface)
 
     # [WillBeGarbageCollected]
     is_will_be_garbage_collected = 'WillBeGarbageCollected' in extended_attributes
@@ -411,7 +411,7 @@ def overload_check_argument(index, argument):
     if idl_type.is_callback_interface:
         return ' || '.join(['%s->IsNull()' % cpp_value,
                             '%s->IsFunction()' % cpp_value])
-    if v8_types.is_wrapper_type(idl_type):
+    if idl_type.is_wrapper_type:
         type_check = 'V8{idl_type}::hasInstance({cpp_value}, info.GetIsolate())'.format(idl_type=idl_type.base_type, cpp_value=cpp_value)
         if idl_type.is_nullable:
             type_check = ' || '.join(['%s->IsNull()' % cpp_value, type_check])
@@ -548,25 +548,19 @@ def property_getter(getter, cpp_arguments):
     extended_attributes = getter.extended_attributes
     is_raises_exception = 'RaisesException' in extended_attributes
 
-    if idl_type.is_union_type:
-        release = [member_type.is_interface_type
-                   for member_type in idl_type.member_types]
-    else:
-        release = idl_type.is_interface_type
-
     # FIXME: make more generic, so can use v8_methods.cpp_value
     cpp_method_name = 'imp->%s' % cpp_name(getter)
 
     if is_raises_exception:
         cpp_arguments.append('exceptionState')
-    this_union_arguments = v8_methods.union_arguments(idl_type)
-    if this_union_arguments:
-        cpp_arguments.extend(this_union_arguments)
+    union_arguments = idl_type.union_arguments
+    if union_arguments:
+        cpp_arguments.extend(union_arguments)
 
     cpp_value = '%s(%s)' % (cpp_method_name, ', '.join(cpp_arguments))
 
     return {
-        'cpp_type': v8_types.cpp_type(idl_type),
+        'cpp_type': idl_type.cpp_type,
         'cpp_value': cpp_value,
         'is_custom':
             'Custom' in extended_attributes and
@@ -580,8 +574,8 @@ def property_getter(getter, cpp_arguments):
         'is_null_expression': is_null_expression(idl_type),
         'is_raises_exception': is_raises_exception,
         'name': cpp_name(getter),
-        'union_arguments': v8_methods.union_arguments(idl_type),
-        'v8_set_return_value': v8_types.v8_set_return_value(idl_type, 'result', extended_attributes=extended_attributes, script_wrappable='imp', release=release),
+        'union_arguments': union_arguments,
+        'v8_set_return_value': idl_type.v8_set_return_value('result', extended_attributes=extended_attributes, script_wrappable='imp', release=idl_type.release),
     }
 
 
@@ -592,15 +586,15 @@ def property_setter(setter):
     return {
         'has_strict_type_checking':
             'StrictTypeChecking' in extended_attributes and
-            v8_types.is_wrapper_type(idl_type),
+            idl_type.is_wrapper_type,
         'idl_type': idl_type.base_type,
         'is_custom': 'Custom' in extended_attributes,
         'has_exception_state': is_raises_exception or
                                idl_type.is_integer_type,
         'is_raises_exception': is_raises_exception,
         'name': cpp_name(setter),
-        'v8_value_to_local_cpp_value': v8_types.v8_value_to_local_cpp_value(
-            idl_type, extended_attributes, 'jsValue', 'propertyValue'),
+        'v8_value_to_local_cpp_value': idl_type.v8_value_to_local_cpp_value(
+            extended_attributes, 'jsValue', 'propertyValue'),
     }
 
 

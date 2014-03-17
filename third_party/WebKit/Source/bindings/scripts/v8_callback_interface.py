@@ -28,9 +28,12 @@
 
 """Generate template values for a callback interface.
 
+Extends IdlType with property |callback_cpp_type|.
+
 Design doc: http://www.chromium.org/developers/design-documents/idl-compiler
 """
 
+from idl_types import IdlType
 from v8_globals import includes
 import v8_types
 import v8_utilities
@@ -54,7 +57,7 @@ def cpp_to_v8_conversion(idl_type, name):
     # FIXME: setting creation_context=v8::Handle<v8::Object>() is wrong,
     # as toV8 then implicitly uses the current context, which causes leaks
     # between isolate worlds if a different context should be used.
-    cpp_value_to_v8_value = v8_types.cpp_value_to_v8_value(idl_type, name,
+    cpp_value_to_v8_value = idl_type.cpp_value_to_v8_value(name,
         isolate='m_isolate', creation_context='v8::Handle<v8::Object>()')
     return 'v8::Handle<v8::Value> {name}Handle = {cpp_to_v8};'.format(
         name=name, cpp_to_v8=cpp_value_to_v8_value)
@@ -69,10 +72,12 @@ def cpp_type(idl_type):
     if idl_type_name == 'void':
         return 'void'
     # Callbacks use raw pointers, so used_as_argument=True
-    usual_cpp_type = v8_types.cpp_type(idl_type, used_as_argument=True)
+    usual_cpp_type = idl_type.cpp_type_args(used_as_argument=True)
     if usual_cpp_type.startswith(('Vector', 'WillBeHeapVector')):
         return 'const %s&' % usual_cpp_type
     return usual_cpp_type
+
+IdlType.callback_cpp_type = property(cpp_type)
 
 
 def generate_callback_interface(callback_interface):
@@ -93,9 +98,9 @@ def generate_callback_interface(callback_interface):
 
 
 def add_includes_for_operation(operation):
-    v8_types.add_includes_for_type(operation.idl_type)
+    operation.idl_type.add_includes_for_type()
     for argument in operation.arguments:
-        v8_types.add_includes_for_type(argument.idl_type)
+        argument.idl_type.add_includes_for_type()
 
 
 def generate_method(operation):
@@ -111,7 +116,7 @@ def generate_method(operation):
     call_with_this_handle = v8_utilities.extended_attribute_value_contains(call_with, 'ThisValue')
     contents = {
         'call_with_this_handle': call_with_this_handle,
-        'cpp_type': cpp_type(idl_type),
+        'cpp_type': idl_type.callback_cpp_type,
         'custom': is_custom,
         'idl_type': idl_type_str,
         'name': operation.name,
@@ -128,7 +133,7 @@ def generate_arguments_contents(arguments, call_with_this_handle):
         }
 
     argument_declarations = [
-            '%s %s' % (cpp_type(argument.idl_type), argument.name)
+            '%s %s' % (argument.idl_type.callback_cpp_type, argument.name)
             for argument in arguments]
     if call_with_this_handle:
         argument_declarations.insert(0, 'ScriptValue thisValue')

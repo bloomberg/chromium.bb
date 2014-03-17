@@ -92,11 +92,11 @@ class CodeGeneratorV8(object):
             interface_name
             for interface_name, interface_info in interfaces_info.iteritems()
             if interface_info['is_callback_interface']))
-        v8_types.set_implemented_as_interfaces(dict(
+        IdlType.set_implemented_as_interfaces(dict(
             (interface_name, interface_info['implemented_as'])
             for interface_name, interface_info in interfaces_info.iteritems()
             if interface_info['implemented_as']))
-        v8_types.set_will_be_garbage_collected_types(set(
+        IdlType.set_will_be_garbage_collected_types(set(
             interface_name
             for interface_name, interface_info in interfaces_info.iteritems()
             if 'WillBeGarbageCollected' in interface_info['inherited_extended_attributes']))

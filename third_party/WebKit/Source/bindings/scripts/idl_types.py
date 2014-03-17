@@ -151,6 +151,8 @@ class IdlType(object):
 
     @property
     def is_enum(self):
+        # FIXME: add an IdlEnumType class and a resolve_enums step at end of
+        # IdlDefinitions constructor
         return self.name in IdlType.enums
 
     @property

@@ -28,14 +28,17 @@
 
 """Generate template values for attributes.
 
+Extends IdlType with property |constructor_type_name|.
+
 Design doc: http://www.chromium.org/developers/design-documents/idl-compiler
 """
 
 import idl_types
+from idl_types import inherits_interface
 from v8_globals import includes, interfaces
 import v8_types
 import v8_utilities
-from v8_utilities import capitalize, cpp_name, has_extended_attribute, uncapitalize
+from v8_utilities import capitalize, cpp_name, has_extended_attribute, scoped_name, strip_suffix, uncapitalize
 
 
 def generate_attribute(interface, attribute):
@@ -43,7 +46,7 @@ def generate_attribute(interface, attribute):
     base_idl_type = idl_type.base_type
     extended_attributes = attribute.extended_attributes
 
-    v8_types.add_includes_for_type(idl_type)
+    idl_type.add_includes_for_type()
 
     # [CheckSecurity]
     is_check_security_for_node = 'CheckSecurity' in extended_attributes
@@ -68,7 +71,7 @@ def generate_attribute(interface, attribute):
     has_strict_type_checking = (
         ('StrictTypeChecking' in extended_attributes or
          'StrictTypeChecking' in interface.extended_attributes) and
-        v8_types.is_wrapper_type(idl_type))
+        idl_type.is_wrapper_type)
 
     if (base_idl_type == 'EventHandler' and
         interface.name in ['Window', 'WorkerGlobalScope'] and
@@ -81,13 +84,12 @@ def generate_attribute(interface, attribute):
         'activity_logging_world_list_for_setter': v8_utilities.activity_logging_world_list(attribute, 'Setter'),  # [ActivityLogging]
         'cached_attribute_validation_method': extended_attributes.get('CachedAttribute'),
         'conditional_string': v8_utilities.conditional_string(attribute),
-        'constructor_type': v8_types.constructor_type_name(idl_type)
+        'constructor_type': idl_type.constructor_type_name
                             if is_constructor_attribute(attribute) else None,
         'cpp_name': cpp_name(attribute),
-        'cpp_type': v8_types.cpp_type(idl_type),
+        'cpp_type': idl_type.cpp_type,
         'deprecate_as': v8_utilities.deprecate_as(attribute),  # [DeprecateAs]
-        'enum_validation_expression':
-            v8_utilities.enum_validation_expression(idl_type),
+        'enum_validation_expression': idl_type.enum_validation_expression,
         'has_custom_getter': has_custom_getter,
         'has_custom_setter': has_custom_setter,
         'has_strict_type_checking': has_strict_type_checking,
@@ -181,7 +183,7 @@ def generate_getter(interface, attribute, contents):
     def v8_set_return_value_statement(for_main_world=False):
         if contents['is_keep_alive_for_gc']:
             return 'v8SetReturnValue(info, wrapper)'
-        return v8_types.v8_set_return_value(idl_type, cpp_value, extended_attributes=extended_attributes, script_wrappable='imp', release=release, for_main_world=for_main_world)
+        return idl_type.v8_set_return_value(cpp_value, extended_attributes=extended_attributes, script_wrappable='imp', release=release, for_main_world=for_main_world)
 
     contents.update({
         'cpp_value': cpp_value,
@@ -193,7 +195,7 @@ def generate_getter(interface, attribute, contents):
 def getter_expression(interface, attribute, contents):
     arguments = []
     this_getter_base_name = getter_base_name(interface, attribute, arguments)
-    getter_name = v8_utilities.scoped_name(interface, attribute, this_getter_base_name)
+    getter_name = scoped_name(interface, attribute, this_getter_base_name)
 
     arguments.extend(v8_utilities.call_with_arguments(attribute))
     if ('ImplementedBy' in attribute.extended_attributes and
@@ -242,12 +244,12 @@ def is_keep_alive_for_gc(interface, attribute):
         # wrapper alive while the owner wrapper is alive, because the attribute
         # never changes.
         (attribute.is_read_only and
-         v8_types.is_wrapper_type(idl_type) and
+         idl_type.is_wrapper_type and
          # There are some exceptions, however:
          not(
              # Node lifetime is managed by object grouping.
-             idl_types.inherits_interface(interface.name, 'Node') or
-             idl_types.inherits_interface(base_idl_type, 'Node') or
+             inherits_interface(interface.name, 'Node') or
+             inherits_interface(base_idl_type, 'Node') or
              # A self-reference is unnecessary.
              attribute.name == 'self' or
              # FIXME: Remove these hard-coded hacks.
@@ -281,8 +283,7 @@ def generate_setter(interface, attribute, contents):
 
     contents.update({
         'cpp_setter': setter_expression(interface, attribute, contents),
-        'v8_value_to_local_cpp_value': v8_types.v8_value_to_local_cpp_value(
-            attribute.idl_type, extended_attributes, 'jsValue', 'cppValue'),
+        'v8_value_to_local_cpp_value': attribute.idl_type.v8_value_to_local_cpp_value(extended_attributes, 'jsValue', 'cppValue'),
     })
 
 
@@ -291,14 +292,14 @@ def setter_expression(interface, attribute, contents):
     arguments = v8_utilities.call_with_arguments(attribute, extended_attributes.get('SetterCallWith'))
 
     this_setter_base_name = setter_base_name(interface, attribute, arguments)
-    setter_name = v8_utilities.scoped_name(interface, attribute, this_setter_base_name)
+    setter_name = scoped_name(interface, attribute, this_setter_base_name)
 
     if ('ImplementedBy' in extended_attributes and
         not attribute.is_static):
         arguments.append('*imp')
     idl_type = attribute.idl_type
     if idl_type.base_type == 'EventHandler':
-        getter_name = v8_utilities.scoped_name(interface, attribute, cpp_name(attribute))
+        getter_name = scoped_name(interface, attribute, cpp_name(attribute))
         contents['event_handler_getter_expression'] = '%s(%s)' % (
             getter_name, ', '.join(arguments))
         if (interface.name in ['Window', 'WorkerGlobalScope'] and
@@ -394,6 +395,11 @@ def property_attributes(attribute):
 ################################################################################
 # Constructors
 ################################################################################
+
+idl_types.IdlType.constructor_type_name = property(
+    # FIXME: replace this with a [ConstructorAttribute] extended attribute
+    lambda self: strip_suffix(self.base_type, 'Constructor'))
+
 
 def is_constructor_attribute(attribute):
     # FIXME: replace this with [ConstructorAttribute] extended attribute
