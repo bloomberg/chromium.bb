@@ -8,6 +8,7 @@
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/frame/caption_buttons/frame_maximize_button.h"
 #include "ash/frame/caption_buttons/frame_maximize_button_observer.h"
+#include "ash/frame/default_header_painter.h"
 #include "ash/frame/frame_border_hit_test_controller.h"
 #include "ash/frame/header_painter.h"
 #include "ash/wm/immersive_fullscreen_controller.h"
@@ -15,30 +16,19 @@
 #include "ash/wm/window_state_delegate.h"
 #include "ash/wm/window_state_observer.h"
 #include "base/command_line.h"
-#include "base/debug/leak_annotations.h"
-#include "grit/ash_resources.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/font_list.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/size.h"
 #include "ui/views/view.h"
-#include "ui/views/widget/native_widget_aura.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/widget/widget_deletion_observer.h"
 
 namespace {
-
-const gfx::FontList& GetTitleFontList() {
-  static const gfx::FontList* title_font_list =
-      new gfx::FontList(views::NativeWidgetAura::GetWindowTitleFontList());
-  ANNOTATE_LEAKING_OBJECT_PTR(title_font_list);
-  return *title_font_list;
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 // CustomFrameViewAshWindowStateDelegate
@@ -160,8 +150,8 @@ class CustomFrameViewAsh::HeaderView
   virtual void Layout() OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
-  HeaderPainter* header_painter() {
-    return header_painter_.get();
+  FrameCaptionButtonContainerView* caption_button_container() {
+    return caption_button_container_;
   }
 
  private:
@@ -179,7 +169,7 @@ class CustomFrameViewAsh::HeaderView
   views::Widget* frame_;
 
   // Helper for painting the header.
-  scoped_ptr<HeaderPainter> header_painter_;
+  scoped_ptr<DefaultHeaderPainter> header_painter_;
 
   // View which contains the window caption buttons.
   FrameCaptionButtonContainerView* caption_button_container_;
@@ -200,7 +190,7 @@ class CustomFrameViewAsh::HeaderView
 
 CustomFrameViewAsh::HeaderView::HeaderView(views::Widget* frame)
     : frame_(frame),
-      header_painter_(new ash::HeaderPainter),
+      header_painter_(new ash::DefaultHeaderPainter),
       caption_button_container_(NULL),
       maximize_bubble_(NULL),
       fullscreen_visible_fraction_(0) {
@@ -218,8 +208,7 @@ CustomFrameViewAsh::HeaderView::HeaderView(views::Widget* frame)
   if (frame_maximize_button)
     frame_maximize_button->AddObserver(this);
 
-  header_painter_->Init(HeaderPainter::STYLE_OTHER, frame_, this, NULL,
-      caption_button_container_);
+  header_painter_->Init(frame_, this, NULL, caption_button_container_);
 }
 
 CustomFrameViewAsh::HeaderView::~HeaderView() {
@@ -230,7 +219,7 @@ CustomFrameViewAsh::HeaderView::~HeaderView() {
 }
 
 void CustomFrameViewAsh::HeaderView::SchedulePaintForTitle() {
-  header_painter_->SchedulePaintForTitle(GetTitleFontList());
+  header_painter_->SchedulePaintForTitle();
 }
 
 void CustomFrameViewAsh::HeaderView::ResetWindowControls() {
@@ -246,9 +235,7 @@ int CustomFrameViewAsh::HeaderView::GetPreferredOnScreenHeight() const {
 }
 
 int CustomFrameViewAsh::HeaderView::GetPreferredHeight() const {
-  // Reserve enough space to see the buttons and the separator line.
-  return caption_button_container_->bounds().bottom() +
-      header_painter_->HeaderContentSeparatorSize();
+  return header_painter_->GetHeaderHeightForPainting();
 }
 
 int CustomFrameViewAsh::HeaderView::GetMinimumWidth() const {
@@ -257,7 +244,6 @@ int CustomFrameViewAsh::HeaderView::GetMinimumWidth() const {
 
 void CustomFrameViewAsh::HeaderView::Layout() {
   header_painter_->LayoutHeader();
-  header_painter_->set_header_height(GetPreferredHeight());
 }
 
 void CustomFrameViewAsh::HeaderView::OnPaint(gfx::Canvas* canvas) {
@@ -265,21 +251,9 @@ void CustomFrameViewAsh::HeaderView::OnPaint(gfx::Canvas* canvas) {
       frame_->non_client_view()->frame_view()->ShouldPaintAsActive();
   caption_button_container_->SetPaintAsActive(paint_as_active);
 
-  int theme_image_id = 0;
-  if (paint_as_active)
-    theme_image_id = IDR_AURA_WINDOW_HEADER_BASE_ACTIVE;
-  else
-    theme_image_id = IDR_AURA_WINDOW_HEADER_BASE_INACTIVE;
-
   HeaderPainter::Mode header_mode = paint_as_active ?
       HeaderPainter::MODE_ACTIVE : HeaderPainter::MODE_INACTIVE;
-  header_painter_->PaintHeader(
-      canvas,
-      header_mode,
-      theme_image_id,
-      0);
-  header_painter_->PaintTitleBar(canvas, GetTitleFontList());
-  header_painter_->PaintHeaderContentSeparator(canvas, header_mode);
+  header_painter_->PaintHeader(canvas, header_mode);
 }
 
 void CustomFrameViewAsh::HeaderView::OnImmersiveRevealStarted() {
@@ -419,20 +393,21 @@ void CustomFrameViewAsh::InitImmersiveFullscreenControllerForView(
 // CustomFrameViewAsh, views::NonClientFrameView overrides:
 
 gfx::Rect CustomFrameViewAsh::GetBoundsForClientView() const {
-  int top_height = NonClientTopBorderHeight();
-  return HeaderPainter::GetBoundsForClientView(top_height, bounds());
+  gfx::Rect client_bounds = bounds();
+  client_bounds.Inset(0, NonClientTopBorderHeight(), 0, 0);
+  return client_bounds;
 }
 
 gfx::Rect CustomFrameViewAsh::GetWindowBoundsForClientBounds(
     const gfx::Rect& client_bounds) const {
-  int top_height = NonClientTopBorderHeight();
-  return HeaderPainter::GetWindowBoundsForClientBounds(top_height,
-                                                       client_bounds);
+  gfx::Rect window_bounds = client_bounds;
+  window_bounds.Inset(0, -NonClientTopBorderHeight(), 0, 0);
+  return window_bounds;
 }
 
 int CustomFrameViewAsh::NonClientHitTest(const gfx::Point& point) {
   return FrameBorderHitTestController::NonClientHitTest(this,
-      header_view_->header_painter(), point);
+      header_view_->caption_button_container(), point);
 }
 
 void CustomFrameViewAsh::GetWindowMask(const gfx::Size& size,

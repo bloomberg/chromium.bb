@@ -11,7 +11,6 @@
 
 namespace ash {
 class FrameBorderHitTestController;
-class HeaderPainter;
 class ImmersiveFullscreenController;
 }
 namespace views {

@@ -5,7 +5,7 @@
 #include "ash/frame/frame_border_hit_test_controller.h"
 
 #include "ash/ash_constants.h"
-#include "ash/frame/header_painter.h"
+#include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/wm/resize_handle_window_targeter.h"
 #include "ash/wm/window_state_observer.h"
 #include "ui/aura/env.h"
@@ -31,8 +31,8 @@ FrameBorderHitTestController::~FrameBorderHitTestController() {
 // static
 int FrameBorderHitTestController::NonClientHitTest(
     views::NonClientFrameView* view,
-    HeaderPainter* header_painter,
-    const gfx::Point& point) {
+    FrameCaptionButtonContainerView* caption_button_container,
+    const gfx::Point& point_in_widget) {
   gfx::Rect expanded_bounds = view->bounds();
   int outside_bounds = kResizeOutsideBoundsSize;
 
@@ -40,7 +40,7 @@ int FrameBorderHitTestController::NonClientHitTest(
     outside_bounds *= kResizeOutsideBoundsScaleForTouch;
   expanded_bounds.Inset(-outside_bounds, -outside_bounds);
 
-  if (!expanded_bounds.Contains(point))
+  if (!expanded_bounds.Contains(point_in_widget))
     return HTNOWHERE;
 
   // Check the frame first, as we allow a small area overlapping the contents
@@ -52,7 +52,7 @@ int FrameBorderHitTestController::NonClientHitTest(
   int resize_border =
       frame->IsMaximized() || frame->IsFullscreen() ? 0 :
       kResizeInsideBoundsSize;
-  int frame_component = view->GetHTComponentForFrame(point,
+  int frame_component = view->GetHTComponentForFrame(point_in_widget,
                                                      resize_border,
                                                      resize_border,
                                                      kResizeAreaCornerSize,
@@ -61,11 +61,23 @@ int FrameBorderHitTestController::NonClientHitTest(
   if (frame_component != HTNOWHERE)
     return frame_component;
 
-  int client_component = frame->client_view()->NonClientHitTest(point);
+  int client_component = frame->client_view()->NonClientHitTest(
+      point_in_widget);
   if (client_component != HTNOWHERE)
     return client_component;
 
-  return header_painter->NonClientHitTest(point);
+  if (caption_button_container->visible()) {
+    gfx::Point point_in_caption_button_container(point_in_widget);
+    views::View::ConvertPointFromWidget(caption_button_container,
+        &point_in_caption_button_container);
+    int caption_button_component = caption_button_container->NonClientHitTest(
+        point_in_caption_button_container);
+    if (caption_button_component != HTNOWHERE)
+      return caption_button_component;
+  }
+
+  // Caption is a safe default.
+  return HTCAPTION;
 }
 
 }  // namespace ash

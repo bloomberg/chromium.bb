@@ -57,7 +57,6 @@ class BrowserNonClientFrameViewAsh
   virtual bool HitTestRect(const gfx::Rect& rect) const OVERRIDE;
   virtual void GetAccessibleState(ui::AXViewState* state) OVERRIDE;
   virtual gfx::Size GetMinimumSize() OVERRIDE;
-  virtual void OnThemeChanged() OVERRIDE;
 
   // Overridden from chrome::TabIconViewModel:
   virtual bool ShouldTabIconViewAnimate() const OVERRIDE;
@@ -100,25 +99,9 @@ class BrowserNonClientFrameViewAsh
 
   void PaintToolbarBackground(gfx::Canvas* canvas);
 
-  // Windows without a toolbar need to draw their own line under the header,
-  // above the content area.
+  // Draws the line under the header for windows without a toolbar and not using
+  // the packaged app header style.
   void PaintContentEdge(gfx::Canvas* canvas);
-
-  // Sets |frame_image_id| and |frame_image_overlay_id| to the ids of the header
-  // frame image and the header frame overlay image respectively which should be
-  // used for tabbed browser windows. |frame_overlay_image_id| is set to 0 if no
-  // overlay image should be used.
-  void GetFrameImageIdsForTabbedBrowser(int* frame_image_id,
-                                        int* frame_overlay_image_id) const;
-
-
-  // Returns the id of the header frame image which should be used for browser
-  // popups. Browser popups are not themed and do not use a frame overlay image.
-  int GetFrameImageIdForBrowserPopup() const;
-
-  // Returns the id of the header frame image which should be used for hosted
-  // apps. Hosted apps are not themed and do not use a frame overlay image.
-  int GetFrameImageIdForHostedApp() const;
 
   // View which contains the window controls.
   ash::FrameCaptionButtonContainerView* caption_button_container_;

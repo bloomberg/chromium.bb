@@ -114,7 +114,7 @@ TEST_F(CustomFrameViewAshTest, HeaderHeight) {
       rb.GetImageSkiaNamed(IDR_AURA_WINDOW_CONTROL_BACKGROUND_H);
 
   // |kSeparatorSize| should match |kHeaderContentSeparatorSize| in
-  // header_painter.cc
+  // default_header_painter.cc
   // TODO(pkotwicz): Clean this test up once the separator overlays the window
   // controls.
   const int kSeparatorSize = 1;

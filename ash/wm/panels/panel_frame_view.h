@@ -7,7 +7,6 @@
 
 #include "ash/ash_export.h"
 #include "base/basictypes.h"
-#include "ui/gfx/font_list.h"
 #include "ui/views/window/non_client_view.h"
 
 namespace views {
@@ -15,10 +14,9 @@ class ImageView;
 }
 
 namespace ash {
-
+class DefaultHeaderPainter;
 class FrameCaptionButtonContainerView;
 class FrameBorderHitTestController;
-class HeaderPainter;
 
 class ASH_EXPORT PanelFrameView : public views::NonClientFrameView {
  public:
@@ -64,10 +62,9 @@ class ASH_EXPORT PanelFrameView : public views::NonClientFrameView {
   FrameCaptionButtonContainerView* caption_button_container_;
   views::ImageView* window_icon_;
   gfx::Rect client_view_bounds_;
-  const gfx::FontList title_font_list_;
 
   // Helper class for painting the header.
-  scoped_ptr<HeaderPainter> header_painter_;
+  scoped_ptr<DefaultHeaderPainter> header_painter_;
 
   // Updates the hittest bounds overrides based on the window state type.
   scoped_ptr<FrameBorderHitTestController> frame_border_hit_test_controller_;
