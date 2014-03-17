@@ -276,13 +276,11 @@
       'message': 'Compiling <(_target_name) java sources',
       'variables': {
         'java_sources': ['>!@(find >(java_in_dir)/src >(additional_src_dirs) -name "*.java")'],
-        'java_source_list': '>|(javasources.<(_target_name).gypcmd >@(java_sources))',
       },
       'inputs': [
         '<(DEPTH)/build/android/gyp/util/build_utils.py',
         '<(DEPTH)/build/android/gyp/javac.py',
         '>@(java_sources)',
-        '>(java_source_list)',
         '>@(input_jars_paths)',
         '>@(additional_input_paths)',
       ],
@@ -293,11 +291,11 @@
         'python', '<(DEPTH)/build/android/gyp/javac.py',
         '--output-dir=<(classes_dir)',
         '--classpath=>(input_jars_paths)',
-        '--src-filelist=>(java_source_list)',
         '--src-gendirs=>(generated_src_dirs)',
         '--javac-includes=<(javac_includes)',
         '--chromium-code=<(chromium_code)',
         '--stamp=<(compile_stamp)',
+        '>@(java_sources)',
       ]
     },
     {

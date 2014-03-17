@@ -13,12 +13,11 @@ from util import build_utils
 from util import md5_check
 
 
-def DoJavac(options):
+def DoJavac(options, args):
   output_dir = options.output_dir
 
   src_gendirs = build_utils.ParseGypList(options.src_gendirs)
-  java_files = (open(options.src_filelist).read().splitlines() +
-                build_utils.FindInDirectories(src_gendirs, '*.java'))
+  java_files = args + build_utils.FindInDirectories(src_gendirs, '*.java')
   if options.javac_includes:
     javac_includes = build_utils.ParseGypList(options.javac_includes)
     filtered_java_files = []
@@ -77,7 +76,6 @@ def DoJavac(options):
 
 def main(argv):
   parser = optparse.OptionParser()
-  parser.add_option('--src-filelist', help='File list containing java files.')
   parser.add_option('--src-gendirs',
       help='Directories containing generated java files.')
   parser.add_option('--javac-includes',
@@ -93,9 +91,9 @@ def main(argv):
   # TODO(newt): remove this once http://crbug.com/177552 is fixed in ninja.
   parser.add_option('--ignore', help='Ignored.')
 
-  options, _ = parser.parse_args()
+  options, args = parser.parse_args()
 
-  DoJavac(options)
+  DoJavac(options, args)
 
   if options.stamp:
     build_utils.Touch(options.stamp)

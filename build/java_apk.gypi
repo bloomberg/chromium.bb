@@ -526,14 +526,12 @@
         # targets use the same java_in_dir and both use java_apk.gypi or
         # both use java.gypi.)
         'java_sources': ['>!@(find >(java_in_dir)/src >(additional_src_dirs) -name "*.java"  # apk)'],
-        'java_source_list': '>|(javasources.<(_target_name).gypcmd >@(java_sources))',
 
       },
       'inputs': [
         '<(DEPTH)/build/android/gyp/util/build_utils.py',
         '<(DEPTH)/build/android/gyp/javac.py',
         '>@(java_sources)',
-        '>(java_source_list)',
         '>@(input_jars_paths)',
         '<(codegen_stamp)',
       ],
@@ -549,11 +547,11 @@
         'python', '<(DEPTH)/build/android/gyp/javac.py',
         '--output-dir=<(classes_dir)',
         '--classpath=>(input_jars_paths) <(android_sdk_jar)',
-        '--src-filelist=>(java_source_list)',
         '--src-gendirs=>(gen_src_dirs)',
         '--javac-includes=<(javac_includes)',
         '--chromium-code=<(chromium_code)',
         '--stamp=<(compile_stamp)',
+        '>@(java_sources)',
       ],
     },
     {
