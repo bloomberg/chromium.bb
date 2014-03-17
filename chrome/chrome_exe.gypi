@@ -597,12 +597,6 @@
             '../win8/delegate_execute/delegate_execute.gyp:*',
           ],
         }],
-        ['chromeos==1', {
-          'ldflags!': [
-            # http://crbug.com/353127
-            '-Wl,--fatal-warnings',
-          ],
-        }],
       ],
     },
   ],
