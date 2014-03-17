@@ -59,6 +59,7 @@
 #include "core/dom/shadow/InsertionPoint.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/htmlediting.h"
+#include "core/editing/markup.h"
 #include "core/events/BeforeLoadEvent.h"
 #include "core/events/Event.h"
 #include "core/events/EventDispatchMediator.h"
@@ -1497,11 +1498,7 @@ void Node::setTextContent(const String& text)
         case ELEMENT_NODE:
         case ATTRIBUTE_NODE:
         case DOCUMENT_FRAGMENT_NODE: {
-            RefPtr<ContainerNode> container = toContainerNode(this);
-            ChildListMutationScope mutation(*this);
-            container->removeChildren();
-            if (!text.isEmpty())
-                container->appendChild(document().createTextNode(text), ASSERT_NO_EXCEPTION);
+            replaceChildrenWithText(toContainerNode(this), text, ASSERT_NO_EXCEPTION);
             return;
         }
         case DOCUMENT_NODE:
