@@ -8,7 +8,7 @@ var ctx2D = canvas2D.getContext("2d");
 var canvas3D = document.createElement('canvas');
 var gl = canvas3D.getContext('experimental-webgl');
 if (!gl)
-    PerfTestRunner.log("\nWebGL is not supported or enabled on this platform!\n");
+    PerfTestRunner.logFatalError("\nWebGL is not supported or enabled on this platform!\n");
 var MEASURE_DRAW_TIMES = 1000;
 var MAX_COUNT = 60000;
 var count = 0;
@@ -34,21 +34,18 @@ function renderWebGL(gl) {
 }
 
 function drawWebGLToCanvas2D() {
-    if (gl) {
-        var start = PerfTestRunner.now();
-        for (var i = 0; i < MEASURE_DRAW_TIMES; i++) {
-            // draw static WebGL
-            ctx2D.drawImage(canvas3D, 0, 0);
-        }
-        // Calling getImageData() is just to flush out the content when
-        // accelerated 2D canvas is in use. The cost of reading 1x1 pixels is low.
-        ctx2D.getImageData(0, 0, 1, 1);
-        count++;
+    var start = PerfTestRunner.now();
+    for (var i = 0; i < MEASURE_DRAW_TIMES; i++) {
+        // draw static WebGL
+        ctx2D.drawImage(canvas3D, 0, 0);
+    }
+    // Calling getImageData() is just to flush out the content when
+    // accelerated 2D canvas is in use. The cost of reading 1x1 pixels is low.
+    ctx2D.getImageData(0, 0, 1, 1);
+    count++;
 
-        var elapsedTime = PerfTestRunner.now() - start;
-        PerfTestRunner.measureValueAsync(MEASURE_DRAW_TIMES * 1000 / elapsedTime);
-    } else
-        PerfTestRunner.measureValueAsync(0);
+    var elapsedTime = PerfTestRunner.now() - start;
+    PerfTestRunner.measureValueAsync(MEASURE_DRAW_TIMES * 1000 / elapsedTime);
     if (count < MAX_COUNT)
         requestAnimationFrame(drawWebGLToCanvas2D);
 }
@@ -64,8 +61,7 @@ window.onload = function () {
     // but this API is not available in JS or WebPage. Assume the threshold size is 256x257
     // and the dest canvas is HW accelerated Canvas when setting its size to 1024x1024.
     setSize(1024, 1024, 1024, 1024);
-    if (gl)
-        renderWebGL(gl);
+    renderWebGL(gl);
     drawWebGLToCanvas2D();
 }
 

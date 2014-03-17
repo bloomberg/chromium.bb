@@ -142,14 +142,14 @@ if (window.testRunner) {
             logInDocument(text);
     }
 
-    function logFatalError(text) {
+    PerfTestRunner.logFatalError = function (text) {
         PerfTestRunner.log(text);
         finish();
     }
 
     function start(test, runner) {
         if (!test) {
-            logFatalError("Got a bad test object.");
+            PerfTestRunner.logFatalError("Got a bad test object.");
             return;
         }
         currentTest = test;
@@ -173,7 +173,7 @@ if (window.testRunner) {
 
                 var measuredValue = runner();
             } catch (exception) {
-                logFatalError("Got an exception while running test.run with name=" + exception.name + ", message=" + exception.message);
+                PerfTestRunner.logFatalError("Got an exception while running test.run with name=" + exception.name + ", message=" + exception.message);
                 return;
             }
 
@@ -182,7 +182,7 @@ if (window.testRunner) {
             try {
                 ignoreWarmUpAndLog(measuredValue);
             } catch (exception) {
-                logFatalError("Got an exception while logging the result with name=" + exception.name + ", message=" + exception.message);
+                PerfTestRunner.logFatalError("Got an exception while logging the result with name=" + exception.name + ", message=" + exception.message);
                 return;
             }
 
@@ -239,7 +239,7 @@ if (window.testRunner) {
         try {
             ignoreWarmUpAndLog(measuredValue);
         } catch (exception) {
-            logFatalError("Got an exception while logging the result with name=" + exception.name + ", message=" + exception.message);
+            PerfTestRunner.logFatalError("Got an exception while logging the result with name=" + exception.name + ", message=" + exception.message);
             return;
         }
 
