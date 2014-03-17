@@ -17,7 +17,7 @@ test(function() {
 }, 'TimedItem.localTime and TimedItem.currentIteration are null when animation is not associated with a Player');
 
 test(function() {
-    var animation = element.animate(keyframes, {fill: 'both', duration: 2, iterations: 3});
+    var animation = element.animate(keyframes, {fill: 'both', duration: 2, iterations: 3}).source;
     animation.player.currentTime = -1;
     assert_equals(animation.localTime, -1);
     assert_equals(animation.currentIteration, 0);
@@ -33,7 +33,7 @@ test(function() {
 }, 'TimedItem.localTime and TimedItem.currentIteration return reasonable values when an animation is in effect');
 
 test(function() {
-    var animation = element.animate(keyframes);
+    var animation = element.animate(keyframes).source;
     animation.player.currentTime = -1;
     assert_equals(animation.currentIteration, null);
     animation.player.currentTime = 1;

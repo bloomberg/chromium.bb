@@ -65,7 +65,7 @@ bool AnimationStack::hasActiveAnimationsOnCompositor(CSSPropertyID property) con
     return false;
 }
 
-AnimationEffect::CompositableValueMap AnimationStack::compositableValues(const AnimationStack* animationStack, const Vector<InertAnimation*>* newAnimations, const HashSet<const Player*>* cancelledPlayers, Animation::Priority priority)
+AnimationEffect::CompositableValueMap AnimationStack::compositableValues(const AnimationStack* animationStack, const Vector<InertAnimation*>* newAnimations, const HashSet<const AnimationPlayer*>* cancelledAnimationPlayers, Animation::Priority priority)
 {
     AnimationEffect::CompositableValueMap result;
 
@@ -75,7 +75,7 @@ AnimationEffect::CompositableValueMap AnimationStack::compositableValues(const A
             Animation* animation = animations[i];
             if (animation->priority() != priority)
                 continue;
-            if (cancelledPlayers && cancelledPlayers->contains(animation->player()))
+            if (cancelledAnimationPlayers && cancelledAnimationPlayers->contains(animation->player()))
                 continue;
             copyToCompositableValueMap(animation->compositableValues(), result);
         }

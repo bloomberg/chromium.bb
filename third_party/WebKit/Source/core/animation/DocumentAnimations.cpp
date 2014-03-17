@@ -65,7 +65,7 @@ void DocumentAnimations::updateAnimationTimingForGetComputedStyle(Node& node, CS
     if (!node.isElementNode())
         return;
     const Element& element = toElement(node);
-    if (element.document().timeline().hasOutdatedPlayer()) {
+    if (element.document().timeline().hasOutdatedAnimationPlayer()) {
         updateAnimationTiming(element.document());
         return;
     }

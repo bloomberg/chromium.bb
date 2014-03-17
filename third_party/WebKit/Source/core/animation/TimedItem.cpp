@@ -31,8 +31,9 @@
 #include "config.h"
 #include "core/animation/TimedItem.h"
 
-#include "core/animation/Player.h"
+#include "core/animation/AnimationPlayer.h"
 #include "core/animation/TimedItemCalculations.h"
+#include "core/animation/TimedItemTiming.h"
 
 namespace WebCore {
 
@@ -183,6 +184,11 @@ const TimedItem::CalculatedTiming& TimedItem::ensureCalculated() const
         m_player->update();
     ASSERT(!m_player->outdated());
     return m_calculated;
+}
+
+PassRefPtr<TimedItemTiming> TimedItem::specified()
+{
+    return TimedItemTiming::create(this);
 }
 
 } // namespace WebCore

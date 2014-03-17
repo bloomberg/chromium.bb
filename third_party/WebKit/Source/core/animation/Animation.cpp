@@ -34,10 +34,10 @@
 #include "bindings/v8/Dictionary.h"
 #include "core/animation/ActiveAnimations.h"
 #include "core/animation/AnimationHelpers.h"
+#include "core/animation/AnimationPlayer.h"
 #include "core/animation/CompositorAnimations.h"
 #include "core/animation/DocumentTimeline.h"
 #include "core/animation/KeyframeEffectModel.h"
-#include "core/animation/Player.h"
 #include "core/dom/Element.h"
 #include "core/rendering/RenderLayer.h"
 

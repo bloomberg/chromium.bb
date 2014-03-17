@@ -190,8 +190,8 @@ TEST_F(AnimationDocumentTimelineTest, PauseForTesting)
     timing.fillMode = Timing::FillModeForwards;
     RefPtr<Animation> anim1 = Animation::create(element.get(), KeyframeEffectModel::create(KeyframeEffectModel::KeyframeVector()), timing);
     RefPtr<Animation> anim2  = Animation::create(element.get(), KeyframeEffectModel::create(KeyframeEffectModel::KeyframeVector()), timing);
-    Player* player1 = timeline->play(anim1.get());
-    Player* player2 = timeline->play(anim2.get());
+    AnimationPlayer* player1 = timeline->play(anim1.get());
+    AnimationPlayer* player2 = timeline->play(anim2.get());
     timeline->pauseAnimationsForTesting(seekTime);
 
     EXPECT_FLOAT_EQ(seekTime, player1->currentTime());
@@ -284,9 +284,9 @@ TEST_F(AnimationDocumentTimelineTest, PlayAfterDocumentDeref)
     timeline->play(anim.get());
 }
 
-TEST_F(AnimationDocumentTimelineTest, UsePlayerAfterTimelineDeref)
+TEST_F(AnimationDocumentTimelineTest, UseAnimationPlayerAfterTimelineDeref)
 {
-    RefPtr<Player> player = timeline->createPlayer(0);
+    RefPtr<AnimationPlayer> player = timeline->createAnimationPlayer(0);
     timeline.clear();
     // Test passes if this does not crash.
     player->setStartTime(0);

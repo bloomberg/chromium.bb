@@ -32,7 +32,7 @@
 #define DocumentTimeline_h
 
 #include "core/animation/AnimationEffect.h"
-#include "core/animation/Player.h"
+#include "core/animation/AnimationPlayer.h"
 #include "core/dom/Element.h"
 #include "core/events/Event.h"
 #include "platform/Timer.h"
@@ -65,10 +65,10 @@ public:
     void serviceAnimations();
 
     // Creates a player attached to this timeline, but without a start time.
-    Player* createPlayer(TimedItem*);
-    Player* play(TimedItem*);
+    AnimationPlayer* createAnimationPlayer(TimedItem*);
+    AnimationPlayer* play(TimedItem*);
 
-    void playerDestroyed(Player* player)
+    void playerDestroyed(AnimationPlayer* player)
     {
         ASSERT(m_players.contains(player));
         m_players.remove(player);
@@ -83,8 +83,8 @@ public:
     void pauseAnimationsForTesting(double);
     size_t numberOfActiveAnimationsForTesting() const;
 
-    void setOutdatedPlayer(Player*);
-    bool hasOutdatedPlayer() const { return m_hasOutdatedPlayer; }
+    void setOutdatedAnimationPlayer(AnimationPlayer*);
+    bool hasOutdatedAnimationPlayer() const { return m_hasOutdatedAnimationPlayer; }
 
     void detachFromDocument();
 
@@ -94,11 +94,11 @@ protected:
 private:
     double m_zeroTime;
     Document* m_document;
-    // Players which will be updated on the next frame
+    // AnimationPlayers which will be updated on the next frame
     // i.e. current, in effect, or had timing changed
-    HashSet<RefPtr<Player> > m_playersNeedingUpdate;
-    HashSet<Player*> m_players;
-    bool m_hasOutdatedPlayer;
+    HashSet<RefPtr<AnimationPlayer> > m_playersNeedingUpdate;
+    HashSet<AnimationPlayer*> m_players;
+    bool m_hasOutdatedAnimationPlayer;
 
     void wake();
 

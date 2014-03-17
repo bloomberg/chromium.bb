@@ -31,7 +31,6 @@
 #ifndef TimedItem_h
 #define TimedItem_h
 
-#include "core/animation/TimedItemTiming.h"
 #include "core/animation/Timing.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
@@ -39,8 +38,9 @@
 
 namespace WebCore {
 
-class Player;
+class AnimationPlayer;
 class TimedItem;
+class TimedItemTiming;
 
 static inline bool isNull(double value)
 {
@@ -53,7 +53,7 @@ static inline double nullValue()
 }
 
 class TimedItem : public RefCounted<TimedItem> {
-    friend class Player; // Calls attach/detach, updateInheritedTime.
+    friend class AnimationPlayer; // Calls attach/detach, updateInheritedTime.
 public:
     // Note that logic in CSSAnimations depends on the order of these values.
     enum Phase {
@@ -87,11 +87,11 @@ public:
     double startTime() const { return m_startTime; }
     double endTime() const { return startTime() + specifiedTiming().startDelay + activeDuration() + specifiedTiming().endDelay; }
 
-    const Player* player() const { return m_player; }
-    Player* player() { return m_player; }
-    Player* player(bool& isNull) { isNull = !m_player; return m_player; }
+    const AnimationPlayer* player() const { return m_player; }
+    AnimationPlayer* player() { return m_player; }
+    AnimationPlayer* player(bool& isNull) { isNull = !m_player; return m_player; }
     const Timing& specifiedTiming() const { return m_specified; }
-    PassRefPtr<TimedItemTiming> specified() { return TimedItemTiming::create(this); }
+    PassRefPtr<TimedItemTiming> specified();
     void updateSpecifiedTiming(const Timing&);
 
     double localTime(bool& isNull) const { isNull = !m_player; return ensureCalculated().localTime; }
@@ -117,7 +117,7 @@ private:
     virtual void didAttach() { };
     virtual void willDetach() { };
 
-    void attach(Player* player)
+    void attach(AnimationPlayer* player)
     {
         m_player = player;
         didAttach();
@@ -133,7 +133,7 @@ private:
     // FIXME: m_parent and m_startTime are placeholders, they depend on timing groups.
     TimedItem* const m_parent;
     const double m_startTime;
-    Player* m_player;
+    AnimationPlayer* m_player;
     Timing m_specified;
     OwnPtr<EventDelegate> m_eventDelegate;
 

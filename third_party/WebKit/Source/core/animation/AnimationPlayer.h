@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef Player_h
-#define Player_h
+#ifndef AnimationPlayer_h
+#define AnimationPlayer_h
 
 #include "core/animation/TimedItem.h"
 #include "wtf/RefPtr.h"
@@ -39,11 +39,11 @@ namespace WebCore {
 class DocumentTimeline;
 class ExceptionState;
 
-class Player FINAL : public RefCounted<Player> {
+class AnimationPlayer FINAL : public RefCounted<AnimationPlayer> {
 
 public:
-    ~Player();
-    static PassRefPtr<Player> create(DocumentTimeline&, TimedItem*);
+    ~AnimationPlayer();
+    static PassRefPtr<AnimationPlayer> create(DocumentTimeline&, TimedItem*);
 
     // Returns whether this player is still current or in effect.
     bool update();
@@ -96,10 +96,10 @@ public:
     void cancelAnimationOnCompositor();
     bool hasActiveAnimationsOnCompositor();
 
-    static bool hasLowerPriority(Player*, Player*);
+    static bool hasLowerPriority(AnimationPlayer*, AnimationPlayer*);
 
 private:
-    Player(DocumentTimeline&, TimedItem*);
+    AnimationPlayer(DocumentTimeline&, TimedItem*);
     double sourceEnd() const;
     bool limited(double currentTime) const;
     double currentTimeWithoutLag() const;

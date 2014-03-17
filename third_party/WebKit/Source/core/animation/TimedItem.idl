@@ -42,5 +42,5 @@
     readonly attribute double endTime;
 
     readonly attribute Timing specified;
-    readonly attribute Player? player;
+    readonly attribute AnimationPlayer? player;
 };

@@ -32,8 +32,8 @@
 #define CSSAnimations_h
 
 #include "core/animation/Animation.h"
+#include "core/animation/AnimationPlayer.h"
 #include "core/animation/InertAnimation.h"
-#include "core/animation/Player.h"
 #include "core/animation/css/CSSAnimationData.h"
 #include "core/css/StylePropertySet.h"
 #include "core/dom/Document.h"
@@ -61,12 +61,12 @@ public:
         m_newAnimations.append(newAnimation);
     }
     // Returns whether player has been cancelled and should be filtered during style application.
-    bool isCancelledAnimation(const Player* player) const { return m_cancelledAnimationPlayers.contains(player); }
-    void cancelAnimation(const AtomicString& name, const HashSet<RefPtr<Player> >& players)
+    bool isCancelledAnimation(const AnimationPlayer* player) const { return m_cancelledAnimationAnimationPlayers.contains(player); }
+    void cancelAnimation(const AtomicString& name, const HashSet<RefPtr<AnimationPlayer> >& players)
     {
         m_cancelledAnimationNames.append(name);
-        for (HashSet<RefPtr<Player> >::const_iterator iter = players.begin(); iter != players.end(); ++iter)
-            m_cancelledAnimationPlayers.add(iter->get());
+        for (HashSet<RefPtr<AnimationPlayer> >::const_iterator iter = players.begin(); iter != players.end(); ++iter)
+            m_cancelledAnimationAnimationPlayers.add(iter->get());
     }
     void toggleAnimationPaused(const AtomicString& name)
     {
@@ -91,7 +91,7 @@ public:
     };
     const Vector<NewAnimation>& newAnimations() const { return m_newAnimations; }
     const Vector<AtomicString>& cancelledAnimationNames() const { return m_cancelledAnimationNames; }
-    const HashSet<const Player*>& cancelledAnimationPlayers() const { return m_cancelledAnimationPlayers; }
+    const HashSet<const AnimationPlayer*>& cancelledAnimationAnimationPlayers() const { return m_cancelledAnimationAnimationPlayers; }
     const Vector<AtomicString>& animationsWithPauseToggled() const { return m_animationsWithPauseToggled; }
 
     struct NewTransition {
@@ -114,7 +114,7 @@ public:
     {
         return m_newAnimations.isEmpty()
             && m_cancelledAnimationNames.isEmpty()
-            && m_cancelledAnimationPlayers.isEmpty()
+            && m_cancelledAnimationAnimationPlayers.isEmpty()
             && m_animationsWithPauseToggled.isEmpty()
             && m_newTransitions.isEmpty()
             && m_cancelledTransitions.isEmpty()
@@ -128,7 +128,7 @@ private:
     // incomplete keyframes.
     Vector<NewAnimation> m_newAnimations;
     Vector<AtomicString> m_cancelledAnimationNames;
-    HashSet<const Player*> m_cancelledAnimationPlayers;
+    HashSet<const AnimationPlayer*> m_cancelledAnimationAnimationPlayers;
     Vector<AtomicString> m_animationsWithPauseToggled;
 
     NewTransitionMap m_newTransitions;
@@ -160,10 +160,10 @@ private:
     // Note that a single animation name may map to multiple players due to
     // the way in which we split up animations with incomplete keyframes.
     // FIXME: Once the Web Animations model supports groups, we could use a
-    // ParGroup to drive multiple animations from a single Player.
-    typedef HashMap<AtomicString, HashSet<RefPtr<Player> > > AnimationMap;
+    // ParGroup to drive multiple animations from a single AnimationPlayer.
+    typedef HashMap<AtomicString, HashSet<RefPtr<AnimationPlayer> > > AnimationMap;
     struct RunningTransition {
-        Animation* transition; // The TransitionTimeline keeps the Players alive
+        Animation* transition; // The TransitionTimeline keeps the AnimationPlayers alive
         const AnimatableValue* from;
         const AnimatableValue* to;
     };

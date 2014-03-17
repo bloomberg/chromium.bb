@@ -364,14 +364,14 @@ void CSSAnimations::calculateAnimationUpdate(CSSAnimationUpdate* update, Element
                 AnimationMap::const_iterator existing(cssAnimations->m_animations.find(animationName));
                 if (existing != cssAnimations->m_animations.end()) {
                     inactive.remove(animationName);
-                    const HashSet<RefPtr<Player> >& players = existing->value;
+                    const HashSet<RefPtr<AnimationPlayer> >& players = existing->value;
                     ASSERT(!players.isEmpty());
-                    bool isFirstPlayerPaused = (*players.begin())->paused();
+                    bool isFirstAnimationPlayerPaused = (*players.begin())->paused();
 #ifndef NDEBUG
-                    for (HashSet<RefPtr<Player> >::const_iterator iter = players.begin(); iter != players.end(); ++iter)
-                        ASSERT((*iter)->paused() == isFirstPlayerPaused);
+                    for (HashSet<RefPtr<AnimationPlayer> >::const_iterator iter = players.begin(); iter != players.end(); ++iter)
+                        ASSERT((*iter)->paused() == isFirstAnimationPlayerPaused);
 #endif
-                    if ((animationData->playState() == AnimPlayStatePaused) != isFirstPlayerPaused) {
+                    if ((animationData->playState() == AnimPlayStatePaused) != isFirstAnimationPlayerPaused) {
                         ASSERT(!activeAnimations || !activeAnimations->isAnimationStyleChange());
                         update->toggleAnimationPaused(animationName);
                     }
@@ -422,19 +422,19 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
     DisableCompositingQueryAsserts disabler;
 
     for (Vector<AtomicString>::const_iterator iter = update->cancelledAnimationNames().begin(); iter != update->cancelledAnimationNames().end(); ++iter) {
-        const HashSet<RefPtr<Player> >& players = m_animations.take(*iter);
-        for (HashSet<RefPtr<Player> >::const_iterator iter = players.begin(); iter != players.end(); ++iter)
+        const HashSet<RefPtr<AnimationPlayer> >& players = m_animations.take(*iter);
+        for (HashSet<RefPtr<AnimationPlayer> >::const_iterator iter = players.begin(); iter != players.end(); ++iter)
             (*iter)->cancel();
     }
 
     for (Vector<AtomicString>::const_iterator iter = update->animationsWithPauseToggled().begin(); iter != update->animationsWithPauseToggled().end(); ++iter) {
-        const HashSet<RefPtr<Player> >& players = m_animations.get(*iter);
+        const HashSet<RefPtr<AnimationPlayer> >& players = m_animations.get(*iter);
         ASSERT(!players.isEmpty());
-        bool isFirstPlayerPaused = (*players.begin())->paused();
-        for (HashSet<RefPtr<Player> >::const_iterator iter = players.begin(); iter != players.end(); ++iter) {
-            Player* player = iter->get();
-            ASSERT(player->paused() == isFirstPlayerPaused);
-            if (isFirstPlayerPaused)
+        bool isFirstAnimationPlayerPaused = (*players.begin())->paused();
+        for (HashSet<RefPtr<AnimationPlayer> >::const_iterator iter = players.begin(); iter != players.end(); ++iter) {
+            AnimationPlayer* player = iter->get();
+            ASSERT(player->paused() == isFirstAnimationPlayerPaused);
+            if (isFirstAnimationPlayerPaused)
                 player->unpause();
             else
                 player->pause();
@@ -443,13 +443,13 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
 
     for (Vector<CSSAnimationUpdate::NewAnimation>::const_iterator iter = update->newAnimations().begin(); iter != update->newAnimations().end(); ++iter) {
         OwnPtr<AnimationEventDelegate> eventDelegate = adoptPtr(new AnimationEventDelegate(element, iter->name));
-        HashSet<RefPtr<Player> > players;
+        HashSet<RefPtr<AnimationPlayer> > players;
         for (HashSet<RefPtr<InertAnimation> >::const_iterator animationsIter = iter->animations.begin(); animationsIter != iter->animations.end(); ++animationsIter) {
             const InertAnimation* inertAnimation = animationsIter->get();
             // The event delegate is set on the the first animation only. We
             // rely on the behavior of OwnPtr::release() to achieve this.
             RefPtr<Animation> animation = Animation::create(element, inertAnimation->effect(), inertAnimation->specifiedTiming(), Animation::DefaultPriority, eventDelegate.release());
-            Player* player = element->document().timeline().createPlayer(animation.get());
+            AnimationPlayer* player = element->document().timeline().createAnimationPlayer(animation.get());
             if (inertAnimation->paused())
                 player->pause();
             element->document().cssPendingAnimations().add(player);
@@ -469,7 +469,7 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
     for (HashSet<CSSPropertyID>::iterator iter = update->cancelledTransitions().begin(); iter != update->cancelledTransitions().end(); ++iter) {
         CSSPropertyID id = *iter;
         ASSERT(m_transitions.contains(id));
-        Player* player = m_transitions.take(id).transition->player();
+        AnimationPlayer* player = m_transitions.take(id).transition->player();
         if (activeAnimations && activeAnimations->hasActiveAnimationsOnCompositor(id) && update->newTransitions().find(id) != update->newTransitions().end())
             retargetedCompositorTransitions.add(id, std::pair<RefPtr<Animation>, double>(toAnimation(player->source()), player->startTime()));
         player->cancel();
@@ -507,7 +507,7 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
             effect = KeyframeEffectModel::create(newFrames);
         }
         RefPtr<Animation> transition = Animation::create(element, effect, inertAnimation->specifiedTiming(), Animation::TransitionPriority, eventDelegate.release());
-        RefPtr<Player> player = element->document().transitionTimeline().createPlayer(transition.get());
+        RefPtr<AnimationPlayer> player = element->document().transitionTimeline().createAnimationPlayer(transition.get());
         player->update();
         element->document().cssPendingAnimations().add(player.get());
         runningTransition.transition = transition.get();
@@ -641,8 +641,8 @@ void CSSAnimations::calculateTransitionUpdate(CSSAnimationUpdate* update, const 
 void CSSAnimations::cancel()
 {
     for (AnimationMap::iterator iter = m_animations.begin(); iter != m_animations.end(); ++iter) {
-        const HashSet<RefPtr<Player> >& players = iter->value;
-        for (HashSet<RefPtr<Player> >::const_iterator animationsIter = players.begin(); animationsIter != players.end(); ++animationsIter)
+        const HashSet<RefPtr<AnimationPlayer> >& players = iter->value;
+        for (HashSet<RefPtr<AnimationPlayer> >::const_iterator animationsIter = players.begin(); animationsIter != players.end(); ++animationsIter)
             (*animationsIter)->cancel();
     }
 
@@ -659,7 +659,7 @@ void CSSAnimations::calculateAnimationCompositableValues(CSSAnimationUpdate* upd
     ActiveAnimations* activeAnimations = element ? element->activeAnimations() : 0;
     AnimationStack* animationStack = activeAnimations ? &activeAnimations->defaultStack() : 0;
 
-    if (update->newAnimations().isEmpty() && update->cancelledAnimationPlayers().isEmpty()) {
+    if (update->newAnimations().isEmpty() && update->cancelledAnimationAnimationPlayers().isEmpty()) {
         AnimationEffect::CompositableValueMap compositableValuesForAnimations(AnimationStack::compositableValues(animationStack, 0, 0, Animation::DefaultPriority));
         update->adoptCompositableValuesForAnimations(compositableValuesForAnimations);
         return;
@@ -671,7 +671,7 @@ void CSSAnimations::calculateAnimationCompositableValues(CSSAnimationUpdate* upd
         for (HashSet<RefPtr<InertAnimation> >::const_iterator animationsIter = animations.begin(); animationsIter != animations.end(); ++animationsIter)
             newAnimations.append(animationsIter->get());
     }
-    AnimationEffect::CompositableValueMap compositableValuesForAnimations(AnimationStack::compositableValues(animationStack, &newAnimations, &update->cancelledAnimationPlayers(), Animation::DefaultPriority));
+    AnimationEffect::CompositableValueMap compositableValuesForAnimations(AnimationStack::compositableValues(animationStack, &newAnimations, &update->cancelledAnimationAnimationPlayers(), Animation::DefaultPriority));
     update->adoptCompositableValuesForAnimations(compositableValuesForAnimations);
 }
 
@@ -688,17 +688,17 @@ void CSSAnimations::calculateTransitionCompositableValues(CSSAnimationUpdate* up
         for (CSSAnimationUpdate::NewTransitionMap::const_iterator iter = update->newTransitions().begin(); iter != update->newTransitions().end(); ++iter)
             newTransitions.append(iter->value.animation.get());
 
-        HashSet<const Player*> cancelledPlayers;
+        HashSet<const AnimationPlayer*> cancelledAnimationPlayers;
         if (!update->cancelledTransitions().isEmpty()) {
             ASSERT(activeAnimations);
             const TransitionMap& transitionMap = activeAnimations->cssAnimations().m_transitions;
             for (HashSet<CSSPropertyID>::iterator iter = update->cancelledTransitions().begin(); iter != update->cancelledTransitions().end(); ++iter) {
                 ASSERT(transitionMap.contains(*iter));
-                cancelledPlayers.add(transitionMap.get(*iter).transition->player());
+                cancelledAnimationPlayers.add(transitionMap.get(*iter).transition->player());
             }
         }
 
-        compositableValuesForTransitions = AnimationStack::compositableValues(animationStack, &newTransitions, &cancelledPlayers, Animation::TransitionPriority);
+        compositableValuesForTransitions = AnimationStack::compositableValues(animationStack, &newTransitions, &cancelledAnimationPlayers, Animation::TransitionPriority);
     }
 
     // Properties being animated by animations don't get values from transitions applied.

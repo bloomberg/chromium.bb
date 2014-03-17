@@ -3,7 +3,7 @@
         # Files for which bindings (.cpp and .h files) will be generated
         'core_idl_files': [
             'animation/Animation.idl',
-            'animation/Player.idl',
+            'animation/AnimationPlayer.idl',
             'animation/TimedItem.idl',
             'animation/Timeline.idl',
             'animation/Timing.idl',
@@ -604,8 +604,8 @@
             'animation/InterpolationEffect.h',
             'animation/KeyframeEffectModel.cpp',
             'animation/KeyframeEffectModel.h',
-            'animation/Player.cpp',
-            'animation/Player.h',
+            'animation/AnimationPlayer.cpp',
+            'animation/AnimationPlayer.h',
             'animation/TimedItem.cpp',
             'animation/TimedItem.h',
             'animation/TimedItemCalculations.h',
@@ -3277,7 +3277,7 @@
             'animation/InterpolableValueTest.cpp',
             'animation/InterpolationEffectTest.cpp',
             'animation/KeyframeEffectModelTest.cpp',
-            'animation/PlayerTest.cpp',
+            'animation/AnimationPlayerTest.cpp',
             'animation/TimedItemCalculationsTest.cpp',
             'animation/TimedItemTest.cpp',
             'animation/TimingInputTest.cpp',

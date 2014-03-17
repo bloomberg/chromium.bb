@@ -38,7 +38,7 @@
 
 namespace WebCore {
 
-void CSSPendingAnimations::add(Player* player)
+void CSSPendingAnimations::add(AnimationPlayer* player)
 {
     ASSERT(player->source()->isAnimation());
     m_pending.append(player);
@@ -83,7 +83,7 @@ bool CSSPendingAnimations::startPendingAnimations()
 void CSSPendingAnimations::notifyCompositorAnimationStarted(double monotonicAnimationStartTime)
 {
     for (size_t i = 0; i < m_waitingForCompositorAnimationStart.size(); ++i) {
-        Player* player = m_waitingForCompositorAnimationStart[i].get();
+        AnimationPlayer* player = m_waitingForCompositorAnimationStart[i].get();
         player->setStartTime(monotonicAnimationStartTime - player->timeline()->zeroTime());
         player->update();
     }

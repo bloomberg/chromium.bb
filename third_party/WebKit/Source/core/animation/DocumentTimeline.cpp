@@ -64,22 +64,22 @@ DocumentTimeline::DocumentTimeline(Document* document, PassOwnPtr<PlatformTiming
 
 DocumentTimeline::~DocumentTimeline()
 {
-    for (HashSet<Player*>::iterator it = m_players.begin(); it != m_players.end(); ++it)
+    for (HashSet<AnimationPlayer*>::iterator it = m_players.begin(); it != m_players.end(); ++it)
         (*it)->timelineDestroyed();
 }
 
-Player* DocumentTimeline::createPlayer(TimedItem* child)
+AnimationPlayer* DocumentTimeline::createAnimationPlayer(TimedItem* child)
 {
-    RefPtr<Player> player = Player::create(*this, child);
-    Player* result = player.get();
+    RefPtr<AnimationPlayer> player = AnimationPlayer::create(*this, child);
+    AnimationPlayer* result = player.get();
     m_players.add(result);
-    setOutdatedPlayer(result);
+    setOutdatedAnimationPlayer(result);
     return result;
 }
 
-Player* DocumentTimeline::play(TimedItem* child)
+AnimationPlayer* DocumentTimeline::play(TimedItem* child)
 {
-    Player* player = createPlayer(child);
+    AnimationPlayer* player = createAnimationPlayer(child);
     player->setStartTime(currentTime());
     return player;
 }
@@ -94,17 +94,17 @@ void DocumentTimeline::serviceAnimations()
     TRACE_EVENT0("webkit", "DocumentTimeline::serviceAnimations");
 
     m_timing->cancelWake();
-    m_hasOutdatedPlayer = false;
+    m_hasOutdatedAnimationPlayer = false;
 
     double timeToNextEffect = std::numeric_limits<double>::infinity();
-    Vector<Player*> players;
-    for (HashSet<RefPtr<Player> >::iterator it = m_playersNeedingUpdate.begin(); it != m_playersNeedingUpdate.end(); ++it)
+    Vector<AnimationPlayer*> players;
+    for (HashSet<RefPtr<AnimationPlayer> >::iterator it = m_playersNeedingUpdate.begin(); it != m_playersNeedingUpdate.end(); ++it)
         players.append(it->get());
 
-    std::sort(players.begin(), players.end(), Player::hasLowerPriority);
+    std::sort(players.begin(), players.end(), AnimationPlayer::hasLowerPriority);
 
     for (size_t i = 0; i < players.size(); ++i) {
-        Player* player = players[i];
+        AnimationPlayer* player = players[i];
         if (player->update())
             timeToNextEffect = std::min(timeToNextEffect, player->timeToEffectChange());
         else
@@ -117,7 +117,7 @@ void DocumentTimeline::serviceAnimations()
     else if (timeToNextEffect != std::numeric_limits<double>::infinity())
         m_timing->wakeAfter(timeToNextEffect - s_minimumDelay);
 
-    ASSERT(!m_hasOutdatedPlayer);
+    ASSERT(!m_hasOutdatedAnimationPlayer);
 }
 
 void DocumentTimeline::setZeroTime(double zeroTime)
@@ -153,15 +153,15 @@ double DocumentTimeline::currentTime()
 
 void DocumentTimeline::pauseAnimationsForTesting(double pauseTime)
 {
-    for (HashSet<RefPtr<Player> >::iterator it = m_playersNeedingUpdate.begin(); it != m_playersNeedingUpdate.end(); ++it)
+    for (HashSet<RefPtr<AnimationPlayer> >::iterator it = m_playersNeedingUpdate.begin(); it != m_playersNeedingUpdate.end(); ++it)
         (*it)->pauseForTesting(pauseTime);
     serviceAnimations();
 }
 
-void DocumentTimeline::setOutdatedPlayer(Player* player)
+void DocumentTimeline::setOutdatedAnimationPlayer(AnimationPlayer* player)
 {
     m_playersNeedingUpdate.add(player);
-    m_hasOutdatedPlayer = true;
+    m_hasOutdatedAnimationPlayer = true;
     if (m_document && m_document->page() && !m_document->page()->animator().isServicingAnimations())
         m_timing->serviceOnNextFrame();
 }
@@ -175,7 +175,7 @@ size_t DocumentTimeline::numberOfActiveAnimationsForTesting() const
     if (isNull(m_zeroTime))
         return 0;
     size_t count = 0;
-    for (HashSet<RefPtr<Player> >::iterator it = m_playersNeedingUpdate.begin(); it != m_playersNeedingUpdate.end(); ++it) {
+    for (HashSet<RefPtr<AnimationPlayer> >::iterator it = m_playersNeedingUpdate.begin(); it != m_playersNeedingUpdate.end(); ++it) {
         const TimedItem* timedItem = (*it)->source();
         if ((*it)->hasStartTime())
             count += (timedItem && (timedItem->isCurrent() || timedItem->isInEffect()));

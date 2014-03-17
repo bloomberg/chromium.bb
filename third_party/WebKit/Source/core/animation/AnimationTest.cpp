@@ -12,6 +12,7 @@
 #include "core/animation/AnimationTestHelper.h"
 #include "core/animation/DocumentTimeline.h"
 #include "core/animation/KeyframeEffectModel.h"
+#include "core/animation/TimedItemTiming.h"
 #include "core/animation/Timing.h"
 
 #include <gtest/gtest.h>
@@ -279,7 +280,7 @@ TEST_F(AnimationAnimationTest, TimeToEffectChange)
     timing.endDelay = 100;
     timing.fillMode = Timing::FillModeNone;
     RefPtr<Animation> animation = Animation::create(nullptr, nullptr, timing);
-    RefPtr<Player> player = document->timeline().play(animation.get());
+    RefPtr<AnimationPlayer> player = document->timeline().play(animation.get());
     double inf = std::numeric_limits<double>::infinity();
 
     EXPECT_EQ(100, animation->timeToForwardsEffectChange());
@@ -312,7 +313,7 @@ TEST_F(AnimationAnimationTest, TimeToEffectChangeWithPlaybackRate)
     timing.playbackRate = 2;
     timing.fillMode = Timing::FillModeNone;
     RefPtr<Animation> animation = Animation::create(nullptr, nullptr, timing);
-    RefPtr<Player> player = document->timeline().play(animation.get());
+    RefPtr<AnimationPlayer> player = document->timeline().play(animation.get());
     double inf = std::numeric_limits<double>::infinity();
 
     EXPECT_EQ(100, animation->timeToForwardsEffectChange());
@@ -345,7 +346,7 @@ TEST_F(AnimationAnimationTest, TimeToEffectChangeWithNegativePlaybackRate)
     timing.playbackRate = -2;
     timing.fillMode = Timing::FillModeNone;
     RefPtr<Animation> animation = Animation::create(nullptr, nullptr, timing);
-    RefPtr<Player> player = document->timeline().play(animation.get());
+    RefPtr<AnimationPlayer> player = document->timeline().play(animation.get());
     double inf = std::numeric_limits<double>::infinity();
 
     EXPECT_EQ(100, animation->timeToForwardsEffectChange());

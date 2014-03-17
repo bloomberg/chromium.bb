@@ -30,7 +30,7 @@
 
 [
     RuntimeEnabled=WebAnimationsAPI,
-] interface Player {
+] interface AnimationPlayer {
              attribute TimedItem? source;
              attribute double     startTime;
              attribute double     currentTime;

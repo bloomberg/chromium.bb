@@ -5,12 +5,11 @@
 #ifndef TimedItemTiming_h
 #define TimedItemTiming_h
 
+#include "core/animation/TimedItem.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
-
-class TimedItem;
 
 class TimedItemTiming : public RefCounted<TimedItemTiming> {
 public:

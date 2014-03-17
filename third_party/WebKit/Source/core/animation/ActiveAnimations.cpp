@@ -87,7 +87,7 @@ bool ActiveAnimations::hasActiveAnimationsOnCompositor(CSSPropertyID property) c
 
 void ActiveAnimations::cancelAnimationOnCompositor()
 {
-    for (PlayerSet::iterator it = m_players.begin(); it != players().end(); ++it)
+    for (AnimationPlayerSet::iterator it = m_players.begin(); it != players().end(); ++it)
         it->key->cancelAnimationOnCompositor();
 }
 

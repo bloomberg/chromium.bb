@@ -63,10 +63,10 @@ public:
     CSSAnimations& cssAnimations() { return m_cssAnimations; }
     const CSSAnimations& cssAnimations() const { return m_cssAnimations; }
 
-    typedef HashCountedSet<Player*> PlayerSet;
-    // Players which have animations targeting this element.
-    const PlayerSet& players() const { return m_players; }
-    PlayerSet& players() { return m_players; }
+    typedef HashCountedSet<AnimationPlayer*> AnimationPlayerSet;
+    // AnimationPlayers which have animations targeting this element.
+    const AnimationPlayerSet& players() const { return m_players; }
+    AnimationPlayerSet& players() { return m_players; }
 
     bool isEmpty() const { return m_defaultStack.isEmpty() && m_cssAnimations.isEmpty(); }
 
@@ -81,7 +81,7 @@ private:
 
     AnimationStack m_defaultStack;
     CSSAnimations m_cssAnimations;
-    PlayerSet m_players;
+    AnimationPlayerSet m_players;
     bool m_animationStyleChange;
 
     // CSSAnimations checks if a style change is due to animation.

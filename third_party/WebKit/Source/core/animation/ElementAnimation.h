@@ -44,43 +44,42 @@ class Dictionary;
 
 class ElementAnimation {
 public:
-    static Animation* animate(Element& element, PassRefPtrWillBeRawPtr<AnimationEffect> effect, const Dictionary& timingInputDictionary)
+    static AnimationPlayer* animate(Element& element, PassRefPtrWillBeRawPtr<AnimationEffect> effect, const Dictionary& timingInputDictionary)
     {
         return animateInternal(element, effect, TimingInput::convert(timingInputDictionary));
     }
 
-    static Animation* animate(Element& element, PassRefPtrWillBeRawPtr<AnimationEffect> effect, double duration)
+    static AnimationPlayer* animate(Element& element, PassRefPtrWillBeRawPtr<AnimationEffect> effect, double duration)
     {
         return animateInternal(element, effect, TimingInput::convert(duration));
     }
 
-    static Animation* animate(Element& element, PassRefPtrWillBeRawPtr<AnimationEffect> effect)
+    static AnimationPlayer* animate(Element& element, PassRefPtrWillBeRawPtr<AnimationEffect> effect)
     {
         return animateInternal(element, effect, Timing());
     }
 
-    static Animation* animate(Element& element, const Vector<Dictionary>& keyframeDictionaryVector, const Dictionary& timingInputDictionary)
+    static AnimationPlayer* animate(Element& element, const Vector<Dictionary>& keyframeDictionaryVector, const Dictionary& timingInputDictionary)
     {
         return animateInternal(element, EffectInput::convert(&element, keyframeDictionaryVector), TimingInput::convert(timingInputDictionary));
     }
 
-    static Animation* animate(Element& element, const Vector<Dictionary>& keyframeDictionaryVector, double duration)
+    static AnimationPlayer* animate(Element& element, const Vector<Dictionary>& keyframeDictionaryVector, double duration)
     {
         return animateInternal(element, EffectInput::convert(&element, keyframeDictionaryVector), TimingInput::convert(duration));
     }
 
-    static Animation* animate(Element& element, const Vector<Dictionary>& keyframeDictionaryVector)
+    static AnimationPlayer* animate(Element& element, const Vector<Dictionary>& keyframeDictionaryVector)
     {
         return animateInternal(element, EffectInput::convert(&element, keyframeDictionaryVector), Timing());
     }
 
 private:
-    static Animation* animateInternal(Element& element, PassRefPtrWillBeRawPtr<AnimationEffect> effect, const Timing& timing)
+    static AnimationPlayer* animateInternal(Element& element, PassRefPtrWillBeRawPtr<AnimationEffect> effect, const Timing& timing)
     {
         ASSERT(RuntimeEnabledFeatures::webAnimationsAPIEnabled());
         RefPtr<Animation> animation = Animation::create(&element, effect, timing);
-        element.document().timeline().play(animation.get());
-        return animation.get();
+        return element.document().timeline().play(animation.get());
     }
 };
 

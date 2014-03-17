@@ -35,21 +35,21 @@
 
 namespace WebCore {
 
-class Player;
+class AnimationPlayer;
 
 // Used to synchronize the start of main-thread animations with compositor
 // animations when both classes of CSS Animations are triggered by the same recalc
 class CSSPendingAnimations FINAL {
 public:
-    void add(Player*);
+    void add(AnimationPlayer*);
     // Returns whether we are waiting for an animation to start and should
     // service again on the next frame.
     bool startPendingAnimations();
     void notifyCompositorAnimationStarted(double monotonicAnimationStartTime);
 
 private:
-    Vector<RefPtr<Player> > m_pending;
-    Vector<RefPtr<Player> > m_waitingForCompositorAnimationStart;
+    Vector<RefPtr<AnimationPlayer> > m_pending;
+    Vector<RefPtr<AnimationPlayer> > m_waitingForCompositorAnimationStart;
 };
 
 } // namespace WebCore
