@@ -30,7 +30,6 @@ var test = function()
 {
     WebInspector.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetAdded, styleSheetAdded);
     InspectorTest.reloadPage(step1);
-    var styleSheets = [];
 
     function pathToFileName(path)
     {
@@ -41,30 +40,30 @@ var test = function()
     {
         InspectorTest.selectNodeAndWaitForStyles("inspected", step2);
     }
-
+    
     function step2()
     {
-        styleSheets.sort();
-        for (var i = 0; i < styleSheets.length; ++i)
-            InspectorTest.addResult(styleSheets[i]);
         InspectorTest.dumpSelectedElementStyles(true, false, true);
         InspectorTest.completeTest();
+    }
+    
+    function dumpStyleSheetHeader(header, text)
+    {
+        InspectorTest.addResult("Stylesheet added:");
+        InspectorTest.addResult("  - isInline: " + header.isInline);
+        InspectorTest.addResult("  - sourceURL: " + pathToFileName(header.sourceURL));
+        InspectorTest.addResult("  - hasSourceURL: " + header.hasSourceURL);
+        InspectorTest.addResult("  - contents: " + text);
     }
     
     function styleSheetAdded(event)
     {
         var header = event.data;
-        var text = ["Stylesheet added:"];
-        text.push("  - isInline: " + header.isInline);
-        text.push("  - sourceURL: " + pathToFileName(header.sourceURL));
-        text.push("  - hasSourceURL: " + header.hasSourceURL);
-
         CSSAgent.getStyleSheetText(header.id, contentLoaded.bind(this));
 
-        function contentLoaded(error, content)
+        function contentLoaded(error, text)
         {
-            text.push("  - contents: " + content);
-            styleSheets.push(text.join("\n"));
+            dumpStyleSheetHeader(header, text);
         }
     }
 }

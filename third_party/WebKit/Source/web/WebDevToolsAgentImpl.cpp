@@ -117,11 +117,6 @@ private:
             return;
         m_running = true;
 
-        // 0. Flush pending frontend messages.
-        WebViewImpl* viewImpl = WebViewImpl::fromPage(page);
-        WebDevToolsAgentImpl* agent = static_cast<WebDevToolsAgentImpl*>(viewImpl->devToolsAgent());
-        agent->flushPendingFrontendMessages();
-
         Vector<WebViewImpl*> views;
 
         // 1. Disable input events.
@@ -572,7 +567,9 @@ void WebDevToolsAgentImpl::sendMessageToFrontend(PassRefPtr<WebCore::JSONObject>
 
 void WebDevToolsAgentImpl::flush()
 {
-    flushPendingFrontendMessages();
+    for (size_t i = 0; i < m_frontendMessageQueue.size(); ++i)
+        m_client->sendMessageToInspectorFrontend(m_frontendMessageQueue[i]->toJSONString());
+    m_frontendMessageQueue.clear();
 }
 
 void WebDevToolsAgentImpl::updateInspectorStateCookie(const String& state)
@@ -606,31 +603,18 @@ void WebDevToolsAgentImpl::evaluateInWebInspector(long callId, const WebString& 
     ic->evaluateForTestInFrontend(callId, script);
 }
 
-void WebDevToolsAgentImpl::flushPendingFrontendMessages()
-{
-    InspectorController* ic = inspectorController();
-    ic->flushPendingFrontendMessages();
-
-    for (size_t i = 0; i < m_frontendMessageQueue.size(); ++i)
-        m_client->sendMessageToInspectorFrontend(m_frontendMessageQueue[i]->toJSONString());
-    m_frontendMessageQueue.clear();
-}
-
 void WebDevToolsAgentImpl::willProcessTask()
 {
-    if (!m_attached)
-        return;
     if (InspectorController* ic = inspectorController())
         ic->willProcessTask();
 }
 
 void WebDevToolsAgentImpl::didProcessTask()
 {
-    if (!m_attached)
-        return;
     if (InspectorController* ic = inspectorController())
         ic->didProcessTask();
-    flushPendingFrontendMessages();
+    if (m_attached)
+        flush();
 }
 
 WebString WebDevToolsAgent::inspectorProtocolVersion()

@@ -108,7 +108,6 @@ public:
     virtual void clearFrontend() OVERRIDE;
     virtual void discardAgent() OVERRIDE;
     virtual void restore() OVERRIDE;
-    virtual void flushPendingFrontendMessages() OVERRIDE;
     virtual void enable(ErrorString*, PassRefPtr<EnableCallback>) OVERRIDE;
     virtual void disable(ErrorString*) OVERRIDE;
     void reset();
@@ -197,7 +196,6 @@ private:
     HashMap<CSSStyleSheet*, RefPtr<InspectorStyleSheet> > m_cssStyleSheetToInspectorStyleSheet;
     typedef HashMap<Document*, OwnPtr<HashSet<CSSStyleSheet*> > > DocumentStyleSheets;
     DocumentStyleSheets m_documentToCSSStyleSheets;
-    HashSet<Document*> m_invalidatedDocuments;
 
     NodeToInspectorStyleSheet m_nodeToInspectorStyleSheet;
     HashMap<RefPtr<Document>, RefPtr<InspectorStyleSheet> > m_documentToViaInspectorStyleSheet; // "via inspector" stylesheets

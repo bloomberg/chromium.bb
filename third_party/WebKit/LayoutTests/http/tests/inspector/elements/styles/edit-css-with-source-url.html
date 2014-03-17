@@ -33,6 +33,12 @@ function test()
         {
             var styleText = "#inspected {\n    color: red;\n}\n";
 
+            function loadStylesheet(callback)
+            {
+                InspectorTest.addResult("Loading stylesheet with sourceURL:");
+                InspectorTest.evaluateInPage("loadStylesheet()", callback);
+            }
+
             function dumpUISourceCodeContents()
             {
                 InspectorTest.addResult("Dumping uiSourceCode content:");
@@ -54,14 +60,11 @@ function test()
             function didShowScriptSource(sourceFrame)
             {
                 dumpUISourceCodeContents();
-                InspectorTest.addResult("Loading stylesheet with sourceURL:");
-                WebInspector.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetAdded, stylesheetLoaded);
-                InspectorTest.evaluateInPage("loadStylesheet()");
+                loadStylesheet(stylesheetLoaded);
             }
   
             function stylesheetLoaded()
             {
-                WebInspector.cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.StyleSheetAdded, stylesheetLoaded);
                 InspectorTest.addResult("Stylesheet loaded.");
                 WebInspector.inspectorView.showPanel("elements");
                 InspectorTest.selectNodeAndWaitForStyles("inspected", nodeSelected);

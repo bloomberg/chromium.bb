@@ -121,7 +121,6 @@ public:
 
     void willProcessTask();
     void didProcessTask();
-    void flushPendingFrontendMessages();
 
     void didCommitLoadForMainFrame();
     void didBeginFrame(int frameId);
@@ -135,8 +134,6 @@ public:
 
     void willAddPageOverlay(const GraphicsLayer*);
     void didRemovePageOverlay(const GraphicsLayer*);
-
-
 private:
     InspectorController(Page*, InspectorClient*);
 

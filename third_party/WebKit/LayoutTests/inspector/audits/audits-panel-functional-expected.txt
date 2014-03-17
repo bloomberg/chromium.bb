@@ -34,11 +34,11 @@ Page reloaded.
        x:hover
        x:first-letter
        x:nth-child(2n + 1)
-      Inline block #2: 100% is not used by the current page.
-       .violation
        audits-style1.css
       : 100% is not used by the current page.
        .some-style
+      Inline block #2: 100% is not used by the current page.
+       .violation
        audits-style1.css
       : 100% is not used by the current page.
        .some-style

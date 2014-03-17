@@ -13,12 +13,10 @@ function addStyle()
 function test()
 {
     WebInspector.inspectorView.showPanel("elements");
-    WebInspector.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetAdded, stylesheetAdded);
-    InspectorTest.evaluateInPage("addStyle()");
+    InspectorTest.evaluateInPage("addStyle()", step0);
 
-    function stylesheetAdded()
+    function step0()
     {
-        WebInspector.cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.StyleSheetAdded, stylesheetAdded);
         InspectorTest.selectNodeAndWaitForStyles("inspected", step1);
     }
 
