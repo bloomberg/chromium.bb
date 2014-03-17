@@ -730,6 +730,9 @@ class ChangeResource {
   const FileResource* file() const { return file_.get(); }
   FileResource* mutable_file() { return file_.get(); }
 
+  // Returns the time of this modification.
+  const base::Time& modification_date() const { return modification_date_; }
+
   void set_change_id(int64 change_id) {
     change_id_ = change_id;
   }
@@ -741,6 +744,9 @@ class ChangeResource {
   }
   void set_file(scoped_ptr<FileResource> file) {
     file_ = file.Pass();
+  }
+  void set_modification_date(const base::Time& modification_date) {
+    modification_date_ = modification_date;
   }
 
  private:
@@ -755,6 +761,7 @@ class ChangeResource {
   std::string file_id_;
   bool deleted_;
   scoped_ptr<FileResource> file_;
+  base::Time modification_date_;
 
   DISALLOW_COPY_AND_ASSIGN(ChangeResource);
 };

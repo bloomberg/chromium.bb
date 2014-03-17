@@ -603,6 +603,7 @@ TEST_F(ChangeListProcessorTest, SharedFilesWithNoParentInFeed) {
   new_file.set_resource_id("new_file_id");
   change_lists[0]->mutable_entries()->push_back(new_file);
   change_lists[0]->mutable_parent_resource_ids()->push_back("nonexisting");
+  change_lists[0]->mutable_modification_dates()->push_back(base::Time());
   change_lists[0]->set_largest_changestamp(kBaseResourceListChangestamp + 1);
 
   std::set<base::FilePath> changed_dirs;

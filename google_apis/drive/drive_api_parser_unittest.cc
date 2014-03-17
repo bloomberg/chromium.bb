@@ -254,6 +254,7 @@ TEST(DriveAPIParserTest, ChangeListParser) {
   EXPECT_EQ("1Pc8jzfU1ErbN_eucMMqdqzY3eBm0v8sxXm_1CtLxABC", change1.file_id());
   EXPECT_EQ(change1.file_id(), change1.file()->file_id());
   EXPECT_FALSE(change1.file()->shared());
+  EXPECT_EQ(change1.file()->modified_date(), change1.modification_date());
 
   const ChangeResource& change2 = *changelist->items()[1];
   EXPECT_EQ(8424, change2.change_id());
@@ -261,6 +262,7 @@ TEST(DriveAPIParserTest, ChangeListParser) {
   EXPECT_EQ("0B4v7G8yEYAWHUmRrU2lMS2hLABC", change2.file_id());
   EXPECT_EQ(change2.file_id(), change2.file()->file_id());
   EXPECT_TRUE(change2.file()->shared());
+  EXPECT_EQ(change2.file()->modified_date(), change2.modification_date());
 
   const ChangeResource& change3 = *changelist->items()[2];
   EXPECT_EQ(8429, change3.change_id());
@@ -268,12 +270,17 @@ TEST(DriveAPIParserTest, ChangeListParser) {
   EXPECT_EQ("0B4v7G8yEYAWHYW1OcExsUVZLABC", change3.file_id());
   EXPECT_EQ(change3.file_id(), change3.file()->file_id());
   EXPECT_FALSE(change3.file()->shared());
+  EXPECT_EQ(change3.file()->modified_date(), change3.modification_date());
 
   // Deleted entry.
   const ChangeResource& change4 = *changelist->items()[3];
   EXPECT_EQ(8430, change4.change_id());
   EXPECT_EQ("ABCv7G8yEYAWHc3Y5X0hMSkJYXYZ", change4.file_id());
   EXPECT_TRUE(change4.is_deleted());
+  base::Time modification_time;
+  ASSERT_TRUE(util::GetTimeFromString("2012-07-27T12:34:56.789Z",
+                                      &modification_time));
+  EXPECT_EQ(modification_time, change4.modification_date());
 }
 
 TEST(DriveAPIParserTest, HasKind) {

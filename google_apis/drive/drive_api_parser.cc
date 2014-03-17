@@ -125,6 +125,7 @@ const char kFileKind[] = "drive#file";
 const char kTitle[] = "title";
 const char kMimeType[] = "mimeType";
 const char kCreatedDate[] = "createdDate";
+const char kModificationDate[] = "modificationDate";
 const char kModifiedDate[] = "modifiedDate";
 const char kModifiedByMeDate[] = "modifiedByMeDate";
 const char kLastViewedByMeDate[] = "lastViewedByMeDate";
@@ -559,6 +560,9 @@ void ChangeResource::RegisterJSONConverter(
   converter->RegisterBoolField(kDeleted, &ChangeResource::deleted_);
   converter->RegisterCustomValueField(kFile, &ChangeResource::file_,
                                       &CreateFileResourceFromValue);
+  converter->RegisterCustomField<base::Time>(
+      kModificationDate, &ChangeResource::modification_date_,
+      &util::GetTimeFromString);
 }
 
 // static

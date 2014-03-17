@@ -464,6 +464,10 @@ class ResourceEntry : public CommonMetadata {
   // If doesn't exist, then equals -1.
   int64 image_rotation() const { return image_rotation_; }
 
+  // The time of this modification.
+  // Note: This property is filled only when converted from ChangeResource.
+  const base::Time& modification_date() const { return modification_date_; }
+
   // Text version of resource entry kind. Returns an empty string for
   // unknown entry kind.
   std::string GetEntryKindText() const;
@@ -557,6 +561,9 @@ class ResourceEntry : public CommonMetadata {
   void set_image_rotation(int64 image_rotation) {
     image_rotation_ = image_rotation;
   }
+  void set_modification_date(const base::Time& modification_date) {
+    modification_date_ = modification_date;
+  }
 
   // Fills the remaining fields where JSONValueConverter cannot catch.
   // Currently, sets |kind_| and |labels_| based on the |categories_| in the
@@ -594,6 +601,8 @@ class ResourceEntry : public CommonMetadata {
   int64 image_width_;
   int64 image_height_;
   int64 image_rotation_;
+
+  base::Time modification_date_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceEntry);
 };

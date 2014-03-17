@@ -78,6 +78,12 @@ class ChangeList {
   std::vector<std::string>* mutable_parent_resource_ids() {
     return &parent_resource_ids_;
   }
+  const std::vector<base::Time>& modification_dates() const {
+    return modification_dates_;
+  }
+  std::vector<base::Time>* mutable_modification_dates() {
+    return &modification_dates_;
+  }
   const GURL& next_url() const { return next_url_; }
   int64 largest_changestamp() const { return largest_changestamp_; }
 
@@ -88,6 +94,7 @@ class ChangeList {
  private:
   std::vector<ResourceEntry> entries_;
   std::vector<std::string> parent_resource_ids_;
+  std::vector<base::Time> modification_dates_;
   GURL next_url_;
   int64 largest_changestamp_;
 
@@ -134,6 +141,8 @@ class ChangeListProcessor {
       ResourceEntryMap;
   typedef std::map<std::string /* resource_id */,
                    std::string /* parent_resource_id*/> ParentResourceIdMap;
+  typedef std::map<std::string /* resource_id */,
+                   base::Time /* modification_date */> ModificationDateMap;
 
   // Applies the pre-processed metadata from entry_map_ onto the resource
   // metadata. |about_resource| must not be null.
@@ -151,6 +160,7 @@ class ChangeListProcessor {
 
   ResourceEntryMap entry_map_;
   ParentResourceIdMap parent_resource_id_map_;
+  ModificationDateMap modification_date_map_;
   std::set<base::FilePath> changed_dirs_;
 
   DISALLOW_COPY_AND_ASSIGN(ChangeListProcessor);

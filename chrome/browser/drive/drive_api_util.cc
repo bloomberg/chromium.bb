@@ -482,6 +482,7 @@ ConvertChangeResourceToResourceEntry(
   // If |is_deleted()| returns true, the file is removed from Drive.
   entry->set_removed(change_resource.is_deleted());
   entry->set_changestamp(change_resource.change_id());
+  entry->set_modification_date(change_resource.modification_date());
 
   return entry.Pass();
 }
