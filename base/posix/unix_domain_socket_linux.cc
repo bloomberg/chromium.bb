@@ -106,8 +106,10 @@ ssize_t UnixDomainSocket::RecvMsgWithFlags(int fd,
     return -1;
   }
 
-  fds->resize(wire_fds_len);
-  memcpy(vector_as_array(fds), wire_fds, sizeof(int) * wire_fds_len);
+  if (wire_fds) {
+    fds->resize(wire_fds_len);
+    memcpy(vector_as_array(fds), wire_fds, sizeof(int) * wire_fds_len);
+  }
 
   return r;
 }
