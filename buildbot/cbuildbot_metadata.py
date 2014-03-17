@@ -5,10 +5,12 @@
 """Module containing class for recording metadata about a run."""
 
 import datetime
+import functools
 import json
 import logging
 import math
 import os
+import re
 import time
 
 from chromite.buildbot import cbuildbot_archive
@@ -17,7 +19,11 @@ from chromite.buildbot import cbuildbot_results as results_lib
 from chromite.buildbot import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import gs
+from chromite.lib import parallel
 from chromite.lib import toolchain
+
+# Number of parallel processes used when uploading/downloading GS files.
+MAX_PARALLEL = 40
 
 ARCHIVE_ROOT = 'gs://chromeos-image-archive/%(target)s'
 METADATA_URL_GLOB = os.path.join(ARCHIVE_ROOT, 'R%(milestone)s**metadata.json')
@@ -243,6 +249,323 @@ class CBuildbotMetadata(object):
         metadata['slave_targets'][builder] = status.AsFlatDict()
 
     return metadata
+
+
+# The graphite graphs use seconds since epoch start as time value.
+EPOCH_START = datetime.datetime(1970, 1, 1)
+
+# Formats we like for output.
+NICE_DATE_FORMAT = '%Y/%m/%d'
+NICE_TIME_FORMAT = '%H:%M:%S'
+NICE_DATETIME_FORMAT = NICE_DATE_FORMAT + ' ' + NICE_TIME_FORMAT
+
+
+# TODO(akeshet): Merge this class into CBuildbotMetadata.
+class BuildData(object):
+  """Class for examining metadata from a prior run.
+
+  The raw metadata dict can be accessed at self.metadata_dict or via []
+  and get() on a BuildData object.  Some values from metadata_dict are
+  also surfaced through the following list of supported properties:
+
+  build_number
+  stages
+  slaves
+  chromeos_version
+  chrome_version
+  bot_id
+  status
+  start_datetime
+  finish_datetime
+  start_date_str
+  start_time_str
+  start_datetime_str
+  finish_date_str
+  finish_time_str
+  finish_datetime_str
+  runtime_seconds
+  runtime_minutes
+  epoch_time_seconds
+  count_changes
+  run_date
+  """
+
+  __slots__ = (
+      'gathered_dict',  # Dict with gathered data (sheets/carbon version).
+      'gathered_url',   # URL to metadata.json.gathered location in GS.
+      'metadata_dict',  # Dict representing metadata data from JSON.
+      'metadata_url',   # URL to metadata.json location in GS.
+  )
+
+  # Regexp for parsing datetimes as stored in metadata.json.  Example text:
+  # Fri, 14 Feb 2014 17:00:49 -0800 (PST)
+  DATETIME_RE = re.compile(r'^(.+)\s-\d\d\d\d\s\(P\wT\)$')
+
+  SHEETS_VER_KEY = 'sheets_version'
+  CARBON_VER_KEY = 'carbon_version'
+
+  @staticmethod
+  def ReadMetadataURLs(urls, gs_ctx=None, exclude_running=True):
+    """Read a list of metadata.json URLs and return BuildData objects.
+
+    Args:
+      urls: List of metadata.json GS URLs.
+      gs_ctx: A GSContext object to use.  If not provided gs.GSContext will
+        be called to get a GSContext to use.
+      exclude_running: If True the metadata for builds that are still running
+        will be skipped.
+
+    Returns:
+      List of BuildData objects.
+    """
+    gs_ctx = gs_ctx or gs.GSContext()
+    cros_build_lib.Info('Reading %d metadata URLs using %d processes now.',
+                        len(urls), MAX_PARALLEL)
+
+    def _ReadMetadataURL(url):
+      # Read the metadata.json URL and parse json into a dict.
+      metadata_dict = json.loads(gs_ctx.Cat(url, print_cmd=False).output)
+
+      # Read the file next to url which indicates whether the metadata has
+      # been gathered before, and with what stats version.
+      gathered_dict = {}
+      gathered_url = url + '.gathered'
+      if gs_ctx.Exists(gathered_url, print_cmd=False):
+        gathered_dict = json.loads(gs_ctx.Cat(gathered_url,
+                                              print_cmd=False).output)
+
+      sheets_version = gathered_dict.get(BuildData.SHEETS_VER_KEY)
+      carbon_version = gathered_dict.get(BuildData.CARBON_VER_KEY)
+
+      bd = BuildData(url, metadata_dict, sheets_version=sheets_version,
+                     carbon_version=carbon_version)
+      if not (sheets_version is None and carbon_version is None):
+        cros_build_lib.Debug('Read %s:\n'
+                             '  build_number=%d, sheets v%d, carbon v%d', url,
+                             bd.build_number, sheets_version, carbon_version)
+      else:
+        cros_build_lib.Debug('Read %s:\n  build_number=%d, ungathered',
+                             url, bd.build_number)
+
+      return bd
+
+    steps = [functools.partial(_ReadMetadataURL, url) for url in urls]
+    builds = parallel.RunParallelSteps(steps, max_parallel=MAX_PARALLEL,
+                                       return_values=True)
+
+    if exclude_running:
+      builds = [b for b in builds if b.status != 'running']
+
+    return builds
+
+  @staticmethod
+  def MarkBuildsGathered(builds, sheets_version, carbon_version, gs_ctx=None):
+    """Mark specified |builds| as processed for the given stats versions.
+
+    Args:
+      builds: List of BuildData objects.
+      sheets_version: The Google Sheets version these builds are now processed
+        for.
+      carbon_version: The Carbon/Graphite version these builds are now
+        processed for.
+      gs_ctx: A GSContext object to use, if set.
+    """
+    gs_ctx = gs_ctx or gs.GSContext()
+
+    # Filter for builds that were not already on these versions.
+    builds = [b for b in builds
+              if b.sheets_version != sheets_version or
+              b.carbon_version != carbon_version]
+    if builds:
+      log_ver_str = 'Sheets v%d, Carbon v%d' % (sheets_version, carbon_version)
+      cros_build_lib.Info('Marking %d builds gathered (for %s) using %d'
+                          ' processes now.', len(builds), log_ver_str,
+                          MAX_PARALLEL)
+
+      def _MarkGathered(build):
+        build.MarkGathered(sheets_version, carbon_version)
+        json_text = json.dumps(build.gathered_dict.copy())
+        gs_ctx.Copy('-', build.gathered_url, input=json_text, print_cmd=False)
+        cros_build_lib.Debug('Marked build_number %d processed for %s.',
+                             build.build_number, log_ver_str)
+
+      steps = [functools.partial(_MarkGathered, build) for build in builds]
+      parallel.RunParallelSteps(steps, max_parallel=MAX_PARALLEL)
+
+  def __init__(self, metadata_url, metadata_dict, carbon_version=None,
+               sheets_version=None):
+    self.metadata_url = metadata_url
+    self.metadata_dict = metadata_dict
+
+    # If a stats version is not specified default to -1 so that the initial
+    # version (version 0) will be considered "newer".
+    self.gathered_url = metadata_url + '.gathered'
+    self.gathered_dict = {
+        self.CARBON_VER_KEY: -1 if carbon_version is None else carbon_version,
+        self.SHEETS_VER_KEY: -1 if sheets_version is None else sheets_version,
+    }
+
+  def MarkGathered(self, sheets_version, carbon_version):
+    """Mark this build as processed for the given stats versions."""
+    self.gathered_dict[self.SHEETS_VER_KEY] = sheets_version
+    self.gathered_dict[self.CARBON_VER_KEY] = carbon_version
+
+  def __getitem__(self, key):
+    """Relay dict-like access to self.metadata_dict."""
+    return self.metadata_dict[key]
+
+  def get(self, key, default=None):
+    """Relay dict-like access to self.metadata_dict."""
+    return self.metadata_dict.get(key, default)
+
+  @property
+  def sheets_version(self):
+    return self.gathered_dict[self.SHEETS_VER_KEY]
+
+  @property
+  def carbon_version(self):
+    return self.gathered_dict[self.CARBON_VER_KEY]
+
+  @property
+  def build_number(self):
+    return int(self['build-number'])
+
+  @property
+  def stages(self):
+    return self['results']
+
+  @property
+  def slaves(self):
+    return self.get('slave_targets', [])
+
+  @property
+  def chromeos_version(self):
+    return self['version']['full']
+
+  @property
+  def chrome_version(self):
+    return self['version']['chrome']
+
+  @property
+  def bot_id(self):
+    return self['bot-config']
+
+  @property
+  def status(self):
+    return self['status']['status']
+
+  @classmethod
+  def _ToDatetime(cls, time_str):
+    match = cls.DATETIME_RE.search(time_str)
+    if match:
+      return datetime.datetime.strptime(match.group(1), '%a, %d %b %Y %H:%M:%S')
+    else:
+      raise ValueError('Unexpected metadata datetime format: %s' % time_str)
+
+  @property
+  def start_datetime(self):
+    return self._ToDatetime(self['time']['start'])
+
+  @property
+  def finish_datetime(self):
+    return self._ToDatetime(self['time']['finish'])
+
+  @property
+  def start_date_str(self):
+    return self.start_datetime.strftime(NICE_DATE_FORMAT)
+
+  @property
+  def start_time_str(self):
+    return self.start_datetime.strftime(NICE_TIME_FORMAT)
+
+  @property
+  def start_datetime_str(self):
+    return self.start_datetime.strftime(NICE_DATETIME_FORMAT)
+
+  @property
+  def finish_date_str(self):
+    return self.finish_datetime.strftime(NICE_DATE_FORMAT)
+
+  @property
+  def finish_time_str(self):
+    return self.finish_datetime.strftime(NICE_TIME_FORMAT)
+
+  @property
+  def finish_datetime_str(self):
+    return self.finish_datetime.strftime(NICE_DATETIME_FORMAT)
+
+  def GetChangelistsStr(self):
+    cl_strs = []
+    for cl_dict in self.metadata_dict['changes']:
+      cl_strs.append('%s%s:%s' %
+                     ('*' if cl_dict['internal'] == 'true' else '',
+                      cl_dict['gerrit_number'], cl_dict['patch_number']))
+
+    return ' '.join(cl_strs)
+
+  def GetFailedStages(self, with_urls=False):
+    """Get names of all failed stages, optionally with URLs for each.
+
+    Args:
+      with_urls: If True then also return URLs.  See Returns.
+
+    Returns:
+      If with_urls is False, return list of stage names.  Otherwise, return list
+        of tuples (stage name, stage URL).
+    """
+    def _Failed(stage):
+      # This can be more discerning in the future, such as for optional stages.
+      return stage['status'] == 'failed'
+
+    if with_urls:
+      # The "log" url includes "/logs/stdio" on the end.  Strip that off.
+      return [(s['name'], os.path.dirname(os.path.dirname(s['log'])))
+              for s in self.stages if _Failed(s)]
+    else:
+      return [s['name'] for s in self.stages if _Failed(s)]
+
+  def GetFailedSlaves(self, with_urls=False):
+    def _Failed(slave):
+      return slave['status'] == 'fail'
+
+    # Older metadata has no slave_targets entry.
+    slaves = self.slaves
+    if with_urls:
+      return [(name, slave['dashboard_url'])
+              for name, slave in slaves.iteritems() if _Failed(slave)]
+    else:
+      return [name for name, slave in slaves.iteritems() if _Failed(slave)]
+
+    return []
+
+  @property
+  def runtime_seconds(self):
+    return (self.finish_datetime - self.start_datetime).seconds
+
+  @property
+  def runtime_minutes(self):
+    return self.runtime_seconds / 60
+
+  @property
+  def epoch_time_seconds(self):
+    # End time seconds since 1/1/1970, for some reason.
+    return int((self.finish_datetime - EPOCH_START).total_seconds())
+
+  @property
+  def count_changes(self):
+    if not self.metadata_dict.get('changes', None):
+      return 0
+
+    return len(self.metadata_dict['changes'])
+
+  @property
+  def run_date(self):
+    return self.finish_datetime.strftime('%d.%m.%Y')
+
+  def Passed(self):
+    """Return True if this represents a successful run."""
+    return 'passed' == self.metadata_dict['status']['status'].strip()
+
 
 
 def FindLatestFullVersion(builder, version):
