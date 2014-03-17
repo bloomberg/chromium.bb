@@ -780,6 +780,7 @@ ResourcePtr<Resource> ResourceFetcher::revalidateResource(const FetchRequest& re
     ASSERT(!resource->resourceToRevalidate());
 
     ResourceRequest revalidatingRequest(resource->resourceRequest());
+    revalidatingRequest.clearHTTPReferrer();
     addAdditionalRequestHeaders(revalidatingRequest, resource->type());
 
     const AtomicString& lastModified = resource->response().httpHeaderField("Last-Modified");
