@@ -641,6 +641,8 @@
             'clipboard/Pasteboard.cpp',
             'clipboard/Pasteboard.h',
             'css/BasicShapeFunctions.cpp',
+            'css/BinaryDataFontFaceSource.cpp',
+            'css/BinaryDataFontFaceSource.h',
             'css/CSSArrayFunctionValue.cpp',
             'css/CSSArrayFunctionValue.h',
             'css/CSSAspectRatioValue.cpp',

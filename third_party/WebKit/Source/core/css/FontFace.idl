@@ -37,6 +37,8 @@ enum FontFaceLoadStatus {
 
 [
     RuntimeEnabled=FontLoadEvents,
+    Constructor(DOMString family, ArrayBuffer source, Dictionary descriptors),
+    Constructor(DOMString family, ArrayBufferView source, Dictionary descriptors),
     Constructor(DOMString family, DOMString source, Dictionary descriptors),
     ConstructorCallWith=ExecutionContext,
     RaisesException=Constructor

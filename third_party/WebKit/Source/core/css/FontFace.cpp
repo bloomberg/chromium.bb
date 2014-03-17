@@ -38,6 +38,7 @@
 #include "bindings/v8/ScriptPromiseResolver.h"
 #include "bindings/v8/ScriptScope.h"
 #include "bindings/v8/ScriptState.h"
+#include "core/css/BinaryDataFontFaceSource.h"
 #include "core/css/CSSFontFace.h"
 #include "core/css/CSSFontFaceSrcValue.h"
 #include "core/css/CSSFontSelector.h"
@@ -58,6 +59,7 @@
 #include "core/svg/SVGFontFaceElement.h"
 #include "core/svg/SVGFontFaceSource.h"
 #include "core/svg/SVGRemoteFontFaceSource.h"
+#include "platform/SharedBuffer.h"
 #include "platform/fonts/FontDescription.h"
 
 namespace WebCore {
@@ -77,7 +79,7 @@ public:
             m_resolver->resolve(fontFace);
             break;
         case FontFace::Error:
-            m_resolver->reject(DOMError::create(NetworkError));
+            m_resolver->reject(fontFace->error());
             break;
         default:
             ASSERT_NOT_REACHED();
@@ -104,6 +106,46 @@ static PassRefPtrWillBeRawPtr<CSSValue> parseCSSValue(const Document* document, 
     return parsedStyle->getPropertyCSSValue(propertyID);
 }
 
+static bool initFontFace(FontFace* fontFace, ExecutionContext* context, const AtomicString& family, const Dictionary& descriptors, ExceptionState& exceptionState)
+{
+    fontFace->setFamily(context, family, exceptionState);
+    if (exceptionState.hadException())
+        return false;
+
+    String value;
+    if (descriptors.get("style", value)) {
+        fontFace->setStyle(context, value, exceptionState);
+        if (exceptionState.hadException())
+            return false;
+    }
+    if (descriptors.get("weight", value)) {
+        fontFace->setWeight(context, value, exceptionState);
+        if (exceptionState.hadException())
+            return false;
+    }
+    if (descriptors.get("stretch", value)) {
+        fontFace->setStretch(context, value, exceptionState);
+        if (exceptionState.hadException())
+            return false;
+    }
+    if (descriptors.get("unicodeRange", value)) {
+        fontFace->setUnicodeRange(context, value, exceptionState);
+        if (exceptionState.hadException())
+            return false;
+    }
+    if (descriptors.get("variant", value)) {
+        fontFace->setVariant(context, value, exceptionState);
+        if (exceptionState.hadException())
+            return false;
+    }
+    if (descriptors.get("featureSettings", value)) {
+        fontFace->setFeatureSettings(context, value, exceptionState);
+        if (exceptionState.hadException())
+            return false;
+    }
+    return true;
+}
+
 PassRefPtr<FontFace> FontFace::create(ExecutionContext* context, const AtomicString& family, const String& source, const Dictionary& descriptors, ExceptionState& exceptionState)
 {
     RefPtrWillBeRawPtr<CSSValue> src = parseCSSValue(toDocument(context), source, CSSPropertySrc);
@@ -112,45 +154,26 @@ PassRefPtr<FontFace> FontFace::create(ExecutionContext* context, const AtomicStr
         return nullptr;
     }
 
-    RefPtr<FontFace> fontFace = adoptRefWillBeRefCountedGarbageCollected<FontFace>(new FontFace(src));
-    fontFace->setFamily(context, family, exceptionState);
-    if (exceptionState.hadException())
-        return nullptr;
+    RefPtr<FontFace> fontFace = adoptRefWillBeRefCountedGarbageCollected<FontFace>(new FontFace());
+    if (initFontFace(fontFace.get(), context, family, descriptors, exceptionState))
+        fontFace->initCSSFontFace(toDocument(context), src);
+    return fontFace.release();
+}
 
-    String value;
-    if (descriptors.get("style", value)) {
-        fontFace->setStyle(context, value, exceptionState);
-        if (exceptionState.hadException())
-            return nullptr;
-    }
-    if (descriptors.get("weight", value)) {
-        fontFace->setWeight(context, value, exceptionState);
-        if (exceptionState.hadException())
-            return nullptr;
-    }
-    if (descriptors.get("stretch", value)) {
-        fontFace->setStretch(context, value, exceptionState);
-        if (exceptionState.hadException())
-            return nullptr;
-    }
-    if (descriptors.get("unicodeRange", value)) {
-        fontFace->setUnicodeRange(context, value, exceptionState);
-        if (exceptionState.hadException())
-            return nullptr;
-    }
-    if (descriptors.get("variant", value)) {
-        fontFace->setVariant(context, value, exceptionState);
-        if (exceptionState.hadException())
-            return nullptr;
-    }
-    if (descriptors.get("featureSettings", value)) {
-        fontFace->setFeatureSettings(context, value, exceptionState);
-        if (exceptionState.hadException())
-            return nullptr;
-    }
+PassRefPtr<FontFace> FontFace::create(ExecutionContext* context, const AtomicString& family, PassRefPtr<ArrayBuffer> source, const Dictionary& descriptors, ExceptionState& exceptionState)
+{
+    RefPtr<FontFace> fontFace = adoptRefWillBeRefCountedGarbageCollected<FontFace>(new FontFace());
+    if (initFontFace(fontFace.get(), context, family, descriptors, exceptionState))
+        fontFace->initCSSFontFace(static_cast<const unsigned char*>(source->data()), source->byteLength());
+    return fontFace.release();
+}
 
-    fontFace->initCSSFontFace(toDocument(context));
-    return fontFace;
+PassRefPtr<FontFace> FontFace::create(ExecutionContext* context, const AtomicString& family, PassRefPtr<ArrayBufferView> source, const Dictionary& descriptors, ExceptionState& exceptionState)
+{
+    RefPtr<FontFace> fontFace = adoptRefWillBeRefCountedGarbageCollected<FontFace>(new FontFace());
+    if (initFontFace(fontFace.get(), context, family, descriptors, exceptionState))
+        fontFace->initCSSFontFace(static_cast<const unsigned char*>(source->baseAddress()), source->byteLength());
+    return fontFace.release();
 }
 
 PassRefPtr<FontFace> FontFace::create(Document* document, const StyleRuleFontFace* fontFaceRule)
@@ -165,7 +188,7 @@ PassRefPtr<FontFace> FontFace::create(Document* document, const StyleRuleFontFac
     if (!src || !src->isValueList())
         return nullptr;
 
-    RefPtr<FontFace> fontFace = adoptRefWillBeRefCountedGarbageCollected<FontFace>(new FontFace(src));
+    RefPtr<FontFace> fontFace = adoptRefWillBeRefCountedGarbageCollected<FontFace>(new FontFace());
 
     if (fontFace->setFamilyValue(toCSSValueList(family.get()))
         && fontFace->setPropertyFromStyle(properties, CSSPropertyFontStyle)
@@ -176,15 +199,14 @@ PassRefPtr<FontFace> FontFace::create(Document* document, const StyleRuleFontFac
         && fontFace->setPropertyFromStyle(properties, CSSPropertyWebkitFontFeatureSettings)
         && !fontFace->family().isEmpty()
         && fontFace->traits().mask()) {
-        fontFace->initCSSFontFace(document);
-        return fontFace;
+        fontFace->initCSSFontFace(document, src);
+        return fontFace.release();
     }
     return nullptr;
 }
 
-FontFace::FontFace(PassRefPtrWillBeRawPtr<CSSValue> src)
-    : m_src(src)
-    , m_status(Unloaded)
+FontFace::FontFace()
+    : m_status(Unloaded)
 {
 }
 
@@ -354,6 +376,8 @@ String FontFace::status() const
 void FontFace::setLoadStatus(LoadStatus status)
 {
     m_status = status;
+    if (m_status == Error)
+        m_error = DOMError::create(NetworkError);
     if (m_status == Loaded || m_status == Error)
         resolveReadyPromises();
 }
@@ -487,10 +511,10 @@ FontTraits FontFace::traits() const
     return FontTraits(style, variant, weight, FontStretchNormal);
 }
 
-void FontFace::initCSSFontFace(Document* document)
+static PassOwnPtr<CSSFontFace> createCSSFontFace(FontFace* fontFace, CSSValue* unicodeRange)
 {
     Vector<CSSFontFace::UnicodeRange> ranges;
-    if (CSSValueList* rangeList = toCSSValueList(m_unicodeRange.get())) {
+    if (CSSValueList* rangeList = toCSSValueList(unicodeRange)) {
         unsigned numRanges = rangeList->length();
         for (unsigned i = 0; i < numRanges; i++) {
             CSSUnicodeRangeValue* range = toCSSUnicodeRangeValue(rangeList->itemWithoutBoundsCheck(i));
@@ -498,10 +522,15 @@ void FontFace::initCSSFontFace(Document* document)
         }
     }
 
-    m_cssFontFace = adoptPtr(new CSSFontFace(this, ranges));
+    return adoptPtr(new CSSFontFace(fontFace, ranges));
+}
+
+void FontFace::initCSSFontFace(Document* document, PassRefPtrWillBeRawPtr<CSSValue> src)
+{
+    m_cssFontFace = createCSSFontFace(this, m_unicodeRange.get());
 
     // Each item in the src property's list is a single CSSFontFaceSource. Put them all into a CSSFontFace.
-    CSSValueList* srcList = toCSSValueList(m_src.get());
+    CSSValueList* srcList = toCSSValueList(src.get());
     int srcLength = srcList->length();
 
     bool foundSVGFont = false;
@@ -546,6 +575,21 @@ void FontFace::initCSSFontFace(Document* document)
     }
 }
 
+void FontFace::initCSSFontFace(const unsigned char* data, unsigned size)
+{
+    m_cssFontFace = createCSSFontFace(this, m_unicodeRange.get());
+
+    RefPtr<SharedBuffer> buffer = SharedBuffer::create(data, size);
+    OwnPtr<BinaryDataFontFaceSource> source = adoptPtr(new BinaryDataFontFaceSource(buffer.get()));
+    if (source->isValid()) {
+        m_status = Loaded;
+    } else {
+        m_status = Error;
+        m_error = DOMError::create(SyntaxError, "Invalid font data in ArrayBuffer.");
+    }
+    m_cssFontFace->addSource(source.release());
+}
+
 void FontFace::trace(Visitor* visitor)
 {
     visitor->trace(m_src);
@@ -555,6 +599,7 @@ void FontFace::trace(Visitor* visitor)
     visitor->trace(m_unicodeRange);
     visitor->trace(m_variant);
     visitor->trace(m_featureSettings);
+    visitor->trace(m_error);
 }
 
 bool FontFace::hadBlankText() const
