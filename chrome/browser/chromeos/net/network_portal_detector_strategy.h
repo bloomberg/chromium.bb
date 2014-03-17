@@ -16,7 +16,8 @@ class PortalDetectorStrategy {
  public:
   enum StrategyId {
     STRATEGY_ID_LOGIN_SCREEN,
-    STRATEGY_ID_ERROR_SCREEN
+    STRATEGY_ID_ERROR_SCREEN,
+    STRATEGY_ID_SESSION,
   };
 
   class Delegate {
@@ -73,6 +74,7 @@ class PortalDetectorStrategy {
 
  private:
   friend class NetworkPortalDetectorImplTest;
+  friend class NetworkPortalDetectorImplBrowserTest;
 
   static void set_delay_till_next_attempt_for_testing(
       const base::TimeDelta& timeout) {

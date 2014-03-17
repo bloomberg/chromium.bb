@@ -12,6 +12,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_profile_client.h"
 #include "chromeos/network/network_state.h"
@@ -80,7 +81,8 @@ NetworkPortalDetectorImpl::NetworkPortalDetectorImpl(
       weak_factory_(this),
       attempt_count_(0),
       strategy_(PortalDetectorStrategy::CreateById(
-          PortalDetectorStrategy::STRATEGY_ID_LOGIN_SCREEN)) {
+          PortalDetectorStrategy::STRATEGY_ID_LOGIN_SCREEN)),
+      error_screen_displayed_(false) {
   captive_portal_detector_.reset(new CaptivePortalDetector(request_context));
   strategy_->set_delegate(this);
 
@@ -93,8 +95,12 @@ NetworkPortalDetectorImpl::NetworkPortalDetectorImpl(
   registrar_.Add(this,
                  chrome::NOTIFICATION_AUTH_CANCELLED,
                  content::NotificationService::AllSources());
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_LOGIN_USER_CHANGED,
+                 content::NotificationService::AllSources());
 
   NetworkHandler::Get()->network_state_handler()->AddObserver(this, FROM_HERE);
+  UpdateCurrentStrategy();
 }
 
 NetworkPortalDetectorImpl::~NetworkPortalDetectorImpl() {
@@ -171,26 +177,6 @@ bool NetworkPortalDetectorImpl::StartDetectionIfIdle() {
   return true;
 }
 
-void NetworkPortalDetectorImpl::EnableErrorScreenStrategy() {
-  if (strategy_->Id() == PortalDetectorStrategy::STRATEGY_ID_ERROR_SCREEN)
-    return;
-  VLOG(1) << "Error screen detection strategy enabled.";
-  strategy_ = PortalDetectorStrategy::CreateById(
-      PortalDetectorStrategy::STRATEGY_ID_ERROR_SCREEN);
-  strategy_->set_delegate(this);
-  StartDetectionIfIdle();
-}
-
-void NetworkPortalDetectorImpl::DisableErrorScreenStrategy() {
-  if (strategy_->Id() != PortalDetectorStrategy::STRATEGY_ID_ERROR_SCREEN)
-    return;
-  VLOG(1) << "Error screen detection strategy disabled.";
-  strategy_ = PortalDetectorStrategy::CreateById(
-      PortalDetectorStrategy::STRATEGY_ID_LOGIN_SCREEN);
-  strategy_->set_delegate(this);
-  StopDetection();
-}
-
 void NetworkPortalDetectorImpl::DefaultNetworkChanged(
     const NetworkState* default_network) {
   DCHECK(CalledOnValidThread());
@@ -244,6 +230,16 @@ base::TimeTicks NetworkPortalDetectorImpl::GetCurrentTimeTicks() {
   if (time_ticks_for_testing_.is_null())
     return base::TimeTicks::Now();
   return time_ticks_for_testing_;
+}
+
+void NetworkPortalDetectorImpl::OnErrorScreenShow() {
+  error_screen_displayed_ = true;
+  UpdateCurrentStrategy();
+}
+
+void NetworkPortalDetectorImpl::OnErrorScreenHide() {
+  error_screen_displayed_ = false;
+  UpdateCurrentStrategy();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -400,6 +396,8 @@ void NetworkPortalDetectorImpl::Observe(
       return;
     StopDetection();
     ScheduleAttempt(base::TimeDelta::FromSeconds(kProxyChangeDelaySec));
+  } else if (type == chrome::NOTIFICATION_LOGIN_USER_CHANGED) {
+    UpdateCurrentStrategy();
   }
 }
 
@@ -483,6 +481,28 @@ void NetworkPortalDetectorImpl::RecordDetectionStats(
       NOTREACHED();
       break;
   }
+}
+
+void NetworkPortalDetectorImpl::UpdateCurrentStrategy() {
+  if (UserManager::IsInitialized() && UserManager::Get()->IsUserLoggedIn()) {
+    SetStrategy(PortalDetectorStrategy::STRATEGY_ID_SESSION);
+    return;
+  }
+  if (error_screen_displayed_) {
+    SetStrategy(PortalDetectorStrategy::STRATEGY_ID_ERROR_SCREEN);
+    return;
+  }
+  SetStrategy(PortalDetectorStrategy::STRATEGY_ID_LOGIN_SCREEN);
+}
+
+void NetworkPortalDetectorImpl::SetStrategy(
+    PortalDetectorStrategy::StrategyId id) {
+  if (id == strategy_->Id())
+    return;
+  strategy_.reset(PortalDetectorStrategy::CreateById(id).release());
+  strategy_->set_delegate(this);
+  StopDetection();
+  StartDetectionIfIdle();
 }
 
 }  // namespace chromeos

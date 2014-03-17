@@ -22,6 +22,7 @@ class MockErrorScreenActor : public ErrorScreenActor {
   MockErrorScreenActor();
   virtual ~MockErrorScreenActor();
 
+  MOCK_METHOD1(SetDelegate, void(ErrorScreenActorDelegate* delegate));
   MOCK_METHOD2(Show, void(OobeDisplay::Screen parent_screen,
                           base::DictionaryValue* params));
   MOCK_METHOD0(Hide, void(void));

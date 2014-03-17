@@ -7,17 +7,27 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/observer_list.h"
 #include "chrome/browser/chromeos/login/oobe_display.h"
+#include "chrome/browser/chromeos/login/oobe_display.h"
+#include "chrome/browser/chromeos/login/screens/error_screen_actor_delegate.h"
 #include "chrome/browser/chromeos/login/screens/wizard_screen.h"
 
 namespace chromeos {
 
-class ErrorScreenActor;
 class ScreenObserver;
 
 // Controller for the error screen.
-class ErrorScreen : public WizardScreen {
+class ErrorScreen : public WizardScreen,
+                    public ErrorScreenActorDelegate {
  public:
+  class Observer {
+   public:
+    virtual ~Observer() {}
+    virtual void OnErrorScreenShow() = 0;
+    virtual void OnErrorScreenHide() = 0;
+  };
+
   enum UIState {
     UI_STATE_UNKNOWN = 0,
     UI_STATE_UPDATE,
@@ -39,11 +49,18 @@ class ErrorScreen : public WizardScreen {
   ErrorScreen(ScreenObserver* screen_observer, ErrorScreenActor* actor);
   virtual ~ErrorScreen();
 
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
+
   // WizardScreen implementation.
   virtual void PrepareToShow() OVERRIDE;
   virtual void Show() OVERRIDE;
   virtual void Hide() OVERRIDE;
   virtual std::string GetName() const OVERRIDE;
+
+  // ErrorScreenActorDelegate implementation:
+  virtual void OnErrorShow() OVERRIDE;
+  virtual void OnErrorHide() OVERRIDE;
 
   // Initializes captive portal dialog and shows that if needed.
   void FixCaptivePortal();
@@ -75,6 +92,8 @@ class ErrorScreen : public WizardScreen {
   ErrorScreenActor* actor_;
 
   OobeDisplay::Screen parent_screen_;
+
+  ObserverList<Observer> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(ErrorScreen);
 };

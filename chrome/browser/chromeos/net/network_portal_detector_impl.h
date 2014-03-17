@@ -64,8 +64,6 @@ class NetworkPortalDetectorImpl
   virtual bool IsEnabled() OVERRIDE;
   virtual void Enable(bool start_detection) OVERRIDE;
   virtual bool StartDetectionIfIdle() OVERRIDE;
-  virtual void EnableErrorScreenStrategy() OVERRIDE;
-  virtual void DisableErrorScreenStrategy() OVERRIDE;
 
   // NetworkStateHandlerObserver implementation:
   virtual void DefaultNetworkChanged(const NetworkState* network) OVERRIDE;
@@ -75,8 +73,13 @@ class NetworkPortalDetectorImpl
   virtual base::TimeTicks AttemptStartTime() OVERRIDE;
   virtual base::TimeTicks GetCurrentTimeTicks() OVERRIDE;
 
+  // ErrorScreen::Observer implementation:
+  virtual void OnErrorScreenShow() OVERRIDE;
+  virtual void OnErrorScreenHide() OVERRIDE;
+
  private:
   friend class NetworkPortalDetectorImplTest;
+  friend class NetworkPortalDetectorImplBrowserTest;
 
   typedef std::string NetworkId;
   typedef base::hash_map<NetworkId, CaptivePortalState> CaptivePortalStateMap;
@@ -127,6 +130,14 @@ class NetworkPortalDetectorImpl
   // Notifies observers that portal detection is completed for a |network|.
   void NotifyDetectionCompleted(const NetworkState* network,
                                 const CaptivePortalState& state);
+
+  // Updates current detection strategy according to the curren state:
+  // error screen, login screen or user session.
+  void UpdateCurrentStrategy();
+
+  // Sets current strategy according to |id|. If current detection id
+  // doesn't equal to |id|, detection is restarted.
+  void SetStrategy(PortalDetectorStrategy::StrategyId id);
 
   State state() const { return state_; }
 
@@ -216,6 +227,9 @@ class NetworkPortalDetectorImpl
 
   // Current detection strategy.
   scoped_ptr<PortalDetectorStrategy> strategy_;
+
+  // True when error screen is displayed.
+  bool error_screen_displayed_;
 
   // UI notification controller about captive portal state.
   NetworkPortalNotificationController notification_controller_;

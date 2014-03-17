@@ -87,6 +87,12 @@ class UpdateScreenTest : public WizardInProcessBrowserTest {
     update_screen_->screen_observer_ = mock_screen_observer_.get();
   }
 
+  virtual void CleanUpOnMainThread() OVERRIDE {
+    mock_error_screen_.reset();
+    mock_error_screen_actor_.reset();
+    WizardInProcessBrowserTest::CleanUpOnMainThread();
+  }
+
   virtual void TearDownInProcessBrowserTestFixture() OVERRIDE {
     NetworkPortalDetector::Shutdown();
     WizardInProcessBrowserTest::TearDownInProcessBrowserTestFixture();

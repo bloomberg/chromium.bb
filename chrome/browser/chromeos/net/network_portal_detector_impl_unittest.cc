@@ -194,11 +194,11 @@ class NetworkPortalDetectorImplTest
   }
 
   void enable_error_screen_strategy() {
-    network_portal_detector()->EnableErrorScreenStrategy();
+    network_portal_detector()->OnErrorScreenShow();
   }
 
   void disable_error_screen_strategy() {
-    network_portal_detector()->DisableErrorScreenStrategy();
+    network_portal_detector()->OnErrorScreenHide();
   }
 
   void stop_detection() {
@@ -779,6 +779,8 @@ TEST_F(NetworkPortalDetectorImplTest, ErrorScreenStrategyForOnlineNetwork) {
 
   SetConnected(kStubWireless1);
   enable_error_screen_strategy();
+  // To run CaptivePortalDetector::DetectCaptivePortal().
+  base::RunLoop().RunUntilIdle();
   CompleteURLFetch(net::OK, 204, NULL);
 
   ASSERT_TRUE(is_state_portal_detection_pending());
@@ -799,7 +801,12 @@ TEST_F(NetworkPortalDetectorImplTest, ErrorScreenStrategyForOnlineNetwork) {
 
   disable_error_screen_strategy();
 
-  ASSERT_TRUE(is_state_idle());
+  ASSERT_TRUE(is_state_portal_detection_pending());
+  // To run CaptivePortalDetector::DetectCaptivePortal().
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(is_state_checking_for_portal());
+  CompleteURLFetch(net::OK, 204, NULL);
+
   CheckPortalState(
       NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE, 204, kStubWireless1);
 
@@ -847,7 +854,7 @@ TEST_F(NetworkPortalDetectorImplTest, ErrorScreenStrategyForPortalNetwork) {
 
   disable_error_screen_strategy();
 
-  ASSERT_TRUE(is_state_idle());
+  ASSERT_TRUE(is_state_portal_detection_pending());
   CheckPortalState(
       NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL, 200, kStubWireless1);
 
@@ -949,7 +956,7 @@ TEST_F(NetworkPortalDetectorImplTest, RequestTimeouts) {
                                         net::ERR_CONNECTION_CLOSED,
                                         net::URLFetcher::RESPONSE_CODE_INVALID);
   disable_error_screen_strategy();
-  ASSERT_TRUE(is_state_idle());
+  ASSERT_TRUE(is_state_portal_detection_pending());
 
   SetNetworkDeviceEnabled(shill::kTypeWifi, true);
   SetConnected(kStubWireless1);
@@ -971,8 +978,7 @@ TEST_F(NetworkPortalDetectorImplTest, RequestTimeouts) {
   base::RunLoop().RunUntilIdle();
   CheckRequestTimeoutAndCompleteAttempt(0, 15, net::OK, 204);
   disable_error_screen_strategy();
-  ASSERT_TRUE(is_state_idle());
-  return;
+  ASSERT_TRUE(is_state_portal_detection_pending());
 
   ASSERT_TRUE(
       MakeResultHistogramChecker()

@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
+#include "chrome/browser/chromeos/login/screens/error_screen_actor_delegate.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 
 namespace base {
@@ -44,6 +45,9 @@ class ErrorScreenActor {
   // Returns OobeUI::SCREEN_UNKNOWN if error screen isn't the current
   // screen.
   OobeUI::Screen parent_screen() const { return parent_screen_; }
+
+  // Sets screen this actor belongs to.
+  virtual void SetDelegate(ErrorScreenActorDelegate* delegate) = 0;
 
   // Shows the screen.
   virtual void Show(OobeDisplay::Screen parent_screen,

@@ -573,6 +573,7 @@
         'browser/chromeos/login/screens/error_screen.h',
         'browser/chromeos/login/screens/error_screen_actor.cc',
         'browser/chromeos/login/screens/error_screen_actor.h',
+        'browser/chromeos/login/screens/error_screen_actor_delegate.h',
         'browser/chromeos/login/screens/eula_screen.cc',
         'browser/chromeos/login/screens/eula_screen.h',
         'browser/chromeos/login/screens/eula_screen_actor.h',

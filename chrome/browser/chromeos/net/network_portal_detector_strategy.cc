@@ -17,6 +17,8 @@ const NetworkState* DefaultNetwork() {
   return NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
 }
 
+// TODO (ygorshenin@): reuse net::BackoffEntry for strategies.
+
 class LoginScreenStrategy : public PortalDetectorStrategy {
  public:
   static const int kMaxAttempts = 3;
@@ -70,6 +72,43 @@ class ErrorScreenStrategy : public PortalDetectorStrategy {
   DISALLOW_COPY_AND_ASSIGN(ErrorScreenStrategy);
 };
 
+class SessionStrategy : public PortalDetectorStrategy {
+ public:
+  static const int kFastDelayBetweenAttemptsSec = 1;
+  static const int kMaxFastAttempts = 3;
+  static const int kFastAttemptTimeoutSec = 3;
+
+  static const int kSlowDelayBetweenAttemptsSec = 10;
+  static const int kSlowAttemptTimeoutSec = 5;
+
+  SessionStrategy() {}
+  virtual ~SessionStrategy() {}
+
+ protected:
+  virtual StrategyId Id() const OVERRIDE { return STRATEGY_ID_SESSION; }
+  virtual bool CanPerformAttemptImpl() OVERRIDE { return true; }
+  virtual bool CanPerformAttemptAfterDetectionImpl() OVERRIDE { return true; }
+  virtual base::TimeDelta GetDelayTillNextAttemptImpl() OVERRIDE {
+    int delay;
+    if (delegate_->AttemptCount() < kMaxFastAttempts)
+      delay = kFastDelayBetweenAttemptsSec;
+    else
+      delay = kSlowDelayBetweenAttemptsSec;
+    return AdjustDelay(base::TimeDelta::FromSeconds(delay));
+  }
+  virtual base::TimeDelta GetNextAttemptTimeoutImpl() OVERRIDE {
+    int timeout;
+    if (delegate_->AttemptCount() < kMaxFastAttempts)
+      timeout = kFastAttemptTimeoutSec;
+    else
+      timeout = kSlowAttemptTimeoutSec;
+    return base::TimeDelta::FromSeconds(timeout);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SessionStrategy);
+};
+
 }  // namespace
 
 // PortalDetectorStrategy -----------------------------------------------------
@@ -100,6 +139,8 @@ scoped_ptr<PortalDetectorStrategy> PortalDetectorStrategy::CreateById(
       return scoped_ptr<PortalDetectorStrategy>(new LoginScreenStrategy());
     case STRATEGY_ID_ERROR_SCREEN:
       return scoped_ptr<PortalDetectorStrategy>(new ErrorScreenStrategy());
+    case STRATEGY_ID_SESSION:
+      return scoped_ptr<PortalDetectorStrategy>(new SessionStrategy());
     default:
       NOTREACHED();
       return scoped_ptr<PortalDetectorStrategy>(

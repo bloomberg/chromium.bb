@@ -38,12 +38,16 @@ namespace chromeos {
 ErrorScreenHandler::ErrorScreenHandler(
     const scoped_refptr<NetworkStateInformer>& network_state_informer)
     : BaseScreenHandler(kJsScreenPath),
+      delegate_(NULL),
       network_state_informer_(network_state_informer),
       show_on_init_(false) {
   DCHECK(network_state_informer_.get());
 }
 
-ErrorScreenHandler::~ErrorScreenHandler() {
+ErrorScreenHandler::~ErrorScreenHandler() {}
+
+void ErrorScreenHandler::SetDelegate(ErrorScreenActorDelegate* delegate) {
+  delegate_ = delegate;
 }
 
 void ErrorScreenHandler::Show(OobeDisplay::Screen parent_screen,
@@ -55,7 +59,8 @@ void ErrorScreenHandler::Show(OobeDisplay::Screen parent_screen,
   parent_screen_ = parent_screen;
   ShowScreen(OobeUI::kScreenErrorMessage, params);
   NetworkErrorShown();
-  NetworkPortalDetector::Get()->EnableErrorScreenStrategy();
+  if (delegate_)
+    delegate_->OnErrorShow();
   LOG(WARNING) << "Offline message is displayed";
 }
 
@@ -65,7 +70,8 @@ void ErrorScreenHandler::Hide() {
   std::string screen_name;
   if (GetScreenName(parent_screen_, &screen_name))
     ShowScreen(screen_name.c_str(), NULL);
-  NetworkPortalDetector::Get()->DisableErrorScreenStrategy();
+  if (delegate_)
+    delegate_->OnErrorHide();
   LOG(WARNING) << "Offline message is hidden";
 }
 
