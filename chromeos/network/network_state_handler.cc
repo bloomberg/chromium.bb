@@ -364,6 +364,13 @@ void NetworkStateHandler::RequestUpdateForAllNetworks() {
   }
 }
 
+void NetworkStateHandler::ClearLastErrorForNetwork(
+    const std::string& service_path) {
+  NetworkState* network = GetModifiableNetworkState(service_path);
+  if (network)
+    network->clear_last_error();
+}
+
 void NetworkStateHandler::SetCheckPortalList(
     const std::string& check_portal_list) {
   NET_LOG_EVENT("SetCheckPortalList", check_portal_list);

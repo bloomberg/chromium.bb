@@ -989,7 +989,8 @@ void VPNConfigView::UpdateErrorLabel() {
     const NetworkState* vpn = NetworkHandler::Get()->network_state_handler()->
         GetNetworkState(service_path_);
     if (vpn && vpn->connection_state() == shill::kStateFailure)
-      error_msg = ash::network_connect::ErrorString(vpn->error(), vpn->path());
+      error_msg = ash::network_connect::ErrorString(
+          vpn->last_error(), vpn->path());
   }
   if (!error_msg.empty()) {
     error_label_->SetText(error_msg);

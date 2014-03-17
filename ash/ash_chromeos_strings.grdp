@@ -161,7 +161,7 @@ Failed to connect to '<ph name="name">$1<ex>GoogleGuest</ex></ph>': <ph name="de
 Server message: <ph name="server_msg">$3<ex>Incorrect password</ex></ph>
   </message>
   <message name="IDS_NETWORK_CONNECTION_ERROR_MESSAGE_NO_NAME" desc="Message for network connection error where the network name is unavailable">
-    Failed to connect to network: <ph name="details">$2<ex>Unrecognized error</ex></ph>
+    Failed to connect to network: <ph name="details">$1<ex>Unrecognized error</ex></ph>
   </message>
   <message name="IDS_NETWORK_OUT_OF_CREDITS_TITLE" desc="Title for network out of data error notification">
     Network Connection Error

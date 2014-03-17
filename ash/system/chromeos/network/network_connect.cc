@@ -60,10 +60,9 @@ bool IsDirectActivatedCarrier(const std::string& carrier) {
 }
 
 void ShowErrorNotification(const std::string& error_name,
-                           const std::string& shill_error,
                            const std::string& service_path) {
   Shell::GetInstance()->system_tray_notifier()->network_state_notifier()->
-      ShowNetworkConnectError(error_name, shill_error, service_path);
+      ShowNetworkConnectError(error_name, service_path);
 }
 
 void HandleUnconfiguredNetwork(const std::string& service_path,
@@ -151,10 +150,7 @@ void OnConnectFailed(const std::string& service_path,
   }
 
   // ConnectFailed or unknown error; show a notification.
-  std::string shill_error;
-  error_data.get()->GetString(
-      chromeos::network_handler::kErrorDetail, &shill_error);
-  ShowErrorNotification(error_name, shill_error, service_path);
+  ShowErrorNotification(error_name, service_path);
 
   // Only show a configure dialog if there was a ConnectFailed error and the
   // screen is not locked.
@@ -204,8 +200,7 @@ void OnActivateFailed(const std::string& service_path,
                       const std::string& error_name,
                       scoped_ptr<base::DictionaryValue> error_data) {
   NET_LOG_ERROR("Unable to activate network", service_path);
-  ShowErrorNotification(
-      network_connect::kErrorActivateFailed, "", service_path);
+  ShowErrorNotification(network_connect::kErrorActivateFailed, service_path);
 }
 
 void OnActivateSucceeded(const std::string& service_path) {
@@ -215,8 +210,7 @@ void OnActivateSucceeded(const std::string& service_path) {
 void OnConfigureFailed(const std::string& error_name,
                        scoped_ptr<base::DictionaryValue> error_data) {
   NET_LOG_ERROR("Unable to configure network", "");
-  ShowErrorNotification(
-      NetworkConnectionHandler::kErrorConfigureFailed, "", "");
+  ShowErrorNotification(NetworkConnectionHandler::kErrorConfigureFailed, "");
 }
 
 void OnConfigureSucceeded(const std::string& service_path) {
@@ -233,7 +227,7 @@ void SetPropertiesFailed(const std::string& desc,
                          scoped_ptr<base::DictionaryValue> error_data) {
   NET_LOG_ERROR(desc + ": Failed: " + config_error_name, service_path);
   ShowErrorNotification(
-      NetworkConnectionHandler::kErrorConfigureFailed, "", service_path);
+      NetworkConnectionHandler::kErrorConfigureFailed, service_path);
 }
 
 void SetPropertiesToClear(base::DictionaryValue* properties_to_set,
@@ -327,8 +321,8 @@ void ConnectToNetwork(const std::string& service_path,
                       gfx::NativeWindow parent_window) {
   NET_LOG_USER("ConnectToNetwork", service_path);
   const NetworkState* network = GetNetworkState(service_path);
-  if (network && !network->error().empty()) {
-    NET_LOG_USER("Configure: " + network->error(), service_path);
+  if (network && !network->last_error().empty()) {
+    NET_LOG_USER("Configure: " + network->last_error(), service_path);
     // If the network is in an error state, show the configuration UI directly
     // to avoid a spurious notification.
     HandleUnconfiguredNetwork(service_path, parent_window);
@@ -439,7 +433,7 @@ void ShowMobileSetup(const std::string& service_path) {
                                        base::UTF8ToUTF16(cellular->name())),
             ui::ResourceBundle::GetSharedInstance().GetImageNamed(
                 IDR_AURA_UBER_TRAY_CELLULAR_NETWORK_FAILED),
-            ash::system_notifier::kNotifierNetwork,
+            ash::system_notifier::kNotifierNetworkError,
             base::Bind(&ash::network_connect::ShowNetworkSettings,
                        service_path)));
     return;
@@ -458,7 +452,7 @@ void ConfigureNetworkAndConnect(const std::string& service_path,
   std::string profile_path;
   if (!GetNetworkProfilePath(shared, &profile_path)) {
     ShowErrorNotification(
-        NetworkConnectionHandler::kErrorConfigureFailed, "", service_path);
+        NetworkConnectionHandler::kErrorConfigureFailed, service_path);
     return;
   }
   NetworkHandler::Get()->network_configuration_handler()->SetNetworkProfile(
@@ -474,8 +468,7 @@ void CreateConfigurationAndConnect(base::DictionaryValue* properties,
   NET_LOG_USER("CreateConfigurationAndConnect", "");
   std::string profile_path;
   if (!GetNetworkProfilePath(shared, &profile_path)) {
-    ShowErrorNotification(
-        NetworkConnectionHandler::kErrorConfigureFailed, "", "");
+    ShowErrorNotification(NetworkConnectionHandler::kErrorConfigureFailed, "");
     return;
   }
   properties->SetStringWithoutPathExpansion(

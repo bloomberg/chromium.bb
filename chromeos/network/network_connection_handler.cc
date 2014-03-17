@@ -33,10 +33,9 @@ namespace {
 void InvokeErrorCallback(const std::string& service_path,
                          const network_handler::ErrorCallback& error_callback,
                          const std::string& error_name) {
-  std::string error_msg = "Connect Error: " + error_name;
-  NET_LOG_ERROR(error_msg, service_path);
+  NET_LOG_ERROR("Connect Error: " + error_name, service_path);
   network_handler::RunErrorCallback(
-      error_callback, service_path, error_name, error_msg);
+      error_callback, service_path, error_name, "");
 }
 
 bool IsAuthenticationError(const std::string& error) {
@@ -253,7 +252,7 @@ void NetworkConnectionHandler::ConnectToNetwork(
     }
 
     if (check_error_state) {
-      const std::string& error = network->error();
+      const std::string& error = network->last_error();
       if (error == shill::kErrorBadPassphrase) {
         InvokeErrorCallback(service_path, error_callback, error);
         return;
@@ -527,6 +526,7 @@ void NetworkConnectionHandler::VerifyConfiguredAndConnect(
 void NetworkConnectionHandler::CallShillConnect(
     const std::string& service_path) {
   NET_LOG_EVENT("Sending Connect Request to Shill", service_path);
+  network_state_handler_->ClearLastErrorForNetwork(service_path);
   DBusThreadManager::Get()->GetShillServiceClient()->Connect(
       dbus::ObjectPath(service_path),
       base::Bind(&NetworkConnectionHandler::HandleShillConnectSuccess,
@@ -622,9 +622,6 @@ void NetworkConnectionHandler::CheckPendingRequest(
 
   // Network is neither connecting or connected; an error occurred.
   std::string error_name;  // 'Canceled' or 'Failed'
-  // If network->error() is empty here, we will look it up later, but we
-  // need to preserve it in case Shill clears it before then. crbug.com/302020.
-  std::string shill_error = network->error();
   if (network->connection_state() == shill::kStateIdle &&
       pending_requests_.size() > 1) {
     // Another connect request canceled this one.
@@ -636,17 +633,14 @@ void NetworkConnectionHandler::CheckPendingRequest(
                     service_path);
     }
   }
-  std::string error_msg = error_name;
-  if (!shill_error.empty())
-    error_msg += ": " + shill_error;
-  NET_LOG_ERROR(error_msg, service_path);
 
   network_handler::ErrorCallback error_callback = request->error_callback;
   pending_requests_.erase(service_path);
-  if (error_callback.is_null())
+  if (error_callback.is_null()) {
+    NET_LOG_ERROR("Connect Error, no callback: " + error_name, service_path);
     return;
-  network_handler::RunErrorCallback(
-      error_callback, service_path, error_name, shill_error);
+  }
+  InvokeErrorCallback(service_path, error_callback, error_name);
 }
 
 void NetworkConnectionHandler::CheckAllPendingRequests() {

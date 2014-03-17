@@ -46,28 +46,23 @@ class ASH_EXPORT NetworkStateNotifier :
 
   // Show a connection error notification. If |error_name| matches an error
   // defined in NetworkConnectionHandler for connect, configure, or activation
-  // failed, then the associated message is shown, otherwise |shill_error|
-  // is expected to contain Service.Error (which might get cleared before
-  // GetProperties returns).
+  // failed, then the associated message is shown; otherwise use the last_error
+  // value for the network or a Shill property if available.
   void ShowNetworkConnectError(const std::string& error_name,
-                               const std::string& shill_error,
                                const std::string& service_path);
 
  private:
   void ConnectErrorPropertiesSucceeded(
       const std::string& error_name,
-      const std::string& shill_error,
       const std::string& service_path,
       const base::DictionaryValue& shill_properties);
   void ConnectErrorPropertiesFailed(
       const std::string& error_name,
-      const std::string& shill_error,
       const std::string& service_path,
       const std::string& shill_connect_error,
       scoped_ptr<base::DictionaryValue> shill_error_data);
   void ShowConnectErrorNotification(
       const std::string& error_name,
-      const std::string& shill_error,
       const std::string& service_path,
       const base::DictionaryValue& shill_properties);
 

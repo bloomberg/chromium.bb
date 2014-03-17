@@ -53,6 +53,8 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   const std::string& connection_state() const { return connection_state_; }
   const std::string& profile_path() const { return profile_path_; }
   const std::string& error() const { return error_; }
+  const std::string& last_error() const { return last_error_; }
+  void clear_last_error() { last_error_.clear(); }
   bool connectable() const { return connectable_; }
 
   const NetworkUIData& ui_data() const { return ui_data_; }
@@ -122,8 +124,15 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   std::string guid_;
   std::string connection_state_;
   std::string profile_path_;
-  std::string error_;
   bool connectable_;
+
+  // Reflects the current Shill Service.Error property. This might get cleared
+  // by Shill shortly after a failure.
+  std::string error_;
+
+  // Last non empty Service.Error property. Cleared by NetworkConnectionHandler
+  // when a connection attempt is initiated.
+  std::string last_error_;
 
   // This is convenient to keep cached for now, but shouldn't be necessary;
   // avoid using it if possible.

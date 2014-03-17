@@ -16,6 +16,7 @@ namespace {
 const char* kAlwaysShownNotifierIds[] = {
   kNotifierDisplay,
   kNotifierDisplayError,
+  kNotifierNetworkError,
   kNotifierPower,
   NULL
 };

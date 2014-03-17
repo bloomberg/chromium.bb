@@ -208,6 +208,9 @@ class CHROMEOS_EXPORT NetworkStateHandler
   // existing networks.
   void RequestUpdateForAllNetworks();
 
+  // Clear the last_error value for the NetworkState for |service_path|.
+  void ClearLastErrorForNetwork(const std::string& service_path);
+
   // Set the list of devices on which portal check is enabled.
   void SetCheckPortalList(const std::string& check_portal_list);
 
