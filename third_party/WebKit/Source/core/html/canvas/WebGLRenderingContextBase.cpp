@@ -3321,12 +3321,12 @@ bool WebGLRenderingContextBase::validateTexFunc(const char* functionName, TexFun
     return true;
 }
 
-PassRefPtr<Image> WebGLRenderingContextBase::drawImageIntoBuffer(Image* image, int width, int height)
+PassRefPtr<Image> WebGLRenderingContextBase::drawImageIntoBuffer(Image* image, int width, int height, const char* functionName)
 {
     IntSize size(width, height);
     ImageBuffer* buf = m_generatedImageCache.imageBuffer(size);
     if (!buf) {
-        synthesizeGLError(GL_OUT_OF_MEMORY, "texImage2D", "out of memory");
+        synthesizeGLError(GL_OUT_OF_MEMORY, functionName, "out of memory");
         return nullptr;
     }
 
@@ -3391,7 +3391,7 @@ void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLenum in
 
     RefPtr<Image> imageForRender = image->cachedImage()->imageForRenderer(image->renderer());
     if (imageForRender->isSVGImage())
-        imageForRender = drawImageIntoBuffer(imageForRender.get(), image->width(), image->height());
+        imageForRender = drawImageIntoBuffer(imageForRender.get(), image->width(), image->height(), "texImage2D");
 
     if (!imageForRender || !validateTexFunc("texImage2D", NotTexSubImage2D, SourceHTMLImageElement, target, level, internalformat, imageForRender->width(), imageForRender->height(), 0, format, type, 0, 0))
         return;
@@ -3558,7 +3558,7 @@ void WebGLRenderingContextBase::texSubImage2DImpl(GLenum target, GLint level, GL
         needConversion = false;
     else {
         if (!WebGLImageConversion::packImageData(image, imagePixelData, format, type, flipY, alphaOp, sourceDataFormat, imageExtractor.imageWidth(), imageExtractor.imageHeight(), imageExtractor.imageSourceUnpackAlignment(), data)) {
-            synthesizeGLError(GL_INVALID_VALUE, "texImage2D", "bad image data");
+            synthesizeGLError(GL_INVALID_VALUE, "texSubImage2D", "bad image data");
             return;
         }
     }
@@ -3630,7 +3630,7 @@ void WebGLRenderingContextBase::texSubImage2D(GLenum target, GLint level, GLint 
 
     RefPtr<Image> imageForRender = image->cachedImage()->imageForRenderer(image->renderer());
     if (imageForRender->isSVGImage())
-        imageForRender = drawImageIntoBuffer(imageForRender.get(), image->width(), image->height());
+        imageForRender = drawImageIntoBuffer(imageForRender.get(), image->width(), image->height(), "texSubImage2D");
 
     if (!imageForRender || !validateTexFunc("texSubImage2D", TexSubImage2D, SourceHTMLImageElement, target, level, format, imageForRender->width(), imageForRender->height(), 0, format, type, xoffset, yoffset))
         return;

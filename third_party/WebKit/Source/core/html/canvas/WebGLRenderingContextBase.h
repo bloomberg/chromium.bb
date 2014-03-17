@@ -386,7 +386,7 @@ protected:
     void addCompressedTextureFormat(GLenum);
     void removeAllCompressedTextureFormats();
 
-    PassRefPtr<Image> drawImageIntoBuffer(Image*, int width, int height);
+    PassRefPtr<Image> drawImageIntoBuffer(Image*, int width, int height, const char* functionName);
 
     PassRefPtr<Image> videoFrameToImage(HTMLVideoElement*, BackingStoreCopy);
 
