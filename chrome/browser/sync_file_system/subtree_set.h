@@ -26,11 +26,11 @@ class SubtreeSet {
 
   // Returns true and inserts the subtree induced by |subtree_root| if the
   // subtree is disjoint with all subtrees in the container.
-  bool Insert(const base::FilePath& subtree_root);
+  bool insert(const base::FilePath& subtree_root);
 
   // Erases the subtree induced by |subtree_root| from the container.
   // Returns true if this erases the subtree.
-  bool Erase(const base::FilePath& subtree_root);
+  bool erase(const base::FilePath& subtree_root);
 
   size_t size() const;
   bool empty() const { return inclusive_ancestors_of_subtree_roots_.empty(); }

@@ -14,22 +14,22 @@ TEST(SubtreeSetTest, InsertAndErase) {
   SubtreeSet subtrees;
 
   EXPECT_EQ(0u, subtrees.size());
-  EXPECT_TRUE(subtrees.Insert(FPL("/a/b/c")));
-  EXPECT_FALSE(subtrees.Insert(FPL("/a/b")));
-  EXPECT_FALSE(subtrees.Insert(FPL("/a/b/c")));
-  EXPECT_FALSE(subtrees.Insert(FPL("/a/b/c/d")));
-  EXPECT_TRUE(subtrees.Insert(FPL("/a/b/d")));
-  EXPECT_FALSE(subtrees.Insert(FPL("/")));
+  EXPECT_TRUE(subtrees.insert(FPL("/a/b/c")));
+  EXPECT_FALSE(subtrees.insert(FPL("/a/b")));
+  EXPECT_FALSE(subtrees.insert(FPL("/a/b/c")));
+  EXPECT_FALSE(subtrees.insert(FPL("/a/b/c/d")));
+  EXPECT_TRUE(subtrees.insert(FPL("/a/b/d")));
+  EXPECT_FALSE(subtrees.insert(FPL("/")));
 
   EXPECT_EQ(2u, subtrees.size());
 
-  EXPECT_FALSE(subtrees.Erase(FPL("/")));
-  EXPECT_FALSE(subtrees.Erase(FPL("/a")));
-  EXPECT_TRUE(subtrees.Erase(FPL("/a/b/c")));
+  EXPECT_FALSE(subtrees.erase(FPL("/")));
+  EXPECT_FALSE(subtrees.erase(FPL("/a")));
+  EXPECT_TRUE(subtrees.erase(FPL("/a/b/c")));
 
   EXPECT_EQ(1u, subtrees.size());
 
-  EXPECT_TRUE(subtrees.Insert(FPL("/a/b/c/d")));
+  EXPECT_TRUE(subtrees.insert(FPL("/a/b/c/d")));
 
   EXPECT_EQ(2u, subtrees.size());
 }

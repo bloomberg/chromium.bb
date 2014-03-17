@@ -25,13 +25,15 @@ SubtreeSet::SubtreeSet() {}
 SubtreeSet::~SubtreeSet() {}
 
 bool SubtreeSet::IsDisjointWith(const base::FilePath& subtree_root) const {
-  DCHECK(fileapi::VirtualPath::IsAbsolute(subtree_root.value()));
+  base::FilePath::StringType normalized_subtree_root =
+      fileapi::VirtualPath::GetNormalizedFilePath(subtree_root);
 
   // Check if |subtree_root| contains any of subtrees in the container.
-  if (ContainsKey(inclusive_ancestors_of_subtree_roots_, subtree_root.value()))
+  if (ContainsKey(inclusive_ancestors_of_subtree_roots_,
+                  normalized_subtree_root))
     return false;
 
-  base::FilePath path = subtree_root;
+  base::FilePath path(normalized_subtree_root);
   while (!fileapi::VirtualPath::IsRootPath(path)) {
     path = fileapi::VirtualPath::DirName(path);
 
@@ -44,14 +46,16 @@ bool SubtreeSet::IsDisjointWith(const base::FilePath& subtree_root) const {
   return true;
 }
 
-bool SubtreeSet::Insert(const base::FilePath& subtree_root) {
-  DCHECK(fileapi::VirtualPath::IsAbsolute(subtree_root.value()));
+bool SubtreeSet::insert(const base::FilePath& subtree_root) {
+  base::FilePath::StringType normalized_subtree_root =
+      fileapi::VirtualPath::GetNormalizedFilePath(subtree_root);
 
   if (!IsDisjointWith(subtree_root))
     return false;
-  inclusive_ancestors_of_subtree_roots_[subtree_root.value()] = Node(true, 1);
+  inclusive_ancestors_of_subtree_roots_[normalized_subtree_root]
+      = Node(true, 1);
 
-  base::FilePath path = subtree_root;
+  base::FilePath path(normalized_subtree_root);
   while (!fileapi::VirtualPath::IsRootPath(path)) {
     path = fileapi::VirtualPath::DirName(path);
     DCHECK(!inclusive_ancestors_of_subtree_roots_[path.value()]
@@ -63,12 +67,13 @@ bool SubtreeSet::Insert(const base::FilePath& subtree_root) {
   return true;
 }
 
-bool SubtreeSet::Erase(const base::FilePath& subtree_root) {
-  DCHECK(fileapi::VirtualPath::IsAbsolute(subtree_root.value()));
+bool SubtreeSet::erase(const base::FilePath& subtree_root) {
+  base::FilePath::StringType normalized_subtree_root =
+      fileapi::VirtualPath::GetNormalizedFilePath(subtree_root);
 
   {
     Subtrees::iterator found =
-        inclusive_ancestors_of_subtree_roots_.find(subtree_root.value());
+        inclusive_ancestors_of_subtree_roots_.find(normalized_subtree_root);
     if (found == inclusive_ancestors_of_subtree_roots_.end() ||
         !found->second.contained_as_subtree_root)
       return false;
@@ -77,7 +82,7 @@ bool SubtreeSet::Erase(const base::FilePath& subtree_root) {
     inclusive_ancestors_of_subtree_roots_.erase(found);
   }
 
-  base::FilePath path = subtree_root;
+  base::FilePath path(normalized_subtree_root);
   while (!fileapi::VirtualPath::IsRootPath(path)) {
     path = fileapi::VirtualPath::DirName(path);
 
