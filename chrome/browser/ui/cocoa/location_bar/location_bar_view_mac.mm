@@ -439,7 +439,8 @@ void LocationBarViewMac::Layout() {
   [cell addRightDecoration:mic_search_decoration_.get()];
 
   // By default only the location icon is visible.
-  location_icon_decoration_->SetVisible(true);
+  location_icon_decoration_->SetVisible(!origin_chip_decoration_.get() ||
+                                        !origin_chip_decoration_->IsVisible());
   selected_keyword_decoration_->SetVisible(false);
   ev_bubble_decoration_->SetVisible(false);
   keyword_hint_decoration_->SetVisible(false);
