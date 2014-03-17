@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "cc/base/completion_event.h"
 #include "cc/test/lap_timer.h"
@@ -26,7 +27,7 @@ class PerfTaskImpl : public internal::Task {
   PerfTaskImpl() {}
 
   // Overridden from internal::Task:
-  virtual void RunOnWorkerThread(unsigned thread_index) OVERRIDE {}
+  virtual void RunOnWorkerThread() OVERRIDE {}
 
   void Reset() { did_run_ = false; }
 
@@ -45,9 +46,7 @@ class TaskGraphRunnerPerfTest : public testing::Test {
 
   // Overridden from testing::Test:
   virtual void SetUp() OVERRIDE {
-    task_graph_runner_ =
-        make_scoped_ptr(new internal::TaskGraphRunner(0,  // 0 worker threads
-                                                      "PerfTest"));
+    task_graph_runner_ = make_scoped_ptr(new internal::TaskGraphRunner);
     namespace_token_ = task_graph_runner_->GetNamespaceToken();
   }
   virtual void TearDown() OVERRIDE { task_graph_runner_.reset(); }
@@ -107,7 +106,7 @@ class TaskGraphRunnerPerfTest : public testing::Test {
     do {
       graph.Reset();
       BuildTaskGraph(top_level_tasks, tasks, leaf_tasks, &graph);
-      task_graph_runner_->SetTaskGraph(namespace_token_, &graph);
+      task_graph_runner_->ScheduleTasks(namespace_token_, &graph);
       // Shouldn't be any tasks to collect as we reschedule the same set
       // of tasks.
       DCHECK_EQ(0u, CollectCompletedTasks(&completed_tasks));
@@ -115,7 +114,7 @@ class TaskGraphRunnerPerfTest : public testing::Test {
     } while (!timer_.HasTimeLimitExpired());
 
     internal::TaskGraph empty;
-    task_graph_runner_->SetTaskGraph(namespace_token_, &empty);
+    task_graph_runner_->ScheduleTasks(namespace_token_, &empty);
     CollectCompletedTasks(&completed_tasks);
 
     perf_test::PrintResult("schedule_tasks",
@@ -153,7 +152,7 @@ class TaskGraphRunnerPerfTest : public testing::Test {
                      tasks[count % kNumVersions],
                      leaf_tasks[count % kNumVersions],
                      &graph);
-      task_graph_runner_->SetTaskGraph(namespace_token_, &graph);
+      task_graph_runner_->ScheduleTasks(namespace_token_, &graph);
       CollectCompletedTasks(&completed_tasks);
       completed_tasks.clear();
       ++count;
@@ -161,7 +160,7 @@ class TaskGraphRunnerPerfTest : public testing::Test {
     } while (!timer_.HasTimeLimitExpired());
 
     internal::TaskGraph empty;
-    task_graph_runner_->SetTaskGraph(namespace_token_, &empty);
+    task_graph_runner_->ScheduleTasks(namespace_token_, &empty);
     CollectCompletedTasks(&completed_tasks);
 
     perf_test::PrintResult("schedule_alternate_tasks",
@@ -192,9 +191,8 @@ class TaskGraphRunnerPerfTest : public testing::Test {
     do {
       graph.Reset();
       BuildTaskGraph(top_level_tasks, tasks, leaf_tasks, &graph);
-      task_graph_runner_->SetTaskGraph(namespace_token_, &graph);
-      while (task_graph_runner_->RunTaskForTesting())
-        continue;
+      task_graph_runner_->ScheduleTasks(namespace_token_, &graph);
+      task_graph_runner_->RunUntilIdle();
       CollectCompletedTasks(&completed_tasks);
       completed_tasks.clear();
       ResetTasks(&top_level_tasks);

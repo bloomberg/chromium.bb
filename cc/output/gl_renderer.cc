@@ -31,6 +31,7 @@
 #include "cc/quads/stream_video_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/resources/layer_quad.h"
+#include "cc/resources/raster_worker_pool.h"
 #include "cc/resources/scoped_resource.h"
 #include "cc/resources/texture_mailbox_deleter.h"
 #include "cc/trees/damage_tracker.h"
@@ -93,12 +94,12 @@ class OnDemandRasterTaskImpl : public internal::Task {
   }
 
   // Overridden from internal::Task:
-  virtual void RunOnWorkerThread(unsigned thread_index) OVERRIDE {
+  virtual void RunOnWorkerThread() OVERRIDE {
     TRACE_EVENT0("cc", "OnDemandRasterTaskImpl::RunOnWorkerThread");
     SkCanvas canvas(*bitmap_);
 
-    PicturePileImpl* picture_pile =
-        picture_pile_->GetCloneForDrawingOnThread(thread_index);
+    PicturePileImpl* picture_pile = picture_pile_->GetCloneForDrawingOnThread(
+        RasterWorkerPool::GetPictureCloneIndexForCurrentThread());
     DCHECK(picture_pile);
 
     picture_pile->RasterToBitmap(&canvas, content_rect_, contents_scale_, NULL);

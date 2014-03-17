@@ -6,12 +6,16 @@
 
 #include <algorithm>
 
+#include "base/atomic_sequence_num.h"
 #include "base/debug/trace_event_synthetic_delay.h"
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/stringprintf.h"
+#include "base/threading/simple_thread.h"
+#include "base/threading/thread_local.h"
 #include "base/values.h"
+#include "cc/base/scoped_ptr_deque.h"
 #include "cc/debug/devtools_instrumentation.h"
 #include "cc/debug/traced_value.h"
 #include "cc/resources/picture_pile_impl.h"
@@ -53,6 +57,61 @@ struct RasterRequiredForActivationSyntheticDelayInitializer {
 };
 static base::LazyInstance<RasterRequiredForActivationSyntheticDelayInitializer>
     g_raster_required_for_activation_delay = LAZY_INSTANCE_INITIALIZER;
+
+class RasterTaskGraphRunner : public internal::TaskGraphRunner,
+                              public base::DelegateSimpleThread::Delegate {
+ public:
+  RasterTaskGraphRunner() {
+    size_t num_threads = RasterWorkerPool::GetNumRasterThreads();
+    while (workers_.size() < num_threads) {
+      scoped_ptr<base::DelegateSimpleThread> worker =
+          make_scoped_ptr(new base::DelegateSimpleThread(
+              this,
+              base::StringPrintf("CompositorRasterWorker%u",
+                                 static_cast<unsigned>(workers_.size() + 1))
+                  .c_str()));
+      worker->Start();
+#if defined(OS_ANDROID) || defined(OS_LINUX)
+      worker->SetThreadPriority(base::kThreadPriority_Background);
+#endif
+      workers_.push_back(worker.Pass());
+    }
+  }
+
+  virtual ~RasterTaskGraphRunner() { NOTREACHED(); }
+
+  size_t GetPictureCloneIndexForCurrentThread() {
+    return current_tls_.Get()->picture_clone_index;
+  }
+
+ private:
+  struct ThreadLocalState {
+    explicit ThreadLocalState(size_t picture_clone_index)
+        : picture_clone_index(picture_clone_index) {}
+
+    size_t picture_clone_index;
+  };
+
+  // Overridden from base::DelegateSimpleThread::Delegate:
+  virtual void Run() OVERRIDE {
+    // Use picture clone index 0..num_threads.
+    int picture_clone_index = picture_clone_index_sequence_.GetNext();
+    current_tls_.Set(new ThreadLocalState(picture_clone_index));
+
+    internal::TaskGraphRunner::Run();
+  }
+
+  ScopedPtrDeque<base::DelegateSimpleThread> workers_;
+  base::AtomicSequenceNumber picture_clone_index_sequence_;
+  base::ThreadLocalPointer<ThreadLocalState> current_tls_;
+};
+
+base::LazyInstance<RasterTaskGraphRunner>::Leaky g_task_graph_runner =
+    LAZY_INSTANCE_INITIALIZER;
+
+const int kDefaultNumRasterThreads = 1;
+
+int g_num_raster_threads = 0;
 
 class DisableLCDTextFilter : public SkDrawFilter {
  public:
@@ -97,12 +156,15 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
         canvas_(NULL) {}
 
   // Overridden from internal::Task:
-  virtual void RunOnWorkerThread(unsigned thread_index) OVERRIDE {
+  virtual void RunOnWorkerThread() OVERRIDE {
     TRACE_EVENT0("cc", "RasterWorkerPoolTaskImpl::RunOnWorkerThread");
 
     DCHECK(picture_pile_);
-    if (canvas_)
-      AnalyzeAndRaster(picture_pile_->GetCloneForDrawingOnThread(thread_index));
+    if (canvas_) {
+      AnalyzeAndRaster(picture_pile_->GetCloneForDrawingOnThread(
+          g_task_graph_runner.Pointer()
+              ->GetPictureCloneIndexForCurrentThread()));
+    }
   }
 
   // Overridden from internal::WorkerPoolTask:
@@ -254,7 +316,7 @@ class ImageDecodeWorkerPoolTaskImpl : public internal::WorkerPoolTask {
         reply_(reply) {}
 
   // Overridden from internal::Task:
-  virtual void RunOnWorkerThread(unsigned thread_index) OVERRIDE {
+  virtual void RunOnWorkerThread() OVERRIDE {
     TRACE_EVENT0("cc", "ImageDecodeWorkerPoolTaskImpl::RunOnWorkerThread");
     Decode();
   }
@@ -303,7 +365,7 @@ class RasterFinishedWorkerPoolTaskImpl : public internal::WorkerPoolTask {
         on_raster_finished_callback_(on_raster_finished_callback) {}
 
   // Overridden from internal::Task:
-  virtual void RunOnWorkerThread(unsigned thread_index) OVERRIDE {
+  virtual void RunOnWorkerThread() OVERRIDE {
     TRACE_EVENT0("cc", "RasterFinishedWorkerPoolTaskImpl::RunOnWorkerThread");
     RasterFinished();
   }
@@ -359,7 +421,7 @@ class RasterRequiredForActivationFinishedWorkerPoolTaskImpl
   }
 
   // Overridden from internal::Task:
-  virtual void RunOnWorkerThread(unsigned thread_index) OVERRIDE {
+  virtual void RunOnWorkerThread() OVERRIDE {
     TRACE_EVENT0("cc",
                  "RasterRequiredForActivationFinishedWorkerPoolTaskImpl::"
                  "RunOnWorkerThread");
@@ -391,19 +453,6 @@ class RasterRequiredForActivationFinishedWorkerPoolTaskImpl
   DISALLOW_COPY_AND_ASSIGN(
       RasterRequiredForActivationFinishedWorkerPoolTaskImpl);
 };
-
-class RasterTaskGraphRunner : public internal::TaskGraphRunner {
- public:
-  RasterTaskGraphRunner()
-      : internal::TaskGraphRunner(RasterWorkerPool::GetNumRasterThreads(),
-                                  "CompositorRaster") {}
-};
-base::LazyInstance<RasterTaskGraphRunner>::Leaky g_task_graph_runner =
-    LAZY_INSTANCE_INITIALIZER;
-
-const int kDefaultNumRasterThreads = 1;
-
-int g_num_raster_threads = 0;
 
 }  // namespace
 
@@ -517,6 +566,11 @@ internal::TaskGraphRunner* RasterWorkerPool::GetTaskGraphRunner() {
 }
 
 // static
+size_t RasterWorkerPool::GetPictureCloneIndexForCurrentThread() {
+  return g_task_graph_runner.Pointer()->GetPictureCloneIndexForCurrentThread();
+}
+
+// static
 scoped_refptr<internal::RasterWorkerPoolTask>
 RasterWorkerPool::CreateRasterTask(
     const Resource* resource,
@@ -566,7 +620,7 @@ void RasterWorkerPool::Shutdown() {
 
   if (task_graph_runner_) {
     internal::TaskGraph empty;
-    task_graph_runner_->SetTaskGraph(namespace_token_, &empty);
+    task_graph_runner_->ScheduleTasks(namespace_token_, &empty);
     task_graph_runner_->WaitForTasksToFinishRunning(namespace_token_);
   }
 
@@ -591,7 +645,7 @@ void RasterWorkerPool::SetTaskGraph(internal::TaskGraph* graph) {
     }
   }
 
-  task_graph_runner_->SetTaskGraph(namespace_token_, graph);
+  task_graph_runner_->ScheduleTasks(namespace_token_, graph);
 }
 
 void RasterWorkerPool::CollectCompletedWorkerPoolTasks(

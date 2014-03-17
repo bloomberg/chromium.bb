@@ -20,6 +20,7 @@
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/quads/tile_draw_quad.h"
+#include "cc/resources/raster_worker_pool.h"
 #include "skia/ext/opacity_draw_filter.h"
 #include "third_party/skia/include/core/SkBitmapDevice.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -51,11 +52,11 @@ class OnDemandRasterTaskImpl : public internal::Task {
   }
 
   // Overridden from internal::Task:
-  virtual void RunOnWorkerThread(unsigned thread_index) OVERRIDE {
+  virtual void RunOnWorkerThread() OVERRIDE {
     TRACE_EVENT0("cc", "OnDemandRasterTaskImpl::RunOnWorkerThread");
 
-    PicturePileImpl* picture_pile =
-        picture_pile_->GetCloneForDrawingOnThread(thread_index);
+    PicturePileImpl* picture_pile = picture_pile_->GetCloneForDrawingOnThread(
+        RasterWorkerPool::GetPictureCloneIndexForCurrentThread());
     DCHECK(picture_pile);
 
     picture_pile->RasterDirect(canvas_, content_rect_, contents_scale_, NULL);

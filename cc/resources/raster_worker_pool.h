@@ -137,6 +137,8 @@ class CC_EXPORT RasterWorkerPool : public internal::WorkerPoolTaskClient {
 
   static internal::TaskGraphRunner* GetTaskGraphRunner();
 
+  static size_t GetPictureCloneIndexForCurrentThread();
+
   static unsigned kOnDemandRasterTaskPriority;
   static unsigned kBenchmarkRasterTaskPriority;
   static unsigned kRasterFinishedTaskPriority;

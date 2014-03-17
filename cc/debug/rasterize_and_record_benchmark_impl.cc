@@ -42,9 +42,9 @@ class BenchmarkRasterTask : public internal::Task {
         best_time_(base::TimeDelta::Max()) {}
 
   // Overridden from internal::Task:
-  virtual void RunOnWorkerThread(unsigned thread_index) OVERRIDE {
-    PicturePileImpl* picture_pile =
-        picture_pile_->GetCloneForDrawingOnThread(thread_index);
+  virtual void RunOnWorkerThread() OVERRIDE {
+    PicturePileImpl* picture_pile = picture_pile_->GetCloneForDrawingOnThread(
+        RasterWorkerPool::GetPictureCloneIndexForCurrentThread());
 
     for (size_t i = 0; i < repeat_count_; ++i) {
       SkBitmap bitmap;
@@ -176,7 +176,7 @@ void RasterizeAndRecordBenchmarkImpl::RunOnLayer(PictureLayerImpl* layer) {
         RasterWorkerPool::kBenchmarkRasterTaskPriority,
         0u));
 
-    task_graph_runner->SetTaskGraph(task_namespace_, &graph);
+    task_graph_runner->ScheduleTasks(task_namespace_, &graph);
     task_graph_runner->WaitForTasksToFinishRunning(task_namespace_);
 
     internal::Task::Vector completed_tasks;

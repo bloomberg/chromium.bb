@@ -49,7 +49,7 @@ class TestRasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
         raster_thread_(RASTER_THREAD_NONE) {}
 
   // Overridden from internal::Task:
-  virtual void RunOnWorkerThread(unsigned thread_index) OVERRIDE {
+  virtual void RunOnWorkerThread() OVERRIDE {
     raster_thread_ = RASTER_THREAD_WORKER;
   }
 
@@ -92,9 +92,9 @@ class BlockingTestRasterWorkerPoolTaskImpl
         lock_(lock) {}
 
   // Overridden from internal::Task:
-  virtual void RunOnWorkerThread(unsigned thread_index) OVERRIDE {
+  virtual void RunOnWorkerThread() OVERRIDE {
     base::AutoLock lock(*lock_);
-    TestRasterWorkerPoolTaskImpl::RunOnWorkerThread(thread_index);
+    TestRasterWorkerPoolTaskImpl::RunOnWorkerThread();
   }
 
   // Overridden from internal::WorkerPoolTask:

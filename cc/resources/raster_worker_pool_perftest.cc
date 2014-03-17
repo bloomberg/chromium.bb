@@ -63,7 +63,7 @@ class PerfWorkerPoolTaskImpl : public internal::WorkerPoolTask {
   PerfWorkerPoolTaskImpl() {}
 
   // Overridden from internal::Task:
-  virtual void RunOnWorkerThread(unsigned thread_index) OVERRIDE {}
+  virtual void RunOnWorkerThread() OVERRIDE {}
 
   // Overridden from internal::WorkerPoolTask:
   virtual void ScheduleOnOriginThread(internal::WorkerPoolTaskClient* client)
@@ -93,7 +93,7 @@ class PerfRasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
         resource_(resource.Pass()) {}
 
   // Overridden from internal::Task:
-  virtual void RunOnWorkerThread(unsigned thread_index) OVERRIDE {}
+  virtual void RunOnWorkerThread() OVERRIDE {}
 
   // Overridden from internal::WorkerPoolTask:
   virtual void ScheduleOnOriginThread(internal::WorkerPoolTaskClient* client)
@@ -119,11 +119,6 @@ class PerfRasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
   scoped_ptr<ScopedResource> resource_;
 
   DISALLOW_COPY_AND_ASSIGN(PerfRasterWorkerPoolTaskImpl);
-};
-
-class PerfTaskGraphRunnerImpl : public internal::TaskGraphRunner {
- public:
-  PerfTaskGraphRunnerImpl() : internal::TaskGraphRunner(0, "Perf") {}
 };
 
 class PerfPixelBufferRasterWorkerPoolImpl : public PixelBufferRasterWorkerPool {
@@ -221,7 +216,8 @@ class RasterWorkerPoolPerfTest
       public testing::TestWithParam<RasterWorkerPoolType>,
       public RasterWorkerPoolClient {
  public:
-  RasterWorkerPoolPerfTest() : task_graph_runner_(new PerfTaskGraphRunnerImpl) {
+  RasterWorkerPoolPerfTest()
+      : task_graph_runner_(new internal::TaskGraphRunner) {
     switch (GetParam()) {
       case RASTER_WORKER_POOL_TYPE_PIXEL_BUFFER:
         raster_worker_pool_.reset(new PerfPixelBufferRasterWorkerPoolImpl(
@@ -259,8 +255,7 @@ class RasterWorkerPoolPerfTest
   virtual void DidFinishRunningTasksRequiredForActivation() OVERRIDE {}
 
   void RunMessageLoopUntilAllTasksHaveCompleted() {
-    while (task_graph_runner_->RunTaskForTesting())
-      continue;
+    task_graph_runner_->RunUntilIdle();
     base::MessageLoop::current()->Run();
   }
 

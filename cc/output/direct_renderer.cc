@@ -432,7 +432,7 @@ void DirectRenderer::RunOnDemandRasterTask(
                                 0u));
 
   // Schedule task and wait for task graph runner to finish running it.
-  task_graph_runner->SetTaskGraph(on_demand_task_namespace_, &graph);
+  task_graph_runner->ScheduleTasks(on_demand_task_namespace_, &graph);
   task_graph_runner->WaitForTasksToFinishRunning(on_demand_task_namespace_);
 
   // Collect task now that it has finished running.

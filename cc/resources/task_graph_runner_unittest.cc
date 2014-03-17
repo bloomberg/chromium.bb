@@ -8,6 +8,8 @@
 
 #include "base/bind.h"
 #include "base/synchronization/lock.h"
+#include "base/threading/simple_thread.h"
+#include "cc/base/scoped_ptr_deque.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
@@ -35,6 +37,9 @@ class TaskGraphRunnerTestBase {
     unsigned dependent_count;
     unsigned priority;
   };
+
+  TaskGraphRunnerTestBase()
+      : task_graph_runner_(new internal::TaskGraphRunner) {}
 
   void ResetIds(int namespace_index) {
     run_task_ids_[namespace_index].clear();
@@ -100,8 +105,8 @@ class TaskGraphRunnerTestBase {
       new_tasks.push_back(new_task.get());
     }
 
-    task_graph_runner_->SetTaskGraph(namespace_token_[namespace_index],
-                                     &new_graph);
+    task_graph_runner_->ScheduleTasks(namespace_token_[namespace_index],
+                                      &new_graph);
 
     dependents_[namespace_index].swap(new_dependents);
     tasks_[namespace_index].swap(new_tasks);
@@ -114,7 +119,7 @@ class TaskGraphRunnerTestBase {
         : test_(test), namespace_index_(namespace_index), id_(id) {}
 
     // Overridden from internal::Task:
-    virtual void RunOnWorkerThread(unsigned thread_index) OVERRIDE {
+    virtual void RunOnWorkerThread() OVERRIDE {
       test_->RunTaskOnWorkerThread(namespace_index_, id_);
     }
 
@@ -159,16 +164,35 @@ class TaskGraphRunnerTestBase {
 };
 
 class TaskGraphRunnerTest : public TaskGraphRunnerTestBase,
-                            public testing::TestWithParam<int> {
+                            public testing::TestWithParam<int>,
+                            public base::DelegateSimpleThread::Delegate {
  public:
   // Overridden from testing::Test:
   virtual void SetUp() OVERRIDE {
-    task_graph_runner_ =
-        make_scoped_ptr(new internal::TaskGraphRunner(GetParam(), "Test"));
+    const size_t num_threads = GetParam();
+    while (workers_.size() < num_threads) {
+      scoped_ptr<base::DelegateSimpleThread> worker =
+          make_scoped_ptr(new base::DelegateSimpleThread(this, "TestWorker"));
+      worker->Start();
+      workers_.push_back(worker.Pass());
+    }
+
     for (int i = 0; i < kNamespaceCount; ++i)
       namespace_token_[i] = task_graph_runner_->GetNamespaceToken();
   }
-  virtual void TearDown() OVERRIDE { task_graph_runner_.reset(); }
+  virtual void TearDown() OVERRIDE {
+    task_graph_runner_->Shutdown();
+    while (workers_.size()) {
+      scoped_ptr<base::DelegateSimpleThread> worker = workers_.take_front();
+      worker->Join();
+    }
+  }
+
+ private:
+  // Overridden from base::DelegateSimpleThread::Delegate:
+  virtual void Run() OVERRIDE { task_graph_runner_->Run(); }
+
+  ScopedPtrDeque<base::DelegateSimpleThread> workers_;
 };
 
 TEST_P(TaskGraphRunnerTest, Basic) {
@@ -256,17 +280,29 @@ INSTANTIATE_TEST_CASE_P(TaskGraphRunnerTests,
                         TaskGraphRunnerTest,
                         ::testing::Range(1, 5));
 
-class TaskGraphRunnerSingleThreadTest : public TaskGraphRunnerTestBase,
-                                        public testing::Test {
+class TaskGraphRunnerSingleThreadTest
+    : public TaskGraphRunnerTestBase,
+      public testing::Test,
+      public base::DelegateSimpleThread::Delegate {
  public:
   // Overridden from testing::Test:
   virtual void SetUp() OVERRIDE {
-    task_graph_runner_ =
-        make_scoped_ptr(new internal::TaskGraphRunner(1, "Test"));
+    worker_.reset(new base::DelegateSimpleThread(this, "TestWorker"));
+    worker_->Start();
+
     for (int i = 0; i < kNamespaceCount; ++i)
       namespace_token_[i] = task_graph_runner_->GetNamespaceToken();
   }
-  virtual void TearDown() OVERRIDE { task_graph_runner_.reset(); }
+  virtual void TearDown() OVERRIDE {
+    task_graph_runner_->Shutdown();
+    worker_->Join();
+  }
+
+ private:
+  // Overridden from base::DelegateSimpleThread::Delegate:
+  virtual void Run() OVERRIDE { task_graph_runner_->Run(); }
+
+  scoped_ptr<base::DelegateSimpleThread> worker_;
 };
 
 TEST_F(TaskGraphRunnerSingleThreadTest, Priority) {
