@@ -29,6 +29,7 @@
 
 #include "core/svg/graphics/SVGImage.h"
 
+#include "core/animation/DocumentTimeline.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/shadow/ComposedTreeWalker.h"
 #include "core/frame/FrameView.h"
@@ -380,7 +381,7 @@ bool SVGImage::hasAnimations() const
     SVGSVGElement* rootElement = toSVGDocument(frame->document())->rootElement();
     if (!rootElement)
         return false;
-    return rootElement->timeContainer()->hasAnimations();
+    return rootElement->timeContainer()->hasAnimations() || frame->document()->timeline().hasPendingUpdates();
 }
 
 bool SVGImage::dataChanged(bool allDataReceived)

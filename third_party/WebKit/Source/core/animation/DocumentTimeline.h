@@ -78,6 +78,7 @@ public:
     // performance.timing.domInteractive
     void setZeroTime(double);
     bool hasStarted() const { return !isNull(m_zeroTime); }
+    bool hasPendingUpdates() const { return !m_playersNeedingUpdate.isEmpty(); }
     double zeroTime() const { return m_zeroTime; }
     double currentTime();
     void pauseAnimationsForTesting(double);
