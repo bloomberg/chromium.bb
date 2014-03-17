@@ -581,7 +581,10 @@ InjectedScript.prototype = {
 
             return resolvedArg;
         } else if ("value" in callArgumentJson) {
-            return callArgumentJson.value;
+            var value = callArgumentJson.value;
+            if (callArgumentJson.type === "number" && typeof value !== "number")
+                value = Number(value);
+            return value;
         }
         return undefined;
     },
@@ -1007,8 +1010,19 @@ InjectedScript.RemoteObject = function(object, objectGroupName, forceValueType, 
             this.subtype = "null";
 
         // Provide user-friendly number values.
-        if (this.type === "number")
+        if (this.type === "number") {
             this.description = toStringDescription(object);
+            // Override "value" property for values that can not be JSON-stringified.
+            switch (this.description) {
+            case "NaN":
+            case "Infinity":
+            case "-Infinity":
+            case "-0":
+                this.value = this.description;
+                break;
+            }
+        }
+
         return;
     }
 
