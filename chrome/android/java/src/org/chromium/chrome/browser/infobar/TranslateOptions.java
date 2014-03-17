@@ -33,6 +33,9 @@ public class TranslateOptions {
     private int mTargetLanguageIndex;
     private final boolean mTriggeredFromMenu;
 
+    // Placeholder while i18tn is supported.
+    private static final String UNTRANSLATED_LANGUAGE_PLAHOLDER = "\ud83c\udfc4";
+
     private TranslateOptions(int sourceLanguageCode, int targetLanguageCode, String[] allLanguages,
             boolean neverLanguage, boolean neverDomain, boolean alwaysLanguage,
             boolean triggeredFromMenu, boolean[] originalOptions) {
@@ -74,14 +77,22 @@ public class TranslateOptions {
     }
 
     public String sourceLanguage() {
-        if (checkLanguageBoundaries(mSourceLanguageIndex))
+        if (checkLanguageBoundaries(mSourceLanguageIndex)) {
+            if (mAllLanguages[mSourceLanguageIndex].isEmpty()) {
+                return TranslateOptions.UNTRANSLATED_LANGUAGE_PLAHOLDER;
+            }
             return mAllLanguages[mSourceLanguageIndex];
+        }
         return "";
     }
 
     public String targetLanguage() {
-        if (checkLanguageBoundaries(mTargetLanguageIndex))
+        if (checkLanguageBoundaries(mTargetLanguageIndex)) {
+            if (mAllLanguages[mTargetLanguageIndex].isEmpty()) {
+                return TranslateOptions.UNTRANSLATED_LANGUAGE_PLAHOLDER;
+            }
             return mAllLanguages[mTargetLanguageIndex];
+        }
         return "";
     }
 

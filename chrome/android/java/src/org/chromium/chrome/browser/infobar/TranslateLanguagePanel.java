@@ -144,6 +144,20 @@ public class TranslateLanguagePanel
                 : mSessionOptions.sourceLanguageIndex();
         if (opposite < position) position -= 1;
 
+        List<String> allLanguages = mSessionOptions.allLanguages();
+
+        // Non translated languages are skipped so the position might be
+        // off as well. We only deal with one of them at at a time.
+        int placeHolderIndex = -1;
+        for (int i = 0; i < allLanguages.size(); i++) {
+            if (allLanguages.get(i).isEmpty()) {
+                placeHolderIndex = i;
+            }
+        }
+
+        if (position >= placeHolderIndex && placeHolderIndex != -1)
+            position -= 1;
+
         return position;
     }
 
@@ -171,7 +185,7 @@ public class TranslateLanguagePanel
         ArrayList<SpinnerLanguageElement> result = new ArrayList<SpinnerLanguageElement>();
         List<String> languages = mSessionOptions.allLanguages();
         for (int i = 0; i <  languages.size(); ++i) {
-            if (i != avoidLanguage) {
+            if (i != avoidLanguage && !languages.get(i).isEmpty()) {
                 result.add(new SpinnerLanguageElement(languages.get(i), i));
             }
         }
