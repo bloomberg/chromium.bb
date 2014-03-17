@@ -275,7 +275,7 @@ void FrameView::init()
 
     // Propagate the marginwidth/height and scrolling modes to the view.
     Element* ownerElement = m_frame->ownerElement();
-    if (ownerElement && (ownerElement->hasTagName(frameTag) || ownerElement->hasTagName(iframeTag))) {
+    if (ownerElement && (isHTMLFrameElement(*ownerElement) || isHTMLIFrameElement(*ownerElement))) {
         HTMLFrameElementBase* frameElt = toHTMLFrameElementBase(ownerElement);
         if (frameElt->scrollingMode() == ScrollbarAlwaysOff)
             setCanHaveScrollbars(false);
@@ -594,7 +594,7 @@ void FrameView::calculateScrollbarModesForLayoutAndSetViewportRenderer(Scrollbar
     if (!isSubtreeLayout()) {
         Document* document = m_frame->document();
         Node* body = document->body();
-        if (body && body->renderer() && body->hasTagName(framesetTag)) {
+        if (isHTMLFrameSetElement(body) && body->renderer()) {
             vMode = ScrollbarAlwaysOff;
             hMode = ScrollbarAlwaysOff;
         } else if (Element* viewportElement = document->viewportDefiningElement()) {
@@ -903,9 +903,9 @@ void FrameView::layout(bool allowSubtree)
             Document* document = m_frame->document();
             Node* body = document->body();
             if (body && body->renderer()) {
-                if (body->hasTagName(framesetTag)) {
+                if (isHTMLFrameSetElement(*body)) {
                     body->renderer()->setChildNeedsLayout();
-                } else if (body->hasTagName(bodyTag)) {
+                } else if (isHTMLBodyElement(*body)) {
                     if (!m_firstLayout && m_size.height() != layoutSize().height() && body->renderer()->enclosingBox()->stretchesToViewport())
                         body->renderer()->setChildNeedsLayout();
                 }
@@ -1187,7 +1187,8 @@ void FrameView::addWidgetToUpdate(RenderEmbeddedObject& object)
     ASSERT(isInPerformLayout());
     // Tell the DOM element that it needs a widget update.
     Node* node = object.node();
-    if (node->hasTagName(objectTag) || node->hasTagName(embedTag))
+    ASSERT(node);
+    if (isHTMLObjectElement(*node) || isHTMLEmbedElement(*node))
         toHTMLPlugInElement(node)->setNeedsWidgetUpdate(true);
 
     m_widgetUpdateSet.add(&object);

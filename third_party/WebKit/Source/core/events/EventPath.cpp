@@ -66,10 +66,10 @@ EventTarget* EventPath::eventTargetRespectingTargetRules(Node* referenceNode)
     Node& rootNode = referenceNode->treeScope().rootNode();
     Element* shadowHostElement = rootNode.isShadowRoot() ? toShadowRoot(rootNode).host() : 0;
     // At this time, SVG nodes are not supported in non-<use> shadow trees.
-    if (!shadowHostElement || !shadowHostElement->hasTagName(SVGNames::useTag))
+    if (!isSVGUseElement(shadowHostElement))
         return referenceNode;
-    SVGUseElement* useElement = toSVGUseElement(shadowHostElement);
-    if (SVGElementInstance* instance = useElement->instanceForShadowTreeElement(referenceNode))
+    SVGUseElement& useElement = toSVGUseElement(*shadowHostElement);
+    if (SVGElementInstance* instance = useElement.instanceForShadowTreeElement(referenceNode))
         return instance;
 
     return referenceNode;

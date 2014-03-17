@@ -143,7 +143,7 @@ SVGFontElement* FontResource::getSVGFontById(const String& fontName) const
 #ifndef NDEBUG
     for (unsigned i = 0; i < collectionLength; ++i) {
         ASSERT(collection->item(i));
-        ASSERT(collection->item(i)->hasTagName(SVGNames::fontTag));
+        ASSERT(isSVGFontElement(collection->item(i)));
     }
 #endif
 
