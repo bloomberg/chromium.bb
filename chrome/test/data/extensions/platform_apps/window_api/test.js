@@ -1322,7 +1322,7 @@ function testFrameColors() {
 
     function testWithBlack() {
       chrome.app.window.create('test.html', {
-        frameOptions: {
+        frame: {
           type: 'chrome',
           color: '#000000'
         }
@@ -1336,7 +1336,7 @@ function testFrameColors() {
 
     function testWithWhite() {
       chrome.app.window.create('test.html', {
-        frameOptions: {
+        frame: {
           color: '#FFFFFF'
         }
       },
@@ -1349,7 +1349,7 @@ function testFrameColors() {
 
     function testWithWhiteShorthand() {
       chrome.app.window.create('test.html', {
-        frameOptions: {
+        frame: {
           color: '#FFF'
         }
       },
@@ -1360,19 +1360,9 @@ function testFrameColors() {
       }));
     },
 
-    function testWithFrameAndFrameOptions() {
-      chrome.app.window.create('test.html', {
-        frame: 'chrome',
-        frameOptions: {
-          color: '#FFF'
-        }
-      },
-      callbackFail('Only one of frame and frameOptions can be supplied.'));
-    },
-
     function testWithFrameNoneAndColor() {
       chrome.app.window.create('test.html', {
-        frameOptions: {
+        frame: {
           type: 'none',
           color: '#FFF'
         }
@@ -1382,7 +1372,7 @@ function testFrameColors() {
 
     function testWithInvalidColor() {
       chrome.app.window.create('test.html', {
-        frameOptions: {
+        frame: {
           color: 'DontWorryBeHappy'
         }
       },
@@ -1407,7 +1397,7 @@ function testFrameColorsInStable() {
 
     function testWithOptionsGivesError() {
       chrome.app.window.create('test.html', {
-        frameOptions: {
+        frame: {
           color: '#FFF'
         }
       },

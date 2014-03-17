@@ -54,8 +54,6 @@ const char kInvalidColorSpecification[] =
     "The color specification could not be parsed.";
 const char kInvalidChannelForFrameOptions[] =
     "frameOptions is only available in dev channel.";
-const char kFrameOptionsAndFrame[] =
-    "Only one of frame and frameOptions can be supplied.";
 const char kColorWithFrameNone[] = "Windows with no frame cannot have a color.";
 const char kInvalidChannelForBounds[] =
     "innerBounds and outerBounds are only available in dev channel.";
@@ -445,40 +443,39 @@ AppWindow::Frame AppWindowCreateFunction::GetFrameFromString(
 bool AppWindowCreateFunction::GetFrameOptions(
     const app_window::CreateWindowOptions& options,
     AppWindow::CreateParams* create_params) {
-  if (options.frame.get() && options.frame_options.get()) {
-    error_ = app_window_constants::kFrameOptionsAndFrame;
+  if (!options.frame)
+    return true;
+
+  DCHECK(options.frame->as_string || options.frame->as_frame_options);
+  if (options.frame->as_string) {
+    create_params->frame = GetFrameFromString(*options.frame->as_string);
+    return true;
+  }
+
+  if (GetCurrentChannel() > chrome::VersionInfo::CHANNEL_DEV) {
+    error_ = app_window_constants::kInvalidChannelForFrameOptions;
     return false;
   }
 
-  if (options.frame.get())
-    create_params->frame = GetFrameFromString(*options.frame);
+  if (options.frame->as_frame_options->type)
+    create_params->frame =
+        GetFrameFromString(*options.frame->as_frame_options->type);
 
-  if (options.frame_options.get()) {
-    if (GetCurrentChannel() <= chrome::VersionInfo::CHANNEL_DEV) {
-      app_window::FrameOptions* frame_options = options.frame_options.get();
-
-      if (frame_options->type.get())
-        create_params->frame = GetFrameFromString(*frame_options->type);
-
-      if (frame_options->color.get()) {
-        if (create_params->frame != AppWindow::FRAME_CHROME) {
-          error_ = app_window_constants::kColorWithFrameNone;
-          return false;
-        }
-
-        if (ExtensionActionFunction::ParseCSSColorString(
-                *frame_options->color,
-                &create_params->frame_color)) {
-          create_params->has_frame_color = true;
-        } else {
-          error_ = app_window_constants::kInvalidColorSpecification;
-          return false;
-        }
-      }
-    } else {
-      error_ = app_window_constants::kInvalidChannelForFrameOptions;
+  if (options.frame->as_frame_options->color.get()) {
+    if (create_params->frame != AppWindow::FRAME_CHROME) {
+      error_ = app_window_constants::kColorWithFrameNone;
       return false;
     }
+
+    if (ExtensionActionFunction::ParseCSSColorString(
+            *options.frame->as_frame_options->color,
+            &create_params->frame_color)) {
+      create_params->has_frame_color = true;
+      return true;
+    }
+
+    error_ = app_window_constants::kInvalidColorSpecification;
+    return false;
   }
 
   return true;

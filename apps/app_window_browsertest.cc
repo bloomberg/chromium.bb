@@ -43,7 +43,7 @@ IN_PROC_BROWSER_TEST_F(AppWindowBrowserTest, MAYBE_FrameInsetsForDefaultFrame) {
 // See crbug.com/346115
 IN_PROC_BROWSER_TEST_F(AppWindowBrowserTest, MAYBE_FrameInsetsForColoredFrame) {
   AppWindow* app_window =
-      CreateTestAppWindow("{ \"frameOptions\": { \"color\": \"#ffffff\" } }");
+      CreateTestAppWindow("{ \"frame\": { \"color\": \"#ffffff\" } }");
   NativeAppWindow* native_window = app_window->GetBaseWindow();
   gfx::Insets insets = native_window->GetFrameInsets();
 

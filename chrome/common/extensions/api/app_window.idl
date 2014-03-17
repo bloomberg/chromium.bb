@@ -95,9 +95,18 @@ namespace app.window {
     static void setMaximumSize(long maxWidth, long maxHeight);
   };
 
-  // TODO(benwells): document this once we are happy with it.
-  [nodoc] dictionary FrameOptions {
+  dictionary FrameOptions {
+    // Frame type: <code>none</code> or <code>chrome</code> (defaults to
+    // <code>chrome</code>).<br>
+    // For <code>none</code>, the <code>-webkit-app-region</code> CSS property
+    // can be used to apply draggability to the app's window.
+    // <code>-webkit-app-region: drag</code> can be used to mark regions
+    // draggable. <code>no-drag</code> can be used to disable this style on
+    // nested elements.<br>
     DOMString? type;
+    // Allows the frame color to be set. Frame coloring is only available if the
+    // frame type is <code>chrome</code>.
+    // Frame coloring is experimental and only available in dev channel.
     DOMString? color;
   };
 
@@ -189,12 +198,9 @@ namespace app.window {
     // <code>-webkit-app-region</code> CSS property can be used to apply
     // draggability to the app's window. <code>-webkit-app-region: drag</code>
     // can be used to mark regions draggable. <code>no-drag</code> can be used
-    // to disable this style on nested elements.
-    DOMString? frame;
-
-    // TODO(benwells): Fix the IDL parsing so this can be:
-    // (DOMString or FrameOptions)? frame.
-    [nodoc] FrameOptions? frameOptions;
+    // to disable this style on nested elements.<br>
+    // Use of <code>FrameOptions</code> is only supported in dev channel.
+    (DOMString or FrameOptions)? frame;
 
     // Size and position of the content in the window (excluding the titlebar).
     // If an id is also specified and a window with a matching id has been shown
