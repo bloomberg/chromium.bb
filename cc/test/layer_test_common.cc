@@ -86,4 +86,11 @@ void LayerTestCommon::VerifyQuadsCoverRectWithOcclusion(
   }
 }
 
+LayerTestCommon::LayerImplTest::LayerImplTest()
+    : host_(FakeLayerTreeHost::Create()),
+      root_layer_impl_(
+          LayerImpl::Create(host_->host_impl()->active_tree(), 1)) {}
+
+LayerTestCommon::LayerImplTest::~LayerImplTest() {}
+
 }  // namespace cc

@@ -6,6 +6,9 @@
 #define CC_TEST_LAYER_TEST_COMMON_H_
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
+#include "cc/test/fake_layer_tree_host.h"
+#include "cc/trees/layer_tree_host_impl.h"
 
 #define EXPECT_SET_NEEDS_COMMIT(expect, code_to_test)                 \
   do {                                                                \
@@ -38,6 +41,31 @@ class LayerTestCommon {
       const gfx::Rect& rect,
       const gfx::Rect& occluded,
       size_t* partially_occluded_count);
+
+  class LayerImplTest {
+   public:
+    LayerImplTest();
+    ~LayerImplTest();
+
+    template <typename T>
+    T* AddChildToRoot() {
+      scoped_ptr<T> layer = T::Create(host_->host_impl()->active_tree(), 2);
+      T* ptr = layer.get();
+      root_layer_impl_->AddChild(layer.template PassAs<LayerImpl>());
+      return ptr;
+    }
+
+    void CalcDrawProps(const gfx::Size& viewport_size) {
+      LayerImplList layer_list;
+      LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
+          root_layer_impl_.get(), viewport_size, &layer_list);
+      LayerTreeHostCommon::CalculateDrawProperties(&inputs);
+    }
+
+   private:
+    scoped_ptr<FakeLayerTreeHost> host_;
+    scoped_ptr<LayerImpl> root_layer_impl_;
+  };
 };
 
 }  // namespace cc

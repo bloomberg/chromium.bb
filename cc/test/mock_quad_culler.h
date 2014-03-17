@@ -38,6 +38,11 @@ class MockQuadCuller : public QuadSink {
     occluded_content_rect_ = occluded;
   }
 
+  void clear_lists() {
+    active_quad_list_->clear();
+    active_shared_quad_state_list_->clear();
+  }
+
  private:
   QuadList* active_quad_list_;
   QuadList quad_list_storage_;
