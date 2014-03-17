@@ -4,6 +4,7 @@
 
 """Module containing class for recording metadata about a run."""
 
+import collections
 import datetime
 import functools
 import json
@@ -694,3 +695,12 @@ def GetMetadataURLsSince(target, start_date):
   return urls
 
 
+GerritPatchTuple = collections.namedtuple('GerritPatchTuple',
+                                          'gerrit_number patch_number internal')
+GerritChangeTuple = collections.namedtuple('GerritChangeTuple',
+                                           'gerrit_number internal')
+CLActionTuple = collections.namedtuple('CLActionTuple',
+                                       'change action timestamp reason')
+CLActionWithBuildTuple = collections.namedtuple('CLActionWithBuildTuple',
+                                                'change action timestamp '
+                                                'reason build_number')

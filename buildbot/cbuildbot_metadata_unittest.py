@@ -5,7 +5,6 @@
 
 """Test the cbuildbot_archive module."""
 
-import collections
 import logging
 import multiprocessing
 import os
@@ -52,9 +51,7 @@ class MetadataTest(cros_test_lib.TestCase):
     self.assertEqual(starting_dict, ending_dict)
 
     # Test that RecordCLAction is process-safe
-    mock_patch = collections.namedtuple('mock_patch',
-                                        'gerrit_number patch_number internal')
-    fake_change = mock_patch(12345, 1, False)
+    fake_change = cbuildbot_metadata.GerritPatchTuple(12345, 1, False)
     fake_action = ('asdf,')
     parallel.RunParallelSteps([lambda: metadata.RecordCLAction(fake_change,
                                                                fake_action)])

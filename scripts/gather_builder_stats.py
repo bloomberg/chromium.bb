@@ -570,6 +570,67 @@ class PreCQStats(StatsManager):
     super(PreCQStats, self).__init__(PRE_CQ_GROUP)
 
 
+class CLStats(StatsManager):
+  """Manager for stats about CL actions taken by the Commit Queue."""
+  TABLE_CLASS = None
+
+
+  def __init__(self):
+    super(CLStats, self).__init__(CQ_MASTER)
+    self.actions = []
+    self.per_patch_actions = {}
+    self.per_cl_actions = {}
+
+
+  def CollectActions(self):
+    """Collects the CL actions from the set of gathered builds.
+
+    Returns a list of CLActionWithBuildTuple for all the actions in the
+    gathered builds.
+    """
+    actions = []
+    for b in self.builds:
+      for a in b.metadata_dict['cl_actions']:
+        actions.append(cbuildbot_metadata.CLActionWithBuildTuple(*a,
+            build_number=b.build_number))
+
+    return actions
+
+
+  def CollateActions(self, actions):
+    """Collates a list of actions into per-patch and per-cl actions.
+
+    Returns a tuple (per_patch_actions, per_cl_actions) where each are
+    a dictionary mapping patches or cls to a list of CLActionWithBuildTuple
+    sorted in order of ascending timestamp.
+    """
+    per_patch_actions = {}
+    per_cl_actions = {}
+    for a in actions:
+      change_dict = a.change.copy()
+      change_with_patch = cbuildbot_metadata.GerritPatchTuple(**change_dict)
+      change_dict.pop('patch_number')
+      change_no_patch = cbuildbot_metadata.GerritChangeTuple(**change_dict)
+
+      per_patch_actions.setdefault(change_with_patch, []).append(a)
+      per_cl_actions.setdefault(change_no_patch, []).append(a)
+
+    for p in [per_cl_actions, per_patch_actions]:
+      for k, v in p.iteritems():
+        p[k] = sorted(v, key=lambda x: x.timestamp)
+
+    return (per_patch_actions, per_cl_actions)
+
+
+  def Summarize(self):
+    """Process and generate a summary of cl action statistics."""
+    super(CLStats, self).Summarize()
+    self.actions = self.CollectActions()
+
+    (self.per_patch_actions,
+     self.per_cl_actions) = self.CollateActions(self.actions)
+
+
 # TODO(mtennant): Add token file support.  See upload_package_status.py.
 def _PrepareCreds(email, password=None):
   """Return a gdata_lib.Creds object from given credentials.
@@ -615,6 +676,9 @@ def GetParser():
                     help='Gather stats for the Pre-CQ.')
   mode.add_argument('--cq-slaves', action='store_true', default=False,
                     help='Gather stats for all CQ slaves.')
+  mode.add_argument('--cl-actions', action='store_true', default=False,
+                    help='Gather stats about CL actions taken by the CQ '
+                         'master')
   # TODO(mtennant): Other modes as they make sense, like maybe --release.
 
   mode = parser.add_mutually_exclusive_group(required=True)
@@ -655,6 +719,9 @@ def main(argv):
   stats_managers = []
   if options.cq_master:
     stats_managers.append(CQMasterStats())
+
+  if options.cl_actions:
+    stats_managers.append(CLStats())
 
   if options.pre_cq:
     # TODO(mtennant): Add spreadsheet and/or graphite support for pre-cq.
