@@ -782,6 +782,12 @@ MockClientSocket::GetNextProto(std::string* proto, std::string* server_protos) {
   return SSLClientSocket::kNextProtoUnsupported;
 }
 
+scoped_refptr<X509Certificate>
+MockClientSocket::GetUnverifiedServerCertificateChain() const {
+  NOTREACHED();
+  return NULL;
+}
+
 MockClientSocket::~MockClientSocket() {}
 
 void MockClientSocket::RunCallbackAsync(const CompletionCallback& callback,

@@ -106,6 +106,11 @@ class SSLClientSocketNSS : public SSLClientSocket {
   virtual bool SetSendBufferSize(int32 size) OVERRIDE;
   virtual ServerBoundCertService* GetServerBoundCertService() const OVERRIDE;
 
+ protected:
+  // SSLClientSocket implementation.
+  virtual scoped_refptr<X509Certificate> GetUnverifiedServerCertificateChain()
+      const OVERRIDE;
+
  private:
   // Helper class to handle marshalling any NSS interaction to and from the
   // NSS and network task runners. Not every call needs to happen on the Core

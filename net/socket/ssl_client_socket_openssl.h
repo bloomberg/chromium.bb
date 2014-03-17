@@ -92,7 +92,13 @@ class SSLClientSocketOpenSSL : public SSLClientSocket {
   virtual bool SetReceiveBufferSize(int32 size) OVERRIDE;
   virtual bool SetSendBufferSize(int32 size) OVERRIDE;
 
+ protected:
+  // SSLClientSocket implementation.
+  virtual scoped_refptr<X509Certificate> GetUnverifiedServerCertificateChain()
+      const OVERRIDE;
+
  private:
+  class PeerCertificateChain;
   class SSLContext;
   friend class SSLClientSocket;
   friend class SSLContext;
@@ -176,6 +182,7 @@ class SSLClientSocketOpenSSL : public SSLClientSocket {
   int transport_write_error_;
 
   // Set when handshake finishes.
+  scoped_ptr<PeerCertificateChain> server_cert_chain_;
   scoped_refptr<X509Certificate> server_cert_;
   CertVerifyResult server_cert_verify_result_;
   bool completed_handshake_;

@@ -326,6 +326,140 @@ class SSLClientSocketOpenSSL::SSLContext {
   SSLSessionCacheOpenSSL session_cache_;
 };
 
+// PeerCertificateChain is a helper object which extracts the certificate
+// chain, as given by the server, from an OpenSSL socket and performs the needed
+// resource management. The first element of the chain is the leaf certificate
+// and the other elements are in the order given by the server.
+class SSLClientSocketOpenSSL::PeerCertificateChain {
+ public:
+  explicit PeerCertificateChain(SSL* ssl) { Reset(ssl); }
+  PeerCertificateChain(const PeerCertificateChain& other) { *this = other; }
+  ~PeerCertificateChain() {}
+  PeerCertificateChain& operator=(const PeerCertificateChain& other);
+
+  // Resets the PeerCertificateChain to the set of certificates supplied by the
+  // peer of |ssl|, which may be NULL, indicating to empty the store
+  // certificates. Note: If an error occurs, such as being unable to parse the
+  // certificates,  this will behave as if Reset(NULL) was called.
+  void Reset(SSL* ssl);
+  // Note that when USE_OPENSSL is defined, OSCertHandle is X509*
+  const scoped_refptr<X509Certificate>& AsOSChain() const { return os_chain_; }
+
+  size_t size() const {
+    if (!openssl_chain_.get())
+      return 0;
+    return sk_X509_num(openssl_chain_.get());
+  }
+
+  X509* operator[](size_t index) const {
+    DCHECK_LT(index, size());
+    return sk_X509_value(openssl_chain_.get(), index);
+  }
+
+ private:
+  static void FreeX509Stack(STACK_OF(X509)* cert_chain) {
+    sk_X509_pop_free(cert_chain, X509_free);
+  }
+
+  friend class crypto::ScopedOpenSSL<STACK_OF(X509), FreeX509Stack>;
+
+  crypto::ScopedOpenSSL<STACK_OF(X509), FreeX509Stack> openssl_chain_;
+
+  scoped_refptr<X509Certificate> os_chain_;
+};
+
+SSLClientSocketOpenSSL::PeerCertificateChain&
+SSLClientSocketOpenSSL::PeerCertificateChain::operator=(
+    const PeerCertificateChain& other) {
+  if (this == &other)
+    return *this;
+
+  // os_chain_ is reference counted by scoped_refptr;
+  os_chain_ = other.os_chain_;
+
+  // Must increase the reference count manually for sk_X509_dup
+  openssl_chain_.reset(sk_X509_dup(other.openssl_chain_.get()));
+  for (int i = 0; i < sk_X509_num(openssl_chain_.get()); ++i) {
+    X509* x = sk_X509_value(openssl_chain_.get(), i);
+    CRYPTO_add(&x->references, 1, CRYPTO_LOCK_X509);
+  }
+  return *this;
+}
+
+#if defined(USE_OPENSSL)
+// When OSCertHandle is typedef'ed to X509, this implementation does a short cut
+// to avoid converting back and forth between der and X509 struct.
+void SSLClientSocketOpenSSL::PeerCertificateChain::Reset(SSL* ssl) {
+  openssl_chain_.reset(NULL);
+  os_chain_ = NULL;
+
+  if (ssl == NULL)
+    return;
+
+  STACK_OF(X509)* chain = SSL_get_peer_cert_chain(ssl);
+  if (!chain)
+    return;
+
+  X509Certificate::OSCertHandles intermediates;
+  for (int i = 1; i < sk_X509_num(chain); ++i)
+    intermediates.push_back(sk_X509_value(chain, i));
+
+  os_chain_ =
+      X509Certificate::CreateFromHandle(sk_X509_value(chain, 0), intermediates);
+
+  // sk_X509_dup does not increase reference count on the certs in the stack.
+  openssl_chain_.reset(sk_X509_dup(chain));
+
+  std::vector<base::StringPiece> der_chain;
+  for (int i = 0; i < sk_X509_num(openssl_chain_.get()); ++i) {
+    X509* x = sk_X509_value(openssl_chain_.get(), i);
+    // Increase the reference count for the certs in openssl_chain_.
+    CRYPTO_add(&x->references, 1, CRYPTO_LOCK_X509);
+  }
+}
+#else  // !defined(USE_OPENSSL)
+void SSLClientSocketOpenSSL::PeerCertificateChain::Reset(SSL* ssl) {
+  openssl_chain_.reset(NULL);
+  os_chain_ = NULL;
+
+  if (ssl == NULL)
+    return;
+
+  STACK_OF(X509)* chain = SSL_get_peer_cert_chain(ssl);
+  if (!chain)
+    return;
+
+  // sk_X509_dup does not increase reference count on the certs in the stack.
+  openssl_chain_.reset(sk_X509_dup(chain));
+
+  std::vector<base::StringPiece> der_chain;
+  for (int i = 0; i < sk_X509_num(openssl_chain_.get()); ++i) {
+    X509* x = sk_X509_value(openssl_chain_.get(), i);
+
+    // Increase the reference count for the certs in openssl_chain_.
+    CRYPTO_add(&x->references, 1, CRYPTO_LOCK_X509);
+
+    unsigned char* cert_data = NULL;
+    int cert_data_length = i2d_X509(x, &cert_data);
+    if (cert_data_length && cert_data)
+      der_chain.push_back(base::StringPiece(reinterpret_cast<char*>(cert_data),
+                                            cert_data_length));
+  }
+
+  os_chain_ = X509Certificate::CreateFromDERCertChain(der_chain);
+
+  for (size_t i = 0; i < der_chain.size(); ++i) {
+    OPENSSL_free(const_cast<char*>(der_chain[i].data()));
+  }
+
+  if (der_chain.size() !=
+      static_cast<size_t>(sk_X509_num(openssl_chain_.get()))) {
+    openssl_chain_.reset(NULL);
+    os_chain_ = NULL;
+  }
+}
+#endif  // USE_OPENSSL
+
 // static
 SSLSessionCacheOpenSSL::Config
     SSLClientSocketOpenSSL::SSLContext::kDefaultSessionCacheConfig = {
@@ -354,6 +488,7 @@ SSLClientSocketOpenSSL::SSLClientSocketOpenSSL(
       weak_factory_(this),
       pending_read_error_(kNoPendingReadResult),
       transport_write_error_(OK),
+      server_cert_chain_(new PeerCertificateChain(NULL)),
       completed_handshake_(false),
       client_auth_cert_needed_(false),
       cert_verifier_(context.cert_verifier),
@@ -369,8 +504,7 @@ SSLClientSocketOpenSSL::SSLClientSocketOpenSSL(
       npn_status_(kNextProtoUnsupported),
       channel_id_request_return_value_(ERR_UNEXPECTED),
       channel_id_xtn_negotiated_(false),
-      net_log_(transport_->socket()->NetLog()) {
-}
+      net_log_(transport_->socket()->NetLog()) {}
 
 SSLClientSocketOpenSSL::~SSLClientSocketOpenSSL() {
   Disconnect();
@@ -924,26 +1058,8 @@ void SSLClientSocketOpenSSL::DoConnectCallback(int rv) {
 }
 
 X509Certificate* SSLClientSocketOpenSSL::UpdateServerCert() {
-  if (server_cert_.get())
-    return server_cert_.get();
-
-  crypto::ScopedOpenSSL<X509, X509_free> cert(SSL_get_peer_certificate(ssl_));
-  if (!cert.get()) {
-    LOG(WARNING) << "SSL_get_peer_certificate returned NULL";
-    return NULL;
-  }
-
-  // Unlike SSL_get_peer_certificate, SSL_get_peer_cert_chain does not
-  // increment the reference so sk_X509_free does not need to be called.
-  STACK_OF(X509)* chain = SSL_get_peer_cert_chain(ssl_);
-  X509Certificate::OSCertHandles intermediates;
-  if (chain) {
-    for (int i = 0; i < sk_X509_num(chain); ++i)
-      intermediates.push_back(sk_X509_value(chain, i));
-  }
-  server_cert_ = X509Certificate::CreateFromHandle(cert.get(), intermediates);
-  DCHECK(server_cert_.get());
-
+  server_cert_chain_->Reset(ssl_);
+  server_cert_ = server_cert_chain_->AsOSChain();
   return server_cert_.get();
 }
 
@@ -1445,6 +1561,11 @@ int SSLClientSocketOpenSSL::SelectNextProtoCallback(unsigned char** out,
   DVLOG(2) << "next protocol: '" << npn_proto_ << "' status: " << npn_status_;
 #endif
   return SSL_TLSEXT_ERR_OK;
+}
+
+scoped_refptr<X509Certificate>
+SSLClientSocketOpenSSL::GetUnverifiedServerCertificateChain() const {
+  return server_cert_;
 }
 
 }  // namespace net

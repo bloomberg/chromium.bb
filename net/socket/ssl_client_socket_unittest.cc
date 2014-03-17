@@ -524,6 +524,47 @@ class SSLClientSocketTest : public PlatformTest {
   SSLClientSocketContext context_;
 };
 
+// Verifies the correctness of GetSSLCertRequestInfo.
+class SSLClientSocketCertRequestInfoTest : public SSLClientSocketTest {
+ protected:
+  // Creates a test server with the given SSLOptions, connects to it and returns
+  // the SSLCertRequestInfo reported by the socket.
+  scoped_refptr<SSLCertRequestInfo> GetCertRequest(
+      SpawnedTestServer::SSLOptions ssl_options) {
+    SpawnedTestServer test_server(
+        SpawnedTestServer::TYPE_HTTPS, ssl_options, base::FilePath());
+    if (!test_server.Start())
+      return NULL;
+
+    AddressList addr;
+    if (!test_server.GetAddressList(&addr))
+      return NULL;
+
+    TestCompletionCallback callback;
+    CapturingNetLog log;
+    scoped_ptr<StreamSocket> transport(
+        new TCPClientSocket(addr, &log, NetLog::Source()));
+    int rv = transport->Connect(callback.callback());
+    if (rv == ERR_IO_PENDING)
+      rv = callback.WaitForResult();
+    EXPECT_EQ(OK, rv);
+
+    scoped_ptr<SSLClientSocket> sock(CreateSSLClientSocket(
+        transport.Pass(), test_server.host_port_pair(), kDefaultSSLConfig));
+    EXPECT_FALSE(sock->IsConnected());
+
+    rv = sock->Connect(callback.callback());
+    if (rv == ERR_IO_PENDING)
+      rv = callback.WaitForResult();
+    scoped_refptr<SSLCertRequestInfo> request_info = new SSLCertRequestInfo();
+    sock->GetSSLCertRequestInfo(request_info.get());
+    sock->Disconnect();
+    EXPECT_FALSE(sock->IsConnected());
+
+    return request_info;
+  }
+};
+
 //-----------------------------------------------------------------------------
 
 // LogContainsSSLConnectEndEvent returns true if the given index in the given
@@ -540,6 +581,8 @@ static bool LogContainsSSLConnectEndEvent(
          LogContainsEvent(
              log, i, NetLog::TYPE_SOCKET_BYTES_SENT, NetLog::PHASE_NONE);
 }
+
+}  // namespace
 
 TEST_F(SSLClientSocketTest, Connect) {
   SpawnedTestServer test_server(SpawnedTestServer::TYPE_HTTPS,
@@ -1708,6 +1751,75 @@ TEST(SSLClientSocket, ClearSessionCache) {
   SSLClientSocket::ClearSessionCache();
 }
 
+// Test that the server certificates are properly retrieved from the underlying
+// SSL stack.
+TEST_F(SSLClientSocketTest, VerifyServerChainProperlyOrdered) {
+  // The connection does not have to be successful.
+  cert_verifier_->set_default_result(ERR_CERT_INVALID);
+
+  // Set up a test server with CERT_CHAIN_WRONG_ROOT.
+  // This makes the server present redundant-server-chain.pem, which contains
+  // intermediate certificates.
+  SpawnedTestServer::SSLOptions ssl_options(
+      SpawnedTestServer::SSLOptions::CERT_CHAIN_WRONG_ROOT);
+  SpawnedTestServer test_server(
+      SpawnedTestServer::TYPE_HTTPS, ssl_options, base::FilePath());
+  ASSERT_TRUE(test_server.Start());
+
+  AddressList addr;
+  ASSERT_TRUE(test_server.GetAddressList(&addr));
+
+  TestCompletionCallback callback;
+  scoped_ptr<StreamSocket> transport(
+      new TCPClientSocket(addr, NULL, NetLog::Source()));
+  int rv = transport->Connect(callback.callback());
+  rv = callback.GetResult(rv);
+  EXPECT_EQ(OK, rv);
+
+  scoped_ptr<SSLClientSocket> sock(CreateSSLClientSocket(
+      transport.Pass(), test_server.host_port_pair(), kDefaultSSLConfig));
+  EXPECT_FALSE(sock->IsConnected());
+  rv = sock->Connect(callback.callback());
+  rv = callback.GetResult(rv);
+
+  EXPECT_EQ(ERR_CERT_INVALID, rv);
+  EXPECT_TRUE(sock->IsConnected());
+
+  // When given option CERT_CHAIN_WRONG_ROOT, SpawnedTestServer will present
+  // certs from redundant-server-chain.pem.
+  CertificateList server_certs =
+      CreateCertificateListFromFile(GetTestCertsDirectory(),
+                                    "redundant-server-chain.pem",
+                                    X509Certificate::FORMAT_AUTO);
+
+  // Get the server certificate as received client side.
+  scoped_refptr<X509Certificate> server_certificate =
+      sock->GetUnverifiedServerCertificateChain();
+
+  // Get the intermediates as received  client side.
+  const X509Certificate::OSCertHandles& server_intermediates =
+      server_certificate->GetIntermediateCertificates();
+
+  // Check that the unverified server certificate chain is properly retrieved
+  // from the underlying ssl stack.
+  ASSERT_EQ(4U, server_certs.size());
+
+  EXPECT_TRUE(X509Certificate::IsSameOSCert(
+      server_certificate->os_cert_handle(), server_certs[0]->os_cert_handle()));
+
+  ASSERT_EQ(3U, server_intermediates.size());
+
+  EXPECT_TRUE(X509Certificate::IsSameOSCert(server_intermediates[0],
+                                            server_certs[1]->os_cert_handle()));
+  EXPECT_TRUE(X509Certificate::IsSameOSCert(server_intermediates[1],
+                                            server_certs[2]->os_cert_handle()));
+  EXPECT_TRUE(X509Certificate::IsSameOSCert(server_intermediates[2],
+                                            server_certs[3]->os_cert_handle()));
+
+  sock->Disconnect();
+  EXPECT_FALSE(sock->IsConnected());
+}
+
 // This tests that SSLInfo contains a properly re-constructed certificate
 // chain. That, in turn, verifies that GetSSLInfo is giving us the chain as
 // verified, not the chain as served by the server. (They may be different.)
@@ -1806,47 +1918,6 @@ TEST_F(SSLClientSocketTest, VerifyReturnChainProperlyOrdered) {
   EXPECT_FALSE(sock->IsConnected());
 }
 
-// Verifies the correctness of GetSSLCertRequestInfo.
-class SSLClientSocketCertRequestInfoTest : public SSLClientSocketTest {
- protected:
-  // Creates a test server with the given SSLOptions, connects to it and returns
-  // the SSLCertRequestInfo reported by the socket.
-  scoped_refptr<SSLCertRequestInfo> GetCertRequest(
-      SpawnedTestServer::SSLOptions ssl_options) {
-    SpawnedTestServer test_server(
-        SpawnedTestServer::TYPE_HTTPS, ssl_options, base::FilePath());
-    if (!test_server.Start())
-      return NULL;
-
-    AddressList addr;
-    if (!test_server.GetAddressList(&addr))
-      return NULL;
-
-    TestCompletionCallback callback;
-    CapturingNetLog log;
-    scoped_ptr<StreamSocket> transport(
-        new TCPClientSocket(addr, &log, NetLog::Source()));
-    int rv = transport->Connect(callback.callback());
-    if (rv == ERR_IO_PENDING)
-      rv = callback.WaitForResult();
-    EXPECT_EQ(OK, rv);
-
-    scoped_ptr<SSLClientSocket> sock(CreateSSLClientSocket(
-        transport.Pass(), test_server.host_port_pair(), kDefaultSSLConfig));
-    EXPECT_FALSE(sock->IsConnected());
-
-    rv = sock->Connect(callback.callback());
-    if (rv == ERR_IO_PENDING)
-      rv = callback.WaitForResult();
-    scoped_refptr<SSLCertRequestInfo> request_info = new SSLCertRequestInfo();
-    sock->GetSSLCertRequestInfo(request_info.get());
-    sock->Disconnect();
-    EXPECT_FALSE(sock->IsConnected());
-
-    return request_info;
-  }
-};
-
 TEST_F(SSLClientSocketCertRequestInfoTest, NoAuthorities) {
   SpawnedTestServer::SSLOptions ssl_options;
   ssl_options.request_client_certificate = true;
@@ -1897,8 +1968,6 @@ TEST_F(SSLClientSocketCertRequestInfoTest, TwoAuthorities) {
       std::string(reinterpret_cast<const char*>(kDiginotarDN), kDiginotarLen),
       request_info->cert_authorities[1]);
 }
-
-}  // namespace
 
 TEST_F(SSLClientSocketTest, ConnectSignedCertTimestampsEnabledTLSExtension) {
   SpawnedTestServer::SSLOptions ssl_options;

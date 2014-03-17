@@ -23,6 +23,7 @@ class SSLCertRequestInfo;
 struct SSLConfig;
 class SSLInfo;
 class TransportSecurityState;
+class X509Certificate;
 
 // This struct groups together several fields which are used by various
 // classes related to SSLClientSocket.
@@ -154,6 +155,13 @@ class NET_EXPORT SSLClientSocket : public SSLSocket {
       const SSLConfig& ssl_config,
       ServerBoundCertService* server_bound_cert_service);
 
+  // For unit testing only.
+  // Returns the unverified certificate chain as presented by server.
+  // Note that chain may be different than the verified chain returned by
+  // StreamSocket::GetSSLInfo().
+  virtual scoped_refptr<X509Certificate> GetUnverifiedServerCertificateChain()
+      const = 0;
+
  private:
   // For signed_cert_timestamps_received_ and stapled_ocsp_response_received_.
   FRIEND_TEST_ALL_PREFIXES(SSLClientSocketTest,
@@ -162,6 +170,8 @@ class NET_EXPORT SSLClientSocket : public SSLSocket {
                            ConnectSignedCertTimestampsEnabledOCSP);
   FRIEND_TEST_ALL_PREFIXES(SSLClientSocketTest,
                            ConnectSignedCertTimestampsDisabled);
+  FRIEND_TEST_ALL_PREFIXES(SSLClientSocketTest,
+                           VerifyServerChainProperlyOrdered);
 
   // True if NPN was responded to, independent of selecting SPDY or HTTP.
   bool was_npn_negotiated_;

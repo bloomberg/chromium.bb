@@ -3589,6 +3589,11 @@ void SSLClientSocketNSS::AddSCTInfoToSSLInfo(SSLInfo* ssl_info) const {
   }
 }
 
+scoped_refptr<X509Certificate>
+SSLClientSocketNSS::GetUnverifiedServerCertificateChain() const {
+  return core_->state().server_cert.get();
+}
+
 ServerBoundCertService* SSLClientSocketNSS::GetServerBoundCertService() const {
   return server_bound_cert_service_;
 }
