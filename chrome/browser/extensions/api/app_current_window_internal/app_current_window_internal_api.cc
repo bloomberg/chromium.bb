@@ -49,7 +49,7 @@ const char kRequiresFramelessWindow[] =
     "This function requires a frameless window (frame:none).";
 
 const char kAlwaysOnTopPermission[] =
-    "The \"alwaysOnTopWindows\" permission is required.";
+    "The \"app.window.alwaysOnTop\" permission is required.";
 
 const char kInvalidParameters[] = "Invalid parameters.";
 

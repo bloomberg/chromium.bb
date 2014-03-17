@@ -231,7 +231,7 @@ namespace app.window {
 
     // If true, the window will stay above most other windows. If there are
     // multiple windows of this kind, the currently focused window will be in
-    // the foreground. Requires the <code>"alwaysOnTopWindows"</code>
+    // the foreground. Requires the <code>"app.window.alwaysOnTop"</code>
     // permission. Defaults to false.<br>
     // Call <code>setAlwaysOnTop()</code> on the window to change this property
     // after creation.<br>
@@ -258,8 +258,9 @@ namespace app.window {
     // Fullscreens the window.<br>
     // The user will be able to restore the window by pressing ESC. An
     // application can prevent the fullscreen state to be left when ESC is
-    // pressed by requesting the <b>overrideEscFullscreen</b> permission and
-    // canceling the event by calling .preventDefault(), like this:<br>
+    // pressed by requesting the <b>app.window.fullscreen.overrideEsc</b>
+    // permission and canceling the event by calling .preventDefault(), like
+    // this:<br>
     // <code>window.onKeyDown = function(e) { if (e.keyCode == 27 /* ESC */) {
     // e.preventDefault(); } };</code>
     static void fullscreen();
@@ -331,7 +332,7 @@ namespace app.window {
     [nodoc] long frameColor;
 
     // Set whether the window should stay above most other windows. Requires the
-    // <code>"alwaysOnTopWindows"</code> permission.
+    // <code>"app.window.alwaysOnTop"</code> permission.
     static void setAlwaysOnTop(boolean alwaysOnTop);
 
     // The JavaScript 'window' object for the created child.

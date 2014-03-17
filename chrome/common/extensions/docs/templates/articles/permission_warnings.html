@@ -414,7 +414,10 @@ The following permissions don't result in a warning:
 <ul>
   <li>"activeTab"</li>
 {{?is_apps}}
-  <li>"alwaysOnTopWindows"</li>
+  <li>"app.window.alwaysOnTop"</li>
+  <li>"app.window.fullscreen"</li>
+  <li>"app.window.fullscreen.overrideEsc"</li>
+  <li>"app.window.shape"</li>
 {{/is_apps}}
   <li>"browsingData"</li>
   <li>"chrome://favicon/"</li>
@@ -422,9 +425,6 @@ The following permissions don't result in a warning:
   <li>"contextMenus"</li>
   <li>"cookies"</li>
   <li>"experimental"</li>
-{{?is_apps}}
-  <li>"fullscreen"</li>
-{{/is_apps}}
   <li>"idle"</li>
   <li>"notifications"</li>
 {{?is_apps}}

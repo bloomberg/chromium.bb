@@ -7,6 +7,6 @@
     }
   },
   "permissions": [
-    "app.window.fullscreen", "app.window.fullscreen.overrideEsc"
+    "fullscreen", "overrideEscFullscreen"
   ]
 }

@@ -53,6 +53,10 @@
     "channel": "stable",
     "contexts": ["blessed_extension", "unblessed_extension", "content_script"]
   },
+  "app.currentWindowInternal.setShape": {
+    "dependencies": ["permission:app.window.shape"],
+    "contexts": ["blessed_extension"]
+  },
   "app.getDetails": {
     "contexts": ["blessed_extension", "unblessed_extension", "content_script"],
     "matches": []

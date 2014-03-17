@@ -1,5 +1,5 @@
 {
-  "name": "Windows API - AlwaysOnTop",
+  "name": "Windows API - AlwaysOnTop (old permission)",
   "version": "1",
   "manifest_version": 2,
   "app": {
@@ -7,5 +7,5 @@
       "scripts": ["background.js"]
     }
   },
-  "permissions": ["app.window.alwaysOnTop"]
+  "permissions": ["alwaysOnTopWindows"]
 }

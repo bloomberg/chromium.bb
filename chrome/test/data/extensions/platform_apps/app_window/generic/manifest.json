@@ -8,5 +8,5 @@
       "scripts": ["main.js"]
     }
   },
-  "permissions": ["fullscreen", "alwaysOnTopWindows"]
+  "permissions": ["app.window.fullscreen", "app.window.alwaysOnTop"]
 }

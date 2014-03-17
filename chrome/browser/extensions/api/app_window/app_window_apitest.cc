@@ -142,6 +142,13 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
+                       WindowsApiAlwaysOnTopWithOldPermissions) {
+  EXPECT_TRUE(RunPlatformAppTest(
+      "platform_apps/windows_api_always_on_top/has_old_permissions"))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
                        WindowsApiAlwaysOnTopNoPermissions) {
   EXPECT_TRUE(RunPlatformAppTest(
       "platform_apps/windows_api_always_on_top/no_permissions")) << message_;

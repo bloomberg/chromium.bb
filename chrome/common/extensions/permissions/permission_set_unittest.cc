@@ -653,6 +653,7 @@ TEST(PermissionsTest, PermissionMessages) {
   skip.insert(APIPermission::kIdltest);
   skip.insert(APIPermission::kLogPrivate);
   skip.insert(APIPermission::kNotification);
+  skip.insert(APIPermission::kOverrideEscFullscreen);
   skip.insert(APIPermission::kPointerLock);
   skip.insert(APIPermission::kPower);
   skip.insert(APIPermission::kPushMessaging);
@@ -666,7 +667,7 @@ TEST(PermissionsTest, PermissionMessages) {
   skip.insert(APIPermission::kTts);
   skip.insert(APIPermission::kUnlimitedStorage);
   skip.insert(APIPermission::kWebView);
-  skip.insert(APIPermission::kOverrideEscFullscreen);
+  skip.insert(APIPermission::kWindowShape);
 
   // TODO(erikkay) add a string for this permission.
   skip.insert(APIPermission::kBackground);
