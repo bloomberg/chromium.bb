@@ -2980,7 +2980,7 @@
   },
   'conditions': [
     # TODO(jochen): Enable this on chromeos. http://crbug.com/353127 
-    ['os_posix==1 && chromeos==0', {
+    ['os_posix==1 and chromeos==0', {
       'target_defaults': {
         'ldflags': [
           '-Wl,--fatal-warnings',
