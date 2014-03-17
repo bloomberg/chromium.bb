@@ -4,5 +4,4 @@
 :: found in the LICENSE file.
 
 setlocal
-set PATH=%~dp0python_bin;%PATH%
-"%~dp0python_bin\python.exe" %*
+call python "%~dp0pylint.py" %*
