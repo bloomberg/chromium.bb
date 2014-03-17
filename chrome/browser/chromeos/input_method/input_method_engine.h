@@ -50,7 +50,7 @@ class InputMethodEngine : public InputMethodEngineInterface {
   // InputMethodEngineInterface overrides.
   virtual const input_method::InputMethodDescriptor& GetDescriptor()
       const OVERRIDE;
-  virtual void StartIme() OVERRIDE;
+  virtual void NotifyImeReady() OVERRIDE;
   virtual bool SetComposition(int context_id,
                               const char* text,
                               int selection_start,

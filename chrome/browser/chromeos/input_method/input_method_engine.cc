@@ -122,7 +122,7 @@ const input_method::InputMethodDescriptor& InputMethodEngine::GetDescriptor()
   return descriptor_;
 }
 
-void InputMethodEngine::StartIme() {
+void InputMethodEngine::NotifyImeReady() {
   input_method::InputMethodManager* manager =
       input_method::InputMethodManager::Get();
   if (manager && imm_id_ == manager->GetCurrentInputMethod().id())

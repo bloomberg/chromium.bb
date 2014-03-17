@@ -19,3 +19,4 @@ zelidrag@chromium.org
 # bshe for wallpaper related files
 bshe@chromium.org
 
+per-file input_method_api.cc=nona@chromium.org

@@ -16,6 +16,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
+#include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/common/extension.h"
 
@@ -63,8 +64,8 @@ class InputImeEventRouter {
   std::map<std::string, std::map<std::string,
                                  chromeos::InputMethodEngineInterface*> >
       engines_;
-  std::map<std::string, std::map<std::string, chromeos::ImeObserver*> >
-      observers_;
+  // The map from extension id to ImeObserver.
+  std::map<std::string, chromeos::ImeObserver*> observers_;
 
   unsigned int next_request_id_;
   RequestMap request_map_;
@@ -214,7 +215,8 @@ class InputImeHideInputViewFunction : public AsyncExtensionFunction {
 };
 
 class InputImeAPI : public BrowserContextKeyedAPI,
-                    public content::NotificationObserver {
+                    public content::NotificationObserver,
+                    public EventRouter::Observer {
  public:
   explicit InputImeAPI(content::BrowserContext* context);
   virtual ~InputImeAPI();
@@ -226,6 +228,9 @@ class InputImeAPI : public BrowserContextKeyedAPI,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+  // EventRouter::Observer implementation.
+  virtual void OnListenerAdded(const EventListenerInfo& details) OVERRIDE;
 
  private:
   friend class BrowserContextKeyedAPIFactory<InputImeAPI>;

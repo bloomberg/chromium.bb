@@ -57,7 +57,7 @@ bool StartImeFunction::RunImpl() {
   chromeos::InputMethodEngineInterface* engine =
       InputImeEventRouter::GetInstance()->GetActiveEngine(extension_id());
   if (engine)
-    engine->StartIme();
+    engine->NotifyImeReady();
   return true;
 #endif
 }

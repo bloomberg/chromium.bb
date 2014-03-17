@@ -19,7 +19,7 @@ MockInputMethodEngine::GetDescriptor() const {
   return descriptor_;
 }
 
-void MockInputMethodEngine::StartIme() {
+void MockInputMethodEngine::NotifyImeReady() {
 }
 
 bool MockInputMethodEngine::SetComposition(
