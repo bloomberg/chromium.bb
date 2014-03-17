@@ -9,6 +9,7 @@
 #import <net/if_dl.h>
 
 #include "base/memory/singleton.h"
+#include "base/metrics/histogram.h"
 
 using local_discovery::ServiceWatcherImplMac;
 using local_discovery::ServiceResolverImplMac;
@@ -153,7 +154,6 @@ void ServiceWatcherImplMac::Start() {
   started_ = true;
 }
 
-// TODO(justinlin): Implement flushing DNS cache to respect parameter.
 void ServiceWatcherImplMac::DiscoverNewServices(bool force_update) {
   DCHECK(started_);
   VLOG(1) << "ServiceWatcherImplMac::DiscoverNewServices";
@@ -168,15 +168,17 @@ void ServiceWatcherImplMac::DiscoverNewServices(bool force_update) {
   DVLOG(1) << "Listening for service type '" << type
            << "' on domain '" << domain << "'";
 
+  base::Time start_time = base::Time::Now();
   [browser_ searchForServicesOfType:[NSString stringWithUTF8String:type.c_str()]
             inDomain:[NSString stringWithUTF8String:domain.c_str()]];
+  UMA_HISTOGRAM_TIMES("LocalDiscovery.MacBrowseCallTimes",
+                      base::Time::Now() - start_time);
 }
 
 void ServiceWatcherImplMac::SetActivelyRefreshServices(
     bool actively_refresh_services) {
   DCHECK(started_);
   VLOG(1) << "ServiceWatcherImplMac::SetActivelyRefreshServices";
-  // TODO(noamsml): Implement this method.
 }
 
 std::string ServiceWatcherImplMac::GetServiceType() const {
