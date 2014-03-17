@@ -154,15 +154,6 @@ void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,
                  BindToCurrentLoop(orig_status_cb));
 
   bool previously_initialized = config_.IsValidConfig();
-#if !defined(OS_CHROMEOS) && !defined(OS_WIN)
-  if (previously_initialized) {
-    // TODO(xhwang): Make GpuVideoDecoder reinitializable.
-    // See http://crbug.com/233608
-    DVLOG(1) << "GpuVideoDecoder reinitialization not supported.";
-    status_cb.Run(DECODER_ERROR_NOT_SUPPORTED);
-    return;
-  }
-#endif
   DVLOG(1) << "(Re)initializing GVD with config: "
            << config.AsHumanReadableString();
 
