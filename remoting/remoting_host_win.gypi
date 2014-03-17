@@ -453,7 +453,6 @@
               'inputs': [
                 '<(chrome_version_path)',
                 '<(remoting_version_path)',
-                '<(RULE_INPUT_PATH)',
               ],
               'outputs': [
                 '<(SHARED_INTERMEDIATE_DIR)/remoting/<(RULE_INPUT_ROOT)',

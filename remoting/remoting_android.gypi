@@ -65,7 +65,6 @@
             'inputs': [
               '<(remoting_localize_path)',
               '<(branding_path)',
-              '<(RULE_INPUT_PATH)',
             ],
             'outputs': [
               '<(SHARED_INTERMEDIATE_DIR)/remoting/android/<(RULE_INPUT_ROOT)',

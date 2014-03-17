@@ -322,7 +322,6 @@
                 # Rule to run the message compiler.
                 'rule_name': 'message_compiler',
                 'extension': 'mc',
-                'inputs': [ '<(RULE_INPUT_PATH)' ],
                 'outputs': [
                   '<(output_dir)/<(RULE_INPUT_ROOT).h',
                   '<(output_dir)/<(RULE_INPUT_ROOT).rc',
@@ -602,7 +601,6 @@
             'inputs': [
               '<(remoting_localize_path)',
               '<(branding_path)',
-              '<(RULE_INPUT_PATH)',
             ],
             'outputs': [
               '<(PRODUCT_DIR)/remoting/<(RULE_INPUT_ROOT)',
@@ -636,7 +634,6 @@
             'extension': 'jinja2',
             'inputs': [
               '<(remoting_localize_path)',
-              '<(RULE_INPUT_PATH)',
             ],
             'outputs': [
               '<!@pymod_do_main(remoting_localize --locale_output '
