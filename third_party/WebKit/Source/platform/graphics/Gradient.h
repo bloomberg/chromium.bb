@@ -31,6 +31,7 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/geometry/FloatPoint.h"
+#include "platform/graphics/Color.h"
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/transforms/AffineTransform.h"
 #include "wtf/PassRefPtr.h"
@@ -42,7 +43,6 @@ class SkShader;
 
 namespace WebCore {
 
-class Color;
 class FloatRect;
 class IntSize;
 
@@ -60,13 +60,9 @@ public:
 
     struct ColorStop {
         float stop;
-        float red;
-        float green;
-        float blue;
-        float alpha;
+        Color color;
 
-        ColorStop() : stop(0), red(0), green(0), blue(0), alpha(0) { }
-        ColorStop(float s, float r, float g, float b, float a) : stop(s), red(r), green(g), blue(b), alpha(a) { }
+        ColorStop(float s, const Color& c) : stop(s), color(c) { }
     };
     void addColorStop(const ColorStop&);
     void addColorStop(float, const Color&);

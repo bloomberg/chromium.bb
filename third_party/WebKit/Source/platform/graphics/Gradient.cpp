@@ -29,9 +29,9 @@
 #include "platform/graphics/Gradient.h"
 
 #include "platform/geometry/FloatRect.h"
-#include "platform/graphics/Color.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/skia/SkiaUtils.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkColorShader.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
@@ -70,12 +70,7 @@ Gradient::~Gradient()
 
 void Gradient::addColorStop(float value, const Color& color)
 {
-    float r;
-    float g;
-    float b;
-    float a;
-    color.getRGBA(r, g, b, a);
-    m_stops.append(ColorStop(value, r, g, b, a));
+    m_stops.append(ColorStop(value, color));
 
     m_stopsSorted = false;
     m_gradient.clear();
@@ -110,7 +105,7 @@ void Gradient::sortStopsIfNecessary()
 bool Gradient::hasAlpha() const
 {
     for (size_t i = 0; i < m_stops.size(); i++) {
-        if (m_stops[i].alpha < 1)
+        if (m_stops[i].color.hasAlpha())
             return true;
     }
 
@@ -147,16 +142,6 @@ void Gradient::setGradientSpaceTransform(const AffineTransform& gradientSpaceTra
         m_gradient->setLocalMatrix(affineTransformToSkMatrix(m_gradientSpaceTransformation));
 }
 
-static inline U8CPU F2B(float x)
-{
-    return static_cast<int>(x * 255);
-}
-
-static SkColor makeSkColor(float a, float r, float g, float b)
-{
-    return SkColorSetARGB(F2B(a), F2B(r), F2B(g), F2B(b));
-}
-
 // Determine the total number of stops needed, including pseudo-stops at the
 // ends as necessary.
 static size_t totalStopsNeeded(const Gradient::ColorStop* stopData, size_t count)
@@ -173,6 +158,12 @@ static size_t totalStopsNeeded(const Gradient::ColorStop* stopData, size_t count
     return countUsed;
 }
 
+// FIXME: This would be more at home as Color::operator SkColor.
+static inline SkColor makeSkColor(const Color& c)
+{
+    return SkColorSetARGB(c.alpha(), c.red(), c.green(), c.blue());
+}
+
 // Collect sorted stop position and color information into the pos and colors
 // buffers, ensuring stops at both 0.0 and 1.0. The buffers must be large
 // enough to hold information for all stops, including the new endpoints if
@@ -185,7 +176,7 @@ static void fillStops(const Gradient::ColorStop* stopData,
     if (count < 1) {
         // A gradient with no stops must be transparent black.
         pos[0] = WebCoreFloatToSkScalar(0.0);
-        colors[0] = makeSkColor(0.0, 0.0, 0.0, 0.0);
+        colors[0] = SK_ColorTRANSPARENT;
         start = 1;
     } else if (stop->stop > 0.0) {
         // Copy the first stop to 0.0. The first stop position may have a slight
@@ -193,13 +184,13 @@ static void fillStops(const Gradient::ColorStop* stopData,
         // 0.0 comes through cleanly and people aren't likely to want a gradient
         // with a stop at (0 + epsilon).
         pos[0] = WebCoreFloatToSkScalar(0.0);
-        colors[0] = makeSkColor(stop->alpha, stop->red, stop->green, stop->blue);
+        colors[0] = makeSkColor(stop->color);
         start = 1;
     }
 
     for (size_t i = start; i < start + count; i++) {
         pos[i] = WebCoreFloatToSkScalar(stop->stop);
-        colors[i] = makeSkColor(stop->alpha, stop->red, stop->green, stop->blue);
+        colors[i] = makeSkColor(stop->color);
         ++stop;
     }
 
