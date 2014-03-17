@@ -29,7 +29,7 @@
 #ifndef GraphicsContextState_h
 #define GraphicsContextState_h
 
-#include "platform/graphics/DrawLooper.h"
+#include "platform/graphics/DrawLooperBuilder.h"
 #include "platform/graphics/Gradient.h"
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/graphics/Path.h"
@@ -106,7 +106,7 @@ public:
 
     // Shadow. (This will need tweaking if we use draw loopers for other things.)
     SkDrawLooper* drawLooper() const { return m_looper.get(); }
-    void setDrawLooper(const DrawLooper&);
+    void setDrawLooper(PassRefPtr<SkDrawLooper>);
     void clearDrawLooper();
 
     // Text. (See TextModeFill & friends.)

@@ -28,25 +28,26 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DrawLooper_h
-#define DrawLooper_h
+#ifndef DrawLooperBuilder_h
+#define DrawLooperBuilder_h
 
 #include "platform/PlatformExport.h"
+#include "third_party/skia/include/effects/SkLayerDrawLooper.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/RefPtr.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/PassRefPtr.h"
 
 class SkDrawLooper;
-class SkLayerDrawLooper;
 
 namespace WebCore {
 
 class Color;
 class FloatSize;
 
-class PLATFORM_EXPORT DrawLooper {
+class PLATFORM_EXPORT DrawLooperBuilder FINAL {
     // Implementing the copy constructor properly would require writing code to
-    // copy the underlying SkDrawLooper.
-    WTF_MAKE_NONCOPYABLE(DrawLooper);
+    // copy the underlying SkLayerDrawLooper::Builder.
+    WTF_MAKE_NONCOPYABLE(DrawLooperBuilder);
 
 public:
     enum ShadowTransformMode {
@@ -58,12 +59,14 @@ public:
         ShadowIgnoresAlpha
     };
 
-    DrawLooper();
-    ~DrawLooper();
+    DrawLooperBuilder();
+    ~DrawLooperBuilder();
 
-    // Callees should not modify this looper other than to iterate over it.
-    // A downcast to SkLayerDrawLooper* is tantamount to a const_cast.
-    SkDrawLooper* skDrawLooper() const;
+    static PassOwnPtr<DrawLooperBuilder> create();
+
+    // Creates the SkDrawLooper and passes ownership to the caller. The builder
+    // should not be used any more after calling this method.
+    PassRefPtr<SkDrawLooper> detachDrawLooper();
 
     void addUnmodifiedContent();
     void addShadow(const FloatSize& offset, float blur, const Color&,
@@ -71,9 +74,9 @@ public:
         ShadowAlphaMode = ShadowRespectsAlpha);
 
 private:
-    RefPtr<SkLayerDrawLooper> m_skDrawLooper;
+    SkLayerDrawLooper::Builder m_skDrawLooperBuilder;
 };
 
 } // namespace WebCore
 
-#endif // DrawLooper_h
+#endif // DrawLooperBuilder_h

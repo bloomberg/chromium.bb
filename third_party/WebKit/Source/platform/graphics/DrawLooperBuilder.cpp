@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "platform/graphics/DrawLooper.h"
+#include "platform/graphics/DrawLooperBuilder.h"
 
 #include "platform/geometry/FloatSize.h"
 #include "platform/graphics/Color.h"
@@ -39,26 +39,31 @@
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkXfermode.h"
 #include "third_party/skia/include/effects/SkBlurMaskFilter.h"
-#include "third_party/skia/include/effects/SkLayerDrawLooper.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 
-DrawLooper::DrawLooper() : m_skDrawLooper(adoptRef(new SkLayerDrawLooper)) { }
+DrawLooperBuilder::DrawLooperBuilder() { }
 
-DrawLooper::~DrawLooper() { }
+DrawLooperBuilder::~DrawLooperBuilder() { }
 
-SkDrawLooper* DrawLooper::skDrawLooper() const
+PassOwnPtr<DrawLooperBuilder> DrawLooperBuilder::create()
 {
-    return m_skDrawLooper.get();
+    return adoptPtr(new DrawLooperBuilder);
 }
 
-void DrawLooper::addUnmodifiedContent()
+PassRefPtr<SkDrawLooper> DrawLooperBuilder::detachDrawLooper()
+{
+    return adoptRef(m_skDrawLooperBuilder.detachLooper());
+}
+
+void DrawLooperBuilder::addUnmodifiedContent()
 {
     SkLayerDrawLooper::LayerInfo info;
-    m_skDrawLooper->addLayerOnTop(info);
+    m_skDrawLooperBuilder.addLayerOnTop(info);
 }
 
-void DrawLooper::addShadow(const FloatSize& offset, float blur, const Color& color,
+void DrawLooperBuilder::addShadow(const FloatSize& offset, float blur, const Color& color,
     ShadowTransformMode shadowTransformMode, ShadowAlphaMode shadowAlphaMode)
 {
     // Detect when there's no effective shadow.
@@ -86,7 +91,7 @@ void DrawLooper::addShadow(const FloatSize& offset, float blur, const Color& col
     info.fOffset.set(offset.width(), offset.height());
     info.fPostTranslate = (shadowTransformMode == ShadowIgnoresTransforms);
 
-    SkPaint* paint = m_skDrawLooper->addLayerOnTop(info);
+    SkPaint* paint = m_skDrawLooperBuilder.addLayerOnTop(info);
 
     if (blur) {
         uint32_t mfFlags = SkBlurMaskFilter::kHighQuality_BlurFlag;

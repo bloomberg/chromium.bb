@@ -188,9 +188,9 @@ void GraphicsContextState::clearFillPattern()
 }
 
 // Shadow. (This will need tweaking if we use draw loopers for other things.)
-void GraphicsContextState::setDrawLooper(const DrawLooper& drawLooper)
+void GraphicsContextState::setDrawLooper(PassRefPtr<SkDrawLooper> drawLooper)
 {
-    m_looper = drawLooper.skDrawLooper();
+    m_looper = drawLooper;
     m_strokePaint.setLooper(m_looper.get());
     m_fillPaint.setLooper(m_looper.get());
 }
