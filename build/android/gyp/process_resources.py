@@ -35,9 +35,6 @@ def ParseArgs():
   parser.add_option('--android-manifest', help='AndroidManifest.xml path')
   parser.add_option('--stamp', help='File to touch on success')
 
-  # This is part of a temporary fix for crbug.com/177552.
-  # TODO(newt): remove this once crbug.com/177552 is fixed in ninja.
-  parser.add_option('--ignore', help='this argument is ignored')
   (options, args) = parser.parse_args()
 
   if args:

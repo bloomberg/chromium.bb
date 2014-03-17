@@ -183,16 +183,16 @@
             # resources in dependencies can be resolved.
             'all_res_dirs': ['<@(res_input_dirs)',
                              '>@(dependencies_res_input_dirs)',],
-            # Write the inputs list to a file, so that the action command
-            # line won't exceed the OS limits when calculating the checksum
-            # of the list.
-            'inputs_list_file': '>|(inputs_list.<(_target_name).gypcmd >@(_inputs))'
+            # Write the inputs list to a file, so that its mtime is updated when
+            # the list of inputs changes.
+            'inputs_list_file': '>|(inputs_list.<(_target_name).gypcmd >@(resource_input_paths) @>(dependencies_res_files))'
           },
           'inputs': [
             '<(DEPTH)/build/android/gyp/util/build_utils.py',
             '<(DEPTH)/build/android/gyp/process_resources.py',
             '>@(resource_input_paths)',
             '>@(dependencies_res_files)',
+            '>(inputs_list_file)',
           ],
           'outputs': [
             '<(R_stamp)',
@@ -209,11 +209,6 @@
             '--non-constant-id',
             '--custom-package', '<(R_package)',
             '--stamp', '<(R_stamp)',
-
-            # Add hash of inputs to the command line, so if inputs change
-            # (e.g. if a resource if removed), the command will be re-run.
-            # TODO(newt): remove this once crbug.com/177552 is fixed in ninja.
-            '--ignore=>!(md5sum >(inputs_list_file))',
           ],
         },
         # Generate API 14 resources.
