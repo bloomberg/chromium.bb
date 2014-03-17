@@ -31,6 +31,7 @@
 
 #include "hb-private.hh"
 
+#include "hb-font.h"
 #include "hb-object-private.hh"
 #include "hb-face-private.hh"
 #include "hb-shaper-private.hh"
@@ -143,12 +144,6 @@ struct hb_font_t {
 
 
   /* Public getters */
-
-  inline hb_bool_t has_glyph (hb_codepoint_t unicode)
-  {
-    hb_codepoint_t glyph;
-    return get_glyph (unicode, 0, &glyph);
-  }
 
   inline hb_bool_t get_glyph (hb_codepoint_t unicode, hb_codepoint_t variation_selector,
 			      hb_codepoint_t *glyph)

@@ -52,6 +52,4 @@ HB_SHAPER_IMPLEMENT (uniscribe)
 HB_SHAPER_IMPLEMENT (coretext)
 #endif
 
-#ifdef HAVE_FALLBACK
 HB_SHAPER_IMPLEMENT (fallback) /* <--- This should be last. */
-#endif

@@ -34,6 +34,8 @@
 
 #include <graphite2/Segment.h>
 
+#include "hb-ot-tag.h"
+
 
 HB_SHAPER_DATA_ENSURE_DECLARE(graphite2, face)
 HB_SHAPER_DATA_ENSURE_DECLARE(graphite2, font)
@@ -107,7 +109,7 @@ _hb_graphite2_shaper_face_data_create (hb_face_t *face)
 
   hb_graphite2_shaper_face_data_t *data = (hb_graphite2_shaper_face_data_t *) calloc (1, sizeof (hb_graphite2_shaper_face_data_t));
   if (unlikely (!data))
-    return NULL;
+    hb_blob_destroy (silf_blob);
 
   data->face = face;
   data->grface = gr_make_face (data, &hb_graphite2_get_table, gr_face_preloadAll);

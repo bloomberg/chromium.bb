@@ -31,6 +31,7 @@
 
 #include "hb-private.hh"
 
+#include "hb-font.h"
 #include "hb-object-private.hh"
 #include "hb-shaper-private.hh"
 #include "hb-shape-plan-private.hh"

@@ -31,6 +31,8 @@
 
 #include "hb-private.hh"
 
+#include "hb-blob.h"
+
 
 namespace OT {
 
@@ -592,7 +594,7 @@ struct LONGDATETIME
     TRACE_SANITIZE (this);
     return TRACE_RETURN (likely (c->check_struct (this)));
   }
-  protected:
+  private:
   LONG major;
   ULONG minor;
   public:

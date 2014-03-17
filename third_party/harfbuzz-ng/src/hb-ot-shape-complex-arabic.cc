@@ -199,6 +199,7 @@ collect_features_arabic (hb_ot_shape_planner_t *plan)
   map->add_global_bool_feature (HB_TAG('c','a','l','t'));
   map->add_gsub_pause (NULL);
 
+  map->add_global_bool_feature (HB_TAG('c','s','w','h'));
   map->add_global_bool_feature (HB_TAG('m','s','e','t'));
 }
 
@@ -365,7 +366,7 @@ const hb_ot_complex_shaper_t _hb_ot_complex_shaper_arabic =
   data_create_arabic,
   data_destroy_arabic,
   NULL, /* preprocess_text_arabic */
-  HB_OT_SHAPE_NORMALIZATION_MODE_DEFAULT,
+  NULL, /* normalization_preference */
   NULL, /* decompose */
   NULL, /* compose */
   setup_masks_arabic,

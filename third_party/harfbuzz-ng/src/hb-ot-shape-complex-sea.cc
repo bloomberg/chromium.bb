@@ -360,6 +360,13 @@ final_reordering (const hb_ot_shape_plan_t *plan,
 }
 
 
+static hb_ot_shape_normalization_mode_t
+normalization_preference_sea (const hb_segment_properties_t *props HB_UNUSED)
+{
+  return HB_OT_SHAPE_NORMALIZATION_MODE_COMPOSED_DIACRITICS_NO_SHORT_CIRCUIT;
+}
+
+
 const hb_ot_complex_shaper_t _hb_ot_complex_shaper_sea =
 {
   "sea",
@@ -368,7 +375,7 @@ const hb_ot_complex_shaper_t _hb_ot_complex_shaper_sea =
   NULL, /* data_create */
   NULL, /* data_destroy */
   NULL, /* preprocess_text */
-  HB_OT_SHAPE_NORMALIZATION_MODE_COMPOSED_DIACRITICS_NO_SHORT_CIRCUIT,
+  normalization_preference_sea,
   NULL, /* decompose */
   NULL, /* compose */
   setup_masks_sea,
