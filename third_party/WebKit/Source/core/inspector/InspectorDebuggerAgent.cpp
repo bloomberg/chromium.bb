@@ -1208,7 +1208,6 @@ void InspectorDebuggerAgent::didPause(ScriptState* scriptState, const ScriptValu
     }
 
     m_frontend->paused(currentCallFrames(), m_breakReason, m_breakAuxData, hitBreakpointIds, currentAsyncStackTrace());
-    m_frontend->flush();
     m_javaScriptPauseScheduled = false;
 
     if (!m_continueToLocationBreakpointId.isEmpty()) {

@@ -94,5 +94,11 @@ void InspectorAgentRegistry::discardAgents()
         m_agents[i]->discardAgent();
 }
 
+void InspectorAgentRegistry::flushPendingFrontendMessages()
+{
+    for (size_t i = 0; i < m_agents.size(); i++)
+        m_agents[i]->flushPendingFrontendMessages();
+}
+
 } // namespace WebCore
 

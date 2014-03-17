@@ -431,11 +431,22 @@ void InspectorCSSAgent::restore()
         wasEnabled(nullptr);
 }
 
+void InspectorCSSAgent::flushPendingFrontendMessages()
+{
+    if (!m_invalidatedDocuments.size())
+        return;
+    HashSet<Document*> invalidatedDocuments;
+    m_invalidatedDocuments.swap(&invalidatedDocuments);
+    for (HashSet<Document*>::iterator it = invalidatedDocuments.begin(); it != invalidatedDocuments.end(); ++it)
+        updateActiveStyleSheets(*it, ExistingFrontendRefresh);
+}
+
 void InspectorCSSAgent::reset()
 {
     m_idToInspectorStyleSheet.clear();
     m_cssStyleSheetToInspectorStyleSheet.clear();
     m_documentToCSSStyleSheets.clear();
+    m_invalidatedDocuments.clear();
     m_nodeToInspectorStyleSheet.clear();
     m_documentToViaInspectorStyleSheet.clear();
     resetNonPersistentData();
@@ -519,8 +530,8 @@ void InspectorCSSAgent::didCommitLoad(LocalFrame* frame, DocumentLoader* loader)
 
 void InspectorCSSAgent::mediaQueryResultChanged()
 {
-    if (m_frontend)
-        m_frontend->mediaQueryResultChanged();
+    flushPendingFrontendMessages();
+    m_frontend->mediaQueryResultChanged();
 }
 
 void InspectorCSSAgent::willMutateRules()
@@ -561,7 +572,9 @@ void InspectorCSSAgent::activeStyleSheetsUpdated(Document* document)
 {
     if (styleSheetEditInProgress())
         return;
-    updateActiveStyleSheets(document, ExistingFrontendRefresh);
+    m_invalidatedDocuments.add(document);
+    if (m_creatingViaInspectorStyleSheet)
+        flushPendingFrontendMessages();
 }
 
 void InspectorCSSAgent::updateActiveStyleSheets(Document* document, StyleSheetsUpdateType styleSheetsUpdateType)
@@ -628,6 +641,7 @@ void InspectorCSSAgent::setActiveStyleSheets(Document* document, const Vector<CS
 
 void InspectorCSSAgent::documentDisposed(Document* document)
 {
+    m_invalidatedDocuments.remove(document);
     setActiveStyleSheets(document, Vector<CSSStyleSheet*>(), ExistingFrontendRefresh);
 }
 
@@ -895,6 +909,8 @@ void InspectorCSSAgent::createStyleSheet(ErrorString* errorString, const String&
         *errorString = "No target stylesheet found";
         return;
     }
+
+    updateActiveStyleSheets(document, ExistingFrontendRefresh);
 
     *outStyleSheetId = inspectorStyleSheet->id();
 }
@@ -1316,8 +1332,8 @@ void InspectorCSSAgent::didModifyDOMAttr(Element* element)
 
 void InspectorCSSAgent::styleSheetChanged(InspectorStyleSheet* styleSheet)
 {
-    if (m_frontend)
-        m_frontend->styleSheetChanged(styleSheet->id());
+    flushPendingFrontendMessages();
+    m_frontend->styleSheetChanged(styleSheet->id());
 }
 
 void InspectorCSSAgent::willReparseStyleSheet()
