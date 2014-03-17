@@ -112,17 +112,6 @@ Promise.resolve(null).then(function() {
     bytesShouldMatchHexString("key.algorithm.publicExponent", "010001", key.algorithm.publicExponent);
     shouldBe("key.usages.join(',')", "''")
 
-    // Import a "raw" key without specifying the algorithm.
-    keyFormat = "raw";
-    data = asciiToUint8Array("16 bytes of key!");
-    algorithm = null;
-    extractable = false;
-    keyUsages = [];
-
-    return crypto.subtle.importKey(keyFormat, data, algorithm, extractable, keyUsages);
-}).then(undefined, function(result) {
-    debug("rejected with " + result);
-
     keyFormat = "raw";
     data = asciiToUint8Array("");
     algorithm = aesCbc;
@@ -146,6 +135,9 @@ Promise.resolve(null).then(function() {
     // Invalid data
     shouldThrow("crypto.subtle.importKey(keyFormat, [], algorithm, extractable, keyUsages)");
     shouldThrow("crypto.subtle.importKey(keyFormat, null, algorithm, extractable, keyUsages)");
+
+    // Invalid algorithm
+    shouldThrow("crypto.subtle.importKey(keyFormat, data, null, extractable, keyUsages)");
 
     // Missing hash parameter for HMAC.
     shouldRejectPromiseWithNull("crypto.subtle.importKey(keyFormat, data, {name: 'hmac'}, extractable, keyUsages)");

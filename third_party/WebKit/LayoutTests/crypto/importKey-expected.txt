@@ -1,4 +1,3 @@
-CONSOLE ERROR: The key's algorithm must be specified when importing raw-formatted key.
 CONSOLE ERROR: Invalid keyFormat argument
 CONSOLE ERROR: Invalid keyUsages argument
 CONSOLE ERROR: Invalid keyFormat argument
@@ -38,9 +37,9 @@ PASS key.algorithm.hash.name is "SHA-1"
 PASS key.algorithm.modulusLength is 1024
 PASS: key.algorithm.publicExponent should be [010001] and was
 PASS key.usages.join(',') is ''
-rejected with null
 PASS crypto.subtle.importKey(keyFormat, [], algorithm, extractable, keyUsages) threw exception TypeError: Failed to execute 'importKey' on 'SubtleCrypto': Invalid keyData argument.
 PASS crypto.subtle.importKey(keyFormat, null, algorithm, extractable, keyUsages) threw exception TypeError: Failed to execute 'importKey' on 'SubtleCrypto': Invalid keyData argument.
+PASS crypto.subtle.importKey(keyFormat, data, null, extractable, keyUsages) threw exception TypeError: Failed to execute 'importKey' on 'SubtleCrypto': Algorithm: Not an object.
 PASS: 'crypto.subtle.importKey('invalid format', data, algorithm, extractable, keyUsages)' rejected with null
 PASS: 'crypto.subtle.importKey(keyFormat, data, algorithm, extractable, ['SIGN'])' rejected with null
 PASS: 'crypto.subtle.importKey('invalid format', data, algorithm, extractable, ['SIGN'])' rejected with null

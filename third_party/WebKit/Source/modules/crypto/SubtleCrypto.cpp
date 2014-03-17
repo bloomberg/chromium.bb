@@ -177,9 +177,8 @@ ScriptPromise SubtleCrypto::importKey(const String& rawFormat, ArrayBufferView* 
     if (!Key::parseUsageMask(rawKeyUsages, keyUsages, result.get()))
         return promise;
 
-    // The algorithm is optional.
     blink::WebCryptoAlgorithm algorithm;
-    if (!rawAlgorithm.isUndefinedOrNull() && !parseAlgorithm(rawAlgorithm, ImportKey, algorithm, exceptionState, result.get()))
+    if (!parseAlgorithm(rawAlgorithm, ImportKey, algorithm, exceptionState, result.get()))
         return promise;
 
     const unsigned char* keyDataBytes = static_cast<unsigned char*>(keyData->baseAddress());
@@ -273,9 +272,8 @@ ScriptPromise SubtleCrypto::unwrapKey(const String& rawFormat, ArrayBufferView* 
     if (!parseAlgorithm(rawUnwrapAlgorithm, UnwrapKey, unwrapAlgorithm, exceptionState, result.get()))
         return promise;
 
-    // The unwrappedKeyAlgorithm is optional.
     blink::WebCryptoAlgorithm unwrappedKeyAlgorithm;
-    if (!rawUnwrappedKeyAlgorithm.isUndefinedOrNull() && !parseAlgorithm(rawUnwrappedKeyAlgorithm, ImportKey, unwrappedKeyAlgorithm, exceptionState, result.get()))
+    if (!parseAlgorithm(rawUnwrappedKeyAlgorithm, ImportKey, unwrappedKeyAlgorithm, exceptionState, result.get()))
         return promise;
 
     if (!unwrappingKey->canBeUsedForAlgorithm(unwrapAlgorithm, UnwrapKey, result.get()))
