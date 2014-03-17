@@ -98,8 +98,6 @@ public:
     void trace(Visitor*) { }
 
 private:
-    const TreeScope* m_treeScope;
-
     explicit DOMSelection(const TreeScope*);
 
     // Convenience method for accessors, does not check m_frame present.
@@ -109,6 +107,10 @@ private:
     int shadowAdjustedOffset(const Position&) const;
 
     bool isValidForPosition(Node*) const;
+
+    void addConsoleError(const String& message);
+
+    const TreeScope* m_treeScope;
 };
 
 } // namespace WebCore

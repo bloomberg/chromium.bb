@@ -379,42 +379,61 @@ void DOMSelection::removeAllRanges()
     m_frame->selection().clear();
 }
 
-void DOMSelection::addRange(Range* r)
+void DOMSelection::addRange(Range* newRange)
 {
     if (!m_frame)
         return;
-    if (!r)
+
+    // FIXME: Should we throw DOMException for error cases below?
+    if (!newRange) {
+        addConsoleError("The given range is null.");
         return;
+    }
+
+    if (!newRange->startContainer()) {
+        addConsoleError("The given range has no container. Perhaps 'detach()' has been invoked on it?");
+        return;
+    }
 
     FrameSelection& selection = m_frame->selection();
 
     if (selection.isNone()) {
-        selection.setSelectedRange(r, VP_DEFAULT_AFFINITY);
+        selection.setSelectedRange(newRange, VP_DEFAULT_AFFINITY);
         return;
     }
 
-    RefPtr<Range> range = selection.selection().toNormalizedRange();
-    if (r->compareBoundaryPoints(Range::START_TO_START, range.get(), IGNORE_EXCEPTION) == -1) {
-        // We don't support discontiguous selection. We don't do anything if r and range don't intersect.
-        if (r->compareBoundaryPoints(Range::START_TO_END, range.get(), IGNORE_EXCEPTION) > -1) {
-            if (r->compareBoundaryPoints(Range::END_TO_END, range.get(), IGNORE_EXCEPTION) == -1) {
-                // The original range and r intersect.
-                selection.setSelection(VisibleSelection(r->startPosition(), range->endPosition(), DOWNSTREAM));
+    RefPtr<Range> originalRange = selection.selection().toNormalizedRange();
+
+    if (originalRange->startContainer()->document() != newRange->startContainer()->document()) {
+        addConsoleError("The given range does not belong to the current selection's document.");
+        return;
+    }
+    if (originalRange->startContainer()->treeScope() != newRange->startContainer()->treeScope()) {
+        addConsoleError("The given range and the current selection belong to two different document fragments.");
+        return;
+    }
+
+    // FIXME: Emit a console error if the combined ranges would form a discontiguous selection.
+    if (newRange->compareBoundaryPoints(Range::START_TO_START, originalRange.get(), ASSERT_NO_EXCEPTION) == -1) {
+        // We don't support discontiguous selection. We don't do anything if newRange and originalRange don't intersect.
+        if (newRange->compareBoundaryPoints(Range::START_TO_END, originalRange.get(), ASSERT_NO_EXCEPTION) > -1) {
+            if (newRange->compareBoundaryPoints(Range::END_TO_END, originalRange.get(), ASSERT_NO_EXCEPTION) == -1) {
+                // The original originalRange and newRange intersect.
+                selection.setSelection(VisibleSelection(newRange->startPosition(), originalRange->endPosition(), DOWNSTREAM));
             } else {
-                // r contains the original range.
-                selection.setSelection(VisibleSelection(r));
+                // newRange contains the original originalRange.
+                selection.setSelection(VisibleSelection(newRange));
             }
         }
     } else {
-        // We don't support discontiguous selection. We don't do anything if r and range don't intersect.
-        TrackExceptionState exceptionState;
-        if (r->compareBoundaryPoints(Range::END_TO_START, range.get(), exceptionState) < 1 && !exceptionState.hadException()) {
-            if (r->compareBoundaryPoints(Range::END_TO_END, range.get(), IGNORE_EXCEPTION) == -1) {
-                // The original range contains r.
-                selection.setSelection(VisibleSelection(range.get()));
+        // We don't support discontiguous selection. We don't do anything if newRange and originalRange don't intersect.
+        if (newRange->compareBoundaryPoints(Range::END_TO_START, originalRange.get(), ASSERT_NO_EXCEPTION) < 1) {
+            if (newRange->compareBoundaryPoints(Range::END_TO_END, originalRange.get(), ASSERT_NO_EXCEPTION) == -1) {
+                // The original range contains newRange.
+                selection.setSelection(VisibleSelection(originalRange.get()));
             } else {
                 // The original range and r intersect.
-                selection.setSelection(VisibleSelection(range->startPosition(), r->endPosition(), DOWNSTREAM));
+                selection.setSelection(VisibleSelection(originalRange->startPosition(), newRange->endPosition(), DOWNSTREAM));
             }
         }
     }
@@ -533,6 +552,12 @@ bool DOMSelection::isValidForPosition(Node* node) const
     if (!node)
         return true;
     return node->document() == m_frame->document();
+}
+
+void DOMSelection::addConsoleError(const String& message)
+{
+    if (m_treeScope)
+        m_treeScope->document().addConsoleMessage(JSMessageSource, ErrorMessageLevel, message);
 }
 
 } // namespace WebCore
