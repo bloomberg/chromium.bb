@@ -3,8 +3,8 @@ Tests that the order of setting the src of an image element and its crossOrigin 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS srcFirstHasOrigin is false
-PASS srcLastHasOrigin is true
+PASS Origin: present in request.
+PASS Origin: present in request.
 PASS successfullyParsed is true
 
 TEST COMPLETE
