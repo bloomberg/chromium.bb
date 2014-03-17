@@ -633,11 +633,13 @@ class RemoteDeviceUpdater(object):
     Returns:
       True if we can start devserver; False otherwise.
     """
+    logging.info('Checking if we can run devserver on the device.')
+    src_dir = self._CopyDevServerPackage(device, tempdir)
+    devserver_bin = os.path.join(src_dir, self.DEVSERVER_FILENAME)
     try:
-      src_dir = self._CopyDevServerPackage(device, tempdir)
-      devserver_bin = os.path.join(src_dir, self.DEVSERVER_FILENAME)
       device.RunCommand(['python', devserver_bin, '--help'])
-    except cros_build_lib.RunCommandError:
+    except cros_build_lib.RunCommandError as e:
+      logging.warning('Cannot start devserver: %s', e)
       return False
 
     return True
@@ -672,7 +674,6 @@ class RemoteDeviceUpdater(object):
         restore_stateful = False
         if (not self._CanRunDevserver(device, self.tempdir) and
             self.do_rootfs_update):
-          logging.info('Checking if we can run devserver on the device.')
           msg = ('Cannot start devserver! The stateful partition may be '
                  'corrupted. Cros Flash can try to restore the stateful '
                  'partition first.')
