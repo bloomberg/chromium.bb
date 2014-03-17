@@ -153,6 +153,8 @@ void ViewEventTestBase::TearDown() {
     window_ = NULL;
   }
 
+  ui::Clipboard::DestroyClipboardForCurrentThread();
+
 #if defined(USE_ASH)
 #if !defined(OS_WIN)
   ash::Shell::DeleteInstance();
