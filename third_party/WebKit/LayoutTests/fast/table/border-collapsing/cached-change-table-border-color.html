@@ -6,12 +6,16 @@ Here we change table border color, expect that cache is invalidated and paint pr
     <head>
         <title></title>
         <link rel="stylesheet" href="resources/cached.css">
+        <script src="../../../resources/run-after-display.js"></script>
         <script type="text/javascript">
             function test() {
-                document.body.offsetTop;
                 if (window.testRunner)
-                    testRunner.display();
-                document.getElementById("tbl").style.borderColor = "yellow";
+                    testRunner.waitUntilDone();
+                runAfterDisplay(function() {
+                    document.getElementById("tbl").style.borderColor = "yellow";
+                    if (window.testRunner)
+                        testRunner.notifyDone();
+                });
             }
         </script>
     </head>

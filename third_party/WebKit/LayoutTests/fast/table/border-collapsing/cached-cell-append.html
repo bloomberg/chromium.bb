@@ -6,16 +6,20 @@ Here we append new cell, expect that cache is invalidated and paint produces exp
     <head>
         <title></title>
         <link rel="stylesheet" href="resources/cached.css">
+        <script src="../../../resources/run-after-display.js"></script>
         <script type="text/javascript">
             function test() {
-                document.body.offsetTop;
                 if (window.testRunner)
-                    testRunner.display();
-                newCell = document.createElement("td");
-                newCell.style.borderLeftWidth = "6px";
-                newCell.style.borderLeftStyle = "solid";
-                newCell.style.borderLeftColor = "yellow";
-                document.getElementById("row").appendChild(newCell);
+                    testRunner.waitUntilDone();
+                runAfterDisplay(function() {
+                    newCell = document.createElement("td");
+                    newCell.style.borderLeftWidth = "6px";
+                    newCell.style.borderLeftStyle = "solid";
+                    newCell.style.borderLeftColor = "yellow";
+                    document.getElementById("row").appendChild(newCell);
+                    if (window.testRunner)
+                        testRunner.notifyDone();
+                });
             }
         </script>
     </head>

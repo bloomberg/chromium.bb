@@ -6,12 +6,17 @@ Here we change cell border width, expect that cache is invalidated and paint pro
     <head>
         <title></title>
         <link rel="stylesheet" href="resources/cached.css">
+        <script src="../../../resources/run-after-display.js"></script>
         <script type="text/javascript">
             function test() {
-                document.body.offsetTop;
                 if (window.testRunner)
-                    testRunner.display();
-                document.getElementById("foo").style.borderWidth = "4px";
+                    testRunner.waitUntilDone();
+                runAfterDisplay(function() {
+                    document.getElementById("foo").style.borderWidth = "4px";
+                    document.getElementById("foo").style.borderColor = "lime";
+                    if (window.testRunner)
+                        testRunner.notifyDone();
+                });
             }
         </script>
     </head>
