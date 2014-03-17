@@ -1,0 +1,36 @@
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x125
+  RenderBlock {HTML} at (0,0) size 800x125
+    RenderBody {BODY} at (0,0) size 800x124
+      RenderBlock {DIV} at (0,0) size 600x36
+        RenderText {#text} at (0,0) size 250x15
+          text run at (0,0) width 250: "Table autosizing tests - wide-percentage-width.html"
+        RenderBR {BR} at (250,0) size 0x15
+        RenderText {#text} at (0,16) size 472x15
+          text run at (0,16) width 472: "This test passes if the cell with lots of text is autosized and none of the other 5 cells are autosized."
+      RenderTable {TABLE} at (1,37) size 500x87 [border: none]
+        RenderTableSection {TBODY} at (0,0) size 499x86
+          RenderTableRow {TR} at (0,0) size 499x19
+            RenderTableCell {TD} at (0,0) size 26x19 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=0 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 23x15
+                text run at (2,2) width 23: "hello"
+            RenderTableCell {TD} at (26,0) size 447x19 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=1 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 23x15
+                text run at (2,2) width 23: "hello"
+            RenderTableCell {TD} at (473,0) size 26x19 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=2 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 23x15
+                text run at (2,2) width 23: "hello"
+          RenderTableRow {TR} at (0,19) size 499x67
+            RenderTableCell {TD} at (0,43) size 26x19 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=0 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 23x15
+                text run at (2,2) width 23: "hello"
+            RenderTableCell {TD} at (26,19) size 447x67 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=1 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 439x63
+                text run at (2,2) width 439: "hello hello hello hello hello hello hello hello hello hello hello hello hello hello hello hello hello"
+                text run at (2,18) width 439: "hello hello hello hello hello hello hello hello hello hello hello hello hello hello hello hello hello"
+                text run at (2,34) width 439: "hello hello hello hello hello hello hello hello hello hello hello hello hello hello hello hello hello"
+                text run at (2,50) width 23: "hello"
+            RenderTableCell {TD} at (473,43) size 26x19 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=1 c=2 rs=1 cs=1]
+              RenderText {#text} at (2,2) size 23x15
+                text run at (2,2) width 23: "hello"
