@@ -81,20 +81,12 @@ class Device(object):
     """Called before anything else, for initial provisioning."""
     raise NotImplementedError()
 
-  def IsNativeAllocTracingEnabled(self):
+  def IsNativeTracingEnabled(self):
     """Check if the device is ready to capture native allocation traces."""
     raise NotImplementedError()
 
-  def EnableNativeAllocTracing(self, enabled):
+  def EnableNativeTracing(self, enabled):
     """Provision the device and make it ready to trace native allocations."""
-    raise NotImplementedError()
-
-  def IsMmapTracingEnabled(self):
-    """Check if the device is ready to capture memory map traces."""
-    raise NotImplementedError()
-
-  def EnableMmapTracing(self, enabled):
-    """Provision the device and make it ready to trace memory maps."""
     raise NotImplementedError()
 
   def ListProcesses(self):

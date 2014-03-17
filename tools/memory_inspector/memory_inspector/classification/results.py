@@ -109,7 +109,6 @@ class Bucket(object):
     self.values = [0] * num_keys
     self.children = []
 
-
   @property
   def name(self):
     return self.rule.name

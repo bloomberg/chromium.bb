@@ -2,15 +2,11 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-.mm-resident-table {
-  border: 1px solid #999;
+#os-mem_chart,
+#os-cpu_chart {
+  width: 49%;
+  max-width: 49%;
+  margin: 0;
+  display: inline-block;
+  height: 20em;
 }
-
-.mm-resident-table td {
-  padding: 0.2em;
-}
-
-.mm-resident-table td.resident {
-  background: lightgreen;
-}
-

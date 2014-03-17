@@ -10,9 +10,10 @@
   <title>Memory Inspector</title>
   <link href='//fonts.googleapis.com/css?family=Coda' rel='stylesheet' type='text/css'>
   <link href="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/themes/flick/jquery-ui.css" rel="stylesheet">
-  <link href="/mmap.css" rel="stylesheet" type="text/css">
-  <link href="/rootUi.css" rel="stylesheet" type="text/css">
-  <link href="/settings.css" rel="stylesheet" type="text/css">
+  <link href="/css/mmap.css" rel="stylesheet" type="text/css">
+  <link href="/css/processes.css" rel="stylesheet" type="text/css">
+  <link href="/css/rootUi.css" rel="stylesheet" type="text/css">
+  <link href="/css/settings.css" rel="stylesheet" type="text/css">
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
   <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/jquery-ui.min.js"></script>
   <script src="//www.google.com/jsapi"></script>
@@ -22,8 +23,8 @@
   </script>
   <script src="/js/devices.js"></script>
   <script src="/js/mmap.js"></script>
-  <script src="/js/rootUi.js"></script>
   <script src="/js/processes.js"></script>
+  <script src="/js/rootUi.js"></script>
   <script src="/js/settings.js"></script>
   <script src="/js/timers.js"></script>
   <script src="/js/webservice.js"></script>
@@ -34,10 +35,9 @@
     <div id="tabs">
       <ul>
         <li><a href="#tabs-ps">Processes</a></li>
-        <li><a href="#tabs-mm">Aggregated Memory maps</a></li>
-        <li><a href="#tabs-mm-table">Memory maps table</a></li>
-        <li><a href="#tabs-native_alloc">Aggregated native allocs.</a></li>
-        <li><a href="#tabs-archive">Archive</a></li>
+        <li><a href="#tabs-prof">Profiler</a></li>
+        <li><a href="#tabs-mm">Memory maps table</a></li>
+        <li><a href="#tabs-storage">Archived traces</a></li>
         <li><a href="#tabs-settings">Settings</a></li>
       </ul>
 
@@ -63,103 +63,72 @@
         </div>
 
         <div id="ps-table-wrapper">
-          <input type="checkbox" id="ps-show_all">
-          <label for="ps-show_all">Show all system processes</label>
+          <div id="ps-toolbar" class="ui-widget-header ui-corner-all">
+            <button id="ps-dump_mmaps">Dump mmaps</button>
+            <input type="checkbox" id="ps-show_all">
+            <label for="ps-show_all">Show all processes</label>
+          </div>
           <div id="ps-table"></div>
         </div>
       </div>
 
+      <div id="tabs-prof">
+      </div>
+
       <div id="tabs-mm">
-        <header id="mm-options">
-          <span>
-            Current metric:
-            <select id="mm-cur-serie"></select>
-          </span>
-          <span>
-            Current snapshot: <select id="mm-cur-snap"></select>
-            of <span id="mm-nsnapshots"></span>
-          </span>
+        <header>
+          <table id="mm-tools">
+            <tr>
+              <th colspan="3">
+                Data filters
+                <input type="button" id="mm-filter-clear" value="&#10226;">
+              </th>
+            </tr>
+            <tr>
+              <th>Filter</th>
+              <td>Prot: <input type="text" id="mm-filter-prot"></td>
+              <td>File: <input type="text" id="mm-filter-file"></td>
+            </tr>
+            <tr>
+              <th>Lookup</th>
+              <td>Addr: <input type="text" id="mm-lookup-addr"></td>
+              <td>Offset: <input type="text" id="mm-lookup-offset" readonly=""></td>
+            </tr>
+          </table>
+          <table id="mm-stats">
+            <tr>
+              <th>Totals</th>
+              <th>Priv Dirty [KB]</th>
+              <th>Priv Clean [KB]</th>
+              <th>Shared Dirty [KB]</th>
+              <th>Shared Clean [KB]</th>
+            </tr>
+            <tr>
+              <th>Shown</th>
+              <td><span id="mm-totals-priv-dirty">0</span></td>
+              <td><span id="mm-totals-priv-clean">0</span></td>
+              <td><span id="mm-totals-shared-dirty">0</span></td>
+              <td><span id="mm-totals-shared-clean">0</span></td>
+            </tr>
+            <tr>
+              <th>Selected</th>
+              <td><span id="mm-selected-priv-dirty">0</span></td>
+              <td><span id="mm-selected-priv-clean">0</span></td>
+              <td><span id="mm-selected-shared-dirty">0</span></td>
+              <td><span id="mm-selected-shared-clean">0</span></td>
+            </tr>
+          </table>
         </header>
-        <h2>Hierarchical view of selected snapshot</h2>
-        <div id="mm-chart-hierarchy"></div>
-
-        <div id="mm-chart-area"></div>
-
-        <div id="mm-chart-treemap"></div>
-
+        <div id="mm-table"></div>
       </div>
 
-      <div id="tabs-mm-table">
-        <div id="mm-table-wrapper">
-          <header>
-            <b>Filters: </b>
-            <span>
-            <input type="button" id="mm-filter-clear" value="Reset">
-            Prot. flags: <input type="text" id="mm-filter-prot">
-            File name: <input type="text" id="mm-filter-file">
-            <i>(Just press enter to apply filters)</i>
-            </span>
-          </header>
-          <header>
-            <b>Lookup addr: </b>
-            <input type="text" id="mm-lookup-addr">
-            <span><b>Offset in mapping:</b></span>
-            <span id="mm-lookup-offset">0</span>
-            </span>
-          </header>
-          <hr>
-          <header>
-            <b>Totals [Kb]: </b>
-            <b>Priv dirty: </b><span id="mm-totals-priv-dirty">0</span>
-            <b>Priv clean: </b><span id="mm-totals-priv-clean">0</span>
-            <b>Shared dirty: </b><span id="mm-totals-shared-dirty">0</span>
-            <b>Shared clean: </b><span id="mm-totals-shared-clean">0</span>
-          </header>
-          <header>
-            <b>Selected [Kb]: </b>
-            <b>Priv dirty: </b><span id="mm-selected-priv-dirty">0</span>
-            <b>Priv clean: </b><span id="mm-selected-priv-clean">0</span>
-            <b>Shared dirty: </b><span id="mm-selected-shared-dirty">0</span>
-            <b>Shared clean: </b><span id="mm-selected-shared-clean">0</span>
-          </header>
-          <div id="mm-table"></div>
-        </div>
-      </div>
-
-      <div id="tabs-native_alloc">
-        <header id="nh-options">
-          <span>
-            Current metric:
-            <select id="nh-cur-serie"></select>
-          </span>
-          <span>
-            Current snapshot: <select id="nh-cur-snap"></select>
-            of <span id="nh-nsnapshots"></span>
-          </span>
-        </header>
-        <h2>Hierarchical view of selected snapshot</h2>
-        <div id="nh-chart-hierarchy"></div>
-        <div id="nh-chart-area"></div>
-        <div id="nh-chart-treemap"></div>
-        <div id="native_alloc_chart"></div>
-        <div id="native_alloc_table"></div>
-      </div>
-
-      <div id="tabs-archive">
-        <input type="button" value="Refresh" id="archive-refresh">
-        <input type="button" value="Analyze Memory maps" id="archive-classify_mmaps">
-        <input type="button" value="Analyze Native Heap" id="archive-classify_native">
-        <div id="archive">
-        </div>
+      <div id="tabs-storage">
       </div>
 
       <div id="tabs-settings">
-        <header>
-          <input type="button" value="Reload" id="settings-load">
-          <input type="button" value="Store" id="settings-store">
-        </header>
         <div id="settings-container">
         </div>
+        <button id="settings-store">Save settings</button>
       </div>
     </div>
   </div>

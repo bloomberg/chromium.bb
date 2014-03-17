@@ -9,6 +9,7 @@ this.DEV_STATS_INTERVAL_SEC_ = 2;
 this.PROC_STATS_INTERVAL_SEC_ = 1;
 
 this.selProcUri_ = null;
+this.selProcName_ = null;
 this.psTable_ = null;
 this.psTableData_ = null;
 this.memChart_ = null;
@@ -24,23 +25,42 @@ this.onDomReady_ = function() {
   $('#device_tabs').tabs();
   $('#device_tabs').on('tabsactivate', this.redrawPsStats_.bind(this));
   $('#device_tabs').on('tabsactivate', this.redrawDevStats_.bind(this));
+
+  // Initialize the toolbar.
+  $('#ps-dump_mmaps').button({icons:{primary: 'ui-icon-calculator'}})
+      .click(this.dumpSelectedProcessMmaps_.bind(this));
+
+  // Create the process table.
+  this.psTable_ = new google.visualization.Table($('#ps-table')[0]);
+  google.visualization.events.addListener(
+      this.psTable_, 'select', this.onPsTableRowSelect_.bind(this));
+
+  // Create the device stats charts.
+  this.memChart_ = new google.visualization.PieChart($('#os-mem_chart')[0]);
+  this.cpuChart_ = new google.visualization.BarChart($('#os-cpu_chart')[0]);
+
+  // Create the selected process stats charts.
+  this.procCpuChart_ =
+      new google.visualization.ComboChart($('#proc-cpu_chart')[0]);
+  this.procMemChart_ =
+      new google.visualization.ComboChart($('#proc-mem_chart')[0]);
 };
 
 this.getSelectedProcessURI = function() {
   return this.selProcUri_;
 };
 
+this.dumpSelectedProcessMmaps_ = function() {
+  if (!this.selProcUri_)
+    return alert('Must select a process!');
+  mmap.dumpMmaps(this.selProcUri_, false);
+  rootUi.showTab('mm');
+};
+
 this.refreshPsTable = function() {
   var targetDevUri = devices.getSelectedURI();
   if (!targetDevUri)
     return this.stopPsTable();
-
-  if (!this.psTable_) {
-    this.psTable_ = new google.visualization.Table($('#ps-table')[0]);
-    google.visualization.events.addListener(
-        this.psTable_, 'select', this.onPsTableRowSelect_.bind(this));
-    $('#ps-table').on('dblclick', this.onPsTableDblClick_.bind(this));
-  };
 
   var showAllParam = $('#ps-show_all').prop('checked') ? '?all=1' : '';
   webservice.ajaxRequest('/ps/' + targetDevUri + showAllParam,
@@ -56,6 +76,7 @@ this.startPsTable = function() {
 
 this.stopPsTable = function() {
   this.selProcUri_ = null;
+  this.selProcName_ = null;
   timers.stop('ps_table');
 };
 
@@ -69,19 +90,23 @@ this.onPsTableRowSelect_ = function() {
     return;
   var pid = this.psTableData_.getValue(sel[0].row, 0);
   this.selProcUri_ = targetDevUri + '/' + pid;
+  this.selProcName_ = this.psTableData_.getValue(sel[0].row, 1);
   this.startSelectedProcessStats();
 };
 
-this.onPsTableDblClick_ = function() {
-  mmap.dumpMmaps(this.getSelectedProcessURI());
+this.onPsAjaxResponse_ = function(data) {
+  this.psTableData_ = new google.visualization.DataTable(data);
+  this.redrawPsTable_();
 };
 
-this.onPsAjaxResponse_ = function(data) {
+this.redrawPsTable_ = function(data) {
+  if (!this.psTableData_)
+    return;
+
   // Redraw table preserving sorting info.
   var sort = this.psTable_.getSortInfo() || {column: -1, ascending: false};
-  this.psTableData_ = new google.visualization.DataTable(data);
   this.psTable_.draw(this.psTableData_, {sortColumn: sort.column,
-                                            sortAscending: sort.ascending});
+                                         sortAscending: sort.ascending});
 };
 
 this.refreshDeviceStats = function() {
@@ -100,7 +125,6 @@ this.startDeviceStats = function() {
                this.DEV_STATS_INTERVAL_SEC_);
 };
 
-
 this.stopDeviceStats = function() {
   timers.stop('device_stats');
 };
@@ -114,11 +138,6 @@ this.onDevStatsAjaxResponse_ = function(data) {
 this.redrawDevStats_ = function(data) {
   if (!this.memChartData_ || !this.cpuChartData_)
     return;
-
-  if (!this.memChart_) {
-    this.memChart_ = new google.visualization.PieChart($('#os-mem_chart')[0]);
-    this.cpuChart_ = new google.visualization.BarChart($('#os-cpu_chart')[0]);
-  }
 
   this.memChart_.draw(this.memChartData_,
                        {title: 'System Memory Usage (MB)', is3D: true});
@@ -158,13 +177,6 @@ this.redrawPsStats_ = function() {
   if (!this.procCpuChartData_ || !this.procMemChartData_)
     return;
 
-  if (!this.procCpuChart_) {
-    this.procCpuChart_ =
-        new google.visualization.ComboChart($('#proc-cpu_chart')[0]);
-    this.procMemChart_ =
-        new google.visualization.ComboChart($('#proc-mem_chart')[0]);
-  }
-
   this.procCpuChart_.draw(this.procCpuChartData_, {
       title: 'CPU stats for ' + this.selProcUri_,
       seriesType: 'line',
@@ -181,6 +193,14 @@ this.redrawPsStats_ = function() {
       hAxis: {title: 'Run Time'},
       legend: {alignment: 'end'},
   });
+};
+
+this.redraw = function() {
+  this.redrawPsTable_();
+  if ($('#device_tabs').tabs('option', 'active') == 0)
+    this.redrawDevStats_();
+  else
+    this.redrawPsStats_();
 };
 
 $(document).ready(this.onDomReady_.bind(this));

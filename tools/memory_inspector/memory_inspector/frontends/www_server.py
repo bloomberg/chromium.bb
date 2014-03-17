@@ -170,8 +170,7 @@ def _InitializeDevice(args, req_vars):  # pylint: disable=W0613
     return _HTTP_GONE, [], 'Device not found'
   device.Initialize()
   return _HTTP_OK, [], {
-    'is_mmap_tracing_enabled': device.IsMmapTracingEnabled(),
-    'is_native_alloc_tracing_enabled': device.IsNativeAllocTracingEnabled()}
+    'isNativeTracingEnabled': device.IsNativeTracingEnabled()}
 
 
 @AjaxHandler(r'/ajax/ps/(\w+)/(\w+)$')  # /ajax/ps/Android/a0b1c2[?all=1]

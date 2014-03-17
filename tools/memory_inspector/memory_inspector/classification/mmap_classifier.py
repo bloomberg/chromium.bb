@@ -17,8 +17,8 @@ from memory_inspector.core import exceptions
 from memory_inspector.core import memory_map
 
 
-_RESULT_KEYS = ['total_rss', 'priv_clean_bytes', 'priv_dirty_bytes',
-                'shared_clean_bytes', 'shared_dirty_bytes']
+_RESULT_KEYS = ['RSS', 'Private Dirty', 'Private Clean', 'Shared Dirty',
+                'Shared Clean']
 
 
 def LoadRules(content):

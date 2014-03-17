@@ -6,28 +6,18 @@ rootUi = new (function() {
 
 this.onDomReady_ = function() {
   $('#js_loading_banner').hide();
-  $('#tabs').tabs();
+  $('#tabs').tabs({activate: this.onTabChange_.bind(this)});
   $('#tabs').css('visibility', 'visible');
 
   // Initialize the status bar.
-  var statusBar = $('#statusBar');
-  var statusMessages = $('#statusMessages');
-  statusMessages.mouseenter(function() {
-    statusBar.addClass('expanded');
-    statusMessages.scrollTop(statusMessages.height());
+  $('#status_messages').mouseenter(function() {
+    $('#status_bar').addClass('expanded');
+    $('#status_messages').scrollTop($('#status_messages').height());
   });
-  statusMessages.mouseleave(function() {
-    statusBar.removeClass('expanded');
+  $('#status_messages').mouseleave(function() {
+    $('#status_bar').removeClass('expanded');
   });
-
-  var progressBar = $('#progressBar');
-  var progressLabel = $('#progressBar-label');
-  progressBar.progressbar({
-    value: 1,
-    change: function() {
-      progressLabel.text(progressBar.progressbar('value') + '%' );
-    }
-  });
+  $('#progress_bar').progressbar({value: 1});
 };
 
 this.showTab = function(tabId) {
@@ -36,8 +26,23 @@ this.showTab = function(tabId) {
     $('#tabs').tabs('option', 'active', index - 1);
 };
 
+this.onTabChange_ = function(_, ui) {
+  switch(ui.newPanel.attr('id').replace('tabs-', '')) {
+    case 'ps':
+      return processes.redraw();
+    case 'prof':
+      return profiler.redraw();
+    case 'mm':
+      return mmap.redraw();
+    case 'settings':
+      return settings.reload();
+    case 'storage':
+      return storage.reload();
+  }
+};
+
 this.showDialog = function(content, title) {
-  var dialog = $("#message_dialog");
+  var dialog = $('#message_dialog');
   title = title || '';
   if (dialog.length == 0) {
     dialog = $('<div id="message_dialog"/>');
@@ -52,7 +57,16 @@ this.showDialog = function(content, title) {
 };
 
 this.hideDialog = function() {
-  $("#message_dialog").dialog('close');
+  $('#message_dialog').dialog('close');
+};
+
+this.setProgress = function(value) {
+  $('#progress_bar').progressbar('option', 'value', value);
+  $('#progress_bar-label').text(value + '%' );
+};
+
+this.setStatusMessage = function(content) {
+  $('#status_messages').text(content);
 };
 
 $(document).ready(this.onDomReady_.bind(this));

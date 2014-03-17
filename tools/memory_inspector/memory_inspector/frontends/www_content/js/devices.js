@@ -42,9 +42,6 @@ this.onBackendsAjaxResponse_ = function(data) {
                        ' broken. Please file a bug');
   }
   this.backends_ = data;
-
-  // Reload settings now that both devices and backends have been enumerated.
-  settings.reload();
 };
 
 this.onDevicesAjaxResponse_ = function(data) {

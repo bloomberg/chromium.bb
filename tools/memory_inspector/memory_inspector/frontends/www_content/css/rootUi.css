@@ -27,11 +27,6 @@ h1 {
   line-height: 1em;
 }
 
-input[type="text"] {
-  border: 1px solid #999;
-  box-shadow: inset -1px -1px 7px #ddd;
-}
-
 #load_banner {
   text-align: center;
   position: fixed;

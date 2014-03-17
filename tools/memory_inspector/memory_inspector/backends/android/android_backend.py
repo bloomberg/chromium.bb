@@ -95,23 +95,16 @@ class AndroidDevice(backends.Device):
                                          _PSEXT_PATH_ON_DEVICE)
     self._initialized = True
 
-  def EnableMmapTracing(self, enabled):
-    """Nothing to do here. memdump is already deployed in Initialize()."""
-    pass
-
-  def IsMmapTracingEnabled(self):
-    return True
-
-  def IsNativeAllocTracingEnabled(self):
+  def IsNativeTracingEnabled(self):
     """Checks for the libc.debug.malloc system property."""
-    return self.adb.system_properties[_DLMALLOC_DEBUG_SYSPROP]
+    return bool(self.adb.system_properties[_DLMALLOC_DEBUG_SYSPROP])
 
-  def EnableNativeAllocTracing(self, enabled):
+  def EnableNativeTracing(self, enabled):
     """Enables libc.debug.malloc and restarts the shell."""
     assert(self._initialized)
     prop_value = '1' if enabled else ''
     self.adb.system_properties[_DLMALLOC_DEBUG_SYSPROP] = prop_value
-    assert(self.IsNativeAllocTracingEnabled())
+    assert(self.IsNativeTracingEnabled())
     # The libc.debug property takes effect only after restarting the Zygote.
     self.adb.RestartShell()
 

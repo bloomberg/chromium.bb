@@ -5,8 +5,8 @@
 settings = new (function() {
 
 this.onDomReady_ = function() {
-  $('#settings-load').click(this.reload.bind(this));
-  $('#settings-store').click(this.store.bind(this));
+  $('#settings-store').button({icons: {primary: 'ui-icon-disk'}})
+      .click(this.store.bind(this));
 };
 
 this.reload = function() {

@@ -4,7 +4,6 @@
 
 mmap = new (function() {
 
-this.AJAX_BASE_URL_ = '/ajax';
 this.COL_START = 0;
 this.COL_END = 1;
 this.COL_LEN = 2;
@@ -27,6 +26,12 @@ this.onDomReady_ = function() {
   $('#mm-filter-file').on('change', this.applyMapsTableFilters_.bind(this));
   $('#mm-filter-prot').on('change', this.applyMapsTableFilters_.bind(this));
   $('#mm-filter-clear').on('click', this.resetMapsTableFilters_.bind(this));
+
+  // Create the mmaps table.
+  this.mapsTable_ = new google.visualization.Table($('#mm-table')[0]);
+  google.visualization.events.addListener(
+      this.mapsTable_, 'select', this.onMmapTableRowSelect_.bind(this));
+  $('#mm-table').on('dblclick', this.onMmapTableDblClick_.bind(this));
 };
 
 this.dumpMmaps = function(targetProcUri) {
@@ -43,11 +48,6 @@ this.onDumpAjaxResponse_ = function(data) {
   this.mapsData_ = new google.visualization.DataTable(data);
   this.mapsFilter_ = new google.visualization.DataView(this.mapsData_);
   this.mapsFilter_.setColumns(this.SHOW_COLUMNS);
-  this.mapsTable_ = new google.visualization.Table($('#mm-table')[0]);
-  google.visualization.events.addListener(
-      this.mapsTable_, 'select', this.onMmapTableRowSelect_.bind(this));
-  $('#mm-table').on('dblclick', this.onMmapTableDblClick_.bind(this));
-  rootUi.showTab('mm-table');
   this.applyMapsTableFilters_();
   rootUi.hideDialog();
 };
@@ -76,12 +76,13 @@ this.applyMapsTableFilters_ = function() {
     totSharedDirty += this.mapsData_.getValue(row,this.COL_SHARED_DIRTY);
     totSharedClean += this.mapsData_.getValue(row, this.COL_SHARED_CLEAN);
   }
+
   this.mapsFilter_.setRows(rows);
-  this.mapsTable_.draw(this.mapsFilter_);
   $('#mm-totals-priv-dirty').text(totPrivDirty);
   $('#mm-totals-priv-clean').text(totPrivClean);
   $('#mm-totals-shared-dirty').text(totSharedDirty);
   $('#mm-totals-shared-clean').text(totSharedClean);
+  this.redraw();
 };
 
 this.resetMapsTableFilters_ = function() {
@@ -151,6 +152,12 @@ this.onMmapTableDblClick_ = function() {
   rootUi.showDialog(table, 'Resident page list');
 };
 
+this.redraw = function() {
+  if (!this.mapsFilter_)
+    return;
+  this.mapsTable_.draw(this.mapsFilter_);
+};
+
 this.lookupAddress = function() {
   // Looks up the user-provided address in the mmap table and highlights the
   // row containing the map (if found).
@@ -158,7 +165,7 @@ this.lookupAddress = function() {
     return;
 
   addr = parseInt($('#mm-lookup-addr').val(), 16);
-  $('#mm-lookup-offset').text('');
+  $('#mm-lookup-offset').val('');
   if (!addr)
     return;
 
@@ -177,7 +184,7 @@ this.lookupAddress = function() {
       lbound = row + 1;
     }
     else {
-      $('#mm-lookup-offset').text((addr - start).toString(16));
+      $('#mm-lookup-offset').val((addr - start).toString(16));
       this.mapsTable_.setSelection([{row: row, column: null}]);
       // Scroll to row.
       $('#wrapper').scrollTop(

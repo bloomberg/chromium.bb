@@ -82,7 +82,7 @@ class Archive(object):
   _NHEAP_EXT = '-nheap.json'
   _SNAP_EXT = '.snapshot'
   _SYM_FILE = 'syms.json'
-  _TIME_FMT = '%Y-%m-%d_%H:%M:%S:%f'
+  _TIME_FMT = '%Y-%m-%d_%H-%M-%S-%f'
 
   def __init__(self, name, path):
     assert(os.path.isdir(path))
@@ -119,8 +119,7 @@ class Archive(object):
     """Returns a list of timestamps (datetime.datetime instances)."""
     file_names = sorted(
         [name[:-(len(Archive._SNAP_EXT))] for name in os.listdir(self._path)
-            if name.endswith(Archive._SNAP_EXT)],
-        reverse=True)
+            if name.endswith(Archive._SNAP_EXT)])
     timestamps = [datetime.datetime.strptime(x, Archive._TIME_FMT)
                   for x in file_names]
     return timestamps
