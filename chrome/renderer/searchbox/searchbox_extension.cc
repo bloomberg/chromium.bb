@@ -15,6 +15,7 @@
 #include "chrome/common/ntp_logging_events.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/searchbox/searchbox.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/renderer/render_view.h"
 #include "extensions/common/extension.h"
 #include "grit/renderer_resources.h"
@@ -362,6 +363,10 @@ class SearchBoxExtensionWrapper : public v8::Extension {
   static void GetAppLauncherEnabled(
       const v8::FunctionCallbackInfo<v8::Value>& args);
 
+  // Gets the desired navigation behavior from a click event.
+  static void GetDispositionFromClick(
+      const v8::FunctionCallbackInfo<v8::Value>& args);
+
   // Gets Most Visited Items.
   static void GetMostVisitedItems(
       const v8::FunctionCallbackInfo<v8::Value>& args);
@@ -405,7 +410,12 @@ class SearchBoxExtensionWrapper : public v8::Extension {
   static void LogEvent(const v8::FunctionCallbackInfo<v8::Value>& args);
 
   // Logs an impression on one of the Most Visited tile on the NTP.
-  static void LogImpression(const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void LogMostVisitedImpression(
+      const v8::FunctionCallbackInfo<v8::Value>& args);
+
+  // Logs a navigation on one of the Most Visited tile on the NTP.
+  static void LogMostVisitedNavigation(
+      const v8::FunctionCallbackInfo<v8::Value>& args);
 
   // Navigates the window to a URL represented by either a URL string or a
   // restricted ID.
@@ -541,6 +551,8 @@ SearchBoxExtensionWrapper::GetNativeFunctionTemplate(
     return v8::FunctionTemplate::New(isolate, Focus);
   if (name->Equals(v8::String::NewFromUtf8(isolate, "GetAppLauncherEnabled")))
     return v8::FunctionTemplate::New(isolate, GetAppLauncherEnabled);
+  if (name->Equals(v8::String::NewFromUtf8(isolate, "GetDispositionFromClick")))
+    return v8::FunctionTemplate::New(isolate, GetDispositionFromClick);
   if (name->Equals(v8::String::NewFromUtf8(isolate, "GetMostVisitedItems")))
     return v8::FunctionTemplate::New(isolate, GetMostVisitedItems);
   if (name->Equals(v8::String::NewFromUtf8(isolate, "GetMostVisitedItemData")))
@@ -563,8 +575,14 @@ SearchBoxExtensionWrapper::GetNativeFunctionTemplate(
     return v8::FunctionTemplate::New(isolate, IsKeyCaptureEnabled);
   if (name->Equals(v8::String::NewFromUtf8(isolate, "LogEvent")))
     return v8::FunctionTemplate::New(isolate, LogEvent);
-  if (name->Equals(v8::String::NewFromUtf8(isolate, "LogImpression")))
-    return v8::FunctionTemplate::New(isolate, LogImpression);
+  if (name->Equals(
+          v8::String::NewFromUtf8(isolate, "LogMostVisitedImpression"))) {
+    return v8::FunctionTemplate::New(isolate, LogMostVisitedImpression);
+  }
+  if (name->Equals(
+          v8::String::NewFromUtf8(isolate, "LogMostVisitedNavigation"))) {
+    return v8::FunctionTemplate::New(isolate, LogMostVisitedNavigation);
+  }
   if (name->Equals(v8::String::NewFromUtf8(isolate, "NavigateContentWindow")))
     return v8::FunctionTemplate::New(isolate, NavigateContentWindow);
   if (name->Equals(v8::String::NewFromUtf8(isolate, "Paste")))
@@ -638,6 +656,27 @@ void SearchBoxExtensionWrapper::GetAppLauncherEnabled(
 
   args.GetReturnValue().Set(
       SearchBox::Get(render_view)->app_launcher_enabled());
+}
+
+// static
+void SearchBoxExtensionWrapper::GetDispositionFromClick(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
+  content::RenderView* render_view = GetRenderView();
+  if (!render_view || args.Length() != 5) return;
+
+  bool middle_button = args[0]->BooleanValue();
+  bool alt_key = args[1]->BooleanValue();
+  bool ctrl_key = args[2]->BooleanValue();
+  bool meta_key = args[3]->BooleanValue();
+  bool shift_key = args[4]->BooleanValue();
+
+  WindowOpenDisposition disposition = ui::DispositionFromClick(middle_button,
+                                                               alt_key,
+                                                               ctrl_key,
+                                                               meta_key,
+                                                               shift_key);
+  v8::Isolate* isolate = args.GetIsolate();
+  args.GetReturnValue().Set(v8::Int32::New(isolate, disposition));
 }
 
 // static
@@ -939,7 +978,7 @@ void SearchBoxExtensionWrapper::LogEvent(
 }
 
 // static
-void SearchBoxExtensionWrapper::LogImpression(
+void SearchBoxExtensionWrapper::LogMostVisitedImpression(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
   content::RenderView* render_view = GetRenderViewWithCheckedOrigin(
       GURL(chrome::kChromeSearchMostVisitedUrl));
@@ -948,10 +987,26 @@ void SearchBoxExtensionWrapper::LogImpression(
   if (args.Length() < 2 || !args[0]->IsNumber() || args[1]->IsUndefined())
     return;
 
-  DVLOG(1) << render_view << " LogImpression";
+  DVLOG(1) << render_view << " LogMostVisitedImpression";
 
-  SearchBox::Get(render_view)->LogImpression(args[0]->IntegerValue(),
-                                             V8ValueToUTF16(args[1]));
+  SearchBox::Get(render_view)->LogMostVisitedImpression(
+      args[0]->IntegerValue(), V8ValueToUTF16(args[1]));
+}
+
+// static
+void SearchBoxExtensionWrapper::LogMostVisitedNavigation(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
+  content::RenderView* render_view = GetRenderViewWithCheckedOrigin(
+      GURL(chrome::kChromeSearchMostVisitedUrl));
+  if (!render_view) return;
+
+  if (args.Length() < 2 || !args[0]->IsNumber() || args[1]->IsUndefined())
+    return;
+
+  DVLOG(1) << render_view << " LogMostVisitedNavigation";
+
+  SearchBox::Get(render_view)->LogMostVisitedNavigation(
+      args[0]->IntegerValue(), V8ValueToUTF16(args[1]));
 }
 
 // static
@@ -973,17 +1028,19 @@ void SearchBoxExtensionWrapper::NavigateContentWindow(
   } else {
     // Resolve the URL
     const base::string16& possibly_relative_url = V8ValueToUTF16(args[0]);
-    GURL current_url = GetCurrentURL(render_view);
+  GURL current_url = GetCurrentURL(render_view);
     destination_url = internal::ResolveURL(current_url, possibly_relative_url);
   }
 
   DVLOG(1) << render_view << " NavigateContentWindow: " << destination_url;
 
   // Navigate the main frame.
-  if (destination_url.is_valid()) {
+  if (destination_url.is_valid() &&
+      !destination_url.SchemeIs(content::kJavaScriptScheme)) {
     WindowOpenDisposition disposition = CURRENT_TAB;
-    if (args[1]->Uint32Value() == 2)
-      disposition = NEW_BACKGROUND_TAB;
+    if (args[1]->IsNumber()) {
+      disposition = (WindowOpenDisposition) args[1]->Uint32Value();
+    }
     SearchBox::Get(render_view)->NavigateToURL(destination_url, disposition,
                                                is_most_visited_item_url);
   }

@@ -50,8 +50,10 @@ class MockSearchIPCRouterDelegate : public SearchIPCRouter::Delegate {
   MOCK_METHOD1(OnUndoMostVisitedDeletion, void(const GURL& url));
   MOCK_METHOD0(OnUndoAllMostVisitedDeletions, void());
   MOCK_METHOD1(OnLogEvent, void(NTPLoggingEventType event));
-  MOCK_METHOD2(OnLogImpression, void(int position,
-                                     const base::string16& provider));
+  MOCK_METHOD2(OnLogMostVisitedImpression,
+               void(int position, const base::string16& provider));
+  MOCK_METHOD2(OnLogMostVisitedNavigation,
+               void(int position, const base::string16& provider));
   MOCK_METHOD1(PasteIntoOmnibox, void(const base::string16&));
   MOCK_METHOD1(OnChromeIdentityCheck, void(const base::string16& identity));
 };

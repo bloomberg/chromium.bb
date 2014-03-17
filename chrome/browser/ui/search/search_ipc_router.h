@@ -63,8 +63,12 @@ class SearchIPCRouter : public content::WebContentsObserver {
     virtual void OnLogEvent(NTPLoggingEventType event) = 0;
 
     // Called to log an impression from a given provider on the New Tab Page.
-    virtual void OnLogImpression(int position,
-                                 const base::string16& provider) = 0;
+    virtual void OnLogMostVisitedImpression(int position,
+                                            const base::string16& provider) = 0;
+
+    // Called to log a navigation from a given provider on the New Tab Page.
+    virtual void OnLogMostVisitedNavigation(int position,
+                                            const base::string16& provider) = 0;
 
     // Called when the page wants to paste the |text| (or the clipboard contents
     // if the |text| is empty) into the omnibox.
@@ -187,9 +191,12 @@ class SearchIPCRouter : public content::WebContentsObserver {
   void OnUndoMostVisitedDeletion(int page_id, const GURL& url) const;
   void OnUndoAllMostVisitedDeletions(int page_id) const;
   void OnLogEvent(int page_id, NTPLoggingEventType event) const;
-  void OnLogImpression(int page_id,
-                       int position,
-                       const base::string16& provider) const;
+  void OnLogMostVisitedImpression(int page_id,
+                                  int position,
+                                  const base::string16& provider) const;
+  void OnLogMostVisitedNavigation(int page_id,
+                                  int position,
+                                  const base::string16& provider) const;
   void OnPasteAndOpenDropDown(int page_id, const base::string16& text) const;
   void OnChromeIdentityCheck(int page_id, const base::string16& identity) const;
 

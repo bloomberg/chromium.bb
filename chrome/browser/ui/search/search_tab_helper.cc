@@ -538,10 +538,16 @@ void SearchTabHelper::OnLogEvent(NTPLoggingEventType event) {
       web_contents())->LogEvent(event);
 }
 
-void SearchTabHelper::OnLogImpression(int position,
-                                      const base::string16& provider) {
+void SearchTabHelper::OnLogMostVisitedImpression(
+    int position, const base::string16& provider) {
   NTPUserDataLogger::GetOrCreateFromWebContents(
-      web_contents())->LogImpression(position, provider);
+      web_contents())->LogMostVisitedImpression(position, provider);
+}
+
+void SearchTabHelper::OnLogMostVisitedNavigation(
+    int position, const base::string16& provider) {
+  NTPUserDataLogger::GetOrCreateFromWebContents(
+      web_contents())->LogMostVisitedNavigation(position, provider);
 }
 
 void SearchTabHelper::PasteIntoOmnibox(const base::string16& text) {

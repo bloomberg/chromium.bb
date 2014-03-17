@@ -83,11 +83,13 @@ if (!chrome.embeddedSearch) {
       native function CheckIsUserSignedInToChromeAs();
       native function DeleteMostVisitedItem();
       native function GetAppLauncherEnabled();
+      native function GetDispositionFromClick();
       native function GetMostVisitedItems();
       native function GetThemeBackgroundInfo();
       native function IsInputInProgress();
       native function LogEvent();
-      native function LogImpression();
+      native function LogMostVisitedImpression();
+      native function LogMostVisitedNavigation();
       native function NavigateContentWindow();
       native function UndoAllMostVisitedDeletions();
       native function UndoMostVisitedDeletion();
@@ -125,6 +127,18 @@ if (!chrome.embeddedSearch) {
         DeleteMostVisitedItem(restrictedId);
       };
 
+      this.getDispositionFromClick = function(middle_button,
+                                              alt_key,
+                                              ctrl_key,
+                                              meta_key,
+                                              shift_key) {
+        return GetDispositionFromClick(middle_button,
+                                       alt_key,
+                                       ctrl_key,
+                                       meta_key,
+                                       shift_key);
+      };
+
       this.checkIsUserSignedIntoChromeAs = function(identity) {
         CheckIsUserSignedInToChromeAs(identity);
       };
@@ -137,8 +151,14 @@ if (!chrome.embeddedSearch) {
 
       // This method is restricted to chrome-search://most-visited pages by
       // checking the invoking context's origin in searchbox_extension.cc.
-      this.logImpression = function(position, provider) {
-        LogImpression(position, provider);
+      this.logMostVisitedImpression = function(position, provider) {
+        LogMostVisitedImpression(position, provider);
+      };
+
+      // This method is restricted to chrome-search://most-visited pages by
+      // checking the invoking context's origin in searchbox_extension.cc.
+      this.logMostVisitedNavigation = function(position, provider) {
+        LogMostVisitedNavigation(position, provider);
       };
 
       this.navigateContentWindow = function(destination, disposition) {

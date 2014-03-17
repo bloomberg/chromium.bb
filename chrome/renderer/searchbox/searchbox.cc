@@ -161,8 +161,16 @@ void SearchBox::LogEvent(NTPLoggingEventType event) {
       render_view()->GetRoutingID(), render_view()->GetPageId(), event));
 }
 
-void SearchBox::LogImpression(int position, const base::string16& provider) {
-  render_view()->Send(new ChromeViewHostMsg_LogImpression(
+void SearchBox::LogMostVisitedImpression(int position,
+                                         const base::string16& provider) {
+  render_view()->Send(new ChromeViewHostMsg_LogMostVisitedImpression(
+      render_view()->GetRoutingID(), render_view()->GetPageId(), position,
+      provider));
+}
+
+void SearchBox::LogMostVisitedNavigation(int position,
+                                         const base::string16& provider) {
+  render_view()->Send(new ChromeViewHostMsg_LogMostVisitedNavigation(
       render_view()->GetRoutingID(), render_view()->GetPageId(), position,
       provider));
 }

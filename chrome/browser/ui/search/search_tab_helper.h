@@ -168,8 +168,10 @@ class SearchTabHelper : public content::WebContentsObserver,
   virtual void OnUndoMostVisitedDeletion(const GURL& url) OVERRIDE;
   virtual void OnUndoAllMostVisitedDeletions() OVERRIDE;
   virtual void OnLogEvent(NTPLoggingEventType event) OVERRIDE;
-  virtual void OnLogImpression(int position,
-                               const base::string16& provider) OVERRIDE;
+  virtual void OnLogMostVisitedImpression(
+      int position, const base::string16& provider) OVERRIDE;
+  virtual void OnLogMostVisitedNavigation(
+      int position, const base::string16& provider) OVERRIDE;
   virtual void PasteIntoOmnibox(const base::string16& text) OVERRIDE;
   virtual void OnChromeIdentityCheck(const base::string16& identity) OVERRIDE;
 

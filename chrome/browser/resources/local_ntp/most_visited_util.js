@@ -8,6 +8,8 @@
  */
 
 <include src="instant_iframe_validation.js">
+<include src="window_disposition_util.js">
+
 
 /**
  * The different types of events that are logged from the NTP.  This enum is
@@ -42,6 +44,7 @@ var NTP_LOGGING_EVENT_TYPE = {
   // The user moused over an NTP tile or title.
   NTP_MOUSEOVER: 9
 };
+
 
 /**
  * Type of the impression provider for a generic client-provided suggestion.
@@ -88,36 +91,20 @@ function parseQueryParams(location) {
  * @param {string} href The destination for the link.
  * @param {string} title The title for the link.
  * @param {string|undefined} text The text for the link or none.
- * @param {string|undefined} ping If specified, a location relative to the
- *     referrer of this iframe, to ping when the link is clicked. Only works if
- *     the referrer is HTTPS.
  * @param {string|undefined} provider A provider name (max 8 alphanumeric
  *     characters) used for logging. Undefined if suggestion is not coming from
  *     the server.
  * @return {HTMLAnchorElement} A new link element.
  */
-function createMostVisitedLink(params, href, title, text, ping, provider) {
+function createMostVisitedLink(params, href, title, text, provider) {
   var styles = getMostVisitedStyles(params, !!text);
   var link = document.createElement('a');
   link.style.color = styles.color;
   link.style.fontSize = styles.fontSize + 'px';
   if (styles.fontFamily)
     link.style.fontFamily = styles.fontFamily;
+
   link.href = href;
-  if ('pos' in params && isFinite(params.pos)) {
-    link.ping = '/log.html?pos=' + params.pos;
-    if (provider)
-      link.ping += '&pr=' + provider;
-    // If a ping parameter was specified, add it to the list of pings, relative
-    // to the referrer of this iframe, which is the default search provider.
-    if (ping) {
-      var parentUrl = document.createElement('a');
-      parentUrl.href = document.referrer;
-      if (parentUrl.protocol == 'https:') {
-        link.ping += ' ' + parentUrl.origin + '/' + ping;
-      }
-    }
-  }
   link.title = title;
   link.target = '_top';
   // Exclude links from the tab order.  The tabIndex is added to the thumbnail
@@ -129,6 +116,20 @@ function createMostVisitedLink(params, href, title, text, ping, provider) {
     var ntpApiHandle = chrome.embeddedSearch.newTabPage;
     ntpApiHandle.logEvent(NTP_LOGGING_EVENT_TYPE.NTP_MOUSEOVER);
   });
+
+  // Webkit's security policy prevents some Most Visited thumbnails from
+  // working (those with schemes different from http and https). Therefore,
+  // navigateContentWindow is being used in order to get all schemes working.
+  link.addEventListener('click', function handleNavigation(e) {
+    e.preventDefault();
+    var ntpApiHandle = chrome.embeddedSearch.newTabPage;
+    if ('pos' in params && isFinite(params.pos)) {
+      ntpApiHandle.logMostVisitedNavigation(parseInt(params.pos, 10),
+                                            provider || '');
+    }
+    ntpApiHandle.navigateContentWindow(href, getDispositionFromEvent(e));
+  });
+
   return link;
 }
 
@@ -186,7 +187,6 @@ function fillMostVisited(location, fill) {
     data.title = params.ti || '';
     data.direction = params.di || '';
     data.domain = params.dom || '';
-    data.ping = params.ping || '';
     data.provider = params.pr || SERVER_PROVIDER_NAME;
 
     // Log the fact that suggestion was obtained from the server.
@@ -199,7 +199,6 @@ function fillMostVisited(location, fill) {
       return;
     // Allow server-side provider override.
     data.provider = params.pr || CLIENT_PROVIDER_NAME;
-    delete data.ping;
   }
   if (/^javascript:/i.test(data.url) ||
       /^javascript:/i.test(data.thumbnailUrl) ||

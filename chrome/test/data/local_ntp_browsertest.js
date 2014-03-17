@@ -87,3 +87,29 @@ function testDoesNotShowFakeboxIfNotGoogle() {
   assert(!$('fakebox'));
   assert(!$('logo'));
 }
+
+
+/**
+ * Tests that clicking on a Most Visited link calls navigateContentWindow.
+ */
+function testMostVisitedLinkCallsNavigateContentWindow() {
+  var ntpHandle = chrome.embeddedSearch.newTabPage;
+  var originalNavigateContentWindow = ntpHandle.navigateContentWindow;
+
+  var navigateContentWindowCalls = 0;
+  ntpHandle.navigateContentWindow = function() {
+    navigateContentWindowCalls++;
+  }
+
+  var params = {};
+  var href = 'file:///some/local/file';
+  var title = 'Title';
+  var text = 'text';
+  var provider = 'foobar';
+  var link = createMostVisitedLink(params, href, title, text, provider);
+
+  link.click();
+
+  ntpHandle.navigateContentWindow = originalNavigateContentWindow;
+  assert(navigateContentWindowCalls > 0);
+}

@@ -39,15 +39,6 @@ class MostVisitedIframeSource : public IframeSource {
   FRIEND_TEST_ALL_PREFIXES(MostVisitedIframeSourceTest,
                            LogEndpointIsValidWithProvider);
 
-  // Logs the click on a Most Visited tile for a specific |provider|. Note that
-  // the UMA_HISTOGRAM_ENUMERATION macro cannot be used since it caches the
-  // histogram object at the call site, which will not work in this case.
-  void LogMostVisitedProviderClick(int position, const std::string& provider);
-
-  // Returns the name of the histogram that should be logged for a click to a
-  // specified Most Visited |provider|.
-  static std::string GetHistogramNameForProvider(const std::string& provider);
-
   DISALLOW_COPY_AND_ASSIGN(MostVisitedIframeSource);
 };
 

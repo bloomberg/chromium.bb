@@ -13,6 +13,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 
 // Macro to log UMA statistics related to the 8 tiles shown on the NTP.
@@ -28,10 +29,26 @@ enum SuggestionsType {
   SUGGESTIONS_TYPE_COUNT = 2
 };
 
+// Number of Most Visited elements on the NTP for logging purposes.
+const int kNumMostVisited = 8;
+
+// Name of the histogram keeping track of Most Visited impressions.
+const char kMostVisitedImpressionHistogramName[] =
+    "NewTabPage.SuggestionsImpression";
+
 // Format string to generate the name for the histogram keeping track of
 // suggestion impressions.
-const char kImpressionHistogramWithProvider[] =
+const char kMostVisitedImpressionHistogramWithProvider[] =
     "NewTabPage.SuggestionsImpression.%s";
+
+// Name of the histogram keeping track of Most Visited navigations.
+const char kMostVisitedNavigationHistogramName[] =
+    "NewTabPage.MostVisited";
+
+// Format string to generate the name for the histogram keeping track of
+// suggestion navigations.
+const char kMostVisitedNavigationHistogramWithProvider[] =
+    "NewTabPage.MostVisited.%s";
 
 }  // namespace
 
@@ -56,6 +73,20 @@ NTPUserDataLogger* NTPUserDataLogger::GetOrCreateFromWebContents(
     logger->ntp_url_ = entry->GetURL();
 
   return logger;
+}
+
+// static
+std::string NTPUserDataLogger::GetMostVisitedImpressionHistogramNameForProvider(
+    const std::string& provider) {
+  return base::StringPrintf(kMostVisitedImpressionHistogramWithProvider,
+                            provider.c_str());
+}
+
+// static
+std::string NTPUserDataLogger::GetMostVisitedNavigationHistogramNameForProvider(
+    const std::string& provider) {
+  return base::StringPrintf(kMostVisitedNavigationHistogramWithProvider,
+                            provider.c_str());
 }
 
 void NTPUserDataLogger::EmitNtpStatistics() {
@@ -136,17 +167,52 @@ void NTPUserDataLogger::LogEvent(NTPLoggingEventType event) {
   }
 }
 
-void NTPUserDataLogger::LogImpression(int position,
-                                      const base::string16& provider) {
-  // Cannot rely on UMA histograms macro because the name of the histogram is
-  // generated dynamically.
-  base::HistogramBase* counter = base::LinearHistogram::FactoryGet(
-      base::StringPrintf(kImpressionHistogramWithProvider,
-                         base::UTF16ToUTF8(provider).c_str()),
-      1, MostVisitedIframeSource::kNumMostVisited,
-      MostVisitedIframeSource::kNumMostVisited + 1,
-      base::Histogram::kUmaTargetedHistogramFlag);
-  counter->Add(position);
+void NTPUserDataLogger::LogMostVisitedImpression(
+    int position, const base::string16& provider) {
+  // Log the Most Visited navigation for navigations that have providers and
+  // those that dont.
+  UMA_HISTOGRAM_ENUMERATION(kMostVisitedImpressionHistogramName, position,
+                            kNumMostVisited);
+
+  // If a provider is specified, log the metric specific to it.
+  if (!provider.empty()) {
+    // Cannot rely on UMA histograms macro because the name of the histogram is
+    // generated dynamically.
+    base::HistogramBase* counter = base::LinearHistogram::FactoryGet(
+        GetMostVisitedImpressionHistogramNameForProvider(
+            base::UTF16ToUTF8(provider)),
+        1,
+        kNumMostVisited,
+        kNumMostVisited + 1,
+        base::Histogram::kUmaTargetedHistogramFlag);
+    counter->Add(position);
+  }
+}
+
+void NTPUserDataLogger::LogMostVisitedNavigation(
+    int position, const base::string16& provider) {
+  // Log the Most Visited navigation for navigations that have providers and
+  // those that dont.
+  UMA_HISTOGRAM_ENUMERATION(kMostVisitedNavigationHistogramName, position,
+                            kNumMostVisited);
+
+  // If a provider is specified, log the metric specific to it.
+  if (!provider.empty()) {
+    // Cannot rely on UMA histograms macro because the name of the histogram is
+    // generated dynamically.
+    base::HistogramBase* counter = base::LinearHistogram::FactoryGet(
+        GetMostVisitedNavigationHistogramNameForProvider(
+            base::UTF16ToUTF8(provider)),
+        1,
+        kNumMostVisited,
+        kNumMostVisited + 1,
+        base::Histogram::kUmaTargetedHistogramFlag);
+    counter->Add(position);
+  }
+
+  // Records the action. This will be available as a time-stamped stream
+  // server-side and can be used to compute time-to-long-dwell.
+  content::RecordAction(base::UserMetricsAction("MostVisited_Clicked"));
 }
 
 // content::WebContentsObserver override

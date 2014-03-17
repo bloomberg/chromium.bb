@@ -14,8 +14,9 @@ window.addEventListener('DOMContentLoaded', function() {
     function logEvent(eventName) {
       chrome.embeddedSearch.newTabPage.logEvent(eventName);
     }
-    function logImpression(tileIndex, provider) {
-      chrome.embeddedSearch.newTabPage.logImpression(tileIndex, provider);
+    function logMostVisitedImpression(tileIndex, provider) {
+      chrome.embeddedSearch.newTabPage.logMostVisitedImpression(
+          tileIndex, provider);
     }
     function displayLink(link) {
       document.body.appendChild(link);
@@ -23,7 +24,7 @@ window.addEventListener('DOMContentLoaded', function() {
     }
     function showDomainElement() {
       var link = createMostVisitedLink(
-          params, data.url, data.title, undefined, data.ping, data.provider);
+          params, data.url, data.title, undefined, data.provider);
       var domain = document.createElement('div');
       domain.textContent = data.domain;
       link.appendChild(domain);
@@ -33,7 +34,7 @@ window.addEventListener('DOMContentLoaded', function() {
     // externally by the page itself.
     function showEmptyTile() {
       displayLink(createMostVisitedLink(
-          params, data.url, data.title, undefined, data.ping, data.provider));
+          params, data.url, data.title, undefined, data.provider));
     }
     // Creates and adds an image.
     function createThumbnail(src) {
@@ -42,8 +43,7 @@ window.addEventListener('DOMContentLoaded', function() {
         var shadow = document.createElement('span');
         shadow.classList.add('shadow');
         var link = createMostVisitedLink(
-            params, data.url, data.title, undefined, data.ping,
-            data.provider);
+            params, data.url, data.title, undefined, data.provider);
         link.appendChild(shadow);
         link.appendChild(image);
         displayLink(link);
@@ -63,7 +63,7 @@ window.addEventListener('DOMContentLoaded', function() {
 
     // Log an impression if we know the position of the tile.
     if (isFinite(params.pos) && data.provider) {
-      logImpression(parseInt(params.pos, 10), data.provider);
+      logMostVisitedImpression(parseInt(params.pos, 10), data.provider);
     }
 
     logEvent(NTP_LOGGING_EVENT_TYPE.NTP_TILE);

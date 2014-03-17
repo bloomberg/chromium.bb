@@ -23,8 +23,6 @@ const char kThumbnailCSSPath[] = "/thumbnail.css";
 const char kThumbnailJSPath[] = "/thumbnail.js";
 const char kUtilJSPath[] = "/util.js";
 const char kCommonCSSPath[] = "/common.css";
-const char kLogHTMLPath[] = "/log.html";
-const char kMostVisitedHistogramWithProvider[] = "NewTabPage.MostVisited.%s";
 
 }  // namespace
 
@@ -66,26 +64,6 @@ void MostVisitedIframeSource::StartDataRequest(
     SendResource(IDR_MOST_VISITED_UTIL_JS, callback);
   } else if (path == kCommonCSSPath) {
     SendResource(IDR_MOST_VISITED_IFRAME_CSS, callback);
-  } else if (path == kLogHTMLPath) {
-    // Log the clicked MostVisited element by position.
-    std::string str_position;
-    int position;
-    if (net::GetValueForKeyInQuery(url, "pos", &str_position) &&
-        base::StringToInt(str_position, &position)) {
-      // Log the Most Visited click.
-      UMA_HISTOGRAM_ENUMERATION(kMostVisitedHistogramName, position,
-                                kNumMostVisited);
-      // If a specific provider is specified, log the metric specific to the
-      // provider.
-      std::string provider;
-      if (net::GetValueForKeyInQuery(url, "pr", &provider))
-        LogMostVisitedProviderClick(position, provider);
-
-      // Records the action. This will be available as a time-stamped stream
-      // server-side and can be used to compute time-to-long-dwell.
-      content::RecordAction(base::UserMetricsAction("MostVisited_Clicked"));
-    }
-    callback.Run(NULL);
   } else {
     callback.Run(NULL);
   }
@@ -95,25 +73,5 @@ bool MostVisitedIframeSource::ServesPath(const std::string& path) const {
   return path == kTitleHTMLPath || path == kTitleCSSPath ||
          path == kTitleJSPath || path == kThumbnailHTMLPath ||
          path == kThumbnailCSSPath || path == kThumbnailJSPath ||
-         path == kUtilJSPath || path == kCommonCSSPath || path == kLogHTMLPath;
-}
-
-void MostVisitedIframeSource::LogMostVisitedProviderClick(
-    int position,
-    const std::string& provider) {
-  std::string histogram_name =
-      MostVisitedIframeSource::GetHistogramNameForProvider(provider);
-  base::HistogramBase* counter = base::LinearHistogram::FactoryGet(
-      histogram_name, 1,
-      MostVisitedIframeSource::kNumMostVisited,
-      MostVisitedIframeSource::kNumMostVisited + 1,
-      base::Histogram::kUmaTargetedHistogramFlag);
-  counter->Add(position);
-}
-
-// static
-std::string MostVisitedIframeSource::GetHistogramNameForProvider(
-    const std::string& provider) {
-  return base::StringPrintf(kMostVisitedHistogramWithProvider,
-                            provider.c_str());
+         path == kUtilJSPath || path == kCommonCSSPath;
 }

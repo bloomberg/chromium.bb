@@ -702,7 +702,14 @@ IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_LogEvent,
 
 // Logs an impression on one of the Most Visited tile on the InstantExtended
 // New Tab Page.
-IPC_MESSAGE_ROUTED3(ChromeViewHostMsg_LogImpression,
+IPC_MESSAGE_ROUTED3(ChromeViewHostMsg_LogMostVisitedImpression,
+                    int /* page_id */,
+                    int /* position */,
+                    base::string16 /* provider */)
+
+// Logs a navigation on one of the Most Visited tile on the InstantExtended
+// New Tab Page.
+IPC_MESSAGE_ROUTED3(ChromeViewHostMsg_LogMostVisitedNavigation,
                     int /* page_id */,
                     int /* position */,
                     base::string16 /* provider */)

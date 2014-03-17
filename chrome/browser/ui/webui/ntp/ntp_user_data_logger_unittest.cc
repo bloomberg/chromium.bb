@@ -7,6 +7,7 @@
 #include "base/basictypes.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/statistics_recorder.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/common/ntp_logging_events.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -21,32 +22,30 @@ class TestNTPUserDataLogger : public NTPUserDataLogger {
 base::HistogramBase::Count GetTotalCount(const std::string& histogram_name) {
   base::HistogramBase* histogram = base::StatisticsRecorder::FindHistogram(
       histogram_name);
-  return histogram->SnapshotSamples()->TotalCount();
+  // Return 0 if history is uninitialized.
+  return histogram ? histogram->SnapshotSamples()->TotalCount() : 0;
 }
 
 base::HistogramBase::Count GetBinCount(const std::string& histogram_name,
                                        base::HistogramBase::Sample value) {
   base::HistogramBase* histogram = base::StatisticsRecorder::FindHistogram(
       histogram_name);
-  return histogram->SnapshotSamples()->GetCount(value);
+  // Return 0 if history is uninitialized.
+  return histogram ? histogram->SnapshotSamples()->GetCount(value) : 0;
 }
 
 }  // namespace
 
 TEST(NTPUserDataLoggerTest, TestLogging) {
   base::StatisticsRecorder::Initialize();
+
+  // Ensure empty statistics.
+  EXPECT_EQ(0, GetTotalCount("NewTabPage.NumberOfMouseOvers"));
+  EXPECT_EQ(0, GetBinCount("NewTabPage.NumberOfMouseOvers", 0));
+
+  // Enusure non-zero statistics.
   TestNTPUserDataLogger logger;
 
-  // Ensure it works when the statistics are all empty. Only the mouseover
-  // should be logged in this case. The other histograms are not created yet so
-  // we can't query them.
-  logger.EmitNtpStatistics();
-
-  EXPECT_EQ(1, GetTotalCount("NewTabPage.NumberOfMouseOvers"));
-  EXPECT_EQ(1, GetBinCount("NewTabPage.NumberOfMouseOvers", 0));
-
-  // Ensure it works with some non-zero statistics. All statistics should now
-  // be logged.
   for (int i = 0; i < 20; ++i)
     logger.LogEvent(NTP_MOUSEOVER);
   for (int i = 0; i < 8; ++i)
@@ -62,10 +61,11 @@ TEST(NTPUserDataLoggerTest, TestLogging) {
   for (int i = 0; i < 2; ++i)
     logger.LogEvent(NTP_GRAY_TILE);
   logger.LogEvent(NTP_SERVER_SIDE_SUGGESTION);
+
   logger.EmitNtpStatistics();
 
-  EXPECT_EQ(2, GetTotalCount("NewTabPage.NumberOfMouseOvers"));
-  EXPECT_EQ(1, GetBinCount("NewTabPage.NumberOfMouseOvers", 0));
+  EXPECT_EQ(1, GetTotalCount("NewTabPage.NumberOfMouseOvers"));
+  EXPECT_EQ(0, GetBinCount("NewTabPage.NumberOfMouseOvers", 0));
   EXPECT_EQ(1, GetBinCount("NewTabPage.NumberOfMouseOvers", 20));
   EXPECT_EQ(1, GetTotalCount("NewTabPage.NumberOfTiles"));
   EXPECT_EQ(1, GetBinCount("NewTabPage.NumberOfTiles", 8));
@@ -86,8 +86,8 @@ TEST(NTPUserDataLoggerTest, TestLogging) {
 
   // Statistics should be reset to 0, so we should not log anything else.
   logger.EmitNtpStatistics();
-  EXPECT_EQ(3, GetTotalCount("NewTabPage.NumberOfMouseOvers"));
-  EXPECT_EQ(2, GetBinCount("NewTabPage.NumberOfMouseOvers", 0));
+  EXPECT_EQ(2, GetTotalCount("NewTabPage.NumberOfMouseOvers"));
+  EXPECT_EQ(1, GetBinCount("NewTabPage.NumberOfMouseOvers", 0));
   EXPECT_EQ(1, GetBinCount("NewTabPage.NumberOfMouseOvers", 20));
   EXPECT_EQ(1, GetTotalCount("NewTabPage.NumberOfTiles"));
   EXPECT_EQ(1, GetTotalCount("NewTabPage.NumberOfThumbnailTiles"));
@@ -97,4 +97,61 @@ TEST(NTPUserDataLoggerTest, TestLogging) {
   EXPECT_EQ(1, GetTotalCount("NewTabPage.NumberOfExternalTiles"));
   EXPECT_EQ(1, GetTotalCount("NewTabPage.NumberOfGrayTiles"));
   EXPECT_EQ(1, GetTotalCount("NewTabPage.SuggestionsType"));
+}
+
+TEST(NTPUserDataLoggerTest, TestLogMostVisitedImpression) {
+  base::StatisticsRecorder::Initialize();
+
+  EXPECT_EQ(0, GetBinCount("NewTabPage.SuggestionsImpression.foobar", 1));
+  EXPECT_EQ(0, GetBinCount("NewTabPage.SuggestionsImpression.foobar", 5));
+
+  TestNTPUserDataLogger logger;
+
+  logger.LogMostVisitedImpression(1, base::ASCIIToUTF16("foobar"));
+  EXPECT_EQ(1, GetBinCount("NewTabPage.SuggestionsImpression.foobar", 1));
+  EXPECT_EQ(0, GetBinCount("NewTabPage.SuggestionsImpression.foobar", 5));
+
+  logger.LogMostVisitedImpression(5, base::ASCIIToUTF16("foobar"));
+  EXPECT_EQ(1, GetBinCount("NewTabPage.SuggestionsImpression.foobar", 1));
+  EXPECT_EQ(1, GetBinCount("NewTabPage.SuggestionsImpression.foobar", 5));
+
+  // Try without provider. Only total increases.
+  logger.LogMostVisitedImpression(5, base::ASCIIToUTF16(""));
+  EXPECT_EQ(1, GetBinCount("NewTabPage.SuggestionsImpression.foobar", 1));
+  EXPECT_EQ(1, GetBinCount("NewTabPage.SuggestionsImpression.foobar", 5));
+
+  logger.LogMostVisitedImpression(1, base::ASCIIToUTF16("foobar"));
+  EXPECT_EQ(2, GetBinCount("NewTabPage.SuggestionsImpression.foobar", 1));
+  EXPECT_EQ(1, GetBinCount("NewTabPage.SuggestionsImpression.foobar", 5));
+}
+
+TEST(NTPUserDataLoggerTest, TestLogMostVisitedNavigation) {
+  base::StatisticsRecorder::Initialize();
+
+  EXPECT_EQ(0, GetTotalCount("NewTabPage.MostVisited"));
+  EXPECT_EQ(0, GetBinCount("NewTabPage.MostVisited.foobar", 1));
+  EXPECT_EQ(0, GetBinCount("NewTabPage.MostVisited.foobar", 5));
+
+  TestNTPUserDataLogger logger;
+
+  logger.LogMostVisitedNavigation(1, base::ASCIIToUTF16("foobar"));
+  EXPECT_EQ(1, GetTotalCount("NewTabPage.MostVisited"));
+  EXPECT_EQ(1, GetBinCount("NewTabPage.MostVisited.foobar", 1));
+  EXPECT_EQ(0, GetBinCount("NewTabPage.MostVisited.foobar", 5));
+
+  logger.LogMostVisitedNavigation(5, base::ASCIIToUTF16("foobar"));
+  EXPECT_EQ(2, GetTotalCount("NewTabPage.MostVisited"));
+  EXPECT_EQ(1, GetBinCount("NewTabPage.MostVisited.foobar", 1));
+  EXPECT_EQ(1, GetBinCount("NewTabPage.MostVisited.foobar", 5));
+
+  // Try without provider. Only total increases.
+  logger.LogMostVisitedNavigation(5, base::ASCIIToUTF16(""));
+  EXPECT_EQ(3, GetTotalCount("NewTabPage.MostVisited"));
+  EXPECT_EQ(1, GetBinCount("NewTabPage.MostVisited.foobar", 1));
+  EXPECT_EQ(1, GetBinCount("NewTabPage.MostVisited.foobar", 5));
+
+  logger.LogMostVisitedNavigation(1, base::ASCIIToUTF16("foobar"));
+  EXPECT_EQ(4, GetTotalCount("NewTabPage.MostVisited"));
+  EXPECT_EQ(2, GetBinCount("NewTabPage.MostVisited.foobar", 1));
+  EXPECT_EQ(1, GetBinCount("NewTabPage.MostVisited.foobar", 5));
 }
