@@ -402,19 +402,19 @@ void StyleSheetContents::checkLoaded()
     // the |CSSStyleSheet| from being deleted during iteration via the |sheetLoaded|
     // method.
     //
-    // FIXME: oilpan: with oilpan we do not need to protect the CSSStyleSheets
-    // explicitly during the iteration. The iterator will make the pointers
-    // strong during iteration so we can just directly iterate root->m_clients.
-    WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet> > protectedClients;
-    copyToVector(m_loadingClients, protectedClients);
+    // When a sheet is loaded it is moved from the set of loading clients
+    // to the set of completed clients. We therefore need the copy in order to
+    // not modify the set while iterating it.
+    WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet> > loadingClients;
+    copyToVector(m_loadingClients, loadingClients);
 
-    for (unsigned i = 0; i < protectedClients.size(); ++i) {
-        if (protectedClients[i]->loadCompleted())
+    for (unsigned i = 0; i < loadingClients.size(); ++i) {
+        if (loadingClients[i]->loadCompleted())
             continue;
 
         // sheetLoaded might be invoked after its owner node is removed from document.
-        if (RefPtr<Node> ownerNode = protectedClients[i]->ownerNode()) {
-            if (protectedClients[i]->sheetLoaded())
+        if (RefPtr<Node> ownerNode = loadingClients[i]->ownerNode()) {
+            if (loadingClients[i]->sheetLoaded())
                 ownerNode->notifyLoadedSheetAndAllCriticalSubresources(m_didLoadErrorOccur);
         }
     }
@@ -435,8 +435,15 @@ void StyleSheetContents::startLoadingDynamicSheet()
     StyleSheetContents* root = rootStyleSheet();
     for (ClientsIterator it = root->m_loadingClients.begin(); it != root->m_loadingClients.end(); ++it)
         (*it)->startLoadingDynamicSheet();
-    for (ClientsIterator it = root->m_completedClients.begin(); it != root->m_completedClients.end(); ++it)
-        (*it)->startLoadingDynamicSheet();
+    // Copy the completed clients to a vector for iteration.
+    // startLoadingDynamicSheet will move the style sheet from the
+    // completed state to the loading state which modifies the set of
+    // completed clients. We therefore need the copy in order to not
+    // modify the set of completed clients while iterating it.
+    WillBeHeapVector<RawPtrWillBeMember<CSSStyleSheet> > completedClients;
+    copyToVector(root->m_completedClients, completedClients);
+    for (unsigned i = 0; i < completedClients.size(); ++i)
+        completedClients[i]->startLoadingDynamicSheet();
 }
 
 StyleSheetContents* StyleSheetContents::rootStyleSheet() const
