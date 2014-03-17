@@ -1513,6 +1513,7 @@ internal_paladin.add_config('bayleybay-paladin',
 internal_paladin.add_config('beltino-paladin',
   boards=['beltino'],
   paladin_builder_name='beltino paladin',
+  important=False,
 )
 
 # x86 full compile
@@ -1638,6 +1639,7 @@ internal_paladin.add_config('peppy-paladin',
 internal_paladin.add_config('slippy-paladin',
   boards=['slippy'],
   paladin_builder_name='slippy paladin',
+  important=False,
 )
 
 internal_paladin.add_config('sonic-paladin',
@@ -2151,8 +2153,7 @@ _release.add_config('stumpy_moblab-release',
 ### Per-chipset release groups
 
 # pineview chipset boards
-# TODO(davidjames): Rename atom-release-group to pineview-release-group.
-_config.add_group('atom-release-group',
+_config.add_group('pineview-release-group',
   config['x86-mario-release'],
   config['x86-alex-release'].derive(_grouped_config),
   config['x86-zgb-release'].derive(_grouped_config),
@@ -2160,19 +2161,13 @@ _config.add_group('atom-release-group',
   config['x86-zgb_he-release'].derive(_grouped_variant_config),
 )
 
-# sandybridge chipset boards
-# TODO(davidjames): Combine sandybridge and ivybridge into one builder named
-# sandy/ivybridge canary, once we've optimized our builders more.
-_config.add_group('sandybridge-release-group',
+# sandybridge and ivybridge chipset boards
+_config.add_group('sandybridge-ivybridge-release-group',
   config['lumpy-release'],
   config['stumpy-release'].derive(_grouped_config),
   config['parrot-release'].derive(_grouped_config),
   config['butterfly-release'].derive(_grouped_config),
-)
-
-# ivybridge chipset boards
-_config.add_group('ivybridge-release-group',
-  config['stout-release'],
+  config['stout-release'].derive(_grouped_config),
   config['parrot_ivb-release'].derive(_grouped_variant_config),
 )
 
@@ -2186,6 +2181,7 @@ _config.add_group('slippy-release-group',
   config['falco-release'].derive(_grouped_config),
   config['leon-release'].derive(_grouped_config),
   config['wolf-release'].derive(_grouped_config),
+  config['falco_li-release'].derive(_grouped_variant_config),
 )
 
 # beltino-based haswell boards
@@ -2198,13 +2194,39 @@ _config.add_group('beltino-release-group',
 )
 
 # rambi-based boards
-_config.add_group('rambi-release-group',
+_config.add_group('rambi-a-release-group',
   config['rambi-release'],
   config['clapper-release'].derive(_grouped_config),
+  config['enguarde-release'].derive(_grouped_config),
+  config['expresso-release'].derive(_grouped_config),
   config['glimmer-release'].derive(_grouped_config),
+)
+
+_config.add_group('rambi-b-release-group',
+  config['gnawty-release'],
   config['kip-release'].derive(_grouped_config),
   config['quawks-release'].derive(_grouped_config),
   config['squawks-release'].derive(_grouped_config),
+  config['winky-release'].derive(_grouped_config),
+)
+
+# daisy-based boards
+_config.add_group('daisy-release-group',
+  config['daisy-release'],
+  config['daisy_spring-release'].derive(_grouped_config),
+  config['daisy_skate-release'].derive(_grouped_config),
+)
+
+# peach-based boards
+_config.add_group('peach-release-group',
+  config['peach_pit-release'],
+  config['peach_pi-release'].derive(_grouped_config),
+)
+
+# nyan-based boards
+_config.add_group('nyan-release-group',
+  config['nyan-release'],
+  config['nyan_big-release'].derive(_grouped_config),
 )
 
 # Factory and Firmware releases much inherit from these classes.  Modifications
