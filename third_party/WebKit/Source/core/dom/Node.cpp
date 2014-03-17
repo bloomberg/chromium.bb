@@ -1981,7 +1981,7 @@ static inline bool tryRemoveEventListener(Node* targetNode, const AtomicString& 
     // listeners for each type, not just a bool - see https://bugs.webkit.org/show_bug.cgi?id=33861
     Document& document = targetNode->document();
     if (eventType == EventTypeNames::wheel || eventType == EventTypeNames::mousewheel)
-        WheelController::from(document)->didAddWheelEventHandler(document);
+        WheelController::from(document)->didRemoveWheelEventHandler(document);
     else if (isTouchEventType(eventType))
         document.didRemoveTouchEventHandler(targetNode);
 
