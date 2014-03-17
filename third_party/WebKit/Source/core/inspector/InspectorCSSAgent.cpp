@@ -435,7 +435,7 @@ void InspectorCSSAgent::reset()
 {
     m_idToInspectorStyleSheet.clear();
     m_cssStyleSheetToInspectorStyleSheet.clear();
-    m_documentToCSSStyleSheets.clear();
+    m_frameToCSSStyleSheets.clear();
     m_nodeToInspectorStyleSheet.clear();
     m_documentToViaInspectorStyleSheet.clear();
     resetNonPersistentData();
@@ -490,8 +490,10 @@ void InspectorCSSAgent::wasEnabled(PassRefPtr<EnableCallback> callback)
 
     m_instrumentingAgents->setInspectorCSSAgent(this);
     Vector<Document*> documents = m_domAgent->documents();
-    for (Vector<Document*>::iterator it = documents.begin(); it != documents.end(); ++it)
-        updateActiveStyleSheets(*it, InitialFrontendLoad);
+    for (Vector<Document*>::iterator it = documents.begin(); it != documents.end(); ++it) {
+        Document* document = *it;
+        updateActiveStyleSheetsForDocument(document, InitialFrontendLoad);
+    }
 
     if (callback)
         callback->sendSuccess();
@@ -510,11 +512,7 @@ void InspectorCSSAgent::didCommitLoad(LocalFrame* frame, DocumentLoader* loader)
         return;
     }
 
-    for (DocumentStyleSheets::iterator it = m_documentToCSSStyleSheets.begin(); it != m_documentToCSSStyleSheets.end(); ++it) {
-        Document* document = it->key;
-        if (!document->frame() || document->frame() == frame)
-            documentDisposed(document);
-    }
+    updateActiveStyleSheets(frame, Vector<CSSStyleSheet*>(), ExistingFrontendRefresh);
 }
 
 void InspectorCSSAgent::mediaQueryResultChanged()
@@ -561,29 +559,32 @@ void InspectorCSSAgent::activeStyleSheetsUpdated(Document* document)
 {
     if (styleSheetEditInProgress())
         return;
-    updateActiveStyleSheets(document, ExistingFrontendRefresh);
+    updateActiveStyleSheetsForDocument(document, ExistingFrontendRefresh);
 }
 
-void InspectorCSSAgent::updateActiveStyleSheets(Document* document, StyleSheetsUpdateType styleSheetsUpdateType)
+void InspectorCSSAgent::updateActiveStyleSheetsForDocument(Document* document, StyleSheetsUpdateType styleSheetsUpdateType)
 {
+    LocalFrame* frame = document->frame();
+    if (!frame)
+        return;
     Vector<CSSStyleSheet*> newSheetsVector;
     collectAllDocumentStyleSheets(document, newSheetsVector);
-    setActiveStyleSheets(document, newSheetsVector, styleSheetsUpdateType);
+    updateActiveStyleSheets(frame, newSheetsVector, styleSheetsUpdateType);
 }
 
-void InspectorCSSAgent::setActiveStyleSheets(Document* document, const Vector<CSSStyleSheet*>& allSheetsVector, StyleSheetsUpdateType styleSheetsUpdateType)
+void InspectorCSSAgent::updateActiveStyleSheets(LocalFrame* frame, const Vector<CSSStyleSheet*>& allSheetsVector, StyleSheetsUpdateType styleSheetsUpdateType)
 {
     bool isInitialFrontendLoad = styleSheetsUpdateType == InitialFrontendLoad;
 
-    HashSet<CSSStyleSheet*>* documentCSSStyleSheets = m_documentToCSSStyleSheets.get(document);
-    if (!documentCSSStyleSheets) {
-        documentCSSStyleSheets = new HashSet<CSSStyleSheet*>();
-        OwnPtr<HashSet<CSSStyleSheet*> > documentCSSStyleSheetsPtr = adoptPtr(documentCSSStyleSheets);
-        m_documentToCSSStyleSheets.set(document, documentCSSStyleSheetsPtr.release());
+    HashSet<CSSStyleSheet*>* frameCSSStyleSheets = m_frameToCSSStyleSheets.get(frame);
+    if (!frameCSSStyleSheets) {
+        frameCSSStyleSheets = new HashSet<CSSStyleSheet*>();
+        OwnPtr<HashSet<CSSStyleSheet*> > frameCSSStyleSheetsPtr = adoptPtr(frameCSSStyleSheets);
+        m_frameToCSSStyleSheets.set(frame, frameCSSStyleSheetsPtr.release());
     }
 
     HashSet<CSSStyleSheet*> removedSheets;
-    for (HashSet<CSSStyleSheet*>::iterator it = documentCSSStyleSheets->begin(); it != documentCSSStyleSheets->end(); ++it)
+    for (HashSet<CSSStyleSheet*>::iterator it = frameCSSStyleSheets->begin(); it != frameCSSStyleSheets->end(); ++it)
         removedSheets.add(*it);
 
     HashSet<CSSStyleSheet*> addedSheets;
@@ -605,7 +606,7 @@ void InspectorCSSAgent::setActiveStyleSheets(Document* document, const Vector<CS
 
         if (m_idToInspectorStyleSheet.contains(inspectorStyleSheet->id())) {
             String id = unbindStyleSheet(inspectorStyleSheet.get());
-            documentCSSStyleSheets->remove(cssStyleSheet);
+            frameCSSStyleSheets->remove(cssStyleSheet);
             if (m_frontend && !isInitialFrontendLoad)
                 m_frontend->styleSheetRemoved(id);
         }
@@ -616,24 +617,19 @@ void InspectorCSSAgent::setActiveStyleSheets(Document* document, const Vector<CS
         bool isNew = isInitialFrontendLoad || !m_cssStyleSheetToInspectorStyleSheet.contains(cssStyleSheet);
         if (isNew) {
             InspectorStyleSheet* newStyleSheet = bindStyleSheet(cssStyleSheet);
-            documentCSSStyleSheets->add(cssStyleSheet);
+            frameCSSStyleSheets->add(cssStyleSheet);
             if (m_frontend)
                 m_frontend->styleSheetAdded(newStyleSheet->buildObjectForStyleSheetInfo());
         }
     }
 
-    if (documentCSSStyleSheets->isEmpty())
-        m_documentToCSSStyleSheets.remove(document);
-}
-
-void InspectorCSSAgent::documentDisposed(Document* document)
-{
-    setActiveStyleSheets(document, Vector<CSSStyleSheet*>(), ExistingFrontendRefresh);
+    if (frameCSSStyleSheets->isEmpty())
+        m_frameToCSSStyleSheets.remove(frame);
 }
 
 void InspectorCSSAgent::frameDetachedFromParent(LocalFrame* frame)
 {
-    documentDisposed(frame->document());
+    updateActiveStyleSheets(frame, Vector<CSSStyleSheet*>(), ExistingFrontendRefresh);
 }
 
 bool InspectorCSSAgent::forcePseudoState(Element* element, CSSSelector::PseudoType pseudoType)
