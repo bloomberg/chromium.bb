@@ -262,8 +262,8 @@ static void implementsStringAttributeAttributeGetterCallback(v8::Local<v8::Strin
 static void implementsStringAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, jsValue);
     ASSERT(imp);
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, jsValue);
     TestImplements::setImplementsStringAttribute(*imp, cppValue);
 }
 
@@ -297,8 +297,8 @@ static void implementsNodeAttributeAttributeSetter(v8::Local<v8::Value> jsValue,
         return;
     }
     TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
-    V8TRYCATCH_VOID(Node*, cppValue, V8Node::toNativeWithTypeCheck(info.GetIsolate(), jsValue));
     ASSERT(imp);
+    V8TRYCATCH_VOID(Node*, cppValue, V8Node::toNativeWithTypeCheck(info.GetIsolate(), jsValue));
     TestImplements::setImplementsNodeAttribute(*imp, WTF::getPtr(cppValue));
 }
 
@@ -312,7 +312,6 @@ static void implementsNodeAttributeAttributeSetterCallback(v8::Local<v8::String>
 static void implementsEventHandlerAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
-    ASSERT(imp);
     ASSERT(imp);
     EventListener* jsValue = TestImplements::implementsEventHandlerAttribute(*imp);
     v8SetReturnValue(info, jsValue ? v8::Handle<v8::Value>(V8AbstractEventListener::cast(jsValue)->getListenerObject(imp->executionContext())) : v8::Handle<v8::Value>(v8::Null(info.GetIsolate())));
@@ -330,7 +329,6 @@ static void implementsEventHandlerAttributeAttributeSetter(v8::Local<v8::Value> 
     TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
     ASSERT(imp);
     moveEventListenerToNewWrapper(info.Holder(), TestImplements::implementsEventHandlerAttribute(*imp), jsValue, V8TestInterfacePython::eventListenerCacheIndex, info.GetIsolate());
-    ASSERT(imp);
     TestImplements::setImplementsEventHandlerAttribute(*imp, V8EventListenerList::getEventListener(jsValue, true, ListenerFindOrCreate));
 }
 
@@ -364,8 +362,8 @@ static void implementsRuntimeEnabledNodeAttributeAttributeSetter(v8::Local<v8::V
         return;
     }
     TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
-    V8TRYCATCH_VOID(Node*, cppValue, V8Node::toNativeWithTypeCheck(info.GetIsolate(), jsValue));
     ASSERT(imp);
+    V8TRYCATCH_VOID(Node*, cppValue, V8Node::toNativeWithTypeCheck(info.GetIsolate(), jsValue));
     TestImplements::setImplementsRuntimeEnabledNodeAttribute(*imp, WTF::getPtr(cppValue));
 }
 
@@ -399,8 +397,8 @@ static void implementsPerContextEnabledNodeAttributeAttributeSetter(v8::Local<v8
         return;
     }
     TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
-    V8TRYCATCH_VOID(Node*, cppValue, V8Node::toNativeWithTypeCheck(info.GetIsolate(), jsValue));
     ASSERT(imp);
+    V8TRYCATCH_VOID(Node*, cppValue, V8Node::toNativeWithTypeCheck(info.GetIsolate(), jsValue));
     TestImplements::setImplementsPerContextEnabledNodeAttribute(*imp, WTF::getPtr(cppValue));
 }
 
@@ -453,8 +451,8 @@ static void implements2StringAttributeAttributeGetterCallback(v8::Local<v8::Stri
 static void implements2StringAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, jsValue);
     ASSERT(imp);
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, jsValue);
     TestImplements2Implementation::setImplements2StringAttribute(*imp, cppValue);
 }
 
@@ -488,8 +486,8 @@ static void partialLongAttributeAttributeSetter(v8::Local<v8::Value> jsValue, co
 {
     ExceptionState exceptionState(ExceptionState::SetterContext, "partialLongAttribute", "TestInterfacePython", info.Holder(), info.GetIsolate());
     TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
-    V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     ASSERT(imp);
+    V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     TestPartialInterfacePython::setPartialLongAttribute(*imp, cppValue);
 }
 #endif // ENABLE(PARTIAL_CONDITION)
@@ -561,8 +559,8 @@ static void partialCallWithExecutionContextLongAttributeAttributeSetter(v8::Loca
 {
     ExceptionState exceptionState(ExceptionState::SetterContext, "partialCallWithExecutionContextLongAttribute", "TestInterfacePython", info.Holder(), info.GetIsolate());
     TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
-    V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     ASSERT(imp);
+    V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     ExecutionContext* scriptContext = currentExecutionContext(info.GetIsolate());
     TestPartialInterfacePython::setPartialCallWithExecutionContextLongAttribute(scriptContext, *imp, cppValue);
 }
@@ -595,8 +593,8 @@ static void partial2LongAttributeAttributeSetter(v8::Local<v8::Value> jsValue, c
 {
     ExceptionState exceptionState(ExceptionState::SetterContext, "partial2LongAttribute", "TestInterfacePython", info.Holder(), info.GetIsolate());
     TestInterfacePythonImplementation* imp = V8TestInterfacePython::toNative(info.Holder());
-    V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     ASSERT(imp);
+    V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     TestPartialInterfacePythonImplementation::setPartial2LongAttribute(*imp, cppValue);
 }
 
