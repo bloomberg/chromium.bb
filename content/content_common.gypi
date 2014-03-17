@@ -329,6 +329,9 @@
     'common/message_router.cc',
     'common/message_router.h',
     'common/mime_registry_messages.h',
+    'common/mojo/mojo_channel_init.cc',
+    'common/mojo/mojo_channel_init.h',
+    'common/mojo/mojo_messages.h',
     'common/navigation_gesture.h',
     'common/net/url_fetcher.cc',
     'common/net/url_request_user_data.cc',
@@ -482,6 +485,28 @@
         '../webkit/storage_browser.gyp:webkit_storage_browser',
         '../webkit/storage_common.gyp:webkit_storage_common',
         'content.gyp:webkit_version',
+      ],
+    }],
+    # Work around for bug in linker used on ia32 machines (gold is not used on
+    # ia32 machines). See bug 353273.
+    ['OS=="linux" and target_arch=="ia32" and component=="static_library"', {
+      'link_settings': {
+        'libraries': [
+          '<(PRODUCT_DIR)/lib/libmojo_system.so',
+        ],
+      },
+    }],
+    # TODO(sky): conditional temporary until mojo is sorted out on mac.
+    ['OS=="mac" or OS=="ios"', {
+      'sources!': [
+        'common/mojo/mojo_channel_init.cc',
+        'common/mojo/mojo_channel_init.h',
+      ],
+    }, {
+      'dependencies': [
+        '../mojo/mojo.gyp:mojo_environment_chromium',
+        '../mojo/mojo.gyp:mojo_system',
+        '../mojo/mojo.gyp:mojo_system_impl',
       ],
     }],
     ['OS=="mac"', {

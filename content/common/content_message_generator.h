@@ -40,6 +40,7 @@
 #include "content/common/memory_benchmark_messages.h"
 #include "content/common/message_port_messages.h"
 #include "content/common/mime_registry_messages.h"
+#include "content/common/mojo/mojo_messages.h"
 #include "content/common/p2p_messages.h"
 #include "content/common/pepper_messages.h"
 #include "content/common/plugin_process_messages.h"

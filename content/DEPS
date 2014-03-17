@@ -35,7 +35,9 @@ include_rules = [
 
   "+dbus",
   "+gpu",
-  "+mojo",
+  "+mojo/public",
+  "+mojo/bindings/js",
+  "+mojo/system/embedder",
   "+net",
   "+ppapi",
   "+printing",
