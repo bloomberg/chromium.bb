@@ -991,25 +991,11 @@ namespace WTF {
     template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
     void HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::swap(HashTable& other)
     {
-        ValueType* tmpTable = m_table;
-        m_table = other.m_table;
-        other.m_table = tmpTable;
-
-        size_t tmpTableSize = m_tableSize;
-        m_tableSize = other.m_tableSize;
-        other.m_tableSize = tmpTableSize;
-
-        size_t tmpTableSizeMask = m_tableSizeMask;
-        m_tableSizeMask = other.m_tableSizeMask;
-        other.m_tableSizeMask = tmpTableSizeMask;
-
-        size_t tmpKeyCount = m_keyCount;
-        m_keyCount = other.m_keyCount;
-        other.m_keyCount = tmpKeyCount;
-
-        size_t tmpDeletedCount = m_deletedCount;
-        m_deletedCount = other.m_deletedCount;
-        other.m_deletedCount = tmpDeletedCount;
+        std::swap(m_table, other.m_table);
+        std::swap(m_tableSize, other.m_tableSize);
+        std::swap(m_tableSizeMask, other.m_tableSizeMask);
+        std::swap(m_keyCount, other.m_keyCount);
+        std::swap(m_deletedCount, other.m_deletedCount);
 
 #if DUMP_HASHTABLE_STATS_PER_TABLE
         m_stats.swap(other.m_stats);
