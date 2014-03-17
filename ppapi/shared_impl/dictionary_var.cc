@@ -90,7 +90,7 @@ PP_Var DictionaryVar::GetKeys() const {
 
 bool DictionaryVar::SetWithStringKey(const std::string& utf8_key,
                                      const PP_Var& value) {
-  if (!IsStringUTF8(utf8_key))
+  if (!base::IsStringUTF8(utf8_key))
     return false;
 
   key_value_map_[utf8_key] = value;

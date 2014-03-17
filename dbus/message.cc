@@ -507,7 +507,7 @@ void MessageWriter::AppendDouble(double value) {
 
 void MessageWriter::AppendString(const std::string& value) {
   // D-Bus Specification (0.19) says a string "must be valid UTF-8".
-  CHECK(IsStringUTF8(value));
+  CHECK(base::IsStringUTF8(value));
   const char* pointer = value.c_str();
   AppendBasic(DBUS_TYPE_STRING, &pointer);
   // TODO(satorux): It may make sense to return an error here, as the

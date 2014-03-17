@@ -529,7 +529,7 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
 
   scoped_ptr<LevelDBComparator> comparator(new Comparator());
 
-  if (!IsStringASCII(path_base.AsUTF8Unsafe())) {
+  if (!base::IsStringASCII(path_base.AsUTF8Unsafe())) {
     HistogramOpenStatus(INDEXED_DB_BACKING_STORE_OPEN_ATTEMPT_NON_ASCII,
                         origin_url);
   }

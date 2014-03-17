@@ -405,7 +405,7 @@ RendererWebKitPlatformSupportImpl::MimeRegistry::supportsMediaMIMEType(
     // Check whether the key system is supported with the mime_type and codecs.
 
     // Chromium only supports ASCII parameters.
-    if (!IsStringASCII(key_system))
+    if (!base::IsStringASCII(key_system))
       return IsNotSupported;
 
     std::string key_system_ascii =
@@ -467,8 +467,8 @@ RendererWebKitPlatformSupportImpl::MimeRegistry::supportsEncryptedMediaMIMEType(
     const WebString& mime_type,
     const WebString& codecs) {
   // Chromium only supports ASCII parameters.
-  if (!IsStringASCII(key_system) || !IsStringASCII(mime_type) ||
-      !IsStringASCII(codecs)) {
+  if (!base::IsStringASCII(key_system) || !base::IsStringASCII(mime_type) ||
+      !base::IsStringASCII(codecs)) {
     return false;
   }
 

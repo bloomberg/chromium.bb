@@ -207,7 +207,7 @@ class Writer : public base::RefCountedThreadSafe<Writer> {
   // Writes out the text string (as UTF8). The text is escaped based on
   // type.
   bool Write(const std::string& text, TextType type) {
-    DCHECK(IsStringUTF8(text));
+    DCHECK(base::IsStringUTF8(text));
     std::string utf8_string;
 
     switch (type) {

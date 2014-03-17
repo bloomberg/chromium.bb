@@ -159,10 +159,10 @@ TEST(URLMatcherConditionFactoryTest, GURLCharacterSet) {
   // non ASCII-7 characters. We test this here, because a change to this
   // guarantee breaks this implementation horribly.
   GURL url("http://www.föö.com/föö?föö#föö");
-  EXPECT_TRUE(IsStringASCII(url.host()));
-  EXPECT_TRUE(IsStringASCII(url.path()));
-  EXPECT_TRUE(IsStringASCII(url.query()));
-  EXPECT_FALSE(IsStringASCII(url.ref()));
+  EXPECT_TRUE(base::IsStringASCII(url.host()));
+  EXPECT_TRUE(base::IsStringASCII(url.path()));
+  EXPECT_TRUE(base::IsStringASCII(url.query()));
+  EXPECT_FALSE(base::IsStringASCII(url.ref()));
 }
 
 TEST(URLMatcherConditionFactoryTest, Criteria) {

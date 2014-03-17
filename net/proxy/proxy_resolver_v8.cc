@@ -110,7 +110,7 @@ class V8ExternalASCIILiteral : public v8::String::ExternalAsciiStringResource {
   // throughout this object's lifetime.
   V8ExternalASCIILiteral(const char* ascii, size_t length)
       : ascii_(ascii), length_(length) {
-    DCHECK(IsStringASCII(ascii));
+    DCHECK(base::IsStringASCII(ascii));
   }
 
   virtual const char* data() const OVERRIDE {
@@ -157,7 +157,7 @@ base::string16 V8StringToUTF16(v8::Handle<v8::String> s) {
 // Converts an ASCII std::string to a V8 string.
 v8::Local<v8::String> ASCIIStringToV8String(v8::Isolate* isolate,
                                             const std::string& s) {
-  DCHECK(IsStringASCII(s));
+  DCHECK(base::IsStringASCII(s));
   return v8::String::NewFromUtf8(isolate, s.data(), v8::String::kNormalString,
                                  s.size());
 }
@@ -180,7 +180,7 @@ v8::Local<v8::String> ScriptDataToV8String(
 // Converts an ASCII string literal to a V8 string.
 v8::Local<v8::String> ASCIILiteralToV8String(v8::Isolate* isolate,
                                              const char* ascii) {
-  DCHECK(IsStringASCII(ascii));
+  DCHECK(base::IsStringASCII(ascii));
   size_t length = strlen(ascii);
   if (length <= kMaxStringBytesForCopy)
     return v8::String::NewFromUtf8(isolate, ascii, v8::String::kNormalString,
@@ -216,7 +216,7 @@ bool GetHostnameArgument(const v8::FunctionCallbackInfo<v8::Value>& args,
   const base::string16 hostname_utf16 = V8StringToUTF16(args[0]->ToString());
 
   // If the hostname is already in ASCII, simply return it as is.
-  if (IsStringASCII(hostname_utf16)) {
+  if (base::IsStringASCII(hostname_utf16)) {
     *hostname = base::UTF16ToASCII(hostname_utf16);
     return true;
   }
@@ -237,7 +237,7 @@ bool GetHostnameArgument(const v8::FunctionCallbackInfo<v8::Value>& args,
                              punycode_output.length(),
                              hostname);
   DCHECK(success);
-  DCHECK(IsStringASCII(*hostname));
+  DCHECK(base::IsStringASCII(*hostname));
   return success;
 }
 
@@ -398,7 +398,7 @@ class ProxyResolverV8::Context {
 
     base::string16 ret_str = V8StringToUTF16(ret->ToString());
 
-    if (!IsStringASCII(ret_str)) {
+    if (!base::IsStringASCII(ret_str)) {
       // TODO(eroman): Rather than failing when a wide string is returned, we
       //               could extend the parsing to handle IDNA hostnames by
       //               converting them to ASCII punycode.
@@ -660,7 +660,7 @@ class ProxyResolverV8::Context {
     }
 
     std::string ip_address_list = V8StringToUTF8(args[0]->ToString());
-    if (!IsStringASCII(ip_address_list)) {
+    if (!base::IsStringASCII(ip_address_list)) {
       args.GetReturnValue().SetNull();
       return;
     }
@@ -685,12 +685,12 @@ class ProxyResolverV8::Context {
     }
 
     std::string ip_address = V8StringToUTF8(args[0]->ToString());
-    if (!IsStringASCII(ip_address)) {
+    if (!base::IsStringASCII(ip_address)) {
       args.GetReturnValue().Set(false);
       return;
     }
     std::string ip_prefix = V8StringToUTF8(args[1]->ToString());
-    if (!IsStringASCII(ip_prefix)) {
+    if (!base::IsStringASCII(ip_prefix)) {
       args.GetReturnValue().Set(false);
       return;
     }

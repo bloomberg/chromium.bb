@@ -464,7 +464,7 @@ void BookmarkCodec::UpdateChecksum(const base::string16& str) {
 void BookmarkCodec::UpdateChecksumWithUrlNode(const std::string& id,
                                               const base::string16& title,
                                               const std::string& url) {
-  DCHECK(IsStringUTF8(url));
+  DCHECK(base::IsStringUTF8(url));
   UpdateChecksum(id);
   UpdateChecksum(title);
   UpdateChecksum(kTypeURL);

@@ -158,7 +158,7 @@ LogDictionaryType* GetSystemLogs(base::FilePath* zip_file_name,
     base::TrimWhitespaceASCII(key, base::TRIM_ALL, &key);
     if (!key.empty()) {
       std::string value = ReadValue(&data);
-      if (IsStringUTF8(value)) {
+      if (base::IsStringUTF8(value)) {
         base::TrimWhitespaceASCII(value, base::TRIM_ALL, &value);
         if (value.empty())
           (*logs)[key] = kEmptyLogEntry;

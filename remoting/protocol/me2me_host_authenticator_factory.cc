@@ -137,7 +137,7 @@ scoped_ptr<Authenticator> Me2MeHostAuthenticatorFactory::CreateAuthenticator(
 
   // Verify that the client's jid is an ASCII string, and then check that the
   // client JID has the expected prefix. Comparison is case insensitive.
-  if (!IsStringASCII(remote_jid) ||
+  if (!base::IsStringASCII(remote_jid) ||
       !StartsWithASCII(remote_jid, remote_jid_prefix + '/', false)) {
     LOG(ERROR) << "Rejecting incoming connection from " << remote_jid;
     return scoped_ptr<Authenticator>(new RejectingAuthenticator());

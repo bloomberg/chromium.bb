@@ -661,7 +661,7 @@ void InstallerState::GetExistingExeVersions(
         FileVersionInfo::CreateFileVersionInfo(chrome_exe));
     if (file_version_info) {
       base::string16 version_string = file_version_info->file_version();
-      if (!version_string.empty() && IsStringASCII(version_string))
+      if (!version_string.empty() && base::IsStringASCII(version_string))
         existing_versions->insert(base::UTF16ToASCII(version_string));
     }
   }

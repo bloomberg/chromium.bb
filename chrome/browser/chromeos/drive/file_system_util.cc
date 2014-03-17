@@ -299,7 +299,7 @@ std::string UnescapeCacheFileName(const std::string& filename) {
 }
 
 std::string NormalizeFileName(const std::string& input) {
-  DCHECK(IsStringUTF8(input));
+  DCHECK(base::IsStringUTF8(input));
 
   std::string output;
   if (!base::ConvertToUtf8AndNormalize(input, base::kCodepageUTF8, &output))

@@ -324,7 +324,19 @@ bool ContainsOnlyChars(const StringPiece16& input,
   return input.find_first_not_of(characters) == StringPiece16::npos;
 }
 
-}  // namespace base
+bool IsStringUTF8(const StringPiece& str) {
+  const char *src = str.data();
+  int32 src_len = static_cast<int32>(str.length());
+  int32 char_index = 0;
+
+  while (char_index < src_len) {
+    int32 code_point;
+    CBU8_NEXT(src, char_index, src_len, code_point);
+    if (!IsValidCharacter(code_point))
+      return false;
+  }
+  return true;
+}
 
 template<class STR>
 static bool DoIsStringASCII(const STR& str) {
@@ -336,7 +348,7 @@ static bool DoIsStringASCII(const STR& str) {
   return true;
 }
 
-bool IsStringASCII(const base::StringPiece& str) {
+bool IsStringASCII(const StringPiece& str) {
   return DoIsStringASCII(str);
 }
 
@@ -344,19 +356,7 @@ bool IsStringASCII(const base::string16& str) {
   return DoIsStringASCII(str);
 }
 
-bool IsStringUTF8(const std::string& str) {
-  const char *src = str.data();
-  int32 src_len = static_cast<int32>(str.length());
-  int32 char_index = 0;
-
-  while (char_index < src_len) {
-    int32 code_point;
-    CBU8_NEXT(src, char_index, src_len, code_point);
-    if (!base::IsValidCharacter(code_point))
-      return false;
-  }
-  return true;
-}
+}  // namespace base
 
 template<typename Iter>
 static inline bool DoLowerCaseEqualsASCII(Iter a_begin,

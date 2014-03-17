@@ -152,7 +152,7 @@ bool ExtractPortFromPASVResponse(const net::FtpCtrlResponse& response,
     return false;
 
   std::string line(response.lines[0]);
-  if (!IsStringASCII(line))
+  if (!base::IsStringASCII(line))
     return false;
   if (line.length() < 2)
     return false;
@@ -830,7 +830,7 @@ int FtpNetworkTransaction::ProcessResponseSYST(
       // The response should be ASCII, which allows us to do case-insensitive
       // comparisons easily. If it is not ASCII, we leave the system type
       // as unknown.
-      if (IsStringASCII(line)) {
+      if (base::IsStringASCII(line)) {
         line = StringToLowerASCII(line);
 
         // Remove all whitespace, to correctly handle cases like fancy "V M S"

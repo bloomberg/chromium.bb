@@ -164,7 +164,7 @@ class URLRequestResourceBundleJob : public net::URLRequestSimpleJob {
     if (StartsWithASCII(*read_mime_type, "text/", false)) {
       // All of our HTML files should be UTF-8 and for other resource types
       // (like images), charset doesn't matter.
-      DCHECK(IsStringUTF8(*data));
+      DCHECK(base::IsStringUTF8(*data));
       *charset = "utf-8";
     }
     int result = read_result ? net::OK : net::ERR_INVALID_URL;

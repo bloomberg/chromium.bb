@@ -748,7 +748,8 @@ static void ReportMediaKeyExceptionToUMA(const std::string& method,
 // Convert a WebString to ASCII, falling back on an empty string in the case
 // of a non-ASCII string.
 static std::string ToASCIIOrEmpty(const blink::WebString& string) {
-  return IsStringASCII(string) ? base::UTF16ToASCII(string) : std::string();
+  return base::IsStringASCII(string) ? base::UTF16ToASCII(string)
+                                     : std::string();
 }
 
 WebMediaPlayer::MediaKeyException

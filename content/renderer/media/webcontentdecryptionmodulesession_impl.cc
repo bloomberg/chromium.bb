@@ -36,7 +36,7 @@ void WebContentDecryptionModuleSessionImpl::initializeNewSession(
     const uint8* init_data, size_t init_data_length) {
   // TODO(ddorwin): Guard against this in supported types check and remove this.
   // Chromium only supports ASCII MIME types.
-  if (!IsStringASCII(mime_type)) {
+  if (!base::IsStringASCII(mime_type)) {
     NOTREACHED();
     OnSessionError(media::MediaKeys::kUnknownError, 0);
     return;

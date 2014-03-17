@@ -802,7 +802,7 @@ std::string GetFileNameFromURL(const GURL& url,
 
   // The URL's path should be escaped UTF-8, but may not be.
   std::string decoded_filename = unescaped_url_filename;
-  if (!IsStringUTF8(decoded_filename)) {
+  if (!base::IsStringUTF8(decoded_filename)) {
     // TODO(jshin): this is probably not robust enough. To be sure, we need
     // encoding detection.
     base::string16 utf16_output;
