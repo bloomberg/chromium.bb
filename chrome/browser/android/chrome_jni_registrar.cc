@@ -13,6 +13,7 @@
 #include "chrome/browser/android/chromium_application.h"
 #include "chrome/browser/android/content_view_util.h"
 #include "chrome/browser/android/dev_tools_server.h"
+#include "chrome/browser/android/dom_distiller/feedback_reporter_android.h"
 #include "chrome/browser/android/favicon_helper.h"
 #include "chrome/browser/android/field_trial_helper.h"
 #include "chrome/browser/android/foreign_session_helper.h"
@@ -119,6 +120,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
       prerender::ExternalPrerenderHandlerAndroid::
       RegisterExternalPrerenderHandlerAndroid },
   { "FaviconHelper", FaviconHelper::RegisterFaviconHelper },
+  { "FeedbackReporter", dom_distiller::android::RegisterFeedbackReporter },
   { "FieldTrialHelper", RegisterFieldTrialHelper },
   { "ForeignSessionHelper",
     ForeignSessionHelper::RegisterForeignSessionHelper },

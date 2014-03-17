@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2014 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file.
+-->
+
+<org.chromium.chrome.browser.dom_distiller.FeedbackReportingView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/feedback_reporting_view"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="#656565">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:baselineAligned="false"
+            android:layout_width="match_parent"
+            android:layout_height="15dp"
+            android:orientation="horizontal">
+
+            <View
+                android:background="#4285F4"
+                android:layout_height="match_parent"
+                android:layout_width="0dp"
+                android:layout_weight="1" />
+
+            <View
+                android:background="#DB4437"
+                android:layout_height="match_parent"
+                android:layout_width="0dp"
+                android:layout_weight="1" />
+
+            <View
+                android:background="#F4B400"
+                android:layout_height="match_parent"
+                android:layout_width="0dp"
+                android:layout_weight="1" />
+
+            <View
+                android:background="#0F9D58"
+                android:layout_height="match_parent"
+                android:layout_width="0dp"
+                android:layout_weight="1" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:orientation="horizontal">
+
+            <ImageButton
+                android:id="@+id/distillation_quality_answer_no"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/distillation_quality_answer_no"
+                android:background="@null"
+                android:src="@drawable/distillation_quality_answer_no" />
+
+            <TextView
+                android:id="@+id/distillation_quality_question"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:padding="10dp"
+                android:text="@string/distillation_quality_question"
+                android:textSize="20sp"
+                android:textColor="@android:color/white"
+                android:textStyle="bold"
+                android:fontFamily="sans-serif" />
+
+            <ImageButton
+                android:id="@+id/distillation_quality_answer_yes"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/distillation_quality_answer_yes"
+                android:background="@null"
+                android:src="@drawable/distillation_quality_answer_yes" />
+
+        </LinearLayout>
+    </LinearLayout>
+
+</org.chromium.chrome.browser.dom_distiller.FeedbackReportingView>

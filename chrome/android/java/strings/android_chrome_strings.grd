@@ -283,6 +283,17 @@ You are signing in with a managed account and giving its administrator control o
       <message name="IDS_APP_BANNER_OPEN" desc="Text that indicates that clicking on the button will launch an application.">
         Open
       </message>
+
+      <!-- DOM Distiller strings -->
+      <message name="IDS_DISTILLATION_QUALITY_QUESTION" desc="Question to ask the user about whether the text from a web page was extracted correctly.">
+        Was the text extracted correctly?
+      </message>
+      <message name="IDS_DISTILLATION_QUALITY_ANSWER_YES" desc="Text for the answering whether the text from a web page was extracted correctly and the answer is yes.">
+        Yes
+      </message>
+      <message name="IDS_DISTILLATION_QUALITY_ANSWER_NO" desc="Text for the answering whether the text from a web page was extracted correctly and the answer is no.">
+        No
+      </message>
     </messages>
   </release>
 </grit>

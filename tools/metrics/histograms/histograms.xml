@@ -3163,6 +3163,12 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="DomDistiller.DistillationQuality" enum="BooleanSuccess">
+  <summary>
+    Whether the perceived quality of the distillation of a web page was good.
+  </summary>
+</histogram>
+
 <histogram name="Download.AcceptRangesBytes.KBytes" units="KB">
   <summary>The length of downloads for serves that accept byte ranges.</summary>
 </histogram>

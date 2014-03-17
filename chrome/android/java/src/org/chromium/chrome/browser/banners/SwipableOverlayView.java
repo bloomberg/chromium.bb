@@ -387,7 +387,7 @@ public abstract class SwipableOverlayView extends FrameLayout {
     /**
      * Dismisses the View, animating it moving vertically off of the screen if needed.
      */
-    void dismiss() {
+    protected void dismiss() {
         if (getParent() == null) return;
 
         float translationY = mTotalHeight;

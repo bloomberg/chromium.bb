@@ -21,6 +21,7 @@ import org.chromium.chrome.browser.contextmenu.ContextMenuParams;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulatorWrapper;
 import org.chromium.chrome.browser.contextmenu.EmptyChromeContextMenuItemDelegate;
+import org.chromium.chrome.browser.dom_distiller.FeedbackReporter;
 import org.chromium.chrome.browser.infobar.AutoLoginProcessor;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -128,6 +129,7 @@ public class Tab implements NavigationClient {
     private WebContentsObserverAndroid mWebContentsObserver;
     private VoiceSearchTabHelper mVoiceSearchTabHelper;
     private TabChromeWebContentsDelegateAndroid mWebContentsDelegate;
+    private FeedbackReporter mFeedbackReporter;
 
     /**
      * A default {@link ChromeContextMenuItemDelegate} that supports some of the context menu
@@ -771,6 +773,10 @@ public class Tab implements NavigationClient {
 
         if (AppBannerManager.isEnabled() && mAppBannerManager == null) {
             mAppBannerManager = new AppBannerManager(this);
+        }
+
+        if (FeedbackReporter.isEnabled() && mFeedbackReporter == null) {
+            mFeedbackReporter = new FeedbackReporter(this);
         }
 
         for (TabObserver observer : mObservers) observer.onContentChanged(this);
