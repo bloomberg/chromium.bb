@@ -637,7 +637,7 @@ void PasswordAutofillAgent::OnFillPasswordForm(
 
     FormData form;
     FormFieldData field;
-    FindFormAndFieldForInputElement(
+    FindFormAndFieldForFormControlElement(
         username_element, &form, &field, REQUIRE_NONE);
     Send(new AutofillHostMsg_AddPasswordFormMapping(
         routing_id(),
@@ -699,7 +699,7 @@ bool PasswordAutofillAgent::ShowSuggestionPopup(
 
   FormData form;
   FormFieldData field;
-  FindFormAndFieldForInputElement(
+  FindFormAndFieldForFormControlElement(
       user_input, &form, &field, REQUIRE_NONE);
 
   blink::WebInputElement selected_element = user_input;
