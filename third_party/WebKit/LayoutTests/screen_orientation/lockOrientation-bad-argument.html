@@ -9,7 +9,7 @@ window.jsTestIsAsync = true;
 function onOrientationChangeEvent(ev) {
     testFailed("Unexpected 'orientationchange' event");
 }
- 
+
 function completeTest() {
     shouldBeEqualToString("screen.orientation", "portrait-primary");
     screen.unlockOrientation();
@@ -28,6 +28,8 @@ shouldBeEqualToString("screen.orientation", "portrait-primary");
 shouldBeFalse("screen.lockOrientation(123)");
 shouldBeEqualToString("screen.orientation", "portrait-primary");
 shouldBeFalse("screen.lockOrientation(window)");
+shouldBeEqualToString("screen.orientation", "portrait-primary");
+shouldBeFalse("screen.lockOrientation(['portrait-primary', 'landscape-primary'])");
 shouldBeEqualToString("screen.orientation", "portrait-primary");
 shouldThrow("screen.lockOrientation()", '"TypeError: Failed to execute \'lockOrientation\' on \'Screen\': 1 argument required, but only 0 present."');
 

@@ -11,7 +11,6 @@
 #include "platform/Supplementable.h"
 #include "platform/Timer.h"
 #include "public/platform/WebScreenOrientation.h"
-#include "wtf/Vector.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/WTFString.h"
 
@@ -29,7 +28,6 @@ public:
     DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(orientationchange);
 
     static const AtomicString& orientation(Screen&);
-    static bool lockOrientation(Screen&, const Vector<String>& orientations);
     static bool lockOrientation(Screen&, const AtomicString& orientation);
     static void unlockOrientation(Screen&);
 

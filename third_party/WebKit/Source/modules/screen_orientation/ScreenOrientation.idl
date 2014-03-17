@@ -7,7 +7,6 @@
 ] partial interface Screen {
     readonly attribute DOMString orientation;
 
-    boolean lockOrientation(sequence<DOMString> orientations);
     boolean lockOrientation(DOMString orientation);
 
     void unlockOrientation();

@@ -14,6 +14,8 @@ PASS screen.lockOrientation(123) is false
 PASS screen.orientation is "portrait-primary"
 PASS screen.lockOrientation(window) is false
 PASS screen.orientation is "portrait-primary"
+PASS screen.lockOrientation(['portrait-primary', 'landscape-primary']) is false
+PASS screen.orientation is "portrait-primary"
 PASS screen.lockOrientation() threw exception TypeError: Failed to execute 'lockOrientation' on 'Screen': 1 argument required, but only 0 present..
 PASS screen.orientation is "portrait-primary"
 PASS successfullyParsed is true

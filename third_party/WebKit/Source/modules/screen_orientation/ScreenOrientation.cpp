@@ -130,21 +130,6 @@ const AtomicString& ScreenOrientation::orientation(Screen& screen)
     return orientationToString(controller.orientation());
 }
 
-bool ScreenOrientation::lockOrientation(Screen& screen, const Vector<String>& orientationsVector)
-{
-    blink::WebScreenOrientations orientations = 0;
-    for (size_t i = 0; i < orientationsVector.size(); ++i) {
-        blink::WebScreenOrientations currentOrientation = stringToOrientations(AtomicString(orientationsVector[i]));
-        if (!currentOrientation)
-            return false;
-        orientations |= currentOrientation;
-    }
-    if (!orientations)
-        return false;
-    ScreenOrientation::from(screen).lockOrientationAsync(orientations);
-    return true;
-}
-
 bool ScreenOrientation::lockOrientation(Screen& screen, const AtomicString& orientationString)
 {
     blink::WebScreenOrientations orientations = stringToOrientations(orientationString);
