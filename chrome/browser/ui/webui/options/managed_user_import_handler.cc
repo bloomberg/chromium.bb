@@ -90,6 +90,8 @@ void ManagedUserImportHandler::InitializeHandler() {
         ManagedUserSyncServiceFactory::GetForProfile(profile);
     if (sync_service) {
       sync_service->AddObserver(this);
+      observer_.Add(ProfileOAuth2TokenServiceFactory::GetForProfile(profile)->
+                        signin_error_controller());
       ManagedUserSharedSettingsService* settings_service =
           ManagedUserSharedSettingsServiceFactory::GetForBrowserContext(
               profile);
@@ -99,11 +101,9 @@ void ManagedUserImportHandler::InitializeHandler() {
     } else {
       DCHECK(!ManagedUserSharedSettingsServiceFactory::GetForBrowserContext(
                  profile));
+      DCHECK(!ProfileOAuth2TokenServiceFactory::GetForProfile(profile));
     }
   }
-
-  observer_.Add(ProfileOAuth2TokenServiceFactory::GetForProfile(profile)->
-                    signin_error_controller());
 }
 
 void ManagedUserImportHandler::RegisterMessages() {
@@ -132,9 +132,11 @@ void ManagedUserImportHandler::RequestManagedUserImportUpdate(
     ManagedUserSyncService* managed_user_sync_service =
         ManagedUserSyncServiceFactory::GetForProfile(
             Profile::FromWebUI(web_ui()));
-    managed_user_sync_service->GetManagedUsersAsync(
-        base::Bind(&ManagedUserImportHandler::SendExistingManagedUsers,
-                   weak_ptr_factory_.GetWeakPtr()));
+    if (managed_user_sync_service) {
+      managed_user_sync_service->GetManagedUsersAsync(
+          base::Bind(&ManagedUserImportHandler::SendExistingManagedUsers,
+                     weak_ptr_factory_.GetWeakPtr()));
+    }
   }
 }
 
@@ -210,14 +212,18 @@ bool ManagedUserImportHandler::IsAccountConnected() const {
   Profile* profile = Profile::FromWebUI(web_ui());
   SigninManagerBase* signin_manager =
       SigninManagerFactory::GetForProfile(profile);
-  return !signin_manager->GetAuthenticatedUsername().empty();
+  return signin_manager && !signin_manager->GetAuthenticatedUsername().empty();
 }
 
 bool ManagedUserImportHandler::HasAuthError() const {
   Profile* profile = Profile::FromWebUI(web_ui());
+  ProfileOAuth2TokenService* token_service =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
+  if (!token_service)
+    return true;
+
   SigninErrorController* error_controller =
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile)->
-          signin_error_controller();
+      token_service->signin_error_controller();
 
   GoogleServiceAuthError::State state = error_controller->auth_error().state();
 
