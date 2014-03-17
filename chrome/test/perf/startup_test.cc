@@ -139,7 +139,7 @@ class StartupTest : public UIPerfTest {
         ReplaceStringPlaceholders(format_string, subst, NULL));
     EXPECT_TRUE(base::WriteFile(pref_path, prefs_string.c_str(),
                                 prefs_string.size()));
-    file_util::EvictFileFromSystemCache(pref_path);
+    base::EvictFileFromSystemCache(pref_path);
   }
 
   // Runs a test which loads |tab_count| tabs on startup, either as command line

@@ -19,12 +19,12 @@
 
 using base::MakeAbsoluteFilePath;
 
-namespace file_util {
+namespace base {
 
 namespace {
 
 // Deny |permission| on the file |path|.
-bool DenyFilePermission(const base::FilePath& path, mode_t permission) {
+bool DenyFilePermission(const FilePath& path, mode_t permission) {
   struct stat stat_buf;
   if (stat(path.value().c_str(), &stat_buf) != 0)
     return false;
@@ -37,7 +37,7 @@ bool DenyFilePermission(const base::FilePath& path, mode_t permission) {
 // Gets a blob indicating the permission information for |path|.
 // |length| is the length of the blob.  Zero on failure.
 // Returns the blob pointer, or NULL on failure.
-void* GetPermissionInfo(const base::FilePath& path, size_t* length) {
+void* GetPermissionInfo(const FilePath& path, size_t* length) {
   DCHECK(length);
   *length = 0;
 
@@ -57,8 +57,7 @@ void* GetPermissionInfo(const base::FilePath& path, size_t* length) {
 // |info| is the pointer to the blob.
 // |length| is the length of the blob.
 // Either |info| or |length| may be NULL/0, in which case nothing happens.
-bool RestorePermissionInfo(const base::FilePath& path,
-                           void* info, size_t length) {
+bool RestorePermissionInfo(const FilePath& path, void* info, size_t length) {
   if (!info || (length == 0))
     return false;
 
@@ -74,19 +73,27 @@ bool RestorePermissionInfo(const base::FilePath& path,
 
 }  // namespace
 
-bool DieFileDie(const base::FilePath& file, bool recurse) {
+bool DieFileDie(const FilePath& file, bool recurse) {
   // There is no need to workaround Windows problems on POSIX.
   // Just pass-through.
-  return base::DeleteFile(file, recurse);
+  return DeleteFile(file, recurse);
 }
 
 #if !defined(OS_LINUX) && !defined(OS_MACOSX)
-bool EvictFileFromSystemCache(const base::FilePath& file) {
+bool EvictFileFromSystemCache(const FilePath& file) {
   // There doesn't seem to be a POSIX way to cool the disk cache.
   NOTIMPLEMENTED();
   return false;
 }
 #endif
+
+}  // namespace base
+
+namespace file_util {
+
+using base::DenyFilePermission;
+using base::GetPermissionInfo;
+using base::RestorePermissionInfo;
 
 std::wstring FilePathAsWString(const base::FilePath& path) {
   return base::UTF8ToWide(path.value());

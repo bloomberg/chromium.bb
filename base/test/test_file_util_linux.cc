@@ -10,19 +10,19 @@
 #include <unistd.h>
 
 #include "base/files/file_path.h"
+#include "base/files/scoped_file.h"
 
-namespace file_util {
+namespace base {
 
-bool EvictFileFromSystemCache(const base::FilePath& file) {
-  int fd = open(file.value().c_str(), O_RDONLY);
-  if (fd < 0)
+bool EvictFileFromSystemCache(const FilePath& file) {
+  ScopedFD fd(open(file.value().c_str(), O_RDONLY));
+  if (!fd.is_valid())
     return false;
-  if (fdatasync(fd) != 0)
+  if (fdatasync(fd.get()) != 0)
     return false;
-  if (posix_fadvise(fd, 0, 0, POSIX_FADV_DONTNEED) != 0)
+  if (posix_fadvise(fd.get(), 0, 0, POSIX_FADV_DONTNEED) != 0)
     return false;
-  close(fd);
   return true;
 }
 
-}  // namespace file_util
+}  // namespace base

@@ -18,7 +18,7 @@
 
 void ClearCacheForFile(const base::FilePath& path) {
   VLOG(1) << "Clearing " << path.MaybeAsASCII();
-  file_util::EvictFileFromSystemCache(path);
+  base::EvictFileFromSystemCache(path);
 }
 
 int main(int argc, const char* argv[]) {

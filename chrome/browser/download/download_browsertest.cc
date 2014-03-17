@@ -665,8 +665,7 @@ class DownloadTest : public InProcessBrowserTest {
         VerifyFile(downloaded_file, original_file_contents, origin_file_size));
 
     // Delete the downloaded copy of the file.
-    bool downloaded_file_deleted =
-        file_util::DieFileDie(downloaded_file, false);
+    bool downloaded_file_deleted = base::DieFileDie(downloaded_file, false);
     EXPECT_TRUE(downloaded_file_deleted);
     return downloaded_file_deleted;
   }
@@ -781,7 +780,7 @@ class DownloadTest : public InProcessBrowserTest {
     EXPECT_TRUE(VerifyFile(download_path, expected_contents, file_size));
 
     // Delete the file we just downloaded.
-    EXPECT_TRUE(file_util::DieFileDie(download_path, true));
+    EXPECT_TRUE(base::DieFileDie(download_path, true));
     EXPECT_FALSE(base::PathExists(download_path));
 
     return true;
@@ -1147,8 +1146,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CheckInternetZone) {
   // as CheckDownload will delete the output file.
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
   base::FilePath downloaded_file(DestinationFile(browser(), file));
-  if (file_util::VolumeSupportsADS(downloaded_file))
-    EXPECT_TRUE(file_util::HasInternetZoneIdentifier(downloaded_file));
+  if (base::VolumeSupportsADS(downloaded_file))
+    EXPECT_TRUE(base::HasInternetZoneIdentifier(downloaded_file));
   CheckDownload(browser(), file, file);
   EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
 }
@@ -3035,9 +3034,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, MAYBE_DownloadTest_PercentComplete) {
 #else
   ASSERT_EQ(size + 1, downloaded_size);
 #endif
-  ASSERT_TRUE(file_util::DieFileDie(file_path, false));
-  ASSERT_TRUE(file_util::DieFileDie(download_items[0]->GetTargetFilePath(),
-                                    false));
+  ASSERT_TRUE(base::DieFileDie(file_path, false));
+  ASSERT_TRUE(base::DieFileDie(download_items[0]->GetTargetFilePath(), false));
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadTest_DenyDanger) {

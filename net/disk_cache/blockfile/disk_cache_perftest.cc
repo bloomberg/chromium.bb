@@ -183,15 +183,15 @@ TEST_F(DiskCacheTest, CacheBackendPerformance) {
   base::MessageLoop::current()->RunUntilIdle();
   cache.reset();
 
-  ASSERT_TRUE(file_util::EvictFileFromSystemCache(
+  ASSERT_TRUE(base::EvictFileFromSystemCache(
               cache_path_.AppendASCII("index")));
-  ASSERT_TRUE(file_util::EvictFileFromSystemCache(
+  ASSERT_TRUE(base::EvictFileFromSystemCache(
               cache_path_.AppendASCII("data_0")));
-  ASSERT_TRUE(file_util::EvictFileFromSystemCache(
+  ASSERT_TRUE(base::EvictFileFromSystemCache(
               cache_path_.AppendASCII("data_1")));
-  ASSERT_TRUE(file_util::EvictFileFromSystemCache(
+  ASSERT_TRUE(base::EvictFileFromSystemCache(
               cache_path_.AppendASCII("data_2")));
-  ASSERT_TRUE(file_util::EvictFileFromSystemCache(
+  ASSERT_TRUE(base::EvictFileFromSystemCache(
               cache_path_.AppendASCII("data_3")));
 
   rv = disk_cache::CreateCacheBackend(

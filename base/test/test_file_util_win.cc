@@ -17,7 +17,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/win/scoped_handle.h"
 
-namespace file_util {
+namespace base {
 
 static const ptrdiff_t kOneMB = 1024 * 1024;
 
@@ -29,7 +29,7 @@ struct PermissionInfo {
 };
 
 // Deny |permission| on the file |path|, for the current user.
-bool DenyFilePermission(const base::FilePath& path, DWORD permission) {
+bool DenyFilePermission(const FilePath& path, DWORD permission) {
   PACL old_dacl;
   PSECURITY_DESCRIPTOR security_descriptor;
   if (GetNamedSecurityInfo(const_cast<wchar_t*>(path.value().c_str()),
@@ -67,7 +67,7 @@ bool DenyFilePermission(const base::FilePath& path, DWORD permission) {
 // Gets a blob indicating the permission information for |path|.
 // |length| is the length of the blob.  Zero on failure.
 // Returns the blob pointer, or NULL on failure.
-void* GetPermissionInfo(const base::FilePath& path, size_t* length) {
+void* GetPermissionInfo(const FilePath& path, size_t* length) {
   DCHECK(length != NULL);
   *length = 0;
   PACL dacl = NULL;
@@ -93,8 +93,7 @@ void* GetPermissionInfo(const base::FilePath& path, size_t* length) {
 // |info| is the pointer to the blob.
 // |length| is the length of the blob.
 // Either |info| or |length| may be NULL/0, in which case nothing happens.
-bool RestorePermissionInfo(const base::FilePath& path,
-                           void* info, size_t length) {
+bool RestorePermissionInfo(const FilePath& path, void* info, size_t length) {
   if (!info || !length)
     return false;
 
@@ -113,27 +112,26 @@ bool RestorePermissionInfo(const base::FilePath& path,
 
 }  // namespace
 
-bool DieFileDie(const base::FilePath& file, bool recurse) {
+bool DieFileDie(const FilePath& file, bool recurse) {
   // It turns out that to not induce flakiness a long timeout is needed.
   const int kIterations = 25;
-  const base::TimeDelta kTimeout = base::TimeDelta::FromSeconds(10) /
-                                   kIterations;
+  const TimeDelta kTimeout = TimeDelta::FromSeconds(10) / kIterations;
 
-  if (!base::PathExists(file))
+  if (!PathExists(file))
     return true;
 
   // Sometimes Delete fails, so try a few more times. Divide the timeout
   // into short chunks, so that if a try succeeds, we won't delay the test
   // for too long.
   for (int i = 0; i < kIterations; ++i) {
-    if (base::DeleteFile(file, recurse))
+    if (DeleteFile(file, recurse))
       return true;
-    base::PlatformThread::Sleep(kTimeout);
+    PlatformThread::Sleep(kTimeout);
   }
   return false;
 }
 
-bool EvictFileFromSystemCache(const base::FilePath& file) {
+bool EvictFileFromSystemCache(const FilePath& file) {
   // Request exclusive access to the file and overwrite it with no buffering.
   base::win::ScopedHandle file_handle(
       CreateFile(file.value().c_str(), GENERIC_READ | GENERIC_WRITE, 0, NULL,
@@ -218,7 +216,7 @@ bool EvictFileFromSystemCache(const base::FilePath& file) {
 
 // Checks if the volume supports Alternate Data Streams. This is required for
 // the Zone Identifier implementation.
-bool VolumeSupportsADS(const base::FilePath& path) {
+bool VolumeSupportsADS(const FilePath& path) {
   wchar_t drive[MAX_PATH] = {0};
   wcscpy_s(drive, MAX_PATH, path.value().c_str());
 
@@ -238,15 +236,15 @@ bool VolumeSupportsADS(const base::FilePath& path) {
 // Return whether the ZoneIdentifier is correctly set to "Internet" (3)
 // Only returns a valid result when called from same process as the
 // one that (was supposed to have) set the zone identifier.
-bool HasInternetZoneIdentifier(const base::FilePath& full_path) {
-  base::FilePath zone_path(full_path.value() + L":Zone.Identifier");
+bool HasInternetZoneIdentifier(const FilePath& full_path) {
+  FilePath zone_path(full_path.value() + L":Zone.Identifier");
   std::string zone_path_contents;
-  if (!base::ReadFileToString(zone_path, &zone_path_contents))
+  if (!ReadFileToString(zone_path, &zone_path_contents))
     return false;
 
   std::vector<std::string> lines;
   // This call also trims whitespaces, including carriage-returns (\r).
-  base::SplitString(zone_path_contents, '\n', &lines);
+  SplitString(zone_path_contents, '\n', &lines);
 
   switch (lines.size()) {
     case 3:
@@ -260,6 +258,14 @@ bool HasInternetZoneIdentifier(const base::FilePath& full_path) {
       return false;
   }
 }
+
+}  // namespace base
+
+namespace file_util {
+
+using base::DenyFilePermission;
+using base::GetPermissionInfo;
+using base::RestorePermissionInfo;
 
 std::wstring FilePathAsWString(const base::FilePath& path) {
   return path.value();

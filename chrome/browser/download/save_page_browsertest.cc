@@ -738,8 +738,8 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, CleanFilenameFromPageTitle) {
 
   EXPECT_TRUE(base::PathExists(full_file_name));
 
-  EXPECT_TRUE(file_util::DieFileDie(full_file_name, false));
-  EXPECT_TRUE(file_util::DieFileDie(dir, true));
+  EXPECT_TRUE(base::DieFileDie(full_file_name, false));
+  EXPECT_TRUE(base::DieFileDie(dir, true));
 }
 #endif
 

@@ -99,7 +99,7 @@ void UpdateHistoryDates(const base::FilePath& user_data_dir) {
       yesterday_str.c_str());
   ASSERT_TRUE(db.Execute(query.c_str()));
   db.Close();
-  file_util::EvictFileFromSystemCache(history);
+  base::EvictFileFromSystemCache(history);
 }
 
 }  // namespace

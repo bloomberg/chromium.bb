@@ -11,16 +11,16 @@
 #include "base/file_util.h"
 #include "base/files/memory_mapped_file.h"
 
-namespace file_util {
+namespace base {
 
-bool EvictFileFromSystemCache(const base::FilePath& file) {
+bool EvictFileFromSystemCache(const FilePath& file) {
   // There aren't any really direct ways to purge a file from the UBC.  From
   // talking with Amit Singh, the safest is to mmap the file with MAP_FILE (the
   // default) + MAP_SHARED, then do an msync to invalidate the memory.  The next
   // open should then have to load the file from disk.
 
   int64 length;
-  if (!base::GetFileSize(file, &length)) {
+  if (!GetFileSize(file, &length)) {
     DLOG(ERROR) << "failed to get size of " << file.value();
     return false;
   }
@@ -32,7 +32,7 @@ bool EvictFileFromSystemCache(const base::FilePath& file) {
     return true;
   }
 
-  base::MemoryMappedFile mapped_file;
+  MemoryMappedFile mapped_file;
   if (!mapped_file.Initialize(file)) {
     DLOG(WARNING) << "failed to memory map " << file.value();
     return false;
@@ -48,4 +48,4 @@ bool EvictFileFromSystemCache(const base::FilePath& file) {
   return true;
 }
 
-}  // namespace file_util
+}  // namespace base

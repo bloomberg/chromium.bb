@@ -27,30 +27,30 @@ class FilePath;
 // rely on uncached files.
 bool EvictFileFromSystemCacheWithRetry(const FilePath& file);
 
-}  // namespace base
-
-// TODO(brettw) move all of this to the base namespace.
-namespace file_util {
-
 // Wrapper over base::Delete. On Windows repeatedly invokes Delete in case
 // of failure to workaround Windows file locking semantics. Returns true on
 // success.
-bool DieFileDie(const base::FilePath& file, bool recurse);
+bool DieFileDie(const FilePath& file, bool recurse);
 
 // Clear a specific file from the system cache. After this call, trying
 // to access this file will result in a cold load from the hard drive.
-bool EvictFileFromSystemCache(const base::FilePath& file);
+bool EvictFileFromSystemCache(const FilePath& file);
 
 #if defined(OS_WIN)
 // Returns true if the volume supports Alternate Data Streams.
-bool VolumeSupportsADS(const base::FilePath& path);
+bool VolumeSupportsADS(const FilePath& path);
 
 // Returns true if the ZoneIdentifier is correctly set to "Internet" (3).
 // Note that this function must be called from the same process as
 // the one that set the zone identifier.  I.e. don't use it in UI/automation
 // based tests.
-bool HasInternetZoneIdentifier(const base::FilePath& full_path);
+bool HasInternetZoneIdentifier(const FilePath& full_path);
 #endif  // defined(OS_WIN)
+
+}  // namespace base
+
+// TODO(brettw) move all of this to the base namespace.
+namespace file_util {
 
 // In general it's not reliable to convert a FilePath to a wstring and we use
 // string16 elsewhere for Unicode strings, but in tests it is frequently

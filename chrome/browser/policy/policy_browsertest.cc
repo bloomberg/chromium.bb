@@ -1449,7 +1449,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DownloadDirectory) {
   // Verify that downloads end up on the default directory.
   base::FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
   DownloadAndVerifyFile(browser(), initial_dir.path(), file);
-  file_util::DieFileDie(initial_dir.path().Append(file), false);
+  base::DieFileDie(initial_dir.path().Append(file), false);
 
   // Override the download directory with the policy and verify a download.
   base::ScopedTempDir forced_dir;
