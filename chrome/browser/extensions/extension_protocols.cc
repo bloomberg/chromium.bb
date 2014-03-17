@@ -364,7 +364,7 @@ bool ExtensionCanLoadInIncognito(const ResourceRequestInfo* info,
 // TODO(aa): This should be moved into ExtensionResourceRequestPolicy, but we
 // first need to find a way to get CanLoadInIncognito state into the renderers.
 bool AllowExtensionResourceLoad(net::URLRequest* request,
-                                bool is_incognito,
+                                Profile::ProfileType profile_type,
                                 const Extension* extension,
                                 extensions::InfoMap* extension_info_map) {
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
@@ -377,8 +377,9 @@ bool AllowExtensionResourceLoad(net::URLRequest* request,
     return true;
   }
 
-  if (is_incognito && !ExtensionCanLoadInIncognito(info, request->url().host(),
-                                                   extension_info_map)) {
+  if (profile_type == Profile::INCOGNITO_PROFILE &&
+      !ExtensionCanLoadInIncognito(info, request->url().host(),
+                                   extension_info_map)) {
     return false;
   }
 
@@ -486,9 +487,9 @@ bool URLIsForExtensionIcon(const GURL& url, const Extension* extension) {
 class ExtensionProtocolHandler
     : public net::URLRequestJobFactory::ProtocolHandler {
  public:
-  ExtensionProtocolHandler(bool is_incognito,
+  ExtensionProtocolHandler(Profile::ProfileType profile_type,
                            extensions::InfoMap* extension_info_map)
-      : is_incognito_(is_incognito), extension_info_map_(extension_info_map) {}
+      : profile_type_(profile_type), extension_info_map_(extension_info_map) {}
 
   virtual ~ExtensionProtocolHandler() {}
 
@@ -497,7 +498,7 @@ class ExtensionProtocolHandler
       net::NetworkDelegate* network_delegate) const OVERRIDE;
 
  private:
-  const bool is_incognito_;
+  const Profile::ProfileType profile_type_;
   extensions::InfoMap* const extension_info_map_;
   DISALLOW_COPY_AND_ASSIGN(ExtensionProtocolHandler);
 };
@@ -513,7 +514,7 @@ ExtensionProtocolHandler::MaybeCreateJob(
 
   // TODO(mpcomplete): better error code.
   if (!AllowExtensionResourceLoad(
-           request, is_incognito_, extension, extension_info_map_)) {
+          request, profile_type_, extension, extension_info_map_)) {
     return new net::URLRequestErrorJob(
         request, network_delegate, net::ERR_ADDRESS_UNREACHABLE);
   }
@@ -638,7 +639,7 @@ ExtensionProtocolHandler::MaybeCreateJob(
 }  // namespace
 
 net::URLRequestJobFactory::ProtocolHandler* CreateExtensionProtocolHandler(
-    bool is_incognito,
+    Profile::ProfileType profile_type,
     extensions::InfoMap* extension_info_map) {
-  return new ExtensionProtocolHandler(is_incognito, extension_info_map);
+  return new ExtensionProtocolHandler(profile_type, extension_info_map);
 }

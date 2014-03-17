@@ -72,7 +72,7 @@ EphemeralAppThrottle::MaybeCreateThrottleForLaunch(
     return NULL;
 
   // Not supported for incognito profiles.
-  if (profile_io_data->is_incognito())
+  if (profile_io_data->IsOffTheRecord())
     return NULL;
 
   // Only watch for links in Google search results.

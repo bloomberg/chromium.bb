@@ -723,6 +723,10 @@ std::string ProfileImpl::GetProfileName() {
   return GetPrefs()->GetString(prefs::kGoogleServicesUsername);
 }
 
+Profile::ProfileType ProfileImpl::GetProfileType() const {
+  return REGULAR_PROFILE;
+}
+
 base::FilePath ProfileImpl::GetPath() const {
   return path_;
 }

@@ -577,6 +577,14 @@ std::string TestingProfile::GetProfileName() {
   return profile_name_;
 }
 
+Profile::ProfileType TestingProfile::GetProfileType() const {
+  if (guest_session_)
+    return GUEST_PROFILE;
+  if (force_incognito_ || incognito_)
+    return INCOGNITO_PROFILE;
+  return REGULAR_PROFILE;
+}
+
 bool TestingProfile::IsOffTheRecord() const {
   return force_incognito_ || incognito_;
 }

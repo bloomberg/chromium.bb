@@ -92,7 +92,7 @@ AppUrlRedirector::MaybeCreateThrottleFor(net::URLRequest* request,
   // Never redirect URLs to apps in incognito. Technically, apps are not
   // supported in incognito, but that may change in future.
   // See crbug.com/240879, which tracks incognito support for v2 apps.
-  if (profile_io_data->is_incognito()) {
+  if (profile_io_data->IsOffTheRecord()) {
     DVLOG(1) << "Skip redirection: unsupported in incognito";
     return NULL;
   }

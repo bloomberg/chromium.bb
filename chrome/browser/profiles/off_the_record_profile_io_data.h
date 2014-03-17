@@ -100,7 +100,7 @@ class OffTheRecordProfileIOData : public ProfileIOData {
  private:
   friend class base::RefCountedThreadSafe<OffTheRecordProfileIOData>;
 
-  OffTheRecordProfileIOData();
+  explicit OffTheRecordProfileIOData(Profile::ProfileType profile_type);
   virtual ~OffTheRecordProfileIOData();
 
   virtual void InitializeInternal(

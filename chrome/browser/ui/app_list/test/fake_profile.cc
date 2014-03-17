@@ -17,6 +17,10 @@ std::string FakeProfile::GetProfileName() {
   return name_;
 }
 
+Profile::ProfileType FakeProfile::GetProfileType() const {
+  return REGULAR_PROFILE;
+}
+
 base::FilePath FakeProfile::GetPath() const {
   return path_;
 }

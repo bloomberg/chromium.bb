@@ -361,11 +361,12 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
   if (!request->is_pending()) {
     net::HttpRequestHeaders headers;
     headers.CopyFrom(request->extra_request_headers());
-    bool incognito = io_data->is_incognito();
+    bool is_off_the_record = io_data->IsOffTheRecord();
     chrome_variations::VariationsHttpHeaderProvider::GetInstance()->
         AppendHeaders(request->url(),
-                      incognito,
-                      !incognito && io_data->GetMetricsEnabledStateOnIOThread(),
+                      is_off_the_record,
+                      !is_off_the_record &&
+                          io_data->GetMetricsEnabledStateOnIOThread(),
                       &headers);
     request->SetExtraRequestHeaders(headers);
   }
@@ -542,7 +543,7 @@ bool ChromeResourceDispatcherHostDelegate::ShouldInterceptResourceAsStream(
 #if !defined(OS_ANDROID)
   ProfileIOData* io_data =
       ProfileIOData::FromResourceContext(resource_context);
-  bool profile_is_incognito = io_data->is_incognito();
+  bool profile_is_off_the_record = io_data->IsOffTheRecord();
   const scoped_refptr<const extensions::InfoMap> extension_info_map(
       io_data->GetExtensionInfoMap());
   std::vector<std::string> whitelist = MimeTypesHandler::GetMIMETypeWhitelist();
@@ -555,7 +556,7 @@ bool ChromeResourceDispatcherHostDelegate::ShouldInterceptResourceAsStream(
     // The white-listed extension may not be installed, so we have to NULL check
     // |extension|.
     if (!extension ||
-        (profile_is_incognito &&
+        (profile_is_off_the_record &&
          !extension_info_map->IsIncognitoEnabled(extension_id))) {
       continue;
     }

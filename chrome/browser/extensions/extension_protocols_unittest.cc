@@ -106,12 +106,13 @@ class ExtensionProtocolTest : public testing::Test {
     request_context->set_job_factory(old_factory_);
   }
 
-  void SetProtocolHandler(bool incognito) {
+  void SetProtocolHandler(Profile::ProfileType profile_type) {
     net::URLRequestContext* request_context =
         resource_context_.GetRequestContext();
     job_factory_.SetProtocolHandler(
         kExtensionScheme,
-        CreateExtensionProtocolHandler(incognito, extension_info_map_.get()));
+        CreateExtensionProtocolHandler(profile_type,
+                                       extension_info_map_.get()));
     request_context->set_job_factory(&job_factory_);
   }
 
@@ -144,7 +145,7 @@ class ExtensionProtocolTest : public testing::Test {
 // extension).
 TEST_F(ExtensionProtocolTest, IncognitoRequest) {
   // Register an incognito extension protocol handler.
-  SetProtocolHandler(true);
+  SetProtocolHandler(Profile::INCOGNITO_PROFILE);
 
   struct TestCase {
     // Inputs.
@@ -223,7 +224,7 @@ void CheckForContentLengthHeader(net::URLRequest* request) {
 // the extension is enabled and when it is disabled.
 TEST_F(ExtensionProtocolTest, ComponentResourceRequest) {
   // Register a non-incognito extension protocol handler.
-  SetProtocolHandler(false);
+  SetProtocolHandler(Profile::REGULAR_PROFILE);
 
   scoped_refptr<Extension> extension = CreateWebStoreExtension();
   extension_info_map_->AddExtension(extension.get(),
@@ -260,7 +261,7 @@ TEST_F(ExtensionProtocolTest, ComponentResourceRequest) {
 // expected response headers.
 TEST_F(ExtensionProtocolTest, ResourceRequestResponseHeaders) {
   // Register a non-incognito extension protocol handler.
-  SetProtocolHandler(false);
+  SetProtocolHandler(Profile::REGULAR_PROFILE);
 
   scoped_refptr<Extension> extension = CreateTestResponseHeaderExtension();
   extension_info_map_->AddExtension(extension.get(),
@@ -298,7 +299,7 @@ TEST_F(ExtensionProtocolTest, ResourceRequestResponseHeaders) {
 // succeeds, but subresources fail. See http://crbug.com/312269.
 TEST_F(ExtensionProtocolTest, AllowFrameRequests) {
   // Register a non-incognito extension protocol handler.
-  SetProtocolHandler(false);
+  SetProtocolHandler(Profile::REGULAR_PROFILE);
 
   scoped_refptr<Extension> extension = CreateTestExtension("foo", false);
   extension_info_map_->AddExtension(extension.get(),

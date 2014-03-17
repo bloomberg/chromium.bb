@@ -69,7 +69,7 @@ net::URLRequestContextGetter* ShellContentBrowserClient::CreateRequestContext(
       browser_main_parts_->extension_system()->info_map();
   (*protocol_handlers)[extensions::kExtensionScheme] =
       linked_ptr<net::URLRequestJobFactory::ProtocolHandler>(
-          CreateExtensionProtocolHandler(false /*is_incognito*/,
+          CreateExtensionProtocolHandler(Profile::REGULAR_PROFILE,
                                          extension_info_map));
   (*protocol_handlers)[extensions::kExtensionResourceScheme] =
       linked_ptr<net::URLRequestJobFactory::ProtocolHandler>(

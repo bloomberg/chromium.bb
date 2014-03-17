@@ -41,7 +41,7 @@
 using content::BrowserThread;
 
 OffTheRecordProfileIOData::Handle::Handle(Profile* profile)
-    : io_data_(new OffTheRecordProfileIOData),
+    : io_data_(new OffTheRecordProfileIOData(profile->GetProfileType())),
       profile_(profile),
       initialized_(false) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -159,8 +159,10 @@ void OffTheRecordProfileIOData::Handle::LazyInitialize() const {
   io_data_->InitializeOnUIThread(profile_);
 }
 
-OffTheRecordProfileIOData::OffTheRecordProfileIOData()
-    : ProfileIOData(true) {}
+OffTheRecordProfileIOData::OffTheRecordProfileIOData(
+    Profile::ProfileType profile_type)
+    : ProfileIOData(profile_type) {}
+
 OffTheRecordProfileIOData::~OffTheRecordProfileIOData() {
   DestroyResourceContext();
 }

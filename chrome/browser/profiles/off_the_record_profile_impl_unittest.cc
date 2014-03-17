@@ -148,6 +148,7 @@ TEST_F(OffTheRecordProfileImplTest, GetHostZoomMap) {
   // Prepare child profile as off the record profile.
   scoped_ptr<OffTheRecordProfileImpl> child_profile(
       new OffTheRecordProfileImpl(parent_profile.get()));
+  child_profile->InitIoData();
   child_profile->InitHostZoomMap();
 
   BrowserContextDependencyManager::GetInstance()->

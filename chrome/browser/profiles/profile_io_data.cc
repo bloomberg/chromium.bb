@@ -385,7 +385,7 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
 
   // These members are used only for one click sign in, which is not enabled
   // in incognito mode.  So no need to initialize them.
-  if (!is_incognito()) {
+  if (!IsOffTheRecord()) {
     signin_names_.reset(new SigninNamesOnIOThread());
 
     google_services_user_account_id_.Init(
@@ -419,7 +419,7 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
                             local_state_pref_service);
   quick_check_enabled_.MoveToThread(io_message_loop_proxy);
 
-  media_device_id_salt_ = new MediaDeviceIDSalt(pref_service, is_incognito());
+  media_device_id_salt_ = new MediaDeviceIDSalt(pref_service, IsOffTheRecord());
 
   network_prediction_enabled_.Init(prefs::kNetworkPredictionEnabled,
                                    pref_service);
@@ -447,7 +447,7 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
                                       callback,
                                       policy::OverrideBlacklistForURL));
 
-  if (!is_incognito()) {
+  if (!IsOffTheRecord()) {
     // Add policy headers for non-incognito requests.
     policy::PolicyHeaderService* policy_header_service =
         policy::PolicyHeaderServiceFactory::GetForBrowserContext(profile);
@@ -507,11 +507,11 @@ ProfileIOData::ProfileParams::ProfileParams()
 
 ProfileIOData::ProfileParams::~ProfileParams() {}
 
-ProfileIOData::ProfileIOData(bool is_incognito)
+ProfileIOData::ProfileIOData(Profile::ProfileType profile_type)
     : initialized_(false),
       resource_context_(new ResourceContext(this)),
       initialized_on_UI_thread_(false),
-      is_incognito_(is_incognito) {
+      profile_type_(profile_type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
@@ -737,6 +737,11 @@ ResourceContext::SaltCallback ProfileIOData::GetMediaDeviceIDSalt() const {
   return base::Bind(&MediaDeviceIDSalt::GetSalt, media_device_id_salt_);
 }
 
+bool ProfileIOData::IsOffTheRecord() const {
+  return profile_type() == Profile::INCOGNITO_PROFILE
+      || profile_type() == Profile::GUEST_PROFILE;
+}
+
 void ProfileIOData::InitializeMetricsEnabledStateOnUIThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 #if defined(OS_CHROMEOS)
@@ -960,7 +965,7 @@ void ProfileIOData::Init(
           transport_security_state_.get(),
           profile_params_->path,
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
-          is_incognito()));
+          IsOffTheRecord()));
 
   // Take ownership over these parameters.
   cookie_settings_ = profile_params_->cookie_settings;
@@ -1032,7 +1037,7 @@ scoped_ptr<net::URLRequestJobFactory> ProfileIOData::SetUpJobFactoryDefaults(
   DCHECK(extension_info_map_.get());
   set_protocol = job_factory->SetProtocolHandler(
       extensions::kExtensionScheme,
-      CreateExtensionProtocolHandler(is_incognito(),
+      CreateExtensionProtocolHandler(profile_type(),
                                      extension_info_map_.get()));
   DCHECK(set_protocol);
   set_protocol = job_factory->SetProtocolHandler(
@@ -1043,7 +1048,7 @@ scoped_ptr<net::URLRequestJobFactory> ProfileIOData::SetUpJobFactoryDefaults(
       content::kDataScheme, new net::DataProtocolHandler());
   DCHECK(set_protocol);
 #if defined(OS_CHROMEOS)
-  if (!is_incognito() && profile_params_) {
+  if (!IsOffTheRecord() && profile_params_) {
     set_protocol = job_factory->SetProtocolHandler(
         chrome::kDriveScheme,
         new drive::DriveProtocolHandler(profile_params_->profile));

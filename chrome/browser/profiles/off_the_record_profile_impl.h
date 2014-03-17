@@ -36,6 +36,7 @@ class OffTheRecordProfileImpl : public Profile {
 
   // Profile implementation.
   virtual std::string GetProfileName() OVERRIDE;
+  virtual ProfileType GetProfileType() const OVERRIDE;
   virtual Profile* GetOffTheRecordProfile() OVERRIDE;
   virtual void DestroyOffTheRecordProfile() OVERRIDE;
   virtual bool HasOffTheRecordProfile() OVERRIDE;
@@ -126,6 +127,7 @@ class OffTheRecordProfileImpl : public Profile {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(OffTheRecordProfileImplTest, GetHostZoomMap);
+  void InitIoData();
   void InitHostZoomMap();
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
@@ -141,7 +143,7 @@ class OffTheRecordProfileImpl : public Profile {
   // Weak pointer owned by |profile_|.
   PrefServiceSyncable* prefs_;
 
-  OffTheRecordProfileIOData::Handle io_data_;
+  scoped_ptr<OffTheRecordProfileIOData::Handle> io_data_;
 
   // We use a non-persistent content settings map for OTR.
   scoped_refptr<HostContentSettingsMap> host_content_settings_map_;

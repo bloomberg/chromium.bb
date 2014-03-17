@@ -223,7 +223,10 @@ class TestingProfile : public Profile {
   virtual quota::SpecialStoragePolicy* GetSpecialStoragePolicy() OVERRIDE;
 
   virtual TestingProfile* AsTestingProfile() OVERRIDE;
+
+  // Profile
   virtual std::string GetProfileName() OVERRIDE;
+  virtual ProfileType GetProfileType() const OVERRIDE;
 
   // DEPRECATED, because it's fragile to change a profile from non-incognito
   // to incognito after the ProfileKeyedServices have been created (some

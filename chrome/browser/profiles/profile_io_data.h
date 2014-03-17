@@ -18,6 +18,7 @@
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/storage_partition_descriptor.h"
 #include "chrome/common/content_settings_types.h"
 #include "content/public/browser/content_browser_client.h"
@@ -32,7 +33,6 @@ class CookieSettings;
 class HostContentSettingsMap;
 class ManagedModeURLFilter;
 class MediaDeviceIDSalt;
-class Profile;
 class ProtocolHandlerRegistry;
 class SigninNamesOnIOThread;
 
@@ -189,9 +189,11 @@ class ProfileIOData {
   }
 #endif
 
-  bool is_incognito() const {
-    return is_incognito_;
+  Profile::ProfileType profile_type() const {
+    return profile_type_;
   }
+
+  bool IsOffTheRecord() const;
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
   policy::PolicyHeaderIOHelper* policy_header_helper() const {
@@ -294,7 +296,7 @@ class ProfileIOData {
     void* profile;
   };
 
-  explicit ProfileIOData(bool is_incognito);
+  explicit ProfileIOData(Profile::ProfileType profile_type);
 
   static std::string GetSSLSessionCacheShard();
 
@@ -553,7 +555,7 @@ class ProfileIOData {
   // TODO(jhawkins): Remove once crbug.com/102004 is fixed.
   bool initialized_on_UI_thread_;
 
-  bool is_incognito_;
+  const Profile::ProfileType profile_type_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileIOData);
 };

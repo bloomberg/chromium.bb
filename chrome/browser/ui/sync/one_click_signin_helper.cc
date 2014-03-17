@@ -907,7 +907,7 @@ OneClickSigninHelper::Offer OneClickSigninHelper::CanOfferOnIOThreadImpl(
 
   // Check for incognito before other parts of the io_data, since those
   // members may not be initalized.
-  if (io_data->is_incognito())
+  if (io_data->IsOffTheRecord())
     return DONT_OFFER;
 
   if (!SigninManager::IsSigninAllowedOnIOThread(io_data))

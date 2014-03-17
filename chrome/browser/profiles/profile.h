@@ -130,6 +130,12 @@ class Profile : public content::BrowserContext {
     EXIT_CRASHED,
   };
 
+  enum ProfileType {
+    REGULAR_PROFILE,  // Login user's normal profile
+    INCOGNITO_PROFILE,  // Login user's off-the-record profile
+    GUEST_PROFILE,  // Guest session's profile
+  };
+
   class Delegate {
    public:
     virtual ~Delegate();
@@ -174,6 +180,9 @@ class Profile : public content::BrowserContext {
   // Returns the name associated with this profile. This name is displayed in
   // the browser frame.
   virtual std::string GetProfileName() = 0;
+
+  // Returns the profile type.
+  virtual ProfileType GetProfileType() const = 0;
 
   // Return the incognito version of this profile. The returned pointer
   // is owned by the receiving profile. If the receiving profile is off the

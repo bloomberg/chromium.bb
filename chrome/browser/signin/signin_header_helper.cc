@@ -68,10 +68,10 @@ void AppendMirrorRequestHeaderIfPossible(
     int route_id) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
-   if (io_data->is_incognito() ||
-       io_data->google_services_username()->GetValue().empty()) {
-     return;
-   }
+  if (io_data->IsOffTheRecord() ||
+      io_data->google_services_username()->GetValue().empty()) {
+    return;
+  }
 
   // Only set the header for Drive always, and other Google properties if
   // new-profile-management is enabled.
@@ -119,7 +119,7 @@ void ProcessMirrorResponseHeaderIfExists(
   if (gaia::IsGaiaSignonRealm(request->url().GetOrigin()) &&
       request->response_headers()->HasHeader(kChromeManageAccountsHeader)) {
     DCHECK(switches::IsNewProfileManagement() &&
-           !io_data->is_incognito());
+           !io_data->IsOffTheRecord());
     content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE,
         base::Bind(ShowAvatarBubbleUIThread, child_id, route_id));
