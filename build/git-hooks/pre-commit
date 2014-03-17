@@ -23,7 +23,8 @@ EOF
   exit 1
 fi
 
-if test "$(git diff-index --cached HEAD .gitmodules)"; then
+if [[ -n "$(git ls-files .gitmodules)" &&
+      -n "$(git diff-index --cached HEAD .gitmodules)" ]]; then
   cat <<EOF 1>&2
 You are trying to commit a change to .gitmodules.  That is not allowed.
 To make changes to submodule names/paths, edit DEPS.
