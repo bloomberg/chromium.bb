@@ -473,14 +473,6 @@ void TileManager::GetTilesWithAssignedBins(PrioritizedTileSet* tiles) {
       continue;
     }
 
-    // In almost all concievable cases (all in practice right now), we can't get
-    // memory back from visible-active-tree tiles. Further, active-tree tiles
-    // can still be used for animations. Further, ready-to-draw tiles won't
-    // delay activation since they are already rastered. So we should keep
-    // these tiles around in all cases.
-    if (mts.visible_and_ready_to_draw)
-      mts.bin = NOW_AND_READY_TO_DRAW_BIN;
-
     // Insert the tile into a priority set.
     tiles->InsertTile(tile, mts.bin);
   }
