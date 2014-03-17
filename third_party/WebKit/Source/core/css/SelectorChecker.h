@@ -175,7 +175,11 @@ inline bool SelectorChecker::checkExactAttribute(const Element& element, const Q
 
 inline bool SelectorChecker::isHostInItsShadowTree(const Element& element, BehaviorAtBoundary behaviorAtBoundary, const ContainerNode* scope)
 {
-    return (behaviorAtBoundary & (ScopeIsShadowHost | TreatShadowHostAsNormalScope)) == ScopeIsShadowHost && scope == element;
+    if ((behaviorAtBoundary & (ScopeIsShadowHost | TreatShadowHostAsNormalScope)) == ScopeIsShadowHost)
+        return scope == element;
+    if (scope && scope->isInShadowTree())
+        return scope->shadowHost() == element;
+    return false;
 }
 
 }

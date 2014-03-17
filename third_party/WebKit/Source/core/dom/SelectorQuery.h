@@ -76,12 +76,17 @@ private:
     void executeForTraverseRoots(const SelectorData&, SimpleElementListType& traverseRoots, MatchTraverseRootState, ContainerNode& rootNode, typename SelectorQueryTrait::OutputType&) const;
 
     template <typename SelectorQueryTrait>
+    bool selectorListMatches(ContainerNode& rootNode, Element&, typename SelectorQueryTrait::OutputType&) const;
+    template <typename SelectorQueryTrait>
     void executeSlow(ContainerNode& rootNode, typename SelectorQueryTrait::OutputType&) const;
+    template <typename SelectorQueryTrait>
+    void executeSlowTraversingShadowTree(ContainerNode& rootNode, typename SelectorQueryTrait::OutputType&) const;
     template <typename SelectorQueryTrait>
     void execute(ContainerNode& rootNode, typename SelectorQueryTrait::OutputType&) const;
     const CSSSelector* selectorForIdLookup(const CSSSelector&) const;
 
     Vector<SelectorData> m_selectors;
+    bool m_crossesTreeBoundary;
 };
 
 class SelectorQuery {

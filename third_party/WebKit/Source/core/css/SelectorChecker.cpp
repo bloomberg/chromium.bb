@@ -85,12 +85,21 @@ Element* SelectorChecker::parentElement(const SelectorCheckingContext& context, 
     if (allowToCrossBoundary)
         return context.element->parentOrShadowHostElement();
 
-    // If context.scope is not a shadow host, we cannot walk up from a shadow root to its shadow host.
-    if (!(context.behaviorAtBoundary & SelectorChecker::ScopeIsShadowHost))
+    // If context.scope is a shadow host, we should walk up from a shadow root to its shadow host.
+    if (context.behaviorAtBoundary & SelectorChecker::ScopeIsShadowHost)
+        return context.element->parentOrShadowHostElement();
+
+    if ((context.behaviorAtBoundary & SelectorChecker::BoundaryBehaviorMask) != SelectorChecker::StaysWithinTreeScope)
         return context.element->parentElement();
 
-    // If behaviorAtBoundary is StaysWithInTreeScope, we cannot walk up from a shadow root to its shadow host.
-    return (context.behaviorAtBoundary & SelectorChecker::BoundaryBehaviorMask) != SelectorChecker::StaysWithinTreeScope ? context.element->parentOrShadowHostElement() : context.element->parentElement();
+    // If context.scope is some element in some shadow tree and querySelector initialized the context,
+    // e.g. shadowRoot.querySelector(':host *'),
+    // (a) context.element has the same treescope as context.scope, need to walk up to its shadow host.
+    // (b) Otherwise, should not walk up from a shadow root to a shadow host.
+    if (context.scope && context.scope->treeScope() == context.element->treeScope())
+        return context.element->parentOrShadowHostElement();
+
+    return context.element->parentElement();
 }
 
 bool SelectorChecker::scopeContainsLastMatchedElement(const SelectorCheckingContext& context) const
@@ -117,7 +126,12 @@ bool SelectorChecker::scopeContainsLastMatchedElement(const SelectorCheckingCont
 
 static inline bool nextSelectorExceedsScope(const SelectorChecker::SelectorCheckingContext& context)
 {
-    return context.element == context.scope && (context.behaviorAtBoundary & SelectorChecker::BoundaryBehaviorMask) != SelectorChecker::StaysWithinTreeScope;
+    if ((context.behaviorAtBoundary & SelectorChecker::BoundaryBehaviorMask) != SelectorChecker::StaysWithinTreeScope)
+        return context.element == context.scope;
+
+    if (context.scope && context.scope->isInShadowTree())
+        return context.element == context.scope->containingShadowRoot()->host();
+    return false;
 }
 
 // Recursive check of selectors and combinators
@@ -867,7 +881,10 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
         case CSSSelector::PseudoAncestor:
             {
                 // :host only matches a shadow host when :host is in a shadow tree of the shadow host.
-                if (!context.scope || !(context.behaviorAtBoundary & ScopeIsShadowHost) || context.scope != element)
+                if (!context.scope)
+                    return false;
+                const ContainerNode* shadowHost = (context.behaviorAtBoundary & ScopeIsShadowHost) ? context.scope : (context.scope->isInShadowTree() ? context.scope->shadowHost() : 0);
+                if (!shadowHost || shadowHost != element)
                     return false;
                 ASSERT(element.shadow());
 
@@ -884,7 +901,7 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
                 // If one of simple selectors matches an element, returns SelectorMatches. Just "OR".
                 for (subContext.selector = selector.selectorList()->first(); subContext.selector; subContext.selector = CSSSelectorList::next(*subContext.selector)) {
                     subContext.behaviorAtBoundary = ScopeIsShadowHostInPseudoHostParameter;
-                    subContext.scope = context.scope;
+                    subContext.scope = shadowHost;
                     // Use NodeRenderingTraversal to traverse a composed ancestor list of a given element.
                     Element* nextElement = &element;
                     do {
