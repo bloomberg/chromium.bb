@@ -7,12 +7,15 @@
 
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
+#include "content/common/service_worker/service_worker_status_code.h"
+#include "content/common/service_worker/service_worker_types.h"
 #include "net/http/http_byte_range.h"
 #include "net/url_request/url_request_job.h"
 
 namespace content {
 
 class ServiceWorkerContextCore;
+class ServiceWorkerFetchDispatcher;
 class ServiceWorkerProviderHost;
 
 class CONTENT_EXPORT ServiceWorkerURLRequestJob
@@ -20,7 +23,8 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob
  public:
   ServiceWorkerURLRequestJob(
       net::URLRequest* request,
-      net::NetworkDelegate* network_delegate);
+      net::NetworkDelegate* network_delegate,
+      base::WeakPtr<ServiceWorkerProviderHost> provider_host);
 
   // Sets the response type.
   void FallbackToNetwork();
@@ -64,12 +68,24 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob
   void MaybeStartRequest();
   void StartRequest();
 
+  // For FORWARD_TO_SERVICE_WORKER case.
+  void DidDispatchFetchEvent(ServiceWorkerStatusCode status,
+                             ServiceWorkerFetchEventResult fetch_result,
+                             const ServiceWorkerResponse& response);
+
+  void CreateResponseHeader(const ServiceWorkerResponse& response);
+
+  base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
+
   ResponseType response_type_;
   bool is_started_;
 
   net::HttpByteRange byte_range_;
   scoped_ptr<net::HttpResponseInfo> range_response_info_;
   scoped_ptr<net::HttpResponseInfo> http_response_info_;
+
+  // Used when response type is FORWARD_TO_SERVICE_WORKER.
+  scoped_ptr<ServiceWorkerFetchDispatcher> fetch_dispatcher_;
 
   base::WeakPtrFactory<ServiceWorkerURLRequestJob> weak_factory_;
 

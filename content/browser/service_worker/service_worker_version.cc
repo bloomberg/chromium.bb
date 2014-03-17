@@ -285,7 +285,9 @@ void ServiceWorkerVersion::AddProcessToWorker(int process_id) {
 }
 
 void ServiceWorkerVersion::RemoveProcessToWorker(int process_id) {
-  embedded_worker_->ReleaseProcessReference(process_id);
+  // We may have been shutdown.
+  if (embedded_worker_)
+    embedded_worker_->ReleaseProcessReference(process_id);
 }
 
 void ServiceWorkerVersion::OnStarted() {

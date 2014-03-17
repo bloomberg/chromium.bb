@@ -110,7 +110,8 @@ net::URLRequestJob* ServiceWorkerRequestHandler::MaybeCreateJob(
   // It's for original request (A) or redirect case (B-a or B-b).
   DCHECK(!job_.get() || job_->ShouldForwardToServiceWorker());
 
-  job_ = new ServiceWorkerURLRequestJob(request, network_delegate);
+  job_ = new ServiceWorkerURLRequestJob(request, network_delegate,
+                                        provider_host_);
   if (ServiceWorkerUtils::IsMainResourceType(resource_type_))
     PrepareForMainResource(request->url());
   else

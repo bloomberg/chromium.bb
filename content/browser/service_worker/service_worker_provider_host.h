@@ -9,6 +9,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "content/common/content_export.h"
 #include "webkit/common/resource_type.h"
 
 namespace content {
@@ -20,7 +21,7 @@ class ServiceWorkerVersion;
 // object is tied to the lifetime of its document in the renderer process.
 // This class holds service worker state this is scoped to an individual
 // document.
-class ServiceWorkerProviderHost
+class CONTENT_EXPORT ServiceWorkerProviderHost
     : public base::SupportsWeakPtr<ServiceWorkerProviderHost> {
  public:
   ServiceWorkerProviderHost(int process_id,

@@ -5,6 +5,9 @@
 #include "content/browser/service_worker/service_worker_url_request_job.h"
 
 #include "base/bind.h"
+#include "base/strings/stringprintf.h"
+#include "content/browser/service_worker/service_worker_fetch_dispatcher.h"
+#include "content/browser/service_worker/service_worker_provider_host.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
@@ -14,8 +17,10 @@ namespace content {
 
 ServiceWorkerURLRequestJob::ServiceWorkerURLRequestJob(
     net::URLRequest* request,
-    net::NetworkDelegate* network_delegate)
+    net::NetworkDelegate* network_delegate,
+    base::WeakPtr<ServiceWorkerProviderHost> provider_host)
     : net::URLRequestJob(request, network_delegate),
+      provider_host_(provider_host),
       response_type_(NOT_DETERMINED),
       is_started_(false),
       weak_factory_(this) {
@@ -40,6 +45,7 @@ void ServiceWorkerURLRequestJob::Start() {
 
 void ServiceWorkerURLRequestJob::Kill() {
   net::URLRequestJob::Kill();
+  fetch_dispatcher_.reset();
   weak_factory_.InvalidateWeakPtrs();
 }
 
@@ -88,6 +94,10 @@ void ServiceWorkerURLRequestJob::SetExtraRequestHeaders(
 
 bool ServiceWorkerURLRequestJob::ReadRawData(
     net::IOBuffer* buf, int buf_size, int *bytes_read) {
+  // TODO(kinuko): Implement this.
+  // If the response returned from ServiceWorker had an
+  // identifier to on-disk data (e.g. blob or cache entry) we'll need to
+  // pull the body from disk.
   NOTIMPLEMENTED();
   *bytes_read = 0;
   return true;
@@ -128,21 +138,80 @@ void ServiceWorkerURLRequestJob::StartRequest() {
       return;
 
     case FORWARD_TO_SERVICE_WORKER:
-      // TODO(kinuko): Implement.
+      DCHECK(provider_host_ && provider_host_->associated_version());
+      DCHECK(!fetch_dispatcher_);
+
       // Send a fetch event to the ServiceWorker associated to the
-      // provider_host, and handle the returned response.
-      //  - If the response indicates fallback-to-network perform restart via
-      //    NotifyRestartRequired.
-      //  - If the response header indicates redirect the request may be
-      //    internally restarted via NotifyHeadersComplete.
-      //  - If the response has an identifier to on-disk response data
-      //    (e.g. blob or cache entry) we'll need to pull  data from disk before
-      //    respond to the document.
-      NOTIMPLEMENTED();
+      // provider_host.
+      fetch_dispatcher_.reset(new ServiceWorkerFetchDispatcher(
+          request(), provider_host_->associated_version(),
+          base::Bind(&ServiceWorkerURLRequestJob::DidDispatchFetchEvent,
+                     weak_factory_.GetWeakPtr())));
+      fetch_dispatcher_->Run();
       return;
   }
 
   NOTREACHED();
+}
+
+void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(
+    ServiceWorkerStatusCode status,
+    ServiceWorkerFetchEventResult fetch_result,
+    const ServiceWorkerResponse& response) {
+  fetch_dispatcher_.reset();
+
+  // Check if we're not orphaned.
+  if (!request())
+    return;
+
+  if (status != SERVICE_WORKER_OK) {
+    // Dispatching event has been failed, falling back to the network.
+    // (Tentative behavior described on github)
+    // TODO(kinuko): consider returning error if we've come here because
+    // unexpected worker termination etc (so that we could fix bugs).
+    // TODO(kinuko): Would be nice to log the error case.
+    response_type_ = FALLBACK_TO_NETWORK;
+    NotifyRestartRequired();
+  }
+
+  if (fetch_result == SERVICE_WORKER_FETCH_EVENT_RESULT_FALLBACK) {
+    // Change the response type and restart the request to fallback to
+    // the network.
+    response_type_ = FALLBACK_TO_NETWORK;
+    NotifyRestartRequired();
+    return;
+  }
+
+  // We should have response now.
+  DCHECK_EQ(SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE, fetch_result);
+
+  CreateResponseHeader(response);
+  NotifyHeadersComplete();
+}
+
+void ServiceWorkerURLRequestJob::CreateResponseHeader(
+    const ServiceWorkerResponse& response) {
+  // TODO(kinuko): If the response has an identifier to on-disk cache entry,
+  // pull response header from the disk.
+  std::string status_line(base::StringPrintf("HTTP/1.1 %d %s",
+                                             response.status_code,
+                                             response.status_text.c_str()));
+  status_line.push_back('\0');
+  scoped_refptr<net::HttpResponseHeaders> headers(
+      new net::HttpResponseHeaders(status_line));
+  for (std::map<std::string, std::string>::const_iterator it =
+           response.headers.begin();
+       it != response.headers.end(); ++it) {
+    std::string header;
+    header.reserve(it->first.size() + 2 + it->second.size());
+    header.append(it->first);
+    header.append(": ");
+    header.append(it->second);
+    headers->AddHeader(header);
+  }
+
+  http_response_info_.reset(new net::HttpResponseInfo());
+  http_response_info_->headers = headers;
 }
 
 }  // namespace content

@@ -1158,6 +1158,8 @@
     'browser/service_worker/service_worker_job_coordinator.cc',
     'browser/service_worker/service_worker_job_coordinator.h',
     'browser/service_worker/service_worker_provider_host.cc',
+    'browser/service_worker/service_worker_fetch_dispatcher.cc',
+    'browser/service_worker/service_worker_fetch_dispatcher.h',
     'browser/service_worker/service_worker_provider_host.h',
     'browser/service_worker/service_worker_register_job.cc',
     'browser/service_worker/service_worker_register_job.h',
