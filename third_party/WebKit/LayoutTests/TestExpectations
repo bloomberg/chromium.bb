@@ -324,8 +324,6 @@ crbug.com/225184 scrollingcoordinator/non-fast-scrollable-region-scaled-iframe.h
 
 crbug.com/341682 editing/selection/4960116.html [ ImageOnlyFailure Pass ]
 
-crbug.com/348461 fast/forms/calendar-picker/calendar-picker-appearance-minimum-date.html [ NeedsRebaseline ]
-
 crbug.com/231357 [ Win Linux Debug ] compositing/video-page-visibility.html [ ImageOnlyFailure ]
 crbug.com/231357 [ Mac ] compositing/video-page-visibility.html [ ImageOnlyFailure ]
 
