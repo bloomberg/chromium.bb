@@ -1,6 +1,8 @@
 <h1>Options</h1>
 
-<p>To allow users to customize the behavior of your extension, you may wish to provide an options page. If you do, a link to it will be provided from the extensions management page at chrome://extensions. Clicking the Options link opens a new tab pointing at your options page.
+<p>To allow users to customize the behavior of your extension, you may wish to provide an options page. If you do, a link to it will be provided from the extensions management page at chrome://extensions. Clicking the Options link opens a new tab pointing at your options page.</p>
+
+<p>Use the $ref:storage API to persist these preferences. These values will then become accessible in any script within your extension.</p>
 
 <h2 id="step_1">Step 1: Declare your options page in the manifest</h2>
 
@@ -13,18 +15,17 @@
 }
 </pre>
 
-
 <h2 id="step_2">Step 2: Write your options page</h2>
 
 Here is an example options page:
 
 <pre data-filename="options.html">
+&lt;!DOCTYPE html>
 &lt;html>
 &lt;head>&lt;title>My Test Extension Options&lt;/title>&lt;/head>
-
 &lt;body>
 
-Favorite Color:
+Favorite color:
 &lt;select id="color">
  &lt;option value="red">red&lt;/option>
  &lt;option value="green">green&lt;/option>
@@ -32,48 +33,52 @@ Favorite Color:
  &lt;option value="yellow">yellow&lt;/option>
 &lt;/select>
 
-&lt;br>
+&lt;label>
+  &lt;input type="checkbox" id="like">
+  I like colors.
+&lt;/label>
+
 &lt;div id="status">&lt;/div>
 &lt;button id="save">Save&lt;/button>
-&lt;/body>
 
 &lt;script src="options.js">&lt;/script>
-
+&lt;/body>
 &lt;/html>
 </pre>
 
 <pre data-filename="options.js">
-// Saves options to localStorage.
+// Saves options to chrome.storage
 function save_options() {
-  var select = document.getElementById("color");
-  var color = select.children[select.selectedIndex].value;
-  localStorage["favorite_color"] = color;
-
-  // Update status to let user know options were saved.
-  var status = document.getElementById("status");
-  status.innerHTML = "Options Saved.";
-  setTimeout(function() {
-    status.innerHTML = "";
-  }, 750);
+  var color = document.getElementById('color').value;
+  var likesColor = document.getElementById('like').checked;
+  chrome.storage.sync.set({
+    favoriteColor: color,
+    likesColor: likesColor
+  }, function() {
+    // Update status to let user know options were saved.
+    var status = document.getElementById('status');
+    status.textContent = 'Options saved.';
+    setTimeout(function() {
+      status.textContent = '';
+    }, 750);
+  });
 }
 
-// Restores select box state to saved value from localStorage.
+// Restores select box and checkbox state using the preferences
+// stored in chrome.storage.
 function restore_options() {
-  var favorite = localStorage["favorite_color"];
-  if (!favorite) {
-    return;
-  }
-  var select = document.getElementById("color");
-  for (var i = 0; i &lt; select.children.length; i++) {
-    var child = select.children[i];
-    if (child.value == favorite) {
-      child.selected = "true";
-      break;
-    }
-  }
+  // Use default value color = 'red' and likesColor = true.
+  chrome.storage.sync.get({
+    favoriteColor: 'red',
+    likesColor: true
+  }, function(items) {
+    document.getElementById('color').value = items.favoriteColor;
+    document.getElementById('like').checked = items.likesColor;
+  });
 }
 document.addEventListener('DOMContentLoaded', restore_options);
-document.querySelector('#save').addEventListener('click', save_options);
+document.getElementById('save').addEventListener('click',
+    save_options);
 </pre>
 
 <h2 id="important_notes">Important notes</h2>
