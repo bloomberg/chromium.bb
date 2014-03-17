@@ -109,9 +109,10 @@ void retrieveResourcesForElement(Element* element,
                                  Vector<KURL>* frameURLs,
                                  Vector<KURL>* resourceURLs)
 {
+    ASSERT(element);
     // If the node is a frame, we'll process it later in retrieveResourcesForFrame.
-    if ((element->hasTagName(HTMLNames::iframeTag) || element->hasTagName(HTMLNames::frameTag)
-        || element->hasTagName(HTMLNames::objectTag) || element->hasTagName(HTMLNames::embedTag))
+    if ((isHTMLIFrameElement(*element) || isHTMLFrameElement(*element)
+        || isHTMLObjectElement(*element) || isHTMLEmbedElement(*element))
             && element->isFrameOwnerElement()) {
         if (LocalFrame* frame = toHTMLFrameOwnerElement(element)->contentFrame()) {
             if (!visitedFrames->contains(frame))

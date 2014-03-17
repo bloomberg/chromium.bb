@@ -215,7 +215,7 @@ WebInputElement::operator PassRefPtr<HTMLInputElement>() const
 
 WebInputElement* toWebInputElement(WebElement* webElement)
 {
-    if (!webElement->unwrap<Element>()->hasTagName(HTMLNames::inputTag))
+    if (!isHTMLInputElement(*webElement->unwrap<Element>()))
         return 0;
 
     return static_cast<WebInputElement*>(webElement);

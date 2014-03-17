@@ -2223,7 +2223,7 @@ WebFrameImpl* WebFrameImpl::fromFrame(LocalFrame* frame)
 WebFrameImpl* WebFrameImpl::fromFrameOwnerElement(Element* element)
 {
     // FIXME: Why do we check specifically for <iframe> and <frame> here? Why can't we get the WebFrameImpl from an <object> element, for example.
-    if (!element || !element->isFrameOwnerElement() || (!element->hasTagName(HTMLNames::iframeTag) && !element->hasTagName(HTMLNames::frameTag)))
+    if (!element || !element->isFrameOwnerElement() || (!isHTMLIFrameElement(*element) && !isHTMLFrameElement(*element)))
         return 0;
     return fromFrame(toHTMLFrameOwnerElement(element)->contentFrame());
 }
@@ -2261,7 +2261,8 @@ void WebFrameImpl::setFindEndstateFocusAndSelection()
         Node* node = m_activeMatch->firstNode();
         if (node && node->isInShadowTree()) {
             Node* host = node->deprecatedShadowAncestorNode();
-            if (host->hasTagName(HTMLNames::inputTag) || host->hasTagName(HTMLNames::textareaTag))
+            ASSERT(host);
+            if (isHTMLInputElement(*host) || isHTMLTextAreaElement(*host))
                 node = host;
         }
         for (; node; node = node->parentNode()) {

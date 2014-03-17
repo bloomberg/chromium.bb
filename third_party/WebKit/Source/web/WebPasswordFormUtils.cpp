@@ -69,15 +69,15 @@ void findPasswordFormFields(HTMLFormElement* form, PasswordFormFields* fields)
         if (control->isActivatedSubmit())
             fields->submit = control;
 
-        if (!control->hasTagName(HTMLNames::inputTag))
+        if (!isHTMLInputElement(*control))
             continue;
 
-        HTMLInputElement* inputElement = toHTMLInputElement(control);
-        if (inputElement->isDisabledFormControl())
+        HTMLInputElement& inputElement = toHTMLInputElement(*control);
+        if (inputElement.isDisabledFormControl())
             continue;
 
         if ((fields->passwords.size() < maxPasswords)
-            && inputElement->isPasswordField()) {
+            && inputElement.isPasswordField()) {
             // We assume that the username is the input element before the
             // first password element.
             if (fields->passwords.isEmpty() && latestInputElement) {
@@ -86,17 +86,17 @@ void findPasswordFormFields(HTMLFormElement* form, PasswordFormFields* fields)
                 if (!fields->alternateUserNames.isEmpty() && !latestInputElement->value().isEmpty())
                     fields->alternateUserNames.removeLast();
             }
-            fields->passwords.append(inputElement);
+            fields->passwords.append(&inputElement);
         }
 
         // Various input types such as text, url, email can be a username field.
-        if (inputElement->isTextField() && !inputElement->isPasswordField()) {
-            latestInputElement = inputElement;
+        if (inputElement.isTextField() && !inputElement.isPasswordField()) {
+            latestInputElement = &inputElement;
             // We ignore elements that have no value. Unlike userName, alternateUserNames
             // is used only for autofill, not for form identification, and blank autofill
             // entries are not useful.
-            if (!inputElement->value().isEmpty())
-                fields->alternateUserNames.append(inputElement->value());
+            if (!inputElement.value().isEmpty())
+                fields->alternateUserNames.append(inputElement.value());
         }
     }
 }

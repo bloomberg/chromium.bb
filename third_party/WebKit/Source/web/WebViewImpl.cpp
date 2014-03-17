@@ -857,9 +857,9 @@ void WebViewImpl::getSelectionRootBounds(WebRect& bounds) const
     // a text field.
     Element* shadowHost = root->shadowHost();
     if (shadowHost
-        && (shadowHost->hasTagName(HTMLNames::textareaTag)
-            || (shadowHost->hasTagName(HTMLNames::inputTag)
-                && toHTMLInputElement(shadowHost)->isText())))
+        && (isHTMLTextAreaElement(*shadowHost)
+            || (isHTMLInputElement(*shadowHost)
+                && toHTMLInputElement(*shadowHost).isText())))
         root = shadowHost;
 
     IntRect boundingBox = root->pixelSnappedBoundingBox();
@@ -2058,42 +2058,42 @@ WebTextInputType WebViewImpl::textInputType()
     if (!element)
         return WebTextInputTypeNone;
 
-    if (element->hasTagName(HTMLNames::inputTag)) {
-        HTMLInputElement* input = toHTMLInputElement(element);
+    if (isHTMLInputElement(*element)) {
+        HTMLInputElement& input = toHTMLInputElement(*element);
 
-        if (input->isDisabledOrReadOnly())
+        if (input.isDisabledOrReadOnly())
             return WebTextInputTypeNone;
 
-        if (input->isPasswordField())
+        if (input.isPasswordField())
             return WebTextInputTypePassword;
-        if (input->isSearchField())
+        if (input.isSearchField())
             return WebTextInputTypeSearch;
-        if (input->isEmailField())
+        if (input.isEmailField())
             return WebTextInputTypeEmail;
-        if (input->isNumberField())
+        if (input.isNumberField())
             return WebTextInputTypeNumber;
-        if (input->isTelephoneField())
+        if (input.isTelephoneField())
             return WebTextInputTypeTelephone;
-        if (input->isURLField())
+        if (input.isURLField())
             return WebTextInputTypeURL;
-        if (input->isDateField())
+        if (input.isDateField())
             return WebTextInputTypeDate;
-        if (input->isDateTimeLocalField())
+        if (input.isDateTimeLocalField())
             return WebTextInputTypeDateTimeLocal;
-        if (input->isMonthField())
+        if (input.isMonthField())
             return WebTextInputTypeMonth;
-        if (input->isTimeField())
+        if (input.isTimeField())
             return WebTextInputTypeTime;
-        if (input->isWeekField())
+        if (input.isWeekField())
             return WebTextInputTypeWeek;
-        if (input->isTextField())
+        if (input.isTextField())
             return WebTextInputTypeText;
 
         return WebTextInputTypeNone;
     }
 
-    if (element->hasTagName(HTMLNames::textareaTag)) {
-        if (toHTMLTextAreaElement(element)->isDisabledOrReadOnly())
+    if (isHTMLTextAreaElement(*element)) {
+        if (toHTMLTextAreaElement(*element).isDisabledOrReadOnly())
             return WebTextInputTypeNone;
         return WebTextInputTypeTextArea;
     }
@@ -2120,15 +2120,15 @@ WebString WebViewImpl::inputModeOfFocusedElement()
     if (!element)
         return WebString();
 
-    if (element->hasTagName(HTMLNames::inputTag)) {
-        const HTMLInputElement* input = toHTMLInputElement(element);
-        if (input->supportsInputModeAttribute())
-            return input->fastGetAttribute(HTMLNames::inputmodeAttr).lower();
+    if (isHTMLInputElement(*element)) {
+        const HTMLInputElement& input = toHTMLInputElement(*element);
+        if (input.supportsInputModeAttribute())
+            return input.fastGetAttribute(HTMLNames::inputmodeAttr).lower();
         return WebString();
     }
-    if (element->hasTagName(HTMLNames::textareaTag)) {
-        const HTMLTextAreaElement* textarea = toHTMLTextAreaElement(element);
-        return textarea->fastGetAttribute(HTMLNames::inputmodeAttr).lower();
+    if (isHTMLTextAreaElement(*element)) {
+        const HTMLTextAreaElement& textarea = toHTMLTextAreaElement(*element);
+        return textarea.fastGetAttribute(HTMLNames::inputmodeAttr).lower();
     }
 
     return WebString();
@@ -2991,7 +2991,7 @@ void WebViewImpl::performMediaPlayerAction(const WebMediaPlayerAction& action,
 {
     HitTestResult result = hitTestResultForWindowPos(location);
     RefPtr<Node> node = result.innerNonSharedNode();
-    if (!node->hasTagName(HTMLNames::videoTag) && !node->hasTagName(HTMLNames::audioTag))
+    if (!isHTMLVideoElement(*node) && !isHTMLAudioElement(*node))
         return;
 
     RefPtr<HTMLMediaElement> mediaElement =
@@ -3022,7 +3022,7 @@ void WebViewImpl::performPluginAction(const WebPluginAction& action,
 {
     HitTestResult result = hitTestResultForWindowPos(location);
     RefPtr<Node> node = result.innerNonSharedNode();
-    if (!node->hasTagName(HTMLNames::objectTag) && !node->hasTagName(HTMLNames::embedTag))
+    if (!isHTMLObjectElement(*node) && !isHTMLEmbedElement(*node))
         return;
 
     RenderObject* object = node->renderer();
@@ -3917,7 +3917,7 @@ bool WebViewImpl::detectContentOnTouch(const WebPoint& position)
 
     // Ignore when tapping on links or nodes listening to click events, unless the click event is on the
     // body element, in which case it's unlikely that the original node itself was intended to be clickable.
-    for (; node && !node->hasTagName(HTMLNames::bodyTag); node = node->parentNode()) {
+    for (; node && !isHTMLBodyElement(*node); node = node->parentNode()) {
         if (node->isLink() || node->willRespondToTouchEvents() || node->willRespondToMouseClickEvents())
             return false;
     }

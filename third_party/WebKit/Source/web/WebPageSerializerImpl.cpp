@@ -132,12 +132,13 @@ String WebPageSerializerImpl::preActionBeforeSerializeOpenTag(
         // Skip the open tag of original META tag which declare charset since we
         // have overrided the META which have correct charset declaration after
         // serializing open tag of HEAD element.
-        if (element->hasTagName(HTMLNames::metaTag)) {
-            const HTMLMetaElement* meta = toHTMLMetaElement(element);
+        ASSERT(element);
+        if (isHTMLMetaElement(*element)) {
+            const HTMLMetaElement& meta = toHTMLMetaElement(*element);
             // Check whether the META tag has declared charset or not.
-            String equiv = meta->httpEquiv();
+            String equiv = meta.httpEquiv();
             if (equalIgnoringCase(equiv, "content-type")) {
-                String content = meta->content();
+                String content = meta.content();
                 if (content.length() && content.contains("charset", false)) {
                     // Find META tag declared charset, we need to skip it when
                     // serializing DOM.
@@ -145,7 +146,7 @@ String WebPageSerializerImpl::preActionBeforeSerializeOpenTag(
                     *needSkip = true;
                 }
             }
-        } else if (element->hasTagName(HTMLNames::htmlTag)) {
+        } else if (isHTMLHtmlElement(*element)) {
             // Check something before processing the open tag of HEAD element.
             // First we add doc type declaration if original document has it.
             if (!param->haveSeenDocType) {
@@ -156,7 +157,7 @@ String WebPageSerializerImpl::preActionBeforeSerializeOpenTag(
             // Add MOTW declaration before html tag.
             // See http://msdn2.microsoft.com/en-us/library/ms537628(VS.85).aspx.
             result.append(WebPageSerializer::generateMarkOfTheWebDeclaration(param->url));
-        } else if (element->hasTagName(HTMLNames::baseTag)) {
+        } else if (isHTMLBaseElement(*element)) {
             // Comment the BASE tag when serializing dom.
             result.append("<!--");
         }
@@ -197,7 +198,7 @@ String WebPageSerializerImpl::postActionAfterSerializeOpenTag(
         return result.toString();
     // Check after processing the open tag of HEAD element
     if (!param->haveAddedCharsetDeclaration
-        && element->hasTagName(HTMLNames::headTag)) {
+        && isHTMLHeadElement(*element)) {
         param->haveAddedCharsetDeclaration = true;
         // Check meta element. WebKit only pre-parse the first 512 bytes
         // of the document. If the whole <HEAD> is larger and meta is the
@@ -212,8 +213,7 @@ String WebPageSerializerImpl::postActionAfterSerializeOpenTag(
         param->haveAddedContentsBeforeEnd = true;
         // Will search each META which has charset declaration, and skip them all
         // in PreActionBeforeSerializeOpenTag.
-    } else if (element->hasTagName(HTMLNames::scriptTag)
-               || element->hasTagName(HTMLNames::styleTag)) {
+    } else if (isHTMLScriptElement(*element) || isHTMLScriptElement(*element)) {
         param->isInScriptOrStyleTag = true;
     }
 
@@ -231,10 +231,9 @@ String WebPageSerializerImpl::preActionBeforeSerializeEndTag(
     // Skip the end tag of original META tag which declare charset.
     // Need not to check whether it's META tag since we guarantee
     // skipMetaElement is definitely META tag if it's not 0.
-    if (param->skipMetaElement == element)
+    if (param->skipMetaElement == element) {
         *needSkip = true;
-    else if (element->hasTagName(HTMLNames::scriptTag)
-             || element->hasTagName(HTMLNames::styleTag)) {
+    } else if (isHTMLScriptElement(*element) || isHTMLScriptElement(*element)) {
         ASSERT(param->isInScriptOrStyleTag);
         param->isInScriptOrStyleTag = false;
     }
@@ -252,7 +251,7 @@ String WebPageSerializerImpl::postActionAfterSerializeEndTag(
     if (!param->isHTMLDocument)
         return result.toString();
     // Comment the BASE tag when serializing DOM.
-    if (element->hasTagName(HTMLNames::baseTag)) {
+    if (isHTMLBaseElement(*element)) {
         result.append("-->");
         // Append a new base tag declaration.
         result.append(WebPageSerializer::generateBaseTagDeclaration(

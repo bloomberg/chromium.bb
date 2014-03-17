@@ -233,6 +233,12 @@ public:
 
     T* get() const { return storage().get(); }
 
+    T& operator*() const
+    {
+        ASSERT(m_storage);
+        return *get();
+    }
+
     T* operator->() const
     {
         ASSERT(m_storage);

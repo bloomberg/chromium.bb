@@ -85,91 +85,91 @@ WebString WebFormControlElement::nameForAutofill() const
 
 bool WebFormControlElement::autoComplete() const
 {
-    if (m_private->hasTagName(HTMLNames::inputTag))
+    if (isHTMLInputElement(*m_private))
         return constUnwrap<HTMLInputElement>()->shouldAutocomplete();
-    if (m_private->hasTagName(HTMLNames::textareaTag))
+    if (isHTMLTextAreaElement(*m_private))
         return constUnwrap<HTMLTextAreaElement>()->shouldAutocomplete();
     return false;
 }
 
 void WebFormControlElement::setValue(const WebString& value, bool sendChangeEvent)
 {
-    if (m_private->hasTagName(HTMLNames::inputTag))
+    if (isHTMLInputElement(*m_private))
         unwrap<HTMLInputElement>()->setValue(value, sendChangeEvent ? DispatchChangeEvent : DispatchNoEvent);
-    if (m_private->hasTagName(HTMLNames::textareaTag))
+    if (isHTMLTextAreaElement(*m_private))
         unwrap<HTMLTextAreaElement>()->setValue(value);
-    if (m_private->hasTagName(HTMLNames::selectTag))
+    if (isHTMLSelectElement(*m_private))
         unwrap<HTMLSelectElement>()->setValue(value);
 }
 
 WebString WebFormControlElement::value() const
 {
-    if (m_private->hasTagName(HTMLNames::inputTag))
+    if (isHTMLInputElement(*m_private))
         return constUnwrap<HTMLInputElement>()->value();
-    if (m_private->hasTagName(HTMLNames::textareaTag))
+    if (isHTMLTextAreaElement(*m_private))
         return constUnwrap<HTMLTextAreaElement>()->value();
-    if (m_private->hasTagName(HTMLNames::selectTag))
+    if (isHTMLSelectElement(*m_private))
         return constUnwrap<HTMLSelectElement>()->value();
     return WebString();
 }
 
 void WebFormControlElement::setSuggestedValue(const WebString& value)
 {
-    if (m_private->hasTagName(HTMLNames::inputTag))
+    if (isHTMLInputElement(*m_private))
         unwrap<HTMLInputElement>()->setSuggestedValue(value);
-    if (m_private->hasTagName(HTMLNames::textareaTag))
+    if (isHTMLTextAreaElement(*m_private))
         unwrap<HTMLTextAreaElement>()->setSuggestedValue(value);
 }
 
 WebString WebFormControlElement::suggestedValue() const
 {
-    if (m_private->hasTagName(HTMLNames::inputTag))
+    if (isHTMLInputElement(*m_private))
         return constUnwrap<HTMLInputElement>()->suggestedValue();
-    if (m_private->hasTagName(HTMLNames::textareaTag))
+    if (isHTMLTextAreaElement(*m_private))
         return constUnwrap<HTMLTextAreaElement>()->suggestedValue();
     return WebString();
 }
 
 WebString WebFormControlElement::editingValue() const
 {
-    if (m_private->hasTagName(HTMLNames::inputTag))
+    if (isHTMLInputElement(*m_private))
         return constUnwrap<HTMLInputElement>()->innerTextValue();
-    if (m_private->hasTagName(HTMLNames::textareaTag))
+    if (isHTMLTextAreaElement(*m_private))
         return constUnwrap<HTMLTextAreaElement>()->innerTextValue();
     return WebString();
 }
 
 void WebFormControlElement::setSelectionRange(int start, int end)
 {
-    if (m_private->hasTagName(HTMLNames::inputTag))
+    if (isHTMLInputElement(*m_private))
         unwrap<HTMLInputElement>()->setSelectionRange(start, end);
-    if (m_private->hasTagName(HTMLNames::textareaTag))
+    if (isHTMLTextAreaElement(*m_private))
         unwrap<HTMLTextAreaElement>()->setSelectionRange(start, end);
 }
 
 int WebFormControlElement::selectionStart() const
 {
-    if (m_private->hasTagName(HTMLNames::inputTag))
+    if (isHTMLInputElement(*m_private))
         return constUnwrap<HTMLInputElement>()->selectionStart();
-    if (m_private->hasTagName(HTMLNames::textareaTag))
+    if (isHTMLTextAreaElement(*m_private))
         return constUnwrap<HTMLTextAreaElement>()->selectionStart();
     return 0;
 }
 
 int WebFormControlElement::selectionEnd() const
 {
-    if (m_private->hasTagName(HTMLNames::inputTag))
+    if (isHTMLInputElement(*m_private))
         return constUnwrap<HTMLInputElement>()->selectionEnd();
-    if (m_private->hasTagName(HTMLNames::textareaTag))
+    if (isHTMLTextAreaElement(*m_private))
         return constUnwrap<HTMLTextAreaElement>()->selectionEnd();
     return 0;
 }
 
 WebString WebFormControlElement::directionForFormData() const
 {
-    if (m_private->hasTagName(HTMLNames::inputTag))
+    if (isHTMLInputElement(*m_private))
         return constUnwrap<HTMLInputElement>()->directionForFormData();
-    if (m_private->hasTagName(HTMLNames::textareaTag))
+    if (isHTMLTextAreaElement(*m_private))
         return constUnwrap<HTMLTextAreaElement>()->directionForFormData();
     return WebString();
 }

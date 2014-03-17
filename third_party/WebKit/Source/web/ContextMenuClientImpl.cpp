@@ -225,9 +225,9 @@ void ContextMenuClientImpl::showContextMenu(const WebCore::ContextMenu* defaultM
         // We know that if absoluteMediaURL() is not empty, then this
         // is a media element.
         HTMLMediaElement* mediaElement = toHTMLMediaElement(r.innerNonSharedNode());
-        if (mediaElement->hasTagName(HTMLNames::videoTag))
+        if (isHTMLVideoElement(*mediaElement))
             data.mediaType = WebContextMenuData::MediaTypeVideo;
-        else if (mediaElement->hasTagName(HTMLNames::audioTag))
+        else if (isHTMLAudioElement(*mediaElement))
             data.mediaType = WebContextMenuData::MediaTypeAudio;
 
         if (mediaElement->error())
@@ -246,8 +246,7 @@ void ContextMenuClientImpl::showContextMenu(const WebCore::ContextMenu* defaultM
             data.mediaFlags |= WebContextMenuData::MediaHasVideo;
         if (mediaElement->controls())
             data.mediaFlags |= WebContextMenuData::MediaControls;
-    } else if (r.innerNonSharedNode()->hasTagName(HTMLNames::objectTag)
-               || r.innerNonSharedNode()->hasTagName(HTMLNames::embedTag)) {
+    } else if (isHTMLObjectElement(*r.innerNonSharedNode()) || isHTMLEmbedElement(*r.innerNonSharedNode())) {
         RenderObject* object = r.innerNonSharedNode()->renderer();
         if (object && object->isWidget()) {
             Widget* widget = toRenderWidget(object)->widget();
@@ -296,14 +295,14 @@ void ContextMenuClientImpl::showContextMenu(const WebCore::ContextMenu* defaultM
     }
 
     if (r.isSelected()) {
-        if (!r.innerNonSharedNode()->hasTagName(HTMLNames::inputTag) || !toHTMLInputElement(r.innerNonSharedNode())->isPasswordField())
+        if (!isHTMLInputElement(*r.innerNonSharedNode()) || !toHTMLInputElement(r.innerNonSharedNode())->isPasswordField())
             data.selectedText = selectedFrame->selectedText().stripWhiteSpace();
     }
 
     if (r.isContentEditable()) {
         data.isEditable = true;
 #if ENABLE(INPUT_SPEECH)
-        if (r.innerNonSharedNode()->hasTagName(HTMLNames::inputTag))
+        if (isHTMLInputElement(*r.innerNonSharedNode()))
             data.isSpeechInputEnabled = toHTMLInputElement(r.innerNonSharedNode())->isSpeechEnabled();
 #endif
         // When Chrome enables asynchronous spellchecking, its spellchecker adds spelling markers to misspelled
@@ -338,13 +337,11 @@ void ContextMenuClientImpl::showContextMenu(const WebCore::ContextMenu* defaultM
             }
         }
         HTMLFormElement* form = selectedFrame->selection().currentForm();
-        if (form && r.innerNonSharedNode()->hasTagName(HTMLNames::inputTag)) {
-            HTMLInputElement* selectedElement = toHTMLInputElement(r.innerNonSharedNode());
-            if (selectedElement) {
-                WebSearchableFormData ws = WebSearchableFormData(WebFormElement(form), WebInputElement(selectedElement));
-                if (ws.url().isValid())
-                    data.keywordURL = ws.url();
-            }
+        if (form && isHTMLInputElement(*r.innerNonSharedNode())) {
+            HTMLInputElement& selectedElement = toHTMLInputElement(*r.innerNonSharedNode());
+            WebSearchableFormData ws = WebSearchableFormData(WebFormElement(form), WebInputElement(&selectedElement));
+            if (ws.url().isValid())
+                data.keywordURL = ws.url();
         }
     }
 

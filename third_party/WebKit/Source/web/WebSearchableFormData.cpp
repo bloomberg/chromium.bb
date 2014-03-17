@@ -135,11 +135,12 @@ bool IsSelectInDefaultState(HTMLSelectElement* select)
 // in its default state if the checked state matches the state of the checked attribute.
 bool IsInDefaultState(HTMLFormControlElement* formElement)
 {
-    if (formElement->hasTagName(HTMLNames::inputTag)) {
-        const HTMLInputElement* inputElement = toHTMLInputElement(formElement);
-        if (inputElement->isCheckbox() || inputElement->isRadioButton())
-            return inputElement->checked() == inputElement->hasAttribute(checkedAttr);
-    } else if (formElement->hasTagName(HTMLNames::selectTag)) {
+    ASSERT(formElement);
+    if (isHTMLInputElement(*formElement)) {
+        const HTMLInputElement& inputElement = toHTMLInputElement(*formElement);
+        if (inputElement.isCheckbox() || inputElement.isRadioButton())
+            return inputElement.checked() == inputElement.hasAttribute(checkedAttr);
+    } else if (isHTMLSelectElement(*formElement)) {
         return IsSelectInDefaultState(toHTMLSelectElement(formElement));
     }
     return true;
@@ -164,17 +165,17 @@ HTMLInputElement* findSuitableSearchInputElement(const HTMLFormElement* form)
         if (control->isDisabledFormControl() || control->name().isNull())
             continue;
 
-        if (!IsInDefaultState(control) || control->hasTagName(textareaTag))
+        if (!IsInDefaultState(control) || isHTMLTextAreaElement(*control))
             return 0;
 
-        if (control->hasTagName(HTMLNames::inputTag) && control->willValidate()) {
-            const HTMLInputElement* input = toHTMLInputElement(control);
+        if (isHTMLInputElement(*control) && control->willValidate()) {
+            const HTMLInputElement& input = toHTMLInputElement(*control);
 
             // Return nothing if a file upload field or a password field are found.
-            if (input->isFileUpload() || input->isPasswordField())
+            if (input.isFileUpload() || input.isPasswordField())
                 return 0;
 
-            if (input->isTextField()) {
+            if (input.isTextField()) {
                 if (textElement) {
                     // The auto-complete bar only knows how to fill in one value.
                     // This form has multiple fields; don't treat it as searchable.
