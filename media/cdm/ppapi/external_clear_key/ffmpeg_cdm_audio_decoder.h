@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "media/cdm/ppapi/external_clear_key/clear_key_cdm_common.h"
+#include "media/ffmpeg/ffmpeg_deleters.h"
 
 struct AVCodecContext;
 struct AVFrame;
@@ -19,8 +20,6 @@ struct AVFrame;
 namespace media {
 class AudioBus;
 class AudioTimestampHelper;
-class ScopedPtrAVFreeContext;
-class ScopedPtrAVFreeFrame;
 }
 
 namespace media {
@@ -64,8 +63,8 @@ class FFmpegCdmAudioDecoder {
   ClearKeyCdmHost* const host_;
 
   // FFmpeg structures owned by this object.
-  scoped_ptr_malloc<AVCodecContext, ScopedPtrAVFreeContext> codec_context_;
-  scoped_ptr_malloc<AVFrame, ScopedPtrAVFreeFrame> av_frame_;
+  scoped_ptr<AVCodecContext, ScopedPtrAVFreeContext> codec_context_;
+  scoped_ptr<AVFrame, ScopedPtrAVFreeFrame> av_frame_;
 
   // Audio format.
   int samples_per_second_;

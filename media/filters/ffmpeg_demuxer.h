@@ -36,6 +36,7 @@
 #include "media/base/pipeline.h"
 #include "media/base/text_track_config.h"
 #include "media/base/video_decoder_config.h"
+#include "media/ffmpeg/ffmpeg_deleters.h"
 #include "media/filters/blocking_url_protocol.h"
 
 // FFmpeg forward declarations.
@@ -49,9 +50,8 @@ class MediaLog;
 class FFmpegDemuxer;
 class FFmpegGlue;
 class FFmpegH264ToAnnexBBitstreamConverter;
-class ScopedPtrAVFreePacket;
 
-typedef scoped_ptr_malloc<AVPacket, ScopedPtrAVFreePacket> ScopedAVPacket;
+typedef scoped_ptr<AVPacket, ScopedPtrAVFreePacket> ScopedAVPacket;
 
 class FFmpegDemuxerStream : public DemuxerStream {
  public:

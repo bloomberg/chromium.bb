@@ -28,13 +28,12 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "media/base/media_export.h"
+#include "media/ffmpeg/ffmpeg_deleters.h"
 
 struct AVFormatContext;
 struct AVIOContext;
 
 namespace media {
-
-class ScopedPtrAVFree;
 
 class MEDIA_EXPORT FFmpegURLProtocol {
  public:
@@ -73,7 +72,7 @@ class MEDIA_EXPORT FFmpegGlue {
  private:
   bool open_called_;
   AVFormatContext* format_context_;
-  scoped_ptr_malloc<AVIOContext, ScopedPtrAVFree> avio_context_;
+  scoped_ptr<AVIOContext, ScopedPtrAVFree> avio_context_;
 
   DISALLOW_COPY_AND_ASSIGN(FFmpegGlue);
 };

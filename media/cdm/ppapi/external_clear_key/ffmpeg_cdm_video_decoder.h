@@ -10,14 +10,12 @@
 #include "base/memory/scoped_ptr.h"
 #include "media/cdm/ppapi/external_clear_key/cdm_video_decoder.h"
 #include "media/cdm/ppapi/external_clear_key/clear_key_cdm_common.h"
+#include "media/ffmpeg/ffmpeg_deleters.h"
 
 struct AVCodecContext;
 struct AVFrame;
 
 namespace media {
-
-class ScopedPtrAVFreeContext;
-class ScopedPtrAVFreeFrame;
 
 class FFmpegCdmVideoDecoder : public CdmVideoDecoder {
  public:
@@ -47,8 +45,8 @@ class FFmpegCdmVideoDecoder : public CdmVideoDecoder {
   void ReleaseFFmpegResources();
 
   // FFmpeg structures owned by this object.
-  scoped_ptr_malloc<AVCodecContext, ScopedPtrAVFreeContext> codec_context_;
-  scoped_ptr_malloc<AVFrame, ScopedPtrAVFreeFrame> av_frame_;
+  scoped_ptr<AVCodecContext, ScopedPtrAVFreeContext> codec_context_;
+  scoped_ptr<AVFrame, ScopedPtrAVFreeFrame> av_frame_;
 
   bool is_initialized_;
 

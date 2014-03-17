@@ -15,6 +15,7 @@
 #include "media/base/media_export.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
+#include "media/ffmpeg/ffmpeg_deleters.h"
 
 // Include FFmpeg header files.
 extern "C" {
@@ -37,48 +38,31 @@ namespace media {
 class AudioDecoderConfig;
 class VideoDecoderConfig;
 
-// Wraps FFmpeg's av_free() in a class that can be passed as a template argument
-// to scoped_ptr_malloc.
-class ScopedPtrAVFree {
- public:
-  inline void operator()(void* x) const {
-    av_free(x);
-  }
-};
+// The following implement the deleters declared in ffmpeg_deleters.h (which
+// contains the declarations needed for use with |scoped_ptr| without #include
+// "pollution").
 
-// This assumes that the AVPacket being captured was allocated outside of
-// FFmpeg via the new operator.  Do not use this with AVPacket instances that
-// are allocated via malloc() or av_malloc().
-class ScopedPtrAVFreePacket {
- public:
-  inline void operator()(void* x) const {
-    AVPacket* packet = static_cast<AVPacket*>(x);
-    av_free_packet(packet);
-    delete packet;
-  }
-};
+inline void ScopedPtrAVFree::operator()(void* x) const {
+  av_free(x);
+}
 
-// Frees an AVCodecContext object in a class that can be passed as a Deleter
-// argument to scoped_ptr_malloc.
-class ScopedPtrAVFreeContext {
- public:
-  inline void operator()(void* x) const {
-    AVCodecContext* codec_context = static_cast<AVCodecContext*>(x);
-    av_free(codec_context->extradata);
-    avcodec_close(codec_context);
-    av_free(codec_context);
-  }
-};
+inline void ScopedPtrAVFreePacket::operator()(void* x) const {
+  AVPacket* packet = static_cast<AVPacket*>(x);
+  av_free_packet(packet);
+  delete packet;
+}
 
-// Frees an AVFrame object in a class that can be passed as a Deleter argument
-// to scoped_ptr_malloc.
-class ScopedPtrAVFreeFrame {
- public:
-  inline void operator()(void* x) const {
-    AVFrame* frame = static_cast<AVFrame*>(x);
-    avcodec_free_frame(&frame);
-  }
-};
+inline void ScopedPtrAVFreeContext::operator()(void* x) const {
+  AVCodecContext* codec_context = static_cast<AVCodecContext*>(x);
+  av_free(codec_context->extradata);
+  avcodec_close(codec_context);
+  av_free(codec_context);
+}
+
+inline void ScopedPtrAVFreeFrame::operator()(void* x) const {
+  AVFrame* frame = static_cast<AVFrame*>(x);
+  avcodec_free_frame(&frame);
+}
 
 // Converts an int64 timestamp in |time_base| units to a base::TimeDelta.
 // For example if |timestamp| equals 11025 and |time_base| equals {1, 44100}

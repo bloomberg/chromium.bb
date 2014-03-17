@@ -14,6 +14,7 @@
 #include "media/base/audio_decoder.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/sample_format.h"
+#include "media/ffmpeg/ffmpeg_deleters.h"
 
 struct AVCodecContext;
 struct AVFrame;
@@ -26,8 +27,6 @@ namespace media {
 
 class AudioTimestampHelper;
 class DecoderBuffer;
-class ScopedPtrAVFreeContext;
-class ScopedPtrAVFreeFrame;
 
 class MEDIA_EXPORT FFmpegAudioDecoder : public AudioDecoder {
  public:
@@ -80,8 +79,8 @@ class MEDIA_EXPORT FFmpegAudioDecoder : public AudioDecoder {
   DecoderState state_;
 
   // FFmpeg structures owned by this object.
-  scoped_ptr_malloc<AVCodecContext, ScopedPtrAVFreeContext> codec_context_;
-  scoped_ptr_malloc<AVFrame, ScopedPtrAVFreeFrame> av_frame_;
+  scoped_ptr<AVCodecContext, ScopedPtrAVFreeContext> codec_context_;
+  scoped_ptr<AVFrame, ScopedPtrAVFreeFrame> av_frame_;
 
   // Decoded audio format.
   int bytes_per_channel_;

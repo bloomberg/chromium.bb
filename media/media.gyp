@@ -346,6 +346,7 @@
         'cdm/key_system_names.h',
         'ffmpeg/ffmpeg_common.cc',
         'ffmpeg/ffmpeg_common.h',
+        'ffmpeg/ffmpeg_deleters.h',
         'filters/audio_file_reader.cc',
         'filters/audio_file_reader.h',
         'filters/audio_renderer_algorithm.cc',
