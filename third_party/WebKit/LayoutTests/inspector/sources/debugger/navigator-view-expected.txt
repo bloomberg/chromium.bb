@@ -1,39 +1,34 @@
 Tests scripts panel file selectors.
 
 Adding first resource:
-  Dumping ScriptsNavigator 'Scripts' tab:
+  Dumping ScriptsNavigator sources tab:
     localhost:8080
-  Dumping ScriptsNavigator 'Content scripts' tab:
-
+  Dumping ScriptsNavigator contentScripts tab:
 Expanding domains:
-  Dumping ScriptsNavigator 'Scripts' tab:
+  Dumping ScriptsNavigator sources tab:
     localhost:8080
       LayoutTests/inspector/debugger/foo/bar
-  Dumping ScriptsNavigator 'Content scripts' tab:
-
+  Dumping ScriptsNavigator contentScripts tab:
 Adding second resource:
-  Dumping ScriptsNavigator 'Scripts' tab:
+  Dumping ScriptsNavigator sources tab:
     localhost:8080
       LayoutTests/inspector/debugger/foo/bar
-  Dumping ScriptsNavigator 'Content scripts' tab:
-
+  Dumping ScriptsNavigator contentScripts tab:
 Adding other resources:
-  Dumping ScriptsNavigator 'Scripts' tab:
+  Dumping ScriptsNavigator sources tab:
     localhost:8080
       LayoutTests/inspector/debugger/foo
-  Dumping ScriptsNavigator 'Content scripts' tab:
-
+  Dumping ScriptsNavigator contentScripts tab:
 Adding content scripts and some random resources:
-  Dumping ScriptsNavigator 'Scripts' tab:
+  Dumping ScriptsNavigator sources tab:
     (no domain)
     example.com
     localhost:8080
       LayoutTests/inspector/debugger/foo
-  Dumping ScriptsNavigator 'Content scripts' tab:
+  Dumping ScriptsNavigator contentScripts tab:
     localhost:8080
-
 Revealing first resource:
-  Dumping ScriptsNavigator 'Scripts' tab:
+  Dumping ScriptsNavigator sources tab:
     (no domain)
     example.com
     localhost:8080
@@ -43,11 +38,10 @@ Revealing first resource:
           script.js?a=1
           script.js?a=2
         baz
-  Dumping ScriptsNavigator 'Content scripts' tab:
+  Dumping ScriptsNavigator contentScripts tab:
     localhost:8080
-
 Adding some resources to change the way debugger folder looks like, first:
-  Dumping ScriptsNavigator 'Scripts' tab:
+  Dumping ScriptsNavigator sources tab:
     (no domain)
     example.com
     localhost:8080
@@ -59,11 +53,10 @@ Adding some resources to change the way debugger folder looks like, first:
             script.js?a=2
           baz
         debugger2/foo/bar
-  Dumping ScriptsNavigator 'Content scripts' tab:
+  Dumping ScriptsNavigator contentScripts tab:
     localhost:8080
-
 Second:
-  Dumping ScriptsNavigator 'Scripts' tab:
+  Dumping ScriptsNavigator sources tab:
     (no domain)
     example.com
     localhost:8080
@@ -75,11 +68,10 @@ Second:
             script.js?a=2
           baz
         debugger2/foo/bar
-  Dumping ScriptsNavigator 'Content scripts' tab:
+  Dumping ScriptsNavigator contentScripts tab:
     localhost:8080
-
 Others:
-  Dumping ScriptsNavigator 'Scripts' tab:
+  Dumping ScriptsNavigator sources tab:
     (no domain)
     example.com
     localhost:8080
@@ -91,10 +83,9 @@ Others:
             script.js?a=2
           baz
         debugger2/foo
-  Dumping ScriptsNavigator 'Content scripts' tab:
+  Dumping ScriptsNavigator contentScripts tab:
     localhost:8080
-
-  Dumping ScriptsNavigator 'Scripts' tab:
+  Dumping ScriptsNavigator sources tab:
     (no domain)
     example.com
     localhost:8080
@@ -107,11 +98,10 @@ Others:
           baz
         debugger2/foo
         debugger3/hasOwnProperty
-  Dumping ScriptsNavigator 'Content scripts' tab:
+  Dumping ScriptsNavigator contentScripts tab:
     localhost:8080
-
 Revealing all resources:
-  Dumping ScriptsNavigator 'Scripts' tab:
+  Dumping ScriptsNavigator sources tab:
     (no domain)
       ?a=b
       very_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo…
@@ -140,15 +130,13 @@ Revealing all resources:
               foo.js
             foo.js
           foo.js
-  Dumping ScriptsNavigator 'Content scripts' tab:
+  Dumping ScriptsNavigator contentScripts tab:
     localhost:8080
       LayoutTests/inspector/debugger/foo/bar
         contentScript.js?a=1
         contentScript.js?a=2
         contentScript2.js?a=1
-
 Removing all resources:
-  Dumping ScriptsNavigator 'Scripts' tab:
-  Dumping ScriptsNavigator 'Content scripts' tab:
-
+  Dumping ScriptsNavigator sources tab:
+  Dumping ScriptsNavigator contentScripts tab:
 

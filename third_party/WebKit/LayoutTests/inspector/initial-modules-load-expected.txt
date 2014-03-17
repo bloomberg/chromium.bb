@@ -19,7 +19,6 @@ Loaded modules:
     elements
     network
     sources
-    sources-formatter-actions
 
 Running: testOpenUISourceCode
 Loaded modules:
@@ -27,5 +26,4 @@ Loaded modules:
     network
     sources
     codemirror
-    sources-formatter-actions
 

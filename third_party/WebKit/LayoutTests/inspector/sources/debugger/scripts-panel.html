@@ -6,8 +6,18 @@
 <script>
 function test()
 {
-    WebInspector.inspectorView.showPanel("sources");
-    InspectorTest.createWorkspace(true);
+    function dumpNavigator(sourcesNavigatorView)
+    {
+        InspectorTest.dumpNavigatorView(sourcesNavigatorView, "sources", "  ");
+    }
+
+    function createNavigatorView()
+    {
+        var navigatorView = new WebInspector.SourcesNavigatorView();
+        navigatorView.setWorkspace(InspectorTest.testWorkspace);
+        navigatorView.show(WebInspector.inspectorView.element);
+        return navigatorView;
+    }
 
     function createContentProvider(url)
     {
@@ -44,65 +54,55 @@ function test()
 
             addNetworkFile(workspace, "foobar.js");
 
-            var panel = new WebInspector.SourcesPanel(workspace);
-            panel.show(WebInspector.inspectorView.element);
+            var sourcesNavigatorView = createNavigatorView();
 
             addNetworkFile(workspace, "foo.js");
             addNetworkFile(workspace, "bar.js");
             var uiSourceCode = addNetworkFile(workspace, "baz.js");
-            panel._navigator.revealUISourceCode(uiSourceCode);
+            sourcesNavigatorView.revealUISourceCode(uiSourceCode);
 
-            InspectorTest.dumpScriptsNavigator(panel._navigator);
-
-            // Select "baz.js".
-            panel._showFile(workspace.uiSourceCodeForOriginURL("baz.js"));
-            panel.detach();
-
+            dumpNavigator(sourcesNavigatorView);
             next();
         },
 
         function testReset(next)
         {
             var workspace = createMockWorkspace();
-            var workspaceController = new WebInspector.WorkspaceController(workspace);
-            var panel = new WebInspector.SourcesPanel(workspace);
-            panel.show(WebInspector.inspectorView.element);
+            var sourcesNavigatorView = createNavigatorView();
 
             var uiSourceCode = addNetworkFile(workspace, "foo.js");
             addNetworkFile(workspace, "bar.js");
             addNetworkFile(workspace, "baz.js");
 
-            InspectorTest.dumpScriptsNavigator(panel._navigator);
+            dumpNavigator(sourcesNavigatorView);
             InspectorTest.addResult("Revealing in navigator.");
-            panel._navigator.revealUISourceCode(uiSourceCode);
-            InspectorTest.dumpScriptsNavigator(panel._navigator);
+            sourcesNavigatorView.revealUISourceCode(uiSourceCode);
+            dumpNavigator(sourcesNavigatorView);
 
             InspectorTest.testNetworkWorkspaceProvider.reset();
-            InspectorTest.dumpScriptsNavigator(panel._navigator);
+            dumpNavigator(sourcesNavigatorView);
             uiSourceCode = addNetworkFile(workspace, "bar.js");
-            panel._navigator.revealUISourceCode(uiSourceCode);
-            InspectorTest.dumpScriptsNavigator(panel._navigator);
+            sourcesNavigatorView.revealUISourceCode(uiSourceCode);
+            dumpNavigator(sourcesNavigatorView);
 
-            panel.detach();
             next();
         },
 
         function testDebuggerUISourceCodeAddedAndRemoved(next)
         {
             var workspace = createMockWorkspace();
-            var panel = new WebInspector.SourcesPanel(workspace);
-            panel.show(WebInspector.inspectorView.element);
+            var sourcesNavigatorView = createNavigatorView();
 
             var uiSourceCode = addNetworkFile(workspace, "foo.js");
             var debuggerUISourceCode = addDebuggerFile(workspace, "compiled.js");
-            panel._navigator.revealUISourceCode(uiSourceCode);
-            panel._navigator.revealUISourceCode(debuggerUISourceCode);
-            InspectorTest.dumpScriptsNavigator(panel._navigator);
+            sourcesNavigatorView.revealUISourceCode(uiSourceCode);
+            sourcesNavigatorView.revealUISourceCode(debuggerUISourceCode);
+            dumpNavigator(sourcesNavigatorView);
 
             // Plug compiler source mapping.
             addNetworkFile(workspace, "source.js");
 
-            InspectorTest.dumpScriptsNavigator(panel._navigator);
+            dumpNavigator(sourcesNavigatorView);
             next();
         }
     ]);

@@ -259,13 +259,10 @@ InspectorTest.waitForScriptSource = function(scriptName, callback)
     InspectorTest.addSniffer(WebInspector.SourcesPanel.prototype, "_addUISourceCode", InspectorTest.waitForScriptSource.bind(InspectorTest, scriptName, callback));
 };
 
-InspectorTest.dumpScriptsNavigator = function(navigator, prefix)
+InspectorTest.dumpNavigatorView = function(navigatorView, id, prefix)
 {
-    prefix = prefix || "";
-    InspectorTest.addResult(prefix + "Dumping ScriptsNavigator 'Scripts' tab:");
-    dumpNavigatorTreeOutline(prefix, navigator._sourcesView._scriptsTree);
-    InspectorTest.addResult(prefix + "Dumping ScriptsNavigator 'Content scripts' tab:");
-    dumpNavigatorTreeOutline(prefix, navigator._contentScriptsView._scriptsTree);
+    InspectorTest.addResult(prefix + "Dumping ScriptsNavigator " + id + " tab:");
+    dumpNavigatorTreeOutline(prefix, navigatorView._scriptsTree);
 
     function dumpNavigatorTreeElement(prefix, treeElement)
     {
@@ -279,7 +276,6 @@ InspectorTest.dumpScriptsNavigator = function(navigator, prefix)
         for (var i = 0; i < treeOutline.children.length; ++i)
             dumpNavigatorTreeElement(prefix + "  ", treeOutline.children[i]);
     }
-    InspectorTest.addResult("");
 };
 
 InspectorTest.setBreakpoint = function(sourceFrame, lineNumber, condition, enabled)

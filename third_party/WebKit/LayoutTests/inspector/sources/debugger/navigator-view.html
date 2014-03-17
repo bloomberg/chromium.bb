@@ -7,10 +7,13 @@
 <script>
 function test()
 {
-    WebInspector.inspectorView.showPanel("sources");
     InspectorTest.createWorkspace(true);
-    var panel = new WebInspector.SourcesPanel(InspectorTest.testWorkspace);
-    var navigator = panel._navigator;
+    var sourcesNavigatorView = new WebInspector.SourcesNavigatorView();
+    sourcesNavigatorView.setWorkspace(InspectorTest.testWorkspace);
+    sourcesNavigatorView.show(WebInspector.inspectorView.element);
+    var contentScriptsNavigatorView = new WebInspector.ContentScriptsNavigatorView();
+    contentScriptsNavigatorView.setWorkspace(InspectorTest.testWorkspace);
+    contentScriptsNavigatorView.show(WebInspector.inspectorView.element);
 
     var uiSourceCodes = [];
     function addUISourceCode(url, isContentScript)
@@ -20,24 +23,32 @@ function test()
         uiSourceCodes.push(uiSourceCode);
     }
 
+    function revealUISourceCode(uiSourceCode)
+    {
+        sourcesNavigatorView.revealUISourceCode(uiSourceCode);
+        contentScriptsNavigatorView.revealUISourceCode(uiSourceCode);
+    }
+
     function dumpNavigator()
     {
-        InspectorTest.dumpScriptsNavigator(navigator, "  ");
+        InspectorTest.dumpNavigatorView(sourcesNavigatorView, "sources", "  ");
+        InspectorTest.dumpNavigatorView(contentScriptsNavigatorView, "contentScripts", "  ");
     }
 
     function expandDomains(tree)
     {
-        var children = navigator._sourcesView._scriptsTree.children;
+        var children = sourcesNavigatorView._scriptsTree.children;
         for (var i = 0; i < children.length; ++i)
           children[i].expand();
     }
 
     var rootURL = "http://localhost:8080/LayoutTests/inspector/debugger/";
+
     InspectorTest.addResult("Adding first resource:");
     addUISourceCode(rootURL + "foo/bar/script.js", false);
     dumpNavigator();
     InspectorTest.addResult("Expanding domains:");
-    expandDomains(navigator._sourcesView._scriptsTree);
+    expandDomains();
     dumpNavigator();
     InspectorTest.addResult("Adding second resource:");
     addUISourceCode(rootURL + "foo/bar/script.js?a=2", false);
@@ -58,7 +69,7 @@ function test()
     dumpNavigator();
 
     InspectorTest.addResult("Revealing first resource:");
-    navigator.revealUISourceCode(uiSourceCodes[0]);
+    revealUISourceCode(uiSourceCodes[0]);
     dumpNavigator();
 
     // Here we keep http://localhost:8080/LayoutTests/inspector/debugger2/ folder collapsed while adding resources into it.
@@ -83,12 +94,11 @@ function test()
 
     InspectorTest.addResult("Revealing all resources:");
     for (var i = 0; i < uiSourceCodes.length; ++i)
-        navigator.revealUISourceCode(uiSourceCodes[i]);
+        revealUISourceCode(uiSourceCodes[i]);
     dumpNavigator();
 
     InspectorTest.addResult("Removing all resources:");
-    for (var i = 0; i < uiSourceCodes.length; ++i)
-        navigator._removeUISourceCode(uiSourceCodes[i]);
+    InspectorTest.testNetworkWorkspaceProvider.reset();
     dumpNavigator();
 
     InspectorTest.completeTest();

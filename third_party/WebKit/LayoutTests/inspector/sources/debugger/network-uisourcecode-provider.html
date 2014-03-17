@@ -65,6 +65,7 @@ function test()
     {
         InspectorTest.createWorkspace();
         WebInspector.resourceTreeModel = new WebInspector.Object();
+        WebInspector.resourceTreeModel.inspectedPageURL = function() { return "foo"; };
         WebInspector.debuggerModel = new WebInspector.Object();
         WebInspector.debuggerModel._registerScript = function(){};
         var networkUISourceCodeProvider = new WebInspector.NetworkUISourceCodeProvider(InspectorTest.testNetworkWorkspaceProvider, InspectorTest.testWorkspace);

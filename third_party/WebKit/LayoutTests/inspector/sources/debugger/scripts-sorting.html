@@ -7,10 +7,22 @@
 <script>
 function test()
 {
-    WebInspector.inspectorView.showPanel("sources");
+    function dumpNavigator(sourcesNavigatorView)
+    {
+        InspectorTest.dumpNavigatorView(sourcesNavigatorView, "sources", "  ");
+    }
+
+    function createNavigatorView(constructor)
+    {
+        var navigatorView = new constructor();
+        navigatorView.setWorkspace(InspectorTest.testWorkspace);
+        navigatorView.show(WebInspector.inspectorView.element);
+        return navigatorView;
+    }
+
     InspectorTest.createWorkspace(true);
-    var panel = new WebInspector.SourcesPanel(InspectorTest.testWorkspace);
-    var navigator = panel._navigator;
+    sourcesNavigatorView = createNavigatorView(WebInspector.SourcesNavigatorView);
+    contentScriptsNavigatorView = createNavigatorView(WebInspector.ContentScriptsNavigatorView);
 
     var uiSourceCodes = [];
     function addUISourceCode(url, isContentScript)
@@ -20,15 +32,28 @@ function test()
         uiSourceCodes.push(uiSourceCode);
     }
 
+    function dumpNavigator()
+    {
+        InspectorTest.dumpNavigatorView(sourcesNavigatorView, "sources", "  ");
+        InspectorTest.dumpNavigatorView(contentScriptsNavigatorView, "contentScripts", "  ");
+    }
+
     function dumpScriptsList()
     {
         InspectorTest.addResult("");
-        InspectorTest.dumpScriptsNavigator(navigator);
-        navigator.revealUISourceCode(uiSourceCodes[0]);
-        InspectorTest.dumpScriptsNavigator(navigator);
-        for (var i = 0; i < uiSourceCodes.length; ++i)
-            navigator.revealUISourceCode(uiSourceCodes[i]);
-        InspectorTest.dumpScriptsNavigator(navigator);
+        dumpNavigator();
+
+        sourcesNavigatorView.revealUISourceCode(uiSourceCodes[0]);
+        contentScriptsNavigatorView.revealUISourceCode(uiSourceCodes[0]);
+
+        dumpNavigator();
+
+        for (var i = 0; i < uiSourceCodes.length; ++i) {
+            sourcesNavigatorView.revealUISourceCode(uiSourceCodes[i]);
+            contentScriptsNavigatorView.revealUISourceCode(uiSourceCodes[i]);
+        }
+
+        dumpNavigator();
     }
 
     var scripts = [
