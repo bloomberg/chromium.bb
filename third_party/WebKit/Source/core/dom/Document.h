@@ -31,7 +31,6 @@
 #include "bindings/v8/ScriptValue.h"
 #include "core/animation/css/CSSPendingAnimations.h"
 #include "core/dom/ContainerNode.h"
-#include "core/dom/DOMTimeStamp.h"
 #include "core/dom/DocumentEncodingData.h"
 #include "core/dom/DocumentInit.h"
 #include "core/dom/DocumentLifecycle.h"
