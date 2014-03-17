@@ -291,6 +291,8 @@
         'win/hidden_window.h',
         'win/hwnd_subclass.cc',
         'win/hwnd_subclass.h',
+        'win/internal_constants.cc',
+        'win/internal_constants.h',
         'win/lock_state.cc',
         'win/lock_state.h',
         'win/message_box_win.cc',

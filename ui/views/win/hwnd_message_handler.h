@@ -449,6 +449,10 @@ class VIEWS_EXPORT HWNDMessageHandler :
   // of a touch event.
   void HandleTouchEvents(const TouchEvents& touch_events);
 
+  // Resets the flag which indicates that we are in the context of a touch down
+  // event.
+  void ResetTouchDownContext();
+
   // Helper to handle mouse events.
   // The |message|, |w_param|, |l_param| parameters identify the Windows mouse
   // message and its parameters respectively.
@@ -574,13 +578,15 @@ class VIEWS_EXPORT HWNDMessageHandler :
   // class. Allows callers to retrieve the interface pointer.
   scoped_ptr<ui::ViewProp> prop_window_target_;
 
+  // Set to true if we are in the context of a touch down event. This is reset
+  // to false in a delayed task. Defaults to false.
+  // We need this to ignore WM_MOUSEACTIVATE messages generated in response to
+  // touch input. This is fine because activation still works correctly via
+  // native SetFocus calls invoked in the views code.
+  bool touch_down_context_;
+
   DISALLOW_COPY_AND_ASSIGN(HWNDMessageHandler);
 };
-
-// This window property if set on the window does not activate the window for a
-// touch based WM_MOUSEACTIVATE message.
-const wchar_t kIgnoreTouchMouseActivateForWindow[] =
-    L"Chrome.IgnoreMouseActivate";
 
 }  // namespace views
 

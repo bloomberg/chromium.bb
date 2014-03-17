@@ -16,6 +16,7 @@
 #include "base/win/windows_version.h"
 #include "ui/base/touch/touch_enabled.h"
 #include "ui/base/view_prop.h"
+#include "ui/base/win/internal_constants.h"
 #include "ui/base/win/lock_state.h"
 #include "ui/base/win/mouse_wheel_util.h"
 #include "ui/base/win/shell.h"
@@ -253,6 +254,8 @@ void AddScrollStylesToWindow(HWND window) {
   }
 }
 
+const int kTouchDownContextResetTimeout = 500;
+
 }  // namespace
 
 // A scoping class that prevents a window from being able to redraw in response
@@ -346,7 +349,8 @@ HWNDMessageHandler::HWNDMessageHandler(HWNDMessageHandlerDelegate* delegate)
       autohide_factory_(this),
       id_generator_(0),
       needs_scroll_styles_(false),
-      in_size_loop_(false) {
+      in_size_loop_(false),
+      touch_down_context_(false) {
 }
 
 HWNDMessageHandler::~HWNDMessageHandler() {
@@ -1493,6 +1497,11 @@ void HWNDMessageHandler::OnKillFocus(HWND focused_window) {
 LRESULT HWNDMessageHandler::OnMouseActivate(UINT message,
                                             WPARAM w_param,
                                             LPARAM l_param) {
+  // Please refer to the comments in the header for the touch_down_context_
+  // member for the if statement below.
+  if (touch_down_context_)
+    return MA_NOACTIVATE;
+
   // On Windows, if we select the menu item by touch and if the window at the
   // location is another window on the same thread, that window gets a
   // WM_MOUSEACTIVATE message and ends up activating itself, which is not
@@ -1500,8 +1509,8 @@ LRESULT HWNDMessageHandler::OnMouseActivate(UINT message,
   // current cursor location. We check for this property in our
   // WM_MOUSEACTIVATE handler and don't activate the window if the property is
   // set.
-  if (::GetProp(hwnd(), kIgnoreTouchMouseActivateForWindow)) {
-    ::RemoveProp(hwnd(), kIgnoreTouchMouseActivateForWindow);
+  if (::GetProp(hwnd(), ui::kIgnoreTouchMouseActivateForWindow)) {
+    ::RemoveProp(hwnd(), ui::kIgnoreTouchMouseActivateForWindow);
     return MA_NOACTIVATE;
   }
   // A child window activation should be treated as if we lost activation.
@@ -2093,6 +2102,12 @@ LRESULT HWNDMessageHandler::OnTouchEvent(UINT message,
       if (input[i].dwFlags & TOUCHEVENTF_DOWN) {
         touch_ids_.insert(input[i].dwID);
         touch_event_type = ui::ET_TOUCH_PRESSED;
+        touch_down_context_ = true;
+        base::MessageLoop::current()->PostDelayedTask(
+            FROM_HERE,
+            base::Bind(&HWNDMessageHandler::ResetTouchDownContext,
+                       weak_factory_.GetWeakPtr()),
+            base::TimeDelta::FromMilliseconds(kTouchDownContextResetTimeout));
       } else if (input[i].dwFlags & TOUCHEVENTF_UP) {
         touch_ids_.erase(input[i].dwID);
         touch_event_type = ui::ET_TOUCH_RELEASED;
@@ -2232,6 +2247,10 @@ void HWNDMessageHandler::HandleTouchEvents(const TouchEvents& touch_events) {
   base::WeakPtr<HWNDMessageHandler> ref(weak_factory_.GetWeakPtr());
   for (size_t i = 0; i < touch_events.size() && ref; ++i)
     delegate_->HandleTouchEvent(touch_events[i]);
+}
+
+void HWNDMessageHandler::ResetTouchDownContext() {
+  touch_down_context_ = false;
 }
 
 LRESULT HWNDMessageHandler::HandleMouseEventInternal(UINT message,

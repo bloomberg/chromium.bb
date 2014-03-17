@@ -12,6 +12,7 @@
 #include "content/public/common/content_switches.h"
 #include "ui/base/touch/touch_enabled.h"
 #include "ui/base/view_prop.h"
+#include "ui/base/win/internal_constants.h"
 #include "ui/base/win/window_event_target.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -209,6 +210,17 @@ LRESULT LegacyRenderWidgetHostHWND::OnMouseActivate(UINT message,
   // WS_EX_NOACTIVATE style.
   if (::GetWindowLong(GetParent(), GWL_EXSTYLE) & WS_EX_NOACTIVATE)
     return MA_NOACTIVATE;
+  // On Windows, if we select the menu item by touch and if the window at the
+  // location is another window on the same thread, that window gets a
+  // WM_MOUSEACTIVATE message and ends up activating itself, which is not
+  // correct. We workaround this by setting a property on the window at the
+  // current cursor location. We check for this property in our
+  // WM_MOUSEACTIVATE handler and don't activate the window if the property is
+  // set.
+  if (::GetProp(hwnd(), ui::kIgnoreTouchMouseActivateForWindow)) {
+    ::RemoveProp(hwnd(), ui::kIgnoreTouchMouseActivateForWindow);
+    return MA_NOACTIVATE;
+  }
   return MA_ACTIVATE;
 }
 

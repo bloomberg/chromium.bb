@@ -46,7 +46,7 @@
 #include "ui/views/widget/widget.h"
 
 #if defined(OS_WIN)
-#include "ui/views/win/hwnd_message_handler.h"
+#include "ui/base/win/internal_constants.h"
 #include "ui/views/win/hwnd_util.h"
 #endif
 
@@ -400,7 +400,7 @@ MenuItemView* MenuController::Run(Widget* parent,
      HWND window = ::WindowFromPoint(cursor_pos);
      if (::GetWindowThreadProcessId(window, NULL) ==
                                     ::GetCurrentThreadId()) {
-       ::SetProp(window, views::kIgnoreTouchMouseActivateForWindow,
+       ::SetProp(window, ui::kIgnoreTouchMouseActivateForWindow,
                  reinterpret_cast<HANDLE>(true));
      }
   }
