@@ -116,9 +116,6 @@ RuleFeatureSet::InvalidationSetMode RuleFeatureSet::supportsClassDescendantInval
     bool foundIdent = false;
     for (const CSSSelector* component = &selector; component; component = component->tagHistory()) {
 
-        // FIXME: We should allow pseudo elements, but we need to change how they hook
-        // into recalcStyle by moving them to recalcOwnStyle instead of recalcChildStyle.
-
         // FIXME: next up: Tag and Id.
         if (component->m_match == CSSSelector::Class) {
             if (!foundDescendantRelation)
