@@ -11,6 +11,7 @@
 #endif
 
 #include "base/file_util.h"
+#include "base/files/scoped_file.h"
 #include "base/strings/string_split.h"
 
 #if defined(OS_ANDROID)
@@ -45,12 +46,11 @@ bool ReadProcMaps(std::string* proc_maps) {
   // file for details.
   const long kReadSize = sysconf(_SC_PAGESIZE);
 
-  int fd = HANDLE_EINTR(open("/proc/self/maps", O_RDONLY));
-  if (fd == -1) {
+  base::ScopedFD fd(HANDLE_EINTR(open("/proc/self/maps", O_RDONLY)));
+  if (!fd.is_valid()) {
     DPLOG(ERROR) << "Couldn't open /proc/self/maps";
     return false;
   }
-  file_util::ScopedFD fd_closer(&fd);
   proc_maps->clear();
 
   while (true) {
@@ -60,7 +60,7 @@ bool ReadProcMaps(std::string* proc_maps) {
     proc_maps->resize(pos + kReadSize);
     void* buffer = &(*proc_maps)[pos];
 
-    ssize_t bytes_read = HANDLE_EINTR(read(fd, buffer, kReadSize));
+    ssize_t bytes_read = HANDLE_EINTR(read(fd.get(), buffer, kReadSize));
     if (bytes_read < 0) {
       DPLOG(ERROR) << "Couldn't read /proc/self/maps";
       proc_maps->clear();

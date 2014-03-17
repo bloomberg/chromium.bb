@@ -30,7 +30,6 @@
 #include "third_party/ashmem/ashmem.h"
 #endif
 
-using file_util::ScopedFD;
 using file_util::ScopedFILE;
 
 namespace base {
@@ -132,8 +131,7 @@ bool SharedMemory::Create(const SharedMemoryCreateOptions& options) {
 
   ScopedFILE fp;
   bool fix_size = true;
-  int readonly_fd_storage = -1;
-  ScopedFD readonly_fd(&readonly_fd_storage);
+  ScopedFD readonly_fd;
 
   FilePath path;
   if (options.name_deprecated == NULL || options.name_deprecated->empty()) {
@@ -145,8 +143,8 @@ bool SharedMemory::Create(const SharedMemoryCreateOptions& options) {
 
     if (fp) {
       // Also open as readonly so that we can ShareReadOnlyToProcess.
-      *readonly_fd = HANDLE_EINTR(open(path.value().c_str(), O_RDONLY));
-      if (*readonly_fd < 0) {
+      readonly_fd.reset(HANDLE_EINTR(open(path.value().c_str(), O_RDONLY)));
+      if (!readonly_fd.is_valid()) {
         DPLOG(ERROR) << "open(\"" << path.value() << "\", O_RDONLY) failed";
         fp.reset();
       }
@@ -198,8 +196,8 @@ bool SharedMemory::Create(const SharedMemoryCreateOptions& options) {
     }
 
     // Also open as readonly so that we can ShareReadOnlyToProcess.
-    *readonly_fd = HANDLE_EINTR(open(path.value().c_str(), O_RDONLY));
-    if (*readonly_fd < 0) {
+    readonly_fd.reset(HANDLE_EINTR(open(path.value().c_str(), O_RDONLY)));
+    if (!readonly_fd.is_valid()) {
       DPLOG(ERROR) << "open(\"" << path.value() << "\", O_RDONLY) failed";
       close(fd);
       fd = -1;
@@ -265,10 +263,8 @@ bool SharedMemory::Open(const std::string& name, bool read_only) {
 
   const char *mode = read_only ? "r" : "r+";
   ScopedFILE fp(base::OpenFile(path, mode));
-  int readonly_fd_storage = -1;
-  ScopedFD readonly_fd(&readonly_fd_storage);
-  *readonly_fd = HANDLE_EINTR(open(path.value().c_str(), O_RDONLY));
-  if (*readonly_fd < 0) {
+  ScopedFD readonly_fd(HANDLE_EINTR(open(path.value().c_str(), O_RDONLY)));
+  if (!readonly_fd.is_valid()) {
     DPLOG(ERROR) << "open(\"" << path.value() << "\", O_RDONLY) failed";
   }
   return PrepareMapFile(fp.Pass(), readonly_fd.Pass());
@@ -353,7 +349,7 @@ void SharedMemory::UnlockDeprecated() {
 bool SharedMemory::PrepareMapFile(ScopedFILE fp, ScopedFD readonly_fd) {
   DCHECK_EQ(-1, mapped_file_);
   DCHECK_EQ(-1, readonly_mapped_file_);
-  if (fp == NULL || *readonly_fd < 0) return false;
+  if (fp == NULL || !readonly_fd.is_valid()) return false;
 
   // This function theoretically can block on the disk, but realistically
   // the temporary files we create will just go into the buffer cache
@@ -364,7 +360,7 @@ bool SharedMemory::PrepareMapFile(ScopedFILE fp, ScopedFD readonly_fd) {
   struct stat readonly_st = {};
   if (fstat(fileno(fp.get()), &st))
     NOTREACHED();
-  if (fstat(*readonly_fd, &readonly_st))
+  if (fstat(readonly_fd.get(), &readonly_st))
     NOTREACHED();
   if (st.st_dev != readonly_st.st_dev || st.st_ino != readonly_st.st_ino) {
     LOG(ERROR) << "writable and read-only inodes don't match; bailing";
@@ -381,7 +377,7 @@ bool SharedMemory::PrepareMapFile(ScopedFILE fp, ScopedFD readonly_fd) {
     }
   }
   inode_ = st.st_ino;
-  readonly_mapped_file_ = *readonly_fd.release();
+  readonly_mapped_file_ = readonly_fd.release();
 
   return true;
 }

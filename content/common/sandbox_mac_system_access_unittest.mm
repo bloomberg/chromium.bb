@@ -5,6 +5,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/file_util.h"
+#include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
 #include "content/common/sandbox_mac.h"
@@ -86,9 +87,8 @@ class MacSandboxedFileAccessTestCase : public MacSandboxTestCase {
 REGISTER_SANDBOX_TEST_CASE(MacSandboxedFileAccessTestCase);
 
 bool MacSandboxedFileAccessTestCase::SandboxedTest() {
-  int fdes = open("/etc/passwd", O_RDONLY);
-  file_util::ScopedFD file_closer(&fdes);
-  return fdes == -1;
+  base::ScopedFD fdes(open("/etc/passwd", O_RDONLY));
+  return !fdes.is_valid();
 }
 
 TEST_F(MacSandboxTest, FileAccess) {
@@ -105,15 +105,14 @@ class MacSandboxedUrandomTestCase : public MacSandboxTestCase {
 REGISTER_SANDBOX_TEST_CASE(MacSandboxedUrandomTestCase);
 
 bool MacSandboxedUrandomTestCase::SandboxedTest() {
-  int fdes = open("/dev/urandom", O_RDONLY);
-  file_util::ScopedFD file_closer(&fdes);
+  base::ScopedFD fdes(open("/dev/urandom", O_RDONLY));
 
   // Opening /dev/urandom succeeds under the sandbox.
-  if (fdes == -1)
+  if (!fdes.is_valid())
     return false;
 
   char buf[16];
-  int rc = read(fdes, buf, sizeof(buf));
+  int rc = read(fdes.get(), buf, sizeof(buf));
   return rc == sizeof(buf);
 }
 

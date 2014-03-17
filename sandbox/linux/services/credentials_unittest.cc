@@ -12,12 +12,11 @@
 #include <unistd.h>
 
 #include "base/file_util.h"
+#include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "sandbox/linux/tests/unit_tests.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-using file_util::ScopedFD;
 
 namespace sandbox {
 
@@ -65,7 +64,7 @@ TEST(Credentials, HasOpenDirectory) {
   {
     // Have a "/dev" file descriptor around.
     int dev_fd = open("/dev", O_RDONLY | O_DIRECTORY);
-    ScopedFD dev_fd_closer(&dev_fd);
+    base::ScopedFD dev_fd_closer(dev_fd);
     EXPECT_TRUE(creds.HasOpenDirectory(-1));
   }
   EXPECT_FALSE(creds.HasOpenDirectory(-1));
@@ -75,7 +74,7 @@ TEST(Credentials, HasOpenDirectoryWithFD) {
   Credentials creds;
 
   int proc_fd = open("/proc", O_RDONLY | O_DIRECTORY);
-  ScopedFD proc_fd_closer(&proc_fd);
+  base::ScopedFD proc_fd_closer(proc_fd);
   ASSERT_LE(0, proc_fd);
 
   // Don't pass |proc_fd|, an open directory (proc_fd) should
@@ -87,7 +86,7 @@ TEST(Credentials, HasOpenDirectoryWithFD) {
   {
     // Have a "/dev" file descriptor around.
     int dev_fd = open("/dev", O_RDONLY | O_DIRECTORY);
-    ScopedFD dev_fd_closer(&dev_fd);
+    base::ScopedFD dev_fd_closer(dev_fd);
     EXPECT_TRUE(creds.HasOpenDirectory(proc_fd));
   }
 

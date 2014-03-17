@@ -6,6 +6,7 @@
 
 #include "base/auto_reset.h"
 #include "base/containers/hash_tables.h"
+#include "base/files/scoped_file.h"
 #include "base/lazy_instance.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_local.h"
@@ -68,8 +69,8 @@ NPChannelBase* NPChannelBase::GetChannel(
   // On POSIX the channel_handle conveys an FD (socket) which is duped by the
   // kernel during the IPC message exchange (via the SCM_RIGHTS mechanism).
   // Ensure we do not leak this FD.
-  int fd = channel_handle.socket.auto_close ? channel_handle.socket.fd : -1;
-  file_util::ScopedFD auto_close_fd(&fd);
+  base::ScopedFD fd(channel_handle.socket.auto_close ?
+                    channel_handle.socket.fd : -1);
 #endif
 
   scoped_refptr<NPChannelBase> channel;
@@ -86,7 +87,7 @@ NPChannelBase* NPChannelBase::GetChannel(
   if (!channel->channel_valid()) {
     channel->channel_handle_ = channel_handle;
 #if defined(OS_POSIX)
-    ignore_result(auto_close_fd.release());
+    ignore_result(fd.release());
 #endif
     if (mode & IPC::Channel::MODE_SERVER_FLAG) {
       channel->channel_handle_.name =
