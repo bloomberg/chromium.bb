@@ -91,6 +91,9 @@ interface InspectorInstrumentation {
     [DOM, DOMDebugger, Inline=FastReturn]
     void didInvalidateStyleAttr([Keep] Node*);
 
+    [CSS]
+    void documentDisposed([Keep] Document*);
+
     [CSS, Inline=FastReturn]
     void willMutateRules(CSSStyleSheet*);
 
