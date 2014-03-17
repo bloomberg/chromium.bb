@@ -613,7 +613,8 @@ void WebDevToolsAgentImpl::didProcessTask()
 {
     if (InspectorController* ic = inspectorController())
         ic->didProcessTask();
-    flush();
+    if (m_attached)
+        flush();
 }
 
 WebString WebDevToolsAgent::inspectorProtocolVersion()
