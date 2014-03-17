@@ -931,5 +931,6 @@ crbug.com/352856 [ Mac ] svg/batik/text/textPosition2.svg [ Pass Failure ]
 crbug.com/353179 http/tests/inspector/elements/styles/selector-line-sourcemap-header-deprecated.html [ Pass Failure ]
 crbug.com/353186 [ Win Debug ] http/tests/security/webgl-remote-read-remote-image-allowed-with-credentials.html [ Pass Timeout ]
 crbug.com/353208 fast/files/workers/worker-read-blob-async-crash.html [ Pass Crash ]
+crbug.com/353301 [ Win ] svg/custom/js-late-gradient-and-object-creation.svg [ Pass ImageOnlyFailure ]
 
 crbug.com/351658 fast/events/window-onerror-03.html [ NeedsManualRebaseline ]
