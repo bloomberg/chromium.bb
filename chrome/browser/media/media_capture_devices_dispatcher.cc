@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/browser_thread.h"
@@ -36,6 +37,7 @@
 #include "extensions/common/extension.h"
 #include "grit/generated_resources.h"
 #include "media/audio/audio_manager_base.h"
+#include "media/base/media_switches.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capture_types.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -258,6 +260,17 @@ MediaCaptureDevicesDispatcher::MediaCaptureDevicesDispatcher()
   notifications_registrar_.Add(
       this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
       content::NotificationService::AllSources());
+
+  // AVFoundation is used for video/audio device monitoring and video capture in
+  // Mac. Experimentally, connect it in Canary and Unkown (developer builds).
+#if defined(OS_MACOSX)
+  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
+  if (channel == chrome::VersionInfo::CHANNEL_CANARY ||
+      channel == chrome::VersionInfo::CHANNEL_UNKNOWN) {
+    CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kEnableAVFoundation);
+  }
+#endif
 }
 
 MediaCaptureDevicesDispatcher::~MediaCaptureDevicesDispatcher() {}
