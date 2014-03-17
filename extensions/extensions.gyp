@@ -173,6 +173,8 @@
       'sources': [
         'browser/admin_policy.cc',
         'browser/admin_policy.h',
+        # NOTE: When moving an API out of Chrome be sure to verify that the
+        # Android build still compiles. See conditions below.
         'browser/api/api_resource.cc',
         'browser/api/api_resource.h',
         'browser/api/api_resource_manager.h',
@@ -303,6 +305,18 @@
         'browser/value_store/value_store_util.h',
         'browser/view_type_utils.cc',
         'browser/view_type_utils.h',
+      ],
+      'conditions': [
+        ['enable_extensions==0', {
+          # Exclude all API implementations and the ExtensionsApiClient
+          # interface. Moving an API from src/chrome to src/extensions implies
+          # it can be cleanly disabled with enable_extensions==0.
+          # TODO: Eventually the entire extensions module should not be built
+          # when enable_extensions==0.
+          'sources/': [
+            ['exclude', '^browser/api/'],
+          ],
+        }],
       ],
       # Disable c4267 warnings until we fix size_t to int truncations.
       'msvs_disabled_warnings': [ 4267, ],

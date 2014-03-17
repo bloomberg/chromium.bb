@@ -83,8 +83,10 @@ class ChromeExtensionsBrowserClient : public ExtensionsBrowserClient {
   // Observer for Chrome-specific notifications.
   ChromeNotificationObserver notification_observer_;
 
+#if defined(ENABLE_EXTENSIONS)
   // Client for API implementations.
   scoped_ptr<ChromeExtensionsAPIClient> api_client_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(ChromeExtensionsBrowserClient);
 };

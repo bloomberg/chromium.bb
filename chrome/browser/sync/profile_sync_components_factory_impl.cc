@@ -9,9 +9,6 @@
 #include "chrome/browser/bookmarks/enhanced_bookmarks_features.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
-#include "chrome/browser/extensions/api/storage/settings_sync_util.h"
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_sync_service.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
@@ -69,6 +66,11 @@
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_system.h"
 #include "sync/api/syncable_service.h"
+
+#if defined(ENABLE_EXTENSIONS)
+#include "chrome/browser/extensions/api/storage/settings_sync_util.h"
+#include "chrome/browser/extensions/extension_sync_service.h"
+#endif
 
 #if defined(ENABLE_MANAGED_USERS)
 #include "chrome/browser/managed_mode/managed_user_settings_service.h"
@@ -463,15 +465,17 @@ base::WeakPtr<syncer::SyncableService> ProfileSyncComponentsFactoryImpl::
             web_data_service_.get())->AsWeakPtr();
       }
     }
+    case syncer::SEARCH_ENGINES:
+      return TemplateURLServiceFactory::GetForProfile(profile_)->AsWeakPtr();
+#if defined(ENABLE_EXTENSIONS)
     case syncer::APPS:
     case syncer::EXTENSIONS:
       return ExtensionSyncService::Get(profile_)->AsWeakPtr();
-    case syncer::SEARCH_ENGINES:
-      return TemplateURLServiceFactory::GetForProfile(profile_)->AsWeakPtr();
     case syncer::APP_SETTINGS:
     case syncer::EXTENSION_SETTINGS:
       return extensions::settings_sync_util::GetSyncableService(profile_, type)
           ->AsWeakPtr();
+#endif
 #if defined(ENABLE_APP_LIST)
     case syncer::APP_LIST:
       return app_list::AppListSyncableServiceFactory::GetForProfile(profile_)->

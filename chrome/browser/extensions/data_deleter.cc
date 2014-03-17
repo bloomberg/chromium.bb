@@ -14,12 +14,15 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
-#include "extensions/browser/api/storage/storage_frontend.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "net/url_request/url_request_context_getter.h"
+
+#if defined(ENABLE_EXTENSIONS)
+#include "extensions/browser/api/storage/storage_frontend.h"
+#endif
 
 using base::WeakPtr;
 using content::BrowserContext;
@@ -103,11 +106,13 @@ void DataDeleter::StartDeleting(Profile* profile, const Extension* extension) {
     DeleteOrigin(profile, partition, extension->url());
   }
 
+#if defined(ENABLE_EXTENSIONS)
   // Begin removal of the settings for the current extension.
   // StorageFrontend may not exist in unit tests.
   StorageFrontend* frontend = StorageFrontend::Get(profile);
   if (frontend)
     frontend->DeleteStorageSoon(extension->id());
+#endif  // defined(ENABLE_EXTENSIONS)
 }
 
 }  // namespace extensions
