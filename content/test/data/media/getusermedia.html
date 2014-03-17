@@ -30,13 +30,14 @@
         failedCallback);
   }
 
-  // Requests getusermedia and expects it to fail.
+  // Requests getusermedia and expects it to fail. The error name is returned
+  // to the test.
   function getUserMediaAndExpectFailure(constraints) {
     console.log('Calling getUserMediaAndExpectFailure.');
     navigator.webkitGetUserMedia(
         constraints,
         function(stream) { failTest('Unexpectedly succeeded getUserMedia.'); },
-        function(error) { reportTestSuccess(); });
+        function(error) { sendValueToTest(error.name); });
   }
 
   // Creates a MediaStream and renders it locally. When the video is detected to

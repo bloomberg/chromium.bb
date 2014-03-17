@@ -295,25 +295,25 @@ IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
 
   // Test with invalid mandatory audio sourceID.
   NavigateToURL(shell(), url);
-  ExecuteJavascriptAndWaitForOk(
+  EXPECT_EQ("DeviceCaptureError", ExecuteJavascriptAndReturnResult(
       GenerateGetUserMediaWithMandatorySourceID(
           kGetUserMediaAndExpectFailure,
           "something invalid",
-          video_ids[0]));
+          video_ids[0])));
 
   // Test with invalid mandatory video sourceID.
-  ExecuteJavascriptAndWaitForOk(
+  EXPECT_EQ("DeviceCaptureError", ExecuteJavascriptAndReturnResult(
       GenerateGetUserMediaWithMandatorySourceID(
           kGetUserMediaAndExpectFailure,
           audio_ids[0],
-          "something invalid"));
+          "something invalid")));
 
   // Test with empty mandatory audio sourceID.
-  ExecuteJavascriptAndWaitForOk(
+  EXPECT_EQ("DeviceCaptureError", ExecuteJavascriptAndReturnResult(
       GenerateGetUserMediaWithMandatorySourceID(
           kGetUserMediaAndExpectFailure,
           "",
-          video_ids[0]));
+          video_ids[0])));
 }
 
 IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
@@ -357,6 +357,26 @@ IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest, TwoGetUserMediaAndStop) {
 
   ExecuteJavascriptAndWaitForOk(
       "twoGetUserMediaAndStop({video: true, audio: true});");
+}
+
+IN_PROC_BROWSER_TEST_P(WebRtcGetUserMediaBrowserTest,
+                       GetUserMediaWithTooHighVideoConstraintsValues) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
+  GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
+
+  int large_value = 99999;
+  std::string call = GenerateGetUserMediaCall(kGetUserMediaAndExpectFailure,
+                                              large_value,
+                                              large_value,
+                                              large_value,
+                                              large_value,
+                                              large_value,
+                                              large_value);
+  NavigateToURL(shell(), url);
+
+  // TODO(perkj): A proper error code should be returned by gUM.
+  EXPECT_EQ("TrackStartError", ExecuteJavascriptAndReturnResult(call));
 }
 
 // This test will make a simple getUserMedia page, verify that video is playing

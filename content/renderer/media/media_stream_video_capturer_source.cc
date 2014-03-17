@@ -44,6 +44,7 @@ VideoCapturerDelegate::VideoCapturerDelegate(
       got_first_frame_(false) {
   DVLOG(3) << "VideoCapturerDelegate::ctor";
   DCHECK(capture_engine_);
+  message_loop_proxy_ = base::MessageLoopProxy::current();
 }
 
 VideoCapturerDelegate::~VideoCapturerDelegate() {
@@ -93,7 +94,7 @@ void VideoCapturerDelegate::StartDeliver(
     const NewFrameCallback& new_frame_callback,
     const StartedCallback& started_callback) {
   DCHECK(params.requested_format.IsValid());
-  message_loop_proxy_ = base::MessageLoopProxy::current();
+  DCHECK(message_loop_proxy_ == base::MessageLoopProxy::current());
   new_frame_callback_ = new_frame_callback;
   started_callback_ = started_callback;
   got_first_frame_ = false;
@@ -124,7 +125,7 @@ void VideoCapturerDelegate::OnPaused(media::VideoCapture* capture) {
 }
 
 void VideoCapturerDelegate::OnError(media::VideoCapture* capture,
-                                             int error_code) {
+                                    int error_code) {
   DVLOG(3) << "VideoCapturerDelegate::OnError";
   message_loop_proxy_->PostTask(
       FROM_HERE,
