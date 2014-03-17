@@ -46,7 +46,7 @@ hb_shape_plan_plan (hb_shape_plan_t    *shape_plan,
 
 #define HB_SHAPER_PLAN(shaper) \
 	HB_STMT_START { \
-	  if (hb_##shaper##_shaper_face_data_ensure (shape_plan->face)) { \
+	  if (hb_##shaper##_shaper_face_data_ensure (shape_plan->face_unsafe)) { \
 	    HB_SHAPER_DATA (shaper, shape_plan) = \
 	      HB_SHAPER_DATA_CREATE_FUNC (shaper, shape_plan) (shape_plan, user_features, num_user_features); \
 	    shape_plan->shaper_func = _hb_##shaper##_shape; \
@@ -117,7 +117,7 @@ hb_shape_plan_create (hb_face_t                     *face,
 
   hb_face_make_immutable (face);
   shape_plan->default_shaper_list = shaper_list == NULL;
-  shape_plan->face = hb_face_reference (face);
+  shape_plan->face_unsafe = face;
   shape_plan->props = *props;
 
   hb_shape_plan_plan (shape_plan, user_features, num_user_features, shaper_list);
@@ -189,8 +189,6 @@ hb_shape_plan_destroy (hb_shape_plan_t *shape_plan)
 #define HB_SHAPER_IMPLEMENT(shaper) HB_SHAPER_DATA_DESTROY(shaper, shape_plan);
 #include "hb-shaper-list.hh"
 #undef HB_SHAPER_IMPLEMENT
-
-  hb_face_destroy (shape_plan->face);
 
   free (shape_plan);
 }
@@ -264,7 +262,7 @@ hb_shape_plan_execute (hb_shape_plan_t    *shape_plan,
 		hb_object_is_inert (buffer)))
     return false;
 
-  assert (shape_plan->face == font->face);
+  assert (shape_plan->face_unsafe == font->face);
   assert (hb_segment_properties_equal (&shape_plan->props, &buffer->props));
 
 #define HB_SHAPER_EXECUTE(shaper) \
@@ -394,9 +392,6 @@ retry:
     free (node);
     goto retry;
   }
-
-  /* Release our reference on face. */
-  hb_face_destroy (face);
 
   return hb_shape_plan_reference (shape_plan);
 }
