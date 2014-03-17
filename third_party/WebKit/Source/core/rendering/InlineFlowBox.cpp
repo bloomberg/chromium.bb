@@ -916,8 +916,13 @@ inline void InlineFlowBox::addReplacedChildOverflow(const InlineBox* inlineBox, 
 void InlineFlowBox::computeOverflow(LayoutUnit lineTop, LayoutUnit lineBottom, GlyphOverflowAndFallbackFontsMap& textBoxDataMap)
 {
     // If we know we have no overflow, we can just bail.
-    if (knownToHaveNoOverflow())
+    if (knownToHaveNoOverflow()) {
+        ASSERT(!m_overflow);
         return;
+    }
+
+    if (m_overflow)
+        m_overflow.clear();
 
     // Visual overflow just includes overflow for stuff we need to repaint ourselves.  Self-painting layers are ignored.
     // Layout overflow is used to determine scrolling extent, so it still includes child layers and also factors in
@@ -956,9 +961,8 @@ void InlineFlowBox::computeOverflow(LayoutUnit lineTop, LayoutUnit lineBottom, G
     setOverflowFromLogicalRects(logicalLayoutOverflow, logicalVisualOverflow, lineTop, lineBottom);
 }
 
-void InlineFlowBox::setLayoutOverflow(const LayoutRect& rect, LayoutUnit lineTop, LayoutUnit lineBottom)
+void InlineFlowBox::setLayoutOverflow(const LayoutRect& rect, const LayoutRect& frameBox)
 {
-    LayoutRect frameBox = enclosingLayoutRect(frameRectIncludingLineHeight(lineTop, lineBottom));
     if (frameBox.contains(rect) || rect.isEmpty())
         return;
 
@@ -968,9 +972,8 @@ void InlineFlowBox::setLayoutOverflow(const LayoutRect& rect, LayoutUnit lineTop
     m_overflow->setLayoutOverflow(rect);
 }
 
-void InlineFlowBox::setVisualOverflow(const LayoutRect& rect, LayoutUnit lineTop, LayoutUnit lineBottom)
+void InlineFlowBox::setVisualOverflow(const LayoutRect& rect, const LayoutRect& frameBox)
 {
-    LayoutRect frameBox = enclosingLayoutRect(frameRectIncludingLineHeight(lineTop, lineBottom));
     if (frameBox.contains(rect) || rect.isEmpty())
         return;
 
@@ -982,11 +985,13 @@ void InlineFlowBox::setVisualOverflow(const LayoutRect& rect, LayoutUnit lineTop
 
 void InlineFlowBox::setOverflowFromLogicalRects(const LayoutRect& logicalLayoutOverflow, const LayoutRect& logicalVisualOverflow, LayoutUnit lineTop, LayoutUnit lineBottom)
 {
+    LayoutRect frameBox = enclosingLayoutRect(frameRectIncludingLineHeight(lineTop, lineBottom));
+
     LayoutRect layoutOverflow(isHorizontal() ? logicalLayoutOverflow : logicalLayoutOverflow.transposedRect());
-    setLayoutOverflow(layoutOverflow, lineTop, lineBottom);
+    setLayoutOverflow(layoutOverflow, frameBox);
 
     LayoutRect visualOverflow(isHorizontal() ? logicalVisualOverflow : logicalVisualOverflow.transposedRect());
-    setVisualOverflow(visualOverflow, lineTop, lineBottom);
+    setVisualOverflow(visualOverflow, frameBox);
 }
 
 bool InlineFlowBox::nodeAtPoint(const HitTestRequest& request, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, LayoutUnit lineTop, LayoutUnit lineBottom)
