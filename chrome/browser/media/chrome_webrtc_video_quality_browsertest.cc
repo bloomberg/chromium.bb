@@ -32,6 +32,11 @@
 #include "testing/perf/perf_test.h"
 #include "ui/gl/gl_switches.h"
 
+// For fine-grained suppression on flaky tests.
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
+
 static const base::FilePath::CharType kFrameAnalyzerExecutable[] =
 #if defined(OS_WIN)
     FILE_PATH_LITERAL("frame_analyzer.exe");
@@ -344,6 +349,12 @@ class WebRtcVideoQualityBrowserTest : public WebRtcTestBase {
 
 IN_PROC_BROWSER_TEST_F(WebRtcVideoQualityBrowserTest,
                        MANUAL_TestVGAVideoQuality) {
+#if defined(OS_WIN)
+  // Fails on XP. http://crbug.com/353078
+  if (base::win::GetVersion() <= base::win::VERSION_XP)
+    return;
+#endif
+
   ASSERT_GE(TestTimeouts::action_max_timeout().InSeconds(), 150) <<
       "This is a long-running test; you must specify "
       "--ui-test-action-max-timeout to have a value of at least 150000.";
