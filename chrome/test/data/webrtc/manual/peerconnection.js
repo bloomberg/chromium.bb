@@ -74,6 +74,7 @@ function setupLocalStorageFieldValues() {
   registerLocalStorage_('pc-createanswer-constraints');
   registerLocalStorage_('pc-createoffer-constraints');
   registerLocalStorage_('get-devices-onload');
+  registerLocalStorage_('data-channel-type-rtp');
 }
 
 // Public HTML functions
@@ -551,9 +552,8 @@ function preparePeerConnection() {
   if (global.peerConnection != null)
     error_('creating peer connection, but we already have one.');
 
-  global.useRtpDataChannels = $('data-channel-type-rtp').checked;
   global.peerConnection = createPeerConnection(STUN_SERVER,
-                                               global.useRtpDataChannels);
+      $('data-channel-type-rtp').checked);
   print_('ok-peerconnection-created');
 }
 
@@ -1337,7 +1337,8 @@ function handlePeerMessage_(peerId, message) {
     print_('We are being called: answer...');
 
     global.peerConnection = createPeerConnection(STUN_SERVER,
-                                                 global.useRtpDataChannels);
+        $('data-channel-type-rtp').checked);
+
     if ($('auto-add-stream-oncall') &&
         obtainGetUserMediaResult_() == 'ok-got-stream') {
       print_('We have a local stream, so hook it up automatically.');
