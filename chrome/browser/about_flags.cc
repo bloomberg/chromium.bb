@@ -1864,6 +1864,13 @@ const Experiment kExperiments[] = {
     kOsWin | kOsLinux | kOsCrOS | kOsAndroid,
     MULTI_VALUE_TYPE(kTouchScrollingModeChoices)
   },
+  {
+    "bleeding-edge-renderer-mode",
+    IDS_FLAGS_BLEEDING_RENDERER_NAME,
+    IDS_FLAGS_BLEEDING_RENDERER_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableBleedingEdgeRenderingFastPaths)
+  },
 };
 
 const Experiment* experiments = kExperiments;

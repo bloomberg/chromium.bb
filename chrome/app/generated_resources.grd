@@ -6956,6 +6956,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_TOUCH_SCROLLING_MODE_SYNC_TOUCHMOVE" desc="Name for the sync-touchmove scrolling mode">
         sync-touchmove
       </message>
+      <message name="IDS_FLAGS_BLEEDING_RENDERER_NAME" desc="Name of the 'Stacked Tabs' lab.">
+        Bleeding Edge Renderer Paths
+      </message>
+      <message name="IDS_FLAGS_BLEEDING_RENDERER_DESCRIPTION" desc="Description of the 'Stacked Tabs' lab.">
+        Use bleeding-edge code to make Chrome draw content faster. The changes
+        behind this path are very likely to break lots of content.
+      </message>
 
       <!-- Crashes -->
       <message name="IDS_CRASHES_TITLE" desc="Title for the chrome://crashes page.">
