@@ -34,7 +34,6 @@ namespace blink {
 
 #pragma pack(push, 1)
 
-#if defined(ENABLE_NEW_GAMEPAD_API)
 class WebGamepadButton {
 public:
     WebGamepadButton()
@@ -50,7 +49,6 @@ public:
     bool pressed;
     float value;
 };
-#endif
 
 // This structure is intentionally POD and fixed size so that it can be shared
 // memory between hardware polling threads and the rest of the browser. See
@@ -69,9 +67,7 @@ public:
         , buttonsLength(0)
     {
         id[0] = 0;
-#if defined(ENABLE_NEW_GAMEPAD_API)
         mapping[0] = 0;
-#endif
     }
 
     // Is there a gamepad connected at this index?
@@ -93,23 +89,15 @@ public:
     // Number of valid entries in the buttons array.
     unsigned buttonsLength;
 
-#if defined(ENABLE_NEW_GAMEPAD_API)
     // Button states
     WebGamepadButton buttons[buttonsLengthCap];
 
     // Mapping type (for example "standard")
     WebUChar mapping[mappingLengthCap];
-#else
-    float buttons[buttonsLengthCap];
-#endif
 };
 
 #if BLINK_IMPLEMENTATION
-#if defined(ENABLE_NEW_GAMEPAD_API)
 COMPILE_ASSERT(sizeof(WebGamepad) == 529, WebGamepad_has_wrong_size);
-#else
-COMPILE_ASSERT(sizeof(WebGamepad) == 465, WebGamepad_has_wrong_size);
-#endif
 #endif
 
 #pragma pack(pop)
