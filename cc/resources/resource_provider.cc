@@ -380,6 +380,9 @@ ResourceProvider::RasterBuffer::RasterBuffer(
 ResourceProvider::RasterBuffer::~RasterBuffer() {}
 
 SkCanvas* ResourceProvider::RasterBuffer::LockForWrite() {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
+               "ResourceProvider::RasterBuffer::LockForWrite");
+
   DCHECK(!locked_canvas_);
 
   locked_canvas_ = DoLockForWrite();
@@ -388,6 +391,9 @@ SkCanvas* ResourceProvider::RasterBuffer::LockForWrite() {
 }
 
 bool ResourceProvider::RasterBuffer::UnlockForWrite() {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
+               "ResourceProvider::RasterBuffer::UnlockForWrite");
+
   if (locked_canvas_) {
     locked_canvas_->restoreToCount(canvas_save_count_);
     locked_canvas_ = NULL;
@@ -1762,6 +1768,9 @@ bool ResourceProvider::UnmapPixelRasterBuffer(ResourceId id) {
 }
 
 void ResourceProvider::AcquirePixelBuffer(Resource* resource) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
+               "ResourceProvider::AcquirePixelBuffer");
+
   DCHECK(resource->origin == Resource::Internal);
   DCHECK_EQ(resource->exported_count, 0);
   DCHECK(!resource->image_id);
@@ -1791,6 +1800,9 @@ void ResourceProvider::AcquirePixelBuffer(Resource* resource) {
 }
 
 void ResourceProvider::ReleasePixelBuffer(Resource* resource) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
+               "ResourceProvider::ReleasePixelBuffer");
+
   DCHECK(resource->origin == Resource::Internal);
   DCHECK_EQ(resource->exported_count, 0);
   DCHECK(!resource->image_id);
@@ -1828,6 +1840,9 @@ void ResourceProvider::ReleasePixelBuffer(Resource* resource) {
 
 uint8_t* ResourceProvider::MapPixelBuffer(const Resource* resource,
                                           int* stride) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
+               "ResourceProvider::MapPixelBuffer");
+
   DCHECK(resource->origin == Resource::Internal);
   DCHECK_EQ(resource->exported_count, 0);
   DCHECK(!resource->image_id);
@@ -1851,6 +1866,9 @@ uint8_t* ResourceProvider::MapPixelBuffer(const Resource* resource,
 }
 
 void ResourceProvider::UnmapPixelBuffer(const Resource* resource) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
+               "ResourceProvider::UnmapPixelBuffer");
+
   DCHECK(resource->origin == Resource::Internal);
   DCHECK_EQ(resource->exported_count, 0);
   DCHECK(!resource->image_id);
@@ -1894,6 +1912,9 @@ GLenum ResourceProvider::BindForSampling(
 }
 
 void ResourceProvider::BeginSetPixels(ResourceId id) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
+               "ResourceProvider::BeginSetPixels");
+
   Resource* resource = GetResource(id);
   DCHECK(!resource->pending_set_pixels);
 
@@ -1960,6 +1981,9 @@ void ResourceProvider::BeginSetPixels(ResourceId id) {
 }
 
 void ResourceProvider::ForceSetPixelsToComplete(ResourceId id) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
+               "ResourceProvider::ForceSetPixelsToComplete");
+
   Resource* resource = GetResource(id);
   DCHECK(resource->locked_for_write);
   DCHECK(resource->pending_set_pixels);
@@ -1976,6 +2000,9 @@ void ResourceProvider::ForceSetPixelsToComplete(ResourceId id) {
 }
 
 bool ResourceProvider::DidSetPixelsComplete(ResourceId id) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
+               "ResourceProvider::DidSetPixelsComplete");
+
   Resource* resource = GetResource(id);
   DCHECK(resource->locked_for_write);
   DCHECK(resource->pending_set_pixels);
