@@ -904,7 +904,7 @@ class CQSlaveStats(StatsManager):
 
 
 class CQMasterStats(StatsManager):
-  """Manager stats gathering for the Pre Commit Queue."""
+  """Manager stats gathering for the Commit Queue Master."""
   TABLE_CLASS = CQMasterTable
 
   def __init__(self):
