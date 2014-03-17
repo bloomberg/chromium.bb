@@ -8,7 +8,9 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 
+namespace base {
 class CommandLine;
+}
 
 namespace policy {
 class BrowserPolicyConnector;
@@ -24,7 +26,7 @@ class BrowserProcessPlatformPartBase {
   // Called after creating the process singleton or when another chrome
   // rendez-vous with this one.
   virtual void PlatformSpecificCommandLineProcessing(
-      const CommandLine& command_line);
+      const base::CommandLine& command_line);
 
   // Called from BrowserProcessImpl::StartTearDown().
   virtual void StartTearDown();

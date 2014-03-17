@@ -41,10 +41,10 @@ class ProcessSingletonStartupLock : public base::NonThreadSafe {
   bool locked() { return locked_; }
 
  private:
-  typedef std::pair<CommandLine::StringVector, base::FilePath>
+  typedef std::pair<base::CommandLine::StringVector, base::FilePath>
       DelayedStartupMessage;
 
-  bool NotificationCallbackImpl(const CommandLine& command_line,
+  bool NotificationCallbackImpl(const base::CommandLine& command_line,
                                 const base::FilePath& current_directory);
 
   bool locked_;

@@ -41,12 +41,12 @@ class InstallUtil {
   static void TriggerActiveSetupCommand();
 
   // Launches given exe as admin on Vista.
-  static bool ExecuteExeAsAdmin(const CommandLine& cmd, DWORD* exit_code);
+  static bool ExecuteExeAsAdmin(const base::CommandLine& cmd, DWORD* exit_code);
 
   // Reads the uninstall command for Chromium from registry and returns it.
   // If system_install is true the command is read from HKLM, otherwise
   // from HKCU.
-  static CommandLine GetChromeUninstallCmd(
+  static base::CommandLine GetChromeUninstallCmd(
       bool system_install,
       BrowserDistribution::Type distribution_type);
 
@@ -173,7 +173,7 @@ class InstallUtil {
   // Composes |program| and |arguments| into |command_line|.
   static void MakeUninstallCommand(const base::string16& program,
                                    const base::string16& arguments,
-                                   CommandLine* command_line);
+                                   base::CommandLine* command_line);
 
   // Returns a string in the form YYYYMMDD of the current date.
   static base::string16 GetCurrentDate();

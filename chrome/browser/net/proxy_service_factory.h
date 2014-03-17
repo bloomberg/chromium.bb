@@ -7,9 +7,12 @@
 
 #include "base/basictypes.h"
 
-class CommandLine;
 class PrefProxyConfigTracker;
 class PrefService;
+
+namespace base {
+class CommandLine;
+}
 
 namespace net {
 class NetLog;
@@ -46,7 +49,7 @@ class ProxyServiceFactory {
       net::URLRequestContext* context,
       net::NetworkDelegate* network_delegate,
       net::ProxyConfigService* proxy_config_service,
-      const CommandLine& command_line,
+      const base::CommandLine& command_line,
       bool quick_check_enabled);
 
  private:

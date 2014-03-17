@@ -15,7 +15,7 @@ class WVTestLicenseServerConfig : public TestLicenseServerConfig {
 
   virtual std::string GetServerURL() OVERRIDE;
 
-  virtual bool GetServerCommandLine(CommandLine* command_line) OVERRIDE;
+  virtual bool GetServerCommandLine(base::CommandLine* command_line) OVERRIDE;
 
   virtual bool IsPlatformSupported() OVERRIDE;
 

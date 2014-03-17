@@ -13,8 +13,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/simple_thread.h"
 
-class CommandLine;
-
 class ChromeLauncher : public base::DelegateSimpleThread::Delegate {
  public:
   explicit ChromeLauncher(const base::FilePath& user_data);

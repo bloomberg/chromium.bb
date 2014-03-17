@@ -19,11 +19,11 @@
 #include "ui/base/window_open_disposition.h"
 #include "url/gurl.h"
 
-class CommandLine;
 class PrefService;
 class Profile;
 
 namespace base {
+class CommandLine;
 class DictionaryValue;
 }
 
@@ -53,7 +53,8 @@ class BackgroundContentsService : private content::NotificationObserver,
                                   public BackgroundContents::Delegate,
                                   public KeyedService {
  public:
-  BackgroundContentsService(Profile* profile, const CommandLine* command_line);
+  BackgroundContentsService(Profile* profile,
+                            const base::CommandLine* command_line);
   virtual ~BackgroundContentsService();
 
   // Allows tests to reduce the time between a force-installed app/extension

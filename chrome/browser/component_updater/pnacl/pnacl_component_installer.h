@@ -15,9 +15,8 @@
 #include "chrome/browser/component_updater/component_updater_service.h"
 #include "chrome/browser/component_updater/pnacl/pnacl_profile_observer.h"
 
-class CommandLine;
-
 namespace base {
+class CommandLine;
 class DictionaryValue;
 }
 
@@ -52,7 +51,7 @@ class PnaclComponentInstaller : public ComponentInstaller {
 
   // Register a PNaCl component for the first time.
   void RegisterPnaclComponent(ComponentUpdateService* cus,
-                              const CommandLine& command_line);
+                              const base::CommandLine& command_line);
 
   // Check the PNaCl version again and re-register with the component
   // updater service.

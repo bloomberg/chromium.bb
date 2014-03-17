@@ -21,8 +21,6 @@
 #include "ppapi/shared_impl/ppapi_permissions.h"
 #include "url/gurl.h"
 
-class CommandLine;
-
 namespace content {
 class BrowserChildProcessHost;
 class BrowserPpapiHost;

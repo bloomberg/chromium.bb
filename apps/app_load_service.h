@@ -37,7 +37,7 @@ class AppLoadService : public KeyedService,
     PostReloadAction();
 
     PostReloadActionType action_type;
-    CommandLine command_line;
+    base::CommandLine command_line;
     base::FilePath current_dir;
   };
 
@@ -53,7 +53,7 @@ class AppLoadService : public KeyedService,
   // launch parameters. Returns true if loading the extension has begun
   // successfully.
   bool LoadAndLaunch(const base::FilePath& extension_path,
-                     const CommandLine& command_line,
+                     const base::CommandLine& command_line,
                      const base::FilePath& current_dir);
 
   static AppLoadService* Get(Profile* profile);

@@ -18,9 +18,12 @@
 #include "url/gurl.h"
 
 class Browser;
-class CommandLine;
 class GURL;
 class PrefService;
+
+namespace base {
+class CommandLine;
+}
 
 // class containing helpers for BrowserMain to spin up a new instance and
 // initialize the profile.
@@ -37,7 +40,7 @@ class StartupBrowserCreator {
 
   // This function is equivalent to ProcessCommandLine but should only be
   // called during actual process startup.
-  bool Start(const CommandLine& cmd_line,
+  bool Start(const base::CommandLine& cmd_line,
              const base::FilePath& cur_dir,
              Profile* last_used_profile,
              const Profiles& last_opened_profiles,
@@ -54,7 +57,7 @@ class StartupBrowserCreator {
   // |startup_profile_dir| is the directory that contains the profile that the
   // command line arguments will be executed under.
   static void ProcessCommandLineAlreadyRunning(
-      const CommandLine& command_line,
+      const base::CommandLine& command_line,
       const base::FilePath& cur_dir,
       const base::FilePath& startup_profile_dir);
 
@@ -72,7 +75,7 @@ class StartupBrowserCreator {
   // implies that the directory of the executable should be used.
   // |process_startup| indicates whether this is the first browser.
   // |is_first_run| indicates that this is a new profile.
-  bool LaunchBrowser(const CommandLine& command_line,
+  bool LaunchBrowser(const base::CommandLine& command_line,
                      Profile* profile,
                      const base::FilePath& cur_dir,
                      chrome::startup::IsProcessStartup is_process_startup,
@@ -85,7 +88,7 @@ class StartupBrowserCreator {
   static bool WasRestarted();
 
   static SessionStartupPref GetSessionStartupPref(
-      const CommandLine& command_line,
+      const base::CommandLine& command_line,
       Profile* profile);
 
   void set_is_default_browser_dialog_suppressed(bool new_value) {
@@ -121,11 +124,11 @@ class StartupBrowserCreator {
   // Returns the list of URLs to open from the command line. The returned
   // vector is empty if the user didn't specify any URLs on the command line.
   static std::vector<GURL> GetURLsFromCommandLine(
-      const CommandLine& command_line,
+      const base::CommandLine& command_line,
       const base::FilePath& cur_dir,
       Profile* profile);
 
-  static bool ProcessCmdLineImpl(const CommandLine& command_line,
+  static bool ProcessCmdLineImpl(const base::CommandLine& command_line,
                                  const base::FilePath& cur_dir,
                                  bool process_startup,
                                  Profile* last_used_profile,
@@ -135,7 +138,7 @@ class StartupBrowserCreator {
 
   // Callback after a profile has been created.
   static void ProcessCommandLineOnProfileCreated(
-      const CommandLine& command_line,
+      const base::CommandLine& command_line,
       const base::FilePath& cur_dir,
       Profile* profile,
       Profile::CreateStatus status);
@@ -173,6 +176,6 @@ bool HasPendingUncleanExit(Profile* profile);
 // Returns the path that contains the profile that should be loaded on process
 // startup.
 base::FilePath GetStartupProfilePath(const base::FilePath& user_data_dir,
-                                     const CommandLine& command_line);
+                                     const base::CommandLine& command_line);
 
 #endif  // CHROME_BROWSER_UI_STARTUP_STARTUP_BROWSER_CREATOR_H_

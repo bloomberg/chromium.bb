@@ -14,7 +14,6 @@
 #include "chrome/test/chromedriver/capabilities.h"
 #include "chrome/test/chromedriver/net/sync_websocket_factory.h"
 
-class CommandLine;
 class DevToolsEventListener;
 
 namespace base {

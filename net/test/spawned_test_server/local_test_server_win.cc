@@ -141,7 +141,7 @@ ScopedPath::~ScopedPath() {
 namespace net {
 
 bool LocalTestServer::LaunchPython(const base::FilePath& testserver_path) {
-  CommandLine python_command(CommandLine::NO_PROGRAM);
+  base::CommandLine python_command(base::CommandLine::NO_PROGRAM);
   if (!GetPythonCommand(&python_command))
     return false;
 

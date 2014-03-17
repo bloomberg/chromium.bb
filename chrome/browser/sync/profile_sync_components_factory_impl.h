@@ -12,9 +12,11 @@
 #include "chrome/browser/sync/profile_sync_components_factory.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 
-
-class CommandLine;
 class Profile;
+
+namespace base {
+class CommandLine;
+}
 
 namespace extensions {
 class ExtensionSystem;
@@ -23,7 +25,7 @@ class ExtensionSystem;
 class ProfileSyncComponentsFactoryImpl : public ProfileSyncComponentsFactory {
  public:
   ProfileSyncComponentsFactoryImpl(Profile* profile,
-                                   CommandLine* command_line);
+                                   base::CommandLine* command_line);
   virtual ~ProfileSyncComponentsFactoryImpl();
 
   virtual void RegisterDataTypes(ProfileSyncService* pss) OVERRIDE;
@@ -74,7 +76,7 @@ class ProfileSyncComponentsFactoryImpl : public ProfileSyncComponentsFactory {
   void RegisterCommonDataTypes(ProfileSyncService* pss);
 
   Profile* profile_;
-  CommandLine* command_line_;
+  base::CommandLine* command_line_;
   // Set on the UI thread (since extensions::ExtensionSystemFactory is
   // non-threadsafe); accessed on both the UI and FILE threads in
   // GetSyncableServiceForType.

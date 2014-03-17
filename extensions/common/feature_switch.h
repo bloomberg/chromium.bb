@@ -9,7 +9,9 @@
 
 #include "base/basictypes.h"
 
+namespace base {
 class CommandLine;
+}
 
 namespace extensions {
 
@@ -50,7 +52,7 @@ class FeatureSwitch {
   // by the default and override values.
   FeatureSwitch(const char* switch_name,
                 DefaultValue default_value);
-  FeatureSwitch(const CommandLine* command_line,
+  FeatureSwitch(const base::CommandLine* command_line,
                 const char* switch_name,
                 DefaultValue default_value);
 
@@ -61,14 +63,14 @@ class FeatureSwitch {
   bool IsEnabled() const;
 
  private:
-  void Init(const CommandLine* command_line,
+  void Init(const base::CommandLine* command_line,
             const char* switch_name,
             DefaultValue default_value);
 
   std::string GetLegacyEnableFlag() const;
   std::string GetLegacyDisableFlag() const;
 
-  const CommandLine* command_line_;
+  const base::CommandLine* command_line_;
   const char* switch_name_;
   bool default_value_;
   OverrideValue override_value_;

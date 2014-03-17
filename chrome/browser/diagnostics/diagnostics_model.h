@@ -8,7 +8,9 @@
 #include <string>
 #include "base/time/time.h"
 
+namespace base {
 class CommandLine;
+}
 
 namespace diagnostics {
 
@@ -100,7 +102,7 @@ class DiagnosticsModel {
 
 // The factory for the model. The main purpose is to hide the creation of
 // different models for different platforms.
-DiagnosticsModel* MakeDiagnosticsModel(const CommandLine& cmdline);
+DiagnosticsModel* MakeDiagnosticsModel(const base::CommandLine& cmdline);
 
 }  // namespace diagnostics
 

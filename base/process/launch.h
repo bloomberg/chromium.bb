@@ -24,9 +24,9 @@
 #include "base/win/scoped_handle.h"
 #endif
 
-class CommandLine;
-
 namespace base {
+
+class CommandLine;
 
 #if defined(OS_WIN)
 typedef std::vector<HANDLE> HandlesToInheritVector;

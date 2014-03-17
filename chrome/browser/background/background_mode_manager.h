@@ -20,12 +20,15 @@
 #include "content/public/browser/notification_registrar.h"
 
 class Browser;
-class CommandLine;
 class PrefRegistrySimple;
 class Profile;
 class ProfileInfoCache;
 class StatusIcon;
 class StatusTray;
+
+namespace base {
+class CommandLine;
+}
 
 namespace extensions {
 class Extension;
@@ -54,7 +57,7 @@ class BackgroundModeManager
       public ProfileInfoCacheObserver,
       public StatusIconMenuModel::Delegate {
  public:
-  BackgroundModeManager(CommandLine* command_line,
+  BackgroundModeManager(base::CommandLine* command_line,
                         ProfileInfoCache* profile_cache);
   virtual ~BackgroundModeManager();
 

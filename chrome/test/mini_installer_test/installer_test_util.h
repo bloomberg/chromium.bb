@@ -79,7 +79,7 @@ bool ValidateInstall(
 
 // Run and wait for command to finish.
 // Returns true if successful, otherwise false.
-bool RunAndWaitForCommandToFinish(CommandLine command);
+bool RunAndWaitForCommandToFinish(base::CommandLine command);
 
 }  // namespace
 

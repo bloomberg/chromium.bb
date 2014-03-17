@@ -9,7 +9,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "mojo/system/embedder/scoped_platform_handle.h"
 
+namespace base {
 class CommandLine;
+}
 
 namespace mojo {
 namespace shell {
@@ -26,7 +28,7 @@ class ChildProcess {
   // Returns null if the command line doesn't indicate that this is a child
   // process. |main()| should call this, and if it returns non-null it should
   // call |Run()| inside a main message loop.
-  static scoped_ptr<ChildProcess> Create(const CommandLine& command_line);
+  static scoped_ptr<ChildProcess> Create(const base::CommandLine& command_line);
 
   void Run();
 

@@ -11,10 +11,10 @@
 #include "base/process/process.h"
 #include "ui/gfx/native_widget_types.h"
 
-class CommandLine;
 class GURL;
 
 namespace base {
+class CommandLine;
 class FilePath;
 }
 
@@ -67,7 +67,7 @@ class NativeProcessLauncher {
                                      std::string* error_message);
 
   // Launches native messaging process.
-  static bool LaunchNativeProcess(const CommandLine& command_line,
+  static bool LaunchNativeProcess(const base::CommandLine& command_line,
                                   base::ProcessHandle* process_handle,
                                   base::PlatformFile* read_file,
                                   base::PlatformFile* write_file);

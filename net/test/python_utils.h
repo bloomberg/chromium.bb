@@ -7,9 +7,8 @@
 
 #include "base/compiler_specific.h"
 
-class CommandLine;
-
 namespace base {
+class CommandLine;
 class FilePath;
 }
 
@@ -23,6 +22,6 @@ void AppendToPythonPath(const base::FilePath& dir);
 bool GetPyProtoPath(base::FilePath* dir);
 
 // Returns the command that should be used to launch Python.
-bool GetPythonCommand(CommandLine* python_cmd) WARN_UNUSED_RESULT;
+bool GetPythonCommand(base::CommandLine* python_cmd) WARN_UNUSED_RESULT;
 
 #endif  // NET_TEST_PYTHON_UTILS_H_

@@ -56,7 +56,7 @@ class WebstoreStartupInstallerTest : public WebstoreInstallerTest {
 };
 
 IN_PROC_BROWSER_TEST_F(WebstoreStartupInstallerTest, Install) {
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kAppsGalleryInstallAutoConfirmForTests, "accept");
 
   ui_test_utils::NavigateToURL(
@@ -71,7 +71,7 @@ IN_PROC_BROWSER_TEST_F(WebstoreStartupInstallerTest, Install) {
 
 IN_PROC_BROWSER_TEST_F(WebstoreStartupInstallerTest,
     InstallNotAllowedFromNonVerifiedDomains) {
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kAppsGalleryInstallAutoConfirmForTests, "cancel");
   ui_test_utils::NavigateToURL(
       browser(),
@@ -91,7 +91,7 @@ IN_PROC_BROWSER_TEST_F(WebstoreStartupInstallerTest, FindLink) {
 // Flakes on all platforms: http://crbug.com/95713, http://crbug.com/229947
 IN_PROC_BROWSER_TEST_F(WebstoreStartupInstallerTest,
                        DISABLED_ArgumentValidation) {
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kAppsGalleryInstallAutoConfirmForTests, "cancel");
 
   // Each of these tests has to run separately, since one page/tab can
@@ -108,7 +108,7 @@ IN_PROC_BROWSER_TEST_F(WebstoreStartupInstallerTest,
 }
 
 IN_PROC_BROWSER_TEST_F(WebstoreStartupInstallerTest, MultipleInstallCalls) {
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kAppsGalleryInstallAutoConfirmForTests, "cancel");
 
   ui_test_utils::NavigateToURL(
@@ -118,7 +118,7 @@ IN_PROC_BROWSER_TEST_F(WebstoreStartupInstallerTest, MultipleInstallCalls) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebstoreStartupInstallerTest, InstallNotSupported) {
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kAppsGalleryInstallAutoConfirmForTests, "cancel");
   ui_test_utils::NavigateToURL(
       browser(),
@@ -138,7 +138,7 @@ IN_PROC_BROWSER_TEST_F(WebstoreStartupInstallerTest, InstallNotSupported) {
 
 // Regression test for http://crbug.com/144991.
 IN_PROC_BROWSER_TEST_F(WebstoreStartupInstallerTest, InstallFromHostedApp) {
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kAppsGalleryInstallAutoConfirmForTests, "accept");
 
   const GURL kInstallUrl = GenerateTestServerUrl(kAppDomain, "install.html");
@@ -175,7 +175,7 @@ class WebstoreStartupInstallerManagedUsersTest
     : public WebstoreStartupInstallerTest {
  public:
   // InProcessBrowserTest overrides:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE {
     WebstoreStartupInstallerTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(switches::kManagedUserId, "asdf");
   }
@@ -185,11 +185,12 @@ IN_PROC_BROWSER_TEST_F(WebstoreStartupInstallerManagedUsersTest,
                        InstallProhibited) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAshBrowserTests))
     return;
 #endif
 
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kAppsGalleryInstallAutoConfirmForTests, "accept");
 
   ui_test_utils::NavigateToURL(
@@ -208,12 +209,12 @@ IN_PROC_BROWSER_TEST_F(WebstoreStartupInstallerManagedUsersTest,
 class WebstoreStartupInstallUnpackFailureTest
     : public WebstoreStartupInstallerTest {
  public:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE {
     WebstoreStartupInstallerTest::SetUpCommandLine(command_line);
 
     GURL crx_url = GenerateTestServerUrl(
         kWebstoreDomain, "malformed_extension.crx");
-    CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kAppsGalleryUpdateURL, crx_url.spec());
   }
 
@@ -225,7 +226,7 @@ class WebstoreStartupInstallUnpackFailureTest
 
 IN_PROC_BROWSER_TEST_F(WebstoreStartupInstallUnpackFailureTest,
     WebstoreStartupInstallUnpackFailureTest) {
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kAppsGalleryInstallAutoConfirmForTests, "accept");
 
   ui_test_utils::NavigateToURL(browser(),
@@ -280,7 +281,7 @@ class CommandLineWebstoreInstall : public WebstoreStartupInstallerTest,
 };
 
 IN_PROC_BROWSER_TEST_F(CommandLineWebstoreInstall, Accept) {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   command_line->AppendSwitchASCII(
       switches::kInstallFromWebstore, kTestExtensionId);
   command_line->AppendSwitchASCII(
@@ -292,7 +293,7 @@ IN_PROC_BROWSER_TEST_F(CommandLineWebstoreInstall, Accept) {
 }
 
 IN_PROC_BROWSER_TEST_F(CommandLineWebstoreInstall, Cancel) {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   command_line->AppendSwitchASCII(
       switches::kInstallFromWebstore, kTestExtensionId);
   command_line->AppendSwitchASCII(
@@ -308,20 +309,20 @@ IN_PROC_BROWSER_TEST_F(CommandLineWebstoreInstall, LimitedAccept) {
 
   // Small test of "WebStoreIdFromLimitedInstallCmdLine" which made more
   // sense together with the rest of the test for "LimitedInstallFromWebstore".
-  CommandLine command_line_test1(CommandLine::NO_PROGRAM);
+  base::CommandLine command_line_test1(base::CommandLine::NO_PROGRAM);
   command_line_test1.AppendSwitchASCII(switches::kLimitedInstallFromWebstore,
       "1");
   EXPECT_EQ("nckgahadagoaajjgafhacjanaoiihapd",
       helper.WebStoreIdFromLimitedInstallCmdLine(command_line_test1));
 
-  CommandLine command_line_test2(CommandLine::NO_PROGRAM);
+  base::CommandLine command_line_test2(base::CommandLine::NO_PROGRAM);
   command_line_test1.AppendSwitchASCII(switches::kLimitedInstallFromWebstore,
       "2");
   EXPECT_EQ(kTestExtensionId,
       helper.WebStoreIdFromLimitedInstallCmdLine(command_line_test1));
 
   // Now, on to the real test for LimitedInstallFromWebstore.
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   command_line->AppendSwitchASCII(
       switches::kLimitedInstallFromWebstore, "2");
   helper.LimitedInstallFromWebstore(*command_line, browser()->profile(),

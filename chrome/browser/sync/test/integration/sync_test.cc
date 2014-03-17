@@ -137,7 +137,7 @@ SyncTest::SyncTest(TestType test_type)
 SyncTest::~SyncTest() {}
 
 void SyncTest::SetUp() {
-  CommandLine* cl = CommandLine::ForCurrentProcess();
+  base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
   if (cl->HasSwitch(switches::kPasswordFileForTest)) {
     ReadPasswordFile();
   } else if (cl->HasSwitch(switches::kSyncUserForTest) &&
@@ -210,12 +210,12 @@ void SyncTest::TearDown() {
   TearDownLocalTestServer();
 }
 
-void SyncTest::SetUpCommandLine(CommandLine* cl) {
+void SyncTest::SetUpCommandLine(base::CommandLine* cl) {
   AddTestSwitches(cl);
   AddOptionalTypesToCommandLine(cl);
 }
 
-void SyncTest::AddTestSwitches(CommandLine* cl) {
+void SyncTest::AddTestSwitches(base::CommandLine* cl) {
   // Disable non-essential access of external network resources.
   if (!cl->HasSwitch(switches::kDisableBackgroundNetworking))
     cl->AppendSwitch(switches::kDisableBackgroundNetworking);
@@ -229,7 +229,7 @@ void SyncTest::AddTestSwitches(CommandLine* cl) {
     cl->AppendSwitch(switches::kDisableSyncPriorityPreferences);
 }
 
-void SyncTest::AddOptionalTypesToCommandLine(CommandLine* cl) {}
+void SyncTest::AddOptionalTypesToCommandLine(base::CommandLine* cl) {}
 
 // static
 Profile* SyncTest::MakeProfile(const base::FilePath::StringType name) {
@@ -414,7 +414,7 @@ void SyncTest::TearDownInProcessBrowserTestFixture() {
 }
 
 void SyncTest::ReadPasswordFile() {
-  CommandLine* cl = CommandLine::ForCurrentProcess();
+  base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
   password_file_ = cl->GetSwitchValuePath(switches::kPasswordFileForTest);
   if (password_file_.empty())
     LOG(FATAL) << "Can't run live server test without specifying --"
@@ -535,7 +535,7 @@ bool SyncTest::SetUpLocalPythonTestServer() {
   EXPECT_TRUE(sync_server_.Start())
       << "Could not launch local python test server.";
 
-  CommandLine* cl = CommandLine::ForCurrentProcess();
+  base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
   if (server_type_ == LOCAL_PYTHON_SERVER) {
     std::string sync_service_url = sync_server_.GetURL("chromiumsync").spec();
     cl->AppendSwitchASCII(switches::kSyncServiceURL, sync_service_url);
@@ -569,13 +569,13 @@ bool SyncTest::SetUpLocalPythonTestServer() {
 }
 
 bool SyncTest::SetUpLocalTestServer() {
-  CommandLine* cl = CommandLine::ForCurrentProcess();
-  CommandLine::StringType server_cmdline_string = cl->GetSwitchValueNative(
-      switches::kSyncServerCommandLine);
-  CommandLine::StringVector server_cmdline_vector;
-  CommandLine::StringType delimiters(FILE_PATH_LITERAL(" "));
+  base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
+  base::CommandLine::StringType server_cmdline_string =
+      cl->GetSwitchValueNative(switches::kSyncServerCommandLine);
+  base::CommandLine::StringVector server_cmdline_vector;
+  base::CommandLine::StringType delimiters(FILE_PATH_LITERAL(" "));
   Tokenize(server_cmdline_string, delimiters, &server_cmdline_vector);
-  CommandLine server_cmdline(server_cmdline_vector);
+  base::CommandLine server_cmdline(server_cmdline_vector);
   base::LaunchOptions options;
 #if defined(OS_WIN)
   options.start_hidden = true;
@@ -625,7 +625,7 @@ bool SyncTest::WaitForTestServerToStart(base::TimeDelta wait, int intervals) {
 }
 
 bool SyncTest::IsTestServerRunning() {
-  CommandLine* cl = CommandLine::ForCurrentProcess();
+  base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
   std::string sync_url = cl->GetSwitchValueASCII(switches::kSyncServiceURL);
   GURL sync_url_status(sync_url.append("/healthz"));
   SyncServerStatusChecker delegate;

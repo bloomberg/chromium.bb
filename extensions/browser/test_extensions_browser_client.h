@@ -24,7 +24,7 @@ class TestExtensionsBrowserClient : public ExtensionsBrowserClient {
 
   // ExtensionsBrowserClient overrides:
   virtual bool IsShuttingDown() OVERRIDE;
-  virtual bool AreExtensionsDisabled(const CommandLine& command_line,
+  virtual bool AreExtensionsDisabled(const base::CommandLine& command_line,
                                      content::BrowserContext* context) OVERRIDE;
   virtual bool IsValidContext(content::BrowserContext* context) OVERRIDE;
   virtual bool IsSameContext(content::BrowserContext* first,

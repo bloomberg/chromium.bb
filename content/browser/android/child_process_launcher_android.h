@@ -21,7 +21,7 @@ typedef base::Callback<void(base::ProcessHandle)> StartChildProcessCallback;
 // The created process handle is returned to the |callback| on success, 0 is
 // retuned if the process could not be created.
 void StartChildProcess(
-    const CommandLine::StringVector& argv,
+    const base::CommandLine::StringVector& argv,
     const std::vector<FileDescriptorInfo>& files_to_register,
     const StartChildProcessCallback& callback);
 

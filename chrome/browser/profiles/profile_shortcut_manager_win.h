@@ -63,7 +63,7 @@ class ProfileShortcutManagerWin : public ProfileShortcutManager,
       const base::FilePath& profile_path,
       const base::Callback<void(bool)>& callback) OVERRIDE;
   virtual void GetShortcutProperties(const base::FilePath& profile_path,
-                                     CommandLine* command_line,
+                                     base::CommandLine* command_line,
                                      base::string16* name,
                                      base::FilePath* icon_path) OVERRIDE;
 

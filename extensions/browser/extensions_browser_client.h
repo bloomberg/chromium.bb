@@ -10,9 +10,12 @@
 
 #include "base/memory/scoped_ptr.h"
 
-class CommandLine;
 class ExtensionFunctionRegistry;
 class PrefService;
+
+namespace base {
+class CommandLine;
+}
 
 namespace content {
 class BrowserContext;
@@ -44,7 +47,7 @@ class ExtensionsBrowserClient {
 
   // Returns true if extensions have been disabled (e.g. via a command-line flag
   // or preference).
-  virtual bool AreExtensionsDisabled(const CommandLine& command_line,
+  virtual bool AreExtensionsDisabled(const base::CommandLine& command_line,
                                      content::BrowserContext* context) = 0;
 
   // Returns true if the |context| is known to the embedder.

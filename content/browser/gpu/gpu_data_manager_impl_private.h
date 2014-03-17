@@ -18,6 +18,10 @@
 #include "gpu/config/gpu_blacklist.h"
 #include "gpu/config/gpu_driver_bug_list.h"
 
+namespace base {
+class CommandLine;
+}
+
 namespace content {
 
 class CONTENT_EXPORT GpuDataManagerImplPrivate {
@@ -57,11 +61,11 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   void UpdateVideoMemoryUsageStats(
       const GPUVideoMemoryUsageStats& video_memory_usage_stats);
 
-  void AppendRendererCommandLine(CommandLine* command_line) const;
+  void AppendRendererCommandLine(base::CommandLine* command_line) const;
 
-  void AppendGpuCommandLine(CommandLine* command_line) const;
+  void AppendGpuCommandLine(base::CommandLine* command_line) const;
 
-  void AppendPluginCommandLine(CommandLine* command_line) const;
+  void AppendPluginCommandLine(base::CommandLine* command_line) const;
 
   void UpdateRendererWebPrefs(WebPreferences* prefs) const;
 

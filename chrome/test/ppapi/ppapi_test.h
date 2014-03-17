@@ -41,7 +41,7 @@ class PPAPITestBase : public InProcessBrowserTest {
 
   // InProcessBrowserTest:
   virtual void SetUp() OVERRIDE;
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
+  virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE;
   virtual void SetUpOnMainThread() OVERRIDE;
 
   virtual std::string BuildQuery(const std::string& base,
@@ -99,7 +99,7 @@ class PPAPITest : public PPAPITestBase {
  public:
   PPAPITest();
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
+  virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE;
 
   virtual std::string BuildQuery(const std::string& base,
                                  const std::string& test_case) OVERRIDE;
@@ -109,7 +109,7 @@ class PPAPITest : public PPAPITestBase {
 
 class PPAPIPrivateTest : public PPAPITest {
  protected:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
+  virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE;
 };
 
 // Variant of PPAPITest that runs plugins out-of-process to test proxy
@@ -118,18 +118,18 @@ class OutOfProcessPPAPITest : public PPAPITest {
  public:
   OutOfProcessPPAPITest();
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
+  virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE;
 };
 
 class OutOfProcessPPAPIPrivateTest : public OutOfProcessPPAPITest {
  protected:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
+  virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE;
 };
 
 // NaCl plugin test runner for Newlib runtime.
 class PPAPINaClTest : public PPAPITestBase {
  public:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
+  virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE;
   // PPAPITestBase overrides.
   virtual void RunTest(const std::string& test_case) OVERRIDE;
   virtual void RunTestAndReload(const std::string& test_case) OVERRIDE;
@@ -152,7 +152,7 @@ class PPAPINaClNewlibTest : public PPAPINaClTest {
 
 class PPAPIPrivateNaClNewlibTest : public PPAPINaClNewlibTest {
  protected:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
+  virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE;
 };
 
 // NaCl plugin test runner for GNU-libc runtime.
@@ -164,7 +164,7 @@ class PPAPINaClGLibcTest : public PPAPINaClTest {
 
 class PPAPIPrivateNaClGLibcTest : public PPAPINaClGLibcTest {
  protected:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
+  virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE;
 };
 
 // NaCl plugin test runner for the PNaCl + Newlib runtime.
@@ -176,12 +176,12 @@ class PPAPINaClPNaClTest : public PPAPINaClTest {
 
 class PPAPIPrivateNaClPNaClTest : public PPAPINaClPNaClTest {
  protected:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
+  virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE;
 };
 
 class PPAPINaClTestDisallowedSockets : public PPAPITestBase {
  public:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
+  virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE;
 
   virtual std::string BuildQuery(const std::string& base,
                                  const std::string& test_case) OVERRIDE;

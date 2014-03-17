@@ -23,7 +23,9 @@
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 
+namespace base {
 class CommandLine;
+}
 
 namespace cloud_print {
 struct CloudPrintProxyInfo;
@@ -132,7 +134,7 @@ class ServiceProcessControl : public IPC::Sender,
   class Launcher
       : public base::RefCountedThreadSafe<ServiceProcessControl::Launcher> {
    public:
-    Launcher(ServiceProcessControl* process, CommandLine* cmd_line);
+    Launcher(ServiceProcessControl* process, base::CommandLine* cmd_line);
     // Execute the command line to start the process asynchronously. After the
     // command is executed |task| is called with the process handle on the UI
     // thread.
@@ -152,7 +154,7 @@ class ServiceProcessControl : public IPC::Sender,
     void Notify();
     void CloseProcessHandle();
     ServiceProcessControl* process_;
-    scoped_ptr<CommandLine> cmd_line_;
+    scoped_ptr<base::CommandLine> cmd_line_;
     base::Closure notify_task_;
     bool launched_;
     uint32 retry_count_;

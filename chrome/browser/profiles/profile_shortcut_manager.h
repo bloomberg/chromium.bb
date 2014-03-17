@@ -10,8 +10,11 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 
-class CommandLine;
 class ProfileManager;
+
+namespace base {
+class CommandLine;
+}
 
 class ProfileShortcutManager {
  public:
@@ -40,7 +43,7 @@ class ProfileShortcutManager {
   // Populates the |command_line|, |name| and |icon_path| that a shortcut for
   // the given |profile_path| should use.
   virtual void GetShortcutProperties(const base::FilePath& profile_path,
-                                     CommandLine* command_line,
+                                     base::CommandLine* command_line,
                                      base::string16* name,
                                      base::FilePath* icon_path) = 0;
 

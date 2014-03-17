@@ -15,6 +15,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
+
+class CommandLine;
+
 #if defined(OS_MACOSX)
 namespace mac {
 class ScopedNSAutoreleasePool;
@@ -29,7 +32,6 @@ class ScopedCOMInitializer;
 }  // namespace base
 
 class Browser;
-class CommandLine;
 class Profile;
 
 namespace content {
@@ -155,7 +157,7 @@ class InProcessBrowserTest : public content::BrowserTestBase {
   // the command line isn't a concept that we support on the Mac; AppleEvents
   // are the Mac solution for the same need. Any test based on these functions
   // doesn't apply to the Mac.
-  CommandLine GetCommandLineForRelaunch();
+  base::CommandLine GetCommandLineForRelaunch();
 #endif
 
 #if defined(OS_MACOSX)
@@ -184,7 +186,7 @@ class InProcessBrowserTest : public content::BrowserTestBase {
 
   // Prepare command line that will be used to launch the child browser process
   // with an in-process test.
-  void PrepareTestCommandLine(CommandLine* command_line);
+  void PrepareTestCommandLine(base::CommandLine* command_line);
 
   // Browser created from CreateBrowser.
   Browser* browser_;

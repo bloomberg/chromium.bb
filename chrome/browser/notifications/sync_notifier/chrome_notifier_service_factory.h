@@ -9,7 +9,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
+namespace base {
 class CommandLine;
+}
 
 namespace notifier {
 
@@ -26,7 +28,7 @@ class ChromeNotifierServiceFactory : public BrowserContextKeyedServiceFactory {
   // not.
   // TODO(petewil): Remove this when the SyncedNotifications feature is ready
   // to be turned on by default, and just use a disable switch instead then.
-  static bool UseSyncedNotifications(CommandLine* command_line);
+  static bool UseSyncedNotifications(base::CommandLine* command_line);
 
  private:
   friend struct DefaultSingletonTraits<ChromeNotifierServiceFactory>;

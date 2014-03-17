@@ -7,7 +7,9 @@
 
 #include "chrome/browser/component_updater/component_updater_service.h"
 
+namespace base {
 class CommandLine;
+}
 
 namespace net {
 class URLRequestContextGetter;
@@ -16,7 +18,8 @@ class URLRequestContextGetter;
 namespace component_updater {
 
 ComponentUpdateService::Configurator* MakeChromeComponentUpdaterConfigurator(
-    const CommandLine* cmdline, net::URLRequestContextGetter* context_getter);
+    const base::CommandLine* cmdline,
+    net::URLRequestContextGetter* context_getter);
 
 }  // namespace component_updater
 

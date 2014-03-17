@@ -15,9 +15,8 @@
 #include "content/public/common/process_type.h"
 #include "ipc/ipc_sender.h"
 
-class CommandLine;
-
 namespace base {
+class CommandLine;
 class FilePath;
 }
 
@@ -45,7 +44,7 @@ class CONTENT_EXPORT BrowserChildProcessHost : public IPC::Sender {
   // Takes ownership of |cmd_line| and |delegate|.
   virtual void Launch(
       SandboxedProcessLauncherDelegate* delegate,
-      CommandLine* cmd_line) = 0;
+      base::CommandLine* cmd_line) = 0;
 
   virtual const ChildProcessData& GetData() const = 0;
 

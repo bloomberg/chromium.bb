@@ -27,7 +27,7 @@ class LocalSyncTestServer : public net::LocalTestServer {
 
   // Overriden from net::LocalTestServer.
   virtual bool AddCommandLineArguments(
-      CommandLine* command_line) const OVERRIDE;
+      base::CommandLine* command_line) const OVERRIDE;
   virtual bool SetPythonPath() const OVERRIDE;
   virtual bool GetTestServerPath(
       base::FilePath* testserver_path) const OVERRIDE;

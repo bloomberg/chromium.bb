@@ -32,7 +32,9 @@
 #include "base/win/message_window.h"
 #endif  // defined(OS_WIN)
 
+namespace base {
 class CommandLine;
+}
 
 // ProcessSingleton ----------------------------------------------------------
 //
@@ -60,7 +62,7 @@ class ProcessSingleton : public base::NonThreadSafe {
   // handled within the current browser instance or false if the remote process
   // should handle it (i.e., because the current process is shutting down).
   typedef base::Callback<bool(
-      const CommandLine& command_line,
+      const base::CommandLine& command_line,
       const base::FilePath& current_directory)> NotificationCallback;
 
   ProcessSingleton(const base::FilePath& user_data_dir,
@@ -101,11 +103,12 @@ class ProcessSingleton : public base::NonThreadSafe {
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
   // Exposed for testing.  We use a timeout on Linux, and in tests we want
   // this timeout to be short.
-  NotifyResult NotifyOtherProcessWithTimeout(const CommandLine& command_line,
-                                             int timeout_seconds,
-                                             bool kill_unresponsive);
+  NotifyResult NotifyOtherProcessWithTimeout(
+      const base::CommandLine& command_line,
+      int timeout_seconds,
+      bool kill_unresponsive);
   NotifyResult NotifyOtherProcessWithTimeoutOrCreate(
-      const CommandLine& command_line,
+      const base::CommandLine& command_line,
       int timeout_seconds);
   void OverrideCurrentPidForTesting(base::ProcessId pid);
   void OverrideKillCallbackForTesting(

@@ -12,9 +12,8 @@
 #include "base/threading/non_thread_safe.h"
 #include "remoting/host/win/worker_process_launcher.h"
 
-class CommandLine;
-
 namespace base {
+class CommandLine;
 class SingleThreadTaskRunner;
 } // namespace base
 
@@ -32,7 +31,7 @@ class WtsSessionProcessDelegate
  public:
   WtsSessionProcessDelegate(
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-      scoped_ptr<CommandLine> target,
+      scoped_ptr<base::CommandLine> target,
       bool launch_elevated,
       const std::string& channel_security);
   ~WtsSessionProcessDelegate();

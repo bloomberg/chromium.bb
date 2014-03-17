@@ -7,11 +7,11 @@
 
 #include <string>
 
-class CommandLine;
 class GURL;
 class Profile;
 
 namespace base {
+class CommandLine;
 class FilePath;
 }
 
@@ -27,7 +27,7 @@ namespace apps {
 // |current_directory| is used to expand any relative paths on the command line.
 void LaunchPlatformAppWithCommandLine(Profile* profile,
                                       const extensions::Extension* extension,
-                                      const CommandLine& command_line,
+                                      const base::CommandLine& command_line,
                                       const base::FilePath& current_directory);
 
 // Launches the platform app |extension| by issuing an onLaunched event

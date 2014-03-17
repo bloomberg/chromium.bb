@@ -14,7 +14,6 @@
 #include "base/process/process.h"
 #include "ipc/ipc_channel_handle.h"
 
-class CommandLine;
 class MultiProcessLock;
 
 #if defined(OS_MACOSX)
@@ -26,6 +25,7 @@ class NSString;
 #endif
 
 namespace base {
+class CommandLine;
 class MessageLoopProxy;
 }
 
@@ -138,7 +138,7 @@ class ServiceProcessState {
   struct StateData;
   StateData* state_;
   scoped_ptr<base::SharedMemory> shared_mem_service_data_;
-  scoped_ptr<CommandLine> autorun_command_line_;
+  scoped_ptr<base::CommandLine> autorun_command_line_;
 };
 
 #endif  // CHROME_COMMON_SERVICE_PROCESS_UTIL_H_

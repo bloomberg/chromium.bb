@@ -28,8 +28,6 @@
 #include "ui/gfx/size.h"
 #include "ui/wm/core/cursor_manager.h"
 
-class CommandLine;
-
 namespace app_list {
 class AppListView;
 }

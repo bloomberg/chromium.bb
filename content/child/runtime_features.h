@@ -5,12 +5,14 @@
 #ifndef CONTENT_CHILD_RUNTIME_FEATURES_H_
 #define CONTENT_CHILD_RUNTIME_FEATURES_H_
 
+namespace base {
 class CommandLine;
+}
 
 namespace content {
 
 void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
-    const CommandLine& command_line);
+    const base::CommandLine& command_line);
 
 }  // namespace content
 

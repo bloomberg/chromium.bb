@@ -4,14 +4,16 @@
 
 #include "content/test/content_browser_test.h"
 
+namespace base {
 class CommandLine;
+}
 
 namespace content {
 
 // Contains stuff WebRTC browsertests have in common.
 class WebRtcContentBrowserTest: public ContentBrowserTest {
  public:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
+  virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE;
   virtual void SetUp() OVERRIDE;
 
  protected:

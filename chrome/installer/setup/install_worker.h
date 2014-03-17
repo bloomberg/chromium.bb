@@ -13,10 +13,10 @@
 #include <vector>
 
 class BrowserDistribution;
-class CommandLine;
 class WorkItemList;
 
 namespace base {
+class CommandLine;
 class FilePath;
 class Version;
 }
@@ -161,7 +161,7 @@ void AddDeleteOldIELowRightsPolicyWorkItems(
 // Utility method currently shared between install.cc and install_worker.cc
 void AppendUninstallCommandLineFlags(const InstallerState& installer_state,
                                      const Product& product,
-                                     CommandLine* uninstall_cmd);
+                                     base::CommandLine* uninstall_cmd);
 
 // Refreshes the elevation policy on platforms where it is supported.
 void RefreshElevationPolicy();

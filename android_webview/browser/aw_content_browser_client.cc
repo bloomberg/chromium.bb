@@ -237,7 +237,7 @@ std::string AwContentBrowserClient::GetCanonicalEncodingNameByAliasName(
 }
 
 void AwContentBrowserClient::AppendExtraCommandLineSwitches(
-    CommandLine* command_line,
+    base::CommandLine* command_line,
     int child_process_id) {
   NOTREACHED() << "Android WebView does not support multi-process yet";
 }

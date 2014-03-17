@@ -23,10 +23,10 @@
 #include "ipc/ipc_platform_file.h"
 #include "ui/surface/transport_dib.h"
 
-class CommandLine;
 struct ViewHostMsg_CompositorSurfaceBuffersSwapped_Params;
 
 namespace base {
+class CommandLine;
 class MessageLoop;
 }
 
@@ -274,13 +274,14 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   // Generates a command line to be used to spawn a renderer and appends the
   // results to |*command_line|.
-  void AppendRendererCommandLine(CommandLine* command_line) const;
+  void AppendRendererCommandLine(base::CommandLine* command_line) const;
 
   // Copies applicable command line switches from the given |browser_cmd| line
   // flags to the output |renderer_cmd| line flags. Not all switches will be
   // copied over.
-  void PropagateBrowserCommandLineToRenderer(const CommandLine& browser_cmd,
-                                             CommandLine* renderer_cmd) const;
+  void PropagateBrowserCommandLineToRenderer(
+      const base::CommandLine& browser_cmd,
+      base::CommandLine* renderer_cmd) const;
 
   // Callers can reduce the RenderProcess' priority.
   void SetBackgrounded(bool backgrounded);

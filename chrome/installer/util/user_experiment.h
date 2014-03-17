@@ -11,9 +11,8 @@
 #include "base/strings/string16.h"
 #include "chrome/installer/util/util_constants.h"
 
-class CommandLine;
-
 namespace base {
+class CommandLine;
 class FilePath;
 }
 
@@ -52,7 +51,7 @@ bool CreateExperimentDetails(int flavor, ExperimentDetails* experiment);
 // After an install or upgrade the user might qualify to participate in an
 // experiment. This function determines if the user qualifies and if so it
 // sets the wheels in motion or in simple cases does the experiment itself.
-void LaunchBrowserUserExperiment(const CommandLine& base_command,
+void LaunchBrowserUserExperiment(const base::CommandLine& base_command,
                                  InstallStatus status,
                                  bool system_level);
 

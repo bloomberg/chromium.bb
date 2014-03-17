@@ -10,9 +10,8 @@
 
 #include "chrome/installer/util/util_constants.h"
 
-class CommandLine;
-
 namespace base {
+class CommandLine;
 class FilePath;
 }  // namespace base
 
@@ -28,7 +27,7 @@ class MasterPreferences;
 // |true| if installation was delegated to a pre-existing higher version.
 InstallStatus InstallProductsHelper(const InstallationState& original_state,
                                     const base::FilePath& setup_exe,
-                                    const CommandLine& cmd_line,
+                                    const base::CommandLine& cmd_line,
                                     const MasterPreferences& prefs,
                                     const InstallerState& installer_state,
                                     base::FilePath* installer_directory,

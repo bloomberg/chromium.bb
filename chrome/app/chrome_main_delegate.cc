@@ -537,8 +537,9 @@ bool ChromeMainDelegate::BasicStartupComplete(int* exit_code) {
 }
 
 #if defined(OS_MACOSX)
-void ChromeMainDelegate::InitMacCrashReporter(const CommandLine& command_line,
-                                              const std::string& process_type) {
+void ChromeMainDelegate::InitMacCrashReporter(
+    const base::CommandLine& command_line,
+    const std::string& process_type) {
   // TODO(mark): Right now, InitCrashReporter() needs to be called after
   // CommandLine::Init() and chrome::RegisterPathProvider().  Ideally,
   // Breakpad initialization could occur sooner, preferably even before the

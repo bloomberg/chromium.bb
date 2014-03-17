@@ -12,7 +12,7 @@ class PrefService;
 
 class ChromeBrowserFieldTrials {
  public:
-  explicit ChromeBrowserFieldTrials(const CommandLine& command_line);
+  explicit ChromeBrowserFieldTrials(const base::CommandLine& command_line);
   ~ChromeBrowserFieldTrials();
 
   // Called by the browser main sequence to set up Field Trials for this client.
@@ -24,7 +24,7 @@ class ChromeBrowserFieldTrials {
   // reported as used.
   void InstantiateDynamicTrials();
 
-  const CommandLine& parsed_command_line_;
+  const base::CommandLine& parsed_command_line_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserFieldTrials);
 };

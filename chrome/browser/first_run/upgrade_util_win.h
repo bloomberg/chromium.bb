@@ -5,7 +5,9 @@
 #ifndef CHROME_BROWSER_FIRST_RUN_UPGRADE_UTIL_WIN_H_
 #define CHROME_BROWSER_FIRST_RUN_UPGRADE_UTIL_WIN_H_
 
+namespace base {
 class CommandLine;
+}
 
 namespace upgrade_util {
 
@@ -19,7 +21,7 @@ bool SwapNewChromeExeIfPresent();
 // the browser. Note that relaunch does NOT exit the existing browser process.
 // If this is called before message loop is executed, simply exit the main
 // function. If browser is already running, you will need to exit it.
-bool DoUpgradeTasks(const CommandLine& command_line);
+bool DoUpgradeTasks(const base::CommandLine& command_line);
 
 }  // namespace upgrade_util
 

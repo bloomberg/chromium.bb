@@ -27,9 +27,8 @@
 #include "base/win/scoped_handle.h"
 #endif
 
-class CommandLine;
-
 namespace base {
+class CommandLine;
 class FilePath;
 }
 
@@ -45,7 +44,7 @@ class PpapiThread : public ChildThread,
                     public ppapi::proxy::PluginDispatcher::PluginDelegate,
                     public ppapi::proxy::PluginProxyDelegate {
  public:
-  PpapiThread(const CommandLine& command_line, bool is_broker);
+  PpapiThread(const base::CommandLine& command_line, bool is_broker);
   virtual ~PpapiThread();
   virtual void Shutdown() OVERRIDE;
 

@@ -16,7 +16,7 @@ class SwitchBuilder {
   SwitchBuilder();
   ~SwitchBuilder();
 
-  const CommandLine& GetSwitches() const;
+  const base::CommandLine& GetSwitches() const;
 
   SwitchBuilder& AddChrome();
   SwitchBuilder& AddChromeFrame();
@@ -24,7 +24,7 @@ class SwitchBuilder {
   SwitchBuilder& AddSystemInstall();
 
  private:
-  CommandLine switches_;
+  base::CommandLine switches_;
   DISALLOW_COPY_AND_ASSIGN(SwitchBuilder);
 };
 

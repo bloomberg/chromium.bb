@@ -10,9 +10,8 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 
-class CommandLine;
-
 namespace base {
+class CommandLine;
 class FilePath;
 class RunLoop;
 }
@@ -33,7 +32,7 @@ class TestLauncherDelegate {
  public:
   virtual int RunTestSuite(int argc, char** argv) = 0;
   virtual bool AdjustChildProcessCommandLine(
-      CommandLine* command_line,
+      base::CommandLine* command_line,
       const base::FilePath& temp_data_dir) = 0;
   virtual void PreRunMessageLoop(base::RunLoop* run_loop) {}
   virtual void PostRunMessageLoop() {}

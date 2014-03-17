@@ -5,7 +5,9 @@
 #ifndef CHROME_BROWSER_JANKOMETER_H_
 #define CHROME_BROWSER_JANKOMETER_H_
 
+namespace base {
 class CommandLine;
+}
 
 // The Jank-O-Meter measures jankyness, which is user-perceivable lag in
 // responsiveness of the application.
@@ -14,7 +16,7 @@ class CommandLine;
 //
 // This function will initialize the service, which will install itself in
 // critical threads. It should be called on the UI thread.
-void InstallJankometer(const CommandLine& parsed_command_line);
+void InstallJankometer(const base::CommandLine& parsed_command_line);
 
 // Clean up Jank-O-Meter junk
 void UninstallJankometer();

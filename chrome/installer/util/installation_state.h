@@ -83,7 +83,9 @@ class ProductState {
   bool is_msi() const { return msi_; }
 
   // The command to uninstall the product; may be empty.
-  const CommandLine& uninstall_command() const { return uninstall_command_; }
+  const base::CommandLine& uninstall_command() const {
+    return uninstall_command_;
+  }
 
   // True if |uninstall_command| contains --multi-install.
   bool is_multi_install() const { return multi_install_; }
@@ -107,7 +109,7 @@ class ProductState {
   std::wstring brand_;
   std::wstring rename_cmd_;
   std::wstring oem_install_;
-  CommandLine uninstall_command_;
+  base::CommandLine uninstall_command_;
   AppCommands commands_;
   DWORD eula_accepted_;
   DWORD usagestats_;

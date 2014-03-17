@@ -5,13 +5,15 @@
 #ifndef TOOLS_ANDROID_COMMON_DAEMON_H_
 #define TOOLS_ANDROID_COMMON_DAEMON_H_
 
+namespace base {
 class CommandLine;
+}
 
 namespace tools {
 
-bool HasHelpSwitch(const CommandLine& command_line);
+bool HasHelpSwitch(const base::CommandLine& command_line);
 
-bool HasNoSpawnDaemonSwitch(const CommandLine& command_line);
+bool HasNoSpawnDaemonSwitch(const base::CommandLine& command_line);
 
 void ShowHelp(const char* program,
               const char* extra_title,

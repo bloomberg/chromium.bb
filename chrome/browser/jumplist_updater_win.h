@@ -30,7 +30,7 @@ class ShellLinkItem : public base::RefCountedThreadSafe<ShellLinkItem> {
   const SkBitmap& icon_data() const { return icon_data_; }
 
   std::wstring GetArguments() const;
-  CommandLine* GetCommandLine();
+  base::CommandLine* GetCommandLine();
 
   void set_title(const std::wstring& title) {
     title_ = title;
@@ -50,7 +50,7 @@ class ShellLinkItem : public base::RefCountedThreadSafe<ShellLinkItem> {
   ~ShellLinkItem();
 
   // Used for storing and appending command-line arguments.
-  CommandLine command_line_;
+  base::CommandLine command_line_;
 
   // The string to be displayed in a JumpList.
   std::wstring title_;

@@ -20,9 +20,12 @@
 #include "tools/gn/token.h"
 #include "tools/gn/toolchain.h"
 
-class CommandLine;
 class InputFile;
 class ParseNode;
+
+namespace base {
+class CommandLine;
+}
 
 extern const char kDotfile_Help[];
 
@@ -95,10 +98,10 @@ class Setup : public CommonSetup {
 
  private:
   // Fills build arguments. Returns true on success.
-  bool FillArguments(const CommandLine& cmdline);
+  bool FillArguments(const base::CommandLine& cmdline);
 
   // Fills the root directory into the settings. Returns true on success.
-  bool FillSourceDir(const CommandLine& cmdline);
+  bool FillSourceDir(const base::CommandLine& cmdline);
 
   // Fills the build directory given the value the user has specified.
   // Must happen after FillSourceDir so we can resolve source-relative
@@ -112,7 +115,7 @@ class Setup : public CommonSetup {
   // Run config file.
   bool RunConfigFile();
 
-  bool FillOtherConfig(const CommandLine& cmdline);
+  bool FillOtherConfig(const base::CommandLine& cmdline);
 
   Scheduler scheduler_;
 

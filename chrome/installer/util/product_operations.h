@@ -15,7 +15,10 @@
 #include "chrome/installer/util/util_constants.h"
 
 class BrowserDistribution;
+
+namespace base {
 class CommandLine;
+}
 
 namespace installer {
 
@@ -35,7 +38,7 @@ class ProductOperations {
                            std::set<base::string16>* options) const = 0;
 
   // Reads product-specific options from |command|, adding them to |options|.
-  virtual void ReadOptions(const CommandLine& command,
+  virtual void ReadOptions(const base::CommandLine& command,
                            std::set<base::string16>* options) const = 0;
 
   // A key-file is a file such as a DLL on Windows that is expected to be in use
@@ -59,11 +62,11 @@ class ProductOperations {
   // required for product-specific uninstall commands, but are of use for any
   // invocation of setup.exe for the product.
   virtual void AppendProductFlags(const std::set<base::string16>& options,
-                                  CommandLine* cmd_line) const = 0;
+                                  base::CommandLine* cmd_line) const = 0;
 
   // Given a command line, appends the set of product-specific rename flags.
   virtual void AppendRenameFlags(const std::set<base::string16>& options,
-                                 CommandLine* cmd_line) const = 0;
+                                 base::CommandLine* cmd_line) const = 0;
 
   // Adds or removes product-specific flags in |channel_info|.  Returns true if
   // |channel_info| is modified.

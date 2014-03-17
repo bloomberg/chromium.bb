@@ -87,7 +87,7 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   const content::MainFunctionParams& parameters() const {
     return parameters_;
   }
-  const CommandLine& parsed_command_line() const {
+  const base::CommandLine& parsed_command_line() const {
     return parsed_command_line_;
   }
 
@@ -126,7 +126,7 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   // Members initialized on construction ---------------------------------------
 
   const content::MainFunctionParams parameters_;
-  const CommandLine& parsed_command_line_;
+  const base::CommandLine& parsed_command_line_;
   int result_code_;
 
   // Create StartupTimeBomb object for watching jank during startup.

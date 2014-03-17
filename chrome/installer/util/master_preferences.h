@@ -85,7 +85,7 @@ class MasterPreferences {
   // is present in the command line.
   // The options from the preference file and command line are merged, with the
   // ones from the command line taking precedence in case of a conflict.
-  explicit MasterPreferences(const CommandLine& cmd_line);
+  explicit MasterPreferences(const base::CommandLine& cmd_line);
 
   // Parses a specific preferences file and does not merge any command line
   // switches with the distribution dictionary.
@@ -191,7 +191,7 @@ class MasterPreferences {
   static const MasterPreferences& ForCurrentProcess();
 
  protected:
-  void InitializeFromCommandLine(const CommandLine& cmd_line);
+  void InitializeFromCommandLine(const base::CommandLine& cmd_line);
 
   // Initializes the instance from a given JSON string, returning true if the
   // string was successfully parsed.

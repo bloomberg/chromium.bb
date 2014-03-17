@@ -71,7 +71,7 @@ class UITestBase {
 
   // Launches the browser with the given command line.
   // TODO(phajdan.jr): Make LaunchBrowser private.
-  void LaunchBrowser(const CommandLine& cmdline, bool clear_profile);
+  void LaunchBrowser(const base::CommandLine& cmdline, bool clear_profile);
 
   // Exits out browser instance.
   void QuitBrowser();
@@ -279,7 +279,7 @@ class UITestBase {
   base::FilePath test_data_directory_;
 
   // Command to launch the browser
-  CommandLine launch_arguments_;
+  base::CommandLine launch_arguments_;
 
   // The number of errors expected during the run (generally 0).
   size_t expected_errors_;

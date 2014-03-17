@@ -50,7 +50,7 @@ const char library_name[] = "ppapi_tests.plugin";
 const char library_name[] = "libppapi_tests.so";
 #endif
 
-void AddPrivateSwitches(CommandLine* command_line) {
+void AddPrivateSwitches(base::CommandLine* command_line) {
   // For TestRequestOSFileHandle.
   command_line->AppendSwitch(switches::kUnlimitedStorage);
   command_line->AppendSwitchASCII(switches::kAllowNaClFileHandleAPI,
@@ -142,7 +142,7 @@ void PPAPITestBase::SetUp() {
   InProcessBrowserTest::SetUp();
 }
 
-void PPAPITestBase::SetUpCommandLine(CommandLine* command_line) {
+void PPAPITestBase::SetUpCommandLine(base::CommandLine* command_line) {
   // The test sends us the result via a cookie.
   command_line->AppendSwitch(switches::kEnableFileCookies);
 
@@ -272,7 +272,8 @@ std::string PPAPITestBase::StripPrefixes(const std::string& test_name) {
 void PPAPITestBase::RunTestURL(const GURL& test_url) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // PPAPITests are broken in Ash browser tests (http://crbug.com/263548).
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests)) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAshBrowserTests)) {
     LOG(WARNING) << "PPAPITests are disabled for Ash browser tests.";
     return;
   }
@@ -308,7 +309,7 @@ GURL PPAPITestBase::GetTestURL(
 PPAPITest::PPAPITest() : in_process_(true) {
 }
 
-void PPAPITest::SetUpCommandLine(CommandLine* command_line) {
+void PPAPITest::SetUpCommandLine(base::CommandLine* command_line) {
   PPAPITestBase::SetUpCommandLine(command_line);
 
   // Append the switch to register the pepper plugin.
@@ -334,7 +335,7 @@ std::string PPAPITest::BuildQuery(const std::string& base,
   return base::StringPrintf("%stestcase=%s", base.c_str(), test_case.c_str());
 }
 
-void PPAPIPrivateTest::SetUpCommandLine(CommandLine* command_line) {
+void PPAPIPrivateTest::SetUpCommandLine(base::CommandLine* command_line) {
   PPAPITest::SetUpCommandLine(command_line);
   AddPrivateSwitches(command_line);
 }
@@ -343,18 +344,19 @@ OutOfProcessPPAPITest::OutOfProcessPPAPITest() {
   in_process_ = false;
 }
 
-void OutOfProcessPPAPITest::SetUpCommandLine(CommandLine* command_line) {
+void OutOfProcessPPAPITest::SetUpCommandLine(base::CommandLine* command_line) {
   PPAPITest::SetUpCommandLine(command_line);
   command_line->AppendSwitch(switches::kUseFakeDeviceForMediaStream);
   command_line->AppendSwitch(switches::kUseFakeUIForMediaStream);
 }
 
-void OutOfProcessPPAPIPrivateTest::SetUpCommandLine(CommandLine* command_line) {
+void OutOfProcessPPAPIPrivateTest::SetUpCommandLine(
+    base::CommandLine* command_line) {
   OutOfProcessPPAPITest::SetUpCommandLine(command_line);
   AddPrivateSwitches(command_line);
 }
 
-void PPAPINaClTest::SetUpCommandLine(CommandLine* command_line) {
+void PPAPINaClTest::SetUpCommandLine(base::CommandLine* command_line) {
   RETURN_IF_NO_NACL();
   PPAPITestBase::SetUpCommandLine(command_line);
 
@@ -413,7 +415,8 @@ std::string PPAPINaClNewlibTest::BuildQuery(const std::string& base,
                             test_case.c_str());
 }
 
-void PPAPIPrivateNaClNewlibTest::SetUpCommandLine(CommandLine* command_line) {
+void PPAPIPrivateNaClNewlibTest::SetUpCommandLine(
+    base::CommandLine* command_line) {
   PPAPINaClNewlibTest::SetUpCommandLine(command_line);
   AddPrivateSwitches(command_line);
 }
@@ -425,7 +428,8 @@ std::string PPAPINaClGLibcTest::BuildQuery(const std::string& base,
                             test_case.c_str());
 }
 
-void PPAPIPrivateNaClGLibcTest::SetUpCommandLine(CommandLine* command_line) {
+void PPAPIPrivateNaClGLibcTest::SetUpCommandLine(
+    base::CommandLine* command_line) {
   PPAPINaClGLibcTest::SetUpCommandLine(command_line);
   AddPrivateSwitches(command_line);
 }
@@ -437,13 +441,14 @@ std::string PPAPINaClPNaClTest::BuildQuery(const std::string& base,
                             test_case.c_str());
 }
 
-void PPAPIPrivateNaClPNaClTest::SetUpCommandLine(CommandLine* command_line) {
+void PPAPIPrivateNaClPNaClTest::SetUpCommandLine(
+    base::CommandLine* command_line) {
   PPAPINaClPNaClTest::SetUpCommandLine(command_line);
   AddPrivateSwitches(command_line);
 }
 
 void PPAPINaClTestDisallowedSockets::SetUpCommandLine(
-    CommandLine* command_line) {
+    base::CommandLine* command_line) {
   PPAPITestBase::SetUpCommandLine(command_line);
 
   base::FilePath plugin_lib;

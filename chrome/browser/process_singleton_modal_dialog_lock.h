@@ -10,9 +10,8 @@
 #include "chrome/browser/process_singleton.h"
 #include "ui/gfx/native_widget_types.h"
 
-class CommandLine;
-
 namespace base {
+class CommandLine;
 class FilePath;
 }
 
@@ -51,7 +50,7 @@ class ProcessSingletonModalDialogLock {
   ProcessSingleton::NotificationCallback AsNotificationCallback();
 
  private:
-  bool NotificationCallbackImpl(const CommandLine& command_line,
+  bool NotificationCallbackImpl(const base::CommandLine& command_line,
                                 const base::FilePath& current_directory);
 
   gfx::NativeWindow active_dialog_;

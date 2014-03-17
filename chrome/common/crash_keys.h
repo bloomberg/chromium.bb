@@ -11,7 +11,9 @@
 
 #include "base/debug/crash_logging.h"
 
+namespace base {
 class CommandLine;
+}
 
 namespace crash_keys {
 
@@ -23,7 +25,7 @@ size_t RegisterChromeCrashKeys();
 void SetClientID(const std::string& client_id);
 
 // Sets the kSwitch and kNumSwitches keys based on the given |command_line|.
-void SetSwitchesFromCommandLine(const CommandLine* command_line);
+void SetSwitchesFromCommandLine(const base::CommandLine* command_line);
 
 // Sets the list of active experiment/variations info.
 void SetVariationsList(const std::vector<std::string>& variations);

@@ -18,10 +18,10 @@
 #include "chrome/test/chromedriver/net/net_util.h"
 
 namespace base {
+class CommandLine;
 class DictionaryValue;
 }
 
-class CommandLine;
 class Status;
 
 class Switches {
@@ -49,7 +49,7 @@ class Switches {
 
   size_t GetSize() const;
 
-  void AppendToCommandLine(CommandLine* command) const;
+  void AppendToCommandLine(base::CommandLine* command) const;
   std::string ToString() const;
 
  private:

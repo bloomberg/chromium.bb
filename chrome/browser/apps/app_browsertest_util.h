@@ -9,12 +9,15 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "content/public/common/page_transition_types.h"
 
+namespace base {
+class CommandLine;
+}
+
 namespace content {
 class WebContents;
 }
 
 class Browser;
-class CommandLine;
 
 namespace extensions {
 class Extension;
@@ -23,7 +26,7 @@ class PlatformAppBrowserTest : public ExtensionApiTest {
  public:
   PlatformAppBrowserTest();
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
+  virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE;
 
   // Gets the first app window that is found for a given browser.
   static apps::AppWindow* GetFirstAppWindowForBrowser(Browser* browser);
@@ -107,7 +110,7 @@ class PlatformAppBrowserTest : public ExtensionApiTest {
 
 class ExperimentalPlatformAppBrowserTest : public PlatformAppBrowserTest {
  public:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
+  virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE;
 };
 
 }  // namespace extensions

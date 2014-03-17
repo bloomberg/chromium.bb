@@ -19,10 +19,12 @@
 
 typedef unsigned int SkColor;
 
-class CommandLine;
-
 namespace aura {
 class Window;
+}
+
+namespace base {
+class CommandLine;
 }
 
 namespace ash {
@@ -81,7 +83,7 @@ class ASH_EXPORT DesktopBackgroundController
     return desktop_background_mode_;
   }
 
-  void set_command_line_for_testing(CommandLine* command_line) {
+  void set_command_line_for_testing(base::CommandLine* command_line) {
     command_line_for_testing_ = command_line;
   }
 
@@ -189,7 +191,7 @@ class ASH_EXPORT DesktopBackgroundController
   static gfx::Size GetMaxDisplaySizeInNative();
 
   // If non-NULL, used in place of the real command line.
-  CommandLine* command_line_for_testing_;
+  base::CommandLine* command_line_for_testing_;
 
   // Can change at runtime.
   bool locked_;

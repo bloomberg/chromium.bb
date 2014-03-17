@@ -14,8 +14,11 @@
 #include "url/gurl.h"
 
 class Browser;
-class CommandLine;
 class Profile;
+
+namespace base {
+class CommandLine;
+}
 
 namespace content {
 class WebContents;
@@ -72,7 +75,7 @@ struct AppLaunchParams {
 
   // If non-empty, information from the command line may be passed on to the
   // application.
-  CommandLine command_line;
+  base::CommandLine command_line;
 
   // If non-empty, the current directory from which any relative paths on the
   // command line should be expanded from.

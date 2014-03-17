@@ -34,17 +34,17 @@
 #include "content/public/browser/file_descriptor_info.h"
 #endif
 
-class CommandLine;
 class GURL;
 struct WebPreferences;
 
-namespace blink {
-struct WebWindowFeatures;
-}
-
 namespace base {
+class CommandLine;
 class DictionaryValue;
 class FilePath;
+}
+
+namespace blink {
+struct WebWindowFeatures;
 }
 
 namespace gfx {
@@ -282,7 +282,7 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   // Allows the embedder to pass extra command line flags.
   // switches::kProcessType will already be set at this point.
-  virtual void AppendExtraCommandLineSwitches(CommandLine* command_line,
+  virtual void AppendExtraCommandLineSwitches(base::CommandLine* command_line,
                                               int child_process_id) {}
 
   // Returns the locale used by the application.
@@ -605,7 +605,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Populates |mappings| with all files that need to be mapped before launching
   // a child process.
   virtual void GetAdditionalMappedFilesForChildProcess(
-      const CommandLine& command_line,
+      const base::CommandLine& command_line,
       int child_process_id,
       std::vector<FileDescriptorInfo>* mappings) {}
 #endif

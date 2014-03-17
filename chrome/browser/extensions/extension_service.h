@@ -36,13 +36,13 @@
 #include "extensions/common/manifest_handlers/shared_module_info.h"
 #include "extensions/common/one_shot_event.h"
 
-class CommandLine;
 class ExtensionErrorUI;
 class ExtensionToolbarModel;
 class GURL;
 class Profile;
 
 namespace base {
+class CommandLine;
 class SequencedTaskRunner;
 class Version;
 }
@@ -152,7 +152,7 @@ class ExtensionService
   // Constructor stores pointers to |profile| and |extension_prefs| but
   // ownership remains at caller.
   ExtensionService(Profile* profile,
-                   const CommandLine* command_line,
+                   const base::CommandLine* command_line,
                    const base::FilePath& install_directory,
                    extensions::ExtensionPrefs* extension_prefs,
                    extensions::Blacklist* blacklist,

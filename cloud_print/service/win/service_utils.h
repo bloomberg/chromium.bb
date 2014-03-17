@@ -5,13 +5,15 @@
 #ifndef CLOUD_PRINT_SERVICE_SERVICE_UTILS_H_
 #define CLOUD_PRINT_SERVICE_SERVICE_UTILS_H_
 
-class CommandLine;
-
 #include "base/strings/string16.h"
+
+namespace base {
+class CommandLine;
+}
 
 base::string16 ReplaceLocalHostInName(const base::string16& user_name);
 base::string16 GetCurrentUserName();
-void CopyChromeSwitchesFromCurrentProcess(CommandLine* destination);
+void CopyChromeSwitchesFromCurrentProcess(base::CommandLine* destination);
 
 #endif  // CLOUD_PRINT_SERVICE_SERVICE_UTILS_H_
 

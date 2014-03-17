@@ -32,7 +32,7 @@ LocalSyncTestServer::LocalSyncTestServer(uint16 port, uint16 xmpp_port)
 LocalSyncTestServer::~LocalSyncTestServer() {}
 
 bool LocalSyncTestServer::AddCommandLineArguments(
-    CommandLine* command_line) const {
+    base::CommandLine* command_line) const {
   if (!LocalTestServer::AddCommandLineArguments(command_line))
     return false;
   if (xmpp_port_ != 0) {

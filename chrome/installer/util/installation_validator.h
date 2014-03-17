@@ -15,9 +15,8 @@
 #include "base/strings/string16.h"
 #include "chrome/installer/util/browser_distribution.h"
 
-class CommandLine;
-
 namespace base {
+class CommandLine;
 class FilePath;
 }
 
@@ -231,12 +230,12 @@ class InstallationValidator {
                                 const base::string16& purpose,
                                 bool* is_valid);
   static void ValidateCommandExpectations(const ProductContext& ctx,
-                                          const CommandLine& command,
+                                          const base::CommandLine& command,
                                           const SwitchExpectations& expected,
                                           const base::string16& source,
                                           bool* is_valid);
   static void ValidateUninstallCommand(const ProductContext& ctx,
-                                       const CommandLine& command,
+                                       const base::CommandLine& command,
                                        const base::string16& source,
                                        bool* is_valid);
   static void ValidateRenameCommand(const ProductContext& ctx,

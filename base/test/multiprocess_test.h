@@ -13,9 +13,9 @@
 #include "build/build_config.h"
 #include "testing/platform_test.h"
 
-class CommandLine;
-
 namespace base {
+
+class CommandLine;
 
 // Helpers to spawn a child for a multiprocess test and execute a designated
 // function. Use these when you already have another base class for your test

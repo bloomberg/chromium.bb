@@ -70,7 +70,7 @@ class ScopedTrace {
   ~ScopedTrace();
 
   void SetToolchain(const Label& label);
-  void SetCommandLine(const CommandLine& cmdline);
+  void SetCommandLine(const base::CommandLine& cmdline);
 
   void Done();
 

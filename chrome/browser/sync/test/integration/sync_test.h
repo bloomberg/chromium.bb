@@ -21,10 +21,12 @@
 #include "sync/test/fake_server/fake_server.h"
 #include "sync/test/local_sync_test_server.h"
 
-
-class CommandLine;
 class Profile;
 class ProfileSyncServiceHarness;
+
+namespace base {
+class CommandLine;
+}
 
 namespace net {
 class FakeURLFetcherFactory;
@@ -120,7 +122,7 @@ class SyncTest : public InProcessBrowserTest {
   virtual void TearDown() OVERRIDE;
 
   // Sets up command line flags required for sync tests.
-  virtual void SetUpCommandLine(CommandLine* cl) OVERRIDE;
+  virtual void SetUpCommandLine(base::CommandLine* cl) OVERRIDE;
 
   // Used to get the number of sync clients used by a test.
   int num_clients() WARN_UNUSED_RESULT { return num_clients_; }
@@ -237,11 +239,11 @@ class SyncTest : public InProcessBrowserTest {
 
  protected:
   // Add custom switches needed for running the test.
-  virtual void AddTestSwitches(CommandLine* cl);
+  virtual void AddTestSwitches(base::CommandLine* cl);
 
   // Append the command line switches to enable experimental types that aren't
   // on by default yet.
-  virtual void AddOptionalTypesToCommandLine(CommandLine* cl);
+  virtual void AddOptionalTypesToCommandLine(base::CommandLine* cl);
 
   // InProcessBrowserTest override. Destroys all the sync clients and sync
   // profiles created by a test.

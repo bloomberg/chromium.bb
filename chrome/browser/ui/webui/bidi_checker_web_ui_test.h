@@ -34,7 +34,7 @@ class WebUIBidiCheckerBrowserTest : public WebUIBrowserTest {
 
  private:
   // The command line args used to run the test before being changed in SetUp().
-  CommandLine::StringVector argv_;
+  base::CommandLine::StringVector argv_;
 };
 
 // Base class for BidiChecker-based tests that run with an LTR UI.

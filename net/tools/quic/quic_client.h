@@ -82,7 +82,8 @@ class QuicClient : public EpollCallbackInterface,
 
   // Sends a request simple GET for each URL in |args|, and then waits for
   // each to complete.
-  void SendRequestsAndWaitForResponse(const CommandLine::StringVector& args);
+  void SendRequestsAndWaitForResponse(const
+      base::CommandLine::StringVector& args);
 
   // Returns a newly created QuicSpdyClientStream, owned by the
   // QuicClient.

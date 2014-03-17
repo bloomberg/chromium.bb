@@ -5,12 +5,16 @@
 #ifndef COMPONENTS_NACL_COMMON_NACL_CMD_LINE_H_
 #define COMPONENTS_NACL_COMMON_NACL_CMD_LINE_H_
 
+namespace base {
 class CommandLine;
+}
 
 namespace nacl {
-  // Copy all the relevant arguments from the command line of the current
-  // process to cmd_line that will be used for launching the NaCl loader/broker.
-  void CopyNaClCommandLineArguments(CommandLine* cmd_line);
-}
+
+// Copy all the relevant arguments from the command line of the current
+// process to cmd_line that will be used for launching the NaCl loader/broker.
+void CopyNaClCommandLineArguments(base::CommandLine* cmd_line);
+
+}  // namespace nacl
 
 #endif  // COMPONENTS_NACL_COMMON_NACL_CMD_LINE_H_

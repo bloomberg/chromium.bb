@@ -55,7 +55,7 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
       content::ProtocolHandlerScopedVector protocol_interceptors) OVERRIDE;
   virtual std::string GetCanonicalEncodingNameByAliasName(
       const std::string& alias_name) OVERRIDE;
-  virtual void AppendExtraCommandLineSwitches(CommandLine* command_line,
+  virtual void AppendExtraCommandLineSwitches(base::CommandLine* command_line,
                                               int child_process_id) OVERRIDE;
   virtual std::string GetApplicationLocale() OVERRIDE;
   virtual std::string GetAcceptLangs(content::BrowserContext* context) OVERRIDE;

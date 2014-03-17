@@ -11,9 +11,8 @@
 #include "base/logging.h"
 #include "base/time/time.h"
 
-class CommandLine;
-
 namespace base {
+class CommandLine;
 class FilePath;
 }
 
@@ -32,15 +31,15 @@ namespace logging {
 // normally appear for assertions and crashes, and makes any catchable
 // errors (namely assertions) available via GetSilencedErrorCount()
 // and GetSilencedError().
-void InitChromeLogging(const CommandLine& command_line,
+void InitChromeLogging(const base::CommandLine& command_line,
                        OldFileDeletionState delete_old_log_file);
 
 #if defined(OS_CHROMEOS)
 // Get the log file location.
-base::FilePath GetSessionLogFile(const CommandLine& command_line);
+base::FilePath GetSessionLogFile(const base::CommandLine& command_line);
 
 // Redirects chrome logging to the appropriate session log dir.
-void RedirectChromeLogging(const CommandLine& command_line);
+void RedirectChromeLogging(const base::CommandLine& command_line);
 #endif
 
 // Call when done using logging for Chrome.

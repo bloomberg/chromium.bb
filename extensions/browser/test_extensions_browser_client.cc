@@ -29,7 +29,7 @@ void TestExtensionsBrowserClient::SetIncognitoContext(BrowserContext* context) {
 bool TestExtensionsBrowserClient::IsShuttingDown() { return false; }
 
 bool TestExtensionsBrowserClient::AreExtensionsDisabled(
-    const CommandLine& command_line,
+    const base::CommandLine& command_line,
     BrowserContext* context) {
   return false;
 }

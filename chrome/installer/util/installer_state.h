@@ -23,7 +23,9 @@
 #include <windows.h>  // NOLINT
 #endif
 
+namespace base {
 class CommandLine;
+}
 
 namespace installer {
 
@@ -73,7 +75,7 @@ class InstallerState {
   explicit InstallerState(Level level);
 
   // Initializes this object based on the current operation.
-  void Initialize(const CommandLine& command_line,
+  void Initialize(const base::CommandLine& command_line,
                   const MasterPreferences& prefs,
                   const InstallationState& machine_state);
 

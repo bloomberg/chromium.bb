@@ -7,12 +7,15 @@
 
 #include "jingle/notifier/base/notifier_options.h"
 
+namespace base {
 class CommandLine;
+}
 
 namespace invalidation {
 
 // Parses the given command line for notifier options.
-notifier::NotifierOptions ParseNotifierOptions(const CommandLine& command_line);
+notifier::NotifierOptions ParseNotifierOptions(
+    const base::CommandLine& command_line);
 
 // Generates a unique client ID for the invalidator.
 std::string GenerateInvalidatorClientId();

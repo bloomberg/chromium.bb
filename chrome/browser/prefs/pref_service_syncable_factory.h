@@ -7,8 +7,11 @@
 
 #include "base/prefs/pref_service_factory.h"
 
-class CommandLine;
 class PrefServiceSyncable;
+
+namespace base {
+class CommandLine;
+}
 
 namespace policy {
 class PolicyService;
@@ -33,7 +36,7 @@ class PrefServiceSyncableFactory : public base::PrefServiceFactory {
 #endif
 
   // Specifies to use an actual command-line backed command-line pref store.
-  void SetCommandLine(CommandLine* command_line);
+  void SetCommandLine(base::CommandLine* command_line);
 
   scoped_ptr<PrefServiceSyncable> CreateSyncable(
       user_prefs::PrefRegistrySyncable* registry);

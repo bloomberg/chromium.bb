@@ -5,7 +5,9 @@
 #ifndef CONTENT_PUBLIC_APP_STARTUP_HELPER_WIN_H_
 #define CONTENT_PUBLIC_APP_STARTUP_HELPER_WIN_H_
 
+namespace base {
 class CommandLine;
+}
 
 namespace sandbox {
 struct SandboxInterfaceInfo;
@@ -28,7 +30,7 @@ void InitializeSandboxInfo(sandbox::SandboxInterfaceInfo* sandbox_info);
 void RegisterInvalidParamHandler();
 
 // Sets up the CRT's debugging macros to output to stdout.
-void SetupCRT(const CommandLine& command_line);
+void SetupCRT(const base::CommandLine& command_line);
 
 }  // namespace content
 

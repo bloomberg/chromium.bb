@@ -14,7 +14,9 @@
 #include "chrome/installer/util/shell_util.h"
 #include "chrome/installer/util/util_constants.h"
 
+namespace base {
 class CommandLine;
+}
 
 namespace installer {
 
@@ -40,7 +42,8 @@ class Product {
 
   void InitializeFromPreferences(const MasterPreferences& prefs);
 
-  void InitializeFromUninstallCommand(const CommandLine& uninstall_command);
+  void InitializeFromUninstallCommand(
+      const base::CommandLine& uninstall_command);
 
   BrowserDistribution* distribution() const {
     return distribution_;
@@ -98,7 +101,7 @@ class Product {
   // NOTE: The 'options' CommandLine object should only contain parameters.
   // The program part will be ignored.
   bool LaunchChromeAndWait(const base::FilePath& application_path,
-                           const CommandLine& options,
+                           const base::CommandLine& options,
                            int32* exit_code) const;
 
   // Sets the boolean MSI marker for this installation if set is true or clears
@@ -117,10 +120,10 @@ class Product {
   void AddComDllList(std::vector<base::FilePath>* com_dll_list) const;
 
   // See ProductOperations::AppendProductFlags.
-  void AppendProductFlags(CommandLine* command_line) const;
+  void AppendProductFlags(base::CommandLine* command_line) const;
 
   // See ProductOperations::AppendRenameFlags.
-  void AppendRenameFlags(CommandLine* command_line) const;
+  void AppendRenameFlags(base::CommandLine* command_line) const;
 
   // See Productoperations::SetChannelFlags.
   bool SetChannelFlags(bool set, ChannelInfo* channel_info) const;

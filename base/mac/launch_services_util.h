@@ -22,7 +22,7 @@ namespace mac {
 // |out_psn|, if not NULL, will be set to the process serial number of the
 // application's main process if the app was successfully launched.
 // Returns true if the app was successfully launched.
-BASE_EXPORT bool OpenApplicationWithPath(const base::FilePath& bundle_path,
+BASE_EXPORT bool OpenApplicationWithPath(const FilePath& bundle_path,
                                          const CommandLine& command_line,
                                          LSLaunchFlags launch_flags,
                                          ProcessSerialNumber* out_psn);

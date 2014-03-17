@@ -26,10 +26,10 @@
 #include "third_party/icu/source/i18n/unicode/timezone.h"
 #include "ui/gfx/image/image_skia.h"
 
-class CommandLine;
 class PrefRegistrySimple;
 
 namespace base {
+class CommandLine;
 class SequencedTaskRunner;
 }
 
@@ -171,7 +171,7 @@ class WallpaperManager: public content::NotificationObserver {
   WallpaperManager();
   virtual ~WallpaperManager();
 
-  void set_command_line_for_testing(CommandLine* command_line) {
+  void set_command_line_for_testing(base::CommandLine* command_line) {
     command_line_for_testing_ = command_line;
   }
 
@@ -354,7 +354,7 @@ class WallpaperManager: public content::NotificationObserver {
   void EnsureCustomWallpaperDirectories(const std::string& user_id_hash);
 
   // Gets the CommandLine representing the current process's command line.
-  CommandLine* GetComandLine();
+  base::CommandLine* GetComandLine();
 
   // Initialize wallpaper of registered device after device policy is trusted.
   // Note that before device is enrolled, it proceeds with untrusted setting.
@@ -481,7 +481,7 @@ class WallpaperManager: public content::NotificationObserver {
   WallpaperInfo current_user_wallpaper_info_;
 
   // If non-NULL, used in place of the real command line.
-  CommandLine* command_line_for_testing_;
+  base::CommandLine* command_line_for_testing_;
 
   // Caches wallpapers of users. Accessed only on UI thread.
   CustomWallpaperMap wallpaper_cache_;

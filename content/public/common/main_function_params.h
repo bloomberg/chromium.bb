@@ -27,7 +27,7 @@ class ScopedNSAutoreleasePool;
 namespace content {
 
 struct MainFunctionParams {
-  explicit MainFunctionParams(const CommandLine& cl)
+  explicit MainFunctionParams(const base::CommandLine& cl)
       : command_line(cl),
 #if defined(OS_WIN)
         sandbox_info(NULL),
@@ -37,7 +37,7 @@ struct MainFunctionParams {
         ui_task(NULL) {
   }
 
-  const CommandLine& command_line;
+  const base::CommandLine& command_line;
 
 #if defined(OS_WIN)
   sandbox::SandboxInterfaceInfo* sandbox_info;

@@ -24,7 +24,9 @@
 #include "ui/gl/gl_surface_stub.h"
 #include "ui/gl/gl_mock.h"
 
+namespace base {
 class CommandLine;
+}
 
 namespace gpu {
 namespace gles2 {
@@ -169,7 +171,7 @@ class GLES2DecoderTestBase : public testing::Test {
       bool request_depth,
       bool request_stencil,
       bool bind_generates_resource,
-      const CommandLine* command_line);
+      const base::CommandLine* command_line);
 
   void ResetDecoder();
 

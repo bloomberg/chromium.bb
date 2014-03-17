@@ -13,13 +13,15 @@
 
 #if !defined(OS_CHROMEOS)
 
+namespace base {
 class CommandLine;
+}
 
 namespace upgrade_util {
 
 // Launches Chrome again simulating a "user" launch. If Chrome could not be
 // launched, returns false.
-bool RelaunchChromeBrowser(const CommandLine& command_line);
+bool RelaunchChromeBrowser(const base::CommandLine& command_line);
 
 #if defined(OS_WIN)
 
@@ -40,14 +42,14 @@ RelaunchMode RelaunchModeStringToEnum(const std::string& relaunch_mode);
 
 // Like RelaunchChromeBrowser() but for Windows 8 it will read pref and restart
 // chrome accordingly in desktop or metro mode.
-bool RelaunchChromeWithMode(const CommandLine& command_line,
+bool RelaunchChromeWithMode(const base::CommandLine& command_line,
                             const RelaunchMode& relaunch_mode);
 
 #endif
 
 #if !defined(OS_MACOSX)
 
-void SetNewCommandLine(CommandLine* new_command_line);
+void SetNewCommandLine(base::CommandLine* new_command_line);
 
 // Launches a new instance of the browser if the current instance in persistent
 // mode an upgrade is detected.

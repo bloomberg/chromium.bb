@@ -8,10 +8,10 @@
 #include <string>
 #include "base/basictypes.h"
 
-class CommandLine;
 
 namespace base {
-  class FilePath;
+class CommandLine;
+class FilePath;
 }
 
 // Class used to start a test license server.
@@ -27,7 +27,7 @@ class TestLicenseServerConfig {
 
   // Returns true if it successfully sets the command line to run the license
   // server with needed args and switches.
-  virtual bool GetServerCommandLine(CommandLine* command_line) = 0;
+  virtual bool GetServerCommandLine(base::CommandLine* command_line) = 0;
 
   // Returns true if the server is supported on current platform.
   virtual bool IsPlatformSupported() = 0;

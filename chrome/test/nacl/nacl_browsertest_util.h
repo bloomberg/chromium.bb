@@ -62,7 +62,7 @@ class NaClBrowserTestBase : public InProcessBrowserTest {
   NaClBrowserTestBase();
   virtual ~NaClBrowserTestBase();
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
+  virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE;
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE;
 
@@ -127,7 +127,7 @@ class NaClBrowserTestPnacl : public NaClBrowserTestBase {
 // type is not available.
 class NaClBrowserTestPnaclDisabled : public NaClBrowserTestBase {
  public:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
+  virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE;
 
   virtual base::FilePath::StringType Variant() OVERRIDE;
 

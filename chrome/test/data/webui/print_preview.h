@@ -14,7 +14,7 @@ class PrintPreviewWebUITest : public WebUIBrowserTest {
 
  private:
   // WebUIBrowserTest implementation.
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
+  virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewWebUITest);
 };

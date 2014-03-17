@@ -188,7 +188,7 @@ class ExtensionApiTest : public ExtensionBrowserTest {
   const extensions::Extension* GetSingleLoadedExtension();
 
   // All extensions tested by ExtensionApiTest are in the "api_test" dir.
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
+  virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE;
 
   // If it failed, what was the error message?
   std::string message_;

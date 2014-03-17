@@ -16,7 +16,9 @@
 #include "base/win/scoped_handle.h"
 #endif
 
+namespace base {
 class CommandLine;
+}
 
 namespace net {
 
@@ -74,7 +76,7 @@ class LocalTestServer : public BaseTestServer {
 
   // Adds the command line arguments for the Python test server to
   // |command_line|. Returns true on success.
-  virtual bool AddCommandLineArguments(CommandLine* command_line) const
+  virtual bool AddCommandLineArguments(base::CommandLine* command_line) const
       WARN_UNUSED_RESULT;
 
   // Returns the actual path of document root for test cases. This function

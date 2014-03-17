@@ -55,7 +55,7 @@ class BasePanelBrowserTest : public InProcessBrowserTest {
   // tests to ensure we still have coverage on the bots.
   bool SkipTestIfCompizWM();
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
+  virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE;
   virtual void SetUpOnMainThread() OVERRIDE;
 
  protected:

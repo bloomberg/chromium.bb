@@ -139,19 +139,19 @@ void GpuDataManagerImpl::UpdateVideoMemoryUsageStats(
 }
 
 void GpuDataManagerImpl::AppendRendererCommandLine(
-    CommandLine* command_line) const {
+    base::CommandLine* command_line) const {
   base::AutoLock auto_lock(lock_);
   private_->AppendRendererCommandLine(command_line);
 }
 
 void GpuDataManagerImpl::AppendGpuCommandLine(
-    CommandLine* command_line) const {
+    base::CommandLine* command_line) const {
   base::AutoLock auto_lock(lock_);
   private_->AppendGpuCommandLine(command_line);
 }
 
 void GpuDataManagerImpl::AppendPluginCommandLine(
-    CommandLine* command_line) const {
+    base::CommandLine* command_line) const {
   base::AutoLock auto_lock(lock_);
   private_->AppendPluginCommandLine(command_line);
 }

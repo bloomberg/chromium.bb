@@ -24,7 +24,7 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase,
 
   // Overridden from BrowserProcessPlatformPartBase:
   virtual void PlatformSpecificCommandLineProcessing(
-      const CommandLine& command_line) OVERRIDE;
+      const base::CommandLine& command_line) OVERRIDE;
 
   // content::NotificationObserver method:
   virtual void Observe(int type,

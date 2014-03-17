@@ -20,11 +20,12 @@
 #include <shellapi.h>
 #endif
 
-using base::FilePath;
+namespace base {
 
 CommandLine* CommandLine::current_process_commandline_ = NULL;
 
 namespace {
+
 const CommandLine::CharType kSwitchTerminator[] = FILE_PATH_LITERAL("--");
 const CommandLine::CharType kSwitchValueSeparator[] = FILE_PATH_LITERAL("=");
 
@@ -74,14 +75,14 @@ void AppendSwitchesAndArguments(CommandLine& command_line,
   bool parse_switches = true;
   for (size_t i = 1; i < argv.size(); ++i) {
     CommandLine::StringType arg = argv[i];
-    base::TrimWhitespace(arg, base::TRIM_ALL, &arg);
+    TrimWhitespace(arg, TRIM_ALL, &arg);
 
     CommandLine::StringType switch_string;
     CommandLine::StringType switch_value;
     parse_switches &= (arg != kSwitchTerminator);
     if (parse_switches && IsSwitch(arg, &switch_string, &switch_value)) {
 #if defined(OS_WIN)
-      command_line.AppendSwitchNative(base::UTF16ToASCII(switch_string),
+      command_line.AppendSwitchNative(UTF16ToASCII(switch_string),
                                       switch_value);
 #elif defined(OS_POSIX)
       command_line.AppendSwitchNative(switch_string, switch_value);
@@ -294,7 +295,7 @@ FilePath CommandLine::GetProgram() const {
 }
 
 void CommandLine::SetProgram(const FilePath& program) {
-  base::TrimWhitespace(program.value(), base::TRIM_ALL, &argv_[0]);
+  TrimWhitespace(program.value(), TRIM_ALL, &argv_[0]);
 }
 
 bool CommandLine::HasSwitch(const std::string& switch_string) const {
@@ -309,7 +310,7 @@ std::string CommandLine::GetSwitchValueASCII(
     return std::string();
   }
 #if defined(OS_WIN)
-  return base::UTF16ToASCII(value);
+  return UTF16ToASCII(value);
 #else
   return value;
 #endif
@@ -340,7 +341,7 @@ void CommandLine::AppendSwitchNative(const std::string& switch_string,
                                      const CommandLine::StringType& value) {
   std::string switch_key(LowerASCIIOnWindows(switch_string));
 #if defined(OS_WIN)
-  StringType combined_switch_string(base::ASCIIToWide(switch_key));
+  StringType combined_switch_string(ASCIIToWide(switch_key));
 #elif defined(OS_POSIX)
   StringType combined_switch_string(switch_string);
 #endif
@@ -358,7 +359,7 @@ void CommandLine::AppendSwitchNative(const std::string& switch_string,
 void CommandLine::AppendSwitchASCII(const std::string& switch_string,
                                     const std::string& value_string) {
 #if defined(OS_WIN)
-  AppendSwitchNative(switch_string, base::ASCIIToWide(value_string));
+  AppendSwitchNative(switch_string, ASCIIToWide(value_string));
 #elif defined(OS_POSIX)
   AppendSwitchNative(switch_string, value_string);
 #endif
@@ -387,7 +388,7 @@ CommandLine::StringVector CommandLine::GetArgs() const {
 void CommandLine::AppendArg(const std::string& value) {
 #if defined(OS_WIN)
   DCHECK(IsStringUTF8(value));
-  AppendArgNative(base::UTF8ToWide(value));
+  AppendArgNative(UTF8ToWide(value));
 #elif defined(OS_POSIX)
   AppendArgNative(value);
 #endif
@@ -414,7 +415,7 @@ void CommandLine::PrependWrapper(const CommandLine::StringType& wrapper) {
   // The wrapper may have embedded arguments (like "gdb --args"). In this case,
   // we don't pretend to do anything fancy, we just split on spaces.
   StringVector wrapper_argv;
-  base::SplitString(wrapper, FILE_PATH_LITERAL(' '), &wrapper_argv);
+  SplitString(wrapper, FILE_PATH_LITERAL(' '), &wrapper_argv);
   // Prepend the wrapper and update the switches/arguments |begin_args_|.
   argv_.insert(argv_.begin(), wrapper_argv.begin(), wrapper_argv.end());
   begin_args_ += wrapper_argv.size();
@@ -423,7 +424,7 @@ void CommandLine::PrependWrapper(const CommandLine::StringType& wrapper) {
 #if defined(OS_WIN)
 void CommandLine::ParseFromString(const std::wstring& command_line) {
   std::wstring command_line_string;
-  base::TrimWhitespace(command_line, base::TRIM_ALL, &command_line_string);
+  TrimWhitespace(command_line, TRIM_ALL, &command_line_string);
   if (command_line_string.empty())
     return;
 
@@ -432,8 +433,10 @@ void CommandLine::ParseFromString(const std::wstring& command_line) {
   args = ::CommandLineToArgvW(command_line_string.c_str(), &num_args);
 
   DPLOG_IF(FATAL, !args) << "CommandLineToArgvW failed on command line: "
-                         << command_line;
+                         << UTF16ToUTF8(command_line);
   InitFromArgv(num_args, args);
   LocalFree(args);
 }
 #endif
+
+}  // namespace base

@@ -94,7 +94,7 @@ class ATL_NO_VTABLE DECLSPEC_UUID("071BB5F2-85A4-424F-BFE7-5F1609BE4C2C")
   EC_HOST_UI_MODE GetLaunchMode();
 
   CComPtr<IShellItemArray> item_array_;
-  CommandLine parameters_;
+  base::CommandLine parameters_;
   base::FilePath chrome_exe_;
   STARTUPINFO start_info_;
   base::string16 verb_;

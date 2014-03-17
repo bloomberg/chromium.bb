@@ -15,7 +15,6 @@
 #include "content/common/content_export.h"
 #include "ui/base/layout.h"
 
-class CommandLine;
 class GURL;
 
 namespace base {

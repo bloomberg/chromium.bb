@@ -137,7 +137,7 @@ class RenderViewTest : public testing::Test {
   // Used to setup the process so renderers can run.
   scoped_ptr<RendererMainPlatformDelegate> platform_;
   scoped_ptr<MainFunctionParams> params_;
-  scoped_ptr<CommandLine> command_line_;
+  scoped_ptr<base::CommandLine> command_line_;
 
 #if defined(OS_MACOSX)
   scoped_ptr<base::mac::ScopedNSAutoreleasePool> autorelease_pool_;

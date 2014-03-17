@@ -45,7 +45,7 @@ class ShellContentBrowserClient : public ContentBrowserClient {
       ProtocolHandlerMap* protocol_handlers,
       ProtocolHandlerScopedVector protocol_interceptors) OVERRIDE;
   virtual bool IsHandledURL(const GURL& url) OVERRIDE;
-  virtual void AppendExtraCommandLineSwitches(CommandLine* command_line,
+  virtual void AppendExtraCommandLineSwitches(base::CommandLine* command_line,
                                               int child_process_id) OVERRIDE;
   virtual void OverrideWebkitPrefs(RenderViewHost* render_view_host,
                                    const GURL& url,
@@ -67,7 +67,7 @@ class ShellContentBrowserClient : public ContentBrowserClient {
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   virtual void GetAdditionalMappedFilesForChildProcess(
-      const CommandLine& command_line,
+      const base::CommandLine& command_line,
       int child_process_id,
       std::vector<content::FileDescriptorInfo>* mappings) OVERRIDE;
 #endif

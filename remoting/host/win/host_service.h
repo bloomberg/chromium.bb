@@ -15,9 +15,8 @@
 #include "base/synchronization/waitable_event.h"
 #include "remoting/host/win/wts_terminal_monitor.h"
 
-class CommandLine;
-
 namespace base {
+class CommandLine;
 class SingleThreadTaskRunner;
 }  // namespace base
 
@@ -32,7 +31,7 @@ class HostService : public WtsTerminalMonitor {
   static HostService* GetInstance();
 
   // This function parses the command line and selects the action routine.
-  bool InitWithCommandLine(const CommandLine* command_line);
+  bool InitWithCommandLine(const base::CommandLine* command_line);
 
   // Invoke the choosen action routine.
   int Run();

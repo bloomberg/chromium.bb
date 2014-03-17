@@ -22,7 +22,7 @@ namespace {
 
 bool AppendArgumentFromJSONValue(const std::string& key,
                                  const base::Value& value_node,
-                                 CommandLine* command_line) {
+                                 base::CommandLine* command_line) {
   std::string argument_name = "--" + key;
   switch (value_node.GetType()) {
     case base::Value::TYPE_NULL:
@@ -198,7 +198,8 @@ bool LocalTestServer::SetPythonPath() const {
   return true;
 }
 
-bool LocalTestServer::AddCommandLineArguments(CommandLine* command_line) const {
+bool LocalTestServer::AddCommandLineArguments(
+    base::CommandLine* command_line) const {
   base::DictionaryValue arguments_dict;
   if (!GenerateArguments(&arguments_dict))
     return false;

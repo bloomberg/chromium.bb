@@ -20,7 +20,7 @@ BrowserProcessPlatformPartBase::~BrowserProcessPlatformPartBase() {
 }
 
 void BrowserProcessPlatformPartBase::PlatformSpecificCommandLineProcessing(
-    const CommandLine& /* command_line */) {
+    const base::CommandLine& /* command_line */) {
 }
 
 void BrowserProcessPlatformPartBase::StartTearDown() {

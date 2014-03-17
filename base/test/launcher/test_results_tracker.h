@@ -14,10 +14,9 @@
 #include "base/test/launcher/test_result.h"
 #include "base/threading/thread_checker.h"
 
-class CommandLine;
-
 namespace base {
 
+class CommandLine;
 class FilePath;
 
 // A helper class to output results.

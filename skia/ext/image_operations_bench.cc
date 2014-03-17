@@ -144,7 +144,7 @@ class Benchmark {
         method_(kDefaultResizeMethod) {}
 
   // Returns true if command line parsing was successful, false otherwise.
-  bool ParseArgs(const CommandLine* command_line);
+  bool ParseArgs(const base::CommandLine* command_line);
 
   // Returns true if successful, false otherwise.
   bool Run() const;
@@ -176,11 +176,11 @@ void Benchmark::Usage() {
   printf("\n  -help: prints this help and exits\n");
 }
 
-bool Benchmark::ParseArgs(const CommandLine* command_line) {
-  const CommandLine::SwitchMap& switches = command_line->GetSwitches();
+bool Benchmark::ParseArgs(const base::CommandLine* command_line) {
+  const base::CommandLine::SwitchMap& switches = command_line->GetSwitches();
   bool fNeedHelp = false;
 
-  for (CommandLine::SwitchMap::const_iterator iter = switches.begin();
+  for (base::CommandLine::SwitchMap::const_iterator iter = switches.begin();
        iter != switches.end();
        ++iter) {
     const std::string& s = iter->first;
@@ -262,14 +262,14 @@ bool Benchmark::Run() const {
 class CommandLineAutoReset {
  public:
   CommandLineAutoReset(int argc, char** argv) {
-    CommandLine::Init(argc, argv);
+    base::CommandLine::Init(argc, argv);
   }
   ~CommandLineAutoReset() {
-    CommandLine::Reset();
+    base::CommandLine::Reset();
   }
 
-  const CommandLine* Get() const {
-    return CommandLine::ForCurrentProcess();
+  const base::CommandLine* Get() const {
+    return base::CommandLine::ForCurrentProcess();
   }
 };
 

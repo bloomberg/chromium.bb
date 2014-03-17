@@ -12,7 +12,9 @@
 #include "base/files/file_path.h"
 #include "base/strings/string16.h"
 
+namespace base {
 class CommandLine;
+}
 
 namespace delegate_execute {
 
@@ -43,7 +45,7 @@ class DelegateExecuteOperation {
   DelegateExecuteOperation();
   ~DelegateExecuteOperation();
 
-  bool Init(const CommandLine* cmd_line);
+  bool Init(const base::CommandLine* cmd_line);
 
   OperationType operation_type() const {
     return operation_type_;

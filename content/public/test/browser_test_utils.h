@@ -27,8 +27,6 @@
 #include "base/win/scoped_handle.h"
 #endif
 
-class CommandLine;
-
 namespace base {
 class RunLoop;
 }

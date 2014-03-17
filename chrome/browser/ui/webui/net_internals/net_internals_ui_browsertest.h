@@ -23,7 +23,7 @@ class NetInternalsTest : public WebUIBrowserTest {
   class MessageHandler;
 
   // InProcessBrowserTest overrides.
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
+  virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE;
   virtual void SetUpOnMainThread() OVERRIDE;
 
   // WebUIBrowserTest implementation.

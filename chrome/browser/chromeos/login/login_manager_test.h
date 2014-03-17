@@ -27,7 +27,7 @@ class LoginManagerTest : public InProcessBrowserTest {
 
   // Overriden from InProcessBrowserTest.
   virtual void CleanUpOnMainThread() OVERRIDE;
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
+  virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE;
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE;
   virtual void SetUpOnMainThread() OVERRIDE;
 

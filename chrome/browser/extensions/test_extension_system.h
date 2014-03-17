@@ -8,11 +8,11 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/one_shot_event.h"
 
-class CommandLine;
 class Profile;
 class TestingValueStore;
 
 namespace base {
+class CommandLine;
 class FilePath;
 class Time;
 }
@@ -38,13 +38,13 @@ class TestExtensionSystem : public ExtensionSystem {
   // Creates an ExtensionPrefs with the testing profile and returns it.
   // Useful for tests that need to modify prefs before creating the
   // ExtensionService.
-  ExtensionPrefs* CreateExtensionPrefs(const CommandLine* command_line,
+  ExtensionPrefs* CreateExtensionPrefs(const base::CommandLine* command_line,
                                        const base::FilePath& install_directory);
 
   // Creates an ExtensionService initialized with the testing profile and
   // returns it, and creates ExtensionPrefs if it hasn't been created yet.
   ExtensionService* CreateExtensionService(
-      const CommandLine* command_line,
+      const base::CommandLine* command_line,
       const base::FilePath& install_directory,
       bool autoupdate_enabled);
 

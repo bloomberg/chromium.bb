@@ -73,13 +73,16 @@
 #pragma warning(disable: 4250)
 #endif
 
-class CommandLine;
 class PepperDeviceTest;
 class SkBitmap;
 struct PP_NetAddress_Private;
 struct FrameMsg_Navigate_Params;
 struct ViewMsg_PostMessage_Params;
 struct ViewMsg_StopFinding_Params;
+
+namespace base {
+class CommandLine;
+}
 
 namespace ui {
 struct SelectedFileInfo;
@@ -1022,7 +1025,7 @@ class CONTENT_EXPORT RenderViewImpl
 
   // Processes the command-line flags --enable-viewport,
   // --enable-fixed-layout[=w,h] and --enable-pinch.
-  void ProcessViewLayoutFlags(const CommandLine& command_line);
+  void ProcessViewLayoutFlags(const base::CommandLine& command_line);
 
 #if defined(OS_ANDROID)
   // Launch an Android content intent with the given URL.

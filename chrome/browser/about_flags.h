@@ -112,13 +112,14 @@ enum SentinelsMode { kNoSentinels, kAddSentinels };
 // Reads the Labs |prefs| (called "Labs" for historical reasons) and adds the
 // commandline flags belonging to the active experiments to |command_line|.
 void ConvertFlagsToSwitches(FlagsStorage* flags_storage,
-                            CommandLine* command_line,
+                            base::CommandLine* command_line,
                             SentinelsMode sentinels);
 
 // Compares a set of switches of the two provided command line objects and
 // returns true if they are the same and false otherwise.
 bool AreSwitchesIdenticalToCurrentCommandLine(
-    const CommandLine& new_cmdline, const CommandLine& active_cmdline);
+    const base::CommandLine& new_cmdline,
+    const base::CommandLine& active_cmdline);
 
 // Differentiate between generic flags available on a per session base and flags
 // that influence the whole machine and can be said by the admin only. This flag
@@ -145,7 +146,7 @@ void SetExperimentEnabled(FlagsStorage* flags_storage,
 // Removes all switches that were added to a command line by a previous call to
 // |ConvertFlagsToSwitches()|.
 void RemoveFlagsSwitches(
-    std::map<std::string, CommandLine::StringType>* switch_list);
+    std::map<std::string, base::CommandLine::StringType>* switch_list);
 
 // Reset all flags to the default state by clearing all flags.
 void ResetAllFlags(FlagsStorage* flags_storage);

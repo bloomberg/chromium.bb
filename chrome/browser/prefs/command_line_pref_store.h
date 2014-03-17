@@ -14,7 +14,7 @@
 // such as proxy settings.
 class CommandLinePrefStore : public ValueMapPrefStore {
  public:
-  explicit CommandLinePrefStore(const CommandLine* command_line);
+  explicit CommandLinePrefStore(const base::CommandLine* command_line);
 
  protected:
   virtual ~CommandLinePrefStore();
@@ -58,7 +58,7 @@ class CommandLinePrefStore : public ValueMapPrefStore {
   void ApplyBackgroundModeSwitches();
 
   // Weak reference.
-  const CommandLine* command_line_;
+  const base::CommandLine* command_line_;
 
   // Mappings of command line switches to prefs.
   static const BooleanSwitchToPreferenceMapEntry boolean_switch_map_[];

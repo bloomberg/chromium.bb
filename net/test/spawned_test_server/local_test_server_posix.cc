@@ -106,7 +106,7 @@ bool LocalTestServer::LaunchPython(const base::FilePath& testserver_path) {
   // the same environment as the TestServer.
   VLOG(1) << "LaunchPython called with PYTHONPATH = " << getenv(kPythonPathEnv);
 
-  CommandLine python_command(CommandLine::NO_PROGRAM);
+  base::CommandLine python_command(base::CommandLine::NO_PROGRAM);
   if (!GetPythonCommand(&python_command))
     return false;
 

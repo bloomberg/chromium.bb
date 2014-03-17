@@ -9,7 +9,9 @@
 #include "base/logging.h"
 #include "third_party/webrtc/system_wrappers/interface/event_tracer.h"
 
+namespace base {
 class CommandLine;
+}
 
 namespace cricket {
 class MediaEngineInterface;
@@ -39,7 +41,7 @@ typedef void (*InitDiagnosticLoggingDelegateFunctionFunction)(
 // The reason we get pointers to these functions this way is to avoid having
 // to go through GetProcAddress et al and rely on specific name mangling.
 typedef bool (*InitializeModuleFunction)(
-    const CommandLine& command_line,
+    const base::CommandLine& command_line,
 #if !defined(OS_MACOSX) && !defined(OS_ANDROID)
     AllocateFunction alloc,
     DellocateFunction dealloc,

@@ -23,7 +23,7 @@ class FakeProductState : public ProductState {
   }
   void clear_usagestats() { has_usagestats_ = false; }
   void SetUninstallProgram(const base::FilePath& setup_exe) {
-    uninstall_command_ = CommandLine(setup_exe);
+    uninstall_command_ = base::CommandLine(setup_exe);
   }
   void AddUninstallSwitch(const std::string& option) {
     uninstall_command_.AppendSwitch(option);

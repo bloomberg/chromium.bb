@@ -31,7 +31,7 @@ class AppListServiceImpl : public AppListService,
   virtual ~AppListServiceImpl();
 
   // Constructor used for testing.
-  AppListServiceImpl(const CommandLine& command_line,
+  AppListServiceImpl(const base::CommandLine& command_line,
                      PrefService* local_state,
                      scoped_ptr<ProfileStore> profile_store,
                      scoped_ptr<KeepAliveService> keep_alive_service);
@@ -83,7 +83,7 @@ class AppListServiceImpl : public AppListService,
 
   scoped_ptr<ProfileStore> profile_store_;
   base::WeakPtrFactory<AppListServiceImpl> weak_factory_;
-  CommandLine command_line_;
+  base::CommandLine command_line_;
   PrefService* local_state_;
   scoped_ptr<ProfileLoader> profile_loader_;
 

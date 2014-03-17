@@ -4,7 +4,7 @@
 
 #include "chrome/browser/jankometer.h"
 
-void InstallJankometer(const CommandLine& parsed_command_line) {
+void InstallJankometer(const base::CommandLine& parsed_command_line) {
   // TODO(port): Implement jankometer, http://crbug.com/8077
 }
 

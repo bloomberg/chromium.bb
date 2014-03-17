@@ -41,7 +41,6 @@ class SpecialStoragePolicy;
 }
 
 class BrowserContextDependencyManager;
-class CommandLine;
 class ExtensionSpecialStoragePolicy;
 class HostContentSettingsMap;
 class PrefServiceSyncable;

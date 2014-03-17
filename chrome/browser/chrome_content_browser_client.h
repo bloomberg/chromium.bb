@@ -19,6 +19,10 @@
 #include "base/memory/scoped_ptr.h"
 #endif
 
+namespace base {
+class CommandLine;
+}
+
 namespace content {
 class QuotaPermissionContext;
 }
@@ -117,7 +121,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   virtual bool ShouldAssignSiteForURL(const GURL& url) OVERRIDE;
   virtual std::string GetCanonicalEncodingNameByAliasName(
       const std::string& alias_name) OVERRIDE;
-  virtual void AppendExtraCommandLineSwitches(CommandLine* command_line,
+  virtual void AppendExtraCommandLineSwitches(base::CommandLine* command_line,
                                               int child_process_id) OVERRIDE;
   virtual std::string GetApplicationLocale() OVERRIDE;
   virtual std::string GetAcceptLangs(
@@ -261,7 +265,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   virtual void GetAdditionalMappedFilesForChildProcess(
-      const CommandLine& command_line,
+      const base::CommandLine& command_line,
       int child_process_id,
       std::vector<content::FileDescriptorInfo>* mappings) OVERRIDE;
 #endif
@@ -281,8 +285,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
 #if defined(ENABLE_WEBRTC)
   // Copies disable WebRTC encryption switch depending on the channel.
   static void MaybeCopyDisableWebRtcEncryptionSwitch(
-      CommandLine* to_command_line,
-      const CommandLine& from_command_line,
+      base::CommandLine* to_command_line,
+      const base::CommandLine& from_command_line,
       VersionInfo::Channel channel);
 #endif
 

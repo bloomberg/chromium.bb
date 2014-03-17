@@ -113,7 +113,7 @@ void GLES2DecoderTestBase::InitDecoderWithCommandLine(
     bool request_depth,
     bool request_stencil,
     bool bind_generates_resource,
-    const CommandLine* command_line) {
+    const base::CommandLine* command_line) {
   Framebuffer::ClearFramebufferCompleteComboMap();
 
   gfx::SetGLGetProcAddressProc(gfx::MockGLInterface::GetGLProcAddress);

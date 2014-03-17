@@ -69,7 +69,7 @@ class ServiceController {
   State state_;
   base::string16 user_;
   bool is_logging_enabled_;
-  CommandLine command_line_;
+  base::CommandLine command_line_;
 };
 
 #endif  // CLOUD_PRINT_SERVICE_SERVICE_CONTROLLER_H_

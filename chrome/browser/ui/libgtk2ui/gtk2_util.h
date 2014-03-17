@@ -8,10 +8,10 @@
 #include <gtk/gtk.h>
 #include <string>
 
-class CommandLine;
 class SkBitmap;
 
 namespace base {
+class CommandLine;
 class Environment;
 }
 
@@ -21,7 +21,7 @@ class Accelerator;
 
 namespace libgtk2ui {
 
-void GtkInitFromCommandLine(const CommandLine& command_line);
+void GtkInitFromCommandLine(const base::CommandLine& command_line);
 
 // Returns the name of the ".desktop" file associated with our running process.
 std::string GetDesktopName(base::Environment* env);

@@ -11,9 +11,8 @@
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class CommandLine;
-
 namespace base {
+class CommandLine;
 class FilePath;
 }
 
@@ -53,7 +52,7 @@ class BrowserTestBase : public testing::Test {
   virtual void TearDownOnMainThread() {}
 
   // Override this to add command line flags specific to your test.
-  virtual void SetUpCommandLine(CommandLine* command_line) {}
+  virtual void SetUpCommandLine(base::CommandLine* command_line) {}
 
   // Returns the host resolver being used for the tests. Subclasses might want
   // to configure it inside tests.

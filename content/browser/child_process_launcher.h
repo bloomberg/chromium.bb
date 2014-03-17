@@ -11,7 +11,9 @@
 #include "base/process/launch.h"
 #include "content/common/content_export.h"
 
+namespace base {
 class CommandLine;
+}
 
 namespace content {
 class SandboxedProcessLauncherDelegate;
@@ -40,7 +42,7 @@ class CONTENT_EXPORT ChildProcessLauncher {
   // Takes ownership of cmd_line.
   ChildProcessLauncher(
       SandboxedProcessLauncherDelegate* delegate,
-      CommandLine* cmd_line,
+      base::CommandLine* cmd_line,
       int child_process_id,
       Client* client);
   ~ChildProcessLauncher();

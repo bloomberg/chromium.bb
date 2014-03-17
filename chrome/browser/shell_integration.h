@@ -14,7 +14,9 @@
 #include "ui/gfx/image/image_family.h"
 #include "url/gurl.h"
 
+namespace base {
 class CommandLine;
+}
 
 class ShellIntegration {
  public:
@@ -160,7 +162,7 @@ class ShellIntegration {
   // login profile, for ChromeOS).
   // If |extension_app_id| is non-empty, the arguments use kAppId=<id>.
   // Otherwise, kApp=<url> is used.
-  static CommandLine CommandLineArgsForLauncher(
+  static base::CommandLine CommandLineArgsForLauncher(
       const GURL& url,
       const std::string& extension_app_id,
       const base::FilePath& profile_path);
@@ -170,7 +172,7 @@ class ShellIntegration {
   // The new command line reuses the current process's user data directory and
   // profile.
   static void AppendProfileArgs(const base::FilePath& profile_path,
-                                CommandLine* command_line);
+                                base::CommandLine* command_line);
 
 #if defined(OS_WIN)
   // Generates an application user model ID (AppUserModelId) for a given app

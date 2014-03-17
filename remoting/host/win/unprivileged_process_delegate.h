@@ -15,9 +15,8 @@
 #include "ipc/ipc_listener.h"
 #include "remoting/host/win/worker_process_launcher.h"
 
-class CommandLine;
-
 namespace base {
+class CommandLine;
 class SingleThreadTaskRunner;
 } // namespace base
 
@@ -37,7 +36,7 @@ class UnprivilegedProcessDelegate
  public:
   UnprivilegedProcessDelegate(
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-      scoped_ptr<CommandLine> target_command);
+      scoped_ptr<base::CommandLine> target_command);
   virtual ~UnprivilegedProcessDelegate();
 
   // WorkerProcessLauncher::Delegate implementation.
@@ -59,7 +58,7 @@ class UnprivilegedProcessDelegate
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
   // Command line of the launched process.
-  scoped_ptr<CommandLine> target_command_;
+  scoped_ptr<base::CommandLine> target_command_;
 
   // The server end of the IPC channel used to communicate to the worker
   // process.

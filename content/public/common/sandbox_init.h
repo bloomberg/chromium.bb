@@ -10,9 +10,8 @@
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 
-class CommandLine;
-
 namespace base {
+class CommandLine;
 class FilePath;
 }
 
@@ -59,7 +58,7 @@ CONTENT_EXPORT bool BrokerAddTargetPeer(HANDLE peer_process);
 // then it just has to outlive this method call.
 CONTENT_EXPORT base::ProcessHandle StartSandboxedProcess(
     SandboxedProcessLauncherDelegate* delegate,
-    CommandLine* cmd_line);
+    base::CommandLine* cmd_line);
 
 #elif defined(OS_MACOSX)
 

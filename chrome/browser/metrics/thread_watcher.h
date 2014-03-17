@@ -381,7 +381,7 @@ class ThreadWatcherList {
   // This method posts a task on WatchDogThread to start watching all browser
   // threads.
   // This method is accessible on UI thread.
-  static void StartWatchingAll(const CommandLine& command_line);
+  static void StartWatchingAll(const base::CommandLine& command_line);
 
   // This method posts a task on WatchDogThread to RevokeAll tasks and to
   // deactive thread watching of other threads and tell NotificationService to
@@ -425,7 +425,7 @@ class ThreadWatcherList {
   // switches::kCrashOnHangThreads. |crash_on_hang_threads| is a map of
   // |crash_on_hang| thread's names to |CrashDataThresholds|.
   static void ParseCommandLine(
-      const CommandLine& command_line,
+      const base::CommandLine& command_line,
       uint32* unresponsive_threshold,
       CrashOnHangThreadMap* crash_on_hang_threads);
 

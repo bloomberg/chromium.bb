@@ -13,9 +13,9 @@
 #include "chrome/installer/util/util_constants.h"
 
 class BrowserDistribution;
-class CommandLine;
 
 namespace base {
+class CommandLine;
 class FilePath;
 }
 
@@ -76,7 +76,7 @@ installer::InstallStatus UninstallProduct(
     const Product& dist,
     bool remove_all,
     bool force_uninstall,
-    const CommandLine& cmd_line);
+    const base::CommandLine& cmd_line);
 
 // Cleans up the installation directory after all uninstall operations have
 // completed. Depending on what products are remaining, setup.exe and the

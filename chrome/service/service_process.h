@@ -17,15 +17,16 @@
 
 class ServiceProcessPrefs;
 class ServiceIPCServer;
-class CommandLine;
 class ServiceURLRequestContextGetter;
 class ServiceProcessState;
+
+namespace base {
+class CommandLine;
+}
 
 namespace net {
 class NetworkChangeNotifier;
 }
-
-class CommandLine;
 
 // The ServiceProcess does not inherit from ChildProcess because this
 // process can live independently of the browser process.
@@ -39,7 +40,7 @@ class ServiceProcess : public cloud_print::CloudPrintProxy::Client {
   // Initialize the ServiceProcess with the message loop that it should run on.
   // ServiceProcess takes ownership of |state|.
   bool Initialize(base::MessageLoopForUI* message_loop,
-                  const CommandLine& command_line,
+                  const base::CommandLine& command_line,
                   ServiceProcessState* state);
 
   bool Teardown();

@@ -9,11 +9,14 @@
 
 #include "base/memory/ref_counted.h"
 
-class CommandLine;
 class GURL;
 class PrefRegistrySimple;
 class PrefService;
 class Profile;
+
+namespace base {
+class CommandLine;
+}
 
 namespace chromeos {
 

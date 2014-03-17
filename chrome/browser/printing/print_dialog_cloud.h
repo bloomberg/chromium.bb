@@ -14,10 +14,10 @@
 #include "ui/gfx/native_widget_types.h"
 
 class Browser;
-class CommandLine;
 class Profile;
 
 namespace base {
+class CommandLine;
 class FilePath;
 }
 
@@ -59,7 +59,7 @@ void CreatePrintDialogForBytes(content::BrowserContext* browser_context,
 
 // Parse switches from command_line and display the print dialog as appropriate.
 bool CreatePrintDialogFromCommandLine(Profile* profile,
-                                      const CommandLine& command_line);
+                                      const base::CommandLine& command_line);
 
 // Creates a tab with Google sinnin page.
 // Calls |callback| when complete.

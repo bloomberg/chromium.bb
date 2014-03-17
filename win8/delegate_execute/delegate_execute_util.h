@@ -15,13 +15,13 @@ class FilePath;
 namespace delegate_execute {
 
 // Returns a CommandLine with an empty program parsed from |params|.
-CommandLine CommandLineFromParameters(const wchar_t* params);
+base::CommandLine CommandLineFromParameters(const wchar_t* params);
 
 // Returns a CommandLine to launch |chrome_exe| with all switches and arguments
 // from |params| plus an optional |argument|.
-CommandLine MakeChromeCommandLine(const base::FilePath& chrome_exe,
-                                  const CommandLine& params,
-                                  const base::string16& argument);
+base::CommandLine MakeChromeCommandLine(const base::FilePath& chrome_exe,
+                                        const base::CommandLine& params,
+                                        const base::string16& argument);
 
 // Returns a properly quoted command-line string less the program (argv[0])
 // containing |switch|.

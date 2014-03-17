@@ -7,7 +7,9 @@
 
 #include "chrome/test/base/in_process_browser_test.h"
 
+namespace base {
 class CommandLine;
+}
 
 class BrowserPerfTest : public InProcessBrowserTest {
  public:
@@ -16,7 +18,7 @@ class BrowserPerfTest : public InProcessBrowserTest {
 
   // Set up common browser perf test flags. Typically call down to this if
   // overridden.
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
+  virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE;
 
   // Prints IO performance data for use by perf graphs.
   void PrintIOPerfInfo(const std::string& test_name);

@@ -19,9 +19,8 @@
 #include "ipc/ipc_channel.h"
 #include "printing/pdf_render_settings.h"
 
-class CommandLine;
-
 namespace base {
+class CommandLine;
 class MessageLoopProxy;
 class ScopedTempDir;
 }  // namespace base
@@ -133,7 +132,7 @@ class ServiceUtilityProcessHost : public content::ChildProcessHostDelegate {
   // TODO(sanjeevr): Determine whether we need to make the launch asynchronous.
   // |exposed_dir| is the path to tbe exposed to the sandbox. This is ignored
   // if |no_sandbox| is true.
-  bool Launch(CommandLine* cmd_line,
+  bool Launch(base::CommandLine* cmd_line,
               bool no_sandbox,
               const base::FilePath& exposed_dir);
 

@@ -12,7 +12,9 @@
 #include "mojo/system/embedder/scoped_platform_handle.h"
 #include "mojo/system/system_impl_export.h"
 
+namespace base {
 class CommandLine;
+}
 
 namespace mojo {
 namespace embedder {
@@ -58,14 +60,14 @@ class MOJO_SYSTEM_IMPL_EXPORT PlatformChannelPair {
   // the provided data), to create a client handle connected to the server
   // handle (in the parent process).
   static ScopedPlatformHandle PassClientHandleFromParentProcess(
-      const CommandLine& command_line);
+      const base::CommandLine& command_line);
 
   // Prepares to pass the client channel to a new child process, to be launched
   // using |LaunchProcess()| (from base/launch.h). Modifies |*command_line| and
   // |*handle_passing_info| as needed.
   // Note: For Windows, this method only works on Vista and later.
   void PrepareToPassClientHandleToChildProcess(
-      CommandLine* command_line,
+      base::CommandLine* command_line,
       HandlePassingInformation* handle_passing_info) const;
 
   // To be called once the child process has been successfully launched, to do

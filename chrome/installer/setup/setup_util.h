@@ -17,9 +17,8 @@
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/util_constants.h"
 
-class CommandLine;
-
 namespace base {
+class CommandLine;
 class FilePath;
 class Version;
 }
@@ -79,7 +78,7 @@ bool GetExistingHigherInstaller(const InstallationState& original_state,
 // invoked |setup_exe| runs the newly installed product prior to exiting.
 // Returns true if |setup_exe| was launched, false otherwise.
 bool DeferToExistingInstall(const base::FilePath& setup_exe,
-                            const CommandLine& command_line,
+                            const base::CommandLine& command_line,
                             const InstallerState& installer_state,
                             const base::FilePath& temp_path,
                             InstallStatus* install_status);
@@ -111,7 +110,7 @@ void MigrateGoogleUpdateStateMultiToSingle(
 bool IsUninstallSuccess(InstallStatus install_status);
 
 // Returns true if |cmd_line| contains unsupported (legacy) switches.
-bool ContainsUnsupportedSwitch(const CommandLine& cmd_line);
+bool ContainsUnsupportedSwitch(const base::CommandLine& cmd_line);
 
 // Returns true if the processor is supported by chrome.
 bool IsProcessorSupported();

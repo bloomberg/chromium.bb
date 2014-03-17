@@ -515,7 +515,7 @@ class MigrationReconfigureTest : public MigrationTwoClientTest {
  public:
   MigrationReconfigureTest() {}
 
-  virtual void SetUpCommandLine(CommandLine* cl) OVERRIDE {
+  virtual void SetUpCommandLine(base::CommandLine* cl) OVERRIDE {
     AddTestSwitches(cl);
     // Do not add optional datatypes.
   }

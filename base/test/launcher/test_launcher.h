@@ -16,8 +16,6 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 
-class CommandLine;
-
 namespace testing {
 class TestCase;
 class TestInfo;
@@ -25,6 +23,7 @@ class TestInfo;
 
 namespace base {
 
+class CommandLine;
 struct LaunchOptions;
 class SequencedWorkerPoolOwner;
 class TestLauncher;

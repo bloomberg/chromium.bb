@@ -13,11 +13,11 @@
 #include "ui/gfx/native_widget_types.h"
 
 class AppListControllerDelegate;
-class CommandLine;
 class PrefRegistrySimple;
 class Profile;
 
 namespace base {
+class CommandLine;
 class FilePath;
 }
 
@@ -51,7 +51,7 @@ class AppListService {
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
-  static void RecordShowTimings(const CommandLine& command_line);
+  static void RecordShowTimings(const base::CommandLine& command_line);
 
   // Indicates that |callback| should be called next time the app list is
   // painted.

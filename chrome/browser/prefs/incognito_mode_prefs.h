@@ -7,9 +7,12 @@
 
 #include "base/basictypes.h"
 
-class CommandLine;
 class PrefService;
 class Profile;
+
+namespace base {
+class CommandLine;
+}
 
 namespace user_prefs {
 class PrefRegistrySyncable;
@@ -52,7 +55,7 @@ class IncognitoModePrefs {
   static bool IntToAvailability(int in_value, Availability* out_value);
 
   // Returns true if the browser should start in incognito mode.
-  static bool ShouldLaunchIncognito(const CommandLine& command_line,
+  static bool ShouldLaunchIncognito(const base::CommandLine& command_line,
                                     const PrefService* prefs);
 
   // Returns true if |profile| can open a new Browser. This checks the incognito
