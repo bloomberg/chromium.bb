@@ -21,6 +21,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_family.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/size.h"
 
@@ -46,6 +47,13 @@ class ImageLoaderTest : public testing::Test {
     if (quit_in_image_loaded_)
       base::MessageLoop::current()->Quit();
     image_ = image;
+  }
+
+  void OnImageFamilyLoaded(const gfx::ImageFamily& image_family) {
+    image_loaded_count_++;
+    if (quit_in_image_loaded_)
+      base::MessageLoop::current()->Quit();
+    image_family_ = image_family;
   }
 
   void WaitForImageLoad() {
@@ -96,6 +104,7 @@ class ImageLoaderTest : public testing::Test {
   }
 
   gfx::Image image_;
+  gfx::ImageFamily image_family_;
 
  private:
   virtual void SetUp() OVERRIDE {
@@ -199,8 +208,8 @@ TEST_F(ImageLoaderTest, MultipleImages) {
   ASSERT_TRUE(extension.get() != NULL);
 
   std::vector<ImageLoader::ImageRepresentation> info_list;
-  int sizes[] = {extension_misc::EXTENSION_ICON_SMALLISH,
-                 extension_misc::EXTENSION_ICON_BITTY};
+  int sizes[] = {extension_misc::EXTENSION_ICON_BITTY,
+                 extension_misc::EXTENSION_ICON_SMALLISH, };
   for (size_t i = 0; i < arraysize(sizes); ++i) {
     ExtensionResource resource = extensions::IconsInfo::GetIconResource(
         extension.get(), sizes[i], ExtensionIconSet::MATCH_EXACTLY);
@@ -228,15 +237,82 @@ TEST_F(ImageLoaderTest, MultipleImages) {
   std::vector<gfx::ImageSkiaRep> image_reps =
       image_.ToImageSkia()->image_reps();
   ASSERT_EQ(2u, image_reps.size());
+
   const gfx::ImageSkiaRep* img_rep1 = &image_reps[0];
   const gfx::ImageSkiaRep* img_rep2 = &image_reps[1];
-  if (img_rep1->pixel_width() > img_rep2->pixel_width()) {
-    std::swap(img_rep1, img_rep2);
-  }
   EXPECT_EQ(extension_misc::EXTENSION_ICON_BITTY,
             img_rep1->pixel_width());
   EXPECT_EQ(extension_misc::EXTENSION_ICON_SMALLISH,
             img_rep2->pixel_width());
+}
+
+// Tests loading multiple dimensions of the same image into an image family.
+TEST_F(ImageLoaderTest, LoadImageFamily) {
+  scoped_refptr<Extension> extension(
+      CreateExtension("image_loading_tracker", Manifest::INVALID_LOCATION));
+  ASSERT_TRUE(extension.get() != NULL);
+
+  std::vector<ImageLoader::ImageRepresentation> info_list;
+  int sizes[] = {extension_misc::EXTENSION_ICON_BITTY,
+                 extension_misc::EXTENSION_ICON_SMALLISH, };
+  for (size_t i = 0; i < arraysize(sizes); ++i) {
+    ExtensionResource resource = extensions::IconsInfo::GetIconResource(
+        extension.get(), sizes[i], ExtensionIconSet::MATCH_EXACTLY);
+    info_list.push_back(ImageLoader::ImageRepresentation(
+        resource,
+        ImageLoader::ImageRepresentation::NEVER_RESIZE,
+        gfx::Size(sizes[i], sizes[i]),
+        ui::SCALE_FACTOR_100P));
+  }
+
+  // Add a second icon of 200P which should get grouped with the smaller icon's
+  // ImageSkia.
+  ExtensionResource resource = extensions::IconsInfo::GetIconResource(
+      extension.get(),
+      extension_misc::EXTENSION_ICON_SMALLISH,
+      ExtensionIconSet::MATCH_EXACTLY);
+  info_list.push_back(ImageLoader::ImageRepresentation(
+      resource,
+      ImageLoader::ImageRepresentation::NEVER_RESIZE,
+      gfx::Size(extension_misc::EXTENSION_ICON_BITTY,
+                extension_misc::EXTENSION_ICON_BITTY),
+      ui::SCALE_FACTOR_200P));
+
+  ImageLoader loader;
+  loader.LoadImageFamilyAsync(extension.get(),
+                              info_list,
+                              base::Bind(&ImageLoaderTest::OnImageFamilyLoaded,
+                                         base::Unretained(this)));
+
+  // The image isn't cached, so we should not have received notification.
+  EXPECT_EQ(0, image_loaded_count());
+
+  WaitForImageLoad();
+
+  // We should have gotten the image.
+  EXPECT_EQ(1, image_loaded_count());
+
+  // Check that all images were loaded.
+  for (size_t i = 0; i < arraysize(sizes); ++i) {
+    const gfx::Image* image = image_family_.GetBest(sizes[i], sizes[i]);
+    EXPECT_EQ(sizes[i], image->Width());
+  }
+
+  // Check the smaller image has 2 representations of different scale factors.
+  std::vector<gfx::ImageSkiaRep> image_reps =
+      image_family_.GetBest(extension_misc::EXTENSION_ICON_BITTY,
+                            extension_misc::EXTENSION_ICON_BITTY)
+          ->ToImageSkia()
+          ->image_reps();
+
+  ASSERT_EQ(2u, image_reps.size());
+
+  const gfx::ImageSkiaRep* img_rep1 = &image_reps[0];
+  const gfx::ImageSkiaRep* img_rep2 = &image_reps[1];
+  EXPECT_EQ(extension_misc::EXTENSION_ICON_BITTY, img_rep1->pixel_width());
+  EXPECT_EQ(1.0f, img_rep1->scale());
+  EXPECT_EQ(extension_misc::EXTENSION_ICON_SMALLISH, img_rep2->pixel_width());
+  EXPECT_EQ(2.0f, img_rep2->scale());
 }
 
 // Tests IsComponentExtensionResource function.

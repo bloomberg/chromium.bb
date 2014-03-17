@@ -24,6 +24,7 @@
 #include "skia/ext/image_operations.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/image/image_family.h"
 #include "ui/gfx/image/image_skia.h"
 
 #if defined(USE_AURA)
@@ -47,6 +48,8 @@ bool ShouldResizeImageRepresentation(
     case ImageLoader::ImageRepresentation::RESIZE_WHEN_LARGER:
       return decoded_size.width() > desired_size.width() ||
              decoded_size.height() > desired_size.height();
+    case ImageLoader::ImageRepresentation::NEVER_RESIZE:
+      return false;
     default:
       NOTREACHED();
       return false;
@@ -113,6 +116,32 @@ void AddComponentResourceEntries(
         path_to_resource_id->end());
     (*path_to_resource_id)[resource_path] = entries[i].value;
   }
+}
+
+std::vector<SkBitmap> LoadResourceBitmaps(
+    const Extension* extension,
+    const std::vector<ImageLoader::ImageRepresentation>& info_list) {
+  // Loading resources has to happen on the UI thread. So do this first, and
+  // pass the rest of the work off as a blocking pool task.
+  std::vector<SkBitmap> bitmaps;
+  bitmaps.resize(info_list.size());
+
+  int i = 0;
+  for (std::vector<ImageLoader::ImageRepresentation>::const_iterator
+           it = info_list.begin();
+       it != info_list.end();
+       ++it, ++i) {
+    DCHECK(it->resource.relative_path().empty() ||
+           extension->path() == it->resource.extension_root());
+
+    int resource_id;
+    if (extension->location() == Manifest::COMPONENT &&
+        ImageLoader::IsComponentExtensionResource(
+            extension->path(), it->resource.relative_path(), &resource_id)) {
+      LoadResourceOnUIThread(resource_id, &bitmaps[i]);
+    }
+  }
+  return bitmaps;
 }
 
 }  // namespace
@@ -277,7 +306,7 @@ bool ImageLoader::IsComponentExtensionResource(
 void ImageLoader::LoadImageAsync(const Extension* extension,
                                  const ExtensionResource& resource,
                                  const gfx::Size& max_size,
-                                 const ImageLoaderCallback& callback) {
+                                 const ImageLoaderImageCallback& callback) {
   std::vector<ImageRepresentation> info_list;
   info_list.push_back(ImageRepresentation(
       resource,
@@ -290,41 +319,37 @@ void ImageLoader::LoadImageAsync(const Extension* extension,
 void ImageLoader::LoadImagesAsync(
     const Extension* extension,
     const std::vector<ImageRepresentation>& info_list,
-    const ImageLoaderCallback& callback) {
+    const ImageLoaderImageCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // Loading an image from the cache and loading resources have to happen
-  // on the UI thread. So do those two things first, and pass the rest of the
-  // work of as a blocking pool task.
-
-  std::vector<SkBitmap> bitmaps;
-  bitmaps.resize(info_list.size());
-
-  int i = 0;
-  for (std::vector<ImageRepresentation>::const_iterator it = info_list.begin();
-       it != info_list.end(); ++it, ++i) {
-    DCHECK(it->resource.relative_path().empty() ||
-           extension->path() == it->resource.extension_root());
-
-    int resource_id;
-    if (extension->location() == Manifest::COMPONENT &&
-        IsComponentExtensionResource(extension->path(),
-                                     it->resource.relative_path(),
-                                     &resource_id)) {
-      LoadResourceOnUIThread(resource_id, &bitmaps[i]);
-    }
-  }
-
   DCHECK(!BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
   base::PostTaskAndReplyWithResult(
       BrowserThread::GetBlockingPool(),
       FROM_HERE,
-      base::Bind(LoadImagesOnBlockingPool, info_list, bitmaps),
-      base::Bind(&ImageLoader::ReplyBack, weak_ptr_factory_.GetWeakPtr(),
+      base::Bind(LoadImagesOnBlockingPool,
+                 info_list,
+                 LoadResourceBitmaps(extension, info_list)),
+      base::Bind(
+          &ImageLoader::ReplyBack, weak_ptr_factory_.GetWeakPtr(), callback));
+}
+
+void ImageLoader::LoadImageFamilyAsync(
+    const extensions::Extension* extension,
+    const std::vector<ImageRepresentation>& info_list,
+    const ImageLoaderImageFamilyCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
+  base::PostTaskAndReplyWithResult(
+      BrowserThread::GetBlockingPool(),
+      FROM_HERE,
+      base::Bind(LoadImagesOnBlockingPool,
+                 info_list,
+                 LoadResourceBitmaps(extension, info_list)),
+      base::Bind(&ImageLoader::ReplyBackWithImageFamily,
+                 weak_ptr_factory_.GetWeakPtr(),
                  callback));
 }
 
-void ImageLoader::ReplyBack(const ImageLoaderCallback& callback,
+void ImageLoader::ReplyBack(const ImageLoaderImageCallback& callback,
                             const std::vector<LoadResult>& load_result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -347,6 +372,38 @@ void ImageLoader::ReplyBack(const ImageLoaderCallback& callback,
   }
 
   callback.Run(image);
+}
+
+void ImageLoader::ReplyBackWithImageFamily(
+    const ImageLoaderImageFamilyCallback& callback,
+    const std::vector<LoadResult>& load_result) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  std::map<std::pair<int, int>, gfx::ImageSkia> image_skia_map;
+  gfx::ImageFamily image_family;
+
+  for (std::vector<LoadResult>::const_iterator it = load_result.begin();
+       it != load_result.end();
+       ++it) {
+    const SkBitmap& bitmap = it->bitmap;
+    const ImageRepresentation& image_rep = it->image_representation;
+    const std::pair<int, int> key = std::make_pair(
+        image_rep.desired_size.width(), image_rep.desired_size.height());
+    // Create a new ImageSkia for this width/height, or add a representation to
+    // an existing ImageSkia with the same width/height.
+    image_skia_map[key].AddRepresentation(
+        gfx::ImageSkiaRep(bitmap, ui::GetImageScale(image_rep.scale_factor)));
+  }
+
+  for (std::map<std::pair<int, int>, gfx::ImageSkia>::iterator it =
+           image_skia_map.begin();
+       it != image_skia_map.end();
+       ++it) {
+    it->second.MakeThreadSafe();
+    image_family.Add(it->second);
+  }
+
+  callback.Run(image_family);
 }
 
 }  // namespace extensions

@@ -345,10 +345,10 @@ void UpdateShortcutWorker::DeleteMeOnUIThread() {
 
 void OnImageLoaded(ShellIntegration::ShortcutInfo shortcut_info,
                    web_app::ShortcutInfoCallback callback,
-                   const gfx::Image& image) {
+                   const gfx::ImageFamily& image_family) {
   // If the image failed to load (e.g. if the resource being loaded was empty)
   // use the standard application icon.
-  if (image.IsEmpty()) {
+  if (image_family.empty()) {
     gfx::Image default_icon =
         ResourceBundle::GetSharedInstance().GetImageNamed(IDR_APP_DEFAULT_ICON);
     int size = kDesiredSizes[kNumDesiredSizes - 1];
@@ -361,21 +361,7 @@ void OnImageLoaded(ShellIntegration::ShortcutInfo shortcut_info,
     image_skia.MakeThreadSafe();
     shortcut_info.favicon.Add(gfx::Image(image_skia));
   } else {
-    // As described in UpdateShortcutInfoAndIconForApp, image contains all of
-    // the icons, hackily put into a single ImageSkia. Separate them out into
-    // individual ImageSkias and insert them into the icon family.
-    const gfx::ImageSkia& multires_image_skia = image.AsImageSkia();
-    // NOTE: We do not call ImageSkia::EnsureRepsForSupportedScales here.
-    // The image reps here are not really for different scale factors (ImageSkia
-    // is just being used as a handy container for multiple images).
-    std::vector<gfx::ImageSkiaRep> image_reps =
-        multires_image_skia.image_reps();
-    for (std::vector<gfx::ImageSkiaRep>::const_iterator it = image_reps.begin();
-         it != image_reps.end(); ++it) {
-      gfx::ImageSkia image_skia(*it);
-      image_skia.MakeThreadSafe();
-      shortcut_info.favicon.Add(image_skia);
-    }
+    shortcut_info.favicon = image_family;
   }
 
   callback.Run(shortcut_info);
@@ -445,13 +431,6 @@ void UpdateShortcutInfoAndIconForApp(
   ShellIntegration::ShortcutInfo shortcut_info =
       ShortcutInfoForExtensionAndProfile(&extension, profile);
 
-  // We want to load each icon into a separate ImageSkia to insert into an
-  // ImageFamily, but LoadImagesAsync currently only builds a single ImageSkia.
-  // Hack around this by loading all images into the ImageSkia as 100%
-  // representations, and later (in OnImageLoaded), pulling them out and
-  // individually inserting them into an ImageFamily.
-  // TODO(mgiuca): Have ImageLoader build the ImageFamily directly
-  // (http://crbug.com/230184).
   std::vector<extensions::ImageLoader::ImageRepresentation> info_list;
   for (size_t i = 0; i < kNumDesiredSizes; ++i) {
     int size = kDesiredSizes[i];
@@ -488,10 +467,12 @@ void UpdateShortcutInfoAndIconForApp(
         ui::SCALE_FACTOR_100P));
   }
 
-  // |info_list| may still be empty at this point, in which case LoadImage
-  // will call the OnImageLoaded callback with an empty image and exit
-  // immediately.
-  extensions::ImageLoader::Get(profile)->LoadImagesAsync(&extension, info_list,
+  // |info_list| may still be empty at this point, in which case
+  // LoadImageFamilyAsync will call the OnImageLoaded callback with an empty
+  // image and exit immediately.
+  extensions::ImageLoader::Get(profile)->LoadImageFamilyAsync(
+      &extension,
+      info_list,
       base::Bind(&OnImageLoaded, shortcut_info, callback));
 }
 
