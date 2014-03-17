@@ -368,7 +368,7 @@ public:
     void clearCompositedLayerMapping(bool layerBeingDestroyed = false);
 
     CompositedLayerMapping* groupedMapping() const { return m_groupedMapping; }
-    void setGroupedMapping(CompositedLayerMapping* groupedMapping) { m_groupedMapping = groupedMapping; }
+    void setGroupedMapping(CompositedLayerMapping* groupedMapping, bool layerBeingDestroyed = false);
 
     bool hasCompositedMask() const;
     bool hasCompositedClippingMask() const;

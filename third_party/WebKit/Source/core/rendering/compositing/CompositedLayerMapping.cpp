@@ -176,7 +176,7 @@ CompositedLayerMapping::~CompositedLayerMapping()
     for (size_t i = 0; i < m_squashedLayers.size(); ++i) {
         RenderLayer* oldSquashedLayer = m_squashedLayers[i].renderLayer;
         if (oldSquashedLayer->groupedMapping() == this) {
-            oldSquashedLayer->setGroupedMapping(0);
+            oldSquashedLayer->setGroupedMapping(0, true);
             oldSquashedLayer->setLostGroupedMapping(true);
         }
     }
