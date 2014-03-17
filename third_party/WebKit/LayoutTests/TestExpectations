@@ -725,10 +725,8 @@ crbug.com/323858 [ XP ] fast/workers/storage/interrupt-database.html [ Pass Time
 
 crbug.com/343892 [ Linux Mac ] fast/workers/shared-worker-name.html [ Pass Crash ]
 
-crbug.com/345831 fast/events/scroll-event-during-modal-dialog.html [ Failure ]
-crbug.com/345831 fast/events/show-modal-dialog-onblur-onfocus.html [ Failure ]
-crbug.com/345831 fast/harness/show-modal-dialog.html [ Failure ]
-crbug.com/345831 fast/dom/Window/open-window-min-size.html [ Timeout Failure ]
+crbug.com/345831 [ Win ] fast/dom/Window/open-window-min-size.html [ Failure ]
+crbug.com/345831 [ Linux Mac ] fast/dom/Window/open-window-min-size.html [ Failure Pass ]
 
 crbug.com/345027 fast/table/border-collapsing/cached-69296.html [ ImageOnlyFailure NeedsRebaseline ]
 crbug.com/345027 fast/table/border-collapsing/cached-cell-append.html [ ImageOnlyFailure NeedsRebaseline ]
