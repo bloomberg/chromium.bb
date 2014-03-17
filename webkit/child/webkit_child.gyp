@@ -54,8 +54,6 @@
       # include the header generated above.
       'hard_dependency': 1,
       'sources': [
-        'ftp_directory_listing_response_delegate.cc',
-        'ftp_directory_listing_response_delegate.h',
         'multipart_response_delegate.cc',
         'multipart_response_delegate.h',
         'resource_loader_bridge.cc',

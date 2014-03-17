@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/child/ftp_directory_listing_response_delegate.h"
+#include "content/child/ftp_directory_listing_response_delegate.h"
 
 #include <vector>
 
@@ -26,6 +26,8 @@ using net::FtpDirectoryListingEntry;
 using blink::WebURLLoader;
 using blink::WebURLLoaderClient;
 using blink::WebURLResponse;
+
+using webkit_glue::WebURLResponseExtraDataImpl;
 
 namespace {
 
@@ -53,7 +55,7 @@ base::string16 ConvertPathToUTF16(const std::string& path) {
 
 }  // namespace
 
-namespace webkit_glue {
+namespace content {
 
 FtpDirectoryListingResponseDelegate::FtpDirectoryListingResponseDelegate(
     WebURLLoaderClient* client,
@@ -120,4 +122,4 @@ void FtpDirectoryListingResponseDelegate::SendDataToClient(
   client_->didReceiveData(loader_, data.data(), data.length(), -1);
 }
 
-}  // namespace webkit_glue
+}  // namespace content

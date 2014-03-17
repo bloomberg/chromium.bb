@@ -13,6 +13,7 @@
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "content/child/blink_platform_impl.h"
+#include "content/child/ftp_directory_listing_response_delegate.h"
 #include "content/common/resource_request_body.h"
 #include "net/base/data_url.h"
 #include "net/base/load_flags.h"
@@ -31,7 +32,6 @@
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "third_party/WebKit/public/web/WebSecurityPolicy.h"
-#include "webkit/child/ftp_directory_listing_response_delegate.h"
 #include "webkit/child/multipart_response_delegate.h"
 #include "webkit/child/resource_loader_bridge.h"
 #include "webkit/child/weburlrequest_extradata_impl.h"
@@ -53,7 +53,6 @@ using blink::WebURLLoader;
 using blink::WebURLLoaderClient;
 using blink::WebURLRequest;
 using blink::WebURLResponse;
-using webkit_glue::FtpDirectoryListingResponseDelegate;
 using webkit_glue::MultipartResponseDelegate;
 using webkit_glue::ResourceDevToolsInfo;
 using webkit_glue::ResourceLoaderBridge;

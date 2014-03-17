@@ -1,18 +1,17 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
 // A delegate class of WebURLLoaderImpl that handles text/vnd.chromium.ftp-dir
 // data.
 
-#ifndef WEBKIT_CHILD_FTP_DIRECTORY_LISTING_RESPONSE_DELEGATE_H_
-#define WEBKIT_CHILD_FTP_DIRECTORY_LISTING_RESPONSE_DELEGATE_H_
+#ifndef CONTENT_CHILD_FTP_DIRECTORY_LISTING_RESPONSE_DELEGATE_H_
+#define CONTENT_CHILD_FTP_DIRECTORY_LISTING_RESPONSE_DELEGATE_H_
 
 #include <string>
 
 #include "base/basictypes.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
-#include "webkit/child/webkit_child_export.h"
 
 namespace blink {
 class WebURLLoader;
@@ -21,9 +20,9 @@ class WebURLLoaderClient;
 
 class GURL;
 
-namespace webkit_glue {
+namespace content {
 
-class WEBKIT_CHILD_EXPORT FtpDirectoryListingResponseDelegate {
+class FtpDirectoryListingResponseDelegate {
  public:
   FtpDirectoryListingResponseDelegate(blink::WebURLLoaderClient* client,
                                       blink::WebURLLoader* loader,
@@ -49,6 +48,6 @@ class WEBKIT_CHILD_EXPORT FtpDirectoryListingResponseDelegate {
   DISALLOW_COPY_AND_ASSIGN(FtpDirectoryListingResponseDelegate);
 };
 
-}  // namespace webkit_glue
+}  // namespace content
 
-#endif  // WEBKIT_CHILD_FTP_DIRECTORY_LISTING_RESPONSE_DELEGATE_H_
+#endif  // CONTENT_CHILD_FTP_DIRECTORY_LISTING_RESPONSE_DELEGATE_H_
