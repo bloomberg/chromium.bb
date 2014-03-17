@@ -152,16 +152,18 @@ bool passesAccessControlCheck(const ResourceResponse& response, StoredCredential
         return false;
     }
 
-    // A wildcard Access-Control-Allow-Origin can not be used if credentials are to be sent,
-    // even with Access-Control-Allow-Credentials set to true.
     const AtomicString& accessControlOriginString = response.httpHeaderField(accessControlAllowOrigin);
-    if (accessControlOriginString == starAtom && includeCredentials == DoNotAllowStoredCredentials)
-        return true;
-
-    if (accessControlOriginString != securityOrigin->toAtomicString()) {
-        if (accessControlOriginString == starAtom) {
+    if (accessControlOriginString == starAtom) {
+        // A wildcard Access-Control-Allow-Origin can not be used if credentials are to be sent,
+        // even with Access-Control-Allow-Credentials set to true.
+        if (includeCredentials == DoNotAllowStoredCredentials)
+            return true;
+        if (response.isHTTP()) {
             errorDescription = "A wildcard '*' cannot be used in the 'Access-Control-Allow-Origin' header when the credentials flag is true. Origin '" + securityOrigin->toString() + "' is therefore not allowed access.";
-        } else if (accessControlOriginString.isEmpty()) {
+            return false;
+        }
+    } else if (accessControlOriginString != securityOrigin->toAtomicString()) {
+        if (accessControlOriginString.isEmpty()) {
             errorDescription = "No 'Access-Control-Allow-Origin' header is present on the requested resource. Origin '" + securityOrigin->toString() + "' is therefore not allowed access.";
         } else if (accessControlOriginString.string().find(isOriginSeparator, 0) != kNotFound) {
             errorDescription = "The 'Access-Control-Allow-Origin' header contains multiple values '" + accessControlOriginString + "', but only one is allowed. Origin '" + securityOrigin->toString() + "' is therefore not allowed access.";
