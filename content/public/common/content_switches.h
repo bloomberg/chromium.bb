@@ -116,7 +116,6 @@ CONTENT_EXPORT extern const char kEnableLayerSquashing[];
 extern const char kEnableAccessibilityLogging[];
 CONTENT_EXPORT extern const char kEnableBeginFrameScheduling[];
 CONTENT_EXPORT extern const char kEnableBrowserPluginForAllViewTypes[];
-CONTENT_EXPORT extern const char kEnableBrowserPluginDragDrop[];
 CONTENT_EXPORT extern const char kEnableCompositingForFixedPosition[];
 CONTENT_EXPORT extern const char kEnableCompositingForTransition[];
 CONTENT_EXPORT extern const char kEnableDeferredImageDecoding[];
