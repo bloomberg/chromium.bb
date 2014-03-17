@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <map>
 #include <string>
 
 #include "base/command_line.h"
@@ -36,22 +37,24 @@ class TestAddObserver : public message_center::MessageCenterObserver {
   virtual ~TestAddObserver() { message_center_->RemoveObserver(this); }
 
   virtual void OnNotificationAdded(const std::string& id) OVERRIDE {
-    if (log_ != "")
-      log_ += "_";
-    log_ += "add-" + id;
+    std::string log = logs_[id];
+    if (log != "")
+      log += "_";
+    logs_[id] = log + "add-" + id;
   }
 
   virtual void OnNotificationUpdated(const std::string& id) OVERRIDE {
-    if (log_ != "")
-      log_ += "_";
-    log_ += "update-" + id;
+    std::string log = logs_[id];
+    if (log != "")
+      log += "_";
+    logs_[id] = log + "update-" + id;
   }
 
-  const std::string log() const { return log_; }
-  void reset_log() { log_ = ""; }
+  const std::string log(const std::string& id) { return logs_[id]; }
+  void reset_logs() { logs_.clear(); }
 
  private:
-  std::string log_;
+  std::map<std::string, std::string> logs_;
   message_center::MessageCenter* message_center_;
 };
 
@@ -178,6 +181,11 @@ IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest, MAYBE_BasicAddCancel) {
 #endif
 
   EXPECT_TRUE(NotificationUIManager::DelegatesToMessageCenter());
+  // Someone may create system notifications like "you're in multi-profile
+  // mode..." or something which may change the expectation.
+  // TODO(mukai): move this to SetUpOnMainThread() after fixing the side-effect
+  // of canceling animation which prevents some Displayed() event.
+  manager()->CancelAll();
   manager()->Add(CreateTestNotification("hey"), profile());
   EXPECT_EQ(1u, message_center()->NotificationCount());
   manager()->CancelById("hey");
@@ -289,11 +297,11 @@ IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest,
 
   // 'update-n' should happen since SetVisibility updates is_read status of n.
   // TODO(mukai): fix event handling to happen update-n just once.
-  EXPECT_EQ("add-n_update-n_update-n", observer.log());
+  EXPECT_EQ("add-n_update-n_update-n", observer.log("n"));
 
   message_center()->SetVisibility(message_center::VISIBILITY_TRANSIENT);
 
-  EXPECT_EQ("add-n_update-n_update-n_add-n2", observer.log());
+  EXPECT_EQ("add-n2", observer.log("n2"));
 
   delegate->Release();
   delegate2->Release();
@@ -327,15 +335,15 @@ IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest,
   manager()->Add(notification, profile());
   message_center()->ClickOnNotification("n");
   message_center()->SetVisibility(message_center::VISIBILITY_MESSAGE_CENTER);
-  observer.reset_log();
+  observer.reset_logs();
   notification.set_title(base::ASCIIToUTF16("title2"));
   manager()->Update(notification, profile());
 
   // Expect that the notification update is not done.
-  EXPECT_EQ("", observer.log());
+  EXPECT_EQ("", observer.log("n"));
 
   message_center()->SetVisibility(message_center::VISIBILITY_TRANSIENT);
-  EXPECT_EQ("update-n", observer.log());
+  EXPECT_EQ("update-n", observer.log("n"));
 
   delegate->Release();
 }
@@ -369,15 +377,15 @@ IN_PROC_BROWSER_TEST_F(
   manager()->Add(notification, profile());
   message_center()->ClickOnNotification("n");
   message_center()->SetVisibility(message_center::VISIBILITY_MESSAGE_CENTER);
-  observer.reset_log();
+  observer.reset_logs();
   notification.set_type(message_center::NOTIFICATION_TYPE_PROGRESS);
   manager()->Update(notification, profile());
 
   // Expect that the notification update is not done.
-  EXPECT_EQ("", observer.log());
+  EXPECT_EQ("", observer.log("n"));
 
   message_center()->SetVisibility(message_center::VISIBILITY_TRANSIENT);
-  EXPECT_EQ("update-n", observer.log());
+  EXPECT_EQ("update-n", observer.log("n"));
 
   delegate->Release();
 }
@@ -411,12 +419,12 @@ IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest,
   manager()->Add(notification, profile());
   message_center()->ClickOnNotification("n");
   message_center()->SetVisibility(message_center::VISIBILITY_MESSAGE_CENTER);
-  observer.reset_log();
+  observer.reset_logs();
   notification.set_progress(50);
   manager()->Update(notification, profile());
 
   // Expect that the progress notification update is performed.
-  EXPECT_EQ("update-n", observer.log());
+  EXPECT_EQ("update-n", observer.log("n"));
 
   delegate->Release();
 }
