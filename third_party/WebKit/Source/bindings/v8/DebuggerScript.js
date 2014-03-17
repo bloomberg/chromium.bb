@@ -70,11 +70,10 @@ DebuggerScript.getFunctionScopes = function(fun)
         return null;
     var result = [];
     for (var i = 0; i < count; i++) {
-        var scopeMirror = mirror.scope(i);
-        var scopeType = scopeMirror.scopeType();
+        var scopeDetails = mirror.scope(i).details();
         result[i] = {
-            type: scopeType,
-            object: DebuggerScript._buildScopeObject(scopeType, scopeMirror.details_.object())
+            type: scopeDetails.type(),
+            object: DebuggerScript._buildScopeObject(scopeDetails.type(), scopeDetails.object())
         };
     }
     return result;
@@ -318,20 +317,22 @@ DebuggerScript._frameMirrorToJSCallFrame = function(frameMirror, callerFrame)
 {
     // Stuff that can not be initialized lazily (i.e. valid while paused with a valid break_id).
     // The frameMirror and scopeMirror can be accessed only while paused on the debugger.
-    var funcObject = frameMirror.details_.func();
-    var sourcePosition = frameMirror.details_.sourcePosition();
-    var thisObject = frameMirror.details_.receiver();
+    var frameDetails = frameMirror.details();
 
-    var isAtReturn = !!frameMirror.details_.isAtReturn();
-    var returnValue = isAtReturn ? frameMirror.details_.returnValue() : undefined;
+    var funcObject = frameDetails.func();
+    var sourcePosition = frameDetails.sourcePosition();
+    var thisObject = frameDetails.receiver();
+
+    var isAtReturn = !!frameDetails.isAtReturn();
+    var returnValue = isAtReturn ? frameDetails.returnValue() : undefined;
 
     var scopeMirrors = frameMirror.allScopes();
     var scopeTypes = new Array(scopeMirrors.length);
     var scopeObjects = new Array(scopeMirrors.length);
     for (var i = 0; i < scopeMirrors.length; ++i) {
-        var scopeMirror = scopeMirrors[i];
-        scopeTypes[i] = scopeMirror.scopeType();
-        scopeObjects[i] = scopeMirror.details_.object();
+        var scopeDetails = scopeMirrors[i].details();
+        scopeTypes[i] = scopeDetails.type();
+        scopeObjects[i] = scopeDetails.object();
     }
 
     // Calculated lazily.
