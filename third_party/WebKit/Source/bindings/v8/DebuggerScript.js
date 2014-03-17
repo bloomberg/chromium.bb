@@ -318,10 +318,8 @@ DebuggerScript._frameMirrorToJSCallFrame = function(frameMirror, callerFrame)
 {
     // Stuff that can not be initialized lazily (i.e. valid while paused with a valid break_id).
     // The frameMirror and scopeMirror can be accessed only while paused on the debugger.
-    var funcMirror = frameMirror.func();
-
+    var funcObject = frameMirror.details_.func();
     var sourcePosition = frameMirror.details_.sourcePosition();
-
     var thisObject = frameMirror.details_.receiver();
 
     var isAtReturn = !!frameMirror.details_.isAtReturn();
@@ -337,8 +335,9 @@ DebuggerScript._frameMirrorToJSCallFrame = function(frameMirror, callerFrame)
     }
 
     // Calculated lazily.
-    var location;
     var scopeChain;
+    var funcMirror;
+    var location;
 
     function lazyScopeChain()
     {
@@ -351,10 +350,20 @@ DebuggerScript._frameMirrorToJSCallFrame = function(frameMirror, callerFrame)
         return scopeChain;
     }
 
+    function ensureFuncMirror()
+    {
+        if (!funcMirror) {
+            funcMirror = MakeMirror(funcObject);
+            if (!funcMirror.isFunction())
+                funcMirror = new UnresolvedFunctionMirror(funcObject);
+        }
+        return funcMirror;
+    }
+
     function ensureLocation()
     {
         if (!location) {
-            var script = funcMirror.script();
+            var script = ensureFuncMirror().script();
             if (script)
                 location = script.locationFromPosition(sourcePosition, true);
             if (!location)
@@ -375,19 +384,20 @@ DebuggerScript._frameMirrorToJSCallFrame = function(frameMirror, callerFrame)
 
     function sourceID()
     {
-        var script = funcMirror.script();
+        var script = ensureFuncMirror().script();
         return script && script.id();
     }
 
     function functionName()
     {
-        if (!funcMirror.resolved())
+        var func = ensureFuncMirror();
+        if (!func.resolved())
             return undefined;
         var displayName;
-        var valueMirror = funcMirror.property("displayName").value();
+        var valueMirror = func.property("displayName").value();
         if (valueMirror && valueMirror.isString())
             displayName = valueMirror.value();
-        return displayName || funcMirror.name() || funcMirror.inferredName();
+        return displayName || func.name() || func.inferredName();
     }
 
     function evaluate(expression)
@@ -411,7 +421,7 @@ DebuggerScript._frameMirrorToJSCallFrame = function(frameMirror, callerFrame)
         var stepInPositionsProtocol;
         if (stepInPositionsV8) {
             stepInPositionsProtocol = [];
-            var script = frameMirror.func().script();
+            var script = ensureFuncMirror().script();
             if (script) {
                 var scriptId = String(script.id());
                 for (var i = 0; i < stepInPositionsV8.length; i++) {
