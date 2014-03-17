@@ -42,7 +42,6 @@
 #include "core/rendering/RenderListMarker.h"
 #include "core/rendering/RenderTableCell.h"
 #include "core/rendering/RenderView.h"
-#include "core/rendering/TextAutosizer.h"
 
 using namespace std;
 
@@ -62,6 +61,182 @@ static const RenderObject* parentElementRenderer(const RenderObject* renderer)
             return node->renderer();
     }
     return 0;
+}
+
+static const Vector<QualifiedName>& formInputTags()
+{
+    // Returns the tags for the form input elements.
+    DEFINE_STATIC_LOCAL(Vector<QualifiedName>, formInputTags, ());
+    if (formInputTags.isEmpty()) {
+        formInputTags.append(HTMLNames::inputTag);
+        formInputTags.append(HTMLNames::buttonTag);
+        formInputTags.append(HTMLNames::selectTag);
+    }
+    return formInputTags;
+}
+
+static bool isAutosizingContainer(const RenderObject* renderer)
+{
+    // "Autosizing containers" are the smallest unit for which we can
+    // enable/disable Text Autosizing.
+    // - Must not be inline, as different multipliers on one line looks terrible.
+    //   Exceptions are inline-block and alike elements (inline-table, -webkit-inline-*),
+    //   as they often contain entire multi-line columns of text.
+    // - Must not be list items, as items in the same list should look consistent (*).
+    // - Must not be normal list items, as items in the same list should look
+    //   consistent, unless they are floating or position:absolute/fixed.
+    Node* node = renderer->generatingNode();
+    if ((node && !node->hasChildren())
+        || !renderer->isRenderBlock()
+        || (renderer->isInline() && !renderer->style()->isDisplayReplacedType()))
+        return false;
+    if (renderer->isListItem())
+        return renderer->isFloating() || renderer->isOutOfFlowPositioned();
+    // Avoid creating containers for text within text controls, buttons, or <select> buttons.
+    Node* parentNode = renderer->parent() ? renderer->parent()->generatingNode() : 0;
+    if (parentNode && parentNode->isElementNode() && formInputTags().contains(toElement(parentNode)->tagQName()))
+        return false;
+
+    return true;
+}
+
+static RenderObject* nextInPreOrderSkippingDescendantsOfContainers(const RenderObject* current, const RenderObject* stayWithin)
+{
+    if (current == stayWithin || !isAutosizingContainer(current))
+        return current->nextInPreOrder(stayWithin);
+    return current->nextInPreOrderAfterChildren(stayWithin);
+}
+
+static bool isIndependentDescendant(const RenderBlock* renderer)
+{
+    ASSERT(isAutosizingContainer(renderer));
+
+    // "Autosizing clusters" are special autosizing containers within which we
+    // want to enforce a uniform text size multiplier, in the hopes of making
+    // the major sections of the page look internally consistent.
+    // All their descendants (including other autosizing containers) must share
+    // the same multiplier, except for subtrees which are themselves clusters,
+    // and some of their descendant containers might not be autosized at all
+    // (for example if their height is constrained).
+    // Additionally, clusterShouldBeAutosized requires each cluster to contain a
+    // minimum amount of text, without which it won't be autosized.
+    //
+    // Clusters are chosen using very similar criteria to CSS flow roots, aka
+    // block formatting contexts (http://w3.org/TR/css3-box/#flow-root), since
+    // flow roots correspond to box containers that behave somewhat
+    // independently from their parent (for example they don't overlap floats).
+    // The definition of a flow root also conveniently includes most of the
+    // ways that a box and its children can have significantly different width
+    // from the box's parent (we want to avoid having significantly different
+    // width blocks within a cluster, since the narrower blocks would end up
+    // larger than would otherwise be necessary).
+    RenderBlock* containingBlock = renderer->containingBlock();
+    return renderer->isRenderView()
+        || renderer->isFloating()
+        || renderer->isOutOfFlowPositioned()
+        || renderer->isTableCell()
+        || renderer->isTableCaption()
+        || renderer->isFlexibleBoxIncludingDeprecated()
+        || renderer->hasColumns()
+        || (containingBlock && containingBlock->isHorizontalWritingMode() != renderer->isHorizontalWritingMode())
+        || renderer->style()->isDisplayReplacedType()
+        || renderer->isTextArea()
+        || renderer->style()->userModify() != READ_ONLY;
+    // FIXME: Tables need special handling to multiply all their columns by
+    // the same amount even if they're different widths; so do hasColumns()
+    // containers, and probably flexboxes...
+}
+
+static bool containerIsRowOfLinks(const RenderObject* container)
+{
+    // A "row of links" is a container for which holds:
+    //  1. it should not contain non-link text elements longer than 3 characters
+    //  2. it should contain min. 3 inline links and all links should
+    //     have the same specified font size
+    //  3. it should not contain <br> elements
+    //  4. it should contain only inline elements unless they are containers,
+    //     children of link elements or children of sub-containers.
+    int linkCount = 0;
+    RenderObject* renderer = container->nextInPreOrder(container);
+    float matchingFontSize = -1;
+
+    while (renderer) {
+        if (!isAutosizingContainer(renderer)) {
+            if (renderer->isText() && toRenderText(renderer)->text().impl()->stripWhiteSpace()->length() > 3)
+                return false;
+            if (!renderer->isInline())
+                return false;
+            if (renderer->isBR())
+                return false;
+        }
+        if (renderer->style()->isLink()) {
+            if (matchingFontSize < 0) {
+                matchingFontSize = renderer->style()->specifiedFontSize();
+            } else {
+                if (matchingFontSize != renderer->style()->specifiedFontSize())
+                    return false;
+            }
+
+            linkCount++;
+            // Skip traversing descendants of the link.
+            renderer = renderer->nextInPreOrderAfterChildren(container);
+        } else {
+            renderer = nextInPreOrderSkippingDescendantsOfContainers(renderer, container);
+        }
+    }
+
+    return (linkCount >= 3);
+}
+
+static bool contentHeightIsConstrained(const RenderBlock* container)
+{
+    // FIXME: Propagate constrainedness down the tree, to avoid inefficiently walking back up from each box.
+    // FIXME: This code needs to take into account vertical writing modes.
+    // FIXME: Consider additional heuristics, such as ignoring fixed heights if the content is already overflowing before autosizing kicks in.
+    for (; container; container = container->containingBlock()) {
+        RenderStyle* style = container->style();
+        if (style->overflowY() >= OSCROLL)
+            return false;
+        if (style->height().isSpecified() || style->maxHeight().isSpecified() || container->isOutOfFlowPositioned()) {
+            // Some sites (e.g. wikipedia) set their html and/or body elements to height:100%,
+            // without intending to constrain the height of the content within them.
+            return !container->isRoot() && !container->isBody();
+        }
+        if (container->isFloating())
+            return false;
+    }
+    return false;
+}
+
+static bool containerContainsOneOfTags(const RenderBlock* container, const Vector<QualifiedName>& tags)
+{
+    const RenderObject* renderer = container;
+    while (renderer) {
+        const Node* rendererNode = renderer->node();
+        if (rendererNode && rendererNode->isElementNode()) {
+            if (tags.contains(toElement(rendererNode)->tagQName()))
+                return true;
+        }
+        renderer = nextInPreOrderSkippingDescendantsOfContainers(renderer, container);
+    }
+
+    return false;
+}
+
+static bool containerShouldBeAutosized(const RenderBlock* container)
+{
+    if (containerContainsOneOfTags(container, formInputTags()))
+        return false;
+
+    if (containerIsRowOfLinks(container))
+        return false;
+
+    // Don't autosize block-level text that can't wrap (as it's likely to
+    // expand sideways and break the page's layout).
+    if (!container->style()->autoWrap())
+        return false;
+
+    return !contentHeightIsConstrained(container);
 }
 
 FastTextAutosizer::FastTextAutosizer(const Document* document)
@@ -189,7 +364,7 @@ void FastTextAutosizer::inflateTable(RenderTable* table)
                 RenderTableCell* renderTableCell = toRenderTableCell(cell);
 
                 bool shouldAutosize;
-                if (!TextAutosizer::containerShouldBeAutosized(renderTableCell))
+                if (!containerShouldBeAutosized(renderTableCell))
                     shouldAutosize = false;
                 else if (Supercluster* supercluster = getSupercluster(renderTableCell))
                     shouldAutosize = anyClusterHasEnoughTextToAutosize(supercluster->m_roots, table);
@@ -285,8 +460,8 @@ bool FastTextAutosizer::isFingerprintingCandidate(const RenderBlock* block)
 {
     // FIXME: move the logic out of TextAutosizer.cpp into this class.
     return block->isRenderView()
-        || (TextAutosizer::isAutosizingContainer(block)
-            && (TextAutosizer::isIndependentDescendant(block)
+        || (isAutosizingContainer(block)
+            && (isIndependentDescendant(block)
                 || mightBeWiderOrNarrowerDescendant(block)));
 }
 
@@ -311,7 +486,7 @@ bool FastTextAutosizer::clusterHasEnoughTextToAutosize(Cluster* cluster, const R
         return true;
     }
 
-    if (!TextAutosizer::containerShouldBeAutosized(root)) {
+    if (!containerShouldBeAutosized(root)) {
         cluster->m_hasEnoughTextToAutosize = NotEnoughText;
         return false;
     }
@@ -324,12 +499,12 @@ bool FastTextAutosizer::clusterHasEnoughTextToAutosize(Cluster* cluster, const R
     while (descendant) {
         if (descendant->isRenderBlock()) {
             RenderBlock* block = toRenderBlock(descendant);
-            if (TextAutosizer::isAutosizingContainer(block)) {
+            if (isAutosizingContainer(block)) {
                 // Note: Ideally we would check isWiderOrNarrowerDescendant here but we only know that
                 //       after the block has entered layout, which may not be the case.
-                bool isAutosizingClusterRoot = TextAutosizer::isIndependentDescendant(block) || block->isTable();
+                bool isAutosizingClusterRoot = isIndependentDescendant(block) || block->isTable();
                 if ((isAutosizingClusterRoot && !block->isTableCell())
-                    || !TextAutosizer::containerShouldBeAutosized(block)) {
+                    || !containerShouldBeAutosized(block)) {
                     descendant = descendant->nextInPreOrderAfterChildren(root);
                     continue;
                 }
@@ -405,18 +580,18 @@ FastTextAutosizer::Fingerprint FastTextAutosizer::computeFingerprint(const Rende
 
 FastTextAutosizer::Cluster* FastTextAutosizer::maybeCreateCluster(const RenderBlock* block)
 {
-    if (!TextAutosizer::isAutosizingContainer(block))
+    if (!isAutosizingContainer(block))
         return 0;
 
     Cluster* parentCluster = m_clusterStack.isEmpty() ? 0 : currentCluster();
     ASSERT(parentCluster || block->isRenderView());
 
     // Create clusters to suppress / unsuppress autosizing based on containerShouldBeAutosized.
-    bool containerCanAutosize = TextAutosizer::containerShouldBeAutosized(block);
+    bool containerCanAutosize = containerShouldBeAutosized(block);
     bool parentClusterCanAutosize = parentCluster && parentCluster->m_autosize;
     bool createClusterThatMightAutosize = block->isRenderView()
         || mightBeWiderOrNarrowerDescendant(block)
-        || TextAutosizer::isIndependentDescendant(block)
+        || isIndependentDescendant(block)
         || block->isTable();
 
     // If the container would not alter the m_autosize bit, it doesn't need to be a cluster.
@@ -467,7 +642,7 @@ float FastTextAutosizer::clusterMultiplier(Cluster* cluster)
     ASSERT(m_renderViewInfoPrepared);
     if (!cluster->m_multiplier) {
         if (cluster->m_root->isTable()
-            || TextAutosizer::isIndependentDescendant(cluster->m_root)
+            || isIndependentDescendant(cluster->m_root)
             || isWiderOrNarrowerDescendant(cluster)) {
 
             if (cluster->m_supercluster) {
@@ -621,7 +796,7 @@ const RenderObject* FastTextAutosizer::findTextLeaf(const RenderObject* parent, 
     while (child) {
         // Note: At this point clusters may not have been created for these blocks so we cannot rely
         //       on m_clusters. Instead, we use a best-guess about whether the block will become a cluster.
-        if (!TextAutosizer::isAutosizingContainer(child) || !TextAutosizer::isIndependentDescendant(toRenderBlock(child))) {
+        if (!isAutosizingContainer(child) || !isIndependentDescendant(toRenderBlock(child))) {
             const RenderObject* leaf = findTextLeaf(child, depth, firstOrLast);
             if (leaf)
                 return leaf;

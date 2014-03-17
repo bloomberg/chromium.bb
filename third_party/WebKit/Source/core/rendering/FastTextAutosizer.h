@@ -33,7 +33,6 @@
 
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderTable.h"
-#include "core/rendering/TextAutosizer.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
 #include "wtf/Noncopyable.h"
