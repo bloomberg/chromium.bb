@@ -348,16 +348,30 @@ void InitializeUserDataDir() {
 
   const bool specified_directory_was_invalid = !user_data_dir.empty() &&
       !PathService::OverrideAndCreateIfNeeded(chrome::DIR_USER_DATA,
-          user_data_dir, chrome::ProcessNeedsProfileDir(process_type));
+          user_data_dir, true);
   // Save inaccessible or invalid paths so the user may be prompted later.
   if (specified_directory_was_invalid)
     chrome::SetInvalidSpecifiedUserDataDir(user_data_dir);
 
-  // Getting the user data directory can fail if the directory isn't creatable.
-  // ProcessSingleton needs a real user data directory on Mac/Linux, so it's
-  // better to fail here than fail mysteriously elsewhere.
-  CHECK(PathService::Get(chrome::DIR_USER_DATA, &user_data_dir))
-      << "Must be able to get user data directory!";
+  // Warn and fail early if the process fails to get a user data directory.
+  if (!PathService::Get(chrome::DIR_USER_DATA, &user_data_dir)) {
+    // If an invalid command-line or policy override was specified, the user
+    // will be given an error with that value. Otherwise, use the directory
+    // returned by PathService (or the fallback default directory) in the error.
+    if (!specified_directory_was_invalid) {
+      // PathService::Get() returns false and yields an empty path if it fails
+      // to create DIR_USER_DATA. Retrieve the default value manually to display
+      // a more meaningful error to the user in that case.
+      if (user_data_dir.empty())
+        chrome::GetDefaultUserDataDirectory(&user_data_dir);
+      chrome::SetInvalidSpecifiedUserDataDir(user_data_dir);
+    }
+
+    // The browser process (which is identified by an empty |process_type|) will
+    // handle the error later; other processes that need the dir crash here.
+    CHECK(process_type.empty()) << "Unable to get the user data directory "
+                                << "for process type: " << process_type;
+  }
 
   // Append the fallback user data directory to the commandline. Otherwise,
   // child or service processes will attempt to use the invalid directory.
@@ -633,8 +647,9 @@ void ChromeMainDelegate::PreSandboxStartup() {
   child_process_logging::Init();
 #endif
 
-  // Initialize the user data dir for service processes, logging, etc.
-  InitializeUserDataDir();
+  // Initialize the user data dir for any process type that needs it.
+  if (chrome::ProcessNeedsProfileDir(process_type))
+    InitializeUserDataDir();
 
   stats_counter_timer_.reset(new base::StatsCounterTimer("Chrome.Init"));
   startup_timer_.reset(new base::StatsScope<base::StatsCounterTimer>

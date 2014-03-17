@@ -780,10 +780,11 @@ int ChromeBrowserMainParts::PreCreateThreads() {
 int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   TRACE_EVENT0("startup", "ChromeBrowserMainParts::PreCreateThreadsImpl")
   run_message_loop_ = false;
-  CHECK(PathService::Get(chrome::DIR_USER_DATA, &user_data_dir_));
 #if !defined(OS_ANDROID)
   chrome::MaybeShowInvalidUserDataDirWarningDialog();
 #endif
+  if (!PathService::Get(chrome::DIR_USER_DATA, &user_data_dir_))
+    return chrome::RESULT_CODE_MISSING_DATA;
 
   // Force MediaCaptureDevicesDispatcher to be created on UI thread.
   MediaCaptureDevicesDispatcher::GetInstance();
