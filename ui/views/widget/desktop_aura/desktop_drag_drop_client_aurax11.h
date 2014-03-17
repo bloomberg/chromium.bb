@@ -9,8 +9,8 @@
 #include <X11/Xlib.h>
 
 #include "base/compiler_specific.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/cursor/cursor.h"
@@ -217,6 +217,8 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
   gfx::NativeCursor grab_cursor_;
   gfx::NativeCursor copy_grab_cursor_;
   gfx::NativeCursor move_grab_cursor_;
+
+  base::WeakPtrFactory<DesktopDragDropClientAuraX11> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopDragDropClientAuraX11);
 };
