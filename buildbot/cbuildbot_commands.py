@@ -1177,6 +1177,29 @@ def _UploadPrebuilts(buildroot, board, extra_args):
   _RunBuildScript(buildroot, cmd, cwd=cwd, possibly_flaky=True)
 
 
+def GenerateCPEExport(buildroot, board, useflags=None):
+  """Generate CPE export.
+
+  Args:
+    buildroot: The root directory where the build occurs.
+    board: Board type that was built on this machine.
+    useflags: A list of useflags for this build.
+
+  Returns:
+    A CommandResult object with the results of running the CPE
+    export command.
+  """
+  cmd = ['cros_extract_deps', '--format=cpe', '--board=%s' % board,
+         'chromeos']
+  env = {}
+  if useflags:
+    env['USE'] = ' '.join(useflags)
+  result = _RunBuildScript(buildroot, cmd, enter_chroot=True,
+                           chromite_cmd=True, capture_output=True,
+                           extra_env=env)
+  return result
+
+
 def GenerateBreakpadSymbols(buildroot, board, debug):
   """Generate breakpad symbols.
 

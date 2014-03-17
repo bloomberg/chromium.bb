@@ -471,6 +471,7 @@ class SimpleBuilder(Builder):
         [stages.UploadPrebuiltsStage, board, archive_stage],
         [stages.DevInstallerPrebuiltsStage, board, archive_stage],
         [stages.DebugSymbolsStage, board],
+        [stages.CPEExportStage, board],
     ]
 
     # We can not run hw tests without archiving the payloads.

@@ -3792,6 +3792,32 @@ class ArchiveStage(ArchivingStage):
     return super(ArchiveStage, self)._HandleStageException(exc_info)
 
 
+class CPEExportStage(BoardSpecificBuilderStage, ArchivingStageMixin):
+  """Handles generation & upload of package CPE information."""
+
+  def PerformStage(self):
+    """Generate debug symbols and upload debug.tgz."""
+    buildroot = self._build_root
+    board = self._current_board
+    useflags = self._run.config.useflags
+
+    logging.info('Generating CPE export.')
+    result = commands.GenerateCPEExport(buildroot, board, useflags)
+
+    logging.info('Writing CPE export to files for archive.')
+    warnings_filename = os.path.join(self.archive_path,
+                                     'cpe-warnings-chromeos-%s.txt' % board)
+    results_filename = os.path.join(self.archive_path,
+                                    'cpe-chromeos-%s.json' % board)
+
+    osutils.WriteFile(warnings_filename, result.error)
+    osutils.WriteFile(results_filename, result.output)
+
+    logging.info('Uploading CPE files.')
+    self.UploadArtifact(os.path.basename(warnings_filename), archive=False)
+    self.UploadArtifact(os.path.basename(results_filename), archive=False)
+
+
 class DebugSymbolsStage(BoardSpecificBuilderStage, ArchivingStageMixin):
   """Handles generation & upload of debug symbols."""
 

@@ -2028,6 +2028,42 @@ class PublishUprevChangesStageTest(AbstractStageTest):
     self.mox.VerifyAll()
 
 
+class CPEExportStageTest(AbstractStageTest):
+  """Test CPEExportStage"""
+
+  def setUp(self):
+    self.StartPatcher(BuilderRunMock())
+    self.StartPatcher(ArchivingMock())
+    self.StartPatcher(parallel_unittest.ParallelMock())
+
+    self.rc_mock = self.StartPatcher(cros_build_lib_unittest.RunCommandMock())
+    self.rc_mock.SetDefaultCmdResult(output='')
+
+    self.stage = None
+
+  def ConstructStage(self):
+    """Create a CPEExportStage instance for testing"""
+    self.run.GetArchive().SetupArchivePath()
+    return stages.CPEExportStage(self.run, self._current_board)
+
+  def assertBoardAttrEqual(self, attr, expected_value):
+    """Assert the value of a board run |attr| against |expected_value|."""
+    value = self.stage.board_runattrs.GetParallel(attr)
+    self.assertEqual(expected_value, value)
+
+  def _TestPerformStage(self):
+    """Run PerformStage for the stage."""
+    self._Prepare()
+    self.run.attrs.release_tag = BuilderRunMock.VERSION
+
+    self.stage = self.ConstructStage()
+    self.stage.PerformStage()
+
+  def testCPEExport(self):
+    """Test that CPEExport stage runs without syntax errors."""
+    self._TestPerformStage()
+
+
 class DebugSymbolsStageTest(AbstractStageTest):
   """Test DebugSymbolsStage"""
 
