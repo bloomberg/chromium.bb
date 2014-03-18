@@ -49,45 +49,24 @@ public:
     void resetStyleState();
     void resetDynamicRestyleObservations();
 
-    short tabIndex() const { return m_tabIndex; }
-    void setTabIndexExplicitly(short index) { m_tabIndex = index; m_tabIndexWasSetExplicitly = true; }
-    bool tabIndexSetExplicitly() const { return m_tabIndexWasSetExplicitly; }
-    void clearTabIndexExplicitly() { m_tabIndex = 0; m_tabIndexWasSetExplicitly = false; }
+    short tabIndex() const { return m_tabindex; }
 
-    bool needsFocusAppearanceUpdateSoonAfterAttach() const { return m_needsFocusAppearanceUpdateSoonAfterAttach; }
-    void setNeedsFocusAppearanceUpdateSoonAfterAttach(bool needs) { m_needsFocusAppearanceUpdateSoonAfterAttach = needs; }
+    void setTabIndexExplicitly(short index)
+    {
+        m_tabindex = index;
+        setFlag(TabIndexWasSetExplicitly, true);
+    }
 
-    bool styleAffectedByEmpty() const { return m_styleAffectedByEmpty; }
-    void setStyleAffectedByEmpty(bool value) { m_styleAffectedByEmpty = value; }
+    void clearTabIndexExplicitly()
+    {
+        m_tabindex = 0;
+        clearFlag(TabIndexWasSetExplicitly);
+    }
 
-    bool isInCanvasSubtree() const { return m_isInCanvasSubtree; }
-    void setIsInCanvasSubtree(bool value) { m_isInCanvasSubtree = value; }
+    bool hasFlag(ElementFlags mask) const { return m_flags & mask; }
+    void setFlag(ElementFlags mask, bool value) { m_flags = (m_flags & ~mask) | (-(int32_t)value & mask); }
+    void clearFlag(ElementFlags mask) { m_flags &= ~mask; }
 
-    bool containsFullScreenElement() { return m_containsFullScreenElement; }
-    void setContainsFullScreenElement(bool value) { m_containsFullScreenElement = value; }
-
-    bool isInTopLayer() const { return m_isInTopLayer; }
-    void setIsInTopLayer(bool value) { m_isInTopLayer = value; }
-
-    bool childrenAffectedByFocus() const { return m_childrenAffectedByFocus; }
-    void setChildrenAffectedByFocus(bool value) { m_childrenAffectedByFocus = value; }
-    bool childrenAffectedByHover() const { return m_childrenAffectedByHover; }
-    void setChildrenAffectedByHover(bool value) { m_childrenAffectedByHover = value; }
-    bool childrenAffectedByActive() const { return m_childrenAffectedByActive; }
-    void setChildrenAffectedByActive(bool value) { m_childrenAffectedByActive = value; }
-    bool childrenAffectedByDrag() const { return m_childrenAffectedByDrag; }
-    void setChildrenAffectedByDrag(bool value) { m_childrenAffectedByDrag = value; }
-
-    bool childrenAffectedByFirstChildRules() const { return m_childrenAffectedByFirstChildRules; }
-    void setChildrenAffectedByFirstChildRules(bool value) { m_childrenAffectedByFirstChildRules = value; }
-    bool childrenAffectedByLastChildRules() const { return m_childrenAffectedByLastChildRules; }
-    void setChildrenAffectedByLastChildRules(bool value) { m_childrenAffectedByLastChildRules = value; }
-    bool childrenAffectedByDirectAdjacentRules() const { return m_childrenAffectedByDirectAdjacentRules; }
-    void setChildrenAffectedByDirectAdjacentRules(bool value) { m_childrenAffectedByDirectAdjacentRules = value; }
-    bool childrenAffectedByForwardPositionalRules() const { return m_childrenAffectedByForwardPositionalRules; }
-    void setChildrenAffectedByForwardPositionalRules(bool value) { m_childrenAffectedByForwardPositionalRules = value; }
-    bool childrenAffectedByBackwardPositionalRules() const { return m_childrenAffectedByBackwardPositionalRules; }
-    void setChildrenAffectedByBackwardPositionalRules(bool value) { m_childrenAffectedByBackwardPositionalRules = value; }
     unsigned childIndex() const { return m_childIndex; }
     void setChildIndex(unsigned index) { m_childIndex = index; }
 
@@ -133,9 +112,6 @@ public:
         m_activeAnimations = activeAnimations;
     }
 
-    bool hasPendingResources() const { return m_hasPendingResources; }
-    void setHasPendingResources(bool has) { m_hasPendingResources = has; }
-
     bool hasInputMethodContext() const { return m_inputMethodContext; }
     InputMethodContext& ensureInputMethodContext(HTMLElement* element)
     {
@@ -148,27 +124,9 @@ public:
     void clearPseudoElements();
 
 private:
-    short m_tabIndex;
+    short m_tabindex;
     unsigned short m_childIndex;
-    unsigned m_tabIndexWasSetExplicitly : 1;
-    unsigned m_needsFocusAppearanceUpdateSoonAfterAttach : 1;
-    unsigned m_styleAffectedByEmpty : 1;
-    unsigned m_isInCanvasSubtree : 1;
-    unsigned m_containsFullScreenElement : 1;
-    unsigned m_isInTopLayer : 1;
-    unsigned m_hasPendingResources : 1;
-    unsigned m_childrenAffectedByFocus : 1;
-    unsigned m_childrenAffectedByHover : 1;
-    unsigned m_childrenAffectedByActive : 1;
-    unsigned m_childrenAffectedByDrag : 1;
-    // Bits for dynamic child matching.
-    // We optimize for :first-child and :last-child. The other positional child selectors like nth-child or
-    // *-child-of-type, we will just give up and re-evaluate whenever children change at all.
-    unsigned m_childrenAffectedByFirstChildRules : 1;
-    unsigned m_childrenAffectedByLastChildRules : 1;
-    unsigned m_childrenAffectedByDirectAdjacentRules : 1;
-    unsigned m_childrenAffectedByForwardPositionalRules : 1;
-    unsigned m_childrenAffectedByBackwardPositionalRules : 1;
+    unsigned m_flags;
 
     LayoutSize m_minimumSizeForResizing;
     IntSize m_savedLayerScrollOffset;
@@ -186,7 +144,7 @@ private:
     RefPtr<PseudoElement> m_generatedAfter;
     RefPtr<PseudoElement> m_backdrop;
 
-    ElementRareData(RenderObject*);
+    explicit ElementRareData(RenderObject*);
 };
 
 inline IntSize defaultMinimumSizeForResizing()
@@ -196,24 +154,9 @@ inline IntSize defaultMinimumSizeForResizing()
 
 inline ElementRareData::ElementRareData(RenderObject* renderer)
     : NodeRareData(renderer)
-    , m_tabIndex(0)
+    , m_tabindex(0)
     , m_childIndex(0)
-    , m_tabIndexWasSetExplicitly(false)
-    , m_needsFocusAppearanceUpdateSoonAfterAttach(false)
-    , m_styleAffectedByEmpty(false)
-    , m_isInCanvasSubtree(false)
-    , m_containsFullScreenElement(false)
-    , m_isInTopLayer(false)
-    , m_hasPendingResources(false)
-    , m_childrenAffectedByFocus(false)
-    , m_childrenAffectedByHover(false)
-    , m_childrenAffectedByActive(false)
-    , m_childrenAffectedByDrag(false)
-    , m_childrenAffectedByFirstChildRules(false)
-    , m_childrenAffectedByLastChildRules(false)
-    , m_childrenAffectedByDirectAdjacentRules(false)
-    , m_childrenAffectedByForwardPositionalRules(false)
-    , m_childrenAffectedByBackwardPositionalRules(false)
+    , m_flags(0)
     , m_minimumSizeForResizing(defaultMinimumSizeForResizing())
 {
 }
@@ -277,21 +220,21 @@ inline PseudoElement* ElementRareData::pseudoElement(PseudoId pseudoId) const
 
 inline void ElementRareData::resetStyleState()
 {
-    setStyleAffectedByEmpty(false);
+    clearFlag(StyleAffectedByEmpty);
     setChildIndex(0);
 }
 
 inline void ElementRareData::resetDynamicRestyleObservations()
 {
-    setChildrenAffectedByFocus(false);
-    setChildrenAffectedByHover(false);
-    setChildrenAffectedByActive(false);
-    setChildrenAffectedByDrag(false);
-    setChildrenAffectedByFirstChildRules(false);
-    setChildrenAffectedByLastChildRules(false);
-    setChildrenAffectedByDirectAdjacentRules(false);
-    setChildrenAffectedByForwardPositionalRules(false);
-    setChildrenAffectedByBackwardPositionalRules(false);
+    clearFlag(ChildrenAffectedByFocus);
+    clearFlag(ChildrenAffectedByHover);
+    clearFlag(ChildrenAffectedByActive);
+    clearFlag(ChildrenAffectedByDrag);
+    clearFlag(ChildrenAffectedByFirstChildRules);
+    clearFlag(ChildrenAffectedByLastChildRules);
+    clearFlag(ChildrenAffectedByDirectAdjacentRules);
+    clearFlag(ChildrenAffectedByForwardPositionalRules);
+    clearFlag(ChildrenAffectedByBackwardPositionalRules);
 }
 
 } // namespace
