@@ -23,6 +23,7 @@
 #include "base/values.h"
 #include "net/base/escape.h"
 #include "net/http/http_byte_range.h"
+#include "net/http/http_log_util.h"
 #include "net/http/http_util.h"
 
 using base::StringPiece;
@@ -113,14 +114,6 @@ void CheckDoesNotHaveEmbededNulls(const std::string& str) {
   // make sure it does not contain embeded NULLs. Any embeded '\0' may be
   // understood as line terminators and change how header lines get tokenized.
   CHECK(str.find('\0') == std::string::npos);
-}
-
-bool ShouldShowHttpHeaderValue(const std::string& header_name) {
-#if defined(SPDY_PROXY_AUTH_ORIGIN)
-  if (header_name == "Proxy-Authenticate")
-    return false;
-#endif
-  return true;
 }
 
 }  // namespace
@@ -1338,7 +1331,7 @@ bool HttpResponseHeaders::GetContentRange(int64* first_byte_position,
 }
 
 base::Value* HttpResponseHeaders::NetLogCallback(
-    NetLog::LogLevel /* log_level */) const {
+    NetLog::LogLevel log_level) const {
   base::DictionaryValue* dict = new base::DictionaryValue();
   base::ListValue* headers = new base::ListValue();
   headers->Append(new base::StringValue(GetStatusLine()));
@@ -1346,12 +1339,10 @@ base::Value* HttpResponseHeaders::NetLogCallback(
   std::string name;
   std::string value;
   while (EnumerateHeaderLines(&iterator, &name, &value)) {
+    std::string log_value = ElideHeaderValueForNetLog(log_level, name, value);
     headers->Append(
       new base::StringValue(
-          base::StringPrintf("%s: %s",
-                             name.c_str(),
-                             (ShouldShowHttpHeaderValue(name) ?
-                                 value.c_str() : "[elided]"))));
+          base::StringPrintf("%s: %s", name.c_str(), log_value.c_str())));
   }
   dict->Set("headers", headers);
   return dict;

@@ -88,6 +88,13 @@ class NetLogTempFileTest : public ::testing::Test {
     return state;
   }
 
+  std::string GetLogTypeString() const {
+    scoped_ptr<base::DictionaryValue> dict(net_log_temp_file_->GetState());
+    std::string log_type;
+    EXPECT_TRUE(dict->GetString("logType", &log_type));
+    return log_type;
+  }
+
   // Make sure the export file has been created and is non-empty, as net
   // constants will always be written to it on creation.
   void VerifyNetExportLog() {
@@ -113,8 +120,10 @@ class NetLogTempFileTest : public ::testing::Test {
   // When we lie in NetExportLogExists, make sure state and GetFilePath return
   // correct values.
   void VerifyFilePathAndStateAfterEnsureInit() {
-    EXPECT_EQ("ALLOW_START", GetStateString());
-    EXPECT_EQ(NetLogTempFile::STATE_ALLOW_START, net_log_temp_file_->state());
+    EXPECT_EQ("NOT_LOGGING", GetStateString());
+    EXPECT_EQ(NetLogTempFile::STATE_NOT_LOGGING, net_log_temp_file_->state());
+    EXPECT_EQ("NONE", GetLogTypeString());
+    EXPECT_EQ(NetLogTempFile::LOG_TYPE_NONE, net_log_temp_file_->log_type());
 
     base::FilePath net_export_file_path;
     EXPECT_FALSE(net_log_temp_file_->GetFilePath(&net_export_file_path));
@@ -123,21 +132,41 @@ class NetLogTempFileTest : public ::testing::Test {
 
   // Make sure the export file has been successfully initialized.
   void VerifyFileAndStateAfterDoStart() {
-    EXPECT_EQ("ALLOW_STOP", GetStateString());
-    EXPECT_EQ(NetLogTempFile::STATE_ALLOW_STOP, net_log_temp_file_->state());
+    EXPECT_EQ("LOGGING", GetStateString());
+    EXPECT_EQ(NetLogTempFile::STATE_LOGGING, net_log_temp_file_->state());
+    EXPECT_EQ("NORMAL", GetLogTypeString());
+    EXPECT_EQ(NetLogTempFile::LOG_TYPE_NORMAL, net_log_temp_file_->log_type());
 
     // Check GetFilePath returns false, if we are still writing to file.
     base::FilePath net_export_file_path;
     EXPECT_FALSE(net_log_temp_file_->GetFilePath(&net_export_file_path));
 
     VerifyNetExportLog();
+    EXPECT_EQ(net::NetLog::LOG_ALL_BUT_BYTES, net_log_->GetLogLevel());
+  }
+
+  // Make sure the export file has been successfully initialized.
+  void VerifyFileAndStateAfterDoStartStripPrivateData() {
+    EXPECT_EQ("LOGGING", GetStateString());
+    EXPECT_EQ(NetLogTempFile::STATE_LOGGING, net_log_temp_file_->state());
+    EXPECT_EQ("STRIP_PRIVATE_DATA", GetLogTypeString());
+    EXPECT_EQ(NetLogTempFile::LOG_TYPE_STRIP_PRIVATE_DATA,
+              net_log_temp_file_->log_type());
+
+    // Check GetFilePath returns false, if we are still writing to file.
+    base::FilePath net_export_file_path;
+    EXPECT_FALSE(net_log_temp_file_->GetFilePath(&net_export_file_path));
+
+    VerifyNetExportLog();
+    EXPECT_EQ(net::NetLog::LOG_STRIP_PRIVATE_DATA, net_log_->GetLogLevel());
   }
 
   // Make sure the export file has been successfully initialized.
   void VerifyFileAndStateAfterDoStop() {
-    EXPECT_EQ("ALLOW_START_SEND", GetStateString());
-    EXPECT_EQ(NetLogTempFile::STATE_ALLOW_START_SEND,
-              net_log_temp_file_->state());
+    EXPECT_EQ("NOT_LOGGING", GetStateString());
+    EXPECT_EQ(NetLogTempFile::STATE_NOT_LOGGING, net_log_temp_file_->state());
+    EXPECT_EQ("NORMAL", GetLogTypeString());
+    EXPECT_EQ(NetLogTempFile::LOG_TYPE_NORMAL, net_log_temp_file_->log_type());
 
     base::FilePath net_export_file_path;
     EXPECT_TRUE(net_log_temp_file_->GetFilePath(&net_export_file_path));
@@ -182,9 +211,10 @@ TEST_F(NetLogTempFileTest, EnsureInitAllowStart) {
 TEST_F(NetLogTempFileTest, EnsureInitAllowStartOrSend) {
   EXPECT_TRUE(net_log_temp_file_->EnsureInit());
 
-  EXPECT_EQ("ALLOW_START_SEND", GetStateString());
-  EXPECT_EQ(NetLogTempFile::STATE_ALLOW_START_SEND,
-            net_log_temp_file_->state());
+  EXPECT_EQ("NOT_LOGGING", GetStateString());
+  EXPECT_EQ(NetLogTempFile::STATE_NOT_LOGGING, net_log_temp_file_->state());
+  EXPECT_EQ("UNKNOWN", GetLogTypeString());
+  EXPECT_EQ(NetLogTempFile::LOG_TYPE_UNKNOWN, net_log_temp_file_->log_type());
   EXPECT_EQ(net_export_log_, net_log_temp_file_->log_path_);
   EXPECT_TRUE(base::PathExists(net_export_log_));
 

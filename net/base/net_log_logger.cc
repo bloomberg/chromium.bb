@@ -23,7 +23,7 @@ namespace net {
 static const int kLogFormatVersion = 1;
 
 NetLogLogger::NetLogLogger(FILE* file, const base::Value& constants)
-    : file_(file), added_events_(false) {
+    : file_(file), log_level_(NetLog::LOG_ALL_BUT_BYTES), added_events_(false) {
   DCHECK(file);
 
   // Write constants to the output file.  This allows loading files that have
@@ -40,8 +40,13 @@ NetLogLogger::~NetLogLogger() {
     fprintf(file_.get(), "]}");
 }
 
+void NetLogLogger::set_log_level(net::NetLog::LogLevel log_level) {
+  DCHECK(!net_log());
+  log_level_ = log_level;
+}
+
 void NetLogLogger::StartObserving(net::NetLog* net_log) {
-  net_log->AddThreadSafeObserver(this, net::NetLog::LOG_ALL_BUT_BYTES);
+  net_log->AddThreadSafeObserver(this, log_level_);
 }
 
 void NetLogLogger::StopObserving() {
@@ -163,6 +168,8 @@ base::DictionaryValue* NetLogLogger::GetConstants() {
 
     dict->SetInteger("LOG_ALL", net::NetLog::LOG_ALL);
     dict->SetInteger("LOG_ALL_BUT_BYTES", net::NetLog::LOG_ALL_BUT_BYTES);
+    dict->SetInteger("LOG_STRIP_PRIVATE_DATA",
+                     net::NetLog::LOG_STRIP_PRIVATE_DATA);
 
     constants_dict->Set("logLevelType", dict);
   }

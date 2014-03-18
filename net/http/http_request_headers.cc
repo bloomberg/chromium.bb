@@ -9,19 +9,8 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
+#include "net/http/http_log_util.h"
 #include "net/http/http_util.h"
-
-namespace {
-
-bool ShouldShowHttpHeaderValue(const std::string& header_name) {
-#if defined(SPDY_PROXY_AUTH_ORIGIN)
-  if (header_name == "Proxy-Authorization")
-    return false;
-#endif
-  return true;
-}
-
-}  // namespace
 
 namespace net {
 
@@ -197,17 +186,17 @@ std::string HttpRequestHeaders::ToString() const {
 
 base::Value* HttpRequestHeaders::NetLogCallback(
     const std::string* request_line,
-    NetLog::LogLevel /* log_level */) const {
+    NetLog::LogLevel log_level) const {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetString("line", *request_line);
   base::ListValue* headers = new base::ListValue();
   for (HeaderVector::const_iterator it = headers_.begin();
        it != headers_.end(); ++it) {
+    std::string log_value = ElideHeaderValueForNetLog(
+        log_level, it->key, it->value);
     headers->Append(new base::StringValue(
         base::StringPrintf("%s: %s",
-                           it->key.c_str(),
-                           (ShouldShowHttpHeaderValue(it->key) ?
-                               it->value.c_str() : "[elided]"))));
+                           it->key.c_str(), log_value.c_str())));
   }
   dict->Set("headers", headers);
   return dict;

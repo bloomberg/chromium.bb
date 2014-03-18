@@ -14,14 +14,31 @@
   <h2>NetLog Export</h2>
   <div id="net-export-main">
     <div>
-      <button id="export-view-start-data">Start Logging to Disk</button>
-      <span class="warning">Deletes old log</span>
+      <label>
+        <input id="export-view-private-data-toggle"
+               type="checkbox" checked disabled>
+        Strip private information (cookies and credentials)
+      </label>
     </div>
     <div>
-      <button id="export-view-stop-data">Stop Logging</button>
+      <button id="export-view-start-data" disabled>
+        Start Logging to Disk
+      </button>
+      <span class="warning" id="export-view-deletes-log-text" hidden>
+        Deletes old log
+      </span>
     </div>
     <div>
-      <button id="export-view-send-data">Email Log</button>
+      <button id="export-view-stop-data" disabled>Stop Logging</button>
+    </div>
+    <div>
+      <button id="export-view-send-data" disabled>Email Log</button>
+      <span class="warning" id="export-view-private-data-text" hidden>
+        Log contains private information
+      </span>
+      <span class="warning" id="export-view-send-old-log-text" hidden>
+        Log file from previous session
+      </span>
     </div>
     <pre id="export-view-file-path-text"></pre>
     <p>
@@ -35,10 +52,11 @@
       of desktop Chrome.
     </p>
     <p>
-      <span class="warning">WARNING</span>: Logs contain a list of sites
-      visited, cookies, and credentials from when logging started to when
-      logging stopped.  They may also contain general network
-      configuration information, such as DNS and proxy configuration.
+      <span class="warning">WARNING</span>: Logs contain a list of sites visited
+      from when logging started to when logging stopped.  They may also contain
+      general network configuration information, such as DNS and proxy
+      configuration. If private information is not stripped, the logs also
+      contain cookies and credentials.
     </p>
   </div>
 </body>

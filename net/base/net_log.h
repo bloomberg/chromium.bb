@@ -78,6 +78,10 @@ class NET_EXPORT NetLog {
     // parameters for bytes sent/received events.
     LOG_ALL_BUT_BYTES,
 
+    // Log all events, but do not include the actual transferred bytes and
+    // remove cookies and HTTP credentials.
+    LOG_STRIP_PRIVATE_DATA,
+
     // Don't log any events.
     LOG_NONE,
   };

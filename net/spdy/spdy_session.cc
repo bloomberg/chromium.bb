@@ -29,8 +29,10 @@
 #include "net/base/net_log.h"
 #include "net/base/net_util.h"
 #include "net/cert/asn1_util.h"
+#include "net/http/http_log_util.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties.h"
+#include "net/http/http_util.h"
 #include "net/spdy/spdy_buffer_producer.h"
 #include "net/spdy/spdy_frame_builder.h"
 #include "net/spdy/spdy_http_utils.h"
@@ -54,13 +56,14 @@ const SpdyStreamId kFirstStreamId = 1;
 const int kMinPushedStreamLifetimeSeconds = 300;
 
 scoped_ptr<base::ListValue> SpdyHeaderBlockToListValue(
-    const SpdyHeaderBlock& headers) {
+    const SpdyHeaderBlock& headers,
+    net::NetLog::LogLevel log_level) {
   scoped_ptr<base::ListValue> headers_list(new base::ListValue());
   for (SpdyHeaderBlock::const_iterator it = headers.begin();
        it != headers.end(); ++it) {
     headers_list->AppendString(
         it->first + ": " +
-        (ShouldShowHttpHeaderValue(it->first) ? it->second : "[elided]"));
+        ElideHeaderValueForNetLog(log_level, it->first, it->second));
   }
   return headers_list.Pass();
 }
@@ -70,9 +73,10 @@ base::Value* NetLogSpdySynStreamSentCallback(const SpdyHeaderBlock* headers,
                                              bool unidirectional,
                                              SpdyPriority spdy_priority,
                                              SpdyStreamId stream_id,
-                                             NetLog::LogLevel /* log_level */) {
+                                             NetLog::LogLevel log_level) {
   base::DictionaryValue* dict = new base::DictionaryValue();
-  dict->Set("headers", SpdyHeaderBlockToListValue(*headers).release());
+  dict->Set("headers",
+            SpdyHeaderBlockToListValue(*headers, log_level).release());
   dict->SetBoolean("fin", fin);
   dict->SetBoolean("unidirectional", unidirectional);
   dict->SetInteger("spdy_priority", static_cast<int>(spdy_priority));
@@ -87,9 +91,10 @@ base::Value* NetLogSpdySynStreamReceivedCallback(
     SpdyPriority spdy_priority,
     SpdyStreamId stream_id,
     SpdyStreamId associated_stream,
-    NetLog::LogLevel /* log_level */) {
+    NetLog::LogLevel log_level) {
   base::DictionaryValue* dict = new base::DictionaryValue();
-  dict->Set("headers", SpdyHeaderBlockToListValue(*headers).release());
+  dict->Set("headers",
+            SpdyHeaderBlockToListValue(*headers, log_level).release());
   dict->SetBoolean("fin", fin);
   dict->SetBoolean("unidirectional", unidirectional);
   dict->SetInteger("spdy_priority", static_cast<int>(spdy_priority));
@@ -102,9 +107,10 @@ base::Value* NetLogSpdySynReplyOrHeadersReceivedCallback(
     const SpdyHeaderBlock* headers,
     bool fin,
     SpdyStreamId stream_id,
-    NetLog::LogLevel /* log_level */) {
+    NetLog::LogLevel log_level) {
   base::DictionaryValue* dict = new base::DictionaryValue();
-  dict->Set("headers", SpdyHeaderBlockToListValue(*headers).release());
+  dict->Set("headers",
+            SpdyHeaderBlockToListValue(*headers, log_level).release());
   dict->SetBoolean("fin", fin);
   dict->SetInteger("stream_id", stream_id);
   return dict;

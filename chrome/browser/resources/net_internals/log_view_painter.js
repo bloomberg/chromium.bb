@@ -522,6 +522,9 @@ function stripCookieOrLoginInfo(line) {
  * unencrypted login text removed.  Otherwise, returns original |entry| object.
  * This is needed so that JSON log dumps can be made without affecting the
  * source data.  Converts headers stored in objects to arrays.
+ *
+ * Note: this logic should be kept in sync with
+ * net::ElideHeaderForNetLog in net/http/http_log_util.cc.
  */
 stripCookiesAndLoginInfo = function(entry) {
   if (!entry.params || entry.params.headers === undefined ||

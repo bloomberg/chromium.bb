@@ -25,13 +25,14 @@ class ChromeNetLog;
 // NetLogTempFile logs all the NetLog entries into a temporary file
 // "chrome-net-export-log.json" created in base::GetTempDir() directory.
 //
-// NetLogTempFile maintains the current state (state_) of the logging into a
-// chrome-net-export-log.json file.
+// NetLogTempFile maintains the current logging state (state_) and log file type
+// (log_type_) of the logging into a chrome-net-export-log.json file.
 //
 // The following are the possible states
-// a) Only Start is allowed (state_ == STATE_UNINITIALIZED).
-// b) Only Stop is allowed (state_ == STATE_ALLOW_STOP).
-// c) Either Send or Start is allowed (state_ == STATE_ALLOW_START_SEND).
+// a) Only Start is allowed (STATE_NOT_LOGGING, LOG_TYPE_NONE).
+// b) Only Stop is allowed (STATE_LOGGING).
+// c) Either Send or Start is allowed (STATE_NOT_LOGGING, anything but
+//    LOG_TYPE_NONE).
 //
 // This is created/destroyed on the UI thread, but all other function calls
 // occur on the FILE_USER_BLOCKING thread.
@@ -42,8 +43,9 @@ class NetLogTempFile {
  public:
   // This enum lists the UI button commands it could receive.
   enum Command {
-    DO_START,  // Call StartLog.
-    DO_STOP,   // Call StopLog.
+    DO_START,  // Call StartNetLog.
+    DO_START_STRIP_PRIVATE_DATA,  // Call StartNetLog stripping private data.
+    DO_STOP,   // Call StopNetLog.
   };
 
   virtual ~NetLogTempFile();  // Destructs a NetLogTempFile.
@@ -88,21 +90,36 @@ class NetLogTempFile {
   // to enable/disable "Start", "Stop" and "Send" (email) UI actions.
   enum State {
     STATE_UNINITIALIZED,
-    STATE_ALLOW_START,       // Only DO_START Command is allowed.
-    STATE_ALLOW_STOP,        // Only DO_STOP Command is allowed.
-    STATE_ALLOW_START_SEND,  // Either DO_START or DO_SEND is allowed.
+    // Not currently logging to file.
+    STATE_NOT_LOGGING,
+    // Currently logging to file.
+    STATE_LOGGING,
   };
 
-  // Initializes the |state_| to either STATE_ALLOW_START (if there is no
-  // temporary file from earlier run) or STATE_ALLOW_START_SEND (if there is a
-  // temporary file from earlier run). Returns false if initialization of
-  // |log_path_| fails.
+  // The type of the current log file on disk.
+  enum LogType {
+    // There is no current log file.
+    LOG_TYPE_NONE,
+    // The file predates this session. May or may not have private data.
+    // TODO(davidben): This state is kind of silly.
+    LOG_TYPE_UNKNOWN,
+    // The file has credentials and cookies stripped.
+    LOG_TYPE_STRIP_PRIVATE_DATA,
+    // The file includes all data.
+    LOG_TYPE_NORMAL,
+  };
+
+  // Initializes the |state_| to STATE_NOT_LOGGING and |log_type_| to
+  // LOG_TYPE_NONE (if there is no temporary file from earlier run) or
+  // LOG_TYPE_UNKNOWN (if there is a temporary file from earlier run). Returns
+  // false if initialization of |log_path_| fails.
   bool EnsureInit();
 
   // Start collecting NetLog data into chrome-net-export-log.json file in
-  // base::GetTempDir() directory. It is a no-op if we are already
-  // collecting data into a file.
-  void StartNetLog();
+  // base::GetTempDir() directory. If |strip_private_data| is true, do not log
+  // cookies and credentials. It is a no-op if we are already collecting data
+  // into a file.
+  void StartNetLog(bool strip_private_data);
 
   // Stop collecting NetLog data into the temporary file. It is a no-op if we
   // are not collecting data into a file.
@@ -115,8 +132,10 @@ class NetLogTempFile {
 
   // Helper function for unit tests.
   State state() const { return state_; }
+  LogType log_type() const { return log_type_; }
 
   State state_;  // Current state of NetLogTempFile.
+  LogType log_type_;  // Type of current log file on disk.
 
   // Name of the file. It defaults to chrome-net-export-log.json, but can be
   // overwritten by unit tests.

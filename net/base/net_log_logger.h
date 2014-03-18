@@ -29,6 +29,9 @@ class NET_EXPORT NetLogLogger : public NetLog::ThreadSafeObserver {
   NetLogLogger(FILE* file, const base::Value& constants);
   virtual ~NetLogLogger();
 
+  // Sets the log level to log at. Must be called before StartObserving.
+  void set_log_level(NetLog::LogLevel log_level);
+
   // Starts observing specified NetLog.  Must not already be watching a NetLog.
   // Separate from constructor to enforce thread safety.
   void StartObserving(NetLog* net_log);
@@ -45,6 +48,9 @@ class NET_EXPORT NetLogLogger : public NetLog::ThreadSafeObserver {
 
  private:
   ScopedStdioHandle file_;
+
+  // The LogLevel to log at.
+  NetLog::LogLevel log_level_;
 
   // True if OnAddEntry() has been called at least once.
   bool added_events_;

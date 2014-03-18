@@ -141,9 +141,16 @@ void NetExportMessageHandler::OnGetExportNetLogInfo(
 }
 
 void NetExportMessageHandler::OnStartNetLog(const base::ListValue* list) {
+  bool strip_private_data = false;
+  if (!list->GetBoolean(0, &strip_private_data)) {
+    NOTREACHED() << "Failed to convert argument 1";
+    return;
+  }
   ProcessNetLogCommand(weak_ptr_factory_.GetWeakPtr(),
                        net_log_temp_file_,
-                       NetLogTempFile::DO_START);
+                       (strip_private_data ?
+                            NetLogTempFile::DO_START_STRIP_PRIVATE_DATA :
+                            NetLogTempFile::DO_START));
 }
 
 void NetExportMessageHandler::OnStopNetLog(const base::ListValue* list) {

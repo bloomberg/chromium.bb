@@ -37,6 +37,8 @@ class NET_EXPORT_PRIVATE HttpAuthChallengeTokenizer {
     return std::string(scheme_begin_, scheme_end_);
   }
 
+  std::string::const_iterator params_begin() const { return params_begin_; }
+  std::string::const_iterator params_end() const { return params_end_; }
   HttpUtil::NameValuePairsIterator param_pairs() const;
   std::string base64_param() const;
 

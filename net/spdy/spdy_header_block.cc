@@ -5,13 +5,13 @@
 #include "net/spdy/spdy_header_block.h"
 
 #include "base/values.h"
-#include "net/spdy/spdy_http_utils.h"
+#include "net/http/http_log_util.h"
 
 namespace net {
 
 base::Value* SpdyHeaderBlockNetLogCallback(
     const SpdyHeaderBlock* headers,
-    NetLog::LogLevel /* log_level */) {
+    NetLog::LogLevel log_level) {
   base::DictionaryValue* dict = new base::DictionaryValue();
   base::DictionaryValue* headers_dict = new base::DictionaryValue();
   for (SpdyHeaderBlock::const_iterator it = headers->begin();
@@ -19,7 +19,7 @@ base::Value* SpdyHeaderBlockNetLogCallback(
     headers_dict->SetWithoutPathExpansion(
         it->first,
         new base::StringValue(
-            ShouldShowHttpHeaderValue(it->first) ? it->second : "[elided]"));
+            ElideHeaderValueForNetLog(log_level, it->first, it->second)));
   }
   dict->Set("headers", headers_dict);
   return dict;
