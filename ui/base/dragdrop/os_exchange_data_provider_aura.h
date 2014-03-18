@@ -18,7 +18,7 @@ namespace ui {
 
 class Clipboard;
 
-// OSExchangeData::Provider implementation for ChromeOS and non-X11 Linux aura.
+// OSExchangeData::Provider implementation for aura on linux.
 class UI_BASE_EXPORT OSExchangeDataProviderAura
     : public OSExchangeData::Provider {
  public:

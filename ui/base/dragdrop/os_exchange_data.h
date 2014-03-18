@@ -12,6 +12,8 @@
 
 #if defined(OS_WIN)
 #include <objidl.h>
+#elif defined(TOOLKIT_GTK)
+#include <gtk/gtk.h>
 #endif
 
 #include "base/basictypes.h"
