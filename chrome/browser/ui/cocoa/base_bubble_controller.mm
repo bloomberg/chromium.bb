@@ -139,8 +139,26 @@
 }
 
 - (void)windowWillClose:(NSNotification*)notification {
+  // The bubble will be closing, so remove the event taps.
+  if (eventTap_) {
+    [NSEvent removeMonitor:eventTap_];
+    eventTap_ = nil;
+  }
+  if (resignationObserver_) {
+    [[NSNotificationCenter defaultCenter]
+        removeObserver:resignationObserver_
+                  name:NSWindowDidResignKeyNotification
+                object:nil];
+    resignationObserver_ = nil;
+  }
+
+  tabStripObserverBridge_.reset();
+
+  [[[self window] parentWindow] removeChildWindow:[self window]];
+
   // We caught a close so we don't need to watch for the parent closing.
   [[NSNotificationCenter defaultCenter] removeObserver:self];
+
   [self autorelease];
 }
 
@@ -159,26 +177,6 @@
   else
     [window orderFront:nil];
   [self registerKeyStateEventTap];
-}
-
-- (void)close {
-  // The bubble will be closing, so remove the event taps.
-  if (eventTap_) {
-    [NSEvent removeMonitor:eventTap_];
-    eventTap_ = nil;
-  }
-  if (resignationObserver_) {
-    [[NSNotificationCenter defaultCenter]
-        removeObserver:resignationObserver_
-                  name:NSWindowDidResignKeyNotification
-                object:nil];
-    resignationObserver_ = nil;
-  }
-
-  tabStripObserverBridge_.reset();
-
-  [[[self window] parentWindow] removeChildWindow:[self window]];
-  [super close];
 }
 
 // The controller is the delegate of the window so it receives did resign key

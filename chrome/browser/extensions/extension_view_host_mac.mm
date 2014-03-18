@@ -16,8 +16,7 @@ namespace extensions {
 ExtensionViewHostMac::~ExtensionViewHostMac() {
   // If there is a popup open for this host's extension, close it.
   ExtensionPopupController* popup = [ExtensionPopupController popup];
-  if ([[popup window] isVisible] &&
-      [popup extensionViewHost]->extension() == this->extension()) {
+  if ([[popup window] isVisible] && [popup extensionViewHost] == this) {
     InfoBubbleWindow* window = (InfoBubbleWindow*)[popup window];
     [window setAllowedAnimations:info_bubble::kAnimateNone];
     [popup close];
