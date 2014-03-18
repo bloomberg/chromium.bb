@@ -46,7 +46,6 @@ enum WebCryptoAlgorithmId {
     WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
     WebCryptoAlgorithmIdRsaEsPkcs1v1_5,
     WebCryptoAlgorithmIdSha1,
-    WebCryptoAlgorithmIdSha224, // FIXME: Delete once no longer referenced by chromium.
     WebCryptoAlgorithmIdSha256,
     WebCryptoAlgorithmIdSha384,
     WebCryptoAlgorithmIdSha512,
