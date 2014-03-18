@@ -64,9 +64,11 @@ void CertificateManagerModel::Create(
 
 CertificateManagerModel::CertificateManagerModel(
     net::NSSCertDatabase* nss_cert_database,
+    bool is_user_db_available,
     bool is_tpm_available,
     Observer* observer)
     : cert_db_(nss_cert_database),
+      is_user_db_available_(is_user_db_available),
       is_tpm_available_(is_tpm_available),
       observer_(observer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -207,13 +209,14 @@ bool CertificateManagerModel::IsHardwareBacked(
 // static
 void CertificateManagerModel::DidGetCertDBOnUIThread(
     net::NSSCertDatabase* cert_db,
+    bool is_user_db_available,
     bool is_tpm_available,
     CertificateManagerModel::Observer* observer,
     const CreationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  scoped_ptr<CertificateManagerModel> model(
-      new CertificateManagerModel(cert_db, is_tpm_available, observer));
+  scoped_ptr<CertificateManagerModel> model(new CertificateManagerModel(
+      cert_db, is_user_db_available, is_tpm_available, observer));
   callback.Run(model.Pass());
 }
 
@@ -224,6 +227,7 @@ void CertificateManagerModel::DidGetCertDBOnIOThread(
     net::NSSCertDatabase* cert_db) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
+  bool is_user_db_available = cert_db->GetPublicSlot();
   bool is_tpm_available = false;
 #if defined(OS_CHROMEOS)
   is_tpm_available = crypto::IsTPMTokenEnabledForNSS();
@@ -233,6 +237,7 @@ void CertificateManagerModel::DidGetCertDBOnIOThread(
       FROM_HERE,
       base::Bind(&CertificateManagerModel::DidGetCertDBOnUIThread,
                  cert_db,
+                 is_user_db_available,
                  is_tpm_available,
                  observer,
                  callback));

@@ -56,6 +56,7 @@ class CertificateManagerModel {
 
   ~CertificateManagerModel();
 
+  bool is_user_db_available() const { return is_user_db_available_; }
   bool is_tpm_available() const { return is_tpm_available_; }
 
   // Accessor for read-only access to the underlying NSSCertDatabase.
@@ -124,6 +125,7 @@ class CertificateManagerModel {
 
  private:
   CertificateManagerModel(net::NSSCertDatabase* nss_cert_database,
+                          bool is_user_db_available,
                           bool is_tpm_available,
                           Observer* observer);
 
@@ -131,6 +133,7 @@ class CertificateManagerModel {
   // file for details.
   static void DidGetCertDBOnUIThread(
       net::NSSCertDatabase* cert_db,
+      bool is_user_db_available,
       bool is_tpm_available,
       CertificateManagerModel::Observer* observer,
       const CreationCallback& callback);
@@ -148,6 +151,9 @@ class CertificateManagerModel {
 
   net::NSSCertDatabase* cert_db_;
   net::CertificateList cert_list_;
+  // Whether the certificate database has a public slot associated with the
+  // profile. If not set, importing certificates is not allowed with this model.
+  bool is_user_db_available_;
   bool is_tpm_available_;
 
   // The observer to notify when certificate list is refreshed.

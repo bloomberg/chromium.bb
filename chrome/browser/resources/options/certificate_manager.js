@@ -208,8 +208,11 @@ cr.define('options', function() {
     CertificateRestoreOverlay.show();
   };
 
-  CertificateManager.onModelReady = function(tpm_available) {
-    if (tpm_available)
+  CertificateManager.onModelReady = function(userDbAvailable,
+                                             tpmAvailable) {
+    if (!userDbAvailable)
+      return;
+    if (tpmAvailable)
       $('personalCertsTab-import-and-bind').disabled = false;
     $('personalCertsTab-import').disabled = false;
     $('serverCertsTab-import').disabled = false;

@@ -14,6 +14,7 @@
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/onc/onc_utils.h"
 #include "components/onc/onc_constants.h"
+#include "crypto/scoped_nss_types.h"
 #include "net/base/crypto_module.h"
 #include "net/base/net_errors.h"
 #include "net/cert/nss_cert_database.h"
@@ -318,8 +319,11 @@ bool CertificateImporterImpl::ParseClientCertificate(
   }
 
   // Since this has a private key, always use the private module.
-  scoped_refptr<net::CryptoModule> module(net::CryptoModule::CreateFromHandle(
-      target_nssdb_->GetPrivateSlot().get()));
+  crypto::ScopedPK11Slot private_slot(target_nssdb_->GetPrivateSlot());
+  if (!private_slot)
+    return false;
+  scoped_refptr<net::CryptoModule> module(
+      net::CryptoModule::CreateFromHandle(private_slot.get()));
   net::CertificateList imported_certs;
 
   int import_result = target_nssdb_->ImportFromPKCS12(

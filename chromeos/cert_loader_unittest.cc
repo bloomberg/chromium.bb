@@ -11,6 +11,7 @@
 #include "base/run_loop.h"
 #include "crypto/nss_util.h"
 #include "crypto/nss_util_internal.h"
+#include "crypto/scoped_nss_types.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_data_directory.h"
 #include "net/cert/nss_cert_database_chromeos.h"
@@ -302,6 +303,20 @@ TEST_F(CertLoaderTest, UpdatedOnCACertTrustChange) {
   ASSERT_EQ(0U, GetAndResetCertificatesLoadedEventsCount());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1U, GetAndResetCertificatesLoadedEventsCount());
+}
+
+TEST_F(CertLoaderTest, DatabaseWithUnsetSlots) {
+  primary_db_.reset(new net::NSSCertDatabaseChromeOS(crypto::ScopedPK11Slot(),
+                                                     crypto::ScopedPK11Slot()));
+  primary_db_->SetSlowTaskRunnerForTest(message_loop_.message_loop_proxy());
+  cert_loader_->StartWithNSSDB(primary_db_.get());
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1u, GetAndResetCertificatesLoadedEventsCount());
+
+  EXPECT_TRUE(cert_loader_->certificates_loaded());
+  EXPECT_EQ(-1, cert_loader_->TPMTokenSlotID());
+  EXPECT_FALSE(cert_loader_->IsHardwareBacked());
 }
 
 }  // namespace

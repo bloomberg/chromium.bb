@@ -13,6 +13,7 @@
 #include "base/task_runner_util.h"
 #include "base/threading/worker_pool.h"
 #include "crypto/nss_util.h"
+#include "crypto/scoped_nss_types.h"
 #include "net/cert/nss_cert_database.h"
 #include "net/cert/nss_cert_database_chromeos.h"
 #include "net/cert/x509_certificate.h"
@@ -86,12 +87,21 @@ void CertLoader::RemoveObserver(CertLoader::Observer* observer) {
 int CertLoader::TPMTokenSlotID() const {
   if (!database_)
     return -1;
-  return static_cast<int>(PK11_GetSlotID(database_->GetPrivateSlot().get()));
+  crypto::ScopedPK11Slot slot(database_->GetPrivateSlot());
+  if (!slot)
+    return -1;
+  return static_cast<int>(PK11_GetSlotID(slot.get()));
 }
 
 bool CertLoader::IsHardwareBacked() const {
-  return force_hardware_backed_for_test_ ||
-      (database_ && PK11_IsHW(database_->GetPrivateSlot().get()));
+  if (force_hardware_backed_for_test_)
+    return true;
+  if (!database_)
+    return false;
+  crypto::ScopedPK11Slot slot(database_->GetPrivateSlot());
+  if (!slot)
+    return false;
+  return PK11_IsHW(slot.get());
 }
 
 bool CertLoader::IsCertificateHardwareBacked(

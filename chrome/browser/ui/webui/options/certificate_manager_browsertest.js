@@ -94,9 +94,18 @@ TEST_F('CertificateManagerWebUIUnpopulatedTest',
 
   Mock4JS.verifyAllMocks();
 
+  // If user database is not available, import buttons should be disabled.
+  CertificateManager.onModelReady(false /* userDbAvailable*/,
+                                  false /* tpmAvailable */);
+
+  expectTrue($('personalCertsTab-import').disabled);
+  expectTrue($('serverCertsTab-import').disabled);
+  expectTrue($('caCertsTab-import').disabled);
+
   // Once we get the onModelReady call, the import buttons should be enabled,
   // others should still be disabled.
-  CertificateManager.onModelReady(false /* tpm_available */);
+  CertificateManager.onModelReady(true /* userDbAvailable*/,
+                                  false /* tpmAvailable */);
 
   expectTrue($('personalCertsTab-view').disabled);
   expectTrue($('personalCertsTab-backup').disabled);
@@ -122,7 +131,8 @@ TEST_F('CertificateManagerWebUIUnpopulatedTest',
   // present.
   if (this.isChromeOS) {
     expectTrue($('personalCertsTab-import-and-bind').disabled);
-    CertificateManager.onModelReady(true /* tpm_available */);
+    CertificateManager.onModelReady(true /* userDbAvailable*/,
+                                    true /* tpmAvailable */);
     expectFalse($('personalCertsTab-import-and-bind').disabled);
   }
 });
@@ -141,10 +151,11 @@ CertificateManagerWebUITest.prototype = {
   preLoad: function() {
     CertificateManagerWebUIBaseTest.prototype.preLoad.call(this);
 
-    var tpm_available = this.isChromeOS;
+    var tpmAvailable = this.isChromeOS;
+    var userDbAvailable = true;
     this.mockHandler.expects(once()).populateCertificateManager().will(
         callFunction(function() {
-          CertificateManager.onModelReady(tpm_available);
+          CertificateManager.onModelReady(userDbAvailable, tpmAvailable);
 
           [['personalCertsTab-tree',
               [{'id': 'o1',

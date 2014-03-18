@@ -1008,9 +1008,12 @@ void CertificateManagerHandler::OnCertificateManagerModelCreated(
 }
 
 void CertificateManagerHandler::CertificateManagerModelReady() {
+  base::FundamentalValue user_db_available_value(
+      certificate_manager_model_->is_user_db_available());
   base::FundamentalValue tpm_available_value(
       certificate_manager_model_->is_tpm_available());
   web_ui()->CallJavascriptFunction("CertificateManager.onModelReady",
+                                   user_db_available_value,
                                    tpm_available_value);
   certificate_manager_model_->Refresh();
 }
