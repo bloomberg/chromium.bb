@@ -157,7 +157,8 @@ public:
     // Notification from the renderer that its content changed.
     void contentChanged(ContentChangeType);
 
-    LayoutRect compositedBounds() const;
+    LayoutRect compositedBounds() const { return m_compositedBounds; }
+    IntRect pixelSnappedCompositedBounds() const;
     void setCompositedBounds(const LayoutRect&);
     void updateCompositedBounds();
 

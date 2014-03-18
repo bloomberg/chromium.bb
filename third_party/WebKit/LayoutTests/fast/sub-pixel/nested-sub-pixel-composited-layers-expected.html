@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+#subPixelContainer {
+    left: 10.5px;
+    width: 100px;
+    height: 100px;
+    position: relative;
+    -webkit-transform: translateZ(0);
+}
+#ref {
+    position: absolute;
+    width: 50.5px;
+    right: 0px;
+    height: 50px;
+    background-color: green;
+}
+</style>
+</head>
+<body>
+<div>This tests that sub-pixel offsets in nested composited layers are properly accumulated. You should see no red.</div>
+<div id="subPixelContainer">
+    <div id="ref"></div>
+</div>

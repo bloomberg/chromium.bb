@@ -566,6 +566,8 @@ void CompositedLayerMapping::adjustBoundsForSubPixelAccumulation(const RenderLay
     LayoutRect localRawCompositingBounds = compositedBounds();
     LayoutPoint rawDelta;
     m_owningLayer.convertToLayerCoords(compositedAncestor, rawDelta);
+    if (compositedAncestor)
+        rawDelta.move(compositedAncestor->compositedLayerMapping()->subpixelAccumulation());
     delta = flooredIntPoint(rawDelta);
     m_subpixelAccumulation = toLayoutSize(rawDelta).fraction();
     RELEASE_ASSERT(m_subpixelAccumulation.width() < 1 && m_subpixelAccumulation.height() < 1);
@@ -668,7 +670,7 @@ GraphicsLayerUpdater::UpdateType CompositedLayerMapping::updateGraphicsLayerGeom
     IntRect ancestorCompositingBounds;
     if (compAncestor) {
         ASSERT(compAncestor->hasCompositedLayerMapping());
-        ancestorCompositingBounds = pixelSnappedIntRect(compAncestor->compositedLayerMapping()->compositedBounds());
+        ancestorCompositingBounds = compAncestor->compositedLayerMapping()->pixelSnappedCompositedBounds();
     }
 
     IntRect localCompositingBounds;
@@ -744,13 +746,14 @@ GraphicsLayerUpdater::UpdateType CompositedLayerMapping::updateGraphicsLayerGeom
     }
 
     if (m_owningLayer.hasTransform()) {
-        const IntRect borderBox = toRenderBox(renderer())->pixelSnappedBorderBoxRect();
+        const LayoutRect borderBox = toRenderBox(renderer())->borderBoxRect();
 
         // Get layout bounds in the coords of compAncestor to match relativeCompositingBounds.
-        IntRect layerBounds(delta + roundedIntSize(m_subpixelAccumulation), borderBox.size());
+        IntRect layerBounds = pixelSnappedIntRect(toLayoutPoint(m_subpixelAccumulation), borderBox.size());
+        layerBounds.moveBy(delta);
 
         // Update properties that depend on layer dimensions
-        FloatPoint3D transformOrigin = computeTransformOrigin(borderBox);
+        FloatPoint3D transformOrigin = computeTransformOrigin(IntRect(IntPoint(), layerBounds.size()));
         // Compute the anchor point, which is in the center of the renderer box unless transform-origin is set.
         FloatPoint3D anchor(
             relativeCompositingBounds.width() ? (layerBounds.x() - relativeCompositingBounds.x() + transformOrigin.x()) / relativeCompositingBounds.width()  : 0.5f,
@@ -2029,9 +2032,11 @@ void CompositedLayerMapping::notifyAnimationStarted(const GraphicsLayer*, double
     renderer()->node()->document().cssPendingAnimations().notifyCompositorAnimationStarted(monotonicTime);
 }
 
-LayoutRect CompositedLayerMapping::compositedBounds() const
+IntRect CompositedLayerMapping::pixelSnappedCompositedBounds() const
 {
-    return m_compositedBounds;
+    LayoutRect bounds = m_compositedBounds;
+    bounds.move(m_subpixelAccumulation);
+    return pixelSnappedIntRect(bounds);
 }
 
 void CompositedLayerMapping::setCompositedBounds(const LayoutRect& bounds)

@@ -35,6 +35,7 @@ filter change with non-composited child
               (bounds 100.00 100.00)
               (children 1
                 (GraphicsLayer
+                  (position 0.00 1.00)
                   (bounds 152.00 152.00)
                   (contentsOpaque 1)
                   (drawsContent 1)
@@ -119,6 +120,7 @@ filter change with non-composited child
               (bounds 100.00 100.00)
               (children 1
                 (GraphicsLayer
+                  (position 0.00 1.00)
                   (bounds 152.00 152.00)
                   (contentsOpaque 1)
                   (drawsContent 1)
@@ -145,6 +147,7 @@ filter change with non-composited child
               (bounds 100.00 100.00)
               (children 1
                 (GraphicsLayer
+                  (position 0.00 1.00)
                   (bounds 152.00 152.00)
                   (contentsOpaque 1)
                   (drawsContent 1)
