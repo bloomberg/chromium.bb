@@ -156,10 +156,6 @@ public:
     // Pass in (numberOfInputChannels > 0) if live/local audio input is desired.
     virtual WebAudioDevice* createAudioDevice(size_t bufferSize, unsigned numberOfInputChannels, unsigned numberOfChannels, double sampleRate, WebAudioDevice::RenderCallback*, const WebString& deviceId) { return 0; }
 
-    // FIXME: remove deprecated APIs once chromium switches over to new method.
-    virtual WebAudioDevice* createAudioDevice(size_t bufferSize, unsigned numberOfChannels, double sampleRate, WebAudioDevice::RenderCallback*) { return 0; }
-    virtual WebAudioDevice* createAudioDevice(size_t bufferSize, unsigned numberOfInputChannels, unsigned numberOfChannels, double sampleRate, WebAudioDevice::RenderCallback*) { return 0; }
-
 
     // MIDI ----------------------------------------------------------------
 
