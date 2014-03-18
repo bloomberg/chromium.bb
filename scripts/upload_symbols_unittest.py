@@ -155,6 +155,44 @@ class UploadSymbolsTest(cros_test_lib.MockTempDirTestCase):
     """Test uploading symbols contains in a remote tarball"""
     # TODO: Need to figure out how to mock out lib.cache.TarballCache.
 
+  def testDedupeNotifyFailure(self):
+    """Test that a dedupe server failure midway doesn't wedge things"""
+    api_mock = mock.MagicMock()
+
+    def _Contains(items):
+      """Do not dedupe anything"""
+      return items
+    api_mock.contains.side_effect = _Contains
+
+    # Use a list so the closure below can modify the value.
+    item_count = [0]
+    # Pick a number big enough to trigger a hang normally, but not so
+    # big it adds a lot of overhead.
+    item_limit = 50
+    def _Push(*_args):
+      """Die in the middle of the push list"""
+      item_count[0] += 1
+      if item_count[0] > (item_limit / 10):
+        raise ValueError('time to die')
+    api_mock.push.side_effect = _Push
+
+    self.PatchObject(isolateserver, 'get_storage_api', return_value=api_mock)
+
+    def _Uploader(*args, **kwargs):
+      """Pass the uploaded symbol to the deduper"""
+      sym_item = args[1]
+      passed_queue = kwargs['passed_queue']
+      passed_queue.put(sym_item)
+    self.upload_mock.side_effect = _Uploader
+
+    self.upload_mock.return_value = 0
+    with parallel_unittest.ParallelMock():
+      ret = upload_symbols.UploadSymbols(
+          '', sym_paths=[self.tempdir] * item_limit, sleep=0,
+          dedupe_namespace='inva!id name$pace')
+      self.assertEqual(ret, 0)
+      # This test normally passes by not hanging.
+
 
 class SymbolDeduplicatorNotifyTest(cros_test_lib.MockTestCase):
   """Tests for SymbolDeduplicatorNotify()"""

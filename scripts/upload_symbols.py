@@ -373,6 +373,10 @@ def SymbolDeduplicatorNotify(dedupe_namespace, dedupe_queue):
     cros_build_lib.Warning('posting %s to dedupe server failed',
                            os.path.basename(sym_file), exc_info=True)
 
+    # Keep draining the queue though so it doesn't fill up.
+    while dedupe_queue.get() is not None:
+      continue
+
 
 def SymbolDeduplicator(storage, sym_paths):
   """Filter out symbol files that we've already uploaded
