@@ -136,12 +136,6 @@ class NaClBrowserTestPnaclDisabled : public NaClBrowserTestBase {
   virtual bool IsPnaclDisabled() OVERRIDE;
 };
 
-class NaClBrowserTestNonSfiMode : public NaClBrowserTestBase {
- public:
-  virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE;
-  virtual base::FilePath::StringType Variant() OVERRIDE;
-};
-
 // A NaCl browser test only using static files.
 class NaClBrowserTestStatic : public NaClBrowserTestBase {
  public:
