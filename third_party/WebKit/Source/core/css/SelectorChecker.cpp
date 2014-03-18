@@ -904,21 +904,23 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
                     subContext.scope = shadowHost;
                     // Use NodeRenderingTraversal to traverse a composed ancestor list of a given element.
                     Element* nextElement = &element;
+                    SelectorCheckingContext hostContext(subContext);
                     do {
                         MatchResult subResult;
-                        subContext.element = nextElement;
-                        if (match(subContext, siblingTraversalStrategy, &subResult) == SelectorMatches) {
+                        hostContext.element = nextElement;
+                        if (match(hostContext, siblingTraversalStrategy, &subResult) == SelectorMatches) {
                             matched = true;
                             // Consider div:host(div:host(div:host(div:host...))).
-                            maxSpecificity = std::max(maxSpecificity, subContext.selector->specificity() + subResult.specificity);
+                            maxSpecificity = std::max(maxSpecificity, hostContext.selector->specificity() + subResult.specificity);
                             break;
                         }
-                        subContext.behaviorAtBoundary = DoesNotCrossBoundary;
-                        subContext.scope = 0;
+                        hostContext.behaviorAtBoundary = DoesNotCrossBoundary;
+                        hostContext.scope = 0;
 
                         if (selector.pseudoType() == CSSSelector::PseudoHost)
                             break;
 
+                        hostContext.elementStyle = 0;
                         nextElement = NodeRenderingTraversal::parentElement(nextElement);
                     } while (nextElement);
                 }
