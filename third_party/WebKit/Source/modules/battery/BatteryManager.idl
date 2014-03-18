@@ -4,7 +4,6 @@
 
 // http://dev.w3.org/2009/dap/system-info/battery-status.html
 [
-    NoInterfaceObject,
     RuntimeEnabled=BatteryStatus,
 ] interface BatteryManager : EventTarget {
     readonly attribute boolean charging;
@@ -16,6 +15,5 @@
     attribute EventHandler onchargingtimechange;
     attribute EventHandler ondischargingtimechange;
     attribute EventHandler onlevelchange;
-
 };
 
