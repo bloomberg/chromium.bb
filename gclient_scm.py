@@ -681,8 +681,7 @@ class GitWrapper(SCMWrapper):
     if not self.cache_dir:
       return url
     v = ['-v'] if options.verbose else []
-    self._Run(['cache', 'populate'] + v +
-              ['--shallow', '--cache-dir', self.cache_dir, url],
+    self._Run(['cache', 'populate'] + v + ['--cache-dir', self.cache_dir, url],
               options, cwd=self._root_dir, retry=True)
     return self._Run(['cache', 'exists', '--cache-dir', self.cache_dir, url],
                      options, cwd=self._root_dir, ).strip()
