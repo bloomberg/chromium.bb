@@ -28,7 +28,7 @@ from file_update import Mkdir, Rmdir, Symlink
 from file_update import NeedsUpdate, UpdateFromTo, UpdateText
 
 
-BIONIC_VERSION = '649e9f7df39f73cd13b83e8c3371d3f47022ef62'
+BIONIC_VERSION = '920fcaa7f6f2c8c5b85ce5204b2e37e79edf1133'
 ARCHES = ['arm']
 
 BUILD_SCRIPT = os.path.abspath(__file__)
@@ -146,6 +146,10 @@ def CreateBasicToolchain():
 
   # Bionic uses the following include paths
   BIONIC_PAIRS = [
+    ('bionic/libc/arch-nacl/syscalls/irt_poll.h',
+        '$NACL-nacl/include/irt_poll.h'),
+    ('bionic/libc/arch-nacl/syscalls/irt_socket.h',
+        '$NACL-nacl/include/irt_socket.h'),
     ('bionic/libc/include', '$NACL-nacl/include'),
     ('bionic/libc/arch-nacl/syscalls/nacl_stat.h',
         '$NACL-nacl/include/nacl_stat.h'),
