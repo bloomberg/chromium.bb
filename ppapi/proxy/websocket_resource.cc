@@ -15,7 +15,6 @@
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/shared_impl/var_tracker.h"
-#include "third_party/WebKit/public/web/WebSocket.h"
 
 namespace {
 
@@ -137,17 +136,10 @@ int32_t WebSocketResource::Close(uint16_t code,
   // Validate |code| and |reason|.
   scoped_refptr<StringVar> reason_string_var;
   std::string reason_string;
-  blink::WebSocket::CloseEventCode event_code =
-      static_cast<blink::WebSocket::CloseEventCode>(code);
-  if (code == PP_WEBSOCKETSTATUSCODE_NOT_SPECIFIED) {
-    // PP_WEBSOCKETSTATUSCODE_NOT_SPECIFIED and CloseEventCodeNotSpecified are
-    // assigned to different values. A conversion is needed if
-    // PP_WEBSOCKETSTATUSCODE_NOT_SPECIFIED is specified.
-    event_code = blink::WebSocket::CloseEventCodeNotSpecified;
-  } else {
-    if (!(code == PP_WEBSOCKETSTATUSCODE_NORMAL_CLOSURE ||
-        (PP_WEBSOCKETSTATUSCODE_USER_REGISTERED_MIN <= code &&
-        code <= PP_WEBSOCKETSTATUSCODE_USER_PRIVATE_MAX)))
+  if (code != PP_WEBSOCKETSTATUSCODE_NOT_SPECIFIED) {
+    if (code != PP_WEBSOCKETSTATUSCODE_NORMAL_CLOSURE &&
+        (code < PP_WEBSOCKETSTATUSCODE_USER_REGISTERED_MIN ||
+        code > PP_WEBSOCKETSTATUSCODE_USER_PRIVATE_MAX))
       // RFC 6455 limits applications to use reserved connection close code in
       // section 7.4.2.. The WebSocket API (http://www.w3.org/TR/websockets/)
       // defines this out of range error as InvalidAccessError in JavaScript.
@@ -195,7 +187,7 @@ int32_t WebSocketResource::Close(uint16_t code,
 
   // Close connection.
   state_ = PP_WEBSOCKETREADYSTATE_CLOSING;
-  PpapiHostMsg_WebSocket_Close msg(static_cast<int32_t>(event_code),
+  PpapiHostMsg_WebSocket_Close msg(static_cast<int32_t>(code),
                                    reason_string);
   Call<PpapiPluginMsg_WebSocket_CloseReply>(RENDERER, msg,
       base::Bind(&WebSocketResource::OnPluginMsgCloseReply, this));
