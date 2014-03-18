@@ -706,7 +706,6 @@ scoped_ptr<ImageMediaMetadata> ImageMediaMetadata::CreateFrom(
 }
 
 bool ImageMediaMetadata::Parse(const base::Value& value) {
-  return true;
   base::JSONValueConverter<ImageMediaMetadata> converter;
   if (!converter.Convert(value, this)) {
     LOG(ERROR) << "Unable to parse: Invalid ImageMediaMetadata.";

@@ -114,21 +114,15 @@ const char GaiaAuthFetcher::kOAuthLoginFormat[] = "service=%s&source=%s";
 
 // static
 const char GaiaAuthFetcher::kAccountDeletedError[] = "AccountDeleted";
-const char GaiaAuthFetcher::kAccountDeletedErrorCode[] = "adel";
 // static
 const char GaiaAuthFetcher::kAccountDisabledError[] = "AccountDisabled";
-const char GaiaAuthFetcher::kAccountDisabledErrorCode[] = "adis";
 // static
 const char GaiaAuthFetcher::kBadAuthenticationError[] = "BadAuthentication";
-const char GaiaAuthFetcher::kBadAuthenticationErrorCode[] = "badauth";
 // static
 const char GaiaAuthFetcher::kCaptchaError[] = "CaptchaRequired";
-const char GaiaAuthFetcher::kCaptchaErrorCode[] = "cr";
 // static
 const char GaiaAuthFetcher::kServiceUnavailableError[] =
     "ServiceUnavailable";
-const char GaiaAuthFetcher::kServiceUnavailableErrorCode[] =
-    "ire";
 // static
 const char GaiaAuthFetcher::kErrorParam[] = "Error";
 // static
@@ -693,102 +687,42 @@ GoogleServiceAuthError GaiaAuthFetcher::GenerateAuthError(
   if (!status.is_success()) {
     if (status.status() == net::URLRequestStatus::CANCELED) {
       return GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED);
-    } else {
-      DLOG(WARNING) << "Could not reach Google Accounts servers: errno "
-          << status.error();
-      return GoogleServiceAuthError::FromConnectionError(status.error());
     }
-  } else {
-    if (IsSecondFactorSuccess(data)) {
-      return GoogleServiceAuthError(GoogleServiceAuthError::TWO_FACTOR);
-    }
+    DLOG(WARNING) << "Could not reach Google Accounts servers: errno "
+                  << status.error();
+    return GoogleServiceAuthError::FromConnectionError(status.error());
+  }
 
-    std::string error;
-    std::string url;
-    std::string captcha_url;
-    std::string captcha_token;
-    ParseClientLoginFailure(data, &error, &url, &captcha_url, &captcha_token);
-    DLOG(WARNING) << "ClientLogin failed with " << error;
+  if (IsSecondFactorSuccess(data))
+    return GoogleServiceAuthError(GoogleServiceAuthError::TWO_FACTOR);
 
-    if (error == kCaptchaError) {
-      GURL image_url(
-          GaiaUrls::GetInstance()->captcha_base_url().Resolve(captcha_url));
-      GURL unlock_url(url);
-      return GoogleServiceAuthError::FromClientLoginCaptchaChallenge(
-          captcha_token, image_url, unlock_url);
-    }
-    if (error == kAccountDeletedError)
-      return GoogleServiceAuthError(GoogleServiceAuthError::ACCOUNT_DELETED);
-    if (error == kAccountDisabledError)
-      return GoogleServiceAuthError(GoogleServiceAuthError::ACCOUNT_DISABLED);
-    if (error == kBadAuthenticationError) {
-      return GoogleServiceAuthError(
-          GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
-    }
-    if (error == kServiceUnavailableError) {
-      return GoogleServiceAuthError(
-          GoogleServiceAuthError::SERVICE_UNAVAILABLE);
-    }
+  std::string error;
+  std::string url;
+  std::string captcha_url;
+  std::string captcha_token;
+  ParseClientLoginFailure(data, &error, &url, &captcha_url, &captcha_token);
+  DLOG(WARNING) << "ClientLogin failed with " << error;
 
-    DLOG(WARNING) << "Incomprehensible response from Google Accounts servers.";
+  if (error == kCaptchaError) {
+    return GoogleServiceAuthError::FromClientLoginCaptchaChallenge(
+        captcha_token,
+        GURL(GaiaUrls::GetInstance()->captcha_base_url().Resolve(captcha_url)),
+        GURL(url));
+  }
+  if (error == kAccountDeletedError)
+    return GoogleServiceAuthError(GoogleServiceAuthError::ACCOUNT_DELETED);
+  if (error == kAccountDisabledError)
+    return GoogleServiceAuthError(GoogleServiceAuthError::ACCOUNT_DISABLED);
+  if (error == kBadAuthenticationError) {
+    return GoogleServiceAuthError(
+        GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
+  }
+  if (error == kServiceUnavailableError) {
     return GoogleServiceAuthError(
         GoogleServiceAuthError::SERVICE_UNAVAILABLE);
   }
 
-  NOTREACHED();
-  return GoogleServiceAuthError(GoogleServiceAuthError::SERVICE_UNAVAILABLE);
-}
-
-// static
-GoogleServiceAuthError GaiaAuthFetcher::GenerateOAuthLoginError(
-    const std::string& data,
-    const net::URLRequestStatus& status) {
-  if (!status.is_success()) {
-    if (status.status() == net::URLRequestStatus::CANCELED) {
-      return GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED);
-    } else {
-      DLOG(WARNING) << "Could not reach Google Accounts servers: errno "
-          << status.error();
-      return GoogleServiceAuthError::FromConnectionError(status.error());
-    }
-  } else {
-    if (IsSecondFactorSuccess(data)) {
-      return GoogleServiceAuthError(GoogleServiceAuthError::TWO_FACTOR);
-    }
-
-    std::string error;
-    std::string url;
-    std::string captcha_url;
-    std::string captcha_token;
-    ParseClientLoginFailure(data, &error, &url, &captcha_url, &captcha_token);
-    LOG(WARNING) << "OAuthLogin failed with " << error;
-
-    if (error == kCaptchaErrorCode) {
-      GURL image_url(
-          GaiaUrls::GetInstance()->captcha_base_url().Resolve(captcha_url));
-      GURL unlock_url(url);
-      return GoogleServiceAuthError::FromClientLoginCaptchaChallenge(
-          captcha_token, image_url, unlock_url);
-    }
-    if (error == kAccountDeletedErrorCode)
-      return GoogleServiceAuthError(GoogleServiceAuthError::ACCOUNT_DELETED);
-    if (error == kAccountDisabledErrorCode)
-      return GoogleServiceAuthError(GoogleServiceAuthError::ACCOUNT_DISABLED);
-    if (error == kBadAuthenticationErrorCode) {
-      return GoogleServiceAuthError(
-          GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
-    }
-    if (error == kServiceUnavailableErrorCode) {
-      return GoogleServiceAuthError(
-          GoogleServiceAuthError::SERVICE_UNAVAILABLE);
-    }
-
-    DLOG(WARNING) << "Incomprehensible response from Google Accounts servers.";
-    return GoogleServiceAuthError(
-        GoogleServiceAuthError::SERVICE_UNAVAILABLE);
-  }
-
-  NOTREACHED();
+  DLOG(WARNING) << "Incomprehensible response from Google Accounts servers.";
   return GoogleServiceAuthError(GoogleServiceAuthError::SERVICE_UNAVAILABLE);
 }
 
