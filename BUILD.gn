@@ -15,28 +15,33 @@ group("root") {
   # ignored in the pure GN build.
   external = true
 
+  # Note that some dependencies are commented out. These are things that are
+  # currently written but not hooked up to the build yet. They may need to be
+  # completed or possibly just tested and then re-enabled.
   deps = [
-    "//base(//build/toolchain/nacl:x86_newlib)",
-    "//chrome",
-    "//components/language_usage_metrics",
-    "//components/navigation_metrics",
-    "//components/onc:onc_component",
-    "//components/startup_metric_utils",
-    "//components/translate:translate_core_browser",
-    "//components/translate:translate_core_common",
-    "//crypto",
-    "//device/usb:device_usb",
-    "//ipc",
-    "//net",
-    "//net/third_party/nss:ssl",
-    "//sdch",
-    "//third_party/WebKit/Source/platform",
-    "//third_party/icu:icudata",
-    "//third_party/leveldatabase",
-    "//third_party/libpng",
-    "//third_party/zlib",
-    "//skia",
+    # This is a temporary test of the not-yet-complete NaCl cross-compilation.
+    #"//base(//build/toolchain/nacl:x86_newlib)",
+
+    #"//chrome",
+    #"//components/language_usage_metrics",
+    #"//components/navigation_metrics",
+    #"//components/onc:onc_component",
+    #"//components/startup_metric_utils",
+    #"//components/translate:translate_core_browser",
+    #"//components/translate:translate_core_common",
+    #"//crypto",
+    #"//device/usb:device_usb",
+    #"//ipc",
+    #"//net",
+    #"//net/third_party/nss:ssl",
+    #"//sdch",
+    #"//third_party/WebKit/Source/platform",
+    #"//third_party/icu:icudata",
+    #"//third_party/leveldatabase",
+    #"//third_party/libpng",
+    #"//third_party/zlib",
+    #"//skia",
     "//tools/gn",
-    "//url",
+    #"//url",
   ]
 }
