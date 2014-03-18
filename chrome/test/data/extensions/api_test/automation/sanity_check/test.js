@@ -10,6 +10,7 @@ var assertTrue = chrome.test.assertTrue;
 var RemoveUntestedStates = function(state) {
   delete state['vertical'];
   delete state['horizontal'];
+  delete state['hovered'];
 };
 
 var allTests = [
