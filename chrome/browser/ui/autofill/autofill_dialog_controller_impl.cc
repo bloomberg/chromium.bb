@@ -1695,7 +1695,7 @@ base::string16 AutofillDialogControllerImpl::TooltipForField(
 bool AutofillDialogControllerImpl::InputIsEditable(
     const DetailInput& input,
     DialogSection section) {
-  if (section != SECTION_CC_BILLING)
+  if (section != SECTION_CC_BILLING || !IsPayingWithWallet())
     return true;
 
   if (input.type == CREDIT_CARD_NUMBER)
