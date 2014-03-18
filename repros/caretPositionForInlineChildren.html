@@ -1,0 +1,43 @@
+<!doctype html>
+<html>
+<head>
+    <style>
+
+        .outer {
+            border: 1px solid black;
+            background: #f09000;
+            padding: 4px;
+            margin: 4px;
+        }
+
+        .pill {
+            -webkit-user-modify: read-only;
+            display: inline;
+            border-radius: 6px;
+            background: yellow;
+            color: black;
+            border: 1px solid black;
+            padding-left: 15px;
+            padding-right: 15px;
+        }
+
+        .pill2 {
+            -webkit-user-modify: read-only;
+            display: inline-block;
+            border-radius: 6px;
+            background: yellow;
+            color: black;
+            border: 10px solid green;
+            padding-left: 15px;
+            padding-right: 15px;
+            margin-left: 3px;
+            margin-right: 3px;
+        }
+		
+    </style>
+</head>
+<body>
+    <div contenteditable="true" class="outer"><div class="pill">IBM Equity</div>a<div class="pill">picture.png</div></div>
+    <div contenteditable="true" class="outer">abc<div class="pill2">IBM Equity</div><div class="pill2">picture.png</div>def</div>
+</body>
+</html>

@@ -118,6 +118,18 @@ you press <code>&lt;up&gt;</code>, the result of
 <code>queryCommandValue('bold')</code> changes inconsistently.<p>
 
 <h3>
+    <a name="bugfix-caretPositionForInlineChildren">bugfix/caretPositionForInlineChildren</a>
+    (Shezan Baig; D48542454)
+    <span class="viewchanges">[<a href="http://github.com/bloomberg/chromium.bb/compare/upstream%2Flatest...bugfix%2FcaretPositionForInlineChildren">view changes</a>]</span>
+</h3>
+<p>Open <a href="repros/caretPositionForInlineChildren.html">this link</a> in
+Chrome.  The "pill" elements have <code>-webkit-user-modify: read-only</code>,
+however, the caret still gets rendered within the pills.  But when the user
+types, the text (correctly) gets inserted outside the pills.  Also, the caret
+is rendered outside the contenteditable div if there is no text after the
+pills.</p>
+
+<h3>
     <a name="bugfix-cellInMulticol">bugfix/cellInMulticol</a>
     (Shezan Baig; D34079255)
     <span class="viewchanges">[<a href="http://github.com/bloomberg/chromium.bb/compare/upstream%2Flatest...bugfix%2FcellInMulticol">view changes</a>]</span>
