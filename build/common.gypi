@@ -796,10 +796,10 @@
           'test_isolation_mode%': 'noop',
         }],
         # Whether Android ARM or x86 build uses OpenMAX DL FFT.
-        ['OS=="android" and ((target_arch=="arm" and arm_version >= 7) or target_arch=="ia32") and android_webview_build==0', {
-          # Currently only supported on Android ARMv7+, or ia32
+        ['OS=="android" and ((target_arch=="arm" and arm_version >= 7) or target_arch=="ia32" or target_arch=="x64") and android_webview_build==0', {
+          # Currently only supported on Android ARMv7+, ia32 or x64
           # without webview.  When enabled, this will also enable
-          # WebAudio support on Android ARM and ia32.  Default is
+          # WebAudio support on Android ARM, ia32 and x64.  Default is
           # enabled.  Whether WebAudio is actually available depends
           # on runtime settings and flags.
           'use_openmax_dl_fft%': 1,
@@ -825,9 +825,9 @@
           'enable_printing%': 0,
         }],
 
-	# By default, use ICU data file (icudtl.dat) on all platforms
-	# except when building Android WebView.
-	# TODO(jshin): Handle 'use_system_icu' on Linux (Chromium).
+        # By default, use ICU data file (icudtl.dat) on all platforms
+        # except when building Android WebView.
+        # TODO(jshin): Handle 'use_system_icu' on Linux (Chromium).
         ['android_webview_build==0', {
           'icu_use_data_file_flag%' : 1,
         }, {
@@ -1307,7 +1307,13 @@
         'conditions': [
           ['OS=="android"', {
             # We directly set the gcc_version since we know what we use.
-            'gcc_version%': 46,
+            'conditions': [
+              ['target_arch=="x64"', {
+                'gcc_version%': 48,
+              }, {
+                'gcc_version%': 46,
+              }],
+            ],
             'binutils_version%': 222,
           }, {
             'gcc_version%': '<!(python <(DEPTH)/build/compiler_version.py)',
@@ -1435,6 +1441,12 @@
               'android_gdbserver%': '<(android_ndk_root)/prebuilt/android-x86/gdbserver/gdbserver',
               'android_ndk_sysroot%': '<(android_ndk_root)/platforms/android-14/arch-x86',
               'android_toolchain%': '<(android_ndk_root)/toolchains/x86-4.6/prebuilt/<(host_os)-<(android_host_arch)/bin',
+            }],
+            ['target_arch == "x64"', {
+              'android_app_abi%': 'x86_64',
+              'android_gdbserver%': '<(android_ndk_root)/prebuilt/android-x86_64/gdbserver/gdbserver',
+              'android_ndk_sysroot%': '<(android_ndk_root)/platforms/android-19/arch-x86_64',
+              'android_toolchain%': '<(android_ndk_root)/toolchains/x86_64-4.8/prebuilt/<(host_os)-<(android_host_arch)/bin',
             }],
             ['target_arch=="arm"', {
               'conditions': [
@@ -1738,7 +1750,7 @@
       ['use_titlecase_in_grd_files==1', {
         'grit_defines': ['-D', 'use_titlecase'],
       }],
-      ['OS=="android" and target_arch=="ia32"', {
+      ['OS=="android" and (target_arch=="ia32" or target_arch=="x64")', {
         # WebAudio on Android/x86 is disabled by default, unlike
         # everywhere else, so use appropriate message.
         'grit_defines': ['-D', 'use_webaudio_enable_message'],
@@ -3252,6 +3264,30 @@
               }],
             ],
           }],
+          ['target_arch=="x64"', {
+            'target_conditions': [
+              ['_toolset=="target"', {
+                'conditions': [
+                  # Use gold linker for Android x64 target.
+                  ['OS=="android"', {
+                    'cflags': [
+                      '-fuse-ld=gold',
+                    ],
+                    'ldflags': [
+                      '-fuse-ld=gold',
+                    ],
+                  }],
+                ],
+                'cflags': [
+                  '-m64',
+                  '-march=x86-64',
+                ],
+                'ldflags': [
+                  '-m64',
+                ],
+              }],
+            ],
+          }],
           ['target_arch=="arm"', {
             'target_conditions': [
               ['_toolset=="target"', {
@@ -3903,6 +3939,16 @@
                       '-target x86-linux-androideabi',
                     ],
                   }],
+                  # Place holder for x64 support, not tested.
+                  # TODO: Enable clang support for Android x64. http://crbug.com/346626
+                  ['target_arch=="x64"', {
+                    'cflags': [
+                      '-target x86_64-linux-androideabi',
+                    ],
+                    'ldflags': [
+                      '-target x86_64-linux-androideabi',
+                    ],
+                  }],
                 ],
               }],
               ['asan==1', {
@@ -4016,7 +4062,6 @@
               ['_type=="executable"', {
                 'ldflags': [
                   '-Bdynamic',
-                  '-Wl,-dynamic-linker,/system/bin/linker',
                   '-Wl,--gc-sections',
                   '-Wl,-z,nocopyreloc',
                   # crtbegin_dynamic.o should be the last item in ldflags.
