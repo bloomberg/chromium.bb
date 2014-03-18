@@ -167,8 +167,7 @@ public class ObserverList<E> implements Iterable<E> {
     private void decrementIterationDepthAndCompactIfNeeded() {
         mIterationDepth--;
         assert mIterationDepth >= 0;
-        if (mIterationDepth == 0)
-            compact();
+        if (mIterationDepth == 0) compact();
     }
 
     /**
