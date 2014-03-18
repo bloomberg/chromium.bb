@@ -79,7 +79,8 @@ public:
     unsigned length() const;
     CSSRule* item(unsigned index);
 
-    virtual void clearOwnerNode() OVERRIDE { didMutate(EntireStyleSheetUpdate); m_ownerNode = 0; }
+    virtual void clearOwnerNode() OVERRIDE;
+
     virtual CSSRule* ownerRule() const OVERRIDE { return m_ownerRule; }
     virtual KURL baseURL() const OVERRIDE;
     virtual bool isLoading() const OVERRIDE;

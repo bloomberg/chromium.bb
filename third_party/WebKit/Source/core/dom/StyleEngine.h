@@ -184,8 +184,8 @@ public:
 
     void markDocumentDirty();
 
-    static PassRefPtr<CSSStyleSheet> createSheet(Element*, const String& text, TextPosition startPosition, bool createdByParser);
-    static void removeSheet(StyleSheetContents*);
+    PassRefPtr<CSSStyleSheet> createSheet(Element*, const String& text, TextPosition startPosition, bool createdByParser);
+    void removeSheet(StyleSheetContents*);
 
     void trace(Visitor*);
 
@@ -245,6 +245,9 @@ private:
     OwnPtr<StyleResolver> m_resolver;
 
     RefPtr<CSSFontSelector> m_fontSelector;
+
+    HashMap<AtomicString, StyleSheetContents*> m_textToSheetCache;
+    HashMap<StyleSheetContents*, AtomicString> m_sheetToTextCache;
 };
 
 }

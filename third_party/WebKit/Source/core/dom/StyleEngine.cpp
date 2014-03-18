@@ -54,30 +54,6 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-static WillBeHeapHashMap<AtomicString, RawPtrWillBeWeakMember<StyleSheetContents> >& textToSheetCache()
-{
-    typedef WillBeHeapHashMap<AtomicString, RawPtrWillBeWeakMember<StyleSheetContents> > TextToSheetCache;
-#if ENABLE(OILPAN)
-    DEFINE_STATIC_LOCAL(Persistent<TextToSheetCache>, cache, (new TextToSheetCache));
-    return *cache;
-#else
-    DEFINE_STATIC_LOCAL(TextToSheetCache, cache, ());
-    return cache;
-#endif
-}
-
-static WillBeHeapHashMap<RawPtrWillBeWeakMember<StyleSheetContents>, AtomicString>& sheetToTextCache()
-{
-    typedef WillBeHeapHashMap<RawPtrWillBeWeakMember<StyleSheetContents>, AtomicString> SheetToTextCache;
-#if ENABLE(OILPAN)
-    DEFINE_STATIC_LOCAL(Persistent<SheetToTextCache>, cache, (new SheetToTextCache));
-    return *cache;
-#else
-    DEFINE_STATIC_LOCAL(SheetToTextCache, cache, ());
-    return cache;
-#endif
-}
-
 StyleEngine::StyleEngine(Document& document)
     : m_document(document)
     , m_isMaster(HTMLImport::isMaster(&document))
@@ -595,16 +571,17 @@ PassRefPtr<CSSStyleSheet> StyleEngine::createSheet(Element* e, const String& tex
     if (!e->document().inQuirksMode()) {
         AtomicString textContent(text);
 
-        WillBeHeapHashMap<AtomicString, RawPtrWillBeWeakMember<StyleSheetContents> >::iterator it = textToSheetCache().find(textContent);
-        if (it == textToSheetCache().end()) {
+        HashMap<AtomicString, StyleSheetContents*>::AddResult result = m_textToSheetCache.add(textContent, 0);
+        if (result.isNewEntry || !result.storedValue->value) {
             styleSheet = StyleEngine::parseSheet(e, text, startPosition, createdByParser);
-            if (styleSheet->contents()->maybeCacheable()) {
-                textToSheetCache().add(textContent, styleSheet->contents());
-                sheetToTextCache().add(styleSheet->contents(), textContent);
+            if (result.isNewEntry && styleSheet->contents()->maybeCacheable()) {
+                result.storedValue->value = styleSheet->contents();
+                m_sheetToTextCache.add(styleSheet->contents(), textContent);
             }
         } else {
-            ASSERT(it->value->maybeCacheable());
-            styleSheet = CSSStyleSheet::createInline(it->value, e, startPosition);
+            ASSERT(result.storedValue->value->maybeCacheable());
+            ASSERT(result.storedValue->value->singleOwnerDocument() == e->document());
+            styleSheet = CSSStyleSheet::createInline(result.storedValue->value, e, startPosition);
         }
     } else {
         // FIXME: currently we don't cache StyleSheetContents inQuirksMode.
@@ -626,12 +603,12 @@ PassRefPtr<CSSStyleSheet> StyleEngine::parseSheet(Element* e, const String& text
 
 void StyleEngine::removeSheet(StyleSheetContents* contents)
 {
-    WillBeHeapHashMap<RawPtrWillBeWeakMember<StyleSheetContents>, AtomicString>::iterator it = sheetToTextCache().find(contents);
-    if (it == sheetToTextCache().end())
+    HashMap<StyleSheetContents*, AtomicString>::iterator it = m_sheetToTextCache.find(contents);
+    if (it == m_sheetToTextCache.end())
         return;
 
-    textToSheetCache().remove(it->value);
-    sheetToTextCache().remove(contents);
+    m_textToSheetCache.remove(it->value);
+    m_sheetToTextCache.remove(contents);
 }
 
 void StyleEngine::trace(Visitor* visitor)

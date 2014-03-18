@@ -158,11 +158,11 @@ CSSStyleSheet::~CSSStyleSheet()
 void CSSStyleSheet::willMutateRules()
 {
     InspectorInstrumentation::willMutateRules(this);
+
     // If we are the only client it is safe to mutate.
-    if (m_contents->hasOneClient() && !m_contents->isInMemoryCache()) {
+    if (m_contents->clientSize() <= 1 && !m_contents->isInMemoryCache()) {
         m_contents->clearRuleSet();
-        if (m_contents->maybeCacheable())
-            StyleEngine::removeSheet(m_contents.get());
+        m_contents->removeSheetFromCache(ownerDocument());
         m_contents->setMutable();
         return;
     }
@@ -183,7 +183,7 @@ void CSSStyleSheet::willMutateRules()
 void CSSStyleSheet::didMutateRules()
 {
     ASSERT(m_contents->isMutable());
-    ASSERT(m_contents->hasOneClient());
+    ASSERT(m_contents->clientSize() <= 1);
 
     InspectorInstrumentation::didMutateRules(this);
     didMutate(PartialRuleUpdate);
@@ -253,6 +253,14 @@ CSSRule* CSSStyleSheet::item(unsigned index)
             cssRule = m_contents->ruleAt(index)->createCSSOMWrapper(this);
     }
     return cssRule.get();
+}
+
+void CSSStyleSheet::clearOwnerNode()
+{
+    didMutate(EntireStyleSheetUpdate);
+    if (m_ownerNode)
+        m_contents->unregisterClient(this);
+    m_ownerNode = 0;
 }
 
 bool CSSStyleSheet::canAccessRules() const
