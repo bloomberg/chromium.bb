@@ -29,6 +29,7 @@
 
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/events/MouseEvent.h"
+#include "core/frame/Settings.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/MediaController.h"
 #include "core/rendering/RenderTheme.h"
@@ -191,7 +192,7 @@ void MediaControls::reset()
 
     refreshClosedCaptionsButtonVisibility();
 
-    if (mediaControllerInterface().hasVideo())
+    if (mediaElement().hasVideo() && document().settings() && document().settings()->fullScreenEnabled())
         m_fullScreenButton->show();
     else
         m_fullScreenButton->hide();
@@ -247,7 +248,7 @@ void MediaControls::playbackProgressed()
     m_timeline->setPosition(mediaControllerInterface().currentTime());
     updateCurrentTimeDisplay();
 
-    if (!m_isMouseOverControls && mediaControllerInterface().hasVideo())
+    if (!m_isMouseOverControls && mediaElement().hasVideo())
         makeTransparent();
 }
 

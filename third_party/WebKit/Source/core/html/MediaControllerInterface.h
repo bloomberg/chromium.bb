@@ -49,10 +49,7 @@ public:
     virtual bool muted() const = 0;
     virtual void setMuted(bool) = 0;
 
-    virtual void enterFullscreen() = 0;
-
     virtual bool hasAudio() const = 0;
-    virtual bool hasVideo() const = 0;
 
     virtual void beginScrubbing() = 0;
     virtual void endScrubbing() = 0;

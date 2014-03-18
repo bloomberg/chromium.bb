@@ -84,7 +84,7 @@ public:
     MediaPlayer* player() const { return m_player.get(); }
     blink::WebMediaPlayer* webMediaPlayer() const { return m_player ? m_player->webMediaPlayer() : 0; }
 
-    virtual bool hasVideo() const OVERRIDE { return false; }
+    virtual bool hasVideo() const { return false; }
     virtual bool hasAudio() const OVERRIDE FINAL;
 
     bool supportsSave() const;
@@ -233,7 +233,7 @@ public:
     bool hasSingleSecurityOrigin() const { return !m_player || m_player->hasSingleSecurityOrigin(); }
 
     bool isFullscreen() const;
-    virtual void enterFullscreen() OVERRIDE FINAL;
+    void enterFullscreen();
 
     bool hasClosedCaptions() const;
     bool closedCaptionsVisible() const;

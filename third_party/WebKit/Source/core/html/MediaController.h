@@ -84,10 +84,7 @@ public:
     enum PlaybackState { WAITING, PLAYING, ENDED };
     const AtomicString& playbackState() const;
 
-    virtual void enterFullscreen() OVERRIDE { }
-
     virtual bool hasAudio() const OVERRIDE;
-    virtual bool hasVideo() const OVERRIDE;
 
     virtual void beginScrubbing() OVERRIDE;
     virtual void endScrubbing() OVERRIDE;

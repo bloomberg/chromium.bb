@@ -565,15 +565,6 @@ bool MediaController::hasAudio() const
     return false;
 }
 
-bool MediaController::hasVideo() const
-{
-    for (size_t index = 0; index < m_mediaElements.size(); ++index) {
-        if (m_mediaElements[index]->hasVideo())
-            return true;
-    }
-    return false;
-}
-
 void MediaController::beginScrubbing()
 {
     for (size_t index = 0; index < m_mediaElements.size(); ++index)

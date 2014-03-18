@@ -38,7 +38,6 @@
 #include "core/events/MouseEvent.h"
 #include "core/events/ThreadLocalEventNames.h"
 #include "core/frame/LocalFrame.h"
-#include "core/frame/Settings.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/html/shadow/MediaControls.h"
 #include "core/html/track/TextTrack.h"
@@ -588,19 +587,10 @@ PassRefPtr<MediaControlFullscreenButtonElement> MediaControlFullscreenButtonElem
 void MediaControlFullscreenButtonElement::defaultEventHandler(Event* event)
 {
     if (event->type() == EventTypeNames::click) {
-        // Only use the new full screen API if the fullScreenEnabled setting has
-        // been explicitly enabled. Otherwise, use the old fullscreen API. This
-        // allows apps which embed a WebView to retain the existing full screen
-        // video implementation without requiring them to implement their own full
-        // screen behavior.
-        if (document().settings() && document().settings()->fullScreenEnabled()) {
-            if (FullscreenElementStack::isActiveFullScreenElement(&mediaElement()))
-                FullscreenElementStack::from(document()).webkitCancelFullScreen();
-            else
-                FullscreenElementStack::from(document()).requestFullScreenForElement(&mediaElement(), 0, FullscreenElementStack::ExemptIFrameAllowFullScreenRequirement);
-        } else {
-            mediaControllerInterface().enterFullscreen();
-        }
+        if (FullscreenElementStack::isActiveFullScreenElement(&mediaElement()))
+            FullscreenElementStack::from(document()).webkitCancelFullScreen();
+        else
+            FullscreenElementStack::from(document()).requestFullScreenForElement(&mediaElement(), 0, FullscreenElementStack::ExemptIFrameAllowFullScreenRequirement);
         event->setDefaultHandled();
     }
     HTMLInputElement::defaultEventHandler(event);
