@@ -854,7 +854,8 @@ crbug.com/339373 http/tests/websocket/useragent-in-openinghandshake.html [ Skip 
 crbug.com/339373 http/tests/websocket/zero-length-text.html [ Skip ]
 crbug.com/327581 http/tests/inspector/websocket/websocket-handshake.html [ Skip ]
 
-crbug.com/349537 http/tests/websocket/workers/worker-reload-repeated.html [ Crash Pass ]
+crbug.com/349537 [ Win Linux ] http/tests/websocket/workers/worker-reload-repeated.html [ Crash Pass Timeout ]
+crbug.com/349537 virtual/stable/http/tests/websocket/workers/worker-reload-repeated.html [ Crash Pass Timeout ]
 
 crbug.com/339778 [ Debug ] fast/dom/timer-throttling-hidden-page.html [ Failure Pass ]
 
@@ -925,3 +926,4 @@ crbug.com/353087 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/shad
 crbug.com/353087 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/the-content-html-element/test-004.html [ Failure ]
 crbug.com/353087 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/the-shadow-html-element/test-003.html [ Failure ]
 crbug.com/353087 w3c/web-platform-tests/shadow-dom/styles/test-012.html [ Failure ]
+crbug.com/353727 virtual/threaded/animations/keyframe-timing-functions-multiple-properties.html [ Pass Timeout ]
