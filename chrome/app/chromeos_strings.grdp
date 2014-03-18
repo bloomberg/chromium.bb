@@ -4978,10 +4978,7 @@ All users must sign out to continue.
     Action required to connect
   </message>
   <message name="IDS_PORTAL_DETECTION_NOTIFICATION_MESSAGE" desc="Body of the system notification that current network is behind captive portal">
-    To use <ph name="NETWORK_ID">$1<ex>Public Wifi</ex></ph> you need to visit the network's login page.
-  </message>
-  <message name="IDS_PORTAL_DETECTION_NOTIFICATION_SIGNIN_BUTTON" desc="Label on the button on the system notification that current network is behind captive portal. When clicked, captive portal login page is opened.">
-    Go to login page
+    To use <ph name="NETWORK_ID">$1<ex>Public Wifi</ex></ph> you need to visit the network's login page. Click to go to login page.
   </message>
 
   <!-- Locale Change Notification-->

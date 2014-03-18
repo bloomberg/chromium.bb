@@ -55,8 +55,7 @@ class NetworkPortalNotificationControllerDelegate
   virtual void Display() OVERRIDE {}
   virtual void Error() OVERRIDE {}
   virtual void Close(bool /* by_user */) OVERRIDE {}
-  virtual void Click() OVERRIDE {}
-  virtual void ButtonClick(int button_index) OVERRIDE;
+  virtual void Click() OVERRIDE;
 
  private:
   virtual ~NetworkPortalNotificationControllerDelegate() {}
@@ -64,10 +63,7 @@ class NetworkPortalNotificationControllerDelegate
   DISALLOW_COPY_AND_ASSIGN(NetworkPortalNotificationControllerDelegate);
 };
 
-void NetworkPortalNotificationControllerDelegate::ButtonClick(
-    int button_index) {
-  if (button_index)
-    return;
+void NetworkPortalNotificationControllerDelegate::Click() {
   Profile* profile = ProfileManager::GetActiveUserProfile();
   if (!profile)
     return;
@@ -113,12 +109,6 @@ void NetworkPortalNotificationController::OnPortalDetectionCompleted(
       message_center::NotifierId::SYSTEM_COMPONENT,
       ash::system_notifier::kNotifierNetworkPortalDetector);
 
-  message_center::ButtonInfo signin_button(l10n_util::GetStringUTF16(
-      IDS_PORTAL_DETECTION_NOTIFICATION_SIGNIN_BUTTON));
-  signin_button.icon = bundle.GetImageNamed(IDR_PORTAL_DETECTION_GLOBE);
-  message_center::RichNotificationData data;
-  data.buttons.push_back(signin_button);
-
   scoped_ptr<Notification> notification(new Notification(
       message_center::NOTIFICATION_TYPE_SIMPLE,
       kNotificationId,
@@ -128,7 +118,7 @@ void NetworkPortalNotificationController::OnPortalDetectionCompleted(
       icon,
       base::string16() /* display_source */,
       notifier_id,
-      data,
+      message_center::RichNotificationData(),
       new NetworkPortalNotificationControllerDelegate()));
   notification->SetSystemPriority();
 
