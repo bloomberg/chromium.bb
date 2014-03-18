@@ -253,17 +253,16 @@ PassOwnPtr<ScaledImageFragment> ImageFrameGenerator::decode(size_t index, ImageD
             return nullptr;
     }
 
-    // An external memory allocator is used if this variable is true.
-    bool useExternalAllocator = false;
+    // This variable is set to true if we can skip a memcpy of the decoded bitmap.
+    bool canSkipBitmapCopy = false;
 
     if (!m_isMultiFrame && newDecoder && allDataReceived) {
-        // We are supporting two decoding paths in this code. Use the
-        // external memory allocator in the Skia discardable path to
-        // save one memory copy.
-        if (m_externalAllocator) {
+        // If we're using an external memory allocator that means we're decoding
+        // directly into the output memory and we can save one memcpy.
+        canSkipBitmapCopy = true;
+        if (m_externalAllocator)
             (*decoder)->setMemoryAllocator(m_externalAllocator.get());
-            useExternalAllocator = true;
-        } else
+        else
             (*decoder)->setMemoryAllocator(m_discardableAllocator.get());
     }
     (*decoder)->setData(data, allDataReceived);
@@ -302,7 +301,7 @@ PassOwnPtr<ScaledImageFragment> ImageFrameGenerator::decode(size_t index, ImageD
 
     // We early out and do not copy the memory if decoder writes directly to
     // the memory provided by Skia and the decode was complete.
-    if (useExternalAllocator && isCacheComplete)
+    if (canSkipBitmapCopy && isCacheComplete)
         return ScaledImageFragment::createComplete(m_fullSize, index, fullSizeBitmap);
 
     // If the image is progressively decoded we need to return a copy.
