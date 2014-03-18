@@ -6,6 +6,12 @@
 
 #include "nacl_x86_defs.h"
 
+#if defined(__native_client_nonsfi__)
+# define NACLJMP(reg) jmp *reg
+#else
+# define NACLJMP(reg) nacljmp reg
+#endif
+
 /*
  * jump_buf is organized as follows
  * ebx, ebp, esp, esi, edi, pc
@@ -30,7 +36,7 @@ setjmp:
     movl    %edx, 20(%ecx)    /* save pc */
 
     xor     %eax, %eax        /* return zero */
-    nacljmp %edx
+    NACLJMP(%edx)
 
 
     .text
@@ -53,6 +59,6 @@ longjmp:
     movl    12(%ecx), %esi    /* restore esi */
     movl    16(%ecx), %edi    /* restore edi */
     movl    20(%ecx), %ecx
-    nacljmp %ecx
+    NACLJMP(%ecx)
     .p2align NACL_BLOCK_SHIFT
 

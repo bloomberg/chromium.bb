@@ -450,6 +450,9 @@ def AeabiReadTpCmd(arch):
 def NativeLibs(host, arch):
   def H(component_name):
     return Mangle(component_name, host)
+  setjmp_arch = arch
+  if setjmp_arch == 'x86-32-nonsfi':
+    setjmp_arch = 'x86-32'
   libs = {
       Mangle('libs_support_native', arch): {
           'type': 'build',
@@ -475,8 +478,9 @@ def NativeLibs(host, arch):
                                    output_dir='%(output)s'),
               # libcrt_platform.a
               BuildTargetNativeCmd('pnacl_irt.c', 'pnacl_irt.o', arch),
-              BuildTargetNativeCmd('setjmp_' + arch.replace('-', '_') + '.S',
-                                   'setjmp.o', arch),
+              BuildTargetNativeCmd(
+                  'setjmp_%s.S' % setjmp_arch.replace('-', '_'),
+                  'setjmp.o', arch),
               BuildTargetNativeCmd('string.c', 'string.o', arch,
                                    ['-std=c99'],
                                    source_dir='%(newlib_subset)s'),
@@ -526,6 +530,9 @@ def NativeLibs(host, arch):
               command.Copy('libgcc.a', os.path.join('%(output)s', 'libgcc.a')),
           ],
       },
+  }
+  if arch != 'x86-32-nonsfi':
+    libs.update({
       Mangle('libgcc_eh', arch): {
           'type': 'build',
           'output_subdir': 'lib-' + arch,
@@ -552,7 +559,7 @@ def NativeLibs(host, arch):
                                'unwind-dw2.o', 'unwind-dw2-fde-glibc.o']),
           ],
       },
-  }
+    })
   return libs
 
 def NativeLibsUnsandboxed(arch):

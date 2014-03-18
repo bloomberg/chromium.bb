@@ -77,10 +77,9 @@ CROSS_MINGW_LIBPATH = '/usr/lib/gcc/i686-w64-mingw32/4.6'
 MINGW_PATH = os.path.join(NACL_DIR, 'mingw32')
 MINGW_VERSION = 'i686-w64-mingw32-4.8.1'
 
-ALL_ARCHES = ('x86-32', 'x86-64', 'arm', 'mips32')
-BITCODE_BIASES = tuple(bias for bias in ('portable', ) + ALL_ARCHES
-                       # MIPS32 doesn't use biased bitcode.
-                       if bias != 'mips32')
+ALL_ARCHES = ('x86-32', 'x86-64', 'arm', 'mips32', 'x86-32-nonsfi')
+# MIPS32 doesn't use biased bitcode, and nonsfi targets don't need it.
+BITCODE_BIASES = tuple(bias for bias in ('portable', 'x86-32', 'x86-64', 'arm'))
 
 MAKE_DESTDIR_CMD = ['make', 'DESTDIR=%(abs_output)s']
 

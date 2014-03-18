@@ -452,7 +452,7 @@ libs() {
     newlib ${arch}
   done
   libs-support
-  for arch in arm x86-32 x86-64 mips32; do
+  for arch in arm x86-32 x86-64 mips32 x86-32-nonsfi; do
     dummy-irt-shim ${arch}
   done
   compiler-rt-all
@@ -1172,6 +1172,7 @@ compiler-rt-all() {
   compiler-rt mips32
   compiler-rt x86-32
   compiler-rt x86-64
+  compiler-rt x86-32-nonsfi
 }
 
 
@@ -2380,7 +2381,7 @@ libs-support() {
   libs-support-bitcode x86-64
 
   local arch
-  for arch in arm x86-32 x86-64 mips32; do
+  for arch in arm x86-32 x86-64 mips32 x86-32-nonsfi; do
     libs-support-native ${arch}
   done
 
@@ -2473,7 +2474,13 @@ libs-support-native() {
   rm -rf "${tmpdir}"
   mkdir -p "${tmpdir}"
   ${cc_cmd} -c pnacl_irt.c -o "${tmpdir}"/pnacl_irt.o
-  ${cc_cmd} -c setjmp_${arch/-/_}.S -o "${tmpdir}"/setjmp.o
+  ${cc_cmd} -c relocate.c -o "${tmpdir}"/relocate.o
+
+  local setjmp_arch="$arch"
+  if [ "$setjmp_arch" = "x86-32-nonsfi" ]; then
+    setjmp_arch=x86-32
+  fi
+  ${cc_cmd} -c setjmp_${setjmp_arch/-/_}.S -o "${tmpdir}"/setjmp.o
 
   # Some of the support code lives in third_party/ because it's based on code
   # from other open-source projects.

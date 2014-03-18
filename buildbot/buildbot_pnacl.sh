@@ -566,6 +566,23 @@ mode-buildbot-tc-x8664-linux() {
   HOST_ARCH=x86_64 tc-tests-all ${is_try}
 }
 
+test-nonsfi-mode() {
+  echo "@@@BUILD_STEP test translating for nonsfi mode@@@"
+  # Test that translation produces an executable without giving an
+  # error.  We can't run the resulting Non-SFI Mode nexe yet because
+  # there is no standalone loader for such nexes that is available in
+  # the NaCl build.
+  # TODO(mseaborn): Move some of Chromium's
+  # components/nacl/loader/nonsfi/ to the NaCl repo so that we can
+  # test this here.
+  local out_dir=scons-out/nacl_irt_test-x86-32-pnacl-pexe-clang
+  local pexe_path=${out_dir}/obj/tests/hello_world/hello_world.final.pexe
+  ./scons -j8 bitcode=1 --mode=nacl,nacl_irt_test ${pexe_path}
+  toolchain/pnacl_linux_x86/bin/pnacl-translate -arch x86-32-nonsfi \
+      ${pexe_path} -o /tmp/hellow.nexe
+  rm /tmp/hellow.nexe
+}
+
 mode-buildbot-tc-x8632-linux() {
   setup-goma
   local is_try=$1
@@ -588,6 +605,8 @@ mode-buildbot-tc-x8632-linux() {
     run_dup_test_irt \
     run_cond_timedwait_test_irt \
     run_syscall_test_irt
+
+  test-nonsfi-mode
 }
 
 mode-buildbot-tc-x8632-mac() {

@@ -24,7 +24,7 @@ import re
 import subprocess
 
 EXTRA_ENV = {
-  'PIC'           : '0',
+  'PIC': '${ARCH == X8632_NONSFI ? 1 : 0}',
 
   # Determine if we should build nexes compatible with the IRT
   'USE_IRT' : '1',
@@ -96,6 +96,7 @@ EXTRA_ENV = {
   'TRIPLE_X8664': 'x86_64-none-nacl-gnu',
   'TRIPLE_MIPS32': 'mipsel-none-nacl-gnu',
   'TRIPLE_X8632_LINUX': 'i686-linux-gnu',
+  'TRIPLE_X8632_NONSFI': 'i686-linux-gnu',
 
   # BE CAREFUL: anything added here can introduce skew between
   # the pnacl-translate commandline tool and the in-browser translator.
@@ -122,6 +123,9 @@ EXTRA_ENV = {
   # thread pointer because that's not compatible with glibc's use of
   # %gs.
   'LLC_FLAGS_X8632_LINUX' : '-mtls-use-call',
+  # Similarly, Non-SFI Mode currently offers no optimized path for
+  # reading the thread pointer.
+  'LLC_FLAGS_X8632_NONSFI' : '-mtls-use-call',
 
   # LLC flags which set the target and output type.
   'LLC_FLAGS_TARGET' : '-mtriple=${TRIPLE} -filetype=${outfiletype}',
@@ -148,6 +152,7 @@ EXTRA_ENV = {
   'LLC_FLAGS_FAST_ARM':   '-O0 ',
   'LLC_FLAGS_FAST_MIPS32': '-fast-isel',
   'LLC_FLAGS_FAST_X8632_LINUX': '-O0',
+  'LLC_FLAGS_FAST_X8632_NONSFI': '-O0',
 
   'LLC_FLAGS': '${LLC_FLAGS_TARGET} ${LLC_FLAGS_COMMON} ${LLC_FLAGS_%ARCH%} ' +
                '${LLC_FLAGS_EXTRA}',
@@ -164,6 +169,7 @@ EXTRA_ENV = {
   'LLC_MCPU_X8664'  : 'core2',
   'LLC_MCPU_MIPS32' : 'mips32r2',
   'LLC_MCPU_X8632_LINUX' : '${LLC_MCPU_X8632}',
+  'LLC_MCPU_X8632_NONSFI' : '${LLC_MCPU_X8632}',
 
   # Note: this is only used in the unsandboxed case
   'RUN_LLC'       : '${LLVM_PNACL_LLC} ${LLC_FLAGS} ${LLC_MCPU} '

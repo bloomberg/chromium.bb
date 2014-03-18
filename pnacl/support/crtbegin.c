@@ -26,6 +26,7 @@
 #include <stdint.h>
 
 #include "native_client/pnacl/support/pnacl_irt.h"
+#include "native_client/pnacl/support/relocate.h"
 
 
 void _pnacl_wrapper_start(uint32_t *info);
@@ -71,6 +72,10 @@ static void __do_eh_ctor(void) {
 
 /* This defines the entry point for a nexe produced by the PNaCl translator. */
 void __pnacl_start(uint32_t *info) {
+#if defined(__native_client_nonsfi__)
+  apply_relocations();
+#endif
+
   __pnacl_init_irt(info);
 
   /*

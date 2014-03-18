@@ -85,6 +85,21 @@ typedef struct {
 } Elf32_Shdr;
 
 typedef struct {
+  Elf32_Addr r_offset;
+  Elf32_Word r_info;
+} Elf32_Rel;
+
+#define ELF32_R_TYPE(val) ((val) & 0xff)
+
+typedef struct {
+  Elf32_Sword d_tag;
+  union {
+    Elf32_Word d_val;
+    Elf32_Addr d_ptr;
+  } d_un;
+} Elf32_Dyn;
+
+typedef struct {
   Elf32_Word n_namesz;
   Elf32_Word n_descsz;
   Elf32_Word n_type;
