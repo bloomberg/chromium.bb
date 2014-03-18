@@ -107,12 +107,12 @@ public:
     virtual void setFrontend(InspectorFrontend*) OVERRIDE;
     virtual void clearFrontend() OVERRIDE;
     virtual void discardAgent() OVERRIDE;
+    virtual void didCommitLoadForMainFrame() OVERRIDE;
     virtual void restore() OVERRIDE;
     virtual void flushPendingFrontendMessages() OVERRIDE;
     virtual void enable(ErrorString*, PassRefPtr<EnableCallback>) OVERRIDE;
     virtual void disable(ErrorString*) OVERRIDE;
     void reset();
-    void didCommitLoad(LocalFrame*, DocumentLoader*);
     void mediaQueryResultChanged();
     void willMutateRules();
     void didMutateRules(CSSStyleSheet*);
@@ -121,7 +121,6 @@ public:
 
     void activeStyleSheetsUpdated(Document*);
     void documentDetached(Document*);
-    void frameDetachedFromParent(LocalFrame*);
 
     virtual void getComputedStyleForNode(ErrorString*, int nodeId, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSComputedStyleProperty> >&) OVERRIDE;
     virtual void getPlatformFontsForNode(ErrorString*, int nodeId, String* cssFamilyName, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::PlatformFontUsage> >&) OVERRIDE;

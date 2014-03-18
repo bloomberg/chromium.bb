@@ -514,21 +514,9 @@ void InspectorCSSAgent::disable(ErrorString*)
     m_state->setBoolean(CSSAgentState::cssAgentEnabled, false);
 }
 
-void InspectorCSSAgent::didCommitLoad(LocalFrame* frame, DocumentLoader* loader)
+void InspectorCSSAgent::didCommitLoadForMainFrame()
 {
-    if (loader->frame() == frame->page()->mainFrame()) {
-        reset();
-        return;
-    }
-
-    Vector<Document*> toDispose;
-    for (DocumentStyleSheets::iterator it = m_documentToCSSStyleSheets.begin(); it != m_documentToCSSStyleSheets.end(); ++it) {
-        Document* document = it->key;
-        if (!document->frame() || document->frame() == frame)
-            toDispose.append(document);
-    }
-    for (Vector<Document*>::iterator it = toDispose.begin(); it != toDispose.end(); ++it)
-        documentDetached(*it);
+    reset();
 }
 
 void InspectorCSSAgent::mediaQueryResultChanged()
@@ -644,11 +632,6 @@ void InspectorCSSAgent::documentDetached(Document* document)
 {
     m_invalidatedDocuments.remove(document);
     setActiveStyleSheets(document, Vector<CSSStyleSheet*>(), ExistingFrontendRefresh);
-}
-
-void InspectorCSSAgent::frameDetachedFromParent(LocalFrame* frame)
-{
-    documentDetached(frame->document());
 }
 
 bool InspectorCSSAgent::forcePseudoState(Element* element, CSSSelector::PseudoType pseudoType)

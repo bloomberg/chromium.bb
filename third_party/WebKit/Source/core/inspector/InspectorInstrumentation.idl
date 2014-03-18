@@ -340,10 +340,10 @@ interface InspectorInstrumentation {
     [Page]
     void frameAttachedToParent([Keep] LocalFrame*);
 
-    [Canvas, Page, CSS]
+    [Canvas, Page]
     void frameDetachedFromParent([Keep] LocalFrame*);
 
-    [Console, Resource, CSS, DOM, Inspector, Canvas, Page, PageDebugger]
+    [Console, Resource, DOM, Inspector, Canvas, Page, PageDebugger]
     void didCommitLoad([Keep] LocalFrame*, DocumentLoader*);
 
     [DOM, Inline=FastReturn]
