@@ -121,6 +121,8 @@ void SampleCpuIdleData(
       for (int state_count = 0; ; ++state_count) {
         std::string idle_state_dir = base::StringPrintf(
             idle_state_dir_format.c_str(), cpu, state_count);
+        // This insures us from the unlikely case wherein the 'cpuidle_stats'
+        // kernel module is not loaded. This could happen on a VM.
         if (!base::DirectoryExists(base::FilePath(idle_state_dir)))
           break;
 
@@ -206,7 +208,14 @@ void SampleCpuFreqData(
           "%s%s", kCpuDataPathBase, kCpuFreqTimeInStatePathSuffixFormat);
       const std::string time_in_state_path = base::StringPrintf(
           time_in_state_path_format.c_str(), cpu);
-      DCHECK(base::PathExists(base::FilePath(time_in_state_path)));
+      if (!base::PathExists(base::FilePath(time_in_state_path))) {
+        // If the path to the 'time_in_state' for a single CPU is missing,
+        // then 'time_in_state' for all CPUs is missing. This could happen
+        // on a VM where the 'cpufreq_stats' kernel module is not loaded.
+        LOG(ERROR) << "CPU freq stats not available in sysfs.";
+        freq_samples->clear();
+        return;
+      }
 
       std::string time_in_state_string;
       // Note time as close to reading the file as possible. This is not
