@@ -8,35 +8,70 @@ using blink::WebString;
 
 namespace content {
 
-RequestExtraData::RequestExtraData(
-    blink::WebPageVisibilityState visibility_state,
-    const WebString& custom_user_agent,
-    bool was_after_preconnect_request,
-    int render_frame_id,
-    bool is_main_frame,
-    const GURL& frame_origin,
-    bool parent_is_main_frame,
-    int parent_render_frame_id,
-    bool allow_download,
-    PageTransition transition_type,
-    bool should_replace_current_entry,
-    int transferred_request_child_id,
-    int transferred_request_request_id,
-    int service_worker_provider_id)
-    : webkit_glue::WebURLRequestExtraDataImpl(custom_user_agent,
-                                              was_after_preconnect_request),
-      visibility_state_(visibility_state),
-      render_frame_id_(render_frame_id),
-      is_main_frame_(is_main_frame),
-      frame_origin_(frame_origin),
-      parent_is_main_frame_(parent_is_main_frame),
-      parent_render_frame_id_(parent_render_frame_id),
-      allow_download_(allow_download),
-      transition_type_(transition_type),
-      should_replace_current_entry_(should_replace_current_entry),
-      transferred_request_child_id_(transferred_request_child_id),
-      transferred_request_request_id_(transferred_request_request_id),
-      service_worker_provider_id_(service_worker_provider_id) {
+RequestExtraData::RequestExtraData() {
+}
+
+void RequestExtraData::set_visibility_state(
+    blink::WebPageVisibilityState visibility_state) {
+  visibility_state_ = visibility_state;
+}
+
+void RequestExtraData::set_render_frame_id(int render_frame_id) {
+  render_frame_id_ = render_frame_id;
+}
+
+void RequestExtraData::set_is_main_frame(bool is_main_frame) {
+  is_main_frame_ = is_main_frame;
+}
+
+void RequestExtraData::set_frame_origin(const GURL& frame_origin) {
+  frame_origin_ = frame_origin;
+}
+
+void RequestExtraData::set_parent_is_main_frame(bool parent_is_main_frame) {
+  parent_is_main_frame_ = parent_is_main_frame;
+}
+
+void RequestExtraData::set_parent_render_frame_id(int parent_render_frame_id) {
+  parent_render_frame_id_ = parent_render_frame_id;
+}
+
+void RequestExtraData::set_allow_download(bool allow_download) {
+  allow_download_ = allow_download;
+}
+
+void RequestExtraData::set_transition_type(PageTransition transition_type) {
+  transition_type_ = transition_type;
+}
+
+void RequestExtraData::set_should_replace_current_entry(
+    bool should_replace_current_entry) {
+  should_replace_current_entry_ = should_replace_current_entry;
+}
+
+void RequestExtraData::set_transferred_request_child_id(
+    int transferred_request_child_id) {
+  transferred_request_child_id_ = transferred_request_child_id;
+}
+
+void RequestExtraData::set_transferred_request_request_id(
+    int transferred_request_request_id) {
+  transferred_request_request_id_ = transferred_request_request_id;
+}
+
+void RequestExtraData::set_service_worker_provider_id(
+    int service_worker_provider_id) {
+  service_worker_provider_id_ = service_worker_provider_id;
+}
+
+void RequestExtraData::set_custom_user_agent(
+    const blink::WebString& custom_user_agent) {
+  custom_user_agent_ = custom_user_agent;
+}
+
+void RequestExtraData::set_was_after_preconnect_request(
+    bool was_after_preconnect_request) {
+  was_after_preconnect_request_ = was_after_preconnect_request;
 }
 
 RequestExtraData::~RequestExtraData() {

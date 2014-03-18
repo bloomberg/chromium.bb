@@ -14,6 +14,7 @@
 #include "base/time/time.h"
 #include "content/child/blink_platform_impl.h"
 #include "content/child/ftp_directory_listing_response_delegate.h"
+#include "content/child/request_extra_data.h"
 #include "content/common/resource_request_body.h"
 #include "net/base/data_url.h"
 #include "net/base/load_flags.h"
@@ -34,7 +35,6 @@
 #include "third_party/WebKit/public/web/WebSecurityPolicy.h"
 #include "webkit/child/multipart_response_delegate.h"
 #include "webkit/child/resource_loader_bridge.h"
-#include "webkit/child/weburlrequest_extradata_impl.h"
 #include "webkit/child/weburlresponse_extradata_impl.h"
 
 using base::Time;

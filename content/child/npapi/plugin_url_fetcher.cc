@@ -107,22 +107,22 @@ PluginURLFetcher::PluginURLFetcher(PluginStreamUrl* plugin_stream,
   request_info.request_type = ResourceType::OBJECT;
   request_info.routing_id = render_view_id;
 
-  RequestExtraData extra_data(blink::WebPageVisibilityStateVisible,
-                              base::string16(),
-                              false,
-                              render_frame_id,
-                              false,
-                              GURL(),
-                              false,
-                              -1,
-                              true,
-                              PAGE_TRANSITION_LINK,
-                              false,
-                              -1,
-                              -1,
-                              kInvalidServiceWorkerProviderId);
-
-  request_info.extra_data = &extra_data;
+  RequestExtraData* extra_data = new RequestExtraData();
+  extra_data->set_visibility_state(blink::WebPageVisibilityStateVisible);
+  extra_data->set_custom_user_agent(base::string16());
+  extra_data->set_was_after_preconnect_request(false);
+  extra_data->set_render_frame_id(render_frame_id);
+  extra_data->set_is_main_frame(false);
+  extra_data->set_frame_origin(GURL());
+  extra_data->set_parent_is_main_frame(false);
+  extra_data->set_parent_render_frame_id(-1);
+  extra_data->set_allow_download(true);
+  extra_data->set_transition_type(PAGE_TRANSITION_LINK);
+  extra_data->set_should_replace_current_entry(false);
+  extra_data->set_transferred_request_child_id(-1);
+  extra_data->set_transferred_request_request_id(-1);
+  extra_data->set_service_worker_provider_id(kInvalidServiceWorkerProviderId);
+  request_info.extra_data = extra_data;
 
   std::vector<char> body;
   if (method == "POST") {

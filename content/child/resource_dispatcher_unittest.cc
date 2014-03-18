@@ -173,13 +173,22 @@ class ResourceDispatcherTest : public testing::Test, public IPC::Sender {
     request_info.request_type = ResourceType::SUB_RESOURCE;
     request_info.appcache_host_id = appcache::kNoHostId;
     request_info.routing_id = 0;
-    RequestExtraData extra_data(blink::WebPageVisibilityStateVisible,
-                                blink::WebString(),
-                                false, MSG_ROUTING_NONE, true, GURL(),
-                                false, -1, true,
-                                PAGE_TRANSITION_LINK, false, -1, -1,
-                                kInvalidServiceWorkerProviderId);
-    request_info.extra_data = &extra_data;
+    RequestExtraData* extra_data = new RequestExtraData();
+    extra_data->set_visibility_state(blink::WebPageVisibilityStateVisible);
+    extra_data->set_custom_user_agent(blink::WebString());
+    extra_data->set_was_after_preconnect_request(false);
+    extra_data->set_render_frame_id(MSG_ROUTING_NONE);
+    extra_data->set_is_main_frame(true);
+    extra_data->set_frame_origin(GURL());
+    extra_data->set_parent_is_main_frame(false);
+    extra_data->set_parent_render_frame_id(-1);
+    extra_data->set_allow_download(true);
+    extra_data->set_transition_type(PAGE_TRANSITION_LINK);
+    extra_data->set_should_replace_current_entry(false);
+    extra_data->set_transferred_request_child_id(-1);
+    extra_data->set_transferred_request_request_id(-1);
+    extra_data->set_service_worker_provider_id(kInvalidServiceWorkerProviderId);
+    request_info.extra_data = extra_data;
 
     return dispatcher_->CreateBridge(request_info);
   }
