@@ -17,6 +17,13 @@
 
 namespace content {
 
+// Simulates scrolling given a sequence of scroll distances as a continuous
+// gestures (i.e. when synthesizing touch events, the touch pointer is not
+// lifted when changing scroll direction).
+// If no distance is provided or the first one is 0, no touch events are
+// generated.
+// When synthesizing touch events, the first distance is extended to compensate
+// for the touch slop.
 class CONTENT_EXPORT SyntheticSmoothScrollGesture : public SyntheticGesture {
  public:
   explicit SyntheticSmoothScrollGesture(
@@ -55,21 +62,26 @@ class CONTENT_EXPORT SyntheticSmoothScrollGesture : public SyntheticGesture {
   void ReleaseTouchPoint(SyntheticGestureTarget* target,
                          const base::TimeTicks& timestamp);
 
-  void AddTouchSlopToDistance(SyntheticGestureTarget* target);
+  void AddTouchSlopToFirstDistance(SyntheticGestureTarget* target);
   gfx::Vector2dF GetPositionDeltaAtTime(const base::TimeTicks& timestamp)
       const;
-  gfx::Vector2dF ProjectLengthOntoScrollDirection(float delta_length) const;
-  void ComputeAndSetStopScrollingTime();
+  void ComputeNextScrollSegment();
   base::TimeTicks ClampTimestamp(const base::TimeTicks& timestamp) const;
-  bool HasScrolledEntireDistance(const base::TimeTicks& timestamp) const;
+  bool FinishedCurrentScrollSegment(const base::TimeTicks& timestamp) const;
+  bool IsLastScrollSegment() const;
+  bool ScrollIsNoOp() const;
 
   SyntheticSmoothScrollGestureParams params_;
-  gfx::Vector2d total_delta_discrete_;
+  // Used for mouse input.
+  gfx::Vector2d current_scroll_segment_total_delta_discrete_;
+  // Used for touch input.
+  gfx::Point current_scroll_segment_start_position_;
   SyntheticWebTouchEvent touch_event_;
   SyntheticGestureParams::GestureSourceType gesture_source_type_;
   GestureState state_;
-  base::TimeTicks start_time_;
-  base::TimeTicks stop_scrolling_time_;
+  int current_scroll_segment_;
+  base::TimeTicks current_scroll_segment_start_time_;
+  base::TimeTicks current_scroll_segment_stop_time_;
 
   DISALLOW_COPY_AND_ASSIGN(SyntheticSmoothScrollGesture);
 };

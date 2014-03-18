@@ -22,6 +22,11 @@ gfx::Vector2d CeilFromZero(const gfx::Vector2dF& vector) {
   return gfx::Vector2d(x, y);
 }
 
+gfx::Vector2dF ProjectScalarOntoVector(
+    float scalar, const gfx::Vector2d& vector) {
+  return gfx::ScaleVector2d(vector, scalar / vector.Length());
+}
+
 }  // namespace
 
 SyntheticSmoothScrollGesture::SyntheticSmoothScrollGesture(
@@ -43,7 +48,8 @@ SyntheticGesture::Result SyntheticSmoothScrollGesture::ForwardInputEvents(
       return SyntheticGesture::GESTURE_SOURCE_TYPE_NOT_SUPPORTED_BY_PLATFORM;
 
     state_ = STARTED;
-    start_time_ = timestamp;
+    current_scroll_segment_ = -1;
+    current_scroll_segment_stop_time_ = timestamp;
   }
 
   DCHECK_NE(gesture_source_type_, SyntheticGestureParams::DEFAULT_INPUT);
@@ -63,13 +69,13 @@ void SyntheticSmoothScrollGesture::ForwardTouchInputEvents(
   base::TimeTicks event_timestamp = timestamp;
   switch (state_) {
     case STARTED:
-      // Check for an early finish.
-      if (params_.distance.IsZero()) {
+      if (ScrollIsNoOp()) {
         state_ = DONE;
         break;
       }
-      AddTouchSlopToDistance(target);
-      ComputeAndSetStopScrollingTime();
+      AddTouchSlopToFirstDistance(target);
+      ComputeNextScrollSegment();
+      current_scroll_segment_start_position_ = params_.anchor;
       PressTouchPoint(target, event_timestamp);
       state_ = MOVING;
       break;
@@ -78,8 +84,14 @@ void SyntheticSmoothScrollGesture::ForwardTouchInputEvents(
       gfx::Vector2dF delta = GetPositionDeltaAtTime(event_timestamp);
       MoveTouchPoint(target, delta, event_timestamp);
 
-      if (HasScrolledEntireDistance(event_timestamp)) {
-        if (params_.prevent_fling) {
+      if (FinishedCurrentScrollSegment(event_timestamp)) {
+        if (!IsLastScrollSegment()) {
+          current_scroll_segment_start_position_ +=
+              params_.distances[current_scroll_segment_];
+          ComputeNextScrollSegment();
+          // Start the next scroll immediately.
+          ForwardTouchInputEvents(timestamp, target);
+        } else if (params_.prevent_fling) {
           state_ = STOPPING;
         } else {
           ReleaseTouchPoint(target, event_timestamp);
@@ -88,10 +100,10 @@ void SyntheticSmoothScrollGesture::ForwardTouchInputEvents(
       }
     } break;
     case STOPPING:
-      if (timestamp - stop_scrolling_time_ >=
+      if (timestamp - current_scroll_segment_stop_time_ >=
           target->PointerAssumedStoppedTime()) {
-        event_timestamp =
-            stop_scrolling_time_ + target->PointerAssumedStoppedTime();
+        event_timestamp = current_scroll_segment_stop_time_ +
+                          target->PointerAssumedStoppedTime();
         // Send one last move event, but don't change the location. Without this
         // we'd still sometimes cause a fling on Android.
         ForwardTouchEvent(target, event_timestamp);
@@ -112,12 +124,11 @@ void SyntheticSmoothScrollGesture::ForwardMouseInputEvents(
     const base::TimeTicks& timestamp, SyntheticGestureTarget* target) {
   switch (state_) {
     case STARTED:
-      // Check for an early finish.
-      if (params_.distance.IsZero()) {
+      if (ScrollIsNoOp()) {
         state_ = DONE;
         break;
       }
-      ComputeAndSetStopScrollingTime();
+      ComputeNextScrollSegment();
       state_ = MOVING;
       // Fall through to forward the first event.
     case MOVING: {
@@ -127,14 +138,23 @@ void SyntheticSmoothScrollGesture::ForwardMouseInputEvents(
       // internal scrolling state. This ensures that when the gesture has
       // finished we've scrolled exactly the specified distance.
       base::TimeTicks event_timestamp = ClampTimestamp(timestamp);
-      gfx::Vector2dF total_delta = GetPositionDeltaAtTime(event_timestamp);
+      gfx::Vector2dF current_scroll_segment_total_delta =
+          GetPositionDeltaAtTime(event_timestamp);
       gfx::Vector2d delta_discrete =
-          FloorTowardZero(total_delta - total_delta_discrete_);
+          FloorTowardZero(current_scroll_segment_total_delta -
+                          current_scroll_segment_total_delta_discrete_);
       ForwardMouseWheelEvent(target, delta_discrete, event_timestamp);
-      total_delta_discrete_ += delta_discrete;
+      current_scroll_segment_total_delta_discrete_ += delta_discrete;
 
-      if (HasScrolledEntireDistance(event_timestamp))
-        state_ = DONE;
+      if (FinishedCurrentScrollSegment(event_timestamp)) {
+        if (!IsLastScrollSegment()) {
+          current_scroll_segment_total_delta_discrete_ = gfx::Vector2d();
+          ComputeNextScrollSegment();
+          ForwardMouseInputEvents(timestamp, target);
+        } else {
+          state_ = DONE;
+        }
+      }
     } break;
     case SETUP:
       NOTREACHED()
@@ -172,6 +192,7 @@ void SyntheticSmoothScrollGesture::ForwardMouseWheelEvent(
 
 void SyntheticSmoothScrollGesture::PressTouchPoint(
     SyntheticGestureTarget* target, const base::TimeTicks& timestamp) {
+  DCHECK_EQ(current_scroll_segment_, 0);
   touch_event_.PressPoint(params_.anchor.x(), params_.anchor.y());
   ForwardTouchEvent(target, timestamp);
 }
@@ -180,63 +201,78 @@ void SyntheticSmoothScrollGesture::MoveTouchPoint(
     SyntheticGestureTarget* target,
     const gfx::Vector2dF& delta,
     const base::TimeTicks& timestamp) {
-  gfx::PointF touch_position = params_.anchor + delta;
+  DCHECK_GE(current_scroll_segment_, 0);
+  DCHECK_LT(current_scroll_segment_,
+            static_cast<int>(params_.distances.size()));
+  gfx::PointF touch_position = current_scroll_segment_start_position_ + delta;
   touch_event_.MovePoint(0, touch_position.x(), touch_position.y());
   ForwardTouchEvent(target, timestamp);
 }
 
 void SyntheticSmoothScrollGesture::ReleaseTouchPoint(
     SyntheticGestureTarget* target, const base::TimeTicks& timestamp) {
+  DCHECK_EQ(current_scroll_segment_,
+            static_cast<int>(params_.distances.size()) - 1);
   touch_event_.ReleasePoint(0);
   ForwardTouchEvent(target, timestamp);
 }
 
-void SyntheticSmoothScrollGesture::AddTouchSlopToDistance(
+void SyntheticSmoothScrollGesture::AddTouchSlopToFirstDistance(
     SyntheticGestureTarget* target) {
-  // Android uses euclidean distance to compute if a touch pointer has moved
-  // beyond the slop, while Aura uses Manhattan distance. We're using Euclidean
-  // distance and round up to the nearest integer.
-  // For vertical and horizontal scrolls (the common case), both methods produce
-  // the same result.
-  gfx::Vector2dF touch_slop_delta =
-      ProjectLengthOntoScrollDirection(target->GetTouchSlopInDips());
-  params_.distance += CeilFromZero(touch_slop_delta);
+  DCHECK_GE(params_.distances.size(), 1ul);
+  gfx::Vector2d& first_scroll_distance = params_.distances[0];
+  DCHECK_GT(first_scroll_distance.Length(), 0);
+  first_scroll_distance += CeilFromZero(ProjectScalarOntoVector(
+      target->GetTouchSlopInDips(), first_scroll_distance));
 }
 
 gfx::Vector2dF SyntheticSmoothScrollGesture::GetPositionDeltaAtTime(
     const base::TimeTicks& timestamp) const {
   // Make sure the final delta is correct. Using the computation below can lead
   // to issues with floating point precision.
-  if (HasScrolledEntireDistance(timestamp))
-    return -params_.distance;
+  if (FinishedCurrentScrollSegment(timestamp))
+    return params_.distances[current_scroll_segment_];
 
   float delta_length =
-      params_.speed_in_pixels_s * (timestamp - start_time_).InSecondsF();
-  return -ProjectLengthOntoScrollDirection(delta_length);
+      params_.speed_in_pixels_s *
+      (timestamp - current_scroll_segment_start_time_).InSecondsF();
+  return ProjectScalarOntoVector(delta_length,
+                                 params_.distances[current_scroll_segment_]);
 }
 
-gfx::Vector2dF SyntheticSmoothScrollGesture::ProjectLengthOntoScrollDirection(
-    float delta_length) const {
-  const float kTotalLength = params_.distance.Length();
-  return ScaleVector2d(params_.distance, delta_length / kTotalLength);
-}
-
-void SyntheticSmoothScrollGesture::ComputeAndSetStopScrollingTime() {
+void SyntheticSmoothScrollGesture::ComputeNextScrollSegment() {
+  current_scroll_segment_++;
+  DCHECK_LT(current_scroll_segment_,
+            static_cast<int>(params_.distances.size()));
   int64 total_duration_in_us = static_cast<int64>(
-      1e6 * (params_.distance.Length() / params_.speed_in_pixels_s));
+      1e6 * (params_.distances[current_scroll_segment_].Length() /
+             params_.speed_in_pixels_s));
   DCHECK_GT(total_duration_in_us, 0);
-  stop_scrolling_time_ =
-      start_time_ + base::TimeDelta::FromMicroseconds(total_duration_in_us);
+  current_scroll_segment_start_time_ = current_scroll_segment_stop_time_;
+  current_scroll_segment_stop_time_ =
+      current_scroll_segment_start_time_ +
+      base::TimeDelta::FromMicroseconds(total_duration_in_us);
 }
 
 base::TimeTicks SyntheticSmoothScrollGesture::ClampTimestamp(
     const base::TimeTicks& timestamp) const {
-  return std::min(timestamp, stop_scrolling_time_);
+  return std::min(timestamp, current_scroll_segment_stop_time_);
 }
 
-bool SyntheticSmoothScrollGesture::HasScrolledEntireDistance(
+bool SyntheticSmoothScrollGesture::FinishedCurrentScrollSegment(
     const base::TimeTicks& timestamp) const {
-  return timestamp >= stop_scrolling_time_;
+  return timestamp >= current_scroll_segment_stop_time_;
+}
+
+bool SyntheticSmoothScrollGesture::IsLastScrollSegment() const {
+  DCHECK_LT(current_scroll_segment_,
+            static_cast<int>(params_.distances.size()));
+  return current_scroll_segment_ ==
+         static_cast<int>(params_.distances.size()) - 1;
+}
+
+bool SyntheticSmoothScrollGesture::ScrollIsNoOp() const {
+  return params_.distances.size() == 0 || params_.distances[0].IsZero();
 }
 
 }  // namespace content

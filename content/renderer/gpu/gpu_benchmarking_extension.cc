@@ -269,6 +269,22 @@ class GpuBenchmarkingWrapper : public v8::Extension {
           "                           direction, speed_in_pixels_s, false,"
           "                           opt_start_x, opt_start_y);"
           "};"
+          "chrome.gpuBenchmarking.scrollBounce = "
+          "    function(direction, distance, overscroll, opt_repeat_count,"
+          "             opt_callback, opt_start_x, opt_start_y,"
+          "             opt_speed_in_pixels_s) {"
+          "  direction = direction || 'down';"
+          "  distance = distance || 0;"
+          "  overscroll = overscroll || 0;"
+          "  repeat_count = opt_repeat_count || 1;"
+          "  callback = opt_callback || function() { };"
+          "  speed_in_pixels_s = opt_speed_in_pixels_s || 800;"
+          "  native function BeginScrollBounce();"
+          "  return BeginScrollBounce(direction, distance, overscroll,"
+          "                           repeat_count, callback,"
+          "                           speed_in_pixels_s,"
+          "                           opt_start_x, opt_start_y);"
+          "};"
           "chrome.gpuBenchmarking.pinchBy = "
           "    function(zoom_in, pixels_to_cover, anchor_x, anchor_y,"
           "             opt_callback, opt_relative_pointer_speed_in_pixels_s) {"
@@ -326,6 +342,8 @@ class GpuBenchmarkingWrapper : public v8::Extension {
     if (name->Equals(
             v8::String::NewFromUtf8(isolate, "SmoothScrollSendsTouch")))
       return v8::FunctionTemplate::New(isolate, SmoothScrollSendsTouch);
+    if (name->Equals(v8::String::NewFromUtf8(isolate, "BeginScrollBounce")))
+      return v8::FunctionTemplate::New(isolate, BeginScrollBounce);
     if (name->Equals(v8::String::NewFromUtf8(isolate, "BeginPinch")))
       return v8::FunctionTemplate::New(isolate, BeginPinch);
     if (name->Equals(v8::String::NewFromUtf8(isolate, "BeginTap")))
@@ -463,37 +481,134 @@ class GpuBenchmarkingWrapper : public v8::Extension {
         static_cast<SyntheticGestureParams::GestureSourceType>(
             gesture_source_type);
 
-    int distance = args[0]->IntegerValue() * page_scale_factor;
+    gesture_params->speed_in_pixels_s = args[4]->IntegerValue();
+    gesture_params->prevent_fling = args[5]->BooleanValue();
+
+    // Account for the 2 optional arguments, start_x and start_y.
+    gfx::Point anchor;
+    if (args[6]->IsUndefined() || args[7]->IsUndefined()) {
+      blink::WebRect rect = context.render_view_impl()->windowRect();
+      anchor.SetPoint(rect.width / 2, rect.height / 2);
+    } else if (args[6]->IsNumber() && args[7]->IsNumber()) {
+      anchor.SetPoint(args[6]->IntegerValue() * page_scale_factor,
+                      args[7]->IntegerValue() * page_scale_factor);
+    } else {
+      args.GetReturnValue().Set(false);
+      return;
+    }
+    gesture_params->anchor = anchor;
+
+    int distance_length = args[0]->IntegerValue() * page_scale_factor;
+    gfx::Vector2d distance;
     v8::String::Utf8Value direction(args[3]);
     DCHECK(*direction);
     std::string direction_str(*direction);
     if (direction_str == "down")
-      gesture_params->distance.set_y(distance);
+      distance.set_y(-distance_length);
     else if (direction_str == "up")
-      gesture_params->distance.set_y(-distance);
+      distance.set_y(distance_length);
     else if (direction_str == "right")
-      gesture_params->distance.set_x(distance);
+      distance.set_x(-distance_length);
     else if (direction_str == "left")
-      gesture_params->distance.set_x(-distance);
+      distance.set_x(distance_length);
+    else {
+      args.GetReturnValue().Set(false);
+      return;
+    }
+    gesture_params->distances.push_back(distance);
+
+    // TODO(nduca): If the render_view_impl is destroyed while the gesture is in
+    // progress, we will leak the callback and context. This needs to be fixed,
+    // somehow.
+    context.render_view_impl()->QueueSyntheticGesture(
+        gesture_params.PassAs<SyntheticGestureParams>(),
+        base::Bind(&OnSyntheticGestureCompleted,
+                   callback_and_context));
+
+    args.GetReturnValue().Set(true);
+  }
+
+  static void BeginScrollBounce(
+      const v8::FunctionCallbackInfo<v8::Value>& args) {
+    GpuBenchmarkingContext context;
+    if (!context.Init(false))
+      return;
+
+    // The last two arguments can be undefined. We check their validity later.
+    int arglen = args.Length();
+    if (arglen < 8 ||
+        !args[0]->IsString() ||
+        !args[1]->IsNumber() ||
+        !args[2]->IsNumber() ||
+        !args[3]->IsNumber() ||
+        !args[4]->IsFunction() ||
+        !args[5]->IsNumber()) {
+      args.GetReturnValue().Set(false);
+      return;
+    }
+
+    v8::Local<v8::Function> callback_local =
+        v8::Local<v8::Function>::Cast(args[4]);
+
+    scoped_refptr<CallbackAndContext> callback_and_context =
+        new CallbackAndContext(args.GetIsolate(),
+                               callback_local,
+                               context.web_frame()->mainWorldScriptContext());
+
+    scoped_ptr<SyntheticSmoothScrollGestureParams> gesture_params(
+        new SyntheticSmoothScrollGestureParams);
+
+    // Convert coordinates from CSS pixels to density independent pixels (DIPs).
+    float page_scale_factor = context.web_view()->pageScaleFactor();
+
+    gesture_params->speed_in_pixels_s = args[5]->IntegerValue();
+
+    // Account for the 2 optional arguments, start_x and start_y.
+    gfx::Point start;
+    if (args[6]->IsUndefined() || args[7]->IsUndefined()) {
+      blink::WebRect rect = context.render_view_impl()->windowRect();
+      start.SetPoint(rect.width / 2, rect.height / 2);
+    } else if (args[6]->IsNumber() && args[7]->IsNumber()) {
+      start.SetPoint(args[6]->IntegerValue() * page_scale_factor,
+                     args[7]->IntegerValue() * page_scale_factor);
+    } else {
+      args.GetReturnValue().Set(false);
+      return;
+    }
+
+    int distance_length = args[1]->IntegerValue() * page_scale_factor;
+    int overscroll_length = args[2]->IntegerValue() * page_scale_factor;
+    gfx::Vector2d distance;
+    gfx::Vector2d overscroll;
+    v8::String::Utf8Value direction(args[0]);
+    DCHECK(*direction);
+    std::string direction_str(*direction);
+    if (direction_str == "down") {
+      distance.set_y(-distance_length);
+      overscroll.set_y(overscroll_length);
+    }
+    else if (direction_str == "up") {
+      distance.set_y(distance_length);
+      overscroll.set_y(-overscroll_length);
+    }
+    else if (direction_str == "right") {
+      distance.set_x(-distance_length);
+      overscroll.set_x(overscroll_length);
+    }
+    else if (direction_str == "left") {
+      distance.set_x(distance_length);
+      overscroll.set_x(-overscroll_length);
+    }
     else {
       args.GetReturnValue().Set(false);
       return;
     }
 
-    gesture_params->speed_in_pixels_s = args[4]->IntegerValue();
-    gesture_params->prevent_fling = args[5]->BooleanValue();
-
-    // Account for the 2 optional arguments, start_x and start_y.
-    if (args[6]->IsUndefined() || args[7]->IsUndefined()) {
-      blink::WebRect rect = context.render_view_impl()->windowRect();
-      gesture_params->anchor.SetPoint(rect.width / 2, rect.height / 2);
-    } else if (args[6]->IsNumber() && args[7]->IsNumber()) {
-      gesture_params->anchor.SetPoint(
-          args[6]->IntegerValue() * page_scale_factor,
-          args[7]->IntegerValue() * page_scale_factor);
-    } else {
-      args.GetReturnValue().Set(false);
-      return;
+    int repeat_count = args[3]->IntegerValue();
+    gesture_params->anchor = start;
+    for (int i = 0; i < repeat_count; i++) {
+      gesture_params->distances.push_back(distance);
+      gesture_params->distances.push_back(-distance + overscroll);
     }
 
     // TODO(nduca): If the render_view_impl is destroyed while the gesture is in

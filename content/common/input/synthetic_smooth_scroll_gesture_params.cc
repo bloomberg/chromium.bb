@@ -19,8 +19,8 @@ SyntheticSmoothScrollGestureParams::SyntheticSmoothScrollGestureParams()
 SyntheticSmoothScrollGestureParams::SyntheticSmoothScrollGestureParams(
       const SyntheticSmoothScrollGestureParams& other)
     : SyntheticGestureParams(other),
-      distance(other.distance),
       anchor(other.anchor),
+      distances(other.distances),
       prevent_fling(other.prevent_fling),
       speed_in_pixels_s(other.speed_in_pixels_s) {}
 

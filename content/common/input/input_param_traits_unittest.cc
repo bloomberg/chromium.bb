@@ -40,8 +40,10 @@ class InputParamTraitsTest : public testing::Test {
   static void Compare(const SyntheticSmoothScrollGestureParams* a,
                       const SyntheticSmoothScrollGestureParams* b) {
     EXPECT_EQ(a->gesture_source_type, b->gesture_source_type);
-    EXPECT_EQ(a->distance, b->distance);
     EXPECT_EQ(a->anchor, b->anchor);
+    EXPECT_EQ(a->distances.size(), b->distances.size());
+    for (size_t i = 0; i < a->distances.size(); i++)
+        EXPECT_EQ(a->distances[i], b->distances[i]);
     EXPECT_EQ(a->prevent_fling, b->prevent_fling);
     EXPECT_EQ(a->speed_in_pixels_s, b->speed_in_pixels_s);
   }
@@ -190,8 +192,9 @@ TEST_F(InputParamTraitsTest, SyntheticSmoothScrollGestureParams) {
   scoped_ptr<SyntheticSmoothScrollGestureParams> gesture_params(
       new SyntheticSmoothScrollGestureParams);
   gesture_params->gesture_source_type = SyntheticGestureParams::TOUCH_INPUT;
-  gesture_params->distance = gfx::Vector2d(123, -789);
   gesture_params->anchor.SetPoint(234, 345);
+  gesture_params->distances.push_back(gfx::Vector2d(123, -789));
+  gesture_params->distances.push_back(gfx::Vector2d(-78, 43));
   gesture_params->prevent_fling = false;
   gesture_params->speed_in_pixels_s = 456;
   ASSERT_EQ(SyntheticGestureParams::SMOOTH_SCROLL_GESTURE,

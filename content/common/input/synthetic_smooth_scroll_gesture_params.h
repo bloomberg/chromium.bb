@@ -5,6 +5,8 @@
 #ifndef CONTENT_COMMON_INPUT_SYNTHETIC_SMOOTH_SCROLL_GESTURE_PARAMS_H_
 #define CONTENT_COMMON_INPUT_SYNTHETIC_SMOOTH_SCROLL_GESTURE_PARAMS_H_
 
+#include <vector>
+
 #include "content/common/content_export.h"
 #include "content/common/input/synthetic_gesture_params.h"
 #include "ui/gfx/point.h"
@@ -22,9 +24,8 @@ struct CONTENT_EXPORT SyntheticSmoothScrollGestureParams
 
   virtual GestureType GetGestureType() const OVERRIDE;
 
-  // Scroll distance (i.e. positive Y to scroll down).
-  gfx::Vector2d distance;
   gfx::Point anchor;
+  std::vector<gfx::Vector2d> distances;  // Positive X/Y to scroll left/up.
   bool prevent_fling;  // Defaults to true.
   int speed_in_pixels_s;
 
