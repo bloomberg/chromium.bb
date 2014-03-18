@@ -584,6 +584,7 @@
               },
             },
           },
+          'msvs_large_pdb': 1,
         }],  # OS=="win"
         ['OS == "win" or toolkit_uses_gtk == 1', {
           'dependencies': [
