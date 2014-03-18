@@ -95,10 +95,9 @@ public:
 
     // MediaPlayer methods:
     virtual WebMediaPlayer* webMediaPlayer() const OVERRIDE;
-    virtual void load(WebMediaPlayer::LoadType, const WTF::String& url) OVERRIDE;
+    virtual void load(WebMediaPlayer::LoadType, const WTF::String& url, WebMediaPlayer::CORSMode) OVERRIDE;
     virtual void play() OVERRIDE;
     virtual void pause() OVERRIDE;
-    virtual void prepareToPlay() OVERRIDE;
     virtual bool supportsSave() const OVERRIDE;
     virtual WebCore::IntSize naturalSize() const OVERRIDE;
     virtual bool hasVideo() const OVERRIDE;
@@ -138,9 +137,6 @@ public:
 private:
     explicit WebMediaPlayerClientImpl(WebCore::MediaPlayerClient*);
 
-    void startDelayedLoad();
-    void loadInternal();
-
     WebCore::HTMLMediaElement& mediaElement() const;
 
 #if OS(ANDROID)
@@ -153,8 +149,6 @@ private:
 
     WebCore::MediaPlayerClient* m_client;
     OwnPtr<WebMediaPlayer> m_webMediaPlayer;
-    WebCore::KURL m_url;
-    bool m_delayingLoad;
     WebCore::MediaPlayer::Preload m_preload;
     bool m_needsWebLayerForVideo;
     double m_rate;
@@ -206,8 +200,6 @@ private:
 
     AudioSourceProviderImpl m_audioSourceProvider;
 #endif
-
-    WebMediaPlayer::LoadType m_loadType;
 };
 
 } // namespace blink

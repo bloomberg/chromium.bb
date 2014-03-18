@@ -84,6 +84,7 @@
 
 using namespace std;
 using blink::WebInbandTextTrack;
+using blink::WebMediaPlayer;
 using blink::WebMimeRegistry;
 
 namespace WebCore {
@@ -273,6 +274,7 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& docum
     , m_closedCaptionsVisible(false)
     , m_completelyLoaded(false)
     , m_havePreparedToPlay(false)
+    , m_delayingLoadForPreloadNone(false)
     , m_tracksAreReady(true)
     , m_haveVisibleTextTrack(false)
     , m_processingPreferenceChange(false)
@@ -413,7 +415,7 @@ void HTMLMediaElement::parseAttribute(const QualifiedName& name, const AtomicStr
 
         // The attribute must be ignored if the autoplay attribute is present
         if (!autoplay() && m_player)
-            m_player->setPreload(m_preload);
+            setPlayerPreload();
 
     } else if (name == mediagroupAttr)
         setMediaGroup(value);
@@ -829,15 +831,13 @@ void HTMLMediaElement::loadResource(const KURL& url, ContentType& contentType, c
 
     WTF_LOG(Media, "HTMLMediaElement::loadResource - m_currentSrc -> %s", urlForLoggingMedia(m_currentSrc).utf8().data());
 
-    blink::WebMediaPlayer::LoadType loadType = blink::WebMediaPlayer::LoadTypeURL;
-
     startProgressEventTimer();
 
     // Reset display mode to force a recalculation of what to show because we are resetting the player.
     setDisplayMode(Unknown);
 
     if (!autoplay())
-        m_player->setPreload(m_preload);
+        setPlayerPreload();
 
     if (fastHasAttribute(mutedAttr))
         m_muted = true;
@@ -849,14 +849,11 @@ void HTMLMediaElement::loadResource(const KURL& url, ContentType& contentType, c
 
     if (url.protocolIs(mediaSourceBlobProtocol)) {
         if (isMediaStreamURL(url.string())) {
-            loadType = blink::WebMediaPlayer::LoadTypeMediaStream;
             m_userGestureRequiredForPlay = false;
         } else {
             m_mediaSource = HTMLMediaSource::lookup(url.string());
 
             if (m_mediaSource) {
-                loadType = blink::WebMediaPlayer::LoadTypeMediaSource;
-
                 if (!m_mediaSource->attachToElement(this)) {
                     // Forget our reference to the MediaSource, so we leave it alone
                     // while processing remainder of load failure.
@@ -868,7 +865,13 @@ void HTMLMediaElement::loadResource(const KURL& url, ContentType& contentType, c
     }
 
     if (attemptLoad && canLoadURL(url, contentType, keySystem)) {
-        m_player->load(loadType, url);
+        ASSERT(!webMediaPlayer());
+
+        if (m_preload == MediaPlayer::None) {
+            m_delayingLoadForPreloadNone = true;
+        } else {
+            m_player->load(loadType(), m_currentSrc, corsMode());
+        }
     } else {
         mediaLoadingFailed(MediaPlayer::FormatError);
     }
@@ -879,6 +882,34 @@ void HTMLMediaElement::loadResource(const KURL& url, ContentType& contentType, c
 
     if (renderer())
         renderer()->updateFromElement();
+}
+
+void HTMLMediaElement::setPlayerPreload()
+{
+    m_player->setPreload(m_preload);
+
+    if (m_delayingLoadForPreloadNone && m_preload != MediaPlayer::None)
+        startDelayedLoad();
+}
+
+void HTMLMediaElement::startDelayedLoad()
+{
+    ASSERT(m_delayingLoadForPreloadNone);
+
+    m_delayingLoadForPreloadNone = false;
+
+    m_player->load(loadType(), m_currentSrc, corsMode());
+}
+
+WebMediaPlayer::LoadType HTMLMediaElement::loadType() const
+{
+    if (m_mediaSource)
+        return WebMediaPlayer::LoadTypeMediaSource;
+
+    if (isMediaStreamURL(m_currentSrc.string()))
+        return WebMediaPlayer::LoadTypeMediaStream;
+
+    return WebMediaPlayer::LoadTypeURL;
 }
 
 static bool trackIndexCompare(TextTrack* a,
@@ -1667,7 +1698,9 @@ void HTMLMediaElement::prepareToPlay()
     if (m_havePreparedToPlay)
         return;
     m_havePreparedToPlay = true;
-    m_player->prepareToPlay();
+
+    if (m_delayingLoadForPreloadNone)
+        startDelayedLoad();
 }
 
 void HTMLMediaElement::seek(double time, ExceptionState& exceptionState)
@@ -3119,6 +3152,8 @@ void HTMLMediaElement::clearMediaPlayer(int flags)
 
     closeMediaSource();
 
+    m_delayingLoadForPreloadNone = false;
+
     clearMediaPlayerAndAudioSourceProviderClient();
 
     stopPeriodicTimers();
@@ -3579,14 +3614,14 @@ void HTMLMediaElement::applyMediaFragmentURI()
     }
 }
 
-MediaPlayerClient::CORSMode HTMLMediaElement::mediaPlayerCORSMode() const
+WebMediaPlayer::CORSMode HTMLMediaElement::corsMode() const
 {
     const AtomicString& crossOriginMode = fastGetAttribute(crossoriginAttr);
     if (crossOriginMode.isNull())
-        return Unspecified;
+        return WebMediaPlayer::CORSModeUnspecified;
     if (equalIgnoringCase(crossOriginMode, "use-credentials"))
-        return UseCredentials;
-    return Anonymous;
+        return WebMediaPlayer::CORSModeUseCredentials;
+    return WebMediaPlayer::CORSModeAnonymous;
 }
 
 void HTMLMediaElement::mediaPlayerSetWebLayer(blink::WebLayer* webLayer)
