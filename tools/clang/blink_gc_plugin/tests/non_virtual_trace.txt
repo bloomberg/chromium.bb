@@ -1,0 +1,7 @@
+non_virtual_trace.cpp:13:1: warning: [blink-gc] Class 'C' overrides non-virtual trace of base class 'A'.
+void C::trace(Visitor* visitor)
+^
+./non_virtual_trace.h:14:5: note: [blink-gc] Non-virtual trace method declared here:
+    void trace(Visitor*);
+    ^
+1 warning generated.

@@ -113,8 +113,9 @@ bool RecordInfo::IsGCFinalized() {
   return false;
 }
 
-// A mixin has not yet been "mixed in" if its only GC base is the mixin base.
-bool RecordInfo::IsUnmixedGCMixin() {
+// A GC mixin is a class that inherits from a GC mixin base and has
+// has not yet been "mixed in" with another GC base class.
+bool RecordInfo::IsGCMixin() {
   if (!IsGCDerived() || base_paths_->begin() == base_paths_->end())
     return false;
   // Get the last element of the first path.
@@ -124,7 +125,7 @@ bool RecordInfo::IsUnmixedGCMixin() {
   // If it is not a mixin base we are done.
   if (!Config::IsGCMixinBase(base->getName()))
     return false;
-  // Otherwise, this is unmixed if there are no other paths to GC bases.
+  // This is a mixin if there are no other paths to GC bases.
   return ++it == base_paths_->end();
 }
 
@@ -194,6 +195,34 @@ bool RecordInfo::InheritsNonPureTrace() {
   return false;
 }
 
+CXXMethodDecl* RecordInfo::InheritsNonVirtualTrace() {
+  if (CXXMethodDecl* trace = GetTraceMethod())
+    return trace->isVirtual() ? 0 : trace;
+  for (Bases::iterator it = GetBases().begin(); it != GetBases().end(); ++it) {
+    if (CXXMethodDecl* trace = it->second.info()->InheritsNonVirtualTrace())
+      return trace;
+  }
+  return 0;
+}
+
+// A (non-virtual) class is considered abstract in Blink if it has
+// no public constructors and no create methods.
+bool RecordInfo::IsConsideredAbstract() {
+  for (CXXRecordDecl::ctor_iterator it = record_->ctor_begin();
+       it != record_->ctor_end();
+       ++it) {
+    if (!it->isCopyOrMoveConstructor() && it->getAccess() == AS_public)
+      return false;
+  }
+  for (CXXRecordDecl::method_iterator it = record_->method_begin();
+       it != record_->method_end();
+       ++it) {
+    if (it->getNameAsString() == kCreateName)
+      return false;
+  }
+  return true;
+}
+
 RecordInfo::Bases* RecordInfo::CollectBases() {
   // Compute the collection locally to avoid inconsistent states.
   Bases* bases = new Bases;
@@ -254,7 +283,6 @@ void RecordInfo::DetermineTracingMethods() {
        it != record_->method_end();
        ++it) {
     if (Config::IsTraceMethod(*it, &isTraceAfterDispatch)) {
-      // TODO: Test that the formal parameter is of type Visitor*.
       if (isTraceAfterDispatch) {
         traceAfterDispatch = *it;
       } else {
@@ -270,6 +298,16 @@ void RecordInfo::DetermineTracingMethods() {
     // class defining a traceAfterDispatch method?
     trace_method_ = trace;
     trace_dispatch_method_ = 0;
+  }
+  if (trace_dispatch_method_)
+    return;
+  // If this class does not define a trace dispatch method inherit it.
+  for (Bases::iterator it = GetBases().begin(); it != GetBases().end(); ++it) {
+    if (CXXMethodDecl* dispatch = it->second.info()->GetTraceDispatchMethod()) {
+      // TODO: Does it make sense to inherit multiple dispatch methods?
+      assert(!trace_dispatch_method_ && "Multiple trace dispatching methods");
+      trace_dispatch_method_ = dispatch;
+    }
   }
 }
 

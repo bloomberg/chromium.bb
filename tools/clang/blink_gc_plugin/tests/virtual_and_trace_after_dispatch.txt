@@ -1,0 +1,5 @@
+In file included from virtual_and_trace_after_dispatch.cpp:5:
+./virtual_and_trace_after_dispatch.h:23:1: warning: [blink-gc] Class 'B' contains or inherits virtual methods but implements manual dispatching.
+class B : public A {
+^
+1 warning generated.

@@ -86,12 +86,14 @@ class RecordInfo {
   bool IsGCDerived();
   bool IsGCAllocated();
   bool IsGCFinalized();
-  bool IsUnmixedGCMixin();
+  bool IsGCMixin();
 
   bool IsStackAllocated();
   bool RequiresTraceMethod();
   bool NeedsFinalization();
   TracingStatus NeedsTracing(Edge::NeedsTracingOption);
+  clang::CXXMethodDecl* InheritsNonVirtualTrace();
+  bool IsConsideredAbstract();
 
  private:
   RecordInfo(clang::CXXRecordDecl* record, RecordCache* cache);
