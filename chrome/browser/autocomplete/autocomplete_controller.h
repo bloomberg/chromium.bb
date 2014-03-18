@@ -235,9 +235,6 @@ class AutocompleteController : public AutocompleteProviderListener {
   // notifications until Start() has been invoked on all providers.
   bool in_start_;
 
-  // Has StartZeroSuggest() been called but not Start()?
-  bool in_zero_suggest_;
-
   Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(AutocompleteController);

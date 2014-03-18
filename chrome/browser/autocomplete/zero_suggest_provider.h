@@ -111,6 +111,12 @@ class ZeroSuggestProvider : public BaseSearchProvider {
   // Returns the relevance score for the verbatim result.
   int GetVerbatimRelevance() const;
 
+  // Whether we can show zero suggest on |current_page_url| without
+  // sending |current_page_url| as a parameter to the server at |suggest_url|.
+  bool CanShowZeroSuggestWithoutSendingURL(
+      const GURL& suggest_url,
+      const GURL& current_page_url) const;
+
   // Used to build default search engine URLs for suggested queries.
   TemplateURLService* template_url_service_;
 

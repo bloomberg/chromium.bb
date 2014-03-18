@@ -90,6 +90,11 @@ void ZeroSuggestProvider::ResetSession() {
   // |field_trial_triggered_in_session_| unchanged and set
   // |field_trial_triggered_| to false since zero suggest is inactive now.
   field_trial_triggered_ = false;
+
+  // This call clears out |matches_| so that they don't pollute prefix-based
+  // queries.
+  // TODO(mariakhomenko): Change the model to clear |matches_| on Start() like
+  // all the other providers.
   Stop(true);
 }
 
@@ -130,16 +135,27 @@ void ZeroSuggestProvider::StartZeroSuggest(
      template_url_service_->GetDefaultSearchProvider();
   if (default_provider == NULL)
     return;
+
   base::string16 prefix;
   TemplateURLRef::SearchTermsArgs search_term_args(prefix);
-  search_term_args.current_page_url = current_query_;
-  GURL suggest_url(default_provider->suggestions_url_ref().
-                   ReplaceSearchTerms(search_term_args));
-  if (!CanSendURL(current_page_url, suggest_url,
-          template_url_service_->GetDefaultSearchProvider(),
-          page_classification, profile_) ||
-      !OmniboxFieldTrial::InZeroSuggestFieldTrial())
+  GURL suggest_url(default_provider->suggestions_url_ref().ReplaceSearchTerms(
+      search_term_args));
+  if (!suggest_url.is_valid())
     return;
+
+  // No need to send the current page URL in personalized suggest field trial.
+  if (CanSendURL(current_page_url, suggest_url, default_provider,
+                 current_page_classification_, profile_) &&
+      !OmniboxFieldTrial::InZeroSuggestPersonalizedFieldTrial()) {
+    // Update suggest_url to include the current_page_url.
+    search_term_args.current_page_url = current_query_;
+    suggest_url = GURL(default_provider->suggestions_url_ref().
+                       ReplaceSearchTerms(search_term_args));
+  } else if (!CanShowZeroSuggestWithoutSendingURL(suggest_url,
+                                                  current_page_url)) {
+    return;
+  }
+
   done_ = false;
   // TODO(jered): Consider adding locally-sourced zero-suggestions here too.
   // These may be useful on the NTP or more relevant to the user than server
@@ -363,4 +379,30 @@ AutocompleteMatch ZeroSuggestProvider::MatchForCurrentURL() {
 int ZeroSuggestProvider::GetVerbatimRelevance() const {
   return results_.verbatim_relevance >= 0 ?
       results_.verbatim_relevance : kDefaultVerbatimZeroSuggestRelevance;
+}
+
+bool ZeroSuggestProvider::CanShowZeroSuggestWithoutSendingURL(
+    const GURL& suggest_url,
+    const GURL& current_page_url) const {
+  if (!ZeroSuggestEnabled(suggest_url,
+                          template_url_service_->GetDefaultSearchProvider(),
+                          current_page_classification_, profile_))
+    return false;
+
+  // If we cannot send URLs, then only the MostVisited and Personalized
+  // variations can be shown.
+  if (!OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial() &&
+      !OmniboxFieldTrial::InZeroSuggestPersonalizedFieldTrial())
+    return false;
+
+  // Only show zero suggest for HTTP[S] pages.
+  // TODO(mariakhomenko): We may be able to expand this set to include pages
+  // with other schemes (e.g. chrome://). That may require improvements to
+  // the formatting of the verbatim result returned by MatchForCurrentURL().
+  if (!current_page_url.is_valid() ||
+      ((current_page_url.scheme() != content::kHttpScheme) &&
+      (current_page_url.scheme() != content::kHttpsScheme)))
+    return false;
+
+  return true;
 }

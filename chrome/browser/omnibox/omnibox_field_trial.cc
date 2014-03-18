@@ -29,11 +29,16 @@ const char kHUPCullRedirectsFieldTrialName[] = "OmniboxHUPCullRedirects";
 const char kHUPCreateShorterMatchFieldTrialName[] =
     "OmniboxHUPCreateShorterMatch";
 const char kStopTimerFieldTrialName[] = "OmniboxStopTimer";
+
+// In dynamic field trials, we use these group names to switch between
+// different zero suggest implementations.
 const char kEnableZeroSuggestGroupPrefix[] = "EnableZeroSuggest";
 const char kEnableZeroSuggestMostVisitedGroupPrefix[] =
     "EnableZeroSuggestMostVisited";
 const char kEnableZeroSuggestAfterTypingGroupPrefix[] =
     "EnableZeroSuggestAfterTyping";
+const char kEnableZeroSuggestPersonalizedGroupPrefix[] =
+    "EnableZeroSuggestPersonalized";
 
 // The autocomplete dynamic field trial name prefix.  Each field trial is
 // configured dynamically and is retrieved automatically by Chrome during
@@ -289,6 +294,14 @@ bool OmniboxFieldTrial::InZeroSuggestAfterTypingFieldTrial() {
       chrome_variations::GetVariationParamValue(
           kBundledExperimentFieldTrialName,
           kZeroSuggestVariantRule) == "AfterTyping";
+}
+
+bool OmniboxFieldTrial::InZeroSuggestPersonalizedFieldTrial() {
+  return HasDynamicFieldTrialGroupPrefix(
+      kEnableZeroSuggestPersonalizedGroupPrefix) ||
+      chrome_variations::GetVariationParamValue(
+          kBundledExperimentFieldTrialName,
+          kZeroSuggestVariantRule) == "Personalized";
 }
 
 bool OmniboxFieldTrial::ShortcutsScoringMaxRelevance(

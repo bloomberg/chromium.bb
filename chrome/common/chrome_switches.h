@@ -411,6 +411,7 @@ extern const char kEnableNewNTP[];
 extern const char kEnableZeroSuggestEtherSerp[];
 extern const char kEnableZeroSuggestEtherNoSerp[];
 extern const char kEnableZeroSuggestMostVisited[];
+extern const char kEnableZeroSuggestPersonalized[];
 #endif
 
 #if defined(USE_ASH)

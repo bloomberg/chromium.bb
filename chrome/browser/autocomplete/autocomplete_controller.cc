@@ -161,7 +161,6 @@ AutocompleteController::AutocompleteController(
       stop_timer_duration_(OmniboxFieldTrial::StopTimerFieldTrialDuration()),
       done_(true),
       in_start_(false),
-      in_zero_suggest_(false),
       profile_(profile) {
   provider_types &= ~OmniboxFieldTrial::GetDisabledProviderTypes();
   if (provider_types & AutocompleteProvider::TYPE_BOOKMARK)
@@ -242,7 +241,6 @@ void AutocompleteController::Start(const AutocompleteInput& input) {
   stop_timer_.Stop();
 
   // Start the new query.
-  in_zero_suggest_ = false;
   in_start_ = true;
   base::TimeTicks start_time = base::TimeTicks::Now();
   for (ACProviders::iterator i(providers_.begin()); i != providers_.end();
@@ -315,7 +313,13 @@ void AutocompleteController::StartZeroSuggest(
     const base::string16& permanent_text) {
   if (zero_suggest_provider_ != NULL) {
     DCHECK(!in_start_);  // We should not be already running a query.
-    in_zero_suggest_ = true;
+
+    // Call Start() on all providers with INVALID input to clear out cached
+    // |matches_| to ensure they aren't used with zero suggest.
+    for (ACProviders::iterator i(providers_.begin()); i != providers_.end();
+        ++i)
+      (*i)->Start(AutocompleteInput(), false);
+
     zero_suggest_provider_->StartZeroSuggest(
         url, page_classification, permanent_text);
   }
@@ -356,21 +360,11 @@ void AutocompleteController::ExpireCopiedEntries() {
 }
 
 void AutocompleteController::OnProviderUpdate(bool updated_matches) {
-  if (in_zero_suggest_) {
-    // We got ZeroSuggest results before Start(). Show only those results,
-    // because results from other providers are stale.
-    result_.Reset();
-    result_.AppendMatches(zero_suggest_provider_->matches());
-    result_.SortAndCull(input_, profile_);
-    UpdateAssistedQueryStats(&result_);
-    NotifyChanged(true);
-  } else {
-    CheckIfDone();
-    // Multiple providers may provide synchronous results, so we only update the
-    // results if we're not in Start().
-    if (!in_start_ && (updated_matches || done_))
-      UpdateResult(false, false);
-  }
+  CheckIfDone();
+  // Multiple providers may provide synchronous results, so we only update the
+  // results if we're not in Start().
+  if (!in_start_ && (updated_matches || done_))
+    UpdateResult(false, false);
 }
 
 void AutocompleteController::AddProvidersInfo(
@@ -390,7 +384,6 @@ void AutocompleteController::ResetSession() {
   for (ACProviders::const_iterator i(providers_.begin()); i != providers_.end();
        ++i)
     (*i)->ResetSession();
-  in_zero_suggest_ = false;
 }
 
 void AutocompleteController::UpdateMatchDestinationURL(
@@ -439,8 +432,8 @@ void AutocompleteController::UpdateResult(
   AutocompleteResult last_result;
   last_result.Swap(&result_);
 
-  for (ACProviders::const_iterator i(providers_.begin()); i != providers_.end();
-       ++i)
+  for (ACProviders::const_iterator i(providers_.begin());
+       i != providers_.end(); ++i)
     result_.AppendMatches((*i)->matches());
 
   // Sort the matches and trim to a small number of "best" matches.

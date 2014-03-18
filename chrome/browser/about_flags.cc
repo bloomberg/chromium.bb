@@ -313,6 +313,8 @@ const Experiment::Choice kZeroSuggestExperimentsChoices[] = {
     switches::kEnableZeroSuggestEtherSerp, ""},
   { IDS_FLAGS_ZERO_SUGGEST_ETHER_NO_SERP,
     switches::kEnableZeroSuggestEtherNoSerp, ""},
+  { IDS_FLAGS_ZERO_SUGGEST_PERSONALIZED,
+    switches::kEnableZeroSuggestPersonalized, ""},
   { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
     switches::kDisableZeroSuggest, ""}
 };

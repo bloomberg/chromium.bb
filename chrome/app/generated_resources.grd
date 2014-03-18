@@ -14741,6 +14741,9 @@ Do you accept?
     <message name="IDS_FLAGS_ZERO_SUGGEST_ETHER_NO_SERP" desc="A choice in dropdown dialog on about:flags page to show zero suggest on http pages only">
       Related URLs only
     </message>
+    <message name="IDS_FLAGS_ZERO_SUGGEST_PERSONALIZED" desc="A choice in dropdown dialog on about:flags page to show personalized zero-prefix suggestions">
+      Personalized
+    </message>
     <message name="IDS_FLAGS_DISABLE_IGNORE_AUTOCOMPLETE_OFF_NAME" desc="Name of the disable ignore autocomplete='off' lab">
       Disable ignore autocomplete='off'
     </message>

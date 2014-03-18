@@ -1489,6 +1489,11 @@ const char kEnableZeroSuggestEtherNoSerp[] =
 const char kEnableZeroSuggestMostVisited[] =
     "enable-zero-suggest-most-visited";
 
+// Enables zero suggest functionality on Dev channel, showing recently typed
+// queries as default suggestions.
+const char kEnableZeroSuggestPersonalized[] =
+    "enable-zero-suggest-personalized";
+
 #endif
 
 #if defined(USE_ASH)

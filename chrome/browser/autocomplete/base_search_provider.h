@@ -330,20 +330,31 @@ class BaseSearchProvider : public AutocompleteProvider,
   // otherwise.
   static scoped_ptr<base::Value> DeserializeJsonData(std::string json_data);
 
-  // Returns whether we can send the URL of the current page in any suggest
-  // requests.  Doing this requires that all the following hold:
+  // Returns whether the requirements for requesting zero suggest results
+  // are met. The requirements are
+  // * The user is enrolled in a zero suggest experiment.
+  // * The user is not on the NTP.
+  // * The suggest request is sent over HTTPS.  This avoids leaking the current
+  //   page URL or personal data in unencrypted network traffic.
   // * The user has suggest enabled in their settings and is not in incognito
   //   mode.  (Incognito disables suggest entirely.)
+  // * The user's suggest provider is Google.  We might want to allow other
+  //   providers to see this data someday, but for now this has only been
+  //   implemented for Google.
+  static bool ZeroSuggestEnabled(
+     const GURL& suggest_url,
+     const TemplateURL* template_url,
+     AutocompleteInput::PageClassification page_classification,
+     Profile* profile);
+
+  // Returns whether we can send the URL of the current page in any suggest
+  // requests.  Doing this requires that all the following hold:
+  // * ZeroSuggestEnabled() is true, so we meet the requirements above.
   // * The current URL is HTTP, or HTTPS with the same domain as the suggest
   //   server.  Non-HTTP[S] URLs (e.g. FTP/file URLs) may contain sensitive
   //   information.  HTTPS URLs may also contain sensitive information, but if
   //   they're on the same domain as the suggest server, then the relevant
   //   entity could have already seen/logged this data.
-  // * The suggest request is sent over HTTPS.  This avoids leaking the current
-  //   page URL in world-readable network traffic.
-  // * The user's suggest provider is Google.  We might want to allow other
-  //   providers to see this data someday, but for now this has only been
-  //   implemented for Google.  Also see next bullet.
   // * The user is OK in principle with sending URLs of current pages to their
   //   provider.  Today, there is no explicit setting that controls this, but if
   //   the user has tab sync enabled and tab sync is unencrypted, then they're

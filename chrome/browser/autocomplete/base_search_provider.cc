@@ -73,7 +73,6 @@ class SuggestionDeletionHandler : public net::URLFetcherDelegate {
   DISALLOW_COPY_AND_ASSIGN(SuggestionDeletionHandler);
 };
 
-
 SuggestionDeletionHandler::SuggestionDeletionHandler(
     const std::string& deletion_url,
     Profile* profile,
@@ -508,36 +507,26 @@ scoped_ptr<base::Value> BaseSearchProvider::DeserializeJsonData(
 }
 
 // static
-bool BaseSearchProvider::CanSendURL(
-    const GURL& current_page_url,
+bool BaseSearchProvider::ZeroSuggestEnabled(
     const GURL& suggest_url,
     const TemplateURL* template_url,
     AutocompleteInput::PageClassification page_classification,
     Profile* profile) {
-  if (!current_page_url.is_valid())
+  if (!OmniboxFieldTrial::InZeroSuggestFieldTrial())
     return false;
 
-  // TODO(hfung): Show Most Visited on NTP with appropriate verbatim
-  // description when the user actively focuses on the omnibox as discussed in
-  // crbug/305366 if Most Visited (or something similar) will launch.
+  // Make sure we are sending the suggest request through HTTPS to prevent
+  // exposing the current page URL or personalized results without encryption.
+  if (!suggest_url.SchemeIs(content::kHttpsScheme))
+    return false;
+
+  // Don't show zero suggest on the NTP.
+  // TODO(hfung): Experiment with showing MostVisited zero suggest on NTP
+  // under the conditions described in crbug.com/305366.
   if ((page_classification ==
        AutocompleteInput::INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS) ||
       (page_classification ==
        AutocompleteInput::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS))
-    return false;
-
-  // Only allow HTTP URLs or HTTPS URLs for the same domain as the search
-  // provider.
-  if ((current_page_url.scheme() != content::kHttpScheme) &&
-      ((current_page_url.scheme() != content::kHttpsScheme) ||
-       !net::registry_controlled_domains::SameDomainOrHost(
-           current_page_url, suggest_url,
-           net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES)))
-    return false;
-
-  // Make sure we are sending the suggest request through HTTPS to prevent
-  // exposing the current page URL to networks before the search provider.
-  if (!suggest_url.SchemeIs(content::kHttpsScheme))
     return false;
 
   // Don't run if there's no profile or in incognito mode.
@@ -556,12 +545,37 @@ bool BaseSearchProvider::CanSendURL(
       SEARCH_ENGINE_GOOGLE)
     return false;
 
+  return true;
+}
+
+// static
+bool BaseSearchProvider::CanSendURL(
+    const GURL& current_page_url,
+    const GURL& suggest_url,
+    const TemplateURL* template_url,
+    AutocompleteInput::PageClassification page_classification,
+    Profile* profile) {
+  if (!ZeroSuggestEnabled(suggest_url, template_url, page_classification,
+                          profile))
+    return false;
+
+  if (!current_page_url.is_valid())
+    return false;
+
+  // Only allow HTTP URLs or HTTPS URLs for the same domain as the search
+  // provider.
+  if ((current_page_url.scheme() != content::kHttpScheme) &&
+      ((current_page_url.scheme() != content::kHttpsScheme) ||
+       !net::registry_controlled_domains::SameDomainOrHost(
+           current_page_url, suggest_url,
+           net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES)))
+    return false;
+
   // Check field trials and settings allow sending the URL on suggest requests.
   ProfileSyncService* service =
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
-  browser_sync::SyncPrefs sync_prefs(prefs);
-  if (!OmniboxFieldTrial::InZeroSuggestFieldTrial() ||
-      service == NULL ||
+  browser_sync::SyncPrefs sync_prefs(profile->GetPrefs());
+  if (service == NULL ||
       !service->IsSyncEnabledAndLoggedIn() ||
       !sync_prefs.GetPreferredDataTypes(syncer::UserTypes()).Has(
           syncer::PROXY_TABS) ||
