@@ -22,6 +22,10 @@ namespace content {
 class CookieCryptoDelegate;
 }  // namespace content
 
+namespace domain_reliability {
+class DomainReliabilityMonitor;
+}  // namespace domain_reliability
+
 namespace net {
 class FtpTransactionFactory;
 class HttpServerProperties;
@@ -209,6 +213,9 @@ class ProfileImplIOData : public ProfileIOData {
 
   mutable scoped_ptr<net::URLRequestJobFactory> main_job_factory_;
   mutable scoped_ptr<net::URLRequestJobFactory> extensions_job_factory_;
+
+  mutable scoped_ptr<domain_reliability::DomainReliabilityMonitor>
+      domain_reliability_monitor_;
 
   // Parameters needed for isolated apps.
   base::FilePath profile_path_;

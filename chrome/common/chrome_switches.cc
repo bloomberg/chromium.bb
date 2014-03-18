@@ -299,6 +299,9 @@ const char kDisableDeviceDiscoveryNotifications[] =
 // Disables retrieval of PAC URLs from DHCP as per the WPAD standard.
 const char kDisableDhcpWpad[]               = "disable-dhcp-wpad";
 
+// Disables Domain Reliability Monitoring.
+const char kDisableDomainReliability[]      = "disable-domain-reliability";
+
 // Disable extensions.
 const char kDisableExtensions[]             = "disable-extensions";
 
@@ -525,6 +528,9 @@ const char kEnableDeviceDiscoveryNotifications[] =
 
 // Enables the DOM distiller.
 const char kEnableDomDistiller[]               = "enable-dom-distiller";
+
+// Enables Domain Reliability Monitoring.
+const char kEnableDomainReliability[]          = "enable-domain-reliability";
 
 // Enable Enhanced Bookmarks.
 const char kEnhancedBookmarksExperiment[] = "enhanced-bookmarks-experiment";

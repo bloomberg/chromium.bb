@@ -64,6 +64,11 @@
             'dom_distiller/core/dom_distiller_store_unittest.cc',
             'dom_distiller/core/task_tracker_unittest.cc',
             'dom_distiller/core/url_utils_unittest.cc',
+            'domain_reliability/context_unittest.cc',
+            'domain_reliability/monitor_unittest.cc',
+            'domain_reliability/test_util.cc',
+            'domain_reliability/test_util.h',
+            'domain_reliability/util_unittest.cc',
             'json_schema/json_schema_validator_unittest.cc',
             'json_schema/json_schema_validator_unittest_base.cc',
             'json_schema/json_schema_validator_unittest_base.h',
@@ -165,8 +170,8 @@
             'components.gyp:dom_distiller_core',
             'components.gyp:dom_distiller_test_support',
 
-            # Dependencies of os_crypt
-            'components.gyp:os_crypt',
+            # Dependencies of domain_reliability
+            'components.gyp:domain_reliability',
 
             # Dependencies of json_schema
             'components.gyp:json_schema',
@@ -176,6 +181,9 @@
 
             # Dependencies of language_usage_metrics
             'components.gyp:language_usage_metrics',
+
+            # Dependencies of os_crypt
+            'components.gyp:os_crypt',
 
             # Dependencies of password_manager
             'components.gyp:password_manager_core_browser',

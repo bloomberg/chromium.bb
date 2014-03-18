@@ -33,6 +33,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "components/domain_reliability/monitor.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cookie_store_factory.h"
 #include "content/public/browser/notification_service.h"
@@ -78,6 +79,15 @@ net::BackendType ChooseCacheBackendType() {
   }
   return net::CACHE_BACKEND_BLOCKFILE;
 #endif
+}
+
+bool IsDomainReliabilityMonitoringEnabled() {
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kDisableDomainReliability))
+    return false;
+  if (command_line->HasSwitch(switches::kEnableDomainReliability))
+    return true;
+  return base::FieldTrialList::FindFullName("DomRel-Enable") == "enable";
 }
 
 }  // namespace
@@ -494,6 +504,13 @@ void ProfileImplIOData::InitializeInternal(
   StoragePartitionDescriptor details(profile_path_, false);
   media_request_context_.reset(InitializeMediaRequestContext(main_context,
                                                              details));
+
+  if (IsDomainReliabilityMonitoringEnabled()) {
+    domain_reliability_monitor_.reset(
+        new domain_reliability::DomainReliabilityMonitor());
+    network_delegate()->set_domain_reliability_monitor(
+        domain_reliability_monitor_.get());
+  }
 
   lazy_params_.reset();
 }

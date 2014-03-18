@@ -15,6 +15,7 @@
     'breakpad.gypi',
     'cloud_devices.gypi',
     'dom_distiller.gypi',
+    'domain_reliability.gypi',
     'json_schema.gypi',
     'keyed_service.gypi',
     'language_usage_metrics.gypi',

@@ -14,6 +14,7 @@ include_rules = [
   "+components/autofill/core/common",
   "+components/breakpad",
   "+components/dom_distiller",
+  "+components/domain_reliability",
   "+components/keyed_service",
   "+components/language_usage_metrics",
   "+components/nacl/browser",

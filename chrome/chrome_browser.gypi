@@ -38,6 +38,7 @@
         '../components/component_strings.gyp:component_strings',
         '../components/components.gyp:autofill_core_browser',
         '../components/components.gyp:cloud_devices',
+        '../components/components.gyp:domain_reliability',
         '../components/components.gyp:navigation_metrics',
         '../components/components.gyp:os_crypt',
         '../components/components.gyp:password_manager_core_browser',
