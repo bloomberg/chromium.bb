@@ -629,8 +629,6 @@ void Document::dispose()
 
     m_lifecycle.advanceTo(DocumentLifecycle::Disposed);
     lifecycleNotifier().notifyDocumentWasDisposed();
-
-    InspectorInstrumentation::documentDisposed(this);
 }
 
 SelectorQueryCache& Document::selectorQueryCache()

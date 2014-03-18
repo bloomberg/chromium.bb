@@ -118,8 +118,8 @@ public:
     void willMutateStyle();
     void didMutateStyle(CSSStyleDeclaration*, bool);
 
+public:
     void activeStyleSheetsUpdated(Document*);
-    void documentDisposed(Document*);
     void frameDetachedFromParent(LocalFrame*);
 
     virtual void getComputedStyleForNode(ErrorString*, int nodeId, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSComputedStyleProperty> >&) OVERRIDE;
@@ -159,8 +159,8 @@ private:
     void collectAllDocumentStyleSheets(Document*, Vector<CSSStyleSheet*>&);
     void collectStyleSheets(CSSStyleSheet*, Vector<CSSStyleSheet*>&);
 
-    void updateActiveStyleSheets(Document*, StyleSheetsUpdateType);
-    void setActiveStyleSheets(Document*, const Vector<CSSStyleSheet*>&, StyleSheetsUpdateType);
+    void updateActiveStyleSheetsForDocument(Document*, StyleSheetsUpdateType);
+    void updateActiveStyleSheets(LocalFrame*, const Vector<CSSStyleSheet*>&, StyleSheetsUpdateType);
 
     void collectPlatformFontsForRenderer(RenderText*, HashCountedSet<String>*);
 
@@ -194,8 +194,7 @@ private:
 
     IdToInspectorStyleSheet m_idToInspectorStyleSheet;
     HashMap<CSSStyleSheet*, RefPtr<InspectorStyleSheet> > m_cssStyleSheetToInspectorStyleSheet;
-    typedef HashMap<Document*, OwnPtr<HashSet<CSSStyleSheet*> > > DocumentStyleSheets;
-    DocumentStyleSheets m_documentToCSSStyleSheets;
+    HashMap<LocalFrame*, OwnPtr<HashSet<CSSStyleSheet*> > > m_frameToCSSStyleSheets;
 
     NodeToInspectorStyleSheet m_nodeToInspectorStyleSheet;
     HashMap<RefPtr<Document>, RefPtr<InspectorStyleSheet> > m_documentToViaInspectorStyleSheet; // "via inspector" stylesheets
