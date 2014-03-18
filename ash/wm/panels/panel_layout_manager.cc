@@ -235,6 +235,7 @@ class PanelCalloutWidget : public views::Widget {
     params.bounds = ScreenUtil::ConvertRectToScreen(parent, gfx::Rect());
     params.bounds.set_width(kArrowWidth);
     params.bounds.set_height(kArrowHeight);
+    params.accept_events = false;
     // Why do we need this and can_activate = false?
     set_focus_on_creation(false);
     Init(params);
