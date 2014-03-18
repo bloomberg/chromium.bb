@@ -145,15 +145,13 @@ bool PluginReverseInterface::EnumerateManifestKeys(
 // GetPOSIXFileDesc.
 bool PluginReverseInterface::OpenManifestEntry(nacl::string url_key,
                                                struct NaClFileInfo* info) {
-  ErrorInfo error_info;
   bool op_complete = false;  // NB: mu_ and cv_ also controls access to this!
   // The to_open object is owned by the weak ref callback. Because this function
   // waits for the callback to finish, the to_open object will be deallocated on
   // the main thread before this function can return. The pointers it contains
   // to stack variables will not leak.
   OpenManifestEntryResource* to_open =
-      new OpenManifestEntryResource(url_key, info,
-                                    &error_info, &op_complete);
+      new OpenManifestEntryResource(url_key, info, &op_complete);
   CHECK(to_open != NULL);
   NaClLog(4, "PluginReverseInterface::OpenManifestEntry: %s\n",
           url_key.c_str());
@@ -198,11 +196,7 @@ bool PluginReverseInterface::OpenManifestEntry(nacl::string url_key,
     // is a runtime error that may simply be a programming error in
     // the untrusted code, or it may be something else wrong w/ the
     // manifest.
-    NaClLog(4,
-            "OpenManifestEntry: failed for key %s, code %d (%s)\n",
-            url_key.c_str(),
-            error_info.error_code(),
-            error_info.message().c_str());
+    NaClLog(4, "OpenManifestEntry: failed for key %s", url_key.c_str());
   }
   return true;
 }
@@ -224,9 +218,14 @@ void PluginReverseInterface::OpenManifestEntry_MainThreadContinuation(
 
   std::string mapped_url;
   PnaclOptions pnacl_options;
+  ErrorInfo error_info;
   if (!manifest_->ResolveKey(p->url, &mapped_url,
-                             &pnacl_options, p->error_info)) {
+                             &pnacl_options, &error_info)) {
     NaClLog(4, "OpenManifestEntry_MainThreadContinuation: ResolveKey failed\n");
+    NaClLog(4,
+            "Error code %d, string %s\n",
+            error_info.error_code(),
+            error_info.message().c_str());
     // Failed, and error_info has the details on what happened.  Wake
     // up requesting thread -- we are done.
     nacl::MutexLocker take(&mu_);
@@ -259,8 +258,6 @@ void PluginReverseInterface::OpenManifestEntry_MainThreadContinuation(
         nacl::MutexLocker take(&mu_);
         *p->op_complete_ptr = true;  // done...
         p->file_info->desc = -1;       // but failed.
-        p->error_info->SetReport(PP_NACL_ERROR_MANIFEST_OPEN,
-                                 "ServiceRuntime: StreamAsFile failed");
         NaClXCondVarBroadcast(&cv_);
         return;
       }
@@ -279,9 +276,6 @@ void PluginReverseInterface::OpenManifestEntry_MainThreadContinuation(
         NaClLog(4,
                 "OpenManifestEntry_MainThreadContinuation: "
                 "GetReadonlyPnaclFd failed\n");
-        // TODO(jvoung): Separate the error codes?
-        p->error_info->SetReport(PP_NACL_ERROR_MANIFEST_OPEN,
-                                 "ServiceRuntime: GetPnaclFd failed");
       }
       nacl::MutexLocker take(&mu_);
       *p->op_complete_ptr = true;  // done!
@@ -300,9 +294,6 @@ void PluginReverseInterface::OpenManifestEntry_MainThreadContinuation(
     nacl::MutexLocker take(&mu_);
     *p->op_complete_ptr = true;  // done...
     p->file_info->desc = -1;  // but failed.
-    p->error_info->SetReport(
-        PP_NACL_ERROR_MANIFEST_OPEN,
-        "ServiceRuntime: Translating OpenManifestEntry files not supported");
     NaClXCondVarBroadcast(&cv_);
     return;
   }
@@ -328,8 +319,6 @@ void PluginReverseInterface::StreamAsFile_MainThreadContinuation(
     NaClLog(4,
             "StreamAsFile_MainThreadContinuation: !PP_OK, setting desc -1\n");
     p->file_info->desc = -1;
-    p->error_info->SetReport(PP_NACL_ERROR_MANIFEST_OPEN,
-                             "Plugin StreamAsFile failed at callback");
   }
   *p->op_complete_ptr = true;
   NaClXCondVarBroadcast(&cv_);

@@ -87,15 +87,12 @@ struct OpenManifestEntryResource {
  public:
   OpenManifestEntryResource(const std::string& target_url,
                             struct NaClFileInfo* finfo,
-                            ErrorInfo* infop,
                             bool* op_complete)
       : url(target_url),
         file_info(finfo),
-        error_info(infop),
         op_complete_ptr(op_complete) {}
   std::string url;
   struct NaClFileInfo* file_info;
-  ErrorInfo* error_info;
   bool* op_complete_ptr;
 };
 
