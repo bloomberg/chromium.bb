@@ -17,18 +17,12 @@
 @interface SadTabView : BaseView<NSTextViewDelegate> {
  @private
   IBOutlet NSImageView* image_;
-  IBOutlet NSTextField* title_;
-  IBOutlet NSTextField* message_;
-  IBOutlet NSTextField* helpPlaceholder_;
+  base::scoped_nsobject<NSTextField> title_;
+  base::scoped_nsobject<NSTextField> message_;
+  base::scoped_nsobject<HyperlinkTextView> help_;
 
   base::scoped_nsobject<NSColor> backgroundColor_;
   NSSize messageSize_;
-
-  // Text fields don't work as well with embedded links as text views, but
-  // text views cannot conveniently be created in IB. The xib file contains
-  // a text field |helpPlaceholder_| that's replaced by this text view |help_|
-  // in -awakeFromNib.
-  base::scoped_nsobject<HyperlinkTextView> help_;
 
   // A weak reference to the parent controller.
   IBOutlet SadTabController* controller_;
