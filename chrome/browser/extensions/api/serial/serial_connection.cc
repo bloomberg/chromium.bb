@@ -8,7 +8,6 @@
 
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
-#include "base/platform_file.h"
 #include "base/strings/string_util.h"
 #include "chrome/common/extensions/api/serial.h"
 #include "extensions/browser/api/api_resource_manager.h"
@@ -35,7 +34,6 @@ SerialConnection::SerialConnection(const std::string& port,
                                    const std::string& owner_extension_id)
     : ApiResource(owner_extension_id),
       port_(port),
-      file_(base::kInvalidPlatformFileValue),
       persistent_(false),
       buffer_size_(kDefaultBufferSize),
       receive_timeout_(0),
@@ -86,12 +84,11 @@ void SerialConnection::Open(const OpenCompleteCallback& callback) {
 void SerialConnection::Close() {
   DCHECK(open_complete_.is_null());
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (file_ != base::kInvalidPlatformFileValue) {
-    base::PlatformFile file = file_;
-    file_ = base::kInvalidPlatformFileValue;
-    BrowserThread::PostTask(BrowserThread::FILE,
-                            FROM_HERE,
-                            base::Bind(&SerialConnection::DoClose, file));
+  if (file_.IsValid()) {
+    BrowserThread::PostTask(
+        BrowserThread::FILE,
+        FROM_HERE,
+        base::Bind(&SerialConnection::DoClose, Passed(file_.Pass())));
   }
 }
 
@@ -163,40 +160,42 @@ bool SerialConnection::GetInfo(api::serial::ConnectionInfo* info) const {
 void SerialConnection::StartOpen() {
   DCHECK(!open_complete_.is_null());
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  DCHECK_EQ(file_, base::kInvalidPlatformFileValue);
-  base::PlatformFile file = base::kInvalidPlatformFileValue;
+  DCHECK(!file_.IsValid());
   // It's the responsibility of the API wrapper around SerialConnection to
   // validate the supplied path against the set of valid port names, and
   // it is a reasonable assumption that serial port names are ASCII.
   DCHECK(IsStringASCII(port_));
   base::FilePath path(
       base::FilePath::FromUTF8Unsafe(MaybeFixUpPortName(port_)));
-  int flags = base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ |
-              base::PLATFORM_FILE_EXCLUSIVE_READ | base::PLATFORM_FILE_WRITE |
-              base::PLATFORM_FILE_EXCLUSIVE_WRITE | base::PLATFORM_FILE_ASYNC |
-              base::PLATFORM_FILE_TERMINAL_DEVICE;
-  file = base::CreatePlatformFile(path, flags, NULL, NULL);
+  int flags = base::File::FLAG_OPEN | base::File::FLAG_READ |
+              base::File::FLAG_EXCLUSIVE_READ | base::File::FLAG_WRITE |
+              base::File::FLAG_EXCLUSIVE_WRITE | base::File::FLAG_ASYNC |
+              base::File::FLAG_TERMINAL_DEVICE;
+  base::File file(path, flags);
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
-      base::Bind(&SerialConnection::FinishOpen, base::Unretained(this), file));
+      base::Bind(&SerialConnection::FinishOpen, base::Unretained(this),
+                 Passed(file.Pass())));
 }
 
-void SerialConnection::FinishOpen(base::PlatformFile file) {
+void SerialConnection::FinishOpen(base::File file) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(!open_complete_.is_null());
-  DCHECK_EQ(file_, base::kInvalidPlatformFileValue);
+  DCHECK(!file_.IsValid());
   OpenCompleteCallback callback = open_complete_;
   open_complete_.Reset();
 
-  if (file == base::kInvalidPlatformFileValue) {
+  if (!file.IsValid()) {
     callback.Run(false);
     return;
   }
 
-  file_ = file;
+  // TODO(rvargas): crbug.com/351073. This is wrong. io_handler_ keeps a copy of
+  // the handler that is not in sync with this one.
+  file_ = file.Pass();
   io_handler_->Initialize(
-      file_,
+      file_.GetPlatformFile(),
       base::Bind(&SerialConnection::OnAsyncReadComplete, AsWeakPtr()),
       base::Bind(&SerialConnection::OnAsyncWriteComplete, AsWeakPtr()));
 
@@ -209,11 +208,9 @@ void SerialConnection::FinishOpen(base::PlatformFile file) {
 }
 
 // static
-void SerialConnection::DoClose(base::PlatformFile port) {
+void SerialConnection::DoClose(base::File port) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  if (port != base::kInvalidPlatformFileValue) {
-    base::ClosePlatformFile(port);
-  }
+  // port closed by destructor.
 }
 
 void SerialConnection::OnReceiveTimeout() {

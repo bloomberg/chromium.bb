@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/file_handlers/app_file_handler_util.h"
 
 #include "base/file_util.h"
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
@@ -73,21 +74,12 @@ bool DoCheckWritableFile(const base::FilePath& path, bool is_directory) {
     return base::DirectoryExists(path);
 
   // Create the file if it doesn't already exist.
-  base::PlatformFileError error = base::PLATFORM_FILE_OK;
-  int creation_flags = base::PLATFORM_FILE_CREATE |
-                       base::PLATFORM_FILE_READ |
-                       base::PLATFORM_FILE_WRITE;
-  base::PlatformFile file = base::CreatePlatformFile(path, creation_flags,
-                                                     NULL, &error);
-  // Close the file so we don't keep a lock open.
-  if (file != base::kInvalidPlatformFileValue)
-    base::ClosePlatformFile(file);
-  if (error != base::PLATFORM_FILE_OK &&
-      error != base::PLATFORM_FILE_ERROR_EXISTS) {
-    return false;
-  }
-
-  return true;
+  int creation_flags = base::File::FLAG_CREATE | base::File::FLAG_READ |
+                       base::File::FLAG_WRITE;
+  base::File file(path, creation_flags);
+  if (file.IsValid())
+    return true;
+  return file.error_details() == base::File::FILE_ERROR_EXISTS;
 }
 
 // Checks whether a list of paths are all OK for writing and calls a provided

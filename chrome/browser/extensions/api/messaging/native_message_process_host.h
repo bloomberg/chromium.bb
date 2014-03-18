@@ -106,8 +106,8 @@ class NativeMessageProcessHost
   // Callback for NativeProcessLauncher::Launch().
   void OnHostProcessLaunched(NativeProcessLauncher::LaunchResult result,
                              base::ProcessHandle process_handle,
-                             base::PlatformFile read_file,
-                             base::PlatformFile write_file);
+                             base::File read_file,
+                             base::File write_file);
 
   // Helper methods to read incoming messages.
   void WaitRead();
@@ -147,11 +147,13 @@ class NativeMessageProcessHost
 
   base::ProcessHandle process_handle_;
 
-  // Input stream handle and reader.
-  base::PlatformFile read_file_;
+  // Input stream reader.
   scoped_ptr<net::FileStream> read_stream_;
 
 #if defined(OS_POSIX)
+  // TODO(rvargas): Remove these members, maybe merging the functionality to
+  // net::FileStream.
+  base::PlatformFile read_file_;
   base::MessageLoopForIO::FileDescriptorWatcher read_watcher_;
 #endif  // !defined(OS_POSIX)
 

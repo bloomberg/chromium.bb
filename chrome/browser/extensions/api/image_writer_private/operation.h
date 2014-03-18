@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_API_IMAGE_WRITER_PRIVATE_OPERATION_H_
 
 #include "base/callback.h"
+#include "base/files/file.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/md5.h"
 #include "base/memory/ref_counted_memory.h"
@@ -176,7 +177,7 @@ class Operation : public base::RefCountedThreadSafe<Operation> {
 #endif
 
   // Incrementally calculates the MD5 sum of a file.
-  void MD5Chunk(const base::PlatformFile& file,
+  void MD5Chunk(base::File file,
                 int64 bytes_processed,
                 int64 bytes_total,
                 int progress_offset,

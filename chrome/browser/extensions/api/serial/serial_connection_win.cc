@@ -134,7 +134,7 @@ bool SerialConnection::ConfigurePort(
     const api::serial::ConnectionOptions& options) {
   DCB config = { 0 };
   config.DCBlength = sizeof(config);
-  if (!GetCommState(file_, &config)) {
+  if (!GetCommState(file_.GetPlatformFile(), &config)) {
     return false;
   }
   if (options.bitrate.get())
@@ -154,7 +154,7 @@ bool SerialConnection::ConfigurePort(
       config.fRtsControl = RTS_CONTROL_ENABLE;
     }
   }
-  return SetCommState(file_, &config) != 0;
+  return SetCommState(file_.GetPlatformFile(), &config) != 0;
 }
 
 bool SerialConnection::PostOpen() {
@@ -164,13 +164,13 @@ bool SerialConnection::PostOpen() {
   // signals that data is available.
   COMMTIMEOUTS timeouts = { 0 };
   timeouts.ReadIntervalTimeout = MAXDWORD;
-  if (!::SetCommTimeouts(file_, &timeouts)) {
+  if (!::SetCommTimeouts(file_.GetPlatformFile(), &timeouts)) {
     return false;
   }
 
   DCB config = { 0 };
   config.DCBlength = sizeof(config);
-  if (!GetCommState(file_, &config)) {
+  if (!GetCommState(file_.GetPlatformFile(), &config)) {
     return false;
   }
   // Setup some sane default state.
@@ -184,17 +184,17 @@ bool SerialConnection::PostOpen() {
   config.fDsrSensitivity = FALSE;
   config.fOutX = FALSE;
   config.fInX = FALSE;
-  return SetCommState(file_, &config) != 0;
+  return SetCommState(file_.GetPlatformFile(), &config) != 0;
 }
 
 bool SerialConnection::Flush() const {
-  return PurgeComm(file_, PURGE_RXCLEAR | PURGE_TXCLEAR) != 0;
+  return PurgeComm(file_.GetPlatformFile(), PURGE_RXCLEAR | PURGE_TXCLEAR) != 0;
 }
 
 bool SerialConnection::GetControlSignals(
     api::serial::DeviceControlSignals* signals) const {
   DWORD status;
-  if (!GetCommModemStatus(file_, &status)) {
+  if (!GetCommModemStatus(file_.GetPlatformFile(), &status)) {
     return false;
   }
   signals->dcd = (status & MS_RLSD_ON) != 0;
@@ -207,12 +207,14 @@ bool SerialConnection::GetControlSignals(
 bool SerialConnection::SetControlSignals(
     const api::serial::HostControlSignals& signals) {
   if (signals.dtr.get()) {
-    if (!EscapeCommFunction(file_, *signals.dtr ? SETDTR : CLRDTR)) {
+    if (!EscapeCommFunction(file_.GetPlatformFile(),
+                            *signals.dtr ? SETDTR : CLRDTR)) {
       return false;
     }
   }
   if (signals.rts.get()) {
-    if (!EscapeCommFunction(file_, *signals.rts ? SETRTS : CLRRTS)) {
+    if (!EscapeCommFunction(file_.GetPlatformFile(),
+                            *signals.rts ? SETRTS : CLRRTS)) {
       return false;
     }
   }
@@ -222,7 +224,7 @@ bool SerialConnection::SetControlSignals(
 bool SerialConnection::GetPortInfo(api::serial::ConnectionInfo* info) const {
   DCB config = { 0 };
   config.DCBlength = sizeof(config);
-  if (!GetCommState(file_, &config)) {
+  if (!GetCommState(file_.GetPlatformFile(), &config)) {
     return false;
   }
   info->bitrate.reset(new int(SpeedConstantToBitrate(config.BaudRate)));

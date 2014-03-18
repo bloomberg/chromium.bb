@@ -50,8 +50,8 @@ base::FilePath NativeProcessLauncher::FindManifest(
 bool NativeProcessLauncher::LaunchNativeProcess(
     const CommandLine& command_line,
     base::ProcessHandle* process_handle,
-    base::PlatformFile* read_file,
-    base::PlatformFile* write_file) {
+    base::File* read_file,
+    base::File* write_file) {
   base::FileHandleMappingVector fd_map;
 
   int read_pipe_fds[2] = {0};
@@ -83,8 +83,8 @@ bool NativeProcessLauncher::LaunchNativeProcess(
   write_pipe_read_fd.reset();
   read_pipe_write_fd.reset();
 
-  *read_file = read_pipe_read_fd.release();
-  *write_file = write_pipe_write_fd.release();
+  *read_file = base::File(read_pipe_read_fd.release());
+  *write_file = base::File(write_pipe_write_fd.release());
 
   return true;
 }

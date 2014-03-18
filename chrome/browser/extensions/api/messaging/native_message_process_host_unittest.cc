@@ -4,6 +4,7 @@
 
 #include "base/bind.h"
 #include "base/file_util.h"
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_file.h"
 #include "base/files/scoped_temp_dir.h"
@@ -11,7 +12,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "base/platform_file.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
@@ -48,42 +48,48 @@ namespace extensions {
 
 class FakeLauncher : public NativeProcessLauncher {
  public:
-  FakeLauncher(base::PlatformFile read_file, base::PlatformFile write_file)
-    : read_file_(read_file),
-      write_file_(write_file) {
+  FakeLauncher(base::File read_file, base::File write_file)
+      : read_file_(read_file.Pass()),
+        write_file_(write_file.Pass()) {
   }
 
   static scoped_ptr<NativeProcessLauncher> Create(base::FilePath read_file,
-                                         base::FilePath write_file) {
-    int read_flags = base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ |
-                     base::PLATFORM_FILE_ASYNC;
-    int write_flags = base::PLATFORM_FILE_CREATE | base::PLATFORM_FILE_WRITE |
-                      base::PLATFORM_FILE_ASYNC;
+                                                  base::FilePath write_file) {
+    int read_flags = base::File::FLAG_OPEN | base::File::FLAG_READ;
+    int write_flags = base::File::FLAG_CREATE | base::File::FLAG_WRITE;
+#if !defined(OS_POSIX)
+    read_flags |= base::File::FLAG_ASYNC;
+    write_flags |= base::File::FLAG_ASYNC;
+#endif
     return scoped_ptr<NativeProcessLauncher>(new FakeLauncher(
-        base::CreatePlatformFile(read_file, read_flags, NULL, NULL),
-        base::CreatePlatformFile(write_file, write_flags, NULL, NULL)));
+        base::File(read_file, read_flags),
+        base::File(write_file, write_flags)));
   }
 
   static scoped_ptr<NativeProcessLauncher> CreateWithPipeInput(
-      base::PlatformFile read_pipe,
+      base::File read_pipe,
       base::FilePath write_file) {
-    int write_flags = base::PLATFORM_FILE_CREATE | base::PLATFORM_FILE_WRITE |
-                      base::PLATFORM_FILE_ASYNC;
+    int write_flags = base::File::FLAG_CREATE | base::File::FLAG_WRITE;
+#if !defined(OS_POSIX)
+    write_flags |= base::File::FLAG_ASYNC;
+#endif
+
     return scoped_ptr<NativeProcessLauncher>(new FakeLauncher(
-        read_pipe,
-        base::CreatePlatformFile(write_file, write_flags, NULL, NULL)));
+        read_pipe.Pass(),
+        base::File(write_file, write_flags)));
   }
 
   virtual void Launch(const GURL& origin,
                       const std::string& native_host_name,
                       LaunchedCallback callback) const OVERRIDE {
     callback.Run(NativeProcessLauncher::RESULT_SUCCESS,
-                 base::kNullProcessHandle, read_file_, write_file_);
+                 base::kNullProcessHandle,
+                 read_file_.Pass(), write_file_.Pass());
   }
 
  private:
-  base::PlatformFile read_file_;
-  base::PlatformFile write_file_;
+  mutable base::File read_file_;
+  mutable base::File write_file_;
 };
 
 class NativeMessagingTest : public ::testing::Test,
@@ -196,33 +202,34 @@ TEST_F(NativeMessagingTest, SingleSendMessageRead) {
 TEST_F(NativeMessagingTest, SingleSendMessageWrite) {
   base::FilePath temp_output_file = temp_dir_.path().AppendASCII("output");
 
-  base::PlatformFile read_file;
+  base::File read_file;
 #if defined(OS_WIN)
   base::string16 pipe_name = base::StringPrintf(
       L"\\\\.\\pipe\\chrome.nativeMessaging.out.%llx", base::RandUint64());
-  base::win::ScopedHandle write_handle(
+  base::File write_handle(
       CreateNamedPipeW(pipe_name.c_str(),
                        PIPE_ACCESS_OUTBOUND | FILE_FLAG_OVERLAPPED |
                            FILE_FLAG_FIRST_PIPE_INSTANCE,
                        PIPE_TYPE_BYTE, 1, 0, 0, 5000, NULL));
-  ASSERT_TRUE(write_handle);
-  base::win::ScopedHandle read_handle(
+  ASSERT_TRUE(write_handle.IsValid());
+  base::File read_handle(
       CreateFileW(pipe_name.c_str(), GENERIC_READ, 0, NULL, OPEN_EXISTING,
                   FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED, NULL));
-  ASSERT_TRUE(read_handle);
+  ASSERT_TRUE(read_handle.IsValid());
 
-  read_file = read_handle.Get();
+  read_file = read_handle.Pass();
 #else  // defined(OS_WIN)
   base::PlatformFile pipe_handles[2];
   ASSERT_EQ(0, pipe(pipe_handles));
   base::ScopedFD read_fd(pipe_handles[0]);
   base::ScopedFD write_fd(pipe_handles[1]);
 
-  read_file = pipe_handles[0];
+  read_file = base::File(pipe_handles[0]);
 #endif  // !defined(OS_WIN)
 
   scoped_ptr<NativeProcessLauncher> launcher =
-      FakeLauncher::CreateWithPipeInput(read_file, temp_output_file).Pass();
+      FakeLauncher::CreateWithPipeInput(read_file.Pass(),
+                                        temp_output_file).Pass();
   native_message_process_host_ = NativeMessageProcessHost::CreateWithLauncher(
       AsWeakPtr(), ScopedTestNativeMessagingHost::kExtensionId, "empty_app.py",
       0, launcher.Pass());

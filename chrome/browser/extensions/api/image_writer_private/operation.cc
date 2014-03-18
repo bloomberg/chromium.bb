@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/extensions/api/image_writer_private/operation.h"
+
 #include "base/file_util.h"
 #include "base/files/file_enumerator.h"
-#include "base/platform_file.h"
 #include "base/threading/worker_pool.h"
 #include "chrome/browser/extensions/api/image_writer_private/error_messages.h"
-#include "chrome/browser/extensions/api/image_writer_private/operation.h"
 #include "chrome/browser/extensions/api/image_writer_private/operation_manager.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -284,18 +284,15 @@ void Operation::GetMD5SumOfFile(
 
   base::MD5Init(&md5_context_);
 
-  base::PlatformFile file = base::CreatePlatformFile(
-      file_path,
-      base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ,
-      NULL,
-      NULL);
-  if (file == base::kInvalidPlatformFileValue) {
+  base::File file(file_path, base::File::FLAG_OPEN | base::File::FLAG_READ);
+  if (!file.IsValid()) {
     Error(error::kImageOpenError);
     return;
   }
 
   if (file_size <= 0) {
-    if (!base::GetFileSize(file_path, &file_size)) {
+    file_size = file.GetLength();
+    if (file_size < 0) {
       Error(error::kImageOpenError);
       return;
     }
@@ -305,7 +302,7 @@ void Operation::GetMD5SumOfFile(
                           FROM_HERE,
                           base::Bind(&Operation::MD5Chunk,
                                      this,
-                                     file,
+                                     Passed(file.Pass()),
                                      0,
                                      file_size,
                                      progress_offset,
@@ -314,16 +311,14 @@ void Operation::GetMD5SumOfFile(
 }
 
 void Operation::MD5Chunk(
-    const base::PlatformFile& file,
+    base::File file,
     int64 bytes_processed,
     int64 bytes_total,
     int progress_offset,
     int progress_scale,
     const base::Callback<void(const std::string&)>& callback) {
-  if (IsCancelled()) {
-    base::ClosePlatformFile(file);
+  if (IsCancelled())
     return;
-  }
 
   CHECK_LE(bytes_processed, bytes_total);
 
@@ -337,8 +332,7 @@ void Operation::MD5Chunk(
     base::MD5Final(&digest, &md5_context_);
     callback.Run(base::MD5DigestToBase16(digest));
   } else {
-    int len =
-        base::ReadPlatformFile(file, bytes_processed, buffer.get(), read_size);
+    int len = file.Read(bytes_processed, buffer.get(), read_size);
 
     if (len == read_size) {
       // Process data.
@@ -352,7 +346,7 @@ void Operation::MD5Chunk(
                               FROM_HERE,
                               base::Bind(&Operation::MD5Chunk,
                                          this,
-                                         file,
+                                         Passed(file.Pass()),
                                          bytes_processed + len,
                                          bytes_total,
                                          progress_offset,
@@ -365,7 +359,6 @@ void Operation::MD5Chunk(
       Error(error::kHashReadError);
     }
   }
-  base::ClosePlatformFile(file);
 }
 
 void Operation::OnUnzipFailure() {

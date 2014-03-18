@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_EXTENSIONS_API_MESSAGING_NATIVE_PROCESS_LAUNCHER_H_
 
 #include "base/callback_forward.h"
+#include "base/files/file.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/platform_file.h"
 #include "base/process/process.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -33,10 +33,10 @@ class NativeProcessLauncher {
   // Callback that's called after the process has been launched. |result| is set
   // to false in case of a failure. Handler must take ownership of the IO
   // handles.
-  typedef base::Callback<void (LaunchResult result,
-                               base::ProcessHandle process_handle,
-                               base::PlatformFile read_file,
-                               base::PlatformFile write_file)> LaunchedCallback;
+  typedef base::Callback<void(LaunchResult result,
+                              base::ProcessHandle process_handle,
+                              base::File read_file,
+                              base::File write_file)> LaunchedCallback;
 
   static scoped_ptr<NativeProcessLauncher> CreateDefault(
       bool allow_user_level_hosts,
@@ -69,8 +69,8 @@ class NativeProcessLauncher {
   // Launches native messaging process.
   static bool LaunchNativeProcess(const base::CommandLine& command_line,
                                   base::ProcessHandle* process_handle,
-                                  base::PlatformFile* read_file,
-                                  base::PlatformFile* write_file);
+                                  base::File* read_file,
+                                  base::File* write_file);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NativeProcessLauncher);

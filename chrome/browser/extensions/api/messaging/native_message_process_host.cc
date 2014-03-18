@@ -104,7 +104,9 @@ NativeMessageProcessHost::NativeMessageProcessHost(
       launcher_(launcher.Pass()),
       closed_(false),
       process_handle_(base::kNullProcessHandle),
+#if defined(OS_POSIX)
       read_file_(base::kInvalidPlatformFileValue),
+#endif
       read_pending_(false),
       write_pending_(false) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
@@ -164,8 +166,8 @@ void NativeMessageProcessHost::LaunchHostProcess() {
 void NativeMessageProcessHost::OnHostProcessLaunched(
     NativeProcessLauncher::LaunchResult result,
     base::ProcessHandle process_handle,
-    base::PlatformFile read_file,
-    base::PlatformFile write_file) {
+    base::File read_file,
+    base::File write_file) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
   switch (result) {
@@ -186,7 +188,10 @@ void NativeMessageProcessHost::OnHostProcessLaunched(
   }
 
   process_handle_ = process_handle;
-  read_file_ = read_file;
+#if defined(OS_POSIX)
+  // This object is not the owner of the file so it should not keep an fd.
+  read_file_ = read_file.GetPlatformFile();
+#endif
 
   scoped_refptr<base::TaskRunner> task_runner(
       content::BrowserThread::GetBlockingPool()->
@@ -194,10 +199,12 @@ void NativeMessageProcessHost::OnHostProcessLaunched(
               base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
 
   read_stream_.reset(new net::FileStream(
-      read_file, base::PLATFORM_FILE_READ | base::PLATFORM_FILE_ASYNC, NULL,
+      read_file.TakePlatformFile(),
+      base::PLATFORM_FILE_READ | base::PLATFORM_FILE_ASYNC, NULL,
       task_runner));
   write_stream_.reset(new net::FileStream(
-      write_file, base::PLATFORM_FILE_WRITE | base::PLATFORM_FILE_ASYNC, NULL,
+      write_file.TakePlatformFile(),
+      base::PLATFORM_FILE_WRITE | base::PLATFORM_FILE_ASYNC, NULL,
       task_runner));
 
   WaitRead();
@@ -256,8 +263,8 @@ void NativeMessageProcessHost::WaitRead() {
   // FileStream uses overlapped IO, so that optimization isn't necessary there.
 #if defined(OS_POSIX)
   base::MessageLoopForIO::current()->WatchFileDescriptor(
-    read_file_, false /* persistent */, base::MessageLoopForIO::WATCH_READ,
-    &read_watcher_, this);
+    read_file_, false /* persistent */,
+    base::MessageLoopForIO::WATCH_READ, &read_watcher_, this);
 #else  // defined(OS_POSIX)
   DoRead();
 #endif  // defined(!OS_POSIX)

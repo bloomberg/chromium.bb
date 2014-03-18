@@ -116,7 +116,7 @@ bool SetCustomBitrate(base::PlatformFile file,
 bool SerialConnection::ConfigurePort(
     const api::serial::ConnectionOptions& options) {
   struct termios config;
-  tcgetattr(file_, &config);
+  tcgetattr(file_.GetPlatformFile(), &config);
   if (options.bitrate.get()) {
     if (*options.bitrate >= 0) {
       speed_t bitrate_opt = B0;
@@ -125,7 +125,8 @@ bool SerialConnection::ConfigurePort(
         cfsetospeed(&config, bitrate_opt);
       } else {
         // Attempt to set a custom speed.
-        if (!SetCustomBitrate(file_, &config, *options.bitrate)) {
+        if (!SetCustomBitrate(file_.GetPlatformFile(), &config,
+                              *options.bitrate)) {
           return false;
         }
       }
@@ -176,12 +177,12 @@ bool SerialConnection::ConfigurePort(
       config.c_cflag &= ~CRTSCTS;
     }
   }
-  return tcsetattr(file_, TCSANOW, &config) == 0;
+  return tcsetattr(file_.GetPlatformFile(), TCSANOW, &config) == 0;
 }
 
 bool SerialConnection::PostOpen() {
   struct termios config;
-  tcgetattr(file_, &config);
+  tcgetattr(file_.GetPlatformFile(), &config);
 
   // Set flags for 'raw' operation
   config.c_lflag &= ~(ICANON | ECHO | ECHOE | ECHONL | ISIG);
@@ -193,17 +194,17 @@ bool SerialConnection::PostOpen() {
   // CREAD enables reading from the port.
   config.c_cflag |= (CLOCAL | CREAD);
 
-  return tcsetattr(file_, TCSANOW, &config) == 0;
+  return tcsetattr(file_.GetPlatformFile(), TCSANOW, &config) == 0;
 }
 
 bool SerialConnection::Flush() const {
-  return tcflush(file_, TCIOFLUSH) == 0;
+  return tcflush(file_.GetPlatformFile(), TCIOFLUSH) == 0;
 }
 
 bool SerialConnection::GetControlSignals(
     api::serial::DeviceControlSignals* signals) const {
   int status;
-  if (ioctl(file_, TIOCMGET, &status) == -1) {
+  if (ioctl(file_.GetPlatformFile(), TIOCMGET, &status) == -1) {
     return false;
   }
 
@@ -218,7 +219,7 @@ bool SerialConnection::SetControlSignals(
     const api::serial::HostControlSignals& signals) {
   int status;
 
-  if (ioctl(file_, TIOCMGET, &status) == -1) {
+  if (ioctl(file_.GetPlatformFile(), TIOCMGET, &status) == -1) {
     return false;
   }
 
@@ -238,12 +239,12 @@ bool SerialConnection::SetControlSignals(
     }
   }
 
-  return ioctl(file_, TIOCMSET, &status) == 0;
+  return ioctl(file_.GetPlatformFile(), TIOCMSET, &status) == 0;
 }
 
 bool SerialConnection::GetPortInfo(api::serial::ConnectionInfo* info) const {
   struct termios config;
-  if (tcgetattr(file_, &config) == -1) {
+  if (tcgetattr(file_.GetPlatformFile(), &config) == -1) {
     return false;
   }
   speed_t ispeed = cfgetispeed(&config);

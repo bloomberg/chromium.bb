@@ -90,8 +90,8 @@ base::FilePath NativeProcessLauncher::FindManifest(
 bool NativeProcessLauncher::LaunchNativeProcess(
     const CommandLine& command_line,
     base::ProcessHandle* process_handle,
-    base::PlatformFile* read_file,
-    base::PlatformFile* write_file) {
+    base::File* read_file,
+    base::File* write_file) {
   // Timeout for the IO pipes.
   const DWORD kTimeoutMs = 5000;
 
@@ -170,8 +170,8 @@ bool NativeProcessLauncher::LaunchNativeProcess(
   }
 
   *process_handle = cmd_handle.Take();
-  *read_file = stdout_pipe.Take();
-  *write_file = stdin_pipe.Take();
+  *read_file = base::File(stdout_pipe.Take());
+  *write_file = base::File(stdin_pipe.Take());
 
   return true;
 }

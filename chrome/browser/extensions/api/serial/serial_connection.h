@@ -9,10 +9,10 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/files/file.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "base/platform_file.h"
 #include "base/time/time.h"
 #include "chrome/browser/extensions/api/serial/serial_io_handler.h"
 #include "chrome/common/extensions/api/serial.h"
@@ -164,10 +164,10 @@ class SerialConnection : public ApiResource,
   void StartOpen();
 
   // Finalizes an Open operation (continued from StartOpen) on the IO thread.
-  void FinishOpen(base::PlatformFile file);
+  void FinishOpen(base::File file);
 
   // Continues a Close operation on the FILE thread.
-  static void DoClose(base::PlatformFile port);
+  static void DoClose(base::File port);
 
   // Handles a receive timeout.
   void OnReceiveTimeout();
@@ -185,9 +185,9 @@ class SerialConnection : public ApiResource,
   // The pathname of the serial device.
   std::string port_;
 
-  // File handle for the opened serial device. This value is only modified from
-  // the IO thread.
-  base::PlatformFile file_;
+  // File for the opened serial device. This value is only modified from the IO
+  // thread.
+  base::File file_;
 
   // Flag indicating whether or not the connection should persist when
   // its host app is suspended.
