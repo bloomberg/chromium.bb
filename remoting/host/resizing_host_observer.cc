@@ -117,7 +117,6 @@ class CandidateResolution {
 ResizingHostObserver::ResizingHostObserver(
     scoped_ptr<DesktopResizer> desktop_resizer)
     : desktop_resizer_(desktop_resizer.Pass()),
-      original_resolution_(desktop_resizer_->GetCurrentResolution()),
       now_function_(base::Bind(base::Time::Now)),
       weak_factory_(this) {
 }
@@ -168,8 +167,12 @@ void ResizingHostObserver::SetScreenResolution(
   }
   ScreenResolution current_resolution =
       desktop_resizer_->GetCurrentResolution();
-  if (!best_candidate.resolution().Equals(current_resolution))
+
+  if (!best_candidate.resolution().Equals(current_resolution)) {
+    if (original_resolution_.IsEmpty())
+      original_resolution_ = current_resolution;
     desktop_resizer_->SetResolution(best_candidate.resolution());
+  }
 
   // Update the time of last resize to allow it to be rate-limited.
   previous_resize_time_ = now;
