@@ -17,6 +17,16 @@
 <script>
 description('Test that form submit within onsubmit event handlers are not delayed and sends the form data when invoked');
 var count = 2;
+
+function asyncTest(query) {
+    if (query === '?query=AAA' || query === '?query1=BBB') {
+        if (--count == 0) {
+            testPassed('Both query events received, with correct values: AAA and BBB');
+            finishJSTest();
+        }
+    }
+}
+
 document.forms[0].onsubmit = function (event) {
     document.forms[0].submit();
     document.forms[0].children.query.value = 'BBB';
@@ -30,20 +40,18 @@ document.forms[1].onsubmit = function (event) {
 }
 
 document.getElementById('target').onload = function(event) {
-    shouldBeEqualToString('event.target.contentWindow.location.search', '?query=AAA');
-    if (--count == 0)
-        finishJSTest();
+    // This should return back query AAA
+    asyncTest(event.target.contentWindow.location.search);
 }
 
 document.getElementById('target1').onload = function(event) {
-    shouldBeEqualToString('event.target.contentWindow.location.search', '?query1=BBB');
-    if (--count == 0)
-        finishJSTest();
+    // This should return back query BBB
+    asyncTest(event.target.contentWindow.location.search);
 }
 
 window.onload = function() {
-    document.getElementById('submitButton1').click();
     document.getElementById('submitButton').click();
+    document.getElementById('submitButton1').click();
 }
 
 if (window.testRunner)
