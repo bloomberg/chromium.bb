@@ -7,6 +7,7 @@ package org.chromium.content.browser;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.SmallTest;
 
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -142,8 +143,12 @@ public class ScreenOrientationProviderTest extends ContentShellTestBase {
                 ScreenOrientationValues.PORTRAIT_SECONDARY));
     }
 
-    @MediumTest
-    @Feature({"ScreenOrientation"})
+    /**
+     * @MediumTest
+     * @Feature({"ScreenOrientation"})
+     * http://crbug.com/353500
+     */
+    @DisabledTest
     public void testLandscape() throws Exception {
         lockOrientationAndWait(ScreenOrientationValues.LANDSCAPE_PRIMARY);
         assertTrue(checkOrientationForLock(ScreenOrientationValues.LANDSCAPE_PRIMARY));
