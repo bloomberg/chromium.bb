@@ -33,19 +33,12 @@ class DefaultState : public WindowState::State {
   static bool ProcessWorkspaceEvents(WindowState* window_state,
                                      const WMEvent* event);
 
-  // Animates to new window bounds based on the current, previous state type
-  // and WM event.
+  // Animates to new window bounds based on the current and previous state type.
   static void UpdateBounds(wm::WindowState* window_state,
-                           wm::WindowStateType old_state_type,
-                           const WMEvent* event);
+                           wm::WindowStateType old_state_type);
 
   // Set the fullscreen/maximized bounds without animation.
   static bool SetMaximizedOrFullscreenBounds(wm::WindowState* window_state);
-
-  // Snaps a window according to the event.
-  static void SnapWindow(WindowState* window_state,
-                         const WMEvent* snap_event,
-                         WindowStateType old_type);
 
   static void SetBounds(WindowState* window_state,
                         const SetBoundsEvent* bounds_event);

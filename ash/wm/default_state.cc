@@ -134,7 +134,7 @@ void DefaultState::OnWMEvent(WindowState* window_state,
     // TODO(oshima): Make docked window a state.
     if (window_state->IsSnapped() ||
         (!window_state->IsDocked() && !IsPanel(window_state->window()))) {
-      UpdateBounds(window_state, current, event);
+      UpdateBounds(window_state, current);
     }
     window_state->NotifyPostStateTypeChange(current);
   }
@@ -356,17 +356,17 @@ bool DefaultState::ProcessWorkspaceEvents(WindowState* window_state,
 
 // static
 void DefaultState::UpdateBounds(WindowState* window_state,
-                                WindowStateType old_state_type,
-                                const WMEvent* event) {
+                                WindowStateType old_state_type) {
   aura::Window* window = window_state->window();
   // Do nothing If this is not yet added to the container.
   if (!window->parent())
     return;
 
-  if (old_state_type != WINDOW_STATE_TYPE_MINIMIZED &&
-      !window_state->HasRestoreBounds() &&
-      window_state->IsMaximizedOrFullscreen() &&
-      !IsMaximizedOrFullscreenWindowStateType(old_state_type)) {
+  if (!window_state->HasRestoreBounds() &&
+      (old_state_type == WINDOW_STATE_TYPE_DEFAULT ||
+       old_state_type == WINDOW_STATE_TYPE_NORMAL) &&
+      !window_state->IsMinimized() &&
+      !window_state->IsNormalStateType()) {
     window_state->SaveCurrentBoundsForRestore();
   }
 
@@ -376,7 +376,7 @@ void DefaultState::UpdateBounds(WindowState* window_state,
   // clicking the window border for example).
   gfx::Rect restore_bounds_in_screen;
   if (old_state_type == WINDOW_STATE_TYPE_MINIMIZED &&
-      window_state->IsNormalOrSnapped() &&
+      window_state->IsNormalStateType() &&
       window_state->HasRestoreBounds() &&
       !window_state->unminimize_to_restore_bounds()) {
     restore_bounds_in_screen = window_state->GetRestoreBoundsInScreen();
@@ -391,11 +391,11 @@ void DefaultState::UpdateBounds(WindowState* window_state,
 
   switch (state_type) {
     case WINDOW_STATE_TYPE_LEFT_SNAPPED:
-    case WINDOW_STATE_TYPE_RIGHT_SNAPPED: {
-      // There is no transition from minimized to snapped state.
-      SnapWindow(window_state, event, old_state_type);
-      return;
-    }
+    case WINDOW_STATE_TYPE_RIGHT_SNAPPED:
+      bounds_in_parent = state_type == WINDOW_STATE_TYPE_LEFT_SNAPPED ?
+          GetDefaultLeftSnappedWindowBoundsInParent(window_state->window()) :
+          GetDefaultRightSnappedWindowBoundsInParent(window_state->window());
+      break;
     case WINDOW_STATE_TYPE_DEFAULT:
     case WINDOW_STATE_TYPE_NORMAL: {
       gfx::Rect work_area_in_parent =
@@ -430,9 +430,13 @@ void DefaultState::UpdateBounds(WindowState* window_state,
     if (old_state_type == WINDOW_STATE_TYPE_MINIMIZED ||
         window_state->IsFullscreen()) {
       window_state->SetBoundsDirect(bounds_in_parent);
-    } else if (window_state->IsMaximizedOrFullscreen() ||
+    } else if (window_state->IsMaximized() ||
                IsMaximizedOrFullscreenWindowStateType(old_state_type)) {
       window_state->SetBoundsDirectCrossFade(bounds_in_parent);
+    } else if (window_state->is_dragged()) {
+      // SetBoundsDirectAnimated does not work when the window gets reparented.
+      // TODO(oshima): Consider fixing it and reenable the animation.
+      window_state->SetBoundsDirect(bounds_in_parent);
     } else {
       window_state->SetBoundsDirectAnimated(bounds_in_parent);
     }
@@ -462,7 +466,7 @@ void DefaultState::UpdateBounds(WindowState* window_state,
     }
   }
 
-  if (window_state->IsNormalOrSnapped())
+  if (window_state->IsNormalStateType())
     window_state->ClearRestoreBounds();
 
   // Set the restore rectangle to the previously set restore rectangle.
@@ -484,32 +488,6 @@ bool DefaultState::SetMaximizedOrFullscreenBounds(WindowState* window_state) {
     return true;
   }
   return false;
-}
-
-// static
-void DefaultState::SnapWindow(WindowState* window_state,
-                              const WMEvent* event,
-                              WindowStateType old_state_type) {
-  // Compute the bounds that the window will restore to. If the window does not
-  // already have restore bounds, it will be restored (when un-snapped) to the
-  // last bounds that it had before getting snapped.
-  gfx::Rect restore_bounds_in_screen = window_state->HasRestoreBounds() ?
-      window_state->GetRestoreBoundsInScreen() :
-      window_state->window()->GetBoundsInScreen();
-  gfx::Rect snapped_bounds = event->type() == WM_EVENT_SNAP_LEFT ?
-      GetDefaultLeftSnappedWindowBoundsInParent(window_state->window()) :
-      GetDefaultRightSnappedWindowBoundsInParent(window_state->window());
-
-  if (IsMaximizedOrFullscreenWindowStateType(old_state_type)) {
-    window_state->SetBoundsDirectCrossFade(snapped_bounds);
-  } else if (window_state->is_dragged()) {
-    // SetBoundsDirectAnimated does not work when the window gets reparented.
-    // TODO(oshima): Consider fixing it and reenable the animation.
-    window_state->SetBoundsDirect(snapped_bounds);
-  } else {
-    window_state->SetBoundsDirectAnimated(snapped_bounds);
-  }
-  window_state->SetRestoreBoundsInScreen(restore_bounds_in_screen);
 }
 
 // static
