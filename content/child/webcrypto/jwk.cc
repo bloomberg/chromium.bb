@@ -353,9 +353,6 @@ Status WriteAlg(const blink::WebCryptoKeyAlgorithm& algorithm,
         case blink::WebCryptoAlgorithmIdSha1:
           jwk_dict->SetString("alg", "HS1");
           break;
-        case blink::WebCryptoAlgorithmIdSha224:
-          jwk_dict->SetString("alg", "HS224");
-          break;
         case blink::WebCryptoAlgorithmIdSha256:
           jwk_dict->SetString("alg", "HS256");
           break;
