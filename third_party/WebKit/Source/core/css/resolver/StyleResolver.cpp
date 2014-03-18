@@ -1004,7 +1004,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForText(Text* textNode)
 
     NodeRenderingTraversal::ParentDetails parentDetails;
     Node* parentNode = NodeRenderingTraversal::parent(textNode, &parentDetails);
-    if (!parentNode || !parentNode->renderStyle() || parentDetails.resetStyleInheritance())
+    if (!parentNode || !parentNode->renderStyle())
         return defaultStyleForElement();
     return parentNode->renderStyle();
 }

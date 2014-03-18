@@ -107,7 +107,7 @@ private:
 
     static Node* traverseBackToYoungerShadowRoot(const Node*, TraversalDirection);
 
-    Node* traverseParentOrHost(const Node*, ParentTraversalDetails* = 0) const;
+    Node* traverseParentOrHost(const Node*) const;
 
     const Node* m_node;
 };

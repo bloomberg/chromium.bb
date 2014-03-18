@@ -41,9 +41,7 @@ StyleResolverState::StyleResolverState(Document& document, Element* element, Ren
     , m_styleMap(*this, m_elementStyleResources)
     , m_currentRule(0)
 {
-    if (m_elementContext.resetStyleInheritance())
-        m_parentStyle = nullptr;
-    else if (!parentStyle && m_elementContext.parentNode())
+    if (!parentStyle && m_elementContext.parentNode())
         m_parentStyle = m_elementContext.parentNode()->renderStyle();
 
     // FIXME: Animation unitests will start animations on non-active documents!

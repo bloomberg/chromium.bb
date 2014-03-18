@@ -49,13 +49,7 @@ void ParentDetails::didTraverseInsertionPoint(const InsertionPoint* insertionPoi
 {
     if (!m_insertionPoint) {
         m_insertionPoint = insertionPoint;
-        m_resetStyleInheritance  = m_resetStyleInheritance || insertionPoint->resetStyleInheritance();
     }
-}
-
-void ParentDetails::didTraverseShadowRoot(const ShadowRoot* root)
-{
-    m_resetStyleInheritance  = m_resetStyleInheritance || root->resetStyleInheritance();
 }
 
 ContainerNode* parent(const Node* node, ParentDetails* details)

@@ -904,9 +904,15 @@ crbug.com/352705 [ Win Debug ] virtual/threaded/animations/sample-on-last-keyfra
 crbug.com/352705 [ Linux ] virtual/threaded/animations/sample-on-last-keyframe.html [ Timeout Pass ]
 crbug.com/352801 [ Mavericks ] http/tests/security/link-crossorigin-stylesheet-no-cors.html [ Pass Failure ]
 crbug.com/352856 [ Mac ] svg/batik/text/textPosition2.svg [ Pass Failure ]
+
 crbug.com/353179 http/tests/inspector/elements/styles/selector-line-sourcemap-header-deprecated.html [ Pass Failure ]
 crbug.com/353186 [ Win Debug ] http/tests/security/webgl-remote-read-remote-image-allowed-with-credentials.html [ Pass Timeout ]
 crbug.com/353208 fast/files/workers/worker-read-blob-async-crash.html [ Pass Crash ]
 crbug.com/353301 [ Win ] svg/custom/js-late-gradient-and-object-creation.svg [ Pass ImageOnlyFailure ]
 
 crbug.com/351658 fast/events/window-onerror-03.html [ NeedsManualRebaseline ]
+
+crbug.com/353087 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/shadowroot-object/shadowroot-attributes/test-005.html [ Failure ]
+crbug.com/353087 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/the-content-html-element/test-004.html [ Failure ]
+crbug.com/353087 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/the-shadow-html-element/test-003.html [ Failure ]
+crbug.com/353087 w3c/web-platform-tests/shadow-dom/styles/test-012.html [ Failure ]

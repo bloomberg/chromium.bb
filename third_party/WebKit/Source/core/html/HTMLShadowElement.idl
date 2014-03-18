@@ -29,6 +29,5 @@
  */
 
 interface HTMLShadowElement : HTMLElement {
-    attribute boolean resetStyleInheritance;
     [RuntimeEnabled=ShadowDOM] NodeList getDistributedNodes();
 };

@@ -161,10 +161,7 @@ void RenderTreeBuilder::createRendererForTextIfNeeded()
     Text* textNode = toText(m_node);
     RenderObject* parentRenderer = this->parentRenderer();
 
-    if (m_parentDetails.resetStyleInheritance())
-        m_style = textNode->document().ensureStyleResolver().defaultStyleForElement();
-    else
-        m_style = parentRenderer->style();
+    m_style = parentRenderer->style();
 
     if (!textNode->textRendererIsNeeded(*m_style, *parentRenderer))
         return;

@@ -113,9 +113,6 @@ public:
     bool applyAuthorStyles() const { return m_applyAuthorStyles; }
     void setApplyAuthorStyles(bool);
 
-    bool resetStyleInheritance() const { return m_resetStyleInheritance; }
-    void setResetStyleInheritance(bool);
-
     ShadowRoot* olderShadowRoot() const { return next(); }
 
     String innerHTML() const;
@@ -167,7 +164,6 @@ private:
     OwnPtr<ShadowRootRareData> m_shadowRootRareData;
     unsigned m_numberOfStyles : 27;
     unsigned m_applyAuthorStyles : 1;
-    unsigned m_resetStyleInheritance : 1;
     unsigned m_type : 1;
     unsigned m_registeredWithParentShadowRoot : 1;
     unsigned m_descendantInsertionPointsIsValid : 1;

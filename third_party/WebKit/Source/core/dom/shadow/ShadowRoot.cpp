@@ -57,7 +57,6 @@ ShadowRoot::ShadowRoot(Document& document, ShadowRootType type)
     , m_next(0)
     , m_numberOfStyles(0)
     , m_applyAuthorStyles(false)
-    , m_resetStyleInheritance(false)
     , m_type(type)
     , m_registeredWithParentShadowRoot(false)
     , m_descendantInsertionPointsIsValid(false)
@@ -142,11 +141,6 @@ void ShadowRoot::recalcStyle(StyleRecalcChange change)
     // ShadowRoot doesn't support custom callbacks.
     ASSERT(!hasCustomStyleCallbacks());
 
-    // If we're propagating an Inherit change and this ShadowRoot resets
-    // inheritance we don't need to look at the children.
-    if (change <= Inherit && resetStyleInheritance() && !needsStyleRecalc() && !childNeedsStyleRecalc())
-        return;
-
     StyleResolver& styleResolver = document().ensureStyleResolver();
     styleResolver.pushParentShadowRoot(*this);
 
@@ -213,21 +207,6 @@ void ShadowRoot::setApplyAuthorStyles(bool value)
     // no recalc style is invoked for any elements in its shadow tree.
     // This problem occurs when using getComputedStyle() API.
     // So currently host and shadow root's needsStyleRecalc flags are set to be true.
-    setNeedsStyleRecalc(SubtreeStyleChange);
-}
-
-void ShadowRoot::setResetStyleInheritance(bool value)
-{
-    if (isOrphan())
-        return;
-
-    if (value == resetStyleInheritance())
-        return;
-
-    m_resetStyleInheritance = value;
-    if (!isActiveForStyling())
-        return;
-
     setNeedsStyleRecalc(SubtreeStyleChange);
 }
 

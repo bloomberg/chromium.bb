@@ -46,11 +46,6 @@ var shadowRoot = target.createShadowRoot();
 shadowRoot.innerHTML = '<span id="targetInShadow" class="target"></span>';
 var targetInShadow = shadowRoot.getElementById("targetInShadow");
 shadowRoot.applyAuthorStyles = true;
-// Disable style-inheritance from its shadow host to check whether rules match
-// the span in the shadow tree or not.
-shadowRoot.resetStyleInheritance = true;
-debug("Test a span in some shadow dom tree. Since the span's host node is the above target, we have to see all inserted scoped styles and an author style to find whether the styles have any matched rules or not.");
-shouldBe("window.getComputedStyle(targetInShadow).color", '"rgb(0, 0, 255)"');
 
 var styleInShadow = document.createElement("style");
 styleInShadow.innerHTML = "span { color: lime; }";
