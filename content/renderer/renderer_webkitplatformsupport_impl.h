@@ -138,12 +138,10 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
   virtual bool processMemorySizesInBytes(
       size_t* private_bytes, size_t* shared_bytes);
   virtual blink::WebGraphicsContext3D* createOffscreenGraphicsContext3D(
-#ifdef ENABLE_EXPLICIT_GL_SHARE_GROUPS
+      const blink::WebGraphicsContext3D::Attributes& attributes);
+  virtual blink::WebGraphicsContext3D* createOffscreenGraphicsContext3D(
       const blink::WebGraphicsContext3D::Attributes& attributes,
       blink::WebGraphicsContext3D* share_context);
-#else
-      const blink::WebGraphicsContext3D::Attributes& attributes);
-#endif
   virtual blink::WebGraphicsContext3DProvider*
       createSharedOffscreenGraphicsContext3DProvider();
   virtual blink::WebCompositorSupport* compositorSupport();
