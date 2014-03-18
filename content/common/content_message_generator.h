@@ -61,3 +61,7 @@
 #include "content/common/media/cdm_messages.h"
 #include "content/common/media/media_player_messages_android.h"
 #endif  // defined(OS_ANDROID)
+
+#if defined(USE_MOJO)
+#include "content/common/mojo/mojo_messages.h"
+#endif

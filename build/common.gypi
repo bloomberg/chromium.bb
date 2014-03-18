@@ -259,6 +259,9 @@
       'branding%': '<(branding)',
       'arm_version%': '<(arm_version)',
 
+      # Whether content/chrome is using mojo: see http://crbug.com/353602
+      'use_mojo%': 0,
+
       # Set to 1 to enable fast builds. Set to 2 for even faster builds
       # (it disables debug info for fastest compilation - only for use
       # on compile-only bots).
@@ -896,6 +899,7 @@
     'use_aura%': '<(use_aura)',
     'use_ash%': '<(use_ash)',
     'use_cras%': '<(use_cras)',
+    'use_mojo%': '<(use_mojo)',
     'use_openssl%': '<(use_openssl)',
     'use_nss%': '<(use_nss)',
     'use_udev%': '<(use_udev)',
@@ -2223,6 +2227,9 @@
       }],
       ['use_libjpeg_turbo==1', {
         'defines': ['USE_LIBJPEG_TURBO=1'],
+      }],
+      ['use_mojo==1', {
+        'defines': ['USE_MOJO=1'],
       }],
       ['use_x11==1', {
         'defines': ['USE_X11=1'],

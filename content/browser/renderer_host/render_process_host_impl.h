@@ -50,6 +50,10 @@ class ScreenOrientationDispatcherHost;
 class StoragePartition;
 class StoragePartitionImpl;
 
+#if defined(USE_MOJO)
+class MojoChannelInit;
+#endif
+
 // Implements a concrete RenderProcessHost for the browser process for talking
 // to actual renderer processes (as opposed to mocks).
 //
@@ -296,6 +300,11 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void SendDisableAecDumpToRenderer();
 #endif
 
+#if defined(USE_MOJO)
+  // Establishes the mojo channel to the renderer.
+  void CreateMojoChannel();
+#endif
+
   // The registered IPC listener objects. When this list is empty, we should
   // delete ourselves.
   IDMap<IPC::Listener> listeners_;
@@ -417,13 +426,16 @@ class CONTENT_EXPORT RenderProcessHostImpl
   base::Callback<void(const std::string&)> webrtc_log_message_callback_;
 #endif
 
-  // Lives on the browser's ChildThread.
-  base::WeakPtrFactory<RenderProcessHostImpl> weak_factory_;
-
   // Message filter and dispatcher for screen orientation.
   ScreenOrientationDispatcherHost* screen_orientation_dispatcher_host_;
 
   int worker_ref_count_;
+
+#if defined(USE_MOJO)
+  scoped_ptr<MojoChannelInit> mojo_channel_init_;
+#endif
+
+  base::WeakPtrFactory<RenderProcessHostImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderProcessHostImpl);
 };

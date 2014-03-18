@@ -1372,6 +1372,11 @@
         'browser/gamepad/gamepad_platform_data_fetcher.cc',
       ]
     }],
+    ['use_mojo==1', {
+      'dependencies': [
+        '../mojo/mojo.gyp:mojo_system',
+      ],
+    }],
     ['OS=="ios"', {
       'sources/': [
         # iOS only needs a small portion of content; exclude all the

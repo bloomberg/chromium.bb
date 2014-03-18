@@ -146,6 +146,10 @@
 #include "content/renderer/npapi/plugin_channel_host.h"
 #endif
 
+#if defined(USE_MOJO)
+#include "content/renderer/mojo/mojo_render_process_observer.h"
+#endif
+
 using base::ThreadRestrictions;
 using blink::WebDocument;
 using blink::WebFrame;
@@ -392,6 +396,11 @@ void RenderThreadImpl::Init() {
   AddFilter((new IndexedDBMessageFilter(thread_safe_sender()))->GetFilter());
 
   AddFilter((new EmbeddedWorkerContextMessageFilter())->GetFilter());
+
+#if defined(USE_MOJO)
+  // MojoRenderProcessObserver deletes itself as necessary.
+  new MojoRenderProcessObserver(this);
+#endif
 
   GetContentClient()->renderer()->RenderThreadStarted();
 
