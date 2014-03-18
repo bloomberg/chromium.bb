@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_APPS_SHORTCUT_MANAGER_H_
 #define CHROME_BROWSER_APPS_SHORTCUT_MANAGER_H_
 
-#include "base/memory/weak_ptr.h"
 #include "chrome/browser/profiles/profile_info_cache_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_observer.h"
@@ -50,9 +49,6 @@ class AppShortcutManager : public KeyedService,
   Profile* profile_;
   bool is_profile_info_cache_observer_;
   PrefService* prefs_;
-
-  // Fields used when installing application shortcuts.
-  base::WeakPtrFactory<AppShortcutManager> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AppShortcutManager);
 };

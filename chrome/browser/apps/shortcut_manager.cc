@@ -68,8 +68,7 @@ void AppShortcutManager::RegisterProfilePrefs(
 AppShortcutManager::AppShortcutManager(Profile* profile)
     : profile_(profile),
       is_profile_info_cache_observer_(false),
-      prefs_(profile->GetPrefs()),
-      weak_factory_(this) {
+      prefs_(profile->GetPrefs()) {
   // Use of g_browser_process requires that we are either on the UI thread, or
   // there are no threads initialized (such as in unit tests).
   DCHECK(!content::BrowserThread::IsThreadInitialized(
