@@ -12,7 +12,11 @@
 
   'variables': {
     'verbose_libraries_build%': 0,
+    'instrumented_libraries_jobs%': 1,
   },
+
+  'jobs': '<(instrumented_libraries_jobs)',
+
   'conditions': [
     ['asan==1', {
       'sanitizer_type': 'asan',
@@ -308,6 +312,7 @@
       'library_name': 'pulseaudio',
       'dependencies=': [],
       'run_before_build': 'pulseaudio.sh',
+      'jobs': 1,
       'custom_configure_flags': '--with-udev-rules-dir=<(INTERMEDIATE_DIR)/udev/rules.d',
       'includes': ['standard_instrumented_library_target.gypi'],
     },
@@ -321,6 +326,7 @@
       'library_name': 'libcups2',
       'dependencies=': [],
       'run_before_build': 'libcups2.sh',
+      'jobs': 1,
       'custom_configure_flags': [
         # Do not touch system-wide directories.
         '--with-rcdir=no',
