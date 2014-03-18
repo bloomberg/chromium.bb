@@ -47,10 +47,10 @@ class TextReporter(BaseReporter):
 
     def add_message(self, msg_id, location, msg):
         """manage message of different type and in the context of path"""
-        module, obj, line, col_offset = location[1:]
+        path, module, obj, line, col_offset = location
         if module not in self._modules:
             if module:
-                self.writeln('************* Module %s' % module)
+                self.writeln('************* Module %s' % (path if path else module))
                 self._modules[module] = 1
             else:
                 self.writeln('************* %s' % module)

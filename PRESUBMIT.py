@@ -8,6 +8,9 @@ See http://dev.chromium.org/developers/how-tos/depottools/presubmit-scripts for
 details on the presubmit API built into depot_tools.
 """
 
+import fnmatch
+import os
+
 
 def CommonChecks(input_api, output_api, tests_to_black_list):
   results = []
@@ -19,6 +22,16 @@ def CommonChecks(input_api, output_api, tests_to_black_list):
       r'^site-packages-py[0-9]\.[0-9][\/\\].+',
       r'^svn_bin[\/\\].+',
       r'^testing_support[\/\\]_rietveld[\/\\].+']
+  if os.path.exists('.gitignore'):
+    with open('.gitignore') as fh:
+      lines = [l.strip() for l in fh.readlines()]
+      black_list.extend([fnmatch.translate(l) for l in lines if
+                         l and not l.startswith('#')])
+  if os.path.exists('.git/info/exclude'):
+    with open('.git/info/exclude') as fh:
+      lines = [l.strip() for l in fh.readlines()]
+      black_list.extend([fnmatch.translate(l) for l in lines if
+                         l and not l.startswith('#')])
   disabled_warnings = [
     'R0401',  # Cyclic import
     'W0613',  # Unused argument
