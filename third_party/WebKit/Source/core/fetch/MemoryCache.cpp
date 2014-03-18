@@ -327,13 +327,14 @@ MemoryCache::LRUList* MemoryCache::lruListFor(MemoryCacheEntry* entry)
 
 void MemoryCache::removeFromLRUList(Resource* resource)
 {
-    // If we've never been accessed, then we're brand new and not in any list.
-    if (!resource->accessCount())
-        return;
-
     MemoryCacheEntry* entry = m_resources.get(resource->url());
     ASSERT(entry->m_resource == resource);
+
     LRUList* list = lruListFor(entry);
+    MemoryCacheEntry* next = entry->m_nextInAllResourcesList;
+    MemoryCacheEntry* previous = entry->m_previousInAllResourcesList;
+    if (!next && !previous && list->m_head != entry)
+        return;
 
 #if !ASSERT_DISABLED
     // Verify that we are in fact in this list.
@@ -346,9 +347,6 @@ void MemoryCache::removeFromLRUList(Resource* resource)
     }
     ASSERT(found);
 #endif
-
-    MemoryCacheEntry* next = entry->m_nextInAllResourcesList;
-    MemoryCacheEntry* previous = entry->m_previousInAllResourcesList;
 
     entry->m_nextInAllResourcesList = 0;
     entry->m_previousInAllResourcesList = 0;
@@ -372,7 +370,6 @@ void MemoryCache::insertInLRUList(Resource* resource)
     // Make sure we aren't in some list already.
     ASSERT(!entry->m_nextInAllResourcesList && !entry->m_previousInAllResourcesList);
     ASSERT(resource->inCache());
-    ASSERT(resource->accessCount() > 0);
 
     LRUList* list = lruListFor(entry);
 

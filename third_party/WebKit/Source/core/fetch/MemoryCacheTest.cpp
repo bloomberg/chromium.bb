@@ -366,4 +366,24 @@ TEST_F(MemoryCacheTest, DecodeCacheOrder)
     ASSERT_EQ(memoryCache()->deadSize(), 0u);
     ASSERT_EQ(memoryCache()->liveSize(), totalSize - lowPriorityMockDecodeSize - highPriorityMockDecodeSize);
 }
+
+TEST_F(MemoryCacheTest, MultipleReplace)
+{
+    ResourcePtr<FakeResource> resource1 = new FakeResource(ResourceRequest(""), Resource::Raw);
+    memoryCache()->add(resource1.get());
+    EXPECT_EQ(1U, resource1->accessCount());
+
+    ResourcePtr<FakeResource> resource2 = new FakeResource(ResourceRequest(""), Resource::Raw);
+    memoryCache()->replace(resource2.get(), resource1.get());
+    EXPECT_TRUE(resource2->inCache());
+    EXPECT_FALSE(resource1->inCache());
+    EXPECT_EQ(0U, resource2->accessCount());
+
+    ResourcePtr<FakeResource> resource3 = new FakeResource(ResourceRequest(""), Resource::Raw);
+    memoryCache()->replace(resource3.get(), resource2.get());
+    EXPECT_TRUE(resource3->inCache());
+    EXPECT_FALSE(resource2->inCache());
+    EXPECT_EQ(0U, resource3->accessCount());
+}
+
 } // namespace
