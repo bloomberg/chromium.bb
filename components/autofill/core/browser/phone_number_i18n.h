@@ -27,21 +27,25 @@ namespace i18n {
 // a ISO 3166 standard code ("US" for USA, "CZ" for Czech Republic, etc.).
 
 // Parses the number stored in |value| as a phone number interpreted in the
-// given |region|, and stores the results into the remaining arguments.  The
-// |region| should be a 2-letter country code.  This is an internal function,
-// exposed in the header file so that it can be tested.
+// given |default_region|, and stores the results into the remaining arguments.
+// The |default_region| should be a 2-letter country code.  |inferred_region| is
+// set to the actual region of the number (which may be different than
+// |default_region| if |value| has an international country code, for example).
+// This is an internal function, exposed in the header file so that it can be
+// tested.
 bool ParsePhoneNumber(
     const base::string16& value,
-    const std::string& region,
+    const std::string& default_region,
     base::string16* country_code,
     base::string16* city_code,
     base::string16* number,
+    std::string* inferred_region,
     ::i18n::phonenumbers::PhoneNumber* i18n_number) WARN_UNUSED_RESULT;
 
 // Normalizes phone number, by changing digits in the extended fonts
 // (such as \xFF1x) into '0'-'9'. Also strips out non-digit characters.
 base::string16 NormalizePhoneNumber(const base::string16& value,
-                                    const std::string& region);
+                                    const std::string& default_region);
 
 // Constructs whole phone number from parts.
 // |city_code| - area code, could be empty.
@@ -54,7 +58,7 @@ base::string16 NormalizePhoneNumber(const base::string16& value,
 bool ConstructPhoneNumber(const base::string16& country_code,
                           const base::string16& city_code,
                           const base::string16& number,
-                          const std::string& region,
+                          const std::string& default_region,
                           base::string16* whole_number) WARN_UNUSED_RESULT;
 
 // Returns true if |number_a| and |number_b| parse to the same phone number in
@@ -68,7 +72,7 @@ bool PhoneNumbersMatch(const base::string16& number_a,
 class PhoneObject {
  public:
   PhoneObject(const base::string16& number,
-              const std::string& region);
+              const std::string& default_region);
   PhoneObject(const PhoneObject&);
   PhoneObject();
   ~PhoneObject();
@@ -88,7 +92,7 @@ class PhoneObject {
   bool IsValidNumber() const { return i18n_number_ != NULL; }
 
  private:
-  // The region code used to parse this number.
+  // The region code for this phone number, inferred during parsing.
   std::string region_;
 
   // The parsed number and its components.

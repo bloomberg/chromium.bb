@@ -757,6 +757,21 @@ TEST_F(AutofillDialogControllerTest, PhoneNumberValidation) {
     outputs[phone] = ASCIIToUTF16("+112333 892 70 12 39");
     messages = controller()->InputsAreValid(section, outputs);
     EXPECT_TRUE(messages.HasSureError(phone));
+
+    // Input a valid Canadian number.
+    outputs[phone] = ASCIIToUTF16("+1 506 887 1234");
+    messages = controller()->InputsAreValid(section, outputs);
+    EXPECT_FALSE(HasAnyError(messages, phone));
+
+    // Input a valid Canadian number without the country code.
+    outputs[phone] = ASCIIToUTF16("506 887 1234");
+    messages = controller()->InputsAreValid(section, outputs);
+    EXPECT_TRUE(HasAnyError(messages, phone));
+
+    // Input a valid Canadian toll-free number.
+    outputs[phone] = ASCIIToUTF16("310 1234");
+    messages = controller()->InputsAreValid(section, outputs);
+    EXPECT_TRUE(HasAnyError(messages, phone));
   }
 }
 

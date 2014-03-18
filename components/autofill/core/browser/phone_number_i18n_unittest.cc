@@ -44,232 +44,93 @@ TEST(PhoneNumberI18NTest, NormalizePhoneNumber) {
 }
 
 TEST(PhoneNumberI18NTest, ParsePhoneNumber) {
-  base::string16 number;
-  base::string16 city_code;
-  base::string16 country_code;
-  ::i18n::phonenumbers::PhoneNumber unused_i18n_number;
+  const struct test_case {
+    // Expected parsing result.
+    bool valid;
+    // Inputs.
+    std::string input;
+    std::string assumed_region;
+    // Further expectations.
+    std::string number;
+    std::string city_code;
+    std::string country_code;
+    std::string deduced_region;
+  } test_cases[] = {
+    // Test for empty string.  Should give back empty strings.
+    { false, "", "US" },
+    // Test for string with less than 7 digits.  Should give back empty strings.
+    { false, "1234", "US" },
+    // Test for string with exactly 7 digits.
+    // Not a valid number - starts with 1
+    { false, "17134567", "US" },
+    // Not a valid number - does not have area code.
+    { false, "7134567", "US" },
+    // Valid Canadian toll-free number.
+    { true, "3101234", "US", "3101234", "", "", "CA" },
+    // Test for string with greater than 7 digits but less than 10 digits.
+    // Should fail parsing in US.
+    { false, "123456789", "US" },
+    // Test for string with greater than 7 digits but less than 10 digits and
+    // separators.
+    // Should fail parsing in US.
+    { false, "12.345-6789", "US" },
+    // Test for string with exactly 10 digits.
+    // Should give back phone number and city code.
+    // This one going to fail because of the incorrect area code.
+    { false, "1234567890", "US" },
+    // This one going to fail because of the incorrect number (starts with 1).
+    { false, "6501567890", "US" },
+    { true, "6504567890", "US", "4567890", "650", "", "US" },
+    // Test for string with exactly 10 digits and separators.
+    // Should give back phone number and city code.
+    { true, "(650) 456-7890", "US", "4567890", "650", "", "US" },
+    // Tests for string with over 10 digits.
+    // 01 is incorrect prefix in the USA, and if we interpret 011 as prefix, the
+    // rest is too short for international number - the parsing should fail.
+    { false, "0116504567890", "US" },
+    // 011 is a correct "dial out" prefix in the USA - the parsing should
+    // succeed.
+    { true, "01116504567890", "US", "4567890", "650", "1", "US" },
+    // 011 is a correct "dial out" prefix in the USA but the rest of the number
+    // can't parse as a US number.
+    { true, "01178124567890", "US", "4567890", "812", "7", "RU" },
+    // Test for string with over 10 digits with separator characters.
+    // Should give back phone number, city code, and country code. "011" is
+    // US "dial out" code, which is discarded.
+    { true, "(0111) 650-456.7890", "US", "4567890", "650", "1" , "US" },
+    // Now try phone from Czech republic - it has 00 dial out code, 420 country
+    // code and variable length area codes.
+    { true, "+420 27-89.10.112", "US", "910112", "278", "420", "CZ" },
+    { false, "27-89.10.112", "US" },
+    { true, "27-89.10.112", "CZ", "910112", "278", "", "CZ" },
+    { false, "420 57-89.10.112", "US" },
+    { true, "420 57-89.10.112", "CZ", "910112", "578", "420", "CZ" },
+    // Parses vanity numbers.
+    { true, "1-650-FLOWERS", "US", "3569377", "650", "1", "US" },
+    // 800 is not an area code, but the destination code. In our library these
+    // codes should be treated the same as area codes.
+    { true, "1-800-FLOWERS", "US", "3569377", "800", "1", "US" },
+  };
 
-  // Test for empty string.  Should give back empty strings.
-  base::string16 phone0;
-  EXPECT_FALSE(ParsePhoneNumber(phone0, "US",
-                                &country_code,
-                                &city_code,
-                                &number,
-                                &unused_i18n_number));
-  EXPECT_EQ(base::string16(), number);
-  EXPECT_EQ(base::string16(), city_code);
-  EXPECT_EQ(base::string16(), country_code);
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
+    SCOPED_TRACE("Testing phone number " + test_cases[i].input);
 
-  // Test for string with less than 7 digits.  Should give back empty strings.
-  base::string16 phone1(ASCIIToUTF16("1234"));
-  EXPECT_FALSE(ParsePhoneNumber(phone1, "US",
-                                &country_code,
-                                &city_code,
-                                &number,
-                                &unused_i18n_number));
-  EXPECT_EQ(base::string16(), number);
-  EXPECT_EQ(base::string16(), city_code);
-  EXPECT_EQ(base::string16(), country_code);
-
-  // Test for string with exactly 7 digits.
-  // Not a valid number - starts with 1
-  base::string16 phone2(ASCIIToUTF16("1234567"));
-  EXPECT_FALSE(ParsePhoneNumber(phone2, "US",
-                                &country_code,
-                                &city_code,
-                                &number,
-                                &unused_i18n_number));
-  EXPECT_EQ(base::string16(), number);
-  EXPECT_EQ(base::string16(), city_code);
-  EXPECT_EQ(base::string16(), country_code);
-
-  // Not a valid number - does not have area code.
-  base::string16 phone3(ASCIIToUTF16("2234567"));
-  EXPECT_FALSE(ParsePhoneNumber(phone3, "US",
-                                &country_code,
-                                &city_code,
-                                &number,
-                                &unused_i18n_number));
-  EXPECT_EQ(base::string16(), number);
-  EXPECT_EQ(base::string16(), city_code);
-  EXPECT_EQ(base::string16(), country_code);
-
-  // Test for string with greater than 7 digits but less than 10 digits.
-  // Should fail parsing in US.
-  base::string16 phone4(ASCIIToUTF16("123456789"));
-  EXPECT_FALSE(ParsePhoneNumber(phone4, "US",
-                                &country_code,
-                                &city_code,
-                                &number,
-                                &unused_i18n_number));
-  EXPECT_EQ(base::string16(), number);
-  EXPECT_EQ(base::string16(), city_code);
-  EXPECT_EQ(base::string16(), country_code);
-
-  // Test for string with greater than 7 digits but less than 10 digits and
-  // separators.
-  // Should fail parsing in US.
-  base::string16 phone_separator4(ASCIIToUTF16("12.345-6789"));
-  EXPECT_FALSE(ParsePhoneNumber(phone_separator4, "US",
-                                &country_code,
-                                &city_code,
-                                &number,
-                                &unused_i18n_number));
-  EXPECT_EQ(base::string16(), number);
-  EXPECT_EQ(base::string16(), city_code);
-  EXPECT_EQ(base::string16(), country_code);
-
-  // Test for string with exactly 10 digits.
-  // Should give back phone number and city code.
-  // This one going to fail because of the incorrect area code.
-  base::string16 phone5(ASCIIToUTF16("1234567890"));
-  EXPECT_FALSE(ParsePhoneNumber(phone5, "US",
-                                &country_code,
-                                &city_code,
-                                &number,
-                                &unused_i18n_number));
-  EXPECT_EQ(base::string16(), number);
-  EXPECT_EQ(base::string16(), city_code);
-  EXPECT_EQ(base::string16(), country_code);
-
-  base::string16 phone6(ASCIIToUTF16("6501567890"));
-  // This one going to fail because of the incorrect number (starts with 1).
-  EXPECT_FALSE(ParsePhoneNumber(phone6, "US",
-                                &country_code,
-                                &city_code,
-                                &number,
-                                &unused_i18n_number));
-  EXPECT_EQ(base::string16(), number);
-  EXPECT_EQ(base::string16(), city_code);
-  EXPECT_EQ(base::string16(), country_code);
-
-  base::string16 phone7(ASCIIToUTF16("6504567890"));
-  EXPECT_TRUE(ParsePhoneNumber(phone7, "US",
+    base::string16 country_code, city_code, number;
+    std::string deduced_region;
+    ::i18n::phonenumbers::PhoneNumber unused_i18n_number;
+    EXPECT_EQ(test_cases[i].valid,
+              ParsePhoneNumber(ASCIIToUTF16(test_cases[i].input),
+                               test_cases[i].assumed_region,
                                &country_code,
                                &city_code,
                                &number,
+                               &deduced_region,
                                &unused_i18n_number));
-  EXPECT_EQ(ASCIIToUTF16("4567890"), number);
-  EXPECT_EQ(ASCIIToUTF16("650"), city_code);
-  EXPECT_EQ(base::string16(), country_code);
-
-  // Test for string with exactly 10 digits and separators.
-  // Should give back phone number and city code.
-  base::string16 phone_separator7(ASCIIToUTF16("(650) 456-7890"));
-  EXPECT_TRUE(ParsePhoneNumber(phone_separator7, "US",
-                               &country_code,
-                               &city_code,
-                               &number,
-                               &unused_i18n_number));
-  EXPECT_EQ(ASCIIToUTF16("4567890"), number);
-  EXPECT_EQ(ASCIIToUTF16("650"), city_code);
-  EXPECT_EQ(base::string16(), country_code);
-
-  // Tests for string with over 10 digits.
-  // 01 is incorrect prefix in the USA, and if we interpret 011 as prefix, the
-  // rest is too short for international number - the parsing should fail.
-  base::string16 phone8(ASCIIToUTF16("0116504567890"));
-  EXPECT_FALSE(ParsePhoneNumber(phone8, "US",
-                                &country_code,
-                                &city_code,
-                                &number,
-                                &unused_i18n_number));
-  EXPECT_EQ(base::string16(), number);
-  EXPECT_EQ(base::string16(), city_code);
-  EXPECT_EQ(base::string16(), country_code);
-
-  // 011 is a correct "dial out" prefix in the USA - the parsing should succeed.
-  base::string16 phone9(ASCIIToUTF16("01116504567890"));
-  EXPECT_TRUE(ParsePhoneNumber(phone9, "US",
-                               &country_code,
-                               &city_code,
-                               &number,
-                               &unused_i18n_number));
-  EXPECT_EQ(ASCIIToUTF16("4567890"), number);
-  EXPECT_EQ(ASCIIToUTF16("650"), city_code);
-  EXPECT_EQ(ASCIIToUTF16("1"), country_code);
-
-  // 011 is a correct "dial out" prefix in the USA - the parsing should succeed.
-  base::string16 phone10(ASCIIToUTF16("01178124567890"));
-  EXPECT_TRUE(ParsePhoneNumber(phone10, "US",
-                               &country_code,
-                               &city_code,
-                               &number,
-                               &unused_i18n_number));
-  EXPECT_EQ(ASCIIToUTF16("4567890"), number);
-  EXPECT_EQ(ASCIIToUTF16("812"), city_code);
-  EXPECT_EQ(ASCIIToUTF16("7"), country_code);
-
-  // Test for string with over 10 digits with separator characters.
-  // Should give back phone number, city code, and country code. "011" is
-  // US "dial out" code, which is discarded.
-  base::string16 phone11(ASCIIToUTF16("(0111) 650-456.7890"));
-  EXPECT_TRUE(ParsePhoneNumber(phone11, "US",
-                               &country_code,
-                               &city_code,
-                               &number,
-                               &unused_i18n_number));
-  EXPECT_EQ(ASCIIToUTF16("4567890"), number);
-  EXPECT_EQ(ASCIIToUTF16("650"), city_code);
-  EXPECT_EQ(ASCIIToUTF16("1"), country_code);
-
-  // Now try phone from Chech republic - it has 00 dial out code, 420 country
-  // code and variable length area codes.
-  base::string16 phone12(ASCIIToUTF16("+420 27-89.10.112"));
-  EXPECT_TRUE(ParsePhoneNumber(phone12, "US",
-                               &country_code,
-                               &city_code,
-                               &number,
-                               &unused_i18n_number));
-  EXPECT_EQ(ASCIIToUTF16("910112"), number);
-  EXPECT_EQ(ASCIIToUTF16("278"), city_code);
-  EXPECT_EQ(ASCIIToUTF16("420"), country_code);
-
-  EXPECT_TRUE(ParsePhoneNumber(phone12, "CZ",
-                               &country_code,
-                               &city_code,
-                               &number,
-                               &unused_i18n_number));
-  EXPECT_EQ(ASCIIToUTF16("910112"), number);
-  EXPECT_EQ(ASCIIToUTF16("278"), city_code);
-  EXPECT_EQ(ASCIIToUTF16("420"), country_code);
-
-  base::string16 phone13(ASCIIToUTF16("420 57-89.10.112"));
-  EXPECT_FALSE(ParsePhoneNumber(phone13, "US",
-                                &country_code,
-                                &city_code,
-                                &number,
-                                &unused_i18n_number));
-  EXPECT_TRUE(ParsePhoneNumber(phone13, "CZ",
-                               &country_code,
-                               &city_code,
-                               &number,
-                               &unused_i18n_number));
-  EXPECT_EQ(ASCIIToUTF16("910112"), number);
-  EXPECT_EQ(ASCIIToUTF16("578"), city_code);
-  EXPECT_EQ(ASCIIToUTF16("420"), country_code);
-
-  base::string16 phone14(ASCIIToUTF16("1-650-FLOWERS"));
-  EXPECT_TRUE(ParsePhoneNumber(phone14, "US",
-                               &country_code,
-                               &city_code,
-                               &number,
-                               &unused_i18n_number));
-  EXPECT_EQ(ASCIIToUTF16("3569377"), number);
-  EXPECT_EQ(ASCIIToUTF16("650"), city_code);
-  EXPECT_EQ(ASCIIToUTF16("1"), country_code);
-
-  // 800 is not an area code, but the destination code. In our library these
-  // codes should be treated the same as area codes.
-  base::string16 phone15(ASCIIToUTF16("1-800-FLOWERS"));
-  EXPECT_TRUE(ParsePhoneNumber(phone15, "US",
-                               &country_code,
-                               &city_code,
-                               &number,
-                               &unused_i18n_number));
-  EXPECT_EQ(ASCIIToUTF16("3569377"), number);
-  EXPECT_EQ(ASCIIToUTF16("800"), city_code);
-  EXPECT_EQ(ASCIIToUTF16("1"), country_code);
+    EXPECT_EQ(ASCIIToUTF16(test_cases[i].number), number);
+    EXPECT_EQ(ASCIIToUTF16(test_cases[i].city_code), city_code);
+    EXPECT_EQ(ASCIIToUTF16(test_cases[i].country_code), country_code);
+    EXPECT_EQ(test_cases[i].deduced_region, deduced_region);
+  }
 }
 
 TEST(PhoneNumberI18NTest, ConstructPhoneNumber) {

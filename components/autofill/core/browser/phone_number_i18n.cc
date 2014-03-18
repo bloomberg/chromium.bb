@@ -79,13 +79,14 @@ void FormatValidatedNumber(const PhoneNumber& number,
 namespace i18n {
 
 // Parses the number stored in |value| as it should be interpreted in the given
-// |region|, and stores the results into the remaining arguments.  The |region|
-// should be sanitized prior to calling this function.
+// |default_region|, and stores the results into the remaining arguments.
+// The |default_region| should be sanitized prior to calling this function.
 bool ParsePhoneNumber(const base::string16& value,
-                      const std::string& region,
+                      const std::string& default_region,
                       base::string16* country_code,
                       base::string16* city_code,
                       base::string16* number,
+                      std::string* inferred_region,
                       PhoneNumber* i18n_number) {
   country_code->clear();
   city_code->clear();
@@ -97,9 +98,9 @@ bool ParsePhoneNumber(const base::string16& value,
   // Parse phone number based on the region.
   PhoneNumberUtil* phone_util = PhoneNumberUtil::GetInstance();
 
-  // The |region| should already be sanitized.
-  DCHECK_EQ(2U, region.size());
-  if (phone_util->Parse(number_text, region.c_str(), i18n_number) !=
+  // The |default_region| should already be sanitized.
+  DCHECK_EQ(2U, default_region.size());
+  if (phone_util->Parse(number_text, default_region, i18n_number) !=
           PhoneNumberUtil::NO_PARSING_ERROR) {
     return false;
   }
@@ -147,18 +148,20 @@ bool ParsePhoneNumber(const base::string16& value,
     }
   }
 
+  // The region might be different from what we started with.
+  phone_util->GetRegionCodeForNumber(*i18n_number, inferred_region);
+
   return true;
 }
 
 base::string16 NormalizePhoneNumber(const base::string16& value,
                                     const std::string& region) {
   DCHECK_EQ(2u, region.size());
-  base::string16 country_code;
-  base::string16 unused_city_code;
-  base::string16 unused_number;
+  base::string16 country_code, unused_city_code, unused_number;
+  std::string unused_region;
   PhoneNumber phone_number;
   if (!ParsePhoneNumber(value, region, &country_code, &unused_city_code,
-                        &unused_number, &phone_number)) {
+                        &unused_number, &unused_region, &phone_number)) {
     return base::string16();  // Parsing failed - do not store phone.
   }
 
@@ -175,13 +178,12 @@ bool ConstructPhoneNumber(const base::string16& country_code,
   DCHECK_EQ(2u, region.size());
   whole_number->clear();
 
-  base::string16 unused_country_code;
-  base::string16 unused_city_code;
-  base::string16 unused_number;
+  base::string16 unused_country_code, unused_city_code, unused_number;
+  std::string unused_region;
   PhoneNumber phone_number;
   if (!ParsePhoneNumber(country_code + city_code + number, region,
                         &unused_country_code, &unused_city_code, &unused_number,
-                        &phone_number)) {
+                        &unused_region, &phone_number)) {
     return false;
   }
 
@@ -229,8 +231,7 @@ bool PhoneNumbersMatch(const base::string16& number_a,
 }
 
 PhoneObject::PhoneObject(const base::string16& number,
-                         const std::string& region)
-    : region_(region) {
+                         const std::string& region) {
   DCHECK_EQ(2u, region.size());
   // TODO(isherman): Autofill profiles should always have a |region| set, but in
   // some cases it should be marked as implicit.  Otherwise, phone numbers
@@ -239,12 +240,12 @@ PhoneObject::PhoneObject(const base::string16& number,
   // verify.
 
   scoped_ptr<PhoneNumber> i18n_number(new PhoneNumber);
-  if (ParsePhoneNumber(number, region_, &country_code_, &city_code_, &number_,
-                       i18n_number.get())) {
+  if (ParsePhoneNumber(number, region, &country_code_, &city_code_, &number_,
+                       &region_, i18n_number.get())) {
     // The phone number was successfully parsed, so store the parsed version.
     // The formatted and normalized versions will be set on the first call to
     // the coresponding methods.
-    i18n_number_.reset(i18n_number.release());
+    i18n_number_ = i18n_number.Pass();
   } else {
     // Parsing failed. Store passed phone "as is" into |whole_number_|.
     whole_number_ = number;

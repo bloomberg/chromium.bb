@@ -545,6 +545,27 @@ void CanonicalizeState(const AddressValidator* validator,
                    g_browser_process->GetApplicationLocale());
 }
 
+ValidityMessage GetPhoneValidityMessage(const base::string16& country_name,
+                                        const base::string16& number) {
+  std::string region = AutofillCountry::GetCountryCode(
+      country_name,
+      g_browser_process->GetApplicationLocale());
+  i18n::PhoneObject phone_object(number, region);
+  ValidityMessage phone_message(base::string16(), true);
+
+  // Check if the phone number is invalid. Allow valid international
+  // numbers that don't match the address's country only if they have an
+  // international calling code.
+  if (!phone_object.IsValidNumber() ||
+      (phone_object.country_code().empty() &&
+       phone_object.region() != region)) {
+    phone_message.text = l10n_util::GetStringUTF16(
+        IDS_AUTOFILL_DIALOG_VALIDATION_INVALID_PHONE_NUMBER);
+  }
+
+  return phone_message;
+}
+
 }  // namespace
 
 AutofillDialogViewDelegate::~AutofillDialogViewDelegate() {}
@@ -1911,33 +1932,19 @@ ValidityMessages AutofillDialogControllerImpl::InputsAreValid(
   // Validate the shipping phone number against the country code of the address.
   if (field_values.count(ADDRESS_HOME_COUNTRY) &&
       field_values.count(PHONE_HOME_WHOLE_NUMBER)) {
-    i18n::PhoneObject phone_object(
-        field_values[PHONE_HOME_WHOLE_NUMBER],
-        AutofillCountry::GetCountryCode(
-            field_values[ADDRESS_HOME_COUNTRY],
-            g_browser_process->GetApplicationLocale()));
-    ValidityMessage phone_message(base::string16(), true);
-    if (!phone_object.IsValidNumber()) {
-      phone_message.text = l10n_util::GetStringUTF16(
-          IDS_AUTOFILL_DIALOG_VALIDATION_INVALID_PHONE_NUMBER);
-    }
-    messages.Set(PHONE_HOME_WHOLE_NUMBER, phone_message);
+    messages.Set(
+        PHONE_HOME_WHOLE_NUMBER,
+        GetPhoneValidityMessage(field_values[ADDRESS_HOME_COUNTRY],
+                                field_values[PHONE_HOME_WHOLE_NUMBER]));
   }
 
   // Validate the billing phone number against the country code of the address.
   if (field_values.count(ADDRESS_BILLING_COUNTRY) &&
       field_values.count(PHONE_BILLING_WHOLE_NUMBER)) {
-    i18n::PhoneObject phone_object(
-        field_values[PHONE_BILLING_WHOLE_NUMBER],
-        AutofillCountry::GetCountryCode(
-            field_values[ADDRESS_BILLING_COUNTRY],
-            g_browser_process->GetApplicationLocale()));
-    ValidityMessage phone_message(base::string16(), true);
-    if (!phone_object.IsValidNumber()) {
-      phone_message.text = l10n_util::GetStringUTF16(
-          IDS_AUTOFILL_DIALOG_VALIDATION_INVALID_PHONE_NUMBER);
-    }
-    messages.Set(PHONE_BILLING_WHOLE_NUMBER, phone_message);
+    messages.Set(
+        PHONE_BILLING_WHOLE_NUMBER,
+        GetPhoneValidityMessage(field_values[ADDRESS_BILLING_COUNTRY],
+                                field_values[PHONE_BILLING_WHOLE_NUMBER]));
   }
 
   return messages;
