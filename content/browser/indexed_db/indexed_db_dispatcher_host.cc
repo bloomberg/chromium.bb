@@ -16,6 +16,7 @@
 #include "content/browser/indexed_db/indexed_db_cursor.h"
 #include "content/browser/indexed_db/indexed_db_database_callbacks.h"
 #include "content/browser/indexed_db/indexed_db_metadata.h"
+#include "content/browser/indexed_db/indexed_db_pending_connection.h"
 #include "content/browser/renderer_host/render_message_filter.h"
 #include "content/common/indexed_db/indexed_db_messages.h"
 #include "content/public/browser/browser_thread.h"
@@ -272,13 +273,13 @@ void IndexedDBDispatcherHost::OnIDBFactoryOpen(
   scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks =
       new IndexedDBDatabaseCallbacks(
           this, params.ipc_thread_id, params.ipc_database_callbacks_id);
-  Context()->GetIDBFactory()->Open(params.name,
-                                   params.version,
-                                   host_transaction_id,
-                                   callbacks,
-                                   database_callbacks,
-                                   origin_url,
-                                   indexed_db_path);
+  IndexedDBPendingConnection connection(callbacks,
+                                        database_callbacks,
+                                        0 /* TODO(ericu) ipc_process_id */,
+                                        host_transaction_id,
+                                        params.version);
+  Context()->GetIDBFactory()->Open(
+      params.name, connection, origin_url, indexed_db_path);
 }
 
 void IndexedDBDispatcherHost::OnIDBFactoryDeleteDatabase(

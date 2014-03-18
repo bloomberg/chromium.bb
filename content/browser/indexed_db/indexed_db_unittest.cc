@@ -174,18 +174,22 @@ TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnDelete) {
     test_path = idb_context->GetFilePathForTesting(
         webkit_database::GetIdentifierFromOrigin(kTestOrigin));
 
+    IndexedDBPendingConnection open_connection(open_callbacks,
+                                               open_db_callbacks,
+                                               0 /* child_process_id */,
+                                               0 /* host_transaction_id */,
+                                               0 /* version */);
     factory->Open(base::ASCIIToUTF16("opendb"),
-                  0,
-                  0,
-                  open_callbacks,
-                  open_db_callbacks,
+                  open_connection,
                   kTestOrigin,
                   idb_context->data_path());
+    IndexedDBPendingConnection closed_connection(closed_callbacks,
+                                                 closed_db_callbacks,
+                                                 0 /* child_process_id */,
+                                                 0 /* host_transaction_id */,
+                                                 0 /* version */);
     factory->Open(base::ASCIIToUTF16("closeddb"),
-                  0,
-                  0,
-                  closed_callbacks,
-                  closed_db_callbacks,
+                  closed_connection,
                   kTestOrigin,
                   idb_context->data_path());
 
@@ -247,13 +251,14 @@ TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnCommitFailure) {
   scoped_refptr<MockIndexedDBDatabaseCallbacks> db_callbacks(
       new MockIndexedDBDatabaseCallbacks());
   const int64 transaction_id = 1;
-  factory->Open(base::ASCIIToUTF16("db"),
-                IndexedDBDatabaseMetadata::DEFAULT_INT_VERSION,
-                transaction_id,
-                callbacks,
-                db_callbacks,
-                kTestOrigin,
-                temp_dir.path());
+  IndexedDBPendingConnection connection(
+      callbacks,
+      db_callbacks,
+      0 /* child_process_id */,
+      transaction_id,
+      IndexedDBDatabaseMetadata::DEFAULT_INT_VERSION);
+  factory->Open(
+      base::ASCIIToUTF16("db"), connection, kTestOrigin, temp_dir.path());
 
   EXPECT_TRUE(callbacks->connection());
 

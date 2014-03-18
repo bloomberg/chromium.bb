@@ -218,13 +218,13 @@ TEST_F(IndexedDBFactoryTest, QuotaErrorOnDiskFull) {
   scoped_refptr<IndexedDBDatabaseCallbacks> dummy_database_callbacks =
       new IndexedDBDatabaseCallbacks(NULL, 0, 0);
   const base::string16 name(ASCIIToUTF16("name"));
-  factory->Open(name,
-                1, /* version */
-                2, /* transaction_id */
-                callbacks,
-                dummy_database_callbacks,
-                origin,
-                base::FilePath(FILE_PATH_LITERAL("/dummy")));
+  IndexedDBPendingConnection connection(callbacks,
+                                        dummy_database_callbacks,
+                                        0, /* child_process_id */
+                                        2, /* transaction_id */
+                                        1 /* version */);
+  factory->Open(
+      name, connection, origin, base::FilePath(FILE_PATH_LITERAL("/dummy")));
 }
 
 TEST_F(IndexedDBFactoryTest, BackingStoreReleasedOnForcedClose) {
@@ -239,13 +239,13 @@ TEST_F(IndexedDBFactoryTest, BackingStoreReleasedOnForcedClose) {
   scoped_refptr<MockIndexedDBDatabaseCallbacks> db_callbacks(
       new MockIndexedDBDatabaseCallbacks());
   const int64 transaction_id = 1;
-  factory->Open(ASCIIToUTF16("db"),
-                IndexedDBDatabaseMetadata::DEFAULT_INT_VERSION,
-                transaction_id,
-                callbacks,
-                db_callbacks,
-                origin,
-                temp_directory.path());
+  IndexedDBPendingConnection connection(
+      callbacks,
+      db_callbacks,
+      0, /* child_process_id */
+      transaction_id,
+      IndexedDBDatabaseMetadata::DEFAULT_INT_VERSION);
+  factory->Open(ASCIIToUTF16("db"), connection, origin, temp_directory.path());
 
   EXPECT_TRUE(callbacks->connection());
 
@@ -270,13 +270,13 @@ TEST_F(IndexedDBFactoryTest, BackingStoreReleaseDelayedOnClose) {
   scoped_refptr<MockIndexedDBDatabaseCallbacks> db_callbacks(
       new MockIndexedDBDatabaseCallbacks());
   const int64 transaction_id = 1;
-  factory->Open(ASCIIToUTF16("db"),
-                IndexedDBDatabaseMetadata::DEFAULT_INT_VERSION,
-                transaction_id,
-                callbacks,
-                db_callbacks,
-                origin,
-                temp_directory.path());
+  IndexedDBPendingConnection connection(
+      callbacks,
+      db_callbacks,
+      0, /* child_process_id */
+      transaction_id,
+      IndexedDBDatabaseMetadata::DEFAULT_INT_VERSION);
+  factory->Open(ASCIIToUTF16("db"), connection, origin, temp_directory.path());
 
   EXPECT_TRUE(callbacks->connection());
   IndexedDBBackingStore* store =
@@ -365,13 +365,13 @@ TEST_F(IndexedDBFactoryTest, ForceCloseReleasesBackingStore) {
   scoped_refptr<MockIndexedDBDatabaseCallbacks> db_callbacks(
       new MockIndexedDBDatabaseCallbacks());
   const int64 transaction_id = 1;
-  factory->Open(ASCIIToUTF16("db"),
-                IndexedDBDatabaseMetadata::DEFAULT_INT_VERSION,
-                transaction_id,
-                callbacks,
-                db_callbacks,
-                origin,
-                temp_directory.path());
+  IndexedDBPendingConnection connection(
+      callbacks,
+      db_callbacks,
+      0, /* child_process_id */
+      transaction_id,
+      IndexedDBDatabaseMetadata::DEFAULT_INT_VERSION);
+  factory->Open(ASCIIToUTF16("db"), connection, origin, temp_directory.path());
 
   EXPECT_TRUE(callbacks->connection());
   EXPECT_TRUE(factory->IsBackingStoreOpen(origin));
@@ -442,13 +442,12 @@ TEST_F(IndexedDBFactoryTest, DatabaseFailedOpen) {
   {
     scoped_refptr<MockIndexedDBCallbacks> callbacks(
         new UpgradeNeededCallbacks());
-    factory->Open(db_name,
-                  db_version,
-                  transaction_id,
-                  callbacks,
-                  db_callbacks,
-                  origin,
-                  temp_directory.path());
+    IndexedDBPendingConnection connection(callbacks,
+                                          db_callbacks,
+                                          0, /* child_process_id */
+                                          transaction_id,
+                                          db_version);
+    factory->Open(db_name, connection, origin, temp_directory.path());
     EXPECT_TRUE(factory->IsDatabaseOpen(origin, db_name));
 
     // Pump the message loop so the upgrade transaction can run.
@@ -464,13 +463,12 @@ TEST_F(IndexedDBFactoryTest, DatabaseFailedOpen) {
   // the database object.
   {
     scoped_refptr<IndexedDBCallbacks> callbacks(new ErrorCallbacks());
-    factory->Open(db_name,
-                  db_version - 1,
-                  transaction_id,
-                  callbacks,
-                  db_callbacks,
-                  origin,
-                  temp_directory.path());
+    IndexedDBPendingConnection connection(callbacks,
+                                          db_callbacks,
+                                          0, /* child_process_id */
+                                          transaction_id,
+                                          db_version - 1);
+    factory->Open(db_name, connection, origin, temp_directory.path());
     EXPECT_FALSE(factory->IsDatabaseOpen(origin, db_name));
   }
 

@@ -22,6 +22,7 @@ namespace content {
 
 class IndexedDBBackingStore;
 class IndexedDBContextImpl;
+struct IndexedDBPendingConnection;
 
 class CONTENT_EXPORT IndexedDBFactory
     : NON_EXPORTED_BASE(public base::RefCountedThreadSafe<IndexedDBFactory>) {
@@ -39,10 +40,7 @@ class CONTENT_EXPORT IndexedDBFactory
                         const GURL& origin_url,
                         const base::FilePath& data_directory);
   void Open(const base::string16& name,
-            int64 version,
-            int64 transaction_id,
-            scoped_refptr<IndexedDBCallbacks> callbacks,
-            scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks,
+            const IndexedDBPendingConnection& connection,
             const GURL& origin_url,
             const base::FilePath& data_directory);
 

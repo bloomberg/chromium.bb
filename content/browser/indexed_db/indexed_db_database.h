@@ -17,6 +17,7 @@
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
 #include "content/browser/indexed_db/indexed_db_callbacks.h"
 #include "content/browser/indexed_db/indexed_db_metadata.h"
+#include "content/browser/indexed_db/indexed_db_pending_connection.h"
 #include "content/browser/indexed_db/indexed_db_transaction_coordinator.h"
 #include "content/browser/indexed_db/list_set.h"
 #include "url/gurl.h"
@@ -74,11 +75,7 @@ class CONTENT_EXPORT IndexedDBDatabase
                 int64 new_max_index_id);
   void RemoveIndex(int64 object_store_id, int64 index_id);
 
-  void OpenConnection(
-      scoped_refptr<IndexedDBCallbacks> callbacks,
-      scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks,
-      int64 transaction_id,
-      int64 version);
+  void OpenConnection(const IndexedDBPendingConnection& connection);
   void DeleteDatabase(scoped_refptr<IndexedDBCallbacks> callbacks);
   const IndexedDBDatabaseMetadata& metadata() const { return metadata_; }
 
@@ -256,6 +253,10 @@ class CONTENT_EXPORT IndexedDBDatabase
   bool IsDeleteDatabaseBlocked() const;
   void DeleteDatabaseFinal(scoped_refptr<IndexedDBCallbacks> callbacks);
 
+  scoped_ptr<IndexedDBConnection> CreateConnection(
+      scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks,
+      int child_process_id);
+
   IndexedDBTransaction* GetTransaction(int64 transaction_id) const;
 
   bool ValidateObjectStoreId(int64 object_store_id) const;
@@ -270,8 +271,6 @@ class CONTENT_EXPORT IndexedDBDatabase
   IndexedDBDatabaseMetadata metadata_;
 
   const Identifier identifier_;
-  // This might not need to be a scoped_refptr since the factory's lifetime is
-  // that of the page group, but it's better to be conservitive than sorry.
   scoped_refptr<IndexedDBFactory> factory_;
 
   IndexedDBTransactionCoordinator transaction_coordinator_;
@@ -279,8 +278,7 @@ class CONTENT_EXPORT IndexedDBDatabase
   typedef std::map<int64, IndexedDBTransaction*> TransactionMap;
   TransactionMap transactions_;
 
-  class PendingOpenCall;
-  typedef std::list<PendingOpenCall*> PendingOpenCallList;
+  typedef std::list<IndexedDBPendingConnection> PendingOpenCallList;
   PendingOpenCallList pending_open_calls_;
 
   class PendingUpgradeCall;

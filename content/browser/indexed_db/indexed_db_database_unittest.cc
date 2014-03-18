@@ -23,6 +23,10 @@
 
 using base::ASCIIToUTF16;
 
+namespace {
+const int FAKE_CHILD_PROCESS_ID = 0;
+}
+
 namespace content {
 
 TEST(IndexedDBDatabaseTest, BackingStoreRetention) {
@@ -59,10 +63,13 @@ TEST(IndexedDBDatabaseTest, ConnectionLifecycle) {
   scoped_refptr<MockIndexedDBDatabaseCallbacks> callbacks1(
       new MockIndexedDBDatabaseCallbacks());
   const int64 transaction_id1 = 1;
-  db->OpenConnection(request1,
-                     callbacks1,
-                     transaction_id1,
-                     IndexedDBDatabaseMetadata::DEFAULT_INT_VERSION);
+  IndexedDBPendingConnection connection1(
+      request1,
+      callbacks1,
+      FAKE_CHILD_PROCESS_ID,
+      transaction_id1,
+      IndexedDBDatabaseMetadata::DEFAULT_INT_VERSION);
+  db->OpenConnection(connection1);
 
   EXPECT_FALSE(backing_store->HasOneRef());  // db, connection count > 0
 
@@ -70,10 +77,13 @@ TEST(IndexedDBDatabaseTest, ConnectionLifecycle) {
   scoped_refptr<MockIndexedDBDatabaseCallbacks> callbacks2(
       new MockIndexedDBDatabaseCallbacks());
   const int64 transaction_id2 = 2;
-  db->OpenConnection(request2,
-                     callbacks2,
-                     transaction_id2,
-                     IndexedDBDatabaseMetadata::DEFAULT_INT_VERSION);
+  IndexedDBPendingConnection connection2(
+      request2,
+      callbacks2,
+      FAKE_CHILD_PROCESS_ID,
+      transaction_id2,
+      IndexedDBDatabaseMetadata::DEFAULT_INT_VERSION);
+  db->OpenConnection(connection2);
 
   EXPECT_FALSE(backing_store->HasOneRef());  // local and connection
 
@@ -109,10 +119,13 @@ TEST(IndexedDBDatabaseTest, ForcedClose) {
       new MockIndexedDBDatabaseCallbacks());
   scoped_refptr<MockIndexedDBCallbacks> request(new MockIndexedDBCallbacks());
   const int64 upgrade_transaction_id = 3;
-  database->OpenConnection(request,
-                           callbacks,
-                           upgrade_transaction_id,
-                           IndexedDBDatabaseMetadata::DEFAULT_INT_VERSION);
+  IndexedDBPendingConnection connection(
+      request,
+      callbacks,
+      FAKE_CHILD_PROCESS_ID,
+      upgrade_transaction_id,
+      IndexedDBDatabaseMetadata::DEFAULT_INT_VERSION);
+  database->OpenConnection(connection);
   EXPECT_EQ(database, request->connection()->database());
 
   const int64 transaction_id = 123;
@@ -167,10 +180,13 @@ TEST(IndexedDBDatabaseTest, PendingDelete) {
   scoped_refptr<MockIndexedDBDatabaseCallbacks> callbacks1(
       new MockIndexedDBDatabaseCallbacks());
   const int64 transaction_id1 = 1;
-  db->OpenConnection(request1,
-                     callbacks1,
-                     transaction_id1,
-                     IndexedDBDatabaseMetadata::DEFAULT_INT_VERSION);
+  IndexedDBPendingConnection connection(
+      request1,
+      callbacks1,
+      FAKE_CHILD_PROCESS_ID,
+      transaction_id1,
+      IndexedDBDatabaseMetadata::DEFAULT_INT_VERSION);
+  db->OpenConnection(connection);
 
   EXPECT_FALSE(backing_store->HasOneRef());  // local and db
 

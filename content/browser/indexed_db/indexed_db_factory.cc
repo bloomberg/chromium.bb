@@ -294,14 +294,10 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBFactory::OpenBackingStore(
   return 0;
 }
 
-void IndexedDBFactory::Open(
-    const base::string16& name,
-    int64 version,
-    int64 transaction_id,
-    scoped_refptr<IndexedDBCallbacks> callbacks,
-    scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks,
-    const GURL& origin_url,
-    const base::FilePath& data_directory) {
+void IndexedDBFactory::Open(const base::string16& name,
+                            const IndexedDBPendingConnection& connection,
+                            const GURL& origin_url,
+                            const base::FilePath& data_directory) {
   IDB_TRACE("IndexedDBFactory::Open");
   scoped_refptr<IndexedDBDatabase> database;
   IndexedDBDatabase::Identifier unique_identifier(origin_url, name);
@@ -320,14 +316,14 @@ void IndexedDBFactory::Open(
                          &disk_full);
     if (!backing_store) {
       if (disk_full) {
-        callbacks->OnError(
+        connection.callbacks->OnError(
             IndexedDBDatabaseError(blink::WebIDBDatabaseExceptionQuotaError,
                                    ASCIIToUTF16(
                                        "Encountered full disk while opening "
                                        "backing store for indexedDB.open.")));
         return;
       }
-      callbacks->OnError(IndexedDBDatabaseError(
+      connection.callbacks->OnError(IndexedDBDatabaseError(
           blink::WebIDBDatabaseExceptionUnknownError,
           ASCIIToUTF16(
               "Internal error opening backing store for indexedDB.open.")));
@@ -337,7 +333,7 @@ void IndexedDBFactory::Open(
     database =
         IndexedDBDatabase::Create(name, backing_store, this, unique_identifier);
     if (!database) {
-      callbacks->OnError(IndexedDBDatabaseError(
+      connection.callbacks->OnError(IndexedDBDatabaseError(
           blink::WebIDBDatabaseExceptionUnknownError,
           ASCIIToUTF16(
               "Internal error creating database backend for indexedDB.open.")));
@@ -348,10 +344,9 @@ void IndexedDBFactory::Open(
   }
 
   if (data_loss != blink::WebIDBDataLossNone)
-    callbacks->OnDataLoss(data_loss, data_loss_message);
+    connection.callbacks->OnDataLoss(data_loss, data_loss_message);
 
-  database->OpenConnection(
-      callbacks, database_callbacks, transaction_id, version);
+  database->OpenConnection(connection);
 
   if (!was_open && database->ConnectionCount() > 0) {
     database_map_[unique_identifier] = database;

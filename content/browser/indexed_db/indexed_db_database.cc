@@ -17,6 +17,7 @@
 #include "content/browser/indexed_db/indexed_db_cursor.h"
 #include "content/browser/indexed_db/indexed_db_factory.h"
 #include "content/browser/indexed_db/indexed_db_index_writer.h"
+#include "content/browser/indexed_db/indexed_db_pending_connection.h"
 #include "content/browser/indexed_db/indexed_db_tracing.h"
 #include "content/browser/indexed_db/indexed_db_transaction.h"
 #include "content/common/indexed_db/indexed_db_key_path.h"
@@ -28,32 +29,6 @@ using base::Int64ToString16;
 using blink::WebIDBKeyTypeNumber;
 
 namespace content {
-
-// PendingOpenCall has a scoped_refptr<IndexedDBDatabaseCallbacks> because it
-// isn't a connection yet.
-class IndexedDBDatabase::PendingOpenCall {
- public:
-  PendingOpenCall(scoped_refptr<IndexedDBCallbacks> callbacks,
-                  scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks,
-                  int64 transaction_id,
-                  int64 version)
-      : callbacks_(callbacks),
-        database_callbacks_(database_callbacks),
-        version_(version),
-        transaction_id_(transaction_id) {}
-  scoped_refptr<IndexedDBCallbacks> callbacks() const { return callbacks_; }
-  scoped_refptr<IndexedDBDatabaseCallbacks> const database_callbacks() {
-    return database_callbacks_;
-  }
-  int64 version() const { return version_; }
-  int64 transaction_id() const { return transaction_id_; }
-
- private:
-  scoped_refptr<IndexedDBCallbacks> callbacks_;
-  scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks_;
-  int64 version_;
-  const int64 transaction_id_;
-};
 
 // PendingUpgradeCall has a scoped_ptr<IndexedDBConnection> because it owns the
 // in-progress connection.
@@ -207,6 +182,18 @@ IndexedDBDatabase::~IndexedDBDatabase() {
   DCHECK(transactions_.empty());
   DCHECK(pending_open_calls_.empty());
   DCHECK(pending_delete_calls_.empty());
+}
+
+scoped_ptr<IndexedDBConnection> IndexedDBDatabase::CreateConnection(
+    scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks,
+    int child_process_id) {
+  scoped_ptr<IndexedDBConnection> connection(
+      new IndexedDBConnection(this, database_callbacks));
+  connections_.insert(connection.get());
+  /* TODO(ericu):  Grant child process permissions here so that the connection
+   * can create Blobs.
+  */
+  return connection.Pass();
 }
 
 IndexedDBTransaction* IndexedDBDatabase::GetTransaction(
@@ -1348,12 +1335,8 @@ void IndexedDBDatabase::ProcessPendingCalls() {
     PendingOpenCallList pending_open_calls;
     pending_open_calls_.swap(pending_open_calls);
     while (!pending_open_calls.empty()) {
-      scoped_ptr<PendingOpenCall> pending_open_call(pending_open_calls.front());
+      OpenConnection(pending_open_calls.front());
       pending_open_calls.pop_front();
-      OpenConnection(pending_open_call->callbacks(),
-                     pending_open_call->database_callbacks(),
-                     pending_open_call->transaction_id(),
-                     pending_open_call->version());
     }
   }
 }
@@ -1391,10 +1374,7 @@ bool IndexedDBDatabase::IsOpenConnectionBlocked() const {
 }
 
 void IndexedDBDatabase::OpenConnection(
-    scoped_refptr<IndexedDBCallbacks> callbacks,
-    scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks,
-    int64 transaction_id,
-    int64 version) {
+    const IndexedDBPendingConnection& connection) {
   DCHECK(backing_store_);
 
   // TODO(jsbell): Should have a priority queue so that higher version
@@ -1403,9 +1383,8 @@ void IndexedDBDatabase::OpenConnection(
     // The backing store only detects data loss when it is first opened. The
     // presence of existing connections means we didn't even check for data loss
     // so there'd better not be any.
-    DCHECK_NE(blink::WebIDBDataLossTotal, callbacks->data_loss());
-    pending_open_calls_.push_back(new PendingOpenCall(
-        callbacks, database_callbacks, transaction_id, version));
+    DCHECK_NE(blink::WebIDBDataLossTotal, connection.callbacks->data_loss());
+    pending_open_calls_.push_back(connection);
     return;
   }
 
@@ -1417,15 +1396,15 @@ void IndexedDBDatabase::OpenConnection(
                 metadata_.int_version);
     } else {
       base::string16 message;
-      if (version == IndexedDBDatabaseMetadata::NO_INT_VERSION) {
+      if (connection.version == IndexedDBDatabaseMetadata::NO_INT_VERSION) {
         message = ASCIIToUTF16(
             "Internal error opening database with no version specified.");
       } else {
         message =
             ASCIIToUTF16("Internal error opening database with version ") +
-            Int64ToString16(version);
+            Int64ToString16(connection.version);
       }
-      callbacks->OnError(IndexedDBDatabaseError(
+      connection.callbacks->OnError(IndexedDBDatabaseError(
           blink::WebIDBDatabaseExceptionUnknownError, message));
       return;
     }
@@ -1437,47 +1416,55 @@ void IndexedDBDatabase::OpenConnection(
       metadata_.version == kNoStringVersion &&
       metadata_.int_version == IndexedDBDatabaseMetadata::NO_INT_VERSION;
 
-  scoped_ptr<IndexedDBConnection> connection(
-      new IndexedDBConnection(this, database_callbacks));
-
-  if (version == IndexedDBDatabaseMetadata::DEFAULT_INT_VERSION) {
+  if (connection.version == IndexedDBDatabaseMetadata::DEFAULT_INT_VERSION) {
     // For unit tests only - skip upgrade steps. Calling from script with
     // DEFAULT_INT_VERSION throws exception.
     // TODO(jsbell): DCHECK that not in unit tests.
     DCHECK(is_new_database);
-    connections_.insert(connection.get());
-    callbacks->OnSuccess(connection.Pass(), this->metadata());
+    connection.callbacks->OnSuccess(
+        CreateConnection(connection.database_callbacks,
+                         connection.child_process_id),
+        this->metadata());
     return;
   }
 
-  if (version == IndexedDBDatabaseMetadata::NO_INT_VERSION) {
+  // We may need to change the version.
+  int64 local_version = connection.version;
+  if (local_version == IndexedDBDatabaseMetadata::NO_INT_VERSION) {
     if (!is_new_database) {
-      connections_.insert(connection.get());
-      callbacks->OnSuccess(connection.Pass(), this->metadata());
+      connection.callbacks->OnSuccess(
+          CreateConnection(connection.database_callbacks,
+                           connection.child_process_id),
+          this->metadata());
       return;
     }
     // Spec says: If no version is specified and no database exists, set
     // database version to 1.
-    version = 1;
+    local_version = 1;
   }
 
-  if (version > metadata_.int_version) {
-    connections_.insert(connection.get());
-    RunVersionChangeTransaction(
-        callbacks, connection.Pass(), transaction_id, version);
+  if (local_version > metadata_.int_version) {
+    RunVersionChangeTransaction(connection.callbacks,
+                                CreateConnection(connection.database_callbacks,
+                                                 connection.child_process_id),
+                                connection.transaction_id,
+                                local_version);
     return;
   }
-  if (version < metadata_.int_version) {
-    callbacks->OnError(IndexedDBDatabaseError(
+  if (local_version < metadata_.int_version) {
+    connection.callbacks->OnError(IndexedDBDatabaseError(
         blink::WebIDBDatabaseExceptionVersionError,
-        ASCIIToUTF16("The requested version (") + Int64ToString16(version) +
+        ASCIIToUTF16("The requested version (") +
+            Int64ToString16(local_version) +
             ASCIIToUTF16(") is less than the existing version (") +
             Int64ToString16(metadata_.int_version) + ASCIIToUTF16(").")));
     return;
   }
-  DCHECK_EQ(version, metadata_.int_version);
-  connections_.insert(connection.get());
-  callbacks->OnSuccess(connection.Pass(), this->metadata());
+  DCHECK_EQ(local_version, metadata_.int_version);
+  connection.callbacks->OnSuccess(
+      CreateConnection(connection.database_callbacks,
+                       connection.child_process_id),
+      this->metadata());
 }
 
 void IndexedDBDatabase::RunVersionChangeTransaction(

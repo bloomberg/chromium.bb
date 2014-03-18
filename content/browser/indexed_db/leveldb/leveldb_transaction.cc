@@ -434,14 +434,14 @@ LevelDBDirectTransaction::~LevelDBDirectTransaction() {
 }
 
 void LevelDBDirectTransaction::Put(const StringPiece& key,
-                                     const std::string* value) {
+                                   const std::string* value) {
   DCHECK(!finished_);
   write_batch_->Put(key, *value);
 }
 
 leveldb::Status LevelDBDirectTransaction::Get(const StringPiece& key,
-                                                std::string* value,
-                                                bool* found) {
+                                              std::string* value,
+                                              bool* found) {
   *found = false;
   DCHECK(!finished_);
 
