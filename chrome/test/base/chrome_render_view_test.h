@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "chrome/renderer/chrome_content_renderer_client.h"
 #include "chrome/renderer/chrome_mock_render_thread.h"
 #include "content/public/test/render_view_test.h"
 
@@ -30,8 +29,11 @@ class ChromeRenderViewTest : public content::RenderViewTest {
   // testing::Test
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
+  virtual content::ContentClient* CreateContentClient() OVERRIDE;
+  virtual content::ContentBrowserClient* CreateContentBrowserClient() OVERRIDE;
+  virtual content::ContentRendererClient*
+      CreateContentRendererClient() OVERRIDE;
 
-  ChromeContentRendererClient chrome_content_renderer_client_;
   extensions::Dispatcher* extension_dispatcher_;
 
   autofill::TestPasswordAutofillAgent* password_autofill_;

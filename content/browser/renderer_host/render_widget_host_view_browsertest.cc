@@ -74,9 +74,8 @@ class RenderWidgetHostViewBrowserTest : public ContentBrowserTest {
         callback_invoke_count_(0),
         frames_captured_(0) {}
 
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+  virtual void SetUpOnMainThread() OVERRIDE {
     ASSERT_TRUE(PathService::Get(DIR_TEST_DATA, &test_dir_));
-    ContentBrowserTest::SetUpInProcessBrowserTestFixture();
   }
 
   // Attempts to set up the source surface.  Returns false if unsupported on the
@@ -875,8 +874,8 @@ class CompositingRenderWidgetHostViewTabCaptureHighDPI
  public:
   CompositingRenderWidgetHostViewTabCaptureHighDPI() : kScale(2.f) {}
 
-  virtual void SetUpCommandLine(CommandLine* cmd) OVERRIDE {
-    CompositingRenderWidgetHostViewBrowserTestTabCapture::SetUpCommandLine(cmd);
+  virtual void SetUpOnMainThread() OVERRIDE {
+    CommandLine* cmd = CommandLine::ForCurrentProcess();
     cmd->AppendSwitchASCII(switches::kForceDeviceScaleFactor,
                            base::StringPrintf("%f", scale()));
 #if defined(OS_WIN)

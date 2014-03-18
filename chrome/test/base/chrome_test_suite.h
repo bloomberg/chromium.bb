@@ -11,10 +11,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/public/test/content_test_suite_base.h"
 
-namespace base {
-class StatsTable;
-}
-
 // Test suite for unit and browser tests. Creates services needed by both.
 // See also ChromeUnitTestSuite for additional services created for unit tests.
 class ChromeTestSuite : public content::ContentTestSuiteBase {
@@ -27,12 +23,6 @@ class ChromeTestSuite : public content::ContentTestSuiteBase {
   virtual void Initialize() OVERRIDE;
   virtual void Shutdown() OVERRIDE;
 
-  virtual content::ContentClient* CreateClientForInitialization() OVERRIDE;
-
-  // Should return true if the test suite will be running the full chrome
-  // browser, false if the test suite is unit tests.
-  virtual bool IsBrowserTestSuite() = 0;
-
   void SetBrowserDirectory(const base::FilePath& browser_dir) {
     browser_dir_ = browser_dir;
   }
@@ -40,8 +30,6 @@ class ChromeTestSuite : public content::ContentTestSuiteBase {
   // Alternative path to browser binaries.
   base::FilePath browser_dir_;
 
-  std::string stats_filename_;
-  scoped_ptr<base::StatsTable> stats_table_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeTestSuite);
 };

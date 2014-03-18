@@ -39,8 +39,6 @@ void UITestSuite::Shutdown() {
   ChromeTestSuite::Shutdown();
 }
 
-bool UITestSuite::IsBrowserTestSuite() { return false; }
-
 #if defined(OS_WIN)
 void UITestSuite::LoadCrashService() {
   scoped_ptr<base::Environment> env(base::Environment::Create());

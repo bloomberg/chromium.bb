@@ -22,8 +22,6 @@ class ContentTestSuite : public ContentTestSuiteBase {
  protected:
   virtual void Initialize() OVERRIDE;
 
-  virtual ContentClient* CreateClientForInitialization() OVERRIDE;
-
  private:
 #if defined(OS_WIN)
   base::win::ScopedCOMInitializer com_initializer_;

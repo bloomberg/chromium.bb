@@ -60,6 +60,7 @@ const char kPreTestPrefix[] = "PRE_";
 const char kManualTestPrefix[] = "MANUAL_";
 
 TestLauncherDelegate* g_launcher_delegate;
+ContentMainParams* g_params;
 
 std::string RemoveAnyPrePrefixes(const std::string& test_name) {
   std::string result(test_name);
@@ -427,35 +428,6 @@ const char kSingleProcessTestsFlag[]   = "single_process";
 TestLauncherDelegate::~TestLauncherDelegate() {
 }
 
-#if defined(OS_WIN) || defined(OS_LINUX)
-bool ShouldRunContentMain() {
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  return command_line->HasSwitch(switches::kProcessType) ||
-         command_line->HasSwitch(kLaunchAsBrowser);
-  return false;
-}
-
-int RunContentMain(int argc, char** argv,
-                   TestLauncherDelegate* launcher_delegate) {
-  scoped_ptr<ContentMainDelegate> chrome_main_delegate(
-      launcher_delegate->CreateContentMainDelegate());
-  ContentMainParams params(chrome_main_delegate.get());
-
-#if defined(OS_WIN)
-  sandbox::SandboxInterfaceInfo sandbox_info = {0};
-  InitializeSandboxInfo(&sandbox_info);
-
-  params.instance = GetModuleHandle(NULL);
-  params.sandbox_info = &sandbox_info;
-#elif defined(OS_LINUX)
-  params.argc = argc;
-  params.argv = const_cast<const char**>(argv);
-#endif  // defined(OS_WIN)
-
-  return ContentMain(params);
-}
-#endif
-
 int LaunchTests(TestLauncherDelegate* launcher_delegate,
                 int default_jobs,
                 int argc,
@@ -471,24 +443,35 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
     return 0;
   }
 
+  scoped_ptr<ContentMainDelegate> chrome_main_delegate(
+      launcher_delegate->CreateContentMainDelegate());
+  ContentMainParams params(chrome_main_delegate.get());
+
+#if defined(OS_WIN)
+  sandbox::SandboxInterfaceInfo sandbox_info = {0};
+  InitializeSandboxInfo(&sandbox_info);
+
+  params.instance = GetModuleHandle(NULL);
+  params.sandbox_info = &sandbox_info;
+#elif !defined(OS_ANDROID)
+  params.argc = argc;
+  params.argv = const_cast<const char**>(argv);
+#endif  // defined(OS_WIN)
+
   if (command_line->HasSwitch(kSingleProcessTestsFlag) ||
       (command_line->HasSwitch(switches::kSingleProcess) &&
        command_line->HasSwitch(base::kGTestFilterFlag)) ||
       command_line->HasSwitch(base::kGTestListTestsFlag) ||
       command_line->HasSwitch(base::kGTestHelpFlag)) {
-#if defined(OS_WIN)
-    if (command_line->HasSwitch(kSingleProcessTestsFlag)) {
-      sandbox::SandboxInterfaceInfo sandbox_info;
-      InitializeSandboxInfo(&sandbox_info);
-      InitializeSandbox(&sandbox_info);
-    }
-#endif
+    g_params = &params;
     return launcher_delegate->RunTestSuite(argc, argv);
   }
 
-#if defined(OS_WIN) || defined(OS_LINUX)
-  if (ShouldRunContentMain())
-    return RunContentMain(argc, argv, launcher_delegate);
+#if !defined(OS_ANDROID)
+  if (command_line->HasSwitch(switches::kProcessType) ||
+      command_line->HasSwitch(kLaunchAsBrowser)) {
+    return ContentMain(params);
+  }
 #endif
 
   base::AtExitManager at_exit;
@@ -516,6 +499,10 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
 
 TestLauncherDelegate* GetCurrentTestLauncherDelegate() {
   return g_launcher_delegate;
+}
+
+ContentMainParams* GetContentMainParams() {
+  return g_params;
 }
 
 }  // namespace content

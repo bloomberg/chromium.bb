@@ -60,8 +60,6 @@ class InteractiveUITestSuite : public ChromeTestSuite {
 #endif
   }
 
-  virtual bool IsBrowserTestSuite() OVERRIDE { return false; }
-
  private:
 #if defined(OS_WIN)
   scoped_ptr<base::win::ScopedCOMInitializer> com_initializer_;

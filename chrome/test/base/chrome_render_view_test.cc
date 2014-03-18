@@ -5,12 +5,16 @@
 #include "chrome/test/base/chrome_render_view_test.h"
 
 #include "base/debug/leak_annotations.h"
+#include "chrome/browser/chrome_content_browser_client.h"
+#include "chrome/common/chrome_content_client.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/renderer/chrome_content_renderer_client.h"
 #include "chrome/renderer/extensions/chrome_v8_context_set.h"
 #include "chrome/renderer/extensions/chrome_v8_extension.h"
 #include "chrome/renderer/extensions/dispatcher.h"
 #include "chrome/renderer/extensions/event_bindings.h"
 #include "chrome/renderer/spellchecker/spellcheck.h"
+#include "chrome/test/base/chrome_unit_test_suite.h"
 #include "components/autofill/content/renderer/autofill_agent.h"
 #include "components/autofill/content/renderer/password_autofill_agent.h"
 #include "components/autofill/content/renderer/test_password_autofill_agent.h"
@@ -51,15 +55,13 @@ ChromeRenderViewTest::~ChromeRenderViewTest() {
 }
 
 void ChromeRenderViewTest::SetUp() {
+  ChromeUnitTestSuite::InitializeProviders();
+  ChromeUnitTestSuite::InitializeResourceBundle();
+
   chrome_render_thread_ = new ChromeMockRenderThread();
   render_thread_.reset(chrome_render_thread_);
 
-  content::SetRendererClientForTesting(&chrome_content_renderer_client_);
   extension_dispatcher_ = new extensions::Dispatcher();
-  chrome_content_renderer_client_.SetExtensionDispatcher(extension_dispatcher_);
-#if defined(ENABLE_SPELLCHECK)
-  chrome_content_renderer_client_.SetSpellcheck(new SpellCheck());
-#endif
 
   content::RenderViewTest::SetUp();
 
@@ -82,4 +84,23 @@ void ChromeRenderViewTest::TearDown() {
   __lsan_do_leak_check();
 #endif
   content::RenderViewTest::TearDown();
+}
+
+content::ContentClient* ChromeRenderViewTest::CreateContentClient() {
+  return new ChromeContentClient();
+}
+
+content::ContentBrowserClient*
+    ChromeRenderViewTest::CreateContentBrowserClient() {
+  return new chrome::ChromeContentBrowserClient();
+}
+
+content::ContentRendererClient*
+    ChromeRenderViewTest::CreateContentRendererClient() {
+  ChromeContentRendererClient* client = new ChromeContentRendererClient();
+  client->SetExtensionDispatcher(extension_dispatcher_);
+#if defined(ENABLE_SPELLCHECK)
+  client->SetSpellcheck(new SpellCheck());
+#endif
+  return client;
 }

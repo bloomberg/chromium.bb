@@ -11,11 +11,13 @@
 #include "chrome/browser/notifications/fake_balloon_view.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/test/base/chrome_unit_test_suite.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "content/public/common/show_desktop_notification_params.h"
 #include "ui/base/ime/input_method_initializer.h"
+#include "ui/gl/gl_surface.h"
 #include "ui/message_center/message_center.h"
 
 #if defined(USE_ASH)
@@ -106,6 +108,8 @@ DesktopNotificationsTest::~DesktopNotificationsTest() {
 }
 
 void DesktopNotificationsTest::SetUp() {
+  ChromeUnitTestSuite::InitializeProviders();
+  ChromeUnitTestSuite::InitializeResourceBundle();
   ui::InitializeInputMethodForTesting();
 #if defined(USE_AURA)
   wm_state_.reset(new wm::WMState);

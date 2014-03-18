@@ -28,10 +28,6 @@ class ContentBrowserTest : public BrowserTestBase {
   // BrowserTestBase:
   virtual void RunTestOnMainThreadLoop() OVERRIDE;
 
-  // Must be called before or during setup.
-  void SetContentRendererClient(
-      scoped_ptr<ContentRendererClient> renderer_client);
-
  protected:
   // Creates a new window and loads about:blank.
   Shell* CreateBrowser();
@@ -43,14 +39,18 @@ class ContentBrowserTest : public BrowserTestBase {
   Shell* shell() const { return shell_; }
 
  private:
-  scoped_ptr<ShellMainDelegate> shell_main_delegate_;
-
   Shell* shell_;
 
   bool setup_called_;
 
+#if defined(OS_ANDROID)
+  // For all other platforms, this is done automatically when calling into
+  // ContentMain. For Android we set things up manually.
+  scoped_ptr<ShellMainDelegate> shell_main_delegate_;
+
   // ContentRendererClient when running in single-process mode.
   scoped_ptr<ContentRendererClient> single_process_renderer_client_;
+#endif
 };
 
 }  // namespace content

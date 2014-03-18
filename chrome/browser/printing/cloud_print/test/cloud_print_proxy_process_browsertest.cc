@@ -27,6 +27,7 @@
 #include "chrome/common/service_process_util.h"
 #include "chrome/service/service_ipc_server.h"
 #include "chrome/service/service_process.h"
+#include "chrome/test/base/chrome_unit_test_suite.h"
 #include "chrome/test/base/test_launcher_utils.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_io_thread_state.h"
@@ -36,6 +37,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/common/content_paths.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "ipc/ipc_descriptors.h"
 #include "ipc/ipc_multiprocess_test.h"
@@ -211,6 +213,7 @@ int CloudPrintMockService_Main(SetExpectationsCallback set_expectations) {
   base::MessageLoopForUI main_message_loop;
   main_message_loop.set_thread_name("Main Thread");
   CommandLine* command_line = CommandLine::ForCurrentProcess();
+  content::RegisterPathProvider();
 
 #if defined(OS_MACOSX)
   if (!command_line->HasSwitch(kTestExecutablePath))
@@ -371,6 +374,10 @@ class CloudPrintProxyPolicyStartupTest : public base::MultiProcessTest,
 
 CloudPrintProxyPolicyStartupTest::CloudPrintProxyPolicyStartupTest()
     : thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD) {
+  // Although is really a unit test which runs in the browser_tests binary, it
+  // doesn't get the unit setup which normally happens in the unit test binary.
+  ChromeUnitTestSuite::InitializeProviders();
+  ChromeUnitTestSuite::InitializeResourceBundle();
 }
 
 CloudPrintProxyPolicyStartupTest::~CloudPrintProxyPolicyStartupTest() {

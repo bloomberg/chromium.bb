@@ -121,11 +121,7 @@ namespace {
 class AppBackgroundPageNaClTest : public AppBackgroundPageApiTest {
  public:
   AppBackgroundPageNaClTest()
-      : extension_(NULL) {
-    PathService::Get(chrome::DIR_GEN_TEST_DATA, &app_dir_);
-    app_dir_ = app_dir_.AppendASCII(
-        "ppapi/tests/extensions/background_keepalive/newlib");
-  }
+      : extension_(NULL) {}
   virtual ~AppBackgroundPageNaClTest() {
   }
 
@@ -143,12 +139,15 @@ class AppBackgroundPageNaClTest : public AppBackgroundPageApiTest {
 
  protected:
   void LaunchTestingApp() {
-    extension_ = LoadExtension(app_dir_);
+    base::FilePath app_dir;
+    PathService::Get(chrome::DIR_GEN_TEST_DATA, &app_dir);
+    app_dir = app_dir.AppendASCII(
+        "ppapi/tests/extensions/background_keepalive/newlib");    
+    extension_ = LoadExtension(app_dir);
     ASSERT_TRUE(extension_);
   }
 
  private:
-  base::FilePath app_dir_;
   const Extension* extension_;
 };
 

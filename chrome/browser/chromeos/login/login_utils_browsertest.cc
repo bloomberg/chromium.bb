@@ -16,6 +16,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread.h"
+#include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/chromeos/input_method/mock_input_method_manager.h"
@@ -34,9 +35,11 @@
 #include "chrome/browser/profiles/chrome_browser_main_extra_parts_profiles.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/rlz/rlz.h"
+#include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/test/base/chrome_unit_test_suite.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/chromeos_switches.h"
@@ -161,6 +164,14 @@ class LoginUtilsTest : public testing::Test,
         prepared_profile_(NULL) {}
 
   virtual void SetUp() OVERRIDE {
+    ChromeUnitTestSuite::InitializeProviders();
+    ChromeUnitTestSuite::InitializeResourceBundle();
+
+    content_client_.reset(new ChromeContentClient);
+    content::SetContentClient(content_client_.get());
+    browser_content_client_.reset(new chrome::ChromeContentBrowserClient());
+    content::SetBrowserClientForTesting(browser_content_client_.get());
+
     // This test is not a full blown InProcessBrowserTest, and doesn't have
     // all the usual threads running. However a lot of subsystems pulled from
     // ProfileImpl post to IO (usually from ProfileIOData), and DCHECK that
@@ -285,6 +296,10 @@ class LoginUtilsTest : public testing::Test,
     browser_process_->SetBrowserPolicyConnector(NULL);
     QuitIOLoop();
     RunUntilIdle();
+
+    browser_content_client_.reset();
+    content_client_.reset();
+    content::SetContentClient(NULL);
   }
 
   void TearDownOnIO() {
@@ -466,6 +481,9 @@ class LoginUtilsTest : public testing::Test,
   // Must be the first member variable as browser_process_ and local_state_
   // rely on this being set up.
   TestingBrowserProcessInitializer initializer_;
+
+  scoped_ptr<ChromeContentClient> content_client_;
+  scoped_ptr<chrome::ChromeContentBrowserClient> browser_content_client_;
 
   base::Closure fake_io_thread_work_;
   base::WaitableEvent fake_io_thread_completion_;

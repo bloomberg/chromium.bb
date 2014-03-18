@@ -130,6 +130,7 @@ class OutOfProcessPPAPIPrivateTest : public OutOfProcessPPAPITest {
 class PPAPINaClTest : public PPAPITestBase {
  public:
   virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE;
+  virtual void SetUpOnMainThread() OVERRIDE;
   // PPAPITestBase overrides.
   virtual void RunTest(const std::string& test_case) OVERRIDE;
   virtual void RunTestAndReload(const std::string& test_case) OVERRIDE;

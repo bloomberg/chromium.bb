@@ -279,7 +279,7 @@ class Dispatcher : public content::RenderProcessObserver {
 
   // Same as above, but on a longer timer and will run even if the process is
   // not idle, to ensure that IdleHandle gets called eventually.
-  base::RepeatingTimer<content::RenderThread> forced_idle_timer_;
+  scoped_ptr<base::RepeatingTimer<content::RenderThread> > forced_idle_timer_;
 
   // All declared function names.
   std::set<std::string> function_names_;

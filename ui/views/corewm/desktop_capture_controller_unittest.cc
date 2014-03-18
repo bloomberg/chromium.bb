@@ -5,11 +5,15 @@
 #include "ui/wm/core/capture_controller.h"
 
 #include "base/logging.h"
+#include "base/path_service.h"
 #include "ui/aura/env.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/base/ui_base_paths.h"
 #include "ui/events/event.h"
+#include "ui/gl/gl_surface.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
@@ -22,7 +26,22 @@
 
 namespace views {
 
-typedef ViewsTestBase DesktopCaptureControllerTest;
+class DesktopCaptureControllerTest : public ViewsTestBase {
+ public:
+  DesktopCaptureControllerTest() {}
+  virtual ~DesktopCaptureControllerTest() {}
+
+  virtual void SetUp() OVERRIDE {
+    gfx::GLSurface::InitializeOneOffForTests();
+    base::FilePath pak_dir;
+    PathService::Get(base::DIR_MODULE, &pak_dir);
+    base::FilePath pak_file;
+    pak_file = pak_dir.Append(FILE_PATH_LITERAL("ui_test.pak"));
+    ui::ResourceBundle::InitSharedInstanceWithPakPath(pak_file);
+
+    ViewsTestBase::SetUp();
+  }
+};
 
 // This class provides functionality to verify whether the View instance
 // received the gesture event.

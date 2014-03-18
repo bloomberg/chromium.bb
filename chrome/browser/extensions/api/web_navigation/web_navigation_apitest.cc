@@ -257,75 +257,6 @@ class TestResourceDispatcherHostDelegate
   DISALLOW_COPY_AND_ASSIGN(TestResourceDispatcherHostDelegate);
 };
 
-// Used to manage the lifetime of the TestResourceDispatcherHostDelegate which
-// needs to be deleted before the threads are stopped.
-class TestBrowserMainExtraParts : public ChromeBrowserMainExtraParts {
- public:
-  explicit TestBrowserMainExtraParts(
-      TestNavigationListener* test_navigation_listener)
-      : test_navigation_listener_(test_navigation_listener) {
-  }
-  virtual ~TestBrowserMainExtraParts() {}
-
-  TestResourceDispatcherHostDelegate* resource_dispatcher_host_delegate() {
-    if (!resource_dispatcher_host_delegate_.get()) {
-      resource_dispatcher_host_delegate_.reset(
-          new TestResourceDispatcherHostDelegate(
-              g_browser_process->prerender_tracker(),
-              test_navigation_listener_.get()));
-    }
-    return resource_dispatcher_host_delegate_.get();
-  }
-
-  // ChromeBrowserMainExtraParts implementation.
-  virtual void PostMainMessageLoopRun() OVERRIDE {
-    resource_dispatcher_host_delegate_.reset();
-  }
-
- private:
-  scoped_refptr<TestNavigationListener> test_navigation_listener_;
-  scoped_ptr<TestResourceDispatcherHostDelegate>
-      resource_dispatcher_host_delegate_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestBrowserMainExtraParts);
-};
-
-// A ContentBrowserClient that doesn't forward the RDH created signal.
-class TestContentBrowserClient : public chrome::ChromeContentBrowserClient {
- public:
-  explicit TestContentBrowserClient(
-      TestNavigationListener* test_navigation_listener)
-      : test_navigation_listener_(test_navigation_listener) {
-  }
-  virtual ~TestContentBrowserClient() {}
-
-  virtual void ResourceDispatcherHostCreated() OVERRIDE {
-    // Don't invoke ChromeContentBrowserClient::ResourceDispatcherHostCreated.
-    // It would notify BrowserProcessImpl which would create a
-    // ChromeResourceDispatcherHostDelegate and other objects. Not creating
-    // other objects might turn out to be a problem in the future.
-    content::ResourceDispatcherHost::Get()->SetDelegate(
-        browser_main_extra_parts_->resource_dispatcher_host_delegate());
-  }
-
-  virtual content::BrowserMainParts* CreateBrowserMainParts(
-      const content::MainFunctionParams& parameters) OVERRIDE {
-    ChromeBrowserMainParts* main_parts = static_cast<ChromeBrowserMainParts*>(
-        ChromeContentBrowserClient::CreateBrowserMainParts(parameters));
-
-    browser_main_extra_parts_ =
-        new TestBrowserMainExtraParts(test_navigation_listener_.get());
-    main_parts->AddParts(browser_main_extra_parts_);
-    return main_parts;
-  }
-
- private:
-  scoped_refptr<TestNavigationListener> test_navigation_listener_;
-  TestBrowserMainExtraParts* browser_main_extra_parts_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestContentBrowserClient);
-};
-
 }  // namespace
 
 class WebNavigationApiTest : public ExtensionApiTest {
@@ -336,12 +267,6 @@ class WebNavigationApiTest : public ExtensionApiTest {
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     ExtensionApiTest::SetUpInProcessBrowserTestFixture();
 
-    test_navigation_listener_ = new TestNavigationListener();
-    content_browser_client_.reset(
-        new TestContentBrowserClient(test_navigation_listener_.get()));
-    original_content_browser_client_ = content::SetBrowserClientForTesting(
-        content_browser_client_.get());
-
     FrameNavigationState::set_allow_extension_scheme(true);
 
     CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -350,9 +275,15 @@ class WebNavigationApiTest : public ExtensionApiTest {
     host_resolver()->AddRule("*", "127.0.0.1");
   }
 
-  virtual void TearDownInProcessBrowserTestFixture() OVERRIDE {
-    ExtensionApiTest::TearDownInProcessBrowserTestFixture();
-    content::SetBrowserClientForTesting(original_content_browser_client_);
+  virtual void SetUpOnMainThread() OVERRIDE {
+    ExtensionApiTest::SetUpOnMainThread();
+    test_navigation_listener_ = new TestNavigationListener();
+    resource_dispatcher_host_delegate_.reset(
+        new TestResourceDispatcherHostDelegate(
+            g_browser_process->prerender_tracker(),
+            test_navigation_listener_.get()));
+    content::ResourceDispatcherHost::Get()->SetDelegate(
+        resource_dispatcher_host_delegate_.get());
   }
 
   TestNavigationListener* test_navigation_listener() {
@@ -361,8 +292,8 @@ class WebNavigationApiTest : public ExtensionApiTest {
 
  private:
   scoped_refptr<TestNavigationListener> test_navigation_listener_;
-  scoped_ptr<TestContentBrowserClient> content_browser_client_;
-  content::ContentBrowserClient* original_content_browser_client_;
+  scoped_ptr<TestResourceDispatcherHostDelegate>
+      resource_dispatcher_host_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(WebNavigationApiTest);
 };

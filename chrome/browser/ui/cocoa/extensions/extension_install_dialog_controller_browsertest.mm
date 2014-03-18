@@ -16,7 +16,9 @@ using extensions::Extension;
 
 class ExtensionInstallDialogControllerTest : public InProcessBrowserTest {
 public:
-  ExtensionInstallDialogControllerTest() {
+  ExtensionInstallDialogControllerTest() {}
+
+  virtual void SetUpOnMainThread() OVERRIDE {
     extension_ = chrome::LoadInstallPromptExtension();
   }
 

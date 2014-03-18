@@ -44,9 +44,11 @@ static const char* kName = "whatsinaname";
 
 class BluetoothApiTest : public ExtensionApiTest {
  public:
-  BluetoothApiTest() : empty_extension_(utils::CreateEmptyExtension()) {}
+  BluetoothApiTest() {}
 
   virtual void SetUpOnMainThread() OVERRIDE {
+    ExtensionApiTest::SetUpOnMainThread();
+    empty_extension_ = utils::CreateEmptyExtension();
     SetUpMockAdapter();
     profile1_.reset(new testing::NiceMock<MockBluetoothProfile>());
     profile2_.reset(new testing::NiceMock<MockBluetoothProfile>());

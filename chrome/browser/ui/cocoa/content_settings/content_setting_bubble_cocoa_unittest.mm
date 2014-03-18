@@ -8,11 +8,14 @@
 
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/mac/scoped_nsobject.h"
+#include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
+#include "chrome/common/chrome_content_client.h"
 #include "chrome/common/content_settings_types.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "chrome/test/base/chrome_unit_test_suite.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/common/media_stream_request.h"
@@ -49,9 +52,23 @@ class ContentSettingBubbleControllerTest
   ContentSettingBubbleController* CreateBubbleController(
       ContentSettingsType settingsType);
 
+  virtual void SetUp() OVERRIDE {
+    ChromeUnitTestSuite::InitializeProviders();
+    ChromeUnitTestSuite::InitializeResourceBundle();
+    content_client_.reset(new ChromeContentClient);
+    content::SetContentClient(content_client_.get());
+    browser_content_client_.reset(new chrome::ChromeContentBrowserClient());
+    content::SetBrowserClientForTesting(browser_content_client_.get());
+    initializer_.reset(new TestingBrowserProcessInitializer);
+    ChromeRenderViewHostTestHarness::SetUp();
+  }
+
+  scoped_ptr<ChromeContentClient> content_client_;
+  scoped_ptr<chrome::ChromeContentBrowserClient> browser_content_client_;
+
   // This is a unit test running in the browser_tests suite, so we must create
   // the TestingBrowserProcess manually. Must be first member.
-  TestingBrowserProcessInitializer initializer_;
+  scoped_ptr<TestingBrowserProcessInitializer> initializer_;
 
   base::scoped_nsobject<NSWindow> parent_;
 

@@ -489,7 +489,8 @@ class ContentMainRunnerImpl : public ContentMainRunner {
       : is_initialized_(false),
         is_shutdown_(false),
         completed_basic_startup_(false),
-        delegate_(NULL) {
+        delegate_(NULL),
+        ui_task_(NULL) {
 #if defined(OS_WIN)
     memset(&sandbox_info_, 0, sizeof(sandbox_info_));
 #endif
@@ -526,6 +527,8 @@ class ContentMainRunnerImpl : public ContentMainRunner {
 #endif
 
   virtual int Initialize(const ContentMainParams& params) OVERRIDE {
+    ui_task_ = params.ui_task;
+
 #if defined(OS_WIN)   
     RegisterInvalidParamHandler();
     _Module.Init(NULL, static_cast<HINSTANCE>(params.instance));
@@ -612,7 +615,12 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     // A consequence of this is that you can't use the ctor/dtor-based
     // TRACE_EVENT methods on Linux or iOS builds till after we set this up.
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
-    exit_manager_.reset(new base::AtExitManager);
+    if (!ui_task_) {
+      // When running browser tests, don't create a second AtExitManager as that
+      // interfers with shutdown when objects created before ContentMain is
+      // called are destructed when it returns.
+      exit_manager_.reset(new base::AtExitManager);
+    }
 #endif  // !OS_ANDROID && !OS_IOS
 
 #if defined(OS_MACOSX)
@@ -769,6 +777,7 @@ class ContentMainRunnerImpl : public ContentMainRunner {
           command_line.GetSwitchValueASCII(switches::kProcessType);
 
     MainFunctionParams main_params(command_line);
+    main_params.ui_task = ui_task_;
 #if defined(OS_WIN)
     main_params.sandbox_info = &sandbox_info_;
 #elif defined(OS_MACOSX)
@@ -834,6 +843,8 @@ class ContentMainRunnerImpl : public ContentMainRunner {
 #elif defined(OS_MACOSX)
   scoped_ptr<base::mac::ScopedNSAutoreleasePool> autorelease_pool_;
 #endif
+
+  base::Closure* ui_task_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentMainRunnerImpl);
 };

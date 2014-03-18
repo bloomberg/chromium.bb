@@ -12,6 +12,7 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/bookmark_test_helpers.h"
+#include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
@@ -20,6 +21,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
+#include "chrome/common/chrome_content_client.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
@@ -118,6 +120,11 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
         model_(NULL) {}
 
   virtual void SetUp() OVERRIDE {
+    content_client_.reset(new ChromeContentClient);
+    content::SetContentClient(content_client_.get());
+    browser_content_client_.reset(new chrome::ChromeContentBrowserClient());
+    content::SetBrowserClientForTesting(browser_content_client_.get());
+
     views::MenuController::TurnOffMenuSelectionHoldForTest();
     BookmarkBarView::DisableAnimationsForTesting(true);
 
@@ -185,6 +192,10 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
 
     ViewEventTestBase::TearDown();
     BookmarkBarView::DisableAnimationsForTesting(false);
+
+    browser_content_client_.reset();
+    content_client_.reset();
+    content::SetContentClient(NULL);
   }
 
  protected:
@@ -239,6 +250,8 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
   }
 
   gfx::Size bb_view_pref_;
+  scoped_ptr<ChromeContentClient> content_client_;
+  scoped_ptr<chrome::ChromeContentBrowserClient> browser_content_client_;
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<Browser> browser_;
   scoped_ptr<ScopedTestingLocalState> local_state_;

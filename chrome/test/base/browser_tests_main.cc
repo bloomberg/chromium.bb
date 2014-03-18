@@ -8,16 +8,10 @@
 #include "chrome/test/base/chrome_test_launcher.h"
 #include "chrome/test/base/chrome_test_suite.h"
 
-class ChromeBrowserTestSuite : public ChromeTestSuite {
- public:
-  ChromeBrowserTestSuite(int argc, char** argv) : ChromeTestSuite(argc, argv) {}
-  virtual bool IsBrowserTestSuite() OVERRIDE { return true; }
-};
-
 class ChromeBrowserTestSuiteRunner : public ChromeTestSuiteRunner {
  public:
   virtual int RunTestSuite(int argc, char** argv) OVERRIDE {
-    return ChromeBrowserTestSuite(argc, argv).Run();
+    return ChromeTestSuite(argc, argv).Run();
   }
 };
 

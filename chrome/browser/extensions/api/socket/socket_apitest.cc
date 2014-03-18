@@ -73,6 +73,10 @@ class SocketPpapiTest : public SocketApiTest {
     // going to move the Pepper API tests to a new place, use a string literal
     // for now.
     command_line->AppendSwitch("enable-pepper-testing");
+  }
+
+  virtual void SetUpOnMainThread() OVERRIDE {
+    SocketApiTest::SetUpOnMainThread();
 
     PathService::Get(chrome::DIR_GEN_TEST_DATA, &app_dir_);
     app_dir_ = app_dir_.AppendASCII("ppapi/tests/extensions/socket/newlib");

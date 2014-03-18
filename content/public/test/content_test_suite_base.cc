@@ -16,7 +16,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/utility_process_host.h"
 #include "content/public/common/content_client.h"
-#include "content/public/common/content_paths.h"
 #include "content/renderer/in_process_renderer_thread.h"
 #include "content/utility/in_process_utility_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -34,10 +33,6 @@
 #include "ui/shell_dialogs/android/shell_dialogs_jni_registrar.h"
 #endif
 
-#if !defined(OS_IOS)
-#include "media/base/media.h"
-#endif
-
 namespace content {
 
 class ContentTestSuiteBaseListener : public testing::EmptyTestEventListener {
@@ -52,8 +47,7 @@ class ContentTestSuiteBaseListener : public testing::EmptyTestEventListener {
 };
 
 ContentTestSuiteBase::ContentTestSuiteBase(int argc, char** argv)
-    : base::TestSuite(argc, argv),
-      external_libraries_enabled_(true) {
+    : base::TestSuite(argc, argv) {
 }
 
 void ContentTestSuiteBase::Initialize() {
@@ -71,26 +65,25 @@ void ContentTestSuiteBase::Initialize() {
   ui::shell_dialogs::RegisterJni(env);
 #endif
 
+  testing::UnitTest::GetInstance()->listeners().Append(
+      new ContentTestSuiteBaseListener);
+}
+
+void ContentTestSuiteBase::RegisterContentSchemes(
+    ContentClient* content_client) {
+  SetContentClient(content_client);
+  content::RegisterContentSchemes(false);
+  SetContentClient(NULL);
+}
+
+void ContentTestSuiteBase::RegisterInProcessThreads() {
 #if !defined(OS_IOS)
   UtilityProcessHost::RegisterUtilityMainThreadFactory(
       CreateInProcessUtilityThread);
   RenderProcessHost::RegisterRendererMainThreadFactory(
       CreateInProcessRendererThread);
   GpuProcessHost::RegisterGpuMainThreadFactory(CreateInProcessGpuThread);
-  if (external_libraries_enabled_)
-    media::InitializeMediaLibraryForTesting();
 #endif
-
-  scoped_ptr<ContentClient> client_for_init(CreateClientForInitialization());
-  SetContentClient(client_for_init.get());
-  RegisterContentSchemes(false);
-  SetContentClient(NULL);
-
-  RegisterPathProvider();
-  ui::RegisterPathProvider();
-
-  testing::UnitTest::GetInstance()->listeners().Append(
-      new ContentTestSuiteBaseListener);
 }
 
 }  // namespace content

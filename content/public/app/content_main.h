@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 
+#include "base/callback_forward.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 
@@ -23,15 +24,15 @@ class ContentMainDelegate;
 
 struct ContentMainParams {
   explicit ContentMainParams(ContentMainDelegate* delegate)
-      : delegate(delegate)
+      : delegate(delegate),
 #if defined(OS_WIN)
-        , instance(NULL),
-        sandbox_info(NULL)
+        instance(NULL),
+        sandbox_info(NULL),
 #elif !defined(OS_ANDROID)
-        , argc(0),
-        argv(NULL)
+        argc(0),
+        argv(NULL),
 #endif
-        {
+        ui_task(NULL) {
   }
 
   ContentMainDelegate* delegate;
@@ -46,6 +47,10 @@ struct ContentMainParams {
   int argc;
   const char** argv;
 #endif
+
+  // Used by browser_tests. If non-null BrowserMain schedules this task to run
+  // on the MessageLoop. It's owned by the test code.
+  base::Closure* ui_task;
 };
 
 #if defined(OS_ANDROID)

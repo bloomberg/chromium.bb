@@ -205,7 +205,7 @@ void NaClBrowserTestBase::SetUpCommandLine(CommandLine* command_line) {
   command_line->AppendSwitch(switches::kEnableNaCl);
 }
 
-void NaClBrowserTestBase::SetUpInProcessBrowserTestFixture() {
+void NaClBrowserTestBase::SetUpOnMainThread() {
   // Sanity check.
   base::FilePath plugin_lib;
   ASSERT_TRUE(PathService::Get(chrome::FILE_NACL_PLUGIN, &plugin_lib));

@@ -10,7 +10,6 @@
 #include "base/test/test_suite.h"
 
 namespace content {
-
 class ContentClient;
 
 // A basis upon which test suites that use content can be built.  This suite
@@ -22,17 +21,16 @@ class ContentTestSuiteBase : public base::TestSuite {
 
   virtual void Initialize() OVERRIDE;
 
-  // Creates a ContentClient for use during test suite initialization.
-  virtual ContentClient* CreateClientForInitialization() = 0;
+  // The methods below are for unit test setup.
 
-  // If set to false, prevents Initialize() to load external libraries
-  // to the process. By default loading is enabled.
-  void set_external_libraries_enabled(bool val) {
-    external_libraries_enabled_ = val;
-  }
+  // Registers content's schemes. During this call, the given content_client is
+  // registered temporarily so that it can provide additional schemes.
+  static void RegisterContentSchemes(ContentClient* content_client);
+
+  // Registers renderer/utility/gpu processes to run in-thread.
+  void RegisterInProcessThreads();
 
  private:
-  bool external_libraries_enabled_;
   DISALLOW_COPY_AND_ASSIGN(ContentTestSuiteBase);
 };
 

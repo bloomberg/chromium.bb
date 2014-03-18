@@ -360,15 +360,17 @@ void PPAPINaClTest::SetUpCommandLine(base::CommandLine* command_line) {
   RETURN_IF_NO_NACL();
   PPAPITestBase::SetUpCommandLine(command_line);
 
-  base::FilePath plugin_lib;
-  EXPECT_TRUE(PathService::Get(chrome::FILE_NACL_PLUGIN, &plugin_lib));
-  EXPECT_TRUE(base::PathExists(plugin_lib));
-
   // Enable running (non-portable) NaCl outside of the Chrome web store.
   command_line->AppendSwitch(switches::kEnableNaCl);
   command_line->AppendSwitchASCII(switches::kAllowNaClSocketAPI, "127.0.0.1");
   command_line->AppendSwitch(switches::kUseFakeDeviceForMediaStream);
   command_line->AppendSwitch(switches::kUseFakeUIForMediaStream);
+}
+
+void PPAPINaClTest::SetUpOnMainThread() {
+  base::FilePath plugin_lib;
+  EXPECT_TRUE(PathService::Get(chrome::FILE_NACL_PLUGIN, &plugin_lib));
+  EXPECT_TRUE(base::PathExists(plugin_lib));
 }
 
 void PPAPINaClTest::RunTest(const std::string& test_case) {
@@ -451,10 +453,6 @@ void PPAPINaClTestDisallowedSockets::SetUpCommandLine(
     base::CommandLine* command_line) {
   PPAPITestBase::SetUpCommandLine(command_line);
 
-  base::FilePath plugin_lib;
-  EXPECT_TRUE(PathService::Get(chrome::FILE_NACL_PLUGIN, &plugin_lib));
-  EXPECT_TRUE(base::PathExists(plugin_lib));
-
   // Enable running (non-portable) NaCl outside of the Chrome web store.
   command_line->AppendSwitch(switches::kEnableNaCl);
 }
@@ -470,4 +468,8 @@ std::string PPAPINaClTestDisallowedSockets::BuildQuery(
 void PPAPIBrokerInfoBarTest::SetUpOnMainThread() {
   // The default content setting for the PPAPI broker is ASK. We purposefully
   // don't call PPAPITestBase::SetUpOnMainThread() to keep it that way.
+
+  base::FilePath plugin_lib;
+  EXPECT_TRUE(PathService::Get(chrome::FILE_NACL_PLUGIN, &plugin_lib));
+  EXPECT_TRUE(base::PathExists(plugin_lib));
 }

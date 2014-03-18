@@ -314,6 +314,8 @@ class UIControlsDesktopX11 : public UIControlsAura {
 }  // namespace
 
 UIControlsAura* CreateUIControlsDesktopAura() {
+  // The constructor of UIControlsDesktopX11 needs XInitThreads to be called.
+  XInitThreads();
   return new UIControlsDesktopX11();
 }
 

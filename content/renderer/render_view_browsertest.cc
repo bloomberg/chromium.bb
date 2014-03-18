@@ -21,6 +21,7 @@
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
+#include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/document_state.h"
 #include "content/public/renderer/history_item_serialization.h"
 #include "content/public/renderer/navigation_state.h"
@@ -2067,9 +2068,8 @@ TEST_F(RenderViewImplTest, MessageOrderInDidChangeSelection) {
 
 class SuppressErrorPageTest : public RenderViewTest {
  public:
-  virtual void SetUp() OVERRIDE {
-    SetRendererClientForTesting(&client_);
-    RenderViewTest::SetUp();
+  virtual ContentRendererClient* CreateContentRendererClient() OVERRIDE {
+    return new TestContentRendererClient;
   }
 
   RenderViewImpl* view() {
@@ -2099,8 +2099,6 @@ class SuppressErrorPageTest : public RenderViewTest {
         *error_html = "A suffusion of yellow.";
     }
   };
-
-  TestContentRendererClient client_;
 };
 
 #if defined(OS_ANDROID)

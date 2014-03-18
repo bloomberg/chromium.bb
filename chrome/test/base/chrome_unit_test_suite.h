@@ -7,7 +7,12 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/files/file_path.h"
 #include "chrome/test/base/chrome_test_suite.h"
+
+namespace base {
+class StatsTable;
+}
 
 // Test suite for unit tests. Creates additional stub services that are not
 // needed for browser tests (e.g. a TestingBrowserProcess).
@@ -18,11 +23,18 @@ class ChromeUnitTestSuite : public ChromeTestSuite {
 
   // base::TestSuite overrides:
   virtual void Initialize() OVERRIDE;
+  virtual void Shutdown() OVERRIDE;
 
-  // ChromeTestSuite overrides:
-  virtual bool IsBrowserTestSuite() OVERRIDE;
+  // These methods allow unit tests which run in the browser_test binary, and so
+  // which don't exercise the initialization in this test suite, to do basic
+  // setup which this class does.
+  static void InitializeProviders();
+  static void InitializeResourceBundle();
 
  private:
+  std::string stats_filename_;
+  scoped_ptr<base::StatsTable> stats_table_;
+
   DISALLOW_COPY_AND_ASSIGN(ChromeUnitTestSuite);
 };
 

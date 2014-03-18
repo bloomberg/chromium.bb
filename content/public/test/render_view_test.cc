@@ -9,8 +9,11 @@
 #include "content/common/frame_messages.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/native_web_keyboard_event.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/renderer_preferences.h"
+#include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/history_item_serialization.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
@@ -130,12 +133,12 @@ void RenderViewTest::GoForward(const blink::WebHistoryItem& item) {
 }
 
 void RenderViewTest::SetUp() {
-  // Subclasses can set the ContentClient's renderer before calling
-  // RenderViewTest::SetUp().
-  ContentRendererClient* old_client =
-      SetRendererClientForTesting(&content_renderer_client_);
-  if (old_client)
-    SetRendererClientForTesting(old_client);
+  content_client_.reset(CreateContentClient());
+  content_browser_client_.reset(CreateContentBrowserClient());
+  content_renderer_client_.reset(CreateContentRendererClient());
+  SetContentClient(content_client_.get());
+  SetBrowserClientForTesting(content_browser_client_.get());
+  SetRendererClientForTesting(content_renderer_client_.get());
 
   // Subclasses can set render_thread_ with their own implementation before
   // calling RenderViewTest::SetUp().
@@ -368,6 +371,19 @@ void RenderViewTest::SendContentStateImmediately() {
 blink::WebWidget* RenderViewTest::GetWebWidget() {
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
   return impl->webwidget();
+}
+
+
+ContentClient* RenderViewTest::CreateContentClient() {
+  return new ContentClient;
+}
+
+ContentBrowserClient* RenderViewTest::CreateContentBrowserClient() {
+  return new ContentBrowserClient;
+}
+
+ContentRendererClient* RenderViewTest::CreateContentRendererClient() {
+  return new ContentRendererClient;
 }
 
 void RenderViewTest::GoToOffset(int offset,

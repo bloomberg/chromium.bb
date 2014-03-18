@@ -519,7 +519,8 @@ void Dispatcher::WebKitInitialized() {
   // For extensions, we want to ensure we call the IdleHandler every so often,
   // even if the extension keeps up activity.
   if (is_extension_process_) {
-    forced_idle_timer_.Start(FROM_HERE,
+    forced_idle_timer_.reset(new base::RepeatingTimer<content::RenderThread>);
+    forced_idle_timer_->Start(FROM_HERE,
         base::TimeDelta::FromMilliseconds(kMaxExtensionIdleHandlerDelayMs),
         RenderThread::Get(), &RenderThread::IdleHandler);
   }
@@ -544,8 +545,8 @@ void Dispatcher::IdleNotification() {
     int64 forced_delay_ms = std::max(
         RenderThread::Get()->GetIdleNotificationDelayInMs(),
         kMaxExtensionIdleHandlerDelayMs);
-    forced_idle_timer_.Stop();
-    forced_idle_timer_.Start(FROM_HERE,
+    forced_idle_timer_->Stop();
+    forced_idle_timer_->Start(FROM_HERE,
         base::TimeDelta::FromMilliseconds(forced_delay_ms),
         RenderThread::Get(), &RenderThread::IdleHandler);
   }
@@ -553,6 +554,7 @@ void Dispatcher::IdleNotification() {
 
 void Dispatcher::OnRenderProcessShutdown() {
   v8_schema_registry_.reset();
+  forced_idle_timer_.reset();
 }
 
 void Dispatcher::OnSetFunctionNames(

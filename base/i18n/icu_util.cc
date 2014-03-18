@@ -44,14 +44,21 @@
 namespace base {
 namespace i18n {
 
+namespace {
+
+#if !defined(NDEBUG)
+// Assert that we are not called more than once.  Even though calling this
+// function isn't harmful (ICU can handle it), being called twice probably
+// indicates a programming error.
+bool g_called_once = false;
+bool g_check_called_once = true;
+#endif
+}
+
 bool InitializeICU() {
-#ifndef NDEBUG
-  // Assert that we are not called more than once.  Even though calling this
-  // function isn't harmful (ICU can handle it), being called twice probably
-  // indicates a programming error.
-  static bool called_once = false;
-  DCHECK(!called_once);
-  called_once = true;
+#if !defined(NDEBUG)
+  DCHECK(!g_check_called_once || !g_called_once);
+  g_called_once = true;
 #endif
 
 #if (ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_SHARED)
@@ -121,6 +128,12 @@ bool InitializeICU() {
   UErrorCode err = U_ZERO_ERROR;
   udata_setCommonData(const_cast<uint8*>(mapped_file.data()), &err);
   return err == U_ZERO_ERROR;
+#endif
+}
+
+void AllowMultipleInitializeCallsForTesting() {
+#if !defined(NDEBUG)
+  g_check_called_once = false;
 #endif
 }
 

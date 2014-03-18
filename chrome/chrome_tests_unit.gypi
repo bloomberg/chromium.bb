@@ -425,7 +425,13 @@
         }],
         ['OS=="mac"', {
           'dependencies': [
-            '../components/components.gyp:breakpad_stubs',
+            '../breakpad/breakpad.gyp:breakpad',
+            '../components/components.gyp:breakpad_component',
+          ],
+          'sources': [
+            'app/chrome_breakpad_client.cc',
+            'app/chrome_breakpad_client_mac.mm',
+            'app/chrome_main_mac.mm',
           ],
         }],
         ['enable_mdns == 1', {

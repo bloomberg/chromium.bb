@@ -84,6 +84,8 @@ class ViewEventTestBase : public views::WidgetDelegate,
   // loop.
   void Done();
 
+  static void SetUpTestCase();
+
   // Creates a window.
   virtual void SetUp() OVERRIDE;
 

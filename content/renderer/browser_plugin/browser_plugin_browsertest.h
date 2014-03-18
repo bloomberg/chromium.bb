@@ -9,7 +9,6 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "content/common/browser_plugin/browser_plugin_messages.h"
-#include "content/public/renderer/content_renderer_client.h"
 #include "content/public/test/render_view_test.h"
 #include "content/renderer/browser_plugin/mock_browser_plugin_manager.h"
 #include "content/renderer/render_view_impl.h"
@@ -22,7 +21,6 @@ class RenderThreadImpl;
 namespace content {
 
 class MockBrowserPlugin;
-class TestContentRendererClient;
 
 class BrowserPluginTest : public RenderViewTest {
  public:
@@ -31,6 +29,8 @@ class BrowserPluginTest : public RenderViewTest {
 
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
+  virtual ContentRendererClient* CreateContentRendererClient() OVERRIDE;
+
   MockBrowserPluginManager* browser_plugin_manager() const {
     return static_cast<MockBrowserPluginManager*>(
         static_cast<RenderViewImpl*>(view_)->GetBrowserPluginManager());
@@ -43,8 +43,6 @@ class BrowserPluginTest : public RenderViewTest {
   // Returns NULL if there is no plugin.
   MockBrowserPlugin* GetCurrentPluginWithAttachParams(
       BrowserPluginHostMsg_Attach_Params* params);
- private:
-  scoped_ptr<TestContentRendererClient> test_content_renderer_client_;
 };
 
 }  // namespace content

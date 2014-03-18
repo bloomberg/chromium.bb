@@ -64,7 +64,7 @@ class NaClBrowserTestBase : public InProcessBrowserTest {
 
   virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE;
 
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE;
+  virtual void SetUpOnMainThread() OVERRIDE;
 
   // What variant are we running - newlib, glibc, pnacl, etc?
   // This is used to compute what directory we're pulling data from, but it can

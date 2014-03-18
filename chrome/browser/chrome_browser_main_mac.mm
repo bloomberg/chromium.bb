@@ -174,26 +174,25 @@ void ChromeBrowserMainPartsMac::PreMainMessageLoopStart() {
   // Initialize NSApplication using the custom subclass.
   chrome_browser_application_mac::RegisterBrowserCrApp();
 
-  // If ui_task is not NULL, the app is actually a browser_test, so startup is
-  // handled outside of BrowserMain (which is what called this).
+  // If ui_task is not NULL, the app is actually a browser_test.
   if (!parameters().ui_task) {
     // The browser process only wants to support the language Cocoa will use,
     // so force the app locale to be overriden with that value.
     l10n_util::OverrideLocaleWithCocoaLocale();
-
-    // Before we load the nib, we need to start up the resource bundle so we
-    // have the strings avaiable for localization.
-    // TODO(markusheintz): Read preference pref::kApplicationLocale in order
-    // to enforce the application locale.
-    const std::string loaded_locale =
-        ResourceBundle::InitSharedInstanceWithLocale(std::string(), NULL);
-    CHECK(!loaded_locale.empty()) << "Default locale could not be found";
-
-    base::FilePath resources_pack_path;
-    PathService::Get(chrome::FILE_RESOURCES_PACK, &resources_pack_path);
-    ResourceBundle::GetSharedInstance().AddDataPackFromPath(
-        resources_pack_path, ui::SCALE_FACTOR_NONE);
   }
+
+  // Before we load the nib, we need to start up the resource bundle so we
+  // have the strings avaiable for localization.
+  // TODO(markusheintz): Read preference pref::kApplicationLocale in order
+  // to enforce the application locale.
+  const std::string loaded_locale =
+      ResourceBundle::InitSharedInstanceWithLocale(std::string(), NULL);
+  CHECK(!loaded_locale.empty()) << "Default locale could not be found";
+
+  base::FilePath resources_pack_path;
+  PathService::Get(chrome::FILE_RESOURCES_PACK, &resources_pack_path);
+  ResourceBundle::GetSharedInstance().AddDataPackFromPath(
+      resources_pack_path, ui::SCALE_FACTOR_NONE);
 
   // This is a no-op if the KeystoneRegistration framework is not present.
   // The framework is only distributed with branded Google Chrome builds.

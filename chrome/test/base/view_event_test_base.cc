@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "chrome/test/base/chrome_unit_test_suite.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -92,6 +93,11 @@ void ViewEventTestBase::Done() {
   // executed before UI events are executed.
   ui_controls::RunClosureAfterAllPendingUIEvents(
       base::MessageLoop::QuitClosure());
+}
+
+void ViewEventTestBase::SetUpTestCase() {
+  ChromeUnitTestSuite::InitializeProviders();
+  ChromeUnitTestSuite::InitializeResourceBundle();
 }
 
 void ViewEventTestBase::SetUp() {

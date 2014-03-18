@@ -10,6 +10,7 @@
 #include "base/path_service.h"
 #include "base/pickle.h"
 #include "content/public/common/content_constants.h"
+#include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/browser_plugin/browser_plugin.h"
 #include "content/renderer/browser_plugin/browser_plugin_manager_factory.h"
 #include "content/renderer/browser_plugin/mock_browser_plugin.h"
@@ -20,6 +21,8 @@
 #include "third_party/WebKit/public/platform/WebCursorInfo.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "third_party/WebKit/public/web/WebScriptSource.h"
+
+namespace content {
 
 namespace {
 const char kHTMLForBrowserPluginObject[] =
@@ -49,12 +52,10 @@ const char kHTMLForPartitionedPersistedPluginObject[] =
 
 std::string GetHTMLForBrowserPluginObject() {
   return base::StringPrintf(kHTMLForBrowserPluginObject,
-                            content::kBrowserPluginMimeType);
+                            kBrowserPluginMimeType);
 }
 
 }  // namespace
-
-namespace content {
 
 class TestContentRendererClient : public ContentRendererClient {
  public:
@@ -98,8 +99,6 @@ BrowserPluginTest::BrowserPluginTest() {}
 BrowserPluginTest::~BrowserPluginTest() {}
 
 void BrowserPluginTest::SetUp() {
-  test_content_renderer_client_.reset(new TestContentRendererClient);
-  SetRendererClientForTesting(test_content_renderer_client_.get());
   BrowserPluginManager::set_factory_for_testing(
       TestBrowserPluginManagerFactory::GetInstance());
   content::RenderViewTest::SetUp();
@@ -113,8 +112,11 @@ void BrowserPluginTest::TearDown() {
   // http://crbug.com/328552
   __lsan_do_leak_check();
 #endif
-  content::RenderViewTest::TearDown();
-  test_content_renderer_client_.reset();
+  RenderViewTest::TearDown();
+}
+
+ContentRendererClient* BrowserPluginTest::CreateContentRendererClient() {
+  return new TestContentRendererClient;
 }
 
 std::string BrowserPluginTest::ExecuteScriptAndReturnString(
@@ -226,7 +228,7 @@ TEST_F(BrowserPluginTest, InitialResize) {
 // correct behavior.
 TEST_F(BrowserPluginTest, ParseAllAttributes) {
   std::string html = base::StringPrintf(kHTMLForBrowserPluginWithAllAttributes,
-                                        content::kBrowserPluginMimeType);
+                                        kBrowserPluginMimeType);
   LoadHTML(html.c_str());
   bool result;
   bool has_value = ExecuteScriptAndReturnBool(
@@ -409,7 +411,7 @@ TEST_F(BrowserPluginTest, RemovePlugin) {
 // BrowserPlugin that has never navigated.
 TEST_F(BrowserPluginTest, RemovePluginBeforeNavigation) {
   std::string html = base::StringPrintf(kHTMLForSourcelessPluginObject,
-                                        content::kBrowserPluginMimeType);
+                                        kBrowserPluginMimeType);
   LoadHTML(html.c_str());
   EXPECT_FALSE(browser_plugin_manager()->sink().GetUniqueMessageMatching(
       BrowserPluginHostMsg_PluginDestroyed::ID));
@@ -424,14 +426,14 @@ TEST_F(BrowserPluginTest, RemovePluginBeforeNavigation) {
 // correctly.
 TEST_F(BrowserPluginTest, PartitionAttribute) {
   std::string html = base::StringPrintf(kHTMLForPartitionedPluginObject,
-                                        content::kBrowserPluginMimeType);
+                                        kBrowserPluginMimeType);
   LoadHTML(html.c_str());
   std::string partition_value = ExecuteScriptAndReturnString(
       "document.getElementById('browserplugin').partition");
   EXPECT_STREQ("someid", partition_value.c_str());
 
   html = base::StringPrintf(kHTMLForPartitionedPersistedPluginObject,
-                            content::kBrowserPluginMimeType);
+                            kBrowserPluginMimeType);
   LoadHTML(html.c_str());
   partition_value = ExecuteScriptAndReturnString(
       "document.getElementById('browserplugin').partition");
@@ -451,7 +453,7 @@ TEST_F(BrowserPluginTest, PartitionAttribute) {
 
   // Load a browser tag without 'src' defined.
   html = base::StringPrintf(kHTMLForSourcelessPluginObject,
-                            content::kBrowserPluginMimeType);
+                            kBrowserPluginMimeType);
   LoadHTML(html.c_str());
 
   // Ensure we don't parse just "persist:" string and return exception.
@@ -468,7 +470,7 @@ TEST_F(BrowserPluginTest, PartitionAttribute) {
 // partition attribute is invalid.
 TEST_F(BrowserPluginTest, InvalidPartition) {
   std::string html = base::StringPrintf(kHTMLForInvalidPartitionedPluginObject,
-                                        content::kBrowserPluginMimeType);
+                                        kBrowserPluginMimeType);
   LoadHTML(html.c_str());
   // Attempt to navigate with an invalid partition.
   {
@@ -514,7 +516,7 @@ TEST_F(BrowserPluginTest, InvalidPartition) {
 // cannot be modified.
 TEST_F(BrowserPluginTest, ImmutableAttributesAfterNavigation) {
   std::string html = base::StringPrintf(kHTMLForSourcelessPluginObject,
-                                        content::kBrowserPluginMimeType);
+                                        kBrowserPluginMimeType);
   LoadHTML(html.c_str());
 
   ExecuteJavaScript(
@@ -560,7 +562,7 @@ TEST_F(BrowserPluginTest, ImmutableAttributesAfterNavigation) {
 
 TEST_F(BrowserPluginTest, AutoSizeAttributes) {
   std::string html = base::StringPrintf(kHTMLForSourcelessPluginObject,
-                                        content::kBrowserPluginMimeType);
+                                        kBrowserPluginMimeType);
   LoadHTML(html.c_str());
   const char* kSetAutoSizeParametersAndNavigate =
     "var browserplugin = document.getElementById('browserplugin');"

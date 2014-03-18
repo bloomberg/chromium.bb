@@ -276,6 +276,7 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {
+    extensions::PlatformAppBrowserTest::SetUpOnMainThread();
     const testing::TestInfo* const test_info =
         testing::UnitTest::GetInstance()->current_test_info();
     // Mock out geolocation for geolocation specific tests.

@@ -13,7 +13,6 @@
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
-#include "content/shell/app/shell_main_delegate.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/shell/browser/shell_content_browser_client.h"
@@ -21,6 +20,10 @@
 #include "content/shell/renderer/shell_content_renderer_client.h"
 #include "content/test/test_content_client.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+
+#if defined(OS_ANDROID)
+#include "content/shell/app/shell_main_delegate.h"
+#endif
 
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
@@ -43,10 +46,13 @@ ContentBrowserTest::ContentBrowserTest()
       FILE_PATH_LITERAL("Content Shell.app/Contents/MacOS/Content Shell"));
   CHECK(PathService::Override(base::FILE_EXE, content_shell_path));
 #endif
-  CreateTestServer(base::FilePath(FILE_PATH_LITERAL("content/test/data")));
-  base::FilePath content_test_data_dir;
-  CHECK(PathService::Get(DIR_TEST_DATA, &content_test_data_dir));
-  embedded_test_server()->ServeFilesFromDirectory(content_test_data_dir);
+  base::FilePath content_test_data(FILE_PATH_LITERAL("content/test/data"));
+  CreateTestServer(content_test_data);
+  base::FilePath content_test_data_absolute;
+  CHECK(PathService::Get(base::DIR_SOURCE_ROOT, &content_test_data_absolute));
+  content_test_data_absolute =
+      content_test_data_absolute.Append(content_test_data);
+  embedded_test_server()->ServeFilesFromDirectory(content_test_data_absolute);
 }
 
 ContentBrowserTest::~ContentBrowserTest() {
@@ -55,27 +61,19 @@ ContentBrowserTest::~ContentBrowserTest() {
 }
 
 void ContentBrowserTest::SetUp() {
-  shell_main_delegate_.reset(new ShellMainDelegate);
-  shell_main_delegate_->PreSandboxStartup();
-
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   command_line->AppendSwitch(switches::kContentBrowserTest);
 
   SetUpCommandLine(command_line);
 
-  // Single-process mode is not set in BrowserMain, so if a subclass hasn't
-  // modified it yet, process it explicitly, and set up renderer.
+#if defined(OS_ANDROID)
+  shell_main_delegate_.reset(new ShellMainDelegate);
+  shell_main_delegate_->PreSandboxStartup();
   if (command_line->HasSwitch(switches::kSingleProcess)) {
-    if (!single_process_renderer_client_)
-      single_process_renderer_client_.reset(new ShellContentRendererClient());
+    single_process_renderer_client_.reset(new ShellContentRendererClient());
     SetRendererClientForTesting(single_process_renderer_client_.get());
-  } else {
-    // Confirm no test has called SetContentRendererClient() without
-    // setting up single process mode.
-    DCHECK(!single_process_renderer_client_);
   }
-
-#if defined(OS_MACOSX)
+#elif defined(OS_MACOSX)
   // See InProcessBrowserTest::PrepareTestCommandLine().
   base::FilePath subprocess_path;
   PathService::Get(base::FILE_EXE, &subprocess_path);
@@ -105,7 +103,9 @@ void ContentBrowserTest::TearDown() {
   ui::ShutdownInputMethodForTesting();
 #endif
 
+#if defined(OS_ANDROID)
   shell_main_delegate_.reset();
+#endif
 }
 
 void ContentBrowserTest::RunTestOnMainThreadLoop() {
@@ -147,14 +147,6 @@ void ContentBrowserTest::RunTestOnMainThreadLoop() {
   }
 
   Shell::CloseAllWindows();
-}
-
-void ContentBrowserTest::SetContentRendererClient(
-    scoped_ptr<ContentRendererClient> renderer_client) {
-  // This routine must be called before SetUp().
-  DCHECK(!setup_called_);
-  DCHECK(!single_process_renderer_client_);
-  single_process_renderer_client_ = renderer_client.Pass();
 }
 
 Shell* ContentBrowserTest::CreateBrowser() {

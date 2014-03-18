@@ -14,6 +14,9 @@ namespace i18n {
 // function should be called before ICU is used.
 BASE_I18N_EXPORT bool InitializeICU();
 
+// In a test binary, the call above might occur twice.
+BASE_I18N_EXPORT void AllowMultipleInitializeCallsForTesting();
+
 }  // namespace i18n
 }  // namespace base
 

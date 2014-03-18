@@ -430,7 +430,9 @@ void VerifyControlledSettingIndicators(Browser* browser,
 
 }  // namespace
 
-TEST(PolicyPrefsTestCoverageTest, AllPoliciesHaveATestCase) {
+typedef InProcessBrowserTest PolicyPrefsTestCoverageTest;
+
+IN_PROC_BROWSER_TEST_F(PolicyPrefsTestCoverageTest, AllPoliciesHaveATestCase) {
   // Verifies that all known policies have a test case in the JSON file.
   // This test fails when a policy is added to
   // components/policy/resources/policy_templates.json but a test case is not

@@ -6,59 +6,30 @@
 
 #include "base/base_paths.h"
 #include "base/command_line.h"
+#include "base/debug/stack_trace.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "base/process/memory.h"
 #include "base/sys_info.h"
 #include "base/test/test_suite.h"
+#include "base/test/test_timeouts.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/content_test_suite_base.h"
 #include "content/shell/app/shell_main_delegate.h"
-#include "content/shell/browser/shell_content_browser_client.h"
-#include "content/shell/common/shell_content_client.h"
 #include "content/shell/common/shell_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_ANDROID)
 #include "base/message_loop/message_loop.h"
+#include "content/common/url_schemes.h"
+#include "content/public/common/content_paths.h"
 #include "content/public/test/nested_message_pump_android.h"
+#include "content/shell/browser/shell_content_browser_client.h"
+#include "content/shell/common/shell_content_client.h"
+#include "ui/base/ui_base_paths.h"
 #endif
-
-#if defined(OS_WIN)
-#include "content/public/app/startup_helper_win.h"
-#include "sandbox/win/src/sandbox_types.h"
-#endif  // defined(OS_WIN)
 
 namespace content {
-
-class ContentShellTestSuiteInitializer
-    : public testing::EmptyTestEventListener {
- public:
-  ContentShellTestSuiteInitializer() {
-  }
-
-  virtual void OnTestStart(const testing::TestInfo& test_info) OVERRIDE {
-    content_client_.reset(new ShellContentClient);
-    browser_content_client_.reset(new ShellContentBrowserClient());
-    SetContentClient(content_client_.get());
-    SetBrowserClientForTesting(browser_content_client_.get());
-  }
-
-  virtual void OnTestEnd(const testing::TestInfo& test_info) OVERRIDE {
-#if !defined(OS_ANDROID)
-    // On Android, production code doesn't reset ContentClient during shutdown.
-    // We try to do the same thing as production. Refer to crbug.com/181069.
-    browser_content_client_.reset();
-    content_client_.reset();
-    SetContentClient(NULL);
-#endif
-  }
-
- private:
-  scoped_ptr<ShellContentClient> content_client_;
-  scoped_ptr<ShellContentBrowserClient> browser_content_client_;
-
-  DISALLOW_COPY_AND_ASSIGN(ContentShellTestSuiteInitializer);
-};
 
 #if defined(OS_ANDROID)
 scoped_ptr<base::MessagePump> CreateMessagePumpForUI() {
@@ -83,21 +54,28 @@ class ContentBrowserTestSuite : public ContentTestSuiteBase {
     if (!base::MessageLoop::InitMessagePumpForUIFactory(
             &CreateMessagePumpForUI))
       VLOG(0) << "MessagePumpForUIFactory already set, unable to override.";
+
+    // For all other platforms, we call ContentMain for browser tests which goes
+    // through the normal browser initialization paths. For Android, we must set
+    // things up manually.
+    content_client_.reset(new ShellContentClient);
+    browser_content_client_.reset(new ShellContentBrowserClient());
+    SetContentClient(content_client_.get());
+    SetBrowserClientForTesting(browser_content_client_.get());
+
+    content::RegisterContentSchemes(false);
+    RegisterPathProvider();
+    ui::RegisterPathProvider();
+    RegisterInProcessThreads();
 #endif
 
     ContentTestSuiteBase::Initialize();
-
-    testing::TestEventListeners& listeners =
-      testing::UnitTest::GetInstance()->listeners();
-    listeners.Append(new ContentShellTestSuiteInitializer);
-  }
-  virtual void Shutdown() OVERRIDE {
-    base::TestSuite::Shutdown();
   }
 
-  virtual ContentClient* CreateClientForInitialization() OVERRIDE {
-    return new ShellContentClient();
-  }
+#if defined(OS_ANDROID)
+  scoped_ptr<ShellContentClient> content_client_;	
+  scoped_ptr<ShellContentBrowserClient> browser_content_client_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(ContentBrowserTestSuite);
 };

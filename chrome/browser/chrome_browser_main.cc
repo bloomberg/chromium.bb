@@ -868,49 +868,44 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   // just changed it to include experiments.
   crash_keys::SetSwitchesFromCommandLine(CommandLine::ForCurrentProcess());
 
-  // If we're running tests (ui_task is non-null), then the ResourceBundle
-  // has already been initialized.
-  if (parameters().ui_task &&
-      !local_state_->IsManagedPreference(prefs::kApplicationLocale)) {
-    browser_process_->SetApplicationLocale("en-US");
-  } else {
-    // Mac starts it earlier in |PreMainMessageLoopStart()| (because it is
-    // needed when loading the MainMenu.nib and the language doesn't depend on
-    // anything since it comes from Cocoa.
+  // Mac starts it earlier in |PreMainMessageLoopStart()| (because it is
+  // needed when loading the MainMenu.nib and the language doesn't depend on
+  // anything since it comes from Cocoa.
 #if defined(OS_MACOSX)
-    browser_process_->SetApplicationLocale(l10n_util::GetLocaleOverride());
+  std::string locale =
+      parameters().ui_task ? "en-US" : l10n_util::GetLocaleOverride();
+  browser_process_->SetApplicationLocale(locale);
 #else
-    const std::string locale =
-        local_state_->GetString(prefs::kApplicationLocale);
+  const std::string locale =
+      local_state_->GetString(prefs::kApplicationLocale);
 
-    // On a POSIX OS other than ChromeOS, the parameter that is passed to the
-    // method InitSharedInstance is ignored.
+  // On a POSIX OS other than ChromeOS, the parameter that is passed to the
+  // method InitSharedInstance is ignored.
 
-    TRACE_EVENT_BEGIN0("startup",
-        "ChromeBrowserMainParts::PreCreateThreadsImpl:InitResourceBundle");
-    const std::string loaded_locale =
-        ResourceBundle::InitSharedInstanceWithLocale(locale, NULL);
-    TRACE_EVENT_END0("startup",
-        "ChromeBrowserMainParts::PreCreateThreadsImpl:InitResourceBundle");
+  TRACE_EVENT_BEGIN0("startup",
+      "ChromeBrowserMainParts::PreCreateThreadsImpl:InitResourceBundle");
+  const std::string loaded_locale =
+      ResourceBundle::InitSharedInstanceWithLocale(locale, NULL);
+  TRACE_EVENT_END0("startup",
+      "ChromeBrowserMainParts::PreCreateThreadsImpl:InitResourceBundle");
 
-    if (loaded_locale.empty() &&
-        !parsed_command_line().HasSwitch(switches::kNoErrorDialogs)) {
-      ShowMissingLocaleMessageBox();
-      return chrome::RESULT_CODE_MISSING_DATA;
-    }
-    CHECK(!loaded_locale.empty()) << "Locale could not be found for " << locale;
-    browser_process_->SetApplicationLocale(loaded_locale);
-
-    base::FilePath resources_pack_path;
-    PathService::Get(chrome::FILE_RESOURCES_PACK, &resources_pack_path);
-    {
-      TRACE_EVENT0("startup",
-          "ChromeBrowserMainParts::PreCreateThreadsImpl:AddDataPack");
-      ResourceBundle::GetSharedInstance().AddDataPackFromPath(
-          resources_pack_path, ui::SCALE_FACTOR_NONE);
-    }
-#endif  // defined(OS_MACOSX)
+  if (loaded_locale.empty() &&
+      !parsed_command_line().HasSwitch(switches::kNoErrorDialogs)) {
+    ShowMissingLocaleMessageBox();
+    return chrome::RESULT_CODE_MISSING_DATA;
   }
+  CHECK(!loaded_locale.empty()) << "Locale could not be found for " << locale;
+  browser_process_->SetApplicationLocale(loaded_locale);
+
+  base::FilePath resources_pack_path;
+  PathService::Get(chrome::FILE_RESOURCES_PACK, &resources_pack_path);
+  {
+    TRACE_EVENT0("startup",
+        "ChromeBrowserMainParts::PreCreateThreadsImpl:AddDataPack");
+    ResourceBundle::GetSharedInstance().AddDataPackFromPath(
+        resources_pack_path, ui::SCALE_FACTOR_NONE);
+  }
+#endif  // defined(OS_MACOSX)
 
 #if defined(TOOLKIT_GTK)
   g_set_application_name(l10n_util::GetStringUTF8(IDS_PRODUCT_NAME).c_str());

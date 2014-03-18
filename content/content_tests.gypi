@@ -1033,7 +1033,7 @@
             'renderer/browser_plugin/mock_browser_plugin.h',
             'renderer/browser_plugin/mock_browser_plugin_manager.cc',
             'renderer/browser_plugin/mock_browser_plugin_manager.h',
-	    'renderer/browser_render_view_browsertest.cc',
+            'renderer/browser_render_view_browsertest.cc',
             'renderer/dom_serializer_browsertest.cc',
             'renderer/gin_browsertest.cc',
             'renderer/mouse_lock_dispatcher_browsertest.cc',

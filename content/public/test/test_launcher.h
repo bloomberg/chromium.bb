@@ -18,6 +18,7 @@ class RunLoop;
 
 namespace content {
 class ContentMainDelegate;
+struct ContentMainParams;
 
 extern const char kEmptyTestName[];
 extern const char kHelpFlag[];
@@ -55,6 +56,7 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
                 char** argv) WARN_UNUSED_RESULT;
 
 TestLauncherDelegate* GetCurrentTestLauncherDelegate();
+ContentMainParams* GetContentMainParams();
 
 }  // namespace content
 

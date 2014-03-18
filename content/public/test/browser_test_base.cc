@@ -7,12 +7,15 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/debug/stack_trace.h"
+#include "base/i18n/icu_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/sys_info.h"
+#include "content/public/app/content_main.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
+#include "content/public/test/test_launcher.h"
 #include "content/public/test/test_utils.h"
 #include "net/base/net_errors.h"
 #include "net/dns/mock_host_resolver.h"
@@ -27,7 +30,6 @@
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
-#include "base/power_monitor/power_monitor_device_source.h"
 #endif
 
 #if defined(OS_ANDROID)
@@ -121,12 +123,16 @@ BrowserTestBase::BrowserTestBase()
     : enable_pixel_output_(false), use_software_compositing_(false) {
 #if defined(OS_MACOSX)
   base::mac::SetOverrideAmIBundled(true);
-  base::PowerMonitorDeviceSource::AllocateSystemIOPorts();
 #endif
 
 #if defined(OS_POSIX)
   handle_sigterm_ = true;
 #endif
+
+  // This is called through base::TestSuite initially. It'll also be called
+  // inside BrowserMain, so tell the code to ignore the check that it's being
+  // called more than once
+  base::i18n::AllowMultipleInitializeCallsForTesting();
 
   embedded_test_server_.reset(new net::test_server::EmbeddedTestServer);
 }
@@ -223,12 +229,14 @@ void BrowserTestBase::SetUp() {
   net::ScopedDefaultHostResolverProc scoped_local_host_resolver_proc(
       rule_based_resolver_.get());
   SetUpInProcessBrowserTestFixture();
-  MainFunctionParams params(*command_line);
-  params.ui_task =
+
+  base::Closure* ui_task =
       new base::Closure(
           base::Bind(&BrowserTestBase::ProxyRunTestOnMainThreadLoop, this));
 
 #if defined(OS_ANDROID)
+  MainFunctionParams params(*command_line);
+  params.ui_task = ui_task;
   BrowserMainRunner::Create()->Initialize(params);
   // We are done running the test by now. During teardown we
   // need to be able to perform IO.
@@ -238,7 +246,8 @@ void BrowserTestBase::SetUp() {
       base::Bind(base::IgnoreResult(&base::ThreadRestrictions::SetIOAllowed),
                  true));
 #else
-  BrowserMain(params);
+  GetContentMainParams()->ui_task = ui_task;
+  ContentMain(*GetContentMainParams());
 #endif
   TearDownInProcessBrowserTestFixture();
 }

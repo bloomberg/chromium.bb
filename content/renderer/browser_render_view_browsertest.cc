@@ -137,7 +137,7 @@ void ClearCache(net::URLRequestContextGetter* getter,
 
 class RenderViewBrowserTest : public ContentBrowserTest {
  public:
-  RenderViewBrowserTest() : renderer_client_(NULL) {}
+  RenderViewBrowserTest() {}
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     // This method is needed to allow interaction with in-process renderer
@@ -145,13 +145,10 @@ class RenderViewBrowserTest : public ContentBrowserTest {
     command_line->AppendSwitch(switches::kSingleProcess);
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUpOnMainThread() OVERRIDE {
     // Override setting of renderer client.
-    renderer_client_ = new TestShellContentRendererClient();
-    SetContentRendererClient(
-        scoped_ptr<ContentRendererClient>(renderer_client_).Pass());
-
-    ContentBrowserTest::SetUp();
+    renderer_client_.reset(new TestShellContentRendererClient());
+    SetRendererClientForTesting(renderer_client_.get());
   }
 
   // Navigates to the given URL and waits for |num_navigations| to occur, and
@@ -179,7 +176,7 @@ class RenderViewBrowserTest : public ContentBrowserTest {
 
     PostTaskToInProcessRendererAndWait(
         base::Bind(&RenderViewBrowserTest::GetLatestErrorFromRendererClient0,
-                   renderer_client_, &result, error_code,
+                   renderer_client_.get(), &result, error_code,
                    stale_cache_entry_present));
     return result;
   }
@@ -193,8 +190,7 @@ class RenderViewBrowserTest : public ContentBrowserTest {
         error_code, stale_cache_entry_present);
   }
 
-  // Actually owned by the superclass, so safe to keep a bare pointer.
-  TestShellContentRendererClient* renderer_client_;
+  scoped_ptr<TestShellContentRendererClient> renderer_client_;
 };
 
 #if defined(OS_ANDROID)

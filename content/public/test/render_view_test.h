@@ -13,7 +13,6 @@
 #include "base/strings/string16.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/common/main_function_params.h"
-#include "content/public/renderer/content_renderer_client.h"
 #include "content/public/test/mock_render_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/Platform.h"
@@ -29,9 +28,13 @@ class Rect;
 }
 
 namespace content {
+class ContentBrowserClient;
+class ContentClient;
+class ContentRendererClient;
 class MockRenderProcess;
 class RendererMainPlatformDelegate;
 class RendererWebKitPlatformSupportImplNoSandboxImpl;
+class RenderView;
 
 class RenderViewTest : public testing::Test {
  public:
@@ -120,6 +123,11 @@ class RenderViewTest : public testing::Test {
   void SendContentStateImmediately();
   blink::WebWidget* GetWebWidget();
 
+  // Allows a subclass to override the various content client implementations.
+  virtual ContentClient* CreateContentClient();
+  virtual ContentBrowserClient* CreateContentBrowserClient();
+  virtual ContentRendererClient* CreateContentRendererClient();
+
   // testing::Test
   virtual void SetUp() OVERRIDE;
 
@@ -131,7 +139,9 @@ class RenderViewTest : public testing::Test {
   // the embedder's namespace.
   RenderView* view_;
   RendererWebKitPlatformSupportImplNoSandbox webkit_platform_support_;
-  ContentRendererClient content_renderer_client_;
+  scoped_ptr<ContentClient> content_client_;
+  scoped_ptr<ContentBrowserClient> content_browser_client_;
+  scoped_ptr<ContentRendererClient> content_renderer_client_;
   scoped_ptr<MockRenderThread> render_thread_;
 
   // Used to setup the process so renderers can run.

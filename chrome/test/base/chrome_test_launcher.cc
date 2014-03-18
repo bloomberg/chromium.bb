@@ -85,14 +85,7 @@ class ChromeTestLauncherDelegate : public content::TestLauncherDelegate {
 
  protected:
   virtual content::ContentMainDelegate* CreateContentMainDelegate() OVERRIDE {
-#if defined(OS_WIN) || defined (OS_LINUX)
     return new ChromeMainDelegate();
-#else
-    // This delegate is only guaranteed to link on linux and windows, so just
-    // bail out if we are on any other platform.
-    NOTREACHED();
-    return NULL;
-#endif
   }
 
   virtual void AdjustDefaultParallelJobs(int* default_jobs) OVERRIDE {

@@ -10,6 +10,7 @@
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebScriptSource.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "v8/include/v8.h"
 
 using blink::WebFrame;
 using blink::WebScriptSource;
