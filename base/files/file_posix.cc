@@ -202,20 +202,18 @@ void File::InitializeUnsafe(const FilePath& name, uint32 flags) {
   else
     error_details_ = File::OSErrorToFileError(errno);
 
-  file_.reset(descriptor);
+  file_ = descriptor;
 }
 #endif  // !defined(OS_NACL)
 
 bool File::IsValid() const {
-  return file_.is_valid();
-}
-
-PlatformFile File::GetPlatformFile() const {
-  return file_.get();
+  return file_ >= 0;
 }
 
 PlatformFile File::TakePlatformFile() {
-  return file_.release();
+  PlatformFile file = file_;
+  file_ = kInvalidPlatformFileValue;
+  return file;
 }
 
 void File::Close() {
@@ -223,17 +221,17 @@ void File::Close() {
     return;
 
   base::ThreadRestrictions::AssertIOAllowed();
-  file_.reset();
+  if (!IGNORE_EINTR(close(file_)))
+    file_ = kInvalidPlatformFileValue;
 }
 
 int64 File::Seek(Whence whence, int64 offset) {
   base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(IsValid());
-  if (offset < 0)
+  if (file_ < 0 || offset < 0)
     return -1;
 
-  return lseek(file_.get(), static_cast<off_t>(offset),
-               static_cast<int>(whence));
+  return lseek(file_, static_cast<off_t>(offset), static_cast<int>(whence));
 }
 
 int File::Read(int64 offset, char* data, int size) {
@@ -245,7 +243,7 @@ int File::Read(int64 offset, char* data, int size) {
   int bytes_read = 0;
   int rv;
   do {
-    rv = HANDLE_EINTR(pread(file_.get(), data + bytes_read,
+    rv = HANDLE_EINTR(pread(file_, data + bytes_read,
                             size - bytes_read, offset + bytes_read));
     if (rv <= 0)
       break;
@@ -265,7 +263,7 @@ int File::ReadAtCurrentPos(char* data, int size) {
   int bytes_read = 0;
   int rv;
   do {
-    rv = HANDLE_EINTR(read(file_.get(), data, size));
+    rv = HANDLE_EINTR(read(file_, data, size));
     if (rv <= 0)
       break;
 
@@ -279,7 +277,7 @@ int File::ReadNoBestEffort(int64 offset, char* data, int size) {
   base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(IsValid());
 
-  return HANDLE_EINTR(pread(file_.get(), data, size, offset));
+  return HANDLE_EINTR(pread(file_, data, size, offset));
 }
 
 int File::ReadAtCurrentPosNoBestEffort(char* data, int size) {
@@ -288,13 +286,13 @@ int File::ReadAtCurrentPosNoBestEffort(char* data, int size) {
   if (size < 0)
     return -1;
 
-  return HANDLE_EINTR(read(file_.get(), data, size));
+  return HANDLE_EINTR(read(file_, data, size));
 }
 
 int File::Write(int64 offset, const char* data, int size) {
   base::ThreadRestrictions::AssertIOAllowed();
 
-  if (IsOpenAppend(file_.get()))
+  if (IsOpenAppend(file_))
     return WriteAtCurrentPos(data, size);
 
   DCHECK(IsValid());
@@ -304,7 +302,7 @@ int File::Write(int64 offset, const char* data, int size) {
   int bytes_written = 0;
   int rv;
   do {
-    rv = HANDLE_EINTR(pwrite(file_.get(), data + bytes_written,
+    rv = HANDLE_EINTR(pwrite(file_, data + bytes_written,
                              size - bytes_written, offset + bytes_written));
     if (rv <= 0)
       break;
@@ -324,7 +322,7 @@ int File::WriteAtCurrentPos(const char* data, int size) {
   int bytes_written = 0;
   int rv;
   do {
-    rv = HANDLE_EINTR(write(file_.get(), data, size));
+    rv = HANDLE_EINTR(write(file_, data, size));
     if (rv <= 0)
       break;
 
@@ -340,14 +338,14 @@ int File::WriteAtCurrentPosNoBestEffort(const char* data, int size) {
   if (size < 0)
     return -1;
 
-  return HANDLE_EINTR(write(file_.get(), data, size));
+  return HANDLE_EINTR(write(file_, data, size));
 }
 
 int64 File::GetLength() {
   DCHECK(IsValid());
 
   stat_wrapper_t file_info;
-  if (CallFstat(file_.get(), &file_info))
+  if (CallFstat(file_, &file_info))
     return false;
 
   return file_info.st_size;
@@ -356,13 +354,13 @@ int64 File::GetLength() {
 bool File::SetLength(int64 length) {
   base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(IsValid());
-  return !CallFtruncate(file_.get(), length);
+  return !CallFtruncate(file_, length);
 }
 
 bool File::Flush() {
   base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(IsValid());
-  return !CallFsync(file_.get());
+  return !CallFsync(file_);
 }
 
 bool File::SetTimes(Time last_access_time, Time last_modified_time) {
@@ -373,14 +371,14 @@ bool File::SetTimes(Time last_access_time, Time last_modified_time) {
   times[0] = last_access_time.ToTimeVal();
   times[1] = last_modified_time.ToTimeVal();
 
-  return !CallFutimes(file_.get(), times);
+  return !CallFutimes(file_, times);
 }
 
 bool File::GetInfo(Info* info) {
   DCHECK(IsValid());
 
   stat_wrapper_t file_info;
-  if (CallFstat(file_.get(), &file_info))
+  if (CallFstat(file_, &file_info))
     return false;
 
   info->is_directory = S_ISDIR(file_info.st_mode);
@@ -434,11 +432,11 @@ bool File::GetInfo(Info* info) {
 }
 
 File::Error File::Lock() {
-  return CallFctnlFlock(file_.get(), true);
+  return CallFctnlFlock(file_, true);
 }
 
 File::Error File::Unlock() {
-  return CallFctnlFlock(file_.get(), false);
+  return CallFctnlFlock(file_, false);
 }
 
 // Static.
@@ -475,8 +473,8 @@ File::Error File::OSErrorToFileError(int saved_errno) {
 }
 
 void File::SetPlatformFile(PlatformFile file) {
-  DCHECK(!file_.is_valid());
-  file_.reset(file);
+  DCHECK_EQ(file_, kInvalidPlatformFileValue);
+  file_ = file;
 }
 
 }  // namespace base

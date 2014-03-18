@@ -40,9 +40,6 @@ File::File(PlatformFile platform_file)
       error_details_(FILE_OK),
       created_(false),
       async_(false) {
-#if defined(OS_POSIX)
-  DCHECK_GE(platform_file, -1);
-#endif
 }
 
 File::File(RValue other)
@@ -53,6 +50,7 @@ File::File(RValue other)
 }
 
 File::~File() {
+  Close();
 }
 
 File& File::operator=(RValue other) {
