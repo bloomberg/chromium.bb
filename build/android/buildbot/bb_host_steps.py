@@ -90,11 +90,14 @@ def FindBugs(options):
       'run_findbugs_plugin_tests.py')] + build_type)
 
 
-def BisectPerfRegression(_):
+def BisectPerfRegression(options):
+  args = []
+  if options.extra_src:
+    args = ['--extra_src', options.extra_src]
   RunCmd([SrcPath('tools', 'prepare-bisect-perf-regression.py'),
           '-w', os.path.join(constants.DIR_SOURCE_ROOT, os.pardir)])
   RunCmd([SrcPath('tools', 'run-bisect-perf-regression.py'),
-          '-w', os.path.join(constants.DIR_SOURCE_ROOT, os.pardir)])
+          '-w', os.path.join(constants.DIR_SOURCE_ROOT, os.pardir)] + args)
 
 
 def GetHostStepCmds():
@@ -115,6 +118,9 @@ def GetHostStepsOptParser():
                     help='Comma separated list of build targets.')
   parser.add_option('--experimental', action='store_true',
                     help='Indicate whether to compile experimental targets.')
+  parser.add_option('--extra_src', default='',
+                    help='Path to extra source file. If this is supplied, '
+                    'bisect script will use it to override default behavior.')
 
   return parser
 
