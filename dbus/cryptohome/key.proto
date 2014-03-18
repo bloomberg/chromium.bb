@@ -20,6 +20,8 @@ message KeyAuthorizationSecret {
   optional KeyAuthorizationSecretUsage usage = 1;
   optional bytes symmetric_key = 2;
   optional bytes public_key = 3;
+  // Indicates if the symmetric_key is wrapped.
+  optional bool wrapped = 4 [default=false];
 }
 
 message KeyAuthorizationData {
