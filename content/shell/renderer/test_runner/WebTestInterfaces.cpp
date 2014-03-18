@@ -71,7 +71,7 @@ TestInterfaces* WebTestInterfaces::testInterfaces()
 
 WebMediaStreamCenter* WebTestInterfaces::createMediaStreamCenter(WebMediaStreamCenterClient* client)
 {
-    return new MockWebMediaStreamCenter(client);
+    return new MockWebMediaStreamCenter(client, m_interfaces.get());
 }
 
 WebRTCPeerConnectionHandler* WebTestInterfaces::createWebRTCPeerConnectionHandler(WebRTCPeerConnectionHandlerClient* client)

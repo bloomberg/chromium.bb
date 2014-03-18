@@ -4,6 +4,8 @@
 
 #include "content/shell/renderer/test_runner/MockWebMediaStreamCenter.h"
 
+#include "content/shell/renderer/test_runner/TestInterfaces.h"
+#include "content/shell/renderer/test_runner/WebTestDelegate.h"
 #include "third_party/WebKit/public/platform/WebAudioDestinationConsumer.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamCenterClient.h"
@@ -17,7 +19,30 @@ using namespace blink;
 
 namespace WebTestRunner {
 
-MockWebMediaStreamCenter::MockWebMediaStreamCenter(WebMediaStreamCenterClient* client)
+class NewTrackTask : public WebMethodTask<MockWebMediaStreamCenter> {
+public:
+    NewTrackTask(MockWebMediaStreamCenter* object, const WebMediaStream& stream)
+        : WebMethodTask<MockWebMediaStreamCenter>(object)
+        , m_stream(stream)
+    {
+        BLINK_ASSERT(!m_stream.isNull());
+    }
+
+    virtual void runIfValid() OVERRIDE
+    {
+        WebMediaStreamSource source;
+        WebMediaStreamTrack track;
+        source.initialize("MagicVideoDevice#1", WebMediaStreamSource::TypeVideo, "Magic video track");
+        track.initialize(source);
+        m_stream.addTrack(track);
+    }
+
+private:
+    WebMediaStream m_stream;
+};
+
+MockWebMediaStreamCenter::MockWebMediaStreamCenter(WebMediaStreamCenterClient* client, TestInterfaces* interfaces)
+    : m_interfaces(interfaces)
 {
 }
 
@@ -88,6 +113,7 @@ void MockWebMediaStreamCenter::didCreateMediaStream(WebMediaStream& stream)
             delete consumer;
         }
     }
+    m_interfaces->delegate()->postTask(new NewTrackTask(this, stream));
 }
 
 }
