@@ -510,7 +510,7 @@ void GCMClientImpl::HandleIncomingMessage(const gcm::MCSMessage& message) {
     message_data[key] = data_message_stanza.app_data(i).value();
   }
 
-  MessageType message_type = UNKNOWN;
+  MessageType message_type = DATA_MESSAGE;
   MessageData::iterator iter = message_data.find(kMessageTypeKey);
   if (iter != message_data.end()) {
     message_type = DecodeMessageType(iter->second);
