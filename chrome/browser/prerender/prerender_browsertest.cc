@@ -2576,6 +2576,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderWindowSize) {
   NavigateToDestURL();
 }
 
+// TODO(jam): http://crbug.com/350550
+#if !(defined(OS_CHROMEOS) && defined(ADDRESS_SANITIZER))
+
 // Checks that prerenderers will terminate when the RenderView crashes.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderRendererCrash) {
   scoped_ptr<TestPrerender> prerender =
@@ -2594,6 +2597,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderRendererCrash) {
           std::string());
   prerender->WaitForStop();
 }
+#endif
 
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                        PrerenderPageWithFragment) {
