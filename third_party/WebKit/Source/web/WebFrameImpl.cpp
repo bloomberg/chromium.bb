@@ -1934,6 +1934,17 @@ int WebFrameImpl::selectNearestFindMatch(const WebFloatPoint& point, WebRect* se
     return -1;
 }
 
+void WebFrameImpl::setTickmarks(const WebVector<WebRect>& tickmarks)
+{
+    if (frameView()) {
+        Vector<IntRect> tickmarksConverted(tickmarks.size());
+        for (size_t i = 0; i < tickmarks.size(); ++i)
+            tickmarksConverted[i] = tickmarks[i];
+        frameView()->setTickmarks(tickmarksConverted);
+        invalidateArea(InvalidateScrollbar);
+    }
+}
+
 int WebFrameImpl::nearestFindMatch(const FloatPoint& point, float& distanceSquared)
 {
     updateFindMatchRects();

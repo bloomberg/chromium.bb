@@ -211,6 +211,7 @@ public:
     virtual WebFloatRect activeFindMatchRect() OVERRIDE;
     virtual void findMatchRects(WebVector<WebFloatRect>&) OVERRIDE;
     virtual int selectNearestFindMatch(const WebFloatPoint&, WebRect* selectionRect) OVERRIDE;
+    virtual void setTickmarks(const WebVector<WebRect>&) OVERRIDE;
 
     virtual void sendOrientationChangeEvent(int orientation) OVERRIDE;
 

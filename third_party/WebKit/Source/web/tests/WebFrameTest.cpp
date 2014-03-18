@@ -3383,6 +3383,60 @@ TEST_F(WebFrameTest, FindDetachFrameWhileScopingStrings)
     holdSecondFrame.release();
 }
 
+TEST_F(WebFrameTest, SetTickmarks)
+{
+    registerMockedHttpURLLoad("find.html");
+
+    FindUpdateWebFrameClient client;
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    webViewHelper.initializeAndLoad(m_baseURL + "find.html", true, &client);
+    webViewHelper.webView()->resize(WebSize(640, 480));
+    webViewHelper.webView()->layout();
+    runPendingTasks();
+
+    static const char* kFindString = "foo";
+    static const int kFindIdentifier = 12345;
+
+    WebFindOptions options;
+    WebString searchText = WebString::fromUTF8(kFindString);
+    WebFrameImpl* mainFrame = toWebFrameImpl(webViewHelper.webView()->mainFrame());
+    EXPECT_TRUE(mainFrame->find(kFindIdentifier, searchText, options, false, 0));
+
+    mainFrame->resetMatchCount();
+    mainFrame->scopeStringMatches(kFindIdentifier, searchText, options, true);
+
+    runPendingTasks();
+    EXPECT_TRUE(client.findResultsAreReady());
+
+    // Get the tickmarks for the original find request.
+    WebCore::FrameView* frameView = webViewHelper.webViewImpl()->mainFrameImpl()->frameView();
+    RefPtr<WebCore::Scrollbar> scrollbar = frameView->createScrollbar(WebCore::HorizontalScrollbar);
+    Vector<WebCore::IntRect> originalTickmarks;
+    scrollbar->getTickmarks(originalTickmarks);
+    EXPECT_EQ(4u, originalTickmarks.size());
+
+    // Override the tickmarks.
+    Vector<WebCore::IntRect> overridingTickmarksExpected;
+    overridingTickmarksExpected.append(WebCore::IntRect(0, 0, 100, 100));
+    overridingTickmarksExpected.append(WebCore::IntRect(0, 20, 100, 100));
+    overridingTickmarksExpected.append(WebCore::IntRect(0, 30, 100, 100));
+    mainFrame->setTickmarks(overridingTickmarksExpected);
+
+    // Check the tickmarks are overriden correctly.
+    Vector<WebCore::IntRect> overridingTickmarksActual;
+    scrollbar->getTickmarks(overridingTickmarksActual);
+    EXPECT_EQ(overridingTickmarksExpected, overridingTickmarksActual);
+
+    // Reset the tickmark behavior.
+    Vector<WebCore::IntRect> resetTickmarks;
+    mainFrame->setTickmarks(resetTickmarks);
+
+    // Check that the original tickmarks are returned
+    Vector<WebCore::IntRect> originalTickmarksAfterReset;
+    scrollbar->getTickmarks(originalTickmarksAfterReset);
+    EXPECT_EQ(originalTickmarks, originalTickmarksAfterReset);
+}
+
 static WebPoint topLeft(const WebRect& rect)
 {
     return WebPoint(rect.x, rect.y);

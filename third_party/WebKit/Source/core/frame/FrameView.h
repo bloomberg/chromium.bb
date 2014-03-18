@@ -313,6 +313,11 @@ public:
     // false.
     bool isSubtreeLayout() const { return !!m_layoutSubtreeRoot; }
 
+    // Sets the tickmarks for the FrameView, overriding the default behavior
+    // which is to display the tickmarks corresponding to find results.
+    // If |m_tickmarks| is empty, the default behavior is restored.
+    void setTickmarks(const Vector<IntRect>& tickmarks) { m_tickmarks = tickmarks; }
+
     // ScrollableArea interface
     virtual void invalidateScrollbarRect(Scrollbar*, const IntRect&) OVERRIDE;
     virtual void getTickmarks(Vector<IntRect>&) const OVERRIDE;
@@ -507,6 +512,8 @@ private:
     bool m_layoutSizeFixedToFrameSize;
 
     Timer<FrameView> m_didScrollTimer;
+
+    Vector<IntRect> m_tickmarks;
 };
 
 inline void FrameView::incrementVisuallyNonEmptyCharacterCount(unsigned count)
