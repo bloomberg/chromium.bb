@@ -37,9 +37,8 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   virtual bool InitialPropertiesReceived(
       const base::DictionaryValue& properties) OVERRIDE;
 
-  // Fills |dictionary| with the state properties. All the properties that are
-  // accepted by PropertyChanged are stored in |dictionary|, no other values are
-  // stored.
+  // Fills |dictionary| with the state properties. All properties that are
+  // parsed by PropertyChanged are stored in |dictionary|, except |ui_data_|.
   void GetProperties(base::DictionaryValue* dictionary) const;
 
   // Returns true, if the network requires a service activation.

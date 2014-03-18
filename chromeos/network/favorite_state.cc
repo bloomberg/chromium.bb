@@ -72,4 +72,21 @@ bool FavoriteState::IsPrivate() const {
       profile_path_ != NetworkProfileHandler::GetSharedProfilePath();
 }
 
+void FavoriteState::GetProperties(base::DictionaryValue* dictionary) const {
+  dictionary->SetStringWithoutPathExpansion(shill::kNameProperty, name());
+  dictionary->SetStringWithoutPathExpansion(shill::kTypeProperty, type());
+  dictionary->SetStringWithoutPathExpansion(shill::kProfileProperty,
+                                            profile_path_);
+  dictionary->SetStringWithoutPathExpansion(shill::kGuidProperty, guid_);
+
+  // ONCSource is used for debugging in chrome://network.
+  scoped_ptr<base::DictionaryValue> onc_dict(new base::DictionaryValue);
+  ui_data_.FillDictionary(onc_dict.get());
+  std::string onc_source;
+  onc_dict->GetStringWithoutPathExpansion(NetworkUIData::kKeyONCSource,
+                                          &onc_source);
+  dictionary->SetStringWithoutPathExpansion(NetworkUIData::kKeyONCSource,
+                                            onc_source);
+}
+
 }  // namespace chromeos

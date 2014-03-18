@@ -41,6 +41,11 @@ class CHROMEOS_EXPORT FavoriteState : public ManagedState {
   // Returns true if the network properties are stored in a user profile.
   bool IsPrivate() const;
 
+  // Fills |dictionary| with the state properties. Only properties that are
+  // parsed by PropertyChanged are stored in |dictionary|. The dictionary
+  // includes the 'onc_source' property from |ui_data_|.
+  void GetProperties(base::DictionaryValue* dictionary) const;
+
  private:
   std::string profile_path_;
   NetworkUIData ui_data_;

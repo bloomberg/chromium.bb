@@ -32,16 +32,16 @@
   margin: 2px;
 }
 
-#network-status-table {
+.state-table {
   border-collapse: collapse;
 }
 
-#network-status-table tr td {
+.state-table tr td {
   border: 1px solid rgb(220, 220, 220);
   font-size: 13px;
 }
 
-.network-status-table-header {
+.state-table-header {
   font-weight: bold;
 }
 

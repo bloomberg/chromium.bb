@@ -3,12 +3,19 @@
 // found in the LICENSE file.
 
 var NetworkUI = function() {
-  // Properties to display in the network state table
+  // Properties to display in the network state table. Each entry can be either
+  // a single state field or an array of state fields. If more than one is
+  // specified then the first non empty value is used.
   var NETWORK_STATE_FIELDS = [
     'Name', 'Type', 'State', 'Profile', 'Connectable',
-    'Error', 'Address', 'Security', 'Cellular.NetworkTechnology',
+    'Error', 'Address', 'Security',
+    ['Cellular.NetworkTechnology', 'EAP.EAP'],
     'Cellular.ActivationState', 'Cellular.RoamingState',
     'Cellular.OutOfCredits', 'Strength'
+  ];
+
+  var FAVORITE_STATE_FIELDS = [
+    'Name', 'Type', 'Profile', 'onc_source'
   ];
 
   var LOG_LEVEL_CLASSNAME = {
@@ -93,7 +100,7 @@ var NetworkUI = function() {
    * @param {string} value Content in the cell.
    * @return {DOMElement} The created td element that displays the given value.
    */
-  var createStatusTableCell = function(value) {
+  var createStateTableCell = function(value) {
     var col = document.createElement('td');
     col.textContent = value || '';
     return col;
@@ -102,35 +109,48 @@ var NetworkUI = function() {
   /**
    * Create a row in the network state table.
    *
-   * @param {string} path The network path.
-   * @param {dictionary} status Properties of the network.
+   * @param {string} stateFields The state fields to use for the row.
+   * @param {string} path The network or favorite path.
+   * @param {dictionary} state Property values for the network or favorite.
    * @return {DOMElement} The created tr element that contains the network
    *     state information.
    */
-  var createStatusTableRow = function(path, status) {
+  var createStateTableRow = function(stateFields, path, state) {
     var row = document.createElement('tr');
-    row.className = 'network-status-table-row';
-    row.appendChild(createStatusTableCell(path));
-    row.appendChild(createStatusTableCell(status['GUID'].slice(1, 9)));
-    for (var i = 0; i < NETWORK_STATE_FIELDS.length; ++i) {
-      row.appendChild(createStatusTableCell(status[NETWORK_STATE_FIELDS[i]]));
+    row.className = 'state-table-row';
+    row.appendChild(createStateTableCell(path));
+    row.appendChild(createStateTableCell(state['GUID'].slice(1, 9)));
+    for (var i = 0; i < stateFields.length; ++i) {
+      var field = stateFields[i];
+      var value = '';
+      if (typeof field == 'string') {
+        value = state[field];
+      } else {
+        for (var j = 0; j < field.length; ++j) {
+          value = state[field[j]];
+          if (value)
+            break;
+        }
+      }
+      row.appendChild(createStateTableCell(value));
     }
     return row;
   };
 
   /**
-   * Create network state table.
+   * Create table for networks or favorites.
    *
-   * @param {Array.<Object>} networkStatuses An array of network states.
+   * @param {string} tablename The name of the table to be created.
+   * @param {Array.<Object>} stateFields The list of fields for the table.
+   * @param {Array.<Object>} states An array of network or favorite states.
    */
-  var createNetworkTable = function(networkStatuses) {
-    var table = $('network-status-table');
-    var oldRows = table.querySelectorAll('.network-status-table-row');
+  var createStateTable = function(tablename, stateFields, states) {
+    var table = $(tablename);
+    var oldRows = table.querySelectorAll('.state-table-row');
     for (var i = 0; i < oldRows.length; ++i)
       table.removeChild(oldRows[i]);
-    for (var path in networkStatuses)
-      table.appendChild(
-          createStatusTableRow(path, networkStatuses[path]));
+    for (var path in states)
+      table.appendChild(createStateTableRow(stateFields, path, states[path]));
   };
 
   /**
@@ -141,7 +161,10 @@ var NetworkUI = function() {
    */
   var onNetworkInfoReceived = function(data) {
     createEventLog(JSON.parse(data.networkEventLog));
-    createNetworkTable(data.networkState);
+    createStateTable(
+        'network-state-table', NETWORK_STATE_FIELDS, data.networkStates);
+    createStateTable(
+        'favorite-state-table', FAVORITE_STATE_FIELDS, data.favoriteStates);
   };
 
   /**

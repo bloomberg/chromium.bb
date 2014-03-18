@@ -31,13 +31,13 @@
   <div id="network-log-container">
   </div>
   <h3>Networks: </h3>
-  <table id="network-status-table">
-    <tr class="network-status-table-header">
+  <table id="network-state-table" class="state-table">
+    <tr class="state-table-header">
       <td>Path</td>
       <td>GUID</td>
       <td>Name</td>
       <td>Type</td>
-      <td>Status</td>
+      <td>State</td>
       <td>Profile</td>
       <td>Connect</td>
       <td>Error</td>
@@ -48,6 +48,17 @@
       <td>Roaming</td>
       <td>OOC</td>
       <td>Strength</td>
+    </tr>
+  </table>
+  <h3>Favorites: </h3>
+  <table id="favorite-state-table" class="state-table">
+    <tr class="state-table-header">
+      <td>Path</td>
+      <td>GUID</td>
+      <td>Name</td>
+      <td>Type</td>
+      <td>Profile</td>
+      <td>ONC Source</td>
     </tr>
   </table>
   <script src="chrome://resources/js/i18n_template2.js"></script>

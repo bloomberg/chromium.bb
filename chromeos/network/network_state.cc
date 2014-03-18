@@ -202,11 +202,9 @@ void NetworkState::GetProperties(base::DictionaryValue* dictionary) const {
                                             security_);
   dictionary->SetStringWithoutPathExpansion(shill::kEapMethodProperty,
                                             eap_method_);
-  // Proxy config and ONC source are intentionally omitted: These properties are
-  // placed in NetworkState to transition ProxyConfigServiceImpl from
-  // NetworkLibrary to the new network stack. The networking extension API
-  // shouldn't depend on this member. Once ManagedNetworkConfigurationHandler
-  // is used instead of NetworkLibrary, we can remove them again.
+
+  // ui_data_ (contains ONC source) is intentionally omitted.
+
   dictionary->SetStringWithoutPathExpansion(
       shill::kNetworkTechnologyProperty,
       network_technology_);
