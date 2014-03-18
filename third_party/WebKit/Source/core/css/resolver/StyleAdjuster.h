@@ -41,6 +41,8 @@ public:
     void adjustRenderStyle(RenderStyle* styleToAdjust, RenderStyle* parentStyle, Element*);
 
 private:
+    void adjustStyleForTagName(RenderStyle* styleToAdjust, RenderStyle* parentStyle, Element&);
+
     const CachedUAStyle& m_cachedUAStyle;
     bool m_useQuirksModeStyles;
 };
