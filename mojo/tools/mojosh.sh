@@ -19,6 +19,12 @@ Example:
 EOF
 }
 
+kill_http_server() {
+  echo "Killing SimpleHTTPServer ..."
+  kill $HTTP_SERVER_PID
+  wait $HTTP_SERVER_PID
+}
+
 while [ $# -gt 0 ]; do
   case "$1" in
     -h|--help)
@@ -55,13 +61,11 @@ echo "Base directory: $DIRECTORY"
 echo "Running SimpleHTTPServer in directory $DIRECTORY/lib on port $PORT"
 cd $DIRECTORY/lib || exit 1
 python -m SimpleHTTPServer $PORT &
-HTTPSERVER_PID=$!
+# Kill the HTTP server on exit (even if the user kills everything using ^C).
+HTTP_SERVER_PID=$!
+trap kill_http_server EXIT
 cd ..
 
 echo "Running:"
 echo "./mojo_shell --origin=http://127.0.0.1:$PORT --disable-cache $*"
 ./mojo_shell --origin=http://127.0.0.1:$PORT --disable-cache $*
-
-echo "Killing SimpleHTTPServer ..."
-kill $HTTPSERVER_PID
-wait $HTTPSERVER_PID
