@@ -370,6 +370,7 @@ crbug.com/248938 virtual/threaded/animations/keyframes-out-of-order.html [ Pass 
 crbug.com/248938 [ Linux Win ] virtual/threaded/animations/longhand-timing-function.html [ Pass Timeout ]
 crbug.com/248938 [ Linux Win ] virtual/threaded/animations/matrix-anim.html [ Pass Timeout ]
 crbug.com/248938 [ Win Debug ] virtual/threaded/animations/missing-values-first-keyframe.html [ Pass Timeout ]
+crbug.com/248938 [ Linux Debug ] virtual/threaded/animations/missing-values-first-keyframe.html [ Pass Timeout ]
 crbug.com/248938 [ Linux Win Debug ] virtual/threaded/animations/missing-from-to-transforms.html [ Pass Timeout ]
 crbug.com/248938 [ Win Debug ] virtual/threaded/animations/missing-keyframe-properties.html [ Pass Timeout ]
 crbug.com/248938 [ Linux ] virtual/threaded/animations/missing-keyframe-properties.html [ Pass Timeout ]
