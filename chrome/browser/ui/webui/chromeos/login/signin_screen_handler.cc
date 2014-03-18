@@ -59,7 +59,7 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "grit/chromium_strings.h"
@@ -73,7 +73,6 @@
 #endif
 
 using content::BrowserThread;
-using content::RenderViewHost;
 
 namespace {
 
@@ -1420,10 +1419,9 @@ void SigninScreenHandler::HandleLoginWebuiReady() {
     // Do this only once. Any subsequent call would relod GAIA frame.
     focus_stolen_ = false;
     const char code[] = "gWindowOnLoad();";
-    RenderViewHost* rvh = web_ui()->GetWebContents()->GetRenderViewHost();
-    rvh->ExecuteJavascriptInWebFrame(
-        base::ASCIIToUTF16("//iframe[@id='signin-frame']\n//iframe"),
-        base::ASCIIToUTF16(code));
+    content::RenderFrameHost* frame =
+        LoginDisplayHostImpl::GetGaiaAuthIframe(web_ui()->GetWebContents());
+    frame->ExecuteJavaScript(base::ASCIIToUTF16(code));
   }
   if (!gaia_silent_load_) {
     content::NotificationService::current()->Notify(
@@ -1437,10 +1435,9 @@ void SigninScreenHandler::HandleLoginWebuiReady() {
     // implemented on the Gaia side.
     const char code[] = "var gWindowOnLoad = window.onload; "
                         "window.onload=function() {};";
-    RenderViewHost* rvh = web_ui()->GetWebContents()->GetRenderViewHost();
-    rvh->ExecuteJavascriptInWebFrame(
-        base::ASCIIToUTF16("//iframe[@id='signin-frame']\n//iframe"),
-        base::ASCIIToUTF16(code));
+    content::RenderFrameHost* frame =
+        LoginDisplayHostImpl::GetGaiaAuthIframe(web_ui()->GetWebContents());
+    frame->ExecuteJavaScript(base::ASCIIToUTF16(code));
     // As we could miss and window.onload could already be called, restore
     // focus to current pod (see crbug/175243).
     RefocusCurrentPod();
@@ -1711,10 +1708,9 @@ void SigninScreenHandler::SubmitLoginFormForTest() {
   code += "document.getElementById('Passwd').value = '" + test_pass_ + "';";
   code += "document.getElementById('signIn').click();";
 
-  RenderViewHost* rvh = web_ui()->GetWebContents()->GetRenderViewHost();
-  rvh->ExecuteJavascriptInWebFrame(
-      base::ASCIIToUTF16("//iframe[@id='signin-frame']\n//iframe"),
-      base::ASCIIToUTF16(code));
+  content::RenderFrameHost* frame =
+      LoginDisplayHostImpl::GetGaiaAuthIframe(web_ui()->GetWebContents());
+  frame->ExecuteJavaScript(base::ASCIIToUTF16(code));
 
   // Test properties are cleared in HandleCompleteLogin because the form
   // submission might fail and login will not be attempted after reloading

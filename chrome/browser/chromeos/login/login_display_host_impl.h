@@ -28,6 +28,11 @@
 
 class PrefService;
 
+namespace content {
+class RenderFrameHost;
+class WebContents;
+}
+
 namespace policy {
 class AutoEnrollmentClient;
 }  // namespace policy
@@ -51,10 +56,14 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
   explicit LoginDisplayHostImpl(const gfx::Rect& background_bounds);
   virtual ~LoginDisplayHostImpl();
 
-  // Returns the default LoginDispalyHost instance if it has been created.
+  // Returns the default LoginDisplayHost instance if it has been created.
   static LoginDisplayHost* default_host() {
     return default_host_;
   }
+
+  // Gets the Gaia auth iframe within a WebContents.
+  static content::RenderFrameHost* GetGaiaAuthIframe(
+      content::WebContents* web_contents);
 
   // LoginDisplayHost implementation:
   virtual LoginDisplay* CreateLoginDisplay(

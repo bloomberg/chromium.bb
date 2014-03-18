@@ -29,7 +29,6 @@
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_types.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
@@ -352,16 +351,15 @@ class SamlTest : public InProcessBrowserTest {
   }
 
   content::WebUI* GetLoginUI() {
-    return static_cast<chromeos::LoginDisplayHostImpl*>(
-        chromeos::LoginDisplayHostImpl::default_host())->GetOobeUI()->web_ui();
+    return static_cast<LoginDisplayHostImpl*>(
+        LoginDisplayHostImpl::default_host())->GetOobeUI()->web_ui();
   }
 
-  // Executes Js code in the auth iframe hosted by gaia_auth extension.
+  // Executes JavaScript code in the auth iframe hosted by gaia_auth extension.
   void ExecuteJsInSigninFrame(const std::string& js) {
-    ASSERT_TRUE(content::ExecuteScriptInFrame(
-        GetLoginUI()->GetWebContents(),
-        "//iframe[@id='signin-frame']\n//iframe",
-        js));
+    content::RenderFrameHost* frame =
+        LoginDisplayHostImpl::GetGaiaAuthIframe(GetLoginUI()->GetWebContents());
+    ASSERT_TRUE(content::ExecuteScript(frame, js));
   }
 
   FakeSamlIdp* fake_saml_idp() { return &fake_saml_idp_; }
