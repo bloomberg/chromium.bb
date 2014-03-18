@@ -48,6 +48,7 @@ TAGS_THAT_HAVE_EXTRA_NEWLINE = {
 TAGS_THAT_ALLOW_SINGLE_LINE = [
   'summary',
   'int',
+  'owner',
 ]
 
 
