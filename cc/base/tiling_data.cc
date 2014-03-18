@@ -275,11 +275,9 @@ TilingData::BaseIterator::BaseIterator(const TilingData* tiling_data)
 TilingData::Iterator::Iterator() : BaseIterator(NULL) { done(); }
 
 TilingData::Iterator::Iterator(const TilingData* tiling_data,
-                               const gfx::Rect& tiling_rect)
-    : BaseIterator(tiling_data),
-      left_(-1),
-      right_(-1),
-      bottom_(-1) {
+                               const gfx::Rect& tiling_rect,
+                               bool include_borders)
+    : BaseIterator(tiling_data), left_(-1), right_(-1), bottom_(-1) {
   if (tiling_data_->num_tiles_x() <= 0 || tiling_data_->num_tiles_y() <= 0) {
     done();
     return;
@@ -287,16 +285,26 @@ TilingData::Iterator::Iterator(const TilingData* tiling_data,
 
   gfx::Rect rect(tiling_rect);
   rect.Intersect(gfx::Rect(tiling_data_->total_size()));
-  index_x_ = tiling_data_->FirstBorderTileXIndexFromSrcCoord(rect.x());
-  index_y_ = tiling_data_->FirstBorderTileYIndexFromSrcCoord(rect.y());
+
+  gfx::Rect top_left_tile;
+  if (include_borders) {
+    index_x_ = tiling_data_->FirstBorderTileXIndexFromSrcCoord(rect.x());
+    index_y_ = tiling_data_->FirstBorderTileYIndexFromSrcCoord(rect.y());
+    right_ = tiling_data_->LastBorderTileXIndexFromSrcCoord(rect.right() - 1);
+    bottom_ = tiling_data_->LastBorderTileYIndexFromSrcCoord(rect.bottom() - 1);
+    top_left_tile = tiling_data_->TileBoundsWithBorder(index_x_, index_y_);
+  } else {
+    index_x_ = tiling_data_->TileXIndexFromSrcCoord(rect.x());
+    index_y_ = tiling_data_->TileYIndexFromSrcCoord(rect.y());
+    right_ = tiling_data_->TileXIndexFromSrcCoord(rect.right() - 1);
+    bottom_ = tiling_data_->TileYIndexFromSrcCoord(rect.bottom() - 1);
+    top_left_tile = tiling_data_->TileBounds(index_x_, index_y_);
+  }
   left_ = index_x_;
-  right_ = tiling_data_->LastBorderTileXIndexFromSrcCoord(rect.right() - 1);
-  bottom_ = tiling_data_->LastBorderTileYIndexFromSrcCoord(rect.bottom() - 1);
 
   // Index functions always return valid indices, so explicitly check
   // for non-intersecting rects.
-  gfx::Rect new_rect = tiling_data_->TileBoundsWithBorder(index_x_, index_y_);
-  if (!new_rect.Intersects(rect))
+  if (!top_left_tile.Intersects(rect))
     done();
 }
 

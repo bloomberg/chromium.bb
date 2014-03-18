@@ -111,7 +111,10 @@ void PictureLayerTiling::SetCanUseLCDText(bool can_use_lcd_text) {
 
 void PictureLayerTiling::CreateMissingTilesInLiveTilesRect() {
   const PictureLayerTiling* twin_tiling = client_->GetTwinTiling(this);
-  for (TilingData::Iterator iter(&tiling_data_, live_tiles_rect_); iter;
+  bool include_borders = true;
+  for (TilingData::Iterator iter(
+           &tiling_data_, live_tiles_rect_, include_borders);
+       iter;
        ++iter) {
     TileMapKey key = iter.index();
     TileMap::iterator find = tiles_.find(key);
@@ -162,7 +165,11 @@ void PictureLayerTiling::Invalidate(const Region& layer_region) {
     content_rect.Intersect(live_tiles_rect_);
     if (content_rect.IsEmpty())
       continue;
-    for (TilingData::Iterator iter(&tiling_data_, content_rect); iter; ++iter) {
+    bool include_borders = true;
+    for (TilingData::Iterator iter(
+             &tiling_data_, content_rect, include_borders);
+         iter;
+         ++iter) {
       TileMapKey key(iter.index());
       TileMap::iterator find = tiles_.find(key);
       if (find == tiles_.end())
@@ -435,7 +442,9 @@ void PictureLayerTiling::UpdateTilePriorities(
       1.0f / (contents_scale_ * layer_contents_scale);
 
   // Assign now priority to all visible tiles.
-  for (TilingData::Iterator iter(&tiling_data_, visible_rect_in_content_space);
+  bool include_borders = true;
+  for (TilingData::Iterator iter(
+           &tiling_data_, visible_rect_in_content_space, include_borders);
        iter;
        ++iter) {
     TileMap::iterator find = tiles_.find(iter.index());
@@ -737,7 +746,9 @@ PictureLayerTiling::TilingRasterTileIterator::TilingRasterTileIterator(
       eventually_rect_in_content_space_(tiling_->current_eventually_rect_),
       tree_(tree),
       current_tile_(NULL),
-      visible_iterator_(&tiling->tiling_data_, visible_rect_in_content_space_),
+      visible_iterator_(&tiling->tiling_data_,
+                        visible_rect_in_content_space_,
+                        true /* include_borders */),
       spiral_iterator_(&tiling->tiling_data_,
                        skewport_in_content_space_,
                        visible_rect_in_content_space_,

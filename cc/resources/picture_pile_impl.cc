@@ -170,8 +170,10 @@ void PicturePileImpl::CoalesceRasters(const gfx::Rect& canvas_rect,
   // that and subtract chunk rects to get the region that we need to subtract
   // from the canvas. Then, we can use clipRect with difference op to subtract
   // each rect in the region.
-  for (TilingData::Iterator tile_iter(&tiling_, layer_rect);
-       tile_iter; ++tile_iter) {
+  bool include_borders = true;
+  for (TilingData::Iterator tile_iter(&tiling_, layer_rect, include_borders);
+       tile_iter;
+       ++tile_iter) {
     PictureMap::iterator map_iter = picture_map_.find(tile_iter.index());
     if (map_iter == picture_map_.end())
       continue;
@@ -350,9 +352,11 @@ PicturePileImpl::PixelRefIterator::PixelRefIterator(
     float contents_scale,
     const PicturePileImpl* picture_pile)
     : picture_pile_(picture_pile),
-      layer_rect_(gfx::ScaleToEnclosingRect(
-          content_rect, 1.f / contents_scale)),
-      tile_iterator_(&picture_pile_->tiling_, layer_rect_) {
+      layer_rect_(
+          gfx::ScaleToEnclosingRect(content_rect, 1.f / contents_scale)),
+      tile_iterator_(&picture_pile_->tiling_, layer_rect_, true) {
+  // TODO(enne): tile iterator should not include borders
+
   // Early out if there isn't a single tile.
   if (!tile_iterator_)
     return;

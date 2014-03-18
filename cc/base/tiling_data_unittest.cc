@@ -913,14 +913,13 @@ TEST(TilingDataTest, LargeBorders) {
   EXPECT_EQ(4, data.LastBorderTileYIndexFromSrcCoord(144));
 }
 
-void TestIterate(
-    const TilingData& data,
-    gfx::Rect rect,
-    int expect_left,
-    int expect_top,
-    int expect_right,
-    int expect_bottom) {
-
+void TestIterate(const TilingData& data,
+                 gfx::Rect rect,
+                 int expect_left,
+                 int expect_top,
+                 int expect_right,
+                 int expect_bottom,
+                 bool include_borders) {
   EXPECT_GE(expect_left, 0);
   EXPECT_GE(expect_top, 0);
   EXPECT_LT(expect_right, data.num_tiles_x());
@@ -929,7 +928,11 @@ void TestIterate(
   std::vector<std::pair<int, int> > original_expected;
   for (int x = 0; x < data.num_tiles_x(); ++x) {
     for (int y = 0; y < data.num_tiles_y(); ++y) {
-      gfx::Rect bounds = data.TileBoundsWithBorder(x, y);
+      gfx::Rect bounds;
+      if (include_borders)
+        bounds = data.TileBoundsWithBorder(x, y);
+      else
+        bounds = data.TileBounds(x, y);
       if (x >= expect_left && x <= expect_right &&
           y >= expect_top && y <= expect_bottom) {
         EXPECT_TRUE(bounds.Intersects(rect));
@@ -943,7 +946,8 @@ void TestIterate(
   // Verify with vanilla iterator.
   {
     std::vector<std::pair<int, int> > expected = original_expected;
-    for (TilingData::Iterator iter(&data, rect); iter; ++iter) {
+    for (TilingData::Iterator iter(&data, rect, include_borders); iter;
+         ++iter) {
       bool found = false;
       for (size_t i = 0; i < expected.size(); ++i) {
         if (expected[i] == iter.index()) {
@@ -959,7 +963,8 @@ void TestIterate(
   }
 
   // Make sure this also works with a difference iterator and an empty ignore.
-  {
+  // The difference iterator always includes borders, so ignore it otherwise.
+  if (include_borders) {
     std::vector<std::pair<int, int> > expected = original_expected;
     for (TilingData::DifferenceIterator iter(&data, rect, gfx::Rect());
          iter; ++iter) {
@@ -978,74 +983,148 @@ void TestIterate(
   }
 }
 
+void TestIterateBorders(const TilingData& data,
+                        gfx::Rect rect,
+                        int expect_left,
+                        int expect_top,
+                        int expect_right,
+                        int expect_bottom) {
+  bool include_borders = true;
+  TestIterate(data,
+              rect,
+              expect_left,
+              expect_top,
+              expect_right,
+              expect_bottom,
+              include_borders);
+}
+
+void TestIterateNoBorders(const TilingData& data,
+                          gfx::Rect rect,
+                          int expect_left,
+                          int expect_top,
+                          int expect_right,
+                          int expect_bottom) {
+  bool include_borders = false;
+  TestIterate(data,
+              rect,
+              expect_left,
+              expect_top,
+              expect_right,
+              expect_bottom,
+              include_borders);
+}
+
+void TestIterateAll(const TilingData& data,
+                    gfx::Rect rect,
+                    int expect_left,
+                    int expect_top,
+                    int expect_right,
+                    int expect_bottom) {
+  TestIterateBorders(
+      data, rect, expect_left, expect_top, expect_right, expect_bottom);
+  TestIterateNoBorders(
+      data, rect, expect_left, expect_top, expect_right, expect_bottom);
+}
+
 TEST(TilingDataTest, IteratorNoBorderTexels) {
   TilingData data(gfx::Size(10, 10), gfx::Size(40, 25), false);
   // X border index by src coord: [0-10), [10-20), [20, 30), [30, 40)
   // Y border index by src coord: [0-10), [10-20), [20, 25)
-  TestIterate(data, gfx::Rect(0, 0, 40, 25), 0, 0, 3, 2);
-  TestIterate(data, gfx::Rect(15, 15, 8, 8), 1, 1, 2, 2);
+  TestIterateAll(data, gfx::Rect(0, 0, 40, 25), 0, 0, 3, 2);
+  TestIterateAll(data, gfx::Rect(15, 15, 8, 8), 1, 1, 2, 2);
 
   // Oversized.
-  TestIterate(data, gfx::Rect(-100, -100, 1000, 1000), 0, 0, 3, 2);
-  TestIterate(data, gfx::Rect(-100, 20, 1000, 1), 0, 2, 3, 2);
-  TestIterate(data, gfx::Rect(29, -100, 31, 1000), 2, 0, 3, 2);
+  TestIterateAll(data, gfx::Rect(-100, -100, 1000, 1000), 0, 0, 3, 2);
+  TestIterateAll(data, gfx::Rect(-100, 20, 1000, 1), 0, 2, 3, 2);
+  TestIterateAll(data, gfx::Rect(29, -100, 31, 1000), 2, 0, 3, 2);
   // Nonintersecting.
-  TestIterate(data, gfx::Rect(60, 80, 100, 100), 0, 0, -1, -1);
+  TestIterateAll(data, gfx::Rect(60, 80, 100, 100), 0, 0, -1, -1);
 }
 
-TEST(TilingDataTest, IteratorOneBorderTexel) {
+TEST(TilingDataTest, BordersIteratorOneBorderTexel) {
   TilingData data(gfx::Size(10, 20), gfx::Size(25, 45), true);
   // X border index by src coord: [0-10), [8-18), [16-25)
   // Y border index by src coord: [0-20), [18-38), [36-45)
-  TestIterate(data, gfx::Rect(0, 0, 25, 45), 0, 0, 2, 2);
-  TestIterate(data, gfx::Rect(18, 19, 3, 17), 2, 0, 2, 1);
-  TestIterate(data, gfx::Rect(10, 20, 6, 16), 1, 1, 1, 1);
-  TestIterate(data, gfx::Rect(9, 19, 8, 18), 0, 0, 2, 2);
-
+  TestIterateBorders(data, gfx::Rect(0, 0, 25, 45), 0, 0, 2, 2);
+  TestIterateBorders(data, gfx::Rect(18, 19, 3, 17), 2, 0, 2, 1);
+  TestIterateBorders(data, gfx::Rect(10, 20, 6, 16), 1, 1, 1, 1);
+  TestIterateBorders(data, gfx::Rect(9, 19, 8, 18), 0, 0, 2, 2);
   // Oversized.
-  TestIterate(data, gfx::Rect(-100, -100, 1000, 1000), 0, 0, 2, 2);
-  TestIterate(data, gfx::Rect(-100, 20, 1000, 1), 0, 1, 2, 1);
-  TestIterate(data, gfx::Rect(18, -100, 6, 1000), 2, 0, 2, 2);
+  TestIterateBorders(data, gfx::Rect(-100, -100, 1000, 1000), 0, 0, 2, 2);
+  TestIterateBorders(data, gfx::Rect(-100, 20, 1000, 1), 0, 1, 2, 1);
+  TestIterateBorders(data, gfx::Rect(18, -100, 6, 1000), 2, 0, 2, 2);
   // Nonintersecting.
-  TestIterate(data, gfx::Rect(60, 80, 100, 100), 0, 0, -1, -1);
+  TestIterateBorders(data, gfx::Rect(60, 80, 100, 100), 0, 0, -1, -1);
 }
 
-TEST(TilingDataTest, IteratorManyBorderTexels) {
+TEST(TilingDataTest, NoBordersIteratorOneBorderTexel) {
+  TilingData data(gfx::Size(10, 20), gfx::Size(25, 45), true);
+  // X index by src coord: [0-9), [9-17), [17-25)
+  // Y index by src coord: [0-19), [19-37), [37-45)
+  TestIterateNoBorders(data, gfx::Rect(0, 0, 25, 45), 0, 0, 2, 2);
+  TestIterateNoBorders(data, gfx::Rect(17, 19, 3, 18), 2, 1, 2, 1);
+  TestIterateNoBorders(data, gfx::Rect(17, 19, 3, 19), 2, 1, 2, 2);
+  TestIterateNoBorders(data, gfx::Rect(8, 18, 9, 19), 0, 0, 1, 1);
+  TestIterateNoBorders(data, gfx::Rect(9, 19, 9, 19), 1, 1, 2, 2);
+  // Oversized.
+  TestIterateNoBorders(data, gfx::Rect(-100, -100, 1000, 1000), 0, 0, 2, 2);
+  TestIterateNoBorders(data, gfx::Rect(-100, 20, 1000, 1), 0, 1, 2, 1);
+  TestIterateNoBorders(data, gfx::Rect(18, -100, 6, 1000), 2, 0, 2, 2);
+  // Nonintersecting.
+  TestIterateNoBorders(data, gfx::Rect(60, 80, 100, 100), 0, 0, -1, -1);
+}
+
+TEST(TilingDataTest, BordersIteratorManyBorderTexels) {
   TilingData data(gfx::Size(50, 60), gfx::Size(65, 110), 20);
   // X border index by src coord: [0-50), [10-60), [20-65)
   // Y border index by src coord: [0-60), [20-80), [40-100), [60-110)
-  TestIterate(data, gfx::Rect(0, 0, 65, 110), 0, 0, 2, 3);
-  TestIterate(data, gfx::Rect(50, 60, 15, 65), 1, 1, 2, 3);
-  TestIterate(data, gfx::Rect(60, 30, 2, 10), 2, 0, 2, 1);
-
+  TestIterateBorders(data, gfx::Rect(0, 0, 65, 110), 0, 0, 2, 3);
+  TestIterateBorders(data, gfx::Rect(50, 60, 15, 65), 1, 1, 2, 3);
+  TestIterateBorders(data, gfx::Rect(60, 30, 2, 10), 2, 0, 2, 1);
   // Oversized.
-  TestIterate(data, gfx::Rect(-100, -100, 1000, 1000), 0, 0, 2, 3);
-  TestIterate(data, gfx::Rect(-100, 10, 1000, 10), 0, 0, 2, 0);
-  TestIterate(data, gfx::Rect(10, -100, 10, 1000), 0, 0, 1, 3);
+  TestIterateBorders(data, gfx::Rect(-100, -100, 1000, 1000), 0, 0, 2, 3);
+  TestIterateBorders(data, gfx::Rect(-100, 10, 1000, 10), 0, 0, 2, 0);
+  TestIterateBorders(data, gfx::Rect(10, -100, 10, 1000), 0, 0, 1, 3);
   // Nonintersecting.
-  TestIterate(data, gfx::Rect(65, 110, 100, 100), 0, 0, -1, -1);
+  TestIterateBorders(data, gfx::Rect(65, 110, 100, 100), 0, 0, -1, -1);
+}
+
+TEST(TilingDataTest, NoBordersIteratorManyBorderTexels) {
+  TilingData data(gfx::Size(50, 60), gfx::Size(65, 110), 20);
+  // X index by src coord: [0-30), [30-40), [40, 65)
+  // Y index by src coord: [0-40), [40-60), [60, 80), [80-110)
+  TestIterateNoBorders(data, gfx::Rect(0, 0, 65, 110), 0, 0, 2, 3);
+  TestIterateNoBorders(data, gfx::Rect(30, 40, 15, 65), 1, 1, 2, 3);
+  TestIterateNoBorders(data, gfx::Rect(60, 20, 2, 21), 2, 0, 2, 1);
+  // Oversized.
+  TestIterateNoBorders(data, gfx::Rect(-100, -100, 1000, 1000), 0, 0, 2, 3);
+  TestIterateNoBorders(data, gfx::Rect(-100, 10, 1000, 10), 0, 0, 2, 0);
+  TestIterateNoBorders(data, gfx::Rect(10, -100, 10, 1000), 0, 0, 0, 3);
+  // Nonintersecting.
+  TestIterateNoBorders(data, gfx::Rect(65, 110, 100, 100), 0, 0, -1, -1);
 }
 
 TEST(TilingDataTest, IteratorOneTile) {
   TilingData no_border(gfx::Size(1000, 1000), gfx::Size(30, 40), false);
-  TestIterate(no_border, gfx::Rect(0, 0, 30, 40), 0, 0, 0, 0);
-  TestIterate(no_border, gfx::Rect(10, 10, 20, 20), 0, 0, 0, 0);
-  TestIterate(no_border, gfx::Rect(30, 40, 100, 100), 0, 0, -1, -1);
+  TestIterateAll(no_border, gfx::Rect(0, 0, 30, 40), 0, 0, 0, 0);
+  TestIterateAll(no_border, gfx::Rect(10, 10, 20, 20), 0, 0, 0, 0);
+  TestIterateAll(no_border, gfx::Rect(30, 40, 100, 100), 0, 0, -1, -1);
 
   TilingData one_border(gfx::Size(1000, 1000), gfx::Size(30, 40), true);
-  TestIterate(one_border, gfx::Rect(0, 0, 30, 40), 0, 0, 0, 0);
-  TestIterate(one_border, gfx::Rect(10, 10, 20, 20), 0, 0, 0, 0);
-  TestIterate(one_border, gfx::Rect(30, 40, 100, 100), 0, 0, -1, -1);
+  TestIterateAll(one_border, gfx::Rect(0, 0, 30, 40), 0, 0, 0, 0);
+  TestIterateAll(one_border, gfx::Rect(10, 10, 20, 20), 0, 0, 0, 0);
+  TestIterateAll(one_border, gfx::Rect(30, 40, 100, 100), 0, 0, -1, -1);
 
   TilingData big_border(gfx::Size(1000, 1000), gfx::Size(30, 40), 50);
-  TestIterate(big_border, gfx::Rect(0, 0, 30, 40), 0, 0, 0, 0);
-  TestIterate(big_border, gfx::Rect(10, 10, 20, 20), 0, 0, 0, 0);
-  TestIterate(big_border, gfx::Rect(30, 40, 100, 100), 0, 0, -1, -1);
+  TestIterateAll(big_border, gfx::Rect(0, 0, 30, 40), 0, 0, 0, 0);
+  TestIterateAll(big_border, gfx::Rect(10, 10, 20, 20), 0, 0, 0, 0);
+  TestIterateAll(big_border, gfx::Rect(30, 40, 100, 100), 0, 0, -1, -1);
 }
 
 TEST(TilingDataTest, IteratorNoTiles) {
   TilingData data(gfx::Size(100, 100), gfx::Size(), false);
-  TestIterate(data, gfx::Rect(0, 0, 100, 100), 0, 0, -1, -1);
+  TestIterateAll(data, gfx::Rect(0, 0, 100, 100), 0, 0, -1, -1);
 }
 
 void TestDiff(

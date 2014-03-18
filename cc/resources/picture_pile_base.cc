@@ -211,8 +211,10 @@ scoped_ptr<base::Value> PicturePileBase::AsValue() const {
   scoped_ptr<base::ListValue> pictures(new base::ListValue());
   gfx::Rect layer_rect(tiling_.total_size());
   std::set<void*> appended_pictures;
-  for (TilingData::Iterator tile_iter(&tiling_, layer_rect);
-       tile_iter; ++tile_iter) {
+  bool include_borders = true;
+  for (TilingData::Iterator tile_iter(&tiling_, layer_rect, include_borders);
+       tile_iter;
+       ++tile_iter) {
     PictureMap::const_iterator map_iter = picture_map_.find(tile_iter.index());
     if (map_iter == picture_map_.end())
       continue;
