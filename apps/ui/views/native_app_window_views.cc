@@ -37,6 +37,10 @@ void NativeAppWindowViews::Init(AppWindow* app_window,
   frameless_ = create_params.frame == AppWindow::FRAME_NONE;
   transparent_background_ = create_params.transparent_background;
   resizable_ = create_params.resizable;
+  size_constraints_.set_minimum_size(
+      create_params.GetContentMinimumSize(gfx::Insets()));
+  size_constraints_.set_maximum_size(
+      create_params.GetContentMaximumSize(gfx::Insets()));
   Observe(app_window_->web_contents());
 
   window_ = new views::Widget;
