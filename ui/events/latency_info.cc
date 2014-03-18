@@ -12,7 +12,7 @@
 
 namespace {
 
-const unsigned int kMaxLatencyInfoNumber = 100;
+const size_t kMaxLatencyInfoNumber = 100;
 
 const char* GetComponentName(ui::LatencyComponentType type) {
 #define CASE_TYPE(t) case ui::t:  return #t

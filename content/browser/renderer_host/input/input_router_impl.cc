@@ -104,7 +104,7 @@ GestureEventWithLatencyInfo MakeGestureEvent(WebInputEvent::Type type,
                                              int x,
                                              int y,
                                              int modifiers,
-                                             const ui::LatencyInfo latency) {
+                                             const ui::LatencyInfo& latency) {
   WebGestureEvent result;
 
   result.type = type;

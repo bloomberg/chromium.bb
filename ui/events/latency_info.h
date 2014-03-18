@@ -5,11 +5,11 @@
 #ifndef UI_EVENTS_LATENCY_INFO_H_
 #define UI_EVENTS_LATENCY_INFO_H_
 
-#include <map>
 #include <utility>
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/containers/small_map.h"
 #include "base/time/time.h"
 #include "ui/events/events_base_export.h"
 
@@ -80,10 +80,14 @@ struct EVENTS_BASE_EXPORT LatencyInfo {
     uint32 event_count;
   };
 
+  // Empirically determined constant based on a typical scroll sequence.
+  enum { kTypicalMaxComponentsPerLatencyInfo = 6 };
+
   // Map a Latency Component (with a component-specific int64 id) to a
   // component info.
-  typedef std::map<std::pair<LatencyComponentType, int64>, LatencyComponent>
-      LatencyMap;
+  typedef base::SmallMap<
+      std::map<std::pair<LatencyComponentType, int64>, LatencyComponent>,
+      kTypicalMaxComponentsPerLatencyInfo> LatencyMap;
 
   LatencyInfo();
 

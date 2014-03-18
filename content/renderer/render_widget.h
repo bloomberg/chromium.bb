@@ -336,7 +336,7 @@ class CONTENT_EXPORT RenderWidget
 
   // RenderWidget IPC message handlers
   void OnHandleInputEvent(const blink::WebInputEvent* event,
-                          ui::LatencyInfo latency_info,
+                          const ui::LatencyInfo& latency_info,
                           bool keyboard_shortcut);
   void OnCursorVisibilityChange(bool is_visible);
   void OnMouseCaptureLost();

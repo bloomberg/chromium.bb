@@ -28,7 +28,8 @@ class MockAutofillPopupViewDelegate : public AutofillPopupViewDelegate {
   MOCK_METHOD1(SetSelectionAtPoint, void(const gfx::Point&));
   MOCK_METHOD1(AcceptSelectionAtPoint, void(const gfx::Point&));
   MOCK_METHOD0(SelectionCleared, void());
-  MOCK_METHOD1(ShouldRepostEvent, bool(const ui::MouseEvent&));
+  // TODO(jdduke): Mock this method upon resolution of crbug.com/352463.
+  bool ShouldRepostEvent(const ui::MouseEvent&) { return false; }
   MOCK_CONST_METHOD0(ShouldHideOnOutsideClick, bool());
   MOCK_CONST_METHOD0(popup_bounds, gfx::Rect&());
   MOCK_METHOD0(container_view, gfx::NativeView());

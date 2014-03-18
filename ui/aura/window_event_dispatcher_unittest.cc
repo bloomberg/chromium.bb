@@ -1623,14 +1623,17 @@ class WindowEventDispatcherTestWithMessageLoop
     // Start a nested message-loop, post an event to be dispatched, and then
     // terminate the message-loop. When the message-loop unwinds and gets back,
     // the reposted event should not have fired.
-    ui::MouseEvent mouse(ui::ET_MOUSE_PRESSED, gfx::Point(10, 10),
-                         gfx::Point(10, 10), ui::EF_NONE, ui::EF_NONE);
-    message_loop()->PostTask(FROM_HERE,
-                             base::Bind(&WindowEventDispatcher::RepostEvent,
-                                        base::Unretained(host()->dispatcher()),
-                                        mouse));
-    message_loop()->PostTask(FROM_HERE,
-                             message_loop()->QuitClosure());
+    scoped_ptr<ui::MouseEvent> mouse(new ui::MouseEvent(ui::ET_MOUSE_PRESSED,
+                                                        gfx::Point(10, 10),
+                                                        gfx::Point(10, 10),
+                                                        ui::EF_NONE,
+                                                        ui::EF_NONE));
+    message_loop()->PostTask(
+        FROM_HERE,
+        base::Bind(&WindowEventDispatcherTestWithMessageLoop::RepostEventHelper,
+                   host()->dispatcher(),
+                   base::Passed(&mouse)));
+    message_loop()->PostTask(FROM_HERE, message_loop()->QuitClosure());
 
     base::MessageLoop::ScopedNestableTaskAllower allow(message_loop());
     base::RunLoop loop;
@@ -1658,6 +1661,12 @@ class WindowEventDispatcherTestWithMessageLoop
   }
 
  private:
+  // Used to avoid a copying |event| when binding to a closure.
+  static void RepostEventHelper(WindowEventDispatcher* dispatcher,
+                                scoped_ptr<ui::MouseEvent> event) {
+    dispatcher->RepostEvent(*event);
+  }
+
   scoped_ptr<Window> window_;
   ExitMessageLoopOnMousePress handler_;
 

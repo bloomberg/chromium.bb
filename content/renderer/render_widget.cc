@@ -1037,7 +1037,7 @@ void RenderWidget::OnSwapBuffersComplete() {
 }
 
 void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
-                                      ui::LatencyInfo latency_info,
+                                      const ui::LatencyInfo& latency_info,
                                       bool is_keyboard_shortcut) {
   handling_input_event_ = true;
   if (!input_event) {
@@ -1056,10 +1056,11 @@ void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
   TRACE_EVENT_SYNTHETIC_DELAY_BEGIN("blink.HandleInputEvent");
 
   scoped_ptr<cc::SwapPromiseMonitor> latency_info_swap_promise_monitor;
-
+  ui::LatencyInfo swap_latency_info(latency_info);
   if (compositor_) {
     latency_info_swap_promise_monitor =
-        compositor_->CreateLatencyInfoSwapPromiseMonitor(&latency_info).Pass();
+        compositor_->CreateLatencyInfoSwapPromiseMonitor(&swap_latency_info)
+            .Pass();
   } else {
     latency_info_.push_back(latency_info);
   }
@@ -1169,7 +1170,7 @@ void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
         new InputHostMsg_HandleInputEvent_ACK(routing_id_,
                                               input_event->type,
                                               ack_result,
-                                              latency_info));
+                                              swap_latency_info));
     if (rate_limiting_wanted && event_type_can_be_rate_limited &&
         frame_pending && !is_hidden_) {
       // We want to rate limit the input events in this case, so we'll wait for
