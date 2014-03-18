@@ -5,6 +5,7 @@
 #include "components/translate/core/browser/language_state.h"
 
 #include "base/memory/scoped_ptr.h"
+#include "components/translate/core/browser/language_state.h"
 #include "components/translate/core/browser/translate_driver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -14,7 +15,8 @@ class MockTranslateDriver : public TranslateDriver {
  public:
   MockTranslateDriver()
       : on_is_page_translated_changed_called_(false),
-        on_translate_enabled_changed_called_(false) {
+        on_translate_enabled_changed_called_(false),
+        language_state_(this) {
   }
 
   void Reset() {
@@ -36,6 +38,10 @@ class MockTranslateDriver : public TranslateDriver {
     return false;
   }
 
+  virtual LanguageState& GetLanguageState() OVERRIDE {
+    return language_state_;
+  }
+
   bool on_is_page_translated_changed_called() const {
     return on_is_page_translated_changed_called_;
   }
@@ -47,6 +53,7 @@ class MockTranslateDriver : public TranslateDriver {
  private:
   bool on_is_page_translated_changed_called_;
   bool on_translate_enabled_changed_called_;
+  LanguageState language_state_;
 
   DISALLOW_COPY_AND_ASSIGN(MockTranslateDriver);
 };

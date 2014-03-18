@@ -51,3 +51,7 @@ void ContentTranslateDriver::OnIsPageTranslatedChanged() {
     observer_->OnIsPageTranslatedChanged(web_contents);
   }
 }
+
+LanguageState& ContentTranslateDriver::GetLanguageState() {
+  return language_state_;
+}

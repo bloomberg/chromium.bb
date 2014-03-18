@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/translate/translate_bubble_model.h"
 #include "components/translate/content/browser/content_translate_driver.h"
+#include "components/translate/core/browser/translate_client.h"
 #include "components/translate/core/common/translate_errors.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -26,7 +27,8 @@ class TranslatePrefs;
 class TranslateManager;
 
 class TranslateTabHelper
-    : public content::WebContentsObserver,
+    : public TranslateClient,
+      public content::WebContentsObserver,
       public content::WebContentsUserData<TranslateTabHelper> {
  public:
   virtual ~TranslateTabHelper();
@@ -73,6 +75,9 @@ class TranslateTabHelper
                        const std::string target_language,
                        TranslateErrors::Type error_type,
                        bool triggered_from_menu);
+
+  // TranslateClient implementation.
+  virtual TranslateDriver* GetTranslateDriver() OVERRIDE;
 
  private:
   explicit TranslateTabHelper(content::WebContents* web_contents);

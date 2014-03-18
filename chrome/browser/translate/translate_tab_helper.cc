@@ -35,7 +35,7 @@ TranslateTabHelper::~TranslateTabHelper() {
 }
 
 LanguageState& TranslateTabHelper::GetLanguageState() {
-  return translate_driver_.language_state();
+  return translate_driver_.GetLanguageState();
 }
 
 // static
@@ -108,6 +108,10 @@ void TranslateTabHelper::ShowTranslateUI(TranslateTabHelper::TranslateStep step,
                                    triggered_from_menu);
 }
 
+TranslateDriver* TranslateTabHelper::GetTranslateDriver() {
+  return &translate_driver_;
+}
+
 bool TranslateTabHelper::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(TranslateTabHelper, message)
@@ -138,7 +142,7 @@ void TranslateTabHelper::WebContentsDestroyed(
 void TranslateTabHelper::OnLanguageDetermined(
     const LanguageDetectionDetails& details,
     bool page_needs_translation) {
-  translate_driver_.language_state().LanguageDetermined(
+  translate_driver_.GetLanguageState().LanguageDetermined(
       details.adopted_language, page_needs_translation);
 
   content::NotificationService::current()->Notify(
@@ -152,8 +156,8 @@ void TranslateTabHelper::OnPageTranslated(int32 page_id,
                                           const std::string& translated_lang,
                                           TranslateErrors::Type error_type) {
   DCHECK(web_contents());
-  translate_driver_.language_state().SetCurrentLanguage(translated_lang);
-  translate_driver_.language_state().set_translation_pending(false);
+  translate_driver_.GetLanguageState().SetCurrentLanguage(translated_lang);
+  translate_driver_.GetLanguageState().set_translation_pending(false);
   PageTranslatedDetails details;
   details.source_language = original_lang;
   details.target_language = translated_lang;

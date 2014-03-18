@@ -29,6 +29,7 @@
         'translate/core/browser/translate_accept_languages.h',
         'translate/core/browser/translate_browser_metrics.cc',
         'translate/core/browser/translate_browser_metrics.h',
+        'translate/core/browser/translate_client.h',
         'translate/core/browser/translate_download_manager.cc',
         'translate/core/browser/translate_download_manager.h',
         'translate/core/browser/translate_driver.h',

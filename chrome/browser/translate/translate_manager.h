@@ -19,6 +19,7 @@
 class GURL;
 struct PageTranslatedDetails;
 class PrefService;
+class TranslateDriver;
 struct TranslateErrorDetails;
 class TranslateTabHelper;
 
@@ -118,7 +119,10 @@ class TranslateManager : public content::NotificationObserver {
   // Max number of attempts before checking if a page has been reloaded.
   int max_reload_check_attempts_;
 
+  // TODO(droger): Remove all uses of |translate_tab_helper_|, use
+  // TranslateClient and TranslateDriver instead.
   TranslateTabHelper* translate_tab_helper_;  // Weak.
+  TranslateDriver* translate_driver_;  // Weak.
 
   base::WeakPtrFactory<TranslateManager> weak_method_factory_;
 

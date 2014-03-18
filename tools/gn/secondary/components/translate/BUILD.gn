@@ -13,6 +13,7 @@ static_library("translate_core_browser") {
     "core/browser/translate_accept_languages.h",
     "core/browser/translate_browser_metrics.cc",
     "core/browser/translate_browser_metrics.h",
+    "core/browser/translate_client.h",
     "core/browser/translate_download_manager.cc",
     "core/browser/translate_download_manager.h",
     "core/browser/translate_driver.h",
