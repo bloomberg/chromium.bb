@@ -278,12 +278,6 @@
     {
       "channel": "beta",
       "extension_types": ["extension", "legacy_packaged_app"]
-    },
-    {
-      "channel": "stable",
-      "extension_types": ["extension", "legacy_packaged_app"],
-      // Legacy Browser Support (remove once this API hits stable).
-      "whitelist": ["BC3A0F8D5AE0DE6454D74AB376EBCC59E10CDD5A"]
     }
   ],
   "desktopCapture": {
