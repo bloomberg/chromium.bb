@@ -216,8 +216,7 @@ bool MediaDecoderJob::HasData() const {
           access_unit_index_ < received_data_.access_units.size()))
       << " (access_units.size(): " << received_data_.access_units.size()
       << ", access_unit_index_: " << access_unit_index_ << ")";
-  return access_unit_index_ < received_data_.access_units.size() ||
-      input_eos_encountered_;
+  return access_unit_index_ < received_data_.access_units.size();
 }
 
 void MediaDecoderJob::RequestData(const base::Closure& done_cb) {
