@@ -56,53 +56,48 @@ class ExtensionWebUITest : public testing::Test {
 // Test that component extension url overrides have lower priority than
 // non-component extension url overrides.
 TEST_F(ExtensionWebUITest, ExtensionURLOverride) {
-  // Make a component extension.
+  // Register a non-component extension.
   extensions::DictionaryBuilder manifest;
   manifest.Set(manifest_keys::kName, "ext1")
       .Set(manifest_keys::kVersion, "0.1")
       .Set(std::string(manifest_keys::kChromeURLOverrides),
            extensions::DictionaryBuilder().Set("bookmarks", "1.html"));
-  scoped_refptr<Extension> ext_component(
+  scoped_refptr<Extension> ext_unpacked(
       extensions::ExtensionBuilder()
           .SetManifest(manifest)
-          .SetLocation(Manifest::COMPONENT)
+          .SetLocation(Manifest::UNPACKED)
           .SetID("abcdefghijabcdefghijabcdefghijaa")
           .Build());
-  profile_->GetExtensionService()->AddComponentExtension(ext_component.get());
+  profile_->GetExtensionService()->AddExtension(ext_unpacked.get());
 
-  // Make a non-component extension.
+  GURL expected_unpacked_override_url(std::string(ext_unpacked->url().spec()) +
+                                      "1.html");
+  GURL url("chrome://bookmarks");
+  EXPECT_TRUE(ExtensionWebUI::HandleChromeURLOverride(&url, profile_.get()));
+  EXPECT_EQ(url, expected_unpacked_override_url);
+
+  // Register a component extension
   extensions::DictionaryBuilder manifest2;
   manifest2.Set(manifest_keys::kName, "ext2")
       .Set(manifest_keys::kVersion, "0.1")
       .Set(std::string(manifest_keys::kChromeURLOverrides),
            extensions::DictionaryBuilder().Set("bookmarks", "2.html"));
-  scoped_refptr<Extension> ext_unpacked(
+  scoped_refptr<Extension> ext_component(
       extensions::ExtensionBuilder()
           .SetManifest(manifest2)
-          .SetLocation(Manifest::UNPACKED)
+          .SetLocation(Manifest::COMPONENT)
           .SetID("bbabcdefghijabcdefghijabcdefghij")
           .Build());
-  profile_->GetExtensionService()->AddExtension(ext_unpacked.get());
+  profile_->GetExtensionService()->AddComponentExtension(ext_component.get());
 
-  GURL expected_component_override_url(
-      std::string(ext_component->url().spec()) + "1.html");
-  GURL expected_unpacked_override_url(std::string(ext_unpacked->url().spec()) +
-                                      "2.html");
-
-  // Register non-component extension.
-  ExtensionWebUI::RegisterChromeURLOverrides(
-      profile_.get(), URLOverrides::GetChromeURLOverrides(ext_unpacked.get()));
-  GURL url("chrome://bookmarks");
-  EXPECT_TRUE(ExtensionWebUI::HandleChromeURLOverride(&url, profile_.get()));
-  EXPECT_EQ(url, expected_unpacked_override_url);
-
-  // Register component extension. Despite being registered more recently, the
-  // non-component extension should still have precedence.
-  ExtensionWebUI::RegisterChromeURLOverrides(
-      profile_.get(), URLOverrides::GetChromeURLOverrides(ext_component.get()));
+  // Despite being registered more recently, the component extension should
+  // not take precendence over the non-component extension.
   url = GURL("chrome://bookmarks");
   EXPECT_TRUE(ExtensionWebUI::HandleChromeURLOverride(&url, profile_.get()));
   EXPECT_EQ(url, expected_unpacked_override_url);
+
+  GURL expected_component_override_url(
+      std::string(ext_component->url().spec()) + "2.html");
 
   // Unregister non-component extension. Only component extension remaining.
   ExtensionWebUI::UnregisterChromeURLOverrides(
@@ -111,8 +106,8 @@ TEST_F(ExtensionWebUITest, ExtensionURLOverride) {
   EXPECT_TRUE(ExtensionWebUI::HandleChromeURLOverride(&url, profile_.get()));
   EXPECT_EQ(url, expected_component_override_url);
 
-  // This time the non-component extension was registered more recently.
-  // The non-component extension should still have precedence.
+  // This time the non-component extension was registered more recently and
+  // should still take precedence.
   ExtensionWebUI::RegisterChromeURLOverrides(
       profile_.get(), URLOverrides::GetChromeURLOverrides(ext_unpacked.get()));
   url = GURL("chrome://bookmarks");
