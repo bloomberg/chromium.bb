@@ -25,6 +25,7 @@ EXTRA_ENV = {
   'MAX_ATTEMPTS'       : '25',
   'RETRIES'            : '3',
   'SUFFIX'             :'-c',
+  'VERBOSE'            : '0',
 }
 
 PrepPatterns = [
@@ -32,6 +33,8 @@ PrepPatterns = [
     ( '--max-attempts=(.*)', "env.set('MAX_ATTEMPTS', $0)"),
     ( '--retries=(.*)',  "env.set('RETRIES', $0)"),
     ( ('--suffix','(.*)'), "env.set('SUFFIX', $0)"),
+    ( '--verbose',       "env.set('VERBOSE', '1')"),
+    ( '-v',               "env.set('VERBOSE', '1')"),
     ( '(-.*)',           driver_tools.UnrecognizedOption),
     ( '(.*)',            "env.append('INPUTS', pathtools.normalize($0))"),
 ]
@@ -54,6 +57,8 @@ def Compress(f_input, f_output):
       to see if we can find a smaller bitcode file, which implies
       you are moving closer to another local minima.
   """
+
+  verbose = env.getbool('VERBOSE')
 
   # Number of times we will continue to retry after finding local
   # minimum file size.
@@ -91,7 +96,8 @@ def Compress(f_input, f_output):
   while max_attempts > 0 and retry_count > 0:
 
     next_file = f_input + test_suffix + str(test_index)
-    print "Compressing %s: %s bytes" % (last_file, last_size)
+    if verbose:
+      print "Compressing %s: %s bytes" % (last_file, last_size)
 
     driver_tools.Run('"${PNACL_COMPRESS}" ' + last_file + ' -o ' + next_file)
     next_size = pathtools.getsize(next_file)
@@ -116,9 +122,10 @@ def Compress(f_input, f_output):
     test_index += 1
 
   # Install results.
-  print "Compressed  %s: %s bytes" % (last_file, last_size)
-  print "Best        %s: %s bytes" % (current_smallest_file,
-                                      current_smallest_size)
+  if verbose:
+    print "Compressed  %s: %s bytes" % (last_file, last_size)
+    print "Best        %s: %s bytes" % (current_smallest_file,
+                                        current_smallest_size)
   if not last_saved:
     os.remove(last_file)
 
@@ -175,4 +182,6 @@ def get_help(unused_argv):
                             a local minimum is found before quiting.
   --suffix XX               Create intermediate compressed files by adding
                             suffix XXN (where N is a number).
+  -v --verbose              Show generated intermediate files and corresponding
+                            sizes.
 """ % script
