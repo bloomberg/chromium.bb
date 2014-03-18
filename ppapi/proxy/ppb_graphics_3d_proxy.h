@@ -37,15 +37,16 @@ class Graphics3D : public PPB_Graphics3D_Shared {
   virtual PP_Bool SetGetBuffer(int32_t shm_id) OVERRIDE;
   virtual gpu::CommandBuffer::State GetState() OVERRIDE;
   virtual PP_Bool Flush(int32_t put_offset) OVERRIDE;
-  virtual gpu::CommandBuffer::State FlushSync(int32_t put_offset) OVERRIDE;
   virtual int32_t CreateTransferBuffer(uint32_t size) OVERRIDE;
   virtual PP_Bool DestroyTransferBuffer(int32_t id) OVERRIDE;
   virtual PP_Bool GetTransferBuffer(int32_t id,
                                     int* shm_handle,
                                     uint32_t* shm_size) OVERRIDE;
-  virtual gpu::CommandBuffer::State FlushSyncFast(
-      int32_t put_offset,
-      int32_t last_known_get) OVERRIDE;
+  virtual gpu::CommandBuffer::State WaitForTokenInRange(int32_t start,
+                                                        int32_t end) OVERRIDE;
+  virtual gpu::CommandBuffer::State WaitForGetOffsetInRange(int32_t start,
+                                                            int32_t end)
+      OVERRIDE;
   virtual uint32_t InsertSyncPoint() OVERRIDE;
 
  private:
@@ -84,13 +85,17 @@ class PPB_Graphics3D_Proxy : public InterfaceProxy {
   void OnMsgGetState(const HostResource& context,
                      gpu::CommandBuffer::State* state,
                      bool* success);
-  void OnMsgFlush(const HostResource& context,
-                  int32 put_offset,
-                  int32 last_known_get,
-                  gpu::CommandBuffer::State* state,
-                  bool* success);
-  void OnMsgAsyncFlush(const HostResource& context,
-                       int32 put_offset);
+  void OnMsgWaitForTokenInRange(const HostResource& context,
+                                int32 start,
+                                int32 end,
+                                gpu::CommandBuffer::State* state,
+                                bool* success);
+  void OnMsgWaitForGetOffsetInRange(const HostResource& context,
+                                    int32 start,
+                                    int32 end,
+                                    gpu::CommandBuffer::State* state,
+                                    bool* success);
+  void OnMsgAsyncFlush(const HostResource& context, int32 put_offset);
   void OnMsgCreateTransferBuffer(const HostResource& context,
                                  uint32 size,
                                  int32* id);

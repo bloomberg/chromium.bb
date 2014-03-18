@@ -145,21 +145,12 @@ CommandBufferHelper::~CommandBufferHelper() {
   FreeResources();
 }
 
-bool CommandBufferHelper::FlushSync() {
+bool CommandBufferHelper::WaitForGetOffsetInRange(int32 start, int32 end) {
   if (!usable()) {
     return false;
   }
-
-  // Wrap put_ before flush.
-  if (put_ == total_entry_count_)
-    put_ = 0;
-
-  last_flush_time_ = clock();
-  last_put_sent_ = put_;
-  CommandBuffer::State state = command_buffer_->FlushSync(put_, get_offset());
-  ++flush_generation_;
-  CalcImmediateEntries(0);
-  return state.error == error::kNoError;
+  command_buffer_->WaitForGetOffsetInRange(start, end);
+  return command_buffer_->GetLastError() == gpu::error::kNoError;
 }
 
 void CommandBufferHelper::Flush() {
@@ -196,12 +187,12 @@ bool CommandBufferHelper::Finish() {
     return true;
   }
   DCHECK(HaveRingBuffer());
-  do {
-    // Do not loop forever if the flush fails, meaning the command buffer reader
-    // has shutdown.
-    if (!FlushSync())
-      return false;
-  } while (put_ != get_offset());
+  Flush();
+  if (!WaitForGetOffsetInRange(put_, put_))
+    return false;
+  DCHECK_EQ(get_offset(), put_);
+
+  CalcImmediateEntries(0);
 
   return true;
 }
@@ -242,16 +233,10 @@ void CommandBufferHelper::WaitForToken(int32 token) {
   if (token < 0)
     return;
   if (token > token_) return;  // we wrapped
-  while (last_token_read() < token) {
-    if (get_offset() == put_) {
-      LOG(FATAL) << "Empty command buffer while waiting on a token.";
-      return;
-    }
-    // Do not loop forever if the flush fails, meaning the command buffer reader
-    // has shutdown.
-    if (!FlushSync())
-      return;
-  }
+  if (last_token_read() > token)
+    return;
+  Flush();
+  command_buffer_->WaitForTokenInRange(token, token_);
 }
 
 // Waits for available entries, basically waiting until get >= put + count + 1.
@@ -275,13 +260,12 @@ void CommandBufferHelper::WaitForAvailableEntries(int32 count) {
     int32 curr_get = get_offset();
     if (curr_get > put_ || curr_get == 0) {
       TRACE_EVENT0("gpu", "CommandBufferHelper::WaitForAvailableEntries");
-      while (curr_get > put_ || curr_get == 0) {
-        // Do not loop forever if the flush fails, meaning the command buffer
-        // reader has shutdown.
-        if (!FlushSync())
-          return;
-        curr_get = get_offset();
-      }
+      Flush();
+      if (!WaitForGetOffsetInRange(1, put_))
+        return;
+      curr_get = get_offset();
+      DCHECK_LE(curr_get, put_);
+      DCHECK_NE(0, curr_get);
     }
     // Insert Noops to fill out the buffer.
     int32 num_entries = total_entry_count_ - put_;
@@ -303,13 +287,10 @@ void CommandBufferHelper::WaitForAvailableEntries(int32 count) {
     if (immediate_entry_count_ < count) {
       // Buffer is full.  Need to wait for entries.
       TRACE_EVENT0("gpu", "CommandBufferHelper::WaitForAvailableEntries1");
-      while (immediate_entry_count_ < count) {
-        // Do not loop forever if the flush fails, meaning the command buffer
-        // reader has shutdown.
-        if (!FlushSync())
-          return;
-        CalcImmediateEntries(count);
-      }
+      if (!WaitForGetOffsetInRange(put_ + count + 1, put_))
+        return;
+      CalcImmediateEntries(count);
+      DCHECK_GE(immediate_entry_count_, count);
     }
   }
 }

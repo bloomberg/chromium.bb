@@ -84,10 +84,6 @@ PP_Bool Graphics3D::Flush(int32_t put_offset) {
   return PP_FALSE;
 }
 
-gpu::CommandBuffer::State Graphics3D::FlushSync(int32_t put_offset) {
-  return GetErrorState();
-}
-
 int32_t Graphics3D::CreateTransferBuffer(uint32_t size) {
   return PP_FALSE;
 }
@@ -102,8 +98,13 @@ PP_Bool Graphics3D::GetTransferBuffer(int32_t id,
   return PP_FALSE;
 }
 
-gpu::CommandBuffer::State Graphics3D::FlushSyncFast(int32_t put_offset,
-                                                    int32_t last_known_get) {
+gpu::CommandBuffer::State Graphics3D::WaitForTokenInRange(int32_t start,
+                                                          int32_t end) {
+  return GetErrorState();
+}
+
+gpu::CommandBuffer::State Graphics3D::WaitForGetOffsetInRange(int32_t start,
+                                                              int32_t end) {
   return GetErrorState();
 }
 
@@ -193,10 +194,11 @@ bool PPB_Graphics3D_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnMsgSetGetBuffer)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBGraphics3D_GetState,
                         OnMsgGetState)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBGraphics3D_Flush,
-                        OnMsgFlush)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBGraphics3D_AsyncFlush,
-                        OnMsgAsyncFlush)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBGraphics3D_WaitForTokenInRange,
+                        OnMsgWaitForTokenInRange)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBGraphics3D_WaitForGetOffsetInRange,
+                        OnMsgWaitForGetOffsetInRange)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBGraphics3D_AsyncFlush, OnMsgAsyncFlush)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBGraphics3D_CreateTransferBuffer,
                         OnMsgCreateTransferBuffer)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBGraphics3D_DestroyTransferBuffer,
@@ -259,17 +261,33 @@ void PPB_Graphics3D_Proxy::OnMsgGetState(const HostResource& context,
   *success = true;
 }
 
-void PPB_Graphics3D_Proxy::OnMsgFlush(const HostResource& context,
-                                      int32 put_offset,
-                                      int32 last_known_get,
-                                      gpu::CommandBuffer::State* state,
-                                      bool* success) {
+void PPB_Graphics3D_Proxy::OnMsgWaitForTokenInRange(
+    const HostResource& context,
+    int32 start,
+    int32 end,
+    gpu::CommandBuffer::State* state,
+    bool* success) {
   EnterHostFromHostResource<PPB_Graphics3D_API> enter(context);
   if (enter.failed()) {
     *success = false;
     return;
   }
-  *state = enter.object()->FlushSyncFast(put_offset, last_known_get);
+  *state = enter.object()->WaitForTokenInRange(start, end);
+  *success = true;
+}
+
+void PPB_Graphics3D_Proxy::OnMsgWaitForGetOffsetInRange(
+    const HostResource& context,
+    int32 start,
+    int32 end,
+    gpu::CommandBuffer::State* state,
+    bool* success) {
+  EnterHostFromHostResource<PPB_Graphics3D_API> enter(context);
+  if (enter.failed()) {
+    *success = false;
+    return;
+  }
+  *state = enter.object()->WaitForGetOffsetInRange(start, end);
   *success = true;
 }
 

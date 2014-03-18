@@ -64,14 +64,6 @@ class GPU_EXPORT CommandBufferHelper {
   // returns, the command buffer service is aware of all pending commands.
   void Flush();
 
-  // Flushes the commands, setting the put pointer to let the buffer interface
-  // know that new commands have been added. After a flush returns, the command
-  // buffer service is aware of all pending commands and it is guaranteed to
-  // have made some progress in processing them. Returns whether the flush was
-  // successful. The flush will fail if the command buffer service has
-  // disconnected.
-  bool FlushSync();
-
   // Waits until all the commands have been executed. Returns whether it
   // was successful. The function will fail if the command buffer service has
   // disconnected.
@@ -274,9 +266,6 @@ class GPU_EXPORT CommandBufferHelper {
   }
 
  private:
-  // Waits until get changes, updating the value of get_.
-  void WaitForGetChange();
-
   // Returns the number of available entries (they may not be contiguous).
   int32 AvailableEntries() {
     return (get_offset() - put_ - 1 + total_entry_count_) % total_entry_count_;
@@ -285,6 +274,10 @@ class GPU_EXPORT CommandBufferHelper {
   void CalcImmediateEntries(int waiting_count);
   bool AllocateRingBuffer();
   void FreeResources();
+
+  // Waits for the get offset to be in a specific range, inclusive. Returns
+  // false if there was an error.
+  bool WaitForGetOffsetInRange(int32 start, int32 end);
 
 #if defined(CMD_HELPER_PERIODIC_FLUSH_CHECK)
   // Calls Flush if automatic flush conditions are met.

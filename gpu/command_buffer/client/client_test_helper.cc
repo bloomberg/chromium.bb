@@ -38,12 +38,11 @@ void MockCommandBufferBase::SetGetOffset(int32 get_offset) {
   state_.get_offset = get_offset;
 }
 
-CommandBuffer::State MockCommandBufferBase::FlushSync(
-    int32 put_offset, int32 last_known_get) {
-  state_.put_offset = put_offset;
-  state_.get_offset = put_offset;
+void MockCommandBufferBase::WaitForTokenInRange(int32 start, int32 end) {}
+
+void MockCommandBufferBase::WaitForGetOffsetInRange(int32 start, int32 end) {
+  state_.get_offset = state_.put_offset;
   OnFlush();
-  return state_;
 }
 
 void MockCommandBufferBase::SetGetBuffer(int transfer_buffer_id) {

@@ -72,23 +72,36 @@ void PpapiCommandBufferProxy::Flush(int32 put_offset) {
   Send(message);
 }
 
-gpu::CommandBuffer::State PpapiCommandBufferProxy::FlushSync(int32 put_offset,
-                                                   int32 last_known_get) {
-  if (last_known_get == last_state_.get_offset) {
-    // Send will flag state with lost context if IPC fails.
-    if (last_state_.error == gpu::error::kNoError) {
-      gpu::CommandBuffer::State state;
-      bool success = false;
-      if (Send(new PpapiHostMsg_PPBGraphics3D_Flush(
-               ppapi::API_ID_PPB_GRAPHICS_3D, resource_, put_offset,
-              last_known_get, &state, &success))) {
-        UpdateState(state, success);
-      }
-    }
-  } else {
-    Flush(put_offset);
-  }
-  return last_state_;
+void PpapiCommandBufferProxy::WaitForTokenInRange(int32 start, int32 end) {
+  if (last_state_.error != gpu::error::kNoError)
+    return;
+
+  bool success;
+  gpu::CommandBuffer::State state;
+  if (Send(new PpapiHostMsg_PPBGraphics3D_WaitForTokenInRange(
+          ppapi::API_ID_PPB_GRAPHICS_3D,
+          resource_,
+          start,
+          end,
+          &state,
+          &success)))
+    UpdateState(state, success);
+}
+
+void PpapiCommandBufferProxy::WaitForGetOffsetInRange(int32 start, int32 end) {
+  if (last_state_.error != gpu::error::kNoError)
+    return;
+
+  bool success;
+  gpu::CommandBuffer::State state;
+  if (Send(new PpapiHostMsg_PPBGraphics3D_WaitForGetOffsetInRange(
+          ppapi::API_ID_PPB_GRAPHICS_3D,
+          resource_,
+          start,
+          end,
+          &state,
+          &success)))
+    UpdateState(state, success);
 }
 
 void PpapiCommandBufferProxy::SetGetBuffer(int32 transfer_buffer_id) {

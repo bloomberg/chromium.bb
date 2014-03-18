@@ -536,21 +536,22 @@ void InProcessCommandBuffer::Flush(int32 put_offset) {
   QueueTask(task);
 }
 
-CommandBuffer::State InProcessCommandBuffer::FlushSync(int32 put_offset,
-                                                       int32 last_known_get) {
+void InProcessCommandBuffer::WaitForTokenInRange(int32 start, int32 end) {
   CheckSequencedThread();
-  if (put_offset == last_known_get || last_state_.error != gpu::error::kNoError)
-    return last_state_;
+  while (!InRange(start, end, GetLastToken()) &&
+         last_state_.error == gpu::error::kNoError)
+    flush_event_.Wait();
+}
 
-  Flush(put_offset);
+void InProcessCommandBuffer::WaitForGetOffsetInRange(int32 start, int32 end) {
+  CheckSequencedThread();
+
   GetStateFast();
-  while (last_known_get == last_state_.get_offset &&
+  while (!InRange(start, end, last_state_.get_offset) &&
          last_state_.error == gpu::error::kNoError) {
     flush_event_.Wait();
     GetStateFast();
   }
-
-  return last_state_;
 }
 
 void InProcessCommandBuffer::SetGetBuffer(int32 shm_id) {

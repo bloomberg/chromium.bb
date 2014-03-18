@@ -70,6 +70,15 @@ class GPU_EXPORT CommandBuffer {
   virtual ~CommandBuffer() {
   }
 
+  // Check if a value is between a start and end value, inclusive, allowing
+  // for wrapping if start > end.
+  static bool InRange(int32 start, int32 end, int32 value) {
+    if (start <= end)
+      return start <= value && value <= end;
+    else
+      return start <= value || value <= end;
+  }
+
   // Initialize the command buffer with the given size.
   virtual bool Initialize() = 0;
 
@@ -92,10 +101,13 @@ class GPU_EXPORT CommandBuffer {
   // subsequent Flushes on the same GpuChannel.
   virtual void Flush(int32 put_offset) = 0;
 
-  // The writer calls this to update its put offset. This function returns the
-  // reader's most recent get offset. Does not return until all pending commands
-  // have been executed.
-  virtual State FlushSync(int32 put_offset, int32 last_known_get) = 0;
+  // The writer calls this to wait until the current token is within a
+  // specific range, inclusive. Can return early if an error is generated.
+  virtual void WaitForTokenInRange(int32 start, int32 end) = 0;
+
+  // The writer calls this to wait until the current get offset is within a
+  // specific range, inclusive. Can return early if an error is generated.
+  virtual void WaitForGetOffsetInRange(int32 start, int32 end) = 0;
 
   // Sets the buffer commands are read from.
   // Also resets the get and put offsets to 0.

@@ -34,7 +34,8 @@ class PPAPI_PROXY_EXPORT PpapiCommandBufferProxy : public gpu::CommandBuffer,
   virtual State GetLastState() OVERRIDE;
   virtual int32 GetLastToken() OVERRIDE;
   virtual void Flush(int32 put_offset) OVERRIDE;
-  virtual State FlushSync(int32 put_offset, int32 last_known_get) OVERRIDE;
+  virtual void WaitForTokenInRange(int32 start, int32 end) OVERRIDE;
+  virtual void WaitForGetOffsetInRange(int32 start, int32 end) OVERRIDE;
   virtual void SetGetBuffer(int32 transfer_buffer_id) OVERRIDE;
   virtual void SetGetOffset(int32 get_offset) OVERRIDE;
   virtual gpu::Buffer CreateTransferBuffer(size_t size, int32* id) OVERRIDE;

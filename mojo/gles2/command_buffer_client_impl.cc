@@ -80,15 +80,22 @@ void CommandBufferClientImpl::Flush(int32 put_offset) {
   command_buffer_->Flush(put_offset);
 }
 
-gpu::CommandBuffer::State CommandBufferClientImpl::FlushSync(
-    int32 put_offset,
-    int32 last_known_get) {
-  Flush(put_offset);
+void CommandBufferClientImpl::WaitForTokenInRange(int32 start, int32 end) {
   TryUpdateState();
-  if (last_known_get == last_state_.get_offset)
+  while (!InRange(start, end, last_state_.token) &&
+         last_state_.error == gpu::error::kNoError) {
     MakeProgressAndUpdateState();
+    TryUpdateState();
+  }
+}
 
-  return last_state_;
+void CommandBufferClientImpl::WaitForGetOffsetInRange(int32 start, int32 end) {
+  TryUpdateState();
+  while (!InRange(start, end, last_state_.token) &&
+         last_state_.error == gpu::error::kNoError) {
+    MakeProgressAndUpdateState();
+    TryUpdateState();
+  }
 }
 
 void CommandBufferClientImpl::SetGetBuffer(int32 shm_id) {

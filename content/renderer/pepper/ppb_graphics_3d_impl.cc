@@ -136,15 +136,18 @@ PP_Bool PPB_Graphics3D_Impl::Flush(int32_t put_offset) {
   return PP_TRUE;
 }
 
-gpu::CommandBuffer::State PPB_Graphics3D_Impl::FlushSync(int32_t put_offset) {
-  gpu::CommandBuffer::State state = GetCommandBuffer()->GetState();
-  return GetCommandBuffer()->FlushSync(put_offset, state.get_offset);
+gpu::CommandBuffer::State PPB_Graphics3D_Impl::WaitForTokenInRange(
+    int32_t start,
+    int32_t end) {
+  GetCommandBuffer()->WaitForTokenInRange(start, end);
+  return GetCommandBuffer()->GetLastState();
 }
 
-gpu::CommandBuffer::State PPB_Graphics3D_Impl::FlushSyncFast(
-    int32_t put_offset,
-    int32_t last_known_get) {
-  return GetCommandBuffer()->FlushSync(put_offset, last_known_get);
+gpu::CommandBuffer::State PPB_Graphics3D_Impl::WaitForGetOffsetInRange(
+    int32_t start,
+    int32_t end) {
+  GetCommandBuffer()->WaitForGetOffsetInRange(start, end);
+  return GetCommandBuffer()->GetLastState();
 }
 
 uint32_t PPB_Graphics3D_Impl::InsertSyncPoint() {

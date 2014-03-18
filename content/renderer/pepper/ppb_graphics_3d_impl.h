@@ -30,10 +30,11 @@ class PPB_Graphics3D_Impl : public ppapi::PPB_Graphics3D_Shared {
                                     int* shm_handle,
                                     uint32_t* shm_size) OVERRIDE;
   virtual PP_Bool Flush(int32_t put_offset) OVERRIDE;
-  virtual gpu::CommandBuffer::State FlushSync(int32_t put_offset) OVERRIDE;
-  virtual gpu::CommandBuffer::State FlushSyncFast(
-      int32_t put_offset,
-      int32_t last_known_get) OVERRIDE;
+  virtual gpu::CommandBuffer::State WaitForTokenInRange(int32_t start,
+                                                        int32_t end) OVERRIDE;
+  virtual gpu::CommandBuffer::State WaitForGetOffsetInRange(int32_t start,
+                                                            int32_t end)
+      OVERRIDE;
   virtual uint32_t InsertSyncPoint() OVERRIDE;
 
   // Binds/unbinds the graphics of this context with the associated instance.

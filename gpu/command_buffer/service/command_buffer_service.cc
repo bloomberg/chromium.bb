@@ -65,19 +65,12 @@ void CommandBufferService::UpdateState() {
   }
 }
 
-CommandBufferService::State CommandBufferService::FlushSync(
-    int32 put_offset, int32 last_known_get) {
-  if (put_offset < 0 || put_offset > num_entries_) {
-    error_ = gpu::error::kOutOfBounds;
-    return GetState();
-  }
+void CommandBufferService::WaitForTokenInRange(int32 start, int32 end) {
+  DCHECK(error_ != error::kNoError || InRange(start, end, token_));
+}
 
-  put_offset_ = put_offset;
-
-  if (!put_offset_change_callback_.is_null())
-    put_offset_change_callback_.Run();
-
-  return GetState();
+void CommandBufferService::WaitForGetOffsetInRange(int32 start, int32 end) {
+  DCHECK(error_ != error::kNoError || InRange(start, end, get_offset_));
 }
 
 void CommandBufferService::Flush(int32 put_offset) {

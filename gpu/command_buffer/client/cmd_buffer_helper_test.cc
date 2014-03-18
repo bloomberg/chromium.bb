@@ -43,20 +43,34 @@ class CommandBufferServiceLocked : public CommandBufferService {
   explicit CommandBufferServiceLocked(
       TransferBufferManagerInterface* transfer_buffer_manager)
       : CommandBufferService(transfer_buffer_manager),
-        flush_locked_(false) {}
+        flush_locked_(false),
+        last_flush_(-1) {}
   virtual ~CommandBufferServiceLocked() {}
 
   virtual void Flush(int32 put_offset) OVERRIDE {
-    if (!flush_locked_)
+    if (!flush_locked_) {
+      last_flush_ = -1;
       CommandBufferService::Flush(put_offset);
+    } else {
+      last_flush_ = put_offset;
+    }
   }
 
   void LockFlush() { flush_locked_ = true; }
 
   void UnlockFlush() { flush_locked_ = false; }
 
+  virtual void WaitForGetOffsetInRange(int32 start, int32 end) OVERRIDE {
+    if (last_flush_ != -1) {
+      CommandBufferService::Flush(last_flush_);
+      last_flush_ = -1;
+    }
+    CommandBufferService::WaitForGetOffsetInRange(start, end);
+  }
+
  private:
   bool flush_locked_;
+  int last_flush_;
   DISALLOW_COPY_AND_ASSIGN(CommandBufferServiceLocked);
 };
 
@@ -626,15 +640,6 @@ TEST_F(CommandBufferHelperTest, TestFlushGeneration) {
   AddUniqueCommandWithExpect(error::kNoError, 2);
   gen2 = GetHelperFlushGeneration();
   helper_->Flush();
-  gen3 = GetHelperFlushGeneration();
-  EXPECT_EQ(gen2, gen1);
-  EXPECT_NE(gen3, gen2);
-
-  // Generation should change after FlushSync() but not before.
-  gen1 = GetHelperFlushGeneration();
-  AddUniqueCommandWithExpect(error::kNoError, 2);
-  gen2 = GetHelperFlushGeneration();
-  helper_->FlushSync();
   gen3 = GetHelperFlushGeneration();
   EXPECT_EQ(gen2, gen1);
   EXPECT_NE(gen3, gen2);
