@@ -37,16 +37,35 @@
 
 
 static int
+handle_sigusr1(int signal_number, void *data)
+{
+	struct weston_xserver *wxs = data;
+
+	/* We'd be safer if we actually had the struct
+	 * signalfd_siginfo from the signalfd data and could verify
+	 * this came from Xwayland.*/
+	weston_wm_create(wxs, wxs->wm_fd);
+	wl_event_source_remove(wxs->sigusr1_source);
+
+	return 1;
+}
+
+static int
 weston_xserver_handle_event(int listen_fd, uint32_t mask, void *data)
 {
 	struct weston_xserver *wxs = data;
-	char display[8], s[8];
-	int sv[2], client_fd;
+	char display[8], s[8], abstract_fd[8], unix_fd[8], wm_fd[8];
+	int sv[2], wm[2], fd;
 	char *xserver = NULL;
 	struct weston_config_section *section;
 
 	if (socketpair(AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0, sv) < 0) {
-		weston_log("socketpair failed\n");
+		weston_log("wl connection socketpair failed\n");
+		return 1;
+	}
+
+	if (socketpair(AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0, wm) < 0) {
+		weston_log("X wm connection socketpair failed\n");
 		return 1;
 	}
 
@@ -55,29 +74,52 @@ weston_xserver_handle_event(int listen_fd, uint32_t mask, void *data)
 	case 0:
 		/* SOCK_CLOEXEC closes both ends, so we need to unset
 		 * the flag on the client fd. */
-		client_fd = dup(sv[1]);
-		if (client_fd < 0)
-			return 1;
-
-		snprintf(s, sizeof s, "%d", client_fd);
+		fd = dup(sv[1]);
+		if (fd < 0)
+			goto fail;
+		snprintf(s, sizeof s, "%d", fd);
 		setenv("WAYLAND_SOCKET", s, 1);
 
 		snprintf(display, sizeof display, ":%d", wxs->display);
 
-		section = weston_config_get_section(wxs->compositor->config, "xwayland", NULL, NULL);
-		weston_config_section_get_string(section, "path", &xserver, XSERVER_PATH);
+		fd = dup(wxs->abstract_fd);
+		if (fd < 0)
+			goto fail;
+		snprintf(abstract_fd, sizeof abstract_fd, "%d", fd);
+		fd = dup(wxs->unix_fd);
+		if (fd < 0)
+			goto fail;
+		snprintf(unix_fd, sizeof unix_fd, "%d", fd);
+		fd = dup(wm[1]);
+		if (fd < 0)
+			goto fail;
+		snprintf(wm_fd, sizeof wm_fd, "%d", fd);
+
+		section = weston_config_get_section(wxs->compositor->config,
+						    "xwayland", NULL, NULL);
+		weston_config_section_get_string(section, "path",
+						 &xserver, XSERVER_PATH);
+
+		/* Ignore SIGUSR1 in the child, which will make the X
+		 * server send SIGUSR1 to the parent (weston) when
+		 * it's done with initialization.  During
+		 * initialization the X server will round trip and
+		 * block on the wayland compositor, so avoid making
+		 * blocking requests (like xcb_connect_to_fd) until
+		 * it's done with that. */
+		signal(SIGUSR1, SIG_IGN);
 
 		if (execl(xserver,
 			  xserver,
 			  display,
-			  "-wayland",
 			  "-rootless",
-			  "-retro",
-			  "-nolisten", "all",
+			  "-listen", abstract_fd,
+			  "-listen", unix_fd,
+			  "-wm", wm_fd,
 			  "-terminate",
 			  NULL) < 0)
 			weston_log("exec failed: %m\n");
-		free(xserver);
+	fail:
 		_exit(EXIT_FAILURE);
 
 	default:
@@ -85,6 +127,9 @@ weston_xserver_handle_event(int listen_fd, uint32_t mask, void *data)
 
 		close(sv[1]);
 		wxs->client = wl_client_create(wxs->wl_display, sv[0]);
+
+		close(wm[1]);
+		wxs->wm_fd = wm[0];
 
 		weston_watch_process(&wxs->process);
 
@@ -151,32 +196,6 @@ weston_xserver_cleanup(struct weston_process *process, int status)
 		weston_log("xserver crashing too fast: %d\n", status);
 		weston_xserver_shutdown(wxs);
 	}
-}
-
-static void
-bind_xserver(struct wl_client *client,
-	     void *data, uint32_t version, uint32_t id)
-{
-	struct weston_xserver *wxs = data;
-
-	/* If it's a different client than the xserver we launched,
-	 * don't start the wm. */
-	if (client != wxs->client)
-		return;
-
-	wxs->resource = 
-		wl_resource_create(client, &xserver_interface,
-					       1, id);
-	wl_resource_set_implementation(wxs->resource, &xserver_implementation,
-				       wxs, NULL);
-
-	wxs->wm = weston_wm_create(wxs);
-	if (wxs->wm == NULL) {
-		weston_log("failed to create wm\n");
-	}
-
-	xserver_send_listen_socket(wxs->resource, wxs->abstract_fd);
-	xserver_send_listen_socket(wxs->resource, wxs->unix_fd);
 }
 
 static int
@@ -380,8 +399,8 @@ module_init(struct weston_compositor *compositor,
 				     WL_EVENT_READABLE,
 				     weston_xserver_handle_event, wxs);
 
-	wl_global_create(display, &xserver_interface, 1, wxs, bind_xserver);
-
+	wxs->sigusr1_source = wl_event_loop_add_signal(wxs->loop, SIGUSR1,
+						       handle_sigusr1, wxs);
 	wxs->destroy_listener.notify = weston_xserver_destroy;
 	wl_signal_add(&compositor->destroy_signal, &wxs->destroy_listener);
 

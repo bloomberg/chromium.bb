@@ -122,6 +122,7 @@ struct weston_wm_window {
 	xcb_window_t frame_id;
 	struct frame *frame;
 	cairo_surface_t *cairo_surface;
+	uint32_t surface_id;
 	struct weston_surface *surface;
 	struct shell_surface *shsurf;
 	struct weston_view *view;
@@ -146,6 +147,7 @@ struct weston_wm_window {
 	int delete_window;
 	struct wm_size_hints size_hints;
 	struct motif_wm_hints motif_hints;
+	struct wl_list link;
 };
 
 static struct weston_wm_window *
@@ -153,6 +155,10 @@ get_wm_window(struct weston_surface *surface);
 
 static void
 weston_wm_window_schedule_repaint(struct weston_wm_window *window);
+
+static void
+xserver_map_shell_surface(struct weston_wm_window *window,
+			  struct weston_surface *surface);
 
 static int __attribute__ ((format (printf, 1, 2)))
 wm_log(const char *fmt, ...)
@@ -658,6 +664,26 @@ weston_wm_kill_client(struct wl_listener *listener, void *data)
 	 * remote applications of course fail. */
 	if (!strcmp(window->machine, name) && window->pid != 0)
 		kill(window->pid, SIGKILL);
+}
+
+static void
+weston_wm_create_surface(struct wl_listener *listener, void *data)
+{
+	struct weston_surface *surface = data;
+	struct weston_wm *wm =
+		container_of(listener,
+			     struct weston_wm, create_surface_listener);
+	struct weston_wm_window *window;
+
+	if (wl_resource_get_client(surface->resource) != wm->server->client)
+		return;
+
+	wl_list_for_each(window, &wm->unpaired_window_list, link)
+		if (window->surface_id ==
+		    wl_resource_get_id(surface->resource)) {
+			xserver_map_shell_surface(window, surface);
+			break;
+		}	
 }
 
 static void
@@ -1283,6 +1309,51 @@ weston_wm_window_handle_state(struct weston_wm_window *window,
 }
 
 static void
+surface_destroy(struct wl_listener *listener, void *data)
+{
+	struct weston_wm_window *window =
+		container_of(listener,
+			     struct weston_wm_window, surface_destroy_listener);
+
+	wm_log("surface for xid %d destroyed\n", window->id);
+
+	/* This should have been freed by the shell.
+	 * Don't try to use it later. */
+	window->shsurf = NULL;
+	window->surface = NULL;
+	window->view = NULL;
+}
+
+static void
+weston_wm_window_handle_surface_id(struct weston_wm_window *window,
+				   xcb_client_message_event_t *client_message)
+{
+	struct weston_wm *wm = window->wm;
+	struct wl_resource *resource;
+
+	if (window->surface_id != 0) {
+		wm_log("already have surface id for window %d\n", window->id);
+		return;
+	}
+
+	/* Xwayland will send the wayland requests to create the
+	 * wl_surface before sending this client message.  Even so, we
+	 * can end up handling the X event before the wayland requests
+	 * and thus when we try to look up the surface ID, the surface
+	 * hasn't been created yet.  In that case put the window on
+	 * the unpaired window list and continue when the surface gets
+	 * created. */
+	window->surface_id = client_message->data.data32[0];
+	resource = wl_client_get_object(wm->server->client,
+					window->surface_id);
+	if (resource)
+		xserver_map_shell_surface(window,
+					  wl_resource_get_user_data(resource));
+	else
+		wl_list_insert(&wm->unpaired_window_list, &window->link);
+}
+
+static void
 weston_wm_handle_client_message(struct weston_wm *wm,
 				xcb_generic_event_t *event)
 {
@@ -1305,6 +1376,8 @@ weston_wm_handle_client_message(struct weston_wm *wm,
 		weston_wm_window_handle_moveresize(window, client_message);
 	else if (client_message->type == wm->atom.net_wm_state)
 		weston_wm_window_handle_state(window, client_message);
+	else if (client_message->type == wm->atom.wl_surface_id)
+		weston_wm_window_handle_surface_id(window, client_message);
 }
 
 enum cursor_type {
@@ -1777,7 +1850,8 @@ weston_wm_get_resources(struct weston_wm *wm)
 		{ "XdndStatus",		F(atom.xdnd_status) },
 		{ "XdndFinished",	F(atom.xdnd_finished) },
 		{ "XdndTypeList",	F(atom.xdnd_type_list) },
-		{ "XdndActionCopy",	F(atom.xdnd_action_copy) }
+		{ "XdndActionCopy",	F(atom.xdnd_action_copy) },
+		{ "WL_SURFACE_ID",	F(atom.wl_surface_id) }
 	};
 #undef F
 
@@ -1899,13 +1973,12 @@ weston_wm_create_wm_window(struct weston_wm *wm)
 }
 
 struct weston_wm *
-weston_wm_create(struct weston_xserver *wxs)
+weston_wm_create(struct weston_xserver *wxs, int fd)
 {
 	struct weston_wm *wm;
 	struct wl_event_loop *loop;
 	xcb_screen_iterator_t s;
 	uint32_t values[1];
-	int sv[2];
 	xcb_atom_t supported[3];
 
 	wm = zalloc(sizeof *wm);
@@ -1919,22 +1992,11 @@ weston_wm_create(struct weston_xserver *wxs)
 		return NULL;
 	}
 
-	if (socketpair(AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0, sv) < 0) {
-		weston_log("socketpair failed\n");
-		hash_table_destroy(wm->window_hash);
-		free(wm);
-		return NULL;
-	}
-
-	xserver_send_client(wxs->resource, sv[1]);
-	wl_client_flush(wl_resource_get_client(wxs->resource));
-	close(sv[1]);
-	
 	/* xcb_connect_to_fd takes ownership of the fd. */
-	wm->conn = xcb_connect_to_fd(sv[0], NULL);
+	wm->conn = xcb_connect_to_fd(fd, NULL);
 	if (xcb_connection_has_error(wm->conn)) {
 		weston_log("xcb_connect_to_fd failed\n");
-		close(sv[0]);
+		close(fd);
 		hash_table_destroy(wm->window_hash);
 		free(wm);
 		return NULL;
@@ -1945,7 +2007,7 @@ weston_wm_create(struct weston_xserver *wxs)
 
 	loop = wl_display_get_event_loop(wxs->wl_display);
 	wm->source =
-		wl_event_loop_add_fd(loop, sv[0],
+		wl_event_loop_add_fd(loop, fd,
 				     WL_EVENT_READABLE,
 				     weston_wm_handle_event, wm);
 	wl_event_source_check(wm->source);
@@ -1965,8 +2027,6 @@ weston_wm_create(struct weston_xserver *wxs)
 
 	wm->theme = theme_create();
 
-	weston_wm_create_wm_window(wm);
-
 	supported[0] = wm->atom.net_wm_moveresize;
 	supported[1] = wm->atom.net_wm_state;
 	supported[2] = wm->atom.net_wm_state_fullscreen;
@@ -1984,6 +2044,9 @@ weston_wm_create(struct weston_xserver *wxs)
 
 	xcb_flush(wm->conn);
 
+	wm->create_surface_listener.notify = weston_wm_create_surface;
+	wl_signal_add(&wxs->compositor->create_surface_signal,
+		      &wm->create_surface_listener);
 	wm->activate_listener.notify = weston_wm_window_activate;
 	wl_signal_add(&wxs->compositor->activate_signal,
 		      &wm->activate_listener);
@@ -1993,11 +2056,16 @@ weston_wm_create(struct weston_xserver *wxs)
 	wm->kill_listener.notify = weston_wm_kill_client;
 	wl_signal_add(&wxs->compositor->kill_signal,
 		      &wm->kill_listener);
+	wl_list_init(&wm->unpaired_window_list);
 
 	weston_wm_create_cursors(wm);
 	weston_wm_window_set_cursor(wm, wm->screen->root, XWM_CURSOR_LEFT_PTR);
 
-	weston_log("created wm\n");
+	/* Create wm window and take WM_S0 selection last, which
+	 * signals to Xwayland that we're done with setup. */
+	weston_wm_create_wm_window(wm);
+
+	weston_log("created wm, root %d\n", wm->screen->root);
 
 	return wm;
 }
@@ -2016,22 +2084,6 @@ weston_wm_destroy(struct weston_wm *wm)
 	wl_list_remove(&wm->transform_listener.link);
 
 	free(wm);
-}
-
-static void
-surface_destroy(struct wl_listener *listener, void *data)
-{
-	struct weston_wm_window *window =
-		container_of(listener,
-			     struct weston_wm_window, surface_destroy_listener);
-
-	wm_log("surface for xid %d destroyed\n", window->id);
-
-	/* This should have been freed by the shell.
-       Don't try to use it later. */
-	window->shsurf = NULL;
-	window->surface = NULL;
-	window->view = NULL;
 }
 
 static struct weston_wm_window *
@@ -2172,14 +2224,31 @@ legacy_fullscreen(struct weston_wm *wm,
 
 	return 0;
 }
+
 static void
-xserver_map_shell_surface(struct weston_wm *wm,
-			  struct weston_wm_window *window)
+xserver_map_shell_surface(struct weston_wm_window *window,
+			  struct weston_surface *surface)
 {
+	struct weston_wm *wm = window->wm;
 	struct weston_shell_interface *shell_interface =
 		&wm->server->compositor->shell_interface;
 	struct weston_output *output;
 	struct weston_wm_window *parent;
+
+	weston_wm_window_read_properties(window);
+
+	/* A weston_wm_window may have many different surfaces assigned
+	 * throughout its life, so we must make sure to remove the listener
+	 * from the old surface signal list. */
+	if (window->surface)
+		wl_list_remove(&window->surface_destroy_listener.link);
+
+	window->surface = surface;
+	window->surface_destroy_listener.notify = surface_destroy;
+	wl_signal_add(&window->surface->destroy_signal,
+		      &window->surface_destroy_listener);
+
+	weston_wm_window_schedule_repaint(window);
 
 	if (!shell_interface->create_shell_surface)
 		return;
@@ -2224,45 +2293,3 @@ xserver_map_shell_surface(struct weston_wm *wm,
 		shell_interface->set_toplevel(window->shsurf);
 	}
 }
-
-static void
-xserver_set_window_id(struct wl_client *client, struct wl_resource *resource,
-		      struct wl_resource *surface_resource, uint32_t id)
-{
-	struct weston_xserver *wxs = wl_resource_get_user_data(resource);
-	struct weston_wm *wm = wxs->wm;
-	struct weston_surface *surface =
-		wl_resource_get_user_data(surface_resource);
-	struct weston_wm_window *window;
-
-	if (client != wxs->client)
-		return;
-
-	window = hash_table_lookup(wm->window_hash, id);
-	if (window == NULL) {
-		weston_log("set_window_id for unknown window %d\n", id);
-		return;
-	}
-
-	wm_log("set_window_id %d for surface %p\n", id, surface);
-
-	weston_wm_window_read_properties(window);
-
-	/* A weston_wm_window may have many different surfaces assigned
-	 * throughout its life, so we must make sure to remove the listener
-	 * from the old surface signal list. */
-	if (window->surface)
-		wl_list_remove(&window->surface_destroy_listener.link);
-
-	window->surface = (struct weston_surface *) surface;
-	window->surface_destroy_listener.notify = surface_destroy;
-	wl_signal_add(&surface->destroy_signal,
-		      &window->surface_destroy_listener);
-
-	weston_wm_window_schedule_repaint(window);
-	xserver_map_shell_surface(wm, window);
-}
-
-const struct xserver_interface xserver_implementation = {
-	xserver_set_window_id
-};

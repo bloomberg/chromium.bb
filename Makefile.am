@@ -754,11 +754,6 @@ xwayland_la_SOURCES =				\
 	xwayland/launcher.c			\
 	xwayland/hash.c				\
 	xwayland/hash.h
-nodist_xwayland_la_SOURCES =			\
-	protocol/xserver-protocol.c		\
-	protocol/xserver-server-protocol.h
-
-BUILT_SOURCES += $(nodist_xwayland_la_SOURCES)
 endif
 
 
@@ -967,7 +962,6 @@ BUILT_SOURCES +=				\
 EXTRA_DIST +=					\
 	protocol/desktop-shell.xml		\
 	protocol/screenshooter.xml		\
-	protocol/xserver.xml			\
 	protocol/text.xml			\
 	protocol/input-method.xml		\
 	protocol/workspaces.xml			\

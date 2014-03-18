@@ -39,7 +39,9 @@ struct weston_xserver {
 	struct wl_event_source *abstract_source;
 	int unix_fd;
 	struct wl_event_source *unix_source;
+	int wm_fd;
 	int display;
+	struct wl_event_source *sigusr1_source;
 	struct weston_process process;
 	struct wl_resource *resource;
 	struct wl_client *client;
@@ -63,9 +65,11 @@ struct weston_wm {
 	xcb_render_pictforminfo_t format_rgb, format_rgba;
 	xcb_visualid_t visual_id;
 	xcb_colormap_t colormap;
+	struct wl_listener create_surface_listener;
 	struct wl_listener activate_listener;
 	struct wl_listener transform_listener;
 	struct wl_listener kill_listener;
+	struct wl_list unpaired_window_list;
 
 	xcb_window_t selection_window;
 	xcb_window_t selection_owner;
@@ -142,6 +146,7 @@ struct weston_wm {
 		xcb_atom_t		 xdnd_finished;
 		xcb_atom_t		 xdnd_type_list;
 		xcb_atom_t		 xdnd_action_copy;
+		xcb_atom_t		 wl_surface_id;
 	} atom;
 };
 
@@ -158,10 +163,8 @@ int
 weston_wm_handle_selection_event(struct weston_wm *wm,
 				 xcb_generic_event_t *event);
 
-extern const struct xserver_interface xserver_implementation;
-
 struct weston_wm *
-weston_wm_create(struct weston_xserver *wxs);
+weston_wm_create(struct weston_xserver *wxs, int fd);
 void
 weston_wm_destroy(struct weston_wm *wm);
 
