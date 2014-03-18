@@ -13,7 +13,6 @@
 #include "ui/base/hit_test.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_client.h"
-#include "ui/base/ime/text_input_type.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/path.h"
@@ -262,6 +261,7 @@ KeyboardController::KeyboardController(KeyboardControllerProxy* proxy)
       input_method_(NULL),
       keyboard_visible_(false),
       lock_keyboard_(false),
+      type_(ui::TEXT_INPUT_TYPE_NONE),
       weak_factory_(this) {
   CHECK(proxy);
   input_method_ = proxy_->GetInputMethod();
@@ -362,9 +362,9 @@ void KeyboardController::OnTextInputStateChanged(
     return;
   }
 
-  ui::TextInputType type =
-      client ? client->GetTextInputType() : ui::TEXT_INPUT_TYPE_NONE;
-  if (type == ui::TEXT_INPUT_TYPE_NONE && !lock_keyboard_) {
+  type_ = client ? client->GetTextInputType() : ui::TEXT_INPUT_TYPE_NONE;
+
+  if (type_ == ui::TEXT_INPUT_TYPE_NONE && !lock_keyboard_) {
     if (keyboard_visible_) {
       // Set the visibility state here so that any queries for visibility
       // before the timer fires returns the correct future value.
@@ -381,16 +381,13 @@ void KeyboardController::OnTextInputStateChanged(
       weak_factory_.InvalidateWeakPtrs();
       keyboard_visible_ = true;
     }
-    proxy_->SetUpdateInputType(type);
+    proxy_->SetUpdateInputType(type_);
     // Do not explicitly show the Virtual keyboard unless it is in the process
     // of hiding. Instead, the virtual keyboard is shown in response to a user
     // gesture (mouse or touch) that is received while an element has input
     // focus. Showing the keyboard requires an explicit call to
     // OnShowImeIfNeeded.
   }
-  // TODO(bryeung): whenever the TextInputClient changes we need to notify the
-  // keyboard (with the TextInputType) so that it can reset it's state (e.g.
-  // abandon compositions in progress)
 }
 
 void KeyboardController::OnInputMethodDestroyed(
@@ -410,6 +407,15 @@ void KeyboardController::OnShowImeIfNeeded() {
     container_->AddChild(keyboard);
     keyboard->set_owned_by_parent(false);
   }
+
+  // Must be called after keyboard window is created. LoadSystemKeyboard and
+  // ReloadKeyboardIfNeeded depend on a keyboard web content which created when
+  // creating keyboard window.
+  if (type_ == ui::TEXT_INPUT_TYPE_PASSWORD)
+    proxy_->LoadSystemKeyboard();
+  else
+    proxy_->ReloadKeyboardIfNeeded();
+
   if (keyboard_visible_)
     return;
 

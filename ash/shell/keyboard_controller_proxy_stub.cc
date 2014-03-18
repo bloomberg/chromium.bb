@@ -46,4 +46,10 @@ void KeyboardControllerProxyStub::RequestAudioInput(
     const MediaResponseCallback& callback) {
 }
 
+void KeyboardControllerProxyStub::LoadSystemKeyboard() {
+}
+
+void KeyboardControllerProxyStub::ReloadKeyboardIfNeeded() {
+}
+
 }  // namespace ash

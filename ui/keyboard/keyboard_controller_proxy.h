@@ -82,6 +82,21 @@ class KEYBOARD_EXPORT KeyboardControllerProxy {
   // window).
   virtual void EnsureCaretInWorkArea();
 
+  // Loads system virtual keyboard. Noop if the current virtual keyboard is
+  // system virtual keyboard.
+  virtual void LoadSystemKeyboard();
+
+  // Reloads virtual keyboard URL if the current keyboard's web content URL is
+  // different. The URL can be different if user switch from password field to
+  // any other type input field.
+  // At password field, the system virtual keyboard is forced to load even if
+  // the current IME provides a customized virtual keyboard. This is needed to
+  // prevent IME virtual keyboard logging user's password. Once user switch to
+  // other input fields, the virtual keyboard should switch back to the IME
+  // provided keyboard, or keep using the system virtual keyboard if IME doesn't
+  // provide one.
+  virtual void ReloadKeyboardIfNeeded();
+
  protected:
   // Gets the BrowserContext to use for creating the WebContents hosting the
   // keyboard.
@@ -94,11 +109,11 @@ class KEYBOARD_EXPORT KeyboardControllerProxy {
   virtual void SetupWebContents(content::WebContents* contents);
 
  private:
-  // Reloads the web contents to the valid url from GetValidUrl().
-  void ReloadContents();
+  // Loads the web contents for the given |url|.
+  void LoadContents(const GURL& url);
 
-  // Gets the valid url from default url or override url.
-  const GURL& GetValidUrl();
+  // Gets the virtual keyboard URL (either the default URL or IME override URL).
+  const GURL& GetVirtualKeyboardUrl();
 
   const GURL default_url_;
   GURL override_url_;
