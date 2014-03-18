@@ -58,6 +58,35 @@ extern sandbox::TargetServices* g_target_services;
 static BOOL CALLBACK EnumLocalesProc(LPTSTR lpLocaleString) {
   return TRUE;
 }
+
+static BOOL CALLBACK EnumLocalesProcEx(
+    LPWSTR lpLocaleString,
+    DWORD dwFlags,
+    LPARAM lParam) {
+  return TRUE;
+}
+
+// Warm up language subsystems before the sandbox is turned on.
+static void WarmupWindowsLocales(const ppapi::PpapiPermissions& permissions) {
+  ::GetUserDefaultLangID();
+  ::GetUserDefaultLCID();
+
+  if (permissions.HasPermission(ppapi::PERMISSION_FLASH)) {
+    if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
+      typedef BOOL (WINAPI *PfnEnumSystemLocalesEx)
+          (LOCALE_ENUMPROCEX, DWORD, LPARAM, LPVOID);
+
+      HMODULE handle_kern32 = GetModuleHandleW(L"Kernel32.dll");
+      PfnEnumSystemLocalesEx enum_sys_locales_ex =
+          reinterpret_cast<PfnEnumSystemLocalesEx>
+              (GetProcAddress(handle_kern32, "EnumSystemLocalesEx"));
+
+      enum_sys_locales_ex(EnumLocalesProcEx, LOCALE_WINDOWS, 0, 0);
+    } else {
+      EnumSystemLocalesW(EnumLocalesProc, LCID_INSTALLED);
+    }
+  }
+}
 #else
 extern void* g_target_services;
 #endif
@@ -313,15 +342,9 @@ void PpapiThread::OnLoadPlugin(const base::FilePath& path,
     // Cause advapi32 to load before the sandbox is turned on.
     unsigned int dummy_rand;
     rand_s(&dummy_rand);
-    // Warm up language subsystems before the sandbox is turned on.
-    ::GetUserDefaultLangID();
-    ::GetUserDefaultLCID();
 
-    if (permissions.HasPermission(ppapi::PERMISSION_FLASH)) {
-      // Warm up system locales.
-      EnumSystemLocalesW(EnumLocalesProc, LCID_INSTALLED);
-    }
-    // Engage the sandbox.
+    WarmupWindowsLocales(permissions);
+
     g_target_services->LowerToken();
   }
 #endif
