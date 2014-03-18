@@ -65,7 +65,11 @@ class VideoCaptureDeviceMac : public VideoCaptureDevice {
   scoped_ptr<VideoCaptureDevice::Client> client_;
 
   VideoCaptureFormat capture_format_;
-  bool sent_frame_info_;
+  // These variables control the two-step configure-start process for QTKit HD:
+  // the device is first started with no configuration and the captured frames
+  // are inspected to check if the camera really supports HD. AVFoundation does
+  // not need this process so |final_resolution_selected_| is false then.
+  bool final_resolution_selected_;
   bool tried_to_square_pixels_;
 
   // Only read and write state_ from inside this loop.

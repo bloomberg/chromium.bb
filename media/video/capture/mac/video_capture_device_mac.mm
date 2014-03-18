@@ -122,13 +122,13 @@ VideoCaptureDevice* VideoCaptureDevice::Create(const Name& device_name) {
 
 VideoCaptureDeviceMac::VideoCaptureDeviceMac(const Name& device_name)
     : device_name_(device_name),
-      sent_frame_info_(false),
       tried_to_square_pixels_(false),
       task_runner_(base::MessageLoopProxy::current()),
       state_(kNotInitialized),
       weak_factory_(this),
       weak_this_(weak_factory_.GetWeakPtr()),
       capture_device_(nil) {
+  final_resolution_selected_ = AVFoundationGlue::IsAVFoundationSupported();
 }
 
 VideoCaptureDeviceMac::~VideoCaptureDeviceMac() {
@@ -147,8 +147,8 @@ void VideoCaptureDeviceMac::AllocateAndStart(
   int height = params.requested_format.frame_size.height();
   int frame_rate = params.requested_format.frame_rate;
 
-  // The OS API can scale captured frame to any size requested, which would lead
-  // to undesired aspect ratio change. Try to open the camera with a natively
+  // QTKit API can scale captured frame to any size requested, which would lead
+  // to undesired aspect ratio changes. Try to open the camera with a known
   // supported format and let the client crop/pad the captured frames.
   GetBestMatchSupportedResolution(&width, &height);
 
@@ -171,21 +171,18 @@ void VideoCaptureDeviceMac::AllocateAndStart(
   capture_format_.frame_rate = frame_rate;
   capture_format_.pixel_format = PIXEL_FORMAT_UYVY;
 
-  if (width <= kVGA.width || height <= kVGA.height) {
-    // If the resolution is VGA or QVGA, set the capture resolution to the
-    // target size. Essentially all supported cameras offer at least VGA.
+  // QTKit: Set the capture resolution only if this is VGA or smaller, otherwise
+  // leave it unconfigured and start capturing: QTKit will produce frames at the
+  // native resolution, allowing us to identify cameras whose native resolution
+  // is too low for HD. This additional information comes at a cost in startup
+  // latency, because the webcam will need to be reopened if its default
+  // resolution is not HD or VGA.
+  // AVfoundation is configured for all resolutions.
+  if (AVFoundationGlue::IsAVFoundationSupported() || width <= kVGA.width ||
+      height <= kVGA.height) {
     if (!UpdateCaptureResolution())
       return;
   }
-  // For higher resolutions, we first open at the default resolution to find
-  // out if the request is larger than the camera's native resolution.
-
-  // If the resolution is HD, start capturing without setting a resolution.
-  // QTKit/AVFoundation will produce frames at the native resolution, allowing
-  // us to identify cameras whose native resolution is too low for HD.  This
-  // additional information comes at a cost in startup latency, because the
-  // webcam will need to be reopened if its default resolution is not HD or VGA.
-
   if (![capture_device_ startCapture]) {
     SetErrorState("Could not start capture device.");
     return;
@@ -244,11 +241,10 @@ void VideoCaptureDeviceMac::ReceiveFrame(
     const VideoCaptureFormat& frame_format,
     int aspect_numerator,
     int aspect_denominator) {
-  // This method is safe to call from a device capture thread,
-  // i.e. any thread controlled by QTKit/AVFoundation.
-
-  if (!sent_frame_info_) {
-    // Final resolution has not yet been selected.
+  // This method is safe to call from a device capture thread, i.e. any thread
+  // controlled by QTKit/AVFoundation.
+  if (!final_resolution_selected_) {
+    DCHECK(!AVFoundationGlue::IsAVFoundationSupported());
     if (capture_format_.frame_size.width() > kVGA.width ||
         capture_format_.frame_size.height() > kVGA.height) {
       // We are requesting HD.  Make sure that the picture is good, otherwise
@@ -273,35 +269,32 @@ void VideoCaptureDeviceMac::ReceiveFrame(
         change_to_vga = true;
       }
 
-      if (change_to_vga) {
+      if (change_to_vga)
         capture_format_.frame_size.SetSize(kVGA.width, kVGA.height);
-      }
     }
 
     if (capture_format_.frame_size == frame_format.frame_size &&
         !tried_to_square_pixels_ &&
         (aspect_numerator > kMaxPixelAspectRatio * aspect_denominator ||
          aspect_denominator > kMaxPixelAspectRatio * aspect_numerator)) {
-      // The requested size results in non-square PAR.
-      // Shrink the frame to 1:1 PAR (assuming QTKit selects the same input
-      // mode, which is not guaranteed).
+      // The requested size results in non-square PAR. Shrink the frame to 1:1
+      // PAR (assuming QTKit selects the same input mode, which is not
+      // guaranteed).
       int new_width = capture_format_.frame_size.width();
       int new_height = capture_format_.frame_size.height();
-      if (aspect_numerator < aspect_denominator) {
+      if (aspect_numerator < aspect_denominator)
         new_width = (new_width * aspect_numerator) / aspect_denominator;
-      } else {
+      else
         new_height = (new_height * aspect_denominator) / aspect_numerator;
-      }
       capture_format_.frame_size.SetSize(new_width, new_height);
       tried_to_square_pixels_ = true;
     }
 
     if (capture_format_.frame_size == frame_format.frame_size) {
-      sent_frame_info_ = true;
+      final_resolution_selected_ = true;
     } else {
       UpdateCaptureResolution();
-      // OnFrameInfo has not yet been called.  OnIncomingCapturedData must
-      // not be called until after OnFrameInfo, so we return early.
+      // Let the resolution update sink through QTKit and wait for next frame.
       return;
     }
   }
