@@ -124,8 +124,6 @@ public:
 
     virtual EventQueue* eventQueue() const = 0;
 
-    void removeAllLifecycleObservers();
-
 protected:
 
     ContextLifecycleNotifier& lifecycleNotifier();

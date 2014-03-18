@@ -64,12 +64,6 @@ void ContextLifecycleNotifier::removeObserver(ContextLifecycleNotifier::Observer
     }
 }
 
-void ContextLifecycleNotifier::removeAndNotifyAllObservers()
-{
-    LifecycleNotifier<ExecutionContext>::removeAndNotifyAllObservers();
-    m_activeDOMObjects.clear();
-}
-
 void ContextLifecycleNotifier::notifyResumingActiveDOMObjects()
 {
     TemporaryChange<IterationType> scope(this->m_iterating, IteratingOverActiveDOMObjects);
