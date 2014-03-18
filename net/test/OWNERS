@@ -1,5 +1,2 @@
 # General reviewer, except sync-specific bits.
 phajdan.jr@chromium.org
-
-# For changes to local_sync_test_server.{h|cc}.
-akalin@chromium.org
