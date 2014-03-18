@@ -15,13 +15,18 @@
     }
     
   </style>
+  <script src="../../resources/run-after-display.js"></script>
   <script type="text/javascript" charset="utf-8">
     function doTest()
     {
       if (window.testRunner)
-        testRunner.display();
+        testRunner.waitUntilDone();
 
-      document.getElementById('iframe').className = 'composited';
+      runAfterDisplay(function() {
+        document.getElementById('iframe').className = 'composited';
+        if (window.testRunner)
+          testRunner.notifyDone();
+      });
     }
     
     window.addEventListener('load', doTest, false);

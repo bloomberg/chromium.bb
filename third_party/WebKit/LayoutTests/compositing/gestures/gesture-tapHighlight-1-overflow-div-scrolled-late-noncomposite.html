@@ -2,6 +2,7 @@
 <html>
 <head>
 <script src="../../resources/js-test.js"></script>
+<script src="../../resources/run-after-display.js"></script>
 <link rel="stylesheet" type="text/css" href="resources/link-highlight-style.css">
 </head>
 <body onload="runTest();">
@@ -34,13 +35,13 @@ function runTest() {
     // be displayed correctly after all these operations.
     if (window.eventSender && window.testRunner) {
         eventSender.gestureShowPress(x, y);
-        window.testRunner.display();
-
-        document.getElementById('divToControlCompositedLayer').style.webkitTransform = "";
-        window.testRunner.display();
-
-        targetDiv.scrollTop += 20;
-        window.setTimeout(function() { window.testRunner.notifyDone(); }, 0);
+        runAfterDisplay(function() {
+            document.getElementById('divToControlCompositedLayer').style.webkitTransform = "";
+            runAfterDisplay(function() {
+                targetDiv.scrollTop += 20;
+                testRunner.notifyDone();
+            });
+        });
     } else {
         debug("This test requires DumpRenderTree.");
     }

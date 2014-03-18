@@ -9,20 +9,27 @@
     }
   </style>
 
+  <script src="../../resources/run-after-display.js"></script>
   <script>
-    if (window.testRunner)
+    if (window.testRunner) {
         testRunner.dumpAsText();
+        testRunner.waitUntilDone();
+    }
 
     var paintCount = 0;
 
     function onLoad()
     {
-      testRunner.display();
-      paintCount = 0;
-      document.getElementById('testPlugin').invalidateRect(0, 0, 200, 200);
-      testRunner.displayInvalidatedRegion();
-      if (paintCount > 0)
-          document.getElementById('result').innerHTML = "SUCCESS";
+      runAfterDisplay(function() {
+        paintCount = 0;
+        document.getElementById('testPlugin').invalidateRect(0, 0, 200, 200);
+        runAfterDisplay(function() {
+          if (paintCount > 0)
+              document.getElementById('result').innerHTML = "SUCCESS";
+          if (window.testRunner)
+            testRunner.notifyDone();
+        });
+      });
     }
 
     function didPaint()

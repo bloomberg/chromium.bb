@@ -29,6 +29,7 @@
         -webkit-perspective: 1px;
     }
   </style>
+  <script src="../../../resources/run-after-display.js"></script>
   <script>
     if (window.testRunner) {
       testRunner.dumpAsTextWithPixelResults();
@@ -37,11 +38,15 @@
     function doTest()
     {
       if (window.testRunner)
-        testRunner.display();
+        testRunner.waitUntilDone();
 
-      // Any scroll should keep the fixed-position element where it is.
-      // If it stutters or disappears incorrectly, then the red background will be revealed.
-      window.scrollTo(0, 150);
+      runAfterDisplay(function() {
+        // Any scroll should keep the fixed-position element where it is.
+        // If it stutters or disappears incorrectly, then the red background will be revealed.
+        window.scrollTo(0, 150);
+        if (window.testRunner)
+          testRunner.notifyDone();
+      });
     }
 
     window.addEventListener('load', doTest, false);

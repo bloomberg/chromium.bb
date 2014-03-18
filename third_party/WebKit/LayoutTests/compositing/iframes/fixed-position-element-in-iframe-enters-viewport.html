@@ -15,6 +15,7 @@ If this test passes, you should see a green square.
             border: 0;
         }
     </style>
+    <script src="../../resources/run-after-display.js"></script>
     <script>
         if (window.testRunner)
             testRunner.waitUntilDone();
@@ -28,18 +29,15 @@ If this test passes, you should see a green square.
         {
             // Initially, the fixed position element in the iframe will not
             // paint because the iframe has zero height.
-            if (window.testRunner)
-                testRunner.display();
+            runAfterDisplay(function() {
+                // Give the iframe a non-zero height. The fixed position element
+                // inside the iframe should paint now.
+                var iframeElement = document.getElementById("iframe-containing-fixed-position-element");
+                iframeElement.style.height = "100px";
 
-            // Give the iframe a non-zero height. The fixed position element
-            // inside the iframe should paint now.
-            var iframeElement = document.getElementById("iframe-containing-fixed-position-element");
-            iframeElement.style.height = "100px";
-
-            if (window.testRunner) {
-                testRunner.display();
-                testRunner.notifyDone();
-            }
+                if (window.testRunner)
+                    testRunner.notifyDone();
+            });
         }
     </script>
 </head>
