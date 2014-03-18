@@ -25,10 +25,6 @@
 - (id)initWithFrame:(NSRect)frame {
   if ((self = [super initWithFrame:frame])) {
     hasTip_ = YES;
-
-    // Give this view its own layer and squash child layers into this layer
-    // so that the text in the tabs have sub-pixel anti-aliasing.
-    [self cr_setWantsSquashedLayer];
   }
   return self;
 }

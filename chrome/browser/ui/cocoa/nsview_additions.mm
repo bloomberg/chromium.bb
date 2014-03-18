@@ -7,6 +7,7 @@
 #import "chrome/browser/ui/cocoa/nsview_additions.h"
 #include "chrome/common/chrome_switches.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
 #include "base/logging.h"
 
@@ -103,18 +104,35 @@
   [self setWantsLayer:wantsLayer];
 }
 
-- (void)cr_setWantsSquashedLayer {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableCoreAnimation))
-    return;
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableCoreAnimationLayerSquashing))
-    return;
-  if (![self respondsToSelector:@selector(setCanDrawSubviewsIntoLayer:)])
-    return;
+static NSView* g_ancestorBeingDrawnFrom = nil;
+static NSView* g_childBeingDrawnTo = nil;
 
-  [self setWantsLayer:YES];
-  [self setCanDrawSubviewsIntoLayer:YES];
+- (void)cr_drawUsingAncestor:(NSView*)ancestorView inRect:(NSRect)rect {
+  gfx::ScopedNSGraphicsContextSaveGState scopedGSState;
+  NSRect frame = [self convertRect:[self bounds] toView:ancestorView];
+  NSAffineTransform* transform = [NSAffineTransform transform];
+  if ([self isFlipped] == [ancestorView isFlipped]) {
+    [transform translateXBy:-NSMinX(frame) yBy:-NSMinY(frame)];
+  } else {
+    [transform translateXBy:-NSMinX(frame) yBy:NSMaxY(frame)];
+    [transform scaleXBy:1.0 yBy:-1.0];
+  }
+  [transform concat];
+
+  // This can be made robust to recursive calls, but is as of yet unneeded.
+  DCHECK(!g_ancestorBeingDrawnFrom && !g_childBeingDrawnTo);
+  g_ancestorBeingDrawnFrom = ancestorView;
+  g_childBeingDrawnTo = self;
+  [ancestorView drawRect:[ancestorView bounds]];
+  g_childBeingDrawnTo = nil;
+  g_ancestorBeingDrawnFrom = nil;
+}
+
+- (NSView*)cr_viewBeingDrawnTo {
+  if (!g_ancestorBeingDrawnFrom)
+    return self;
+  DCHECK(g_ancestorBeingDrawnFrom == self);
+  return g_childBeingDrawnTo;
 }
 
 @end

@@ -46,8 +46,9 @@
   } else {
     NSPoint position = [[self window]
         themeImagePositionForAlignment:THEME_IMAGE_ALIGN_WITH_TAB_STRIP];
-    [[NSGraphicsContext currentContext] cr_setPatternPhase:position
-                                                   forView:self];
+    [[NSGraphicsContext currentContext]
+        cr_setPatternPhase:position
+                   forView:[self cr_viewBeingDrawnTo]];
     [self drawBackgroundWithOpaque:YES];
   }
 }
@@ -78,7 +79,7 @@
     CGContextBeginTransparencyLayer(cgContext, NULL);
     NSPoint position = [[self window]
         themeImagePositionForAlignment:THEME_IMAGE_ALIGN_WITH_TAB_STRIP];
-    [context cr_setPatternPhase:position forView:self];
+    [context cr_setPatternPhase:position forView:[self cr_viewBeingDrawnTo]];
     [self drawBackgroundWithOpaque:YES];
     CGContextEndTransparencyLayer(cgContext);
   }

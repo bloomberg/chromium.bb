@@ -12,7 +12,10 @@
 @interface HyperlinkTextView : NSTextView {
  @private
   BOOL acceptsFirstResponder_;
+  BOOL drawsBackgroundUsingSuperview_;
 }
+
+@property(nonatomic, assign) BOOL drawsBackgroundUsingSuperview;
 
 // Convenience function that sets the |HyperlinkTextView| contents to the
 // specified |message| with a hypertext style |link| inserted at |linkOffset|.
