@@ -61,6 +61,7 @@ namespace extension_urls {
   // Values to use with webstore URL launch source field.
   extern const char kLaunchSourceAppList[];
   extern const char kLaunchSourceAppListSearch[];
+  extern const char kLaunchSourceAppListInfoDialog[];
 }  // namespace extension_urls
 
 namespace extension_misc {

@@ -91,6 +91,7 @@ const char kWebstoreSourceField[] = "utm_source";
 
 const char kLaunchSourceAppList[] = "chrome-app-launcher";
 const char kLaunchSourceAppListSearch[] = "chrome-app-launcher-search";
+const char kLaunchSourceAppListInfoDialog[] = "chrome-app-launcher-info-dialog";
 
 }  // namespace extension_urls
 

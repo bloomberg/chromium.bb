@@ -8,17 +8,24 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/image_loader.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/manifest_handlers/icons_handler.h"
+#include "chrome/common/extensions/manifest_url_handler.h"
 #include "extensions/common/extension.h"
+#include "grit/generated_resources.h"
+#include "net/base/url_util.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/link.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
+#include "url/gurl.h"
 
 // Size of extension icon in top left of dialog.
 const int kIconSize = 64;
@@ -70,6 +77,16 @@ AppInfoSummaryTab::AppInfoSummaryTab(gfx::NativeWindow parent_window,
                                0,
                                0);
 
+  // Create a main column set for the rest of the dialog content.
+  static const int kMainColumnSetId = 1;
+  views::ColumnSet* main_column_set = layout->AddColumnSet(kMainColumnSetId);
+  main_column_set->AddColumn(views::GridLayout::FILL,
+                             views::GridLayout::LEADING,
+                             100.0f,
+                             views::GridLayout::FIXED,
+                             0,
+                             0);
+
   // The app icon takes up 3 rows.
   layout->StartRow(0, kHeaderColumnSetId);
   layout->AddView(app_icon_, 1, 3);
@@ -84,9 +101,28 @@ AppInfoSummaryTab::AppInfoSummaryTab(gfx::NativeWindow parent_window,
   layout->StartRow(0, kHeaderColumnSetId);
   layout->SkipColumns(1);
   layout->AddView(app_description_label);
+
+  // Add a link to the web store for apps that have it.
+  if (CanShowAppInWebStore()) {
+    view_in_store_link_ = new views::Link(
+        l10n_util::GetStringUTF16(IDS_APPLICATION_INFO_WEB_STORE_LINK));
+    view_in_store_link_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    view_in_store_link_->set_listener(this);
+
+    layout->StartRow(0, kMainColumnSetId);
+    layout->AddView(view_in_store_link_);
+  }
 }
 
 AppInfoSummaryTab::~AppInfoSummaryTab() {}
+
+void AppInfoSummaryTab::LinkClicked(views::Link* source, int event_flags) {
+  if (source == view_in_store_link_) {
+    ShowAppInWebStore();
+  } else {
+    NOTREACHED();
+  }
+}
 
 void AppInfoSummaryTab::LoadAppImageAsync() {
   extensions::ExtensionResource image = extensions::IconsInfo::GetIconResource(
@@ -113,4 +149,20 @@ void AppInfoSummaryTab::OnAppImageLoaded(const gfx::Image& image) {
   }
 
   app_icon_->SetImage(gfx::ImageSkia::CreateFrom1xBitmap(*bitmap));
+}
+
+bool AppInfoSummaryTab::CanShowAppInWebStore() const {
+  return app_->from_webstore();
+}
+
+void AppInfoSummaryTab::ShowAppInWebStore() const {
+  const GURL url = extensions::ManifestURL::GetDetailsURL(app_);
+  DCHECK_NE(url, GURL::EmptyGURL());
+  chrome::NavigateParams params(
+      profile_,
+      net::AppendQueryParameter(url,
+                                extension_urls::kWebstoreSourceField,
+                                extension_urls::kLaunchSourceAppListInfoDialog),
+      content::PAGE_TRANSITION_LINK);
+  chrome::Navigate(&params);
 }
