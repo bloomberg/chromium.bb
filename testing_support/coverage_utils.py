@@ -16,7 +16,8 @@ def native_error(msg, version):
   print textwrap.dedent("""\
   ERROR: Native python-coverage (version: %s) is required to be
   installed on your PYTHONPATH to run this test. Recommendation:
-     sudo pip install python-coverage
+     sudo apt-get install pip
+     sudo pip install --upgrade coverage
   %s""") % (version, msg)
   sys.exit(1)
 
@@ -35,7 +36,7 @@ def covered_main(includes, require_native=None):
     import coverage
     if require_native is not None:
       got_ver = coverage.__version__
-      if not coverage.collector.CTracer:
+      if not getattr(coverage.collector, 'CTracer', None):
         native_error((
             "Native python-coverage module required.\n"
             "Pure-python implementation (version: %s) found: %s"
