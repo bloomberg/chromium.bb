@@ -41,6 +41,7 @@ public:
     void adjustRenderStyle(RenderStyle* styleToAdjust, RenderStyle* parentStyle, Element*);
 
 private:
+    void adjustStyleForDisplay(RenderStyle* styleToAdjust, RenderStyle* parentStyle);
     void adjustStyleForTagName(RenderStyle* styleToAdjust, RenderStyle* parentStyle, Element&);
 
     const CachedUAStyle& m_cachedUAStyle;

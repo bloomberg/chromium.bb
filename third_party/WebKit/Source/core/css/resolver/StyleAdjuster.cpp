@@ -208,42 +208,7 @@ void StyleAdjuster::adjustRenderStyle(RenderStyle* style, RenderStyle* parentSty
         if (style->hasOutOfFlowPosition() || style->isFloating() || (e && e->document().documentElement() == e))
             style->setDisplay(equivalentBlockDisplay(style->display(), style->isFloating(), !m_useQuirksModeStyles));
 
-        // FIXME: Don't support this mutation for pseudo styles like first-letter or first-line, since it's not completely
-        // clear how that should work.
-        if (style->display() == INLINE && style->styleType() == NOPSEUDO && style->writingMode() != parentStyle->writingMode())
-            style->setDisplay(INLINE_BLOCK);
-
-        // After performing the display mutation, check table rows. We do not honor position: relative table rows or cells.
-        // This has been established for position: relative in CSS2.1 (and caused a crash in containingBlock()
-        // on some sites).
-        if ((style->display() == TABLE_HEADER_GROUP || style->display() == TABLE_ROW_GROUP
-            || style->display() == TABLE_FOOTER_GROUP || style->display() == TABLE_ROW)
-            && style->position() == RelativePosition)
-            style->setPosition(StaticPosition);
-
-        // Cannot support position: sticky for table columns and column groups because current code is only doing
-        // background painting through columns / column groups
-        if ((style->display() == TABLE_COLUMN_GROUP || style->display() == TABLE_COLUMN)
-            && style->position() == StickyPosition)
-            style->setPosition(StaticPosition);
-
-        // writing-mode does not apply to table row groups, table column groups, table rows, and table columns.
-        // FIXME: Table cells should be allowed to be perpendicular or flipped with respect to the table, though.
-        if (style->display() == TABLE_COLUMN || style->display() == TABLE_COLUMN_GROUP || style->display() == TABLE_FOOTER_GROUP
-            || style->display() == TABLE_HEADER_GROUP || style->display() == TABLE_ROW || style->display() == TABLE_ROW_GROUP
-            || style->display() == TABLE_CELL)
-            style->setWritingMode(parentStyle->writingMode());
-
-        // FIXME: Since we don't support block-flow on flexible boxes yet, disallow setting
-        // of block-flow to anything other than TopToBottomWritingMode.
-        // https://bugs.webkit.org/show_bug.cgi?id=46418 - Flexible box support.
-        if (style->writingMode() != TopToBottomWritingMode && (style->display() == BOX || style->display() == INLINE_BOX))
-            style->setWritingMode(TopToBottomWritingMode);
-
-        if (isDisplayFlexibleBox(parentStyle->display()) || isDisplayGridBox(parentStyle->display())) {
-            style->setFloating(NoFloat);
-            style->setDisplay(equivalentBlockDisplay(style->display(), style->isFloating(), !m_useQuirksModeStyles));
-        }
+        adjustStyleForDisplay(style, parentStyle);
     }
 
     // Make sure our z-index value is only applied if the object is positioned.
@@ -434,6 +399,49 @@ void StyleAdjuster::adjustStyleForTagName(RenderStyle* style, RenderStyle* paren
         if (style->fontSize() >= 11 && (!isHTMLInputElement(element) || !toHTMLInputElement(element).isImageButton()))
             addIntrinsicMargins(style);
         return;
+    }
+}
+
+void StyleAdjuster::adjustStyleForDisplay(RenderStyle* style, RenderStyle* parentStyle)
+{
+    if (style->display() == BLOCK && !style->isFloating())
+        return;
+
+    // FIXME: Don't support this mutation for pseudo styles like first-letter or first-line, since it's not completely
+    // clear how that should work.
+    if (style->display() == INLINE && style->styleType() == NOPSEUDO && style->writingMode() != parentStyle->writingMode())
+        style->setDisplay(INLINE_BLOCK);
+
+    // After performing the display mutation, check table rows. We do not honor position: relative table rows or cells.
+    // This has been established for position: relative in CSS2.1 (and caused a crash in containingBlock()
+    // on some sites).
+    if ((style->display() == TABLE_HEADER_GROUP || style->display() == TABLE_ROW_GROUP
+        || style->display() == TABLE_FOOTER_GROUP || style->display() == TABLE_ROW)
+        && style->position() == RelativePosition)
+        style->setPosition(StaticPosition);
+
+    // Cannot support position: sticky for table columns and column groups because current code is only doing
+    // background painting through columns / column groups
+    if ((style->display() == TABLE_COLUMN_GROUP || style->display() == TABLE_COLUMN)
+        && style->position() == StickyPosition)
+        style->setPosition(StaticPosition);
+
+    // writing-mode does not apply to table row groups, table column groups, table rows, and table columns.
+    // FIXME: Table cells should be allowed to be perpendicular or flipped with respect to the table, though.
+    if (style->display() == TABLE_COLUMN || style->display() == TABLE_COLUMN_GROUP || style->display() == TABLE_FOOTER_GROUP
+        || style->display() == TABLE_HEADER_GROUP || style->display() == TABLE_ROW || style->display() == TABLE_ROW_GROUP
+        || style->display() == TABLE_CELL)
+        style->setWritingMode(parentStyle->writingMode());
+
+    // FIXME: Since we don't support block-flow on flexible boxes yet, disallow setting
+    // of block-flow to anything other than TopToBottomWritingMode.
+    // https://bugs.webkit.org/show_bug.cgi?id=46418 - Flexible box support.
+    if (style->writingMode() != TopToBottomWritingMode && (style->display() == BOX || style->display() == INLINE_BOX))
+        style->setWritingMode(TopToBottomWritingMode);
+
+    if (isDisplayFlexibleBox(parentStyle->display()) || isDisplayGridBox(parentStyle->display())) {
+        style->setFloating(NoFloat);
+        style->setDisplay(equivalentBlockDisplay(style->display(), style->isFloating(), !m_useQuirksModeStyles));
     }
 }
 
