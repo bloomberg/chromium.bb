@@ -429,12 +429,6 @@ class ExtensionService
   // Note that this may return NULL if autoupdate is not turned on.
   extensions::ExtensionUpdater* updater();
 
-  // Sets the name, id and icon resource path of the given extension into the
-  // returned dictionary. Returns an empty dictionary if the given extension id
-  // is not found.
-  scoped_ptr<base::DictionaryValue> GetExtensionInfo(
-      const std::string& extension_id) const;
-
   // Notify the frontend that there was an error loading an extension.
   // This method is public because UnpackedInstaller and InstalledLoader
   // can post to here.

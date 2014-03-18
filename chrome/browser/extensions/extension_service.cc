@@ -24,7 +24,6 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
-#include "base/values.h"
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -2470,22 +2469,6 @@ bool ExtensionService::OnExternalExtensionFileFound(
     AcknowledgeExternalExtension(id);
 
   return true;
-}
-
-scoped_ptr<base::DictionaryValue> ExtensionService::GetExtensionInfo(
-    const std::string& extension_id) const {
-  scoped_ptr<base::DictionaryValue> dictionary(new base::DictionaryValue);
-  const extensions::Extension* extension =
-      registry_->enabled_extensions().GetByID(extension_id);
-  if (extension) {
-    GURL icon = extensions::ExtensionIconSource::GetIconURL(
-        extension, extension_misc::EXTENSION_ICON_SMALLISH,
-        ExtensionIconSet::MATCH_BIGGER, false, NULL);
-    dictionary->SetString("id", extension_id);
-    dictionary->SetString("name", extension->name());
-    dictionary->SetString("icon", icon.spec());
-  }
-  return dictionary.Pass();
 }
 
 void ExtensionService::ReportExtensionLoadError(

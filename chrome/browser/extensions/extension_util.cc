@@ -5,10 +5,14 @@
 #include "chrome/browser/extensions/extension_util.h"
 
 #include "base/command_line.h"
+#include "base/logging.h"
+#include "base/values.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_sync_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/sync_helper.h"
 #include "content/public/browser/site_instance.h"
 #include "extensions/browser/extension_prefs.h"
@@ -175,6 +179,24 @@ GURL GetSiteForExtensionId(const std::string& extension_id,
                            content::BrowserContext* context) {
   return content::SiteInstance::GetSiteForURL(
       context, Extension::GetBaseURLFromExtensionId(extension_id));
+}
+
+scoped_ptr<base::DictionaryValue> GetExtensionInfo(const Extension* extension) {
+  DCHECK(extension);
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
+
+  dict->SetString("id", extension->id());
+  dict->SetString("name", extension->name());
+
+  GURL icon = extensions::ExtensionIconSource::GetIconURL(
+      extension,
+      extension_misc::EXTENSION_ICON_SMALLISH,
+      ExtensionIconSet::MATCH_BIGGER,
+      false,  // Not grayscale.
+      NULL);  // Don't set bool if exists.
+  dict->SetString("icon", icon.spec());
+
+  return dict.Pass();
 }
 
 }  // namespace util

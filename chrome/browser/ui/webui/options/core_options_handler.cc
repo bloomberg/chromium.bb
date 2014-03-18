@@ -15,6 +15,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/options/options_util.h"
 #include "chrome/common/net/url_fixer_upper.h"
@@ -26,6 +27,7 @@
 #include "content/public/browser/web_ui.h"
 #include "extensions/browser/extension_pref_value_map.h"
 #include "extensions/browser/extension_pref_value_map_factory.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "grit/chromium_strings.h"
@@ -361,12 +363,13 @@ base::Value* CoreOptionsHandler::CreateValueForPref(
         extension_pref_value_map->GetExtensionControllingPref(
             controlling_pref->name());
 
-    ExtensionService* extension_service = extensions::ExtensionSystem::Get(
-        profile)->extension_service();
-    scoped_ptr<base::DictionaryValue> dictionary =
-        extension_service->GetExtensionInfo(extension_id);
-    if (!dictionary->empty())
-      dict->Set("extension", dictionary.release());
+    const extensions::Extension* extension =
+        extensions::ExtensionRegistry::Get(profile)->GetExtensionById(
+            extension_id, extensions::ExtensionRegistry::EVERYTHING);
+    if (extension) {
+      dict->Set("extension",
+                extensions::util::GetExtensionInfo(extension).release());
+    }
   } else if (controlling_pref->IsRecommended()) {
     dict->SetString("controlledBy", "recommended");
   }

@@ -7,7 +7,12 @@
 
 #include <string>
 
+#include "base/memory/scoped_ptr.h"
 #include "url/gurl.h"
+
+namespace base {
+class DictionaryValue;
+}
 
 namespace content {
 class BrowserContext;
@@ -72,6 +77,10 @@ bool IsExtensionInstalledPermanently(const std::string& extension_id,
 // Suitable for use with BrowserContext::GetStoragePartitionForSite().
 GURL GetSiteForExtensionId(const std::string& extension_id,
                            content::BrowserContext* context);
+
+// Sets the name, id, and icon resource path of the given extension into the
+// returned dictionary.
+scoped_ptr<base::DictionaryValue> GetExtensionInfo(const Extension* extension);
 
 }  // namespace util
 }  // namespace extensions

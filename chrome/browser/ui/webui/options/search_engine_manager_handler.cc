@@ -8,17 +8,15 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/ui/search_engines/keyword_editor_controller.h"
 #include "chrome/browser/ui/search_engines/template_url_table_model.h"
-#include "chrome/common/extensions/api/omnibox/omnibox_handler.h"
-#include "chrome/common/extensions/manifest_handlers/icons_handler.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_ui.h"
-#include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -193,13 +191,14 @@ base::DictionaryValue* SearchEngineManagerHandler::CreateDictionaryForEngine(
   dict->SetBoolean("canBeEdited", list_controller_->CanEdit(template_url));
   dict->SetBoolean("isExtension", is_extension);
   if (template_url->GetType() == TemplateURL::NORMAL_CONTROLLED_BY_EXTENSION) {
-    std::string extension_id = template_url->GetExtensionId();
-    ExtensionService* extension_service = extensions::ExtensionSystem::Get(
-        Profile::FromWebUI(web_ui()))->extension_service();
-    scoped_ptr<base::DictionaryValue> dictionary =
-        extension_service->GetExtensionInfo(extension_id);
-    if (!dictionary->empty())
-      dict->Set("extension", dictionary.release());
+    const extensions::Extension* extension =
+        extensions::ExtensionRegistry::Get(Profile::FromWebUI(web_ui()))
+            ->GetExtensionById(template_url->GetExtensionId(),
+                               extensions::ExtensionRegistry::EVERYTHING);
+    if (extension) {
+      dict->Set("extension",
+                extensions::util::GetExtensionInfo(extension).release());
+    }
   }
   return dict;
 }
