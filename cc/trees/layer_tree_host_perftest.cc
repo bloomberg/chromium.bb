@@ -315,7 +315,7 @@ class BrowserCompositorInvalidateLayerTreePerfTest
   bool clean_up_started_;
 };
 
-TEST_F(BrowserCompositorInvalidateLayerTreePerfTest, DenseBrowserUI) {
+TEST_F(BrowserCompositorInvalidateLayerTreePerfTest, DISABLED_DenseBrowserUI) {
   SetTestName("dense_layer_tree");
   ReadTestFile("dense_layer_tree");
   RunTestWithImplSidePainting();
