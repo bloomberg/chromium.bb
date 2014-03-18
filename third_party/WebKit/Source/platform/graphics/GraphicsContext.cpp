@@ -779,12 +779,11 @@ void GraphicsContext::drawLineForDocumentMarker(const FloatPoint& pt, float widt
         // Match the artwork used by the Mac.
         const int rowPixels = 4 * deviceScaleFactor;
         const int colPixels = 3 * deviceScaleFactor;
-        misspellBitmap[index] = new SkBitmap;
-        misspellBitmap[index]->setConfig(SkBitmap::kARGB_8888_Config,
-                                         rowPixels, colPixels);
-        misspellBitmap[index]->allocPixels();
+        SkBitmap bitmap;
+        if (!bitmap.allocN32Pixels(rowPixels, colPixels))
+            return;
 
-        misspellBitmap[index]->eraseARGB(0, 0, 0, 0);
+        bitmap.eraseARGB(0, 0, 0, 0);
         const uint32_t transparentColor = 0x00000000;
 
         if (deviceScaleFactor == 1) {
@@ -797,7 +796,7 @@ void GraphicsContext::drawLineForDocumentMarker(const FloatPoint& pt, float widt
             //          c d c   c d c
             //          e f e   e f e
             for (int x = 0; x < colPixels; ++x) {
-                uint32_t* row = misspellBitmap[index]->getAddr32(0, x);
+                uint32_t* row = bitmap.getAddr32(0, x);
                 row[0] = colors[index][x * 2];
                 row[1] = colors[index][x * 2 + 1];
                 row[2] = colors[index][x * 2];
@@ -818,7 +817,7 @@ void GraphicsContext::drawLineForDocumentMarker(const FloatPoint& pt, float widt
             //          n o p p o n
             //          q r s s r q
             for (int x = 0; x < colPixels; ++x) {
-                uint32_t* row = misspellBitmap[index]->getAddr32(0, x);
+                uint32_t* row = bitmap.getAddr32(0, x);
                 row[0] = colors[index][x * 3];
                 row[1] = colors[index][x * 3 + 1];
                 row[2] = colors[index][x * 3 + 2];
@@ -830,23 +829,27 @@ void GraphicsContext::drawLineForDocumentMarker(const FloatPoint& pt, float widt
             }
         } else
             ASSERT_NOT_REACHED();
+
+        misspellBitmap[index] = new SkBitmap(bitmap);
 #else
         // We use a 2-pixel-high misspelling indicator because that seems to be
         // what WebKit is designed for, and how much room there is in a typical
         // page for it.
         const int rowPixels = 32 * deviceScaleFactor; // Must be multiple of 4 for pattern below.
         const int colPixels = 2 * deviceScaleFactor;
-        misspellBitmap[index] = new SkBitmap;
-        misspellBitmap[index]->setConfig(SkBitmap::kARGB_8888_Config, rowPixels, colPixels);
-        misspellBitmap[index]->allocPixels();
+        SkBitmap bitmap;
+        if (!bitmap.allocN32Pixels(rowPixels, colPixels))
+            return;
 
-        misspellBitmap[index]->eraseARGB(0, 0, 0, 0);
+        bitmap.eraseARGB(0, 0, 0, 0);
         if (deviceScaleFactor == 1)
-            draw1xMarker(misspellBitmap[index], index);
+            draw1xMarker(&bitmap, index);
         else if (deviceScaleFactor == 2)
-            draw2xMarker(misspellBitmap[index], index);
+            draw2xMarker(&bitmap, index);
         else
             ASSERT_NOT_REACHED();
+
+        misspellBitmap[index] = new SkBitmap(bitmap);
 #endif
     }
 

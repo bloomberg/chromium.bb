@@ -92,8 +92,8 @@ protected:
     PassOwnPtr<ScaledImageFragment> createCompleteImage(const SkISize& size)
     {
         SkBitmap bitmap;
-        bitmap.setConfig(SkBitmap::kARGB_8888_Config, size.width(), size.height());
-        bitmap.allocPixels();
+        if (!bitmap.allocN32Pixels(size.width(), size.height()))
+            return nullptr;
         return ScaledImageFragment::createComplete(size, 0, bitmap);
     }
 
@@ -130,8 +130,10 @@ protected:
 
 TEST_F(ImageFrameGeneratorTest, cacheHit)
 {
+    OwnPtr<ScaledImageFragment> completeImageTemp = createCompleteImage(fullSize());
+    ASSERT_TRUE(completeImageTemp);
     const ScaledImageFragment* fullImage = ImageDecodingStore::instance()->insertAndLockCache(
-        m_generator.get(), createCompleteImage(fullSize()));
+        m_generator.get(), completeImageTemp.release());
     EXPECT_EQ(fullSize(), fullImage->scaledSize());
     ImageDecodingStore::instance()->unlockCache(m_generator.get(), fullImage);
 

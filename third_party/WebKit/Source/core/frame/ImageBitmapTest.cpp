@@ -54,12 +54,10 @@ class ImageBitmapTest : public ::testing::Test {
 protected:
     virtual void SetUp()
     {
-        m_bitmap.setConfig(SkBitmap::kARGB_8888_Config, 10, 10);
-        m_bitmap.allocPixels();
+        ASSERT_TRUE(m_bitmap.allocN32Pixels(10, 10));
         m_bitmap.eraseColor(0xFFFFFFFF);
 
-        m_bitmap2.setConfig(SkBitmap::kARGB_8888_Config, 5, 5);
-        m_bitmap2.allocPixels();
+        ASSERT_TRUE(m_bitmap2.allocN32Pixels(5, 5));
         m_bitmap2.eraseColor(0xAAAAAAAA);
 
         // Save the global memory cache to restore it upon teardown.

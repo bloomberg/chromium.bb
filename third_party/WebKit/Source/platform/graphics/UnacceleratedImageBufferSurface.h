@@ -32,7 +32,7 @@
 #define UnacceleratedImageBufferSurface_h
 
 #include "platform/graphics/ImageBufferSurface.h"
-#include "wtf/OwnPtr.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 
@@ -46,7 +46,7 @@ public:
     virtual bool isValid() const OVERRIDE { return m_canvas; }
 
 private:
-    OwnPtr<SkCanvas> m_canvas;
+    RefPtr<SkCanvas> m_canvas;
 };
 
 } // namespace WebCore

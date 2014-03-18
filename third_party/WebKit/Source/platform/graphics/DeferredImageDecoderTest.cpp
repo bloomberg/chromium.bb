@@ -59,12 +59,6 @@ const unsigned char whitePNG[] = {
     0x42, 0x60, 0x82,
 };
 
-static SkCanvas* createRasterCanvas(int width, int height)
-{
-    SkAutoTUnref<SkBaseDevice> device(new SkBitmapDevice(SkBitmap::kARGB_8888_Config, width, height));
-    return new SkCanvas(device);
-}
-
 struct Rasterizer {
     SkCanvas* canvas;
     SkPicture* picture;
@@ -83,7 +77,8 @@ public:
         m_actualDecoder = decoder.get();
         m_actualDecoder->setSize(1, 1);
         m_lazyDecoder = DeferredImageDecoder::createForTesting(decoder.release());
-        m_canvas.reset(createRasterCanvas(100, 100));
+        m_canvas.reset(SkCanvas::NewRasterN32(100, 100));
+        ASSERT_TRUE(m_canvas);
         m_frameBufferRequestCount = 0;
         m_frameCount = 1;
         m_repetitionCount = cAnimationNone;
@@ -170,7 +165,7 @@ TEST_F(DeferredImageDecoderTest, drawIntoSkPicture)
     EXPECT_EQ(0, m_frameBufferRequestCount);
 
     SkBitmap canvasBitmap;
-    canvasBitmap.setConfig(SkBitmap::kARGB_8888_Config, 100, 100);
+    ASSERT_TRUE(canvasBitmap.allocN32Pixels(100, 100));
     ASSERT_TRUE(m_canvas->readPixels(&canvasBitmap, 0, 0));
     SkAutoLockPixels autoLock(canvasBitmap);
     EXPECT_EQ(SkColorSetARGB(255, 255, 255, 255), canvasBitmap.getColor(0, 0));
@@ -197,7 +192,7 @@ TEST_F(DeferredImageDecoderTest, drawIntoSkPictureProgressive)
     m_canvas->drawPicture(m_picture);
 
     SkBitmap canvasBitmap;
-    canvasBitmap.setConfig(SkBitmap::kARGB_8888_Config, 100, 100);
+    ASSERT_TRUE(canvasBitmap.allocN32Pixels(100, 100));
     ASSERT_TRUE(m_canvas->readPixels(&canvasBitmap, 0, 0));
     SkAutoLockPixels autoLock(canvasBitmap);
     EXPECT_EQ(SkColorSetARGB(255, 255, 255, 255), canvasBitmap.getColor(0, 0));
@@ -229,7 +224,7 @@ TEST_F(DeferredImageDecoderTest, decodeOnOtherThread)
     EXPECT_EQ(0, m_frameBufferRequestCount);
 
     SkBitmap canvasBitmap;
-    canvasBitmap.setConfig(SkBitmap::kARGB_8888_Config, 100, 100);
+    ASSERT_TRUE(canvasBitmap.allocN32Pixels(100, 100));
     ASSERT_TRUE(m_canvas->readPixels(&canvasBitmap, 0, 0));
     SkAutoLockPixels autoLock(canvasBitmap);
     EXPECT_EQ(SkColorSetARGB(255, 255, 255, 255), canvasBitmap.getColor(0, 0));

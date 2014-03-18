@@ -89,9 +89,7 @@ PassOwnPtr<DragImage> DragImage::create(Image* image, RespectImageOrientationEnu
                 destRect = destRect.transposedRect();
 
             SkBitmap skBitmap;
-            skBitmap.setConfig(
-                SkBitmap::kARGB_8888_Config, sizeRespectingOrientation.width(), sizeRespectingOrientation.height());
-            if (!skBitmap.allocPixels())
+            if (!skBitmap.allocN32Pixels(sizeRespectingOrientation.width(), sizeRespectingOrientation.height()))
                 return nullptr;
 
             SkCanvas canvas(skBitmap);

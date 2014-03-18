@@ -32,20 +32,16 @@
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
 
 #include "third_party/skia/include/core/SkCanvas.h"
-#include "wtf/PassOwnPtr.h"
+#include "wtf/PassRefPtr.h"
 
 namespace WebCore {
 
 UnacceleratedImageBufferSurface::UnacceleratedImageBufferSurface(const IntSize& size, OpacityMode opacityMode)
     : ImageBufferSurface(size, opacityMode)
+    , m_canvas(adoptRef(SkCanvas::NewRasterN32(size.width(), size.height())))
 {
-    SkBitmap bitmap;
-    bitmap.setConfig(SkBitmap::kARGB_8888_Config, size.width(), size.height());
-    bitmap.allocPixels();
-    if (bitmap.isNull())
-        return;
-    m_canvas = adoptPtr(new SkCanvas(bitmap));
-    clear();
+    if (m_canvas)
+        clear();
 }
 
 } // namespace WebCore
