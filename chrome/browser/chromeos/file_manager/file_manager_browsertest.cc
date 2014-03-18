@@ -1028,12 +1028,15 @@ IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest, VisitDesktopMenu) {
   StartTest();
 }
 
-IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest, PRE_MaxUser) {
+// TODO(kinaba): investigate the flakiness.
+IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest,
+                       DISABLED_PRE_MaxUser) {
   AddAllUsers();
   AddExtraUsersForStressTesting();
 }
 
-IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest, MaxUser) {
+IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest,
+                       DISABLED_MaxUser) {
   // Run the same test as VisitDesktopMenu with maximum number of users logged
   // in and checks that nothing goes wrong. Here, the primary user (alice) logs
   // in first, then the "extra" users follow, and then lastly the other users
