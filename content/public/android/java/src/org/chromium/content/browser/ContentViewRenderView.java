@@ -165,8 +165,7 @@ public class ContentViewRenderView extends FrameLayout {
         @Override
         public void unregisterVSyncListener(VSyncManager.Listener listener) {
             mCurrentVSyncListeners.removeObserver(listener);
-            mCurrentVSyncListenersIterator.rewind();
-            if (!mCurrentVSyncListenersIterator.hasNext()) {
+            if (mCurrentVSyncListeners.isEmpty()) {
                 mVSyncNotificationEnabled = false;
             }
         }
