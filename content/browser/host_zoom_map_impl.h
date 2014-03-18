@@ -33,6 +33,7 @@ class CONTENT_EXPORT HostZoomMapImpl : public NON_EXPORTED_BASE(HostZoomMap),
   virtual double GetZoomLevelForHostAndScheme(
       const std::string& scheme,
       const std::string& host) const OVERRIDE;
+  virtual ZoomLevelVector GetAllZoomLevels() const OVERRIDE;
   virtual void SetZoomLevelForHost(
       const std::string& host,
       double level) OVERRIDE;

@@ -84,6 +84,42 @@ double HostZoomMapImpl::GetZoomLevelForHostAndScheme(
   return GetZoomLevelForHost(host);
 }
 
+HostZoomMap::ZoomLevelVector HostZoomMapImpl::GetAllZoomLevels() const {
+  HostZoomMap::ZoomLevelVector result;
+  {
+    base::AutoLock auto_lock(lock_);
+    result.reserve(host_zoom_levels_.size() + scheme_host_zoom_levels_.size());
+    for (HostZoomLevels::const_iterator i = host_zoom_levels_.begin();
+         i != host_zoom_levels_.end();
+         ++i) {
+      ZoomLevelChange change = {HostZoomMap::ZOOM_CHANGED_FOR_HOST,
+                                i->first,       // host
+                                std::string(),  // scheme
+                                i->second       // zoom level
+      };
+      result.push_back(change);
+    }
+    for (SchemeHostZoomLevels::const_iterator i =
+             scheme_host_zoom_levels_.begin();
+         i != scheme_host_zoom_levels_.end();
+         ++i) {
+      const std::string& scheme = i->first;
+      const HostZoomLevels& host_zoom_levels = i->second;
+      for (HostZoomLevels::const_iterator j = host_zoom_levels.begin();
+           j != host_zoom_levels.end();
+           ++j) {
+        ZoomLevelChange change = {HostZoomMap::ZOOM_CHANGED_FOR_SCHEME_AND_HOST,
+                                  j->first,  // host
+                                  scheme,    // scheme
+                                  j->second  // zoom level
+        };
+        result.push_back(change);
+      }
+    }
+  }
+  return result;
+}
+
 void HostZoomMapImpl::SetZoomLevelForHost(const std::string& host,
                                           double level) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

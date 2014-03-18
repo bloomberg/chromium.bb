@@ -49,6 +49,8 @@ class HostZoomMap {
     double zoom_level;
   };
 
+  typedef std::vector<ZoomLevelChange> ZoomLevelVector;
+
   CONTENT_EXPORT static HostZoomMap* GetForBrowserContext(
       BrowserContext* browser_context);
 
@@ -65,6 +67,9 @@ class HostZoomMap {
   virtual double GetZoomLevelForHostAndScheme(
       const std::string& scheme,
       const std::string& host) const = 0;
+
+  // Returns all non-temporary zoom levels. Can only be called on any thread.
+  virtual ZoomLevelVector GetAllZoomLevels() const = 0;
 
   // Here |host| is the host portion of URL, or (in the absence of a host)
   // the complete spec of the URL.

@@ -57,4 +57,29 @@ TEST_F(HostZoomMapTest, GetSetZoomLevelWithScheme) {
       host_zoom_map.GetZoomLevelForHostAndScheme("http", "login"));
 }
 
+TEST_F(HostZoomMapTest, GetAllZoomLevels) {
+  HostZoomMapImpl host_zoom_map;
+
+  double zoomed = 2.5;
+  host_zoom_map.SetZoomLevelForHost("zoomed.com", zoomed);
+  host_zoom_map.SetZoomLevelForHostAndScheme("https", "zoomed.com", zoomed);
+  host_zoom_map.SetZoomLevelForHostAndScheme("chrome", "login", zoomed);
+
+  HostZoomMap::ZoomLevelVector levels = host_zoom_map.GetAllZoomLevels();
+  HostZoomMap::ZoomLevelChange expected[] = {
+      {HostZoomMap::ZOOM_CHANGED_FOR_HOST, "zoomed.com", std::string(), zoomed},
+      {HostZoomMap::ZOOM_CHANGED_FOR_SCHEME_AND_HOST, "login", "chrome",
+       zoomed},
+      {HostZoomMap::ZOOM_CHANGED_FOR_SCHEME_AND_HOST, "zoomed.com", "https",
+       zoomed}, };
+  ASSERT_EQ(arraysize(expected), levels.size());
+  for (size_t i = 0; i < arraysize(expected); ++i) {
+    SCOPED_TRACE(testing::Message() << "levels[" << i << "]");
+    EXPECT_EQ(expected[i].mode, levels[i].mode);
+    EXPECT_EQ(expected[i].scheme, levels[i].scheme);
+    EXPECT_EQ(expected[i].host, levels[i].host);
+    EXPECT_EQ(expected[i].zoom_level, levels[i].zoom_level);
+  }
+}
+
 }  // namespace content

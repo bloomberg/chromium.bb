@@ -39,7 +39,7 @@ select.exception-setting {
   -webkit-box-flex: 1;
 }
 
-#exception-behavior-column {
+.exception-value-column-header {
   width: 145px;
 }
 

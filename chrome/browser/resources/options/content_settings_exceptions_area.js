@@ -104,8 +104,10 @@ cr.define('options.contentSettings', function() {
         this.editable = false;
       }
 
-      this.addEditField(select, this.settingLabel);
-      this.contentElement.appendChild(select);
+      if (this.contentType != 'zoomlevels') {
+        this.addEditField(select, this.settingLabel);
+        this.contentElement.appendChild(select);
+      }
       select.className = 'exception-setting';
       select.setAttribute('aria-labelledby', 'exception-behavior-column');
 
@@ -121,6 +123,19 @@ cr.define('options.contentSettings', function() {
         videoSettingLabel.classList.add('media-video-setting');
         videoSettingLabel.setAttribute('displaymode', 'static');
         this.contentElement.appendChild(videoSettingLabel);
+      }
+
+      if (this.contentType == 'zoomlevels') {
+        this.deletable = true;
+        this.editable = false;
+
+        var zoomLabel = cr.doc.createElement('span');
+        zoomLabel.textContent = this.dataItem.zoom;
+        zoomLabel.className = 'exception-setting';
+        zoomLabel.setAttribute('displaymode', 'static');
+        zoomLabel.setAttribute('aria-labelledby', 'exception-zoom-column');
+        this.contentElement.appendChild(zoomLabel);
+        this.zoomLabel = zoomLabel;
       }
 
       // Used to track whether the URL pattern in the input is valid.
@@ -541,7 +556,8 @@ cr.define('options.contentSettings', function() {
       return !(this.contentType == 'notifications' ||
                this.contentType == 'location' ||
                this.contentType == 'fullscreen' ||
-               this.contentType == 'media-stream');
+               this.contentType == 'media-stream' ||
+               this.contentType == 'zoomlevels');
     },
 
     /**
@@ -627,6 +643,9 @@ cr.define('options.contentSettings', function() {
 
       var mediaHeader = this.pageDiv.querySelector('.media-header');
       mediaHeader.hidden = type != 'media-stream';
+
+      $('exception-behavior-column').hidden = type == 'zoomlevels';
+      $('exception-zoom-column').hidden = type != 'zoomlevels';
     },
 
     /**

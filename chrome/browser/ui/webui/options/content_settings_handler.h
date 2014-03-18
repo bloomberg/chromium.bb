@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/webui/options/pepper_flash_content_settings_utils.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_types.h"
+#include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -109,6 +110,8 @@ class ContentSettingsHandler : public OptionsPageUIHandler,
   void UpdateMediaExceptionsView();
   // Clobbers and rebuilds just the MIDI SysEx exception table.
   void UpdateMIDISysExExceptionsView();
+  // Clobbers and rebuilds just the zoom levels exception table.
+  void UpdateZoomLevelsExceptionsView();
   // Clobbers and rebuilds an exception table that's managed by the host content
   // settings map.
   void UpdateExceptionsViewFromHostContentSettingsMap(ContentSettingsType type);
@@ -117,7 +120,10 @@ class ContentSettingsHandler : public OptionsPageUIHandler,
       ContentSettingsType type);
   // Updates the radio buttons for enabling / disabling handlers.
   void UpdateHandlersEnabledRadios();
-  // Removes one geolocation exception.
+  // Removes one geolocation exception. |args| contains the parameters passed to
+  // RemoveException(). |arg_index| points to the first parameter n |args| that
+  // appears after the specified exception type to be removed by
+  // RemoveException().
   void RemoveGeolocationException(const base::ListValue* args,
                                   size_t arg_index);
   // Removes one notification exception.
@@ -130,6 +136,8 @@ class ContentSettingsHandler : public OptionsPageUIHandler,
       const base::ListValue* args,
       size_t arg_index,
       ContentSettingsType type);
+  // Removes one zoom level exception.
+  void RemoveZoomLevelException(const base::ListValue* args, size_t arg_index);
 
   // Callbacks used by the page ------------------------------------------------
 
@@ -182,6 +190,9 @@ class ContentSettingsHandler : public OptionsPageUIHandler,
 
   void OnPepperFlashPrefChanged();
 
+  // content::HostZoomMap subscription.
+  void OnZoomLevelChanged(const content::HostZoomMap::ZoomLevelChange& change);
+
   void ShowFlashMediaLink(LinkType link_type, bool show);
 
   void UpdateFlashMediaLinksVisibility();
@@ -194,6 +205,7 @@ class ContentSettingsHandler : public OptionsPageUIHandler,
   PrefChangeRegistrar pref_change_registrar_;
   scoped_ptr<PepperFlashSettingsManager> flash_settings_manager_;
   MediaSettingsInfo media_settings_;
+  scoped_ptr<content::HostZoomMap::Subscription> host_zoom_map_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingsHandler);
 };
