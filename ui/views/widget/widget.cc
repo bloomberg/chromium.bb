@@ -1164,6 +1164,7 @@ void Widget::OnMouseEvent(ui::MouseEvent* event) {
       }
       return;
     }
+
     case ui::ET_MOUSE_RELEASED:
       last_mouse_event_was_move_ = false;
       is_mouse_button_pressed_ = false;
@@ -1175,6 +1176,7 @@ void Widget::OnMouseEvent(ui::MouseEvent* event) {
       if ((event->flags() & ui::EF_IS_NON_CLIENT) == 0)
         event->SetHandled();
       return;
+
     case ui::ET_MOUSE_MOVED:
     case ui::ET_MOUSE_DRAGGED:
       if (native_widget_->HasCapture() && is_mouse_button_pressed_) {
@@ -1189,20 +1191,22 @@ void Widget::OnMouseEvent(ui::MouseEvent* event) {
           root_view->OnMouseMoved(*event);
       }
       return;
+
     case ui::ET_MOUSE_EXITED:
       last_mouse_event_was_move_ = false;
       if (root_view)
         root_view->OnMouseExited(*event);
       return;
+
     case ui::ET_MOUSEWHEEL:
       if (root_view && root_view->OnMouseWheel(
           static_cast<const ui::MouseWheelEvent&>(*event)))
         event->SetHandled();
       return;
+
     default:
       return;
   }
-  event->SetHandled();
 }
 
 void Widget::OnMouseCaptureLost() {

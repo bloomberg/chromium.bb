@@ -94,9 +94,9 @@ scoped_refptr<SelectFileDialog> SelectFileDialog::Create(
   return CreateLinuxSelectFileDialog(listener, policy);
 #elif defined(OS_ANDROID)
   return CreateAndroidSelectFileDialog(listener, policy);
-#endif
-
+#else
   return NULL;
+#endif
 }
 
 void SelectFileDialog::SelectFile(

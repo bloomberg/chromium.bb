@@ -34,7 +34,7 @@ bool RepostLocatedEvent(gfx::NativeWindow window,
       target_window = window->GetHost()->GetAcceleratedWidget();
   }
   return RepostLocatedEventWin(target_window, event);
-#endif
+#else
   if (!window)
     return false;
 
@@ -49,22 +49,21 @@ bool RepostLocatedEvent(gfx::NativeWindow window,
   spc->ConvertPointFromScreen(root_window, &root_loc);
 
   scoped_ptr<ui::LocatedEvent> relocated;
-  if (event.IsMouseEvent()) {
-    const ui::MouseEvent& orig = static_cast<const ui::MouseEvent&>(event);
-    relocated.reset(new ui::MouseEvent(orig));
-  } else if (event.IsGestureEvent()) {
+  if (!event.IsMouseEvent()) {
     // TODO(rbyers): Gesture event repost is tricky to get right
     // crbug.com/170987.
-    return false;
-  } else {
-    NOTREACHED();
+    DCHECK(event.IsGestureEvent());
     return false;
   }
+
+  const ui::MouseEvent& orig = static_cast<const ui::MouseEvent&>(event);
+  relocated.reset(new ui::MouseEvent(orig));
   relocated->set_location(root_loc);
   relocated->set_root_location(root_loc);
 
   root_window->GetHost()->dispatcher()->RepostEvent(*relocated);
   return true;
+#endif
 }
 
 }  // namespace views

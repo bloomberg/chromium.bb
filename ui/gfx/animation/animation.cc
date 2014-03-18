@@ -106,8 +106,9 @@ bool Animation::ShouldRenderRichAnimation() {
     }
   }
   return !::GetSystemMetrics(SM_REMOTESESSION);
-#endif
+#else
   return true;
+#endif
 }
 
 bool Animation::ShouldSendCanceledFromStop() {
