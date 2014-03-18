@@ -2361,6 +2361,7 @@
    bug_340957
    Memcheck:Leak
    fun:_Znw*
+   ...
    fun:_ZN7WebCore7RuleSet18ensurePendingRulesEv
    fun:_ZN7WebCore7RuleSet21findBestRuleSetAndAdd*
    fun:_ZN7WebCore7RuleSet7addRule*
