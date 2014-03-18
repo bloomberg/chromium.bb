@@ -3557,15 +3557,6 @@ void RenderLayer::clearCompositedLayerMapping(bool layerBeingDestroyed)
         updateOrRemoveFilterEffectRenderer();
 }
 
-void RenderLayer::setGroupedMapping(CompositedLayerMapping* groupedMapping, bool layerBeingDestroyed)
-{
-    if (!layerBeingDestroyed && m_groupedMapping)
-        m_groupedMapping->setNeedsGeometryUpdate();
-    m_groupedMapping = groupedMapping;
-    if (!layerBeingDestroyed && m_groupedMapping)
-        m_groupedMapping->setNeedsGeometryUpdate();
-}
-
 bool RenderLayer::hasCompositedMask() const
 {
     return m_compositedLayerMapping && m_compositedLayerMapping->hasMaskLayer();
