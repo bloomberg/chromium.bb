@@ -10,10 +10,6 @@
 #include "chrome/browser/chrome_browser_main_linux.h"
 #include "chrome/browser/chromeos/version_loader.h"
 
-namespace contacts {
-class ContactManager;
-}
-
 namespace content {
 class PowerSaveBlocker;
 }
@@ -61,7 +57,6 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   virtual void PostDestroyThreads() OVERRIDE;
 
  private:
-  scoped_ptr<contacts::ContactManager> contact_manager_;
   scoped_ptr<default_app_order::ExternalLoader> app_order_loader_;
   scoped_ptr<ExtensionSystemEventObserver> extension_system_event_observer_;
   scoped_ptr<PeripheralBatteryObserver> peripheral_battery_observer_;

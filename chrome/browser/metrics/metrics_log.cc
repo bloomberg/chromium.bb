@@ -139,8 +139,6 @@ OmniboxEventProto::Suggestion::ResultType AsOmniboxEventResultType(
       return OmniboxEventProto::Suggestion::SEARCH_OTHER_ENGINE;
     case AutocompleteMatchType::EXTENSION_APP:
       return OmniboxEventProto::Suggestion::EXTENSION_APP;
-    case AutocompleteMatchType::CONTACT:
-      return OmniboxEventProto::Suggestion::CONTACT;
     case AutocompleteMatchType::BOOKMARK_TITLE:
       return OmniboxEventProto::Suggestion::BOOKMARK_TITLE;
     default:

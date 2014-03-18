@@ -555,10 +555,6 @@ const char kEnableBookmarkUndo[]            = "enable-bookmark-undo";
 // Print Proxy component within the service process.
 const char kEnableCloudPrintProxy[]         = "enable-cloud-print-proxy";
 
-// Enables fetching the user's contacts from Google and showing them in the
-// Chrome OS apps list.
-const char kEnableContacts[]                = "enable-contacts";
-
 // If true devtools experimental settings are enabled.
 const char kEnableDevToolsExperiments[]     = "enable-devtools-experiments";
 

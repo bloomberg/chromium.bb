@@ -150,8 +150,6 @@ int AutocompleteMatch::TypeToIcon(Type type) {
     IDR_OMNIBOX_SEARCH,
     IDR_OMNIBOX_SEARCH,
     IDR_OMNIBOX_EXTENSION_APP,
-    // ContactProvider isn't used by the omnibox, so this icon is never
-    // displayed.
     IDR_OMNIBOX_SEARCH,
     IDR_OMNIBOX_HTTP,
   };

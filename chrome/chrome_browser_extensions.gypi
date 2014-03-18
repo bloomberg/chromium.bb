@@ -884,7 +884,6 @@
             '../build/linux/system.gyp:dbus',
             '../chromeos/ime/input_method.gyp:gencode',
             '../third_party/libevent/libevent.gyp:libevent',
-            'contacts_proto',
           ],
           'sources!': [
             'browser/extensions/api/audio/audio_service.cc',
@@ -1184,22 +1183,5 @@
       },
       'includes': [ '../build/protoc.gypi' ]
     },
-  ],
-  'conditions': [
-    ['chromeos==1', {
-      'targets': [
-        {
-          # Protobuf compiler / generator for contacts-related protocol buffers.
-          'target_name': 'contacts_proto',
-          'type': 'static_library',
-          'sources': [ 'browser/chromeos/contacts/contact.proto' ],
-          'variables': {
-            'proto_in_dir': 'browser/chromeos/contacts',
-            'proto_out_dir': 'chrome/browser/chromeos/contacts',
-          },
-          'includes': [ '../build/protoc.gypi' ]
-        },
-      ],
-    },],  # 'chromeos=1'
   ],  # 'conditions'
 }

@@ -1088,13 +1088,6 @@ const Experiment kExperiments[] = {
     kOsWin | kOsCrOS,
     SINGLE_VALUE_TYPE(switches::kDisableAcceleratedVideoDecode),
   },
-  {
-    "enable-contacts",
-    IDS_FLAGS_ENABLE_CONTACTS_NAME,
-    IDS_FLAGS_ENABLE_CONTACTS_DESCRIPTION,
-    kOsCrOS,
-    SINGLE_VALUE_TYPE(switches::kEnableContacts)
-  },
 #if defined(USE_ASH)
   {
     "ash-debug-shortcuts",

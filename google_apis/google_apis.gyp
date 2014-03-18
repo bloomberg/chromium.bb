@@ -79,8 +79,6 @@
         'drive/drive_api_url_generator.h',
         'drive/drive_common_callbacks.h',
         'drive/drive_entry_kinds.h',
-        'drive/gdata_contacts_requests.cc',
-        'drive/gdata_contacts_requests.h',
         'drive/gdata_errorcode.cc',
         'drive/gdata_errorcode.h',
         'drive/gdata_wapi_requests.cc',

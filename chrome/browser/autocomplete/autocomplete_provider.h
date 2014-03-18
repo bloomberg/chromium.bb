@@ -143,14 +143,13 @@ class AutocompleteProvider
   enum Type {
     TYPE_BOOKMARK         = 1 << 0,
     TYPE_BUILTIN          = 1 << 1,
-    TYPE_CONTACT          = 1 << 2,
-    TYPE_EXTENSION_APP    = 1 << 3,
-    TYPE_HISTORY_QUICK    = 1 << 4,
-    TYPE_HISTORY_URL      = 1 << 5,
-    TYPE_KEYWORD          = 1 << 6,
-    TYPE_SEARCH           = 1 << 7,
-    TYPE_SHORTCUTS        = 1 << 8,
-    TYPE_ZERO_SUGGEST     = 1 << 9,
+    TYPE_EXTENSION_APP    = 1 << 2,
+    TYPE_HISTORY_QUICK    = 1 << 3,
+    TYPE_HISTORY_URL      = 1 << 4,
+    TYPE_KEYWORD          = 1 << 5,
+    TYPE_SEARCH           = 1 << 6,
+    TYPE_SHORTCUTS        = 1 << 7,
+    TYPE_ZERO_SUGGEST     = 1 << 8,
   };
 
   AutocompleteProvider(AutocompleteProviderListener* listener,

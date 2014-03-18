@@ -140,7 +140,7 @@ message OmniboxEventProto {
     BUILTIN = 6;           // Built-in URLs, such as chrome://version
     SHORTCUTS = 7;         // Recently selected omnibox suggestions
     EXTENSION_APPS = 8;    // Custom suggestions from extensions and/or apps
-    CONTACT = 9;           // The user's contacts
+    CONTACT = 9;           // DEPRECATED. The user's contacts
     BOOKMARK = 10;         // The user's bookmarks
     ZERO_SUGGEST = 11;     // Suggestions based on the current page
     // This enum value is currently only used by Android GSA. It represents
@@ -178,7 +178,7 @@ message OmniboxEventProto {
       SEARCH_OTHER_ENGINE = 10;   // A search with a non-default engine
       EXTENSION_APP = 11;         // An Extension App with a title/url that
                                   // contains the input
-      CONTACT = 12;               // One of the user's contacts
+      CONTACT = 12;               // DEPRECATED. One of the user's contacts
       BOOKMARK_TITLE = 13;        // A bookmark whose title contains the input.
       SEARCH_SUGGEST_ENTITY = 14; // A suggested search for an entity.
       SEARCH_SUGGEST_INFINITE = 15; // A suggested search to complete the tail

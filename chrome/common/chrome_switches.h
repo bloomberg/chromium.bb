@@ -163,7 +163,6 @@ extern const char kEnableBenchmarking[];
 extern const char kEnableClientHints[];
 extern const char kEnableBookmarkUndo[];
 extern const char kEnableCloudPrintProxy[];
-extern const char kEnableContacts[];
 extern const char kEnableDevToolsExperiments[];
 extern const char kEnableDeviceDiscoveryNotifications[];
 extern const char kEnableDomDistiller[];

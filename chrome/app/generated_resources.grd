@@ -6430,12 +6430,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_PINCH_VIRTUAL_VIEWPORT_DESCRIPTION" desc="Description of the flag to turn on experimental pinch virtual viewport.">
         When zoomed in, fixed-position elements and scaled scrollbars attach to this viewport.
       </message>
-      <message name="IDS_FLAGS_ENABLE_CONTACTS_NAME" desc="Name of the 'Enable contacts' lab.">
-        Enable contacts integration.
-      </message>
-      <message name="IDS_FLAGS_ENABLE_CONTACTS_DESCRIPTION" desc="Description of the 'Enable contacts' lab.">
-        Enables downloading Google contacts and displaying them in the App Launcher.
-      </message>
       <message name="IDS_FLAGS_ENABLE_VIEWPORT_META_NAME" desc="Name of the flag to turn on viewport meta tag support.">
         Enable viewport meta tag.
       </message>
@@ -14354,18 +14348,6 @@ Do you accept?
 
     <!-- App List. -->
     <if expr="enable_app_list">
-      <message name="IDS_APP_LIST_CONTACT_CHAT_TOOLTIP" desc="Tooltip text for the 'chat' icon displayed next to a contact search result.">
-        Chat
-      </message>
-      <message name="IDS_APP_LIST_CONTACT_EMAIL_TOOLTIP" desc="Tooltip text for the 'email' icon displayed next to a contact search result.">
-        Send email
-      </message>
-      <message name="IDS_APP_LIST_CONTACT_PHONE_TOOLTIP" desc="Tooltip text for the 'phone' icon displayed next to a contact search result.">
-        Call phone
-      </message>
-      <message name="IDS_APP_LIST_CONTACT_VIDEO_TOOLTIP" desc="Tooltip text for the 'video' icon displayed next to a contact search result.">
-        Start Hangout
-      </message>
       <message name="IDS_APP_LIST_START_SPEECH_RECOGNITION" desc="Tooltip text for the button to start the speech recognition.">
         Click to start voice search
       </message>

@@ -30,7 +30,6 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_mode_idle_app_name_notification.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
-#include "chrome/browser/chromeos/contacts/contact_manager.h"
 #include "chrome/browser/chromeos/dbus/cros_dbus_service.h"
 #include "chrome/browser/chromeos/events/event_rewriter.h"
 #include "chrome/browser/chromeos/events/system_key_event_listener.h"
@@ -492,11 +491,6 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
   if (parsed_command_line().HasSwitch(::switches::kAllowFileAccess))
     ChromeNetworkDelegate::AllowAccessToAllFiles();
 
-  if (parsed_command_line().HasSwitch(::switches::kEnableContacts)) {
-    contact_manager_.reset(new contacts::ContactManager());
-    contact_manager_->Init();
-  }
-
   // There are two use cases for kLoginUser:
   //   1) if passed in tandem with kLoginPassword, to drive a "StubLogin"
   //   2) if passed alone, to signal that the indicated user has already
@@ -815,9 +809,6 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   // Detach D-Bus clients before DBusThreadManager is shut down.
   power_button_observer_.reset();
   idle_action_warning_observer_.reset();
-
-  // Delete ContactManager while |g_browser_process| is still alive.
-  contact_manager_.reset();
 
   MagnificationManager::Shutdown();
   AccessibilityManager::Shutdown();
