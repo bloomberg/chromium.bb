@@ -233,6 +233,83 @@ Status ImportKeyRaw(const CryptoData& key_data,
   }
 }
 
+// Returns the key format to use for structured cloning.
+blink::WebCryptoKeyFormat GetCloneFormatForKeyType(
+    blink::WebCryptoKeyType type) {
+  switch (type) {
+    case blink::WebCryptoKeyTypeSecret:
+      return blink::WebCryptoKeyFormatRaw;
+    case blink::WebCryptoKeyTypePublic:
+      return blink::WebCryptoKeyFormatSpki;
+    case blink::WebCryptoKeyTypePrivate:
+      return blink::WebCryptoKeyFormatPkcs8;
+  }
+
+  NOTREACHED();
+  return blink::WebCryptoKeyFormatRaw;
+}
+
+// Converts a KeyAlgorithm into an equivalent Algorithm for import.
+blink::WebCryptoAlgorithm KeyAlgorithmToImportAlgorithm(
+    const blink::WebCryptoKeyAlgorithm& algorithm) {
+  switch (algorithm.paramsType()) {
+    case blink::WebCryptoKeyAlgorithmParamsTypeAes:
+    case blink::WebCryptoKeyAlgorithmParamsTypeRsa:
+      return CreateAlgorithm(algorithm.id());
+    case blink::WebCryptoKeyAlgorithmParamsTypeHmac:
+      return CreateHmacImportAlgorithm(algorithm.hmacParams()->hash().id());
+    case blink::WebCryptoKeyAlgorithmParamsTypeRsaHashed:
+      return CreateRsaHashedImportAlgorithm(
+          algorithm.id(), algorithm.rsaHashedParams()->hash().id());
+    case blink::WebCryptoKeyAlgorithmParamsTypeNone:
+      break;
+  }
+  return blink::WebCryptoAlgorithm::createNull();
+}
+
+// There is some duplicated information in the serialized format used by
+// structured clone (since the KeyAlgorithm is serialized separately from the
+// key data). Use this extra information to further validate what was
+// deserialized from the key data.
+//
+// A failure here implies either a bug in the code, or that the serialized data
+// was corrupted.
+Status ValidateDeserializedKey(const blink::WebCryptoKey& key,
+                               const blink::WebCryptoKeyAlgorithm& algorithm,
+                               blink::WebCryptoKeyType type) {
+  if (algorithm.id() != key.algorithm().id())
+    return Status::ErrorUnexpected();
+
+  if (key.type() != type)
+    return Status::ErrorUnexpected();
+
+  switch (algorithm.paramsType()) {
+    case blink::WebCryptoKeyAlgorithmParamsTypeAes:
+      if (algorithm.aesParams()->lengthBits() !=
+          key.algorithm().aesParams()->lengthBits())
+        return Status::ErrorUnexpected();
+      break;
+    case blink::WebCryptoKeyAlgorithmParamsTypeRsa:
+    case blink::WebCryptoKeyAlgorithmParamsTypeRsaHashed:
+      if (algorithm.rsaParams()->modulusLengthBits() !=
+          key.algorithm().rsaParams()->modulusLengthBits())
+        return Status::ErrorUnexpected();
+      if (algorithm.rsaParams()->publicExponent().size() !=
+          key.algorithm().rsaParams()->publicExponent().size())
+        return Status::ErrorUnexpected();
+      if (memcmp(algorithm.rsaParams()->publicExponent().data(),
+                 key.algorithm().rsaParams()->publicExponent().data(),
+                 key.algorithm().rsaParams()->publicExponent().size()) != 0)
+        return Status::ErrorUnexpected();
+      break;
+    case blink::WebCryptoKeyAlgorithmParamsTypeNone:
+    case blink::WebCryptoKeyAlgorithmParamsTypeHmac:
+      break;
+  }
+
+  return Status::Success();
+}
+
 }  // namespace
 
 void Init() { platform::Init(); }
@@ -403,12 +480,10 @@ Status ImportKey(blink::WebCryptoKeyFormat format,
   }
 }
 
-Status ExportKey(blink::WebCryptoKeyFormat format,
-                 const blink::WebCryptoKey& key,
-                 blink::WebArrayBuffer* buffer) {
-  if (!key.extractable())
-    return Status::ErrorKeyNotExtractable();
-
+// TODO(eroman): Move this to anonymous namespace.
+Status ExportKeyDontCheckExtractability(blink::WebCryptoKeyFormat format,
+                                        const blink::WebCryptoKey& key,
+                                        blink::WebArrayBuffer* buffer) {
   switch (format) {
     case blink::WebCryptoKeyFormatRaw: {
       platform::SymKey* sym_key;
@@ -431,6 +506,14 @@ Status ExportKey(blink::WebCryptoKeyFormat format,
     default:
       return Status::ErrorUnsupported();
   }
+}
+
+Status ExportKey(blink::WebCryptoKeyFormat format,
+                 const blink::WebCryptoKey& key,
+                 blink::WebArrayBuffer* buffer) {
+  if (!key.extractable())
+    return Status::ErrorKeyNotExtractable();
+  return ExportKeyDontCheckExtractability(format, key, buffer);
 }
 
 Status Sign(const blink::WebCryptoAlgorithm& algorithm,
@@ -585,6 +668,36 @@ Status UnwrapKey(blink::WebCryptoKeyFormat format,
     default:
       return Status::ErrorUnsupported();
   }
+}
+
+Status SerializeKeyForClone(const blink::WebCryptoKey& key,
+                            blink::WebVector<unsigned char>* data) {
+  blink::WebArrayBuffer buffer;
+  Status status = ExportKeyDontCheckExtractability(
+      GetCloneFormatForKeyType(key.type()), key, &buffer);
+  if (status.IsError())
+    return status;
+  data->assign(
+      reinterpret_cast<unsigned char*>(buffer.data()), buffer.byteLength());
+  return Status::Success();
+}
+
+Status DeserializeKeyForClone(const blink::WebCryptoKeyAlgorithm& algorithm,
+                              blink::WebCryptoKeyType type,
+                              bool extractable,
+                              blink::WebCryptoKeyUsageMask usage_mask,
+                              const CryptoData& key_data,
+                              blink::WebCryptoKey* key) {
+  Status status = ImportKey(GetCloneFormatForKeyType(type),
+                            key_data,
+                            KeyAlgorithmToImportAlgorithm(algorithm),
+                            extractable,
+                            usage_mask,
+                            key);
+  if (status.IsError())
+    return status;
+
+  return ValidateDeserializedKey(*key, algorithm, type);
 }
 
 }  // namespace webcrypto

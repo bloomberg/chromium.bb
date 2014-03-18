@@ -9,6 +9,7 @@
 #include "base/compiler_specific.h"
 #include "third_party/WebKit/public/platform/WebCrypto.h"
 #include "third_party/WebKit/public/platform/WebCryptoAlgorithm.h"
+#include "third_party/WebKit/public/platform/WebVector.h"
 
 namespace content {
 
@@ -67,6 +68,18 @@ class WebCryptoImpl : public blink::WebCrypto {
                                  const unsigned char* data,
                                  unsigned int data_size,
                                  blink::WebArrayBuffer& result);
+
+  virtual bool deserializeKeyForClone(
+      const blink::WebCryptoKeyAlgorithm& algorithm,
+      blink::WebCryptoKeyType type,
+      bool extractable,
+      blink::WebCryptoKeyUsageMask usages,
+      const unsigned char* key_data,
+      unsigned key_data_size,
+      blink::WebCryptoKey& key);
+
+  virtual bool serializeKeyForClone(const blink::WebCryptoKey& key,
+                                    blink::WebVector<unsigned char>& key_data);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebCryptoImpl);

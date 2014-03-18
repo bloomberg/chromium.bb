@@ -319,17 +319,6 @@ void RestoreJwkRsaDictionary(base::DictionaryValue* dict) {
   dict->SetString("e", "AQAB");
 }
 
-blink::WebCryptoAlgorithm CreateRsaHashedImportAlgorithm(
-    blink::WebCryptoAlgorithmId algorithm_id,
-    blink::WebCryptoAlgorithmId hash_id) {
-  DCHECK(algorithm_id == blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5 ||
-         algorithm_id == blink::WebCryptoAlgorithmIdRsaOaep);
-  DCHECK(IsHashAlgorithm(hash_id));
-  return blink::WebCryptoAlgorithm::adoptParamsAndCreate(
-      algorithm_id,
-      new blink::WebCryptoRsaHashedImportParams(CreateAlgorithm(hash_id)));
-}
-
 // Determines if two ArrayBuffers have identical content.
 bool ArrayBuffersEqual(const blink::WebArrayBuffer& a,
                        const blink::WebArrayBuffer& b) {

@@ -207,4 +207,29 @@ bool WebCryptoImpl::digestSynchronous(
       .IsSuccess();
 }
 
+bool WebCryptoImpl::deserializeKeyForClone(
+    const blink::WebCryptoKeyAlgorithm& algorithm,
+    blink::WebCryptoKeyType type,
+    bool extractable,
+    blink::WebCryptoKeyUsageMask usages,
+    const unsigned char* key_data,
+    unsigned key_data_size,
+    blink::WebCryptoKey& key) {
+  Status status = webcrypto::DeserializeKeyForClone(
+      algorithm,
+      type,
+      extractable,
+      usages,
+      webcrypto::CryptoData(key_data, key_data_size),
+      &key);
+  return status.IsSuccess();
+}
+
+bool WebCryptoImpl::serializeKeyForClone(
+    const blink::WebCryptoKey& key,
+    blink::WebVector<unsigned char>& key_data) {
+  Status status = webcrypto::SerializeKeyForClone(key, &key_data);
+  return status.IsSuccess();
+}
+
 }  // namespace content

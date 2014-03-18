@@ -265,6 +265,13 @@ CONTENT_EXPORT blink::WebCryptoAlgorithm CreateAlgorithm(
 CONTENT_EXPORT blink::WebCryptoAlgorithm CreateHmacImportAlgorithm(
     blink::WebCryptoAlgorithmId hash_id);
 
+// Creates an import algorithm for RSA algorithms that take a hash.
+// It is an error to call this with a hash_id that is not a SHA*.
+CONTENT_EXPORT blink::WebCryptoAlgorithm CreateRsaHashedImportAlgorithm(
+    blink::WebCryptoAlgorithmId id,
+    blink::WebCryptoAlgorithmId hash_id);
+
+// TODO(eroman): Move these to jwk.cc
 // Creates an RSASSA-PKCS1-v1_5 algorithm. It is an error to call this with a
 // hash_id that is not a SHA*.
 blink::WebCryptoAlgorithm CreateRsaSsaImportAlgorithm(

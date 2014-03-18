@@ -151,6 +151,18 @@ CONTENT_EXPORT Status
               blink::WebCryptoKeyUsageMask usage_mask,
               blink::WebCryptoKey* key);
 
+CONTENT_EXPORT Status
+    SerializeKeyForClone(const blink::WebCryptoKey& key,
+                         blink::WebVector<unsigned char>* data);
+
+CONTENT_EXPORT Status
+    DeserializeKeyForClone(const blink::WebCryptoKeyAlgorithm& algorithm,
+                           blink::WebCryptoKeyType type,
+                           bool extractable,
+                           blink::WebCryptoKeyUsageMask usage_mask,
+                           const CryptoData& key_data,
+                           blink::WebCryptoKey* key);
+
 }  // namespace webcrypto
 
 }  // namespace content

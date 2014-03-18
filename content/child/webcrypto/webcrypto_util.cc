@@ -340,20 +340,26 @@ blink::WebCryptoAlgorithm CreateHmacImportAlgorithm(
       new blink::WebCryptoHmacImportParams(CreateAlgorithm(hash_id)));
 }
 
-blink::WebCryptoAlgorithm CreateRsaSsaImportAlgorithm(
+blink::WebCryptoAlgorithm CreateRsaHashedImportAlgorithm(
+    blink::WebCryptoAlgorithmId id,
     blink::WebCryptoAlgorithmId hash_id) {
   DCHECK(IsHashAlgorithm(hash_id));
+  DCHECK(id == blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5 ||
+         id == blink::WebCryptoAlgorithmIdRsaOaep);
   return blink::WebCryptoAlgorithm::adoptParamsAndCreate(
-      blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
-      new blink::WebCryptoRsaHashedImportParams(CreateAlgorithm(hash_id)));
+      id, new blink::WebCryptoRsaHashedImportParams(CreateAlgorithm(hash_id)));
+}
+
+blink::WebCryptoAlgorithm CreateRsaSsaImportAlgorithm(
+    blink::WebCryptoAlgorithmId hash_id) {
+  return CreateRsaHashedImportAlgorithm(
+      blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5, hash_id);
 }
 
 blink::WebCryptoAlgorithm CreateRsaOaepImportAlgorithm(
     blink::WebCryptoAlgorithmId hash_id) {
-  DCHECK(IsHashAlgorithm(hash_id));
-  return blink::WebCryptoAlgorithm::adoptParamsAndCreate(
-      blink::WebCryptoAlgorithmIdRsaOaep,
-      new blink::WebCryptoRsaHashedImportParams(CreateAlgorithm(hash_id)));
+  return CreateRsaHashedImportAlgorithm(blink::WebCryptoAlgorithmIdRsaOaep,
+                                        hash_id);
 }
 
 unsigned int ShaBlockSizeBytes(blink::WebCryptoAlgorithmId hash_id) {
