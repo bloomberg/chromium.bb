@@ -8,6 +8,10 @@
   "bytes": {
     "improvement_direction": "down"
   },
+  "Celsius": {
+    "improvement_direction": "down",
+    "why": "Colder machines are faster."
+  }
   "commit_count": {
     "improvement_direction": "up",
     "why": "layer_tree_host_perftest"
@@ -39,9 +43,17 @@
   "frame_time": {
     "improvement_direction": "down"
   },
+  "Hz": {
+    "improvement_direction": "up",
+    "why": "Higher frequencies are faster."
+  },
   "kb": {
     "improvement_direction": "down",
     "why": "Synonym for KB, used in memory and io metrics."
+  },
+  "available_kB": {
+    "improvement_direction": "up",
+    "why": "kB of memory available. More memory available is better."
   },
   "KB": {
     "improvement_direction": "down",
@@ -57,6 +69,26 @@
   "MB": {
     "improvement_direction": "down"
   },
+  "mips": {
+    improvement_direction": "up",
+    "why": "More instructions processed per time unit."
+  }
+  "mpixels_sec": {
+    improvement_direction": "up",
+    "why": "More pixels processed per time unit."
+  }
+  "mtexel_sec": {
+    improvement_direction": "up",
+    "why": "More texels processed per time unit."
+  }
+  "mtri_sec": {
+    improvement_direction": "up",
+    "why": "More triangles processed per time unit."
+  }
+  "mvtx_sec": {
+    improvement_direction": "up",
+    "why": "More vertices processed per time unit."
+  }
   "ms": {
     "improvement_direction": "down",
     "why": "Used in many Telemetry measurements. Fewer ms of time means faster."
