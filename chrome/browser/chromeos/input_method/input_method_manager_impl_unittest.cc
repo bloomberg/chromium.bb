@@ -40,6 +40,12 @@ const char kExt2Engine1Id[] =
     "_comp_ime_nmblnjkfdkabgdofidlkienfnnbjhnabext2_engine1_engine_id";
 const char kExt2Engine2Id[] =
     "_comp_ime_nmblnjkfdkabgdofidlkienfnnbjhnabext2_engine2_engine_id";
+const char kXkbExtId[] =
+#if defined(OFFICIAL_BUILD)
+    "jkghodnilhceideoidjikpgommlajknk";
+#else
+    "fgoepimhcoialccpbmpnnblemnepkkao";
+#endif
 
 // Returns true if |descriptors| contain |target|.
 bool Contain(const InputMethodDescriptors& descriptors,
@@ -83,7 +89,7 @@ class InputMethodManagerImplTest :  public testing::Test {
     ime_list_.clear();
 
     ComponentExtensionIME ext_xkb;
-    ext_xkb.id = "fgoepimhcoialccpbmpnnblemnepkkao";
+    ext_xkb.id = kXkbExtId;
     ext_xkb.description = "ext_xkb_description";
     ext_xkb.path = base::FilePath("ext_xkb_file_path");
 
@@ -1314,19 +1320,19 @@ TEST_F(InputMethodManagerImplTest, MigrateXkbInputMethodTest_1) {
   input_method_ids.push_back("xkb:us::eng");
   input_method_ids.push_back("xkb:fr::fra");
   input_method_ids.push_back(
-      "_comp_ime_fgoepimhcoialccpbmpnnblemnepkkaoxkb:us::eng");
+      std::string("_comp_ime_") + kXkbExtId + "xkb:us::eng");
   input_method_ids.push_back("xkb:fr::fra");
   input_method_ids.push_back(
-      "_comp_ime_fgoepimhcoialccpbmpnnblemnepkkaoxkb:us::eng");
+      std::string("_comp_ime_") + kXkbExtId + "xkb:us::eng");
   input_method_ids.push_back("_comp_ime_asdf_pinyin");
 
   manager_->MigrateXkbInputMethods(&input_method_ids);
 
   ASSERT_EQ(3U, input_method_ids.size());
 
-  EXPECT_EQ("_comp_ime_fgoepimhcoialccpbmpnnblemnepkkaoxkb:us::eng",
+  EXPECT_EQ(std::string("_comp_ime_") + kXkbExtId + "xkb:us::eng",
             input_method_ids[0]);
-  EXPECT_EQ("_comp_ime_fgoepimhcoialccpbmpnnblemnepkkaoxkb:fr::fra",
+  EXPECT_EQ(std::string("_comp_ime_") + kXkbExtId + "xkb:fr::fra",
             input_method_ids[1]);
   EXPECT_EQ("_comp_ime_asdf_pinyin", input_method_ids[2]);
 }
@@ -1339,10 +1345,10 @@ TEST_F(InputMethodManagerImplTest, MigrateXkbInputMethodTest_2) {
   input_method_ids.push_back("xkb:us::eng");
   input_method_ids.push_back("xkb:fr::fra");
   input_method_ids.push_back(
-      "_comp_ime_fgoepimhcoialccpbmpnnblemnepkkaoxkb:us::eng");
+      std::string("_comp_ime_") + kXkbExtId + "xkb:us::eng");
   input_method_ids.push_back("xkb:fr::fra");
   input_method_ids.push_back(
-      "_comp_ime_fgoepimhcoialccpbmpnnblemnepkkaoxkb:us::eng");
+      std::string("_comp_ime_") + kXkbExtId + "xkb:us::eng");
   input_method_ids.push_back("_comp_ime_asdf_pinyin");
 
   manager_->MigrateXkbInputMethods(&input_method_ids);

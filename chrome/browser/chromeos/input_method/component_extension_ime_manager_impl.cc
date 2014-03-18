@@ -27,31 +27,21 @@ struct WhitelistedComponentExtensionIME {
   const char* path;
 } whitelisted_component_extension[] = {
   {
-    // ChromeOS xkb extension.
-    "fgoepimhcoialccpbmpnnblemnepkkao",
-    "/usr/share/chromeos-assets/input_methods/xkb",
-  },
-  {
-    // ChromeOS Keyboards extension.
-    "jhffeifommiaekmbkkjlpmilogcfdohp",
-    "/usr/share/chromeos-assets/input_methods/keyboard_layouts",
-  },
-  {
     // ChromeOS Hangul Input.
     "bdgdidmhaijohebebipajioienkglgfo",
     "/usr/share/chromeos-assets/input_methods/hangul",
   },
+#if defined(OFFICIAL_BUILD)
   {
-    // Google XKB Input.
+    // Official Google XKB Input.
     "jkghodnilhceideoidjikpgommlajknk",
     "/usr/share/chromeos-assets/input_methods/google_xkb",
   },
   {
-    // Google Keyboards Input.
+    // Official Google Keyboards Input.
     "habcdindjejkmepknlhkkloncjcpcnbf",
     "/usr/share/chromeos-assets/input_methods/google_keyboards",
   },
-#if defined(OFFICIAL_BUILD)
   {
     // Official Google Japanese Input.
     "fpfbhcjppmaeaijcidgiibchfbnhbelj",
@@ -78,6 +68,16 @@ struct WhitelistedComponentExtensionIME {
     "/usr/share/chromeos-assets/input_methods/input_tools",
   },
 #else
+  {
+    // Open-sourced ChromeOS xkb extension.
+    "fgoepimhcoialccpbmpnnblemnepkkao",
+    "/usr/share/chromeos-assets/input_methods/xkb",
+  },
+  {
+    // Open-sourced ChromeOS Keyboards extension.
+    "jhffeifommiaekmbkkjlpmilogcfdohp",
+    "/usr/share/chromeos-assets/input_methods/keyboard_layouts",
+  },
   {
     // Open-sourced Pinyin Chinese Input Method.
     "cpgalbafkoofkjmaeonnfijgpfennjjn",

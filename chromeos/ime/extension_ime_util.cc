@@ -12,8 +12,11 @@ const char kExtensionIMEPrefix[] = "_ext_ime_";
 const int kExtensionIMEPrefixLength =
     sizeof(kExtensionIMEPrefix) / sizeof(kExtensionIMEPrefix[0]) - 1;
 const char kComponentExtensionIMEPrefix[] = "_comp_ime_";
-const char kExtensionXkbIdPrefix[] =
+const char kPublicExtensionXkbIdPrefix[] =
     "_comp_ime_fgoepimhcoialccpbmpnnblemnepkkao";
+const char kInternalExtensionXkbIdPrefix[] =
+    "_comp_ime_jkghodnilhceideoidjikpgommlajknk";
+
 const int kComponentExtensionIMEPrefixLength =
     sizeof(kComponentExtensionIMEPrefix) /
         sizeof(kComponentExtensionIMEPrefix[0]) - 1;
@@ -57,11 +60,19 @@ std::string GetExtensionIDFromInputMethodID(
 
 std::string GetInputMethodIDByKeyboardLayout(
     const std::string& keyboard_layout_id) {
+  const char* kExtensionXkbIdPrefix =
+#if defined(OFFICIAL_BUILD)
+      kInternalExtensionXkbIdPrefix;
+#else
+      kPublicExtensionXkbIdPrefix;
+#endif
   bool migrate = UseWrappedExtensionKeyboardLayouts();
   if (IsKeyboardLayoutExtension(keyboard_layout_id)) {
+    std::string id = keyboard_layout_id.substr(
+        arraysize(kPublicExtensionXkbIdPrefix) - 1);
     if (migrate)
-      return keyboard_layout_id;
-    return keyboard_layout_id.substr(arraysize(kExtensionXkbIdPrefix) - 1);
+      return kExtensionXkbIdPrefix + id;
+    return id;
   }
   if (migrate && StartsWithASCII(keyboard_layout_id, "xkb:", true))
     return kExtensionXkbIdPrefix + keyboard_layout_id;
@@ -88,7 +99,8 @@ bool IsMemberOfExtension(const std::string& input_method_id,
 }
 
 bool IsKeyboardLayoutExtension(const std::string& input_method_id) {
-  return StartsWithASCII(input_method_id, kExtensionXkbIdPrefix, true);
+  return StartsWithASCII(input_method_id, kPublicExtensionXkbIdPrefix, true) ||
+      StartsWithASCII(input_method_id, kInternalExtensionXkbIdPrefix, true);
 }
 
 bool UseWrappedExtensionKeyboardLayouts() {

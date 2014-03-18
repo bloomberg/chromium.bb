@@ -122,9 +122,15 @@ const struct {
   { "zh-CN", "us", "_comp_ime_nmblnjkfdkabgdofidlkienfnnbjhnabzh-t-i0-pinyin" },
   { "zh-TW", "us",
     "_comp_ime_goedamlknlnjaengojinmfgpmdjmkooozh-hant-t-i0-und" },
+#if defined(OFFICIAL_BUILD)
+  { "th", "us", "_comp_ime_habcdindjejkmepknlhkkloncjcpcnbfvkd_th" },
+  { "vi", "us", "_comp_ime_habcdindjejkmepknlhkkloncjcpcnbfvkd_vi_tcvn" },
+  { "vi", "us", "_comp_ime_habcdindjejkmepknlhkkloncjcpcnbfvkd_vi_tcvn" },
+#else
   { "th", "us", "_comp_ime_jhffeifommiaekmbkkjlpmilogcfdohpvkd_th" },
   { "vi", "us", "_comp_ime_jhffeifommiaekmbkkjlpmilogcfdohpvkd_vi_tcvn" },
   { "vi", "us", "_comp_ime_jhffeifommiaekmbkkjlpmilogcfdohpvkd_vi_tcvn" },
+#endif
 };
 
 // The map from xkb layout to the indicator text.

@@ -30,6 +30,12 @@ const char pinyin_ime_id[] =
     "_comp_ime_nmblnjkfdkabgdofidlkienfnnbjhnabzh-t-i0-pinyin";
 const char zhuyin_ime_id[] =
     "_comp_ime_goedamlknlnjaengojinmfgpmdjmkooozh-hant-t-i0-und";
+const char kKeyboardExtId[] =
+#if defined(OFFICIAL_BUILD)
+    "habcdindjejkmepknlhkkloncjcpcnbf";
+#else
+    "jhffeifommiaekmbkkjlpmilogcfdohp";
+#endif
 
 class TestableInputMethodUtil : public InputMethodUtil {
  public:
@@ -443,7 +449,7 @@ TEST_F(InputMethodUtilTest, TestGetFirstLoginInputMethodIds_Us_And_Th) {
   util_.GetFirstLoginInputMethodIds("th", *descriptor, &input_method_ids);
   ASSERT_EQ(2U, input_method_ids.size());
   EXPECT_EQ("xkb:us::eng", input_method_ids[0]);
-  EXPECT_EQ("_comp_ime_jhffeifommiaekmbkkjlpmilogcfdohpvkd_th",
+  EXPECT_EQ(std::string("_comp_ime_") + kKeyboardExtId + "vkd_th",
             input_method_ids[1]);  // Kesmanee.
 }
 
@@ -456,7 +462,7 @@ TEST_F(InputMethodUtilTest, TestGetFirstLoginInputMethodIds_Us_And_Vi) {
   util_.GetFirstLoginInputMethodIds("vi", *descriptor, &input_method_ids);
   ASSERT_EQ(2U, input_method_ids.size());
   EXPECT_EQ("xkb:us::eng", input_method_ids[0]);
-  EXPECT_EQ("_comp_ime_jhffeifommiaekmbkkjlpmilogcfdohpvkd_vi_tcvn",
+  EXPECT_EQ(std::string("_comp_ime_") + kKeyboardExtId + "vkd_vi_tcvn",
             input_method_ids[1]);  // TCVN6064.
 }
 

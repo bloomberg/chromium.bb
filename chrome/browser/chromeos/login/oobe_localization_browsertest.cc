@@ -235,7 +235,8 @@ void OobeLocalizationTest::RunLocalizationTest(
     // extension based xkb id.
     size_t pos = 0;
     std::string repl_old = "xkb:";
-    std::string repl_new = "_comp_ime_fgoepimhcoialccpbmpnnblemnepkkaoxkb:";
+    std::string repl_new =
+        extension_ime_util::GetInputMethodIDByKeyboardLayout("xkb:");
     while ((pos = expected_keyboard_select.find(repl_old, pos)) !=
            std::string::npos) {
       expected_keyboard_select.replace(pos, repl_old.length(), repl_new);
