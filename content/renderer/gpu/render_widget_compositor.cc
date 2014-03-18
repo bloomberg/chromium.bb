@@ -142,6 +142,8 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
     settings.rasterization_site = cc::LayerTreeSettings::HybridRasterization;
   else
     settings.rasterization_site = cc::LayerTreeSettings::CpuRasterization;
+  settings.create_low_res_tiling =
+      RenderThreadImpl::current()->is_low_res_tiling_enabled();
 
   settings.calculate_top_controls_position =
       cmd->HasSwitch(cc::switches::kEnableTopControlsPositionCalculation);

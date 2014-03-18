@@ -36,6 +36,7 @@ class CC_EXPORT LayerTreeSettings {
     GpuRasterization,
   };
   RasterizationSite rasterization_site;
+  bool create_low_res_tiling;
 
   enum ScrollbarAnimator {
     NoAnimator,

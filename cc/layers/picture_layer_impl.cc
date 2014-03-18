@@ -54,7 +54,8 @@ PictureLayerImpl::PictureLayerImpl(LayerTreeImpl* tree_impl, int id)
       is_using_lcd_text_(tree_impl->settings().can_use_lcd_text),
       needs_post_commit_initialization_(true),
       should_update_tile_priorities_(false),
-      has_gpu_rasterization_hint_(false) {}
+      has_gpu_rasterization_hint_(false),
+      should_use_low_res_tiling_(tree_impl->settings().create_low_res_tiling) {}
 
 PictureLayerImpl::~PictureLayerImpl() {}
 
@@ -468,6 +469,8 @@ skia::RefPtr<SkPicture> PictureLayerImpl::GetPicture() {
 void PictureLayerImpl::SetHasGpuRasterizationHint(bool has_hint) {
   bool old_should_use_gpu_rasterization = ShouldUseGpuRasterization();
   has_gpu_rasterization_hint_ = has_hint;
+  if (has_gpu_rasterization_hint_)
+    should_use_low_res_tiling_ = false;
   if (ShouldUseGpuRasterization() != old_should_use_gpu_rasterization)
     RemoveAllTilings();
 }

@@ -69,6 +69,7 @@ CONTENT_EXPORT extern const char kDisableGpuProcessPrelaunch[];
 CONTENT_EXPORT extern const char kDisableGpuRasterization[];
 CONTENT_EXPORT extern const char kDisableGpuSandbox[];
 CONTENT_EXPORT extern const char kDisableGpuWatchdog[];
+CONTENT_EXPORT extern const char kDisableLowResTiling[];
 CONTENT_EXPORT extern const char kDisableHangMonitor[];
 extern const char kDisableHistogramCustomizer[];
 CONTENT_EXPORT extern const char kDisableImplSidePainting[];
@@ -131,6 +132,7 @@ CONTENT_EXPORT extern const char kEnableFixedPositionCreatesStackingContext[];
 CONTENT_EXPORT extern const char kEnableGestureTapHighlight[];
 extern const char kEnableGpuClientTracing[];
 CONTENT_EXPORT extern const char kEnableGpuRasterization[];
+CONTENT_EXPORT extern const char kEnableLowResTiling[];
 CONTENT_EXPORT extern const char kEnableHighDpiCompositingForFixedPosition[];
 #if defined(OS_WIN)
 CONTENT_EXPORT extern const char kDisableLegacyIntermediateWindow[];

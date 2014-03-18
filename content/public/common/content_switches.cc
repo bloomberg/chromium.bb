@@ -202,6 +202,11 @@ const char kDisableGpuProcessPrelaunch[]    = "disable-gpu-process-prelaunch";
 // Overrides the kEnableGpuRasterization and kForceGpuRasterization flags.
 const char kDisableGpuRasterization[]       = "disable-gpu-rasterization";
 
+// When using CPU rasterizing disable low resolution tiling. This uses
+// less power, particularly during animations, but more white may be seen
+// during fast scrolling especially on slower devices.
+const char kDisableLowResTiling[] = "disable-low-res-tiling";
+
 // Disable the GPU process sandbox.
 const char kDisableGpuSandbox[]             = "disable-gpu-sandbox";
 
@@ -442,6 +447,10 @@ const char kEnableGpuClientTracing[]        = "enable-gpu-client-tracing";
 // Skia GPU backend. Only valid with GPU accelerated compositing +
 // impl-side painting.
 const char kEnableGpuRasterization[]        = "enable-gpu-rasterization";
+
+// When using CPU rasterizing generate low resolution tiling. Low res
+// tiles may be displayed during fast scrolls especially on slower devices.
+const char kEnableLowResTiling[] = "enable-low-res-tiling";
 
 // See comment for kEnableCompositingForFixedPosition.
 const char kEnableHighDpiCompositingForFixedPosition[] =

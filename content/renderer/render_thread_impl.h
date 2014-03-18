@@ -212,6 +212,8 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
     return is_impl_side_painting_enabled_;
   }
 
+  bool is_low_res_tiling_enabled() const { return is_low_res_tiling_enabled_; }
+
   bool is_lcd_text_enabled() const { return is_lcd_text_enabled_; }
 
   bool is_map_image_enabled() const { return is_map_image_enabled_; }
@@ -532,6 +534,7 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   bool is_gpu_rasterization_enabled_;
   bool is_gpu_rasterization_forced_;
   bool is_impl_side_painting_enabled_;
+  bool is_low_res_tiling_enabled_;
   bool is_lcd_text_enabled_;
   bool is_map_image_enabled_;
 

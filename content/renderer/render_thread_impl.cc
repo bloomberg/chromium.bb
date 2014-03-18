@@ -445,6 +445,12 @@ void RenderThreadImpl::Init() {
     }
   }
 
+  is_low_res_tiling_enabled_ = !is_gpu_rasterization_enabled_;
+  if (command_line.HasSwitch(switches::kDisableLowResTiling) &&
+      !command_line.HasSwitch(switches::kEnableLowResTiling)) {
+    is_low_res_tiling_enabled_ = false;
+  }
+
   // Note that under Linux, the media library will normally already have
   // been initialized by the Zygote before this instance became a Renderer.
   base::FilePath media_path;
