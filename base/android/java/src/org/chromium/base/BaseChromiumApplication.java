@@ -25,7 +25,7 @@ public class BaseChromiumApplication extends Application {
         public void onWindowFocusChanged(Activity activity, boolean hasFocus);
     }
 
-    private ObserverList<WindowFocusChangedListener> sWindowFocusListeners =
+    private ObserverList<WindowFocusChangedListener> mWindowFocusListeners =
             new ObserverList<WindowFocusChangedListener>();
 
     @Override
@@ -42,7 +42,7 @@ public class BaseChromiumApplication extends Application {
                     public void onWindowFocusChanged(boolean hasFocus) {
                         super.onWindowFocusChanged(hasFocus);
 
-                        for (WindowFocusChangedListener listener : sWindowFocusListeners) {
+                        for (WindowFocusChangedListener listener : mWindowFocusListeners) {
                             listener.onWindowFocusChanged(activity, hasFocus);
                         }
                     }
@@ -86,7 +86,7 @@ public class BaseChromiumApplication extends Application {
      * @param listener Listener to receive window focus events.
      */
     public void registerWindowFocusChangedListener(WindowFocusChangedListener listener) {
-        sWindowFocusListeners.addObserver(listener);
+        mWindowFocusListeners.addObserver(listener);
     }
 
     /**
@@ -94,6 +94,6 @@ public class BaseChromiumApplication extends Application {
      * @param listener Listener that doesn't want to receive window focus events.
      */
     public void unregisterWindowFocusChangedListener(WindowFocusChangedListener listener) {
-        sWindowFocusListeners.removeObserver(listener);
+        mWindowFocusListeners.removeObserver(listener);
     }
 }
