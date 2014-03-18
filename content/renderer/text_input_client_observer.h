@@ -35,6 +35,7 @@ class TextInputClientObserver : public RenderViewObserver {
   blink::WebView* webview();
 
   // IPC Message handlers:
+  void OnStringAtPoint(gfx::Point point);
   void OnCharacterIndexForPoint(gfx::Point point);
   void OnFirstRectForCharacterRange(gfx::Range range);
   void OnStringForRange(gfx::Range range);

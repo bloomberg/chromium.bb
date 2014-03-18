@@ -33,6 +33,10 @@ IPC_MESSAGE_ROUTED1(TextInputClientMsg_FirstRectForCharacterRange,
 IPC_MESSAGE_ROUTED1(TextInputClientMsg_StringForRange,
                     gfx::Range)
 
+// Tells the renderer to send back the word under the given point and its
+// baseline point.
+IPC_MESSAGE_ROUTED1(TextInputClientMsg_StringAtPoint, gfx::Point)
+
 ////////////////////////////////////////////////////////////////////////////////
 
 // Renderer -> Browser Replies /////////////////////////////////////////////////
@@ -51,5 +55,10 @@ IPC_MESSAGE_ROUTED1(TextInputClientReplyMsg_GotFirstRectForRange,
 // Reply message for TextInputClientMsg_StringForRange.
 IPC_MESSAGE_ROUTED1(TextInputClientReplyMsg_GotStringForRange,
                     mac::AttributedStringCoder::EncodedString)
+
+// Reply message for TextInputClientMsg_StringAtPoint
+IPC_MESSAGE_ROUTED2(TextInputClientReplyMsg_GotStringAtPoint,
+                    mac::AttributedStringCoder::EncodedString,
+                    gfx::Point)
 #endif  // defined(OS_MACOSX)
 

@@ -33,6 +33,24 @@ TextInputClientMac* TextInputClientMac::GetInstance() {
   return Singleton<TextInputClientMac>::get();
 }
 
+void TextInputClientMac::GetStringAtPoint(
+    RenderWidgetHost* rwh,
+    gfx::Point point,
+    void (^replyHandler)(NSAttributedString*, NSPoint)) {
+  DCHECK(replyHandler_.get() == nil);
+  replyHandler_.reset(replyHandler, base::scoped_policy::RETAIN);
+  RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(rwh);
+  rwhi->Send(new TextInputClientMsg_StringAtPoint(rwhi->GetRoutingID(), point));
+}
+
+void TextInputClientMac::GetStringAtPointReply(NSAttributedString* string,
+                                               NSPoint point) {
+  if (replyHandler_.get()) {
+    replyHandler_.get()(string, point);
+    replyHandler_.reset();
+  }
+}
+
 NSUInteger TextInputClientMac::GetCharacterIndexAtPoint(RenderWidgetHost* rwh,
     gfx::Point point) {
   base::TimeTicks start = base::TimeTicks::Now();

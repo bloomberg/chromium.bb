@@ -7,6 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/mac/scoped_block.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
@@ -32,6 +33,12 @@ class RenderWidgetHost;
 // requires getting information from the renderer synchronously. Rather than
 // using an actual sync IPC message, a normal async ViewMsg is used with a lock
 // and condition (managed by this service).
+//
+// Mac OS 10.8 introduced -[NSResponder quickLookWithEvent:].
+// We can use it to implement asynchronous dictionary lookup when the user
+// taps a word using three fingers.
+// But currently the "Look Up in Dictionary" context menu item still goes
+// through the above synchronous IPC.
 class CONTENT_EXPORT TextInputClientMac {
  public:
   // Returns the singleton instance.
@@ -61,6 +68,19 @@ class CONTENT_EXPORT TextInputClientMac {
   void SetFirstRectAndSignal(NSRect first_rect);
   void SetSubstringAndSignal(NSAttributedString* string);
 
+  // This async method is invoked from RenderWidgetHostViewCocoa's
+  // -quickLookWithEvent:, when the user taps a word using 3 fingers.
+  // The reply callback will be invoked from the IO thread, the caller is
+  // responsible for bouncing to the main thread if necessary.
+  // The callback parameters provide the attributed word under the point and
+  // the lower left baseline point of the text.
+  void GetStringAtPoint(RenderWidgetHost* rwh,
+                        gfx::Point point,
+                        void (^replyHandler)(NSAttributedString*, NSPoint));
+  // This is called on the IO thread when we get the renderer's reply for
+  // GetStringAtPoint.
+  void GetStringAtPointReply(NSAttributedString*, NSPoint);
+
  private:
   friend struct DefaultSingletonTraits<TextInputClientMac>;
   TextInputClientMac();
@@ -81,6 +101,8 @@ class CONTENT_EXPORT TextInputClientMac {
 
   base::Lock lock_;
   base::ConditionVariable condition_;
+
+  base::mac::ScopedBlock<void(^)(NSAttributedString*, NSPoint)> replyHandler_;
 
   DISALLOW_COPY_AND_ASSIGN(TextInputClientMac);
 };

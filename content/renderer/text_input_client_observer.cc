@@ -29,6 +29,8 @@ TextInputClientObserver::~TextInputClientObserver() {
 bool TextInputClientObserver::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(TextInputClientObserver, message)
+    IPC_MESSAGE_HANDLER(TextInputClientMsg_StringAtPoint,
+                        OnStringAtPoint)
     IPC_MESSAGE_HANDLER(TextInputClientMsg_CharacterIndexForPoint,
                         OnCharacterIndexForPoint)
     IPC_MESSAGE_HANDLER(TextInputClientMsg_FirstRectForCharacterRange,
@@ -41,6 +43,21 @@ bool TextInputClientObserver::OnMessageReceived(const IPC::Message& message) {
 
 blink::WebView* TextInputClientObserver::webview() {
   return render_view()->GetWebView();
+}
+
+void TextInputClientObserver::OnStringAtPoint(gfx::Point point) {
+#if defined(OS_MACOSX)
+  blink::WebPoint baselinePoint;
+  NSAttributedString* string = blink::WebSubstringUtil::attributedWordAtPoint(
+      webview(), point, baselinePoint);
+
+  scoped_ptr<const mac::AttributedStringCoder::EncodedString> encoded(
+      mac::AttributedStringCoder::Encode(string));
+  Send(new TextInputClientReplyMsg_GotStringAtPoint(
+      routing_id(), *encoded.get(), baselinePoint));
+#else
+  NOTIMPLEMENTED();
+#endif
 }
 
 void TextInputClientObserver::OnCharacterIndexForPoint(gfx::Point point) {

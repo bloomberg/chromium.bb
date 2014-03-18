@@ -2795,6 +2795,24 @@ SkBitmap::Config RenderWidgetHostViewMac::PreferredReadbackFormat() {
   [responderDelegate_ touchesEndedWithEvent:event];
 }
 
+// This is invoked only on 10.8 or newer when the user taps a word using
+// three fingers.
+- (void)quickLookWithEvent:(NSEvent*)event {
+  NSPoint point = [self convertPoint:[event locationInWindow] fromView:nil];
+  TextInputClientMac::GetInstance()->GetStringAtPoint(
+      renderWidgetHostView_->render_widget_host_,
+      gfx::Point(point.x, NSHeight([self frame]) - point.y),
+      ^(NSAttributedString* string, NSPoint baselinePoint) {
+          if (string && [string length] > 0) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [self showDefinitionForAttributedString:string
+                                                atPoint:baselinePoint];
+            });
+          }
+      }
+  );
+}
+
 // This method handles 2 different types of hardware events.
 // (Apple does not distinguish between them).
 //  a. Scrolling the middle wheel of a mouse.

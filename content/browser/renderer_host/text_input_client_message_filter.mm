@@ -10,8 +10,8 @@
 #include "content/common/text_input_client_messages.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "ipc/ipc_message_macros.h"
+#include "ui/gfx/point.h"
 #include "ui/gfx/range/range.h"
-#include "ui/gfx/rect.h"
 
 namespace content {
 
@@ -26,6 +26,8 @@ bool TextInputClientMessageFilter::OnMessageReceived(
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(TextInputClientMessageFilter, message,
       *message_was_ok)
+    IPC_MESSAGE_HANDLER(TextInputClientReplyMsg_GotStringAtPoint,
+                        OnGotStringAtPoint)
     IPC_MESSAGE_HANDLER(TextInputClientReplyMsg_GotCharacterIndexForPoint,
                         OnGotCharacterIndexForPoint)
     IPC_MESSAGE_HANDLER(TextInputClientReplyMsg_GotFirstRectForRange,
@@ -38,6 +40,15 @@ bool TextInputClientMessageFilter::OnMessageReceived(
 }
 
 TextInputClientMessageFilter::~TextInputClientMessageFilter() {}
+
+void TextInputClientMessageFilter::OnGotStringAtPoint(
+    const mac::AttributedStringCoder::EncodedString& encoded_string,
+    const gfx::Point& point) {
+  TextInputClientMac* service = TextInputClientMac::GetInstance();
+  NSAttributedString* string =
+      mac::AttributedStringCoder::Decode(&encoded_string);
+  service->GetStringAtPointReply(string, NSPointFromCGPoint(point.ToCGPoint()));
+}
 
 void TextInputClientMessageFilter::OnGotCharacterIndexForPoint(size_t index) {
   TextInputClientMac* service = TextInputClientMac::GetInstance();
