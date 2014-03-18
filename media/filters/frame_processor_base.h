@@ -71,11 +71,6 @@ class MEDIA_EXPORT FrameProcessorBase {
     kVideoTrackId = -3
   };
 
-  // Callback signature used to notify ChunkDemuxer of timestamps that may cause
-  // the duration to be updated.
-  typedef base::Callback<void(
-      base::TimeDelta, ChunkDemuxerStream*)> IncreaseDurationCB;
-
   virtual ~FrameProcessorBase();
 
   // Get/set the current append mode, which if true means "sequence" and if
@@ -116,7 +111,7 @@ class MEDIA_EXPORT FrameProcessorBase {
  protected:
   typedef std::map<StreamParser::TrackId, MseTrackBuffer*> TrackBufferMap;
 
-  explicit FrameProcessorBase(const IncreaseDurationCB& increase_duration_cb);
+  FrameProcessorBase();
 
   // If |track_buffers_| contains |id|, returns a pointer to the associated
   // MseTrackBuffer. Otherwise, returns NULL.
@@ -128,8 +123,6 @@ class MEDIA_EXPORT FrameProcessorBase {
   // Controls how a sequence of media segments are handled. This is initially
   // set to false ("segments").
   bool sequence_mode_;
-
-  IncreaseDurationCB increase_duration_cb_;
 
   // TrackId-indexed map of each track's stream.
   TrackBufferMap track_buffers_;

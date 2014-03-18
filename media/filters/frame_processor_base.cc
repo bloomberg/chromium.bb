@@ -25,12 +25,8 @@ void MseTrackBuffer::Reset() {
   needs_random_access_point_ = true;
 }
 
-FrameProcessorBase::FrameProcessorBase(
-    const IncreaseDurationCB& increase_duration_cb)
-    : sequence_mode_(false),
-      increase_duration_cb_(increase_duration_cb) {
-  DCHECK(!increase_duration_cb_.is_null());
-}
+FrameProcessorBase::FrameProcessorBase()
+    : sequence_mode_(false) {}
 
 FrameProcessorBase::~FrameProcessorBase() {
   DVLOG(2) << __FUNCTION__ << "()";

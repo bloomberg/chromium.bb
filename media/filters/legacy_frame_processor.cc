@@ -11,8 +11,9 @@ namespace media {
 
 LegacyFrameProcessor::LegacyFrameProcessor(
     const IncreaseDurationCB& increase_duration_cb)
-    : FrameProcessorBase(increase_duration_cb) {
+    : increase_duration_cb_(increase_duration_cb) {
   DVLOG(2) << __FUNCTION__ << "()";
+  DCHECK(!increase_duration_cb_.is_null());
 }
 
 LegacyFrameProcessor::~LegacyFrameProcessor() {
