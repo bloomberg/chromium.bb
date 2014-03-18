@@ -230,8 +230,8 @@ class GitWrapper(SCMWrapper):
       quiet = ['--quiet']
     self._UpdateBranchHeads(options, fetch=False)
 
-    fetch_cmd = [
-      '-c', 'core.deltaBaseCacheLimit=2g', 'fetch', self.remote, '--prune']
+    cfg = gclient_utils.DefaultIndexPackConfig()
+    fetch_cmd = cfg + ['fetch', self.remote, '--prune']
     self._Run(fetch_cmd + quiet, options, retry=True)
     self._Run(['reset', '--hard', revision] + quiet, options)
     self.UpdateSubmoduleConfig()
@@ -700,8 +700,9 @@ class GitWrapper(SCMWrapper):
       print('')
     template_path = os.path.join(
         os.path.dirname(THIS_FILE_PATH), 'git-templates')
-    clone_cmd = ['-c', 'core.deltaBaseCacheLimit=2g', 'clone', '--no-checkout',
-                 '--progress', '--template=%s' % template_path]
+    cfg = gclient_utils.DefaultIndexPackConfig()
+    clone_cmd = cfg + [
+        'clone', '--no-checkout', '--progress', '--template=%s' % template_path]
     if self.cache_dir:
       clone_cmd.append('--shared')
     if options.verbose:
@@ -911,7 +912,8 @@ class GitWrapper(SCMWrapper):
                     '^\\+refs/branch-heads/\\*:.*$']
       self._Run(config_cmd, options)
       if fetch:
-        fetch_cmd = ['-c', 'core.deltaBaseCacheLimit=2g', 'fetch', self.remote]
+        cfg = gclient_utils.DefaultIndexPackConfig()
+        fetch_cmd =  cfg + ['fetch', self.remote]
         if options.verbose:
           fetch_cmd.append('--verbose')
         self._Run(fetch_cmd, options, retry=True)

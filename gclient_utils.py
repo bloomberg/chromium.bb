@@ -9,6 +9,7 @@ import cStringIO
 import logging
 import os
 import pipes
+import platform
 import Queue
 import re
 import stat
@@ -960,3 +961,23 @@ def NumLocalCpus():
     # Mac OS 10.6 only
     # pylint: disable=E1101
     return int(os.sysconf('SC_NPROCESSORS_ONLN'))
+
+def DefaultDeltaBaseCacheLimit():
+  """Return a reasonable default for the git config core.deltaBaseCacheLimit.
+
+  The primary constraint is the address space of virtual memory.  The cache
+  size limit is per-thread, and 32-bit systems can hit OOM errors if this
+  parameter is set too high.
+  """
+  if platform.architecture()[0].startswith('64'):
+    return '2g'
+  else:
+    return '512m'
+
+def DefaultIndexPackConfig():
+  """Return reasonable default values for configuring git-index-pack.
+
+  Experiments suggest that higher values for pack.threads don't improve
+  performance."""
+  return ['-c', 'pack.threads=5', '-c',
+          'core.deltaBaseCacheLimit=%s' % DefaultDeltaBaseCacheLimit()]

@@ -109,9 +109,6 @@ class GclientGitCheckout(GclientCheckout, GitCheckout):
     return os.path.exists(os.path.join(os.getcwd(), self.root))
 
   def init(self):
-    # TODO(dpranke): Work around issues w/ delta compression on big repos.
-    self.run_git('config', '--global', 'core.deltaBaseCacheLimit', '1G')
-
     # Configure and do the gclient checkout.
     self.run_gclient('config', '--spec', self.spec['gclient_spec'])
     if self.options.nohooks:

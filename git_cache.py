@@ -181,8 +181,8 @@ def CMDpopulate(parser, args):
     d = ['--depth', '%d' % options.depth]
 
   def _config(directory):
-    RunGit(['config', 'core.deltaBaseCacheLimit', '2g'],
-           cwd=directory)
+    RunGit(['config', 'core.deltaBaseCacheLimit',
+            gclient_utils.DefaultDeltaBaseCacheLimit()], cwd=directory)
     RunGit(['config', 'remote.origin.url', url],
            cwd=directory)
     RunGit(['config', '--replace-all', 'remote.origin.fetch',
