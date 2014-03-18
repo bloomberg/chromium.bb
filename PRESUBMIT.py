@@ -158,7 +158,7 @@ TOOLCHAIN_BUILD_TRYBOTS = [
     ]
 
 
-def GetPreferredTrySlaves(_, change):
+def GetPreferredTryMasters(_, change):
 
   has_pnacl = False
   has_toolchain_build = False
@@ -189,4 +189,6 @@ def GetPreferredTrySlaves(_, change):
   if has_others:
     trybots += DEFAULT_TRYBOTS
 
-  return trybots
+  return {
+    'tryserver.nacl': { t: set(['defaulttests']) for t in trybots },
+  }
