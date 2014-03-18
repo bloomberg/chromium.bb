@@ -899,7 +899,6 @@ public:
 protected:
     GarbageCollected()
     {
-        ASSERT(ThreadStateFor<ThreadingTrait<T>::Affinity>::state()->contains(reinterpret_cast<Address>(this)));
     }
 };
 

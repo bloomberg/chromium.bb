@@ -49,6 +49,11 @@ inline const WillBeHeapVector<RefPtrWillBeMember<StyleSheet> >& StyleSheetList::
 
 void StyleSheetList::detachFromDocument()
 {
+    // FIXME: Oilpan: This is safe currently because the Document is
+    // *not* in the oilpan heap and the style engine is alive when the
+    // document dies. When the Document is in the oilpan heap, we need
+    // the StyleSheetList and the document to die together and get rid
+    // of the detachedStyleSheets.
     m_detachedStyleSheets = document()->styleEngine()->styleSheetsForStyleSheetList(*m_treeScope);
     m_treeScope = 0;
 }

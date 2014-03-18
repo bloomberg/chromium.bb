@@ -39,11 +39,17 @@ class StyleSheetCollection;
 class StyleEngine;
 
 class ShadowTreeStyleSheetCollection FINAL : public TreeScopeStyleSheetCollection {
-    WTF_MAKE_NONCOPYABLE(ShadowTreeStyleSheetCollection); WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_NONCOPYABLE(ShadowTreeStyleSheetCollection);
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
     explicit ShadowTreeStyleSheetCollection(ShadowRoot&);
 
     bool updateActiveStyleSheets(StyleEngine*, StyleResolverUpdateMode);
+
+    virtual void trace(Visitor* visitor) OVERRIDE
+    {
+        TreeScopeStyleSheetCollection::trace(visitor);
+    }
 
 private:
     void collectStyleSheets(StyleEngine*, StyleSheetCollection&);

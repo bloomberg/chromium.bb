@@ -32,6 +32,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/DocumentOrderedList.h"
 #include "core/dom/DocumentStyleSheetCollection.h"
+#include "heap/Handle.h"
 #include "wtf/FastAllocBase.h"
 #include "wtf/ListHashSet.h"
 #include "wtf/RefPtr.h"
@@ -184,7 +185,7 @@ public:
 
     void markDocumentDirty();
 
-    PassRefPtr<CSSStyleSheet> createSheet(Element*, const String& text, TextPosition startPosition, bool createdByParser);
+    PassRefPtrWillBeRawPtr<CSSStyleSheet> createSheet(Element*, const String& text, TextPosition startPosition, bool createdByParser);
     void removeSheet(StyleSheetContents*);
 
     void trace(Visitor*);
@@ -207,7 +208,7 @@ private:
 
     void createResolver();
 
-    static PassRefPtr<CSSStyleSheet> parseSheet(Element*, const String& text, TextPosition startPosition, bool createdByParser);
+    static PassRefPtrWillBeRawPtr<CSSStyleSheet> parseSheet(Element*, const String& text, TextPosition startPosition, bool createdByParser);
 
     Document& m_document;
     bool m_isMaster;
@@ -224,7 +225,7 @@ private:
     WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet> > m_authorStyleSheets;
 
     DocumentStyleSheetCollection m_documentStyleSheetCollection;
-    HashMap<TreeScope*, OwnPtr<TreeScopeStyleSheetCollection> > m_styleSheetCollectionMap;
+    WillBeHeapHashMap<TreeScope*, OwnPtrWillBeMember<ShadowTreeStyleSheetCollection> > m_styleSheetCollectionMap;
 
     bool m_documentScopeDirty;
     TreeScopeSet m_dirtyTreeScopes;

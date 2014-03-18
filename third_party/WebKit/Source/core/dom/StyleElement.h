@@ -53,7 +53,7 @@ protected:
     void childrenChanged(Element*);
     void finishParsingChildren(Element*);
 
-    RefPtr<CSSStyleSheet> m_sheet;
+    RefPtrWillBePersistent<CSSStyleSheet> m_sheet;
 
 private:
     void createSheet(Element*, const String& text = String());

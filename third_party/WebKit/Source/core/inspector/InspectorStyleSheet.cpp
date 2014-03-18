@@ -375,7 +375,7 @@ private:
     String m_text;
     bool m_hasText;
     OwnPtr<RuleSourceDataList> m_sourceData;
-    RefPtr<CSSStyleSheet> m_pageStyleSheet;
+    RefPtrWillBePersistent<CSSStyleSheet> m_pageStyleSheet;
 };
 
 ParsedStyleSheet::ParsedStyleSheet(CSSStyleSheet* pageStyleSheet)
@@ -833,12 +833,12 @@ Document* InspectorStyle::ownerDocument() const
     return m_parentStyleSheet->pageStyleSheet() ? m_parentStyleSheet->pageStyleSheet()->ownerDocument() : 0;
 }
 
-PassRefPtr<InspectorStyleSheet> InspectorStyleSheet::create(InspectorPageAgent* pageAgent, InspectorResourceAgent* resourceAgent, const String& id, PassRefPtr<CSSStyleSheet> pageStyleSheet, TypeBuilder::CSS::StyleSheetOrigin::Enum origin, const String& documentURL, Listener* listener)
+PassRefPtr<InspectorStyleSheet> InspectorStyleSheet::create(InspectorPageAgent* pageAgent, InspectorResourceAgent* resourceAgent, const String& id, PassRefPtrWillBeRawPtr<CSSStyleSheet> pageStyleSheet, TypeBuilder::CSS::StyleSheetOrigin::Enum origin, const String& documentURL, Listener* listener)
 {
     return adoptRef(new InspectorStyleSheet(pageAgent, resourceAgent, id, pageStyleSheet, origin, documentURL, listener));
 }
 
-InspectorStyleSheet::InspectorStyleSheet(InspectorPageAgent* pageAgent, InspectorResourceAgent* resourceAgent, const String& id, PassRefPtr<CSSStyleSheet> pageStyleSheet, TypeBuilder::CSS::StyleSheetOrigin::Enum origin, const String& documentURL, Listener* listener)
+InspectorStyleSheet::InspectorStyleSheet(InspectorPageAgent* pageAgent, InspectorResourceAgent* resourceAgent, const String& id, PassRefPtrWillBeRawPtr<CSSStyleSheet> pageStyleSheet, TypeBuilder::CSS::StyleSheetOrigin::Enum origin, const String& documentURL, Listener* listener)
     : m_pageAgent(pageAgent)
     , m_resourceAgent(resourceAgent)
     , m_id(id)

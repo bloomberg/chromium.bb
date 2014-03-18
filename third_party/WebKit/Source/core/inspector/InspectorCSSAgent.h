@@ -202,7 +202,7 @@ private:
     HashMap<RefPtr<Document>, RefPtr<InspectorStyleSheet> > m_documentToViaInspectorStyleSheet; // "via inspector" stylesheets
     NodeIdToForcedPseudoState m_nodeIdToForcedPseudoState;
 
-    RefPtr<CSSStyleSheet> m_inspectorUserAgentStyleSheet;
+    RefPtrWillBePersistent<CSSStyleSheet> m_inspectorUserAgentStyleSheet;
 
     int m_lastStyleSheetId;
     int m_styleSheetsPendingMutation;

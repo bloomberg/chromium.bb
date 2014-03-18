@@ -251,6 +251,13 @@ public:
     Persistent(T* raw) : m_raw(raw)
     {
         COMPILE_ASSERT_IS_GARBAGE_COLLECTED(T, NonGarbageCollectedObjectInPersistent);
+#ifndef NDEBUG
+        // For global persistent handles we cannot check that the
+        // pointer is in the heap because that would involve
+        // inspecting the heap of running threads.
+        bool isGlobalPersistent = WTF::IsSubclass<RootsAccessor, GlobalPersistents>::value;
+        ASSERT(!raw || isGlobalPersistent || ThreadStateFor<ThreadingTrait<T>::Affinity>::state()->contains(raw));
+#endif
     }
 
     Persistent(const Persistent& other) : m_raw(other)
@@ -423,6 +430,7 @@ public:
     Member(T* raw) : m_raw(raw)
     {
         COMPILE_ASSERT_IS_GARBAGE_COLLECTED(T, NonGarbageCollectedObjectInMember);
+        ASSERT(!raw || ThreadStateFor<ThreadingTrait<T>::Affinity>::state()->contains(raw));
     }
 
     Member(WTF::HashTableDeletedValueType) : m_raw(reinterpret_cast<T*>(-1))

@@ -39,12 +39,18 @@ class StyleEngine;
 class TreeScope;
 
 class DocumentStyleSheetCollection FINAL : public TreeScopeStyleSheetCollection {
-    WTF_MAKE_NONCOPYABLE(DocumentStyleSheetCollection); WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_NONCOPYABLE(DocumentStyleSheetCollection);
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
     explicit DocumentStyleSheetCollection(TreeScope&);
 
     bool updateActiveStyleSheets(StyleEngine*, StyleResolverUpdateMode);
     void collectStyleSheets(StyleEngine*, DocumentStyleSheetCollector&);
+
+    virtual void trace(Visitor* visitor) OVERRIDE
+    {
+        TreeScopeStyleSheetCollection::trace(visitor);
+    }
 
 private:
     void collectStyleSheetsFromCandidates(StyleEngine*, DocumentStyleSheetCollector&);

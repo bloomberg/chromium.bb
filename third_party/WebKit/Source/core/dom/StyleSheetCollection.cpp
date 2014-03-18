@@ -52,7 +52,7 @@ void StyleSheetCollection::swapSheetsForSheetList(WillBeHeapVector<RefPtrWillBeM
     m_styleSheetsForStyleSheetList.swap(sheets);
 }
 
-void StyleSheetCollection::appendActiveStyleSheets(const WillBePersistentHeapVector<RefPtrWillBeMember<CSSStyleSheet> >& sheets)
+void StyleSheetCollection::appendActiveStyleSheets(const WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet> >& sheets)
 {
     m_activeAuthorStyleSheets.appendVector(sheets);
 }
@@ -65,6 +65,12 @@ void StyleSheetCollection::appendActiveStyleSheet(CSSStyleSheet* sheet)
 void StyleSheetCollection::appendSheetForList(StyleSheet* sheet)
 {
     m_styleSheetsForStyleSheetList.append(sheet);
+}
+
+void StyleSheetCollection::trace(Visitor* visitor)
+{
+    visitor->trace(m_activeAuthorStyleSheets);
+    visitor->trace(m_styleSheetsForStyleSheetList);
 }
 
 }

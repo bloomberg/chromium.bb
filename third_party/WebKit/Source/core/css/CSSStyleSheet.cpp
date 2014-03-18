@@ -87,25 +87,25 @@ static bool isAcceptableCSSStyleSheetParent(Node* parentNode)
 
 PassRefPtrWillBeRawPtr<CSSStyleSheet> CSSStyleSheet::create(PassRefPtrWillBeRawPtr<StyleSheetContents> sheet, CSSImportRule* ownerRule)
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new CSSStyleSheet(sheet, ownerRule));
+    return adoptRefWillBeNoop(new CSSStyleSheet(sheet, ownerRule));
 }
 
 PassRefPtrWillBeRawPtr<CSSStyleSheet> CSSStyleSheet::create(PassRefPtrWillBeRawPtr<StyleSheetContents> sheet, Node* ownerNode)
 {
-    return adoptRefWillBeRefCountedGarbageCollected(new CSSStyleSheet(sheet, ownerNode, false, TextPosition::minimumPosition()));
+    return adoptRefWillBeNoop(new CSSStyleSheet(sheet, ownerNode, false, TextPosition::minimumPosition()));
 }
 
 PassRefPtrWillBeRawPtr<CSSStyleSheet> CSSStyleSheet::createInline(PassRefPtrWillBeRawPtr<StyleSheetContents> sheet, Node* ownerNode, const TextPosition& startPosition)
 {
     ASSERT(sheet);
-    return adoptRefWillBeRefCountedGarbageCollected(new CSSStyleSheet(sheet, ownerNode, true, startPosition));
+    return adoptRefWillBeNoop(new CSSStyleSheet(sheet, ownerNode, true, startPosition));
 }
 
 PassRefPtrWillBeRawPtr<CSSStyleSheet> CSSStyleSheet::createInline(Node* ownerNode, const KURL& baseURL, const TextPosition& startPosition, const String& encoding)
 {
     CSSParserContext parserContext(ownerNode->document(), 0, baseURL, encoding);
     RefPtrWillBeRawPtr<StyleSheetContents> sheet = StyleSheetContents::create(baseURL.string(), parserContext);
-    return adoptRefWillBeRefCountedGarbageCollected(new CSSStyleSheet(sheet.release(), ownerNode, true, startPosition));
+    return adoptRefWillBeNoop(new CSSStyleSheet(sheet.release(), ownerNode, true, startPosition));
 }
 
 CSSStyleSheet::CSSStyleSheet(PassRefPtrWillBeRawPtr<StyleSheetContents> contents, CSSImportRule* ownerRule)

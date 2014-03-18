@@ -170,7 +170,7 @@ public:
         virtual void didReparseStyleSheet() = 0;
     };
 
-    static PassRefPtr<InspectorStyleSheet> create(InspectorPageAgent*, InspectorResourceAgent*, const String& id, PassRefPtr<CSSStyleSheet> pageStyleSheet, TypeBuilder::CSS::StyleSheetOrigin::Enum, const String& documentURL, Listener*);
+    static PassRefPtr<InspectorStyleSheet> create(InspectorPageAgent*, InspectorResourceAgent*, const String& id, PassRefPtrWillBeRawPtr<CSSStyleSheet> pageStyleSheet, TypeBuilder::CSS::StyleSheetOrigin::Enum, const String& documentURL, Listener*);
 
     virtual ~InspectorStyleSheet();
 
@@ -199,7 +199,7 @@ public:
     virtual CSSStyleDeclaration* styleForId(const InspectorCSSId&) const;
 
 protected:
-    InspectorStyleSheet(InspectorPageAgent*, InspectorResourceAgent*, const String& id, PassRefPtr<CSSStyleSheet> pageStyleSheet, TypeBuilder::CSS::StyleSheetOrigin::Enum, const String& documentURL, Listener*);
+    InspectorStyleSheet(InspectorPageAgent*, InspectorResourceAgent*, const String& id, PassRefPtrWillBeRawPtr<CSSStyleSheet> pageStyleSheet, TypeBuilder::CSS::StyleSheetOrigin::Enum, const String& documentURL, Listener*);
 
     void fireStyleSheetChanged();
     virtual PassRefPtr<CSSRuleSourceData> ruleSourceDataFor(CSSStyleDeclaration*) const;
@@ -234,7 +234,7 @@ private:
     InspectorPageAgent* m_pageAgent;
     InspectorResourceAgent* m_resourceAgent;
     String m_id;
-    RefPtr<CSSStyleSheet> m_pageStyleSheet;
+    RefPtrWillBePersistent<CSSStyleSheet> m_pageStyleSheet;
     TypeBuilder::CSS::StyleSheetOrigin::Enum m_origin;
     String m_documentURL;
     OwnPtr<ParsedStyleSheet> m_parsedStyleSheet;

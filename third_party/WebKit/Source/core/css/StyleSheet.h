@@ -34,7 +34,7 @@ class MediaList;
 class Node;
 class StyleSheet;
 
-class StyleSheet : public RefCountedWillBeRefCountedGarbageCollected<StyleSheet> {
+class StyleSheet : public RefCountedWillBeGarbageCollectedFinalized<StyleSheet> {
 public:
     virtual ~StyleSheet();
 
