@@ -388,6 +388,9 @@ Status ImportKeyJwk(const CryptoData& key_data,
   // TODO(padolph): Generalize this comment to include export, and move to top
   // of file.
 
+  // TODO(padolph): Generalize this comment to include export, and move to top
+  // of file.
+
   // The goal of this method is to extract key material and meta data from the
   // incoming JWK, combine them with the input parameters, and ultimately import
   // a Web Crypto Key.

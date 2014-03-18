@@ -2369,6 +2369,51 @@ TEST_F(SharedCryptoTest, MAYBE(AesKwKeyImport)) {
                           &key));
 }
 
+TEST_F(SharedCryptoTest, MAYBE(UnwrapFailures)) {
+  // This test exercises the code path common to all unwrap operations.
+  scoped_ptr<base::ListValue> tests;
+  ASSERT_TRUE(ReadJsonTestFileToList("aes_kw.json", &tests));
+  base::DictionaryValue* test;
+  ASSERT_TRUE(tests->GetDictionary(0, &test));
+  const std::vector<uint8> test_kek = GetBytesFromHexString(test, "kek");
+  const std::vector<uint8> test_ciphertext =
+      GetBytesFromHexString(test, "ciphertext");
+
+  // Using a key that does not have unwrapKey usage should fail.
+  blink::WebCryptoKey bad_wrapping_key = ImportSecretKeyFromRaw(
+      test_kek,
+      webcrypto::CreateAlgorithm(blink::WebCryptoAlgorithmIdAesKw),
+      blink::WebCryptoKeyUsageDecrypt);  // <-- should be UnwrapKey
+  blink::WebCryptoKey unwrapped_key = blink::WebCryptoKey::createNull();
+  EXPECT_STATUS(
+      Status::ErrorUnexpected(),
+      UnwrapKey(blink::WebCryptoKeyFormatRaw,
+                CryptoData(test_ciphertext),
+                bad_wrapping_key,
+                webcrypto::CreateAlgorithm(blink::WebCryptoAlgorithmIdAesKw),
+                webcrypto::CreateAlgorithm(blink::WebCryptoAlgorithmIdAesCbc),
+                true,
+                blink::WebCryptoKeyUsageEncrypt,
+                &unwrapped_key));
+
+  // Using a wrapping algorithm that does not match the wrapping key algorithm
+  // should fail.
+  blink::WebCryptoKey wrapping_key = ImportSecretKeyFromRaw(
+      test_kek,
+      webcrypto::CreateAlgorithm(blink::WebCryptoAlgorithmIdAesKw),
+      blink::WebCryptoKeyUsageUnwrapKey);
+  EXPECT_STATUS(
+      Status::ErrorUnexpected(),
+      UnwrapKey(blink::WebCryptoKeyFormatRaw,
+                CryptoData(test_ciphertext),
+                wrapping_key,
+                webcrypto::CreateAlgorithm(blink::WebCryptoAlgorithmIdAesCbc),
+                webcrypto::CreateAlgorithm(blink::WebCryptoAlgorithmIdAesCbc),
+                true,
+                blink::WebCryptoKeyUsageEncrypt,
+                &unwrapped_key));
+}
+
 TEST_F(SharedCryptoTest, MAYBE(AesKwRawSymkeyWrapUnwrapKnownAnswer)) {
   scoped_ptr<base::ListValue> tests;
   ASSERT_TRUE(ReadJsonTestFileToList("aes_kw.json", &tests));
@@ -2529,6 +2574,114 @@ TEST_F(SharedCryptoTest, MAYBE(AesKwRawSymkeyUnwrapCorruptData)) {
                 true,
                 blink::WebCryptoKeyUsageEncrypt,
                 &unwrapped_key));
+}
+
+TEST_F(SharedCryptoTest, MAYBE(AesKwJwkSymkeyUnwrapKnownData)) {
+  // The following data lists a known HMAC SHA-256 key, then a JWK
+  // representation of this key which was encrypted ("wrapped") using AES-KW and
+  // the following wrapping key.
+  // For reference, the intermediate clear JWK is
+  // {"alg":"HS256","ext":true,"k":<b64urlKey>,"key_ops":["verify"],"kty":"oct"}
+  // (Not shown is space padding to ensure the cleartext meets the size
+  // requirements of the AES-KW algorithm.)
+  const std::vector<uint8> key_data = HexStringToBytes(
+      "000102030405060708090A0B0C0D0E0F000102030405060708090A0B0C0D0E0F");
+  const std::vector<uint8> wrapped_key_data = HexStringToBytes(
+      "14E6380B35FDC5B72E1994764B6CB7BFDD64E7832894356AAEE6C3768FC3D0F115E6B0"
+      "6729756225F999AA99FDF81FD6A359F1576D3D23DE6CB69C3937054EB497AC1E8C38D5"
+      "5E01B9783A20C8D930020932CF25926103002213D0FC37279888154FEBCEDF31832158"
+      "97938C5CFE5B10B4254D0C399F39D0");
+  const std::vector<uint8> wrapping_key_data =
+      HexStringToBytes("000102030405060708090A0B0C0D0E0F");
+  const blink::WebCryptoAlgorithm wrapping_algorithm =
+      webcrypto::CreateAlgorithm(blink::WebCryptoAlgorithmIdAesKw);
+
+  // Import the wrapping key.
+  blink::WebCryptoKey wrapping_key = ImportSecretKeyFromRaw(
+      wrapping_key_data, wrapping_algorithm, blink::WebCryptoKeyUsageUnwrapKey);
+
+  // Unwrap the known wrapped key data to produce a new key
+  blink::WebCryptoKey unwrapped_key = blink::WebCryptoKey::createNull();
+  ASSERT_STATUS_SUCCESS(UnwrapKey(blink::WebCryptoKeyFormatJwk,
+                                  CryptoData(wrapped_key_data),
+                                  wrapping_key,
+                                  wrapping_algorithm,
+                                  blink::WebCryptoAlgorithm::createNull(),
+                                  true,
+                                  blink::WebCryptoKeyUsageVerify,
+                                  &unwrapped_key));
+
+  // Validate the new key's attributes.
+  EXPECT_FALSE(unwrapped_key.isNull());
+  EXPECT_TRUE(unwrapped_key.handle());
+  EXPECT_EQ(blink::WebCryptoKeyTypeSecret, unwrapped_key.type());
+  EXPECT_EQ(blink::WebCryptoAlgorithmIdHmac, unwrapped_key.algorithm().id());
+  EXPECT_EQ(blink::WebCryptoAlgorithmIdSha256,
+            unwrapped_key.algorithm().hmacParams()->hash().id());
+  EXPECT_EQ(true, unwrapped_key.extractable());
+  EXPECT_EQ(blink::WebCryptoKeyUsageVerify, unwrapped_key.usages());
+
+  // Export the new key's raw data and compare to the known original.
+  blink::WebArrayBuffer raw_key;
+  EXPECT_STATUS_SUCCESS(
+      ExportKey(blink::WebCryptoKeyFormatRaw, unwrapped_key, &raw_key));
+  EXPECT_TRUE(ArrayBufferMatches(key_data, raw_key));
+}
+
+TEST_F(SharedCryptoTest, MAYBE(AesKwJwkSymkeyUnwrapErrors)) {
+  // Unwrap data that can be successfully decrypted, but contains an error in
+  // the plaintext JWK, and ensure that a generic error is returned instead of
+  // some other more specific error, to show that information about the
+  // plaintext JWK inside the encrypted data is not leaked.
+  // Specifically, wrapped_key_data below is an AES-KW encrypted version of the
+  // plaintext JWK
+  // {
+  //   "alg":"HS256",
+  //   "ext":true,
+  //   "k":"AAECAwQFBgcICQoLDA0ODwABAgMEBQYHCAkKCwwNDg8",
+  //   "key_ops":["verify"],
+  //   "kty":"foo"   <-- Invalid kty value
+  // }
+  // Recall that unwrapKey = decrypt followed by import. The wrapped_key_data
+  // will decrypt successfully, but the import step will fail because of the bad
+  // kty value. But unlike the standalone ImportKey() method which returns
+  // ErrorJwkUnrecognizedKty in this case, the error returned must be just
+  // Error::Status().
+  // Note that it is sufficient to consider just one JWK import failure mode
+  // here; others are validated in the ImportJwkFailures Test.
+  const std::vector<uint8> wrapped_key_data = HexStringToBytes(
+      "8d5ad45f5be6195a7a5944f0cf521bbae255daea140d4712985bb63ca1de1a318fbc49ff"
+      "307bd91bfafd7e9ea2057a2ddabb42ba94e319465972d165e5cc42785ad5cfa36159d5cc"
+      "50084133eae85a22bf8f7cb35f3c07b7c06480dec745d9ce4d4bfce45a6cbc2d39263ab7"
+      "073fc346724841f872f7148d");
+  const std::vector<uint8> wrapping_key_data =
+      HexStringToBytes("000102030405060708090A0B0C0D0E0F");
+  const blink::WebCryptoAlgorithm wrapping_algorithm =
+      webcrypto::CreateAlgorithm(blink::WebCryptoAlgorithmIdAesKw);
+
+  // Import the wrapping key.
+  blink::WebCryptoKey wrapping_key = ImportSecretKeyFromRaw(
+      wrapping_key_data, wrapping_algorithm, blink::WebCryptoKeyUsageUnwrapKey);
+
+  // Unwrap and ensure a generic error is received.
+  blink::WebCryptoKey unwrapped_key = blink::WebCryptoKey::createNull();
+  EXPECT_STATUS(Status::Error(),
+                UnwrapKey(blink::WebCryptoKeyFormatJwk,
+                          CryptoData(wrapped_key_data),
+                          wrapping_key,
+                          wrapping_algorithm,
+                          blink::WebCryptoAlgorithm::createNull(),
+                          true,
+                          blink::WebCryptoKeyUsageVerify,
+                          &unwrapped_key));
+
+  // FIXME(padolph): The check above can fail if the AES-KW decryption step
+  // failed, which masks the test result desired here. For now we have to just
+  // trust the result because I say so.
+  // Once RSA-ES unwrapping is implemented, port this test to use that wrapping
+  // algorithm instead of AES-KW. Unlike AES-KW, RSA-ES supports both the
+  // decrypt and unwrapKey usages, so we can validate successful decryption of
+  // wrapped_key_data prior to seeing the unwrapKey (import) failure.
 }
 
 // TODO(eroman):
@@ -2813,7 +2966,7 @@ TEST_F(SharedCryptoTest, MAYBE(RsaEsRawSymkeyWrapUnwrapErrors)) {
                           blink::WebCryptoKeyUsageSign,
                           &unwrapped_key));
 
-  // Unwapping data too large for the wrapping key should fail.
+  // Unwrapping data too large for the wrapping key should fail.
   EXPECT_STATUS(Status::ErrorDataTooLarge(),
                 UnwrapKey(blink::WebCryptoKeyFormatRaw,
                           CryptoData(big_data),

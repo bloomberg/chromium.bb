@@ -486,6 +486,71 @@ Status WebCryptoAlgorithmToNssMechFlags(
   return Status::Success();
 }
 
+Status DoUnwrapSymKeyAesKw(const CryptoData& wrapped_key_data,
+                           SymKey* wrapping_key,
+                           CK_MECHANISM_TYPE mechanism,
+                           CK_FLAGS flags,
+                           crypto::ScopedPK11SymKey* unwrapped_key) {
+  DCHECK_GE(wrapped_key_data.byte_length(), 24u);
+  DCHECK_EQ(wrapped_key_data.byte_length() % 8, 0u);
+
+  SECItem iv_item = MakeSECItemForBuffer(CryptoData(kAesIv, sizeof(kAesIv)));
+  crypto::ScopedSECItem param_item(
+      PK11_ParamFromIV(CKM_NSS_AES_KEY_WRAP, &iv_item));
+  if (!param_item)
+    return Status::ErrorUnexpected();
+
+  SECItem cipher_text = MakeSECItemForBuffer(wrapped_key_data);
+
+  // The plaintext length is always 64 bits less than the data size.
+  const unsigned int plaintext_length = wrapped_key_data.byte_length() - 8;
+
+  crypto::ScopedPK11SymKey new_key(PK11_UnwrapSymKey(wrapping_key->key(),
+                                                     CKM_NSS_AES_KEY_WRAP,
+                                                     param_item.get(),
+                                                     &cipher_text,
+                                                     mechanism,
+                                                     flags,
+                                                     plaintext_length));
+  // TODO(padolph): Use NSS PORT_GetError() and friends to report a more
+  // accurate error, providing if doesn't leak any information to web pages
+  // about other web crypto users, key details, etc.
+  if (!new_key)
+    return Status::Error();
+
+// TODO(padolph): Change to "defined(USE_NSS)" once the NSS fix for
+// https://bugzilla.mozilla.org/show_bug.cgi?id=981170 rolls into chromium.
+#if 1
+  // ------- Start NSS bug workaround
+  // Workaround for https://code.google.com/p/chromium/issues/detail?id=349939
+  // If unwrap fails, NSS nevertheless returns a valid-looking PK11SymKey, with
+  // a reasonable length but with key data pointing to uninitialized memory.
+  // This workaround re-wraps the key and compares the result with the incoming
+  // data, and fails if there is a difference. This prevents returning a bad key
+  // to the caller.
+  const unsigned int output_length = wrapped_key_data.byte_length();
+  std::vector<unsigned char> buffer(output_length, 0);
+  SECItem wrapped_key_item = MakeSECItemForBuffer(CryptoData(buffer));
+  if (SECSuccess != PK11_WrapSymKey(CKM_NSS_AES_KEY_WRAP,
+                                    param_item.get(),
+                                    wrapping_key->key(),
+                                    new_key.get(),
+                                    &wrapped_key_item)) {
+    return Status::Error();
+  }
+  if (wrapped_key_item.len != wrapped_key_data.byte_length() ||
+      memcmp(wrapped_key_item.data,
+             wrapped_key_data.bytes(),
+             wrapped_key_item.len) != 0) {
+    return Status::Error();
+  }
+// ------- End NSS bug workaround
+#endif
+
+  *unwrapped_key = new_key.Pass();
+  return Status::Success();
+}
+
 }  // namespace
 
 Status ImportKeyRaw(const blink::WebCryptoAlgorithm& algorithm,
@@ -1145,20 +1210,6 @@ Status UnwrapSymKeyAesKw(const CryptoData& wrapped_key_data,
                          bool extractable,
                          blink::WebCryptoKeyUsageMask usage_mask,
                          blink::WebCryptoKey* key) {
-  DCHECK_GE(wrapped_key_data.byte_length(), 24u);
-  DCHECK_EQ(wrapped_key_data.byte_length() % 8, 0u);
-
-  SECItem iv_item = MakeSECItemForBuffer(CryptoData(kAesIv, sizeof(kAesIv)));
-  crypto::ScopedSECItem param_item(
-      PK11_ParamFromIV(CKM_NSS_AES_KEY_WRAP, &iv_item));
-  if (!param_item)
-    return Status::ErrorUnexpected();
-
-  SECItem cipher_text = MakeSECItemForBuffer(wrapped_key_data);
-
-  // The plaintext length is always 64 bits less than the data size.
-  const unsigned int plaintext_length = wrapped_key_data.byte_length() - 8;
-
   // Determine the proper NSS key properties from the input algorithm.
   CK_MECHANISM_TYPE mechanism;
   CK_FLAGS flags;
@@ -1167,50 +1218,15 @@ Status UnwrapSymKeyAesKw(const CryptoData& wrapped_key_data,
   if (status.IsError())
     return status;
 
-  crypto::ScopedPK11SymKey unwrapped_key(PK11_UnwrapSymKey(wrapping_key->key(),
-                                                           CKM_NSS_AES_KEY_WRAP,
-                                                           param_item.get(),
-                                                           &cipher_text,
-                                                           mechanism,
-                                                           flags,
-                                                           plaintext_length));
-  // TODO(padolph): Use NSS PORT_GetError() and friends to report a more
-  // accurate error, providing if doesn't leak any information to web pages
-  // about other web crypto users, key details, etc.
-  if (!unwrapped_key)
-    return Status::Error();
-
-// TODO(padolph): Change to "defined(USE_NSS)" once the NSS fix for
-// https://bugzilla.mozilla.org/show_bug.cgi?id=981170 rolls into chromium.
-#if 1
-  // ------- Start NSS bug workaround
-  // Workaround for https://code.google.com/p/chromium/issues/detail?id=349939
-  // If unwrap fails, NSS nevertheless returns a valid-looking PK11SymKey, with
-  // a reasonable length but with key data pointing to uninitialized memory.
-  // This workaround re-wraps the key and compares the result with the incoming
-  // data, and fails if there is a difference. This prevents returning a bad key
-  // to the caller.
-  const unsigned int output_length = wrapped_key_data.byte_length();
-  std::vector<unsigned char> buffer(output_length, 0);
-  SECItem wrapped_key_item = MakeSECItemForBuffer(CryptoData(buffer));
-  if (SECSuccess != PK11_WrapSymKey(CKM_NSS_AES_KEY_WRAP,
-                                    param_item.get(),
-                                    wrapping_key->key(),
-                                    unwrapped_key.get(),
-                                    &wrapped_key_item)) {
-    return Status::Error();
-  }
-  if (wrapped_key_item.len != wrapped_key_data.byte_length() ||
-      memcmp(wrapped_key_item.data,
-             wrapped_key_data.bytes(),
-             wrapped_key_item.len) != 0) {
-    return Status::Error();
-  }
-  // ------- End NSS bug workaround
-#endif
+  crypto::ScopedPK11SymKey unwrapped_key;
+  status = DoUnwrapSymKeyAesKw(
+      wrapped_key_data, wrapping_key, mechanism, flags, &unwrapped_key);
+  if (status.IsError())
+    return status;
 
   blink::WebCryptoKeyAlgorithm key_algorithm;
-  if (!CreateSecretKeyAlgorithm(algorithm, plaintext_length, &key_algorithm))
+  if (!CreateSecretKeyAlgorithm(
+          algorithm, PK11_GetKeyLength(unwrapped_key.get()), &key_algorithm))
     return Status::ErrorUnexpected();
 
   *key = blink::WebCryptoKey::create(new SymKey(unwrapped_key.Pass()),
@@ -1218,6 +1234,29 @@ Status UnwrapSymKeyAesKw(const CryptoData& wrapped_key_data,
                                      extractable,
                                      key_algorithm,
                                      usage_mask);
+  return Status::Success();
+}
+
+Status DecryptAesKw(SymKey* wrapping_key,
+                    const CryptoData& data,
+                    blink::WebArrayBuffer* buffer) {
+  // Due to limitations in the NSS API for the AES-KW algorithm, |data| must be
+  // temporarily viewed as a symmetric key to be unwrapped (decrypted).
+  crypto::ScopedPK11SymKey decrypted;
+  Status status = DoUnwrapSymKeyAesKw(
+      data, wrapping_key, CKK_GENERIC_SECRET, CKA_ENCRYPT, &decrypted);
+  if (status.IsError())
+    return status;
+
+  // Once the decrypt is complete, extract the resultant raw bytes from NSS and
+  // return them to the caller.
+  if (PK11_ExtractKeyValue(decrypted.get()) != SECSuccess)
+    return Status::Error();
+  const SECItem* const key_data = PK11_GetKeyData(decrypted.get());
+  if (!key_data)
+    return Status::Error();
+  *buffer = webcrypto::CreateArrayBuffer(key_data->data, key_data->len);
+
   return Status::Success();
 }
 

@@ -183,6 +183,10 @@ Status WrapSymKeyAesKw(SymKey* wrapping_key,
                        SymKey* key,
                        blink::WebArrayBuffer* buffer);
 
+// Unwraps (decrypts) |wrapped_key_data| using AES-KW and places the results in
+// a WebCryptoKey. Raw key data remains inside NSS. This function should be used
+// when the input |wrapped_key_data| is known to result in symmetric raw key
+// data after AES-KW decryption.
 // Preconditions:
 //  * |wrapping_key| is non-null
 //  * |key| is non-null
@@ -194,6 +198,17 @@ Status UnwrapSymKeyAesKw(const CryptoData& wrapped_key_data,
                          bool extractable,
                          blink::WebCryptoKeyUsageMask usage_mask,
                          blink::WebCryptoKey* key);
+
+// Performs AES-KW decryption on the input |data|. This function should be used
+// when the input |data| does not directly represent a key and should instead be
+// interpreted as generic bytes.
+// Preconditions:
+//  * |key| is non-null
+//  * |data| is at least 24 bytes and a multiple of 8 bytes
+//  * |buffer| is non-null.
+Status DecryptAesKw(SymKey* key,
+                    const CryptoData& data,
+                    blink::WebArrayBuffer* buffer);
 
 // Preconditions:
 //  * |wrapping_key| is non-null

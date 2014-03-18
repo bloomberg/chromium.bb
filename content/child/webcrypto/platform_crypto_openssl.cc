@@ -403,6 +403,13 @@ Status UnwrapSymKeyAesKw(const CryptoData& wrapped_key_data,
   return Status::ErrorUnsupported();
 }
 
+Status DecryptAesKw(SymKey* key,
+                    const CryptoData& data,
+                    blink::WebArrayBuffer* buffer) {
+  // TODO(eroman): http://crbug.com/267888
+  return Status::ErrorUnsupported();
+}
+
 Status WrapSymKeyRsaEs(PublicKey* wrapping_key,
                        SymKey* key,
                        blink::WebArrayBuffer* buffer) {
