@@ -69,7 +69,7 @@ bool ManagedBookmarksPolicyHandler::CheckPolicySettings(
     std::string url;
     if (!*it || !GetBookmark(**it, &name, &url)) {
       size_t index = it - list->begin();
-      errors->AddError(policy_name(), IDS_POLICY_INVALID_BOOKMARK, index);
+      errors->AddError(policy_name(), index, IDS_POLICY_INVALID_BOOKMARK);
     }
   }
 
