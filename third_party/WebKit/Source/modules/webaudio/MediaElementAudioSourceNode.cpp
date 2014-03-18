@@ -28,6 +28,7 @@
 
 #include "modules/webaudio/MediaElementAudioSourceNode.h"
 
+#include "core/html/HTMLMediaElement.h"
 #include "modules/webaudio/AudioContext.h"
 #include "modules/webaudio/AudioNodeOutput.h"
 #include "platform/Logging.h"

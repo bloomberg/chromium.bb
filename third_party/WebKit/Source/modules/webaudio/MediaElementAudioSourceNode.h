@@ -27,7 +27,6 @@
 
 #if ENABLE(WEB_AUDIO)
 
-#include "core/html/HTMLMediaElement.h"
 #include "platform/audio/AudioSourceProviderClient.h"
 #include "platform/audio/MultiChannelResampler.h"
 #include "modules/webaudio/AudioSourceNode.h"
@@ -38,6 +37,7 @@
 namespace WebCore {
 
 class AudioContext;
+class HTMLMediaElement;
 
 class MediaElementAudioSourceNode FINAL : public AudioSourceNode, public AudioSourceProviderClient {
 public:

@@ -31,7 +31,6 @@
 #ifndef HTMLMediaSource_h
 #define HTMLMediaSource_h
 
-#include "core/html/HTMLMediaElement.h"
 #include "core/html/URLRegistry.h"
 #include "wtf/Forward.h"
 
@@ -41,6 +40,7 @@ class WebMediaSource;
 
 namespace WebCore {
 
+class HTMLMediaElement;
 class TimeRanges;
 
 class HTMLMediaSource : public URLRegistrable {

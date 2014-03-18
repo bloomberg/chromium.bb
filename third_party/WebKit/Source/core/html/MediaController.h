@@ -41,7 +41,6 @@ namespace WebCore {
 class Clock;
 class Event;
 class ExceptionState;
-class HTMLMediaElement;
 class ExecutionContext;
 
 class MediaController FINAL : public RefCounted<MediaController>, public ScriptWrappable, public MediaControllerInterface, public EventTargetWithInlineData {

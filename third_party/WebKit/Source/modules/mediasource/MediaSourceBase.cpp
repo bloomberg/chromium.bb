@@ -37,6 +37,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/events/Event.h"
 #include "core/events/GenericEventQueue.h"
+#include "core/html/HTMLMediaElement.h"
 #include "core/html/TimeRanges.h"
 #include "modules/mediasource/MediaSourceRegistry.h"
 #include "platform/Logging.h"

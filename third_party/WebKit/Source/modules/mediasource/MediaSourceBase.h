@@ -35,12 +35,12 @@
 #include "core/events/EventTarget.h"
 #include "core/html/HTMLMediaSource.h"
 #include "core/html/URLRegistry.h"
+#include "public/platform/WebMediaSource.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 
 namespace blink {
-class WebMediaSource;
 class WebSourceBuffer;
 }
 
