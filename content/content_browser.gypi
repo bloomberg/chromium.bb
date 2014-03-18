@@ -1368,12 +1368,6 @@
         'browser/gamepad/gamepad_platform_data_fetcher.cc',
       ]
     }],
-    # TODO(sky): conditional temporary until mojo is sorted out on mac.
-    ['OS=="win" or OS=="linux" or OS=="android"', {
-      'dependencies': [
-        '../mojo/mojo.gyp:mojo_system',
-      ],
-    }],
     ['OS=="ios"', {
       'sources/': [
         # iOS only needs a small portion of content; exclude all the

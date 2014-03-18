@@ -40,7 +40,6 @@ class BrowserDemuxerAndroid;
 class GeolocationDispatcherHost;
 class GpuMessageFilter;
 class MessagePortMessageFilter;
-class MojoChannelInit;
 class PeerConnectionTrackerHost;
 class RendererMainThread;
 class RenderWidgetHelper;
@@ -297,9 +296,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void SendDisableAecDumpToRenderer();
 #endif
 
-  // Establishes the mojo channel to the renderer.
-  void CreateMojoChannel();
-
   // The registered IPC listener objects. When this list is empty, we should
   // delete ourselves.
   IDMap<IPC::Listener> listeners_;
@@ -421,17 +417,13 @@ class CONTENT_EXPORT RenderProcessHostImpl
   base::Callback<void(const std::string&)> webrtc_log_message_callback_;
 #endif
 
+  // Lives on the browser's ChildThread.
+  base::WeakPtrFactory<RenderProcessHostImpl> weak_factory_;
+
   // Message filter and dispatcher for screen orientation.
   ScreenOrientationDispatcherHost* screen_orientation_dispatcher_host_;
 
   int worker_ref_count_;
-
-  // TODO(sky): remove ifdef, temporary until mac sorted out.
-#if !defined(OS_MACOSX)
-  scoped_ptr<MojoChannelInit> mojo_channel_init_;
-#endif
-
-  base::WeakPtrFactory<RenderProcessHostImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderProcessHostImpl);
 };
