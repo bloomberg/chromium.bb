@@ -137,7 +137,7 @@ MemoryInfo::MemoryInfo(LocalFrame* frame)
     if (!frame || !frame->settings())
         return;
 
-    if (frame->settings()->memoryInfoEnabled()) {
+    if (frame->settings()->preciseMemoryInfoEnabled()) {
         ScriptGCEvent::getHeapSize(m_info);
     } else {
         DEFINE_STATIC_LOCAL(HeapSizeCache, heapSizeCache, ());

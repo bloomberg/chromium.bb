@@ -133,7 +133,7 @@ webAudioEnabled initial=false
 
 fullScreenEnabled initial=false
 asynchronousSpellCheckingEnabled initial=false
-memoryInfoEnabled initial=false
+preciseMemoryInfoEnabled initial=false
 
 hyperlinkAuditingEnabled initial=false
 allowDisplayOfInsecureContent initial=true
