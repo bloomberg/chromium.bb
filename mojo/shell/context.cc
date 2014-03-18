@@ -4,10 +4,13 @@
 
 #include "mojo/shell/context.h"
 
+#include "base/command_line.h"
 #include "mojo/gles2/gles2_support_impl.h"
 #include "mojo/shell/dynamic_service_loader.h"
 #include "mojo/shell/in_process_dynamic_service_runner.h"
 #include "mojo/shell/network_delegate.h"
+#include "mojo/shell/out_of_process_dynamic_service_runner.h"
+#include "mojo/shell/switches.h"
 #include "mojo/system/embedder/embedder.h"
 
 namespace mojo {
@@ -24,8 +27,12 @@ Context::Context()
   embedder::Init();
   gles2::GLES2SupportImpl::Init();
 
-  scoped_ptr<DynamicServiceRunnerFactory> runner_factory(
-      new InProcessDynamicServiceRunnerFactory());
+  scoped_ptr<DynamicServiceRunnerFactory> runner_factory;
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableMultiprocess))
+    runner_factory.reset(new OutOfProcessDynamicServiceRunnerFactory());
+  else
+    runner_factory.reset(new InProcessDynamicServiceRunnerFactory());
   dynamic_service_loader_.reset(
       new DynamicServiceLoader(this, runner_factory.Pass()));
   service_manager_.set_default_loader(dynamic_service_loader_.get());

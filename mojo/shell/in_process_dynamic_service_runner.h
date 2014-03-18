@@ -18,7 +18,7 @@ class InProcessDynamicServiceRunner
     : public DynamicServiceRunner,
       public base::DelegateSimpleThread::Delegate {
  public:
-  InProcessDynamicServiceRunner();
+  explicit InProcessDynamicServiceRunner(Context* context);
   virtual ~InProcessDynamicServiceRunner();
 
   // |DynamicServiceRunner| method:

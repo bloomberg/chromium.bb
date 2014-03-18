@@ -13,7 +13,8 @@
 namespace mojo {
 namespace shell {
 
-InProcessDynamicServiceRunner::InProcessDynamicServiceRunner()
+InProcessDynamicServiceRunner::InProcessDynamicServiceRunner(
+    Context* /*context*/)
     : thread_(this, "app_thread") {
 }
 

@@ -109,8 +109,8 @@ void DynamicServiceLoader::LoadService(ServiceManager* manager,
                                        const GURL& url,
                                        ScopedShellHandle service_handle) {
   DCHECK(url_to_load_context_.find(url) == url_to_load_context_.end());
-  url_to_load_context_[url] = new LoadContext(this, url, service_handle.Pass(),
-                                              runner_factory_->Create());
+  url_to_load_context_[url] = new LoadContext(
+      this, url, service_handle.Pass(), runner_factory_->Create(context_));
 }
 
 void DynamicServiceLoader::AppCompleted(const GURL& url) {

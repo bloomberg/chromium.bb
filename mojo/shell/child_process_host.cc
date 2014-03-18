@@ -22,10 +22,14 @@
 namespace mojo {
 namespace shell {
 
-ChildProcessHost::ChildProcessHost(Context* context, ChildProcess::Type type)
-    : process_launch_task_runner_(context->task_runners()->blocking_pool()),
+ChildProcessHost::ChildProcessHost(Context* context,
+                                   Delegate* delegate,
+                                   ChildProcess::Type type)
+    : context_(context),
+      delegate_(delegate),
       type_(type),
       child_process_handle_(base::kNullProcessHandle) {
+  DCHECK(delegate);
 }
 
 ChildProcessHost::~ChildProcessHost() {
@@ -36,13 +40,15 @@ ChildProcessHost::~ChildProcessHost() {
   }
 }
 
-void ChildProcessHost::Start(DidStartCallback callback) {
+void ChildProcessHost::Start() {
   DCHECK_EQ(child_process_handle_, base::kNullProcessHandle);
   CHECK(base::PostTaskAndReplyWithResult(
-      process_launch_task_runner_,
+      context_->task_runners()->blocking_pool(),
       FROM_HERE,
       base::Bind(&ChildProcessHost::DoLaunch, base::Unretained(this)),
-      callback));
+      base::Bind(&ChildProcessHost::DidLaunch, base::Unretained(this))));
+//FIXME move the platform channel pair to here, so we get the server channel
+// immediately
 }
 
 int ChildProcessHost::Join() {
@@ -89,6 +95,10 @@ bool ChildProcessHost::DoLaunch() {
   platform_channel_ = platform_channel_pair.PassServerHandle();
   CHECK(platform_channel_.is_valid());
   return true;
+}
+
+void ChildProcessHost::DidLaunch(bool success) {
+  delegate_->DidStart(success);
 }
 
 }  // namespace shell

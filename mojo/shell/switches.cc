@@ -14,6 +14,11 @@ const char kChildProcessType[] = "child-process-type";
 // instructions.
 const char kDisableCache[] = "disable-cache";
 
+// Load apps in separate processes.
+// TODO(vtl): Work in progress; doesn't work. Flip this to "disable" (or maybe
+// change it to "single-process") when it works.
+const char kEnableMultiprocess[] = "enable-multiprocess";
+
 const char kOrigin[] = "origin";
 
 }  // namespace switches

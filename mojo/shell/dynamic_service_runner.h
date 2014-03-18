@@ -17,6 +17,8 @@ class FilePath;
 namespace mojo {
 namespace shell {
 
+class Context;
+
 class DynamicServiceRunner {
  public:
   virtual ~DynamicServiceRunner() {}
@@ -30,7 +32,7 @@ class DynamicServiceRunner {
 class DynamicServiceRunnerFactory {
  public:
   virtual ~DynamicServiceRunnerFactory() {}
-  virtual scoped_ptr<DynamicServiceRunner> Create() = 0;
+  virtual scoped_ptr<DynamicServiceRunner> Create(Context* context) = 0;
 };
 
 // A generic factory.
@@ -39,8 +41,9 @@ class DynamicServiceRunnerFactoryImpl : public DynamicServiceRunnerFactory {
  public:
   DynamicServiceRunnerFactoryImpl() {}
   virtual ~DynamicServiceRunnerFactoryImpl() {}
-  virtual scoped_ptr<DynamicServiceRunner> Create() OVERRIDE {
-    return scoped_ptr<DynamicServiceRunner>(new DynamicServiceRunnerImpl());
+  virtual scoped_ptr<DynamicServiceRunner> Create(Context* context) OVERRIDE {
+    return scoped_ptr<DynamicServiceRunner>(
+        new DynamicServiceRunnerImpl(context));
   }
 };
 

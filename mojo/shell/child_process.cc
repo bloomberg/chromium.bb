@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
+#include "mojo/shell/app_child_process.h"
 #include "mojo/shell/switches.h"
 #include "mojo/shell/test_child_process.h"
 #include "mojo/system/embedder/platform_channel_pair.h"
@@ -30,6 +31,9 @@ scoped_ptr<ChildProcess> ChildProcess::Create(const CommandLine& command_line) {
   switch (type_as_int) {
     case TYPE_TEST:
       rv.reset(new TestChildProcess());
+      break;
+    case TYPE_APP:
+      rv.reset(new AppChildProcess());
       break;
     default:
       CHECK(false) << "Invalid child process type";

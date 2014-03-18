@@ -22,7 +22,9 @@ class ChildProcess {
  public:
   enum Type {
     // TODO(vtl): Add real types here.
-    TYPE_TEST
+    TYPE_TEST,
+    // Hosts a single app (see app_child_process(_host).*).
+    TYPE_APP
   };
 
   // Returns null if the command line doesn't indicate that this is a child

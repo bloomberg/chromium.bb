@@ -5,16 +5,10 @@
 #ifndef MOJO_SHELL_CHILD_PROCESS_HOST_H_
 #define MOJO_SHELL_CHILD_PROCESS_HOST_H_
 
-#include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "base/process/process_handle.h"
 #include "mojo/shell/child_process.h"  // For |ChildProcess::Type|.
 #include "mojo/system/embedder/scoped_platform_handle.h"
-
-namespace base {
-class TaskRunner;
-}
 
 namespace mojo {
 namespace shell {
@@ -32,12 +26,22 @@ class Context;
 // Note: Does not currently work on Windows before Vista.
 class ChildProcessHost {
  public:
-  ChildProcessHost(Context* context, ChildProcess::Type type);
-  ~ChildProcessHost();
+  class Delegate {
+   public:
+    virtual void DidStart(bool success) = 0;
+  };
 
-  // |Start()|s a
-  typedef base::Callback<void(bool success)> DidStartCallback;
-  void Start(DidStartCallback callback);
+  ChildProcessHost(Context* context,
+                   Delegate* delegate,
+                   ChildProcess::Type type);
+  virtual ~ChildProcessHost();
+
+  // |Start()|s the child process; calls the delegate's |DidStart()| (on the
+  // thread on which |Start()| was called) when the child has been started (or
+  // failed to start). After calling |Start()|, this object must not be
+  // destroyed until |DidStart()| has been called.
+  // TODO(vtl): Consider using weak pointers and removing this requirement.
+  void Start();
 
   // Waits for the child process to terminate, and returns its exit code.
   // Note: If |Start()| has been called, this must not be called until the
@@ -48,16 +52,22 @@ class ChildProcessHost {
     return &platform_channel_;
   }
 
+ protected:
+  Context* context() const {
+    return context_;
+  }
+
  private:
   bool DoLaunch();
+  void DidLaunch(bool success);
 
-  scoped_refptr<base::TaskRunner> process_launch_task_runner_;
+  Context* const context_;
+  Delegate* const delegate_;
   const ChildProcess::Type type_;
 
   base::ProcessHandle child_process_handle_;
 
-  // Platform-specific "pipe" to the child process.
-  // Valid after the |Start()| callback has been completed (successfully).
+  // Platform-specific "pipe" to the child process. Valid after |Start()|.
   embedder::ScopedPlatformHandle platform_channel_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildProcessHost);
