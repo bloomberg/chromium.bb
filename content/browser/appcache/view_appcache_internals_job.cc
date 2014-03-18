@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/browser/appcache/view_appcache_internals_job.h"
+#include "content/browser/appcache/view_appcache_internals_job.h"
 
 #include <algorithm>
 #include <string>
@@ -31,7 +31,19 @@
 #include "webkit/browser/appcache/appcache_service.h"
 #include "webkit/browser/appcache/appcache_storage.h"
 
-namespace appcache {
+using appcache::AppCacheGroup;
+using appcache::AppCacheInfo;
+using appcache::AppCacheInfoCollection;
+using appcache::AppCacheInfoVector;
+using appcache::AppCacheService;
+using appcache::AppCacheStorage;
+using appcache::AppCacheStorageReference;
+using appcache::AppCacheResourceInfo;
+using appcache::AppCacheResourceInfoVector;
+using appcache::AppCacheResponseInfo;
+using appcache::AppCacheResponseReader;
+
+namespace content {
 namespace {
 
 const char kErrorMessage[] = "Error in retrieving Application Caches.";
@@ -668,4 +680,4 @@ net::URLRequestJob* ViewAppCacheInternalsJobFactory::CreateJobForRequest(
   return new RedirectToMainPageJob(request, network_delegate, service);
 }
 
-}  // namespace appcache
+}  // namespace content

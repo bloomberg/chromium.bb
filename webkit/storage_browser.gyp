@@ -65,8 +65,6 @@
         'browser/appcache/appcache_url_request_job.h',
         'browser/appcache/manifest_parser.cc',
         'browser/appcache/manifest_parser.h',
-        'browser/appcache/view_appcache_internals_job.h',
-        'browser/appcache/view_appcache_internals_job.cc',
         'browser/blob/blob_data_handle.cc',
         'browser/blob/blob_data_handle.h',
         'browser/blob/blob_storage_context.cc',
