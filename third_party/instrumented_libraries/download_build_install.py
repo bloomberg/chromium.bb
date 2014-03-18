@@ -98,7 +98,22 @@ def shell_call(command, verbose=False, environment=None):
   if child.returncode:
     raise Exception("Failed to run: %s" % command)
 
-def configure_make_install(parsed_arguments, environment, install_prefix):
+def destdir_configure_make_install(parsed_arguments, environment,
+                                   install_prefix):
+  configure_command = './configure %s' % parsed_arguments.custom_configure_flags
+  configure_command += ' --libdir=/lib/'
+  shell_call(configure_command, parsed_arguments.verbose, environment)
+  shell_call('make -j%s' % parsed_arguments.jobs,
+      parsed_arguments.verbose, environment)
+  shell_call('make -j%s DESTDIR=%s install' % (parsed_arguments.jobs,
+                                               install_prefix),
+      parsed_arguments.verbose, environment)
+  # Kill the .la files. They contain absolute paths, and will cause build errors
+  # in dependent libraries.
+  shell_call('rm %s/lib/*.la -f' % install_prefix)
+
+def prefix_configure_make_install(parsed_arguments, environment,
+                                  install_prefix):
   configure_command = './configure %s --prefix=%s' % (
       parsed_arguments.custom_configure_flags, install_prefix)
   shell_call(configure_command, parsed_arguments.verbose, environment)
@@ -159,20 +174,23 @@ def libcap2_make_install(parsed_arguments, environment, install_prefix):
     ' '.join(install_args)), parsed_arguments.verbose, environment)
 
 def build_and_install(parsed_arguments, environment, install_prefix):
-  if parsed_arguments.library == 'pango-1.0':
-    # This needs an absolute path and thus cannot be in GYP.
+  if parsed_arguments.build_method == 'destdir':
+    destdir_configure_make_install(parsed_arguments, environment, install_prefix)
+  elif parsed_arguments.build_method == 'prefix':
+    prefix_configure_make_install(parsed_arguments, environment, install_prefix)
+  elif parsed_arguments.build_method == 'custom_nss':
+    nss_make_and_copy(parsed_arguments, environment, install_prefix)
+  elif parsed_arguments.build_method == 'custom_libcap':
+    libcap2_make_install(parsed_arguments, environment, install_prefix)
+  elif parsed_arguments.build_method == 'custom_pango':
     parsed_arguments.custom_configure_flags += \
       ' --x-libraries=%s/lib' % install_prefix
     parsed_arguments.custom_configure_flags += \
       ' --x-includes=%s/include' % install_prefix
-
-  if parsed_arguments.library == 'nss':
-    nss_make_and_copy(parsed_arguments, environment, install_prefix)
-  elif parsed_arguments.library == 'libcap2':
-    libcap2_make_install(parsed_arguments, environment, install_prefix)
+    prefix_configure_make_install(parsed_arguments, environment, install_prefix)
   else:
-    configure_make_install(parsed_arguments, environment, install_prefix)
-
+    raise Exception('Unrecognized build method: %s' %
+        parsed_arguments.build_method)
 
 def download_build_install(parsed_arguments):
   sanitizer_params = SUPPORTED_SANITIZERS[parsed_arguments.sanitizer_type]
@@ -262,6 +280,7 @@ def main():
   # This should be a shell script to run before building specific libraries
   # e.g. extracting archives with sources, patching makefiles, etc.
   argument_parser.add_argument('--run-before-build', default='')
+  argument_parser.add_argument('--build-method', default='destdir')
 
   # Ignore all empty arguments because in several cases gyp passes them to the
   # script, but ArgumentParser treats them as positional arguments instead of

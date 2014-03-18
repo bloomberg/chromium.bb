@@ -9,6 +9,7 @@
   'custom_cxx_compiler_flags': '',
   'custom_linker_flags': '',
   'run_before_build': '',
+  'build_method': 'destdir',
 
   'variables': {
     'verbose_libraries_build%': 0,
@@ -136,6 +137,7 @@
       'dependencies=': [
         '<(_sanitizer_type)-libglib2.0-0',
       ],
+      'build_method': 'prefix',
       'includes': ['standard_instrumented_library_target.gypi'],
     },
     {
@@ -153,8 +155,14 @@
       'dependencies=': [
         '<(_sanitizer_type)-freetype',
       ],
-      'custom_configure_flags': '--disable-docs',
+      'custom_configure_flags': [
+        '--disable-docs',
+        '--sysconfdir=/etc/',
+        # From debian/rules.
+        '--with-add-fonts=/usr/X11R6/lib/X11/fonts,/usr/local/share/fonts',
+      ],
       'run_before_build': 'libfontconfig.sh',
+      'destdir_build': 1,
       'includes': ['standard_instrumented_library_target.gypi'],
     },
     {
@@ -306,14 +314,16 @@
         '<(_sanitizer_type)-libnspr4',
       ],
       'run_before_build': 'nss.sh',
+      'build_method': 'custom_nss',
       'includes': ['standard_instrumented_library_target.gypi'],
     },
     {
       'library_name': 'pulseaudio',
-      'dependencies=': [],
+      'dependencies=': [
+        '<(_sanitizer_type)-libdbus-1-3',
+      ],
       'run_before_build': 'pulseaudio.sh',
       'jobs': 1,
-      'custom_configure_flags': '--with-udev-rules-dir=<(INTERMEDIATE_DIR)/udev/rules.d',
       'includes': ['standard_instrumented_library_target.gypi'],
     },
     {
@@ -336,6 +346,7 @@
         '--with-icondir=no',
         '--with-docdir=no'
       ],
+      'build_method': 'prefix',
       'includes': ['standard_instrumented_library_target.gypi'],
     },
     {
@@ -346,13 +357,14 @@
       'custom_configure_flags': [
         # Avoid https://bugs.gentoo.org/show_bug.cgi?id=425620
         '--enable-introspection=no',
-        # More flags are set in download_build_install.py.
       ],
+      'build_method': 'custom_pango',
       'includes': ['standard_instrumented_library_target.gypi'],
     },
     {
       'library_name': 'libcap2',
       'dependencies=': [],
+      'build_method': 'custom_libcap',
       'includes': ['standard_instrumented_library_target.gypi'],
     },
     {
