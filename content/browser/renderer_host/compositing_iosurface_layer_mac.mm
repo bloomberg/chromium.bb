@@ -31,7 +31,7 @@
   if (self = [super init]) {
     renderWidgetHostView_ = r;
     context_ = content::CompositingIOSurfaceContext::Get(
-        content::CompositingIOSurfaceContext::kOffscreenContextWindowNumber);
+        content::CompositingIOSurfaceContext::kCALayerContextWindowNumber);
     DCHECK(context_);
     needsDisplay_ = NO;
 
