@@ -278,6 +278,9 @@ bool SharedMemory::MapAt(off_t offset, size_t bytes) {
   if (bytes > static_cast<size_t>(std::numeric_limits<int>::max()))
     return false;
 
+  if (memory_)
+    return false;
+
 #if defined(OS_ANDROID)
   // On Android, Map can be called with a size and offset of zero to use the
   // ashmem-determined size.
