@@ -31,11 +31,16 @@
 #define Atomics_h
 
 #include "wtf/Assertions.h"
+#include "wtf/CPU.h"
 
 #include <stdint.h>
 
 #if COMPILER(MSVC)
 #include <windows.h>
+#endif
+
+#if defined(THREAD_SANITIZER)
+#include <sanitizer/tsan_interface_atomic.h>
 #endif
 
 namespace WTF {
@@ -98,6 +103,60 @@ ALWAYS_INLINE void atomicSetOneToZero(int volatile* ptr)
     ASSERT(*ptr == 1);
     __sync_lock_release(ptr);
 }
+#endif
+
+#if defined(THREAD_SANITIZER)
+ALWAYS_INLINE void releaseStore(volatile int* ptr, int value)
+{
+    __tsan_atomic32_store(ptr, value, __tsan_memory_order_release);
+}
+
+ALWAYS_INLINE int acquireLoad(volatile const int* ptr)
+{
+    return __tsan_atomic32_load(ptr, __tsan_memory_order_acquire);
+}
+#else
+
+#if CPU(X86) || CPU(X86_64)
+// Only compiler barrier is needed.
+#if COMPILER(MSVC)
+// Starting from Visual Studio 2005 compiler guarantees acquire and release
+// semantics for operations on volatile variables. See MSDN entry for
+// MemoryBarrier macro.
+#define MEMORY_BARRIER()
+#else
+#define MEMORY_BARRIER() __asm__ __volatile__("" : : : "memory")
+#endif
+#elif CPU(ARM) && (OS(LINUX) || OS(ANDROID))
+// On ARM __sync_synchronize generates dmb which is very expensive on single
+// core devices which don't actually need it. Avoid the cost by calling into
+// kuser_memory_barrier helper.
+inline void memoryBarrier()
+{
+    // Note: This is a function call, which is also an implicit compiler barrier.
+    typedef void (*KernelMemoryBarrierFunc)();
+    ((KernelMemoryBarrierFunc)0xffff0fa0)();
+}
+#define MEMORY_BARRIER() memoryBarrier()
+#else
+// Fallback to the compiler intrinsic on all other platforms.
+#define MEMORY_BARRIER() __sync_synchronize()
+#endif
+
+ALWAYS_INLINE void releaseStore(volatile int* ptr, int value)
+{
+    MEMORY_BARRIER();
+    *ptr = value;
+}
+
+ALWAYS_INLINE int acquireLoad(volatile const int* ptr)
+{
+    int value = *ptr;
+    MEMORY_BARRIER();
+    return value;
+}
+
+#undef MEMORY_BARRIER
 
 #endif
 
@@ -109,5 +168,7 @@ using WTF::atomicDecrement;
 using WTF::atomicIncrement;
 using WTF::atomicTestAndSetToOne;
 using WTF::atomicSetOneToZero;
+using WTF::acquireLoad;
+using WTF::releaseStore;
 
 #endif // Atomics_h

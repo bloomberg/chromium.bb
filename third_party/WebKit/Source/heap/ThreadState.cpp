@@ -115,7 +115,7 @@ public:
 
         MutexLocker locker(m_mutex);
         atomicAdd(&m_unparkedThreadCount, threads.size());
-        atomicSetOneToZero(&m_canResume);
+        releaseStore(&m_canResume, 0);
 
         ThreadState* current = ThreadState::current();
         for (ThreadState::AttachedThreadStateSet::iterator it = threads.begin(), end = threads.end(); it != end; ++it) {
@@ -127,7 +127,7 @@ public:
                 interruptors[i]->requestInterrupt();
         }
 
-        while (m_unparkedThreadCount > 0)
+        while (acquireLoad(&m_unparkedThreadCount) > 0)
             m_parked.wait(m_mutex);
     }
 
@@ -135,7 +135,7 @@ public:
     {
         ThreadState::AttachedThreadStateSet& threads = ThreadState::attachedThreads();
         atomicSubtract(&m_unparkedThreadCount, threads.size());
-        atomicTestAndSetToOne(&m_canResume);
+        releaseStore(&m_canResume, 1);
         {
             // FIXME: Resumed threads will all contend for
             // m_mutex just to unlock it later which is a waste of
@@ -164,7 +164,7 @@ public:
         MutexLocker locker(m_mutex);
         if (!atomicDecrement(&m_unparkedThreadCount))
             m_parked.signal();
-        while (!m_canResume)
+        while (!acquireLoad(&m_canResume))
             m_resume.wait(m_mutex);
         atomicIncrement(&m_unparkedThreadCount);
     }
@@ -172,7 +172,7 @@ public:
     void checkAndPark(ThreadState* state)
     {
         ASSERT(!state->isSweepInProgress());
-        if (!m_canResume) {
+        if (!acquireLoad(&m_canResume)) {
             pushAllRegisters(this, state, parkAfterPushRegisters);
             state->performPendingSweep();
         }
