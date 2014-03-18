@@ -145,7 +145,8 @@ int64 ExtractPostId(const WebHistoryItem& item) {
 
 WebURLResponseExtraDataImpl* GetExtraDataFromResponse(
     const WebURLResponse& response) {
-  return static_cast<WebURLResponseExtraDataImpl*>(response.extraData());
+  return static_cast<WebURLResponseExtraDataImpl*>(
+      response.extraData());
 }
 
 void GetRedirectChain(WebDataSource* ds, std::vector<GURL>* result) {
@@ -1823,10 +1824,8 @@ void RenderFrameImpl::willRequestAfterPreconnect(
   bool was_after_preconnect_request = true;
   // The args after |was_after_preconnect_request| are not used, and set to
   // correct values at |willSendRequest|.
-  RequestExtraData* extra_data = new RequestExtraData();
-  extra_data->set_custom_user_agent(custom_user_agent);
-  extra_data->set_was_after_preconnect_request(was_after_preconnect_request);
-  request.setExtraData(extra_data);
+  request.setExtraData(new webkit_glue::WebURLRequestExtraDataImpl(
+      custom_user_agent, was_after_preconnect_request));
 }
 
 void RenderFrameImpl::willSendRequest(
@@ -1875,8 +1874,8 @@ void RenderFrameImpl::willSendRequest(
   WebString custom_user_agent;
   bool was_after_preconnect_request = false;
   if (request.extraData()) {
-    RequestExtraData* old_extra_data =
-        static_cast<RequestExtraData*>(
+    webkit_glue::WebURLRequestExtraDataImpl* old_extra_data =
+        static_cast<webkit_glue::WebURLRequestExtraDataImpl*>(
             request.extraData());
     custom_user_agent = old_extra_data->custom_user_agent();
     was_after_preconnect_request =
@@ -1926,25 +1925,21 @@ void RenderFrameImpl::willSendRequest(
 
   int parent_routing_id = frame->parent() ?
       FromWebFrame(frame->parent())->GetRoutingID() : -1;
-  RequestExtraData* extra_data = new RequestExtraData();
-  extra_data->set_visibility_state(render_view_->visibilityState());
-  extra_data->set_custom_user_agent(custom_user_agent);
-  extra_data->set_was_after_preconnect_request(was_after_preconnect_request);
-  extra_data->set_render_frame_id(routing_id_);
-  extra_data->set_is_main_frame(frame == top_frame);
-  extra_data->set_frame_origin(
-      GURL(frame->document().securityOrigin().toString()));
-  extra_data->set_parent_is_main_frame(frame->parent() == top_frame);
-  extra_data->set_parent_render_frame_id(parent_routing_id);
-  extra_data->set_allow_download(navigation_state->allow_download());
-  extra_data->set_transition_type(transition_type);
-  extra_data->set_should_replace_current_entry(should_replace_current_entry);
-  extra_data->set_transferred_request_child_id(
-      navigation_state->transferred_request_child_id());
-  extra_data->set_transferred_request_request_id(
-      navigation_state->transferred_request_request_id());
-  extra_data->set_service_worker_provider_id(provider_id);
-  request.setExtraData(extra_data);
+  request.setExtraData(
+      new RequestExtraData(render_view_->visibilityState(),
+                           custom_user_agent,
+                           was_after_preconnect_request,
+                           routing_id_,
+                           (frame == top_frame),
+                           GURL(frame->document().securityOrigin().toString()),
+                           frame->parent() == top_frame,
+                           parent_routing_id,
+                           navigation_state->allow_download(),
+                           transition_type,
+                           should_replace_current_entry,
+                           navigation_state->transferred_request_child_id(),
+                           navigation_state->transferred_request_request_id(),
+                           provider_id));
 
   DocumentState* top_document_state =
       DocumentState::FromDataSource(top_data_source);
@@ -2009,8 +2004,7 @@ void RenderFrameImpl::didReceiveResponse(
   int http_status_code = response.httpStatusCode();
 
   // Record page load flags.
-  WebURLResponseExtraDataImpl* extra_data =
-      GetExtraDataFromResponse(response);
+  WebURLResponseExtraDataImpl* extra_data = GetExtraDataFromResponse(response);
   if (extra_data) {
     document_state->set_was_fetched_via_spdy(
         extra_data->was_fetched_via_spdy());
