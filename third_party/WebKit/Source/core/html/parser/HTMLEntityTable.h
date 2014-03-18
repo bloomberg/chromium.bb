@@ -30,13 +30,14 @@
 
 namespace WebCore {
 
+// Member order to optimize packing. There will be thousands of these objects.
 struct HTMLEntityTableEntry {
-    LChar lastCharacter() const { return entity[length - 1]; }
+    LChar lastCharacter() const;
 
-    const LChar* entity;
-    int length;
     UChar32 firstValue;
-    UChar32 secondValue;
+    UChar secondValue; // UChar since double char sequences only use BMP chars.
+    short entityOffset;
+    short length;
 };
 
 class HTMLEntityTable {
@@ -46,6 +47,8 @@ public:
 
     static const HTMLEntityTableEntry* firstEntryStartingWith(UChar);
     static const HTMLEntityTableEntry* lastEntryStartingWith(UChar);
+
+    static const LChar* entityString(const HTMLEntityTableEntry&);
 };
 
 }

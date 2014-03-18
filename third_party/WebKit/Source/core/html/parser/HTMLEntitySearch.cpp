@@ -47,7 +47,8 @@ HTMLEntitySearch::CompareResult HTMLEntitySearch::compare(const HTMLEntityTableE
 {
     if (entry->length < m_currentLength + 1)
         return Before;
-    UChar entryNextCharacter = entry->entity[m_currentLength];
+    const LChar* entityString = HTMLEntityTable::entityString(*entry);
+    UChar entryNextCharacter = entityString[m_currentLength];
     if (entryNextCharacter == nextCharacter)
         return Prefix;
     return entryNextCharacter < nextCharacter ? Before : After;

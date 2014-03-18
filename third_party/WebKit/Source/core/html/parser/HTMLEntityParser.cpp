@@ -115,7 +115,7 @@ static bool consumeNamedEntity(SegmentedString& source, DecodedHTMLEntity& decod
     }
     notEnoughCharacters = source.isEmpty();
     if (notEnoughCharacters) {
-        // We can't an entity because there might be a longer entity
+        // We can't decide on an entity because there might be a longer entity
         // that we could match if we had more data.
         unconsumeCharacters(source, consumedCharacters);
         return false;
@@ -130,11 +130,12 @@ static bool consumeNamedEntity(SegmentedString& source, DecodedHTMLEntity& decod
         // actual entity.
         unconsumeCharacters(source, consumedCharacters);
         consumedCharacters.clear();
-        const int length = entitySearch.mostRecentMatch()->length;
-        const LChar* reference = entitySearch.mostRecentMatch()->entity;
+        const HTMLEntityTableEntry* mostRecent = entitySearch.mostRecentMatch();
+        const int length = mostRecent->length;
+        const LChar* reference = HTMLEntityTable::entityString(*mostRecent);
         for (int i = 0; i < length; ++i) {
             cc = source.currentChar();
-            ASSERT_UNUSED(reference, cc == *reference++);
+            ASSERT_UNUSED(reference, cc == static_cast<UChar>(*reference++));
             consumedCharacters.append(cc);
             source.advanceAndASSERT(cc);
             ASSERT(!source.isEmpty());
