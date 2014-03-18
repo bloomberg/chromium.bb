@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/process/process.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/indexed_db/indexed_db_callbacks.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"
@@ -40,7 +41,9 @@ IndexedDBDispatcherHost::IndexedDBDispatcherHost(
   DCHECK(indexed_db_context_);
 }
 
-IndexedDBDispatcherHost::~IndexedDBDispatcherHost() {}
+IndexedDBDispatcherHost::~IndexedDBDispatcherHost() {
+  STLDeleteValues(&blob_data_handle_map_);
+}
 
 void IndexedDBDispatcherHost::OnChannelClosing() {
   bool success = indexed_db_context_->TaskRunner()->PostTask(
@@ -101,6 +104,7 @@ bool IndexedDBDispatcherHost::OnMessageReceived(const IPC::Message& message,
       IPC_MESSAGE_HANDLER(IndexedDBHostMsg_FactoryOpen, OnIDBFactoryOpen)
       IPC_MESSAGE_HANDLER(IndexedDBHostMsg_FactoryDeleteDatabase,
                           OnIDBFactoryDeleteDatabase)
+      IPC_MESSAGE_HANDLER(IndexedDBHostMsg_AckReceivedBlobs, OnAckReceivedBlobs)
       IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
   }
@@ -167,6 +171,22 @@ uint32 IndexedDBDispatcherHost::TransactionIdToProcessId(
   return (host_transaction_id >> 32) & 0xffffffff;
 }
 
+void IndexedDBDispatcherHost::HoldBlobDataHandle(
+    const std::string& uuid,
+    scoped_ptr<webkit_blob::BlobDataHandle>& blob_data_handle) {
+  DCHECK(ContainsKey(blob_data_handle_map_, uuid));
+  blob_data_handle_map_[uuid] = blob_data_handle.release();
+}
+
+void IndexedDBDispatcherHost::DropBlobDataHandle(const std::string& uuid) {
+  BlobDataHandleMap::iterator iter = blob_data_handle_map_.find(uuid);
+  if (iter != blob_data_handle_map_.end()) {
+    delete iter->second;
+    blob_data_handle_map_.erase(iter);
+  } else {
+    DLOG(FATAL) << "Failed to find blob UUID in map:" << uuid;
+  }
+}
 
 IndexedDBCursor* IndexedDBDispatcherHost::GetCursorFromId(int32 ipc_cursor_id) {
   DCHECK(indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
@@ -273,6 +293,14 @@ void IndexedDBDispatcherHost::OnIDBFactoryDeleteDatabase(
           this, params.ipc_thread_id, params.ipc_callbacks_id),
       origin_url,
       indexed_db_path);
+}
+
+void IndexedDBDispatcherHost::OnAckReceivedBlobs(
+    const std::vector<std::string>& uuids) {
+  DCHECK(indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
+  std::vector<std::string>::const_iterator iter;
+  for (iter = uuids.begin(); iter != uuids.end(); ++iter)
+    DropBlobDataHandle(*iter);
 }
 
 void IndexedDBDispatcherHost::FinishTransaction(int64 host_transaction_id,

@@ -422,6 +422,9 @@ IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_FactoryOpen,
 IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_FactoryDeleteDatabase,
                      IndexedDBHostMsg_FactoryDeleteDatabase_Params)
 
+IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_AckReceivedBlobs,
+                     std::vector<std::string>) /* uuids */
+
 // WebIDBDatabase::createObjectStore() message.
 IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_DatabaseCreateObjectStore,
                      IndexedDBHostMsg_DatabaseCreateObjectStore_Params)

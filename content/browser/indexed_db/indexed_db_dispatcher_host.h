@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "url/gurl.h"
+#include "webkit/browser/blob/blob_data_handle.h"
 
 struct IndexedDBDatabaseMetadata;
 struct IndexedDBHostMsg_DatabaseCount_Params;
@@ -80,6 +81,11 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
   static uint32 TransactionIdToRendererTransactionId(int64 host_transaction_id);
   static uint32 TransactionIdToProcessId(int64 host_transaction_id);
 
+  void HoldBlobDataHandle(
+      const std::string& uuid,
+      scoped_ptr<webkit_blob::BlobDataHandle>& blob_data_handle);
+  void DropBlobDataHandle(const std::string& uuid);
+
  private:
   // Friends to enable OnDestruct() delegation.
   friend class BrowserThread;
@@ -95,6 +101,8 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
 
   void OnIDBFactoryDeleteDatabase(
       const IndexedDBHostMsg_FactoryDeleteDatabase_Params& p);
+
+  void OnAckReceivedBlobs(const std::vector<std::string>& uuids);
 
   void ResetDispatcherHosts();
 
@@ -229,6 +237,9 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
   };
 
   scoped_refptr<IndexedDBContextImpl> indexed_db_context_;
+
+  typedef std::map<std::string, webkit_blob::BlobDataHandle*> BlobDataHandleMap;
+  BlobDataHandleMap blob_data_handle_map_;
 
   // Only access on IndexedDB thread.
   scoped_ptr<DatabaseDispatcherHost> database_dispatcher_host_;

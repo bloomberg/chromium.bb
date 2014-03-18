@@ -93,6 +93,8 @@ class WebIDBDatabaseImpl : public blink::WebIDBDatabase {
                            long long indexId);
   virtual void abort(long long transaction_id);
   virtual void commit(long long transaction_id);
+  virtual void ackReceivedBlobs(
+      const blink::WebVector<blink::WebString>& uuids);
 
  private:
   int32 ipc_database_id_;

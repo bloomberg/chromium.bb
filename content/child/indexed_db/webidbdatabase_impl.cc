@@ -261,4 +261,12 @@ void WebIDBDatabaseImpl::commit(long long transaction_id) {
       new IndexedDBHostMsg_DatabaseCommit(ipc_database_id_, transaction_id));
 }
 
+void WebIDBDatabaseImpl::ackReceivedBlobs(const WebVector<WebString>& uuids) {
+  DCHECK(uuids.size());
+  std::vector<std::string> param(uuids.size());
+  for (size_t i = 0; i < uuids.size(); ++i)
+    param[i] = uuids[i].latin1().data();
+  thread_safe_sender_->Send(new IndexedDBHostMsg_AckReceivedBlobs(param));
+}
+
 }  // namespace content
