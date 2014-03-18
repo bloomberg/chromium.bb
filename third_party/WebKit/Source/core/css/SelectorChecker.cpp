@@ -293,7 +293,7 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
     case CSSSelector::IndirectAdjacent:
         if (m_mode == ResolvingStyle) {
             if (Node* parent = context.element->parentElementOrShadowRoot())
-                SiblingRuleHelper(parent).setChildrenAffectedByForwardPositionalRules();
+                SiblingRuleHelper(parent).setChildrenAffectedByIndirectAdjacentRules();
         }
         nextContext.element = ElementTraversal::previousSibling(*context.element);
         nextContext.isSubSelector = false;

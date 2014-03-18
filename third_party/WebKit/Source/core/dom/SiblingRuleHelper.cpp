@@ -28,6 +28,14 @@ void SiblingRuleHelper::setChildrenAffectedByDirectAdjacentRules()
         toShadowRoot(m_node)->setChildrenAffectedByDirectAdjacentRules();
 }
 
+void SiblingRuleHelper::setChildrenAffectedByIndirectAdjacentRules()
+{
+    if (m_node->isElementNode())
+        toElement(m_node)->setChildrenAffectedByIndirectAdjacentRules();
+    else
+        toShadowRoot(m_node)->setChildrenAffectedByIndirectAdjacentRules();
+}
+
 void SiblingRuleHelper::setChildrenAffectedByForwardPositionalRules()
 {
     if (m_node->isElementNode())
@@ -80,6 +88,11 @@ bool SiblingRuleHelper::childrenAffectedByDirectAdjacentRules() const
     return m_node->isElementNode() ? toElement(m_node)->childrenAffectedByDirectAdjacentRules() : toShadowRoot(m_node)->childrenAffectedByDirectAdjacentRules();
 }
 
+bool SiblingRuleHelper::childrenAffectedByIndirectAdjacentRules() const
+{
+    return m_node->isElementNode() ? toElement(m_node)->childrenAffectedByIndirectAdjacentRules() : toShadowRoot(m_node)->childrenAffectedByIndirectAdjacentRules();
+}
+
 bool SiblingRuleHelper::childrenAffectedByForwardPositionalRules() const
 {
     return m_node->isElementNode() ? toElement(m_node)->childrenAffectedByForwardPositionalRules() : toShadowRoot(m_node)->childrenAffectedByForwardPositionalRules();
@@ -93,7 +106,7 @@ bool SiblingRuleHelper::childrenAffectedByBackwardPositionalRules() const
 void SiblingRuleHelper::checkForChildrenAdjacentRuleChanges()
 {
     bool hasDirectAdjacentRules = childrenAffectedByDirectAdjacentRules();
-    bool hasIndirectAdjacentRules = childrenAffectedByForwardPositionalRules();
+    bool hasIndirectAdjacentRules = childrenAffectedByIndirectAdjacentRules();
 
     if (!hasDirectAdjacentRules && !hasIndirectAdjacentRules)
         return;

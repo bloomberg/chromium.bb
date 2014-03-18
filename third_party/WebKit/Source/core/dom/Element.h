@@ -90,8 +90,9 @@ enum ElementFlags {
     ChildrenAffectedByFirstChildRules = 1 << 11,
     ChildrenAffectedByLastChildRules = 1 << 12,
     ChildrenAffectedByDirectAdjacentRules = 1 << 13,
-    ChildrenAffectedByForwardPositionalRules = 1 << 14,
-    ChildrenAffectedByBackwardPositionalRules = 1 << 15,
+    ChildrenAffectedByIndirectAdjacentRules = 1 << 14,
+    ChildrenAffectedByForwardPositionalRules = 1 << 15,
+    ChildrenAffectedByBackwardPositionalRules = 1 << 16,
 
     // If any of these flags are set we cannot share style.
     ElementFlagsPreventingStyleSharing =
@@ -102,6 +103,7 @@ enum ElementFlags {
         | ChildrenAffectedByFirstChildRules
         | ChildrenAffectedByLastChildRules
         | ChildrenAffectedByDirectAdjacentRules
+        | ChildrenAffectedByIndirectAdjacentRules
         | ChildrenAffectedByForwardPositionalRules
         | ChildrenAffectedByBackwardPositionalRules,
 };
@@ -383,6 +385,9 @@ public:
 
     bool childrenAffectedByDirectAdjacentRules() const { return hasElementFlag(ChildrenAffectedByDirectAdjacentRules); }
     void setChildrenAffectedByDirectAdjacentRules() { setElementFlag(ChildrenAffectedByDirectAdjacentRules); }
+
+    bool childrenAffectedByIndirectAdjacentRules() const { return hasElementFlag(ChildrenAffectedByIndirectAdjacentRules); }
+    void setChildrenAffectedByIndirectAdjacentRules() { setElementFlag(ChildrenAffectedByIndirectAdjacentRules); }
 
     bool childrenAffectedByForwardPositionalRules() const { return hasElementFlag(ChildrenAffectedByForwardPositionalRules); }
     void setChildrenAffectedByForwardPositionalRules() { setElementFlag(ChildrenAffectedByForwardPositionalRules); }

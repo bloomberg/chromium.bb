@@ -129,12 +129,14 @@ public:
     bool childrenAffectedByFirstChildRules() const;
     bool childrenAffectedByLastChildRules() const;
     bool childrenAffectedByDirectAdjacentRules() const;
+    bool childrenAffectedByIndirectAdjacentRules() const;
     bool childrenAffectedByForwardPositionalRules() const;
     bool childrenAffectedByBackwardPositionalRules() const;
 
     void setChildrenAffectedByFirstChildRules();
     void setChildrenAffectedByLastChildRules();
     void setChildrenAffectedByDirectAdjacentRules();
+    void setChildrenAffectedByIndirectAdjacentRules();
     void setChildrenAffectedByForwardPositionalRules();
     void setChildrenAffectedByBackwardPositionalRules();
 

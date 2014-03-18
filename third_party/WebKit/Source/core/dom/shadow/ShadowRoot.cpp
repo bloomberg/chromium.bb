@@ -390,6 +390,7 @@ bool ShadowRoot::childrenSupportStyleSharing() const
     return !m_shadowRootRareData->childrenAffectedByFirstChildRules()
         && !m_shadowRootRareData->childrenAffectedByLastChildRules()
         && !m_shadowRootRareData->childrenAffectedByDirectAdjacentRules()
+        && !m_shadowRootRareData->childrenAffectedByIndirectAdjacentRules()
         && !m_shadowRootRareData->childrenAffectedByForwardPositionalRules()
         && !m_shadowRootRareData->childrenAffectedByBackwardPositionalRules();
 }
@@ -414,6 +415,11 @@ bool ShadowRoot::childrenAffectedByDirectAdjacentRules() const
     return m_shadowRootRareData && m_shadowRootRareData->childrenAffectedByDirectAdjacentRules();
 }
 
+bool ShadowRoot::childrenAffectedByIndirectAdjacentRules() const
+{
+    return m_shadowRootRareData && m_shadowRootRareData->childrenAffectedByIndirectAdjacentRules();
+}
+
 bool ShadowRoot::childrenAffectedByForwardPositionalRules() const
 {
     return m_shadowRootRareData && m_shadowRootRareData->childrenAffectedByForwardPositionalRules();
@@ -432,6 +438,11 @@ void ShadowRoot::setChildrenAffectedByForwardPositionalRules()
 void ShadowRoot::setChildrenAffectedByDirectAdjacentRules()
 {
     ensureShadowRootRareData()->setChildrenAffectedByDirectAdjacentRules(true);
+}
+
+void ShadowRoot::setChildrenAffectedByIndirectAdjacentRules()
+{
+    ensureShadowRootRareData()->setChildrenAffectedByIndirectAdjacentRules(true);
 }
 
 void ShadowRoot::setChildrenAffectedByBackwardPositionalRules()

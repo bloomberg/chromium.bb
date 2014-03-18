@@ -1849,14 +1849,16 @@ void Element::checkForSiblingStyleChanges(bool finishedParsingCallback, Node* be
     if (!style || (needsStyleRecalc() && childrenAffectedByPositionalRules()))
         return;
 
-    // Forward positional selectors include the ~ selector, nth-child, nth-of-type, first-of-type and only-of-type.
+    // Forward positional selectors include nth-child, nth-of-type, first-of-type and only-of-type.
+    // The indirect adjacent selector is the ~ selector.
     // Backward positional selectors include nth-last-child, nth-last-of-type, last-of-type and only-of-type.
-    // We have to invalidate everything following the insertion point in the forward case, and everything before the insertion point in the
-    // backward case.
+    // We have to invalidate everything following the insertion point in the forward and indirect adjacent case,
+    // and everything before the insertion point in the backward case.
     // |afterChange| is 0 in the parser callback case, so we won't do any work for the forward case if we don't have to.
     // For performance reasons we just mark the parent node as changed, since we don't want to make childrenChanged O(n^2) by crawling all our kids
     // here. recalcStyle will then force a walk of the children when it sees that this has happened.
-    if ((childrenAffectedByForwardPositionalRules() && afterChange) || (childrenAffectedByBackwardPositionalRules() && beforeChange)) {
+    if (((childrenAffectedByForwardPositionalRules() || childrenAffectedByIndirectAdjacentRules()) && afterChange)
+        || (childrenAffectedByBackwardPositionalRules() && beforeChange)) {
         setNeedsStyleRecalc(SubtreeStyleChange);
         return;
     }

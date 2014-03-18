@@ -233,6 +233,7 @@ inline void ElementRareData::resetDynamicRestyleObservations()
     clearFlag(ChildrenAffectedByFirstChildRules);
     clearFlag(ChildrenAffectedByLastChildRules);
     clearFlag(ChildrenAffectedByDirectAdjacentRules);
+    clearFlag(ChildrenAffectedByIndirectAdjacentRules);
     clearFlag(ChildrenAffectedByForwardPositionalRules);
     clearFlag(ChildrenAffectedByBackwardPositionalRules);
 }

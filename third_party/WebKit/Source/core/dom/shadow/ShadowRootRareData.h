@@ -44,6 +44,7 @@ public:
         , m_descendantContentElementCount(0)
         , m_childShadowRootCount(0)
         , m_childrenAffectedByDirectAdjacentRules(false)
+        , m_childrenAffectedByIndirectAdjacentRules(false)
         , m_childrenAffectedByForwardPositionalRules(false)
         , m_childrenAffectedByBackwardPositionalRules(false)
         , m_childrenAffectedByFirstChildRules(false)
@@ -77,6 +78,10 @@ public:
 
     bool childrenAffectedByDirectAdjacentRules() const { return m_childrenAffectedByDirectAdjacentRules; }
     void setChildrenAffectedByDirectAdjacentRules(bool value) { m_childrenAffectedByDirectAdjacentRules = value; }
+
+    bool childrenAffectedByIndirectAdjacentRules() const { return m_childrenAffectedByIndirectAdjacentRules; }
+    void setChildrenAffectedByIndirectAdjacentRules(bool value) { m_childrenAffectedByIndirectAdjacentRules = value; }
+
     bool childrenAffectedByForwardPositionalRules() const { return m_childrenAffectedByForwardPositionalRules; }
     void setChildrenAffectedByForwardPositionalRules(bool value) { m_childrenAffectedByForwardPositionalRules = value; }
 
@@ -98,6 +103,7 @@ private:
     RefPtrWillBePersistent<StyleSheetList> m_styleSheetList;
 
     unsigned m_childrenAffectedByDirectAdjacentRules : 1;
+    unsigned m_childrenAffectedByIndirectAdjacentRules : 1;
     unsigned m_childrenAffectedByForwardPositionalRules : 1;
     unsigned m_childrenAffectedByBackwardPositionalRules : 1;
     unsigned m_childrenAffectedByFirstChildRules : 1;

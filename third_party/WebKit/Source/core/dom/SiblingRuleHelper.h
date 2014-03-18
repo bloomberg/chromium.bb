@@ -20,6 +20,7 @@ public:
     void checkForChildrenAdjacentRuleChanges();
 
     void setChildrenAffectedByDirectAdjacentRules();
+    void setChildrenAffectedByIndirectAdjacentRules();
     void setChildrenAffectedByForwardPositionalRules();
     void setChildrenAffectedByBackwardPositionalRules();
     void setChildrenAffectedByFirstChildRules();
@@ -34,6 +35,7 @@ private:
     bool childrenAffectedByFirstChildRules() const;
     bool childrenAffectedByLastChildRules() const;
     bool childrenAffectedByDirectAdjacentRules() const;
+    bool childrenAffectedByIndirectAdjacentRules() const;
     bool childrenAffectedByForwardPositionalRules() const;
     bool childrenAffectedByBackwardPositionalRules() const;
 
