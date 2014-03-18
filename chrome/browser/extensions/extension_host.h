@@ -136,11 +136,6 @@ class ExtensionHost : public content::WebContentsDelegate,
   void OnEventAck();
   void OnIncrementLazyKeepaliveCount();
   void OnDecrementLazyKeepaliveCount();
-  void OnDetailedConsoleMessageAdded(
-      const base::string16& message,
-      const base::string16& source,
-      const StackTrace& stack_trace,
-      int32 severity_level);
 
   // The extension that we're hosting in this view.
   const Extension* extension_;

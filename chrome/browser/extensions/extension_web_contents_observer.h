@@ -44,9 +44,10 @@ class ExtensionWebContentsObserver
                                      const StackTrace& stack_trace,
                                      int32 severity_level);
 
-
-  // Gets the extension or app (if any) that is associated with a RVH.
-  const Extension* GetExtension(content::RenderViewHost* render_view_host);
+  // Gets the extension or app (if any) that is associated with a RVH. If
+  // |reload_if_terminated| is true then terminated extensions will be reloaded.
+  const Extension* GetExtension(content::RenderViewHost* render_view_host,
+                                bool reload_if_terminated);
 
   // The browser context for the web contents this is observing.
   content::BrowserContext* browser_context_;

@@ -7,10 +7,10 @@
 #include "chrome/browser/extensions/api/messaging/message_service.h"
 #include "chrome/browser/extensions/error_console/error_console.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/messaging/message.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -42,7 +42,9 @@ void ExtensionWebContentsObserver::RenderViewCreated(
       render_view_host->GetRoutingID(),
       GetViewType(web_contents())));
 
-  const Extension* extension = GetExtension(render_view_host);
+  // Get the extension (and reload it if it crashed).
+  const Extension* extension =
+      GetExtension(render_view_host, true /* reload_if_terminated */);
   if (!extension)
     return;
 
@@ -111,22 +113,31 @@ void ExtensionWebContentsObserver::OnDetailedConsoleMessageAdded(
     const base::string16& source,
     const StackTrace& stack_trace,
     int32 severity_level) {
-  if (IsSourceFromAnExtension(source)) {
-    content::RenderViewHost* rvh = web_contents()->GetRenderViewHost();
-    ErrorConsole::Get(Profile::FromBrowserContext(browser_context_))->
-        ReportError(
-            scoped_ptr<ExtensionError>(new RuntimeError(
-                std::string(),
-                browser_context_->IsOffTheRecord(),
-                source,
-                message,
-                stack_trace,
-                web_contents() ?
-                    web_contents()->GetLastCommittedURL() : GURL::EmptyGURL(),
-                static_cast<logging::LogSeverity>(severity_level),
-                rvh->GetRoutingID(),
-                rvh->GetProcess()->GetID())));
+  if (!IsSourceFromAnExtension(source))
+    return;
+
+  std::string extension_id;
+  content::RenderViewHost* render_view_host =
+      web_contents()->GetRenderViewHost();
+  const Extension* extension =
+      GetExtension(render_view_host, false /* reload_if_terminated */);
+  if (extension) {
+    extension_id = extension->id();
+  } else {
+    extension_id = GURL(source).host();
   }
+
+  ExtensionSystem::Get(browser_context_)->error_console()->ReportError(
+      scoped_ptr<ExtensionError>(
+          new RuntimeError(extension_id,
+                           browser_context_->IsOffTheRecord(),
+                           source,
+                           message,
+                           stack_trace,
+                           web_contents()->GetLastCommittedURL(),
+                           static_cast<logging::LogSeverity>(severity_level),
+                           render_view_host->GetRoutingID(),
+                           render_view_host->GetProcess()->GetID())));
 }
 
 void ExtensionWebContentsObserver::OnPostMessage(int port_id,
@@ -138,7 +149,8 @@ void ExtensionWebContentsObserver::OnPostMessage(int port_id,
 }
 
 const Extension* ExtensionWebContentsObserver::GetExtension(
-    content::RenderViewHost* render_view_host) {
+    content::RenderViewHost* render_view_host,
+    bool reload_if_terminated) {
   // Note that due to ChromeContentBrowserClient::GetEffectiveURL(), hosted apps
   // (excluding bookmark apps) will have a chrome-extension:// URL for their
   // site, so we can ignore that wrinkle here.
@@ -155,7 +167,8 @@ const Extension* ExtensionWebContentsObserver::GetExtension(
   // TODO(yoz): This reload doesn't happen synchronously for unpacked
   //            extensions. It seems to be fast enough, but there is a race.
   //            We should delay loading until the extension has reloaded.
-  if (registry->GetExtensionById(extension_id, ExtensionRegistry::TERMINATED)) {
+  if (reload_if_terminated &&
+      registry->GetExtensionById(extension_id, ExtensionRegistry::TERMINATED)) {
     ExtensionSystem::Get(browser_context_)->
         extension_service()->ReloadExtension(extension_id);
   }

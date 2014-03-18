@@ -15,7 +15,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/error_console/error_console.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_web_contents_observer.h"
@@ -144,6 +143,9 @@ ExtensionHost::ExtensionHost(const Extension* extension,
   host_contents_->SetDelegate(this);
   SetViewType(host_contents_.get(), host_type);
 
+  // TODO(jamescook): Break ExtensionWebContentsObserver into pieces to extract
+  // the core IPC message handling and URL schema support from Chrome-level
+  // error console message and MessageService support.
   ExtensionWebContentsObserver::CreateForWebContents(host_contents());
 
   render_view_host_ = host_contents_->GetRenderViewHost();
@@ -153,6 +155,7 @@ ExtensionHost::ExtensionHost(const Extension* extension,
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
                  content::Source<BrowserContext>(browser_context_));
 
+  // Set up Chrome-level pref observers.
   ExtensionsBrowserClient::Get()->OnExtensionHostCreated(host_contents());
 }
 
@@ -197,6 +200,7 @@ void ExtensionHost::CreateRenderViewNow() {
   LoadInitialURL();
   if (IsBackgroundPage()) {
     DCHECK(IsRenderViewLive());
+    // Connect orphaned dev-tools instances.
     ExtensionsBrowserClient::Get()->OnRenderViewCreatedForBackgroundPage(this);
   }
 }
@@ -340,8 +344,6 @@ bool ExtensionHost::OnMessageReceived(const IPC::Message& message) {
                         OnIncrementLazyKeepaliveCount)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_DecrementLazyKeepaliveCount,
                         OnDecrementLazyKeepaliveCount)
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_DetailedConsoleMessageAdded,
-                        OnDetailedConsoleMessageAdded)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -369,39 +371,6 @@ void ExtensionHost::OnDecrementLazyKeepaliveCount() {
       browser_context_)->process_manager();
   if (pm)
     pm->DecrementLazyKeepaliveCount(extension());
-}
-
-void ExtensionHost::OnDetailedConsoleMessageAdded(
-    const base::string16& message,
-    const base::string16& source,
-    const StackTrace& stack_trace,
-    int32 severity_level) {
-  if (!IsSourceFromAnExtension(source))
-    return;
-
-  GURL context_url;
-  WebContents* associated_contents = GetAssociatedWebContents();
-  if (associated_contents)
-    context_url = associated_contents->GetLastCommittedURL();
-  else if (host_contents_.get())
-    context_url = host_contents_->GetLastCommittedURL();
-
-  ErrorConsole* console =
-      ExtensionSystem::Get(browser_context_)->error_console();
-  if (!console)
-    return;
-
-  console->ReportError(
-      scoped_ptr<ExtensionError>(new RuntimeError(
-          extension_id_,
-          browser_context_->IsOffTheRecord(),
-          source,
-          message,
-          stack_trace,
-          context_url,
-          static_cast<logging::LogSeverity>(severity_level),
-          render_view_host_->GetRoutingID(),
-          render_view_host_->GetProcess()->GetID())));
 }
 
 // content::WebContentsObserver
