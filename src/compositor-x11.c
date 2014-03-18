@@ -761,7 +761,7 @@ x11_compositor_create_output(struct x11_compositor *c, int x, int y,
 	xcb_screen_iterator_t iter;
 	struct wm_normal_hints normal_hints;
 	struct wl_event_loop *loop;
-	int output_width, output_height;
+	int output_width, output_height, width_mm, height_mm;
 	int ret;
 	uint32_t mask = XCB_CW_EVENT_MASK | XCB_CW_CURSOR;
 	xcb_atom_t atom_list[1];
@@ -876,8 +876,12 @@ x11_compositor_create_output(struct x11_compositor *c, int x, int y,
 	if (configured_name)
 		output->base.name = strdup(configured_name);
 
+	width_mm = width * c->screen->width_in_millimeters /
+		c->screen->width_in_pixels;
+	height_mm = height * c->screen->height_in_millimeters /
+		c->screen->height_in_pixels;
 	weston_output_init(&output->base, &c->base,
-			   x, y, width, height, transform, scale);
+			   x, y, width_mm, height_mm, transform, scale);
 
 	if (c->use_pixman) {
 		if (x11_output_init_shm(c, output,
