@@ -4,7 +4,6 @@
 
 #include "chrome/browser/signin/signin_header_helper.h"
 
-#include "chrome/browser/extensions/extension_renderer_state.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/tab_contents/tab_util.h"
@@ -25,7 +24,6 @@ namespace {
 
 const char kChromeConnectedHeader[] = "X-Chrome-Connected";
 const char kChromeManageAccountsHeader[] = "X-Chrome-Manage-Accounts";
-const char kGaiaAuthExtensionID[] = "mfffpogegjflfpflabcdkioaeobkgjik";
 
 // Show profile avatar bubble on UI thread. Must be called on the UI thread.
 void ShowAvatarBubbleUIThread(int child_id, int route_id) {
@@ -91,15 +89,6 @@ void AppendMirrorRequestHeaderIfPossible(
           google_util::DISALLOW_NON_STANDARD_PORTS);
   if (!is_google_url && !IsDriveOrigin(origin))
     return;
-
-  ExtensionRendererState* renderer_state =
-      ExtensionRendererState::GetInstance();
-  ExtensionRendererState::WebViewInfo webview_info;
-  bool is_guest = renderer_state->GetWebViewInfo(
-      child_id, route_id, &webview_info);
-  if (is_guest && webview_info.embedder_extension_id == kGaiaAuthExtensionID){
-    return;
-  }
 
   std::string account_id(io_data->google_services_account_id()->GetValue());
   if (account_id.empty())

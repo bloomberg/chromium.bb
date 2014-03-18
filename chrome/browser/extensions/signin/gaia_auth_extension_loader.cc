@@ -13,8 +13,10 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/storage_partition.h"
 #include "extensions/browser/extension_system.h"
 #include "grit/browser_resources.h"
 
@@ -78,6 +80,20 @@ void LoadGaiaAuthExtension(BrowserContext* context) {
 
 void UnloadGaiaAuthExtension(BrowserContext* context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  content::StoragePartition* partition =
+      content::BrowserContext::GetStoragePartitionForSite(
+          context, GURL(chrome::kChromeUIChromeSigninURL));
+  if (partition) {
+    partition->ClearData(
+        content::StoragePartition::REMOVE_DATA_MASK_ALL,
+        content::StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL,
+        GURL(),
+        content::StoragePartition::OriginMatcherFunction(),
+        base::Time(),
+        base::Time::Max(),
+        base::Bind(&base::DoNothing));
+  }
 
   const char kGaiaAuthId[] = "mfffpogegjflfpflabcdkioaeobkgjik";
   GetComponentLoader(context)->Remove(kGaiaAuthId);
