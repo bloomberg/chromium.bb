@@ -79,7 +79,7 @@ public:
     static void renderSubtree(GraphicsContext*, RenderObject*, const AffineTransform&);
 
     static float calculateScreenFontSizeScalingFactor(const RenderObject*);
-    static void calculateTransformationToOutermostCoordinateSystem(const RenderObject*, AffineTransform& absoluteTransform);
+    static void calculateDeviceSpaceTransformation(const RenderObject*, AffineTransform& absoluteTransform);
     static FloatRect clampedAbsoluteTargetRect(const FloatRect& absoluteTargetRect);
     static void clear2DRotation(AffineTransform&);
 

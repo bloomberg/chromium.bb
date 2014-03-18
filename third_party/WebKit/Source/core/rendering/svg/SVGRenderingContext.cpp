@@ -203,12 +203,17 @@ float SVGRenderingContext::calculateScreenFontSizeScalingFactor(const RenderObje
     ASSERT(renderer);
 
     AffineTransform ctm;
-    calculateTransformationToOutermostCoordinateSystem(renderer, ctm);
+    // FIXME: calculateDeviceSpaceTransformation() queries layer compositing state - which is not
+    // supported during layout. Hence, the result may not include all CSS transforms.
+    calculateDeviceSpaceTransformation(renderer, ctm);
     return narrowPrecisionToFloat(sqrt((pow(ctm.xScale(), 2) + pow(ctm.yScale(), 2)) / 2));
 }
 
-void SVGRenderingContext::calculateTransformationToOutermostCoordinateSystem(const RenderObject* renderer, AffineTransform& absoluteTransform)
+void SVGRenderingContext::calculateDeviceSpaceTransformation(const RenderObject* renderer, AffineTransform& absoluteTransform)
 {
+    // FIXME: trying to compute a device space transform at record time is wrong. All clients
+    // should be updated to avoid relying on this information, and the method should be removed.
+
     ASSERT(renderer);
     // We're about to possibly clear renderer, so save the deviceScaleFactor now.
     float deviceScaleFactor = renderer->document().frameHost()->deviceScaleFactor();
@@ -224,17 +229,17 @@ void SVGRenderingContext::calculateTransformationToOutermostCoordinateSystem(con
 
     // Continue walking up the layer tree, accumulating CSS transforms.
     RenderLayer* layer = renderer ? renderer->enclosingLayer() : 0;
-    while (layer) {
-        if (TransformationMatrix* layerTransform = layer->transform())
-            absoluteTransform = layerTransform->toAffineTransform() * absoluteTransform;
-
+    while (layer && layer->isAllowedToQueryCompositingState()) {
         // We can stop at compositing layers, to match the backing resolution.
         // FIXME: should we be computing the transform to the nearest composited layer,
         // or the nearest composited layer that does not paint into its ancestor?
         // I think this is the nearest composited ancestor since we will inherit its
         // transforms in the composited layer tree.
-        if (layer->hasCompositedLayerMapping())
+        if (layer->compositingState() != NotComposited)
             break;
+
+        if (TransformationMatrix* layerTransform = layer->transform())
+            absoluteTransform = layerTransform->toAffineTransform() * absoluteTransform;
 
         layer = layer->parent();
     }

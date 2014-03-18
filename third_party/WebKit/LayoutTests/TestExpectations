@@ -628,6 +628,8 @@ crbug.com/308952 [ XP ] inspector/editor/text-editor-reveal-line.html [ Failure 
 crbug.com/310992 virtual/threaded/animations/play-state.html [ Pass Failure ]
 crbug.com/310992 animations/play-state.html [ Pass Failure ]
 
+Bug(fmalita) svg/custom/filter-css-transform-resolution.html [ NeedsRebaseline ]
+
 crbug.com/327447 [ Linux Win Debug ] animations/combo-transform-translate+scale.html [ Pass Failure ]
 
 crbug.com/337736 [ Linux Win ] fast/forms/time-multiple-fields/time-multiple-fields-stepup-stepdown-from-renderer.html [ Failure Pass ]

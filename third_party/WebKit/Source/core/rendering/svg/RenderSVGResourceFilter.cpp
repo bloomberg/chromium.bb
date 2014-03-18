@@ -171,7 +171,7 @@ bool RenderSVGResourceFilter::applyResource(RenderObject* object, RenderStyle*, 
 
     // Determine absolute transformation matrix for filter.
     AffineTransform absoluteTransform;
-    SVGRenderingContext::calculateTransformationToOutermostCoordinateSystem(object, absoluteTransform);
+    SVGRenderingContext::calculateDeviceSpaceTransformation(object, absoluteTransform);
     if (!absoluteTransform.isInvertible())
         return false;
 
