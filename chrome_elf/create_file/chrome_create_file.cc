@@ -10,6 +10,7 @@
 #include "chrome_elf/chrome_elf_constants.h"
 #include "chrome_elf/chrome_elf_util.h"
 #include "chrome_elf/ntdll_cache.h"
+#include "sandbox/win/src/interception_internal.h"
 #include "sandbox/win/src/nt_internals.h"
 
 namespace {
@@ -205,13 +206,22 @@ HANDLE CreateFileNTDLL(
   if (flags_and_attributes & FILE_FLAG_OPEN_NO_RECALL)
     flags |= FILE_OPEN_NO_RECALL;
 
-  if (!g_ntdll_lookup["NtCreateFile"] ||
-      !g_ntdll_lookup["RtlInitUnicodeString"]) {
+  if (!g_ntdll_lookup["RtlInitUnicodeString"])
+    return INVALID_HANDLE_VALUE;
+
+  NtCreateFileFunction create_file;
+  char thunk_buffer[sizeof(sandbox::ThunkData)] = {};
+
+  if (g_nt_thunk_storage.data[0] != 0) {
+    create_file = reinterpret_cast<NtCreateFileFunction>(&g_nt_thunk_storage);
+    // Copy the thunk data to a buffer on the stack for debugging purposes.
+    memcpy(&thunk_buffer, &g_nt_thunk_storage, sizeof(sandbox::ThunkData));
+  } else if (g_ntdll_lookup["NtCreateFile"]) {
+    create_file =
+        reinterpret_cast<NtCreateFileFunction>(g_ntdll_lookup["NtCreateFile"]);
+  } else {
     return INVALID_HANDLE_VALUE;
   }
-
-  NtCreateFileFunction create_file =
-      reinterpret_cast<NtCreateFileFunction>(g_ntdll_lookup["NtCreateFile"]);
 
   RtlInitUnicodeStringFunction init_unicode_string =
       reinterpret_cast<RtlInitUnicodeStringFunction>(

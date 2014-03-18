@@ -20,6 +20,7 @@
 #include "base/win/windows_version.h"
 #include "chrome_elf/chrome_elf_constants.h"
 #include "chrome_elf/ntdll_cache.h"
+#include "sandbox/win/src/interception_internal.h"
 #include "sandbox/win/src/nt_internals.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -87,7 +88,22 @@ class ChromeCreateFileTest : public PlatformTest {
     self_ = this;
   }
 
+  void UnsetThunkStorage() {
+    DWORD old_protect = 0;
+    EXPECT_TRUE(::VirtualProtect(&g_nt_thunk_storage,
+                                 sizeof(g_nt_thunk_storage),
+                                 PAGE_EXECUTE_READWRITE,
+                                 &old_protect));
+    memset(&g_nt_thunk_storage, 0, sizeof(g_nt_thunk_storage));
+
+    EXPECT_TRUE(::VirtualProtect(&g_nt_thunk_storage,
+                                 sizeof(g_nt_thunk_storage),
+                                 PAGE_EXECUTE_READ,
+                                 &old_protect));
+  }
+
   void RedirectNtCreateFileCalls() {
+    UnsetThunkStorage();
     old_func_ptr_ =
         reinterpret_cast<NtCreateFileFunction>(g_ntdll_lookup["NtCreateFile"]);
 
@@ -376,13 +392,14 @@ TEST_F(ChromeCreateFileTest, BypassTest) {
   EXPECT_FALSE(ShouldBypass(local_junk_path.value().c_str()));
 }
 
-TEST_F(ChromeCreateFileTest, NtCreateFileAddressCheck) {
-  HMODULE ntdll_handle = ::GetModuleHandle(L"ntdll.dll");
-  EXPECT_EQ(::GetProcAddress(ntdll_handle, "NtCreateFile"),
-            g_ntdll_lookup["NtCreateFile"]);
+TEST_F(ChromeCreateFileTest, ReadWriteFromNtDll) {
+  UnsetThunkStorage();
+  base::FilePath file_name = temp_dir_.path().Append(L"some_file.txt");
+  DoWriteCheck(file_name, FILE_ATTRIBUTE_NORMAL, false);
+  DoReadCheck(file_name, FILE_ATTRIBUTE_NORMAL, false);
 }
 
-TEST_F(ChromeCreateFileTest, ReadWriteFromNtDll) {
+TEST_F(ChromeCreateFileTest, ReadWriteFromThunk) {
   base::FilePath file_name = temp_dir_.path().Append(L"some_file.txt");
   DoWriteCheck(file_name, FILE_ATTRIBUTE_NORMAL, false);
   DoReadCheck(file_name, FILE_ATTRIBUTE_NORMAL, false);
