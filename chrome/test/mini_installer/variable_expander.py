@@ -94,14 +94,14 @@ class VariableExpander:
     # This string will be converted to a tuple once injected in eval() through
     # conditional checks. Tuples are compared lexicographically.
     windows_version = '(%s, %s)' % (windows_major_ver, windows_minor_ver)
-    if mini_installer_product_name == 'Google Chrome':
+    if mini_installer_product_name == 'Google Chrome Installer':
       chrome_short_name = 'Chrome'
       chrome_long_name = 'Google Chrome'
       chrome_dir = 'Google\\Chrome'
       chrome_update_registry_subkey = ('Software\\Google\\Update\\Clients\\'
                                        '{8A69D345-D564-463c-AFF1-A69D9E530F96}')
       chrome_html_prog_id = 'ChromeHTML'
-    elif mini_installer_product_name == 'Chromium':
+    elif mini_installer_product_name == 'Chromium Installer':
       chrome_short_name = 'Chromium'
       chrome_long_name = 'Chromium'
       chrome_dir = 'Chromium'
