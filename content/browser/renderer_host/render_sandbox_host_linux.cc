@@ -33,6 +33,7 @@
 #include "content/common/sandbox_linux/sandbox_linux.h"
 #include "content/common/set_process_title.h"
 #include "content/public/common/content_switches.h"
+#include "ppapi/c/trusted/ppb_browser_font_trusted.h"
 #include "skia/ext/skia_utils_base.h"
 #include "third_party/WebKit/public/platform/linux/WebFontInfo.h"
 #include "third_party/WebKit/public/web/WebKit.h"
@@ -394,13 +395,14 @@ class SandboxIPCProcess  {
 
     std::string face;
     bool is_bold, is_italic;
-    uint32 charset;
+    uint32 charset, fallback_family;
 
     if (!pickle.ReadString(&iter, &face) ||
         face.empty() ||
         !pickle.ReadBool(&iter, &is_bold) ||
         !pickle.ReadBool(&iter, &is_italic) ||
-        !pickle.ReadUInt32(&iter, &charset)) {
+        !pickle.ReadUInt32(&iter, &charset) ||
+        !pickle.ReadUInt32(&iter, &fallback_family)) {
       return;
     }
 
@@ -409,7 +411,27 @@ class SandboxIPCProcess  {
 
     FcPattern* pattern = FcPatternCreate();
     // TODO(agl): FC_FAMILy needs to change
-    FcPatternAddString(pattern, FC_FAMILY, (FcChar8*) face.c_str());
+    FcPatternAddString(pattern, FC_FAMILY,
+                       reinterpret_cast<const FcChar8*>(face.c_str()));
+
+    std::string generic_font_name;
+    switch (fallback_family) {
+      case PP_BROWSERFONT_TRUSTED_FAMILY_SERIF:
+        generic_font_name = "Times New Roman";
+        break;
+      case PP_BROWSERFONT_TRUSTED_FAMILY_SANSSERIF:
+        generic_font_name = "Arial";
+        break;
+      case PP_BROWSERFONT_TRUSTED_FAMILY_MONOSPACE:
+        generic_font_name = "Courier New";
+        break;
+    }
+    if (!generic_font_name.empty()) {
+      const FcChar8* fc_generic_font_name =
+          reinterpret_cast<const FcChar8*>(generic_font_name.c_str());
+      FcPatternAddString(pattern, FC_FAMILY, fc_generic_font_name);
+    }
+
     if (is_bold)
       FcPatternAddInteger(pattern, FC_WEIGHT, FC_WEIGHT_BOLD);
     if (is_italic)

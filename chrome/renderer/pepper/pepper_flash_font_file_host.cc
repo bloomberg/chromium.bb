@@ -28,9 +28,11 @@ PepperFlashFontFileHost::PepperFlashFontFileHost(
       fd_(-1) {
 #if defined(OS_LINUX) || defined(OS_OPENBSD)
   fd_ = content::MatchFontWithFallback(
-      description.face.c_str(), description.weight >=
-          PP_BROWSERFONT_TRUSTED_WEIGHT_BOLD,
-      description.italic, charset);
+      description.face.c_str(),
+      description.weight >= PP_BROWSERFONT_TRUSTED_WEIGHT_BOLD,
+      description.italic,
+      charset,
+      PP_BROWSERFONT_TRUSTED_FAMILY_DEFAULT);
 #endif  // defined(OS_LINUX) || defined(OS_OPENBSD)
 }
 

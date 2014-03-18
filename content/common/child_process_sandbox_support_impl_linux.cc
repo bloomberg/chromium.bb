@@ -88,8 +88,11 @@ void GetRenderStyleForStrike(const char* family, int sizeAndStyle,
   }
 }
 
-int MatchFontWithFallback(const std::string& face, bool bold,
-                          bool italic, int charset) {
+int MatchFontWithFallback(const std::string& face,
+                          bool bold,
+                          bool italic,
+                          int charset,
+                          PP_BrowserFont_Trusted_Family fallback_family) {
   TRACE_EVENT0("sandbox_ipc", "MatchFontWithFallback");
 
   Pickle request;
@@ -98,6 +101,7 @@ int MatchFontWithFallback(const std::string& face, bool bold,
   request.WriteBool(bold);
   request.WriteBool(italic);
   request.WriteUInt32(charset);
+  request.WriteUInt32(fallback_family);
   uint8_t reply_buf[64];
   int fd = -1;
   UnixDomainSocket::SendRecvMsg(GetSandboxFD(), reply_buf, sizeof(reply_buf),

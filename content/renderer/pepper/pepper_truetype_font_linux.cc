@@ -10,6 +10,7 @@
 #include "content/renderer/pepper/pepper_truetype_font.h"
 #include "ppapi/c/dev/ppb_truetype_font_dev.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/c/trusted/ppb_browser_font_trusted.h"
 
 namespace content {
 
@@ -69,7 +70,8 @@ PepperTrueTypeFontLinux::PepperTrueTypeFontLinux(
       desc_.family.c_str(),
       desc_.weight >= PP_TRUETYPEFONTWEIGHT_BOLD,
       desc_.style & PP_TRUETYPEFONTSTYLE_ITALIC,
-      desc_.charset);
+      desc_.charset,
+      PP_BROWSERFONT_TRUSTED_FAMILY_DEFAULT);
 }
 
 PepperTrueTypeFontLinux::~PepperTrueTypeFontLinux() {

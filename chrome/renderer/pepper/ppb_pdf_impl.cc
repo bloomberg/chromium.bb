@@ -206,7 +206,8 @@ PP_Resource GetFontFileWithFallback(
       face_name->value().c_str(),
       description->weight >= PP_BROWSERFONT_TRUSTED_WEIGHT_BOLD,
       description->italic,
-      charset);
+      charset,
+      description->family);
   if (fd == -1)
     return 0;
 
@@ -336,7 +337,8 @@ void HasUnsupportedFeature(PP_Instance instance_id) {
   if (!instance->IsFullPagePlugin())
     return;
 
-  WebView* view = instance->GetContainer()->element().document().frame()->view();
+  WebView* view =
+      instance->GetContainer()->element().document().frame()->view();
   content::RenderView* render_view = content::RenderView::FromWebView(view);
   render_view->Send(new ChromeViewHostMsg_PDFHasUnsupportedFeature(
       render_view->GetRoutingID()));
