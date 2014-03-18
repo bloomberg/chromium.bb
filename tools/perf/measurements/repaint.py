@@ -11,9 +11,6 @@ class Repaint(page_measurement.PageMeasurement):
     super(Repaint, self).__init__('repaint', False)
     self._smoothness_metric = None
 
-  def CanRunForPage(self, page):
-    return hasattr(page, 'repaint')
-
   def WillRunActions(self, page, tab):
     tab.WaitForDocumentReadyStateToBeComplete()
     self._smoothness_metric = smoothness.SmoothnessMetric()

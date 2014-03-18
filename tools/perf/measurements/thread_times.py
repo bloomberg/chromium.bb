@@ -17,9 +17,6 @@ class ThreadTimes(page_measurement.PageMeasurement):
     parser.add_option('--report-silk-details', action='store_true',
                       help='Report details relevant to silk.')
 
-  def CanRunForPage(self, page):
-    return hasattr(page, 'smoothness')
-
   @property
   def results_are_the_same_on_every_page(self):
     return False

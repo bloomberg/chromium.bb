@@ -17,9 +17,6 @@ class Smoothness(page_measurement.PageMeasurement):
     options.AppendExtraBrowserArgs('--enable-gpu-benchmarking')
     power.PowerMetric.CustomizeBrowserOptions(options)
 
-  def CanRunForPage(self, page):
-    return hasattr(page, 'smoothness')
-
   def WillRunActions(self, page, tab):
     self._power_metric = power.PowerMetric()
     self._power_metric.Start(page, tab)

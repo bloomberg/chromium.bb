@@ -8,9 +8,6 @@ class NoOp(page_measurement.PageMeasurement):
   def __init__(self):
     super(NoOp, self).__init__('no_op')
 
-  def CanRunForPage(self, page):
-    return hasattr(page, 'no_op')
-
   def WillRunAction(self, page, tab, action):
     pass
 

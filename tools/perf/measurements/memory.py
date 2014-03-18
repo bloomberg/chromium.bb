@@ -25,9 +25,6 @@ class Memory(page_measurement.PageMeasurement):
     # a high frequency.
     options.AppendExtraBrowserArgs('--memory-metrics')
 
-  def CanRunForPage(self, page):
-    return hasattr(page, 'stress_memory')
-
   def MeasurePage(self, page, tab, results):
     self._power_metric.Stop(page, tab)
     self._memory_metric.Stop(page, tab)

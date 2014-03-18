@@ -69,10 +69,6 @@ class Endure(page_measurement.PageMeasurement):
     """Adds extra command-line options to the browser."""
     v8_object_stats.V8ObjectStatsMetric.CustomizeBrowserOptions(options)
 
-  def CanRunForPage(self, page):
-    """Checks whether a page has the required 'endure' property."""
-    return hasattr(page, 'endure')
-
   def MeasurePage(self, page, tab, results):
     """Takes a sample and adds a result if enough time has passed."""
     self._iterations_elapsed += 1

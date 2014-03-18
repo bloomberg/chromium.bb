@@ -86,9 +86,6 @@ class TimelineBasedMeasurement(page_measurement.PageMeasurement):
         default=NO_OVERHEAD_LEVEL,
         help='How much overhead to incur during the measurement.')
 
-  def CanRunForPage(self, page):
-    return hasattr(page, 'smoothness')
-
   def WillNavigateToPage(self, page, tab):
     if not tab.browser.supports_tracing:
       raise Exception('Not supported')
