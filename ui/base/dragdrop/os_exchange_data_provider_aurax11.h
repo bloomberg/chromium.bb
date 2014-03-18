@@ -29,7 +29,7 @@ namespace ui {
 class Clipboard;
 class OSExchangeDataProviderAuraX11Test;
 
-// OSExchangeData::Provider implementation for aura on linux.
+// OSExchangeData::Provider implementation for aura on desktop Linux.
 class UI_BASE_EXPORT OSExchangeDataProviderAuraX11
     : public OSExchangeData::Provider,
       public base::MessagePumpDispatcher {

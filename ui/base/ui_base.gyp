@@ -386,6 +386,10 @@
             'cursor/cursor_mac.mm',
             'cursor/cursor_win.cc',
             'cursor/cursor_x11.cc',
+            'dragdrop/drag_utils.cc',
+            'dragdrop/drag_utils.h',
+            'dragdrop/os_exchange_data.cc',
+            'dragdrop/os_exchange_data.h',
             'nine_image_painter_factory.cc',
             'nine_image_painter_factory.h',
             'x/selection_owner.cc',
@@ -401,9 +405,9 @@
             'resource/resource_bundle_auralinux.cc',
           ],
         }],
-        ['use_aura==1 and OS=="win"', {
-          'sources/': [
-            ['exclude', 'dragdrop/drag_utils_aura.cc'],
+        ['OS=="win"', {
+          'sources!': [
+            'dragdrop/drag_utils_aura.cc',
           ],
         }],
         ['use_glib == 1', {
@@ -411,26 +415,6 @@
             # font_gtk.cc uses fontconfig.
             '../../build/linux/system.gyp:fontconfig',
             '../../build/linux/system.gyp:glib',
-          ],
-        }],
-        ['desktop_linux == 1 or chromeos == 1', {
-          'conditions': [
-            ['toolkit_views==0 and use_aura==0', {
-              # Note: because of gyp predence rules this has to be defined as
-              # 'sources/' rather than 'sources!'.
-              'sources/': [
-                ['exclude', '^dragdrop/drag_utils.cc'],
-                ['exclude', '^dragdrop/drag_utils.h'],
-                ['exclude', '^dragdrop/os_exchange_data.cc'],
-                ['exclude', '^dragdrop/os_exchange_data.h'],
-              ],
-            }, {
-              # Note: because of gyp predence rules this has to be defined as
-              # 'sources/' rather than 'sources!'.
-              'sources/': [
-                ['include', '^dragdrop/os_exchange_data.cc'],
-              ],
-            }],
           ],
         }],
         ['use_pango==1', {
@@ -447,22 +431,7 @@
             'clipboard/clipboard_aurax11.cc',
           ],
         }],
-        ['chromeos==1 or (use_aura==1 and OS=="linux" and use_x11==0)', {
-          'sources!': [
-            'dragdrop/os_exchange_data_provider_aurax11.cc',
-            'touch/touch_device.cc',
-          ],
-        }, {
-          'sources!': [
-            'dragdrop/os_exchange_data_provider_aura.cc',
-            'dragdrop/os_exchange_data_provider_aura.h',
-            'touch/touch_device_aurax11.cc',
-          ],
-        }],
         ['OS=="win"', {
-          'sources!': [
-            'touch/touch_device.cc',
-          ],
           'include_dirs': [
             '../..',
             '../../third_party/wtl/include',
@@ -502,18 +471,10 @@
               ],
             }],
           ],
-          'sources!': [
-            'dragdrop/drag_drop_types.h',
-            'dragdrop/os_exchange_data.cc',
-          ],
         }],
         ['OS=="mac"', {
           'dependencies': [
             '../../third_party/mozilla/mozilla.gyp:mozilla',
-          ],
-          'sources!': [
-            'dragdrop/drag_utils.cc',
-            'dragdrop/drag_utils.h',
           ],
           'link_settings': {
             'libraries': [
@@ -546,13 +507,10 @@
         ['OS=="android"', {
           'sources!': [
             'default_theme_provider.cc',
-            'dragdrop/drag_utils.cc',
-            'dragdrop/drag_utils.h',
             'l10n/l10n_font_util.cc',
             'models/button_menu_item_model.cc',
             'models/dialog_model.cc',
             'theme_provider.cc',
-            'touch/touch_device.cc',
             'touch/touch_editing_controller.cc',
             'ui_base_types.cc',
           ],
@@ -583,6 +541,24 @@
         ['OS=="android" or OS=="ios"', {
           'sources!': [
             'device_form_factor_desktop.cc'
+          ],
+        }],
+        ['OS!="mac" and toolkit_uses_gtk==0', {
+          # Only mac and linux_gtk require the stubs in touch_device.cc.
+          'sources!': [
+            'touch/touch_device.cc',
+          ],
+        }],
+        ['chromeos==1 or use_x11==0', {
+          'sources!': [
+            'dragdrop/os_exchange_data_provider_aurax11.cc',
+            'dragdrop/os_exchange_data_provider_aurax11.h',
+          ],
+        }],
+        ['(chromeos==0 and use_x11==1) or OS=="win"', {
+          'sources!': [
+            'dragdrop/os_exchange_data_provider_aura.cc',
+            'dragdrop/os_exchange_data_provider_aura.h',
           ],
         }],
         ['OS=="linux"', {
