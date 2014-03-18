@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/api/desktop_capture/desktop_capture_api.h"
 
+#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
@@ -12,11 +13,13 @@
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/native_desktop_media_list.h"
 #include "chrome/browser/ui/ash/ash_util.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/tabs.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
+#include "net/base/net_util.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capture_options.h"
 #include "third_party/webrtc/modules/desktop_capture/screen_capturer.h"
 #include "third_party/webrtc/modules/desktop_capture/window_capturer.h"
@@ -33,6 +36,8 @@ const char kNoTabIdError[] = "targetTab doesn't have id field set.";
 const char kNoUrlError[] = "targetTab doesn't have URL field set.";
 const char kInvalidTabIdError[] = "Invalid tab specified.";
 const char kTabUrlChangedError[] = "URL for the specified tab has changed.";
+const char kTabUrlNotSecure[] =
+    "URL scheme for the specified tab is not secure.";
 
 DesktopCaptureChooseDesktopMediaFunction::PickerFactory* g_picker_factory =
     NULL;
@@ -93,7 +98,15 @@ bool DesktopCaptureChooseDesktopMediaFunction::RunImpl() {
       return false;
     }
     origin_ = GURL(*(params->target_tab->url)).GetOrigin();
-    target_name = base::UTF8ToUTF16(origin_.spec());
+
+    if (!CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kAllowHttpScreenCapture) &&
+        !origin_.SchemeIsSecure()) {
+      error_ = kTabUrlNotSecure;
+      return false;
+    }
+    target_name = base::UTF8ToUTF16(origin_.SchemeIsSecure() ?
+        net::GetHostAndOptionalPort(origin_) : origin_.spec());
 
     if (!params->target_tab->id) {
       error_ = kNoTabIdError;

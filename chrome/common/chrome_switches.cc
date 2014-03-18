@@ -34,7 +34,8 @@ const char kAllowCrossOriginAuthPrompt[]    = "allow-cross-origin-auth-prompt";
 // directories. This switch re-enables file:// for testing.
 const char kAllowFileAccess[]               = "allow-file-access";
 
-// Allow non-secure origins to use the screen capture API.
+// Allow non-secure origins to use the screen capture API and the desktopCapture
+// extension API.
 const char kAllowHttpScreenCapture[] = "allow-http-screen-capture";
 
 // Specifies comma-separated list of extension ids or hosts to grant

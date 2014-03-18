@@ -38,6 +38,7 @@
 #include "grit/generated_resources.h"
 #include "media/audio/audio_manager_base.h"
 #include "media/base/media_switches.h"
+#include "net/base/net_util.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capture_types.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -147,12 +148,15 @@ bool IsOriginForCasting(const GURL& origin) {
 // notification.
 base::string16 GetApplicationTitle(content::WebContents* web_contents,
                                    const extensions::Extension* extension) {
-  // Use extension name as title for extensions and origin for drive-by web.
+  // Use extension name as title for extensions and host/origin for drive-by
+  // web.
   std::string title;
   if (extension) {
     title = extension->name();
   } else {
-    title = web_contents->GetURL().GetOrigin().spec();
+    GURL url = web_contents->GetURL();
+    title = url.SchemeIsSecure() ? net::GetHostAndOptionalPort(url)
+                                 : url.GetOrigin().spec();
   }
   return base::UTF8ToUTF16(title);
 }
