@@ -606,9 +606,9 @@ void SafeBrowsingDatabaseNew::Init(const base::FilePath& filename_base) {
     if (base::GetFileInfo(side_effect_free_whitelist_filename_, &db_info)
         && db_info.size != 0) {
       const base::TimeTicks before = base::TimeTicks::Now();
-      side_effect_free_whitelist_prefix_set_.reset(
+      side_effect_free_whitelist_prefix_set_ =
           safe_browsing::PrefixSet::LoadFile(
-              side_effect_free_whitelist_prefix_set_filename_));
+              side_effect_free_whitelist_prefix_set_filename_);
       DVLOG(1) << "SafeBrowsingDatabaseNew read side-effect free whitelist "
                << "prefix set in "
                << (base::TimeTicks::Now() - before).InMilliseconds() << " ms";
@@ -1279,11 +1279,11 @@ void SafeBrowsingDatabaseNew::UpdateWhitelistStore(
   // hashes are already full.
   std::vector<SBAddFullHash> empty_add_hashes;
 
-  // Note: prefixes will not be empty.  The current data store implementation
+  // Note: |builder| will not be empty.  The current data store implementation
   // stores all full-length hashes as both full and prefix hashes.
-  SBAddPrefixes prefixes;
+  safe_browsing::PrefixSetBuilder builder;
   std::vector<SBAddFullHash> full_hashes;
-  if (!store->FinishUpdate(empty_add_hashes, &prefixes, &full_hashes)) {
+  if (!store->FinishUpdate(empty_add_hashes, &builder, &full_hashes)) {
     RecordFailure(FAILURE_WHITELIST_DATABASE_UPDATE_FINISH);
     WhitelistEverything(whitelist);
     return;
@@ -1305,11 +1305,11 @@ int64 SafeBrowsingDatabaseNew::UpdateHashPrefixStore(
 
   // These results are not used after this call. Simply ignore the
   // returned value after FinishUpdate(...).
-  SBAddPrefixes add_prefixes_result;
+  safe_browsing::PrefixSetBuilder builder;
   std::vector<SBAddFullHash> add_full_hashes_result;
 
   if (!store->FinishUpdate(empty_add_hashes,
-                           &add_prefixes_result,
+                           &builder,
                            &add_full_hashes_result)) {
     RecordFailure(failure_type);
   }
@@ -1351,28 +1351,14 @@ void SafeBrowsingDatabaseNew::UpdateBrowseStore() {
 
   const base::TimeTicks before = base::TimeTicks::Now();
 
-  SBAddPrefixes add_prefixes;
+  safe_browsing::PrefixSetBuilder builder;
   std::vector<SBAddFullHash> add_full_hashes;
   if (!browse_store_->FinishUpdate(pending_add_hashes,
-                                   &add_prefixes, &add_full_hashes)) {
+                                   &builder, &add_full_hashes)) {
     RecordFailure(FAILURE_BROWSE_DATABASE_UPDATE_FINISH);
     return;
   }
-
-  // TODO(shess): If |add_prefixes| were sorted by the prefix, it
-  // could be passed directly to |PrefixSet()|, removing the need for
-  // |prefixes|.  For now, |prefixes| is useful while debugging
-  // things.
-  std::vector<SBPrefix> prefixes;
-  prefixes.reserve(add_prefixes.size());
-  for (SBAddPrefixes::const_iterator iter = add_prefixes.begin();
-       iter != add_prefixes.end(); ++iter) {
-    prefixes.push_back(iter->prefix);
-  }
-
-  std::sort(prefixes.begin(), prefixes.end());
-  scoped_ptr<safe_browsing::PrefixSet>
-      prefix_set(new safe_browsing::PrefixSet(prefixes));
+  scoped_ptr<safe_browsing::PrefixSet> prefix_set(builder.GetPrefixSet());
 
   // This needs to be in sorted order by prefix for efficient access.
   std::sort(add_full_hashes.begin(), add_full_hashes.end(),
@@ -1395,7 +1381,7 @@ void SafeBrowsingDatabaseNew::UpdateBrowseStore() {
 
   DVLOG(1) << "SafeBrowsingDatabaseImpl built prefix set in "
            << (base::TimeTicks::Now() - before).InMilliseconds()
-           << " ms total.  prefix count: " << add_prefixes.size();
+           << " ms total.";
   UMA_HISTOGRAM_LONG_TIMES("SB2.BuildFilter", base::TimeTicks::Now() - before);
 
   // Persist the prefix set to disk.  Since only this thread changes
@@ -1432,31 +1418,17 @@ void SafeBrowsingDatabaseNew::UpdateBrowseStore() {
 
 void SafeBrowsingDatabaseNew::UpdateSideEffectFreeWhitelistStore() {
   std::vector<SBAddFullHash> empty_add_hashes;
-  SBAddPrefixes add_prefixes;
+  safe_browsing::PrefixSetBuilder builder;
   std::vector<SBAddFullHash> add_full_hashes_result;
 
   if (!side_effect_free_whitelist_store_->FinishUpdate(
           empty_add_hashes,
-          &add_prefixes,
+          &builder,
           &add_full_hashes_result)) {
     RecordFailure(FAILURE_SIDE_EFFECT_FREE_WHITELIST_UPDATE_FINISH);
     return;
   }
-
-  // TODO(shess): If |add_prefixes| were sorted by the prefix, it
-  // could be passed directly to |PrefixSet()|, removing the need for
-  // |prefixes|.  For now, |prefixes| is useful while debugging
-  // things.
-  std::vector<SBPrefix> prefixes;
-  prefixes.reserve(add_prefixes.size());
-  for (SBAddPrefixes::const_iterator iter = add_prefixes.begin();
-       iter != add_prefixes.end(); ++iter) {
-    prefixes.push_back(iter->prefix);
-  }
-
-  std::sort(prefixes.begin(), prefixes.end());
-  scoped_ptr<safe_browsing::PrefixSet>
-      prefix_set(new safe_browsing::PrefixSet(prefixes));
+  scoped_ptr<safe_browsing::PrefixSet> prefix_set(builder.GetPrefixSet());
 
   // Swap in the newly built prefix set.
   {
@@ -1499,10 +1471,10 @@ void SafeBrowsingDatabaseNew::UpdateIpBlacklistStore() {
 
   // Note: prefixes will not be empty.  The current data store implementation
   // stores all full-length hashes as both full and prefix hashes.
-  SBAddPrefixes prefixes;
+  safe_browsing::PrefixSetBuilder builder;
   std::vector<SBAddFullHash> full_hashes;
   if (!ip_blacklist_store_->FinishUpdate(empty_add_hashes,
-                                         &prefixes, &full_hashes)) {
+                                         &builder, &full_hashes)) {
     RecordFailure(FAILURE_IP_BLACKLIST_UPDATE_FINISH);
     LoadIpBlacklist(std::vector<SBAddFullHash>());  // Clear the list.
     return;
@@ -1551,8 +1523,8 @@ void SafeBrowsingDatabaseNew::LoadPrefixSet() {
   base::DeleteFile(bloom_filter_filename, false);
 
   const base::TimeTicks before = base::TimeTicks::Now();
-  browse_prefix_set_.reset(safe_browsing::PrefixSet::LoadFile(
-      browse_prefix_set_filename_));
+  browse_prefix_set_ = safe_browsing::PrefixSet::LoadFile(
+      browse_prefix_set_filename_);
   DVLOG(1) << "SafeBrowsingDatabaseNew read prefix set in "
            << (base::TimeTicks::Now() - before).InMilliseconds() << " ms";
   UMA_HISTOGRAM_TIMES("SB2.PrefixSetLoad", base::TimeTicks::Now() - before);

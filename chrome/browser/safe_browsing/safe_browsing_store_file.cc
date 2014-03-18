@@ -478,11 +478,11 @@ bool SafeBrowsingStoreFile::FinishChunk() {
 
 bool SafeBrowsingStoreFile::DoUpdate(
     const std::vector<SBAddFullHash>& pending_adds,
-    SBAddPrefixes* add_prefixes_result,
+    safe_browsing::PrefixSetBuilder* builder,
     std::vector<SBAddFullHash>* add_full_hashes_result) {
   DCHECK(file_.get() || empty_);
   DCHECK(new_file_.get());
-  CHECK(add_prefixes_result);
+  CHECK(builder);
   CHECK(add_full_hashes_result);
 
   SBAddPrefixes add_prefixes;
@@ -664,7 +664,10 @@ bool SafeBrowsingStoreFile::DoUpdate(
   UMA_HISTOGRAM_COUNTS("SB2.SubPrefixes", sub_prefixes.size());
 
   // Pass the resulting data off to the caller.
-  add_prefixes_result->swap(add_prefixes);
+  for (SBAddPrefixes::const_iterator iter = add_prefixes.begin();
+       iter != add_prefixes.end(); ++iter) {
+    builder->AddPrefix(iter->prefix);
+  }
   add_full_hashes_result->swap(add_full_hashes);
 
   return true;
@@ -672,12 +675,12 @@ bool SafeBrowsingStoreFile::DoUpdate(
 
 bool SafeBrowsingStoreFile::FinishUpdate(
     const std::vector<SBAddFullHash>& pending_adds,
-    SBAddPrefixes* add_prefixes_result,
+    safe_browsing::PrefixSetBuilder* builder,
     std::vector<SBAddFullHash>* add_full_hashes_result) {
-  DCHECK(add_prefixes_result);
+  DCHECK(builder);
   DCHECK(add_full_hashes_result);
 
-  if (!DoUpdate(pending_adds, add_prefixes_result, add_full_hashes_result)) {
+  if (!DoUpdate(pending_adds, builder, add_full_hashes_result)) {
     CancelUpdate();
     return false;
   }

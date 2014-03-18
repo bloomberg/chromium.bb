@@ -51,6 +51,7 @@
 
 #include <vector>
 
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
 
 namespace base {
@@ -61,14 +62,13 @@ namespace safe_browsing {
 
 class PrefixSet {
  public:
-  explicit PrefixSet(const std::vector<SBPrefix>& sorted_prefixes);
   ~PrefixSet();
 
   // |true| if |prefix| was in |prefixes| passed to the constructor.
   bool Exists(SBPrefix prefix) const;
 
   // Persist the set on disk.
-  static PrefixSet* LoadFile(const base::FilePath& filter_name);
+  static scoped_ptr<PrefixSet> LoadFile(const base::FilePath& filter_name);
   bool WriteFile(const base::FilePath& filter_name) const;
 
   // Regenerate the vector of prefixes passed to the constructor into
@@ -76,6 +76,8 @@ class PrefixSet {
   void GetPrefixes(std::vector<SBPrefix>* prefixes) const;
 
  private:
+  friend class PrefixSetBuilder;
+
   // Maximum number of consecutive deltas to encode before generating
   // a new index entry.  This helps keep the worst-case performance
   // for |Exists()| under control.
@@ -85,6 +87,14 @@ class PrefixSet {
   typedef std::pair<SBPrefix,uint32> IndexPair;
   typedef std::vector<IndexPair> IndexVector;
   static bool PrefixLess(const IndexPair& a, const IndexPair& b);
+
+  // Helper to let |PrefixSetBuilder| add a run of data.  |index_prefix| is
+  // added to |index_|, with the other elements added into |deltas_|.
+  void AddRun(SBPrefix index_prefix,
+              const uint16* run_begin, const uint16* run_end);
+
+  // Used by |PrefixSetBuilder|.
+  PrefixSet();
 
   // Helper for |LoadFile()|.  Steals the contents of |index| and
   // |deltas| using |swap()|.
@@ -102,6 +112,35 @@ class PrefixSet {
   std::vector<uint16> deltas_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefixSet);
+};
+
+// Helper to incrementally build a PrefixSet from a stream of sorted prefixes.
+class PrefixSetBuilder {
+ public:
+  PrefixSetBuilder();
+  ~PrefixSetBuilder();
+
+  // Helper for unit tests and format conversion.
+  explicit PrefixSetBuilder(const std::vector<SBPrefix>& prefixes);
+
+  // Add a prefix to the set.  Prefixes must arrive in ascending order.
+  // Duplicate prefixes are dropped.
+  void AddPrefix(SBPrefix prefix);
+
+  // Flush any buffered prefixes, and return the final PrefixSet instance.
+  // Any call other than the destructor is illegal after this call.
+  scoped_ptr<PrefixSet> GetPrefixSet();
+
+ private:
+  // Encode a run of deltas for |AddRun()|.  The run is broken by a too-large
+  // delta, or kMaxRun, whichever comes first.
+  void EmitRun();
+
+  // Buffers prefixes until enough are avaliable to emit a run.
+  std::vector<SBPrefix> buffer_;
+
+  // The PrefixSet being built.
+  scoped_ptr<PrefixSet> prefix_set_;
 };
 
 }  // namespace safe_browsing

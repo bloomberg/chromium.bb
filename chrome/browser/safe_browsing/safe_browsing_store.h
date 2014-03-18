@@ -12,6 +12,7 @@
 #include "base/callback_forward.h"
 #include "base/containers/hash_tables.h"
 #include "base/time/time.h"
+#include "chrome/browser/safe_browsing/prefix_set.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
 
 namespace base {
@@ -104,16 +105,16 @@ struct SBSubFullHash {
   SBPrefix GetAddPrefix() const { return full_hash.prefix; }
 };
 
-// Determine less-than based on add chunk and prefix.
+// Determine less-than based on prefix and add chunk.
 template <class T, class U>
 bool SBAddPrefixLess(const T& a, const U& b) {
-  if (a.GetAddChunkId() != b.GetAddChunkId())
-    return a.GetAddChunkId() < b.GetAddChunkId();
+  if (a.GetAddPrefix() != b.GetAddPrefix())
+    return a.GetAddPrefix() < b.GetAddPrefix();
 
-  return a.GetAddPrefix() < b.GetAddPrefix();
+  return a.GetAddChunkId() < b.GetAddChunkId();
 }
 
-// Determine less-than based on add chunk, prefix, and full hash.
+// Determine less-than based on prefix, add chunk, and full hash.
 // Prefix can compare differently than hash due to byte ordering,
 // so it must take precedence.
 template <class T, class U>
@@ -232,7 +233,7 @@ class SafeBrowsingStore {
   // chunk to disk).
   virtual bool FinishUpdate(
       const std::vector<SBAddFullHash>& pending_adds,
-      SBAddPrefixes* add_prefixes_result,
+      safe_browsing::PrefixSetBuilder* builder,
       std::vector<SBAddFullHash>* add_full_hashes_result) = 0;
 
   // Cancel the update in process and remove any temporary disk

@@ -37,6 +37,41 @@ typedef struct {
   uint32 deltas_size;
 } FileHeader;
 
+// Common std::vector<> implementations add capacity by multiplying from the
+// current size (usually either by 2 or 1.5) to satisfy push_back() running in
+// amortized constant time.  This is not necessary for insert() at end(), but
+// AFAICT it seems true for some implementations.  SBPrefix values should
+// uniformly cover the 32-bit space, so the final size can be estimated given a
+// subset of the input.
+//
+// |kEstimateThreshold| is when estimates start converging.  Results are strong
+// starting around 1<<27.  1<<30 is chosen to prevent the degenerate case of
+// resizing capacity from >50% to 100%.
+//
+// TODO(shess): I'm sure there is math in the world to describe good settings
+// for estimating the size of a uniformly-distributed set of integers from a
+// sorted subset.  I do not have such math in me, so I assumed that my current
+// organic database of prefixes was scale-free, and wrote a script to see how
+// often given slop values would always suffice for given strides.  At 1<<30,
+// .5% slop was sufficient to cover all cases (though the code below uses 1%).
+//
+// TODO(shess): A smaller threshold uses less transient space in reallocation.
+// 1<<30 uses between 125% and 150%, 1<<29 between 112% and 125%, etc.  The cost
+// is that a smaller threshold needs more slop (locked down for the long term).
+// 1<<29 worked well with 1%, 1<<27 worked well with 2%.
+const SBPrefix kEstimateThreshold = 1 << 30;
+size_t EstimateFinalCount(SBPrefix current_prefix, size_t current_count) {
+  // estimated_count / current_count == estimated_max / current_prefix
+  // For large input sets, estimated_max of 2^32 is close enough.
+  const size_t estimated_prefix_count = static_cast<size_t>(
+      (static_cast<uint64>(current_count) << 32) / current_prefix);
+
+  // The estimate has an error bar, if the final total is below the estimate, no
+  // harm, but if it is above a capacity resize will happen at nearly 100%.  Add
+  // some slop to make sure all cases are covered.
+  return estimated_prefix_count + estimated_prefix_count / 100;
+}
+
 }  // namespace
 
 namespace safe_browsing {
@@ -47,56 +82,7 @@ bool PrefixSet::PrefixLess(const IndexPair& a, const IndexPair& b) {
   return a.first < b.first;
 }
 
-PrefixSet::PrefixSet(const std::vector<SBPrefix>& sorted_prefixes) {
-  if (sorted_prefixes.size()) {
-    // Estimate the resulting vector sizes.  There will be strictly
-    // more than |min_runs| entries in |index_|, but there generally
-    // aren't many forced breaks.
-    const size_t min_runs = sorted_prefixes.size() / kMaxRun;
-    index_.reserve(min_runs);
-    deltas_.reserve(sorted_prefixes.size() - min_runs);
-
-    // Lead with the first prefix.
-    SBPrefix prev_prefix = sorted_prefixes[0];
-    size_t run_length = 0;
-    index_.push_back(std::make_pair(prev_prefix, deltas_.size()));
-
-    for (size_t i = 1; i < sorted_prefixes.size(); ++i) {
-      // Skip duplicates.
-      if (sorted_prefixes[i] == prev_prefix)
-        continue;
-
-      // Calculate the delta.  |unsigned| is mandatory, because the
-      // sorted_prefixes could be more than INT_MAX apart.
-      DCHECK_GT(sorted_prefixes[i], prev_prefix);
-      const unsigned delta = sorted_prefixes[i] - prev_prefix;
-      const uint16 delta16 = static_cast<uint16>(delta);
-
-      // New index ref if the delta doesn't fit, or if too many
-      // consecutive deltas have been encoded.
-      if (delta != static_cast<unsigned>(delta16) || run_length >= kMaxRun) {
-        index_.push_back(std::make_pair(sorted_prefixes[i], deltas_.size()));
-        run_length = 0;
-      } else {
-        // Continue the run of deltas.
-        deltas_.push_back(delta16);
-        DCHECK_EQ(static_cast<unsigned>(deltas_.back()), delta);
-        ++run_length;
-      }
-
-      prev_prefix = sorted_prefixes[i];
-    }
-
-    // Send up some memory-usage stats.  Bits because fractional bytes
-    // are weird.
-    const size_t bits_used = index_.size() * sizeof(index_[0]) * CHAR_BIT +
-        deltas_.size() * sizeof(deltas_[0]) * CHAR_BIT;
-    const size_t unique_prefixes = index_.size() + deltas_.size();
-    static const size_t kMaxBitsPerPrefix = sizeof(SBPrefix) * CHAR_BIT;
-    UMA_HISTOGRAM_ENUMERATION("SB2.PrefixSetBitsPerPrefix",
-                              bits_used / unique_prefixes,
-                              kMaxBitsPerPrefix);
-  }
+PrefixSet::PrefixSet() {
 }
 
 PrefixSet::PrefixSet(IndexVector* index, std::vector<uint16>* deltas) {
@@ -158,29 +144,29 @@ void PrefixSet::GetPrefixes(std::vector<SBPrefix>* prefixes) const {
 }
 
 // static
-PrefixSet* PrefixSet::LoadFile(const base::FilePath& filter_name) {
+scoped_ptr<PrefixSet> PrefixSet::LoadFile(const base::FilePath& filter_name) {
   int64 size_64;
   if (!base::GetFileSize(filter_name, &size_64))
-    return NULL;
+    return scoped_ptr<PrefixSet>();
   using base::MD5Digest;
   if (size_64 < static_cast<int64>(sizeof(FileHeader) + sizeof(MD5Digest)))
-    return NULL;
+    return scoped_ptr<PrefixSet>();
 
   base::ScopedFILE file(base::OpenFile(filter_name, "rb"));
   if (!file.get())
-    return NULL;
+    return scoped_ptr<PrefixSet>();
 
   FileHeader header;
   size_t read = fread(&header, sizeof(header), 1, file.get());
   if (read != 1)
-    return NULL;
+    return scoped_ptr<PrefixSet>();
 
   // TODO(shess): Version 1 and 2 use the same file structure, with version 1
   // data using a signed sort.  For M-35, the data is re-sorted before return.
   // After M-35, just drop v1 support. <http://crbug.com/346405>
   if (header.magic != kMagic ||
       (header.version != kVersion && header.version != 1)) {
-    return NULL;
+    return scoped_ptr<PrefixSet>();
   }
 
   IndexVector index;
@@ -193,7 +179,7 @@ PrefixSet* PrefixSet::LoadFile(const base::FilePath& filter_name) {
   const size_t expected_bytes =
       sizeof(header) + index_bytes + deltas_bytes + sizeof(MD5Digest);
   if (static_cast<int64>(expected_bytes) != size_64)
-    return NULL;
+    return scoped_ptr<PrefixSet>();
 
   // The file looks valid, start building the digest.
   base::MD5Context context;
@@ -208,7 +194,7 @@ PrefixSet* PrefixSet::LoadFile(const base::FilePath& filter_name) {
     index.resize(header.index_size);
     read = fread(&(index[0]), sizeof(index[0]), index.size(), file.get());
     if (read != index.size())
-      return NULL;
+      return scoped_ptr<PrefixSet>();
     base::MD5Update(&context,
                     base::StringPiece(reinterpret_cast<char*>(&(index[0])),
                                       index_bytes));
@@ -219,7 +205,7 @@ PrefixSet* PrefixSet::LoadFile(const base::FilePath& filter_name) {
     deltas.resize(header.deltas_size);
     read = fread(&(deltas[0]), sizeof(deltas[0]), deltas.size(), file.get());
     if (read != deltas.size())
-      return NULL;
+      return scoped_ptr<PrefixSet>();
     base::MD5Update(&context,
                     base::StringPiece(reinterpret_cast<char*>(&(deltas[0])),
                                       deltas_bytes));
@@ -231,21 +217,21 @@ PrefixSet* PrefixSet::LoadFile(const base::FilePath& filter_name) {
   base::MD5Digest file_digest;
   read = fread(&file_digest, sizeof(file_digest), 1, file.get());
   if (read != 1)
-    return NULL;
+    return scoped_ptr<PrefixSet>();
 
   if (0 != memcmp(&file_digest, &calculated_digest, sizeof(file_digest)))
-    return NULL;
+    return scoped_ptr<PrefixSet>();
 
   // For version 1, fetch the prefixes and re-sort.
   if (header.version == 1) {
     std::vector<SBPrefix> prefixes;
     PrefixSet(&index, &deltas).GetPrefixes(&prefixes);
     std::sort(prefixes.begin(), prefixes.end());
-    return new PrefixSet(prefixes);
+    return PrefixSetBuilder(prefixes).GetPrefixSet().Pass();
   }
 
   // Steals contents of |index| and |deltas| via swap().
-  return new PrefixSet(&index, &deltas);
+  return scoped_ptr<PrefixSet>(new PrefixSet(&index, &deltas));
 }
 
 bool PrefixSet::WriteFile(const base::FilePath& filter_name) const {
@@ -313,6 +299,99 @@ bool PrefixSet::WriteFile(const base::FilePath& filter_name) const {
   file.reset();
 
   return true;
+}
+
+void PrefixSet::AddRun(SBPrefix index_prefix,
+                       const uint16* run_begin, const uint16* run_end) {
+  // Preempt organic capacity decisions for |delta_| once strong estimates can
+  // be made.
+  if (index_prefix > kEstimateThreshold &&
+      deltas_.capacity() < deltas_.size() + (run_end - run_begin)) {
+    deltas_.reserve(EstimateFinalCount(index_prefix, deltas_.size()));
+  }
+
+  index_.push_back(std::make_pair(index_prefix, deltas_.size()));
+  deltas_.insert(deltas_.end(), run_begin, run_end);
+}
+
+PrefixSetBuilder::PrefixSetBuilder()
+    : prefix_set_(new PrefixSet()) {
+}
+
+PrefixSetBuilder::PrefixSetBuilder(const std::vector<SBPrefix>& prefixes)
+    : prefix_set_(new PrefixSet()) {
+  for (size_t i = 0; i < prefixes.size(); ++i) {
+    AddPrefix(prefixes[i]);
+  }
+}
+
+PrefixSetBuilder::~PrefixSetBuilder() {
+}
+
+scoped_ptr<PrefixSet> PrefixSetBuilder::GetPrefixSet() {
+  DCHECK(prefix_set_.get());
+
+  // Flush runs until buffered data is gone.
+  while (!buffer_.empty()) {
+    EmitRun();
+  }
+
+  // Precisely size |index_| for read-only.  It's 50k-60k, so minor savings, but
+  // they're almost free.
+  PrefixSet::IndexVector(prefix_set_->index_).swap(prefix_set_->index_);
+
+  return prefix_set_.Pass();
+}
+
+
+void PrefixSetBuilder::EmitRun() {
+  DCHECK(prefix_set_.get());
+
+  SBPrefix prev_prefix = buffer_[0];
+  uint16 run[PrefixSet::kMaxRun];
+  size_t run_pos = 0;
+
+  size_t i;
+  for (i = 1; i < buffer_.size() && run_pos < PrefixSet::kMaxRun; ++i) {
+    // Calculate the delta.  |unsigned| is mandatory, because the
+    // sorted_prefixes could be more than INT_MAX apart.
+    DCHECK_GT(buffer_[i], prev_prefix);
+    const unsigned delta = buffer_[i] - prev_prefix;
+    const uint16 delta16 = static_cast<uint16>(delta);
+
+    // Break the run if the delta doesn't fit.
+    if (delta != static_cast<unsigned>(delta16))
+      break;
+
+    // Continue the run of deltas.
+    run[run_pos++] = delta16;
+    DCHECK_EQ(static_cast<unsigned>(run[run_pos - 1]), delta);
+
+    prev_prefix = buffer_[i];
+  }
+  prefix_set_->AddRun(buffer_[0], run, run + run_pos);
+  buffer_.erase(buffer_.begin(), buffer_.begin() + i);
+}
+
+void PrefixSetBuilder::AddPrefix(SBPrefix prefix) {
+  DCHECK(prefix_set_.get());
+
+  if (buffer_.empty()) {
+    DCHECK(prefix_set_->index_.empty());
+    DCHECK(prefix_set_->deltas_.empty());
+  } else {
+    // Drop duplicates.
+    if (buffer_.back() == prefix)
+      return;
+
+    DCHECK_LT(buffer_.back(), prefix);
+  }
+  buffer_.push_back(prefix);
+
+  // Flush buffer when a run can be constructed.  +1 for the index item, and +1
+  // to leave at least one item in the buffer for dropping duplicates.
+  if (buffer_.size() > PrefixSet::kMaxRun + 2)
+    EmitRun();
 }
 
 }  // namespace safe_browsing
