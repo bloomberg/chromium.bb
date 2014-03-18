@@ -92,11 +92,14 @@ SkBitmap CreateSkBitmapFromJavaBitmap(JavaBitmap& jbitmap) {
                      src_size.width(),
                      src_size.height(),
                      jbitmap.stride());
-  skbitmap.allocPixels();
+  if (!skbitmap.allocPixels()) {
+    LOG(FATAL) << " Failed to allocate bitmap of size " << src_size.width()
+               << "x" << src_size.height() << " stride=" << jbitmap.stride();
+  }
   SkAutoLockPixels dst_lock(skbitmap);
-
   void* src_pixels = jbitmap.pixels();
   void* dst_pixels = skbitmap.getPixels();
+  CHECK(src_pixels);
 
   memcpy(dst_pixels, src_pixels, skbitmap.getSize());
 
