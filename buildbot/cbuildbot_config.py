@@ -2100,7 +2100,7 @@ _arm_brillo_release.add_config('daisy_winter-full',
 _release.add_config('stumpy_moblab-release',
   brillo_non_testable,
   boards=['stumpy_moblab'],
-
+  upload_hw_test_artifacts=False,
 )
 
 ### Per-chipset release groups
