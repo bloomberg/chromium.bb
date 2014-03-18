@@ -28,10 +28,10 @@
 
 #include "SkDevice.h"
 #include "SkSurface.h"
+#include "platform/graphics/test/MockWebGraphicsContext3D.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
 #include "public/platform/WebThread.h"
-#include "web/tests/MockWebGraphicsContext3D.h"
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>

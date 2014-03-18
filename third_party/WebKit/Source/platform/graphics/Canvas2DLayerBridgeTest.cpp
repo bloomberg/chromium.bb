@@ -29,12 +29,12 @@
 #include "SkDeferredCanvas.h"
 #include "SkSurface.h"
 #include "platform/graphics/ImageBuffer.h"
+#include "platform/graphics/test/MockWebGraphicsContext3D.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebExternalBitmap.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
 #include "public/platform/WebThread.h"
 #include "third_party/skia/include/core/SkDevice.h"
-#include "web/tests/MockWebGraphicsContext3D.h"
 #include "wtf/RefPtr.h"
 
 #include <gmock/gmock.h>

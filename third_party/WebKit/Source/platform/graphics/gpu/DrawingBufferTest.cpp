@@ -34,9 +34,9 @@
 
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
+#include "platform/graphics/test/MockWebGraphicsContext3D.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebExternalTextureMailbox.h"
-#include "web/tests/MockWebGraphicsContext3D.h"
 #include "wtf/RefPtr.h"
 
 #include <gmock/gmock.h>
@@ -105,8 +105,6 @@ static const int initialWidth = 100;
 static const int initialHeight = 100;
 static const int alternateHeight = 50;
 
-} // namespace
-
 class DrawingBufferTest : public Test {
 protected:
     virtual void SetUp()
@@ -124,8 +122,6 @@ protected:
     OwnPtr<WebGraphicsContext3DForTests> m_context;
     RefPtr<DrawingBuffer> m_drawingBuffer;
 };
-
-namespace {
 
 TEST_F(DrawingBufferTest, testPaintRenderingResultsToCanvas)
 {
