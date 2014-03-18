@@ -62,12 +62,17 @@ private:
     virtual bool hasLegalLinkAttribute(const QualifiedName&) const OVERRIDE;
 };
 
-inline bool isHTMLTableCellElement(const Node& node)
+inline bool isHTMLTableCellElement(const Element& element)
 {
-    return node.hasTagName(HTMLNames::tdTag) || node.hasTagName(HTMLNames::thTag);
+    return element.hasTagName(HTMLNames::tdTag) || element.hasTagName(HTMLNames::thTag);
 }
 
-DEFINE_ELEMENT_TYPE_CASTS_WITH_FUNCTION(HTMLTableCellElement);
+inline bool isHTMLTableCellElement(const HTMLElement& element)
+{
+    return element.hasLocalName(HTMLNames::tdTag) || element.hasLocalName(HTMLNames::thTag);
+}
+
+DEFINE_HTMLELEMENT_TYPE_CASTS_WITH_FUNCTION(HTMLTableCellElement);
 
 } // namespace
 

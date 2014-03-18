@@ -49,12 +49,17 @@ private:
     virtual const StylePropertySet* additionalPresentationAttributeStyle() OVERRIDE;
 };
 
-inline bool isHTMLTableSectionElement(const Node& node)
+inline bool isHTMLTableSectionElement(const Element& element)
 {
-    return node.hasTagName(HTMLNames::tbodyTag) || node.hasTagName(HTMLNames::tfootTag) || node.hasTagName(HTMLNames::theadTag);
+    return element.hasTagName(HTMLNames::tbodyTag) || element.hasTagName(HTMLNames::tfootTag) || element.hasTagName(HTMLNames::theadTag);
 }
 
-DEFINE_ELEMENT_TYPE_CASTS_WITH_FUNCTION(HTMLTableSectionElement);
+inline bool isHTMLTableSectionElement(const HTMLElement& element)
+{
+    return element.hasLocalName(HTMLNames::tbodyTag) || element.hasLocalName(HTMLNames::tfootTag) || element.hasLocalName(HTMLNames::theadTag);
+}
+
+DEFINE_HTMLELEMENT_TYPE_CASTS_WITH_FUNCTION(HTMLTableSectionElement);
 
 } //namespace
 

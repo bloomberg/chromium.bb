@@ -181,12 +181,12 @@ private:
     bool m_wasFocusedByMouse : 1;
 };
 
-inline bool isHTMLFormControlElement(const Node& node)
+inline bool isHTMLFormControlElement(const Element& element)
 {
-    return node.isElementNode() && toElement(node).isFormControlElement();
+    return element.isFormControlElement();
 }
 
-DEFINE_ELEMENT_TYPE_CASTS_WITH_FUNCTION(HTMLFormControlElement);
+DEFINE_HTMLELEMENT_TYPE_CASTS_WITH_FUNCTION(HTMLFormControlElement);
 DEFINE_TYPE_CASTS(HTMLFormControlElement, FormAssociatedElement, control, control->isFormControlElement(), control.isFormControlElement());
 
 } // namespace

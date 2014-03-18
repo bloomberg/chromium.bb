@@ -543,17 +543,17 @@ struct ValueToString<TextTrackCue*> {
 };
 #endif
 
-inline bool isHTMLMediaElement(const Node& node)
+inline bool isHTMLMediaElement(const Element& element)
 {
-    return isHTMLAudioElement(node) || isHTMLVideoElement(node);
+    return isHTMLAudioElement(element) || isHTMLVideoElement(element);
 }
 
-inline bool isHTMLMediaElement(const Node* node)
+inline bool isHTMLMediaElement(const HTMLElement& element)
 {
-    return node && isHTMLMediaElement(*node);
+    return isHTMLAudioElement(element) || isHTMLVideoElement(element);
 }
 
-DEFINE_ELEMENT_TYPE_CASTS_WITH_FUNCTION(HTMLMediaElement);
+DEFINE_HTMLELEMENT_TYPE_CASTS_WITH_FUNCTION(HTMLMediaElement);
 
 } //namespace
 

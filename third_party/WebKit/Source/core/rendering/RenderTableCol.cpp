@@ -60,7 +60,7 @@ void RenderTableCol::updateFromElement()
 {
     unsigned oldSpan = m_span;
     Node* n = node();
-    if (n && isHTMLTableColElement(*n)) {
+    if (isHTMLTableColElement(n)) {
         HTMLTableColElement& tc = toHTMLTableColElement(*n);
         m_span = tc.span();
     } else

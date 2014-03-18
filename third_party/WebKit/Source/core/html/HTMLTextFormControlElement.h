@@ -135,12 +135,12 @@ private:
     TextFieldSelectionDirection m_cachedSelectionDirection;
 };
 
-inline bool isHTMLTextFormControlElement(const Node& node)
+inline bool isHTMLTextFormControlElement(const Element& element)
 {
-    return node.isElementNode() && toElement(node).isTextFormControl();
+    return element.isTextFormControl();
 }
 
-DEFINE_ELEMENT_TYPE_CASTS_WITH_FUNCTION(HTMLTextFormControlElement);
+DEFINE_HTMLELEMENT_TYPE_CASTS_WITH_FUNCTION(HTMLTextFormControlElement);
 
 HTMLTextFormControlElement* enclosingTextFormControl(const Position&);
 

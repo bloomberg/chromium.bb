@@ -51,12 +51,17 @@ private:
     }
 };
 
-inline bool isHTMLUnknownElement(const Node& node)
+inline bool isHTMLUnknownElement(const Element& element)
 {
-    return node.isElementNode() && toHTMLElement(node).isHTMLUnknownElement();
+    return element.isHTMLElement() && toHTMLElement(element).isHTMLUnknownElement();
 }
 
-DEFINE_ELEMENT_TYPE_CASTS_WITH_FUNCTION(HTMLUnknownElement);
+inline bool isHTMLUnknownElement(const HTMLElement& element)
+{
+    return element.isHTMLUnknownElement();
+}
+
+DEFINE_HTMLELEMENT_TYPE_CASTS_WITH_FUNCTION(HTMLUnknownElement);
 
 } // namespace
 

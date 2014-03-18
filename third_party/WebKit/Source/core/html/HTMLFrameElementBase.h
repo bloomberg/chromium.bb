@@ -76,17 +76,17 @@ private:
     int m_marginHeight;
 };
 
-inline bool isHTMLFrameElementBase(const Node& node)
+inline bool isHTMLFrameElementBase(const Element& element)
 {
-    return isHTMLFrameElement(node) || isHTMLIFrameElement(node);
+    return isHTMLFrameElement(element) || isHTMLIFrameElement(element);
 }
 
-inline bool isHTMLFrameElementBase(const Node* node)
+inline bool isHTMLFrameElementBase(const HTMLElement& element)
 {
-    return node && isHTMLFrameElementBase(*node);
+    return isHTMLFrameElement(element) || isHTMLIFrameElement(element);
 }
 
-DEFINE_ELEMENT_TYPE_CASTS_WITH_FUNCTION(HTMLFrameElementBase);
+DEFINE_HTMLELEMENT_TYPE_CASTS_WITH_FUNCTION(HTMLFrameElementBase);
 
 } // namespace WebCore
 

@@ -50,12 +50,17 @@ private:
     virtual bool isLabelable() const OVERRIDE FINAL { return true; }
 };
 
-inline bool isLabelableElement(const Node& node)
+inline bool isLabelableElement(const Element& element)
 {
-    return node.isHTMLElement() && toHTMLElement(node).isLabelable();
+    return element.isHTMLElement() && toHTMLElement(element).isLabelable();
 }
 
-DEFINE_ELEMENT_TYPE_CASTS_WITH_FUNCTION(LabelableElement);
+inline bool isLabelableElement(const HTMLElement& element)
+{
+    return element.isLabelable();
+}
+
+DEFINE_HTMLELEMENT_TYPE_CASTS_WITH_FUNCTION(LabelableElement);
 
 } // namespace WebCore
 

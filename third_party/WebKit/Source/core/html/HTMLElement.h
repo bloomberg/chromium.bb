@@ -137,6 +137,20 @@ inline HTMLElement::HTMLElement(const QualifiedName& tagName, Document& document
     ScriptWrappable::init(this);
 }
 
+// This requires isHTML*Element(const Element&) and isHTML*Element(const HTMLElement&).
+// When the input element is an HTMLElement, we don't need to check the namespace URI, just the local name.
+#define DEFINE_HTMLELEMENT_TYPE_CASTS_WITH_FUNCTION(thisType) \
+    inline bool is##thisType(const thisType* element); \
+    inline bool is##thisType(const thisType& element); \
+    inline bool is##thisType(const HTMLElement* element) { return element && is##thisType(*element); } \
+    inline bool is##thisType(const Element* element) { return element && is##thisType(*element); } \
+    inline bool is##thisType(const Node& node) { return node.isElementNode() ? is##thisType(toElement(node)) : false; } \
+    inline bool is##thisType(const Node* node) { return node && node->isElementNode() ? is##thisType(*toElement(node)) : false; } \
+    template<typename T> inline bool is##thisType(const PassRefPtr<T>& node) { return is##thisType(node.get()); } \
+    template<typename T> inline bool is##thisType(const RefPtr<T>& node) { return is##thisType(node.get()); } \
+    template <> inline bool isElementOfType<const thisType>(const HTMLElement& element) { return is##thisType(element); } \
+    DEFINE_ELEMENT_TYPE_CASTS_WITH_FUNCTION(thisType)
+
 } // namespace WebCore
 
 #include "HTMLElementTypeHelpers.h"

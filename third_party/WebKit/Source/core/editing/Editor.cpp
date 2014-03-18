@@ -954,11 +954,11 @@ void Editor::redo()
 
 void Editor::setBaseWritingDirection(WritingDirection direction)
 {
-    Node* focusedElement = frame().document()->focusedElement();
-    if (focusedElement && isHTMLTextFormControlElement(*focusedElement)) {
+    Element* focusedElement = frame().document()->focusedElement();
+    if (isHTMLTextFormControlElement(focusedElement)) {
         if (direction == NaturalWritingDirection)
             return;
-        toHTMLElement(focusedElement)->setAttribute(dirAttr, direction == LeftToRightWritingDirection ? "ltr" : "rtl");
+        focusedElement->setAttribute(dirAttr, direction == LeftToRightWritingDirection ? "ltr" : "rtl");
         focusedElement->dispatchInputEvent();
         frame().document()->updateStyleIfNeeded();
         return;
