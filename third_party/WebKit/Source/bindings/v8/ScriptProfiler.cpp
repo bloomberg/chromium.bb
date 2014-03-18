@@ -69,7 +69,7 @@ void ScriptProfiler::start(const String& title)
     if (!profiler)
         return;
     v8::HandleScope handleScope(isolate);
-    profiler->StartCpuProfiling(v8String(isolate, title), true);
+    profiler->StartProfiling(v8String(isolate, title), true);
 }
 
 PassRefPtr<ScriptProfile> ScriptProfiler::stop(const String& title)
@@ -79,7 +79,7 @@ PassRefPtr<ScriptProfile> ScriptProfiler::stop(const String& title)
     if (!profiler)
         return nullptr;
     v8::HandleScope handleScope(isolate);
-    const v8::CpuProfile* profile = profiler->StopCpuProfiling(v8String(isolate, title));
+    v8::CpuProfile* profile = profiler->StopProfiling(v8String(isolate, title));
     if (!profile)
         return nullptr;
 

@@ -43,7 +43,7 @@ namespace WebCore {
 
 class ScriptProfile FINAL : public RefCounted<ScriptProfile> {
 public:
-    static PassRefPtr<ScriptProfile> create(const v8::CpuProfile* profile, double idleTime)
+    static PassRefPtr<ScriptProfile> create(v8::CpuProfile* profile, double idleTime)
     {
         return adoptRef(new ScriptProfile(profile, idleTime));
     }
@@ -59,13 +59,13 @@ public:
     PassRefPtr<TypeBuilder::Array<int> > buildInspectorObjectForSamples() const;
 
 private:
-    ScriptProfile(const v8::CpuProfile* profile, double idleTime)
+    ScriptProfile(v8::CpuProfile* profile, double idleTime)
         : m_profile(profile)
         , m_idleTime(idleTime)
     {
     }
 
-    const v8::CpuProfile* m_profile;
+    v8::CpuProfile* m_profile;
     double m_idleTime;
 };
 
