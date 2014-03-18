@@ -25,18 +25,17 @@ struct ServiceWorkerFetchRequest;
 
 // In-Process EmbeddedWorker test helper.
 //
-// Create an instance of this class for a ServiceWorkerContextCore,
-// set up process association by calling Simulate{Add,Remove}Process
-// and test to interact with an embedded worker without creating
-// a child process.
+// Usage: create an instance of this class for a ServiceWorkerContextCore
+// to test browser-side embedded worker code without creating a child process.
 //
 // By default this class just notifies back WorkerStarted and WorkerStopped
-// for StartWorker and StopWorker requests, and ignores any messages sent
-// to the worker.
+// for StartWorker and StopWorker requests. The default implementation
+// also returns success for event messages (e.g. InstallEvent, FetchEvent).
 //
 // Alternatively consumers can subclass this helper and override
-// OnStartWorker(), OnStopWorker() and OnSendMessageToWorker() to add
-// their own logic/verification code.
+// OnStartWorker(), OnStopWorker(), OnSendMessageToWorker(),
+// OnInstallEvent(), OnFetchEvent() etc to add their own
+// logic/verification code.
 //
 // See embedded_worker_instance_unittest.cc for example usages.
 //

@@ -17,7 +17,7 @@ ServiceWorkerScriptContext::ServiceWorkerScriptContext(
     blink::WebServiceWorkerContextProxy* proxy)
     : embedded_context_(embedded_context),
       proxy_(proxy),
-      current_request_id_(kInvalidRequestId) {
+      current_request_id_(kInvalidServiceWorkerRequestId) {
 }
 
 ServiceWorkerScriptContext::~ServiceWorkerScriptContext() {}
@@ -25,7 +25,7 @@ ServiceWorkerScriptContext::~ServiceWorkerScriptContext() {}
 void ServiceWorkerScriptContext::OnMessageReceived(
     int request_id,
     const IPC::Message& message) {
-  DCHECK_EQ(kInvalidRequestId, current_request_id_);
+  DCHECK_EQ(kInvalidServiceWorkerRequestId, current_request_id_);
   current_request_id_ = request_id;
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ServiceWorkerScriptContext, message)
@@ -34,7 +34,7 @@ void ServiceWorkerScriptContext::OnMessageReceived(
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   DCHECK(handled);
-  current_request_id_ = kInvalidRequestId;
+  current_request_id_ = kInvalidServiceWorkerRequestId;
 }
 
 void ServiceWorkerScriptContext::DidHandleInstallEvent(int request_id) {

@@ -20,7 +20,7 @@ namespace content {
 // Indicates invalid request ID (i.e. the sender does not expect it gets
 // response for the message) for messaging between browser process
 // and embedded worker.
-const static int kInvalidRequestId = -1;
+const static int kInvalidServiceWorkerRequestId = -1;
 
 const static int kInvalidServiceWorkerProviderId = -1;
 

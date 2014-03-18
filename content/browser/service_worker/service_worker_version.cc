@@ -217,7 +217,7 @@ void ServiceWorkerVersion::SendMessage(
   }
 
   ServiceWorkerStatusCode status = embedded_worker_->SendMessage(
-      kInvalidRequestId, message);
+      kInvalidServiceWorkerRequestId, message);
   RunSoon(base::Bind(callback, status));
 }
 
