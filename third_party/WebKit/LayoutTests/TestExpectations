@@ -885,13 +885,6 @@ crbug.com/349528 [ Debug ] fast/mediastream/RTCPeerConnection-lifetime.html [ Cr
 # Failing on Mac since r168339
 crbug.com/348911 [ Mac ] fast/text/international/rtl-space-in-ltr-element.html [ ImageOnlyFailure ]
 
-crbug.com/353015 [ Win ] fast/text/emphasis-complex.html [ ImageOnlyFailure ]
-crbug.com/353015 [ Linux ] fast/text/emphasis-complex.html [ Failure ]
-crbug.com/353015 [ Linux Win ] fast/text/atsui-multiple-renderers.html [ ImageOnlyFailure ]
-crbug.com/353015 [ Linux ] fast/text/international/bidi-mirror-he-ar.html [ ImageOnlyFailure ]
-crbug.com/353015 [ Linux ] fast/text/international/complex-character-based-fallback.html [ ImageOnlyFailure ]
-crbug.com/353015 [ Win ] fast/text/international/complex-character-based-fallback.html [ Failure ]
-
 # Temporary until the Web Notification API test-runner changes finished.
 crbug.com/349015 fast/notifications/notifications-constructor-with-permission.html [ Failure Pass ]
 
