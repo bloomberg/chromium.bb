@@ -99,6 +99,11 @@ void File::InitializeUnsafe(const FilePath& name, uint32 flags) {
 bool File::IsValid() const {
   return file_.IsValid();
 }
+
+PlatformFile File::GetPlatformFile() const {
+  return file_;
+}
+
 PlatformFile File::TakePlatformFile() {
   return file_.Take();
 }

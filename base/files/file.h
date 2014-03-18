@@ -12,6 +12,7 @@
 
 #include "base/base_export.h"
 #include "base/basictypes.h"
+#include "base/files/scoped_file.h"
 #include "base/move.h"
 #include "base/time/time.h"
 
@@ -177,7 +178,7 @@ class BASE_EXPORT File {
   //     return;
   Error error_details() const { return error_details_; }
 
-  PlatformFile GetPlatformFile() const { return file_; }
+  PlatformFile GetPlatformFile() const;
   PlatformFile TakePlatformFile();
 
   // Destroying this object closes the file automatically.
@@ -276,7 +277,7 @@ class BASE_EXPORT File {
 #if defined(OS_WIN)
   win::ScopedHandle file_;
 #elif defined(OS_POSIX)
-  PlatformFile file_;
+  ScopedFD file_;
 #endif
 
   Error error_details_;
