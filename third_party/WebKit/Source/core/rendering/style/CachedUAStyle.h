@@ -39,15 +39,11 @@ public:
     { }
 
     explicit CachedUAStyle(const RenderStyle* style)
-        : hasAppearance(style->hasAppearance())
+        : hasAppearance(true)
         , backgroundLayers(BackgroundFillLayer)
         , backgroundColor(StyleColor::currentColor())
     {
-        // RenderTheme::adjustStyle is the only consumer of this data.
-        // It only cares about the styles if appearance is set,
-        // so we cheat and don't bother to copy them when !hasAppearance.
-        if (!hasAppearance)
-            return;
+        ASSERT(style->hasAppearance());
         border = style->border();
         backgroundLayers = *style->backgroundLayers();
         backgroundColor = style->backgroundColor();

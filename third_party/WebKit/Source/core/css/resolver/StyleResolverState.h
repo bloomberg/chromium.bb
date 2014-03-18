@@ -94,7 +94,14 @@ public:
     void setLineHeightValue(CSSValue* value) { m_lineHeightValue = value; }
     CSSValue* lineHeightValue() { return m_lineHeightValue; }
 
-    void cacheUserAgentBorderAndBackground() { m_cachedUAStyle = CachedUAStyle(style()); }
+    void cacheUserAgentBorderAndBackground()
+    {
+        // RenderTheme only needs the cached style if it has an appearance,
+        // and constructing it is expensive so we avoid it if possible.
+        if (!style()->hasAppearance())
+            return;
+        m_cachedUAStyle = CachedUAStyle(style());
+    }
     const CachedUAStyle& cachedUAStyle() const { return m_cachedUAStyle; }
 
     ElementStyleResources& elementStyleResources() { return m_elementStyleResources; }
