@@ -5,14 +5,24 @@
      found in the LICENSE file.
 -->
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        android:orientation="vertical"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_height="match_parent"
         android:layout_width="match_parent">
-    <TextView android:id="@+id/hostList_greeting"
-            android:layout_height="wrap_content"
-            android:layout_width="match_parent"/>
-    <ListView android:id="@+id/hostList_chooser"
+    <LinearLayout android:id="@+id/hostList_main"
+            android:orientation="vertical"
             android:layout_height="match_parent"
-            android:layout_width="match_parent"/>
-</LinearLayout>
+            android:layout_width="match_parent">
+        <TextView android:id="@+id/hostList_greeting"
+                android:layout_height="wrap_content"
+                android:layout_width="match_parent"/>
+        <ListView android:id="@+id/hostList_chooser"
+                android:layout_height="match_parent"
+                android:layout_width="match_parent"/>
+    </LinearLayout>
+    <ProgressBar android:id="@+id/hostList_progress"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:layout_gravity="center"
+            android:visibility="gone"
+            style="@android:style/Widget.Holo.ProgressBar.Large"/>
+</FrameLayout>

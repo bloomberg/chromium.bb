@@ -23,6 +23,7 @@ import android.provider.Settings;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -68,6 +69,12 @@ public class Chromoting extends Activity implements JniInterface.ConnectionListe
 
     /** Refresh button. */
     private MenuItem mRefreshButton;
+
+    /** Main view of this activity */
+    private View mMainView;
+
+    /** Progress view shown instead of the main view when the host list is loading. */
+    private View mProgressView;
 
     /** Greeting at the top of the displayed list. */
     private TextView mGreeting;
@@ -119,6 +126,12 @@ public class Chromoting extends Activity implements JniInterface.ConnectionListe
         dialog.show();
     }
 
+    /** Shows or hides the progress indicator for loading the host list. */
+    private void setHostListProgressVisible(boolean visible) {
+        mMainView.setVisibility(visible ? View.GONE : View.VISIBLE);
+        mProgressView.setVisibility(visible ? View.VISIBLE : View.GONE);
+    }
+
     /**
      * Called when the activity is first created. Loads the native library and requests an
      * authentication token from the system.
@@ -132,6 +145,8 @@ public class Chromoting extends Activity implements JniInterface.ConnectionListe
         mHostListLoader = new HostListLoader();
 
         // Get ahold of our view widgets.
+        mMainView = findViewById(R.id.hostList_main);
+        mProgressView = findViewById(R.id.hostList_progress);
         mGreeting = (TextView)findViewById(R.id.hostList_greeting);
         mList = (ListView)findViewById(R.id.hostList_chooser);
 
@@ -238,6 +253,7 @@ public class Chromoting extends Activity implements JniInterface.ConnectionListe
 
     private void refreshHostList() {
         mTriedNewAuthToken = false;
+        setHostListProgressVisible(true);
 
         // The refresh button simply makes use of the currently-chosen account.
         AccountManager.get(this).getAuthToken(mAccount, TOKEN_SCOPE, null, this, this, null);
@@ -287,6 +303,9 @@ public class Chromoting extends Activity implements JniInterface.ConnectionListe
         getPreferences(MODE_PRIVATE).edit().putString("account_name", mAccount.name).
                     putString("account_type", mAccount.type).apply();
 
+        // The current host list is no longer valid for the new account, so clear the list.
+        mHosts = new HostInfo[0];
+        updateUi();
         refreshHostList();
         return true;
     }
@@ -296,6 +315,7 @@ public class Chromoting extends Activity implements JniInterface.ConnectionListe
         // Store a copy of the array, so that it can't be mutated by the HostListLoader. HostInfo
         // is an immutable type, so a shallow copy of the array is sufficient here.
         mHosts = Arrays.copyOf(hosts, hosts.length);
+        setHostListProgressVisible(false);
         updateUi();
     }
 
@@ -320,6 +340,7 @@ public class Chromoting extends Activity implements JniInterface.ConnectionListe
 
         if (explanation != null) {
             Toast.makeText(this, explanation, Toast.LENGTH_LONG).show();
+            setHostListProgressVisible(false);
             return;
         }
 
@@ -343,6 +364,7 @@ public class Chromoting extends Activity implements JniInterface.ConnectionListe
             Log.e("auth", "Fresh auth token was also rejected");
             explanation = getString(R.string.error_authentication_failed);
             Toast.makeText(this, explanation, Toast.LENGTH_LONG).show();
+            setHostListProgressVisible(false);
         }
     }
 
