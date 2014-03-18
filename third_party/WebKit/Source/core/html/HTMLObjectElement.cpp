@@ -370,6 +370,11 @@ bool HTMLObjectElement::isURLAttribute(const Attribute& attribute) const
         || HTMLPlugInElement::isURLAttribute(attribute);
 }
 
+bool HTMLObjectElement::hasLegalLinkAttribute(const QualifiedName& name) const
+{
+    return name == classidAttr || name == dataAttr || name == codebaseAttr || HTMLPlugInElement::hasLegalLinkAttribute(name);
+}
+
 const AtomicString HTMLObjectElement::imageSourceURL() const
 {
     return getAttribute(dataAttr);

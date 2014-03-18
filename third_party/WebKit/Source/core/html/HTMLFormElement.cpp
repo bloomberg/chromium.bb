@@ -512,6 +512,11 @@ bool HTMLFormElement::isURLAttribute(const Attribute& attribute) const
     return attribute.name() == actionAttr || HTMLElement::isURLAttribute(attribute);
 }
 
+bool HTMLFormElement::hasLegalLinkAttribute(const QualifiedName& name) const
+{
+    return name == actionAttr || HTMLElement::hasLegalLinkAttribute(name);
+}
+
 void HTMLFormElement::associate(HTMLImageElement& e)
 {
     m_imageElementsAreDirty = true;

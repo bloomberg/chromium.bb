@@ -32,13 +32,11 @@
 #include "WebPasswordFormData.h"
 
 #include "HTMLNames.h"
+#include "WebPasswordFormUtils.h"
 #include "core/dom/Document.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "platform/weborigin/KURL.h"
-
-#include "DOMUtilitiesPrivate.h"
-#include "WebPasswordFormUtils.h"
 
 using namespace WebCore;
 

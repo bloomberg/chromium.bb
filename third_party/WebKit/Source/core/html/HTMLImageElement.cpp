@@ -322,6 +322,11 @@ bool HTMLImageElement::isURLAttribute(const Attribute& attribute) const
         || HTMLElement::isURLAttribute(attribute);
 }
 
+bool HTMLImageElement::hasLegalLinkAttribute(const QualifiedName& name) const
+{
+    return name == srcAttr || HTMLElement::hasLegalLinkAttribute(name);
+}
+
 const AtomicString& HTMLImageElement::alt() const
 {
     return fastGetAttribute(altAttr);

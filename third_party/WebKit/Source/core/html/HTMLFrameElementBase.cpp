@@ -206,6 +206,11 @@ bool HTMLFrameElementBase::isURLAttribute(const Attribute& attribute) const
         || HTMLFrameOwnerElement::isURLAttribute(attribute);
 }
 
+bool HTMLFrameElementBase::hasLegalLinkAttribute(const QualifiedName& name) const
+{
+    return name == hrefAttr || HTMLFrameOwnerElement::hasLegalLinkAttribute(name);
+}
+
 bool HTMLFrameElementBase::isHTMLContentAttribute(const Attribute& attribute) const
 {
     return attribute.name() == srcdocAttr || HTMLFrameOwnerElement::isHTMLContentAttribute(attribute);

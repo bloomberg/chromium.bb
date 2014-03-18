@@ -81,6 +81,7 @@ private:
     virtual void childrenChanged(bool changedByParser = false, Node* beforeChange = 0, Node* afterChange = 0, int childCountDelta = 0) OVERRIDE;
 
     virtual bool isURLAttribute(const Attribute&) const OVERRIDE;
+    virtual bool hasLegalLinkAttribute(const QualifiedName&) const OVERRIDE;
     virtual const AtomicString imageSourceURL() const OVERRIDE;
 
     virtual RenderWidget* existingRenderWidget() const OVERRIDE;

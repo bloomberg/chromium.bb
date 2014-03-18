@@ -536,6 +536,11 @@ bool HTMLTableElement::isURLAttribute(const Attribute& attribute) const
     return attribute.name() == backgroundAttr || HTMLElement::isURLAttribute(attribute);
 }
 
+bool HTMLTableElement::hasLegalLinkAttribute(const QualifiedName& name) const
+{
+    return name == backgroundAttr || HTMLElement::hasLegalLinkAttribute(name);
+}
+
 PassRefPtr<HTMLCollection> HTMLTableElement::rows()
 {
     return ensureCachedHTMLCollection(TableRows);

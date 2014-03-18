@@ -1050,6 +1050,11 @@ void Element::attributeChanged(const QualifiedName& name, const AtomicString& ne
         cache->handleAttributeChanged(name, this);
 }
 
+bool Element::hasLegalLinkAttribute(const QualifiedName&) const
+{
+    return false;
+}
+
 inline void Element::attributeChangedFromParserOrByCloning(const QualifiedName& name, const AtomicString& newValue, AttributeModificationReason reason)
 {
     if (name == isAttr)

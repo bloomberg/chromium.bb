@@ -59,6 +59,7 @@ private:
     virtual void setFocus(bool) OVERRIDE FINAL;
 
     virtual bool isURLAttribute(const Attribute&) const OVERRIDE FINAL;
+    virtual bool hasLegalLinkAttribute(const QualifiedName&) const OVERRIDE FINAL;
     virtual bool isHTMLContentAttribute(const Attribute&) const OVERRIDE FINAL;
 
     virtual bool isFrameElementBase() const OVERRIDE FINAL { return true; }

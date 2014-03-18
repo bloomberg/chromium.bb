@@ -758,6 +758,11 @@ void InputType::handleDOMActivateEvent(Event*)
 {
 }
 
+bool InputType::hasLegalLinkAttribute(const QualifiedName&) const
+{
+    return false;
+}
+
 bool InputType::supportsIndeterminateAppearance() const
 {
     return false;

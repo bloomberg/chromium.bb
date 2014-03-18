@@ -77,6 +77,11 @@ bool HTMLAppletElement::isURLAttribute(const Attribute& attribute) const
         || HTMLPlugInElement::isURLAttribute(attribute);
 }
 
+bool HTMLAppletElement::hasLegalLinkAttribute(const QualifiedName& name) const
+{
+    return name == codebaseAttr || HTMLPlugInElement::hasLegalLinkAttribute(name);
+}
+
 bool HTMLAppletElement::rendererIsNeeded(const RenderStyle& style)
 {
     if (!fastHasAttribute(codeAttr) && !hasAuthorShadowRoot())

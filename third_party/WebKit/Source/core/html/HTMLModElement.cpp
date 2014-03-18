@@ -45,4 +45,9 @@ bool HTMLModElement::isURLAttribute(const Attribute& attribute) const
     return attribute.name() == citeAttr || HTMLElement::isURLAttribute(attribute);
 }
 
+bool HTMLModElement::hasLegalLinkAttribute(const QualifiedName& name) const
+{
+    return name == citeAttr || HTMLElement::hasLegalLinkAttribute(name);
+}
+
 }

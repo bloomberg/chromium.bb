@@ -36,6 +36,7 @@ private:
     HTMLModElement(const QualifiedName&, Document&);
 
     virtual bool isURLAttribute(const Attribute&) const OVERRIDE;
+    virtual bool hasLegalLinkAttribute(const QualifiedName&) const OVERRIDE;
 };
 
 } //namespace

@@ -179,6 +179,11 @@ bool HTMLBodyElement::isURLAttribute(const Attribute& attribute) const
     return attribute.name() == backgroundAttr || HTMLElement::isURLAttribute(attribute);
 }
 
+bool HTMLBodyElement::hasLegalLinkAttribute(const QualifiedName& name) const
+{
+    return name == backgroundAttr || HTMLElement::hasLegalLinkAttribute(name);
+}
+
 bool HTMLBodyElement::supportsFocus() const
 {
     // This override is needed because the inherited method bails if the parent is editable.

@@ -97,6 +97,7 @@ private:
     virtual void setActive(bool = true) OVERRIDE FINAL;
     virtual void accessKeyAction(bool sendMouseEvents) OVERRIDE FINAL;
     virtual bool isURLAttribute(const Attribute&) const OVERRIDE FINAL;
+    virtual bool hasLegalLinkAttribute(const QualifiedName&) const OVERRIDE FINAL;
     virtual bool canStartSelection() const OVERRIDE FINAL;
     virtual short tabIndex() const OVERRIDE FINAL;
     virtual bool draggable() const OVERRIDE FINAL;

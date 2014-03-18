@@ -78,7 +78,6 @@
 #include "config.h"
 #include "WebPageSerializerImpl.h"
 
-#include "DOMUtilitiesPrivate.h"
 #include "HTMLNames.h"
 #include "WebFrameImpl.h"
 #include "core/dom/Document.h"
@@ -317,7 +316,7 @@ void WebPageSerializerImpl::openTagToString(Element* element,
                 // Check whether we need to replace some resource links
                 // with local resource paths.
                 const QualifiedName& attrName = attribute.name();
-                if (elementHasLegalLinkAttribute(element, attrName)) {
+                if (element->hasLegalLinkAttribute(attrName)) {
                     // For links start with "javascript:", we do not change it.
                     if (attrValue.startsWith("javascript:", false))
                         result.append(attrValue);

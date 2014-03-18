@@ -191,6 +191,7 @@ public:
     virtual String defaultToolTip() const;
     virtual Decimal findClosestTickMarkValue(const Decimal&);
     virtual void handleDOMActivateEvent(Event*);
+    virtual bool hasLegalLinkAttribute(const QualifiedName&) const;
 
     // Parses the specified string for the type, and return
     // the Decimal value for the parsing result if the parsing

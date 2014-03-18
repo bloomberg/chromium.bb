@@ -400,6 +400,11 @@ bool HTMLLinkElement::isURLAttribute(const Attribute& attribute) const
     return attribute.name().localName() == hrefAttr || HTMLElement::isURLAttribute(attribute);
 }
 
+bool HTMLLinkElement::hasLegalLinkAttribute(const QualifiedName& name) const
+{
+    return name == hrefAttr || HTMLElement::hasLegalLinkAttribute(name);
+}
+
 KURL HTMLLinkElement::href() const
 {
     return document().completeURL(getAttribute(hrefAttr));

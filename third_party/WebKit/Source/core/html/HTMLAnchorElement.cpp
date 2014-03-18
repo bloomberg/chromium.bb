@@ -301,6 +301,11 @@ bool HTMLAnchorElement::isURLAttribute(const Attribute& attribute) const
     return attribute.name().localName() == hrefAttr || HTMLElement::isURLAttribute(attribute);
 }
 
+bool HTMLAnchorElement::hasLegalLinkAttribute(const QualifiedName& name) const
+{
+    return name == hrefAttr || HTMLElement::hasLegalLinkAttribute(name);
+}
+
 bool HTMLAnchorElement::canStartSelection() const
 {
     // FIXME: We probably want this same behavior in SVGAElement too

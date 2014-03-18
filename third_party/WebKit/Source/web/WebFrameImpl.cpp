@@ -74,7 +74,6 @@
 
 #include <algorithm>
 #include "AssociatedURLLoader.h"
-#include "DOMUtilitiesPrivate.h"
 #include "EventListenerWrapper.h"
 #include "FindInPageCoordinates.h"
 #include "HTMLNames.h"

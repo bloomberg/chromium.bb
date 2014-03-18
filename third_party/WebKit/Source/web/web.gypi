@@ -19,8 +19,6 @@
       'ContextFeaturesClientImpl.h',
       'ContextMenuClientImpl.cpp',
       'ContextMenuClientImpl.h',
-      'DOMUtilitiesPrivate.cpp',
-      'DOMUtilitiesPrivate.h',
       'DatabaseClientImpl.cpp',
       'DatabaseClientImpl.h',
       'DateTimeChooserImpl.cpp',

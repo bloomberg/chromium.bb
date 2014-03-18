@@ -235,4 +235,9 @@ unsigned ImageInputType::width() const
     return box ? adjustForAbsoluteZoom(box->contentWidth(), box) : 0;
 }
 
+bool ImageInputType::hasLegalLinkAttribute(const QualifiedName& name) const
+{
+    return name == srcAttr || BaseButtonInputType::hasLegalLinkAttribute(name);
+}
+
 } // namespace WebCore
