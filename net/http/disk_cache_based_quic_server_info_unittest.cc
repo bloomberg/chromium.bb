@@ -220,4 +220,61 @@ TEST(DiskCacheBasedQuicServerInfo, UpdateDifferentPorts) {
   RemoveMockTransaction(&kHostInfoTransaction1);
 }
 
+// Test IsDataReady when there is a pending write.
+TEST(DiskCacheBasedQuicServerInfo, IsDataReady) {
+  MockHttpCache cache;
+  AddMockTransaction(&kHostInfoTransaction1);
+  net::TestCompletionCallback callback;
+
+  net::QuicSessionKey server_key("www.google.com", 443, true);
+  scoped_ptr<net::QuicServerInfo> quic_server_info(
+      new net::DiskCacheBasedQuicServerInfo(server_key, cache.http_cache()));
+  quic_server_info->Start();
+  EXPECT_TRUE(quic_server_info->IsDataReady());
+  int rv = quic_server_info->WaitForDataReady(callback.callback());
+  EXPECT_TRUE(quic_server_info->IsDataReady());
+  EXPECT_EQ(net::OK, callback.GetResult(rv));
+
+  net::QuicServerInfo::State* state = quic_server_info->mutable_state();
+  EXPECT_TRUE(state->certs.empty());
+  const string server_config_a = "server_config_a";
+  const string source_address_token_a = "source_address_token_a";
+  const string server_config_sig_a = "server_config_sig_a";
+  const string cert_a = "cert_a";
+
+  state->server_config = server_config_a;
+  state->source_address_token = source_address_token_a;
+  state->server_config_sig = server_config_sig_a;
+  state->certs.push_back(cert_a);
+  EXPECT_TRUE(quic_server_info->IsDataReady());
+  quic_server_info->Persist();
+
+  // Once we call Persist, IsDataReady should return false until Persist has
+  // completed.
+  EXPECT_FALSE(quic_server_info->IsDataReady());
+
+  // Wait until Persist() does the work.
+  base::MessageLoop::current()->RunUntilIdle();
+
+  EXPECT_TRUE(quic_server_info->IsDataReady());
+
+  // Verify that the state was updated.
+  quic_server_info.reset(
+      new net::DiskCacheBasedQuicServerInfo(server_key, cache.http_cache()));
+  quic_server_info->Start();
+  rv = quic_server_info->WaitForDataReady(callback.callback());
+  EXPECT_EQ(net::OK, callback.GetResult(rv));
+  EXPECT_TRUE(quic_server_info->IsDataReady());
+
+  const net::QuicServerInfo::State& state1 = quic_server_info->state();
+  EXPECT_TRUE(quic_server_info->IsDataReady());
+  EXPECT_EQ(server_config_a, state1.server_config);
+  EXPECT_EQ(source_address_token_a, state1.source_address_token);
+  EXPECT_EQ(server_config_sig_a, state1.server_config_sig);
+  EXPECT_EQ(1U, state1.certs.size());
+  EXPECT_EQ(cert_a, state1.certs[0]);
+
+  RemoveMockTransaction(&kHostInfoTransaction1);
+}
+
 }  // namespace
