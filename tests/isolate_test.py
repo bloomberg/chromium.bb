@@ -8,6 +8,7 @@ import hashlib
 import json
 import logging
 import os
+import shutil
 import sys
 import tempfile
 import unittest
@@ -941,6 +942,28 @@ class IsolateCommand(IsolateBase):
             isolate.OptionParserIsolate(),
             cmd + ['--config-variable', 'foo=bar']))
 
+  def test_CMDcheck_isolate_copied(self):
+    # Note that moving the .isolate file is a different code path, this is about
+    # copying the .isolate file to a new place and specifying the new location
+    # on a subsequent execution.
+    x_isolate_file = os.path.join(self.cwd, 'x.isolate')
+    isolated_file = os.path.join(self.cwd, 'x.isolated')
+    cmd = ['-i', x_isolate_file, '-s', isolated_file]
+    with open(x_isolate_file, 'wb') as f:
+      f.write('{}')
+    self.assertEqual(0, isolate.CMDcheck(isolate.OptionParserIsolate(), cmd))
+    self.assertTrue(os.path.isfile(isolated_file + '.state'))
+    with open(isolated_file + '.state', 'rb') as f:
+      self.assertEqual(json.load(f)['isolate_file'], 'x.isolate')
+
+    # Move the .isolate file.
+    y_isolate_file = os.path.join(self.cwd, 'Y.isolate')
+    shutil.copyfile(x_isolate_file, y_isolate_file)
+    cmd = ['-i', y_isolate_file, '-s', isolated_file]
+    self.assertEqual(0, isolate.CMDcheck(isolate.OptionParserIsolate(), cmd))
+    with open(isolated_file + '.state', 'rb') as f:
+      self.assertEqual(json.load(f)['isolate_file'], 'Y.isolate')
+
   def test_CMDrewrite(self):
     isolate_file = os.path.join(self.cwd, 'x.isolate')
     data = (
@@ -968,6 +991,20 @@ class IsolateCommand(IsolateBase):
     ]
     self.mock(isolate, 'load_complete_state', self.load_complete_state)
     self.mock(isolate.subprocess, 'call', lambda *_, **_kwargs: 0)
+    self.assertEqual(0, isolate.CMDrun(isolate.OptionParserIsolate(), cmd))
+
+  def test_CMDrun_no_isolated(self):
+    isolate_file = os.path.join(self.cwd, 'x.isolate')
+    with open(isolate_file, 'wb') as f:
+      f.write('{"variables": {"command": ["python", "-c", "print(\'hi\')"]} }')
+
+    def expect_call(cmd, cwd):
+      self.assertEqual([sys.executable, '-c', "print('hi')", 'run'], cmd)
+      self.assertTrue(os.path.isdir(cwd))
+      return 0
+    self.mock(isolate.subprocess, 'call', expect_call)
+
+    cmd = ['run', '--isolate', isolate_file]
     self.assertEqual(0, isolate.CMDrun(isolate.OptionParserIsolate(), cmd))
 
 

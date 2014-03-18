@@ -481,8 +481,9 @@ class SavedState(Flattenable):
   def __init__(self, isolated_basedir):
     """Creates an empty SavedState.
 
-    |isolated_basedir| is the directory where the .isolated and .isolated.state
-    files are saved.
+    Arguments:
+      isolated_basedir: the directory where the .isolated and .isolated.state
+          files are saved.
     """
     super(SavedState, self).__init__()
     assert os.path.isabs(isolated_basedir), isolated_basedir
@@ -863,8 +864,9 @@ def load_complete_state(options, cwd, subdir, skip_update):
     complete_state = CompleteState.load_files(options.isolated)
   else:
     # Constructs a dummy object that cannot be saved. Useful for temporary
-    # commands like 'run'.
-    complete_state = CompleteState(None, SavedState())
+    # commands like 'run'. There is no directory containing a .isolated file so
+    # specify the current working directory as a valid directory.
+    complete_state = CompleteState(None, SavedState(os.getcwd()))
 
   if not options.isolate:
     if not complete_state.saved_state.isolate_file:
@@ -879,9 +881,16 @@ def load_complete_state(options, cwd, subdir, skip_update):
       rel_isolate = file_path.safe_relpath(
           options.isolate, complete_state.saved_state.isolated_basedir)
       if rel_isolate != complete_state.saved_state.isolate_file:
-        raise ExecutionError(
-            '%s and %s do not match.' % (
-              options.isolate, complete_state.saved_state.isolate_file))
+        # This happens if the .isolate file was moved for example. In this case,
+        # discard the saved state.
+        logging.warning(
+            '--isolated %s != %s as saved in %s. Discarding saved state',
+            rel_isolate,
+            complete_state.saved_state.isolate_file,
+            isolatedfile_to_state(options.isolated))
+        complete_state = CompleteState(
+            options.isolated,
+            SavedState(complete_state.saved_state.isolated_basedir))
 
   if not skip_update:
     # Then load the .isolate and expands directories.
