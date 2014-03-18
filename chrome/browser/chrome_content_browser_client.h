@@ -83,6 +83,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
                                const GURL& url) OVERRIDE;
   virtual void GetAdditionalWebUISchemes(
       std::vector<std::string>* additional_schemes) OVERRIDE;
+  virtual void GetAdditionalWebUIHostsToIgnoreParititionCheck(
+      std::vector<std::string>* hosts) OVERRIDE;
   virtual net::URLRequestContextGetter* CreateRequestContext(
       content::BrowserContext* browser_context,
       content::ProtocolHandlerMap* protocol_handlers,

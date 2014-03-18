@@ -1072,7 +1072,18 @@ void ChromeContentBrowserClient::GetAdditionalWebUISchemes(
   additional_schemes->push_back(chrome::kDomDistillerScheme);
 }
 
-net::URLRequestContextGetter* ChromeContentBrowserClient::CreateRequestContext(
+void ChromeContentBrowserClient::GetAdditionalWebUIHostsToIgnoreParititionCheck(
+    std::vector<std::string>* hosts) {
+  hosts->push_back(chrome::kChromeUIExtensionIconHost);
+  hosts->push_back(chrome::kChromeUIFaviconHost);
+  hosts->push_back(chrome::kChromeUIThemeHost);
+  hosts->push_back(chrome::kChromeUIThumbnailHost);
+  hosts->push_back(chrome::kChromeUIThumbnailHost2);
+  hosts->push_back(chrome::kChromeUIThumbnailListHost);
+}
+
+net::URLRequestContextGetter*
+ChromeContentBrowserClient::CreateRequestContext(
     content::BrowserContext* browser_context,
     content::ProtocolHandlerMap* protocol_handlers,
     content::ProtocolHandlerScopedVector protocol_interceptors) {

@@ -198,6 +198,11 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual void GetAdditionalWebUISchemes(
       std::vector<std::string>* additional_schemes) {}
 
+  // Returns a list of webUI hosts to ignore the storage partition check in
+  // URLRequestChromeJob::CheckStoragePartitionMatches.
+  virtual void GetAdditionalWebUIHostsToIgnoreParititionCheck(
+      std::vector<std::string>* hosts) {}
+
   // Creates the main net::URLRequestContextGetter. Should only be called once
   // per ContentBrowserClient object.
   // TODO(ajwong): Remove once http://crbug.com/159193 is resolved.

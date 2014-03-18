@@ -360,18 +360,13 @@ void URLRequestChromeJob::CheckStoragePartitionMatches(
   // being in the same process. We do an extra check to guard against an
   // exploited renderer pretending to add them as a subframe. We skip this check
   // for resources.
-  // TODO(guohui): move URL constants for extension-icon, favicon, theme, thumb,
-  // thumb and thumbnails from chrome/common/url_constants.h to
-  // content/public/common/url_constants.h, so that they could be reused here.
   bool allowed = false;
+  std::vector<std::string> hosts;
+  GetContentClient()->
+      browser()->GetAdditionalWebUIHostsToIgnoreParititionCheck(&hosts);
   if (url.SchemeIs(kChromeUIScheme) &&
-      (url.host() == kChromeUIResourcesHost ||
-       url.host() == "extension-icon" ||
-       url.host() == "favicon" ||
-       url.host() == "theme" ||
-       url.host() == "thumb" ||
-       url.host() == "thumb2" ||
-       url.host() == "thumbnails")) {
+      (url.SchemeIs(kChromeUIScheme) ||
+       std::find(hosts.begin(), hosts.end(), url.host()) != hosts.end())) {
     allowed = true;
   } else if (render_process_id == kNoRenderProcessId) {
     // Request was not issued by renderer.
