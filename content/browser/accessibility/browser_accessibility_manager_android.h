@@ -57,6 +57,14 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAndroid
   void Blur(JNIEnv* env, jobject obj);
   void ScrollToMakeNodeVisible(JNIEnv* env, jobject obj, int id);
 
+  // Return the id of the next node in tree order in the direction given by
+  // |forwards|, starting with |start_id|, that matches |element_type|,
+  // where |element_type| is a special uppercase string from TalkBack or
+  // BrailleBack indicating general categories of web content like
+  // "SECTION" or "CONTROL".  Return 0 if not found.
+  jint FindElementType(JNIEnv* env, jobject obj, jint start_id,
+                       jstring element_type, jboolean forwards);
+
  protected:
   virtual void NotifyRootChanged() OVERRIDE;
 

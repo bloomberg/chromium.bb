@@ -244,6 +244,40 @@ gfx::Rect BrowserAccessibilityManager::GetViewBounds() {
   return gfx::Rect();
 }
 
+BrowserAccessibility* BrowserAccessibilityManager::NextInTreeOrder(
+    BrowserAccessibility* node) {
+  if (!node)
+    return NULL;
+
+  if (node->PlatformChildCount() > 0)
+    return node->PlatformGetChild(0);
+  while (node) {
+    if (node->parent() &&
+        node->index_in_parent() <
+            static_cast<int>(node->parent()->PlatformChildCount()) - 1) {
+      return node->parent()->PlatformGetChild(node->index_in_parent() + 1);
+    }
+    node = node->parent();
+  }
+
+  return NULL;
+}
+
+BrowserAccessibility* BrowserAccessibilityManager::PreviousInTreeOrder(
+    BrowserAccessibility* node) {
+  if (!node)
+    return NULL;
+
+  if (node->parent() && node->index_in_parent() > 0) {
+    node = node->parent()->PlatformGetChild(node->index_in_parent() - 1);
+    while (node->PlatformChildCount() > 0)
+      node = node->PlatformGetChild(node->PlatformChildCount() - 1);
+    return node;
+  }
+
+  return node->parent();
+}
+
 void BrowserAccessibilityManager::UpdateNodesForTesting(
     const ui::AXNodeData& node1,
     const ui::AXNodeData& node2 /* = ui::AXNodeData() */,

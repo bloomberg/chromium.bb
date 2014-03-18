@@ -194,6 +194,28 @@ public class BrowserAccessibilityManager {
             case AccessibilityNodeInfo.ACTION_CLEAR_FOCUS:
                 nativeBlur(mNativeObj);
                 return true;
+
+            case AccessibilityNodeInfo.ACTION_NEXT_HTML_ELEMENT: {
+                if (arguments == null)
+                    return false;
+                String elementType = arguments.getString(
+                    AccessibilityNodeInfo.ACTION_ARGUMENT_HTML_ELEMENT_STRING);
+                if (elementType == null)
+                    return false;
+                elementType = elementType.toUpperCase();
+                return jumpToElementType(elementType, true);
+            }
+            case AccessibilityNodeInfo.ACTION_PREVIOUS_HTML_ELEMENT: {
+                if (arguments == null)
+                    return false;
+                String elementType = arguments.getString(
+                    AccessibilityNodeInfo.ACTION_ARGUMENT_HTML_ELEMENT_STRING);
+                if (elementType == null)
+                    return false;
+                elementType = elementType.toUpperCase();
+                return jumpToElementType(elementType, false);
+            }
+
             default:
                 break;
         }
@@ -259,6 +281,16 @@ public class BrowserAccessibilityManager {
             sendAccessibilityEvent(mAccessibilityFocusId,
                                    AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUSED);
         }
+    }
+
+    private boolean jumpToElementType(String elementType, boolean forwards) {
+        int id = nativeFindElementType(mNativeObj, mAccessibilityFocusId, elementType, forwards);
+        if (id == 0)
+            return false;
+
+        mAccessibilityFocusId = id;
+        sendAccessibilityEvent(id, AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUSED);
+        return true;
     }
 
     private void sendAccessibilityEvent(int virtualViewId, int eventType) {
@@ -429,6 +461,9 @@ public class BrowserAccessibilityManager {
         node.setScrollable(scrollable);
         node.setSelected(selected);
         node.setVisibleToUser(visibleToUser);
+
+        node.addAction(AccessibilityNodeInfo.ACTION_NEXT_HTML_ELEMENT);
+        node.addAction(AccessibilityNodeInfo.ACTION_PREVIOUS_HTML_ELEMENT);
 
         if (focusable) {
             if (focused) {
@@ -649,4 +684,6 @@ public class BrowserAccessibilityManager {
     private native void nativeBlur(long nativeBrowserAccessibilityManagerAndroid);
     private native void nativeScrollToMakeNodeVisible(
             long nativeBrowserAccessibilityManagerAndroid, int id);
+    private native int nativeFindElementType(long nativeBrowserAccessibilityManagerAndroid,
+            int startId, String elementType, boolean forwards);
 }

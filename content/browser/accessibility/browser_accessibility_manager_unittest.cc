@@ -886,4 +886,53 @@ TEST(BrowserAccessibilityManagerTest, MAYBE_BoundsForRangeOnParentElement) {
             root_accessible->GetLocalBoundsForRange(0, 4).ToString());
 }
 
+TEST(BrowserAccessibilityManagerTest, NextPreviousInTreeOrder) {
+  ui::AXNodeData root;
+  root.id = 1;
+  root.role = ui::AX_ROLE_ROOT_WEB_AREA;
+
+  ui::AXNodeData node2;
+  node2.id = 2;
+  root.child_ids.push_back(2);
+
+  ui::AXNodeData node3;
+  node3.id = 3;
+  root.child_ids.push_back(3);
+
+  ui::AXNodeData node4;
+  node4.id = 4;
+  node3.child_ids.push_back(4);
+
+  ui::AXNodeData node5;
+  node5.id = 5;
+  root.child_ids.push_back(5);
+
+  scoped_ptr<BrowserAccessibilityManager> manager(
+      BrowserAccessibilityManager::Create(
+          root,
+          NULL,
+          new CountedBrowserAccessibilityFactory()));
+  manager->UpdateNodesForTesting(node2, node3, node4, node5);
+
+  BrowserAccessibility* root_accessible = manager->GetRoot();
+  BrowserAccessibility* node2_accessible = root_accessible->PlatformGetChild(0);
+  BrowserAccessibility* node3_accessible = root_accessible->PlatformGetChild(1);
+  BrowserAccessibility* node4_accessible =
+      node3_accessible->PlatformGetChild(0);
+  BrowserAccessibility* node5_accessible = root_accessible->PlatformGetChild(2);
+
+  ASSERT_EQ(NULL, manager->NextInTreeOrder(NULL));
+  ASSERT_EQ(node2_accessible, manager->NextInTreeOrder(root_accessible));
+  ASSERT_EQ(node3_accessible, manager->NextInTreeOrder(node2_accessible));
+  ASSERT_EQ(node4_accessible, manager->NextInTreeOrder(node3_accessible));
+  ASSERT_EQ(node5_accessible, manager->NextInTreeOrder(node4_accessible));
+  ASSERT_EQ(NULL, manager->NextInTreeOrder(node5_accessible));
+
+  ASSERT_EQ(NULL, manager->PreviousInTreeOrder(NULL));
+  ASSERT_EQ(node4_accessible, manager->PreviousInTreeOrder(node5_accessible));
+  ASSERT_EQ(node3_accessible, manager->PreviousInTreeOrder(node4_accessible));
+  ASSERT_EQ(node2_accessible, manager->PreviousInTreeOrder(node3_accessible));
+  ASSERT_EQ(root_accessible, manager->PreviousInTreeOrder(node2_accessible));
+}
+
 }  // namespace content

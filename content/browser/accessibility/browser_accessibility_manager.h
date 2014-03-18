@@ -154,6 +154,10 @@ class CONTENT_EXPORT BrowserAccessibilityManager {
   // scroll offsets separately.
   virtual bool UseRootScrollOffsetsWhenComputingBounds();
 
+  // Walk the tree.
+  BrowserAccessibility* NextInTreeOrder(BrowserAccessibility* node);
+  BrowserAccessibility* PreviousInTreeOrder(BrowserAccessibility* node);
+
   // For testing only: update the given nodes as if they were
   // received from the renderer process in OnAccessibilityEvents.
   // Takes up to 7 nodes at once so tests don't need to create a vector

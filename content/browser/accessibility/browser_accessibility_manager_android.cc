@@ -26,9 +26,29 @@ enum {
   ANDROID_ACCESSIBILITY_EVENT_TYPE_VIEW_TEXT_SELECTION_CHANGED = 8192
 };
 
+enum AndroidHtmlElementType {
+  HTML_ELEMENT_TYPE_SECTION,
+  HTML_ELEMENT_TYPE_LIST,
+  HTML_ELEMENT_TYPE_CONTROL,
+  HTML_ELEMENT_TYPE_ANY
+};
+
 // Restricts |val| to the range [min, max].
 int Clamp(int val, int min, int max) {
   return std::min(std::max(val, min), max);
+}
+
+// These are special unofficial strings sent from TalkBack/BrailleBack
+// to jump to certain categories of web elements.
+AndroidHtmlElementType HtmlElementTypeFromString(base::string16 element_type) {
+  if (element_type == base::ASCIIToUTF16("SECTION"))
+    return HTML_ELEMENT_TYPE_SECTION;
+  else if (element_type == base::ASCIIToUTF16("LIST"))
+    return HTML_ELEMENT_TYPE_LIST;
+  else if (element_type == base::ASCIIToUTF16("CONTROL"))
+    return HTML_ELEMENT_TYPE_CONTROL;
+  else
+    return HTML_ELEMENT_TYPE_ANY;
 }
 
 }  // anonymous namespace
@@ -442,6 +462,63 @@ int BrowserAccessibilityManagerAndroid::CalculateDistanceSquared(
   int dx = std::abs(x - nearest_x);
   int dy = std::abs(y - nearest_y);
   return dx * dx + dy * dy;
+}
+
+jint BrowserAccessibilityManagerAndroid::FindElementType(
+    JNIEnv* env, jobject obj, jint start_id, jstring element_type_str,
+    jboolean forwards) {
+  BrowserAccessibility* node = GetFromRendererID(start_id);
+  if (!node)
+    return 0;
+
+  AndroidHtmlElementType element_type = HtmlElementTypeFromString(
+      base::android::ConvertJavaStringToUTF16(env, element_type_str));
+
+  node = forwards ? NextInTreeOrder(node) : PreviousInTreeOrder(node);
+  while (node) {
+    switch(element_type) {
+      case HTML_ELEMENT_TYPE_SECTION:
+        if (node->role() == ui::AX_ROLE_ARTICLE ||
+            node->role() == ui::AX_ROLE_APPLICATION ||
+            node->role() == ui::AX_ROLE_BANNER ||
+            node->role() == ui::AX_ROLE_COMPLEMENTARY ||
+            node->role() == ui::AX_ROLE_CONTENT_INFO ||
+            node->role() == ui::AX_ROLE_HEADING ||
+            node->role() == ui::AX_ROLE_MAIN ||
+            node->role() == ui::AX_ROLE_NAVIGATION ||
+            node->role() == ui::AX_ROLE_SEARCH ||
+            node->role() == ui::AX_ROLE_REGION) {
+          return node->renderer_id();
+        }
+        break;
+      case HTML_ELEMENT_TYPE_LIST:
+        if (node->role() == ui::AX_ROLE_LIST ||
+            node->role() == ui::AX_ROLE_GRID ||
+            node->role() == ui::AX_ROLE_TABLE ||
+            node->role() == ui::AX_ROLE_TREE) {
+          return node->renderer_id();
+        }
+        break;
+      case HTML_ELEMENT_TYPE_CONTROL:
+        if (static_cast<BrowserAccessibilityAndroid*>(node)->IsFocusable())
+          return node->renderer_id();
+        break;
+      case HTML_ELEMENT_TYPE_ANY:
+        // In theory, the API says that an accessibility service could
+        // jump to an element by element name, like 'H1' or 'P'. This isn't
+        // currently used by any accessibility service, and we think it's
+        // better to keep them high-level like 'SECTION' or 'CONTROL', so we
+        // just fall back on linear navigation when we don't recognize the
+        // element type.
+        if (static_cast<BrowserAccessibilityAndroid*>(node)->IsClickable())
+          return node->renderer_id();
+        break;
+    }
+
+    node = forwards ? NextInTreeOrder(node) : PreviousInTreeOrder(node);
+  }
+
+  return 0;
 }
 
 void BrowserAccessibilityManagerAndroid::NotifyRootChanged() {
