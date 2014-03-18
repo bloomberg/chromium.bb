@@ -20,6 +20,7 @@ static const int kDefaultNumHostsToRemember = 200;
 
 HttpServerPropertiesImpl::HttpServerPropertiesImpl()
     : alternate_protocol_map_(AlternateProtocolMap::NO_AUTO_EVICT),
+      spdy_settings_map_(SpdySettingsMap::NO_AUTO_EVICT),
       pipeline_capability_map_(
         new CachedPipelineCapabilityMap(kDefaultNumHostsToRemember)),
       weak_ptr_factory_(this) {
@@ -91,7 +92,10 @@ void HttpServerPropertiesImpl::InitializeAlternateProtocolServers(
 
 void HttpServerPropertiesImpl::InitializeSpdySettingsServers(
     SpdySettingsMap* spdy_settings_map) {
-  spdy_settings_map_.swap(*spdy_settings_map);
+  for (SpdySettingsMap::reverse_iterator it = spdy_settings_map->rbegin();
+       it != spdy_settings_map->rend(); ++it) {
+    spdy_settings_map_.Put(it->first, it->second);
+  }
 }
 
 void HttpServerPropertiesImpl::InitializePipelineCapabilities(
@@ -158,7 +162,7 @@ void HttpServerPropertiesImpl::Clear() {
   DCHECK(CalledOnValidThread());
   spdy_servers_table_.clear();
   alternate_protocol_map_.Clear();
-  spdy_settings_map_.clear();
+  spdy_settings_map_.Clear();
   pipeline_capability_map_->Clear();
 }
 
@@ -295,8 +299,8 @@ HttpServerPropertiesImpl::alternate_protocol_map() const {
 }
 
 const SettingsMap& HttpServerPropertiesImpl::GetSpdySettings(
-    const HostPortPair& host_port_pair) const {
-  SpdySettingsMap::const_iterator it = spdy_settings_map_.find(host_port_pair);
+    const HostPortPair& host_port_pair) {
+  SpdySettingsMap::iterator it = spdy_settings_map_.Get(host_port_pair);
   if (it == spdy_settings_map_.end()) {
     CR_DEFINE_STATIC_LOCAL(SettingsMap, kEmptySettingsMap, ());
     return kEmptySettingsMap;
@@ -312,19 +316,28 @@ bool HttpServerPropertiesImpl::SetSpdySetting(
   if (!(flags & SETTINGS_FLAG_PLEASE_PERSIST))
       return false;
 
-  SettingsMap& settings_map = spdy_settings_map_[host_port_pair];
   SettingsFlagsAndValue flags_and_value(SETTINGS_FLAG_PERSISTED, value);
-  settings_map[id] = flags_and_value;
+  SpdySettingsMap::iterator it = spdy_settings_map_.Get(host_port_pair);
+  if (it == spdy_settings_map_.end()) {
+    SettingsMap settings_map;
+    settings_map[id] = flags_and_value;
+    spdy_settings_map_.Put(host_port_pair, settings_map);
+  } else {
+    SettingsMap& settings_map = it->second;
+    settings_map[id] = flags_and_value;
+  }
   return true;
 }
 
 void HttpServerPropertiesImpl::ClearSpdySettings(
     const HostPortPair& host_port_pair) {
-  spdy_settings_map_.erase(host_port_pair);
+  SpdySettingsMap::iterator it = spdy_settings_map_.Peek(host_port_pair);
+  if (it != spdy_settings_map_.end())
+    spdy_settings_map_.Erase(it);
 }
 
 void HttpServerPropertiesImpl::ClearAllSpdySettings() {
-  spdy_settings_map_.clear();
+  spdy_settings_map_.Clear();
 }
 
 const SpdySettingsMap&

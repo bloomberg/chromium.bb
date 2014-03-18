@@ -112,7 +112,7 @@ class NET_EXPORT HttpServerPropertiesImpl
   // Gets a reference to the SettingsMap stored for a host.
   // If no settings are stored, returns an empty SettingsMap.
   virtual const SettingsMap& GetSpdySettings(
-      const HostPortPair& host_port_pair) const OVERRIDE;
+      const HostPortPair& host_port_pair) OVERRIDE;
 
   // Saves an individual SPDY setting for a host. Returns true if SPDY setting
   // is to be persisted.

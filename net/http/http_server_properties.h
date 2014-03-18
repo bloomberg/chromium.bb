@@ -65,7 +65,7 @@ struct NET_EXPORT PortAlternateProtocolPair {
 
 typedef base::MRUCache<
     HostPortPair, PortAlternateProtocolPair> AlternateProtocolMap;
-typedef std::map<HostPortPair, SettingsMap> SpdySettingsMap;
+typedef base::MRUCache<HostPortPair, SettingsMap> SpdySettingsMap;
 typedef std::map<HostPortPair,
         HttpPipelinedHostCapability> PipelineCapabilityMap;
 
@@ -125,7 +125,7 @@ class NET_EXPORT HttpServerProperties {
   // Gets a reference to the SettingsMap stored for a host.
   // If no settings are stored, returns an empty SettingsMap.
   virtual const SettingsMap& GetSpdySettings(
-      const HostPortPair& host_port_pair) const = 0;
+      const HostPortPair& host_port_pair) = 0;
 
   // Saves an individual SPDY setting for a host. Returns true if SPDY setting
   // is to be persisted.

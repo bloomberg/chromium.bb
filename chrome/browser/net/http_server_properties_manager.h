@@ -124,7 +124,7 @@ class HttpServerPropertiesManager
   // Gets a reference to the SettingsMap stored for a host.
   // If no settings are stored, returns an empty SettingsMap.
   virtual const net::SettingsMap& GetSpdySettings(
-      const net::HostPortPair& host_port_pair) const OVERRIDE;
+      const net::HostPortPair& host_port_pair) OVERRIDE;
 
   // Saves an individual SPDY setting for a host. Returns true if SPDY setting
   // is to be persisted.
