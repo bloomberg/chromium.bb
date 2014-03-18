@@ -69,11 +69,25 @@ std::string GetPlatform() {
 }
 
 bool IsRunningOnHighRamDevice() {
+  return RamIsAtLeast(500);
+}
+
+bool RamIsAtLeast512Mb() {
+  // 512MB devices report anywhere from 502-504 MB, use 450 MB just to be safe.
+  return RamIsAtLeast(450);
+}
+
+bool RamIsAtLeast1024Mb() {
+  // 1GB devices report anywhere from 975-999 MB, use 900 MB just to be safe.
+  return RamIsAtLeast(900);
+}
+
+bool RamIsAtLeast(uint64_t ram_in_mb) {
   uint64_t memory_size = 0;
   size_t size = sizeof(memory_size);
   if (sysctlbyname("hw.memsize", &memory_size, &size, NULL, 0) == 0) {
     // Anything >= 500M, call high ram.
-    return memory_size >= 500 * 1024 * 1024;
+    return memory_size >= ram_in_mb * 1024 * 1024;
   }
   return false;
 }

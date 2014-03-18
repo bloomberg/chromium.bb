@@ -40,8 +40,25 @@ namespace device_util {
 // x86_64     -> Simulator
 std::string GetPlatform();
 
+// Deprecated: Use RamIsAtLeast512Mb() instead.
 // Returns true if the application is running on a high-ram device. (>=500M).
 bool IsRunningOnHighRamDevice();
+
+// Returns true if the application is running on a device with 512MB or more
+// RAM.
+bool RamIsAtLeast512Mb();
+
+// Returns true if the application is running on a device with 1024MB or more
+// RAM.
+bool RamIsAtLeast1024Mb();
+
+// Returns true if the application is running on a device with |ram_in_mb| MB or
+// more RAM.
+// Use with caution! Actual RAM reported by devices is less than the commonly
+// used powers-of-two values. For example, a 512MB device may report only 502MB
+// RAM. The convenience methods above should be used in most cases because they
+// correctly handle this issue.
+bool RamIsAtLeast(uint64_t ram_in_mb);
 
 // Returns true if the device has only one core.
 bool IsSingleCoreDevice();
