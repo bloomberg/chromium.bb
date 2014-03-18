@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "cc/output/context_provider.h"
 #include "cc/resources/single_release_callback.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -34,7 +34,9 @@ static void PostTaskFromMainToImplThread(
       FROM_HERE, base::Bind(run_impl_callback, sync_point, is_lost));
 }
 
-TextureMailboxDeleter::TextureMailboxDeleter() : weak_ptr_factory_(this) {}
+TextureMailboxDeleter::TextureMailboxDeleter(
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
+    : impl_task_runner_(task_runner), weak_ptr_factory_(this) {}
 
 TextureMailboxDeleter::~TextureMailboxDeleter() {
   for (size_t i = 0; i < impl_callbacks_.size(); ++i)
@@ -65,9 +67,7 @@ scoped_ptr<SingleReleaseCallback> TextureMailboxDeleter::GetReleaseCallback(
   // thread.
   scoped_ptr<SingleReleaseCallback> main_callback =
       SingleReleaseCallback::Create(base::Bind(
-          &PostTaskFromMainToImplThread,
-          base::MessageLoopProxy::current(),
-          run_impl_callback));
+          &PostTaskFromMainToImplThread, impl_task_runner_, run_impl_callback));
 
   return main_callback.Pass();
 }

@@ -9,13 +9,18 @@
 #include "cc/base/cc_export.h"
 #include "cc/base/scoped_ptr_vector.h"
 
+namespace base {
+class SingleThreadTaskRunner;
+}
+
 namespace cc {
 class ContextProvider;
 class SingleReleaseCallback;
 
 class CC_EXPORT TextureMailboxDeleter {
  public:
-  TextureMailboxDeleter();
+  explicit TextureMailboxDeleter(
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
   ~TextureMailboxDeleter();
 
   // Returns a Callback that can be used as the ReleaseCallback for a
@@ -36,6 +41,7 @@ class CC_EXPORT TextureMailboxDeleter {
                                     uint32 sync_point,
                                     bool is_lost);
 
+  scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner_;
   ScopedPtrVector<SingleReleaseCallback> impl_callbacks_;
   base::WeakPtrFactory<TextureMailboxDeleter> weak_ptr_factory_;
 };

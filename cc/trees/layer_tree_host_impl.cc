@@ -240,7 +240,9 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       paint_time_counter_(PaintTimeCounter::Create()),
       memory_history_(MemoryHistory::Create()),
       debug_rect_history_(DebugRectHistory::Create()),
-      texture_mailbox_deleter_(new TextureMailboxDeleter),
+      texture_mailbox_deleter_(new TextureMailboxDeleter(
+          proxy_->HasImplThread() ? proxy_->ImplThreadTaskRunner()
+                                  : proxy_->MainThreadTaskRunner())),
       max_memory_needed_bytes_(0),
       last_sent_memory_visible_bytes_(0),
       last_sent_memory_visible_and_nearby_bytes_(0),

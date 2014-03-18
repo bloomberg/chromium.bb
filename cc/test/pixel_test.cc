@@ -5,6 +5,7 @@
 #include "cc/test/pixel_test.h"
 
 #include "base/command_line.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "cc/base/switches.h"
@@ -123,7 +124,8 @@ void PixelTest::SetUpGLRenderer(bool use_skia_gpu_backend) {
   resource_provider_ =
       ResourceProvider::Create(output_surface_.get(), NULL, 0, false, 1);
 
-  texture_mailbox_deleter_ = make_scoped_ptr(new TextureMailboxDeleter);
+  texture_mailbox_deleter_ = make_scoped_ptr(
+      new TextureMailboxDeleter(base::MessageLoopProxy::current()));
 
   renderer_ = GLRenderer::Create(this,
                                  &settings_,
