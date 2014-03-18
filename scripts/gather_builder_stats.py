@@ -6,6 +6,7 @@
 
 import datetime
 import logging
+import numpy
 import os
 import re
 import sys
@@ -659,15 +660,31 @@ class CLStats(StatsManager):
     logging.info(' Good patches rejected: %d.', len(rejected_then_submitted))
 
 
-    eventually_submitted_cls = {k : v
-                                for k, v, in self.per_cl_actions.iteritems()
-                                if any(a.action==constants.CL_ACTION_SUBMITTED
-                                       for a in v)}
+    submitted_changes = {k : v for k, v, in self.per_cl_actions.iteritems()
+                         if any(a.action==constants.CL_ACTION_SUBMITTED
+                                for a in v)}
+    submitted_patches = {k : v for k, v, in self.per_patch_actions.iteritems()
+                         if any(a.action==constants.CL_ACTION_SUBMITTED
+                                for a in v)}
+
+    was_rejected = lambda x: x.action == constants.CL_ACTION_KICKED_OUT
+    good_patch_rejections = [len(filter(was_rejected, v))
+                             for v in submitted_patches.values()]
+    logging.info('   Mean rejections per')
+    logging.info('            good patch: %.2f',
+                 numpy.mean(good_patch_rejections))
+
+    patch_handle_times =  [v[-1].timestamp - v[0].timestamp
+                           for v in submitted_patches.values()]
+
+    logging.info('     Median good patch')
+    logging.info('         handling time: %.2f hours',
+                 numpy.median(patch_handle_times)/3600)
 
     # Count CLs that were rejected, then a subsequent patch was submitted.
     # These are good candidates for bad CLs.
     submitted_after_new_patch = {}
-    for k, v in eventually_submitted_cls.iteritems():
+    for k, v in submitted_changes.iteritems():
       # The last action taken on a CL should be submit.
       if v[-1].action != constants.CL_ACTION_SUBMITTED:
         logging.warn('CL %s was submitted but submit was not the final '
@@ -678,9 +695,13 @@ class CLStats(StatsManager):
              a.change['patch_number'] != submitted_patch_number for a in v):
         submitted_after_new_patch[k] = v
 
-    logging.info('  Fixed then submitted: %s', len(submitted_after_new_patch))
-    for k in submitted_after_new_patch:
-      logging.info('Possible bad CL: %s', k)
+    logging.info('  Possibly bad patches: %s', len(submitted_after_new_patch))
+
+    # Log the candidate bad CLs in order of submit time.
+    for k, _ in sorted(submitted_after_new_patch.items(),
+                       key=lambda x: x[1][-1].timestamp):
+      logging.info('Bad patch candidate in: CL:%s%s',
+                   '*' if k.internal else '', k.gerrit_number)
 
 # TODO(mtennant): Add token file support.  See upload_package_status.py.
 def _PrepareCreds(email, password=None):
