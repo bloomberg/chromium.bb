@@ -14,6 +14,7 @@
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/util/immutable.h"
+#include "sync/protocol/sync.pb.h"
 
 namespace sync_pb {
 class EntitySpecifics;

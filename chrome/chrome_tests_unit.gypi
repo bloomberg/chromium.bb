@@ -34,6 +34,7 @@
         '../ui/message_center/message_center.gyp:message_center_test_support',
       ],
       'export_dependent_settings': [
+        'browser',
         '../base/base.gyp:test_support_base',
         '../content/content_shell_and_tests.gyp:test_support_content',
       ],

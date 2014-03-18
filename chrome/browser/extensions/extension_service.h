@@ -19,7 +19,6 @@
 #include "base/prefs/pref_change_registrar.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/extensions/blacklist.h"
-#include "chrome/browser/extensions/extension_sync_service.h"
 #include "chrome/browser/extensions/pending_extension_manager.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "content/public/browser/devtools_agent_host.h"
@@ -63,6 +62,7 @@ class UpdateObserver;
 using extensions::ExtensionIdSet;
 
 namespace syncer {
+class ExtensionSyncService;
 class SyncErrorFactory;
 }
 

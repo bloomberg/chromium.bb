@@ -64,8 +64,11 @@
         '..',
         '<(INTERMEDIATE_DIR)',
       ],
+      # This target has header files that include generated header files from
+      # sync. Give our dependents access to those headers.
       'export_dependent_settings': [
         '../content/content.gyp:content_browser',
+        '../sync/sync.gyp:sync',
       ],
       'sources': [
         # All .cc, .h, .m, and .mm files under browser/extensions except for
