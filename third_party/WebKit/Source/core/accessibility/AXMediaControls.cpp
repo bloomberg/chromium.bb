@@ -229,7 +229,7 @@ bool AXMediaControlsContainer::controllingVideoElement() const
 
     MediaControlTimeDisplayElement* element = static_cast<MediaControlTimeDisplayElement*>(m_renderer->node());
 
-    return toParentMediaElement(element)->isVideo();
+    return isHTMLVideoElement(toParentMediaElement(element));
 }
 
 bool AXMediaControlsContainer::computeAccessibilityIsIgnored() const

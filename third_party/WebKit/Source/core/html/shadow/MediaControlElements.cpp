@@ -704,7 +704,7 @@ void MediaControlTextTrackContainerElement::updateDisplay()
     // 1. If the media element is an audio element, or is another playback
     // mechanism with no rendering area, abort these steps. There is nothing to
     // render.
-    if (!mediaElement().isVideo())
+    if (isHTMLAudioElement(mediaElement()))
         return;
 
     // 2. Let video be the media element or other playback mechanism.

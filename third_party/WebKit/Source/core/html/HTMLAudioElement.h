@@ -40,8 +40,6 @@ public:
 
 private:
     HTMLAudioElement(Document&);
-
-    virtual bool isVideo() const OVERRIDE { return false; }
 };
 
 } //namespace

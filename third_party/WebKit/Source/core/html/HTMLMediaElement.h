@@ -84,7 +84,6 @@ public:
     MediaPlayer* player() const { return m_player.get(); }
     blink::WebMediaPlayer* webMediaPlayer() const { return m_player ? m_player->webMediaPlayer() : 0; }
 
-    virtual bool isVideo() const = 0;
     virtual bool hasVideo() const OVERRIDE { return false; }
     virtual bool hasAudio() const OVERRIDE FINAL;
 

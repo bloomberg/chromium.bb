@@ -78,7 +78,6 @@ private:
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
     virtual bool isPresentationAttribute(const QualifiedName&) const OVERRIDE;
     virtual void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) OVERRIDE;
-    virtual bool isVideo() const OVERRIDE { return true; }
     virtual bool hasVideo() const OVERRIDE { return player() && player()->hasVideo(); }
     virtual bool isURLAttribute(const Attribute&) const OVERRIDE;
     virtual const AtomicString imageSourceURL() const OVERRIDE;
