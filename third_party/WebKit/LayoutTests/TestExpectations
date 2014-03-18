@@ -933,3 +933,6 @@ crbug.com/353087 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/the-
 crbug.com/353087 w3c/web-platform-tests/shadow-dom/styles/test-012.html [ Failure ]
 crbug.com/353727 virtual/threaded/animations/keyframe-timing-functions-multiple-properties.html [ Pass Timeout ]
 crbug.com/24182 [ Win ] jquery/manipulation.html [ Pass Timeout ]
+
+crbug.com/353736 [ Linux ] fast/forms/number/number-appearance-spinbutton-disabled-readonly.html [ Pass ImageOnlyFailure ]
+crbug.com/353736 [ Linux ] fast/forms/select/listbox-appearance-basic.html [ Pass ImageOnlyFailure ]
