@@ -60,11 +60,9 @@ class RendererMediaPlayerManager;
 // media player in the browser process. It listens to all the status changes
 // sent from the browser process and sends playback controls to the media
 // player.
-class WebMediaPlayerAndroid
-    : public blink::WebMediaPlayer,
-      public cc::VideoFrameProvider,
-      public RenderFrameObserver,
-      public base::SupportsWeakPtr<WebMediaPlayerAndroid> {
+class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
+                              public cc::VideoFrameProvider,
+                              public RenderFrameObserver {
  public:
   // Construct a WebMediaPlayerAndroid object. This class communicates with the
   // MediaPlayerAndroid object in the browser process through |proxy|.
@@ -233,12 +231,6 @@ class WebMediaPlayerAndroid
   // TODO(xhwang): Implement WebMediaPlayer::setContentDecryptionModule().
   // See: http://crbug.com/224786
 
-  // Can be called on any thread.
-  static void OnReleaseRemotePlaybackTexture(
-      const scoped_refptr<base::MessageLoopProxy>& main_loop,
-      const base::WeakPtr<WebMediaPlayerAndroid>& player,
-      scoped_ptr<gpu::MailboxHolder> mailbox_holder);
-
  protected:
   // Helper method to update the playing state.
   void UpdatePlayingState(bool is_playing_);
@@ -263,7 +255,8 @@ class WebMediaPlayerAndroid
   void CreateWebLayerIfNeeded();
   void SetCurrentFrameInternal(scoped_refptr<media::VideoFrame>& frame);
   void DidLoadMediaInfo(MediaInfoLoader::Status status);
-  void DoReleaseRemotePlaybackTexture(uint32 sync_point);
+  void DoReleaseRemotePlaybackTexture(
+      scoped_ptr<gpu::MailboxHolder> mailbox_holder);
 
   bool IsKeySystemSupported(const std::string& key_system);
 
@@ -312,9 +305,6 @@ class WebMediaPlayerAndroid
   base::Lock current_frame_lock_;
 
   base::ThreadChecker main_thread_checker_;
-
-  // Message loop for main renderer thread.
-  const scoped_refptr<base::MessageLoopProxy> main_loop_;
 
   // Message loop for media thread.
   const scoped_refptr<base::MessageLoopProxy> media_loop_;

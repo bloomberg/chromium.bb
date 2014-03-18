@@ -66,18 +66,6 @@ const char* kMediaEme = "Media.EME.";
 
 namespace content {
 
-// static
-void WebMediaPlayerAndroid::OnReleaseRemotePlaybackTexture(
-    const scoped_refptr<base::MessageLoopProxy>& main_loop,
-    const base::WeakPtr<WebMediaPlayerAndroid>& player,
-    scoped_ptr<gpu::MailboxHolder> mailbox_holder) {
-  main_loop->PostTask(
-      FROM_HERE,
-      base::Bind(&WebMediaPlayerAndroid::DoReleaseRemotePlaybackTexture,
-                 player,
-                 mailbox_holder->sync_point));
-}
-
 WebMediaPlayerAndroid::WebMediaPlayerAndroid(
     blink::WebFrame* frame,
     blink::WebMediaPlayerClient* client,
@@ -91,7 +79,6 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
       client_(client),
       delegate_(delegate),
       buffered_(static_cast<size_t>(1)),
-      main_loop_(base::MessageLoopProxy::current()),
       media_loop_(media_loop),
       ignore_metadata_duration_change_(false),
       pending_seek_(false),
@@ -272,7 +259,7 @@ void WebMediaPlayerAndroid::pause() {
 }
 
 void WebMediaPlayerAndroid::seek(double seconds) {
-  DCHECK(main_loop_->BelongsToCurrentThread());
+  DCHECK(main_thread_checker_.CalledOnValidThread());
   DVLOG(1) << __FUNCTION__ << "(" << seconds << ")";
 
   base::TimeDelta new_seek_time = ConvertSecondsToTimestamp(seconds);
@@ -590,13 +577,13 @@ void WebMediaPlayerAndroid::OnBufferingUpdate(int percentage) {
 }
 
 void WebMediaPlayerAndroid::OnSeekRequest(const base::TimeDelta& time_to_seek) {
-  DCHECK(main_loop_->BelongsToCurrentThread());
+  DCHECK(main_thread_checker_.CalledOnValidThread());
   client_->requestSeek(time_to_seek.InSecondsF());
 }
 
 void WebMediaPlayerAndroid::OnSeekComplete(
     const base::TimeDelta& current_time) {
-  DCHECK(main_loop_->BelongsToCurrentThread());
+  DCHECK(main_thread_checker_.CalledOnValidThread());
   seeking_ = false;
   if (pending_seek_) {
     pending_seek_ = false;
@@ -675,7 +662,7 @@ void WebMediaPlayerAndroid::OnVideoSizeChanged(int width, int height) {
 }
 
 void WebMediaPlayerAndroid::OnTimeUpdate(const base::TimeDelta& current_time) {
-  DCHECK(main_loop_->BelongsToCurrentThread());
+  DCHECK(main_thread_checker_.CalledOnValidThread());
   current_time_ = current_time.InSecondsF();
 }
 
@@ -740,7 +727,7 @@ void WebMediaPlayerAndroid::OnRequestFullscreen() {
 }
 
 void WebMediaPlayerAndroid::OnDurationChanged(const base::TimeDelta& duration) {
-  DCHECK(main_loop_->BelongsToCurrentThread());
+  DCHECK(main_thread_checker_.CalledOnValidThread());
   // Only MSE |player_type_| registers this callback.
   DCHECK_EQ(player_type_, MEDIA_PLAYER_TYPE_MEDIA_SOURCE);
 
@@ -756,7 +743,7 @@ void WebMediaPlayerAndroid::OnDurationChanged(const base::TimeDelta& duration) {
 
 void WebMediaPlayerAndroid::UpdateNetworkState(
     WebMediaPlayer::NetworkState state) {
-  DCHECK(main_loop_->BelongsToCurrentThread());
+  DCHECK(main_thread_checker_.CalledOnValidThread());
   if (ready_state_ == WebMediaPlayer::ReadyStateHaveNothing &&
       (state == WebMediaPlayer::NetworkStateNetworkError ||
        state == WebMediaPlayer::NetworkStateDecodeError)) {
@@ -920,9 +907,9 @@ void WebMediaPlayerAndroid::DrawRemotePlaybackIcon() {
   scoped_refptr<VideoFrame> new_frame = VideoFrame::WrapNativeTexture(
       make_scoped_ptr(new gpu::MailboxHolder(
           texture_mailbox, texture_target, texture_mailbox_sync_point)),
-      base::Bind(&WebMediaPlayerAndroid::OnReleaseRemotePlaybackTexture,
-                 main_loop_,
-                 weak_factory_.GetWeakPtr()),
+      media::BindToCurrentLoop(
+          base::Bind(&WebMediaPlayerAndroid::DoReleaseRemotePlaybackTexture,
+                     weak_factory_.GetWeakPtr())),
       canvas_size /* coded_size */,
       gfx::Rect(canvas_size) /* visible_rect */,
       canvas_size /* natural_size */,
@@ -1374,7 +1361,7 @@ void WebMediaPlayerAndroid::OnMediaSourceOpened(
 
 void WebMediaPlayerAndroid::OnNeedKey(const std::string& type,
                                       const std::vector<uint8>& init_data) {
-  DCHECK(main_loop_->BelongsToCurrentThread());
+  DCHECK(main_thread_checker_.CalledOnValidThread());
 
   // Do not fire NeedKey event if encrypted media is not enabled.
   if (!blink::WebRuntimeFeatures::isPrefixedEncryptedMediaEnabled() &&
@@ -1395,7 +1382,7 @@ void WebMediaPlayerAndroid::OnNeedKey(const std::string& type,
 
 void WebMediaPlayerAndroid::SetDecryptorReadyCB(
     const media::DecryptorReadyCB& decryptor_ready_cb) {
-  DCHECK(main_loop_->BelongsToCurrentThread());
+  DCHECK(main_thread_checker_.CalledOnValidThread());
 
   // Cancels the previous decryptor request.
   if (decryptor_ready_cb.is_null()) {
@@ -1422,14 +1409,15 @@ void WebMediaPlayerAndroid::SetDecryptorReadyCB(
   decryptor_ready_cb_ = decryptor_ready_cb;
 }
 
-void WebMediaPlayerAndroid::DoReleaseRemotePlaybackTexture(uint32 sync_point) {
+void WebMediaPlayerAndroid::DoReleaseRemotePlaybackTexture(
+    scoped_ptr<gpu::MailboxHolder> mailbox_holder) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   DCHECK(remote_playback_texture_id_);
 
   GLES2Interface* gl = stream_texture_factory_->ContextGL();
 
-  if (sync_point)
-    gl->WaitSyncPointCHROMIUM(sync_point);
+  if (mailbox_holder->sync_point)
+    gl->WaitSyncPointCHROMIUM(mailbox_holder->sync_point);
   gl->DeleteTextures(1, &remote_playback_texture_id_);
   remote_playback_texture_id_ = 0;
 }
