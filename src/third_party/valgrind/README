@@ -46,12 +46,12 @@ int main(void) {
 
  * Build it with the right options:
 
-toolchain/linux_x86/bin/nacl64-gcc -o 1.nexe \
+toolchain/linux_x86_nacl_x86/nacl_x86_glibc/bin/nacl64-gcc -o 1.nexe \
   -Wl,-u,have_nacl_valgrind_interceptors -m64 -O0 -g 1.c  -lvalgrind
 
  * Run:
 
-memcheck.sh toolchain/linux_x86/bin/nacl64-sel_ldr -Q 1.nexe
+memcheck.sh toolchain/linux_x86_nacl_x86/nacl_x86_glibc/bin/nacl64-sel_ldr -Q 1.nexe
 
  * Note Valgrind warnings among other output:
 
