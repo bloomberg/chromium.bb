@@ -180,6 +180,8 @@ class DistillerImpl : public Distiller {
 
   size_t max_pages_in_article_;
 
+  bool destruction_allowed_;
+
   base::WeakPtrFactory<DistillerImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DistillerImpl);

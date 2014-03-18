@@ -4,6 +4,7 @@
 
 #include "components/dom_distiller/core/task_tracker.h"
 
+#include "base/auto_reset.h"
 #include "base/message_loop/message_loop.h"
 #include "components/dom_distiller/core/proto/distilled_article.pb.h"
 #include "components/dom_distiller/core/proto/distilled_page.pb.h"
@@ -23,10 +24,14 @@ TaskTracker::TaskTracker(const ArticleEntry& entry, CancelCallback callback)
     : cancel_callback_(callback),
       entry_(entry),
       distilled_article_(),
-      distillation_complete_(false),
+      content_ready_(false),
+      destruction_allowed_(true),
       weak_ptr_factory_(this) {}
 
-TaskTracker::~TaskTracker() { DCHECK(viewers_.empty()); }
+TaskTracker::~TaskTracker() {
+  DCHECK(destruction_allowed_);
+  DCHECK(viewers_.empty());
+}
 
 void TaskTracker::StartDistiller(DistillerFactory* factory) {
   if (distiller_) {
@@ -41,7 +46,7 @@ void TaskTracker::StartDistiller(DistillerFactory* factory) {
 
   distiller_ = factory->CreateDistiller();
   distiller_->DistillPage(url,
-                          base::Bind(&TaskTracker::OnDistilledArticleReady,
+                          base::Bind(&TaskTracker::OnDistillerFinished,
                                      weak_ptr_factory_.GetWeakPtr()),
                           base::Bind(&TaskTracker::OnArticleDistillationUpdated,
                                      weak_ptr_factory_.GetWeakPtr()));
@@ -56,7 +61,7 @@ void TaskTracker::StartBlobFetcher() {
 void TaskTracker::AddSaveCallback(const SaveCallback& callback) {
   DCHECK(!callback.is_null());
   save_callbacks_.push_back(callback);
-  if (distillation_complete_) {
+  if (content_ready_) {
     // Distillation for this task has already completed, and so it can be
     // immediately saved.
     ScheduleSaveCallbacks(true);
@@ -65,7 +70,7 @@ void TaskTracker::AddSaveCallback(const SaveCallback& callback) {
 
 scoped_ptr<ViewerHandle> TaskTracker::AddViewer(ViewRequestDelegate* delegate) {
   viewers_.push_back(delegate);
-  if (distillation_complete_) {
+  if (content_ready_) {
     // Distillation for this task has already completed, and so the delegate can
     // be immediately told of the result.
     base::MessageLoop::current()->PostTask(
@@ -106,11 +111,9 @@ void TaskTracker::MaybeCancel() {
     return;
   }
 
-  // The cancel callback should not delete this. To ensure that it doesn't, grab
-  // a weak pointer and check that it has not been invalidated.
-  base::WeakPtr<TaskTracker> self(weak_ptr_factory_.GetWeakPtr());
+  base::AutoReset<bool> dont_delete_this_in_callback(&destruction_allowed_,
+                                                     false);
   cancel_callback_.Run(this);
-  DCHECK(self);
 }
 
 void TaskTracker::CancelSaveCallbacks() { ScheduleSaveCallbacks(false); }
@@ -137,8 +140,13 @@ void TaskTracker::DoSaveCallbacks(bool distillation_succeeded) {
 }
 
 void TaskTracker::NotifyViewer(ViewRequestDelegate* delegate) {
-  DCHECK(distillation_complete_);
+  DCHECK(content_ready_);
   delegate->OnArticleReady(distilled_article_.get());
+}
+
+void TaskTracker::OnDistillerFinished(
+    scoped_ptr<DistilledArticleProto> distilled_article) {
+  OnDistilledArticleReady(distilled_article.Pass());
 }
 
 void TaskTracker::OnDistilledArticleReady(
@@ -156,7 +164,7 @@ void TaskTracker::OnDistilledArticleReady(
     }
   }
 
-  distillation_complete_ = true;
+  content_ready_ = true;
 
   for (size_t i = 0; i < viewers_.size(); ++i) {
     NotifyViewer(viewers_[i]);

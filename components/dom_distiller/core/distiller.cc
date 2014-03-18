@@ -7,6 +7,7 @@
 #include <map>
 #include <vector>
 
+#include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/location.h"
@@ -51,11 +52,14 @@ DistillerImpl::DistillerImpl(
     const DistillerURLFetcherFactory& distiller_url_fetcher_factory)
     : distiller_url_fetcher_factory_(distiller_url_fetcher_factory),
       max_pages_in_article_(kMaxPagesInArticle),
+      destruction_allowed_(true),
       weak_factory_(this) {
   page_distiller_.reset(new PageDistiller(distiller_page_factory));
 }
 
-DistillerImpl::~DistillerImpl() {}
+DistillerImpl::~DistillerImpl() {
+  DCHECK(destruction_allowed_);
+}
 
 void DistillerImpl::Init() {
   DCHECK(AreAllPagesFinished());
@@ -282,6 +286,9 @@ void DistillerImpl::RunDistillerCallbackIfDone() {
 
     DCHECK(pages_.empty());
     DCHECK(finished_pages_index_.empty());
+
+    base::AutoReset<bool> dont_delete_this_in_callback(&destruction_allowed_,
+                                                       false);
     finished_cb_.Run(article_proto.Pass());
     finished_cb_.Reset();
   }

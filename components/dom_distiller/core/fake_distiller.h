@@ -28,6 +28,9 @@ class MockDistillerFactory : public DistillerFactory {
 
 class FakeDistiller : public Distiller {
  public:
+  // If execute_callback is true, when DistillPage is called, a task will
+  // immediately be posted to execute the callback with a simple
+  // DistilledArticleProto.
   explicit FakeDistiller(bool execute_callback);
   virtual ~FakeDistiller();
   MOCK_METHOD0(Die, void());
@@ -46,12 +49,15 @@ class FakeDistiller : public Distiller {
   }
 
  private:
+  void PostDistillerCallback(scoped_ptr<DistilledArticleProto> proto);
   void RunDistillerCallbackInternal(scoped_ptr<DistilledArticleProto> proto);
 
   bool execute_callback_;
   GURL url_;
   DistillationFinishedCallback article_callback_;
   DistillationUpdateCallback page_callback_;
+
+  bool destruction_allowed_;
 };
 
 }  // namespace test

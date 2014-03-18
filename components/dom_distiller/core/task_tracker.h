@@ -94,6 +94,8 @@ class TaskTracker {
   bool HasUrl(const GURL& url) const;
 
  private:
+  void OnDistillerFinished(scoped_ptr<DistilledArticleProto> distilled_article);
+
   void OnDistilledArticleReady(
       scoped_ptr<DistilledArticleProto> distilled_article);
   void OnArticleDistillationUpdated(
@@ -121,7 +123,10 @@ class TaskTracker {
 
   ArticleEntry entry_;
   scoped_ptr<DistilledArticleProto> distilled_article_;
-  bool distillation_complete_;
+
+  bool content_ready_;
+
+  bool destruction_allowed_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
