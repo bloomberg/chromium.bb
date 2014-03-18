@@ -688,8 +688,7 @@ function requestCardDismissal(
   var dismissalAge = Date.now() - dismissalTimeMs;
 
   if (dismissalAge > MAXIMUM_DISMISSAL_AGE_MS) {
-    callbackBoolean(true);
-    return;
+    return Promise.resolve();
   }
 
   recordEvent(GoogleNowEvent.DISMISS_REQUEST_TOTAL);
