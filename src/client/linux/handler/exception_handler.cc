@@ -458,12 +458,12 @@ bool ExceptionHandler::GenerateDump(CrashContext *context) {
   // kernels, but we need to know the PID of the cloned process before we
   // can do this. Create a pipe here which we can use to block the
   // cloned process after creating it, until we have explicitly enabled ptrace
-  if(sys_pipe(fdes) == -1) {
+  if (sys_pipe(fdes) == -1) {
     // Creating the pipe failed. We'll log an error but carry on anyway,
     // as we'll probably still get a useful crash report. All that will happen
     // is the write() and read() calls will fail with EBADF
-    static const char no_pipe_msg[] = "ExceptionHandler::GenerateDump \
-                                       sys_pipe failed:";
+    static const char no_pipe_msg[] = "ExceptionHandler::GenerateDump "
+                                      "sys_pipe failed:";
     logger::write(no_pipe_msg, sizeof(no_pipe_msg) - 1);
     logger::write(strerror(errno), strlen(strerror(errno)));
     logger::write("\n", 1);
@@ -502,9 +502,9 @@ void ExceptionHandler::SendContinueSignalToChild() {
   static const char okToContinueMessage = 'a';
   int r;
   r = HANDLE_EINTR(sys_write(fdes[1], &okToContinueMessage, sizeof(char)));
-  if(r == -1) {
-    static const char msg[] = "ExceptionHandler::SendContinueSignalToChild \
-                               sys_write failed:";
+  if (r == -1) {
+    static const char msg[] = "ExceptionHandler::SendContinueSignalToChild "
+                              "sys_write failed:";
     logger::write(msg, sizeof(msg) - 1);
     logger::write(strerror(errno), strlen(strerror(errno)));
     logger::write("\n", 1);
@@ -517,9 +517,9 @@ void ExceptionHandler::WaitForContinueSignal() {
   int r;
   char receivedMessage;
   r = HANDLE_EINTR(sys_read(fdes[0], &receivedMessage, sizeof(char)));
-  if(r == -1) {
-    static const char msg[] = "ExceptionHandler::WaitForContinueSignal \
-                               sys_read failed:";
+  if (r == -1) {
+    static const char msg[] = "ExceptionHandler::WaitForContinueSignal "
+                              "sys_read failed:";
     logger::write(msg, sizeof(msg) - 1);
     logger::write(strerror(errno), strlen(strerror(errno)));
     logger::write("\n", 1);
