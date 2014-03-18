@@ -14,10 +14,6 @@
 
 #if defined(OS_MACOSX)
 #include "base/mac/bundle_locations.h"
-
-// TODO(blundell): Eliminate this dependency by having this file avoid using
-// the //chrome constant to get the framework name on OS X. crbug.com/348563
-#include "chrome/common/chrome_constants.h"
 #endif
 
 #if !defined(OS_IOS)
@@ -54,9 +50,18 @@ class ComponentsTestSuite : public base::TestSuite {
     base::FilePath path;
     PathService::Get(base::DIR_EXE, &path);
 
-    // TODO(blundell): Eliminate this dependency by having this file avoid using
-    // the //chrome constant to get the framework name on OS X. crbug.com/348563
-    path = path.Append(chrome::kFrameworkName);
+    // TODO(tfarina): This is temporary. The right fix is to write a
+    // framework-Info.plist and integrate that into the build.
+    // Hardcode the framework name here to avoid having to depend on chrome's
+    // common target for chrome::kFrameworkName.
+#if defined(GOOGLE_CHROME_BUILD)
+    path = path.AppendASCII("Google Chrome Framework.framework");
+#elif defined(CHROMIUM_BUILD)
+    path = path.AppendASCII("Chromium Framework.framework");
+#else
+#error Unknown branding
+#endif
+
     base::mac::SetOverrideFrameworkBundlePath(path);
 #endif
 
@@ -74,6 +79,11 @@ class ComponentsTestSuite : public base::TestSuite {
 
   virtual void Shutdown() OVERRIDE {
     ui::ResourceBundle::CleanupSharedInstance();
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  base::mac::SetOverrideFrameworkBundle(NULL);
+#endif
+
     base::TestSuite::Shutdown();
   }
 

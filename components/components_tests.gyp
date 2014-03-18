@@ -297,12 +297,6 @@
               ],
             }],
             ['OS == "mac"', {
-              'dependencies': [
-                # TODO(blundell): Eliminate this dependency by having
-                # ./test/run_all_unittests.cc avoid using the //chrome
-                # constant to get the framework name on OS X. crbug.com/348563
-                '../chrome/chrome.gyp:common',
-              ],
               'link_settings': {
                 'libraries': [
                   '$(SDKROOT)/System/Library/Frameworks/AddressBook.framework',

@@ -24,6 +24,10 @@ extern const base::FilePath::CharType kHelperProcessExecutableNameChromium[];
 extern const base::FilePath::CharType kBrowserProcessExecutablePathChromium[];
 extern const base::FilePath::CharType kHelperProcessExecutablePathChromium[];
 #if defined(OS_MACOSX)
+// NOTE: if you change the value of kFrameworkName, please don't forget to
+// update components/test/run_all_unittests.cc as well.
+// TODO(tfarina): Remove the comment above, when you fix components to use plist
+// on Mac.
 extern const base::FilePath::CharType kFrameworkName[];
 
 // The helper .app bundle name and executable name may have one of these
