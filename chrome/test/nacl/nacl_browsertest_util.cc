@@ -14,6 +14,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/nacl/common/nacl_switches.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/webplugininfo.h"
@@ -201,7 +202,7 @@ NaClBrowserTestBase::NaClBrowserTestBase() {
 NaClBrowserTestBase::~NaClBrowserTestBase() {
 }
 
-void NaClBrowserTestBase::SetUpCommandLine(CommandLine* command_line) {
+void NaClBrowserTestBase::SetUpCommandLine(base::CommandLine* command_line) {
   command_line->AppendSwitch(switches::kEnableNaCl);
 }
 
@@ -313,9 +314,20 @@ bool NaClBrowserTestPnaclDisabled::IsAPnaclTest() {
 bool NaClBrowserTestPnaclDisabled::IsPnaclDisabled() {
   return true;
 }
-void NaClBrowserTestPnaclDisabled::SetUpCommandLine(CommandLine* command_line) {
+void NaClBrowserTestPnaclDisabled::SetUpCommandLine(
+    base::CommandLine* command_line) {
   NaClBrowserTestBase::SetUpCommandLine(command_line);
   command_line->AppendSwitch(switches::kDisablePnacl);
+}
+
+base::FilePath::StringType NaClBrowserTestNonSfiMode::Variant() {
+  return FILE_PATH_LITERAL("libc-free");
+}
+
+void NaClBrowserTestNonSfiMode::SetUpCommandLine(
+    base::CommandLine* command_line) {
+  NaClBrowserTestBase::SetUpCommandLine(command_line);
+  command_line->AppendSwitch(switches::kEnableNaClNonSfiMode);
 }
 
 base::FilePath::StringType NaClBrowserTestStatic::Variant() {
