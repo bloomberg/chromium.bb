@@ -119,6 +119,18 @@ def IsFlavorNeeded(options, flavor):
 def FlavorOutDir(options, flavor):
   """Given a flavor, decide where it should be extracted."""
   if isinstance(flavor, tuple):
+    return toolchainbinaries.GetStandardToolchainFlavorDir(
+        options.toolchain_dir,
+        flavor[0])
+  else:
+    return toolchainbinaries.GetStandardToolchainFlavorDir(
+        options.toolchain_dir,
+        flavor)
+
+
+def OldFlavorOutDir(options, flavor):
+  """Given a flavor, returns old flavor directory (transitional)."""
+  if isinstance(flavor, tuple):
     return os.path.join(options.toolchain_dir, flavor[0])
   else:
     return os.path.join(options.toolchain_dir, flavor)
@@ -408,6 +420,7 @@ def main(args):
     version = VersionSelect(versions, flavor)
     urls = FlavorUrls(options, versions, flavor)
     dst = FlavorOutDir(options, flavor)
+    old_dst = OldFlavorOutDir(options, flavor)
     hashes = FlavorHashes(versions, flavor)
     flavor_name = FlavorName(flavor)
 
@@ -418,6 +431,11 @@ def main(args):
       force = False
 
     try:
+      # While we are still transitioning to the new toolchain directory format,
+      # keep on syncing to the old destination. Eventually we will remove this.
+      SyncFlavor(flavor, urls, old_dst, hashes, script_time, force=force,
+                 keep=options.keep, verbose=options.verbose)
+
       if SyncFlavor(flavor, urls, dst, hashes, script_time, force=force,
                     keep=options.keep, verbose=options.verbose):
         print flavor_name + ': updated to version ' + version + '.'

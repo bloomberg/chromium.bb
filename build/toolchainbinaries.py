@@ -58,6 +58,41 @@ PLATFORM_MAPPING = {
     },
 }
 
+# Transitional mapping to the standardized toolchain directory.
+def GetStandardToolchainFlavorDir(toolchain_dir, flavor):
+  build_os = pynacl.platform.GetOS()
+  build_arch = pynacl.platform.GetArch()
+
+  if 'arm' in flavor:
+    target_arch = 'arm'
+  else:
+    target_arch = 'x86'
+
+  if 'trusted' in flavor:
+    platform_target_dir = '%s_%s_%s_%s' % (build_os, build_arch,
+                                           build_os, target_arch)
+    toolchain_subdir = '%s_trusted' % target_arch
+  elif flavor.startswith('pnacl'):
+    platform_target_dir = '%s_%s_pnacl' % (build_os, build_arch)
+    if flavor == 'pnacl_translator':
+      toolchain_subdir = flavor
+    else:
+      toolchain_subdir = 'pnacl_newlib'
+  else:
+    if 'newlib' in flavor:
+      target_lib = 'newlib'
+    elif 'bionic' in flavor:
+      target_lib = 'bionic'
+    else:
+      target_lib = 'glibc'
+
+    platform_target_dir = '%s_%s_nacl_%s' % (build_os, build_arch,
+                                             target_arch)
+    toolchain_subdir = 'nacl_%s_%s' % (target_arch, target_lib)
+
+  return os.path.join(toolchain_dir, platform_target_dir, toolchain_subdir)
+
+
 def EncodeToolchainUrl(base_url, version, flavor):
   if 'pnacl' in flavor:
     return '%s/toolchain/%s/naclsdk_%s.tgz' % (
