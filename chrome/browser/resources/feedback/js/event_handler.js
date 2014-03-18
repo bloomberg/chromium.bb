@@ -28,7 +28,9 @@ var whitelistedExtensionIds = [
   'kodldpbjkkmmnilagfdheibampofhaom', // Connectivity Diagnostics
   'kkebgepbbgbcmghedmmdfcbdcodlkngh', // Chrome OS Recovery Tool
   'jndclpdbaamdhonoechobihbbiimdgai', // Chrome OS Recovery Tool
-  'ljoammodoonkhnehlncldjelhidljdpi'  // GetHelp app.
+  'ljoammodoonkhnehlncldjelhidljdpi', // GetHelp app.
+  'ljacajndfccfgnfohlgkdphmbnpkjflk', // Chrome Remote Desktop Dev
+  'gbchcmhmhahfdphkhkmpfmihenigjmpp', // Chrome Remote Desktop Stable
 ];
 
 /**
