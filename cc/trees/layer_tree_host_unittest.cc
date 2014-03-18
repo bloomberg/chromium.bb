@@ -1562,7 +1562,6 @@ class LayerTreeHostTestDirectRendererAtomicCommit : public LayerTreeHostTest {
         EXPECT_TRUE(context->UsedTexture(context->TextureAt(1)));
 
         context->ResetUsedTextures();
-        PostSetNeedsCommitToMainThread();
         break;
       case 1:
         // Number of textures should be one for scrollbar layer since it was
@@ -1578,7 +1577,6 @@ class LayerTreeHostTestDirectRendererAtomicCommit : public LayerTreeHostTest {
         // New textures should have been used.
         EXPECT_TRUE(context->UsedTexture(context->TextureAt(2)));
         context->ResetUsedTextures();
-        PostSetNeedsCommitToMainThread();
         break;
       case 2:
         EndTest();
@@ -1601,6 +1599,9 @@ class LayerTreeHostTestDirectRendererAtomicCommit : public LayerTreeHostTest {
     // We draw/ship one texture each frame for each layer.
     EXPECT_EQ(2u, context->NumUsedTextures());
     context->ResetUsedTextures();
+
+    if (!TestEnded())
+      PostSetNeedsCommitToMainThread();
   }
 
   virtual void Layout() OVERRIDE {
@@ -1638,7 +1639,6 @@ class LayerTreeHostTestDelegatingRendererAtomicCommit
         EXPECT_TRUE(context->UsedTexture(context->TextureAt(0)));
         EXPECT_TRUE(context->UsedTexture(context->TextureAt(1)));
         context->ResetUsedTextures();
-        PostSetNeedsCommitToMainThread();
         break;
       case 1:
         // Number of textures should be doubled as the first context layer
@@ -1657,7 +1657,6 @@ class LayerTreeHostTestDelegatingRendererAtomicCommit
         EXPECT_TRUE(context->UsedTexture(context->TextureAt(2)));
         EXPECT_TRUE(context->UsedTexture(context->TextureAt(3)));
         context->ResetUsedTextures();
-        PostSetNeedsCommitToMainThread();
         break;
       case 2:
         EndTest();
@@ -1669,9 +1668,8 @@ class LayerTreeHostTestDelegatingRendererAtomicCommit
   }
 };
 
-// Failing flakily http://crbug.com/352797
-// MULTI_THREAD_DELEGATING_RENDERER_NOIMPL_TEST_F(
-//     LayerTreeHostTestDelegatingRendererAtomicCommit);
+MULTI_THREAD_DELEGATING_RENDERER_NOIMPL_TEST_F(
+    LayerTreeHostTestDelegatingRendererAtomicCommit);
 
 static void SetLayerPropertiesForTesting(Layer* layer,
                                          Layer* parent,
