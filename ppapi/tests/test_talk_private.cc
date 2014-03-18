@@ -55,12 +55,9 @@ std::string TestTalkPrivate::TestGetPermission() {
     PASS();
   }
 
-#if defined(USE_ASH)
   // Under Ash, this will prompt the user so the test cannot run in an automated
-  // fashion. To manually test under Ash, comment this out.
-  PASS();
-#endif
-
+  // fashion. To manually test under Ash, replace "!defined(USE_ASH)" with 1.
+#if !defined(USE_ASH)
   PP_Resource talk_resource = talk_private_interface_1->Create(
       instance_->pp_instance());
 
@@ -79,6 +76,6 @@ std::string TestTalkPrivate::TestGetPermission() {
   if (callback.result() != 0)
     return "Unexpected non-zero result";
 #endif
-
+#endif
   PASS();
 }

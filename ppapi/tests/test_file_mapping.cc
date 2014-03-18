@@ -498,7 +498,6 @@ std::string TestFileMapping::TestPartialRegions() {
           callback.GetCallback().pp_completion_callback()));
   CHECK_CALLBACK_BEHAVIOR(callback);
   ASSERT_EQ(PP_OK, callback.result());
-  PASS();
 
   // Write something else to the mapped region, then unmap, and see if it
   // gets written to both files. (Note we have to Unmap to make sure that the

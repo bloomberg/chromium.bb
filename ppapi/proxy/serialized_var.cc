@@ -68,14 +68,14 @@ PP_Var SerializedVar::Inner::GetVar() {
 #if defined(NACL_WIN64)
   NOTREACHED();
   return PP_MakeUndefined();
-#endif
-
+#else
   if (raw_var_data_.get()) {
     var_ = raw_var_data_->CreatePPVar(instance_);
     raw_var_data_.reset(NULL);
   }
 
   return var_;
+#endif
 }
 
 void SerializedVar::Inner::SetVar(PP_Var var) {
