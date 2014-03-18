@@ -23,6 +23,7 @@
 #ifndef RenderInline_h
 #define RenderInline_h
 
+#include "core/animation/ActiveAnimations.h"
 #include "core/rendering/InlineFlowBox.h"
 #include "core/rendering/RenderBoxModelObject.h"
 #include "core/rendering/RenderLineBoxList.h"
@@ -135,7 +136,7 @@ private:
 
     virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) OVERRIDE FINAL;
 
-    virtual LayerType layerTypeRequired() const OVERRIDE { return isInFlowPositioned() || createsGroup() || hasClipPath() ? NormalLayer : NoLayer; }
+    virtual LayerType layerTypeRequired() const OVERRIDE { return isInFlowPositioned() || createsGroup() || hasClipPath() || shouldCompositeForActiveAnimations(*this) ? NormalLayer : NoLayer; }
 
     virtual LayoutUnit offsetLeft() const OVERRIDE FINAL;
     virtual LayoutUnit offsetTop() const OVERRIDE FINAL;

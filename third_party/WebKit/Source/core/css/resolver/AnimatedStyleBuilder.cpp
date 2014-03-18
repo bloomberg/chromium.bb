@@ -345,8 +345,7 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         style->setVisitedLinkColor(toAnimatableColor(value)->visitedLinkColor());
         return;
     case CSSPropertyFillOpacity:
-        // Avoiding a value of 1 forces a layer to be created.
-        style->setFillOpacity(clampTo<float>(toAnimatableDouble(value)->toDouble(), 0, nextafterf(1, 0)));
+        style->setFillOpacity(clampTo<float>(toAnimatableDouble(value)->toDouble(), 0, 1));
         return;
     case CSSPropertyFill:
         {
@@ -581,8 +580,7 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         return;
     case CSSPropertyWebkitTransform: {
         const TransformOperations& operations = toAnimatableTransform(value)->transformOperations();
-        // FIXME: Using identity matrix here when the transform list is empty
-        // forces a layer to be created in the presence of a transform animation.
+        // FIXME: This normalization (handling of 'none') should be performed at input in AnimatableValueFactory.
         style->setTransform(operations.size() ? operations : TransformOperations(true));
         return;
     }

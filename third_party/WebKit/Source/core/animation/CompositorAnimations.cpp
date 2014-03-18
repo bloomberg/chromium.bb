@@ -257,7 +257,11 @@ bool CompositorAnimations::startAnimationOnCompositor(const Element& element, co
 void CompositorAnimations::cancelAnimationOnCompositor(const Element& element, int id)
 {
     if (!canStartAnimationOnCompositor(element)) {
-        ASSERT_NOT_REACHED();
+        // When an element is being detached, we cancel any associated
+        // AnimationPlayers for CSS animations. But by the time we get
+        // here the mapping will have been removed.
+        // FIXME: Defer remove/pause operations until after the
+        // compositing update.
         return;
     }
     toRenderBoxModelObject(element.renderer())->layer()->compositedLayerMapping()->mainGraphicsLayer()->removeAnimation(id);

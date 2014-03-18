@@ -105,7 +105,7 @@ private:
 
     virtual LayerType layerTypeRequired() const OVERRIDE
     {
-        if (hasTransform() || hasHiddenBackface() || hasClipPath() || createsGroup() || isStickyPositioned() || style()->hasWillChangeCompositingHint() || style()->hasWillChangeGpuRasterizationHint())
+        if (hasTransform() || hasHiddenBackface() || hasClipPath() || createsGroup() || isStickyPositioned() || style()->hasWillChangeCompositingHint() || style()->hasWillChangeGpuRasterizationHint() || shouldCompositeForActiveAnimations(*this))
             return NormalLayer;
 
         if (hasOverflowClip())

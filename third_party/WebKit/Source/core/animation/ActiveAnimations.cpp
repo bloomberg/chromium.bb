@@ -77,7 +77,16 @@ bool hasActiveAnimationsOnCompositor(const RenderObject& renderer, CSSPropertyID
 
 bool ActiveAnimations::hasActiveAnimations(CSSPropertyID property) const
 {
-    return m_defaultStack.affects(property);
+    for (AnimationPlayerSet::const_iterator it = m_players.begin(); it != players().end(); ++it) {
+        const AnimationPlayer& player = *it->key;
+        ASSERT(player.source());
+        // FIXME: Needs to consider AnimationGroup once added.
+        ASSERT(player.source()->isAnimation());
+        const Animation& animation = *toAnimation(player.source());
+        if (animation.isCurrent() && animation.affects(property))
+            return true;
+    }
+    return false;
 }
 
 bool ActiveAnimations::hasActiveAnimationsOnCompositor(CSSPropertyID property) const

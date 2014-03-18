@@ -70,6 +70,8 @@ public:
 
     bool isEmpty() const { return m_defaultStack.isEmpty() && m_cssAnimations.isEmpty(); }
 
+    // FIXME: This and most of this class needs to be renamed to consider 'current'
+    // rather than 'active' animations.
     bool hasActiveAnimations(CSSPropertyID) const;
     bool hasActiveAnimationsOnCompositor(CSSPropertyID) const;
     void cancelAnimationOnCompositor();

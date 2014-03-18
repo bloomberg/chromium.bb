@@ -77,6 +77,7 @@ public:
     double startTime() const { return m_startTime; }
     void setStartTime(double);
 
+    const TimedItem* source() const { return m_content.get(); }
     TimedItem* source() { return m_content.get(); }
     TimedItem* source(bool& isNull) { isNull = !m_content; return m_content.get(); }
     void setSource(TimedItem*);
