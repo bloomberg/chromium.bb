@@ -13,6 +13,7 @@
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/test/aura_test_base.h"
+#include "ui/aura/test/env_test_helper.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_cursor_client.h"
 #include "ui/aura/test/test_event_handler.h"
@@ -1941,6 +1942,62 @@ TEST_F(WindowEventDispatcherTest, MAYBE_NestedEventDispatchTargetMoved) {
 
   first->RemovePreTargetHandler(&dispatch_event);
   second->RemovePreTargetHandler(&move_window);
+}
+
+class AlwaysMouseDownInputStateLookup : public InputStateLookup {
+ public:
+  AlwaysMouseDownInputStateLookup() {}
+  virtual ~AlwaysMouseDownInputStateLookup() {}
+
+ private:
+  // InputStateLookup:
+  virtual bool IsMouseButtonDown() const OVERRIDE { return true; }
+
+  DISALLOW_COPY_AND_ASSIGN(AlwaysMouseDownInputStateLookup);
+};
+
+TEST_F(WindowEventDispatcherTest,
+       CursorVisibilityChangedWhileCaptureWindowInAnotherDispatcher) {
+  test::EventCountDelegate delegate;
+  scoped_ptr<Window> window(CreateTestWindowWithDelegate(&delegate, 123,
+      gfx::Rect(20, 10, 10, 20), root_window()));
+  window->Show();
+
+  scoped_ptr<WindowTreeHost> second_host(
+      WindowTreeHost::Create(gfx::Rect(20, 30, 100, 50)));
+  second_host->InitHost();
+  WindowEventDispatcher* second_dispatcher = second_host->dispatcher();
+
+  // Install an InputStateLookup on the Env that always claims that a
+  // mouse-button is down.
+  test::EnvTestHelper(Env::GetInstance()).SetInputStateLookup(
+      scoped_ptr<InputStateLookup>(new AlwaysMouseDownInputStateLookup()));
+
+  window->SetCapture();
+
+  // Because the mouse button is down, setting the capture on |window| will set
+  // it as the mouse-move handler for |root_window()|.
+  EXPECT_EQ(window.get(), host()->dispatcher()->mouse_moved_handler());
+
+  // This does not set |window| as the mouse-move handler for the second
+  // dispatcher.
+  EXPECT_EQ(NULL, second_dispatcher->mouse_moved_handler());
+
+  // However, some capture-client updates the capture in each root-window on a
+  // capture. Emulate that here. Because of this, the second dispatcher also has
+  // |window| as the mouse-move handler.
+  client::CaptureDelegate* second_capture_delegate = second_dispatcher;
+  second_capture_delegate->UpdateCapture(NULL, window.get());
+  EXPECT_EQ(window.get(), second_dispatcher->mouse_moved_handler());
+
+  // Reset the mouse-event counts for |window|.
+  delegate.GetMouseMotionCountsAndReset();
+
+  // Notify both hosts that the cursor is now hidden. This should send a single
+  // mouse-exit event to |window|.
+  host()->OnCursorVisibilityChanged(false);
+  second_host->OnCursorVisibilityChanged(false);
+  EXPECT_EQ("0 0 1", delegate.GetMouseMotionCountsAndReset());
 }
 
 }  // namespace aura

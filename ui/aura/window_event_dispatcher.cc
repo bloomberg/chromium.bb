@@ -318,7 +318,8 @@ ui::EventDispatchDetails WindowEventDispatcher::DispatchMouseEnterOrExit(
     SetLastMouseLocation(window(), event.root_location());
   }
 
-  if (!mouse_moved_handler_ || !mouse_moved_handler_->delegate())
+  if (!mouse_moved_handler_ || !mouse_moved_handler_->delegate() ||
+      !window()->Contains(mouse_moved_handler_))
     return DispatchDetails();
 
   // |event| may be an event in the process of being dispatched to a target (in
