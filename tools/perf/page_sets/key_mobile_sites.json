@@ -59,6 +59,7 @@
       "why": "Top tech site"
     },
     {
+      "disabled": "Always fails. http://crbug.com/353314",
       "url": "https://www.google.com/#hl=en&q=barack+obama",
       "why": "Top Google property; a Google tab is often open"
     },
