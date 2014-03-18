@@ -13,7 +13,7 @@
   var VALUES = Object.freeze({
     shuffle: false,
     repeat: false,
-    volume: 10,
+    volume: 100,
     expanded: false,
   });
 
