@@ -1196,7 +1196,7 @@ util.isTeleported = function(window) {
     window.chrome.fileBrowserPrivate.getProfiles(function(profiles,
                                                           currentId,
                                                           displayedId) {
-      onFullfilled(currentId !== displayedId);
+      onFulfilled(currentId !== displayedId);
     });
   });
 };

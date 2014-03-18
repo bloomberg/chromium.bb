@@ -257,14 +257,14 @@ AppWindowWrapper.prototype = {
  *     dropped, the window is focused on the current window.
  */
 AppWindowWrapper.focusOnDesktop = function(appWindow, opt_profileId) {
-  new Promise(function(onFullfilled, onRejected) {
+  new Promise(function(onFulfilled, onRejected) {
     if (opt_profileId) {
-      onFullfilled(opt_profileId);
+      onFulfilled(opt_profileId);
     } else {
       chrome.fileBrowserPrivate.getProfiles(function(profiles,
                                                      currentId,
                                                      displayedId) {
-        onFullfilled(currentId);
+        onFulfilled(currentId);
       });
     }
   }).then(function(profileId) {
