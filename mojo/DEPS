@@ -3,6 +3,5 @@ include_rules = [
   "+build",
   "+mojo",
   "-mojo/system",
-  "+mojom",
   "+testing",
 ]
