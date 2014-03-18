@@ -837,7 +837,7 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
             // element is an element in the document, the 'full-screen' pseudoclass applies to
             // that element. Also, an <iframe>, <object> or <embed> element whose child browsing
             // context's Document is in the fullscreen state has the 'full-screen' pseudoclass applied.
-            if (element.isFrameElementBase() && element.containsFullScreenElement())
+            if (isHTMLFrameElementBase(element) && element.containsFullScreenElement())
                 return true;
             if (FullscreenElementStack* fullscreen = FullscreenElementStack::fromIfExists(element.document())) {
                 if (!fullscreen->webkitIsFullScreen())

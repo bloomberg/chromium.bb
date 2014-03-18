@@ -42,6 +42,7 @@
 #include "core/dom/Element.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLAllCollection.h"
+#include "core/html/HTMLFrameElementBase.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLTableElement.h"
@@ -111,9 +112,7 @@ void retrieveResourcesForElement(Element* element,
 {
     ASSERT(element);
     // If the node is a frame, we'll process it later in retrieveResourcesForFrame.
-    if ((isHTMLIFrameElement(*element) || isHTMLFrameElement(*element)
-        || isHTMLObjectElement(*element) || isHTMLEmbedElement(*element))
-            && element->isFrameOwnerElement()) {
+    if (isHTMLFrameElementBase(*element) || isHTMLObjectElement(*element) || isHTMLEmbedElement(*element)) {
         if (LocalFrame* frame = toHTMLFrameOwnerElement(element)->contentFrame()) {
             if (!visitedFrames->contains(frame))
                 framesToVisit->append(frame);

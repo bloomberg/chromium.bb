@@ -84,6 +84,7 @@
 #include "core/html/HTMLDocument.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLFormControlsCollection.h"
+#include "core/html/HTMLFrameElementBase.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/HTMLLabelElement.h"
 #include "core/html/HTMLOptionsCollection.h"
@@ -3388,8 +3389,7 @@ bool Element::supportsStyleSharing() const
     // Turn off style sharing for elements that can gain layers for reasons outside of the style system.
     // See comments in RenderObject::setStyle().
     // FIXME: Why does gaining a layer from outside the style system require disabling sharing?
-    if (isHTMLIFrameElement(*this)
-        || isHTMLFrameElement(*this)
+    if (isHTMLFrameElementBase(*this)
         || isHTMLEmbedElement(*this)
         || isHTMLObjectElement(*this)
         || isHTMLAppletElement(*this)

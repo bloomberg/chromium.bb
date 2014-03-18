@@ -2223,9 +2223,9 @@ WebFrameImpl* WebFrameImpl::fromFrame(LocalFrame* frame)
 WebFrameImpl* WebFrameImpl::fromFrameOwnerElement(Element* element)
 {
     // FIXME: Why do we check specifically for <iframe> and <frame> here? Why can't we get the WebFrameImpl from an <object> element, for example.
-    if (!element || !element->isFrameOwnerElement() || (!isHTMLIFrameElement(*element) && !isHTMLFrameElement(*element)))
+    if (!isHTMLFrameElementBase(element))
         return 0;
-    return fromFrame(toHTMLFrameOwnerElement(element)->contentFrame());
+    return fromFrame(toHTMLFrameElementBase(element)->contentFrame());
 }
 
 WebViewImpl* WebFrameImpl::viewImpl() const

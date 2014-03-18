@@ -1620,7 +1620,7 @@ String AXNodeObject::alternativeTextForWebArea() const
 
     Node* owner = document->ownerElement();
     if (owner) {
-        if (isHTMLFrameElement(*owner) || isHTMLIFrameElement(*owner)) {
+        if (isHTMLFrameElementBase(*owner)) {
             const AtomicString& title = toElement(owner)->getAttribute(titleAttr);
             if (!title.isEmpty())
                 return title;

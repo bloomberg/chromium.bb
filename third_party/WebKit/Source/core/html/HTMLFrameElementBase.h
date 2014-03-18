@@ -62,8 +62,6 @@ private:
     virtual bool hasLegalLinkAttribute(const QualifiedName&) const OVERRIDE FINAL;
     virtual bool isHTMLContentAttribute(const Attribute&) const OVERRIDE FINAL;
 
-    virtual bool isFrameElementBase() const OVERRIDE FINAL { return true; }
-
     virtual bool areAuthorShadowsAllowed() const OVERRIDE FINAL { return false; }
 
     void setNameAndOpenURL();
@@ -80,7 +78,12 @@ private:
 
 inline bool isHTMLFrameElementBase(const Node& node)
 {
-    return node.isElementNode() && toElement(node).isFrameElementBase();
+    return isHTMLFrameElement(node) || isHTMLIFrameElement(node);
+}
+
+inline bool isHTMLFrameElementBase(const Node* node)
+{
+    return node && isHTMLFrameElementBase(*node);
 }
 
 DEFINE_ELEMENT_TYPE_CASTS_WITH_FUNCTION(HTMLFrameElementBase);

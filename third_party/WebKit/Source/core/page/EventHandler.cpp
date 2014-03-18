@@ -1745,10 +1745,7 @@ bool EventHandler::dispatchDragEvent(const AtomicString& eventType, Node* dragTa
 
 static bool targetIsFrame(Node* target, LocalFrame*& frame)
 {
-    if (!target)
-        return false;
-
-    if (!isHTMLFrameElement(*target) && !isHTMLIFrameElement(*target))
+    if (!isHTMLFrameElementBase(target))
         return false;
 
     frame = toHTMLFrameElementBase(target)->contentFrame();

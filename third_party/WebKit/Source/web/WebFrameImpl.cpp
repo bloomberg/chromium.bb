@@ -131,6 +131,7 @@
 #include "core/frame/FrameView.h"
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLFormElement.h"
+#include "core/html/HTMLFrameElementBase.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/HTMLHeadElement.h"
 #include "core/html/HTMLInputElement.h"
@@ -2236,9 +2237,9 @@ WebFrameImpl* WebFrameImpl::fromFrame(LocalFrame* frame)
 WebFrameImpl* WebFrameImpl::fromFrameOwnerElement(Element* element)
 {
     // FIXME: Why do we check specifically for <iframe> and <frame> here? Why can't we get the WebFrameImpl from an <object> element, for example.
-    if (!element || !element->isFrameOwnerElement() || (!isHTMLIFrameElement(*element) && !isHTMLFrameElement(*element)))
+    if (!isHTMLFrameElementBase(element))
         return 0;
-    return fromFrame(toHTMLFrameOwnerElement(element)->contentFrame());
+    return fromFrame(toHTMLFrameElementBase(element)->contentFrame());
 }
 
 WebViewImpl* WebFrameImpl::viewImpl() const

@@ -1733,7 +1733,7 @@ static HTMLFormElement* scanForForm(Node* start)
         if (HTMLFormElement* owner = element->formOwner())
                 return owner;
 
-        if (isHTMLFrameElement(*element) || isHTMLIFrameElement(*element)) {
+        if (isHTMLFrameElementBase(*element)) {
             Node* childDocument = toHTMLFrameElementBase(*element).contentDocument();
             if (HTMLFormElement* frameResult = scanForForm(childDocument))
                 return frameResult;
