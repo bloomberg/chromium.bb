@@ -12,11 +12,11 @@
 
 /*
  * This trusted code is linked into the service_runtime and
- * executed when switching from the service runtime to a nacl
- * module. This happens when a main nacl thread is created and starting to
- * execute the nacle code, or when nacl module is returning from a system
+ * executed when switching from the service runtime to a NaCl
+ * module. This happens when a main NaCl thread is created and starting to
+ * execute the NaCl code, or when NaCl module is returning from a system
  * call. This piece of code lives in a service runtime part of address space.
- * the one and only argument is in register r0
+ * The one and only argument is in register r0.
  *
  * r0 -- address of thread context (struct NaClThreadContext)
  */
