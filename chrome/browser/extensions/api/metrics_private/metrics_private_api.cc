@@ -103,13 +103,6 @@ bool MetricsPrivateRecordUserActionFunction::RunImpl() {
   return true;
 }
 
-bool MetricsHistogramHelperFunction::GetNameAndSample(std::string* name,
-                                                      int* sample) {
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, name));
-  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(1, sample));
-  return true;
-}
-
 bool MetricsHistogramHelperFunction::RecordValue(
     const std::string& name,
     base::HistogramType type,

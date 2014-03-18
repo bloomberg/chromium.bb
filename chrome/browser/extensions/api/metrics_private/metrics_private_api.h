@@ -64,7 +64,6 @@ class MetricsPrivateRecordUserActionFunction : public SyncExtensionFunction {
 class MetricsHistogramHelperFunction : public SyncExtensionFunction {
  protected:
   virtual ~MetricsHistogramHelperFunction() {}
-  bool GetNameAndSample(std::string* name, int* sample);
   virtual bool RecordValue(const std::string& name,
                            base::HistogramType type,
                            int min, int max, size_t buckets,
