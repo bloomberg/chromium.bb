@@ -657,6 +657,8 @@
     'browser/indexed_db/indexed_db.h',
     'browser/indexed_db/indexed_db_backing_store.cc',
     'browser/indexed_db/indexed_db_backing_store.h',
+    'browser/indexed_db/indexed_db_blob_info.cc',
+    'browser/indexed_db/indexed_db_blob_info.h',
     'browser/indexed_db/indexed_db_callbacks.cc',
     'browser/indexed_db/indexed_db_callbacks.h',
     'browser/indexed_db/indexed_db_connection.cc',

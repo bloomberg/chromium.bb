@@ -1400,6 +1400,10 @@ bool DatabaseMetaDataKey::IsValidBlobKey(int64 blob_key) {
   return blob_key >= kBlobKeyGeneratorInitialNumber;
 }
 
+const int64 DatabaseMetaDataKey::kAllBlobsKey = 1;
+const int64 DatabaseMetaDataKey::kBlobKeyGeneratorInitialNumber = 2;
+const int64 DatabaseMetaDataKey::kInvalidBlobKey = -1;
+
 std::string DatabaseMetaDataKey::Encode(int64 database_id,
                                         MetaDataType meta_data_type) {
   KeyPrefix prefix(database_id);

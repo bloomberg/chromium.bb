@@ -229,9 +229,10 @@ class DatabaseMetaDataKey {
     MAX_SIMPLE_METADATA_TYPE = 6
   };
 
-  static const int64 kAllBlobsKey = 1;
-  static const int64 kBlobKeyGeneratorInitialNumber = 2;
-  static const int64 kInvalidBlobKey = -1;  // All keys <= 0 are invalid.
+  static const int64 kAllBlobsKey;
+  static const int64 kBlobKeyGeneratorInitialNumber;
+  // All keys <= 0 are invalid.  This one's just a convenient example.
+  static const int64 kInvalidBlobKey;
 
   static bool IsValidBlobKey(int64 blobKey);
   CONTENT_EXPORT static std::string Encode(int64 database_id,
