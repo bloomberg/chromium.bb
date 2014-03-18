@@ -11,7 +11,7 @@
 
 namespace WebCore {
 
-const unsigned codePointsNumber = SCHAR_MAX;
+const unsigned codePointsNumber = SCHAR_MAX + 1;
 
 class MediaQueryTokenizer::CodePoints {
 public:

@@ -24,4 +24,46 @@ TEST(MediaQueryTokenizerTest, Basic)
     }
 }
 
+void testToken(UChar c, MediaQueryTokenType tokenType)
+{
+    Vector<MediaQueryToken> tokens;
+    StringBuilder input;
+    input.append(c);
+    MediaQueryTokenizer::tokenize(input.toString(), tokens);
+    ASSERT_EQ(tokens[0].type(), tokenType);
+}
+
+TEST(MediaQueryTokenizerCodepointsTest, Basic)
+{
+    for (UChar c = 0; c <= 1000; ++c) {
+        if (isASCIIDigit(c))
+            testToken(c, NumberToken);
+        else if (isASCIIAlpha(c))
+            testToken(c, IdentToken);
+        else if (c == '_')
+            testToken(c, IdentToken);
+        else if (c == '\r' || c == ' ' || c == '\n' || c == '\t' || c == '\f')
+            testToken(c, WhitespaceToken);
+        else if (c == '(')
+            testToken(c, LeftParenthesisToken);
+        else if (c == ')')
+            testToken(c, RightParenthesisToken);
+        else if (c == '.' || c == '+' || c == '-' || c == '/' || c == '\\')
+            testToken(c, DelimiterToken);
+        else if (c == ',')
+            testToken(c, CommaToken);
+        else if (c == ':')
+            testToken(c, ColonToken);
+        else if (c == ';')
+            testToken(c, SemicolonToken);
+        else if (!c)
+            testToken(c, EOFToken);
+        else if (c > SCHAR_MAX)
+            testToken(c, IdentToken);
+        else
+            testToken(c, DelimiterToken);
+    }
+    testToken(USHRT_MAX, IdentToken);
+}
+
 } // namespace
