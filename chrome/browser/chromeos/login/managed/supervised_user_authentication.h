@@ -33,13 +33,13 @@ class SupervisedUserAuthentication {
   explicit SupervisedUserAuthentication(SupervisedUserManager* owner);
   virtual ~SupervisedUserAuthentication();
 
+  // Returns current schema for whole ChromeOS. It defines if users with older
+  // schema should be migrated somehow.
+  Schema GetStableSchema();
+
   // Transforms password according to schema specified in Local State.
   std::string TransformPassword(const std::string& supervised_user_id,
                                 const std::string& password);
-
-  // Returns |true| if current password schema for user is different from
-  // target schema.
-  bool PasswordNeedsMigration(const std::string& user_id);
 
   // Schedules password migration for |user_id| with |password| as a plain text
   // password. Migration should happen during |user_login_flow|.
@@ -51,7 +51,8 @@ class SupervisedUserAuthentication {
   // depending on target schema. Does not affect Local State.
   bool FillDataForNewUser(const std::string& user_id,
                           const std::string& password,
-                          base::DictionaryValue* password_data);
+                          base::DictionaryValue* password_data,
+                          base::DictionaryValue* extra_data);
 
   // Stores |password_data| for |user_id| in Local State. Only public parts
   // of |password_data| will be stored.
@@ -67,10 +68,17 @@ class SupervisedUserAuthentication {
                                     const std::string& supervised_user_id,
                                     const base::DictionaryValue* password_data);
 
+  // Creates a random string that can be used as a master key for managed
+  // user's homedir.
+  std::string GenerateMasterKey();
+
   // Called by supervised user
   void ScheduleSupervisedPasswordChange(
       const std::string& supervised_user_id,
       const base::DictionaryValue* password_data);
+
+  // Utility method that gets schema version for |user_id| from Local State.
+  Schema GetPasswordSchema(const std::string& user_id);
 
  private:
   SupervisedUserManager* owner_;
@@ -81,8 +89,6 @@ class SupervisedUserAuthentication {
   // Target schema version. Affects migration process and new user creation.
   Schema stable_schema_;
 
-  // Utility method that gets schema version for |user_id| from Local State.
-  Schema GetPasswordSchema(const std::string& user_id);
 
   DISALLOW_COPY_AND_ASSIGN(SupervisedUserAuthentication);
 };

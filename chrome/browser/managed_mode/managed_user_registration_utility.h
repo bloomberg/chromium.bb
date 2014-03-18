@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "base/strings/string16.h"
+#include "base/values.h"
 #include "chrome/browser/managed_mode/managed_user_sync_service.h"
 #include "chrome/browser/managed_mode/managed_user_sync_service_observer.h"
 #include "chrome/browser/managed_mode/managed_users.h"
@@ -39,6 +40,7 @@ struct ManagedUserRegistrationInfo {
   std::string master_key;
   std::string password_signature_key;
   std::string password_encryption_key;
+  base::DictionaryValue password_data;
 };
 
 // Holds the state necessary for registering a new managed user with the

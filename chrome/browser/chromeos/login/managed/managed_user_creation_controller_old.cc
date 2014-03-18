@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/login/managed/locally_managed_user_creation_controller.h"
+#include "chrome/browser/chromeos/login/managed/managed_user_creation_controller_old.h"
 
 #include "base/bind.h"
 #include "base/file_util.h"
@@ -33,8 +33,7 @@ namespace chromeos {
 
 namespace {
 
-const int kMasterKeySize = 32;
-const int kUserCreationTimeoutSeconds = 30; // 30 seconds.
+const int kUserCreationTimeoutSeconds = 30;  // 30 seconds.
 
 bool StoreManagedUserFiles(const std::string& token,
                            const base::FilePath& base_path) {
@@ -47,44 +46,29 @@ bool StoreManagedUserFiles(const std::string& token,
   return bytes >= 0;
 }
 
-} // namespace
+}  // namespace
 
-// static
-const int LocallyManagedUserCreationController::kDummyAvatarIndex = -111;
-
-LocallyManagedUserCreationController::StatusConsumer::~StatusConsumer() {}
-
-LocallyManagedUserCreationController::UserCreationContext::UserCreationContext()
+ManagedUserCreationControllerOld::UserCreationContext::UserCreationContext()
     : avatar_index(kDummyAvatarIndex),
       token_acquired(false),
       token_succesfully_written(false),
       creation_type(NEW_USER),
       manager_profile(NULL) {}
 
-LocallyManagedUserCreationController::UserCreationContext::
-    ~UserCreationContext() {}
+ManagedUserCreationControllerOld::UserCreationContext::~UserCreationContext() {}
 
-// static
-LocallyManagedUserCreationController*
-    LocallyManagedUserCreationController::current_controller_ = NULL;
-
-LocallyManagedUserCreationController::LocallyManagedUserCreationController(
-    LocallyManagedUserCreationController::StatusConsumer* consumer,
+ManagedUserCreationControllerOld::ManagedUserCreationControllerOld(
+    ManagedUserCreationControllerOld::StatusConsumer* consumer,
     const std::string& manager_id)
-    : consumer_(consumer),
-      weak_factory_(this) {
-  DCHECK(!current_controller_) << "More than one controller exist.";
-  current_controller_ = this;
+    : ManagedUserCreationController(consumer), weak_factory_(this) {
   creation_context_.reset(
-      new LocallyManagedUserCreationController::UserCreationContext());
+      new ManagedUserCreationControllerOld::UserCreationContext());
   creation_context_->manager_id = manager_id;
 }
 
-LocallyManagedUserCreationController::~LocallyManagedUserCreationController() {
-  current_controller_ = NULL;
-}
+ManagedUserCreationControllerOld::~ManagedUserCreationControllerOld() {}
 
-void LocallyManagedUserCreationController::SetUpCreation(
+void ManagedUserCreationControllerOld::StartCreation(
     const base::string16& display_name,
     const std::string& password,
     int avatar_index) {
@@ -92,9 +76,10 @@ void LocallyManagedUserCreationController::SetUpCreation(
   creation_context_->display_name = display_name;
   creation_context_->password = password;
   creation_context_->avatar_index = avatar_index;
+  StartCreation();
 }
 
-void LocallyManagedUserCreationController::StartImport(
+void ManagedUserCreationControllerOld::StartImport(
     const base::string16& display_name,
     const std::string& password,
     int avatar_index,
@@ -110,12 +95,12 @@ void LocallyManagedUserCreationController::StartImport(
   StartCreation();
 }
 
-void LocallyManagedUserCreationController::SetManagerProfile(
+void ManagedUserCreationControllerOld::SetManagerProfile(
     Profile* manager_profile) {
   creation_context_->manager_profile = manager_profile;
 }
 
-void LocallyManagedUserCreationController::StartCreation() {
+void ManagedUserCreationControllerOld::StartCreation() {
   DCHECK(creation_context_);
   VLOG(1) << "Starting supervised user creation";
 
@@ -129,9 +114,10 @@ void LocallyManagedUserCreationController::StartCreation() {
     consumer_->OnLongCreationWarning();
 
   timeout_timer_.Start(
-      FROM_HERE, base::TimeDelta::FromSeconds(kUserCreationTimeoutSeconds),
+      FROM_HERE,
+      base::TimeDelta::FromSeconds(kUserCreationTimeoutSeconds),
       this,
-      &LocallyManagedUserCreationController::CreationTimedOut);
+      &ManagedUserCreationControllerOld::CreationTimedOut);
   SupervisedUserManager* manager =
       UserManager::Get()->GetSupervisedUserManager();
   manager->StartCreationTransaction(creation_context_->display_name);
@@ -143,29 +129,30 @@ void LocallyManagedUserCreationController::StartCreation() {
         ManagedUserRegistrationUtility::GenerateNewManagedUserId();
   }
 
-  manager->CreateUserRecord(
-      creation_context_->manager_id,
-      creation_context_->local_user_id,
-      creation_context_->sync_user_id,
-      creation_context_->display_name);
+  manager->CreateUserRecord(creation_context_->manager_id,
+                            creation_context_->local_user_id,
+                            creation_context_->sync_user_id,
+                            creation_context_->display_name);
 
   manager->SetCreationTransactionUserId(creation_context_->local_user_id);
   SupervisedUserAuthentication* authentication = manager->GetAuthentication();
+  base::DictionaryValue extra;
   if (authentication->FillDataForNewUser(creation_context_->local_user_id,
                                          creation_context_->password,
-                                         &creation_context_->password_data)) {
+                                         &creation_context_->password_data,
+                                         &extra)) {
     authentication->StorePasswordData(creation_context_->local_user_id,
                                       creation_context_->password_data);
   }
   VLOG(1) << "Creating cryptohome";
   authenticator_ = new ManagedUserAuthenticator(this);
-  authenticator_->AuthenticateToCreate(creation_context_->local_user_id,
-                                       authentication->TransformPassword(
-                                           creation_context_->local_user_id,
-                                           creation_context_->password));
+  authenticator_->AuthenticateToCreate(
+      creation_context_->local_user_id,
+      authentication->TransformPassword(creation_context_->local_user_id,
+                                        creation_context_->password));
 }
 
-void LocallyManagedUserCreationController::OnAuthenticationFailure(
+void ManagedUserCreationControllerOld::OnAuthenticationFailure(
     ManagedUserAuthenticator::AuthState error) {
   timeout_timer_.Stop();
   ErrorCode code = NO_ERROR;
@@ -186,31 +173,28 @@ void LocallyManagedUserCreationController::OnAuthenticationFailure(
     consumer_->OnCreationError(code);
 }
 
-void LocallyManagedUserCreationController::OnMountSuccess(
+void ManagedUserCreationControllerOld::OnMountSuccess(
     const std::string& mount_hash) {
   creation_context_->mount_hash = mount_hash;
 
+  SupervisedUserAuthentication* authentication =
+      UserManager::Get()->GetSupervisedUserManager()->GetAuthentication();
+
   if (creation_context_->creation_type == NEW_USER) {
     // Generate master password.
-    char master_key_bytes[kMasterKeySize];
-    crypto::RandBytes(&master_key_bytes, sizeof(master_key_bytes));
-    creation_context_->master_key = StringToLowerASCII(base::HexEncode(
-        reinterpret_cast<const void*>(master_key_bytes),
-        sizeof(master_key_bytes)));
+    creation_context_->master_key = authentication->GenerateMasterKey();
   }
 
   VLOG(1) << "Adding master key";
-  SupervisedUserAuthentication* authentication = UserManager::Get()->
-      GetSupervisedUserManager()->GetAuthentication();
 
-  authenticator_->AddMasterKey(creation_context_->local_user_id,
-                               authentication->TransformPassword(
-                                   creation_context_->local_user_id,
-                                   creation_context_->password),
-                               creation_context_->master_key);
+  authenticator_->AddMasterKey(
+      creation_context_->local_user_id,
+      authentication->TransformPassword(creation_context_->local_user_id,
+                                        creation_context_->password),
+      creation_context_->master_key);
 }
 
-void LocallyManagedUserCreationController::OnAddKeySuccess() {
+void ManagedUserCreationControllerOld::OnAddKeySuccess() {
   creation_context_->registration_utility =
       ManagedUserRegistrationUtility::Create(
           creation_context_->manager_profile);
@@ -225,18 +209,19 @@ void LocallyManagedUserCreationController::OnAddKeySuccess() {
   creation_context_->registration_utility->Register(
       creation_context_->sync_user_id,
       info,
-      base::Bind(&LocallyManagedUserCreationController::RegistrationCallback,
+      base::Bind(&ManagedUserCreationControllerOld::RegistrationCallback,
                  weak_factory_.GetWeakPtr()));
 }
 
-void LocallyManagedUserCreationController::RegistrationCallback(
+void ManagedUserCreationControllerOld::RegistrationCallback(
     const GoogleServiceAuthError& error,
     const std::string& token) {
   if (error.state() == GoogleServiceAuthError::NONE) {
     timeout_timer_.Start(
-        FROM_HERE, base::TimeDelta::FromSeconds(kUserCreationTimeoutSeconds),
+        FROM_HERE,
+        base::TimeDelta::FromSeconds(kUserCreationTimeoutSeconds),
         this,
-        &LocallyManagedUserCreationController::CreationTimedOut);
+        &ManagedUserCreationControllerOld::CreationTimedOut);
     TokenFetched(token);
   } else {
     LOG(ERROR) << "Managed user creation failed. Error code " << error.state();
@@ -245,28 +230,27 @@ void LocallyManagedUserCreationController::RegistrationCallback(
   }
 }
 
-void LocallyManagedUserCreationController::CreationTimedOut() {
+void ManagedUserCreationControllerOld::CreationTimedOut() {
   LOG(ERROR) << "Supervised user creation timed out.";
   if (consumer_)
     consumer_->OnCreationTimeout();
 }
 
-void LocallyManagedUserCreationController::FinishCreation() {
+void ManagedUserCreationControllerOld::FinishCreation() {
   chrome::AttemptUserExit();
 }
 
-void LocallyManagedUserCreationController::CancelCreation() {
+void ManagedUserCreationControllerOld::CancelCreation() {
   creation_context_->registration_utility.reset();
   chrome::AttemptUserExit();
 }
 
-std::string LocallyManagedUserCreationController::GetManagedUserId() {
+std::string ManagedUserCreationControllerOld::GetManagedUserId() {
   DCHECK(creation_context_);
   return creation_context_->local_user_id;
 }
 
-void LocallyManagedUserCreationController::TokenFetched(
-    const std::string& token) {
+void ManagedUserCreationControllerOld::TokenFetched(const std::string& token) {
   creation_context_->token_acquired = true;
   creation_context_->token = token;
 
@@ -276,13 +260,11 @@ void LocallyManagedUserCreationController::TokenFetched(
       base::Bind(&StoreManagedUserFiles,
                  creation_context_->token,
                  MountManager::GetHomeDir(creation_context_->mount_hash)),
-      base::Bind(
-           &LocallyManagedUserCreationController::OnManagedUserFilesStored,
-           weak_factory_.GetWeakPtr()));
+      base::Bind(&ManagedUserCreationControllerOld::OnManagedUserFilesStored,
+                 weak_factory_.GetWeakPtr()));
 }
 
-void LocallyManagedUserCreationController::OnManagedUserFilesStored(
-    bool success) {
+void ManagedUserCreationControllerOld::OnManagedUserFilesStored(bool success) {
   timeout_timer_.Stop();
 
   content::RecordAction(
@@ -297,8 +279,7 @@ void LocallyManagedUserCreationController::OnManagedUserFilesStored(
   // sync service fails to use it.
   UserManager::Get()->SaveUserOAuthStatus(creation_context_->local_user_id,
                                           User::OAUTH2_TOKEN_STATUS_VALID);
-  UserManager::Get()->GetSupervisedUserManager()->
-      CommitCreationTransaction();
+  UserManager::Get()->GetSupervisedUserManager()->CommitCreationTransaction();
   if (consumer_)
     consumer_->OnCreationSuccess();
 }

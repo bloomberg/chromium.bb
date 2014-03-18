@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/login/authenticator.h"
+#include "chrome/browser/chromeos/login/extended_authenticator.h"
 #include "chrome/browser/chromeos/login/login_status_consumer.h"
 #include "chrome/browser/chromeos/login/online_attempt_host.h"
 #include "chrome/browser/chromeos/login/user.h"
@@ -132,6 +133,7 @@ class LoginPerformer : public LoginStatusConsumer,
 
   // Used for logging in.
   scoped_refptr<Authenticator> authenticator_;
+  scoped_refptr<ExtendedAuthenticator> extended_authenticator_;
 
   // Used to make auxiliary online check.
   OnlineAttemptHost online_attempt_host_;

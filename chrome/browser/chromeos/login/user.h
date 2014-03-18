@@ -50,8 +50,13 @@ struct UserContext {
               AuthFlow auth_flow);
   virtual ~UserContext();
   bool operator==(const UserContext& context) const;
+
+  void CopyFrom(const UserContext& other);
+
   std::string username;
   std::string password;
+  bool need_password_hashing;
+  std::string key_label;
   std::string auth_code;
   std::string username_hash;
   bool using_oauth;

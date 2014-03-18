@@ -114,10 +114,10 @@ UserContext::UserContext(const std::string& username,
                          const std::string& auth_code)
     : username(username),
       password(password),
+      need_password_hashing(true),
       auth_code(auth_code),
       using_oauth(true),
-      auth_flow(AUTH_FLOW_OFFLINE) {
-}
+      auth_flow(AUTH_FLOW_OFFLINE) {}
 
 UserContext::UserContext(const std::string& username,
                          const std::string& password,
@@ -125,11 +125,11 @@ UserContext::UserContext(const std::string& username,
                          const std::string& username_hash)
     : username(username),
       password(password),
+      need_password_hashing(true),
       auth_code(auth_code),
       username_hash(username_hash),
       using_oauth(true),
-      auth_flow(AUTH_FLOW_OFFLINE) {
-}
+      auth_flow(AUTH_FLOW_OFFLINE) {}
 
 UserContext::UserContext(const std::string& username,
                          const std::string& password,
@@ -137,24 +137,35 @@ UserContext::UserContext(const std::string& username,
                          const std::string& username_hash,
                          bool using_oauth,
                          AuthFlow auth_flow)
-    :  username(username),
-       password(password),
-       auth_code(auth_code),
-       username_hash(username_hash),
-       using_oauth(using_oauth),
-       auth_flow(auth_flow) {
-}
+    : username(username),
+      password(password),
+      need_password_hashing(true),
+      auth_code(auth_code),
+      username_hash(username_hash),
+      using_oauth(using_oauth),
+      auth_flow(auth_flow) {}
 
 UserContext::~UserContext() {
 }
 
 bool UserContext::operator==(const UserContext& context) const {
-  return context.username == username &&
-         context.password == password &&
+  return context.username == username && context.password == password &&
+         context.key_label == key_label &&
+         context.need_password_hashing == need_password_hashing &&
          context.auth_code == auth_code &&
          context.username_hash == username_hash &&
-         context.using_oauth == using_oauth &&
-         context.auth_flow == auth_flow;
+         context.using_oauth == using_oauth && context.auth_flow == auth_flow;
+}
+
+void UserContext::CopyFrom(const UserContext& other) {
+  username = other.username;
+  password = other.password;
+  key_label = other.key_label;
+  need_password_hashing = other.need_password_hashing;
+  auth_code = other.auth_code;
+  username_hash = other.username_hash;
+  using_oauth = other.using_oauth;
+  auth_flow = other.auth_flow;
 }
 
 base::string16 User::GetDisplayName() const {

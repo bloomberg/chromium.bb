@@ -93,6 +93,9 @@ const char kPasswordRevision[] = "PasswordRevision";
 const char kSalt[] = "PasswordSalt";
 const char kEncryptedPassword[] = "EncryptedPassword";
 const char kRequirePasswordUpdate[] = "RequirePasswordUpdate";
+const char kPasswordEncryptionKey[] = "password.hmac.encryption";
+const char kPasswordSignatureKey[] = "password.hmac.signature";
+
 const char kPasswordUpdateFile[] = "password.update";
 const int kMinPasswordRevision = 1;
 

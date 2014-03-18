@@ -11,6 +11,9 @@ namespace chromeos {
 
 extern const char kManagedUserTokenFilename[];
 
+extern const char kCryptohomeManagedUserKeyLabel[];
+extern const char kCryptohomeMasterKeyLabel[];
+
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_LOGIN_MANAGED_LOCALLY_MANAGED_USER_CONSTANTS_H_

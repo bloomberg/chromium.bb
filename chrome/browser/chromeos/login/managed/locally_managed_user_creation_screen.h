@@ -9,7 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "chrome/browser/chromeos/login/managed/locally_managed_user_creation_controller.h"
+#include "chrome/browser/chromeos/login/managed/managed_user_creation_controller.h"
 #include "chrome/browser/chromeos/login/screens/wizard_screen.h"
 #include "chrome/browser/chromeos/net/network_portal_detector.h"
 #include "chrome/browser/image_decoder.h"
@@ -26,7 +26,7 @@ class NetworkState;
 class LocallyManagedUserCreationScreen
     : public WizardScreen,
       public LocallyManagedUserCreationScreenHandler::Delegate,
-      public LocallyManagedUserCreationController::StatusConsumer,
+      public ManagedUserCreationController::StatusConsumer,
       public ImageDecoder::Delegate,
       public NetworkPortalDetector::Observer {
  public:
@@ -84,8 +84,8 @@ class LocallyManagedUserCreationScreen
   virtual void OnPageSelected(const std::string& page) OVERRIDE;
 
   // LocallyManagedUserController::StatusConsumer overrides.
-  virtual void OnCreationError(
-      LocallyManagedUserCreationController::ErrorCode code) OVERRIDE;
+  virtual void OnCreationError(ManagedUserCreationController::ErrorCode code)
+      OVERRIDE;
   virtual void OnCreationTimeout() OVERRIDE;
   virtual void OnCreationSuccess() OVERRIDE;
   virtual void OnLongCreationWarning() OVERRIDE;
@@ -117,7 +117,7 @@ class LocallyManagedUserCreationScreen
   base::WeakPtrFactory<LocallyManagedUserCreationScreen> weak_factory_;
   LocallyManagedUserCreationScreenHandler* actor_;
 
-  scoped_ptr<LocallyManagedUserCreationController> controller_;
+  scoped_ptr<ManagedUserCreationController> controller_;
   scoped_ptr<base::DictionaryValue> existing_users_;
 
   bool on_error_screen_;

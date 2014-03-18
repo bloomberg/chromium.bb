@@ -27,6 +27,9 @@ const unsigned kSaltSize = 32;
 const unsigned kNumIterations = 1234;
 const unsigned kKeySizeInBits = 256;
 
+const unsigned kHMACKeySizeInBits = 256;
+const int kMasterKeySize = 32;
+
 std::string CreateSalt() {
     char result[kSaltSize];
     crypto::RandBytes(&result, sizeof(result));
@@ -49,21 +52,33 @@ std::string BuildPasswordForHashWithSaltSchema(
   return result;
 }
 
+std::string BuildRawHMACKey() {
+  scoped_ptr<crypto::SymmetricKey> key(crypto::SymmetricKey::GenerateRandomKey(
+      crypto::SymmetricKey::AES, kHMACKeySizeInBits));
+  std::string raw_result, result;
+  key->GetRawKey(&raw_result);
+  base::Base64Encode(raw_result, &result);
+  return result;
+}
+
 }  // namespace
 
 SupervisedUserAuthentication::SupervisedUserAuthentication(
     SupervisedUserManager* owner)
       : owner_(owner),
-        migration_enabled_(false),
         stable_schema_(SCHEMA_PLAIN) {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kEnableSupervisedPasswordSync)) {
-    migration_enabled_ = true;
     stable_schema_ = SCHEMA_SALT_HASHED;
   }
 }
 
 SupervisedUserAuthentication::~SupervisedUserAuthentication() {}
+
+SupervisedUserAuthentication::Schema
+SupervisedUserAuthentication::GetStableSchema() {
+  return stable_schema_;
+}
 
 std::string SupervisedUserAuthentication::TransformPassword(
     const std::string& user_id,
@@ -87,10 +102,12 @@ std::string SupervisedUserAuthentication::TransformPassword(
 bool SupervisedUserAuthentication::FillDataForNewUser(
     const std::string& user_id,
     const std::string& password,
-    base::DictionaryValue* password_data) {
+    base::DictionaryValue* password_data,
+    base::DictionaryValue* extra_data) {
   Schema schema = stable_schema_;
   if (schema == SCHEMA_PLAIN)
     return false;
+
   if (schema == SCHEMA_SALT_HASHED) {
     password_data->SetIntegerWithoutPathExpansion(kSchemaVersion, schema);
     std::string salt = CreateSalt();
@@ -99,10 +116,23 @@ bool SupervisedUserAuthentication::FillDataForNewUser(
         kMinPasswordRevision);
     password_data->SetStringWithoutPathExpansion(kEncryptedPassword,
         BuildPasswordForHashWithSaltSchema(salt, password));
+
+    extra_data->SetStringWithoutPathExpansion(kPasswordEncryptionKey,
+                                              BuildRawHMACKey());
+    extra_data->SetStringWithoutPathExpansion(kPasswordSignatureKey,
+                                              BuildRawHMACKey());
     return true;
   }
   NOTREACHED();
   return false;
+}
+
+std::string SupervisedUserAuthentication::GenerateMasterKey() {
+  char master_key_bytes[kMasterKeySize];
+  crypto::RandBytes(&master_key_bytes, sizeof(master_key_bytes));
+  return StringToLowerASCII(
+      base::HexEncode(reinterpret_cast<const void*>(master_key_bytes),
+                      sizeof(master_key_bytes)));
 }
 
 void SupervisedUserAuthentication::StorePasswordData(
@@ -120,19 +150,6 @@ void SupervisedUserAuthentication::StorePasswordData(
   owner_->SetPasswordInformation(user_id, &holder);
 }
 
-bool SupervisedUserAuthentication::PasswordNeedsMigration(
-    const std::string& user_id) {
-  // Either we have password with old schema, or there is a password update.
-  base::DictionaryValue holder;
-  owner_->GetPasswordInformation(user_id, &holder);
-  bool need_update;
-  if (holder.GetBoolean(kRequirePasswordUpdate, &need_update)) {
-    if (need_update)
-      return true;
-  }
-  return GetPasswordSchema(user_id) < stable_schema_;
-}
-
 SupervisedUserAuthentication::Schema
 SupervisedUserAuthentication::GetPasswordSchema(
   const std::string& user_id) {
@@ -147,13 +164,6 @@ SupervisedUserAuthentication::GetPasswordSchema(
     schema_version = static_cast<Schema>(schema_version_index);
   }
   return schema_version;
-}
-
-void SupervisedUserAuthentication::SchedulePasswordMigration(
-    const std::string& supervised_user_id,
-    const std::string& user_password,
-    SupervisedUserLoginFlow* user_flow) {
-  // TODO(antrim): Add actual migration code once cryptohome has required API.
 }
 
 bool SupervisedUserAuthentication::NeedPasswordChange(

@@ -24,9 +24,13 @@ class SupervisedUserAuthentication;
 extern const char kSchemaVersion[];
 extern const char kPasswordRevision[];
 extern const char kSalt[];
-extern const char kEncryptedPassword[];
 extern const char kRequirePasswordUpdate[];
 extern const int kMinPasswordRevision;
+
+// Values for these keys are not stored in local state.
+extern const char kEncryptedPassword[];
+extern const char kPasswordEncryptionKey[];
+extern const char kPasswordSignatureKey[];
 
 extern const char kPasswordUpdateFile[];
 

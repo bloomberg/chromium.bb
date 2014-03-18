@@ -27,6 +27,7 @@ extern const char kManagedUserPseudoEmail[];
 // SupervisedUserPrefMappingService.
 extern const char kChromeAvatarIndex[];
 extern const char kChromeOSAvatarIndex[];
+extern const char kChromeOSPasswordData[];
 
 }  // namespace managed_users
 
