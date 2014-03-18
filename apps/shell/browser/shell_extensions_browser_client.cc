@@ -54,7 +54,7 @@ bool ShellExtensionsBrowserClient::IsShuttingDown() {
 }
 
 bool ShellExtensionsBrowserClient::AreExtensionsDisabled(
-    const CommandLine& command_line,
+    const base::CommandLine& command_line,
     BrowserContext* context) {
   return false;
 }
