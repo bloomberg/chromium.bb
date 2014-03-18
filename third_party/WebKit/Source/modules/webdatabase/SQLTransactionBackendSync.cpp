@@ -62,11 +62,25 @@ SQLTransactionBackendSync::SQLTransactionBackendSync(DatabaseSync* db, PassOwnPt
     ASSERT(m_database->executionContext()->isContextThread());
 }
 
-SQLTransactionBackendSync::~SQLTransactionBackendSync()
+void SQLTransactionBackendSync::rollbackIfInProgress()
 {
-    ASSERT(m_database->executionContext()->isContextThread());
+    ASSERT(!m_database->executionContext() || m_database->executionContext()->isContextThread());
     if (m_sqliteTransaction && m_sqliteTransaction->inProgress())
         rollback();
+}
+
+SQLTransactionBackendSync::~SQLTransactionBackendSync()
+{
+#if ENABLE(OILPAN)
+    ASSERT(!m_sqliteTransaction || !m_sqliteTransaction->inProgress());
+#else
+    rollbackIfInProgress();
+#endif
+}
+
+void SQLTransactionBackendSync::trace(Visitor* visitor)
+{
+    visitor->trace(m_database);
 }
 
 PassRefPtr<SQLResultSet> SQLTransactionBackendSync::executeSQL(const String& sqlStatement, const Vector<SQLValue>& arguments, ExceptionState& exceptionState)
@@ -229,9 +243,10 @@ void SQLTransactionBackendSync::commit(ExceptionState& exceptionState)
     m_database->reportCommitTransactionResult(0, -1, 0); // OK
 }
 
+// This can be called during GC. Do not allocate new on-heap objects.
 void SQLTransactionBackendSync::rollback()
 {
-    ASSERT(m_database->executionContext()->isContextThread());
+    ASSERT(!m_database->executionContext() || m_database->executionContext()->isContextThread());
     m_database->disableAuthorizer();
     if (m_sqliteTransaction) {
         m_sqliteTransaction->rollback();

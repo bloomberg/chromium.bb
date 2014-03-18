@@ -84,7 +84,7 @@ void DatabaseSync::changeVersion(const String& oldVersion, const String& newVers
         return;
     }
 
-    RefPtr<SQLTransactionSync> transaction = SQLTransactionSync::create(this, changeVersionCallback, false);
+    RefPtrWillBeRawPtr<SQLTransactionSync> transaction = SQLTransactionSync::create(this, changeVersionCallback, false);
     transaction->begin(exceptionState);
     if (exceptionState.hadException()) {
         ASSERT(!lastErrorMessage().isEmpty());
@@ -143,10 +143,10 @@ void DatabaseSync::readTransaction(PassOwnPtr<SQLTransactionSyncCallback> callba
     runTransaction(callback, true, exceptionState);
 }
 
-void DatabaseSync::rollbackTransaction(PassRefPtr<SQLTransactionSync> transaction)
+void DatabaseSync::rollbackTransaction(SQLTransactionSync& transaction)
 {
     ASSERT(!lastErrorMessage().isEmpty());
-    transaction->rollback();
+    transaction.rollback();
     setLastErrorMessage("");
     return;
 }
@@ -161,22 +161,22 @@ void DatabaseSync::runTransaction(PassOwnPtr<SQLTransactionSyncCallback> callbac
         return;
     }
 
-    RefPtr<SQLTransactionSync> transaction = SQLTransactionSync::create(this, callback, readOnly);
+    RefPtrWillBeRawPtr<SQLTransactionSync> transaction = SQLTransactionSync::create(this, callback, readOnly);
     transaction->begin(exceptionState);
     if (exceptionState.hadException()) {
-        rollbackTransaction(transaction);
+        rollbackTransaction(*transaction);
         return;
     }
 
     transaction->execute(exceptionState);
     if (exceptionState.hadException()) {
-        rollbackTransaction(transaction);
+        rollbackTransaction(*transaction);
         return;
     }
 
     transaction->commit(exceptionState);
     if (exceptionState.hadException()) {
-        rollbackTransaction(transaction);
+        rollbackTransaction(*transaction);
         return;
     }
 
@@ -193,5 +193,19 @@ void DatabaseSync::closeImmediately()
     logErrorMessage("forcibly closing database");
     closeDatabase();
 }
+
+void DatabaseSync::observeTransaction(SQLTransactionSync& transaction)
+{
+#if ENABLE(OILPAN)
+    m_observers.add(&transaction, adoptPtr(new TransactionObserver(transaction)));
+#endif
+}
+
+#if ENABLE(OILPAN)
+DatabaseSync::TransactionObserver::~TransactionObserver()
+{
+    m_transaction.rollbackIfInProgress();
+}
+#endif
 
 } // namespace WebCore

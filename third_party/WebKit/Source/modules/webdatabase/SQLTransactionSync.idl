@@ -29,6 +29,7 @@
  */
 
 [
+    WillBeGarbageCollected,
     NoInterfaceObject,
 ] interface SQLTransactionSync {
     [RaisesException, Custom] SQLResultSet executeSql(DOMString sqlStatement, object[] arguments);

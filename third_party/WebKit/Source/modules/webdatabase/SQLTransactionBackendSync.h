@@ -50,9 +50,10 @@ class SQLiteTransaction;
 class ExceptionState;
 
 // Instances of this class should be created and used only on the worker's context thread.
-class SQLTransactionBackendSync : public RefCounted<SQLTransactionBackendSync> {
+class SQLTransactionBackendSync : public RefCountedWillBeGarbageCollectedFinalized<SQLTransactionBackendSync> {
 public:
     ~SQLTransactionBackendSync();
+    void trace(Visitor*);
 
     PassRefPtr<SQLResultSet> executeSQL(const String& sqlStatement, const Vector<SQLValue>& arguments, ExceptionState&);
 
@@ -62,11 +63,12 @@ public:
     void execute(ExceptionState&);
     void commit(ExceptionState&);
     void rollback();
+    void rollbackIfInProgress();
 
 private:
     SQLTransactionBackendSync(DatabaseSync*, PassOwnPtr<SQLTransactionSyncCallback>, bool readOnly);
 
-    RefPtrWillBePersistent<DatabaseSync> m_database;
+    RefPtrWillBeMember<DatabaseSync> m_database;
     OwnPtr<SQLTransactionSyncCallback> m_callback;
     bool m_readOnly;
     bool m_hasVersionMismatch;

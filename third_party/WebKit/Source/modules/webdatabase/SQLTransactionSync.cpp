@@ -38,9 +38,9 @@
 
 namespace WebCore {
 
-PassRefPtr<SQLTransactionSync> SQLTransactionSync::create(DatabaseSync* db, PassOwnPtr<SQLTransactionSyncCallback> callback, bool readOnly)
+PassRefPtrWillBeRawPtr<SQLTransactionSync> SQLTransactionSync::create(DatabaseSync* db, PassOwnPtr<SQLTransactionSyncCallback> callback, bool readOnly)
 {
-    return adoptRef(new SQLTransactionSync(db, callback, readOnly));
+    return adoptRefWillBeNoop(new SQLTransactionSync(db, callback, readOnly));
 }
 
 SQLTransactionSync::SQLTransactionSync(DatabaseSync* db, PassOwnPtr<SQLTransactionSyncCallback> callback, bool readOnly)
@@ -48,6 +48,7 @@ SQLTransactionSync::SQLTransactionSync(DatabaseSync* db, PassOwnPtr<SQLTransacti
 {
     ASSERT(m_database->executionContext()->isContextThread());
     ScriptWrappable::init(this);
+    db->observeTransaction(*this);
 }
 
 SQLTransactionSync* SQLTransactionSync::from(SQLTransactionBackendSync* backend)
