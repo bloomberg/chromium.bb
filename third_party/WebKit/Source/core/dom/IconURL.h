@@ -31,6 +31,7 @@
 #ifndef IconURL_h
 #define IconURL_h
 
+#include "platform/geometry/IntSize.h"
 #include "platform/weborigin/KURL.h"
 
 namespace WebCore {
@@ -44,7 +45,7 @@ enum IconType {
 
 struct IconURL {
     IconType m_iconType;
-    String m_sizes;
+    Vector<IntSize> m_sizes;
     String m_mimeType;
     KURL m_iconURL;
     bool m_isDefaultIcon;
@@ -55,7 +56,7 @@ struct IconURL {
     {
     }
 
-    IconURL(const KURL& url, const String& sizes, const String& mimeType, IconType type)
+    IconURL(const KURL& url, const Vector<IntSize>& sizes, const String& mimeType, IconType type)
         : m_iconType(type)
         , m_sizes(sizes)
         , m_mimeType(mimeType)

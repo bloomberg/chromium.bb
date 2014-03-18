@@ -34,7 +34,9 @@
 #if BLINK_IMPLEMENTATION
 #include "core/dom/IconURL.h"
 #endif
-#include "../platform/WebURL.h"
+#include "public/platform/WebSize.h"
+#include "public/platform/WebURL.h"
+#include "public/platform/WebVector.h"
 
 namespace blink {
 
@@ -68,10 +70,16 @@ public:
         return m_iconURL;
     }
 
+    const WebVector<WebSize>& sizes() const
+    {
+        return m_sizes;
+    }
+
 #if BLINK_IMPLEMENTATION
     WebIconURL(const WebCore::IconURL& iconURL)
         : m_iconType(static_cast<Type>(iconURL.m_iconType))
         , m_iconURL(iconURL.m_iconURL)
+        , m_sizes(iconURL.m_sizes)
     {
     }
 #endif
@@ -79,6 +87,7 @@ public:
 private:
     Type m_iconType;
     WebURL m_iconURL;
+    WebVector<WebSize> m_sizes;
 };
 
 }

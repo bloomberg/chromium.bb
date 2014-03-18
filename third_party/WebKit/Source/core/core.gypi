@@ -3315,6 +3315,7 @@
             'fetch/ResourceFetcherTest.cpp',
             'frame/ImageBitmapTest.cpp',
             'html/HTMLDimensionTest.cpp',
+            'html/HTMLLinkElementSizesAttributeTest.cpp',
             'html/LinkRelAttributeTest.cpp',
             'html/TimeRangesTest.cpp',
             'html/parser/HTMLParserThreadTest.cpp',
