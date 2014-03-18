@@ -616,7 +616,6 @@
                 'extension': 'S',
                 'inputs': [
                   '<(DEPTH)/native_client/tools/win_as.py',
-                  '$(InputPath)'
                 ],
                 'outputs': [
                   '$(IntDir)/$(InputName).obj',
