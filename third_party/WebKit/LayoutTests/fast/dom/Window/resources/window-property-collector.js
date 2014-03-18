@@ -35,7 +35,7 @@ function emitExpectedResult(path, expected)
     if (path[path.length - 1].toUpperCase() == path[path.length - 1])
         return;
 
-    // Various special cases...
+    // Various special cases for legacy reasons. Please do not add entries to this list.
     var propertyPath = path.join('.');
     switch (propertyPath) {
     case "location.href":
@@ -59,18 +59,6 @@ function emitExpectedResult(path, expected)
     case "navigator.productSub":
     case "navigator.vendor":
         expected = "window." + propertyPath;
-        break;
-    case "navigator.battery.charging":
-        expected = "true";
-        break;
-    case "navigator.battery.chargingTime":
-        expected = "Infinity";
-        break;
-    case "navigator.battery.dischargingTime":
-        expected = "Infinity";
-        break;
-    case "navigator.battery.level":
-        expected = "1";
         break;
     }
 

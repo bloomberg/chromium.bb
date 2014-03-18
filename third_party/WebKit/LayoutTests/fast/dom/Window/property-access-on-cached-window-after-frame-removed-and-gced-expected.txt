@@ -1,5 +1,5 @@
 CONSOLE WARNING: 'window.webkitStorageInfo' is deprecated. Please use 'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage' instead.
-Tests property access on a cached DOMWindow after the associated frame is no longer in a web page. Test should not crash and properties should be set to sane defaults.
+Tests property access on a cached DOMWindow after the associated frame is removed from a web page and garbage collected. Test should not crash and properties should be set to sane defaults.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
@@ -8,20 +8,21 @@ PASS childWindow.devicePixelRatio is 0
 PASS childWindow.history.length is 0
 PASS childWindow.innerHeight is 0
 PASS childWindow.innerWidth is 0
+FAIL childWindow.jsTestIsAsync should be false (of type boolean). Was undefined (of type undefined).
 PASS childWindow.length is 0
-PASS childWindow.location.href is 'about:blank'
-PASS childWindow.location.origin is 'null'
-PASS childWindow.location.pathname is 'blank'
-PASS childWindow.location.protocol is 'about:'
+FAIL childWindow.location.href should be about:blank (of type string). Was undefined (of type undefined).
+FAIL childWindow.location.origin should be null (of type string). Was undefined (of type undefined).
+FAIL childWindow.location.pathname should be blank (of type string). Was undefined (of type undefined).
+FAIL childWindow.location.protocol should be about: (of type string). Was undefined (of type undefined).
 PASS childWindow.locationbar.visible is false
 PASS childWindow.menubar.visible is false
 PASS childWindow.navigator.appCodeName is window.navigator.appCodeName
 PASS childWindow.navigator.appName is window.navigator.appName
 PASS childWindow.navigator.appVersion is ''
-FAIL childWindow.navigator.battery.charging should be false. Was true.
-FAIL childWindow.navigator.battery.chargingTime should be 0. Was Infinity.
-FAIL childWindow.navigator.battery.dischargingTime should be 0. Was Infinity.
-FAIL childWindow.navigator.battery.level should be 0. Was 1.
+FAIL childWindow.navigator.battery.charging should be false. Threw exception TypeError: Cannot read property 'charging' of null
+FAIL childWindow.navigator.battery.chargingTime should be 0. Threw exception TypeError: Cannot read property 'chargingTime' of null
+FAIL childWindow.navigator.battery.dischargingTime should be 0. Threw exception TypeError: Cannot read property 'dischargingTime' of null
+FAIL childWindow.navigator.battery.level should be 0. Threw exception TypeError: Cannot read property 'level' of null
 PASS childWindow.navigator.cookieEnabled is false
 PASS childWindow.navigator.language is window.navigator.language
 PASS childWindow.navigator.onLine is window.navigator.onLine
