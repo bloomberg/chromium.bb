@@ -34,7 +34,7 @@
 
 namespace WebCore {
 
-const char PlatformInstrumentation::CategoryName[] = "webkit";
+const char PlatformInstrumentation::CategoryName[] = "devtools";
 
 const char PlatformInstrumentation::ImageDecodeEvent[] = "Decode Image";
 const char PlatformInstrumentation::ImageResizeEvent[] = "Resize Image";
