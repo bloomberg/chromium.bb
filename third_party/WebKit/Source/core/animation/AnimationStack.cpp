@@ -30,6 +30,7 @@
 
 #include "config.h"
 #include "core/animation/AnimationStack.h"
+#include "core/animation/Interpolation.h"
 
 #include "core/animation/css/CSSAnimations.h"
 
@@ -37,12 +38,13 @@ namespace WebCore {
 
 namespace {
 
-void copyToCompositableValueMap(const AnimationEffect::CompositableValueList* source, AnimationEffect::CompositableValueMap& target)
+void copyToActiveInterpolationMap(const Vector<RefPtr<WebCore::Interpolation> >& source, HashMap<CSSPropertyID, RefPtr<WebCore::Interpolation> >& target)
 {
-    if (!source)
-        return;
-    for (AnimationEffect::CompositableValueList::const_iterator iter = source->begin(); iter != source->end(); ++iter)
-        target.set(iter->first, iter->second);
+    for (Vector<RefPtr<WebCore::Interpolation> >::const_iterator iter = source.begin(); iter != source.end(); ++iter) {
+        RefPtr<WebCore::Interpolation> interpolation = *iter;
+        WebCore::StyleInterpolation *styleInterpolation = toStyleInterpolation(interpolation.get());
+        target.set(styleInterpolation->id(), styleInterpolation);
+    }
 }
 
 } // namespace
@@ -65,9 +67,9 @@ bool AnimationStack::hasActiveAnimationsOnCompositor(CSSPropertyID property) con
     return false;
 }
 
-AnimationEffect::CompositableValueMap AnimationStack::compositableValues(const AnimationStack* animationStack, const Vector<InertAnimation*>* newAnimations, const HashSet<const AnimationPlayer*>* cancelledAnimationPlayers, Animation::Priority priority)
+HashMap<CSSPropertyID, RefPtr<Interpolation> > AnimationStack::activeInterpolations(const AnimationStack* animationStack, const Vector<InertAnimation*>* newAnimations, const HashSet<const AnimationPlayer*>* cancelledAnimationPlayers, Animation::Priority priority)
 {
-    AnimationEffect::CompositableValueMap result;
+    HashMap<CSSPropertyID, RefPtr<Interpolation> > result;
 
     if (animationStack) {
         const Vector<Animation*>& animations = animationStack->m_activeAnimations;
@@ -77,13 +79,17 @@ AnimationEffect::CompositableValueMap AnimationStack::compositableValues(const A
                 continue;
             if (cancelledAnimationPlayers && cancelledAnimationPlayers->contains(animation->player()))
                 continue;
-            copyToCompositableValueMap(animation->compositableValues(), result);
+            copyToActiveInterpolationMap(animation->activeInterpolations(), result);
         }
     }
 
     if (newAnimations) {
-        for (size_t i = 0; i < newAnimations->size(); ++i)
-            copyToCompositableValueMap(newAnimations->at(i)->sample().get(), result);
+        for (size_t i = 0; i < newAnimations->size(); ++i) {
+            OwnPtr<Vector<RefPtr<Interpolation> > > sample = newAnimations->at(i)->sample();
+            if (sample) {
+                copyToActiveInterpolationMap(*sample, result);
+            }
+        }
     }
 
     return result;

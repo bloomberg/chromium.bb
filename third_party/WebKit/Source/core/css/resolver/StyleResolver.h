@@ -275,7 +275,7 @@ private:
     template <StyleApplicationPass pass>
     void applyProperties(StyleResolverState&, const StylePropertySet* properties, StyleRule*, bool isImportant, bool inheritedOnly, PropertyWhitelistType = PropertyWhitelistNone);
     template <StyleApplicationPass pass>
-    void applyAnimatedProperties(StyleResolverState&, const AnimationEffect::CompositableValueMap&);
+    void applyAnimatedProperties(StyleResolverState&, const HashMap<CSSPropertyID, RefPtr<Interpolation> >&);
     void matchPageRules(MatchResult&, RuleSet*, bool isLeftPage, bool isFirstPage, const String& pageName);
     void matchPageRulesForList(WillBeHeapVector<RawPtrWillBeMember<StyleRulePage> >& matchedRules, const WillBeHeapVector<RawPtrWillBeMember<StyleRulePage> >&, bool isLeftPage, bool isFirstPage, const String& pageName);
     void collectViewportRules();

@@ -10,7 +10,6 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"
 
-
 namespace WebCore {
 
 class InterpolationEffect : public RefCounted<InterpolationEffect> {

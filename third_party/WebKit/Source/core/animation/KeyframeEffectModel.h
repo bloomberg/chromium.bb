@@ -33,6 +33,7 @@
 
 #include "core/animation/AnimatableValue.h"
 #include "core/animation/AnimationEffect.h"
+#include "core/animation/InterpolationEffect.h"
 #include "heap/Handle.h"
 #include "platform/animation/TimingFunction.h"
 #include "wtf/HashMap.h"
@@ -101,7 +102,7 @@ public:
     }
 
     // AnimationEffect implementation.
-    virtual PassOwnPtr<CompositableValueList> sample(int iteration, double fraction) const OVERRIDE;
+    virtual PassOwnPtr<Vector<RefPtr<Interpolation> > > sample(int iteration, double fraction) const OVERRIDE;
 
     // FIXME: Implement setFrames()
     const KeyframeVector& getFrames() const { return m_keyframes; }
@@ -114,7 +115,7 @@ public:
     public:
         PropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, const AnimatableValue*, CompositeOperation);
         double offset() const { return m_offset; }
-        const TimingFunction* easing() const { return m_easing.get(); }
+        TimingFunction* easing() const { return m_easing.get(); }
         const CompositableValue* value() const { return m_value.get(); }
         PassOwnPtr<PropertySpecificKeyframe> cloneWithOffset(double offset) const;
     private:
@@ -128,7 +129,6 @@ public:
     class PropertySpecificKeyframeGroup {
     public:
         void appendKeyframe(PassOwnPtr<PropertySpecificKeyframe>);
-        PassRefPtr<CompositableValue> sample(int iteration, double offset) const;
         const PropertySpecificKeyframeVector& keyframes() const { return m_keyframes; }
     private:
         PropertySpecificKeyframeVector m_keyframes;
@@ -153,6 +153,7 @@ private:
 
     // Lazily computes the groups of property-specific keyframes.
     void ensureKeyframeGroups() const;
+    void ensureInterpolationEffect() const;
 
     KeyframeVector m_keyframes;
     // The spec describes filtering the normalized keyframes at sampling time
@@ -160,6 +161,8 @@ private:
     // property-specific lists.
     typedef HashMap<CSSPropertyID, OwnPtr<PropertySpecificKeyframeGroup> > KeyframeGroupMap;
     mutable OwnPtr<KeyframeGroupMap> m_keyframeGroups;
+
+    mutable RefPtr<InterpolationEffect> m_interpolationEffect;
 
     friend class KeyframeEffectModelTest;
 };

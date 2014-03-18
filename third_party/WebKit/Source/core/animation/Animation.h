@@ -71,10 +71,10 @@ public:
 
     virtual bool isAnimation() const OVERRIDE { return true; }
 
-    const AnimationEffect::CompositableValueList* compositableValues() const
+    const Vector<RefPtr<Interpolation> >& activeInterpolations() const
     {
-        ASSERT(m_compositableValues);
-        return m_compositableValues.get();
+        ASSERT(m_activeInterpolations);
+        return *m_activeInterpolations;
     }
 
     bool affects(CSSPropertyID) const;
@@ -107,7 +107,7 @@ private:
     RefPtrWillBePersistent<AnimationEffect> m_effect;
 
     bool m_activeInAnimationStack;
-    OwnPtr<AnimationEffect::CompositableValueList> m_compositableValues;
+    OwnPtr<Vector<RefPtr<Interpolation> > > m_activeInterpolations;
 
     Priority m_priority;
 

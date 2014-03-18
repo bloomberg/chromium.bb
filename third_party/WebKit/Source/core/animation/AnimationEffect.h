@@ -40,6 +40,7 @@
 namespace WebCore {
 
 class AnimatableValue;
+class Interpolation;
 
 class AnimationEffect : public RefCountedWillBeGarbageCollectedFinalized<AnimationEffect> {
 public:
@@ -55,12 +56,14 @@ public:
         virtual ~CompositableValue() { }
         virtual bool dependsOnUnderlyingValue() const = 0;
         virtual PassRefPtr<AnimatableValue> compositeOnto(const AnimatableValue*) const = 0;
+
+        virtual bool isAnimatableValue() const { return false; }
     };
 
     virtual ~AnimationEffect() { }
     typedef HashMap<CSSPropertyID, RefPtr<CompositableValue> > CompositableValueMap;
     typedef Vector<std::pair<CSSPropertyID, RefPtr<CompositableValue> > > CompositableValueList;
-    virtual PassOwnPtr<CompositableValueList> sample(int iteration, double fraction) const = 0;
+    virtual PassOwnPtr<Vector<RefPtr<Interpolation> > > sample(int iteration, double fraction) const = 0;
 
     virtual bool affects(CSSPropertyID) { return false; };
     virtual bool isKeyframeEffectModel() const { return false; }

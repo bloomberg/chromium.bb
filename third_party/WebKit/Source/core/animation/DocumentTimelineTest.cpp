@@ -159,7 +159,7 @@ TEST_F(AnimationDocumentTimelineTest, EmptyForwardsKeyframeAnimation)
     updateClockAndService(0);
     EXPECT_FLOAT_EQ(0, timeline->currentTime());
     EXPECT_TRUE(anim->isInEffect());
-    EXPECT_TRUE(anim->compositableValues()->isEmpty());
+    EXPECT_TRUE(anim->activeInterpolations().isEmpty());
 
     platformTiming->expectNoMoreActions();
     updateClockAndService(100);

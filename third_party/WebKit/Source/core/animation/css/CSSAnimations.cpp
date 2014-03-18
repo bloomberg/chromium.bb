@@ -324,9 +324,9 @@ PassOwnPtr<CSSAnimationUpdate> CSSAnimations::calculateUpdate(Element* element, 
 {
     OwnPtr<CSSAnimationUpdate> update = adoptPtr(new CSSAnimationUpdate());
     calculateAnimationUpdate(update.get(), element, parentElement, style, parentStyle, resolver);
-    calculateAnimationCompositableValues(update.get(), element);
+    calculateAnimationActiveInterpolations(update.get(), element);
     calculateTransitionUpdate(update.get(), element, style);
-    calculateTransitionCompositableValues(update.get(), element);
+    calculateTransitionActiveInterpolations(update.get(), element);
     return update->isEmpty() ? nullptr : update.release();
 }
 
@@ -408,13 +408,13 @@ void CSSAnimations::calculateAnimationUpdate(CSSAnimationUpdate* update, Element
 void CSSAnimations::maybeApplyPendingUpdate(Element* element)
 {
     if (!m_pendingUpdate) {
-        m_previousCompositableValuesForAnimations.clear();
+        m_previousActiveInterpolationsForAnimations.clear();
         return;
     }
 
     OwnPtr<CSSAnimationUpdate> update = m_pendingUpdate.release();
 
-    m_previousCompositableValuesForAnimations.swap(update->compositableValuesForAnimations());
+    m_previousActiveInterpolationsForAnimations.swap(update->activeInterpolationsForAnimations());
 
     // FIXME: cancelling, pausing, unpausing animations all query compositingState, which is not necessarily up to date here
     // since we call this from recalc style.
@@ -499,10 +499,9 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
             KeyframeEffectModel::KeyframeVector newFrames;
             newFrames.append(frames[0]->clone());
             newFrames[0]->clearPropertyValue(id);
-            ASSERT(oldAnimation->compositableValues()->size() == 1);
-            const AnimationEffect::CompositableValue* compositableValue = oldAnimation->compositableValues()->at(0).second.get();
-            ASSERT(!compositableValue->dependsOnUnderlyingValue());
-            newFrames[0]->setPropertyValue(id, compositableValue->compositeOnto(0).get());
+            ASSERT(oldAnimation->activeInterpolations().size() == 1);
+            const AnimatableValue* value = toLegacyStyleInterpolation(oldAnimation->activeInterpolations()[0].get())->currentValue();
+            newFrames[0]->setPropertyValue(id, value);
             newFrames.append(frames[1]->clone());
             effect = KeyframeEffectModel::create(newFrames);
         }
@@ -618,8 +617,8 @@ void CSSAnimations::calculateTransitionUpdate(CSSAnimationUpdate* update, const 
 
                 // FIXME: We should transition if an !important property changes even when an animation is running,
                 // but this is a bit hard to do with the current applyMatchedProperties system.
-                if (!update->compositableValuesForAnimations().contains(id)
-                    && (!activeAnimations || !activeAnimations->cssAnimations().m_previousCompositableValuesForAnimations.contains(id))) {
+                if (!update->activeInterpolationsForAnimations().contains(id)
+                    && (!activeAnimations || !activeAnimations->cssAnimations().m_previousActiveInterpolationsForAnimations.contains(id))) {
                     calculateTransitionUpdateForProperty(id, anim, oldStyle, style, activeTransitions, update, element);
                 }
             }
@@ -654,14 +653,14 @@ void CSSAnimations::cancel()
     m_pendingUpdate = nullptr;
 }
 
-void CSSAnimations::calculateAnimationCompositableValues(CSSAnimationUpdate* update, const Element* element)
+void CSSAnimations::calculateAnimationActiveInterpolations(CSSAnimationUpdate* update, const Element* element)
 {
     ActiveAnimations* activeAnimations = element ? element->activeAnimations() : 0;
     AnimationStack* animationStack = activeAnimations ? &activeAnimations->defaultStack() : 0;
 
     if (update->newAnimations().isEmpty() && update->cancelledAnimationAnimationPlayers().isEmpty()) {
-        AnimationEffect::CompositableValueMap compositableValuesForAnimations(AnimationStack::compositableValues(animationStack, 0, 0, Animation::DefaultPriority));
-        update->adoptCompositableValuesForAnimations(compositableValuesForAnimations);
+        HashMap<CSSPropertyID, RefPtr<Interpolation> > activeInterpolationsForAnimations(AnimationStack::activeInterpolations(animationStack, 0, 0, Animation::DefaultPriority));
+        update->adoptActiveInterpolationsForAnimations(activeInterpolationsForAnimations);
         return;
     }
 
@@ -671,18 +670,18 @@ void CSSAnimations::calculateAnimationCompositableValues(CSSAnimationUpdate* upd
         for (HashSet<RefPtr<InertAnimation> >::const_iterator animationsIter = animations.begin(); animationsIter != animations.end(); ++animationsIter)
             newAnimations.append(animationsIter->get());
     }
-    AnimationEffect::CompositableValueMap compositableValuesForAnimations(AnimationStack::compositableValues(animationStack, &newAnimations, &update->cancelledAnimationAnimationPlayers(), Animation::DefaultPriority));
-    update->adoptCompositableValuesForAnimations(compositableValuesForAnimations);
+    HashMap<CSSPropertyID, RefPtr<Interpolation> > activeInterpolationsForAnimations(AnimationStack::activeInterpolations(animationStack, &newAnimations, &update->cancelledAnimationAnimationPlayers(), Animation::DefaultPriority));
+    update->adoptActiveInterpolationsForAnimations(activeInterpolationsForAnimations);
 }
 
-void CSSAnimations::calculateTransitionCompositableValues(CSSAnimationUpdate* update, const Element* element)
+void CSSAnimations::calculateTransitionActiveInterpolations(CSSAnimationUpdate* update, const Element* element)
 {
     ActiveAnimations* activeAnimations = element ? element->activeAnimations() : 0;
     AnimationStack* animationStack = activeAnimations ? &activeAnimations->defaultStack() : 0;
 
-    AnimationEffect::CompositableValueMap compositableValuesForTransitions;
+    HashMap<CSSPropertyID, RefPtr<Interpolation> > activeInterpolationsForTransitions;
     if (update->newTransitions().isEmpty() && update->cancelledTransitions().isEmpty()) {
-        compositableValuesForTransitions = AnimationStack::compositableValues(animationStack, 0, 0, Animation::TransitionPriority);
+        activeInterpolationsForTransitions = AnimationStack::activeInterpolations(animationStack, 0, 0, Animation::TransitionPriority);
     } else {
         Vector<InertAnimation*> newTransitions;
         for (CSSAnimationUpdate::NewTransitionMap::const_iterator iter = update->newTransitions().begin(); iter != update->newTransitions().end(); ++iter)
@@ -698,15 +697,15 @@ void CSSAnimations::calculateTransitionCompositableValues(CSSAnimationUpdate* up
             }
         }
 
-        compositableValuesForTransitions = AnimationStack::compositableValues(animationStack, &newTransitions, &cancelledAnimationPlayers, Animation::TransitionPriority);
+        activeInterpolationsForTransitions = AnimationStack::activeInterpolations(animationStack, &newTransitions, &cancelledAnimationPlayers, Animation::TransitionPriority);
     }
 
     // Properties being animated by animations don't get values from transitions applied.
-    if (!update->compositableValuesForAnimations().isEmpty() && !compositableValuesForTransitions.isEmpty()) {
-        for (AnimationEffect::CompositableValueMap::const_iterator iter = update->compositableValuesForAnimations().begin(); iter != update->compositableValuesForAnimations().end(); ++iter)
-            compositableValuesForTransitions.remove(iter->key);
+    if (!update->activeInterpolationsForAnimations().isEmpty() && !activeInterpolationsForTransitions.isEmpty()) {
+        for (HashMap<CSSPropertyID, RefPtr<Interpolation> >::const_iterator iter = update->activeInterpolationsForAnimations().begin(); iter != update->activeInterpolationsForAnimations().end(); ++iter)
+            activeInterpolationsForTransitions.remove(iter->key);
     }
-    update->adoptCompositableValuesForTransitions(compositableValuesForTransitions);
+    update->adoptActiveInterpolationsForTransitions(activeInterpolationsForTransitions);
 }
 
 void CSSAnimations::AnimationEventDelegate::maybeDispatch(Document::ListenerType listenerType, const AtomicString& eventName, double elapsedTime)

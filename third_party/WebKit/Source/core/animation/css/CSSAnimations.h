@@ -34,6 +34,7 @@
 #include "core/animation/Animation.h"
 #include "core/animation/AnimationPlayer.h"
 #include "core/animation/InertAnimation.h"
+#include "core/animation/Interpolation.h"
 #include "core/animation/css/CSSAnimationData.h"
 #include "core/css/StylePropertySet.h"
 #include "core/dom/Document.h"
@@ -104,11 +105,11 @@ public:
     const NewTransitionMap& newTransitions() const { return m_newTransitions; }
     const HashSet<CSSPropertyID>& cancelledTransitions() const { return m_cancelledTransitions; }
 
-    void adoptCompositableValuesForAnimations(AnimationEffect::CompositableValueMap& newMap) { newMap.swap(m_compositableValuesForAnimations); }
-    void adoptCompositableValuesForTransitions(AnimationEffect::CompositableValueMap& newMap) { newMap.swap(m_compositableValuesForTransitions); }
-    const AnimationEffect::CompositableValueMap& compositableValuesForAnimations() const { return m_compositableValuesForAnimations; }
-    const AnimationEffect::CompositableValueMap& compositableValuesForTransitions() const { return m_compositableValuesForTransitions; }
-    AnimationEffect::CompositableValueMap& compositableValuesForAnimations() { return m_compositableValuesForAnimations; }
+    void adoptActiveInterpolationsForAnimations(HashMap<CSSPropertyID, RefPtr<Interpolation> >& newMap) { newMap.swap(m_activeInterpolationsForAnimations); }
+    void adoptActiveInterpolationsForTransitions(HashMap<CSSPropertyID, RefPtr<Interpolation> >& newMap) { newMap.swap(m_activeInterpolationsForTransitions); }
+    const HashMap<CSSPropertyID, RefPtr<Interpolation> >& activeInterpolationsForAnimations() const { return m_activeInterpolationsForAnimations; }
+    const HashMap<CSSPropertyID, RefPtr<Interpolation> >& activeInterpolationsForTransitions() const { return m_activeInterpolationsForTransitions; }
+    HashMap<CSSPropertyID, RefPtr<Interpolation> >& activeInterpolationsForAnimations() { return m_activeInterpolationsForAnimations; }
 
     bool isEmpty() const
     {
@@ -118,8 +119,8 @@ public:
             && m_animationsWithPauseToggled.isEmpty()
             && m_newTransitions.isEmpty()
             && m_cancelledTransitions.isEmpty()
-            && m_compositableValuesForAnimations.isEmpty()
-            && m_compositableValuesForTransitions.isEmpty();
+            && m_activeInterpolationsForAnimations.isEmpty()
+            && m_activeInterpolationsForTransitions.isEmpty();
     }
 private:
     // Order is significant since it defines the order in which new animations
@@ -134,8 +135,8 @@ private:
     NewTransitionMap m_newTransitions;
     HashSet<CSSPropertyID> m_cancelledTransitions;
 
-    AnimationEffect::CompositableValueMap m_compositableValuesForAnimations;
-    AnimationEffect::CompositableValueMap m_compositableValuesForTransitions;
+    HashMap<CSSPropertyID, RefPtr<Interpolation> > m_activeInterpolationsForAnimations;
+    HashMap<CSSPropertyID, RefPtr<Interpolation> > m_activeInterpolationsForTransitions;
 };
 
 class CSSAnimations FINAL {
@@ -172,14 +173,14 @@ private:
     TransitionMap m_transitions;
     OwnPtr<CSSAnimationUpdate> m_pendingUpdate;
 
-    AnimationEffect::CompositableValueMap m_previousCompositableValuesForAnimations;
+    HashMap<CSSPropertyID, RefPtr<Interpolation> > m_previousActiveInterpolationsForAnimations;
 
     static void calculateAnimationUpdate(CSSAnimationUpdate*, Element*, const Element& parentElement, const RenderStyle&, RenderStyle* parentStyle, StyleResolver*);
     static void calculateTransitionUpdate(CSSAnimationUpdate*, const Element*, const RenderStyle&);
     static void calculateTransitionUpdateForProperty(CSSPropertyID, const CSSAnimationData*, const RenderStyle& oldStyle, const RenderStyle&, const TransitionMap* activeTransitions, CSSAnimationUpdate*, const Element*);
 
-    static void calculateAnimationCompositableValues(CSSAnimationUpdate*, const Element*);
-    static void calculateTransitionCompositableValues(CSSAnimationUpdate*, const Element*);
+    static void calculateAnimationActiveInterpolations(CSSAnimationUpdate*, const Element*);
+    static void calculateTransitionActiveInterpolations(CSSAnimationUpdate*, const Element*);
 
     class AnimationEventDelegate FINAL : public TimedItem::EventDelegate {
     public:

@@ -87,8 +87,6 @@ private:
     bool m_dependsOnUnderlyingValue;
 };
 
-const double accuracyForKeyframeEasing = 0.0000001;
-
 } // namespace
 
 
@@ -170,15 +168,14 @@ PropertySet KeyframeEffectModel::properties() const
     return result;
 }
 
-PassOwnPtr<AnimationEffect::CompositableValueList> KeyframeEffectModel::sample(int iteration, double fraction) const
+PassOwnPtr<Vector<RefPtr<Interpolation> > > KeyframeEffectModel::sample(int iteration, double fraction) const
 {
     ASSERT(iteration >= 0);
     ASSERT(!isNull(fraction));
-    const_cast<KeyframeEffectModel*>(this)->ensureKeyframeGroups();
-    OwnPtr<CompositableValueList> map = adoptPtr(new CompositableValueList());
-    for (KeyframeGroupMap::const_iterator iter = m_keyframeGroups->begin(); iter != m_keyframeGroups->end(); ++iter)
-        map->append(std::make_pair(iter->key, iter->value->sample(iteration, fraction)));
-    return map.release();
+    ensureKeyframeGroups();
+    ensureInterpolationEffect();
+
+    return m_interpolationEffect->getActiveInterpolations(fraction);
 }
 
 KeyframeEffectModel::KeyframeVector KeyframeEffectModel::normalizedKeyframes(const KeyframeVector& keyframes)
@@ -276,6 +273,33 @@ void KeyframeEffectModel::ensureKeyframeGroups() const
     }
 }
 
+void KeyframeEffectModel::ensureInterpolationEffect() const
+{
+    if (m_interpolationEffect)
+        return;
+    m_interpolationEffect = InterpolationEffect::create();
+
+    for (KeyframeGroupMap::const_iterator iter = m_keyframeGroups->begin(); iter != m_keyframeGroups->end(); ++iter) {
+        const PropertySpecificKeyframeVector& keyframes = iter->value->keyframes();
+        ASSERT(keyframes[0]->value()->isAnimatableValue());
+        const AnimatableValue* start;
+        const AnimatableValue* end = toAnimatableValue(keyframes[0]->value());
+        for (size_t i = 0; i < keyframes.size() - 1; i++) {
+            ASSERT(keyframes[i + 1]->value()->isAnimatableValue());
+            start = end;
+            end = toAnimatableValue(keyframes[i + 1]->value());
+            double applyFrom = i ? keyframes[i]->offset() : (-std::numeric_limits<double>::infinity());
+            double applyTo = i == keyframes.size() - 2 ? std::numeric_limits<double>::infinity() : keyframes[i+1]->offset();
+            if (applyTo == 1)
+                applyTo = std::numeric_limits<double>::infinity();
+            m_interpolationEffect->addInterpolation(
+                LegacyStyleInterpolation::create(
+                    AnimatableValue::takeConstRef(start),
+                    AnimatableValue::takeConstRef(end), iter->key),
+                keyframes[i]->easing(), keyframes[i]->offset(), keyframes[i+1]->offset(), applyFrom, applyTo);
+        }
+    }
+}
 
 KeyframeEffectModel::PropertySpecificKeyframe::PropertySpecificKeyframe(double offset, PassRefPtr<TimingFunction> easing, const AnimatableValue* value, CompositeOperation composite)
     : m_offset(offset)
@@ -343,58 +367,6 @@ void KeyframeEffectModel::PropertySpecificKeyframeGroup::addSyntheticKeyframeIfR
         appendKeyframe(m_keyframes.first()->cloneWithOffset(1.0));
     else
         m_keyframes.insert(0, adoptPtr(new PropertySpecificKeyframe(0.0, nullptr, AnimatableValue::neutralValue(), CompositeAdd)));
-}
-
-PassRefPtr<AnimationEffect::CompositableValue> KeyframeEffectModel::PropertySpecificKeyframeGroup::sample(int iteration, double offset) const
-{
-    // FIXME: Implement accumulation.
-    ASSERT_UNUSED(iteration, iteration >= 0);
-    ASSERT(!isNull(offset));
-
-    // Bail if offset is null, as this can lead to buffer overflow below.
-    if (isNull(offset))
-        return const_cast<CompositableValue*>(m_keyframes.first()->value());
-
-    double minimumOffset = m_keyframes.first()->offset();
-    double maximumOffset = m_keyframes.last()->offset();
-    ASSERT(minimumOffset != maximumOffset);
-
-    PropertySpecificKeyframeVector::const_iterator before;
-    PropertySpecificKeyframeVector::const_iterator after;
-
-    // Note that this algorithm is simpler than that in the spec because we
-    // have removed keyframes with equal offsets in
-    // removeRedundantKeyframes().
-    if (offset < minimumOffset) {
-        before = m_keyframes.begin();
-        after = before + 1;
-        ASSERT((*before)->offset() > offset);
-        ASSERT((*after)->offset() > offset);
-    } else if (offset >= maximumOffset) {
-        after = m_keyframes.end() - 1;
-        before = after - 1;
-        ASSERT((*before)->offset() < offset);
-        ASSERT((*after)->offset() <= offset);
-    } else {
-        // FIXME: This is inefficient for large numbers of keyframes. Consider
-        // using binary search.
-        after = m_keyframes.begin();
-        while ((*after)->offset() <= offset)
-            ++after;
-        before = after - 1;
-        ASSERT((*before)->offset() <= offset);
-        ASSERT((*after)->offset() > offset);
-    }
-
-    if ((*before)->offset() == offset)
-        return const_cast<CompositableValue*>((*before)->value());
-    if ((*after)->offset() == offset)
-        return const_cast<CompositableValue*>((*after)->value());
-
-    double fraction = (offset - (*before)->offset()) / ((*after)->offset() - (*before)->offset());
-    if (const TimingFunction* timingFunction = (*before)->easing())
-        fraction = timingFunction->evaluate(fraction, accuracyForKeyframeEasing);
-    return BlendedCompositableValue::create((*before)->value(), (*after)->value(), fraction);
 }
 
 void KeyframeEffectModel::trace(Visitor* visitor)

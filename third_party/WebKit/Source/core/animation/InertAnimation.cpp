@@ -30,6 +30,7 @@
 
 #include "config.h"
 #include "core/animation/InertAnimation.h"
+#include "core/animation/Interpolation.h"
 
 namespace WebCore {
 
@@ -45,7 +46,7 @@ InertAnimation::InertAnimation(PassRefPtrWillBeRawPtr<AnimationEffect> effect, c
 {
 }
 
-PassOwnPtr<AnimationEffect::CompositableValueList> InertAnimation::sample()
+PassOwnPtr<Vector<RefPtr<Interpolation> > > InertAnimation::sample()
 {
     updateInheritedTime(0);
     if (!isInEffect())

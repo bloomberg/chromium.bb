@@ -37,6 +37,7 @@
 #include "core/animation/AnimationPlayer.h"
 #include "core/animation/CompositorAnimations.h"
 #include "core/animation/DocumentTimeline.h"
+#include "core/animation/Interpolation.h"
 #include "core/animation/KeyframeEffectModel.h"
 #include "core/dom/Element.h"
 #include "core/rendering/RenderLayer.h"
@@ -121,7 +122,7 @@ void Animation::applyEffects(bool previouslyInEffect)
     double iteration = currentIteration();
     ASSERT(iteration >= 0);
     // FIXME: Handle iteration values which overflow int.
-    m_compositableValues = m_effect->sample(static_cast<int>(iteration), timeFraction());
+    m_activeInterpolations = m_effect->sample(static_cast<int>(iteration), timeFraction());
     if (player())
         m_target->setNeedsAnimationStyleRecalc();
 }
@@ -141,7 +142,7 @@ void Animation::clearEffects()
     }
 
     m_activeInAnimationStack = false;
-    m_compositableValues.clear();
+    m_activeInterpolations.clear();
     m_target->setNeedsAnimationStyleRecalc();
     invalidate();
 }

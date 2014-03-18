@@ -1077,12 +1077,12 @@ void StyleResolver::applyAnimatedProperties(StyleResolverState& state, Element* 
     if (!state.animationUpdate())
         return;
 
-    const AnimationEffect::CompositableValueMap& compositableValuesForAnimations = state.animationUpdate()->compositableValuesForAnimations();
-    const AnimationEffect::CompositableValueMap& compositableValuesForTransitions = state.animationUpdate()->compositableValuesForTransitions();
-    applyAnimatedProperties<HighPriorityProperties>(state, compositableValuesForAnimations);
-    applyAnimatedProperties<HighPriorityProperties>(state, compositableValuesForTransitions);
-    applyAnimatedProperties<LowPriorityProperties>(state, compositableValuesForAnimations);
-    applyAnimatedProperties<LowPriorityProperties>(state, compositableValuesForTransitions);
+    const HashMap<CSSPropertyID, RefPtr<Interpolation> >& activeInterpolationsForAnimations = state.animationUpdate()->activeInterpolationsForAnimations();
+    const HashMap<CSSPropertyID, RefPtr<Interpolation> >& activeInterpolationsForTransitions = state.animationUpdate()->activeInterpolationsForTransitions();
+    applyAnimatedProperties<HighPriorityProperties>(state, activeInterpolationsForAnimations);
+    applyAnimatedProperties<HighPriorityProperties>(state, activeInterpolationsForTransitions);
+    applyAnimatedProperties<LowPriorityProperties>(state, activeInterpolationsForAnimations);
+    applyAnimatedProperties<LowPriorityProperties>(state, activeInterpolationsForTransitions);
 
     // If the animations/transitions change opacity or transform, we need to update
     // the style to impose the stacking rules. Note that this is also
@@ -1096,17 +1096,16 @@ void StyleResolver::applyAnimatedProperties(StyleResolverState& state, Element* 
 }
 
 template <StyleResolver::StyleApplicationPass pass>
-void StyleResolver::applyAnimatedProperties(StyleResolverState& state, const AnimationEffect::CompositableValueMap& compositableValues)
+void StyleResolver::applyAnimatedProperties(StyleResolverState& state, const HashMap<CSSPropertyID, RefPtr<Interpolation> >& activeInterpolations)
 {
     ASSERT(pass != AnimationProperties);
 
-    for (AnimationEffect::CompositableValueMap::const_iterator iter = compositableValues.begin(); iter != compositableValues.end(); ++iter) {
+    for (HashMap<CSSPropertyID, RefPtr<Interpolation> >::const_iterator iter = activeInterpolations.begin(); iter != activeInterpolations.end(); ++iter) {
         CSSPropertyID property = iter->key;
         if (!isPropertyForPass<pass>(property))
             continue;
-        ASSERT_WITH_MESSAGE(!iter->value->dependsOnUnderlyingValue(), "Web Animations not yet implemented: An interface for compositing onto the underlying value.");
-        RefPtr<AnimatableValue> animatableValue = iter->value->compositeOnto(0);
-        AnimatedStyleBuilder::applyProperty(property, state, animatableValue.get());
+        const StyleInterpolation *interpolation = toStyleInterpolation(iter->value.get());
+        interpolation->apply(state);
     }
 }
 
