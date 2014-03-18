@@ -4,10 +4,8 @@
 
 #include "base/command_line.h"
 #include "build/build_config.h"
-#include "chrome/browser/about_flags.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/enhanced_bookmarks_features.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -123,6 +121,19 @@ using browser_sync::TypedUrlModelAssociator;
 using browser_sync::UIDataTypeController;
 using content::BrowserThread;
 
+namespace {
+
+syncer::ModelTypeSet GetDisabledTypesFromCommandLine(
+    CommandLine* command_line) {
+  syncer::ModelTypeSet disabled_types;
+  std::string disabled_types_str =
+      command_line->GetSwitchValueASCII(switches::kDisableSyncTypes);
+  disabled_types = syncer::ModelTypeSetFromString(disabled_types_str);
+  return disabled_types;
+}
+
+}  // namespace
+
 ProfileSyncComponentsFactoryImpl::ProfileSyncComponentsFactoryImpl(
     Profile* profile, CommandLine* command_line)
     : profile_(profile),
@@ -138,31 +149,35 @@ ProfileSyncComponentsFactoryImpl::~ProfileSyncComponentsFactoryImpl() {
 
 void ProfileSyncComponentsFactoryImpl::RegisterDataTypes(
     ProfileSyncService* pss) {
-  RegisterCommonDataTypes(pss);
+  syncer::ModelTypeSet disabled_types =
+      GetDisabledTypesFromCommandLine(command_line_);
+  // TODO(zea): pass an enabled_types set for types that are off by default.
+  RegisterCommonDataTypes(disabled_types, pss);
 #if !defined(OS_ANDROID)
-  RegisterDesktopDataTypes(pss);
+  RegisterDesktopDataTypes(disabled_types, pss);
 #endif
 }
 
 void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
+    syncer::ModelTypeSet disabled_types,
     ProfileSyncService* pss) {
   // Autofill sync is enabled by default.  Register unless explicitly
   // disabled.
-  if (!command_line_->HasSwitch(switches::kDisableSyncAutofill)) {
+  if (!disabled_types.Has(syncer::AUTOFILL)) {
     pss->RegisterDataTypeController(
         new AutofillDataTypeController(this, profile_, pss));
   }
 
   // Autofill profile sync is enabled by default.  Register unless explicitly
   // disabled.
-  if (!command_line_->HasSwitch(switches::kDisableSyncAutofillProfile)) {
+  if (!disabled_types.Has(syncer::AUTOFILL_PROFILE)) {
     pss->RegisterDataTypeController(
         new AutofillProfileDataTypeController(this, profile_, pss));
   }
 
   // Bookmark sync is enabled by default.  Register unless explicitly
   // disabled.
-  if (!command_line_->HasSwitch(switches::kDisableSyncBookmarks)) {
+  if (!disabled_types.Has(syncer::BOOKMARKS)) {
     pss->RegisterDataTypeController(
         new BookmarkDataTypeController(this, profile_, pss));
   }
@@ -170,14 +185,14 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
   // TypedUrl sync is enabled by default.  Register unless explicitly disabled,
   // or if saving history is disabled.
   if (!profile_->GetPrefs()->GetBoolean(prefs::kSavingBrowserHistoryDisabled) &&
-      !command_line_->HasSwitch(switches::kDisableSyncTypedUrls)) {
+      !disabled_types.Has(syncer::TYPED_URLS)) {
     pss->RegisterDataTypeController(
         new TypedUrlDataTypeController(this, profile_, pss));
   }
 
   // Delete directive sync is enabled by default.  Register unless full history
   // sync is disabled.
-  if (!command_line_->HasSwitch(switches::kHistoryDisableFullHistorySync)) {
+  if (!disabled_types.Has(syncer::HISTORY_DELETE_DIRECTIVES)) {
     pss->RegisterDataTypeController(
         new UIDataTypeController(
             BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
@@ -189,21 +204,17 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
   }
 
   // Session sync is enabled by default.  Register unless explicitly disabled.
-  if (!command_line_->HasSwitch(switches::kDisableSyncTabs)) {
+  if (!disabled_types.Has(syncer::PROXY_TABS)) {
       pss->RegisterDataTypeController(new ProxyDataTypeController(
          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
          syncer::PROXY_TABS));
-    if (command_line_->HasSwitch(switches::kDisableSyncSessionsV2)) {
-      pss->RegisterDataTypeController(
-          new SessionDataTypeController(this, profile_, pss));
-    } else {
-      pss->RegisterDataTypeController(
-          new SessionDataTypeController2(this, profile_, pss));
-    }
+    pss->RegisterDataTypeController(
+        new SessionDataTypeController2(this, profile_, pss));
   }
 
   // Favicon sync is enabled by default. Register unless explicitly disabled.
-  if (!command_line_->HasSwitch(switches::kDisableSyncFavicons)) {
+  if (!disabled_types.Has(syncer::FAVICON_IMAGES) &&
+      !disabled_types.Has(syncer::FAVICON_TRACKING)) {
     pss->RegisterDataTypeController(
         new UIDataTypeController(
             BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
@@ -224,7 +235,7 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
 
   // Password sync is enabled by default.  Register unless explicitly
   // disabled.
-  if (!command_line_->HasSwitch(switches::kDisableSyncPasswords)) {
+  if (!disabled_types.Has(syncer::PASSWORDS)) {
     pss->RegisterDataTypeController(
         new PasswordDataTypeController(this, profile_, pss));
   }
@@ -273,17 +284,18 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
 }
 
 void ProfileSyncComponentsFactoryImpl::RegisterDesktopDataTypes(
+    syncer::ModelTypeSet disabled_types,
     ProfileSyncService* pss) {
   // App sync is enabled by default.  Register unless explicitly
   // disabled.
-  if (!command_line_->HasSwitch(switches::kDisableSyncApps)) {
+  if (!disabled_types.Has(syncer::APPS)) {
     pss->RegisterDataTypeController(
         new ExtensionDataTypeController(syncer::APPS, this, profile_, pss));
   }
 
   // Extension sync is enabled by default.  Register unless explicitly
   // disabled.
-  if (!command_line_->HasSwitch(switches::kDisableSyncExtensions)) {
+  if (!disabled_types.Has(syncer::EXTENSIONS)) {
     pss->RegisterDataTypeController(
         new ExtensionDataTypeController(syncer::EXTENSIONS,
                                         this, profile_, pss));
@@ -291,7 +303,7 @@ void ProfileSyncComponentsFactoryImpl::RegisterDesktopDataTypes(
 
   // Preference sync is enabled by default.  Register unless explicitly
   // disabled.
-  if (!command_line_->HasSwitch(switches::kDisableSyncPreferences)) {
+  if (!disabled_types.Has(syncer::PREFERENCES)) {
     pss->RegisterDataTypeController(
         new UIDataTypeController(
             BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
@@ -303,7 +315,7 @@ void ProfileSyncComponentsFactoryImpl::RegisterDesktopDataTypes(
 
   }
 
-  if (!command_line_->HasSwitch(switches::kDisableSyncPriorityPreferences)) {
+  if (!disabled_types.Has(syncer::PRIORITY_PREFERENCES)) {
     pss->RegisterDataTypeController(
         new UIDataTypeController(
             BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
@@ -316,7 +328,7 @@ void ProfileSyncComponentsFactoryImpl::RegisterDesktopDataTypes(
 
 #if defined(ENABLE_THEMES)
   // Theme sync is enabled by default.  Register unless explicitly disabled.
-  if (!command_line_->HasSwitch(switches::kDisableSyncThemes)) {
+  if (!disabled_types.Has(syncer::THEMES)) {
     pss->RegisterDataTypeController(
         new ThemeDataTypeController(this, profile_, pss));
   }
@@ -324,14 +336,14 @@ void ProfileSyncComponentsFactoryImpl::RegisterDesktopDataTypes(
 
   // Search Engine sync is enabled by default.  Register unless explicitly
   // disabled.
-  if (!command_line_->HasSwitch(switches::kDisableSyncSearchEngines)) {
+  if (!disabled_types.Has(syncer::SEARCH_ENGINES)) {
     pss->RegisterDataTypeController(
         new SearchEngineDataTypeController(this, profile_, pss));
   }
 
   // Extension setting sync is enabled by default.  Register unless explicitly
   // disabled.
-  if (!command_line_->HasSwitch(switches::kDisableSyncExtensionSettings)) {
+  if (!disabled_types.Has(syncer::EXTENSION_SETTINGS)) {
     pss->RegisterDataTypeController(
         new ExtensionSettingDataTypeController(
             syncer::EXTENSION_SETTINGS, this, profile_, pss));
@@ -339,7 +351,7 @@ void ProfileSyncComponentsFactoryImpl::RegisterDesktopDataTypes(
 
   // App setting sync is enabled by default.  Register unless explicitly
   // disabled.
-  if (!command_line_->HasSwitch(switches::kDisableSyncAppSettings)) {
+  if (!disabled_types.Has(syncer::APP_SETTINGS)) {
     pss->RegisterDataTypeController(
         new ExtensionSettingDataTypeController(
             syncer::APP_SETTINGS, this, profile_, pss));
@@ -359,34 +371,36 @@ void ProfileSyncComponentsFactoryImpl::RegisterDesktopDataTypes(
 #endif
 
   // Synced Notifications are enabled by default.
-  pss->RegisterDataTypeController(
-      new UIDataTypeController(
-            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-            base::Bind(&ChromeReportUnrecoverableError),
-            syncer::SYNCED_NOTIFICATIONS,
-            this,
-            profile_,
-            pss));
+  if (!disabled_types.Has(syncer::SYNCED_NOTIFICATIONS)) {
+    pss->RegisterDataTypeController(
+        new UIDataTypeController(
+              BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
+              base::Bind(&ChromeReportUnrecoverableError),
+              syncer::SYNCED_NOTIFICATIONS,
+              this,
+              profile_,
+              pss));
 
-  // Synced Notification App Infos are enabled by default.
-  // For now we only enable it on Dev and Canary.
-  // TODO(petewil): Enable on stable once we have tested on stable.
-  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
-  if (channel == chrome::VersionInfo::CHANNEL_UNKNOWN ||
-      channel == chrome::VersionInfo::CHANNEL_DEV ||
-      channel == chrome::VersionInfo::CHANNEL_CANARY) {
-    pss->RegisterDataTypeController(new UIDataTypeController(
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-        base::Bind(&ChromeReportUnrecoverableError),
-        syncer::SYNCED_NOTIFICATION_APP_INFO,
-        this,
-        profile_,
-        pss));
+    // Synced Notification App Infos are enabled by default.
+    // For now we only enable it on Dev and Canary.
+    // TODO(petewil): Enable on stable once we have tested on stable.
+    chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
+    if (channel == chrome::VersionInfo::CHANNEL_UNKNOWN ||
+        channel == chrome::VersionInfo::CHANNEL_DEV ||
+        channel == chrome::VersionInfo::CHANNEL_CANARY) {
+      pss->RegisterDataTypeController(new UIDataTypeController(
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
+          base::Bind(&ChromeReportUnrecoverableError),
+          syncer::SYNCED_NOTIFICATION_APP_INFO,
+          this,
+          profile_,
+          pss));
+    }
   }
 
 #if defined(OS_LINUX) || defined(OS_WIN) || defined(OS_CHROMEOS)
   // Dictionary sync is enabled by default.
-  if (!command_line_->HasSwitch(switches::kDisableSyncDictionary)) {
+  if (!disabled_types.Has(syncer::DICTIONARY)) {
     pss->RegisterDataTypeController(
         new UIDataTypeController(
             BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),

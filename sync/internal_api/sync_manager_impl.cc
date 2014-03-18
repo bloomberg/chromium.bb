@@ -65,8 +65,8 @@ static const int kSyncRefreshDelayMsec = 500;
 static const int kSyncSchedulerDelayMsec = 250;
 
 // Maximum count and size for traffic recorder.
-static const unsigned int kMaxMessagesToRecord = 10;
-static const unsigned int kMaxMessageSizeToRecord = 5 * 1024;
+static const unsigned int kMaxMessagesToRecord = 100;
+static const unsigned int kMaxMessageSizeToRecord = 50 * 1024;
 
 GetUpdatesCallerInfo::GetUpdatesSource GetSourceFromReason(
     ConfigureReason reason) {

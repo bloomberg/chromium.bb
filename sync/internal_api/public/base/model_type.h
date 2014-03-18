@@ -279,7 +279,12 @@ SYNC_EXPORT_PRIVATE ModelType ModelTypeFromValue(const base::Value& value);
 SYNC_EXPORT ModelType ModelTypeFromString(
     const std::string& model_type_string);
 
+// Returns the comma-separated string representation of |model_types|.
 SYNC_EXPORT std::string ModelTypeSetToString(ModelTypeSet model_types);
+
+// Returns the set of comma-separated model types from |model_type_string|.
+SYNC_EXPORT ModelTypeSet ModelTypeSetFromString(
+    const std::string& model_type_string);
 
 // Caller takes ownership of returned list.
 SYNC_EXPORT base::ListValue* ModelTypeSetToValue(ModelTypeSet model_types);

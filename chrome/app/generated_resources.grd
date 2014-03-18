@@ -6463,12 +6463,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
           This is an experimental mode to run several profiles/users simultaneously during a browsing session. Features may break or change significantly.
         </message>
       </if>
-      <message name="IDS_FLAGS_FULL_HISTORY_SYNC_NAME" desc="Name of the flag to disable full history sync.">
-        Disable full history sync
-      </message>
-      <message name="IDS_FLAGS_FULL_HISTORY_SYNC_DESCRIPTION" desc="Description for the flag to disable full history sync.">
-        Allows you to see and delete history entries from your signed-in devices at chrome://history.
-      </message>
       <message name="IDS_FLAGS_DISABLE_ACCELERATED_VIDEO_DECODE_NAME" desc="Name of the flag to disable accelerated video decode where available.">
         Disable hardware-accelerated video decode.
       </message>

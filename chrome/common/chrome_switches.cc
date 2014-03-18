@@ -420,58 +420,19 @@ const char kDisableSync[]                   = "disable-sync";
 // Disables syncing of the app list independent of extensions.
 const char kDisableSyncAppList[]            = "disable-sync-app-list";
 
-// Disables syncing of app settings.
-const char kDisableSyncAppSettings[]        = "disable-sync-app-settings";
-
-// Disables syncing of apps.
-const char kDisableSyncApps[]               = "disable-sync-apps";
-
-// Disables syncing of autofill.
-const char kDisableSyncAutofill[]           = "disable-sync-autofill";
-
-// Disables syncing of autofill Profile.
-const char kDisableSyncAutofillProfile[]    = "disable-sync-autofill-profile";
-
-// Disables syncing of bookmarks.
-const char kDisableSyncBookmarks[]          = "disable-sync-bookmarks";
-
-// Disables syncing of dictionary.
-const char kDisableSyncDictionary[]         = "disable-sync-dictionary";
-
-// Disables syncing extension settings.
-const char kDisableSyncExtensionSettings[]  = "disable-sync-extension-settings";
-
-// Disables syncing of extensions.
-const char kDisableSyncExtensions[]         = "disable-sync-extensions";
-
-// Disables syncing of favicons.
-const char kDisableSyncFavicons[]           = "disable-sync-favicons";
-
-// Disables syncing browser passwords.
-const char kDisableSyncPasswords[]          = "disable-sync-passwords";
-
-// Disables syncing of preferences.
-const char kDisableSyncPreferences[]        = "disable-sync-preferences";
-
-// Disables syncing of priority preferences.
-const char kDisableSyncPriorityPreferences[] =
-    "disable-sync-priority-preferences";
-
-// Disable syncing custom search engines.
-const char kDisableSyncSearchEngines[]      = "disable-sync-search-engines";
+// Disables sync/API based session sync implementation (back to legacy).
+const char kDisableSyncSessionsV2[] = "disable-sync-sessions-v2";
 
 // Disable synced notifications.
 const char kDisableSyncSyncedNotifications[] =
     "disable-sync-synced-notifications";
 
-// Disables syncing browser sessions. Will override kEnableSyncTabs.
-const char kDisableSyncTabs[]               = "disable-sync-tabs";
-
-// Disables syncing of themes.
-const char kDisableSyncThemes[]             = "disable-sync-themes";
-
-// Disables syncing browser typed urls.
-const char kDisableSyncTypedUrls[]          = "disable-sync-typed-urls";
+// Disables syncing one or more sync data types that are on by default.
+// See sync/internal_api/public/base/model_type.h for possible types. Types
+// should be comma separated, and follow the naming convention for string
+// representation of model types, e.g.:
+// --disable-synctypes='Typed URLs, Bookmarks, Autofill Profiles'
+const char kDisableSyncTypes[]              = "disable-sync-types";
 
 // Disables TLS Channel ID extension.
 const char kDisableTLSChannelID[]           = "disable-tls-channel-id";
@@ -744,9 +705,6 @@ const char kEnableStreamlinedHostedApps[]   = "enable-streamlined-hosted-apps";
 const char kEnableSyncSyncedNotifications[] =
     "enable-sync-synced-notifications";
 
-// Disables sync/API based session sync implementation (back to legacy).
-const char kDisableSyncSessionsV2[] = "disable-sync-sessions-v2";
-
 // Enables synced articles.
 const char kEnableSyncArticles[]            = "enable-sync-articles";
 
@@ -859,9 +817,6 @@ const char kHelpShort[]                     = "h";
 // shows an error box because the only way to hide Chrome is by uninstalling
 // it.
 const char kHideIcons[]                     = "hide-icons";
-
-// Disables full history sync.
-const char kHistoryDisableFullHistorySync[] = "disable-full-history-sync";
 
 // Enables grouping websites by domain and filtering them by period.
 const char kHistoryEnableGroupByDomain[]    = "enable-grouped-history";

@@ -46,7 +46,7 @@ void SetChromeSpecificCommandLineFlags() {
 
   // Disable syncing favicons on low end devices.
   if (base::android::SysUtils::IsLowEndDevice())
-    SetCommandLineSwitch(switches::kDisableSyncFavicons);
+    SetCommandLineSwitchASCII(switches::kDisableSyncTypes, "Favicon Images");
 
   // Enable DOM Distiller on local builds, canary and dev-channel.
   chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();

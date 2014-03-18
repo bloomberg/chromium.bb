@@ -104,5 +104,18 @@ TEST_F(ModelTypeTest, ModelTypeHistogramMapping) {
   }
 }
 
+TEST_F(ModelTypeTest, ModelTypeSetFromString) {
+  syncer::ModelTypeSet empty;
+  syncer::ModelTypeSet one(BOOKMARKS);
+  syncer::ModelTypeSet two(BOOKMARKS, TYPED_URLS);
+
+  EXPECT_TRUE(
+      empty.Equals(ModelTypeSetFromString(ModelTypeSetToString(empty))));
+  EXPECT_TRUE(
+      one.Equals(ModelTypeSetFromString(ModelTypeSetToString(one))));
+  EXPECT_TRUE(
+      two.Equals(ModelTypeSetFromString(ModelTypeSetToString(two))));
+}
+
 }  // namespace
 }  // namespace syncer

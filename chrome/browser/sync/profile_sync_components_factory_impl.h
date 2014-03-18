@@ -71,9 +71,11 @@ class ProfileSyncComponentsFactoryImpl : public ProfileSyncComponentsFactory {
 
  private:
   // Register data types which are enabled on desktop platforms only.
-  void RegisterDesktopDataTypes(ProfileSyncService* pss);
+  void RegisterDesktopDataTypes(syncer::ModelTypeSet disabled_types,
+                                ProfileSyncService* pss);
   // Register data types which are enabled on both desktop and mobile.
-  void RegisterCommonDataTypes(ProfileSyncService* pss);
+  void RegisterCommonDataTypes(syncer::ModelTypeSet disabled_types,
+                               ProfileSyncService* pss);
 
   Profile* profile_;
   base::CommandLine* command_line_;

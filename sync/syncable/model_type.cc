@@ -696,6 +696,30 @@ std::string ModelTypeSetToString(ModelTypeSet model_types) {
   return result;
 }
 
+ModelTypeSet ModelTypeSetFromString(const std::string& model_types_string) {
+  std::string working_copy = model_types_string;
+  ModelTypeSet model_types;
+  while (!working_copy.empty()) {
+    // Remove any leading spaces.
+    working_copy = working_copy.substr(working_copy.find_first_not_of(' '));
+    if (working_copy.empty())
+      break;
+    std::string type_str;
+    size_t end = working_copy.find(',');
+    if (end == std::string::npos) {
+      end = working_copy.length() - 1;
+      type_str = working_copy;
+    } else {
+      type_str = working_copy.substr(0, end);
+    }
+    syncer::ModelType type = ModelTypeFromString(type_str);
+    if (IsRealDataType(type))
+      model_types.Put(type);
+    working_copy = working_copy.substr(end + 1);
+  }
+  return model_types;
+}
+
 base::ListValue* ModelTypeSetToValue(ModelTypeSet model_types) {
   base::ListValue* value = new base::ListValue();
   for (ModelTypeSet::Iterator it = model_types.First(); it.Good(); it.Inc()) {
