@@ -35,14 +35,17 @@
 
 namespace blink {
 
+class WebDataSource;
 class WebString;
 class WebServiceWorkerContextProxy;
+class WebServiceWorkerNetworkProvider;
 class WebServiceWorkerResponse;
 
-// This interface is implemented by the client. It is suppoed to be created
+// This interface is implemented by the client. It is supposed to be created
 // on the main thread and then passed on to the worker thread to be owned
 // by a newly created WorkerGlobalScope. All methods of this class, except
-// for workerContextFailedToStart(), are called on the worker thread.
+// for createServiceWorkerNetworkProvider() and workerContextFailedToStart(),
+// are called on the worker thread.
 // FIXME: Split this into EmbeddedWorkerContextClient and
 // ServiceWorkerScriptContextClient when we decide to use EmbeddedWorker
 // framework for other implementation (like SharedWorker).
@@ -84,6 +87,9 @@ public:
     // should fallback to native fetch.
     virtual void didHandleFetchEvent(int fetchEventID) { }
     virtual void didHandleFetchEvent(int fetchEventID, const WebServiceWorkerResponse& response) { }
+
+    // Ownership of the returned object is transferred to the caller.
+    virtual WebServiceWorkerNetworkProvider* createServiceWorkerNetworkProvider(blink::WebDataSource*) { return 0; }
 };
 
 } // namespace blink

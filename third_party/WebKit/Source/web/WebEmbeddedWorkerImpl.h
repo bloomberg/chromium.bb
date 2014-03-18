@@ -44,6 +44,7 @@ class WorkerThread;
 namespace blink {
 
 class ServiceWorkerGlobalScopeProxy;
+class WebServiceWorkerNetworkProvider;
 class WebView;
 
 class WebEmbeddedWorkerImpl FINAL :
@@ -67,6 +68,9 @@ private:
     void prepareShadowPageForLoader();
 
     // WebFrameClient overrides.
+    virtual void willSendRequest(
+        WebFrame*, unsigned identifier, WebURLRequest&,
+        const WebURLResponse& redirectResponse) OVERRIDE;
     virtual void didFinishDocumentLoad(WebFrame*) OVERRIDE;
 
     void onScriptLoaderFinished();
@@ -77,6 +81,10 @@ private:
     // to WorkerContext.
     OwnPtr<WebServiceWorkerContextClient> m_workerContextClient;
     OwnPtr<WebWorkerPermissionClientProxy> m_permissionClient;
+
+    // We retain ownership of this one which is for use on the
+    // main thread only.
+    OwnPtr<WebServiceWorkerNetworkProvider> m_networkProvider;
 
     // Kept around only while main script loading is ongoing.
     OwnPtr<Loader> m_mainScriptLoader;

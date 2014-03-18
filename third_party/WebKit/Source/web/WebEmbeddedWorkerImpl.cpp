@@ -36,6 +36,7 @@
 #include "WebDataSourceImpl.h"
 #include "WebFrameImpl.h"
 #include "WebServiceWorkerContextClient.h"
+#include "WebServiceWorkerNetworkProvider.h"
 #include "WebView.h"
 #include "WebWorkerPermissionClientProxy.h"
 #include "WorkerPermissionClient.h"
@@ -204,10 +205,21 @@ void WebEmbeddedWorkerImpl::prepareShadowPageForLoader()
     webFrame->frame()->loader().load(FrameLoadRequest(0, ResourceRequest(m_workerStartData.scriptURL), SubstituteData(buffer, "text/html", "UTF-8", KURL())));
 }
 
+void WebEmbeddedWorkerImpl::willSendRequest(
+    WebFrame* frame, unsigned, WebURLRequest& request,
+    const WebURLResponse& redirectResponse)
+{
+    if (m_networkProvider)
+        m_networkProvider->willSendRequest(frame->dataSource(), request);
+}
+
 void WebEmbeddedWorkerImpl::didFinishDocumentLoad(WebFrame* frame)
 {
     ASSERT(!m_mainScriptLoader);
+    ASSERT(!m_networkProvider);
     ASSERT(m_mainFrame);
+    ASSERT(m_workerContextClient);
+    m_networkProvider = adoptPtr(m_workerContextClient->createServiceWorkerNetworkProvider(frame->dataSource()));
     m_mainScriptLoader = Loader::create();
     m_mainScriptLoader->load(
         toWebFrameImpl(m_mainFrame)->frame()->document(),
