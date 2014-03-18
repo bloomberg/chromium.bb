@@ -124,13 +124,13 @@ void OutputPointer(void* pointer, BacktraceOutputHandler* handler) {
 }
 
 void ProcessBacktrace(void *const *trace,
-                      int size,
+                      size_t size,
                       BacktraceOutputHandler* handler) {
   // NOTE: This code MUST be async-signal safe (it's used by in-process
   // stack dumping signal handler). NO malloc or stdio is allowed here.
 
 #if defined(USE_SYMBOLIZE)
-  for (int i = 0; i < size; ++i) {
+  for (size_t i = 0; i < size; ++i) {
     OutputPointer(trace[i], handler);
     handler->HandleOutput(" ");
 
@@ -155,7 +155,7 @@ void ProcessBacktrace(void *const *trace,
     scoped_ptr<char*, FreeDeleter>
         trace_symbols(backtrace_symbols(trace, size));
     if (trace_symbols.get()) {
-      for (int i = 0; i < size; ++i) {
+      for (size_t i = 0; i < size; ++i) {
         std::string trace_symbol = trace_symbols.get()[i];
         DemangleSymbols(&trace_symbol);
         handler->HandleOutput(trace_symbol.c_str());
@@ -167,7 +167,7 @@ void ProcessBacktrace(void *const *trace,
   }
 
   if (!printed) {
-    for (int i = 0; i < size; ++i) {
+    for (size_t i = 0; i < size; ++i) {
       OutputPointer(trace[i], handler);
       handler->HandleOutput("\n");
     }
