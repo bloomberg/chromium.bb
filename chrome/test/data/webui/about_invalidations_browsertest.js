@@ -45,12 +45,12 @@ TEST_F('InvalidationsWebUITest', 'testChangingInvalidationsState', function() {
   var newState = 'INVALIDATIONS_ENABLED';
   var newNewState = 'TRANSIENT_INVALIDATION_ERROR';
 
-  chrome.invalidations.updateState(newState);
+  chrome.invalidations.updateInvalidatorState(newState);
   expectEquals(invalidationsState.textContent,
     'INVALIDATIONS_ENABLED',
     'could not change the invalidations text');
   invalidationsLog.value = '';
-  chrome.invalidations.updateState(newNewState);
+  chrome.invalidations.updateInvalidatorState(newNewState);
   expectEquals(invalidationsState.textContent,
     'TRANSIENT_INVALIDATION_ERROR');
   var isContained =
@@ -110,4 +110,11 @@ TEST_F('InvalidationsWebUITest', 'testUpdatingRegisteredHandlers', function() {
   chrome.invalidations.updateHandlers(['FakeClient']);
   expectEquals(text().indexOf('FakeApi'), -1);
   expectNotEquals(text().indexOf('FakeClient'), -1);
+});
+
+// Test that an object showing internal state is correctly displayed.
+TEST_F('InvalidationsWebUITest', 'testUpdatingInternalDisplay', function() {
+  var newDetailedStatus = {MessagesSent: 1};
+  chrome.invalidations.updateDetailedStatus(newDetailedStatus);
+  expectEquals( $('internal-display').value, '{\n  \"MessagesSent\": 1\n}');
 });

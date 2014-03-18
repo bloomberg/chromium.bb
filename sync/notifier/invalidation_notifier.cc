@@ -73,6 +73,12 @@ void InvalidationNotifier::UpdateCredentials(
   invalidation_listener_.UpdateCredentials(email, token);
 }
 
+void InvalidationNotifier::RequestDetailedStatus(
+    base::Callback<void(const base::DictionaryValue&)> callback) {
+  DCHECK(CalledOnValidThread());
+  invalidation_listener_.RequestDetailedStatus(callback);
+}
+
 void InvalidationNotifier::OnInvalidate(
     const ObjectIdInvalidationMap& invalidation_map) {
   DCHECK(CalledOnValidThread());

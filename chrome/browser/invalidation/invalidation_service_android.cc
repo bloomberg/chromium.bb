@@ -64,6 +64,10 @@ InvalidationLogger* InvalidationServiceAndroid::GetInvalidationLogger() {
   return &logger_;
 }
 
+void InvalidationServiceAndroid::RequestDetailedStatus(
+    base::Callback<void(const base::DictionaryValue&)> return_callback) {
+}
+
 void InvalidationServiceAndroid::Observe(
     int type,
     const content::NotificationSource& source,

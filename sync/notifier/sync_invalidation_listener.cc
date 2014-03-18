@@ -360,6 +360,25 @@ void SyncInvalidationListener::DoRegistrationUpdate() {
   EmitSavedInvalidations(object_id_invalidation_map);
 }
 
+void SyncInvalidationListener::RequestDetailedStatus(
+    base::Callback<void(const base::DictionaryValue&)> callback) {
+  DCHECK(CalledOnValidThread());
+  callback.Run(*CollectDebugData());
+}
+
+scoped_ptr<base::DictionaryValue> SyncInvalidationListener::CollectDebugData() {
+  scoped_ptr<base::DictionaryValue> return_value(new base::DictionaryValue());
+  scoped_ptr<base::DictionaryValue> unacked_map(new base::DictionaryValue());
+  for (UnackedInvalidationsMap::iterator it =
+           unacked_invalidations_map_.begin();
+       it != unacked_invalidations_map_.end();
+       ++it) {
+    unacked_map->Set((it->first).name(), (it->second).ToValue().release());
+  }
+  return_value->Set("UnackedInvalidationsMap", unacked_map.release());
+  return return_value.Pass();
+}
+
 void SyncInvalidationListener::StopForTest() {
   DCHECK(CalledOnValidThread());
   Stop();

@@ -136,6 +136,9 @@ class SYNC_EXPORT_PRIVATE SyncInvalidationListener
 
   void DoRegistrationUpdate();
 
+  void RequestDetailedStatus(
+      base::Callback<void(const base::DictionaryValue&)> callback);
+
   void StopForTest();
 
  private:
@@ -163,6 +166,9 @@ class SYNC_EXPORT_PRIVATE SyncInvalidationListener
 
   // Emits previously saved invalidations to their registered observers.
   void EmitSavedInvalidations(const ObjectIdInvalidationMap& to_emit);
+
+  // Generate a Dictionary with all the debugging information.
+  scoped_ptr<base::DictionaryValue> CollectDebugData();
 
   WeakHandle<AckHandler> GetThisAsAckHandler();
 

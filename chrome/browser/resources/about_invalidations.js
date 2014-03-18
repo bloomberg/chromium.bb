@@ -6,7 +6,8 @@ cr.define('chrome.invalidations', function() {
   /**
    * Local variable where we maintain a count of the invalidations received
    * and of every ObjectId that has ever been updated (note that this doesn't
-   * log any invalidations ocurred prior to opening the about:invalidation page)
+   * log any invalidations ocurred prior to opening the about:invalidation
+   * page).
    */
   var tableObjects = {};
 
@@ -42,10 +43,10 @@ cr.define('chrome.invalidations', function() {
   }
 
   /**
-   * Shows the current state of the InvalidatorService
+   * Shows the current state of the InvalidatorService.
    * @param {string} newState The string to be displayed and logged.
    */
-  function updateState(newState) {
+  function updateInvalidatorState(newState) {
     var logMessage = nowTimeString() +
       'Invalidations service state changed to ' + quote(newState);
 
@@ -162,19 +163,32 @@ cr.define('chrome.invalidations', function() {
   }
 
   /**
-   * Function that notifies the Invalidator Logger that the UI is
+   * Update the internal status display.
+   * @param {!Object} details The dictionary containing assorted debugging
+   *      details (e.g. Network Channel information).
+   */
+  function updateDetailedStatus(details) {
+    $('internal-display').value = JSON.stringify(details, null, 2);
+  }
+
+  /**
+   * Function that notifies the InvalidationsMessageHandler that the UI is
    * ready to receive real-time notifications.
    */
   function onLoadWork() {
+    $('request-detailed-status').onclick = function() {
+      chrome.send('requestDetailedStatus');
+    };
     chrome.send('doneLoading');
   }
 
   return {
     logInvalidations: logInvalidations,
     onLoadWork: onLoadWork,
+    updateDetailedStatus: updateDetailedStatus,
     updateHandlers: updateHandlers,
     updateIds: updateIds,
-    updateState: updateState,
+    updateInvalidatorState: updateInvalidatorState,
   };
 });
 

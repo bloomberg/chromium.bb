@@ -34,6 +34,7 @@ class InvalidationLoggerObserver {
   virtual void OnDebugMessage(const base::DictionaryValue& details) = 0;
   virtual void OnInvalidation(
       const syncer::ObjectIdInvalidationMap& details) = 0;
+  virtual void OnDetailedStatus(const base::DictionaryValue& details) = 0;
 
  protected:
   virtual ~InvalidationLoggerObserver() {}

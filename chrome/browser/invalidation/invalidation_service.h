@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_INVALIDATION_INVALIDATION_SERVICE_H_
 #define CHROME_BROWSER_INVALIDATION_INVALIDATION_SERVICE_H_
 
+#include "base/callback_forward.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "sync/notifier/invalidation_util.h"
 #include "sync/notifier/invalidator_state.h"
@@ -102,6 +103,10 @@ class InvalidationService : public KeyedService {
 
   // Return the logger used to debug invalidations
   virtual InvalidationLogger* GetInvalidationLogger() = 0;
+
+  // Triggers requests of internal status.
+  virtual void RequestDetailedStatus(
+      base::Callback<void(const base::DictionaryValue&)> post_caller) = 0;
 
  protected:
   virtual ~InvalidationService() { }

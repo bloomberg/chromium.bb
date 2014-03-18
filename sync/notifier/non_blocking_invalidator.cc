@@ -48,6 +48,47 @@ struct NonBlockingInvalidator::InitializeOptions {
   scoped_refptr<net::URLRequestContextGetter> request_context_getter;
 };
 
+namespace {
+// This class provides a wrapper for a logging class in order to receive
+// callbacks across threads, without having to worry about owner threads.
+class CallbackProxy {
+ public:
+  explicit CallbackProxy(
+      base::Callback<void(const base::DictionaryValue&)> callback);
+  ~CallbackProxy();
+
+  void Run(const base::DictionaryValue& value);
+
+ private:
+  static void DoRun(base::Callback<void(const base::DictionaryValue&)> callback,
+                    scoped_ptr<base::DictionaryValue> value);
+
+  base::Callback<void(const base::DictionaryValue&)> callback_;
+  scoped_refptr<base::SingleThreadTaskRunner> running_thread_;
+
+  DISALLOW_COPY_AND_ASSIGN(CallbackProxy);
+};
+
+CallbackProxy::CallbackProxy(
+    base::Callback<void(const base::DictionaryValue&)> callback)
+    : callback_(callback),
+      running_thread_(base::ThreadTaskRunnerHandle::Get()) {}
+
+CallbackProxy::~CallbackProxy() {}
+
+void CallbackProxy::DoRun(
+    base::Callback<void(const base::DictionaryValue&)> callback,
+    scoped_ptr<base::DictionaryValue> value) {
+  callback.Run(*value);
+}
+
+void CallbackProxy::Run(const base::DictionaryValue& value) {
+  scoped_ptr<base::DictionaryValue> copied(value.DeepCopy());
+  running_thread_->PostTask(
+      FROM_HERE,
+      base::Bind(&CallbackProxy::DoRun, callback_, base::Passed(&copied)));
+}
+}
 
 class NonBlockingInvalidator::Core
     : public base::RefCountedThreadSafe<NonBlockingInvalidator::Core>,
@@ -65,6 +106,8 @@ class NonBlockingInvalidator::Core
   void Teardown();
   void UpdateRegisteredIds(const ObjectIdSet& ids);
   void UpdateCredentials(const std::string& email, const std::string& token);
+  void RequestDetailedStatus(
+      base::Callback<void(const base::DictionaryValue&)> callback);
 
   // InvalidationHandler implementation (all called on I/O thread by
   // InvalidationNotifier).
@@ -131,6 +174,12 @@ void NonBlockingInvalidator::Core::UpdateCredentials(const std::string& email,
                                                      const std::string& token) {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
   invalidation_notifier_->UpdateCredentials(email, token);
+}
+
+void NonBlockingInvalidator::Core::RequestDetailedStatus(
+    base::Callback<void(const base::DictionaryValue&)> callback) {
+  DCHECK(network_task_runner_->BelongsToCurrentThread());
+  invalidation_notifier_->RequestDetailedStatus(callback);
 }
 
 void NonBlockingInvalidator::Core::OnInvalidatorStateChange(
@@ -231,6 +280,20 @@ void NonBlockingInvalidator::UpdateCredentials(const std::string& email,
           FROM_HERE,
           base::Bind(&NonBlockingInvalidator::Core::UpdateCredentials,
                      core_.get(), email, token))) {
+    NOTREACHED();
+  }
+}
+
+void NonBlockingInvalidator::RequestDetailedStatus(
+    base::Callback<void(const base::DictionaryValue&)> callback) {
+  DCHECK(parent_task_runner_->BelongsToCurrentThread());
+  base::Callback<void(const base::DictionaryValue&)> proxy_callback =
+      base::Bind(&CallbackProxy::Run, base::Owned(new CallbackProxy(callback)));
+  if (!network_task_runner_->PostTask(
+          FROM_HERE,
+          base::Bind(&NonBlockingInvalidator::Core::RequestDetailedStatus,
+                     core_.get(),
+                     proxy_callback))) {
     NOTREACHED();
   }
 }

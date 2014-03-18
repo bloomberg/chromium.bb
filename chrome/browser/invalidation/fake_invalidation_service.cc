@@ -50,6 +50,12 @@ InvalidationLogger* FakeInvalidationService::GetInvalidationLogger() {
   return NULL;
 }
 
+void FakeInvalidationService::RequestDetailedStatus(
+    base::Callback<void(const base::DictionaryValue&)> caller) {
+  base::DictionaryValue value;
+  caller.Run(value);
+}
+
 void FakeInvalidationService::SetInvalidatorState(
     syncer::InvalidatorState state) {
   invalidator_registrar_.UpdateInvalidatorState(state);

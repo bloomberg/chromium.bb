@@ -58,6 +58,8 @@ class SYNC_EXPORT_PRIVATE InvalidationNotifier
   virtual InvalidatorState GetInvalidatorState() const OVERRIDE;
   virtual void UpdateCredentials(
       const std::string& email, const std::string& token) OVERRIDE;
+  virtual void RequestDetailedStatus(
+      base::Callback<void(const base::DictionaryValue&)> callback) OVERRIDE;
 
   // SyncInvalidationListener::Delegate implementation.
   virtual void OnInvalidate(

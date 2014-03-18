@@ -71,7 +71,7 @@ class InvalidationLogger {
   void EmitUpdatedIds();
 
   // Send to every Observer a vector with the all the current registered
-  // handlers
+  // handlers.
   void EmitRegisteredHandlers();
 
   // The list of every observer currently listening for notifications.
@@ -86,7 +86,7 @@ class InvalidationLogger {
 
   // The name of all invalidatorHandler registered (note that this is not
   // necessarily the same as the keys of latest_ids_, because they might
-  // have not registered any object id)
+  // have not registered any object id).
   std::multiset<std::string> registered_handlers_;
 
   DISALLOW_COPY_AND_ASSIGN(InvalidationLogger);

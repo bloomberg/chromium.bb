@@ -27,7 +27,7 @@ void InvalidationLogger::OnUnregistration(const std::string& registrar_name) {
          registered_handlers_.end());
   std::multiset<std::string>::iterator it =
       registered_handlers_.find(registrar_name);
-  // Only delete one instance of registrar_name;
+  // Delete only one instance of registrar_name.
   registered_handlers_.erase(it);
   EmitRegisteredHandlers();
 }
@@ -98,5 +98,4 @@ bool InvalidationLogger::IsObserverRegistered(
     InvalidationLoggerObserver* debug_observer) {
   return observer_list_.HasObserver(debug_observer);
 }
-
 }  // namespace invalidation

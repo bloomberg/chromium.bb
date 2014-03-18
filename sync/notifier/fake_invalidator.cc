@@ -61,4 +61,9 @@ void FakeInvalidator::UpdateCredentials(
   token_ = token;
 }
 
+void FakeInvalidator::RequestDetailedStatus(
+    base::Callback<void(const base::DictionaryValue&)> callback) {
+  base::DictionaryValue value;
+  callback.Run(value);
+}
 }  // namespace syncer

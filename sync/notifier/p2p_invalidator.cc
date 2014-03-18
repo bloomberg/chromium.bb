@@ -202,6 +202,14 @@ void P2PInvalidator::UpdateCredentials(
   logged_in_ = true;
 }
 
+void P2PInvalidator::RequestDetailedStatus(
+    base::Callback<void(const base::DictionaryValue&)> callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  // TODO(mferreria): Make the P2P Invalidator work.
+  scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
+  callback.Run(*value);
+}
+
 void P2PInvalidator::SendInvalidation(const ObjectIdSet& ids) {
   DCHECK(thread_checker_.CalledOnValidThread());
   ObjectIdInvalidationMap invalidation_map =

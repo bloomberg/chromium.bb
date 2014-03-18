@@ -74,4 +74,10 @@ InvalidationLogger* P2PInvalidationService::GetInvalidationLogger() {
   return NULL;
 }
 
+void P2PInvalidationService::RequestDetailedStatus(
+    base::Callback<void(const base::DictionaryValue&)> caller) {
+  base::DictionaryValue value;
+  caller.Run(value);
+}
+
 }  // namespace invalidation

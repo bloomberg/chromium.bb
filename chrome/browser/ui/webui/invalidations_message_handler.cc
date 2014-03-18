@@ -21,7 +21,7 @@ class ObjectIdInvalidationMap;
 }  // namespace syncer
 
 InvalidationsMessageHandler::InvalidationsMessageHandler()
-    : logger_(NULL) {}
+    : logger_(NULL), weak_ptr_factory_(this) {}
 
 InvalidationsMessageHandler::~InvalidationsMessageHandler() {
   if (logger_)
@@ -33,21 +33,33 @@ void InvalidationsMessageHandler::RegisterMessages() {
       "doneLoading",
       base::Bind(&InvalidationsMessageHandler::UIReady,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "requestDetailedStatus",
+      base::Bind(&InvalidationsMessageHandler::HandleRequestDetailedStatus,
+                 base::Unretained(this)));
 }
 
 void InvalidationsMessageHandler::UIReady(const base::ListValue* args) {
-  Profile* profile = Profile::FromWebUI(web_ui());
-  if (profile) {
-    invalidation::InvalidationService* invalidation_service =
-        invalidation::InvalidationServiceFactory::GetForProfile(profile);
-    if (invalidation_service)
-      logger_ = invalidation_service->GetInvalidationLogger();
-    if (logger_) {
-      if (!logger_->IsObserverRegistered(this))
-        logger_->RegisterObserver(this);
-    }
-  }
+  invalidation::InvalidationService* invalidation_service =
+      invalidation::InvalidationServiceFactory::GetForProfile(
+          Profile::FromWebUI(web_ui()));
+  if (invalidation_service)
+    logger_ = invalidation_service->GetInvalidationLogger();
+  if (logger_ && !logger_->IsObserverRegistered(this))
+    logger_->RegisterObserver(this);
   UpdateContent(args);
+}
+
+void InvalidationsMessageHandler::HandleRequestDetailedStatus(
+    const base::ListValue* args) {
+  invalidation::InvalidationService* invalidation_service =
+      invalidation::InvalidationServiceFactory::GetForProfile(
+          Profile::FromWebUI(web_ui()));
+  if (invalidation_service) {
+    invalidation_service->RequestDetailedStatus(base::Bind(
+        &InvalidationsMessageHandler::OnDetailedStatus,
+        weak_ptr_factory_.GetWeakPtr()));
+  }
 }
 
 void InvalidationsMessageHandler::UpdateContent(const base::ListValue* args) {
@@ -70,8 +82,8 @@ void InvalidationsMessageHandler::OnRegistrationChange(
 void InvalidationsMessageHandler::OnStateChange(
     const syncer::InvalidatorState& new_state) {
   std::string state(syncer::InvalidatorStateToString(new_state));
-  web_ui()->CallJavascriptFunction("chrome.invalidations.updateState",
-                                   base::StringValue(state));
+  web_ui()->CallJavascriptFunction(
+      "chrome.invalidations.updateInvalidatorState", base::StringValue(state));
 }
 
 void InvalidationsMessageHandler::OnUpdateIds(
@@ -99,3 +111,8 @@ void InvalidationsMessageHandler::OnInvalidation(
                                    *invalidations_list);
 }
 
+void InvalidationsMessageHandler::OnDetailedStatus(
+    const base::DictionaryValue& network_details) {
+  web_ui()->CallJavascriptFunction("chrome.invalidations.updateDetailedStatus",
+                                   network_details);
+}

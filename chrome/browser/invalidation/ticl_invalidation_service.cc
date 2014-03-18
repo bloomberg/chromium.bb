@@ -167,6 +167,11 @@ void TiclInvalidationService::GoogleSignedOut(const std::string& username) {
   Logout();
 }
 
+void TiclInvalidationService::RequestDetailedStatus(
+    base::Callback<void(const base::DictionaryValue&)> return_callback) {
+  invalidator_->RequestDetailedStatus(return_callback);
+}
+
 void TiclInvalidationService::RequestAccessToken() {
   // Only one active request at a time.
   if (access_token_request_ != NULL)

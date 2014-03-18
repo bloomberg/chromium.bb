@@ -7,6 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/invalidation/invalidation_logger_observer.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -40,6 +41,8 @@ class InvalidationsMessageHandler
   virtual void OnDebugMessage(const base::DictionaryValue& details) OVERRIDE;
   virtual void OnInvalidation(
       const syncer::ObjectIdInvalidationMap& new_invalidations) OVERRIDE;
+  virtual void OnDetailedStatus(const base::DictionaryValue& network_details)
+      OVERRIDE;
 
   // Implementation of WebUIMessageHandler.
   virtual void RegisterMessages() OVERRIDE;
@@ -50,11 +53,16 @@ class InvalidationsMessageHandler
   // Called by the javascript whenever the page is ready to receive messages.
   void UIReady(const base::ListValue* args);
 
+  // Calls the InvalidationService for any internal details.
+  void HandleRequestDetailedStatus(const base::ListValue* args);
+
  private:
   // The pointer to the internal InvalidatorService InvalidationLogger.
   // Used to get the information necessary to display to the JS and to
   // register ourselves as Observers for any notifications.
   invalidation::InvalidationLogger* logger_;
+
+  base::WeakPtrFactory<InvalidationsMessageHandler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(InvalidationsMessageHandler);
 };

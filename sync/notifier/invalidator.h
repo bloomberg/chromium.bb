@@ -78,6 +78,10 @@ class SYNC_EXPORT Invalidator {
   // once.
   virtual void UpdateCredentials(
       const std::string& email, const std::string& token) = 0;
+
+  // Requests internal detailed status to be posted back to the callback.
+  virtual void RequestDetailedStatus(
+      base::Callback<void(const base::DictionaryValue&)> callback) = 0;
 };
 }  // namespace syncer
 

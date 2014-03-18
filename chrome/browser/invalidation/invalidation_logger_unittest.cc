@@ -19,6 +19,7 @@ class InvalidationLoggerObserverTest : public InvalidationLoggerObserver {
     update_id_received = false;
     debug_message_received = false;
     invalidation_received = false;
+    detailed_status_received = false;
     update_id_replicated = std::map<std::string, syncer::ObjectIdSet>();
     registered_handlers = std::multiset<std::string>();
   }
@@ -48,11 +49,17 @@ class InvalidationLoggerObserverTest : public InvalidationLoggerObserver {
       const syncer::ObjectIdInvalidationMap& newInvalidations) OVERRIDE {
     invalidation_received = true;
   }
+
+  virtual void OnDetailedStatus(const base::DictionaryValue& details) OVERRIDE {
+    detailed_status_received = true;
+  }
+
   bool registration_change_received;
   bool state_received;
   bool update_id_received;
   bool debug_message_received;
   bool invalidation_received;
+  bool detailed_status_received;
   std::map<std::string, syncer::ObjectIdSet> update_id_replicated;
   std::multiset<std::string> registered_handlers;
 };
@@ -70,6 +77,7 @@ TEST(InvalidationLoggerTest, TestCallbacks) {
   EXPECT_FALSE(observer_test.registration_change_received);
   EXPECT_FALSE(observer_test.invalidation_received);
   EXPECT_FALSE(observer_test.debug_message_received);
+  EXPECT_FALSE(observer_test.detailed_status_received);
 
   observer_test.ResetStates();
 
@@ -79,6 +87,7 @@ TEST(InvalidationLoggerTest, TestCallbacks) {
   EXPECT_FALSE(observer_test.update_id_received);
   EXPECT_FALSE(observer_test.registration_change_received);
   EXPECT_FALSE(observer_test.debug_message_received);
+  EXPECT_FALSE(observer_test.detailed_status_received);
 
   log.UnregisterObserver(&observer_test);
 }
@@ -104,6 +113,7 @@ TEST(InvalidationLoggerTest, TestReleaseOfObserver) {
   EXPECT_FALSE(observer_test.invalidation_received);
   EXPECT_FALSE(observer_test.state_received);
   EXPECT_FALSE(observer_test.debug_message_received);
+  EXPECT_FALSE(observer_test.detailed_status_received);
 }
 
 // Test the EmitContet in InvalidationLogger is actually
@@ -122,6 +132,7 @@ TEST(InvalidationLoggerTest, TestEmitContent) {
   EXPECT_FALSE(observer_test.update_id_received);
   EXPECT_FALSE(observer_test.invalidation_received);
   EXPECT_FALSE(observer_test.debug_message_received);
+  EXPECT_FALSE(observer_test.detailed_status_received);
 
   observer_test.ResetStates();
   std::map<std::string, syncer::ObjectIdSet> test_map;
@@ -137,6 +148,7 @@ TEST(InvalidationLoggerTest, TestEmitContent) {
   EXPECT_TRUE(observer_test.registration_change_received);
   EXPECT_FALSE(observer_test.invalidation_received);
   EXPECT_FALSE(observer_test.debug_message_received);
+  EXPECT_FALSE(observer_test.detailed_status_received);
   log.UnregisterObserver(&observer_test);
 }
 

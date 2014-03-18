@@ -56,6 +56,8 @@ class TiclInvalidationService : public base::NonThreadSafe,
   virtual syncer::InvalidatorState GetInvalidatorState() const OVERRIDE;
   virtual std::string GetInvalidatorClientId() const OVERRIDE;
   virtual InvalidationLogger* GetInvalidationLogger() OVERRIDE;
+  virtual void RequestDetailedStatus(
+      base::Callback<void(const base::DictionaryValue&)> caller) OVERRIDE;
 
   void RequestAccessToken();
 

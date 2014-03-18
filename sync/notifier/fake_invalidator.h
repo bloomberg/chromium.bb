@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "sync/notifier/invalidation_util.h"
 #include "sync/notifier/invalidator.h"
@@ -36,6 +37,8 @@ class FakeInvalidator : public Invalidator {
   virtual InvalidatorState GetInvalidatorState() const OVERRIDE;
   virtual void UpdateCredentials(
       const std::string& email, const std::string& token) OVERRIDE;
+  virtual void RequestDetailedStatus(
+      base::Callback<void(const base::DictionaryValue&)> callback) OVERRIDE;
 
  private:
   InvalidatorRegistrar registrar_;
