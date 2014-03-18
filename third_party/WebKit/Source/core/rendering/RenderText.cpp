@@ -930,9 +930,6 @@ void RenderText::computePreferredLogicalWidths(float leadWidth, HashSet<const Si
     int lastWordBoundary = 0;
     float cachedWordTrailingSpaceWidth[2] = { 0, 0 }; // LTR, RTL
 
-    // If automatic hyphenation is allowed, we keep track of the width of the widest word (or word
-    // fragment) encountered so far, and only try hyphenating words that are wider.
-    float maxWordWidth = numeric_limits<float>::max();
     int firstGlyphLeftOverflow = -1;
 
     bool breakAll = (styleToUse->wordBreak() == BreakAllWordBreak || styleToUse->wordBreak() == BreakWordBreak) && styleToUse->autoWrap();
@@ -1047,8 +1044,6 @@ void RenderText::computePreferredLogicalWidths(float leadWidth, HashSet<const Si
                 if (c == softHyphen)
                     currMinWidth += hyphenWidth(this, f, textDirection);
             }
-
-            maxWordWidth = max(maxWordWidth, w);
 
             if (firstGlyphLeftOverflow < 0)
                 firstGlyphLeftOverflow = glyphOverflow.left;
