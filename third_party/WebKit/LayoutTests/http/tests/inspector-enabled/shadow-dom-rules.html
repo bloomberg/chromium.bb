@@ -21,7 +21,6 @@ function test()
     InspectorTest.runTestSuite([
         function testInit(next)
         {
-            WebInspector.settings.showShadowDOM.set(true);
             InspectorTest.selectNodeAndWaitForStyles("inner", next);
         },
 

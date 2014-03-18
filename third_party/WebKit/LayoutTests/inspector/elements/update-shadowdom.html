@@ -8,11 +8,6 @@ function updateShadowDOM()
     shadowRoot.removeChild(shadowRoot.firstChild);
 }
 
-function initialize_shadowSettings()
-{
-    WebInspector.settings.showShadowDOM.set(true);
-}
-
 function test()
 {
     InspectorTest.expandElementsTree(function() {
@@ -20,7 +15,6 @@ function test()
             InspectorTest.expandElementsTree(function() {
                 var containerElem = InspectorTest.expandedNodeWithId('container');
                 InspectorTest.dumpElementsTree(containerElem);
-                WebInspector.settings.showShadowDOM.set(false);
                 InspectorTest.completeTest();
             });
         });

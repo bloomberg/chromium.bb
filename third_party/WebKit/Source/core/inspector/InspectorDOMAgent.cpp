@@ -423,6 +423,20 @@ Element* InspectorDOMAgent::assertElement(ErrorString* errorString, int nodeId)
     return toElement(node);
 }
 
+static ShadowRoot* userAgentShadowRoot(Node* node)
+{
+    if (!node || !node->isInShadowTree())
+        return 0;
+
+    Node* candidate = node;
+    while (candidate && !candidate->isShadowRoot())
+        candidate = candidate->parentOrShadowHostNode();
+    ASSERT(candidate);
+    ShadowRoot* shadowRoot = toShadowRoot(candidate);
+
+    return shadowRoot->type() == ShadowRoot::UserAgentShadowRoot ? shadowRoot : 0;
+}
+
 Node* InspectorDOMAgent::assertEditableNode(ErrorString* errorString, int nodeId)
 {
     Node* node = assertNode(errorString, nodeId);
@@ -434,10 +448,7 @@ Node* InspectorDOMAgent::assertEditableNode(ErrorString* errorString, int nodeId
             *errorString = "Cannot edit shadow roots";
             return 0;
         }
-        Node* candidate = node;
-        while (candidate && !candidate->isShadowRoot())
-            candidate = candidate->parentElementOrShadowRoot();
-        if (!candidate || (candidate->isShadowRoot() && toShadowRoot(candidate)->type() == ShadowRoot::UserAgentShadowRoot)) {
+        if (userAgentShadowRoot(node)) {
             *errorString = "Cannot edit nodes from user-agent shadow trees";
             return 0;
         }
@@ -1127,8 +1138,11 @@ void InspectorDOMAgent::inspect(Node* inspectedNode)
         return;
 
     Node* node = inspectedNode;
-    if (node->nodeType() != Node::ELEMENT_NODE && node->nodeType() != Node::DOCUMENT_NODE)
-        node = node->parentNode();
+    while (node && node->nodeType() != Node::ELEMENT_NODE && node->nodeType() != Node::DOCUMENT_NODE && node->nodeType() != Node::DOCUMENT_FRAGMENT_NODE)
+        node = node->parentOrShadowHostNode();
+
+    if (!node)
+        return;
 
     int nodeId = pushNodePathToFrontend(node);
     if (nodeId)
@@ -1144,8 +1158,19 @@ void InspectorDOMAgent::handleMouseMove(LocalFrame* frame, const PlatformMouseEv
         return;
     Node* node = hoveredNodeForEvent(frame, event, event.shiftKey());
 
-    while (m_searchingForNode != SearchingForShadow && node && node->isInShadowTree())
+    // Do not highlight within UA shadow root unless requested.
+    if (m_searchingForNode != SearchingForUAShadow) {
+        ShadowRoot* uaShadowRoot = userAgentShadowRoot(node);
+        if (uaShadowRoot)
+            node = uaShadowRoot->host();
+    }
+
+    // Shadow roots don't have boxes - use host element instead.
+    if (node && node->isShadowRoot())
         node = node->parentOrShadowHostNode();
+
+    if (!node)
+        return;
 
     Node* eventTarget = event.shiftKey() ? hoveredNodeForEvent(frame, event, false) : 0;
     if (eventTarget == node)
@@ -1193,11 +1218,11 @@ PassOwnPtr<HighlightConfig> InspectorDOMAgent::highlightConfigFromInspectorObjec
     return highlightConfig.release();
 }
 
-void InspectorDOMAgent::setInspectModeEnabled(ErrorString* errorString, bool enabled, const bool* inspectShadowDOM, const RefPtr<JSONObject>* highlightConfig)
+void InspectorDOMAgent::setInspectModeEnabled(ErrorString* errorString, bool enabled, const bool* inspectUAShadowDOM, const RefPtr<JSONObject>* highlightConfig)
 {
     if (enabled && !pushDocumentUponHandlelessOperation(errorString))
         return;
-    SearchMode searchMode = enabled ? (inspectShadowDOM && *inspectShadowDOM ? SearchingForShadow : SearchingForNormal) : NotSearching;
+    SearchMode searchMode = enabled ? (inspectUAShadowDOM && *inspectUAShadowDOM ? SearchingForUAShadow : SearchingForNormal) : NotSearching;
     setSearchingForNode(errorString, searchMode, highlightConfig ? highlightConfig->get() : 0);
 }
 

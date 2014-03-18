@@ -32,7 +32,7 @@ function test()
             var shadowDiv = children[0];
             InspectorTest.addResult("User-agent shadow DOM hidden:");
             elementsPanel.revealAndSelectNode(shadowDiv.id);
-            WebInspector.settings.showShadowDOM.set(true);
+            WebInspector.settings.showUAShadowDOM.set(true);
             InspectorTest.addResult("User-agent shadow DOM shown:");
             elementsPanel.revealAndSelectNode(shadowDiv.id);
         }

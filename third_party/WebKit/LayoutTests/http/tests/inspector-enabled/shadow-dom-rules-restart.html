@@ -49,7 +49,6 @@ function test()
 
     function runTests(callback)
     {
-        WebInspector.settings.showShadowDOM.set(true);
         InspectorTest.selectNodeAndWaitForStyles("inner", step2);
         
         function step2()

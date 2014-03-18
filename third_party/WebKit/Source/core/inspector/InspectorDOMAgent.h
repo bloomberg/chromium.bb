@@ -131,7 +131,7 @@ public:
     virtual void discardSearchResults(ErrorString*, const String& searchId) OVERRIDE;
     virtual void resolveNode(ErrorString*, int nodeId, const String* objectGroup, RefPtr<TypeBuilder::Runtime::RemoteObject>& result) OVERRIDE;
     virtual void getAttributes(ErrorString*, int nodeId, RefPtr<TypeBuilder::Array<String> >& result) OVERRIDE;
-    virtual void setInspectModeEnabled(ErrorString*, bool enabled, const bool* inspectShadowDOM, const RefPtr<JSONObject>* highlightConfig) OVERRIDE;
+    virtual void setInspectModeEnabled(ErrorString*, bool enabled, const bool* inspectUAShadowDOM, const RefPtr<JSONObject>* highlightConfig) OVERRIDE;
     virtual void requestNode(ErrorString*, const String& objectId, int* nodeId) OVERRIDE;
     virtual void pushNodeByPathToFrontend(ErrorString*, const String& path, int* nodeId) OVERRIDE;
     virtual void pushNodesByBackendIdsToFrontend(ErrorString*, const RefPtr<JSONArray>& nodeIds, RefPtr<TypeBuilder::Array<int> >&) OVERRIDE;
@@ -205,7 +205,7 @@ public:
     Document* assertDocument(ErrorString*, int nodeId);
 
 private:
-    enum SearchMode { NotSearching, SearchingForNormal, SearchingForShadow };
+    enum SearchMode { NotSearching, SearchingForNormal, SearchingForUAShadow };
 
     InspectorDOMAgent(InspectorPageAgent*, InjectedScriptManager*, InspectorOverlay*);
 
