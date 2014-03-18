@@ -20,7 +20,7 @@ base::SingleThreadTaskRunner* Proxy::ImplThreadTaskRunner() const {
 }
 
 bool Proxy::IsMainThread() const {
-#ifndef NDEBUG
+#if DCHECK_IS_ON
   DCHECK(main_task_runner_.get());
   if (impl_thread_is_overridden_)
     return false;
@@ -31,7 +31,7 @@ bool Proxy::IsMainThread() const {
 }
 
 bool Proxy::IsImplThread() const {
-#ifndef NDEBUG
+#if DCHECK_IS_ON
   if (impl_thread_is_overridden_)
     return true;
   if (!impl_task_runner_.get())
@@ -42,36 +42,36 @@ bool Proxy::IsImplThread() const {
 #endif
 }
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON
 void Proxy::SetCurrentThreadIsImplThread(bool is_impl_thread) {
   impl_thread_is_overridden_ = is_impl_thread;
 }
 #endif
 
 bool Proxy::IsMainThreadBlocked() const {
-#ifndef NDEBUG
+#if DCHECK_IS_ON
   return is_main_thread_blocked_;
 #else
   return true;
 #endif
 }
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON
 void Proxy::SetMainThreadBlocked(bool is_main_thread_blocked) {
   is_main_thread_blocked_ = is_main_thread_blocked;
 }
 #endif
 
-Proxy::Proxy(
-    scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner)
+Proxy::Proxy(scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner)
     : main_task_runner_(base::MessageLoopProxy::current()),
-#ifdef NDEBUG
-      impl_task_runner_(impl_task_runner) {}
+#if !DCHECK_IS_ON
+      impl_task_runner_(impl_task_runner) {
 #else
       impl_task_runner_(impl_task_runner),
       impl_thread_is_overridden_(false),
-      is_main_thread_blocked_(false) {}
+      is_main_thread_blocked_(false) {
 #endif
+}
 
 Proxy::~Proxy() {
   DCHECK(IsMainThread());

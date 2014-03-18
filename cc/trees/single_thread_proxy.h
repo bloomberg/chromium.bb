@@ -126,13 +126,13 @@ class SingleThreadProxy : public Proxy, LayerTreeHostImplClient {
 class DebugScopedSetImplThread {
  public:
   explicit DebugScopedSetImplThread(Proxy* proxy) : proxy_(proxy) {
-#ifndef NDEBUG
+#if DCHECK_IS_ON
     previous_value_ = proxy_->impl_thread_is_overridden_;
     proxy_->SetCurrentThreadIsImplThread(true);
 #endif
   }
   ~DebugScopedSetImplThread() {
-#ifndef NDEBUG
+#if DCHECK_IS_ON
     proxy_->SetCurrentThreadIsImplThread(previous_value_);
 #endif
   }
@@ -149,13 +149,13 @@ class DebugScopedSetImplThread {
 class DebugScopedSetMainThread {
  public:
   explicit DebugScopedSetMainThread(Proxy* proxy) : proxy_(proxy) {
-#ifndef NDEBUG
+#if DCHECK_IS_ON
     previous_value_ = proxy_->impl_thread_is_overridden_;
     proxy_->SetCurrentThreadIsImplThread(false);
 #endif
   }
   ~DebugScopedSetMainThread() {
-#ifndef NDEBUG
+#if DCHECK_IS_ON
     proxy_->SetCurrentThreadIsImplThread(previous_value_);
 #endif
   }

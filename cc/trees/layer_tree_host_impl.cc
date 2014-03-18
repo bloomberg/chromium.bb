@@ -257,7 +257,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       rendering_stats_instrumentation_(rendering_stats_instrumentation),
       micro_benchmark_controller_(this),
       need_to_update_visible_tiles_before_draw_(false),
-#ifndef NDEBUG
+#if DCHECK_IS_ON
       did_lose_called_(false),
 #endif
       shared_bitmap_manager_(manager),
@@ -886,7 +886,7 @@ DrawSwapReadbackResult::DrawResult LayerTreeHostImpl::CalculateRenderPasses(
       output_surface_->capabilities().draw_and_swap_full_viewport_every_frame)
     draw_result = DrawSwapReadbackResult::DRAW_SUCCESS;
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON
   for (size_t i = 0; i < frame->render_passes.size(); ++i) {
     for (size_t j = 0; j < frame->render_passes[i]->quad_list.size(); ++j)
       DCHECK(frame->render_passes[i]->quad_list[j]->shared_quad_state);
@@ -1529,7 +1529,7 @@ void LayerTreeHostImpl::DidLoseOutputSurface() {
   // important) in production. We should adjust the test to not need this.
   if (renderer_)
     client_->DidLoseOutputSurfaceOnImplThread();
-#ifndef NDEBUG
+#if DCHECK_IS_ON
   did_lose_called_ = true;
 #endif
 }
@@ -1792,7 +1792,7 @@ void LayerTreeHostImpl::EnforceZeroBudget(bool zero_budget) {
 
 bool LayerTreeHostImpl::InitializeRenderer(
     scoped_ptr<OutputSurface> output_surface) {
-#ifndef NDEBUG
+#if DCHECK_IS_ON
   DCHECK(!renderer_ || did_lose_called_);
 #endif
 

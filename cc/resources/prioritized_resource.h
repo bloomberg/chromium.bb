@@ -143,7 +143,7 @@ class CC_EXPORT PrioritizedResource {
 
     bool resource_has_been_deleted_;
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON
     ResourceProvider* resource_provider_;
 #endif
     DISALLOW_COPY_AND_ASSIGN(Backing);

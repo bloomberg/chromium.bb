@@ -482,7 +482,7 @@ void PrioritizedResourceManager::EvictFirstBackingResource(
 }
 
 void PrioritizedResourceManager::AssertInvariants() {
-#ifndef NDEBUG
+#if DCHECK_IS_ON
   DCHECK(proxy_->IsImplThread() && proxy_->IsMainThreadBlocked());
 
   // If we hit any of these asserts, there is a bug in this class. To see
@@ -541,7 +541,7 @@ void PrioritizedResourceManager::AssertInvariants() {
       DCHECK(backing->CanBeRecycledIfNotInExternalUse());
     previous_backing = backing;
   }
-#endif
+#endif  // DCHECK_IS_ON
 }
 
 const Proxy* PrioritizedResourceManager::ProxyForDebug() const {

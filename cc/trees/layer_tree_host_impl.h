@@ -645,7 +645,7 @@ class CC_EXPORT LayerTreeHostImpl
   MicroBenchmarkControllerImpl micro_benchmark_controller_;
 
   bool need_to_update_visible_tiles_before_draw_;
-#ifndef NDEBUG
+#if DCHECK_IS_ON
   bool did_lose_called_;
 #endif
 

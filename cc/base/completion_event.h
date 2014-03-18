@@ -19,21 +19,21 @@ class CompletionEvent {
  public:
   CompletionEvent()
       : event_(false /* manual_reset */, false /* initially_signaled */) {
-#ifndef NDEBUG
+#if DCHECK_IS_ON
     waited_ = false;
     signaled_ = false;
 #endif
   }
 
   ~CompletionEvent() {
-#ifndef NDEBUG
+#if DCHECK_IS_ON
     DCHECK(waited_);
     DCHECK(signaled_);
 #endif
   }
 
   void Wait() {
-#ifndef NDEBUG
+#if DCHECK_IS_ON
     DCHECK(!waited_);
     waited_ = true;
 #endif
@@ -42,7 +42,7 @@ class CompletionEvent {
   }
 
   void Signal() {
-#ifndef NDEBUG
+#if DCHECK_IS_ON
     DCHECK(!signaled_);
     signaled_ = true;
 #endif
@@ -51,7 +51,7 @@ class CompletionEvent {
 
  private:
   base::WaitableEvent event_;
-#ifndef NDEBUG
+#if DCHECK_IS_ON
   // Used to assert that Wait() and Signal() are each called exactly once.
   bool waited_;
   bool signaled_;

@@ -12,6 +12,7 @@
 #include "cc/test/fake_proxy.h"
 #include "cc/test/impl_side_painting_settings.h"
 #include "cc/trees/occlusion_tracker.h"
+#include "cc/trees/single_thread_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
@@ -45,10 +46,9 @@ TEST(PictureLayerTest, NoTilesIfEmptyBounds) {
   // a layer with empty bounds.
 
   FakeProxy proxy;
-#ifndef NDEBUG
-  proxy.SetCurrentThreadIsImplThread(true);
-#endif
   {
+    DebugScopedSetImplThread impl_thread(&proxy);
+
     FakeLayerTreeHostImpl host_impl(ImplSidePaintingSettings(), &proxy);
     host_impl.CreatePendingTree();
     scoped_ptr<FakePictureLayerImpl> layer_impl =
@@ -60,9 +60,6 @@ TEST(PictureLayerTest, NoTilesIfEmptyBounds) {
     EXPECT_TRUE(layer_impl->pile()->size() == gfx::Size(0, 0));
     EXPECT_TRUE(layer_impl->pile()->recorded_region().IsEmpty());
   }
-#ifndef NDEBUG
-  proxy.SetCurrentThreadIsImplThread(false);
-#endif
 }
 
 }  // namespace

@@ -222,7 +222,7 @@ void SingleThreadProxy::DoCommit(scoped_ptr<ResourceUpdateQueue> queue) {
 
     layer_tree_host_impl_->CommitComplete();
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON
     // In the single-threaded case, the scale and scroll deltas should never be
     // touched on the impl layer tree.
     scoped_ptr<ScrollAndScaleSet> scroll_info =

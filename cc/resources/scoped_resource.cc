@@ -25,7 +25,7 @@ void ScopedResource::Allocate(const gfx::Size& size,
   set_id(resource_provider_->CreateResource(
       size, GL_CLAMP_TO_EDGE, hint, format));
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON
   allocate_thread_id_ = base::PlatformThread::CurrentId();
 #endif
 }
@@ -44,14 +44,14 @@ void ScopedResource::AllocateManaged(const gfx::Size& size,
       ResourceProvider::TextureUsageAny,
       format));
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON
   allocate_thread_id_ = base::PlatformThread::CurrentId();
 #endif
 }
 
 void ScopedResource::Free() {
   if (id()) {
-#ifndef NDEBUG
+#if DCHECK_IS_ON
     DCHECK(allocate_thread_id_ == base::PlatformThread::CurrentId());
 #endif
     resource_provider_->DeleteResource(id());

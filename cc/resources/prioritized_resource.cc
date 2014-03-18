@@ -126,12 +126,13 @@ PrioritizedResource::Backing::Backing(unsigned id,
       was_above_priority_cutoff_at_last_priority_update_(false),
       in_drawing_impl_tree_(false),
       in_parent_compositor_(false),
-#ifdef NDEBUG
-      resource_has_been_deleted_(false) {}
+#if !DCHECK_IS_ON
+      resource_has_been_deleted_(false) {
 #else
       resource_has_been_deleted_(false),
-      resource_provider_(resource_provider) {}
+      resource_provider_(resource_provider) {
 #endif
+}
 
 PrioritizedResource::Backing::~Backing() {
   DCHECK(!owner_);
@@ -142,7 +143,7 @@ void PrioritizedResource::Backing::DeleteResource(
     ResourceProvider* resource_provider) {
   DCHECK(!proxy() || proxy()->IsImplThread());
   DCHECK(!resource_has_been_deleted_);
-#ifndef NDEBUG
+#if DCHECK_IS_ON
   DCHECK(resource_provider == resource_provider_);
 #endif
 
