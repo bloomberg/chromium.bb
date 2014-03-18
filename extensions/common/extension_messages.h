@@ -264,12 +264,6 @@ struct ParamTraits<extensions::APIPermission::ID> {
 };
 
 template <>
-struct ParamTraits<extensions::APIPermission*> {
-  typedef extensions::APIPermission* param_type;
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
 struct ParamTraits<extensions::APIPermissionSet> {
   typedef extensions::APIPermissionSet param_type;
   static void Write(Message* m, const param_type& p);

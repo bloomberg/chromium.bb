@@ -146,11 +146,6 @@ void ParamTraits<APIPermission::ID>::Log(
   LogParam(static_cast<int>(p), l);
 }
 
-void ParamTraits<APIPermission*>::Log(
-    const param_type& p, std::string* l) {
-  p->Log(l);
-}
-
 void ParamTraits<APIPermissionSet>::Write(
     Message* m, const param_type& p) {
   APIPermissionSet::const_iterator it = p.begin();
