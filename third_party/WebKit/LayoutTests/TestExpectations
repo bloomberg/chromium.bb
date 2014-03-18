@@ -372,6 +372,7 @@ crbug.com/248938 [ Linux Win ] virtual/threaded/animations/matrix-anim.html [ Pa
 crbug.com/248938 [ Win Debug ] virtual/threaded/animations/missing-values-first-keyframe.html [ Pass Timeout ]
 crbug.com/248938 [ Linux Win Debug ] virtual/threaded/animations/missing-from-to-transforms.html [ Pass Timeout ]
 crbug.com/248938 [ Win Debug ] virtual/threaded/animations/missing-keyframe-properties.html [ Pass Timeout ]
+crbug.com/248938 [ Linux ] virtual/threaded/animations/missing-keyframe-properties.html [ Pass Timeout ]
 crbug.com/248938 virtual/threaded/animations/negative-delay.html [ Pass Failure Timeout ]
 crbug.com/248938 [ Debug ] virtual/threaded/animations/opacity-transform-animation.html [ Pass Timeout ]
 crbug.com/248938 virtual/threaded/animations/play-state-initially-paused.html [ Pass Failure ]
