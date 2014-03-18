@@ -1718,9 +1718,9 @@ void ThreadProxy::StartScrollbarAnimationOnImplThread() {
 void ThreadProxy::DidActivatePendingTree() {
   TRACE_EVENT0("cc", "ThreadProxy::DidActivatePendingTreeOnImplThread");
   DCHECK(IsImplThread());
+  DCHECK(!impl().layer_tree_host_impl->pending_tree());
 
-  if (impl().completion_event_for_commit_held_on_tree_activation &&
-      !impl().layer_tree_host_impl->pending_tree()) {
+  if (impl().completion_event_for_commit_held_on_tree_activation) {
     TRACE_EVENT_INSTANT0(
         "cc", "ReleaseCommitbyActivation", TRACE_EVENT_SCOPE_THREAD);
     DCHECK(impl().layer_tree_host_impl->settings().impl_side_painting);
