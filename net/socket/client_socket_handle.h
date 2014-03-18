@@ -126,7 +126,7 @@ class NET_EXPORT ClientSocketHandle {
   // SetSocket() may also be used if this handle is used as simply for
   // socket storage (e.g., http://crbug.com/37810).
   void SetSocket(scoped_ptr<StreamSocket> s);
-  void set_is_reused(bool is_reused) { is_reused_ = is_reused; }
+  void set_reuse_type(SocketReuseType reuse_type) { reuse_type_ = reuse_type; }
   void set_idle_time(base::TimeDelta idle_time) { idle_time_ = idle_time; }
   void set_pool_id(int id) { pool_id_ = id; }
   void set_is_ssl_error(bool is_ssl_error) { is_ssl_error_ = is_ssl_error; }
@@ -161,17 +161,9 @@ class NET_EXPORT ClientSocketHandle {
   // These may only be used if is_initialized() is true.
   const std::string& group_name() const { return group_name_; }
   int id() const { return pool_id_; }
-  bool is_reused() const { return is_reused_; }
+  bool is_reused() const { return reuse_type_ == REUSED_IDLE; }
   base::TimeDelta idle_time() const { return idle_time_; }
-  SocketReuseType reuse_type() const {
-    if (is_reused()) {
-      return REUSED_IDLE;
-    } else if (idle_time() == base::TimeDelta()) {
-      return UNUSED;
-    } else {
-      return UNUSED_IDLE;
-    }
-  }
+  SocketReuseType reuse_type() const { return reuse_type_; }
   const LoadTimingInfo::ConnectTiming& connect_timing() const {
     return connect_timing_;
   }
@@ -200,7 +192,7 @@ class NET_EXPORT ClientSocketHandle {
   HigherLayeredPool* higher_pool_;
   scoped_ptr<StreamSocket> socket_;
   std::string group_name_;
-  bool is_reused_;
+  SocketReuseType reuse_type_;
   CompletionCallback callback_;
   CompletionCallback user_callback_;
   base::TimeDelta idle_time_;

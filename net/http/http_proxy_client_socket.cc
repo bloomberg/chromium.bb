@@ -276,7 +276,7 @@ int HttpProxyClientSocket::PrepareForAuthRestart() {
 int HttpProxyClientSocket::DidDrainBodyForAuthRestart(bool keep_alive) {
   if (keep_alive && transport_->socket()->IsConnectedAndIdle()) {
     next_state_ = STATE_GENERATE_AUTH_TOKEN;
-    transport_->set_is_reused(true);
+    transport_->set_reuse_type(ClientSocketHandle::REUSED_IDLE);
   } else {
     // This assumes that the underlying transport socket is a TCP socket,
     // since only TCP sockets are restartable.

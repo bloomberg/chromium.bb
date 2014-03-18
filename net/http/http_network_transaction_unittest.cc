@@ -16,6 +16,7 @@
 #include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_file_util.h"
@@ -282,6 +283,13 @@ class HttpNetworkTransactionTest
   // other argument should be NULL.
   void KeepAliveConnectionResendRequestTest(const MockWrite* write_failure,
                                             const MockRead* read_failure);
+
+  // Either |write_failure| specifies a write failure or |read_failure|
+  // specifies a read failure when using a reused socket.  In either case, the
+  // failure should cause the network transaction to resend the request, and the
+  // other argument should be NULL.
+  void PreconnectErrorResendRequestTest(const MockWrite* write_failure,
+                                        const MockRead* read_failure);
 
   SimpleGetHelperResult SimpleGetHelperForData(StaticSocketDataProvider* data[],
                                                size_t data_count) {
@@ -1239,7 +1247,7 @@ void HttpNetworkTransactionTest::KeepAliveConnectionResendRequestTest(
   };
 
   if (write_failure) {
-    ASSERT_TRUE(!read_failure);
+    ASSERT_FALSE(read_failure);
     data1_writes[1] = *write_failure;
   } else {
     ASSERT_TRUE(read_failure);
@@ -1298,6 +1306,90 @@ void HttpNetworkTransactionTest::KeepAliveConnectionResendRequestTest(
   }
 }
 
+void HttpNetworkTransactionTest::PreconnectErrorResendRequestTest(
+    const MockWrite* write_failure,
+    const MockRead* read_failure) {
+  HttpRequestInfo request;
+  request.method = "GET";
+  request.url = GURL("http://www.foo.com/");
+  request.load_flags = 0;
+
+  CapturingNetLog net_log;
+  session_deps_.net_log = &net_log;
+  scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+
+  // Written data for successfully sending a request.
+  MockWrite data1_writes[] = {
+    MockWrite("GET / HTTP/1.1\r\n"
+              "Host: www.foo.com\r\n"
+              "Connection: keep-alive\r\n\r\n"),
+  };
+
+  // Read results for the first request.
+  MockRead data1_reads[] = {
+    MockRead(ASYNC, OK),
+  };
+
+  if (write_failure) {
+    ASSERT_FALSE(read_failure);
+    data1_writes[0] = *write_failure;
+  } else {
+    ASSERT_TRUE(read_failure);
+    data1_reads[0] = *read_failure;
+  }
+
+  StaticSocketDataProvider data1(data1_reads, arraysize(data1_reads),
+                                 data1_writes, arraysize(data1_writes));
+  session_deps_.socket_factory->AddSocketDataProvider(&data1);
+
+  MockRead data2_reads[] = {
+    MockRead("HTTP/1.1 200 OK\r\nContent-Length: 5\r\n\r\n"),
+    MockRead("hello"),
+    MockRead(ASYNC, OK),
+  };
+  StaticSocketDataProvider data2(data2_reads, arraysize(data2_reads), NULL, 0);
+  session_deps_.socket_factory->AddSocketDataProvider(&data2);
+
+  // Preconnect a socket.
+  net::SSLConfig ssl_config;
+  session->ssl_config_service()->GetSSLConfig(&ssl_config);
+  if (session->http_stream_factory()->has_next_protos())
+    ssl_config.next_protos = session->http_stream_factory()->next_protos();
+  session->http_stream_factory()->PreconnectStreams(
+      1, request, DEFAULT_PRIORITY, ssl_config, ssl_config);
+  // Wait for the preconnect to complete.
+  // TODO(davidben): Some way to wait for an idle socket count might be handy.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, GetIdleSocketCountInTransportSocketPool(session.get()));
+
+  // Make the request.
+  TestCompletionCallback callback;
+
+  scoped_ptr<HttpTransaction> trans(
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
+
+  int rv = trans->Start(&request, callback.callback(), BoundNetLog());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+
+  rv = callback.WaitForResult();
+  EXPECT_EQ(OK, rv);
+
+  LoadTimingInfo load_timing_info;
+  EXPECT_TRUE(trans->GetLoadTimingInfo(&load_timing_info));
+  TestLoadTimingNotReused(load_timing_info, CONNECT_TIMING_HAS_DNS_TIMES);
+
+  const HttpResponseInfo* response = trans->GetResponseInfo();
+  ASSERT_TRUE(response != NULL);
+
+  EXPECT_TRUE(response->headers.get() != NULL);
+  EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
+
+  std::string response_data;
+  rv = ReadTransaction(trans.get(), &response_data);
+  EXPECT_EQ(OK, rv);
+  EXPECT_EQ("hello", response_data);
+}
+
 TEST_P(HttpNetworkTransactionTest,
        KeepAliveConnectionNotConnectedOnWrite) {
   MockWrite write_failure(ASYNC, ERR_SOCKET_NOT_CONNECTED);
@@ -1312,6 +1404,22 @@ TEST_P(HttpNetworkTransactionTest, KeepAliveConnectionReset) {
 TEST_P(HttpNetworkTransactionTest, KeepAliveConnectionEOF) {
   MockRead read_failure(SYNCHRONOUS, OK);  // EOF
   KeepAliveConnectionResendRequestTest(NULL, &read_failure);
+}
+
+TEST_P(HttpNetworkTransactionTest,
+       PreconnectErrorNotConnectedOnWrite) {
+  MockWrite write_failure(ASYNC, ERR_SOCKET_NOT_CONNECTED);
+  PreconnectErrorResendRequestTest(&write_failure, NULL);
+}
+
+TEST_P(HttpNetworkTransactionTest, PreconnectErrorReset) {
+  MockRead read_failure(ASYNC, ERR_CONNECTION_RESET);
+  PreconnectErrorResendRequestTest(NULL, &read_failure);
+}
+
+TEST_P(HttpNetworkTransactionTest, PreconnectErrorEOF) {
+  MockRead read_failure(SYNCHRONOUS, OK);  // EOF
+  PreconnectErrorResendRequestTest(NULL, &read_failure);
 }
 
 TEST_P(HttpNetworkTransactionTest, NonKeepAliveConnectionReset) {

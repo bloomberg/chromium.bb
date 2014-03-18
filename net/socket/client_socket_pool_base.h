@@ -46,6 +46,7 @@
 #include "net/base/network_change_notifier.h"
 #include "net/base/priority_queue.h"
 #include "net/base/request_priority.h"
+#include "net/socket/client_socket_handle.h"
 #include "net/socket/client_socket_pool.h"
 #include "net/socket/stream_socket.h"
 
@@ -528,7 +529,7 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
 
   // Assigns |socket| to |handle| and updates |group|'s counters appropriately.
   void HandOutSocket(scoped_ptr<StreamSocket> socket,
-                     bool reused,
+                     ClientSocketHandle::SocketReuseType reuse_type,
                      const LoadTimingInfo::ConnectTiming& connect_timing,
                      ClientSocketHandle* handle,
                      base::TimeDelta time_idle,

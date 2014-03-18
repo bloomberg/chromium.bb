@@ -19,7 +19,7 @@ ClientSocketHandle::ClientSocketHandle()
     : is_initialized_(false),
       pool_(NULL),
       higher_pool_(NULL),
-      is_reused_(false),
+      reuse_type_(ClientSocketHandle::UNUSED),
       callback_(base::Bind(&ClientSocketHandle::OnIOComplete,
                            base::Unretained(this))),
       is_ssl_error_(false) {}
@@ -58,7 +58,7 @@ void ClientSocketHandle::ResetInternal(bool cancel) {
   is_initialized_ = false;
   socket_.reset();
   group_name_.clear();
-  is_reused_ = false;
+  reuse_type_ = ClientSocketHandle::UNUSED;
   user_callback_.Reset();
   if (higher_pool_)
     RemoveHigherLayeredPool(higher_pool_);

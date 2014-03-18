@@ -15,7 +15,6 @@
 #include "base/values.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_log.h"
-#include "net/socket/client_socket_handle.h"
 
 using base::TimeDelta;
 
@@ -401,7 +400,7 @@ int ClientSocketPoolBaseHelper::RequestSocketInternal(
   if (rv == OK) {
     LogBoundConnectJobToRequest(connect_job->net_log().source(), request);
     if (!preconnecting) {
-      HandOutSocket(connect_job->PassSocket(), false /* not reused */,
+      HandOutSocket(connect_job->PassSocket(), ClientSocketHandle::UNUSED,
                     connect_job->connect_timing(), handle, base::TimeDelta(),
                     group, request.net_log());
     } else {
@@ -427,7 +426,7 @@ int ClientSocketPoolBaseHelper::RequestSocketInternal(
       error_socket = connect_job->PassSocket();
     }
     if (error_socket) {
-      HandOutSocket(error_socket.Pass(), false /* not reused */,
+      HandOutSocket(error_socket.Pass(), ClientSocketHandle::UNUSED,
                     connect_job->connect_timing(), handle, base::TimeDelta(),
                     group, request.net_log());
     } else if (group->IsEmpty()) {
@@ -476,9 +475,16 @@ bool ClientSocketPoolBaseHelper::AssignIdleSocketToRequest(
         base::TimeTicks::Now() - idle_socket_it->start_time;
     IdleSocket idle_socket = *idle_socket_it;
     idle_sockets->erase(idle_socket_it);
+    // TODO(davidben): If |idle_time| is under some low watermark, consider
+    // treating as UNUSED rather than UNUSED_IDLE. This will avoid
+    // HttpNetworkTransaction retrying on some errors.
+    ClientSocketHandle::SocketReuseType reuse_type =
+        idle_socket.socket->WasEverUsed() ?
+            ClientSocketHandle::REUSED_IDLE :
+            ClientSocketHandle::UNUSED_IDLE;
     HandOutSocket(
         scoped_ptr<StreamSocket>(idle_socket.socket),
-        idle_socket.socket->WasEverUsed(),
+        reuse_type,
         LoadTimingInfo::ConnectTiming(),
         request.handle(),
         idle_time,
@@ -878,7 +884,7 @@ void ClientSocketPoolBaseHelper::OnConnectJobComplete(
     if (request) {
       LogBoundConnectJobToRequest(job_log.source(), *request);
       HandOutSocket(
-          socket.Pass(), false /* unused socket */, connect_timing,
+          socket.Pass(), ClientSocketHandle::UNUSED, connect_timing,
           request->handle(), base::TimeDelta(), group, request->net_log());
       request->net_log().EndEvent(NetLog::TYPE_SOCKET_POOL);
       InvokeUserCallbackLater(request->handle(), request->callback(), result);
@@ -898,7 +904,7 @@ void ClientSocketPoolBaseHelper::OnConnectJobComplete(
       RemoveConnectJob(job, group);
       if (socket.get()) {
         handed_out_socket = true;
-        HandOutSocket(socket.Pass(), false /* unused socket */,
+        HandOutSocket(socket.Pass(), ClientSocketHandle::UNUSED,
                       connect_timing, request->handle(), base::TimeDelta(),
                       group, request->net_log());
       }
@@ -963,7 +969,7 @@ void ClientSocketPoolBaseHelper::ProcessPendingRequest(
 
 void ClientSocketPoolBaseHelper::HandOutSocket(
     scoped_ptr<StreamSocket> socket,
-    bool reused,
+    ClientSocketHandle::SocketReuseType reuse_type,
     const LoadTimingInfo::ConnectTiming& connect_timing,
     ClientSocketHandle* handle,
     base::TimeDelta idle_time,
@@ -971,12 +977,12 @@ void ClientSocketPoolBaseHelper::HandOutSocket(
     const BoundNetLog& net_log) {
   DCHECK(socket);
   handle->SetSocket(socket.Pass());
-  handle->set_is_reused(reused);
+  handle->set_reuse_type(reuse_type);
   handle->set_idle_time(idle_time);
   handle->set_pool_id(pool_generation_number_);
   handle->set_connect_timing(connect_timing);
 
-  if (reused) {
+  if (handle->is_reused()) {
     net_log.AddEvent(
         NetLog::TYPE_SOCKET_POOL_REUSED_AN_EXISTING_SOCKET,
         NetLog::IntegerCallback(

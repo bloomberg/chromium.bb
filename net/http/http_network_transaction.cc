@@ -1443,7 +1443,11 @@ int HttpNetworkTransaction::HandleIOError(int error) {
     // likely happen when trying to retrieve its IP address.
     // See http://crbug.com/105824 for more details.
     case ERR_SOCKET_NOT_CONNECTED:
-      if (ShouldResendRequest(error)) {
+    // If a socket is closed on its initial request, HttpStreamParser returns
+    // ERR_EMPTY_RESPONSE. This may still be close/reuse race if the socket was
+    // preconnected but failed to be used before the server timed it out.
+    case ERR_EMPTY_RESPONSE:
+      if (ShouldResendRequest()) {
         net_log_.AddEventWithNetErrorCode(
             NetLog::TYPE_HTTP_TRANSACTION_RESTART_AFTER_ERROR, error);
         ResetConnectionAndRequestForResend();
@@ -1494,7 +1498,7 @@ HttpResponseHeaders* HttpNetworkTransaction::GetResponseHeaders() const {
   return response_.headers.get();
 }
 
-bool HttpNetworkTransaction::ShouldResendRequest(int error) const {
+bool HttpNetworkTransaction::ShouldResendRequest() const {
   bool connection_is_proven = stream_->IsConnectionReused();
   bool has_received_headers = GetResponseHeaders() != NULL;
 

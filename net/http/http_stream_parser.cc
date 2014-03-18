@@ -904,7 +904,7 @@ bool HttpStreamParser::IsConnectionReused() const {
 }
 
 void HttpStreamParser::SetConnectionReused() {
-  connection_->set_is_reused(true);
+  connection_->set_reuse_type(ClientSocketHandle::REUSED_IDLE);
 }
 
 bool HttpStreamParser::IsConnectionReusable() const {
