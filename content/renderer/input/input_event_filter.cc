@@ -18,6 +18,21 @@
 
 using blink::WebInputEvent;
 
+#include "ipc/ipc_message_null_macros.h"
+#undef IPC_MESSAGE_DECL
+#define IPC_MESSAGE_DECL(kind, type, name, in, out, ilist, olist) \
+  case name::ID: return #name;
+
+const char* GetInputMessageTypeName(const IPC::Message& message) {
+  switch (message.type()) {
+#include "content/common/input_messages.h"
+    default:
+      NOTREACHED() << "Invalid message type: " << message.type();
+      break;
+  };
+  return "NonInputMsgType";
+}
+
 namespace content {
 
 InputEventFilter::InputEventFilter(
@@ -87,10 +102,10 @@ static bool RequiresThreadBounce(const IPC::Message& message) {
 }
 
 bool InputEventFilter::OnMessageReceived(const IPC::Message& message) {
-  TRACE_EVENT0("input", "InputEventFilter::OnMessageReceived");
-
   if (!RequiresThreadBounce(message))
     return false;
+
+  TRACE_EVENT0("input", "InputEventFilter::OnMessageReceived::InputMessage");
 
   {
     base::AutoLock locked(routes_lock_);
@@ -114,8 +129,14 @@ void InputEventFilter::ForwardToMainListener(const IPC::Message& message) {
 void InputEventFilter::ForwardToHandler(const IPC::Message& message) {
   DCHECK(!handler_.is_null());
   DCHECK(target_loop_->BelongsToCurrentThread());
+  TRACE_EVENT1("input", "InputEventFilter::ForwardToHandler",
+               "message_type", GetInputMessageTypeName(message));
 
   if (message.type() != InputMsg_HandleInputEvent::ID) {
+    TRACE_EVENT_INSTANT0(
+        "input",
+        "InputEventFilter::ForwardToHandler::ForwardToMainListener",
+        TRACE_EVENT_SCOPE_THREAD);
     main_loop_->PostTask(
         FROM_HERE,
         base::Bind(&InputEventFilter::ForwardToMainListener,
@@ -135,7 +156,10 @@ void InputEventFilter::ForwardToHandler(const IPC::Message& message) {
   InputEventAckState ack = handler_.Run(routing_id, event, &latency_info);
 
   if (ack == INPUT_EVENT_ACK_STATE_NOT_CONSUMED) {
-    TRACE_EVENT0("input", "InputEventFilter::ForwardToHandler");
+    TRACE_EVENT_INSTANT0(
+        "input",
+        "InputEventFilter::ForwardToHandler::ForwardToMainListener",
+        TRACE_EVENT_SCOPE_THREAD);
     IPC::Message new_msg = InputMsg_HandleInputEvent(
         routing_id, event, latency_info, is_keyboard_shortcut);
     main_loop_->PostTask(

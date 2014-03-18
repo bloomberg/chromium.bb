@@ -7,6 +7,7 @@
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "content/common/input/web_input_event_traits.h"
 #include "content/renderer/input/input_handler_proxy_client.h"
 #include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
@@ -106,6 +107,8 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleInputEvent(
     const WebInputEvent& event) {
   DCHECK(client_);
   DCHECK(input_handler_);
+  TRACE_EVENT1("input", "InputHandlerProxy::HandleInputEvent",
+               "type", WebInputEventTraits::GetName(event.type));
 
   if (event.type == WebInputEvent::MouseWheel) {
     const WebMouseWheelEvent& wheel_event =
@@ -125,7 +128,7 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleInputEvent(
     switch (scroll_status) {
       case cc::InputHandler::ScrollStarted: {
         TRACE_EVENT_INSTANT2(
-            "renderer",
+            "input",
             "InputHandlerProxy::handle_input wheel scroll",
             TRACE_EVENT_SCOPE_THREAD,
             "deltaX",
@@ -284,7 +287,7 @@ InputHandlerProxy::HandleGestureFling(
       disallow_vertical_fling_scroll_ =
           !gesture_event.data.flingStart.velocityY;
       TRACE_EVENT_ASYNC_BEGIN0(
-          "renderer",
+          "input",
           "InputHandlerProxy::HandleGestureFling::started",
           this);
       if (gesture_event.timeStampSeconds) {
@@ -305,7 +308,7 @@ InputHandlerProxy::HandleGestureFling(
       return DID_HANDLE;
     }
     case cc::InputHandler::ScrollOnMainThread: {
-      TRACE_EVENT_INSTANT0("renderer",
+      TRACE_EVENT_INSTANT0("input",
                            "InputHandlerProxy::HandleGestureFling::"
                            "scroll_on_main_thread",
                            TRACE_EVENT_SCOPE_THREAD);
@@ -314,7 +317,7 @@ InputHandlerProxy::HandleGestureFling(
     }
     case cc::InputHandler::ScrollIgnored: {
       TRACE_EVENT_INSTANT0(
-          "renderer",
+          "input",
           "InputHandlerProxy::HandleGestureFling::ignored",
           TRACE_EVENT_SCOPE_THREAD);
       if (gesture_event.sourceDevice == WebGestureEvent::Touchpad) {
@@ -350,7 +353,7 @@ void InputHandlerProxy::Animate(base::TimeTicks time) {
   if (fling_is_active) {
     input_handler_->ScheduleAnimation();
   } else {
-    TRACE_EVENT_INSTANT0("renderer",
+    TRACE_EVENT_INSTANT0("input",
                          "InputHandlerProxy::animate::flingOver",
                          TRACE_EVENT_SCOPE_THREAD);
     CancelCurrentFling(true);
@@ -384,12 +387,12 @@ bool InputHandlerProxy::CancelCurrentFling(
       fling_parameters_.sourceDevice == WebGestureEvent::Touchscreen) {
     input_handler_->ScrollEnd();
     TRACE_EVENT_ASYNC_END0(
-        "renderer",
+        "input",
         "InputHandlerProxy::HandleGestureFling::started",
         this);
   }
 
-  TRACE_EVENT_INSTANT1("renderer",
+  TRACE_EVENT_INSTANT1("input",
                        "InputHandlerProxy::CancelCurrentFling",
                        TRACE_EVENT_SCOPE_THREAD,
                        "had_fling_animation",
@@ -423,7 +426,7 @@ bool InputHandlerProxy::TouchpadFlingScroll(
     case DROP_EVENT:
       break;
     case DID_NOT_HANDLE:
-      TRACE_EVENT_INSTANT0("renderer",
+      TRACE_EVENT_INSTANT0("input",
                            "InputHandlerProxy::scrollBy::AbortFling",
                            TRACE_EVENT_SCOPE_THREAD);
       // If we got a DID_NOT_HANDLE, that means we need to deliver wheels on the
@@ -455,7 +458,7 @@ void InputHandlerProxy::scrollBy(const WebFloatSize& increment) {
   if (clipped_increment == WebFloatSize())
     return;
 
-  TRACE_EVENT2("renderer",
+  TRACE_EVENT2("input",
                "InputHandlerProxy::scrollBy",
                "x",
                clipped_increment.width,
@@ -483,7 +486,7 @@ void InputHandlerProxy::scrollBy(const WebFloatSize& increment) {
 
 void InputHandlerProxy::notifyCurrentFlingVelocity(
     const WebFloatSize& velocity) {
-  TRACE_EVENT2("renderer",
+  TRACE_EVENT2("input",
                "InputHandlerProxy::notifyCurrentFlingVelocity",
                "vx",
                velocity.width,
