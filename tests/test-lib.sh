@@ -100,7 +100,7 @@ setup_initgit() {
     git commit -qam "second commit"
     # Hack: make sure master is not the current branch
     #       otherwise push will give a warning
-    git checkout -q -b foo
+    git checkout -q --detach master
   )
 }
 
