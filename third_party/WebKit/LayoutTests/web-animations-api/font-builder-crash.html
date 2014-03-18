@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<div id="target">This test passes if it does not crash.</div>
+<script>
+target.animate([
+  {fontSize: 'large', fontWeight: 'normal'},
+  {fontSize: 'small', fontWeight: 'bold'},
+], 1);
+if (window.testRunner) {
+  testRunner.dumpAsText();
+  testRunner.waitUntilDone();
+}
+requestAnimationFrame(function() {
+  testRunner.notifyDone();
+});
+</script>

@@ -805,6 +805,7 @@ PassRefPtrWillBeRawPtr<KeyframeEffectModel> StyleResolver::createKeyframeEffectM
 
     StyleResolverState state(element.document(), &element);
     state.setStyle(RenderStyle::create());
+    state.fontBuilder().initForStyleResolve(state.document(), state.style(), state.useSVGZoomRules());
 
     for (unsigned i = 0; i < propertySetVector.size(); ++i) {
         for (unsigned j = 0; j < propertySetVector[i]->propertyCount(); ++j) {
