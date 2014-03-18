@@ -19,8 +19,8 @@ namespace {
 // This is admittedly pretty magical. It's approximately enough memory for four
 // 2560x1600 images.
 static const size_t kDefaultDiscardableMemoryLimit = 64 * 1024 * 1024;
-static const size_t kDefaultBytesToReclaimUnderModeratePressure =
-    (3 * kDefaultDiscardableMemoryLimit) / 4;
+static const size_t kDefaultBytesToKeepUnderModeratePressure =
+    kDefaultDiscardableMemoryLimit / 4;
 
 }  // namespace
 
@@ -28,8 +28,8 @@ DiscardableMemoryProvider::DiscardableMemoryProvider()
     : allocations_(AllocationMap::NO_AUTO_EVICT),
       bytes_allocated_(0),
       discardable_memory_limit_(kDefaultDiscardableMemoryLimit),
-      bytes_to_reclaim_under_moderate_pressure_(
-          kDefaultBytesToReclaimUnderModeratePressure) {
+      bytes_to_keep_under_moderate_pressure_(
+          kDefaultBytesToKeepUnderModeratePressure) {
 }
 
 DiscardableMemoryProvider::~DiscardableMemoryProvider() {
@@ -59,10 +59,10 @@ void DiscardableMemoryProvider::SetDiscardableMemoryLimit(size_t bytes) {
   EnforcePolicyWithLockAcquired();
 }
 
-void DiscardableMemoryProvider::SetBytesToReclaimUnderModeratePressure(
+void DiscardableMemoryProvider::SetBytesToKeepUnderModeratePressure(
     size_t bytes) {
   AutoLock lock(lock_);
-  bytes_to_reclaim_under_moderate_pressure_ = bytes;
+  bytes_to_keep_under_moderate_pressure_ = bytes;
 }
 
 void DiscardableMemoryProvider::Register(
@@ -190,14 +190,8 @@ void DiscardableMemoryProvider::OnMemoryPressure(
 void DiscardableMemoryProvider::Purge() {
   AutoLock lock(lock_);
 
-  if (bytes_to_reclaim_under_moderate_pressure_ == 0)
-    return;
-
-  size_t limit = 0;
-  if (bytes_to_reclaim_under_moderate_pressure_ < bytes_allocated_)
-    limit = bytes_allocated_ - bytes_to_reclaim_under_moderate_pressure_;
-
-  PurgeLRUWithLockAcquiredUntilUsageIsWithin(limit);
+  PurgeLRUWithLockAcquiredUntilUsageIsWithin(
+      bytes_to_keep_under_moderate_pressure_);
 }
 
 void DiscardableMemoryProvider::PurgeLRUWithLockAcquiredUntilUsageIsWithin(

@@ -58,8 +58,8 @@ class BASE_EXPORT_PRIVATE DiscardableMemoryProvider {
   // having no limit at all.
   void SetDiscardableMemoryLimit(size_t bytes);
 
-  // Sets the amount of memory to reclaim when we're under moderate pressure.
-  void SetBytesToReclaimUnderModeratePressure(size_t bytes);
+  // Sets the amount of memory to keep when we're under moderate pressure.
+  void SetBytesToKeepUnderModeratePressure(size_t bytes);
 
   // Adds the given discardable memory to the provider's collection.
   void Register(const DiscardableMemory* discardable, size_t bytes);
@@ -109,8 +109,8 @@ class BASE_EXPORT_PRIVATE DiscardableMemoryProvider {
   void OnMemoryPressure(
       MemoryPressureListener::MemoryPressureLevel pressure_level);
 
-  // Purges |bytes_to_reclaim_under_moderate_pressure_| bytes of
-  // discardable memory.
+  // Purges until discardable memory usage is within
+  // |bytes_to_keep_under_moderate_pressure_|.
   void Purge();
 
   // Purges least recently used memory until usage is less or equal to |limit|.
@@ -130,12 +130,12 @@ class BASE_EXPORT_PRIVATE DiscardableMemoryProvider {
   // The total amount of allocated discardable memory.
   size_t bytes_allocated_;
 
-  // The maximum number of bytes of discardable memory that may be allocated
-  // before we assume moderate memory pressure.
+  // The maximum number of bytes of discardable memory that may be allocated.
   size_t discardable_memory_limit_;
 
-  // Under moderate memory pressure, we will purge this amount of memory.
-  size_t bytes_to_reclaim_under_moderate_pressure_;
+  // Under moderate memory pressure, we will purge until usage is within this
+  // limit.
+  size_t bytes_to_keep_under_moderate_pressure_;
 
   // Allows us to be respond when the system reports that it is under memory
   // pressure.

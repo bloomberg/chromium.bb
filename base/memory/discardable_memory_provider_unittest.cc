@@ -87,8 +87,8 @@ class DiscardableMemoryProviderTestBase {
     provider_->SetDiscardableMemoryLimit(bytes);
   }
 
-  void SetBytesToReclaimUnderModeratePressure(size_t bytes) {
-    provider_->SetBytesToReclaimUnderModeratePressure(bytes);
+  void SetBytesToKeepUnderModeratePressure(size_t bytes) {
+    provider_->SetBytesToKeepUnderModeratePressure(bytes);
   }
 
   scoped_ptr<DiscardableMemory> CreateLockedMemory(size_t size) {
@@ -256,7 +256,9 @@ class DiscardableMemoryProviderPermutationTest
 TEST_P(DiscardableMemoryProviderPermutationTest, LRUDiscardedModeratePressure) {
   CreateAndUseDiscardableMemory();
 
-  SetBytesToReclaimUnderModeratePressure(1024);
+  SetBytesToKeepUnderModeratePressure(1024);
+  SetDiscardableMemoryLimit(2048);
+
   MemoryPressureListener::NotifyMemoryPressure(
       MemoryPressureListener::MEMORY_PRESSURE_MODERATE);
   RunLoop().RunUntilIdle();
@@ -272,7 +274,7 @@ TEST_P(DiscardableMemoryProviderPermutationTest, LRUDiscardedModeratePressure) {
 TEST_P(DiscardableMemoryProviderPermutationTest, LRUDiscardedExceedLimit) {
   CreateAndUseDiscardableMemory();
 
-  SetBytesToReclaimUnderModeratePressure(1024);
+  SetBytesToKeepUnderModeratePressure(1024);
   SetDiscardableMemoryLimit(2048);
 
   EXPECT_NE(DISCARDABLE_MEMORY_LOCK_STATUS_FAILED, discardable(2)->Lock());
@@ -284,7 +286,7 @@ TEST_P(DiscardableMemoryProviderPermutationTest, LRUDiscardedExceedLimit) {
 // Verify that no more memory than necessary was discarded after changing
 // memory limit.
 TEST_P(DiscardableMemoryProviderPermutationTest, LRUDiscardedAmount) {
-  SetBytesToReclaimUnderModeratePressure(2048);
+  SetBytesToKeepUnderModeratePressure(2048);
   SetDiscardableMemoryLimit(4096);
 
   CreateAndUseDiscardableMemory();
