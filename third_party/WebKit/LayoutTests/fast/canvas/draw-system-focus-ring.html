@@ -15,10 +15,16 @@ if (window.testRunner)
 document.getElementById("button1").focus();
 
 var canvas = document.getElementById("canvas").getContext("2d");
+
+shouldNotThrow('canvas.drawSystemFocusRing(null);');
+shouldThrow('canvas.drawSystemFocusRing();');
+
 canvas.beginPath();
 canvas.rect(50, 50, 200, 100);
 canvas.fillStyle = "#ccf";
 canvas.fill();
+// re-test null case after having defined a path (regression test for crbug.com/353248)
+shouldNotThrow('canvas.drawSystemFocusRing(null);');
 canvas.drawSystemFocusRing(document.getElementById("button1"));
 
 canvas.beginPath();

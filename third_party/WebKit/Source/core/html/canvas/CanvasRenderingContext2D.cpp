@@ -2238,7 +2238,7 @@ bool CanvasRenderingContext2D::focusRingCallIsValid(const Path& path, Element* e
         return false;
     if (path.isEmpty())
         return false;
-    if (!element->isDescendantOf(canvas()))
+    if (!element || !element->isDescendantOf(canvas()))
         return false;
 
     return true;

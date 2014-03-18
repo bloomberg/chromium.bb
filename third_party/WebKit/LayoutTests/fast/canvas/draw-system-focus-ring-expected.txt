@@ -1,3 +1,6 @@
+PASS canvas.drawSystemFocusRing(null); did not throw exception.
+PASS canvas.drawSystemFocusRing(); threw exception TypeError: Failed to execute 'drawSystemFocusRing' on 'CanvasRenderingContext2D': 1 argument required, but only 0 present..
+PASS canvas.drawSystemFocusRing(null); did not throw exception.
 PASS data[0] != 0 || data[1] != 0 || data[2] != 0 is true
 PASS data[0] == 0 && data[1] == 0 && data[2] == 0 is true
 PASS successfullyParsed is true
