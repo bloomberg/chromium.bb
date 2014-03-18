@@ -225,24 +225,24 @@ const char* PassphraseTypeString(
   return "";
 }
 
-const char* SingletonEventTypeString(
-    sync_pb::DebugEventInfo::SingletonEventType type) {
-  ASSERT_ENUM_BOUNDS(sync_pb::DebugEventInfo, SingletonEventType,
+const char* SingletonDebugEventTypeString(
+    sync_pb::SyncEnums::SingletonDebugEventType type) {
+  ASSERT_ENUM_BOUNDS(sync_pb::SyncEnums, SingletonDebugEventType,
                      CONNECTION_STATUS_CHANGE, BOOTSTRAP_TOKEN_UPDATED);
   switch (type) {
-    ENUM_CASE(sync_pb::DebugEventInfo, CONNECTION_STATUS_CHANGE);
-    ENUM_CASE(sync_pb::DebugEventInfo, UPDATED_TOKEN);
-    ENUM_CASE(sync_pb::DebugEventInfo, PASSPHRASE_REQUIRED);
-    ENUM_CASE(sync_pb::DebugEventInfo, PASSPHRASE_ACCEPTED);
-    ENUM_CASE(sync_pb::DebugEventInfo, INITIALIZATION_COMPLETE);
-    ENUM_CASE(sync_pb::DebugEventInfo, STOP_SYNCING_PERMANENTLY);
-    ENUM_CASE(sync_pb::DebugEventInfo, ENCRYPTION_COMPLETE);
-    ENUM_CASE(sync_pb::DebugEventInfo, ACTIONABLE_ERROR);
-    ENUM_CASE(sync_pb::DebugEventInfo, ENCRYPTED_TYPES_CHANGED);
-    ENUM_CASE(sync_pb::DebugEventInfo, PASSPHRASE_TYPE_CHANGED);
-    ENUM_CASE(sync_pb::DebugEventInfo, KEYSTORE_TOKEN_UPDATED);
-    ENUM_CASE(sync_pb::DebugEventInfo, CONFIGURE_COMPLETE);
-    ENUM_CASE(sync_pb::DebugEventInfo, BOOTSTRAP_TOKEN_UPDATED);
+    ENUM_CASE(sync_pb::SyncEnums, CONNECTION_STATUS_CHANGE);
+    ENUM_CASE(sync_pb::SyncEnums, UPDATED_TOKEN);
+    ENUM_CASE(sync_pb::SyncEnums, PASSPHRASE_REQUIRED);
+    ENUM_CASE(sync_pb::SyncEnums, PASSPHRASE_ACCEPTED);
+    ENUM_CASE(sync_pb::SyncEnums, INITIALIZATION_COMPLETE);
+    ENUM_CASE(sync_pb::SyncEnums, STOP_SYNCING_PERMANENTLY);
+    ENUM_CASE(sync_pb::SyncEnums, ENCRYPTION_COMPLETE);
+    ENUM_CASE(sync_pb::SyncEnums, ACTIONABLE_ERROR);
+    ENUM_CASE(sync_pb::SyncEnums, ENCRYPTED_TYPES_CHANGED);
+    ENUM_CASE(sync_pb::SyncEnums, PASSPHRASE_TYPE_CHANGED);
+    ENUM_CASE(sync_pb::SyncEnums, KEYSTORE_TOKEN_UPDATED);
+    ENUM_CASE(sync_pb::SyncEnums, CONFIGURE_COMPLETE);
+    ENUM_CASE(sync_pb::SyncEnums, BOOTSTRAP_TOKEN_UPDATED);
   }
   NOTREACHED();
   return "";

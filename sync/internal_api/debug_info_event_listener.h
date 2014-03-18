@@ -95,7 +95,7 @@ class SYNC_EXPORT_PRIVATE DebugInfoEventListener
   FRIEND_TEST_ALL_PREFIXES(DebugInfoEventListenerTest, VerifyClearEvents);
 
   void AddEventToQueue(const sync_pb::DebugEventInfo& event_info);
-  void CreateAndAddEvent(sync_pb::DebugEventInfo::SingletonEventType type);
+  void CreateAndAddEvent(sync_pb::SyncEnums::SingletonDebugEventType type);
 
   typedef std::deque<sync_pb::DebugEventInfo> DebugEventInfoQueue;
   DebugEventInfoQueue events_;

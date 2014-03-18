@@ -12,6 +12,7 @@ option retain_unknown_fields = true;
 package sync_pb;
 
 import "get_updates_caller_info.proto";
+import "sync_enums.proto";
 
 // Per-type hint information.
 message TypeHint {
@@ -136,41 +137,10 @@ message DatatypeAssociationStats {
 }
 
 message DebugEventInfo {
-  // Singleton event types. These events have no further information beyond
-  // the fact that the event happened.
-  enum SingletonEventType {
-    CONNECTION_STATUS_CHANGE = 1; // Connection status change. Note this
-                                  // gets generated even during a successful
-                                  // connection.
-    UPDATED_TOKEN = 2; // Client received an updated token.
-    PASSPHRASE_REQUIRED = 3; // Cryptographer needs passphrase.
-    PASSPHRASE_ACCEPTED = 4; // Passphrase was accepted by cryptographer.
-    INITIALIZATION_COMPLETE = 5; // Sync Initialization is complete.
-
-    // |STOP_SYNCING_PERMANENTLY| event should never be seen by the server in
-    // the absence of bugs.
-    STOP_SYNCING_PERMANENTLY = 6; // Server sent stop syncing permanently.
-
-    ENCRYPTION_COMPLETE = 7; // Client has finished encrypting all data.
-    ACTIONABLE_ERROR = 8; // Client received an actionable error.
-    ENCRYPTED_TYPES_CHANGED = 9; // Set of encrypted types has changed.
-                                 // NOTE: until m25 bootstrap token updated also
-                                 // shared this field (erroneously).
-    PASSPHRASE_TYPE_CHANGED = 10;  // The encryption passphrase state changed.
-    KEYSTORE_TOKEN_UPDATED = 11;  // A new keystore encryption token was
-                                  // persisted.
-    CONFIGURE_COMPLETE = 12;      // The datatype manager has finished an
-                                  // at least partially successful
-                                  // configuration and is once again syncing
-                                  // with the server.
-    BOOTSTRAP_TOKEN_UPDATED = 13;  // A new cryptographer bootstrap token was
-                                   // generated.
-  }
-
   // Each of the following fields correspond to different kinds of events. as
   // a result, only one is set during any single DebugEventInfo.
   // A singleton event. See enum definition.
-  optional SingletonEventType singleton_event = 1;
+  optional SyncEnums.SingletonDebugEventType singleton_event = 1;
   // A sync cycle completed.
   optional SyncCycleCompletedEventInfo sync_cycle_completed_event_info = 2;
   // A datatype triggered a nudge.

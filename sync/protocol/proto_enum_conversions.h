@@ -60,8 +60,8 @@ const char* GetFaviconTypeString(sync_pb::SessionTab::FaviconType favicon_type);
 
 const char* PassphraseTypeString(sync_pb::NigoriSpecifics::PassphraseType type);
 
-const char* SingletonEventTypeString(
-    sync_pb::DebugEventInfo::SingletonEventType type);
+const char* SingletonDebugEventTypeString(
+    sync_pb::SyncEnums::SingletonDebugEventType type);
 
 const char* GetBlockedStateString(sync_pb::TabNavigation::BlockedState state);
 

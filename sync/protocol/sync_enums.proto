@@ -15,12 +15,11 @@ option retain_unknown_fields = true;
 package sync_pb;
 
 message SyncEnums {
-  // These events are sent by |SyncManager| class. Note: In the code they each
-  // of these events have some additional info but we are not sending them to
-  // server.
-  enum EventType {
-    AUTH_ERROR = 1; // Auth error. Note this gets generated even during
-                    // successful auth with the error set to none.
+  // These events are sent by the DebugInfo class for singleton events.
+  enum SingletonDebugEventType {
+    CONNECTION_STATUS_CHANGE = 1; // Connection status change. Note this
+                                  // gets generated even during a successful
+                                  // connection.
     UPDATED_TOKEN = 2; // Client received an updated token.
     PASSPHRASE_REQUIRED = 3; // Cryptographer needs passphrase.
     PASSPHRASE_ACCEPTED = 4; // Passphrase was accepted by cryptographer.
@@ -30,9 +29,20 @@ message SyncEnums {
     // the absence of bugs.
     STOP_SYNCING_PERMANENTLY = 6; // Server sent stop syncing permanently.
 
-    ENCRYPTED_TYPES_CHANGED = 9; // Set of encrypted types has changed.
     ENCRYPTION_COMPLETE = 7; // Client has finished encrypting all data.
     ACTIONABLE_ERROR = 8; // Client received an actionable error.
+    ENCRYPTED_TYPES_CHANGED = 9; // Set of encrypted types has changed.
+                                 // NOTE: until m25 bootstrap token updated also
+                                 // shared this field (erroneously).
+    PASSPHRASE_TYPE_CHANGED = 10;  // The encryption passphrase state changed.
+    KEYSTORE_TOKEN_UPDATED = 11;  // A new keystore encryption token was
+                                  // persisted.
+    CONFIGURE_COMPLETE = 12;      // The datatype manager has finished an
+                                  // at least partially successful
+                                  // configuration and is once again syncing
+                                  // with the server.
+    BOOTSTRAP_TOKEN_UPDATED = 13;  // A new cryptographer bootstrap token was
+                                   // generated.
   }
 
   // See content/public/common/page_transition_types.h for detailed

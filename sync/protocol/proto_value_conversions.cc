@@ -1015,7 +1015,7 @@ base::DictionaryValue* DatatypeAssociationStatsToValue(
 base::DictionaryValue* DebugEventInfoToValue(
     const sync_pb::DebugEventInfo& proto) {
   base::DictionaryValue* value = new base::DictionaryValue();
-  SET_ENUM(singleton_event, SingletonEventTypeString);
+  SET_ENUM(singleton_event, SingletonDebugEventTypeString);
   SET(sync_cycle_completed_event_info, SyncCycleCompletedEventInfoToValue);
   SET_INT32(nudging_datatype);
   SET_INT32_REP(datatypes_notified_from_server);

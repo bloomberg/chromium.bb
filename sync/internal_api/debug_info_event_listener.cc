@@ -52,48 +52,48 @@ void DebugInfoEventListener::OnInitializationComplete(
     const WeakHandle<DataTypeDebugInfoListener>& debug_listener,
     bool success, ModelTypeSet restored_types) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  CreateAndAddEvent(sync_pb::DebugEventInfo::INITIALIZATION_COMPLETE);
+  CreateAndAddEvent(sync_pb::SyncEnums::INITIALIZATION_COMPLETE);
 }
 
 void DebugInfoEventListener::OnConnectionStatusChange(
     ConnectionStatus status) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  CreateAndAddEvent(sync_pb::DebugEventInfo::CONNECTION_STATUS_CHANGE);
+  CreateAndAddEvent(sync_pb::SyncEnums::CONNECTION_STATUS_CHANGE);
 }
 
 void DebugInfoEventListener::OnPassphraseRequired(
     PassphraseRequiredReason reason,
     const sync_pb::EncryptedData& pending_keys) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  CreateAndAddEvent(sync_pb::DebugEventInfo::PASSPHRASE_REQUIRED);
+  CreateAndAddEvent(sync_pb::SyncEnums::PASSPHRASE_REQUIRED);
 }
 
 void DebugInfoEventListener::OnPassphraseAccepted() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  CreateAndAddEvent(sync_pb::DebugEventInfo::PASSPHRASE_ACCEPTED);
+  CreateAndAddEvent(sync_pb::SyncEnums::PASSPHRASE_ACCEPTED);
 }
 
 void DebugInfoEventListener::OnBootstrapTokenUpdated(
     const std::string& bootstrap_token, BootstrapTokenType type) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (type == PASSPHRASE_BOOTSTRAP_TOKEN) {
-    CreateAndAddEvent(sync_pb::DebugEventInfo::BOOTSTRAP_TOKEN_UPDATED);
+    CreateAndAddEvent(sync_pb::SyncEnums::BOOTSTRAP_TOKEN_UPDATED);
     return;
   }
   DCHECK_EQ(type, KEYSTORE_BOOTSTRAP_TOKEN);
-  CreateAndAddEvent(sync_pb::DebugEventInfo::KEYSTORE_TOKEN_UPDATED);
+  CreateAndAddEvent(sync_pb::SyncEnums::KEYSTORE_TOKEN_UPDATED);
 }
 
 void DebugInfoEventListener::OnEncryptedTypesChanged(
     ModelTypeSet encrypted_types,
     bool encrypt_everything) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  CreateAndAddEvent(sync_pb::DebugEventInfo::ENCRYPTED_TYPES_CHANGED);
+  CreateAndAddEvent(sync_pb::SyncEnums::ENCRYPTED_TYPES_CHANGED);
 }
 
 void DebugInfoEventListener::OnEncryptionComplete() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  CreateAndAddEvent(sync_pb::DebugEventInfo::ENCRYPTION_COMPLETE);
+  CreateAndAddEvent(sync_pb::SyncEnums::ENCRYPTION_COMPLETE);
 }
 
 void DebugInfoEventListener::OnCryptographerStateChanged(
@@ -107,13 +107,13 @@ void DebugInfoEventListener::OnPassphraseTypeChanged(
     PassphraseType type,
     base::Time explicit_passphrase_time) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  CreateAndAddEvent(sync_pb::DebugEventInfo::PASSPHRASE_TYPE_CHANGED);
+  CreateAndAddEvent(sync_pb::SyncEnums::PASSPHRASE_TYPE_CHANGED);
 }
 
 void DebugInfoEventListener::OnActionableError(
     const SyncProtocolError& sync_error) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  CreateAndAddEvent(sync_pb::DebugEventInfo::ACTIONABLE_ERROR);
+  CreateAndAddEvent(sync_pb::SyncEnums::ACTIONABLE_ERROR);
 }
 
 void DebugInfoEventListener::OnMigrationRequested(ModelTypeSet types) {}
@@ -244,7 +244,7 @@ void DebugInfoEventListener::OnDataTypeConfigureComplete(
 }
 
 void DebugInfoEventListener::CreateAndAddEvent(
-    sync_pb::DebugEventInfo::SingletonEventType type) {
+    sync_pb::SyncEnums::SingletonDebugEventType type) {
   DCHECK(thread_checker_.CalledOnValidThread());
   sync_pb::DebugEventInfo event_info;
   event_info.set_singleton_event(type);
