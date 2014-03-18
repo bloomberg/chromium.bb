@@ -72,6 +72,9 @@ class StartupController {
   bool StartUp(StartUpDeferredOption deferred_option);
   void OnFallbackStartupTimerExpired();
 
+  // Records time spent in deferred state with UMA histograms.
+  void RecordTimeDeferred();
+
   // True if we should start sync ASAP because either a SyncableService has
   // requested it, or we're done waiting for a sign and decided to go ahead.
   bool received_start_request_;

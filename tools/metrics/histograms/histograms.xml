@@ -22630,6 +22630,16 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Sync.Startup.TimeDeferred" units="milliseconds">
+  <obsolete>
+    Deprecated, see TimeDeferred2.
+  </obsolete>
+  <summary>
+    Time spent after ProfileSyncService *creation* but before SyncBackendHost
+    initialization.
+  </summary>
+</histogram>
+
+<histogram name="Sync.Startup.TimeDeferred2" units="milliseconds">
   <summary>
     Time spent after ProfileSyncService *creation* but before SyncBackendHost
     initialization.

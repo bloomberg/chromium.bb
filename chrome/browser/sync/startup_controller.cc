@@ -165,6 +165,16 @@ bool StartupController::TryStart() {
   return false;
 }
 
+void StartupController::RecordTimeDeferred() {
+  DCHECK(!start_up_time_.is_null());
+  base::TimeDelta time_deferred = base::Time::Now() - start_up_time_;
+  UMA_HISTOGRAM_CUSTOM_TIMES("Sync.Startup.TimeDeferred2",
+      time_deferred,
+      base::TimeDelta::FromSeconds(0),
+      base::TimeDelta::FromMinutes(2),
+      60);
+}
+
 void StartupController::OnFallbackStartupTimerExpired() {
   DCHECK(!CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kSyncDisableDeferredStartup));
@@ -173,9 +183,7 @@ void StartupController::OnFallbackStartupTimerExpired() {
     return;
 
   DVLOG(2) << "Sync deferred init fallback timer expired, starting backend.";
-  DCHECK(!start_up_time_.is_null());
-  base::TimeDelta time_deferred = base::Time::Now() - start_up_time_;
-  UMA_HISTOGRAM_TIMES("Sync.Startup.TimeDeferred", time_deferred);
+  RecordTimeDeferred();
   UMA_HISTOGRAM_ENUMERATION("Sync.Startup.DeferredInitTrigger",
                             TRIGGER_FALLBACK_TIMER,
                             MAX_TRIGGER_VALUE);
@@ -209,8 +217,7 @@ void StartupController::OnDataTypeRequestsSyncStartup(syncer::ModelType type) {
   // We could measure the time spent deferred on a per-datatype basis, but
   // for now this is probably sufficient.
   if (!start_up_time_.is_null()) {
-    base::TimeDelta time_deferred = base::Time::Now() - start_up_time_;
-    UMA_HISTOGRAM_TIMES("Sync.Startup.TimeDeferred", time_deferred);
+    RecordTimeDeferred();
     UMA_HISTOGRAM_ENUMERATION("Sync.Startup.TypeTriggeringInit",
                               ModelTypeToHistogramInt(type),
                               syncer::MODEL_TYPE_COUNT);
