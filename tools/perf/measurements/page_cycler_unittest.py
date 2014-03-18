@@ -32,7 +32,21 @@ class MockMemoryMetric(object):
   def AddSummaryResults(self, tab, results):
     pass
 
+class MockV8Metric(object):
+  def __init__(self):
+    pass
 
+  def Start(self, page, tab):
+    pass
+
+  def Stop(self, page, tab):
+    pass
+
+  def AddResults(self, tab, results, chart_name):
+    pass
+
+
+# Used to mock loading a page.
 class FakePage(object):
   """Used to mock loading a page."""
   def __init__(self, url):
@@ -62,6 +76,8 @@ class PageCyclerUnitTest(unittest.TestCase):
     parser.parse_args(args)
     cycler.ProcessCommandLineArgs(parser, options)
     cycler.CustomizeBrowserOptions(options)
+
+    cycler._v8_metric = MockV8Metric()
 
     if setup_memory_module:
       # Mock out memory metrics; the real ones require a real browser.

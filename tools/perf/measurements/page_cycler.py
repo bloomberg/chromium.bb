@@ -23,6 +23,7 @@ from metrics import iometric
 from metrics import memory
 from metrics import power
 from metrics import speedindex
+from metrics import v8
 from metrics import v8_object_stats
 from telemetry.core import util
 from telemetry.page import page_measurement
@@ -38,6 +39,7 @@ class PageCycler(page_measurement.PageMeasurement):
     self._speedindex_metric = speedindex.SpeedIndexMetric()
     self._memory_metric = None
     self._power_metric = power.PowerMetric()
+    self._v8_metric = v8.V8Metric()
     self._cpu_metric = None
     self._v8_object_stats_metric = None
     self._cold_run_start_index = None
@@ -83,6 +85,7 @@ class PageCycler(page_measurement.PageMeasurement):
       self._speedindex_metric.Start(page, tab)
 
   def DidNavigateToPage(self, page, tab):
+    self._v8_metric.Start(page, tab)
     self._memory_metric.Start(page, tab)
     self._power_metric.Start(page, tab)
     # TODO(qyearsley): Uncomment the following line and move it to
@@ -146,8 +149,11 @@ class PageCycler(page_measurement.PageMeasurement):
 
     self._has_loaded_page[page.url] += 1
 
+    self._v8_metric.Stop(page, tab)
     self._power_metric.Stop(page, tab)
     self._memory_metric.Stop(page, tab)
+    self._v8_metric.AddResults(
+        tab, results, chart_name=chart_name_prefix+'times')
     self._memory_metric.AddResults(tab, results)
     self._power_metric.AddResults(tab, results)
 
