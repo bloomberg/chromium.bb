@@ -220,8 +220,7 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
 
 - (void)windowWillClose:(NSNotification *)notification {
   [super windowWillClose:notification];
-  if (gPopup == self)
-    gPopup = nil;
+  gPopup = nil;
   if (host_->view())
     host_->view()->set_container(NULL);
   host_.reset();
@@ -280,7 +279,15 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
   if (!host)
     return nil;
 
-  [gPopup close];
+  // Make absolutely sure that no popups are leaked.
+  if (gPopup) {
+    if ([[gPopup window] isVisible])
+      [gPopup close];
+
+    [gPopup autorelease];
+    gPopup = nil;
+  }
+  DCHECK(!gPopup);
 
   // Takes ownership of |host|. Also will autorelease itself when the popup is
   // closed, so no need to do that here.
