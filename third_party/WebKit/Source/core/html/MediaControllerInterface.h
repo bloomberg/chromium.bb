@@ -53,9 +53,6 @@ public:
 
     virtual bool hasAudio() const = 0;
     virtual bool hasVideo() const = 0;
-    virtual bool hasClosedCaptions() const = 0;
-    virtual void setClosedCaptionsVisible(bool) = 0;
-    virtual bool closedCaptionsVisible() const = 0;
 
     virtual void beginScrubbing() = 0;
     virtual void endScrubbing() = 0;

@@ -303,7 +303,7 @@ void MediaControls::changedClosedCaptionsVisibility()
 
 void MediaControls::refreshClosedCaptionsButtonVisibility()
 {
-    if (mediaControllerInterface().hasClosedCaptions())
+    if (mediaElement().hasClosedCaptions())
         m_toggleClosedCaptionsButton->show();
     else
         m_toggleClosedCaptionsButton->hide();

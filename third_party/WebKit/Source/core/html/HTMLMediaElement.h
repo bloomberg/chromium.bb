@@ -236,9 +236,9 @@ public:
     bool isFullscreen() const;
     virtual void enterFullscreen() OVERRIDE FINAL;
 
-    virtual bool hasClosedCaptions() const OVERRIDE FINAL;
-    virtual bool closedCaptionsVisible() const OVERRIDE FINAL;
-    virtual void setClosedCaptionsVisible(bool) OVERRIDE FINAL;
+    bool hasClosedCaptions() const;
+    bool closedCaptionsVisible() const;
+    void setClosedCaptionsVisible(bool);
 
     MediaControls* mediaControls() const;
 

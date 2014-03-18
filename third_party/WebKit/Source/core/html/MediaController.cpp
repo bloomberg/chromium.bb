@@ -55,7 +55,6 @@ MediaController::MediaController(ExecutionContext* context)
     , m_playbackState(WAITING)
     , m_asyncEventTimer(this, &MediaController::asyncEventTimerFired)
     , m_clearPositionTimer(this, &MediaController::clearPositionTimerFired)
-    , m_closedCaptionsVisible(false)
     , m_clock(Clock::create())
     , m_executionContext(context)
     , m_timeupdateTimer(this, &MediaController::timeupdateTimerFired)
@@ -573,22 +572,6 @@ bool MediaController::hasVideo() const
             return true;
     }
     return false;
-}
-
-bool MediaController::hasClosedCaptions() const
-{
-    for (size_t index = 0; index < m_mediaElements.size(); ++index) {
-        if (m_mediaElements[index]->hasClosedCaptions())
-            return true;
-    }
-    return false;
-}
-
-void MediaController::setClosedCaptionsVisible(bool visible)
-{
-    m_closedCaptionsVisible = visible;
-    for (size_t index = 0; index < m_mediaElements.size(); ++index)
-        m_mediaElements[index]->setClosedCaptionsVisible(visible);
 }
 
 void MediaController::beginScrubbing()

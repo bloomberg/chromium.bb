@@ -416,7 +416,7 @@ PassRefPtr<MediaControlToggleClosedCaptionsButtonElement> MediaControlToggleClos
 
 void MediaControlToggleClosedCaptionsButtonElement::updateDisplayType()
 {
-    bool captionsVisible = mediaControllerInterface().closedCaptionsVisible();
+    bool captionsVisible = mediaElement().closedCaptionsVisible();
     setDisplayType(captionsVisible ? MediaHideClosedCaptionsButton : MediaShowClosedCaptionsButton);
     setChecked(captionsVisible);
 }
@@ -424,8 +424,8 @@ void MediaControlToggleClosedCaptionsButtonElement::updateDisplayType()
 void MediaControlToggleClosedCaptionsButtonElement::defaultEventHandler(Event* event)
 {
     if (event->type() == EventTypeNames::click) {
-        mediaControllerInterface().setClosedCaptionsVisible(!mediaControllerInterface().closedCaptionsVisible());
-        setChecked(mediaControllerInterface().closedCaptionsVisible());
+        mediaElement().setClosedCaptionsVisible(!mediaElement().closedCaptionsVisible());
+        setChecked(mediaElement().closedCaptionsVisible());
         updateDisplayType();
         event->setDefaultHandled();
     }
@@ -696,7 +696,7 @@ const AtomicString& MediaControlTextTrackContainerElement::shadowPseudoId() cons
 
 void MediaControlTextTrackContainerElement::updateDisplay()
 {
-    if (!mediaControllerInterface().closedCaptionsVisible()) {
+    if (!mediaElement().closedCaptionsVisible()) {
         removeChildren();
         return;
     }

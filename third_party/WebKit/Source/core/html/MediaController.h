@@ -89,9 +89,6 @@ public:
 
     virtual bool hasAudio() const OVERRIDE;
     virtual bool hasVideo() const OVERRIDE;
-    virtual bool hasClosedCaptions() const OVERRIDE;
-    virtual void setClosedCaptionsVisible(bool) OVERRIDE;
-    virtual bool closedCaptionsVisible() const OVERRIDE { return m_closedCaptionsVisible; }
 
     virtual void beginScrubbing() OVERRIDE;
     virtual void endScrubbing() OVERRIDE;
@@ -134,7 +131,6 @@ private:
     Vector<RefPtr<Event> > m_pendingEvents;
     Timer<MediaController> m_asyncEventTimer;
     mutable Timer<MediaController> m_clearPositionTimer;
-    bool m_closedCaptionsVisible;
     OwnPtr<Clock> m_clock;
     ExecutionContext* m_executionContext;
     Timer<MediaController> m_timeupdateTimer;
