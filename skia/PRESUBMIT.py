@@ -10,10 +10,12 @@ for more details about the presubmit API built into depot_tools.
 
 def GetPreferredTryMasters(project, change):
   return {
-    'tryserver.chromium': {
+    'tryserver.blink': {
+      'linux_blink_rel': set(['defaulttests']),
+    },
+    'tryserver.chromium.gpu': {
       'linux_gpu': set(['defaulttests']),
       'win_gpu': set(['defaulttests']),
       'mac_gpu': set(['defaulttests']),
-      'linux_blink_rel': set(['defaulttests']),
-    }
+    },
   }
