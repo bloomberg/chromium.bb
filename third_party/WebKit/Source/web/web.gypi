@@ -281,6 +281,7 @@
       'tests/LinkHighlightTest.cpp',
       'tests/ListenerLeakTest.cpp',
       'tests/MemoryInfo.cpp',
+      'tests/MHTMLTest.cpp',
       'tests/OpaqueRectTrackingContentLayerDelegateTest.cpp',
       'tests/OpenTypeVerticalDataTest.cpp',
       'tests/PageSerializerTest.cpp',

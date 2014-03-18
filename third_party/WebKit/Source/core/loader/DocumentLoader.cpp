@@ -589,6 +589,10 @@ void DocumentLoader::clearMainResourceHandle()
 
 bool DocumentLoader::maybeCreateArchive()
 {
+    // Only the top-frame can load MHTML.
+    if (m_frame->tree().parent())
+        return false;
+
     // Give the archive machinery a crack at this document. If the MIME type is not an archive type, it will return 0.
     if (!isArchiveMIMEType(m_response.mimeType()))
         return false;
@@ -607,6 +611,9 @@ bool DocumentLoader::maybeCreateArchive()
     // The origin is the MHTML file, we need to set the base URL to the document encoded in the MHTML so
     // relative URLs are resolved properly.
     ensureWriter(mainResource->mimeType(), m_archive->mainResource()->url());
+
+    // The Document has now been created.
+    document()->enforceSandboxFlags(SandboxAll);
 
     commitData(mainResource->data()->data(), mainResource->data()->size());
     return true;

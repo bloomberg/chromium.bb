@@ -15,10 +15,6 @@ Content-Transfer-Encoding: 7bit
  <head>
   <meta charset='utf-8'>
   <title>MHTML Tests</title>
-  <script>
-   if (window.testRunner)
-     testRunner.dumpAsText();
-  </script>
  </head>
  <body>
   <h1>MHTML Relaxed Content-Type parameters test</h1>

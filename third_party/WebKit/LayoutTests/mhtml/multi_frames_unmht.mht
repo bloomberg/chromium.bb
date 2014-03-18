@@ -16,21 +16,13 @@ Content-Location: http://localhost/top_frame.html
 
 
 <title>A page that contains multiple nested frames</title>
-<script>
-if (window.testRunner) {
-  testRunner.dumpAsText();
-  testRunner.dumpChildFramesAsText();
-}
-</script>
 <base href=3D"http://localhost/"></base></head><body>
 This page contains several frames.<br>
 <iframe src=3D"http://localhost/frame_0.html"></iframe><br>
 <iframe src=3D"http://localhost/frame_1.html"></iframe><br>
 <iframe src=3D"http://localhost/frame_2.html"></iframe><br>
 And a red square:<br>
-<img onerror=3D"document.getElementById(&#x27;error&#x27;).innerHTML+=3D&#x=
-27;Failed to load image!&#x27;" src=3D"resources/red_square.png">
-<div id=3D"error"></div>
+<img src=3D"resources/red_square.png">
 </body></html>
 ------=_NextPart_000_0000_58874EE0.2096A571
 Content-Type: text/html; charset="ISO-8859-1"
@@ -79,9 +71,7 @@ Content-Location: http://localhost/frame_4.html
 
 <base href=3D"http://localhost/"></base></head><body>
 This is frame 4!<br>
-<img onerror=3D"document.getElementById(&#x27;error&#x27;).innerHTML+=3D&#x=
-27;Failed to load image!&#x27;" src=3D"resources/red_square.png">
-<div id=3D"error"></div>
+<img src=3D"resources/red_square.png">
 </body></html>
 ------=_NextPart_000_0000_58874EE0.2096A571
 Content-Type: image/png

@@ -15,15 +15,10 @@ Content-Type: text/html;
 <html lang='en'>
  <head>
   <title>MHTML Content-Transfer-Encoding none test</title>
-  <script>
-   if (window.testRunner)
-     testRunner.dumpAsText();
-  </script>
  </head>
  <body>
   This is a red square:<br>
-  <img src="resources/red_square.png" onerror="document.getElementById('error').innerHTML+='Failed to load image!'">
-  <div id="error"></div>
+  <img src="resources/red_square.png">
  </body>
 </html>
 

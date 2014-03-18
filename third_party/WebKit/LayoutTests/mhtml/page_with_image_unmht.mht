@@ -16,17 +16,9 @@ Content-Location: http://localhost/page_with_image.html
 
 
 <title>Page with square</title>
-<script>
-if (window.testRunner) {
-  testRunner.dumpAsText();
-}
-
-</script>
 <base href=3D"http://localhost/"></base></head><body>
 This is a red square:<br>
-<img onerror=3D"document.getElementById(&#x27;error&#x27;).innerHTML+=3D&#x=
-27;Failed to load image!&#x27;" src=3D"resources/red_square.png">
-<div id=3D"error"></div>
+<img src=3D"resources/red_square.png">
 </body></html>
 ------=_NextPart_000_0000_02C8A5EE.D896CA6B
 Content-Type: image/png

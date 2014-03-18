@@ -20,16 +20,10 @@ ss"></link>
   =20
   <script src=3D"resources/remove_image_script.js" type=3D"text/javascript"=
 ></script>
-  <script>
-    if (window.testRunner) {
-      testRunner.dumpAsText();
-      testRunner.waitUntilDone();
-    }
-  </script>
 <base href=3D"http://localhost/"></base></head><body onload=3D"onLoad()">
 This page tests that CSS and JavaScript resources are retrieved correctly=
  for MHTML files.<br><br>
-There should be only one red square below:
+There should be only 2 red squares below:
 <div id=3D"firstDiv">
 <img src=3D"resources/red_square.png"><br><br>
 </div>
@@ -38,7 +32,8 @@ The red square below should be hidden by way of CSS.<br>
 <img src=3D"resources/red_square.png"><br><br>
 </div>
 <div id=3D"thirdDiv">
-The red square below should be hidden by way of JavaScript.<br>
+The red square below should be hidden by way of JavaScript (with JS disab=
+led in MHTML, it still should show).<br>
 <img src=3D"resources/red_square.png"><br><br>
 </div>
 

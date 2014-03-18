@@ -21,8 +21,11 @@ Content-Location: http://localhost/page_with_image.html
 http-equiv=3DContent-Type>
 
 <META name=3DGENERATOR content=3D"MSHTML 9.00.8112.16421"></HEAD>
-<BODY>This is a red square:<BR><IMG=20
-src=3D"http://localhost/resources/red_square.png">=20
+<BODY>
+Image with an absolute URL:<BR><IMG=20
+src=3D"http://localhost/resources/red_square.png"/>=20
+<br>Image with a relative URL:<BR><IMG=20
+src=3D"resources/red_square.png"/>=20
 </BODY></HTML>
 
 ------=_NextPart_000_001B_01CC157B.96F808A0

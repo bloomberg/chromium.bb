@@ -16,4 +16,3 @@ Content-Location: http://localhost/invalid-bad-boundary.html
 This tests that we don't crash if the MHTML is invalid (bad boundary).
 </body>
 ------=_NextPart_000_CA35_2BC72789.A73F63D7--
-
