@@ -204,11 +204,9 @@ void VpxVideoDecoder::MemoryPool::OnVideoFrameDestroyed(
 VpxVideoDecoder::VpxVideoDecoder(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
     : task_runner_(task_runner),
-      weak_factory_(this),
       state_(kUninitialized),
       vpx_codec_(NULL),
-      vpx_codec_alpha_(NULL) {
-}
+      vpx_codec_alpha_(NULL) {}
 
 VpxVideoDecoder::~VpxVideoDecoder() {
   DCHECK_EQ(kUninitialized, state_);
@@ -222,8 +220,6 @@ void VpxVideoDecoder::Initialize(const VideoDecoderConfig& config,
   DCHECK(!config.is_encrypted());
   DCHECK(decode_cb_.is_null());
   DCHECK(reset_cb_.is_null());
-
-  weak_this_ = weak_factory_.GetWeakPtr();
 
   if (!ConfigureDecoder(config)) {
     status_cb.Run(DECODER_ERROR_NOT_SUPPORTED);

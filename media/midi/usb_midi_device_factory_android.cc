@@ -12,7 +12,6 @@
 #include "base/containers/hash_tables.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_vector.h"
-#include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/synchronization/lock.h"
 #include "jni/UsbMidiDeviceFactoryAndroid_jni.h"

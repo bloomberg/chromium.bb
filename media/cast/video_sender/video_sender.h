@@ -141,6 +141,8 @@ class VideoSender : public base::NonThreadSafe,
   bool initialized_;
   // Indicator for receiver acknowledgments.
   bool active_session_;
+
+  // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<VideoSender> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoSender);

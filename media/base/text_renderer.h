@@ -105,8 +105,6 @@ class MEDIA_EXPORT TextRenderer {
   void Read(TextTrackState* state, DemuxerStream* text_stream);
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  base::WeakPtrFactory<TextRenderer> weak_factory_;
-  base::WeakPtr<TextRenderer> weak_this_;
   const AddTextTrackCB add_text_track_cb_;
 
   // Callbacks provided during Initialize().
@@ -139,6 +137,9 @@ class MEDIA_EXPORT TextRenderer {
   // Indicates which text streams have not delivered end-of-stream yet.
   typedef std::set<DemuxerStream*> PendingEosSet;
   PendingEosSet pending_eos_set_;
+
+  // NOTE: Weak pointers must be invalidated before all other member variables.
+  base::WeakPtrFactory<TextRenderer> weak_factory_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(TextRenderer);
 };

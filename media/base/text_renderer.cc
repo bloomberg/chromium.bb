@@ -21,11 +21,10 @@ TextRenderer::TextRenderer(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     const AddTextTrackCB& add_text_track_cb)
     : task_runner_(task_runner),
-      weak_factory_(this),
       add_text_track_cb_(add_text_track_cb),
       state_(kUninitialized),
-      pending_read_count_(0) {
-}
+      pending_read_count_(0),
+      weak_factory_(this) {}
 
 TextRenderer::~TextRenderer() {
   DCHECK(state_ == kUninitialized ||
@@ -43,7 +42,6 @@ void TextRenderer::Initialize(const base::Closure& ended_cb) {
   DCHECK(pending_eos_set_.empty());
   DCHECK(ended_cb_.is_null());
 
-  weak_this_ = weak_factory_.GetWeakPtr();
   ended_cb_ = ended_cb;
   state_ = kPaused;
 }
@@ -127,8 +125,10 @@ void TextRenderer::AddTextStream(DemuxerStream* text_stream,
   DCHECK(pending_eos_set_.find(text_stream) ==
          pending_eos_set_.end());
 
-  AddTextTrackDoneCB done_cb = BindToCurrentLoop(
-      base::Bind(&TextRenderer::OnAddTextTrackDone, weak_this_, text_stream));
+  AddTextTrackDoneCB done_cb =
+      BindToCurrentLoop(base::Bind(&TextRenderer::OnAddTextTrackDone,
+                                   weak_factory_.GetWeakPtr(),
+                                   text_stream));
 
   add_text_track_cb_.Run(config, done_cb);
 }
@@ -354,9 +354,8 @@ void TextRenderer::Read(
   state->read_state = TextTrackState::kReadPending;
   ++pending_read_count_;
 
-  text_stream->Read(base::Bind(&TextRenderer::BufferReady,
-                                weak_this_,
-                                text_stream));
+  text_stream->Read(base::Bind(
+      &TextRenderer::BufferReady, weak_factory_.GetWeakPtr(), text_stream));
 }
 
 TextRenderer::TextTrackState::TextTrackState(scoped_ptr<TextTrack> tt)

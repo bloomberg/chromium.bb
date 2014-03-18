@@ -32,7 +32,8 @@ AlsaPcmInputStream::AlsaPcmInputStream(AudioManagerBase* audio_manager,
       device_name_(device_name),
       params_(params),
       bytes_per_buffer_(params.frames_per_buffer() *
-                        (params.channels() * params.bits_per_sample()) / 8),
+                        (params.channels() * params.bits_per_sample()) /
+                        8),
       wrapper_(wrapper),
       buffer_duration_(base::TimeDelta::FromMicroseconds(
           params.frames_per_buffer() * base::Time::kMicrosecondsPerSecond /
@@ -41,9 +42,8 @@ AlsaPcmInputStream::AlsaPcmInputStream(AudioManagerBase* audio_manager,
       device_handle_(NULL),
       mixer_handle_(NULL),
       mixer_element_handle_(NULL),
-      weak_factory_(this),
-      read_callback_behind_schedule_(false) {
-}
+      read_callback_behind_schedule_(false),
+      weak_factory_(this) {}
 
 AlsaPcmInputStream::~AlsaPcmInputStream() {}
 

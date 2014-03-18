@@ -137,8 +137,6 @@ class MEDIA_EXPORT VideoRendererImpl
   void UpdateStatsAndWait_Locked(base::TimeDelta wait_duration);
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  base::WeakPtrFactory<VideoRendererImpl> weak_factory_;
-  base::WeakPtr<VideoRendererImpl> weak_this_;
 
   // Used for accessing data members.
   base::Lock lock_;
@@ -239,6 +237,9 @@ class MEDIA_EXPORT VideoRendererImpl
   // last call to |statistics_cb_|. These must be accessed under lock.
   int frames_decoded_;
   int frames_dropped_;
+
+  // NOTE: Weak pointers must be invalidated before all other member variables.
+  base::WeakPtrFactory<VideoRendererImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoRendererImpl);
 };

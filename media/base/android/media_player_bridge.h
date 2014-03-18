@@ -105,6 +105,8 @@ class MEDIA_EXPORT MediaPlayerBridge : public MediaPlayerAndroid {
   virtual base::android::ScopedJavaLocalRef<jobject> GetAllowedOperations();
 
  private:
+  friend class MediaPlayerListener;
+
   // Set the data source for the media player.
   void SetDataSource(const std::string& url);
 
@@ -168,16 +170,16 @@ class MEDIA_EXPORT MediaPlayerBridge : public MediaPlayerAndroid {
 
   base::RepeatingTimer<MediaPlayerBridge> time_update_timer_;
 
-  // Weak pointer passed to |listener_| for callbacks.
-  base::WeakPtrFactory<MediaPlayerBridge> weak_this_;
-
   // Listener object that listens to all the media player events.
-  MediaPlayerListener listener_;
+  scoped_ptr<MediaPlayerListener> listener_;
 
   // Whether player is currently using a surface.
   bool is_surface_in_use_;
 
-  friend class MediaPlayerListener;
+  // Weak pointer passed to |listener_| for callbacks.
+  // NOTE: Weak pointers must be invalidated before all other member variables.
+  base::WeakPtrFactory<MediaPlayerBridge> weak_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(MediaPlayerBridge);
 };
 

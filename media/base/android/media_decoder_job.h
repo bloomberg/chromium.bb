@@ -170,10 +170,6 @@ class MediaDecoderJob {
   // is not very accurate.
   bool prerolling_;
 
-  // Weak pointer passed to media decoder jobs for callbacks. It is bounded to
-  // the decoder thread.
-  base::WeakPtrFactory<MediaDecoderJob> weak_this_;
-
   // Callback used to request more data.
   base::Closure request_data_cb_;
 
@@ -199,6 +195,11 @@ class MediaDecoderJob {
   // Decode() has completed. This gets set when Release() gets called
   // while there is a decode in progress.
   bool destroy_pending_;
+
+  // Weak pointer passed to media decoder jobs for callbacks. It is bounded to
+  // the decoder thread.
+  // NOTE: Weak pointers must be invalidated before all other member variables.
+  base::WeakPtrFactory<MediaDecoderJob> weak_factory_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(MediaDecoderJob);
 };

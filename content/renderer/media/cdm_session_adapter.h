@@ -87,12 +87,13 @@ class CdmSessionAdapter : public base::RefCounted<CdmSessionAdapter> {
 
   scoped_ptr<media::MediaKeys> media_keys_;
 
-  base::WeakPtrFactory<CdmSessionAdapter> weak_ptr_factory_;
-
   SessionMap sessions_;
 
   // Session ID should be unique per renderer process for debugging purposes.
   static uint32 next_session_id_;
+
+  // NOTE: Weak pointers must be invalidated before all other member variables.
+  base::WeakPtrFactory<CdmSessionAdapter> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CdmSessionAdapter);
 };

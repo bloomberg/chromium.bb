@@ -37,7 +37,9 @@ MediaSourcePlayer::MediaSourcePlayer(
     const RequestMediaResourcesCB& request_media_resources_cb,
     const ReleaseMediaResourcesCB& release_media_resources_cb,
     scoped_ptr<DemuxerAndroid> demuxer)
-    : MediaPlayerAndroid(player_id, manager, request_media_resources_cb,
+    : MediaPlayerAndroid(player_id,
+                         manager,
+                         request_media_resources_cb,
                          release_media_resources_cb),
       demuxer_(demuxer.Pass()),
       pending_event_(NO_EVENT_PENDING),
@@ -59,9 +61,9 @@ MediaSourcePlayer::MediaSourcePlayer(
       pending_seek_(false),
       reconfig_audio_decoder_(false),
       reconfig_video_decoder_(false),
-      weak_this_(this),
       drm_bridge_(NULL),
-      is_waiting_for_key_(false) {
+      is_waiting_for_key_(false),
+      weak_factory_(this) {
   demuxer_->Initialize(this);
   clock_.SetMaxTime(base::TimeDelta());
 }
@@ -388,7 +390,7 @@ void MediaSourcePlayer::SetDrmBridge(MediaDrmBridge* drm_bridge) {
 
   if (drm_bridge_->GetMediaCrypto().is_null()) {
     drm_bridge_->SetMediaCryptoReadyCB(base::Bind(
-        &MediaSourcePlayer::OnMediaCryptoReady, weak_this_.GetWeakPtr()));
+        &MediaSourcePlayer::OnMediaCryptoReady, weak_factory_.GetWeakPtr()));
     return;
   }
 
@@ -523,8 +525,10 @@ void MediaSourcePlayer::ProcessPendingEvents() {
       return;
 
     SetPendingEvent(PREFETCH_DONE_EVENT_PENDING);
-    base::Closure barrier = BarrierClosure(count, base::Bind(
-        &MediaSourcePlayer::OnPrefetchDone, weak_this_.GetWeakPtr()));
+    base::Closure barrier =
+        BarrierClosure(count,
+                       base::Bind(&MediaSourcePlayer::OnPrefetchDone,
+                                  weak_factory_.GetWeakPtr()));
 
     if (!AudioFinished())
       audio_decoder_job_->Prefetch(barrier);
@@ -646,9 +650,11 @@ void MediaSourcePlayer::DecodeMoreAudio() {
   DCHECK(!AudioFinished());
 
   if (audio_decoder_job_->Decode(
-          start_time_ticks_, start_presentation_timestamp_, base::Bind(
-              &MediaSourcePlayer::MediaDecoderCallback,
-              weak_this_.GetWeakPtr(), true))) {
+          start_time_ticks_,
+          start_presentation_timestamp_,
+          base::Bind(&MediaSourcePlayer::MediaDecoderCallback,
+                     weak_factory_.GetWeakPtr(),
+                     true))) {
     TRACE_EVENT_ASYNC_BEGIN0("media", "MediaSourcePlayer::DecodeMoreAudio",
                              audio_decoder_job_.get());
     return;
@@ -676,9 +682,11 @@ void MediaSourcePlayer::DecodeMoreVideo() {
   DCHECK(!VideoFinished());
 
   if (video_decoder_job_->Decode(
-          start_time_ticks_, start_presentation_timestamp_, base::Bind(
-              &MediaSourcePlayer::MediaDecoderCallback,
-              weak_this_.GetWeakPtr(), false))) {
+          start_time_ticks_,
+          start_presentation_timestamp_,
+          base::Bind(&MediaSourcePlayer::MediaDecoderCallback,
+                     weak_factory_.GetWeakPtr(),
+                     false))) {
     TRACE_EVENT_ASYNC_BEGIN0("media", "MediaSourcePlayer::DecodeMoreVideo",
                              video_decoder_job_.get());
     return;
@@ -884,9 +892,8 @@ void MediaSourcePlayer::StartStarvationCallback(
 
   timeout = std::max(timeout, kMinStarvationTimeout);
 
-  decoder_starvation_callback_.Reset(
-      base::Bind(&MediaSourcePlayer::OnDecoderStarved,
-                 weak_this_.GetWeakPtr()));
+  decoder_starvation_callback_.Reset(base::Bind(
+      &MediaSourcePlayer::OnDecoderStarved, weak_factory_.GetWeakPtr()));
   base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE, decoder_starvation_callback_.callback(), timeout);
 }

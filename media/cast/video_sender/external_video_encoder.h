@@ -71,6 +71,7 @@ class ExternalVideoEncoder : public VideoEncoder {
 
   // Weak pointer factory for posting back LocalVideoEncodeAcceleratorClient
   // notifications to ExternalVideoEncoder.
+  // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<ExternalVideoEncoder> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalVideoEncoder);

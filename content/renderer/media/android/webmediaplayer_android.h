@@ -433,6 +433,7 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   // Manages decryption keys and decrypts encrypted frames.
   scoped_ptr<ProxyDecryptor> proxy_decryptor_;
 
+  // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<WebMediaPlayerAndroid> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerAndroid);

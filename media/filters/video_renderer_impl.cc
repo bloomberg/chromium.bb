@@ -30,9 +30,7 @@ VideoRendererImpl::VideoRendererImpl(
     const SetOpaqueCB& set_opaque_cb,
     bool drop_frames)
     : task_runner_(task_runner),
-      weak_factory_(this),
-      video_frame_stream_(
-          task_runner, decoders.Pass(), set_decryptor_ready_cb),
+      video_frame_stream_(task_runner, decoders.Pass(), set_decryptor_ready_cb),
       received_end_of_stream_(false),
       frame_available_(&lock_),
       state_(kUninitialized),
@@ -44,7 +42,8 @@ VideoRendererImpl::VideoRendererImpl(
       set_opaque_cb_(set_opaque_cb),
       last_timestamp_(kNoTimestamp()),
       frames_decoded_(0),
-      frames_dropped_(0) {
+      frames_dropped_(0),
+      weak_factory_(this) {
   DCHECK(!paint_cb_.is_null());
 }
 
@@ -81,8 +80,9 @@ void VideoRendererImpl::Flush(const base::Closure& callback) {
   // stream and needs to drain it before flushing it.
   ready_frames_.clear();
   received_end_of_stream_ = false;
-  video_frame_stream_.Reset(base::Bind(
-      &VideoRendererImpl::OnVideoFrameStreamResetDone, weak_this_));
+  video_frame_stream_.Reset(
+      base::Bind(&VideoRendererImpl::OnVideoFrameStreamResetDone,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void VideoRendererImpl::Stop(const base::Closure& callback) {
@@ -173,7 +173,6 @@ void VideoRendererImpl::Initialize(DemuxerStream* stream,
   DCHECK(!get_duration_cb.is_null());
   DCHECK_EQ(kUninitialized, state_);
 
-  weak_this_ = weak_factory_.GetWeakPtr();
   init_cb_ = init_cb;
   statistics_cb_ = statistics_cb;
   max_time_cb_ = max_time_cb;
@@ -187,7 +186,7 @@ void VideoRendererImpl::Initialize(DemuxerStream* stream,
       stream,
       statistics_cb,
       base::Bind(&VideoRendererImpl::OnVideoFrameStreamInitialized,
-                 weak_this_));
+                 weak_factory_.GetWeakPtr()));
 }
 
 void VideoRendererImpl::OnVideoFrameStreamInitialized(bool success,
@@ -323,8 +322,9 @@ void VideoRendererImpl::PaintNextReadyFrame_Locked() {
 
   paint_cb_.Run(next_frame);
 
-  task_runner_->PostTask(FROM_HERE, base::Bind(
-      &VideoRendererImpl::AttemptRead, weak_this_));
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&VideoRendererImpl::AttemptRead, weak_factory_.GetWeakPtr()));
 }
 
 void VideoRendererImpl::DropNextReadyFrame_Locked() {
@@ -337,8 +337,9 @@ void VideoRendererImpl::DropNextReadyFrame_Locked() {
   frames_decoded_++;
   frames_dropped_++;
 
-  task_runner_->PostTask(FROM_HERE, base::Bind(
-      &VideoRendererImpl::AttemptRead, weak_this_));
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&VideoRendererImpl::AttemptRead, weak_factory_.GetWeakPtr()));
 }
 
 void VideoRendererImpl::FrameReady(VideoFrameStream::Status status,
@@ -463,7 +464,7 @@ void VideoRendererImpl::AttemptRead_Locked() {
     case kPlaying:
       pending_read_ = true;
       video_frame_stream_.Read(base::Bind(&VideoRendererImpl::FrameReady,
-                                          weak_this_));
+                                          weak_factory_.GetWeakPtr()));
       return;
 
     case kUninitialized:

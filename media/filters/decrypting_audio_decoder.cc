@@ -38,15 +38,14 @@ DecryptingAudioDecoder::DecryptingAudioDecoder(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     const SetDecryptorReadyCB& set_decryptor_ready_cb)
     : task_runner_(task_runner),
-      weak_factory_(this),
       state_(kUninitialized),
       set_decryptor_ready_cb_(set_decryptor_ready_cb),
       decryptor_(NULL),
       key_added_while_decode_pending_(false),
       bits_per_channel_(0),
       channel_layout_(CHANNEL_LAYOUT_NONE),
-      samples_per_second_(0) {
-}
+      samples_per_second_(0),
+      weak_factory_(this) {}
 
 void DecryptingAudioDecoder::Initialize(const AudioDecoderConfig& config,
                                         const PipelineStatusCB& status_cb) {

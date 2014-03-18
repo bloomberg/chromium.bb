@@ -99,7 +99,6 @@ BufferedDataSource::BufferedDataSource(
       downloading_cb_(downloading_cb),
       weak_factory_(this) {
   DCHECK(!downloading_cb_.is_null());
-  weak_this_ = weak_factory_.GetWeakPtr();
 }
 
 BufferedDataSource::~BufferedDataSource() {}
@@ -159,10 +158,11 @@ void BufferedDataSource::Initialize(
     assume_fully_buffered_ = true;
   }
 
+  base::WeakPtr<BufferedDataSource> weak_this = weak_factory_.GetWeakPtr();
   loader_->Start(
-      base::Bind(&BufferedDataSource::StartCallback, weak_this_),
-      base::Bind(&BufferedDataSource::LoadingStateChangedCallback, weak_this_),
-      base::Bind(&BufferedDataSource::ProgressCallback, weak_this_),
+      base::Bind(&BufferedDataSource::StartCallback, weak_this),
+      base::Bind(&BufferedDataSource::LoadingStateChangedCallback, weak_this),
+      base::Bind(&BufferedDataSource::ProgressCallback, weak_this),
       frame_);
 }
 
@@ -223,13 +223,16 @@ void BufferedDataSource::Stop(const base::Closure& closure) {
   }
   closure.Run();
 
-  render_loop_->PostTask(FROM_HERE,
-      base::Bind(&BufferedDataSource::StopLoader, weak_this_));
+  render_loop_->PostTask(
+      FROM_HERE,
+      base::Bind(&BufferedDataSource::StopLoader, weak_factory_.GetWeakPtr()));
 }
 
 void BufferedDataSource::SetBitrate(int bitrate) {
-  render_loop_->PostTask(FROM_HERE, base::Bind(
-      &BufferedDataSource::SetBitrateTask, weak_this_, bitrate));
+  render_loop_->PostTask(FROM_HERE,
+                         base::Bind(&BufferedDataSource::SetBitrateTask,
+                                    weak_factory_.GetWeakPtr(),
+                                    bitrate));
 }
 
 void BufferedDataSource::Read(
@@ -250,8 +253,9 @@ void BufferedDataSource::Read(
     read_op_.reset(new ReadOperation(position, size, data, read_cb));
   }
 
-  render_loop_->PostTask(FROM_HERE, base::Bind(
-      &BufferedDataSource::ReadTask, weak_this_));
+  render_loop_->PostTask(
+      FROM_HERE,
+      base::Bind(&BufferedDataSource::ReadTask, weak_factory_.GetWeakPtr()));
 }
 
 bool BufferedDataSource::GetSize(int64* size_out) {
@@ -326,9 +330,11 @@ void BufferedDataSource::ReadInternal() {
   }
 
   // Perform the actual read with BufferedResourceLoader.
-  loader_->Read(
-      position, size, intermediate_read_buffer_.get(),
-      base::Bind(&BufferedDataSource::ReadCallback, weak_this_));
+  loader_->Read(position,
+                size,
+                intermediate_read_buffer_.get(),
+                base::Bind(&BufferedDataSource::ReadCallback,
+                           weak_factory_.GetWeakPtr()));
 }
 
 
@@ -431,11 +437,13 @@ void BufferedDataSource::ReadCallback(
       // end of the resource.
       loader_.reset(CreateResourceLoader(
           read_op_->position(), kPositionNotSpecified));
+
+      base::WeakPtr<BufferedDataSource> weak_this = weak_factory_.GetWeakPtr();
       loader_->Start(
-          base::Bind(&BufferedDataSource::PartialReadStartCallback, weak_this_),
+          base::Bind(&BufferedDataSource::PartialReadStartCallback, weak_this),
           base::Bind(&BufferedDataSource::LoadingStateChangedCallback,
-                     weak_this_),
-          base::Bind(&BufferedDataSource::ProgressCallback, weak_this_),
+                     weak_this),
+          base::Bind(&BufferedDataSource::ProgressCallback, weak_this),
           frame_);
       return;
     }

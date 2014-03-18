@@ -139,8 +139,6 @@ class CONTENT_EXPORT BufferedDataSource : public media::DataSource {
   // change in playback rate.
   void UpdateDeferStrategy(bool paused);
 
-  base::WeakPtr<BufferedDataSource> weak_this_;
-
   // URL of the resource requested.
   GURL url_;
   // crossorigin attribute on the corresponding HTML media element, if any.
@@ -216,6 +214,7 @@ class CONTENT_EXPORT BufferedDataSource : public media::DataSource {
 
   DownloadingCB downloading_cb_;
 
+  // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<BufferedDataSource> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BufferedDataSource);

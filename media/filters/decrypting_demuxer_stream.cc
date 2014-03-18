@@ -32,13 +32,12 @@ DecryptingDemuxerStream::DecryptingDemuxerStream(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     const SetDecryptorReadyCB& set_decryptor_ready_cb)
     : task_runner_(task_runner),
-      weak_factory_(this),
       state_(kUninitialized),
       demuxer_stream_(NULL),
       set_decryptor_ready_cb_(set_decryptor_ready_cb),
       decryptor_(NULL),
-      key_added_while_decrypt_pending_(false) {
-}
+      key_added_while_decrypt_pending_(false),
+      weak_factory_(this) {}
 
 void DecryptingDemuxerStream::Initialize(DemuxerStream* stream,
                                          const PipelineStatusCB& status_cb) {

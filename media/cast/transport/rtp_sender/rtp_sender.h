@@ -80,6 +80,7 @@ class RtpSender {
   CastTransportRtpStatistics stats_callback_;
   scoped_refptr<base::SingleThreadTaskRunner> transport_task_runner_;
 
+  // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<RtpSender> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RtpSender);

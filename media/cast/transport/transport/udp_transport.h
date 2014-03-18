@@ -69,6 +69,8 @@ class UdpTransport : public PacketSender {
   net::IPEndPoint recv_addr_;
   PacketReceiverCallback packet_receiver_;
   const CastTransportStatusCallback status_callback_;
+
+  // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<UdpTransport> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(UdpTransport);

@@ -56,10 +56,7 @@ static int GetThreadCount(AVCodecID codec_id) {
 
 FFmpegVideoDecoder::FFmpegVideoDecoder(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
-    : task_runner_(task_runner),
-      weak_factory_(this),
-      state_(kUninitialized) {
-}
+    : task_runner_(task_runner), state_(kUninitialized) {}
 
 int FFmpegVideoDecoder::GetVideoBuffer(AVCodecContext* codec_context,
                                        AVFrame* frame) {
@@ -134,7 +131,6 @@ void FFmpegVideoDecoder::Initialize(const VideoDecoderConfig& config,
   DCHECK(!config.is_encrypted());
 
   FFmpegGlue::InitializeFFmpeg();
-  weak_this_ = weak_factory_.GetWeakPtr();
 
   config_ = config;
   PipelineStatusCB initialize_cb = BindToCurrentLoop(status_cb);

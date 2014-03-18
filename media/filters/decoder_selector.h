@@ -88,6 +88,7 @@ class MEDIA_EXPORT DecoderSelector {
   scoped_ptr<Decoder> decoder_;
   scoped_ptr<DecryptingDemuxerStream> decrypted_stream_;
 
+  // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<DecoderSelector> weak_ptr_factory_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(DecoderSelector);

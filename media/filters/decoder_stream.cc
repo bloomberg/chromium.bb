@@ -40,13 +40,13 @@ DecoderStream<StreamType>::DecoderStream(
     ScopedVector<Decoder> decoders,
     const SetDecryptorReadyCB& set_decryptor_ready_cb)
     : task_runner_(task_runner),
-      weak_factory_(this),
       state_(STATE_UNINITIALIZED),
       stream_(NULL),
       decoder_selector_(
           new DecoderSelector<StreamType>(task_runner,
                                           decoders.Pass(),
-                                          set_decryptor_ready_cb)) {}
+                                          set_decryptor_ready_cb)),
+      weak_factory_(this) {}
 
 template <DemuxerStream::Type StreamType>
 DecoderStream<StreamType>::~DecoderStream() {

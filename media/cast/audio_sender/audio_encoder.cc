@@ -167,9 +167,9 @@ class AudioEncoder::ImplBase
   // so far.
   uint32 rtp_timestamp_;
 
+  // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<ImplBase> weak_factory_;
 
- private:
   DISALLOW_COPY_AND_ASSIGN(ImplBase);
 };
 

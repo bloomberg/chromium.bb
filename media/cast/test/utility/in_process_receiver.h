@@ -101,7 +101,7 @@ class InProcessReceiver {
   scoped_ptr<transport::UdpTransport> transport_;
   scoped_ptr<CastReceiver> cast_receiver_;
 
-  // For shutdown safety, this member must be last:
+  // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<InProcessReceiver> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(InProcessReceiver);

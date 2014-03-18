@@ -43,7 +43,6 @@ AudioRendererImpl::AudioRendererImpl(
     ScopedVector<AudioDecoder> decoders,
     const SetDecryptorReadyCB& set_decryptor_ready_cb)
     : task_runner_(task_runner),
-      weak_factory_(this),
       sink_(sink),
       audio_buffer_stream_(task_runner,
                            decoders.Pass(),
@@ -57,7 +56,8 @@ AudioRendererImpl::AudioRendererImpl(
       audio_time_buffered_(kNoTimestamp()),
       current_time_(kNoTimestamp()),
       underflow_disabled_(false),
-      preroll_aborted_(false) {}
+      preroll_aborted_(false),
+      weak_factory_(this) {}
 
 AudioRendererImpl::~AudioRendererImpl() {
   // Stop() should have been called and |algorithm_| should have been destroyed.
@@ -146,8 +146,8 @@ void AudioRendererImpl::DoFlush_Locked() {
   DCHECK(!pending_read_);
   DCHECK_EQ(state_, kPaused);
 
-  audio_buffer_stream_.Reset(
-      base::Bind(&AudioRendererImpl::ResetDecoderDone, weak_this_));
+  audio_buffer_stream_.Reset(base::Bind(&AudioRendererImpl::ResetDecoderDone,
+                                        weak_factory_.GetWeakPtr()));
 }
 
 void AudioRendererImpl::ResetDecoderDone() {
@@ -243,7 +243,6 @@ void AudioRendererImpl::Initialize(DemuxerStream* stream,
 
   state_ = kInitializing;
 
-  weak_this_ = weak_factory_.GetWeakPtr();
   init_cb_ = init_cb;
   underflow_cb_ = underflow_cb;
   time_cb_ = time_cb;
@@ -255,7 +254,7 @@ void AudioRendererImpl::Initialize(DemuxerStream* stream,
       stream,
       statistics_cb,
       base::Bind(&AudioRendererImpl::OnAudioBufferStreamInitialized,
-                 weak_this_));
+                 weak_factory_.GetWeakPtr()));
 }
 
 void AudioRendererImpl::OnAudioBufferStreamInitialized(bool success) {
@@ -307,7 +306,7 @@ void AudioRendererImpl::OnAudioBufferStreamInitialized(bool success) {
 
   {
     base::AutoUnlock auto_unlock(lock_);
-    sink_->Initialize(audio_parameters_, weak_this_.get());
+    sink_->Initialize(audio_parameters_, this);
     sink_->Start();
 
     // Some sinks play on start...
@@ -472,8 +471,8 @@ void AudioRendererImpl::AttemptRead_Locked() {
     return;
 
   pending_read_ = true;
-  audio_buffer_stream_.Read(
-      base::Bind(&AudioRendererImpl::DecodedAudioReady, weak_this_));
+  audio_buffer_stream_.Read(base::Bind(&AudioRendererImpl::DecodedAudioReady,
+                                       weak_factory_.GetWeakPtr()));
 }
 
 bool AudioRendererImpl::CanRead_Locked() {
@@ -585,8 +584,9 @@ int AudioRendererImpl::Render(AudioBus* audio_bus,
     }
 
     if (CanRead_Locked()) {
-      task_runner_->PostTask(FROM_HERE, base::Bind(
-          &AudioRendererImpl::AttemptRead, weak_this_));
+      task_runner_->PostTask(FROM_HERE,
+                             base::Bind(&AudioRendererImpl::AttemptRead,
+                                        weak_factory_.GetWeakPtr()));
     }
 
     // The |audio_time_buffered_| is the ending timestamp of the last frame

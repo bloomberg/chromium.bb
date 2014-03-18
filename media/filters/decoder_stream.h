@@ -147,7 +147,6 @@ class MEDIA_EXPORT DecoderStream {
   void OnDecoderStopped();
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  base::WeakPtrFactory<DecoderStream<StreamType> > weak_factory_;
 
   State state_;
 
@@ -165,6 +164,9 @@ class MEDIA_EXPORT DecoderStream {
   // These two will be set by DecoderSelector::SelectDecoder().
   scoped_ptr<Decoder> decoder_;
   scoped_ptr<DecryptingDemuxerStream> decrypting_demuxer_stream_;
+
+  // NOTE: Weak pointers must be invalidated before all other member variables.
+  base::WeakPtrFactory<DecoderStream<StreamType> > weak_factory_;
 
   // This is required so the VideoFrameStream can access private members in
   // FinishInitialization() and ReportStatistics().

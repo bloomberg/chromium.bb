@@ -200,13 +200,13 @@ void CookieGetterTask::CheckPolicyForCookies(
 MediaResourceGetterImpl::MediaResourceGetterImpl(
     BrowserContext* browser_context,
     fileapi::FileSystemContext* file_system_context,
-    int renderer_id, int routing_id)
+    int renderer_id,
+    int routing_id)
     : browser_context_(browser_context),
       file_system_context_(file_system_context),
-      weak_this_(this),
       renderer_id_(renderer_id),
-      routing_id_(routing_id) {
-}
+      routing_id_(routing_id),
+      weak_factory_(this) {}
 
 MediaResourceGetterImpl::~MediaResourceGetterImpl() {}
 
@@ -218,7 +218,8 @@ void MediaResourceGetterImpl::GetCookies(
       browser_context_, renderer_id_, routing_id_);
 
   GetCookieCB cb = base::Bind(&MediaResourceGetterImpl::GetCookiesCallback,
-                              weak_this_.GetWeakPtr(), callback);
+                              weak_factory_.GetWeakPtr(),
+                              callback);
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
@@ -238,9 +239,10 @@ void MediaResourceGetterImpl::GetPlatformPathFromURL(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(url.SchemeIsFileSystem() || url.SchemeIs(kBlobScheme));
 
-  GetPlatformPathCB cb = base::Bind(
-      &MediaResourceGetterImpl::GetPlatformPathCallback,
-      weak_this_.GetWeakPtr(), callback);
+  GetPlatformPathCB cb =
+      base::Bind(&MediaResourceGetterImpl::GetPlatformPathCallback,
+                 weak_factory_.GetWeakPtr(),
+                 callback);
 
   if (url.SchemeIs(kBlobScheme)) {
     BrowserThread::PostTask(

@@ -79,8 +79,6 @@ class MEDIA_EXPORT DecryptingVideoDecoder : public VideoDecoder {
   void DoStop();
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  base::WeakPtrFactory<DecryptingVideoDecoder> weak_factory_;
-  base::WeakPtr<DecryptingVideoDecoder> weak_this_;
 
   State state_;
 
@@ -108,6 +106,10 @@ class MEDIA_EXPORT DecryptingVideoDecoder : public VideoDecoder {
   // A unique ID to trace Decryptor::DecryptAndDecodeVideo() call and the
   // matching DecryptCB call (in DoDeliverFrame()).
   uint32 trace_id_;
+
+  // NOTE: Weak pointers must be invalidated before all other member variables.
+  base::WeakPtrFactory<DecryptingVideoDecoder> weak_factory_;
+  base::WeakPtr<DecryptingVideoDecoder> weak_this_;
 
   DISALLOW_COPY_AND_ASSIGN(DecryptingVideoDecoder);
 };

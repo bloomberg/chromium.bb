@@ -69,14 +69,14 @@ class MediaResourceGetterImpl : public media::MediaResourceGetter {
   // FileSystemContext to be used on FILE thread.
   fileapi::FileSystemContext* file_system_context_;
 
-  // Used to post tasks.
-  base::WeakPtrFactory<MediaResourceGetterImpl> weak_this_;
-
   // Render process id, used to check whether the process can access cookies.
   int renderer_id_;
 
   // Routing id for the render view, used to check tab specific cookie policy.
   int routing_id_;
+
+  // NOTE: Weak pointers must be invalidated before all other member variables.
+  base::WeakPtrFactory<MediaResourceGetterImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaResourceGetterImpl);
 };

@@ -137,6 +137,7 @@ class VideoReceiver : public base::NonThreadSafe,
   // it allows the event to be transmitted via RTCP.
   RtpTimestamp frame_id_to_rtp_timestamp_[256];
 
+  // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<VideoReceiver> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoReceiver);

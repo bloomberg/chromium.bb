@@ -310,6 +310,7 @@ class WebContentsCaptureMachine
   scoped_ptr<ContentCaptureSubscription> subscription_;
 
   // Weak pointer factory used to invalidate callbacks.
+  // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<WebContentsCaptureMachine> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsCaptureMachine);

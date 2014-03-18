@@ -60,14 +60,14 @@ GpuVideoDecoder::GpuVideoDecoder(
     const scoped_refptr<GpuVideoAcceleratorFactories>& factories,
     const scoped_refptr<MediaLog>& media_log)
     : needs_bitstream_conversion_(false),
-      weak_factory_(this),
       factories_(factories),
       state_(kNormal),
       media_log_(media_log),
       decoder_texture_target_(0),
       next_picture_buffer_id_(0),
       next_bitstream_buffer_id_(0),
-      available_pictures_(0) {
+      available_pictures_(0),
+      weak_factory_(this) {
   DCHECK(factories_.get());
 }
 
@@ -76,8 +76,10 @@ void GpuVideoDecoder::Reset(const base::Closure& closure)  {
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
 
   if (state_ == kDrainingDecoder) {
-    base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
-        &GpuVideoDecoder::Reset, weak_this_, closure));
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(
+            &GpuVideoDecoder::Reset, weak_factory_.GetWeakPtr(), closure));
     // NOTE: if we're deferring Reset() until a Flush() completes, return
     // queued pictures to the VDA so they can be used to finish that Flush().
     if (pending_decode_cb_.is_null())
@@ -146,8 +148,6 @@ void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
   DCHECK(config.IsValidConfig());
   DCHECK(!config.is_encrypted());
-
-  weak_this_ = weak_factory_.GetWeakPtr();
 
   PipelineStatusCB status_cb =
       base::Bind(&ReportGpuVideoDecoderInitializeStatusToUMAAndRunCB,
@@ -463,7 +463,7 @@ void GpuVideoDecoder::PictureReady(const media::Picture& picture) {
       make_scoped_ptr(new gpu::MailboxHolder(
           pb.texture_mailbox(), decoder_texture_target_, 0 /* sync_point */)),
       BindToCurrentLoop(base::Bind(&GpuVideoDecoder::ReusePictureBuffer,
-                                   weak_this_,
+                                   weak_factory_.GetWeakPtr(),
                                    picture.picture_buffer_id())),
       pb.size(),
       visible_rect,

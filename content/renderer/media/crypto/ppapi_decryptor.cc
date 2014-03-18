@@ -73,16 +73,15 @@ PpapiDecryptor::PpapiDecryptor(
   DCHECK(!session_closed_cb_.is_null());
   DCHECK(!session_error_cb_.is_null());
 
-  weak_this_ = weak_ptr_factory_.GetWeakPtr();
-
+  base::WeakPtr<PpapiDecryptor> weak_this = weak_ptr_factory_.GetWeakPtr();
   CdmDelegate()->Initialize(
       key_system,
-      base::Bind(&PpapiDecryptor::OnSessionCreated, weak_this_),
-      base::Bind(&PpapiDecryptor::OnSessionMessage, weak_this_),
-      base::Bind(&PpapiDecryptor::OnSessionReady, weak_this_),
-      base::Bind(&PpapiDecryptor::OnSessionClosed, weak_this_),
-      base::Bind(&PpapiDecryptor::OnSessionError, weak_this_),
-      base::Bind(&PpapiDecryptor::OnFatalPluginError, weak_this_));
+      base::Bind(&PpapiDecryptor::OnSessionCreated, weak_this),
+      base::Bind(&PpapiDecryptor::OnSessionMessage, weak_this),
+      base::Bind(&PpapiDecryptor::OnSessionReady, weak_this),
+      base::Bind(&PpapiDecryptor::OnSessionClosed, weak_this),
+      base::Bind(&PpapiDecryptor::OnSessionError, weak_this),
+      base::Bind(&PpapiDecryptor::OnFatalPluginError, weak_this));
 }
 
 PpapiDecryptor::~PpapiDecryptor() {
@@ -149,9 +148,11 @@ media::Decryptor* PpapiDecryptor::GetDecryptor() {
 void PpapiDecryptor::RegisterNewKeyCB(StreamType stream_type,
                                       const NewKeyCB& new_key_cb) {
   if (!render_loop_proxy_->BelongsToCurrentThread()) {
-    render_loop_proxy_->PostTask(FROM_HERE, base::Bind(
-        &PpapiDecryptor::RegisterNewKeyCB, weak_this_, stream_type,
-        new_key_cb));
+    render_loop_proxy_->PostTask(FROM_HERE,
+                                 base::Bind(&PpapiDecryptor::RegisterNewKeyCB,
+                                            weak_ptr_factory_.GetWeakPtr(),
+                                            stream_type,
+                                            new_key_cb));
     return;
   }
 
@@ -173,9 +174,12 @@ void PpapiDecryptor::Decrypt(
     const scoped_refptr<media::DecoderBuffer>& encrypted,
     const DecryptCB& decrypt_cb) {
   if (!render_loop_proxy_->BelongsToCurrentThread()) {
-    render_loop_proxy_->PostTask(FROM_HERE, base::Bind(
-        &PpapiDecryptor::Decrypt, weak_this_,
-        stream_type, encrypted, decrypt_cb));
+    render_loop_proxy_->PostTask(FROM_HERE,
+                                 base::Bind(&PpapiDecryptor::Decrypt,
+                                            weak_ptr_factory_.GetWeakPtr(),
+                                            stream_type,
+                                            encrypted,
+                                            decrypt_cb));
     return;
   }
 
@@ -188,8 +192,10 @@ void PpapiDecryptor::Decrypt(
 
 void PpapiDecryptor::CancelDecrypt(StreamType stream_type) {
   if (!render_loop_proxy_->BelongsToCurrentThread()) {
-    render_loop_proxy_->PostTask(FROM_HERE, base::Bind(
-        &PpapiDecryptor::CancelDecrypt, weak_this_, stream_type));
+    render_loop_proxy_->PostTask(FROM_HERE,
+                                 base::Bind(&PpapiDecryptor::CancelDecrypt,
+                                            weak_ptr_factory_.GetWeakPtr(),
+                                            stream_type));
     return;
   }
 
@@ -202,8 +208,12 @@ void PpapiDecryptor::InitializeAudioDecoder(
       const media::AudioDecoderConfig& config,
       const DecoderInitCB& init_cb) {
   if (!render_loop_proxy_->BelongsToCurrentThread()) {
-    render_loop_proxy_->PostTask(FROM_HERE, base::Bind(
-        &PpapiDecryptor::InitializeAudioDecoder, weak_this_, config, init_cb));
+    render_loop_proxy_->PostTask(
+        FROM_HERE,
+        base::Bind(&PpapiDecryptor::InitializeAudioDecoder,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   config,
+                   init_cb));
     return;
   }
 
@@ -212,11 +222,11 @@ void PpapiDecryptor::InitializeAudioDecoder(
   DCHECK(config.IsValidConfig());
 
   audio_decoder_init_cb_ = init_cb;
-  if (!CdmDelegate() ||
-      !CdmDelegate()->InitializeAudioDecoder(
-          config,
-          base::Bind(
-              &PpapiDecryptor::OnDecoderInitialized, weak_this_, kAudio))) {
+  if (!CdmDelegate() || !CdmDelegate()->InitializeAudioDecoder(
+                            config,
+                            base::Bind(&PpapiDecryptor::OnDecoderInitialized,
+                                       weak_ptr_factory_.GetWeakPtr(),
+                                       kAudio))) {
     base::ResetAndReturn(&audio_decoder_init_cb_).Run(false);
     return;
   }
@@ -226,8 +236,12 @@ void PpapiDecryptor::InitializeVideoDecoder(
     const media::VideoDecoderConfig& config,
     const DecoderInitCB& init_cb) {
   if (!render_loop_proxy_->BelongsToCurrentThread()) {
-    render_loop_proxy_->PostTask(FROM_HERE, base::Bind(
-        &PpapiDecryptor::InitializeVideoDecoder, weak_this_, config, init_cb));
+    render_loop_proxy_->PostTask(
+        FROM_HERE,
+        base::Bind(&PpapiDecryptor::InitializeVideoDecoder,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   config,
+                   init_cb));
     return;
   }
 
@@ -236,11 +250,11 @@ void PpapiDecryptor::InitializeVideoDecoder(
   DCHECK(config.IsValidConfig());
 
   video_decoder_init_cb_ = init_cb;
-  if (!CdmDelegate() ||
-      !CdmDelegate()->InitializeVideoDecoder(
-          config,
-          base::Bind(
-              &PpapiDecryptor::OnDecoderInitialized, weak_this_, kVideo))) {
+  if (!CdmDelegate() || !CdmDelegate()->InitializeVideoDecoder(
+                            config,
+                            base::Bind(&PpapiDecryptor::OnDecoderInitialized,
+                                       weak_ptr_factory_.GetWeakPtr(),
+                                       kVideo))) {
     base::ResetAndReturn(&video_decoder_init_cb_).Run(false);
     return;
   }
@@ -250,9 +264,12 @@ void PpapiDecryptor::DecryptAndDecodeAudio(
     const scoped_refptr<media::DecoderBuffer>& encrypted,
     const AudioDecodeCB& audio_decode_cb) {
   if (!render_loop_proxy_->BelongsToCurrentThread()) {
-    render_loop_proxy_->PostTask(FROM_HERE, base::Bind(
-        &PpapiDecryptor::DecryptAndDecodeAudio, weak_this_,
-        encrypted, audio_decode_cb));
+    render_loop_proxy_->PostTask(
+        FROM_HERE,
+        base::Bind(&PpapiDecryptor::DecryptAndDecodeAudio,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   encrypted,
+                   audio_decode_cb));
     return;
   }
 
@@ -267,9 +284,12 @@ void PpapiDecryptor::DecryptAndDecodeVideo(
     const scoped_refptr<media::DecoderBuffer>& encrypted,
     const VideoDecodeCB& video_decode_cb) {
   if (!render_loop_proxy_->BelongsToCurrentThread()) {
-    render_loop_proxy_->PostTask(FROM_HERE, base::Bind(
-        &PpapiDecryptor::DecryptAndDecodeVideo, weak_this_,
-        encrypted, video_decode_cb));
+    render_loop_proxy_->PostTask(
+        FROM_HERE,
+        base::Bind(&PpapiDecryptor::DecryptAndDecodeVideo,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   encrypted,
+                   video_decode_cb));
     return;
   }
 
@@ -282,8 +302,10 @@ void PpapiDecryptor::DecryptAndDecodeVideo(
 
 void PpapiDecryptor::ResetDecoder(StreamType stream_type) {
   if (!render_loop_proxy_->BelongsToCurrentThread()) {
-    render_loop_proxy_->PostTask(FROM_HERE, base::Bind(
-        &PpapiDecryptor::ResetDecoder, weak_this_, stream_type));
+    render_loop_proxy_->PostTask(FROM_HERE,
+                                 base::Bind(&PpapiDecryptor::ResetDecoder,
+                                            weak_ptr_factory_.GetWeakPtr(),
+                                            stream_type));
     return;
   }
 
@@ -294,8 +316,11 @@ void PpapiDecryptor::ResetDecoder(StreamType stream_type) {
 
 void PpapiDecryptor::DeinitializeDecoder(StreamType stream_type) {
   if (!render_loop_proxy_->BelongsToCurrentThread()) {
-    render_loop_proxy_->PostTask(FROM_HERE, base::Bind(
-        &PpapiDecryptor::DeinitializeDecoder, weak_this_, stream_type));
+    render_loop_proxy_->PostTask(
+        FROM_HERE,
+        base::Bind(&PpapiDecryptor::DeinitializeDecoder,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   stream_type));
     return;
   }
 

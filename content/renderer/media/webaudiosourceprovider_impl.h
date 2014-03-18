@@ -56,8 +56,6 @@ class CONTENT_EXPORT WebAudioSourceProviderImpl
   // Calls setFormat() on |client_| from the Blink renderer thread.
   void OnSetFormat();
 
-  base::WeakPtrFactory<WebAudioSourceProviderImpl> weak_this_;
-
   // Closure that posts a task to call OnSetFormat() on the renderer thread.
   base::Closure set_format_cb_;
 
@@ -80,6 +78,9 @@ class CONTENT_EXPORT WebAudioSourceProviderImpl
   base::Lock sink_lock_;
   scoped_refptr<media::AudioRendererSink> sink_;
   scoped_ptr<media::AudioBus> bus_wrapper_;
+
+  // NOTE: Weak pointers must be invalidated before all other member variables.
+  base::WeakPtrFactory<WebAudioSourceProviderImpl> weak_factory_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(WebAudioSourceProviderImpl);
 };

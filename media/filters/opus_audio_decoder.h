@@ -6,7 +6,6 @@
 #define MEDIA_FILTERS_OPUS_AUDIO_DECODER_H_
 
 #include "base/callback.h"
-#include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "media/base/audio_decoder.h"
 #include "media/base/demuxer_stream.h"
@@ -58,8 +57,6 @@ class MEDIA_EXPORT OpusAudioDecoder : public AudioDecoder {
               scoped_refptr<AudioBuffer>* output_buffer);
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  base::WeakPtrFactory<OpusAudioDecoder> weak_factory_;
-  base::WeakPtr<OpusAudioDecoder> weak_this_;
 
   AudioDecoderConfig config_;
   OpusMSDecoder* opus_decoder_;

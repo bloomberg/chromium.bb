@@ -76,12 +76,12 @@ class VideoCaptureDeviceMac : public VideoCaptureDevice {
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   InternalState state_;
 
-  // Used with Bind and PostTask to ensure that methods aren't called
-  // after the VideoCaptureDeviceMac is destroyed.
-  base::WeakPtrFactory<VideoCaptureDeviceMac> weak_factory_;
-  base::WeakPtr<VideoCaptureDeviceMac> weak_this_;
-
   id<PlatformVideoCapturingMac> capture_device_;
+
+  // Used with Bind and PostTask to ensure that methods aren't called after the
+  // VideoCaptureDeviceMac is destroyed.
+  // NOTE: Weak pointers must be invalidated before all other member variables.
+  base::WeakPtrFactory<VideoCaptureDeviceMac> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureDeviceMac);
 };

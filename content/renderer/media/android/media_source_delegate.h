@@ -182,15 +182,6 @@ class MediaSourceDelegate : public media::DemuxerHost {
   base::TimeDelta FindBufferedBrowserSeekTime_Locked(
       const base::TimeDelta& seek_time) const;
 
-  // Message loop for main renderer thread and corresponding weak pointer.
-  const scoped_refptr<base::MessageLoopProxy> main_loop_;
-  base::WeakPtrFactory<MediaSourceDelegate> main_weak_factory_;
-  base::WeakPtr<MediaSourceDelegate> main_weak_this_;
-
-  // Message loop for media thread and corresponding weak pointer.
-  const scoped_refptr<base::MessageLoopProxy> media_loop_;
-  base::WeakPtrFactory<MediaSourceDelegate> media_weak_factory_;
-
   RendererDemuxerAndroid* demuxer_client_;
   int demuxer_client_id_;
 
@@ -239,6 +230,15 @@ class MediaSourceDelegate : public media::DemuxerHost {
   bool expecting_regular_seek_;
 
   size_t access_unit_size_;
+
+  // Message loop for main renderer and media threads.
+  const scoped_refptr<base::MessageLoopProxy> main_loop_;
+  const scoped_refptr<base::MessageLoopProxy> media_loop_;
+
+  // NOTE: Weak pointers must be invalidated before all other member variables.
+  base::WeakPtrFactory<MediaSourceDelegate> main_weak_factory_;
+  base::WeakPtrFactory<MediaSourceDelegate> media_weak_factory_;
+  base::WeakPtr<MediaSourceDelegate> main_weak_this_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaSourceDelegate);
 };

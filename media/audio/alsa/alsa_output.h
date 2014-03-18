@@ -201,10 +201,6 @@ class MEDIA_EXPORT AlsaPcmOutputStream : public AudioOutputStream {
   scoped_ptr<media::SeekableBuffer> buffer_;
   uint32 frames_per_packet_;
 
-  // Allows us to run tasks on the AlsaPcmOutputStream instance which are
-  // bound by its lifetime.
-  base::WeakPtrFactory<AlsaPcmOutputStream> weak_factory_;
-
   InternalState state_;
   float volume_;  // Volume level from 0.0 to 1.0.
 
@@ -216,6 +212,11 @@ class MEDIA_EXPORT AlsaPcmOutputStream : public AudioOutputStream {
   // Channel mixer and temporary bus for the final mixed channel data.
   scoped_ptr<ChannelMixer> channel_mixer_;
   scoped_ptr<AudioBus> mixed_audio_bus_;
+
+  // Allows us to run tasks on the AlsaPcmOutputStream instance which are
+  // bound by its lifetime.
+  // NOTE: Weak pointers must be invalidated before all other member variables.
+  base::WeakPtrFactory<AlsaPcmOutputStream> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AlsaPcmOutputStream);
 };

@@ -71,10 +71,12 @@ class MEDIA_EXPORT SerialRunner {
 
   void RunNextInSeries(PipelineStatus last_status);
 
-  base::WeakPtrFactory<SerialRunner> weak_this_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   Queue bound_fns_;
   PipelineStatusCB done_cb_;
+
+  // NOTE: Weak pointers must be invalidated before all other member variables.
+  base::WeakPtrFactory<SerialRunner> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SerialRunner);
 };

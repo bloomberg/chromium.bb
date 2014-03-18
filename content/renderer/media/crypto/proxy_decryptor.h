@@ -109,8 +109,6 @@ class ProxyDecryptor {
   // stored by copy.
   const std::string& LookupWebSessionId(uint32 session_id) const;
 
-  base::WeakPtrFactory<ProxyDecryptor> weak_ptr_factory_;
-
 #if defined(ENABLE_PEPPER_CDMS)
   // Callback to create the Pepper plugin.
   CreatePepperCdmCB create_pepper_cdm_cb_;
@@ -137,6 +135,9 @@ class ProxyDecryptor {
   std::set<uint32> persistent_sessions_;
 
   bool is_clear_key_;
+
+  // NOTE: Weak pointers must be invalidated before all other member variables.
+  base::WeakPtrFactory<ProxyDecryptor> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ProxyDecryptor);
 };

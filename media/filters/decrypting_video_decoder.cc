@@ -23,13 +23,12 @@ DecryptingVideoDecoder::DecryptingVideoDecoder(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     const SetDecryptorReadyCB& set_decryptor_ready_cb)
     : task_runner_(task_runner),
-      weak_factory_(this),
       state_(kUninitialized),
       set_decryptor_ready_cb_(set_decryptor_ready_cb),
       decryptor_(NULL),
       key_added_while_decode_pending_(false),
-      trace_id_(0) {
-}
+      trace_id_(0),
+      weak_factory_(this) {}
 
 void DecryptingVideoDecoder::Initialize(const VideoDecoderConfig& config,
                                         const PipelineStatusCB& status_cb) {

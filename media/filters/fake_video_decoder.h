@@ -74,8 +74,6 @@ class FakeVideoDecoder : public VideoDecoder {
   void DoStop();
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  base::WeakPtrFactory<FakeVideoDecoder> weak_factory_;
-  base::WeakPtr<FakeVideoDecoder> weak_this_;
 
   const int decoding_delay_;
 
@@ -93,6 +91,9 @@ class FakeVideoDecoder : public VideoDecoder {
   std::list<scoped_refptr<VideoFrame> > decoded_frames_;
 
   int total_bytes_decoded_;
+
+  // NOTE: Weak pointers must be invalidated before all other member variables.
+  base::WeakPtrFactory<FakeVideoDecoder> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeVideoDecoder);
 };

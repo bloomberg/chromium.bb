@@ -74,6 +74,8 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid,
   virtual void OnDemuxerDurationChanged(base::TimeDelta duration) OVERRIDE;
 
  private:
+  friend class MediaSourcePlayerTest;
+
   // Update the current timestamp.
   void UpdateTimestamps(const base::TimeDelta& presentation_timestamp,
                         size_t audio_output_bytes);
@@ -266,9 +268,6 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid,
   // Object to calculate the current audio timestamp for A/V sync.
   scoped_ptr<AudioTimestampHelper> audio_timestamp_helper_;
 
-  // Weak pointer passed to media decoder jobs for callbacks.
-  base::WeakPtrFactory<MediaSourcePlayer> weak_this_;
-
   MediaDrmBridge* drm_bridge_;
 
   // No decryption key available to decrypt the encrypted buffer. In this case,
@@ -282,7 +281,10 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid,
   // Whether |surface_| is currently used by the player.
   bool is_surface_in_use_;
 
-  friend class MediaSourcePlayerTest;
+  // Weak pointer passed to media decoder jobs for callbacks.
+  // NOTE: Weak pointers must be invalidated before all other member variables.
+  base::WeakPtrFactory<MediaSourcePlayer> weak_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(MediaSourcePlayer);
 };
 

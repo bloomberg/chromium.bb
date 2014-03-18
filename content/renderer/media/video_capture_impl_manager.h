@@ -101,9 +101,12 @@ class CONTENT_EXPORT VideoCaptureImplManager {
 
   scoped_refptr<VideoCaptureMessageFilter> filter_;
 
-  // Following two members are bound to the render thread.
-  base::WeakPtrFactory<VideoCaptureImplManager> weak_factory_;
+  // Bound to the render thread.
   base::ThreadChecker thread_checker_;
+
+  // Bound to the render thread.
+  // NOTE: Weak pointers must be invalidated before all other member variables.
+  base::WeakPtrFactory<VideoCaptureImplManager> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureImplManager);
 };

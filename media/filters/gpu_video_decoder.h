@@ -130,10 +130,6 @@ class MEDIA_EXPORT GpuVideoDecoder
 
   bool needs_bitstream_conversion_;
 
-  // Bound to factories_->GetMessageLoop().
-  base::WeakPtrFactory<GpuVideoDecoder> weak_factory_;
-  base::WeakPtr<GpuVideoDecoder> weak_this_;
-
   scoped_refptr<GpuVideoAcceleratorFactories> factories_;
 
   // Populated during Initialize() (on success) and unchanged until an error
@@ -187,6 +183,10 @@ class MEDIA_EXPORT GpuVideoDecoder
   // Set during ProvidePictureBuffers(), used for checking and implementing
   // HasAvailableOutputFrames().
   int available_pictures_;
+
+  // Bound to factories_->GetMessageLoop().
+  // NOTE: Weak pointers must be invalidated before all other member variables.
+  base::WeakPtrFactory<GpuVideoDecoder> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuVideoDecoder);
 };

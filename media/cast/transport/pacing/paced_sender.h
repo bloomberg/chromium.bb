@@ -98,6 +98,7 @@ class PacedSender : public PacedPacketSender,
   PacketList packet_list_;
   PacketList resend_packet_list_;
 
+  // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<PacedSender> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PacedSender);

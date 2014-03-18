@@ -87,7 +87,6 @@ RTCVideoDecoder::RTCVideoDecoder(
       reset_bitstream_buffer_id_(ID_INVALID),
       weak_factory_(this) {
   DCHECK(!vda_task_runner_->BelongsToCurrentThread());
-  weak_this_ = weak_factory_.GetWeakPtr();
 }
 
 RTCVideoDecoder::~RTCVideoDecoder() {
@@ -163,7 +162,7 @@ int32_t RTCVideoDecoder::InitDecode(const webrtc::VideoCodec* codecSettings,
   if (available_shm_segments_.size() == 0) {
     vda_task_runner_->PostTask(FROM_HERE,
                                base::Bind(&RTCVideoDecoder::CreateSHM,
-                                          weak_this_,
+                                          weak_factory_.GetWeakPtr(),
                                           kMaxInFlightDecodes,
                                           kSharedMemorySegmentBytes));
   }
@@ -251,8 +250,9 @@ int32_t RTCVideoDecoder::Decode(
   }
 
   SaveToDecodeBuffers_Locked(inputImage, shm_buffer.Pass(), buffer_data);
-  vda_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&RTCVideoDecoder::RequestBufferDecode, weak_this_));
+  vda_task_runner_->PostTask(FROM_HERE,
+                             base::Bind(&RTCVideoDecoder::RequestBufferDecode,
+                                        weak_factory_.GetWeakPtr()));
   return WEBRTC_VIDEO_CODEC_OK;
 }
 
@@ -285,8 +285,9 @@ int32_t RTCVideoDecoder::Reset() {
   // If VDA is already resetting, no need to request the reset again.
   if (state_ != RESETTING) {
     state_ = RESETTING;
-    vda_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&RTCVideoDecoder::ResetInternal, weak_this_));
+    vda_task_runner_->PostTask(FROM_HERE,
+                               base::Bind(&RTCVideoDecoder::ResetInternal,
+                                          weak_factory_.GetWeakPtr()));
   }
   return WEBRTC_VIDEO_CODEC_OK;
 }
@@ -441,7 +442,7 @@ scoped_refptr<media::VideoFrame> RTCVideoDecoder::CreateVideoFrame(
       make_scoped_ptr(new gpu::MailboxHolder(
           pb.texture_mailbox(), decoder_texture_target_, 0)),
       media::BindToCurrentLoop(base::Bind(&RTCVideoDecoder::ReusePictureBuffer,
-                                          weak_this_,
+                                          weak_factory_.GetWeakPtr(),
                                           picture.picture_buffer_id())),
       pb.size(),
       visible_rect,
@@ -718,9 +719,11 @@ scoped_ptr<RTCVideoDecoder::SHMBuffer> RTCVideoDecoder::GetSHM_Locked(
   // queue is almost empty.
   if (num_shm_buffers_ < kMaxNumSharedMemorySegments &&
       (ret == NULL || available_shm_segments_.size() <= 1)) {
-    vda_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&RTCVideoDecoder::CreateSHM, weak_this_, 1, min_size));
+    vda_task_runner_->PostTask(FROM_HERE,
+                               base::Bind(&RTCVideoDecoder::CreateSHM,
+                                          weak_factory_.GetWeakPtr(),
+                                          1,
+                                          min_size));
   }
   return scoped_ptr<SHMBuffer>(ret);
 }

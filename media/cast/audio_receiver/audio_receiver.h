@@ -123,8 +123,6 @@ class AudioReceiver : public base::NonThreadSafe,
   // Processes raw audio events to be sent over to the cast sender via RTCP.
   ReceiverRtcpEventSubscriber event_subscriber_;
 
-  base::WeakPtrFactory<AudioReceiver> weak_factory_;
-
   const transport::AudioCodec codec_;
   const int frequency_;
   base::TimeDelta target_delay_delta_;
@@ -147,6 +145,9 @@ class AudioReceiver : public base::NonThreadSafe,
   // This mapping allows us to log kAudioAckSent as a frame event. In addition
   // it allows the event to be transmitted via RTCP.
   RtpTimestamp frame_id_to_rtp_timestamp_[256];
+
+  // NOTE: Weak pointers must be invalidated before all other member variables.
+  base::WeakPtrFactory<AudioReceiver> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioReceiver);
 };

@@ -9,7 +9,6 @@
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "media/base/audio_decoder.h"
 #include "media/base/demuxer_stream.h"
@@ -73,8 +72,6 @@ class MEDIA_EXPORT FFmpegAudioDecoder : public AudioDecoder {
   void ResetTimestampState();
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  base::WeakPtrFactory<FFmpegAudioDecoder> weak_factory_;
-  base::WeakPtr<FFmpegAudioDecoder> weak_this_;
 
   DecoderState state_;
 

@@ -205,8 +205,6 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
   DemuxerHost* host_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  base::WeakPtrFactory<FFmpegDemuxer> weak_factory_;
-  base::WeakPtr<FFmpegDemuxer> weak_this_;
 
   // Thread on which all blocking FFmpeg operations are executed.
   base::Thread blocking_thread_;
@@ -263,6 +261,9 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
   scoped_ptr<FFmpegGlue> glue_;
 
   const NeedKeyCB need_key_cb_;
+
+  // NOTE: Weak pointers must be invalidated before all other member variables.
+  base::WeakPtrFactory<FFmpegDemuxer> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FFmpegDemuxer);
 };

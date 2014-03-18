@@ -104,8 +104,6 @@ class PpapiDecryptor : public media::MediaKeys, public media::Decryptor {
 
   ContentDecryptorDelegate* CdmDelegate();
 
-  base::WeakPtr<PpapiDecryptor> weak_this_;
-
   // Hold a reference of the Pepper CDM wrapper to make sure the plugin lives
   // as long as needed.
   scoped_ptr<PepperCdmWrapper> pepper_cdm_wrapper_;
@@ -124,6 +122,7 @@ class PpapiDecryptor : public media::MediaKeys, public media::Decryptor {
   NewKeyCB new_audio_key_cb_;
   NewKeyCB new_video_key_cb_;
 
+  // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<PpapiDecryptor> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PpapiDecryptor);

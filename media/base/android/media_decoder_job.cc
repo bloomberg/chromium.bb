@@ -31,13 +31,12 @@ MediaDecoderJob::MediaDecoderJob(
       output_eos_encountered_(false),
       skip_eos_enqueue_(true),
       prerolling_(true),
-      weak_this_(this),
       request_data_cb_(request_data_cb),
       access_unit_index_(0),
       input_buf_index_(-1),
       stop_decode_pending_(false),
-      destroy_pending_(false) {
-}
+      destroy_pending_(false),
+      weak_factory_(this) {}
 
 MediaDecoderJob::~MediaDecoderJob() {}
 
@@ -362,7 +361,10 @@ void MediaDecoderJob::DecodeInternal(
     decoder_task_runner_->PostDelayedTask(
         FROM_HERE,
         base::Bind(&MediaDecoderJob::ReleaseOutputBuffer,
-                   weak_this_.GetWeakPtr(), buffer_index, size, render_output,
+                   weak_factory_.GetWeakPtr(),
+                   buffer_index,
+                   size,
+                   render_output,
                    base::Bind(callback, status, presentation_timestamp)),
         time_to_render);
     return;

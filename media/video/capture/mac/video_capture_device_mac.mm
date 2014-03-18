@@ -125,9 +125,8 @@ VideoCaptureDeviceMac::VideoCaptureDeviceMac(const Name& device_name)
       tried_to_square_pixels_(false),
       task_runner_(base::MessageLoopProxy::current()),
       state_(kNotInitialized),
-      weak_factory_(this),
-      weak_this_(weak_factory_.GetWeakPtr()),
-      capture_device_(nil) {
+      capture_device_(nil),
+      weak_factory_(this) {
   final_resolution_selected_ = AVFoundationGlue::IsAVFoundationSupported();
 }
 
@@ -313,8 +312,9 @@ void VideoCaptureDeviceMac::ReceiveFrame(
 
 void VideoCaptureDeviceMac::ReceiveError(const std::string& reason) {
   task_runner_->PostTask(FROM_HERE,
-      base::Bind(&VideoCaptureDeviceMac::SetErrorState, weak_this_,
-          reason));
+                         base::Bind(&VideoCaptureDeviceMac::SetErrorState,
+                                    weak_factory_.GetWeakPtr(),
+                                    reason));
 }
 
 void VideoCaptureDeviceMac::SetErrorState(const std::string& reason) {

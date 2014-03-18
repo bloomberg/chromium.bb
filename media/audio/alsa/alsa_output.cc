@@ -153,11 +153,11 @@ AlsaPcmOutputStream::AlsaPcmOutputStream(const std::string& device_name,
       message_loop_(base::MessageLoop::current()),
       playback_handle_(NULL),
       frames_per_packet_(packet_size_ / bytes_per_frame_),
-      weak_factory_(this),
       state_(kCreated),
       volume_(1.0f),
       source_callback_(NULL),
-      audio_bus_(AudioBus::Create(params)) {
+      audio_bus_(AudioBus::Create(params)),
+      weak_factory_(this) {
   DCHECK(manager_->GetTaskRunner()->BelongsToCurrentThread());
   DCHECK_EQ(audio_bus_->frames() * bytes_per_frame_, packet_size_);
 

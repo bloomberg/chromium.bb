@@ -86,6 +86,7 @@ class LocalRtpSenderStatistics : public RtpSenderStatistics {
   base::TimeTicks time_sent_;
   uint32 rtp_timestamp_;
 
+  // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<LocalRtpSenderStatistics> weak_factory_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(LocalRtpSenderStatistics);

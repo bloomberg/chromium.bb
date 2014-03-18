@@ -47,7 +47,7 @@ ProxyDecryptor::ProxyDecryptor(
     const KeyAddedCB& key_added_cb,
     const KeyErrorCB& key_error_cb,
     const KeyMessageCB& key_message_cb)
-    : weak_ptr_factory_(this),
+    :
 #if defined(ENABLE_PEPPER_CDMS)
       create_pepper_cdm_cb_(create_pepper_cdm_cb),
 #elif defined(OS_ANDROID)
@@ -57,7 +57,8 @@ ProxyDecryptor::ProxyDecryptor(
       key_added_cb_(key_added_cb),
       key_error_cb_(key_error_cb),
       key_message_cb_(key_message_cb),
-      is_clear_key_(false) {
+      is_clear_key_(false),
+      weak_ptr_factory_(this) {
 #if defined(ENABLE_PEPPER_CDMS)
   DCHECK(!create_pepper_cdm_cb_.is_null());
 #endif  // defined(ENABLE_PEPPER_CDMS)

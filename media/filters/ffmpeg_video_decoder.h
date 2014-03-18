@@ -9,7 +9,6 @@
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "media/base/video_decoder.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame_pool.h"
@@ -71,8 +70,6 @@ class MEDIA_EXPORT FFmpegVideoDecoder : public VideoDecoder {
   void DoReset();
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  base::WeakPtrFactory<FFmpegVideoDecoder> weak_factory_;
-  base::WeakPtr<FFmpegVideoDecoder> weak_this_;
 
   DecoderState state_;
 

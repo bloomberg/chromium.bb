@@ -57,6 +57,8 @@ class CastSenderImpl : public CastSender {
   transport::CastTransportSender* const transport_sender_;
   uint32 ssrc_of_audio_sender_;
   uint32 ssrc_of_video_sender_;
+
+  // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<CastSenderImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CastSenderImpl);

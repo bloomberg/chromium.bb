@@ -68,8 +68,6 @@ class AudioSender : public base::NonThreadSafe,
 
   void InitializeTimers();
 
-  base::WeakPtrFactory<AudioSender> weak_factory_;
-
   scoped_refptr<CastEnvironment> cast_environment_;
   transport::CastTransportSender* const transport_sender_;
   scoped_ptr<AudioEncoder> audio_encoder_;
@@ -78,6 +76,9 @@ class AudioSender : public base::NonThreadSafe,
   Rtcp rtcp_;
   bool timers_initialized_;
   CastInitializationStatus cast_initialization_cb_;
+
+  // NOTE: Weak pointers must be invalidated before all other member variables.
+  base::WeakPtrFactory<AudioSender> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioSender);
 };

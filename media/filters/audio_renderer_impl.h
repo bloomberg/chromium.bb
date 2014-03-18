@@ -180,8 +180,6 @@ class MEDIA_EXPORT AudioRendererImpl
   void ResetDecoderDone();
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  base::WeakPtrFactory<AudioRendererImpl> weak_factory_;
-  base::WeakPtr<AudioRendererImpl> weak_this_;
 
   scoped_ptr<AudioSplicer> splicer_;
 
@@ -263,6 +261,9 @@ class MEDIA_EXPORT AudioRendererImpl
   bool preroll_aborted_;
 
   // End variables which must be accessed under |lock_|. ----------------------
+
+  // NOTE: Weak pointers must be invalidated before all other member variables.
+  base::WeakPtrFactory<AudioRendererImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioRendererImpl);
 };

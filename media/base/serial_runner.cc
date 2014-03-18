@@ -54,17 +54,19 @@ bool SerialRunner::Queue::empty() {
   return bound_fns_.empty();
 }
 
-SerialRunner::SerialRunner(
-    const Queue& bound_fns, const PipelineStatusCB& done_cb)
-    : weak_this_(this),
-      task_runner_(base::MessageLoopProxy::current()),
+SerialRunner::SerialRunner(const Queue& bound_fns,
+                           const PipelineStatusCB& done_cb)
+    : task_runner_(base::MessageLoopProxy::current()),
       bound_fns_(bound_fns),
-      done_cb_(done_cb) {
+      done_cb_(done_cb),
+      weak_factory_(this) {
   // Respect both cancellation and calling stack guarantees for |done_cb|
   // when empty.
   if (bound_fns_.empty()) {
-    task_runner_->PostTask(FROM_HERE, base::Bind(
-        &SerialRunner::RunNextInSeries, weak_this_.GetWeakPtr(), PIPELINE_OK));
+    task_runner_->PostTask(FROM_HERE,
+                           base::Bind(&SerialRunner::RunNextInSeries,
+                                      weak_factory_.GetWeakPtr(),
+                                      PIPELINE_OK));
     return;
   }
 
@@ -90,8 +92,10 @@ void SerialRunner::RunNextInSeries(PipelineStatus last_status) {
   }
 
   BoundPipelineStatusCB bound_fn = bound_fns_.Pop();
-  bound_fn.Run(base::Bind(&RunOnTaskRunner, task_runner_, base::Bind(
-      &SerialRunner::RunNextInSeries, weak_this_.GetWeakPtr())));
+  bound_fn.Run(base::Bind(
+      &RunOnTaskRunner,
+      task_runner_,
+      base::Bind(&SerialRunner::RunNextInSeries, weak_factory_.GetWeakPtr())));
 }
 
 }  // namespace media

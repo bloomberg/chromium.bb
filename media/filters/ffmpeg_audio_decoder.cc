@@ -4,9 +4,7 @@
 
 #include "media/filters/ffmpeg_audio_decoder.h"
 
-#include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "media/base/audio_buffer.h"
 #include "media/base/audio_bus.h"
@@ -14,9 +12,7 @@
 #include "media/base/audio_timestamp_helper.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/decoder_buffer.h"
-#include "media/base/demuxer.h"
 #include "media/base/limits.h"
-#include "media/base/pipeline.h"
 #include "media/base/sample_format.h"
 #include "media/ffmpeg/ffmpeg_common.h"
 #include "media/filters/ffmpeg_glue.h"
@@ -123,7 +119,6 @@ static int GetAudioBuffer(struct AVCodecContext* s, AVFrame* frame, int flags) {
 FFmpegAudioDecoder::FFmpegAudioDecoder(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
     : task_runner_(task_runner),
-      weak_factory_(this),
       state_(kUninitialized),
       bytes_per_channel_(0),
       channel_layout_(CHANNEL_LAYOUT_NONE),
@@ -145,7 +140,6 @@ void FFmpegAudioDecoder::Initialize(const AudioDecoderConfig& config,
   DCHECK(!config.is_encrypted());
 
   FFmpegGlue::InitializeFFmpeg();
-  weak_this_ = weak_factory_.GetWeakPtr();
 
   config_ = config;
   PipelineStatusCB initialize_cb = BindToCurrentLoop(status_cb);

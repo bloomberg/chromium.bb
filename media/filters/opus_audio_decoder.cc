@@ -6,9 +6,6 @@
 
 #include <cmath>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
-#include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/sys_byteorder.h"
 #include "media/base/audio_buffer.h"
@@ -17,8 +14,6 @@
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/buffers.h"
 #include "media/base/decoder_buffer.h"
-#include "media/base/demuxer.h"
-#include "media/base/pipeline.h"
 #include "third_party/opus/src/include/opus.h"
 #include "third_party/opus/src/include/opus_multistream.h"
 
@@ -255,7 +250,6 @@ static bool ParseOpusExtraData(const uint8* data, int data_size,
 OpusAudioDecoder::OpusAudioDecoder(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
     : task_runner_(task_runner),
-      weak_factory_(this),
       opus_decoder_(NULL),
       channel_layout_(CHANNEL_LAYOUT_NONE),
       samples_per_second_(0),
@@ -264,15 +258,13 @@ OpusAudioDecoder::OpusAudioDecoder(
       last_input_timestamp_(kNoTimestamp()),
       frames_to_discard_(0),
       frame_delay_at_start_(0),
-      start_input_timestamp_(kNoTimestamp()) {
-}
+      start_input_timestamp_(kNoTimestamp()) {}
 
 void OpusAudioDecoder::Initialize(const AudioDecoderConfig& config,
                                   const PipelineStatusCB& status_cb) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   PipelineStatusCB initialize_cb = BindToCurrentLoop(status_cb);
 
-  weak_this_ = weak_factory_.GetWeakPtr();
   config_ = config;
 
   if (!ConfigureDecoder()) {

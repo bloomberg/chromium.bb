@@ -369,7 +369,6 @@ FFmpegDemuxer::FFmpegDemuxer(
     const scoped_refptr<MediaLog>& media_log)
     : host_(NULL),
       task_runner_(task_runner),
-      weak_factory_(this),
       blocking_thread_("FFmpegDemuxer"),
       pending_read_(false),
       pending_seek_(false),
@@ -380,7 +379,8 @@ FFmpegDemuxer::FFmpegDemuxer(
       audio_disabled_(false),
       text_enabled_(false),
       duration_known_(false),
-      need_key_cb_(need_key_cb) {
+      need_key_cb_(need_key_cb),
+      weak_factory_(this) {
   DCHECK(task_runner_.get());
   DCHECK(data_source_);
 }
@@ -390,9 +390,10 @@ FFmpegDemuxer::~FFmpegDemuxer() {}
 void FFmpegDemuxer::Stop(const base::Closure& callback) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   url_protocol_->Abort();
-  data_source_->Stop(BindToCurrentLoop(base::Bind(
-      &FFmpegDemuxer::OnDataSourceStopped, weak_this_,
-      BindToCurrentLoop(callback))));
+  data_source_->Stop(
+      BindToCurrentLoop(base::Bind(&FFmpegDemuxer::OnDataSourceStopped,
+                                   weak_factory_.GetWeakPtr(),
+                                   BindToCurrentLoop(callback))));
   data_source_ = NULL;
 }
 
@@ -419,7 +420,8 @@ void FFmpegDemuxer::Seek(base::TimeDelta time, const PipelineStatusCB& cb) {
                  -1,
                  time.InMicroseconds(),
                  flags),
-      base::Bind(&FFmpegDemuxer::OnSeekFrameDone, weak_this_, cb));
+      base::Bind(
+          &FFmpegDemuxer::OnSeekFrameDone, weak_factory_.GetWeakPtr(), cb));
 }
 
 void FFmpegDemuxer::OnAudioRendererDisabled() {
@@ -438,7 +440,6 @@ void FFmpegDemuxer::Initialize(DemuxerHost* host,
                                bool enable_text_tracks) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   host_ = host;
-  weak_this_ = weak_factory_.GetWeakPtr();
   text_enabled_ = enable_text_tracks;
 
   // TODO(scherkus): DataSource should have a host by this point,
@@ -461,7 +462,9 @@ void FFmpegDemuxer::Initialize(DemuxerHost* host,
       blocking_thread_.message_loop_proxy().get(),
       FROM_HERE,
       base::Bind(&FFmpegGlue::OpenContext, base::Unretained(glue_.get())),
-      base::Bind(&FFmpegDemuxer::OnOpenContextDone, weak_this_, status_cb));
+      base::Bind(&FFmpegDemuxer::OnOpenContextDone,
+                 weak_factory_.GetWeakPtr(),
+                 status_cb));
 }
 
 DemuxerStream* FFmpegDemuxer::GetStream(DemuxerStream::Type type) {
@@ -560,7 +563,9 @@ void FFmpegDemuxer::OnOpenContextDone(const PipelineStatusCB& status_cb,
       base::Bind(&avformat_find_stream_info,
                  glue_->format_context(),
                  static_cast<AVDictionary**>(NULL)),
-      base::Bind(&FFmpegDemuxer::OnFindStreamInfoDone, weak_this_, status_cb));
+      base::Bind(&FFmpegDemuxer::OnFindStreamInfoDone,
+                 weak_factory_.GetWeakPtr(),
+                 status_cb));
 }
 
 void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
@@ -793,8 +798,9 @@ void FFmpegDemuxer::ReadFrameIfNeeded() {
       blocking_thread_.message_loop_proxy().get(),
       FROM_HERE,
       base::Bind(&av_read_frame, glue_->format_context(), packet_ptr),
-      base::Bind(
-          &FFmpegDemuxer::OnReadFrameDone, weak_this_, base::Passed(&packet)));
+      base::Bind(&FFmpegDemuxer::OnReadFrameDone,
+                 weak_factory_.GetWeakPtr(),
+                 base::Passed(&packet)));
 }
 
 void FFmpegDemuxer::OnReadFrameDone(ScopedAVPacket packet, int result) {

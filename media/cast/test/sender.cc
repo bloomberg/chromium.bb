@@ -326,7 +326,11 @@ class SendProcess {
   base::TimeTicks start_time_;
   base::TimeTicks send_time_;
   scoped_ptr<TestAudioBusFactory> audio_bus_factory_;
+
+  // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<SendProcess> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(SendProcess);
 };
 
 }  // namespace cast

@@ -512,7 +512,7 @@ RTCVideoEncoder::RTCVideoEncoder(
       gpu_factories_(gpu_factories),
       encoded_image_callback_(NULL),
       impl_status_(WEBRTC_VIDEO_CODEC_UNINITIALIZED),
-      weak_this_factory_(this) {
+      weak_factory_(this) {
   DVLOG(1) << "RTCVideoEncoder(): profile=" << profile;
 }
 
@@ -532,8 +532,8 @@ int32_t RTCVideoEncoder::InitEncode(const webrtc::VideoCodec* codec_settings,
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!impl_);
 
-  weak_this_factory_.InvalidateWeakPtrs();
-  impl_ = new Impl(weak_this_factory_.GetWeakPtr(), gpu_factories_);
+  weak_factory_.InvalidateWeakPtrs();
+  impl_ = new Impl(weak_factory_.GetWeakPtr(), gpu_factories_);
   base::WaitableEvent initialization_waiter(true, false);
   int32_t initialization_retval = WEBRTC_VIDEO_CODEC_UNINITIALIZED;
   gpu_factories_->GetTaskRunner()->PostTask(
@@ -602,7 +602,7 @@ int32_t RTCVideoEncoder::Release() {
     gpu_factories_->GetTaskRunner()->PostTask(
         FROM_HERE, base::Bind(&RTCVideoEncoder::Impl::Destroy, impl_));
     impl_ = NULL;
-    weak_this_factory_.InvalidateWeakPtrs();
+    weak_factory_.InvalidateWeakPtrs();
     impl_status_ = WEBRTC_VIDEO_CODEC_UNINITIALIZED;
   }
   return WEBRTC_VIDEO_CODEC_OK;

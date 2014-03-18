@@ -245,6 +245,7 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   // Object for retrieving resources media players.
   scoped_ptr<media::MediaResourceGetter> media_resource_getter_;
 
+  // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<BrowserMediaPlayerManager> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserMediaPlayerManager);

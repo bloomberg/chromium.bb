@@ -6,7 +6,6 @@
 #define MEDIA_FILTERS_VPX_VIDEO_DECODER_H_
 
 #include "base/callback.h"
-#include "base/memory/weak_ptr.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/video_decoder.h"
 #include "media/base/video_decoder_config.h"
@@ -68,8 +67,6 @@ class MEDIA_EXPORT VpxVideoDecoder : public VideoDecoder {
                       scoped_refptr<VideoFrame>* video_frame);
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  base::WeakPtrFactory<VpxVideoDecoder> weak_factory_;
-  base::WeakPtr<VpxVideoDecoder> weak_this_;
 
   DecoderState state_;
 

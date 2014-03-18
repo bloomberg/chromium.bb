@@ -100,7 +100,8 @@ class CONTENT_EXPORT RTCVideoEncoder
 
   // Weak pointer factory for posting back VEA::Client notifications to
   // RTCVideoEncoder.
-  base::WeakPtrFactory<RTCVideoEncoder> weak_this_factory_;
+  // NOTE: Weak pointers must be invalidated before all other member variables.
+  base::WeakPtrFactory<RTCVideoEncoder> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RTCVideoEncoder);
 };
