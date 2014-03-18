@@ -35,14 +35,16 @@ std::vector<char> PnaclOptions::GetOptCommandline() const {
 
   nacl::stringstream ss;
   ss << "-O" << opt_level_;
-  // Debug info is only available in LLVM format pexes,
-  // not in PNaCl format pexes.
-  if (is_debug_)
-    ss << "\x00-bitcode-format=llvm";
   str = ss.str();
-
   std::copy(str.begin(), str.end(), std::back_inserter(result));
   result.push_back('\x00');
+  // Debug info is only available in LLVM format pexes,
+  // not in PNaCl format pexes.
+  if (is_debug_) {
+    str = "-bitcode-format=llvm";
+    std::copy(str.begin(), str.end(), std::back_inserter(result));
+    result.push_back('\x00');
+  }
 
   return result;
 }

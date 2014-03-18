@@ -38,8 +38,8 @@ class JsonManifest : public Manifest {
         manifest_base_url_(manifest_base_url),
         sandbox_isa_(sandbox_isa),
         nonsfi_enabled_(nonsfi_enabled),
-        dictionary_(Json::nullValue),
-        pnacl_debug_(pnacl_debug) { }
+        pnacl_debug_(pnacl_debug),
+        dictionary_(Json::nullValue) { }
   virtual ~JsonManifest() { }
 
   // Initialize the manifest object for use by later lookups.  The return
@@ -98,9 +98,9 @@ class JsonManifest : public Manifest {
   nacl::string manifest_base_url_;
   nacl::string sandbox_isa_;
   bool nonsfi_enabled_;
+  bool pnacl_debug_;
 
   Json::Value dictionary_;
-  bool pnacl_debug_;  // Search for a pnacl-debug entry.
 };
 
 }  // namespace plugin

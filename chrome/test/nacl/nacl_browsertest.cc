@@ -14,6 +14,7 @@
 #include "base/command_line.h"
 #include "base/environment.h"
 #include "base/path_service.h"
+#include "base/win/windows_version.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/nacl/nacl_browsertest_util.h"
 #include "components/nacl/common/nacl_switches.h"
@@ -206,22 +207,33 @@ class NaClBrowserTestPnaclDebugURL : public NaClBrowserTestPnacl {
   }
 };
 
-#if defined(OS_WIN)
-#define MAYBE_PnaclDebugURLFlagAndURL DISABLED_PnaclDebugURLFlagAndURL
-#define MAYBE_PnaclDebugURLFlagNoURL DISABLED_PnaclDebugURLFlagNoURL
-#else
-#define MAYBE_PnaclDebugURLFlagAndURL PnaclDebugURLFlagAndURL
-#define MAYBE_PnaclDebugURLFlagNoURL PnaclDebugURLFlagNoURL
-#endif
-
 IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnaclDebugURL,
-                       MAYBE_PnaclDebugURLFlagAndURL) {
+                       MAYBE_PNACL(PnaclDebugURLFlagAndURL)) {
+  // TODO(jvoung): Make this test work on Windows 32-bit. When --no-sandbox
+  // is used, the required 1GB sandbox address space is not reserved.
+  // (see note in chrome/browser/nacl_host/test/nacl_gdb_browsertest.cc)
+#if defined(OS_WIN)
+  if (base::win::OSInfo::GetInstance()->wow64_status() ==
+      base::win::OSInfo::WOW64_DISABLED &&
+      base::win::OSInfo::GetInstance()->architecture() ==
+      base::win::OSInfo::X86_ARCHITECTURE) {
+    return;
+  }
+#endif
   RunLoadTest(FILE_PATH_LITERAL(
       "pnacl_debug_url.html?nmf_file=pnacl_has_debug.nmf"));
 }
 
 IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnaclDebugURL,
-                       MAYBE_PnaclDebugURLFlagNoURL) {
+                       MAYBE_PNACL(PnaclDebugURLFlagNoURL)) {
+#if defined(OS_WIN)
+  if (base::win::OSInfo::GetInstance()->wow64_status() ==
+      base::win::OSInfo::WOW64_DISABLED &&
+      base::win::OSInfo::GetInstance()->architecture() ==
+      base::win::OSInfo::X86_ARCHITECTURE) {
+    return;
+  }
+#endif
   RunLoadTest(FILE_PATH_LITERAL(
       "pnacl_debug_url.html?nmf_file=pnacl_no_debug.nmf"));
 }

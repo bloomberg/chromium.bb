@@ -4,7 +4,7 @@
       "pnacl-translate": {
         "optlevel": 0,
         "comment": "Test w/ the debug flag off, so load this URL instead",
-        "url": "pnacl_options_newlib_pnacl.pexe"
+        "url": "pnacl_debug_url_newlib_pnacl.pexe"
       },
       "pnacl-debug": {
         "optlevel": 0,
