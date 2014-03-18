@@ -29,48 +29,59 @@ class TestPicturePile : public PicturePile {
     virtual ~TestPicturePile() {}
 };
 
-TEST(PicturePileTest, SmallInvalidateInflated) {
-  FakeContentLayerClient client;
-  FakeRenderingStatsInstrumentation stats_instrumentation;
-  scoped_refptr<TestPicturePile> pile = new TestPicturePile;
-  SkColor background_color = SK_ColorBLUE;
+class PicturePileTest : public testing::Test {
+ public:
+  PicturePileTest()
+      : pile_(new TestPicturePile()),
+        background_color_(SK_ColorBLUE),
+        min_scale_(0.125),
+        frame_number_(0),
+        contents_opaque_(false) {
+    pile_->Resize(pile_->tiling().max_texture_size());
+    pile_->SetTileGridSize(gfx::Size(1000, 1000));
+    pile_->SetMinContentsScale(min_scale_);
+  }
 
-  float min_scale = 0.125;
-  gfx::Size base_picture_size = pile->tiling().max_texture_size();
+  gfx::Rect layer_rect() const { return gfx::Rect(pile_->size()); }
 
-  gfx::Size layer_size = base_picture_size;
-  pile->Resize(layer_size);
-  pile->SetTileGridSize(gfx::Size(1000, 1000));
-  pile->SetMinContentsScale(min_scale);
+  bool Update(const Region& invalidation, const gfx::Rect& visible_layer_rect) {
+    frame_number_++;
+    return pile_->Update(&client_,
+                         background_color_,
+                         contents_opaque_,
+                         invalidation,
+                         visible_layer_rect,
+                         frame_number_,
+                         &stats_instrumentation_);
+  }
 
-  // Update the whole layer.
-  pile->Update(&client,
-               background_color,
-               false,
-               gfx::Rect(layer_size),
-               gfx::Rect(layer_size),
-               1,
-               &stats_instrumentation);
+  bool UpdateWholeLayer() { return Update(layer_rect(), layer_rect()); }
+
+  FakeContentLayerClient client_;
+  FakeRenderingStatsInstrumentation stats_instrumentation_;
+  scoped_refptr<TestPicturePile> pile_;
+  SkColor background_color_;
+  float min_scale_;
+  int frame_number_;
+  bool contents_opaque_;
+};
+
+TEST_F(PicturePileTest, SmallInvalidateInflated) {
+  UpdateWholeLayer();
 
   // Invalidate something inside a tile.
   gfx::Rect invalidate_rect(50, 50, 1, 1);
-  pile->Update(&client,
-               background_color,
-               false,
-               invalidate_rect,
-               gfx::Rect(layer_size),
-               2,
-               &stats_instrumentation);
+  Update(invalidate_rect, layer_rect());
 
-  EXPECT_EQ(1, pile->tiling().num_tiles_x());
-  EXPECT_EQ(1, pile->tiling().num_tiles_y());
+  EXPECT_EQ(1, pile_->tiling().num_tiles_x());
+  EXPECT_EQ(1, pile_->tiling().num_tiles_y());
 
   TestPicturePile::PictureInfo& picture_info =
-      pile->picture_map().find(TestPicturePile::PictureMapKey(0, 0))->second;
+      pile_->picture_map().find(TestPicturePile::PictureMapKey(0, 0))->second;
   // We should have a picture.
   EXPECT_TRUE(!!picture_info.GetPicture());
   gfx::Rect picture_rect = gfx::ScaleToEnclosedRect(
-      picture_info.GetPicture()->LayerRect(), min_scale);
+      picture_info.GetPicture()->LayerRect(), min_scale_);
 
   // The the picture should be large enough that scaling it never makes a rect
   // smaller than 1 px wide or tall.
@@ -78,117 +89,63 @@ TEST(PicturePileTest, SmallInvalidateInflated) {
       picture_rect.ToString();
 }
 
-TEST(PicturePileTest, LargeInvalidateInflated) {
-  FakeContentLayerClient client;
-  FakeRenderingStatsInstrumentation stats_instrumentation;
-  scoped_refptr<TestPicturePile> pile = new TestPicturePile;
-  SkColor background_color = SK_ColorBLUE;
-
-  float min_scale = 0.125;
-  gfx::Size base_picture_size = pile->tiling().max_texture_size();
-
-  gfx::Size layer_size = base_picture_size;
-  pile->Resize(layer_size);
-  pile->SetTileGridSize(gfx::Size(1000, 1000));
-  pile->SetMinContentsScale(min_scale);
-
-  // Update the whole layer.
-  pile->Update(&client,
-               background_color,
-               false,
-               gfx::Rect(layer_size),
-               gfx::Rect(layer_size),
-               1,
-               &stats_instrumentation);
+TEST_F(PicturePileTest, LargeInvalidateInflated) {
+  UpdateWholeLayer();
 
   // Invalidate something inside a tile.
   gfx::Rect invalidate_rect(50, 50, 100, 100);
-  pile->Update(&client,
-               background_color,
-               false,
-               invalidate_rect,
-               gfx::Rect(layer_size),
-               2,
-               &stats_instrumentation);
+  Update(invalidate_rect, layer_rect());
 
-  EXPECT_EQ(1, pile->tiling().num_tiles_x());
-  EXPECT_EQ(1, pile->tiling().num_tiles_y());
+  EXPECT_EQ(1, pile_->tiling().num_tiles_x());
+  EXPECT_EQ(1, pile_->tiling().num_tiles_y());
 
   TestPicturePile::PictureInfo& picture_info =
-      pile->picture_map().find(TestPicturePile::PictureMapKey(0, 0))->second;
+      pile_->picture_map().find(TestPicturePile::PictureMapKey(0, 0))->second;
   EXPECT_TRUE(!!picture_info.GetPicture());
 
-  int expected_inflation = pile->buffer_pixels();
+  int expected_inflation = pile_->buffer_pixels();
 
   Picture* base_picture = picture_info.GetPicture();
-  gfx::Rect base_picture_rect(layer_size);
+  gfx::Rect base_picture_rect(pile_->size());
   base_picture_rect.Inset(-expected_inflation, -expected_inflation);
   EXPECT_EQ(base_picture_rect.ToString(),
             base_picture->LayerRect().ToString());
 }
 
-TEST(PicturePileTest, InvalidateOnTileBoundaryInflated) {
-  FakeContentLayerClient client;
-  FakeRenderingStatsInstrumentation stats_instrumentation;
-  scoped_refptr<TestPicturePile> pile = new TestPicturePile;
-  SkColor background_color = SK_ColorBLUE;
-
-  float min_scale = 0.125;
-  gfx::Size base_picture_size = pile->tiling().max_texture_size();
-
-  gfx::Size layer_size =
-      gfx::ToFlooredSize(gfx::ScaleSize(base_picture_size, 2.f));
-  pile->Resize(layer_size);
-  pile->SetTileGridSize(gfx::Size(1000, 1000));
-  pile->SetMinContentsScale(min_scale);
+TEST_F(PicturePileTest, InvalidateOnTileBoundaryInflated) {
+  gfx::Size layer_size = gfx::ToFlooredSize(gfx::ScaleSize(pile_->size(), 2.f));
+  pile_->Resize(layer_size);
 
   // Due to border pixels, we should have 3 tiles.
-  EXPECT_EQ(3, pile->tiling().num_tiles_x());
-  EXPECT_EQ(3, pile->tiling().num_tiles_y());
+  EXPECT_EQ(3, pile_->tiling().num_tiles_x());
+  EXPECT_EQ(3, pile_->tiling().num_tiles_y());
 
   // We should have 1/.125 - 1 = 7 border pixels.
-  EXPECT_EQ(7, pile->buffer_pixels());
-  EXPECT_EQ(7, pile->tiling().border_texels());
+  EXPECT_EQ(7, pile_->buffer_pixels());
+  EXPECT_EQ(7, pile_->tiling().border_texels());
 
   // Update the whole layer to create initial pictures.
-  pile->Update(&client,
-               background_color,
-               false,
-               gfx::Rect(layer_size),
-               gfx::Rect(layer_size),
-               0,
-               &stats_instrumentation);
+  UpdateWholeLayer();
 
   // Invalidate everything again to have a non zero invalidation
   // frequency.
-  pile->Update(&client,
-               background_color,
-               false,
-               gfx::Rect(layer_size),
-               gfx::Rect(layer_size),
-               1,
-               &stats_instrumentation);
+  UpdateWholeLayer();
 
   // Invalidate something just over a tile boundary by a single pixel.
   // This will invalidate the tile (1, 1), as well as 1 row of pixels in (1, 0).
   gfx::Rect invalidate_rect(
-      pile->tiling().TileBoundsWithBorder(0, 0).right(),
-      pile->tiling().TileBoundsWithBorder(0, 0).bottom() - 1,
+      pile_->tiling().TileBoundsWithBorder(0, 0).right(),
+      pile_->tiling().TileBoundsWithBorder(0, 0).bottom() - 1,
       50,
       50);
-  pile->Update(&client,
-               background_color,
-               false,
-               invalidate_rect,
-               gfx::Rect(layer_size),
-               2,
-               &stats_instrumentation);
+  Update(invalidate_rect, layer_rect());
 
-  for (int i = 0; i < pile->tiling().num_tiles_x(); ++i) {
-    for (int j = 0; j < pile->tiling().num_tiles_y(); ++j) {
+  for (int i = 0; i < pile_->tiling().num_tiles_x(); ++i) {
+    for (int j = 0; j < pile_->tiling().num_tiles_y(); ++j) {
       TestPicturePile::PictureInfo& picture_info =
-          pile->picture_map().find(
-              TestPicturePile::PictureMapKey(i, j))->second;
+          pile_->picture_map()
+              .find(TestPicturePile::PictureMapKey(i, j))
+              ->second;
 
       // Expect (1, 1) and (1, 0) to be invalidated once more
       // than the rest of the tiles.
@@ -205,60 +162,38 @@ TEST(PicturePileTest, InvalidateOnTileBoundaryInflated) {
   }
 }
 
-TEST(PicturePileTest, StopRecordingOffscreenInvalidations) {
-  FakeContentLayerClient client;
-  FakeRenderingStatsInstrumentation stats_instrumentation;
-  scoped_refptr<TestPicturePile> pile = new TestPicturePile;
-  SkColor background_color = SK_ColorBLUE;
-
-  float min_scale = 0.125;
-  gfx::Size base_picture_size = pile->tiling().max_texture_size();
-
-  gfx::Size layer_size =
-      gfx::ToFlooredSize(gfx::ScaleSize(base_picture_size, 4.f));
-  pile->Resize(layer_size);
-  pile->SetTileGridSize(gfx::Size(1000, 1000));
-  pile->SetMinContentsScale(min_scale);
+TEST_F(PicturePileTest, StopRecordingOffscreenInvalidations) {
+  gfx::Size layer_size = gfx::ToFlooredSize(gfx::ScaleSize(pile_->size(), 4.f));
+  pile_->Resize(layer_size);
 
   gfx::Rect viewport(0, 0, layer_size.width(), 1);
 
   // Update the whole layer until the invalidation frequency is high.
-  int frame;
-  for (frame = 0; frame < 33; ++frame) {
-    pile->Update(&client,
-                 background_color,
-                 false,
-                 gfx::Rect(layer_size),
-                 viewport,
-                 frame,
-                 &stats_instrumentation);
+  for (int frame = 0; frame < 33; ++frame) {
+    UpdateWholeLayer();
   }
 
   // Make sure we have a high invalidation frequency.
-  for (int i = 0; i < pile->tiling().num_tiles_x(); ++i) {
-    for (int j = 0; j < pile->tiling().num_tiles_y(); ++j) {
+  for (int i = 0; i < pile_->tiling().num_tiles_x(); ++i) {
+    for (int j = 0; j < pile_->tiling().num_tiles_y(); ++j) {
       TestPicturePile::PictureInfo& picture_info =
-          pile->picture_map().find(
-              TestPicturePile::PictureMapKey(i, j))->second;
+          pile_->picture_map()
+              .find(TestPicturePile::PictureMapKey(i, j))
+              ->second;
       EXPECT_FLOAT_EQ(1.0f, picture_info.GetInvalidationFrequencyForTesting())
           << "i " << i << " j " << j;
     }
   }
 
   // Update once more with a small viewport 0,0 layer_width by 1
-  pile->Update(&client,
-               background_color,
-               false,
-               gfx::Rect(layer_size),
-               viewport,
-               frame,
-               &stats_instrumentation);
+  Update(layer_rect(), viewport);
 
-  for (int i = 0; i < pile->tiling().num_tiles_x(); ++i) {
-    for (int j = 0; j < pile->tiling().num_tiles_y(); ++j) {
+  for (int i = 0; i < pile_->tiling().num_tiles_x(); ++i) {
+    for (int j = 0; j < pile_->tiling().num_tiles_y(); ++j) {
       TestPicturePile::PictureInfo& picture_info =
-          pile->picture_map().find(
-              TestPicturePile::PictureMapKey(i, j))->second;
+          pile_->picture_map()
+              .find(TestPicturePile::PictureMapKey(i, j))
+              ->second;
       EXPECT_FLOAT_EQ(1.0f, picture_info.GetInvalidationFrequencyForTesting());
 
       // If the y far enough away we expect to find no picture (no re-recording
@@ -271,19 +206,14 @@ TEST(PicturePileTest, StopRecordingOffscreenInvalidations) {
   }
 
   // Now update with no invalidation and full viewport
-  pile->Update(&client,
-               background_color,
-               false,
-               gfx::Rect(),
-               gfx::Rect(layer_size),
-               frame+1,
-               &stats_instrumentation);
+  Update(gfx::Rect(), layer_rect());
 
-  for (int i = 0; i < pile->tiling().num_tiles_x(); ++i) {
-    for (int j = 0; j < pile->tiling().num_tiles_y(); ++j) {
+  for (int i = 0; i < pile_->tiling().num_tiles_x(); ++i) {
+    for (int j = 0; j < pile_->tiling().num_tiles_y(); ++j) {
       TestPicturePile::PictureInfo& picture_info =
-          pile->picture_map().find(
-              TestPicturePile::PictureMapKey(i, j))->second;
+          pile_->picture_map()
+              .find(TestPicturePile::PictureMapKey(i, j))
+              ->second;
       // Expect the invalidation frequency to be less than 1, since we just
       // updated with no invalidations.
       float expected_frequency =
