@@ -24,13 +24,24 @@
 
 import fnmatch
 import os
-import cPickle as pickle
 import shutil
+import sys
 import tempfile
 
 from webkitpy.common.checkout.scm.detection import detect_scm_system
 from webkitpy.common.system import executive
 from webkitpy.common.system.executive import ScriptError
+
+# Add Source path to PYTHONPATH to support function calls to bindings/scripts
+# for compute_interfaces_info and idl_compiler
+module_path = os.path.dirname(__file__)
+source_path = os.path.normpath(os.path.join(module_path, os.pardir, os.pardir,
+                                            os.pardir, os.pardir, 'Source'))
+sys.path.append(source_path)
+
+from bindings.scripts.compute_interfaces_info import compute_interfaces_info, interfaces_info
+from bindings.scripts.idl_compiler import IdlCompilerV8
+
 
 PASS_MESSAGE = 'All tests PASS!'
 FAIL_MESSAGE = """Some tests FAIL!
@@ -53,6 +64,9 @@ DEPENDENCY_IDL_FILES = set([
     'TestPartialInterfacePython.idl',
     'TestPartialInterfacePython2.idl',
 ])
+
+
+EXTENDED_ATTRIBUTES_FILE = 'bindings/IDLExtendedAttributes.txt'
 
 all_input_directory = '.'  # Relative to Source/
 test_input_directory = os.path.join('bindings', 'tests', 'idls')
@@ -96,7 +110,7 @@ class BindingsTests(object):
         self.verbose = verbose
         self.executive = executive.Executive()
         self.provider = provider
-        _, self.interfaces_info_filename = provider.new_temp_file()
+        self.idl_compiler = None
         # Generate output into the reference directory if resetting results, or
         # a temp directory if not.
         if reset_results:
@@ -110,18 +124,14 @@ class BindingsTests(object):
             print output
 
     def generate_from_idl(self, idl_file):
-        cmd = ['python',
-               'bindings/scripts/idl_compiler.py',
-               '--output-dir', self.output_directory,
-               '--idl-attributes-file', 'bindings/IDLExtendedAttributes.txt',
-               '--interfaces-info-file', self.interfaces_info_filename,
-               idl_file]
+        idl_file_fullpath = os.path.realpath(idl_file)
         try:
-            self.run_command(cmd)
-        except ScriptError, e:
+            self.idl_compiler.compile_file(idl_file_fullpath)
+        except Exception as err:
             print 'ERROR: idl_compiler.py: ' + os.path.basename(idl_file)
-            print e.output
-            return e.exit_code
+            print err
+            return 1
+
         return 0
 
     def generate_interface_dependencies(self):
@@ -144,14 +154,6 @@ class BindingsTests(object):
             os.write(list_file, list_contents)
             return list_filename
 
-        def compute_interfaces_info(idl_files_list_filename):
-            cmd = ['python',
-                   'bindings/scripts/compute_interfaces_info.py',
-                   '--idl-files-list', idl_files_list_filename,
-                   '--interfaces-info-file', self.interfaces_info_filename,
-                   '--write-file-only-if-changed', '0']
-            self.run_command(cmd)
-
         # We compute interfaces info for *all* IDL files, not just test IDL
         # files, as code generator output depends on inheritance (both ancestor
         # chain and inherited extended attributes), and some real interfaces
@@ -162,13 +164,13 @@ class BindingsTests(object):
         # since this is also special-cased and Node inherits from EventTarget,
         # but this inheritance information requires computing dependencies for
         # the real Node.idl file.
-        all_idl_files_list_filename = write_list_file(idl_paths_recursive(all_input_directory))
         try:
-            compute_interfaces_info(all_idl_files_list_filename)
-        except ScriptError, e:
+            compute_interfaces_info(idl_paths_recursive(all_input_directory))
+        except Exception as err:
             print 'ERROR: compute_interfaces_info.py'
-            print e.output
-            return e.exit_code
+            print err
+            return 1
+
         return 0
 
     def delete_cache_files(self):
@@ -191,10 +193,10 @@ class BindingsTests(object):
                output_filename]
         try:
             self.run_command(cmd)
-        except ScriptError, e:
+        except ScriptError as err:
             # run_command throws an exception on diff (b/c non-zero exit code)
             print 'FAIL: %s' % reference_basename
-            print e.output
+            print err.output
             return False
 
         if self.verbose:
@@ -225,6 +227,11 @@ class BindingsTests(object):
         # Generate output, immediately dying on failure
         if self.generate_interface_dependencies():
             return False
+
+        self.idl_compiler = IdlCompilerV8(self.output_directory,
+                                          EXTENDED_ATTRIBUTES_FILE,
+                                          interfaces_info=interfaces_info,
+                                          only_if_changed=True)
 
         for input_filename in os.listdir(test_input_directory):
             if not input_filename.endswith('.idl'):
@@ -260,7 +267,7 @@ class BindingsTests(object):
             return 0
         print
         print FAIL_MESSAGE
-        return -1
+        return 1
 
 
 def run_bindings_tests(reset_results, verbose):
