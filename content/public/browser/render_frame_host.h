@@ -5,6 +5,8 @@
 #ifndef CONTENT_PUBLIC_BROWSER_RENDER_FRAME_HOST_H_
 #define CONTENT_PUBLIC_BROWSER_RENDER_FRAME_HOST_H_
 
+#include <string>
+
 #include "base/callback_forward.h"
 #include "content/common/content_export.h"
 #include "ipc/ipc_listener.h"
@@ -47,6 +49,12 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // is no parent. The result may be in a different process than the current
   // RenderFrameHost.
   virtual RenderFrameHost* GetParent() = 0;
+
+  // Returns the assigned name of the frame, the id of the iframe tag declaring
+  // it. For example, <iframe id="thisistheframename">[...]</iframe>. It is
+  // quite possible for a frame to have no name, in which case GetFrameName will
+  // return an empty string.
+  virtual const std::string& GetFrameName() = 0;
 
   // Returns true if the frame is out of process.
   virtual bool IsCrossProcessSubframe() = 0;

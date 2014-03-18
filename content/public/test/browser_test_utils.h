@@ -201,6 +201,16 @@ bool ExecuteScriptAndExtractString(const internal::ToRenderFrameHost& adapter,
                                    const std::string& script,
                                    std::string* result) WARN_UNUSED_RESULT;
 
+// Walks the frame tree of the specified WebContents and returns the sole frame
+// that matches the specified predicate function. This function will DCHECK if
+// no frames match the specified predicate, or if more than one frame matches.
+RenderFrameHost* FrameMatchingPredicate(
+    WebContents* web_contents,
+    const base::Callback<bool(RenderFrameHost*)>& predicate);
+
+// Predicates for use with FrameMatchingPredicate.
+bool FrameMatchesName(const std::string& name, RenderFrameHost* frame);
+
 // Executes the WebUI resource test runner injecting each resource ID in
 // |js_resource_ids| prior to executing the tests.
 //

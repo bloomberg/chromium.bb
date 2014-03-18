@@ -552,6 +552,30 @@ bool ExecuteScriptAndExtractString(const internal::ToRenderFrameHost& adapter,
   return value->GetAsString(result);
 }
 
+namespace {
+void AddToSetIfFrameMatchesPredicate(
+    std::set<RenderFrameHost*>* frame_set,
+    const base::Callback<bool(RenderFrameHost*)>& predicate,
+    RenderFrameHost* host) {
+  if (predicate.Run(host))
+    frame_set->insert(host);
+}
+}
+
+RenderFrameHost* FrameMatchingPredicate(
+    WebContents* web_contents,
+    const base::Callback<bool(RenderFrameHost*)>& predicate) {
+  std::set<RenderFrameHost*> frame_set;
+  web_contents->ForEachFrame(
+      base::Bind(&AddToSetIfFrameMatchesPredicate, &frame_set, predicate));
+  DCHECK_EQ(1U, frame_set.size());
+  return *frame_set.begin();
+}
+
+bool FrameMatchesName(const std::string& name, RenderFrameHost* frame) {
+  return frame->GetFrameName() == name;
+}
+
 bool ExecuteWebUIResourceTest(WebContents* web_contents,
                               const std::vector<int>& js_resource_ids) {
   // Inject WebUI test runner script first prior to other scripts required to
@@ -568,11 +592,11 @@ bool ExecuteWebUIResourceTest(WebContents* web_contents,
         .AppendToString(&script);
     script.append("\n");
   }
-  if (!content::ExecuteScript(web_contents, script))
+  if (!ExecuteScript(web_contents, script))
     return false;
 
-  content::DOMMessageQueue message_queue;
-  if (!content::ExecuteScript(web_contents, "runTests()"))
+  DOMMessageQueue message_queue;
+  if (!ExecuteScript(web_contents, "runTests()"))
     return false;
 
   std::string message;

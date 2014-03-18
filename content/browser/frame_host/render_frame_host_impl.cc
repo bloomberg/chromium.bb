@@ -106,6 +106,10 @@ RenderFrameHost* RenderFrameHostImpl::GetParent() {
   return parent_node->current_frame_host();
 }
 
+const std::string& RenderFrameHostImpl::GetFrameName() {
+  return frame_tree_node_->frame_name();
+}
+
 bool RenderFrameHostImpl::IsCrossProcessSubframe() {
   FrameTreeNode* parent_node = frame_tree_node_->parent();
   if (!parent_node)

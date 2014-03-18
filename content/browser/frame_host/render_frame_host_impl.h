@@ -6,7 +6,6 @@
 #define CONTENT_BROWSER_FRAME_HOST_RENDER_FRAME_HOST_IMPL_H_
 
 #include <map>
-#include <string>
 #include <vector>
 
 #include "base/callback.h"
@@ -51,6 +50,7 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
   virtual SiteInstance* GetSiteInstance() OVERRIDE;
   virtual RenderProcessHost* GetProcess() OVERRIDE;
   virtual RenderFrameHost* GetParent() OVERRIDE;
+  virtual const std::string& GetFrameName() OVERRIDE;
   virtual bool IsCrossProcessSubframe() OVERRIDE;
   virtual GURL GetLastCommittedURL() OVERRIDE;
   virtual gfx::NativeView GetNativeView() OVERRIDE;
