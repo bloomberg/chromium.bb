@@ -14,6 +14,7 @@
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/native_theme/native_theme_switches.h"
 
 namespace content {
 

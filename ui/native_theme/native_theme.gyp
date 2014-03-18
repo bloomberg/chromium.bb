@@ -41,6 +41,8 @@
         'native_theme_gtk.h',
         'native_theme_mac.h',
         'native_theme_mac.mm',
+        'native_theme_switches.cc',
+        'native_theme_switches.h',
         'native_theme_win.cc',
         'native_theme_win.h',
       ],

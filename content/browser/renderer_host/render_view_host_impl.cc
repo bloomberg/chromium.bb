@@ -82,6 +82,7 @@
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/native_theme/native_theme_switches.h"
 #include "ui/shell_dialogs/selected_file_info.h"
 #include "webkit/browser/fileapi/isolated_context.h"
 
@@ -447,7 +448,7 @@ WebPreferences RenderViewHostImpl::GetWebkitPrefs(const GURL& url) {
     prefs.pinch_virtual_viewport_enabled = true;
     prefs.pinch_overlay_scrollbar_thickness = 10;
   }
-  prefs.use_solid_color_scrollbars = IsOverlayScrollbarEnabled();
+  prefs.use_solid_color_scrollbars = ui::IsOverlayScrollbarEnabled();
 
 #if defined(OS_ANDROID)
   prefs.user_gesture_required_for_media_playback = !command_line.HasSwitch(

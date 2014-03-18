@@ -73,6 +73,39 @@ class NATIVE_THEME_EXPORT NativeThemeAura : public FallbackTheme {
   mutable scoped_ptr<gfx::NineImagePainter>
       scrollbar_arrow_button_painters_[kMaxState];
 
+ private:
+  struct DualPainter {
+    // For overlay scrollbar thumbs, fill and stroke are controlled separately,
+    // and each state is achieved by painting with different opacity. This
+    // struct bundles information of painter generated using assets and alpha
+    // value associated with each state, so that a DualPainter for overlay
+    // scrollbar thumb would only need state as input to paint correctly.
+    DualPainter(scoped_ptr<gfx::NineImagePainter> fill_painter,
+                const uint8 fill_alphas[kMaxState],
+                scoped_ptr<gfx::NineImagePainter> stroke_painter,
+                const uint8 stroke_alphas[kMaxState]);
+    ~DualPainter();
+
+    scoped_ptr<gfx::NineImagePainter> fill_painter;
+    const uint8* const fill_alphas;
+    scoped_ptr<gfx::NineImagePainter> stroke_painter;
+    const uint8* const stroke_alphas;
+  };
+
+  // Returns DualPainter from specific fill and stroke, creating if necessary.
+  scoped_ptr<DualPainter> CreateDualPainter(
+      const int fill_image_ids[9],
+      const uint8 fill_alphas[kMaxState],
+      const int stroke_image_ids[9],
+      const uint8 stroke_alphas[kMaxState]) const;
+
+  // Paints |dualPainter| into the canvas using |rect| and specific alpha.
+  void PaintDualPainter(DualPainter* dual_painter,
+                        SkCanvas* sk_canvas,
+                        const gfx::Rect& rect,
+                        State state) const;
+
+  mutable scoped_ptr<DualPainter> scrollbar_overlay_thumb_painter_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeThemeAura);
 };
