@@ -132,6 +132,8 @@
         'cursor/cursor_x11.cc',
         'cursor/cursors_aura.cc',
         'cursor/cursors_aura.h',
+        'cursor/ozone/bitmap_cursor_factory_ozone.cc',
+        'cursor/ozone/bitmap_cursor_factory_ozone.h',
         'cursor/ozone/cursor_factory_ozone.cc',
         'cursor/ozone/cursor_factory_ozone.h',
         'default_theme_provider.cc',

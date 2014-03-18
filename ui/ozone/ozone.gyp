@@ -38,6 +38,8 @@
         'ozone_switches.h',
         'platform/dri/ozone_platform_dri.cc',
         'platform/dri/ozone_platform_dri.h',
+        'platform/dri/cursor_factory_evdev_dri.cc',
+        'platform/dri/cursor_factory_evdev_dri.h',
         'platform/test/ozone_platform_test.cc',
         'platform/test/ozone_platform_test.h',
         '<@(external_ozone_platform_files)',

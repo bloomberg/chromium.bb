@@ -243,6 +243,34 @@ scoped_ptr<gfx::VSyncProvider> DriSurfaceFactory::CreateVSyncProvider(
   return scoped_ptr<VSyncProvider>(new DriVSyncProvider(controller_.get()));
 }
 
+void DriSurfaceFactory::SetHardwareCursor(gfx::AcceleratedWidget window,
+                                          const SkBitmap& image,
+                                          const gfx::Point& location) {
+  if (state_ != INITIALIZED)
+    return;
+  // TODO(dnicoara): Land DRI cursor.
+  // controller_->MoveCursor(location.x(), location.y());
+  // controller_->SetCursor(*cursor_.get());
+  NOTIMPLEMENTED();
+}
+
+void DriSurfaceFactory::MoveHardwareCursor(gfx::AcceleratedWidget window,
+                                           const gfx::Point& location) {
+  if (state_ != INITIALIZED)
+    return;
+  // TODO(dnicoara): Land DRI cursor.
+  // controller_->MoveCursor(location.x(), location.y());
+  NOTIMPLEMENTED();
+}
+
+void DriSurfaceFactory::UnsetHardwareCursor(gfx::AcceleratedWidget window) {
+  if (state_ != INITIALIZED)
+    return;
+  // TODO(dnicoara): Land DRI cursor.
+  // controller_->UnsetCursor();
+  NOTIMPLEMENTED();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // DriSurfaceFactory private
 

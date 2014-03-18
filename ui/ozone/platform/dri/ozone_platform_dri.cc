@@ -4,11 +4,14 @@
 
 #include "ui/ozone/platform/dri/ozone_platform_dri.h"
 
+#include "ui/events/ozone/evdev/cursor_delegate_evdev.h"
 #include "ui/ozone/ozone_platform.h"
 
 namespace ui {
 
-OzonePlatformDri::OzonePlatformDri() {}
+OzonePlatformDri::OzonePlatformDri()
+    : cursor_factory_ozone_(&surface_factory_ozone_),
+      event_factory_ozone_(&cursor_factory_ozone_) {}
 
 OzonePlatformDri::~OzonePlatformDri() {}
 

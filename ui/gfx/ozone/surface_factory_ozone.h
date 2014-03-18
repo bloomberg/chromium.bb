@@ -153,12 +153,6 @@ class GFX_EXPORT SurfaceFactoryOzone {
   // caller. desired_list contains list of desired EGL properties and values.
   virtual const int32* GetEGLSurfaceProperties(const int32* desired_list);
 
-  // Sets the cursor image to |image|.
-  virtual void SetCursorImage(const SkBitmap& image);
-
-  // Sets the cursor position to |location|.
-  virtual void MoveCursorTo(const gfx::Point& location);
-
   // Get the hal struct to check for overlay support.
   virtual gfx::OverlayCandidatesOzone* GetOverlayCandidates(
       gfx::AcceleratedWidget w);
