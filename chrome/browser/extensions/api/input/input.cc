@@ -21,12 +21,14 @@
 #include "ui/keyboard/keyboard_util.h"
 #endif
 
+#if !defined(USE_ASH)
 namespace {
 
 const char kNotYetImplementedError[] =
     "API is not implemented on this platform.";
 
 }  // namespace
+#endif
 
 namespace extensions {
 
