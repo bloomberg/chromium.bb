@@ -668,11 +668,15 @@ class CLStats(StatsManager):
                                 for a in v)}
 
     was_rejected = lambda x: x.action == constants.CL_ACTION_KICKED_OUT
-    good_patch_rejections = [len(filter(was_rejected, v))
-                             for v in submitted_patches.values()]
+    good_patch_rejections = {k: len(filter(was_rejected, v))
+                             for k, v in submitted_patches.items()}
     logging.info('   Mean rejections per')
     logging.info('            good patch: %.2f',
-                 numpy.mean(good_patch_rejections))
+                 numpy.mean(good_patch_rejections.values()))
+
+    for x in range(max(good_patch_rejections.values()) + 1):
+      logging.info('%d good patches were rejected %d times',
+                   good_patch_rejections.values().count(x), x)
 
     patch_handle_times =  [v[-1].timestamp - v[0].timestamp
                            for v in submitted_patches.values()]
