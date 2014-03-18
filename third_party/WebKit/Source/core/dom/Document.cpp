@@ -2057,6 +2057,7 @@ void Document::detach(const AttachContext& context)
 
     if (page())
         page()->documentDetached(this);
+    InspectorInstrumentation::documentDetached(this);
 
     if (m_frame->loader().client()->sharedWorkerRepositoryClient())
         m_frame->loader().client()->sharedWorkerRepositoryClient()->documentDetached(this);
