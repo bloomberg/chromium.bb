@@ -154,6 +154,7 @@ class DesktopDragDropClientAuraX11::X11DragContext :
   // message. If we have that data already, dispatch immediately. Otherwise,
   // delay dispatching until we do.
   void OnStartXdndPositionMessage(DesktopDragDropClientAuraX11* client,
+                                  ::Atom suggested_action,
                                   ::Window source_window,
                                   const gfx::Point& screen_point);
 
@@ -177,6 +178,10 @@ class DesktopDragDropClientAuraX11::X11DragContext :
   int GetDragOperation() const;
 
  private:
+  // Masks the X11 atom |xdnd_operation|'s views representation onto
+  // |drag_operation|.
+  void MaskOpeartion(::Atom xdnd_operation, int* drag_operation) const;
+
   // Overridden from MessagePumpDispatcher:
   virtual uint32_t Dispatch(const base::NativeEvent& event) OVERRIDE;
 
@@ -206,6 +211,10 @@ class DesktopDragDropClientAuraX11::X11DragContext :
   // haven't fetched and put in |fetched_targets_| yet.
   std::vector<Atom> unfetched_targets_;
 
+  // XdndPosition messages have a suggested action. Qt applications exclusively
+  // use this, instead of the XdndActionList which is backed by |actions_|.
+  Atom suggested_action_;
+
   // Possible actions.
   std::vector<Atom> actions_;
 
@@ -220,7 +229,8 @@ DesktopDragDropClientAuraX11::X11DragContext::X11DragContext(
       local_window_(local_window),
       source_window_(event.data.l[0]),
       drag_drop_client_(NULL),
-      waiting_to_handle_position_(false) {
+      waiting_to_handle_position_(false),
+      suggested_action_(None) {
   bool get_types = ((event.data.l[1] & 1) != 0);
 
   if (get_types) {
@@ -273,9 +283,11 @@ DesktopDragDropClientAuraX11::X11DragContext::~X11DragContext() {
 
 void DesktopDragDropClientAuraX11::X11DragContext::OnStartXdndPositionMessage(
     DesktopDragDropClientAuraX11* client,
+    ::Atom suggested_action,
     ::Window source_window,
     const gfx::Point& screen_point) {
   DCHECK_EQ(source_window_, source_window);
+  suggested_action_ = suggested_action;
 
   if (!unfetched_targets_.empty()) {
     // We have unfetched targets. That means we need to pause the handling of
@@ -349,15 +361,23 @@ int DesktopDragDropClientAuraX11::X11DragContext::GetDragOperation() const {
   int drag_operation = ui::DragDropTypes::DRAG_NONE;
   for (std::vector<Atom>::const_iterator it = actions_.begin();
        it != actions_.end(); ++it) {
-    if (*it == atom_cache_->GetAtom(kXdndActionCopy))
-      drag_operation |= ui::DragDropTypes::DRAG_COPY;
-    else if (*it == atom_cache_->GetAtom(kXdndActionMove))
-      drag_operation |= ui::DragDropTypes::DRAG_MOVE;
-    else if (*it == atom_cache_->GetAtom(kXdndActionLink))
-      drag_operation |= ui::DragDropTypes::DRAG_LINK;
+    MaskOpeartion(*it, &drag_operation);
   }
 
+  MaskOpeartion(suggested_action_, &drag_operation);
+
   return drag_operation;
+}
+
+void DesktopDragDropClientAuraX11::X11DragContext::MaskOpeartion(
+    ::Atom xdnd_operation,
+    int* drag_operation) const {
+  if (xdnd_operation == atom_cache_->GetAtom(kXdndActionCopy))
+    *drag_operation |= ui::DragDropTypes::DRAG_COPY;
+  else if (xdnd_operation == atom_cache_->GetAtom(kXdndActionMove))
+    *drag_operation |= ui::DragDropTypes::DRAG_MOVE;
+  else if (xdnd_operation == atom_cache_->GetAtom(kXdndActionLink))
+    *drag_operation |= ui::DragDropTypes::DRAG_LINK;
 }
 
 uint32_t DesktopDragDropClientAuraX11::X11DragContext::Dispatch(
@@ -450,6 +470,7 @@ void DesktopDragDropClientAuraX11::OnXdndPosition(
   unsigned long source_window = event.data.l[0];
   int x_root_window = event.data.l[2] >> 16;
   int y_root_window = event.data.l[2] & 0xffff;
+  ::Atom suggested_action = event.data.l[4];
 
   if (!target_current_context_.get()) {
     NOTREACHED();
@@ -459,7 +480,8 @@ void DesktopDragDropClientAuraX11::OnXdndPosition(
   // If we already have all the data from this drag, we complete it
   // immediately.
   target_current_context_->OnStartXdndPositionMessage(
-      this, source_window, gfx::Point(x_root_window, y_root_window));
+      this, suggested_action, source_window,
+      gfx::Point(x_root_window, y_root_window));
 }
 
 void DesktopDragDropClientAuraX11::OnXdndStatus(
