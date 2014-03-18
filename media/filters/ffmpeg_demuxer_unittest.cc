@@ -673,24 +673,21 @@ TEST_F(FFmpegDemuxerTest, SeekWithCuesBeforeFirstCluster) {
   message_loop_.Run();
 }
 
+#if defined(USE_PROPRIETARY_CODECS)
 // Ensure ID3v1 tag reading is disabled.  id3_test.mp3 has an ID3v1 tag with the
 // field "title" set to "sample for id3 test".
 TEST_F(FFmpegDemuxerTest, NoID3TagData) {
-#if !defined(USE_PROPRIETARY_CODECS)
-  return;
-#endif
   CreateDemuxer("id3_test.mp3");
   InitializeDemuxer();
   EXPECT_FALSE(av_dict_get(format_context()->metadata, "title", NULL, 0));
 }
+#endif
 
+#if defined(USE_PROPRIETARY_CODECS)
 // Ensure MP3 files with large image/video based ID3 tags demux okay.  FFmpeg
 // will hand us a video stream to the data which will likely be in a format we
 // don't accept as video; e.g. PNG.
 TEST_F(FFmpegDemuxerTest, Mp3WithVideoStreamID3TagData) {
-#if !defined(USE_PROPRIETARY_CODECS)
-  return;
-#endif
   CreateDemuxer("id3_png_test.mp3");
   InitializeDemuxer();
 
@@ -698,6 +695,7 @@ TEST_F(FFmpegDemuxerTest, Mp3WithVideoStreamID3TagData) {
   EXPECT_FALSE(demuxer_->GetStream(DemuxerStream::VIDEO));
   EXPECT_TRUE(demuxer_->GetStream(DemuxerStream::AUDIO));
 }
+#endif
 
 // Ensure a video with an unsupported audio track still results in the video
 // stream being demuxed.
@@ -721,15 +719,14 @@ TEST_F(FFmpegDemuxerTest, UnsupportedVideoSupportedAudioDemux) {
   EXPECT_TRUE(demuxer_->GetStream(DemuxerStream::AUDIO));
 }
 
+#if defined(USE_PROPRIETARY_CODECS)
 // FFmpeg returns null data pointers when samples have zero size, leading to
 // mistakenly creating end of stream buffers http://crbug.com/169133
 TEST_F(FFmpegDemuxerTest, MP4_ZeroStszEntry) {
-#if !defined(USE_PROPRIETARY_CODECS)
-  return;
-#endif
   CreateDemuxer("bear-1280x720-zero-stsz-entry.mp4");
   InitializeDemuxer();
   ReadUntilEndOfStream(demuxer_->GetStream(DemuxerStream::AUDIO));
 }
+#endif
 
 }  // namespace media

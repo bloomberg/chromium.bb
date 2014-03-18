@@ -78,5 +78,4 @@ int main(int argc, char** argv) {
   }
 
   exit(retval);  // Don't free memory, it can be really slow!
-  return retval;
 }

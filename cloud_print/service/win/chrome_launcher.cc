@@ -271,19 +271,16 @@ void ChromeLauncher::Run() {
 std::string ChromeLauncher::CreateServiceStateFile(
     const std::string& proxy_id,
     const std::vector<std::string>& printers) {
-  std::string result;
-
   base::ScopedTempDir temp_user_data;
   if (!temp_user_data.CreateUniqueTempDir()) {
     LOG(ERROR) << "Can't create temp dir.";
-    return result;
+    return std::string();
   }
 
   base::FilePath chrome_path = chrome_launcher_support::GetAnyChromePath();
-
   if (chrome_path.empty()) {
     LOG(ERROR) << "Can't find Chrome.";
-    return result;
+    return std::string();
   }
 
   base::FilePath printers_file = temp_user_data.path().Append(L"printers.json");
@@ -297,7 +294,7 @@ std::string ChromeLauncher::CreateServiceStateFile(
                                    printers_json.size());
   if (written != printers_json.size()) {
     LOG(ERROR) << "Can't write file.";
-    return result;
+    return std::string();
   }
 
   CommandLine cmd(chrome_path);
@@ -320,7 +317,7 @@ std::string ChromeLauncher::CreateServiceStateFile(
   DWORD thread_id = 0;
   if (!LaunchProcess(cmd, &chrome_handle, &thread_id)) {
     LOG(ERROR) << "Unable to launch Chrome.";
-    return result;
+    return std::string();
   }
 
   for (;;) {
@@ -330,18 +327,16 @@ std::string ChromeLauncher::CreateServiceStateFile(
     if (wait_result == WAIT_OBJECT_0) {
       // Return what we have because browser is closed.
       return json;
-    } else if (wait_result == WAIT_TIMEOUT) {
-      if (!json.empty()) {
-        // Close chrome because Service State is ready.
-        CloseChrome(chrome_handle, thread_id);
-        return json;
-      }
-    } else {
+    }
+    if (wait_result != WAIT_TIMEOUT) {
       LOG(ERROR) << "Chrome launch failed.";
-      return result;
+      return std::string();
+    }
+    if (!json.empty()) {
+      // Close chrome because Service State is ready.
+      CloseChrome(chrome_handle, thread_id);
+      return json;
     }
   }
-  NOTREACHED();
-  return std::string();
 }
 

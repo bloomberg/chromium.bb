@@ -62,14 +62,13 @@ namespace device {
 
 // static
 bool BluetoothAdapterFactory::IsBluetoothAdapterAvailable() {
-#if defined(OS_CHROMEOS)
-  return true;
-#elif defined(OS_WIN)
+#if defined(OS_CHROMEOS) || defined(OS_WIN)
   return true;
 #elif defined(OS_MACOSX)
   return base::mac::IsOSLionOrLater();
-#endif
+#else
   return false;
+#endif
 }
 
 // static

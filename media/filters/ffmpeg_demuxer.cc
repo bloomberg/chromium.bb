@@ -313,14 +313,16 @@ void FFmpegDemuxerStream::SatisfyPendingRead() {
 }
 
 bool FFmpegDemuxerStream::HasAvailableCapacity() {
-  // TODO(scherkus): Remove early return and reenable time-based capacity
+  // TODO(scherkus): Remove this return and reenable time-based capacity
   // after our data sources support canceling/concurrent reads, see
   // http://crbug.com/165762 for details.
+#if 1
   return !read_cb_.is_null();
-
+#else
   // Try to have one second's worth of encoded data per stream.
   const base::TimeDelta kCapacity = base::TimeDelta::FromSeconds(1);
   return buffer_queue_.IsEmpty() || buffer_queue_.Duration() < kCapacity;
+#endif
 }
 
 size_t FFmpegDemuxerStream::MemoryUsage() const {

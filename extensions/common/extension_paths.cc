@@ -10,26 +10,18 @@
 namespace extensions {
 
 bool PathProvider(int key, base::FilePath* result) {
-  switch (key) {
-    case DIR_TEST_DATA: {
-      base::FilePath cur;
-      if (!PathService::Get(base::DIR_SOURCE_ROOT, &cur))
-        return false;
-      cur = cur.Append(FILE_PATH_LITERAL("extensions"));
-      cur = cur.Append(FILE_PATH_LITERAL("test"));
-      cur = cur.Append(FILE_PATH_LITERAL("data"));
-      if (!base::PathExists(cur))  // we don't want to create this
-        return false;
-
-      *result = cur;
-      return true;
-      break;
-    }
-    default:
-      return false;
-  }
-
-  return false;
+  if (key != DIR_TEST_DATA)
+    return false;
+  base::FilePath cur;
+  if (!PathService::Get(base::DIR_SOURCE_ROOT, &cur))
+    return false;
+  cur = cur.Append(FILE_PATH_LITERAL("extensions"));
+  cur = cur.Append(FILE_PATH_LITERAL("test"));
+  cur = cur.Append(FILE_PATH_LITERAL("data"));
+  if (!base::PathExists(cur))  // we don't want to create this
+    return false;
+  *result = cur;
+  return true;
 }
 
 // This cannot be done as a static initializer sadly since Visual Studio will

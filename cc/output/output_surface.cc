@@ -411,8 +411,8 @@ base::TimeDelta OutputSurface::GpuLatencyEstimate() {
 }
 
 void OutputSurface::UpdateAndMeasureGpuLatency() {
-  return;  // http://crbug.com/306690  tracks re-enabling latency queries.
-
+  // http://crbug.com/306690  tracks re-enabling latency queries.
+#if 0
   // We only care about GPU latency for surfaces that do not have a parent
   // compositor, since surfaces that do have a parent compositor can use
   // mailboxes or delegated rendering to send frames to their parent without
@@ -473,6 +473,7 @@ void OutputSurface::UpdateAndMeasureGpuLatency() {
                                                 gpu_latency_query_id);
   context_provider_->ContextGL()->EndQueryEXT(GL_LATENCY_QUERY_CHROMIUM);
   pending_gpu_latency_query_ids_.push_back(gpu_latency_query_id);
+#endif
 }
 
 void OutputSurface::PostSwapBuffersComplete() {

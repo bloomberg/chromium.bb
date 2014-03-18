@@ -41,21 +41,10 @@ base::FilePath::StringType GetRegisterNameForPath(const base::FilePath& path) {
 }
 
 bool IsSinglePathIsolatedFileSystem(FileSystemType type) {
-  switch (type) {
-    // As of writing dragged file system is the only filesystem
-    // which could have multiple top-level paths.
-    case kFileSystemTypeDragged:
-      return false;
-
-    case kFileSystemTypeUnknown:
-      NOTREACHED();
-      return true;
-
-    default:
-      return true;
-  }
-  NOTREACHED();
-  return true;
+  DCHECK_NE(kFileSystemTypeUnknown, type);
+  // As of writing dragged file system is the only filesystem which could have
+  // multiple top-level paths.
+  return type != kFileSystemTypeDragged;
 }
 
 static base::LazyInstance<IsolatedContext>::Leaky g_isolated_context =

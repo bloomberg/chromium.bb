@@ -291,8 +291,6 @@ CheckBool DisassemblerElf32ARM::RelToRVA(Elf32_Rel rel, RVA* result) const {
     default:
       return false;
   }
-
-  return false;
 }
 
 CheckBool DisassemblerElf32ARM::ParseRelocationSection(
