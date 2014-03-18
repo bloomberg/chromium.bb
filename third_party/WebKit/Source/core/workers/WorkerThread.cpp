@@ -145,7 +145,19 @@ void WorkerThread::workerThread()
 #endif
     m_workerGlobalScope = nullptr;
 
+    // Detach the ThreadState, cleaning out the thread's heap by
+    // performing a final GC. The cleanup operation will at the end
+    // assert that the heap is empty. If the heap does not become
+    // empty, there are still pointers into the heap and those
+    // pointers will be dangling after thread termination because we
+    // are destroying the heap. It is important to detach while the
+    // thread is still valid. In particular, finalizers for objects in
+    // the heap for this thread will need to access thread local data.
     ThreadState::detach();
+
+    // Notify the proxy that the WorkerGlobalScope has been disposed of.
+    // This can free this thread object, hence it must not be touched afterwards.
+    workerReportingProxy().workerGlobalScopeDestroyed();
 
     // Clean up PlatformThreadData before WTF::WTFThreadData goes away!
     PlatformThreadData::current().destroy();

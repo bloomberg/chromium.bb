@@ -196,18 +196,16 @@ void WorkerGlobalScope::dispose()
 {
     ASSERT(thread()->isCurrentThread());
 
-    // Notify proxy that we are going away. This can free the WorkerThread object, so do not access it after this.
-    thread()->workerReportingProxy().workerGlobalScopeDestroyed();
-
     clearScript();
     clearInspector();
     setClient(0);
 
-    // The thread reference isn't currently cleared, as the execution
-    // context's thread is accessed by GCed lifetime objects when
-    // they're finalized.
-    // FIXME: oilpan: avoid by explicitly removing the WorkerGlobalScope
-    // as an observable context right here.
+    // We do not clear the thread field of the
+    // WorkerGlobalScope. Other objects keep the worker global scope
+    // alive because they need its thread field to check that work is
+    // being carried out on the right thread. We therefore cannot clear
+    // the thread field before all references to the worker global
+    // scope are gone.
 }
 
 void WorkerGlobalScope::importScripts(const Vector<String>& urls, ExceptionState& exceptionState)
