@@ -19,6 +19,7 @@
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/signin_oauth_helper.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
@@ -30,7 +31,9 @@
 // Fetches a refresh token from the given session in the GAIA cookie.  This is
 // a best effort only.  If it should fail, another reconcile action will occur
 // shortly anyway.
-class AccountReconcilor::RefreshTokenFetcher : public GaiaAuthConsumer {
+class AccountReconcilor::RefreshTokenFetcher
+    : public SigninOAuthHelper,
+      public SigninOAuthHelper::Consumer {
  public:
   RefreshTokenFetcher(AccountReconcilor* reconcilor,
                       const std::string& account_id,
@@ -39,12 +42,16 @@ class AccountReconcilor::RefreshTokenFetcher : public GaiaAuthConsumer {
 
  private:
   // Overridden from GaiaAuthConsumer:
-  virtual void OnClientOAuthSuccess(const ClientOAuthResult& result) OVERRIDE;
-  virtual void OnClientOAuthFailure(
+  virtual void OnSigninOAuthInformationAvailable(
+      const std::string& email,
+      const std::string& display_email,
+      const std::string& refresh_token) OVERRIDE;
+
+  // Called when an error occurs while getting the information.
+  virtual void OnSigninOAuthInformationFailure(
       const GoogleServiceAuthError& error) OVERRIDE;
 
   AccountReconcilor* reconcilor_;
-  GaiaAuthFetcher fetcher_;
   const std::string account_id_;
   int session_index_;
 
@@ -55,35 +62,44 @@ AccountReconcilor::RefreshTokenFetcher::RefreshTokenFetcher(
     AccountReconcilor* reconcilor,
     const std::string& account_id,
     int session_index)
-    : reconcilor_(reconcilor),
-      fetcher_(this, GaiaConstants::kChromeSource,
-               reconcilor_->profile()->GetRequestContext()),
+    : SigninOAuthHelper(reconcilor->profile()->GetRequestContext(),
+                        base::IntToString(session_index), this),
+      reconcilor_(reconcilor),
       account_id_(account_id),
       session_index_(session_index) {
   DCHECK(reconcilor_);
   DCHECK(!account_id.empty());
-  fetcher_.StartCookieForOAuthLoginTokenExchange(
-      base::IntToString(session_index_));
 }
 
-void AccountReconcilor::RefreshTokenFetcher::OnClientOAuthSuccess(
-    const ClientOAuthResult& result) {
-  VLOG(1) << "RefreshTokenFetcher::OnClientOAuthSuccess:"
+void AccountReconcilor::RefreshTokenFetcher::OnSigninOAuthInformationAvailable(
+      const std::string& email,
+      const std::string& display_email,
+      const std::string& refresh_token) {
+  VLOG(1) << "RefreshTokenFetcher::OnSigninOAuthInformationAvailable:"
           << " account=" << account_id_
-          << " session_index=" << session_index_;
+          << " email=" << email
+          << " displayEmail=" << display_email;
 
-  reconcilor_->HandleRefreshTokenFetched(account_id_,
-                                         result.refresh_token);
+  // TODO(rogerta): because of the problem with email vs displayEmail and
+  // emails that have been canonicalized, the argument |email| is used here
+  // to make sure the correct string is used when calling the token service.
+  // This will be cleaned up when chrome moves to using gaia obfuscated id.
+  reconcilor_->HandleRefreshTokenFetched(email, refresh_token);
 }
 
-void AccountReconcilor::RefreshTokenFetcher::OnClientOAuthFailure(
+void AccountReconcilor::RefreshTokenFetcher::OnSigninOAuthInformationFailure(
     const GoogleServiceAuthError& error) {
-  VLOG(1) << "RefreshTokenFetcher::OnClientOAuthFailure:"
+  VLOG(1) << "RefreshTokenFetcher::OnSigninOAuthInformationFailure:"
           << " account=" << account_id_
           << " session_index=" << session_index_;
   reconcilor_->HandleRefreshTokenFetched(account_id_, std::string());
 }
 
+
+bool AccountReconcilor::EmailLessFunc::operator()(const std::string& s1,
+                                                  const std::string& s2) const {
+  return gaia::CanonicalizeEmail(s1) < gaia::CanonicalizeEmail(s2);
+}
 
 class AccountReconcilor::UserIdFetcher
     : public gaia::GaiaOAuthClient::Delegate {
@@ -525,7 +541,7 @@ void AccountReconcilor::ValidateAccountsFromTokenService() {
   ProfileOAuth2TokenService* token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
   chrome_accounts_ = token_service->GetAccounts();
-  DCHECK(chrome_accounts_.size() > 0);
+  DCHECK_GT(chrome_accounts_.size(), 0u);
 
   VLOG(1) << "AccountReconcilor::ValidateAccountsFromTokenService: "
           << "Chrome " << chrome_accounts_.size() << " accounts, "
@@ -596,7 +612,8 @@ void AccountReconcilor::FinishReconcile() {
   DCHECK(add_to_cookie_.empty());
   DCHECK(add_to_chrome_.empty());
   bool are_primaries_equal =
-      gaia_accounts_.size() > 0 && primary_account_ == gaia_accounts_[0].first;
+      gaia_accounts_.size() > 0 &&
+      gaia::AreEmailsSame(primary_account_, gaia_accounts_[0].first);
 
   if (are_primaries_equal) {
     // Determine if we need to merge accounts from gaia cookie to chrome.
@@ -610,12 +627,11 @@ void AccountReconcilor::FinishReconcile() {
     }
 
     // Determine if we need to merge accounts from chrome into gaia cookie.
-    for (std::set<std::string>::const_iterator i =
-             valid_chrome_accounts_.begin();
+    for (EmailSet::const_iterator i = valid_chrome_accounts_.begin();
          i != valid_chrome_accounts_.end(); ++i) {
       bool add_to_cookie = true;
       for (size_t j = 0; j < gaia_accounts_.size(); ++j) {
-        if (gaia_accounts_[j].first == *i) {
+        if (gaia::AreEmailsSame(gaia_accounts_[j].first, *i)) {
           add_to_cookie = !gaia_accounts_[j].second;
           break;
         }
@@ -630,8 +646,7 @@ void AccountReconcilor::FinishReconcile() {
     // SigninManager is the first session in the gaia cookie.
     PerformLogoutAllAccountsAction();
     add_to_cookie_.push_back(primary_account_);
-    for (std::set<std::string>::const_iterator i =
-             valid_chrome_accounts_.begin();
+    for (EmailSet::const_iterator i = valid_chrome_accounts_.begin();
          i != valid_chrome_accounts_.end(); ++i) {
       if (*i != primary_account_)
         add_to_cookie_.push_back(*i);
@@ -683,7 +698,7 @@ void AccountReconcilor::ScheduleStartReconcileIfChromeAccountsChanged() {
   if (reconciled_accounts != new_chrome_accounts) {
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
-        base::Bind(&AccountReconcilor::StartReconcile,base::Unretained(this)));
+        base::Bind(&AccountReconcilor::StartReconcile, base::Unretained(this)));
   }
 }
 
@@ -731,7 +746,7 @@ void AccountReconcilor::HandleRefreshTokenFetched(
   for (std::vector<std::pair<std::string, int> >::iterator i =
            add_to_chrome_.begin();
        i != add_to_chrome_.end(); ++i) {
-    if (account_id == i->first) {
+    if (gaia::AreEmailsSame(account_id, i->first)) {
       add_to_chrome_.erase(i);
       break;
     }

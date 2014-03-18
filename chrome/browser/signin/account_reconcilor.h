@@ -5,6 +5,8 @@
 #define CHROME_BROWSER_SIGNIN_ACCOUNT_RECONCILOR_H_
 
 #include <deque>
+#include <functional>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -23,9 +25,10 @@
 #include "google_apis/gaia/merge_session_helper.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
+struct ChromeCookieDetails;
 class GaiaAuthFetcher;
 class Profile;
-struct ChromeCookieDetails;
+class SigninOAuthHelper;
 
 class AccountReconcilor : public KeyedService,
                           public content::NotificationObserver,
@@ -49,6 +52,23 @@ class AccountReconcilor : public KeyedService,
 
   Profile* profile() { return profile_; }
 
+ private:
+  // An std::set<> for use with email addresses that uses
+  // gaia::CanonicalizeEmail() during comparisons.
+  // TODO(rogerta): this is a workaround for the fact that SigninManager and
+  // SigninOAuthHelper use the gaia "email" property when adding accounts to
+  // the token service, whereas gaia::ParseListAccountsData() returns email
+  // addresses that have been passed through gaia::CanonicalizeEmail().  These
+  // two types of email addresses are not directly comparable.
+  class EmailLessFunc : public std::less<std::string> {
+   public:
+    bool operator()(const std::string& s1, const std::string& s2) const;
+  };
+  typedef std::set<std::string, EmailLessFunc> EmailSet;
+
+  class RefreshTokenFetcher;
+  class UserIdFetcher;
+
   bool IsPeriodicReconciliationRunning() const {
     return reconciliation_timer_.IsRunning();
   }
@@ -66,12 +86,11 @@ class AccountReconcilor : public KeyedService,
     return gaia_accounts_;
   }
 
- private:
-  const std::set<std::string>& GetValidChromeAccountsForTesting() const {
+  const EmailSet& GetValidChromeAccountsForTesting() const {
     return valid_chrome_accounts_;
   }
 
-  const std::set<std::string>& GetInvalidChromeAccountsForTesting() const {
+  const EmailSet& GetInvalidChromeAccountsForTesting() const {
     return invalid_chrome_accounts_;
   }
 
@@ -83,6 +102,9 @@ class AccountReconcilor : public KeyedService,
           GetAccountsFromCookieCallback;
 
   friend class AccountReconcilorTest;
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, SigninManagerRegistration);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, Reauth);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, ProfileAlreadyConnected);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, GetAccountsFromCookieSuccess);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, GetAccountsFromCookieFailure);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, ValidateAccountsFromTokens);
@@ -91,6 +113,7 @@ class AccountReconcilor : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest,
                            ValidateAccountsFromTokensFailedTokenRequest);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, StartReconcileNoop);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, StartReconcileNoopWithDots);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, StartReconcileNoopMultiple);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, StartReconcileAddToCookie);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, StartReconcileAddToChrome);
@@ -98,9 +121,6 @@ class AccountReconcilor : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, StartReconcileOnlyOnce);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest,
                            StartReconcileWithSessionInfoExpiredDefault);
-
-  class RefreshTokenFetcher;
-  class UserIdFetcher;
 
   // Register and unregister with dependent services.
   void RegisterWithCookieMonster();
@@ -213,9 +233,9 @@ class AccountReconcilor : public KeyedService,
   std::vector<std::string> chrome_accounts_;
   scoped_ptr<OAuth2TokenService::Request>* requests_;
   ScopedVector<UserIdFetcher> user_id_fetchers_;
-  ScopedVector<RefreshTokenFetcher> refresh_token_fetchers_;
-  std::set<std::string> valid_chrome_accounts_;
-  std::set<std::string> invalid_chrome_accounts_;
+  ScopedVector<SigninOAuthHelper> refresh_token_fetchers_;
+  EmailSet valid_chrome_accounts_;
+  EmailSet invalid_chrome_accounts_;
   std::vector<std::string> add_to_cookie_;
   std::vector<std::pair<std::string, int> > add_to_chrome_;
 
