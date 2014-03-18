@@ -14,16 +14,11 @@
 // -----------------------------------------------------------------------------
 
 // These histograms follow the definition of UMA_HISTOGRAMN_XXX except that
-// whenever the name changes (the experiment group changes), the histrogram
-// object is re-created.
-// Note: These macros are only run on one thread, so the declarations of
-// |counter| was made static (i.e., there will be no race for reinitialization).
+// the counter is not cached locally.
 
 #define CACHE_HISTOGRAM_CUSTOM_COUNTS(name, sample, min, max, bucket_count) \
     do { \
-      static base::HistogramBase* counter(NULL); \
-      if (!counter || name != counter->histogram_name()) \
-        counter = base::Histogram::FactoryGet( \
+      base::HistogramBase* counter = base::Histogram::FactoryGet( \
             name, min, max, bucket_count, \
             base::Histogram::kUmaTargetedHistogramFlag); \
       counter->Add(sample); \
@@ -40,9 +35,7 @@
 
 #define CACHE_HISTOGRAM_CUSTOM_TIMES(name, sample, min, max, bucket_count) \
     do { \
-      static base::HistogramBase* counter(NULL); \
-      if (!counter || name != counter->histogram_name()) \
-        counter = base::Histogram::FactoryTimeGet( \
+      base::HistogramBase* counter = base::Histogram::FactoryTimeGet( \
             name, min, max, bucket_count, \
             base::Histogram::kUmaTargetedHistogramFlag); \
       counter->AddTime(sample); \
@@ -53,9 +46,7 @@
     base::TimeDelta::FromSeconds(10), 50)
 
 #define CACHE_HISTOGRAM_ENUMERATION(name, sample, boundary_value) do { \
-    static base::HistogramBase* counter(NULL); \
-    if (!counter || name != counter->histogram_name()) \
-      counter = base::LinearHistogram::FactoryGet( \
+    base::HistogramBase* counter = base::LinearHistogram::FactoryGet( \
                     name, 1, boundary_value, boundary_value + 1, \
                     base::Histogram::kUmaTargetedHistogramFlag); \
     counter->Add(sample); \
@@ -98,23 +89,15 @@
     const std::string my_name =\
         CACHE_UMA_BACKEND_IMPL_OBJ->HistogramName(name, experiment);\
     switch (CACHE_UMA_BACKEND_IMPL_OBJ->cache_type()) {\
-      case net::DISK_CACHE:\
-        CACHE_HISTOGRAM_##type(my_name.data(), sample);\
-        break;\
-      case net::MEDIA_CACHE:\
-        CACHE_HISTOGRAM_##type(my_name.data(), sample);\
-        break;\
-      case net::APP_CACHE:\
-        CACHE_HISTOGRAM_##type(my_name.data(), sample);\
-        break;\
-      case net::SHADER_CACHE:\
-        CACHE_HISTOGRAM_##type(my_name.data(), sample);\
-        break;\
-      case net::PNACL_CACHE:\
-        CACHE_HISTOGRAM_##type(my_name.data(), sample);\
-        break;\
       default:\
         NOTREACHED();\
+        /* Fall-through. */\
+      case net::DISK_CACHE:\
+      case net::MEDIA_CACHE:\
+      case net::APP_CACHE:\
+      case net::SHADER_CACHE:\
+      case net::PNACL_CACHE:\
+        CACHE_HISTOGRAM_##type(my_name.data(), sample);\
         break;\
     }\
   }
