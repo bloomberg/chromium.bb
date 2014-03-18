@@ -197,7 +197,7 @@ class WallpaperManager: public content::NotificationObserver {
   // to custom wallpaper directory.
   base::FilePath GetCustomWallpaperPath(const char* sub_dir,
                                         const std::string& user_id_hash,
-                                        const std::string& file);
+                                        const std::string& file) const;
 
   // Returns filepath to save original custom wallpaper for the given user.
   base::FilePath GetOriginalWallpaperPathForUser(const std::string& user_id);
@@ -224,7 +224,7 @@ class WallpaperManager: public content::NotificationObserver {
                        ash::WallpaperLayout layout,
                        int preferred_width,
                        int preferred_height,
-                       scoped_refptr<base::RefCountedBytes>* output);
+                       scoped_refptr<base::RefCountedBytes>* output) const;
 
   // Resizes |wallpaper| to a resolution which is nearest to |preferred_width|
   // and |preferred_height| while maintaining aspect ratio. And saves the
@@ -233,7 +233,7 @@ class WallpaperManager: public content::NotificationObserver {
                               const base::FilePath& path,
                               ash::WallpaperLayout layout,
                               int preferred_width,
-                              int preferred_height);
+                              int preferred_height) const;
 
   // Saves custom wallpaper to file, post task to generate thumbnail and updates
   // local state preferences. If |update_wallpaper| is false, don't change
@@ -415,7 +415,7 @@ class WallpaperManager: public content::NotificationObserver {
                               const UserImage::RawImage& raw_image);
 
   // Record data for User Metrics Analysis.
-  void RecordUma(User::WallpaperType type, int index);
+  void RecordUma(User::WallpaperType type, int index) const;
 
   // Saves original custom wallpaper to |path| (absolute path) on filesystem
   // and starts resizing operation of the custom wallpaper if necessary.
@@ -426,7 +426,7 @@ class WallpaperManager: public content::NotificationObserver {
 
   // Saves wallpaper image raw |data| to |path| (absolute path) in file system.
   void SaveWallpaperInternal(const base::FilePath& path, const char* data,
-                             int size);
+                             int size) const;
 
   // Creates new PendingWallpaper request (or updates currently pending).
   void ScheduleSetUserWallpaper(const std::string& user_id, bool delayed);

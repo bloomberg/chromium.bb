@@ -400,7 +400,7 @@ void WallpaperManager::ClearDisposableWallpaperCache() {
 base::FilePath WallpaperManager::GetCustomWallpaperPath(
     const char* sub_dir,
     const std::string& user_id_hash,
-    const std::string& file) {
+    const std::string& file) const {
   base::FilePath custom_wallpaper_path = GetCustomWallpaperDir(sub_dir);
   return custom_wallpaper_path.Append(user_id_hash).Append(file);
 }
@@ -520,7 +520,7 @@ bool WallpaperManager::ResizeWallpaper(
     ash::WallpaperLayout layout,
     int preferred_width,
     int preferred_height,
-    scoped_refptr<base::RefCountedBytes>* output) {
+    scoped_refptr<base::RefCountedBytes>* output) const {
   DCHECK(BrowserThread::GetBlockingPool()->
       IsRunningSequenceOnCurrentThread(sequence_token_));
   int width = wallpaper.image().width();
@@ -574,7 +574,7 @@ void WallpaperManager::ResizeAndSaveWallpaper(const UserImage& wallpaper,
                                               const base::FilePath& path,
                                               ash::WallpaperLayout layout,
                                               int preferred_width,
-                                              int preferred_height) {
+                                              int preferred_height) const {
   if (layout == ash::WALLPAPER_LAYOUT_CENTER) {
     // TODO(bshe): Generates cropped custom wallpaper for CENTER layout.
     if (base::PathExists(path))
@@ -666,7 +666,7 @@ void WallpaperManager::SetCustomWallpaper(const std::string& user_id,
   base::FilePath wallpaper_path =
       GetCustomWallpaperPath(kOriginalWallpaperSubDir, user_id_hash, file);
 
-  // If decoded wallpaper is empty, we are probably failed to decode the file.
+  // If decoded wallpaper is empty, we have probably failed to decode the file.
   // Use default wallpaper in this case.
   if (wallpaper.image().isNull()) {
     SetDefaultWallpaperDelayed(user_id);
@@ -686,8 +686,8 @@ void WallpaperManager::SetCustomWallpaper(const std::string& user_id,
       // Date field is not used.
       base::Time::Now().LocalMidnight()
   };
-  // Block shutdown on this task. Otherwise, we may lost the custom wallpaper
-  // user selected.
+  // Block shutdown on this task. Otherwise, we may lose the custom wallpaper
+  // that the user selected.
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner =
       BrowserThread::GetBlockingPool()->
           GetSequencedTaskRunnerWithShutdownBehavior(sequence_token_,
@@ -732,7 +732,7 @@ void WallpaperManager::SetDefaultWallpaperDelayed(const std::string& user_id) {
 void WallpaperManager::DoSetDefaultWallpaper(
     const std::string& user_id,
     MovableOnDestroyCallbackHolder on_finish) {
-  // There is no visible background in  kiosk mode.
+  // There is no visible background in kiosk mode.
   if (UserManager::Get()->IsLoggedInAsKioskApp())
     return;
   current_wallpaper_path_.clear();
@@ -873,7 +873,7 @@ void WallpaperManager::SetWallpaperFromImageSkia(
     bool update_wallpaper) {
   DCHECK(UserManager::Get()->IsUserLoggedIn());
 
-  // There is no visible background in  kiosk mode.
+  // There is no visible background in kiosk mode.
   if (UserManager::Get()->IsLoggedInAsKioskApp())
     return;
   WallpaperInfo info;
@@ -1252,7 +1252,7 @@ void WallpaperManager::GetCustomWallpaperInternal(
 
   base::FilePath valid_path = wallpaper_path;
   if (!base::PathExists(wallpaper_path)) {
-    // Falls back on original file if the correct resoltuion file does not
+    // Falls back on original file if the correct resolution file does not
     // exist. This may happen when the original custom wallpaper is small or
     // browser shutdown before resized wallpaper saved.
     valid_path = GetCustomWallpaperDir(kOriginalWallpaperSubDir);
@@ -1297,7 +1297,7 @@ void WallpaperManager::OnWallpaperDecoded(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   TRACE_EVENT_ASYNC_END0("ui", "LoadAndDecodeWallpaper", this);
 
-  // If decoded wallpaper is empty, we are probably failed to decode the file.
+  // If decoded wallpaper is empty, we have probably failed to decode the file.
   // Use default wallpaper in this case.
   if (wallpaper.image().isNull()) {
     // Updates user pref to default wallpaper.
@@ -1373,14 +1373,14 @@ void WallpaperManager::SaveCustomWallpaper(const std::string& user_id_hash,
   DeleteAllExcept(large_wallpaper_path);
 }
 
-void WallpaperManager::RecordUma(User::WallpaperType type, int index) {
+void WallpaperManager::RecordUma(User::WallpaperType type, int index) const {
   UMA_HISTOGRAM_ENUMERATION("Ash.Wallpaper.Type", type,
                             User::WALLPAPER_TYPE_COUNT);
 }
 
 void WallpaperManager::SaveWallpaperInternal(const base::FilePath& path,
                                              const char* data,
-                                             int size) {
+                                             int size) const {
   int written_bytes = base::WriteFile(path, data, size);
   DCHECK(written_bytes == size);
 }
