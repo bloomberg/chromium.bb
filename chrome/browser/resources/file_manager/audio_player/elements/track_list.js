@@ -157,7 +157,7 @@
      */
     ensureTrackInViewport_: function(trackIndex) {
       var trackSelector = '.track[index="' + trackIndex + '"]';
-      var trackElement = this.impl.querySelector(trackSelector);
+      var trackElement = this.querySelector(trackSelector);
       if (trackElement) {
         var viewTop = this.scrollTop;
         var viewHeight = this.clientHeight;

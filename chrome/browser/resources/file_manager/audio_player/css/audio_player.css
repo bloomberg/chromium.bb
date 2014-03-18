@@ -22,7 +22,7 @@ body {
   height: 32px;
 }
 
-.audio-player {
+div.audio-player {
   color: #3d3d3d;
   cursor: default;
   flex: 1 1 auto;
@@ -88,13 +88,4 @@ body {
   background-color: transparent;
   border-left: 5px solid transparent;
   border-right: 0 solid transparent;
-}
-
-control-panel {
-  border-top: 1px solid rgba(0, 0, 0, 0.1);
-  bottom: 0;
-  left: 0;
-  margin-bottom: 8px;
-  position: fixed;
-  right: 0;
 }
