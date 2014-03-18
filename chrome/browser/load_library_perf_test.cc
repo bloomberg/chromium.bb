@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/scoped_native_library.h"
@@ -16,6 +17,7 @@ void MeasureTimeToLoadNativeLibrary(const base::FilePath& library_name) {
   base::FilePath output_dir;
   ASSERT_TRUE(PathService::Get(base::DIR_MODULE, &output_dir));
   base::FilePath library_path = output_dir.Append(library_name);
+  ASSERT_TRUE(base::PathExists(library_path)) << library_path.value();
   std::string error;
   base::TimeTicks start = base::TimeTicks::HighResNow();
   base::NativeLibrary native_library =
@@ -53,10 +55,18 @@ TEST(LoadCDMPerfTest, WidevineAdapter) {
 #endif  // defined(WIDEVINE_CDM_AVAILABLE)
 
 TEST(LoadCDMPerfTest, ExternalClearKey) {
+#if defined(OS_MACOSX)
+  MeasureTimeToLoadNativeLibrary("libclearkeycdm.dylib");
+#else
   MeasureTimeToLoadNativeLibraryByBaseName("clearkeycdm");
+#endif  // defined(OS_MACOSX)
 }
 
 TEST(LoadCDMPerfTest, ExternalClearKeyAdapter) {
+#if defined(OS_MACOSX)
+  MeasureTimeToLoadNativeLibrary("clearkeycdmadapter.plugin");
+#else
   MeasureTimeToLoadNativeLibraryByBaseName("clearkeycdmadapter");
+#endif  // defined(OS_MACOSX)
 }
 #endif  // defined(ENABLE_PEPPER_CDMS)
