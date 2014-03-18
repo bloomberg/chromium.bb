@@ -94,6 +94,8 @@ shm_pool_resize(struct shm_pool *pool, int size)
 
 	pool->data = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED,
 			  pool->fd, 0);
+	if (pool->data == (void *)-1)
+		return 0;
 	pool->size = size;
 
 	return 1;
@@ -391,17 +393,15 @@ wl_cursor_theme_load(const char *name, int size, struct wl_shm *shm)
 		name = "default";
 
 	theme->name = strdup(name);
+	if (!theme->name)
+		goto out_error_name;
 	theme->size = size;
 	theme->cursor_count = 0;
 	theme->cursors = NULL;
 
-	theme->pool =
-		shm_pool_create(shm, size * size * 4);
-	if (!theme->pool) {
-		free(theme->name);
-		free(theme);
-		return NULL;
-	}
+	theme->pool = shm_pool_create(shm, size * size * 4);
+	if (!theme->pool)
+		goto out_error_pool;
 
 	xcursor_load_theme(name, size, load_callback, theme);
 
@@ -409,6 +409,12 @@ wl_cursor_theme_load(const char *name, int size, struct wl_shm *shm)
 		load_default_theme(theme);
 
 	return theme;
+
+out_error_pool:
+	free(theme->name);
+out_error_name:
+	free(theme);
+	return NULL;
 }
 
 /** Destroys a cursor theme object
