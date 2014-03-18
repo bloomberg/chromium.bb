@@ -25,11 +25,13 @@
 
 namespace net {
 
+class CertVerifyResult;
 class DatagramClientSocket;
 class QuicConnectionHelper;
 class QuicCryptoClientStreamFactory;
 class QuicDefaultPacketWriter;
 class QuicSessionKey;
+class QuicServerInfo;
 class QuicStreamFactory;
 class SSLInfo;
 
@@ -37,7 +39,9 @@ namespace test {
 class QuicClientSessionPeer;
 }  // namespace test
 
-class NET_EXPORT_PRIVATE QuicClientSession : public QuicSession {
+class NET_EXPORT_PRIVATE QuicClientSession :
+      public QuicSession,
+      public QuicCryptoClientStream::Visitor {
  public:
   // An interface for observing events on a session.
   class NET_EXPORT_PRIVATE Observer {
@@ -130,7 +134,13 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicSession {
       const CryptoHandshakeMessage& message) OVERRIDE;
   virtual void OnCryptoHandshakeMessageReceived(
       const CryptoHandshakeMessage& message) OVERRIDE;
-  virtual bool GetSSLInfo(SSLInfo* ssl_info) OVERRIDE;
+  virtual bool GetSSLInfo(SSLInfo* ssl_info) const OVERRIDE;
+
+  // QuicCryptoClientStream::Visitor methods:
+  virtual void OnProofValid(
+      const QuicCryptoClientConfig::CachedState& cached) OVERRIDE;
+  virtual void OnProofVerifyDetailsAvailable(
+      const ProofVerifyDetails& verify_details) OVERRIDE;
 
   // QuicConnectionVisitorInterface methods:
   virtual void OnConnectionClosed(QuicErrorCode error, bool from_peer) OVERRIDE;
@@ -211,6 +221,8 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicSession {
   scoped_ptr<DatagramClientSocket> socket_;
   scoped_ptr<QuicDefaultPacketWriter> writer_;
   scoped_refptr<IOBufferWithSize> read_buffer_;
+  scoped_ptr<QuicServerInfo> server_info_;
+  scoped_ptr<CertVerifyResult> cert_verify_result_;
   ObserverSet observers_;
   StreamRequestQueue stream_requests_;
   bool read_pending_;

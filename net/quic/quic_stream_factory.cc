@@ -86,10 +86,10 @@ class QuicStreamFactory::Job {
   int Run(const CompletionCallback& callback);
 
   int DoLoop(int rv);
-  int DoLoadServerInfo();
-  int DoLoadServerInfoComplete(int rv);
   int DoResolveHost();
   int DoResolveHostComplete(int rv);
+  int DoLoadServerInfo();
+  int DoLoadServerInfoComplete(int rv);
   int DoConnect();
   int DoConnectComplete(int rv);
 
@@ -106,10 +106,10 @@ class QuicStreamFactory::Job {
  private:
   enum IoState {
     STATE_NONE,
-    STATE_LOAD_SERVER_INFO,
-    STATE_LOAD_SERVER_INFO_COMPLETE,
     STATE_RESOLVE_HOST,
     STATE_RESOLVE_HOST_COMPLETE,
+    STATE_LOAD_SERVER_INFO,
+    STATE_LOAD_SERVER_INFO_COMPLETE,
     STATE_CONNECT,
     STATE_CONNECT_COMPLETE,
   };
@@ -126,6 +126,8 @@ class QuicStreamFactory::Job {
   QuicClientSession* session_;
   CompletionCallback callback_;
   AddressList address_list_;
+  base::TimeTicks disk_cache_load_start_time_;
+  base::WeakPtrFactory<Job> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(Job);
 };
 
@@ -145,13 +147,14 @@ QuicStreamFactory::Job::Job(QuicStreamFactory* factory,
       cert_verifier_(cert_verifier),
       server_info_(server_info),
       net_log_(net_log),
-      session_(NULL) {}
+      session_(NULL),
+      weak_factory_(this) {}
 
 QuicStreamFactory::Job::~Job() {
 }
 
 int QuicStreamFactory::Job::Run(const CompletionCallback& callback) {
-  io_state_ = STATE_LOAD_SERVER_INFO;
+  io_state_ = STATE_RESOLVE_HOST;
   int rv = DoLoop(OK);
   if (rv == ERR_IO_PENDING)
     callback_ = callback;
@@ -164,19 +167,19 @@ int QuicStreamFactory::Job::DoLoop(int rv) {
     IoState state = io_state_;
     io_state_ = STATE_NONE;
     switch (state) {
-      case STATE_LOAD_SERVER_INFO:
-        CHECK_EQ(OK, rv);
-        rv = DoLoadServerInfo();
-        break;
-      case STATE_LOAD_SERVER_INFO_COMPLETE:
-        rv = DoLoadServerInfoComplete(rv);
-        break;
       case STATE_RESOLVE_HOST:
         CHECK_EQ(OK, rv);
         rv = DoResolveHost();
         break;
       case STATE_RESOLVE_HOST_COMPLETE:
         rv = DoResolveHostComplete(rv);
+        break;
+      case STATE_LOAD_SERVER_INFO:
+        CHECK_EQ(OK, rv);
+        rv = DoLoadServerInfo();
+        break;
+      case STATE_LOAD_SERVER_INFO_COMPLETE:
+        rv = DoLoadServerInfoComplete(rv);
         break;
       case STATE_CONNECT:
         CHECK_EQ(OK, rv);
@@ -201,30 +204,20 @@ void QuicStreamFactory::Job::OnIOComplete(int rv) {
   }
 }
 
-int QuicStreamFactory::Job::DoLoadServerInfo() {
-  io_state_ = STATE_LOAD_SERVER_INFO_COMPLETE;
-
-  if (server_info_)
-    server_info_->Start();
-
-  return OK;
-}
-
-int QuicStreamFactory::Job::DoLoadServerInfoComplete(int rv) {
-  if (rv != OK)
-    return rv;
-
-  io_state_ = STATE_RESOLVE_HOST;
-  return OK;
-}
-
 int QuicStreamFactory::Job::DoResolveHost() {
+  // Start loading the data now, and wait for it after we resolve the host.
+  if (server_info_) {
+    disk_cache_load_start_time_ = base::TimeTicks::Now();
+    server_info_->Start();
+  }
+
   io_state_ = STATE_RESOLVE_HOST_COMPLETE;
   return host_resolver_.Resolve(
       HostResolver::RequestInfo(session_key_.host_port_pair()),
       DEFAULT_PRIORITY,
       &address_list_,
-      base::Bind(&QuicStreamFactory::Job::OnIOComplete, base::Unretained(this)),
+      base::Bind(&QuicStreamFactory::Job::OnIOComplete,
+                 weak_factory_.GetWeakPtr()),
       net_log_);
 }
 
@@ -240,7 +233,74 @@ int QuicStreamFactory::Job::DoResolveHostComplete(int rv) {
     return OK;
   }
 
+  io_state_ = STATE_LOAD_SERVER_INFO;
+  return OK;
+}
+
+int QuicStreamFactory::Job::DoLoadServerInfo() {
+  io_state_ = STATE_LOAD_SERVER_INFO_COMPLETE;
+
+  if (!server_info_)
+    return OK;
+
+  return server_info_->WaitForDataReady(
+      base::Bind(&QuicStreamFactory::Job::OnIOComplete,
+                 weak_factory_.GetWeakPtr()));
+}
+
+int QuicStreamFactory::Job::DoLoadServerInfoComplete(int rv) {
+  if (server_info_) {
+    UMA_HISTOGRAM_TIMES("Net.QuicServerInfo.DiskCacheReadTime",
+                        base::TimeTicks::Now() - disk_cache_load_start_time_);
+  }
+
+  if (rv != OK) {
+    server_info_.reset();
+  }
+
   io_state_ = STATE_CONNECT;
+  return OK;
+}
+
+int QuicStreamFactory::Job::DoConnect() {
+  io_state_ = STATE_CONNECT_COMPLETE;
+
+  int rv = factory_->CreateSession(session_key_.host_port_pair(), is_https_,
+                                   cert_verifier_, server_info_.Pass(),
+                                   address_list_, net_log_, &session_);
+  if (rv != OK) {
+    DCHECK(rv != ERR_IO_PENDING);
+    DCHECK(!session_);
+    return rv;
+  }
+
+  session_->StartReading();
+  if (!session_->connection()->connected()) {
+    return ERR_QUIC_PROTOCOL_ERROR;
+  }
+  rv = session_->CryptoConnect(
+      factory_->require_confirmation() || is_https_,
+      base::Bind(&QuicStreamFactory::Job::OnIOComplete,
+                 base::Unretained(this)));
+  return rv;
+}
+
+int QuicStreamFactory::Job::DoConnectComplete(int rv) {
+  if (rv != OK)
+    return rv;
+
+  DCHECK(!factory_->HasActiveSession(session_key_));
+  // There may well now be an active session for this IP.  If so, use the
+  // existing session instead.
+  AddressList address(session_->connection()->peer_address());
+  if (factory_->OnResolution(session_key_, address)) {
+    session_->connection()->SendConnectionClose(QUIC_NO_ERROR);
+    session_ = NULL;
+    return OK;
+  }
+
+  factory_->ActivateSession(session_key_, session_);
+
   return OK;
 }
 
@@ -290,48 +350,6 @@ void QuicStreamRequest::OnRequestComplete(int rv) {
 scoped_ptr<QuicHttpStream> QuicStreamRequest::ReleaseStream() {
   DCHECK(stream_);
   return stream_.Pass();
-}
-
-int QuicStreamFactory::Job::DoConnect() {
-  io_state_ = STATE_CONNECT_COMPLETE;
-
-  int rv = factory_->CreateSession(session_key_.host_port_pair(), is_https_,
-                                   cert_verifier_, server_info_.Pass(),
-                                   address_list_, net_log_, &session_);
-  if (rv != OK) {
-    DCHECK(rv != ERR_IO_PENDING);
-    DCHECK(!session_);
-    return rv;
-  }
-
-  session_->StartReading();
-  if (!session_->connection()->connected()) {
-    return ERR_QUIC_PROTOCOL_ERROR;
-  }
-  rv = session_->CryptoConnect(
-      factory_->require_confirmation() || is_https_,
-      base::Bind(&QuicStreamFactory::Job::OnIOComplete,
-                 base::Unretained(this)));
-  return rv;
-}
-
-int QuicStreamFactory::Job::DoConnectComplete(int rv) {
-  if (rv != OK)
-    return rv;
-
-  DCHECK(!factory_->HasActiveSession(session_key_));
-  // There may well now be an active session for this IP.  If so, use the
-  // existing session instead.
-  AddressList address(session_->connection()->peer_address());
-  if (factory_->OnResolution(session_key_, address)) {
-    session_->connection()->SendConnectionClose(QUIC_NO_ERROR);
-    session_ = NULL;
-    return OK;
-  }
-
-  factory_->ActivateSession(session_key_, session_);
-
-  return OK;
 }
 
 QuicStreamFactory::QuicStreamFactory(
@@ -700,7 +718,7 @@ int QuicStreamFactory::CreateSession(
   connection->options()->max_packet_length = max_packet_length_;
 
   QuicCryptoClientConfig* crypto_config = GetOrCreateCryptoConfig(session_key);
-
+  InitializeCachedState(session_key, crypto_config, server_info);
   DCHECK(crypto_config);
 
   QuicConfig config = config_;
@@ -796,6 +814,31 @@ void QuicStreamFactory::PopulateFromCanonicalConfig(
   // Update canonical version to point at the "most recent" crypto_config.
   canonical_hostname_to_origin_map_[suffix_session_key] =
       canonical_session_key;
+}
+
+void QuicStreamFactory::InitializeCachedState(
+    const QuicSessionKey& session_key,
+    QuicCryptoClientConfig* crypto_config,
+    const scoped_ptr<QuicServerInfo>& server_info) {
+  if (!server_info)
+    return;
+
+  QuicCryptoClientConfig::CachedState* cached =
+      crypto_config->LookupOrCreate(session_key);
+  if (!cached->IsEmpty())
+    return;
+
+  if (!cached->Initialize(server_info->state().server_config,
+                          server_info->state().source_address_token,
+                          server_info->state().certs,
+                          server_info->state().server_config_sig,
+                          clock_->WallNow()))
+    return;
+
+  if (!crypto_config->proof_verifier()) {
+    // If no verifier is set then we don't check the certificates.
+    cached->SetProofValid();
+  }
 }
 
 void QuicStreamFactory::ExpireBrokenAlternateProtocolMappings() {

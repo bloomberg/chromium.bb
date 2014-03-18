@@ -62,9 +62,7 @@ class NET_EXPORT_PRIVATE ProofVerifier {
   //
   // This function may also return PENDING, in which case the ProofVerifier
   // will call back, on the original thread, via |callback| when complete.
-  //
-  // This function takes ownership of |callback|. It will be deleted even if
-  // the call returns immediately.
+  // In this case, the ProofVerifier will take ownership of |callback|.
   //
   // The signature uses SHA-256 as the hash function and PSS padding in the
   // case of RSA.

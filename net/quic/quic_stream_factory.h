@@ -223,6 +223,12 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       const QuicSessionKey& session_key,
       QuicCryptoClientConfig* crypto_config);
 
+  // Initializes the cached state associated with |session_key| in
+  // |crypto_config| with the information in |server_info|.
+  void InitializeCachedState(const QuicSessionKey& session_key,
+                             QuicCryptoClientConfig* crypto_config,
+                             const scoped_ptr<QuicServerInfo>& server_info);
+
   void ExpireBrokenAlternateProtocolMappings();
   void ScheduleBrokenAlternateProtocolMappingsExpiration();
 

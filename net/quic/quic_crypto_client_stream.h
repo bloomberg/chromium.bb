@@ -7,10 +7,6 @@
 
 #include <string>
 
-#include "base/memory/weak_ptr.h"
-#include "base/time/time.h"
-#include "net/cert/cert_verify_result.h"
-#include "net/cert/x509_certificate.h"
 #include "net/quic/crypto/proof_verifier.h"
 #include "net/quic/crypto/quic_crypto_client_config.h"
 #include "net/quic/quic_config.h"
@@ -19,9 +15,7 @@
 
 namespace net {
 
-class QuicServerInfo;
 class QuicSession;
-class SSLInfo;
 
 namespace test {
 class CryptoTestUtils;
@@ -29,8 +23,28 @@ class CryptoTestUtils;
 
 class NET_EXPORT_PRIVATE QuicCryptoClientStream : public QuicCryptoStream {
  public:
+  class NET_EXPORT_PRIVATE Visitor {
+   public:
+    ~Visitor() {}
+
+    // Called when the proof in |cached| is marked valid.  If this is a secure
+    // QUIC session, then this will happen only after the proof verifier
+    // completes.  If this is an insecure QUIC connection, this will happen
+    // as soon as a valid config is discovered (either from the cache or
+    // from the server).
+    virtual void OnProofValid(
+        const QuicCryptoClientConfig::CachedState& cached) = 0;
+
+    // Called when proof verification details become available, either because
+    // proof verification is complete, or when cached details are used. This
+    // will only be called for secure QUIC connections.
+    virtual void OnProofVerifyDetailsAvailable(
+        const ProofVerifyDetails& verify_details) = 0;
+  };
+
   QuicCryptoClientStream(const QuicSessionKey& server_key,
                          QuicSession* session,
+                         Visitor* visitor,
                          QuicCryptoClientConfig* crypto_config);
   virtual ~QuicCryptoClientStream();
 
@@ -48,12 +62,7 @@ class NET_EXPORT_PRIVATE QuicCryptoClientStream : public QuicCryptoStream {
   // than the number of round-trips needed for the handshake.
   int num_sent_client_hellos() const;
 
-  // Gets the SSL connection information.
-  virtual bool GetSSLInfo(SSLInfo* ssl_info);
-
-  void OnIOComplete(int result);
-
-  void SetQuicServerInfo(scoped_ptr<QuicServerInfo> server_info);
+  Visitor* visitor() { return visitor_; }
 
  private:
   // ProofVerifierCallbackImpl is passed as the callback method to VerifyProof.
@@ -82,8 +91,7 @@ class NET_EXPORT_PRIVATE QuicCryptoClientStream : public QuicCryptoStream {
 
   enum State {
     STATE_IDLE,
-    STATE_LOAD_QUIC_SERVER_INFO,
-    STATE_LOAD_QUIC_SERVER_INFO_COMPLETE,
+    STATE_INITIALIZE,
     STATE_SEND_CHLO,
     STATE_RECV_REJ,
     STATE_VERIFY_PROOF,
@@ -92,23 +100,14 @@ class NET_EXPORT_PRIVATE QuicCryptoClientStream : public QuicCryptoStream {
   };
 
   // DoHandshakeLoop performs a step of the handshake state machine. Note that
-  // |in| may be NULL if the call did not result from a received message
+  // |in| may be NULL if the call did not result from a received message.
   void DoHandshakeLoop(const CryptoHandshakeMessage* in);
 
-  // TODO(rtenneti): convert the other states of the state machine into DoXXX
-  // functions.
+  // Called to set the proof of |cache| valid.  Also invokes the visitor's
+  // OnProofValid() method.
+  void SetProofValid(QuicCryptoClientConfig::CachedState* cached);
 
-  // Call QuicServerInfo's WaitForDataReady to load the server information from
-  // the disk cache.
-  int DoLoadQuicServerInfo(QuicCryptoClientConfig::CachedState* cached);
-  void DoLoadQuicServerInfoComplete(
-      QuicCryptoClientConfig::CachedState* cached);
-  // LoadQuicServerInfo is a helper function for DoLoadQuicServerInfoComplete.
-  void LoadQuicServerInfo(QuicCryptoClientConfig::CachedState* cached);
-
-  // Should be aclled whenever cached->SetProofValid() is called.
-  // TODO(rch): move this to some chrome-specific class.
-  void SaveQuicServerInfo(const QuicCryptoClientConfig::CachedState& cached);
+  Visitor* visitor_;
 
   State next_state_;
   // num_client_hellos_ contains the number of client hello messages that this
@@ -135,21 +134,6 @@ class NET_EXPORT_PRIVATE QuicCryptoClientStream : public QuicCryptoStream {
   bool verify_ok_;
   string verify_error_details_;
   scoped_ptr<ProofVerifyDetails> verify_details_;
-
-  // The result of certificate verification.
-  scoped_ptr<CertVerifyResult> cert_verify_result_;
-
-  scoped_ptr<QuicServerInfo> quic_server_info_;
-
-  // This member is used to store the result of an asynchronous disk cache read.
-  // It must not be used after STATE_LOAD_QUIC_SERVER_INFO_COMPLETE.
-  int disk_cache_load_result_;
-
-  // Time when call to WaitForDataReady was made, used for computing time spent
-  // to load QUIC server information from disk cache.
-  base::TimeTicks disk_cache_load_start_time_;
-
-  base::WeakPtrFactory<QuicCryptoClientStream> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicCryptoClientStream);
 };

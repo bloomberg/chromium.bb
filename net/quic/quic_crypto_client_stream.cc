@@ -4,44 +4,21 @@
 
 #include "net/quic/quic_crypto_client_stream.h"
 
-#include "base/metrics/histogram.h"
-#include "net/base/completion_callback.h"
-#include "net/base/net_errors.h"
 #include "net/quic/crypto/crypto_protocol.h"
 #include "net/quic/crypto/crypto_utils.h"
 #include "net/quic/crypto/null_encrypter.h"
 #include "net/quic/crypto/proof_verifier.h"
-#include "net/quic/crypto/proof_verifier_chromium.h"
-#include "net/quic/crypto/quic_server_info.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_session.h"
-#include "net/ssl/ssl_connection_status_flags.h"
-#include "net/ssl/ssl_info.h"
 
 namespace net {
-
-namespace {
-
-// Copies CertVerifyResult from |verify_details| to |cert_verify_result|.
-void CopyCertVerifyResult(
-    const ProofVerifyDetails* verify_details,
-    scoped_ptr<CertVerifyResult>* cert_verify_result) {
-  const CertVerifyResult* cert_verify_result_other =
-      &(reinterpret_cast<const ProofVerifyDetailsChromium*>(
-          verify_details))->cert_verify_result;
-  CertVerifyResult* result_copy = new CertVerifyResult;
-  result_copy->CopyFrom(*cert_verify_result_other);
-  cert_verify_result->reset(result_copy);
-}
-
-}  // namespace
 
 QuicCryptoClientStream::ProofVerifierCallbackImpl::ProofVerifierCallbackImpl(
     QuicCryptoClientStream* stream)
     : stream_(stream) {}
 
 QuicCryptoClientStream::ProofVerifierCallbackImpl::
-    ~ProofVerifierCallbackImpl() {}
+~ProofVerifierCallbackImpl() {}
 
 void QuicCryptoClientStream::ProofVerifierCallbackImpl::Run(
     bool ok,
@@ -68,16 +45,16 @@ void QuicCryptoClientStream::ProofVerifierCallbackImpl::Cancel() {
 QuicCryptoClientStream::QuicCryptoClientStream(
     const QuicSessionKey& server_key,
     QuicSession* session,
+    Visitor* visitor,
     QuicCryptoClientConfig* crypto_config)
     : QuicCryptoStream(session),
+      visitor_(visitor),
       next_state_(STATE_IDLE),
       num_client_hellos_(0),
       crypto_config_(crypto_config),
       server_key_(server_key),
       generation_counter_(0),
-      proof_verify_callback_(NULL),
-      disk_cache_load_result_(ERR_UNEXPECTED),
-      weak_factory_(this) {
+      proof_verify_callback_(NULL) {
 }
 
 QuicCryptoClientStream::~QuicCryptoClientStream() {
@@ -94,49 +71,13 @@ void QuicCryptoClientStream::OnHandshakeMessage(
 }
 
 bool QuicCryptoClientStream::CryptoConnect() {
-  next_state_ = STATE_LOAD_QUIC_SERVER_INFO;
+  next_state_ = STATE_INITIALIZE;
   DoHandshakeLoop(NULL);
   return true;
 }
 
 int QuicCryptoClientStream::num_sent_client_hellos() const {
   return num_client_hellos_;
-}
-
-// TODO(rtenneti): Add unittests for GetSSLInfo which exercise the various ways
-// we learn about SSL info (sync vs async vs cached).
-bool QuicCryptoClientStream::GetSSLInfo(SSLInfo* ssl_info) {
-  ssl_info->Reset();
-  if (!cert_verify_result_) {
-    return false;
-  }
-
-  ssl_info->cert_status = cert_verify_result_->cert_status;
-  ssl_info->cert = cert_verify_result_->verified_cert;
-
-  // TODO(rtenneti): Figure out what to set for the following.
-  // Temporarily hard coded cipher_suite as 0xc031 to represent
-  // TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 (from
-  // net/ssl/ssl_cipher_suite_names.cc) and encryption as 256.
-  int cipher_suite = 0xc02f;
-  int ssl_connection_status = 0;
-  ssl_connection_status |=
-      (cipher_suite & SSL_CONNECTION_CIPHERSUITE_MASK) <<
-       SSL_CONNECTION_CIPHERSUITE_SHIFT;
-  ssl_connection_status |=
-      (SSL_CONNECTION_VERSION_TLS1_2 & SSL_CONNECTION_VERSION_MASK) <<
-       SSL_CONNECTION_VERSION_SHIFT;
-
-  ssl_info->public_key_hashes = cert_verify_result_->public_key_hashes;
-  ssl_info->is_issued_by_known_root =
-      cert_verify_result_->is_issued_by_known_root;
-
-  ssl_info->connection_status = ssl_connection_status;
-  ssl_info->client_cert_sent = false;
-  ssl_info->channel_id_sent = false;
-  ssl_info->security_bits = 256;
-  ssl_info->handshake_type = SSLInfo::HANDSHAKE_FULL;
-  return true;
 }
 
 // kMaxClientHellos is the maximum number of times that we'll send a client
@@ -162,14 +103,14 @@ void QuicCryptoClientStream::DoHandshakeLoop(
     const State state = next_state_;
     next_state_ = STATE_IDLE;
     switch (state) {
-      case STATE_LOAD_QUIC_SERVER_INFO: {
-        if (DoLoadQuicServerInfo(cached) == ERR_IO_PENDING) {
-          return;
+      case STATE_INITIALIZE: {
+        if (!cached->IsEmpty() && !cached->signature().empty() &&
+            crypto_config_->proof_verifier()) {
+          // If the cached state needs to be verified, do it now.
+          next_state_ = STATE_VERIFY_PROOF;
+        } else {
+          next_state_ = STATE_SEND_CHLO;
         }
-        break;
-      }
-      case STATE_LOAD_QUIC_SERVER_INFO_COMPLETE: {
-        DoLoadQuicServerInfoComplete(cached);
         break;
       }
       case STATE_SEND_CHLO: {
@@ -225,11 +166,9 @@ void QuicCryptoClientStream::DoHandshakeLoop(
           CloseConnectionWithDetails(error, error_details);
           return;
         }
-        if (cached->proof_verify_details()) {
-          CopyCertVerifyResult(cached->proof_verify_details(),
-                               &cert_verify_result_);
-        } else {
-          cert_verify_result_.reset();
+        if (visitor_ && cached->proof_verify_details()) {
+          visitor_->OnProofVerifyDetailsAvailable(
+              *cached->proof_verify_details());
         }
         next_state_ = STATE_RECV_SHLO;
         DVLOG(1) << "Client: Sending " << out.DebugString();
@@ -276,8 +215,7 @@ void QuicCryptoClientStream::DoHandshakeLoop(
           ProofVerifier* verifier = crypto_config_->proof_verifier();
           if (!verifier) {
             // If no verifier is set then we don't check the certificates.
-            cached->SetProofValid();
-            SaveQuicServerInfo(*cached);
+            SetProofValid(cached);
           } else if (!cached->signature().empty()) {
             next_state_ = STATE_VERIFY_PROOF;
             break;
@@ -320,7 +258,10 @@ void QuicCryptoClientStream::DoHandshakeLoop(
       }
       case STATE_VERIFY_PROOF_COMPLETE:
         if (!verify_ok_) {
-          CopyCertVerifyResult(verify_details_.get(), &cert_verify_result_);
+          if (visitor_) {
+            visitor_->OnProofVerifyDetailsAvailable(
+                *cached->proof_verify_details());
+          }
           CloseConnectionWithDetails(
               QUIC_PROOF_INVALID, "Proof invalid: " + verify_error_details_);
           return;
@@ -330,9 +271,8 @@ void QuicCryptoClientStream::DoHandshakeLoop(
         if (generation_counter_ != cached->generation_counter()) {
           next_state_ = STATE_VERIFY_PROOF;
         } else {
-          cached->SetProofValid();
+          SetProofValid(cached);
           cached->SetProofVerifyDetails(verify_details_.release());
-          SaveQuicServerInfo(*cached);
           next_state_ = STATE_SEND_CHLO;
         }
         break;
@@ -409,111 +349,12 @@ void QuicCryptoClientStream::DoHandshakeLoop(
   }
 }
 
-void QuicCryptoClientStream::OnIOComplete(int result) {
-  DCHECK_EQ(STATE_LOAD_QUIC_SERVER_INFO_COMPLETE, next_state_);
-  DCHECK_NE(ERR_IO_PENDING, result);
-  disk_cache_load_result_ = result;
-  DoHandshakeLoop(NULL);
-}
-
-void QuicCryptoClientStream::SetQuicServerInfo(
-    scoped_ptr<QuicServerInfo> server_info) {
-  quic_server_info_.reset(server_info.release());
-}
-
-int QuicCryptoClientStream::DoLoadQuicServerInfo(
+void QuicCryptoClientStream::SetProofValid(
     QuicCryptoClientConfig::CachedState* cached) {
-  next_state_ = STATE_SEND_CHLO;
-  if (!quic_server_info_) {
-    return OK;
+  cached->SetProofValid();
+  if (visitor_) {
+    visitor_->OnProofValid(*cached);
   }
-
-  disk_cache_load_start_time_ = base::TimeTicks::Now();
-  generation_counter_ = cached->generation_counter();
-  next_state_ = STATE_LOAD_QUIC_SERVER_INFO_COMPLETE;
-
-  // TODO(rtenneti): Use host:port to access QUIC server information from disk
-  // cache. If multiple tabs load URLs with same hostname but different
-  // ports, all requests except for the first request send InchoateClientHello.
-  // Fix the code to handle multiple requests. A possible solution is to wait
-  // for the first request to finish and use the data from the disk cache for
-  // all requests.
-  // We may need to call quic_server_info->Persist later.
-  // quic_server_info->Persist requires quic_server_info to be ready, so we
-  // always call WaitForDataReady, even though we might have initialized
-  // |cached| config from the cached state for a canonical hostname.
-  int rv = quic_server_info_->WaitForDataReady(
-      base::Bind(&QuicCryptoClientStream::OnIOComplete,
-                 weak_factory_.GetWeakPtr()));
-
-  if (rv != ERR_IO_PENDING) {
-    disk_cache_load_result_ = rv;
-  }
-  return rv;
-}
-
-void QuicCryptoClientStream::DoLoadQuicServerInfoComplete(
-    QuicCryptoClientConfig::CachedState* cached) {
-  LoadQuicServerInfo(cached);
-  QuicServerInfo::State* state = quic_server_info_->mutable_state();
-  state->Clear();
-}
-
-void QuicCryptoClientStream::LoadQuicServerInfo(
-    QuicCryptoClientConfig::CachedState* cached) {
-  next_state_ = STATE_SEND_CHLO;
-
-  // If someone else already saved a server config, we don't want to overwrite
-  // it. Also, if someone else saved a server config and then cleared it (so
-  // cached->IsEmpty() is true), we still want to load from QuicServerInfo.
-  if (!cached->IsEmpty()) {
-    return;
-  }
-
-  UMA_HISTOGRAM_TIMES("Net.QuicServerInfo.DiskCacheReadTime",
-                      base::TimeTicks::Now() - disk_cache_load_start_time_);
-
-  if (disk_cache_load_result_ != OK ||
-      !cached->Initialize(quic_server_info_->state().server_config,
-                          quic_server_info_->state().source_address_token,
-                          quic_server_info_->state().certs,
-                          quic_server_info_->state().server_config_sig,
-                          session()->connection()->clock()->WallNow())) {
-    // It is ok to proceed to STATE_SEND_CHLO when we cannot load QuicServerInfo
-    // from the disk cache.
-    DCHECK(cached->IsEmpty());
-    DVLOG(1) << "Empty server_config";
-    return;
-  }
-
-  ProofVerifier* verifier = crypto_config_->proof_verifier();
-  if (!verifier) {
-    // If no verifier is set then we don't check the certificates.
-    cached->SetProofValid();
-    SaveQuicServerInfo(*cached);
-  } else if (!cached->signature().empty()) {
-    next_state_ = STATE_VERIFY_PROOF;
-  }
-}
-
-void QuicCryptoClientStream::SaveQuicServerInfo(
-    const QuicCryptoClientConfig::CachedState& cached) {
-  DCHECK(cached.proof_valid());
-
-  // If the QuicServerInfo hasn't managed to load from disk yet then we can't
-  // save anything. TODO(rtenneti): we should fix this.
-  if (!quic_server_info_ || !quic_server_info_->IsDataReady()) {
-    return;
-  }
-
-  QuicServerInfo::State* state = quic_server_info_->mutable_state();
-
-  state->server_config = cached.server_config();
-  state->source_address_token = cached.source_address_token();
-  state->server_config_sig = cached.signature();
-  state->certs = cached.certs();
-
-  quic_server_info_->Persist();
 }
 
 }  // namespace net

@@ -11,8 +11,8 @@
 
 namespace net {
 
+class QuicClientSession;
 class QuicCryptoClientStream;
-class QuicSession;
 class QuicSessionKey;
 
 // An interface used to instantiate QuicCryptoClientStream objects. Used to
@@ -23,7 +23,7 @@ class NET_EXPORT QuicCryptoClientStreamFactory {
 
   virtual QuicCryptoClientStream* CreateQuicCryptoClientStream(
       const QuicSessionKey& server_key,
-      QuicSession* session,
+      QuicClientSession* session,
       QuicCryptoClientConfig* crypto_config) = 0;
 };
 

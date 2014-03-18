@@ -5,7 +5,6 @@
 #include "net/quic/test_tools/mock_crypto_client_stream.h"
 
 #include "net/quic/quic_session_key.h"
-#include "net/ssl/ssl_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -13,12 +12,13 @@ namespace net {
 MockCryptoClientStream::MockCryptoClientStream(
     const QuicSessionKey& server_key,
     QuicSession* session,
+    QuicCryptoClientStream::Visitor* visitor,
     QuicCryptoClientConfig* crypto_config,
     HandshakeMode handshake_mode,
-    const SSLInfo* ssl_info)
-    : QuicCryptoClientStream(server_key, session, crypto_config),
+    const ProofVerifyDetails* proof_verify_details)
+    : QuicCryptoClientStream(server_key, session, visitor, crypto_config),
       handshake_mode_(handshake_mode),
-      ssl_info_(ssl_info) {
+      proof_verify_details_(proof_verify_details) {
 }
 
 MockCryptoClientStream::~MockCryptoClientStream() {
@@ -42,6 +42,9 @@ bool MockCryptoClientStream::CryptoConnect() {
     case CONFIRM_HANDSHAKE: {
       encryption_established_ = true;
       handshake_confirmed_ = true;
+      if (proof_verify_details_) {
+        visitor()->OnProofVerifyDetailsAvailable(*proof_verify_details_);
+      }
       SetConfigNegotiated();
       session()->OnCryptoHandshakeEvent(QuicSession::HANDSHAKE_CONFIRMED);
       break;
@@ -53,15 +56,6 @@ bool MockCryptoClientStream::CryptoConnect() {
       break;
     }
   }
-  return true;
-}
-
-bool MockCryptoClientStream::GetSSLInfo(SSLInfo* ssl_info) {
-  ssl_info->Reset();
-  if (!ssl_info_) {
-    return false;
-  }
-  *ssl_info = *ssl_info_;
   return true;
 }
 

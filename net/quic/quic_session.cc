@@ -544,7 +544,7 @@ bool QuicSession::HasDataToWrite() const {
       connection_->HasQueuedData();
 }
 
-bool QuicSession::GetSSLInfo(SSLInfo* ssl_info) {
+bool QuicSession::GetSSLInfo(SSLInfo* ssl_info) const {
   NOTIMPLEMENTED();
   return false;
 }

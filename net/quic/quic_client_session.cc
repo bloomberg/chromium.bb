@@ -13,12 +13,14 @@
 #include "base/values.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
+#include "net/quic/crypto/proof_verifier_chromium.h"
 #include "net/quic/crypto/quic_server_info.h"
 #include "net/quic/quic_connection_helper.h"
 #include "net/quic/quic_crypto_client_stream_factory.h"
 #include "net/quic/quic_default_packet_writer.h"
 #include "net/quic/quic_session_key.h"
 #include "net/quic/quic_stream_factory.h"
+#include "net/ssl/ssl_connection_status_flags.h"
 #include "net/ssl/ssl_info.h"
 #include "net/udp/datagram_client_socket.h"
 
@@ -99,6 +101,7 @@ QuicClientSession::QuicClientSession(
       socket_(socket.Pass()),
       writer_(writer.Pass()),
       read_buffer_(new IOBufferWithSize(kMaxPacketSize)),
+      server_info_(server_info.Pass()),
       read_pending_(false),
       num_total_streams_(0),
       net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_QUIC_SESSION)),
@@ -109,9 +112,7 @@ QuicClientSession::QuicClientSession(
       crypto_client_stream_factory ?
           crypto_client_stream_factory->CreateQuicCryptoClientStream(
               server_key, this, crypto_config) :
-          new QuicCryptoClientStream(server_key, this, crypto_config));
-
-  crypto_stream_->SetQuicServerInfo(server_info.Pass());
+          new QuicCryptoClientStream(server_key, this, this, crypto_config));
 
   connection->set_debug_visitor(&logger_);
   // TODO(rch): pass in full host port proxy pair
@@ -159,7 +160,7 @@ QuicClientSession::~QuicClientSession() {
 
   bool port_selected = stream_factory_->enable_port_selection();
   SSLInfo ssl_info;
-  if (!crypto_stream_->GetSSLInfo(&ssl_info) || !ssl_info.cert) {
+  if (!GetSSLInfo(&ssl_info) || !ssl_info.cert) {
     if (port_selected) {
       UMA_HISTOGRAM_CUSTOM_COUNTS("Net.QuicSession.ConnectSelectPortForHTTP",
                                   round_trip_handshakes, 0, 3, 4);
@@ -278,9 +279,40 @@ QuicCryptoClientStream* QuicClientSession::GetCryptoStream() {
   return crypto_stream_.get();
 };
 
-bool QuicClientSession::GetSSLInfo(SSLInfo* ssl_info) {
-  DCHECK(crypto_stream_.get());
-  return crypto_stream_->GetSSLInfo(ssl_info);
+// TODO(rtenneti): Add unittests for GetSSLInfo which exercise the various ways
+// we learn about SSL info (sync vs async vs cached).
+bool QuicClientSession::GetSSLInfo(SSLInfo* ssl_info) const {
+  ssl_info->Reset();
+  if (!cert_verify_result_) {
+    return false;
+  }
+
+  ssl_info->cert_status = cert_verify_result_->cert_status;
+  ssl_info->cert = cert_verify_result_->verified_cert;
+
+  // TODO(rtenneti): Figure out what to set for the following.
+  // Temporarily hard coded cipher_suite as 0xc031 to represent
+  // TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 (from
+  // net/ssl/ssl_cipher_suite_names.cc) and encryption as 256.
+  int cipher_suite = 0xc02f;
+  int ssl_connection_status = 0;
+  ssl_connection_status |=
+      (cipher_suite & SSL_CONNECTION_CIPHERSUITE_MASK) <<
+       SSL_CONNECTION_CIPHERSUITE_SHIFT;
+  ssl_connection_status |=
+      (SSL_CONNECTION_VERSION_TLS1_2 & SSL_CONNECTION_VERSION_MASK) <<
+       SSL_CONNECTION_VERSION_SHIFT;
+
+  ssl_info->public_key_hashes = cert_verify_result_->public_key_hashes;
+  ssl_info->is_issued_by_known_root =
+      cert_verify_result_->is_issued_by_known_root;
+
+  ssl_info->connection_status = ssl_connection_status;
+  ssl_info->client_cert_sent = false;
+  ssl_info->channel_id_sent = false;
+  ssl_info->security_bits = 256;
+  ssl_info->handshake_type = SSLInfo::HANDSHAKE_FULL;
+  return true;
 }
 
 int QuicClientSession::CryptoConnect(bool require_confirmation,
@@ -313,8 +345,7 @@ bool QuicClientSession::CanPool(const std::string& hostname) const {
   DCHECK(connection()->connected());
   SSLInfo ssl_info;
   bool unused = false;
-  DCHECK(crypto_stream_);
-  if (!crypto_stream_->GetSSLInfo(&ssl_info) || !ssl_info.cert) {
+  if (!GetSSLInfo(&ssl_info) || !ssl_info.cert) {
     // We can always pool with insecure QUIC sessions.
     return true;
   }
@@ -431,6 +462,34 @@ void QuicClientSession::OnSuccessfulVersionNegotiation(
   QuicSession::OnSuccessfulVersionNegotiation(version);
 }
 
+void QuicClientSession::OnProofValid(
+    const QuicCryptoClientConfig::CachedState& cached) {
+  DCHECK(cached.proof_valid());
+
+  if (!server_info_ || !server_info_->IsDataReady()) {
+    return;
+  }
+
+  QuicServerInfo::State* state = server_info_->mutable_state();
+
+  state->server_config = cached.server_config();
+  state->source_address_token = cached.source_address_token();
+  state->server_config_sig = cached.signature();
+  state->certs = cached.certs();
+
+  server_info_->Persist();
+}
+
+void QuicClientSession::OnProofVerifyDetailsAvailable(
+    const ProofVerifyDetails& verify_details) {
+  const CertVerifyResult* cert_verify_result_other =
+      &(reinterpret_cast<const ProofVerifyDetailsChromium*>(
+          &verify_details))->cert_verify_result;
+  CertVerifyResult* result_copy = new CertVerifyResult;
+  result_copy->CopyFrom(*cert_verify_result_other);
+  cert_verify_result_.reset(result_copy);
+}
+
 void QuicClientSession::StartReading() {
   if (read_pending_) {
     return;
@@ -509,8 +568,7 @@ base::Value* QuicClientSession::GetInfoAsValue(
   dict->SetString("connection_id", base::Uint64ToString(connection_id()));
   dict->SetBoolean("connected", connection()->connected());
   SSLInfo ssl_info;
-  dict->SetBoolean("secure",
-                   crypto_stream_->GetSSLInfo(&ssl_info) && ssl_info.cert);
+  dict->SetBoolean("secure", GetSSLInfo(&ssl_info) && ssl_info.cert);
 
   base::ListValue* alias_list = new base::ListValue();
   for (std::set<HostPortPair>::const_iterator it = aliases.begin();

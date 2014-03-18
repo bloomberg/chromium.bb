@@ -13,6 +13,7 @@
 #include "net/http/http_response_info.h"
 #include "net/http/http_util.h"
 #include "net/quic/crypto/crypto_handshake.h"
+#include "net/quic/crypto/proof_verifier_chromium.h"
 #include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/crypto/quic_encrypter.h"
 #include "net/quic/quic_http_stream.h"
@@ -420,9 +421,9 @@ TEST_P(QuicStreamFactoryTest, HttpsPooling) {
   scoped_refptr<X509Certificate> test_cert(
       ImportCertFromFile(certs_dir, "spdy_pooling.pem"));
   ASSERT_NE(static_cast<X509Certificate*>(NULL), test_cert);
-  SSLInfo ssl_info;
-  ssl_info.cert = test_cert.get();
-  crypto_client_stream_factory_.set_ssl_info(&ssl_info);
+  ProofVerifyDetailsChromium verify_details;
+  verify_details.cert_verify_result.verified_cert = test_cert;
+  crypto_client_stream_factory_.set_proof_verify_details(&verify_details);
 
   host_resolver_.set_synchronous_mode(true);
   host_resolver_.rules()->AddIPLiteralRule(server1.host(), "192.168.0.1", "");
@@ -484,9 +485,10 @@ TEST_P(QuicStreamFactoryTest, NoHttpsPoolingWithCertMismatch) {
   scoped_refptr<X509Certificate> test_cert(
       ImportCertFromFile(certs_dir, "spdy_pooling.pem"));
   ASSERT_NE(static_cast<X509Certificate*>(NULL), test_cert);
-  SSLInfo ssl_info;
-  ssl_info.cert = test_cert.get();
-  crypto_client_stream_factory_.set_ssl_info(&ssl_info);
+  ProofVerifyDetailsChromium verify_details;
+  verify_details.cert_verify_result.verified_cert = test_cert;
+  crypto_client_stream_factory_.set_proof_verify_details(&verify_details);
+
 
   host_resolver_.set_synchronous_mode(true);
   host_resolver_.rules()->AddIPLiteralRule(server1.host(), "192.168.0.1", "");

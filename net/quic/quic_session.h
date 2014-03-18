@@ -190,7 +190,7 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   }
 
   // Gets the SSL connection information.
-  virtual bool GetSSLInfo(SSLInfo* ssl_info);
+  virtual bool GetSSLInfo(SSLInfo* ssl_info) const;
 
   QuicErrorCode error() const { return error_; }
 
