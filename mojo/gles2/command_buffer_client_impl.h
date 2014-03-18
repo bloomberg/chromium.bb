@@ -7,6 +7,7 @@
 
 #include <map>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "gpu/command_buffer/common/command_buffer.h"
@@ -88,15 +89,15 @@ class CommandBufferClientImpl : public CommandBufferClient,
   typedef std::map<int32, gpu::Buffer> TransferBufferMap;
 
   // CommandBufferClient implementation:
-  virtual void DidInitialize(bool success) MOJO_OVERRIDE;
-  virtual void DidMakeProgress(const CommandBufferState& state) MOJO_OVERRIDE;
-  virtual void DidDestroy() MOJO_OVERRIDE;
-  virtual void LostContext(int32_t lost_reason) MOJO_OVERRIDE;
+  virtual void DidInitialize(bool success) OVERRIDE;
+  virtual void DidMakeProgress(const CommandBufferState& state) OVERRIDE;
+  virtual void DidDestroy() OVERRIDE;
+  virtual void LostContext(int32_t lost_reason) OVERRIDE;
 
   // ErrorHandler implementation:
-  virtual void OnError() MOJO_OVERRIDE;
+  virtual void OnError() OVERRIDE;
 
-  virtual void DrawAnimationFrame() MOJO_OVERRIDE;
+  virtual void DrawAnimationFrame() OVERRIDE;
 
   void TryUpdateState();
   void MakeProgressAndUpdateState();

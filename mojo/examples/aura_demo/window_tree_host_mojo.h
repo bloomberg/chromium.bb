@@ -58,7 +58,7 @@ class WindowTreeHostMojo : public aura::WindowTreeHost,
   virtual ui::EventProcessor* GetEventProcessor() OVERRIDE;
 
   // Overridden from NativeViewportClient:
-  virtual void OnCreated() MOJO_OVERRIDE;
+  virtual void OnCreated() OVERRIDE;
   virtual void OnDestroyed() OVERRIDE;
   virtual void OnBoundsChanged(const Rect& bounds) OVERRIDE;
   virtual void OnEvent(const Event& event) OVERRIDE;

@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <string>
 
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "mojo/examples/compositor_app/compositor_host.h"
 #include "mojo/public/bindings/allocation_scope.h"
@@ -51,18 +52,18 @@ class SampleApp : public Application, public NativeViewportClient {
     host_.reset(new CompositorHost(gles2_handle.Pass()));
   }
 
-  virtual void OnCreated() MOJO_OVERRIDE {
+  virtual void OnCreated() OVERRIDE {
   }
 
-  virtual void OnDestroyed() MOJO_OVERRIDE {
+  virtual void OnDestroyed() OVERRIDE {
     base::MessageLoop::current()->Quit();
   }
 
-  virtual void OnBoundsChanged(const Rect& bounds) MOJO_OVERRIDE {
+  virtual void OnBoundsChanged(const Rect& bounds) OVERRIDE {
     host_->SetSize(bounds.size());
   }
 
-  virtual void OnEvent(const Event& event) MOJO_OVERRIDE {
+  virtual void OnEvent(const Event& event) OVERRIDE {
     if (!event.location().is_null()) {
       viewport_->AckEvent(event);
     }

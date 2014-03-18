@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/i18n/icu_util.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "mojo/examples/aura_demo/demo_screen.h"
@@ -213,7 +214,7 @@ class LauncherImpl : public Application,
  private:
   // Overridden from Application:
   virtual void AcceptConnection(const mojo::String& url,
-                                ScopedMessagePipeHandle handle) MOJO_OVERRIDE {
+                                ScopedMessagePipeHandle handle) OVERRIDE {
     launcher_client_.reset(
         MakeScopedHandle(LauncherClientHandle(handle.release().value())).Pass(),
         this);

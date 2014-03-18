@@ -6,6 +6,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "mojo/public/bindings/allocation_scope.h"
 #include "mojo/public/bindings/error_handler.h"
 #include "mojo/public/bindings/remote_ptr.h"
@@ -34,11 +35,11 @@ class ServiceManager::ServiceFactory : public Shell, public ErrorHandler {
   }
 
   virtual void Connect(const String& url,
-                       ScopedMessagePipeHandle client_pipe) MOJO_OVERRIDE {
+                       ScopedMessagePipeHandle client_pipe) OVERRIDE {
     manager_->Connect(GURL(url.To<std::string>()), client_pipe.Pass());
   }
 
-  virtual void OnError() MOJO_OVERRIDE {
+  virtual void OnError() OVERRIDE {
     manager_->RemoveServiceFactory(this);
   }
 

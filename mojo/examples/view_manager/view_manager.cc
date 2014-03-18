@@ -5,6 +5,7 @@
 #include <stdio.h>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "mojo/examples/launcher/launcher.mojom.h"
@@ -43,11 +44,10 @@ class ViewImpl : public View {
 
  private:
   // Overridden from View:
-  virtual void SetId(int view_id) MOJO_OVERRIDE {
+  virtual void SetId(int view_id) OVERRIDE {
     id_ = view_id;
   }
-  virtual void GetId(const mojo::Callback<void(int32_t)>& callback)
-      MOJO_OVERRIDE {
+  virtual void GetId(const mojo::Callback<void(int32_t)>& callback) OVERRIDE {
     callback.Run(id_);
   }
 
@@ -68,7 +68,7 @@ class ViewManagerImpl : public Service<ViewManager, ViewManagerImpl>,
  private:
   // Overridden from ViewManager:
   virtual void CreateView(const Callback<void(ScopedViewHandle)>& callback)
-      MOJO_OVERRIDE {
+      OVERRIDE {
     InterfacePipe<View> pipe;
     views_.push_back(new ViewImpl(pipe.handle_to_peer.Pass()));
     callback.Run(pipe.handle_to_self.Pass());

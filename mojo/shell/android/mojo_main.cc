@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "jni/MojoMain_jni.h"
 #include "mojo/public/shell/application.h"
@@ -41,8 +42,7 @@ class NativeViewportServiceLoader : public ServiceLoader {
  private:
   virtual void LoadService(ServiceManager* manager,
                            const GURL& url,
-                           ScopedShellHandle service_handle)
-      MOJO_OVERRIDE {
+                           ScopedShellHandle service_handle) OVERRIDE {
     app_.reset(CreateNativeViewportService(g_context.Get().get(),
                                            service_handle.Pass()));
   }

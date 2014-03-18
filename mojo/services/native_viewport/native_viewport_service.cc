@@ -4,6 +4,7 @@
 
 #include "mojo/services/native_viewport/native_viewport_service.h"
 
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
 #include "mojo/public/bindings/allocation_scope.h"
@@ -36,7 +37,7 @@ class NativeViewportImpl
         pending_event_timestamp_(0) {}
   virtual ~NativeViewportImpl() {}
 
-  virtual void Create(const Rect& bounds) MOJO_OVERRIDE {
+  virtual void Create(const Rect& bounds) OVERRIDE {
     native_viewport_ =
         services::NativeViewport::Create(context(), this);
     native_viewport_->Init(bounds);
@@ -44,28 +45,28 @@ class NativeViewportImpl
     OnBoundsChanged(bounds);
   }
 
-  virtual void Show() MOJO_OVERRIDE {
+  virtual void Show() OVERRIDE {
     native_viewport_->Show();
   }
 
-  virtual void Hide() MOJO_OVERRIDE {
+  virtual void Hide() OVERRIDE {
     native_viewport_->Hide();
   }
 
-  virtual void Close() MOJO_OVERRIDE {
+  virtual void Close() OVERRIDE {
     command_buffer_.reset();
     DCHECK(native_viewport_);
     native_viewport_->Close();
   }
 
-  virtual void SetBounds(const Rect& bounds) MOJO_OVERRIDE {
+  virtual void SetBounds(const Rect& bounds) OVERRIDE {
     gfx::Rect gfx_bounds(bounds.position().x(), bounds.position().y(),
                          bounds.size().width(), bounds.size().height());
     native_viewport_->SetBounds(gfx_bounds);
   }
 
   virtual void CreateGLES2Context(ScopedMessagePipeHandle client_handle)
-      MOJO_OVERRIDE {
+      OVERRIDE {
     if (command_buffer_ || command_buffer_handle_.is_valid()) {
       LOG(ERROR) << "Can't create multiple contexts on a NativeViewport";
       return;
@@ -81,7 +82,7 @@ class NativeViewportImpl
     CreateCommandBufferIfNeeded();
   }
 
-  virtual void AckEvent(const Event& event) MOJO_OVERRIDE {
+  virtual void AckEvent(const Event& event) OVERRIDE {
     DCHECK_EQ(event.time_stamp(), pending_event_timestamp_);
     waiting_for_event_ack_ = false;
   }
@@ -99,7 +100,7 @@ class NativeViewportImpl
         command_buffer_handle_.Pass(), widget_, native_viewport_->GetSize()));
   }
 
-  virtual bool OnEvent(ui::Event* ui_event) MOJO_OVERRIDE {
+  virtual bool OnEvent(ui::Event* ui_event) OVERRIDE {
     // Must not return early before updating capture.
     switch (ui_event->type()) {
     case ui::ET_MOUSE_PRESSED:
@@ -153,18 +154,18 @@ class NativeViewportImpl
   }
 
   virtual void OnAcceleratedWidgetAvailable(
-      gfx::AcceleratedWidget widget) MOJO_OVERRIDE {
+      gfx::AcceleratedWidget widget) OVERRIDE {
     widget_ = widget;
     CreateCommandBufferIfNeeded();
   }
 
-  virtual void OnBoundsChanged(const gfx::Rect& bounds) MOJO_OVERRIDE {
+  virtual void OnBoundsChanged(const gfx::Rect& bounds) OVERRIDE {
     CreateCommandBufferIfNeeded();
     AllocationScope scope;
     client()->OnBoundsChanged(bounds);
   }
 
-  virtual void OnDestroyed() MOJO_OVERRIDE {
+  virtual void OnDestroyed() OVERRIDE {
     command_buffer_.reset();
     client()->OnDestroyed();
     base::MessageLoop::current()->Quit();

@@ -35,7 +35,7 @@ class DynamicServiceLoader : public ServiceLoader {
   // host / port.
   virtual void LoadService(ServiceManager* manager,
                            const GURL& url,
-                           ScopedShellHandle service_handle) MOJO_OVERRIDE;
+                           ScopedShellHandle service_handle) OVERRIDE;
 
  private:
   class LoadContext;

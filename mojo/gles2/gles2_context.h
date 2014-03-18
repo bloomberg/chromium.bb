@@ -5,6 +5,7 @@
 #ifndef MOJO_GLES2_GLES2_CONTEXT_H_
 #define MOJO_GLES2_GLES2_CONTEXT_H_
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "mojo/gles2/command_buffer_client_impl.h"
@@ -43,8 +44,8 @@ class GLES2Context : public CommandBufferDelegate,
   void CancelAnimationFrames();
 
  private:
-  virtual void ContextLost() MOJO_OVERRIDE;
-  virtual void DrawAnimationFrame() MOJO_OVERRIDE;
+  virtual void ContextLost() OVERRIDE;
+  virtual void DrawAnimationFrame() OVERRIDE;
 
   CommandBufferClientImpl command_buffer_;
   scoped_ptr<gpu::gles2::GLES2CmdHelper> gles2_helper_;
