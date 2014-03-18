@@ -34,8 +34,9 @@ base::Time GetOriginalProcessStartTime(const CommandLine& command_line) {
 // platforms.
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
   return base::CurrentProcessInfo::CreationTime();
-#endif
+#else
   return base::Time();
+#endif
 }
 
 StartupType GetStartupType(const CommandLine& command_line) {

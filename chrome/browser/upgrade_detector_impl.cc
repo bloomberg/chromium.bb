@@ -173,29 +173,31 @@ UpgradeDetectorImpl::UpgradeDetectorImpl()
     return;
   }
 
-  // Windows: only enable upgrade notifications for official builds.
-  // Mac: only enable them if the updater (Keystone) is present.
-  // Linux (and other POSIX): always enable regardless of branding.
   base::Closure start_upgrade_check_timer_task =
       base::Bind(&UpgradeDetectorImpl::StartTimerForUpgradeCheck,
                  weak_factory_.GetWeakPtr());
-#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+
+#if defined(OS_WIN)
+  // Only enable upgrade notifications for official builds.  Chromium has no
+  // upgrade channel.
+#if defined(GOOGLE_CHROME_BUILD)
   // On Windows, there might be a policy preventing updates, so validate
   // updatability, and then call StartTimerForUpgradeCheck appropriately.
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
                           base::Bind(&DetectUpdatability,
                                      start_upgrade_check_timer_task,
                                      &is_unstable_channel_));
-  return;
-#elif defined(OS_WIN) && !defined(GOOGLE_CHROME_BUILD)
-  return;  // Chromium has no upgrade channel.
-#elif defined(OS_MACOSX)
+#endif
+#else
+#if defined(OS_MACOSX)
+  // Only enable upgrade notifications if the updater (Keystone) is present.
   if (!keystone_glue::KeystoneEnabled())
-    return;  // Keystone updater not enabled.
-#elif !defined(OS_POSIX)
+    return;
+#elif defined(OS_POSIX)
+  // Always enable upgrade notifications regardless of branding.
+#else
   return;
 #endif
-
   // Check whether the build is an unstable channel before starting the timer.
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
                           base::Bind(&CheckForUnstableChannel,
@@ -204,6 +206,7 @@ UpgradeDetectorImpl::UpgradeDetectorImpl()
 
   // Start tracking network time updates.
   network_time_tracker_.Start();
+#endif
 }
 
 UpgradeDetectorImpl::~UpgradeDetectorImpl() {

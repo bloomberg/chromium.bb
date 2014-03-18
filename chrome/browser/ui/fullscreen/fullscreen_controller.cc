@@ -455,28 +455,18 @@ void FullscreenController::LostMouseLock() {
 void FullscreenController::Observe(int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  switch (type) {
-    case content::NOTIFICATION_NAV_ENTRY_COMMITTED:
-      if (content::Details<content::LoadCommittedDetails>(details)->
-              is_navigation_to_different_page()) {
-        ExitTabFullscreenOrMouseLockIfNecessary();
-      }
-      break;
-
-    default:
-      NOTREACHED() << "Got a notification we didn't register for.";
-  }
+  DCHECK_EQ(content::NOTIFICATION_NAV_ENTRY_COMMITTED, type);
+  if (content::Details<content::LoadCommittedDetails>(details)->
+      is_navigation_to_different_page())
+    ExitTabFullscreenOrMouseLockIfNecessary();
 }
 
 GURL FullscreenController::GetFullscreenExitBubbleURL() const {
   if (fullscreened_tab_)
     return fullscreened_tab_->GetURL();
-  else if (mouse_lock_tab_)
+  if (mouse_lock_tab_)
     return mouse_lock_tab_->GetURL();
-  else if (!extension_caused_fullscreen_.is_empty())
-    return extension_caused_fullscreen_;
-  else
-    return GURL();
+  return extension_caused_fullscreen_;
 }
 
 FullscreenExitBubbleType FullscreenController::GetFullscreenExitBubbleType()
@@ -488,45 +478,34 @@ FullscreenExitBubbleType FullscreenController::GetFullscreenExitBubbleType()
   app_mode = chrome::IsRunningInAppMode();
 #endif
 
-  if (mouse_lock_state_ == MOUSELOCK_ACCEPTED_SILENTLY) {
+  if (mouse_lock_state_ == MOUSELOCK_ACCEPTED_SILENTLY)
+    return FEB_TYPE_NONE;
+
+  if (!fullscreened_tab_) {
+    if (IsMouseLocked())
+      return FEB_TYPE_MOUSELOCK_EXIT_INSTRUCTION;
+    if (IsMouseLockRequested())
+      return FEB_TYPE_MOUSELOCK_BUTTONS;
+    if (!extension_caused_fullscreen_.is_empty())
+      return FEB_TYPE_BROWSER_EXTENSION_FULLSCREEN_EXIT_INSTRUCTION;
+    if (toggled_into_fullscreen_ && !app_mode)
+      return FEB_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION;
     return FEB_TYPE_NONE;
   }
 
-  if (fullscreened_tab_) {
-    if (tab_fullscreen_accepted_) {
-      if (IsPrivilegedFullscreenForTab()) {
-        return FEB_TYPE_NONE;
-      } else if (IsMouseLocked()) {
-        return FEB_TYPE_FULLSCREEN_MOUSELOCK_EXIT_INSTRUCTION;
-      } else if (IsMouseLockRequested()) {
-        return FEB_TYPE_MOUSELOCK_BUTTONS;
-      } else {
-        return FEB_TYPE_FULLSCREEN_EXIT_INSTRUCTION;
-      }
-    } else {  // Full screen not yet accepted.
-      if (IsMouseLockRequested()) {
-        return FEB_TYPE_FULLSCREEN_MOUSELOCK_BUTTONS;
-      } else {
-        return FEB_TYPE_FULLSCREEN_BUTTONS;
-      }
-    }
-  } else {  // Not tab full screen.
-    if (IsMouseLocked()) {
-      return FEB_TYPE_MOUSELOCK_EXIT_INSTRUCTION;
-    } else if (IsMouseLockRequested()) {
+  if (tab_fullscreen_accepted_) {
+    if (IsPrivilegedFullscreenForTab())
+      return FEB_TYPE_NONE;
+    if (IsMouseLocked())
+      return FEB_TYPE_FULLSCREEN_MOUSELOCK_EXIT_INSTRUCTION;
+    if (IsMouseLockRequested())
       return FEB_TYPE_MOUSELOCK_BUTTONS;
-    } else {
-      if (!extension_caused_fullscreen_.is_empty()) {
-        return FEB_TYPE_BROWSER_EXTENSION_FULLSCREEN_EXIT_INSTRUCTION;
-      } else if (toggled_into_fullscreen_ && !app_mode) {
-        return FEB_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION;
-      } else {
-        return FEB_TYPE_NONE;
-      }
-    }
+    return FEB_TYPE_FULLSCREEN_EXIT_INSTRUCTION;
   }
-  NOTREACHED();
-  return FEB_TYPE_NONE;
+
+  if (IsMouseLockRequested())
+    return FEB_TYPE_FULLSCREEN_MOUSELOCK_BUTTONS;
+  return FEB_TYPE_FULLSCREEN_BUTTONS;
 }
 
 void FullscreenController::UpdateNotificationRegistrations() {

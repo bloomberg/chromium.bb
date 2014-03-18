@@ -351,8 +351,9 @@ bool HungRendererDialogView::UseNewStyleForThisDialog() const {
   // Use the old dialog style without Aero glass, otherwise the dialog will be
   // visually constrained to browser window bounds. See http://crbug.com/323278
   return ui::win::IsAeroGlassEnabled();
-#endif
+#else
   return views::DialogDelegateView::UseNewStyleForThisDialog();
+#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////

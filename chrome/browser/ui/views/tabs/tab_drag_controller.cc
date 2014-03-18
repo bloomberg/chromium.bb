@@ -96,8 +96,9 @@ bool IsDockedOrSnapped(const TabStrip* tab_strip) {
   ash::wm::WindowState* window_state =
       ash::wm::GetWindowState(tab_strip->GetWidget()->GetNativeWindow());
   return window_state->IsDocked() || window_state->IsSnapped();
-#endif
+#else
   return false;
+#endif
 }
 
 // Returns true if |bounds| contains the y-coordinate |y|. The y-coordinate

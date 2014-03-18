@@ -279,15 +279,13 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, MAYBE_FocusRestoreOnTabSwitch) {
   EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
 }
 
+// FindInPage on Mac doesn't use prepopulated values. Search there is global.
+#if !defined(OS_MACOSX) && !defined(USE_AURA)
 // Flaky because the test server fails to start? See: http://crbug.com/96594.
 // This tests that whenever you clear values from the Find box and close it that
 // it respects that and doesn't show you the last search, as reported in bug:
 // http://crbug.com/40121. For Aura see bug http://crbug.com/292299.
 IN_PROC_BROWSER_TEST_F(FindInPageTest, PrepopulateRespectBlank) {
-#if defined(OS_MACOSX) || defined(USE_AURA)
-  // FindInPage on Mac doesn't use prepopulated values. Search there is global.
-  return;
-#endif
   ASSERT_TRUE(test_server()->Start());
 
   // Make sure Chrome is in the foreground, otherwise sending input
@@ -338,6 +336,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, PrepopulateRespectBlank) {
   // value.
   EXPECT_EQ(base::string16(), GetFindBarText());
 }
+#endif
 
 // Flaky on Win. http://crbug.com/92467
 // Flaky on ChromeOS. http://crbug.com/118216

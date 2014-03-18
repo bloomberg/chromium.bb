@@ -77,15 +77,17 @@ bool IncognitoModePrefs::CanOpenBrowser(Profile* profile) {
   switch (GetAvailability(profile->GetPrefs())) {
     case IncognitoModePrefs::ENABLED:
       return true;
+
     case IncognitoModePrefs::DISABLED:
       return !profile->IsOffTheRecord();
+
     case IncognitoModePrefs::FORCED:
       return profile->IsOffTheRecord();
-    case IncognitoModePrefs::AVAILABILITY_NUM_TYPES:
+
+    default:
       NOTREACHED();
+      return false;
   }
-  NOTREACHED();
-  return false;
 }
 
 // static
@@ -96,6 +98,7 @@ bool IncognitoModePrefs::ArePlatformParentalControlsEnabled() {
   return base::win::IsParentalControlActivityLoggingOn();
 #elif defined(OS_ANDROID)
   return chrome::android::ChromiumApplication::AreParentalControlsEnabled();
-#endif
+#else
   return false;
+#endif
 }

@@ -65,21 +65,20 @@ class ContextMenuContentType {
                          const content::ContextMenuParams& params,
                          bool supports_custom_items);
 
-  const extensions::Extension* GetExtension() const;
+  const content::ContextMenuParams& params() const { return params_; }
 
-  content::ContextMenuParams params_;
-  content::WebContents* source_web_contents_;
-  Profile* profile_;
-  bool supports_custom_items_;
-  bool has_custom_items_;
+  const extensions::Extension* GetExtension() const;
 
  private:
   friend class ContextMenuContentTypeFactory;
   friend class ContextMenuContentTypeTest;
 
-  bool HasCustomItems(const std::vector<content::MenuItem>& items) const;
-  void Initialize();
   bool SupportsGroupInternal(int group);
+
+  const content::ContextMenuParams params_;
+  content::WebContents* source_web_contents_;
+  Profile* profile_;
+  const bool supports_custom_items_;
 
   DISALLOW_COPY_AND_ASSIGN(ContextMenuContentType);
 };

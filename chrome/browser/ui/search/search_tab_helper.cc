@@ -142,15 +142,15 @@ void RecordNewTabLoadTime(content::WebContents* contents) {
 
 // Returns the OmniboxView for |contents| or NULL if not available.
 OmniboxView* GetOmniboxView(content::WebContents* contents) {
-  if (!contents)
-    return NULL;
-
   // iOS and Android don't use the Instant framework.
-#if !defined(OS_IOS) && !defined(OS_ANDROID)
+#if defined(OS_IOS) || defined(OS_ANDROID)
+  return NULL;
+#else
+  if (contents)
+    return NULL;
   Browser* browser = chrome::FindBrowserWithWebContents(contents);
   return browser ? browser->window()->GetLocationBar()->GetOmniboxView() : NULL;
 #endif
-  return NULL;
 }
 
 }  // namespace

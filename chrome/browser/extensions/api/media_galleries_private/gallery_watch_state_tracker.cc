@@ -103,9 +103,9 @@ GalleryWatchStateTracker* GalleryWatchStateTracker::GetForProfile(
   DCHECK(profile);
   MediaGalleriesPrivateAPI* private_api =
       MediaGalleriesPrivateAPI::Get(profile);
-  if (!private_api)
-    return NULL;  // In unit tests, we don't have a MediaGalleriesPrivateAPI.
-  return private_api->GetGalleryWatchStateTracker();
+  // In unit tests, we don't have a MediaGalleriesPrivateAPI.
+  if (private_api)
+    return private_api->GetGalleryWatchStateTracker();
 #endif
   return NULL;
 }

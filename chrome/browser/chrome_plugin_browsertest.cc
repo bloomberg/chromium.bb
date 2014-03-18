@@ -246,11 +246,9 @@ IN_PROC_BROWSER_TEST_F(ChromePluginTest, DISABLED_Flash) {
   EnsureFlashProcessCount(1);
 }
 
+#if defined(OFFICIAL_BUILD)
 // Verify that the official builds have the known set of plugins.
 IN_PROC_BROWSER_TEST_F(ChromePluginTest, InstalledPlugins) {
-#if !defined(OFFICIAL_BUILD)
-  return;
-#endif
   const char* expected[] = {
     "Chrome PDF Viewer",
     "Shockwave Flash",
@@ -273,6 +271,7 @@ IN_PROC_BROWSER_TEST_F(ChromePluginTest, InstalledPlugins) {
     ASSERT_TRUE(j != plugins.size()) << "Didn't find " << expected[i];
   }
 }
+#endif
 
 #if defined(OS_WIN)
 
@@ -286,7 +285,7 @@ BOOL CALLBACK EnumerateChildren(HWND hwnd, LPARAM l_param) {
   return FALSE;
 }
 
-}
+}  // namespace
 
 // Test that if a background tab loads an NPAPI plugin, they are displayed after
 // switching to that page.  http://crbug.com/335900

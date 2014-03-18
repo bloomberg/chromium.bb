@@ -18,7 +18,7 @@ bool ContextMenuContentTypePanel::SupportsGroup(int group) {
     case ITEM_GROUP_LINK:
       // Checking link should take precedence before checking selection since on
       // Mac right-clicking a link will also make it selected.
-      return params_.unfiltered_link_url.is_valid();
+      return params().unfiltered_link_url.is_valid();
     case ITEM_GROUP_EDITABLE:
     case ITEM_GROUP_COPY:
       return ContextMenuContentType::SupportsGroup(group);

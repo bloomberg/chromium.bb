@@ -942,7 +942,8 @@ void BrowserView::UpdateFullscreenExitBubbleContent(
 bool BrowserView::ShouldHideUIForFullscreen() const {
 #if defined(USE_ASH)
   // Immersive mode needs UI for the slide-down top panel.
-  return IsFullscreen() && !immersive_mode_controller_->IsEnabled();
+  if (immersive_mode_controller_->IsEnabled())
+    return false;
 #endif
   return IsFullscreen();
 }

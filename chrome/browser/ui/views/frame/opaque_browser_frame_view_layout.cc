@@ -132,8 +132,9 @@ OpaqueBrowserFrameViewLayout::~OpaqueBrowserFrameViewLayout() {}
 bool OpaqueBrowserFrameViewLayout::ShouldAddDefaultCaptionButtons() {
 #if defined(OS_WIN)
   return !win8::IsSingleWindowMetroMode();
-#endif  // OS_WIN
+#else
   return true;
+#endif
 }
 
 void OpaqueBrowserFrameViewLayout::SetButtonOrdering(

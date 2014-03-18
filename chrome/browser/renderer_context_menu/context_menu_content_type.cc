@@ -28,9 +28,8 @@ bool IsDevToolsURL(const GURL& url) {
 }
 
 bool IsInternalResourcesURL(const GURL& url) {
-  if (!url.SchemeIs(content::kChromeUIScheme))
-    return false;
-  return url.host() == chrome::kChromeUISyncResourcesHost;
+  return url.SchemeIs(content::kChromeUIScheme) &&
+      (url.host() == chrome::kChromeUISyncResourcesHost);
 }
 
 }  // namespace
@@ -43,19 +42,10 @@ ContextMenuContentType::ContextMenuContentType(
       source_web_contents_(WebContents::FromRenderFrameHost(render_frame_host)),
       profile_(Profile::FromBrowserContext(
                    source_web_contents_->GetBrowserContext())),
-      supports_custom_items_(supports_custom_items),
-      has_custom_items_(false) {
-  Initialize();
+      supports_custom_items_(supports_custom_items) {
 }
 
 ContextMenuContentType::~ContextMenuContentType() {
-}
-
-void ContextMenuContentType::Initialize() {
-  // Save it in |has_custom_items_| so we don't have to repeatedly call
-  // HasCustomItems().
-  has_custom_items_ = supports_custom_items_ &&
-                      HasCustomItems(params_.custom_items);
 }
 
 const Extension* ContextMenuContentType::GetExtension() const {
@@ -69,22 +59,10 @@ const Extension* ContextMenuContentType::GetExtension() const {
       source_web_contents_->GetRenderViewHost());
 }
 
-bool ContextMenuContentType::HasCustomItems(
-    const std::vector<content::MenuItem>& items) const {
-  for (size_t i = 0; i < items.size(); ++i) {
-    if (IDC_CONTENT_CONTEXT_CUSTOM_FIRST + items[i].action >=
-        IDC_CONTENT_CONTEXT_CUSTOM_LAST) {
-      return false;
-    }
-    return true;
-  }
-  return false;
-}
-
 bool ContextMenuContentType::SupportsGroup(int group) {
   const bool has_selection = !params_.selection_text.empty();
 
-  if (has_custom_items_) {
+  if (supports_custom_items_ && !params_.custom_items.empty()) {
     if (group == ITEM_GROUP_CUSTOM)
       return true;
 
@@ -111,7 +89,8 @@ bool ContextMenuContentType::SupportsGroupInternal(int group) {
 
   switch (group) {
     case ITEM_GROUP_CUSTOM:
-      return has_custom_items_;
+      return supports_custom_items_ && !params_.custom_items.empty();
+
     case ITEM_GROUP_PAGE: {
       bool is_candidate =
           params_.media_type == WebContextMenuData::MediaTypeNone &&
@@ -124,57 +103,77 @@ bool ContextMenuContentType::SupportsGroupInternal(int group) {
           !IsDevToolsURL(params_.page_url) &&
           !IsInternalResourcesURL(params_.page_url);
     }
+
     case ITEM_GROUP_FRAME: {
+
       bool page_group_supported = SupportsGroupInternal(ITEM_GROUP_PAGE);
       return page_group_supported && !params_.frame_url.is_empty() &&
           !IsDevToolsURL(params_.frame_url) &&
           !IsInternalResourcesURL(params_.page_url);
     }
+
     case ITEM_GROUP_LINK:
       return has_link;
+
     case ITEM_GROUP_MEDIA_IMAGE:
       return params_.media_type == WebContextMenuData::MediaTypeImage;
+
     case ITEM_GROUP_SEARCHWEBFORIMAGE:
       // Image menu items imply search web for image item.
       return SupportsGroupInternal(ITEM_GROUP_MEDIA_IMAGE);
+
     case ITEM_GROUP_MEDIA_VIDEO:
       return params_.media_type == WebContextMenuData::MediaTypeVideo;
+
     case ITEM_GROUP_MEDIA_AUDIO:
       return params_.media_type == WebContextMenuData::MediaTypeAudio;
+
     case ITEM_GROUP_MEDIA_PLUGIN:
       return params_.media_type == WebContextMenuData::MediaTypePlugin;
+
     case ITEM_GROUP_MEDIA_FILE:
-#ifdef WEBCONTEXT_MEDIATYPEFILE_DEFINED
+#if defined(WEBCONTEXT_MEDIATYPEFILE_DEFINED)
       return params_.media_type == WebContextMenuData::MediaTypeFile;
-#endif
+#else
       return false;
+#endif
+
     case ITEM_GROUP_EDITABLE:
       return params_.is_editable;
+
     case ITEM_GROUP_COPY:
       return !params_.is_editable && has_selection;
+
     case ITEM_GROUP_SEARCH_PROVIDER:
       return has_selection;
+
     case ITEM_GROUP_PRINT: {
       bool enable = has_selection && !IsDevToolsURL(params_.page_url);
       // Image menu items also imply print items.
       return enable || SupportsGroupInternal(ITEM_GROUP_MEDIA_IMAGE);
     }
+
     case ITEM_GROUP_ALL_EXTENSION:
       return !IsDevToolsURL(params_.page_url);
+
     case ITEM_GROUP_CURRENT_EXTENSION:
       return false;
+
     case ITEM_GROUP_DEVELOPER:
       return true;
+
     case ITEM_GROUP_DEVTOOLS_UNPACKED_EXT:
       return false;
+
     case ITEM_GROUP_PRINT_PREVIEW:
 #if defined(ENABLE_FULL_PRINTING)
       return true;
 #else
       return false;
 #endif
-  }
 
-  NOTREACHED();
-  return false;
+    default:
+      NOTREACHED();
+      return false;
+  }
 }

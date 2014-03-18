@@ -94,16 +94,12 @@ void RunTestFunction(DevToolsWindow* window, const char* test_name) {
           "    '' + (window.uiTests && (typeof uiTests.runTest)));",
           &result));
 
-  if (result == "function") {
-    ASSERT_TRUE(
-        content::ExecuteScriptAndExtractString(
-            window->GetRenderViewHost(),
-            base::StringPrintf("uiTests.runTest('%s')", test_name),
-            &result));
-    EXPECT_EQ("[OK]", result);
-  } else {
-    FAIL() << "DevTools front-end is broken.";
-  }
+  ASSERT_EQ("function", result) << "DevTools front-end is broken.";
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      window->GetRenderViewHost(),
+      base::StringPrintf("uiTests.runTest('%s')", test_name),
+      &result));
+  EXPECT_EQ("[OK]", result);
 }
 
 }  // namespace
@@ -323,7 +319,7 @@ class DevToolsUnresponsiveBeforeUnloadTest: public DevToolsBeforeUnloadTest {
 };
 
 void TimeoutCallback(const std::string& timeout_message) {
-  FAIL() << timeout_message;
+  ADD_FAILURE() << timeout_message;
   base::MessageLoop::current()->Quit();
 }
 
@@ -496,13 +492,11 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
   }
 
   static void TerminateWorkerOnIOThread(scoped_refptr<WorkerData> worker_data) {
-    if (WorkerService::GetInstance()->TerminateWorker(
-            worker_data->worker_process_id, worker_data->worker_route_id)) {
-      WorkerService::GetInstance()->AddObserver(
-          new WorkerTerminationObserver(worker_data.get()));
-      return;
-    }
-    FAIL() << "Failed to terminate worker.\n";
+    if (!WorkerService::GetInstance()->TerminateWorker(
+        worker_data->worker_process_id, worker_data->worker_route_id))
+      FAIL() << "Failed to terminate worker.\n";
+    WorkerService::GetInstance()->AddObserver(
+        new WorkerTerminationObserver(worker_data.get()));
   }
 
   static void TerminateWorker(scoped_refptr<WorkerData> worker_data) {

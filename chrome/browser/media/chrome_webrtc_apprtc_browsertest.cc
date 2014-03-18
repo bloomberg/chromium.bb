@@ -183,8 +183,6 @@ class WebRtcApprtcBrowserTest : public WebRtcTestBase {
     VLOG(1) << "Running " << command_line.GetCommandLineString();
     return base::LaunchProcess(command_line, base::LaunchOptions(),
                                &firefox_);
-
-    return true;
   }
 
  private:

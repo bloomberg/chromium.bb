@@ -46,9 +46,8 @@ void AttemptRestartWithModeSwitch() {
 #if defined(USE_AURA)
   // This function should be called only from non aura code path.
   // In aura/ash windows world browser process is always non metro.
-  CHECK(false);
-  return;
-#endif
+  NOTREACHED();
+#else
   // The kRestartSwitchMode preference does not exists for Windows 7 and older
   // operating systems so there is no need for OS version check.
   PrefService* prefs = g_browser_process->local_state();
@@ -60,6 +59,7 @@ void AttemptRestartWithModeSwitch() {
                      upgrade_util::kRelaunchModeMetro);
   }
   AttemptRestart();
+#endif
 }
 
 #if defined(USE_AURA)

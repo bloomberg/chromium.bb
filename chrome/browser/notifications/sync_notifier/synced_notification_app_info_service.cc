@@ -42,14 +42,15 @@ SyncedNotificationAppInfoService::MergeDataAndStartSyncing(
   syncer::SyncMergeResult merge_result(syncer::SYNCED_NOTIFICATION_APP_INFO);
 
   // There should only be one sync data in the list for this data type.
-  if (initial_sync_data.size() != 1 && initial_sync_data.size() != 0) {
+  if (initial_sync_data.size() > 1) {
     LOG(ERROR) << "Too many app infos over sync";
   }
 
-  for (syncer::SyncDataList::const_iterator it = initial_sync_data.begin();
-       it != initial_sync_data.end();
-       ++it) {
-    const syncer::SyncData& sync_data = *it;
+  // TODO(petewil): Today we can only handle a single object, so we simply check
+  // for a non-empty list.  If in the future we can ever handle more, convert
+  // this whole block to be a loop over all of |initial_sync_data|.
+  if (!initial_sync_data.empty()) {
+    const syncer::SyncData& sync_data = initial_sync_data.front();
     DCHECK_EQ(syncer::SYNCED_NOTIFICATION_APP_INFO, sync_data.GetDataType());
 
     const sync_pb::SyncedNotificationAppInfoSpecifics& specifics =
@@ -69,10 +70,6 @@ SyncedNotificationAppInfoService::MergeDataAndStartSyncing(
 
       ProcessIncomingAppInfoProtobuf(app_info);
     }
-
-    // TODO(petewil): Today we can only handle a single object, so we break
-    // here.  In the future if we can ever handle more, remove the next line.
-    break;
   }
 
   return merge_result;

@@ -201,7 +201,6 @@ bool SpellingMenuObserver::IsCommandIdSupported(int command_id) {
     default:
       return false;
   }
-  return false;
 }
 
 bool SpellingMenuObserver::IsCommandIdChecked(int command_id) {
@@ -210,7 +209,7 @@ bool SpellingMenuObserver::IsCommandIdChecked(int command_id) {
   if (command_id == IDC_CONTENT_CONTEXT_SPELLING_TOGGLE)
     return integrate_spelling_service_.GetValue() &&
         !proxy_->GetProfile()->IsOffTheRecord();
-  else if (command_id == IDC_CONTENT_CONTEXT_AUTOCORRECT_SPELLING_TOGGLE)
+  if (command_id == IDC_CONTENT_CONTEXT_AUTOCORRECT_SPELLING_TOGGLE)
     return autocorrect_spelling_.GetValue() &&
         !proxy_->GetProfile()->IsOffTheRecord();
   return false;
@@ -244,7 +243,6 @@ bool SpellingMenuObserver::IsCommandIdEnabled(int command_id) {
     default:
       return false;
   }
-  return false;
 }
 
 void SpellingMenuObserver::ExecuteCommand(int command_id) {

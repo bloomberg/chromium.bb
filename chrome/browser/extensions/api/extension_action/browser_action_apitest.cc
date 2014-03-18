@@ -59,9 +59,9 @@ gfx::ImageSkia AddBackgroundForViews(const Extension* extension,
   if (extensions::DevModeBubbleController::IsDevModeExtension(extension))
     bg = *rb.GetImageSkiaNamed(IDR_BROWSER_ACTION_HIGHLIGHT);
   return gfx::ImageSkiaOperations::CreateSuperimposedImage(bg, icon);
-#endif
-
+#else
   return icon;
+#endif
 }
 
 bool ImagesAreEqualAtScale(const gfx::ImageSkia& i1,
