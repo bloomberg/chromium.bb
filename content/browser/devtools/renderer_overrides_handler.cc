@@ -307,7 +307,7 @@ RendererOverridesHandler::PageHandleJavaScriptDialog(
           web_contents->GetDelegate()->GetJavaScriptDialogManager();
       if (manager && manager->HandleJavaScriptDialog(
               web_contents, accept, prompt_override_ptr)) {
-        return NULL;
+        return command->SuccessResponse(new base::DictionaryValue());
       }
     }
   }
