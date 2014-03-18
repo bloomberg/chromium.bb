@@ -59,6 +59,8 @@ public:
     bool contains(ActiveDOMObject* object) const { return m_activeDOMObjects.contains(object); }
     bool hasPendingActivity() const;
 
+    virtual void removeAndNotifyAllObservers() OVERRIDE;
+
 protected:
     explicit ContextLifecycleNotifier(ExecutionContext*);
 

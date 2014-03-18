@@ -93,9 +93,6 @@ WorkerGlobalScope::WorkerGlobalScope(const KURL& url, const String& userAgent, W
 
 WorkerGlobalScope::~WorkerGlobalScope()
 {
-#if !ENABLE(OILPAN)
-    dispose();
-#endif
 }
 
 void WorkerGlobalScope::applyContentSecurityPolicyFromString(const String& policy, ContentSecurityPolicyHeaderType contentSecurityPolicyType)
@@ -196,18 +193,21 @@ void WorkerGlobalScope::dispose()
 {
     ASSERT(thread()->isCurrentThread());
 
-    // Notify proxy that we are going away. This can free the WorkerThread object, so do not access it after this.
-    thread()->workerReportingProxy().workerGlobalScopeDestroyed();
-
     clearScript();
     clearInspector();
     setClient(0);
 
-    // The thread reference isn't currently cleared, as the execution
-    // context's thread is accessed by GCed lifetime objects when
-    // they're finalized.
-    // FIXME: oilpan: avoid by explicitly removing the WorkerGlobalScope
-    // as an observable context right here.
+    // Observers must not access the context of a disposed WorkerGlobalScope
+    // lacking a thread object.
+    //
+    // Notify them now that the context has been destroyed and explicitly remove
+    // them as observers. If this is delayed until the LifecycleNotifier of the
+    // WorkerGlobalScope is garbage collected and destructed, some observers
+    // may have access to the disposed object (it all depends on the order
+    // the garbage collector finalizes these objects.) Prevent that situation from
+    // arising here.
+    removeAllLifecycleObservers();
+    clearThread();
 }
 
 void WorkerGlobalScope::importScripts(const Vector<String>& urls, ExceptionState& exceptionState)

@@ -64,6 +64,8 @@ protected:
     {
     }
 
+    virtual void removeAndNotifyAllObservers();
+
     Context* context() const { return m_context; }
 
     enum IterationType {
@@ -86,7 +88,7 @@ private:
 };
 
 template<typename T>
-inline LifecycleNotifier<T>::~LifecycleNotifier()
+inline void LifecycleNotifier<T>::removeAndNotifyAllObservers()
 {
     TemporaryChange<IterationType> scope(this->m_iterating, IteratingOverAll);
     for (typename ObserverSet::iterator it = m_observers.begin(); it != m_observers.end(); it = m_observers.begin()) {
@@ -95,6 +97,12 @@ inline LifecycleNotifier<T>::~LifecycleNotifier()
         ASSERT(observer->lifecycleContext() == m_context);
         observer->contextDestroyed();
     }
+}
+
+template<typename T>
+inline LifecycleNotifier<T>::~LifecycleNotifier()
+{
+    removeAndNotifyAllObservers();
 }
 
 template<typename T>

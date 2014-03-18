@@ -150,6 +150,8 @@ namespace WebCore {
         virtual EventTarget* errorEventTarget() OVERRIDE FINAL;
         virtual void didUpdateSecurityOrigin() OVERRIDE FINAL { }
 
+        void clearThread() { m_thread = 0; }
+
         KURL m_url;
         String m_userAgent;
 

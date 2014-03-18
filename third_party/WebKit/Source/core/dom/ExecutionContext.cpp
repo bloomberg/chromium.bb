@@ -96,6 +96,11 @@ void ExecutionContext::stopActiveDOMObjects()
     lifecycleNotifier().notifyStoppingActiveDOMObjects();
 }
 
+void ExecutionContext::removeAllLifecycleObservers()
+{
+    lifecycleNotifier().removeAndNotifyAllObservers();
+}
+
 unsigned ExecutionContext::activeDOMObjectCount()
 {
     return lifecycleNotifier().activeDOMObjects().size();
