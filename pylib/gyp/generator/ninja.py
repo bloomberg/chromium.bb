@@ -619,12 +619,14 @@ class NinjaWriter:
     env = self.GetToolchainEnv()
     all_outputs = []
     for rule in rules:
-      # First write out a rule for the rule action.
-      name = '%s_%s' % (rule['rule_name'],
-                        hashlib.md5(self.qualified_target).hexdigest())
       # Skip a rule with no action and no inputs.
       if 'action' not in rule and not rule.get('rule_sources', []):
         continue
+
+      # First write out a rule for the rule action.
+      name = '%s_%s' % (rule['rule_name'],
+                        hashlib.md5(self.qualified_target).hexdigest())
+
       args = rule['action']
       description = self.GenerateDescription(
           'RULE',
@@ -653,6 +655,8 @@ class NinjaWriter:
           return path.replace('\\', '/')
         return path
 
+      inputs = [self.GypPathToNinja(i, env) for i in rule.get('inputs', [])]
+
       # For each source file, write an edge that generates all the outputs.
       for source in rule.get('rule_sources', []):
         source = os.path.normpath(source)
@@ -663,9 +667,6 @@ class NinjaWriter:
         outputs = [self.ExpandRuleVariables(o, root, dirname,
                                             source, ext, basename)
                    for o in rule['outputs']]
-        inputs = [self.ExpandRuleVariables(i, root, dirname,
-                                           source, ext, basename)
-                  for i in rule.get('inputs', [])]
 
         if int(rule.get('process_outputs_as_sources', False)):
           extra_sources += outputs
@@ -703,7 +704,6 @@ class NinjaWriter:
           else:
             assert var == None, repr(var)
 
-        inputs = [self.GypPathToNinja(i, env) for i in inputs]
         outputs = [self.GypPathToNinja(o, env) for o in outputs]
         extra_bindings.append(('unique_name',
             hashlib.md5(outputs[0]).hexdigest()))
