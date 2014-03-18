@@ -501,6 +501,8 @@ pointer_handle_enter(void *data, struct wl_pointer *pointer,
 	else if (cursor) {
 		image = display->default_cursor->images[0];
 		buffer = wl_cursor_image_get_buffer(image);
+		if (!buffer)
+			return;
 		wl_pointer_set_cursor(pointer, serial,
 				      display->cursor_surface,
 				      image->hotspot_x,
@@ -715,8 +717,16 @@ registry_handle_global(void *data, struct wl_registry *registry,
 		d->shm = wl_registry_bind(registry, name,
 					  &wl_shm_interface, 1);
 		d->cursor_theme = wl_cursor_theme_load(NULL, 32, d->shm);
+		if (!d->cursor_theme) {
+			fprintf(stderr, "unable to load default theme\n");
+			return;
+		}
 		d->default_cursor =
 			wl_cursor_theme_get_cursor(d->cursor_theme, "left_ptr");
+		if (!d->default_cursor) {
+			fprintf(stderr, "unable to load default left pointer\n");
+			// TODO: abort ?
+		}
 	}
 }
 

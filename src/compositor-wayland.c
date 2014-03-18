@@ -968,7 +968,8 @@ input_set_cursor(struct wayland_input *input)
 
 	image = input->compositor->cursor->images[0];
 	buffer = wl_cursor_image_get_buffer(image);
-
+	if (!buffer)
+		return;
 
 	wl_pointer_set_cursor(input->parent.pointer, input->enter_serial,
 			      input->parent.cursor.surface,
@@ -1428,6 +1429,10 @@ create_cursor(struct wayland_compositor *c, struct weston_config *config)
 	weston_config_section_get_int(s, "cursor-size", &size, 32);
 
 	c->cursor_theme = wl_cursor_theme_load(theme, size, c->parent.shm);
+	if (!c->cursor_theme) {
+		fprintf(stderr, "could not load cursor theme\n");
+		return;
+	}
 
 	free(theme);
 
