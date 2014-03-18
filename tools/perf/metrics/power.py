@@ -5,12 +5,13 @@
 import logging
 
 from metrics import Metric
+from telemetry.core.platform import factory
 
 
 class PowerMetric(Metric):
   """A metric for measuring power usage."""
 
-  _enabled = True
+  enabled = True
 
   def __init__(self):
     super(PowerMetric, self).__init__()
@@ -36,14 +37,24 @@ class PowerMetric(Metric):
 
   @classmethod
   def CustomizeBrowserOptions(cls, options):
-    PowerMetric._enabled = options.report_root_metrics
+    PowerMetric.enabled = options.report_root_metrics
+
+    # Friendly informational messages if measurement won't run.
+    system_supports_power_monitoring = (
+        factory.GetPlatformBackendForCurrentOS().CanMonitorPowerAsync())
+    if system_supports_power_monitoring:
+      if not PowerMetric.enabled:
+        logging.warning(
+            "--report-root-metrics omitted, power measurement disabled.")
+    else:
+      logging.info("System doesn't support power monitoring, power measurement"
+          " disabled.")
 
   def Start(self, _, tab):
-    if not PowerMetric._enabled:
+    if not PowerMetric.enabled:
       return
 
     if not tab.browser.platform.CanMonitorPowerAsync():
-      logging.warning("System doesn't support async power monitoring.")
       return
 
     self._results = None
@@ -54,7 +65,7 @@ class PowerMetric(Metric):
     self._running = True
 
   def Stop(self, _, tab):
-    if not PowerMetric._enabled:
+    if not PowerMetric.enabled:
       return
 
     if not tab.browser.platform.CanMonitorPowerAsync():
