@@ -191,9 +191,12 @@ void Scheduler::SetupNextBeginImplFrameIfNeeded() {
     // will not give us a BeginImplFrame until the commit completes.  See
     // crbug.com/317430 for an example of a swap ack being held on commit. Thus
     // we set a repeating timer to poll on ProcessScheduledActions until we
-    // successfully reach BeginImplFrame.
-    if (IsBeginMainFrameSentOrStarted())
+    // successfully reach BeginImplFrame. Synchronous compositor does not use
+    // frame rate controller or have the circular wait in the bug.
+    if (IsBeginMainFrameSentOrStarted() &&
+        !settings_.using_synchronous_renderer_compositor) {
       needs_advance_commit_state_timer = true;
+    }
   }
   if (needs_advance_commit_state_timer !=
       advance_commit_state_timer_.IsRunning()) {
