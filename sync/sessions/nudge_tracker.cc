@@ -201,6 +201,39 @@ ModelTypeSet NudgeTracker::GetThrottledTypes() const {
   return result;
 }
 
+ModelTypeSet NudgeTracker::GetNudgedTypes() const {
+  ModelTypeSet result;
+  for (TypeTrackerMap::const_iterator it = type_trackers_.begin();
+       it != type_trackers_.end(); ++it) {
+    if (it->second.HasLocalChangePending()) {
+      result.Put(it->first);
+    }
+  }
+  return result;
+}
+
+ModelTypeSet NudgeTracker::GetNotifiedTypes() const {
+  ModelTypeSet result;
+  for (TypeTrackerMap::const_iterator it = type_trackers_.begin();
+       it != type_trackers_.end(); ++it) {
+    if (it->second.HasPendingInvalidation()) {
+      result.Put(it->first);
+    }
+  }
+  return result;
+}
+
+ModelTypeSet NudgeTracker::GetRefreshRequestedTypes() const {
+  ModelTypeSet result;
+  for (TypeTrackerMap::const_iterator it = type_trackers_.begin();
+       it != type_trackers_.end(); ++it) {
+    if (it->second.HasRefreshRequestPending()) {
+      result.Put(it->first);
+    }
+  }
+  return result;
+}
+
 void NudgeTracker::SetLegacyNotificationHint(
     ModelType type,
     sync_pb::DataTypeProgressMarker* progress) const {
