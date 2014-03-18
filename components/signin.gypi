@@ -8,10 +8,10 @@
       'target_name': 'signin_core',
       'type': 'static_library',
       'dependencies': [
-        'encryptor',
-        'webdata_common',
         '../base/base.gyp:base',
         '../sql/sql.gyp:sql',
+        'os_crypt',
+        'webdata_common',
       ],
       'include_dirs': [
         '..',

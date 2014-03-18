@@ -4,7 +4,7 @@
 
 #include "components/sync_driver/system_encryptor.h"
 
-#include "components/encryptor/os_crypt.h"
+#include "components/os_crypt/os_crypt.h"
 
 namespace browser_sync {
 

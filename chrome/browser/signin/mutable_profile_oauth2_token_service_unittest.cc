@@ -19,7 +19,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_MACOSX)
-#include "components/encryptor/os_crypt.h"
+#include "components/os_crypt/os_crypt.h"
 #endif
 
 // Defining constant here to handle backward compatiblity tests, but this

@@ -1,7 +1,7 @@
 include_rules = [
+  "+components/os_crypt",
   # TODO(joi): Perhaps PrefRegistrySyncable should be a separate
   # component since it is currently in the same component as
   # UserPrefs, which uses content::BrowserContext.
   "+components/user_prefs/pref_registry_syncable.h",
-  "+components/encryptor",
 ]

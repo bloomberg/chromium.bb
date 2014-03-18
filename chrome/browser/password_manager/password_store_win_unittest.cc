@@ -20,7 +20,7 @@
 #include "chrome/browser/webdata/logins_table.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/encryptor/ie7_password_win.h"
+#include "components/os_crypt/ie7_password_win.h"
 #include "components/password_manager/core/browser/password_form_data.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"

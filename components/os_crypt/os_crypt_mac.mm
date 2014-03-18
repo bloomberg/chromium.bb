@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/encryptor/os_crypt.h"
+#include "components/os_crypt/os_crypt.h"
 
 #include <CommonCrypto/CommonCryptor.h>  // for kCCBlockSizeAES128
 
@@ -10,8 +10,8 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/encryptor/encryptor_switches.h"
-#include "components/encryptor/keychain_password_mac.h"
+#include "components/os_crypt/keychain_password_mac.h"
+#include "components/os_crypt/os_crypt_switches.h"
 #include "crypto/apple_keychain.h"
 #include "crypto/encryptor.h"
 #include "crypto/symmetric_key.h"
@@ -44,7 +44,7 @@ const char kEncryptionVersionPrefix[] = "v10";
 crypto::SymmetricKey* GetEncryptionKey() {
   static bool mock_keychain_command_line_flag =
       CommandLine::ForCurrentProcess()->HasSwitch(
-          encryptor::switches::kUseMockKeychain);
+          os_crypt::switches::kUseMockKeychain);
 
   std::string password;
   if (use_mock_keychain || mock_keychain_command_line_flag) {

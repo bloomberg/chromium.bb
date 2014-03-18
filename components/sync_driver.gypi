@@ -8,9 +8,9 @@
       'target_name': 'sync_driver',
       'type': 'static_library',
       'dependencies': [
-        'encryptor',
         '../base/base.gyp:base',
         '../sync/sync.gyp:sync',
+        'os_crypt',
       ],
       'include_dirs': [
         '..',

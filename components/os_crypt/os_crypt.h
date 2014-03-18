@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_ENCRYPTOR_OS_CRYPT_H_
-#define COMPONENTS_ENCRYPTOR_OS_CRYPT_H_
+#ifndef COMPONENTS_OS_CRYPT_OS_CRYPT_H_
+#define COMPONENTS_OS_CRYPT_OS_CRYPT_H_
 
 #include <string>
 
@@ -45,4 +45,4 @@ class OSCrypt {
   DISALLOW_IMPLICIT_CONSTRUCTORS(OSCrypt);
 };
 
-#endif  // COMPONENTS_ENCRYPTOR_OS_CRYPT_H_
+#endif  // COMPONENTS_OS_CRYPT_OS_CRYPT_H_

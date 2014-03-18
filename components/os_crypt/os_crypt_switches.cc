@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/encryptor/encryptor_switches.h"
+#include "components/os_crypt/os_crypt_switches.h"
 
-namespace encryptor {
+namespace os_crypt {
 namespace switches {
 
 #if defined(OS_MACOSX)
@@ -14,4 +14,4 @@ const char kUseMockKeychain[] = "use-mock-keychain";
 #endif  // OS_MACOSX
 
 }  // namespace switches
-}  // namespace encryptor
+}  // namespace os_crypt

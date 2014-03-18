@@ -24,7 +24,7 @@
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
 #include "components/autofill/core/browser/phone_number.h"
 #include "components/autofill/core/browser/phone_number_i18n.h"
-#include "components/encryptor/os_crypt.h"
+#include "components/os_crypt/os_crypt.h"
 
 using base::win::RegKey;
 

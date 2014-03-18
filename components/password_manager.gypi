@@ -8,13 +8,13 @@
       'target_name': 'password_manager_core_browser',
       'type': 'static_library',
       'dependencies': [
-        'autofill_core_common',
-        'encryptor',
-        'password_manager_core_common',
         '../base/base.gyp:base',
         '../net/net.gyp:net',
         '../sql/sql.gyp:sql',
         '../url/url.gyp:url_lib',
+        'autofill_core_common',
+        'os_crypt',
+        'password_manager_core_common',
       ],
       'include_dirs': [
         '..',

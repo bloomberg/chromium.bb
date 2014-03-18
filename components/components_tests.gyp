@@ -45,8 +45,8 @@
             'autofill/core/browser/password_generator_unittest.cc',
             'autofill/core/browser/personal_data_manager_unittest.cc',
             'autofill/core/browser/phone_field_unittest.cc',
-            'autofill/core/browser/phone_number_unittest.cc',
             'autofill/core/browser/phone_number_i18n_unittest.cc',
+            'autofill/core/browser/phone_number_unittest.cc',
             'autofill/core/browser/validation_unittest.cc',
             'autofill/core/browser/webdata/autofill_profile_syncable_service_unittest.cc',
             'autofill/core/browser/webdata/autofill_table_unittest.cc',
@@ -54,8 +54,6 @@
             'autofill/core/common/form_data_unittest.cc',
             'autofill/core/common/form_field_data_unittest.cc',
             'autofill/core/common/password_form_fill_data_unittest.cc',
-            'keyed_service/content/browser_context_dependency_manager_unittest.cc',
-            'keyed_service/core/dependency_graph_unittest.cc',
             'cloud_devices/printer_description_unittest.cc',
             'dom_distiller/core/article_entry_unittest.cc',
             'dom_distiller/core/distiller_unittest.cc',
@@ -69,9 +67,14 @@
             'json_schema/json_schema_validator_unittest.cc',
             'json_schema/json_schema_validator_unittest_base.cc',
             'json_schema/json_schema_validator_unittest_base.h',
+            'keyed_service/content/browser_context_dependency_manager_unittest.cc',
+            'keyed_service/core/dependency_graph_unittest.cc',
             'language_usage_metrics/language_usage_metrics_unittest.cc',
             'metrics/metrics_hashes_unittest.cc',
             'navigation_interception/intercept_navigation_resource_throttle_unittest.cc',
+            'os_crypt/ie7_password_win_unittest.cc',
+            'os_crypt/keychain_password_mac_unittest.mm',
+            'os_crypt/os_crypt_unittest.cc',
             'password_manager/core/browser/login_database_unittest.cc',
             'password_manager/core/browser/password_form_manager_unittest.cc',
             'password_manager/core/browser/password_generation_manager_unittest.cc',
@@ -121,9 +124,6 @@
             'variations/variations_seed_processor_unittest.cc',
             'variations/variations_seed_simulator_unittest.cc',
             'visitedlink/test/visitedlink_unittest.cc',
-            'encryptor/keychain_password_mac_unittest.mm',
-            'encryptor/ie7_password_unittest_win.cc',
-            'encryptor/os_crypt_unittest.cc',
             'web_modal/web_contents_modal_dialog_manager_unittest.cc',
           ],
           'include_dirs': [
@@ -165,8 +165,8 @@
             'components.gyp:dom_distiller_core',
             'components.gyp:dom_distiller_test_support',
 
-            # Dependencies of encryptor
-            'components.gyp:encryptor',
+            # Dependencies of os_crypt
+            'components.gyp:os_crypt',
 
             # Dependencies of json_schema
             'components.gyp:json_schema',

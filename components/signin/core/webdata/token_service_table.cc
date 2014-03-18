@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/logging.h"
-#include "components/encryptor/os_crypt.h"
+#include "components/os_crypt/os_crypt.h"
 #include "components/webdata/common/web_database.h"
 #include "sql/statement.h"
 

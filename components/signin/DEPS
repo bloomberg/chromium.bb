@@ -1,5 +1,5 @@
 include_rules = [
-  "+components/encryptor",
+  "+components/os_crypt",
   "+components/webdata/common",
   "+google_apis/gaia/gaia_urls.h",
   "+grit",  # For generated headers

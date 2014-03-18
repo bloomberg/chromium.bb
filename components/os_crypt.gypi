@@ -5,7 +5,7 @@
 {
   'targets': [
     {
-      'target_name': 'encryptor',
+      'target_name': 'os_crypt',
       'type': 'static_library',
       'include_dirs': [
         '..',
@@ -15,29 +15,29 @@
         '../crypto/crypto.gyp:crypto',
       ],
       'sources': [
-        'encryptor/encryptor_switches.cc',
-        'encryptor/encryptor_switches.h',
-        'encryptor/ie7_password_win.cc',
-        'encryptor/ie7_password_win.h',
-        'encryptor/keychain_password_mac.h',
-        'encryptor/keychain_password_mac.mm',
-        'encryptor/os_crypt.h',
-        'encryptor/os_crypt_mac.mm',
-        'encryptor/os_crypt_posix.cc',
-        'encryptor/os_crypt_win.cc',
+        'os_crypt/ie7_password_win.cc',
+        'os_crypt/ie7_password_win.h',
+        'os_crypt/keychain_password_mac.h',
+        'os_crypt/keychain_password_mac.mm',
+        'os_crypt/os_crypt.h',
+        'os_crypt/os_crypt_mac.mm',
+        'os_crypt/os_crypt_posix.cc',
+        'os_crypt/os_crypt_switches.cc',
+        'os_crypt/os_crypt_switches.h',
+        'os_crypt/os_crypt_win.cc',
       ],
       'conditions': [
         ['OS=="mac"', {
           'sources!': [
-            'encryptor/os_crypt_posix.cc',
+            'os_crypt/os_crypt_posix.cc',
           ],
         }],
       ],
       'target_conditions': [
         ['OS=="ios"', {
           'sources/': [
-            ['include', '^encryptor/keychain_password_mac\\.mm$'],
-            ['include', '^encryptor/os_crypt_mac\\.mm$'],
+            ['include', '^os_crypt/keychain_password_mac\\.mm$'],
+            ['include', '^os_crypt/os_crypt_mac\\.mm$'],
           ],
         }],
       ],

@@ -1,6 +1,6 @@
 include_rules = [
   "+components/autofill/core/common",
-  "+components/encryptor",
+  "+components/os_crypt",
   "+components/password_manager/core",
   "+net/base",
   "+sql",

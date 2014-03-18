@@ -12,7 +12,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "components/encryptor/encryptor_switches.h"
+#include "components/os_crypt/os_crypt_switches.h"
 
 #if defined(USE_AURA)
 #include "ui/wm/core/wm_core_switches.h"
@@ -66,7 +66,7 @@ void PrepareBrowserCommandLineForTests(CommandLine* command_line) {
 
 #if defined(OS_MACOSX)
   // Use mock keychain on mac to prevent blocking permissions dialogs.
-  command_line->AppendSwitch(encryptor::switches::kUseMockKeychain);
+  command_line->AppendSwitch(os_crypt::switches::kUseMockKeychain);
 #endif
 
   command_line->AppendSwitch(switches::kDisableComponentUpdate);

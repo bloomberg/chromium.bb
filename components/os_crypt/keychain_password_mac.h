@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_ENCRYPTOR_KEYCHAIN_PASSWORD_MAC_H_
-#define COMPONENTS_ENCRYPTOR_KEYCHAIN_PASSWORD_MAC_H_
+#ifndef COMPONENTS_OS_CRYPT_KEYCHAIN_PASSWORD_MAC_H_
+#define COMPONENTS_OS_CRYPT_KEYCHAIN_PASSWORD_MAC_H_
 
 #include <string>
 
@@ -33,4 +33,4 @@ class KeychainPassword {
   DISALLOW_COPY_AND_ASSIGN(KeychainPassword);
 };
 
-#endif  // COMPONENTS_ENCRYPTOR_KEYCHAIN_PASSWORD_MAC_H_
+#endif  // COMPONENTS_OS_CRYPT_KEYCHAIN_PASSWORD_MAC_H_

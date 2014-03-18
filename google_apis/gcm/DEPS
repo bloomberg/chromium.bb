@@ -7,7 +7,7 @@ include_rules = [
   "+base",
   "+testing",
 
-  "+components/encryptor",
+  "+components/os_crypt",
   "+google",  # For third_party/protobuf/src.
   "+net",
   "+third_party/leveldatabase",

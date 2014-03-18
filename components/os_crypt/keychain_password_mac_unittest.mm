@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/encryptor/keychain_password_mac.h"
+#include "components/os_crypt/keychain_password_mac.h"
 
 #include "crypto/mock_apple_keychain.h"
 #include "testing/gtest/include/gtest/gtest.h"

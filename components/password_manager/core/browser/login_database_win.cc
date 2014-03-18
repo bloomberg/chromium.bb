@@ -5,7 +5,7 @@
 #include "components/password_manager/core/browser/login_database.h"
 
 #include "base/strings/string_util.h"
-#include "components/encryptor/os_crypt.h"
+#include "components/os_crypt/os_crypt.h"
 
 LoginDatabase::EncryptionResult LoginDatabase::EncryptedString(
     const base::string16& plain_text,

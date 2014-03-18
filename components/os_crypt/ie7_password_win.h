@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_ENCRYPTOR_IE7_PASSWORD_WIN_H_
-#define COMPONENTS_ENCRYPTOR_IE7_PASSWORD_WIN_H_
+#ifndef COMPONENTS_OS_CRYPT_IE7_PASSWORD_WIN_H_
+#define COMPONENTS_OS_CRYPT_IE7_PASSWORD_WIN_H_
 
 #include <windows.h>
 #include <string>
@@ -51,4 +51,4 @@ std::wstring GetUrlHash(const std::wstring& url);
 
 }  // namespace ie7_password
 
-#endif  // COMPONENTS_ENCRYPTOR_IE7_PASSWORD_WIN_H_
+#endif  // COMPONENTS_OS_CRYPT_IE7_PASSWORD_WIN_H_

@@ -13,8 +13,8 @@
 #include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
-#include "components/encryptor/encryptor_switches.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/os_crypt/os_crypt_switches.h"
 #include "components/password_manager/core/browser/login_database.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_default.h"
@@ -148,7 +148,7 @@ KeyedService* PasswordStoreFactory::BuildServiceInstanceFor(
 #elif defined(OS_MACOSX)
   crypto::AppleKeychain* keychain =
       CommandLine::ForCurrentProcess()->HasSwitch(
-          encryptor::switches::kUseMockKeychain) ?
+          os_crypt::switches::kUseMockKeychain) ?
           new crypto::MockAppleKeychain() : new crypto::AppleKeychain();
   ps = new PasswordStoreMac(
       main_thread_runner, db_thread_runner, keychain, login_db.release());
