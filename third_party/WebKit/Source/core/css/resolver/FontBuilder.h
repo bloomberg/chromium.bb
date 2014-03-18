@@ -125,6 +125,8 @@ private:
     // is changed, FontBuilder tracks the need to update
     // style->font() with this bool.
     bool m_fontDirty;
+
+    friend class FontBuilderTest;
 };
 
 }

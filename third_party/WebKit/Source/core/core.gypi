@@ -3300,6 +3300,7 @@
             'css/RuleSetTest.cpp',
             'css/MediaQuerySetTest.cpp',
             'css/analyzer/DescendantInvalidationSetTest.cpp',
+            'css/resolver/FontBuilderTest.cpp',
             'dom/ActiveDOMObjectTest.cpp',
             'dom/DOMImplementationTest.cpp',
             'css/parser/BisonCSSParserTest.cpp',

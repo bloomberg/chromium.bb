@@ -63,6 +63,7 @@ FontBuilder::FontBuilder()
     : m_document(0)
     , m_useSVGZoomRules(false)
     , m_fontSizehasViewportUnits(false)
+    , m_style(0)
     , m_fontDirty(false)
 {
 }
