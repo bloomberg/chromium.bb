@@ -190,5 +190,5 @@ def GetPreferredTryMasters(_, change):
     trybots += DEFAULT_TRYBOTS
 
   return {
-    'tryserver.nacl': { t: set(['defaulttests']) for t in trybots },
+    'tryserver.chromium': { t: set(['defaulttests']) for t in trybots },
   }
