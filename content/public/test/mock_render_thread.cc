@@ -148,7 +148,7 @@ scoped_ptr<base::SharedMemory>
     MockRenderThread::HostAllocateSharedMemoryBuffer(
         size_t buffer_size) {
   scoped_ptr<base::SharedMemory> shared_buf(new base::SharedMemory);
-  if (!shared_buf->CreateAndMapAnonymous(buffer_size)) {
+  if (!shared_buf->CreateAnonymous(buffer_size)) {
     NOTREACHED() << "Cannot map shared memory buffer";
     return scoped_ptr<base::SharedMemory>();
   }
