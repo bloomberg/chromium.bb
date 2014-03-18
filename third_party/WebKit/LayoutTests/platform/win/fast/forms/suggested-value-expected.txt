@@ -66,6 +66,12 @@ instead of "initial value".
 |     <div>
 |       id="inner-editor"
 |       "suggested value"
+| <select>
+|   id="select"
+|   <option>
+|     "CA"
+|   <option>
+|     "TX"
 | "input.value: initial value"
 | "internals.suggestedValue(input): suggested value"
 | "input.selectionStart: 0"
@@ -74,3 +80,5 @@ instead of "initial value".
 | "internals.suggestedValue(month): 2014-01"
 | "textarea.value: initial value"
 | "internals.suggestedValue(textarea): suggested value"
+| "select.value: "
+| "internals.suggestedValue(select): TX"

@@ -201,10 +201,14 @@ void RenderMenuList::updateFromElement()
         m_optionsChanged = false;
     }
 
-    if (m_popupIsVisible)
+    if (m_popupIsVisible) {
         m_popup->updateFromElement();
-    else
-        setTextFromOption(selectElement()->selectedIndex());
+    } else {
+        if (selectElement()->suggestedIndex() >= 0)
+            setTextFromOption(selectElement()->suggestedIndex());
+        else
+            setTextFromOption(selectElement()->selectedIndex());
+    }
 }
 
 void RenderMenuList::setTextFromOption(int optionIndex)

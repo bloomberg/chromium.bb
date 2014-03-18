@@ -1013,6 +1013,10 @@ String Internals::suggestedValue(Element* element, ExceptionState& exceptionStat
 
     if (isHTMLTextAreaElement(*element))
         suggestedValue = toHTMLTextAreaElement(*element).suggestedValue();
+
+    if (isHTMLSelectElement(*element))
+        suggestedValue = toHTMLSelectElement(*element).suggestedValue();
+
     return suggestedValue;
 }
 
@@ -1033,6 +1037,9 @@ void Internals::setSuggestedValue(Element* element, const String& value, Excepti
 
     if (isHTMLTextAreaElement(*element))
         toHTMLTextAreaElement(*element).setSuggestedValue(value);
+
+    if (isHTMLSelectElement(*element))
+        toHTMLSelectElement(*element).setSuggestedValue(value);
 }
 
 void Internals::setEditingValue(Element* element, const String& value, ExceptionState& exceptionState)

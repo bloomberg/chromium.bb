@@ -44,6 +44,8 @@ public:
 
     int selectedIndex() const;
     void setSelectedIndex(int);
+    int suggestedIndex() const;
+    void setSuggestedIndex(int);
 
     void optionSelectedByUser(int index, bool dispatchChangeEvent, bool allowMultipleSelection = false);
 
@@ -67,6 +69,8 @@ public:
 
     String value() const;
     void setValue(const String&);
+    String suggestedValue() const;
+    void setSuggestedValue(const String&);
 
     PassRefPtr<HTMLOptionsCollection> options();
     PassRefPtr<HTMLCollection> selectedOptions();
@@ -204,6 +208,7 @@ private:
     bool m_multiple;
     bool m_activeSelectionState;
     mutable bool m_shouldRecalcListItems;
+    int m_suggestedIndex;
 };
 
 } // namespace

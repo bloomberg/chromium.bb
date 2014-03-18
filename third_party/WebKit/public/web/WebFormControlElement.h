@@ -73,13 +73,16 @@ public:
     BLINK_EXPORT void setValue(const WebString&, bool sendChangeEvent = false);
     // Returns value of element. For select element, it returns the value of
     // the selected option if present. If no selected option, an empty string
-    // is returned. For any other types of elements, a null string is returned.
+    // is returned. If element doesn't fall into input element, textarea element
+    // and select element categories, a null string is returned.
     BLINK_EXPORT WebString value() const;
-    // Sets suggested value for element. The goal of introducing suggested value
-    // is to not leak any information to JavaScript.
+    // Sets suggested value for element. For select element it finds the option
+    // with value matches the given parameter and make the option as the suggested
+    // selection. The goal of introducing suggested value is to not leak any information
+    // to JavaScript.
     BLINK_EXPORT void setSuggestedValue(const WebString&);
-    // Returns suggested value for input element or textarea element. If neither
-    // input element nor textarea element, a null string is returned.
+    // Returns suggested value of element. If element doesn't fall into input element,
+    // textarea element and select element categories, a null string is returned.
     BLINK_EXPORT WebString suggestedValue() const;
 
     // Returns the non-sanitized, exact value inside the text input field

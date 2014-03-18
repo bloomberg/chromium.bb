@@ -119,6 +119,8 @@ void WebFormControlElement::setSuggestedValue(const WebString& value)
         unwrap<HTMLInputElement>()->setSuggestedValue(value);
     if (isHTMLTextAreaElement(*m_private))
         unwrap<HTMLTextAreaElement>()->setSuggestedValue(value);
+    if (isHTMLSelectElement(*m_private))
+        unwrap<HTMLSelectElement>()->setSuggestedValue(value);
 }
 
 WebString WebFormControlElement::suggestedValue() const
@@ -127,6 +129,8 @@ WebString WebFormControlElement::suggestedValue() const
         return constUnwrap<HTMLInputElement>()->suggestedValue();
     if (isHTMLTextAreaElement(*m_private))
         return constUnwrap<HTMLTextAreaElement>()->suggestedValue();
+    if (isHTMLSelectElement(*m_private))
+        return constUnwrap<HTMLSelectElement>()->suggestedValue();
     return WebString();
 }
 

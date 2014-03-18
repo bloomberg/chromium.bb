@@ -73,6 +73,7 @@ HTMLSelectElement::HTMLSelectElement(Document& document, HTMLFormElement* form)
     , m_multiple(false)
     , m_activeSelectionState(false)
     , m_shouldRecalcListItems(false)
+    , m_suggestedIndex(-1)
 {
     ScriptWrappable::init(this);
 }
@@ -203,7 +204,7 @@ void HTMLSelectElement::add(HTMLElement* element, HTMLElement* before, Exception
     // Make sure the element is ref'd and deref'd so we don't leak it.
     RefPtr<HTMLElement> protectNewChild(element);
 
-    if (!element || !(element->hasLocalName(optionTag) || element->hasLocalName(hrTag)))
+    if (!element || !(isHTMLOptionElement(element) || isHTMLHRElement(element)))
         return;
 
     insertBefore(element, before, exceptionState);
@@ -223,7 +224,7 @@ String HTMLSelectElement::value() const
 {
     const Vector<HTMLElement*>& items = listItems();
     for (unsigned i = 0; i < items.size(); i++) {
-        if (items[i]->hasLocalName(optionTag) && toHTMLOptionElement(items[i])->selected())
+        if (isHTMLOptionElement(items[i]) && toHTMLOptionElement(items[i])->selected())
             return toHTMLOptionElement(items[i])->value();
     }
     return "";
@@ -241,7 +242,7 @@ void HTMLSelectElement::setValue(const String &value)
     const Vector<HTMLElement*>& items = listItems();
     unsigned optionIndex = 0;
     for (unsigned i = 0; i < items.size(); i++) {
-        if (items[i]->hasLocalName(optionTag)) {
+        if (isHTMLOptionElement(items[i])) {
             if (toHTMLOptionElement(items[i])->value() == value) {
                 setSelectedIndex(optionIndex);
                 return;
@@ -251,6 +252,40 @@ void HTMLSelectElement::setValue(const String &value)
     }
 
     setSelectedIndex(-1);
+}
+
+String HTMLSelectElement::suggestedValue() const
+{
+    const Vector<HTMLElement*>& items = listItems();
+    for (unsigned i = 0; i < items.size(); ++i) {
+        if (isHTMLOptionElement(items[i]) && m_suggestedIndex >= 0) {
+            if (i == static_cast<unsigned>(m_suggestedIndex))
+                return toHTMLOptionElement(items[i])->value();
+        }
+    }
+    return "";
+}
+
+void HTMLSelectElement::setSuggestedValue(const String& value)
+{
+    if (value.isNull()) {
+        setSuggestedIndex(-1);
+        return;
+    }
+
+    const Vector<HTMLElement*>& items = listItems();
+    unsigned optionIndex = 0;
+    for (unsigned i = 0; i < items.size(); ++i) {
+        if (isHTMLOptionElement(items[i])) {
+            if (toHTMLOptionElement(items[i])->value() == value) {
+                setSuggestedIndex(optionIndex);
+                return;
+            }
+            optionIndex++;
+        }
+    }
+
+    setSuggestedIndex(-1);
 }
 
 bool HTMLSelectElement::isPresentationAttribute(const QualifiedName& name) const
@@ -441,7 +476,7 @@ void HTMLSelectElement::setLength(unsigned newLen, ExceptionState& exceptionStat
         size_t optionIndex = 0;
         for (size_t i = 0; i < items.size(); ++i) {
             Element* item = items[i];
-            if (item->hasLocalName(optionTag) && optionIndex++ >= newLen) {
+            if (isHTMLOptionElement(items[i]) && optionIndex++ >= newLen) {
                 ASSERT(item->parentNode());
                 itemsToRemove.append(item);
             }
@@ -797,6 +832,22 @@ void HTMLSelectElement::setSelectedIndex(int index)
     selectOption(index, DeselectOtherOptions);
 }
 
+int HTMLSelectElement::suggestedIndex() const
+{
+    return m_suggestedIndex;
+}
+
+void HTMLSelectElement::setSuggestedIndex(int suggestedIndex)
+{
+    m_suggestedIndex = suggestedIndex;
+
+    if (RenderObject* renderer = this->renderer())  {
+        renderer->updateFromElement();
+        if (renderer->isListBox())
+            toRenderListBox(renderer)->scrollToRevealElementAtListIndex(suggestedIndex);
+    }
+}
+
 void HTMLSelectElement::optionSelectionStateChanged(HTMLOptionElement* option, bool optionIsSelected)
 {
     ASSERT(option->ownerSelectElement() == this);
@@ -939,7 +990,7 @@ size_t HTMLSelectElement::searchOptionsForValue(const String& value, size_t list
     const Vector<HTMLElement*>& items = listItems();
     size_t loopEndIndex = std::min(items.size(), listIndexEnd);
     for (size_t i = listIndexStart; i < loopEndIndex; ++i) {
-        if (!items[i]->hasLocalName(optionTag))
+        if (!isHTMLOptionElement(items[i]))
             continue;
         if (toHTMLOptionElement(items[i])->value() == value)
             return i;
@@ -957,7 +1008,7 @@ void HTMLSelectElement::restoreFormControlState(const FormControlState& state)
         return;
 
     for (size_t i = 0; i < itemsSize; ++i) {
-        if (!items[i]->hasLocalName(optionTag))
+        if (!isHTMLOptionElement(items[i]))
             continue;
         toHTMLOptionElement(items[i])->setSelectedState(false);
     }
