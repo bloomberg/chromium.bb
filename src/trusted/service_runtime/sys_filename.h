@@ -16,14 +16,6 @@ struct NaClApp;
 struct NaClAppThread;
 struct nacl_abi_stat;
 
-int32_t NaClOpenAclCheck(struct NaClApp *nap,
-                         char const     *path,
-                         int            flags,
-                         int            mode);
-
-int32_t NaClStatAclCheck(struct NaClApp *nap,
-                         char const     *path);
-
 int32_t NaClSysOpen(struct NaClAppThread  *natp,
                     char                  *pathname,
                     int                   flags,

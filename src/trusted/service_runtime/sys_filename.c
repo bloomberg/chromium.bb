@@ -21,61 +21,6 @@
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
 
-/*
- * NaClOpenAclCheck: Is the NaCl app authorized to open this file?  The
- * return value is syscall return convention, so 0 is success and
- * small negative numbers are negated errno values.
- */
-int32_t NaClOpenAclCheck(struct NaClApp *nap,
-                         char const     *path,
-                         int            flags,
-                         int            mode) {
-  /*
-   * TODO(bsy): provide some minimal authorization check, based on
-   * whether a debug flag is set; eventually provide a data-driven
-   * authorization configuration mechanism, perhaps persisted via
-   * gears.  need GUI for user configuration, as well as designing an
-   * appropriate language (with sufficient expressiveness), however.
-   */
-  NaClLog(1, "NaClOpenAclCheck(0x%08"NACL_PRIxPTR", %s, 0%o, 0%o)\n",
-          (uintptr_t) nap, path, flags, mode);
-  if (3 < NaClLogGetVerbosity()) {
-    NaClLog(0, "O_ACCMODE: 0%o\n", flags & NACL_ABI_O_ACCMODE);
-    NaClLog(0, "O_RDONLY = %d\n", NACL_ABI_O_RDONLY);
-    NaClLog(0, "O_WRONLY = %d\n", NACL_ABI_O_WRONLY);
-    NaClLog(0, "O_RDWR   = %d\n", NACL_ABI_O_RDWR);
-#define FLOG(VAR, BIT) do {\
-      NaClLog(1, "%s: %s\n", #BIT, (VAR & BIT) ? "yes" : "no");\
-    } while (0)
-    FLOG(flags, NACL_ABI_O_CREAT);
-    FLOG(flags, NACL_ABI_O_TRUNC);
-    FLOG(flags, NACL_ABI_O_APPEND);
-#undef FLOG
-  }
-  if (NaClAclBypassChecks) {
-    return 0;
-  }
-  return -NACL_ABI_EACCES;
-}
-
-/*
- * NaClStatAclCheck: Is the NaCl app authorized to stat this pathname?  The
- * return value is syscall return convention, so 0 is success and
- * small negative numbers are negated errno values.
- *
- * This is primarily for debug use.  File access should be through
- * SRPC-based file servers.
- */
-int32_t NaClStatAclCheck(struct NaClApp *nap,
-                         char const     *path) {
-  NaClLog(2,
-          "NaClStatAclCheck(0x%08"NACL_PRIxPTR", %s)\n", (uintptr_t) nap, path);
-  if (NaClAclBypassChecks) {
-    return 0;
-  }
-  return -NACL_ABI_EACCES;
-}
-
 static uint32_t CopyPathFromUser(struct NaClApp *nap,
                                  char           *dest,
                                  size_t         num_bytes,
@@ -111,6 +56,10 @@ int32_t NaClSysOpen(struct NaClAppThread  *natp,
           "0x%08"NACL_PRIxPTR", 0x%x, 0x%x)\n",
           (uintptr_t) natp, (uintptr_t) pathname, flags, mode);
 
+  if (!NaClAclBypassChecks) {
+    return -NACL_ABI_EACCES;
+  }
+
   retval = CopyPathFromUser(nap, path, sizeof path, (uintptr_t) pathname);
   if (0 != retval)
     goto cleanup;
@@ -125,12 +74,6 @@ int32_t NaClSysOpen(struct NaClAppThread  *natp,
   if (0 != (mode & ~0600)) {
     NaClLog(1, "IGNORING Invalid access mode bits 0%o\n", mode);
     mode &= 0600;
-  }
-
-  retval = NaClOpenAclCheck(nap, path, flags, mode);
-  if (0 != retval) {
-    NaClLog(3, "Open ACL check rejected \"%s\".\n", path);
-    goto cleanup;
   }
 
   /*
@@ -207,11 +150,11 @@ int32_t NaClSysStat(struct NaClAppThread  *natp,
            " 0x%08"NACL_PRIxPTR")\n"),
           (uintptr_t) natp, (uintptr_t) pathname, (uintptr_t) buf);
 
-  retval = CopyPathFromUser(nap, path, sizeof path, (uintptr_t) pathname);
-  if (0 != retval)
-    goto cleanup;
+  if (!NaClAclBypassChecks) {
+    return -NACL_ABI_EACCES;
+  }
 
-  retval = NaClStatAclCheck(nap, path);
+  retval = CopyPathFromUser(nap, path, sizeof path, (uintptr_t) pathname);
   if (0 != retval)
     goto cleanup;
 
