@@ -19,35 +19,21 @@
 #include "ui/display/display_constants.h"
 #include "ui/display/display_export.h"
 
-// Forward declarations for Xlib and Xrandr.
-// This is so unused X definitions don't pollute the namespace.
-typedef unsigned long XID;
-typedef XID RROutput;
-typedef XID RRCrtc;
-typedef XID RRMode;
+namespace gfx {
+class Point;
+class Size;
+}
 
 namespace ui {
-
+class DisplayMode;
+class DisplaySnapshot;
 class NativeDisplayDelegate;
 
-// This class interacts directly with the underlying Xrandr API to manipulate
-// CTRCs and Outputs.
+// This class interacts directly with the system display configurator.
 class DISPLAY_EXPORT OutputConfigurator : public NativeDisplayObserver {
  public:
   typedef uint64_t OutputProtectionClientId;
   static const OutputProtectionClientId kInvalidClientId = 0;
-
-  struct ModeInfo {
-    ModeInfo();
-    ModeInfo(int width, int height, bool interlaced, float refresh_rate);
-
-    int width;
-    int height;
-    bool interlaced;
-    float refresh_rate;
-  };
-
-  typedef std::map<RRMode, ModeInfo> ModeInfoMap;
 
   struct CoordinateTransformation {
     // Initialized to the identity transformation.
@@ -59,59 +45,24 @@ class DISPLAY_EXPORT OutputConfigurator : public NativeDisplayObserver {
     float y_offset;
   };
 
-  // Information about an output's current state.
-  struct OutputSnapshot {
-    OutputSnapshot();
-    ~OutputSnapshot();
+  struct DisplayState {
+    DisplayState();
 
-    RROutput output;
-
-    // CRTC that should be used for this output. Not necessarily the CRTC
-    // that XRandR reports is currently being used.
-    RRCrtc crtc;
-
-    // Mode currently being used by the output.
-    RRMode current_mode;
-
-    // "Best" mode supported by the output.
-    RRMode native_mode;
-
-    // Mode used when displaying the same desktop on multiple outputs.
-    RRMode mirror_mode;
-
-    // User-selected mode for the output.
-    RRMode selected_mode;
-
-    // Output's origin on the framebuffer.
-    int x;
-    int y;
-
-    // Output's physical dimensions.
-    uint64 width_mm;
-    uint64 height_mm;
-
-    bool is_aspect_preserving_scaling;
-
-    // The type of output.
-    OutputType type;
-
-    // Map from mode IDs to details about the corresponding modes.
-    ModeInfoMap mode_infos;
+    DisplaySnapshot* display;  // Not owned.
 
     // XInput device ID or 0 if this output isn't a touchscreen.
     int touch_device_id;
 
     CoordinateTransformation transform;
 
-    // Display id for this output.
-    int64 display_id;
+    // User-selected mode for the output.
+    const DisplayMode* selected_mode;
 
-    bool has_display_id;
-
-    // This output's index in the array returned by XRandR. Stable even as
-    // outputs are connected or disconnected.
-    int index;
+    // Mode used when displaying the same desktop on multiple outputs.
+    const DisplayMode* mirror_mode;
   };
+
+  typedef std::vector<DisplayState> DisplayStateList;
 
   class Observer {
    public:
@@ -122,7 +73,7 @@ class DISPLAY_EXPORT OutputConfigurator : public NativeDisplayObserver {
     // when this method is called, so the actual configuration could've changed
     // already.
     virtual void OnDisplayModeChanged(
-        const std::vector<OutputSnapshot>& outputs) {}
+        const std::vector<DisplayState>& outputs) {}
 
     // Called after a display mode change attempt failed. |failed_new_state| is
     // the new state which the system failed to enter.
@@ -139,11 +90,10 @@ class DISPLAY_EXPORT OutputConfigurator : public NativeDisplayObserver {
     virtual OutputState GetStateForDisplayIds(
         const std::vector<int64>& display_ids) const = 0;
 
-    // Queries the resolution (|width|x|height|) in pixels
-    // to select output mode for the given display id.
+    // Queries the resolution (|size|) in pixels to select output mode for the
+    // given display id.
     virtual bool GetResolutionForDisplayId(int64 display_id,
-                                           int* width,
-                                           int* height) const = 0;
+                                           gfx::Size* size) const = 0;
   };
 
   // Interface for classes that implement software based mirroring.
@@ -164,8 +114,7 @@ class DISPLAY_EXPORT OutputConfigurator : public NativeDisplayObserver {
     // |outputs| is an array of detected screens.
     // If a touchscreen with same resolution as an output's native mode
     // is detected, its id will be stored in this output.
-    virtual void AssociateTouchscreens(
-        std::vector<OutputSnapshot>* outputs) = 0;
+    virtual void AssociateTouchscreens(std::vector<DisplayState>* outputs) = 0;
 
     // Configures XInput's Coordinate Transformation Matrix property.
     // |touch_device_id| the ID of the touchscreen device to configure.
@@ -209,22 +158,18 @@ class DISPLAY_EXPORT OutputConfigurator : public NativeDisplayObserver {
   // See crbug.com/130188 for initial discussion.
   static const int kVerticalGap = 60;
 
-  // Returns a pointer to the ModeInfo struct in |output| corresponding to
-  // |mode|, or NULL if the struct isn't present.
-  static const ModeInfo* GetModeInfo(const OutputSnapshot& output, RRMode mode);
-
   // Returns the mode within |output| that matches the given size with highest
   // refresh rate. Returns None if no matching output was found.
-  static RRMode FindOutputModeMatchingSize(const OutputSnapshot& output,
-                                           int width,
-                                           int height);
+  static const DisplayMode* FindDisplayModeMatchingSize(
+      const DisplaySnapshot& output,
+      const gfx::Size& size);
 
   OutputConfigurator();
   virtual ~OutputConfigurator();
 
   OutputState output_state() const { return output_state_; }
   chromeos::DisplayPowerState power_state() const { return power_state_; }
-  const std::vector<OutputSnapshot>& cached_outputs() const {
+  const std::vector<DisplayState>& cached_outputs() const {
     return cached_outputs_;
   }
 
@@ -338,8 +283,8 @@ class DISPLAY_EXPORT OutputConfigurator : public NativeDisplayObserver {
   //
   // |preserve_aspect| limits the search/creation only to the modes having the
   // native aspect ratio of |external_output|.
-  bool FindMirrorMode(OutputSnapshot* internal_output,
-                      OutputSnapshot* external_output,
+  bool FindMirrorMode(DisplayState* internal_output,
+                      DisplayState* external_output,
                       bool try_panel_fitting,
                       bool preserve_aspect);
 
@@ -372,22 +317,21 @@ class DISPLAY_EXPORT OutputConfigurator : public NativeDisplayObserver {
   // Computes the relevant transformation for mirror mode.
   // |output| is the output on which mirror mode is being applied.
   // Returns the transformation or identity if computations fail.
-  CoordinateTransformation GetMirrorModeCTM(
-      const OutputConfigurator::OutputSnapshot& output);
+  CoordinateTransformation GetMirrorModeCTM(const DisplayState& output);
 
-  // Computes the relevant transformation for extended mode.
-  // |output| is the output on which extended mode is being applied.
-  // |width| and |height| are the width and height of the combined framebuffer.
+  // Computes the relevant transformation for extended mode. |output| is the
+  // output on which extended mode is being applied. |new_origin| is the
+  // position of the output on the framebuffer. |framebuffer_size| is the
+  // size of the combined framebuffer.
   // Returns the transformation or identity if computations fail.
   CoordinateTransformation GetExtendedModeCTM(
-      const OutputConfigurator::OutputSnapshot& output,
-      int framebuffer_width,
-      int frame_buffer_height);
+      const DisplayState& output,
+      const gfx::Point& new_origin,
+      const gfx::Size& framebuffer_size);
 
   // Returns the ratio between mirrored mode area and native mode area:
   // (mirror_mode_width * mirrow_mode_height) / (native_width * native_height)
-  float GetMirroredDisplayAreaRatio(
-      const OutputConfigurator::OutputSnapshot& output);
+  float GetMirroredDisplayAreaRatio(const DisplayState& output);
 
   // Applies output protections according to requests.
   bool ApplyProtections(const DisplayProtections& requests);
@@ -423,7 +367,7 @@ class DISPLAY_EXPORT OutputConfigurator : public NativeDisplayObserver {
 
   // Most-recently-used output configuration. Note that the actual
   // configuration changes asynchronously.
-  std::vector<OutputSnapshot> cached_outputs_;
+  DisplayStateList cached_outputs_;
 
   ObserverList<Observer> observers_;
 
@@ -439,8 +383,6 @@ class DISPLAY_EXPORT OutputConfigurator : public NativeDisplayObserver {
 
   DISALLOW_COPY_AND_ASSIGN(OutputConfigurator);
 };
-
-typedef std::vector<OutputConfigurator::OutputSnapshot> OutputSnapshotList;
 
 }  // namespace ui
 

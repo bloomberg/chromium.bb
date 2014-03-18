@@ -27,6 +27,7 @@
 
 #if defined(OS_CHROMEOS) && defined(USE_X11)
 #include "ui/display/chromeos/output_configurator.h"
+#include "ui/display/chromeos/test/test_display_snapshot.h"
 #include "ui/display/display_constants.h"
 #endif
 
@@ -998,20 +999,32 @@ TEST_F(LockStateControllerTest, IgnorePowerButtonIfScreenIsOff) {
 
 #if defined(OS_CHROMEOS) && defined(USE_X11)
 TEST_F(LockStateControllerTest, HonorPowerButtonInDockedMode) {
+  ScopedVector<const ui::DisplayMode> modes;
+  modes.push_back(new ui::DisplayMode(gfx::Size(1, 1), false, 60.0f));
+
   // Create two outputs, the first internal and the second external.
-  std::vector<ui::OutputConfigurator::OutputSnapshot> outputs;
-  ui::OutputConfigurator::OutputSnapshot internal_output;
-  internal_output.type = ui::OUTPUT_TYPE_INTERNAL;
+  ui::OutputConfigurator::DisplayStateList outputs;
+  ui::OutputConfigurator::DisplayState internal_output;
+  ui::TestDisplaySnapshot internal_display;
+  internal_display.set_type(ui::OUTPUT_TYPE_INTERNAL);
+  internal_display.set_modes(modes.get());
+  internal_output.display = &internal_display;
   outputs.push_back(internal_output);
-  ui::OutputConfigurator::OutputSnapshot external_output;
-  external_output.type = ui::OUTPUT_TYPE_HDMI;
+
+  ui::OutputConfigurator::DisplayState external_output;
+  ui::TestDisplaySnapshot external_display;
+  external_display.set_type(ui::OUTPUT_TYPE_HDMI);
+  external_display.set_modes(modes.get());
+  external_output.display = &external_display;
   outputs.push_back(external_output);
 
   // When all of the displays are turned off (e.g. due to user inactivity), the
   // power button should be ignored.
   controller_->OnScreenBrightnessChanged(0.0);
-  outputs[0].current_mode = 0;
-  outputs[1].current_mode = 0;
+  static_cast<ui::TestDisplaySnapshot*>(outputs[0].display)
+      ->set_current_mode(NULL);
+  static_cast<ui::TestDisplaySnapshot*>(outputs[1].display)
+      ->set_current_mode(NULL);
   controller_->OnDisplayModeChanged(outputs);
   PressPowerButton();
   EXPECT_FALSE(test_api_->is_animating_lock());
@@ -1020,7 +1033,8 @@ TEST_F(LockStateControllerTest, HonorPowerButtonInDockedMode) {
   // When the screen brightness is 0% but the external display is still turned
   // on (indicating either docked mode or the user having manually decreased the
   // brightness to 0%), the power button should still be handled.
-  outputs[1].current_mode = 1;
+  static_cast<ui::TestDisplaySnapshot*>(outputs[1].display)
+      ->set_current_mode(modes[0]);
   controller_->OnDisplayModeChanged(outputs);
   PressPowerButton();
   EXPECT_TRUE(test_api_->is_animating_lock());

@@ -6,6 +6,7 @@
 
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
+#include "ui/display/chromeos/display_snapshot.h"
 
 namespace ash {
 
@@ -19,12 +20,12 @@ ProjectingObserver::ProjectingObserver()
 ProjectingObserver::~ProjectingObserver() {}
 
 void ProjectingObserver::OnDisplayModeChanged(
-    const std::vector<ui::OutputConfigurator::OutputSnapshot>& outputs) {
+    const ui::OutputConfigurator::DisplayStateList& outputs) {
   has_internal_output_ = false;
   output_count_ = outputs.size();
 
   for (size_t i = 0; i < outputs.size(); ++i) {
-    if (outputs[i].type == ui::OUTPUT_TYPE_INTERNAL) {
+    if (outputs[i].display->type() == ui::OUTPUT_TYPE_INTERNAL) {
       has_internal_output_ = true;
       break;
     }

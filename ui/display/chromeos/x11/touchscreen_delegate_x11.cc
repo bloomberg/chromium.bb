@@ -11,6 +11,8 @@
 #include <set>
 
 #include "base/message_loop/message_pump_x11.h"
+#include "ui/display/chromeos/display_mode.h"
+#include "ui/display/chromeos/display_snapshot.h"
 
 namespace ui {
 
@@ -20,7 +22,7 @@ TouchscreenDelegateX11::TouchscreenDelegateX11()
 TouchscreenDelegateX11::~TouchscreenDelegateX11() {}
 
 void TouchscreenDelegateX11::AssociateTouchscreens(
-    std::vector<OutputConfigurator::OutputSnapshot>* outputs) {
+    OutputConfigurator::DisplayStateList* outputs) {
   int ndevices = 0;
   Atom valuator_x = XInternAtom(display_, "Abs MT Position X", False);
   Atom valuator_y = XInternAtom(display_, "Abs MT Position Y", False);
@@ -72,12 +74,11 @@ void TouchscreenDelegateX11::AssociateTouchscreens(
     if (width > 0.0 && height > 0.0 && is_direct_touch) {
       size_t k = 0;
       for (; k < outputs->size(); k++) {
-        OutputConfigurator::OutputSnapshot* output = &(*outputs)[k];
-        if (output->native_mode == None || output->touch_device_id != None)
+        OutputConfigurator::DisplayState* output = &(*outputs)[k];
+        if (output->touch_device_id != None)
           continue;
 
-        const OutputConfigurator::ModeInfo* mode_info =
-            OutputConfigurator::GetModeInfo(*output, output->native_mode);
+        const DisplayMode* mode_info = output->display->native_mode();
         if (!mode_info)
           continue;
 
@@ -86,8 +87,8 @@ void TouchscreenDelegateX11::AssociateTouchscreens(
         // 1024x768 touchscreen's resolution would be 1024x768, but for
         // some 1023x767.  It really depends on touchscreen's firmware
         // configuration.
-        if (std::abs(mode_info->width - width) <= 1.0 &&
-            std::abs(mode_info->height - height) <= 1.0) {
+        if (std::abs(mode_info->size().width() - width) <= 1.0 &&
+            std::abs(mode_info->size().height() - height) <= 1.0) {
           output->touch_device_id = info[i].deviceid;
 
           VLOG(2) << "Found touchscreen for output #" << k << " id "
@@ -114,8 +115,8 @@ void TouchscreenDelegateX11::AssociateTouchscreens(
        it != no_match_touchscreen.end();
        it++) {
     for (size_t i = 0; i < outputs->size(); i++) {
-      if ((*outputs)[i].type != ui::OUTPUT_TYPE_INTERNAL &&
-          (*outputs)[i].native_mode != None &&
+      if ((*outputs)[i].display->type() != OUTPUT_TYPE_INTERNAL &&
+          (*outputs)[i].display->native_mode() != NULL &&
           (*outputs)[i].touch_device_id == None) {
         (*outputs)[i].touch_device_id = *it;
         VLOG(2) << "Arbitrarily matching touchscreen "

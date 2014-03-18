@@ -21,8 +21,8 @@ class ASH_EXPORT ProjectingObserver : public ui::OutputConfigurator::Observer {
   void OnCastingSessionStartedOrStopped(bool started);
 
   // OutputConfigurator::Observer implementation:
-  virtual void OnDisplayModeChanged(const std::vector<
-      ui::OutputConfigurator::OutputSnapshot>& outputs) OVERRIDE;
+  virtual void OnDisplayModeChanged(
+      const ui::OutputConfigurator::DisplayStateList& outputs) OVERRIDE;
 
  private:
   // Sends the current projecting state to power manager.

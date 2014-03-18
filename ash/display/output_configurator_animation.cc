@@ -204,7 +204,7 @@ void OutputConfiguratorAnimation::StartFadeInAnimation() {
 }
 
 void OutputConfiguratorAnimation::OnDisplayModeChanged(
-    const std::vector<ui::OutputConfigurator::OutputSnapshot>& outputs) {
+    const ui::OutputConfigurator::DisplayStateList& outputs) {
   if (!hiding_layers_.empty())
     StartFadeInAnimation();
 }

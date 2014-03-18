@@ -43,8 +43,8 @@ class ASH_EXPORT OutputConfiguratorAnimation
 
  protected:
   // ui::OutputConfigurator::Observer overrides:
-  virtual void OnDisplayModeChanged(const std::vector<
-      ui::OutputConfigurator::OutputSnapshot>& outputs) OVERRIDE;
+  virtual void OnDisplayModeChanged(
+      const ui::OutputConfigurator::DisplayStateList& outputs) OVERRIDE;
   virtual void OnDisplayModeChangeFailed(ui::OutputState failed_new_state)
       OVERRIDE;
 

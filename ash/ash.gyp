@@ -1035,6 +1035,7 @@
             '../chromeos/chromeos.gyp:power_manager_proto',
             '../device/bluetooth/bluetooth.gyp:device_bluetooth',
             '../ui/display/display.gyp:display',
+            '../ui/display/display.gyp:display_test_util',
           ],
           'sources': [
             'first_run/first_run_helper_unittest.cc',

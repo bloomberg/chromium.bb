@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "ui/display/chromeos/x11/native_display_event_dispatcher_x11.h"
+#include "ui/display/chromeos/x11/display_mode_x11.h"
+#include "ui/display/chromeos/x11/display_snapshot_x11.h"
 
 #include <X11/extensions/Xrandr.h>
 
@@ -44,15 +46,20 @@ uint32_t NativeDisplayEventDispatcherX11::Dispatch(
           << " action=" << (connected ? "connected" : "disconnected");
 
   bool found_changed_output = false;
-  const std::vector<OutputConfigurator::OutputSnapshot>& cached_outputs =
+  const std::vector<DisplaySnapshot*>& cached_outputs =
       delegate_->GetCachedOutputs();
-  for (std::vector<OutputConfigurator::OutputSnapshot>::const_iterator it =
+  for (std::vector<DisplaySnapshot*>::const_iterator it =
            cached_outputs.begin();
        it != cached_outputs.end();
        ++it) {
-    if (it->output == output_change_event->output) {
-      if (connected && it->crtc == output_change_event->crtc &&
-          it->current_mode == output_change_event->mode) {
+    const DisplaySnapshotX11* x11_output =
+        static_cast<const DisplaySnapshotX11*>(*it);
+    const DisplayModeX11* x11_mode =
+        static_cast<const DisplayModeX11*>(x11_output->current_mode());
+
+    if (x11_output->output() == output_change_event->output) {
+      if (connected && x11_output->crtc() == output_change_event->crtc &&
+          x11_mode->mode_id() == output_change_event->mode) {
         VLOG(1) << "Ignoring event describing already-cached state";
         return POST_DISPATCH_PERFORM_DEFAULT;
       }

@@ -8,6 +8,8 @@
 #undef None
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/display/chromeos/x11/display_mode_x11.h"
+#include "ui/display/chromeos/x11/display_snapshot_x11.h"
 #include "ui/display/chromeos/x11/native_display_delegate_x11.h"
 #include "ui/display/chromeos/x11/native_display_event_dispatcher_x11.h"
 
@@ -15,13 +17,22 @@ namespace ui {
 
 namespace {
 
-OutputConfigurator::OutputSnapshot CreateOutput(RROutput output,
-                                                RRCrtc crtc,
-                                                RRMode mode) {
-  OutputConfigurator::OutputSnapshot snapshot;
-  snapshot.output = output;
-  snapshot.crtc = crtc;
-  snapshot.current_mode = mode;
+const DisplayModeX11 kDefaultDisplayMode(gfx::Size(1, 1), false, 60.0f, 20);
+
+DisplaySnapshotX11* CreateOutput(RROutput output, RRCrtc crtc) {
+  DisplaySnapshotX11* snapshot = new DisplaySnapshotX11(
+      0,
+      false,
+      gfx::Point(0, 0),
+      gfx::Size(0, 0),
+      OUTPUT_TYPE_UNKNOWN,
+      false,
+      std::vector<const DisplayMode*>(1, &kDefaultDisplayMode),
+      &kDefaultDisplayMode,
+      NULL,
+      output,
+      crtc,
+      0);
 
   return snapshot;
 }
@@ -37,23 +48,22 @@ class TestHelperDelegate : public NativeDisplayDelegateX11::HelperDelegate {
 
   int num_calls_notify_observers() const { return num_calls_notify_observers_; }
 
-  void set_cached_outputs(
-      const std::vector<OutputConfigurator::OutputSnapshot>& outputs) {
+  void set_cached_outputs(const std::vector<DisplaySnapshot*>& outputs) {
     cached_outputs_ = outputs;
   }
 
   // NativeDisplayDelegateX11::HelperDelegate overrides:
   virtual void UpdateXRandRConfiguration(const base::NativeEvent& event)
       OVERRIDE;
-  virtual const std::vector<OutputConfigurator::OutputSnapshot>&
-      GetCachedOutputs() const OVERRIDE;
+  virtual const std::vector<DisplaySnapshot*>& GetCachedOutputs() const
+      OVERRIDE;
   virtual void NotifyDisplayObservers() OVERRIDE;
 
  private:
   int num_calls_update_xrandr_config_;
   int num_calls_notify_observers_;
 
-  std::vector<OutputConfigurator::OutputSnapshot> cached_outputs_;
+  std::vector<DisplaySnapshot*> cached_outputs_;
 
   DISALLOW_COPY_AND_ASSIGN(TestHelperDelegate);
 };
@@ -68,8 +78,8 @@ void TestHelperDelegate::UpdateXRandRConfiguration(
   ++num_calls_update_xrandr_config_;
 }
 
-const std::vector<OutputConfigurator::OutputSnapshot>&
-TestHelperDelegate::GetCachedOutputs() const {
+const std::vector<DisplaySnapshot*>& TestHelperDelegate::GetCachedOutputs()
+    const {
   return cached_outputs_;
 }
 
@@ -149,54 +159,54 @@ TEST_F(NativeDisplayEventDispatcherX11Test, CheckNotificationAfterSecondEvent) {
   DispatchOutputChangeEvent(1, 10, 20, true);
 
   // Simulate addition of the first output to the cached output list.
-  std::vector<OutputConfigurator::OutputSnapshot> outputs;
-  outputs.push_back(CreateOutput(1, 10, 20));
-  helper_delegate_->set_cached_outputs(outputs);
+  ScopedVector<DisplaySnapshot> outputs;
+  outputs.push_back(CreateOutput(1, 10));
+  helper_delegate_->set_cached_outputs(outputs.get());
 
   DispatchOutputChangeEvent(2, 11, 20, true);
   EXPECT_EQ(2, helper_delegate_->num_calls_notify_observers());
 }
 
 TEST_F(NativeDisplayEventDispatcherX11Test, AvoidNotificationOnDuplicateEvent) {
-  std::vector<OutputConfigurator::OutputSnapshot> outputs;
-  outputs.push_back(CreateOutput(1, 10, 20));
-  helper_delegate_->set_cached_outputs(outputs);
+  ScopedVector<DisplaySnapshot> outputs;
+  outputs.push_back(CreateOutput(1, 10));
+  helper_delegate_->set_cached_outputs(outputs.get());
 
   DispatchOutputChangeEvent(1, 10, 20, true);
   EXPECT_EQ(0, helper_delegate_->num_calls_notify_observers());
 }
 
 TEST_F(NativeDisplayEventDispatcherX11Test, CheckNotificationOnDisconnect) {
-  std::vector<OutputConfigurator::OutputSnapshot> outputs;
-  outputs.push_back(CreateOutput(1, 10, 20));
-  helper_delegate_->set_cached_outputs(outputs);
+  ScopedVector<DisplaySnapshot> outputs;
+  outputs.push_back(CreateOutput(1, 10));
+  helper_delegate_->set_cached_outputs(outputs.get());
 
   DispatchOutputChangeEvent(1, 10, 20, false);
   EXPECT_EQ(1, helper_delegate_->num_calls_notify_observers());
 }
 
 TEST_F(NativeDisplayEventDispatcherX11Test, CheckNotificationOnModeChange) {
-  std::vector<OutputConfigurator::OutputSnapshot> outputs;
-  outputs.push_back(CreateOutput(1, 10, 20));
-  helper_delegate_->set_cached_outputs(outputs);
+  ScopedVector<DisplaySnapshot> outputs;
+  outputs.push_back(CreateOutput(1, 10));
+  helper_delegate_->set_cached_outputs(outputs.get());
 
   DispatchOutputChangeEvent(1, 10, 21, true);
   EXPECT_EQ(1, helper_delegate_->num_calls_notify_observers());
 }
 
 TEST_F(NativeDisplayEventDispatcherX11Test, CheckNotificationOnSecondOutput) {
-  std::vector<OutputConfigurator::OutputSnapshot> outputs;
-  outputs.push_back(CreateOutput(1, 10, 20));
-  helper_delegate_->set_cached_outputs(outputs);
+  ScopedVector<DisplaySnapshot> outputs;
+  outputs.push_back(CreateOutput(1, 10));
+  helper_delegate_->set_cached_outputs(outputs.get());
 
   DispatchOutputChangeEvent(2, 11, 20, true);
   EXPECT_EQ(1, helper_delegate_->num_calls_notify_observers());
 }
 
 TEST_F(NativeDisplayEventDispatcherX11Test, CheckNotificationOnDifferentCrtc) {
-  std::vector<OutputConfigurator::OutputSnapshot> outputs;
-  outputs.push_back(CreateOutput(1, 10, 20));
-  helper_delegate_->set_cached_outputs(outputs);
+  ScopedVector<DisplaySnapshot> outputs;
+  outputs.push_back(CreateOutput(1, 10));
+  helper_delegate_->set_cached_outputs(outputs.get());
 
   DispatchOutputChangeEvent(1, 11, 20, true);
   EXPECT_EQ(1, helper_delegate_->num_calls_notify_observers());
@@ -204,10 +214,10 @@ TEST_F(NativeDisplayEventDispatcherX11Test, CheckNotificationOnDifferentCrtc) {
 
 TEST_F(NativeDisplayEventDispatcherX11Test,
        CheckNotificationOnSecondOutputDisconnect) {
-  std::vector<OutputConfigurator::OutputSnapshot> outputs;
-  outputs.push_back(CreateOutput(1, 10, 20));
-  outputs.push_back(CreateOutput(2, 11, 20));
-  helper_delegate_->set_cached_outputs(outputs);
+  ScopedVector<DisplaySnapshot> outputs;
+  outputs.push_back(CreateOutput(1, 10));
+  outputs.push_back(CreateOutput(2, 11));
+  helper_delegate_->set_cached_outputs(outputs.get());
 
   DispatchOutputChangeEvent(2, 11, 20, false);
   EXPECT_EQ(1, helper_delegate_->num_calls_notify_observers());
@@ -215,17 +225,17 @@ TEST_F(NativeDisplayEventDispatcherX11Test,
 
 TEST_F(NativeDisplayEventDispatcherX11Test,
        AvoidDuplicateNotificationOnSecondOutputDisconnect) {
-  std::vector<OutputConfigurator::OutputSnapshot> outputs;
-  outputs.push_back(CreateOutput(1, 10, 20));
-  outputs.push_back(CreateOutput(2, 11, 20));
-  helper_delegate_->set_cached_outputs(outputs);
+  ScopedVector<DisplaySnapshot> outputs;
+  outputs.push_back(CreateOutput(1, 10));
+  outputs.push_back(CreateOutput(2, 11));
+  helper_delegate_->set_cached_outputs(outputs.get());
 
   DispatchOutputChangeEvent(2, 11, 20, false);
   EXPECT_EQ(1, helper_delegate_->num_calls_notify_observers());
 
   // Simulate removal of second output from cached output list.
   outputs.erase(outputs.begin() + 1);
-  helper_delegate_->set_cached_outputs(outputs);
+  helper_delegate_->set_cached_outputs(outputs.get());
 
   DispatchOutputChangeEvent(2, 11, 20, false);
   EXPECT_EQ(1, helper_delegate_->num_calls_notify_observers());

@@ -15,9 +15,12 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_pump_x11.h"
+#include "base/stl_util.h"
 #include "base/x11/edid_parser_x11.h"
 #include "base/x11/x11_error_tracker.h"
 #include "ui/display/chromeos/native_display_observer.h"
+#include "ui/display/chromeos/x11/display_mode_x11.h"
+#include "ui/display/chromeos/x11/display_snapshot_x11.h"
 #include "ui/display/chromeos/x11/display_util.h"
 #include "ui/display/chromeos/x11/native_display_event_dispatcher_x11.h"
 
@@ -55,9 +58,9 @@ class NativeDisplayDelegateX11::HelperDelegateX11
       OVERRIDE {
     XRRUpdateConfiguration(event);
   }
-  virtual const std::vector<OutputConfigurator::OutputSnapshot>&
-  GetCachedOutputs() const OVERRIDE {
-    return delegate_->cached_outputs_;
+  virtual const std::vector<DisplaySnapshot*>& GetCachedOutputs() const
+      OVERRIDE {
+    return delegate_->cached_outputs_.get();
   }
   virtual void NotifyDisplayObservers() OVERRIDE {
     FOR_EACH_OBSERVER(
@@ -127,6 +130,8 @@ NativeDisplayDelegateX11::~NativeDisplayDelegateX11() {
   base::MessagePumpX11::Current()->RemoveDispatcherForRootWindow(
       message_pump_dispatcher_.get());
   base::MessagePumpX11::Current()->RemoveObserver(message_pump_observer_.get());
+
+  STLDeleteContainerPairSecondPointers(modes_.begin(), modes_.end());
 }
 
 void NativeDisplayDelegateX11::Initialize() {
@@ -187,44 +192,52 @@ void NativeDisplayDelegateX11::ForceDPMSOn() {
   CHECK(DPMSForceLevel(display_, DPMSModeOn));
 }
 
-std::vector<OutputConfigurator::OutputSnapshot>
-NativeDisplayDelegateX11::GetOutputs() {
+std::vector<DisplaySnapshot*> NativeDisplayDelegateX11::GetOutputs() {
   CHECK(screen_) << "Server not grabbed";
 
   cached_outputs_.clear();
   RRCrtc last_used_crtc = None;
 
+  InitModes();
   for (int i = 0; i < screen_->noutput && cached_outputs_.size() < 2; ++i) {
     RROutput output_id = screen_->outputs[i];
     XRROutputInfo* output_info = XRRGetOutputInfo(display_, screen_, output_id);
     if (output_info->connection == RR_Connected) {
-      OutputConfigurator::OutputSnapshot output =
-          InitOutputSnapshot(output_id, output_info, &last_used_crtc, i);
-      VLOG(2) << "Found display " << cached_outputs_.size() << ":"
-              << " output=" << output.output << " crtc=" << output.crtc
-              << " current_mode=" << output.current_mode;
+      DisplaySnapshotX11* output =
+          InitDisplaySnapshot(output_id, output_info, &last_used_crtc, i);
       cached_outputs_.push_back(output);
     }
     XRRFreeOutputInfo(output_info);
   }
 
-  return cached_outputs_;
+  return cached_outputs_.get();
 }
 
-void NativeDisplayDelegateX11::AddMode(
-    const OutputConfigurator::OutputSnapshot& output,
-    RRMode mode) {
+void NativeDisplayDelegateX11::AddMode(const DisplaySnapshot& output,
+                                       const DisplayMode* mode) {
   CHECK(screen_) << "Server not grabbed";
-  VLOG(1) << "AddOutputMode: output=" << output.output << " mode=" << mode;
-  XRRAddOutputMode(display_, output.output, mode);
+  CHECK(mode) << "Must add valid mode";
+
+  const DisplaySnapshotX11& x11_output =
+      static_cast<const DisplaySnapshotX11&>(output);
+  RRMode mode_id = static_cast<const DisplayModeX11*>(mode)->mode_id();
+
+  VLOG(1) << "AddOutputMode: output=" << x11_output.output()
+          << " mode=" << mode_id;
+  XRRAddOutputMode(display_, x11_output.output(), mode_id);
 }
 
-bool NativeDisplayDelegateX11::Configure(
-    const OutputConfigurator::OutputSnapshot& output,
-    RRMode mode,
-    int x,
-    int y) {
-  return ConfigureCrtc(output.crtc, mode, output.output, x, y);
+bool NativeDisplayDelegateX11::Configure(const DisplaySnapshot& output,
+                                         const DisplayMode* mode,
+                                         const gfx::Point& origin) {
+  const DisplaySnapshotX11& x11_output =
+      static_cast<const DisplaySnapshotX11&>(output);
+  RRMode mode_id = None;
+  if (mode)
+    mode_id = static_cast<const DisplayModeX11*>(mode)->mode_id();
+
+  return ConfigureCrtc(
+      x11_output.crtc(), mode_id, x11_output.output(), origin.x(), origin.y());
 }
 
 bool NativeDisplayDelegateX11::ConfigureCrtc(RRCrtc crtc,
@@ -238,128 +251,155 @@ bool NativeDisplayDelegateX11::ConfigureCrtc(RRCrtc crtc,
   // Xrandr.h is full of lies. XRRSetCrtcConfig() is defined as returning a
   // Status, which is typically 0 for failure and 1 for success. In
   // actuality it returns a RRCONFIGSTATUS, which uses 0 for success.
-  return XRRSetCrtcConfig(display_,
-                          screen_,
-                          crtc,
-                          CurrentTime,
-                          x,
-                          y,
-                          mode,
-                          RR_Rotate_0,
-                          (output && mode) ? &output : NULL,
-                          (output && mode) ? 1 : 0) == RRSetConfigSuccess;
+  if (XRRSetCrtcConfig(display_,
+                       screen_,
+                       crtc,
+                       CurrentTime,
+                       x,
+                       y,
+                       mode,
+                       RR_Rotate_0,
+                       (output && mode) ? &output : NULL,
+                       (output && mode) ? 1 : 0) != RRSetConfigSuccess) {
+    LOG(WARNING) << "Unable to configure CRTC " << crtc << ":"
+                 << " mode=" << mode << " output=" << output << " x=" << x
+                 << " y=" << y;
+    return false;
+  }
+
+  return true;
 }
 
-void NativeDisplayDelegateX11::CreateFrameBuffer(
-    int width,
-    int height,
-    const std::vector<OutputConfigurator::OutputSnapshot>& outputs) {
+void NativeDisplayDelegateX11::CreateFrameBuffer(const gfx::Size& size) {
   CHECK(screen_) << "Server not grabbed";
   int current_width = DisplayWidth(display_, DefaultScreen(display_));
   int current_height = DisplayHeight(display_, DefaultScreen(display_));
-  VLOG(1) << "CreateFrameBuffer: new=" << width << "x" << height
+  VLOG(1) << "CreateFrameBuffer: new=" << size.width() << "x" << size.height()
           << " current=" << current_width << "x" << current_height;
-  if (width == current_width && height == current_height)
+  if (size.width() == current_width && size.height() == current_height)
     return;
 
-  DestroyUnusedCrtcs(outputs);
-  int mm_width = width * kPixelsToMmScale;
-  int mm_height = height * kPixelsToMmScale;
-  XRRSetScreenSize(display_, window_, width, height, mm_width, mm_height);
+  DestroyUnusedCrtcs();
+  int mm_width = size.width() * kPixelsToMmScale;
+  int mm_height = size.height() * kPixelsToMmScale;
+  XRRSetScreenSize(
+      display_, window_, size.width(), size.height(), mm_width, mm_height);
 }
 
-bool NativeDisplayDelegateX11::InitModeInfo(
-    RRMode mode,
-    OutputConfigurator::ModeInfo* mode_info) {
-  DCHECK(mode_info);
+void NativeDisplayDelegateX11::InitModes() {
   CHECK(screen_) << "Server not grabbed";
-  // TODO: Determine if we need to organize modes in a way which provides
-  // better than O(n) lookup time.  In many call sites, for example, the
-  // "next" mode is typically what we are looking for so using this
-  // helper might be too expensive.
+
+  STLDeleteContainerPairSecondPointers(modes_.begin(), modes_.end());
+  modes_.clear();
+
   for (int i = 0; i < screen_->nmode; ++i) {
-    if (mode == screen_->modes[i].id) {
-      const XRRModeInfo& info = screen_->modes[i];
-      mode_info->width = info.width;
-      mode_info->height = info.height;
-      mode_info->interlaced = info.modeFlags & RR_Interlace;
-      if (info.hTotal && info.vTotal) {
-        mode_info->refresh_rate =
-            static_cast<float>(info.dotClock) /
-            (static_cast<float>(info.hTotal) * static_cast<float>(info.vTotal));
-      } else {
-        mode_info->refresh_rate = 0.0f;
-      }
-      return true;
+    const XRRModeInfo& info = screen_->modes[i];
+    float refresh_rate = 0.0f;
+    if (info.hTotal && info.vTotal) {
+      refresh_rate =
+          static_cast<float>(info.dotClock) /
+          (static_cast<float>(info.hTotal) * static_cast<float>(info.vTotal));
     }
+
+    modes_.insert(
+        std::make_pair(info.id,
+                       new DisplayModeX11(gfx::Size(info.width, info.height),
+                                          info.modeFlags & RR_Interlace,
+                                          refresh_rate,
+                                          info.id)));
   }
-  return false;
 }
 
-OutputConfigurator::OutputSnapshot NativeDisplayDelegateX11::InitOutputSnapshot(
+DisplaySnapshotX11* NativeDisplayDelegateX11::InitDisplaySnapshot(
     RROutput id,
     XRROutputInfo* info,
     RRCrtc* last_used_crtc,
     int index) {
-  OutputConfigurator::OutputSnapshot output;
-  output.output = id;
-  output.width_mm = info->mm_width;
-  output.height_mm = info->mm_height;
-  output.has_display_id = base::GetDisplayId(id, index, &output.display_id);
-  output.index = index;
-  output.type = GetOutputTypeFromName(info->name);
+  int64_t display_id = 0;
+  bool has_display_id = base::GetDisplayId(id, index, &display_id);
 
-  if (output.type == OUTPUT_TYPE_UNKNOWN)
+  OutputType type = GetOutputTypeFromName(info->name);
+  if (type == OUTPUT_TYPE_UNKNOWN)
     LOG(ERROR) << "Unknown link type: " << info->name;
 
   // Use the index as a valid display ID even if the internal
   // display doesn't have valid EDID because the index
   // will never change.
-  if (!output.has_display_id && output.type == OUTPUT_TYPE_INTERNAL)
-    output.has_display_id = true;
+  if (!has_display_id) {
+    if (type == OUTPUT_TYPE_INTERNAL)
+      has_display_id = true;
 
+    // Fallback to output index.
+    display_id = index;
+  }
+
+  RRMode native_mode_id = GetOutputNativeMode(info);
+  RRMode current_mode_id = None;
+  gfx::Point origin;
   if (info->crtc) {
     XRRCrtcInfo* crtc_info = XRRGetCrtcInfo(display_, screen_, info->crtc);
-    output.current_mode = crtc_info->mode;
-    output.x = crtc_info->x;
-    output.y = crtc_info->y;
+    current_mode_id = crtc_info->mode;
+    origin.SetPoint(crtc_info->x, crtc_info->y);
     XRRFreeCrtcInfo(crtc_info);
   }
 
+  RRCrtc crtc = None;
   // Assign a CRTC that isn't already in use.
   for (int i = 0; i < info->ncrtc; ++i) {
     if (info->crtcs[i] != *last_used_crtc) {
-      output.crtc = info->crtcs[i];
-      *last_used_crtc = output.crtc;
+      crtc = info->crtcs[i];
+      *last_used_crtc = crtc;
       break;
     }
   }
 
-  output.native_mode = GetOutputNativeMode(info);
-  output.is_aspect_preserving_scaling = IsOutputAspectPreservingScaling(id);
-  output.touch_device_id = None;
-
+  const DisplayMode* current_mode = NULL;
+  const DisplayMode* native_mode = NULL;
+  std::vector<const DisplayMode*> display_modes;
   for (int i = 0; i < info->nmode; ++i) {
     const RRMode mode = info->modes[i];
-    OutputConfigurator::ModeInfo mode_info;
-    if (InitModeInfo(mode, &mode_info))
-      output.mode_infos.insert(std::make_pair(mode, mode_info));
-    else
+    if (modes_.find(mode) != modes_.end()) {
+      display_modes.push_back(modes_.at(mode));
+
+      if (mode == current_mode_id)
+        current_mode = display_modes.back();
+      if (mode == native_mode_id)
+        native_mode = display_modes.back();
+    } else {
       LOG(WARNING) << "Unable to find XRRModeInfo for mode " << mode;
+    }
   }
+
+  DisplaySnapshotX11* output =
+      new DisplaySnapshotX11(display_id,
+                             has_display_id,
+                             origin,
+                             gfx::Size(info->mm_width, info->mm_height),
+                             type,
+                             IsOutputAspectPreservingScaling(id),
+                             display_modes,
+                             current_mode,
+                             native_mode,
+                             id,
+                             crtc,
+                             index);
+
+  VLOG(2) << "Found display " << cached_outputs_.size() << ":"
+          << " output=" << output << " crtc=" << crtc
+          << " current_mode=" << current_mode_id;
 
   return output;
 }
 
-bool NativeDisplayDelegateX11::GetHDCPState(
-    const OutputConfigurator::OutputSnapshot& output,
-    HDCPState* state) {
+bool NativeDisplayDelegateX11::GetHDCPState(const DisplaySnapshot& output,
+                                            HDCPState* state) {
   unsigned char* values = NULL;
   int actual_format = 0;
   unsigned long nitems = 0;
   unsigned long bytes_after = 0;
   Atom actual_type = None;
   int success = 0;
+  RROutput output_id = static_cast<const DisplaySnapshotX11&>(output).output();
   // TODO(kcwu): Use X11AtomCache to save round trip time of XInternAtom.
   Atom prop = XInternAtom(display_, kContentProtectionAtomName, False);
 
@@ -367,7 +407,7 @@ bool NativeDisplayDelegateX11::GetHDCPState(
   // TODO(kcwu): Move this to x11_util (similar method calls in this file and
   // output_util.cc)
   success = XRRGetOutputProperty(display_,
-                                 output.output,
+                                 output_id,
                                  prop,
                                  0,
                                  100,
@@ -410,9 +450,8 @@ bool NativeDisplayDelegateX11::GetHDCPState(
   return ok;
 }
 
-bool NativeDisplayDelegateX11::SetHDCPState(
-    const OutputConfigurator::OutputSnapshot& output,
-    HDCPState state) {
+bool NativeDisplayDelegateX11::SetHDCPState(const DisplaySnapshot& output,
+                                            HDCPState state) {
   Atom name = XInternAtom(display_, kContentProtectionAtomName, False);
   Atom value = None;
   switch (state) {
@@ -428,8 +467,9 @@ bool NativeDisplayDelegateX11::SetHDCPState(
   }
   base::X11ErrorTracker err_tracker;
   unsigned char* data = reinterpret_cast<unsigned char*>(&value);
+  RROutput output_id = static_cast<const DisplaySnapshotX11&>(output).output();
   XRRChangeOutputProperty(
-      display_, output.output, name, XA_ATOM, 32, PropModeReplace, data, 1);
+      display_, output_id, name, XA_ATOM, 32, PropModeReplace, data, 1);
   if (err_tracker.FoundNewError()) {
     LOG(ERROR) << "XRRChangeOutputProperty failed";
     return false;
@@ -438,8 +478,7 @@ bool NativeDisplayDelegateX11::SetHDCPState(
   }
 }
 
-void NativeDisplayDelegateX11::DestroyUnusedCrtcs(
-    const std::vector<OutputConfigurator::OutputSnapshot>& outputs) {
+void NativeDisplayDelegateX11::DestroyUnusedCrtcs() {
   CHECK(screen_) << "Server not grabbed";
   // Setting the screen size will fail if any CRTC doesn't fit afterwards.
   // At the same time, turning CRTCs off and back on uses up a lot of time.
@@ -457,27 +496,27 @@ void NativeDisplayDelegateX11::DestroyUnusedCrtcs(
     RRCrtc crtc = screen_->crtcs[i];
     RRMode mode = None;
     RROutput output = None;
-    const OutputConfigurator::ModeInfo* mode_info = NULL;
-    for (std::vector<OutputConfigurator::OutputSnapshot>::const_iterator it =
-             outputs.begin();
-         it != outputs.end();
+    const DisplayMode* mode_info = NULL;
+    for (ScopedVector<DisplaySnapshot>::const_iterator it =
+             cached_outputs_.begin();
+         it != cached_outputs_.end();
          ++it) {
-      if (crtc == it->crtc) {
-        mode = it->current_mode;
-        output = it->output;
-        if (mode != None)
-          mode_info = OutputConfigurator::GetModeInfo(*it, mode);
+      DisplaySnapshotX11* x11_output = static_cast<DisplaySnapshotX11*>(*it);
+      if (crtc == x11_output->crtc()) {
+        mode_info = x11_output->current_mode();
+        output = x11_output->output();
         break;
       }
     }
 
     if (mode_info) {
+      mode = static_cast<const DisplayModeX11*>(mode_info)->mode_id();
       // In case our CRTC doesn't fit in our current framebuffer, disable it.
       // It'll get reenabled after we resize the framebuffer.
       int current_width = DisplayWidth(display_, DefaultScreen(display_));
       int current_height = DisplayHeight(display_, DefaultScreen(display_));
-      if (mode_info->width > current_width ||
-          mode_info->height > current_height) {
+      if (mode_info->size().width() > current_width ||
+          mode_info->size().height() > current_height) {
         mode = None;
         output = None;
         mode_info = NULL;

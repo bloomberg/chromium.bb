@@ -22,6 +22,7 @@
     ['chromeos == 1', {
       'dependencies': [
         '../ui/display/display.gyp:display',
+        '../ui/display/display.gyp:display_test_util',
       ],
     }],
   ],

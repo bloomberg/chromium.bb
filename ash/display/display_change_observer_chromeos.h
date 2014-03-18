@@ -23,7 +23,7 @@ class DisplayChangeObserver : public ui::OutputConfigurator::StateController,
  public:
   // Returns the resolution list.
   ASH_EXPORT static std::vector<DisplayMode> GetDisplayModeList(
-      const ui::OutputConfigurator::OutputSnapshot& output);
+      const ui::OutputConfigurator::DisplayState& output);
 
   DisplayChangeObserver();
   virtual ~DisplayChangeObserver();
@@ -32,12 +32,11 @@ class DisplayChangeObserver : public ui::OutputConfigurator::StateController,
   virtual ui::OutputState GetStateForDisplayIds(
       const std::vector<int64>& outputs) const OVERRIDE;
   virtual bool GetResolutionForDisplayId(int64 display_id,
-                                         int* width,
-                                         int* height) const OVERRIDE;
+                                         gfx::Size* size) const OVERRIDE;
 
   // Overriden from ui::OutputConfigurator::Observer:
-  virtual void OnDisplayModeChanged(const std::vector<
-      ui::OutputConfigurator::OutputSnapshot>& outputs) OVERRIDE;
+  virtual void OnDisplayModeChanged(
+      const ui::OutputConfigurator::DisplayStateList& outputs) OVERRIDE;
 
   // Overriden from ShellObserver:
   virtual void OnAppTerminating() OVERRIDE;

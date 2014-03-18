@@ -20,7 +20,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/compositor/dip_util.h"
-#include "ui/display/chromeos/x11/display_util.h"
+#include "ui/display/chromeos/display_mode.h"
+#include "ui/display/chromeos/display_snapshot.h"
 #include "ui/gfx/display.h"
 
 namespace ash {
@@ -52,18 +53,21 @@ struct DisplayModeSorter {
 
 // static
 std::vector<DisplayMode> DisplayChangeObserver::GetDisplayModeList(
-    const OutputConfigurator::OutputSnapshot& output) {
+    const OutputConfigurator::DisplayState& output) {
   typedef std::map<std::pair<int, int>, DisplayMode> DisplayModeMap;
   DisplayModeMap display_mode_map;
 
-  for (std::map<RRMode, OutputConfigurator::ModeInfo>::const_iterator it =
-       output.mode_infos.begin(); it != output.mode_infos.end(); ++it) {
-    const OutputConfigurator::ModeInfo& mode_info = it->second;
-    const std::pair<int, int> size(mode_info.width, mode_info.height);
-    const DisplayMode display_mode(gfx::Size(mode_info.width, mode_info.height),
-                                   mode_info.refresh_rate,
-                                   mode_info.interlaced,
-                                   output.native_mode == it->first);
+  for (std::vector<const ui::DisplayMode*>::const_iterator it =
+           output.display->modes().begin();
+       it != output.display->modes().end();
+       ++it) {
+    const ui::DisplayMode& mode_info = **it;
+    const std::pair<int, int> size(mode_info.size().width(),
+                                   mode_info.size().height());
+    const DisplayMode display_mode(mode_info.size(),
+                                   mode_info.refresh_rate(),
+                                   mode_info.is_interlaced(),
+                                   output.display->native_mode() == *it);
 
     // Add the display mode if it isn't already present and override interlaced
     // display modes with non-interlaced ones.
@@ -104,62 +108,53 @@ ui::OutputState DisplayChangeObserver::GetStateForDisplayIds(
 }
 
 bool DisplayChangeObserver::GetResolutionForDisplayId(int64 display_id,
-                                                      int* width,
-                                                      int* height) const {
+                                                      gfx::Size* size) const {
   DisplayMode mode;
   if (!Shell::GetInstance()->display_manager()->GetSelectedModeForDisplayId(
            display_id, &mode))
     return false;
 
-  *width = mode.size.width();
-  *height = mode.size.height();
+  *size = mode.size;
   return true;
 }
 
 void DisplayChangeObserver::OnDisplayModeChanged(
-    const std::vector<OutputConfigurator::OutputSnapshot>& outputs) {
+    const std::vector<OutputConfigurator::DisplayState>& outputs) {
   std::vector<DisplayInfo> displays;
   std::set<int64> ids;
   for (size_t i = 0; i < outputs.size(); ++i) {
-    const OutputConfigurator::OutputSnapshot& output = outputs[i];
+    const OutputConfigurator::DisplayState& output = outputs[i];
 
-    if (output.type == ui::OUTPUT_TYPE_INTERNAL &&
+    if (output.display->type() == ui::OUTPUT_TYPE_INTERNAL &&
         gfx::Display::InternalDisplayId() == gfx::Display::kInvalidDisplayID) {
-      // Fall back to output index. crbug.com/180100
-      gfx::Display::SetInternalDisplayId(
-          output.display_id == gfx::Display::kInvalidDisplayID ? output.index :
-          output.display_id);
+      gfx::Display::SetInternalDisplayId(output.display->display_id());
     }
 
-    const OutputConfigurator::ModeInfo* mode_info =
-        OutputConfigurator::GetModeInfo(output, output.current_mode);
+    const ui::DisplayMode* mode_info = output.display->current_mode();
     if (!mode_info)
       continue;
 
     float device_scale_factor = 1.0f;
-    if (!ui::IsXDisplaySizeBlackListed(output.width_mm, output.height_mm) &&
-        (kInchInMm * mode_info->width / output.width_mm) >
-        kHighDensityDPIThreshold) {
+    if (!ui::IsXDisplaySizeBlackListed(
+            output.display->physical_size().width(),
+            output.display->physical_size().height()) &&
+        (kInchInMm * mode_info->size().width() /
+         output.display->physical_size().width()) > kHighDensityDPIThreshold) {
       device_scale_factor = 2.0f;
     }
-    gfx::Rect display_bounds(
-        output.x, output.y, mode_info->width, mode_info->height);
+    gfx::Rect display_bounds(output.display->origin(), mode_info->size());
 
     std::vector<DisplayMode> display_modes = GetDisplayModeList(output);
 
     std::string name =
-        output.type == ui::OUTPUT_TYPE_INTERNAL
+        output.display->type() == ui::OUTPUT_TYPE_INTERNAL
             ? l10n_util::GetStringUTF8(IDS_ASH_INTERNAL_DISPLAY_NAME) :
-              ui::GetDisplayName(output);
+              output.display->GetDisplayName();
     if (name.empty())
       name = l10n_util::GetStringUTF8(IDS_ASH_STATUS_TRAY_UNKNOWN_DISPLAY_NAME);
 
-    bool has_overscan = false;
-    ui::GetOutputOverscanFlag(output, &has_overscan);
-
-    int64 id = output.display_id;
-    if (id == gfx::Display::kInvalidDisplayID || ids.find(id) != ids.end())
-      id = output.index;
+    bool has_overscan = output.display->GetOverscanFlag();
+    int64 id = output.display->display_id();
     ids.insert(id);
 
     displays.push_back(DisplayInfo(id, name, has_overscan));

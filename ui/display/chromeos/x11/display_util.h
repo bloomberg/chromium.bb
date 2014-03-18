@@ -7,8 +7,10 @@
 
 #include <string>
 
-#include "ui/display/chromeos/output_configurator.h"
 #include "ui/display/display_constants.h"
+#include "ui/display/display_export.h"
+
+typedef unsigned long RROutput;
 
 namespace ui {
 
@@ -17,17 +19,14 @@ namespace ui {
 DISPLAY_EXPORT OutputType GetOutputTypeFromName(const std::string& name);
 
 // Generate the human readable string from EDID obtained from |output|.
-DISPLAY_EXPORT std::string GetDisplayName(
-    const OutputConfigurator::OutputSnapshot& output);
+DISPLAY_EXPORT std::string GetDisplayName(RROutput output);
 
 // Gets the overscan flag from |output| and stores to |flag|. Returns true if
 // the flag is found. Otherwise returns false and doesn't touch |flag|. The
 // output will produce overscan if |flag| is set to true, but the output may
 // still produce overscan even though it returns true and |flag| is set to
 // false.
-DISPLAY_EXPORT bool GetOutputOverscanFlag(
-    const OutputConfigurator::OutputSnapshot& output,
-    bool* flag);
+DISPLAY_EXPORT bool GetOutputOverscanFlag(RROutput output, bool* flag);
 
 DISPLAY_EXPORT bool ParseOutputOverscanFlag(const unsigned char* prop,
                                             unsigned long nitems,

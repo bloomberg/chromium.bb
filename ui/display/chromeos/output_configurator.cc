@@ -4,22 +4,22 @@
 
 #include "ui/display/chromeos/output_configurator.h"
 
-#include <X11/Xlib.h>
-#include <X11/extensions/Xrandr.h>
-
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/time/time.h"
-#include "ui/display/chromeos/x11/display_util.h"
+#include "ui/display/chromeos/display_mode.h"
+#include "ui/display/chromeos/display_snapshot.h"
 #include "ui/display/chromeos/x11/native_display_delegate_x11.h"
 #include "ui/display/chromeos/x11/touchscreen_delegate_x11.h"
 
 namespace ui {
 
 namespace {
+
+typedef std::vector<const DisplayMode*> DisplayModeList;
 
 // The delay to perform configuration after RRNotify.  See the comment
 // in |Dispatch()|.
@@ -59,41 +59,28 @@ std::string OutputStateToString(OutputState state) {
   return "INVALID";
 }
 
-// Returns a string representation of OutputSnapshot.
-std::string OutputSnapshotToString(
-    const OutputConfigurator::OutputSnapshot* output) {
-  return base::StringPrintf(
-      "[type=%d, output=%ld, crtc=%ld, mode=%ld, dim=%dx%d]",
-      output->type,
-      output->output,
-      output->crtc,
-      output->current_mode,
-      static_cast<int>(output->width_mm),
-      static_cast<int>(output->height_mm));
-}
-
-// Returns a string representation of ModeInfo.
-std::string ModeInfoToString(const OutputConfigurator::ModeInfo* mode) {
+// Returns a string representation of DisplayMode.
+// TODO(dnicoara) Move this to DisplayMode.
+std::string DisplayModeToString(const DisplayMode* mode) {
   return base::StringPrintf("[%dx%d %srate=%f]",
-                            mode->width,
-                            mode->height,
-                            mode->interlaced ? "interlaced " : "",
-                            mode->refresh_rate);
+                            mode->size().width(),
+                            mode->size().height(),
+                            mode->is_interlaced() ? "interlaced " : "",
+                            mode->refresh_rate());
 }
 
 // Returns the number of outputs in |outputs| that should be turned on, per
 // |state|.  If |output_power| is non-NULL, it is updated to contain the
 // on/off state of each corresponding entry in |outputs|.
-int GetOutputPower(
-    const std::vector<OutputConfigurator::OutputSnapshot>& outputs,
-    chromeos::DisplayPowerState state,
-    std::vector<bool>* output_power) {
+int GetOutputPower(const std::vector<OutputConfigurator::DisplayState>& outputs,
+                   chromeos::DisplayPowerState state,
+                   std::vector<bool>* output_power) {
   int num_on_outputs = 0;
   if (output_power)
     output_power->resize(outputs.size());
 
   for (size_t i = 0; i < outputs.size(); ++i) {
-    bool internal = outputs[i].type == OUTPUT_TYPE_INTERNAL;
+    bool internal = outputs[i].display->type() == OUTPUT_TYPE_INTERNAL;
     bool on =
         state == chromeos::DISPLAY_POWER_ALL_ON ||
         (state == chromeos::DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON &&
@@ -109,46 +96,17 @@ int GetOutputPower(
 
 }  // namespace
 
-OutputConfigurator::ModeInfo::ModeInfo()
-    : width(0),
-      height(0),
-      interlaced(false),
-      refresh_rate(0.0) {}
-
-OutputConfigurator::ModeInfo::ModeInfo(int width,
-                                       int height,
-                                       bool interlaced,
-                                       float refresh_rate)
-    : width(width),
-      height(height),
-      interlaced(interlaced),
-      refresh_rate(refresh_rate) {}
-
 OutputConfigurator::CoordinateTransformation::CoordinateTransformation()
     : x_scale(1.0),
       x_offset(0.0),
       y_scale(1.0),
       y_offset(0.0) {}
 
-OutputConfigurator::OutputSnapshot::OutputSnapshot()
-    : output(None),
-      crtc(None),
-      current_mode(None),
-      native_mode(None),
-      mirror_mode(None),
-      selected_mode(None),
-      x(0),
-      y(0),
-      width_mm(0),
-      height_mm(0),
-      is_aspect_preserving_scaling(false),
-      type(OUTPUT_TYPE_UNKNOWN),
+OutputConfigurator::DisplayState::DisplayState()
+    : display(NULL),
       touch_device_id(0),
-      display_id(0),
-      has_display_id(false),
-      index(0) {}
-
-OutputConfigurator::OutputSnapshot::~OutputSnapshot() {}
+      selected_mode(NULL),
+      mirror_mode(NULL) {}
 
 bool OutputConfigurator::TestApi::TriggerConfigureTimeout() {
   if (configurator_->configure_timer_.get() &&
@@ -162,54 +120,41 @@ bool OutputConfigurator::TestApi::TriggerConfigureTimeout() {
 }
 
 // static
-const OutputConfigurator::ModeInfo* OutputConfigurator::GetModeInfo(
-    const OutputSnapshot& output,
-    RRMode mode) {
-  if (mode == None)
-    return NULL;
-
-  ModeInfoMap::const_iterator it = output.mode_infos.find(mode);
-  if (it == output.mode_infos.end()) {
-    LOG(WARNING) << "Unable to find info about mode " << mode << " for output "
-                 << output.output;
-    return NULL;
-  }
-  return &it->second;
-}
-
-// static
-RRMode OutputConfigurator::FindOutputModeMatchingSize(
-    const OutputSnapshot& output,
-    int width,
-    int height) {
-  RRMode found = None;
-  float best_rate = 0;
-  bool non_interlaced_found = false;
-  for (ModeInfoMap::const_iterator it = output.mode_infos.begin();
-       it != output.mode_infos.end();
+const DisplayMode* OutputConfigurator::FindDisplayModeMatchingSize(
+    const DisplaySnapshot& output,
+    const gfx::Size& size) {
+  const DisplayMode* best_mode = NULL;
+  for (DisplayModeList::const_iterator it = output.modes().begin();
+       it != output.modes().end();
        ++it) {
-    RRMode mode = it->first;
-    const ModeInfo& info = it->second;
+    const DisplayMode* mode = *it;
 
-    if (info.width == width && info.height == height) {
-      if (info.interlaced) {
-        if (non_interlaced_found)
-          continue;
-      } else {
-        // Reset the best rate if the non interlaced is
-        // found the first time.
-        if (!non_interlaced_found)
-          best_rate = info.refresh_rate;
-        non_interlaced_found = true;
-      }
-      if (info.refresh_rate < best_rate)
-        continue;
+    if (mode->size() != size)
+      continue;
 
-      found = mode;
-      best_rate = info.refresh_rate;
+    if (!best_mode) {
+      best_mode = mode;
+      continue;
     }
+
+    if (mode->is_interlaced()) {
+      if (!best_mode->is_interlaced())
+        continue;
+    } else {
+      // Reset the best rate if the non interlaced is
+      // found the first time.
+      if (best_mode->is_interlaced()) {
+        best_mode = mode;
+        continue;
+      }
+    }
+    if (mode->refresh_rate() < best_mode->refresh_rate())
+      continue;
+
+    best_mode = mode;
   }
-  return found;
+
+  return best_mode;
 }
 
 OutputConfigurator::OutputConfigurator()
@@ -284,15 +229,15 @@ void OutputConfigurator::ForceInitialConfigure(uint32 background_color_argb) {
 }
 
 bool OutputConfigurator::ApplyProtections(const DisplayProtections& requests) {
-  for (std::vector<OutputSnapshot>::const_iterator it = cached_outputs_.begin();
+  for (DisplayStateList::const_iterator it = cached_outputs_.begin();
        it != cached_outputs_.end();
        ++it) {
     uint32_t all_desired = 0;
     DisplayProtections::const_iterator request_it =
-        requests.find(it->display_id);
+        requests.find(it->display->display_id());
     if (request_it != requests.end())
       all_desired = request_it->second;
-    switch (it->type) {
+    switch (it->display->type()) {
       case OUTPUT_TYPE_UNKNOWN:
         return false;
       // DisplayPort, DVI, and HDMI all support HDCP.
@@ -302,7 +247,8 @@ bool OutputConfigurator::ApplyProtections(const DisplayProtections& requests) {
         HDCPState new_desired_state =
             (all_desired & OUTPUT_PROTECTION_METHOD_HDCP) ?
                 HDCP_STATE_DESIRED : HDCP_STATE_UNDESIRED;
-        if (!native_display_delegate_->SetHDCPState(*it, new_desired_state))
+        if (!native_display_delegate_->SetHDCPState(*it->display,
+                                                    new_desired_state))
           return false;
         break;
       }
@@ -358,13 +304,13 @@ bool OutputConfigurator::QueryOutputProtectionStatus(
   uint32_t enabled = 0;
   uint32_t unfulfilled = 0;
   *link_mask = 0;
-  for (std::vector<OutputSnapshot>::const_iterator it = cached_outputs_.begin();
+  for (DisplayStateList::const_iterator it = cached_outputs_.begin();
        it != cached_outputs_.end();
        ++it) {
-    if (it->display_id != display_id)
+    if (it->display->display_id() != display_id)
       continue;
-    *link_mask |= it->type;
-    switch (it->type) {
+    *link_mask |= it->display->type();
+    switch (it->display->type()) {
       case OUTPUT_TYPE_UNKNOWN:
         return false;
       // DisplayPort, DVI, and HDMI all support HDCP.
@@ -372,7 +318,7 @@ bool OutputConfigurator::QueryOutputProtectionStatus(
       case OUTPUT_TYPE_DVI:
       case OUTPUT_TYPE_HDMI: {
         HDCPState state;
-        if (!native_display_delegate_->GetHDCPState(*it, &state))
+        if (!native_display_delegate_->GetHDCPState(*it->display, &state))
           return false;
         if (state == HDCP_STATE_ENABLED)
           enabled |= OUTPUT_PROTECTION_METHOD_HDCP;
@@ -472,7 +418,7 @@ bool OutputConfigurator::SetDisplayPower(
       flags & kSetDisplayPowerOnlyIfSingleInternalDisplay;
   bool single_internal_display =
       cached_outputs_.size() == 1 &&
-      cached_outputs_[0].type == OUTPUT_TYPE_INTERNAL;
+      cached_outputs_[0].display->type() == OUTPUT_TYPE_INTERNAL;
   if (single_internal_display || !only_if_single_internal_display) {
     success = EnterStateOrFallBackToSoftwareMirroring(new_state, power_state);
     attempted_change = true;
@@ -560,29 +506,40 @@ void OutputConfigurator::ResumeDisplays() {
 }
 
 void OutputConfigurator::UpdateCachedOutputs() {
-  cached_outputs_ = native_display_delegate_->GetOutputs();
+  std::vector<DisplaySnapshot*> snapshots =
+      native_display_delegate_->GetOutputs();
+
+  cached_outputs_.clear();
+  for (size_t i = 0; i < snapshots.size(); ++i) {
+    DisplayState display_state;
+    display_state.display = snapshots[i];
+    cached_outputs_.push_back(display_state);
+  }
+
   touchscreen_delegate_->AssociateTouchscreens(&cached_outputs_);
 
   // Set |selected_mode| fields.
   for (size_t i = 0; i < cached_outputs_.size(); ++i) {
-    OutputSnapshot* output = &cached_outputs_[i];
-    if (output->has_display_id) {
-      int width = 0, height = 0;
+    DisplayState* output = &cached_outputs_[i];
+    if (output->display->has_proper_display_id()) {
+      gfx::Size size;
       if (state_controller_ && state_controller_->GetResolutionForDisplayId(
-                                   output->display_id, &width, &height)) {
+                                   output->display->display_id(), &size)) {
         output->selected_mode =
-            FindOutputModeMatchingSize(*output, width, height);
+            FindDisplayModeMatchingSize(*output->display, size);
       }
     }
     // Fall back to native mode.
-    if (output->selected_mode == None)
-      output->selected_mode = output->native_mode;
+    if (!output->selected_mode)
+      output->selected_mode = output->display->native_mode();
   }
 
   // Set |mirror_mode| fields.
   if (cached_outputs_.size() == 2) {
-    bool one_is_internal = cached_outputs_[0].type == OUTPUT_TYPE_INTERNAL;
-    bool two_is_internal = cached_outputs_[1].type == OUTPUT_TYPE_INTERNAL;
+    bool one_is_internal =
+        cached_outputs_[0].display->type() == OUTPUT_TYPE_INTERNAL;
+    bool two_is_internal =
+        cached_outputs_[1].display->type() == OUTPUT_TYPE_INTERNAL;
     int internal_outputs =
         (one_is_internal ? 1 : 0) + (two_is_internal ? 1 : 0);
     DCHECK_LT(internal_outputs, 2);
@@ -624,42 +581,42 @@ void OutputConfigurator::UpdateCachedOutputs() {
   }
 }
 
-bool OutputConfigurator::FindMirrorMode(OutputSnapshot* internal_output,
-                                        OutputSnapshot* external_output,
+bool OutputConfigurator::FindMirrorMode(DisplayState* internal_output,
+                                        DisplayState* external_output,
                                         bool try_panel_fitting,
                                         bool preserve_aspect) {
-  const ModeInfo* internal_native_info =
-      GetModeInfo(*internal_output, internal_output->native_mode);
-  const ModeInfo* external_native_info =
-      GetModeInfo(*external_output, external_output->native_mode);
+  const DisplayMode* internal_native_info =
+      internal_output->display->native_mode();
+  const DisplayMode* external_native_info =
+      external_output->display->native_mode();
   if (!internal_native_info || !external_native_info)
     return false;
 
   // Check if some external output resolution can be mirrored on internal.
   // Prefer the modes in the order that X sorts them, assuming this is the order
   // in which they look better on the monitor.
-  for (ModeInfoMap::const_iterator external_it =
-           external_output->mode_infos.begin();
-       external_it != external_output->mode_infos.end();
+  for (DisplayModeList::const_iterator external_it =
+           external_output->display->modes().begin();
+       external_it != external_output->display->modes().end();
        ++external_it) {
-    const ModeInfo& external_info = external_it->second;
+    const DisplayMode& external_info = **external_it;
     bool is_native_aspect_ratio =
-        external_native_info->width * external_info.height ==
-        external_native_info->height * external_info.width;
+        external_native_info->size().width() * external_info.size().height() ==
+        external_native_info->size().height() * external_info.size().width();
     if (preserve_aspect && !is_native_aspect_ratio)
       continue;  // Allow only aspect ratio preserving modes for mirroring.
 
     // Try finding an exact match.
-    for (ModeInfoMap::const_iterator internal_it =
-             internal_output->mode_infos.begin();
-         internal_it != internal_output->mode_infos.end();
+    for (DisplayModeList::const_iterator internal_it =
+             internal_output->display->modes().begin();
+         internal_it != internal_output->display->modes().end();
          ++internal_it) {
-      const ModeInfo& internal_info = internal_it->second;
-      if (internal_info.width == external_info.width &&
-          internal_info.height == external_info.height &&
-          internal_info.interlaced == external_info.interlaced) {
-        internal_output->mirror_mode = internal_it->first;
-        external_output->mirror_mode = external_it->first;
+      const DisplayMode& internal_info = **internal_it;
+      if (internal_info.size().width() == external_info.size().width() &&
+          internal_info.size().height() == external_info.size().height() &&
+          internal_info.is_interlaced() == external_info.is_interlaced()) {
+        internal_output->mirror_mode = *internal_it;
+        external_output->mirror_mode = *external_it;
         return true;  // Mirror mode found.
       }
     }
@@ -669,15 +626,17 @@ bool OutputConfigurator::FindMirrorMode(OutputSnapshot* internal_output,
       // We can downscale by 1.125, and upscale indefinitely. Downscaling looks
       // ugly, so, can fit == can upscale. Also, internal panels don't support
       // fitting interlaced modes.
-      bool can_fit = internal_native_info->width >= external_info.width &&
-                     internal_native_info->height >= external_info.height &&
-                     !external_info.interlaced;
+      bool can_fit = internal_native_info->size().width() >=
+                         external_info.size().width() &&
+                     internal_native_info->size().height() >=
+                         external_info.size().height() &&
+                     !external_info.is_interlaced();
       if (can_fit) {
-        RRMode mode = external_it->first;
-        native_display_delegate_->AddMode(*internal_output, mode);
-        internal_output->mode_infos.insert(std::make_pair(mode, external_info));
-        internal_output->mirror_mode = mode;
-        external_output->mirror_mode = mode;
+        native_display_delegate_->AddMode(*internal_output->display,
+                                          *external_it);
+        internal_output->display->add_mode(*external_it);
+        internal_output->mirror_mode = *external_it;
+        external_output->mirror_mode = *external_it;
         return true;  // Mirror mode created.
       }
     }
@@ -740,84 +699,77 @@ bool OutputConfigurator::EnterState(OutputState output_state,
           << " power=" << DisplayPowerStateToString(power_state);
 
   // Framebuffer dimensions.
-  int width = 0, height = 0;
-  std::vector<OutputSnapshot> updated_outputs = cached_outputs_;
+  gfx::Size size;
+
+  std::vector<gfx::Point> new_origins(cached_outputs_.size(), gfx::Point());
+  std::vector<const DisplayMode*> new_mode;
+  for (size_t i = 0; i < cached_outputs_.size(); ++i)
+    new_mode.push_back(cached_outputs_[i].display->current_mode());
 
   switch (output_state) {
     case OUTPUT_STATE_INVALID:
       NOTREACHED() << "Ignoring request to enter invalid state with "
-                   << updated_outputs.size() << " connected output(s)";
+                   << cached_outputs_.size() << " connected output(s)";
       return false;
     case OUTPUT_STATE_HEADLESS:
-      if (updated_outputs.size() != 0) {
+      if (cached_outputs_.size() != 0) {
         LOG(WARNING) << "Ignoring request to enter headless mode with "
-                     << updated_outputs.size() << " connected output(s)";
+                     << cached_outputs_.size() << " connected output(s)";
         return false;
       }
       break;
     case OUTPUT_STATE_SINGLE: {
       // If there are multiple outputs connected, only one should be turned on.
-      if (updated_outputs.size() != 1 && num_on_outputs != 1) {
+      if (cached_outputs_.size() != 1 && num_on_outputs != 1) {
         LOG(WARNING) << "Ignoring request to enter single mode with "
-                     << updated_outputs.size() << " connected outputs and "
+                     << cached_outputs_.size() << " connected outputs and "
                      << num_on_outputs << " turned on";
         return false;
       }
 
-      for (size_t i = 0; i < updated_outputs.size(); ++i) {
-        OutputSnapshot* output = &updated_outputs[i];
-        output->x = 0;
-        output->y = 0;
-        output->current_mode = output_power[i] ? output->selected_mode : None;
+      for (size_t i = 0; i < cached_outputs_.size(); ++i) {
+        DisplayState* output = &cached_outputs_[i];
+        new_mode[i] = output_power[i] ? output->selected_mode : NULL;
 
-        if (output_power[i] || updated_outputs.size() == 1) {
-          const ModeInfo* mode_info =
-              GetModeInfo(*output, output->selected_mode);
+        if (output_power[i] || cached_outputs_.size() == 1) {
+          const DisplayMode* mode_info = output->selected_mode;
           if (!mode_info)
             return false;
-          if (mode_info->width == 1024 && mode_info->height == 768) {
+          if (mode_info->size() == gfx::Size(1024, 768)) {
             VLOG(1) << "Potentially misdetecting display(1024x768):"
-                    << " outputs size=" << updated_outputs.size()
+                    << " outputs size=" << cached_outputs_.size()
                     << ", num_on_outputs=" << num_on_outputs
-                    << ", current size:" << width << "x" << height
-                    << ", i=" << i
-                    << ", output=" << OutputSnapshotToString(output)
-                    << ", mode_info=" << ModeInfoToString(mode_info);
+                    << ", current size:" << size.width() << "x" << size.height()
+                    << ", i=" << i << ", output=" << output->display->ToString()
+                    << ", display_mode=" << DisplayModeToString(mode_info);
           }
-          width = mode_info->width;
-          height = mode_info->height;
+          size = mode_info->size();
         }
       }
       break;
     }
     case OUTPUT_STATE_DUAL_MIRROR: {
-      if (updated_outputs.size() != 2 ||
+      if (cached_outputs_.size() != 2 ||
           (num_on_outputs != 0 && num_on_outputs != 2)) {
         LOG(WARNING) << "Ignoring request to enter mirrored mode with "
-                     << updated_outputs.size() << " connected output(s) and "
+                     << cached_outputs_.size() << " connected output(s) and "
                      << num_on_outputs << " turned on";
         return false;
       }
 
-      if (!updated_outputs[0].mirror_mode)
-        return false;
-      const ModeInfo* mode_info =
-          GetModeInfo(updated_outputs[0], updated_outputs[0].mirror_mode);
+      const DisplayMode* mode_info = cached_outputs_[0].mirror_mode;
       if (!mode_info)
         return false;
-      width = mode_info->width;
-      height = mode_info->height;
+      size = mode_info->size();
 
-      for (size_t i = 0; i < updated_outputs.size(); ++i) {
-        OutputSnapshot* output = &updated_outputs[i];
-        output->x = 0;
-        output->y = 0;
-        output->current_mode = output_power[i] ? output->mirror_mode : None;
+      for (size_t i = 0; i < cached_outputs_.size(); ++i) {
+        DisplayState* output = &cached_outputs_[i];
+        new_mode[i] = output_power[i] ? output->mirror_mode : NULL;
         if (output->touch_device_id) {
           // CTM needs to be calculated if aspect preserving scaling is used.
           // Otherwise, assume it is full screen, and use identity CTM.
-          if (output->mirror_mode != output->native_mode &&
-              output->is_aspect_preserving_scaling) {
+          if (output->mirror_mode != output->display->native_mode() &&
+              output->display->is_aspect_preserving_scaling()) {
             output->transform = GetMirrorModeCTM(*output);
             mirrored_display_area_ratio_map_[output->touch_device_id] =
                 GetMirroredDisplayAreaRatio(*output);
@@ -827,62 +779,59 @@ bool OutputConfigurator::EnterState(OutputState output_state,
       break;
     }
     case OUTPUT_STATE_DUAL_EXTENDED: {
-      if (updated_outputs.size() != 2 ||
+      if (cached_outputs_.size() != 2 ||
           (num_on_outputs != 0 && num_on_outputs != 2)) {
         LOG(WARNING) << "Ignoring request to enter extended mode with "
-                     << updated_outputs.size() << " connected output(s) and "
+                     << cached_outputs_.size() << " connected output(s) and "
                      << num_on_outputs << " turned on";
         return false;
       }
 
-      for (size_t i = 0; i < updated_outputs.size(); ++i) {
-        OutputSnapshot* output = &updated_outputs[i];
-        output->x = 0;
-        output->y = height ? height + kVerticalGap : 0;
-        output->current_mode = output_power[i] ? output->selected_mode : None;
+      for (size_t i = 0; i < cached_outputs_.size(); ++i) {
+        DisplayState* output = &cached_outputs_[i];
+        new_origins[i].set_y(size.height() ? size.height() + kVerticalGap : 0);
+        new_mode[i] = output_power[i] ? output->selected_mode : NULL;
 
         // Retain the full screen size even if all outputs are off so the
         // same desktop configuration can be restored when the outputs are
         // turned back on.
-        const ModeInfo* mode_info =
-            GetModeInfo(updated_outputs[i], updated_outputs[i].selected_mode);
+        const DisplayMode* mode_info = cached_outputs_[i].selected_mode;
         if (!mode_info)
           return false;
-        width = std::max<int>(width, mode_info->width);
-        height += (height ? kVerticalGap : 0) + mode_info->height;
+
+        size.set_width(std::max<int>(size.width(), mode_info->size().width()));
+        size.set_height(size.height() + (size.height() ? kVerticalGap : 0) +
+                        mode_info->size().height());
       }
 
-      for (size_t i = 0; i < updated_outputs.size(); ++i) {
-        OutputSnapshot* output = &updated_outputs[i];
+      for (size_t i = 0; i < cached_outputs_.size(); ++i) {
+        DisplayState* output = &cached_outputs_[i];
         if (output->touch_device_id)
-          output->transform = GetExtendedModeCTM(*output, width, height);
+          output->transform = GetExtendedModeCTM(*output, new_origins[i], size);
       }
       break;
     }
   }
 
   // Finally, apply the desired changes.
-  DCHECK_EQ(cached_outputs_.size(), updated_outputs.size());
   bool all_succeeded = true;
-  if (!updated_outputs.empty()) {
-    native_display_delegate_->CreateFrameBuffer(width, height, updated_outputs);
-    for (size_t i = 0; i < updated_outputs.size(); ++i) {
-      const OutputSnapshot& output = updated_outputs[i];
+  if (!cached_outputs_.empty()) {
+    native_display_delegate_->CreateFrameBuffer(size);
+    for (size_t i = 0; i < cached_outputs_.size(); ++i) {
+      const DisplayState& output = cached_outputs_[i];
       bool configure_succeeded = false;
 
       while (true) {
         if (native_display_delegate_->Configure(
-                output, output.current_mode, output.x, output.y)) {
+                *output.display, new_mode[i], new_origins[i])) {
+          output.display->set_current_mode(new_mode[i]);
+          output.display->set_origin(new_origins[i]);
+
           configure_succeeded = true;
           break;
         }
 
-        LOG(WARNING) << "Unable to configure CRTC " << output.crtc << ":"
-                     << " mode=" << output.current_mode
-                     << " output=" << output.output << " x=" << output.x
-                     << " y=" << output.y;
-
-        const ModeInfo* mode_info = GetModeInfo(output, output.current_mode);
+        const DisplayMode* mode_info = new_mode[i];
         if (!mode_info)
           break;
 
@@ -890,14 +839,15 @@ bool OutputConfigurator::EnterState(OutputState output_state,
         // be set.
         int best_mode_pixels = 0;
 
-        int current_mode_pixels = mode_info->width * mode_info->height;
-        for (ModeInfoMap::const_iterator it = output.mode_infos.begin();
-             it != output.mode_infos.end();
+        int current_mode_pixels = mode_info->size().GetArea();
+        for (DisplayModeList::const_iterator it =
+                 output.display->modes().begin();
+             it != output.display->modes().end();
              it++) {
-          int pixel_count = it->second.width * it->second.height;
+          int pixel_count = (*it)->size().GetArea();
           if ((pixel_count < current_mode_pixels) &&
               (pixel_count > best_mode_pixels)) {
-            updated_outputs[i].current_mode = it->first;
+            new_mode[i] = *it;
             best_mode_pixels = pixel_count;
           }
         }
@@ -910,7 +860,6 @@ bool OutputConfigurator::EnterState(OutputState output_state,
         if (output.touch_device_id)
           touchscreen_delegate_->ConfigureCTM(output.touch_device_id,
                                               output.transform);
-        cached_outputs_[i] = updated_outputs[i];
       } else {
         all_succeeded = false;
       }
@@ -919,7 +868,7 @@ bool OutputConfigurator::EnterState(OutputState output_state,
       // then the two monitors will be mis-matched.  In this case, return
       // false to let the observers be aware.
       if (output_state == OUTPUT_STATE_DUAL_MIRROR && output_power[i] &&
-          output.current_mode != output.mirror_mode)
+          output.display->current_mode() != output.mirror_mode)
         all_succeeded = false;
     }
   }
@@ -950,9 +899,9 @@ OutputState OutputConfigurator::ChooseOutputState(
         std::vector<int64> display_ids;
         for (size_t i = 0; i < cached_outputs_.size(); ++i) {
           // If display id isn't available, switch to extended mode.
-          if (!cached_outputs_[i].has_display_id)
+          if (!cached_outputs_[i].display->has_proper_display_id())
             return OUTPUT_STATE_DUAL_EXTENDED;
-          display_ids.push_back(cached_outputs_[i].display_id);
+          display_ids.push_back(cached_outputs_[i].display->display_id());
         }
         return state_controller_->GetStateForDisplayIds(display_ids);
       }
@@ -964,21 +913,22 @@ OutputState OutputConfigurator::ChooseOutputState(
 }
 
 OutputConfigurator::CoordinateTransformation
-OutputConfigurator::GetMirrorModeCTM(
-    const OutputConfigurator::OutputSnapshot& output) {
+OutputConfigurator::GetMirrorModeCTM(const DisplayState& output) {
   CoordinateTransformation ctm;  // Default to identity
-  const ModeInfo* native_mode_info = GetModeInfo(output, output.native_mode);
-  const ModeInfo* mirror_mode_info = GetModeInfo(output, output.mirror_mode);
+  const DisplayMode* native_mode_info = output.display->native_mode();
+  const DisplayMode* mirror_mode_info = output.mirror_mode;
 
-  if (!native_mode_info || !mirror_mode_info || native_mode_info->height == 0 ||
-      mirror_mode_info->height == 0 || native_mode_info->width == 0 ||
-      mirror_mode_info->width == 0)
+  if (!native_mode_info || !mirror_mode_info ||
+      native_mode_info->size().height() == 0 ||
+      mirror_mode_info->size().height() == 0 ||
+      native_mode_info->size().width() == 0 ||
+      mirror_mode_info->size().width() == 0)
     return ctm;
 
-  float native_mode_ar = static_cast<float>(native_mode_info->width) /
-                         static_cast<float>(native_mode_info->height);
-  float mirror_mode_ar = static_cast<float>(mirror_mode_info->width) /
-                         static_cast<float>(mirror_mode_info->height);
+  float native_mode_ar = static_cast<float>(native_mode_info->size().width()) /
+                         static_cast<float>(native_mode_info->size().height());
+  float mirror_mode_ar = static_cast<float>(mirror_mode_info->size().width()) /
+                         static_cast<float>(mirror_mode_info->size().height());
 
   if (mirror_mode_ar > native_mode_ar) {  // Letterboxing
     ctm.x_scale = 1.0;
@@ -999,12 +949,11 @@ OutputConfigurator::GetMirrorModeCTM(
 }
 
 OutputConfigurator::CoordinateTransformation
-OutputConfigurator::GetExtendedModeCTM(
-    const OutputConfigurator::OutputSnapshot& output,
-    int framebuffer_width,
-    int framebuffer_height) {
+OutputConfigurator::GetExtendedModeCTM(const DisplayState& output,
+                                       const gfx::Point& new_origin,
+                                       const gfx::Size& framebuffer_size) {
   CoordinateTransformation ctm;  // Default to identity
-  const ModeInfo* mode_info = GetModeInfo(output, output.selected_mode);
+  const DisplayMode* mode_info = output.selected_mode;
   DCHECK(mode_info);
   if (!mode_info)
     return ctm;
@@ -1028,30 +977,34 @@ OutputConfigurator::GetExtendedModeCTM(
   // y_scale = (1600 - 1) / (2428 - 1)
   // y_offset = 828 / (2428 -1)
   // See the unittest OutputConfiguratorTest.CTMForMultiScreens.
-  ctm.x_scale =
-      static_cast<float>(mode_info->width - 1) / (framebuffer_width - 1);
-  ctm.x_offset = static_cast<float>(output.x) / (framebuffer_width - 1);
-  ctm.y_scale =
-      static_cast<float>(mode_info->height - 1) / (framebuffer_height - 1);
-  ctm.y_offset = static_cast<float>(output.y) / (framebuffer_height - 1);
+  ctm.x_scale = static_cast<float>(mode_info->size().width() - 1) /
+                (framebuffer_size.width() - 1);
+  ctm.x_offset =
+      static_cast<float>(new_origin.x()) / (framebuffer_size.width() - 1);
+  ctm.y_scale = static_cast<float>(mode_info->size().height() - 1) /
+                (framebuffer_size.height() - 1);
+  ctm.y_offset =
+      static_cast<float>(new_origin.y()) / (framebuffer_size.height() - 1);
   return ctm;
 }
 
 float OutputConfigurator::GetMirroredDisplayAreaRatio(
-    const OutputConfigurator::OutputSnapshot& output) {
+    const DisplayState& output) {
   float area_ratio = 1.0f;
-  const ModeInfo* native_mode_info = GetModeInfo(output, output.native_mode);
-  const ModeInfo* mirror_mode_info = GetModeInfo(output, output.mirror_mode);
+  const DisplayMode* native_mode_info = output.display->native_mode();
+  const DisplayMode* mirror_mode_info = output.mirror_mode;
 
-  if (!native_mode_info || !mirror_mode_info || native_mode_info->height == 0 ||
-      mirror_mode_info->height == 0 || native_mode_info->width == 0 ||
-      mirror_mode_info->width == 0)
+  if (!native_mode_info || !mirror_mode_info ||
+      native_mode_info->size().height() == 0 ||
+      mirror_mode_info->size().height() == 0 ||
+      native_mode_info->size().width() == 0 ||
+      mirror_mode_info->size().width() == 0)
     return area_ratio;
 
-  float width_ratio = static_cast<float>(mirror_mode_info->width) /
-                      static_cast<float>(native_mode_info->width);
-  float height_ratio = static_cast<float>(mirror_mode_info->height) /
-                       static_cast<float>(native_mode_info->height);
+  float width_ratio = static_cast<float>(mirror_mode_info->size().width()) /
+                      static_cast<float>(native_mode_info->size().width());
+  float height_ratio = static_cast<float>(mirror_mode_info->size().height()) /
+                       static_cast<float>(native_mode_info->size().height());
 
   area_ratio = width_ratio * height_ratio;
   return area_ratio;

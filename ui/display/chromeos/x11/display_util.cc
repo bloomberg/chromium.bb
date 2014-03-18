@@ -62,17 +62,16 @@ OutputType GetOutputTypeFromName(const std::string& name) {
   return OUTPUT_TYPE_UNKNOWN;
 }
 
-std::string GetDisplayName(const OutputConfigurator::OutputSnapshot& output) {
+std::string GetDisplayName(RROutput output) {
   std::string display_name;
-  GetOutputDeviceData(output.output, NULL, &display_name);
+  GetOutputDeviceData(output, NULL, &display_name);
   return display_name;
 }
 
-bool GetOutputOverscanFlag(const OutputConfigurator::OutputSnapshot& output,
-                           bool* flag) {
+bool GetOutputOverscanFlag(RROutput output, bool* flag) {
   unsigned long nitems = 0;
   unsigned char* prop = NULL;
-  if (!base::GetEDIDProperty(output.output, &nitems, &prop))
+  if (!base::GetEDIDProperty(output, &nitems, &prop))
     return false;
 
   bool found = ParseOutputOverscanFlag(prop, nitems, flag);

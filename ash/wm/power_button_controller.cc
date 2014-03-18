@@ -12,6 +12,7 @@
 #include "ash/wm/session_state_animator.h"
 #include "base/command_line.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/display/chromeos/display_snapshot.h"
 #include "ui/wm/core/compound_event_filter.h"
 
 namespace ash {
@@ -117,15 +118,15 @@ void PowerButtonController::OnLockButtonEvent(
 
 #if defined(OS_CHROMEOS) && defined(USE_X11)
 void PowerButtonController::OnDisplayModeChanged(
-    const std::vector<ui::OutputConfigurator::OutputSnapshot>& outputs) {
+    const ui::OutputConfigurator::DisplayStateList& outputs) {
   bool internal_display_off = false;
   bool external_display_on = false;
   for (size_t i = 0; i < outputs.size(); ++i) {
-    const ui::OutputConfigurator::OutputSnapshot& output = outputs[i];
-    if (output.type == ui::OUTPUT_TYPE_INTERNAL) {
-      if (!output.current_mode)
+    const ui::OutputConfigurator::DisplayState& output = outputs[i];
+    if (output.display->type() == ui::OUTPUT_TYPE_INTERNAL) {
+      if (!output.display->current_mode())
         internal_display_off = true;
-    } else if (output.current_mode) {
+    } else if (output.display->current_mode()) {
       external_display_on = true;
     }
   }

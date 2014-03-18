@@ -12,10 +12,13 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/display/chromeos/display_mode.h"
 #include "ui/display/chromeos/native_display_delegate.h"
+#include "ui/display/chromeos/test/test_display_snapshot.h"
 
 namespace ui {
 
@@ -33,6 +36,18 @@ const char kForceDPMS[] = "dpms";
 // actions were requested.
 const char kNoActions[] = "";
 
+std::string DisplayModeToString(const DisplayMode& mode) {
+  return base::StringPrintf("%dx%d@%f%s",
+                            mode.size().width(),
+                            mode.size().height(),
+                            mode.refresh_rate(),
+                            mode.is_interlaced() ? " interlaced" : "");
+}
+
+std::string DisplaySnapshotToString(const DisplaySnapshot& output) {
+  return base::StringPrintf("id=%ld", output.display_id());
+}
+
 // Returns a string describing a TestNativeDisplayDelegate::SetBackgroundColor()
 // call.
 std::string GetBackgroundAction(uint32 color_argb) {
@@ -41,33 +56,36 @@ std::string GetBackgroundAction(uint32 color_argb) {
 
 // Returns a string describing a TestNativeDisplayDelegate::AddOutputMode()
 // call.
-std::string GetAddOutputModeAction(RROutput output, RRMode mode) {
-  return base::StringPrintf("add_mode(output=%lu,mode=%lu)", output, mode);
+std::string GetAddOutputModeAction(const DisplaySnapshot& output,
+                                   const DisplayMode* mode) {
+  return base::StringPrintf("add_mode(output=%lu,mode=%s)",
+                            output.display_id(),
+                            DisplayModeToString(*mode).c_str());
 }
 
 // Returns a string describing a TestNativeDisplayDelegate::Configure()
 // call.
-std::string GetCrtcAction(RRCrtc crtc,
-                          int x,
-                          int y,
-                          RRMode mode,
-                          RROutput output) {
-  return base::StringPrintf(
-      "crtc(crtc=%lu,x=%d,y=%d,mode=%lu,output=%lu)", crtc, x, y, mode, output);
+std::string GetCrtcAction(const DisplaySnapshot& output,
+                          const DisplayMode* mode,
+                          const gfx::Point& origin) {
+  return base::StringPrintf("crtc(display=[%s],x=%d,y=%d,mode=[%s])",
+                            DisplaySnapshotToString(output).c_str(),
+                            origin.x(),
+                            origin.y(),
+                            mode ? DisplayModeToString(*mode).c_str() : "NULL");
 }
 
 // Returns a string describing a TestNativeDisplayDelegate::CreateFramebuffer()
 // call.
-std::string GetFramebufferAction(int width,
-                                 int height,
-                                 RRCrtc crtc1,
-                                 RRCrtc crtc2) {
+std::string GetFramebufferAction(const gfx::Size& size,
+                                 const DisplaySnapshot* out1,
+                                 const DisplaySnapshot* out2) {
   return base::StringPrintf(
-      "framebuffer(width=%d,height=%d,crtc1=%lu,crtc2=%lu)",
-      width,
-      height,
-      crtc1,
-      crtc2);
+      "framebuffer(width=%d,height=%d,display1=%s,display2=%s)",
+      size.width(),
+      size.height(),
+      out1 ? DisplaySnapshotToString(*out1).c_str() : "NULL",
+      out2 ? DisplaySnapshotToString(*out2).c_str() : "NULL");
 }
 
 // Returns a string describing a TestNativeDisplayDelegate::ConfigureCTM() call.
@@ -83,8 +101,10 @@ std::string GetCTMAction(
 }
 
 // Returns a string describing a TestNativeDisplayDelegate::SetHDCPState() call.
-std::string GetSetHDCPStateAction(RROutput id, HDCPState state) {
-  return base::StringPrintf("set_hdcp(id=%lu,state=%d)", id, state);
+std::string GetSetHDCPStateAction(const DisplaySnapshot& output,
+                                  HDCPState state) {
+  return base::StringPrintf(
+      "set_hdcp(id=%lu,state=%d)", output.display_id(), state);
 }
 
 // Joins a sequence of strings describing actions (e.g. kScreenDim) such
@@ -134,7 +154,9 @@ class ActionLogger {
 class TestTouchscreenDelegate : public OutputConfigurator::TouchscreenDelegate {
  public:
   // Ownership of |log| remains with the caller.
-  explicit TestTouchscreenDelegate(ActionLogger* log) : log_(log) {}
+  explicit TestTouchscreenDelegate(ActionLogger* log)
+      : log_(log),
+        configure_touchscreens_(false) {}
   virtual ~TestTouchscreenDelegate() {}
 
   const OutputConfigurator::CoordinateTransformation& GetCTM(
@@ -142,9 +164,18 @@ class TestTouchscreenDelegate : public OutputConfigurator::TouchscreenDelegate {
     return ctms_[touch_device_id];
   }
 
+  void set_configure_touchscreens(bool state) {
+    configure_touchscreens_ = state;
+  }
+
   // OutputConfigurator::TouchscreenDelegate implementation:
   virtual void AssociateTouchscreens(
-      std::vector<OutputConfigurator::OutputSnapshot>* outputs) OVERRIDE {}
+      OutputConfigurator::DisplayStateList* outputs) OVERRIDE {
+    if (configure_touchscreens_) {
+      for (size_t i = 0; i < outputs->size(); ++i)
+        (*outputs)[i].touch_device_id = i + 1;
+    }
+  }
   virtual void ConfigureCTM(
       int touch_device_id,
       const OutputConfigurator::CoordinateTransformation& ctm) OVERRIDE {
@@ -154,6 +185,8 @@ class TestTouchscreenDelegate : public OutputConfigurator::TouchscreenDelegate {
 
  private:
   ActionLogger* log_;  // Not owned.
+
+  bool configure_touchscreens_;
 
   // Most-recently-configured transformation matrices, keyed by touch device ID.
   std::map<int, OutputConfigurator::CoordinateTransformation> ctms_;
@@ -170,11 +203,8 @@ class TestNativeDisplayDelegate : public NativeDisplayDelegate {
         log_(log) {}
   virtual ~TestNativeDisplayDelegate() {}
 
-  const std::vector<OutputConfigurator::OutputSnapshot>& outputs() const {
-    return outputs_;
-  }
-  void set_outputs(
-      const std::vector<OutputConfigurator::OutputSnapshot>& outputs) {
+  const std::vector<DisplaySnapshot*>& outputs() const { return outputs_; }
+  void set_outputs(const std::vector<DisplaySnapshot*>& outputs) {
     outputs_ = outputs;
   }
 
@@ -193,54 +223,41 @@ class TestNativeDisplayDelegate : public NativeDisplayDelegate {
     log_->AppendAction(GetBackgroundAction(color_argb));
   }
   virtual void ForceDPMSOn() OVERRIDE { log_->AppendAction(kForceDPMS); }
-  virtual std::vector<OutputConfigurator::OutputSnapshot> GetOutputs()
-      OVERRIDE {
+  virtual std::vector<DisplaySnapshot*> GetOutputs() OVERRIDE {
     return outputs_;
   }
-  virtual void AddMode(const OutputConfigurator::OutputSnapshot& output,
-                       RRMode mode) OVERRIDE {
-    log_->AppendAction(GetAddOutputModeAction(output.output, mode));
+  virtual void AddMode(const DisplaySnapshot& output,
+                       const DisplayMode* mode) OVERRIDE {
+    log_->AppendAction(GetAddOutputModeAction(output, mode));
   }
-  virtual bool Configure(const OutputConfigurator::OutputSnapshot& output,
-                         RRMode mode,
-                         int x,
-                         int y) OVERRIDE {
-    log_->AppendAction(GetCrtcAction(output.crtc, x, y, mode, output.output));
+  virtual bool Configure(const DisplaySnapshot& output,
+                         const DisplayMode* mode,
+                         const gfx::Point& origin) OVERRIDE {
+    log_->AppendAction(GetCrtcAction(output, mode, origin));
 
     if (max_configurable_pixels_ == 0)
       return true;
 
-    OutputConfigurator::OutputSnapshot* snapshot =
-        GetOutputFromId(output.output);
-    if (!snapshot)
+    if (!mode)
       return false;
 
-    const OutputConfigurator::ModeInfo* mode_info =
-        OutputConfigurator::GetModeInfo(*snapshot, mode);
-    if (!mode_info)
-      return false;
-
-    return mode_info->width * mode_info->height <= max_configurable_pixels_;
+    return mode->size().GetArea() <= max_configurable_pixels_;
   }
-  virtual void CreateFrameBuffer(
-      int width,
-      int height,
-      const std::vector<OutputConfigurator::OutputSnapshot>& outputs) OVERRIDE {
+  virtual void CreateFrameBuffer(const gfx::Size& size) OVERRIDE {
     log_->AppendAction(
-        GetFramebufferAction(width,
-                             height,
-                             outputs.size() >= 1 ? outputs[0].crtc : 0,
-                             outputs.size() >= 2 ? outputs[1].crtc : 0));
+        GetFramebufferAction(size,
+                             outputs_.size() >= 1 ? outputs_[0] : NULL,
+                             outputs_.size() >= 2 ? outputs_[1] : NULL));
   }
-  virtual bool GetHDCPState(const OutputConfigurator::OutputSnapshot& output,
+  virtual bool GetHDCPState(const DisplaySnapshot& output,
                             HDCPState* state) OVERRIDE {
     *state = hdcp_state_;
     return true;
   }
 
-  virtual bool SetHDCPState(const OutputConfigurator::OutputSnapshot& output,
+  virtual bool SetHDCPState(const DisplaySnapshot& output,
                             HDCPState state) OVERRIDE {
-    log_->AppendAction(GetSetHDCPStateAction(output.output, state));
+    log_->AppendAction(GetSetHDCPStateAction(output, state));
     return true;
   }
 
@@ -249,16 +266,8 @@ class TestNativeDisplayDelegate : public NativeDisplayDelegate {
   virtual void RemoveObserver(NativeDisplayObserver* observer) OVERRIDE {}
 
  private:
-  OutputConfigurator::OutputSnapshot* GetOutputFromId(RROutput output_id) {
-    for (unsigned int i = 0; i < outputs_.size(); i++) {
-      if (outputs_[i].output == output_id)
-        return &outputs_[i];
-    }
-    return NULL;
-  }
-
   // Outputs to be returned by GetOutputs().
-  std::vector<OutputConfigurator::OutputSnapshot> outputs_;
+  std::vector<DisplaySnapshot*> outputs_;
 
   // |max_configurable_pixels_| represents the maximum number of pixels that
   // Configure will support.  Tests can use this to force Configure
@@ -287,8 +296,7 @@ class TestObserver : public OutputConfigurator::Observer {
 
   int num_changes() const { return num_changes_; }
   int num_failures() const { return num_failures_; }
-  const std::vector<OutputConfigurator::OutputSnapshot>& latest_outputs()
-      const {
+  const OutputConfigurator::DisplayStateList& latest_outputs() const {
     return latest_outputs_;
   }
   OutputState latest_failed_state() const { return latest_failed_state_; }
@@ -302,7 +310,7 @@ class TestObserver : public OutputConfigurator::Observer {
 
   // OutputConfigurator::Observer overrides:
   virtual void OnDisplayModeChanged(
-      const std::vector<OutputConfigurator::OutputSnapshot>& outputs) OVERRIDE {
+      const OutputConfigurator::DisplayStateList& outputs) OVERRIDE {
     num_changes_++;
     latest_outputs_ = outputs;
   }
@@ -321,7 +329,7 @@ class TestObserver : public OutputConfigurator::Observer {
   int num_failures_;
 
   // Parameters most recently passed to OnDisplayMode*().
-  std::vector<OutputConfigurator::OutputSnapshot> latest_outputs_;
+  OutputConfigurator::DisplayStateList latest_outputs_;
   OutputState latest_failed_state_;
 
   DISALLOW_COPY_AND_ASSIGN(TestObserver);
@@ -340,8 +348,7 @@ class TestStateController : public OutputConfigurator::StateController {
     return state_;
   }
   virtual bool GetResolutionForDisplayId(int64 display_id,
-                                         int* width,
-                                         int* height) const OVERRIDE {
+                                         gfx::Size* size) const OVERRIDE {
     return false;
   }
 
@@ -373,17 +380,11 @@ class TestMirroringController
 
 class OutputConfiguratorTest : public testing::Test {
  public:
-  // Predefined modes that can be used by outputs.
-  static const RRMode kSmallModeId;
-  static const int kSmallModeWidth;
-  static const int kSmallModeHeight;
-
-  static const RRMode kBigModeId;
-  static const int kBigModeWidth;
-  static const int kBigModeHeight;
-
   OutputConfiguratorTest()
-      : observer_(&configurator_), test_api_(&configurator_) {}
+      : small_mode_(gfx::Size(1366, 768), false, 60.0f),
+        big_mode_(gfx::Size(2560, 1600), false, 60.0f),
+        observer_(&configurator_),
+        test_api_(&configurator_) {}
   virtual ~OutputConfiguratorTest() {}
 
   virtual void SetUp() OVERRIDE {
@@ -401,41 +402,34 @@ class OutputConfiguratorTest : public testing::Test {
     configurator_.set_state_controller(&state_controller_);
     configurator_.set_mirroring_controller(&mirroring_controller_);
 
-    OutputConfigurator::ModeInfo small_mode_info;
-    small_mode_info.width = kSmallModeWidth;
-    small_mode_info.height = kSmallModeHeight;
+    std::vector<const DisplayMode*> modes;
+    modes.push_back(&small_mode_);
 
-    OutputConfigurator::ModeInfo big_mode_info;
-    big_mode_info.width = kBigModeWidth;
-    big_mode_info.height = kBigModeHeight;
-
-    OutputConfigurator::OutputSnapshot* o = &outputs_[0];
-    o->output = 1;
-    o->crtc = 10;
-    o->current_mode = kSmallModeId;
-    o->native_mode = kSmallModeId;
-    o->type = OUTPUT_TYPE_INTERNAL;
-    o->is_aspect_preserving_scaling = true;
-    o->mode_infos[kSmallModeId] = small_mode_info;
-    o->has_display_id = true;
-    o->display_id = 123;
-    o->index = 0;
+    TestDisplaySnapshot* o = &outputs_[0];
+    o->set_current_mode(&small_mode_);
+    o->set_native_mode(&small_mode_);
+    o->set_modes(modes);
+    o->set_type(OUTPUT_TYPE_INTERNAL);
+    o->set_is_aspect_preserving_scaling(true);
+    o->set_display_id(123);
+    o->set_has_proper_display_id(true);
 
     o = &outputs_[1];
-    o->output = 2;
-    o->crtc = 11;
-    o->current_mode = kBigModeId;
-    o->native_mode = kBigModeId;
-    o->type = OUTPUT_TYPE_HDMI;
-    o->is_aspect_preserving_scaling = true;
-    o->mode_infos[kSmallModeId] = small_mode_info;
-    o->mode_infos[kBigModeId] = big_mode_info;
-    o->has_display_id = true;
-    o->display_id = 456;
-    o->index = 1;
+    o->set_current_mode(&big_mode_);
+    o->set_native_mode(&big_mode_);
+    modes.push_back(&big_mode_);
+    o->set_modes(modes);
+    o->set_type(OUTPUT_TYPE_HDMI);
+    o->set_is_aspect_preserving_scaling(true);
+    o->set_display_id(456);
+    o->set_has_proper_display_id(true);
 
     UpdateOutputs(2, false);
   }
+
+  // Predefined modes that can be used by outputs.
+  const DisplayMode small_mode_;
+  const DisplayMode big_mode_;
 
  protected:
   // Configures |native_display_delegate_| to return the first |num_outputs|
@@ -445,9 +439,9 @@ class OutputConfiguratorTest : public testing::Test {
   // timeout if one was scheduled.
   void UpdateOutputs(size_t num_outputs, bool send_events) {
     ASSERT_LE(num_outputs, arraysize(outputs_));
-    std::vector<OutputConfigurator::OutputSnapshot> outputs;
+    std::vector<DisplaySnapshot*> outputs;
     for (size_t i = 0; i < num_outputs; ++i)
-      outputs.push_back(outputs_[i]);
+      outputs.push_back(&outputs_[i]);
     native_display_delegate_->set_outputs(outputs);
 
     if (send_events) {
@@ -467,11 +461,9 @@ class OutputConfiguratorTest : public testing::Test {
         JoinActions(
             kGrab,
             kInitXRandR,
-            GetFramebufferAction(
-                kSmallModeWidth, kSmallModeHeight, outputs_[0].crtc, 0).c_str(),
-            GetCrtcAction(
-                outputs_[0].crtc, 0, 0, kSmallModeId, outputs_[0].output)
+            GetFramebufferAction(small_mode_.size(), &outputs_[0], NULL)
                 .c_str(),
+            GetCrtcAction(outputs_[0], &small_mode_, gfx::Point(0, 0)).c_str(),
             kForceDPMS,
             kUngrab,
             NULL),
@@ -488,80 +480,83 @@ class OutputConfiguratorTest : public testing::Test {
   TestTouchscreenDelegate* touchscreen_delegate_;       // not owned
   OutputConfigurator::TestApi test_api_;
 
-  OutputConfigurator::OutputSnapshot outputs_[2];
+  TestDisplaySnapshot outputs_[2];
 
  private:
   DISALLOW_COPY_AND_ASSIGN(OutputConfiguratorTest);
 };
 
-const RRMode OutputConfiguratorTest::kSmallModeId = 20;
-const int OutputConfiguratorTest::kSmallModeWidth = 1366;
-const int OutputConfiguratorTest::kSmallModeHeight = 768;
-
-const RRMode OutputConfiguratorTest::kBigModeId = 21;
-const int OutputConfiguratorTest::kBigModeWidth = 2560;
-const int OutputConfiguratorTest::kBigModeHeight = 1600;
-
 }  // namespace
 
-TEST_F(OutputConfiguratorTest, FindOutputModeMatchingSize) {
-  OutputConfigurator::OutputSnapshot output;
+TEST_F(OutputConfiguratorTest, FindDisplayModeMatchingSize) {
+  ScopedVector<const DisplayMode> modes;
 
   // Fields are width, height, interlaced, refresh rate.
-  output.mode_infos[11] = OutputConfigurator::ModeInfo(1920, 1200, false, 60.0);
+  modes.push_back(new DisplayMode(gfx::Size(1920, 1200), false, 60.0));
   // Different rates.
-  output.mode_infos[12] = OutputConfigurator::ModeInfo(1920, 1080, false, 30.0);
-  output.mode_infos[13] = OutputConfigurator::ModeInfo(1920, 1080, false, 50.0);
-  output.mode_infos[14] = OutputConfigurator::ModeInfo(1920, 1080, false, 40.0);
-  output.mode_infos[15] = OutputConfigurator::ModeInfo(1920, 1080, false, 0.0);
+  modes.push_back(new DisplayMode(gfx::Size(1920, 1080), false, 30.0));
+  modes.push_back(new DisplayMode(gfx::Size(1920, 1080), false, 50.0));
+  modes.push_back(new DisplayMode(gfx::Size(1920, 1080), false, 40.0));
+  modes.push_back(new DisplayMode(gfx::Size(1920, 1080), false, 0.0));
   // Interlaced vs non-interlaced.
-  output.mode_infos[16] = OutputConfigurator::ModeInfo(1280, 720, true, 60.0);
-  output.mode_infos[17] = OutputConfigurator::ModeInfo(1280, 720, false, 40.0);
+  modes.push_back(new DisplayMode(gfx::Size(1280, 720), true, 60.0));
+  modes.push_back(new DisplayMode(gfx::Size(1280, 720), false, 40.0));
   // Interlaced only.
-  output.mode_infos[18] = OutputConfigurator::ModeInfo(1024, 768, true, 0.0);
-  output.mode_infos[19] = OutputConfigurator::ModeInfo(1024, 768, true, 40.0);
-  output.mode_infos[20] = OutputConfigurator::ModeInfo(1024, 768, true, 60.0);
+  modes.push_back(new DisplayMode(gfx::Size(1024, 768), true, 0.0));
+  modes.push_back(new DisplayMode(gfx::Size(1024, 768), true, 40.0));
+  modes.push_back(new DisplayMode(gfx::Size(1024, 768), true, 60.0));
   // Mixed.
-  output.mode_infos[21] = OutputConfigurator::ModeInfo(1024, 600, true, 60.0);
-  output.mode_infos[22] = OutputConfigurator::ModeInfo(1024, 600, false, 40.0);
-  output.mode_infos[23] = OutputConfigurator::ModeInfo(1024, 600, false, 50.0);
+  modes.push_back(new DisplayMode(gfx::Size(1024, 600), true, 60.0));
+  modes.push_back(new DisplayMode(gfx::Size(1024, 600), false, 40.0));
+  modes.push_back(new DisplayMode(gfx::Size(1024, 600), false, 50.0));
   // Just one interlaced mode.
-  output.mode_infos[24] = OutputConfigurator::ModeInfo(640, 480, true, 60.0);
+  modes.push_back(new DisplayMode(gfx::Size(640, 480), true, 60.0));
   // Refresh rate not available.
-  output.mode_infos[25] = OutputConfigurator::ModeInfo(320, 200, false, 0.0);
+  modes.push_back(new DisplayMode(gfx::Size(320, 200), false, 0.0));
 
-  EXPECT_EQ(11u,
-            OutputConfigurator::FindOutputModeMatchingSize(output, 1920, 1200));
+  TestDisplaySnapshot output;
+  output.set_modes(modes.get());
+
+  EXPECT_EQ(modes[0],
+            OutputConfigurator::FindDisplayModeMatchingSize(
+                output, gfx::Size(1920, 1200)));
 
   // Should pick highest refresh rate.
-  EXPECT_EQ(13u,
-            OutputConfigurator::FindOutputModeMatchingSize(output, 1920, 1080));
+  EXPECT_EQ(modes[2],
+            OutputConfigurator::FindDisplayModeMatchingSize(
+                output, gfx::Size(1920, 1080)));
 
   // Should pick non-interlaced mode.
-  EXPECT_EQ(17u,
-            OutputConfigurator::FindOutputModeMatchingSize(output, 1280, 720));
+  EXPECT_EQ(modes[6],
+            OutputConfigurator::FindDisplayModeMatchingSize(
+                output, gfx::Size(1280, 720)));
 
   // Interlaced only. Should pick one with the highest refresh rate in
   // interlaced mode.
-  EXPECT_EQ(20u,
-            OutputConfigurator::FindOutputModeMatchingSize(output, 1024, 768));
+  EXPECT_EQ(modes[9],
+            OutputConfigurator::FindDisplayModeMatchingSize(
+                output, gfx::Size(1024, 768)));
 
   // Mixed: Should pick one with the highest refresh rate in
   // interlaced mode.
-  EXPECT_EQ(23u,
-            OutputConfigurator::FindOutputModeMatchingSize(output, 1024, 600));
+  EXPECT_EQ(modes[12],
+            OutputConfigurator::FindDisplayModeMatchingSize(
+                output, gfx::Size(1024, 600)));
 
   // Just one interlaced mode.
-  EXPECT_EQ(24u,
-            OutputConfigurator::FindOutputModeMatchingSize(output, 640, 480));
+  EXPECT_EQ(modes[13],
+            OutputConfigurator::FindDisplayModeMatchingSize(
+                output, gfx::Size(640, 480)));
 
   // Refresh rate not available.
-  EXPECT_EQ(25u,
-            OutputConfigurator::FindOutputModeMatchingSize(output, 320, 200));
+  EXPECT_EQ(modes[14],
+            OutputConfigurator::FindDisplayModeMatchingSize(
+                output, gfx::Size(320, 200)));
 
   // No mode found.
-  EXPECT_EQ(0u,
-            OutputConfigurator::FindOutputModeMatchingSize(output, 1440, 900));
+  EXPECT_EQ(NULL,
+            OutputConfigurator::FindDisplayModeMatchingSize(
+                output, gfx::Size(1440, 900)));
 }
 
 TEST_F(OutputConfiguratorTest, ConnectSecondOutput) {
@@ -572,21 +567,22 @@ TEST_F(OutputConfiguratorTest, ConnectSecondOutput) {
   observer_.Reset();
   state_controller_.set_state(OUTPUT_STATE_DUAL_EXTENDED);
   UpdateOutputs(2, true);
-  const int kDualHeight =
-      kSmallModeHeight + OutputConfigurator::kVerticalGap + kBigModeHeight;
+  const int kDualHeight = small_mode_.size().height() +
+                          OutputConfigurator::kVerticalGap +
+                          big_mode_.size().height();
   EXPECT_EQ(
       JoinActions(
           kGrab,
-          GetFramebufferAction(
-              kBigModeWidth, kDualHeight, outputs_[0].crtc, outputs_[1].crtc)
+          GetFramebufferAction(gfx::Size(big_mode_.size().width(), kDualHeight),
+                               &outputs_[0],
+                               &outputs_[1]).c_str(),
+          GetCrtcAction(outputs_[0], &small_mode_, gfx::Point(0, 0)).c_str(),
+          GetCrtcAction(outputs_[1],
+                        &big_mode_,
+                        gfx::Point(0,
+                                   small_mode_.size().height() +
+                                       OutputConfigurator::kVerticalGap))
               .c_str(),
-          GetCrtcAction(
-              outputs_[0].crtc, 0, 0, kSmallModeId, outputs_[0].output).c_str(),
-          GetCrtcAction(outputs_[1].crtc,
-                        0,
-                        kSmallModeHeight + OutputConfigurator::kVerticalGap,
-                        kBigModeId,
-                        outputs_[1].output).c_str(),
           kUngrab,
           NULL),
       log_->GetActionsAndClear());
@@ -598,14 +594,10 @@ TEST_F(OutputConfiguratorTest, ConnectSecondOutput) {
   EXPECT_EQ(
       JoinActions(
           kGrab,
-          GetFramebufferAction(kSmallModeWidth,
-                               kSmallModeHeight,
-                               outputs_[0].crtc,
-                               outputs_[1].crtc).c_str(),
-          GetCrtcAction(
-              outputs_[0].crtc, 0, 0, kSmallModeId, outputs_[0].output).c_str(),
-          GetCrtcAction(
-              outputs_[1].crtc, 0, 0, kSmallModeId, outputs_[1].output).c_str(),
+          GetFramebufferAction(small_mode_.size(), &outputs_[0], &outputs_[1])
+              .c_str(),
+          GetCrtcAction(outputs_[0], &small_mode_, gfx::Point(0, 0)).c_str(),
+          GetCrtcAction(outputs_[1], &small_mode_, gfx::Point(0, 0)).c_str(),
           kUngrab,
           NULL),
       log_->GetActionsAndClear());
@@ -618,10 +610,8 @@ TEST_F(OutputConfiguratorTest, ConnectSecondOutput) {
   EXPECT_EQ(
       JoinActions(
           kGrab,
-          GetFramebufferAction(
-              kSmallModeWidth, kSmallModeHeight, outputs_[0].crtc, 0).c_str(),
-          GetCrtcAction(
-              outputs_[0].crtc, 0, 0, kSmallModeId, outputs_[0].output).c_str(),
+          GetFramebufferAction(small_mode_.size(), &outputs_[0], NULL).c_str(),
+          GetCrtcAction(outputs_[0], &small_mode_, gfx::Point(0, 0)).c_str(),
           kUngrab,
           NULL),
       log_->GetActionsAndClear());
@@ -629,22 +619,22 @@ TEST_F(OutputConfiguratorTest, ConnectSecondOutput) {
   EXPECT_EQ(1, observer_.num_changes());
 
   // Get rid of shared modes to force software mirroring.
-  outputs_[1].mode_infos.erase(kSmallModeId);
+  outputs_[1].set_modes(std::vector<const DisplayMode*>(1, &big_mode_));
   state_controller_.set_state(OUTPUT_STATE_DUAL_EXTENDED);
   UpdateOutputs(2, true);
   EXPECT_EQ(
       JoinActions(
           kGrab,
-          GetFramebufferAction(
-              kBigModeWidth, kDualHeight, outputs_[0].crtc, outputs_[1].crtc)
+          GetFramebufferAction(gfx::Size(big_mode_.size().width(), kDualHeight),
+                               &outputs_[0],
+                               &outputs_[1]).c_str(),
+          GetCrtcAction(outputs_[0], &small_mode_, gfx::Point(0, 0)).c_str(),
+          GetCrtcAction(outputs_[1],
+                        &big_mode_,
+                        gfx::Point(0,
+                                   small_mode_.size().height() +
+                                       OutputConfigurator::kVerticalGap))
               .c_str(),
-          GetCrtcAction(
-              outputs_[0].crtc, 0, 0, kSmallModeId, outputs_[0].output).c_str(),
-          GetCrtcAction(outputs_[1].crtc,
-                        0,
-                        kSmallModeHeight + OutputConfigurator::kVerticalGap,
-                        kBigModeId,
-                        outputs_[1].output).c_str(),
           kUngrab,
           NULL),
       log_->GetActionsAndClear());
@@ -678,10 +668,8 @@ TEST_F(OutputConfiguratorTest, ConnectSecondOutput) {
   EXPECT_EQ(
       JoinActions(
           kGrab,
-          GetFramebufferAction(
-              kSmallModeWidth, kSmallModeHeight, outputs_[0].crtc, 0).c_str(),
-          GetCrtcAction(
-              outputs_[0].crtc, 0, 0, kSmallModeId, outputs_[0].output).c_str(),
+          GetFramebufferAction(small_mode_.size(), &outputs_[0], NULL).c_str(),
+          GetCrtcAction(outputs_[0], &small_mode_, gfx::Point(0, 0)).c_str(),
           kUngrab,
           NULL),
       log_->GetActionsAndClear());
@@ -698,14 +686,10 @@ TEST_F(OutputConfiguratorTest, SetDisplayPower) {
   EXPECT_EQ(
       JoinActions(
           kGrab,
-          GetFramebufferAction(kSmallModeWidth,
-                               kSmallModeHeight,
-                               outputs_[0].crtc,
-                               outputs_[1].crtc).c_str(),
-          GetCrtcAction(
-              outputs_[0].crtc, 0, 0, kSmallModeId, outputs_[0].output).c_str(),
-          GetCrtcAction(
-              outputs_[1].crtc, 0, 0, kSmallModeId, outputs_[1].output).c_str(),
+          GetFramebufferAction(small_mode_.size(), &outputs_[0], &outputs_[1])
+              .c_str(),
+          GetCrtcAction(outputs_[0], &small_mode_, gfx::Point(0, 0)).c_str(),
+          GetCrtcAction(outputs_[1], &small_mode_, gfx::Point(0, 0)).c_str(),
           kUngrab,
           NULL),
       log_->GetActionsAndClear());
@@ -721,12 +705,10 @@ TEST_F(OutputConfiguratorTest, SetDisplayPower) {
   EXPECT_EQ(
       JoinActions(
           kGrab,
-          GetFramebufferAction(
-              kBigModeWidth, kBigModeHeight, outputs_[0].crtc, outputs_[1].crtc)
+          GetFramebufferAction(big_mode_.size(), &outputs_[0], &outputs_[1])
               .c_str(),
-          GetCrtcAction(outputs_[0].crtc, 0, 0, 0, outputs_[0].output).c_str(),
-          GetCrtcAction(outputs_[1].crtc, 0, 0, kBigModeId, outputs_[1].output)
-              .c_str(),
+          GetCrtcAction(outputs_[0], NULL, gfx::Point(0, 0)).c_str(),
+          GetCrtcAction(outputs_[1], &big_mode_, gfx::Point(0, 0)).c_str(),
           kForceDPMS,
           kUngrab,
           NULL),
@@ -740,16 +722,13 @@ TEST_F(OutputConfiguratorTest, SetDisplayPower) {
   configurator_.SetDisplayPower(chromeos::DISPLAY_POWER_ALL_OFF,
                                 OutputConfigurator::kSetDisplayPowerNoFlags);
   EXPECT_EQ(
-      JoinActions(
-          kGrab,
-          GetFramebufferAction(kSmallModeWidth,
-                               kSmallModeHeight,
-                               outputs_[0].crtc,
-                               outputs_[1].crtc).c_str(),
-          GetCrtcAction(outputs_[0].crtc, 0, 0, 0, outputs_[0].output).c_str(),
-          GetCrtcAction(outputs_[1].crtc, 0, 0, 0, outputs_[1].output).c_str(),
-          kUngrab,
-          NULL),
+      JoinActions(kGrab,
+                  GetFramebufferAction(
+                      small_mode_.size(), &outputs_[0], &outputs_[1]).c_str(),
+                  GetCrtcAction(outputs_[0], NULL, gfx::Point(0, 0)).c_str(),
+                  GetCrtcAction(outputs_[1], NULL, gfx::Point(0, 0)).c_str(),
+                  kUngrab,
+                  NULL),
       log_->GetActionsAndClear());
   EXPECT_EQ(OUTPUT_STATE_DUAL_MIRROR, configurator_.output_state());
   EXPECT_FALSE(mirroring_controller_.software_mirroring_enabled());
@@ -762,14 +741,10 @@ TEST_F(OutputConfiguratorTest, SetDisplayPower) {
   EXPECT_EQ(
       JoinActions(
           kGrab,
-          GetFramebufferAction(kSmallModeWidth,
-                               kSmallModeHeight,
-                               outputs_[0].crtc,
-                               outputs_[1].crtc).c_str(),
-          GetCrtcAction(
-              outputs_[0].crtc, 0, 0, kSmallModeId, outputs_[0].output).c_str(),
-          GetCrtcAction(
-              outputs_[1].crtc, 0, 0, kSmallModeId, outputs_[1].output).c_str(),
+          GetFramebufferAction(small_mode_.size(), &outputs_[0], &outputs_[1])
+              .c_str(),
+          GetCrtcAction(outputs_[0], &small_mode_, gfx::Point(0, 0)).c_str(),
+          GetCrtcAction(outputs_[1], &small_mode_, gfx::Point(0, 0)).c_str(),
           kForceDPMS,
           kUngrab,
           NULL),
@@ -779,25 +754,26 @@ TEST_F(OutputConfiguratorTest, SetDisplayPower) {
   EXPECT_EQ(1, observer_.num_changes());
 
   // Get rid of shared modes to force software mirroring.
-  outputs_[1].mode_infos.erase(kSmallModeId);
+  outputs_[1].set_modes(std::vector<const DisplayMode*>(1, &big_mode_));
   state_controller_.set_state(OUTPUT_STATE_DUAL_MIRROR);
   observer_.Reset();
   UpdateOutputs(2, true);
-  const int kDualHeight =
-      kSmallModeHeight + OutputConfigurator::kVerticalGap + kBigModeHeight;
+  const int kDualHeight = small_mode_.size().height() +
+                          OutputConfigurator::kVerticalGap +
+                          big_mode_.size().height();
   EXPECT_EQ(
       JoinActions(
           kGrab,
-          GetFramebufferAction(
-              kBigModeWidth, kDualHeight, outputs_[0].crtc, outputs_[1].crtc)
+          GetFramebufferAction(gfx::Size(big_mode_.size().width(), kDualHeight),
+                               &outputs_[0],
+                               &outputs_[1]).c_str(),
+          GetCrtcAction(outputs_[0], &small_mode_, gfx::Point(0, 0)).c_str(),
+          GetCrtcAction(outputs_[1],
+                        &big_mode_,
+                        gfx::Point(0,
+                                   small_mode_.size().height() +
+                                       OutputConfigurator::kVerticalGap))
               .c_str(),
-          GetCrtcAction(
-              outputs_[0].crtc, 0, 0, kSmallModeId, outputs_[0].output).c_str(),
-          GetCrtcAction(outputs_[1].crtc,
-                        0,
-                        kSmallModeHeight + OutputConfigurator::kVerticalGap,
-                        kBigModeId,
-                        outputs_[1].output).c_str(),
           kUngrab,
           NULL),
       log_->GetActionsAndClear());
@@ -814,12 +790,10 @@ TEST_F(OutputConfiguratorTest, SetDisplayPower) {
   EXPECT_EQ(
       JoinActions(
           kGrab,
-          GetFramebufferAction(
-              kBigModeWidth, kBigModeHeight, outputs_[0].crtc, outputs_[1].crtc)
+          GetFramebufferAction(big_mode_.size(), &outputs_[0], &outputs_[1])
               .c_str(),
-          GetCrtcAction(outputs_[0].crtc, 0, 0, 0, outputs_[0].output).c_str(),
-          GetCrtcAction(outputs_[1].crtc, 0, 0, kBigModeId, outputs_[1].output)
-              .c_str(),
+          GetCrtcAction(outputs_[0], NULL, gfx::Point(0, 0)).c_str(),
+          GetCrtcAction(outputs_[1], &big_mode_, gfx::Point(0, 0)).c_str(),
           kForceDPMS,
           kUngrab,
           NULL),
@@ -836,15 +810,16 @@ TEST_F(OutputConfiguratorTest, SetDisplayPower) {
   EXPECT_EQ(
       JoinActions(
           kGrab,
-          GetFramebufferAction(
-              kBigModeWidth, kDualHeight, outputs_[0].crtc, outputs_[1].crtc)
+          GetFramebufferAction(gfx::Size(big_mode_.size().width(), kDualHeight),
+                               &outputs_[0],
+                               &outputs_[1]).c_str(),
+          GetCrtcAction(outputs_[0], NULL, gfx::Point(0, 0)).c_str(),
+          GetCrtcAction(outputs_[1],
+                        NULL,
+                        gfx::Point(0,
+                                   small_mode_.size().height() +
+                                       OutputConfigurator::kVerticalGap))
               .c_str(),
-          GetCrtcAction(outputs_[0].crtc, 0, 0, 0, outputs_[0].output).c_str(),
-          GetCrtcAction(outputs_[1].crtc,
-                        0,
-                        kSmallModeHeight + OutputConfigurator::kVerticalGap,
-                        0,
-                        outputs_[1].output).c_str(),
           kUngrab,
           NULL),
       log_->GetActionsAndClear());
@@ -859,16 +834,16 @@ TEST_F(OutputConfiguratorTest, SetDisplayPower) {
   EXPECT_EQ(
       JoinActions(
           kGrab,
-          GetFramebufferAction(
-              kBigModeWidth, kDualHeight, outputs_[0].crtc, outputs_[1].crtc)
+          GetFramebufferAction(gfx::Size(big_mode_.size().width(), kDualHeight),
+                               &outputs_[0],
+                               &outputs_[1]).c_str(),
+          GetCrtcAction(outputs_[0], &small_mode_, gfx::Point(0, 0)).c_str(),
+          GetCrtcAction(outputs_[1],
+                        &big_mode_,
+                        gfx::Point(0,
+                                   small_mode_.size().height() +
+                                       OutputConfigurator::kVerticalGap))
               .c_str(),
-          GetCrtcAction(
-              outputs_[0].crtc, 0, 0, kSmallModeId, outputs_[0].output).c_str(),
-          GetCrtcAction(outputs_[1].crtc,
-                        0,
-                        kSmallModeHeight + OutputConfigurator::kVerticalGap,
-                        kBigModeId,
-                        outputs_[1].output).c_str(),
           kForceDPMS,
           kUngrab,
           NULL),
@@ -890,10 +865,8 @@ TEST_F(OutputConfiguratorTest, SuspendAndResume) {
   EXPECT_EQ(
       JoinActions(
           kGrab,
-          GetFramebufferAction(
-              kSmallModeWidth, kSmallModeHeight, outputs_[0].crtc, 0).c_str(),
-          GetCrtcAction(
-              outputs_[0].crtc, 0, 0, kSmallModeId, outputs_[0].output).c_str(),
+          GetFramebufferAction(small_mode_.size(), &outputs_[0], NULL).c_str(),
+          GetCrtcAction(outputs_[0], &small_mode_, gfx::Point(0, 0)).c_str(),
           kForceDPMS,
           kUngrab,
           NULL),
@@ -906,9 +879,8 @@ TEST_F(OutputConfiguratorTest, SuspendAndResume) {
   EXPECT_EQ(
       JoinActions(
           kGrab,
-          GetFramebufferAction(
-              kSmallModeWidth, kSmallModeHeight, outputs_[0].crtc, 0).c_str(),
-          GetCrtcAction(outputs_[0].crtc, 0, 0, 0, outputs_[0].output).c_str(),
+          GetFramebufferAction(small_mode_.size(), &outputs_[0], NULL).c_str(),
+          GetCrtcAction(outputs_[0], NULL, gfx::Point(0, 0)).c_str(),
           kUngrab,
           NULL),
       log_->GetActionsAndClear());
@@ -917,10 +889,8 @@ TEST_F(OutputConfiguratorTest, SuspendAndResume) {
   EXPECT_EQ(
       JoinActions(
           kGrab,
-          GetFramebufferAction(
-              kSmallModeWidth, kSmallModeHeight, outputs_[0].crtc, 0).c_str(),
-          GetCrtcAction(
-              outputs_[0].crtc, 0, 0, kSmallModeId, outputs_[0].output).c_str(),
+          GetFramebufferAction(small_mode_.size(), &outputs_[0], NULL).c_str(),
+          GetCrtcAction(outputs_[0], &small_mode_, gfx::Point(0, 0)).c_str(),
           kForceDPMS,
           kUngrab,
           kSync,
@@ -931,10 +901,8 @@ TEST_F(OutputConfiguratorTest, SuspendAndResume) {
   EXPECT_EQ(
       JoinActions(
           kGrab,
-          GetFramebufferAction(
-              kSmallModeWidth, kSmallModeHeight, outputs_[0].crtc, 0).c_str(),
-          GetCrtcAction(
-              outputs_[0].crtc, 0, 0, kSmallModeId, outputs_[0].output).c_str(),
+          GetFramebufferAction(small_mode_.size(), &outputs_[0], NULL).c_str(),
+          GetCrtcAction(outputs_[0], &small_mode_, gfx::Point(0, 0)).c_str(),
           kForceDPMS,
           kUngrab,
           NULL),
@@ -947,14 +915,10 @@ TEST_F(OutputConfiguratorTest, SuspendAndResume) {
   EXPECT_EQ(
       JoinActions(
           kGrab,
-          GetFramebufferAction(kSmallModeWidth,
-                               kSmallModeHeight,
-                               outputs_[0].crtc,
-                               outputs_[1].crtc).c_str(),
-          GetCrtcAction(
-              outputs_[0].crtc, 0, 0, kSmallModeId, outputs_[0].output).c_str(),
-          GetCrtcAction(
-              outputs_[1].crtc, 0, 0, kSmallModeId, outputs_[1].output).c_str(),
+          GetFramebufferAction(small_mode_.size(), &outputs_[0], &outputs_[1])
+              .c_str(),
+          GetCrtcAction(outputs_[0], &small_mode_, gfx::Point(0, 0)).c_str(),
+          GetCrtcAction(outputs_[1], &small_mode_, gfx::Point(0, 0)).c_str(),
           kUngrab,
           NULL),
       log_->GetActionsAndClear());
@@ -962,16 +926,13 @@ TEST_F(OutputConfiguratorTest, SuspendAndResume) {
   configurator_.SetDisplayPower(chromeos::DISPLAY_POWER_ALL_OFF,
                                 OutputConfigurator::kSetDisplayPowerNoFlags);
   EXPECT_EQ(
-      JoinActions(
-          kGrab,
-          GetFramebufferAction(kSmallModeWidth,
-                               kSmallModeHeight,
-                               outputs_[0].crtc,
-                               outputs_[1].crtc).c_str(),
-          GetCrtcAction(outputs_[0].crtc, 0, 0, 0, outputs_[0].output).c_str(),
-          GetCrtcAction(outputs_[1].crtc, 0, 0, 0, outputs_[1].output).c_str(),
-          kUngrab,
-          NULL),
+      JoinActions(kGrab,
+                  GetFramebufferAction(
+                      small_mode_.size(), &outputs_[0], &outputs_[1]).c_str(),
+                  GetCrtcAction(outputs_[0], NULL, gfx::Point(0, 0)).c_str(),
+                  GetCrtcAction(outputs_[1], NULL, gfx::Point(0, 0)).c_str(),
+                  kUngrab,
+                  NULL),
       log_->GetActionsAndClear());
 
   configurator_.SuspendDisplays();
@@ -985,9 +946,8 @@ TEST_F(OutputConfiguratorTest, SuspendAndResume) {
   EXPECT_EQ(
       JoinActions(
           kGrab,
-          GetFramebufferAction(
-              kSmallModeWidth, kSmallModeHeight, outputs_[0].crtc, 0).c_str(),
-          GetCrtcAction(outputs_[0].crtc, 0, 0, 0, outputs_[0].output).c_str(),
+          GetFramebufferAction(small_mode_.size(), &outputs_[0], NULL).c_str(),
+          GetCrtcAction(outputs_[0], NULL, gfx::Point(0, 0)).c_str(),
           kUngrab,
           NULL),
       log_->GetActionsAndClear());
@@ -1013,15 +973,17 @@ TEST_F(OutputConfiguratorTest, Headless) {
             log_->GetActionsAndClear());
 
   // Connect an external display and check that it's configured correctly.
-  outputs_[0] = outputs_[1];
+  outputs_[0].set_current_mode(outputs_[1].current_mode());
+  outputs_[0].set_native_mode(outputs_[1].native_mode());
+  outputs_[0].set_modes(outputs_[1].modes());
+  outputs_[0].set_type(outputs_[1].type());
+
   UpdateOutputs(1, true);
   EXPECT_EQ(
       JoinActions(
           kGrab,
-          GetFramebufferAction(
-              kBigModeWidth, kBigModeHeight, outputs_[0].crtc, 0).c_str(),
-          GetCrtcAction(outputs_[0].crtc, 0, 0, kBigModeId, outputs_[0].output)
-              .c_str(),
+          GetFramebufferAction(big_mode_.size(), &outputs_[0], NULL).c_str(),
+          GetCrtcAction(outputs_[0], &big_mode_, gfx::Point(0, 0)).c_str(),
           kUngrab,
           NULL),
       log_->GetActionsAndClear());
@@ -1039,14 +1001,10 @@ TEST_F(OutputConfiguratorTest, StartWithTwoOutputs) {
       JoinActions(
           kGrab,
           kInitXRandR,
-          GetFramebufferAction(kSmallModeWidth,
-                               kSmallModeHeight,
-                               outputs_[0].crtc,
-                               outputs_[1].crtc).c_str(),
-          GetCrtcAction(
-              outputs_[0].crtc, 0, 0, kSmallModeId, outputs_[0].output).c_str(),
-          GetCrtcAction(
-              outputs_[1].crtc, 0, 0, kSmallModeId, outputs_[1].output).c_str(),
+          GetFramebufferAction(small_mode_.size(), &outputs_[0], &outputs_[1])
+              .c_str(),
+          GetCrtcAction(outputs_[0], &small_mode_, gfx::Point(0, 0)).c_str(),
+          GetCrtcAction(outputs_[1], &small_mode_, gfx::Point(0, 0)).c_str(),
           kForceDPMS,
           kUngrab,
           NULL),
@@ -1087,7 +1045,7 @@ TEST_F(OutputConfiguratorTest, InvalidOutputStates) {
 }
 
 TEST_F(OutputConfiguratorTest, GetOutputStateForDisplaysWithoutId) {
-  outputs_[0].has_display_id = false;
+  outputs_[0].set_has_proper_display_id(false);
   UpdateOutputs(2, false);
   configurator_.Init(false);
   state_controller_.set_state(OUTPUT_STATE_DUAL_MIRROR);
@@ -1096,7 +1054,7 @@ TEST_F(OutputConfiguratorTest, GetOutputStateForDisplaysWithoutId) {
 }
 
 TEST_F(OutputConfiguratorTest, GetOutputStateForDisplaysWithId) {
-  outputs_[0].has_display_id = true;
+  outputs_[0].set_has_proper_display_id(true);
   UpdateOutputs(2, false);
   configurator_.Init(false);
   state_controller_.set_state(OUTPUT_STATE_DUAL_MIRROR);
@@ -1106,10 +1064,10 @@ TEST_F(OutputConfiguratorTest, GetOutputStateForDisplaysWithId) {
 
 TEST_F(OutputConfiguratorTest, UpdateCachedOutputsEvenAfterFailure) {
   InitWithSingleOutput();
-  const std::vector<OutputConfigurator::OutputSnapshot>* cached =
+  const OutputConfigurator::DisplayStateList* cached =
       &configurator_.cached_outputs();
   ASSERT_EQ(static_cast<size_t>(1), cached->size());
-  EXPECT_EQ(outputs_[0].current_mode, (*cached)[0].current_mode);
+  EXPECT_EQ(outputs_[0].current_mode(), (*cached)[0].display->current_mode());
 
   // After connecting a second output, check that it shows up in
   // |cached_outputs_| even if an invalid state is requested.
@@ -1117,24 +1075,20 @@ TEST_F(OutputConfiguratorTest, UpdateCachedOutputsEvenAfterFailure) {
   UpdateOutputs(2, true);
   cached = &configurator_.cached_outputs();
   ASSERT_EQ(static_cast<size_t>(2), cached->size());
-  EXPECT_EQ(outputs_[0].current_mode, (*cached)[0].current_mode);
-  EXPECT_EQ(outputs_[1].current_mode, (*cached)[1].current_mode);
+  EXPECT_EQ(outputs_[0].current_mode(), (*cached)[0].display->current_mode());
+  EXPECT_EQ(outputs_[1].current_mode(), (*cached)[1].display->current_mode());
 }
 
 TEST_F(OutputConfiguratorTest, PanelFitting) {
   // Configure the internal display to support only the big mode and the
   // external display to support only the small mode.
-  outputs_[0].current_mode = kBigModeId;
-  outputs_[0].native_mode = kBigModeId;
-  outputs_[0].mode_infos.clear();
-  outputs_[0].mode_infos[kBigModeId] =
-      OutputConfigurator::ModeInfo(kBigModeWidth, kBigModeHeight, false, 60.0);
+  outputs_[0].set_current_mode(&big_mode_);
+  outputs_[0].set_native_mode(&big_mode_);
+  outputs_[0].set_modes(std::vector<const DisplayMode*>(1, &big_mode_));
 
-  outputs_[1].current_mode = kSmallModeId;
-  outputs_[1].native_mode = kSmallModeId;
-  outputs_[1].mode_infos.clear();
-  outputs_[1].mode_infos[kSmallModeId] = OutputConfigurator::ModeInfo(
-      kSmallModeWidth, kSmallModeHeight, false, 60.0);
+  outputs_[1].set_current_mode(&small_mode_);
+  outputs_[1].set_native_mode(&small_mode_);
+  outputs_[1].set_modes(std::vector<const DisplayMode*>(1, &small_mode_));
 
   // The small mode should be added to the internal output when requesting
   // mirrored mode.
@@ -1147,15 +1101,11 @@ TEST_F(OutputConfiguratorTest, PanelFitting) {
       JoinActions(
           kGrab,
           kInitXRandR,
-          GetAddOutputModeAction(outputs_[0].output, kSmallModeId).c_str(),
-          GetFramebufferAction(kSmallModeWidth,
-                               kSmallModeHeight,
-                               outputs_[0].crtc,
-                               outputs_[1].crtc).c_str(),
-          GetCrtcAction(
-              outputs_[0].crtc, 0, 0, kSmallModeId, outputs_[0].output).c_str(),
-          GetCrtcAction(
-              outputs_[1].crtc, 0, 0, kSmallModeId, outputs_[1].output).c_str(),
+          GetAddOutputModeAction(outputs_[0], &small_mode_).c_str(),
+          GetFramebufferAction(small_mode_.size(), &outputs_[0], &outputs_[1])
+              .c_str(),
+          GetCrtcAction(outputs_[0], &small_mode_, gfx::Point(0, 0)).c_str(),
+          GetCrtcAction(outputs_[1], &small_mode_, gfx::Point(0, 0)).c_str(),
           kForceDPMS,
           kUngrab,
           NULL),
@@ -1164,18 +1114,20 @@ TEST_F(OutputConfiguratorTest, PanelFitting) {
   // Both outputs should be using the small mode.
   ASSERT_EQ(1, observer_.num_changes());
   ASSERT_EQ(static_cast<size_t>(2), observer_.latest_outputs().size());
-  EXPECT_EQ(kSmallModeId, observer_.latest_outputs()[0].mirror_mode);
-  EXPECT_EQ(kSmallModeId, observer_.latest_outputs()[0].current_mode);
-  EXPECT_EQ(kSmallModeId, observer_.latest_outputs()[1].mirror_mode);
-  EXPECT_EQ(kSmallModeId, observer_.latest_outputs()[1].current_mode);
+  EXPECT_EQ(&small_mode_, observer_.latest_outputs()[0].mirror_mode);
+  EXPECT_EQ(&small_mode_,
+            observer_.latest_outputs()[0].display->current_mode());
+  EXPECT_EQ(&small_mode_, observer_.latest_outputs()[1].mirror_mode);
+  EXPECT_EQ(&small_mode_,
+            observer_.latest_outputs()[1].display->current_mode());
 
   // Also check that the newly-added small mode is present in the internal
   // snapshot that was passed to the observer (http://crbug.com/289159).
-  const OutputConfigurator::ModeInfo* info = OutputConfigurator::GetModeInfo(
-      observer_.latest_outputs()[0], kSmallModeId);
-  ASSERT_TRUE(info);
-  EXPECT_EQ(kSmallModeWidth, info->width);
-  EXPECT_EQ(kSmallModeHeight, info->height);
+  const OutputConfigurator::DisplayState& state = observer_.latest_outputs()[0];
+  ASSERT_NE(state.display->modes().end(),
+            std::find(state.display->modes().begin(),
+                      state.display->modes().end(),
+                      &small_mode_));
 }
 
 TEST_F(OutputConfiguratorTest, OutputProtection) {
@@ -1193,7 +1145,7 @@ TEST_F(OutputConfiguratorTest, OutputProtection) {
   uint32_t link_mask = 0;
   uint32_t protection_mask = 0;
   EXPECT_TRUE(configurator_.QueryOutputProtectionStatus(
-      id, outputs_[0].display_id, &link_mask, &protection_mask));
+      id, outputs_[0].display_id(), &link_mask, &protection_mask));
   EXPECT_EQ(static_cast<uint32_t>(OUTPUT_TYPE_INTERNAL), link_mask);
   EXPECT_EQ(static_cast<uint32_t>(OUTPUT_PROTECTION_METHOD_NONE),
             protection_mask);
@@ -1203,21 +1155,21 @@ TEST_F(OutputConfiguratorTest, OutputProtection) {
   UpdateOutputs(2, true);
   EXPECT_NE(kNoActions, log_->GetActionsAndClear());
   EXPECT_TRUE(configurator_.QueryOutputProtectionStatus(
-      id, outputs_[1].display_id, &link_mask, &protection_mask));
+      id, outputs_[1].display_id(), &link_mask, &protection_mask));
   EXPECT_EQ(static_cast<uint32_t>(OUTPUT_TYPE_HDMI), link_mask);
   EXPECT_EQ(static_cast<uint32_t>(OUTPUT_PROTECTION_METHOD_NONE),
             protection_mask);
   EXPECT_EQ(kNoActions, log_->GetActionsAndClear());
 
   EXPECT_TRUE(configurator_.EnableOutputProtection(
-      id, outputs_[1].display_id, OUTPUT_PROTECTION_METHOD_HDCP));
-  EXPECT_EQ(GetSetHDCPStateAction(outputs_[1].output, HDCP_STATE_DESIRED),
+      id, outputs_[1].display_id(), OUTPUT_PROTECTION_METHOD_HDCP));
+  EXPECT_EQ(GetSetHDCPStateAction(outputs_[1], HDCP_STATE_DESIRED),
             log_->GetActionsAndClear());
 
   // Enable protection.
   native_display_delegate_->set_hdcp_state(HDCP_STATE_ENABLED);
   EXPECT_TRUE(configurator_.QueryOutputProtectionStatus(
-      id, outputs_[1].display_id, &link_mask, &protection_mask));
+      id, outputs_[1].display_id(), &link_mask, &protection_mask));
   EXPECT_EQ(static_cast<uint32_t>(OUTPUT_TYPE_HDMI), link_mask);
   EXPECT_EQ(static_cast<uint32_t>(OUTPUT_PROTECTION_METHOD_HDCP),
             protection_mask);
@@ -1225,7 +1177,7 @@ TEST_F(OutputConfiguratorTest, OutputProtection) {
 
   // Protections should be disabled after unregister.
   configurator_.UnregisterOutputProtectionClient(id);
-  EXPECT_EQ(GetSetHDCPStateAction(outputs_[1].output, HDCP_STATE_UNDESIRED),
+  EXPECT_EQ(GetSetHDCPStateAction(outputs_[1], HDCP_STATE_UNDESIRED),
             log_->GetActionsAndClear());
 }
 
@@ -1243,96 +1195,87 @@ TEST_F(OutputConfiguratorTest, OutputProtectionTwoClients) {
 
   // Clients never know state enableness for methods that they didn't request.
   EXPECT_TRUE(configurator_.EnableOutputProtection(
-      client1, outputs_[1].display_id, OUTPUT_PROTECTION_METHOD_HDCP));
-  EXPECT_EQ(
-      GetSetHDCPStateAction(outputs_[1].output, HDCP_STATE_DESIRED).c_str(),
-      log_->GetActionsAndClear());
+      client1, outputs_[1].display_id(), OUTPUT_PROTECTION_METHOD_HDCP));
+  EXPECT_EQ(GetSetHDCPStateAction(outputs_[1], HDCP_STATE_DESIRED).c_str(),
+            log_->GetActionsAndClear());
   native_display_delegate_->set_hdcp_state(HDCP_STATE_ENABLED);
 
   uint32_t link_mask = 0;
   uint32_t protection_mask = 0;
   EXPECT_TRUE(configurator_.QueryOutputProtectionStatus(
-      client1, outputs_[1].display_id, &link_mask, &protection_mask));
+      client1, outputs_[1].display_id(), &link_mask, &protection_mask));
   EXPECT_EQ(static_cast<uint32_t>(OUTPUT_TYPE_HDMI), link_mask);
   EXPECT_EQ(OUTPUT_PROTECTION_METHOD_HDCP, protection_mask);
 
   EXPECT_TRUE(configurator_.QueryOutputProtectionStatus(
-      client2, outputs_[1].display_id, &link_mask, &protection_mask));
+      client2, outputs_[1].display_id(), &link_mask, &protection_mask));
   EXPECT_EQ(static_cast<uint32_t>(OUTPUT_TYPE_HDMI), link_mask);
   EXPECT_EQ(OUTPUT_PROTECTION_METHOD_NONE, protection_mask);
 
   // Protections will be disabled only if no more clients request them.
   EXPECT_TRUE(configurator_.EnableOutputProtection(
-      client2, outputs_[1].display_id, OUTPUT_PROTECTION_METHOD_NONE));
-  EXPECT_EQ(
-      GetSetHDCPStateAction(outputs_[1].output, HDCP_STATE_DESIRED).c_str(),
-      log_->GetActionsAndClear());
+      client2, outputs_[1].display_id(), OUTPUT_PROTECTION_METHOD_NONE));
+  EXPECT_EQ(GetSetHDCPStateAction(outputs_[1], HDCP_STATE_DESIRED).c_str(),
+            log_->GetActionsAndClear());
   EXPECT_TRUE(configurator_.EnableOutputProtection(
-      client1, outputs_[1].display_id, OUTPUT_PROTECTION_METHOD_NONE));
+      client1, outputs_[1].display_id(), OUTPUT_PROTECTION_METHOD_NONE));
   EXPECT_EQ(
-      GetSetHDCPStateAction(outputs_[1].output, HDCP_STATE_UNDESIRED).c_str(),
+      GetSetHDCPStateAction(outputs_[1], HDCP_STATE_UNDESIRED).c_str(),
       log_->GetActionsAndClear());
 }
 
 TEST_F(OutputConfiguratorTest, CTMForMultiScreens) {
-  outputs_[0].touch_device_id = 1;
-  outputs_[1].touch_device_id = 2;
-
+  touchscreen_delegate_->set_configure_touchscreens(true);
   UpdateOutputs(2, false);
   configurator_.Init(false);
   state_controller_.set_state(OUTPUT_STATE_DUAL_EXTENDED);
   configurator_.ForceInitialConfigure(0);
 
-  const int kDualHeight =
-      kSmallModeHeight + OutputConfigurator::kVerticalGap + kBigModeHeight;
-  const int kDualWidth = kBigModeWidth;
+  const int kDualHeight = small_mode_.size().height() +
+                          OutputConfigurator::kVerticalGap +
+                          big_mode_.size().height();
+  const int kDualWidth = big_mode_.size().width();
 
   OutputConfigurator::CoordinateTransformation ctm1 =
       touchscreen_delegate_->GetCTM(1);
   OutputConfigurator::CoordinateTransformation ctm2 =
       touchscreen_delegate_->GetCTM(2);
 
-  EXPECT_EQ(kSmallModeHeight - 1, round((kDualHeight - 1) * ctm1.y_scale));
+  EXPECT_EQ(small_mode_.size().height() - 1,
+            round((kDualHeight - 1) * ctm1.y_scale));
   EXPECT_EQ(0, round((kDualHeight - 1) * ctm1.y_offset));
 
-  EXPECT_EQ(kBigModeHeight - 1, round((kDualHeight - 1) * ctm2.y_scale));
-  EXPECT_EQ(kSmallModeHeight + OutputConfigurator::kVerticalGap,
+  EXPECT_EQ(big_mode_.size().height() - 1,
+            round((kDualHeight - 1) * ctm2.y_scale));
+  EXPECT_EQ(small_mode_.size().height() + OutputConfigurator::kVerticalGap,
             round((kDualHeight - 1) * ctm2.y_offset));
 
-  EXPECT_EQ(kSmallModeWidth - 1, round((kDualWidth - 1) * ctm1.x_scale));
+  EXPECT_EQ(small_mode_.size().width() - 1,
+            round((kDualWidth - 1) * ctm1.x_scale));
   EXPECT_EQ(0, round((kDualWidth - 1) * ctm1.x_offset));
 
-  EXPECT_EQ(kBigModeWidth - 1, round((kDualWidth - 1) * ctm2.x_scale));
+  EXPECT_EQ(big_mode_.size().width() - 1,
+            round((kDualWidth - 1) * ctm2.x_scale));
   EXPECT_EQ(0, round((kDualWidth - 1) * ctm2.x_offset));
 }
 
 TEST_F(OutputConfiguratorTest, HandleConfigureCrtcFailure) {
   InitWithSingleOutput();
 
-  // kFirstMode represents the first mode in the list and
-  // also the mode that we are requesting the output_configurator
-  // to choose.  The test will be setup so that this mode will fail
-  // and it will have to choose the next best option.
-  const int kFirstMode = 11;
+  ScopedVector<const DisplayMode> modes;
+  // The first mode is the mode we are requesting OutputConfigurator to choose.
+  // The test will be setup so that this mode will fail and it will have to
+  // choose the next best option.
+  modes.push_back(new DisplayMode(gfx::Size(2560, 1600), false, 60.0));
+  modes.push_back(new DisplayMode(gfx::Size(1024, 768), false, 60.0));
+  modes.push_back(new DisplayMode(gfx::Size(1280, 720), false, 60.0));
+  modes.push_back(new DisplayMode(gfx::Size(1920, 1080), false, 60.0));
+  modes.push_back(new DisplayMode(gfx::Size(1920, 1080), false, 40.0));
 
-  // Give the mode_info lists a few reasonable modes.
   for (unsigned int i = 0; i < arraysize(outputs_); i++) {
-    outputs_[i].mode_infos.clear();
-
-    int current_mode = kFirstMode;
-    outputs_[i].mode_infos[current_mode++] =
-        OutputConfigurator::ModeInfo(2560, 1600, false, 60.0);
-    outputs_[i].mode_infos[current_mode++] =
-        OutputConfigurator::ModeInfo(1024, 768, false, 60.0);
-    outputs_[i].mode_infos[current_mode++] =
-        OutputConfigurator::ModeInfo(1280, 720, false, 60.0);
-    outputs_[i].mode_infos[current_mode++] =
-        OutputConfigurator::ModeInfo(1920, 1080, false, 60.0);
-    outputs_[i].mode_infos[current_mode++] =
-        OutputConfigurator::ModeInfo(1920, 1080, false, 40.0);
-
-    outputs_[i].current_mode = kFirstMode;
-    outputs_[i].native_mode = kFirstMode;
+    outputs_[i].set_modes(modes.get());
+    outputs_[i].set_current_mode(modes[0]);
+    outputs_[i].set_native_mode(modes[0]);
   }
 
   configurator_.Init(false);
@@ -1341,23 +1284,17 @@ TEST_F(OutputConfiguratorTest, HandleConfigureCrtcFailure) {
   // unrealistic but the want to make sure any assumptions don't
   // creep in.
   native_display_delegate_->set_max_configurable_pixels(
-      outputs_[0].mode_infos[kFirstMode + 2].width *
-      outputs_[0].mode_infos[kFirstMode + 2].height);
+      modes[2]->size().GetArea());
   state_controller_.set_state(OUTPUT_STATE_SINGLE);
   UpdateOutputs(1, true);
 
   EXPECT_EQ(
       JoinActions(
           kGrab,
-          GetFramebufferAction(2560, 1600, outputs_[0].crtc, 0).c_str(),
-          GetCrtcAction(outputs_[0].crtc, 0, 0, kFirstMode, outputs_[0].output)
-              .c_str(),
-          GetCrtcAction(
-              outputs_[0].crtc, 0, 0, kFirstMode + 3, outputs_[0].output)
-              .c_str(),
-          GetCrtcAction(
-              outputs_[0].crtc, 0, 0, kFirstMode + 2, outputs_[0].output)
-              .c_str(),
+          GetFramebufferAction(big_mode_.size(), &outputs_[0], NULL).c_str(),
+          GetCrtcAction(outputs_[0], modes[0], gfx::Point(0, 0)).c_str(),
+          GetCrtcAction(outputs_[0], modes[3], gfx::Point(0, 0)).c_str(),
+          GetCrtcAction(outputs_[0], modes[2], gfx::Point(0, 0)).c_str(),
           kUngrab,
           NULL),
       log_->GetActionsAndClear());
@@ -1365,58 +1302,46 @@ TEST_F(OutputConfiguratorTest, HandleConfigureCrtcFailure) {
   // This test should attempt to configure a mirror mode that will not succeed
   // and should end up in extended mode.
   native_display_delegate_->set_max_configurable_pixels(
-      outputs_[0].mode_infos[kFirstMode + 3].width *
-      outputs_[0].mode_infos[kFirstMode + 3].height);
+      modes[3]->size().GetArea());
   state_controller_.set_state(OUTPUT_STATE_DUAL_MIRROR);
   UpdateOutputs(2, true);
 
   EXPECT_EQ(
       JoinActions(
           kGrab,
-          GetFramebufferAction(outputs_[0].mode_infos[kFirstMode].width,
-                               outputs_[0].mode_infos[kFirstMode].height,
-                               outputs_[0].crtc,
-                               outputs_[1].crtc).c_str(),
-          GetCrtcAction(outputs_[0].crtc, 0, 0, kFirstMode, outputs_[0].output)
+          GetFramebufferAction(modes[0]->size(), &outputs_[0], &outputs_[1])
               .c_str(),
+          GetCrtcAction(outputs_[0], modes[0], gfx::Point(0, 0)).c_str(),
           // First mode tried is expected to fail and it will
           // retry wil the 4th mode in the list.
-          GetCrtcAction(
-              outputs_[0].crtc, 0, 0, kFirstMode + 3, outputs_[0].output)
-              .c_str(),
+          GetCrtcAction(outputs_[0], modes[3], gfx::Point(0, 0)).c_str(),
           // Then attempt to configure crtc1 with the first mode.
-          GetCrtcAction(outputs_[1].crtc, 0, 0, kFirstMode, outputs_[1].output)
-              .c_str(),
-          GetCrtcAction(
-              outputs_[1].crtc, 0, 0, kFirstMode + 3, outputs_[1].output)
-              .c_str(),
+          GetCrtcAction(outputs_[1], modes[0], gfx::Point(0, 0)).c_str(),
+          GetCrtcAction(outputs_[1], modes[3], gfx::Point(0, 0)).c_str(),
           // Since it was requested to go into mirror mode
           // and the configured modes were different, it
           // should now try and setup a valid configurable
           // extended mode.
-          GetFramebufferAction(outputs_[0].mode_infos[kFirstMode].width,
-                               outputs_[0].mode_infos[kFirstMode].height +
-                                   outputs_[1].mode_infos[kFirstMode].height +
-                                   OutputConfigurator::kVerticalGap,
-                               outputs_[0].crtc,
-                               outputs_[1].crtc).c_str(),
-          GetCrtcAction(outputs_[0].crtc, 0, 0, kFirstMode, outputs_[0].output)
+          GetFramebufferAction(
+              gfx::Size(modes[0]->size().width(),
+                        modes[0]->size().height() + modes[0]->size().height() +
+                            OutputConfigurator::kVerticalGap),
+              &outputs_[0],
+              &outputs_[1]).c_str(),
+          GetCrtcAction(outputs_[0], modes[0], gfx::Point(0, 0)).c_str(),
+          GetCrtcAction(outputs_[0], modes[3], gfx::Point(0, 0)).c_str(),
+          GetCrtcAction(outputs_[1],
+                        modes[0],
+                        gfx::Point(0,
+                                   modes[0]->size().height() +
+                                       OutputConfigurator::kVerticalGap))
               .c_str(),
-          GetCrtcAction(
-              outputs_[0].crtc, 0, 0, kFirstMode + 3, outputs_[0].output)
+          GetCrtcAction(outputs_[1],
+                        modes[3],
+                        gfx::Point(0,
+                                   modes[0]->size().height() +
+                                       OutputConfigurator::kVerticalGap))
               .c_str(),
-          GetCrtcAction(outputs_[1].crtc,
-                        0,
-                        outputs_[1].mode_infos[kFirstMode].height +
-                            OutputConfigurator::kVerticalGap,
-                        kFirstMode,
-                        outputs_[1].output).c_str(),
-          GetCrtcAction(outputs_[1].crtc,
-                        0,
-                        outputs_[1].mode_infos[kFirstMode].height +
-                            OutputConfigurator::kVerticalGap,
-                        kFirstMode + 3,
-                        outputs_[1].output).c_str(),
           kUngrab,
           NULL),
       log_->GetActionsAndClear());

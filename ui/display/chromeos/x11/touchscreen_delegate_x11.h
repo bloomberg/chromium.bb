@@ -19,7 +19,7 @@ class TouchscreenDelegateX11 : public OutputConfigurator::TouchscreenDelegate {
 
   // OutputConfigurator::TouchscreenDelegate implementation:
   virtual void AssociateTouchscreens(
-      std::vector<OutputConfigurator::OutputSnapshot>* outputs) OVERRIDE;
+      OutputConfigurator::DisplayStateList* outputs) OVERRIDE;
   virtual void ConfigureCTM(
       int touch_device_id,
       const OutputConfigurator::CoordinateTransformation& ctm) OVERRIDE;

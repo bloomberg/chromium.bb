@@ -5,12 +5,25 @@
 #ifndef UI_DISPLAY_CHROMEOS_X11_NATIVE_DISPLAY_DELEGATE_X11_H_
 #define UI_DISPLAY_CHROMEOS_X11_NATIVE_DISPLAY_DELEGATE_X11_H_
 
+#include <map>
 #include <vector>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/event_types.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
+#include "base/observer_list.h"
 #include "ui/display/chromeos/native_display_delegate.h"
+#include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/size.h"
 
+// Forward declarations for Xlib and Xrandr.
+// This is so unused X definitions don't pollute the namespace.
+typedef unsigned long XID;
+typedef XID RROutput;
+typedef XID RRCrtc;
+typedef XID RRMode;
 typedef XID Window;
 
 struct _XDisplay;
@@ -22,9 +35,11 @@ typedef _XRRScreenResources XRRScreenResources;
 
 namespace ui {
 
+class DisplayModeX11;
+class DisplaySnapshotX11;
 class NativeDisplayEventDispatcherX11;
 
-class NativeDisplayDelegateX11 : public NativeDisplayDelegate {
+class DISPLAY_EXPORT NativeDisplayDelegateX11 : public NativeDisplayDelegate {
  public:
   // Helper class that allows NativeDisplayEventDispatcherX11 and
   // NativeDisplayDelegateX11::MessagePumpObserverX11 to interact with this
@@ -39,8 +54,7 @@ class NativeDisplayDelegateX11 : public NativeDisplayDelegate {
 
     // Returns the list of current outputs. This is used to discard duplicate
     // events.
-    virtual const std::vector<OutputConfigurator::OutputSnapshot>&
-        GetCachedOutputs() const = 0;
+    virtual const std::vector<DisplaySnapshot*>& GetCachedOutputs() const = 0;
 
     // Notify |observers_| that a change in configuration has occurred.
     virtual void NotifyDisplayObservers() = 0;
@@ -56,21 +70,17 @@ class NativeDisplayDelegateX11 : public NativeDisplayDelegate {
   virtual void SyncWithServer() OVERRIDE;
   virtual void SetBackgroundColor(uint32 color_argb) OVERRIDE;
   virtual void ForceDPMSOn() OVERRIDE;
-  virtual std::vector<OutputConfigurator::OutputSnapshot> GetOutputs() OVERRIDE;
-  virtual void AddMode(const OutputConfigurator::OutputSnapshot& output,
-                       RRMode mode) OVERRIDE;
-  virtual bool Configure(const OutputConfigurator::OutputSnapshot& output,
-                         RRMode mode,
-                         int x,
-                         int y) OVERRIDE;
-  virtual void CreateFrameBuffer(
-      int width,
-      int height,
-      const std::vector<OutputConfigurator::OutputSnapshot>& outputs) OVERRIDE;
-  virtual bool GetHDCPState(const OutputConfigurator::OutputSnapshot& output,
-                            ui::HDCPState* state) OVERRIDE;
-  virtual bool SetHDCPState(const OutputConfigurator::OutputSnapshot& output,
-                            ui::HDCPState state) OVERRIDE;
+  virtual std::vector<DisplaySnapshot*> GetOutputs() OVERRIDE;
+  virtual void AddMode(const DisplaySnapshot& output,
+                       const DisplayMode* mode) OVERRIDE;
+  virtual bool Configure(const DisplaySnapshot& output,
+                         const DisplayMode* mode,
+                         const gfx::Point& origin) OVERRIDE;
+  virtual void CreateFrameBuffer(const gfx::Size& size) OVERRIDE;
+  virtual bool GetHDCPState(const DisplaySnapshot& output,
+                            HDCPState* state) OVERRIDE;
+  virtual bool SetHDCPState(const DisplaySnapshot& output,
+                            HDCPState state) OVERRIDE;
 
   virtual void AddObserver(NativeDisplayObserver* observer) OVERRIDE;
   virtual void RemoveObserver(NativeDisplayObserver* observer) OVERRIDE;
@@ -79,23 +89,20 @@ class NativeDisplayDelegateX11 : public NativeDisplayDelegate {
   class HelperDelegateX11;
   class MessagePumpObserverX11;
 
-  // Initializes |mode_info| to contain details corresponding to |mode|. Returns
-  // true on success.
-  bool InitModeInfo(RRMode mode, OutputConfigurator::ModeInfo* mode_info);
+  // Parses all the modes made available by |screen_|.
+  void InitModes();
 
   // Helper method for GetOutputs() that returns an OutputSnapshot struct based
-  // on the passed-in information. Further initialization is required (e.g.
-  // |selected_mode|, |mirror_mode|, and |touch_device_id|).
-  OutputConfigurator::OutputSnapshot InitOutputSnapshot(RROutput id,
-                                                        XRROutputInfo* info,
-                                                        RRCrtc* last_used_crtc,
-                                                        int index);
+  // on the passed-in information.
+  DisplaySnapshotX11* InitDisplaySnapshot(RROutput id,
+                                          XRROutputInfo* info,
+                                          RRCrtc* last_used_crtc,
+                                          int index);
 
   // Destroys unused CRTCs and parks used CRTCs in a way which allows a
   // framebuffer resize. This is faster than turning them off, resizing,
   // then turning them back on.
-  void DestroyUnusedCrtcs(
-      const std::vector<OutputConfigurator::OutputSnapshot>& outputs);
+  void DestroyUnusedCrtcs();
 
   bool ConfigureCrtc(RRCrtc crtc, RRMode mode, RROutput output, int x, int y);
 
@@ -108,10 +115,12 @@ class NativeDisplayDelegateX11 : public NativeDisplayDelegate {
   // Initialized when the server is grabbed and freed when it's ungrabbed.
   XRRScreenResources* screen_;
 
+  std::map<RRMode, DisplayModeX11*> modes_;
+
   // Every time GetOutputs() is called we cache the updated list of outputs in
   // |cached_outputs_| so that we can check for duplicate events rather than
   // propagate them.
-  std::vector<OutputConfigurator::OutputSnapshot> cached_outputs_;
+  ScopedVector<DisplaySnapshot> cached_outputs_;
 
   scoped_ptr<HelperDelegate> helper_delegate_;
 

@@ -56,8 +56,8 @@ class ASH_EXPORT PowerButtonController
 
 #if defined(OS_CHROMEOS) && defined(USE_X11)
   // Overriden from ui::OutputConfigurator::Observer:
-  virtual void OnDisplayModeChanged(const std::vector<
-      ui::OutputConfigurator::OutputSnapshot>& outputs) OVERRIDE;
+  virtual void OnDisplayModeChanged(
+      const ui::OutputConfigurator::DisplayStateList& outputs) OVERRIDE;
 #endif
 
  private:
