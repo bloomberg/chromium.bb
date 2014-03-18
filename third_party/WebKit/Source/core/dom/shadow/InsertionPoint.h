@@ -56,9 +56,6 @@ public:
 
     virtual bool canAffectSelector() const { return false; }
 
-    bool resetStyleInheritance() const;
-    void setResetStyleInheritance(bool);
-
     virtual void attach(const AttachContext& = AttachContext()) OVERRIDE;
     virtual void detach(const AttachContext& = AttachContext()) OVERRIDE;
 
@@ -77,7 +74,6 @@ protected:
     virtual void childrenChanged(bool changedByParser, Node* beforeChange, Node* afterChange, int childCountDelta) OVERRIDE;
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
     virtual void removedFrom(ContainerNode*) OVERRIDE;
-    virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
     virtual void willRecalcStyle(StyleRecalcChange) OVERRIDE;
 
 private:

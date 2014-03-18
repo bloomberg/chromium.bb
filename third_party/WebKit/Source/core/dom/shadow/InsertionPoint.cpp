@@ -247,26 +247,6 @@ void InsertionPoint::removedFrom(ContainerNode* insertionPoint)
     HTMLElement::removedFrom(insertionPoint);
 }
 
-void InsertionPoint::parseAttribute(const QualifiedName& name, const AtomicString& value)
-{
-    if (name == reset_style_inheritanceAttr) {
-        if (!inDocument() || !isActive())
-            return;
-        containingShadowRoot()->host()->setNeedsStyleRecalc(SubtreeStyleChange);
-    } else
-        HTMLElement::parseAttribute(name, value);
-}
-
-bool InsertionPoint::resetStyleInheritance() const
-{
-    return fastHasAttribute(reset_style_inheritanceAttr);
-}
-
-void InsertionPoint::setResetStyleInheritance(bool value)
-{
-    setBooleanAttribute(reset_style_inheritanceAttr, value);
-}
-
 const InsertionPoint* resolveReprojection(const Node* projectedNode)
 {
     ASSERT(projectedNode);
