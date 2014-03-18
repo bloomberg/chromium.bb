@@ -47,15 +47,23 @@ void FeedbackProfileObserver::Observe(
     QueueUnsentReports(profile);
 }
 
+void FeedbackProfileObserver::QueueSingleReport(
+    feedback::FeedbackUploader* uploader,
+    const std::string& data) {
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE, base::Bind(&FeedbackUploader::QueueReport,
+                                               uploader->AsWeakPtr(), data));
+}
+
 void FeedbackProfileObserver::QueueUnsentReports(
     content::BrowserContext* context) {
   feedback::FeedbackUploader* uploader =
       feedback::FeedbackUploaderFactory::GetForBrowserContext(context);
   BrowserThread::PostBlockingPoolTask(FROM_HERE,
-      base::Bind(&FeedbackReport::LoadReportsAndQueue,
-                 context->GetPath(),
-                 base::Bind(&FeedbackUploader::QueueReport,
-                            uploader->AsWeakPtr())));
+      base::Bind(
+          &FeedbackReport::LoadReportsAndQueue,
+          uploader->GetFeedbackReportsPath(),
+          base::Bind(&FeedbackProfileObserver::QueueSingleReport, uploader)));
 }
 
 }  // namespace feedback

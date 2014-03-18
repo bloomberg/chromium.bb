@@ -9,11 +9,10 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "chrome/browser/feedback/feedback_uploader.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
 namespace feedback {
-
-typedef base::Callback<void(const std::string&)> ReportDataCallback;
 
 // FeedbackUploaderDelegate is a simple http uploader for a feedback report. On
 // succes or failure, it deletes itself, but on failure it also notifies the

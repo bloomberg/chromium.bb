@@ -6,6 +6,7 @@
 
 #include "base/memory/singleton.h"
 #include "chrome/browser/feedback/feedback_uploader.h"
+#include "chrome/browser/feedback/feedback_uploader_chrome.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
@@ -19,7 +20,7 @@ FeedbackUploaderFactory* FeedbackUploaderFactory::GetInstance() {
 // static
 FeedbackUploader* FeedbackUploaderFactory::GetForBrowserContext(
     content::BrowserContext* context) {
-  return static_cast<FeedbackUploader*>(
+  return static_cast<FeedbackUploaderChrome*>(
       GetInstance()->GetServiceForBrowserContext(context, true));
 }
 
@@ -32,7 +33,7 @@ FeedbackUploaderFactory::~FeedbackUploaderFactory() {}
 
 KeyedService* FeedbackUploaderFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  return new FeedbackUploader(context);
+  return new FeedbackUploaderChrome(context);
 }
 
 content::BrowserContext* FeedbackUploaderFactory::GetBrowserContextToUse(

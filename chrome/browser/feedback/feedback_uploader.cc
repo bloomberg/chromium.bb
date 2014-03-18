@@ -7,26 +7,21 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/sequenced_task_runner.h"
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/feedback/feedback_report.h"
-#include "chrome/common/chrome_switches.h"
-#include "content/public/browser/browser_context.h"
-#include "content/public/browser/browser_thread.h"
-#include "net/base/load_flags.h"
-#include "net/url_request/url_fetcher.h"
-#include "url/gurl.h"
-
-using content::BrowserThread;
 
 namespace feedback {
 namespace {
 
 const char kFeedbackPostUrl[] =
     "https://www.google.com/tools/feedback/chrome/__submit";
-const char kProtBufMimeType[] = "application/x-protobuf";
 
 const int64 kRetryDelayMinutes = 60;
+
+const base::FilePath::CharType kFeedbackReportPath[] =
+    FILE_PATH_LITERAL("Feedback Reports");
 
 }  // namespace
 
@@ -35,10 +30,12 @@ bool FeedbackUploader::ReportsUploadTimeComparator::operator()(
   return a->upload_at() > b->upload_at();
 }
 
-FeedbackUploader::FeedbackUploader(content::BrowserContext* context)
-    : context_(context),
-      retry_delay_(base::TimeDelta::FromMinutes(kRetryDelayMinutes)) {
-  CHECK(context_);
+FeedbackUploader::FeedbackUploader(const base::FilePath& path,
+                                   base::SequencedWorkerPool* pool)
+    : report_path_(path.Append(kFeedbackReportPath)),
+      retry_delay_(base::TimeDelta::FromMinutes(kRetryDelayMinutes)),
+      url_(kFeedbackPostUrl),
+      pool_(pool) {
   dispatch_callback_ = base::Bind(&FeedbackUploader::DispatchReport,
                                   AsWeakPtr());
 }
@@ -46,31 +43,7 @@ FeedbackUploader::FeedbackUploader(content::BrowserContext* context)
 FeedbackUploader::~FeedbackUploader() {}
 
 void FeedbackUploader::QueueReport(const std::string& data) {
-  reports_queue_.push(
-      new FeedbackReport(context_, base::Time::Now(), data));
-  UpdateUploadTimer();
-}
-
-void FeedbackUploader::DispatchReport(const std::string& data) {
-  GURL post_url;
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kFeedbackServer))
-    post_url = GURL(CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-        switches::kFeedbackServer));
-  else
-    post_url = GURL(kFeedbackPostUrl);
-
-  net::URLFetcher* fetcher = net::URLFetcher::Create(
-      post_url, net::URLFetcher::POST,
-      new FeedbackUploaderDelegate(
-          data,
-          base::Bind(&FeedbackUploader::UpdateUploadTimer, AsWeakPtr()),
-          base::Bind(&FeedbackUploader::RetryReport, AsWeakPtr())));
-
-  fetcher->SetUploadData(std::string(kProtBufMimeType), data);
-  fetcher->SetRequestContext(context_->GetRequestContext());
-  fetcher->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
-                        net::LOAD_DO_NOT_SEND_COOKIES);
-  fetcher->Start();
+  QueueReportWithDelay(data, base::TimeDelta());
 }
 
 void FeedbackUploader::UpdateUploadTimer() {
@@ -94,9 +67,22 @@ void FeedbackUploader::UpdateUploadTimer() {
 }
 
 void FeedbackUploader::RetryReport(const std::string& data) {
-  reports_queue_.push(new FeedbackReport(context_,
-                                         base::Time::Now() + retry_delay_,
-                                         data));
+  QueueReportWithDelay(data, retry_delay_);
+}
+
+void FeedbackUploader::QueueReportWithDelay(const std::string& data,
+                                            base::TimeDelta delay) {
+  // Uses a BLOCK_SHUTDOWN file task runner because we really don't want to
+  // lose reports.
+  scoped_refptr<base::SequencedTaskRunner> task_runner =
+      pool_->GetSequencedTaskRunnerWithShutdownBehavior(
+          pool_->GetSequenceToken(),
+          base::SequencedWorkerPool::BLOCK_SHUTDOWN);
+
+  reports_queue_.push(new FeedbackReport(report_path_,
+                                         base::Time::Now() + delay,
+                                         data,
+                                         task_runner));
   UpdateUploadTimer();
 }
 

@@ -409,6 +409,8 @@
         'browser/feedback/feedback_util.h',
         'browser/feedback/feedback_uploader.cc',
         'browser/feedback/feedback_uploader.h',
+        'browser/feedback/feedback_uploader_chrome.cc',
+        'browser/feedback/feedback_uploader_chrome.h',
         'browser/feedback/feedback_uploader_delegate.cc',
         'browser/feedback/feedback_uploader_delegate.h',
         'browser/feedback/feedback_uploader_factory.cc',

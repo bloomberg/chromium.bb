@@ -10,26 +10,14 @@
 #include "base/guid.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "content/public/browser/browser_context.h"
-#include "content/public/browser/browser_thread.h"
 #include "net/base/directory_lister.h"
-
-using content::BrowserThread;
 
 namespace {
 
-const base::FilePath::CharType kFeedbackReportPath[] =
-    FILE_PATH_LITERAL("Feedback Reports");
 const base::FilePath::CharType kFeedbackReportFilenameWildcard[] =
     FILE_PATH_LITERAL("Feedback Report.*");
 
 const char kFeedbackReportFilenamePrefix[] = "Feedback Report.";
-
-base::FilePath GetFeedbackReportsPath(content::BrowserContext* context) {
-  if (!context)
-    return base::FilePath();
-  return context->GetPath().Append(kFeedbackReportPath);
-}
 
 void WriteReportOnBlockingPool(const base::FilePath reports_path,
                                const base::FilePath& file,
@@ -47,23 +35,19 @@ void WriteReportOnBlockingPool(const base::FilePath reports_path,
 
 namespace feedback {
 
-FeedbackReport::FeedbackReport(content::BrowserContext* context,
-                               const base::Time& upload_at,
-                               const std::string& data)
-    : upload_at_(upload_at),
-      data_(data) {
-  reports_path_ = GetFeedbackReportsPath(context);
+FeedbackReport::FeedbackReport(
+    const base::FilePath& path,
+    const base::Time& upload_at,
+    const std::string& data,
+    scoped_refptr<base::SequencedTaskRunner> task_runner)
+    : reports_path_(path),
+      upload_at_(upload_at),
+      data_(data),
+      reports_task_runner_(task_runner) {
   if (reports_path_.empty())
     return;
   file_ = reports_path_.AppendASCII(
       kFeedbackReportFilenamePrefix + base::GenerateGUID());
-
-  // Uses a BLOCK_SHUTDOWN file task runner because we really don't want to
-  // lose reports.
-  base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
-  reports_task_runner_ = pool->GetSequencedTaskRunnerWithShutdownBehavior(
-      pool->GetSequenceToken(),
-      base::SequencedWorkerPool::BLOCK_SHUTDOWN);
 
   reports_task_runner_->PostTask(FROM_HERE, base::Bind(
       &WriteReportOnBlockingPool, reports_path_, file_, data_));
@@ -82,7 +66,7 @@ void FeedbackReport::LoadReportsAndQueue(
   if (user_dir.empty())
     return;
 
-  base::FileEnumerator enumerator(user_dir.Append(kFeedbackReportPath),
+  base::FileEnumerator enumerator(user_dir,
                                   false,
                                   base::FileEnumerator::FILES,
                                   kFeedbackReportFilenameWildcard);
@@ -91,8 +75,7 @@ void FeedbackReport::LoadReportsAndQueue(
        name = enumerator.Next()) {
     std::string data;
     if (ReadFileToString(name, &data))
-      BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE, base::Bind(callback, data));
+      callback.Run(data);
     base::DeleteFile(name, false);
   }
 }

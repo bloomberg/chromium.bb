@@ -16,6 +16,8 @@ class BrowserContext;
 
 namespace feedback {
 
+class FeedbackUploader;
+
 // FeedbackProfileObserver waits on profile creation notifications to check
 // if the profile has any pending feedback reports to upload. If it does, it
 // queues those reports for upload.
@@ -37,6 +39,9 @@ class FeedbackProfileObserver : public content::NotificationObserver {
   // Loads any unsent reports from disk and queues them to be uploaded in
   // the given browser context.
   void QueueUnsentReports(content::BrowserContext* context);
+
+  static void QueueSingleReport(feedback::FeedbackUploader* uploader,
+                                const std::string& data);
 
   // Used to track creation of profiles so we can load any unsent reports
   // for that profile.
