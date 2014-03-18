@@ -4,6 +4,8 @@
 
 #include "content/renderer/media/websourcebuffer_impl.h"
 
+#include <limits>
+
 #include "base/float_util.h"
 #include "media/filters/chunk_demuxer.h"
 
@@ -11,7 +13,8 @@ namespace content {
 
 static base::TimeDelta DoubleToTimeDelta(double time) {
   DCHECK(!base::IsNaN(time));
-  DCHECK_GE(time, 0);
+  DCHECK_NE(time, -std::numeric_limits<double>::infinity());
+
   if (time == std::numeric_limits<double>::infinity())
     return media::kInfiniteDuration();
 
@@ -89,6 +92,8 @@ void WebSourceBufferImpl::abort() {
 }
 
 void WebSourceBufferImpl::remove(double start, double end) {
+  DCHECK_GE(start, 0);
+  DCHECK_GE(end, 0);
   demuxer_->Remove(id_, DoubleToTimeDelta(start), DoubleToTimeDelta(end));
 }
 
@@ -101,10 +106,12 @@ bool WebSourceBufferImpl::setTimestampOffset(double offset) {
 }
 
 void WebSourceBufferImpl::setAppendWindowStart(double start) {
+  DCHECK_GE(start, 0);
   append_window_start_ = DoubleToTimeDelta(start);
 }
 
 void WebSourceBufferImpl::setAppendWindowEnd(double end) {
+  DCHECK_GE(end, 0);
   append_window_end_ = DoubleToTimeDelta(end);
 }
 
