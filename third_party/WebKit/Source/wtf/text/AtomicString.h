@@ -50,7 +50,7 @@ public:
 
     // Constructing an AtomicString from a String / StringImpl can be expensive if
     // the StringImpl is not already atomic.
-    explicit AtomicString(StringImpl* imp) : m_string(add(imp)) { }
+    explicit AtomicString(StringImpl* impl) : m_string(add(impl)) { }
     explicit AtomicString(const String& s) : m_string(add(s.impl())) { }
 
     AtomicString(StringImpl* baseString, unsigned start, unsigned length) : m_string(add(baseString, start, length)) { }
