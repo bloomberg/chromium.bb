@@ -29,6 +29,7 @@
 #include "config.h"
 #include "core/css/CSSDefaultStyleSheets.h"
 
+#include "MathMLNames.h"
 #include "UserAgentStyleSheets.h"
 #include "core/css/MediaQueryEvaluator.h"
 #include "core/css/RuleSet.h"
@@ -88,6 +89,7 @@ CSSDefaultStyleSheets::CSSDefaultStyleSheets()
     , m_viewportStyleSheet(nullptr)
     , m_quirksStyleSheet(nullptr)
     , m_svgStyleSheet(nullptr)
+    , m_mathmlStyleSheet(nullptr)
     , m_mediaControlsStyleSheet(nullptr)
     , m_fullscreenStyleSheet(nullptr)
 {
@@ -147,6 +149,16 @@ void CSSDefaultStyleSheets::ensureDefaultStyleSheetsForElement(Element* element,
         changedDefaultStyle = true;
     }
 
+    // FIXME: We should assert that the sheet only styles MathML elements.
+    if (element->namespaceURI() == MathMLNames::mathmlNamespaceURI
+        && !m_mathmlStyleSheet) {
+        m_mathmlStyleSheet = parseUASheet(mathmlUserAgentStyleSheet,
+            sizeof(mathmlUserAgentStyleSheet));
+        m_defaultStyle->addRulesFromSheet(mathmlStyleSheet(), screenEval());
+        m_defaultPrintStyle->addRulesFromSheet(mathmlStyleSheet(), printEval());
+        changedDefaultStyle = true;
+    }
+
     // FIXME: We should assert that this sheet only contains rules for <video> and <audio>.
     if (!m_mediaControlsStyleSheet && (isHTMLVideoElement(*element) || isHTMLAudioElement(*element))) {
         String mediaRules = String(mediaControlsUserAgentStyleSheet, sizeof(mediaControlsUserAgentStyleSheet)) + RenderTheme::theme().extraMediaControlsStyleSheet();
@@ -182,6 +194,7 @@ void CSSDefaultStyleSheets::trace(Visitor* visitor)
     visitor->trace(m_viewportStyleSheet);
     visitor->trace(m_quirksStyleSheet);
     visitor->trace(m_svgStyleSheet);
+    visitor->trace(m_mathmlStyleSheet);
     visitor->trace(m_mediaControlsStyleSheet);
     visitor->trace(m_fullscreenStyleSheet);
 }

@@ -50,6 +50,7 @@ public:
     StyleSheetContents* viewportStyleSheet() { return m_viewportStyleSheet.get(); }
     StyleSheetContents* quirksStyleSheet() { return m_quirksStyleSheet.get(); }
     StyleSheetContents* svgStyleSheet() { return m_svgStyleSheet.get(); }
+    StyleSheetContents* mathmlStyleSheet() { return m_mathmlStyleSheet.get(); }
     StyleSheetContents* mediaControlsStyleSheet() { return m_mediaControlsStyleSheet.get(); }
     StyleSheetContents* fullscreenStyleSheet() { return m_fullscreenStyleSheet.get(); }
 
@@ -69,6 +70,7 @@ private:
     RefPtrWillBeMember<StyleSheetContents> m_viewportStyleSheet;
     RefPtrWillBeMember<StyleSheetContents> m_quirksStyleSheet;
     RefPtrWillBeMember<StyleSheetContents> m_svgStyleSheet;
+    RefPtrWillBeMember<StyleSheetContents> m_mathmlStyleSheet;
     RefPtrWillBeMember<StyleSheetContents> m_mediaControlsStyleSheet;
     RefPtrWillBeMember<StyleSheetContents> m_fullscreenStyleSheet;
 };
