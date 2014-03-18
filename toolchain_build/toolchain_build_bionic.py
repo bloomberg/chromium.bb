@@ -19,6 +19,7 @@ import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import pynacl.hashing_tools
+import pynacl.platform
 import pynacl.repo_tools
 
 import toolchain_build
@@ -37,14 +38,13 @@ TOOLCHAIN_BUILD_SRC = os.path.join(TOOLCHAIN_BUILD, 'src')
 TOOLCHAIN_BUILD_OUT = os.path.join(TOOLCHAIN_BUILD, 'out')
 
 BIONIC_SRC = os.path.join(TOOLCHAIN_BUILD_SRC, 'bionic')
-
 NATIVE_CLIENT = os.path.dirname(TOOLCHAIN_BUILD)
-TOOLCHAIN = os.path.join(NATIVE_CLIENT, 'toolchain')
 
-ARM_NEWLIB = os.path.join(TOOLCHAIN, 'linux_arm_newlib')
-ARM_BIONIC = os.path.join(TOOLCHAIN, 'linux_arm_bionic')
-X86_NEWLIB = os.path.join(TOOLCHAIN, 'linux_x86_newlib')
-X86_BIONIC = os.path.join(TOOLCHAIN, 'linux_x86_bionic')
+def GetToolchainPath(host_arch, libc, *extra_paths):
+  os_name = pynacl.platform.GetOS()
+  return os.path.join(NATIVE_CLIENT, 'toolchain',
+                      '%s_%s_%s' % (os_name, host_arch, libc),
+                      *extra_paths)
 
 
 PROJECTS = [
@@ -91,7 +91,7 @@ def ReplaceArch(text, arch, subarch=None):
 def Clobber():
   Rmdir(os.path.join(TOOLCHAIN_BUILD, 'cache'))
   for arch in ARCHES:
-    Rmdir(os.path.join(TOOLCHAIN, 'linux_%s_bionic' % arch))
+    Rmdir(GetToolchainPath(arch, 'bionic'))
     for workdir in PROJECTS:
       Rmdir(os.path.join(TOOLCHAIN_BUILD_OUT, workdir % arch))
 
@@ -124,10 +124,13 @@ def MungeIRT(src, dst):
 def CreateBasicToolchain():
   # Create a toolchain directory containing only the toolchain binaries and
   # basic files line nacl_arm_macros.s.
-
-  UpdateFromTo(ARM_NEWLIB, ARM_BIONIC,
+  arch = 'arm'
+  UpdateFromTo(GetToolchainPath(arch, 'newlib'),
+               GetToolchainPath(arch, 'bionic'),
                filters=['*arm-nacl/include*', '*arm-nacl/lib*','*.a', '*.o'])
-  UpdateFromTo(ARM_NEWLIB, ARM_BIONIC, paterns=['*.s'])
+  UpdateFromTo(GetToolchainPath(arch, 'newlib'),
+               GetToolchainPath(arch, 'bionic'),
+               paterns=['*.s'])
 
   #  Static build uses:
   #     crt1.o crti.o 4.8.2/crtbeginT.o ... 4.8.2/crtend.o crtn.o
@@ -169,11 +172,10 @@ def CreateBasicToolchain():
   for arch in ARCHES:
     for name in ['irt.h', 'irt_dev.h']:
       src = os.path.join(NATIVE_CLIENT, 'src', 'untrusted', 'irt', name)
-      dst = os.path.join(TOOLCHAIN, 'linux_$ARCH_bionic', '$NACL-nacl',
-                       'include', name)
+      dst = GetToolchainPath(arch, 'bionic', '$NACL-nacl', 'include', name)
       MungeIRT(src, ReplaceArch(dst, arch))
 
-    inspath = os.path.join(TOOLCHAIN, 'linux_$ARCH_bionic')
+    inspath = GetToolchainPath(arch, 'bionic')
     inspath = ReplaceArch(inspath, arch)
 
     # Create empty objects and libraries
@@ -207,9 +209,7 @@ def CreateBasicToolchain():
 
 def ConfigureAndBuild_libc():
   for arch in ARCHES:
-    inspath = os.path.join(TOOLCHAIN, 'linux_$ARCH_bionic')
-    inspath = ReplaceArch(inspath, arch)
-
+    inspath = GetToolchainPath(arch, 'bionic')
     workpath = os.path.join(TOOLCHAIN_BUILD_OUT, 'bionic_$ARCH_work')
     workpath = ReplaceArch(workpath, arch)
     ConfigureAndBuild(arch, 'bionic/libc', workpath, inspath, )
@@ -217,9 +217,7 @@ def ConfigureAndBuild_libc():
 
 def ConfigureAndBuild_libc():
   for arch in ARCHES:
-    inspath = os.path.join(TOOLCHAIN, 'linux_$ARCH_bionic')
-    inspath = ReplaceArch(inspath, arch)
-
+    inspath = GetToolchainPath(arch, 'bionic')
     workpath = os.path.join(TOOLCHAIN_BUILD_OUT, 'bionic_$ARCH_work')
     workpath = ReplaceArch(workpath, arch)
     ConfigureAndBuild(arch, 'bionic/libc', workpath, inspath)
@@ -228,9 +226,7 @@ def ConfigureAndBuild_libc():
 
 def ConfigureAndBuildLinker():
   for arch in ARCHES:
-    inspath = os.path.join(TOOLCHAIN, 'linux_$ARCH_bionic')
-    inspath = ReplaceArch(inspath, arch)
-
+    inspath = GetToolchainPath(arch, 'bionic')
     workpath = os.path.join(TOOLCHAIN_BUILD_OUT, 'bionic_$ARCH_work')
     workpath = ReplaceArch(workpath, arch)
     ConfigureAndBuild(arch, 'bionic/linker', workpath, inspath)
@@ -243,10 +239,8 @@ def ConfigureGCCProject(arch, project, cfg, workpath, inspath):
   os.chmod(filepath, st_info.st_mode | stat.S_IEXEC)
 
   env = os.environ
-  if arch == 'arm':
-    newpath = os.path.join(ARM_BIONIC, 'bin') + ':' + env['PATH']
-  else:
-    newpath = os.path.join(X86_BIONIC, 'bin') + ':' + env['PATH']
+  newpath = GetToolchainPath(arch, 'bionic', 'bin')  + ':' + env['PATH']
+
   proj = '%s %s' % (project, arch)
   setpath = ['/usr/bin/env', 'PATH=' + newpath]
 
@@ -265,10 +259,7 @@ def ConfigureGCCProject(arch, project, cfg, workpath, inspath):
 
 def MakeGCCProject(arch, project, workpath, targets=[]):
   env = os.environ
-  if arch == 'arm':
-    newpath = os.path.join(ARM_BIONIC, 'bin') + ':' + env['PATH']
-  else:
-    newpath = os.path.join(X86_BIONIC, 'bin') + ':' + env['PATH']
+  newpath = GetToolchainPath(arch, 'bionic', 'bin')  + ':' + env['PATH']
   proj = '%s %s' % (project, arch)
   setpath = ['/usr/bin/env', 'PATH=' + newpath]
 
@@ -287,8 +278,7 @@ def MakeGCCProject(arch, project, workpath, targets=[]):
 def ConfigureAndBuild_libgcc(config=False):
   arch = 'arm'
   project = 'libgcc'
-  tcpath = os.path.join(TOOLCHAIN, 'linux_$ARCH_bionic')
-  tcpath = ReplaceArch(tcpath, arch)
+  tcpath = GetToolchainPath(arch, 'bionic')
 
   # Prep work path
   workpath = os.path.join(TOOLCHAIN_BUILD_OUT, 'gcc_$GCC_bionic_work')
@@ -324,8 +314,7 @@ def ConfigureAndBuild_libgcc(config=False):
 def BuildAndInstall_libgcc_s():
   arch = 'arm'
   project = 'libgcc'
-  tcpath = os.path.join(TOOLCHAIN, 'linux_$ARCH_bionic')
-  tcpath = ReplaceArch(tcpath, arch)
+  tcpath = GetToolchainPath(arch, 'bionic')
 
   # Remove temp copy of libgcc.a, it get's installed at the end
   os.remove(os.path.join(tcpath, 'arm-nacl', 'lib', 'libgcc.a'))
@@ -354,8 +343,7 @@ def BuildAndInstall_libgcc_s():
 def ConfigureAndBuild_libstdcpp():
   arch = 'arm'
   project = 'libstdc++'
-  tcpath = os.path.join(TOOLCHAIN, 'linux_$ARCH_bionic')
-  tcpath = ReplaceArch(tcpath, arch)
+  tcpath = GetToolchainPath(arch, 'bionic')
 
   # Prep work path
   workpath = os.path.join(TOOLCHAIN_BUILD_OUT, 'gcc_$GCC_bionic_work')
@@ -396,8 +384,8 @@ def GetProjectPaths(arch, project):
   workpath = os.path.join(TOOLCHAIN_BUILD_OUT, 'bionic_$ARCH_work')
   instpath = os.path.join(TOOLCHAIN_BUILD_OUT, 'bionic_$ARCH_install')
 
+  toolpath = GetToolchainPath(arch, 'bionic')
   workpath = ReplaceArch(os.path.join(workpath, 'bionic', project), arch)
-  toolpath = ReplaceArch(os.path.join(TOOLCHAIN, 'linux_$ARCH_bionic'), arch)
   instpath = ReplaceArch(os.path.join(toolpath, '$NACL-nacl', 'lib'), arch)
   out = {
     'src': srcpath,
@@ -419,7 +407,7 @@ def CreateProject(arch, project, clobber=False):
 # GNU Makefile based on shared rules provided by the Native Client SDK.
 # See README.Makefiles for more details.
 
-TOOLCHAIN_PATH?=$(tc_path)/linux_$ARCH_bionic
+TOOLCHAIN_PATH?=$(tc_path)
 TOOLCHAIN_PREFIX:=$(TOOLCHAIN_PATH)/bin/$GCC-nacl-
 
 CC:=$(TOOLCHAIN_PREFIX)gcc
@@ -443,7 +431,7 @@ include $(src_path)/Makefile
     '$(src_path)': paths['src'],
     '$(dst_path)': paths['work'],
     '$(ins_path)': paths['ins'],
-    '$(tc_path)': TOOLCHAIN,
+    '$(tc_path)': GetToolchainPath(arch, 'bionic'),
     '$(build_tc_path)': TOOLCHAIN_BUILD
   }
   text = ReplaceText(MAKEFILE_TEMPLATE, [remap])
