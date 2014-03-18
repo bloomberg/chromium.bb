@@ -329,4 +329,8 @@ IN_PROC_BROWSER_TEST_F(CastStreamingApiTestWithPixelOutput, DISABLED_EndToEnd) {
   cast_environment->Shutdown();
 }
 
+IN_PROC_BROWSER_TEST_F(CastStreamingApiTestWithPixelOutput, RtpStreamError) {
+  ASSERT_TRUE(RunExtensionSubtest("cast_streaming", "rtp_stream_error.html"));
+}
+
 }  // namespace extensions

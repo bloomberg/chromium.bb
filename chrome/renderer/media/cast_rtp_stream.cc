@@ -11,6 +11,7 @@
 #include "chrome/renderer/media/cast_udp_transport.h"
 #include "content/public/renderer/media_stream_audio_sink.h"
 #include "content/public/renderer/media_stream_video_sink.h"
+#include "content/public/renderer/render_thread.h"
 #include "media/audio/audio_parameters.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_fifo.h"
@@ -122,11 +123,14 @@ class CastVideoSink : public base::SupportsWeakPtr<CastVideoSink>,
                       public content::MediaStreamVideoSink {
  public:
   // |track| provides data for this sink.
+  // |expected_coded_size| is the expected dimension of the video frame.
   // |error_callback| is called if video formats don't match.
   CastVideoSink(const blink::WebMediaStreamTrack& track,
+                const gfx::Size& expected_coded_size,
                 const CastRtpStream::ErrorCallback& error_callback)
       : track_(track),
         sink_added_(false),
+        expected_coded_size_(expected_coded_size),
         error_callback_(error_callback) {}
 
   virtual ~CastVideoSink() {
@@ -137,7 +141,10 @@ class CastVideoSink : public base::SupportsWeakPtr<CastVideoSink>,
   // content::MediaStreamVideoSink implementation.
   virtual void OnVideoFrame(const scoped_refptr<media::VideoFrame>& frame)
       OVERRIDE {
-    DCHECK(frame_input_);
+    if (frame->coded_size() != expected_coded_size_) {
+      error_callback_.Run("Video frame resolution does not match config.");
+      return;
+    }
 
     // Capture time is calculated using the time when the first frame
     // is delivered. Doing so has less jitter because each frame has
@@ -165,6 +172,7 @@ class CastVideoSink : public base::SupportsWeakPtr<CastVideoSink>,
   blink::WebMediaStreamTrack track_;
   scoped_refptr<media::cast::VideoFrameInput> frame_input_;
   bool sink_added_;
+  gfx::Size expected_coded_size_;
   CastRtpStream::ErrorCallback error_callback_;
   base::TimeTicks first_frame_timestamp_;
 
@@ -385,6 +393,7 @@ void CastRtpStream::Start(const CastRtpParams& params,
     // See the code for audio above for explanation of callbacks.
     video_sink_.reset(new CastVideoSink(
         track_,
+        gfx::Size(config.width, config.height),
         media::BindToCurrentLoop(base::Bind(&CastRtpStream::DidEncounterError,
                                             weak_factory_.GetWeakPtr()))));
     cast_session_->StartVideo(
@@ -419,6 +428,10 @@ bool CastRtpStream::IsAudio() const {
 }
 
 void CastRtpStream::DidEncounterError(const std::string& message) {
+  // Save the WeakPtr first because the error callback might delete this object.
+  base::WeakPtr<CastRtpStream> ptr = weak_factory_.GetWeakPtr();
   error_callback_.Run(message);
-  Stop();
+  content::RenderThread::Get()->GetMessageLoop()->PostTask(
+      FROM_HERE,
+      base::Bind(&CastRtpStream::Stop, ptr));
 }
