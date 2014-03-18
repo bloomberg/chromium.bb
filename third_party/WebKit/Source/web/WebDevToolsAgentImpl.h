@@ -124,6 +124,8 @@ public:
     // WebPageOverlay
     virtual void paintPageOverlay(WebCanvas*) OVERRIDE;
 
+    void flushPendingFrontendMessages();
+
 private:
     // WebThread::TaskObserver
     virtual void willProcessTask() OVERRIDE;

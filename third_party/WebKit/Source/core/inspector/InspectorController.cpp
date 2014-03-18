@@ -428,6 +428,11 @@ void InspectorController::didProcessTask()
         domDebuggerAgent->didProcessTask();
 }
 
+void InspectorController::flushPendingFrontendMessages()
+{
+    m_agents.flushPendingFrontendMessages();
+}
+
 void InspectorController::didCommitLoadForMainFrame()
 {
     Vector<InspectorAgent*> agents = m_moduleAgents;
