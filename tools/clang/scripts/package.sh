@@ -48,7 +48,6 @@ done
 THIS_DIR="$(dirname "${0}")"
 LLVM_DIR="${THIS_DIR}/../../../third_party/llvm"
 LLVM_BOOTSTRAP_DIR="${THIS_DIR}/../../../third_party/llvm-bootstrap"
-LLVM_BOOTSTRAP_INSTALL_DIR="${LLVM_DIR}/../llvm-bootstrap-install"
 LLVM_BUILD_DIR="${THIS_DIR}/../../../third_party/llvm-build"
 LLVM_BIN_DIR="${LLVM_BUILD_DIR}/Release+Asserts/bin"
 LLVM_LIB_DIR="${LLVM_BUILD_DIR}/Release+Asserts/lib"
@@ -69,7 +68,6 @@ set -exu
 
 # Do a clobber build.
 rm -rf "${LLVM_BOOTSTRAP_DIR}"
-rm -rf "${LLVM_BOOTSTRAP_INSTALL_DIR}"
 rm -rf "${LLVM_BUILD_DIR}"
 extra_flags=
 if [[ -n "${gcc_toolchain}" ]]; then

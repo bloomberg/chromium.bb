@@ -237,6 +237,7 @@ config("compiler") {
       if (cpu_arch == "arm") {
         cflags += [
           "-target arm-linux-androideabi",
+          "-mllvm -arm-enable-ehabi",
         ]
         ldflags += [ "-target arm-linux-androideabi" ]
       } else if (cpu_arch == "x86") {

@@ -153,7 +153,7 @@ unsigned int XKeyboardImpl::GetNumLockMask() {
   if (!xkb_desc)
     return kBadMask;
 
-  if (xkb_desc->dpy && xkb_desc->names /*TODO && xkb_desc->names->vmods*/) {
+  if (xkb_desc->dpy && xkb_desc->names && xkb_desc->names->vmods) {
     const std::string string_to_find(kNumLockVirtualModifierString);
     for (size_t i = 0; i < XkbNumVirtualMods; ++i) {
       const unsigned int virtual_mod_mask = 1U << i;
