@@ -79,7 +79,6 @@ class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
       offscreen_context_for_main_thread_;
   // This is a pointer to the context owned by
   // |offscreen_context_for_main_thread_|.
-  gpu::GLInProcessContext* wrapped_gl_context_for_main_thread_;
   gpu::GLInProcessContext* wrapped_gl_context_for_compositor_thread_;
   scoped_refptr<cc::ContextProvider> offscreen_context_for_compositor_thread_;
 

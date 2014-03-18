@@ -100,8 +100,7 @@ class VideoContextProvider
 using webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl;
 
 SynchronousCompositorFactoryImpl::SynchronousCompositorFactoryImpl()
-    : wrapped_gl_context_for_main_thread_(NULL),
-      wrapped_gl_context_for_compositor_thread_(NULL),
+    : wrapped_gl_context_for_compositor_thread_(NULL),
       num_hardware_compositors_(0) {
   SynchronousCompositorFactory::SetInstance(this);
 }
@@ -132,7 +131,6 @@ SynchronousCompositorFactoryImpl::GetOffscreenContextProviderForMainThread() {
        offscreen_context_for_main_thread_->DestroyedOnMainThread())) {
     scoped_ptr<gpu::GLInProcessContext> context =
         CreateContext(NULL, NULL, NULL);
-    wrapped_gl_context_for_main_thread_ = context.get();
     offscreen_context_for_main_thread_ =
         webkit::gpu::ContextProviderInProcess::Create(
             WrapContext(context.Pass()),
@@ -143,7 +141,6 @@ SynchronousCompositorFactoryImpl::GetOffscreenContextProviderForMainThread() {
 
   if (failed) {
     offscreen_context_for_main_thread_ = NULL;
-    wrapped_gl_context_for_main_thread_ = NULL;
   }
   return offscreen_context_for_main_thread_;
 }
