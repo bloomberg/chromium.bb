@@ -57,7 +57,7 @@ class PageCycler(page_measurement.PageMeasurement):
         action='store_true',
         help='Enable the speed index metric.')
 
-    parser.add_option('--cold-load-percent', type='int',
+    parser.add_option('--cold-load-percent', type='int', default=50,
                       help='%d of page visits for which a cold load is forced')
 
   @classmethod

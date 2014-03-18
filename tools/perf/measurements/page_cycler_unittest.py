@@ -100,12 +100,12 @@ class PageCyclerUnitTest(unittest.TestCase):
   def testOptionsColdLoadNoArgs(self):
     cycler = self.SetUpCycler([])
 
-    self.assertEquals(cycler._cold_run_start_index, 10)
+    self.assertEquals(cycler._cold_run_start_index, 5)
 
   def testOptionsColdLoadPagesetRepeat(self):
     cycler = self.SetUpCycler(['--pageset-repeat=20', '--page-repeat=2'])
 
-    self.assertEquals(cycler._cold_run_start_index, 40)
+    self.assertEquals(cycler._cold_run_start_index, 20)
 
   def testOptionsColdLoadRequested(self):
     cycler = self.SetUpCycler(['--pageset-repeat=21', '--page-repeat=2',
@@ -172,7 +172,7 @@ class PageCyclerUnitTest(unittest.TestCase):
         self.assertEqual(1, len(values))
         self.assertEqual(values[0].page, page)
 
-        chart_name = 'cold_times' if i == 0 else 'warm_times'
+        chart_name = 'cold_times' if i == 0 or i > 1 else 'warm_times'
         self.assertEqual(values[0].name, '%s.page_load_time' % chart_name)
 
         cycler.DidNavigateToPage(page, tab)

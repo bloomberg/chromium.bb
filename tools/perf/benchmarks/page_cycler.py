@@ -52,8 +52,7 @@ class PageCyclerIntlKoThVi(test.Test):
 class PageCyclerMorejs(test.Test):
   test = page_cycler.PageCycler
   page_set = 'page_sets/page_cycler/morejs.json'
-  options = {'pageset_repeat_iters': 20,
-             'cold_load_percent': 50}
+  options = {'pageset_repeat_iters': 10}
 
 
 class PageCyclerMoz(test.Test):
