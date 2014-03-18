@@ -101,6 +101,11 @@ var keyboardOverlayId = 'en_US';
 var identifierMap = {};
 
 /**
+ * True after at least one keydown event has been received.
+ */
+var gotKeyDown = false;
+
+/**
  * Returns the layout name.
  * @return {string} layout name.
  */
@@ -457,6 +462,18 @@ function handleKeyEvent(e) {
   if (!getKeyboardOverlayId()) {
     return;
   }
+
+  // To avoid flickering as the user releases the modifier keys that were held
+  // to trigger the overlay, avoid updating in response to keyup events until at
+  // least one keydown event has been received.
+  if (!gotKeyDown) {
+    if (e.type == 'keyup') {
+      return;
+    } else if (e.type == 'keydown') {
+      gotKeyDown = true;
+    }
+  }
+
   var modifiers = getModifiers(e);
   update(modifiers);
   KeyboardOverlayAccessibilityHelper.maybeSpeakAllShortcuts(modifiers);
