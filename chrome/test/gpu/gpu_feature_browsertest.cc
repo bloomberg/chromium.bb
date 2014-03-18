@@ -215,7 +215,8 @@ class AcceleratedCompositingBlockedTest : public GpuFeatureTest {
 // Compositing is always on for Aura and Mac.
 #define MAYBE_AcceleratedCompositingBlocked DISABLED_AcceleratedCompositingBlocked
 #else
-#define MAYBE_AcceleratedCompositingBlocked AcceleratedCompositingBlocked
+// TODO(jam): http://crbug.com/350550
+#define MAYBE_AcceleratedCompositingBlocked DISABLED_AcceleratedCompositingBlocked
 #endif
 
 IN_PROC_BROWSER_TEST_F(AcceleratedCompositingBlockedTest,

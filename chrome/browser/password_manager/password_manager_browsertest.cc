@@ -433,6 +433,8 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   EXPECT_FALSE(observer.infobar_shown());
 }
 
+// TODO(jam): http://crbug.com/350550
+#if !defined(OS_WIN)
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
                        VerifyPasswordGenerationUpload) {
   // Prevent Autofill requests from actually going over the wire.
@@ -495,6 +497,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   EXPECT_EQ(0, snapshot->GetCount(0 /* failure */));
   EXPECT_EQ(1, snapshot->GetCount(1 /* success */));
 }
+#endif
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, PromptForSubmitFromIframe) {
   NavigateToFile("/password/password_submit_from_iframe.html");

@@ -25,6 +25,9 @@ using content::OpenURLParams;
 using content::Referrer;
 using content::WebContents;
 
+// TODO(jam): http://crbug.com/350550
+#if !(defined(OS_CHROMEOS) && defined(ADDRESS_SANITIZER))
+
 namespace {
 
 void SimulateRendererCrash(Browser* browser) {
@@ -162,3 +165,5 @@ IN_PROC_BROWSER_TEST_F(CrashRecoveryBrowserTest, DoubleReloadWithError) {
   content::WaitForLoadStop(GetActiveWebContents());
   ASSERT_EQ(url, GetActiveWebContents()->GetVisibleURL());
 }
+
+#endif

@@ -621,6 +621,8 @@ IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest,
 }
 #endif  // !defined(OS_WIN)
 
+// TODO(jam): http://crbug.com/350550
+#if !(defined(OS_CHROMEOS) && defined(ADDRESS_SANITIZER))
 IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest, RendererCrashEvent) {
   content::RenderProcessHostWatcher observer(
       browser()->tab_strip_model()->GetActiveWebContents(),
@@ -639,6 +641,7 @@ IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest, RendererCrashEvent) {
   ASSERT_TRUE(events[0]->data()->GetString("url", &url));
   ASSERT_EQ("chrome://crash/", url);
 }
+#endif
 
 IN_PROC_BROWSER_TEST_F(PerformanceMonitorUncleanExitBrowserTest,
                        OneProfileUncleanExit) {
