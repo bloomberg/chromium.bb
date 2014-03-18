@@ -133,7 +133,7 @@ TEST_F(ChromeRenderViewTest, ShowAutofillWarning) {
   // Simulate attempting to Autofill the form from the first element, which
   // specifies autocomplete="off".  This should still trigger an IPC which
   // shouldn't display warnings.
-  autofill_agent_->FormControlElementClicked(firstname, true);
+  autofill_agent_->InputElementClicked(firstname, true, true);
   const IPC::Message* message1 = render_thread_->sink().GetFirstMessageMatching(
       AutofillHostMsg_QueryFormFieldAutofill::ID);
   EXPECT_NE(static_cast<IPC::Message*>(NULL), message1);
@@ -147,7 +147,7 @@ TEST_F(ChromeRenderViewTest, ShowAutofillWarning) {
   // does not specify autocomplete="off".  This should trigger an IPC that will
   // show warnings, as we *do* show warnings for elements that don't themselves
   // set autocomplete="off", but for which the form does.
-  autofill_agent_->FormControlElementClicked(middlename, true);
+  autofill_agent_->InputElementClicked(middlename, true, true);
   const IPC::Message* message2 = render_thread_->sink().GetFirstMessageMatching(
       AutofillHostMsg_QueryFormFieldAutofill::ID);
   ASSERT_NE(static_cast<IPC::Message*>(NULL), message2);

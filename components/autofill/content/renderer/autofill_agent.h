@@ -18,7 +18,6 @@
 #include "components/autofill/core/common/forms_seen_state.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "third_party/WebKit/public/web/WebAutofillClient.h"
-#include "third_party/WebKit/public/web/WebFormControlElement.h"
 #include "third_party/WebKit/public/web/WebFormElement.h"
 #include "third_party/WebKit/public/web/WebInputElement.h"
 
@@ -69,20 +68,16 @@ class AutofillAgent : public content::RenderViewObserver,
   virtual void OrientationChangeEvent(int orientation) OVERRIDE;
 
   // PageClickListener:
-  virtual void FormControlElementClicked(
-      const blink::WebFormControlElement& element,
-      bool was_focused) OVERRIDE;
-  virtual void FormControlElementLostFocus() OVERRIDE;
+  virtual void InputElementClicked(const blink::WebInputElement& element,
+                                   bool was_focused,
+                                   bool is_focused) OVERRIDE;
+  virtual void InputElementLostFocus() OVERRIDE;
 
   // blink::WebAutofillClient:
   virtual void textFieldDidEndEditing(
       const blink::WebInputElement& element) OVERRIDE;
-  // TODO(ziran.sun): To be removed once next Blink roll is done
   virtual void textFieldDidChange(
-      const blink::WebInputElement& element);
-  // TODO(ziran.sun): OVERRIDE this function once next Blink roll is done
-  virtual void textFieldDidChange(
-      const blink::WebFormControlElement& element);
+      const blink::WebInputElement& element) OVERRIDE;
   virtual void textFieldDidReceiveKeyDown(
       const blink::WebInputElement& element,
       const blink::WebKeyboardEvent& event) OVERRIDE;
@@ -118,7 +113,7 @@ class AutofillAgent : public content::RenderViewObserver,
 
   // Called in a posted task by textFieldDidChange() to work-around a WebKit bug
   // http://bugs.webkit.org/show_bug.cgi?id=16976
-  void TextFieldDidChangeImpl(const blink::WebFormControlElement& element);
+  void TextFieldDidChangeImpl(const blink::WebInputElement& element);
 
   // Shows the autofill suggestions for |element|.
   // This call is asynchronous and may or may not lead to the showing of a
@@ -134,7 +129,7 @@ class AutofillAgent : public content::RenderViewObserver,
   // |datalist_only| specifies whether all of <datalist> suggestions and no
   // autofill suggestions are shown. |autofill_on_empty_values| and
   // |requires_caret_at_end| are ignored if |datalist_only| is true.
-  void ShowSuggestions(const blink::WebFormControlElement& element,
+  void ShowSuggestions(const blink::WebInputElement& element,
                        bool autofill_on_empty_values,
                        bool requires_caret_at_end,
                        bool display_warning_if_disabled,
@@ -142,7 +137,7 @@ class AutofillAgent : public content::RenderViewObserver,
 
   // Queries the browser for Autocomplete and Autofill suggestions for the given
   // |element|.
-  void QueryAutofillSuggestions(const blink::WebFormControlElement& element,
+  void QueryAutofillSuggestions(const blink::WebInputElement& element,
                                 bool display_warning_if_disabled,
                                 bool datalist_only);
 
@@ -179,7 +174,7 @@ class AutofillAgent : public content::RenderViewObserver,
   int autofill_query_id_;
 
   // The element corresponding to the last request sent for form field Autofill.
-  blink::WebFormControlElement element_;
+  blink::WebInputElement element_;
 
   // The form element currently requesting an interactive autocomplete.
   blink::WebFormElement in_flight_request_form_;

@@ -159,7 +159,7 @@ class FormAutofillTest : public ChromeRenderViewTest {
   }
 
   typedef void (*FillFormFunction)(const FormData& form,
-                                   const WebFormControlElement& element);
+                                   const WebInputElement& element);
 
   typedef WebString (*GetValueFunction)(WebFormControlElement element);
 
@@ -187,10 +187,10 @@ class FormAutofillTest : public ChromeRenderViewTest {
     FormData form_data;
     FormFieldData field;
     EXPECT_TRUE(
-        FindFormAndFieldForFormControlElement(input_element,
-                                              &form_data,
-                                              &field,
-                                              autofill::REQUIRE_AUTOCOMPLETE));
+        FindFormAndFieldForInputElement(input_element,
+                                        &form_data,
+                                        &field,
+                                        autofill::REQUIRE_AUTOCOMPLETE));
     EXPECT_EQ(ASCIIToUTF16("TestForm"), form_data.name);
     EXPECT_EQ(GURL(web_frame->document().url()), form_data.origin);
     EXPECT_EQ(GURL("http://buh.com"), form_data.action);
@@ -258,7 +258,7 @@ class FormAutofillTest : public ChromeRenderViewTest {
 
   static void FillFormIncludingNonFocusableElementsWrapper(
       const FormData& form,
-      const WebFormControlElement& element) {
+      const WebInputElement& element) {
     FillFormIncludingNonFocusableElements(form, element.form());
   }
 
@@ -1002,7 +1002,7 @@ TEST_F(FormAutofillTest, WebFormElementToFormDataAutocomplete) {
   }
 }
 
-TEST_F(FormAutofillTest, FindFormForInputElement) {
+TEST_F(FormAutofillTest, FindForm) {
   LoadHTML("<FORM name=\"TestForm\" action=\"http://buh.com\" method=\"post\">"
            "  <INPUT type=\"text\" id=\"firstname\" value=\"John\"/>"
            "  <INPUT type=\"text\" id=\"lastname\" value=\"Smith\"/>"
@@ -1027,10 +1027,8 @@ TEST_F(FormAutofillTest, FindFormForInputElement) {
   // Find the form and verify it's the correct form.
   FormData form;
   FormFieldData field;
-  EXPECT_TRUE(FindFormAndFieldForFormControlElement(input_element,
-                                                    &form,
-                                                    &field,
-                                                    autofill::REQUIRE_NONE));
+  EXPECT_TRUE(FindFormAndFieldForInputElement(input_element, &form, &field,
+                                              autofill::REQUIRE_NONE));
   EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
   EXPECT_EQ(GURL(web_frame->document().url()), form.origin);
   EXPECT_EQ(GURL("http://buh.com"), form.action);
@@ -1064,11 +1062,8 @@ TEST_F(FormAutofillTest, FindFormForInputElement) {
   // Try again, but require autocomplete.
   FormData form2;
   FormFieldData field2;
-  EXPECT_TRUE(FindFormAndFieldForFormControlElement(
-      input_element,
-      &form2,
-      &field2,
-      autofill::REQUIRE_AUTOCOMPLETE));
+  EXPECT_TRUE(FindFormAndFieldForInputElement(input_element, &form2, &field2,
+                                              autofill::REQUIRE_AUTOCOMPLETE));
   EXPECT_EQ(ASCIIToUTF16("TestForm"), form2.name);
   EXPECT_EQ(GURL(web_frame->document().url()), form2.origin);
   EXPECT_EQ(GURL("http://buh.com"), form2.action);
@@ -1091,109 +1086,6 @@ TEST_F(FormAutofillTest, FindFormForInputElement) {
   expected.name = ASCIIToUTF16("phone");
   expected.value = ASCIIToUTF16("1.800.555.1234");
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields2[2]);
-}
-
-TEST_F(FormAutofillTest, FindFormForTextAreaElement) {
-  LoadHTML("<FORM name=\"TestForm\" action=\"http://buh.com\" method=\"post\">"
-           "  <INPUT type=\"text\" id=\"firstname\" value=\"John\"/>"
-           "  <INPUT type=\"text\" id=\"lastname\" value=\"Smith\"/>"
-           "  <INPUT type=\"text\" id=\"email\" value=\"john@example.com\""
-                     "autocomplete=\"off\" />"
-           "  <TEXTAREA id=\"street-address\">"
-               "123 Fantasy Ln.&#10;"
-               "Apt. 42"
-             "</TEXTAREA>"
-           "  <INPUT type=\"submit\" name=\"reply-send\" value=\"Send\"/>"
-           "</FORM>");
-
-  WebFrame* web_frame = GetMainFrame();
-  ASSERT_NE(static_cast<WebFrame*>(NULL), web_frame);
-
-  FormCache form_cache;
-  std::vector<FormData> forms;
-  form_cache.ExtractForms(*web_frame, &forms);
-  ASSERT_EQ(1U, forms.size());
-
-  // Get the textarea element we want to find.
-  WebElement element = web_frame->document().getElementById("street-address");
-  WebTextAreaElement textarea_element = element.to<WebTextAreaElement>();
-
-  // Find the form and verify it's the correct form.
-  FormData form;
-  FormFieldData field;
-  EXPECT_TRUE(FindFormAndFieldForFormControlElement(textarea_element,
-                                                    &form,
-                                                    &field,
-                                                    autofill::REQUIRE_NONE));
-  EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
-  EXPECT_EQ(GURL(web_frame->document().url()), form.origin);
-  EXPECT_EQ(GURL("http://buh.com"), form.action);
-
-  const std::vector<FormFieldData>& fields = form.fields;
-  ASSERT_EQ(4U, fields.size());
-
-  FormFieldData expected;
-
-  expected.name = ASCIIToUTF16("firstname");
-  expected.value = ASCIIToUTF16("John");
-  expected.form_control_type = "text";
-  expected.max_length = WebInputElement::defaultMaxLength();
-  EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[0]);
-
-  expected.name = ASCIIToUTF16("lastname");
-  expected.value = ASCIIToUTF16("Smith");
-  expected.form_control_type = "text";
-  expected.max_length = WebInputElement::defaultMaxLength();
-  EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[1]);
-
-  expected.name = ASCIIToUTF16("email");
-  expected.value = ASCIIToUTF16("john@example.com");
-  expected.autocomplete_attribute = "off";
-  expected.form_control_type = "text";
-  expected.max_length = WebInputElement::defaultMaxLength();
-  EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[2]);
-  expected.autocomplete_attribute = std::string();  // reset
-
-  expected.name = ASCIIToUTF16("street-address");
-  expected.value = ASCIIToUTF16("123 Fantasy Ln.\nApt. 42");
-  expected.form_control_type = "textarea";
-  expected.max_length = 0;
-  EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[3]);
-  EXPECT_FORM_FIELD_DATA_EQUALS(expected, field);
-
-  // Try again, but require autocomplete.
-  FormData form2;
-  FormFieldData field2;
-  EXPECT_TRUE(FindFormAndFieldForFormControlElement(
-      textarea_element,
-      &form2,
-      &field2,
-      autofill::REQUIRE_AUTOCOMPLETE));
-  EXPECT_EQ(ASCIIToUTF16("TestForm"), form2.name);
-  EXPECT_EQ(GURL(web_frame->document().url()), form2.origin);
-  EXPECT_EQ(GURL("http://buh.com"), form2.action);
-
-  const std::vector<FormFieldData>& fields2 = form2.fields;
-  ASSERT_EQ(3U, fields2.size());
-
-  expected.name = ASCIIToUTF16("firstname");
-  expected.value = ASCIIToUTF16("John");
-  expected.form_control_type = "text";
-  expected.max_length = WebInputElement::defaultMaxLength();
-  EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields2[0]);
-
-  expected.name = ASCIIToUTF16("lastname");
-  expected.value = ASCIIToUTF16("Smith");
-  expected.form_control_type = "text";
-  expected.max_length = WebInputElement::defaultMaxLength();
-  EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields2[1]);
-
-  expected.name = ASCIIToUTF16("street-address");
-  expected.value = ASCIIToUTF16("123 Fantasy Ln.\nApt. 42");
-  expected.form_control_type = "textarea";
-  expected.max_length = 0;
-  EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields2[2]);
-  EXPECT_FORM_FIELD_DATA_EQUALS(expected, field);
 }
 
 // Test regular FillForm function.
@@ -2217,10 +2109,8 @@ TEST_F(FormAutofillTest, FillFormMaxLength) {
   // Find the form that contains the input element.
   FormData form;
   FormFieldData field;
-  EXPECT_TRUE(FindFormAndFieldForFormControlElement(input_element,
-                                                    &form,
-                                                    &field,
-                                                    autofill::REQUIRE_NONE));
+  EXPECT_TRUE(FindFormAndFieldForInputElement(input_element, &form, &field,
+                                              autofill::REQUIRE_NONE));
   EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
   EXPECT_EQ(GURL(web_frame->document().url()), form.origin);
   EXPECT_EQ(GURL("http://buh.com"), form.action);
@@ -2255,10 +2145,8 @@ TEST_F(FormAutofillTest, FillFormMaxLength) {
   // Find the newly-filled form that contains the input element.
   FormData form2;
   FormFieldData field2;
-  EXPECT_TRUE(FindFormAndFieldForFormControlElement(input_element,
-                                                    &form2,
-                                                    &field2,
-                                                    autofill::REQUIRE_NONE));
+  EXPECT_TRUE(FindFormAndFieldForInputElement(input_element, &form2, &field2,
+                                              autofill::REQUIRE_NONE));
 
   EXPECT_EQ(ASCIIToUTF16("TestForm"), form2.name);
   EXPECT_EQ(GURL(web_frame->document().url()), form2.origin);
@@ -2314,10 +2202,8 @@ TEST_F(FormAutofillTest, FillFormNegativeMaxLength) {
   // Find the form that contains the input element.
   FormData form;
   FormFieldData field;
-  EXPECT_TRUE(FindFormAndFieldForFormControlElement(input_element,
-                                                    &form,
-                                                    &field,
-                                                    autofill::REQUIRE_NONE));
+  EXPECT_TRUE(FindFormAndFieldForInputElement(input_element, &form, &field,
+                                              autofill::REQUIRE_NONE));
   EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
   EXPECT_EQ(GURL(web_frame->document().url()), form.origin);
   EXPECT_EQ(GURL("http://buh.com"), form.action);
@@ -2347,10 +2233,8 @@ TEST_F(FormAutofillTest, FillFormNegativeMaxLength) {
   // Find the newly-filled form that contains the input element.
   FormData form2;
   FormFieldData field2;
-  EXPECT_TRUE(FindFormAndFieldForFormControlElement(input_element,
-                                                    &form2,
-                                                    &field2,
-                                                    autofill::REQUIRE_NONE));
+  EXPECT_TRUE(FindFormAndFieldForInputElement(input_element, &form2, &field2,
+                                              autofill::REQUIRE_NONE));
 
   EXPECT_EQ(ASCIIToUTF16("TestForm"), form2.name);
   EXPECT_EQ(GURL(web_frame->document().url()), form2.origin);
@@ -2395,10 +2279,8 @@ TEST_F(FormAutofillTest, FillFormEmptyName) {
   // Find the form that contains the input element.
   FormData form;
   FormFieldData field;
-  EXPECT_TRUE(FindFormAndFieldForFormControlElement(input_element,
-                                                    &form,
-                                                    &field,
-                                                    autofill::REQUIRE_NONE));
+  EXPECT_TRUE(FindFormAndFieldForInputElement(input_element, &form, &field,
+                                              autofill::REQUIRE_NONE));
   EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
   EXPECT_EQ(GURL(web_frame->document().url()), form.origin);
   EXPECT_EQ(GURL("http://buh.com"), form.action);
@@ -2428,10 +2310,8 @@ TEST_F(FormAutofillTest, FillFormEmptyName) {
   // Find the newly-filled form that contains the input element.
   FormData form2;
   FormFieldData field2;
-  EXPECT_TRUE(FindFormAndFieldForFormControlElement(input_element,
-                                                    &form2,
-                                                    &field2,
-                                                    autofill::REQUIRE_NONE));
+  EXPECT_TRUE(FindFormAndFieldForInputElement(input_element, &form2, &field2,
+                                              autofill::REQUIRE_NONE));
 
   EXPECT_EQ(ASCIIToUTF16("TestForm"), form2.name);
   EXPECT_EQ(GURL(web_frame->document().url()), form2.origin);
@@ -2485,10 +2365,8 @@ TEST_F(FormAutofillTest, FillFormEmptyFormNames) {
   // Find the form that contains the input element.
   FormData form;
   FormFieldData field;
-  EXPECT_TRUE(FindFormAndFieldForFormControlElement(input_element,
-                                                    &form,
-                                                    &field,
-                                                    autofill::REQUIRE_NONE));
+  EXPECT_TRUE(FindFormAndFieldForInputElement(input_element, &form, &field,
+                                              autofill::REQUIRE_NONE));
   EXPECT_EQ(base::string16(), form.name);
   EXPECT_EQ(GURL(web_frame->document().url()), form.origin);
   EXPECT_EQ(GURL("http://abc.com"), form.action);
@@ -2521,10 +2399,8 @@ TEST_F(FormAutofillTest, FillFormEmptyFormNames) {
   // Find the newly-filled form that contains the input element.
   FormData form2;
   FormFieldData field2;
-  EXPECT_TRUE(FindFormAndFieldForFormControlElement(input_element,
-                                                    &form2,
-                                                    &field2,
-                                                    autofill::REQUIRE_NONE));
+  EXPECT_TRUE(FindFormAndFieldForInputElement(input_element, &form2, &field2,
+                                              autofill::REQUIRE_NONE));
 
   EXPECT_EQ(base::string16(), form2.name);
   EXPECT_EQ(GURL(web_frame->document().url()), form2.origin);
@@ -2708,10 +2584,8 @@ TEST_F(FormAutofillTest, FillFormNonEmptyField) {
   // Find the form that contains the input element.
   FormData form;
   FormFieldData field;
-  EXPECT_TRUE(FindFormAndFieldForFormControlElement(input_element,
-                                                    &form,
-                                                    &field,
-                                                    autofill::REQUIRE_NONE));
+  EXPECT_TRUE(FindFormAndFieldForInputElement(input_element, &form, &field,
+                                              autofill::REQUIRE_NONE));
   EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
   EXPECT_EQ(GURL(web_frame->document().url()), form.origin);
   EXPECT_EQ(GURL("http://buh.com"), form.action);
@@ -2752,10 +2626,8 @@ TEST_F(FormAutofillTest, FillFormNonEmptyField) {
   // Find the newly-filled form that contains the input element.
   FormData form2;
   FormFieldData field2;
-  EXPECT_TRUE(FindFormAndFieldForFormControlElement(input_element,
-                                                    &form2,
-                                                    &field2,
-                                                    autofill::REQUIRE_NONE));
+  EXPECT_TRUE(FindFormAndFieldForInputElement(input_element, &form2, &field2,
+                                              autofill::REQUIRE_NONE));
 
   EXPECT_EQ(ASCIIToUTF16("TestForm"), form2.name);
   EXPECT_EQ(GURL(web_frame->document().url()), form2.origin);
@@ -2829,10 +2701,8 @@ TEST_F(FormAutofillTest, ClearFormWithNode) {
   // Verify the form is cleared.
   FormData form2;
   FormFieldData field2;
-  EXPECT_TRUE(FindFormAndFieldForFormControlElement(firstname,
-                                                    &form2,
-                                                    &field2,
-                                                    autofill::REQUIRE_NONE));
+  EXPECT_TRUE(FindFormAndFieldForInputElement(firstname, &form2, &field2,
+                                              autofill::REQUIRE_NONE));
   EXPECT_EQ(ASCIIToUTF16("TestForm"), form2.name);
   EXPECT_EQ(GURL(web_frame->document().url()), form2.origin);
   EXPECT_EQ(GURL("http://buh.com"), form2.action);
@@ -2933,10 +2803,8 @@ TEST_F(FormAutofillTest, ClearFormWithNodeContainingSelectOne) {
   // Verify the form is cleared.
   FormData form2;
   FormFieldData field2;
-  EXPECT_TRUE(FindFormAndFieldForFormControlElement(firstname,
-                                                    &form2,
-                                                    &field2,
-                                                    autofill::REQUIRE_NONE));
+  EXPECT_TRUE(FindFormAndFieldForInputElement(firstname, &form2, &field2,
+                                              autofill::REQUIRE_NONE));
   EXPECT_EQ(ASCIIToUTF16("TestForm"), form2.name);
   EXPECT_EQ(GURL(web_frame->document().url()), form2.origin);
   EXPECT_EQ(GURL("http://buh.com"), form2.action);

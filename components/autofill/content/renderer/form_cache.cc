@@ -179,7 +179,7 @@ void FormCache::ResetFrame(const WebFrame& frame) {
   RemoveOldElements(frame, &initial_checked_state_);
 }
 
-bool FormCache::ClearFormWithElement(const WebFormControlElement& element) {
+bool FormCache::ClearFormWithElement(const WebInputElement& element) {
   WebFormElement form_element = element.form();
   if (form_element.isNull())
     return false;

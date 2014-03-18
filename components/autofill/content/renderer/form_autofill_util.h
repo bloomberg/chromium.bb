@@ -116,16 +116,15 @@ bool WebFormElementToFormData(
 // Finds the form that contains |element| and returns it in |form|.  Fills
 // |field| with the |FormField| representation for element.
 // Returns false if the form is not found or cannot be serialized.
-bool FindFormAndFieldForFormControlElement(
-    const blink::WebFormControlElement& element,
-    FormData* form,
-    FormFieldData* field,
-    RequirementsMask requirements);
+bool FindFormAndFieldForInputElement(const blink::WebInputElement& element,
+                                     FormData* form,
+                                     FormFieldData* field,
+                                     RequirementsMask requirements);
 
 // Fills the form represented by |form|.  |element| is the input element that
 // initiated the auto-fill process.
 void FillForm(const FormData& form,
-              const blink::WebFormControlElement& element);
+              const blink::WebInputElement& element);
 
 // Fills focusable and non-focusable form control elements within |form_element|
 // with field data from |form_data|.
@@ -142,13 +141,13 @@ void FillFormForAllElements(
 // Previews the form represented by |form|.  |element| is the input element that
 // initiated the preview process.
 void PreviewForm(const FormData& form,
-                 const blink::WebFormControlElement& element);
+                 const blink::WebInputElement& element);
 
 // Clears the placeholder values and the auto-filled background for any fields
 // in the form containing |node| that have been previewed.  Resets the
 // autofilled state of |node| to |was_autofilled|.  Returns false if the form is
 // not found.
-bool ClearPreviewedFormWithElement(const blink::WebFormControlElement& element,
+bool ClearPreviewedFormWithElement(const blink::WebInputElement& element,
                                    bool was_autofilled);
 
 // Returns true if |form| has any auto-filled fields.
@@ -170,8 +169,7 @@ bool IsWebpageEmpty(const blink::WebFrame* frame);
 bool IsWebElementEmpty(const blink::WebElement& element);
 
 // Return a gfx::RectF that is the bounding box for |element| scaled by |scale|.
-gfx::RectF GetScaledBoundingBox(float scale,
-                                blink::WebFormControlElement* element);
+gfx::RectF GetScaledBoundingBox(float scale, blink::WebInputElement* element);
 
 }  // namespace autofill
 
