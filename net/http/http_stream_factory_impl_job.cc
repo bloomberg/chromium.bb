@@ -452,9 +452,8 @@ int HttpStreamFactoryImpl::Job::RunLoop(int result) {
   if (IsPreconnecting()) {
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
-        base::Bind(
-            &HttpStreamFactoryImpl::Job::OnPreconnectsComplete,
-            ptr_factory_.GetWeakPtr()));
+        base::Bind(&HttpStreamFactoryImpl::Job::OnPreconnectsComplete,
+                   ptr_factory_.GetWeakPtr()));
     return ERR_IO_PENDING;
   }
 
@@ -465,62 +464,50 @@ int HttpStreamFactoryImpl::Job::RunLoop(int result) {
     next_state_ = STATE_WAITING_USER_ACTION;
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
-        base::Bind(
-            &HttpStreamFactoryImpl::Job::OnCertificateErrorCallback,
-            ptr_factory_.GetWeakPtr(),
-            result, ssl_info_));
+        base::Bind(&HttpStreamFactoryImpl::Job::OnCertificateErrorCallback,
+                   ptr_factory_.GetWeakPtr(), result, ssl_info_));
     return ERR_IO_PENDING;
   }
 
   switch (result) {
-    case ERR_PROXY_AUTH_REQUESTED:
-      {
-        DCHECK(connection_.get());
-        DCHECK(connection_->socket());
-        DCHECK(establishing_tunnel_);
+    case ERR_PROXY_AUTH_REQUESTED: {
+      DCHECK(connection_.get());
+      DCHECK(connection_->socket());
+      DCHECK(establishing_tunnel_);
 
-        ProxyClientSocket* proxy_socket =
-            static_cast<ProxyClientSocket*>(connection_->socket());
-        const HttpResponseInfo* tunnel_auth_response =
-            proxy_socket->GetConnectResponseInfo();
-
-        next_state_ = STATE_WAITING_USER_ACTION;
-        base::MessageLoop::current()->PostTask(
-            FROM_HERE,
-            base::Bind(
-                &Job::OnNeedsProxyAuthCallback,
-                ptr_factory_.GetWeakPtr(),
-                *tunnel_auth_response,
-                proxy_socket->GetAuthController()));
-      }
+      next_state_ = STATE_WAITING_USER_ACTION;
+      ProxyClientSocket* proxy_socket =
+          static_cast<ProxyClientSocket*>(connection_->socket());
+      base::MessageLoop::current()->PostTask(
+          FROM_HERE,
+          base::Bind(&Job::OnNeedsProxyAuthCallback, ptr_factory_.GetWeakPtr(),
+                     *proxy_socket->GetConnectResponseInfo(),
+                     proxy_socket->GetAuthController()));
       return ERR_IO_PENDING;
+    }
 
     case ERR_SSL_CLIENT_AUTH_CERT_NEEDED:
       base::MessageLoop::current()->PostTask(
           FROM_HERE,
-          base::Bind(
-              &Job::OnNeedsClientAuthCallback,
-              ptr_factory_.GetWeakPtr(),
-              connection_->ssl_error_response_info().cert_request_info));
+          base::Bind(&Job::OnNeedsClientAuthCallback, ptr_factory_.GetWeakPtr(),
+                     connection_->ssl_error_response_info().cert_request_info));
       return ERR_IO_PENDING;
 
-    case ERR_HTTPS_PROXY_TUNNEL_RESPONSE:
-      {
-        DCHECK(connection_.get());
-        DCHECK(connection_->socket());
-        DCHECK(establishing_tunnel_);
+    case ERR_HTTPS_PROXY_TUNNEL_RESPONSE: {
+      DCHECK(connection_.get());
+      DCHECK(connection_->socket());
+      DCHECK(establishing_tunnel_);
 
-        ProxyClientSocket* proxy_socket =
-            static_cast<ProxyClientSocket*>(connection_->socket());
-        base::MessageLoop::current()->PostTask(
-            FROM_HERE,
-            base::Bind(
-                &Job::OnHttpsProxyTunnelResponseCallback,
-                ptr_factory_.GetWeakPtr(),
-                *proxy_socket->GetConnectResponseInfo(),
-                proxy_socket->CreateConnectResponseStream()));
-        return ERR_IO_PENDING;
-      }
+      ProxyClientSocket* proxy_socket =
+          static_cast<ProxyClientSocket*>(connection_->socket());
+      base::MessageLoop::current()->PostTask(
+          FROM_HERE,
+          base::Bind(&Job::OnHttpsProxyTunnelResponseCallback,
+                     ptr_factory_.GetWeakPtr(),
+                     *proxy_socket->GetConnectResponseInfo(),
+                     proxy_socket->CreateConnectResponseStream()));
+      return ERR_IO_PENDING;
+    }
 
     case OK:
       next_state_ = STATE_DONE;
@@ -539,22 +526,17 @@ int HttpStreamFactoryImpl::Job::RunLoop(int result) {
         DCHECK(stream_.get());
         base::MessageLoop::current()->PostTask(
             FROM_HERE,
-            base::Bind(
-                &Job::OnStreamReadyCallback,
-                ptr_factory_.GetWeakPtr()));
+            base::Bind(&Job::OnStreamReadyCallback, ptr_factory_.GetWeakPtr()));
       }
       return ERR_IO_PENDING;
 
     default:
       base::MessageLoop::current()->PostTask(
           FROM_HERE,
-          base::Bind(
-              &Job::OnStreamFailedCallback,
-              ptr_factory_.GetWeakPtr(),
-              result));
+          base::Bind(&Job::OnStreamFailedCallback, ptr_factory_.GetWeakPtr(),
+                     result));
       return ERR_IO_PENDING;
   }
-  return result;
 }
 
 int HttpStreamFactoryImpl::Job::DoLoop(int result) {

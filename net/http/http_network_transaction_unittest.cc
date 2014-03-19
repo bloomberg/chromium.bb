@@ -10970,8 +10970,7 @@ WRAPPED_TEST_P(HttpNetworkTransactionTest,
 // prefix doesn't work with parametrized tests).
 #if defined(OS_WIN)
   return;
-#endif
-
+#else
   HttpStreamFactory::set_use_alternate_protocols(true);
   HttpStreamFactory::SetNextProtos(SpdyNextProtos());
 
@@ -11073,6 +11072,7 @@ WRAPPED_TEST_P(HttpNetworkTransactionTest,
   EXPECT_TRUE(response->was_npn_negotiated);
   ASSERT_EQ(OK, ReadTransaction(&trans2, &response_data));
   EXPECT_EQ("hello!", response_data);
+#endif
 }
 #undef MAYBE_UseIPConnectionPoolingWithHostCacheExpiration
 

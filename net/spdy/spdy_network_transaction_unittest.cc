@@ -4280,21 +4280,16 @@ TEST_P(SpdyNetworkTransactionTest, BufferedCancelled) {
   // Read Data
   TestCompletionCallback read_callback;
 
-  do {
-    const int kReadSize = 256;
-    scoped_refptr<net::IOBuffer> buf(new net::IOBuffer(kReadSize));
-    rv = trans->Read(buf.get(), kReadSize, read_callback.callback());
-    if (rv == net::ERR_IO_PENDING) {
-      // Complete the read now, which causes buffering to start.
-      data.CompleteRead();
-      // Destroy the transaction, causing the stream to get cancelled
-      // and orphaning the buffered IO task.
-      helper.ResetTrans();
-      break;
-    }
-    // We shouldn't get here in this test.
-    FAIL() << "Unexpected read: " << rv;
-  } while (rv > 0);
+  const int kReadSize = 256;
+  scoped_refptr<net::IOBuffer> buf(new net::IOBuffer(kReadSize));
+  rv = trans->Read(buf.get(), kReadSize, read_callback.callback());
+  ASSERT_EQ(net::ERR_IO_PENDING, rv) << "Unexpected read: " << rv;
+
+  // Complete the read now, which causes buffering to start.
+  data.CompleteRead();
+  // Destroy the transaction, causing the stream to get cancelled
+  // and orphaning the buffered IO task.
+  helper.ResetTrans();
 
   // Flush the MessageLoop; this will cause the buffered IO task
   // to run for the final time.

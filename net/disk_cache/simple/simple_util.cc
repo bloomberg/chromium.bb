@@ -28,16 +28,18 @@ bool GetNanoSecsFromStat(const struct stat& st,
 #if defined(OS_ANDROID)
   *out_sec = st.st_mtime;
   *out_nsec = st.st_mtime_nsec;
+  return true;
 #elif defined(OS_LINUX)
   *out_sec = st.st_mtim.tv_sec;
   *out_nsec = st.st_mtim.tv_nsec;
+  return true;
 #elif defined(OS_MACOSX) || defined(OS_IOS) || defined(OS_BSD)
   *out_sec = st.st_mtimespec.tv_sec;
   *out_nsec = st.st_mtimespec.tv_nsec;
+  return true;
 #else
   return false;
 #endif
-  return true;
 }
 
 }  // namespace

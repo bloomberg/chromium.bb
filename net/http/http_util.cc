@@ -18,54 +18,40 @@
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 
-using std::string;
 
 namespace net {
 
-//-----------------------------------------------------------------------------
+// Helpers --------------------------------------------------------------------
 
-// Return the index of the closing quote of the string, if any.
-static size_t FindStringEnd(const string& line, size_t start, char delim) {
-  DCHECK(start < line.length() && line[start] == delim &&
-         (delim == '"' || delim == '\''));
+// Returns the index of the closing quote of the string, if any.  |start| points
+// at the opening quote.
+static size_t FindStringEnd(const std::string& line, size_t start, char delim) {
+  DCHECK_LT(start, line.length());
+  DCHECK_EQ(line[start], delim);
+  DCHECK((delim == '"') || (delim == '\''));
 
   const char set[] = { delim, '\\', '\0' };
-  for (;;) {
-    // start points to either the start quote or the last
-    // escaped char (the char following a '\\')
-
-    size_t end = line.find_first_of(set, start + 1);
-    if (end == string::npos)
-      return line.length();
-
-    if (line[end] == '\\') {
-      // Hit a backslash-escaped char.  Need to skip over it.
-      start = end + 1;
-      if (start == line.length())
-        return start;
-
-      // Go back to looking for the next escape or the string end
-      continue;
-    }
-
-    return end;
+  for (size_t end = line.find_first_of(set, start + 1);
+       end != std::string::npos; end = line.find_first_of(set, end + 2)) {
+    if (line[end] != '\\')
+      return end;
   }
-
-  NOTREACHED();
   return line.length();
 }
 
-//-----------------------------------------------------------------------------
+
+// HttpUtil -------------------------------------------------------------------
 
 // static
-size_t HttpUtil::FindDelimiter(const string& line, size_t search_start,
+size_t HttpUtil::FindDelimiter(const std::string& line,
+                               size_t search_start,
                                char delimiter) {
   do {
     // search_start points to the spot from which we should start looking
     // for the delimiter.
     const char delim_str[] = { delimiter, '"', '\'', '\0' };
     size_t cur_delim_pos = line.find_first_of(delim_str, search_start);
-    if (cur_delim_pos == string::npos)
+    if (cur_delim_pos == std::string::npos)
       return line.length();
 
     char ch = line[cur_delim_pos];
@@ -91,12 +77,12 @@ size_t HttpUtil::FindDelimiter(const string& line, size_t search_start,
 }
 
 // static
-void HttpUtil::ParseContentType(const string& content_type_str,
-                                string* mime_type,
-                                string* charset,
+void HttpUtil::ParseContentType(const std::string& content_type_str,
+                                std::string* mime_type,
+                                std::string* charset,
                                 bool* had_charset,
-                                string* boundary) {
-  const string::const_iterator begin = content_type_str.begin();
+                                std::string* boundary) {
+  const std::string::const_iterator begin = content_type_str.begin();
 
   // Trim leading and trailing whitespace from type.  We include '(' in
   // the trailing trim set to catch media-type comments, which are not at all
@@ -104,7 +90,7 @@ void HttpUtil::ParseContentType(const string& content_type_str,
   size_t type_val = content_type_str.find_first_not_of(HTTP_LWS);
   type_val = std::min(type_val, content_type_str.length());
   size_t type_end = content_type_str.find_first_of(HTTP_LWS ";(", type_val);
-  if (string::npos == type_end)
+  if (type_end == std::string::npos)
     type_end = content_type_str.length();
 
   size_t charset_val = 0;
@@ -113,22 +99,22 @@ void HttpUtil::ParseContentType(const string& content_type_str,
 
   // Iterate over parameters
   size_t param_start = content_type_str.find_first_of(';', type_end);
-  if (param_start != string::npos) {
+  if (param_start != std::string::npos) {
     base::StringTokenizer tokenizer(begin + param_start, content_type_str.end(),
                                     ";");
     tokenizer.set_quote_chars("\"");
     while (tokenizer.GetNext()) {
-      string::const_iterator equals_sign =
+      std::string::const_iterator equals_sign =
           std::find(tokenizer.token_begin(), tokenizer.token_end(), '=');
       if (equals_sign == tokenizer.token_end())
         continue;
 
-      string::const_iterator param_name_begin = tokenizer.token_begin();
-      string::const_iterator param_name_end = equals_sign;
+      std::string::const_iterator param_name_begin = tokenizer.token_begin();
+      std::string::const_iterator param_name_end = equals_sign;
       TrimLWS(&param_name_begin, &param_name_end);
 
-      string::const_iterator param_value_begin = equals_sign + 1;
-      string::const_iterator param_value_end = tokenizer.token_end();
+      std::string::const_iterator param_value_begin = equals_sign + 1;
+      std::string::const_iterator param_value_end = tokenizer.token_end();
       DCHECK(param_value_begin <= tokenizer.token_end());
       TrimLWS(&param_value_begin, &param_value_end);
 
@@ -172,7 +158,7 @@ void HttpUtil::ParseContentType(const string& content_type_str,
   // include a comma, so this check makes us a bit more tolerant.
   if (content_type_str.length() != 0 &&
       content_type_str != "*/*" &&
-      content_type_str.find_first_of('/') != string::npos) {
+      content_type_str.find_first_of('/') != std::string::npos) {
     // Common case here is that mime_type is empty
     bool eq = !mime_type->empty() && LowerCaseEqualsASCII(begin + type_val,
                                                           begin + type_end,
@@ -291,7 +277,7 @@ bool HttpUtil::ParseRangeHeader(const std::string& ranges_specifier,
 // static
 bool HttpUtil::HasHeader(const std::string& headers, const char* name) {
   size_t name_len = strlen(name);
-  string::const_iterator it =
+  std::string::const_iterator it =
       std::search(headers.begin(),
                   headers.end(),
                   name,
@@ -379,8 +365,8 @@ std::string HttpUtil::StripHeaders(const std::string& headers,
 }
 
 // static
-bool HttpUtil::IsNonCoalescingHeader(string::const_iterator name_begin,
-                                     string::const_iterator name_end) {
+bool HttpUtil::IsNonCoalescingHeader(std::string::const_iterator name_begin,
+                                     std::string::const_iterator name_end) {
   // NOTE: "set-cookie2" headers do not support expires attributes, so we don't
   // have to list them here.
   const char* kNonCoalescingHeaders[] = {
@@ -409,8 +395,8 @@ bool HttpUtil::IsLWS(char c) {
   return strchr(HTTP_LWS, c) != NULL;
 }
 
-void HttpUtil::TrimLWS(string::const_iterator* begin,
-                       string::const_iterator* end) {
+void HttpUtil::TrimLWS(std::string::const_iterator* begin,
+                       std::string::const_iterator* end) {
   // leading whitespace
   while (*begin < *end && IsLWS((*begin)[0]))
     ++(*begin);
@@ -427,8 +413,8 @@ bool HttpUtil::IsQuote(char c) {
 }
 
 // See RFC 2616 Sec 2.2 for the definition of |token|.
-bool HttpUtil::IsToken(string::const_iterator begin,
-                       string::const_iterator end) {
+bool HttpUtil::IsToken(std::string::const_iterator begin,
+                       std::string::const_iterator end) {
   if (begin == end)
     return false;
   for (std::string::const_iterator iter = begin; iter != end; ++iter) {
@@ -764,9 +750,10 @@ int HttpUtil::MapStatusCodeForHistogram(int code) {
 //                     of token, separators, and quoted-string>
 //
 
-HttpUtil::HeadersIterator::HeadersIterator(string::const_iterator headers_begin,
-                                           string::const_iterator headers_end,
-                                           const std::string& line_delimiter)
+HttpUtil::HeadersIterator::HeadersIterator(
+    std::string::const_iterator headers_begin,
+    std::string::const_iterator headers_end,
+    const std::string& line_delimiter)
     : lines_(headers_begin, headers_end, line_delimiter) {
 }
 
@@ -778,7 +765,7 @@ bool HttpUtil::HeadersIterator::GetNext() {
     name_begin_ = lines_.token_begin();
     values_end_ = lines_.token_end();
 
-    string::const_iterator colon = std::find(name_begin_, values_end_, ':');
+    std::string::const_iterator colon(std::find(name_begin_, values_end_, ':'));
     if (colon == values_end_)
       continue;  // skip malformed header
 
@@ -818,10 +805,10 @@ bool HttpUtil::HeadersIterator::AdvanceTo(const char* name) {
 }
 
 HttpUtil::ValuesIterator::ValuesIterator(
-    string::const_iterator values_begin,
-    string::const_iterator values_end,
+    std::string::const_iterator values_begin,
+    std::string::const_iterator values_end,
     char delimiter)
-    : values_(values_begin, values_end, string(1, delimiter)) {
+    : values_(values_begin, values_end, std::string(1, delimiter)) {
   values_.set_quote_chars("\'\"");
 }
 
@@ -842,8 +829,8 @@ bool HttpUtil::ValuesIterator::GetNext() {
 }
 
 HttpUtil::NameValuePairsIterator::NameValuePairsIterator(
-    string::const_iterator begin,
-    string::const_iterator end,
+    std::string::const_iterator begin,
+    std::string::const_iterator end,
     char delimiter)
     : props_(begin, end, delimiter),
       valid_(true),
