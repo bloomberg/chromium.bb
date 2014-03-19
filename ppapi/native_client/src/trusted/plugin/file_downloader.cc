@@ -149,9 +149,10 @@ bool FileDownloader::Open(
   // Note that we have the only reference to the underlying objects, so
   // this will implicitly close any pending IO and destroy them.
   url_loader_ = pp::URLLoader(instance_);
-  url_scheme_ = instance_->GetUrlScheme(url);
+  pp::Var url_var = pp::Var(url);
+  url_scheme_ = instance_->nacl_interface()->GetUrlScheme(url_var.pp_var());
   bool grant_universal_access = false;
-  if (url_scheme_ == SCHEME_DATA) {
+  if (url_scheme_ == PP_SCHEME_DATA) {
     // TODO(elijahtaylor) Remove this when data URIs can be read without
     // universal access.
     // https://bugs.webkit.org/show_bug.cgi?id=17352
@@ -268,17 +269,17 @@ bool FileDownloader::InitialResponseIsValid() {
   bool status_ok = false;
   status_code_ = url_response_.GetStatusCode();
   switch (url_scheme_) {
-    case SCHEME_CHROME_EXTENSION:
+    case PP_SCHEME_CHROME_EXTENSION:
       PLUGIN_PRINTF(("FileDownloader::InitialResponseIsValid (chrome-extension "
                      "response status_code=%" NACL_PRId32 ")\n", status_code_));
       status_ok = (status_code_ == kExtensionUrlRequestStatusOk);
       break;
-    case SCHEME_DATA:
+    case PP_SCHEME_DATA:
       PLUGIN_PRINTF(("FileDownloader::InitialResponseIsValid (data URI "
                      "response status_code=%" NACL_PRId32 ")\n", status_code_));
       status_ok = (status_code_ == kDataUriRequestStatusOk);
       break;
-    case SCHEME_OTHER:
+    case PP_SCHEME_OTHER:
       PLUGIN_PRINTF(("FileDownloader::InitialResponseIsValid (HTTP response "
                      "status_code=%" NACL_PRId32 ")\n", status_code_));
       status_ok = (status_code_ == NACL_HTTP_STATUS_OK);

@@ -39,6 +39,7 @@
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
 #include "third_party/WebKit/public/web/WebView.h"
+#include "url/gurl.h"
 #include "v8/include/v8.h"
 
 namespace {
@@ -559,6 +560,19 @@ const char* GetSandboxArch() {
   return nacl::GetSandboxArch();
 }
 
+PP_UrlSchemeType GetUrlScheme(PP_Var url) {
+  scoped_refptr<ppapi::StringVar> url_string = ppapi::StringVar::FromPPVar(url);
+  if (!url_string)
+    return PP_SCHEME_OTHER;
+
+  GURL gurl(url_string->value());
+  if (gurl.SchemeIs("chrome-extension"))
+    return PP_SCHEME_CHROME_EXTENSION;
+  if (gurl.SchemeIs("data"))
+    return PP_SCHEME_DATA;
+  return PP_SCHEME_OTHER;
+}
+
 const PPB_NaCl_Private nacl_interface = {
   &LaunchSelLdr,
   &StartPpapiProxy,
@@ -577,7 +591,8 @@ const PPB_NaCl_Private nacl_interface = {
   &ReportLoadError,
   &InstanceDestroyed,
   &NaClDebugStubEnabled,
-  &GetSandboxArch
+  &GetSandboxArch,
+  &GetUrlScheme
 };
 
 }  // namespace

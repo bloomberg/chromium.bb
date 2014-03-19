@@ -115,6 +115,12 @@ enum PP_NaClEventType {
   PP_NACL_EVENT_CRASH
 };
 
+enum PP_UrlSchemeType {
+  PP_SCHEME_CHROME_EXTENSION,
+  PP_SCHEME_DATA,
+  PP_SCHEME_OTHER
+};
+
 /* PPB_NaCl_Private */
 interface PPB_NaCl_Private {
   /* Launches NaCl's sel_ldr process.  Returns PP_EXTERNAL_PLUGIN_OK on success
@@ -282,4 +288,7 @@ interface PPB_NaCl_Private {
   /* platform.
    */
   str_t GetSandboxArch();
+
+  /* Returns the scheme type for a given url. */
+  PP_UrlSchemeType GetUrlScheme([in] PP_Var url);
 };

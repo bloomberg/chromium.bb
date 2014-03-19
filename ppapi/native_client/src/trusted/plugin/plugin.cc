@@ -70,10 +70,6 @@ const size_t kNaClManifestMaxFileBytes = 1024 * 1024;
 // collide with any user-defined HTML attribute, make the first character '@'.
 const char* const kDevAttribute = "@dev";
 
-// URL schemes that we treat in special ways.
-const char* const kChromeExtensionUriScheme = "chrome-extension";
-const char* const kDataUriScheme = "data";
-
 // Up to 20 seconds
 const int64_t kTimeSmallMin = 1;         // in ms
 const int64_t kTimeSmallMax = 20000;     // in ms
@@ -1050,7 +1046,9 @@ void Plugin::ProcessNaClManifest(const nacl::string& manifest_json) {
   bool uses_nonsfi_mode;
   if (manifest_->GetProgramURL(
           &program_url, &pnacl_options, &uses_nonsfi_mode, &error_info)) {
-    is_installed_ = GetUrlScheme(program_url) == SCHEME_CHROME_EXTENSION;
+    pp::Var program_url_var(program_url);
+    is_installed_ = (nacl_interface_->GetUrlScheme(program_url_var.pp_var()) ==
+                     PP_SCHEME_CHROME_EXTENSION);
     uses_nonsfi_mode_ = uses_nonsfi_mode;
     set_nacl_ready_state(LOADING);
     // Inform JavaScript that we found a nexe URL to load.
@@ -1106,13 +1104,15 @@ void Plugin::RequestNaClManifest(const nacl::string& url) {
   }
   PLUGIN_PRINTF(("Plugin::RequestNaClManifest (resolved url='%s')\n",
                  nmf_resolved_url.AsString().c_str()));
-  is_installed_ = GetUrlScheme(nmf_resolved_url.AsString()) ==
-      SCHEME_CHROME_EXTENSION;
+  is_installed_ = (nacl_interface_->GetUrlScheme(nmf_resolved_url.pp_var()) ==
+                   PP_SCHEME_CHROME_EXTENSION);
   set_manifest_base_url(nmf_resolved_url.AsString());
   // Inform JavaScript that a load is starting.
   set_nacl_ready_state(OPENED);
   EnqueueProgressEvent(PP_NACL_EVENT_LOADSTART);
-  bool is_data_uri = GetUrlScheme(nmf_resolved_url.AsString()) == SCHEME_DATA;
+  bool is_data_uri =
+      (nacl_interface_->GetUrlScheme(nmf_resolved_url.pp_var()) ==
+       PP_SCHEME_DATA);
   HistogramEnumerateManifestIsDataURI(static_cast<int>(is_data_uri));
   if (is_data_uri) {
     pp::CompletionCallback open_callback =
@@ -1385,7 +1385,9 @@ void Plugin::EnqueueProgressEvent(PP_NaClEventType event_type,
 bool Plugin::OpenURLFast(const nacl::string& url,
                          FileDownloader* downloader) {
   // Fast path only works for installed file URLs.
-  if (GetUrlScheme(url) != SCHEME_CHROME_EXTENSION)
+  pp::Var url_var(url);
+  if (nacl_interface_->GetUrlScheme(url_var.pp_var()) !=
+      PP_SCHEME_CHROME_EXTENSION)
     return false;
   // IMPORTANT: Make sure the document can request the given URL. If we don't
   // check, a malicious app could probe the extension system. This enforces a
@@ -1407,32 +1409,6 @@ bool Plugin::OpenURLFast(const nacl::string& url,
   // FileDownloader takes ownership of the file handle.
   downloader->OpenFast(url, file_handle, file_token_lo, file_token_hi);
   return true;
-}
-
-UrlSchemeType Plugin::GetUrlScheme(const std::string& url) {
-  CHECK(url_util_ != NULL);
-  PP_URLComponents_Dev comps;
-  pp::Var canonicalized =
-      url_util_->Canonicalize(pp::Var(url), &comps);
-
-  if (canonicalized.is_null() ||
-      (comps.scheme.begin == 0 && comps.scheme.len == -1)) {
-    // |url| was an invalid URL or has no scheme.
-    return SCHEME_OTHER;
-  }
-
-  CHECK(comps.scheme.begin <
-            static_cast<int>(canonicalized.AsString().size()));
-  CHECK(comps.scheme.begin + comps.scheme.len <
-            static_cast<int>(canonicalized.AsString().size()));
-
-  std::string scheme = canonicalized.AsString().substr(comps.scheme.begin,
-                                                       comps.scheme.len);
-  if (scheme == kChromeExtensionUriScheme)
-    return SCHEME_CHROME_EXTENSION;
-  if (scheme == kDataUriScheme)
-    return SCHEME_DATA;
-  return SCHEME_OTHER;
 }
 
 bool Plugin::DocumentCanRequest(const std::string& url) {

@@ -208,10 +208,6 @@ class Plugin : public pp::Instance {
   // descriptor.
   struct NaClFileInfo GetFileInfo(const nacl::string& url);
 
-  // A helper function that gets the scheme type for |url|. Uses URLUtil_Dev
-  // interface which this class has as a member.
-  UrlSchemeType GetUrlScheme(const std::string& url);
-
   // A helper function that indicates if |url| can be requested by the document
   // under the same-origin policy. Strictly speaking, it may be possible for the
   // document to request the URL using CORS even if this function returns false.

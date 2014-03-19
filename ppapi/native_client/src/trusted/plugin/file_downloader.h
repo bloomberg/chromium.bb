@@ -12,6 +12,7 @@
 #include "native_client/src/trusted/validator/nacl_file_info.h"
 #include "ppapi/c/private/pp_file_handle.h"
 #include "ppapi/c/private/ppb_file_io_private.h"
+#include "ppapi/c/private/ppb_nacl_private.h"
 #include "ppapi/c/trusted/ppb_url_loader_trusted.h"
 #include "ppapi/cpp/file_io.h"
 #include "ppapi/cpp/instance.h"
@@ -30,12 +31,6 @@ typedef enum {
   DOWNLOAD_STREAM,
   DOWNLOAD_NONE
 } DownloadMode;
-
-typedef enum {
-  SCHEME_CHROME_EXTENSION,
-  SCHEME_DATA,
-  SCHEME_OTHER
-} UrlSchemeType;
 
 typedef std::vector<char>* FileStreamData;
 typedef CallbackSource<FileStreamData> StreamCallbackSource;
@@ -86,7 +81,7 @@ class FileDownloader {
         url_loader_trusted_interface_(NULL),
         open_time_(-1),
         mode_(DOWNLOAD_NONE),
-        url_scheme_(SCHEME_OTHER),
+        url_scheme_(PP_SCHEME_OTHER),
         data_stream_callback_source_(NULL) {}
   ~FileDownloader() {}
 
@@ -223,7 +218,7 @@ class FileDownloader {
   static const uint32_t kTempBufferSize = 16384;
   std::vector<char> temp_buffer_;
   std::deque<char> buffer_;
-  UrlSchemeType url_scheme_;
+  PP_UrlSchemeType url_scheme_;
   StreamCallbackSource* data_stream_callback_source_;
   NaClFileInfoAutoCloser file_info_;
 };
