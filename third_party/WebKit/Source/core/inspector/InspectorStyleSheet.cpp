@@ -340,7 +340,7 @@ void StyleSheetHandler::endComment(unsigned offset)
     // FIXME: Use another subclass of BisonCSSParser::SourceDataHandler and assert that
     // no comments are encountered (will not need m_document and m_styleSheetContents).
     StyleSheetHandler handler(commentText, m_document, m_styleSheetContents, &sourceData);
-    RefPtr<MutableStylePropertySet> tempMutableStyle = MutableStylePropertySet::create();
+    RefPtrWillBeRawPtr<MutableStylePropertySet> tempMutableStyle = MutableStylePropertySet::create();
     m_commentParser->parseDeclaration(tempMutableStyle.get(), commentText, &handler, m_styleSheetContents);
     Vector<CSSPropertySourceData>& commentPropertyData = sourceData.first()->styleSourceData->propertyData;
     if (commentPropertyData.size() != 1)
@@ -551,7 +551,7 @@ PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSComputedStyleProperty> > Insp
 bool InspectorStyle::verifyPropertyText(const String& propertyText, bool canOmitSemicolon)
 {
     DEFINE_STATIC_LOCAL(String, bogusPropertyName, ("-webkit-boguz-propertee"));
-    RefPtr<MutableStylePropertySet> tempMutableStyle = MutableStylePropertySet::create();
+    RefPtrWillBeRawPtr<MutableStylePropertySet> tempMutableStyle = MutableStylePropertySet::create();
     RuleSourceDataList sourceData;
     RefPtrWillBeRawPtr<StyleSheetContents> styleSheetContents = StyleSheetContents::create(strictCSSParserContext());
     String declarationText = propertyText + (canOmitSemicolon ? ";" : " ") + bogusPropertyName + ": none";
@@ -1625,7 +1625,7 @@ PassRefPtr<CSSRuleSourceData> InspectorStyleSheetForInlineStyle::getStyleAttribu
         return result.release();
     }
 
-    RefPtr<MutableStylePropertySet> tempDeclaration = MutableStylePropertySet::create();
+    RefPtrWillBeRawPtr<MutableStylePropertySet> tempDeclaration = MutableStylePropertySet::create();
     RuleSourceDataList ruleSourceDataResult;
     StyleSheetHandler handler(m_styleText, &m_element->document(), m_element->document().elementSheet().contents(), &ruleSourceDataResult);
     createCSSParser(&m_element->document())->parseDeclaration(tempDeclaration.get(), m_styleText, &handler, m_element->document().elementSheet().contents());

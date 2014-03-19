@@ -42,15 +42,13 @@
 
 namespace WebCore {
 
+DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(ViewportStyleResolver);
+
 ViewportStyleResolver::ViewportStyleResolver(Document* document)
     : m_document(document),
     m_hasAuthorStyle(false)
 {
     ASSERT(m_document);
-}
-
-ViewportStyleResolver::~ViewportStyleResolver()
-{
 }
 
 void ViewportStyleResolver::collectViewportRules(RuleSet* rules, Origin origin)
@@ -204,6 +202,11 @@ Length ViewportStyleResolver::viewportLengthValue(CSSPropertyID id) const
     documentStyle->setHasViewportUnits(documentStyleHasViewportUnits);
 
     return result;
+}
+
+void ViewportStyleResolver::trace(Visitor* visitor)
+{
+    visitor->trace(m_propertySet);
 }
 
 } // namespace WebCore

@@ -57,7 +57,7 @@ void CSSMatrix::setMatrixValue(const String& string, ExceptionState& exceptionSt
     if (string.isEmpty())
         return;
 
-    RefPtr<MutableStylePropertySet> styleDeclaration = MutableStylePropertySet::create();
+    RefPtrWillBeRawPtr<MutableStylePropertySet> styleDeclaration = MutableStylePropertySet::create();
     if (BisonCSSParser::parseValue(styleDeclaration.get(), CSSPropertyWebkitTransform, string, true, HTMLStandardMode, 0)) {
         // Convert to TransformOperations. This can fail if a property
         // requires style (i.e., param uses 'ems' or 'exs')

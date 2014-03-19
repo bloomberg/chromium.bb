@@ -431,7 +431,7 @@ void MutableStylePropertySet::clear()
     m_propertyVector.clear();
 }
 
-PassRefPtr<MutableStylePropertySet> StylePropertySet::copyBlockProperties() const
+PassRefPtrWillBeRawPtr<MutableStylePropertySet> StylePropertySet::copyBlockProperties() const
 {
     return copyPropertiesInSet(blockProperties());
 }
@@ -514,12 +514,12 @@ void MutableStylePropertySet::removeEquivalentProperties(const CSSStyleDeclarati
         removeProperty(propertiesToRemove[i]);
 }
 
-PassRefPtr<MutableStylePropertySet> StylePropertySet::mutableCopy() const
+PassRefPtrWillBeRawPtr<MutableStylePropertySet> StylePropertySet::mutableCopy() const
 {
     return adoptRefWillBeRefCountedGarbageCollected(new MutableStylePropertySet(*this));
 }
 
-PassRefPtr<MutableStylePropertySet> StylePropertySet::copyPropertiesInSet(const Vector<CSSPropertyID>& properties) const
+PassRefPtrWillBeRawPtr<MutableStylePropertySet> StylePropertySet::copyPropertiesInSet(const Vector<CSSPropertyID>& properties) const
 {
     WillBeHeapVector<CSSProperty, 256> list;
     list.reserveInitialCapacity(properties.size());
@@ -585,12 +585,12 @@ void StylePropertySet::showStyle()
 }
 #endif
 
-PassRefPtr<MutableStylePropertySet> MutableStylePropertySet::create(CSSParserMode cssParserMode)
+PassRefPtrWillBeRawPtr<MutableStylePropertySet> MutableStylePropertySet::create(CSSParserMode cssParserMode)
 {
     return adoptRefWillBeRefCountedGarbageCollected(new MutableStylePropertySet(cssParserMode));
 }
 
-PassRefPtr<MutableStylePropertySet> MutableStylePropertySet::create(const CSSProperty* properties, unsigned count)
+PassRefPtrWillBeRawPtr<MutableStylePropertySet> MutableStylePropertySet::create(const CSSProperty* properties, unsigned count)
 {
     return adoptRefWillBeRefCountedGarbageCollected(new MutableStylePropertySet(properties, count));
 }

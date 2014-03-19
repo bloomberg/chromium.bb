@@ -62,14 +62,14 @@ public:
     String getPropertyValue(CSSPropertyID) const;
     bool getPropertyPriority(CSSPropertyID) const;
 
-    virtual PassRefPtr<MutableStylePropertySet> copyProperties() const OVERRIDE;
+    virtual PassRefPtrWillBeRawPtr<MutableStylePropertySet> copyProperties() const OVERRIDE;
 
     PassRefPtrWillBeRawPtr<CSSValue> getPropertyCSSValue(CSSPropertyID, EUpdateLayout) const;
     PassRefPtrWillBeRawPtr<CSSValue> getFontSizeCSSValuePreferringKeyword() const;
     bool useFixedFontDefaultSize() const;
     PassRefPtrWillBeRawPtr<CSSValue> getSVGPropertyCSSValue(CSSPropertyID, EUpdateLayout) const;
 
-    PassRefPtr<MutableStylePropertySet> copyPropertiesInSet(const Vector<CSSPropertyID>&) const;
+    PassRefPtrWillBeRawPtr<MutableStylePropertySet> copyPropertiesInSet(const Vector<CSSPropertyID>&) const;
 
 private:
     CSSComputedStyleDeclaration(PassRefPtr<Node>, bool allowVisitedStyle, const String&);

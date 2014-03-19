@@ -400,7 +400,7 @@ void HTMLTableElement::parseAttribute(const QualifiedName& name, const AtomicStr
 
 static PassRefPtr<StylePropertySet> createBorderStyle(CSSValueID value)
 {
-    RefPtr<MutableStylePropertySet> style = MutableStylePropertySet::create();
+    RefPtrWillBeRawPtr<MutableStylePropertySet> style = MutableStylePropertySet::create();
     style->setProperty(CSSPropertyBorderTopStyle, value);
     style->setProperty(CSSPropertyBorderBottomStyle, value);
     style->setProperty(CSSPropertyBorderLeftStyle, value);
@@ -456,7 +456,7 @@ HTMLTableElement::CellBorders HTMLTableElement::cellBorders() const
 
 PassRefPtr<StylePropertySet> HTMLTableElement::createSharedCellStyle()
 {
-    RefPtr<MutableStylePropertySet> style = MutableStylePropertySet::create();
+    RefPtrWillBeRawPtr<MutableStylePropertySet> style = MutableStylePropertySet::create();
 
     switch (cellBorders()) {
     case SolidBordersColsOnly:
@@ -503,7 +503,7 @@ const StylePropertySet* HTMLTableElement::additionalCellStyle()
 
 static PassRefPtr<StylePropertySet> createGroupBorderStyle(int rows)
 {
-    RefPtr<MutableStylePropertySet> style = MutableStylePropertySet::create();
+    RefPtrWillBeRawPtr<MutableStylePropertySet> style = MutableStylePropertySet::create();
     if (rows) {
         style->setProperty(CSSPropertyBorderTopWidth, CSSValueThin);
         style->setProperty(CSSPropertyBorderBottomWidth, CSSValueThin);

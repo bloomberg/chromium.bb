@@ -270,7 +270,7 @@ PassRefPtrWillBeRawPtr<CSSValue> SVGElement::getPresentationAttribute(const Atom
     if (!attr)
         return nullptr;
 
-    RefPtr<MutableStylePropertySet> style = MutableStylePropertySet::create(SVGAttributeMode);
+    RefPtrWillBeRawPtr<MutableStylePropertySet> style = MutableStylePropertySet::create(SVGAttributeMode);
     CSSPropertyID propertyID = SVGElement::cssPropertyIdForSVGAttributeName(attr->name());
     style->setProperty(propertyID, attr->value());
     RefPtrWillBeRawPtr<CSSValue> cssValue = style->getPropertyCSSValue(propertyID);

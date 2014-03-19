@@ -35,6 +35,7 @@
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
 #include "core/editing/WritingDirection.h"
+#include "heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
@@ -155,7 +156,7 @@ private:
     void mergeInlineAndImplicitStyleOfElement(Element*, CSSPropertyOverrideMode, PropertiesToInclude);
     void mergeStyle(const StylePropertySet*, CSSPropertyOverrideMode);
 
-    RefPtr<MutableStylePropertySet> m_mutableStyle;
+    RefPtrWillBePersistent<MutableStylePropertySet> m_mutableStyle;
     bool m_shouldUseFixedDefaultFontSize;
     float m_fontSizeDelta;
 

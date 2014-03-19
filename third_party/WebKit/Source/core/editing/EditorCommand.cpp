@@ -118,14 +118,14 @@ static bool applyCommandToFrame(LocalFrame& frame, EditorCommandSource source, E
 
 static bool executeApplyStyle(LocalFrame& frame, EditorCommandSource source, EditAction action, CSSPropertyID propertyID, const String& propertyValue)
 {
-    RefPtr<MutableStylePropertySet> style = MutableStylePropertySet::create();
+    RefPtrWillBeRawPtr<MutableStylePropertySet> style = MutableStylePropertySet::create();
     style->setProperty(propertyID, propertyValue);
     return applyCommandToFrame(frame, source, action, style.get());
 }
 
 static bool executeApplyStyle(LocalFrame& frame, EditorCommandSource source, EditAction action, CSSPropertyID propertyID, CSSValueID propertyValue)
 {
-    RefPtr<MutableStylePropertySet> style = MutableStylePropertySet::create();
+    RefPtrWillBeRawPtr<MutableStylePropertySet> style = MutableStylePropertySet::create();
     style->setProperty(propertyID, propertyValue);
     return applyCommandToFrame(frame, source, action, style.get());
 }
@@ -152,7 +152,7 @@ static bool executeToggleStyleInList(LocalFrame& frame, EditorCommandSource sour
         newStyle = value->cssText();
 
     // FIXME: We shouldn't be having to convert new style into text.  We should have setPropertyCSSValue.
-    RefPtr<MutableStylePropertySet> newMutableStyle = MutableStylePropertySet::create();
+    RefPtrWillBeRawPtr<MutableStylePropertySet> newMutableStyle = MutableStylePropertySet::create();
     newMutableStyle->setProperty(propertyID, newStyle);
     return applyCommandToFrame(frame, source, action, newMutableStyle.get());
 }
@@ -175,7 +175,7 @@ static bool executeToggleStyle(LocalFrame& frame, EditorCommandSource source, Ed
 
 static bool executeApplyParagraphStyle(LocalFrame& frame, EditorCommandSource source, EditAction action, CSSPropertyID propertyID, const String& propertyValue)
 {
-    RefPtr<MutableStylePropertySet> style = MutableStylePropertySet::create();
+    RefPtrWillBeRawPtr<MutableStylePropertySet> style = MutableStylePropertySet::create();
     style->setProperty(propertyID, propertyValue);
     // FIXME: We don't call shouldApplyStyle when the source is DOM; is there a good reason for that?
     switch (source) {
@@ -596,7 +596,7 @@ static bool executeJustifyRight(LocalFrame& frame, Event*, EditorCommandSource s
 
 static bool executeMakeTextWritingDirectionLeftToRight(LocalFrame& frame, Event*, EditorCommandSource, const String&)
 {
-    RefPtr<MutableStylePropertySet> style = MutableStylePropertySet::create();
+    RefPtrWillBeRawPtr<MutableStylePropertySet> style = MutableStylePropertySet::create();
     style->setProperty(CSSPropertyUnicodeBidi, CSSValueEmbed);
     style->setProperty(CSSPropertyDirection, CSSValueLtr);
     frame.editor().applyStyle(style.get(), EditActionSetWritingDirection);
@@ -605,7 +605,7 @@ static bool executeMakeTextWritingDirectionLeftToRight(LocalFrame& frame, Event*
 
 static bool executeMakeTextWritingDirectionNatural(LocalFrame& frame, Event*, EditorCommandSource, const String&)
 {
-    RefPtr<MutableStylePropertySet> style = MutableStylePropertySet::create();
+    RefPtrWillBeRawPtr<MutableStylePropertySet> style = MutableStylePropertySet::create();
     style->setProperty(CSSPropertyUnicodeBidi, CSSValueNormal);
     frame.editor().applyStyle(style.get(), EditActionSetWritingDirection);
     return true;
@@ -613,7 +613,7 @@ static bool executeMakeTextWritingDirectionNatural(LocalFrame& frame, Event*, Ed
 
 static bool executeMakeTextWritingDirectionRightToLeft(LocalFrame& frame, Event*, EditorCommandSource, const String&)
 {
-    RefPtr<MutableStylePropertySet> style = MutableStylePropertySet::create();
+    RefPtrWillBeRawPtr<MutableStylePropertySet> style = MutableStylePropertySet::create();
     style->setProperty(CSSPropertyUnicodeBidi, CSSValueEmbed);
     style->setProperty(CSSPropertyDirection, CSSValueRtl);
     frame.editor().applyStyle(style.get(), EditActionSetWritingDirection);

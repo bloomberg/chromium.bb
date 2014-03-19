@@ -122,7 +122,7 @@ public:
         RuleMatchingBehavior = MatchAllRules);
 
     PassRefPtr<RenderStyle> styleForKeyframe(Element*, const RenderStyle&, RenderStyle* parentStyle, const StyleKeyframe*, const AtomicString& animationName);
-    static PassRefPtrWillBeRawPtr<KeyframeEffectModel> createKeyframeEffectModel(Element&, const Vector<RefPtr<MutableStylePropertySet> >&, KeyframeEffectModel::KeyframeVector&);
+    static PassRefPtrWillBeRawPtr<KeyframeEffectModel> createKeyframeEffectModel(Element&, const WillBeHeapVector<RefPtrWillBeMember<MutableStylePropertySet> >&, KeyframeEffectModel::KeyframeVector&);
 
     PassRefPtr<RenderStyle> pseudoStyleForElement(Element*, const PseudoStyleRequest&, RenderStyle* parentStyle);
 
@@ -304,7 +304,7 @@ private:
     Document& m_document;
     SelectorFilter m_selectorFilter;
 
-    RefPtr<ViewportStyleResolver> m_viewportStyleResolver;
+    RefPtrWillBePersistent<ViewportStyleResolver> m_viewportStyleResolver;
 
     // FIXME: Oilpan: This should be a WillBePersistentHeapListHashSet.
     // This is safe for now, but should be updated when we support

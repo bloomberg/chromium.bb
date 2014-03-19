@@ -57,10 +57,10 @@ PassRefPtrWillBeRawPtr<AnimationEffect> EffectInput::convert(Element* element, c
 
     // FIXME: Move this code into KeyframeEffectModel, it will be used by the IDL constructor for that class.
     KeyframeEffectModel::KeyframeVector keyframes;
-    Vector<RefPtr<MutableStylePropertySet> > propertySetVector;
+    WillBeHeapVector<RefPtrWillBeMember<MutableStylePropertySet> > propertySetVector;
 
     for (size_t i = 0; i < keyframeDictionaryVector.size(); ++i) {
-        RefPtr<MutableStylePropertySet> propertySet = MutableStylePropertySet::create();
+        RefPtrWillBeRawPtr<MutableStylePropertySet> propertySet = MutableStylePropertySet::create();
         propertySetVector.append(propertySet);
 
         RefPtrWillBeRawPtr<Keyframe> keyframe = Keyframe::create();

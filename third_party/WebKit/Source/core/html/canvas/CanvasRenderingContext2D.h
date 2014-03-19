@@ -63,7 +63,7 @@ class ImageBitmap;
 class ImageData;
 class TextMetrics;
 
-typedef HashMap<String, RefPtr<MutableStylePropertySet> > MutableStylePropertyMap;
+typedef WillBePersistentHeapHashMap<String, RefPtrWillBeMember<MutableStylePropertySet> > MutableStylePropertyMap;
 
 class CanvasRenderingContext2D FINAL: public ScriptWrappable, public CanvasRenderingContext, public CanvasPathMethods {
 public:

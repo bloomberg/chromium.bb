@@ -102,14 +102,14 @@ public:
     CSSPropertyID getPropertyShorthand(CSSPropertyID) const;
     bool isPropertyImplicit(CSSPropertyID) const;
 
-    PassRefPtr<MutableStylePropertySet> copyBlockProperties() const;
+    PassRefPtrWillBeRawPtr<MutableStylePropertySet> copyBlockProperties() const;
 
     CSSParserMode cssParserMode() const { return static_cast<CSSParserMode>(m_cssParserMode); }
 
-    PassRefPtr<MutableStylePropertySet> mutableCopy() const;
+    PassRefPtrWillBeRawPtr<MutableStylePropertySet> mutableCopy() const;
     PassRefPtr<ImmutableStylePropertySet> immutableCopyIfNeeded() const;
 
-    PassRefPtr<MutableStylePropertySet> copyPropertiesInSet(const Vector<CSSPropertyID>&) const;
+    PassRefPtrWillBeRawPtr<MutableStylePropertySet> copyPropertiesInSet(const Vector<CSSPropertyID>&) const;
 
     String asText() const;
 
@@ -195,8 +195,8 @@ inline ImmutableStylePropertySet* toImmutableStylePropertySet(const RefPtr<Style
 class MutableStylePropertySet : public StylePropertySet {
 public:
     ~MutableStylePropertySet() { }
-    static PassRefPtr<MutableStylePropertySet> create(CSSParserMode = HTMLQuirksMode);
-    static PassRefPtr<MutableStylePropertySet> create(const CSSProperty* properties, unsigned count);
+    static PassRefPtrWillBeRawPtr<MutableStylePropertySet> create(CSSParserMode = HTMLQuirksMode);
+    static PassRefPtrWillBeRawPtr<MutableStylePropertySet> create(const CSSProperty* properties, unsigned count);
 
     unsigned propertyCount() const { return m_propertyVector.size(); }
 

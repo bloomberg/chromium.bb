@@ -52,7 +52,7 @@ inline SVGFontFaceElement::SVGFontFaceElement(Document& document)
     , m_fontElement(0)
 {
     ScriptWrappable::init(this);
-    RefPtr<MutableStylePropertySet> styleDeclaration = MutableStylePropertySet::create(HTMLStandardMode);
+    RefPtrWillBeRawPtr<MutableStylePropertySet> styleDeclaration = MutableStylePropertySet::create(HTMLStandardMode);
     m_fontFaceRule->setProperties(styleDeclaration.release());
 }
 

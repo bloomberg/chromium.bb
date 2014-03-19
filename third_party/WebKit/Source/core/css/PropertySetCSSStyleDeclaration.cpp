@@ -296,7 +296,7 @@ StyleSheetContents* AbstractPropertySetCSSStyleDeclaration::contextStyleSheet() 
     return cssStyleSheet ? cssStyleSheet->contents() : 0;
 }
 
-PassRefPtr<MutableStylePropertySet> AbstractPropertySetCSSStyleDeclaration::copyProperties() const
+PassRefPtrWillBeRawPtr<MutableStylePropertySet> AbstractPropertySetCSSStyleDeclaration::copyProperties() const
 {
     return propertySet().mutableCopy();
 }

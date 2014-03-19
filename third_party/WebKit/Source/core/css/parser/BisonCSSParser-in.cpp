@@ -993,7 +993,7 @@ PassRefPtrWillBeRawPtr<CSSValueList> BisonCSSParser::parseFontFaceValue(const At
 {
     if (string.isEmpty())
         return nullptr;
-    RefPtr<MutableStylePropertySet> dummyStyle = MutableStylePropertySet::create();
+    RefPtrWillBeRawPtr<MutableStylePropertySet> dummyStyle = MutableStylePropertySet::create();
     if (!parseValue(dummyStyle.get(), CSSPropertyFontFamily, string, false, HTMLQuirksMode, 0))
         return nullptr;
 
@@ -1008,7 +1008,7 @@ PassRefPtrWillBeRawPtr<CSSValue> BisonCSSParser::parseAnimationTimingFunctionVal
 {
     if (string.isEmpty())
         return nullptr;
-    RefPtr<MutableStylePropertySet> style = MutableStylePropertySet::create();
+    RefPtrWillBeRawPtr<MutableStylePropertySet> style = MutableStylePropertySet::create();
     if (!parseValue(style.get(), CSSPropertyAnimationTimingFunction, string, false, HTMLStandardMode, 0))
         return nullptr;
 

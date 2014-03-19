@@ -292,7 +292,7 @@ void ApplyStyleCommand::applyBlockStyle(EditingStyle *style)
         updateStartEnd(startRange->startPosition(), endRange->startPosition());
 }
 
-static PassRefPtr<MutableStylePropertySet> copyStyleOrCreateEmpty(const StylePropertySet* style)
+static PassRefPtrWillBeRawPtr<MutableStylePropertySet> copyStyleOrCreateEmpty(const StylePropertySet* style)
 {
     if (!style)
         return MutableStylePropertySet::create();
@@ -401,7 +401,7 @@ void ApplyStyleCommand::applyRelativeFontStyleChange(EditingStyle* style)
         }
         lastStyledNode = node;
 
-        RefPtr<MutableStylePropertySet> inlineStyle = copyStyleOrCreateEmpty(element->inlineStyle());
+        RefPtrWillBeRawPtr<MutableStylePropertySet> inlineStyle = copyStyleOrCreateEmpty(element->inlineStyle());
         float currentFontSize = computedFontSize(node);
         float desiredFontSize = max(MinimumFontSize, startingFontSizes.get(node) + style->fontSizeDelta());
         RefPtrWillBeRawPtr<CSSValue> value = inlineStyle->getPropertyCSSValue(CSSPropertyFontSize);
@@ -525,7 +525,7 @@ void ApplyStyleCommand::removeEmbeddingUpToEnclosingBlock(Node* node, Node* unsp
             // other attributes, like we (should) do with B and I elements.
             removeNodeAttribute(element, dirAttr);
         } else {
-            RefPtr<MutableStylePropertySet> inlineStyle = copyStyleOrCreateEmpty(element->inlineStyle());
+            RefPtrWillBeRawPtr<MutableStylePropertySet> inlineStyle = copyStyleOrCreateEmpty(element->inlineStyle());
             inlineStyle->setProperty(CSSPropertyUnicodeBidi, CSSValueNormal);
             inlineStyle->removeProperty(CSSPropertyDirection);
             setNodeAttribute(element, styleAttr, AtomicString(inlineStyle->asText()));
@@ -773,7 +773,7 @@ void ApplyStyleCommand::applyInlineStyleToNodeRange(EditingStyle* style, PassRef
             next = NodeTraversal::nextSkippingChildren(*node);
             if (!style->style())
                 continue;
-            RefPtr<MutableStylePropertySet> inlineStyle = copyStyleOrCreateEmpty(element->inlineStyle());
+            RefPtrWillBeRawPtr<MutableStylePropertySet> inlineStyle = copyStyleOrCreateEmpty(element->inlineStyle());
             inlineStyle->mergeAndOverrideOnConflict(style->style());
             setNodeAttribute(element, styleAttr, AtomicString(inlineStyle->asText()));
             continue;

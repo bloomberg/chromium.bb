@@ -113,7 +113,7 @@ private:
     bool m_instancesUpdatesBlocked : 1;
     bool m_useOverrideComputedStyle : 1;
     bool m_needsOverrideComputedStyleUpdate : 1;
-    RefPtr<MutableStylePropertySet> m_animatedSMILStyleProperties;
+    RefPtrWillBePersistent<MutableStylePropertySet> m_animatedSMILStyleProperties;
     RefPtr<RenderStyle> m_overrideComputedStyle;
 };
 

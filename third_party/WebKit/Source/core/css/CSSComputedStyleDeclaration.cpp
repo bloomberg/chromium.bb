@@ -2905,7 +2905,7 @@ bool CSSComputedStyleDeclaration::cssPropertyMatches(CSSPropertyID propertyID, c
     return value && propertyValue && value->equals(*propertyValue);
 }
 
-PassRefPtr<MutableStylePropertySet> CSSComputedStyleDeclaration::copyProperties() const
+PassRefPtrWillBeRawPtr<MutableStylePropertySet> CSSComputedStyleDeclaration::copyProperties() const
 {
     return copyPropertiesInSet(computableProperties());
 }
@@ -2958,7 +2958,7 @@ PassRefPtrWillBeRawPtr<CSSValueList> CSSComputedStyleDeclaration::valuesForGridS
     return list.release();
 }
 
-PassRefPtr<MutableStylePropertySet> CSSComputedStyleDeclaration::copyPropertiesInSet(const Vector<CSSPropertyID>& properties) const
+PassRefPtrWillBeRawPtr<MutableStylePropertySet> CSSComputedStyleDeclaration::copyPropertiesInSet(const Vector<CSSPropertyID>& properties) const
 {
     WillBeHeapVector<CSSProperty, 256> list;
     list.reserveInitialCapacity(properties.size());

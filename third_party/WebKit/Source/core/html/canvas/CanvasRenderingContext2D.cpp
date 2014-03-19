@@ -1869,7 +1869,7 @@ void CanvasRenderingContext2D::setFont(const String& newFont)
         return;
 
     MutableStylePropertyMap::iterator i = m_fetchedFonts.find(newFont);
-    RefPtr<MutableStylePropertySet> parsedStyle = i != m_fetchedFonts.end() ? i->value : nullptr;
+    RefPtrWillBeRawPtr<MutableStylePropertySet> parsedStyle = i != m_fetchedFonts.end() ? i->value : nullptr;
 
     if (!parsedStyle) {
         parsedStyle = MutableStylePropertySet::create();
