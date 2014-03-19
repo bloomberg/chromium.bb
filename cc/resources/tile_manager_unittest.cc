@@ -4,11 +4,15 @@
 
 #include "cc/resources/tile.h"
 #include "cc/resources/tile_priority.h"
+#include "cc/test/fake_impl_proxy.h"
+#include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_output_surface_client.h"
+#include "cc/test/fake_picture_layer_impl.h"
 #include "cc/test/fake_picture_pile_impl.h"
 #include "cc/test/fake_tile_manager.h"
 #include "cc/test/test_tile_priorities.h"
+#include "cc/trees/layer_tree_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
@@ -618,6 +622,63 @@ TEST_P(TileManagerTest, PreventRasterizeOnDemand) {
   EXPECT_TRUE(ready_to_activate());
   for (TileVector::iterator it = tiles.begin(); it != tiles.end(); ++it)
     EXPECT_FALSE((*it)->IsReadyToDraw());
+}
+
+TEST_P(TileManagerTest, PairedPictureLayers) {
+  Initialize(10, ALLOW_ANYTHING, SMOOTHNESS_TAKES_PRIORITY);
+
+  FakeImplProxy proxy;
+  FakeLayerTreeHostImpl host_impl(&proxy);
+  host_impl.CreatePendingTree();
+  host_impl.ActivatePendingTree();
+  host_impl.CreatePendingTree();
+
+  LayerTreeImpl* active_tree = host_impl.active_tree();
+  LayerTreeImpl* pending_tree = host_impl.pending_tree();
+  EXPECT_NE(active_tree, pending_tree);
+
+  scoped_ptr<FakePictureLayerImpl> active_layer =
+      FakePictureLayerImpl::Create(active_tree, 10);
+  scoped_ptr<FakePictureLayerImpl> pending_layer =
+      FakePictureLayerImpl::Create(pending_tree, 10);
+
+  FakeTileManager* tile_manager = TileManagerTest::tile_manager();
+  EXPECT_TRUE(tile_manager);
+
+  tile_manager->RegisterPictureLayerImpl(active_layer.get());
+  tile_manager->RegisterPictureLayerImpl(pending_layer.get());
+
+  std::vector<TileManager::PairedPictureLayer> paired_layers;
+  tile_manager->GetPairedPictureLayers(&paired_layers);
+
+  EXPECT_EQ(2u, paired_layers.size());
+  if (paired_layers[0].active_layer) {
+    EXPECT_EQ(active_layer.get(), paired_layers[0].active_layer);
+    EXPECT_EQ(NULL, paired_layers[0].pending_layer);
+  } else {
+    EXPECT_EQ(pending_layer.get(), paired_layers[0].pending_layer);
+    EXPECT_EQ(NULL, paired_layers[0].active_layer);
+  }
+
+  if (paired_layers[1].active_layer) {
+    EXPECT_EQ(active_layer.get(), paired_layers[1].active_layer);
+    EXPECT_EQ(NULL, paired_layers[1].pending_layer);
+  } else {
+    EXPECT_EQ(pending_layer.get(), paired_layers[1].pending_layer);
+    EXPECT_EQ(NULL, paired_layers[1].active_layer);
+  }
+
+  active_layer->set_twin_layer(pending_layer.get());
+  pending_layer->set_twin_layer(active_layer.get());
+
+  tile_manager->GetPairedPictureLayers(&paired_layers);
+  EXPECT_EQ(1u, paired_layers.size());
+
+  EXPECT_EQ(active_layer.get(), paired_layers[0].active_layer);
+  EXPECT_EQ(pending_layer.get(), paired_layers[0].pending_layer);
+
+  tile_manager->UnregisterPictureLayerImpl(active_layer.get());
+  tile_manager->UnregisterPictureLayerImpl(pending_layer.get());
 }
 
 // If true, the max tile limit should be applied as bytes; if false,

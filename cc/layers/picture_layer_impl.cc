@@ -55,9 +55,13 @@ PictureLayerImpl::PictureLayerImpl(LayerTreeImpl* tree_impl, int id)
       needs_post_commit_initialization_(true),
       should_update_tile_priorities_(false),
       has_gpu_rasterization_hint_(false),
-      should_use_low_res_tiling_(tree_impl->settings().create_low_res_tiling) {}
+      should_use_low_res_tiling_(tree_impl->settings().create_low_res_tiling),
+      layer_needs_to_register_itself_(true) {}
 
-PictureLayerImpl::~PictureLayerImpl() {}
+PictureLayerImpl::~PictureLayerImpl() {
+  if (!layer_needs_to_register_itself_)
+    layer_tree_impl()->tile_manager()->UnregisterPictureLayerImpl(this);
+}
 
 const char* PictureLayerImpl::LayerTypeAsString() const {
   return "cc::PictureLayerImpl";
@@ -320,9 +324,18 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
   CleanUpTilingsOnActiveLayer(seen_tilings);
 }
 
+void PictureLayerImpl::DidUnregisterLayer() {
+  layer_needs_to_register_itself_ = true;
+}
+
 void PictureLayerImpl::UpdateTilePriorities() {
   DCHECK(!needs_post_commit_initialization_);
   CHECK(should_update_tile_priorities_);
+
+  if (layer_needs_to_register_itself_) {
+    layer_tree_impl()->tile_manager()->RegisterPictureLayerImpl(this);
+    layer_needs_to_register_itself_ = false;
+  }
 
   if (!layer_tree_impl()->device_viewport_valid_for_tile_management()) {
     for (size_t i = 0; i < tilings_->num_tilings(); ++i)
@@ -1250,6 +1263,14 @@ size_t PictureLayerImpl::GPUMemoryUsageInBytes() const {
 
 void PictureLayerImpl::RunMicroBenchmark(MicroBenchmarkImpl* benchmark) {
   benchmark->RunOnLayer(this);
+}
+
+WhichTree PictureLayerImpl::GetTree() const {
+  return layer_tree_impl()->IsActiveTree() ? ACTIVE_TREE : PENDING_TREE;
+}
+
+bool PictureLayerImpl::IsOnActiveOrPendingTree() const {
+  return !layer_tree_impl()->IsRecycleTree();
 }
 
 }  // namespace cc

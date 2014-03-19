@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "cc/debug/traced_value.h"
+#include "cc/layers/picture_layer_impl.h"
 #include "cc/resources/direct_raster_worker_pool.h"
 #include "cc/resources/image_raster_worker_pool.h"
 #include "cc/resources/pixel_buffer_raster_worker_pool.h"
@@ -234,6 +235,13 @@ TileManager::~TileManager() {
 
   DCHECK_EQ(0u, bytes_releasable_);
   DCHECK_EQ(0u, resources_releasable_);
+
+  for (std::vector<PictureLayerImpl*>::iterator it = layers_.begin();
+       it != layers_.end();
+       ++it) {
+    (*it)->DidUnregisterLayer();
+  }
+  layers_.clear();
 }
 
 void TileManager::Release(Tile* tile) {
@@ -1019,5 +1027,65 @@ scoped_refptr<Tile> TileManager::CreateTile(PicturePileImpl* picture_pile,
   prioritized_tiles_dirty_ = true;
   return tile;
 }
+
+void TileManager::RegisterPictureLayerImpl(PictureLayerImpl* layer) {
+  DCHECK(std::find(layers_.begin(), layers_.end(), layer) == layers_.end());
+  layers_.push_back(layer);
+}
+
+void TileManager::UnregisterPictureLayerImpl(PictureLayerImpl* layer) {
+  std::vector<PictureLayerImpl*>::iterator it =
+      std::find(layers_.begin(), layers_.end(), layer);
+  DCHECK(it != layers_.end());
+  layers_.erase(it);
+}
+
+void TileManager::GetPairedPictureLayers(
+    std::vector<PairedPictureLayer>* paired_layers) const {
+  paired_layers->clear();
+  // Reserve a maximum possible paired layers.
+  paired_layers->reserve(layers_.size());
+
+  for (std::vector<PictureLayerImpl*>::const_iterator it = layers_.begin();
+       it != layers_.end();
+       ++it) {
+    PictureLayerImpl* layer = *it;
+
+    // This is a recycle tree layer, so it shouldn't be included in the raster
+    // tile generation.
+    // TODO(vmpstr): We need these layers for eviction, so they should probably
+    // go into a separate vector as an output.
+    if (!layer->IsOnActiveOrPendingTree())
+      continue;
+
+    PictureLayerImpl* twin_layer = layer->GetTwinLayer();
+
+    // If the twin layer is recycled, it is not a valid twin.
+    if (twin_layer && !twin_layer->IsOnActiveOrPendingTree())
+      twin_layer = NULL;
+
+    PairedPictureLayer paired_layer;
+    WhichTree tree = layer->GetTree();
+
+    // If the current tree is ACTIVE_TREE, then always generate a paired_layer.
+    // If current tree is PENDING_TREE, then only generate a paired_layer if
+    // there is no twin layer.
+    if (tree == ACTIVE_TREE) {
+      DCHECK(!twin_layer || twin_layer->GetTree() == PENDING_TREE);
+      paired_layer.active_layer = layer;
+      paired_layer.pending_layer = twin_layer;
+      paired_layers->push_back(paired_layer);
+    } else if (!twin_layer) {
+      paired_layer.active_layer = NULL;
+      paired_layer.pending_layer = layer;
+      paired_layers->push_back(paired_layer);
+    }
+  }
+}
+
+TileManager::PairedPictureLayer::PairedPictureLayer()
+    : active_layer(NULL), pending_layer(NULL) {}
+
+TileManager::PairedPictureLayer::~PairedPictureLayer() {}
 
 }  // namespace cc

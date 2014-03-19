@@ -284,6 +284,82 @@ TEST_F(PictureLayerImplTest, CloneNoInvalidation) {
     VerifyAllTilesExistAndHavePile(tilings->tiling_at(i), active_pile.get());
 }
 
+TEST_F(PictureLayerImplTest, TileManagerRegisterUnregister) {
+  gfx::Size tile_size(100, 100);
+  gfx::Size layer_bounds(400, 400);
+
+  scoped_refptr<FakePicturePileImpl> pending_pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
+  scoped_refptr<FakePicturePileImpl> active_pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
+
+  SetupTrees(pending_pile, active_pile);
+
+  std::vector<TileManager::PairedPictureLayer> paired_layers;
+  host_impl_.tile_manager()->GetPairedPictureLayers(&paired_layers);
+  EXPECT_EQ(0u, paired_layers.size());
+
+  // Update tile priorities will force the layer to register itself.
+  float dummy_contents_scale_x;
+  float dummy_contents_scale_y;
+  gfx::Size dummy_content_bounds;
+  active_layer_->CalculateContentsScale(1.f,
+                                        1.f,
+                                        1.f,
+                                        false,
+                                        &dummy_contents_scale_x,
+                                        &dummy_contents_scale_y,
+                                        &dummy_content_bounds);
+  active_layer_->UpdateTilePriorities();
+  host_impl_.pending_tree()->UpdateDrawProperties();
+  pending_layer_->CalculateContentsScale(1.f,
+                                         1.f,
+                                         1.f,
+                                         false,
+                                         &dummy_contents_scale_x,
+                                         &dummy_contents_scale_y,
+                                         &dummy_content_bounds);
+  pending_layer_->UpdateTilePriorities();
+
+  host_impl_.tile_manager()->GetPairedPictureLayers(&paired_layers);
+  EXPECT_EQ(1u, paired_layers.size());
+  EXPECT_EQ(active_layer_, paired_layers[0].active_layer);
+  EXPECT_EQ(pending_layer_, paired_layers[0].pending_layer);
+
+  // Destroy and recreate tile manager.
+  host_impl_.DidLoseOutputSurface();
+  scoped_ptr<TestWebGraphicsContext3D> context =
+      TestWebGraphicsContext3D::Create();
+  host_impl_.InitializeRenderer(
+      FakeOutputSurface::Create3d(context.Pass()).PassAs<OutputSurface>());
+
+  host_impl_.tile_manager()->GetPairedPictureLayers(&paired_layers);
+  EXPECT_EQ(0u, paired_layers.size());
+
+  active_layer_->CalculateContentsScale(1.f,
+                                        1.f,
+                                        1.f,
+                                        false,
+                                        &dummy_contents_scale_x,
+                                        &dummy_contents_scale_y,
+                                        &dummy_content_bounds);
+  active_layer_->UpdateTilePriorities();
+  host_impl_.pending_tree()->UpdateDrawProperties();
+  pending_layer_->CalculateContentsScale(1.f,
+                                         1.f,
+                                         1.f,
+                                         false,
+                                         &dummy_contents_scale_x,
+                                         &dummy_contents_scale_y,
+                                         &dummy_content_bounds);
+  pending_layer_->UpdateTilePriorities();
+
+  host_impl_.tile_manager()->GetPairedPictureLayers(&paired_layers);
+  EXPECT_EQ(1u, paired_layers.size());
+  EXPECT_EQ(active_layer_, paired_layers[0].active_layer);
+  EXPECT_EQ(pending_layer_, paired_layers[0].pending_layer);
+}
+
 TEST_F(PictureLayerImplTest, SuppressUpdateTilePriorities) {
   base::TimeTicks time_ticks;
   host_impl_.SetCurrentFrameTimeTicks(time_ticks);

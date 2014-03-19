@@ -80,6 +80,12 @@ class CC_EXPORT PictureLayerImpl
   void SetHasGpuRasterizationHint(bool has_hint);
   bool ShouldUseGpuRasterization() const;
 
+  // Functions used by tile manager.
+  void DidUnregisterLayer();
+  PictureLayerImpl* GetTwinLayer() { return twin_layer_; }
+  WhichTree GetTree() const;
+  bool IsOnActiveOrPendingTree() const;
+
  protected:
   PictureLayerImpl(LayerTreeImpl* tree_impl, int id);
   PictureLayerTiling* AddTiling(float contents_scale);
@@ -147,6 +153,8 @@ class CC_EXPORT PictureLayerImpl
   bool should_update_tile_priorities_;
   bool has_gpu_rasterization_hint_;
   bool should_use_low_res_tiling_;
+
+  bool layer_needs_to_register_itself_;
 
   friend class PictureLayer;
   DISALLOW_COPY_AND_ASSIGN(PictureLayerImpl);

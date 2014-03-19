@@ -23,6 +23,7 @@
 #include "cc/resources/tile.h"
 
 namespace cc {
+class PictureLayerImpl;
 class RasterWorkerPoolDelegate;
 class ResourceProvider;
 
@@ -50,6 +51,14 @@ scoped_ptr<base::Value> RasterTaskCompletionStatsAsValue(
 class CC_EXPORT TileManager : public RasterWorkerPoolClient,
                               public RefCountedManager<Tile> {
  public:
+  struct CC_EXPORT PairedPictureLayer {
+    PairedPictureLayer();
+    ~PairedPictureLayer();
+
+    PictureLayerImpl* active_layer;
+    PictureLayerImpl* pending_layer;
+  };
+
   static scoped_ptr<TileManager> Create(
       TileManagerClient* client,
       base::SequencedTaskRunner* task_runner,
@@ -77,6 +86,9 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient,
                                  int source_frame_number,
                                  int flags);
 
+  void RegisterPictureLayerImpl(PictureLayerImpl* layer);
+  void UnregisterPictureLayerImpl(PictureLayerImpl* layer);
+
   scoped_ptr<base::Value> BasicStateAsValue() const;
   scoped_ptr<base::Value> AllTilesAsValue() const;
   void GetMemoryStats(size_t* memory_required_bytes,
@@ -87,6 +99,8 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient,
   const MemoryHistory::Entry& memory_stats_from_last_assign() const {
     return memory_stats_from_last_assign_;
   }
+
+  void GetPairedPictureLayers(std::vector<PairedPictureLayer>* layers) const;
 
   void InitializeTilesWithResourcesForTesting(
       const std::vector<Tile*>& tiles,
@@ -234,6 +248,8 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient,
   RasterTaskQueue raster_queue_[NUM_RASTER_WORKER_POOL_TYPES];
 
   std::vector<scoped_refptr<internal::Task> > orphan_raster_tasks_;
+
+  std::vector<PictureLayerImpl*> layers_;
 
   DISALLOW_COPY_AND_ASSIGN(TileManager);
 };

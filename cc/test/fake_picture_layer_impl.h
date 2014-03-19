@@ -48,6 +48,7 @@ class FakePictureLayerImpl : public PictureLayerImpl {
   size_t num_tilings() const { return tilings_->num_tilings(); }
 
   PictureLayerImpl* twin_layer() { return twin_layer_; }
+  void set_twin_layer(PictureLayerImpl* twin) { twin_layer_ = twin; }
   PictureLayerTilingSet* tilings() { return tilings_.get(); }
   PicturePileImpl* pile() { return pile_.get(); }
   size_t append_quads_count() { return append_quads_count_; }
