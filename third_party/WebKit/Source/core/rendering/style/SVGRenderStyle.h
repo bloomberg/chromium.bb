@@ -89,9 +89,9 @@ public:
     static const AtomicString& initialClipperResource() { return nullAtom; }
     static const AtomicString& initialFilterResource() { return nullAtom; }
     static const AtomicString& initialMaskerResource() { return nullAtom; }
-    static String initialMarkerStartResource() { return String(); }
-    static String initialMarkerMidResource() { return String(); }
-    static String initialMarkerEndResource() { return String(); }
+    static const AtomicString& initialMarkerStartResource() { return nullAtom; }
+    static const AtomicString& initialMarkerMidResource() { return nullAtom; }
+    static const AtomicString& initialMarkerEndResource() { return nullAtom; }
     static EMaskType initialMaskType() { return MT_LUMINANCE; }
     static EPaintOrder initialPaintOrder() { return PO_NORMAL; }
 
@@ -282,19 +282,19 @@ public:
     }
 
     // Setters for inherited resources
-    void setMarkerStartResource(const String& obj)
+    void setMarkerStartResource(const AtomicString& obj)
     {
         if (!(inheritedResources->markerStart == obj))
             inheritedResources.access()->markerStart = obj;
     }
 
-    void setMarkerMidResource(const String& obj)
+    void setMarkerMidResource(const AtomicString& obj)
     {
         if (!(inheritedResources->markerMid == obj))
             inheritedResources.access()->markerMid = obj;
     }
 
-    void setMarkerEndResource(const String& obj)
+    void setMarkerEndResource(const AtomicString& obj)
     {
         if (!(inheritedResources->markerEnd == obj))
             inheritedResources.access()->markerEnd = obj;
@@ -340,9 +340,9 @@ public:
     const AtomicString& clipperResource() const { return resources->clipper; }
     const AtomicString& filterResource() const { return resources->filter; }
     const AtomicString& maskerResource() const { return resources->masker; }
-    String markerStartResource() const { return inheritedResources->markerStart; }
-    String markerMidResource() const { return inheritedResources->markerMid; }
-    String markerEndResource() const { return inheritedResources->markerEnd; }
+    const AtomicString& markerStartResource() const { return inheritedResources->markerStart; }
+    const AtomicString& markerMidResource() const { return inheritedResources->markerMid; }
+    const AtomicString& markerEndResource() const { return inheritedResources->markerEnd; }
     EMaskType maskType() const { return (EMaskType) svg_noninherited_flags.f.maskType; }
     EPaintOrder paintOrder() const { return (EPaintOrder) svg_inherited_flags._paintOrder; }
     EPaintOrderType paintOrderType(unsigned index) const;

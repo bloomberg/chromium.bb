@@ -251,16 +251,16 @@ PassOwnPtr<SVGResources> SVGResources::buildResources(const RenderObject* object
     }
 
     if (markerTags().contains(tagName) && style->hasMarkers()) {
-        AtomicString markerStartId(style->markerStartResource());
+        const AtomicString& markerStartId = style->markerStartResource();
         if (!ensureResources(resources)->setMarkerStart(getRenderSVGResourceById<RenderSVGResourceMarker>(document, markerStartId)))
             registerPendingResource(extensions, markerStartId, element);
 
-        AtomicString markerMidId(style->markerMidResource());
+        const AtomicString& markerMidId = style->markerMidResource();
         if (!ensureResources(resources)->setMarkerMid(getRenderSVGResourceById<RenderSVGResourceMarker>(document, markerMidId)))
             registerPendingResource(extensions, markerMidId, element);
 
-        AtomicString markerEndId(style->markerEndResource());
-        if (!ensureResources(resources)->setMarkerEnd(getRenderSVGResourceById<RenderSVGResourceMarker>(document, markerEndId)))
+        const AtomicString& markerEndId = style->markerEndResource();
+        if (!ensureResources(resources)->setMarkerEnd(getRenderSVGResourceById<RenderSVGResourceMarker>(document, style->markerEndResource())))
             registerPendingResource(extensions, markerEndId, element);
     }
 

@@ -257,9 +257,9 @@ namespace WebCore {
             return !(*this == other);
         }
 
-        String markerStart;
-        String markerMid;
-        String markerEnd;
+        AtomicString markerStart;
+        AtomicString markerMid;
+        AtomicString markerEnd;
 
     private:
         StyleInheritedResourceData();
