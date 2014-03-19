@@ -5334,4 +5334,33 @@ TEST_F(WebFrameTest, FullscreenLayerNonScrollable)
     ASSERT_TRUE(webScrollLayer->scrollable());
 }
 
+TEST_F(WebFrameTest, RenderBlockPercentHeightDescendants)
+{
+    registerMockedHttpURLLoad("percent-height-descendants.html");
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    webViewHelper.initializeAndLoad(m_baseURL + "percent-height-descendants.html");
+
+    WebView* webView = webViewHelper.webView();
+    webView->resize(WebSize(800, 800));
+    webView->layout();
+
+    Document* document = toWebFrameImpl(webView->mainFrame())->frame()->document();
+    WebCore::RenderBlock* container = WebCore::toRenderBlock(document->getElementById("container")->renderer());
+    WebCore::RenderBox* percentHeightInAnonymous = WebCore::toRenderBox(document->getElementById("percent-height-in-anonymous")->renderer());
+    WebCore::RenderBox* percentHeightDirectChild = WebCore::toRenderBox(document->getElementById("percent-height-direct-child")->renderer());
+
+    EXPECT_TRUE(WebCore::RenderBlock::hasPercentHeightDescendant(percentHeightInAnonymous));
+    EXPECT_TRUE(WebCore::RenderBlock::hasPercentHeightDescendant(percentHeightDirectChild));
+
+    ASSERT_TRUE(container->percentHeightDescendants());
+    ASSERT_TRUE(container->hasPercentHeightDescendants());
+    EXPECT_EQ(2U, container->percentHeightDescendants()->size());
+    EXPECT_TRUE(container->percentHeightDescendants()->contains(percentHeightInAnonymous));
+    EXPECT_TRUE(container->percentHeightDescendants()->contains(percentHeightDirectChild));
+
+    WebCore::RenderBlock* anonymousBlock = percentHeightInAnonymous->containingBlock();
+    EXPECT_TRUE(anonymousBlock->isAnonymous());
+    EXPECT_FALSE(anonymousBlock->hasPercentHeightDescendants());
+}
+
 } // namespace
