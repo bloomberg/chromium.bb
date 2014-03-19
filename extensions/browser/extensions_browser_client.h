@@ -19,7 +19,6 @@ class CommandLine;
 
 namespace content {
 class BrowserContext;
-class JavaScriptDialogManager;
 class WebContents;
 }
 
@@ -28,7 +27,7 @@ namespace extensions {
 class ApiActivityMonitor;
 class AppSorting;
 class Extension;
-class ExtensionHost;
+class ExtensionHostDelegate;
 class ExtensionSystem;
 class ExtensionSystemProvider;
 
@@ -98,12 +97,8 @@ class ExtensionsBrowserClient {
   virtual bool IsBackgroundPageAllowed(
       content::BrowserContext* context) const = 0;
 
-  // Called after the hosting |web_contents| for an extension is created. The
-  // implementation may wish to add preference observers to |web_contents|.
-  virtual void OnExtensionHostCreated(content::WebContents* web_contents) = 0;
-
-  // Called after |host| creates a RenderView for an extension.
-  virtual void OnRenderViewCreatedForBackgroundPage(ExtensionHost* host) = 0;
+  // Creates a new ExtensionHostDelegate instance.
+  virtual scoped_ptr<ExtensionHostDelegate> CreateExtensionHostDelegate() = 0;
 
   // Returns true if the client version has updated since the last run. Called
   // once each time the extensions system is loaded per browser_context. The
@@ -120,10 +115,6 @@ class ExtensionsBrowserClient {
 
   // Return true if the system is run in forced app mode.
   virtual bool IsRunningInForcedAppMode() = 0;
-
-  // Returns the embedder's JavaScriptDialogManager or NULL if the embedder
-  // does not support JavaScript dialogs.
-  virtual content::JavaScriptDialogManager* GetJavaScriptDialogManager() = 0;
 
   // Returns the embedder's ApiActivityMonitor for |context|. Returns NULL if
   // the embedder does not monitor extension API activity.

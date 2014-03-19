@@ -30,6 +30,7 @@ class SiteInstance;
 
 namespace extensions {
 class Extension;
+class ExtensionHostDelegate;
 class WindowController;
 
 // This class is the browser component of an extension component's RenderView.
@@ -136,6 +137,9 @@ class ExtensionHost : public content::WebContentsDelegate,
   void OnEventAck();
   void OnIncrementLazyKeepaliveCount();
   void OnDecrementLazyKeepaliveCount();
+
+  // Delegate for functionality that cannot exist in the extensions module.
+  scoped_ptr<ExtensionHostDelegate> delegate_;
 
   // The extension that we're hosting in this view.
   const Extension* extension_;

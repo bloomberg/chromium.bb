@@ -6,6 +6,7 @@
 
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/app_sorting.h"
+#include "extensions/browser/extension_host_delegate.h"
 
 using content::BrowserContext;
 
@@ -97,11 +98,10 @@ bool TestExtensionsBrowserClient::IsBackgroundPageAllowed(
   return true;
 }
 
-void TestExtensionsBrowserClient::OnExtensionHostCreated(
-    content::WebContents* web_contents) {}
-
-void TestExtensionsBrowserClient::OnRenderViewCreatedForBackgroundPage(
-    ExtensionHost* host) {}
+scoped_ptr<ExtensionHostDelegate>
+TestExtensionsBrowserClient::CreateExtensionHostDelegate() {
+  return scoped_ptr<ExtensionHostDelegate>();
+}
 
 bool TestExtensionsBrowserClient::DidVersionUpdate(BrowserContext* context) {
   return false;
@@ -114,11 +114,6 @@ scoped_ptr<AppSorting> TestExtensionsBrowserClient::CreateAppSorting() {
 }
 
 bool TestExtensionsBrowserClient::IsRunningInForcedAppMode() { return false; }
-
-content::JavaScriptDialogManager*
-TestExtensionsBrowserClient::GetJavaScriptDialogManager() {
-  return NULL;
-}
 
 ApiActivityMonitor* TestExtensionsBrowserClient::GetApiActivityMonitor(
     BrowserContext* context) {

@@ -14,6 +14,7 @@
 #include "components/user_prefs/user_prefs.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/app_sorting.h"
+#include "extensions/browser/extension_host_delegate.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/common/api/generated_api.h"
 
@@ -26,6 +27,46 @@ namespace {
 void RegisterPrefs(user_prefs::PrefRegistrySyncable* registry) {
   ExtensionPrefs::RegisterProfilePrefs(registry);
 }
+
+// An ExtensionHostDelegate that does nothing.
+class ShellExtensionHostDelegate : public ExtensionHostDelegate {
+ public:
+  ShellExtensionHostDelegate() {}
+  virtual ~ShellExtensionHostDelegate() {}
+
+  // ExtensionHostDelegate implementation.
+  virtual void OnExtensionHostCreated(content::WebContents* web_contents)
+      OVERRIDE {}
+
+  virtual void OnRenderViewCreatedForBackgroundPage(ExtensionHost* host)
+      OVERRIDE {}
+
+  virtual content::JavaScriptDialogManager* GetJavaScriptDialogManager()
+      OVERRIDE {
+    // TODO(jamescook): Create a JavaScriptDialogManager or reuse the one from
+    // content_shell.
+    NOTREACHED();
+    return NULL;
+  }
+
+  virtual void CreateTab(content::WebContents* web_contents,
+                         const std::string& extension_id,
+                         WindowOpenDisposition disposition,
+                         const gfx::Rect& initial_pos,
+                         bool user_gesture) OVERRIDE {
+    // TODO(jamescook): Should app_shell support opening popup windows?
+    NOTREACHED();
+  }
+
+  virtual void ProcessMediaAccessRequest(
+      content::WebContents* web_contents,
+      const content::MediaStreamRequest& request,
+      const content::MediaResponseCallback& callback,
+      const Extension* extension) OVERRIDE {
+    // app_shell does not support media capture.
+    NOTREACHED();
+  }
+};
 
 }  // namespace
 
@@ -116,12 +157,9 @@ bool ShellExtensionsBrowserClient::IsBackgroundPageAllowed(
   return true;
 }
 
-void ShellExtensionsBrowserClient::OnExtensionHostCreated(
-    content::WebContents* web_contents) {
-}
-
-void ShellExtensionsBrowserClient::OnRenderViewCreatedForBackgroundPage(
-    ExtensionHost* host) {
+scoped_ptr<ExtensionHostDelegate>
+ShellExtensionsBrowserClient::CreateExtensionHostDelegate() {
+  return scoped_ptr<ExtensionHostDelegate>(new ShellExtensionHostDelegate);
 }
 
 bool ShellExtensionsBrowserClient::DidVersionUpdate(BrowserContext* context) {
@@ -133,19 +171,11 @@ void ShellExtensionsBrowserClient::PermitExternalProtocolHandler() {
 }
 
 scoped_ptr<AppSorting> ShellExtensionsBrowserClient::CreateAppSorting() {
-  return scoped_ptr<AppSorting>(new apps::ShellAppSorting).Pass();
+  return scoped_ptr<AppSorting>(new apps::ShellAppSorting);
 }
 
 bool ShellExtensionsBrowserClient::IsRunningInForcedAppMode() {
   return false;
-}
-
-content::JavaScriptDialogManager*
-ShellExtensionsBrowserClient::GetJavaScriptDialogManager() {
-  // TODO(jamescook): Create a JavaScriptDialogManager or reuse the one from
-  // content_shell.
-  NOTREACHED();
-  return NULL;
 }
 
 ApiActivityMonitor* ShellExtensionsBrowserClient::GetApiActivityMonitor(

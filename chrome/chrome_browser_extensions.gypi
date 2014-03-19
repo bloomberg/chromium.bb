@@ -620,6 +620,8 @@
         'browser/extensions/chrome_app_sorting.h',
         'browser/extensions/chrome_extension_function.cc',
         'browser/extensions/chrome_extension_function.h',
+        'browser/extensions/chrome_extension_host_delegate.cc',
+        'browser/extensions/chrome_extension_host_delegate.h',
         'browser/extensions/chrome_extensions_browser_client.cc',
         'browser/extensions/chrome_extensions_browser_client.h',
         'browser/extensions/chrome_notification_observer.cc',

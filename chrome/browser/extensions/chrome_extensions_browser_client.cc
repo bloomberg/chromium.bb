@@ -14,16 +14,13 @@
 #include "chrome/browser/extensions/api/runtime/runtime_api.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
 #include "chrome/browser/extensions/chrome_app_sorting.h"
-#include "chrome/browser/extensions/extension_host.h"
-#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/chrome_extension_host_delegate.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/app_modal_dialogs/javascript_dialog_manager.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/prefs/prefs_tab_helper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/api/generated_api.h"
@@ -31,7 +28,6 @@
 #include "chrome/common/pref_names.h"
 #include "extensions/browser/extension_function_registry.h"
 #include "extensions/browser/extension_prefs.h"
-#include "extensions/browser/extension_system.h"
 #include "extensions/browser/pref_names.h"
 #include "extensions/common/api/generated_api.h"
 
@@ -149,17 +145,9 @@ bool ChromeExtensionsBrowserClient::IsBackgroundPageAllowed(
          context->IsOffTheRecord();
 }
 
-void ChromeExtensionsBrowserClient::OnExtensionHostCreated(
-    content::WebContents* web_contents) {
-  PrefsTabHelper::CreateForWebContents(web_contents);
-}
-
-void ChromeExtensionsBrowserClient::OnRenderViewCreatedForBackgroundPage(
-    ExtensionHost* host) {
-  ExtensionService* service =
-      ExtensionSystem::Get(host->browser_context())->extension_service();
-  if (service)
-    service->DidCreateRenderViewForBackgroundPage(host);
+scoped_ptr<ExtensionHostDelegate>
+ChromeExtensionsBrowserClient::CreateExtensionHostDelegate() {
+  return scoped_ptr<ExtensionHostDelegate>(new ChromeExtensionHostDelegate);
 }
 
 bool ChromeExtensionsBrowserClient::DidVersionUpdate(
@@ -200,16 +188,11 @@ void ChromeExtensionsBrowserClient::PermitExternalProtocolHandler() {
 }
 
 scoped_ptr<AppSorting> ChromeExtensionsBrowserClient::CreateAppSorting() {
-  return scoped_ptr<AppSorting>(new ChromeAppSorting()).Pass();
+  return scoped_ptr<AppSorting>(new ChromeAppSorting());
 }
 
 bool ChromeExtensionsBrowserClient::IsRunningInForcedAppMode() {
   return chrome::IsRunningInForcedAppMode();
-}
-
-content::JavaScriptDialogManager*
-ChromeExtensionsBrowserClient::GetJavaScriptDialogManager() {
-  return GetJavaScriptDialogManagerInstance();
 }
 
 ApiActivityMonitor* ChromeExtensionsBrowserClient::GetApiActivityMonitor(

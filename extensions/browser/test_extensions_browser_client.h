@@ -48,16 +48,12 @@ class TestExtensionsBrowserClient : public ExtensionsBrowserClient {
       content::BrowserContext* context) const OVERRIDE;
   virtual bool IsBackgroundPageAllowed(content::BrowserContext* context) const
       OVERRIDE;
-  virtual void OnExtensionHostCreated(content::WebContents* web_contents)
-      OVERRIDE;
-  virtual void OnRenderViewCreatedForBackgroundPage(ExtensionHost* host)
+  virtual scoped_ptr<ExtensionHostDelegate> CreateExtensionHostDelegate()
       OVERRIDE;
   virtual bool DidVersionUpdate(content::BrowserContext* context) OVERRIDE;
   virtual void PermitExternalProtocolHandler() OVERRIDE;
   virtual scoped_ptr<AppSorting> CreateAppSorting() OVERRIDE;
   virtual bool IsRunningInForcedAppMode() OVERRIDE;
-  virtual content::JavaScriptDialogManager* GetJavaScriptDialogManager()
-      OVERRIDE;
   virtual ApiActivityMonitor* GetApiActivityMonitor(
       content::BrowserContext* context) OVERRIDE;
   virtual ExtensionSystemProvider* GetExtensionSystemFactory() OVERRIDE;

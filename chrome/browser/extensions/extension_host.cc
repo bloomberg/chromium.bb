@@ -15,14 +15,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_web_contents_observer.h"
-#include "chrome/browser/media/media_capture_devices_dispatcher.h"
-#include "chrome/common/chrome_constants.h"
-#include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/render_messages.h"
-#include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/native_web_keyboard_event.h"
@@ -36,6 +29,7 @@
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_error.h"
+#include "extensions/browser/extension_host_delegate.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/process_manager.h"
@@ -123,7 +117,8 @@ ExtensionHost::ExtensionHost(const Extension* extension,
                              SiteInstance* site_instance,
                              const GURL& url,
                              ViewType host_type)
-    : extension_(extension),
+    : delegate_(ExtensionsBrowserClient::Get()->CreateExtensionHostDelegate()),
+      extension_(extension),
       extension_id_(extension->id()),
       browser_context_(site_instance->GetBrowserContext()),
       render_view_host_(NULL),
@@ -156,7 +151,7 @@ ExtensionHost::ExtensionHost(const Extension* extension,
                  content::Source<BrowserContext>(browser_context_));
 
   // Set up Chrome-level pref observers.
-  ExtensionsBrowserClient::Get()->OnExtensionHostCreated(host_contents());
+  delegate_->OnExtensionHostCreated(host_contents());
 }
 
 ExtensionHost::~ExtensionHost() {
@@ -201,7 +196,7 @@ void ExtensionHost::CreateRenderViewNow() {
   if (IsBackgroundPage()) {
     DCHECK(IsRenderViewLive());
     // Connect orphaned dev-tools instances.
-    ExtensionsBrowserClient::Get()->OnRenderViewCreatedForBackgroundPage(this);
+    delegate_->OnRenderViewCreatedForBackgroundPage(this);
   }
 }
 
@@ -388,7 +383,7 @@ void ExtensionHost::RenderViewDeleted(RenderViewHost* render_view_host) {
 }
 
 content::JavaScriptDialogManager* ExtensionHost::GetJavaScriptDialogManager() {
-  return ExtensionsBrowserClient::Get()->GetJavaScriptDialogManager();
+  return delegate_->GetJavaScriptDialogManager();
 }
 
 void ExtensionHost::AddNewContents(WebContents* source,
@@ -420,8 +415,8 @@ void ExtensionHost::AddNewContents(WebContents* source,
     }
   }
 
-  ExtensionTabUtil::CreateTab(new_contents, extension_id_, disposition,
-                              initial_pos, user_gesture);
+  delegate_->CreateTab(
+      new_contents, extension_id_, disposition, initial_pos, user_gesture);
 }
 
 void ExtensionHost::RenderViewReady() {
@@ -435,7 +430,7 @@ void ExtensionHost::RequestMediaAccessPermission(
     content::WebContents* web_contents,
     const content::MediaStreamRequest& request,
     const content::MediaResponseCallback& callback) {
-  MediaCaptureDevicesDispatcher::GetInstance()->ProcessMediaAccessRequest(
+  delegate_->ProcessMediaAccessRequest(
       web_contents, request, callback, extension());
 }
 
