@@ -1535,8 +1535,10 @@ const char kImageLoaderExtensionPath[]      = "image-loader-ext-path";
 // Disables print preview (For testing, and for users who don't like us. :[ )
 const char kDisablePrintPreview[]           = "disable-print-preview";
 #else
-// Enables print preview (Force enable on Chromium, which normally does not
-//                        have the PDF viewer required for print preview.)
+// Enables print preview. Chromium normally does not have the PDF viewer,
+// required for print preview.
+// pdf.dll or libpdf.so should be present in primary directory of
+// Chromium. For local builds it's usually out/Debug or out/Release.
 const char kEnablePrintPreview[]            = "enable-print-preview";
 #endif
 
