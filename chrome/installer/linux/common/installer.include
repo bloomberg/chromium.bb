@@ -150,6 +150,8 @@ stage_install_common() {
   # ffmpeg libs
   install -m 644 -s "${BUILDDIR}/libffmpegsumo.so" "${STAGEDIR}/${INSTALLDIR}/"
 
+  install -m 644 -s "${BUILDDIR}/lib/libmojo_system.so" "${STAGEDIR}/${INSTALLDIR}/lib/"
+
   # Widevine CDM.
   if [ -f "${BUILDDIR}/libwidevinecdmadapter.so" ]; then
     install -m 644 -s "${BUILDDIR}/libwidevinecdmadapter.so" "${STAGEDIR}/${INSTALLDIR}/"
