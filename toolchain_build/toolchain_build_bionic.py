@@ -40,18 +40,19 @@ TOOLCHAIN_BUILD_OUT = os.path.join(TOOLCHAIN_BUILD, 'out')
 BIONIC_SRC = os.path.join(TOOLCHAIN_BUILD_SRC, 'bionic')
 NATIVE_CLIENT = os.path.dirname(TOOLCHAIN_BUILD)
 TOOLCHAIN = os.path.join(NATIVE_CLIENT, 'toolchain')
-
-
-def GetToolchainPath(host_arch, libc, *extra_paths):
-  os_name = pynacl.platform.GetOS()
-  return os.path.join(TOOLCHAIN,  '%s_%s_%s' % (os_name, host_arch, libc),
-                      *extra_paths)
-
-
 PROJECTS = [
   'bionic_%s_work',
   'gcc_%s_work',
 ]
+
+
+def GetToolchainPath(target_arch, libc, *extra_paths):
+  os_name = pynacl.platform.GetOS()
+  host_arch = pynacl.platform.GetArch()
+  return os.path.join(TOOLCHAIN,
+                      '%s_%s_nacl_%s' % (os_name, host_arch, target_arch),
+                      'nacl_%s_%s' % (target_arch, libc),
+                      *extra_paths)
 
 
 def ReplaceText(text, maplist):
