@@ -846,10 +846,6 @@
         }, {
           'icu_use_data_file_flag%' : 0,
         }],
-
-        ['OS=="linux"', {
-          'use_mojo%': 1,
-        }],
       ],
 
       # Set this to 1 to enable use of concatenated impulse responses

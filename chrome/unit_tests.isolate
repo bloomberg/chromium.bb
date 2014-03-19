@@ -49,7 +49,6 @@
           '../testing/xvfb.py',
           '<(PRODUCT_DIR)/libffmpegsumo.so',
           '<(PRODUCT_DIR)/libosmesa.so',
-          '<(PRODUCT_DIR)/lib/libmojo_system.so',
           '<(PRODUCT_DIR)/locales/fr.pak',
           '<(PRODUCT_DIR)/xdisplaycheck<(EXECUTABLE_SUFFIX)',
         ],

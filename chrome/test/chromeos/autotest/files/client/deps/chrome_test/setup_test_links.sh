@@ -55,7 +55,6 @@ link_from_pyauto_dep \
     "$pyauto_dep_dir/test_src/out/Release/suid-python" \
     "$pyauto_dep_dir/test_src/out/Release/_pyautolib.so" \
     "$pyauto_dep_dir/test_src/out/Release/libffmpegsumo.so" \
-    "$pyauto_dep_dir/test_src/out/Release/lib/libmojo_system.so" \
     "$pyauto_dep_dir/test_src/third_party"/*
 
 # Make sure the test files are owned by chronos as some browser_tests emit
