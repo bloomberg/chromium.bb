@@ -28,7 +28,6 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/base/net_util.h"
@@ -39,7 +38,6 @@ using content::NavigationController;
 using content::WebContents;
 
 namespace {
-
 
 // IFrameLoader ---------------------------------------------------------------
 
@@ -121,7 +119,6 @@ void IFrameLoader::Observe(int type,
     base::MessageLoopForUI::current()->Quit();
 }
 
-
 // GeolocationNotificationObserver --------------------------------------------
 
 class GeolocationNotificationObserver : public content::NotificationObserver {
@@ -137,8 +134,8 @@ class GeolocationNotificationObserver : public content::NotificationObserver {
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  void AddWatchAndWaitForNotification(content::RenderViewHost* render_view_host,
-                                      const std::string& iframe_xpath);
+  void AddWatchAndWaitForNotification(
+      content::RenderFrameHost* render_frame_host);
 
   bool has_infobar() const { return !!infobar_; }
   InfoBar* infobar() { return infobar_; }
@@ -206,14 +203,12 @@ void GeolocationNotificationObserver::Observe(
 }
 
 void GeolocationNotificationObserver::AddWatchAndWaitForNotification(
-    content::RenderViewHost* render_view_host,
-    const std::string& iframe_xpath) {
+    content::RenderFrameHost* render_frame_host) {
   LOG(WARNING) << "will add geolocation watch";
   std::string script(
       "window.domAutomationController.setAutomationId(0);"
       "window.domAutomationController.send(geoStart());");
-  render_view_host->ExecuteJavascriptInWebFrame(base::UTF8ToUTF16(iframe_xpath),
-                                                base::UTF8ToUTF16(script));
+  render_frame_host->ExecuteJavaScript(base::UTF8ToUTF16(script));
   content::RunMessageLoop();
   registrar_.RemoveAll();
   LOG(WARNING) << "got geolocation watch" << javascript_response_;
@@ -255,10 +250,7 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
   void set_html_for_tests(const std::string& html_for_tests) {
     html_for_tests_ = html_for_tests;
   }
-  const std::string& iframe_xpath() const { return iframe_xpath_; }
-  void set_iframe_xpath(const std::string& iframe_xpath) {
-    iframe_xpath_ = iframe_xpath;
-  }
+  content::RenderFrameHost* frame_host() const { return render_frame_host_; }
   const GURL& current_url() const { return current_url_; }
   const GURL& iframe_url(size_t i) const { return iframe_urls_[i]; }
   double fake_latitude() const { return fake_latitude_; }
@@ -269,6 +261,9 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
 
   // Loads the specified number of iframes.
   void LoadIFrames(int number_iframes);
+
+  // Specifies which frame is to be used for JavaScript calls.
+  void SetFrameHost(const std::string& frame_name);
 
   // Start watching for geolocation notifications. If |wait_for_infobar| is
   // true, wait for the infobar to be displayed. Otherwise wait for a javascript
@@ -284,11 +279,12 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
   // cancel it.
   void SetInfoBarResponse(const GURL& requesting_url, bool allowed);
 
-  // Executes |function| in |web_contents| and checks that the return value
+  // Executes |function| in |render_frame_host| and checks that the return value
   // matches |expected|.
-  void CheckStringValueFromJavascriptForTab(const std::string& expected,
-                                            const std::string& function,
-                                            WebContents* web_contents);
+  void CheckStringValueFromJavascriptForFrame(
+      const std::string& expected,
+      const std::string& function,
+      content::RenderFrameHost* render_frame_host);
 
   // Executes |function| and checks that the return value matches |expected|.
   void CheckStringValueFromJavascript(const std::string& expected,
@@ -302,9 +298,8 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
   Browser* current_browser_;
   // path element of a URL referencing the html content for this test.
   std::string html_for_tests_;
-  // This member defines the iframe (or top-level page, if empty) where the
-  // javascript calls will run.
-  std::string iframe_xpath_;
+  // This member defines the frame where the JavaScript calls will run.
+  content::RenderFrameHost* render_frame_host_;
   // The current url for the top level page.
   GURL current_url_;
   // If not empty, the GURLs for the iframes loaded by LoadIFrames().
@@ -319,6 +314,7 @@ GeolocationBrowserTest::GeolocationBrowserTest()
   : infobar_(NULL),
     current_browser_(NULL),
     html_for_tests_("/geolocation/simple.html"),
+    render_frame_host_(NULL),
     fake_latitude_(1.23),
     fake_longitude_(4.56) {
 }
@@ -369,12 +365,23 @@ void GeolocationBrowserTest::LoadIFrames(int number_iframes) {
   }
 }
 
+void GeolocationBrowserTest::SetFrameHost(const std::string& frame_name) {
+  WebContents* web_contents =
+      current_browser_->tab_strip_model()->GetActiveWebContents();
+  render_frame_host_ = NULL;
+
+  if (frame_name.empty()) {
+    render_frame_host_ = web_contents->GetMainFrame();
+  } else {
+    render_frame_host_ = content::FrameMatchingPredicate(
+        web_contents, base::Bind(&content::FrameMatchesName, frame_name));
+  }
+  DCHECK(render_frame_host_);
+}
+
 void GeolocationBrowserTest::AddGeolocationWatch(bool wait_for_infobar) {
   GeolocationNotificationObserver notification_observer(wait_for_infobar);
-  notification_observer.AddWatchAndWaitForNotification(
-      current_browser_->tab_strip_model()->GetActiveWebContents()->
-          GetRenderViewHost(),
-      iframe_xpath());
+  notification_observer.AddWatchAndWaitForNotification(render_frame_host_);
   if (wait_for_infobar) {
     EXPECT_TRUE(notification_observer.has_infobar());
     infobar_ = notification_observer.infobar();
@@ -425,24 +432,23 @@ void GeolocationBrowserTest::SetInfoBarResponse(const GURL& requesting_url,
             usages_state.state_map().find(requesting_origin)->second);
 }
 
-void GeolocationBrowserTest::CheckStringValueFromJavascriptForTab(
+void GeolocationBrowserTest::CheckStringValueFromJavascriptForFrame(
     const std::string& expected,
     const std::string& function,
-    WebContents* web_contents) {
+    content::RenderFrameHost* render_frame_host) {
   std::string script(base::StringPrintf(
       "window.domAutomationController.send(%s)", function.c_str()));
   std::string result;
-  ASSERT_TRUE(content::ExecuteScriptInFrameAndExtractString(
-      web_contents, iframe_xpath_, script, &result));
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      render_frame_host, script, &result));
   EXPECT_EQ(expected, result);
 }
 
 void GeolocationBrowserTest::CheckStringValueFromJavascript(
     const std::string& expected,
     const std::string& function) {
-  CheckStringValueFromJavascriptForTab(
-      expected, function,
-      current_browser_->tab_strip_model()->GetActiveWebContents());
+  CheckStringValueFromJavascriptForFrame(
+      expected, function, render_frame_host_);
 }
 
 void GeolocationBrowserTest::NotifyGeoposition(double latitude,
@@ -458,11 +464,13 @@ void GeolocationBrowserTest::NotifyGeoposition(double latitude,
 
 IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, DisplaysPermissionBar) {
   ASSERT_TRUE(Initialize(INITIALIZATION_NONE));
+  SetFrameHost("");
   AddGeolocationWatch(true);
 }
 
 IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, Geoposition) {
   ASSERT_TRUE(Initialize(INITIALIZATION_NONE));
+  SetFrameHost("");
   AddGeolocationWatch(true);
   SetInfoBarResponse(current_url(), true);
   CheckGeoposition(fake_latitude(), fake_longitude());
@@ -471,6 +479,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, Geoposition) {
 IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
                        ErrorOnPermissionDenied) {
   ASSERT_TRUE(Initialize(INITIALIZATION_NONE));
+  SetFrameHost("");
   AddGeolocationWatch(true);
   // Infobar was displayed, deny access and check for error code.
   SetInfoBarResponse(current_url(), false);
@@ -480,13 +489,15 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
 // See http://crbug.com/308358
 IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, DISABLED_NoInfobarForSecondTab) {
   ASSERT_TRUE(Initialize(INITIALIZATION_NONE));
+  SetFrameHost("");
   AddGeolocationWatch(true);
   SetInfoBarResponse(current_url(), true);
   // Disables further prompts from this tab.
   CheckStringValueFromJavascript("0", "geoSetMaxNavigateCount(0)");
 
-  // Checks infobar will not be created a second tab.
+  // Checks infobar will not be created in a second tab.
   ASSERT_TRUE(Initialize(INITIALIZATION_NEWTAB));
+  SetFrameHost("");
   AddGeolocationWatch(false);
   CheckGeoposition(fake_latitude(), fake_longitude());
 }
@@ -497,11 +508,13 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, NoInfobarForDeniedOrigin) {
       ContentSettingsPattern::FromURLNoWildcard(current_url()),
       ContentSettingsPattern::FromURLNoWildcard(current_url()),
       CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string(), CONTENT_SETTING_BLOCK);
+  SetFrameHost("");
   AddGeolocationWatch(false);
   // Checks we have an error for this denied origin.
   CheckStringValueFromJavascript("1", "geoGetLastError()");
   // Checks infobar will not be created a second tab.
   ASSERT_TRUE(Initialize(INITIALIZATION_NEWTAB));
+  SetFrameHost("");
   AddGeolocationWatch(false);
   CheckStringValueFromJavascript("1", "geoGetLastError()");
 }
@@ -513,6 +526,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, NoInfobarForAllowedOrigin) {
       ContentSettingsPattern::FromURLNoWildcard(current_url()),
       CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string(), CONTENT_SETTING_ALLOW);
   // Checks no infobar will be created and there's no error callback.
+  SetFrameHost("");
   AddGeolocationWatch(false);
   CheckGeoposition(fake_latitude(), fake_longitude());
 }
@@ -520,14 +534,16 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, NoInfobarForAllowedOrigin) {
 IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, NoInfobarForOffTheRecord) {
   // First, check infobar will be created for regular profile
   ASSERT_TRUE(Initialize(INITIALIZATION_NONE));
+  SetFrameHost("");
   AddGeolocationWatch(true);
-  // Response will be persisted
+  // Response will be persisted.
   SetInfoBarResponse(current_url(), true);
   CheckGeoposition(fake_latitude(), fake_longitude());
   // Disables further prompts from this tab.
   CheckStringValueFromJavascript("0", "geoSetMaxNavigateCount(0)");
   // Go incognito, and checks no infobar will be created.
   ASSERT_TRUE(Initialize(INITIALIZATION_OFFTHERECORD));
+  SetFrameHost("");
   AddGeolocationWatch(false);
   CheckGeoposition(fake_latitude(), fake_longitude());
 }
@@ -535,6 +551,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, NoInfobarForOffTheRecord) {
 IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, NoLeakFromOffTheRecord) {
   // First, check infobar will be created for incognito profile.
   ASSERT_TRUE(Initialize(INITIALIZATION_OFFTHERECORD));
+  SetFrameHost("");
   AddGeolocationWatch(true);
   // Response won't be persisted.
   SetInfoBarResponse(current_url(), true);
@@ -543,6 +560,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, NoLeakFromOffTheRecord) {
   CheckStringValueFromJavascript("0", "geoSetMaxNavigateCount(0)");
   // Go to the regular profile, infobar will be created.
   ASSERT_TRUE(Initialize(INITIALIZATION_NONE));
+  SetFrameHost("");
   AddGeolocationWatch(true);
   SetInfoBarResponse(current_url(), false);
   CheckStringValueFromJavascript("1", "geoGetLastError()");
@@ -554,7 +572,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, IFramesWithFreshPosition) {
   LoadIFrames(2);
   LOG(WARNING) << "frames loaded";
 
-  set_iframe_xpath("//iframe[@id='iframe_0']");
+  SetFrameHost("iframe_0");
   AddGeolocationWatch(true);
   SetInfoBarResponse(iframe_url(0), true);
   CheckGeoposition(fake_latitude(), fake_longitude());
@@ -563,11 +581,11 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, IFramesWithFreshPosition) {
 
   // Test second iframe from a different origin with a cached geoposition will
   // create the infobar.
-  set_iframe_xpath("//iframe[@id='iframe_1']");
+  SetFrameHost("iframe_1");
   AddGeolocationWatch(true);
 
   // Back to the first frame, enable navigation and refresh geoposition.
-  set_iframe_xpath("//iframe[@id='iframe_0']");
+  SetFrameHost("iframe_0");
   CheckStringValueFromJavascript("1", "geoSetMaxNavigateCount(1)");
   double fresh_position_latitude = 3.17;
   double fresh_position_longitude = 4.23;
@@ -584,7 +602,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, IFramesWithFreshPosition) {
   CheckStringValueFromJavascript("0", "geoSetMaxNavigateCount(0)");
 
   // Now go ahead an authorize the second frame.
-  set_iframe_xpath("//iframe[@id='iframe_1']");
+  SetFrameHost("iframe_1");
   // Infobar was displayed, allow access and check there's no error code.
   SetInfoBarResponse(iframe_url(1), true);
   LOG(WARNING) << "Checking position...";
@@ -598,7 +616,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
   ASSERT_TRUE(Initialize(INITIALIZATION_IFRAMES));
   LoadIFrames(2);
 
-  set_iframe_xpath("//iframe[@id='iframe_0']");
+  SetFrameHost("iframe_0");
   AddGeolocationWatch(true);
   SetInfoBarResponse(iframe_url(0), true);
   CheckGeoposition(fake_latitude(), fake_longitude());
@@ -619,8 +637,8 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
   // Disable navigation for this frame.
   CheckStringValueFromJavascript("0", "geoSetMaxNavigateCount(0)");
 
-  // Now go ahead an authorize the second frame.
-  set_iframe_xpath("//iframe[@id='iframe_1']");
+  // Now go ahead and authorize the second frame.
+  SetFrameHost("iframe_1");
   AddGeolocationWatch(true);
   // WebKit will use its cache, but we also broadcast a position shortly
   // afterwards. We're only interested in the first navigation for the success
@@ -636,7 +654,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, CancelPermissionForFrame) {
   LoadIFrames(2);
   LOG(WARNING) << "frames loaded";
 
-  set_iframe_xpath("//iframe[@id='iframe_0']");
+  SetFrameHost("iframe_0");
   AddGeolocationWatch(true);
   SetInfoBarResponse(iframe_url(0), true);
   CheckGeoposition(fake_latitude(), fake_longitude());
@@ -645,7 +663,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, CancelPermissionForFrame) {
 
   // Test second iframe from a different origin with a cached geoposition will
   // create the infobar.
-  set_iframe_xpath("//iframe[@id='iframe_1']");
+  SetFrameHost("iframe_1");
   AddGeolocationWatch(true);
 
   InfoBarService* infobar_service = InfoBarService::FromWebContents(
@@ -662,10 +680,13 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, InvalidUrlRequest) {
   // correctly. Also acts as a regression test for http://crbug.com/40478
   set_html_for_tests("/geolocation/invalid_request_url.html");
   ASSERT_TRUE(Initialize(INITIALIZATION_NONE));
+
+  SetFrameHost("");
   WebContents* original_tab =
       current_browser()->tab_strip_model()->GetActiveWebContents();
   CheckStringValueFromJavascript("1", "requestGeolocationFromInvalidUrl()");
-  CheckStringValueFromJavascriptForTab("1", "isAlive()", original_tab);
+  CheckStringValueFromJavascriptForFrame("1", "isAlive()",
+                                         original_tab->GetMainFrame());
 }
 
 IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, NoInfoBarBeforeStart) {
@@ -676,17 +697,17 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, NoInfoBarBeforeStart) {
   LOG(WARNING) << "frames loaded";
 
   // Access navigator.geolocation, but ensure it won't request permission.
-  set_iframe_xpath("//iframe[@id='iframe_1']");
+  SetFrameHost("iframe_1");
   CheckStringValueFromJavascript("object", "geoAccessNavigatorGeolocation()");
 
-  set_iframe_xpath("//iframe[@id='iframe_0']");
+  SetFrameHost("iframe_0");
   AddGeolocationWatch(true);
   SetInfoBarResponse(iframe_url(0), true);
   CheckGeoposition(fake_latitude(), fake_longitude());
   CheckStringValueFromJavascript("0", "geoSetMaxNavigateCount(0)");
 
   // Permission should be requested after adding a watch.
-  set_iframe_xpath("//iframe[@id='iframe_1']");
+  SetFrameHost("iframe_1");
   AddGeolocationWatch(true);
   SetInfoBarResponse(iframe_url(1), true);
   CheckGeoposition(fake_latitude(), fake_longitude());
@@ -695,6 +716,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, NoInfoBarBeforeStart) {
 IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, TwoWatchesInOneFrame) {
   set_html_for_tests("/geolocation/two_watches.html");
   ASSERT_TRUE(Initialize(INITIALIZATION_NONE));
+
   // First, set the JavaScript to navigate when it receives |final_position|.
   double final_position_latitude = 3.17;
   double final_position_longitude = 4.23;
@@ -708,6 +730,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, TwoWatchesInOneFrame) {
   EXPECT_EQ(js_result, "ok");
 
   // Send a position which both geolocation watches will receive.
+  SetFrameHost("");
   AddGeolocationWatch(true);
   SetInfoBarResponse(current_url(), true);
   CheckGeoposition(fake_latitude(), fake_longitude());
@@ -729,13 +752,13 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, TabDestroyed) {
   ASSERT_TRUE(Initialize(INITIALIZATION_IFRAMES));
   LoadIFrames(3);
 
-  set_iframe_xpath("//iframe[@id='iframe_0']");
+  SetFrameHost("iframe_0");
   AddGeolocationWatch(true);
 
-  set_iframe_xpath("//iframe[@id='iframe_1']");
+  SetFrameHost("iframe_1");
   AddGeolocationWatch(false);
 
-  set_iframe_xpath("//iframe[@id='iframe_2']");
+  SetFrameHost("iframe_2");
   AddGeolocationWatch(false);
 
   std::string script =
