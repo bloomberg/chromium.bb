@@ -152,11 +152,15 @@ def SymUpload(upload_url, sym_item):
       ('code_file', sym_header.name),
       ('debug_file', sym_header.name),
       ('debug_identifier', sym_header.id.replace('-', '')),
-      # Should we set these fields?  They aren't critical, but it might be nice?
-      # We'd have to figure out what file this symbol is coming from and what
-      # package provides it ...
+      # The product/version fields are used by the server only for statistic
+      # purposes.  They do not impact symbolization, so they're safe to set
+      # to any value all the time.
+      # In this case, we use it to help see the load our build system is
+      # placing on the server.
+      # Not sure what to set for the version.  Maybe the git sha1 of this file.
+      # Note: the server restricts this to 30 chars.
       #('version', None),
-      #('product', 'ChromeOS'),
+      ('product', 'ChromeOS'),
       ('os', sym_header.os),
       ('cpu', sym_header.cpu),
       poster.encode.MultipartParam.from_file('symbol_file', sym_file),
