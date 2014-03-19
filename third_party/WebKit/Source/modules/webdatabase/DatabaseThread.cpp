@@ -42,7 +42,7 @@ namespace WebCore {
 
 DatabaseThread::DatabaseThread()
     : m_transactionClient(adoptPtr(new SQLTransactionClient()))
-    , m_transactionCoordinator(adoptPtr(new SQLTransactionCoordinator()))
+    , m_transactionCoordinator(adoptPtrWillBeNoop(new SQLTransactionCoordinator()))
     , m_cleanupSync(0)
     , m_terminationRequested(false)
 {
@@ -58,6 +58,12 @@ DatabaseThread::~DatabaseThread()
     // databases, and wait until GC heap cleanup of the database thread. So we
     // can safely destruct WebThread here.
     m_thread.clear();
+}
+
+void DatabaseThread::trace(Visitor* visitor)
+{
+    visitor->trace(m_openDatabaseSet);
+    visitor->trace(m_transactionCoordinator);
 }
 
 void DatabaseThread::start()

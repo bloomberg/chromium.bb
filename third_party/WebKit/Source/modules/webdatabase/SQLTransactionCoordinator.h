@@ -43,10 +43,12 @@ namespace WebCore {
 
 class SQLTransactionBackend;
 
-class SQLTransactionCoordinator {
-    WTF_MAKE_NONCOPYABLE(SQLTransactionCoordinator); WTF_MAKE_FAST_ALLOCATED;
+class SQLTransactionCoordinator : public NoBaseWillBeGarbageCollected<SQLTransactionCoordinator> {
+    WTF_MAKE_NONCOPYABLE(SQLTransactionCoordinator);
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
     SQLTransactionCoordinator();
+    void trace(Visitor*);
     void acquireLock(SQLTransactionBackend*);
     void releaseLock(SQLTransactionBackend*);
     void shutdown();
@@ -66,7 +68,7 @@ private:
         ALLOW_ONLY_INLINE_ALLOCATION();
     };
     // Maps database names to information about pending transactions
-    typedef WillBePersistentHeapHashMap<String, CoordinationInfo> CoordinationInfoHeapMap;
+    typedef WillBeHeapHashMap<String, CoordinationInfo> CoordinationInfoHeapMap;
     CoordinationInfoHeapMap m_coordinationInfoMap;
     bool m_isShuttingDown;
 

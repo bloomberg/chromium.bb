@@ -51,10 +51,11 @@ class PendingGCRunner;
 class SQLTransactionClient;
 class SQLTransactionCoordinator;
 
-class DatabaseThread : public ThreadSafeRefCounted<DatabaseThread> {
+class DatabaseThread : public ThreadSafeRefCountedWillBeGarbageCollectedFinalized<DatabaseThread> {
 public:
-    static PassRefPtr<DatabaseThread> create() { return adoptRef(new DatabaseThread); }
+    static PassRefPtrWillBeRawPtr<DatabaseThread> create() { return adoptRefWillBeNoop(new DatabaseThread); }
     ~DatabaseThread();
+    void trace(Visitor*);
 
     void start();
     void requestTermination(DatabaseTaskSynchronizer* cleanupSync);
@@ -83,10 +84,10 @@ private:
     // This set keeps track of the open databases that have been used on this thread.
     // This must be updated in the database thread though it is constructed and
     // destructed in the context thread.
-    WillBePersistentHeapHashSet<RefPtrWillBeMember<DatabaseBackend> > m_openDatabaseSet;
+    WillBeHeapHashSet<RefPtrWillBeMember<DatabaseBackend> > m_openDatabaseSet;
 
     OwnPtr<SQLTransactionClient> m_transactionClient;
-    OwnPtr<SQLTransactionCoordinator> m_transactionCoordinator;
+    OwnPtrWillBeMember<SQLTransactionCoordinator> m_transactionCoordinator;
     DatabaseTaskSynchronizer* m_cleanupSync;
 
     mutable Mutex m_terminationRequestedMutex;

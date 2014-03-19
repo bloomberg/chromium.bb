@@ -75,7 +75,7 @@ private:
 
     void stopSyncDatabases();
 
-    RefPtr<DatabaseThread> m_databaseThread;
+    RefPtrWillBePersistent<DatabaseThread> m_databaseThread;
     // The contents of m_openSyncDatabases are raw pointers. It's safe because
     // DatabaseBackendSync is always closed before destruction.
     HashSet<DatabaseBackendBase*> m_openSyncDatabases;

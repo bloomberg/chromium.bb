@@ -49,6 +49,11 @@ SQLTransactionCoordinator::SQLTransactionCoordinator()
 {
 }
 
+void SQLTransactionCoordinator::trace(Visitor* visitor)
+{
+    visitor->trace(m_coordinationInfoMap);
+}
+
 void SQLTransactionCoordinator::processPendingTransactions(CoordinationInfo& info)
 {
     if (info.activeWriteTransaction || info.pendingTransactions.isEmpty())
