@@ -1074,7 +1074,7 @@ Signing in anyway will merge Chrome information like bookmarks, history, and oth
           Guests can use Chrome without leaving anything behind.
         </message>
         <message name="IDS_USER_MANAGER_TUTORIAL_SLIDE_FRIENDS_TEXT" desc="Main text of the friends and family slide">
-          If you share a computer, friends and family can browse separately and set up Chrome just the way the want.
+          If you share a computer, friends and family can browse separately and set up Chrome just the way they want.
         </message>
         <message name="IDS_USER_MANAGER_TUTORIAL_SLIDE_OUTRO_TEXT" desc="Main text of the tutorial completion slide">
           Click your name to open Chrome and start browsing.
