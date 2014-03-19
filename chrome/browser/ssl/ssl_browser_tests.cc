@@ -1356,14 +1356,13 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestGoodFrameNavigation) {
 
   // And the frame should be blocked.
   bool is_content_evil = true;
-  std::string content_frame_xpath("html/frameset/frame[2]");
+  content::RenderFrameHost* content_frame = content::FrameMatchingPredicate(
+        tab, base::Bind(&content::FrameMatchesName, "contentFrame"));
   std::string is_evil_js("window.domAutomationController.send("
                          "document.getElementById('evilDiv') != null);");
-  EXPECT_TRUE(content::ExecuteScriptInFrameAndExtractBool(
-      tab,
-      content_frame_xpath,
-      is_evil_js,
-      &is_content_evil));
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(content_frame,
+                                                   is_evil_js,
+                                                   &is_content_evil));
   EXPECT_FALSE(is_content_evil);
 
   // Now go back, our state should still be OK.
@@ -1496,14 +1495,13 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestUnauthenticatedFrameNavigation) {
 
   // And the frame should have been blocked (see bug #2316).
   bool is_content_evil = true;
-  std::string content_frame_xpath("html/frameset/frame[2]");
+  content::RenderFrameHost* content_frame = content::FrameMatchingPredicate(
+        tab, base::Bind(&content::FrameMatchesName, "contentFrame"));
   std::string is_evil_js("window.domAutomationController.send("
                          "document.getElementById('evilDiv') != null);");
-  EXPECT_TRUE(content::ExecuteScriptInFrameAndExtractBool(
-      tab,
-      content_frame_xpath,
-      is_evil_js,
-      &is_content_evil));
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(content_frame,
+                                                   is_evil_js,
+                                                   &is_content_evil));
   EXPECT_FALSE(is_content_evil);
 }
 
