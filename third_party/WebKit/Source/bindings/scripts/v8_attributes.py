@@ -123,6 +123,7 @@ def generate_attribute(interface, attribute):
         'per_context_enabled_function': v8_utilities.per_context_enabled_function_name(attribute),  # [PerContextEnabled]
         'property_attributes': property_attributes(attribute),
         'put_forwards': 'PutForwards' in extended_attributes,
+        'ref_ptr': 'RefPtrWillBeRawPtr' if idl_type.is_will_be_garbage_collected else 'RefPtr',
         'reflect_empty': extended_attributes.get('ReflectEmpty'),
         'reflect_invalid': extended_attributes.get('ReflectInvalid', ''),
         'reflect_missing': extended_attributes.get('ReflectMissing'),

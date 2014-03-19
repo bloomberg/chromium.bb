@@ -353,7 +353,7 @@ enum PageshowEventPersistence {
         mutable RefPtr<BarProp> m_toolbar;
         mutable RefPtr<Console> m_console;
         mutable RefPtrWillBePersistent<Navigator> m_navigator;
-        mutable RefPtr<Location> m_location;
+        mutable RefPtrWillBePersistent<Location> m_location;
         mutable RefPtr<StyleMedia> m_media;
 
         String m_status;
