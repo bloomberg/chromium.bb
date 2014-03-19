@@ -101,10 +101,13 @@ const size_t kStaticEntryCount = arraysize(kStaticTable);
 
 }  // namespace
 
-const uint32 HpackEncodingContext::kUntouched = HpackEntry::kUntouched;
+// Must match HpackEntry::kUntouched.
+const uint32 HpackEncodingContext::kUntouched = 0x7fffffff;
 
 HpackEncodingContext::HpackEncodingContext()
-    : settings_header_table_size_(kDefaultHeaderTableSizeSetting) {}
+    : settings_header_table_size_(kDefaultHeaderTableSizeSetting) {
+  DCHECK_EQ(HpackEncodingContext::kUntouched, HpackEntry::kUntouched);
+}
 
 HpackEncodingContext::~HpackEncodingContext() {}
 

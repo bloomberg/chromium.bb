@@ -22,9 +22,6 @@ namespace {
 const uint8 kDecodeTableRootBits = 9;
 // Maximum number of bits to index in successive decode tables.
 const uint8 kDecodeTableBranchBits = 6;
-// Number of decode iterations required for a 32-bit code.
-const int kDecodeIterations = static_cast<int>(
-    std::ceil((32.f - kDecodeTableRootBits) / kDecodeTableBranchBits));
 
 bool SymbolLengthAndIdCompare(const HpackHuffmanSymbol& a,
                               const HpackHuffmanSymbol& b) {
@@ -254,6 +251,10 @@ void HpackHuffmanTable::EncodeString(StringPiece in,
 bool HpackHuffmanTable::DecodeString(HpackInputStream* in,
                                      size_t out_capacity,
                                      string* out) const {
+  // Number of decode iterations required for a 32-bit code.
+  const int kDecodeIterations = static_cast<int>(
+      std::ceil((32.f - kDecodeTableRootBits) / kDecodeTableBranchBits));
+
   out->clear();
 
   // Current input, stored in the high |bits_available| bits of |bits|.

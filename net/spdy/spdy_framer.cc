@@ -17,6 +17,7 @@
 #include "net/spdy/spdy_bitmasks.h"
 #include "third_party/zlib/zlib.h"
 
+using std::string;
 using std::vector;
 
 namespace net {
@@ -125,6 +126,7 @@ bool SpdyFramerVisitorInterface::OnRstStreamFrameData(
 SpdyFramer::SpdyFramer(SpdyMajorVersion version)
     : current_frame_buffer_(new char[kControlFrameBufferSize]),
       enable_compression_(true),
+      hpack_decoder_(ObtainHpackHuffmanTable()),
       visitor_(NULL),
       debug_visitor_(NULL),
       display_protocol_("SPDY"),
@@ -516,7 +518,8 @@ size_t SpdyFramer::ProcessInput(const char* data, size_t len) {
       }
 
       case SPDY_CONTROL_FRAME_HEADER_BLOCK: {
-        int bytes_read = ProcessControlFrameHeaderBlock(data, len);
+        int bytes_read = ProcessControlFrameHeaderBlock(
+            data, len, spdy_version_ >= 4 ? true : false);
         len -= bytes_read;
         data += bytes_read;
         break;
@@ -988,17 +991,13 @@ size_t SpdyFramer::UpdateCurrentFrameBuffer(const char** data, size_t* len,
 }
 
 size_t SpdyFramer::GetSerializedLength(const int spdy_version,
-                                       const SpdyHeaderBlock* headers,
-                                       bool begin_block) {
+                                       const SpdyHeaderBlock* headers) {
   const size_t num_name_value_pairs_size
       = (spdy_version < 3) ? sizeof(uint16) : sizeof(uint32);
   const size_t length_of_name_size = num_name_value_pairs_size;
   const size_t length_of_value_size = num_name_value_pairs_size;
 
-  size_t total_length = 0;
-  if (begin_block) {
-    total_length += num_name_value_pairs_size;
-  }
+  size_t total_length = num_name_value_pairs_size;
   for (SpdyHeaderBlock::const_iterator it = headers->begin();
        it != headers->end();
        ++it) {
@@ -1407,7 +1406,8 @@ size_t SpdyFramer::ProcessControlFrameBeforeHeaderBlock(const char* data,
 // IncrementallyDeliverControlFrameHeaderData() or
 // IncrementallyDecompressControlFrameHeaderData() respectively.
 size_t SpdyFramer::ProcessControlFrameHeaderBlock(const char* data,
-                                                  size_t data_len) {
+                                                  size_t data_len,
+                                                  bool is_hpack_header_block) {
   DCHECK_EQ(SPDY_CONTROL_FRAME_HEADER_BLOCK, state_);
 
   bool processed_successfully = true;
@@ -1419,33 +1419,54 @@ size_t SpdyFramer::ProcessControlFrameHeaderBlock(const char* data,
     LOG(DFATAL) << "Unhandled frame type in ProcessControlFrameHeaderBlock.";
   }
   size_t process_bytes = std::min(data_len, remaining_data_length_);
-  if (process_bytes > 0) {
-    if (enable_compression_) {
+  if (is_hpack_header_block) {
+    if (!hpack_decoder_.HandleControlFrameHeadersData(current_frame_stream_id_,
+                                                      data,
+                                                      process_bytes)) {
+      // TODO(jgraettinger): Finer-grained HPACK error codes.
+      set_error(SPDY_DECOMPRESS_FAILURE);
+      processed_successfully = false;
+    }
+  } else if (process_bytes > 0) {
+    if (enable_compression_ && spdy_version_ < 4) {
       processed_successfully = IncrementallyDecompressControlFrameHeaderData(
           current_frame_stream_id_, data, process_bytes);
     } else {
       processed_successfully = IncrementallyDeliverControlFrameHeaderData(
           current_frame_stream_id_, data, process_bytes);
     }
-
-    remaining_data_length_ -= process_bytes;
   }
+  remaining_data_length_ -= process_bytes;
 
   // Handle the case that there is no futher data in this frame.
   if (remaining_data_length_ == 0 && processed_successfully) {
     if (expect_continuation_ == 0) {
-      // The complete header block has been delivered. We send a zero-length
-      // OnControlFrameHeaderData() to indicate this.
-      visitor_->OnControlFrameHeaderData(current_frame_stream_id_, NULL, 0);
-
+      if (is_hpack_header_block) {
+        if (!hpack_decoder_.HandleControlFrameHeadersComplete(
+            current_frame_stream_id_)) {
+          set_error(SPDY_DECOMPRESS_FAILURE);
+          processed_successfully = false;
+        } else {
+          // TODO(jgraettinger): To be removed with migration to
+          // SpdyHeadersHandlerInterface. Serializes the HPACK block as a SPDY3
+          // block, delivered via reentrant call to
+          // ProcessControlFrameHeaderBlock().
+          DeliverHpackBlockAsSpdy3Block();
+          return process_bytes;
+        }
+      } else {
+        // The complete header block has been delivered. We send a zero-length
+        // OnControlFrameHeaderData() to indicate this.
+        visitor_->OnControlFrameHeaderData(current_frame_stream_id_, NULL, 0);
+      }
       // If this is a FIN, tell the caller.
       if ((current_frame_flags_ & CONTROL_FLAG_FIN) || end_stream_when_done_) {
         end_stream_when_done_ = false;
         visitor_->OnStreamFrameData(current_frame_stream_id_, NULL, 0, true);
       }
     }
-
-    CHANGE_STATE(SPDY_AUTO_RESET);
+    if (processed_successfully)
+      CHANGE_STATE(SPDY_AUTO_RESET);
   }
 
   // Handle error.
@@ -1511,6 +1532,26 @@ size_t SpdyFramer::ProcessSettingsFramePayload(const char* data,
   }
 
   return processed_bytes;
+}
+
+void SpdyFramer::DeliverHpackBlockAsSpdy3Block() {
+  DCHECK_GE(spdy_version_, SPDY4);
+  DCHECK_EQ(remaining_data_length_, 0u);
+
+  const SpdyNameValueBlock& block = hpack_decoder_.decoded_block();
+  if (block.empty()) {
+    // Special-case this to make tests happy.
+    ProcessControlFrameHeaderBlock(NULL, 0, false);
+    return;
+  }
+  SpdyFrameBuilder builder(
+      GetSerializedLength(protocol_version(), &block));
+
+  SerializeNameValueBlockWithoutCompression(&builder, block);
+  scoped_ptr<SpdyFrame> frame(builder.take());
+
+  remaining_data_length_ = frame->size();
+  ProcessControlFrameHeaderBlock(frame->data(), frame->size(), false);
 }
 
 bool SpdyFramer::ProcessSetting(const char* data) {
@@ -1907,8 +1948,16 @@ SpdySerializedFrame* SpdyFramer::SerializeSynStream(
   }
 
   // The size of this frame, including variable-length name-value block.
-  const size_t size = GetSynStreamMinimumSize()
-    + GetSerializedLength(syn_stream.name_value_block(), true);
+  size_t size = GetSynStreamMinimumSize();
+
+  string hpack_encoding;
+  if (spdy_version_ >= 4) {
+    hpack_encoder_.EncodeHeaderSet(syn_stream.name_value_block(),
+                                   &hpack_encoding);
+    size += hpack_encoding.size();
+  } else {
+    size += GetSerializedLength(syn_stream.name_value_block());
+  }
 
   SpdyFrameBuilder builder(size);
   if (spdy_version_ < 4) {
@@ -1925,11 +1974,16 @@ SpdySerializedFrame* SpdyFramer::SerializeSynStream(
     builder.WriteUInt32(priority);
   }
   DCHECK_EQ(GetSynStreamMinimumSize(), builder.length());
-  SerializeNameValueBlock(&builder, syn_stream, true);
+  if (spdy_version_ >= 4) {
+    builder.WriteBytes(&hpack_encoding[0], hpack_encoding.size());
+  } else {
+    SerializeNameValueBlock(&builder, syn_stream);
+  }
 
   if (debug_visitor_) {
-    const size_t payload_len = GetSerializedLength(
-        protocol_version(), &(syn_stream.name_value_block()), true);
+    const size_t payload_len = spdy_version_ >= 4 ? hpack_encoding.size() :
+        GetSerializedLength(protocol_version(),
+                            &(syn_stream.name_value_block()));
     // SPDY 4 reports this compression as a SYN_STREAM compression.
     debug_visitor_->OnSendCompressedFrame(syn_stream.stream_id(),
                                           SYN_STREAM,
@@ -1953,8 +2007,16 @@ SpdySerializedFrame* SpdyFramer::SerializeSynReply(
   }
 
   // The size of this frame, including variable-length name-value block.
-  size_t size = GetSynReplyMinimumSize()
-    + GetSerializedLength(syn_reply.name_value_block(), true);
+  size_t size = GetSynReplyMinimumSize();
+
+  string hpack_encoding;
+  if (spdy_version_ >= 4) {
+    hpack_encoder_.EncodeHeaderSet(syn_reply.name_value_block(),
+                                   &hpack_encoding);
+    size += hpack_encoding.size();
+  } else {
+    size += GetSerializedLength(syn_reply.name_value_block());
+  }
 
   SpdyFrameBuilder builder(size);
   if (spdy_version_ < 4) {
@@ -1970,11 +2032,16 @@ SpdySerializedFrame* SpdyFramer::SerializeSynReply(
     builder.WriteUInt16(0);  // Unused.
   }
   DCHECK_EQ(GetSynReplyMinimumSize(), builder.length());
-  SerializeNameValueBlock(&builder, syn_reply, true);
+  if (spdy_version_ >= 4) {
+    builder.WriteBytes(&hpack_encoding[0], hpack_encoding.size());
+  } else {
+    SerializeNameValueBlock(&builder, syn_reply);
+  }
 
   if (debug_visitor_) {
-    const size_t payload_len = GetSerializedLength(
-        protocol_version(), &(syn_reply.name_value_block()), true);
+    const size_t payload_len = spdy_version_ >= 4 ? hpack_encoding.size() :
+        GetSerializedLength(protocol_version(),
+                            &(syn_reply.name_value_block()));
     debug_visitor_->OnSendCompressedFrame(syn_reply.stream_id(),
                                           SYN_REPLY,
                                           payload_len,
@@ -2150,8 +2217,7 @@ SpdySerializedFrame* SpdyFramer::SerializeHeaders(
   }
 
   // The size of this frame, including variable-length name-value block.
-  size_t size = GetHeadersMinimumSize()
-    + GetSerializedLength(headers.name_value_block(), true);
+  size_t size = GetHeadersMinimumSize();
 
   uint32 priority = headers.priority();
   if (headers.has_priority()) {
@@ -2160,6 +2226,14 @@ SpdySerializedFrame* SpdyFramer::SerializeHeaders(
       priority = GetLowestPriority();
     }
     size += 4;
+  }
+
+  string hpack_encoding;
+  if (spdy_version_ >= 4) {
+    hpack_encoder_.EncodeHeaderSet(headers.name_value_block(), &hpack_encoding);
+    size += hpack_encoding.size();
+  } else {
+    size += GetSerializedLength(headers.name_value_block());
   }
 
   SpdyFrameBuilder builder(size);
@@ -2180,11 +2254,16 @@ SpdySerializedFrame* SpdyFramer::SerializeHeaders(
   }
   DCHECK_EQ(GetHeadersMinimumSize(), builder.length());
 
-  SerializeNameValueBlock(&builder, headers, true);
+  if (spdy_version_ >= 4) {
+    builder.WriteBytes(&hpack_encoding[0], hpack_encoding.size());
+  } else {
+    SerializeNameValueBlock(&builder, headers);
+  }
 
   if (debug_visitor_) {
-    const size_t payload_len = GetSerializedLength(
-        protocol_version(), &(headers.name_value_block()), true);
+    const size_t payload_len = spdy_version_ >= 4 ? hpack_encoding.size() :
+        GetSerializedLength(protocol_version(),
+                            &(headers.name_value_block()));
     debug_visitor_->OnSendCompressedFrame(headers.stream_id(),
                                           HEADERS,
                                           payload_len,
@@ -2219,8 +2298,16 @@ SpdyFrame* SpdyFramer::SerializePushPromise(
     flags |= PUSH_PROMISE_FLAG_END_PUSH_PROMISE;
   }
   // The size of this frame, including variable-length name-value block.
-  size_t size = GetPushPromiseMinimumSize()
-    + GetSerializedLength(push_promise.name_value_block(), true);
+  size_t size = GetPushPromiseMinimumSize();
+
+  string hpack_encoding;
+  if (spdy_version_ >= 4) {
+    hpack_encoder_.EncodeHeaderSet(push_promise.name_value_block(),
+                                   &hpack_encoding);
+    size += hpack_encoding.size();
+  } else {
+    size += GetSerializedLength(push_promise.name_value_block());
+  }
 
   SpdyFrameBuilder builder(size);
   builder.WriteFramePrefix(*this, PUSH_PROMISE, flags,
@@ -2228,11 +2315,16 @@ SpdyFrame* SpdyFramer::SerializePushPromise(
   builder.WriteUInt32(push_promise.promised_stream_id());
   DCHECK_EQ(GetPushPromiseMinimumSize(), builder.length());
 
-  SerializeNameValueBlock(&builder, push_promise, true);
+  if (spdy_version_ >= 4) {
+    builder.WriteBytes(&hpack_encoding[0], hpack_encoding.size());
+  } else {
+    SerializeNameValueBlock(&builder, push_promise);
+  }
 
   if (debug_visitor_) {
-    const size_t payload_len = GetSerializedLength(
-        protocol_version(), &(push_promise.name_value_block()), true);
+    const size_t payload_len = spdy_version_ >= 4 ? hpack_encoding.size() :
+        GetSerializedLength(protocol_version(),
+                            &(push_promise.name_value_block()));
     debug_visitor_->OnSendCompressedFrame(push_promise.stream_id(),
         PUSH_PROMISE, payload_len, builder.length());
   }
@@ -2240,27 +2332,33 @@ SpdyFrame* SpdyFramer::SerializePushPromise(
   return builder.take();
 }
 
+// TODO(jgraettinger): This implementation is incorrect. The continuation
+// frame continues a previously-begun HPACK encoding; it doesn't begin a
+// new one. Figure out whether it makes sense to keep SerializeContinuation().
 SpdyFrame* SpdyFramer::SerializeContinuation(
     const SpdyContinuationIR& continuation) {
+  CHECK_GE(spdy_version_, 4);
   uint8 flags = 0;
   if (continuation.end_headers()) {
     flags |= HEADERS_FLAG_END_HEADERS;
   }
 
   // The size of this frame, including variable-length name-value block.
-  size_t size = GetContinuationMinimumSize()
-    + GetSerializedLength(continuation.name_value_block(), false);
+  size_t size = GetContinuationMinimumSize();
+  string hpack_encoding;
+  hpack_encoder_.EncodeHeaderSet(continuation.name_value_block(),
+                                 &hpack_encoding);
+  size += hpack_encoding.size();
 
   SpdyFrameBuilder builder(size);
   builder.WriteFramePrefix(*this, CONTINUATION, flags,
       continuation.stream_id());
   DCHECK_EQ(GetContinuationMinimumSize(), builder.length());
 
-  SerializeNameValueBlock(&builder, continuation, false);
+  builder.WriteBytes(&hpack_encoding[0], hpack_encoding.size());
 
   if (debug_visitor_) {
-    const size_t payload_len = GetSerializedLength(
-        protocol_version(), &(continuation.name_value_block()), false);
+    const size_t payload_len = hpack_encoding.size();
     debug_visitor_->OnSendCompressedFrame(continuation.stream_id(),
         CONTINUATION, payload_len, builder.length());
   }
@@ -2330,10 +2428,10 @@ SpdySerializedFrame* SpdyFramer::SerializeFrame(const SpdyFrameIR& frame) {
   return visitor.ReleaseSerializedFrame();
 }
 
-  size_t SpdyFramer::GetSerializedLength(const SpdyHeaderBlock& headers,
-                                         bool begin_block) {
+size_t SpdyFramer::GetSerializedLength(const SpdyHeaderBlock& headers) {
+  CHECK_LT(spdy_version_, 4);
   const size_t uncompressed_length =
-    GetSerializedLength(protocol_version(), &headers, begin_block);
+    GetSerializedLength(protocol_version(), &headers);
   if (!enable_compression_) {
     return uncompressed_length;
   }
@@ -2496,15 +2594,12 @@ bool SpdyFramer::IncrementallyDeliverControlFrameHeaderData(
 
 void SpdyFramer::SerializeNameValueBlockWithoutCompression(
     SpdyFrameBuilder* builder,
-    const SpdyNameValueBlock& name_value_block,
-    bool begin_block) const {
+    const SpdyNameValueBlock& name_value_block) const {
   // Serialize number of headers.
-  if (begin_block) {
-    if (protocol_version() < 3) {
-      builder->WriteUInt16(name_value_block.size());
-    } else {
-      builder->WriteUInt32(name_value_block.size());
-    }
+  if (protocol_version() < 3) {
+    builder->WriteUInt16(name_value_block.size());
+  } else {
+    builder->WriteUInt32(name_value_block.size());
   }
 
   // Serialize each header.
@@ -2523,21 +2618,19 @@ void SpdyFramer::SerializeNameValueBlockWithoutCompression(
 
 void SpdyFramer::SerializeNameValueBlock(
     SpdyFrameBuilder* builder,
-    const SpdyFrameWithNameValueBlockIR& frame,
-    bool begin_block) {
+    const SpdyFrameWithNameValueBlockIR& frame) {
+  CHECK_LT(spdy_version_, 4);
   if (!enable_compression_) {
     return SerializeNameValueBlockWithoutCompression(builder,
-                                                     frame.name_value_block(),
-                                                     begin_block);
+                                                     frame.name_value_block());
   }
 
   // First build an uncompressed version to be fed into the compressor.
   const size_t uncompressed_len = GetSerializedLength(
-      protocol_version(), &(frame.name_value_block()), begin_block);
+      protocol_version(), &(frame.name_value_block()));
   SpdyFrameBuilder uncompressed_builder(uncompressed_len);
   SerializeNameValueBlockWithoutCompression(&uncompressed_builder,
-                                            frame.name_value_block(),
-                                            begin_block);
+                                            frame.name_value_block());
   scoped_ptr<SpdyFrame> uncompressed_payload(uncompressed_builder.take());
 
   z_stream* compressor = GetHeaderCompressor();
