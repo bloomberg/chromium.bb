@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/api/chrome_extensions_api_client.h"
 
+#include "base/files/file_path.h"
 #include "chrome/browser/extensions/api/storage/sync_value_store_cache.h"
 #include "content/public/browser/browser_context.h"
 
