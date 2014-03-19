@@ -72,10 +72,6 @@ const char kApp[]                           = "app";
 // Specifies an URL to use for app list start page.
 const char kAppListStartPageURL[]           = "app-list-start-page-url";
 
-// Specifies the initial size for application windows launched with --app.
-// --app-window-size=w,h
-const char kAppWindowSize[]                 = "app-window-size";
-
 // Overrides the apps checkout URL, which is used to determine when to expose
 // some private APIs.
 const char kAppsCheckoutURL[]               = "apps-checkout-url";

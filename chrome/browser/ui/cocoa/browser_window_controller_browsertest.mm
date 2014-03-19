@@ -303,9 +303,7 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest, SheetPosition) {
   // we'll create the shortcut window without the bookmark bar.
   chrome::ToggleBookmarkBarWhenVisible(browser()->profile());
   // Open application mode window.
-  gfx::Rect initial_bounds(0, 0, 400, 400);
-  OpenAppShortcutWindow(browser()->profile(), GURL("about:blank"),
-                        initial_bounds);
+  OpenAppShortcutWindow(browser()->profile(), GURL("about:blank"));
   Browser* popup_browser = BrowserList::GetInstance(
       chrome::GetActiveDesktop())->GetLastActive();
   NSWindow* popupWindow = popup_browser->window()->GetNativeWindow();
@@ -339,9 +337,7 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
   EXPECT_FALSE(
       [[controller() infoBarContainerController] shouldSuppressTopInfoBarTip]);
 
-  gfx::Rect initial_bounds(0, 0, 400, 400);
-  OpenAppShortcutWindow(browser()->profile(), GURL("about:blank"),
-                        initial_bounds);
+  OpenAppShortcutWindow(browser()->profile(), GURL("about:blank"));
   Browser* popup_browser = BrowserList::GetInstance(
       chrome::HOST_DESKTOP_TYPE_NATIVE)->GetLastActive();
   NSWindow* popupWindow = popup_browser->window()->GetNativeWindow();

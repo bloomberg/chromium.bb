@@ -20,6 +20,7 @@
 #include "chrome/browser/chromeos/login/fake_user_manager.h"
 #include "chrome/browser/chromeos/login/mock_user_manager.h"
 #include "chrome/browser/chromeos/login/oobe_base_test.h"
+#include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
@@ -1221,7 +1222,6 @@ class KioskHiddenWebUITest : public KioskTest,
   // KioskTest overrides:
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     KioskTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitchASCII(switches::kDeviceRegistered, "1");
     command_line->AppendSwitch(switches::kDisableBootAnimation);
   }
 
@@ -1229,6 +1229,7 @@ class KioskHiddenWebUITest : public KioskTest,
     KioskTest::SetUpOnMainThread();
     ash::Shell::GetInstance()->desktop_background_controller()
         ->AddObserver(this);
+    StartupUtils::MarkDeviceRegistered();
   }
 
   virtual void TearDownOnMainThread() OVERRIDE {

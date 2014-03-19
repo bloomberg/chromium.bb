@@ -88,13 +88,12 @@ void OpenApplicationWithReenablePrompt(const AppLaunchParams& params);
 // Open the application in a way specified by |params|.
 content::WebContents* OpenApplication(const AppLaunchParams& params);
 
-// Open |url| in an app shortcut window. |override_bounds| param is optional.
+// Open |url| in an app shortcut window.
 // There are two kinds of app shortcuts: Shortcuts to a URL,
 // and shortcuts that open an installed application.  This function
 // is used to open the former.  To open the latter, use
 // application_launch::OpenApplication().
 content::WebContents* OpenAppShortcutWindow(Profile* profile,
-                                            const GURL& url,
-                                            const gfx::Rect& override_bounds);
+                                            const GURL& url);
 
 #endif  // CHROME_BROWSER_UI_EXTENSIONS_APPLICATION_LAUNCH_H_

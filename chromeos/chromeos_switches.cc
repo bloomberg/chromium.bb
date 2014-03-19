@@ -27,9 +27,6 @@ const char kDerelictDetectionTimeout[] = "derelict-detection-timeout";
 // Time before a derelict machines starts demo mode.
 const char kDerelictIdleTimeout[] = "derelict-idle-timeout";
 
-// Integer flag that sets the DeviceRegistered local state pref.
-const char kDeviceRegistered[]              = "device-registered";
-
 // Disables wallpaper boot animation (except of OOBE case).
 const char kDisableBootAnimation[]          = "disable-boot-animation";
 

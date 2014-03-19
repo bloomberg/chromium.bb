@@ -28,10 +28,6 @@ namespace content {
 class WebContents;
 }
 
-namespace gfx {
-class Rect;
-}
-
 namespace internals {
 GURL GetWelcomePageURL();
 }
@@ -82,9 +78,6 @@ class StartupBrowserCreatorImpl {
  private:
   FRIEND_TEST_ALL_PREFIXES(BrowserTest, RestorePinnedTabs);
   FRIEND_TEST_ALL_PREFIXES(BrowserTest, AppIdSwitch);
-
-  // Extracts optional application window size passed in command line.
-  void ExtractOptionalAppWindowSize(gfx::Rect* bounds);
 
   // If the process was launched with the web application command line flags,
   // e.g. --app=http://www.google.com/ or --app_id=... return true.

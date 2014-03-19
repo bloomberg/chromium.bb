@@ -479,15 +479,13 @@ void OpenApplicationWithReenablePrompt(const AppLaunchParams& params) {
 }
 
 WebContents* OpenAppShortcutWindow(Profile* profile,
-                                   const GURL& url,
-                                   const gfx::Rect& override_bounds) {
+                                   const GURL& url) {
   AppLaunchParams launch_params(
       profile,
       NULL,  // this is a URL app.  No extension.
       extensions::LAUNCH_CONTAINER_WINDOW,
       NEW_WINDOW);
   launch_params.override_url = url;
-  launch_params.override_bounds = override_bounds;
 
   WebContents* tab = OpenApplicationWindow(launch_params);
 
