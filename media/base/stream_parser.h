@@ -53,9 +53,12 @@ class MEDIA_EXPORT StreamParser {
   // First parameter - Indicates initialization success. Set to true if
   //                   initialization was successful. False if an error
   //                   occurred.
-  // Second parameter -  Indicates the stream duration. Only contains a valid
-  //                     value if the first parameter is true.
-  typedef base::Callback<void(bool, base::TimeDelta)> InitCB;
+  // Second parameter - Indicates the stream duration. Only contains a valid
+  //                    value if the first parameter is true.
+  // Third parameters - Indicates that timestampOffset should be updated based
+  //                    on the earliest end timestamp (audio or video) provided
+  //                    during each NewBuffersCB.
+  typedef base::Callback<void(bool, base::TimeDelta, bool)> InitCB;
 
   // Indicates when new stream configurations have been parsed.
   // First parameter - The new audio configuration. If the config is not valid

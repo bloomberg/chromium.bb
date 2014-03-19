@@ -33,6 +33,7 @@ const char kVideoOnlyWebM[] = "video/webm; codecs=\"vp8\"";
 const char kMP4VideoType[] = "video/mp4";
 const char kMP4AudioType[] = "audio/mp4";
 #if defined(USE_PROPRIETARY_CODECS)
+const char kADTS[] = "audio/aac";
 const char kMP4[] = "video/mp4; codecs=\"avc1.4D4041,mp4a.40.2\"";
 const char kMP4Video[] = "video/mp4; codecs=\"avc1.4D4041\"";
 const char kMP4VideoAVC3[] = "video/mp4; codecs=\"avc3.64001f\"";
@@ -305,15 +306,17 @@ class MockMediaSource {
         kSourceId, file_data_->data() + current_position_, size,
         base::TimeDelta(), kInfiniteDuration(), &timestamp_offset);
     current_position_ += size;
+    last_timestamp_offset_ = timestamp_offset;
   }
 
-  void AppendAtTime(const base::TimeDelta& timestampOffset,
-                    const uint8* pData, int size) {
-    base::TimeDelta timestamp_offset = timestampOffset;
+  void AppendAtTime(base::TimeDelta timestamp_offset,
+                    const uint8* pData,
+                    int size) {
     CHECK(!chunk_demuxer_->IsParsingMediaSegment(kSourceId));
     chunk_demuxer_->AppendData(kSourceId, pData, size,
                                base::TimeDelta(), kInfiniteDuration(),
                                &timestamp_offset);
+    last_timestamp_offset_ = timestamp_offset;
   }
 
   void EndOfStream() {
@@ -369,6 +372,10 @@ class MockMediaSource {
     need_key_cb_.Run(type, init_data);
   }
 
+  base::TimeDelta last_timestamp_offset() const {
+    return last_timestamp_offset_;
+  }
+
  private:
   base::FilePath file_path_;
   scoped_refptr<DecoderBuffer> file_data_;
@@ -378,6 +385,7 @@ class MockMediaSource {
   ChunkDemuxer* chunk_demuxer_;
   scoped_ptr<Demuxer> owned_chunk_demuxer_;
   Demuxer::NeedKeyCB need_key_cb_;
+  base::TimeDelta last_timestamp_offset_;
 };
 
 class PipelineIntegrationTest
@@ -715,16 +723,77 @@ TEST_F(PipelineIntegrationTest,
 }
 
 #if defined(USE_PROPRIETARY_CODECS)
-TEST_F(PipelineIntegrationTest, MediaSource_MP3) {
-  MockMediaSource source("sfx.mp3", kMP3, kAppendWholeFile);
+TEST_F(PipelineIntegrationTest, MediaSource_ADTS) {
+  MockMediaSource source("sfx.adts", kADTS, kAppendWholeFile);
   StartPipelineWithMediaSource(&source);
   source.EndOfStream();
+
+  EXPECT_EQ(1u, pipeline_->GetBufferedTimeRanges().size());
+  EXPECT_EQ(0, pipeline_->GetBufferedTimeRanges().start(0).InMilliseconds());
+  EXPECT_EQ(325, pipeline_->GetBufferedTimeRanges().end(0).InMilliseconds());
 
   Play();
 
   EXPECT_TRUE(WaitUntilOnEnded());
 }
 
+TEST_F(PipelineIntegrationTest, MediaSource_ADTS_TimestampOffset) {
+  MockMediaSource source("sfx.adts", kADTS, kAppendWholeFile);
+  StartPipelineWithMediaSource(&source);
+  EXPECT_EQ(325, source.last_timestamp_offset().InMilliseconds());
+
+  scoped_refptr<DecoderBuffer> second_file = ReadTestDataFile("sfx.adts");
+  source.AppendAtTime(
+      source.last_timestamp_offset() - base::TimeDelta::FromMilliseconds(10),
+      second_file->data(),
+      second_file->data_size());
+  source.EndOfStream();
+
+  EXPECT_EQ(640, source.last_timestamp_offset().InMilliseconds());
+  EXPECT_EQ(1u, pipeline_->GetBufferedTimeRanges().size());
+  EXPECT_EQ(0, pipeline_->GetBufferedTimeRanges().start(0).InMilliseconds());
+  EXPECT_EQ(640, pipeline_->GetBufferedTimeRanges().end(0).InMilliseconds());
+
+  Play();
+
+  EXPECT_TRUE(WaitUntilOnEnded());
+}
+
+TEST_F(PipelineIntegrationTest, MediaSource_MP3) {
+  MockMediaSource source("sfx.mp3", kMP3, kAppendWholeFile);
+  StartPipelineWithMediaSource(&source);
+  source.EndOfStream();
+
+  EXPECT_EQ(1u, pipeline_->GetBufferedTimeRanges().size());
+  EXPECT_EQ(0, pipeline_->GetBufferedTimeRanges().start(0).InMilliseconds());
+  EXPECT_EQ(339, pipeline_->GetBufferedTimeRanges().end(0).InMilliseconds());
+
+  Play();
+
+  EXPECT_TRUE(WaitUntilOnEnded());
+}
+
+TEST_F(PipelineIntegrationTest, MediaSource_MP3_TimestampOffset) {
+  MockMediaSource source("sfx.mp3", kMP3, kAppendWholeFile);
+  StartPipelineWithMediaSource(&source);
+  EXPECT_EQ(339, source.last_timestamp_offset().InMilliseconds());
+
+  scoped_refptr<DecoderBuffer> second_file = ReadTestDataFile("sfx.mp3");
+  source.AppendAtTime(
+      source.last_timestamp_offset() - base::TimeDelta::FromMilliseconds(10),
+      second_file->data(),
+      second_file->data_size());
+  source.EndOfStream();
+
+  EXPECT_EQ(669, source.last_timestamp_offset().InMilliseconds());
+  EXPECT_EQ(1u, pipeline_->GetBufferedTimeRanges().size());
+  EXPECT_EQ(0, pipeline_->GetBufferedTimeRanges().start(0).InMilliseconds());
+  EXPECT_EQ(669, pipeline_->GetBufferedTimeRanges().end(0).InMilliseconds());
+
+  Play();
+
+  EXPECT_TRUE(WaitUntilOnEnded());
+}
 
 TEST_F(PipelineIntegrationTest, MediaSource_MP3_Icecast) {
   MockMediaSource source("icy_sfx.mp3", kMP3, kAppendWholeFile);

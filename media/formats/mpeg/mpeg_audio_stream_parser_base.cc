@@ -208,7 +208,7 @@ int MPEGAudioStreamParserBase::ParseFrame(const uint8* data,
     bool success = config_cb_.Run(config_, video_config, TextTrackConfigMap());
 
     if (!init_cb_.is_null())
-      base::ResetAndReturn(&init_cb_).Run(success, kInfiniteDuration());
+      base::ResetAndReturn(&init_cb_).Run(success, kInfiniteDuration(), true);
 
     if (!success)
       return -1;
@@ -393,6 +393,7 @@ bool MPEGAudioStreamParserBase::SendBuffers(BufferQueue* buffers,
     end_of_segment_cb_.Run();
   }
 
+  timestamp_helper_->SetBaseTimestamp(base::TimeDelta());
   return true;
 }
 

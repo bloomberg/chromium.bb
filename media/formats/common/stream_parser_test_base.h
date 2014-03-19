@@ -43,7 +43,9 @@ class StreamParserTestBase {
   void InitializeParser();
   bool AppendDataInPieces(const uint8* data, size_t length, size_t piece_size);
 
-  void OnInitDone(bool success, base::TimeDelta duration);
+  void OnInitDone(bool success,
+                  base::TimeDelta duration,
+                  bool auto_update_timestamp_offset);
   bool OnNewConfig(const AudioDecoderConfig& audio_config,
                    const VideoDecoderConfig& video_config,
                    const StreamParser::TextTrackConfigMap& text_config);

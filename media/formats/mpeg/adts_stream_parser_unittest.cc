@@ -22,21 +22,21 @@ TEST_F(ADTSStreamParserTest, UnalignedAppend) {
   const std::string expected =
       "NewSegment"
       "{ 0K }"
-      "{ 23K }"
-      "{ 46K }"
-      "{ 69K }"
-      "{ 92K }"
-      "{ 116K }"
-      "{ 139K }"
-      "{ 162K }"
-      "{ 185K }"
+      "{ 0K }"
+      "{ 0K }"
+      "{ 0K }"
+      "{ 0K }"
+      "{ 0K }"
+      "{ 0K }"
+      "{ 0K }"
+      "{ 0K }"
       "EndOfSegment"
       "NewSegment"
-      "{ 208K }"
-      "{ 232K }"
-      "{ 255K }"
-      "{ 278K }"
-      "{ 301K }"
+      "{ 0K }"
+      "{ 0K }"
+      "{ 0K }"
+      "{ 0K }"
+      "{ 0K }"
       "EndOfSegment";
   EXPECT_EQ(expected, ParseFile("sfx.adts", 17));
 }
@@ -47,11 +47,11 @@ TEST_F(ADTSStreamParserTest, UnalignedAppend512) {
   const std::string expected =
       "NewSegment"
       "{ 0K 23K 46K }"
-      "{ 69K 92K 116K 139K 162K }"
-      "{ 185K 208K 232K 255K 278K }"
+      "{ 0K 23K 46K 69K 92K }"
+      "{ 0K 23K 46K 69K 92K }"
       "EndOfSegment"
       "NewSegment"
-      "{ 301K }"
+      "{ 0K }"
       "EndOfSegment";
   EXPECT_EQ(expected, ParseFile("sfx.adts", 512));
 }

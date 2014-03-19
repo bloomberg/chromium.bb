@@ -70,9 +70,13 @@ bool StreamParserTestBase::AppendDataInPieces(const uint8* data,
   return true;
 }
 
-void StreamParserTestBase::OnInitDone(bool success, base::TimeDelta duration) {
+void StreamParserTestBase::OnInitDone(bool success,
+                                      base::TimeDelta duration,
+                                      bool auto_update_timestamp_offset) {
+  EXPECT_TRUE(auto_update_timestamp_offset);
   DVLOG(1) << __FUNCTION__ << "(" << success << ", "
-           << duration.InMilliseconds() << ")";
+           << duration.InMilliseconds() << ", " << auto_update_timestamp_offset
+           << ")";
 }
 
 bool StreamParserTestBase::OnNewConfig(

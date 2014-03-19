@@ -484,7 +484,7 @@ bool Mp2tStreamParser::FinishInitializationIfNeeded() {
 
   // For Mpeg2 TS, the duration is not known.
   DVLOG(1) << "Mpeg2TS stream parser initialization done";
-  init_cb_.Run(true, kInfiniteDuration());
+  init_cb_.Run(true, kInfiniteDuration(), false);
   is_initialized_ = true;
 
   return true;

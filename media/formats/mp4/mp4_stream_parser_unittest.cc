@@ -58,9 +58,11 @@ class MP4StreamParserTest : public testing::Test {
     return true;
   }
 
-  void InitF(bool init_ok, base::TimeDelta duration) {
-    DVLOG(1) << "InitF: ok=" << init_ok
-             << ", dur=" << duration.InMilliseconds();
+  void InitF(bool init_ok,
+             base::TimeDelta duration,
+             bool auto_update_timestamp_offset) {
+    DVLOG(1) << "InitF: ok=" << init_ok << ", dur=" << duration.InMilliseconds()
+             << ", autoTimestampOffset=" << auto_update_timestamp_offset;
   }
 
   bool NewConfigF(const AudioDecoderConfig& ac,

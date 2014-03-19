@@ -24,6 +24,10 @@ using base::TimeDelta;
 
 namespace media {
 
+static TimeDelta EndTimestamp(const StreamParser::BufferQueue& queue) {
+  return queue.back()->timestamp() + queue.back()->duration();
+}
+
 // List of time ranges for each SourceBuffer.
 typedef std::list<Ranges<TimeDelta> > RangesList;
 static Ranges<TimeDelta> ComputeIntersection(const RangesList& activeRanges,
@@ -89,6 +93,13 @@ class SourceState {
   typedef base::Callback<void(
       ChunkDemuxerStream*, const TextTrackConfig&)> NewTextTrackCB;
 
+  // First parameter - Indicates initialization success. Set to true if
+  //                   initialization was successful. False if an error
+  //                   occurred.
+  // Second parameter - Indicates the stream duration. Only contains a valid
+  //                    value if the first parameter is true.
+  typedef base::Callback<void(bool, TimeDelta)> InitCB;
+
   SourceState(
       scoped_ptr<StreamParser> stream_parser,
       scoped_ptr<FrameProcessorBase> frame_processor, const LogCB& log_cb,
@@ -96,7 +107,7 @@ class SourceState {
 
   ~SourceState();
 
-  void Init(const StreamParser::InitCB& init_cb,
+  void Init(const InitCB& init_cb,
             bool allow_audio,
             bool allow_video,
             const StreamParser::NeedKeyCB& need_key_cb,
@@ -177,6 +188,10 @@ class SourceState {
                     const StreamParser::BufferQueue& video_buffers,
                     const StreamParser::TextBufferQueueMap& text_map);
 
+  void OnSourceInitDone(bool success,
+                        TimeDelta duration,
+                        bool auto_update_timestamp_offset);
+
   CreateDemuxerStreamCB create_demuxer_stream_cb_;
   NewTextTrackCB new_text_track_cb_;
 
@@ -216,15 +231,19 @@ class SourceState {
 
   scoped_ptr<FrameProcessorBase> frame_processor_;
   LogCB log_cb_;
+  InitCB init_cb_;
+
+  // Indicates that timestampOffset should be updated automatically during
+  // OnNewBuffers() based on the earliest end timestamp of the buffers provided.
+  bool auto_update_timestamp_offset_;
 
   DISALLOW_COPY_AND_ASSIGN(SourceState);
 };
 
-SourceState::SourceState(
-    scoped_ptr<StreamParser> stream_parser,
-    scoped_ptr<FrameProcessorBase> frame_processor,
-    const LogCB& log_cb,
-    const CreateDemuxerStreamCB& create_demuxer_stream_cb)
+SourceState::SourceState(scoped_ptr<StreamParser> stream_parser,
+                         scoped_ptr<FrameProcessorBase> frame_processor,
+                         const LogCB& log_cb,
+                         const CreateDemuxerStreamCB& create_demuxer_stream_cb)
     : create_demuxer_stream_cb_(create_demuxer_stream_cb),
       timestamp_offset_during_append_(NULL),
       new_media_segment_(false),
@@ -233,7 +252,8 @@ SourceState::SourceState(
       audio_(NULL),
       video_(NULL),
       frame_processor_(frame_processor.release()),
-      log_cb_(log_cb) {
+      log_cb_(log_cb),
+      auto_update_timestamp_offset_(false) {
   DCHECK(!create_demuxer_stream_cb_.is_null());
   DCHECK(frame_processor_);
 }
@@ -244,27 +264,26 @@ SourceState::~SourceState() {
   STLDeleteValues(&text_stream_map_);
 }
 
-void SourceState::Init(const StreamParser::InitCB& init_cb,
+void SourceState::Init(const InitCB& init_cb,
                        bool allow_audio,
                        bool allow_video,
                        const StreamParser::NeedKeyCB& need_key_cb,
                        const NewTextTrackCB& new_text_track_cb) {
   new_text_track_cb_ = new_text_track_cb;
+  init_cb_ = init_cb;
 
-  stream_parser_->Init(init_cb,
-                       base::Bind(&SourceState::OnNewConfigs,
-                                  base::Unretained(this),
-                                  allow_audio,
-                                  allow_video),
-                       base::Bind(&SourceState::OnNewBuffers,
-                                  base::Unretained(this)),
-                       new_text_track_cb_.is_null(),
-                       need_key_cb,
-                       base::Bind(&SourceState::OnNewMediaSegment,
-                                  base::Unretained(this)),
-                       base::Bind(&SourceState::OnEndOfMediaSegment,
-                                  base::Unretained(this)),
-                       log_cb_);
+  stream_parser_->Init(
+      base::Bind(&SourceState::OnSourceInitDone, base::Unretained(this)),
+      base::Bind(&SourceState::OnNewConfigs,
+                 base::Unretained(this),
+                 allow_audio,
+                 allow_video),
+      base::Bind(&SourceState::OnNewBuffers, base::Unretained(this)),
+      new_text_track_cb_.is_null(),
+      need_key_cb,
+      base::Bind(&SourceState::OnNewMediaSegment, base::Unretained(this)),
+      base::Bind(&SourceState::OnEndOfMediaSegment, base::Unretained(this)),
+      log_cb_);
 }
 
 void SourceState::SetSequenceMode(bool sequence_mode) {
@@ -638,10 +657,49 @@ bool SourceState::OnNewBuffers(
   DVLOG(2) << "OnNewBuffers()";
   DCHECK(timestamp_offset_during_append_);
 
-  return frame_processor_->ProcessFrames(
-      audio_buffers, video_buffers, text_map,
-      append_window_start_during_append_, append_window_end_during_append_,
-      &new_media_segment_, timestamp_offset_during_append_);
+  const TimeDelta timestamp_offset_before_processing =
+      *timestamp_offset_during_append_;
+
+  // Calculate the new timestamp offset for audio/video tracks if the stream
+  // parser has requested automatic updates.
+  TimeDelta new_timestamp_offset = timestamp_offset_before_processing;
+  if (auto_update_timestamp_offset_) {
+    const bool have_audio_buffers = !audio_buffers.empty();
+    const bool have_video_buffers = !video_buffers.empty();
+    if (have_audio_buffers && have_video_buffers) {
+      new_timestamp_offset +=
+          std::min(EndTimestamp(audio_buffers), EndTimestamp(video_buffers));
+    } else if (have_audio_buffers) {
+      new_timestamp_offset += EndTimestamp(audio_buffers);
+    } else if (have_video_buffers) {
+      new_timestamp_offset += EndTimestamp(video_buffers);
+    }
+  }
+
+  if (!frame_processor_->ProcessFrames(audio_buffers,
+                                       video_buffers,
+                                       text_map,
+                                       append_window_start_during_append_,
+                                       append_window_end_during_append_,
+                                       &new_media_segment_,
+                                       timestamp_offset_during_append_)) {
+    return false;
+  }
+
+  // Only update the timestamp offset if the frame processor hasn't already.
+  if (auto_update_timestamp_offset_ &&
+      timestamp_offset_before_processing == *timestamp_offset_during_append_) {
+    *timestamp_offset_during_append_ = new_timestamp_offset;
+  }
+
+  return true;
+}
+
+void SourceState::OnSourceInitDone(bool success,
+                                   TimeDelta duration,
+                                   bool auto_update_timestamp_offset) {
+  auto_update_timestamp_offset_ = auto_update_timestamp_offset;
+  base::ResetAndReturn(&init_cb_).Run(success, duration);
 }
 
 ChunkDemuxerStream::ChunkDemuxerStream(Type type)

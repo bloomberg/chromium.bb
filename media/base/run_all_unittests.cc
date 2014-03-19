@@ -40,6 +40,7 @@ void TestSuiteNoAtExit::Initialize() {
   // present.
   media::InitializeMediaLibraryForTesting();
   CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+  cmd_line->AppendSwitch(switches::kEnableADTSStreamParser);
   cmd_line->AppendSwitch(switches::kEnableMP3StreamParser);
 }
 

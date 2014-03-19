@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "media/formats/webm/webm_cluster_parser.h"
 #include "media/formats/webm/webm_constants.h"
@@ -214,10 +215,8 @@ int WebMStreamParser::ParseInfoAndTracks(const uint8* data, int size) {
 
   ChangeState(kParsingClusters);
 
-  if (!init_cb_.is_null()) {
-    init_cb_.Run(true, duration);
-    init_cb_.Reset();
-  }
+  if (!init_cb_.is_null())
+    base::ResetAndReturn(&init_cb_).Run(true, duration, false);
 
   return bytes_parsed;
 }

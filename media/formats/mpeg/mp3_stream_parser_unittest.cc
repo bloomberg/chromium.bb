@@ -22,22 +22,22 @@ TEST_F(MP3StreamParserTest, UnalignedAppend) {
   const std::string expected =
       "NewSegment"
       "{ 0K }"
-      "{ 26K }"
-      "{ 52K }"
-      "{ 78K }"
-      "{ 104K }"
-      "{ 130K }"
-      "{ 156K }"
-      "{ 182K }"
+      "{ 0K }"
+      "{ 0K }"
+      "{ 0K }"
+      "{ 0K }"
+      "{ 0K }"
+      "{ 0K }"
+      "{ 0K }"
       "EndOfSegment"
       "NewSegment"
-      "{ 208K }"
-      "{ 235K }"
-      "{ 261K }"
+      "{ 0K }"
+      "{ 0K }"
+      "{ 0K }"
       "EndOfSegment"
       "NewSegment"
-      "{ 287K }"
-      "{ 313K }"
+      "{ 0K }"
+      "{ 0K }"
       "EndOfSegment";
   EXPECT_EQ(expected, ParseFile("sfx.mp3", 17));
 }
@@ -48,12 +48,12 @@ TEST_F(MP3StreamParserTest, UnalignedAppend512) {
   const std::string expected =
       "NewSegment"
       "{ 0K }"
-      "{ 26K 52K 78K 104K }"
+      "{ 0K 26K 52K 78K }"
       "EndOfSegment"
       "NewSegment"
-      "{ 130K 156K 182K }"
-      "{ 208K 235K 261K 287K }"
-      "{ 313K }"
+      "{ 0K 26K 52K }"
+      "{ 0K 26K 52K 78K }"
+      "{ 0K }"
       "EndOfSegment";
   EXPECT_EQ(expected, ParseFile("sfx.mp3", 512));
 }

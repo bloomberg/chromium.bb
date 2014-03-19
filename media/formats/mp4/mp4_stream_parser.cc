@@ -301,7 +301,7 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
   }
 
   if (!init_cb_.is_null())
-    base::ResetAndReturn(&init_cb_).Run(true, duration);
+    base::ResetAndReturn(&init_cb_).Run(true, duration, false);
 
   EmitNeedKeyIfNecessary(moov_->pssh);
   return true;
