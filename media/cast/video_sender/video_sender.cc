@@ -119,7 +119,6 @@ void VideoSender::InitializeTimers() {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   if (!initialized_) {
     initialized_ = true;
-    ScheduleNextRtcpReport();
     ScheduleNextResendCheck();
     ScheduleNextSkippedFramesCheck();
   }
@@ -408,6 +407,11 @@ void VideoSender::OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback) {
 
 void VideoSender::ReceivedAck(uint32 acked_frame_id) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
+  // Start sending RTCP packets only after receiving the first ACK, i.e. only
+  // after establishing that the receiver is active.
+  if (last_acked_frame_id_ == -1) {
+    ScheduleNextRtcpReport();
+  }
   last_acked_frame_id_ = static_cast<int>(acked_frame_id);
   base::TimeTicks now = cast_environment_->Clock()->NowTicks();
 

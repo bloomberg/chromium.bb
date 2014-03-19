@@ -230,6 +230,14 @@ TEST_F(VideoSenderTest, RtcpTimer) {
 
   RunTasks(max_rtcp_timeout.InMilliseconds());
   EXPECT_GE(transport_.number_of_rtp_packets(), 1);
+  // Don't send RTCP prior to receiving an ACK.
+  EXPECT_GE(transport_.number_of_rtcp_packets(), 0);
+  // Build Cast msg and expect RTCP packet.
+  RtcpCastMessage cast_feedback(1);
+  cast_feedback.media_ssrc_ = 2;
+  cast_feedback.ack_frame_id_ = 0;
+  video_sender_->OnReceivedCastFeedback(cast_feedback);
+  RunTasks(max_rtcp_timeout.InMilliseconds());
   EXPECT_GE(transport_.number_of_rtcp_packets(), 1);
 }
 
