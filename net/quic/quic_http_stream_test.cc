@@ -206,8 +206,8 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
         new QuicClientSession(connection_,
                               scoped_ptr<DatagramClientSocket>(socket),
                               writer_.Pass(), NULL,
-                              make_scoped_ptr((QuicServerInfo*)NULL),
                               &crypto_client_stream_factory_,
+                              make_scoped_ptr((QuicServerInfo*)NULL),
                               QuicSessionKey(kServerHostname, kServerPort,
                                              false),
                               DefaultQuicConfig(), &crypto_config_, NULL));

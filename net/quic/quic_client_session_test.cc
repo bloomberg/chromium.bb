@@ -68,8 +68,8 @@ class QuicClientSessionTest : public ::testing::TestWithParam<QuicVersion> {
       : writer_(new TestPacketWriter()),
         connection_(
             new PacketSavingConnection(false, SupportedVersions(GetParam()))),
-        session_(connection_, GetSocket().Pass(), writer_.Pass(), NULL,
-                 make_scoped_ptr((QuicServerInfo*)NULL), NULL,
+        session_(connection_, GetSocket().Pass(), writer_.Pass(), NULL, NULL,
+                 make_scoped_ptr((QuicServerInfo*)NULL),
                  QuicSessionKey(kServerHostname, kServerPort, false),
                  DefaultQuicConfig(), &crypto_config_, &net_log_) {
     session_.config()->SetDefaults();

@@ -732,9 +732,9 @@ int QuicStreamFactory::CreateSession(
   }
 
   *session = new QuicClientSession(
-      connection, socket.Pass(), writer.Pass(), this, server_info.Pass(),
-      quic_crypto_client_stream_factory_, session_key, config, crypto_config,
-      net_log.net_log());
+      connection, socket.Pass(), writer.Pass(), this,
+      quic_crypto_client_stream_factory_, server_info.Pass(), session_key,
+      config, crypto_config, net_log.net_log());
   all_sessions_.insert(*session);  // owning pointer
   if (is_https) {
     crypto_config->SetProofVerifier(
