@@ -324,7 +324,13 @@ size_t SpdyFramer::GetFrameMinimumSize() const {
 }
 
 size_t SpdyFramer::GetFrameMaximumSize() const {
-  return (protocol_version() < 4) ? 0xffffff : 0xffff;
+  if (protocol_version() < 4) {
+    // 24-bit length field plus eight-byte frame header.
+    return ((1<<24) - 1) + 8;
+  } else {
+    // 14-bit length field.
+    return (1<<14) - 1;
+  }
 }
 
 size_t SpdyFramer::GetDataFrameMaximumPayload() const {
@@ -693,6 +699,12 @@ size_t SpdyFramer::ProcessCommonHeader(const char* data, size_t len) {
 
   // if we're here, then we have the common header all received.
   if (!is_control_frame) {
+    if (protocol_version() >= 4) {
+      // Catch bogus tests sending oversized DATA frames.
+      DCHECK_GE(GetFrameMaximumSize(), current_frame_length_)
+          << "DATA frame too large for SPDY >= 4.";
+    }
+
     if (current_frame_flags_ & ~DATA_FLAG_FIN) {
       set_error(SPDY_INVALID_DATA_FRAME_FLAGS);
     } else {

@@ -2922,7 +2922,11 @@ TEST_P(SpdyFramerTest, ControlFrameTooLarge) {
   // Create a frame at exatly that size.
   string big_value(kBigValueSize, 'x');
   syn_stream.SetHeader("aa", big_value.c_str());
+  // Upstream branches here and wraps SPDY4 with EXPECT_DEBUG_DFATAL. We
+  // neither support that in Chromium, nor do we use the same DFATAL (see
+  // SpdyFrameBuilder::WriteFramePrefix()).
   control_frame.reset(framer.SerializeSynStream(syn_stream));
+
   EXPECT_TRUE(control_frame.get() != NULL);
   EXPECT_EQ(framer.GetControlFrameBufferMaxSize() + 1,
             control_frame->size());
@@ -3725,8 +3729,8 @@ TEST_P(SpdyFramerTest, SizesTest) {
     EXPECT_EQ(8u, framer.GetBlockedSize());
     EXPECT_EQ(12u, framer.GetPushPromiseMinimumSize());
     EXPECT_EQ(8u, framer.GetFrameMinimumSize());
-    EXPECT_EQ(65535u, framer.GetFrameMaximumSize());
-    EXPECT_EQ(65527u, framer.GetDataFrameMaximumPayload());
+    EXPECT_EQ(16383u, framer.GetFrameMaximumSize());
+    EXPECT_EQ(16375u, framer.GetDataFrameMaximumPayload());
   } else {
     EXPECT_EQ(8u, framer.GetControlFrameHeaderSize());
     EXPECT_EQ(18u, framer.GetSynStreamMinimumSize());
@@ -3738,8 +3742,8 @@ TEST_P(SpdyFramerTest, SizesTest) {
     EXPECT_EQ(IsSpdy2() ? 14u : 12u, framer.GetHeadersMinimumSize());
     EXPECT_EQ(16u, framer.GetWindowUpdateSize());
     EXPECT_EQ(8u, framer.GetFrameMinimumSize());
-    EXPECT_EQ(16777215u, framer.GetFrameMaximumSize());
-    EXPECT_EQ(16777207u, framer.GetDataFrameMaximumPayload());
+    EXPECT_EQ(16777223u, framer.GetFrameMaximumSize());
+    EXPECT_EQ(16777215u, framer.GetDataFrameMaximumPayload());
   }
 }
 

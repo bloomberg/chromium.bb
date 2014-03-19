@@ -615,9 +615,8 @@ class NET_EXPORT_PRIVATE SpdyFramer {
     if (spdy_version_ == SPDY3) {
       return 16 * 1024 * 1024;
     }
-    // The theoretical maximum for SPDY4 is 2^16 - 1, as the length
-    // field does count the size of the header.
-    return 16 * 1024;
+    // Absolute maximum size of HTTP2 frame payload (section 4.2 "Frame size").
+    return (1<<14) - 1;
   }
 
   // The size of the control frame buffer.

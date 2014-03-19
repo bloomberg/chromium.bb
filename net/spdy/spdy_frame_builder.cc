@@ -102,7 +102,9 @@ bool SpdyFrameBuilder::WriteFramePrefix(const SpdyFramer& framer,
   DCHECK_EQ(0u, stream_id & ~kStreamIdMask);
   DCHECK_LE(4, framer.protocol_version());
   bool success = true;
-  DCHECK_GT(1u<<16, capacity_);  // Make sure length fits in 2B.
+  // Upstream DCHECK's that capacity_ is under the maximum frame size at this
+  // point. Chromium does not, because of the large additional zlib inflation
+  // factor we use. (Frame size is is still checked by OverwriteLength() below).
   success &= WriteUInt16(capacity_);
   success &= WriteUInt8(type);
   success &= WriteUInt8(flags);
@@ -153,6 +155,12 @@ bool SpdyFrameBuilder::RewriteLength(const SpdyFramer& framer) {
 
 bool SpdyFrameBuilder::OverwriteLength(const SpdyFramer& framer,
                                        size_t length) {
+  if (framer.protocol_version() < 4) {
+    DCHECK_GT(framer.GetFrameMaximumSize() - framer.GetFrameMinimumSize(),
+              length);
+  } else {
+    DCHECK_GE(framer.GetFrameMaximumSize(), length);
+  }
   bool success = false;
   const size_t old_length = length_;
 

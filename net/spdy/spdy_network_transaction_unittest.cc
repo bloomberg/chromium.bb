@@ -12,6 +12,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
+#include "base/strings/string_piece.h"
 #include "base/test/test_file_util.h"
 #include "net/base/auth.h"
 #include "net/base/net_log_unittest.h"
@@ -33,6 +34,7 @@
 #include "net/spdy/spdy_test_util_common.h"
 #include "net/spdy/spdy_test_utils.h"
 #include "net/url_request/url_request_test_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/platform_test.h"
 
 //-----------------------------------------------------------------------------
@@ -40,6 +42,10 @@
 namespace net {
 
 namespace {
+
+using testing::Each;
+using testing::Eq;
+
 const char kRequestUrl[] = "http://www.google.com/";
 
 enum SpdyNetworkTransactionTestSSLType {
@@ -6038,16 +6044,15 @@ TEST_P(SpdyNetworkTransactionTest, WindowUpdateSent) {
   if (GetParam().protocol < kProtoSPDY3)
     return;
 
-  // Set the data in the body frame large enough to trigger sending a
-  // WINDOW_UPDATE by the stream.
-  const std::string body_data(kSpdyStreamInitialWindowSize / 2 + 1, 'x');
+  // Amount of body required to trigger a sent window update.
+  const size_t kTargetSize = kSpdyStreamInitialWindowSize / 2 + 1;
 
   scoped_ptr<SpdyFrame> req(
       spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, LOWEST, true));
   scoped_ptr<SpdyFrame> session_window_update(
-      spdy_util_.ConstructSpdyWindowUpdate(0, body_data.size()));
+      spdy_util_.ConstructSpdyWindowUpdate(0, kTargetSize));
   scoped_ptr<SpdyFrame> window_update(
-      spdy_util_.ConstructSpdyWindowUpdate(1, body_data.size()));
+      spdy_util_.ConstructSpdyWindowUpdate(1, kTargetSize));
 
   std::vector<MockWrite> writes;
   writes.push_back(CreateMockWrite(*req));
@@ -6055,23 +6060,23 @@ TEST_P(SpdyNetworkTransactionTest, WindowUpdateSent) {
     writes.push_back(CreateMockWrite(*session_window_update));
   writes.push_back(CreateMockWrite(*window_update));
 
+  std::vector<MockRead> reads;
   scoped_ptr<SpdyFrame> resp(
       spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
-  scoped_ptr<SpdyFrame> body_no_fin(
-      spdy_util_.ConstructSpdyBodyFrame(
-          1, body_data.data(), body_data.size(), false));
-  scoped_ptr<SpdyFrame> body_fin(
-      spdy_util_.ConstructSpdyBodyFrame(1, NULL, 0, true));
-  MockRead reads[] = {
-    CreateMockRead(*resp),
-    CreateMockRead(*body_no_fin),
-    MockRead(ASYNC, ERR_IO_PENDING, 0),  // Force a pause
-    CreateMockRead(*body_fin),
-    MockRead(ASYNC, ERR_IO_PENDING, 0),  // Force a pause
-    MockRead(ASYNC, 0, 0)  // EOF
-  };
+  reads.push_back(CreateMockRead(*resp));
 
-  DelayedSocketData data(1, reads, arraysize(reads),
+  ScopedVector<SpdyFrame> body_frames;
+  const std::string body_data(4096, 'x');
+  for (size_t remaining = kTargetSize; remaining != 0;) {
+    size_t frame_size = std::min(remaining, body_data.size());
+    body_frames.push_back(spdy_util_.ConstructSpdyBodyFrame(
+        1, body_data.data(), frame_size, false));
+    reads.push_back(CreateMockRead(*body_frames.back()));
+    remaining -= frame_size;
+  }
+  reads.push_back(MockRead(ASYNC, ERR_IO_PENDING, 0)); // Yield.
+
+  DelayedSocketData data(1, vector_as_array(&reads), reads.size(),
                          vector_as_array(&writes), writes.size());
 
   NormalSpdyTransactionHelper helper(CreateGetRequest(), DEFAULT_PRIORITY,
@@ -6092,9 +6097,9 @@ TEST_P(SpdyNetworkTransactionTest, WindowUpdateSent) {
   ASSERT_TRUE(stream != NULL);
   ASSERT_TRUE(stream->stream() != NULL);
 
-  EXPECT_EQ(
-      static_cast<int>(kSpdyStreamInitialWindowSize - body_data.size()),
-      stream->stream()->recv_window_size());
+  // All data has been read, but not consumed. The window reflects this.
+  EXPECT_EQ(static_cast<int>(kSpdyStreamInitialWindowSize - kTargetSize),
+            stream->stream()->recv_window_size());
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response != NULL);
@@ -6104,22 +6109,15 @@ TEST_P(SpdyNetworkTransactionTest, WindowUpdateSent) {
 
   // Issue a read which will cause a WINDOW_UPDATE to be sent and window
   // size increased to default.
-  scoped_refptr<net::IOBuffer> buf(new net::IOBuffer(body_data.size()));
-  rv = trans->Read(buf.get(), body_data.size(), CompletionCallback());
-  EXPECT_EQ(static_cast<int>(body_data.size()), rv);
-  std::string content(buf->data(), buf->data() + body_data.size());
-  EXPECT_EQ(body_data, content);
+  scoped_refptr<net::IOBuffer> buf(new net::IOBuffer(kTargetSize));
+  EXPECT_EQ(static_cast<int>(kTargetSize),
+            trans->Read(buf.get(), kTargetSize, CompletionCallback()));
+  EXPECT_EQ(static_cast<int>(kSpdyStreamInitialWindowSize),
+            stream->stream()->recv_window_size());
+  EXPECT_THAT(base::StringPiece(buf->data(), kTargetSize), Each(Eq('x')));
 
-  // Schedule the reading of empty data frame with FIN
-  data.CompleteRead();
-
-  // Force write of WINDOW_UPDATE which was scheduled during the above
-  // read.
+  // Allow scheduled WINDOW_UPDATE frames to write.
   base::RunLoop().RunUntilIdle();
-
-  // Read EOF.
-  data.CompleteRead();
-
   helper.VerifyDataConsumed();
 }
 
