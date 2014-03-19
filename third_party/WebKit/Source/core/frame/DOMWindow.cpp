@@ -979,7 +979,7 @@ void DOMWindow::print()
     if (!host)
         return;
 
-    if (m_frame->loader().documentLoader()->isLoading()) {
+    if (m_frame->loader().provisionalDocumentLoader() || m_frame->loader().documentLoader()->isLoading()) {
         m_shouldPrintWhenFinishedLoading = true;
         return;
     }
