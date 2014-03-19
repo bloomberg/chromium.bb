@@ -913,6 +913,7 @@
     # NOTE: these are legacy unit tests, do not add more!
     'platform_web_unittest_files': [
       'animation/TimingFunctionTest.cpp',
+      'graphics/BitmapImageTest.cpp',
       'graphics/Canvas2DLayerBridgeTest.cpp',
       'graphics/Canvas2DLayerManagerTest.cpp',
       'graphics/DeferredImageDecoderTest.cpp',
@@ -921,6 +922,8 @@
       'graphics/gpu/DrawingBufferTest.cpp',
       'graphics/test/MockImageDecoder.h',
       'graphics/test/MockWebGraphicsContext3D.h',
+      'image-decoders/gif/GIFImageDecoderTest.cpp',
+      'image-decoders/jpeg/JPEGImageDecoderTest.cpp',
     ],
   },
 }
