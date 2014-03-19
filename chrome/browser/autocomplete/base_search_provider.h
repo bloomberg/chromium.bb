@@ -370,6 +370,9 @@ class BaseSearchProvider : public AutocompleteProvider,
       AutocompleteInput::PageClassification page_classification,
       Profile* profile);
 
+  // net::URLFetcherDelegate:
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+
   // Creates an AutocompleteMatch from |result| to search for the query in
   // |result|. Adds the created match to |map|; if such a match
   // already exists, whichever one has lower relevance is eliminated.
@@ -396,13 +399,16 @@ class BaseSearchProvider : public AutocompleteProvider,
                            const base::ListValue* relevances,
                            Results* results);
 
-  // Returns the TemplateURL for the given |result|.
-  virtual const TemplateURL* GetTemplateURL(
-      const SuggestResult& result) const = 0;
+  // Returns the TemplateURL corresponding to the keyword or default
+  // provider based on the value of |is_keyword|.
+  virtual const TemplateURL* GetTemplateURL(bool is_keyword) const = 0;
 
   // Returns the AutocompleteInput for keyword provider or default provider
   // based on the value of |is_keyword|.
   virtual const AutocompleteInput GetInput(bool is_keyword) const = 0;
+
+  // Returns a pointer to a Results object, which will hold suggest results.
+  virtual Results* GetResultsToFill(bool is_keyword) = 0;
 
   // Returns whether the destination URL corresponding to the given |result|
   // should contain command-line-specified query params.
@@ -421,6 +427,16 @@ class BaseSearchProvider : public AutocompleteProvider,
   // Records in UMA whether the deletion request resulted in success.
   virtual void RecordDeletionResult(bool success) = 0;
 
+  // Records UMA statistics about a suggest server response.
+  virtual void LogFetchComplete(bool succeeded, bool is_keyword) = 0;
+
+  // Returns whether the |fetcher| is for the keyword provider.
+  virtual bool IsKeywordFetcher(const net::URLFetcher* fetcher) const = 0;
+
+  // Updates |matches_| from the latest results; applies calculated relevances
+  // if suggested relevances cause undesriable behavior. Updates |done_|.
+  virtual void UpdateMatches() = 0;
+
   // Whether a field trial, if any, has triggered in the most recent
   // autocomplete query. This field is set to true only if the suggestion
   // provider has completed and the response contained
@@ -430,6 +446,10 @@ class BaseSearchProvider : public AutocompleteProvider,
   // Same as above except that it is maintained across the current Omnibox
   // session.
   bool field_trial_triggered_in_session_;
+
+  // The number of suggest results that haven't yet arrived. If it's greater
+  // than 0, it indicates that one of the URLFetchers is still running.
+  int suggest_results_pending_;
 
  private:
   friend class SearchProviderTest;

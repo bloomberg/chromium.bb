@@ -142,22 +142,22 @@ class SearchProvider : public BaseSearchProvider {
   virtual void Start(const AutocompleteInput& input,
                      bool minimal_changes) OVERRIDE;
 
-  // net::URLFetcherDelegate:
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
-
   // BaseSearchProvider:
   virtual void SortResults(bool is_keyword,
                            const base::ListValue* relevances,
                            Results* results) OVERRIDE;
-  virtual const TemplateURL* GetTemplateURL(
-      const SuggestResult& result) const OVERRIDE;
+  virtual const TemplateURL* GetTemplateURL(bool is_keyword) const OVERRIDE;
   virtual const AutocompleteInput GetInput(bool is_keyword) const OVERRIDE;
+  virtual Results* GetResultsToFill(bool is_keyword) OVERRIDE;
   virtual bool ShouldAppendExtraParams(
       const SuggestResult& result) const OVERRIDE;
   virtual void StopSuggest() OVERRIDE;
   virtual void ClearAllResults() OVERRIDE;
   virtual int GetDefaultResultRelevance() const OVERRIDE;
   virtual void RecordDeletionResult(bool success) OVERRIDE;
+  virtual void LogFetchComplete(bool success, bool is_keyword) OVERRIDE;
+  virtual bool IsKeywordFetcher(const net::URLFetcher* fetcher) const OVERRIDE;
+  virtual void UpdateMatches() OVERRIDE;
 
   // Called when timer_ expires.
   void Run();
@@ -213,10 +213,6 @@ class SearchProvider : public BaseSearchProvider {
       bool autocomplete_result_will_reorder_for_default_match) const;
   bool HasValidDefaultMatch(
       bool autocomplete_result_will_reorder_for_default_match) const;
-
-  // Updates |matches_| from the latest results; applies calculated relevances
-  // if suggested relevances cause undesriable behavior. Updates |done_|.
-  void UpdateMatches();
 
   // Converts an appropriate number of navigation results in
   // |navigation_results| to matches and adds them to |matches|.
@@ -311,10 +307,6 @@ class SearchProvider : public BaseSearchProvider {
   // Searches in the user's history that begin with the input text.
   HistoryResults keyword_history_results_;
   HistoryResults default_history_results_;
-
-  // Number of suggest results that haven't yet arrived. If greater than 0 it
-  // indicates one of the URLFetchers is still running.
-  int suggest_results_pending_;
 
   // A timer to start a query to the suggest server after the user has stopped
   // typing for long enough.

@@ -10,7 +10,6 @@
 #include "base/callback.h"
 #include "base/i18n/break_iterator.h"
 #include "base/i18n/case_conversion.h"
-#include "base/i18n/icu_string_conversions.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
@@ -43,7 +42,6 @@
 #include "net/base/load_flags.h"
 #include "net/base/net_util.h"
 #include "net/http/http_request_headers.h"
-#include "net/http/http_response_headers.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -130,8 +128,7 @@ int SearchProvider::kMinimumTimeBetweenSuggestQueriesMs = 100;
 SearchProvider::SearchProvider(AutocompleteProviderListener* listener,
                                Profile* profile)
     : BaseSearchProvider(listener, profile, AutocompleteProvider::TYPE_SEARCH),
-      providers_(TemplateURLServiceFactory::GetForProfile(profile)),
-      suggest_results_pending_(0) {
+      providers_(TemplateURLServiceFactory::GetForProfile(profile)) {
 }
 
 // static
@@ -310,72 +307,6 @@ void SearchProvider::Start(const AutocompleteInput& input,
   UpdateMatches();
 }
 
-void SearchProvider::OnURLFetchComplete(const net::URLFetcher* source) {
-  DCHECK(!done_);
-  suggest_results_pending_--;
-  LogOmniboxSuggestRequest(REPLY_RECEIVED);
-  DCHECK_GE(suggest_results_pending_, 0);  // Should never go negative.
-
-  const bool is_keyword = (source == keyword_fetcher_.get());
-  // Ensure the request succeeded and that the provider used is still available.
-  // A verbatim match cannot be generated without this provider, causing errors.
-  const bool request_succeeded =
-      source->GetStatus().is_success() && (source->GetResponseCode() == 200) &&
-      (is_keyword ?
-          providers_.GetKeywordProviderURL() :
-          providers_.GetDefaultProviderURL());
-
-  // Record response time for suggest requests sent to Google.  We care
-  // only about the common case: the Google default provider used in
-  // non-keyword mode.
-  const TemplateURL* default_url = providers_.GetDefaultProviderURL();
-  if (!is_keyword && default_url &&
-      (TemplateURLPrepopulateData::GetEngineType(*default_url) ==
-       SEARCH_ENGINE_GOOGLE)) {
-    const base::TimeDelta elapsed_time =
-        base::TimeTicks::Now() - time_suggest_request_sent_;
-    if (request_succeeded) {
-      UMA_HISTOGRAM_TIMES("Omnibox.SuggestRequest.Success.GoogleResponseTime",
-                          elapsed_time);
-    } else {
-      UMA_HISTOGRAM_TIMES("Omnibox.SuggestRequest.Failure.GoogleResponseTime",
-                          elapsed_time);
-    }
-  }
-
-  bool results_updated = false;
-  if (request_succeeded) {
-    const net::HttpResponseHeaders* const response_headers =
-        source->GetResponseHeaders();
-    std::string json_data;
-    source->GetResponseAsString(&json_data);
-
-    // JSON is supposed to be UTF-8, but some suggest service providers send
-    // JSON files in non-UTF-8 encodings.  The actual encoding is usually
-    // specified in the Content-Type header field.
-    if (response_headers) {
-      std::string charset;
-      if (response_headers->GetCharset(&charset)) {
-        base::string16 data_16;
-        // TODO(jungshik): Switch to CodePageToUTF8 after it's added.
-        if (base::CodepageToUTF16(json_data, charset.c_str(),
-                                  base::OnStringConversionError::FAIL,
-                                  &data_16))
-          json_data = base::UTF16ToUTF8(data_16);
-      }
-    }
-
-    scoped_ptr<base::Value> data(DeserializeJsonData(json_data));
-    results_updated = data.get() && ParseSuggestResults(
-        *data.get(), is_keyword,
-        is_keyword ? &keyword_results_ : &default_results_);
-  }
-
-  UpdateMatches();
-  if (done_ || results_updated)
-    listener_->OnProviderUpdate(results_updated);
-}
-
 void SearchProvider::SortResults(bool is_keyword,
                                  const base::ListValue* relevances,
                                  Results* results) {
@@ -404,14 +335,17 @@ void SearchProvider::SortResults(bool is_keyword,
                    comparator);
 }
 
-const TemplateURL* SearchProvider::GetTemplateURL(
-    const SuggestResult& result) const {
-  return result.from_keyword_provider() ? providers_.GetKeywordProviderURL()
-                                        : providers_.GetDefaultProviderURL();
+const TemplateURL* SearchProvider::GetTemplateURL(bool is_keyword) const {
+  return is_keyword ? providers_.GetKeywordProviderURL()
+                    : providers_.GetDefaultProviderURL();
 }
 
 const AutocompleteInput SearchProvider::GetInput(bool is_keyword) const {
   return is_keyword ? keyword_input_ : input_;
+}
+
+BaseSearchProvider::Results* SearchProvider::GetResultsToFill(bool is_keyword) {
+  return is_keyword ? &keyword_results_ : &default_results_;
 }
 
 bool SearchProvider::ShouldAppendExtraParams(
@@ -449,6 +383,137 @@ void SearchProvider::RecordDeletionResult(bool success) {
     content::RecordAction(
         base::UserMetricsAction("Omnibox.ServerSuggestDelete.Failure"));
   }
+}
+
+void SearchProvider::LogFetchComplete(bool success, bool is_keyword) {
+  LogOmniboxSuggestRequest(REPLY_RECEIVED);
+  // Record response time for suggest requests sent to Google.  We care
+  // only about the common case: the Google default provider used in
+  // non-keyword mode.
+  const TemplateURL* default_url = providers_.GetDefaultProviderURL();
+  if (!is_keyword && default_url &&
+      (TemplateURLPrepopulateData::GetEngineType(*default_url) ==
+       SEARCH_ENGINE_GOOGLE)) {
+    const base::TimeDelta elapsed_time =
+        base::TimeTicks::Now() - time_suggest_request_sent_;
+    if (success) {
+      UMA_HISTOGRAM_TIMES("Omnibox.SuggestRequest.Success.GoogleResponseTime",
+                          elapsed_time);
+    } else {
+      UMA_HISTOGRAM_TIMES("Omnibox.SuggestRequest.Failure.GoogleResponseTime",
+                          elapsed_time);
+    }
+  }
+}
+
+bool SearchProvider::IsKeywordFetcher(const net::URLFetcher* fetcher) const {
+  return fetcher == keyword_fetcher_.get();
+}
+
+void SearchProvider::UpdateMatches() {
+  base::TimeTicks update_matches_start_time(base::TimeTicks::Now());
+  ConvertResultsToAutocompleteMatches();
+
+  // Check constraints that may be violated by suggested relevances.
+  if (!matches_.empty() &&
+      (default_results_.HasServerProvidedScores() ||
+       keyword_results_.HasServerProvidedScores())) {
+    // These blocks attempt to repair undesirable behavior by suggested
+    // relevances with minimal impact, preserving other suggested relevances.
+
+    // True if the omnibox will reorder matches as necessary to make the first
+    // one something that is allowed to be the default match.
+    const bool omnibox_will_reorder_for_legal_default_match =
+        OmniboxFieldTrial::ReorderForLegalDefaultMatch(
+            input_.current_page_classification());
+    if (IsTopMatchNavigationInKeywordMode(
+        omnibox_will_reorder_for_legal_default_match)) {
+      // Correct the suggested relevance scores if the top match is a
+      // navigation in keyword mode, since inlining a navigation match
+      // would break the user out of keyword mode.  This will only be
+      // triggered in regular (non-reorder) mode; in reorder mode,
+      // navigation matches are marked as not allowed to be the default
+      // match and hence IsTopMatchNavigation() will always return false.
+      DCHECK(!omnibox_will_reorder_for_legal_default_match);
+      DemoteKeywordNavigationMatchesPastTopQuery();
+      ConvertResultsToAutocompleteMatches();
+      DCHECK(!IsTopMatchNavigationInKeywordMode(
+          omnibox_will_reorder_for_legal_default_match));
+    }
+    if (!HasKeywordDefaultMatchInKeywordMode()) {
+      // In keyword mode, disregard the keyword verbatim suggested relevance
+      // if necessary so there at least one keyword match that's allowed to
+      // be the default match.
+      keyword_results_.verbatim_relevance = -1;
+      ConvertResultsToAutocompleteMatches();
+    }
+    if (IsTopMatchScoreTooLow(omnibox_will_reorder_for_legal_default_match)) {
+      // Disregard the suggested verbatim relevance if the top score is below
+      // the usual verbatim value. For example, a BarProvider may rely on
+      // SearchProvider's verbatim or inlineable matches for input "foo" (all
+      // allowed to be default match) to always outrank its own lowly-ranked
+      // "bar" matches that shouldn't be the default match.
+      default_results_.verbatim_relevance = -1;
+      keyword_results_.verbatim_relevance = -1;
+      ConvertResultsToAutocompleteMatches();
+    }
+    if (IsTopMatchSearchWithURLInput(
+        omnibox_will_reorder_for_legal_default_match)) {
+      // Disregard the suggested search and verbatim relevances if the input
+      // type is URL and the top match is a highly-ranked search suggestion.
+      // For example, prevent a search for "foo.com" from outranking another
+      // provider's navigation for "foo.com" or "foo.com/url_from_history".
+      ApplyCalculatedSuggestRelevance(&keyword_results_.suggest_results);
+      ApplyCalculatedSuggestRelevance(&default_results_.suggest_results);
+      default_results_.verbatim_relevance = -1;
+      keyword_results_.verbatim_relevance = -1;
+      ConvertResultsToAutocompleteMatches();
+    }
+    if (!HasValidDefaultMatch(omnibox_will_reorder_for_legal_default_match)) {
+      // If the omnibox is not going to reorder results to put a legal default
+      // match at the top, then this provider needs to guarantee that its top
+      // scoring result is a legal default match (i.e., it's either a verbatim
+      // match or inlinable).  For example, input "foo" should not invoke a
+      // search for "bar", which would happen if the "bar" search match
+      // outranked all other matches.  On the other hand, if the omnibox will
+      // reorder matches as necessary to put a legal default match at the top,
+      // all we need to guarantee is that SearchProvider returns a legal
+      // default match.  (The omnibox always needs at least one legal default
+      // match, and it relies on SearchProvider to always return one.)
+      ApplyCalculatedRelevance();
+      ConvertResultsToAutocompleteMatches();
+    }
+    DCHECK(!IsTopMatchNavigationInKeywordMode(
+        omnibox_will_reorder_for_legal_default_match));
+    DCHECK(HasKeywordDefaultMatchInKeywordMode());
+    DCHECK(!IsTopMatchScoreTooLow(
+        omnibox_will_reorder_for_legal_default_match));
+    DCHECK(!IsTopMatchSearchWithURLInput(
+        omnibox_will_reorder_for_legal_default_match));
+    DCHECK(HasValidDefaultMatch(omnibox_will_reorder_for_legal_default_match));
+  }
+  UMA_HISTOGRAM_CUSTOM_COUNTS(
+      "Omnibox.SearchProviderMatches", matches_.size(), 1, 6, 7);
+
+  const TemplateURL* keyword_url = providers_.GetKeywordProviderURL();
+  if ((keyword_url != NULL) && HasKeywordDefaultMatchInKeywordMode()) {
+    // If there is a keyword match that is allowed to be the default match,
+    // then prohibit default provider matches from being the default match lest
+    // such matches cause the user to break out of keyword mode.
+    for (ACMatches::iterator it = matches_.begin(); it != matches_.end();
+         ++it) {
+      if (it->keyword != keyword_url->keyword())
+        it->allowed_to_be_default_match = false;
+    }
+  }
+
+  base::TimeTicks update_starred_start_time(base::TimeTicks::Now());
+  UpdateStarredStateOfMatches();
+  UMA_HISTOGRAM_TIMES("Omnibox.SearchProvider.UpdateStarredTime",
+                      base::TimeTicks::Now() - update_starred_start_time);
+  UpdateDone();
+  UMA_HISTOGRAM_TIMES("Omnibox.SearchProvider.UpdateMatchesTime",
+                      base::TimeTicks::Now() - update_matches_start_time);
 }
 
 void SearchProvider::Run() {
@@ -928,111 +993,6 @@ bool SearchProvider::HasValidDefaultMatch(
   return false;
 }
 
-void SearchProvider::UpdateMatches() {
-  base::TimeTicks update_matches_start_time(base::TimeTicks::Now());
-  ConvertResultsToAutocompleteMatches();
-
-  // Check constraints that may be violated by suggested relevances.
-  if (!matches_.empty() &&
-      (default_results_.HasServerProvidedScores() ||
-       keyword_results_.HasServerProvidedScores())) {
-    // These blocks attempt to repair undesirable behavior by suggested
-    // relevances with minimal impact, preserving other suggested relevances.
-
-    // True if the omnibox will reorder matches as necessary to make the first
-    // one something that is allowed to be the default match.
-    const bool omnibox_will_reorder_for_legal_default_match =
-        OmniboxFieldTrial::ReorderForLegalDefaultMatch(
-            input_.current_page_classification());
-    if (IsTopMatchNavigationInKeywordMode(
-        omnibox_will_reorder_for_legal_default_match)) {
-      // Correct the suggested relevance scores if the top match is a
-      // navigation in keyword mode, since inlining a navigation match
-      // would break the user out of keyword mode.  This will only be
-      // triggered in regular (non-reorder) mode; in reorder mode,
-      // navigation matches are marked as not allowed to be the default
-      // match and hence IsTopMatchNavigation() will always return false.
-      DCHECK(!omnibox_will_reorder_for_legal_default_match);
-      DemoteKeywordNavigationMatchesPastTopQuery();
-      ConvertResultsToAutocompleteMatches();
-      DCHECK(!IsTopMatchNavigationInKeywordMode(
-          omnibox_will_reorder_for_legal_default_match));
-    }
-    if (!HasKeywordDefaultMatchInKeywordMode()) {
-      // In keyword mode, disregard the keyword verbatim suggested relevance
-      // if necessary so there at least one keyword match that's allowed to
-      // be the default match.
-      keyword_results_.verbatim_relevance = -1;
-      ConvertResultsToAutocompleteMatches();
-    }
-    if (IsTopMatchScoreTooLow(omnibox_will_reorder_for_legal_default_match)) {
-      // Disregard the suggested verbatim relevance if the top score is below
-      // the usual verbatim value. For example, a BarProvider may rely on
-      // SearchProvider's verbatim or inlineable matches for input "foo" (all
-      // allowed to be default match) to always outrank its own lowly-ranked
-      // "bar" matches that shouldn't be the default match.
-      default_results_.verbatim_relevance = -1;
-      keyword_results_.verbatim_relevance = -1;
-      ConvertResultsToAutocompleteMatches();
-    }
-    if (IsTopMatchSearchWithURLInput(
-        omnibox_will_reorder_for_legal_default_match)) {
-      // Disregard the suggested search and verbatim relevances if the input
-      // type is URL and the top match is a highly-ranked search suggestion.
-      // For example, prevent a search for "foo.com" from outranking another
-      // provider's navigation for "foo.com" or "foo.com/url_from_history".
-      ApplyCalculatedSuggestRelevance(&keyword_results_.suggest_results);
-      ApplyCalculatedSuggestRelevance(&default_results_.suggest_results);
-      default_results_.verbatim_relevance = -1;
-      keyword_results_.verbatim_relevance = -1;
-      ConvertResultsToAutocompleteMatches();
-    }
-    if (!HasValidDefaultMatch(omnibox_will_reorder_for_legal_default_match)) {
-      // If the omnibox is not going to reorder results to put a legal default
-      // match at the top, then this provider needs to guarantee that its top
-      // scoring result is a legal default match (i.e., it's either a verbatim
-      // match or inlinable).  For example, input "foo" should not invoke a
-      // search for "bar", which would happen if the "bar" search match
-      // outranked all other matches.  On the other hand, if the omnibox will
-      // reorder matches as necessary to put a legal default match at the top,
-      // all we need to guarantee is that SearchProvider returns a legal
-      // default match.  (The omnibox always needs at least one legal default
-      // match, and it relies on SearchProvider to always return one.)
-      ApplyCalculatedRelevance();
-      ConvertResultsToAutocompleteMatches();
-    }
-    DCHECK(!IsTopMatchNavigationInKeywordMode(
-        omnibox_will_reorder_for_legal_default_match));
-    DCHECK(HasKeywordDefaultMatchInKeywordMode());
-    DCHECK(!IsTopMatchScoreTooLow(
-        omnibox_will_reorder_for_legal_default_match));
-    DCHECK(!IsTopMatchSearchWithURLInput(
-        omnibox_will_reorder_for_legal_default_match));
-    DCHECK(HasValidDefaultMatch(omnibox_will_reorder_for_legal_default_match));
-  }
-  UMA_HISTOGRAM_CUSTOM_COUNTS(
-      "Omnibox.SearchProviderMatches", matches_.size(), 1, 6, 7);
-
-  const TemplateURL* keyword_url = providers_.GetKeywordProviderURL();
-  if ((keyword_url != NULL) && HasKeywordDefaultMatchInKeywordMode()) {
-    // If there is a keyword match that is allowed to be the default match,
-    // then prohibit default provider matches from being the default match lest
-    // such matches cause the user to break out of keyword mode.
-    for (ACMatches::iterator it = matches_.begin(); it != matches_.end();
-         ++it) {
-      if (it->keyword != keyword_url->keyword())
-        it->allowed_to_be_default_match = false;
-    }
-  }
-
-  base::TimeTicks update_starred_start_time(base::TimeTicks::Now());
-  UpdateStarredStateOfMatches();
-  UMA_HISTOGRAM_TIMES("Omnibox.SearchProvider.UpdateStarredTime",
-                      base::TimeTicks::Now() - update_starred_start_time);
-  UpdateDone();
-  UMA_HISTOGRAM_TIMES("Omnibox.SearchProvider.UpdateMatchesTime",
-                      base::TimeTicks::Now() - update_matches_start_time);
-}
 
 void SearchProvider::AddNavigationResultsToMatches(
     const NavigationResults& navigation_results,

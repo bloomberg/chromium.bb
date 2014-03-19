@@ -5,6 +5,7 @@
 #include "chrome/browser/autocomplete/base_search_provider.h"
 
 #include "base/i18n/case_conversion.h"
+#include "base/i18n/icu_string_conversions.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
@@ -28,6 +29,7 @@
 #include "net/base/escape.h"
 #include "net/base/net_util.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "net/http/http_response_headers.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
@@ -112,7 +114,9 @@ BaseSearchProvider::BaseSearchProvider(AutocompleteProviderListener* listener,
                                        AutocompleteProvider::Type type)
     : AutocompleteProvider(listener, profile, type),
       field_trial_triggered_(false),
-      field_trial_triggered_in_session_(false) {}
+      field_trial_triggered_in_session_(false),
+      suggest_results_pending_(0) {
+}
 
 // static
 bool BaseSearchProvider::ShouldPrefetch(const AutocompleteMatch& match) {
@@ -585,6 +589,53 @@ bool BaseSearchProvider::CanSendURL(
   return true;
 }
 
+void BaseSearchProvider::OnURLFetchComplete(const net::URLFetcher* source) {
+  DCHECK(!done_);
+  suggest_results_pending_--;
+  DCHECK_GE(suggest_results_pending_, 0);  // Should never go negative.
+
+  const bool is_keyword = IsKeywordFetcher(source);
+
+  // Ensure the request succeeded and that the provider used is still available.
+  // A verbatim match cannot be generated without this provider, causing errors.
+  const bool request_succeeded =
+      source->GetStatus().is_success() && (source->GetResponseCode() == 200) &&
+      GetTemplateURL(is_keyword);
+
+  LogFetchComplete(request_succeeded, is_keyword);
+
+  bool results_updated = false;
+  if (request_succeeded) {
+    const net::HttpResponseHeaders* const response_headers =
+        source->GetResponseHeaders();
+    std::string json_data;
+    source->GetResponseAsString(&json_data);
+
+    // JSON is supposed to be UTF-8, but some suggest service providers send
+    // JSON files in non-UTF-8 encodings.  The actual encoding is usually
+    // specified in the Content-Type header field.
+    if (response_headers) {
+      std::string charset;
+      if (response_headers->GetCharset(&charset)) {
+        base::string16 data_16;
+        // TODO(jungshik): Switch to CodePageToUTF8 after it's added.
+        if (base::CodepageToUTF16(json_data, charset.c_str(),
+                                  base::OnStringConversionError::FAIL,
+                                  &data_16))
+          json_data = base::UTF16ToUTF8(data_16);
+      }
+    }
+
+    scoped_ptr<base::Value> data(DeserializeJsonData(json_data));
+    results_updated = data.get() && ParseSuggestResults(
+        *data.get(), is_keyword, GetResultsToFill(is_keyword));
+  }
+
+  UpdateMatches();
+  if (done_ || results_updated)
+    listener_->OnProviderUpdate(results_updated);
+}
+
 void BaseSearchProvider::AddMatchToMap(const SuggestResult& result,
                                        const std::string& metadata,
                                        int accepted_suggestion,
@@ -598,8 +649,8 @@ void BaseSearchProvider::AddMatchToMap(const SuggestResult& result,
 
   AutocompleteMatch match = CreateSearchSuggestion(
       this, GetInput(result.from_keyword_provider()), result,
-      GetTemplateURL(result), accepted_suggestion, omnibox_start_margin,
-      ShouldAppendExtraParams(result));
+      GetTemplateURL(result.from_keyword_provider()), accepted_suggestion,
+      omnibox_start_margin, ShouldAppendExtraParams(result));
   if (!match.destination_url.is_valid())
     return;
   match.search_terms_args->bookmark_bar_pinned =

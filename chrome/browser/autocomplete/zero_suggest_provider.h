@@ -54,9 +54,6 @@ class ZeroSuggestProvider : public BaseSearchProvider {
   // Sets |field_trial_triggered_| to false.
   virtual void ResetSession() OVERRIDE;
 
-  // net::URLFetcherDelegate
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
-
   // Initiates a new fetch for the given |url| of classification
   // |page_classification|. |permanent_text| is the omnibox text
   // for the current page.
@@ -72,15 +69,18 @@ class ZeroSuggestProvider : public BaseSearchProvider {
   virtual ~ZeroSuggestProvider();
 
   // BaseSearchProvider:
-  virtual const TemplateURL* GetTemplateURL(
-      const SuggestResult& result) const OVERRIDE;
+  virtual const TemplateURL* GetTemplateURL(bool is_keyword) const OVERRIDE;
   virtual const AutocompleteInput GetInput(bool is_keyword) const OVERRIDE;
+  virtual Results* GetResultsToFill(bool is_keyword) OVERRIDE;
   virtual bool ShouldAppendExtraParams(
       const SuggestResult& result) const OVERRIDE;
   virtual void StopSuggest() OVERRIDE;
   virtual void ClearAllResults() OVERRIDE;
   virtual int GetDefaultResultRelevance() const OVERRIDE;
   virtual void RecordDeletionResult(bool success) OVERRIDE;
+  virtual void LogFetchComplete(bool success, bool is_keyword) OVERRIDE;
+  virtual bool IsKeywordFetcher(const net::URLFetcher* fetcher) const OVERRIDE;
+  virtual void UpdateMatches() OVERRIDE;
 
   // Adds AutocompleteMatches for each of the suggestions in |results| to
   // |map|.
@@ -132,8 +132,6 @@ class ZeroSuggestProvider : public BaseSearchProvider {
 
   // Fetcher used to retrieve results.
   scoped_ptr<net::URLFetcher> fetcher_;
-  // Whether there's a pending request in flight.
-  bool have_pending_request_;
 
   // Suggestion for the current URL.
   AutocompleteMatch current_url_match_;

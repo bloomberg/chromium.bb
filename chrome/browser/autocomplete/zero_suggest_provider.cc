@@ -37,7 +37,6 @@
 #include "net/base/load_flags.h"
 #include "net/base/net_util.h"
 #include "net/http/http_request_headers.h"
-#include "net/http/http_response_headers.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
 #include "url/gurl.h"
@@ -98,27 +97,6 @@ void ZeroSuggestProvider::ResetSession() {
   Stop(true);
 }
 
-void ZeroSuggestProvider::OnURLFetchComplete(const net::URLFetcher* source) {
-  have_pending_request_ = false;
-  LogOmniboxZeroSuggestRequest(ZERO_SUGGEST_REPLY_RECEIVED);
-
-  std::string json_data;
-  source->GetResponseAsString(&json_data);
-  const bool request_succeeded =
-      source->GetStatus().is_success() && source->GetResponseCode() == 200;
-
-  if (request_succeeded) {
-    scoped_ptr<base::Value> data(DeserializeJsonData(json_data));
-    if (data.get())
-      ParseSuggestResults(*data.get(), false, &results_);
-  }
-  done_ = true;
-
-  ConvertResultsToAutocompleteMatches();
-  if (!matches_.empty())
-    listener_->OnProviderUpdate(true);
-}
-
 void ZeroSuggestProvider::StartZeroSuggest(
     const GURL& current_page_url,
     AutocompleteInput::PageClassification page_classification,
@@ -169,17 +147,15 @@ ZeroSuggestProvider::ZeroSuggestProvider(
     : BaseSearchProvider(listener, profile,
                          AutocompleteProvider::TYPE_ZERO_SUGGEST),
       template_url_service_(TemplateURLServiceFactory::GetForProfile(profile)),
-      have_pending_request_(false),
       weak_ptr_factory_(this) {
 }
 
 ZeroSuggestProvider::~ZeroSuggestProvider() {
 }
 
-const TemplateURL* ZeroSuggestProvider::GetTemplateURL(
-    const SuggestResult& result) const {
+const TemplateURL* ZeroSuggestProvider::GetTemplateURL(bool is_keyword) const {
   // Zero suggest provider should not receive keyword results.
-  DCHECK(!result.from_keyword_provider());
+  DCHECK(!is_keyword);
   return template_url_service_->GetDefaultSearchProvider();
 }
 
@@ -190,6 +166,12 @@ const AutocompleteInput ZeroSuggestProvider::GetInput(bool is_keyword) const {
       AutocompleteInput::ALL_MATCHES);
 }
 
+BaseSearchProvider::Results* ZeroSuggestProvider::GetResultsToFill(
+    bool is_keyword) {
+  DCHECK(!is_keyword);
+  return &results_;
+}
+
 bool ZeroSuggestProvider::ShouldAppendExtraParams(
       const SuggestResult& result) const {
   // We always use the default provider for search, so append the params.
@@ -197,9 +179,9 @@ bool ZeroSuggestProvider::ShouldAppendExtraParams(
 }
 
 void ZeroSuggestProvider::StopSuggest() {
-  if (have_pending_request_)
+  if (suggest_results_pending_ > 0)
     LogOmniboxZeroSuggestRequest(ZERO_SUGGEST_REQUEST_INVALIDATED);
-  have_pending_request_ = false;
+  suggest_results_pending_ = 0;
   fetcher_.reset();
 }
 
@@ -226,6 +208,22 @@ void ZeroSuggestProvider::RecordDeletionResult(bool success) {
     content::RecordAction(
         base::UserMetricsAction("Omnibox.ZeroSuggestDelete.Failure"));
   }
+}
+
+void ZeroSuggestProvider::LogFetchComplete(bool success, bool is_keyword) {
+  LogOmniboxZeroSuggestRequest(ZERO_SUGGEST_REPLY_RECEIVED);
+}
+
+bool ZeroSuggestProvider::IsKeywordFetcher(
+    const net::URLFetcher* fetcher) const {
+  // ZeroSuggestProvider does not have a keyword provider.
+  DCHECK_EQ(fetcher, fetcher_.get());
+  return false;
+}
+
+void ZeroSuggestProvider::UpdateMatches() {
+  done_ = true;
+  ConvertResultsToAutocompleteMatches();
 }
 
 void ZeroSuggestProvider::AddSuggestResultsToMap(
@@ -263,7 +261,7 @@ AutocompleteMatch ZeroSuggestProvider::NavigationToMatch(
 }
 
 void ZeroSuggestProvider::Run(const GURL& suggest_url) {
-  have_pending_request_ = false;
+  suggest_results_pending_ = 0;
   const int kFetcherID = 1;
   fetcher_.reset(
       net::URLFetcher::Create(kFetcherID,
@@ -288,7 +286,7 @@ void ZeroSuggestProvider::Run(const GURL& suggest_url) {
                      weak_ptr_factory_.GetWeakPtr()), false);
     }
   }
-  have_pending_request_ = true;
+  suggest_results_pending_ = 1;
   LogOmniboxZeroSuggestRequest(ZERO_SUGGEST_REQUEST_SENT);
 }
 
