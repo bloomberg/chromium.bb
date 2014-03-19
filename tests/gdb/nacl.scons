@@ -18,8 +18,18 @@ if env.Bit('target_arm') or env.Bit('target_mips32'):
     # nacl-gdb is built with ARM support but not MIPS support.
     if env.Bit('target_mips32'):
       Return()
-    env.Replace(GDB='${SCONSTRUCT_DIR}/'
-                'toolchain/linux_x86_newlib/bin/i686-nacl-gdb')
+    platform_build_dir = env.GetPlatformBuildTargetDir(target_arch='x86',
+                                                       is_pnacl=False)
+    toolchain_name = env.GetToolchainName(target_arch='x86',
+                                          is_pnacl=False,
+                                          lib_name='newlib')
+
+    nacl_x86_toolchain_dir = env.GetToolchainDir(
+        platform_build_dir=platform_build_dir,
+        toolchain_name=toolchain_name
+    )
+    nacl_gdb_path = os.path.join(nacl_x86_toolchain_dir, 'bin', 'i686-nacl-gdb')
+    env.Replace(GDB=nacl_gdb_path)
   else:
     # Use the system's ARM/MIPS GDB because the NaCl toolchain does not
     # include a copy of GDB built to run on ARM/MIPS.

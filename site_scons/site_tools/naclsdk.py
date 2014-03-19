@@ -16,17 +16,6 @@ import subprocess
 import tempfile
 
 
-# Mapping from env['PLATFORM'] (scons) to a single host platform from the point
-# of view of NaCl.
-NACL_CANONICAL_PLATFORM_MAP = {
-    'win32': 'win',
-    'cygwin': 'win',
-    'posix': 'linux',
-    'linux': 'linux',
-    'linux2': 'linux',
-    'darwin': 'mac',
-}
-
 NACL_TOOL_MAP = {
     'arm': {
         '32': {
@@ -68,19 +57,6 @@ def _StubOutEnvToolsForBuiltElsewhere(env):
               RANLIB='true', AS='true', ASPP='true', LD='true',
               STRIP='true')
 
-def _PlatformSubdirs(env):
-  if env.Bit('bitcode'):
-    os = NACL_CANONICAL_PLATFORM_MAP[env['PLATFORM']]
-    name = 'pnacl_%s_x86' % os
-  else:
-    platform = NACL_CANONICAL_PLATFORM_MAP[env['PLATFORM']]
-    arch = env['BUILD_ARCHITECTURE']
-    subarch = env['TARGET_SUBARCH']
-    name = platform + '_' + arch
-    if not env.Bit('nacl_glibc'):
-      name = name + '_newlib'
-  return name
-
 
 def _GetNaClSdkRoot(env, sdk_mode, psdk_mode):
   """Return the path to the sdk.
@@ -116,8 +92,7 @@ def _GetNaClSdkRoot(env, sdk_mode, psdk_mode):
       return '/usr/local/nacl-sdk'
 
   elif sdk_mode == 'download':
-    tcname = _PlatformSubdirs(env)
-    return os.path.join(env['MAIN_DIR'], 'toolchain', tcname)
+    return env.GetToolchainDir()
   elif sdk_mode.startswith('custom:'):
     return os.path.abspath(sdk_mode[len('custom:'):])
 

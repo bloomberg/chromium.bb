@@ -186,6 +186,12 @@ ACCEPTABLE_ARGUMENTS = set([
     'bindir',
     # Where a Breakpad build output directory is for optional Breakpad testing.
     'breakpad_tools_dir',
+    # Allows overriding the toolchain to use. The default toolchain will be
+    # a combination of the other arguments. Example toolchains:
+    #  NaCl (newlib): nacl_PLATFORM_newlib
+    #  NaCl (glibc):  nacl_PLATFORM_glibc
+    #  pnacl:         pnacl_PLATFORM
+    'toolchain',
     # Allows overriding the version number in the toolchain's
     # FEATURE_VERSION file.  This is used for PNaCl ABI compatibility
     # testing.
@@ -449,6 +455,7 @@ def GetTargetPlatform():
 
 def GetBuildPlatform():
   return pynacl.platform.GetArch3264()
+
 
 environment_list = []
 
@@ -1143,6 +1150,75 @@ def SConstructAbsPath(env, path):
   return os.path.normpath(os.path.join(env['MAIN_DIR'], path))
 
 pre_base_env.AddMethod(SConstructAbsPath)
+
+
+def GetPlatformBuildTargetDir(env, target_arch=None, is_pnacl=None,
+                              is_trusted=False):
+  # Currently we do not support any cross OS compiles, eventually the OS name
+  # will probably be passed in through arguments.
+  os_name = pynacl.platform.GetOS()
+
+  # Currently 32/64 share the same tool build target directory. When we have
+  # separate toolchains for each the architectures will probably have to use
+  # the Arch3264() variant.
+  build_arch = pynacl.platform.GetArch(GetBuildPlatform())
+  if target_arch is None:
+    target_arch = pynacl.platform.GetArch(GetTargetPlatform())
+
+  if is_pnacl is None:
+    is_pnacl = env.Bit('bitcode')
+
+  if is_trusted:
+    return '%s_%s_%s_%s' % (os_name, build_arch, os_name, target_arch)
+  elif is_pnacl:
+    return '%s_%s_pnacl' % (os_name, build_arch)
+  else:
+    return '%s_%s_nacl_%s' % (os_name, build_arch, target_arch)
+
+pre_base_env.AddMethod(GetPlatformBuildTargetDir)
+
+
+def GetToolchainName(env, target_arch=None, is_pnacl=None, lib_name=None):
+  toolchain = ARGUMENTS.get('toolchain', None)
+  if toolchain is None:
+    if is_pnacl is None:
+      is_pnacl = env.Bit('bitcode')
+    if lib_name is None:
+      if is_pnacl or not env.Bit('nacl_glibc'):
+        lib_name = 'newlib'
+      else:
+        lib_name = 'glibc'
+
+    build_arch = pynacl.platform.GetArch(GetBuildPlatform())
+    if target_arch is None:
+      target_arch = pynacl.platform.GetArch(GetTargetPlatform())
+
+    if is_pnacl:
+      target_env = 'pnacl'
+    else:
+      target_env = 'nacl_%s' % target_arch
+
+    toolchain = '%s_%s' % (target_env, lib_name)
+
+  return toolchain
+
+pre_base_env.AddMethod(GetToolchainName)
+
+
+def GetToolchainDir(env, platform_build_dir=None, toolchain_name=None):
+  if platform_build_dir is None:
+    platform_build_dir = env.GetPlatformBuildTargetDir()
+  if toolchain_name is None:
+    toolchain_name = env.GetToolchainName()
+
+  toolchain_sub_dir = os.path.join(
+      'toolchain',
+      platform_build_dir,
+      toolchain_name
+  )
+  return env.SConstructAbsPath(toolchain_sub_dir)
+
+pre_base_env.AddMethod(GetToolchainDir)
 
 
 def GetSelLdr(env):
@@ -2433,7 +2509,11 @@ def which(cmd, paths=os.environ.get('PATH', '').split(os.pathsep)):
 
 
 def SetUpLinuxEnvArm(env):
-  jail = '${SCONSTRUCT_DIR}/toolchain/linux_arm-trusted'
+  trusted_build_dir = env.GetPlatformBuildTargetDir(is_trusted=True)
+  jail = env.GetToolchainDir(
+      platform_build_dir=trusted_build_dir,
+      toolchain_name='arm_trusted'
+  )
   if env.Bit('arm_hard_float'):
     arm_abi = 'gnueabihf'
   else:
@@ -2571,7 +2651,11 @@ def SetUpAndroidEnv(env):
   return env
 
 def SetUpLinuxEnvMips(env):
-  jail = '${SCONSTRUCT_DIR}/toolchain/linux_mips-trusted'
+  trusted_build_dir = env.GetPlatformBuildTargetDir(is_trusted=True)
+  jail = env.GetToolchainDir(
+      platform_build_dir=trusted_build_dir,
+      toolchain_name='mips_trusted'
+  )
   if not platform.machine().startswith('mips'):
     # Allow emulation on non-MIPS hosts.
     env.Replace(EMULATOR=jail + '/run_under_qemu_mips32')
@@ -2582,8 +2666,7 @@ def SetUpLinuxEnvMips(env):
     env.Replace(CC='true', CXX='true', LD='true',
                 AR='true', RANLIB='true', INSTALL=FakeInstall)
   else:
-    tc_dir = os.path.join(os.getcwd(), 'toolchain', 'linux_mips-trusted',
-                          'bin')
+    tc_dir = os.path.join(jail, 'bin')
     if not which(os.path.join(tc_dir, 'mipsel-linux-gnu-gcc')):
       raise UserError("\nERRROR: "
           "MIPS trusted TC is not installed - try running:\n"
@@ -3664,7 +3747,7 @@ def DumpEnvironmentInfo(selected_envs):
       print 'ASPPCOM:', asppcom
       DumpCompilerVersion(cc, env)
       print
-    rev_file = 'toolchain/pnacl_linux_x86/REV'
+    rev_file = 'toolchain/linux_x86_pnacl/pnacl_newlib/REV'
     if os.path.exists(rev_file):
       for line in open(rev_file).read().split('\n'):
         if "Revision:" in line:
