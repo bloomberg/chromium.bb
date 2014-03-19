@@ -66,4 +66,4 @@ class StartWithUrl(Startup):
   """
 
   def __init__(self):
-    super(StartWithUrl, self).__init__(action_name_to_run='navigate_steps')
+    super(StartWithUrl, self).__init__(action_name_to_run='RunNavigateSteps')

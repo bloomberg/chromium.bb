@@ -8,7 +8,7 @@ from telemetry.page import page_measurement
 
 class Repaint(page_measurement.PageMeasurement):
   def __init__(self):
-    super(Repaint, self).__init__('repaint', False)
+    super(Repaint, self).__init__('RunRepaint', False)
     self._smoothness_metric = None
 
   def WillRunActions(self, page, tab):
