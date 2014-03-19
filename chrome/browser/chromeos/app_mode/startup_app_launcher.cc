@@ -243,10 +243,10 @@ void StartupAppLauncher::LaunchApp() {
       content::NotificationService::AllSources(),
       content::NotificationService::NoDetails());
 
-  OnLaunchSuccess();
-
   if (diagnostic_mode_)
     KioskDiagnosisRunner::Run(profile_, app_id_);
+
+  OnLaunchSuccess();
 }
 
 void StartupAppLauncher::OnLaunchSuccess() {
