@@ -469,7 +469,7 @@ void DesktopWindowTreeHostX11::Deactivate() {
     return;
 
   x11_capture_.reset();
-  X11DesktopHandler::get()->DeactivateWindow(xwindow_);
+  XLowerWindow(xdisplay_, xwindow_);
 }
 
 bool DesktopWindowTreeHostX11::IsActive() const {
