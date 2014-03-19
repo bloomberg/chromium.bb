@@ -538,8 +538,21 @@ unsigned int DefaultXKeysymFromHardwareKeycode(unsigned int hardware_code) {
     XK_Scroll_Lock,   // 0x4E: XK_Scroll_Lock
   };
 
-  return hardware_code < arraysize(kHardwareKeycodeMap) ?
-      kHardwareKeycodeMap[hardware_code] : 0;
+  if (hardware_code >= arraysize(kHardwareKeycodeMap)) {
+    // Checks for arrow keys.
+    switch (hardware_code) {
+      case 0x6f:
+        return XK_Up;
+      case 0x71:
+        return XK_Left;
+      case 0x72:
+        return XK_Right;
+      case 0x74:
+        return XK_Down;
+    }
+    return 0;
+  }
+  return kHardwareKeycodeMap[hardware_code];
 }
 
 // TODO(jcampan): this method might be incomplete.
